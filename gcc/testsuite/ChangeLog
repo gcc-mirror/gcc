@@ -1,3 +1,7 @@
+2009-03-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.target/x86_64/abi/callabi/func-indirect.c (main): Return 0.
+
 2009-03-16  Janis Johnson  <janis187@us.ibm.com>
 
 	Revert patch for PR testsuite/37630.
