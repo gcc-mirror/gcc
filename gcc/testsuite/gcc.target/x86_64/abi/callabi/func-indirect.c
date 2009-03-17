@@ -20,5 +20,5 @@ int main()
     volatile func callme = callback;
     if(callme(0, 0, 0, 0, 0x1234567890abcdefLL))
      abort();
+    return 0;
 }
-
