@@ -4273,17 +4273,15 @@ static int
 ix86_function_regparm (const_tree type, const_tree decl)
 {
   tree attr;
-  int regparm = ix86_regparm;
+  int regparm;
 
   static bool error_issued;
 
   if (TARGET_64BIT)
-    {
-      if (ix86_function_type_abi (type) == DEFAULT_ABI)
-        return regparm;
-      return DEFAULT_ABI != SYSV_ABI ? X86_64_REGPARM_MAX : X64_REGPARM_MAX;
-    }
+    return (ix86_function_type_abi (type) == SYSV_ABI
+	    ? X86_64_REGPARM_MAX : X64_REGPARM_MAX);
 
+  regparm = ix86_regparm;
   attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
   if (attr)
     {
