@@ -1,5 +1,13 @@
 2009-03-16  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/39473
+	* config/i386/i386.c (ix86_expand_call): Check extra clobbers
+	for ms->sysv ABI calls only in 64bit mode.
+
+	* config/i386/i386.md (untyped_call): Support 32bit.
+
+2009-03-16  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* doc/extend.texi: Replace x86_65 with x86_64.
 
 2009-03-16  Jakub Jelinek  <jakub@redhat.com>
