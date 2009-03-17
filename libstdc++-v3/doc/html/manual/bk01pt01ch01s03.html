@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Bugs</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt01ch01.html" title="Chapter 1. Status" /><link rel="prev" href="bk01pt01ch01s02.html" title="License" /><link rel="next" href="bk01pt01ch02.html" title="Chapter 2. Setup" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bugs</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt01ch01s02.html">Prev</a> </td><th width="60%" align="center">Chapter 1. Status</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt01ch02.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.status.bugs"></a>Bugs</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.status.bugs.impl"></a>Implementation Bugs</h3></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Bugs</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="bk01pt01ch01.html" title="Chapter 1. Status" /><link rel="prev" href="bk01pt01ch01s02.html" title="License" /><link rel="next" href="bk01pt01ch02.html" title="Chapter 2. Setup" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Bugs</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt01ch01s02.html">Prev</a> </td><th width="60%" align="center">Chapter 1. Status</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt01ch02.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.status.bugs"></a>Bugs</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.status.bugs.impl"></a>Implementation Bugs</h3></div></div></div><p>
       Information on known bugs, details on efforts to fix them, and
       fixed bugs are all available as part of the GCC bug tracking
       system, <a class="ulink" href="http://gcc.gnu.org/bugzilla" target="_top">bugzilla</a>, with the
@@ -49,6 +49,9 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#22" target="_top">22</a>:
         <span class="emphasis"><em>Member open vs flags</em></span>
     </span></dt><dd><p>Re-opening a file stream does <span class="emphasis"><em>not</em></span> clear the state flags.
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#23" target="_top">23</a>:
+        <span class="emphasis"><em>Num_get overflow result</em></span>
+    </span></dt><dd><p>Implement the proposed resolution.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#25" target="_top">25</a>:
         <span class="emphasis"><em>String operator&lt;&lt; uses width() value wrong</em></span>
     </span></dt><dd><p>Padding issues.
@@ -228,6 +231,9 @@
         <span class="emphasis"><em>Const overload of valarray::operator[] returns 
                   by value</em></span>
     </span></dt><dd><p>Change it to return a <code class="code">const T&amp;</code>.
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#396" target="_top">396</a>:
+        <span class="emphasis"><em>what are characters zero and one</em></span>
+    </span></dt><dd><p>Implement the proposed resolution.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#402" target="_top">402</a>:
         <span class="emphasis"><em>Wrong new expression in [some_]allocator::construct</em></span>
     </span></dt><dd><p>Replace "new" with "::new".
@@ -278,13 +284,13 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#543" target="_top">543</a>:
         <span class="emphasis"><em>valarray slice default constructor</em></span>
     </span></dt><dd><p>Follow the straightforward proposed resolution.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#550" target="_top">550</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#550" target="_top">550</a>:
         <span class="emphasis"><em>What should the return type of pow(float,int) be?</em></span>
     </span></dt><dd><p>In C++0x mode, remove the pow(float,int), etc., signatures.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#586" target="_top">586</a>:
         <span class="emphasis"><em>string inserter not a formatted function</em></span>
     </span></dt><dd><p>Change it to be a formatted output function (i.e. catch exceptions).
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#596" target="_top">596</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#596" target="_top">596</a>:
         <span class="emphasis"><em>27.8.1.3 Table 112 omits "a+" and "a+b" modes</em></span>
     </span></dt><dd><p>Add the missing modes to fopen_mode.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#660" target="_top">660</a>:
@@ -300,20 +306,16 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#695" target="_top">695</a>:
         <span class="emphasis"><em>ctype&lt;char&gt;::classic_table() not accessible</em></span>
     </span></dt><dd><p>Make the member functions table and classic_table public.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#761" target="_top">761</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#761" target="_top">761</a>:
         <span class="emphasis"><em>unordered_map needs an at() member function</em></span>
     </span></dt><dd><p>In C++0x mode, add at() and at() const.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#775" target="_top">775</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#775" target="_top">775</a>:
         <span class="emphasis"><em>Tuple indexing should be unsigned?</em></span>
     </span></dt><dd><p>Implement the int -&gt; size_t replacements.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#776" target="_top">776</a>:
         <span class="emphasis"><em>Undescribed assign function of std::array</em></span>
     </span></dt><dd><p>In C++0x mode, remove assign, add fill.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#778" target="_top">778</a>:
-        <span class="emphasis"><em>std::bitset does not have any constructor taking a string 
-	          literal</em></span>
-    </span></dt><dd><p>Add it.
-    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#781" target="_top">781</a>:
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-defects.html#781" target="_top">781</a>:
         <span class="emphasis"><em>std::complex should add missing C99 functions</em></span>
     </span></dt><dd><p>In C++0x mode, add std::proj.
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#809" target="_top">809</a>:
@@ -322,4 +324,7 @@
     </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#844" target="_top">844</a>:
         <span class="emphasis"><em>complex pow return type is ambiguous</em></span>
     </span></dt><dd><p>In C++0x mode, remove the pow(complex&lt;T&gt;, int) signature.
+    </p></dd><dt><span class="term"><a class="ulink" href="../ext/lwg-active.html#853" target="_top">853</a>:
+        <span class="emphasis"><em>to_string needs updating with zero and one</em></span>
+    </span></dt><dd><p>Update / add the signatures.
     </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt01ch01s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="bk01pt01ch01.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt01ch02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">License </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 2. Setup</td></tr></table></div></body></html>

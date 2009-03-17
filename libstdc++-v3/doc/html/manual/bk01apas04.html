@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Documentation Style</title><meta name="generator" content="DocBook XSL Stylesheets V1.73.2" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="start" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_contributing.html" title="Appendix A. Contributing" /><link rel="prev" href="bk01apas03.html" title="Coding Style" /><link rel="next" href="bk01apas05.html" title="Design Notes" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Documentation Style</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01apas03.html">Prev</a> </td><th width="60%" align="center">Appendix A. Contributing</th><td width="20%" align="right"> <a accesskey="n" href="bk01apas05.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="contrib.doc_style"></a>Documentation Style</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="doc_style.doxygen"></a>Doxygen</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.prereq"></a>Prerequisites</h4></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Documentation Style</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_contributing.html" title="Appendix A. Contributing" /><link rel="prev" href="bk01apas03.html" title="Coding Style" /><link rel="next" href="bk01apas05.html" title="Design Notes" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Documentation Style</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01apas03.html">Prev</a> </td><th width="60%" align="center">Appendix A. Contributing</th><td width="20%" align="right"> <a accesskey="n" href="bk01apas05.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="contrib.doc_style"></a>Documentation Style</h2></div></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="doc_style.doxygen"></a>Doxygen</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.prereq"></a>Prerequisites</h4></div></div></div><p>
 	Prerequisite tools are Bash 2.x,
 	<a class="ulink" href="http://www.doxygen.org/" target="_top">Doxygen</a>, and
 	the <a class="ulink" href="http://www.gnu.org/software/coreutils/" target="_top">GNU
@@ -13,14 +13,14 @@
 	<a class="ulink" href="http://www.research.att.com/sw/tools/graphviz/download.html" target="_top">Graphviz</a>
 	package will need to be installed. 
       </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.rules"></a>Generating the Doxygen Files</h4></div></div></div><p>
-	The Makefile rules
+	The following Makefile rules run Doxygen to generate HTML
+	docs, XML docs, and the man pages.
+      </p><p>
       </p><pre class="screen"><strong class="userinput"><code>make doc-html-doxygen</code></strong></pre><p>
-	and 
+      </p><p>
       </p><pre class="screen"><strong class="userinput"><code>make doc-xml-doxygen</code></strong></pre><p>
-	and 
+      </p><p>
       </p><pre class="screen"><strong class="userinput"><code>make doc-man-doxygen</code></strong></pre><p>
-	in the libstdc++ build directory generate the HTML docs, the
-	XML docs, and the man pages.
       </p><p>
 	Careful observers will see that the Makefile rules simply call
 	a script from the source tree, <code class="filename">run_doxygen</code>, which
@@ -97,8 +97,11 @@
       </p><p>
 	Access to the DocBook stylesheets and DTD is required. The
 	stylesheets are usually packaged by vendor, in something
-	like <code class="filename">docbook-style-xsl</code>. The installation
-	directory for this package corresponds to
+	like <code class="filename">docbook-style-xsl</code>. To exactly match
+	generated output, please use a version of the stylesheets
+	equivalent
+	to <code class="filename">docbook-style-xsl-1.74.0-5</code>. The
+	installation directory for this package corresponds to
 	the <code class="literal">XSL_STYLE_DIR</code>
 	in <code class="filename">doc/Makefile.am</code> and defaults
 	to <code class="filename">/usr/share/sgml/docbook/xsl-stylesheets</code>.
@@ -128,18 +131,18 @@
 xmllint --noout --valid <code class="filename">xml/index.xml</code>
 	  </code></strong>
 	</pre></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.rules"></a>Generating the DocBook Files</h4></div></div></div><p>
-	The Makefile rules
+	The following Makefile rules generate (in order): an HTML
+	version of all the documentation, a PDF version of the same, a
+	single XML document, and the result of validating the entire XML
+	document.
+      </p><p>
       </p><pre class="screen"><strong class="userinput"><code>make doc-html</code></strong></pre><p>
-	and 
+      </p><p>
       </p><pre class="screen"><strong class="userinput"><code>make doc-pdf</code></strong></pre><p>
-	and 
+      </p><p>
       </p><pre class="screen"><strong class="userinput"><code>make doc-xml-single</code></strong></pre><p>
-	and 
+      </p><p>
       </p><pre class="screen"><strong class="userinput"><code>make doc-xml-validate</code></strong></pre><p>
-	in the libstdc++ build directory result respectively in the
-	following: the generation of an HTML version of all the
-	documentation, a PDF version of the same, a single XML
-	document, and the results of validating the XML document.
       </p></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.examples"></a>File Organization and Basics</h4></div></div></div><div class="literallayout"><p><br />
       <span class="emphasis"><em>Which files are important</em></span><br />
 <br />
@@ -200,64 +203,25 @@ xmllint --noout --valid <code class="filename">xml/index.xml</code>
       &lt;/book&gt;<br />
 <br />
       &lt;/set&gt;<br />
-    </p></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.markup"></a>Markup By Example</h4></div></div></div><div class="literallayout"><p><br />
-      HTML to XML rough equivalents<br />
-<br />
-      &lt;p&gt;			&lt;para&gt;<br />
-<br />
-      &lt;pre&gt;			&lt;computeroutput&gt;<br />
-      &lt;pre&gt;			&lt;programlisting&gt;<br />
-      &lt;pre&gt;			&lt;literallayout&gt;<br />
-<br />
-      &lt;ul&gt;			&lt;itemizedlist&gt;<br />
-      &lt;ol&gt;			&lt;orderedlist&gt;<br />
-      &lt;il&gt;			&lt;listitem&gt;<br />
-<br />
-      &lt;dl&gt;			&lt;variablelist&gt;<br />
-<br />
-      &lt;varlistentry&gt;<br />
-      &lt;dt&gt; 			  &lt;term&gt;<br />
-      &lt;/dt&gt;			  &lt;/term&gt;<br />
-      &lt;dd&gt;  			  &lt;listitem&gt;<br />
-      &lt;/dt&gt;			  &lt;/listitem&gt;<br />
-      &lt;/varlistentry&gt;<br />
-<br />
-      &lt;a href			&lt;ulink url<br />
-      &lt;code&gt;			&lt;literal&gt;<br />
-      &lt;code&gt;			&lt;programlisting&gt;<br />
-<br />
-      &lt;strong&gt;		&lt;emphasis&gt;<br />
-      &lt;em&gt;			&lt;emphasis&gt;<br />
-      "			&lt;quote&gt;<br />
-<br />
-      ctype.h			&lt;filename class="headerfile"&gt;&lt;/filename&gt;<br />
-<br />
-      <br />
-      build_dir   		&lt;filename class="directory"&gt;path_to_build_dir&lt;/filename&gt;<br />
-<br />
-      Finer gradations of &lt;code&gt;<br />
-<br />
-      &lt;classname&gt;		&lt;classname&gt;string&lt;/classname&gt;<br />
-      &lt;classname&gt;vector&lt;&gt;&lt;/classname&gt;			<br />
-      &lt;function&gt;fs.clear()&lt;/function&gt;<br />
-<br />
-      &lt;structname&gt;<br />
-<br />
-      &lt;function&gt;		&lt;function&gt;clear()&lt;/function&gt;<br />
-<br />
-      &lt;type&gt;			&lt;type&gt;long long&lt;/type&gt;<br />
-<br />
-      &lt;varname&gt;		&lt;varname&gt;fs&lt;/varname&gt;<br />
-<br />
-      &lt;literal&gt;		&lt;literal&gt;-Weffc++&lt;/literal&gt; <br />
-      &lt;literal&gt;rel_ops&lt;/literal&gt;<br />
-<br />
-      &lt;constant&gt;		&lt;constant&gt;_GNU_SOURCE&lt;/constant&gt;<br />
-      &lt;constant&gt;3.0&lt;/constant&gt;<br />
-<br />
-      &lt;filename&gt;<br />
-<br />
-      &lt;command&gt;		&lt;command&gt;g++&lt;/command&gt;<br />
-<br />
-      &lt;errortext&gt;		&lt;errortext&gt;foo Concept &lt;/errortext&gt;<br />
-</p></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01apas03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_contributing.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01apas05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Coding Style </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Design Notes</td></tr></table></div></body></html>
+    </p></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.markup"></a>Markup By Example</h4></div></div></div><p>
+Complete details on Docbook markup can be found in the DocBook Element
+Reference, <a class="ulink" href="http://www.docbook.org/tdg/en/html/part2.html" target="_top">online</a>. An
+incomplete reference for HTML to Docbook conversion is detailed in the
+table below.
+</p><div class="table"><a id="id552441"></a><p class="title"><b>Table A.1. HTML to Docbook XML markup comparison</b></p><div class="table-contents"><table summary="HTML to Docbook XML markup comparison" border="1"><colgroup><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">XML</th></tr></thead><tbody><tr><td align="left">&lt;p&gt;</td><td align="left">&lt;para&gt;</td></tr><tr><td align="left">&lt;pre&gt;</td><td align="left">&lt;computeroutput&gt;, &lt;programlisting&gt;, 
+	&lt;literallayout&gt;</td></tr><tr><td align="left">&lt;ul&gt;</td><td align="left">&lt;itemizedlist&gt;</td></tr><tr><td align="left">&lt;ol&gt;</td><td align="left">&lt;orderedlist&gt;</td></tr><tr><td align="left">&lt;il&gt;</td><td align="left">&lt;listitem&gt;</td></tr><tr><td align="left">&lt;dl&gt;</td><td align="left">&lt;variablelist&gt;</td></tr><tr><td align="left">&lt;dt&gt;</td><td align="left">&lt;term&gt;</td></tr><tr><td align="left">&lt;dd&gt;</td><td align="left">&lt;listitem&gt;</td></tr><tr><td align="left">&lt;a href=""&gt;</td><td align="left">&lt;ulink url=""&gt;</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">&lt;literal&gt;, &lt;programlisting&gt;</td></tr><tr><td align="left">&lt;strong&gt;</td><td align="left">&lt;emphasis&gt;</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;emphasis&gt;</td></tr><tr><td align="left">"</td><td align="left">&lt;quote&gt;</td></tr></tbody></table></div></div><br class="table-break" /><p>
+  And examples of detailed markup for which there are no real HTML
+  equivalents are listed in the table below.
+</p><div class="table"><a id="id554436"></a><p class="title"><b>Table A.2. Docbook XML Element Use</b></p><div class="table-contents"><table summary="Docbook XML Element Use" border="1"><colgroup><col align="left" /><col align="left" /></colgroup><thead><tr><th align="left">Element</th><th align="left">Use</th></tr></thead><tbody><tr><td align="left">&lt;structname&gt;</td><td align="left">&lt;structname&gt;char_traits&lt;/structname&gt;</td></tr><tr><td align="left">&lt;classname&gt;</td><td align="left">&lt;classname&gt;string&lt;/classname&gt;</td></tr><tr><td align="left">&lt;function&gt;</td><td align="left">
+	<p>&lt;function&gt;clear()&lt;/function&gt;</p>
+	<p>&lt;function&gt;fs.clear()&lt;/function&gt;</p>
+      </td></tr><tr><td align="left">&lt;type&gt;</td><td align="left">&lt;type&gt;long long&lt;/type&gt;</td></tr><tr><td align="left">&lt;varname&gt;</td><td align="left">&lt;varname&gt;fs&lt;/varname&gt;</td></tr><tr><td align="left">&lt;literal&gt;</td><td align="left">
+	<p>&lt;literal&gt;-Weffc++&lt;/literal&gt;</p>
+	<p>&lt;literal&gt;rel_ops&lt;/literal&gt;</p>
+      </td></tr><tr><td align="left">&lt;constant&gt;</td><td align="left">
+	<p>&lt;constant&gt;_GNU_SOURCE&lt;/constant&gt;</p>
+	<p>&lt;constant&gt;3.0&lt;/constant&gt;</p>
+      </td></tr><tr><td align="left">&lt;command&gt;</td><td align="left">&lt;command&gt;g++&lt;/command&gt;</td></tr><tr><td align="left">&lt;errortext&gt;</td><td align="left">&lt;errortext&gt;In instantiation of&lt;/errortext&gt;</td></tr><tr><td align="left">&lt;filename&gt;</td><td align="left">
+	<p>&lt;filename class="headerfile"&gt;ctype.h&lt;/filename&gt;</p>
+	<p>&lt;filename class="directory"&gt;/home/gcc/build&lt;/filename&gt;</p>
+      </td></tr></tbody></table></div></div><br class="table-break" /></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01apas03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_contributing.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01apas05.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Coding Style </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Design Notes</td></tr></table></div></body></html>
