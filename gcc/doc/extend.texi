@@ -2687,7 +2687,7 @@ default).  Lazy binding will send the first call via resolving code in
 the loader, which might assume EAX, EDX and ECX can be clobbered, as
 per the standard calling conventions.  Solaris 8 is affected by this.
 GNU systems with GLIBC 2.1 or higher, and FreeBSD, are believed to be
-safe since the loaders there save all registers.  (Lazy binding can be
+safe since the loaders there save EAX, EDX and ECX.  (Lazy binding can be
 disabled with the linker or the loader if desired, to avoid the
 problem.)
 
