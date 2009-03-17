@@ -1,5 +1,11 @@
 2009-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/39477
+	* doc/extend.texi: Correct register behavior for regparm on
+	Intel 386.
+
+2009-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/39476
 	* config/i386/i386.c (ix86_function_regparm): Rewrite for
 	64bit.
