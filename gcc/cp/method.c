@@ -436,7 +436,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       BLOCK_VARS (fn_block) = a;
       DECL_INITIAL (thunk_fndecl) = fn_block;
       init_function_start (thunk_fndecl);
-      crtl->is_thunk = 1;
+      cfun->is_thunk = 1;
       assemble_start_function (thunk_fndecl, fnname);
 
       targetm.asm_out.output_mi_thunk (asm_out_file, thunk_fndecl,
