@@ -43,6 +43,7 @@ global compat_have_dfp
 # Load procedures from common libraries. 
 load_lib standard.exp
 load_lib gcc.exp
+load_lib target-libpath.exp
 
 # Load the language-dependent compabibility support procedures.
 load_lib c-compat.exp
@@ -90,20 +91,12 @@ set generator_src "$generator_src $srcdir/$subdir/generate-random.c"
 set generator_src "$generator_src $srcdir/$subdir/generate-random_r.c"
 set generator_cmd "-o $generator $skip_dfp $generator_src"
 
-# Temporarily unset GCC_EXEC_PREFIX from environment, as that might
-# confuse the $HOSTCC.
-set orig_gcc_exec_prefix_saved 0
-if [info exists env(GCC_EXEC_PREFIX)] {
-     set orig_gcc_exec_prefix "$env(GCC_EXEC_PREFIX)"
-     set orig_gcc_exec_prefix_saved 1
-     unsetenv GCC_EXEC_PREFIX
-}
+# Temporarily switch to the environment for the host compiler.
+restore_ld_library_path_env_vars
 set status [remote_exec build "$HOSTCC $HOSTCFLAGS $generator_cmd"]
 set status [lindex $status 0]
-if { $orig_gcc_exec_prefix_saved } {
-     set orig_gcc_exec_prefix_saved 0
-     setenv GCC_EXEC_PREFIX "$orig_gcc_exec_prefix"
-}
+set_ld_library_path_env_vars
+
 if { $status == 0 } then {
     file delete -force $tstobjdir
     file mkdir $tstobjdir

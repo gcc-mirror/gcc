@@ -4418,9 +4418,13 @@ site.exp: ./config.status Makefile
 	@echo "set CXXFLAGS \"\"" >> ./tmp0
 	@echo "set HOSTCC \"$(CC)\"" >> ./tmp0
 	@echo "set HOSTCFLAGS \"$(CFLAGS)\"" >> ./tmp0
+# When running the tests we set GCC_EXEC_PREFIX to the install tree so that
+# files that have already been installed there will be found.  The -B option
+# overrides it, so use of GCC_EXEC_PREFIX will not result in using GCC files
+# from the install tree.
+	@echo "set TEST_GCC_EXEC_PREFIX \"$(libdir)/gcc/\"" >> ./tmp0
 	@echo "set TESTING_IN_BUILD_TREE 1" >> ./tmp0
 	@echo "set HAVE_LIBSTDCXX_V3 1" >> ./tmp0
-	@echo "set GCC_EXEC_PREFIX \"$(libdir)/gcc/\"" >> ./tmp0
 # If newlib has been configured, we need to pass -B to gcc so it can find
 # newlib's crt0.o if it exists.  This will cause a "path prefix not used"
 # message if it doesn't, but the testsuite is supposed to ignore the message -
@@ -4505,7 +4509,6 @@ $(filter-out $(lang_checks_parallelized),$(lang_checks)): check-% : site.exp
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd $${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
 	    export TCL_LIBRARY ; fi ; \
-	GCC_EXEC_PREFIX="$(libdir)/gcc/" ; export GCC_EXEC_PREFIX ; \
 	$(RUNTEST) --tool $* $(RUNTESTFLAGS))
 
 $(patsubst %,%-subtargets,$(filter-out $(lang_checks_parallelized),$(lang_checks))): check-%-subtargets:
@@ -4593,7 +4596,6 @@ check-parallel-% : site.exp
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd $${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
 	    export TCL_LIBRARY ; fi ; \
-	GCC_EXEC_PREFIX="$(libdir)/gcc/" ; export GCC_EXEC_PREFIX ; \
 	runtestflags= ; \
 	if [ -n "$(check_p_subno)" ] ; then \
 	  runtestflags="$(check_p_subwork)"; \
@@ -4618,7 +4620,6 @@ check-consistency: testsuite/site.exp
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd $${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
 	   export TCL_LIBRARY ; fi ; \
-	GCC_EXEC_PREFIX="$(libdir)/gcc/" ; export GCC_EXEC_PREFIX ; \
 	$(RUNTEST) --tool consistency $(RUNTESTFLAGS)
 
 # QMTest targets

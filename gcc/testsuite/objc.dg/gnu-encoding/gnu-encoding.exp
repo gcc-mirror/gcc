@@ -17,6 +17,7 @@
 
 # Load support procs.
 load_lib objc-dg.exp
+load_lib target-libpath.exp
 
 # If a testcase doesn't have special options, use these.
 global DEFAULT_CFLAGS
@@ -37,20 +38,11 @@ set generator_src "$srcdir/$subdir/struct-layout-encoding-1_generate.c"
 set generator_src "$generator_src $srcdir/$subdir/generate-random.c"
 set generator_src "$generator_src $srcdir/$subdir/generate-random_r.c"
 set generator_cmd "-o $generator $generator_src"
-# Temporarily unset GCC_EXEC_PREFIX from environment, as that might
-# confuse the $HOSTCC.
-set orig_gcc_exec_prefix_saved 0
-if [info exists env(GCC_EXEC_PREFIX)] {
-     set orig_gcc_exec_prefix "$env(GCC_EXEC_PREFIX)"
-     set orig_gcc_exec_prefix_saved 1
-     unsetenv GCC_EXEC_PREFIX
-}
+# Temporarily switch to the environment of the host compiler.
+restore_ld_library_path_env_vars
 set status [remote_exec build "$HOSTCC $HOSTCFLAGS $generator_cmd"]
 set status [lindex $status 0]
-if { $orig_gcc_exec_prefix_saved } {
-     set orig_gcc_exec_prefix_saved 0
-     setenv GCC_EXEC_PREFIX "$orig_gcc_exec_prefix"
-}
+set_ld_library_path_env_vars
 if { $status == 0 } then {
     file delete -force $tstobjdir
     file mkdir $tstobjdir
