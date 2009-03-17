@@ -7135,7 +7135,7 @@ alpha_sa_mask (unsigned long *imaskP, unsigned long *fmaskP)
   /* When outputting a thunk, we don't have valid register life info,
      but assemble_start_function wants to output .frame and .mask
      directives.  */
-  if (crtl->is_thunk)
+  if (cfun->is_thunk)
     {
       *imaskP = 0;
       *fmaskP = 0;
@@ -7365,7 +7365,7 @@ alpha_does_function_need_gp (void)
     return 1;
 
   /* The code emitted by alpha_output_mi_thunk_osf uses the gp.  */
-  if (crtl->is_thunk)
+  if (cfun->is_thunk)
     return 1;
 
   /* The nonlocal receiver pattern assumes that the gp is valid for
@@ -7888,7 +7888,7 @@ alpha_start_function (FILE *file, const char *fnname,
 	 Otherwise, do it here.  */
       if (TARGET_ABI_OSF
           && ! alpha_function_needs_gp
-	  && ! crtl->is_thunk)
+	  && ! cfun->is_thunk)
 	{
 	  putc ('$', file);
 	  assemble_name (file, fnname);
@@ -7999,7 +7999,7 @@ alpha_output_function_end_prologue (FILE *file)
     fputs ("\t.prologue 0\n", file);
   else if (!flag_inhibit_size_directive)
     fprintf (file, "\t.prologue %d\n",
-	     alpha_function_needs_gp || crtl->is_thunk);
+	     alpha_function_needs_gp || cfun->is_thunk);
 }
 
 /* Write function epilogue.  */
@@ -8283,7 +8283,7 @@ alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
     output_asm_insn (get_insn_template (CODE_FOR_nop, NULL), NULL);
 
 #if TARGET_ABI_OSF
-  if (crtl->is_thunk)
+  if (cfun->is_thunk)
     free_after_compilation (cfun);
 #endif
 
@@ -8326,7 +8326,7 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   HOST_WIDE_INT hi, lo;
   rtx this_rtx, insn, funexp;
 
-  gcc_assert (crtl->is_thunk);
+  gcc_assert (cfun->is_thunk);
 
   /* We always require a valid GP.  */
   emit_insn (gen_prologue_ldgp ());

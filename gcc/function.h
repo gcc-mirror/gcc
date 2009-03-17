@@ -378,12 +378,6 @@ struct rtl_data GTY(())
   /* Nonzero if function being compiled has an asm statement.  */
   bool has_asm_statement;
 
-  /* Nonzero if the current function is a thunk, i.e., a lightweight
-     function implemented by the output_mi_thunk hook) that just
-     adjusts one of its arguments and forwards to another
-     function.  */
-  bool is_thunk;
-
   /* This bit is used by the exception handling logic.  It is set if all
      calls (if any) are sibling calls.  Such functions do not have to
      have EH tables generated, as they cannot throw.  A call to such a
@@ -600,6 +594,12 @@ struct function GTY(())
   /* Nonzero if this function has local DECL_HARD_REGISTER variables.
      In this case code motion has to be done more carefully.  */
   unsigned int has_local_explicit_reg_vars : 1;
+
+  /* Nonzero if the current function is a thunk, i.e., a lightweight
+     function implemented by the output_mi_thunk hook) that just
+     adjusts one of its arguments and forwards to another
+     function.  */
+  unsigned int is_thunk : 1;
 };
 
 /* If va_list_[gf]pr_size is set to this, it means we don't know how
