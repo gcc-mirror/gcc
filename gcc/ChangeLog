@@ -3,6 +3,10 @@
 	* dwarf2out.c (dwarf2out_imported_module_or_decl_1): Allow
 	non-NAMESPACE_DECL IMPORTED_DECL_ASSOCIATED_DECL.
 
+	PR debug/39474
+	* tree-ssa-live.c (remove_unused_locals): Don't remove local
+	unused non-artificial variables when not optimizing.
+
 	PR debug/39471
 	* dwarf2out.c (dwarf2out_imported_module_or_decl_1): Emit
 	DW_TAG_imported_module even if decl is IMPORTED_DECL with
