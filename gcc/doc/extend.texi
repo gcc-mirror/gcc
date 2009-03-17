@@ -2553,7 +2553,7 @@ defined by shared libraries.
 @cindex @code{ms_abi} attribute
 @cindex @code{sysv_abi} attribute
 
-On 64-bit x86_65-*-* targets, you can use an ABI attribute to indicate
+On 64-bit x86_64-*-* targets, you can use an ABI attribute to indicate
 which calling convention should be used for a function.  The @code{ms_abi}
 attribute tells the compiler to use the Microsoft ABI, while the
 @code{sysv_abi} attribute tells the compiler to use the ABI used on
