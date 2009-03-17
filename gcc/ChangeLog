@@ -1,3 +1,7 @@
+2009-03-16  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/extend.texi: Replace x86_65 with x86_64.
+
 2009-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/39455
