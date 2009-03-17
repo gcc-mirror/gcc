@@ -22,7 +22,6 @@
 	PR middle-end/39378
 	* function.h: Move is_thunk from rtl_data structure to function
 	structure.
-	* cp/method.c (use_thunk): Change is_thunk from crtl to cfun.
 	* varasm.c (assemble_start_function): Change is_thunk from crtl to
 	cfun.
 	* config/alpha/alpha.c: Change is_thunk from crtl to cfun.
