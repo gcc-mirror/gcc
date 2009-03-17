@@ -1,3 +1,11 @@
+2009-03-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	Revert
+	2008-10-14  Jakub Jelinek  <jakub@redhat.com>
+	PR middle-end/37805
+	* opts.c (common_handle_option): Don't ICE on -fhelp=joined
+	and -fhelp=separate.
+
 2009-03-17  Jing Yu  <jingyu@google.com>
 
 	PR middle-end/39378

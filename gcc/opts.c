@@ -1515,6 +1515,8 @@ common_handle_option (size_t scode, const char *arg, int value,
 	      { "warnings", CL_WARNING },
 	      { "undocumented", CL_UNDOCUMENTED },
 	      { "params", CL_PARAMS },
+	      { "joined", CL_JOINED },
+	      { "separate", CL_SEPARATE },
 	      { "common", CL_COMMON },
 	      { NULL, 0 }
 	    };
