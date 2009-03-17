@@ -163,7 +163,7 @@ in the following sections.
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
 @gccoptlist{-c  -S  -E  -o @var{file}  -combine  -pipe  -pass-exit-codes  @gol
--x @var{language}  -v  -###  --help@r{[}=@var{class}@r{]}  --target-help  @gol
+-x @var{language}  -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  @gol
 --version -wrapper@@@var{file}}
 
 @item C Language Options
@@ -1161,11 +1161,10 @@ Print (on the standard output) a description of target-specific command
 line options for each tool.  For some targets extra target-specific
 information may also be printed.
 
-@item --help=@var{class}@r{[},@var{qualifier}@r{]}
+@item --help=@{@var{class}@r{|[}^@r{]}@var{qualifier}@}@r{[},@dots{}@r{]}
 Print (on the standard output) a description of the command line
-options understood by the compiler that fit into a specific class.
-The class can be one of @samp{optimizers}, @samp{warnings}, @samp{target},
-@samp{params}, or @var{language}:
+options understood by the compiler that fit into all specified classes
+and qualifiers.  These are the supported classes:
 
 @table @asis
 @item @samp{optimizers}
@@ -1195,9 +1194,7 @@ version of GCC.
 This will display the options that are common to all languages.
 @end table
 
-It is possible to further refine the output of the @option{--help=}
-option by adding a comma separated list of qualifiers after the
-class.  These can be any from the following list:
+These are the supported qualifiers:
 
 @table @asis
 @item @samp{undocumented}
@@ -1221,7 +1218,7 @@ switches supported by the compiler the following can be used:
 @end smallexample
 
 The sense of a qualifier can be inverted by prefixing it with the
-@var{^} character, so for example to display all binary warning
+@samp{^} character, so for example to display all binary warning
 options (i.e., ones that are either on or off and that do not take an
 argument), which have a description the following can be used:
 
@@ -1229,7 +1226,10 @@ argument), which have a description the following can be used:
 --help=warnings,^joined,^undocumented
 @end smallexample
 
-A class can also be used as a qualifier, although this usually
+The argument to @option{--help=} should not consist solely of inverted
+qualifiers.
+
+Combining several classes is possible, although this usually
 restricts the output by so much that there is nothing to display.  One
 case where it does work however is when one of the classes is
 @var{target}.  So for example to display all the target-specific
@@ -1265,7 +1265,7 @@ options, so for example it is possible to find out which optimizations
 are enabled at @option{-O2} by using:
 
 @smallexample
--O2 --help=optimizers
+-Q -O2 --help=optimizers
 @end smallexample
 
 Alternatively you can discover which binary optimizations are enabled
