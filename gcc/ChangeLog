@@ -1,5 +1,16 @@
 2009-03-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
+	PR middle-end/37805
+	* opts.c (print_specific_help): In addition to `undocumented',
+	accept `separate' and `joined' flags if passed alone.  Describe
+	output by the first matched one of those.
+	(common_handle_option): Skip over empty strings.
+	* gcc.c (display_help): Fix help string for `--help='.
+	* doc/invoke.texi (Option Summary, Overall Options): With
+	`--help=', classes and qualifiers can both be repeated, but
+	only the latter can be negated.  One should not pass only
+	negated qualifiers.  Fix markup and examples.
+
 	Revert
 	2008-10-14  Jakub Jelinek  <jakub@redhat.com>
 	PR middle-end/37805
