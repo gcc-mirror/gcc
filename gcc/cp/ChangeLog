@@ -1,3 +1,9 @@
+2009-03-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/39475
+	* semantics.c (check_trait_type): New.
+	(finish_trait_expr): Use it.
+
 2009-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* name-lookup.c (cp_emit_debug_info_for_using): Emit USING_STMTs
