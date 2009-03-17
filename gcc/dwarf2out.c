@@ -5149,9 +5149,6 @@ static void gen_descr_array_type_die (tree, struct array_descr_info *, dw_die_re
 #if 0
 static void gen_entry_point_die (tree, dw_die_ref);
 #endif
-static void gen_inlined_enumeration_type_die (tree, dw_die_ref);
-static void gen_inlined_structure_type_die (tree, dw_die_ref);
-static void gen_inlined_union_type_die (tree, dw_die_ref);
 static dw_die_ref gen_enumeration_type_die (tree, dw_die_ref);
 static dw_die_ref gen_formal_parameter_die (tree, tree, dw_die_ref);
 static void gen_unspecified_parameters_die (tree, dw_die_ref);
@@ -5172,7 +5169,6 @@ static void gen_struct_or_union_type_die (tree, dw_die_ref,
 static void gen_subroutine_type_die (tree, dw_die_ref);
 static void gen_typedef_die (tree, dw_die_ref);
 static void gen_type_die (tree, dw_die_ref);
-static void gen_tagged_type_instantiation_die (tree, dw_die_ref);
 static void gen_block_die (tree, dw_die_ref, int);
 static void decls_for_scope (tree, dw_die_ref, int);
 static int is_redundant_typedef (const_tree);
@@ -13149,18 +13145,6 @@ retry_incomplete_types (void)
     gen_type_die (VEC_index (tree, incomplete_types, i), comp_unit_die);
 }
 
-/* Generate a DIE to represent an inlined instance of an enumeration type.  */
-
-static void
-gen_inlined_enumeration_type_die (tree type, dw_die_ref context_die)
-{
-  dw_die_ref type_die = new_die (DW_TAG_enumeration_type, context_die, type);
-
-  /* We do not check for TREE_ASM_WRITTEN (type) being set, as the type may
-     be incomplete and such types are not marked.  */
-  add_abstract_origin_attribute (type_die, type);
-}
-
 /* Determine what tag to use for a record type.  */
 
 static enum dwarf_tag
@@ -13183,30 +13167,6 @@ record_type_tag (tree type)
     default:
       gcc_unreachable ();
     }
-}
-
-/* Generate a DIE to represent an inlined instance of a structure type.  */
-
-static void
-gen_inlined_structure_type_die (tree type, dw_die_ref context_die)
-{
-  dw_die_ref type_die = new_die (record_type_tag (type), context_die, type);
-
-  /* We do not check for TREE_ASM_WRITTEN (type) being set, as the type may
-     be incomplete and such types are not marked.  */
-  add_abstract_origin_attribute (type_die, type);
-}
-
-/* Generate a DIE to represent an inlined instance of a union type.  */
-
-static void
-gen_inlined_union_type_die (tree type, dw_die_ref context_die)
-{
-  dw_die_ref type_die = new_die (DW_TAG_union_type, context_die, type);
-
-  /* We do not check for TREE_ASM_WRITTEN (type) being set, as the type may
-     be incomplete and such types are not marked.  */
-  add_abstract_origin_attribute (type_die, type);
 }
 
 /* Generate a DIE to represent an enumeration type.  Note that these DIEs
@@ -14835,46 +14795,6 @@ gen_type_die (tree type, dw_die_ref context_die)
   gen_type_die_with_usage (type, context_die, DINFO_USAGE_DIR_USE);
 }
 
-/* Generate a DIE for a tagged type instantiation.  */
-
-static void
-gen_tagged_type_instantiation_die (tree type, dw_die_ref context_die)
-{
-  if (type == NULL_TREE || type == error_mark_node)
-    return;
-
-  /* We are going to output a DIE to represent the unqualified version of
-     this type (i.e. without any const or volatile qualifiers) so make sure
-     that we have the main variant (i.e. the unqualified version) of this
-     type now.  */
-  gcc_assert (type == type_main_variant (type));
-
-  /* Do not check TREE_ASM_WRITTEN (type) as it may not be set if this is
-     an instance of an unresolved type.  */
-
-  switch (TREE_CODE (type))
-    {
-    case ERROR_MARK:
-      break;
-
-    case ENUMERAL_TYPE:
-      gen_inlined_enumeration_type_die (type, context_die);
-      break;
-
-    case RECORD_TYPE:
-      gen_inlined_structure_type_die (type, context_die);
-      break;
-
-    case UNION_TYPE:
-    case QUAL_UNION_TYPE:
-      gen_inlined_union_type_die (type, context_die);
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
 /* Generate a DW_TAG_lexical_block DIE followed by DIEs to represent all of the
    things which are local to the given block.  */
 
@@ -15315,14 +15235,14 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
 	 of some type tag, if the given TYPE_DECL is marked as having been
 	 instantiated from some other (original) TYPE_DECL node (e.g. one which
 	 was generated within the original definition of an inline function) we
-	 have to generate a special (abbreviated) DW_TAG_structure_type,
-	 DW_TAG_union_type, or DW_TAG_enumeration_type DIE here.  */
-      if (TYPE_DECL_IS_STUB (decl) && decl_ultimate_origin (decl) != NULL_TREE
-	  && is_tagged_type (TREE_TYPE (decl)))
-	{
-	  gen_tagged_type_instantiation_die (TREE_TYPE (decl), context_die);
-	  break;
-	}
+	 used to generate a special (abbreviated) DW_TAG_structure_type,
+	 DW_TAG_union_type, or DW_TAG_enumeration_type DIE here.  But nothing
+	 should be actually referencing those DIEs, as variable DIEs with that
+	 type would be emitted already in the abstract origin, so it was always
+	 removed during unused type prunning.  Don't add anything in this
+	 case.  */
+      if (TYPE_DECL_IS_STUB (decl) && decl_ultimate_origin (decl) != NULL_TREE)
+	break;
 
       if (is_redundant_typedef (decl))
 	gen_type_die (TREE_TYPE (decl), context_die);

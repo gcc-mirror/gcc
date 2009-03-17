@@ -1,3 +1,12 @@
+2009-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/39412
+	* dwarf2out.c (gen_inlined_enumeration_type_die,
+	gen_inlined_structure_type_die, gen_inlined_union_type_die,
+	gen_tagged_type_instantiation_die): Removed.
+	(gen_decl_die): For TYPE_DECL_IS_STUB with non-NULL decl_origin
+	do nothing.
+
 2009-03-17  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/38526
