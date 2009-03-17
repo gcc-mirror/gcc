@@ -1,3 +1,11 @@
+2009-03-17  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Add docbook style
+	sheet version information. Table-ize docbook element examples.
+	* doc/xml/manual/using.xml: Human-readable header
+	markup. Alphabetized. Add new headers.
+	* doc/html: Regenerate.
+
 2009-03-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* doc/xml/faq.xml: Fix link to setup documentation.

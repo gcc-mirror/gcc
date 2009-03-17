@@ -121,13 +121,52 @@
 <colspec colname='c3'></colspec>
 <colspec colname='c4'></colspec>
 <tbody>
-<row><entry><filename class="headerfile">algorithm</filename></entry><entry><filename class="headerfile">iomanip</filename></entry><entry><filename class="headerfile">list</filename></entry><entry><filename class="headerfile">ostream</filename></entry><entry><filename class="headerfile">streambuf</filename></entry></row>
-<row><entry><filename class="headerfile">bitset</filename></entry><entry><filename class="headerfile">ios</filename></entry><entry><filename class="headerfile">locale</filename></entry><entry><filename class="headerfile">queue</filename></entry><entry><filename class="headerfile">string</filename></entry></row>
-<row><entry><filename class="headerfile">complex</filename></entry><entry><filename class="headerfile">iosfwd</filename></entry><entry><filename class="headerfile">map</filename></entry><entry><filename class="headerfile">set</filename></entry><entry><filename class="headerfile">typeinfo</filename></entry></row>
-<row><entry><filename class="headerfile">deque</filename></entry><entry><filename class="headerfile">iostream</filename></entry><entry><filename class="headerfile">memory</filename></entry><entry><filename class="headerfile">sstream</filename></entry><entry><filename class="headerfile">utility</filename></entry></row>
-<row><entry><filename class="headerfile">exception</filename></entry><entry><filename class="headerfile">istream</filename></entry><entry><filename class="headerfile">new</filename></entry><entry><filename class="headerfile">stack</filename></entry><entry><filename class="headerfile">valarray</filename></entry></row>
-<row><entry><filename class="headerfile">fstream</filename></entry><entry><filename class="headerfile">iterator</filename></entry><entry><filename class="headerfile">numeric</filename></entry><entry><filename class="headerfile">stdexcept</filename></entry><entry><filename class="headerfile">vector</filename></entry></row>
-<row><entry><filename class="headerfile">functional</filename></entry><entry><filename class="headerfile">limits</filename></entry></row>
+<row>
+<entry><filename class="headerfile">algorithm</filename></entry>
+<entry><filename class="headerfile">bitset</filename></entry>
+<entry><filename class="headerfile">complex</filename></entry>
+<entry><filename class="headerfile">deque</filename></entry>
+<entry><filename class="headerfile">exception</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">fstream</filename></entry>
+<entry><filename class="headerfile">functional</filename></entry>
+<entry><filename class="headerfile">iomanip</filename></entry>
+<entry><filename class="headerfile">ios</filename></entry>
+<entry><filename class="headerfile">iosfwd</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">iostream</filename></entry>
+<entry><filename class="headerfile">istream</filename></entry>
+<entry><filename class="headerfile">iterator</filename></entry>
+<entry><filename class="headerfile">limits</filename></entry>
+<entry><filename class="headerfile">list</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">locale</filename></entry>
+<entry><filename class="headerfile">map</filename></entry>
+<entry><filename class="headerfile">memory</filename></entry>
+<entry><filename class="headerfile">new</filename></entry>
+<entry><filename class="headerfile">numeric</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">ostream</filename></entry>
+<entry><filename class="headerfile">queue</filename></entry>
+<entry><filename class="headerfile">set</filename></entry>
+<entry><filename class="headerfile">sstream</filename></entry>
+<entry><filename class="headerfile">stack</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">stdexcept</filename></entry>
+<entry><filename class="headerfile">streambuf</filename></entry>
+<entry><filename class="headerfile">string</filename></entry>
+<entry><filename class="headerfile">utility</filename></entry>
+<entry><filename class="headerfile">typeinfo</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">valarray</filename></entry>
+<entry><filename class="headerfile">vector</filename></entry>
+</row>
 </tbody>
 </tgroup>
 </table>
@@ -141,15 +180,39 @@
 <colspec colname='c3'></colspec>
 <colspec colname='c4'></colspec>
 <tbody>
-<row><entry><filename class="headerfile">cassert</filename></entry><entry><filename class="headerfile">ciso646</filename></entry><entry><filename class="headerfile">csetjmp</filename></entry><entry><filename class="headerfile">cstdio</filename></entry><entry><filename class="headerfile">ctime</filename></entry></row>
-<row><entry><filename class="headerfile">cctype</filename></entry><entry><filename class="headerfile">climits</filename></entry><entry><filename class="headerfile">csignal</filename></entry><entry><filename class="headerfile">cstdlib</filename></entry><entry><filename class="headerfile">cwchar</filename></entry></row>
-<row><entry><filename class="headerfile">cerrno</filename></entry><entry><filename class="headerfile">clocale</filename></entry><entry><filename class="headerfile">cstdarg</filename></entry><entry><filename class="headerfile">cstring</filename></entry><entry><filename class="headerfile">cwctype</filename></entry></row>
-<row><entry><filename class="headerfile">cfloat</filename></entry><entry><filename class="headerfile">cmath</filename></entry><entry><filename class="headerfile">cstddef</filename></entry></row>
+<row>
+<entry><filename class="headerfile">cassert</filename></entry>
+<entry><filename class="headerfile">cerrno</filename></entry>
+<entry><filename class="headerfile">cctype</filename></entry>
+<entry><filename class="headerfile">cfloat</filename></entry>
+<entry><filename class="headerfile">ciso646</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">climits</filename></entry>
+<entry><filename class="headerfile">clocale</filename></entry>
+<entry><filename class="headerfile">cmath</filename></entry>
+<entry><filename class="headerfile">csetjmp</filename></entry>
+<entry><filename class="headerfile">csignal</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">cstdarg</filename></entry>
+<entry><filename class="headerfile">cstddef</filename></entry>
+<entry><filename class="headerfile">cstdio</filename></entry>
+<entry><filename class="headerfile">cstdlib</filename></entry>
+<entry><filename class="headerfile">cstring</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">ctime</filename></entry>
+<entry><filename class="headerfile">cwchar</filename></entry>
+<entry><filename class="headerfile">cwctype</filename></entry>
+</row>
 </tbody>
 </tgroup>
 </table>
 
-<para>C++0x include files. These are only available in C++0x compilation mode, i.e. <code>-std=c++0x</code> or <code>-std=gnu++0x</code>.
+<para>
+C++0x include files. These are only available in C++0x compilation
+mode, i.e. <literal>-std=c++0x</literal> or <literal>-std=gnu++0x</literal>.
 </para>
 
 <para></para>
@@ -161,15 +224,75 @@
 <colspec colname='c3'></colspec>
 <colspec colname='c4'></colspec>
 <tbody>
-<row><entry><filename class="headerfile">algorithm</filename></entry><entry><filename class="headerfile">iomanip</filename></entry><entry><filename class="headerfile">locale</filename></entry><entry><filename class="headerfile">regex</filename></entry><entry><filename class="headerfile">tuple</filename></entry></row>
-<row><entry><filename class="headerfile">array</filename></entry><entry><filename class="headerfile">ios</filename></entry><entry><filename class="headerfile">map</filename></entry><entry><filename class="headerfile">set</filename></entry><entry><filename class="headerfile">typeinfo</filename></entry></row>
-<row><entry><filename class="headerfile">bitset</filename></entry><entry><filename class="headerfile">iosfwd</filename></entry><entry><filename class="headerfile">memory</filename></entry><entry><filename class="headerfile">sstream</filename></entry><entry><filename class="headerfile">type_traits</filename></entry></row>
-<row><entry><filename class="headerfile">complex</filename></entry><entry><filename class="headerfile">iostream</filename></entry><entry><filename class="headerfile">new</filename></entry><entry><filename class="headerfile">stack</filename></entry><entry><filename class="headerfile">unordered_map</filename></entry></row>
-<row><entry><filename class="headerfile">deque</filename></entry><entry><filename class="headerfile">istream</filename></entry><entry><filename class="headerfile">numeric</filename></entry><entry><filename class="headerfile">stdexcept</filename></entry><entry><filename class="headerfile">unordered_set</filename></entry></row>
-<row><entry><filename class="headerfile">exception</filename></entry><entry><filename class="headerfile">iterator</filename></entry><entry><filename class="headerfile">ostream</filename></entry><entry><filename class="headerfile">streambuf</filename></entry><entry><filename class="headerfile">utility</filename></entry></row>
-<row><entry><filename class="headerfile">fstream</filename></entry><entry><filename class="headerfile">limits</filename></entry><entry><filename class="headerfile">queue</filename></entry><entry><filename class="headerfile">string</filename></entry><entry><filename class="headerfile">valarray</filename></entry></row>
-<row><entry><filename class="headerfile">functional</filename></entry><entry><filename class="headerfile">list</filename></entry><entry><filename class="headerfile">random</filename></entry><entry><filename class="headerfile">system_error</filename></entry><entry><filename class="headerfile">vector</filename></entry></row>
-<row><entry><filename class="headerfile">condition_variable</filename></entry><entry><filename class="headerfile">mutex</filename></entry><entry><filename class="headerfile">thread</filename></entry><entry></entry><entry></entry></row>
+
+<row>
+<entry><filename class="headerfile">algorithm</filename></entry>
+<entry><filename class="headerfile">array</filename></entry>
+<entry><filename class="headerfile">bitset</filename></entry>
+<entry><filename class="headerfile">chrono</filename></entry>
+<entry><filename class="headerfile">complex</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">condition_variable</filename></entry>
+<entry><filename class="headerfile">deque</filename></entry>
+<entry><filename class="headerfile">exception</filename></entry>
+<entry><filename class="headerfile">forward_list</filename></entry>
+<entry><filename class="headerfile">fstream</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">functional</filename></entry>
+<entry><filename class="headerfile">initalizer_list</filename></entry>
+<entry><filename class="headerfile">iomanip</filename></entry>
+<entry><filename class="headerfile">ios</filename></entry>
+<entry><filename class="headerfile">iosfwd</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">iostream</filename></entry>
+<entry><filename class="headerfile">istream</filename></entry>
+<entry><filename class="headerfile">iterator</filename></entry>
+<entry><filename class="headerfile">limits</filename></entry>
+<entry><filename class="headerfile">list</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">locale</filename></entry>
+<entry><filename class="headerfile">map</filename></entry>
+<entry><filename class="headerfile">memory</filename></entry>
+<entry><filename class="headerfile">mutex</filename></entry>
+<entry><filename class="headerfile">new</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">numeric</filename></entry>
+<entry><filename class="headerfile">ostream</filename></entry>
+<entry><filename class="headerfile">queue</filename></entry>
+<entry><filename class="headerfile">random</filename></entry>
+<entry><filename class="headerfile">ratio</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">regex</filename></entry>
+<entry><filename class="headerfile">set</filename></entry>
+<entry><filename class="headerfile">sstream</filename></entry>
+<entry><filename class="headerfile">stack</filename></entry>
+<entry><filename class="headerfile">stdexcept</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">streambuf</filename></entry>
+<entry><filename class="headerfile">string</filename></entry>
+<entry><filename class="headerfile">system_error</filename></entry>
+<entry><filename class="headerfile">thread</filename></entry>
+<entry><filename class="headerfile">tuple</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">type_traits</filename></entry>
+<entry><filename class="headerfile">typeinfo</filename></entry>
+<entry><filename class="headerfile">unordered_map</filename></entry>
+<entry><filename class="headerfile">unordered_set</filename></entry>
+<entry><filename class="headerfile">utility</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">valarray</filename></entry>
+<entry><filename class="headerfile">vector</filename></entry>
+</row>
+
 </tbody>
 </tgroup>
 </table>
@@ -185,12 +308,46 @@
 <colspec colname='c4'></colspec>
 <colspec colname='c5'></colspec>
 <tbody>
-<row><entry><filename class="headerfile">cassert</filename></entry><entry><filename class="headerfile">cfloat</filename></entry><entry><filename class="headerfile">cmath</filename></entry><entry><filename class="headerfile">cstddef</filename></entry><entry><filename class="headerfile">ctgmath</filename></entry></row>
-<row><entry><filename class="headerfile">ccomplex</filename></entry><entry><filename class="headerfile">cinttypes</filename></entry><entry><filename class="headerfile">csetjmp</filename></entry><entry><filename class="headerfile">cstdint</filename></entry><entry><filename class="headerfile">ctime</filename></entry></row>
-<row><entry><filename class="headerfile">cctype</filename></entry><entry><filename class="headerfile">ciso646</filename></entry><entry><filename class="headerfile">csignal</filename></entry><entry><filename class="headerfile">cstdio</filename></entry><entry><filename class="headerfile">cuchar</filename></entry></row>
-<row><entry><filename class="headerfile">cerrno</filename></entry><entry><filename class="headerfile">climits</filename></entry><entry><filename class="headerfile">cstdarg</filename></entry><entry><filename class="headerfile">cstdlib</filename></entry><entry><filename class="headerfile">cwchar</filename></entry></row>
-<row><entry><filename class="headerfile">cfenv</filename></entry><entry><filename class="headerfile">clocale</filename></entry><entry><filename class="headerfile">cstdbool</filename></entry><entry><filename class="headerfile">cstring</filename></entry><entry><filename class="headerfile">cwctype</filename></entry></row>
-<row><entry><filename class="headerfile">cstdatomic</filename></entry><entry></entry><entry></entry><entry></entry><entry></entry></row>
+<row>
+<entry><filename class="headerfile">cassert</filename></entry>
+<entry><filename class="headerfile">ccomplex</filename></entry>
+<entry><filename class="headerfile">cctype</filename></entry>
+<entry><filename class="headerfile">cerrno</filename></entry>
+<entry><filename class="headerfile">cfenv</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">cfloat</filename></entry>
+<entry><filename class="headerfile">cinttypes</filename></entry>
+<entry><filename class="headerfile">ciso646</filename></entry>
+<entry><filename class="headerfile">climits</filename></entry>
+<entry><filename class="headerfile">clocale</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">cmath</filename></entry>
+<entry><filename class="headerfile">csetjmp</filename></entry>
+<entry><filename class="headerfile">csignal</filename></entry>
+<entry><filename class="headerfile">cstdarg</filename></entry>
+<entry><filename class="headerfile">cstdatomic</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">cstdbool</filename></entry>
+<entry><filename class="headerfile">cstddef</filename></entry>
+<entry><filename class="headerfile">cstdint</filename></entry>
+<entry><filename class="headerfile">cstdlib</filename></entry>
+<entry><filename class="headerfile">cstdio</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">cstring</filename></entry>
+<entry><filename class="headerfile">ctgmath</filename></entry>
+<entry><filename class="headerfile">ctime</filename></entry>
+<entry><filename class="headerfile">cuchar</filename></entry>
+<entry><filename class="headerfile">cwchar</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">cwctype</filename></entry>
+<entry><filename class="headerfile">stdatomic.h</filename></entry>
+</row>
+
 </tbody>
 </tgroup>
 </table>
@@ -210,9 +367,24 @@
 <colspec colname='c5'></colspec>
 <tbody>
 
-<row><entry><filename class="headerfile">tr1/array</filename></entry><entry><filename class="headerfile">tr1/memory</filename></entry><entry><filename class="headerfile">tr1/regex</filename></entry><entry><filename class="headerfile">tr1/type_traits</filename></entry><entry><filename class="headerfile">tr1/unordered_set</filename></entry></row>
-<row><entry><filename class="headerfile">tr1/complex</filename></entry><entry><filename class="headerfile">tr1/random</filename></entry><entry><filename class="headerfile">tr1/tuple</filename></entry><entry><filename class="headerfile">tr1/unordered_map</filename></entry><entry><filename class="headerfile">tr1/utility</filename></entry></row>
-<row><entry><filename class="headerfile">tr1/functional</filename></entry></row>
+<row>
+<entry><filename class="headerfile">tr1/array</filename></entry>
+<entry><filename class="headerfile">tr1/complex</filename></entry>
+<entry><filename class="headerfile">tr1/memory</filename></entry>
+<entry><filename class="headerfile">tr1/functional</filename></entry>
+<entry><filename class="headerfile">tr1/random</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">tr1/regex</filename></entry>
+<entry><filename class="headerfile">tr1/tuple</filename></entry>
+<entry><filename class="headerfile">tr1/type_traits</filename></entry>
+<entry><filename class="headerfile">tr1/unordered_map</filename></entry>
+<entry><filename class="headerfile">tr1/unordered_set</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">tr1/utility</filename></entry>
+</row>
+
 </tbody>
 </tgroup>
 </table>
@@ -230,9 +402,28 @@
 <colspec colname='c5'></colspec>
 <tbody>
 
-<row><entry><filename class="headerfile">tr1/cmath</filename></entry><entry><filename class="headerfile">tr1/cfloat</filename></entry><entry><filename class="headerfile">tr1/cstdarg</filename></entry><entry><filename class="headerfile">tr1/cstdio</filename></entry><entry><filename class="headerfile">tr1/ctime</filename></entry></row>
-<row><entry><filename class="headerfile">tr1/ccomplex</filename></entry><entry><filename class="headerfile">tr1/cinttypes</filename></entry><entry><filename class="headerfile">tr1/cstdbool</filename></entry><entry><filename class="headerfile">tr1/cstdlib</filename></entry><entry><filename class="headerfile">tr1/cwchar</filename></entry></row>
-<row><entry><filename class="headerfile">tr1/cfenv</filename></entry><entry><filename class="headerfile">tr1/climits</filename></entry><entry><filename class="headerfile">tr1/cstdint</filename></entry><entry><filename class="headerfile">tr1/ctgmath</filename></entry><entry><filename class="headerfile">tr1/cwctype</filename></entry></row>
+<row>
+<entry><filename class="headerfile">tr1/ccomplex</filename></entry>
+<entry><filename class="headerfile">tr1/cfenv</filename></entry>
+<entry><filename class="headerfile">tr1/cfloat</filename></entry>
+<entry><filename class="headerfile">tr1/cmath</filename></entry>
+<entry><filename class="headerfile">tr1/cinttypes</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">tr1/climits</filename></entry>
+<entry><filename class="headerfile">tr1/cstdarg</filename></entry>
+<entry><filename class="headerfile">tr1/cstdbool</filename></entry>
+<entry><filename class="headerfile">tr1/cstdint</filename></entry>
+<entry><filename class="headerfile">tr1/cstdio</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">tr1/cstdlib</filename></entry>
+<entry><filename class="headerfile">tr1/ctgmath</filename></entry>
+<entry><filename class="headerfile">tr1/ctime</filename></entry>
+<entry><filename class="headerfile">tr1/cwchar</filename></entry>
+<entry><filename class="headerfile">tr1/cwctype</filename></entry>
+</row>
+
 </tbody>
 </tgroup>
 </table>
@@ -266,12 +457,52 @@
 <colspec colname='c5'></colspec>
 <tbody>
 
-<row><entry><filename class="headerfile">ext/algorithm</filename></entry><entry><filename class="headerfile">ext/debug_allocator.h</filename></entry><entry><filename class="headerfile">ext/mt_allocator.h</filename></entry><entry><filename class="headerfile">ext/pod_char_traits.h</filename></entry><entry><filename class="headerfile">ext/stdio_sync_filebuf.h</filename></entry></row>
-<row><entry><filename class="headerfile">ext/array_allocator.h</filename></entry><entry><filename class="headerfile">ext/enc_filebuf.h</filename></entry><entry><filename class="headerfile">ext/new_allocator.h</filename></entry><entry><filename class="headerfile">ext/pool_allocator.h</filename></entry><entry><filename class="headerfile">ext/throw_allocator.h</filename></entry></row>
-<row><entry><filename class="headerfile">ext/atomicity.h</filename></entry><entry><filename class="headerfile">ext/functional</filename></entry><entry><filename class="headerfile">ext/numeric</filename></entry><entry><filename class="headerfile">ext/rb_tree</filename></entry><entry><filename class="headerfile">ext/typelist.h</filename></entry></row>
-<row><entry><filename class="headerfile">ext/bitmap_allocator.h</filename></entry><entry><filename class="headerfile">ext/iterator</filename></entry><entry><filename class="headerfile">ext/numeric_traits.h</filename></entry><entry><filename class="headerfile">ext/rope</filename></entry><entry><filename class="headerfile">ext/type_traits.h</filename></entry></row>
-<row><entry><filename class="headerfile">ext/codecvt_specializations.h</filename></entry><entry><filename class="headerfile">ext/malloc_allocator.h</filename></entry><entry><filename class="headerfile">ext/pb_ds/assoc_container.h</filename></entry><entry><filename class="headerfile">ext/slist</filename></entry><entry><filename class="headerfile">ext/vstring.h</filename></entry></row>
-<row><entry><filename class="headerfile">ext/concurrence.h</filename></entry><entry><filename class="headerfile">ext/memory</filename></entry><entry><filename class="headerfile">ext/pb_ds/priority_queue.h</filename></entry><entry><filename class="headerfile">ext/stdio_filebuf.h</filename></entry></row>
+<row>
+<entry><filename class="headerfile">ext/algorithm</filename></entry>
+<entry><filename class="headerfile">ext/atomicity.h</filename></entry>
+<entry><filename class="headerfile">ext/array_allocator.h</filename></entry>
+<entry><filename class="headerfile">ext/bitmap_allocator.h</filename></entry>
+<entry><filename class="headerfile">ext/cast.h</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">ext/codecvt_specializations.h</filename></entry>
+<entry><filename class="headerfile">ext/concurrence.h</filename></entry>
+<entry><filename class="headerfile">ext/debug_allocator.h</filename></entry>
+<entry><filename class="headerfile">ext/enc_filebuf.h</filename></entry>
+<entry><filename class="headerfile">ext/extptr_allocator.h</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">ext/functional</filename></entry>
+<entry><filename class="headerfile">ext/iterator</filename></entry>
+<entry><filename class="headerfile">ext/malloc_allocator.h</filename></entry>
+<entry><filename class="headerfile">ext/memory</filename></entry>
+<entry><filename class="headerfile">ext/mt_allocator.h</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">ext/new_allocator.h</filename></entry>
+<entry><filename class="headerfile">ext/numeric</filename></entry>
+<entry><filename class="headerfile">ext/numeric_traits.h</filename></entry>
+<entry><filename class="headerfile">ext/pb_ds/assoc_container.h</filename></entry>
+<entry><filename class="headerfile">ext/pb_ds/priority_queue.h</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">ext/pod_char_traits.h</filename></entry>
+<entry><filename class="headerfile">ext/pool_allocator.h</filename></entry>
+<entry><filename class="headerfile">ext/rb_tree</filename></entry>
+<entry><filename class="headerfile">ext/rope</filename></entry>
+<entry><filename class="headerfile">ext/slist</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">ext/stdio_filebuf.h</filename></entry>
+<entry><filename class="headerfile">ext/stdio_sync_filebuf.h</filename></entry>
+<entry><filename class="headerfile">ext/throw_allocator.h</filename></entry>
+<entry><filename class="headerfile">ext/typelist.h</filename></entry>
+<entry><filename class="headerfile">ext/type_traits.h</filename></entry>
+</row>
+<row>
+<entry><filename class="headerfile">ext/vstring.h</filename></entry>
+</row>
+
 </tbody>
 </tgroup>
 </table>
@@ -288,8 +519,21 @@
 <colspec colname='c5'></colspec>
 <tbody>
 
-<row><entry><filename class="headerfile">debug/bitset</filename></entry><entry><filename class="headerfile">debug/list</filename></entry><entry><filename class="headerfile">debug/set</filename></entry><entry><filename class="headerfile">debug/unordered_map</filename></entry><entry><filename class="headerfile">debug/vector</filename></entry></row>
-<row><entry><filename class="headerfile">debug/deque</filename></entry><entry><filename class="headerfile">debug/map</filename></entry><entry><filename class="headerfile">debug/string</filename></entry><entry><filename class="headerfile">debug/unordered_set</filename></entry></row>
+<row>
+<entry><filename class="headerfile">debug/bitset</filename></entry>
+<entry><filename class="headerfile">debug/deque</filename></entry>
+<entry><filename class="headerfile">debug/list</filename></entry>
+<entry><filename class="headerfile">debug/map</filename></entry>
+<entry><filename class="headerfile">debug/set</filename></entry>
+</row>
+
+<row>
+<entry><filename class="headerfile">debug/string</filename></entry>
+<entry><filename class="headerfile">debug/unordered_map</filename></entry>
+<entry><filename class="headerfile">debug/unordered_set</filename></entry>
+<entry><filename class="headerfile">debug/vector</filename></entry>
+</row>
+
 </tbody>
 </tgroup>
 </table>
@@ -302,7 +546,10 @@
 <colspec colname='c1'></colspec>
 <colspec colname='c2'></colspec>
 <tbody>
-<row><entry><filename class="headerfile">parallel/algorithm</filename></entry><entry><filename class="headerfile">parallel/numeric</filename></entry></row>
+<row>
+<entry><filename class="headerfile">parallel/algorithm</filename></entry>
+<entry><filename class="headerfile">parallel/numeric</filename></entry>
+</row>
 </tbody>
 </tgroup>
 </table>
