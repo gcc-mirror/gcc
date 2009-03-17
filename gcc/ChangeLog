@@ -1,4 +1,10 @@
-2009-03-16  H.J. Lu  <hongjiu.lu@intel.com>
+2009-03-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39476
+	* config/i386/i386.c (ix86_function_regparm): Rewrite for
+	64bit.
+
+2009-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39473
 	* config/i386/i386.c (ix86_expand_call): Check extra clobbers
