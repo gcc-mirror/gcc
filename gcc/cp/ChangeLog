@@ -6,6 +6,10 @@
 	* cp-gimplify.c (cp_gimplify_expr): Don't assert the first operand
 	is a NAMESPACE_DECL.
 
+	PR debug/37890
+	* name-lookup.c (do_namespace_alias): Don't call global_decl debug
+	hook at function scope.
+
 	PR debug/39471
 	* cp-gimplify.c (cp_gimplify_expr): Don't set DECL_NAME
 	on IMPORTED_DECL.
