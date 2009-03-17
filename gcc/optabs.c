@@ -6072,6 +6072,24 @@ init_one_libfunc (const char *name)
   return XEXP (DECL_RTL (decl), 0);
 }
 
+/* Adjust the assembler name of libfunc NAME to ASMSPEC.  */
+
+rtx
+set_user_assembler_libfunc (const char *name, const char *asmspec)
+{
+  tree id, decl;
+  void **slot;
+  hashval_t hash;
+
+  id = get_identifier (name);
+  hash = htab_hash_string (name);
+  slot = htab_find_slot_with_hash (libfunc_decls, id, hash, NO_INSERT);
+  gcc_assert (slot);
+  decl = (tree) *slot;
+  set_user_assembler_name (decl, asmspec);
+  return XEXP (DECL_RTL (decl), 0);
+}
+
 /* Call this to reset the function entry for one optab (OPTABLE) in mode
    MODE to NAME, which should be either 0 or a string constant.  */
 void

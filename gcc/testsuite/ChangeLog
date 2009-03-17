@@ -1,5 +1,8 @@
 2009-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/39443
+	* gcc.dg/pr39443.c: New test.
+
 	PR debug/39412
 	* gcc.dg/debug/pr39412.c: New test.
 

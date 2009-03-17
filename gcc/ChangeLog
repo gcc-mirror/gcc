@@ -1,5 +1,13 @@
 2009-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/39443
+	* optabs.c (set_user_assembler_libfunc): New function.
+	* expr.h (set_user_assembler_libfunc): New prototype.
+	* c-common.c: Include libfuncs.h.
+	(set_builtin_user_assembler_name): Call set_user_assembler_libfunc
+	for memcmp, memset, memcpy, memmove and abort.
+	* Makefile.in (c-common.o): Depend on libfuncs.h.
+
 	PR debug/39412
 	* dwarf2out.c (gen_inlined_enumeration_type_die,
 	gen_inlined_structure_type_die, gen_inlined_union_type_die,

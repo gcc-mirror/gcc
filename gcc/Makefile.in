@@ -1890,7 +1890,7 @@ c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(TARGET_H) $(C_TREE_H) tree-iterator.h langhooks.h tree-mudflap.h \
 	intl.h opts.h $(REAL_H) $(CPPLIB_H) $(TREE_INLINE_H) $(HASHTAB_H) \
 	$(BUILTINS_DEF) $(CGRAPH_H) $(BASIC_BLOCK_H) $(TARGET_DEF_H) \
-	$(GIMPLE_H)
+	$(GIMPLE_H) libfuncs.h
 
 c-pretty-print.o : c-pretty-print.c $(C_PRETTY_PRINT_H) \
 	$(C_TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(REAL_H) \
