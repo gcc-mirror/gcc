@@ -1253,7 +1253,7 @@ create_general_new_stmt (struct access_site *acc, tree new_type)
     {
       tree *pos;
       tree new_var = find_new_var_of_type (var, new_type);
-      tree lhs, rhs;
+      tree lhs, rhs = NULL_TREE;
 
       gcc_assert (new_var);
       finalize_var_creation (new_var);
