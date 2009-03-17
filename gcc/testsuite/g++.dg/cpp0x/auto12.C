@@ -37,16 +37,16 @@ auto A<T>::f(U u) -> decltype (u + i)
 
 int main()
 {
-  // { dg-final { scan-assembler  "_ZN1AIiE1fIiEEDTplsTT_sTiES2_" } }
+  // { dg-final { scan-assembler  "_ZN1AIiE1fIiEEDTplfp_L_ZNS0_1iEEET_" } }
   A<int>().f(1);
-  // { dg-final { scan-assembler  "_ZN1AIiE2frIiEEDTplsTT_sTiES2_" } }
+  // { dg-final { scan-assembler  "_ZN1AIiE2frIiEEDTplfp_L_ZNS0_2irEEET_" } }
   A<int>().fr(1);
-  // { dg-final { scan-assembler  "_ZN1AIiE3frrIiEEDTplsTT_sTiES2_" } }
+  // { dg-final { scan-assembler  "_ZN1AIiE3frrIiEEDTplfp_L_ZNS0_3irrEEET_" } }
   A<int>().frr(1);
-  // { dg-final { scan-assembler  "_ZN1AIiE1gIiEEDTplsTT_sR.ES2_" } }
+  // { dg-final { scan-assembler  "_ZN1AIiE1gIiEEDTplfp_szL_ZNS0_1iEEET_" } }
   A<int>().g(1);
-  // { dg-final { scan-assembler  "_ZN1AIiE1hIiEEDTplsTT_sr1BIS2_E1iES2_" } }
+  // { dg-final { scan-assembler  "_ZN1AIiE1hIiEEDTplfp_sr1BIT_E1iES3_" } }
   A<int>().h(1);
-  // { dg-final { scan-assembler  "_ZN1AIiE1jIiEEDTplsTT_sRiES2_" } }
+  // { dg-final { scan-assembler  "_ZN1AIiE1jIiEEDTplfp_clL_Z1xvEEET_" } }
   A<int>().j(1);
 }

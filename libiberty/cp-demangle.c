@@ -964,6 +964,22 @@ d_make_template_param (struct d_info *di, long i)
   return p;
 }
 
+/* Add a new function parameter.  */
+
+static struct demangle_component *
+d_make_function_param (struct d_info *di, long i)
+{
+  struct demangle_component *p;
+
+  p = d_make_empty (di);
+  if (p != NULL)
+    {
+      p->type = DEMANGLE_COMPONENT_FUNCTION_PARAM;
+      p->u.s_number.number = i;
+    }
+  return p;
+}
+
 /* Add a new standard substitution component.  */
 
 static struct demangle_component *
@@ -989,7 +1005,11 @@ CP_STATIC_IF_GLIBCPP_V3
 struct demangle_component *
 cplus_demangle_mangled_name (struct d_info *di, int top_level)
 {
-  if (! d_check_char (di, '_'))
+  if (! d_check_char (di, '_')
+      /* Allow missing _ if not at toplevel to work around a
+	 bug in G++ abi-version=2 mangling; see the comment in
+	 write_template_arg.  */
+      && top_level)
     return NULL;
   if (! d_check_char (di, 'Z'))
     return NULL;
@@ -1481,6 +1501,8 @@ const struct demangle_operator_info cplus_demangle_operators[] =
   { "rs", NL (">>"),        2 },
   { "st", NL ("sizeof "),   1 },
   { "sz", NL ("sizeof "),   1 },
+  { "at", NL ("alignof "),   1 },
+  { "az", NL ("alignof "),   1 },
   { NULL, NULL, 0,          0 }
 };
 
@@ -2564,12 +2586,25 @@ d_expression (struct d_info *di)
 			    d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE, name,
 					 d_template_args (di)));
     }
-  else if (peek == 's'
-	   && (d_peek_next_char (di) == 'T' || d_peek_next_char (di) == 'R'))
+  else if (peek == 'f' && d_peek_next_char (di) == 'p')
     {
-      /* Just demangle a parameter placeholder as its type.  */
+      /* Function parameter used in a late-specified return type.  */
+      int index;
       d_advance (di, 2);
-      return cplus_demangle_type (di);
+      if (d_peek_char (di) == '_')
+	index = 1;
+      else
+	{
+	  index = d_number (di);
+	  if (index < 0)
+	    return NULL;
+	  index += 2;
+	}
+
+      if (! d_check_char (di, '_'))
+	return NULL;
+
+      return d_make_function_param (di, index);
     }
   else if (IS_DIGIT (peek))
     {
@@ -2619,8 +2654,16 @@ d_expression (struct d_info *di)
       switch (args)
 	{
 	case 1:
-	  return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
-			      d_expression (di));
+	  {
+	    struct demangle_component *operand;
+	    if (op->type == DEMANGLE_COMPONENT_CAST
+		&& d_check_char (di, '_'))
+	      operand = d_exprlist (di);
+	    else
+	      operand = d_expression (di);
+	    return d_make_comp (di, DEMANGLE_COMPONENT_UNARY, op,
+				operand);
+	  }
 	case 2:
 	  {
 	    struct demangle_component *left;
@@ -2671,7 +2714,9 @@ d_expr_primary (struct d_info *di)
 
   if (! d_check_char (di, 'L'))
     return NULL;
-  if (d_peek_char (di) == '_')
+  if (d_peek_char (di) == '_'
+      /* Workaround for G++ bug; see comment in write_template_arg.  */
+      || d_peek_char (di) == 'Z')
     ret = cplus_demangle_mangled_name (di, 0);
   else
     {
@@ -3293,6 +3338,7 @@ d_print_comp (struct d_print_info *dpi,
 	   the right place for the type.  We also have to pass down
 	   any CV-qualifiers, which apply to the this parameter.  */
 	hold_modifiers = dpi->modifiers;
+	dpi->modifiers = 0;
 	i = 0;
 	typed_name = d_left (dc);
 	while (typed_name != NULL)
@@ -3980,6 +4026,15 @@ d_print_comp (struct d_print_info *dpi,
 	  }
       }
       return;
+
+    case DEMANGLE_COMPONENT_FUNCTION_PARAM:
+      {
+	char buf[25];
+	d_append_string (dpi, "parm#");
+	sprintf(buf,"%ld", dc->u.s_number.number);
+	d_append_string (dpi, buf);
+	return;
+      }
 
     default:
       d_print_error (dpi);

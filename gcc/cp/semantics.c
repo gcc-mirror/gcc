@@ -4585,8 +4585,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p)
 	      break;
 	    }
 	}
-      else
-	type = describable_type (expr);
 
       if (type && !type_uses_auto (type))
 	return type;

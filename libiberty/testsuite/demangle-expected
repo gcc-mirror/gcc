@@ -3723,7 +3723,7 @@ foo<int (*) [3]>
 # This used to crash the demangler--PR 16240
 --format=gnu-v3 --no-params
 _ZN13PatternDriver23StringScalarDeleteValueC1ERKNS_25ConflateStringScalarValueERKNS_25AbstractStringScalarValueERKNS_12TemplateEnumINS_12pdcomplementELZNS_16complement_namesEELZNS_14COMPLEMENTENUMEEEE
-_ZN13PatternDriver23StringScalarDeleteValueC1ERKNS_25ConflateStringScalarValueERKNS_25AbstractStringScalarValueERKNS_12TemplateEnumINS_12pdcomplementELZNS_16complement_namesEELZNS_14COMPLEMENTENUMEEEE
+PatternDriver::StringScalarDeleteValue::StringScalarDeleteValue(PatternDriver::ConflateStringScalarValue const&, PatternDriver::AbstractStringScalarValue const&, PatternDriver::TemplateEnum<PatternDriver::pdcomplement, PatternDriver::complement_names, PatternDriver::COMPLEMENTENUM> const&)
 PatternDriver::StringScalarDeleteValue::StringScalarDeleteValue
 #
 # This used to cause the demangler to walk into undefined memory--PR 22268
@@ -3884,12 +3884,12 @@ _ZGr32_java$Sutil$Siso4217$_properties
 java resource java/util/iso4217.properties
 # decltype/param placeholder test
 --format=gnu-v3
-_Z3addIidEDTplsTT_sTT0_ES0_S1_
-decltype ((int)+(double)) add<int, double>(int, double)
+_Z3addIidEDTplfp_fp0_ET_T0_
+decltype ((parm#1)+(parm#2)) add<int, double>(int, double)
 # decltype/fn call test
 --format=gnu-v3
-_Z4add3IidEDTclL_Z1gEsTT_sTT0_EES0_S1_
-decltype (g(int, double)) add3<int, double>(int, double)
+_Z4add3IidEDTclL_Z1gEfp_fp0_EET_T0_
+decltype (g(parm#1, parm#2)) add3<int, double>(int, double)
 # new (2008) built in types test
 --format=gnu-v3
 _Z1fDfDdDeDhDsDi
@@ -3900,5 +3900,9 @@ _Z1fIIPiPfPdEEvDpT_
 void f<int*, float*, double*>(int*, float*, double*)
 # '.' test
 --format=gnu-v3
-_Z1hI1AIiEdEDTcldtsTT_1gIT0_EEES2_S3_
-decltype (((A<int>).(g<double>))()) h<A<int>, double>(A<int>, double)
+_Z1hI1AIiEdEDTcldtfp_1gIT0_EEET_S2_
+decltype (((parm#1).(g<double>))()) h<A<int>, double>(A<int>, double)
+# test for typed function in decltype
+--format=gnu-v3
+_ZN1AIiE1jIiEEDTplfp_clL_Z1xvEEET_
+decltype ((parm#1)+((x())())) A<int>::j<int>(int)

@@ -4436,6 +4436,7 @@ extern bool decl_needed_p			(tree);
 extern void note_vague_linkage_fn		(tree);
 extern tree build_artificial_parm		(tree, tree);
 extern bool possibly_inlined_p			(tree);
+extern int parm_index                           (tree);
 
 /* in error.c */
 extern void init_error				(void);
