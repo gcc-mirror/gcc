@@ -15361,6 +15361,15 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
   dw_die_ref imported_die = NULL;
   dw_die_ref at_import_die;
 
+  if (TREE_CODE (decl) == IMPORTED_DECL)
+    {
+      xloc = expand_location (DECL_SOURCE_LOCATION (decl));
+      decl = IMPORTED_DECL_ASSOCIATED_DECL (decl);
+      gcc_assert (decl);
+    }
+  else
+    xloc = expand_location (input_location);
+
   if (TREE_CODE (decl) == TYPE_DECL || TREE_CODE (decl) == CONST_DECL)
     {
       if (is_base_type (TREE_TYPE (decl)))
@@ -15377,18 +15386,6 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
 	  at_import_die = lookup_type_die (TREE_TYPE (decl));
 	  gcc_assert (at_import_die);
 	}
-    }
-  else if (TREE_CODE (decl) == IMPORTED_DECL)
-    {
-      tree imported_ns_decl = IMPORTED_DECL_ASSOCIATED_DECL (decl);
-      /* IMPORTED_DECL nodes that are not imported namespace are just not
-         supported yet.  */
-      gcc_assert (imported_ns_decl
-		  && TREE_CODE (imported_ns_decl) == NAMESPACE_DECL);
-      at_import_die = lookup_decl_die (imported_ns_decl);
-      if (!at_import_die)
-	at_import_die = force_decl_die (imported_ns_decl);
-      gcc_assert (at_import_die);
     }
   else
     {
@@ -15413,10 +15410,7 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
 	}
     }
 
-  if (TREE_CODE (decl) == NAMESPACE_DECL
-      || (TREE_CODE (decl) == IMPORTED_DECL
-	  && (TREE_CODE (IMPORTED_DECL_ASSOCIATED_DECL (decl))
-	      == NAMESPACE_DECL)))
+  if (TREE_CODE (decl) == NAMESPACE_DECL)
     imported_die = new_die (DW_TAG_imported_module,
 			    lexical_block_die,
 			    lexical_block);
@@ -15425,10 +15419,6 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
 			    lexical_block_die,
 			    lexical_block);
 
-  if (TREE_CODE (decl) == IMPORTED_DECL)
-    xloc = expand_location (DECL_SOURCE_LOCATION (decl));
-  else
-    xloc = expand_location (input_location);
   add_AT_file (imported_die, DW_AT_decl_file, lookup_filename (xloc.file));
   add_AT_unsigned (imported_die, DW_AT_decl_line, xloc.line);
   if (name)

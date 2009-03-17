@@ -1,5 +1,11 @@
 2009-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* name-lookup.c (cp_emit_debug_info_for_using): Emit USING_STMTs
+	instead of calling imported_module_or_decl debug hook if
+	building_stmt_tree ().
+	* cp-gimplify.c (cp_gimplify_expr): Don't assert the first operand
+	is a NAMESPACE_DECL.
+
 	PR debug/39471
 	* cp-gimplify.c (cp_gimplify_expr): Don't set DECL_NAME
 	on IMPORTED_DECL.
