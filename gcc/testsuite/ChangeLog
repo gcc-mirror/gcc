@@ -1,3 +1,16 @@
+2009-03-17  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/38526
+	* lib/target-libpath.exp (set_ld_library_path_env_vars): Save
+	existing GCC_EXEC_PREFIX, set to TEST_GCC_EXEC_PREFIX if that
+	is defined.
+	(restore_ld_library_path_env_vars): Restore GCC_EXEC_PREFIX to
+	its original value, or unset if it was not defined.
+	* gcc.dg/compat/struct-layout-1.exp: Use set/restore library
+	path procs around use of HOSTCC.
+	* g++.dg/compat/struct-layout-1.exp: Ditto.
+	* objc.dg/gnu-encoding/gnu-encoding.exp: Ditto.
+
 2009-03-16  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/x86_64/abi/callabi/func-indirect.c (main): Return 0.

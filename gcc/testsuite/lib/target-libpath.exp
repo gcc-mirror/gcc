@@ -25,6 +25,8 @@ set orig_ld_library64_path_saved 0
 set orig_ld_library_path_32_saved 0
 set orig_ld_library_path_64_saved 0
 set orig_dyld_library_path_saved 0
+set orig_gcc_exec_prefix_saved 0
+set orig_gcc_exec_prefix_checked 0
 
 
 #######################################
@@ -42,6 +44,8 @@ proc set_ld_library_path_env_vars { } {
   global orig_ld_library_path_32_saved
   global orig_ld_library_path_64_saved
   global orig_dyld_library_path_saved
+  global orig_gcc_exec_prefix_saved
+  global orig_gcc_exec_prefix_checked
   global orig_ld_library_path
   global orig_ld_run_path
   global orig_shlib_path
@@ -50,11 +54,23 @@ proc set_ld_library_path_env_vars { } {
   global orig_ld_library_path_32
   global orig_ld_library_path_64
   global orig_dyld_library_path
-  global GCC_EXEC_PREFIX
+  global orig_gcc_exec_prefix
+  global TEST_GCC_EXEC_PREFIX
+  global env
 
-  # Set the relocated compiler prefix, but only if the user hasn't specified one.
-  if { [info exists GCC_EXEC_PREFIX] && ![info exists env(GCC_EXEC_PREFIX)] } {
-    setenv GCC_EXEC_PREFIX "$GCC_EXEC_PREFIX"
+  # Save the original GCC_EXEC_PREFIX.
+  if { $orig_gcc_exec_prefix_checked == 0 } {
+    if [info exists env(GCC_EXEC_PREFIX)] {
+      set orig_gcc_exec_prefix "$env(GCC_EXEC_PREFIX)"
+      set orig_gcc_exec_prefix_saved 1
+    }
+    set orig_gcc_exec_prefix_checked 1
+  }
+
+  # Set GCC_EXEC_PREFIX for the compiler under test to pick up files not in
+  # the build tree from a specified location (normally the install tree).
+  if [info exists env(TEST_GCC_EXEC_PREFIX)] {
+    setenv GCC_EXEC_PREFIX "$TEST_GCC_EXEC_PREFIX"
   }
 
   # Setting the ld library path causes trouble when testing cross-compilers.
@@ -63,8 +79,6 @@ proc set_ld_library_path_env_vars { } {
   }
 
   if { $orig_environment_saved == 0 } {
-    global env
-
     set orig_environment_saved 1
 
     # Save the original environment.
@@ -187,6 +201,7 @@ proc restore_ld_library_path_env_vars { } {
   global orig_ld_library_path_32_saved
   global orig_ld_library_path_64_saved
   global orig_dyld_library_path_saved
+  global orig_gcc_exec_prefix_saved
   global orig_ld_library_path
   global orig_ld_run_path
   global orig_shlib_path
@@ -195,9 +210,17 @@ proc restore_ld_library_path_env_vars { } {
   global orig_ld_library_path_32
   global orig_ld_library_path_64
   global orig_dyld_library_path
+  global orig_gcc_exec_prefix
+  global env
 
   if { $orig_environment_saved == 0 } {
     return
+  }
+
+  if { $orig_gcc_exec_prefix_saved } {
+    setenv GCC_EXEC_PREFIX "$orig_gcc_exec_prefix"
+  } elseif [info exists env(GCC_EXEC_PREFIX)] {
+    unsetenv GCC_EXEC_PREFIX
   }
 
   if { $orig_ld_library_path_saved } {

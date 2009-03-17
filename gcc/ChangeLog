@@ -1,3 +1,12 @@
+2009-03-17  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/38526
+	* Makefile.in (site.exp): Rename TEST_GCC_EXEC_PREFIX and comment
+	its use.
+	(check-%): Don't set GCC_EXEC_PREFIX when invoking runtest.
+	(check-parallel-%): Ditto.
+	(check-consistency): Ditto.
+
 2009-03-17  Kai Tietz  <kai.tietz@onevision.com>
 
 	* ipa-struct-reorg.c (create_general_new_stmt): Initialize
