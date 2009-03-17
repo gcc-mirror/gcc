@@ -1684,8 +1684,14 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    = DECL_SOURCE_LOCATION (newdecl);
 	  DECL_INITIAL (old_result) = DECL_INITIAL (new_result);
 	  if (DECL_FUNCTION_TEMPLATE_P (newdecl))
-	    DECL_ARGUMENTS (old_result)
-	      = DECL_ARGUMENTS (new_result);
+	    {
+	      tree parm;
+	      DECL_ARGUMENTS (old_result)
+		= DECL_ARGUMENTS (new_result);
+	      for (parm = DECL_ARGUMENTS (old_result); parm;
+		   parm = TREE_CHAIN (parm))
+		DECL_CONTEXT (parm) = old_result;
+	    }
 	}
 
       return olddecl;
@@ -1918,6 +1924,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
+      tree parm;
+
       if (DECL_TEMPLATE_INSTANTIATION (olddecl)
 	  && !DECL_TEMPLATE_INSTANTIATION (newdecl))
 	{
@@ -1974,6 +1982,11 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       /* Preserve abstractness on cloned [cd]tors.  */
       DECL_ABSTRACT (newdecl) = DECL_ABSTRACT (olddecl);
 
+      /* Update newdecl's parms to point at olddecl.  */
+      for (parm = DECL_ARGUMENTS (newdecl); parm;
+	   parm = TREE_CHAIN (parm))
+	DECL_CONTEXT (parm) = olddecl;
+
       if (! types_match)
 	{
 	  SET_DECL_LANGUAGE (olddecl, DECL_LANGUAGE (newdecl));
@@ -2006,7 +2019,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	    }
 
 	  DECL_RESULT (newdecl) = DECL_RESULT (olddecl);
-	  /* Don't clear out the arguments if we're redefining a function.  */
+	  /* Don't clear out the arguments if we're just redeclaring a
+	     function.  */
 	  if (DECL_ARGUMENTS (olddecl))
 	    DECL_ARGUMENTS (newdecl) = DECL_ARGUMENTS (olddecl);
 	}
@@ -6555,6 +6569,8 @@ grokfndecl (tree ctype,
       parms = parm;
     }
   DECL_ARGUMENTS (decl) = parms;
+  for (t = parms; t; t = TREE_CHAIN (t))
+    DECL_CONTEXT (t) = decl;
   /* Propagate volatile out from type to decl.  */
   if (TYPE_VOLATILE (type))
     TREE_THIS_VOLATILE (decl) = 1;

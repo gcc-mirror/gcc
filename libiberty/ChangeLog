@@ -1,3 +1,15 @@
+2009-03-17  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_make_function_param): new fn.
+	(cplus_demangle_mangled_name): Work around abi v2 bug.
+	(d_expr_primary): Likewise.
+	(cplus_demangle_operators): Add alignof ops.
+	(d_expression): Handle function parameters and conversions
+	with other than 1 operand.
+	(d_print_comp): Handle function parameters.  Fix bug with
+	function used in type of function.
+	* testsuite/demangle-expected: Upate tests.
+
 2009-02-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* make-temp-file.c (<windows.h>): Include on Windows.

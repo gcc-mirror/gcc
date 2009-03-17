@@ -2217,17 +2217,21 @@ check_explicit_specialization (tree declarator,
 	     the specialization of it.  */
 	  if (tsk == tsk_template)
 	    {
+	      tree result = DECL_TEMPLATE_RESULT (tmpl);
 	      SET_DECL_TEMPLATE_SPECIALIZATION (tmpl);
-	      DECL_INITIAL (DECL_TEMPLATE_RESULT (tmpl)) = NULL_TREE;
+	      DECL_INITIAL (result) = NULL_TREE;
 	      if (have_def)
 		{
+		  tree parm;
 		  DECL_SOURCE_LOCATION (tmpl) = DECL_SOURCE_LOCATION (decl);
-		  DECL_SOURCE_LOCATION (DECL_TEMPLATE_RESULT (tmpl))
+		  DECL_SOURCE_LOCATION (result)
 		    = DECL_SOURCE_LOCATION (decl);
 		  /* We want to use the argument list specified in the
 		     definition, not in the original declaration.  */
-		  DECL_ARGUMENTS (DECL_TEMPLATE_RESULT (tmpl))
-		    = DECL_ARGUMENTS (decl);
+		  DECL_ARGUMENTS (result) = DECL_ARGUMENTS (decl);
+		  for (parm = DECL_ARGUMENTS (result); parm;
+		       parm = TREE_CHAIN (parm))
+		    DECL_CONTEXT (parm) = result;
 		}
 	      return tmpl;
 	    }
@@ -9898,16 +9902,14 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       if (r == NULL)
 	{
 	  /* This can happen for a parameter name used later in a function
-	     declaration (such as in a late-specified return type).
-	     Replace it with an arbitrary expression with the same type
-	     (*(T*)0).  This should only occur in an unevaluated context
-	     (i.e. decltype).  */
-	  gcc_assert (skip_evaluation);
-	  r = non_reference (TREE_TYPE (t));
-	  r = tsubst (r, args, complain, in_decl);
-	  r = build_pointer_type (r);
-	  r = build_c_cast (r, null_node);
-	  return cp_build_indirect_ref (r, NULL, tf_warning_or_error);
+	     declaration (such as in a late-specified return type).  Just
+	     make a dummy decl, since it's only used for its type.  */
+	  gcc_assert (skip_evaluation);	  
+	  r = tsubst_decl (t, args, complain);
+	  /* Give it the template pattern as its context; its true context
+	     hasn't been instantiated yet and this is good enough for
+	     mangling.  */
+	  DECL_CONTEXT (r) = DECL_CONTEXT (t);
 	}
       
       if (TREE_CODE (r) == ARGUMENT_PACK_SELECT)
