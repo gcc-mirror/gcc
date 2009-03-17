@@ -740,7 +740,8 @@ remove_unused_locals (void)
 
       if (TREE_CODE (var) != FUNCTION_DECL
 	  && (!(ann = var_ann (var))
-	      || !ann->used))
+	      || !ann->used)
+	  && (optimize || DECL_ARTIFICIAL (var)))
 	{
 	  if (is_global_var (var))
 	    {
@@ -781,8 +782,7 @@ remove_unused_locals (void)
 
 	  if (TREE_CODE (var) == VAR_DECL
 	      && is_global_var (var)
-	      && bitmap_bit_p (global_unused_vars, DECL_UID (var))
-	      && (optimize || DECL_ARTIFICIAL (var)))
+	      && bitmap_bit_p (global_unused_vars, DECL_UID (var)))
 	    *cell = TREE_CHAIN (*cell);
 	  else
 	    cell = &TREE_CHAIN (*cell);
