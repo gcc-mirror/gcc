@@ -1,5 +1,11 @@
 2009-03-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR debug/39471
+	* g++.dg/debug/dwarf2/imported-module-2.C: Expect
+	DW_TAG_imported_module, not just any DW_TAG_imported prefixed tag.
+	* g++.dg/debug/dwarf2/imported-module-3.C: Likewise.
+	* g++.dg/debug/dwarf2/imported-module-4.C: Likewise.
+
 	PR middle-end/39443
 	* gcc.dg/pr39443.c: New test.
 

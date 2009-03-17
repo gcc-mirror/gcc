@@ -15380,12 +15380,11 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
     }
   else if (TREE_CODE (decl) == IMPORTED_DECL)
     {
-      tree imported_ns_decl;
+      tree imported_ns_decl = IMPORTED_DECL_ASSOCIATED_DECL (decl);
       /* IMPORTED_DECL nodes that are not imported namespace are just not
          supported yet.  */
-      gcc_assert (DECL_INITIAL (decl)
-		  && TREE_CODE (DECL_INITIAL (decl)) == NAMESPACE_DECL);
-      imported_ns_decl = DECL_INITIAL (decl);
+      gcc_assert (imported_ns_decl
+		  && TREE_CODE (imported_ns_decl) == NAMESPACE_DECL);
       at_import_die = lookup_decl_die (imported_ns_decl);
       if (!at_import_die)
 	at_import_die = force_decl_die (imported_ns_decl);
@@ -15414,7 +15413,10 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
 	}
     }
 
-  if (TREE_CODE (decl) == NAMESPACE_DECL)
+  if (TREE_CODE (decl) == NAMESPACE_DECL
+      || (TREE_CODE (decl) == IMPORTED_DECL
+	  && (TREE_CODE (IMPORTED_DECL_ASSOCIATED_DECL (decl))
+	      == NAMESPACE_DECL)))
     imported_die = new_die (DW_TAG_imported_module,
 			    lexical_block_die,
 			    lexical_block);
