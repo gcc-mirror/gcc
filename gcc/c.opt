@@ -185,7 +185,7 @@ Warn when a declaration is found after a statement
 
 Wdeprecated
 C C++ ObjC ObjC++ Var(warn_deprecated) Init(1) Warning
-Warn about deprecated compiler features
+Warn if a deprecated compiler feature, class, method, or field is used
 
 Wdiv-by-zero
 C ObjC C++ ObjC++ Var(warn_div_by_zero) Init(1) Warning
@@ -446,7 +446,7 @@ Deprecated.  This switch has no effect
 
 Wsystem-headers
 C ObjC C++ ObjC++ Warning
-Do not suppress warnings from system headers
+; Documented in common.opt
 
 Wtraditional
 C ObjC Var(warn_traditional) Warning
@@ -691,7 +691,7 @@ Enable Objective-C setjmp exception handling runtime
 
 fopenmp
 C ObjC C++ ObjC++ Var(flag_openmp)
-Enable OpenMP
+Enable OpenMP (implies -frecursive in Fortran)
 
 foperator-names
 C++ ObjC++

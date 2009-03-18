@@ -1,3 +1,8 @@
+2009-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* c.opt: Unify help texts for -Wdeprecated, -Wsystem-headers,
+	and -fopenmp.
+
 2009-03-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/35180

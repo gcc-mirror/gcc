@@ -1,5 +1,5 @@
 ; Options for the Fortran 95 front end.
-; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+; Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
 ; Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
@@ -50,7 +50,7 @@ Fortran
 
 I
 Fortran Joined Separate
--I<directory>	Add a directory for INCLUDE and MODULE searching
+; Documented in C
 
 J
 Fortran Joined Separate
@@ -90,7 +90,7 @@ Warn about truncated character expressions
 
 Wconversion
 Fortran Warning
-Warn about implicit conversion
+; Documented in C
 
 Wimplicit-interface
 Fortran Warning
@@ -134,7 +134,7 @@ Disable preprocessing
 
 d
 Fortran Joined
--d[DIMNU]	Dump details about macro names and definitions during preprocessing
+; Documented in common.opt
 
 falign-commons
 Fortran
@@ -310,7 +310,7 @@ Set default accessibility of module entities to PRIVATE.
 
 fopenmp
 Fortran
-Enable OpenMP (also sets frecursive)
+; Documented in C
 
 fpack-derived
 Fortran
@@ -318,7 +318,7 @@ Try to lay out derived types as compactly as possible
 
 fpreprocessed
 Fortran
-Treat the input file as preprocessed
+; Documented in C
 
 frange-check
 Fortran
