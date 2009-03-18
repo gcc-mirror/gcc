@@ -1,3 +1,10 @@
+2009-03-18  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-transform.c (vect_loop_versioning): Fold the
+	generated comparisons.
+	* tree-vectorizer.c (set_prologue_iterations): Likewise.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+
 2009-03-17  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR middle-end/37805
