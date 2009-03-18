@@ -10497,7 +10497,6 @@ cp_parser_explicit_specialization (cp_parser* parser)
   if (!begin_specialization ())
     {
       end_specialization ();
-      cp_parser_skip_to_end_of_block_or_statement (parser);
       return;
     }
 

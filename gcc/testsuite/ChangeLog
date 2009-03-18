@@ -1,3 +1,13 @@
+2009-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/39425
+	* g++.dg/template/pr39425.C: New.
+
+	* g++.dg/template/spec33.C: Updated.
+
 2009-03-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
