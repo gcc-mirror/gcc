@@ -1,3 +1,8 @@
+2009-03-19  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Fix -msdata-data
+	option; change to -msdata=data.
+
 2009-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* c.opt: Unify help texts for -Wdeprecated, -Wsystem-headers,
