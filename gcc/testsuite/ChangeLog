@@ -1,3 +1,7 @@
+2009-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* g++.dg/dg.exp: Prune graphite.
+
 2009-03-18  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/39447
