@@ -240,8 +240,6 @@ struct ira_allocno
   /* Mode of the allocno which is the mode of the corresponding
      pseudo-register.  */
   enum machine_mode mode;
-  /* Final rtx representation of the allocno.  */
-  rtx reg;
   /* Hard register assigned to given allocno.  Negative value means
      that memory was allocated to the allocno.  During the reload,
      spilled allocno has value equal to the corresponding stack slot
@@ -249,6 +247,8 @@ struct ira_allocno
      reload (at this point pseudo-register has only one allocno) which
      did not get stack slot yet.  */
   int hard_regno;
+  /* Final rtx representation of the allocno.  */
+  rtx reg;
   /* Allocnos with the same regno are linked by the following member.
      Allocnos corresponding to inner loops are first in the list (it
      corresponds to depth-first traverse of the loops).  */
@@ -312,33 +312,29 @@ struct ira_allocno
      correspondingly minimal and maximal conflict ids of allocnos with
      which given allocno can conflict.  */
   int min, max;
-  /* The unique member value represents given allocno in conflict bit
-     vectors.  */
-  int conflict_id;
   /* Vector of accumulated conflicting allocnos with NULL end marker
      (if CONFLICT_VEC_P is true) or conflict bit vector otherwise.
      Only allocnos with the same cover class are in the vector or in
      the bit vector.  */
   void *conflict_allocno_array;
+  /* The unique member value represents given allocno in conflict bit
+     vectors.  */
+  int conflict_id;
   /* Allocated size of the previous array.  */
   unsigned int conflict_allocno_array_size;
-  /* Number of accumulated conflicts in the vector of conflicting
-     allocnos.  */
-  int conflict_allocnos_num;
   /* Initial and accumulated hard registers conflicting with this
      allocno and as a consequences can not be assigned to the allocno.
      All non-allocatable hard regs and hard regs of cover classes
      different from given allocno one are included in the sets.  */
   HARD_REG_SET conflict_hard_regs, total_conflict_hard_regs;
+  /* Number of accumulated conflicts in the vector of conflicting
+     allocnos.  */
+  int conflict_allocnos_num;
   /* Accumulated frequency of calls which given allocno
      intersects.  */
   int call_freq;
   /* Accumulated number of the intersected calls.  */
   int calls_crossed_num;
-  /* Non NULL if we remove restoring value from given allocno to
-     MEM_OPTIMIZED_DEST at loop exit (see ira-emit.c) because the
-     allocno value is not changed inside the loop.  */
-  ira_allocno_t mem_optimized_dest;
   /* TRUE if the allocno assigned to memory was a destination of
      removed move (see ira-emit.c) at loop exit because the value of
      the corresponding pseudo-register is not changed inside the
@@ -383,6 +379,10 @@ struct ira_allocno
      vector where a bit with given index represents allocno with the
      same number.  */
   unsigned int conflict_vec_p : 1;
+  /* Non NULL if we remove restoring value from given allocno to
+     MEM_OPTIMIZED_DEST at loop exit (see ira-emit.c) because the
+     allocno value is not changed inside the loop.  */
+  ira_allocno_t mem_optimized_dest;
   /* Array of usage costs (accumulated and the one updated during
      coloring) for each hard register of the allocno cover class.  The
      member value can be NULL if all costs are the same and equal to

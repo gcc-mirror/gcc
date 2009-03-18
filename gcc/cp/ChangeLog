@@ -1,3 +1,8 @@
+2009-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (struct cp_token): Reorder fields for 64-bit hosts.
+	(eof_token): Adjust.
+
 2009-03-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/39425

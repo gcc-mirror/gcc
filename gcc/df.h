@@ -1,6 +1,6 @@
 /* Form lists of pseudo register references for autoinc optimization
    for GNU compiler.  This is part of flow optimization.
-   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes 
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
@@ -535,21 +535,12 @@ struct df
 
   struct dataflow *problems_in_order[DF_LAST_PROBLEM_PLUS1]; 
   struct dataflow *problems_by_index[DF_LAST_PROBLEM_PLUS1]; 
-  int num_problems_defined;
 
   /* If not NULL, this subset of blocks of the program to be
      considered for analysis.  At certain times, this will contain all
      the blocks in the function so it cannot be used as an indicator
      of if we are analyzing a subset.  See analyze_subset.  */ 
   bitmap blocks_to_analyze;
-
-  /* If this is true, then only a subset of the blocks of the program
-     is considered to compute the solutions of dataflow problems.  */
-  bool analyze_subset;
-
-  /* True if someone added or deleted something from regs_ever_live so
-     that the entry and exit blocks need be reprocessed.  */
-  bool redo_entry_and_exit;
 
   /* The following information is really the problem data for the
      scanning instance but it is used too often by the other problems
@@ -568,6 +559,9 @@ struct df
 
   struct df_insn_info **insns;   /* Insn table, indexed by insn UID.  */
   unsigned int insns_size;       /* Size of insn table.  */
+
+  int num_problems_defined;
+
   bitmap hardware_regs_used;     /* The set of hardware registers used.  */
   /* The set of hard regs that are in the artificial uses at the end
      of a regular basic block.  */
@@ -609,7 +603,15 @@ struct df
   unsigned int ref_order;
 
   /* Problem specific control information.  */
-  enum df_changeable_flags changeable_flags;
+  ENUM_BITFIELD (df_changeable_flags) changeable_flags : 8;
+
+  /* If this is true, then only a subset of the blocks of the program
+     is considered to compute the solutions of dataflow problems.  */
+  bool analyze_subset;
+
+  /* True if someone added or deleted something from regs_ever_live so
+     that the entry and exit blocks need be reprocessed.  */
+  bool redo_entry_and_exit;
 };
 
 #define DF_SCAN_BB_INFO(BB) (df_scan_get_bb_info((BB)->index))

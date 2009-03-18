@@ -1864,21 +1864,21 @@ mark_elimination (int from, int to)
 
 struct equivalence
 {
-  /* Set when an attempt should be made to replace a register
-     with the associated src_p entry.  */
-  char replace;
   /* Set when a REG_EQUIV note is found or created.  Use to
      keep track of what memory accesses might be created later,
      e.g. by reload.  */
   rtx replacement;
   rtx *src_p;
+  /* The list of each instruction which initializes this register.  */
+  rtx init_insns;
   /* Loop depth is used to recognize equivalences which appear
      to be present within the same loop (or in an inner loop).  */
   int loop_depth;
-  /* The list of each instruction which initializes this register.  */
-  rtx init_insns;
   /* Nonzero if this had a preexisting REG_EQUIV note.  */
   int is_arg_equivalence;
+  /* Set when an attempt should be made to replace a register
+     with the associated src_p entry.  */
+  char replace;
 };
 
 /* reg_equiv[N] (where N is a pseudo reg number) is the equivalence

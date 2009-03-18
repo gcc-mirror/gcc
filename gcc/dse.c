@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
    and Kenneth Zadeck <zadeck@naturalbridge.com>
@@ -464,6 +464,14 @@ struct group_info
      canonical ordering of these that is not based on addresses.  */
   int id;
 
+  /* True if there are any positions that are to be processed
+     globally.  */
+  bool process_globally;
+
+  /* True if the base of this group is either the frame_pointer or
+     hard_frame_pointer.  */
+  bool frame_related;
+
   /* A mem wrapped around the base pointer for the group in order to
      do read dependency.  */
   rtx base_mem;
@@ -493,14 +501,6 @@ struct group_info
      out, gen and kill bitmaps.  This bitmap is all zeros except for
      the positions that are occupied by stores for this group.  */
   bitmap group_kill;
-
-  /* True if there are any positions that are to be processed
-     globally.  */
-  bool process_globally;
-
-  /* True if the base of this group is either the frame_pointer or
-     hard_frame_pointer.  */
-  bool frame_related;
 
   /* The offset_map is used to map the offsets from this base into
      positions in the global bitmaps.  It is only created after all of

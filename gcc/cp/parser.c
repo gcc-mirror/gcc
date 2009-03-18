@@ -77,6 +77,8 @@ typedef struct cp_token GTY (())
      KEYWORD is RID_MAX) iff this name was looked up and found to be
      ambiguous.  An error has already been reported.  */
   BOOL_BITFIELD ambiguous_p : 1;
+  /* The location at which this token was found.  */
+  location_t location;
   /* The value associated with this token, if any.  */
   union cp_token_value {
     /* Used for CPP_NESTED_NAME_SPECIFIER and CPP_TEMPLATE_ID.  */
@@ -84,8 +86,6 @@ typedef struct cp_token GTY (())
     /* Use for all other tokens.  */
     tree GTY((tag ("0"))) value;
   } GTY((desc ("(%1.type == CPP_TEMPLATE_ID) || (%1.type == CPP_NESTED_NAME_SPECIFIER)"))) u;
-  /* The location at which this token was found.  */
-  location_t location;
 } cp_token;
 
 /* We use a stack of token pointer for saving token sets.  */
@@ -95,8 +95,7 @@ DEF_VEC_ALLOC_P (cp_token_position,heap);
 
 static cp_token eof_token =
 {
-  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, false, 0, { NULL },
-  0
+  CPP_EOF, RID_MAX, 0, PRAGMA_NONE, false, 0, 0, { NULL }
 };
 
 /* The cp_lexer structure represents the C++ lexer.  It is responsible

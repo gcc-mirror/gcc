@@ -1,5 +1,5 @@
 /* Matrix layout transformations.
-   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Razya Ladelsky <razya@il.ibm.com>
    Originally written by Revital Eres and Mustafa Hagog.
    
@@ -261,9 +261,6 @@ struct matrix_info
 
   gimple min_indirect_level_escape_stmt;
 
-  /* Is the matrix transposed.  */
-  bool is_transposed_p;
-
   /* Hold the allocation site for each level (dimension).
      We can use NUM_DIMS as the upper bound and allocate the array
      once with this number of elements and no need to use realloc and
@@ -271,6 +268,9 @@ struct matrix_info
   gimple *malloc_for_level;
 
   int max_malloced_level;
+
+  /* Is the matrix transposed.  */
+  bool is_transposed_p;
 
   /* The location of the allocation sites (they must be in one
      function).  */
@@ -303,7 +303,7 @@ struct matrix_info
 
   /* An array of the accesses to be flattened.
      elements are of type "struct access_site_info *".  */
-    VEC (access_site_info_p, heap) * access_l;
+  VEC (access_site_info_p, heap) * access_l;
 
   /* A map of how the dimensions will be organized at the end of 
      the analyses.  */

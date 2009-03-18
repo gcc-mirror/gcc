@@ -1,6 +1,6 @@
 /* Scanning of rtl for dataflow analysis.
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-   2008  Free Software Foundation, Inc.
+   2008, 2009  Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes 
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -85,12 +85,12 @@ static HARD_REG_SET elim_reg_set;
 struct df_collection_rec
 {
   df_ref * def_vec;
-  unsigned int next_def;
   df_ref * use_vec;
+  unsigned int next_def;
   unsigned int next_use;
   df_ref * eq_use_vec;
-  unsigned int next_eq_use;
   struct df_mw_hardreg **mw_vec;
+  unsigned int next_eq_use;
   unsigned int next_mw;
 };
 
