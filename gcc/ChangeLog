@@ -12,6 +12,10 @@
 	* function.c (struct temp_slot): Likewise.
 	* cfgloop.h (struct loop): Likewise.
 
+	PR debug/39485
+	* function.c (use_register_for_decl): When not optimizing, disregard
+	register keyword for variables with types containing methods.
+
 2009-03-18  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/39447
