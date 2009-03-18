@@ -1,3 +1,8 @@
+2009-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* lang.opt: Unify help texts for -I, -Wconversion, -d, -fopenmp,
+	and -fpreprocessed.
+
 2009-03-06  Alexandre Oliva <aoliva@redhat.com>
 
 	* simplify.c (gfc_simplify_transfer): Zero-initialize the

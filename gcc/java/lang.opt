@@ -1,5 +1,5 @@
 ; Options for the Java front end.
-; Copyright (C) 2003, 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2003, 2005, 2007, 2009 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -62,7 +62,7 @@ Java
 
 Wdeprecated
 Java Var(warn_deprecated) VarExists
-Warn if a deprecated compiler feature, class, method, or field is used
+; Documented for C
 
 Wextraneous-semicolon
 Java Var(flag_extraneous_semicolon)
