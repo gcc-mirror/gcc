@@ -714,6 +714,7 @@ configure-host:  \
     maybe-configure-libdecnumber \
     maybe-configure-libgui \
     maybe-configure-libiberty \
+    maybe-configure-libiconv \
     maybe-configure-libtool \
     maybe-configure-m4 \
     maybe-configure-make \
@@ -871,6 +872,7 @@ all-host: maybe-all-libgui
 @if libiberty-no-bootstrap
 all-host: maybe-all-libiberty
 @endif libiberty-no-bootstrap
+all-host: maybe-all-libiconv
 all-host: maybe-all-libtool
 all-host: maybe-all-m4
 all-host: maybe-all-make
@@ -989,6 +991,7 @@ info-host: maybe-info-libcpp
 info-host: maybe-info-libdecnumber
 info-host: maybe-info-libgui
 info-host: maybe-info-libiberty
+info-host: maybe-info-libiconv
 info-host: maybe-info-libtool
 info-host: maybe-info-m4
 info-host: maybe-info-make
@@ -1098,6 +1101,7 @@ dvi-host: maybe-dvi-libcpp
 dvi-host: maybe-dvi-libdecnumber
 dvi-host: maybe-dvi-libgui
 dvi-host: maybe-dvi-libiberty
+dvi-host: maybe-dvi-libiconv
 dvi-host: maybe-dvi-libtool
 dvi-host: maybe-dvi-m4
 dvi-host: maybe-dvi-make
@@ -1207,6 +1211,7 @@ pdf-host: maybe-pdf-libcpp
 pdf-host: maybe-pdf-libdecnumber
 pdf-host: maybe-pdf-libgui
 pdf-host: maybe-pdf-libiberty
+pdf-host: maybe-pdf-libiconv
 pdf-host: maybe-pdf-libtool
 pdf-host: maybe-pdf-m4
 pdf-host: maybe-pdf-make
@@ -1316,6 +1321,7 @@ html-host: maybe-html-libcpp
 html-host: maybe-html-libdecnumber
 html-host: maybe-html-libgui
 html-host: maybe-html-libiberty
+html-host: maybe-html-libiconv
 html-host: maybe-html-libtool
 html-host: maybe-html-m4
 html-host: maybe-html-make
@@ -1425,6 +1431,7 @@ TAGS-host: maybe-TAGS-libcpp
 TAGS-host: maybe-TAGS-libdecnumber
 TAGS-host: maybe-TAGS-libgui
 TAGS-host: maybe-TAGS-libiberty
+TAGS-host: maybe-TAGS-libiconv
 TAGS-host: maybe-TAGS-libtool
 TAGS-host: maybe-TAGS-m4
 TAGS-host: maybe-TAGS-make
@@ -1534,6 +1541,7 @@ install-info-host: maybe-install-info-libcpp
 install-info-host: maybe-install-info-libdecnumber
 install-info-host: maybe-install-info-libgui
 install-info-host: maybe-install-info-libiberty
+install-info-host: maybe-install-info-libiconv
 install-info-host: maybe-install-info-libtool
 install-info-host: maybe-install-info-m4
 install-info-host: maybe-install-info-make
@@ -1643,6 +1651,7 @@ install-pdf-host: maybe-install-pdf-libcpp
 install-pdf-host: maybe-install-pdf-libdecnumber
 install-pdf-host: maybe-install-pdf-libgui
 install-pdf-host: maybe-install-pdf-libiberty
+install-pdf-host: maybe-install-pdf-libiconv
 install-pdf-host: maybe-install-pdf-libtool
 install-pdf-host: maybe-install-pdf-m4
 install-pdf-host: maybe-install-pdf-make
@@ -1752,6 +1761,7 @@ install-html-host: maybe-install-html-libcpp
 install-html-host: maybe-install-html-libdecnumber
 install-html-host: maybe-install-html-libgui
 install-html-host: maybe-install-html-libiberty
+install-html-host: maybe-install-html-libiconv
 install-html-host: maybe-install-html-libtool
 install-html-host: maybe-install-html-m4
 install-html-host: maybe-install-html-make
@@ -1861,6 +1871,7 @@ installcheck-host: maybe-installcheck-libcpp
 installcheck-host: maybe-installcheck-libdecnumber
 installcheck-host: maybe-installcheck-libgui
 installcheck-host: maybe-installcheck-libiberty
+installcheck-host: maybe-installcheck-libiconv
 installcheck-host: maybe-installcheck-libtool
 installcheck-host: maybe-installcheck-m4
 installcheck-host: maybe-installcheck-make
@@ -1970,6 +1981,7 @@ mostlyclean-host: maybe-mostlyclean-libcpp
 mostlyclean-host: maybe-mostlyclean-libdecnumber
 mostlyclean-host: maybe-mostlyclean-libgui
 mostlyclean-host: maybe-mostlyclean-libiberty
+mostlyclean-host: maybe-mostlyclean-libiconv
 mostlyclean-host: maybe-mostlyclean-libtool
 mostlyclean-host: maybe-mostlyclean-m4
 mostlyclean-host: maybe-mostlyclean-make
@@ -2079,6 +2091,7 @@ clean-host: maybe-clean-libcpp
 clean-host: maybe-clean-libdecnumber
 clean-host: maybe-clean-libgui
 clean-host: maybe-clean-libiberty
+clean-host: maybe-clean-libiconv
 clean-host: maybe-clean-libtool
 clean-host: maybe-clean-m4
 clean-host: maybe-clean-make
@@ -2188,6 +2201,7 @@ distclean-host: maybe-distclean-libcpp
 distclean-host: maybe-distclean-libdecnumber
 distclean-host: maybe-distclean-libgui
 distclean-host: maybe-distclean-libiberty
+distclean-host: maybe-distclean-libiconv
 distclean-host: maybe-distclean-libtool
 distclean-host: maybe-distclean-m4
 distclean-host: maybe-distclean-make
@@ -2297,6 +2311,7 @@ maintainer-clean-host: maybe-maintainer-clean-libcpp
 maintainer-clean-host: maybe-maintainer-clean-libdecnumber
 maintainer-clean-host: maybe-maintainer-clean-libgui
 maintainer-clean-host: maybe-maintainer-clean-libiberty
+maintainer-clean-host: maybe-maintainer-clean-libiconv
 maintainer-clean-host: maybe-maintainer-clean-libtool
 maintainer-clean-host: maybe-maintainer-clean-m4
 maintainer-clean-host: maybe-maintainer-clean-make
@@ -2460,6 +2475,7 @@ check-host:  \
     maybe-check-libdecnumber \
     maybe-check-libgui \
     maybe-check-libiberty \
+    maybe-check-libiconv \
     maybe-check-libtool \
     maybe-check-m4 \
     maybe-check-make \
@@ -2595,6 +2611,7 @@ install-host-nogcc:  \
     maybe-install-libdecnumber \
     maybe-install-libgui \
     maybe-install-libiberty \
+    maybe-install-libiconv \
     maybe-install-libtool \
     maybe-install-m4 \
     maybe-install-make \
@@ -2671,6 +2688,7 @@ install-host:  \
     maybe-install-libdecnumber \
     maybe-install-libgui \
     maybe-install-libiberty \
+    maybe-install-libiconv \
     maybe-install-libtool \
     maybe-install-m4 \
     maybe-install-make \
@@ -29059,6 +29077,374 @@ maintainer-clean-libiberty:
 
 
 
+.PHONY: configure-libiconv maybe-configure-libiconv
+maybe-configure-libiconv:
+@if gcc-bootstrap
+configure-libiconv: stage_current
+@endif gcc-bootstrap
+@if libiconv
+maybe-configure-libiconv: configure-libiconv
+configure-libiconv: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	test ! -f $(HOST_SUBDIR)/libiconv/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libiconv ; \
+	$(HOST_EXPORTS) \
+	echo Configuring in $(HOST_SUBDIR)/libiconv; \
+	cd "$(HOST_SUBDIR)/libiconv" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libiconv/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	srcdiroption="--srcdir=$${topdir}/libiconv"; \
+	libsrcdir="$$s/libiconv"; \
+	$(SHELL) $${libsrcdir}/configure \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} $${srcdiroption} --disable-shared \
+	  || exit 1
+@endif libiconv
+
+
+
+
+
+.PHONY: all-libiconv maybe-all-libiconv
+maybe-all-libiconv:
+@if gcc-bootstrap
+all-libiconv: stage_current
+@endif gcc-bootstrap
+@if libiconv
+TARGET-libiconv=all
+maybe-all-libiconv: all-libiconv
+all-libiconv: configure-libiconv
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)  \
+		$(TARGET-libiconv))
+@endif libiconv
+
+
+
+
+.PHONY: check-libiconv maybe-check-libiconv
+maybe-check-libiconv:
+@if libiconv
+maybe-check-libiconv: check-libiconv
+
+check-libiconv:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(FLAGS_TO_PASS)  check)
+
+@endif libiconv
+
+.PHONY: install-libiconv maybe-install-libiconv
+maybe-install-libiconv:
+@if libiconv
+maybe-install-libiconv: install-libiconv
+
+install-libiconv:
+
+@endif libiconv
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-libiconv info-libiconv
+maybe-info-libiconv:
+@if libiconv
+maybe-info-libiconv: info-libiconv
+
+info-libiconv: \
+    configure-libiconv 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing info in libiconv" ; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          info) \
+	  || exit 1
+
+@endif libiconv
+
+.PHONY: maybe-dvi-libiconv dvi-libiconv
+maybe-dvi-libiconv:
+@if libiconv
+maybe-dvi-libiconv: dvi-libiconv
+
+dvi-libiconv: \
+    configure-libiconv 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing dvi in libiconv" ; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          dvi) \
+	  || exit 1
+
+@endif libiconv
+
+.PHONY: maybe-pdf-libiconv pdf-libiconv
+maybe-pdf-libiconv:
+@if libiconv
+maybe-pdf-libiconv: pdf-libiconv
+
+pdf-libiconv: \
+    configure-libiconv 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing pdf in libiconv" ; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          pdf) \
+	  || exit 1
+
+@endif libiconv
+
+.PHONY: maybe-html-libiconv html-libiconv
+maybe-html-libiconv:
+@if libiconv
+maybe-html-libiconv: html-libiconv
+
+html-libiconv: \
+    configure-libiconv 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing html in libiconv" ; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          html) \
+	  || exit 1
+
+@endif libiconv
+
+.PHONY: maybe-TAGS-libiconv TAGS-libiconv
+maybe-TAGS-libiconv:
+@if libiconv
+maybe-TAGS-libiconv: TAGS-libiconv
+
+TAGS-libiconv: \
+    configure-libiconv 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing TAGS in libiconv" ; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          TAGS) \
+	  || exit 1
+
+@endif libiconv
+
+.PHONY: maybe-install-info-libiconv install-info-libiconv
+maybe-install-info-libiconv:
+@if libiconv
+maybe-install-info-libiconv: install-info-libiconv
+
+# libiconv doesn't support install-info.
+install-info-libiconv:
+
+@endif libiconv
+
+.PHONY: maybe-install-pdf-libiconv install-pdf-libiconv
+maybe-install-pdf-libiconv:
+@if libiconv
+maybe-install-pdf-libiconv: install-pdf-libiconv
+
+# libiconv doesn't support install-pdf.
+install-pdf-libiconv:
+
+@endif libiconv
+
+.PHONY: maybe-install-html-libiconv install-html-libiconv
+maybe-install-html-libiconv:
+@if libiconv
+maybe-install-html-libiconv: install-html-libiconv
+
+# libiconv doesn't support install-html.
+install-html-libiconv:
+
+@endif libiconv
+
+.PHONY: maybe-installcheck-libiconv installcheck-libiconv
+maybe-installcheck-libiconv:
+@if libiconv
+maybe-installcheck-libiconv: installcheck-libiconv
+
+installcheck-libiconv: \
+    configure-libiconv 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing installcheck in libiconv" ; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          installcheck) \
+	  || exit 1
+
+@endif libiconv
+
+.PHONY: maybe-mostlyclean-libiconv mostlyclean-libiconv
+maybe-mostlyclean-libiconv:
+@if libiconv
+maybe-mostlyclean-libiconv: mostlyclean-libiconv
+
+mostlyclean-libiconv: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing mostlyclean in libiconv" ; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          mostlyclean) \
+	  || exit 1
+
+@endif libiconv
+
+.PHONY: maybe-clean-libiconv clean-libiconv
+maybe-clean-libiconv:
+@if libiconv
+maybe-clean-libiconv: clean-libiconv
+
+clean-libiconv: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing clean in libiconv" ; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          clean) \
+	  || exit 1
+
+@endif libiconv
+
+.PHONY: maybe-distclean-libiconv distclean-libiconv
+maybe-distclean-libiconv:
+@if libiconv
+maybe-distclean-libiconv: distclean-libiconv
+
+distclean-libiconv: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing distclean in libiconv" ; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          distclean) \
+	  || exit 1
+
+@endif libiconv
+
+.PHONY: maybe-maintainer-clean-libiconv maintainer-clean-libiconv
+maybe-maintainer-clean-libiconv:
+@if libiconv
+maybe-maintainer-clean-libiconv: maintainer-clean-libiconv
+
+maintainer-clean-libiconv: 
+	@: $(MAKE); $(unstage)
+	@[ -f ./libiconv/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	for flag in $(EXTRA_HOST_FLAGS) ; do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing maintainer-clean in libiconv" ; \
+	(cd $(HOST_SUBDIR)/libiconv && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	          maintainer-clean) \
+	  || exit 1
+
+@endif libiconv
+
+
+
 .PHONY: configure-libtool maybe-configure-libtool
 maybe-configure-libtool:
 @if gcc-bootstrap
@@ -55261,7 +55647,9 @@ configure-stagefeedback-cloog: maybe-all-stagefeedback-ppl
 configure-gdb: maybe-all-intl
 configure-gdb: maybe-configure-sim
 configure-gdb: maybe-all-bfd
+configure-gdb: maybe-all-libiconv
 all-gdb: maybe-all-libiberty
+all-gdb: maybe-all-libiconv
 all-gdb: maybe-all-opcodes
 all-gdb: maybe-all-readline
 all-gdb: maybe-all-build-bison

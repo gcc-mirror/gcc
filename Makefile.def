@@ -94,6 +94,14 @@ host_modules= { module= libcpp; bootstrap=true; };
 host_modules= { module= libdecnumber; bootstrap=true; };
 host_modules= { module= libgui; };
 host_modules= { module= libiberty; bootstrap=true; };
+// We abuse missing to avoid installing anything for libiconv.
+host_modules= { module= libiconv;
+		extra_configure_flags='--disable-shared';
+		no_install= true;
+		missing= install-info;
+		missing= install-pdf;
+		missing= install-html;
+		missing= install-info; };
 host_modules= { module= libtool; };
 host_modules= { module= m4; };
 host_modules= { module= make; };
@@ -339,7 +347,11 @@ dependencies = { module=configure-cloog; on=all-ppl; };
 dependencies = { module=configure-gdb; on=all-intl; };
 dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=configure-gdb; on=all-bfd; };
+// Depend on all-libiconv so that configure checks for iconv
+// functions will work.
+dependencies = { module=configure-gdb; on=all-libiconv; };
 dependencies = { module=all-gdb; on=all-libiberty; };
+dependencies = { module=all-gdb; on=all-libiconv; };
 dependencies = { module=all-gdb; on=all-opcodes; };
 dependencies = { module=all-gdb; on=all-readline; };
 dependencies = { module=all-gdb; on=all-build-bison; };
