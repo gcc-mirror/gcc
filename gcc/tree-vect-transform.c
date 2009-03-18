@@ -8107,8 +8107,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo)
 				    min_profitable_iters);
 
   cond_expr =
-    build2 (GT_EXPR, boolean_type_node, scalar_loop_iters, 
-	    build_int_cst (TREE_TYPE (scalar_loop_iters), th));
+    fold_build2 (GT_EXPR, boolean_type_node, scalar_loop_iters, 
+		 build_int_cst (TREE_TYPE (scalar_loop_iters), th));
 
   cond_expr = force_gimple_operand (cond_expr, &cond_expr_stmt_list,
 				    false, NULL_TREE);

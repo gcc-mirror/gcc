@@ -1066,8 +1066,8 @@ set_prologue_iterations (basic_block bb_before_first_loop,
   e_fallthru = EDGE_SUCC (then_bb, 0);
 
   cost_pre_condition =
-    build2 (LE_EXPR, boolean_type_node, scalar_loop_iters, 
-	    build_int_cst (TREE_TYPE (scalar_loop_iters), th));
+    fold_build2 (LE_EXPR, boolean_type_node, scalar_loop_iters, 
+		 build_int_cst (TREE_TYPE (scalar_loop_iters), th));
   cost_pre_condition =
     force_gimple_operand (cost_pre_condition, &gimplify_stmt_list,
 			  true, NULL_TREE);
@@ -1319,8 +1319,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 	    = unshare_expr (LOOP_VINFO_NITERS_UNCHANGED
 					(loop_vec_info_for_loop (loop)));
 	  cost_pre_condition = 
-	    build2 (LE_EXPR, boolean_type_node, scalar_loop_iters, 
-		    build_int_cst (TREE_TYPE (scalar_loop_iters), th));
+	    fold_build2 (LE_EXPR, boolean_type_node, scalar_loop_iters, 
+			 build_int_cst (TREE_TYPE (scalar_loop_iters), th));
 
 	  pre_condition = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
 				       cost_pre_condition, pre_condition);
