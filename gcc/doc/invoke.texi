@@ -15709,12 +15709,25 @@ Use it to conform to a non-default application binary interface.
 
 @item -fno-common
 @opindex fno-common
-In C, allocate even uninitialized global variables in the data section of the
-object file, rather than generating them as common blocks.  This has the
-effect that if the same variable is declared (without @code{extern}) in
-two different compilations, you will get an error when you link them.
-The only reason this might be useful is if you wish to verify that the
-program will work on other systems which always work this way.
+In C code, controls the placement of uninitialized global variables.
+Unix C compilers have traditionally permitted multiple definitions of
+such variables in different compilation units by placing the variables
+in a common block.  
+This is the behavior specified by @option{-fcommon}, and is the default 
+for GCC on most targets.  
+On the other hand, this behavior is not required by ISO C, and on some
+targets may carry a speed or code size penalty on variable references.
+The @option{-fno-common} option specifies that the compiler should place 
+uninitialized global variables in the data section of the object file,
+rather than generating them as common blocks.
+This has the effect that if the same variable is declared 
+(without @code{extern}) in two different compilations,
+you will get a multiple-definition error when you link them.
+In this case, you must compile with @option{-fcommon} instead.  
+Compiling with @option{-fno-common} is useful on targets for which 
+it provides better performance, or if you wish to verify that the
+program will work on other systems which always treat uninitialized
+variable declarations this way.
 
 @item -fno-ident
 @opindex fno-ident
