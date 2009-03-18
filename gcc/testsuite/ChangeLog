@@ -1,3 +1,10 @@
+2009-03-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/39447
+	* g++.dg/graphite: New.
+	* g++.dg/graphite/graphite.exp: New.
+	* g++.dg/graphite/pr39447.C: New.
+
 2009-03-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c++/39425

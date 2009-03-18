@@ -1,0 +1,48 @@
+#   Copyright (C) 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Load support procs.
+load_lib g++-dg.exp
+
+if ![check_effective_target_fgraphite] {
+  return
+}
+
+# The default action for a test is 'compile'.  Save current default.
+global dg-do-what-default
+set save-dg-do-what-default ${dg-do-what-default}
+set dg-do-what-default compile
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] \
+	"" $DEFAULT_CFLAGS
+
+# Clean up.
+set dg-do-what-default ${save-dg-do-what-default}
+
+# All done.
+dg-finish
