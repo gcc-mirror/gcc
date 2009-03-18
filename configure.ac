@@ -1,5 +1,5 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-#   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation,
+#   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation,
 #   Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
@@ -158,7 +158,7 @@ build_tools="build-texinfo build-byacc build-flex build-bison build-m4 build-fix
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr ppl cloog"
+host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr ppl cloog libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to

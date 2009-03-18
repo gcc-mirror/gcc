@@ -1,3 +1,11 @@
+2009-03-18  Tom Tromey  <tromey@redhat.com>
+
+        * configure: Rebuild.
+        * configure.ac (host_libs): Add libiconv.
+        * Makefile.in: Rebuild.
+        * Makefile.def (host_modules): Add libiconv.
+        (configure-gdb, all-gdb): Depend on libiconv.
+
 2009-03-16  Tristan Gingold  <gingold@adacore.com>
 
 	* configure.ac: Treat gdb as supported on x86_64-darwin.
