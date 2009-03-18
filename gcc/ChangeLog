@@ -1,3 +1,12 @@
+2009-03-18  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR middle-end/39447
+	* graphite.c (exclude_component_ref): Renamed contains_component_ref_p.
+	(is_simple_operand): Call contains_component_ref_p before calling data
+	reference analysis that would fail on COMPONENT_REFs.
+
+	* tree-vrp.c (search_for_addr_array): Fix formatting.
+
 2009-03-18  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-transform.c (vect_loop_versioning): Fold the
