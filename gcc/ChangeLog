@@ -1,3 +1,8 @@
+2009-03-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/35180
+	* config/sparc/sparc.md (do_builtin_setjmp_setup): Prettify asm output.
+
 2009-03-18  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Code Gen Options): Expand discussion of
