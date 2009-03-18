@@ -1,3 +1,8 @@
+2009-03-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Code Gen Options): Expand discussion of
+	-fno-common.
+
 2009-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* dse.c (struct group_info): Reorder fields for 64-bit hosts.
