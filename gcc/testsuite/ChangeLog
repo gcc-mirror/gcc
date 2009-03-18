@@ -1,3 +1,10 @@
+2009-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/39425
+	* g++.dg/template/pr39425.C: New.
+
+	* g++.dg/template/spec33.C: Updated.
+
 2009-03-17  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/auto6.C, auto12.C: Update mangling.

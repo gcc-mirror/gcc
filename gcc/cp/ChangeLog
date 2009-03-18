@@ -1,3 +1,10 @@
+2009-03-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/39425
+	* parser.c (cp_parser_explicit_specialization): Don't skip the
+	rest of the specialization when begin_specialization returns
+	false.
+
 2009-03-17  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (grokfndecl): Set DECL_CONTEXT on parms.
