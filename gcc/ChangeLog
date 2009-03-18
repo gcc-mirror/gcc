@@ -1,3 +1,17 @@
+2009-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* dse.c (struct group_info): Reorder fields for 64-bit hosts.
+	* matrix-reorg.c (struct matrix_info): Likewise.
+	* tree-ssa-loop-ivopts.c (struct ivopts_data): Likewise.
+	* rtl.h (struct mem_attrs): Likewise.
+	* df.h (struct df): Likewise.
+	* tree-data-ref.h (struct data_dependence_relation): Likewise.
+	* ira-int.h (struct ira_allocno): Likewise.
+	* df-scan.c (struct df_collection_rec): Likewise.
+	* ira.c (struct equivalence): Likewise.
+	* function.c (struct temp_slot): Likewise.
+	* cfgloop.h (struct loop): Likewise.
+
 2009-03-18  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/39447

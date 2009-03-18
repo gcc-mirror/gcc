@@ -291,14 +291,6 @@ struct data_dependence_relation
   struct data_reference *a;
   struct data_reference *b;
 
-  /* When the dependence relation is affine, it can be represented by
-     a distance vector.  */
-  bool affine_p;
-
-  /* Set to true when the dependence relation is on the same data
-     access.  */
-  bool self_reference_p;
-
   /* A "yes/no/maybe" field for the dependence relation:
      
      - when "ARE_DEPENDENT == NULL_TREE", there exist a dependence
@@ -320,18 +312,26 @@ struct data_dependence_relation
   /* The analyzed loop nest.  */
   VEC (loop_p, heap) *loop_nest;
 
-  /* An index in loop_nest for the innermost loop that varies for
-     this data dependence relation.  */
-  unsigned inner_loop;
-
   /* The classic direction vector.  */
   VEC (lambda_vector, heap) *dir_vects;
 
   /* The classic distance vector.  */
   VEC (lambda_vector, heap) *dist_vects;
 
+  /* An index in loop_nest for the innermost loop that varies for
+     this data dependence relation.  */
+  unsigned inner_loop;
+
   /* Is the dependence reversed with respect to the lexicographic order?  */
   bool reversed_p;
+
+  /* When the dependence relation is affine, it can be represented by
+     a distance vector.  */
+  bool affine_p;
+
+  /* Set to true when the dependence relation is on the same data
+     access.  */
+  bool self_reference_p;
 };
 
 typedef struct data_dependence_relation *ddr_p;

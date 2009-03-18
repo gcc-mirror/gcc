@@ -458,8 +458,6 @@ struct temp_slot GTY(())
   struct temp_slot *prev;
   /* The rtx to used to reference the slot.  */
   rtx slot;
-  /* The alignment (in bits) of the slot.  */
-  unsigned int align;
   /* The size, in units, of the slot.  */
   HOST_WIDE_INT size;
   /* The type of the object in the slot, or zero if it doesn't correspond
@@ -467,6 +465,8 @@ struct temp_slot GTY(())
      It can be reused if objects of the type of the new slot will always
      conflict with objects of the type of the old slot.  */
   tree type;
+  /* The alignment (in bits) of the slot.  */
+  unsigned int align;
   /* Nonzero if this temporary is currently in use.  */
   char in_use;
   /* Nonzero if this temporary has its address taken.  */

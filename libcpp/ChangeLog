@@ -1,3 +1,7 @@
+2009-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_dir): Reorder fields for 64-bit hosts.
+
 2009-02-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* lex.c (lex_string): Return a CPP_LESS token for missing '>' in a

@@ -1,6 +1,6 @@
 /* Definitions for CPP library.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2007, 2008
+   2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
@@ -516,13 +516,16 @@ struct cpp_dir
   char *name;
   unsigned int len;
 
-  /* The canonicalized NAME as determined by lrealpath.  This field 
-     is only used by hosts that lack reliable inode numbers.  */
-  char *canonical_name;
-
   /* One if a system header, two if a system header that has extern
      "C" guards for C++.  */
   unsigned char sysp;
+
+  /* Is this a user-supplied directory? */
+  bool user_supplied_p;
+
+  /* The canonicalized NAME as determined by lrealpath.  This field 
+     is only used by hosts that lack reliable inode numbers.  */
+  char *canonical_name;
 
   /* Mapping of file names for this directory for MS-DOS and related
      platforms.  A NULL-terminated array of (from, to) pairs.  */
@@ -538,9 +541,6 @@ struct cpp_dir
      directories in the search path.  */
   ino_t ino;
   dev_t dev;
-
-  /* Is this a user-supplied directory? */
-  bool user_supplied_p;
 };
 
 /* Name under which this program was invoked.  */
