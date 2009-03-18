@@ -7082,10 +7082,10 @@
   [(unspec_volatile [(const_int 0)] UNSPECV_SETJMP)]
   ""
 {
-  if (! cfun->calls_alloca)
+  if (!cfun->calls_alloca)
     return "";
-  if (! TARGET_V9)
-    return "\tta\t3\n";
+  if (!TARGET_V9)
+    return "ta\t3";
   fputs ("\tflushw\n", asm_out_file);
   if (flag_pic)
     fprintf (asm_out_file, "\tst%c\t%%l7, [%%sp+%d]\n",
