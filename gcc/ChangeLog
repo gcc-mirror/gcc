@@ -1,3 +1,7 @@
+2009-03-19  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reginfo.c (globalize_reg): Recompute derived reg sets.
+
 2009-03-19  Ozkan Sezer <sezeroz@gmail.com>
 
 	PR target/39063
