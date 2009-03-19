@@ -1,3 +1,5 @@
+/* { dg-prune-output ".*-Wno-abi.*" } */
+
 #include "struct-layout-1.h"
 
 #define TX(n, type, attrs, fields, ops) extern void test##n (void);

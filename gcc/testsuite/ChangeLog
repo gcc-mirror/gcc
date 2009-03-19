@@ -1,4 +1,14 @@
 2009-03-19  Jakub Jelinek  <jakub@redhat.com>
+	    Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/compat.exp (compat-get-options-main, compat-get-options):
+	Handle dg-prune-output in source file.
+	* lib/gcc-defs.exp (${tool}_check_compile): Process prune requests.
+	* gcc.dg/compat/struct-layout-1_main.c: Use dg-prune for warning.
+	* gcc.dg/compat/struct-layout-1_generate.c: Use -Wno-abi, prune
+	two warnings.
+
+2009-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/39495
 	* gcc.dg/gomp/pr39495-1.c: New test.

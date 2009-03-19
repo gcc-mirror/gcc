@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 
 const char *dg_options[] = {
 "/* { dg-options \"%s-I%s\" } */\n",
+"/* { dg-options \"%s-I%s -Wno-abi\" } */\n",
 "/* { dg-options \"%s-I%s -mno-mmx -Wno-abi\" { target i?86-*-* x86_64-*-* } } */\n",
 "/* { dg-options \"%s-I%s -fno-common\" { target hppa*-*-hpux* powerpc*-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n",
 "/* { dg-options \"%s-I%s -mno-mmx -fno-common -Wno-abi\" { target i?86-*-darwin* x86_64-*-darwin* } } */\n",
@@ -789,6 +790,8 @@ switchfiles (int fields)
   fprintf (outfile, "/* { dg-require-effective-target int32plus } */\n");
   for (i = 0; i < NDG_OPTIONS; i++)
     fprintf (outfile, dg_options[i], "", srcdir_safe);
+  fprintf (outfile, "/* { dg-prune-output \".*-Wno-abi.*\" } */\n");
+  fprintf (outfile, "/* { dg-prune-output \".*Offset of packed bit-field.*\" } */\n");
   fprintf (outfile, "\
 #include \"struct-layout-1.h\"\n\
 \n\

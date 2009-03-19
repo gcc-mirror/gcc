@@ -49,6 +49,11 @@ proc ${tool}_check_compile {testcase option objname gcc_output} {
 
     set gcc_output [prune_warnings $gcc_output]
 
+    if { [info proc ${tool}-dg-prune] != "" } {
+	global target_triplet
+	set gcc_output [${tool}-dg-prune $target_triplet $gcc_output]
+    }
+
     set unsupported_message [${tool}_check_unsupported_p $gcc_output]
     if { $unsupported_message != "" } {
 	unsupported "$testcase: $unsupported_message"
