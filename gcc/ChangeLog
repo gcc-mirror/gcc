@@ -1,3 +1,11 @@
+2009-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39496
+	* config/i386/i386.c (ix86_function_regparm): Don't optimize local
+	functions using regparm calling conventions when not optimizing.
+	(ix86_function_sseregparm): Similarly for sseregparm calling
+	conventions.
+
 2009-03-19  Li Feng  <nemokingdom@gmail.com>
 
 	PR middle-end/39500
