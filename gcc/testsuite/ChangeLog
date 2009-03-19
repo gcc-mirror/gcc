@@ -1,3 +1,9 @@
+2009-03-19  Li Feng  <nemokingdom@gmail.com>
+
+	PR middle-end/39500
+	* gcc.dg/autopar/pr39500-1.c: New.
+	* gcc.dg/autopar/pr39500-2.c: New.
+
 2009-03-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* g++.dg/dg.exp: Prune graphite.
