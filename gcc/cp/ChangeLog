@@ -1,3 +1,9 @@
+2009-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/39495
+	* parser.c (cp_parser_omp_for_cond): Don't check lhs if decl is NULL.
+	(cp_parser_omp_for_loop): Always use cp_parser_omp_for_cond.
+
 2009-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (struct cp_token): Reorder fields for 64-bit hosts.
