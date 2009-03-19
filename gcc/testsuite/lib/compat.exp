@@ -170,6 +170,7 @@ proc compat-get-options-main { src } {
     foreach op $tmp {
 	set cmd [lindex $op 0]
 	if { ![string compare "dg-options" $cmd] \
+	     || [string match "dg-prune-output" $cmd] \
 	     || [string match "dg-skip-if" $cmd] \
 	     || [string match "dg-require-*" $cmd]  } {
 	    set status [catch "$op" errmsg]
@@ -215,6 +216,7 @@ proc compat-get-options { src } {
     foreach op $tmp {
 	set cmd [lindex $op 0]
 	if { ![string compare "dg-options" $cmd] \
+	     || ![string compare "dg-prune-output" $cmd] \
 	     || ![string compare "dg-xfail-if" $cmd] } {
 	    set status [catch "$op" errmsg]
 	    if { $status != 0 } {
