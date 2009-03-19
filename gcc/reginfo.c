@@ -875,6 +875,8 @@ globalize_reg (int i)
   SET_HARD_REG_BIT (fixed_reg_set, i);
   SET_HARD_REG_BIT (call_used_reg_set, i);
   SET_HARD_REG_BIT (call_fixed_reg_set, i);
+
+  reinit_regs ();
 }
 
 
