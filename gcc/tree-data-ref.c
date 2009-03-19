@@ -2302,7 +2302,7 @@ analyze_subscript_affine_affine (tree chrec_a,
 
 		  /* If the overlap occurs outside of the bounds of the
 		     loop, there is no dependence.  */
-		  if (x1 > niter || y1 > niter)
+		  if (x1 >= niter || y1 >= niter)
 		    {
 		      *overlaps_a = conflict_fn_no_dependence ();
 		      *overlaps_b = conflict_fn_no_dependence ();
