@@ -851,8 +851,9 @@ enum reg_class
 /* Node: Elimination */
 
 /* Really only needed if the stack frame has variable length (alloca
-   or variable sized local arguments (GNU C extension).  */
-#define FRAME_POINTER_REQUIRED 0
+   or variable sized local arguments (GNU C extension).  See PR39499 and
+   PR38609 for the reason this isn't just 0.  */
+#define FRAME_POINTER_REQUIRED (!current_function_sp_is_unchanging)
 
 #define ELIMINABLE_REGS				\
  {{ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
