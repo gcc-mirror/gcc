@@ -1,3 +1,9 @@
+2009-03-19  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/38609
+	* config/cris/cris.h (FRAME_POINTER_REQUIRED): Force for all
+	functions with dynamic stack-pointer adjustments.
+
 2009-03-19  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Fix -msdata-data
