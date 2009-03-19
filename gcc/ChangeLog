@@ -1,3 +1,10 @@
+2009-03-19  Ozkan Sezer <sezeroz@gmail.com>
+
+	PR target/39063
+	* libgcc2.c (mprotect): Do not use signed arguments for
+	VirtualProtect, use DWORD arguments.  Also fix the 'may
+	be used uninitialized' warning for the np variable.
+
 2009-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39496
