@@ -1,5 +1,11 @@
 2009-03-19  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/39495
+	* gcc.dg/gomp/pr39495-1.c: New test.
+	* gcc.dg/gomp/pr39495-2.c: New test.
+	* g++.dg/gomp/pr39495-1.C: New test.
+	* g++.dg/gomp/pr39495-2.C: New test.
+
 	PR target/39496
 	* gcc.target/i386/pr39496.c: New test.
 	* g++.dg/other/pr39496.C: New test.

@@ -1,3 +1,9 @@
+2009-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/39495
+	* c-omp.c (c_finish_omp_for): Allow NE_EXPR with TREE_TYPE (decl)'s
+	minimum or maximum value.
+
 2009-03-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* reginfo.c (globalize_reg): Recompute derived reg sets.
