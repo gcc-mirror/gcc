@@ -1,3 +1,7 @@
+2009-03-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist5.C: Add additional test.
+
 2009-03-19  Jakub Jelinek  <jakub@redhat.com>
 	    Janis Johnson  <janis187@us.ibm.com>
 

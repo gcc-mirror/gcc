@@ -20,6 +20,8 @@ C c2 = { 1.1, 2 }; // { dg-error "narrowing" }
 int j { 1 }; // initialize to 1
 int k {}; // initialize to 0
 
-// PR c++/39693
+// PR c++/36963
 double d = 1.1;
 float fa[] = { d, 1.1 };      // { dg-error "narrowing conversion of 'd'" }
+const double d2 = 1.1;
+float fa2[] = { d2, 1.1 };
