@@ -1,3 +1,10 @@
+2009-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/37890
+	* dwarf2out.c (gen_namespace_die): Add context_die argument and use
+	it for block local namespace aliases.
+	(gen_decl_die): Pass context_die to gen_namespace_die.
+
 2009-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/39495
