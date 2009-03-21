@@ -1,3 +1,8 @@
+2009-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28879
+	* g++.dg/ext/vla6.C: New test.
+
 2009-03-20  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/initlist5.C: Add additional test.

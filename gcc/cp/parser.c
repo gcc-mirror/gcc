@@ -13267,6 +13267,13 @@ cp_parser_direct_declarator (cp_parser* parser,
 						 &non_constant_p);
 	      if (!non_constant_p)
 		bounds = fold_non_dependent_expr (bounds);
+	      else if (processing_template_decl)
+		{
+		  /* Remember this wasn't a constant-expression.  */
+		  bounds = build_nop (TREE_TYPE (bounds), bounds);
+		  TREE_SIDE_EFFECTS (bounds) = 1;
+		}
+
 	      /* Normally, the array bound must be an integral constant
 		 expression.  However, as an extension, we allow VLAs
 		 in function scopes.  */
