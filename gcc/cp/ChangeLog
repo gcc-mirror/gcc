@@ -1,5 +1,13 @@
 2009-03-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/28879
+	* parser.c (cp_parser_direct_declarator): In a template, wrap 
+	non-constant expression in NOP_EXPR with TREE_SIDE_EFFECTS set.
+	* pt.c (tsubst): Preserve it in a partial instantiation.
+	(dependent_type_p_r): Don't check value_dependent_expression_p.
+	* decl.c (compute_array_index_type): Don't check
+	value_dependent_expression_p if TREE_SIDE_EFFECTS.
+
 	C++ core issue 703
 	* typeck2.c (check_narrowing): Don't complain about loss of 
 	precision when converting a floating-point constant.

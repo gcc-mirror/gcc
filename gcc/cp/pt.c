@@ -9084,8 +9084,19 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			   /*integral_constant_expression_p=*/false);
 	max = fold_decl_constant_value (max);
 
+	/* If we're in a partial instantiation, preserve the magic NOP_EXPR
+	   with TREE_SIDE_EFFECTS that indicates this is not an integral
+	   constant expression.  */
+	if (processing_template_decl
+	    && TREE_SIDE_EFFECTS (omax) && TREE_CODE (omax) == NOP_EXPR)
+	  {
+	    gcc_assert (TREE_CODE (max) == NOP_EXPR);
+	    TREE_SIDE_EFFECTS (max) = 1;
+	  }
+
 	if (TREE_CODE (max) != INTEGER_CST
 	    && !at_function_scope_p ()
+	    && !TREE_SIDE_EFFECTS (max)
 	    && !value_dependent_expression_p (max))
 	  {
 	    if (complain & tf_error)
@@ -15972,9 +15983,9 @@ dependent_type_p_r (tree type)
 	   && !TREE_CONSTANT (TYPE_MAX_VALUE (type)))
     {
       /* If this is the TYPE_DOMAIN of an array type, consider it
-	 dependent.  */
-      return (value_dependent_expression_p (TYPE_MAX_VALUE (type))
-	      || type_dependent_expression_p (TYPE_MAX_VALUE (type)));
+	 dependent.  We already checked for value-dependence in
+	 compute_array_index_type.  */
+      return type_dependent_expression_p (TYPE_MAX_VALUE (type));
     }
 
   /* -- a template-id in which either the template name is a template
