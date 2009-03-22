@@ -3069,7 +3069,7 @@ Do/do not align destination of inlined string operations.
 @itemx no-recip
 @cindex @code{target("recip")} attribute
 Enable/disable the generation of RCPSS, RCPPS, RSQRTSS and RSQRTPS
-instructions followed an additional Newton-Rhapson step instead of
+instructions followed an additional Newton-Raphson step instead of
 doing a floating point division.
 
 @item arch=@var{ARCH}
@@ -3861,7 +3861,7 @@ struct foo
 @emph{Note:} The 4.1, 4.2 and 4.3 series of GCC ignore the
 @code{packed} attribute on bit-fields of type @code{char}.  This has
 been fixed in GCC 4.4 but the change can lead to differences in the
-structure layout.  See the documention of
+structure layout.  See the documentation of
 @option{-Wpacked-bitfield-compat} for more information.
 
 @item section ("@var{section-name}")
