@@ -1,3 +1,9 @@
+2009-03-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/target-libpath.exp (set_ld_library_path_env_vars):
+	Correct TEST_GCC_EXEC_PREFIX test to check existence as a tcl
+	variable, not environment variable.
+
 2009-03-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28879
