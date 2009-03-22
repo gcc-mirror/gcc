@@ -1,4 +1,4 @@
-# Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -69,7 +69,7 @@ proc set_ld_library_path_env_vars { } {
 
   # Set GCC_EXEC_PREFIX for the compiler under test to pick up files not in
   # the build tree from a specified location (normally the install tree).
-  if [info exists env(TEST_GCC_EXEC_PREFIX)] {
+  if [info exists TEST_GCC_EXEC_PREFIX] {
     setenv GCC_EXEC_PREFIX "$TEST_GCC_EXEC_PREFIX"
   }
 
