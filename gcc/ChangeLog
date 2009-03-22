@@ -1,3 +1,10 @@
+2009-03-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/extend.texi (Function Attributes, Variable Attributes):
+	Fix typos.
+	* doc/invoke.texi (Debugging Options, Optimize Options)
+	(i386 and x86-64 Options, MCore Options): Likewise.
+
 2009-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/37890
