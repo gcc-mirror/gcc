@@ -16,6 +16,8 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
+// { dg-options "-DTEST_DEPTH=10" { target simulator } }
+
 // 25 algorithms, search_n
 
 #include <algorithm>
@@ -23,7 +25,10 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
+#ifndef TEST_DEPTH
 #define TEST_DEPTH 14
+#endif
+
 int array1[11] = {0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0};
 int array2[TEST_DEPTH];
 

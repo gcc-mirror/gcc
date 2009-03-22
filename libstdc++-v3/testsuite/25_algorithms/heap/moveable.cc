@@ -18,6 +18,8 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
+// { dg-options "-std=gnu++0x -DITERATIONS=5" { target simulator } }
+
 // 25.3.6 Heap operations [lib.alg.heap.operations]
 
 #undef _GLIBCXX_CONCEPT_CHECKS
@@ -27,6 +29,10 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 #include <testsuite_rvalref.h>
+
+#ifndef ITERATIONS
+#define ITERATIONS 9
+#endif
 
 using __gnu_test::test_container;
 using __gnu_test::random_access_iterator_wrapper;
@@ -115,7 +121,7 @@ void
 test01()
 {
   int array[9];
-  for (int i = 1; i < 9; ++i)
+  for (int i = 1; i < ITERATIONS; ++i)
     {
       for(int z = 0; z < i; ++z)
 	array[z] = z;
