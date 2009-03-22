@@ -110,7 +110,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef CRIS_LINK_SUBTARGET_SPEC
 #define CRIS_LINK_SUBTARGET_SPEC \
  "-mcrislinux\
-  -rpath-link include/asm/../..%s\
+  %{B*:-rpath-link %*}\
+  %{!nostdlib:-rpath-link ../sys-include/asm/../../lib%s}\
   %{shared} %{static}\
   %{symbolic:-Bdynamic} %{shlib:-Bdynamic} %{static:-Bstatic}\
   %{!shared:%{!static:\

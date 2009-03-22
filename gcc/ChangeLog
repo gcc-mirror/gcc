@@ -1,3 +1,9 @@
+2009-03-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/linux.h (CRIS_LINK_SUBTARGET_SPEC):
+	Translate -B-options to -rpath-link.  Correct existing
+	rpath-link and conditionalize on !nostdlib.
+
 2009-03-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/extend.texi (Function Attributes, Variable Attributes):
