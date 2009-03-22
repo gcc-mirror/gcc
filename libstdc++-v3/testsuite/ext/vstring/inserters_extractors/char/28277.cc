@@ -18,10 +18,16 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
+// { dg-options "-DWIDTH=200000" { target simulator } }
+
 #include <ostream>
 #include <sstream>
 #include <ext/vstring.h>
 #include <testsuite_hooks.h>
+
+#ifndef WIDTH
+#define WIDTH 20000000
+#endif
 
 // libstdc++/28277
 void test01()
@@ -32,7 +38,7 @@ void test01()
   ostringstream oss_01;
   const __gnu_cxx::__vstring str_01(50, 'a');
 
-  oss_01.width(20000000);
+  oss_01.width(WIDTH);
   const streamsize width = oss_01.width();
 
   oss_01 << str_01;
