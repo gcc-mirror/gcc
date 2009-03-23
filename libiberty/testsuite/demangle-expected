@@ -3885,7 +3885,7 @@ java resource java/util/iso4217.properties
 # decltype/param placeholder test
 --format=gnu-v3
 _Z3addIidEDTplfp_fp0_ET_T0_
-decltype ((parm#1)+(parm#2)) add<int, double>(int, double)
+decltype (parm#1+parm#2) add<int, double>(int, double)
 # decltype/fn call test
 --format=gnu-v3
 _Z4add3IidEDTclL_Z1gEfp_fp0_EET_T0_
@@ -3901,8 +3901,12 @@ void f<int*, float*, double*>(int*, float*, double*)
 # '.' test
 --format=gnu-v3
 _Z1hI1AIiEdEDTcldtfp_1gIT0_EEET_S2_
-decltype (((parm#1).(g<double>))()) h<A<int>, double>(A<int>, double)
+decltype ((parm#1.(g<double>))()) h<A<int>, double>(A<int>, double)
 # test for typed function in decltype
 --format=gnu-v3
 _ZN1AIiE1jIiEEDTplfp_clL_Z1xvEEET_
-decltype ((parm#1)+((x())())) A<int>::j<int>(int)
+decltype (parm#1+((x())())) A<int>::j<int>(int)
+# test for expansion of function parameter pack
+--format=gnu-v3
+_Z1gIIidEEDTclL_Z1fEspplfp_Li1EEEDpT_
+decltype (f((parm#1+(1))...)) g<int, double>(int, double)

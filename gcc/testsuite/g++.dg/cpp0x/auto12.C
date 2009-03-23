@@ -35,6 +35,15 @@ auto A<T>::f(U u) -> decltype (u + i)
   return u + i;
 }
 
+template <class... Args>
+int f (Args... args);
+
+template <class... Args>
+auto g (Args... args) -> decltype (f ((args+1)...))
+{
+  return (f ((args+1)...));
+}
+
 int main()
 {
   // { dg-final { scan-assembler  "_ZN1AIiE1fIiEEDTplfp_L_ZNS0_1iEEET_" } }
@@ -49,4 +58,6 @@ int main()
   A<int>().h(1);
   // { dg-final { scan-assembler  "_ZN1AIiE1jIiEEDTplfp_clL_Z1xvEEET_" } }
   A<int>().j(1);
+  // { dg-final { scan-assembler  "_Z1gIIidEEDTclL_Z1fEspplfp_Li1EEEDpT_" } }  
+  g(42, 1.0);
 }

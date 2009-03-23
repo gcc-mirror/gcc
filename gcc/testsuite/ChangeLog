@@ -1,5 +1,7 @@
 2009-03-23  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/auto12.C: Add variadic test.
+	
 	PR c++/39526
 	* g++.dg/warn/Wshadow-4.C: New test.
 

@@ -2586,6 +2586,12 @@ d_expression (struct d_info *di)
 			    d_make_comp (di, DEMANGLE_COMPONENT_TEMPLATE, name,
 					 d_template_args (di)));
     }
+  else if (peek == 's' && d_peek_next_char (di) == 'p')
+    {
+      d_advance (di, 2);
+      return d_make_comp (di, DEMANGLE_COMPONENT_PACK_EXPANSION,
+			  d_expression (di), NULL);
+    }
   else if (peek == 'f' && d_peek_next_char (di) == 'p')
     {
       /* Function parameter used in a late-specified return type.  */
@@ -3244,6 +3250,7 @@ d_find_pack (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_BUILTIN_TYPE:
     case DEMANGLE_COMPONENT_SUB_STD:
     case DEMANGLE_COMPONENT_CHARACTER:
+    case DEMANGLE_COMPONENT_FUNCTION_PARAM:
       return NULL;
 
     case DEMANGLE_COMPONENT_EXTENDED_OPERATOR:
@@ -3284,7 +3291,8 @@ d_print_subexpr (struct d_print_info *dpi,
 		 const struct demangle_component *dc)
 {
   int simple = 0;
-  if (dc->type == DEMANGLE_COMPONENT_NAME)
+  if (dc->type == DEMANGLE_COMPONENT_NAME
+      || dc->type == DEMANGLE_COMPONENT_FUNCTION_PARAM)
     simple = 1;
   if (!simple)
     d_append_char (dpi, '(');
@@ -4012,10 +4020,20 @@ d_print_comp (struct d_print_info *dpi,
 
     case DEMANGLE_COMPONENT_PACK_EXPANSION:
       {
-	struct demangle_component *a = d_find_pack (dpi, d_left (dc));
-	int len = d_pack_length (a);
+	int len;
 	int i;
+	struct demangle_component *a = d_find_pack (dpi, d_left (dc));
+	if (a == NULL)
+	  {
+	    /* d_find_pack won't find anything if the only packs involved
+	       in this expansion are function parameter packs; in that
+	       case, just print the pattern and "...".  */
+	    d_print_subexpr (dpi, d_left (dc));
+	    d_append_string (dpi, "...");
+	    return;
+	  }
 
+	len = d_pack_length (a);
 	dc = d_left (dc);
 	for (i = 0; i < len; ++i)
 	  {
