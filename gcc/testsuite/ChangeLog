@@ -1,3 +1,11 @@
+2009-03-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-03-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39482
+	* gcc.target/i386/pr39482.c: New test.
+
 2009-03-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
