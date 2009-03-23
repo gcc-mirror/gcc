@@ -2472,7 +2472,8 @@ perfect_nestify (struct loop *loop,
      it to one just in case.  */
 
   exit_condition = get_loop_exit_condition (newloop);
-  uboundvar = create_tmp_var (integer_type_node, "uboundvar");
+  uboundvar = create_tmp_var (TREE_TYPE (VEC_index (tree, ubounds, 0)),
+			      "uboundvar");
   add_referenced_var (uboundvar);
   stmt = gimple_build_assign (uboundvar, VEC_index (tree, ubounds, 0));
   uboundvar = make_ssa_name (uboundvar, stmt);

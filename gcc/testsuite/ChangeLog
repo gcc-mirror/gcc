@@ -1,3 +1,8 @@
+2009-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/39516
+	* gfortran.dg/pr39516.f: New test.
+
 2009-03-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* lib/target-libpath.exp (set_ld_library_path_env_vars):
