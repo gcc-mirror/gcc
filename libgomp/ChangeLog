@@ -1,3 +1,12 @@
+2009-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/39495
+	* testsuite/libgomp.c/loop-12.c: New test.
+	* testsuite/libgomp.c/loop-11.c: New test.
+	* testsuite/libgomp.c++/loop-11.C: New test.
+	* testsuite/libgomp.c++/loop-12.C: New test.
+	* testsuite/libgomp.c++/for-8.C: New test.
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

@@ -1615,7 +1615,7 @@ static tree cp_parser_delete_expression
 static tree cp_parser_cast_expression
   (cp_parser *, bool, bool, cp_id_kind *);
 static tree cp_parser_binary_expression
-  (cp_parser *, bool, enum cp_parser_prec, cp_id_kind *);
+  (cp_parser *, bool, bool, enum cp_parser_prec, cp_id_kind *);
 static tree cp_parser_question_colon_clause
   (cp_parser *, tree);
 static tree cp_parser_assignment_expression
@@ -6215,6 +6215,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 
 static tree
 cp_parser_binary_expression (cp_parser* parser, bool cast_p,
+			     bool no_toplevel_fold_p,
 			     enum cp_parser_prec prec,
 			     cp_id_kind * pidk)
 {
@@ -6297,6 +6298,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	  goto get_rhs;
 
 	 pop:
+	  lookahead_prec = new_prec;
 	  /* If the stack is not empty, we have parsed into LHS the right side
 	     (`4' in the example above) of an expression we had suspended.
 	     We can use the information on the stack to recover the LHS (`3')
@@ -6321,8 +6323,14 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	 pass the correct tree_code unless the unary expression was
 	 surrounded by parentheses.
       */
-      lhs = build_x_binary_op (tree_type, lhs, lhs_type, rhs, rhs_type,
-			       &overloaded_p, tf_warning_or_error);
+      if (no_toplevel_fold_p
+	  && lookahead_prec <= prec
+	  && sp == stack
+	  && TREE_CODE_CLASS (tree_type) == tcc_comparison)
+	lhs = build2 (tree_type, boolean_type_node, lhs, rhs);
+      else
+	lhs = build_x_binary_op (tree_type, lhs, lhs_type, rhs, rhs_type,
+				 &overloaded_p, tf_warning_or_error);
       lhs_type = tree_type;
 
       /* If the binary operator required the use of an overloaded operator,
@@ -6408,7 +6416,8 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
   else
     {
       /* Parse the binary expressions (logical-or-expression).  */
-      expr = cp_parser_binary_expression (parser, cast_p, PREC_NOT_OPERATOR, pidk);
+      expr = cp_parser_binary_expression (parser, cast_p, false,
+					  PREC_NOT_OPERATOR, pidk);
       /* If the next token is a `?' then we're actually looking at a
 	 conditional-expression.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_QUERY))
@@ -21015,41 +21024,39 @@ cp_parser_omp_flush (cp_parser *parser, cp_token *pragma_tok)
 static tree
 cp_parser_omp_for_cond (cp_parser *parser, tree decl)
 {
-  tree lhs = cp_parser_cast_expression (parser, false, false, NULL), rhs;
-  enum tree_code op;
-  cp_token *token;
+  tree cond = cp_parser_binary_expression (parser, false, true,
+					   PREC_NOT_OPERATOR, NULL);
+  bool overloaded_p;
 
-  if (decl && lhs != decl)
-    {
-      cp_parser_skip_to_end_of_statement (parser);
-      return error_mark_node;
-    }
-
-  token = cp_lexer_peek_token (parser->lexer);
-  op = binops_by_token [token->type].tree_type;
-  switch (op)
-    {
-    case LT_EXPR:
-    case LE_EXPR:
-    case GT_EXPR:
-    case GE_EXPR:
-      break;
-    default:
-      cp_parser_skip_to_end_of_statement (parser);
-      return error_mark_node;
-    }
-
-  cp_lexer_consume_token (parser->lexer);
-  rhs = cp_parser_binary_expression (parser, false,
-				     PREC_RELATIONAL_EXPRESSION, NULL);
-  if (rhs == error_mark_node
+  if (cond == error_mark_node
       || cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
     {
       cp_parser_skip_to_end_of_statement (parser);
       return error_mark_node;
     }
 
-  return build2 (op, boolean_type_node, lhs, rhs);
+  switch (TREE_CODE (cond))
+    {
+    case GT_EXPR:
+    case GE_EXPR:
+    case LT_EXPR:
+    case LE_EXPR:
+      break;
+    default:
+      return error_mark_node;
+    }
+
+  /* If decl is an iterator, preserve LHS and RHS of the relational
+     expr until finish_omp_for.  */
+  if (decl
+      && (type_dependent_expression_p (decl)
+	  || CLASS_TYPE_P (TREE_TYPE (decl))))
+    return cond;
+
+  return build_x_binary_op (TREE_CODE (cond),
+			    TREE_OPERAND (cond, 0), ERROR_MARK,
+			    TREE_OPERAND (cond, 1), ERROR_MARK,
+			    &overloaded_p, tf_warning_or_error);
 }
 
 /* Helper function, to parse omp for increment expression.  */
@@ -21098,7 +21105,7 @@ cp_parser_omp_for_incr (cp_parser *parser, tree decl)
       return build2 (MODIFY_EXPR, TREE_TYPE (decl), decl, rhs);
     }
 
-  lhs = cp_parser_binary_expression (parser, false,
+  lhs = cp_parser_binary_expression (parser, false, false,
 				     PREC_ADDITIVE_EXPRESSION, NULL);
   token = cp_lexer_peek_token (parser->lexer);
   decl_first = lhs == decl;
@@ -21112,7 +21119,7 @@ cp_parser_omp_for_incr (cp_parser *parser, tree decl)
     {
       op = token->type == CPP_PLUS ? PLUS_EXPR : MINUS_EXPR;
       cp_lexer_consume_token (parser->lexer);
-      rhs = cp_parser_binary_expression (parser, false,
+      rhs = cp_parser_binary_expression (parser, false, false,
 					 PREC_ADDITIVE_EXPRESSION, NULL);
       token = cp_lexer_peek_token (parser->lexer);
       if (token->type == CPP_PLUS || token->type == CPP_MINUS || decl_first)
