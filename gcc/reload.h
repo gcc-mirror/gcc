@@ -205,10 +205,22 @@ struct insn_chain
      all insns that need reloading.  */
   struct insn_chain *next_need_reload;
 
-  /* The basic block this insn is in.  */
-  int block;
   /* The rtx of the insn.  */
   rtx insn;
+
+  /* The basic block this insn is in.  */
+  int block;
+
+  /* Nonzero if find_reloads said the insn requires reloading.  */
+  unsigned int need_reload:1;
+  /* Nonzero if find_reloads needs to be run during reload_as_needed to
+     perform modifications on any operands.  */
+  unsigned int need_operand_change:1;
+  /* Nonzero if eliminate_regs_in_insn said it requires eliminations.  */
+  unsigned int need_elim:1;
+  /* Nonzero if this insn was inserted by perform_caller_saves.  */
+  unsigned int is_caller_save_insn:1;
+
   /* Register life information: record all live hard registers, and
      all live pseudos that have a hard register.  This set also
      contains pseudos spilled by IRA.  */
@@ -221,16 +233,6 @@ struct insn_chain
 
   /* Indicates which registers have already been used for spills.  */
   HARD_REG_SET used_spill_regs;
-
-  /* Nonzero if find_reloads said the insn requires reloading.  */
-  unsigned int need_reload:1;
-  /* Nonzero if find_reloads needs to be run during reload_as_needed to
-     perform modifications on any operands.  */
-  unsigned int need_operand_change:1;
-  /* Nonzero if eliminate_regs_in_insn said it requires eliminations.  */
-  unsigned int need_elim:1;
-  /* Nonzero if this insn was inserted by perform_caller_saves.  */
-  unsigned int is_caller_save_insn:1;
 };
 
 /* A chain of insn_chain structures to describe all non-note insns in

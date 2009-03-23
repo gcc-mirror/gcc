@@ -163,6 +163,10 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   /* Ordering of all cgraph nodes.  */
   int order;
 
+  /* unique id for profiling. pid is not suitable because of different
+     number of cfg nodes with -fprofile-generate and -fprofile-use */
+  int pid;
+
   /* Set when function must be output - it is externally visible
      or its address is taken.  */
   unsigned needed : 1;
@@ -186,10 +190,6 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
      into clone before compiling so the function in original form can be
      inlined later.  This pointer points to the clone.  */
   tree inline_decl;
-
-  /* unique id for profiling. pid is not suitable because of different
-     number of cfg nodes with -fprofile-generate and -fprofile-use */
-  int pid;
 };
 
 struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller")))

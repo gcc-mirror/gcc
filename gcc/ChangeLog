@@ -1,3 +1,12 @@
+2009-03-23  Richard Guenther  <rguenther@suse.de>
+
+	* cgraph.h (struct cgraph_node): Reorder fields for 64-bit hosts.
+	* tree.h (struct tree_type): Likewise.
+	* reload.h (struct insn_chain): Likewise.
+	* dwarf2out.c (struct dw_loc_descr_struct): Likewise.
+	* function.h (struct function): Likewise.
+	* tree-ssa-structalias.c (struct equiv_class_label): Likewise.
+
 2009-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/39516
