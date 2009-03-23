@@ -13978,6 +13978,14 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
       return;
     }
 
+  /* If the compiler emitted a definition for the DECL declaration
+     and if we already emitted a DIE for it, don't emit a second
+     DIE for it again.  */
+  if (old_die
+      && declaration
+      && old_die->die_parent == context_die)
+    return;
+
   var_die = new_die (DW_TAG_variable, context_die, decl);
 
   origin_die = NULL;
