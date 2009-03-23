@@ -13,6 +13,7 @@
 
 2009-03-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/37729
 	* pt.c (make_fnparm_pack): Split out from...
 	(instantiate_decl): ...here.
 	(tsubst_pack_expansion): Handle being called in a late-specified
