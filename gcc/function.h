@@ -501,9 +501,6 @@ struct function GTY(())
      pointer.  */
   tree nonlocal_goto_save_area;
 
-  /* Function sequence number for profiling, debugging, etc.  */
-  int funcdef_no;
-
   /* List of function local variables, functions, types and constants.  */
   tree local_decls;
 
@@ -520,6 +517,9 @@ struct function GTY(())
 
   /* Last statement uid.  */
   int last_stmt_uid;
+
+  /* Function sequence number for profiling, debugging, etc.  */
+  int funcdef_no;
 
   /* Line number of the start of the function for debugging purposes.  */
   location_t function_start_locus;

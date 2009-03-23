@@ -1817,9 +1817,9 @@ compute_topo_order (constraint_graph_t graph,
 
 typedef struct equiv_class_label
 {
+  hashval_t hashcode;
   unsigned int equivalence_class;
   bitmap labels;
-  hashval_t hashcode;
 } *equiv_class_label_t;
 typedef const struct equiv_class_label *const_equiv_class_label_t;
 
