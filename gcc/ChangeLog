@@ -1,3 +1,10 @@
+2009-03-24  Dodji Seketeli  <dodji@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/39524
+	* dwarf2out.c (gen_variable_die): Avoid adding duplicate declaration
+	nodes.
+
 2009-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/39495
