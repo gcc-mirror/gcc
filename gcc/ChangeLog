@@ -1,3 +1,8 @@
+2009-03-23 Bingfeng Mei  <bmei@broadcom.com>
+
+	* config.gcc (need_64bit_hwint): Make clear that need_64bit_hwint 
+	should be set true if BITS_PER_WORD of target is bigger than 32
+
 2009-03-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/linux.h (CRIS_LINK_SUBTARGET_SPEC):
