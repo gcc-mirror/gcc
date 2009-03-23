@@ -1,3 +1,10 @@
+2009-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/39495
+	* c-parser.c (c_parser_omp_for_loop): Call c_parser_binary_expression
+	instead of c_parser_expression_conv, if original_code isn't one of the
+	4 allowed comparison codes, fail.
+
 2009-03-23  Richard Guenther  <rguenther@suse.de>
 
 	* cgraph.h (struct cgraph_node): Reorder fields for 64-bit hosts.
