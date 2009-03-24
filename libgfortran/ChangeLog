@@ -1,3 +1,9 @@
+2009-03-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/39528
+	* io/list_read.c (list_formatted_read_scalar): Move check for read
+	completion to just after the check for a repeated value.
+
 2009-03-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/39402
