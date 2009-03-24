@@ -1,6 +1,6 @@
 // 2007-04-09  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2007 Free Software Foundation
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,10 +18,16 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
+// { dg-options "-DWIDTH=500000" { target simulator } }
+
 #include <ostream>
 #include <sstream>
 #include <ext/vstring.h>
 #include <testsuite_hooks.h>
+
+#ifndef WIDTH
+#define WIDTH 50000000
+#endif
 
 // libstdc++/28277
 void test01()
@@ -32,7 +38,7 @@ void test01()
   wostringstream oss_01;
   const __gnu_cxx::__wvstring str_01(50, L'a');
 
-  oss_01.width(5000000);
+  oss_01.width(WIDTH);
   const streamsize width = oss_01.width();
 
   oss_01 << str_01;

@@ -1,6 +1,6 @@
 // 2006-10-12  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2006, 2007 Free Software Foundation
+// Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,11 +18,17 @@
 // Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 // USA.
 
+// { dg-options "-DWIDTH=500000" { target simulator } }
+
 // 21.3.7.9 inserters and extractors
 
 #include <ostream>
 #include <sstream>
 #include <testsuite_hooks.h>
+
+#ifndef WIDTH
+#define WIDTH 50000000
+#endif
 
 // libstdc++/28277
 void test01()
@@ -33,7 +39,7 @@ void test01()
   wostringstream oss_01;
   const wstring str_01(50, L'a');
 
-  oss_01.width(5000000);
+  oss_01.width(WIDTH);
   const streamsize width = oss_01.width();
 
   oss_01 << str_01;
