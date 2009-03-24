@@ -10212,10 +10212,20 @@ Schedules as an EV6 and supports the BWX, FIX, and MAX extensions.
 Schedules as an EV6 and supports the BWX, CIX, FIX, and MAX extensions.
 @end table
 
+Native Linux/GNU toolchains also support the value @samp{native},
+which selects the best architecture option for the host processor.
+@option{-mcpu=native} has no effect if GCC does not recognize
+the processor.
+
 @item -mtune=@var{cpu_type}
 @opindex mtune
 Set only the instruction scheduling parameters for machine type
 @var{cpu_type}.  The instruction set is not changed.
+
+Native Linux/GNU toolchains also support the value @samp{native},
+which selects the best architecture option for the host processor.
+@option{-mtune=native} has no effect if GCC does not recognize
+the processor.
 
 @item -mmemory-latency=@var{time}
 @opindex mmemory-latency

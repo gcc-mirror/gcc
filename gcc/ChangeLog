@@ -1,3 +1,14 @@
+2009-03-24  Arthur Loiret  <aloiret@debian.org>
+
+	* config.host (alpha*-*-linux*): Use driver-alpha.o and
+	alpha/x-alpha.
+	* config/alpha/linux.h (host_detect_local_cpu): Declare, add to
+	EXTRA_SPEC_FUNCTIONS.
+	(MCPU_MTUNE_NATIVE_SPECS, DRIVER_SELF_SPECS): New macros.
+	* config/alpha/driver-alpha.c, config/alpha/x-alpha: New.
+	* doc/invoke.texi (DEC Alpha Options): Document 'native' value for
+	-march and -mtune options.
+
 2009-03-24  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config/m68k/t-rtems: Add m5329 multilib.

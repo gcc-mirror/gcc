@@ -94,6 +94,14 @@ case ${host} in
 esac
 
 case ${host} in
+  alpha*-*-linux*)
+    case ${target} in
+      alpha*-*-linux*)
+	host_extra_gcc_objs="driver-alpha.o"
+	host_xmake_file="${host_xmake_file} alpha/x-alpha"
+	;;
+    esac
+    ;;
   i[34567]86-*-* \
   | x86_64-*-* )
     case ${target} in
@@ -112,9 +120,6 @@ case ${host} in
       ;;
     esac
     ;;
-esac
-
-case ${host} in
   rs6000-*-* \
   | powerpc*-*-* )
     case ${target} in
