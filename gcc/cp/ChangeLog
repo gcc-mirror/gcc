@@ -1,3 +1,8 @@
+2009-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28274
+	* name-lookup.c (pushdecl_maybe_friend): Check default args later.
+
 2009-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/39495

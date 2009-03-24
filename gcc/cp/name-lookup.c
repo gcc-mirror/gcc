@@ -813,9 +813,6 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	    }
 	}
 
-      if (TREE_CODE (x) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (x))
-	check_default_args (x);
-
       check_template_shadow (x);
 
       /* If this is a function conjured up by the back end, massage it
@@ -826,11 +823,10 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	  SET_DECL_LANGUAGE (x, lang_c);
 	}
 
+      t = x;
       if (DECL_NON_THUNK_FUNCTION_P (x) && ! DECL_FUNCTION_MEMBER_P (x))
 	{
 	  t = push_overloaded_decl (x, PUSH_LOCAL, is_friend);
-	  if (t != x)
-	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 	  if (!namespace_bindings_p ())
 	    /* We do not need to create a binding for this name;
 	       push_overloaded_decl will have already done so if
@@ -842,8 +838,13 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 	  t = push_overloaded_decl (x, PUSH_GLOBAL, is_friend);
 	  if (t == x)
 	    add_decl_to_level (x, NAMESPACE_LEVEL (CP_DECL_CONTEXT (t)));
-	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 	}
+
+      if (TREE_CODE (x) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (x))
+	check_default_args (x);
+
+      if (t != x || DECL_FUNCTION_TEMPLATE_P (t))
+	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
 
       /* If declaring a type as a typedef, copy the type (unless we're
 	 at line 0), and install this TYPE_DECL as the new type's typedef
