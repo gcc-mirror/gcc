@@ -1,3 +1,7 @@
+2009-03-24  Ralf Corsépius <ralf.corsepius@rtems.org>
+
+	* config/m68k/t-rtems: Add m5329 multilib.
+
 2009-03-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
