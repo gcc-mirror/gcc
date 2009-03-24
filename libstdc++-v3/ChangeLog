@@ -1,5 +1,16 @@
 2009-03-22  Mark Mitchell  <mark@codesourcery.com>
 
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/28277.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/28277-3.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/28277-4.cc:
+	Likewise.
+	* testsuite/ext/vstring/inserters_extractors/wchar_t/28277.cc:
+	Likewise.
+
+2009-03-22  Mark Mitchell  <mark@codesourcery.com>
+
 	* testsuite/25_algorithms/search_n/iterator.cc: Update copyright
 	year(s).
 	* testsuite/25_algorithms/heap/moveable.cc: Likewise.
