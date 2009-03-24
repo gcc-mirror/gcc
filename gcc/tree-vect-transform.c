@@ -1099,7 +1099,10 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
   if (!MTAG_P (tag))
     new_type_alias (vect_ptr, tag, DR_REF (dr));
   else
-    set_symbol_mem_tag (vect_ptr, tag);
+    {
+      set_symbol_mem_tag (vect_ptr, tag);
+      mark_sym_for_renaming (tag);
+    }
 
   /** Note: If the dataref is in an inner-loop nested in LOOP, and we are
       vectorizing LOOP (i.e. outer-loop vectorization), we need to create two
