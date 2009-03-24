@@ -1,5 +1,8 @@
 2009-03-24  Hans-Peter Nilsson  <hp@axis.com>
 
+	* config/cris/libgcc.ver: New version-script.
+	* config/cris/t-linux (SHLIB_MAPFILES): Use it.
+
 	* configure.ac <GAS features, nop mnemonic>: Add pattern
 	crisv32-*-* for "nop".
 	<GAS features, Thread-local storage>: Add item for CRIS and

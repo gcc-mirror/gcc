@@ -1,0 +1,7 @@
+GCC_4.3 {
+ __Mul
+ __Div
+ __Udiv
+ __Mod
+ __Umod
+}
