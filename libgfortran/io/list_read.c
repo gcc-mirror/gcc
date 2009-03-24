@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008
+/* Copyright (C) 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist input contributed by Paul Thomas
@@ -1720,15 +1720,15 @@ list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
     }
   else
     {
-      if (dtp->u.p.input_complete)
-	goto cleanup;
-
       if (dtp->u.p.repeat_count > 0)
 	{
 	  if (check_type (dtp, type, kind))
 	    return;
 	  goto set_value;
 	}
+
+      if (dtp->u.p.input_complete)
+	goto cleanup;
 
       if (dtp->u.p.at_eol)
 	finish_separator (dtp);
