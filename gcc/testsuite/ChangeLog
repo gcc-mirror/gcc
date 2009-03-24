@@ -1,3 +1,8 @@
+2009-03-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/39528
+	* gfortran.dg/read_repeat.f90: New test.
+
 2009-03-24  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39529
