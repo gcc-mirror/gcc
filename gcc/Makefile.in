@@ -177,8 +177,8 @@ GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 build/gengtype-lex.o-warn = -Wno-error
 # SYSCALLS.c misses prototypes
 SYSCALLS.c.X-warn = -Wno-strict-prototypes -Wno-error
-# dfp.c contains alias violations
-dfp.o-warn = -Wno-error
+# dfp.c contains many alias violations
+dfp.o-warn = -fno-strict-aliasing
 # mips-tfile.c contains -Wcast-qual warnings.
 mips-tfile.o-warn = -Wno-error
 
