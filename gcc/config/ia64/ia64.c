@@ -7274,6 +7274,8 @@ ia64_set_sched_flags (spec_info_t spec_info)
 	    spec_info->flags |= COUNT_SPEC_IN_CRITICAL_PATH;
 	}
     }
+  else
+    spec_info->mask = 0;
 }
 
 /* If INSN is an appropriate load return its mode.

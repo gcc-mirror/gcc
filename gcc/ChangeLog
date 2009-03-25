@@ -1,3 +1,8 @@
+2009-03-25  Andrey Belevantsev  <abel@ispras.ru>
+
+	* config/ia64/ia64.c (ia64_set_sched_flags): Zero spec_info->mask when
+	neither of haifa/selective schedulers are working.
+
 2009-03-25  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/invoke.texi (Debugging Options): Fix description of
