@@ -1,3 +1,8 @@
+2009-03-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* testsuite/libgomp.c/atomic-5.c: Cleanup cpuid usage.
+	* testsuite/libgomp.c/atomic-6.c: Ditto.
+
 2009-03-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/39495
@@ -25,7 +30,7 @@
 
 2009-01-19  Iain Sandoe  <iain.sandoe@sandoe-acoustics.co.uk>
 
-        * testsuite/lib/libgomp.exp: Add -B option for targets that
+	* testsuite/lib/libgomp.exp: Add -B option for targets that
 	use libgfortran.a%s in their specs.
 
 2009-01-07  Jakub Jelinek  <jakub@redhat.com>
