@@ -5966,7 +5966,9 @@ calc_live_regs (HARD_REG_SET *live_regs_mask)
 	      && crtl->args.info.call_cookie
 	      && reg == PIC_OFFSET_TABLE_REGNUM)
 	     || (df_regs_ever_live_p (reg)
-		 && (!call_really_used_regs[reg]
+		 && ((!call_really_used_regs[reg]
+		      && !(reg != PIC_OFFSET_TABLE_REGNUM
+			   && fixed_regs[reg] && call_used_regs[reg]))
 		     || (trapa_handler && reg == FPSCR_REG && TARGET_FPU_ANY)))
 	     || (crtl->calls_eh_return
 		 && (reg == EH_RETURN_DATA_REGNO (0)
