@@ -3854,9 +3854,17 @@ bfin_optimize_loop (loop_info loop)
       /* Make sure the predecessor is before the loop start label, as required by
 	 the LSETUP instruction.  */
       length = 0;
-      for (insn = BB_END (loop->incoming_src);
-	   insn && insn != loop->start_label;
-	   insn = NEXT_INSN (insn))
+      insn = BB_END (loop->incoming_src);
+      /* If we have to insert the LSETUP before a jump, count that jump in the
+	 length.  */
+      if (VEC_length (edge, loop->incoming) > 1
+	  || !(VEC_last (edge, loop->incoming)->flags & EDGE_FALLTHRU))
+	{
+	  gcc_assert (JUMP_P (insn));
+	  insn = PREV_INSN (insn);
+	}
+
+      for (; insn && insn != loop->start_label; insn = NEXT_INSN (insn))
 	length += length_for_loop (insn);
       
       if (!insn)
