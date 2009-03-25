@@ -1,3 +1,9 @@
+2009-03-25  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/39497
+	* Makefile.in (dfp.o-warn): Use -fno-strict-aliasing instead
+	of -Wno-error.
+
 2009-03-25  Andrey Belevantsev  <abel@ispras.ru>
 
 	* config/ia64/ia64.c (ia64_set_sched_flags): Zero spec_info->mask when
