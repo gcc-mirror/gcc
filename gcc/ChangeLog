@@ -1,3 +1,8 @@
+2009-03-26  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_optimize_loop): If the LSETUP goes before
+	a jump insn, count that jump in the distance to the loop start.
+
 2009-03-25  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/39523
