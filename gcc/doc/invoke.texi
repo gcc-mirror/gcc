@@ -4408,11 +4408,11 @@ This option works only with DWARF 2.
 @item -fno-merge-debug-strings
 @opindex fmerge-debug-strings
 @opindex fno-merge-debug-strings
-Direct the linker to merge together strings which are identical in
-different object files.  This is not supported by all assemblers or
-linker.  This decreases the size of the debug information in the
-output file at the cost of increasing link processing time.  This is
-on by default.
+Direct the linker to not merge together strings in the debugging
+information which are identical in different object files.  Merging is
+not supported by all assemblers or linkers.  Merging decreases the size
+of the debug information in the output file at the cost of increasing
+link processing time.  Merging is enabled by default.
 
 @item -fdebug-prefix-map=@var{old}=@var{new}
 @opindex fdebug-prefix-map
