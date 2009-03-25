@@ -1,3 +1,16 @@
+2009-03-25  Kai Tietz  <kai.tietz@onevision.com>
+
+	PR/39518
+	* doc/invoke.texi (-mconsole): New.
+	(-mcygwin): New.
+	(-mno-cygwin): New.
+	(-mdll): New.
+	(-mnop-fun-dllimport): New.
+	(-mthread): New.
+	(-mwin32): New.
+	(-mwindows): New.
+	(sub section "i386 and x86-64 Windows Options"): New.
+
 2009-03-25  Ralf Corsépius <ralf.corsepius@rtems.org>
 
 	* config/arm/rtems-elf.h: Remove LINK_GCC_C_SEQUENCE_SPEC.
