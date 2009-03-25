@@ -1,3 +1,7 @@
+2009-03-25  Erven Rohou <erven.rohou@inria.fr>
+
+        * MAINTAINERS:  Update my email address.
+
 2009-03-18  Tom Tromey  <tromey@redhat.com>
 
         * configure: Rebuild.
