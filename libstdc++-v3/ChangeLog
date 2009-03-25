@@ -1,7 +1,15 @@
+2009-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h (_Fwd_list_node_base<>::
+	_M_transfer_after, _M_reverse_after): Move out of line...
+	* include/bits/forward_list.tcc: ... here.
+	(forward_list<>::reverse): Move inline...
+	* include/bits/forward_list.h: ... here; minor cosmetic changes.
+
 2009-03-22  Mark Mitchell  <mark@codesourcery.com>
 
-	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/28277.cc:
-	Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/
+	28277.cc: Likewise.
 	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/28277-3.cc:
 	Likewise.
 	* testsuite/27_io/basic_ostream/inserters_character/wchar_t/28277-4.cc:

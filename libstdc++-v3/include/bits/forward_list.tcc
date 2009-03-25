@@ -1,6 +1,6 @@
 // <forward_list.tcc> -*- C++ -*-
 
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,6 +35,50 @@
 #define _FORWARD_LIST_TCC 1
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
+
+  template<typename _Alloc>
+    void
+    _Fwd_list_node_base<_Alloc>::
+    _M_transfer_after(_Pointer __bbegin)
+    {
+      _Pointer __bend = __bbegin;
+      while (__bend && __bend->_M_next)
+	__bend = __bend->_M_next;
+      _M_transfer_after(__bbegin, __bend);
+    }
+
+  template<typename _Alloc>
+    void
+    _Fwd_list_node_base<_Alloc>::
+    _M_transfer_after(_Pointer __bbegin, _Pointer __bend)
+    {
+      _Pointer __keep = __bbegin->_M_next;
+      if (__bend)
+	{
+	  __bbegin->_M_next = __bend->_M_next;
+	  __bend->_M_next = _M_next;
+	}
+      else
+	__bbegin->_M_next = 0;
+      _M_next = __keep;
+    }
+ 
+  template<typename _Alloc>
+    void
+    _Fwd_list_node_base<_Alloc>::
+    _M_reverse_after()
+    {
+      _Pointer __tail = _M_next;
+      if (!__tail)
+	return;
+      while (_Pointer __temp = __tail->_M_next)
+	{
+	  _Pointer __keep = _M_next;
+	  _M_next = __temp;
+	  __tail->_M_next = __temp->_M_next;
+	  _M_next->_M_next = __keep;
+	}
+    }
 
  /**
   *  @brief  Sort the singly linked list starting after this node.
@@ -410,12 +454,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
             __list._M_impl._M_head._M_next = 0;
           }
       }
-
-  template<typename _Tp, typename _Alloc>
-    void
-    forward_list<_Tp, _Alloc>::
-    reverse()
-    { this->_M_impl._M_head._M_reverse_after(); }
 
   template<typename _Tp, typename _Alloc>
     bool

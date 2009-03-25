@@ -62,52 +62,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         ::other::pointer        _Pointer;
       typedef typename _Alloc::template rebind<_Fwd_list_node_base<_Alloc> >
         ::other::const_pointer  _Const_pointer;
-  
+
       _Pointer _M_next;
-  
+
       _Fwd_list_node_base() : _M_next(0) { }
-  
+
       static void
       swap(_Fwd_list_node_base& __x, _Fwd_list_node_base& __y)
       { std::swap(__x._M_next, __y._M_next); }
-  
+
       void
-      _M_transfer_after(_Pointer __bbegin, _Pointer __bend)
-      { 
-        _Pointer __keep = __bbegin->_M_next;
-        if (__bend)
-          {
-            __bbegin->_M_next = __bend->_M_next;
-            __bend->_M_next = this->_M_next;
-          }
-        else
-          __bbegin->_M_next = 0;
-        this->_M_next = __keep;
-      }
-  
+      _M_transfer_after(_Pointer __bbegin);
+
       void
-      _M_transfer_after(_Pointer __bbegin)
-      {
-        _Pointer __bend = __bbegin;
-        while (__bend && __bend->_M_next)
-          __bend = __bend->_M_next;
-        _M_transfer_after(__bbegin, __bend);
-      }
-  
+      _M_transfer_after(_Pointer __bbegin, _Pointer __bend);
+
       void
-      _M_reverse_after()
-      { 
-        _Pointer __tail = this->_M_next;
-        if (!__tail)
-          return;
-        while (_Pointer __temp = __tail->_M_next)
-          {
-            _Pointer __keep = this->_M_next;
-            this->_M_next = __temp;
-            __tail->_M_next = __temp->_M_next;
-            this->_M_next->_M_next = __keep;
-          }
-      }    
+      _M_reverse_after();
     };
 
   /**
@@ -159,16 +130,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       reference
       operator*() const
-      { return __static_pointer_cast<_Node*>(this->_M_node)->_M_value; }
+      { return __static_pointer_cast<_Node*>(_M_node)->_M_value; }
 
       pointer
       operator->() const
-      { return &__static_pointer_cast<_Node*>(this->_M_node)->_M_value; }
+      { return &__static_pointer_cast<_Node*>(_M_node)->_M_value; }
 
       _Self&
       operator++()
       {
-        this->_M_node = this->_M_node->_M_next;
+        _M_node = _M_node->_M_next;
         return *this;
       }
 
@@ -176,23 +147,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator++(int)
       {
         _Self __tmp(*this);
-        this->_M_node = this->_M_node->_M_next;
+        _M_node = _M_node->_M_next;
         return __tmp;
       }
 
       bool
       operator==(const _Self& __x) const
-      { return this->_M_node == __x._M_node; }
+      { return _M_node == __x._M_node; }
 
       bool
       operator!=(const _Self& __x) const
-      { return this->_M_node != __x._M_node; }
+      { return _M_node != __x._M_node; }
 
       _Self
       _M_next() const
       {
         if (_M_node)
-          return _Fwd_list_iterator(this->_M_node->_M_next);
+          return _Fwd_list_iterator(_M_node->_M_next);
         else
           return _Fwd_list_iterator(0);
       }
@@ -230,16 +201,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
       reference
       operator*() const
-      { return __static_pointer_cast<_Node*>(this->_M_node)->_M_value; }
+      { return __static_pointer_cast<_Node*>(_M_node)->_M_value; }
 
       pointer
       operator->() const
-      { return &__static_pointer_cast<_Node*>(this->_M_node)->_M_value; }
+      { return &__static_pointer_cast<_Node*>(_M_node)->_M_value; }
 
       _Self&
       operator++()
       {
-        this->_M_node = this->_M_node->_M_next;
+        _M_node = _M_node->_M_next;
         return *this;
       }
 
@@ -247,23 +218,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       operator++(int)
       {
         _Self __tmp(*this);
-        this->_M_node = this->_M_node->_M_next;
+        _M_node = _M_node->_M_next;
         return __tmp;
       }
 
       bool
       operator==(const _Self& __x) const
-      { return this->_M_node == __x._M_node; }
+      { return _M_node == __x._M_node; }
 
       bool
       operator!=(const _Self& __x) const
-      { return this->_M_node != __x._M_node; }
+      { return _M_node != __x._M_node; }
 
       _Self
       _M_next() const
       {
         if (this->_M_node)
-          return _Fwd_list_const_iterator(this->_M_node->_M_next);
+          return _Fwd_list_const_iterator(_M_node->_M_next);
         else
           return _Fwd_list_const_iterator(0);
       }
@@ -777,7 +748,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       reference
       front()
       {
-        _Node* __front = __static_pointer_cast<_Node*>(this->_M_impl._M_head._M_next);
+        _Node* __front =
+	  __static_pointer_cast<_Node*>(this->_M_impl._M_head._M_next);
         return __front->_M_value;
       }
 
@@ -1229,7 +1201,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Reverse the order of elements in the list in linear time.
        */
       void
-      reverse();
+      reverse()
+      { this->_M_impl._M_head._M_reverse_after(); }
 
     private:
       template<typename _Integer>
@@ -1328,7 +1301,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp, typename _Alloc>
     inline void 
     swap(forward_list<_Tp, _Alloc>& __lx,
-         forward_list<_Tp, _Alloc>&& __ly)
+	 forward_list<_Tp, _Alloc>&& __ly)
     { __lx.swap(__ly); }
 
 _GLIBCXX_END_NAMESPACE // namespace std
