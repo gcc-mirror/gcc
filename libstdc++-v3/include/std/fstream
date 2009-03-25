@@ -45,8 +45,11 @@
 #include <istream>
 #include <ostream>
 #include <bits/codecvt.h>
-#include <cstdio>             // For BUFSIZ     
+#include <cstdio>             // For BUFSIZ
 #include <bits/basic_file.h>  // For __basic_file, __c_lock
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+#include <string>             // For std::string overloads.
+#endif
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
@@ -59,7 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  external disk file, and maintains a joint file position for both
    *  sequences.  Many of its semantics are described in terms of similar
    *  behavior in the Standard C Library's @c FILE streams.
-  */
+   */
   // Requirements on traits_type, specific to this class:
   // traits_type::pos_type must be fpos<traits_type::state_type>
   // traits_type::off_type must be streamoff
@@ -114,19 +117,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Actual size of internal buffer. This number is equal to the size
        *  of the put area + 1 position, reserved for the overflow char of
        *  a full area.
-      */
+       */
       size_t			_M_buf_size;
 
       // Set iff _M_buf is allocated memory from _M_allocate_internal_buffer.
       bool			_M_buf_allocated;
 
       /**
-       *  _M_reading == false && _M_writing == false for 'uncommitted' mode;  
+       *  _M_reading == false && _M_writing == false for 'uncommitted' mode;
        *  _M_reading == true for 'read' mode;
        *  _M_writing == true for 'write' mode;
        *
        *  NB: _M_reading == true && _M_writing == true is unused.
-      */ 
+       */
       bool                      _M_reading;
       bool                      _M_writing;
 
@@ -135,11 +138,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Necessary bits for putback buffer management.
        *
        *  @note pbacks of over one character are not currently supported.
-      */
-      char_type			_M_pback; 
+       */
+      char_type			_M_pback;
       char_type*		_M_pback_cur_save;
       char_type*		_M_pback_end_save;
-      bool			_M_pback_init; 
+      bool			_M_pback_init;
       //@}
 
       // Cached codecvt facet.
@@ -149,19 +152,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Buffer for external characters. Used for input when
        *  codecvt::always_noconv() == false. When valid, this corresponds
        *  to eback().
-      */ 
+       */
       char*			_M_ext_buf;
 
       /**
        *  Size of buffer held by _M_ext_buf.
-      */ 
+       */
       streamsize		_M_ext_buf_size;
 
       /**
        *  Pointers into the buffer held by _M_ext_buf that delimit a
        *  subsequence of bytes that have been read but not yet converted.
        *  When valid, _M_ext_next corresponds to egptr().
-      */ 
+       */
       const char*		_M_ext_next;
       char*			_M_ext_end;
 
@@ -169,7 +172,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Initializes pback buffers, and moves normal buffers to safety.
        *  Assumptions:
        *  _M_in_cur has already been moved back
-      */
+       */
       void
       _M_create_pback()
       {
@@ -186,7 +189,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Deactivates pback buffer contents, and restores normal buffer.
        *  Assumptions:
        *  The pback buffer has only moved forward.
-      */ 
+       */
       void
       _M_destroy_pback() throw()
       {
@@ -206,12 +209,12 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *
        *  The default constructor initializes the parent class using its
        *  own default ctor.
-      */
+       */
       basic_filebuf();
 
       /**
        *  @brief  The destructor closes the file first.
-      */
+       */
       virtual
       ~basic_filebuf()
       { this->close(); }
@@ -219,7 +222,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // Members:
       /**
        *  @brief  Returns true if the external file is open.
-      */
+       */
       bool
       is_open() const throw()
       { return _M_file.is_open(); }
@@ -266,6 +269,18 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       __filebuf_type*
       open(const char* __s, ios_base::openmode __mode);
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Opens an external file.
+       *  @param  s  The name of the file.
+       *  @param  mode  The open mode flags.
+       *  @return  @c this on success, NULL on failure
+       */
+      __filebuf_type*
+      open(const std::string& __s, ios_base::openmode __mode)
+      { return open(__s.c_str(), __mode); }
+#endif
+
       /**
        *  @brief  Closes the currently associated file.
        *  @return  @c this on success, NULL on failure
@@ -276,7 +291,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  all the characters.  The file is then closed.
        *
        *  If any operations fail, this function also fails.
-      */
+       */
       __filebuf_type*
       close();
 
@@ -328,7 +343,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  buffer; see
        *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt11ch25s02.html
        *  for more.
-      */
+       */
       virtual __streambuf_type*
       setbuf(char_type* __s, streamsize __n);
 
@@ -367,11 +382,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *   __off == egptr() - eback() upon underflow/uflow ('read' mode);
        *   __off == 0 upon overflow ('write' mode);
        *   __off == -1 upon open, setbuf, seekoff/pos ('uncommitted' mode).
-       * 
+       *
        *  NB: epptr() - pbase() == _M_buf_size - 1, since _M_buf_size
        *  reflects the actual allocated memory and the last cell is reserved
        *  for the overflow char of a full put area.
-      */
+       */
       void
       _M_set_buffer(streamsize __off)
       {
@@ -399,7 +414,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  functions from std::basic_istream.  To control the associated
    *  sequence, an instance of std::basic_filebuf is used, which this page
    *  refers to as @c sb.
-  */
+   */
   template<typename _CharT, typename _Traits>
     class basic_ifstream : public basic_istream<_CharT, _Traits>
     {
@@ -426,7 +441,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Initializes @c sb using its default constructor, and passes
        *  @c &sb to the base class initializer.  Does not open any files
        *  (you haven't given it a filename to open).
-      */
+       */
       basic_ifstream() : __istream_type(), _M_filebuf()
       { this->init(&_M_filebuf); }
 
@@ -439,7 +454,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.
-      */
+       */
       explicit
       basic_ifstream(const char* __s, ios_base::openmode __mode = ios_base::in)
       : __istream_type(), _M_filebuf()
@@ -448,12 +463,30 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	this->open(__s, __mode);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Create an input file stream.
+       *  @param  s  std::string specifying the filename.
+       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *
+       *  @c ios_base::in is automatically included in @a mode.
+       */
+      explicit
+      basic_ifstream(const std::string& __s,
+		     ios_base::openmode __mode = ios_base::in)
+      : __istream_type(), _M_filebuf()
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
+      }
+#endif
+
       /**
        *  @brief  The destructor does nothing.
        *
        *  The file is closed by the filebuf object, not the formatting
        *  stream.
-      */
+       */
       ~basic_ifstream()
       { }
 
@@ -463,7 +496,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @return  The current basic_filebuf buffer.
        *
        *  This hides both signatures of std::basic_ios::rdbuf().
-      */
+       */
       __filebuf_type*
       rdbuf() const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
@@ -471,7 +504,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Wrapper to test for an open file.
        *  @return  @c rdbuf()->is_open()
-      */
+       */
       bool
       is_open()
       { return _M_filebuf.is_open(); }
@@ -492,7 +525,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.
-      */
+       */
       void
       open(const char* __s, ios_base::openmode __mode = ios_base::in)
       {
@@ -504,12 +537,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  this->clear();
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Opens an external file.
+       *  @param  s  The name of the file.
+       *  @param  mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(s,mode|in).  If that function
+       *  fails, @c failbit is set in the stream's error state.
+       */
+      void
+      open(const std::string& __s, ios_base::openmode __mode = ios_base::in)
+      {
+	if (!_M_filebuf.open(__s, __mode | ios_base::in))
+	  this->setstate(ios_base::failbit);
+	else
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 409. Closing an fstream should clear error state
+	  this->clear();
+      }
+#endif
+
       /**
        *  @brief  Close the file.
        *
        *  Calls @c std::basic_filebuf::close().  If that function
        *  fails, @c failbit is set in the stream's error state.
-      */
+       */
       void
       close()
       {
@@ -528,7 +582,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  functions from std::basic_ostream.  To control the associated
    *  sequence, an instance of std::basic_filebuf is used, which this page
    *  refers to as @c sb.
-  */
+   */
   template<typename _CharT, typename _Traits>
     class basic_ofstream : public basic_ostream<_CharT,_Traits>
     {
@@ -555,7 +609,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Initializes @c sb using its default constructor, and passes
        *  @c &sb to the base class initializer.  Does not open any files
        *  (you haven't given it a filename to open).
-      */
+       */
       basic_ofstream(): __ostream_type(), _M_filebuf()
       { this->init(&_M_filebuf); }
 
@@ -569,7 +623,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.
-      */
+       */
       explicit
       basic_ofstream(const char* __s,
 		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
@@ -579,12 +633,31 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	this->open(__s, __mode);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Create an output file stream.
+       *  @param  s  std::string specifying the filename.
+       *  @param  mode  Open file in specified mode (see std::ios_base).
+       *
+       *  @c ios_base::out|ios_base::trunc is automatically included in
+       *  @a mode.
+       */
+      explicit
+      basic_ofstream(const std::string& __s,
+		     ios_base::openmode __mode = ios_base::out|ios_base::trunc)
+      : __ostream_type(), _M_filebuf()
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
+      }
+#endif
+
       /**
        *  @brief  The destructor does nothing.
        *
        *  The file is closed by the filebuf object, not the formatting
        *  stream.
-      */
+       */
       ~basic_ofstream()
       { }
 
@@ -594,7 +667,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @return  The current basic_filebuf buffer.
        *
        *  This hides both signatures of std::basic_ios::rdbuf().
-      */
+       */
       __filebuf_type*
       rdbuf() const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
@@ -602,7 +675,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Wrapper to test for an open file.
        *  @return  @c rdbuf()->is_open()
-      */
+       */
       bool
       is_open()
       { return _M_filebuf.is_open(); }
@@ -623,7 +696,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.
-      */
+       */
       void
       open(const char* __s,
 	   ios_base::openmode __mode = ios_base::out | ios_base::trunc)
@@ -636,12 +709,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  this->clear();
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Opens an external file.
+       *  @param  s  The name of the file.
+       *  @param  mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(s,mode|out|trunc).  If that
+       *  function fails, @c failbit is set in the stream's error state.
+       */
+      void
+      open(const std::string& __s,
+	   ios_base::openmode __mode = ios_base::out | ios_base::trunc)
+      {
+	if (!_M_filebuf.open(__s, __mode | ios_base::out))
+	  this->setstate(ios_base::failbit);
+	else
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 409. Closing an fstream should clear error state
+	  this->clear();
+      }
+#endif
+
       /**
        *  @brief  Close the file.
        *
        *  Calls @c std::basic_filebuf::close().  If that function
        *  fails, @c failbit is set in the stream's error state.
-      */
+       */
       void
       close()
       {
@@ -660,7 +755,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *  the inherited functions from std::basic_iostream.  To control the
    *  associated sequence, an instance of std::basic_filebuf is used, which
    *  this page refers to as @c sb.
-  */
+   */
   template<typename _CharT, typename _Traits>
     class basic_fstream : public basic_iostream<_CharT, _Traits>
     {
@@ -688,7 +783,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  Initializes @c sb using its default constructor, and passes
        *  @c &sb to the base class initializer.  Does not open any files
        *  (you haven't given it a filename to open).
-      */
+       */
       basic_fstream()
       : __iostream_type(), _M_filebuf()
       { this->init(&_M_filebuf); }
@@ -700,7 +795,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.
-      */
+       */
       explicit
       basic_fstream(const char* __s,
 		    ios_base::openmode __mode = ios_base::in | ios_base::out)
@@ -710,12 +805,28 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	this->open(__s, __mode);
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Create an input/output file stream.
+       *  @param  s  Null terminated string specifying the filename.
+       *  @param  mode  Open file in specified mode (see std::ios_base).
+       */
+      explicit
+      basic_fstream(const std::string& __s,
+		    ios_base::openmode __mode = ios_base::in | ios_base::out)
+      : __iostream_type(NULL), _M_filebuf()
+      {
+	this->init(&_M_filebuf);
+	this->open(__s, __mode);
+      }
+#endif
+
       /**
        *  @brief  The destructor does nothing.
        *
        *  The file is closed by the filebuf object, not the formatting
        *  stream.
-      */
+       */
       ~basic_fstream()
       { }
 
@@ -725,7 +836,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  @return  The current basic_filebuf buffer.
        *
        *  This hides both signatures of std::basic_ios::rdbuf().
-      */
+       */
       __filebuf_type*
       rdbuf() const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
@@ -733,7 +844,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       /**
        *  @brief  Wrapper to test for an open file.
        *  @return  @c rdbuf()->is_open()
-      */
+       */
       bool
       is_open()
       { return _M_filebuf.is_open(); }
@@ -754,7 +865,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *
        *  Tip:  When using std::string to hold the filename, you must use
        *  .c_str() before passing it to this constructor.
-      */
+       */
       void
       open(const char* __s,
 	   ios_base::openmode __mode = ios_base::in | ios_base::out)
@@ -767,12 +878,34 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  this->clear();
       }
 
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      /**
+       *  @brief  Opens an external file.
+       *  @param  s  The name of the file.
+       *  @param  mode  The open mode flags.
+       *
+       *  Calls @c std::basic_filebuf::open(s,mode).  If that
+       *  function fails, @c failbit is set in the stream's error state.
+       */
+      void
+      open(const std::string& __s,
+	   ios_base::openmode __mode = ios_base::in | ios_base::out)
+      {
+	if (!_M_filebuf.open(__s, __mode))
+	  this->setstate(ios_base::failbit);
+	else
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 409. Closing an fstream should clear error state
+	  this->clear();
+      }
+#endif
+
       /**
        *  @brief  Close the file.
        *
        *  Calls @c std::basic_filebuf::close().  If that function
        *  fails, @c failbit is set in the stream's error state.
-      */
+       */
       void
       close()
       {

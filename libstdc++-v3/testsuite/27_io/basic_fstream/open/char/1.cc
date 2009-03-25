@@ -23,6 +23,10 @@
 
 void test01()
 {
-  const std::string name = "ofstream_name.txt";
-  std::ofstream ofs(name);
+  std::fstream fs;
+
+  const std::string name = "fstream_name.txt";
+  fs.open(name);
+
+  fs.close();
 }
