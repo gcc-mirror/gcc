@@ -1,3 +1,12 @@
+2009-03-26  Ben Elliston  <bje@au.ibm.com>
+
+	Backport from mainline:
+	2009-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39175
+	* gcc.dg/visibility-20.c: New test.
+	* g++.dg/ext/visibility/visibility-11.C: New test.
+
 2009-03-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:

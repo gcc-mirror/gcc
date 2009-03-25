@@ -1,6 +1,7 @@
 /* Subroutines shared by all languages that are variants of C.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -5768,8 +5769,18 @@ c_determine_visibility (tree decl)
      visibility_specified depending on #pragma GCC visibility.  */
   if (!DECL_VISIBILITY_SPECIFIED (decl))
     {
-      DECL_VISIBILITY (decl) = default_visibility;
-      DECL_VISIBILITY_SPECIFIED (decl) = visibility_options.inpragma;
+      if (visibility_options.inpragma
+	  || DECL_VISIBILITY (decl) != default_visibility)
+	{
+	  DECL_VISIBILITY (decl) = default_visibility;
+	  DECL_VISIBILITY_SPECIFIED (decl) = visibility_options.inpragma;
+	  /* If visibility changed and DECL already has DECL_RTL, ensure
+	     symbol flags are updated.  */
+	  if (((TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+	       || TREE_CODE (decl) == FUNCTION_DECL)
+	      && DECL_RTL_SET_P (decl))
+	    make_decl_rtl (decl);
+	}
     }
   return false;
 }

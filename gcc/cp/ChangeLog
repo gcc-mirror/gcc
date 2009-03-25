@@ -1,3 +1,13 @@
+2009-03-26  Ben Elliston  <bje@au.ibm.com>
+
+	Backport from mainline:
+	2009-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39175
+	* decl2.c (determine_visibility): If visibility changed and
+	DECL_RTL has been already set, call make_decl_rtl to update symbol
+	flags.
+
 2009-03-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

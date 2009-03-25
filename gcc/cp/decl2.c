@@ -1,6 +1,6 @@
 /* Process declarations and variables for C++ compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -1887,6 +1887,8 @@ determine_visibility (tree decl)
 {
   tree class_type = NULL_TREE;
   bool use_template;
+  bool orig_visibility_specified;
+  enum symbol_visibility orig_visibility;
 
   /* Remember that all decls get VISIBILITY_DEFAULT when built.  */
 
@@ -1898,6 +1900,9 @@ determine_visibility (tree decl)
      the underlying function.  That should be set up in
      maybe_clone_body.  */
   gcc_assert (!DECL_CLONED_FUNCTION_P (decl));
+
+  orig_visibility_specified = DECL_VISIBILITY_SPECIFIED (decl);
+  orig_visibility = DECL_VISIBILITY (decl);
 
   if (TREE_CODE (decl) == TYPE_DECL)
     {
@@ -2019,6 +2024,15 @@ determine_visibility (tree decl)
 	  || ! DECL_VISIBILITY_SPECIFIED (decl))
 	constrain_visibility (decl, tvis);
     }
+
+  /* If visibility changed and DECL already has DECL_RTL, ensure
+     symbol flags are updated.  */
+  if ((DECL_VISIBILITY (decl) != orig_visibility
+       || DECL_VISIBILITY_SPECIFIED (decl) != orig_visibility_specified)
+      && ((TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
+	  || TREE_CODE (decl) == FUNCTION_DECL)
+      && DECL_RTL_SET_P (decl))
+    make_decl_rtl (decl);
 }
 
 /* By default, static data members and function members receive
