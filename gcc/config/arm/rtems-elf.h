@@ -43,4 +43,3 @@
  *  with how this used to be defined.
  */
 #undef LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC "%G %L"
