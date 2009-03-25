@@ -3,7 +3,7 @@
 /* { dg-options "-O2 -mcx16" { target { { i?86-*-* x86_64-*-* } && lp64 } } } */
 
 #ifdef __x86_64__
-# include "../../../gcc/config/i386/cpuid.h"
+# include "cpuid.h"
 #endif
 
 extern void abort (void);
@@ -31,10 +31,11 @@ main (void)
   if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
     return 0;
 
-  if (ecx & bit_CMPXCHG16B)
-    do_test ();
-#else
-  do_test ();
+  if (!(ecx & bit_CMPXCHG16B))
+    return 0;
 #endif
+
+  do_test ();
+
   return 0;
 }
