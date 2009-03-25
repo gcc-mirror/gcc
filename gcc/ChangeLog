@@ -1,3 +1,9 @@
+2009-03-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/39523
+	* config/sh/sh.c (calc_live_regs): Fix condition for global
+	registers except PIC_OFFSET_TABLE_REGNUM.
+
 2009-03-25  Kai Tietz  <kai.tietz@onevision.com>
 
 	PR/39518
