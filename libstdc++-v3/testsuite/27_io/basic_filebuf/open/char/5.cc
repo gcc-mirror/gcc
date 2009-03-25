@@ -21,8 +21,11 @@
 
 #include <fstream>
 
+// Test member functions.
 void test01()
 {
-  const std::string name = "ofstream_name.txt";
-  std::ofstream ofs(name);
+  std::filebuf fb;
+
+  const std::string name = "filebuf_name.txt";
+  fb.open(name, std::ios_base::in | std::ios_base::ate);
 }
