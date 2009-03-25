@@ -13,8 +13,8 @@
 	* testsuite/27_io/basic_ofstream/cons/char/2.cc: Likewise.
 	* testsuite/27_io/basic_fstream/open/char/1.cc: Likewise.
 	* testsuite/27_io/basic_fstream/cons/char/1.cc: Likewise.
-	* testsuite/27_io/basic_ifstream/open/char/1.cc: Likewise.
-	* testsuite/27_io/basic_ifstream/cons/char/1.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/open/char/2.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/cons/char/2.cc: Likewise.
 	* testsuite/27_io/basic_filebuf/open/char/5.cc: Likewise.
 
 2009-03-25  Paolo Carlini  <paolo.carlini@oracle.com>
