@@ -1,3 +1,7 @@
+2009-03-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/inline-33.c: Fix when pic.
+
 2009-03-25  Alexander Monakov  <amonakov@ispras.ru>
 
         * gcc.target/ia64/20090324-1.c: New test.
