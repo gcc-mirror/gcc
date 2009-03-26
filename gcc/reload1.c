@@ -4367,29 +4367,39 @@ reload_as_needed (int live_known)
 		      SET_REGNO_REG_SET (&reg_has_output_reload,
 					 REGNO (XEXP (in_reg, 0)));
 		    }
-		  else if ((code == PRE_INC || code == PRE_DEC
-			    || code == POST_INC || code == POST_DEC))
+		  else if (code == PRE_INC || code == PRE_DEC
+			   || code == POST_INC || code == POST_DEC)
 		    {
-		      int in_hard_regno;
 		      int in_regno = REGNO (XEXP (in_reg, 0));
 
 		      if (reg_last_reload_reg[in_regno] != NULL_RTX)
 			{
+			  int in_hard_regno;
+			  bool forget_p = true;
+
 			  in_hard_regno = REGNO (reg_last_reload_reg[in_regno]);
-			  gcc_assert (TEST_HARD_REG_BIT (reg_reloaded_valid,
-							 in_hard_regno));
-			  for (x = old_prev ? NEXT_INSN (old_prev) : insn;
-			       x != old_next;
-			       x = NEXT_INSN (x))
-			    if (x == reg_reloaded_insn[in_hard_regno])
-			      break;
+			  if (TEST_HARD_REG_BIT (reg_reloaded_valid,
+						 in_hard_regno))
+			    {
+			      for (x = old_prev ? NEXT_INSN (old_prev) : insn;
+				   x != old_next;
+				   x = NEXT_INSN (x))
+				if (x == reg_reloaded_insn[in_hard_regno])
+				  {
+				    forget_p = false;
+				    break;
+				  }
+			    }
 			  /* If for some reasons, we didn't set up
 			     reg_last_reload_reg in this insn,
 			     invalidate inheritance from previous
 			     insns for the incremented/decremented
 			     register.  Such registers will be not in
-			     reg_has_output_reload.  */
-			  if (x == old_next)
+			     reg_has_output_reload.  Invalidate it
+			     also if the corresponding element in
+			     reg_reloaded_insn is also
+			     invalidated.  */
+			  if (forget_p)
 			    forget_old_reloads_1 (XEXP (in_reg, 0),
 						  NULL_RTX, NULL);
 			}

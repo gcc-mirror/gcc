@@ -1,3 +1,9 @@
+2009-03-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/39522
+	* reload1.c (reload_as_needed): Invalidate reg_last_reload_reg too
+	when reg_reloaded_valid is set.
+
 2009-03-26  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/divv2df3.c: New file.
