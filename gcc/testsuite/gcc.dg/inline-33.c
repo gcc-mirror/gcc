@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-optimized"  } */
+/* { dg-options "-O3 -fdump-tree-optimized -fpie" { target { ! nonpic } } } */
 
 int i;
 
