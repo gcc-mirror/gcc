@@ -81,6 +81,8 @@ struct impl_files
 
 static struct impl_files *impl_file_chain;
 
+/* True if we saw "#pragma GCC java_exceptions".  */
+bool pragma_java_exceptions;
 
 void
 cxx_finish (void)
@@ -430,6 +432,7 @@ handle_pragma_java_exceptions (cpp_reader* dfile ATTRIBUTE_UNUSED)
     warning (0, "junk at end of #pragma GCC java_exceptions");
 
   choose_personality_routine (lang_java);
+  pragma_java_exceptions = true;
 }
 
 /* Issue an error message indicating that the lookup of NAME (an
