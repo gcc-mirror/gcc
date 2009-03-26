@@ -1,3 +1,9 @@
+2009-03-26  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/divv2df3.c: New file.
+	* config/spu/t-spu-elf (LIB2FUNCS_STATIC_EXTRA): Add it.
+	(DPBIT_FUNCS): Filter out _div_df.
+
 2009-03-26  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.c (bfin_optimize_loop): If the LSETUP goes before
