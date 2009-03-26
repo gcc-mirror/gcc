@@ -745,13 +745,21 @@ flag_instrument_functions_exclude_p (tree fndecl)
 void
 warn_if_disallowed_function_p (const_tree exp)
 {
-  if (TREE_CODE(exp) == CALL_EXPR
+  if (TREE_CODE (exp) == CALL_EXPR
       && VEC_length (char_p, warning_disallowed_functions) > 0)
     {
       int i;
       char *s;
-      const char *fnname =
-          IDENTIFIER_POINTER (DECL_NAME (get_callee_fndecl (exp)));
+      tree fndecl = get_callee_fndecl (exp);
+      const char *fnname;
+
+      if (fndecl == NULL)
+	return;
+
+      fnname = get_name (fndecl);
+      if (fnname == NULL)
+	return;
+
       for (i = 0; VEC_iterate (char_p, warning_disallowed_functions, i, s);
            ++i)
         {
