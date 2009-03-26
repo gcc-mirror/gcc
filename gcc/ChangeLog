@@ -1,3 +1,8 @@
+2009-03-26  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+        * doc/invoke.texi (i386 and x86-64 Windows Options): Fix texinfo
+        markup glitch.
+
 2009-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/39554

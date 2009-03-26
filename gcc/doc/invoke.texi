@@ -15534,7 +15534,7 @@ instructing the linker to set the PE header subsystem type
 appropriately.
 @end table
 
-See also under @xref{i386 and x86-64 Options} for standard options.
+See also under @ref{i386 and x86-64 Options} for standard options.
 
 @node Xstormy16 Options
 @subsection Xstormy16 Options
