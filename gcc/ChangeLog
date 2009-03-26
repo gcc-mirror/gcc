@@ -1,3 +1,9 @@
+2009-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/39554
+	* opts.c (warn_if_disallowed_function_p): Don't assume
+	get_callee_fndecl must return non-NULL.
+
 2009-03-26  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/39522
