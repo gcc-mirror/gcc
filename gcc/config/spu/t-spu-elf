@@ -29,6 +29,10 @@ TARGET_LIBGCC2_CFLAGS = -fPIC -mwarn-reloc -D__IN_LIBGCC2
 # own versions below.
 LIB2FUNCS_EXCLUDE = _floatdisf _floatundisf
 
+# We provide our own version of __divdf3 that performs better and has
+# better support for non-default rounding modes.
+DPBIT_FUNCS := $(filter-out _div_df, $(DPBIT_FUNCS))
+
 LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/spu/float_unssidf.c \
 			 $(srcdir)/config/spu/float_unsdidf.c \
 			 $(srcdir)/config/spu/float_unsdisf.c \
@@ -39,7 +43,8 @@ LIB2FUNCS_STATIC_EXTRA = $(srcdir)/config/spu/float_unssidf.c \
 			 $(srcdir)/config/spu/mfc_multi_tag_reserve.c \
 			 $(srcdir)/config/spu/mfc_multi_tag_release.c \
 			 $(srcdir)/config/spu/multi3.c \
-			 $(srcdir)/config/spu/divmodti4.c
+			 $(srcdir)/config/spu/divmodti4.c \
+			 $(srcdir)/config/spu/divv2df3.c
 
 LIB2ADDEH = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde.c \
    $(srcdir)/unwind-sjlj.c $(srcdir)/unwind-c.c
