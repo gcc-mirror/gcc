@@ -158,7 +158,7 @@ not recommended.
 
 @end deftypefn
 
-@c make-temp-file.c:87
+@c make-temp-file.c:95
 @deftypefn Replacement char* choose_tmpdir ()
 
 Returns a pointer to a directory path suitable for creating temporary
@@ -602,7 +602,7 @@ relative prefix can be found, return @code{NULL}.
 
 @end deftypefn
 
-@c make-temp-file.c:137
+@c make-temp-file.c:163
 @deftypefn Replacement char* make_temp_file (const char *@var{suffix})
 
 Return a temporary file name (as a string) or @code{NULL} if unable to
@@ -640,6 +640,15 @@ as if comparing unsigned char arrays.
 
 Copies @var{length} bytes from memory region @var{in} to region
 @var{out}.  Returns a pointer to @var{out}.
+
+@end deftypefn
+
+@c memmem.c:20
+@deftypefn Supplemental void* memmem (const void *@var{haystack}, size_t @var{haystack_len} const void *@var{needle}, size_t @var{needle_len})
+
+Returns a pointer to the first occurrence of @var{needle} (length
+@var{needle_len}) in @var{haystack} (length @var{haystack_len}).
+Returns @code{NULL} if not found.
 
 @end deftypefn
 
