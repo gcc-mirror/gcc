@@ -1,3 +1,9 @@
+2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/39315
+	* cfgexpand.c (expand_one_stack_var_at): Change alignment
+	limit to MAX_SUPPORTED_STACK_ALIGNMENT.
+
 2009-03-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39120

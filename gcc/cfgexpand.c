@@ -866,7 +866,8 @@ dump_stack_var_partition (void)
 static void
 expand_one_stack_var_at (tree decl, HOST_WIDE_INT offset)
 {
-  HOST_WIDE_INT align;
+  /* Alignment is unsigned.   */
+  unsigned HOST_WIDE_INT align;
   rtx x;
 
   /* If this fails, we've overflowed the stack frame.  Error nicely?  */
@@ -879,8 +880,10 @@ expand_one_stack_var_at (tree decl, HOST_WIDE_INT offset)
   offset -= frame_phase;
   align = offset & -offset;
   align *= BITS_PER_UNIT;
-  if (align > STACK_BOUNDARY || align == 0)
+  if (align == 0)
     align = STACK_BOUNDARY;
+  else if (align > MAX_SUPPORTED_STACK_ALIGNMENT)
+    align = MAX_SUPPORTED_STACK_ALIGNMENT;
   DECL_ALIGN (decl) = align;
   DECL_USER_ALIGN (decl) = 0;
 
