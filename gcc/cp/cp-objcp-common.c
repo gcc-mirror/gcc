@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -201,6 +201,16 @@ cxx_staticp (tree arg)
     }
   
   return NULL_TREE;
+}
+
+/* Return true if DECL is explicit member function.  */
+
+bool
+cp_function_decl_explicit_p (tree decl)
+{
+  return (decl
+	  && FUNCTION_FIRST_USER_PARMTYPE (decl) != void_list_node
+	  && DECL_NONCONVERTING_P (decl));
 }
 
 /* Stubs to keep c-opts.c happy.  */
