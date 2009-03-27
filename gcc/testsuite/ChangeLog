@@ -1,5 +1,8 @@
 2009-03-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/memmove-2.c: New test.
+	* gcc.dg/memmove-3.c: New test.
+
 	* gcc.dg/ipa/ipacost-1.c: Adjust match pattern for change
 	in clone naming.
 

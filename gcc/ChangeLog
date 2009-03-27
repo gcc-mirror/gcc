@@ -1,5 +1,8 @@
 2009-03-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* builtins.c (fold_builtin_memory_op): Optimize memmove
+	into memcpy if we can prove source and destination don't overlap.
+
 	* tree-inline.c: Include gt-tree-inline.h.
 	(clone_fn_id_num): New variable.
 	(clone_function_name): New function.
