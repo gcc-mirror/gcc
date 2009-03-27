@@ -8331,21 +8331,6 @@ fold_builtin_bswap (tree fndecl, tree arg)
   return NULL_TREE;
 }
 
-/* Return true if EXPR is the real constant contained in VALUE.  */
-
-static bool
-real_dconstp (tree expr, const REAL_VALUE_TYPE *value)
-{
-  STRIP_NOPS (expr);
-
-  return ((TREE_CODE (expr) == REAL_CST
-	   && !TREE_OVERFLOW (expr)
-	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), *value))
-	  || (TREE_CODE (expr) == COMPLEX_CST
-	      && real_dconstp (TREE_REALPART (expr), value)
-	      && real_zerop (TREE_IMAGPART (expr))));
-}
-
 /* A subroutine of fold_builtin to fold the various logarithmic
    functions.  Return NULL_TREE if no simplification can me made.
    FUNC is the corresponding MPFR logarithm function.  */
@@ -8359,17 +8344,6 @@ fold_builtin_logarithm (tree fndecl, tree arg,
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
       tree res;
       const enum built_in_function fcode = builtin_mathfn_code (arg);
-
-      /* Optimize log(e) = 1.0.  We're never passed an exact 'e',
-	 instead we'll look for 'e' truncated to MODE.  So only do
-	 this if flag_unsafe_math_optimizations is set.  */
-      if (flag_unsafe_math_optimizations && func == mpfr_log)
-        {
-	  const REAL_VALUE_TYPE e_truncated =
-	    real_value_truncate (TYPE_MODE (type), dconst_e ());
-	  if (real_dconstp (arg, &e_truncated))
-	    return build_real (type, dconst1);
-	}
 
       /* Calculate the result when the argument is a constant.  */
       if ((res = do_mpfr_arg1 (arg, type, func, &dconst0, NULL, false)))

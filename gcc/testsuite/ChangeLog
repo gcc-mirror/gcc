@@ -1,3 +1,8 @@
+2009-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-explog-1.c: Remove tests that aren't true
+	for low precision (i.e. float).
+
 2009-03-27  Dodji Seketeli  <dodji@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
