@@ -3315,8 +3315,8 @@ pointer_int_sum (location_t location, enum tree_code resultcode,
 
 	  offset = offset + tree_low_cst (intop, 0);
 	  if (offset < 0 || offset > max)
-	    warning_at (location, 0,
-			"offset %<%ld%> outside bounds of constant string",
+	    warning_at (location, 0, "offset %<" HOST_WIDE_INT_PRINT_DEC
+			"%> outside bounds of constant string",
 			tree_low_cst (intop, 0));
 	}
     }
