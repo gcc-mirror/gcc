@@ -1,4 +1,13 @@
 2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/38034
+	* config/ia64/sync.md (cmpxchg_rel_<mode>): Replace input
+	gr_register_operand with gr_reg_or_0_operand.
+	(cmpxchg_rel_di): Likewise.
+	(sync_lock_test_and_set<mode>): Likewise.
+
+2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* jump.c (rtx_renumbered_equal_p): Use subreg_get_info.
 	(true_regnum): Likewise.
