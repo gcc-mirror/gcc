@@ -135,8 +135,8 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	lbasename.c							\
 	lrealpath.c							\
 	make-relative-prefix.c						\
-	make-temp-file.c md5.c memchr.c memcmp.c memcpy.c memmove.c	\
-	 mempcpy.c memset.c mkstemps.c					\
+	make-temp-file.c md5.c memchr.c memcmp.c memcpy.c memmem.c	\
+	 memmove.c mempcpy.c memset.c mkstemps.c			\
 	objalloc.c obstack.c						\
 	partition.c pexecute.c						\
 	 pex-common.c pex-djgpp.c pex-msdos.c pex-one.c			\
@@ -187,8 +187,8 @@ CONFIGURED_OFILES = ./asprintf.o ./atexit.o				\
 	./ffs.o								\
 	./getcwd.o ./getpagesize.o ./gettimeofday.o			\
 	./index.o ./insque.o						\
-	./memchr.o ./memcmp.o ./memcpy.o ./memmove.o ./mempcpy.o	\
-	 ./memset.o ./mkstemps.o					\
+	./memchr.o ./memcmp.o ./memcpy.o ./memmem.o ./memmove.o		\
+	 ./mempcpy.o ./memset.o ./mkstemps.o				\
 	./pex-djgpp.o ./pex-msdos.o					\
 	 ./pex-unix.o ./pex-win32.o					\
 	 ./putenv.o							\
@@ -797,6 +797,12 @@ $(CONFIGURED_OFILES): stamp-picdir
 	  $(COMPILE.c) $(PICFLAG) $(srcdir)/memcpy.c -o pic/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/memcpy.c $(OUTPUT_OPTION)
+
+./memmem.o: $(srcdir)/memmem.c config.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/memmem.c -o pic/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/memmem.c $(OUTPUT_OPTION)
 
 ./memmove.o: $(srcdir)/memmove.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \

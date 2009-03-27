@@ -317,6 +317,7 @@ funcs="$funcs insque"
 funcs="$funcs memchr"
 funcs="$funcs memcmp"
 funcs="$funcs memcpy"
+funcs="$funcs memmem"
 funcs="$funcs memmove"
 funcs="$funcs mempcpy"
 funcs="$funcs memset"
@@ -362,7 +363,7 @@ checkfuncs="$checkfuncs getsysinfo table sysctl wait3 wait4 __fsetlocking"
 if test "x" = "y"; then
   AC_CHECK_FUNCS(asprintf atexit basename bcmp bcopy bsearch bzero calloc clock \
   getcwd getpagesize gettimeofday index insque mkstemps memchr memcmp memcpy \
-  memmove mempcpy memset putenv random rename rindex sigsetmask \
+  memmem memmove mempcpy memset putenv random rename rindex sigsetmask \
   strcasecmp setenv stpcpy stpncpy strchr strdup strncasecmp strndup strrchr strstr \
   strtod strtol strtoul strverscmp tmpnam vasprintf vfprintf vprintf \
   vsprintf waitpid getrusage on_exit psignal strerror strsignal \
