@@ -1,5 +1,10 @@
 2009-03-27  Xinliang David Li  <davidxl@google.com>
 
+	PR tree-optimization/39557
+	* tree-ssa.c (warn_uninitialized_vars): free postdom info.
+
+2009-03-27  Xinliang David Li  <davidxl@google.com>
+
 	PR tree-optimization/39548
 	* tree-ssa-copy.c (copy_prop_visit_phi_node): Add copy 
 	candidate check.

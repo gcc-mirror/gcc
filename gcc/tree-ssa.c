@@ -1589,6 +1589,11 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	  walk_gimple_op (gsi_stmt (gsi), warn_uninitialized_var, &wi);
 	}
     }
+
+  /* Post-dominator information can not be reliably updated. Free it
+     after the use.  */
+
+  free_dominance_info (CDI_POST_DOMINATORS);
   return 0;
 }
 
