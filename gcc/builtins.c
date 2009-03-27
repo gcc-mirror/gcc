@@ -8879,16 +8879,75 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 	     really mandatory?
 
 	     If either SRC is readonly or length is 1, we can use memcpy.  */
-	  if (dest_align && src_align
-	      && (readonly_data_expr (src)
-	          || (host_integerp (len, 1)
-		      && (MIN (src_align, dest_align) / BITS_PER_UNIT >=
-			  tree_low_cst (len, 1)))))
+	  if (!dest_align || !src_align)
+	    return NULL_TREE;
+	  if (readonly_data_expr (src)
+	      || (host_integerp (len, 1)
+		  && (MIN (src_align, dest_align) / BITS_PER_UNIT
+		      >= tree_low_cst (len, 1))))
 	    {
 	      tree fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
 	      if (!fn)
 		return NULL_TREE;
               return build_call_expr (fn, 3, dest, src, len);
+	    }
+
+	  /* If *src and *dest can't overlap, optimize into memcpy as well.  */
+	  srcvar = build_fold_indirect_ref (src);
+	  destvar = build_fold_indirect_ref (dest);
+	  if (srcvar
+	      && !TREE_THIS_VOLATILE (srcvar)
+	      && destvar
+	      && !TREE_THIS_VOLATILE (destvar))
+	    {
+	      tree src_base, dest_base, fn;
+	      HOST_WIDE_INT src_offset = 0, dest_offset = 0;
+	      HOST_WIDE_INT size = -1;
+	      HOST_WIDE_INT maxsize = -1;
+
+	      src_base = srcvar;
+	      if (handled_component_p (src_base))
+		src_base = get_ref_base_and_extent (src_base, &src_offset,
+						    &size, &maxsize);
+	      dest_base = destvar;
+	      if (handled_component_p (dest_base))
+		dest_base = get_ref_base_and_extent (dest_base, &dest_offset,
+						     &size, &maxsize);
+	      if (host_integerp (len, 1))
+		{
+		  maxsize = tree_low_cst (len, 1);
+		  if (maxsize
+		      > INTTYPE_MAXIMUM (HOST_WIDE_INT) / BITS_PER_UNIT)
+		    maxsize = -1;
+		  else
+		    maxsize *= BITS_PER_UNIT;
+		}
+	      else
+		maxsize = -1;
+	      if (SSA_VAR_P (src_base)
+		  && SSA_VAR_P (dest_base))
+		{
+		  if (operand_equal_p (src_base, dest_base, 0)
+		      && ranges_overlap_p (src_offset, maxsize,
+					   dest_offset, maxsize))
+		    return NULL_TREE;
+		}
+	      else if (TREE_CODE (src_base) == INDIRECT_REF
+		       && TREE_CODE (dest_base) == INDIRECT_REF)
+		{
+		  if (! operand_equal_p (TREE_OPERAND (src_base, 0),
+					 TREE_OPERAND (dest_base, 0), 0)
+		      || ranges_overlap_p (src_offset, maxsize,
+					   dest_offset, maxsize))
+		    return NULL_TREE;
+		}
+	      else
+		return NULL_TREE;
+
+	      fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+	      if (!fn)
+		return NULL_TREE;
+	      return build_call_expr (fn, 3, dest, src, len);
 	    }
 	  return NULL_TREE;
 	}
