@@ -1,3 +1,15 @@
+2009-03-27  Dodji Seketeli  <dodji@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/37959
+	* dwarf2out.c (dwarf_attr_name): Handle DW_AT_explicit attribute.
+	(gen_subprogram_die): When a function is explicit, generate the
+	DW_AT_explicit attribute.
+	* langhooks.h (struct lang_hooks_for_decls): Add
+	function_decl_explicit_p langhook.
+	* langhooks-def.h (LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P): Define.
+	(LANG_HOOKS_DECLS): Add LANG_HOOKS_FUNCTION_DECL_EXPLICIT_P.
+
 2009-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtins.c (fold_builtin_memory_op): Optimize memmove
