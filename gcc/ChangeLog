@@ -1,3 +1,8 @@
+2009-03-27  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR c++/36799
+	* ginclude/stdarg.h (va_copy): Define also for __GXX_EXPERIMENTAL_CXX0X__.
+
 2009-03-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/35652
