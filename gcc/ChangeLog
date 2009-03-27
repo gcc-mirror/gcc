@@ -1,3 +1,27 @@
+2009-03-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39120
+	* tree-ssa-structalias.c (handle_rhs_call): Fill out return
+	constraints.
+	(handle_lhs_call): Process return constraints.  Add escape
+	constraints if necessary.
+	(handle_const_call): Fill out return constraints.  Make nested
+	case more precise.  Avoid consttmp if possible.
+	(handle_pure_call): Fill out return constraints.  Avoid
+	callused if possible.
+	(find_func_aliases): Simplify call handling.
+
+2009-03-27  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39120
+	* tree-ssa-structalias.c (do_sd_constraint): Do not use CALLUSED
+	as a representative.
+	(solve_graph): Do propagate CALLUSED.
+	(handle_pure_call): Use a scalar constraint from CALLUSED for
+	the return value.
+	(find_what_p_points_to): CALLUSED shall not appear in poins-to
+	solutions.
+
 2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/39323

@@ -1592,12 +1592,9 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	  if (get_varinfo (t)->is_special_var)
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
 	  /* Merging the solution from ESCAPED needlessly increases
-	     the set.  Use ESCAPED as representative instead.
-	     Same for CALLUSED.  */
+	     the set.  Use ESCAPED as representative instead.  */
 	  else if (get_varinfo (t)->id == find (escaped_id))
 	    flag |= bitmap_set_bit (sol, escaped_id);
-	  else if (get_varinfo (t)->id == find (callused_id))
-	    flag |= bitmap_set_bit (sol, callused_id);
 	  else if (add_graph_edge (graph, lhs, t))
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
 	}
@@ -2516,9 +2513,8 @@ solve_graph (constraint_graph_t graph)
 	      solution_empty = bitmap_empty_p (solution);
 
 	      if (!solution_empty
-		  /* Do not propagate the ESCAPED/CALLUSED solutions.  */
-		  && i != find (escaped_id)
-		  && i != find (callused_id))
+		  /* Do not propagate the ESCAPED solutions.  */
+		  && i != find (escaped_id))
 		{
 		  bitmap_iterator bi;
 
@@ -3488,8 +3484,9 @@ make_escape_constraint (tree op)
    RHS.  */
 
 static void
-handle_rhs_call (gimple stmt)
+handle_rhs_call (gimple stmt, VEC(ce_s, heap) **results)
 {
+  struct constraint_expr rhsc;
   unsigned i;
 
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
@@ -3505,6 +3502,12 @@ handle_rhs_call (gimple stmt)
   /* The static chain escapes as well.  */
   if (gimple_call_chain (stmt))
     make_escape_constraint (gimple_call_chain (stmt));
+
+  /* Regular functions return escaped addresses.  */
+  rhsc.var = escaped_id;
+  rhsc.offset = 0;
+  rhsc.type = ADDRESSOF;
+  VEC_safe_push (ce_s, heap, *results, &rhsc);
 }
 
 /* For non-IPA mode, generate constraints necessary for a call
@@ -3512,10 +3515,9 @@ handle_rhs_call (gimple stmt)
    the LHS point to global and escaped variables.  */
 
 static void
-handle_lhs_call (tree lhs, int flags)
+handle_lhs_call (tree lhs, int flags, VEC(ce_s, heap) *rhsc)
 {
   VEC(ce_s, heap) *lhsc = NULL;
-  struct constraint_expr rhsc;
   unsigned int j;
   struct constraint_expr *lhsp;
 
@@ -3523,6 +3525,7 @@ handle_lhs_call (tree lhs, int flags)
 
   if (flags & ECF_MALLOC)
     {
+      struct constraint_expr rhsc;
       tree heapvar = heapvar_lookup (lhs);
       varinfo_t vi;
 
@@ -3546,15 +3549,30 @@ handle_lhs_call (tree lhs, int flags)
       vi->size = ~0;
       rhsc.type = ADDRESSOF;
       rhsc.offset = 0;
+      for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
+	process_constraint (new_constraint (*lhsp, rhsc));
     }
-  else
+  else if (VEC_length (ce_s, rhsc) > 0)
     {
-      rhsc.var = escaped_id;
-      rhsc.offset = 0;
-      rhsc.type = ADDRESSOF;
+      struct constraint_expr *lhsp, *rhsp;
+      unsigned int i, j;
+      /* If the store is to a global decl make sure to
+	 add proper escape constraints.  */
+      lhs = get_base_address (lhs);
+      if (lhs
+	  && DECL_P (lhs)
+	  && is_global_var (lhs))
+	{
+	  struct constraint_expr tmpc;
+	  tmpc.var = escaped_id;
+	  tmpc.offset = 0;
+	  tmpc.type = SCALAR;
+	  VEC_safe_push (ce_s, heap, lhsc, &tmpc);
+	}
+      for (i = 0; VEC_iterate (ce_s, lhsc, i, lhsp); ++i)
+	for (j = 0; VEC_iterate (ce_s, rhsc, j, rhsp); ++j)
+	  process_constraint (new_constraint (*lhsp, *rhsp));
     }
-  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-    process_constraint (new_constraint (*lhsp, rhsc));
   VEC_free (ce_s, heap, lhsc);
 }
 
@@ -3562,42 +3580,22 @@ handle_lhs_call (tree lhs, int flags)
    const function that returns a pointer in the statement STMT.  */
 
 static void
-handle_const_call (gimple stmt)
+handle_const_call (gimple stmt, VEC(ce_s, heap) **results)
 {
-  tree lhs = gimple_call_lhs (stmt);
-  VEC(ce_s, heap) *lhsc = NULL;
-  struct constraint_expr rhsc;
-  unsigned int j, k;
-  struct constraint_expr *lhsp;
-  tree tmpvar;
-  struct constraint_expr tmpc;
+  struct constraint_expr rhsc, tmpc;
+  tree tmpvar = NULL_TREE;
+  unsigned int k;
 
-  get_constraint_for (lhs, &lhsc);
-
-  /* If this is a nested function then it can return anything.  */
+  /* Treat nested const functions the same as pure functions as far
+     as the static chain is concerned.  */
   if (gimple_call_chain (stmt))
     {
-      rhsc.var = anything_id;
+      make_constraint_to (callused_id, gimple_call_chain (stmt));
+      rhsc.var = callused_id;
       rhsc.offset = 0;
-      rhsc.type = ADDRESSOF;
-      for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-	process_constraint (new_constraint (*lhsp, rhsc));
-      VEC_free (ce_s, heap, lhsc);
-      return;
+      rhsc.type = SCALAR;
+      VEC_safe_push (ce_s, heap, *results, &rhsc);
     }
-
-  /* We always use a temporary here, otherwise we end up with a quadratic
-     amount of constraints for
-       large_struct = const_call (large_struct);
-     in field-sensitive PTA.  */
-  tmpvar = create_tmp_var_raw (ptr_type_node, "consttmp");
-  tmpc = get_constraint_exp_for_temp (tmpvar);
-
-  /* May return addresses of globals.  */
-  rhsc.var = nonlocal_id;
-  rhsc.offset = 0;
-  rhsc.type = ADDRESSOF;
-  process_constraint (new_constraint (tmpc, rhsc));
 
   /* May return arguments.  */
   for (k = 0; k < gimple_call_num_args (stmt); ++k)
@@ -3610,26 +3608,41 @@ handle_const_call (gimple stmt)
 	  struct constraint_expr *argp;
 	  int i;
 
+	  /* We always use a temporary here, otherwise we end up with
+	     a quadratic amount of constraints for
+	       large_struct = const_call (large_struct);
+	     with field-sensitive PTA.  */
+	  if (tmpvar == NULL_TREE)
+	    {
+	      tmpvar = create_tmp_var_raw (ptr_type_node, "consttmp");
+	      tmpc = get_constraint_exp_for_temp (tmpvar);
+	    }
+
 	  get_constraint_for (arg, &argc);
 	  for (i = 0; VEC_iterate (ce_s, argc, i, argp); i++)
 	    process_constraint (new_constraint (tmpc, *argp));
 	  VEC_free (ce_s, heap, argc);
 	}
     }
+  if (tmpvar != NULL_TREE)
+    VEC_safe_push (ce_s, heap, *results, &tmpc);
 
-  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-    process_constraint (new_constraint (*lhsp, tmpc));
-
-  VEC_free (ce_s, heap, lhsc);
+  /* May return addresses of globals.  */
+  rhsc.var = nonlocal_id;
+  rhsc.offset = 0;
+  rhsc.type = ADDRESSOF;
+  VEC_safe_push (ce_s, heap, *results, &rhsc);
 }
 
 /* For non-IPA mode, generate constraints necessary for a call to a
    pure function in statement STMT.  */
 
 static void
-handle_pure_call (gimple stmt)
+handle_pure_call (gimple stmt, VEC(ce_s, heap) **results)
 {
+  struct constraint_expr rhsc;
   unsigned i;
+  bool need_callused = false;
 
   /* Memory reached from pointer arguments is call-used.  */
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
@@ -3637,48 +3650,31 @@ handle_pure_call (gimple stmt)
       tree arg = gimple_call_arg (stmt, i);
 
       if (could_have_pointers (arg))
-	make_constraint_to (callused_id, arg);
+	{
+	  make_constraint_to (callused_id, arg);
+	  need_callused = true;
+	}
     }
 
   /* The static chain is used as well.  */
   if (gimple_call_chain (stmt))
-    make_constraint_to (callused_id, gimple_call_chain (stmt));
-
-  /* If the call returns a pointer it may point to reachable memory
-     from the arguments.  Not so for malloc functions though.  */
-  if (gimple_call_lhs (stmt)
-      && could_have_pointers (gimple_call_lhs (stmt))
-      && !(gimple_call_flags (stmt) & ECF_MALLOC))
     {
-      tree lhs = gimple_call_lhs (stmt);
-      VEC(ce_s, heap) *lhsc = NULL;
-      struct constraint_expr rhsc;
-      struct constraint_expr *lhsp;
-      unsigned j;
+      make_constraint_to (callused_id, gimple_call_chain (stmt));
+      need_callused = true;
+    }
 
-      get_constraint_for (lhs, &lhsc);
-
-      /* If this is a nested function then it can return anything.  */
-      if (gimple_call_chain (stmt))
-	{
-	  rhsc.var = anything_id;
-	  rhsc.offset = 0;
-	  rhsc.type = ADDRESSOF;
-	  for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-	    process_constraint (new_constraint (*lhsp, rhsc));
-	  VEC_free (ce_s, heap, lhsc);
-	  return;
-	}
-
-      /* Else just add the call-used memory here.  Escaped variables
-         and globals will be dealt with in handle_lhs_call.  */
+  /* Pure functions may return callused and escaped memory.  */
+  if (need_callused)
+    {
       rhsc.var = callused_id;
       rhsc.offset = 0;
-      rhsc.type = ADDRESSOF;
-      for (j = 0; VEC_iterate (ce_s, lhsc, j, lhsp); j++)
-	process_constraint (new_constraint (*lhsp, rhsc));
-      VEC_free (ce_s, heap, lhsc);
+      rhsc.type = SCALAR;
+      VEC_safe_push (ce_s, heap, *results, &rhsc);
     }
+  rhsc.var = escaped_id;
+  rhsc.offset = 0;
+  rhsc.type = ADDRESSOF;
+  VEC_safe_push (ce_s, heap, *results, &rhsc);
 }
 
 /* Walk statement T setting up aliasing constraints according to the
@@ -3743,33 +3739,28 @@ find_func_aliases (gimple origt)
     {
       if (!in_ipa_mode)
 	{
+	  VEC(ce_s, heap) *rhsc = NULL;
 	  int flags = gimple_call_flags (t);
 
 	  /* Const functions can return their arguments and addresses
 	     of global memory but not of escaped memory.  */
-	  if (flags & ECF_CONST)
+	  if (flags & (ECF_CONST|ECF_NOVOPS))
 	    {
 	      if (gimple_call_lhs (t)
 		  && could_have_pointers (gimple_call_lhs (t)))
-		handle_const_call (t);
+		handle_const_call (t, &rhsc);
 	    }
 	  /* Pure functions can return addresses in and of memory
 	     reachable from their arguments, but they are not an escape
 	     point for reachable memory of their arguments.  */
-	  else if (flags & ECF_PURE)
-	    {
-	      handle_pure_call (t);
-	      if (gimple_call_lhs (t)
-		  && could_have_pointers (gimple_call_lhs (t)))
-		handle_lhs_call (gimple_call_lhs (t), flags);
-	    }
+	  else if (flags & (ECF_PURE|ECF_LOOPING_CONST_OR_PURE))
+	    handle_pure_call (t, &rhsc);
 	  else
-	    {
-	      handle_rhs_call (t);
-	      if (gimple_call_lhs (t)
-		  && could_have_pointers (gimple_call_lhs (t)))
-		handle_lhs_call (gimple_call_lhs (t), flags);
-	    }
+	    handle_rhs_call (t, &rhsc);
+	  if (gimple_call_lhs (t)
+	      && could_have_pointers (gimple_call_lhs (t)))
+	    handle_lhs_call (gimple_call_lhs (t), flags, rhsc);
+	  VEC_free (ce_s, heap, rhsc);
 	}
       else
 	{
@@ -4925,9 +4916,10 @@ find_what_p_points_to (tree p)
 		    pi->pt_null = 1;
 		  else if (vi->id == anything_id
 			   || vi->id == nonlocal_id
-			   || vi->id == escaped_id
-			   || vi->id == callused_id)
+			   || vi->id == escaped_id)
 		    was_pt_anything = 1;
+		  else if (vi->id == callused_id)
+		    gcc_unreachable ();
 		  else if (vi->id == readonly_id)
 		    was_pt_anything = 1;
 		  else if (vi->id == integer_id)
