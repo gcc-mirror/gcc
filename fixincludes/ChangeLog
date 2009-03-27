@@ -1,3 +1,7 @@
+2009-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* server.c (run_shell): Quote directory name passed to cd.
+
 2009-03-01  Bruce Korb  <bkorb@gnu.org>
 	Apply a positively ancient patch:
 
