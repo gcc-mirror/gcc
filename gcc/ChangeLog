@@ -1,7 +1,16 @@
+2009-03-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/35652
+	* builtins.h (c_strlen): Do not warn here.
+	* c-typeck.c (build_binary_op): Adjust calls to pointer_int_sum.
+	* c-common.c (pointer_int_sum): Take an explicit location.
+	Warn about offsets out of bounds.
+	* c-common.h (pointer_int_sum): Adjust declaration.
+
 2009-03-26  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
-        * doc/invoke.texi (i386 and x86-64 Windows Options): Fix texinfo
-        markup glitch.
+	* doc/invoke.texi (i386 and x86-64 Windows Options): Fix texinfo
+	markup glitch.
 
 2009-03-26  Jakub Jelinek  <jakub@redhat.com>
 
