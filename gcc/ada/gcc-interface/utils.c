@@ -1707,7 +1707,7 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
      we get the alignment from the type, indicate if this is from an explicit
      user request, which prevents stor-layout from lowering it later on.  */
   {
-    int bit_align
+    unsigned int bit_align
       = (DECL_BIT_FIELD (field_decl) ? 1
 	 : packed && TYPE_MODE (field_type) != BLKmode ? BITS_PER_UNIT : 0);
 

@@ -1,5 +1,12 @@
 2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR c/39323
+	* gcc.dg/pr39323-1.c: New.
+	* gcc.dg/pr39323-2.c: Likewise.
+	* gcc.dg/pr39323-3.c: Likewise.
+
+2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/38034
 	* gcc.target/ia64/sync-1.c: New.
 

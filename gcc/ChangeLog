@@ -1,4 +1,18 @@
 2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/39323
+	* c-common.c (handle_aligned_attribute): Properly check alignment
+	overflow.  Use (1U << i) instead of (1 << i).
+
+	* emit-rtl.c (get_mem_align_offset): Use "unsigned int" for
+	align.
+
+	* expr.h (get_mem_align_offset): Updated.
+
+	* tree.h (tree_decl_common): Change align to "unsigned int" and
+	move it before pointer_alias_set.
+
+2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/38034
