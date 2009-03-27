@@ -228,6 +228,10 @@ mtune=
 Target RejectNegative Joined Var(ix86_tune_string)
 Schedule code for given CPU
 
+mabi=
+Target RejectNegative Joined Var(ix86_abi_string)
+Generate code that conforms to the given ABI
+
 mveclibabi=
 Target RejectNegative Joined Var(ix86_veclibabi_string)
 Vector library ABI to use

@@ -1,3 +1,15 @@
+2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39472
+	* gcc.target/x86_64/abi/callabi/func-2a.c: New.
+	* gcc.target/x86_64/abi/callabi/func-2b.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/func-indirect-2a.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/func-indirect-2b.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/vaarg-4a.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/vaarg-4b.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/vaarg-5a.c: Likewise.
+	* gcc.target/x86_64/abi/callabi/vaarg-5b.c: Likewise.
+
 2009-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-explog-1.c: Remove tests that aren't true

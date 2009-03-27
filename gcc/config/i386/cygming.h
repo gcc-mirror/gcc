@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #undef TARGET_64BIT_MS_ABI
-#define TARGET_64BIT_MS_ABI (!cfun ? DEFAULT_ABI == MS_ABI : TARGET_64BIT && cfun->machine->call_abi == MS_ABI)
+#define TARGET_64BIT_MS_ABI (!cfun ? ix86_abi == MS_ABI : TARGET_64BIT && cfun->machine->call_abi == MS_ABI)
 
 #undef DEFAULT_ABI
 #define DEFAULT_ABI (TARGET_64BIT ? MS_ABI : SYSV_ABI)
@@ -202,7 +202,7 @@ do {						\
 #define CHECK_STACK_LIMIT 4000
 
 #undef STACK_BOUNDARY
-#define STACK_BOUNDARY	(DEFAULT_ABI == MS_ABI ? 128 : BITS_PER_WORD)
+#define STACK_BOUNDARY	(ix86_abi == MS_ABI ? 128 : BITS_PER_WORD)
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    returns float values in the 387 and needs stack probes.

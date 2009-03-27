@@ -1,3 +1,52 @@
+2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39472
+	* config/i386/i386.c (ix86_abi): New.
+	(override_options): Handle -mabi=.
+	(ix86_function_arg_regno_p): Replace DEFAULT_ABI with
+	ix86_abi.
+	(ix86_call_abi_override): Likewise.
+	(init_cumulative_args): Likewise.
+	(function_arg_advance): Likewise.
+	(function_arg_64): Likewise.
+	(function_arg): Likewise.
+	(ix86_pass_by_reference): Likewise.
+	(ix86_function_value_regno_p): Likewise.
+	(ix86_build_builtin_va_list_abi): Likewise.
+	(setup_incoming_varargs_64): Likewise.
+	(is_va_list_char_pointer): Likewise.
+	(ix86_init_machine_status): Likewise.
+	(ix86_reg_parm_stack_space): Use enum calling_abi on
+	call_abi.
+	(ix86_function_type_abi): Return enum calling_abi.  Rewrite
+	for 64bit.  Replace DEFAULT_ABI with ix86_abi.
+	(ix86_function_abi): Make it static and return enum
+	calling_abi.
+	(ix86_cfun_abi): Return enum calling_abi.  Replace DEFAULT_ABI
+	with ix86_abi.
+	(ix86_fn_abi_va_list): Updated.
+
+	* config/i386/i386.h (ix86_abi): New.
+	(STACK_BOUNDARY): Replace DEFAULT_ABI with ix86_abi.
+	(CONDITIONAL_REGISTER_USAGE): Likewise.
+	(CUMULATIVE_ARGS): Change call_abi type to enum calling_abi.
+	(machine_function): Likewise.
+
+	* config/i386/i386.md (untyped_call): Replace DEFAULT_ABI
+	with ix86_abi.
+	* config/i386/cygming.h (TARGET_64BIT_MS_ABI): Likewise.
+	(STACK_BOUNDARY): Likewise.
+	* config/i386/mingw32.h (EXTRA_OS_CPP_BUILTINS): Likewise.
+
+	* config/i386/i386.opt (mabi=): New.
+
+	* config/i386/i386-protos.h (ix86_cfun_abi): Changed to
+	return enum calling_abi.
+	(ix86_function_type_abi): Likewise.
+	(ix86_function_abi): Removed.
+
+	* doc/invoke.texi: Document -mabi= option for x86.
+
 2009-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (real_dconstp): Delete.
