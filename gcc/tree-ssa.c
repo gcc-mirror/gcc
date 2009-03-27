@@ -478,6 +478,21 @@ verify_phi_args (gimple phi, basic_block bb, basic_block *definition_block)
 			     op_p, phi, e->flags & EDGE_ABNORMAL, NULL);
 	}
 
+      if (TREE_CODE (op) == ADDR_EXPR)
+	{
+	  tree base = TREE_OPERAND (op, 0);
+	  while (handled_component_p (base))
+	    base = TREE_OPERAND (base, 0);
+	  if ((TREE_CODE (base) == VAR_DECL
+	       || TREE_CODE (base) == PARM_DECL
+	       || TREE_CODE (base) == RESULT_DECL)
+	      && !TREE_ADDRESSABLE (base))
+	    {
+	      error ("address taken, but ADDRESSABLE bit not set");
+	      err = true;
+	    }
+	}
+
       if (e->dest != bb)
 	{
 	  error ("wrong edge %d->%d for PHI argument",

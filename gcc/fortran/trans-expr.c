@@ -164,7 +164,7 @@ gfc_conv_missing_dummy (gfc_se * se, gfc_expr * arg, gfc_typespec ts, int kind)
       tmp = build3 (COND_EXPR, TREE_TYPE (tmp), present, tmp,
 		    fold_convert (TREE_TYPE (tmp), integer_one_node));
       tmp = gfc_evaluate_now (tmp, &se->pre);
-      se->expr = build_fold_addr_expr (tmp);
+      se->expr = gfc_build_addr_expr (NULL_TREE, tmp);
     }
   else
     {
@@ -603,7 +603,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	  if (!sym->attr.dummy && !sym->attr.proc_pointer)
 	    {
 	      gcc_assert (TREE_CODE (se->expr) == FUNCTION_DECL);
-	      se->expr = build_fold_addr_expr (se->expr);
+	      se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
 	    }
 	  return;
 	}
@@ -705,7 +705,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       if (expr->ts.type == BT_CHARACTER)
 	gfc_conv_string_parameter (se);
       else 
-	se->expr = build_fold_addr_expr (se->expr);
+	se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
     }
 }
 
@@ -1519,7 +1519,7 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
       if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
 	{
 	  gcc_assert (TREE_CODE (tmp) == FUNCTION_DECL);
-	  tmp = build_fold_addr_expr (tmp);
+	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
 	}
     }
   se->expr = tmp;
@@ -1547,8 +1547,8 @@ gfc_conv_operator_assign (gfc_se *lse, gfc_se *rse, gfc_symbol *sym)
   gfc_add_block_to_block (&block, &rse->pre);
 
   /* Build the argument list for the call, including hidden string lengths.  */
-  args = gfc_chainon_list (NULL_TREE, build_fold_addr_expr (lse->expr));
-  args = gfc_chainon_list (args, build_fold_addr_expr (rse->expr));
+  args = gfc_chainon_list (NULL_TREE, gfc_build_addr_expr (NULL_TREE, lse->expr));
+  args = gfc_chainon_list (args, gfc_build_addr_expr (NULL_TREE, rse->expr));
   if (lse->string_length != NULL_TREE)
     args = gfc_chainon_list (args, lse->string_length);
   if (rse->string_length != NULL_TREE)
@@ -2371,7 +2371,7 @@ gfc_conv_subref_array_arg (gfc_se * parmse, gfc_expr * expr,
   if (g77)
     parmse->expr = gfc_conv_descriptor_data_get (parmse->expr);
   else
-    parmse->expr = build_fold_addr_expr (parmse->expr);
+    parmse->expr = gfc_build_addr_expr (NULL_TREE, parmse->expr);
 
   return;
 }
@@ -2666,7 +2666,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 			  && fsym && fsym->attr.target)
 		{
 		  gfc_conv_expr (&parmse, e);
-		  parmse.expr = build_fold_addr_expr (parmse.expr);
+		  parmse.expr = gfc_build_addr_expr (NULL_TREE, parmse.expr);
 		}
 	      else
 		{
@@ -2680,7 +2680,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 			 indirection. The null pointer already contains
 			 this level of indirection.  */
 		      parm_kind = SCALAR_POINTER;
-		      parmse.expr = build_fold_addr_expr (parmse.expr);
+		      parmse.expr = gfc_build_addr_expr (NULL_TREE, parmse.expr);
 		    }
 		}
 	    }
@@ -2881,7 +2881,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 
 	  /* Pass the temporary as the first argument.  */
 	  tmp = info->descriptor;
-	  tmp = build_fold_addr_expr (tmp);
+	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
 	  retargs = gfc_chainon_list (retargs, tmp);
 	}
       else if (ts.type == BT_CHARACTER)
@@ -2897,7 +2897,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      var = gfc_create_var (type, "pstr");
 
 	      /* Provide an address expression for the function arguments.  */
-	      var = build_fold_addr_expr (var);
+	      var = gfc_build_addr_expr (NULL_TREE, var);
 	    }
 	  else
 	    var = gfc_conv_string_tmp (se, type, len);
@@ -2909,7 +2909,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  gcc_assert (gfc_option.flag_f2c && ts.type == BT_COMPLEX);
 
 	  type = gfc_get_complex_type (ts.kind);
-	  var = build_fold_addr_expr (gfc_create_var (type, "cmplx"));
+	  var = gfc_build_addr_expr (NULL_TREE, gfc_create_var (type, "cmplx"));
 	  retargs = gfc_chainon_list (retargs, var);
 	}
 
@@ -2945,7 +2945,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  TREE_TYPE (sym->backend_decl)
 		= build_function_type (integer_type_node,
 		      TYPE_ARG_TYPES (TREE_TYPE (sym->backend_decl)));
-	  se->expr = build_fold_addr_expr (sym->backend_decl);
+	  se->expr = gfc_build_addr_expr (NULL_TREE, sym->backend_decl);
 	}
       else
 	TREE_TYPE (TREE_TYPE (TREE_TYPE (se->expr))) = integer_type_node;
@@ -4010,7 +4010,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
   gfc_add_block_to_block (&se->pre, &se->post);
 
   /* Take the address of that value.  */
-  se->expr = build_fold_addr_expr (var);
+  se->expr = gfc_build_addr_expr (NULL_TREE, var);
 }
 
 
@@ -4226,8 +4226,8 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
       if (r_is_var)
 	{
 	  cond = fold_build2 (EQ_EXPR, boolean_type_node,
-			      build_fold_addr_expr (lse->expr),
-			      build_fold_addr_expr (rse->expr));
+			      gfc_build_addr_expr (NULL_TREE, lse->expr),
+			      gfc_build_addr_expr (NULL_TREE, rse->expr));
 	  cond = gfc_evaluate_now (cond, &lse->pre);
 	}
 

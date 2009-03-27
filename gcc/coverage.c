@@ -459,6 +459,8 @@ tree_coverage_counter_addr (unsigned counter, unsigned no)
   gcc_assert (no < fn_n_ctrs[counter] - fn_b_ctrs[counter]);
   no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
 
+  TREE_ADDRESSABLE (tree_ctr_tables[counter]) = 1;
+
   /* "no" here is an array index, scaled to bytes later.  */
   return build_fold_addr_expr (build4 (ARRAY_REF, gcov_type_node,
 				       tree_ctr_tables[counter],

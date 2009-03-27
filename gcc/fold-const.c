@@ -7937,11 +7937,10 @@ fold_view_convert_expr (tree type, tree expr)
 }
 
 /* Build an expression for the address of T.  Folds away INDIRECT_REF
-   to avoid confusing the gimplify process.  When IN_FOLD is true
-   avoid modifications of T.  */
+   to avoid confusing the gimplify process.  */
 
-static tree
-build_fold_addr_expr_with_type_1 (tree t, tree ptrtype, bool in_fold)
+tree
+build_fold_addr_expr_with_type (tree t, tree ptrtype)
 {
   /* The size of the object is not relevant when talking about its address.  */
   if (TREE_CODE (t) == WITH_SIZE_EXPR)
@@ -7956,56 +7955,20 @@ build_fold_addr_expr_with_type_1 (tree t, tree ptrtype, bool in_fold)
       if (TREE_TYPE (t) != ptrtype)
 	t = build1 (NOP_EXPR, ptrtype, t);
     }
-  else if (!in_fold)
-    {
-      tree base = t;
-
-      while (handled_component_p (base))
-	base = TREE_OPERAND (base, 0);
-
-      if (DECL_P (base))
-	TREE_ADDRESSABLE (base) = 1;
-
-      t = build1 (ADDR_EXPR, ptrtype, t);
-    }
   else
     t = build1 (ADDR_EXPR, ptrtype, t);
 
   return t;
 }
 
-/* Build an expression for the address of T with type PTRTYPE.  This
-   function modifies the input parameter 'T' by sometimes setting the
-   TREE_ADDRESSABLE flag.  */
-
-tree
-build_fold_addr_expr_with_type (tree t, tree ptrtype)
-{
-  return build_fold_addr_expr_with_type_1 (t, ptrtype, false);
-}
-
-/* Build an expression for the address of T.  This function modifies
-   the input parameter 'T' by sometimes setting the TREE_ADDRESSABLE
-   flag.  When called from fold functions, use fold_addr_expr instead.  */
+/* Build an expression for the address of T.  */
 
 tree
 build_fold_addr_expr (tree t)
 {
-  return build_fold_addr_expr_with_type_1 (t, 
-					   build_pointer_type (TREE_TYPE (t)),
-					   false);
-}
-
-/* Same as build_fold_addr_expr, builds an expression for the address
-   of T, but avoids touching the input node 't'.  Fold functions
-   should use this version.  */
-
-static tree
-fold_addr_expr (tree t)
-{
   tree ptrtype = build_pointer_type (TREE_TYPE (t));
 
-  return build_fold_addr_expr_with_type_1 (t, ptrtype, true);
+  return build_fold_addr_expr_with_type (t, ptrtype);
 }
 
 /* Fold a unary expression of code CODE and type TYPE with operand
@@ -8245,7 +8208,7 @@ fold_unary (enum tree_code code, tree type, tree op0)
 	  if (! offset && bitpos == 0
 	      && TYPE_MAIN_VARIANT (TREE_TYPE (type))
 		  == TYPE_MAIN_VARIANT (TREE_TYPE (base)))
-	    return fold_convert (type, fold_addr_expr (base));
+	    return fold_convert (type, build_fold_addr_expr (base));
         }
 
       if (TREE_CODE (op0) == MODIFY_EXPR
@@ -9155,9 +9118,9 @@ fold_comparison (enum tree_code code, tree type, tree op0, tree op1)
 		       && operand_equal_p (offset0, offset1, 0))))
 	{
 	  if (indirect_base0)
-	    base0 = fold_addr_expr (base0);
+	    base0 = build_fold_addr_expr (base0);
 	  if (indirect_base1)
-	    base1 = fold_addr_expr (base1);
+	    base1 = build_fold_addr_expr (base1);
 	  return fold_build2 (code, type, base0, base1);
 	}
     }
@@ -15829,7 +15792,7 @@ split_address_to_core_and_offset (tree exp,
       core = get_inner_reference (TREE_OPERAND (exp, 0), &bitsize, pbitpos,
 				  poffset, &mode, &unsignedp, &volatilep,
 				  false);
-      core = fold_addr_expr (core);
+      core = build_fold_addr_expr (core);
     }
   else
     {
