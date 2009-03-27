@@ -293,8 +293,9 @@ gfc_build_addr_expr (tree type, tree t)
     }
   else
     {
-      if (DECL_P (t))
-        TREE_ADDRESSABLE (t) = 1;
+      tree base = get_base_address (t);
+      if (base && DECL_P (base))
+        TREE_ADDRESSABLE (base) = 1;
       t = fold_build1 (ADDR_EXPR, natural_type, t);
     }
 

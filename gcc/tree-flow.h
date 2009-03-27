@@ -1145,6 +1145,7 @@ tree force_gimple_operand (tree, gimple_seq *, bool, tree);
 tree force_gimple_operand_gsi (gimple_stmt_iterator *, tree, bool, tree,
 			       bool, enum gsi_iterator_update);
 tree gimple_fold_indirect_ref (tree);
+void mark_addressable (tree);
 
 /* In tree-ssa-structalias.c */
 bool find_what_p_points_to (tree);

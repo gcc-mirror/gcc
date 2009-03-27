@@ -194,7 +194,7 @@ gfc_conv_descriptor_data_addr (tree desc)
   gcc_assert (DATA_FIELD == 0);
 
   t = fold_build3 (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
-  return build_fold_addr_expr (t);
+  return gfc_build_addr_expr (NULL_TREE, t);
 }
 
 tree
@@ -533,7 +533,7 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
 	  tmp = build_array_type (gfc_get_element_type (TREE_TYPE (desc)),
 				  tmp);
 	  tmp = gfc_create_var (tmp, "A");
-	  tmp = build_fold_addr_expr (tmp);
+	  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
 	  gfc_conv_descriptor_data_set (pre, desc, tmp);
 	}
       else
@@ -1281,8 +1281,8 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	      tmp = gfc_conv_descriptor_data_get (desc);
 	      tmp = build_fold_indirect_ref (tmp);
 	      tmp = gfc_build_array_ref (tmp, *poffset, NULL);
-	      tmp = build_fold_addr_expr (tmp);
-	      init = build_fold_addr_expr (init);
+	      tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+	      init = gfc_build_addr_expr (NULL_TREE, init);
 
 	      size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type));
 	      bound = build_int_cst (NULL_TREE, n * size);
@@ -1683,7 +1683,7 @@ gfc_trans_constant_array_constructor (gfc_loopinfo * loop,
   info = &ss->data.info;
 
   info->descriptor = tmp;
-  info->data = build_fold_addr_expr (tmp);
+  info->data = gfc_build_addr_expr (NULL_TREE, tmp);
   info->offset = gfc_index_zero_node;
 
   for (i = 0; i < info->dimen; i++)
@@ -2136,7 +2136,7 @@ gfc_conv_array_data (tree descriptor)
       else
         {
           /* Descriptorless arrays.  */
-	  return build_fold_addr_expr (descriptor);
+	  return gfc_build_addr_expr (NULL_TREE, descriptor);
         }
     }
   else
@@ -4836,7 +4836,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	    {
 	      /* We pass full arrays directly.  This means that pointers and
 		 allocatable arrays should also work.  */
-	      se->expr = build_fold_addr_expr (desc);
+	      se->expr = gfc_build_addr_expr (NULL_TREE, desc);
 	    }
 	  else
 	    {
@@ -4867,7 +4867,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
 	  /* For pointer assignments pass the descriptor directly.  */
 	  se->ss = secss;
-	  se->expr = build_fold_addr_expr (se->expr);
+	  se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
 	  gfc_conv_expr (se, expr);
 	  return;
 	}
@@ -5189,7 +5189,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
     {
       /* Get a pointer to the new descriptor.  */
       if (se->want_pointer)
-	se->expr = build_fold_addr_expr (desc);
+	se->expr = gfc_build_addr_expr (NULL_TREE, desc);
       else
 	se->expr = desc;
     }
@@ -5255,7 +5255,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
           if (sym->attr.dummy || POINTER_TYPE_P (TREE_TYPE (tmp)))
             se->expr = tmp;
           else
-	    se->expr = build_fold_addr_expr (tmp);
+	    se->expr = gfc_build_addr_expr (NULL_TREE, tmp);
 	  return;
         }
       if (sym->attr.allocatable)
@@ -5275,7 +5275,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
     {
       /* Result of the enclosing function.  */
       gfc_conv_expr_descriptor (se, expr, ss);
-      se->expr = build_fold_addr_expr (se->expr);
+      se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
 
       if (g77 && TREE_TYPE (TREE_TYPE (se->expr)) != NULL_TREE
 	      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (se->expr))))

@@ -99,6 +99,8 @@ create_iv (tree base, tree step, tree var, struct loop *loop,
     }
   if (POINTER_TYPE_P (TREE_TYPE (base)))
     {
+      if (TREE_CODE (base) == ADDR_EXPR)
+	mark_addressable (TREE_OPERAND (base, 0));
       step = fold_convert (sizetype, step);
       if (incr_op == MINUS_EXPR)
 	step = fold_build1 (NEGATE_EXPR, sizetype, step);
