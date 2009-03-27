@@ -1,3 +1,32 @@
+2009-03-27  Richard Guenther  <rguenther@suse.de>
+
+	* gimplify.c (mark_addressable): Export.
+	* tree-flow.h (mark_addressable): Declare.
+	* tree-ssa-loop-manip.c (create_iv): Mark the base addressable.
+	* tree-ssa.c (verify_phi_args): Verify that address taken
+	variables have TREE_ADDRESSABLE set.
+
+2009-03-27  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (build_fold_addr_expr_with_type_1): Rename back to ...
+	(build_fold_addr_expr_with_type): ... this.  Remove in_fold handling.
+	Do not mark decls TREE_ADDRESSABLE.
+	(build_fold_addr_expr): Adjust.
+	(fold_addr_expr): Remove.
+	(fold_unary): Use build_fold_addr_expr.
+	(fold_comparison): Likewise.
+	(split_address_to_core_and_offset): Likewise.
+	* coverage.c (tree_coverage_counter_addr): Mark the array decl
+	TREE_ADDRESSABLE.
+	* gimplify.c (mark_addressable): Do not exclude RESULT_DECLs.
+	(gimplify_modify_expr_to_memcpy): Mark source and destination
+	addressable.
+	* omp-low.c (create_omp_child_function): Mark the object decl
+	TREE_ADDRESSABLE.
+	(lower_rec_input_clauses): Mark the var we take the address of
+	TREE_ADDRESSABLE.
+	(lower_omp_taskreg): Mark the sender decl TREE_ADDRESSABLE.
+
 2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/39315
