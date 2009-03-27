@@ -585,7 +585,7 @@ Objective-C and Objective-C++ Dialects}.
 -m96bit-long-double  -mregparm=@var{num}  -msseregparm @gol
 -mveclibabi=@var{type} -mpc32 -mpc64 -mpc80 -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone -mno-tls-direct-seg-refs @gol
--mcmodel=@var{code-model} @gol
+-mcmodel=@var{code-model} -mabi=@var{name} @gol
 -m32  -m64 -mlarge-data-threshold=@var{num} @gol
 -mfused-madd -mno-fused-madd -msse2avx}
 
@@ -11392,6 +11392,16 @@ function type when @option{-mveclibabi=svml} is used and @code{__vrd2_sin},
 when @option{-mveclibabi=acml} is used. Both @option{-ftree-vectorize} and
 @option{-funsafe-math-optimizations} have to be enabled. A SVML or ACML ABI
 compatible library will have to be specified at link time.
+
+@item -mabi=@var{name}
+@opindex mabi
+Generate code for the specified calling convention.  Permissible values
+are: @samp{sysv} for the ABI used on GNU/Linux and other systems and
+@samp{ms} for the Microsoft ABI.  The default is to use the Microsoft
+ABI when targeting Windows.  On all other systems, the default is the
+SYSV ABI.  You can control this behavior for a specific function by
+using the function attribute @samp{ms_abi}/@samp{sysv_abi}.
+@xref{Function Attributes}.
 
 @item -mpush-args
 @itemx -mno-push-args
