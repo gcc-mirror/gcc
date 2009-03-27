@@ -151,10 +151,10 @@
         (unspec:I124MODE
 	  [(match_dup 1)
 	   (match_operand:DI 2 "ar_ccv_reg_operand" "")
-	   (match_operand:I124MODE 3 "gr_register_operand" "r")]
+	   (match_operand:I124MODE 3 "gr_reg_or_0_operand" "rO")]
 	  UNSPEC_CMPXCHG_ACQ))]
   ""
-  "cmpxchg<modesuffix>.rel %0 = %1, %3, %2"
+  "cmpxchg<modesuffix>.rel %0 = %1, %r3, %2"
   [(set_attr "itanium_class" "sem")])
 
 (define_insn "cmpxchg_rel_di"
@@ -163,19 +163,19 @@
    (set (match_dup 1)
         (unspec:DI [(match_dup 1)
 		    (match_operand:DI 2 "ar_ccv_reg_operand" "")
-		    (match_operand:DI 3 "gr_register_operand" "r")]
+		    (match_operand:DI 3 "gr_reg_or_0_operand" "rO")]
 		   UNSPEC_CMPXCHG_ACQ))]
   ""
-  "cmpxchg8.rel %0 = %1, %3, %2"
+  "cmpxchg8.rel %0 = %1, %r3, %2"
   [(set_attr "itanium_class" "sem")])
 
 (define_insn "sync_lock_test_and_set<mode>"
   [(set (match_operand:IMODE 0 "gr_register_operand" "=r")
         (match_operand:IMODE 1 "not_postinc_memory_operand" "+S"))
    (set (match_dup 1)
-        (match_operand:IMODE 2 "gr_register_operand" "r"))]
+        (match_operand:IMODE 2 "gr_reg_or_0_operand" "rO"))]
   ""
-  "xchg<modesuffix> %0 = %1, %2"
+  "xchg<modesuffix> %0 = %1, %r2"
   [(set_attr "itanium_class" "sem")])
 
 (define_expand "sync_lock_release<mode>"
