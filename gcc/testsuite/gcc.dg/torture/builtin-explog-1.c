@@ -53,7 +53,6 @@ void test(double d1, double d2, float f1, float f2,
  if (LOG(BASE) != 1.0 || LOG##f(BASE##F) != 1.0F || LOG##l(BASE##L) != 1.0L) \
     link_failure_##LOG##_N()
 
-  LOG_N(log, M_E);
   LOG_N(log2, 2.0);
   LOG_N(log10, 10.0);
 
@@ -74,7 +73,6 @@ void test(double d1, double d2, float f1, float f2,
  if (LOG(EXP(d1)) != d1*LOG(BASE) || LOG##f(EXP##f(f1)) != f1*LOG##f(BASE##F) \
   || LOG##l(EXP##l(ld1)) != ld1*LOG##l(BASE##L)) link_failure_##LOG##_##EXP()
 
-  LOGEXP(log,exp,M_E);
   LOGEXP(log,exp2,2.0);
   LOGEXP(log,exp10,10.0);
   LOGEXP(log,pow10,10.0);
