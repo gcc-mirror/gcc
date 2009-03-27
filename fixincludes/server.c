@@ -266,7 +266,7 @@ run_shell (const char* pz_cmd)
   /*  Make sure the process will pay attention to us, send the
      supplied command, and then have it output a special marker that
      we can find.  */
-  fprintf (server_pair.pf_write, "cd %s\n%s\n\necho\necho %s\n",
+  fprintf (server_pair.pf_write, "cd \"%s\"\n%s\n\necho\necho %s\n",
            p_cur_dir, pz_cmd, z_done);
   fflush (server_pair.pf_write);
 
