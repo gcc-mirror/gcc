@@ -4419,9 +4419,15 @@ check_array_designated_initializer (const constructor_elt *ce)
     {
       /* The parser only allows identifiers as designated
 	 initializers.  */
-      gcc_assert (TREE_CODE (ce->index) == IDENTIFIER_NODE);
-      error ("name %qD used in a GNU-style designated "
-	     "initializer for an array", ce->index);
+      if (ce->index == error_mark_node)
+	error ("name used in a GNU-style designated "
+	       "initializer for an array");
+      else
+	{
+	  gcc_assert (TREE_CODE (ce->index) == IDENTIFIER_NODE);
+	  error ("name %qD used in a GNU-style designated "
+		 "initializer for an array", ce->index);
+	}
       return false;
     }
 
