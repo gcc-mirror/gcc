@@ -1,3 +1,11 @@
+2009-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-inline.c: Include gt-tree-inline.h.
+	(clone_fn_id_num): New variable.
+	(clone_function_name): New function.
+	(tree_function_versioning): Use it.
+	* Makefile.in (GTFILES): Add tree-inline.c.
+
 2009-03-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* BASE-VER: Change to 4.5.0.
