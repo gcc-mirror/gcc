@@ -1,3 +1,7 @@
+2009-03-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* crontab: Add 4.4 branch snapshots.
+
 2009-02-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_version_svn (ADD_BRANCHES): Remove autovect-branch
