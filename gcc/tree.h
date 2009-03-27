@@ -2726,10 +2726,9 @@ struct tree_decl_common GTY(())
   unsigned gimple_reg_flag : 1;
   /* In a DECL with pointer type, set if no TBAA should be done.  */
   unsigned no_tbaa_flag : 1;
-  /* Padding so that 'align' can be on a 32-bit boundary.  */
+  /* Padding so that 'off_align' can be on a 32-bit boundary.  */
   unsigned decl_common_unused : 2;
 
-  unsigned int align : 24;
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */
   unsigned int off_align : 8;
 
@@ -2737,6 +2736,9 @@ struct tree_decl_common GTY(())
   tree initial;
   tree attributes;
   tree abstract_origin;
+
+  /* DECL_ALIGN.  It should have the same size as TYPE_ALIGN.  */
+  unsigned int align;
 
   alias_set_type pointer_alias_set;
   /* Points to a structure whose details depend on the language in use.  */

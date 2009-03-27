@@ -1495,7 +1495,7 @@ mem_expr_equal_p (const_tree expr1, const_tree expr2)
    -1 if not known.  */
 
 int
-get_mem_align_offset (rtx mem, int align)
+get_mem_align_offset (rtx mem, unsigned int align)
 {
   tree expr;
   unsigned HOST_WIDE_INT offset;

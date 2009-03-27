@@ -5976,7 +5976,7 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       error ("requested alignment is not a power of 2");
       *no_add_attrs = true;
     }
-  else if (i > HOST_BITS_PER_INT - 2)
+  else if (i >= HOST_BITS_PER_INT - BITS_PER_UNIT_LOG)
     {
       error ("requested alignment is too large");
       *no_add_attrs = true;
@@ -5998,7 +5998,7 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       else if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	*type = build_variant_type_copy (*type);
 
-      TYPE_ALIGN (*type) = (1 << i) * BITS_PER_UNIT;
+      TYPE_ALIGN (*type) = (1U << i) * BITS_PER_UNIT;
       TYPE_USER_ALIGN (*type) = 1;
     }
   else if (! VAR_OR_FUNCTION_DECL_P (decl)
@@ -6008,7 +6008,7 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       *no_add_attrs = true;
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL
-	   && DECL_ALIGN (decl) > (1 << i) * BITS_PER_UNIT)
+	   && DECL_ALIGN (decl) > (1U << i) * BITS_PER_UNIT)
     {
       if (DECL_USER_ALIGN (decl))
 	error ("alignment for %q+D was previously specified as %d "
@@ -6021,7 +6021,7 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
     }
   else
     {
-      DECL_ALIGN (decl) = (1 << i) * BITS_PER_UNIT;
+      DECL_ALIGN (decl) = (1U << i) * BITS_PER_UNIT;
       DECL_USER_ALIGN (decl) = 1;
     }
 
