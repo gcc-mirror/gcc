@@ -158,7 +158,7 @@ encode_integer (int kind, mpz_t integer, unsigned char *buffer,
 static int
 encode_float (int kind, mpfr_t real, unsigned char *buffer, size_t buffer_size)
 {
-  return native_encode_expr (gfc_conv_mpfr_to_tree (real, kind), buffer,
+  return native_encode_expr (gfc_conv_mpfr_to_tree (real, kind, 0), buffer,
 			     buffer_size);
 }
 

@@ -718,6 +718,8 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 	gfc_option.flag_init_real = GFC_INIT_REAL_ZERO;
       else if (!strcasecmp (arg, "nan"))
 	gfc_option.flag_init_real = GFC_INIT_REAL_NAN;
+      else if (!strcasecmp (arg, "snan"))
+	gfc_option.flag_init_real = GFC_INIT_REAL_SNAN;
       else if (!strcasecmp (arg, "inf"))
 	gfc_option.flag_init_real = GFC_INIT_REAL_INF;
       else if (!strcasecmp (arg, "-inf"))

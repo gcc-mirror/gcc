@@ -24,7 +24,7 @@ tree gfc_conv_mpz_to_tree (mpz_t, int);
 void gfc_conv_tree_to_mpz (mpz_t, tree);
 
 /* Converts between REAL_CST and MPFR floating-point representations.  */
-tree gfc_conv_mpfr_to_tree (mpfr_t, int);
+tree gfc_conv_mpfr_to_tree (mpfr_t, int, int);
 void gfc_conv_tree_to_mpfr (mpfr_ptr, tree);
 
 /* Build a tree for a constant.  Must be an EXPR_CONSTANT gfc_expr.

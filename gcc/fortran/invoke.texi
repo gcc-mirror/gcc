@@ -169,7 +169,7 @@ and warnings}.
 -fmax-stack-var-size=@var{n} @gol
 -fpack-derived  -frepack-arrays  -fshort-enums  -fexternal-blas @gol
 -fblas-matmul-limit=@var{n} -frecursive -finit-local-zero @gol
--finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan>} @gol
+-finit-integer=@var{n} -finit-real=@var{<zero|inf|-inf|nan|snan>} @gol
 -finit-logical=@var{<true|false>} -finit-character=@var{n} -fno-align-commons}
 @end table
 
@@ -1303,7 +1303,7 @@ on the stack. This flag cannot be used together with
 
 @item -finit-local-zero
 @item -finit-integer=@var{n}
-@item -finit-real=@var{<zero|inf|-inf|nan>} 
+@item -finit-real=@var{<zero|inf|-inf|nan|snan>} 
 @item -finit-logical=@var{<true|false>}
 @item -finit-character=@var{n}
 @opindex @code{finit-local-zero}
@@ -1317,7 +1317,7 @@ variables to zero, @code{LOGICAL} variables to false, and
 @code{CHARACTER} variables to a string of null bytes.  Finer-grained
 initialization options are provided by the
 @option{-finit-integer=@var{n}},
-@option{-finit-real=@var{<zero|inf|-inf|nan>}} (which also initializes
+@option{-finit-real=@var{<zero|inf|-inf|nan|snan>}} (which also initializes
 the real and imaginary parts of local @code{COMPLEX} variables),
 @option{-finit-logical=@var{<true|false>}}, and
 @option{-finit-character=@var{n}} (where @var{n} is an ASCII character
@@ -1327,7 +1327,10 @@ type variables, nor do they initialize variables that appear in an
 future releases).
 
 Note that the @option{-finit-real=nan} option initializes @code{REAL}
-and @code{COMPLEX} variables with a quiet NaN.
+and @code{COMPLEX} variables with a quiet NaN. For a signalling NaN
+use @option{-finit-real=snan}; note, however, that compile-time
+optimizations may convert them into quiet NaN and that trapping
+needs to be enabled (e.g. via @option{-ffpe-trap}).
 
 @item -falign-commons
 @opindex @code{falign-commons}

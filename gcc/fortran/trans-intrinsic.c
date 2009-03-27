@@ -488,11 +488,11 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, enum rounding_mode op)
   mpfr_init (huge);
   n = gfc_validate_kind (BT_INTEGER, kind, false);
   mpfr_set_z (huge, gfc_integer_kinds[n].huge, GFC_RND_MODE);
-  tmp = gfc_conv_mpfr_to_tree (huge, kind);
+  tmp = gfc_conv_mpfr_to_tree (huge, kind, 0);
   cond = fold_build2 (LT_EXPR, boolean_type_node, arg[0], tmp);
 
   mpfr_neg (huge, huge, GFC_RND_MODE);
-  tmp = gfc_conv_mpfr_to_tree (huge, kind);
+  tmp = gfc_conv_mpfr_to_tree (huge, kind, 0);
   tmp = fold_build2 (GT_EXPR, boolean_type_node, arg[0], tmp);
   cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, cond, tmp);
   itype = gfc_get_int_type (kind);
@@ -1197,11 +1197,11 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
 	  ikind = gfc_max_integer_kind;
 	}
       mpfr_set_z (huge, gfc_integer_kinds[n].huge, GFC_RND_MODE);
-      test = gfc_conv_mpfr_to_tree (huge, expr->ts.kind);
+      test = gfc_conv_mpfr_to_tree (huge, expr->ts.kind, 0);
       test2 = fold_build2 (LT_EXPR, boolean_type_node, tmp, test);
 
       mpfr_neg (huge, huge, GFC_RND_MODE);
-      test = gfc_conv_mpfr_to_tree (huge, expr->ts.kind);
+      test = gfc_conv_mpfr_to_tree (huge, expr->ts.kind, 0);
       test = fold_build2 (GT_EXPR, boolean_type_node, tmp, test);
       test2 = fold_build2 (TRUTH_AND_EXPR, boolean_type_node, test, test2);
 
@@ -2163,7 +2163,8 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   switch (arrayexpr->ts.type)
     {
     case BT_REAL:
-      tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge, arrayexpr->ts.kind);
+      tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge,
+				   arrayexpr->ts.kind, 0);
       break;
 
     case BT_INTEGER:
@@ -2342,7 +2343,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
   switch (expr->ts.type)
     {
     case BT_REAL:
-      tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge, expr->ts.kind);
+      tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge, expr->ts.kind, 0);
       break;
 
     case BT_INTEGER:
@@ -3199,7 +3200,7 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
   k = gfc_validate_kind (BT_REAL, expr->ts.kind, false);
   prec = build_int_cst (NULL_TREE, gfc_real_kinds[k].digits);
   emin = build_int_cst (NULL_TREE, gfc_real_kinds[k].min_exponent - 1);
-  tiny = gfc_conv_mpfr_to_tree (gfc_real_kinds[k].tiny, expr->ts.kind);
+  tiny = gfc_conv_mpfr_to_tree (gfc_real_kinds[k].tiny, expr->ts.kind, 0);
 
   switch (expr->ts.kind)
     {
