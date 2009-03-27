@@ -9346,6 +9346,14 @@ grokdeclarator (const cp_declarator *declarator,
 		error ("virtual non-class function %qs", name);
 		virtualp = 0;
 	      }
+	    else if (sfk == sfk_constructor
+		     || sfk == sfk_destructor)
+	      {
+		error (funcdef_flag
+		       ? "%qs defined in a non-class scope"
+		       : "%qs declared in a non-class scope", name);
+		sfk = sfk_none;
+	      }
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE && staticp < 2
 		 && !NEW_DELETE_OPNAME_P (original_name))
