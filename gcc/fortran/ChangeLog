@@ -1,3 +1,14 @@
+2009-03-27  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (enum init_local_real.): Add GFC_INIT_REAL_SNAN.
+	(gfc_expr): Add is_snan.
+	* trans-const.c (gfc_conv_mpfr_to_tree): Support SNaN.
+	(gfc_conv_constant_to_tree): Update call to gfc_conv_mpfr_to_tree.
+	* trans-const.h (gfc_conv_mpfr_to_tree): Update prototype.
+	* resolve.c (build_default_init_expr): Update call.
+	* target-memory.c (encode_float): Ditto.
+	* trans-intrinsic.c (gfc_conv_intrinsic_aint,gfc_conv_intrinsic_mod,
+
 2009-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* lang.opt: Unify help texts for -I, -Wconversion, -d, -fopenmp,

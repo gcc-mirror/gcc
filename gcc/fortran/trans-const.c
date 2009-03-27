@@ -218,7 +218,7 @@ gfc_conv_tree_to_mpz (mpz_t i, tree source)
 /* Converts a real constant into backend form.  */
 
 tree
-gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
+gfc_conv_mpfr_to_tree (mpfr_t f, int kind, int is_snan)
 {
   tree type;
   int n;
@@ -228,7 +228,11 @@ gfc_conv_mpfr_to_tree (mpfr_t f, int kind)
   gcc_assert (gfc_real_kinds[n].radix == 2);
 
   type = gfc_get_real_type (kind);
-  real_from_mpfr (&real, f, type, GFC_RND_MODE);
+  if (mpfr_nan_p (f) && is_snan)
+     real_from_string (&real, "SNaN");
+  else
+    real_from_mpfr (&real, f, type, GFC_RND_MODE);
+
   return build_real (type, real);
 }
 
@@ -277,7 +281,7 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
 			    gfc_build_string_const (expr->representation.length,
 						    expr->representation.string));
       else
-	return gfc_conv_mpfr_to_tree (expr->value.real, expr->ts.kind);
+	return gfc_conv_mpfr_to_tree (expr->value.real, expr->ts.kind, expr->is_snan);
 
     case BT_LOGICAL:
       if (expr->representation.string)
@@ -304,9 +308,9 @@ gfc_conv_constant_to_tree (gfc_expr * expr)
       else
 	{
 	  tree real = gfc_conv_mpfr_to_tree (expr->value.complex.r,
-					  expr->ts.kind);
+					  expr->ts.kind, expr->is_snan);
 	  tree imag = gfc_conv_mpfr_to_tree (expr->value.complex.i,
-					  expr->ts.kind);
+					  expr->ts.kind, expr->is_snan);
 
 	  return build_complex (gfc_typenode_for_spec (&expr->ts),
 				real, imag);
