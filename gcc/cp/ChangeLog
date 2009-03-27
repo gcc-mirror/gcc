@@ -1,3 +1,8 @@
+2009-03-27  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/29727
+	* decl.c (check_array_designated_initializer): Handle error_mark_node.
+
 2009-03-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/35652
