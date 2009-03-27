@@ -1,3 +1,8 @@
+2009-03-27  Ian Lance Taylor  <iant@google.com>
+
+	* include/backward/hashtable.h (_S_num_primes): Change to 29.
+	(__stl_prime_list): Add 5 at the start of the list.
+
 2009-03-25  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/std/fstream (basic_filebuf<>::open(const std::string&,
