@@ -1,3 +1,10 @@
+2009-03-27  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR c++/38638
+	* parser.c (cp_parser_elaborated_type_specifier): If we have a
+	typename tag and don't have either a TYPE_DECL or a
+	TEMPLATE_ID_EXPR, set the type to NULL.
+
 2009-03-27  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/37647

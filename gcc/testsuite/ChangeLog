@@ -1,5 +1,11 @@
 2009-03-27  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
+	PR c++/38638
+	* g++.dg/template/typename17.C: New testcase.
+	* g++.dg/template/typename18.C: New testcase.
+
+2009-03-27  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
 	PR c++/36799
 	* g++.dg/other/var_copy-1.C: New test.
 
