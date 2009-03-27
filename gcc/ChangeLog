@@ -1,3 +1,8 @@
+2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* c-common.c (pointer_int_sum): Use HOST_WIDE_INT_PRINT_DEC
+	on return from tree_low_cst.
+
 2009-03-27  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c++/36799
