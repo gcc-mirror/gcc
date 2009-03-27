@@ -1,3 +1,8 @@
+2009-03-27  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR c++/36799
+	* g++.dg/other/var_copy-1.C: New test.
+
 2009-03-27  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/37647
