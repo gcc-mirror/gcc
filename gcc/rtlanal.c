@@ -39,18 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "tree.h"
 
-/* Information about a subreg of a hard register.  */
-struct subreg_info
-{
-  /* Offset of first hard register involved in the subreg.  */
-  int offset;
-  /* Number of hard registers involved in the subreg.  */
-  int nregs;
-  /* Whether this subreg can be represented as a hard reg with the new
-     mode.  */
-  bool representable_p;
-};
-
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
 static bool covers_regno_p (const_rtx, unsigned int);
@@ -58,9 +46,6 @@ static bool covers_regno_no_parallel_p (const_rtx, unsigned int);
 static int rtx_referenced_p_1 (rtx *, void *);
 static int computed_jump_p_1 (const_rtx);
 static void parms_set (rtx, const_rtx, void *);
-static void subreg_get_info (unsigned int, enum machine_mode,
-			     unsigned int, enum machine_mode,
-			     struct subreg_info *);
 
 static unsigned HOST_WIDE_INT cached_nonzero_bits (const_rtx, enum machine_mode,
                                                    const_rtx, enum machine_mode,
@@ -3090,7 +3075,7 @@ subreg_lsb (const_rtx x)
    offset - The byte offset.
    ymode  - The mode of a top level SUBREG (or what may become one).
    info   - Pointer to structure to fill in.  */
-static void
+void
 subreg_get_info (unsigned int xregno, enum machine_mode xmode,
 		 unsigned int offset, enum machine_mode ymode,
 		 struct subreg_info *info)

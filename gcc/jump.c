@@ -1536,6 +1536,7 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
     {
       int reg_x = -1, reg_y = -1;
       int byte_x = 0, byte_y = 0;
+      struct subreg_info info;
 
       if (GET_MODE (x) != GET_MODE (y))
 	return 0;
@@ -1552,15 +1553,12 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 
 	  if (reg_renumber[reg_x] >= 0)
 	    {
-	      if (!subreg_offset_representable_p (reg_renumber[reg_x],
-						  GET_MODE (SUBREG_REG (x)),
-						  byte_x,
-						  GET_MODE (x)))
+	      subreg_get_info (reg_renumber[reg_x],
+			       GET_MODE (SUBREG_REG (x)), byte_x,
+			       GET_MODE (x), &info);
+	      if (!info.representable_p)
 		return 0;
-	      reg_x = subreg_regno_offset (reg_renumber[reg_x],
-					   GET_MODE (SUBREG_REG (x)),
-					   byte_x,
-					   GET_MODE (x));
+	      reg_x = info.offset;
 	      byte_x = 0;
 	    }
 	}
@@ -1578,15 +1576,12 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
 
 	  if (reg_renumber[reg_y] >= 0)
 	    {
-	      if (!subreg_offset_representable_p (reg_renumber[reg_y],
-						  GET_MODE (SUBREG_REG (y)),
-						  byte_y,
-						  GET_MODE (y)))
+	      subreg_get_info (reg_renumber[reg_y],
+			       GET_MODE (SUBREG_REG (y)), byte_y,
+			       GET_MODE (y), &info);
+	      if (!info.representable_p)
 		return 0;
-	      reg_y = subreg_regno_offset (reg_renumber[reg_y],
-					   GET_MODE (SUBREG_REG (y)),
-					   byte_y,
-					   GET_MODE (y));
+	      reg_y = info.offset;
 	      byte_y = 0;
 	    }
 	}
@@ -1728,13 +1723,17 @@ true_regnum (const_rtx x)
     {
       int base = true_regnum (SUBREG_REG (x));
       if (base >= 0
-	  && base < FIRST_PSEUDO_REGISTER
-	  && subreg_offset_representable_p (REGNO (SUBREG_REG (x)),
-					    GET_MODE (SUBREG_REG (x)),
-					    SUBREG_BYTE (x), GET_MODE (x)))
-	return base + subreg_regno_offset (REGNO (SUBREG_REG (x)),
-					   GET_MODE (SUBREG_REG (x)),
-					   SUBREG_BYTE (x), GET_MODE (x));
+	  && base < FIRST_PSEUDO_REGISTER)
+	{
+	  struct subreg_info info;
+
+	  subreg_get_info (REGNO (SUBREG_REG (x)),
+			   GET_MODE (SUBREG_REG (x)),
+			   SUBREG_BYTE (x), GET_MODE (x), &info);
+
+	  if (info.representable_p)
+	    return base + info.offset;
+	}
     }
   return -1;
 }

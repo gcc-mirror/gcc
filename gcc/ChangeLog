@@ -1,5 +1,16 @@
 2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* jump.c (rtx_renumbered_equal_p): Use subreg_get_info.
+	(true_regnum): Likewise.
+
+	* rtlanal.c (subreg_info): Moved to ...
+	* rtl.h (subreg_info): Here.  New.
+	(subreg_get_info): New.
+
+	* rtlanal.c (subreg_get_info): Make it extern.
+
+2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/39472
 	* config/i386/i386.c (ix86_abi): New.
 	(override_options): Handle -mabi=.
