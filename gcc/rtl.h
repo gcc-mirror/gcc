@@ -1806,6 +1806,22 @@ extern rtx canonicalize_condition (rtx, rtx, int, rtx *, rtx, int, int);
    being made.  */
 extern rtx get_condition (rtx, rtx *, int, int);
 
+/* Information about a subreg of a hard register.  */
+struct subreg_info
+{
+  /* Offset of first hard register involved in the subreg.  */
+  int offset;
+  /* Number of hard registers involved in the subreg.  */
+  int nregs;
+  /* Whether this subreg can be represented as a hard reg with the new
+     mode.  */
+  bool representable_p;
+};
+
+extern void subreg_get_info (unsigned int, enum machine_mode,
+			     unsigned int, enum machine_mode,
+			     struct subreg_info *);
+
 /* lists.c */
 
 extern void free_EXPR_LIST_list		(rtx *);
