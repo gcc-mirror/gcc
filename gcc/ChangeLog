@@ -1,5 +1,11 @@
 2009-03-29  Ben Elliston  <bje@au.ibm.com>
 
+	PR target/30451
+	* config/rs6000/rs6000.md (*movti_ppc64): Correct the order of
+	load and store attributes.
+
+2009-03-29  Ben Elliston  <bje@au.ibm.com>
+
 	* config/i386/i386.c (enum ix86_builtins): Add IX86_BUILTIN_HUGE_VALQ.
 	(ix86_init_builtins): Add built-in function __builtin_huge_valq.
 	(ix86_expand_builtin): Handle IX86_BUILTIN_HUGE_VALQ.
