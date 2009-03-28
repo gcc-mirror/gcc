@@ -1,3 +1,8 @@
+2009-03-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/38432
+	* resolve.c (gfc_resolve_iterator): Add zero-loop warning.
+
 2009-03-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Paul Thomas  <pault@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>

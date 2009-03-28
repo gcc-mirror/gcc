@@ -1,3 +1,13 @@
+2009-03-28 Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/38432
+	* gfortran.dg/do_check_5.f90: New test.
+	* gfortran.dg/array_constructor_11.f90: Add dg-warning.
+	* gfortran.dg/array_constructor_18.f90: Ditto.
+	* gfortran.dg/array_constructor_22.f90: Ditto.
+	* gfortran.dg/do_3.F90: Ditto.
+	* gfortran.dg/do_1.f90: Ditto.
+
 2009-03-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38180

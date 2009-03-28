@@ -5,7 +5,7 @@
 !
 ! Contributed by Joost VandeVondele <jv244@cam.ac.uk>
 !
-  call foo ((/(S1(i),i=1,3,-1)/))
+  call foo ((/(S1(i),i=1,3,-1)/)) ! { dg-warning "will be executed zero times" }
 CONTAINS
   FUNCTION S1(i)
     CHARACTER(LEN=1) :: S1
