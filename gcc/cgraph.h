@@ -143,9 +143,6 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   /* Pointer to the next clone.  */
   struct cgraph_node *next_clone;
   struct cgraph_node *prev_clone;
-  /* Pointer to a single unique cgraph node for this function.  If the
-     function is to be output, this is the copy that will survive.  */
-  struct cgraph_node *master_clone;
   /* For functions with many calls sites it holds map from call expression
      to the edge to speed up cgraph_edge function.  */
   htab_t GTY((param_is (struct cgraph_edge))) call_site_hash;
@@ -334,8 +331,6 @@ bool cgraph_function_possibly_inlined_p (tree);
 void cgraph_unnest_node (struct cgraph_node *);
 
 enum availability cgraph_function_body_availability (struct cgraph_node *);
-bool cgraph_is_master_clone (struct cgraph_node *);
-struct cgraph_node *cgraph_master_clone (struct cgraph_node *);
 void cgraph_add_new_function (tree, bool);
 
 /* In cgraphunit.c  */
