@@ -1,3 +1,64 @@
+2009-03-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/t-arm-coff, config/h8300/coff.h,
+	config/i386/i386-aout.h, config/i386/i386-coff.h,
+	config/libgloss.h, config/m68k/coff.h, config/m68k/m68k-aout.h,
+	config/pdp11/2bsd.h, config/rs6000/aix41.h,
+	config/rs6000/aix41.opt, config/rs6000/t-newas, config/sh/coff.h,
+	fix-header.c, fixproto, gen-protos.c, protoize.c, scan-decls.c,
+	scan-types.sh, scan.c, scan.h, sort-protos, sys-protos.h,
+	sys-types.h: Remove.
+	* Makefile.in: Remove protoize and fixproto support and references
+	in comments.
+	(SYSCALLS.c.X-warn, TARGET_GETGROUPS_T, STMP_FIXPROTO,
+	PROTOIZE_INSTALL_NAME, UNPROTOIZE_INSTALL_NAME, FIXPROTO_DEFINES):
+	Remove.
+	(ALL_HOST_OBJS): Remove $(PROTO_OBJS).
+	(MOSTLYCLEANFILES): Remove protoize$(exeext) and
+	unprotoize$(exeext).
+	(rest.encap): Don't depend on $(STMP_FIXPROTO)
+	(.PHONY): Don't depend on proto.
+	(libgcc-support): Don't depend on $(STMP_FIXPROTO).
+	(proto, PROTO_OBJS, protoize$(exeext), unprotoize$(exeext),
+	protoize.o, unprotoize.o, SYSCALLS.c.X, test-protoize-simple,
+	deduced.h, GEN_PROTOS_OBJS, build/gen-protos$(build_exeext),
+	build/gen-protos.o, build/scan.o, xsys-protos.h,
+	build/fix-header$(build_exeext), build/fix-header.o,
+	build/scan-decls.o, fixhdr.ready, stmp-fixproto,
+	stmp-install-fixproto): Remove.
+	(mostlyclean): Don't remove xsys-protos.hT, SYSCALLS.c.X,
+	SYSCALLS.c or fixproto files.
+	(install-common): Don't install protoize.
+	(install-headers-tar, install-headers-cpio, install-headers-cp):
+	Don't depend on $(STMP_FIXPROTO).
+	(install-mkheaders): Don't depend on $(STMP_FIXPROTO).  Don't
+	install fixproto files or write out fixproto settings.
+	(uninstall): Don't uninstall protoize.
+	* config.gcc (use_fixproto): Remove.
+	(arm-*-coff*, armel-*-coff*, h8300-*-*, i[34567]86-*-aout*,
+	i[34567]86-*-coff*, m68k-*-aout*, m68k-*-coff*, pdp11-*-bsd,
+	rs6000-ibm-aix4.[12]*, powerpc-ibm-aix4.[12]*, sh-*-*): Remove.
+	* config/m32r/t-linux (STMP_FIXPROTO): Remove.
+	* config/m68k/m68k.c: Remove M68K_TARGET_COFF-conditional code.
+	* config/mips/t-iris (FIXPROTO_DEFINES): Remove.
+	* config/pa/t-pa-hpux (FIXPROTO_DEFINES): Remove.
+	* config/pdp11/pdp11.c: Remove TWO_BSD-conditional code.
+	* config/t-svr4 (FIXPROTO_DEFINES): Remove.
+	* config/t-vxworks (STMP_FIXPROTO): Remove.
+	* configure.ac (AC_TYPE_GETGROUPS, TARGET_GETGROUPS_T,
+	STMP_FIXPROTO): Remove.
+	* config.in, configure: Regenerate.
+	* crtstuff.c (gid_t, uid_t): Don't undefine.
+	* doc/install.texi: Change m68k-coff to m68k-elf in example.
+	(arm-*-coff, arm-*-aout: Remove target entries.
+	(*-ibm-aix*): Mention removal of support for AIX 4.2 and older.
+	Remove mention of AIX 4.1.
+	(m68k-*-*): Remove mention of m68k-*-aout and m68k-*-coff*.
+	* doc/invoke.texi (Running Protoize): Remove.
+	* doc/trouble.texi (Actual Bugs): Remove mention of fixproto.
+	(Protoize Caveats): Remove.
+	* tsystem.h: Update comments on headers assumed to exist.
+
 2009-03-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c: Add a new year to the copyright.  Add a new

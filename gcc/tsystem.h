@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations
    based on target macros.
-   Copyright (C) 2000, 2001, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2004, 2005, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -99,7 +99,7 @@ extern void *memset (void *, int, size_t);
 extern int errno;
 #endif
 
-/* GCC (fixproto) guarantees these system headers exist.  */
+/* If these system headers do not exist, fixincludes must create them.  */
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -107,7 +107,7 @@ extern int errno;
 /* GCC supplies this header.  */
 #include <limits.h>
 
-/* GCC (fixproto) guarantees this system headers exists.  */
+/* If these system headers do not exist, fixincludes must create them.  */
 #include <time.h>
 
 #endif /* inhibit_libc */

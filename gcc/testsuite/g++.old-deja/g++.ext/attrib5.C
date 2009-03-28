@@ -1,4 +1,4 @@
-// { dg-do run { xfail alpha*-dec-osf* *-*-hms i?86-pc-cygwin *-*-coff } }
+// { dg-do run { xfail alpha*-dec-osf* i?86-pc-cygwin } }
 // Test that attributes weak and alias coexist.
 // { dg-require-weak "" }
 // { dg-require-alias "" }

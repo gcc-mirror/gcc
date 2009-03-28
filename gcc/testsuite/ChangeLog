@@ -1,3 +1,9 @@
+2009-03-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.old-deja/g++.ext/attrib5.C, g++.old-deja/g++.jason/thunk3.C,
+	gcc.c-torture/compile/981006-1.c: Don't XFAIL or add special
+	options for removed targets.
+
 2009-03-27  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39120

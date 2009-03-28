@@ -6,7 +6,7 @@
 /* { dg-do assemble } */
 /* For MIPS at least, pic is needed to trigger the problem. */
 /* { dg-options "-w -Wuninitialized -Werror -fpic" } */
-/* { dg-options "-w -Wuninitialized -Werror" { target { { rs6000-*-aix* powerpc*-*-aix* arm*-*-* fr30-*-* sh-*-hms sh-*-coff h8300*-*-* cris-*-elf* mmix-*-* } || { ! fpic } } } } */
+/* { dg-options "-w -Wuninitialized -Werror" { target { { rs6000-*-aix* powerpc*-*-aix* arm*-*-* fr30-*-* sh-*-hms h8300*-*-* cris-*-elf* mmix-*-* } || { ! fpic } } } } */
 
 int foo (int a, int b)
 {

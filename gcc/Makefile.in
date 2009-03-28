@@ -22,7 +22,7 @@
 #<http://www.gnu.org/licenses/>.
 
 # The targets for external use include:
-# all, doc, proto, install, install-cross, install-cross-rest,
+# all, doc, install, install-cross, install-cross-rest,
 # uninstall, TAGS, mostlyclean, clean, distclean, maintainer-clean.
 
 # This is the default target.
@@ -175,8 +175,6 @@ GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 # be subject to -Werror:
 # flex output may yield harmless "no previous prototype" warnings
 build/gengtype-lex.o-warn = -Wno-error
-# SYSCALLS.c misses prototypes
-SYSCALLS.c.X-warn = -Wno-strict-prototypes -Wno-error
 # dfp.c contains many alias violations
 dfp.o-warn = -fno-strict-aliasing
 # mips-tfile.c contains -Wcast-qual warnings.
@@ -297,9 +295,6 @@ DECNUMFMT = $(srcdir)/../libdecnumber/$(enable_decimal_float)
 DECNUMINC = -I$(DECNUM) -I$(DECNUMFMT) -I../libdecnumber
 LIBDECNUMBER = ../libdecnumber/libdecnumber.a
 
-# Substitution type for target's getgroups 2nd arg.
-TARGET_GETGROUPS_T = @TARGET_GETGROUPS_T@
-
 # Target to use when installing include directory.  Either
 # install-headers-tar, install-headers-cpio or install-headers-cp.
 INSTALL_HEADERS_DIR = @build_install_headers_dir@
@@ -395,8 +390,7 @@ CROSS_SYSTEM_HEADER_DIR = @CROSS_SYSTEM_HEADER_DIR@
 # macro is also used in a double-quoted context.
 SYSTEM_HEADER_DIR = `echo @SYSTEM_HEADER_DIR@ | sed -e :a -e 's,[^/]*/\.\.\/,,' -e ta`
 
-# Control whether to run fixproto and fixincludes.
-STMP_FIXPROTO = @STMP_FIXPROTO@
+# Control whether to run fixincludes.
 STMP_FIXINC = @STMP_FIXINC@
 
 # Test to see whether <limits.h> exists in the system header files.
@@ -701,8 +695,6 @@ BUILD_CPPFLAGS=$(ALL_CPPFLAGS)
 GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
 GCC_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcc|sed '$(program_transform_name)')
 CPP_INSTALL_NAME := $(shell echo cpp|sed '$(program_transform_name)')
-PROTOIZE_INSTALL_NAME := $(shell echo protoize|sed '$(program_transform_name)')
-UNPROTOIZE_INSTALL_NAME := $(shell echo unprotoize|sed '$(program_transform_name)')
 GCOV_INSTALL_NAME := $(shell echo gcov|sed '$(program_transform_name)')
 GCCBUG_INSTALL_NAME := $(shell echo gccbug|sed '$(program_transform_name)')
 
@@ -715,9 +707,6 @@ RUNTEST = `if [ -f $${srcdir}/../dejagnu/runtest ] ; then \
 	       echo $${srcdir}/../dejagnu/runtest ; \
 	    else echo runtest; fi`
 RUNTESTFLAGS =
-
-# Extra symbols for fixproto to define when parsing headers.
-FIXPROTO_DEFINES =
 
 # Extra flags to use when compiling crt{begin,end}.o.
 CRTSTUFF_T_CFLAGS =
@@ -1324,7 +1313,7 @@ ALL_HOST_OBJS = $(GCC_OBJS) $(C_OBJS) $(OBJS) libbackend.o \
   $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS)) \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) \
   mips-tfile.o mips-tdump.o \
-  $(PROTO_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
+  $(GCOV_OBJS) $(GCOV_DUMP_OBJS)
 
 BACKEND = main.o @TREEBROWSER@ libbackend.a $(CPPLIB) $(LIBDECNUMBER)
 
@@ -1336,7 +1325,6 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-input.list \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) cc1*-dummy$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
- protoize$(exeext) unprotoize$(exeext) \
  $(SPECS) collect2$(exeext) \
  gcov-iov$(build_exeext) gcov$(exeext) gcov-dump$(exeext) \
  *.[0-9][0-9].* *.[si] *-checksum.c libbackend.a libgcc.mk
@@ -1586,7 +1574,7 @@ all.cross: native gcc-cross$(exeext) cpp$(exeext) specs \
 start.encap: native xgcc$(exeext) cpp$(exeext) specs \
 	libgcc-support lang.start.encap @GENINSRC@ srcextra
 # These can't be made until after GCC can run.
-rest.encap: $(STMP_FIXPROTO) lang.rest.encap
+rest.encap: lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status auto-host.h build-@POSUB@ $(LANGUAGES) \
@@ -1596,7 +1584,7 @@ native: config.status auto-host.h build-@POSUB@ $(LANGUAGES) \
 c: cc1$(exeext)
 
 # Tell GNU make these are phony targets.
-.PHONY: c proto
+.PHONY: c
 
 # On the target machine, finish building a cross compiler.
 # This does the things that can't be done on the host machine.
@@ -1670,7 +1658,7 @@ srcdirify = $(patsubst $(srcdir)%,$$(gcc_srcdir)%,$(filter $(srcdir)%,$(1))) \
 # so we combine them.  Sort removes duplicates.
 GCC_EXTRA_PARTS := $(sort $(EXTRA_MULTILIB_PARTS) $(EXTRA_PARTS))
 
-libgcc-support: libgcc.mvars stmp-int-hdrs $(STMP_FIXPROTO) $(TCONFIG_H) \
+libgcc-support: libgcc.mvars stmp-int-hdrs $(TCONFIG_H) \
 	$(MACHMODE_H) $(FPBIT) $(DPBIT) $(TPBIT) $(LIB2ADD) \
 	$(LIB2ADD_ST) $(LIB2ADDEH) $(srcdir)/emutls.c gcov-iov.h $(SFP_MACHINE)
 
@@ -3460,7 +3448,7 @@ intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h Makefile
 	  -c $(srcdir)/intl.c $(OUTPUT_OPTION)
 
 #
-# Remake cpp and protoize.
+# Remake cpp.
 
 PREPROCESSOR_DEFINES = \
   -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
@@ -3483,72 +3471,6 @@ cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
-
-proto: config.status protoize$(exeext) unprotoize$(exeext) SYSCALLS.c.X
-
-PROTO_OBJS = intl.o version.o cppdefault.o errors.o
-
-protoize$(exeext): protoize.o $(PROTO_OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ protoize.o $(PROTO_OBJS) $(LIBS)
-
-unprotoize$(exeext): unprotoize.o $(PROTO_OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ unprotoize.o $(PROTO_OBJS) $(LIBS)
-
-protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h $(TM_H) Makefile version.h cppdefault.h intl.h
-	(SHLIB_LINK='$(SHLIB_LINK)'; \
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
-	  $(DRIVER_DEFINES) \
-	  $(srcdir)/protoize.c $(OUTPUT_OPTION))
-
-unprotoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) \
-    $(SYSTEM_H) coretypes.h $(TM_H) Makefile version.h cppdefault.h intl.h
-	(SHLIB_LINK='$(SHLIB_LINK)'; \
-	$(CC) -c -DUNPROTOIZE $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
-	  $(DRIVER_DEFINES) \
-	  $(srcdir)/protoize.c $(OUTPUT_OPTION))
-
-# This info describes the target machine, so compile with GCC just built.
-SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES) \
-   stmp-int-hdrs
-	-rm -f SYSCALLS.c tmp-SYSCALLS.s
-	sed -e s/TARGET_GETGROUPS_T/$(TARGET_GETGROUPS_T)/ \
-	  $(srcdir)/sys-types.h $(srcdir)/sys-protos.h > SYSCALLS.c
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) \
-	  -aux-info $@ -S -o tmp-SYSCALLS.s SYSCALLS.c
-	-rm -f SYSCALLS.c tmp-SYSCALLS.s
-
-
-test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
-	-rm -f tmp-proto.[cso]
-	cp $(srcdir)/protoize.c tmp-proto.c
-	chmod u+w tmp-proto.c
-	./protoize -N -B ./ -x getopt.h -c "-B./ -Wall -Wwrite-strings \
-	  $(GCC_CFLAGS) $(INCLUDES) \
-	  -DGCC_INCLUDE_DIR=0 \
-	  -DFIXED_INCLUDE_DIR=0 \
-	  -DGPLUSPLUS_INCLUDE_DIR=0 \
-	  -DCROSS_INCLUDE_DIR=0 \
-	  -DTOOL_INCLUDE_DIR=0 \
-	  -DSTANDARD_EXEC_PREFIX=0 \
-	  -DDEFAULT_TARGET_MACHINE=0 \
-	  -DDEFAULT_TARGET_VERSION=0" tmp-proto.c
-	@echo '**********' Expect 400 lines of differences.
-	-diff $(srcdir)/protoize.c tmp-proto.c > tmp-proto.diff
-	-wc -l tmp-proto.diff
-	./unprotoize -N -x getopt.h -c "-B./ -Wall -Wwrite-strings \
-	  $(GCC_CFLAGS) $(INCLUDES) \
-	  -DGCC_INCLUDE_DIR=0 \
-	  -DFIXED_INCLUDE_DIR=0 \
-	  -DGPLUSPLUS_INCLUDE_DIR=0 \
-	  -DCROSS_INCLUDE_DIR=0 \
-	  -DTOOL_INCLUDE_DIR=0 \
-	  -DSTANDARD_EXEC_PREFIX=0 \
-	  -DDEFAULT_TARGET_MACHINE=0 \
-	  -DDEFAULT_TARGET_VERSION=0" tmp-proto.c
-	@echo Expect zero differences.
-	diff $(srcdir)/protoize.c tmp-proto.c | cat
-	-rm -f tmp-proto.[cs] tmp-proto$(objext)
 
 # gcov-iov.c is run on the build machine to generate gcov-iov.h from version.c
 build/gcov-iov.o: gcov-iov.c $(BCONFIG_H) coretypes.h $(GTM_H) \
@@ -3712,98 +3634,6 @@ stmp-fixinc: gsyslimits.h macro_list fixinc_list \
 	  done; \
 	fi
 	$(STAMP) stmp-fixinc
-
-# Files related to the fixproto script.
-# gen-protos and fix-header are compiled with CC_FOR_BUILD, but they are only
-# used in native and host-x-target builds, so it's safe to link them with
-# libiberty.a.
-
-deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
-	if [ -d "$(SYSTEM_HEADER_DIR)" ]; \
-	then \
-	  CC="$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -I. -I$(srcdir) -isystem include -isystem ${SYSTEM_HEADER_DIR}"; \
-	  export CC; \
-	  $(SHELL) $(srcdir)/scan-types.sh "$(srcdir)" >tmp-deduced.h; \
-	  mv tmp-deduced.h deduced.h; \
-	else \
-	  $(STAMP) deduced.h; \
-	fi
-
-GEN_PROTOS_OBJS = build/gen-protos.o build/scan.o $(BUILD_ERRORS)
-build/gen-protos$(build_exeext): $(GEN_PROTOS_OBJS)
-	${CC_FOR_BUILD} $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	  $(GEN_PROTOS_OBJS) $(BUILD_LIBS)
-
-build/gen-protos.o: gen-protos.c scan.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(GTM_H) errors.h
-
-build/scan.o: scan.c scan.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H)
-
-xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h \
-  build/gen-protos$(build_exeext) Makefile
-	sed -e s/TARGET_GETGROUPS_T/$(TARGET_GETGROUPS_T)/ \
-	  deduced.h $(srcdir)/sys-protos.h > tmp-fixtmp.c
-	mv tmp-fixtmp.c fixtmp.c
-	$(GCC_FOR_TARGET) fixtmp.c -w -U__SIZE_TYPE__ -U__PTRDIFF_TYPE__ -U__WCHAR_TYPE__ -E \
-	  | sed -e 's/	/ /g' -e 's/ *(/ (/g' -e 's/ [ ]*/ /g' -e 's/( )/()/' \
-	  | $(RUN_GEN) build/gen-protos >xsys-protos.hT
-	mv xsys-protos.hT xsys-protos.h
-	rm -rf fixtmp.c
-
-# This is nominally a 'build' program, but it's run only when host==build,
-# so we can (indeed, must) use $(LIBDEPS) and $(LIBS).
-build/fix-header$(build_exeext): build/fix-header.o build/scan-decls.o \
-  build/scan.o xsys-protos.h \
-  $(BUILD_ERRORS) $(LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
-	 build/fix-header.o incpath.o cppdefault.o build/scan-decls.o prefix.o \
-	 build/scan.o $(BUILD_ERRORS) $(LIBS)
-
-build/fix-header.o: fix-header.c $(OBSTACK_H) scan.h errors.h \
-	xsys-protos.h $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) $(CPPLIB_H)
-
-build/scan-decls.o: scan-decls.c scan.h $(CPPLIB_H) $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H)
-
-# stmp-fixproto depends on this, not on fix-header directly.
-# The idea is to make sure fix-header gets built,
-# but not rerun fixproto after each stage
-# just because fix-header's mtime has changed.
-fixhdr.ready: build/fix-header$(build_exeext)
-	-if [ -f fixhdr.ready ] ; then \
-		true; \
-	else \
-		$(STAMP) fixhdr.ready; \
-	fi
-
-# stmp-int-hdrs is to make sure fixincludes has already finished.
-# The if statement is so that we don't run fixproto a second time
-# if it has already been run on the files in `include-fixed'.
-stmp-fixproto: fixhdr.ready fixproto fixinc_list stmp-int-hdrs
-	set -e; for ml in `cat fixinc_list`; do \
-	  sysroot_headers_suffix=`echo $${ml} | sed -e 's/;.*$$//'`; \
-	  multi_dir=`echo $${ml} | sed -e 's/^[^;]*;//'`; \
-	  fix_dir=include-fixed$${multi_dir}; \
-	  if [ -f $${fix_dir}/fixed ] ; then true; \
-	  else \
-	    : This line works around a 'make' bug in BSDI 1.1.; \
-	    FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"; export FIXPROTO_DEFINES; \
-	    FIX_HEADER="build/fix-header$(build_exeext)"; export FIX_HEADER; \
-	    mkinstalldirs="$(mkinstalldirs)"; \
-	      export mkinstalldirs; \
-	    if [ -d "$(SYSTEM_HEADER_DIR)" ]; then \
-	      $(SHELL) ${srcdir}/fixproto $${fix_dir} $${fix_dir} $(SYSTEM_HEADER_DIR); \
-	      if [ $$? -eq 0 ] ; then true ; else exit 1 ; fi ; \
-	    else true; fi; \
-	    $(STAMP) $${fix_dir}/fixed; \
-	  fi; \
-	done
-	$(STAMP) stmp-fixproto
-
-# We can't run fixproto (it's being built for a different host), but we still
-# need to install it so that the user can run it when the compiler is
-# installed.
-stmp-install-fixproto: fixproto
-	$(STAMP) $@
 #
 # Remake the info files.
 
@@ -4009,7 +3839,6 @@ mostlyclean: lang.mostlyclean
 	-rm -f build/*
 	-rm -f mddeps.mk
 # Delete other built files.
-	-rm -f xsys-protos.hT
 	-rm -f specs.h options.c options.h
 # Delete the stamp and temporary files.
 	-rm -f s-* tmp-* stamp-* stmp-*
@@ -4017,11 +3846,8 @@ mostlyclean: lang.mostlyclean
 # Delete debugging dump files.
 	-rm -f *.[0-9][0-9].* */*.[0-9][0-9].*
 # Delete some files made during installation.
-	-rm -f specs $(SPECS) SYSCALLS.c.X SYSCALLS.c
+	-rm -f specs $(SPECS)
 	-rm -f collect collect2 mips-tfile mips-tdump
-# Delete files generated for fixproto
-	-rm -rf $(build_exeext) xsys-protos.h deduced.h tmp-deduced.h \
-	  gen-protos$(build_exeext) fixproto.list fixtmp.* fixhdr.ready
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
 	-rm -f */*.toc */*.log */*.vr */*.fn */*.cp */*.tp */*.ky */*.pg
@@ -4142,16 +3968,6 @@ install-common: native lang.install-common installdirs
 # using -dumpspecs.  We remove any old version because it would
 # otherwise override the specs built into the driver.
 	rm -f $(DESTDIR)$(libsubdir)/specs
-# Install protoize if it was compiled.
-	-if [ -f protoize$(exeext) ]; then \
-	  rm -f $(DESTDIR)$(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) protoize$(exeext) $(DESTDIR)$(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext); \
-	  rm -f $(DESTDIR)$(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) unprotoize$(exeext) $(DESTDIR)$(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext); \
-	  rm -f $(DESTDIR)$(libsubdir)/SYSCALLS.c.X; \
-	  $(INSTALL_DATA) SYSCALLS.c.X $(DESTDIR)$(libsubdir)/SYSCALLS.c.X; \
-	  chmod a-x $(DESTDIR)$(libsubdir)/SYSCALLS.c.X; \
-	fi
 # Install gcov if it was compiled.
 	-if [ -f gcov$(exeext) ]; \
 	then \
@@ -4299,7 +4115,7 @@ install-itoolsdirs: installdirs
 	$(mkinstalldirs) $(DESTDIR)$(itoolsdir)
 
 # Install the include directory using tar.
-install-headers-tar: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
+install-headers-tar: stmp-int-hdrs install-include-dir
 # We use `pwd`/include instead of just include to problems with CDPATH
 # Unless a full pathname is provided, some shells would print the new CWD,
 # found in CDPATH, corrupting the output.  We could just redirect the
@@ -4313,7 +4129,7 @@ install-headers-tar: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # So use `exit 0' to ignore its exit status.
 
 # Install the include directory using cpio.
-install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
+install-headers-cpio: stmp-int-hdrs install-include-dir
 # See discussion about the use of `pwd` above
 	cd `${PWD_COMMAND}`/include ; \
 	find . -print | cpio -pdum $(DESTDIR)$(libsubdir)/include
@@ -4321,7 +4137,7 @@ install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 	find . -print | cpio -pdum $(DESTDIR)$(libsubdir)/include-fixed
 
 # Install the include directory using cp.
-install-headers-cp: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
+install-headers-cp: stmp-int-hdrs install-include-dir
 	cp -p -r include $(DESTDIR)$(libsubdir)
 	cp -p -r include-fixed $(DESTDIR)$(libsubdir)
 
@@ -4338,7 +4154,7 @@ real-install-headers-cp:
 	cp -p -r include-fixed $(DESTDIR)$(libsubdir)
 
 # Install supporting files for fixincludes to be run later.
-install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-itoolsdirs \
+install-mkheaders: stmp-int-hdrs install-itoolsdirs \
   macro_list fixinc_list
 	$(INSTALL_DATA) $(srcdir)/gsyslimits.h \
 	  $(DESTDIR)$(itoolsdatadir)/gsyslimits.h
@@ -4351,19 +4167,10 @@ install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-itoolsdirs \
 	done
 	$(INSTALL_SCRIPT) $(srcdir)/../mkinstalldirs \
 		$(DESTDIR)$(itoolsdir)/mkinstalldirs ; \
-	if [ x$(STMP_FIXPROTO) != x ] ; then \
-	  $(INSTALL_SCRIPT) $(srcdir)/fixproto $(DESTDIR)$(itoolsdir)/fixproto ; \
-	  $(INSTALL_PROGRAM) build/fix-header$(build_exeext) \
-		$(DESTDIR)$(itoolsdir)/fix-header$(build_exeext) ; \
-	else :; fi
 	sysroot_headers_suffix='$${sysroot_headers_suffix}'; \
 		echo 'SYSTEM_HEADER_DIR="'"$(SYSTEM_HEADER_DIR)"'"' \
 		> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
 	echo 'OTHER_FIXINCLUDES_DIRS="$(OTHER_FIXINCLUDES_DIRS)"' \
-		>> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
-	echo 'FIXPROTO_DEFINES="$(FIXPROTO_DEFINES)"' \
-		>> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
-	echo 'STMP_FIXPROTO="$(STMP_FIXPROTO)"' \
 		>> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
 	echo 'STMP_FIXINC="$(STMP_FIXINC)"' \
 		>> $(DESTDIR)$(itoolsdatadir)/mkheaders.conf
@@ -4383,13 +4190,9 @@ uninstall: lang.uninstall
 	-if [ x$(cpp_install_dir) != x ]; then \
 	  rm -f $(DESTDIR)$(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
 	else true; fi
-	-rm -rf $(DESTDIR)$(bindir)/$(PROTOIZE_INSTALL_NAME)$(exeext)
-	-rm -rf $(DESTDIR)$(bindir)/$(UNPROTOIZE_INSTALL_NAME)$(exeext)
 	-rm -rf $(DESTDIR)$(bindir)/$(GCOV_INSTALL_NAME)$(exeext)
 	-rm -rf $(DESTDIR)$(man1dir)/$(GCC_INSTALL_NAME)$(man1ext)
 	-rm -rf $(DESTDIR)$(man1dir)/cpp$(man1ext)
-	-rm -rf $(DESTDIR)$(man1dir)/protoize$(man1ext)
-	-rm -rf $(DESTDIR)$(man1dir)/unprotoize$(man1ext)
 	-rm -f $(DESTDIR)$(infodir)/cpp.info* $(DESTDIR)$(infodir)/gcc.info*
 	-rm -f $(DESTDIR)$(infodir)/cppinternals.info* $(DESTDIR)$(infodir)/gccint.info*
 #

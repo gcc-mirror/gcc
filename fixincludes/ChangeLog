@@ -1,3 +1,11 @@
+2009-03-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* inclhack.def (aix_syswait, exception_structure,
+	pthread_page_size): Remove.
+	(math_exception): Remove mention of fixproto in comment.
+	* fixincl.x: Regenerate.
+	* mkheaders.in: Do not handle STMP_FIXPROTO.
+
 2009-03-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* server.c (run_shell): Quote directory name passed to cd.

@@ -653,7 +653,7 @@ provide a configure target when configuring a native compiler.
 @item
 @var{target} must be specified as @option{--target=@var{target}}
 when configuring a cross compiler; examples of valid targets would be
-m68k-coff, sh-elf, etc.
+m68k-elf, sh-elf, etc.
 
 @item
 Specifying just @var{target} instead of @option{--target=@var{target}}
@@ -2625,8 +2625,6 @@ information are.
 @uref{#arc-x-elf,,arc-*-elf}
 @item
 @uref{#arm-x-elf,,arm-*-elf}
-@uref{#arm-x-coff,,arm-*-coff}
-@uref{#arm-x-aout,,arm-*-aout}
 @item
 @uref{#avr,,avr}
 @item
@@ -2846,21 +2844,6 @@ ARM-family processors.  Subtargets that use the ELF object format
 require GNU binutils 2.13 or newer.  Such subtargets include:
 @code{arm-*-freebsd}, @code{arm-*-netbsdelf}, @code{arm-*-*linux}
 and @code{arm-*-rtems}.
-
-@html
-<hr />
-@end html
-@heading @anchor{arm-x-coff}arm-*-coff
-ARM-family processors.  Note that there are two different varieties
-of PE format subtarget supported: @code{arm-wince-pe} and
-@code{arm-pe} as well as a standard COFF target @code{arm-*-coff}.
-
-@html
-<hr />
-@end html
-@heading @anchor{arm-x-aout}arm-*-aout
-ARM-family processors.  These targets support the AOUT file format:
-@code{arm-*-aout}, @code{arm-*-netbsd}.
 
 @html
 <hr />
@@ -3316,6 +3299,7 @@ removed and the system libunwind library will always be used.
 @end html
 @heading @anchor{x-ibm-aix}*-ibm-aix*
 Support for AIX version 3 and older was discontinued in GCC 3.4.
+Support for AIX version 4.2 and older was discontinued in GCC 4.5.
 
 ``out of memory'' bootstrap failures may indicate a problem with
 process resource limits (ulimit).  Hard limits are configured in the
@@ -3436,9 +3420,6 @@ GCC does not produce the same floating-point formats that the assembler
 expects.  If one encounters this problem, set the @env{LANG}
 environment variable to @samp{C} or @samp{En_US}.
 
-By default, GCC for AIX 4.1 and above produces code that can be used on
-both Power or PowerPC processors.
-
 A default can be specified with the @option{-mcpu=@var{cpu_type}}
 switch and using the configure option @option{--with-cpu-@var{cpu_type}}.
 
@@ -3481,7 +3462,7 @@ applications.  There are no standard Unix configurations.
 <hr />
 @end html
 @heading @anchor{m68k-x-x}m68k-*-*
-By default, @samp{m68k-*-aout}, @samp{m68k-*-coff*},
+By default,
 @samp{m68k-*-elf*}, @samp{m68k-*-rtems},  @samp{m68k-*-uclinux} and
 @samp{m68k-*-linux}
 build libraries for both M680x0 and ColdFire processors.  If you only

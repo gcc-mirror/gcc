@@ -43,8 +43,6 @@ unwind.h
 #   These programs are meant to be executed only by GCC maintainers or
 #   installers.  Such files do not need to be translated, as these
 #   people typically need to be able to read English anyway.
-fix-header.c
-gen-protos.c
 genattr.c
 genattrtab.c
 genautomata.c
@@ -66,9 +64,6 @@ genpreds.c
 genrecog.c
 gensupport.c
 gensupport.h
-scan-decls.c
-scan.c
-scan.h
 
 #   These files are not yet internationalized, because they contain
 #   many strings that require a lot of analysis, and are little-used.

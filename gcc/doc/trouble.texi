@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008
+@c 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -30,7 +30,6 @@ where people's opinions differ as to what is best.
                         compliant with the ISO C standard.
 * Disappointments::     Regrettable things we can't change, but not quite bugs.
 * C++ Misunderstandings:: Common misunderstandings with GNU C++.
-* Protoize Caveats::    Things to watch out for when using @code{protoize}.
 * Non-bugs::            Things we think are right, but some others disagree.
 * Warnings and Errors:: Which problems in your code get warnings,
                         and which get errors.
@@ -45,13 +44,6 @@ The @code{fixincludes} script interacts badly with automounters; if the
 directory of system header files is automounted, it tends to be
 unmounted while @code{fixincludes} is running.  This would seem to be a
 bug in the automounter.  We don't know any good way to work around it.
-
-@item
-The @code{fixproto} script will sometimes add prototypes for the
-@code{sigsetjmp} and @code{siglongjmp} functions that reference the
-@code{jmp_buf} type before that type is defined.  To work around this,
-edit the offending file and place the typedef in front of the
-prototypes.
 @end itemize
 
 @node Cross-Compiler Problems
@@ -938,92 +930,6 @@ If application code relies on copy-assignment, a user-defined
 copy-assignment operator removes any uncertainties.  With such an
 operator, the application can define whether and how the virtual base
 subobject is assigned.
-
-@node Protoize Caveats
-@section Caveats of using @command{protoize}
-
-The conversion programs @command{protoize} and @command{unprotoize} can
-sometimes change a source file in a way that won't work unless you
-rearrange it.
-
-@itemize @bullet
-@item
-@command{protoize} can insert references to a type name or type tag before
-the definition, or in a file where they are not defined.
-
-If this happens, compiler error messages should show you where the new
-references are, so fixing the file by hand is straightforward.
-
-@item
-There are some C constructs which @command{protoize} cannot figure out.
-For example, it can't determine argument types for declaring a
-pointer-to-function variable; this you must do by hand.  @command{protoize}
-inserts a comment containing @samp{???} each time it finds such a
-variable; so you can find all such variables by searching for this
-string.  ISO C does not require declaring the argument types of
-pointer-to-function types.
-
-@item
-Using @command{unprotoize} can easily introduce bugs.  If the program
-relied on prototypes to bring about conversion of arguments, these
-conversions will not take place in the program without prototypes.
-One case in which you can be sure @command{unprotoize} is safe is when
-you are removing prototypes that were made with @command{protoize}; if
-the program worked before without any prototypes, it will work again
-without them.
-
-@opindex Wtraditional-conversion
-You can find all the places where this problem might occur by compiling
-the program with the @option{-Wtraditional-conversion} option.  It
-prints a warning whenever an argument is converted.
-
-@item
-Both conversion programs can be confused if there are macro calls in and
-around the text to be converted.  In other words, the standard syntax
-for a declaration or definition must not result from expanding a macro.
-This problem is inherent in the design of C and cannot be fixed.  If
-only a few functions have confusing macro calls, you can easily convert
-them manually.
-
-@item
-@command{protoize} cannot get the argument types for a function whose
-definition was not actually compiled due to preprocessing conditionals.
-When this happens, @command{protoize} changes nothing in regard to such
-a function.  @command{protoize} tries to detect such instances and warn
-about them.
-
-You can generally work around this problem by using @command{protoize} step
-by step, each time specifying a different set of @option{-D} options for
-compilation, until all of the functions have been converted.  There is
-no automatic way to verify that you have got them all, however.
-
-@item
-Confusion may result if there is an occasion to convert a function
-declaration or definition in a region of source code where there is more
-than one formal parameter list present.  Thus, attempts to convert code
-containing multiple (conditionally compiled) versions of a single
-function header (in the same vicinity) may not produce the desired (or
-expected) results.
-
-If you plan on converting source files which contain such code, it is
-recommended that you first make sure that each conditionally compiled
-region of source code which contains an alternative function header also
-contains at least one additional follower token (past the final right
-parenthesis of the function header).  This should circumvent the
-problem.
-
-@item
-@command{unprotoize} can become confused when trying to convert a function
-definition or declaration which contains a declaration for a
-pointer-to-function formal argument which has the same name as the
-function being defined or declared.  We recommend you avoid such choices
-of formal parameter names.
-
-@item
-You might also want to correct some of the indentation by hand and break
-long lines.  (The conversion programs don't write lines longer than
-eighty characters in any case.)
-@end itemize
 
 @node Non-bugs
 @section Certain Changes We Don't Want to Make

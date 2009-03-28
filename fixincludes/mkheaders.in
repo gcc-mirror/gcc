@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (C) 2002, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2007, 2009 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -102,9 +102,4 @@ for ml in `cat ${itoolsdatadir}/fixinc_list`; do
   fi
 
   cp ${itoolsdatadir}/include${multi_dir}/limits.h ${subincdir}
-
-  if [ x${STMP_FIXPROTO} != x ] ; then
-    export FIXPROTO_DEFINES mkinstalldirs
-    @SHELL@ fixproto ${subincdir} ${subincdir} ${isysroot}${SYSTEM_HEADER_DIR} || exit 1
-  fi
 done
