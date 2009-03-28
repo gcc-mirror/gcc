@@ -1,5 +1,10 @@
 2009-03-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/38180
+	* gcc.dg/tree-ssa/ssa-ccp-24.c: New testcase.
+
+2009-03-28  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/38513
 	* gcc.dg/tree-ssa/ssa-fre-21.c: New testcase.
 	* gcc.dg/tree-ssa/ssa-dse-11.c: Adjust.

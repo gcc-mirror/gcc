@@ -1,3 +1,13 @@
+2009-03-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/38180
+	* tree-ssa-ccp.c (get_default_value): Simplify.
+	(likely_value): Likewise.
+	(surely_varying_stmt_p): Properly handle VOP case.
+	(ccp_initialize): Likewise.
+	(ccp_fold): Handle propagating through *&.
+	(fold_const_aggregate_ref): Also handle decls.
+
 2009-03-28  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (dump_cgraph_node): Add replace output flag by process.
