@@ -1,3 +1,9 @@
+2009-03-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38765
+	* parse.c (parse_derived): Do not break on finding pointer,
+	allocatable or private components.
+
 2009-03-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/32626
