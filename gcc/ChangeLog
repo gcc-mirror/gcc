@@ -1,5 +1,15 @@
 2009-03-28  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_node, cgraph_remove_node, dump_cgraph_node,
+	cgraph_clone_node): Remove master clone handling.
+	(cgraph_is_master_clone, cgraph_master_clone): Remove.
+	* cgraph.h (master_clone): Remove.
+	(cgraph_is_master_clone, cgraph_master_clone): Remove.
+	* ipa-type-escape.c (type_escape_execute): Remove use of master clone.
+	(tree-ssa-structalias.c (ipa_pta_execute): Likewise.
+
+2009-03-28  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_function_body_availability): Functions declared
 	inline are always safe to assume that it is not going to be replaced.
 

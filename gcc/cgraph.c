@@ -464,8 +464,6 @@ cgraph_node (tree decl)
   if (*slot)
     {
       node = *slot;
-      if (!node->master_clone)
-	node->master_clone = node;
       return node;
     }
 
@@ -477,7 +475,6 @@ cgraph_node (tree decl)
       node->origin = cgraph_node (DECL_CONTEXT (decl));
       node->next_nested = node->origin->nested;
       node->origin->nested = node;
-      node->master_clone = node;
     }
   if (assembler_name_hash)
     {
@@ -985,11 +982,6 @@ cgraph_remove_node (struct cgraph_node *node)
       if (node->next_clone)
       {
 	struct cgraph_node *new_node = node->next_clone;
-	struct cgraph_node *n;
-
-	/* Make the next clone be the master clone */
-	for (n = new_node; n; n = n->next_clone)
-	  n->master_clone = new_node;
 
 	*slot = new_node;
 	node->next_clone->prev_clone = NULL;
@@ -1139,8 +1131,6 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   if (cgraph_function_flags_ready)
     fprintf (f, " availability:%s",
 	     cgraph_availability_names [cgraph_function_body_availability (node)]);
-  if (node->master_clone && node->master_clone->uid != node->uid)
-    fprintf (f, "(%i)", node->master_clone->uid);
   if (node->count)
     fprintf (f, " executed "HOST_WIDEST_INT_PRINT_DEC"x",
 	     (HOST_WIDEST_INT)node->count);
@@ -1349,7 +1339,6 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int freq,
   new_node->local = n->local;
   new_node->global = n->global;
   new_node->rtl = n->rtl;
-  new_node->master_clone = n->master_clone;
   new_node->count = count;
   if (n->count)
     {
@@ -1379,28 +1368,6 @@ cgraph_clone_node (struct cgraph_node *n, gcov_type count, int freq,
 
   cgraph_call_node_duplication_hooks (n, new_node);
   return new_node;
-}
-
-/* Return true if N is an master_clone, (see cgraph_master_clone).  */
-
-bool
-cgraph_is_master_clone (struct cgraph_node *n)
-{
-  return (n == cgraph_master_clone (n));
-}
-
-struct cgraph_node *
-cgraph_master_clone (struct cgraph_node *n)
-{
-  enum availability avail = cgraph_function_body_availability (n);
-
-  if (avail == AVAIL_NOT_AVAILABLE || avail == AVAIL_OVERWRITABLE)
-    return NULL;
-
-  if (!n->master_clone)
-    n->master_clone = cgraph_node (n->decl);
-
-  return n->master_clone;
 }
 
 /* NODE is no longer nested function; update cgraph accordingly.  */
