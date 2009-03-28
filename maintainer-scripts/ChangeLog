@@ -1,3 +1,8 @@
+2009-03-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* crontab: Stop 4.2 snapshots.
+	Spread out 4.3, 4.4, and 4.5 snapshots more evenly.
+
 2009-03-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* crontab: Add 4.4 branch snapshots.
