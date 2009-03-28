@@ -380,6 +380,43 @@ ifcombine_ifandif (basic_block inner_cond_bb, basic_block outer_cond_bb)
       return true;
     }
 
+  /* See if we have two comparisons that we can merge into one.  */
+  else if (TREE_CODE_CLASS (gimple_cond_code (inner_cond)) == tcc_comparison
+	   && TREE_CODE_CLASS (gimple_cond_code (outer_cond)) == tcc_comparison
+	   && operand_equal_p (gimple_cond_lhs (inner_cond),
+			       gimple_cond_lhs (outer_cond), 0)
+	   && operand_equal_p (gimple_cond_rhs (inner_cond),
+			       gimple_cond_rhs (outer_cond), 0))
+    {
+      enum tree_code code1 = gimple_cond_code (inner_cond);
+      enum tree_code code2 = gimple_cond_code (outer_cond);
+      tree t;
+
+      if (!(t = combine_comparisons (TRUTH_ANDIF_EXPR, code1, code2,
+				     boolean_type_node,
+				     gimple_cond_lhs (outer_cond),
+				     gimple_cond_rhs (outer_cond))))
+	return false;
+      t = canonicalize_cond_expr_cond (t);
+      if (!t)
+	return false;
+      gimple_cond_set_condition_from_tree (inner_cond, t);
+      update_stmt (inner_cond);
+
+      /* Leave CFG optimization to cfg_cleanup.  */
+      gimple_cond_set_condition_from_tree (outer_cond, boolean_true_node);
+      update_stmt (outer_cond);
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "optimizing two comparisons to ");
+	  print_generic_expr (dump_file, t, 0);
+	  fprintf (dump_file, "\n");
+	}
+
+      return true;
+    }
+
   return false;
 }
 
@@ -502,42 +539,13 @@ ifcombine_iforif (basic_block inner_cond_bb, basic_block outer_cond_bb)
     {
       enum tree_code code1 = gimple_cond_code (inner_cond);
       enum tree_code code2 = gimple_cond_code (outer_cond);
-      enum tree_code code;
       tree t;
 
-#define CHK(a,b) ((code1 == a ## _EXPR && code2 == b ## _EXPR) \
-		  || (code2 == a ## _EXPR && code1 == b ## _EXPR))
-      /* Merge the two condition codes if possible.  */
-      if (code1 == code2)
-	code = code1;
-      else if (CHK (EQ, LT))
-	code = LE_EXPR;
-      else if (CHK (EQ, GT))
-	code = GE_EXPR;
-      else if (CHK (LT, LE))
-	code = LE_EXPR;
-      else if (CHK (GT, GE))
-	code = GE_EXPR;
-      else if (INTEGRAL_TYPE_P (TREE_TYPE (gimple_cond_lhs (inner_cond)))
-	       || flag_unsafe_math_optimizations)
-	{
-	  if (CHK (LT, GT))
-	    code = NE_EXPR;
-	  else if (CHK (LT, NE))
-	    code = NE_EXPR;
-	  else if (CHK (GT, NE))
-	    code = NE_EXPR;
-	  else
-	    return false;
-	}
-      /* We could check for combinations leading to trivial true/false.  */
-      else
+      if (!(t = combine_comparisons (TRUTH_ORIF_EXPR, code1, code2,
+				     boolean_type_node,
+				     gimple_cond_lhs (outer_cond),
+				     gimple_cond_rhs (outer_cond))))
 	return false;
-#undef CHK
-
-      /* Do it.  */
-      t = fold_build2 (code, boolean_type_node, gimple_cond_lhs (outer_cond),
-		       gimple_cond_rhs (outer_cond));
       t = canonicalize_cond_expr_cond (t);
       if (!t)
 	return false;
