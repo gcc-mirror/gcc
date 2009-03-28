@@ -142,6 +142,7 @@ echo ubound: $ub
 
 /* Debug counter definitions.  */
 DEBUG_COUNTER (auto_inc_dec)
+DEBUG_COUNTER (ccp)
 DEBUG_COUNTER (cfg_cleanup)
 DEBUG_COUNTER (cse2_move2add)
 DEBUG_COUNTER (cprop1)
