@@ -1,5 +1,12 @@
 2009-03-28  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/32626
+	* option.c (gfc_handle_runtime_check_option): Enable recursion check.
+	* trans-decl.c (gfc_generate_function_code): Add recursion check.
+	* invoke.texi (-fcheck): Add recursive option.
+
+2009-03-28  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/38432
 	* resolve.c (gfc_resolve_iterator): Add zero-loop warning.
 
@@ -8,12 +15,12 @@
 	    Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.h (gfc_option_t): Add rtcheck.
-	* lang.opt: New option -fruntime-check.
+	* lang.opt: New option -fcheck.
 	* libgfortran.h: Add GFC_RTCHECK_* constants.
-	* invoke.texi: Document -fruntime-check.
+	* invoke.texi: Document -fcheck.
 	* options.c (gfc_handle_runtime_check_option): New function.
 	(gfc_init_options,gfc_post_options,gfc_handle_option):
-	Add -fruntime-check option.
+	Add -fcheck option.
 
 2009-03-27  Richard Guenther  <rguenther@suse.de>
 
