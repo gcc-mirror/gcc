@@ -1,5 +1,11 @@
 2009-03-28  Paul Thomas  <pault@gcc.gnu.org>
 
+        PR fortran/38538
+        * trans-array.c (get_elemental_fcn_charlen): Remove.
+	(get_array_charlen): New function to replace previous.
+
+2009-03-28  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/38765
 	* parse.c (parse_derived): Do not break on finding pointer,
 	allocatable or private components.

@@ -4703,45 +4703,100 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 }
 
 
-/* gfc_conv_expr_descriptor needs the character length of elemental
-   functions before the function is called so that the size of the
-   temporary can be obtained.  The only way to do this is to convert
-   the expression, mapping onto the actual arguments.  */
+/* gfc_conv_expr_descriptor needs the string length an expression
+   so that the size of the temporary can be obtained.  This is done
+   by adding up the string lengths of all the elements in the
+   expression.  Function with non-constant expressions have their
+   string lengths mapped onto the actual arguments using the
+   interface mapping machinery in trans-expr.c.  */
 static void
-get_elemental_fcn_charlen (gfc_expr *expr, gfc_se *se)
+get_array_charlen (gfc_expr *expr, gfc_se *se)
 {
   gfc_interface_mapping mapping;
   gfc_formal_arglist *formal;
   gfc_actual_arglist *arg;
   gfc_se tse;
 
-  formal = expr->symtree->n.sym->formal;
-  arg = expr->value.function.actual;
-  gfc_init_interface_mapping (&mapping);
-
-  /* Set se = NULL in the calls to the interface mapping, to suppress any
-     backend stuff.  */
-  for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
+  if (expr->ts.cl->length
+	&& gfc_is_constant_expr (expr->ts.cl->length))
     {
-      if (!arg->expr)
-	continue;
-      if (formal->sym)
-	gfc_add_interface_mapping (&mapping, formal->sym, NULL, arg->expr);
+      if (!expr->ts.cl->backend_decl)
+	gfc_conv_string_length (expr->ts.cl, expr, &se->pre);
+      return;
     }
 
-  gfc_init_se (&tse, NULL);
+  switch (expr->expr_type)
+    {
+    case EXPR_OP:
+      get_array_charlen (expr->value.op.op1, se);
 
-  /* Build the expression for the character length and convert it.  */
-  gfc_apply_interface_mapping (&mapping, &tse, expr->ts.cl->length);
+      /* For parentheses the expression ts.cl is identical.  */
+      if (expr->value.op.op == INTRINSIC_PARENTHESES)
+	return;
 
-  gfc_add_block_to_block (&se->pre, &tse.pre);
-  gfc_add_block_to_block (&se->post, &tse.post);
-  tse.expr = fold_convert (gfc_charlen_type_node, tse.expr);
-  tse.expr = fold_build2 (MAX_EXPR, gfc_charlen_type_node, tse.expr,
-			  build_int_cst (gfc_charlen_type_node, 0));
-  expr->ts.cl->backend_decl = tse.expr;
-  gfc_free_interface_mapping (&mapping);
+     expr->ts.cl->backend_decl =
+		gfc_create_var (gfc_charlen_type_node, "sln");
+
+      if (expr->value.op.op2)
+	{
+	  get_array_charlen (expr->value.op.op2, se);
+
+	  /* Add the string lengths and assign them to the expression
+	     string length backend declaration.  */
+	  gfc_add_modify (&se->pre, expr->ts.cl->backend_decl,
+			  fold_build2 (PLUS_EXPR, gfc_charlen_type_node,
+				expr->value.op.op1->ts.cl->backend_decl,
+				expr->value.op.op2->ts.cl->backend_decl));
+	}
+      else
+	gfc_add_modify (&se->pre, expr->ts.cl->backend_decl,
+			expr->value.op.op1->ts.cl->backend_decl);
+      break;
+
+    case EXPR_FUNCTION:
+      if (expr->value.function.esym == NULL
+	    || expr->ts.cl->length->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_conv_string_length (expr->ts.cl, expr, &se->pre);
+	  break;
+	}
+
+      /* Map expressions involving the dummy arguments onto the actual
+	 argument expressions.  */
+      gfc_init_interface_mapping (&mapping);
+      formal = expr->symtree->n.sym->formal;
+      arg = expr->value.function.actual;
+
+      /* Set se = NULL in the calls to the interface mapping, to suppress any
+	 backend stuff.  */
+      for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
+	{
+	  if (!arg->expr)
+	    continue;
+	  if (formal->sym)
+	  gfc_add_interface_mapping (&mapping, formal->sym, NULL, arg->expr);
+	}
+
+      gfc_init_se (&tse, NULL);
+
+      /* Build the expression for the character length and convert it.  */
+      gfc_apply_interface_mapping (&mapping, &tse, expr->ts.cl->length);
+
+      gfc_add_block_to_block (&se->pre, &tse.pre);
+      gfc_add_block_to_block (&se->post, &tse.post);
+      tse.expr = fold_convert (gfc_charlen_type_node, tse.expr);
+      tse.expr = fold_build2 (MAX_EXPR, gfc_charlen_type_node, tse.expr,
+			      build_int_cst (gfc_charlen_type_node, 0));
+      expr->ts.cl->backend_decl = tse.expr;
+      gfc_free_interface_mapping (&mapping);
+      break;
+
+    default:
+      gfc_conv_string_length (expr->ts.cl, expr, &se->pre);
+      break;
+    }
 }
+
 
 
 /* Convert an array for passing as an actual argument.  Expressions and
@@ -4879,7 +4934,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  need_tmp = 1;
 	  if (expr->ts.type == BT_CHARACTER
 		&& expr->ts.cl->length->expr_type != EXPR_CONSTANT)
-	    get_elemental_fcn_charlen (expr, se);
+	    get_array_charlen (expr, se);
 
 	  info = NULL;
 	}
@@ -4939,8 +4994,9 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       loop.temp_ss->type = GFC_SS_TEMP;
       loop.temp_ss->next = gfc_ss_terminator;
 
-      if (expr->ts.type == BT_CHARACTER && !expr->ts.cl->backend_decl)
-	gfc_conv_string_length (expr->ts.cl, expr, &se->pre);
+      if (expr->ts.type == BT_CHARACTER
+	    && !expr->ts.cl->backend_decl)
+	get_array_charlen (expr, se);
 
       loop.temp_ss->data.temp.type = gfc_typenode_for_spec (&expr->ts);
 
