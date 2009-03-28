@@ -1077,6 +1077,7 @@ extern bool operation_could_trap_p (enum tree_code, bool, bool, tree);
 extern bool stmt_could_throw_p (gimple);
 extern bool tree_could_throw_p (tree);
 extern bool stmt_can_throw_internal (gimple);
+extern bool stmt_can_throw_external (gimple);
 extern void add_stmt_to_eh_region (gimple, int);
 extern bool remove_stmt_from_eh_region (gimple);
 extern bool maybe_clean_or_replace_eh_stmt (gimple, gimple);

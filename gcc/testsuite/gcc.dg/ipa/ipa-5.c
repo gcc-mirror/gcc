@@ -5,12 +5,15 @@
 /* Float & short constants.  */
 
 #include <stdio.h>
+void t(void);
 int g (float b, short c)
 {
+  t();
   return c + (int)b;
 }
 int f (float a)
 {
+  t();
   /* a is modified.  */
   if (a++ > 0)
     g (a, 3);

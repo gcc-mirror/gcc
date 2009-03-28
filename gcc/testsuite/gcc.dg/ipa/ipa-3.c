@@ -6,8 +6,10 @@
 /* Double constants.  */
 
 #include <stdio.h>
+void t(void);
 int g (double b, double c)
 {
+  t();
   return (int)(b+c);  
 }
 int f (double a)

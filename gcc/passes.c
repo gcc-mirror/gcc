@@ -563,6 +563,7 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_tail_recursion);
 	  NEXT_PASS (pass_convert_switch);
           NEXT_PASS (pass_profile);
+          NEXT_PASS (pass_local_pure_const);
 	}
       NEXT_PASS (pass_release_ssa_names);
       NEXT_PASS (pass_rebuild_cgraph_edges);
@@ -702,6 +703,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_tail_calls);
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_uncprop);
+      NEXT_PASS (pass_local_pure_const);
     }
   NEXT_PASS (pass_del_ssa);
   NEXT_PASS (pass_nrv);
@@ -1371,6 +1373,32 @@ execute_ipa_pass_list (struct opt_pass *pass)
       pass = pass->next;
     }
   while (pass);
+}
+
+/* Called by local passes to see if function is called by already processed nodes.
+   Because we process nodes in topological order, this means that function is
+   in recursive cycle or we introduced new direct calls.  */
+bool
+function_called_by_processed_nodes_p (void)
+{
+  struct cgraph_edge *e;
+  for (e = cgraph_node (current_function_decl)->callers; e; e = e->next_caller)
+    {
+      if (e->caller->decl == current_function_decl)
+        continue;
+      if (!e->caller->analyzed || (!e->caller->needed && !e->caller->reachable))
+        continue;
+      if (TREE_ASM_WRITTEN (e->caller->decl))
+        continue;
+      if (!e->caller->process && !e->caller->global.inlined_to)
+      	break;
+    }
+  if (dump_file && e)
+    {
+      fprintf (dump_file, "Already processed call to:\n");
+      dump_cgraph_node (dump_file, e->caller);
+    }
+  return e != NULL;
 }
 
 #include "gt-passes.h"
