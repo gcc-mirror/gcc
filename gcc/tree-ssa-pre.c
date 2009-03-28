@@ -3857,7 +3857,7 @@ eliminate (void)
     {
       gimple_stmt_iterator i;
 
-      for (i = gsi_start_bb (b); !gsi_end_p (i); gsi_next (&i))
+      for (i = gsi_start_bb (b); !gsi_end_p (i);)
 	{
 	  gimple stmt = gsi_stmt (i);
 
@@ -3915,6 +3915,7 @@ eliminate (void)
 		  propagate_tree_value_into_stmt (&i, sprime);
 		  stmt = gsi_stmt (i);
 		  update_stmt (stmt);
+		  gsi_next (&i);
 		  continue;
 		}
 
@@ -3975,6 +3976,58 @@ eliminate (void)
 		    }
 		}
 	    }
+	  /* If the statement is a scalar store, see if the expression
+	     has the same value number as its rhs.  If so, the store is
+	     dead.  */
+	  else if (gimple_assign_single_p (stmt)
+		   && !is_gimple_reg (gimple_assign_lhs (stmt))
+		   && (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
+		       || is_gimple_min_invariant (gimple_assign_rhs1 (stmt))))
+	    {
+	      tree rhs = gimple_assign_rhs1 (stmt);
+	      tree val;
+	      val = vn_reference_lookup (gimple_assign_lhs (stmt),
+					 shared_vuses_from_stmt (stmt),
+					 true, NULL);
+	      if (TREE_CODE (rhs) == SSA_NAME)
+		rhs = VN_INFO (rhs)->valnum;
+	      if (val
+		  && operand_equal_p (val, rhs, 0))
+		{
+		  def_operand_p def;
+		  use_operand_p use;
+		  vuse_vec_p usevec;
+		  ssa_op_iter oi;
+		  imm_use_iterator ui;
+		  gimple use_stmt;
+
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Deleted dead store ");
+		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		    }
+
+		  /* Propagate all may-uses to the uses of their defs.  */
+		  FOR_EACH_SSA_VDEF_OPERAND (def, usevec, stmt, oi)
+		    {
+		      tree vuse = VUSE_ELEMENT_VAR (*usevec, 0);
+		      tree vdef = DEF_FROM_PTR (def);
+
+		      /* If the vdef is used in an abnormal PHI node we
+		         have to propagate that flag to the vuse as well.  */
+		      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vdef))
+			SSA_NAME_OCCURS_IN_ABNORMAL_PHI (vuse) = 1;
+
+		      FOR_EACH_IMM_USE_STMT (use_stmt, ui, vdef)
+			FOR_EACH_IMM_USE_ON_STMT (use, ui)
+			  SET_USE (use, vuse);
+		    }
+
+		  gsi_remove (&i, true);
+		  release_defs (stmt);
+		  continue;
+		}
+	    }
 	  /* Visit COND_EXPRs and fold the comparison with the
 	     available value-numbers.  */
 	  else if (gimple_code (stmt) == GIMPLE_COND)
@@ -3999,6 +4052,8 @@ eliminate (void)
 		  todo = TODO_cleanup_cfg;
 		}
 	    }
+
+	  gsi_next (&i);
 	}
     }
 

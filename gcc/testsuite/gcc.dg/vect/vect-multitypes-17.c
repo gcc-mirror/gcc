@@ -5,9 +5,9 @@
 
 #define N 64
 
-unsigned char uX[N] __attribute__ ((__aligned__(16)));
+unsigned char uX[N] __attribute__ ((__aligned__(16))) = {16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1};
 unsigned char uresultX[N];
-unsigned long long uY[N] __attribute__ ((__aligned__(16)));
+unsigned long long uY[N] __attribute__ ((__aligned__(16))) = {16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1};
 unsigned char uresultY[N];
 
 /* Unsigned type demotion (si->qi) */
@@ -27,13 +27,6 @@ int main (void)
   int i;
 
   check_vect ();
-
-  for (i=0; i<N; i++) {
-    uX[i] = 16-i;
-    uY[i] = 16-i;
-    if (i%5 == 0)
-      uX[i] = 16-i;
-  }
 
   foo1 (N);
 
