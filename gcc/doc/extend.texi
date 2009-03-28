@@ -7780,6 +7780,11 @@ The following floating point built-in functions are made available in the
 @table @code
 @item __float128 __builtin_infq (void)
 Similar to @code{__builtin_inf}, except the return type is @code{__float128}.
+@findex __builtin_infq
+
+@item __float128 __builtin_huge_valq (void)
+Similar to @code{__builtin_huge_val}, except the return type is @code{__float128}.
+@findex __builtin_huge_valq
 @end table
 
 The following built-in functions are made available by @option{-mmmx}.
