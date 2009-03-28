@@ -4853,6 +4853,8 @@ extern bool tree_call_nonnegative_warnv_p (tree, tree, tree, tree, bool *);
 extern bool tree_expr_nonzero_warnv_p (tree, bool *);
 
 extern bool fold_real_zero_addition_p (const_tree, const_tree, int);
+extern tree combine_comparisons (enum tree_code, enum tree_code,
+				 enum tree_code, tree, tree, tree);
 
 /* Return nonzero if CODE is a tree code that represents a truth value.  */
 static inline bool

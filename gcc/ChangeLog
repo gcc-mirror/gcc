@@ -1,3 +1,12 @@
+2009-03-28  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37795
+	* tree.h (combine_comparisons): Declare.
+	* fold-const.c (combine_comparisons): Export.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Optimize two successive
+	comparisons.
+	(ifcombine_iforif): Use combine_comparisons.
+
 2009-03-28  Jan Hubicka  <jh@suse.cz>
 
 	* tree-eh.c (inlinable_call_p): New function.
