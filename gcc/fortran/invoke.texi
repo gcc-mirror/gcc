@@ -1220,6 +1220,10 @@ the compilation of the main program.
 
 Note: In the future this may also include other forms of checking, e.g.,
 checking substring references.
+
+@item @samp{recursion}
+Enable generation of run-time checks for recursively called subroutines and
+functions which are not marked as recursive. See also @option{-frecursive}.
 @end table
 
 

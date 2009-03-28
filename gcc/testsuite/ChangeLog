@@ -1,4 +1,9 @@
-2009-03-28 Tobias Burnus  <burnus@net-b.de>
+2009-03-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/32626
+	* gfortran.dg/recursive_check_7.f90: New test.
+
+2009-03-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/38432
 	* gfortran.dg/do_check_5.f90: New test.

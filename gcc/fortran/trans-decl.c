@@ -3679,6 +3679,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   stmtblock_t block;
   stmtblock_t body;
   tree result;
+  tree recurcheckvar = NULL;
   gfc_symbol *sym;
   int rank;
 
@@ -3846,6 +3847,22 @@ gfc_generate_function_code (gfc_namespace * ns)
       gfc_add_expr_to_block (&body, tmp);
     }
 
+   if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !sym->attr.recursive)
+     {
+       char * msg;
+
+       asprintf (&msg, "Recursive call to nonrecursive procedure '%s'",
+		 sym->name);
+       recurcheckvar = gfc_create_var (boolean_type_node, "is_recursive");
+       TREE_STATIC (recurcheckvar) = 1;
+       DECL_INITIAL (recurcheckvar) = boolean_false_node;
+       gfc_add_expr_to_block (&block, recurcheckvar);
+       gfc_trans_runtime_check (true, false, recurcheckvar, &block,
+				&sym->declared_at, msg);
+       gfc_add_modify (&block, recurcheckvar, boolean_true_node);
+       gfc_free (msg);
+    }
+
   if (TREE_TYPE (DECL_RESULT (fndecl)) != void_type_node
       && sym->attr.subroutine)
     {
@@ -3924,6 +3941,9 @@ gfc_generate_function_code (gfc_namespace * ns)
   else
     gfc_add_expr_to_block (&block, tmp);
 
+ /* Reset recursion-check variable.  */
+ if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !sym->attr.recursive)
+   gfc_add_modify (&block, recurcheckvar, boolean_false_node);
 
   /* Add all the decls we created during processing.  */
   decl = saved_function_decls;
