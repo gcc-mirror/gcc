@@ -1,5 +1,10 @@
 2009-03-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): If macro
+	following vector keyword has expansion starting with pixel or bool
+	keyword, expand vector to __vector and pixel or bool to __pixel or
+	__bool.
+
 	PR c++/39554
 	* opts.c (warning_disallowed_functions, warn_disallowed_functions,
 	warn_if_disallowed_function_p): Removed.

@@ -1,5 +1,7 @@
 2009-03-28  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.target/powerpc/altivec-28.c: New test.
+
 	PR c++/39554
 	* gcc.dg/wdisallowed-functions-1.c: Removed.
 	* gcc.dg/wdisallowed-functions-2.c: Removed.

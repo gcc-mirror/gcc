@@ -188,7 +188,19 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 		tok = cpp_peek_token (pfile, idx++);
 	      while (tok->type == CPP_PADDING);
 	      ident = altivec_categorize_keyword (tok);
-	      if (ident)
+	      if (ident == C_CPP_HASHNODE (__pixel_keyword))
+		{
+		  expand_this = C_CPP_HASHNODE (__vector_keyword);
+		  expand_bool_pixel = __pixel_keyword;
+		  rid_code = RID_MAX;
+		}
+	      else if (ident == C_CPP_HASHNODE (__bool_keyword))
+		{
+		  expand_this = C_CPP_HASHNODE (__vector_keyword);
+		  expand_bool_pixel = __bool_keyword;
+		  rid_code = RID_MAX;
+		}
+	      else if (ident)
 		rid_code = (enum rid)(ident->rid_code);
 	    }
 
