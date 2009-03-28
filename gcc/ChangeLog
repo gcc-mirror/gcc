@@ -1,3 +1,8 @@
+2009-03-28  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_function_body_availability): Functions declared
+	inline are always safe to assume that it is not going to be replaced.
+
 2009-03-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38513
