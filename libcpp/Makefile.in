@@ -236,7 +236,7 @@ endif
 # Rule for regenerating the message template.
 $(PACKAGE).pot: po/$(PACKAGE).pot
 po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
-	mkinstalldirs $(srcdir)/po
+	$(mkinstalldirs) $(srcdir)/po
 	$(XGETTEXT) --default-domain=$(PACKAGE) \
 	  --keyword=_ --keyword=N_ \
 	  --keyword=cpp_error:3 --keyword=cpp_errno:3 \
