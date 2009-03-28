@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
-"POT-Creation-Date: 2008-11-18 20:02+0000\n"
+"POT-Creation-Date: 2009-03-28 07:24+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -398,7 +398,7 @@ msgid "unterminated #%s"
 msgstr ""
 
 #: directives-only.c:222
-#: lex.c:1138
+#: lex.c:1148
 #: traditional.c:162
 msgid "unterminated comment"
 msgstr ""
@@ -748,28 +748,28 @@ msgstr ""
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.c:664
+#: lex.c:674
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.c:667
+#: lex.c:677
 #, c-format
 msgid "missing terminating %c character"
 msgstr ""
 
-#: lex.c:1149
+#: lex.c:1159
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.c:1151
+#: lex.c:1161
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.c:1156
+#: lex.c:1166
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:1469
+#: lex.c:1480
 #, c-format
 msgid "unspellable token %s"
 msgstr ""
@@ -924,28 +924,33 @@ msgstr ""
 msgid "while writing precompiled header"
 msgstr ""
 
-#: pch.c:485
+#: pch.c:484
+#, c-format
+msgid "%s: not used because `%.*s' is poisoned"
+msgstr ""
+
+#: pch.c:506
 #, c-format
 msgid "%s: not used because `%.*s' not defined"
 msgstr ""
 
-#: pch.c:497
+#: pch.c:518
 #, c-format
 msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
 msgstr ""
 
-#: pch.c:538
+#: pch.c:559
 #, c-format
 msgid "%s: not used because `%s' is defined"
 msgstr ""
 
-#: pch.c:558
+#: pch.c:579
 #, c-format
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr ""
 
-#: pch.c:567
-#: pch.c:737
+#: pch.c:588
+#: pch.c:758
 msgid "while reading precompiled header"
 msgstr ""
 
