@@ -1061,7 +1061,7 @@ cgraph_expand_function (struct cgraph_node *node)
 /* Return true when CALLER_DECL should be inlined into CALLEE_DECL.  */
 
 bool
-cgraph_inline_p (struct cgraph_edge *e, const char **reason)
+cgraph_inline_p (struct cgraph_edge *e, cgraph_inline_failed_t *reason)
 {
   *reason = e->inline_failed;
   return !e->inline_failed;
