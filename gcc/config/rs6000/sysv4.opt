@@ -94,7 +94,8 @@ mregnames
 Target Mask(REGNAMES)
 Use alternate register names
 
-;; FIXME: Does nothing.
+;; This option does nothing and only exists because the compiler
+;; driver passes all -m* options through.
 msdata
 Target
 no description yet
