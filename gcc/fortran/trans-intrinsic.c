@@ -759,7 +759,7 @@ gfc_trans_same_strlen_check (const char* intr_name, locus* where,
   tree name;
 
   /* If bounds-checking is disabled, do nothing.  */
-  if (!flag_bounds_check)
+  if (!(gfc_option.rtcheck & GFC_RTCHECK_BOUNDS))
     return;
 
   /* Compare the two string lengths.  */
@@ -885,7 +885,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
     }
   else
     {
-      if (flag_bounds_check)
+      if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
         {
           bound = gfc_evaluate_now (bound, &se->pre);
           cond = fold_build2 (LT_EXPR, boolean_type_node,

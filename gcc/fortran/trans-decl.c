@@ -3777,7 +3777,8 @@ gfc_generate_function_code (gfc_namespace * ns)
 
       array = tree_cons (NULL_TREE,
 			 build_int_cst (integer_type_node,
-					flag_bounds_check), array);
+					(gfc_option.rtcheck
+					 & GFC_RTCHECK_BOUNDS)), array);
 
       array = tree_cons (NULL_TREE,
 			 build_int_cst (integer_type_node,

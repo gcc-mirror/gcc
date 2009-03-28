@@ -1,3 +1,15 @@
+2009-03-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_option_t): Add rtcheck.
+	* lang.opt: New option -fruntime-check.
+	* libgfortran.h: Add GFC_RTCHECK_* constants.
+	* invoke.texi: Document -fruntime-check.
+	* options.c (gfc_handle_runtime_check_option): New function.
+	(gfc_init_options,gfc_post_options,gfc_handle_option):
+	Add -fruntime-check option.
+
 2009-03-27  Richard Guenther  <rguenther@suse.de>
 
 	* trans-array.c (gfc_conv_descriptor_data_addr): Use

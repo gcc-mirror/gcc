@@ -1,5 +1,5 @@
 /* Parse and display command line options.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -106,7 +106,6 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.flag_backslash = 0;
   gfc_option.flag_module_private = 0;
   gfc_option.flag_backtrace = 0;
-  gfc_option.flag_check_array_temporaries = 0;
   gfc_option.flag_allow_leading_underscore = 0;
   gfc_option.flag_dump_core = 0;
   gfc_option.flag_external_blas = 0;
@@ -125,6 +124,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.flag_align_commons = 1;
   
   gfc_option.fpe = 0;
+  gfc_option.rtcheck = 0;
 
   /* Argument pointers cannot point to anything but their argument.  */
   flag_argument_noalias = 3;
@@ -231,6 +231,10 @@ gfc_post_options (const char **pfilename)
   /* Issue an error if -fwhole-program was used.  */
   if (flag_whole_program)
     gfc_fatal_error ("Option -fwhole-program is not supported for Fortran");
+
+  /* -fbounds-check is equivalent to -fcheck=bounds */
+  if (flag_bounds_check)
+    gfc_option.rtcheck |= GFC_RTCHECK_BOUNDS;
 
   /* Verify the input file name.  */
   if (!filename || strcmp (filename, "-") == 0)
@@ -449,6 +453,43 @@ gfc_handle_fpe_trap_option (const char *arg)
 }
 
 
+static void
+gfc_handle_runtime_check_option (const char *arg)
+{
+  int result, pos = 0, n;
+  static const char * const optname[] = { "all", "bounds", "array-temps",
+					  /* "recursion", "do", */ NULL };
+  static const int optmask[] = { GFC_RTCHECK_ALL, GFC_RTCHECK_BOUNDS,
+				 GFC_RTCHECK_ARRAY_TEMPS,
+				 /* GFC_RTCHECK_RECURSION, GFC_RTCHECK_DO, */
+				 0 };
+ 
+  while (*arg)
+    {
+      while (*arg == ',')
+	arg++;
+
+      while (arg[pos] && arg[pos] != ',')
+	pos++;
+
+      result = 0;
+      for (n = 0; optname[n] != NULL; n++)
+	{
+	  if (optname[n] && strncmp (optname[n], arg, pos) == 0)
+	    {
+	      gfc_option.rtcheck |= optmask[n];
+	      arg += pos;
+	      pos = 0;
+	      result = 1;
+	      break;
+	    }
+	}
+      if (!result)
+	gfc_fatal_error ("Argument to -fcheck is not valid: %s", arg);
+    }
+}
+
+
 /* Handle command-line options.  Returns 0 if unrecognized, 1 if
    recognized and handled.  */
 
@@ -548,7 +589,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
       
     case OPT_fcheck_array_temporaries:
-      gfc_option.flag_check_array_temporaries = value;
+      gfc_option.rtcheck |= GFC_RTCHECK_ARRAY_TEMPS;
       break;
       
     case OPT_fdump_core:
@@ -845,6 +886,11 @@ gfc_handle_option (size_t scode, const char *arg, int value)
     case OPT_falign_commons:
       gfc_option.flag_align_commons = value;
       break;
+
+    case OPT_fcheck_:
+      gfc_handle_runtime_check_option (arg);
+      break;
+
     }
 
   return result;

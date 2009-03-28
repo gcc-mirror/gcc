@@ -398,7 +398,7 @@ gfc_conv_substring (gfc_se * se, gfc_ref * ref, int kind,
   if (!CONSTANT_CLASS_P (end.expr) && !DECL_P (end.expr))
     end.expr = gfc_evaluate_now (end.expr, &se->pre);
 
-  if (flag_bounds_check)
+  if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
     {
       tree nonempty = fold_build2 (LE_EXPR, boolean_type_node,
 				   start.expr, end.expr);
@@ -2988,7 +2988,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	{
 	  if (sym->attr.dimension)
 	    {
-	      if (flag_bounds_check)
+	      if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
 		{
 		  /* Check the data pointer hasn't been modified.  This would
 		     happen in a function returning a pointer.  */
