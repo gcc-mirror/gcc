@@ -7506,6 +7506,11 @@ be ignored for this case.  The additional guard is necessary to
 recognize complicated bypasses, e.g.@: when the consumer is only an address
 of insn @samp{store} (not a stored value).
 
+If there are more one bypass with the same output and input insns, the
+chosen bypass is the first bypass with a guard in description whose
+guard function returns nonzero.  If there is no such bypass, then
+bypass without the guard function is chosen.
+
 @findex exclusion_set
 @findex presence_set
 @findex final_presence_set

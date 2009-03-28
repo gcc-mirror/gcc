@@ -1088,7 +1088,11 @@ DEF_RTL_EXPR(FINAL_ABSENCE_SET, "final_absence_set", "ss", RTX_EXTRA)
    guard for the bypass.  The function will get the two insns as
    parameters.  If the function returns zero the bypass will be
    ignored for this case.  Additional guard is necessary to recognize
-   complicated bypasses, e.g. when consumer is load address.  */
+   complicated bypasses, e.g. when consumer is load address.  If there
+   are more one bypass with the same output and input insns, the
+   chosen bypass is the first bypass with a guard in description whose
+   guard function returns nonzero.  If there is no such bypass, then
+   bypass without the guard function is chosen.  */
 DEF_RTL_EXPR(DEFINE_BYPASS, "define_bypass", "issS", RTX_EXTRA)
 
 /* (define_automaton string) describes names of automata generated and

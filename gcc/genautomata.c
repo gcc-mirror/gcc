@@ -1,5 +1,5 @@
 /* Pipeline hazard description translator.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
    Written by Vladimir Makarov <vmakarov@redhat.com>
@@ -22,21 +22,25 @@ along with GCC; see the file COPYING3.  If not see
 
 /* References:
 
-   1. Detecting pipeline structural hazards quickly. T. Proebsting,
+   1. The finite state automaton based pipeline hazard recognizer and
+      instruction scheduler in GCC.  V. Makarov.  Proceedings of GCC
+      summit, 2003.
+
+   2. Detecting pipeline structural hazards quickly. T. Proebsting,
       C. Fraser. Proceedings of ACM SIGPLAN-SIGACT Symposium on
       Principles of Programming Languages, pages 280--286, 1994.
 
       This article is a good start point to understand usage of finite
       state automata for pipeline hazard recognizers.  But I'd
-      recommend the 2nd article for more deep understanding.
+      recommend the 1st and 3rd article for more deep understanding.
 
-   2. Efficient Instruction Scheduling Using Finite State Automata:
+   3. Efficient Instruction Scheduling Using Finite State Automata:
       V. Bala and N. Rubin, Proceedings of MICRO-28.  This is the best
       article about usage of finite state automata for pipeline hazard
       recognizers.
 
-   The current implementation is different from the 2nd article in the
-   following:
+   The current implementation is described in the 1st article and it
+   is different from the 3rd article in the following:
 
    1. New operator `|' (alternative) is permitted in functional unit
       reservation which can be treated deterministically and
@@ -463,7 +467,10 @@ struct insn_reserv_decl
      insn.  */
   int insn_num;
   /* The following field value is list of bypasses in which given insn
-     is output insn.  */
+     is output insn.  Bypasses with the same input insn stay one after
+     another in the list in the same order as their occurrences in the
+     description but the bypass without a guard stays always the last
+     in a row of bypasses with the same input insn.  */
   struct bypass_decl *bypass_list;
 
   /* The following fields are defined by automaton generator.  */
@@ -2367,18 +2374,67 @@ add_presence_absence (unit_set_el_t dest_list,
 }
 
 
-/* The function searches for bypass with given IN_INSN_RESERV in given
-   BYPASS_LIST.  */
-static struct bypass_decl *
-find_bypass (struct bypass_decl *bypass_list,
-	     struct insn_reserv_decl *in_insn_reserv)
+/* The function inserts BYPASS in the list of bypasses of the
+   corresponding output insn.  The order of bypasses in the list is
+   decribed in a comment for member `bypass_list' (see above).  If
+   there is already the same bypass in the list the function reports
+   this and does nothing.  */
+static void
+insert_bypass (struct bypass_decl *bypass)
 {
-  struct bypass_decl *bypass;
-
-  for (bypass = bypass_list; bypass != NULL; bypass = bypass->next)
-    if (bypass->in_insn_reserv == in_insn_reserv)
-      break;
-  return bypass;
+  struct bypass_decl *curr, *last;
+  struct insn_reserv_decl *out_insn_reserv = bypass->out_insn_reserv;
+  struct insn_reserv_decl *in_insn_reserv = bypass->in_insn_reserv;
+  
+  for (curr = out_insn_reserv->bypass_list, last = NULL;
+       curr != NULL;
+       last = curr, curr = curr->next)
+    if (curr->in_insn_reserv == in_insn_reserv)
+      {
+	if ((bypass->bypass_guard_name != NULL
+	     && curr->bypass_guard_name != NULL
+	     && ! strcmp (bypass->bypass_guard_name, curr->bypass_guard_name))
+	    || bypass->bypass_guard_name == curr->bypass_guard_name)
+	  {
+	    if (bypass->bypass_guard_name == NULL)
+	      {
+		if (!w_flag)
+		  error ("the same bypass `%s - %s' is already defined",
+			 bypass->out_insn_name, bypass->in_insn_name);
+		else
+		  warning (0, "the same bypass `%s - %s' is already defined",
+			   bypass->out_insn_name, bypass->in_insn_name);
+	      }
+	    else if (!w_flag)
+	      error ("the same bypass `%s - %s' (guard %s) is already defined",
+		     bypass->out_insn_name, bypass->in_insn_name,
+		     bypass->bypass_guard_name);
+	    else
+	      warning
+		(0, "the same bypass `%s - %s' (guard %s) is already defined",
+		 bypass->out_insn_name, bypass->in_insn_name,
+		 bypass->bypass_guard_name);
+	    return;
+	  }
+	if (curr->bypass_guard_name == NULL)
+	  break;
+	if (curr->next == NULL || curr->next->in_insn_reserv != in_insn_reserv)
+	  {
+	    last = curr;
+	    break;
+	  }
+	  
+      }
+  if (last == NULL)
+    {
+      bypass->next = out_insn_reserv->bypass_list;
+      out_insn_reserv->bypass_list = bypass;
+    }
+  else
+    {
+      bypass->next = last->next;
+      last->next = bypass;
+    }
 }
 
 /* The function processes pipeline description declarations, checks
@@ -2391,7 +2447,6 @@ process_decls (void)
   decl_t decl_in_table;
   decl_t out_insn_reserv;
   decl_t in_insn_reserv;
-  struct bypass_decl *bypass;
   int automaton_presence;
   int i;
 
@@ -2514,36 +2569,7 @@ process_decls (void)
 		= DECL_INSN_RESERV (out_insn_reserv);
 	      DECL_BYPASS (decl)->in_insn_reserv
 		= DECL_INSN_RESERV (in_insn_reserv);
-	      bypass
-		= find_bypass (DECL_INSN_RESERV (out_insn_reserv)->bypass_list,
-			       DECL_BYPASS (decl)->in_insn_reserv);
-	      if (bypass != NULL)
-		{
-		  if (DECL_BYPASS (decl)->latency == bypass->latency)
-		    {
-		      if (!w_flag)
-			error
-			  ("the same bypass `%s - %s' is already defined",
-			   DECL_BYPASS (decl)->out_insn_name,
-			   DECL_BYPASS (decl)->in_insn_name);
-		      else
-			warning
-			  (0, "the same bypass `%s - %s' is already defined",
-			   DECL_BYPASS (decl)->out_insn_name,
-			   DECL_BYPASS (decl)->in_insn_name);
-		    }
-		  else
-		    error ("bypass `%s - %s' is already defined",
-			   DECL_BYPASS (decl)->out_insn_name,
-			   DECL_BYPASS (decl)->in_insn_name);
-		}
-	      else
-		{
-		  DECL_BYPASS (decl)->next
-		    = DECL_INSN_RESERV (out_insn_reserv)->bypass_list;
-		  DECL_INSN_RESERV (out_insn_reserv)->bypass_list
-		    = DECL_BYPASS (decl);
-		}
+	      insert_bypass (DECL_BYPASS (decl));
 	    }
 	}
     }
@@ -8159,19 +8185,32 @@ output_internal_insn_latency_func (void)
 			    (advance_cycle_insn_decl)->insn_num));
 	    fprintf (output_file, "        case %d:\n",
 		     bypass->in_insn_reserv->insn_num);
-	    if (bypass->bypass_guard_name == NULL)
-	      fprintf (output_file, "          return %d;\n",
-		       bypass->latency);
-	    else
+	    for (;;)
 	      {
-		fprintf (output_file,
-			 "          if (%s (%s, %s))\n",
-			 bypass->bypass_guard_name, INSN_PARAMETER_NAME,
-			 INSN2_PARAMETER_NAME);
-		fprintf (output_file,
-			 "            return %d;\n          break;\n",
-			 bypass->latency);
+		if (bypass->bypass_guard_name == NULL)
+		  {
+		    gcc_assert (bypass->next == NULL
+				|| (bypass->in_insn_reserv
+				    != bypass->next->in_insn_reserv));
+		    fprintf (output_file, "          return %d;\n",
+			     bypass->latency);
+		  }
+		else
+		  {
+		    fprintf (output_file,
+			     "          if (%s (%s, %s))\n",
+			     bypass->bypass_guard_name, INSN_PARAMETER_NAME,
+			     INSN2_PARAMETER_NAME);
+		    fprintf (output_file, "            return %d;\n",
+			     bypass->latency);
+		  }
+		if (bypass->next == NULL
+		    || bypass->in_insn_reserv != bypass->next->in_insn_reserv)
+		  break;
+		bypass = bypass->next;
 	      }
+	    if (bypass->bypass_guard_name != NULL)
+	      fprintf (output_file, "          break;\n");
 	  }
 	fputs ("        }\n      break;\n", output_file);
       }

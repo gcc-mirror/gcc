@@ -1,3 +1,17 @@
+2009-03-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c: Add a new year to the copyright.  Add a new
+	reference.
+	(struct insn_reserv_decl): Add comments for member bypass_list.
+	(find_bypass): Remove.
+	(insert_bypass): New.
+	(process_decls): Use insert_bypass.
+	(output_internal_insn_latency_func): Output all bypasses with the
+	same input insn in one switch case.
+
+	* rtl.def (define_bypass): Describe bypass choice.
+	* doc/md.texi (define_bypass): Ditto.
+
 2009-03-27  Richard Guenther  <rguenther@suse.de>
 
 	* gimplify.c (mark_addressable): Export.
