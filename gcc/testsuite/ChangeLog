@@ -1,5 +1,19 @@
 2009-03-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/38513
+	* gcc.dg/tree-ssa/ssa-fre-21.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-dse-11.c: Adjust.
+	* gcc.dg/vect/vect-reduc-dot-u8a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-u8b.c: Likewise.
+	* gcc.dg/vect/slp-widen-mult-u8.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-16.c: Likewise.
+	* gcc.dg/vect/vect-35.c: Likewise.
+	* gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c: Likewise.
+	* gcc.dg/vect/vect-multitypes-17.c: Likewise.
+	* gcc.dg/vect/slp-widen-mult-s16.c: Likewise.
+
+2009-03-28  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/38968
 	* gfortran.dg/vect/fast-math-pr38968.f90: New testcase.
 

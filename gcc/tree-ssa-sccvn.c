@@ -658,6 +658,8 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	case CONST_DECL:
 	case RESULT_DECL:
 	case SSA_NAME:
+	case EXC_PTR_EXPR:
+	case FILTER_EXPR:
 	  temp.op0 = ref;
 	  break;
 	case ADDR_EXPR:
@@ -750,6 +752,8 @@ get_ref_from_reference_ops (VEC(vn_reference_op_s, heap) *ops)
 	case CONST_DECL:
 	case RESULT_DECL:
 	case SSA_NAME:
+	case FILTER_EXPR:
+	case EXC_PTR_EXPR:
 	  *op0_p = op->op0;
 	  break;
 

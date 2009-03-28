@@ -1,5 +1,13 @@
 2009-03-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/38513
+	* tree-ssa-pre.c (eliminate): Remove redundant stores.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Handle
+	EXC_PTR_EXPR and FILTER_EXPR.
+	(get_ref_from_reference_ops): Likewise.
+
+2009-03-28  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/38968
 	* tree-vect-analyze.c (vect_compute_data_ref_alignment):
 	Use FLOOR_MOD_EXPR to compute misalignment.
