@@ -368,12 +368,6 @@ DEF_VEC_ALLOC_P(const_char_p,heap);
 
 static VEC(const_char_p,heap) *ignored_options;
 
-/* Function calls disallowed under -Wdisallowed-function-list=...  */
-static VEC(char_p,heap) *warning_disallowed_functions;
-
-/* If -Wdisallowed-function-list=...  */
-bool warn_disallowed_functions = false;
-
 /* Input file names.  */
 const char **in_fnames;
 unsigned num_in_fnames;
@@ -740,38 +734,6 @@ flag_instrument_functions_exclude_p (tree fndecl)
   return false;
 }
 
-
-/* Return whether this function call is disallowed.  */
-void
-warn_if_disallowed_function_p (const_tree exp)
-{
-  if (TREE_CODE (exp) == CALL_EXPR
-      && VEC_length (char_p, warning_disallowed_functions) > 0)
-    {
-      int i;
-      char *s;
-      tree fndecl = get_callee_fndecl (exp);
-      const char *fnname;
-
-      if (fndecl == NULL)
-	return;
-
-      fnname = get_name (fndecl);
-      if (fnname == NULL)
-	return;
-
-      for (i = 0; VEC_iterate (char_p, warning_disallowed_functions, i, s);
-           ++i)
-        {
-          if (strcmp (fnname, s) == 0)
-            {
-              warning (OPT_Wdisallowed_function_list_,
-                       "disallowed call to %qs", fnname);
-              break;
-            }
-        }
-    }
-}
 
 /* Decode and handle the vector of command line options.  LANG_MASK
    contains has a single bit set representing the current
@@ -1633,12 +1595,6 @@ common_handle_option (size_t scode, const char *arg, int value,
     case OPT_W:
       /* For backward compatibility, -W is the same as -Wextra.  */
       set_Wextra (value);
-      break;
-
-    case OPT_Wdisallowed_function_list_:
-      warn_disallowed_functions = true;
-      add_comma_separated_to_vector
-	(&warning_disallowed_functions, arg);
       break;
 
     case OPT_Werror_:
