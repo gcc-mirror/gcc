@@ -1,3 +1,10 @@
+2009-03-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR fortran/33595
+	* intrinsics/c99_functions.c (round): Use floor instead of ceil.
+	Revise checks to round up.
+	(roundf): Likewise.
+
 2009-03-28  Daniel Kraft  <d@domob.eu>
 
 	* intrinsics/string_intrinsics.c: #include <assert.h>
