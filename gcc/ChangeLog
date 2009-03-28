@@ -1,5 +1,11 @@
 2009-03-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/38968
+	* tree-vect-analyze.c (vect_compute_data_ref_alignment):
+	Use FLOOR_MOD_EXPR to compute misalignment.
+
+2009-03-28  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/37795
 	* tree.h (combine_comparisons): Declare.
 	* fold-const.c (combine_comparisons): Export.

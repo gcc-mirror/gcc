@@ -1504,7 +1504,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 		  && DECL_ALIGN (base) >= TYPE_ALIGN (vectype)));
 
   /* Modulo alignment.  */
-  misalign = size_binop (TRUNC_MOD_EXPR, misalign, alignment);
+  misalign = size_binop (FLOOR_MOD_EXPR, misalign, alignment);
 
   if (!host_integerp (misalign, 1))
     {
