@@ -3153,7 +3153,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
   tree modify_dest;
   location_t saved_location;
   struct cgraph_edge *cg_edge;
-  const char *reason;
+  cgraph_inline_failed_t reason;
   basic_block return_block;
   edge e;
   gimple_stmt_iterator gsi, stmt_gsi;
@@ -3218,7 +3218,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
       cgraph_create_edge (id->dst_node, dest, stmt,
 			  bb->count, CGRAPH_FREQ_BASE,
 			  bb->loop_depth)->inline_failed
-	= N_("originally indirect function call not considered for inlining");
+	= CIF_ORIGINALLY_INDIRECT_CALL;
       if (dump_file)
 	{
 	   fprintf (dump_file, "Created new direct edge to %s",
@@ -3241,18 +3241,19 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	  /* Avoid warnings during early inline pass. */
 	  && cgraph_global_info_ready)
 	{
-	  sorry ("inlining failed in call to %q+F: %s", fn, reason);
+	  sorry ("inlining failed in call to %q+F: %s", fn,
+		 cgraph_inline_failed_string (reason));
 	  sorry ("called from here");
 	}
       else if (warn_inline && DECL_DECLARED_INLINE_P (fn)
 	       && !DECL_IN_SYSTEM_HEADER (fn)
-	       && strlen (reason)
+	       && reason != CIF_UNSPECIFIED
 	       && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fn))
 	       /* Avoid warnings during early inline pass. */
 	       && cgraph_global_info_ready)
 	{
 	  warning (OPT_Winline, "inlining failed in call to %q+F: %s",
-		   fn, reason);
+		   fn, cgraph_inline_failed_string (reason));
 	  warning (OPT_Winline, "called from here");
 	}
       goto egress;

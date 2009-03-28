@@ -92,14 +92,13 @@ initialize_inline_failed (struct cgraph_node *node)
       gcc_assert (!e->callee->global.inlined_to);
       gcc_assert (e->inline_failed);
       if (node->local.redefined_extern_inline)
-	e->inline_failed = N_("redefined extern inline functions are not "
-			   "considered for inlining");
+	e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
       else if (!node->local.inlinable)
-	e->inline_failed = N_("function not inlinable");
+	e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
       else if (gimple_call_cannot_inline_p (e->call_stmt))
-	e->inline_failed = N_("mismatched arguments");
+	e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
       else
-	e->inline_failed = N_("function not considered for inlining");
+	e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
     }
 }
 

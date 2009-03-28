@@ -680,14 +680,13 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
     }
 
   if (!callee->analyzed)
-    edge->inline_failed = N_("function body not available");
+    edge->inline_failed = CIF_BODY_NOT_AVAILABLE;
   else if (callee->local.redefined_extern_inline)
-    edge->inline_failed = N_("redefined extern inline functions are not "
-			     "considered for inlining");
+    edge->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
   else if (callee->local.inlinable)
-    edge->inline_failed = N_("function not considered for inlining");
+    edge->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
   else
-    edge->inline_failed = N_("function not inlinable");
+    edge->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
 
   edge->aux = NULL;
 
@@ -1103,6 +1102,24 @@ cgraph_rtl_info (tree decl)
       && !TREE_ASM_WRITTEN (node->decl))
     return NULL;
   return &node->rtl;
+}
+
+/* Return a string describing the failure REASON.  */
+
+const char*
+cgraph_inline_failed_string (cgraph_inline_failed_t reason)
+{
+#undef DEFCIFCODE
+#define DEFCIFCODE(code, string)	string,
+
+  static const char *cif_string_table[CIF_N_REASONS] = {
+#include "cif-code.def"
+  };
+
+  /* Signedness of an enum type is implementation defined, so cast it
+     to unsigned before testing. */
+  gcc_assert ((unsigned) reason < CIF_N_REASONS);
+  return cif_string_table[reason];
 }
 
 /* Return name of the node used in debug output.  */

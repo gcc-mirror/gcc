@@ -189,6 +189,13 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   tree inline_decl;
 };
 
+#define DEFCIFCODE(code, string)	CIF_ ## code,
+/* Reasons for inlining failures.  */
+typedef enum {
+#include "cif-code.def"
+  CIF_N_REASONS
+} cgraph_inline_failed_t;
+
 struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller")))
 {
   struct cgraph_node *caller;
@@ -199,9 +206,9 @@ struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_call
   struct cgraph_edge *next_callee;
   gimple call_stmt;
   PTR GTY ((skip (""))) aux;
-  /* When NULL, inline this call.  When non-NULL, points to the explanation
-     why function was not inlined.  */
-  const char *inline_failed;
+  /* When equal to CIF_OK, inline this call.  Otherwise, points to the
+     explanation why function was not inlined.  */
+  cgraph_inline_failed_t inline_failed;
   /* Expected number of executions: calculated in profile.c.  */
   gcov_type count;
   /* Expected frequency of executions within the function. 
@@ -332,6 +339,7 @@ void cgraph_unnest_node (struct cgraph_node *);
 
 enum availability cgraph_function_body_availability (struct cgraph_node *);
 void cgraph_add_new_function (tree, bool);
+const char* cgraph_inline_failed_string (cgraph_inline_failed_t);
 
 /* In cgraphunit.c  */
 void cgraph_finalize_function (tree, bool);
@@ -340,7 +348,7 @@ void cgraph_finalize_compilation_unit (void);
 void cgraph_optimize (void);
 void cgraph_mark_needed_node (struct cgraph_node *);
 void cgraph_mark_reachable_node (struct cgraph_node *);
-bool cgraph_inline_p (struct cgraph_edge *, const char **reason);
+bool cgraph_inline_p (struct cgraph_edge *, cgraph_inline_failed_t *reason);
 bool cgraph_preserve_function_body_p (tree);
 void verify_cgraph (void);
 void verify_cgraph_node (struct cgraph_node *);
@@ -449,7 +457,6 @@ varpool_next_static_initializer (struct varpool_node *node)
 
 /* In ipa-inline.c  */
 void cgraph_clone_inlined_nodes (struct cgraph_edge *, bool, bool);
-bool cgraph_default_inline_p (struct cgraph_node *, const char **);
 unsigned int compute_inline_parameters (struct cgraph_node *);
 
 

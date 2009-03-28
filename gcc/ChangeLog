@@ -1,5 +1,48 @@
 2009-03-28  Jan Hubicka  <jh@suse.cz>
 
+	Bring from lto-branch:
+	2008-09-03  Doug Kwan  <dougkwan@google.com>
+
+	* cgraphbuild.c (initialize_inline_failed): Use cgraph_inline_failed_t
+	enums instead of reason strings.
+	* cgraph.c (cgraph_create_edge): Same.
+	(cgraph_inline_failed_string): New function.
+	* cgraph.h (cgraph_inline_failed_t): New enum type.
+	(cgraph_inline_failed_string): New prototype.
+	(struct cgraph_edge): Change type of INLINED_FAILED from constant
+	char pointer to cgraph_inline_failed_t.
+	(cgraph_inline_p): Adjust prototype to use cgraph_inline_failed_t.
+	(cgraph_default_inline_p): Ditto.
+	* gcc/cgraphunit.c (cgraph_inline_p): Change type of parameter REASON
+	to cgraph_inline_failed_t pointer.
+	* cif-code.def: New file.
+	* ipa-inline.c (cgraph_mark_inline_edge): Use an enum instead of a
+	reason string.
+	(cgraph_check_inline_limits): Change type of REASON to pointer to
+	cgraph_inline_failed_t.  Replace reason strings with enums.
+	(cgraph_default_inline_p): Ditto.
+	(cgraph_recursive_inlining_p): Ditto.
+	(update_caller_keys): Change type of FAILED_REASON to
+	cgraph_inline_failed_t.
+	(cgraph_set_inline_failed): Change type of REASON to pointer to
+	cgraph_inline_failed_t.  Call cgraph_inline_failed_string to
+	convert enums to strings for text output.
+	(cgraph_decide_inlining_of_small_function): Change FAILED_REASON
+	to be of type cgraph_inline_failed_t.  Replace reason strings with
+	enums.  Call cgraph_inline_failed_string to covert enums
+	to strings for text output.
+	(cgraph_decide_inlining): Replace reason strings with enums.
+	(cgraph_decide_inlining_incrementally): Change type of FAILED_REASON
+	to cgraph_inline_failed_t type.  Call cgraph_inline_failed_string
+	for text output.
+	* tree-inline.c (expand_call_inline): Change type of REASON
+	to cgraph_inline_failed_t.  Replace reason strings with enums.
+	Call cgraph_inline_failed_string for text output.
+	* Makefile.in (CGRAPH_H): Add cif-code.def to dependencies.
+	(cgraph.o): Ditto.
+
+2009-03-28  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_node, cgraph_remove_node, dump_cgraph_node,
 	cgraph_clone_node): Remove master clone handling.
 	(cgraph_is_master_clone, cgraph_master_clone): Remove.
