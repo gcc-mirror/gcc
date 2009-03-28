@@ -761,6 +761,7 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   tree type;
   tree cond;
   tree tmp;
+  tree saved_dovar = NULL;
   tree cycle_label;
   tree exit_label;
   
@@ -768,6 +769,13 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
 
   /* Initialize the DO variable: dovar = from.  */
   gfc_add_modify (pblock, dovar, from);
+  
+  /* Save value for do-tinkering checking. */
+  if (gfc_option.rtcheck & GFC_RTCHECK_DO)
+    {
+      saved_dovar = gfc_create_var (type, ".saved_dovar");
+      gfc_add_modify (pblock, saved_dovar, dovar);
+    }
 
   /* Cycle and exit statements are implemented with gotos.  */
   cycle_label = gfc_build_label_decl (NULL_TREE);
@@ -790,6 +798,14 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
       gfc_add_expr_to_block (&body, tmp);
     }
 
+  /* Check whether someone has modified the loop variable. */
+  if (gfc_option.rtcheck & GFC_RTCHECK_DO)
+    {
+      tmp = fold_build2 (NE_EXPR, boolean_type_node, dovar, saved_dovar);
+      gfc_trans_runtime_check (true, false, tmp, &body, &code->loc,
+			       "Loop variable has been modified");
+    }
+
   /* Evaluate the loop condition.  */
   cond = fold_build2 (EQ_EXPR, boolean_type_node, dovar, to);
   cond = gfc_evaluate_now (cond, &body);
@@ -797,6 +813,9 @@ gfc_trans_simple_do (gfc_code * code, stmtblock_t *pblock, tree dovar,
   /* Increment the loop variable.  */
   tmp = fold_build2 (PLUS_EXPR, type, dovar, step);
   gfc_add_modify (&body, dovar, tmp);
+
+  if (gfc_option.rtcheck & GFC_RTCHECK_DO)
+    gfc_add_modify (&body, saved_dovar, dovar);
 
   /* The loop exit.  */
   tmp = build1_v (GOTO_EXPR, exit_label);
@@ -864,6 +883,7 @@ gfc_trans_do (gfc_code * code)
 {
   gfc_se se;
   tree dovar;
+  tree saved_dovar = NULL;
   tree from;
   tree to;
   tree step;
@@ -902,6 +922,14 @@ gfc_trans_do (gfc_code * code)
   gfc_add_block_to_block (&block, &se.pre);
   step = gfc_evaluate_now (se.expr, &block);
 
+  if (gfc_option.rtcheck & GFC_RTCHECK_DO)
+    {
+      tmp = fold_build2 (EQ_EXPR, boolean_type_node, step,
+			 fold_convert (type, integer_zero_node));
+      gfc_trans_runtime_check (true, false, tmp, &block, &code->loc,
+			       "DO step value is zero");
+    }
+
   /* Special case simple loops.  */
   if (TREE_CODE (type) == INTEGER_TYPE
       && (integer_onep (step)
@@ -924,6 +952,13 @@ gfc_trans_do (gfc_code * code)
 
   /* Initialize the DO variable: dovar = from.  */
   gfc_add_modify (&block, dovar, from);
+
+  /* Save value for do-tinkering checking. */
+  if (gfc_option.rtcheck & GFC_RTCHECK_DO)
+    {
+      saved_dovar = gfc_create_var (type, ".saved_dovar");
+      gfc_add_modify (&block, saved_dovar, dovar);
+    }
 
   /* Initialize loop count and jump to exit label if the loop is empty.
      This code is executed before we enter the loop body. We generate:
@@ -1011,9 +1046,20 @@ gfc_trans_do (gfc_code * code)
       gfc_add_expr_to_block (&body, tmp);
     }
 
+  /* Check whether someone has modified the loop variable. */
+  if (gfc_option.rtcheck & GFC_RTCHECK_DO)
+    {
+      tmp = fold_build2 (NE_EXPR, boolean_type_node, dovar, saved_dovar);
+      gfc_trans_runtime_check (true, false, tmp, &body, &code->loc,
+			       "Loop variable has been modified");
+    }
+
   /* Increment the loop variable.  */
   tmp = fold_build2 (PLUS_EXPR, type, dovar, step);
   gfc_add_modify (&body, dovar, tmp);
+
+  if (gfc_option.rtcheck & GFC_RTCHECK_DO)
+    gfc_add_modify (&body, saved_dovar, dovar);
 
   /* End with the loop condition.  Loop until countm1 == 0.  */
   cond = fold_build2 (EQ_EXPR, boolean_type_node, countm1,

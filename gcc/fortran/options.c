@@ -458,10 +458,10 @@ gfc_handle_runtime_check_option (const char *arg)
 {
   int result, pos = 0, n;
   static const char * const optname[] = { "all", "bounds", "array-temps",
-					  "recursion", /* "do", */ NULL };
+					  "recursion", "do", NULL };
   static const int optmask[] = { GFC_RTCHECK_ALL, GFC_RTCHECK_BOUNDS,
 				 GFC_RTCHECK_ARRAY_TEMPS,
-				 GFC_RTCHECK_RECURSION, /* GFC_RTCHECK_DO, */
+				 GFC_RTCHECK_RECURSION, GFC_RTCHECK_DO,
 				 0 };
  
   while (*arg)
