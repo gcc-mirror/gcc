@@ -29,17 +29,17 @@ program do_1
 
   ! Zero iterations
   j = 0
-  do i = 1, 0, 1
+  do i = 1, 0, 1 ! { dg-warning "executed zero times" }
     j = j + 1
   end do
   if (j .ne. 0) call abort
   j = 0
-  do i = 1, 0, 2
+  do i = 1, 0, 2 ! { dg-warning "executed zero times" }
     j = j + 1
   end do
   if (j .ne. 0) call abort
   j = 0
-  do i = 1, 2, -1
+  do i = 1, 2, -1 ! { dg-warning "executed zero times" }
     j = j + 1
   end do
   if (j .ne. 0) call abort
