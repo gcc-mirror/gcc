@@ -1,3 +1,8 @@
+2009-03-28  Paul Thomas  <pault@gcc.gnu.org
+
+        PR fortran/38538
+        * gfortran.dg/char_result_13.f90: New test.
+
 2009-03-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38765
