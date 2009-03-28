@@ -311,6 +311,7 @@ execute_fixup_cfg (void)
 		if (gimple_in_ssa_p (cfun))
 		  {
 		    todo |= TODO_update_ssa | TODO_cleanup_cfg;
+		    mark_symbols_for_renaming (stmt);
 	            update_stmt (stmt);
 		  }
 	      }

@@ -1,3 +1,10 @@
+2009-03-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/attr-noinline.c: Avoid pure-const optimization.
+	* gcc.dg/pr33826.c: Update dump files.
+	* gcc.dg/ipa/ipa-3.c: Avoid pure-const optimization.
+	* gcc.dg/ipa/ipa-5.c: Avoid pure-const optimization.
+
 2009-03-28  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/tree-ssa/fwprop-align.C: New test.

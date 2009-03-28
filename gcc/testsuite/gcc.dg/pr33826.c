@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-require-effective-target nonpic } */
-/* { dg-options "-O1 -fdump-ipa-pure-const" } */
+/* { dg-options "-O1 -fdump-tree-local-pure-const1 -fdump-ipa-pure-const" } */
 
 int recurese1 (int i)
 {
@@ -30,8 +30,14 @@ int norecurse1b (int i)
   return i+1;
 }
 
-/* { dg-final { scan-ipa-dump "found to be const: norecurse1a" "pure-const" } } */
-/* { dg-final { scan-ipa-dump "found to be const: norecurse1b" "pure-const" } } */
+/* { dg-final { scan-tree-dump "found to be const: norecurse1a" "local-pure-const1" } } */
+/* { dg-final { scan-tree-dump "found to be const: norecurse1b" "local-pure-const1" } } */
+/* { dg-final { scan-tree-dump-not "found to be pure: recurse1" "local-pure-const1" } } */
+/* { dg-final { scan-tree-dump-not "found to be pure: recurse2a" "local-pure-const1" } } */
+/* { dg-final { scan-tree-dump-not "found to be pure: recurse2b" "local-pure-const1" } } */
+/* { dg-final { scan-tree-dump-not "found to be const: recurse1" "local-pure-const1" } } */
+/* { dg-final { scan-tree-dump-not "found to be const: recurse2a" "local-pure-const1" } } */
+/* { dg-final { scan-tree-dump-not "found to be const: recurse2b" "local-pure-const1" } } */
 /* { dg-final { scan-ipa-dump-not "found to be pure: recurse1" "pure-const" } } */
 /* { dg-final { scan-ipa-dump-not "found to be pure: recurse2a" "pure-const" } } */
 /* { dg-final { scan-ipa-dump-not "found to be pure: recurse2b" "pure-const" } } */
@@ -39,3 +45,4 @@ int norecurse1b (int i)
 /* { dg-final { scan-ipa-dump-not "found to be const: recurse2a" "pure-const" } } */
 /* { dg-final { scan-ipa-dump-not "found to be const: recurse2b" "pure-const" } } */
 /* { dg-final { cleanup-ipa-dump "pure-const" } } */
+/* { dg-final { cleanup-tree-dump "local-pure-const1" } } */

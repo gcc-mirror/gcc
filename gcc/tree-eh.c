@@ -2402,6 +2402,32 @@ tree_could_throw_p (tree t)
   return false;
 }
 
+/* Return true if STMT can throw an exception that is not caught within
+   the current function (CFUN).  */
+
+bool
+stmt_can_throw_external (gimple stmt)
+{
+  int region_nr;
+  bool is_resx = false;
+  bool inlinable_call = false;
+
+  if (!stmt_could_throw_p (stmt))
+    return false;
+
+  if (gimple_code (stmt) == GIMPLE_RESX)
+    {
+      region_nr = gimple_resx_region (stmt);
+      is_resx = true;
+    }
+  else
+    region_nr = lookup_stmt_eh_region (stmt);
+
+  if (region_nr < 0)
+    return true;
+
+  return can_throw_external_1 (region_nr, is_resx, inlinable_call);
+}
 
 /* Return true if STMT can throw an exception that is caught within
    the current function (CFUN).  */

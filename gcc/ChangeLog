@@ -1,3 +1,40 @@
+2009-03-28  Jan Hubicka  <jh@suse.cz>
+
+	Merge from pretty-ipa:
+
+	2009-03-27  Jan Hubicka  <jh@suse.cz>
+	* cgraph.c (dump_cgraph_node): Add replace output flag by process.
+	* tree-pass.h (function_called_by_processed_nodes_p): Declare.
+	* passes.c (function_called_by_processed_nodes_p): New.
+	* ipa-pure-const.c (check_call): Fix handling of operands.
+	(analyze_function): Dump debug output for skipped bodies.
+	(local_pure_const): Use function_called_by_processed_nodes_p.
+	* dwarf2out.c (reference_to_unused): Use output.
+	* passes.c (do_per_function_toporder): Likewise.
+
+	2008-11-12  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pass.h (pass_fixup_cfg, pass_local_pure_const): Declare.
+	* ipa-pure-const.c (funct_state_d): Add can throw field; make
+	state_set_in_source enum
+	(check_decl): Ignore memory tags; do not set fake looping flags;
+	dump diagnostics.
+	(check_operand, check_tree, check_rhs_var, check_lhs_var,
+	get_asm_expr_operands, scan_function_op, scan_function_stmt): Remove.
+	(check_call, analyze_function): Rewrite.
+	(check_stmt): New.
+	(add_new_function): Update call of analyze_function.
+	(generate_summary): Add call of analyze_function.
+	(propagate): Propagate can_throw; handle state_set_in_source correctly.
+	(local_pure_const): New function.
+	(pass_local_pure_const): New pass.
+	* ipa-inline.c (inline_transform): Set after_inlining.
+	* tree-eh.c (stmt_can_throw_external): New.
+	* tree-optimize.c (execute_fixup_cfg): Do not set after_inlining;
+	work with aliasing built.
+	* tree-flow.h (stmt_can_throw_external): New.
+	* passes.c (init_optimization_passes): Schedule fixup_cfg pass early;
+	and local pure/const pass in early and late optimization queue.
 2009-03-28  Martin Jambor  <mjambor@suse.cz>
 
 	* fold-const.c (get_pointer_modulus_and_residue): New parameter
