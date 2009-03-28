@@ -1,5 +1,11 @@
 2009-03-28  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/38458
+	* tree-ssa-copy.c (copy_prop_visit_phi_node): For the first
+	argument use the arguments copy-of value.
+
+2009-03-28  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/38180
 	* tree-ssa-ccp.c (get_default_value): Simplify.
 	(likely_value): Likewise.
