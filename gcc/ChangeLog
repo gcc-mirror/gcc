@@ -1,3 +1,8 @@
+2009-03-28  Xinliang David Li  <davidxl@google.com>
+
+	* tree-ssa-ccp.c (ccp_finalize): Add dbg_count support. 
+	(do_dbg_cnt): New function.
+
 2009-03-28  Jan Hubicka  <jh@suse.cz>
 
 	Merge from pretty-ipa:

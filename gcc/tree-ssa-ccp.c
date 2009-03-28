@@ -208,6 +208,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "target.h"
 #include "toplev.h"
+#include "dbgcnt.h"
 
 
 /* Possible lattice values.  */
@@ -666,6 +667,24 @@ ccp_initialize (void)
     }
 }
 
+/* Debug count support. Reset the values of ssa names
+   VARYING when the total number ssa names analyzed is
+   beyond the debug count specified.  */
+
+static void
+do_dbg_cnt (void)
+{
+  unsigned i;
+  for (i = 0; i < num_ssa_names; i++)
+    {
+      if (!dbg_cnt (ccp))
+        {
+          const_val[i].lattice_val = VARYING;
+          const_val[i].value = NULL_TREE;
+        }
+    }
+}
+
 
 /* Do final substitution of propagated values, cleanup the flowgraph and
    free allocated storage.  
@@ -675,8 +694,11 @@ ccp_initialize (void)
 static bool
 ccp_finalize (void)
 {
+  bool something_changed;
+
+  do_dbg_cnt ();
   /* Perform substitutions based on the known constant values.  */
-  bool something_changed = substitute_and_fold (const_val, false);
+  something_changed = substitute_and_fold (const_val, false);
 
   free (const_val);
   const_val = NULL;
