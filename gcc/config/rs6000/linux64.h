@@ -152,7 +152,7 @@ extern int dot_symbols;
 
 #define ASM_SPEC32 "-a32 %{n} %{T} %{Ym,*} %{Yd,*} \
 %{mrelocatable} %{mrelocatable-lib} %{fpic:-K PIC} %{fPIC:-K PIC} \
-%{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb}} \
+%{memb} %{!memb: %{msdata=eabi: -memb}} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
     %{mcall-freebsd: -mbig} \
     %{mcall-i960-old: -mlittle} \

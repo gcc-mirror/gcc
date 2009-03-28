@@ -1,5 +1,12 @@
 2009-03-29  Ben Elliston  <bje@au.ibm.com>
 
+	PR target/32542
+	* sysv4.opt (msdata): Improve comment.
+	* linux64.h (ASM_SPEC32): Do not pass -memb when -msdata is given.
+	* sysv4.h (SVR4_ASM_SPEC): Likewise.
+
+2009-03-29  Ben Elliston  <bje@au.ibm.com>
+
 	PR target/30451
 	* config/rs6000/rs6000.md (*movti_ppc64): Correct the order of
 	load and store attributes.

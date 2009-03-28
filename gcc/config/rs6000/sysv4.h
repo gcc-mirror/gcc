@@ -588,7 +588,7 @@ extern int fixuplabelno;
 %{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}}" \
 SVR4_ASM_SPEC \
 "%{mrelocatable} %{mrelocatable-lib} %{fpic|fpie|fPIC|fPIE:-K PIC} \
-%{memb|msdata|msdata=eabi: -memb} \
+%{memb|msdata=eabi: -memb} \
 %{mlittle|mlittle-endian:-mlittle; \
   mbig|mbig-endian      :-mbig;    \
   mcall-aixdesc |		   \
