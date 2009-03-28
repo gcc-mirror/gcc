@@ -1,5 +1,9 @@
 2009-03-28  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.pot: Regenerate.
+
+2009-03-28  Joseph Myers  <joseph@codesourcery.com>
+
 	* EXCLUDES (fix-header.c, gen-protos.c, scan-decls.c, scan.c,
 	scan.h): Remove.
 
