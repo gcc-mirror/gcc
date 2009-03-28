@@ -2368,15 +2368,7 @@ stmt_could_throw_p (gimple stmt)
   if (code == GIMPLE_ASSIGN || code == GIMPLE_COND)
     return stmt_could_throw_1_p (stmt);
   else if (is_gimple_call (stmt))
-    {
-      tree t = gimple_call_fndecl (stmt);
-
-      /* Assume that calls to weak functions may trap.  */
-      if (!t || !DECL_P (t) || DECL_WEAK (t))
-	return true;
-
-      return (gimple_call_flags (stmt) & ECF_NOTHROW) == 0;
-    }
+    return (gimple_call_flags (stmt) & ECF_NOTHROW) == 0;
   else if (gimple_code (stmt) == GIMPLE_ASM)
     return (gimple_asm_volatile_p (stmt));
   else
