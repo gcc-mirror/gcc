@@ -892,7 +892,7 @@ copy_prop_visit_phi_node (gimple phi)
 	 memory reference of all the other arguments.  */
       if (phi_val.value == NULL_TREE)
 	{
-	  phi_val.value = arg;
+	  phi_val.value = arg_val->value;
 	  continue;
 	}
 
