@@ -1,3 +1,13 @@
+2009-03-28  Martin Jambor  <mjambor@suse.cz>
+
+	* fold-const.c (get_pointer_modulus_and_residue): New parameter
+	allow_func_align.
+	(fold_binary): Allow function decl aligment consideration is the
+	second argument is integer constant one.
+	* tree-ssa-forwprop.c (simplify_bitwise_and): New function.
+	(tree_ssa_forward_propagate_single_use_vars): Handle assing statements
+	with BIT_AND_EXPR on the RHS by calling simplify_bitwise_and.
+
 2009-03-28  Jan Hubicka  <jh@suse.cz>
 
 	* dwarf2out.c (dwarf2out_begin_prologue): Use crtl->nothrow
