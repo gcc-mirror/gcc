@@ -1429,6 +1429,11 @@ cgraph_function_body_availability (struct cgraph_node *node)
     avail = AVAIL_LOCAL;
   else if (!node->local.externally_visible)
     avail = AVAIL_AVAILABLE;
+  /* Inline functions are safe to be analyzed even if their sybol can
+     be overwritten at runtime.  It is not meaningful to enfore any sane
+     behaviour on replacing inline function by different body.  */
+  else if (DECL_DECLARED_INLINE_P (node->decl))
+    avail = AVAIL_AVAILABLE;
 
   /* If the function can be overwritten, return OVERWRITABLE.  Take
      care at least of two notable extensions - the COMDAT functions
@@ -1438,15 +1443,9 @@ cgraph_function_body_availability (struct cgraph_node *node)
 
      ??? Does the C++ one definition rule allow us to always return
      AVAIL_AVAILABLE here?  That would be good reason to preserve this
-     hook Similarly deal with extern inline functions - this is again
-     necessary to get C++ shared functions having keyed templates
-     right and in the C extension documentation we probably should
-     document the requirement of both versions of function (extern
-     inline and offline) having same side effect characteristics as
-     good optimization is what this optimization is about.  */
+     bit.  */
 
-  else if (!(*targetm.binds_local_p) (node->decl)
-	   && !DECL_COMDAT (node->decl) && !DECL_EXTERNAL (node->decl))
+  else if (DECL_REPLACEABLE_P (node->decl) && !DECL_EXTERNAL (node->decl))
     avail = AVAIL_OVERWRITABLE;
   else avail = AVAIL_AVAILABLE;
 
