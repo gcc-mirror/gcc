@@ -5,7 +5,7 @@
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 2004, 2005, 2006, 2007, 2008
+Copyright @copyright{} 2004, 2005, 2006, 2007, 2008, 2009
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -1220,6 +1220,10 @@ the compilation of the main program.
 
 Note: In the future this may also include other forms of checking, e.g.,
 checking substring references.
+
+@item @samp{do}
+Enable generation of run-time checks for invalid modification of loop
+iteration variables.
 
 @item @samp{recursion}
 Enable generation of run-time checks for recursively called subroutines and
