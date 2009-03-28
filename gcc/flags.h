@@ -1,6 +1,6 @@
 /* Compilation switch flag definitions for GCC.
    Copyright (C) 1987, 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008
+   2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -309,13 +309,6 @@ extern enum stack_check_type flag_stack_check;
 /* Return whether the function should be excluded from
    instrumentation.  */
 extern bool flag_instrument_functions_exclude_p (tree fndecl);
-
-/* Emit warning if the function call is disallowed under
-   -Wdisallowed-function-list=...  */
-extern void warn_if_disallowed_function_p (const_tree fncall);
-
-/* True, if the -Wdisallowed-function-list=... option has been specified.  */
-extern bool warn_disallowed_functions;
 
 /* True if the given mode has a NaN representation and the treatment of
    NaN operands is important.  Certain optimizations, such as folding
