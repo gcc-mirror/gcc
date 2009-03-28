@@ -5669,18 +5669,15 @@ ipa_pta_execute (void)
 
   for (node = cgraph_nodes; node; node = node->next)
     {
-      if (!node->analyzed)
-	{
-	  unsigned int varid;
+      unsigned int varid;
 
-	  varid = create_function_info_for (node->decl,
-					    cgraph_node_name (node));
-	  if (node->local.externally_visible)
-	    {
-	      varinfo_t fi = get_varinfo (varid);
-	      for (; fi; fi = fi->next)
-		make_constraint_from (fi, anything_id);
-	    }
+      varid = create_function_info_for (node->decl,
+					cgraph_node_name (node));
+      if (node->local.externally_visible)
+	{
+	  varinfo_t fi = get_varinfo (varid);
+	  for (; fi; fi = fi->next)
+	    make_constraint_from (fi, anything_id);
 	}
     }
   for (node = cgraph_nodes; node; node = node->next)
