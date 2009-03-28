@@ -11319,7 +11319,7 @@ reference_to_unused (tree * tp, int * walk_subtrees,
 	   && (!DECL_EXTERNAL (*tp) || DECL_DECLARED_INLINE_P (*tp)))
     {
       struct cgraph_node *node = cgraph_node (*tp);
-      if (!node->output)
+      if (node->process || TREE_ASM_WRITTEN (*tp))
 	return *tp;
     }
   else if (TREE_CODE (*tp) == STRING_CST && !TREE_ASM_WRITTEN (*tp))

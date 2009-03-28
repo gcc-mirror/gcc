@@ -878,11 +878,14 @@ do_per_function_toporder (void (*callback) (void *data), void *data)
       order = GGC_NEWVEC (struct cgraph_node *, cgraph_n_nodes);
       nnodes = cgraph_postorder (order);
       for (i = nnodes - 1; i >= 0; i--)
+        order[i]->process = 1;
+      for (i = nnodes - 1; i >= 0; i--)
 	{
 	  struct cgraph_node *node = order[i];
 
 	  /* Allow possibly removed nodes to be garbage collected.  */
 	  order[i] = NULL;
+	  node->process = 0;
 	  if (node->analyzed && (node->needed || node->reachable))
 	    {
 	      push_cfun (DECL_STRUCT_FUNCTION (node->decl));
