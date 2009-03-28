@@ -1,3 +1,12 @@
+2009-03-28  Jan Hubicka  <jh@suse.cz>
+
+	* tree-pass.h (pass_fixup_cfg): New pass.
+	* ipa-inline.c (inline_transform): Set
+	always_inline_functions_inlined/after_inlining.
+	* tree-optimize.c (execute_fixup_cfg): Do not set them here.
+	(pass_fixup_cfg): New pass.
+	* passes.c (init_optimization_passes): Add fixup_cfg.
+
 2009-03-28  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/38458

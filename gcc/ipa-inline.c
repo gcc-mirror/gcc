@@ -1755,6 +1755,8 @@ inline_transform (struct cgraph_node *node)
       todo = optimize_inline_calls (current_function_decl);
       timevar_pop (TV_INTEGRATION);
     }
+  cfun->always_inline_functions_inlined = true;
+  cfun->after_inlining = true;
   return todo | execute_fixup_cfg ();
 }
 
