@@ -271,7 +271,7 @@ enum reachable_code
 
 struct reachable_info;
 static enum reachable_code reachable_next_level (struct eh_region *, tree,
-						 struct reachable_info *);
+						 struct reachable_info *, bool);
 
 static int action_record_eq (const void *, const void *);
 static hashval_t action_record_hash (const void *);
@@ -1660,7 +1660,7 @@ sjlj_find_directly_reachable_regions (struct sjlj_lp_info *lp_info)
       rc = RNL_NOT_CAUGHT;
       for (; region; region = region->outer)
 	{
-	  rc = reachable_next_level (region, type_thrown, NULL);
+	  rc = reachable_next_level (region, type_thrown, NULL, false);
 	  if (rc != RNL_NOT_CAUGHT)
 	    break;
 	}
@@ -2359,8 +2359,6 @@ add_reachable_handler (struct reachable_info *info,
   if (! info)
     return;
 
-  info->saw_any_handlers = true;
-
   if (crtl->eh.built_landing_pads)
     info->callback (lp_region, info->callback_data);
   else
@@ -2374,7 +2372,8 @@ add_reachable_handler (struct reachable_info *info,
 
 static enum reachable_code
 reachable_next_level (struct eh_region *region, tree type_thrown,
-		      struct reachable_info *info)
+		      struct reachable_info *info,
+		      bool maybe_resx)
 {
   switch (region->type)
     {
@@ -2510,15 +2509,16 @@ reachable_next_level (struct eh_region *region, tree type_thrown,
 
     case ERT_MUST_NOT_THROW:
       /* Here we end our search, since no exceptions may propagate.
-	 If we've touched down at some landing pad previous, then the
-	 explicit function call we generated may be used.  Otherwise
-	 the call is made by the runtime.
+        
+         Local landing pads of ERT_MUST_NOT_THROW instructions are reachable
+	 only via locally handled RESX instructions.  
 
-         Before inlining, do not perform this optimization.  We may
-	 inline a subroutine that contains handlers, and that will
-	 change the value of saw_any_handlers.  */
+	 When we inline a function call, we can bring in new handlers.  In order
+	 to avoid ERT_MUST_NOT_THROW landing pads from being deleted as unreachable
+	 assume that such handlers exists prior for any inlinable call prior
+	 inlining decisions are fixed.  */
 
-      if ((info && info->saw_any_handlers) || !cfun->after_inlining)
+      if (maybe_resx)
 	{
 	  add_reachable_handler (info, region, region);
 	  return RNL_CAUGHT;
@@ -2539,7 +2539,7 @@ reachable_next_level (struct eh_region *region, tree type_thrown,
 /* Invoke CALLBACK on each region reachable from REGION_NUMBER.  */
 
 void
-foreach_reachable_handler (int region_number, bool is_resx,
+foreach_reachable_handler (int region_number, bool is_resx, bool inlinable_call,
 			   void (*callback) (struct eh_region *, void *),
 			   void *callback_data)
 {
@@ -2570,7 +2570,8 @@ foreach_reachable_handler (int region_number, bool is_resx,
 
   while (region)
     {
-      if (reachable_next_level (region, type_thrown, &info) >= RNL_CAUGHT)
+      if (reachable_next_level (region, type_thrown, &info,
+      				inlinable_call || is_resx) >= RNL_CAUGHT)
 	break;
       /* If we have processed one cleanup, there is no point in
 	 processing any more of them.  Each cleanup will have an edge
@@ -2622,7 +2623,7 @@ reachable_handlers (rtx insn)
       region_number = INTVAL (XEXP (note, 0));
     }
 
-  foreach_reachable_handler (region_number, is_resx,
+  foreach_reachable_handler (region_number, is_resx, false,
 			     (crtl->eh.built_landing_pads
 			      ? arh_to_landing_pad
 			      : arh_to_label),
@@ -2635,7 +2636,7 @@ reachable_handlers (rtx insn)
    within the function.  */
 
 bool
-can_throw_internal_1 (int region_number, bool is_resx)
+can_throw_internal_1 (int region_number, bool is_resx, bool inlinable_call)
 {
   struct eh_region *region;
   tree type_thrown;
@@ -2656,7 +2657,8 @@ can_throw_internal_1 (int region_number, bool is_resx)
      regions, which also do not require processing internally.  */
   for (; region; region = region->outer)
     {
-      enum reachable_code how = reachable_next_level (region, type_thrown, 0);
+      enum reachable_code how = reachable_next_level (region, type_thrown, 0,
+      						      inlinable_call || is_resx);
       if (how == RNL_BLOCKED)
 	return false;
       if (how != RNL_NOT_CAUGHT)
@@ -2677,7 +2679,7 @@ can_throw_internal (const_rtx insn)
   if (JUMP_P (insn)
       && GET_CODE (PATTERN (insn)) == RESX
       && XINT (PATTERN (insn), 0) > 0)
-    return can_throw_internal_1 (XINT (PATTERN (insn), 0), true);
+    return can_throw_internal_1 (XINT (PATTERN (insn), 0), true, false);
 
   if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
@@ -2688,14 +2690,14 @@ can_throw_internal (const_rtx insn)
   if (!note || INTVAL (XEXP (note, 0)) <= 0)
     return false;
 
-  return can_throw_internal_1 (INTVAL (XEXP (note, 0)), false);
+  return can_throw_internal_1 (INTVAL (XEXP (note, 0)), false, false);
 }
 
 /* Determine if the given INSN can throw an exception that is
    visible outside the function.  */
 
 bool
-can_throw_external_1 (int region_number, bool is_resx)
+can_throw_external_1 (int region_number, bool is_resx, bool inlinable_call)
 {
   struct eh_region *region;
   tree type_thrown;
@@ -2714,7 +2716,8 @@ can_throw_external_1 (int region_number, bool is_resx)
   /* If the exception is caught or blocked by any containing region,
      then it is not seen by any calling function.  */
   for (; region ; region = region->outer)
-    if (reachable_next_level (region, type_thrown, NULL) >= RNL_CAUGHT)
+    if (reachable_next_level (region, type_thrown, NULL,
+    	inlinable_call || is_resx) >= RNL_CAUGHT)
       return false;
 
   return true;
@@ -2731,7 +2734,7 @@ can_throw_external (const_rtx insn)
   if (JUMP_P (insn)
       && GET_CODE (PATTERN (insn)) == RESX
       && XINT (PATTERN (insn), 0) > 0)
-    return can_throw_external_1 (XINT (PATTERN (insn), 0), true);
+    return can_throw_external_1 (XINT (PATTERN (insn), 0), true, false);
 
   if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
@@ -2752,7 +2755,7 @@ can_throw_external (const_rtx insn)
   if (INTVAL (XEXP (note, 0)) <= 0)
     return false;
 
-  return can_throw_external_1 (INTVAL (XEXP (note, 0)), false);
+  return can_throw_external_1 (INTVAL (XEXP (note, 0)), false, false);
 }
 
 /* Set TREE_NOTHROW and crtl->all_throwers_are_sibcalls.  */

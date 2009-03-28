@@ -1,3 +1,19 @@
+2009-03-28  Jan Hubicka  <jh@suse.cz>
+
+	* tree-eh.c (inlinable_call_p): New function.
+	(make_eh_edges): Use it.
+	(verify_eh_edges): Use it.
+	(stmt_can_throw_external, stmt_can_throw_internal): Use it.
+	* except.c (reachable_next_level): Add inlinable_function argument
+	(sjlj_find_directly_reachable_regions): Update.
+	(add_reachable_handler): Do not set saw_any_handlers.
+	(reachable_next_level): Handle MUST_NOT_THROW more curefully.
+	(foreach_reachable_handler, can_throw_internal_1, can_throw_external_1):
+	Add new inlinable call parameter.
+	(can_throw_internal, can_throw_external): Update.
+	* except.h (can_throw_internal_1, can_throw_external_1,
+	foreach_reachable_handler): Update declaration.
+
 2009-03-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/t-arm-coff, config/h8300/coff.h,
