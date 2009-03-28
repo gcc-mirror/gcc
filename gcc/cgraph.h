@@ -178,8 +178,8 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   /* Set once the function has been instantiated and its callee
      lists created.  */
   unsigned analyzed : 1;
-  /* Set when function is scheduled to be assembled.  */
-  unsigned output : 1;
+  /* Set when function is scheduled to be processed by local passes.  */
+  unsigned process : 1;
   /* Set for aliases once they got through assemble_alias.  */
   unsigned alias : 1;
 

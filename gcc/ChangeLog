@@ -1,5 +1,18 @@
 2009-03-28  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (dump_cgraph_node): Add replace output flag by process.
+	* cgraph.h (cgraph_node): Likewise.
+	* cgraphunit.c (cgraph_process_new_functions): Set process flag.
+	(cgraph_reset_node): Use process flag.
+	(cgraph_mark_functions_to_output): Likewise.
+	(cgraph_expand_function): Likewise.
+	(cgraph_expand_all_functions): Likewise.
+	(cgraph_output_in_order): Likewise.
+	* dwarf2out.c (reference_to_unused): Likewise.
+	* passes.c do_per_function_toporder): Likewise.
+
+2009-03-28  Jan Hubicka  <jh@suse.cz>
+
 	Bring from lto-branch:
 	2008-09-03  Doug Kwan  <dougkwan@google.com>
 

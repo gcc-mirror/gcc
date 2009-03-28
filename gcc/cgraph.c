@@ -1168,8 +1168,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " reachable");
   if (gimple_has_body_p (node->decl))
     fprintf (f, " body");
-  if (node->output)
-    fprintf (f, " output");
+  if (node->process)
+    fprintf (f, " process");
   if (node->local.local)
     fprintf (f, " local");
   if (node->local.externally_visible)
