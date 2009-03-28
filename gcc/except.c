@@ -2765,13 +2765,7 @@ set_nothrow_function_flags (void)
 {
   rtx insn;
 
-  /* If we don't know that this implementation of the function will
-     actually be used, then we must not set TREE_NOTHROW, since
-     callers must not assume that this function does not throw.  */
-  if (DECL_REPLACEABLE_P (current_function_decl))
-    return 0;
-
-  TREE_NOTHROW (current_function_decl) = 1;
+  crtl->nothrow = 1;
 
   /* Assume crtl->all_throwers_are_sibcalls until we encounter
      something that can throw an exception.  We specifically exempt
@@ -2781,13 +2775,19 @@ set_nothrow_function_flags (void)
 
   crtl->all_throwers_are_sibcalls = 1;
 
+  /* If we don't know that this implementation of the function will
+     actually be used, then we must not set TREE_NOTHROW, since
+     callers must not assume that this function does not throw.  */
+  if (TREE_NOTHROW (current_function_decl))
+    return 0;
+
   if (! flag_exceptions)
     return 0;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (can_throw_external (insn))
       {
-        TREE_NOTHROW (current_function_decl) = 0;
+        crtl->nothrow = 0;
 
 	if (!CALL_P (insn) || !SIBLING_CALL_P (insn))
 	  {
@@ -2800,7 +2800,7 @@ set_nothrow_function_flags (void)
        insn = XEXP (insn, 1))
     if (can_throw_external (insn))
       {
-        TREE_NOTHROW (current_function_decl) = 0;
+        crtl->nothrow = 0;
 
 	if (!CALL_P (insn) || !SIBLING_CALL_P (insn))
 	  {
@@ -2808,6 +2808,10 @@ set_nothrow_function_flags (void)
 	    return 0;
 	  }
       }
+  if (crtl->nothrow
+      && (cgraph_function_body_availability (cgraph_node (current_function_decl))
+          >= AVAIL_AVAILABLE))
+    TREE_NOTHROW (current_function_decl) = 1;
   return 0;
 }
 
