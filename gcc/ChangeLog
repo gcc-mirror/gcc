@@ -1,3 +1,8 @@
+2009-03-28  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-structalias.c (ipa_pta_execute): Fix bogus node->analyzed
+	test introduced by my previous patch.
+
 2009-03-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-copy.c (copy_prop_visit_phi_node): Do not leave
