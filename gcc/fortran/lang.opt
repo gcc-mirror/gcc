@@ -246,7 +246,7 @@ Fortran RejectNegative Joined UInteger
 
 ffpe-trap=
 Fortran RejectNegative JoinedOrMissing
--ffpe-trap=[..]	Stop on following floating point exceptions
+-ffpe-trap=[...]	Stop on following floating point exceptions
 
 ffree-form
 Fortran RejectNegative
@@ -339,6 +339,10 @@ Allocate local variables on the stack to allow indirect recursion
 frepack-arrays
 Fortran
 Copy array sections into a contiguous block on procedure entry
+
+fcheck=
+Fortran RejectNegative JoinedOrMissing
+-fcheck=[...]	Specify which runtime checks are to be performed
 
 fsecond-underscore
 Fortran

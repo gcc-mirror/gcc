@@ -1,5 +1,5 @@
 /* Array translation routines
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
@@ -1058,7 +1058,7 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 	  gfc_trans_string_copy (&se->pre, esize, tmp, expr->ts.kind,
 				 se->string_length, se->expr, expr->ts.kind);
 	}
-      if (flag_bounds_check && !typespec_chararray_ctor)
+      if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS) && !typespec_chararray_ctor)
 	{
 	  if (first_len)
 	    {
@@ -1761,8 +1761,8 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
   typespec_chararray_ctor = (ss->expr->ts.cl
 			     && ss->expr->ts.cl->length_from_typespec);
 
-  if (flag_bounds_check && ss->expr->ts.type == BT_CHARACTER
-      && !typespec_chararray_ctor)
+  if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+      && ss->expr->ts.type == BT_CHARACTER && !typespec_chararray_ctor)
     {  
       first_len_val = gfc_create_var (gfc_charlen_type_node, "len");
       first_len = true;
@@ -1880,7 +1880,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss, locus * where)
     gcc_assert (INTEGER_CST_P (offset));
 #if 0
   /* Disable bound checking for now because it's probably broken.  */
-  if (flag_bounds_check)
+  if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
     {
       gcc_unreachable ();
     }
@@ -2233,7 +2233,7 @@ gfc_trans_array_bound_check (gfc_se * se, tree descriptor, tree index, int n,
   char *msg;
   const char * name = NULL;
 
-  if (!flag_bounds_check)
+  if (!(gfc_option.rtcheck & GFC_RTCHECK_BOUNDS))
     return index;
 
   index = gfc_evaluate_now (index, &se->pre);
@@ -2469,7 +2469,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
       gfc_conv_expr_type (&indexse, ar->start[n], gfc_array_index_type);
       gfc_add_block_to_block (&se->pre, &indexse.pre);
 
-      if (flag_bounds_check)
+      if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
 	{
 	  /* Check array bounds.  */
 	  tree cond;
@@ -3015,7 +3015,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
     }
 
   /* The rest is just runtime bound checking.  */
-  if (flag_bounds_check)
+  if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
     {
       stmtblock_t block;
       tree lbound, ubound;
@@ -4332,7 +4332,8 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
       && TREE_CODE (sym->ts.cl->backend_decl) == VAR_DECL)
     gfc_conv_string_length (sym->ts.cl, NULL, &block);
 
-  checkparm = (sym->as->type == AS_EXPLICIT && flag_bounds_check);
+  checkparm = (sym->as->type == AS_EXPLICIT
+	       && (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS));
 
   no_repack = !(GFC_DECL_PACKED_ARRAY (tmpdesc)
                 || GFC_DECL_PARTIAL_PACKED_ARRAY (tmpdesc));
@@ -5329,7 +5330,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
 
       se->expr = ptr;
 
-      if (gfc_option.flag_check_array_temporaries)
+      if (gfc_option.rtcheck & GFC_RTCHECK_ARRAY_TEMPS)
 	{
 	  char * msg;
 
