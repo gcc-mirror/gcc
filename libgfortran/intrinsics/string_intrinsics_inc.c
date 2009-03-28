@@ -165,15 +165,7 @@ void
 string_trim (gfc_charlen_type *len, CHARTYPE **dest, gfc_charlen_type slen,
 	     const CHARTYPE *src)
 {
-  gfc_charlen_type i;
-
-  /* Determine length of result string.  */
-  for (i = slen - 1; i >= 0; i--)
-    {
-      if (src[i] != ' ')
-        break;
-    }
-  *len = i + 1;
+  *len = string_len_trim (slen, src);
 
   if (*len == 0)
     *dest = &zero_length_string;
@@ -193,13 +185,57 @@ string_trim (gfc_charlen_type *len, CHARTYPE **dest, gfc_charlen_type slen,
 gfc_charlen_type
 string_len_trim (gfc_charlen_type len, const CHARTYPE *s)
 {
+  const gfc_charlen_type long_len = (gfc_charlen_type) sizeof (unsigned long);
   gfc_charlen_type i;
 
-  for (i = len - 1; i >= 0; i--)
+  i = len - 1;
+
+  /* If we've got the standard (KIND=1) character type, we scan the string in
+     long word chunks to speed it up (until a long word is hit that does not
+     consist of ' 's).  */
+  if (sizeof (CHARTYPE) == 1 && i >= long_len)
     {
-      if (s[i] != ' ')
-        break;
+      int starting;
+      unsigned long blank_longword;
+
+      /* Handle the first characters until we're aligned on a long word
+	 boundary.  Actually, s + i + 1 must be properly aligned, because
+	 s + i will be the last byte of a long word read.  */
+      starting = ((unsigned long) (s + i + 1)) % long_len;
+      i -= starting;
+      for (; starting > 0; --starting)
+	if (s[i + starting] != ' ')
+	  return i + starting + 1;
+
+      /* Handle the others in a batch until first non-blank long word is
+	 found.  Here again, s + i is the last byte of the current chunk,
+	 to it starts at s + i - sizeof (long) + 1.  */
+
+#if __SIZEOF_LONG__ == 4
+      blank_longword = 0x20202020L;
+#elif __SIZEOF_LONG__ == 8
+      blank_longword = 0x2020202020202020L;
+#else
+      #error Invalid size of long!
+#endif
+
+      while (i >= long_len)
+	{
+	  i -= long_len;
+	  if (*((unsigned long*) (s + i + 1)) != blank_longword)
+	    {
+	      i += long_len;
+	      break;
+	    }
+	}
+
+      /* Now continue for the last characters with naive approach below.  */
+      assert (i >= 0);
     }
+
+  /* Simply look for the first non-blank character.  */
+  while (i >= 0 && s[i] == ' ')
+    --i;
   return i + 1;
 }
 

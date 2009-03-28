@@ -39,6 +39,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 
 /* Helper function to set parts of wide strings to a constant (usually
