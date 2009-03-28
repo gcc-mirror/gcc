@@ -1,6 +1,3 @@
-# Find all of the declarations from the header files
-FIXPROTO_DEFINES = -D__EXTENSIONS__ -D_SGI_SOURCE -D_LANGUAGE_C_PLUS_PLUS
-
 $(T)irix-crti.o: $(srcdir)/config/mips/irix-crti.asm $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) $(INCLUDES) \
 	-c -o $@ -x assembler-with-cpp $<

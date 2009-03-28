@@ -458,7 +458,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical build_libsubdir build_subdir host_subdir target_subdir GENINSRC CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT GNATBIND ac_ct_GNATBIND GNATMAKE ac_ct_GNATMAKE NO_MINUS_C_MINUS_O OUTPUT_OPTION CPP EGREP loose_warn strict_warn warn_cflags nocommon_flag TREEBROWSER valgrind_path valgrind_path_defines valgrind_command coverage_flags enable_multilib enable_decimal_float enable_fixed_point enable_shared TARGET_SYSTEM_ROOT TARGET_SYSTEM_ROOT_DEFINE CROSS_SYSTEM_HEADER_DIR onestep PKGVERSION REPORT_BUGS_TO REPORT_BUGS_TEXI datarootdir docdir htmldir SET_MAKE AWK LN_S LN RANLIB ac_ct_RANLIB ranlib_flags INSTALL INSTALL_PROGRAM INSTALL_DATA make_compare_target have_mktemp_command MAKEINFO BUILD_INFO GENERATED_MANPAGES FLEX BISON NM AR COLLECT2_LIBS GNAT_LIBEXC LDEXP_LIB TARGET_GETGROUPS_T LIBICONV LTLIBICONV LIBICONV_DEP manext objext gthread_flags extra_modes_file extra_opt_files USE_NLS LIBINTL LIBINTL_DEP INCINTL XGETTEXT GMSGFMT POSUB CATALOGS DATADIRNAME INSTOBJEXT GENCAT CATOBJEXT CROSS ALL SYSTEM_HEADER_DIR inhibit_libc CC_FOR_BUILD BUILD_CFLAGS BUILD_LDFLAGS STMP_FIXINC STMP_FIXPROTO collect2 LIBTOOL SED FGREP GREP LD DUMPBIN ac_ct_DUMPBIN OBJDUMP ac_ct_OBJDUMP ac_ct_AR STRIP ac_ct_STRIP lt_ECHO DSYMUTIL ac_ct_DSYMUTIL NMEDIT ac_ct_NMEDIT LIPO ac_ct_LIPO OTOOL ac_ct_OTOOL OTOOL64 ac_ct_OTOOL64 objdir enable_fast_install gcc_cv_as ORIGINAL_AS_FOR_TARGET gcc_cv_ld ORIGINAL_LD_FOR_TARGET gcc_cv_nm ORIGINAL_NM_FOR_TARGET gcc_cv_objdump gcc_cv_readelf libgcc_visibility GGC zlibdir zlibinc MAINT gcc_tooldir dollar slibdir subdirs srcdir all_compilers all_gtfiles all_lang_makefrags all_lang_makefiles all_languages all_selected_languages build_exeext build_install_headers_dir build_xm_file_list build_xm_include_list build_xm_defines build_file_translate check_languages cpp_install_dir xmake_file tmake_file extra_gcc_objs extra_headers_list extra_objs extra_parts extra_passes extra_programs float_h_file gcc_config_arguments gcc_gxx_include_dir host_exeext host_xm_file_list host_xm_include_list host_xm_defines out_host_hook_obj install lang_opt_files lang_specs_files lang_tree_files local_prefix md_file objc_boehm_gc out_file out_object_file thread_file tm_file_list tm_include_list tm_defines tm_p_file_list tm_p_include_list xm_file_list xm_include_list xm_defines c_target_objs cxx_target_objs fortran_target_objs target_cpu_default GMPLIBS GMPINC PPLLIBS PPLINC CLOOGLIBS CLOOGINC LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical build_libsubdir build_subdir host_subdir target_subdir GENINSRC CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT GNATBIND ac_ct_GNATBIND GNATMAKE ac_ct_GNATMAKE NO_MINUS_C_MINUS_O OUTPUT_OPTION CPP EGREP loose_warn strict_warn warn_cflags nocommon_flag TREEBROWSER valgrind_path valgrind_path_defines valgrind_command coverage_flags enable_multilib enable_decimal_float enable_fixed_point enable_shared TARGET_SYSTEM_ROOT TARGET_SYSTEM_ROOT_DEFINE CROSS_SYSTEM_HEADER_DIR onestep PKGVERSION REPORT_BUGS_TO REPORT_BUGS_TEXI datarootdir docdir htmldir SET_MAKE AWK LN_S LN RANLIB ac_ct_RANLIB ranlib_flags INSTALL INSTALL_PROGRAM INSTALL_DATA make_compare_target have_mktemp_command MAKEINFO BUILD_INFO GENERATED_MANPAGES FLEX BISON NM AR COLLECT2_LIBS GNAT_LIBEXC LDEXP_LIB LIBICONV LTLIBICONV LIBICONV_DEP manext objext gthread_flags extra_modes_file extra_opt_files USE_NLS LIBINTL LIBINTL_DEP INCINTL XGETTEXT GMSGFMT POSUB CATALOGS DATADIRNAME INSTOBJEXT GENCAT CATOBJEXT CROSS ALL SYSTEM_HEADER_DIR inhibit_libc CC_FOR_BUILD BUILD_CFLAGS BUILD_LDFLAGS STMP_FIXINC collect2 LIBTOOL SED FGREP GREP LD DUMPBIN ac_ct_DUMPBIN OBJDUMP ac_ct_OBJDUMP ac_ct_AR STRIP ac_ct_STRIP lt_ECHO DSYMUTIL ac_ct_DSYMUTIL NMEDIT ac_ct_NMEDIT LIPO ac_ct_LIPO OTOOL ac_ct_OTOOL OTOOL64 ac_ct_OTOOL64 objdir enable_fast_install gcc_cv_as ORIGINAL_AS_FOR_TARGET gcc_cv_ld ORIGINAL_LD_FOR_TARGET gcc_cv_nm ORIGINAL_NM_FOR_TARGET gcc_cv_objdump gcc_cv_readelf libgcc_visibility GGC zlibdir zlibinc MAINT gcc_tooldir dollar slibdir subdirs srcdir all_compilers all_gtfiles all_lang_makefrags all_lang_makefiles all_languages all_selected_languages build_exeext build_install_headers_dir build_xm_file_list build_xm_include_list build_xm_defines build_file_translate check_languages cpp_install_dir xmake_file tmake_file extra_gcc_objs extra_headers_list extra_objs extra_parts extra_passes extra_programs float_h_file gcc_config_arguments gcc_gxx_include_dir host_exeext host_xm_file_list host_xm_include_list host_xm_defines out_host_hook_obj install lang_opt_files lang_specs_files lang_tree_files local_prefix md_file objc_boehm_gc out_file out_object_file thread_file tm_file_list tm_include_list tm_defines tm_p_file_list tm_p_include_list xm_file_list xm_include_list xm_defines c_target_objs cxx_target_objs fortran_target_objs target_cpu_default GMPLIBS GMPINC PPLLIBS PPLINC CLOOGLIBS CLOOGINC LIBOBJS LTLIBOBJS'
 ac_subst_files='language_hooks'
 ac_pwd=`pwd`
 
@@ -10413,150 +10413,6 @@ _ACEOF
 fi
 
 
-# Try to determine the array type of the second argument of getgroups
-# for the target system (int or gid_t).
-echo "$as_me:$LINENO: checking for uid_t in sys/types.h" >&5
-echo $ECHO_N "checking for uid_t in sys/types.h... $ECHO_C" >&6
-if test "${ac_cv_type_uid_t+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <sys/types.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "uid_t" >/dev/null 2>&1; then
-  ac_cv_type_uid_t=yes
-else
-  ac_cv_type_uid_t=no
-fi
-rm -f conftest*
-
-fi
-echo "$as_me:$LINENO: result: $ac_cv_type_uid_t" >&5
-echo "${ECHO_T}$ac_cv_type_uid_t" >&6
-if test $ac_cv_type_uid_t = no; then
-
-cat >>confdefs.h <<\_ACEOF
-#define uid_t int
-_ACEOF
-
-
-cat >>confdefs.h <<\_ACEOF
-#define gid_t int
-_ACEOF
-
-fi
-
-echo "$as_me:$LINENO: checking type of array argument to getgroups" >&5
-echo $ECHO_N "checking type of array argument to getgroups... $ECHO_C" >&6
-if test "${ac_cv_type_getgroups+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  if test "$cross_compiling" = yes; then
-  ac_cv_type_getgroups=cross
-else
-  cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-/* Thanks to Mike Rendell for this test.  */
-#include <sys/types.h>
-#define NGID 256
-#undef MAX
-#define MAX(x, y) ((x) > (y) ? (x) : (y))
-
-int
-main ()
-{
-  gid_t gidset[NGID];
-  int i, n;
-  union { gid_t gval; long lval; }  val;
-
-  val.lval = -1;
-  for (i = 0; i < NGID; i++)
-    gidset[i] = val.gval;
-  n = getgroups (sizeof (gidset) / MAX (sizeof (int), sizeof (gid_t)) - 1,
-		 gidset);
-  /* Exit non-zero if getgroups seems to require an array of ints.  This
-     happens when gid_t is short but getgroups modifies an array of ints.  */
-  exit ((n > 0 && gidset[n] != val.gval) ? 1 : 0);
-}
-_ACEOF
-rm -f conftest$ac_exeext
-if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
-  (eval $ac_link) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); } && { ac_try='./conftest$ac_exeext'
-  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  echo "$as_me:$LINENO: \$? = $ac_status" >&5
-  (exit $ac_status); }; }; then
-  ac_cv_type_getgroups=gid_t
-else
-  echo "$as_me: program exited with status $ac_status" >&5
-echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-( exit $ac_status )
-ac_cv_type_getgroups=int
-fi
-rm -f core *.core gmon.out bb.out conftest$ac_exeext conftest.$ac_objext conftest.$ac_ext
-fi
-if test $ac_cv_type_getgroups = cross; then
-        cat >conftest.$ac_ext <<_ACEOF
-/* confdefs.h.  */
-_ACEOF
-cat confdefs.h >>conftest.$ac_ext
-cat >>conftest.$ac_ext <<_ACEOF
-/* end confdefs.h.  */
-#include <unistd.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "getgroups.*int.*gid_t" >/dev/null 2>&1; then
-  ac_cv_type_getgroups=gid_t
-else
-  ac_cv_type_getgroups=int
-fi
-rm -f conftest*
-
-fi
-fi
-echo "$as_me:$LINENO: result: $ac_cv_type_getgroups" >&5
-echo "${ECHO_T}$ac_cv_type_getgroups" >&6
-
-cat >>confdefs.h <<_ACEOF
-#define GETGROUPS_T $ac_cv_type_getgroups
-_ACEOF
-
-
-if test "${target}" = "${build}"; then
-  TARGET_GETGROUPS_T=$ac_cv_type_getgroups
-else
-  case "${target}" in
-	# This condition may need some tweaking.  It should include all
-	# targets where the array type of the second argument of getgroups
-	# is int and the type of gid_t is not equivalent to int.
-	*-*-sunos* | *-*-ultrix*)
-		TARGET_GETGROUPS_T=int
-		;;
-	*)
-		TARGET_GETGROUPS_T=gid_t
-		;;
-  esac
-fi
-
-
 
 echo "$as_me:$LINENO: checking for sys/mman.h" >&5
 echo $ECHO_N "checking for sys/mman.h... $ECHO_C" >&6
@@ -14019,7 +13875,7 @@ fi
 
 # When building gcc with a cross-compiler, we need to adjust things so
 # that the generator programs are still built with the native compiler.
-# Also, we cannot run fixincludes or fix-header.
+# Also, we cannot run fixincludes.
 
 # These are the normal (build=host) settings:
 CC_FOR_BUILD='$(CC)'
@@ -14027,28 +13883,11 @@ BUILD_CFLAGS='$(ALL_CFLAGS)'
 BUILD_LDFLAGS='$(LDFLAGS)'
 STMP_FIXINC=stmp-fixinc
 
-# Possibly disable fixproto, on a per-target basis.
-case ${use_fixproto} in
-  no)
-    STMP_FIXPROTO=
-    ;;
-  yes)
-    STMP_FIXPROTO=stmp-fixproto
-    ;;
-esac
-
-
 # And these apply if build != host, or we are generating coverage data
 if test x$build != x$host || test "x$coverage_flags" != x
 then
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD)'
     BUILD_LDFLAGS='$(LDFLAGS_FOR_BUILD)'
-
-    if test "x$TARGET_SYSTEM_ROOT" = x; then
-	if test "x$STMP_FIXPROTO" != x; then
-	  STMP_FIXPROTO=stmp-install-fixproto
-	fi
-    fi
 fi
 
 # Expand extra_headers to include complete path.
@@ -14509,13 +14348,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:14512: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:14351: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:14515: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:14354: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:14518: output\"" >&5)
+  (eval echo "\"\$as_me:14357: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -15672,7 +15511,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 15675 "configure"' > conftest.$ac_ext
+  echo '#line 15514 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -16971,11 +16810,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16974: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16813: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16978: \$? = $ac_status" >&5
+   echo "$as_me:16817: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -17310,11 +17149,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17313: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17152: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:17317: \$? = $ac_status" >&5
+   echo "$as_me:17156: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -17415,11 +17254,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17418: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17257: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:17422: \$? = $ac_status" >&5
+   echo "$as_me:17261: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -17470,11 +17309,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17473: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17312: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:17477: \$? = $ac_status" >&5
+   echo "$as_me:17316: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -20282,7 +20121,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 20285 "configure"
+#line 20124 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -20378,7 +20217,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 20381 "configure"
+#line 20220 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25516,7 +25355,6 @@ s,@AR@,$AR,;t t
 s,@COLLECT2_LIBS@,$COLLECT2_LIBS,;t t
 s,@GNAT_LIBEXC@,$GNAT_LIBEXC,;t t
 s,@LDEXP_LIB@,$LDEXP_LIB,;t t
-s,@TARGET_GETGROUPS_T@,$TARGET_GETGROUPS_T,;t t
 s,@LIBICONV@,$LIBICONV,;t t
 s,@LTLIBICONV@,$LTLIBICONV,;t t
 s,@LIBICONV_DEP@,$LIBICONV_DEP,;t t
@@ -25545,7 +25383,6 @@ s,@CC_FOR_BUILD@,$CC_FOR_BUILD,;t t
 s,@BUILD_CFLAGS@,$BUILD_CFLAGS,;t t
 s,@BUILD_LDFLAGS@,$BUILD_LDFLAGS,;t t
 s,@STMP_FIXINC@,$STMP_FIXINC,;t t
-s,@STMP_FIXPROTO@,$STMP_FIXPROTO,;t t
 s,@collect2@,$collect2,;t t
 s,@LIBTOOL@,$LIBTOOL,;t t
 s,@SED@,$SED,;t t

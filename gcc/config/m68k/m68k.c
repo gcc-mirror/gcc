@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
    Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004, 2005, 2006, 2007, 2008
+   2001, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -134,9 +134,6 @@ static int m68k_sched_first_cycle_multipass_dfa_lookahead (void);
 static bool m68k_handle_option (size_t, const char *, int);
 static rtx find_addr_reg (rtx);
 static const char *singlemove_string (rtx *);
-#ifdef M68K_TARGET_COFF
-static void m68k_coff_asm_named_section (const char *, unsigned int, tree);
-#endif /* M68K_TARGET_COFF */
 static void m68k_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree);
 static rtx m68k_struct_value_rtx (tree, int);
@@ -4335,26 +4332,6 @@ output_sibcall (rtx x)
   else
     return "jmp %a0";
 }
-
-#ifdef M68K_TARGET_COFF
-
-/* Output assembly to switch to section NAME with attribute FLAGS.  */
-
-static void
-m68k_coff_asm_named_section (const char *name, unsigned int flags, 
-			     tree decl ATTRIBUTE_UNUSED)
-{
-  char flagchar;
-
-  if (flags & SECTION_WRITE)
-    flagchar = 'd';
-  else
-    flagchar = 'x';
-
-  fprintf (asm_out_file, "\t.section\t%s,\"%c\"\n", name, flagchar);
-}
-
-#endif /* M68K_TARGET_COFF */
 
 static void
 m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,

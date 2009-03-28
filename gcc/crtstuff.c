@@ -1,7 +1,7 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
-   Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   2002, 2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GCC.
@@ -58,11 +58,9 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
    identified the set of defines that need to go into auto-target.h,
    this will have to do.  */
 #include "auto-host.h"
-#undef gid_t
 #undef pid_t
 #undef rlim_t
 #undef ssize_t
-#undef uid_t
 #undef vfork
 #include "tconfig.h"
 #include "tsystem.h"

@@ -386,23 +386,6 @@ fix = {
 
 
 /*
- *  sys/wait.h on AIX 3.2.5 puts the declaration of wait3 before the
- *  definition of struct rusage, so the prototype added by fixproto fails.
- */
-fix = {
-    hackname  = aix_syswait;
-    files     = sys/wait.h;
-    select    = "^extern pid_t wait3\\(\\);\n";
-    select    = "bos325,";
-    c_fix     = format;
-    c_fix_arg = "struct rusage;\n%0";
-    test_text = "/* bos325, */\n"
-    "extern pid_t wait3();\n"
-    "\t/* pid_t wait3(int *, int, struct rusage *); */";
-};
-
-
-/*
  *  sys/wait.h on AIX 5.2 defines macros that have both signed and
  *  unsigned types in conditional expressions.
  */
@@ -1085,26 +1068,6 @@ fix = {
     c_fix_arg = 'ecd_cursor';
 
     test_text = "#ifdef ecd.cursor\n#error bogus\n#endif /* ecd+cursor */";
-};
-
-
-/*
- *  math.h on SunOS 4 puts the declaration of matherr before the definition
- *  of struct exception, so the prototype (added by fixproto) causes havoc.
- *  This must appear before the math_exception fix.
- */
-fix = {
-    hackname  = exception_structure;
-    files     = math.h;
-
-    /*  If matherr has a prototype already, the header needs no fix.  */
-    bypass    = 'matherr.*(struct exception|__MATH_EXCEPTION|[ \t]*__FP_EXCEPTION[ \t]*\*[ \t]*)';
-    select    = matherr;
-
-    c_fix     = wrap;
-    c_fix_arg = "struct exception;\n";
-
-    test_text = "extern int matherr();";
 };
 
 
@@ -2306,9 +2269,7 @@ fix = {
  *  Interface Definition), which conflicts with the class exception defined
  *  in the C++ file std/stdexcept.h.  We redefine it to __math_exception.
  *  This is not a great fix, but I haven't been able to think of anything
- *  better.  Note that we have to put the #ifdef/#endif blocks at beginning
- *  and end of file, because fixproto runs after us and may insert
- *  additional references to struct exception.
+ *  better.
  */
 fix = {
     hackname  = math_exception;
@@ -2656,20 +2617,6 @@ fix = {
     test_text = "#include <reg_types.h>";
 };
 
-
-/*
- *  Fix __page_size* declarations in pthread.h AIX 4.1.[34].
- *  The original ones fail if uninitialized externs are not common.
- *  This is the default for all ANSI standard C++ compilers.
- */
-fix = {
-    hackname  = pthread_page_size;
-    files     = pthread.h;
-    select    = "^int __page_size";
-    c_fix     = format;
-    c_fix_arg = "extern %0";
-    test_text = "int __page_size;";
-};
 
 /*
  * On broken glibc-2.3.3 systems an array of incomplete structures is

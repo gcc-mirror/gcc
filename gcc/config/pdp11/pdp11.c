@@ -1,6 +1,6 @@
 /* Subroutines for gcc2 for pdp11.
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2004, 2005,
-   2006, 2007, 2008 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GCC.
@@ -241,23 +241,6 @@ expand_shift_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    knowing which registers should not be saved even if used.  
 */
 
-#ifdef TWO_BSD
-
-static void
-pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
-{							       
-  fprintf (stream, "\tjsr	r5, csv\n");
-  if (size)
-    {
-      fprintf (stream, "\t/*abuse empty parameter slot for locals!*/\n");
-      if (size > 2)
-	asm_fprintf (stream, "\tsub $%#wo, sp\n", size - 2);
-
-    }
-}
-
-#else  /* !TWO_BSD */
-
 static void
 pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 {							       
@@ -331,8 +314,6 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
     fprintf (stream, "\t;/* end of prologue */\n\n");		
 }
 
-#endif /* !TWO_BSD */
-
 /*
    The function epilogue should not depend on the current stack pointer!
    It should use the frame pointer only.  This is mandatory because
@@ -351,18 +332,6 @@ pdp11_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
    like this and not use the second set of registers... 
 
    maybe as option if you want to generate code for kernel mode? */
-
-#ifdef TWO_BSD
-
-static void
-pdp11_output_function_epilogue (FILE *stream,
-				HOST_WIDE_INT size ATTRIBUTE_UNUSED)
-{								
-  fprintf (stream, "\t/* SP ignored by cret? */\n");
-  fprintf (stream, "\tjmp cret\n");
-}
-
-#else  /* !TWO_BSD */
 
 static void
 pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
@@ -469,8 +438,6 @@ pdp11_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
     fprintf (stream, "\t;/* end of epilogue*/\n\n\n");		
 }
 
-#endif /* !TWO_BSD */
-	
 /* Return the best assembler insn template
    for moving operands[1] into operands[0] as a fullword.  */
 static const char *

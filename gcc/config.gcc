@@ -155,9 +155,6 @@
 #  configure_default_options
 #			Set to an initializer for configure_default_options
 #			in configargs.h, based on --with-cpu et cetera.
-#
-#  use_fixproto		Set to "yes" if fixproto should be run normally,
-#			"no" if fixproto should never be run.
 
 # The following variables are used in each case-construct to build up the
 # outgoing variables:
@@ -196,40 +193,21 @@ default_use_cxa_atexit=no
 target_gtfiles=
 need_64bit_hwint=
 
-# Default to not using fixproto.  Targets which need fixproto should
-# specifically set this to 'yes'.
-use_fixproto=no
-
 # Don't carry these over build->host->target.  Please.
 xm_file=
 md_file=
 
 # Obsolete configurations.
-case ${target} in
-# Avoid generic cases below matching.
-   h8300-*-rtems* | h8300-*-elf* \
- | sh-*-elf* | sh-*-symbianelf* | sh-*-linux* | sh-*-netbsdelf* \
- | sh-*-rtems* | sh-wrs-vxworks) ;;
-   arm-*-coff*		\
- | armel-*-coff*	\
- | h8300-*-*		\
- | i[34567]86-*-aout*	\
- | i[34567]86-*-coff*	\
- | m68k-*-aout*		\
- | m68k-*-coff*		\
- | sh-*-*		\
- | pdp11-*-bsd		\
- | rs6000-ibm-aix4.[12]* \
- | powerpc-ibm-aix4.[12]* \
- )
-    if test "x$enable_obsolete" != xyes; then
-      echo "*** Configuration ${target} is obsolete." >&2
-      echo "*** Specify --enable-obsolete to build it anyway." >&2
-      echo "*** Support will be REMOVED in the next major release of GCC," >&2
-      echo "*** unless a maintainer comes forward." >&2
-      exit 1
-    fi;;
-esac
+#case ${target} in
+# )
+#    if test "x$enable_obsolete" != xyes; then
+#      echo "*** Configuration ${target} is obsolete." >&2
+#      echo "*** Specify --enable-obsolete to build it anyway." >&2
+#      echo "*** Support will be REMOVED in the next major release of GCC," >&2
+#      echo "*** unless a maintainer comes forward." >&2
+#      exit 1
+#    fi;;
+#esac
 
 # Unsupported targets list.  Do not put an entry in this list unless
 # it would otherwise be caught by a more permissive pattern.  The list
@@ -238,6 +216,7 @@ case ${target} in
    i[34567]86-go32-*			\
  | i[34567]86-*-go32*			\
  | mips64orion*-*-rtems*		\
+ | pdp11-*-bsd				\
  | sparc-hal-solaris2*			\
  | thumb-*-*				\
  | *-*-linux*aout*			\
@@ -681,10 +660,6 @@ arc-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o"
 	;;
-arm-*-coff* | armel-*-coff*)
-	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h dbxcoff.h"
-	tmake_file="arm/t-arm arm/t-arm-coff"
-	;;
 arm-wrs-vxworks)
 	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
@@ -885,9 +860,6 @@ h8300-*-elf*)
 	tmake_file="h8300/t-h8300 h8300/t-elf"
 	tm_file="h8300/h8300.h dbxelf.h elfos.h h8300/elf.h"
 	;;
-h8300-*-*)
-	tm_file="h8300/h8300.h dbxcoff.h h8300/coff.h"
-	;;
 hppa*64*-*-linux*)
 	target_cpu_default="MASK_PA_11|MASK_PA_20"
 	tm_file="pa/pa64-start.h ${tm_file} dbxelf.h elfos.h svr4.h linux.h \
@@ -1037,9 +1009,6 @@ x86_64-*-elf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h i386/x86-64.h"
 	tmake_file="${tmake_file} i386/t-i386elf t-svr4"
 	;;
-i[34567]86-*-aout*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h i386/i386-aout.h"
-	;;
 i[34567]86-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/freebsd.h"
 	;;
@@ -1072,9 +1041,6 @@ i[34567]86-*-openbsd*)
 	tm_file="${tm_file} openbsd.h i386/openbsdelf.h"
 	gas=yes
 	gnu_ld=yes
-	;;
-i[34567]86-*-coff*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/i386-coff.h"
 	;;
 i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-knetbsd*-gnu | i[34567]86-*-gnu* | i[34567]86-*-kopensolaris*-gnu)
 			# Intel 80386's running GNU/*
@@ -1404,19 +1370,6 @@ m68hc12-*-*|m6812-*-*)
 	tmake_file="m68hc11/t-m68hc11"
 	extra_options="${extra_options} m68hc11/m68hc11.opt"
         ;;
-m68k-*-aout*)
-	default_m68k_cpu=68020
-	default_cf_cpu=5206
-	tmake_file="m68k/t-floatlib m68k/t-m68kbare m68k/t-mlibs"
-	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kemb.h m68k/m68k-aout.h libgloss.h"
-	;;
-m68k-*-coff*)
-	default_m68k_cpu=68020
-	default_cf_cpu=5206
-	tmake_file="m68k/t-floatlib m68k/t-m68kbare m68k/t-mlibs"
-	tm_defines="${tm_defines} MOTOROLA=1"
-	tm_file="${tm_file} m68k/m68k-none.h m68k/m68kemb.h dbxcoff.h m68k/coff.h dbx.h"
-	;;
 m68k-*-elf* | fido-*-elf*)
 	case ${target} in
 	fido-*-elf*)
@@ -1715,10 +1668,6 @@ mn10300-*-*)
 	fi
 	use_collect2=no
 	;;
-pdp11-*-bsd)
-	tm_file="${tm_file} pdp11/2bsd.h"
-	use_fixproto=yes
-        ;;
 pdp11-*-*)
 	;;
 picochip-*)
@@ -1915,14 +1864,6 @@ powerpc-xilinx-eabi*)
   	extra_options="${extra_options} rs6000/sysv4.opt"
   	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-ppcgas rs6000/t-ppccomm"
   	;;
-rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix41.h rs6000/xcoff.h"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-newas"
-	extra_options="${extra_options} rs6000/aix41.opt"
-	use_collect2=yes
-	extra_headers=
-	use_fixproto=yes
-	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	tm_file="rs6000/biarch64.h ${tm_file} rs6000/aix.h rs6000/aix43.h rs6000/xcoff.h"
 	tmake_file=rs6000/t-aix43
@@ -2163,9 +2104,6 @@ sh-*-rtems*)
 sh-wrs-vxworks)
 	tmake_file="$tmake_file sh/t-sh sh/t-elf sh/t-vxworks"
 	tm_file="${tm_file} elfos.h svr4.h sh/elf.h sh/embed-elf.h vx-common.h vxworks.h sh/vxworks.h"
-	;;
-sh-*-*)
-	tm_file="${tm_file} dbxcoff.h sh/coff.h"
 	;;
 sparc-*-netbsdelf*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"

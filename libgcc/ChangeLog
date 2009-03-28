@@ -1,3 +1,10 @@
+2009-03-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.host (arm-*-coff*, armel-*-coff*, arm-semi-aof,
+	armel-semi-aof, h8300-*-*, i[34567]86-*-aout*, i[34567]86-*-coff*,
+	m68k-*-aout*, m68k-*-coff*, pdp11-*-bsd, rs6000-ibm-aix4.[12]*,
+	powerpc-ibm-aix4.[12]*, sh-*-*): Remove.
+
 2009-02-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config.host (ia64*-*-linux*): Add t-softfp to tmake_file.
