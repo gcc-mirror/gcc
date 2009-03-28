@@ -1,3 +1,16 @@
+2009-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/39554
+	* opts.c (warning_disallowed_functions, warn_disallowed_functions,
+	warn_if_disallowed_function_p): Removed.
+	(common_handle_option): Don't handle OPT_Wdisallowed_function_list_.
+	* c-parser.c (c_parser_postfix_expression_after_primary): Don't call
+	warning_if_disallowed_function_p.
+	* flags.h (warn_if_disallowed_function_p,
+	warn_disallowed_functions): Removed.
+	* common.opt (Wdisallowed-function-list=): Removed.
+	* doc/invoke.texi (-Wdisallowed-function-list=): Removed.
+
 2009-03-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* DEV-PHASE: Mark "prerelease".

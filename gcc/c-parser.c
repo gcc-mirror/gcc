@@ -5584,8 +5584,6 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 				     "expected %<)%>");
 	  expr.value = build_function_call (expr.value, exprlist);
 	  expr.original_code = ERROR_MARK;
-          if (warn_disallowed_functions)
-            warn_if_disallowed_function_p (expr.value);
 	  break;
 	case CPP_DOT:
 	  /* Structure element reference.  */

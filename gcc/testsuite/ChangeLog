@@ -1,3 +1,13 @@
+2009-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/39554
+	* gcc.dg/wdisallowed-functions-1.c: Removed.
+	* gcc.dg/wdisallowed-functions-2.c: Removed.
+	* gcc.dg/wdisallowed-functions-3.c: Removed.
+	* g++.dg/warn/Wdisallowed-functions-1.C: Removed.
+	* g++.dg/warn/Wdisallowed-functions-2.C: Removed.
+	* g++.dg/warn/Wdisallowed-functions-3.C: Removed.
+
 2009-03-27  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/39557

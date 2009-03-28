@@ -233,7 +233,6 @@ Objective-C and Objective-C++ Dialects}.
 -Wchar-subscripts -Wclobbered  -Wcomment @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-deprecated  @gol
 -Wno-deprecated-declarations -Wdisabled-optimization  @gol
--Wdisallowed-function-list=@var{sym},@var{sym},@dots{} @gol
 -Wno-div-by-zero -Wempty-body  -Wenum-compare -Wno-endif-labels @gol
 -Werror  -Werror=* @gol
 -Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
@@ -4189,13 +4188,6 @@ minimum maximum, so we do not diagnose overlength strings in C++@.
 
 This option is implied by @option{-pedantic}, and can be disabled with
 @option{-Wno-overlength-strings}.
-
-@item -Wdisallowed-function-list=@var{sym},@var{sym},@dots{}
-@opindex Wdisallowed-function-list
-
-If any of @var{sym} is called, GCC will issue a warning. This can be useful
-in enforcing coding conventions that ban calls to certain functions, for
-example, @code{alloca}, @code{malloc}, etc.
 @end table
 
 @node Debugging Options

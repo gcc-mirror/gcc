@@ -4823,9 +4823,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 				    koenig_p,
 				    tf_warning_or_error);
 
-            if (warn_disallowed_functions)
-              warn_if_disallowed_function_p (postfix_expression);
-
 	    /* The POSTFIX_EXPRESSION is certainly no longer an id.  */
 	    idk = CP_ID_KIND_NONE;
 	  }

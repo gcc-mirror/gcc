@@ -94,10 +94,6 @@ Wdisabled-optimization
 Common Var(warn_disabled_optimization) Warning
 Warn when an optimization pass is disabled
 
-Wdisallowed-function-list=
-Common RejectNegative Joined Warning
-Warn on calls to these functions
-
 Werror
 Common Var(warnings_are_errors)
 Treat all warnings as errors
