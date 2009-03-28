@@ -1,3 +1,11 @@
+2009-03-29  Ben Elliston  <bje@au.ibm.com>
+
+	* config/i386/i386.c (enum ix86_builtins): Add IX86_BUILTIN_HUGE_VALQ.
+	(ix86_init_builtins): Add built-in function __builtin_huge_valq.
+	(ix86_expand_builtin): Handle IX86_BUILTIN_HUGE_VALQ.
+	* doc/extend.texi (X86 Built-in Functions): Add index entries for
+	__builtin_infq and __builtin_huge_valq.
+
 2009-03-28  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_t): Add atmega8c1, atmega16c1 and

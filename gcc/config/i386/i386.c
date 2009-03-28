@@ -20225,6 +20225,7 @@ enum ix86_builtins
 
   /* TFmode support builtins.  */
   IX86_BUILTIN_INFQ,
+  IX86_BUILTIN_HUGE_VALQ,
   IX86_BUILTIN_FABSQ,
   IX86_BUILTIN_COPYSIGNQ,
 
@@ -23393,6 +23394,11 @@ ix86_init_builtins (void)
 			       NULL, NULL_TREE);
   ix86_builtins[(int) IX86_BUILTIN_INFQ] = decl;
 
+  decl = add_builtin_function ("__builtin_huge_valq", ftype,
+			       IX86_BUILTIN_HUGE_VALQ, BUILT_IN_MD,
+			       NULL, NULL_TREE);
+  ix86_builtins[(int) IX86_BUILTIN_HUGE_VALQ] = decl;
+
   /* We will expand them to normal call if SSE2 isn't available since
      they are used by libgcc. */
   ftype = build_function_type_list (float128_type_node,
@@ -24848,6 +24854,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return ix86_expand_vec_set_builtin (exp);
 
     case IX86_BUILTIN_INFQ:
+    case IX86_BUILTIN_HUGE_VALQ:
       {
 	REAL_VALUE_TYPE inf;
 	rtx tmp;
