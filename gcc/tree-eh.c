@@ -1946,11 +1946,34 @@ make_eh_edge (struct eh_region *region, void *data)
   make_edge (src, dst, EDGE_ABNORMAL | EDGE_EH);
 }
 
+/* See if STMT is call that might be inlined.  */
+
+static bool
+inlinable_call_p (gimple stmt)
+{
+  tree decl;
+  if (gimple_code (stmt) != GIMPLE_CALL)
+    return false;
+  if (cfun->after_inlining)
+    return false;
+  /* Indirect calls can be propagated to direct call
+     and inlined.  */
+  decl = gimple_call_fndecl (stmt);
+  if (!decl)
+    return true;
+  if (cgraph_function_flags_ready
+      && cgraph_function_body_availability (cgraph_node (decl))
+      < AVAIL_OVERWRITABLE)
+    return false;
+  return !DECL_UNINLINABLE (decl);
+}
+
 void
 make_eh_edges (gimple stmt)
 {
   int region_nr;
   bool is_resx;
+  bool inlinable = false;
 
   if (gimple_code (stmt) == GIMPLE_RESX)
     {
@@ -1963,9 +1986,10 @@ make_eh_edges (gimple stmt)
       if (region_nr < 0)
 	return;
       is_resx = false;
+      inlinable = inlinable_call_p (stmt);
     }
 
-  foreach_reachable_handler (region_nr, is_resx, make_eh_edge, stmt);
+  foreach_reachable_handler (region_nr, is_resx, inlinable, make_eh_edge, stmt);
 }
 
 static bool mark_eh_edge_found_error;
@@ -2019,6 +2043,7 @@ verify_eh_edges (gimple stmt)
   basic_block bb = gimple_bb (stmt);
   edge_iterator ei;
   edge e;
+  bool inlinable = false;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     gcc_assert (!e->aux);
@@ -2046,10 +2071,11 @@ verify_eh_edges (gimple stmt)
 	  error ("BB %i last statement has incorrectly set region", bb->index);
 	  return true;
 	}
+      inlinable = inlinable_call_p (stmt);
       is_resx = false;
     }
 
-  foreach_reachable_handler (region_nr, is_resx, mark_eh_edge, stmt);
+  foreach_reachable_handler (region_nr, is_resx, inlinable, mark_eh_edge, stmt);
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       if ((e->flags & EDGE_EH) && !e->aux)
@@ -2393,6 +2419,7 @@ stmt_can_throw_internal (gimple stmt)
 {
   int region_nr;
   bool is_resx = false;
+  bool inlinable_call = false;
 
   if (gimple_code (stmt) == GIMPLE_RESX)
     {
@@ -2400,12 +2427,15 @@ stmt_can_throw_internal (gimple stmt)
       is_resx = true;
     }
   else
-    region_nr = lookup_stmt_eh_region (stmt);
+    {
+      region_nr = lookup_stmt_eh_region (stmt);
+      inlinable_call = inlinable_call_p (stmt);
+    }
 
   if (region_nr < 0)
     return false;
 
-  return can_throw_internal_1 (region_nr, is_resx);
+  return can_throw_internal_1 (region_nr, is_resx, inlinable_call);
 }
 
 
