@@ -147,6 +147,14 @@ along with GCC; see the file COPYING3.  If not see
 
      ptr2 = &x[index];
 
+  Or
+    ssa = (int) decl
+    res = ssa & 1
+
+  Provided that decl has known alignment >= 2, will get turned into
+
+    res = 0
+
   We also propagate casts into SWITCH_EXPR and COND_EXPR conditions to
   allow us to remove the cast and {NOT_EXPR,NEG_EXPR} into a subsequent
   {NOT_EXPR,NEG_EXPR}.
@@ -1124,6 +1132,45 @@ simplify_gimple_switch (gimple stmt)
     }
 }
 
+/* Run bitwise and assignments throug the folder.  If the first argument is an
+   ssa name that is itself a result of a typecast of an ADDR_EXPR to an
+   integer, feed the ADDR_EXPR to the folder rather than the ssa name.
+*/
+
+static void
+simplify_bitwise_and (gimple_stmt_iterator *gsi, gimple stmt)
+{
+  tree res;
+  tree arg1 = gimple_assign_rhs1 (stmt);
+  tree arg2 = gimple_assign_rhs2 (stmt);
+
+  if (TREE_CODE (arg2) != INTEGER_CST)
+    return;
+
+  if (TREE_CODE (arg1) == SSA_NAME && !SSA_NAME_IS_DEFAULT_DEF (arg1))
+    {
+      gimple def = SSA_NAME_DEF_STMT (arg1);
+
+      if (gimple_assign_cast_p (def)
+	  && INTEGRAL_TYPE_P (gimple_expr_type (def)))
+	{
+	  tree op = gimple_assign_rhs1 (def);
+
+	  if (TREE_CODE (op) == ADDR_EXPR)
+	    arg1 = op;
+	}
+    }
+
+  res = fold_binary (BIT_AND_EXPR, TREE_TYPE (gimple_assign_lhs (stmt)),
+		     arg1, arg2);
+  if (res && is_gimple_min_invariant (res))
+    {
+      gimple_assign_set_rhs_from_tree (gsi, res);
+      update_stmt (stmt);
+    }
+  return;
+}
+
 /* Main entry point for the forward propagation optimizer.  */
 
 static unsigned int
@@ -1205,6 +1252,11 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		    }
 		  else
 		    gsi_next (&gsi);
+		}
+	      else if (gimple_assign_rhs_code (stmt) == BIT_AND_EXPR)
+		{
+		  simplify_bitwise_and (&gsi, stmt);
+		  gsi_next (&gsi);
 		}
 	      else
 		gsi_next (&gsi);
