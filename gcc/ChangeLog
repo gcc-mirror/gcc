@@ -1,3 +1,10 @@
+2009-03-28  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.c (avr_mcu_t): Add atmega8c1, atmega16c1 and
+	atmega8m1 devices.
+	* config/avr/avr.h (LINK_SPEC, CRT_BINUTILS_SPECS): (Ditto.).
+	* config/avr/t-avr (MULTILIB_MATCHES): (Ditto.)
+
 2009-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000-c.c (rs6000_macro_to_expand): If macro
