@@ -1938,16 +1938,6 @@ check_intrinsic_op (gfc_expr *e, gfc_try (*check_function) (gfc_expr *))
       if (!numeric_type (et0 (op1)) || !numeric_type (et0 (op2)))
 	goto not_numeric;
 
-      if (e->value.op.op == INTRINSIC_POWER
-	  && check_function == check_init_expr && et0 (op2) != BT_INTEGER)
-	{
-	  if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Noninteger "
-			      "exponent in an initialization "
-			      "expression at %L", &op2->where)
-	      == FAILURE)
-	    return FAILURE;
-	}
-
       break;
 
     case INTRINSIC_CONCAT:
@@ -2424,7 +2414,11 @@ gfc_reduce_init_expr (gfc_expr *expr)
 
 
 /* Match an initialization expression.  We work by first matching an
-   expression, then reducing it to a constant.  */
+   expression, then reducing it to a constant.  The reducing it to 
+   constant part requires a global variable to flag the prohibition
+   of a non-integer exponent in -std=f95 mode.  */
+
+bool init_flag = false;
 
 match
 gfc_match_init_expr (gfc_expr **result)
@@ -2435,18 +2429,25 @@ gfc_match_init_expr (gfc_expr **result)
 
   expr = NULL;
 
+  init_flag = true;
+
   m = gfc_match_expr (&expr);
   if (m != MATCH_YES)
-    return m;
+    {
+      init_flag = false;
+      return m;
+    }
 
   t = gfc_reduce_init_expr (expr);
   if (t != SUCCESS)
     {
       gfc_free_expr (expr);
+      init_flag = false;
       return MATCH_ERROR;
     }
 
   *result = expr;
+  init_flag = false;
 
   return MATCH_YES;
 }

@@ -1,3 +1,17 @@
+2009-03-29  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/38823
+	* gfortran.h: Add ARITH_PROHIBIT to arith enum.
+	expr.c (gfc_match_init_expr): Add global variable init_flag to
+	flag matching an initialization expression.
+	(check_intrinsic_op): Move no longer reachable error message to ...
+	* arith.c (arith_power): ... here.  Remove gfc_ prefix in
+	gfc_arith_power.  Use init_flag.  Allow constant folding of x**y
+	when y is REAL or COMPLEX.
+	(eval_intrinsic): Remove restriction that y in x**y must be INTEGER
+	for constant folding.
+	* gfc_power: Update gfc_arith_power to arith_power
+
 2009-03-29  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37423
