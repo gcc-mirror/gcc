@@ -1,7 +1,7 @@
 # @configure_input@
 # Makefile for libcpp.  Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 2004, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2008, 2009 Free Software Foundation, Inc.
 
 #This file is part of libcpp.
 
@@ -73,13 +73,12 @@ ALL_CFLAGS = $(CFLAGS) $(WARN_CFLAGS) $(INCLUDES) $(CPPFLAGS)
 libcpp_a_OBJS = charset.o directives.o directives-only.o errors.o \
 	expr.o files.o identifiers.o init.o lex.o line-map.o macro.o \
 	mkdeps.o pch.o symtab.o traditional.o
-makedepend_OBJS = makedepend.o
 
 libcpp_a_SOURCES = charset.c directives.c directives-only.c errors.c \
 	expr.c files.c identifiers.c init.c lex.c line-map.c macro.c \
 	mkdeps.c pch.c symtab.c traditional.c
 
-all: libcpp.a makedepend$(EXEEXT) $(USED_CATALOGS)
+all: libcpp.a $(USED_CATALOGS)
 
 .SUFFIXES:
 .SUFFIXES: .c .gmo .o .obj .po .pox
@@ -88,12 +87,6 @@ libcpp.a: $(libcpp_a_OBJS)
 	-rm -f libcpp.a
 	$(AR) $(ARFLAGS) libcpp.a $(libcpp_a_OBJS)
 	$(RANLIB) libcpp.a
-
-makedepend$(EXEEXT): $(makedepend_OBJS) libcpp.a ../libiberty/libiberty.a
-	@rm -f makedepend$(EXEEXT)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o makedepend$(EXEEXT) \
-	  $(makedepend_OBJS) libcpp.a ../libiberty/libiberty.a \
-	  $(LIBINTL) $(LIBICONV)
 
 # Rules to rebuild the configuration
 
@@ -166,7 +159,7 @@ mostlyclean:
 	-rm -f *.o
 
 clean: mostlyclean
-	-rm -rf makedepend$(EXEEXT) libcpp.a $(srcdir)/autom4te.cache
+	-rm -rf libcpp.a $(srcdir)/autom4te.cache
 
 distclean: clean
 	-rm -f config.h stamp-h1 config.status config.cache config.log \
@@ -248,7 +241,7 @@ po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 	sed 's:$(srcdir)/::g' <po/$(PACKAGE).pot.tmp >po/$(PACKAGE).pot
 	rm po/$(PACKAGE).pot.tmp
 
-TAGS_SOURCES = $(libcpp_a_SOURCES) makedepend.c internal.h ucnid.h \
+TAGS_SOURCES = $(libcpp_a_SOURCES) internal.h ucnid.h \
     include/line-map.h include/symtab.h include/cpp-id-data.h \
     include/cpplib.h include/mkdeps.h system.h
 
@@ -260,7 +253,7 @@ TAGS: $(TAGS_SOURCES)
 .NOEXPORT:
 
 # Dependencies
--include $(patsubst %.o, $(DEPDIR)/%.Po, $(libcpp_a_OBJS) $(makedepend_OBJS))
+-include $(patsubst %.o, $(DEPDIR)/%.Po, $(libcpp_a_OBJS))
 
 # Dependencies on generated headers have to be explicit.
 init.o: localedir.h

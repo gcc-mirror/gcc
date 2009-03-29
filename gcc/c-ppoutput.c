@@ -1,6 +1,6 @@
 /* Preprocess only, using cpplib.
    Copyright (C) 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2007,
-   2008 Free Software Foundation, Inc.
+   2008, 2009 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
    This program is free software; you can redistribute it and/or modify it
@@ -521,6 +521,7 @@ pp_file_change (const struct line_map *map)
 
   if (map != NULL)
     {
+      input_location = map->start_location;
       if (print.first_time)
 	{
 	  /* Avoid printing foo.i when the main file is foo.c.  */

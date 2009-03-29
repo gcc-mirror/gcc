@@ -1,3 +1,28 @@
+2009-03-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/34695
+	* Makefile.in (c-opts.o): Depend on c-tree.h.
+	* c-common.c: Move down include of diagnostic.h.
+	(done_lexing, c_cpp_error): New.
+	* c-common.h (done_lexing): Declare.
+	* c-decl.c (c_write_global_declarations): Don't check cpp_errors
+	(parse_in).
+	* c-opts.c: Include c-tree.h.
+	(c_common_init_options): Set preprocessor error callback.
+	(c_common_handle_option): Do not set preprocessor
+	inhibit_warnings, warnings_are_errors, warn_system_headers,
+	pedantic_errors or inhibit_warnings flags.
+	(c_common_post_options): Do not check cpp_errors (parse_in).
+	(c_common_finish): Do not output dependencies if there were
+	errors.  Do not check return value of cpp_finish.
+	* c-ppoutput.c (pp_file_change): Set input_location.
+	* c-tree.h (c_cpp_error): Declare.
+	* diagnostic.c (diagnostic_set_info_translated): Also initialize
+	override_column.
+	(diagnostic_build_prefix): Check override_column.
+	* diagnostic.h (diagnostic_info): Add override_column field.
+	(diagnostic_override_column): Define.
+
 2009-03-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-common.c (c_expand_expr, c_staticp): Remove.

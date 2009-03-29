@@ -28,7 +28,7 @@
 #define __TIME__ "X"         /* Re-define while defined.  */
 
 #define __TIME__ "Y"         /* { dg-warning "\"__TIME__\" redefined" } */
-/* { dg-warning "previous definition" "" { target *-*-* } 28 } */
+/* { dg-message "previous definition" "" { target *-*-* } 28 } */
 
 #undef __TIME__              /* Undefine while defined.  */
 
@@ -39,7 +39,7 @@
 #define __DATE__ "X"         /* Re-define while defined.  */
 
 #define __DATE__ "Y"         /* { dg-warning "\"__DATE__\" redefined" } */
-/* { dg-warning "previous definition" "" { target *-*-* } 39 } */
+/* { dg-message "previous definition" "" { target *-*-* } 39 } */
 
 #undef __DATE__              /* Undefine while defined.  */
 
@@ -48,7 +48,7 @@
 #define __TIMESTAMP__ "X"    /* Re-define while defined.  */
 
 #define __TIMESTAMP__ "Y"    /* { dg-warning "\"__TIMESTAMP__\" redefined" } */
-/* { dg-warning "previous definition" "" { target *-*-* } 48 } */
+/* { dg-message "previous definition" "" { target *-*-* } 48 } */
 
 #undef __TIMESTAMP__         /* Undefine while defined.  */
 

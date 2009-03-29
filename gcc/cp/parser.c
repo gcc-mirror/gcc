@@ -309,8 +309,7 @@ cp_lexer_new_main (void)
 
   /* Subsequent preprocessor diagnostics should use compiler
      diagnostic functions to get the compiler source location.  */
-  cpp_get_options (parse_in)->client_diagnostic = true;
-  cpp_get_callbacks (parse_in)->error = cp_cpp_error;
+  done_lexing = true;
 
   gcc_assert (lexer->next_token->type != CPP_PURGED);
   return lexer;

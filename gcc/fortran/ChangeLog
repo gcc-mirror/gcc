@@ -1,3 +1,11 @@
+2009-03-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/34695
+	* cpp.c (cb_cpp_error): New.
+	(gfc_cpp_post_options): Don't set cpp_option->inhibit_warnings.
+	Don't check cpp_errors (cpp_in).
+	(gfc_cpp_init_0): Set cb->error.
+
 2009-03-29  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/38823

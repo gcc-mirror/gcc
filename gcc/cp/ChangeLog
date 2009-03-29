@@ -1,3 +1,11 @@
+2009-03-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/34695
+	* cp-tree.h (cp_cpp_error): Remove.
+	* error.c (cp_cpp_error): Remove.
+	* parser.c (cp_lexer_new_main): Set done_lexing instead of
+	client_diagnostic and error callback.
+
 2009-03-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	* cp/cp-objcp-common.h (LANG_HOOKS_STATICP): Remove.

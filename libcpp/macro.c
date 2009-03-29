@@ -1,7 +1,7 @@
 /* Part of CPP library.  (Macro and #define handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1807,11 +1807,13 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 
       if (warn_of_redefinition (pfile, node, macro))
 	{
-	  cpp_error_with_line (pfile, CPP_DL_PEDWARN, pfile->directive_line, 0,
-			       "\"%s\" redefined", NODE_NAME (node));
+	  bool warned;
+	  warned = cpp_error_with_line (pfile, CPP_DL_PEDWARN,
+					pfile->directive_line, 0,
+					"\"%s\" redefined", NODE_NAME (node));
 
-	  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
-	    cpp_error_with_line (pfile, CPP_DL_PEDWARN,
+	  if (warned && node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
+	    cpp_error_with_line (pfile, CPP_DL_NOTE,
 				 node->value.macro->line, 0,
 			 "this is the location of the previous definition");
 	}

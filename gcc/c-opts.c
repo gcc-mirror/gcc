@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "mkdeps.h"
 #include "target.h"
 #include "tm_p.h"
+#include "c-tree.h"		/* For c_cpp_error.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -201,6 +202,7 @@ c_common_init_options (unsigned int argc, const char **argv)
 {
   static const unsigned int lang_flags[] = {CL_C, CL_ObjC, CL_CXX, CL_ObjCXX};
   unsigned int i, result;
+  struct cpp_callbacks *cb;
 
   /* This is conditionalized only because that is the way the front
      ends used to do it.  Maybe this should be unconditional?  */
@@ -216,6 +218,8 @@ c_common_init_options (unsigned int argc, const char **argv)
 
   parse_in = cpp_create_reader (c_dialect_cxx () ? CLK_GNUCXX: CLK_GNUC89,
 				ident_hash, line_table);
+  cb = cpp_get_callbacks (parse_in);
+  cb->error = c_cpp_error;
 
   cpp_opts = cpp_get_options (parse_in);
   cpp_opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
@@ -333,7 +337,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	 or environment var dependency generation is used.  */
       cpp_opts->deps.style = (code == OPT_M ? DEPS_SYSTEM: DEPS_USER);
       flag_no_output = 1;
-      cpp_opts->inhibit_warnings = 1;
       break;
 
     case OPT_MD:
@@ -444,7 +447,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_Werror:
-      cpp_opts->warnings_are_errors = value;
       global_dc->warning_as_error_requested = value;
       break;
 
@@ -501,10 +503,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_Wstrict_null_sentinel:
       warn_strict_null_sentinel = value;
-      break;
-
-    case OPT_Wsystem_headers:
-      cpp_opts->warn_system_headers = value;
       break;
 
     case OPT_Wtraditional:
@@ -895,8 +893,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	 c_common_post_options, so that a subsequent -Wno-endif-labels
 	 is not overridden.  */
     case OPT_pedantic_errors:
-      cpp_opts->pedantic_errors = 1;
-      /* Fall through.  */
     case OPT_pedantic:
       cpp_opts->pedantic = 1;
       cpp_opts->warn_endif_labels = 1;
@@ -969,10 +965,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_undef:
       flag_undef = 1;
-      break;
-
-    case OPT_w:
-      cpp_opts->inhibit_warnings = 1;
       break;
 
     case OPT_v:
@@ -1159,10 +1151,6 @@ c_common_post_options (const char **pfilename)
 
   input_location = UNKNOWN_LOCATION;
 
-  /* If an error has occurred in cpplib, note it so we fail
-     immediately.  */
-  errorcount += cpp_errors (parse_in);
-
   *pfilename = this_input_filename
     = cpp_read_main_file (parse_in, in_fnames[0]);
   /* Don't do any compilation or preprocessing if there is no input file.  */
@@ -1274,7 +1262,8 @@ c_common_finish (void)
 {
   FILE *deps_stream = NULL;
 
-  if (cpp_opts->deps.style != DEPS_NONE)
+  /* Don't write the deps file if there are errors.  */
+  if (cpp_opts->deps.style != DEPS_NONE && errorcount == 0)
     {
       /* If -M or -MM was seen without -MF, default output to the
 	 output stream.  */
@@ -1290,7 +1279,7 @@ c_common_finish (void)
 
   /* For performance, avoid tearing down cpplib's internal structures
      with cpp_destroy ().  */
-  errorcount += cpp_finish (parse_in, deps_stream);
+  cpp_finish (parse_in, deps_stream);
 
   if (deps_stream && deps_stream != out_stream
       && (ferror (deps_stream) || fclose (deps_stream)))

@@ -2666,39 +2666,6 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 #undef next_int
 }
 
-/* Callback from cpp_error for PFILE to print diagnostics arising from
-   interpreting strings.  The diagnostic is of type LEVEL; MSG is the
-   translated message and AP the arguments.  */
-
-void
-cp_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
-	      const char *msg, va_list *ap)
-{
-  diagnostic_info diagnostic;
-  diagnostic_t dlevel;
-  switch (level)
-    {
-    case CPP_DL_WARNING:
-    case CPP_DL_WARNING_SYSHDR:
-      dlevel = DK_WARNING;
-      break;
-    case CPP_DL_PEDWARN:
-      dlevel = DK_PEDWARN;
-      break;
-    case CPP_DL_ERROR:
-      dlevel = DK_ERROR;
-      break;
-    case CPP_DL_ICE:
-      dlevel = DK_ICE;
-      break;
-    default:
-      gcc_unreachable ();
-    }
-  diagnostic_set_info_translated (&diagnostic, msg, ap,
-				  input_location, dlevel);
-  report_diagnostic (&diagnostic);
-}
-
 /* Warn about the use of C++0x features when appropriate.  */
 void
 maybe_warn_cpp0x (const char* str)
