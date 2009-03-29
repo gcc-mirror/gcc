@@ -1,3 +1,7 @@
+2009-03-29  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/forwprop-11.c: New testcase.
+
 2009-03-29  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37423
