@@ -1,4 +1,11 @@
-2009-03-28  Adam Nemet  <anemet@caviumnetworks.com>
+2009-03-29  David Ayers  <ayers@fsfe.org>
+
+	PR objc/27377
+	* c-typeck.c (build_conditional_expr): Emit ObjC warnings
+	by calling objc_compare_types and surpress warnings about
+	incompatible C pointers that are compatible ObjC pointers.
+	
+2009-03-29  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* cgraphbuild.c (build_cgraph_edges, rebuild_cgraph_edges): Don't
 	call initialize_inline_failed.
