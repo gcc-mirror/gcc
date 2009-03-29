@@ -1,3 +1,15 @@
+2009-03-29  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* regmove.c (perhaps_ends_bb_p): Remove.
+	(optimize_reg_copy_1): Don't call perhaps_ends_bb_p.  Get basic block
+	from INSN and check that the main loop stays within that basic block.
+	(optimize_reg_copy_1, optimize_reg_copy_3, fixup_match_2): Likewise.
+	(regmove_forward_pass): Split out from regmove_optimize.  Use
+	FOR_EACH_BB and FOR_BB_INSNS instead of traversing the insns stream.
+	(regmove_backward_pass): Split out from regmove_optimize.  Use
+	FOR_EACH_BB_REVERSE and FOR_BB_INSNS_REVERS_SAFE.
+	(regmove_optimize): Simplify.
+
 2009-03-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39545
