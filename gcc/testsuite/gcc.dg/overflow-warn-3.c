@@ -17,7 +17,7 @@ enum e {
   /* But as in DR#031, the 1/0 in an evaluated subexpression means the
      whole expression violates the constraints.  */
   E4 = 0 * (1 / 0), /* { dg-warning "division by zero" } */
-  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { xfail *-*-* } 19 } */
+  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { target *-*-* } 19 } */
   E5 = INT_MAX + 1, /* { dg-warning "integer overflow in expression" } */
   /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 21 } */
   /* Again, overflow in evaluated subexpression.  */
@@ -30,8 +30,9 @@ enum e {
 struct s {
   int a;
   int : 0 * (1 / 0); /* { dg-warning "division by zero" } */
+  /* { dg-error "not an integer constant" "integer constant" { target *-*-* } 32 } */
   int : 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
-  /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 33 } */
+  /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 34 } */
 };
 
 void
@@ -45,16 +46,17 @@ f (void)
 
 /* But this expression does need to be constant.  */
 static int sc = INT_MAX + 1; /* { dg-warning "integer overflow in expression" } */
-/* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 47 } */
+/* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 48 } */
 
 /* The first two of these involve overflow, so are not null pointer
    constants.  The third has the overflow in an unevaluated
    subexpression, so is a null pointer constant.  */
 void *p = 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
-/* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 53 } */
-/* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } 53 } */
+/* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 54 } */
+/* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } 54 } */
 void *q = 0 * (1 / 0); /* { dg-warning "division by zero" } */
-/* { dg-warning "initialization makes pointer from integer without a cast" "null" { xfail *-*-* } 56 } */
+/* { dg-error "initializer element is not constant" "constant" { target *-*-* } 57 } */
+/* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } 57 } */
 void *r = (1 ? 0 : INT_MAX+1);
 
 void
@@ -63,9 +65,10 @@ g (int i)
   switch (i)
     {
     case 0 * (1/0): /* { dg-warning "division by zero" } */
+      /* { dg-error "case label does not reduce to an integer constant" "constant" { target *-*-* } 67 } */
       ;
     case 1 + 0 * (INT_MAX + 1): /* { dg-warning "integer overflow in expression" } */
-      /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 67 } */
+      /* { dg-warning "overflow in constant expression" "constant" { target *-*-* } 70 } */
       ;
     }
 }

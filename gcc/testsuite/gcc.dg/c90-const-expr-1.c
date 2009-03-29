@@ -15,9 +15,9 @@ void
 foo (void)
 {
   int i;
-  static int j = (1 ? 0 : (i = 2)); /* { dg-error "initial" "assignment" { xfail *-*-* } } */
-  static int k = (1 ? 0 : ++i); /* { dg-error "initial" "increment" { xfail *-*-* } } */
-  static int l = (1 ? 0 : --i); /* { dg-error "initial" "decrement" { xfail *-*-* } } */
-  static int m = (1 ? 0 : bar ()); /* { dg-error "initial" "function call" { xfail *-*-* } } */
-  static int n = (1 ? 0 : (2, 3)); /* { dg-error "initial" "comma" { xfail *-*-* } } */
+  static int j = (1 ? 0 : (i = 2)); /* { dg-error "initial" "assignment" } */
+  static int k = (1 ? 0 : ++i); /* { dg-error "initial" "increment" } */
+  static int l = (1 ? 0 : --i); /* { dg-error "initial" "decrement" } */
+  static int m = (1 ? 0 : bar ()); /* { dg-error "initial" "function call" } */
+  static int n = (1 ? 0 : (2, 3)); /* { dg-error "initial" "comma" } */
 }

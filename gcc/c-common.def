@@ -2,7 +2,7 @@
    additional tree codes used in the GNU C compiler (see tree.def
    for the standard codes).
    Copyright (C) 1987, 1988, 1990, 1993, 1997, 1998,
-   1999, 2000, 2001, 2004, 2005, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
    Written by Benjamin Chelf <chelf@codesourcery.com>
 
 This file is part of GCC.
@@ -30,6 +30,21 @@ along with GCC; see the file COPYING3.  If not see
    the DECL_INITIAL of that decl is the CONSTRUCTOR that initializes
    the compound literal.  */
 DEFTREECODE (COMPOUND_LITERAL_EXPR, "compound_literal_expr", tcc_expression, 1)
+
+/* A C_MAYBE_CONST_EXPR, currently only used for C and Objective C,
+   tracks information about constancy of an expression and VLA type
+   sizes or VM expressions from typeof that need to be evaluated
+   before the main expression.  It is used during parsing and removed
+   in c_fully_fold.  C_MAYBE_CONST_EXPR_PRE is the expression to
+   evaluate first, if not NULL; C_MAYBE_CONST_EXPR_EXPR is the main
+   expression.  If C_MAYBE_CONST_EXPR_INT_OPERANDS is set then the
+   expression may be used in an unevaluated part of an integer
+   constant expression, but not in an evaluated part.  If
+   C_MAYBE_CONST_EXPR_NON_CONST is set then the expression contains
+   something that cannot occur in an evaluated part of a constant
+   expression (or outside of sizeof in C90 mode); otherwise it does
+   not.  */
+DEFTREECODE (C_MAYBE_CONST_EXPR, "c_maybe_const_expr", tcc_expression, 2)
 
 /*
 Local variables:

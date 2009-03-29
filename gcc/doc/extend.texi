@@ -663,6 +663,10 @@ A @code{typeof}-construct can be used anywhere a typedef name could be
 used.  For example, you can use it in a declaration, in a cast, or inside
 of @code{sizeof} or @code{typeof}.
 
+The operand of @code{typeof} is evaluated for its side effects if and
+only if it is an expression of variably modified type or the name of
+such a type.
+
 @code{typeof} is often useful in conjunction with the
 statements-within-expressions feature.  Here is how the two together can
 be used to define a safe ``maximum'' macro that operates on any
@@ -6635,9 +6639,8 @@ depending on the arguments' types.  For example:
 
 You can use the built-in function @code{__builtin_choose_expr} to
 evaluate code depending on the value of a constant expression.  This
-built-in function returns @var{exp1} if @var{const_exp}, which is a
-constant expression that must be able to be determined at compile time,
-is nonzero.  Otherwise it returns 0.
+built-in function returns @var{exp1} if @var{const_exp}, which is an
+integer constant expression, is nonzero.  Otherwise it returns 0.
 
 This built-in function is analogous to the @samp{? :} operator in C,
 except that the expression returned has its type unaltered by promotion
@@ -6716,7 +6719,11 @@ static const int table[] = @{
 
 @noindent
 This is an acceptable initializer even if @var{EXPRESSION} is not a
-constant expression.  GCC must be more conservative about evaluating the
+constant expression, including the case where
+@code{__builtin_constant_p} returns 1 because @var{EXPRESSION} can be
+folded to a constant but @var{EXPRESSION} contains operands that would
+not otherwize be permitted in a static initializer (for example,
+@code{0 && foo ()}).  GCC must be more conservative about evaluating the
 built-in in this case, because it has no opportunity to perform
 optimization.
 

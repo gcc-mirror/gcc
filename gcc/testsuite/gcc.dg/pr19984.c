@@ -5,7 +5,7 @@
 
 double nan (const char *);
 
-const double nok = nan ("");	/* { dg-warning "(not constant)|(near initialization)" } */
+const double nok = nan ("");	/* { dg-warning "(not a constant)|(near initialization)" } */
 
 const double ok = __builtin_nan ("");
 

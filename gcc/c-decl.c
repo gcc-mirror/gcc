@@ -410,8 +410,8 @@ static tree lookup_name_in_scope (tree, struct c_scope *);
 static tree c_make_fname_decl (tree, int);
 static tree grokdeclarator (const struct c_declarator *,
 			    struct c_declspecs *,
-			    enum decl_context, bool, tree *, tree *,
-			    enum deprecated_states);
+			    enum decl_context, bool, tree *, tree *, tree *,
+			    bool *, enum deprecated_states);
 static tree grokparms (struct c_arg_info *, bool);
 static void layout_array_type (tree);
 
@@ -3128,10 +3128,15 @@ add_flexible_array_elts_to_size (tree decl, tree init)
     }
 }
 
-/* Decode a "typename", such as "int **", returning a ..._TYPE node.  */
+/* Decode a "typename", such as "int **", returning a ..._TYPE node.
+   Set *EXPR, if EXPR not NULL, to any expression to be evaluated
+   before the type name, and set *EXPR_CONST_OPERANDS, if
+   EXPR_CONST_OPERANDS not NULL, to indicate whether the type name may
+   appear in a constant expression.  */
 
 tree
-groktypename (struct c_type_name *type_name)
+groktypename (struct c_type_name *type_name, tree *expr,
+	      bool *expr_const_operands)
 {
   tree type;
   tree attrs = type_name->specs->attrs;
@@ -3139,7 +3144,8 @@ groktypename (struct c_type_name *type_name)
   type_name->specs->attrs = NULL_TREE;
 
   type = grokdeclarator (type_name->declarator, type_name->specs, TYPENAME,
-			 false, NULL, &attrs, DEPRECATED_NORMAL);
+			 false, NULL, &attrs, expr, expr_const_operands,
+			 DEPRECATED_NORMAL);
 
   /* Apply attributes.  */
   decl_attributes (&type, attrs, 0);
@@ -3168,6 +3174,7 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 {
   tree decl;
   tree tem;
+  tree expr = NULL_TREE;
   enum deprecated_states deprecated_state = DEPRECATED_NORMAL;
 
   /* An object declared as __attribute__((deprecated)) suppresses
@@ -3176,10 +3183,13 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
     deprecated_state = DEPRECATED_SUPPRESS;
 
   decl = grokdeclarator (declarator, declspecs,
-			 NORMAL, initialized, NULL, &attributes,
+			 NORMAL, initialized, NULL, &attributes, &expr, NULL,
 			 deprecated_state);
   if (!decl)
     return 0;
+
+  if (expr)
+    add_stmt (expr);
 
   if (TREE_CODE (decl) != FUNCTION_DECL && MAIN_NAME_P (DECL_NAME (decl)))
     warning (OPT_Wmain, "%q+D is usually a function", decl);
@@ -3668,7 +3678,7 @@ grokparm (const struct c_parm *parm)
 {
   tree attrs = parm->attrs;
   tree decl = grokdeclarator (parm->declarator, parm->specs, PARM, false,
-			      NULL, &attrs, DEPRECATED_NORMAL);
+			      NULL, &attrs, NULL, NULL, DEPRECATED_NORMAL);
 
   decl_attributes (&decl, attrs, 0);
 
@@ -3685,7 +3695,7 @@ push_parm_decl (const struct c_parm *parm)
   tree decl;
 
   decl = grokdeclarator (parm->declarator, parm->specs, PARM, false, NULL,
-			 &attrs, DEPRECATED_NORMAL);
+			 &attrs, NULL, NULL, DEPRECATED_NORMAL);
   decl_attributes (&decl, attrs, 0);
 
   decl = pushdecl (decl);
@@ -3716,10 +3726,11 @@ mark_forward_parm_decls (void)
 /* Build a COMPOUND_LITERAL_EXPR.  TYPE is the type given in the compound
    literal, which may be an incomplete array type completed by the
    initializer; INIT is a CONSTRUCTOR that initializes the compound
-   literal.  */
+   literal.  NON_CONST is true if the initializers contain something
+   that cannot occur in a constant expression.  */
 
 tree
-build_compound_literal (tree type, tree init)
+build_compound_literal (tree type, tree init, bool non_const)
 {
   /* We do not use start_decl here because we have a type, not a declarator;
      and do not use finish_decl because the decl should be stored inside
@@ -3770,6 +3781,12 @@ build_compound_literal (tree type, tree init)
       DECL_IGNORED_P (decl) = 1;
       pushdecl (decl);
       rest_of_decl_compilation (decl, 1, 0);
+    }
+
+  if (non_const)
+    {
+      complit = build2 (C_MAYBE_CONST_EXPR, type, NULL, complit);
+      C_MAYBE_CONST_EXPR_NON_CONST (complit) = 1;
     }
 
   return complit;
@@ -3958,6 +3975,11 @@ warn_variable_length_array (const char *name, tree size)
    DECL_ATTRS points to the list of attributes that should be added to this
      decl.  Any nested attributes that belong on the decl itself will be
      added to this list.
+   If EXPR is not NULL, any expressions that need to be evaluated as
+     part of evaluating variably modified types will be stored in *EXPR.
+   If EXPR_CONST_OPERANDS is not NULL, *EXPR_CONST_OPERANDS will be
+     set to indicate whether operands in *EXPR can be used in constant
+     expressions.
    DEPRECATED_STATE is a deprecated_states value indicating whether
    deprecation warnings should be suppressed.
 
@@ -3972,7 +3994,8 @@ static tree
 grokdeclarator (const struct c_declarator *declarator,
 		struct c_declspecs *declspecs,
 		enum decl_context decl_context, bool initialized, tree *width,
-		tree *decl_attrs, enum deprecated_states deprecated_state)
+		tree *decl_attrs, tree *expr, bool *expr_const_operands,
+		enum deprecated_states deprecated_state)
 {
   tree type = declspecs->type;
   bool threadp = declspecs->thread_p;
@@ -3994,6 +4017,16 @@ grokdeclarator (const struct c_declarator *declarator,
   bool bitfield = width != NULL;
   tree element_type;
   struct c_arg_info *arg_info = 0;
+  tree expr_dummy;
+  bool expr_const_operands_dummy;
+
+  if (expr == NULL)
+    expr = &expr_dummy;
+  if (expr_const_operands == NULL)
+    expr_const_operands = &expr_const_operands_dummy;
+
+  *expr = declspecs->expr;
+  *expr_const_operands = declspecs->expr_const_operands;
 
   if (decl_context == FUNCDEF)
     funcdef_flag = true, decl_context = NORMAL;
@@ -4306,6 +4339,11 @@ grokdeclarator (const struct c_declarator *declarator,
 
 	    if (size)
 	      {
+		bool size_maybe_const = true;
+		bool size_int_const = (TREE_CODE (size) == INTEGER_CST
+				       && !TREE_OVERFLOW (size));
+		bool this_size_varies = false;
+
 		/* Strip NON_LVALUE_EXPRs since we aren't using as an
 		   lvalue.  */
 		STRIP_TYPE_NOPS (size);
@@ -4316,17 +4354,26 @@ grokdeclarator (const struct c_declarator *declarator,
 		    size = integer_one_node;
 		  }
 
-		if (pedantic && integer_zerop (size))
+		size = c_fully_fold (size, false, &size_maybe_const);
+
+		if (pedantic && size_maybe_const && integer_zerop (size))
 		  pedwarn (input_location, OPT_pedantic,
 			   "ISO C forbids zero-size array %qs", name);
 
-		if (TREE_CODE (size) == INTEGER_CST)
+		if (TREE_CODE (size) == INTEGER_CST && size_maybe_const)
 		  {
 		    constant_expression_warning (size);
 		    if (tree_int_cst_sgn (size) < 0)
 		      {
 			error ("size of array %qs is negative", name);
 			size = integer_one_node;
+		      }
+		    /* Handle a size folded to an integer constant but
+		       not an integer constant expression.  */
+		    if (!size_int_const)
+		      {
+			this_size_varies = size_varies = 1;
+			warn_variable_length_array (orig_name, size);
 		      }
 		  }
 		else if ((decl_context == NORMAL || decl_context == FIELD)
@@ -4340,11 +4387,11 @@ grokdeclarator (const struct c_declarator *declarator,
 		    /* Make sure the array size remains visibly
 		       nonconstant even if it is (eg) a const variable
 		       with known value.  */
-		    size_varies = 1;
+		    this_size_varies = size_varies = 1;
 		    warn_variable_length_array (orig_name, size);
 		  }
 
-		if (integer_zerop (size))
+		if (integer_zerop (size) && !this_size_varies)
 		  {
 		    /* A zero-length array cannot be represented with
 		       an unsigned index type, which is what we'll
@@ -4359,6 +4406,9 @@ grokdeclarator (const struct c_declarator *declarator,
 		       with the +1 that happens when building TYPE_SIZE.  */
 		    if (size_varies)
 		      size = variable_size (size);
+		    if (this_size_varies && TREE_CODE (size) == INTEGER_CST)
+		      size = build2 (COMPOUND_EXPR, TREE_TYPE (size),
+				     integer_zero_node, size);
 
 		    /* Compute the maximum valid index, that is, size
 		       - 1.  Do the calculation in index_type, so that
@@ -4385,6 +4435,15 @@ grokdeclarator (const struct c_declarator *declarator,
 		      }
 
 		    itype = build_index_type (itype);
+		  }
+		if (this_size_varies)
+		  {
+		    if (*expr)
+		      *expr = build2 (COMPOUND_EXPR, TREE_TYPE (size),
+				      *expr, size);
+		    else
+		      *expr = size;
+		    *expr_const_operands &= size_maybe_const;
 		  }
 	      }
 	    else if (decl_context == FIELD)
@@ -5288,10 +5347,15 @@ struct c_typespec
 parser_xref_tag (enum tree_code code, tree name)
 {
   struct c_typespec ret;
+  tree ref;
+
+  ret.expr = NULL_TREE;
+  ret.expr_const_operands = true;
+
   /* If a cross reference is requested, look up the type
      already defined for this tag and return it.  */
 
-  tree ref = lookup_tag (code, name, 0);
+  ref = lookup_tag (code, name, 0);
   /* If this is the right type of tag, return what we found.
      (This reference will be shadowed by shadow_tag later if appropriate.)
      If this is the wrong type of tag, do not return it.  If it was the
@@ -5460,7 +5524,7 @@ grokfield (location_t loc,
     }
 
   value = grokdeclarator (declarator, declspecs, FIELD, false,
-			  width ? &width : NULL, decl_attrs,
+			  width ? &width : NULL, decl_attrs, NULL, NULL,
 			  DEPRECATED_NORMAL);
 
   finish_decl (value, NULL_TREE, NULL_TREE);
@@ -6119,7 +6183,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   c_break_label = c_cont_label = size_zero_node;
 
   decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, true, NULL,
-			  &attributes, DEPRECATED_NORMAL);
+			  &attributes, NULL, NULL, DEPRECATED_NORMAL);
 
   /* If the declarator is not suitable for a function definition,
      cause a syntax error.  */
@@ -7132,10 +7196,12 @@ build_null_declspecs (void)
 {
   struct c_declspecs *ret = XOBNEW (&parser_obstack, struct c_declspecs);
   ret->type = 0;
+  ret->expr = 0;
   ret->decl_attr = 0;
   ret->attrs = 0;
   ret->typespec_word = cts_none;
   ret->storage_class = csc_none;
+  ret->expr_const_operands = true;
   ret->declspecs_seen_p = false;
   ret->type_seen_p = false;
   ret->non_sc_seen_p = false;
@@ -7657,7 +7723,18 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
       if (spec.kind == ctsk_tagdef || spec.kind == ctsk_tagfirstref)
 	specs->tag_defined_p = true;
       if (spec.kind == ctsk_typeof)
-	specs->typedef_p = true;
+	{
+	  specs->typedef_p = true;
+	  if (spec.expr)
+	    {
+	      if (specs->expr)
+		specs->expr = build2 (COMPOUND_EXPR, TREE_TYPE (spec.expr),
+				      specs->expr, spec.expr);
+	      else
+		specs->expr = spec.expr;
+	      specs->expr_const_operands &= spec.expr_const_operands;
+	    }
+	}
       specs->type = type;
     }
 
