@@ -1,3 +1,12 @@
+2009-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39545
+	* config/i386/i386.c (classify_argument): Ignore flexible array
+	member in struct and warn ABI change.
+
 2009-03-29  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/invoke.texi, doc/standards.texi: Refer to

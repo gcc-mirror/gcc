@@ -1,3 +1,22 @@
+2009-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39545
+	* gcc.c-torture/compile/pr16566-2.c: Add -Wno-psabi for x86-64.
+
+	* gcc.target/i386/pr39545-1.c: New.
+	* gcc.target/i386/pr39545-2.c: Likewise.
+
+	* gcc.target/x86_64/abi/test_passing_structs.c (flex1_struct): New.
+	(flex2_struct): Likewise.
+	(check_struct_passing7): Likewise.
+	(check_struct_passing8): Likewise.
+	(f1s): Likewise.
+	(f2s): Likewise.
+	(main): Call check_struct_passing7 and check_struct_passing8.
+
 2009-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/powerpc/altivec-28.c: New test.
