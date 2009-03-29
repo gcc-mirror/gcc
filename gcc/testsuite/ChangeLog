@@ -1,3 +1,13 @@
+2009-03-29  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/20090113-1.c: New testcase.
+	* gcc.c-torture/execute/20090113-2.c: Likewise.
+	* gcc.c-torture/execute/20090113-3.c: Likewise.
+	* gcc.c-torture/execute/20090207-1.c: Likewise.
+	* gcc.c-torture/compile/20090114-1.c: Likewise.
+	* gcc.c-torture/compile/20090328-1.c: Likewise.
+	* gcc.dg/noncompile/920507-1.c: Fix out-of-bounds array access.
+
 2009-03-29  David Ayers  <ayers@fsfe.org>
 
 	PR objc/27377
