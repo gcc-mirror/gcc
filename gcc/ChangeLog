@@ -1,5 +1,14 @@
 2009-03-29  Jan Hubicka  <jh@suse.cz>
 
+	* except.c (duplicate_eh_regions_0): Handle AKA bitmap.
+	(duplicate_eh_regions_1): Likewise.
+	(duplicate_eh_regions): Likewise; cleanup code gorwing the region
+	vector; call EH verification.
+	(foreach_reachable_handler, can_throw_internal_1, can_throw_external_1):
+	Be ready for region being removed.
+
+2009-03-29  Jan Hubicka  <jh@suse.cz>
+
 	* bitmap.c (bitmap_last_set_bit): New function.
 	* bitmap.h (bitmap_last_set_bit): Declare.
 
