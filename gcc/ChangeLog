@@ -1,5 +1,10 @@
 2009-03-29  Jan Hubicka  <jh@suse.cz>
 
+	* except.c (verify_eh_tree): Fix handling of fun!=cfun; be ready
+	for removed regions.
+
+2009-03-29  Jan Hubicka  <jh@suse.cz>
+
 	* except.c (dump_eh_tree): Dump all datastructures.
 
 2009-03-29  Jan Hubicka  <jh@suse.cz>

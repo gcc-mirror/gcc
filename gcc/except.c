@@ -3968,23 +3968,25 @@ verify_eh_tree (struct function *fun)
   int j;
   int depth = 0;
 
-  i = fun->eh->region_tree;
-  if (! i)
+  if (!fun->eh->region_tree)
     return;
   for (j = fun->eh->last_region_number; j > 0; --j)
-    if ((i = VEC_index (eh_region, cfun->eh->region_array, j)))
+    if ((i = VEC_index (eh_region, fun->eh->region_array, j)))
       {
-	count++;
-	if (i->region_number != j)
+	if (i->region_number == j)
+	  count++;
+	if (i->region_number != j && (!i->aka || !bitmap_bit_p (i->aka, j)))
 	  {
-	    error ("region_array is corrupted for region %i", i->region_number);
+	    error ("region_array is corrupted for region %i",
+		   i->region_number);
 	    err = true;
 	  }
       }
+  i = fun->eh->region_tree;
 
   while (1)
     {
-      if (VEC_index (eh_region, cfun->eh->region_array, i->region_number) != i)
+      if (VEC_index (eh_region, fun->eh->region_array, i->region_number) != i)
 	{
 	  error ("region_array is corrupted for region %i", i->region_number);
 	  err = true;
@@ -3996,8 +3998,9 @@ verify_eh_tree (struct function *fun)
 	}
       if (i->may_contain_throw && outer && !outer->may_contain_throw)
 	{
-	  error ("region %i may contain throw and is contained in region that may not",
-		 i->region_number);
+	  error
+	    ("region %i may contain throw and is contained in region that may not",
+	     i->region_number);
 	  err = true;
 	}
       if (depth < 0)
@@ -4005,7 +4008,7 @@ verify_eh_tree (struct function *fun)
 	  error ("negative nesting depth of region %i", i->region_number);
 	  err = true;
 	}
-      nvisited ++;
+      nvisited++;
       /* If there are sub-regions, process them.  */
       if (i->inner)
 	outer = i, i = i->inner, depth++;
@@ -4015,30 +4018,32 @@ verify_eh_tree (struct function *fun)
       /* Otherwise, step back up the tree to the next peer.  */
       else
 	{
-	  do {
-	    i = i->outer;
-	    depth--;
-	    if (i == NULL)
-	      {
-		if (depth != -1)
-		  {
-		    error ("tree list ends on depth %i", depth + 1);
-		    err = true;
-		  }
-		if (count != nvisited)
-		  {
-		    error ("array does not match the region tree");
-		    err = true;
-		  }
-		if (err)
-		  {
-		    dump_eh_tree (stderr, fun);
-		    internal_error ("verify_eh_tree failed");
-		  }
-	        return;
-	      }
-	    outer = i->outer;
-	  } while (i->next_peer == NULL);
+	  do
+	    {
+	      i = i->outer;
+	      depth--;
+	      if (i == NULL)
+		{
+		  if (depth != -1)
+		    {
+		      error ("tree list ends on depth %i", depth + 1);
+		      err = true;
+		    }
+		  if (count != nvisited)
+		    {
+		      error ("array does not match the region tree");
+		      err = true;
+		    }
+		  if (err)
+		    {
+		      dump_eh_tree (stderr, fun);
+		      internal_error ("verify_eh_tree failed");
+		    }
+		  return;
+		}
+	      outer = i->outer;
+	    }
+	  while (i->next_peer == NULL);
 	  i = i->next_peer;
 	}
     }
