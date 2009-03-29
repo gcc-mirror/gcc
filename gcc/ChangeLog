@@ -1,3 +1,10 @@
+2009-03-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386-protos.h (ix86_agi_dependent): New.
+
+	* config/i386/i386.c (ix86_agi_dependent): Rewrite.
+	(ix86_adjust_cost): Updated.
+
 2009-03-29  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/28850

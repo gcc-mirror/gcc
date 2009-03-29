@@ -85,6 +85,7 @@ extern void ix86_fixup_binary_operands_no_copy (enum rtx_code,
 extern void ix86_expand_binary_operator (enum rtx_code,
 					 enum machine_mode, rtx[]);
 extern int ix86_binary_operator_ok (enum rtx_code, enum machine_mode, rtx[]);
+extern bool ix86_agi_dependent (rtx set_insn, rtx use_insn);
 extern void ix86_expand_unary_operator (enum rtx_code, enum machine_mode,
 					rtx[]);
 extern rtx ix86_build_const_vector (enum machine_mode, bool, rtx);
