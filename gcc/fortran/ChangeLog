@@ -1,3 +1,24 @@
+2008-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/38507
+	* gfortran.h (gfc_st_label): Fix comment.
+	(gfc_exec_op): Add statement code EXEC_END_BLOCK for end of block.
+	* parse.c (accept_statement): Use EXEC_END_BLOCK for END IF and
+	END SELECT with labels.
+	(check_do_closure): Fix formatting.
+	(parse_do_block): Fix typo in error message.
+	* resolve.c (code_stack): Remove tail member.  Update comment to
+	new use of reachable_labels.
+	(reachable_labels): Rename to ...
+	(find_reachable_labels): ... this.  Overhaul.  Update preceding
+	comment.
+	(resolve_branch): Fix comment preceding function.  Rewrite.
+	(resolve_code): Update call to find_reachable_labels.  Add code to
+	deal with EXEC_END_BLOCK.
+	* st.c (gfc_free_statement): Add code to deal with EXEC_END_BLOCK.
+	Add 2009 to copyright years.
+	* trans.c (gfc_trans_code): Likewise on both counts.
+
 2009-03-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34656

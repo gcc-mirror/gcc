@@ -1,3 +1,11 @@
+2008-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
+
+	PR fortran/38507
+	* gfortran.dg/do_4.f: New.
+	* gfortran.dg/goto_2.f90: Correct expected warnings.
+	* gfortran.dg/goto_4.f90: Likewise.
+	* gfortran.dg/goto_5.f90: New.
+
 2009-03-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39545
