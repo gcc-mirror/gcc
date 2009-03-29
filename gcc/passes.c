@@ -562,6 +562,7 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_simple_dse);
 	  NEXT_PASS (pass_tail_recursion);
 	  NEXT_PASS (pass_convert_switch);
+          NEXT_PASS (pass_cleanup_eh);
           NEXT_PASS (pass_profile);
           NEXT_PASS (pass_local_pure_const);
 	}
@@ -589,6 +590,7 @@ init_optimization_passes (void)
       /* Initial scalar cleanups before alias computation.
 	 They ensure memory accesses are not indirect wherever possible.  */
       NEXT_PASS (pass_strip_predict_hints);
+      NEXT_PASS (pass_cleanup_eh);
       NEXT_PASS (pass_update_address_taken);
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_complete_unrolli);
@@ -686,6 +688,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_phi_only_cprop);
       NEXT_PASS (pass_cd_dce);
       NEXT_PASS (pass_tracer);
+      NEXT_PASS (pass_cleanup_eh);
 
       /* FIXME: If DCE is not run before checking for uninitialized uses,
 	 we may get false warnings (e.g., testsuite/gcc.dg/uninit-5.c).
