@@ -1,3 +1,8 @@
+2009-03-29  Jan Hubicka  <jh@suse.cz>
+
+	* bitmap.c (bitmap_last_set_bit): New function.
+	* bitmap.h (bitmap_last_set_bit): Declare.
+
 2009-03-29  David Ayers  <ayers@fsfe.org>
 
 	PR objc/27377

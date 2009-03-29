@@ -183,6 +183,7 @@ extern void bitmap_obstack_free (bitmap);
 #define dump_bitmap(file, bitmap) bitmap_print (file, bitmap, "", "\n")
 #define bitmap_zero(a) bitmap_clear (a)
 extern unsigned bitmap_first_set_bit (const_bitmap);
+extern unsigned bitmap_last_set_bit (const_bitmap);
 
 /* Compute bitmap hash (for purposes of hashing etc.)  */
 extern hashval_t bitmap_hash(const_bitmap);
