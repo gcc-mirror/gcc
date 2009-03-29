@@ -1,5 +1,30 @@
 2009-03-29  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/28850
+	* tree-pass.h (pass_cleanup_eh): New function.
+	(remove_unreachable_regions): Break code handling RTL
+	to rtl_remove_unreachable_regions; remove ERT_MUST_NOT_THROW
+	that can not be reached by runtime.
+	(can_be_reached_by_runtime): New function.
+	(label_to_region_map): New function.
+	(num_eh_regions): New function.
+	(rtl_remove_unreachable_regions): New function.
+	(convert_from_eh_region_ranges): Call rtl_remove_unreachable_regions.
+	(remove_eh_region): New function.
+	* except.h: Include sbitmap and vecprim.
+	(remove_eh_region, remove_unreachable_regions, label_to_region_map,
+	num_eh_regions): Declare.
+	* passes.c (init_optimization_passes): Schedule cleanup_eh.
+	* Makefile.in (EXCEPT_H): New; replace all uses of except.h
+	by it.
+	* tree-eh.c (tree_remove_unreachable_handlers): New function.
+	(tree_empty_eh_handler_p): New function.
+	(cleanup_empty_eh): New function.
+	(cleanup_eh): New function.
+	(pass_cleanup_eh): New function.
+
+2009-03-29  Jan Hubicka  <jh@suse.cz>
+
 	* except.c (verify_eh_tree): Fix handling of fun!=cfun; be ready
 	for removed regions.
 
