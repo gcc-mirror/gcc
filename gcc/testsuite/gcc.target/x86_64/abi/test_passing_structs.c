@@ -92,6 +92,33 @@ check_struct_passing6 (struct m128_2_struct ms ATTRIBUTE_UNUSED)
 }
 #endif
 
+struct flex1_struct
+{
+  long i;
+  long flex[];
+};
+
+struct flex2_struct
+{
+  long i;
+  long flex[0];
+};
+
+void
+check_struct_passing7 (struct flex1_struct is ATTRIBUTE_UNUSED)
+{
+  check_int_arguments;
+}
+
+void
+check_struct_passing8 (struct flex2_struct is ATTRIBUTE_UNUSED)
+{
+  check_int_arguments;
+}
+
+static struct flex1_struct f1s = { 60, { } };
+static struct flex2_struct f2s = { 61, { } };
+
 int
 main (void)
 {
@@ -145,6 +172,18 @@ main (void)
 				    m128s[4], m128s[5], m128s[6], m128s[7]);
   WRAP_CALL (check_struct_passing6)(m128_2s);
 #endif
+
+  clear_struct_registers;
+  iregs.I0 = f1s.i;
+  num_iregs = 1;
+  clear_int_hardware_registers;
+  WRAP_CALL (check_struct_passing7)(f1s);
+
+  clear_struct_registers;
+  iregs.I0 = f2s.i;
+  num_iregs = 1;
+  clear_int_hardware_registers;
+  WRAP_CALL (check_struct_passing8)(f2s);
 
   return 0;
 }
