@@ -15,7 +15,7 @@
    { dg-warning "redefined" "redef B"      { target *-*-* } 9  }
    { dg-warning "redefined" "redef D"      { target *-*-* } 11 }
    { dg-warning "redefined" "redef E"      { target *-*-* } 12 }
-   { dg-warning "previous"  "prev def A"   { target *-*-* } 6  }
-   { dg-warning "previous"  "prev def B"   { target *-*-* } 8  }
-   { dg-warning "previous"  "prev def D/E" { target *-*-* } 0  }
+   { dg-message "previous"  "prev def A"   { target *-*-* } 6  }
+   { dg-message "previous"  "prev def B"   { target *-*-* } 8  }
+   { dg-message "previous"  "prev def D/E" { target *-*-* } 0  }
 */

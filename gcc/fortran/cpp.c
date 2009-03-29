@@ -1,4 +1,4 @@
-/* Copyright (C) 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -137,6 +137,9 @@ static void cb_include (cpp_reader *, source_location, const unsigned char *,
 static void cb_ident (cpp_reader *, source_location, const cpp_string *);
 static void cb_used_define (cpp_reader *, source_location, cpp_hashnode *);
 static void cb_used_undef (cpp_reader *, source_location, cpp_hashnode *);
+static bool cb_cpp_error (cpp_reader *, int, location_t, unsigned int,
+			  const char *, va_list *)
+     ATTRIBUTE_GCC_DIAG(5,0);
 void pp_dir_change (cpp_reader *, const char *);
 
 static int dump_macro (cpp_reader *, cpp_hashnode *, void *);
@@ -452,7 +455,6 @@ gfc_cpp_post_options (void)
   cpp_option->cplusplus_comments = 0;
 
   cpp_option->pedantic = pedantic;
-  cpp_option->inhibit_warnings = inhibit_warnings;
 
   cpp_option->dollars_in_ident = gfc_option.flag_dollar_ok;
   cpp_option->discard_comments = gfc_cpp_option.discard_comments;
@@ -464,9 +466,6 @@ gfc_cpp_post_options (void)
     gfc_cpp_option.working_directory = (debug_info_level != DINFO_LEVEL_NONE);
 
   cpp_post_options (cpp_in);
-
-  /* If an error has occurred in cpplib, note it so we fail immediately.  */
-  errorcount += cpp_errors (cpp_in);
 
   gfc_cpp_register_include_paths ();
 }
@@ -482,6 +481,7 @@ gfc_cpp_init_0 (void)
   cb->line_change = cb_line_change;
   cb->ident = cb_ident;
   cb->def_pragma = cb_def_pragma;
+  cb->error = cb_cpp_error;
 
   if (gfc_cpp_option.dump_includes)
     cb->include = cb_include;
@@ -961,6 +961,54 @@ cb_used_define (cpp_reader *pfile, source_location line ATTRIBUTE_UNUSED,
   cpp_define_queue = q;
 }
 
+/* Callback from cpp_error for PFILE to print diagnostics from the
+   preprocessor.  The diagnostic is of type LEVEL, at location
+   LOCATION, with column number possibly overridden by COLUMN_OVERRIDE
+   if not zero; MSG is the translated message and AP the arguments.
+   Returns true if a diagnostic was emitted, false otherwise.  */
+
+static bool
+cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
+	      location_t location, unsigned int column_override,
+	      const char *msg, va_list *ap)
+{
+  diagnostic_info diagnostic;
+  diagnostic_t dlevel;
+  int save_warn_system_headers = warn_system_headers;
+  bool ret;
+
+  switch (level)
+    {
+    case CPP_DL_WARNING_SYSHDR:
+      warn_system_headers = 1;
+      /* Fall through.  */
+    case CPP_DL_WARNING:
+      dlevel = DK_WARNING;
+      break;
+    case CPP_DL_PEDWARN:
+      dlevel = DK_PEDWARN;
+      break;
+    case CPP_DL_ERROR:
+      dlevel = DK_ERROR;
+      break;
+    case CPP_DL_ICE:
+      dlevel = DK_ICE;
+      break;
+    case CPP_DL_NOTE:
+      dlevel = DK_NOTE;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  diagnostic_set_info_translated (&diagnostic, msg, ap,
+				  location, dlevel);
+  if (column_override)
+    diagnostic_override_column (&diagnostic, column_override);
+  ret = report_diagnostic (&diagnostic);
+  if (level == CPP_DL_WARNING_SYSHDR)
+    warn_system_headers = save_warn_system_headers;
+  return ret;
+}
 
 /* Callback called when -fworking-director and -E to emit working
    directory in cpp output file.  */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
+/* { dg-options "-std=gnu99 -fshow-column" } */
 
 double a = 1.ld;	/* { dg-error "12:invalid suffix" } */
 double b = 1.fd;	/* { dg-error "12:invalid suffix" } */

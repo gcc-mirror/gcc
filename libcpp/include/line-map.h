@@ -1,5 +1,5 @@
 /* Map logical line numbers to (source file, line number) pairs.
-   Copyright (C) 2001, 2003, 2004, 2007
+   Copyright (C) 2001, 2003, 2004, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
@@ -143,12 +143,6 @@ extern const struct line_map *linemap_add
    (source file, line) pair can be deduced.  */
 extern const struct line_map *linemap_lookup
   (struct line_maps *, source_location);
-
-/* Print the file names and line numbers of the #include commands
-   which led to the map MAP, if any, to stderr.  Nothing is output if
-   the most recently listed stack is the same as the current one.  */
-extern void linemap_print_containing_files (struct line_maps *,
-					    const struct line_map *);
 
 /* Converts a map and a source_location to source line.  */
 #define SOURCE_LINE(MAP, LOC) \

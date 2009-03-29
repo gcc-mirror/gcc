@@ -660,6 +660,11 @@ extern int max_tinst_depth;
 
 extern int skip_evaluation;
 
+/* Whether lexing has been completed, so subsequent preprocessor
+   errors should use the compiler's input_location.  */
+
+extern bool done_lexing;
+
 /* C types are partitioned into three subsets: object, function, and
    incomplete types.  */
 #define C_TYPE_OBJECT_P(type) \

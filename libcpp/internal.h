@@ -1,6 +1,6 @@
 /* Part of CPP library.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
-   Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007,
+   2008, 2009 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -387,9 +387,6 @@ struct cpp_reader
 
   /* Nonzero prevents the lexer from re-using the token runs.  */
   unsigned int keep_tokens;
-
-  /* Error counter for exit code.  */
-  unsigned int errors;
 
   /* Buffer to hold macro definition string.  */
   unsigned char *macro_buffer;

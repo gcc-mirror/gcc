@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "varray.h"
 #include "expr.h"
 #include "c-common.h"
-#include "diagnostic.h"
 #include "tm_p.h"
 #include "obstack.h"
 #include "cpplib.h"
@@ -42,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "c-tree.h"
 #include "toplev.h"
+#include "diagnostic.h"
 #include "tree-iterator.h"
 #include "hashtab.h"
 #include "tree-mudflap.h"
@@ -496,6 +496,10 @@ tree (*make_fname_decl) (tree, int);
 /* Nonzero means the expression being parsed will never be evaluated.
    This is a count, since unevaluated expressions can nest.  */
 int skip_evaluation;
+
+/* Whether lexing has been completed, so subsequent preprocessor
+   errors should use the compiler's input_location.  */
+bool done_lexing = false;
 
 /* Information about how a function name is generated.  */
 struct fname_var_t
@@ -7926,6 +7930,65 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token, tree value)
       free (message);
     }
 #undef catenate_messages
+}
+
+/* Callback from cpp_error for PFILE to print diagnostics from the
+   preprocessor.  The diagnostic is of type LEVEL, at location
+   LOCATION unless this is after lexing and the compiler's location
+   should be used instead, with column number possibly overridden by
+   COLUMN_OVERRIDE if not zero; MSG is the translated message and AP
+   the arguments.  Returns true if a diagnostic was emitted, false
+   otherwise.  */
+
+bool
+c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
+	     location_t location, unsigned int column_override,
+	     const char *msg, va_list *ap)
+{
+  diagnostic_info diagnostic;
+  diagnostic_t dlevel;
+  int save_warn_system_headers = warn_system_headers;
+  bool ret;
+
+  switch (level)
+    {
+    case CPP_DL_WARNING_SYSHDR:
+      if (flag_no_output)
+	return false;
+      warn_system_headers = 1;
+      /* Fall through.  */
+    case CPP_DL_WARNING:
+      if (flag_no_output)
+	return false;
+      dlevel = DK_WARNING;
+      break;
+    case CPP_DL_PEDWARN:
+      if (flag_no_output && !flag_pedantic_errors)
+	return false;
+      dlevel = DK_PEDWARN;
+      break;
+    case CPP_DL_ERROR:
+      dlevel = DK_ERROR;
+      break;
+    case CPP_DL_ICE:
+      dlevel = DK_ICE;
+      break;
+    case CPP_DL_NOTE:
+      dlevel = DK_NOTE;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (done_lexing)
+    location = input_location;
+  diagnostic_set_info_translated (&diagnostic, msg, ap,
+				  location, dlevel);
+  if (column_override)
+    diagnostic_override_column (&diagnostic, column_override);
+  ret = report_diagnostic (&diagnostic);
+  if (level == CPP_DL_WARNING_SYSHDR)
+    warn_system_headers = save_warn_system_headers;
+  return ret;
 }
 
 /* Walk a gimplified function and warn for functions whose return value is

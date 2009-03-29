@@ -1,6 +1,7 @@
 /* CPP Library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008,
+   2009 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -615,12 +616,11 @@ read_original_directory (cpp_reader *pfile)
 }
 
 /* This is called at the end of preprocessing.  It pops the last
-   buffer and writes dependency output, and returns the number of
-   errors.
+   buffer and writes dependency output.
 
    Maybe it should also reset state, such that you could call
    cpp_start_read with a new filename to restart processing.  */
-int
+void
 cpp_finish (cpp_reader *pfile, FILE *deps_stream)
 {
   /* Warn about unused macros before popping the final buffer.  */
@@ -635,9 +635,8 @@ cpp_finish (cpp_reader *pfile, FILE *deps_stream)
   while (pfile->buffer)
     _cpp_pop_buffer (pfile);
 
-  /* Don't write the deps file if there are errors.  */
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE
-      && deps_stream && pfile->errors == 0)
+      && deps_stream)
     {
       deps_write (pfile->deps, deps_stream, 72);
 
@@ -648,8 +647,6 @@ cpp_finish (cpp_reader *pfile, FILE *deps_stream)
   /* Report on headers that could use multiple include guards.  */
   if (CPP_OPTION (pfile, print_include_names))
     _cpp_report_missing_guards (pfile);
-
-  return pfile->errors;
 }
 
 static void

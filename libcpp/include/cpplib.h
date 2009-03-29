@@ -302,21 +302,8 @@ struct cpp_options
   /* Nonzero means print names of header files (-H).  */
   unsigned char print_include_names;
 
-  /* Nonzero means cpp_pedwarn causes a hard error.  */
-  unsigned char pedantic_errors;
-
-  /* Nonzero means don't print warning messages.  */
-  unsigned char inhibit_warnings;
-
   /* Nonzero means complain about deprecated features.  */
   unsigned char warn_deprecated;
-
-  /* Nonzero means don't suppress warnings from system headers.  */
-  unsigned char warn_system_headers;
-
-  /* Nonzero means don't print error messages.  Has no option to
-     select it, but can be set by a user of cpplib (e.g. fix-header).  */
-  unsigned char inhibit_errors;
 
   /* Nonzero means warn if slash-star appears in a comment.  */
   unsigned char warn_comments;
@@ -352,9 +339,6 @@ struct cpp_options
   /* Nonzero means warn about builtin macros that are redefined or
      explicitly undefined.  */
   unsigned char warn_builtin_macro_redefined;
-
-  /* Nonzero means turn warnings into errors.  */
-  unsigned char warnings_are_errors;
 
   /* Nonzero means we should look for header.gcc files that remap file
      names.  */
@@ -450,9 +434,6 @@ struct cpp_options
   /* Nonzero means __STDC__ should have the value 0 in system headers.  */
   unsigned char stdc_0_in_system_headers;
 
-  /* True means error callback should be used for diagnostics.  */
-  bool client_diagnostic;
-
   /* True disables tokenization outside of preprocessing directives. */
   bool directives_only;
 };
@@ -492,10 +473,11 @@ struct cpp_callbacks
      be expanded.  */
   cpp_hashnode * (*macro_to_expand) (cpp_reader *, const cpp_token *);
 
-  /* Called to emit a diagnostic if client_diagnostic option is true.
-     This callback receives the translated message.  */
-  void (*error) (cpp_reader *, int, const char *, va_list *)
-       ATTRIBUTE_FPTR_PRINTF(3,0);
+  /* Called to emit a diagnostic.  This callback receives the
+     translated message.  */
+  bool (*error) (cpp_reader *, int, source_location, unsigned int,
+		 const char *, va_list *)
+       ATTRIBUTE_FPTR_PRINTF(5,0);
 
   /* Callbacks for when a macro is expanded, or tested (whether
      defined or not at the time) in #ifdef, #ifndef or "defined".  */
@@ -697,18 +679,12 @@ extern void cpp_init_iconv (cpp_reader *);
 
 /* Call this to finish preprocessing.  If you requested dependency
    generation, pass an open stream to write the information to,
-   otherwise NULL.  It is your responsibility to close the stream.
-
-   Returns cpp_errors (pfile).  */
-extern int cpp_finish (cpp_reader *, FILE *deps_stream);
+   otherwise NULL.  It is your responsibility to close the stream.  */
+extern void cpp_finish (cpp_reader *, FILE *deps_stream);
 
 /* Call this to release the handle at the end of preprocessing.  Any
-   use of the handle after this function returns is invalid.  Returns
-   cpp_errors (pfile).  */
+   use of the handle after this function returns is invalid.  */
 extern void cpp_destroy (cpp_reader *);
-
-/* Error count.  */
-extern unsigned int cpp_errors (cpp_reader *);
 
 extern unsigned int cpp_token_len (const cpp_token *);
 extern unsigned char *cpp_token_as_text (cpp_reader *, const cpp_token *);
@@ -835,24 +811,21 @@ cpp_num cpp_num_sign_extend (cpp_num, size_t);
 /* An internal consistency check failed.  Prints "internal error: ",
    otherwise the same as CPP_DL_ERROR.  */
 #define CPP_DL_ICE		0x04
-/* Extracts a diagnostic level from an int.  */
-#define CPP_DL_EXTRACT(l)	(l & 0xf)
-/* Nonzero if a diagnostic level is one of the warnings.  */
-#define CPP_DL_WARNING_P(l)	(CPP_DL_EXTRACT (l) >= CPP_DL_WARNING \
-				 && CPP_DL_EXTRACT (l) <= CPP_DL_PEDWARN)
+/* An informative note following a warning.  */
+#define CPP_DL_NOTE		0x05
 
 /* Output a diagnostic of some kind.  */
-extern void cpp_error (cpp_reader *, int, const char *msgid, ...)
+extern bool cpp_error (cpp_reader *, int, const char *msgid, ...)
   ATTRIBUTE_PRINTF_3;
 
 /* Output a diagnostic with "MSGID: " preceding the
    error string of errno.  No location is printed.  */
-extern void cpp_errno (cpp_reader *, int, const char *msgid);
+extern bool cpp_errno (cpp_reader *, int, const char *msgid);
 
 /* Same as cpp_error, except additionally specifies a position as a
    (translation unit) physical line and physical column.  If the line is
    zero, then no location is printed.  */
-extern void cpp_error_with_line (cpp_reader *, int, source_location, unsigned,
+extern bool cpp_error_with_line (cpp_reader *, int, source_location, unsigned,
 				 const char *msgid, ...) ATTRIBUTE_PRINTF_5;
 
 /* In lex.c */

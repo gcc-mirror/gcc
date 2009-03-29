@@ -8148,7 +8148,7 @@ c_write_global_declarations (void)
 
   /* Don't waste time on further processing if -fsyntax-only or we've
      encountered errors.  */
-  if (flag_syntax_only || errorcount || sorrycount || cpp_errors (parse_in))
+  if (flag_syntax_only || errorcount || sorrycount)
     return;
 
   /* Close the external scope.  */

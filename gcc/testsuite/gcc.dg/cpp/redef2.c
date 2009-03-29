@@ -23,9 +23,9 @@
    { dg-warning "redefined" "redef ro"      { target *-*-* } 12 }
    { dg-warning "redefined" "redef va"      { target *-*-* } 15 }
 
-   { dg-warning "previous"  "prev def mac"  { target *-*-* } 6  }
-   { dg-warning "previous"  "prev def mac"  { target *-*-* } 7  }
-   { dg-warning "previous"  "prev def mac"  { target *-*-* } 8  }
-   { dg-warning "previous"  "prev def ro"   { target *-*-* } 11 }
-   { dg-warning "previous"  "prev def va"   { target *-*-* } 14 }
+   { dg-message "previous"  "prev def mac"  { target *-*-* } 6  }
+   { dg-message "previous"  "prev def mac"  { target *-*-* } 7  }
+   { dg-message "previous"  "prev def mac"  { target *-*-* } 8  }
+   { dg-message "previous"  "prev def ro"   { target *-*-* } 11 }
+   { dg-message "previous"  "prev def va"   { target *-*-* } 14 }
 */
