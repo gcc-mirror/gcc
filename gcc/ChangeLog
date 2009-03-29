@@ -1,31 +1,31 @@
 2009-03-28  Paolo Bonzini  <bonzini@gnu.org>
 
-        * c-common.c (c_expand_expr, c_staticp): Remove.
-        * c-common.def (COMPOUND_LITERAL_EXPR): Delete.
-        * c-common.h (emit_local_var, c_staticp, COMPOUND_LITERAL_EXPR_DECL,
-        COMPOUND_LITERAL_EXPR_DECL_EXPR): Remove.
-        * c-gimplify.c (gimplify_compound_literal_expr,
-        optimize_compound_literals_in_ctor): Remove.
-        (c_gimplify_expr): Remove COMPOUND_LITERAL_EXPR handling.
-        * c-objc-common.h (LANG_HOOKS_STATICP): Remove.
-        * c-semantics.c (emit_local_var): Remove.
+	* c-common.c (c_expand_expr, c_staticp): Remove.
+	* c-common.def (COMPOUND_LITERAL_EXPR): Delete.
+	* c-common.h (emit_local_var, c_staticp, COMPOUND_LITERAL_EXPR_DECL,
+	COMPOUND_LITERAL_EXPR_DECL_EXPR): Remove.
+	* c-gimplify.c (gimplify_compound_literal_expr,
+	optimize_compound_literals_in_ctor): Remove.
+	(c_gimplify_expr): Remove COMPOUND_LITERAL_EXPR handling.
+	* c-objc-common.h (LANG_HOOKS_STATICP): Remove.
+	* c-semantics.c (emit_local_var): Remove.
 
-        * langhooks-def.h (lhd_expand_expr): Remove.
-        * langhooks.c (lhd_expand_expr): Remove.
-        * langhooks.h (LANG_HOOKS_DEF): Remove LANG_HOOKS_EXPAND_EXPR.
+	* langhooks-def.h (lhd_expand_expr): Remove.
+	* langhooks.c (lhd_expand_expr): Remove.
+	* langhooks.h (LANG_HOOKS_DEF): Remove LANG_HOOKS_EXPAND_EXPR.
 
-        * expr.c (expand_expr_real_1): Move COMPOUND_LITERAL_EXPR
-        handling from c-semantics.c; don't call into langhook.
-        (expand_expr_addr_expr_1): Check that we don't get non-GENERIC trees.
-        * gimplify.c (gimplify_compound_literal_expr,
-        optimize_compound_literals_in_ctor): Move from c-gimplify.c.
-        (gimplify_init_constructor): Call optimize_compound_literals_in_ctor.
-        (gimplify_modify_expr_rhs, gimplify_expr): Handle COMPOUND_LITERAL_EXPR
-        as was done in c-gimplify.c.
-        * tree.c (staticp): Move COMPOUND_LITERAL_EXPR handling from c_staticp.
-        * tree.h (COMPOUND_LITERAL_EXPR_DECL, COMPOUND_LITERAL_EXPR_DECL_EXPR):
-        Move from c-common.h.
-        * tree.def (COMPOUND_LITERAL_EXPR): Move from c-common.def.
+	* expr.c (expand_expr_real_1): Move COMPOUND_LITERAL_EXPR
+	handling from c-semantics.c; don't call into langhook.
+	(expand_expr_addr_expr_1): Check that we don't get non-GENERIC trees.
+	* gimplify.c (gimplify_compound_literal_expr,
+	optimize_compound_literals_in_ctor): Move from c-gimplify.c.
+	(gimplify_init_constructor): Call optimize_compound_literals_in_ctor.
+	(gimplify_modify_expr_rhs, gimplify_expr): Handle COMPOUND_LITERAL_EXPR
+	as was done in c-gimplify.c.
+	* tree.c (staticp): Move COMPOUND_LITERAL_EXPR handling from c_staticp.
+	* tree.h (COMPOUND_LITERAL_EXPR_DECL, COMPOUND_LITERAL_EXPR_DECL_EXPR):
+	Move from c-common.h.
+	* tree.def (COMPOUND_LITERAL_EXPR): Move from c-common.def.
 
 	* tree.c (staticp): Do not call langhook.
 	* langhooks.c (lhd_staticp): Delete.
@@ -33,8 +33,8 @@
 	(LANG_HOOKS_STATICP): Delete.
 	(LANG_HOOKS_INITIALIZER): Delete LANG_HOOKS_STATICP.
 
-        * doc/c-tree.texi (Expression nodes): Refer to DECL_EXPRs
-        instead of DECL_STMTs.
+	* doc/c-tree.texi (Expression nodes): Refer to DECL_EXPRs
+	instead of DECL_STMTs.
 
 2009-03-29  Joseph Myers  <joseph@codesourcery.com>
 
@@ -48,12 +48,11 @@
 	void_type_node.
 	(fold_call_expr): Return a NOP_EXPR from folding rather than the
 	contained expression.
-	* c-common.c (c_fully_fold, c_fully_fold_internal, c_save_expr):
-	New.
+	* c-common.c (c_fully_fold, c_fully_fold_internal, c_save_expr): New.
 	(c_common_truthvalue_conversion): Use c_save_expr.  Do not fold
 	conditional expressions for C.
 	(decl_constant_value_for_optimization): Move from
-	decl_constant_value_for_broken_optimization in c-typeck.c.  Check
+ 	decl_constant_value_for_broken_optimization in c-typeck.c.  Check
 	whether optimizing and that the expression is a VAR_DECL not of
 	array type instead of doing such checks in the caller.  Do not
 	check pedantic.  Call gcc_unreachable for C++.
@@ -194,8 +193,7 @@
 	(c_start_case): Fold switch expression.
 	(c_process_expr_stmt): Fold expression.
 	(c_finish_stmt_expr): Create C_MAYBE_CONST_EXPR as needed to
-	ensure statement expression is not evaluated in constant
-	expression.
+	ensure statement expression is not evaluated in constant expression.
 	(build_binary_op): Track whether results are integer constant
 	expressions or may occur in such, disable folding and wrap results
 	as applicable.  Fold operands for -Wsign-compare warnings unless
@@ -254,8 +252,7 @@
 	(remove_eh_region, remove_unreachable_regions, label_to_region_map,
 	num_eh_regions): Declare.
 	* passes.c (init_optimization_passes): Schedule cleanup_eh.
-	* Makefile.in (EXCEPT_H): New; replace all uses of except.h
-	by it.
+	* Makefile.in (EXCEPT_H): New; replace all uses of except.h by it.
 	* tree-eh.c (tree_remove_unreachable_handlers): New function.
 	(tree_empty_eh_handler_p): New function.
 	(cleanup_empty_eh): New function.
@@ -339,6 +336,7 @@
 	Merge from pretty-ipa:
 
 	2009-03-27  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (dump_cgraph_node): Add replace output flag by process.
 	* tree-pass.h (function_called_by_processed_nodes_p): Declare.
 	* passes.c (function_called_by_processed_nodes_p): New.
@@ -371,6 +369,7 @@
 	* tree-flow.h (stmt_can_throw_external): New.
 	* passes.c (init_optimization_passes): Schedule fixup_cfg pass early;
 	and local pure/const pass in early and late optimization queue.
+
 2009-03-28  Martin Jambor  <mjambor@suse.cz>
 
 	* fold-const.c (get_pointer_modulus_and_residue): New parameter
@@ -464,6 +463,7 @@
 2009-03-28  Jan Hubicka  <jh@suse.cz>
 
 	Bring from lto-branch:
+
 	2008-09-03  Doug Kwan  <dougkwan@google.com>
 
 	* cgraphbuild.c (initialize_inline_failed): Use cgraph_inline_failed_t
@@ -698,8 +698,7 @@
 	* c-common.c (handle_aligned_attribute): Properly check alignment
 	overflow.  Use (1U << i) instead of (1 << i).
 
-	* emit-rtl.c (get_mem_align_offset): Use "unsigned int" for
-	align.
+	* emit-rtl.c (get_mem_align_offset): Use "unsigned int" for align.
 
 	* expr.h (get_mem_align_offset): Updated.
 
@@ -731,8 +730,7 @@
 	PR target/39472
 	* config/i386/i386.c (ix86_abi): New.
 	(override_options): Handle -mabi=.
-	(ix86_function_arg_regno_p): Replace DEFAULT_ABI with
-	ix86_abi.
+	(ix86_function_arg_regno_p): Replace DEFAULT_ABI with ix86_abi.
 	(ix86_call_abi_override): Likewise.
 	(init_cumulative_args): Likewise.
 	(function_arg_advance): Likewise.
@@ -744,12 +742,10 @@
 	(setup_incoming_varargs_64): Likewise.
 	(is_va_list_char_pointer): Likewise.
 	(ix86_init_machine_status): Likewise.
-	(ix86_reg_parm_stack_space): Use enum calling_abi on
-	call_abi.
+	(ix86_reg_parm_stack_space): Use enum calling_abi on call_abi.
 	(ix86_function_type_abi): Return enum calling_abi.  Rewrite
 	for 64bit.  Replace DEFAULT_ABI with ix86_abi.
-	(ix86_function_abi): Make it static and return enum
-	calling_abi.
+	(ix86_function_abi): Make it static and return enum calling_abi.
 	(ix86_cfun_abi): Return enum calling_abi.  Replace DEFAULT_ABI
 	with ix86_abi.
 	(ix86_fn_abi_va_list): Updated.
@@ -831,7 +827,8 @@
 2009-03-27  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR c++/36799
-	* ginclude/stdarg.h (va_copy): Define also for __GXX_EXPERIMENTAL_CXX0X__.
+	* ginclude/stdarg.h (va_copy): Define also for
+	__GXX_EXPERIMENTAL_CXX0X__.
 
 2009-03-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
@@ -917,8 +914,7 @@
 
 	* configure.ac <GAS features, nop mnemonic>: Add pattern
 	crisv32-*-* for "nop".
-	<GAS features, Thread-local storage>: Add item for CRIS and
-	CRIS v32.
+	<GAS features, Thread-local storage>: Add item for CRIS and CRIS v32.
 	* configure: Regenerate.
 
 2009-03-24  Ira Rosen  <irar@il.ibm.com>
@@ -930,8 +926,7 @@
 
 2009-03-24  Arthur Loiret  <aloiret@debian.org>
 
-	* config.host (alpha*-*-linux*): Use driver-alpha.o and
-	alpha/x-alpha.
+	* config.host (alpha*-*-linux*): Use driver-alpha.o and alpha/x-alpha.
 	* config/alpha/linux.h (host_detect_local_cpu): Declare, add to
 	EXTRA_SPEC_FUNCTIONS.
 	(MCPU_MTUNE_NATIVE_SPECS, DRIVER_SELF_SPECS): New macros.
@@ -1384,7 +1379,7 @@
 
 2009-03-06  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
-	* genpreds.c: (needs_variable): Fix parentheses at variable name
+	* genpreds.c (needs_variable): Fix parentheses at variable name
 	detection.
 	(write_tm_constrs_h): Indent generated code.
 
@@ -1703,7 +1698,7 @@
 
 2009-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* gcc/config/s390/s390.c: (s390_swap_cmp): Look for conditional
+	* gcc/config/s390/s390.c (s390_swap_cmp): Look for conditional
 	jumps if COND is NULL.
 	(find_cond_jump): New function.
 	(s390_z10_optimize_cmp): Handling for reg-reg compares added.
@@ -2750,7 +2745,7 @@
 
 	* global.c: Remove the file.
 
-	* opts.c: (decode_options): Remove flag_ira.
+	* opts.c (decode_options): Remove flag_ira.
 
 	* hard-reg-set.h (losing_caller_save_reg_set): Remove.
 
@@ -3130,7 +3125,7 @@
 2009-01-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/38930
-	* c-decl.c: (clone_underlying_type): Revert PR c++/26693 changes.
+	* c-decl.c (clone_underlying_type): Revert PR c++/26693 changes.
 	* c-common.c (set_underlying_type): Likewise.
 	(is_typedef_decl ): Likewise
 	* tree.h: Likewise
@@ -3160,7 +3155,7 @@
 2009-01-21  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/26693
-	* c-decl.c: (clone_underlying_type): Move this ...
+	* c-decl.c (clone_underlying_type): Move this ...
 	* c-common.c (set_underlying_type): ... here.
 	Also, make sure the function properly sets TYPE_STUB_DECL() on
 	the newly created typedef variant type.
@@ -3523,7 +3518,7 @@
 	* config/avr/t-avr (LIB1ASMFUNCS): Add _tablejump_elpm.
 	* config/avr/libgcc.S (__do_global_ctors, __do_global_dtors): Add
 	variant for devices with 3-byte PC.
-	(__tablejump_elpm__) : New.
+	(__tablejump_elpm__): New.
 
 2009-01-12  Jakub Jelinek  <jakub@redhat.com>
 
