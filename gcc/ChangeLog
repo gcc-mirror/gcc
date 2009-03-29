@@ -1,5 +1,9 @@
 2009-03-29  Jan Hubicka  <jh@suse.cz>
 
+	* except.c (dump_eh_tree): Dump all datastructures.
+
+2009-03-29  Jan Hubicka  <jh@suse.cz>
+
 	* except.c (duplicate_eh_regions_0): Handle AKA bitmap.
 	(duplicate_eh_regions_1): Likewise.
 	(duplicate_eh_regions): Likewise; cleanup code gorwing the region
