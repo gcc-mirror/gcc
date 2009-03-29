@@ -31,12 +31,12 @@
 /* ------------------------------------------------------------------ */
 /* Packed Decimal conversion module				      */
 /* ------------------------------------------------------------------ */
-/* This module comprises the routines for Packed Decimal format	      */
+/* This module comprises the routines for Packed Decimal format       */
 /* numbers.  Conversions are supplied to and from decNumber, which in */
 /* turn supports:						      */
 /*   conversions to and from string				      */
 /*   arithmetic routines					      */
-/*   utilities.							      */
+/*   utilities. 						      */
 /* Conversions from decNumber to and from densely packed decimal      */
 /* formats are provided by the decimal32 through decimal128 modules.  */
 /* ------------------------------------------------------------------ */
@@ -51,8 +51,8 @@
 /*								      */
 /*   bcd    is the BCD bytes					      */
 /*   length is the length of the BCD array			      */
-/*   scale  is the scale result					      */
-/*   dn	    is the decNumber					      */
+/*   scale  is the scale result 				      */
+/*   dn     is the decNumber					      */
 /*   returns bcd, or NULL if error				      */
 /*								      */
 /* The number is converted to a BCD packed decimal byte array,	      */
@@ -67,7 +67,7 @@
 /* as necessary.						      */
 /*								      */
 /* If there is an error (that is, the decNumber has too many digits   */
-/* to fit in length bytes, or it is a NaN or Infinity), NULL is	      */
+/* to fit in length bytes, or it is a NaN or Infinity), NULL is       */
 /* returned and the bcd and scale results are unchanged.  Otherwise   */
 /* bcd is returned.						      */
 /* ------------------------------------------------------------------ */
@@ -86,9 +86,9 @@ uByte * decPackedFromNumber(uByte *bcd, Int length, Int *scale,
   if (dn->digits>length*2-1		     /* too long .. */
    ||(dn->bits & DECSPECIAL)) return NULL;   /* .. or special -- hopeless */
 
-  if (dn->bits&DECNEG) obyte=DECPMINUS;	     /* set the sign .. */
-   else		       obyte=DECPPLUS;
-  *scale=-dn->exponent;			     /* .. and scale */
+  if (dn->bits&DECNEG) obyte=DECPMINUS;      /* set the sign .. */
+   else 	       obyte=DECPPLUS;
+  *scale=-dn->exponent; 		     /* .. and scale */
 
   /* loop from lowest (rightmost) byte */
   out=bcd+length-1;			     /* -> final byte */
@@ -141,7 +141,7 @@ uByte * decPackedFromNumber(uByte *bcd, Int length, Int *scale,
 /*   bcd    is the BCD bytes					      */
 /*   length is the length of the BCD array			      */
 /*   scale  is the scale associated with the BCD integer	      */
-/*   dn	    is the decNumber [with space for length*2 digits]	      */
+/*   dn     is the decNumber [with space for length*2 digits]	      */
 /*   returns dn, or NULL if error				      */
 /*								      */
 /* The BCD packed decimal byte array, together with an associated     */
@@ -157,7 +157,7 @@ uByte * decPackedFromNumber(uByte *bcd, Int length, Int *scale,
 /* no error is possible unless the adjusted exponent is out of range, */
 /* no sign nibble was found, or a sign nibble was found before the    */
 /* final nibble.  In these error cases, NULL is returned and the      */
-/* decNumber will be 0.						      */
+/* decNumber will be 0. 					      */
 /* ------------------------------------------------------------------ */
 decNumber * decPackedToNumber(const uByte *bcd, Int length,
 			      const Int *scale, decNumber *dn) {
@@ -165,7 +165,7 @@ decNumber * decPackedToNumber(const uByte *bcd, Int length,
   const uByte *first;		   /* -> first non-zero byte */
   uInt	nib;			   /* work nibble */
   Unit	*up=dn->lsu;		   /* output pointer */
-  Int	digits;			   /* digits count */
+  Int	digits; 		   /* digits count */
   Int	cut=0;			   /* phase of output */
 
   decNumberZero(dn);		   /* default result */
@@ -182,7 +182,7 @@ decNumber * decPackedToNumber(const uByte *bcd, Int length,
 					/* leave as 1] */
 
   /* check the adjusted exponent; note that scale could be unbounded */
-  dn->exponent=-*scale;			/* set the exponent */
+  dn->exponent=-*scale; 		/* set the exponent */
   if (*scale>=0) {			/* usual case */
     if ((dn->digits-*scale-1)<-DECNUMMAXE) {	  /* underflow */
       decNumberZero(dn);

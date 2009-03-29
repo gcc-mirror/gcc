@@ -36,7 +36,7 @@
   #define DECPACKED
   #define DECPNAME     "decPacked"			/* Short name */
   #define DECPFULLNAME "Packed Decimal conversions"   /* Verbose name */
-  #define DECPAUTHOR   "Mike Cowlishaw"		      /* Who to blame */
+  #define DECPAUTHOR   "Mike Cowlishaw" 	      /* Who to blame */
 
   #define DECPACKED_DefP 32		/* default precision	      */
 
@@ -47,12 +47,12 @@
 
   /* Sign nibble constants					      */
   #if !defined(DECPPLUSALT)
-    #define DECPPLUSALT	 0x0A /* alternate plus	 nibble		      */
-    #define DECPMINUSALT 0x0B /* alternate minus nibble		      */
-    #define DECPPLUS	 0x0C /* preferred plus	 nibble		      */
-    #define DECPMINUS	 0x0D /* preferred minus nibble		      */
-    #define DECPPLUSALT2 0x0E /* alternate plus	 nibble		      */
-    #define DECPUNSIGNED 0x0F /* alternate plus	 nibble (unsigned)    */
+    #define DECPPLUSALT  0x0A /* alternate plus  nibble 	      */
+    #define DECPMINUSALT 0x0B /* alternate minus nibble 	      */
+    #define DECPPLUS	 0x0C /* preferred plus  nibble 	      */
+    #define DECPMINUS	 0x0D /* preferred minus nibble 	      */
+    #define DECPPLUSALT2 0x0E /* alternate plus  nibble 	      */
+    #define DECPUNSIGNED 0x0F /* alternate plus  nibble (unsigned)    */
   #endif
 
   /* ---------------------------------------------------------------- */

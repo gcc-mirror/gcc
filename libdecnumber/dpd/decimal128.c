@@ -42,11 +42,11 @@
 #include <string.h>	      /* [for memset/memcpy] */
 #include <stdio.h>	      /* [for printf] */
 
-#include "dconfig.h"	      /* GCC definitions */
-#define	 DECNUMDIGITS 34      /* make decNumbers with space for 34 */
+#include "dconfig.h"          /* GCC definitions */
+#define  DECNUMDIGITS 34      /* make decNumbers with space for 34 */
 #include "decNumber.h"	      /* base number library */
 #include "decNumberLocal.h"   /* decNumber local types, etc. */
-#include "decimal128.h"	      /* our primary include */
+#include "decimal128.h"       /* our primary include */
 
 /* Utility routines and tables [in decimal64.c] */
 extern const uInt   COMBEXP[32], COMBMSD[32];
@@ -71,7 +71,7 @@ extern void decNumberShow(const decNumber *);	  /* .. */
 /*								      */
 /*   ds is the target decimal128				      */
 /*   dn is the source number (assumed valid)			      */
-/*   set is the context, used only for reporting errors		      */
+/*   set is the context, used only for reporting errors 	      */
 /*								      */
 /* The set argument is used only for status reporting and for the     */
 /* rounding mode (used if the coefficient is more than DECIMAL128_Pmax*/
@@ -89,8 +89,8 @@ decimal128 * decimal128FromNumber(decimal128 *d128, const decNumber *dn,
   Int ae;			   /* adjusted exponent */
   decNumber  dw;		   /* work */
   decContext dc;		   /* .. */
-  uInt *pu;			   /* .. */
   uInt comb, exp;		   /* .. */
+  uInt uiwork;			   /* for macros */
   uInt targar[4]={0,0,0,0};	   /* target 128-bit */
   #define targhi targar[3]	   /* name the word with the sign */
   #define targmh targar[2]	   /* name the words */
@@ -102,7 +102,7 @@ decimal128 * decimal128FromNumber(decimal128 *d128, const decNumber *dn,
   /* constraints.  This could push the number to Infinity or zero, */
   /* so this check and rounding must be done before generating the */
   /* decimal128] */
-  ae=dn->exponent+dn->digits-1;		     /* [0 if special] */
+  ae=dn->exponent+dn->digits-1; 	     /* [0 if special] */
   if (dn->digits>DECIMAL128_Pmax	     /* too many digits */
    || ae>DECIMAL128_Emax		     /* likely overflow */
    || ae<DECIMAL128_Emin) {		     /* likely underflow */
@@ -118,7 +118,7 @@ decimal128 * decimal128FromNumber(decimal128 *d128, const decNumber *dn,
   if (dn->bits&DECSPECIAL) {			  /* a special value */
     if (dn->bits&DECINF) targhi=DECIMAL_Inf<<24;
      else {					  /* sNaN or qNaN */
-      if ((*dn->lsu!=0 || dn->digits>1)		  /* non-zero coefficient */
+      if ((*dn->lsu!=0 || dn->digits>1) 	  /* non-zero coefficient */
        && (dn->digits<DECIMAL128_Pmax)) {	  /* coefficient fits */
 	decDigitsToDPD(dn, targar, 0);
 	}
@@ -144,11 +144,11 @@ decimal128 * decimal128FromNumber(decimal128 *d128, const decNumber *dn,
       comb=(exp>>9) & 0x18;		/* msd=0, exp top 2 bits .. */
       }
      else {				/* non-zero finite number */
-      uInt msd;				/* work */
+      uInt msd; 			/* work */
       Int pad=0;			/* coefficient pad digits */
 
       /* the dn is known to fit, but it may need to be padded */
-      exp=(uInt)(dn->exponent+DECIMAL128_Bias);	   /* bias exponent */
+      exp=(uInt)(dn->exponent+DECIMAL128_Bias);    /* bias exponent */
       if (exp>DECIMAL128_Ehigh) {		   /* fold-down case */
 	pad=exp-DECIMAL128_Ehigh;
 	exp=DECIMAL128_Ehigh;			   /* [to maximum] */
@@ -172,18 +172,19 @@ decimal128 * decimal128FromNumber(decimal128 *d128, const decNumber *dn,
   if (dn->bits&DECNEG) targhi|=0x80000000; /* add sign bit */
 
   /* now write to storage; this is endian */
-  pu=(uInt *)d128->bytes;	   /* overlay */
   if (DECLITEND) {
-    pu[0]=targlo;		   /* directly store the low int */
-    pu[1]=targml;		   /* then the mid-low */
-    pu[2]=targmh;		   /* then the mid-high */
-    pu[3]=targhi;		   /* then the high int */
+    /* lo -> hi */
+    UBFROMUI(d128->bytes,    targlo);
+    UBFROMUI(d128->bytes+4,  targml);
+    UBFROMUI(d128->bytes+8,  targmh);
+    UBFROMUI(d128->bytes+12, targhi);
     }
    else {
-    pu[0]=targhi;		   /* directly store the high int */
-    pu[1]=targmh;		   /* then the mid-high */
-    pu[2]=targml;		   /* then the mid-low */
-    pu[3]=targlo;		   /* then the low int */
+    /* hi -> lo */
+    UBFROMUI(d128->bytes,    targhi);
+    UBFROMUI(d128->bytes+4,  targmh);
+    UBFROMUI(d128->bytes+8,  targml);
+    UBFROMUI(d128->bytes+12, targlo);
     }
 
   if (status!=0) decContextSetStatus(set, status); /* pass on status */
@@ -201,8 +202,8 @@ decNumber * decimal128ToNumber(const decimal128 *d128, decNumber *dn) {
   uInt msd;			   /* coefficient MSD */
   uInt exp;			   /* exponent top two bits */
   uInt comb;			   /* combination field */
-  const uInt *pu;		   /* work */
-  Int  need;			   /* .. */
+  Int  need;			   /* work */
+  uInt uiwork;			   /* for macros */
   uInt sourar[4];		   /* source 128-bit */
   #define sourhi sourar[3]	   /* name the word with the sign */
   #define sourmh sourar[2]	   /* and the mid-high word */
@@ -210,18 +211,17 @@ decNumber * decimal128ToNumber(const decimal128 *d128, decNumber *dn) {
   #define sourlo sourar[0]	   /* and the lowest word */
 
   /* load source from storage; this is endian */
-  pu=(const uInt *)d128->bytes;	   /* overlay */
   if (DECLITEND) {
-    sourlo=pu[0];		   /* directly load the low int */
-    sourml=pu[1];		   /* then the mid-low */
-    sourmh=pu[2];		   /* then the mid-high */
-    sourhi=pu[3];		   /* then the high int */
+    sourlo=UBTOUI(d128->bytes	); /* directly load the low int */
+    sourml=UBTOUI(d128->bytes+4 ); /* then the mid-low */
+    sourmh=UBTOUI(d128->bytes+8 ); /* then the mid-high */
+    sourhi=UBTOUI(d128->bytes+12); /* then the high int */
     }
    else {
-    sourhi=pu[0];		   /* directly load the high int */
-    sourmh=pu[1];		   /* then the mid-high */
-    sourml=pu[2];		   /* then the mid-low */
-    sourlo=pu[3];		   /* then the low int */
+    sourhi=UBTOUI(d128->bytes	); /* directly load the high int */
+    sourmh=UBTOUI(d128->bytes+4 ); /* then the mid-high */
+    sourml=UBTOUI(d128->bytes+8 ); /* then the mid-low */
+    sourlo=UBTOUI(d128->bytes+12); /* then the low int */
     }
 
   comb=(sourhi>>26)&0x1f;	   /* combination field */
@@ -232,7 +232,7 @@ decNumber * decimal128ToNumber(const decimal128 *d128, decNumber *dn) {
   msd=COMBMSD[comb];		   /* decode the combination field */
   exp=COMBEXP[comb];		   /* .. */
 
-  if (exp==3) {			   /* is a special */
+  if (exp==3) { 		   /* is a special */
     if (msd==0) {
       dn->bits|=DECINF;
       return dn;		   /* no coefficient needed */
@@ -265,7 +265,7 @@ decNumber * decimal128ToNumber(const decimal128 *d128, decNumber *dn) {
   } /* decimal128ToNumber */
 
 /* ------------------------------------------------------------------ */
-/* to-scientific-string -- conversion to numeric string		      */
+/* to-scientific-string -- conversion to numeric string 	      */
 /* to-engineering-string -- conversion to numeric string	      */
 /*								      */
 /*   decimal128ToString(d128, string);				      */
@@ -279,7 +279,7 @@ decNumber * decimal128ToNumber(const decimal128 *d128, decNumber *dn) {
 /*  No error is possible, and no status can be set.		      */
 /* ------------------------------------------------------------------ */
 char * decimal128ToEngString(const decimal128 *d128, char *string){
-  decNumber dn;				/* work */
+  decNumber dn; 			/* work */
   decimal128ToNumber(d128, &dn);
   decNumberToEngString(&dn, string);
   return string;
@@ -289,13 +289,13 @@ char * decimal128ToString(const decimal128 *d128, char *string){
   uInt msd;			   /* coefficient MSD */
   Int  exp;			   /* exponent top two bits or full */
   uInt comb;			   /* combination field */
-  char *cstart;			   /* coefficient start */
+  char *cstart; 		   /* coefficient start */
   char *c;			   /* output pointer in string */
-  const uInt *pu;		   /* work */
+  const uByte *u;		   /* work */
   char *s, *t;			   /* .. (source, target) */
   Int  dpd;			   /* .. */
   Int  pre, e;			   /* .. */
-  const uByte *u;		   /* .. */
+  uInt uiwork;			   /* for macros */
 
   uInt sourar[4];		   /* source 128-bit */
   #define sourhi sourar[3]	   /* name the word with the sign */
@@ -304,18 +304,17 @@ char * decimal128ToString(const decimal128 *d128, char *string){
   #define sourlo sourar[0]	   /* and the lowest word */
 
   /* load source from storage; this is endian */
-  pu=(const uInt *)d128->bytes;	   /* overlay */
   if (DECLITEND) {
-    sourlo=pu[0];		   /* directly load the low int */
-    sourml=pu[1];		   /* then the mid-low */
-    sourmh=pu[2];		   /* then the mid-high */
-    sourhi=pu[3];		   /* then the high int */
+    sourlo=UBTOUI(d128->bytes	); /* directly load the low int */
+    sourml=UBTOUI(d128->bytes+4 ); /* then the mid-low */
+    sourmh=UBTOUI(d128->bytes+8 ); /* then the mid-high */
+    sourhi=UBTOUI(d128->bytes+12); /* then the high int */
     }
    else {
-    sourhi=pu[0];		   /* directly load the high int */
-    sourmh=pu[1];		   /* then the mid-high */
-    sourml=pu[2];		   /* then the mid-low */
-    sourlo=pu[3];		   /* then the low int */
+    sourhi=UBTOUI(d128->bytes	); /* directly load the high int */
+    sourmh=UBTOUI(d128->bytes+4 ); /* then the mid-high */
+    sourml=UBTOUI(d128->bytes+8 ); /* then the mid-low */
+    sourlo=UBTOUI(d128->bytes+12); /* then the low int */
     }
 
   c=string;			   /* where result will go */
@@ -327,7 +326,7 @@ char * decimal128ToString(const decimal128 *d128, char *string){
 
   if (exp==3) {
     if (msd==0) {		   /* infinity */
-      strcpy(c,	  "Inf");
+      strcpy(c,   "Inf");
       strcpy(c+3, "inity");
       return string;		   /* easy */
       }
@@ -353,12 +352,12 @@ char * decimal128ToString(const decimal128 *d128, char *string){
   /* length.  We use fixed-length memcpys because variable-length */
   /* causes a subroutine call in GCC.  (These are length 4 for speed */
   /* and are safe because the array has an extra terminator byte.) */
-  #define dpd2char u=&BIN2CHAR[DPD2BIN[dpd]*4];			  \
+  #define dpd2char u=&BIN2CHAR[DPD2BIN[dpd]*4]; 		  \
 		   if (c!=cstart) {memcpy(c, u+1, 4); c+=3;}	  \
 		    else if (*u)  {memcpy(c, u+4-*u, 4); c+=*u;}
   dpd=(sourhi>>4)&0x3ff;		     /* declet 1 */
   dpd2char;
-  dpd=((sourhi&0xf)<<6) | (sourmh>>26);	     /* declet 2 */
+  dpd=((sourhi&0xf)<<6) | (sourmh>>26);      /* declet 2 */
   dpd2char;
   dpd=(sourmh>>16)&0x3ff;		     /* declet 3 */
   dpd2char;
@@ -381,7 +380,7 @@ char * decimal128ToString(const decimal128 *d128, char *string){
 
   if (c==cstart) *c++='0';	   /* all zeros -- make 0 */
 
-  if (exp==0) {			   /* integer or NaN case -- easy */
+  if (exp==0) { 		   /* integer or NaN case -- easy */
     *c='\0';			   /* terminate */
     return string;
     }
@@ -409,8 +408,8 @@ char * decimal128ToString(const decimal128 *d128, char *string){
     /* finally add the E-part, if needed; it will never be 0, and has */
     /* a maximum length of 4 digits */
     if (e!=0) {
-      *c++='E';			   /* starts with E */
-      *c++='+';			   /* assume positive */
+      *c++='E'; 		   /* starts with E */
+      *c++='+'; 		   /* assume positive */
       if (e<0) {
 	*(c-1)='-';		   /* oops, need '-' */
 	e=-e;			   /* uInt, please */
@@ -449,13 +448,13 @@ char * decimal128ToString(const decimal128 *d128, char *string){
 /* ------------------------------------------------------------------ */
 /* to-number -- conversion from numeric string			      */
 /*								      */
-/*   decimal128FromString(result, string, set);			      */
+/*   decimal128FromString(result, string, set); 		      */
 /*								      */
 /*  result  is the decimal128 format number which gets the result of  */
 /*	    the conversion					      */
 /*  *string is the character string which should contain a valid      */
 /*	    number (which may be a special value)		      */
-/*  set	    is the context					      */
+/*  set     is the context					      */
 /*								      */
 /* The context is supplied to this routine is used for error handling */
 /* (setting of status and traps) and for the rounding mode, only.     */
@@ -464,7 +463,7 @@ char * decimal128ToString(const decimal128 *d128, char *string){
 decimal128 * decimal128FromString(decimal128 *result, const char *string,
 				  decContext *set) {
   decContext dc;			     /* work */
-  decNumber dn;				     /* .. */
+  decNumber dn; 			     /* .. */
 
   decContextDefault(&dc, DEC_INIT_DECIMAL128); /* no traps, please */
   dc.round=set->round;			       /* use supplied rounding */
@@ -483,8 +482,8 @@ decimal128 * decimal128FromString(decimal128 *result, const char *string,
 /*   returns 1 if the encoding of d128 is canonical, 0 otherwise      */
 /* No error is possible.					      */
 /* ------------------------------------------------------------------ */
-uint32_t decimal128IsCanonical(const decimal128 *d128) {
-  decNumber dn;				/* work */
+uInt decimal128IsCanonical(const decimal128 *d128) {
+  decNumber dn; 			/* work */
   decimal128 canon;			 /* .. */
   decContext dc;			/* .. */
   decContextDefault(&dc, DEC_INIT_DECIMAL128);
@@ -501,7 +500,7 @@ uint32_t decimal128IsCanonical(const decimal128 *d128) {
 /* No error is possible.					      */
 /* ------------------------------------------------------------------ */
 decimal128 * decimal128Canonical(decimal128 *result, const decimal128 *d128) {
-  decNumber dn;				/* work */
+  decNumber dn; 			/* work */
   decContext dc;			/* .. */
   decContextDefault(&dc, DEC_INIT_DECIMAL128);
   decimal128ToNumber(d128, &dn);
@@ -532,13 +531,13 @@ decimal128 * decimal128Canonical(decimal128 *result, const decimal128 *d128) {
 /* This assumes range has been checked and exponent previously 0; */
 /* type of exponent must be unsigned */
 #define decimal128SetExpCon(d, e) {				      \
-  (d)->bytes[0]|=(uint8_t)((e)>>10);				      \
-  (d)->bytes[1] =(uint8_t)(((e)&0x3fc)>>2);			      \
-  (d)->bytes[2]|=(uint8_t)(((e)&0x03)<<6);}
+  (d)->bytes[0]|=(uByte)((e)>>10);				      \
+  (d)->bytes[1] =(uByte)(((e)&0x3fc)>>2);			      \
+  (d)->bytes[2]|=(uByte)(((e)&0x03)<<6);}
 
 /* ------------------------------------------------------------------ */
 /* decimal128Show -- display a decimal128 in hexadecimal [debug aid]  */
-/*   d128 -- the number to show					      */
+/*   d128 -- the number to show 				      */
 /* ------------------------------------------------------------------ */
 /* Also shows sign/cob/expconfields extracted */
 void decimal128Show(const decimal128 *d128) {

@@ -31,24 +31,22 @@
 /* ------------------------------------------------------------------ */
 /* decSingle.h -- Decimal 32-bit format module header		      */
 /* ------------------------------------------------------------------ */
-/* Please see decFloats.h for an overview and documentation details.  */
-/* ------------------------------------------------------------------ */
 
 #if !defined(DECSINGLE)
   #define DECSINGLE
 
-  #define DECSINGLENAME	      "decSingle"	      /* Short name   */
+  #define DECSINGLENAME       "decSingle"	      /* Short name   */
   #define DECSINGLETITLE      "Decimal 32-bit datum"  /* Verbose name */
   #define DECSINGLEAUTHOR     "Mike Cowlishaw"	      /* Who to blame */
 
   /* parameters for decSingles */
   #define DECSINGLE_Bytes    4	   /* length			      */
   #define DECSINGLE_Pmax     7	   /* maximum precision (digits)      */
-  #define DECSINGLE_Emin   -95	   /* minimum adjusted exponent	      */
-  #define DECSINGLE_Emax    96	   /* maximum adjusted exponent	      */
+  #define DECSINGLE_Emin   -95	   /* minimum adjusted exponent       */
+  #define DECSINGLE_Emax    96	   /* maximum adjusted exponent       */
   #define DECSINGLE_EmaxD    3	   /* maximum exponent digits	      */
   #define DECSINGLE_Bias   101	   /* bias for the exponent	      */
-  #define DECSINGLE_String  16	   /* maximum string length, +1	      */
+  #define DECSINGLE_String  16	   /* maximum string length, +1       */
   #define DECSINGLE_EconL    6	   /* exponent continuation length    */
   #define DECSINGLE_Declets  2	   /* count of declets		      */
   /* highest biased exponent (Elimit-1) */
@@ -59,11 +57,11 @@
   #include "decQuad.h"
   #include "decDouble.h"
 
-  /* The decSingle decimal 32-bit type, accessible by various types */
+  /* The decSingle decimal 32-bit type, accessible by all sizes */
   typedef union {
-    uint8_t bytes[DECSINGLE_Bytes];	/* fields: 1, 5, 6, 20 bits */
+    uint8_t   bytes[DECSINGLE_Bytes];	/* fields: 1, 5, 6, 20 bits */
     uint16_t shorts[DECSINGLE_Bytes/2];
-    uint32_t words[DECSINGLE_Bytes/4];
+    uint32_t  words[DECSINGLE_Bytes/4];
     } decSingle;
 
   /* ---------------------------------------------------------------- */
@@ -75,6 +73,7 @@
   /* Utilities (binary argument(s) or result, extractors, etc.) */
   extern decSingle * decSingleFromBCD(decSingle *, int32_t, const uint8_t *, int32_t);
   extern decSingle * decSingleFromPacked(decSingle *, int32_t, const uint8_t *);
+  extern decSingle * decSingleFromPackedChecked(decSingle *, int32_t, const uint8_t *);
   extern decSingle * decSingleFromString(decSingle *, const char *, decContext *);
   extern decSingle * decSingleFromWider(decSingle *, const decDouble *, decContext *);
   extern int32_t     decSingleGetCoefficient(const decSingle *, uint8_t *);
@@ -97,7 +96,8 @@
 
   /* decNumber conversions; these are implemented as macros so as not  */
   /* to force a dependency on decimal32 and decNumber in decSingle.    */
+  /* decSingleFromNumber returns a decimal32 * to avoid warnings.      */
   #define decSingleToNumber(dq, dn) decimal32ToNumber((decimal32 *)(dq), dn)
-  #define decSingleFromNumber(dq, dn, set) (decSingle *)decimal32FromNumber((decimal32 *)(dq), dn, set)
+  #define decSingleFromNumber(dq, dn, set) decimal32FromNumber((decimal32 *)(dq), dn, set)
 
 #endif
