@@ -786,6 +786,13 @@ DEFTREECODE (NON_LVALUE_EXPR, "non_lvalue_expr", tcc_unary, 1)
    generating insns.  */
 DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", tcc_reference, 1)
 
+/* A COMPOUND_LITERAL_EXPR represents a literal that is placed in a DECL.  The
+   COMPOUND_LITERAL_EXPR_DECL_EXPR is the a DECL_EXPR containing the decl
+   for the anonymous object represented by the COMPOUND_LITERAL;
+   the DECL_INITIAL of that decl is the CONSTRUCTOR that initializes
+   the compound literal.  */
+DEFTREECODE (COMPOUND_LITERAL_EXPR, "compound_literal_expr", tcc_expression, 1)
+
 /* Represents something we computed once and will use multiple times.
    First operand is that expression.  After it is evaluated once, it
    will be replaced by the temporary variable that holds the value.  */

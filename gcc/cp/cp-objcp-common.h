@@ -52,12 +52,8 @@ extern bool cp_function_decl_explicit_p (tree decl);
 #define LANG_HOOKS_POST_OPTIONS c_common_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET cxx_get_alias_set
-#undef LANG_HOOKS_EXPAND_EXPR
-#define LANG_HOOKS_EXPAND_EXPR c_expand_expr
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE c_common_parse_file
-#undef LANG_HOOKS_STATICP
-#define LANG_HOOKS_STATICP cxx_staticp
 #undef LANG_HOOKS_DUP_LANG_SPECIFIC_DECL
 #define LANG_HOOKS_DUP_LANG_SPECIFIC_DECL cxx_dup_lang_specific_decl
 #undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME

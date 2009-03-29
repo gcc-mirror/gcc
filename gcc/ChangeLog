@@ -1,3 +1,41 @@
+2009-03-28  Paolo Bonzini  <bonzini@gnu.org>
+
+        * c-common.c (c_expand_expr, c_staticp): Remove.
+        * c-common.def (COMPOUND_LITERAL_EXPR): Delete.
+        * c-common.h (emit_local_var, c_staticp, COMPOUND_LITERAL_EXPR_DECL,
+        COMPOUND_LITERAL_EXPR_DECL_EXPR): Remove.
+        * c-gimplify.c (gimplify_compound_literal_expr,
+        optimize_compound_literals_in_ctor): Remove.
+        (c_gimplify_expr): Remove COMPOUND_LITERAL_EXPR handling.
+        * c-objc-common.h (LANG_HOOKS_STATICP): Remove.
+        * c-semantics.c (emit_local_var): Remove.
+
+        * langhooks-def.h (lhd_expand_expr): Remove.
+        * langhooks.c (lhd_expand_expr): Remove.
+        * langhooks.h (LANG_HOOKS_DEF): Remove LANG_HOOKS_EXPAND_EXPR.
+
+        * expr.c (expand_expr_real_1): Move COMPOUND_LITERAL_EXPR
+        handling from c-semantics.c; don't call into langhook.
+        (expand_expr_addr_expr_1): Check that we don't get non-GENERIC trees.
+        * gimplify.c (gimplify_compound_literal_expr,
+        optimize_compound_literals_in_ctor): Move from c-gimplify.c.
+        (gimplify_init_constructor): Call optimize_compound_literals_in_ctor.
+        (gimplify_modify_expr_rhs, gimplify_expr): Handle COMPOUND_LITERAL_EXPR
+        as was done in c-gimplify.c.
+        * tree.c (staticp): Move COMPOUND_LITERAL_EXPR handling from c_staticp.
+        * tree.h (COMPOUND_LITERAL_EXPR_DECL, COMPOUND_LITERAL_EXPR_DECL_EXPR):
+        Move from c-common.h.
+        * tree.def (COMPOUND_LITERAL_EXPR): Move from c-common.def.
+
+	* tree.c (staticp): Do not call langhook.
+	* langhooks.c (lhd_staticp): Delete.
+	* langhooks-def.h (lhd_staticp): Delete prototype.
+	(LANG_HOOKS_STATICP): Delete.
+	(LANG_HOOKS_INITIALIZER): Delete LANG_HOOKS_STATICP.
+
+        * doc/c-tree.texi (Expression nodes): Refer to DECL_EXPRs
+        instead of DECL_STMTs.
+
 2009-03-29  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/456

@@ -188,21 +188,6 @@ cxx_types_compatible_p (tree x, tree y)
   return same_type_ignoring_top_level_qualifiers_p (x, y);
 }
 
-tree
-cxx_staticp (tree arg)
-{
-  switch (TREE_CODE (arg))
-    {
-    case BASELINK:
-      return staticp (BASELINK_FUNCTIONS (arg));
-
-    default:
-      break;
-    }
-  
-  return NULL_TREE;
-}
-
 /* Return true if DECL is explicit member function.  */
 
 bool

@@ -1,6 +1,4 @@
-/* This file contains the definitions and documentation for the common
-   tree codes used in the GNU C and C++ compilers (see c-common.def
-   for the standard codes).
+/* This file contains subroutine used by the C front-end to construct GENERIC.
    Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
    Free Software Foundation, Inc.
    Written by Benjamin Chelf (chelf@codesourcery.com).
@@ -143,23 +141,6 @@ build_stmt (enum tree_code code, ...)
 
   va_end (p);
   return ret;
-}
-
-/* Let the back-end know about DECL.  */
-
-void
-emit_local_var (tree decl)
-{
-  /* Create RTL for this variable.  */
-  if (!DECL_RTL_SET_P (decl))
-    {
-      if (DECL_HARD_REGISTER (decl))
-	/* The user specified an assembler name for this variable.
-	   Set that up now.  */
-	rest_of_decl_compilation (decl, 0, 0);
-      else
-	expand_decl (decl);
-    }
 }
 
 /* Create a CASE_LABEL_EXPR tree node and return it.  */

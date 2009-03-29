@@ -2636,10 +2636,10 @@ declaration order.  You should not assume that all fields will be
 represented.  Unrepresented fields will be set to zero.
 
 @item COMPOUND_LITERAL_EXPR
-@findex COMPOUND_LITERAL_EXPR_DECL_STMT
+@findex COMPOUND_LITERAL_EXPR_DECL_EXPR
 @findex COMPOUND_LITERAL_EXPR_DECL
 These nodes represent ISO C99 compound literals.  The
-@code{COMPOUND_LITERAL_EXPR_DECL_STMT} is a @code{DECL_STMT}
+@code{COMPOUND_LITERAL_EXPR_DECL_EXPR} is a @code{DECL_EXPR}
 containing an anonymous @code{VAR_DECL} for
 the unnamed object represented by the compound literal; the
 @code{DECL_INITIAL} of that @code{VAR_DECL} is a @code{CONSTRUCTOR}

@@ -798,12 +798,6 @@ extern void finish_file	(void);
 #define STATEMENT_LIST_HAS_LABEL(NODE) \
   TREE_LANG_FLAG_3 (STATEMENT_LIST_CHECK (NODE))
 
-/* COMPOUND_LITERAL_EXPR accessors.  */
-#define COMPOUND_LITERAL_EXPR_DECL_STMT(NODE)		\
-  TREE_OPERAND (COMPOUND_LITERAL_EXPR_CHECK (NODE), 0)
-#define COMPOUND_LITERAL_EXPR_DECL(NODE)			\
-  DECL_EXPR_DECL (COMPOUND_LITERAL_EXPR_DECL_STMT (NODE))
-
 /* C_MAYBE_CONST_EXPR accessors.  */
 #define C_MAYBE_CONST_EXPR_PRE(NODE)			\
   TREE_OPERAND (C_MAYBE_CONST_EXPR_CHECK (NODE), 0)
@@ -827,7 +821,6 @@ extern void finish_file	(void);
 #define CLEAR_DECL_C_BIT_FIELD(NODE) \
   (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 0)
 
-extern void emit_local_var (tree);
 extern tree do_case (tree, tree);
 extern tree build_stmt (enum tree_code, ...);
 extern tree build_case_label (tree, tree, tree);
@@ -875,8 +868,6 @@ extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
 
 extern rtx c_expand_expr (tree, rtx, enum machine_mode, int, rtx *);
-
-extern tree c_staticp (tree);
 
 extern void init_c_lex (void);
 

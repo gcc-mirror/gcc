@@ -1,3 +1,9 @@
+2009-03-28  Paolo Bonzini  <bonzini@gnu.org>
+
+	* cp/cp-objcp-common.h (LANG_HOOKS_STATICP): Remove.
+	* cp/cp-objcp-common.c (cxx_staticp): Remove.
+	* cp/cp-tree.h (cxx_staticp): Remove.
+
 2009-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/39554
