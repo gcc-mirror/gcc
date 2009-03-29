@@ -1,5 +1,10 @@
 2009-03-29  Joseph Myers  <joseph@codesourcery.com>
 
+	* tests/base/math.h, tests/base/pthread.h, tests/base/sys/wait.h:
+	Update.
+
+2009-03-29  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/456
 	PR c/5675
 	PR c/19976
