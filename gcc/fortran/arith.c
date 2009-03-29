@@ -932,131 +932,213 @@ complex_pow (gfc_expr *result, gfc_expr *base, mpz_t power)
 }
 
 
-/* Raise a number to an integer power.  */
+/* Raise a number to a power.  */
 
 static arith
-gfc_arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
+arith_power (gfc_expr *op1, gfc_expr *op2, gfc_expr **resultp)
 {
   int power_sign;
   gfc_expr *result;
   arith rc;
-
-  gcc_assert (op2->expr_type == EXPR_CONSTANT && op2->ts.type == BT_INTEGER);
+  extern bool init_flag;
 
   rc = ARITH_OK;
   result = gfc_constant_result (op1->ts.type, op1->ts.kind, &op1->where);
-  power_sign = mpz_sgn (op2->value.integer);
 
-  if (power_sign == 0)
+  switch (op2->ts.type)
     {
-      /* Handle something to the zeroth power.  Since we're dealing
-	 with integral exponents, there is no ambiguity in the
-	 limiting procedure used to determine the value of 0**0.  */
-      switch (op1->ts.type)
+    case BT_INTEGER:
+      power_sign = mpz_sgn (op2->value.integer);
+
+      if (power_sign == 0)
 	{
-	case BT_INTEGER:
-	  mpz_set_ui (result->value.integer, 1);
-	  break;
+	  /* Handle something to the zeroth power.  Since we're dealing
+	     with integral exponents, there is no ambiguity in the
+	     limiting procedure used to determine the value of 0**0.  */
+	  switch (op1->ts.type)
+	    {
+	    case BT_INTEGER:
+	      mpz_set_ui (result->value.integer, 1);
+	      break;
 
-	case BT_REAL:
-	  mpfr_set_ui (result->value.real, 1, GFC_RND_MODE);
-	  break;
+	    case BT_REAL:
+	      mpfr_set_ui (result->value.real, 1, GFC_RND_MODE);
+	      break;
 
-	case BT_COMPLEX:
-	  mpfr_set_ui (result->value.complex.r, 1, GFC_RND_MODE);
-	  mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
-	  break;
+	    case BT_COMPLEX:
+	      mpfr_set_ui (result->value.complex.r, 1, GFC_RND_MODE);
+	      mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
+	      break;
 
-	default:
-	  gfc_internal_error ("gfc_arith_power(): Bad base");
+	    default:
+	      gfc_internal_error ("arith_power(): Bad base");
+	    }
 	}
-    }
-  else
-    {
-      switch (op1->ts.type)
+      else
 	{
-	case BT_INTEGER:
-	  {
-	    int power;
+	  switch (op1->ts.type)
+	    {
+	    case BT_INTEGER:
+	      {
+		int power;
 
-	    /* First, we simplify the cases of op1 == 1, 0 or -1.  */
-	    if (mpz_cmp_si (op1->value.integer, 1) == 0)
-	      {
-		/* 1**op2 == 1 */
-		mpz_set_si (result->value.integer, 1);
-	      }
-	    else if (mpz_cmp_si (op1->value.integer, 0) == 0)
-	      {
-		/* 0**op2 == 0, if op2 > 0
-	           0**op2 overflow, if op2 < 0 ; in that case, we
-		   set the result to 0 and return ARITH_DIV0.  */
-		mpz_set_si (result->value.integer, 0);
-		if (mpz_cmp_si (op2->value.integer, 0) < 0)
-		  rc = ARITH_DIV0;
-	      }
-	    else if (mpz_cmp_si (op1->value.integer, -1) == 0)
-	      {
-		/* (-1)**op2 == (-1)**(mod(op2,2)) */
-		unsigned int odd = mpz_fdiv_ui (op2->value.integer, 2);
-		if (odd)
-		  mpz_set_si (result->value.integer, -1);
+		/* First, we simplify the cases of op1 == 1, 0 or -1.  */
+		if (mpz_cmp_si (op1->value.integer, 1) == 0)
+		  {
+		    /* 1**op2 == 1 */
+		    mpz_set_si (result->value.integer, 1);
+		  }
+		else if (mpz_cmp_si (op1->value.integer, 0) == 0)
+		  {
+		    /* 0**op2 == 0, if op2 > 0
+	               0**op2 overflow, if op2 < 0 ; in that case, we
+		       set the result to 0 and return ARITH_DIV0.  */
+		    mpz_set_si (result->value.integer, 0);
+		    if (mpz_cmp_si (op2->value.integer, 0) < 0)
+		      rc = ARITH_DIV0;
+		  }
+		else if (mpz_cmp_si (op1->value.integer, -1) == 0)
+		  {
+		    /* (-1)**op2 == (-1)**(mod(op2,2)) */
+		    unsigned int odd = mpz_fdiv_ui (op2->value.integer, 2);
+		    if (odd)
+		      mpz_set_si (result->value.integer, -1);
+		    else
+		      mpz_set_si (result->value.integer, 1);
+		  }
+		/* Then, we take care of op2 < 0.  */
+		else if (mpz_cmp_si (op2->value.integer, 0) < 0)
+		  {
+		    /* if op2 < 0, op1**op2 == 0  because abs(op1) > 1.  */
+		    mpz_set_si (result->value.integer, 0);
+		  }
+		else if (gfc_extract_int (op2, &power) != NULL)
+		  {
+		    /* If op2 doesn't fit in an int, the exponentiation will
+		       overflow, because op2 > 0 and abs(op1) > 1.  */
+		    mpz_t max;
+		    int i;
+		    i = gfc_validate_kind (BT_INTEGER, result->ts.kind, false);
+
+		    if (gfc_option.flag_range_check)
+		      rc = ARITH_OVERFLOW;
+
+		    /* Still, we want to give the same value as the
+		       processor.  */
+		    mpz_init (max);
+		    mpz_add_ui (max, gfc_integer_kinds[i].huge, 1);
+		    mpz_mul_ui (max, max, 2);
+		    mpz_powm (result->value.integer, op1->value.integer,
+			      op2->value.integer, max);
+		    mpz_clear (max);
+		  }
 		else
-		  mpz_set_si (result->value.integer, 1);
+		  mpz_pow_ui (result->value.integer, op1->value.integer,
+			      power);
 	      }
-	    /* Then, we take care of op2 < 0.  */
-	    else if (mpz_cmp_si (op2->value.integer, 0) < 0)
+	      break;
+
+	    case BT_REAL:
+	      mpfr_pow_z (result->value.real, op1->value.real,
+			  op2->value.integer, GFC_RND_MODE);
+	      break;
+
+	    case BT_COMPLEX:
 	      {
-		/* if op2 < 0, op1**op2 == 0  because abs(op1) > 1.  */
-		mpz_set_si (result->value.integer, 0);
+		mpz_t apower;
+
+		/* Compute op1**abs(op2)  */
+		mpz_init (apower);
+		mpz_abs (apower, op2->value.integer);
+		complex_pow (result, op1, apower);
+		mpz_clear (apower);
+
+		/* If (op2 < 0), compute the inverse.  */
+		if (power_sign < 0)
+		  complex_reciprocal (result);
 	      }
-	    else if (gfc_extract_int (op2, &power) != NULL)
-	      {
-		/* If op2 doesn't fit in an int, the exponentiation will
-		   overflow, because op2 > 0 and abs(op1) > 1.  */
-		mpz_t max;
-		int i = gfc_validate_kind (BT_INTEGER, result->ts.kind, false);
+	      break;
 
-		if (gfc_option.flag_range_check)
-		  rc = ARITH_OVERFLOW;
+	    default:
+	      break;
+	    }
+	}
+      break;
 
-		/* Still, we want to give the same value as the processor.  */
-		mpz_init (max);
-		mpz_add_ui (max, gfc_integer_kinds[i].huge, 1);
-		mpz_mul_ui (max, max, 2);
-		mpz_powm (result->value.integer, op1->value.integer,
-			  op2->value.integer, max);
-		mpz_clear (max);
-	      }
-	    else
-	      mpz_pow_ui (result->value.integer, op1->value.integer, power);
-	  }
-	  break;
+    case BT_REAL:
 
-	case BT_REAL:
-	  mpfr_pow_z (result->value.real, op1->value.real, op2->value.integer,
-		      GFC_RND_MODE);
-	  break;
+      if (init_flag)
+	{
+	  if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Noninteger "
+			      "exponent in an initialization "
+			      "expression at %L", &op2->where) == FAILURE)
+	    return ARITH_PROHIBIT;
+	}
 
-	case BT_COMPLEX:
+      if (mpfr_cmp_si (op1->value.real, 0) < 0)
+	{
+	  gfc_error ("Raising a negative REAL at %L to "
+		     "a REAL power is prohibited", &op1->where);
+	  gfc_free (result);
+	  return ARITH_PROHIBIT;
+	}
+
+	mpfr_pow (result->value.real, op1->value.real, op2->value.real,
+		  GFC_RND_MODE);
+      break;
+
+    case BT_COMPLEX:
+      {
+	mpfr_t x, y, r, t;
+
+	if (init_flag)
 	  {
-	    mpz_t apower;
+	    if (gfc_notify_std (GFC_STD_F2003,"Fortran 2003: Noninteger "
+				"exponent in an initialization "
+				"expression at %L", &op2->where) == FAILURE)
+	      return ARITH_PROHIBIT;
+	  }
 
-	    /* Compute op1**abs(op2)  */
-	    mpz_init (apower);
-	    mpz_abs (apower, op2->value.integer);
-	    complex_pow (result, op1, apower);
-	    mpz_clear (apower);
+	gfc_set_model (op1->value.complex.r);
 
-	    /* If (op2 < 0), compute the inverse.  */
-	    if (power_sign < 0)
-	      complex_reciprocal (result);
+	mpfr_init (r);
 
+	mpfr_hypot (r, op1->value.complex.r, op1->value.complex.i,
+		    GFC_RND_MODE);
+	if (mpfr_cmp_si (r, 0) == 0)
+	  {
+	    mpfr_set_ui (result->value.complex.r, 0, GFC_RND_MODE);
+	    mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
+	    mpfr_clear (r);
 	    break;
 	  }
+	mpfr_log (r, r, GFC_RND_MODE);
 
-	default:
-	  break;
-	}
+	mpfr_init (t);
+
+	mpfr_atan2 (t, op1->value.complex.i, op1->value.complex.r, 
+		    GFC_RND_MODE);
+
+	mpfr_init (x);
+	mpfr_init (y);
+
+	mpfr_mul (x, op2->value.complex.r, r, GFC_RND_MODE);
+	mpfr_mul (y, op2->value.complex.i, t, GFC_RND_MODE);
+	mpfr_sub (x, x, y, GFC_RND_MODE);
+	mpfr_exp (x, x, GFC_RND_MODE);
+
+	mpfr_mul (y, op2->value.complex.r, t, GFC_RND_MODE);
+	mpfr_mul (t, op2->value.complex.i, r, GFC_RND_MODE);
+	mpfr_add (y, y, t, GFC_RND_MODE);
+	mpfr_cos (t, y, GFC_RND_MODE);
+	mpfr_sin (y, y, GFC_RND_MODE);
+	mpfr_mul (result->value.complex.r, x, t, GFC_RND_MODE);
+	mpfr_mul (result->value.complex.i, x, y, GFC_RND_MODE);
+	mpfr_clears (r, t, x, y, NULL);
+      }
+      break;
+    default:
+      gfc_internal_error ("arith_power(): unknown type");
     }
 
   if (rc == ARITH_OK)
@@ -1695,10 +1777,6 @@ eval_intrinsic (gfc_intrinsic_op op,
       gfc_internal_error ("eval_intrinsic(): Bad operator");
     }
 
-  /* Try to combine the operators.  */
-  if (op == INTRINSIC_POWER && op2->ts.type != BT_INTEGER)
-    goto runtime;
-
   if (op1->expr_type != EXPR_CONSTANT
       && (op1->expr_type != EXPR_ARRAY
 	  || !gfc_is_constant_expr (op1) || !gfc_expanded_ac (op1)))
@@ -1715,8 +1793,13 @@ eval_intrinsic (gfc_intrinsic_op op,
   else
     rc = reduce_binary (eval.f3, op1, op2, &result);
 
+
+  /* Something went wrong.  */
+  if (op == INTRINSIC_POWER && rc == ARITH_PROHIBIT)
+    return NULL;
+
   if (rc != ARITH_OK)
-    { /* Something went wrong.  */
+    {
       gfc_error (gfc_arith_error (rc), &op1->where);
       return NULL;
     }
@@ -1908,7 +1991,7 @@ gfc_divide (gfc_expr *op1, gfc_expr *op2)
 gfc_expr *
 gfc_power (gfc_expr *op1, gfc_expr *op2)
 {
-  return eval_intrinsic_f3 (INTRINSIC_POWER, gfc_arith_power, op1, op2);
+  return eval_intrinsic_f3 (INTRINSIC_POWER, arith_power, op1, op2);
 }
 
 
