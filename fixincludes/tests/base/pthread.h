@@ -96,11 +96,6 @@
 #endif  /* GLIBC_MUTEX_INIT_CHECK */
 
 
-#if defined( PTHREAD_PAGE_SIZE_CHECK )
-extern int __page_size;
-#endif  /* PTHREAD_PAGE_SIZE_CHECK */
-
-
 #if defined( PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK )
 extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask);
 #endif  /* PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK */

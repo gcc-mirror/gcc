@@ -13,10 +13,6 @@
 #ifdef __cplusplus
 #define exception __math_exception
 #endif
-#ifndef FIXINC_WRAP_MATH_H_EXCEPTION_STRUCTURE
-#define FIXINC_WRAP_MATH_H_EXCEPTION_STRUCTURE 1
-
-struct exception;
 
 
 #if defined( AAB_DARWIN7_9_LONG_DOUBLE_FUNCS_2_CHECK )
@@ -36,11 +32,6 @@ struct exception;
 
 
 #endif  /* BROKEN_CABS_CHECK */
-
-
-#if defined( EXCEPTION_STRUCTURE_CHECK )
-extern int matherr();
-#endif  /* EXCEPTION_STRUCTURE_CHECK */
 
 
 #if defined( HPPA_HPUX_FP_MACROS_CHECK )
@@ -118,8 +109,6 @@ extern int class();
 int foo;
 #endif
 #endif  /* STRICT_ANSI_NOT_CTD_CHECK */
-
-#endif  /* FIXINC_WRAP_MATH_H_EXCEPTION_STRUCTURE */
 #ifdef __cplusplus
 #undef exception
 #endif
