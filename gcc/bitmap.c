@@ -806,6 +806,59 @@ bitmap_first_set_bit (const_bitmap a)
 #endif
  return bit_no;
 }
+
+/* Return the bit number of the first set bit in the bitmap.  The
+   bitmap must be non-empty.  */
+
+unsigned
+bitmap_last_set_bit (const_bitmap a)
+{
+  const bitmap_element *elt = a->current ? a->current : a->first;
+  unsigned bit_no;
+  BITMAP_WORD word;
+  int ix;
+
+  gcc_assert (elt);
+  while (elt->next)
+    elt = elt->next;
+  bit_no = elt->indx * BITMAP_ELEMENT_ALL_BITS;
+  for (ix = BITMAP_ELEMENT_WORDS - 1; ix >= 0; ix--)
+    {
+      word = elt->bits[ix];
+      if (word)
+	goto found_bit;
+    }
+  gcc_unreachable ();
+ found_bit:
+  bit_no += ix * BITMAP_WORD_BITS;
+
+  /* Binary search for the last set bit.  */
+#if GCC_VERSION >= 3004
+  gcc_assert (sizeof(long) == sizeof (word));
+  bit_no += sizeof (long) * 8 - __builtin_ctzl (word);
+#else
+#if BITMAP_WORD_BITS > 64
+#error "Fill out the table."
+#endif
+#if BITMAP_WORD_BITS > 32
+  if ((word & 0xffffffff00000000))
+    word >>= 32, bit_no += 32;
+#endif
+  if (word & 0xffff0000)
+    word >>= 16, bit_no += 16;
+  if (!(word & 0xff00))
+    word >>= 8, bit_no += 8;
+  if (!(word & 0xf0))
+    word >>= 4, bit_no += 4;
+  if (!(word & 12))
+    word >>= 2, bit_no += 2;
+  if (!(word & 2))
+    word >>= 1, bit_no += 1;
+#endif
+
+ gcc_assert (word & 1);
+ return bit_no;
+}
 
 
 /* DST = A & B.  */
