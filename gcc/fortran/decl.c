@@ -6732,6 +6732,7 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic)
   ba->pass_arg_num = 0;
   ba->nopass = 0;
   ba->non_overridable = 0;
+  ba->deferred = 0;
 
   /* If we find a comma, we believe there are binding attributes.  */
   if (gfc_match_char (',') == MATCH_NO)
@@ -6813,14 +6814,19 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic)
 	    }
 
 	  /* DEFERRED flag.  */
-	  /* TODO: Handle really once implemented.  */
 	  m = gfc_match (" deferred");
 	  if (m == MATCH_ERROR)
 	    goto error;
 	  if (m == MATCH_YES)
 	    {
-	      gfc_error ("DEFERRED not yet implemented at %C");
-	      goto error;
+	      if (ba->deferred)
+		{
+		  gfc_error ("Duplicate DEFERRED at %C");
+		  goto error;
+		}
+
+	      ba->deferred = 1;
+	      continue;
 	    }
 
 	  /* PASS possibly including argument.  */
@@ -6861,6 +6867,13 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic)
     }
   while (gfc_match_char (',') == MATCH_YES);
 
+  /* NON_OVERRIDABLE and DEFERRED exclude themselves.  */
+  if (ba->non_overridable && ba->deferred)
+    {
+      gfc_error ("NON_OVERRIDABLE and DEFERRED can't both appear at %C");
+      goto error;
+    }
+
   if (ba->access == ACCESS_UNKNOWN)
     ba->access = gfc_typebound_default_access;
 
@@ -6879,7 +6892,7 @@ match_procedure_in_type (void)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   char target_buf[GFC_MAX_SYMBOL_LEN + 1];
-  char* target;
+  char* target = NULL;
   gfc_typebound_proc* tb;
   bool seen_colons;
   bool seen_attrs;
@@ -6893,11 +6906,25 @@ match_procedure_in_type (void)
   block = gfc_state_stack->previous->sym;
   gcc_assert (block);
 
-  /* TODO: Really implement PROCEDURE(interface).  */
+  /* Try to match PROCEDURE(interface).  */
   if (gfc_match (" (") == MATCH_YES)
     {
-      gfc_error ("PROCEDURE(interface) at %C is not yet implemented");
-      return MATCH_ERROR;
+      m = gfc_match_name (target_buf);
+      if (m == MATCH_ERROR)
+	return m;
+      if (m != MATCH_YES)
+	{
+	  gfc_error ("Interface-name expected after '(' at %C");
+	  return MATCH_ERROR;
+	}
+
+      if (gfc_match (" )") != MATCH_YES)
+	{
+	  gfc_error ("')' expected at %C");
+	  return MATCH_ERROR;
+	}
+
+      target = target_buf;
     }
 
   /* Construct the data structure.  */
@@ -6910,6 +6937,19 @@ match_procedure_in_type (void)
   if (m == MATCH_ERROR)
     return m;
   seen_attrs = (m == MATCH_YES);
+
+  /* Check that attribute DEFERRED is given iff an interface is specified, which
+     means target != NULL.  */
+  if (tb->deferred && !target)
+    {
+      gfc_error ("Interface must be specified for DEFERRED binding at %C");
+      return MATCH_ERROR;
+    }
+  if (target && !tb->deferred)
+    {
+      gfc_error ("PROCEDURE(interface) at %C should be declared DEFERRED");
+      return MATCH_ERROR;
+    }
 
   /* Match the colons.  */
   m = gfc_match (" ::");
@@ -6933,12 +6973,17 @@ match_procedure_in_type (void)
     }
 
   /* Try to match the '=> target', if it's there.  */
-  target = NULL;
   m = gfc_match (" =>");
   if (m == MATCH_ERROR)
     return m;
   if (m == MATCH_YES)
     {
+      if (tb->deferred)
+	{
+	  gfc_error ("'=> target' is invalid for DEFERRED binding at %C");
+	  return MATCH_ERROR;
+	}
+
       if (!seen_colons)
 	{
 	  gfc_error ("'::' needed in PROCEDURE binding with explicit target"
@@ -6974,6 +7019,14 @@ match_procedure_in_type (void)
   /* Get the namespace to insert the symbols into.  */
   ns = block->f2k_derived;
   gcc_assert (ns);
+
+  /* If the binding is DEFERRED, check that the containing type is ABSTRACT.  */
+  if (tb->deferred && !block->attr.abstract)
+    {
+      gfc_error ("Type '%s' containing DEFERRED binding at %C is not ABSTRACT",
+		 block->name);
+      return MATCH_ERROR;
+    }
 
   /* See if we already have a binding with this name in the symtree which would
      be an error.  If a GENERIC already targetted this binding, it may be

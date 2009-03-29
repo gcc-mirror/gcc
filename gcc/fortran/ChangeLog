@@ -1,3 +1,27 @@
+2009-03-29  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37423
+	* gfortran.h (struct gfc_typebound_proc): Added new flag `deferred' and
+	added a comment explaining DEFERRED binding handling.
+	* decl.c (match_binding_attributes): Really match DEFERRED attribute.
+	(match_procedure_in_type): Really match PROCEDURE(interface) syntax
+	and do some validity checks for DEFERRED and this construct.
+	* module.c (binding_overriding): New string constant for DEFERRED.
+	(mio_typebound_proc): Module-IO DEFERRED flag.
+	* resolve.c (check_typebound_override): Ensure that a non-DEFERRED
+	binding is not overridden by a DEFERRED one.
+	(resolve_typebound_procedure): Allow abstract interfaces as targets
+	for DEFERRED bindings.
+	(ensure_not_abstract_walker), (ensure_not_abstract): New methods.
+	(resolve_fl_derived): Use new `ensure_not_abstract' method for
+	non-ABSTRACT types extending ABSTRACT ones to ensure each DEFERRED
+	binding is overridden.
+	(check_typebound_baseobject): New method.
+	(resolve_compcall), (resolve_typebound_call): Check base-object of
+	the type-bound procedure call.
+	* gfc-internals.texi (Type-bound procedures): Document a little bit
+	about internal handling of DEFERRED bindings.
+
 2008-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/38507

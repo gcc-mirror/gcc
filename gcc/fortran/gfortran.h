@@ -1019,7 +1019,7 @@ typedef struct gfc_typebound_proc
 
   union
   {
-    struct gfc_symtree* specific;
+    struct gfc_symtree* specific; /* The interface if DEFERRED.  */
     gfc_tbp_generic* generic;
   }
   u;
@@ -1038,6 +1038,7 @@ typedef struct gfc_typebound_proc
 
   unsigned nopass:1; /* Whether we have NOPASS (PASS otherwise).  */
   unsigned non_overridable:1;
+  unsigned deferred:1;
   unsigned is_generic:1;
   unsigned function:1, subroutine:1;
   unsigned error:1; /* Ignore it, when an error occurred during resolution.  */
