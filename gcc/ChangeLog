@@ -1,3 +1,12 @@
+2009-03-28  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* cgraphbuild.c (build_cgraph_edges, rebuild_cgraph_edges): Don't
+	call initialize_inline_failed.
+	(initialize_inline_failed): Move it from here ...
+	* cgraph.c (initialize_inline_failed): ... to here.
+	(cgraph_create_edge): Call initialize_inline_failed rather than
+	setting inline_failed directly.
+
 2009-03-29  Ben Elliston  <bje@au.ibm.com>
 
 	PR target/32542

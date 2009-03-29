@@ -1,3 +1,7 @@
+2009-03-28  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.dg/winline-10.c: New test.
+
 2009-03-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34656

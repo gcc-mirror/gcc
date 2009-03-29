@@ -78,30 +78,6 @@ record_reference (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
   return NULL_TREE;
 }
 
-/* Give initial reasons why inlining would fail on all calls from
-   NODE.  Those get either nullified or usually overwritten by more precise
-   reason later.  */
-
-static void
-initialize_inline_failed (struct cgraph_node *node)
-{
-  struct cgraph_edge *e;
-
-  for (e = node->callers; e; e = e->next_caller)
-    {
-      gcc_assert (!e->callee->global.inlined_to);
-      gcc_assert (e->inline_failed);
-      if (node->local.redefined_extern_inline)
-	e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
-      else if (!node->local.inlinable)
-	e->inline_failed = CIF_FUNCTION_NOT_INLINABLE;
-      else if (gimple_call_cannot_inline_p (e->call_stmt))
-	e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
-      else
-	e->inline_failed = CIF_FUNCTION_NOT_CONSIDERED;
-    }
-}
-
 /* Computes the frequency of the call statement so that it can be stored in
    cgraph_edge.  BB is the basic block of the call statement.  */
 int
@@ -193,7 +169,6 @@ build_cgraph_edges (void)
     }
 
   pointer_set_destroy (visited_nodes);
-  initialize_inline_failed (node);
   return 0;
 }
 
@@ -253,8 +228,8 @@ rebuild_cgraph_edges (void)
 			      bb->loop_depth);
 
       }
-  initialize_inline_failed (node);
   gcc_assert (!node->global.inlined_to);
+
   return 0;
 }
 
