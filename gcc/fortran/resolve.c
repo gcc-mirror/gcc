@@ -4551,6 +4551,30 @@ update_compcall_arglist (gfc_expr* e)
 }
 
 
+/* Check that the object a TBP is called on is valid, i.e. it must not be
+   of ABSTRACT type (as in subobject%abstract_parent%tbp()).  */
+
+static gfc_try
+check_typebound_baseobject (gfc_expr* e)
+{
+  gfc_expr* base;
+
+  base = extract_compcall_passed_object (e);
+  if (!base)
+    return FAILURE;
+
+  gcc_assert (base->ts.type == BT_DERIVED);
+  if (base->ts.derived->attr.abstract)
+    {
+      gfc_error ("Base object for type-bound procedure call at %L is of"
+		 " ABSTRACT type '%s'", &e->where, base->ts.derived->name);
+      return FAILURE;
+    }
+
+  return SUCCESS;
+}
+
+
 /* Resolve a call to a type-bound procedure, either function or subroutine,
    statically from the data in an EXPR_COMPCALL expression.  The adapted
    arglist and the target-procedure symtree are returned.  */
@@ -4668,6 +4692,9 @@ resolve_typebound_call (gfc_code* c)
       return FAILURE;
     }
 
+  if (check_typebound_baseobject (c->expr) == FAILURE)
+    return FAILURE;
+
   if (resolve_typebound_generic_call (c->expr) == FAILURE)
     return FAILURE;
 
@@ -4703,6 +4730,9 @@ resolve_compcall (gfc_expr* e)
 		 e->value.compcall.name, &e->where);
       return FAILURE;
     }
+
+  if (check_typebound_baseobject (e) == FAILURE)
+    return FAILURE;
 
   if (resolve_typebound_generic_call (e) == FAILURE)
     return FAILURE;
@@ -8163,6 +8193,14 @@ check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
       return FAILURE;
     }
 
+  /* It's an error to override a non-DEFERRED procedure with a DEFERRED one.  */
+  if (!old->typebound->deferred && proc->typebound->deferred)
+    {
+      gfc_error ("'%s' at %L must not be DEFERRED as it overrides a"
+		 " non-DEFERRED binding", proc->name, &where);
+      return FAILURE;
+    }
+
   /* If the overridden binding is PURE, the overriding must be, too.  */
   if (old_target->attr.pure && !proc_target->attr.pure)
     {
@@ -8505,11 +8543,11 @@ resolve_typebound_procedure (gfc_symtree* stree)
   gcc_assert (stree->typebound->access != ACCESS_UNKNOWN);
 
   /* It should be a module procedure or an external procedure with explicit
-     interface.  */
+     interface.  For DEFERRED bindings, abstract interfaces are ok as well.  */
   if ((!proc->attr.subroutine && !proc->attr.function)
       || (proc->attr.proc != PROC_MODULE
 	  && proc->attr.if_source != IFSRC_IFBODY)
-      || proc->attr.abstract)
+      || (proc->attr.abstract && !stree->typebound->deferred))
     {
       gfc_error ("'%s' must be a module procedure or an external procedure with"
 		 " an explicit interface at %L", proc->name, &where);
@@ -8664,6 +8702,67 @@ add_dt_to_dt_list (gfc_symbol *derived)
 }
 
 
+/* Ensure that a derived-type is really not abstract, meaning that every
+   inherited DEFERRED binding is overridden by a non-DEFERRED one.  */
+
+static gfc_try
+ensure_not_abstract_walker (gfc_symbol* sub, gfc_symtree* st)
+{
+  if (!st)
+    return SUCCESS;
+
+  if (ensure_not_abstract_walker (sub, st->left) == FAILURE)
+    return FAILURE;
+  if (ensure_not_abstract_walker (sub, st->right) == FAILURE)
+    return FAILURE;
+
+  if (st->typebound && st->typebound->deferred)
+    {
+      gfc_symtree* overriding;
+      overriding = gfc_find_typebound_proc (sub, NULL, st->name, true);
+      gcc_assert (overriding && overriding->typebound);
+      if (overriding->typebound->deferred)
+	{
+	  gfc_error ("Derived-type '%s' declared at %L must be ABSTRACT because"
+		     " '%s' is DEFERRED and not overridden",
+		     sub->name, &sub->declared_at, st->name);
+	  return FAILURE;
+	}
+    }
+
+  return SUCCESS;
+}
+
+static gfc_try
+ensure_not_abstract (gfc_symbol* sub, gfc_symbol* ancestor)
+{
+  /* The algorithm used here is to recursively travel up the ancestry of sub
+     and for each ancestor-type, check all bindings.  If any of them is
+     DEFERRED, look it up starting from sub and see if the found (overriding)
+     binding is not DEFERRED.
+     This is not the most efficient way to do this, but it should be ok and is
+     clearer than something sophisticated.  */
+
+  gcc_assert (ancestor && ancestor->attr.abstract && !sub->attr.abstract);
+
+  /* Walk bindings of this ancestor.  */
+  if (ancestor->f2k_derived)
+    {
+      gfc_try t;
+      t = ensure_not_abstract_walker (sub, ancestor->f2k_derived->sym_root);
+      if (t == FAILURE)
+	return FAILURE;
+    }
+
+  /* Find next ancestor type and recurse on it.  */
+  ancestor = gfc_get_derived_super_type (ancestor);
+  if (ancestor)
+    return ensure_not_abstract (sub, ancestor);
+
+  return SUCCESS;
+}
+
+
 /* Resolve the components of a derived type.  */
 
 static gfc_try
@@ -8789,6 +8888,12 @@ resolve_fl_derived (gfc_symbol *sym)
 
   /* Resolve the finalizer procedures.  */
   if (gfc_resolve_finalizers (sym) == FAILURE)
+    return FAILURE;
+
+  /* If this is a non-ABSTRACT type extending an ABSTRACT one, ensure that
+     all DEFERRED bindings are overridden.  */
+  if (super_type && super_type->attr.abstract && !sym->attr.abstract
+      && ensure_not_abstract (sym, super_type) == FAILURE)
     return FAILURE;
 
   /* Add derived type to the derived type list.  */

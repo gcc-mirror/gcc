@@ -30,10 +30,6 @@ MODULE testmod
     PROCEDURE, PUBLIC, PRIVATE ! { dg-error "Duplicate" }
     PROCEDURE, NON_OVERRIDABLE, NON_OVERRIDABLE ! { dg-error "Duplicate" }
     PROCEDURE, NOPASS, NOPASS ! { dg-error "illegal NOPASS" }
-
-    ! TODO: Correct these when things get implemented.
-    PROCEDURE, DEFERRED :: x ! { dg-error "not yet implemented" }
-    PROCEDURE(abc) ! { dg-error "not yet implemented" }
   END TYPE t
 
 CONTAINS

@@ -1,3 +1,13 @@
+2009-03-29  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37423
+	* gfortran.dg/typebound_proc_4.f03: Remove not-implemented check for
+	DEFERRED bindings.
+	* gfortran.dg/typebound_proc_9.f03: New test.
+	* gfortran.dg/typebound_proc_10.f03: New test.
+	* gfortran.dg/typebound_proc_11.f03: New test.
+	* gfortran.dg/abstract_type_5.f03: New test.
+
 2008-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/38507

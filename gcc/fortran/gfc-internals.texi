@@ -601,6 +601,11 @@ name, and later during resolution phase the corresponding argument is looked for
 and its position remembered as @code{pass_arg_num} in @code{gfc_typebound_proc}.
 The binding's target procedure is pointed-to by @code{u.specific}.
 
+@code{DEFERRED} bindings are just like ordinary specific bindings, except
+that their @code{deferred} flag is set of course and that @code{u.specific}
+points to their ``interface'' defining symbol (might be an abstract interface)
+instead of the target procedure.
+
 At the moment, all type-bound procedure calls are statically dispatched and
 transformed into ordinary procedure calls at resolution time; their actual
 argument list is updated to include at the right position the passed-object
