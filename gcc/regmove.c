@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "df.h"
 
-static int perhaps_ends_bb_p (rtx);
 static int optimize_reg_copy_1 (rtx, rtx, rtx);
 static void optimize_reg_copy_2 (rtx, rtx, rtx);
 static void optimize_reg_copy_3 (rtx, rtx, rtx);
@@ -208,30 +207,6 @@ try_auto_increment (rtx insn, rtx inc_insn, rtx inc_insn_set, rtx reg,
 
 static int *regno_src_regno;
 
-
-/* Return 1 if INSN might end a basic block.  */
-
-static int perhaps_ends_bb_p (rtx insn)
-{
-  switch (GET_CODE (insn))
-    {
-    case CODE_LABEL:
-    case JUMP_INSN:
-      /* These always end a basic block.  */
-      return 1;
-
-    case CALL_INSN:
-      /* A CALL_INSN might be the last insn of a basic block, if it is inside
-	 an EH region or if there are nonlocal gotos.  Note that this test is
-	 very conservative.  */
-      if (nonlocal_goto_handler_labels)
-	return 1;
-      /* Fall through.  */
-    default:
-      return can_throw_internal (insn);
-    }
-}
-
 /* INSN is a copy from SRC to DEST, both registers, and SRC does not die
    in INSN.
 
@@ -251,6 +226,7 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
   rtx dest_death = 0;
   int sregno = REGNO (src);
   int dregno = REGNO (dest);
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
   /* We don't want to mess with hard regs if register classes are small.  */
   if (sregno == dregno
@@ -264,12 +240,10 @@ optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 
   for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
     {
-      /* ??? We can't scan past the end of a basic block without updating
-	 the register lifetime info (REG_DEAD/basic_block_live_at_start).  */
-      if (perhaps_ends_bb_p (p))
-	break;
-      else if (! INSN_P (p))
+      if (! INSN_P (p))
 	continue;
+      if (BLOCK_FOR_INSN (p) != bb)
+	break;
 
       if (reg_set_p (src, p) || reg_set_p (dest, p)
 	  /* If SRC is an asm-declared register, it must not be replaced
@@ -457,15 +431,14 @@ optimize_reg_copy_2 (rtx insn, rtx dest, rtx src)
   rtx set;
   int sregno = REGNO (src);
   int dregno = REGNO (dest);
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
   for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
     {
-      /* ??? We can't scan past the end of a basic block without updating
-	 the register lifetime info (REG_DEAD/basic_block_live_at_start).  */
-      if (perhaps_ends_bb_p (p))
-	break;
-      else if (! INSN_P (p))
+      if (! INSN_P (p))
 	continue;
+      if (BLOCK_FOR_INSN (p) != bb)
+	break;
 
       set = single_set (p);
       if (set && SET_SRC (set) == dest && SET_DEST (set) == src
@@ -530,6 +503,7 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
   int dst_no = REGNO (dest);
   rtx p, set;
   enum machine_mode old_mode;
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
   if (src_no < FIRST_PSEUDO_REGISTER
       || dst_no < FIRST_PSEUDO_REGISTER
@@ -537,13 +511,12 @@ optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
       || REG_N_DEATHS (src_no) != 1
       || REG_N_SETS (src_no) != 1)
     return;
-  for (p = PREV_INSN (insn); p && ! reg_set_p (src_reg, p); p = PREV_INSN (p))
-    /* ??? We can't scan past the end of a basic block without updating
-       the register lifetime info (REG_DEAD/basic_block_live_at_start).  */
-    if (perhaps_ends_bb_p (p))
-      break;
 
-  if (! p)
+  for (p = PREV_INSN (insn); p && ! reg_set_p (src_reg, p); p = PREV_INSN (p))
+    if (INSN_P (p) && BLOCK_FOR_INSN (p) != bb)
+      break;
+  
+  if (! p || BLOCK_FOR_INSN (p) != bb)
     return;
 
   if (! (set = single_set (p))
@@ -767,6 +740,7 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
 {
   rtx p, dst_death = 0;
   int length, num_calls = 0, freq_calls = 0;
+  basic_block bb = BLOCK_FOR_INSN (insn);
 
   /* If SRC dies in INSN, we'd have to move the death note.  This is
      considered to be very unlikely, so we just skip the optimization
@@ -780,12 +754,10 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
     {
       rtx pset;
 
-      /* ??? We can't scan past the end of a basic block without updating
-	 the register lifetime info (REG_DEAD/basic_block_live_at_start).  */
-      if (perhaps_ends_bb_p (p))
-	break;
-      else if (! INSN_P (p))
+      if (! INSN_P (p))
 	continue;
+      if (BLOCK_FOR_INSN (p) != bb)
+	break;
 
       if (find_regno_note (p, REG_DEAD, REGNO (dst)))
 	dst_death = p;
@@ -821,11 +793,10 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
 #ifdef AUTO_INC_DEC
 	      for (p = PREV_INSN (insn); p; p = PREV_INSN (p))
 		{
-		  if (LABEL_P (p)
-		      || JUMP_P (p))
-		    break;
 		  if (! INSN_P (p))
 		    continue;
+		  if (BLOCK_FOR_INSN (p) != bb)
+		    break;
 		  if (reg_overlap_mentioned_p (dst, PATTERN (p)))
 		    {
 		      if (try_auto_increment (p, insn, 0, dst, newconst, 0))
@@ -835,11 +806,10 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
 		}
 	      for (p = NEXT_INSN (insn); p; p = NEXT_INSN (p))
 		{
-		  if (LABEL_P (p)
-		      || JUMP_P (p))
-		    break;
 		  if (! INSN_P (p))
 		    continue;
+		  if (BLOCK_FOR_INSN (p) != bb)
+		    break;
 		  if (reg_overlap_mentioned_p (dst, PATTERN (p)))
 		    {
 		      try_auto_increment (p, insn, 0, dst, newconst, 1);
@@ -882,40 +852,23 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
   return 0;
 }
 
-/* Main entry for the register move optimization.  */
+/* A forward pass.  Replace output operands with input operands.  */
 
-static unsigned int
-regmove_optimize (void)
+static void
+regmove_forward_pass (void)
 {
+  basic_block bb;
   rtx insn;
-  struct match match;
-  int i;
-  rtx copy_src, copy_dst;
-  int nregs = max_reg_num ();
 
-  /* ??? Hack.  Regmove doesn't examine the CFG, and gets mightily
-     confused by non-call exceptions ending blocks.  */
-  if (flag_non_call_exceptions)
-    return 0;
+  if (! flag_expensive_optimizations)
+    return;
 
-  df_note_add_problem ();
-  df_analyze ();
+  if (dump_file)
+    fprintf (dump_file, "Starting forward pass...\n");
 
-  regstat_init_n_sets_and_refs ();
-  regstat_compute_ri ();
-
-  regno_src_regno = XNEWVEC (int, nregs);
-  for (i = nregs; --i >= 0; )
-    regno_src_regno[i] = -1;
-
-  /* A forward pass.  Replace output operands with input operands.  */
-
-  if (flag_expensive_optimizations)
+  FOR_EACH_BB (bb)
     {
-      if (dump_file)
-	fprintf (dump_file, "Starting forward pass...\n");
-
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+      FOR_BB_INSNS (bb, insn)
 	{
 	  rtx set = single_set (insn);
 	  if (! set)
@@ -952,18 +905,32 @@ regmove_optimize (void)
 	    }
 	}
     }
+}
 
-  /* A backward pass.  Replace input operands with output operands.  */
+/* A backward pass.  Replace input operands with output operands.  */
+
+static void
+regmove_backward_pass (void)
+{
+  basic_block bb;
+  rtx insn, prev;
 
   if (dump_file)
     fprintf (dump_file, "Starting backward pass...\n");
 
-  for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
+  FOR_EACH_BB_REVERSE (bb)
     {
-      if (INSN_P (insn))
+      /* ??? Use the safe iterator because fixup_match_2 can remove
+	     insns via try_auto_increment.  */ 
+      FOR_BB_INSNS_REVERSE_SAFE (bb, insn, prev)
 	{
+	  struct match match;
+	  rtx copy_src, copy_dst;
 	  int op_no, match_no;
 	  int success = 0;
+
+	  if (! INSN_P (insn))
+	    continue;
 
 	  if (! find_matches (insn, &match))
 	    continue;
@@ -1117,13 +1084,10 @@ regmove_optimize (void)
 		{
 		  rtx pset;
 
-		  /* ??? We can't scan past the end of a basic block without
-		     updating the register lifetime info
-		     (REG_DEAD/basic_block_live_at_start).  */
-		  if (perhaps_ends_bb_p (p))
-		    break;
-		  else if (! INSN_P (p))
+		  if (! INSN_P (p))
 		    continue;
+		  if (BLOCK_FOR_INSN (p) != bb)
+		    break;
 
 		  length++;
 
@@ -1231,6 +1195,31 @@ regmove_optimize (void)
 	    copy_src_to_dest (insn, copy_src, copy_dst);
 	}
     }
+}
+
+/* Main entry for the register move optimization.  */
+
+static unsigned int
+regmove_optimize (void)
+{
+  int i;
+  int nregs = max_reg_num ();
+
+  df_note_add_problem ();
+  df_analyze ();
+
+  regstat_init_n_sets_and_refs ();
+  regstat_compute_ri ();
+
+  regno_src_regno = XNEWVEC (int, nregs);
+  for (i = nregs; --i >= 0; )
+    regno_src_regno[i] = -1;
+
+  /* A forward pass.  Replace output operands with input operands.  */
+  regmove_forward_pass ();
+
+  /* A backward pass.  Replace input operands with output operands.  */
+  regmove_backward_pass ();
 
   /* Clean up.  */
   free (regno_src_regno);
