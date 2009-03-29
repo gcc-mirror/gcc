@@ -1,3 +1,8 @@
+2009-03-29  David Ayers  <ayers@fsfe.org>
+
+	PR objc/27377
+	* objc.dg/conditional-1.m: New tests.
+	
 2009-03-28  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.dg/winline-10.c: New test.

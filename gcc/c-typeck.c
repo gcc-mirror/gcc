@@ -3437,6 +3437,7 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
   enum tree_code code2;
   tree result_type = NULL;
   tree orig_op1 = op1, orig_op2 = op2;
+  bool objc_ok;
 
   /* Promote both alternatives.  */
 
@@ -3462,6 +3463,8 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
       error ("non-lvalue array in conditional expression");
       return error_mark_node;
     }
+
+  objc_ok = objc_compare_types (type1, type2, -3, NULL_TREE);
 
   /* Quickly detect the usual case where op1 and op2 have the same type
      after promotion.  */
@@ -3546,8 +3549,9 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
 	}
       else
 	{
-	  pedwarn (input_location, 0, 
-		   "pointer type mismatch in conditional expression");
+	  if (!objc_ok)
+	    pedwarn (input_location, 0, 
+		     "pointer type mismatch in conditional expression");
 	  result_type = build_pointer_type (void_type_node);
 	}
     }
