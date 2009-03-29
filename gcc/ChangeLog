@@ -1,3 +1,8 @@
+2009-03-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi, doc/standards.texi: Refer to
+	gcc-4.4/c99status.html.
+
 2009-03-28  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (avr_mcu_t): Add atmega8c1, atmega16c1 and
