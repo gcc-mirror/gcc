@@ -828,19 +828,20 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
   array_ref = TREE_OPERAND (def_rhs, 0);
   if (TREE_CODE (array_ref) != ARRAY_REF
       || TREE_CODE (TREE_TYPE (TREE_OPERAND (array_ref, 0))) != ARRAY_TYPE
-      || !integer_zerop (TREE_OPERAND (array_ref, 1)))
+      || TREE_CODE (TREE_OPERAND (array_ref, 1)) != INTEGER_CST)
     return false;
 
   rhs2 = gimple_assign_rhs2 (use_stmt);
-  /* Try to optimize &x[0] p+ C where C is a multiple of the size
-     of the elements in X into &x[C/element size].  */
+  /* Try to optimize &x[C1] p+ C2 where C2 is a multiple of the size
+     of the elements in X into &x[C1 + C2/element size].  */
   if (TREE_CODE (rhs2) == INTEGER_CST)
     {
       tree new_rhs = maybe_fold_stmt_addition (gimple_expr_type (use_stmt),
-					       array_ref, rhs2);
+					       def_rhs, rhs2);
       if (new_rhs)
 	{
-	  gimple_assign_set_rhs_from_tree (use_stmt_gsi, new_rhs);
+	  gimple_assign_set_rhs_from_tree (use_stmt_gsi,
+					   unshare_expr (new_rhs));
 	  use_stmt = gsi_stmt (*use_stmt_gsi);
 	  update_stmt (use_stmt);
 	  tidy_after_forward_propagate_addr (use_stmt);
@@ -853,6 +854,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
      array elements, then the result is converted into the proper
      type for the arithmetic.  */
   if (TREE_CODE (rhs2) == SSA_NAME
+      && integer_zerop (TREE_OPERAND (array_ref, 1))
       && useless_type_conversion_p (TREE_TYPE (name), TREE_TYPE (def_rhs))
       /* Avoid problems with IVopts creating PLUS_EXPRs with a
 	 different type than their operands.  */

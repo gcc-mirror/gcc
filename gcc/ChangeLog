@@ -1,3 +1,8 @@
+2009-03-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Properly
+	propagate addresses of array references.
+
 2009-03-29  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* regmove.c (perhaps_ends_bb_p): Remove.
