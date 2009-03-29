@@ -1,3 +1,40 @@
+2009-03-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/456
+	PR c/5675
+	PR c/19976
+	PR c/29116
+	PR c/31871
+	PR c/35198
+	* gcc.c-torture/compile/20081108-1.c,
+	gcc.c-torture/compile/20081108-2.c,
+	gcc.c-torture/compile/20081108-3.c, gcc.dg/bconstp-2.c,
+	gcc.dg/bconstp-3.c, gcc.dg/bconstp-4.c, gcc.dg/c90-const-expr-6.c,
+	gcc.dg/c90-const-expr-7.c, gcc.dg/c90-const-expr-8.c,
+	gcc.dg/c90-const-expr-9.c, gcc.dg/c90-const-expr-10.c,
+	gcc.dg/c90-const-expr-11.c, gcc.dg/c99-const-expr-6.c,
+	gcc.dg/c99-const-expr-7.c, gcc.dg/c99-const-expr-8.c,
+	gcc.dg/c99-const-expr-9.c, gcc.dg/c99-const-expr-10.c,
+	gcc.dg/c99-const-expr-11.c, gcc.dg/c99-const-expr-12.c,
+	gcc.dg/c99-const-expr-13.c, gcc.dg/compare10.c,
+	gcc.dg/gnu89-const-expr-1.c, gcc.dg/gnu89-const-expr-2.c,
+	gcc.dg/gnu99-const-expr-1.c, gcc.dg/gnu99-const-expr-2.c,
+	gcc.dg/gnu99-const-expr-3.c, gcc.dg/vla-12.c, gcc.dg/vla-13.c,
+	gcc.dg/vla-14.c, gcc.dg/vla-15.c, gcc.dg/vla-16.c: New tests.
+	* gcc.dg/c90-const-expr-1.c, gcc.dg/c90-const-expr-2.c,
+	gcc.dg/c90-const-expr-3.c, gcc.dg/c99-const-expr-2.c,
+	gcc.dg/c99-const-expr-3.c, gcc.dg/c99-static-1.c: Remove XFAILs.
+	* gcc.dg/c90-const-expr-2.c: Use ZERO in place of 0 in another
+	case.
+	* gcc.dg/overflow-warn-1.c, gcc.dg/overflow-warn-2.c,
+	gcc.dg/overflow-warn-3.c, gcc.dg/overflow-warn-4.c: Remove
+	XFAILs.  Update expected messages.
+	* gcc.dg/pr14649-1.c, gcc.dg/pr19984.c, gcc.dg/pr25682.c: Update
+	expected messages.
+	* gcc.dg/real-const-1.c: Replace with test from original PR.
+	* gcc.dg/vect/pr32230.c: Use intermediate cast to __PTRDIFF_TYPE__
+	when casting from non-constant integer to pointer.
+
 2009-03-29  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/forwprop-11.c: New testcase.

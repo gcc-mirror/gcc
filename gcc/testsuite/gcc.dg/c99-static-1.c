@@ -27,7 +27,7 @@ static int f4(void);
 void g4(void) { sizeof(int (*)[f4()]); }
 
 /* Constraint violation (VLA).  */
-static int f5(void); /* { dg-error "used but never defined" "VLA" { xfail *-*-* } } */
+static int f5(void); /* { dg-error "used but never defined" "VLA" } */
 void g5(void) { sizeof(int [0 ? f5() : 1]); }
 
 /* OK (non-constant sizeof inside constant sizeof).  */

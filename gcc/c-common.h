@@ -1,6 +1,6 @@
 /* Definitions for c-common.c.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -30,8 +30,10 @@ along with GCC; see the file COPYING3.  If not see
    0: TREE_NEGATED_INT (in INTEGER_CST).
       IDENTIFIER_MARKED (used by search routines).
       DECL_PRETTY_FUNCTION_P (in VAR_DECL)
+      C_MAYBE_CONST_EXPR_INT_OPERANDS (in C_MAYBE_CONST_EXPR, for C)
    1: C_DECLARED_LABEL_FLAG (in LABEL_DECL)
       STATEMENT_LIST_STMT_EXPR (in STATEMENT_LIST)
+      C_MAYBE_CONST_EXPR_NON_CONST (in C_MAYBE_CONST_EXPR, for C)
    2: unused
    3: STATEMENT_LIST_HAS_LABEL (in STATEMENT_LIST)
    4: unused
@@ -715,6 +717,9 @@ extern tree c_common_signed_type (tree);
 extern tree c_common_signed_or_unsigned_type (int, tree);
 extern tree c_build_bitfield_integer_type (unsigned HOST_WIDE_INT, int);
 extern bool decl_with_nonnull_addr_p (const_tree);
+extern tree c_fully_fold (tree, bool, bool *);
+extern tree decl_constant_value_for_optimization (tree);
+extern tree c_save_expr (tree);
 extern tree c_common_truthvalue_conversion (location_t, tree);
 extern void c_apply_type_quals_to_decl (int, tree);
 extern tree c_sizeof_or_alignof_type (tree, bool, int);
@@ -798,6 +803,21 @@ extern void finish_file	(void);
   TREE_OPERAND (COMPOUND_LITERAL_EXPR_CHECK (NODE), 0)
 #define COMPOUND_LITERAL_EXPR_DECL(NODE)			\
   DECL_EXPR_DECL (COMPOUND_LITERAL_EXPR_DECL_STMT (NODE))
+
+/* C_MAYBE_CONST_EXPR accessors.  */
+#define C_MAYBE_CONST_EXPR_PRE(NODE)			\
+  TREE_OPERAND (C_MAYBE_CONST_EXPR_CHECK (NODE), 0)
+#define C_MAYBE_CONST_EXPR_EXPR(NODE)			\
+  TREE_OPERAND (C_MAYBE_CONST_EXPR_CHECK (NODE), 1)
+#define C_MAYBE_CONST_EXPR_INT_OPERANDS(NODE)		\
+  TREE_LANG_FLAG_0 (C_MAYBE_CONST_EXPR_CHECK (NODE))
+#define C_MAYBE_CONST_EXPR_NON_CONST(NODE)		\
+  TREE_LANG_FLAG_1 (C_MAYBE_CONST_EXPR_CHECK (NODE))
+#define EXPR_INT_CONST_OPERANDS(EXPR)			\
+  (INTEGRAL_TYPE_P (TREE_TYPE (EXPR))			\
+   && (TREE_CODE (EXPR) == INTEGER_CST			\
+       || (TREE_CODE (EXPR) == C_MAYBE_CONST_EXPR	\
+	   && C_MAYBE_CONST_EXPR_INT_OPERANDS (EXPR))))
 
 /* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
 #define DECL_C_BIT_FIELD(NODE) \

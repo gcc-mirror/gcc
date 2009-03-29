@@ -7930,7 +7930,7 @@ fold_builtin_sincos (tree arg0, tree arg1, tree arg2)
   call = build_call_expr (fn, 1, arg0);
   call = builtin_save_expr (call);
 
-  return build2 (COMPOUND_EXPR, type,
+  return build2 (COMPOUND_EXPR, void_type_node,
 		 build2 (MODIFY_EXPR, void_type_node,
 			 build_fold_indirect_ref (arg1),
 			 build1 (IMAGPART_EXPR, type, call)),
@@ -10929,7 +10929,6 @@ fold_call_expr (tree exp, bool ignore)
 		  if (CAN_HAVE_LOCATION_P (realret)
 		      && !EXPR_HAS_LOCATION (realret))
 		    SET_EXPR_LOCATION (realret, EXPR_LOCATION (exp));
-		  return realret;
 		}
 	      return ret;
 	    }

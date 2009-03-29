@@ -1,3 +1,174 @@
+2009-03-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/456
+	PR c/5675
+	PR c/19976
+	PR c/29116
+	PR c/31871
+	PR c/35198
+	* builtins.c (fold_builtin_sincos): Build COMPOUND_EXPR in
+	void_type_node.
+	(fold_call_expr): Return a NOP_EXPR from folding rather than the
+	contained expression.
+	* c-common.c (c_fully_fold, c_fully_fold_internal, c_save_expr):
+	New.
+	(c_common_truthvalue_conversion): Use c_save_expr.  Do not fold
+	conditional expressions for C.
+	(decl_constant_value_for_optimization): Move from
+	decl_constant_value_for_broken_optimization in c-typeck.c.  Check
+	whether optimizing and that the expression is a VAR_DECL not of
+	array type instead of doing such checks in the caller.  Do not
+	check pedantic.  Call gcc_unreachable for C++.
+	* c-common.def (C_MAYBE_CONST_EXPR): New.
+	* c-common.h (c_fully_fold, c_save_expr,
+	decl_constant_value_for_optimization): New prototypes.
+	(C_MAYBE_CONST_EXPR_PRE, C_MAYBE_CONST_EXPR_EXPR,
+	C_MAYBE_CONST_EXPR_INT_OPERANDS, C_MAYBE_CONST_EXPR_NON_CONST,
+	EXPR_INT_CONST_OPERANDS): Define.
+	* c-convert.c (convert): Strip nops from expression.
+	* c-decl.c (groktypename): Take extra parameters expr and
+	expr_const_operands.  Update call to grokdeclarator.
+	(start_decl): Update call to grokdeclarator.  Add statement for
+	expressions used in type of decl.
+	(grokparm): Update call to grokdeclarator.
+	(push_parm_decl): Update call to grokdeclarator.
+	(build_compound_literal): Add parameter non_const and build a
+	C_MAYBE_COSNT_EXPR if applicable.
+	(grokdeclarator): Take extra parameters expr and
+	expr_const_operands.  Track expressions used in declaration
+	specifiers and declarators.  Fold array sizes and track whether
+	they are constant expressions and whether they are integer
+	constant expressions.
+	(parser_xref_tag): Set expr and expr_const_operands fields in
+	return value.
+	(grokfield): Update call to grokdeclarator.
+	(start_function): Update call to grokdeclarator.
+	(build_null_declspecs): Set expr and expr_const_operands fields in
+	return value.
+	(declspecs_add_type): Handle expressions in typeof specifiers.
+	* c-parser.c (c_parser_declspecs): Set expr and
+	expr_const_operands fields for declaration specifiers.
+	(c_parser_enum_specifier): Likewise.
+	(c_parser_struct_or_union_specifier): Likewise.
+	(c_parser_typeof_specifier): Likewise.  Update call to
+	groktypename.  Fold expression as needed.  Return expressions with
+	type instead of adding statements.
+	(c_parser_attributes): Update calls to c_parser_expr_list.
+	(c_parser_statement_after_labels): Fold expression before passing
+	to objc_build_throw_stmt.
+	(c_parser_condition): Fold expression.
+	(c_parser_asm_operands): Fold expression.
+	(c_parser_conditional_expression): Use c_save_expr.  Update call
+	to build_conditional_expr.
+	(c_parser_alignof_expression): Update call to groktypename.
+	(c_parser_postfix_expression): Preserve C_MAYBE_CONST_EXPR as
+	original_code.  Fold expression argument of va_arg.  Create
+	C_MAYBE_CONST_EXPR to preserve side effects of expressions in type
+	argument to va_arg.  Update calls to groktypename.  Fold array
+	index for offsetof.  Verify that first argument to
+	__builtin_choose_expr has integer type.
+	(c_parser_postfix_expression_after_paren_type): Update calls to
+	groktypename and build_compound_literal.  Handle expressions with
+	side effects in type name.
+	(c_parser_postfix_expression_after_primary): Update call to
+	c_parser_expr_list.  Set original_code for calls to
+	__builtin_constant_p.
+	(c_parser_expr_list): Take extra parameter fold_p.  Fold
+	expressions if requested.
+	(c_parser_objc_type_name): Update call to groktypename.
+	(c_parser_objc_synchronized_statement): Fold expression.
+	(c_parser_objc_receiver): Fold expression.
+	(c_parser_objc_keywordexpr): Update call to c_parser_expr_list.
+	(c_parser_omp_clause_num_threads, c_parser_omp_clause_schedule,
+	c_parser_omp_atomic, c_parser_omp_for_loop): Fold expressions.
+	* c-tree.h (CONSTRUCTOR_NON_CONST): Define.
+	(struct c_typespec): Add elements expr and expr_const_operands.
+	(struct c_declspecs): Add elements expr and expr_const_operands.
+	(groktypename, build_conditional_expr, build_compound_literal):
+	Update prototypes.
+	(in_late_binary_op): Declare.
+	* c-typeck.c (note_integer_operands): New function.
+	(in_late_binary_op): New variable.
+	(decl_constant_value_for_broken_optimization): Move to c-common.c
+	and rename to decl_constant_value_for_optimization.
+	(default_function_array_conversion): Do not strip nops.
+	(default_conversion): Do not call
+	decl_constant_value_for_broken_optimization.
+	(build_array_ref): Do not fold result.
+	(c_expr_sizeof_expr): Fold operand.  Use C_MAYBE_CONST_EXPR for
+	result when operand is a VLA.
+	(c_expr_sizeof_type): Update call to groktypename.  Handle
+	expressions included in type name.  Use C_MAYBE_CONST_EXPR for
+	result when operand names a VLA type.
+	(build_function_call): Update call to build_compound_literal.
+	Only fold result for calls to __builtin_* functions.  Strip
+	NOP_EXPR from INTEGER_CST returned from such functions.  Fold
+	the function designator.
+	(convert_arguments): Fold arguments.  Update call to
+	convert_for_assignment.
+	(build_unary_op): Handle increment and decrement of
+	C_MAYBE_CONST_EXPR.  Move lvalue checks for increment and
+	decrement earlier.  Fold operand of increment and decrement.
+	Handle address of C_MAYBE_CONST_EXPR.  Only fold expression being
+	built for integer operand.  Wrap returns that are INTEGER_CSTs
+	without being integer constant expressions or that have integer
+	constant operands without being INTEGER_CSTs.
+	(lvalue_p): Handle C_MAYBE_CONST_EXPR.
+	(build_conditional_expr): Add operand ifexp_bcp.  Track whether
+	result is an integer constant expression or can be used in
+	unevaluated parts of one and avoid folding and wrap as
+	appropriate.  Fold operands before possibly doing -Wsign-compare
+	warnings.
+	(build_compound_expr): Wrap result for C99 if operands can be used
+	in integer constant expressions.
+	(build_c_cast): Update call to digest_init.  Do not ignore
+	overflow from casting floating-point constants to integers.  Wrap
+	results that could be confused with integer constant expressions,
+	null pointer constants or floating-point constants.
+	(c_cast_expr): Update call to groktypename.  Handle expressions
+	included in type name.
+	(build_modify_expr): Handle modifying a C_MAYBE_CONST_EXPR.  Fold
+	lhs inside possible SAVE_EXPR.  Fold RHS before assignment.
+	Update calls to convert_for_assignment.
+	(convert_for_assignment): Take new parameter
+	null_pointer_constant.  Do not strip nops or call
+	decl_constant_value_for_broken_optimization.  Set
+	in_late_binary_op for conversions to boolean.
+	(store_init_value): Update call to digest_init.
+	(digest_init): Take new parameter null_pointer_constant.  Do not
+	call decl_constant_value_for_broken_optimization.  pedwarn for
+	initializers not constant expressions.  Update calls to
+	convert_for_assignment.
+	(constructor_nonconst): New.
+	(struct constructor_stack): Add nonconst element.
+	(really_start_incremental_init, push_init_level, pop_init_level):
+	Handle constructor_nonconst and nonconst element.
+	(set_init_index): Call constant_expression_warning for array
+	designators.
+	(output_init_element): Fold value.  Set constructor_nonconst as
+	applicable.  pedwarn for initializers not constant expressions.
+	Update call to digest_init.  Call constant_expression_warning
+	where constant initializers are required.
+	(process_init_element): Use c_save_expr.
+	(c_finish_goto_ptr): Fold expression.
+	(c_finish_return): Fold return value.  Update call to
+	convert_for_assignment.
+	(c_start_case): Fold switch expression.
+	(c_process_expr_stmt): Fold expression.
+	(c_finish_stmt_expr): Create C_MAYBE_CONST_EXPR as needed to
+	ensure statement expression is not evaluated in constant
+	expression.
+	(build_binary_op): Track whether results are integer constant
+	expressions or may occur in such, disable folding and wrap results
+	as applicable.  Fold operands for -Wsign-compare warnings unless
+	in_late_binary_op.
+	(c_objc_common_truthvalue_conversion): Handle results folded to
+	integer constants that are not integer constant expressions.
+	* doc/extend.texi: Document when typeof operands are evaluated,
+	that condition of __builtin_choose_expr is an integer constant
+	expression, and more about use of __builtin_constant_p in
+	initializers.
+
 2009-03-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Properly

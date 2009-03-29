@@ -146,6 +146,10 @@ struct lang_type GTY(())
    without prototypes.  */
 #define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_LANG_SLOT_1 (NODE)
 
+/* For a CONSTRUCTOR, whether some initializer contains a
+   subexpression meaning it is not a constant expression.  */
+#define CONSTRUCTOR_NON_CONST(EXPR) TREE_LANG_FLAG_1 (CONSTRUCTOR_CHECK (EXPR))
+
 /* Record parser information about an expression that is irrelevant
    for code generation alongside a tree representing its value.  */
 struct c_expr
@@ -154,7 +158,9 @@ struct c_expr
   tree value;
   /* Record the original unary/binary operator of an expression, which may
      have been changed by fold, STRING_CST for unparenthesized string
-     constants, or ERROR_MARK for other expressions (including
+     constants, C_MAYBE_CONST_EXPR for __builtin_constant_p calls
+     (even if parenthesized), for subexpressions, and for non-constant
+     initializers, or ERROR_MARK for other expressions (including
      parenthesized expressions).  */
   enum tree_code original_code;
 };
@@ -190,6 +196,18 @@ struct c_typespec {
   enum c_typespec_kind kind;
   /* The specifier itself.  */
   tree spec;
+  /* An expression to be evaluated before the type specifier, in the
+     case of typeof specifiers, or NULL otherwise or if no such
+     expression is required for a particular typeof specifier.  In
+     particular, when typeof is applied to an expression of variably
+     modified type, that expression must be evaluated in order to
+     determine array sizes that form part of the type, but the
+     expression itself (as opposed to the array sizes) forms no part
+     of the type and so needs to be recorded separately.  */
+  tree expr;
+  /* Whether the expression has operands suitable for use in constant
+     expressions.  */
+  bool expr_const_operands;
 };
 
 /* A storage class specifier.  */
@@ -227,6 +245,9 @@ struct c_declspecs {
      whole type, or NULL_TREE if none or a keyword such as "void" or
      "char" is used.  Does not include qualifiers.  */
   tree type;
+  /* Any expression to be evaluated before the type, from a typeof
+     specifier.  */
+  tree expr;
   /* The attributes from a typedef decl.  */
   tree decl_attr;
   /* When parsing, the attributes.  Outside the parser, this will be
@@ -238,6 +259,9 @@ struct c_declspecs {
   enum c_typespec_keyword typespec_word;
   /* The storage class specifier, or csc_none if none.  */
   enum c_storage_class storage_class;
+  /* Whether any expressions in typeof specifiers may appear in
+     constant expressions.  */
+  BOOL_BITFIELD expr_const_operands : 1;
   /* Whether any declaration specifiers have been seen at all.  */
   BOOL_BITFIELD declspecs_seen_p : 1;
   /* Whether a type specifier has been seen.  */
@@ -478,7 +502,7 @@ extern tree finish_struct (tree, tree, tree);
 extern struct c_arg_info *get_parm_info (bool);
 extern tree grokfield (location_t, struct c_declarator *,
 		       struct c_declspecs *, tree, tree *);
-extern tree groktypename (struct c_type_name *);
+extern tree groktypename (struct c_type_name *, tree *, bool *);
 extern tree grokparm (const struct c_parm *);
 extern tree implicitly_declare (tree);
 extern void keep_next_level (void);
@@ -532,6 +556,7 @@ extern bool c_vla_unspec_p (tree x, tree fn);
 			  ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
 
 /* in c-typeck.c */
+extern bool in_late_binary_op;
 extern int in_alignof;
 extern int in_sizeof;
 extern int in_typeof;
@@ -561,7 +586,7 @@ extern struct c_expr parser_build_unary_op (enum tree_code, struct c_expr,
 extern struct c_expr parser_build_binary_op (location_t, 
     					     enum tree_code, struct c_expr,
 					     struct c_expr);
-extern tree build_conditional_expr (tree, tree, tree);
+extern tree build_conditional_expr (tree, bool, tree, tree);
 extern tree build_compound_expr (tree, tree);
 extern tree c_cast_expr (struct c_type_name *, tree);
 extern tree build_c_cast (tree, tree);
@@ -577,7 +602,7 @@ extern struct c_expr pop_init_level (int);
 extern void set_init_index (tree, tree);
 extern void set_init_label (tree);
 extern void process_init_element (struct c_expr, bool);
-extern tree build_compound_literal (tree, tree);
+extern tree build_compound_literal (tree, tree, bool);
 extern tree c_start_case (tree);
 extern void c_finish_case (tree);
 extern tree build_asm_expr (tree, tree, tree, tree, bool);

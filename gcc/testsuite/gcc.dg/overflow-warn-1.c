@@ -17,7 +17,7 @@ enum e {
   /* But as in DR#031, the 1/0 in an evaluated subexpression means the
      whole expression violates the constraints.  */
   E4 = 0 * (1 / 0), /* { dg-warning "division by zero" } */
-  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { xfail *-*-* } 19 } */
+  /* { dg-error "enumerator value for 'E4' is not an integer constant" "enum error" { target *-*-* } 19 } */
   E5 = INT_MAX + 1, /* { dg-warning "integer overflow in expression" } */
   /* Again, overflow in evaluated subexpression.  */
   E6 = 0 * (INT_MAX + 1), /* { dg-warning "integer overflow in expression" } */
@@ -28,6 +28,7 @@ enum e {
 struct s {
   int a;
   int : 0 * (1 / 0); /* { dg-warning "division by zero" } */
+  /* { dg-error "not an integer constant" "integer constant" { target *-*-* } 30 } */
   int : 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
 };
 
@@ -46,9 +47,10 @@ static int sc = INT_MAX + 1; /* { dg-warning "integer overflow in expression" } 
    constants.  The third has the overflow in an unevaluated
    subexpression, so is a null pointer constant.  */
 void *p = 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
-/* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } 48 } */
+/* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } 49 } */
 void *q = 0 * (1 / 0); /* { dg-warning "division by zero" } */
-/* { dg-warning "initialization makes pointer from integer without a cast" "null" { xfail *-*-* } 50 } */
+/* { dg-error "initializer element is not constant" "constant" { target *-*-* } 51 } */
+/* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } 51 } */
 void *r = (1 ? 0 : INT_MAX+1);
 
 void
@@ -57,6 +59,7 @@ g (int i)
   switch (i)
     {
     case 0 * (1/0): /* { dg-warning "division by zero" } */
+      /* { dg-error "case label does not reduce to an integer constant" "constant" { target *-*-* } 61 } */
       ;
     case 1 + 0 * (INT_MAX + 1): /* { dg-warning "integer overflow in expression" } */
       ;

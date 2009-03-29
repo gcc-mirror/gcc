@@ -518,6 +518,7 @@ const struct fname_var_t fname_vars[] =
   {NULL, 0, 0},
 };
 
+static tree c_fully_fold_internal (tree expr, bool, bool *, bool *);
 static tree check_case_value (tree);
 static bool check_case_bounds (tree, tree, tree *, tree *);
 
@@ -1107,6 +1108,390 @@ fix_string_type (tree value)
   return value;
 }
 
+/* Fully fold EXPR, an expression that was not folded (beyond integer
+   constant expressions and null pointer constants) when being built
+   up.  If IN_INIT, this is in a static initializer and certain
+   changes are made to the folding done.  Clear *MAYBE_CONST if
+   MAYBE_CONST is not NULL and EXPR is definitely not a constant
+   expression because it contains an evaluated operator (in C99) or an
+   operator outside of sizeof returning an integer constant (in C90)
+   not permitted in constant expressions, or because it contains an
+   evaluated arithmetic overflow.  (*MAYBE_CONST should typically be
+   set to true by callers before calling this function.)  Return the
+   folded expression.  Function arguments have already been folded
+   before calling this function, as have the contents of SAVE_EXPR,
+   TARGET_EXPR, BIND_EXPR, VA_ARG_EXPR, OBJ_TYPE_REF and
+   C_MAYBE_CONST_EXPR.  */
+
+tree
+c_fully_fold (tree expr, bool in_init, bool *maybe_const)
+{
+  tree ret;
+  bool dummy = true;
+  bool maybe_const_itself = true;
+
+  /* This function is not relevant to C++ because C++ folds while
+     parsing, and may need changes to be correct for C++ when C++
+     stops folding while parsing.  */
+  if (c_dialect_cxx ())
+    gcc_unreachable ();
+
+  if (!maybe_const)
+    maybe_const = &dummy;
+  ret = c_fully_fold_internal (expr, in_init, maybe_const,
+			       &maybe_const_itself);
+  *maybe_const &= maybe_const_itself;
+  return ret;
+}
+
+/* Internal helper for c_fully_fold.  EXPR and IN_INIT are as for
+   c_fully_fold.  *MAYBE_CONST_OPERANDS is cleared because of operands
+   not permitted, while *MAYBE_CONST_ITSELF is cleared because of
+   arithmetic overflow (for C90, *MAYBE_CONST_OPERANDS is carried from
+   both evaluated and unevaluated subexpressions while
+   *MAYBE_CONST_ITSELF is carried from only evaluated
+   subexpressions).  */
+
+static tree
+c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
+		       bool *maybe_const_itself)
+{
+  tree ret = expr;
+  enum tree_code code = TREE_CODE (expr);
+  enum tree_code_class kind = TREE_CODE_CLASS (code);
+  location_t loc = EXPR_LOCATION (expr);
+  tree op0, op1, op2, op3;
+  tree orig_op0, orig_op1, orig_op2;
+  bool op0_const = true, op1_const = true, op2_const = true;
+  bool op0_const_self = true, op1_const_self = true, op2_const_self = true;
+  bool nowarning = TREE_NO_WARNING (expr);
+
+  /* This function is not relevant to C++ because C++ folds while
+     parsing, and may need changes to be correct for C++ when C++
+     stops folding while parsing.  */
+  if (c_dialect_cxx ())
+    gcc_unreachable ();
+
+  /* Constants, declarations, statements, errors, SAVE_EXPRs and
+     anything else not counted as an expression cannot usefully be
+     folded further at this point.  */
+  if (!IS_EXPR_CODE_CLASS (kind)
+      || kind == tcc_statement
+      || code == SAVE_EXPR)
+    return expr;
+
+  /* Operands of variable-length expressions (function calls) have
+     already been folded, as have __builtin_* function calls, and such
+     expressions cannot occur in constant expressions.  */
+  if (kind == tcc_vl_exp)
+    {
+      *maybe_const_operands = false;
+      ret = fold (expr);
+      goto out;
+    }
+
+  if (code == C_MAYBE_CONST_EXPR)
+    {
+      tree pre = C_MAYBE_CONST_EXPR_PRE (expr);
+      tree inner = C_MAYBE_CONST_EXPR_EXPR (expr);
+      if (C_MAYBE_CONST_EXPR_NON_CONST (expr))
+	*maybe_const_operands = false;
+      if (C_MAYBE_CONST_EXPR_INT_OPERANDS (expr))
+	*maybe_const_itself = false;
+      if (pre && !in_init)
+	ret = build2 (COMPOUND_EXPR, TREE_TYPE (expr), pre, inner);
+      else
+	ret = inner;
+      goto out;
+    }
+
+  /* Assignment, increment, decrement, function call and comma
+     operators, and statement expressions, cannot occur in constant
+     expressions if evaluated / outside of sizeof.  (Function calls
+     were handled above, though VA_ARG_EXPR is treated like a function
+     call here, and statement expressions are handled through
+     C_MAYBE_CONST_EXPR to avoid folding inside them.)  */
+  switch (code)
+    {
+    case MODIFY_EXPR:
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case COMPOUND_EXPR:
+      *maybe_const_operands = false;
+      break;
+
+    case VA_ARG_EXPR:
+    case TARGET_EXPR:
+    case BIND_EXPR:
+    case OBJ_TYPE_REF:
+      *maybe_const_operands = false;
+      ret = fold (expr);
+      goto out;
+
+    default:
+      break;
+    }
+
+  /* Fold individual tree codes as appropriate.  */
+  switch (code)
+    {
+    case COMPOUND_LITERAL_EXPR:
+      /* Any non-constancy will have been marked in a containing
+	 C_MAYBE_CONST_EXPR; there is no more folding to do here.  */
+      goto out;
+
+    case COMPONENT_REF:
+      orig_op0 = op0 = TREE_OPERAND (expr, 0);
+      op1 = TREE_OPERAND (expr, 1);
+      op2 = TREE_OPERAND (expr, 2);
+      op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
+				   maybe_const_itself);
+      if (op0 != orig_op0)
+	ret = build3 (COMPONENT_REF, TREE_TYPE (expr), op0, op1, op2);
+      if (ret != expr)
+	{
+	  TREE_READONLY (ret) = TREE_READONLY (expr);
+	  TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (expr);
+	}
+      goto out;
+
+    case ARRAY_REF:
+      orig_op0 = op0 = TREE_OPERAND (expr, 0);
+      orig_op1 = op1 = TREE_OPERAND (expr, 1);
+      op2 = TREE_OPERAND (expr, 2);
+      op3 = TREE_OPERAND (expr, 3);
+      op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
+				   maybe_const_itself);
+      op1 = c_fully_fold_internal (op1, in_init, maybe_const_operands,
+				   maybe_const_itself);
+      op1 = decl_constant_value_for_optimization (op1);
+      if (op0 != orig_op0 || op1 != orig_op1)
+	ret = build4 (ARRAY_REF, TREE_TYPE (expr), op0, op1, op2, op3);
+      if (ret != expr)
+	{
+	  TREE_READONLY (ret) = TREE_READONLY (expr);
+	  TREE_SIDE_EFFECTS (ret) = TREE_SIDE_EFFECTS (expr);
+	  TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (expr);
+	}
+      ret = fold (ret);
+      goto out;
+
+    case COMPOUND_EXPR:
+    case MODIFY_EXPR:
+    case PREDECREMENT_EXPR:
+    case PREINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case POINTER_PLUS_EXPR:
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case TRUNC_MOD_EXPR:
+    case RDIV_EXPR:
+    case EXACT_DIV_EXPR:
+    case LSHIFT_EXPR:
+    case RSHIFT_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case BIT_AND_EXPR:
+    case LT_EXPR:
+    case LE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+    case EQ_EXPR:
+    case NE_EXPR:
+    case COMPLEX_EXPR:
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
+    case UNORDERED_EXPR:
+    case ORDERED_EXPR:
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+      /* Binary operations evaluating both arguments (increment and
+	 decrement are binary internally in GCC).  */
+      orig_op0 = op0 = TREE_OPERAND (expr, 0);
+      orig_op1 = op1 = TREE_OPERAND (expr, 1);
+      op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
+				   maybe_const_itself);
+      if (code != MODIFY_EXPR
+	  && code != PREDECREMENT_EXPR
+	  && code != PREINCREMENT_EXPR
+	  && code != POSTDECREMENT_EXPR
+	  && code != POSTINCREMENT_EXPR)
+	op0 = decl_constant_value_for_optimization (op0);
+      /* The RHS of a MODIFY_EXPR was fully folded when building that
+	 expression for the sake of conversion warnings.  */
+      if (code != MODIFY_EXPR)
+	op1 = c_fully_fold_internal (op1, in_init, maybe_const_operands,
+				     maybe_const_itself);
+      op1 = decl_constant_value_for_optimization (op1);
+      if (op0 != orig_op0 || op1 != orig_op1 || in_init)
+	ret = in_init
+	  ? fold_build2_initializer (code, TREE_TYPE (expr), op0, op1)
+	  : fold_build2 (code, TREE_TYPE (expr), op0, op1);
+      else
+	ret = fold (expr);
+      goto out;
+
+    case INDIRECT_REF:
+    case FIX_TRUNC_EXPR:
+    case FLOAT_EXPR:
+    CASE_CONVERT:
+    case NON_LVALUE_EXPR:
+    case NEGATE_EXPR:
+    case BIT_NOT_EXPR:
+    case TRUTH_NOT_EXPR:
+    case ADDR_EXPR:
+    case CONJ_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      /* Unary operations.  */
+      orig_op0 = op0 = TREE_OPERAND (expr, 0);
+      op0 = c_fully_fold_internal (op0, in_init, maybe_const_operands,
+				   maybe_const_itself);
+      if (code != ADDR_EXPR && code != REALPART_EXPR && code != IMAGPART_EXPR)
+	op0 = decl_constant_value_for_optimization (op0);
+      if (op0 != orig_op0 || in_init)
+	ret = in_init
+	  ? fold_build1_initializer (code, TREE_TYPE (expr), op0)
+	  : fold_build1 (code, TREE_TYPE (expr), op0);
+      else
+	ret = fold (expr);
+      if (code == INDIRECT_REF
+	  && ret != expr
+	  && TREE_CODE (ret) == INDIRECT_REF)
+	{
+	  TREE_READONLY (ret) = TREE_READONLY (expr);
+	  TREE_SIDE_EFFECTS (ret) = TREE_SIDE_EFFECTS (expr);
+	  TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (expr);
+	}
+      goto out;
+
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
+      /* Binary operations not necessarily evaluating both
+	 arguments.  */
+      orig_op0 = op0 = TREE_OPERAND (expr, 0);
+      orig_op1 = op1 = TREE_OPERAND (expr, 1);
+      op0 = c_fully_fold_internal (op0, in_init, &op0_const, &op0_const_self);
+      op1 = c_fully_fold_internal (op1, in_init, &op1_const, &op1_const_self);
+      if (op0 != orig_op0 || op1 != orig_op1 || in_init)
+	ret = in_init
+	  ? fold_build2_initializer (code, TREE_TYPE (expr), op0, op1)
+	  : fold_build2 (code, TREE_TYPE (expr), op0, op1);
+      else
+	ret = fold (expr);
+      *maybe_const_operands &= op0_const;
+      *maybe_const_itself &= op0_const_self;
+      if (!(flag_isoc99
+	    && op0_const
+	    && op0_const_self
+	    && (code == TRUTH_ANDIF_EXPR
+		? op0 == truthvalue_false_node
+		: op0 == truthvalue_true_node)))
+	*maybe_const_operands &= op1_const;
+      if (!(op0_const
+	    && op0_const_self
+	    && (code == TRUTH_ANDIF_EXPR
+		? op0 == truthvalue_false_node
+		: op0 == truthvalue_true_node)))
+	*maybe_const_itself &= op1_const_self;
+      goto out;
+
+    case COND_EXPR:
+      orig_op0 = op0 = TREE_OPERAND (expr, 0);
+      orig_op1 = op1 = TREE_OPERAND (expr, 1);
+      orig_op2 = op2 = TREE_OPERAND (expr, 2);
+      op0 = c_fully_fold_internal (op0, in_init, &op0_const, &op0_const_self);
+      op1 = c_fully_fold_internal (op1, in_init, &op1_const, &op1_const_self);
+      op2 = c_fully_fold_internal (op2, in_init, &op2_const, &op2_const_self);
+      if (op0 != orig_op0 || op1 != orig_op1 || op2 != orig_op2)
+	ret = fold_build3 (code, TREE_TYPE (expr), op0, op1, op2);
+      else
+	ret = fold (expr);
+      *maybe_const_operands &= op0_const;
+      *maybe_const_itself &= op0_const_self;
+      if (!(flag_isoc99
+	    && op0_const
+	    && op0_const_self
+	    && op0 == truthvalue_false_node))
+	*maybe_const_operands &= op1_const;
+      if (!(op0_const
+	    && op0_const_self
+	    && op0 == truthvalue_false_node))
+	*maybe_const_itself &= op1_const_self;
+      if (!(flag_isoc99
+	    && op0_const
+	    && op0_const_self
+	    && op0 == truthvalue_true_node))
+	*maybe_const_operands &= op2_const;
+      if (!(op0_const
+	    && op0_const_self
+	    && op0 == truthvalue_true_node))
+	*maybe_const_itself &= op2_const_self;
+      goto out;
+
+    default:
+      /* Various codes may appear through folding built-in functions
+	 and their arguments.  */
+      goto out;
+    }
+
+ out:
+  /* Some folding may introduce NON_LVALUE_EXPRs; all lvalue checks
+     have been done by this point, so remove them again.  */
+  nowarning |= TREE_NO_WARNING (ret);
+  STRIP_TYPE_NOPS (ret);
+  if (nowarning && !TREE_NO_WARNING (ret))
+    {
+      if (!CAN_HAVE_LOCATION_P (ret))
+	ret = build1 (NOP_EXPR, TREE_TYPE (ret), ret);
+      TREE_NO_WARNING (ret) = 1;
+    }
+  if (ret != expr)
+    protected_set_expr_location (ret, loc);
+  return ret;
+}
+
+/* If not optimizing, EXP is not a VAR_DECL, or EXP has array type,
+   return EXP.  Otherwise, return either EXP or its known constant
+   value (if it has one), but return EXP if EXP has mode BLKmode.  ???
+   Is the BLKmode test appropriate?  */
+
+tree
+decl_constant_value_for_optimization (tree exp)
+{
+  tree ret;
+
+  /* This function is only used by C, for c_fully_fold and other
+     optimization, and may not be correct for C++.  */
+  if (c_dialect_cxx ())
+    gcc_unreachable ();
+
+  if (!optimize
+      || TREE_CODE (exp) != VAR_DECL
+      || TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE
+      || DECL_MODE (exp) == BLKmode)
+    return exp;
+
+  ret = decl_constant_value (exp);
+  /* Avoid unwanted tree sharing between the initializer and current
+     function's body where the tree can be modified e.g. by the
+     gimplifier.  */
+  if (ret != exp && TREE_STATIC (exp))
+    ret = unshare_expr (ret);
+  return ret;
+}
+
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
    requires to be a constant expression.
@@ -3328,6 +3713,27 @@ pointer_int_sum (location_t location, enum tree_code resultcode,
   return ret;
 }
 
+/* Wrap a SAVE_EXPR around EXPR, if appropriate.  Like save_expr, but
+   for C folds the inside expression and wraps a C_MAYBE_CONST_EXPR
+   around the SAVE_EXPR if needed so that c_fully_fold does not need
+   to look inside SAVE_EXPRs.  */
+
+tree
+c_save_expr (tree expr)
+{
+  bool maybe_const = true;
+  if (c_dialect_cxx ())
+    return save_expr (expr);
+  expr = c_fully_fold (expr, false, &maybe_const);
+  expr = save_expr (expr);
+  if (!maybe_const)
+    {
+      expr = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (expr), NULL, expr);
+      C_MAYBE_CONST_EXPR_NON_CONST (expr) = 1;
+    }
+  return expr;
+}
+
 /* Return whether EXPR is a declaration whose address can never be
    NULL.  */
 
@@ -3470,12 +3876,23 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
-      return fold_build3 (COND_EXPR, truthvalue_type_node,
-		TREE_OPERAND (expr, 0),
-		c_common_truthvalue_conversion (location,
-						TREE_OPERAND (expr, 1)),
-		c_common_truthvalue_conversion (location,
-						TREE_OPERAND (expr, 2)));
+      if (c_dialect_cxx ())
+	return fold_build3 (COND_EXPR, truthvalue_type_node,
+			    TREE_OPERAND (expr, 0),
+			    c_common_truthvalue_conversion (location,
+							    TREE_OPERAND (expr,
+									  1)),
+			    c_common_truthvalue_conversion (location,
+							    TREE_OPERAND (expr,
+									  2)));
+      else
+	/* Folding will happen later for C.  */
+	return build3 (COND_EXPR, truthvalue_type_node,
+		       TREE_OPERAND (expr, 0),
+		       c_common_truthvalue_conversion (location,
+						       TREE_OPERAND (expr, 1)),
+		       c_common_truthvalue_conversion (location,
+						       TREE_OPERAND (expr, 2)));
 
     CASE_CONVERT:
       /* Don't cancel the effect of a CONVERT_EXPR from a REFERENCE_TYPE,
@@ -3506,7 +3923,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 
   if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
     {
-      tree t = save_expr (expr);
+      tree t = c_save_expr (expr);
       return (build_binary_op
 	      (EXPR_LOCATION (expr),
 	       (TREE_SIDE_EFFECTS (expr)

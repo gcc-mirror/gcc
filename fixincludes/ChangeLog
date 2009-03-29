@@ -1,3 +1,15 @@
+2009-03-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/456
+	PR c/5675
+	PR c/19976
+	PR c/29116
+	PR c/31871
+	PR c/35198
+	* inclhack.def (glibc_tgmath): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/tgmath.h: New.
+
 2009-03-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (aix_syswait, exception_structure,
