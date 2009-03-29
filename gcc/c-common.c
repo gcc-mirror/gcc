@@ -5444,43 +5444,6 @@ finish_label_address_expr (tree label, location_t loc)
 
   return result;
 }
-
-/* Hook used by expand_expr to expand language-specific tree codes.  */
-/* The only things that should go here are bits needed to expand
-   constant initializers.  Everything else should be handled by the
-   gimplification routines.  */
-
-rtx
-c_expand_expr (tree exp, rtx target, enum machine_mode tmode,
-	       int modifiera /* Actually enum expand_modifier.  */,
-	       rtx *alt_rtl)
-{
-  enum expand_modifier modifier = (enum expand_modifier) modifiera;
-  switch (TREE_CODE (exp))
-    {
-    case COMPOUND_LITERAL_EXPR:
-      {
-	/* Initialize the anonymous variable declared in the compound
-	   literal, then return the variable.  */
-	tree decl = COMPOUND_LITERAL_EXPR_DECL (exp);
-	emit_local_var (decl);
-	return expand_expr_real (decl, target, tmode, modifier, alt_rtl);
-      }
-
-    default:
-      gcc_unreachable ();
-    }
-}
-
-/* Hook used by staticp to handle language-specific tree codes.  */
-
-tree
-c_staticp (tree exp)
-{
-  return (TREE_CODE (exp) == COMPOUND_LITERAL_EXPR
-	  && TREE_STATIC (COMPOUND_LITERAL_EXPR_DECL (exp))
-	  ? exp : NULL);
-}
 
 
 /* Given a boolean expression ARG, return a tree representing an increment

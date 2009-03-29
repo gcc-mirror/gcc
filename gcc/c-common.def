@@ -24,13 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Tree nodes used in the C frontend.  These are also shared with the
    C++ and Objective C frontends.  */
 
-/* A COMPOUND_LITERAL_EXPR represents a C99 compound literal.  The
-   COMPOUND_LITERAL_EXPR_DECL_STMT is the a DECL_STMT containing the decl
-   for the anonymous object represented by the COMPOUND_LITERAL;
-   the DECL_INITIAL of that decl is the CONSTRUCTOR that initializes
-   the compound literal.  */
-DEFTREECODE (COMPOUND_LITERAL_EXPR, "compound_literal_expr", tcc_expression, 1)
-
 /* A C_MAYBE_CONST_EXPR, currently only used for C and Objective C,
    tracks information about constancy of an expression and VLA type
    sizes or VM expressions from typeof that need to be evaluated

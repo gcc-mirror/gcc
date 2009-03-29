@@ -3456,6 +3456,83 @@ rhs_predicate_for (tree lhs)
     return is_gimple_mem_or_call_rhs;
 }
 
+/* Gimplify a C99 compound literal expression.  This just means adding
+   the DECL_EXPR before the current statement and using its anonymous
+   decl instead.  */
+
+static enum gimplify_status
+gimplify_compound_literal_expr (tree *expr_p, gimple_seq *pre_p)
+{
+  tree decl_s = COMPOUND_LITERAL_EXPR_DECL_EXPR (*expr_p);
+  tree decl = DECL_EXPR_DECL (decl_s);
+  /* Mark the decl as addressable if the compound literal
+     expression is addressable now, otherwise it is marked too late
+     after we gimplify the initialization expression.  */
+  if (TREE_ADDRESSABLE (*expr_p))
+    TREE_ADDRESSABLE (decl) = 1;
+
+  /* Preliminarily mark non-addressed complex variables as eligible
+     for promotion to gimple registers.  We'll transform their uses
+     as we find them.  */
+  if ((TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE
+       || TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE)
+      && !TREE_THIS_VOLATILE (decl)
+      && !needs_to_live_in_memory (decl))
+    DECL_GIMPLE_REG_P (decl) = 1;
+
+  /* This decl isn't mentioned in the enclosing block, so add it to the
+     list of temps.  FIXME it seems a bit of a kludge to say that
+     anonymous artificial vars aren't pushed, but everything else is.  */
+  if (DECL_NAME (decl) == NULL_TREE && !DECL_SEEN_IN_BIND_EXPR_P (decl))
+    gimple_add_tmp_var (decl);
+
+  gimplify_and_add (decl_s, pre_p);
+  *expr_p = decl;
+  return GS_OK;
+}
+
+/* Optimize embedded COMPOUND_LITERAL_EXPRs within a CONSTRUCTOR,
+   return a new CONSTRUCTOR if something changed.  */
+
+static tree
+optimize_compound_literals_in_ctor (tree orig_ctor)
+{
+  tree ctor = orig_ctor;
+  VEC(constructor_elt,gc) *elts = CONSTRUCTOR_ELTS (ctor);
+  unsigned int idx, num = VEC_length (constructor_elt, elts);
+
+  for (idx = 0; idx < num; idx++)
+    {
+      tree value = VEC_index (constructor_elt, elts, idx)->value;
+      tree newval = value;
+      if (TREE_CODE (value) == CONSTRUCTOR)
+	newval = optimize_compound_literals_in_ctor (value);
+      else if (TREE_CODE (value) == COMPOUND_LITERAL_EXPR)
+	{
+	  tree decl_s = COMPOUND_LITERAL_EXPR_DECL_EXPR (value);
+	  tree decl = DECL_EXPR_DECL (decl_s);
+	  tree init = DECL_INITIAL (decl);
+
+	  if (!TREE_ADDRESSABLE (value)
+	      && !TREE_ADDRESSABLE (decl)
+	      && init)
+	    newval = optimize_compound_literals_in_ctor (init);
+	}
+      if (newval == value)
+	continue;
+
+      if (ctor == orig_ctor)
+	{
+	  ctor = copy_node (orig_ctor);
+	  CONSTRUCTOR_ELTS (ctor) = VEC_copy (constructor_elt, gc, elts);
+	  elts = CONSTRUCTOR_ELTS (ctor);
+	}
+      VEC_index (constructor_elt, elts, idx)->value = newval;
+    }
+  return ctor;
+}
+
+
 
 /* A subroutine of gimplify_modify_expr.  Break out elements of a
    CONSTRUCTOR used as an initializer into separate MODIFY_EXPRs.
@@ -3474,7 +3551,7 @@ static enum gimplify_status
 gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 			   bool want_value, bool notify_temp_creation)
 {
-  tree object;
+  tree object, new_ctor;
   tree ctor = TREE_OPERAND (*expr_p, 1);
   tree type = TREE_TYPE (ctor);
   enum gimplify_status ret;
@@ -3492,7 +3569,8 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
     }
 
   object = TREE_OPERAND (*expr_p, 0);
-  elts = CONSTRUCTOR_ELTS (ctor);
+  new_ctor = optimize_compound_literals_in_ctor (ctor);
+  elts = CONSTRUCTOR_ELTS (new_ctor);
   ret = GS_ALL_DONE;
 
   switch (TREE_CODE (type))
@@ -4099,6 +4177,26 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
 	  return GS_OK;
 	}
 	
+      case COMPOUND_LITERAL_EXPR:
+	{
+	  tree complit = TREE_OPERAND (*expr_p, 1);
+	  tree decl_s = COMPOUND_LITERAL_EXPR_DECL_EXPR (complit);
+	  tree decl = DECL_EXPR_DECL (decl_s);
+	  tree init = DECL_INITIAL (decl);
+
+	  /* struct T x = (struct T) { 0, 1, 2 } can be optimized
+	     into struct T x = { 0, 1, 2 } if the address of the
+	     compound literal has never been taken.  */
+	  if (!TREE_ADDRESSABLE (complit)
+	      && !TREE_ADDRESSABLE (decl)
+	      && init)
+	    {
+	      *expr_p = copy_node (*expr_p);
+	      TREE_OPERAND (*expr_p, 1) = init;
+	      return GS_OK;
+	    }
+	}
+
       default:
 	ret = GS_UNHANDLED;
 	break;
@@ -6359,6 +6457,10 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case COMPOUND_EXPR:
 	  ret = gimplify_compound_expr (expr_p, pre_p, fallback != fb_none);
+	  break;
+
+	case COMPOUND_LITERAL_EXPR:
+	  ret = gimplify_compound_literal_expr (expr_p, pre_p);
 	  break;
 
 	case MODIFY_EXPR:

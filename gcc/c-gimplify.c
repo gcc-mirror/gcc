@@ -176,145 +176,25 @@ c_build_bind_expr (tree block, tree body)
 
 /* Gimplification of expression trees.  */
 
-/* Gimplify a C99 compound literal expression.  This just means adding
-   the DECL_EXPR before the current statement and using its anonymous
-   decl instead.  */
-
-static enum gimplify_status
-gimplify_compound_literal_expr (tree *expr_p, gimple_seq *pre_p)
-{
-  tree decl_s = COMPOUND_LITERAL_EXPR_DECL_STMT (*expr_p);
-  tree decl = DECL_EXPR_DECL (decl_s);
-  /* Mark the decl as addressable if the compound literal
-     expression is addressable now, otherwise it is marked too late
-     after we gimplify the initialization expression.  */
-  if (TREE_ADDRESSABLE (*expr_p))
-    TREE_ADDRESSABLE (decl) = 1;
-
-  /* Preliminarily mark non-addressed complex variables as eligible
-     for promotion to gimple registers.  We'll transform their uses
-     as we find them.  */
-  if ((TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE
-       || TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE)
-      && !TREE_THIS_VOLATILE (decl)
-      && !needs_to_live_in_memory (decl))
-    DECL_GIMPLE_REG_P (decl) = 1;
-
-  /* This decl isn't mentioned in the enclosing block, so add it to the
-     list of temps.  FIXME it seems a bit of a kludge to say that
-     anonymous artificial vars aren't pushed, but everything else is.  */
-  if (DECL_NAME (decl) == NULL_TREE && !DECL_SEEN_IN_BIND_EXPR_P (decl))
-    gimple_add_tmp_var (decl);
-
-  gimplify_and_add (decl_s, pre_p);
-  *expr_p = decl;
-  return GS_OK;
-}
-
-/* Optimize embedded COMPOUND_LITERAL_EXPRs within a CONSTRUCTOR,
-   return a new CONSTRUCTOR if something changed.  */
-
-static tree
-optimize_compound_literals_in_ctor (tree orig_ctor)
-{
-  tree ctor = orig_ctor;
-  VEC(constructor_elt,gc) *elts = CONSTRUCTOR_ELTS (ctor);
-  unsigned int idx, num = VEC_length (constructor_elt, elts);
-
-  for (idx = 0; idx < num; idx++)
-    {
-      tree value = VEC_index (constructor_elt, elts, idx)->value;
-      tree newval = value;
-      if (TREE_CODE (value) == CONSTRUCTOR)
-	newval = optimize_compound_literals_in_ctor (value);
-      else if (TREE_CODE (value) == COMPOUND_LITERAL_EXPR)
-	{
-	  tree decl_s = COMPOUND_LITERAL_EXPR_DECL_STMT (value);
-	  tree decl = DECL_EXPR_DECL (decl_s);
-	  tree init = DECL_INITIAL (decl);
-
-	  if (!TREE_ADDRESSABLE (value)
-	      && !TREE_ADDRESSABLE (decl)
-	      && init)
-	    newval = init;
-	}
-      if (newval == value)
-	continue;
-
-      if (ctor == orig_ctor)
-	{
-	  ctor = copy_node (orig_ctor);
-	  CONSTRUCTOR_ELTS (ctor) = VEC_copy (constructor_elt, gc, elts);
-	  elts = CONSTRUCTOR_ELTS (ctor);
-	}
-      VEC_index (constructor_elt, elts, idx)->value = newval;
-    }
-  return ctor;
-}
-
 /* Do C-specific gimplification on *EXPR_P.  PRE_P and POST_P are as in
    gimplify_expr.  */
 
 int
-c_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
+c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 		 gimple_seq *post_p ATTRIBUTE_UNUSED)
 {
   enum tree_code code = TREE_CODE (*expr_p);
 
-  switch (code)
-    {
-    case DECL_EXPR:
-      /* This is handled mostly by gimplify.c, but we have to deal with
-	 not warning about int x = x; as it is a GCC extension to turn off
-	 this warning but only if warn_init_self is zero.  */
-      if (TREE_CODE (DECL_EXPR_DECL (*expr_p)) == VAR_DECL
-	  && !DECL_EXTERNAL (DECL_EXPR_DECL (*expr_p))
-	  && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
-	  && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p))
-	      == DECL_EXPR_DECL (*expr_p))
-	  && !warn_init_self)
-	TREE_NO_WARNING (DECL_EXPR_DECL (*expr_p)) = 1;
-      return GS_UNHANDLED;
+  /* This is handled mostly by gimplify.c, but we have to deal with
+     not warning about int x = x; as it is a GCC extension to turn off
+     this warning but only if warn_init_self is zero.  */
+  if (code == DECL_EXPR
+      && TREE_CODE (DECL_EXPR_DECL (*expr_p)) == VAR_DECL
+      && !DECL_EXTERNAL (DECL_EXPR_DECL (*expr_p))
+      && !TREE_STATIC (DECL_EXPR_DECL (*expr_p))
+      && (DECL_INITIAL (DECL_EXPR_DECL (*expr_p)) == DECL_EXPR_DECL (*expr_p))
+      && !warn_init_self)
+    TREE_NO_WARNING (DECL_EXPR_DECL (*expr_p)) = 1;
 
-    case COMPOUND_LITERAL_EXPR:
-      return gimplify_compound_literal_expr (expr_p, pre_p);
-
-    case INIT_EXPR:
-    case MODIFY_EXPR:
-      if (TREE_CODE (TREE_OPERAND (*expr_p, 1)) == COMPOUND_LITERAL_EXPR)
-	{
-	  tree complit = TREE_OPERAND (*expr_p, 1);
-	  tree decl_s = COMPOUND_LITERAL_EXPR_DECL_STMT (complit);
-	  tree decl = DECL_EXPR_DECL (decl_s);
-	  tree init = DECL_INITIAL (decl);
-
-	  /* struct T x = (struct T) { 0, 1, 2 } can be optimized
-	     into struct T x = { 0, 1, 2 } if the address of the
-	     compound literal has never been taken.  */
-	  if (!TREE_ADDRESSABLE (complit)
-	      && !TREE_ADDRESSABLE (decl)
-	      && init)
-	    {
-	      *expr_p = copy_node (*expr_p);
-	      TREE_OPERAND (*expr_p, 1) = init;
-	      return GS_OK;
-	    }
-	}
-      else if (TREE_CODE (TREE_OPERAND (*expr_p, 1)) == CONSTRUCTOR)
-	{
-	  tree ctor
-	    = optimize_compound_literals_in_ctor (TREE_OPERAND (*expr_p, 1));
-
-	  if (ctor != TREE_OPERAND (*expr_p, 1))
-	    {
-	      *expr_p = copy_node (*expr_p);
-	      TREE_OPERAND (*expr_p, 1) = ctor;
-	      return GS_OK;
-	    }
-	}
-      return GS_UNHANDLED;
-
-    default:
-      return GS_UNHANDLED;
-    }
+  return GS_UNHANDLED;
 }
