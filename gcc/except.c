@@ -3860,30 +3860,80 @@ get_eh_throw_stmt_table (struct function *fun)
 }
 
 /* Dump EH information to OUT.  */
+
 void
-dump_eh_tree (FILE *out, struct function *fun)
+dump_eh_tree (FILE * out, struct function *fun)
 {
   struct eh_region *i;
   int depth = 0;
-  static const char * const type_name[] = {"unknown", "cleanup", "try", "catch",
-					   "allowed_exceptions", "must_not_throw",
-					   "throw"};
+  static const char *const type_name[] = { "unknown", "cleanup", "try", "catch",
+    					   "allowed_exceptions", "must_not_throw",
+    					   "throw"
+  					 };
 
   i = fun->eh->region_tree;
-  if (! i)
+  if (!i)
     return;
 
   fprintf (out, "Eh tree:\n");
   while (1)
     {
       fprintf (out, "  %*s %i %s", depth * 2, "",
-	       i->region_number, type_name [(int)i->type]);
+	       i->region_number, type_name[(int) i->type]);
       if (i->tree_label)
 	{
-          fprintf (out, " tree_label:");
+	  fprintf (out, " tree_label:");
 	  print_generic_expr (out, i->tree_label, 0);
 	}
-      fprintf (out, "\n");
+      switch (i->type)
+	{
+	case ERT_CLEANUP:
+	  if (i->u.cleanup.prev_try)
+	    fprintf (out, " prev try:%i",
+		     i->u.cleanup.prev_try->region_number);
+	  break;
+
+	case ERT_TRY:
+	  {
+	    struct eh_region *c;
+	    fprintf (out, " catch regions:");
+	    for (c = i->u.eh_try.eh_catch; c; c = c->u.eh_catch.next_catch)
+	      fprintf (out, " %i", c->region_number);
+	  }
+	  break;
+
+	case ERT_CATCH:
+	  if (i->u.eh_catch.prev_catch)
+	    fprintf (out, " prev: %i",
+		     i->u.eh_catch.prev_catch->region_number);
+	  if (i->u.eh_catch.next_catch)
+	    fprintf (out, " next %i",
+		     i->u.eh_catch.next_catch->region_number);
+	  break;
+
+	case ERT_ALLOWED_EXCEPTIONS:
+	  fprintf (out, "filter :%i types:", i->u.allowed.filter);
+	  print_generic_expr (out, i->u.allowed.type_list, 0);
+	  break;
+
+	case ERT_THROW:
+	  fprintf (out, "type:");
+	  print_generic_expr (out, i->u.eh_throw.type, 0);
+	  break;
+
+	case ERT_MUST_NOT_THROW:
+	  break;
+
+	case ERT_UNKNOWN:
+	  break;
+	}
+      if (i->aka)
+	{
+	  fprintf (out, " also known as:");
+	  dump_bitmap (out, i->aka);
+	}
+      else
+	fprintf (out, "\n");
       /* If there are sub-regions, process them.  */
       if (i->inner)
 	i = i->inner, depth++;
@@ -3893,12 +3943,14 @@ dump_eh_tree (FILE *out, struct function *fun)
       /* Otherwise, step back up the tree to the next peer.  */
       else
 	{
-	  do {
-	    i = i->outer;
-	    depth--;
-	    if (i == NULL)
-	      return;
-	  } while (i->next_peer == NULL);
+	  do
+	    {
+	      i = i->outer;
+	      depth--;
+	      if (i == NULL)
+		return;
+	    }
+	  while (i->next_peer == NULL);
 	  i = i->next_peer;
 	}
     }
