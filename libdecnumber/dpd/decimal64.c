@@ -29,7 +29,7 @@
    02110-1301, USA.  */
 
 /* ------------------------------------------------------------------ */
-/* Decimal 64-bit format module					      */
+/* Decimal 64-bit format module 				      */
 /* ------------------------------------------------------------------ */
 /* This module comprises the routines for decimal64 format numbers.   */
 /* Conversions are supplied to and from decNumber and String.	      */
@@ -42,8 +42,8 @@
 #include <string.h>	      /* [for memset/memcpy] */
 #include <stdio.h>	      /* [for printf] */
 
-#include "dconfig.h"	      /* GCC definitions */
-#define	 DECNUMDIGITS 16      /* make decNumbers with space for 16 */
+#include "dconfig.h"          /* GCC definitions */
+#define  DECNUMDIGITS 16      /* make decNumbers with space for 16 */
 #include "decNumber.h"	      /* base number library */
 #include "decNumberLocal.h"   /* decNumber local types, etc. */
 #include "decimal64.h"	      /* our primary include */
@@ -75,9 +75,9 @@ extern void decNumberShow(const decNumber *);	  /* .. */
 /* ------------------------------------------------------------------ */
 /* decimal64FromNumber -- convert decNumber to decimal64	      */
 /*								      */
-/*   ds is the target decimal64					      */
+/*   ds is the target decimal64 				      */
 /*   dn is the source number (assumed valid)			      */
-/*   set is the context, used only for reporting errors		      */
+/*   set is the context, used only for reporting errors 	      */
 /*								      */
 /* The set argument is used only for status reporting and for the     */
 /* rounding mode (used if the coefficient is more than DECIMAL64_Pmax */
@@ -95,8 +95,8 @@ decimal64 * decimal64FromNumber(decimal64 *d64, const decNumber *dn,
   Int ae;			   /* adjusted exponent */
   decNumber  dw;		   /* work */
   decContext dc;		   /* .. */
-  uInt *pu;			   /* .. */
   uInt comb, exp;		   /* .. */
+  uInt uiwork;			   /* for macros */
   uInt targar[2]={0, 0};	   /* target 64-bit */
   #define targhi targar[1]	   /* name the word with the sign */
   #define targlo targar[0]	   /* and the other */
@@ -106,9 +106,9 @@ decimal64 * decimal64FromNumber(decimal64 *d64, const decNumber *dn,
   /* constraints.  This could push the number to Infinity or zero, */
   /* so this check and rounding must be done before generating the */
   /* decimal64] */
-  ae=dn->exponent+dn->digits-1;		     /* [0 if special] */
-  if (dn->digits>DECIMAL64_Pmax		     /* too many digits */
-   || ae>DECIMAL64_Emax			     /* likely overflow */
+  ae=dn->exponent+dn->digits-1; 	     /* [0 if special] */
+  if (dn->digits>DECIMAL64_Pmax 	     /* too many digits */
+   || ae>DECIMAL64_Emax 		     /* likely overflow */
    || ae<DECIMAL64_Emin) {		     /* likely underflow */
     decContextDefault(&dc, DEC_INIT_DECIMAL64); /* [no traps] */
     dc.round=set->round;		     /* use supplied rounding */
@@ -122,7 +122,7 @@ decimal64 * decimal64FromNumber(decimal64 *d64, const decNumber *dn,
   if (dn->bits&DECSPECIAL) {			  /* a special value */
     if (dn->bits&DECINF) targhi=DECIMAL_Inf<<24;
      else {					  /* sNaN or qNaN */
-      if ((*dn->lsu!=0 || dn->digits>1)		  /* non-zero coefficient */
+      if ((*dn->lsu!=0 || dn->digits>1) 	  /* non-zero coefficient */
        && (dn->digits<DECIMAL64_Pmax)) {	  /* coefficient fits */
 	decDigitsToDPD(dn, targar, 0);
 	}
@@ -148,7 +148,7 @@ decimal64 * decimal64FromNumber(decimal64 *d64, const decNumber *dn,
       comb=(exp>>5) & 0x18;		/* msd=0, exp top 2 bits .. */
       }
      else {				/* non-zero finite number */
-      uInt msd;				/* work */
+      uInt msd; 			/* work */
       Int pad=0;			/* coefficient pad digits */
 
       /* the dn is known to fit, but it may need to be padded */
@@ -193,14 +193,15 @@ decimal64 * decimal64FromNumber(decimal64 *d64, const decNumber *dn,
   if (dn->bits&DECNEG) targhi|=0x80000000; /* add sign bit */
 
   /* now write to storage; this is now always endian */
-  pu=(uInt *)d64->bytes;	   /* overlay */
   if (DECLITEND) {
-    pu[0]=targar[0];		   /* directly store the low int */
-    pu[1]=targar[1];		   /* then the high int */
+    /* lo int then hi */
+    UBFROMUI(d64->bytes,   targar[0]);
+    UBFROMUI(d64->bytes+4, targar[1]);
     }
    else {
-    pu[0]=targar[1];		   /* directly store the high int */
-    pu[1]=targar[0];		   /* then the low int */
+    /* hi int then lo */
+    UBFROMUI(d64->bytes,   targar[1]);
+    UBFROMUI(d64->bytes+4, targar[0]);
     }
 
   if (status!=0) decContextSetStatus(set, status); /* pass on status */
@@ -218,21 +219,20 @@ decNumber * decimal64ToNumber(const decimal64 *d64, decNumber *dn) {
   uInt msd;			   /* coefficient MSD */
   uInt exp;			   /* exponent top two bits */
   uInt comb;			   /* combination field */
-  const uInt *pu;		   /* work */
-  Int  need;			   /* .. */
+  Int  need;			   /* work */
+  uInt uiwork;			   /* for macros */
   uInt sourar[2];		   /* source 64-bit */
   #define sourhi sourar[1]	   /* name the word with the sign */
   #define sourlo sourar[0]	   /* and the lower word */
 
   /* load source from storage; this is endian */
-  pu=(const uInt *)d64->bytes;	   /* overlay */
   if (DECLITEND) {
-    sourlo=pu[0];		   /* directly load the low int */
-    sourhi=pu[1];		   /* then the high int */
+    sourlo=UBTOUI(d64->bytes  );   /* directly load the low int */
+    sourhi=UBTOUI(d64->bytes+4);   /* then the high int */
     }
    else {
-    sourhi=pu[0];		   /* directly load the high int */
-    sourlo=pu[1];		   /* then the low int */
+    sourhi=UBTOUI(d64->bytes  );   /* directly load the high int */
+    sourlo=UBTOUI(d64->bytes+4);   /* then the low int */
     }
 
   comb=(sourhi>>26)&0x1f;	   /* combination field */
@@ -243,7 +243,7 @@ decNumber * decimal64ToNumber(const decimal64 *d64, decNumber *dn) {
   msd=COMBMSD[comb];		   /* decode the combination field */
   exp=COMBEXP[comb];		   /* .. */
 
-  if (exp==3) {			   /* is a special */
+  if (exp==3) { 		   /* is a special */
     if (msd==0) {
       dn->bits|=DECINF;
       return dn;		   /* no coefficient needed */
@@ -281,11 +281,11 @@ decNumber * decimal64ToNumber(const decimal64 *d64, decNumber *dn) {
 
 
 /* ------------------------------------------------------------------ */
-/* to-scientific-string -- conversion to numeric string		      */
+/* to-scientific-string -- conversion to numeric string 	      */
 /* to-engineering-string -- conversion to numeric string	      */
 /*								      */
 /*   decimal64ToString(d64, string);				      */
-/*   decimal64ToEngString(d64, string);				      */
+/*   decimal64ToEngString(d64, string); 			      */
 /*								      */
 /*  d64 is the decimal64 format number to convert		      */
 /*  string is the string where the result will be laid out	      */
@@ -295,7 +295,7 @@ decNumber * decimal64ToNumber(const decimal64 *d64, decNumber *dn) {
 /*  No error is possible, and no status can be set.		      */
 /* ------------------------------------------------------------------ */
 char * decimal64ToEngString(const decimal64 *d64, char *string){
-  decNumber dn;				/* work */
+  decNumber dn; 			/* work */
   decimal64ToNumber(d64, &dn);
   decNumberToEngString(&dn, string);
   return string;
@@ -305,27 +305,26 @@ char * decimal64ToString(const decimal64 *d64, char *string){
   uInt msd;			   /* coefficient MSD */
   Int  exp;			   /* exponent top two bits or full */
   uInt comb;			   /* combination field */
-  char *cstart;			   /* coefficient start */
+  char *cstart; 		   /* coefficient start */
   char *c;			   /* output pointer in string */
-  const uInt *pu;		   /* work */
+  const uByte *u;		   /* work */
   char *s, *t;			   /* .. (source, target) */
   Int  dpd;			   /* .. */
   Int  pre, e;			   /* .. */
-  const uByte *u;		   /* .. */
+  uInt uiwork;			   /* for macros */
 
   uInt sourar[2];		   /* source 64-bit */
   #define sourhi sourar[1]	   /* name the word with the sign */
   #define sourlo sourar[0]	   /* and the lower word */
 
   /* load source from storage; this is endian */
-  pu=(const uInt *)d64->bytes;	   /* overlay */
   if (DECLITEND) {
-    sourlo=pu[0];		   /* directly load the low int */
-    sourhi=pu[1];		   /* then the high int */
+    sourlo=UBTOUI(d64->bytes  );   /* directly load the low int */
+    sourhi=UBTOUI(d64->bytes+4);   /* then the high int */
     }
    else {
-    sourhi=pu[0];		   /* directly load the high int */
-    sourlo=pu[1];		   /* then the low int */
+    sourhi=UBTOUI(d64->bytes  );   /* directly load the high int */
+    sourlo=UBTOUI(d64->bytes+4);   /* then the low int */
     }
 
   c=string;			   /* where result will go */
@@ -337,7 +336,7 @@ char * decimal64ToString(const decimal64 *d64, char *string){
 
   if (exp==3) {
     if (msd==0) {		   /* infinity */
-      strcpy(c,	  "Inf");
+      strcpy(c,   "Inf");
       strcpy(c+3, "inity");
       return string;		   /* easy */
       }
@@ -362,7 +361,7 @@ char * decimal64ToString(const decimal64 *d64, char *string){
   /* length.  We use fixed-length memcpys because variable-length */
   /* causes a subroutine call in GCC.  (These are length 4 for speed */
   /* and are safe because the array has an extra terminator byte.) */
-  #define dpd2char u=&BIN2CHAR[DPD2BIN[dpd]*4];			  \
+  #define dpd2char u=&BIN2CHAR[DPD2BIN[dpd]*4]; 		  \
 		   if (c!=cstart) {memcpy(c, u+1, 4); c+=3;}	  \
 		    else if (*u)  {memcpy(c, u+4-*u, 4); c+=*u;}
 
@@ -379,7 +378,7 @@ char * decimal64ToString(const decimal64 *d64, char *string){
 
   if (c==cstart) *c++='0';	   /* all zeros -- make 0 */
 
-  if (exp==0) {			   /* integer or NaN case -- easy */
+  if (exp==0) { 		   /* integer or NaN case -- easy */
     *c='\0';			   /* terminate */
     return string;
     }
@@ -407,13 +406,13 @@ char * decimal64ToString(const decimal64 *d64, char *string){
     /* finally add the E-part, if needed; it will never be 0, and has */
     /* a maximum length of 3 digits */
     if (e!=0) {
-      *c++='E';			   /* starts with E */
-      *c++='+';			   /* assume positive */
+      *c++='E'; 		   /* starts with E */
+      *c++='+'; 		   /* assume positive */
       if (e<0) {
 	*(c-1)='-';		   /* oops, need '-' */
 	e=-e;			   /* uInt, please */
 	}
-      u=&BIN2CHAR[e*4];		   /* -> length byte */
+      u=&BIN2CHAR[e*4]; 	   /* -> length byte */
       memcpy(c, u+4-*u, 4);	   /* copy fixed 4 characters [is safe] */
       c+=*u;			   /* bump pointer appropriately */
       }
@@ -443,7 +442,7 @@ char * decimal64ToString(const decimal64 *d64, char *string){
 /*	    the conversion					      */
 /*  *string is the character string which should contain a valid      */
 /*	    number (which may be a special value)		      */
-/*  set	    is the context					      */
+/*  set     is the context					      */
 /*								      */
 /* The context is supplied to this routine is used for error handling */
 /* (setting of status and traps) and for the rounding mode, only.     */
@@ -452,7 +451,7 @@ char * decimal64ToString(const decimal64 *d64, char *string){
 decimal64 * decimal64FromString(decimal64 *result, const char *string,
 				decContext *set) {
   decContext dc;			     /* work */
-  decNumber dn;				     /* .. */
+  decNumber dn; 			     /* .. */
 
   decContextDefault(&dc, DEC_INIT_DECIMAL64); /* no traps, please */
   dc.round=set->round;			      /* use supplied rounding */
@@ -469,11 +468,11 @@ decimal64 * decimal64FromString(decimal64 *result, const char *string,
 /* ------------------------------------------------------------------ */
 /* decimal64IsCanonical -- test whether encoding is canonical	      */
 /*   d64 is the source decimal64				      */
-/*   returns 1 if the encoding of d64 is canonical, 0 otherwise	      */
+/*   returns 1 if the encoding of d64 is canonical, 0 otherwise       */
 /* No error is possible.					      */
 /* ------------------------------------------------------------------ */
-uint32_t decimal64IsCanonical(const decimal64 *d64) {
-  decNumber dn;				/* work */
+uInt decimal64IsCanonical(const decimal64 *d64) {
+  decNumber dn; 			/* work */
   decimal64 canon;			/* .. */
   decContext dc;			/* .. */
   decContextDefault(&dc, DEC_INIT_DECIMAL64);
@@ -490,7 +489,7 @@ uint32_t decimal64IsCanonical(const decimal64 *d64) {
 /* No error is possible.					      */
 /* ------------------------------------------------------------------ */
 decimal64 * decimal64Canonical(decimal64 *result, const decimal64 *d64) {
-  decNumber dn;				/* work */
+  decNumber dn; 			/* work */
   decContext dc;			/* .. */
   decContextDefault(&dc, DEC_INIT_DECIMAL64);
   decimal64ToNumber(d64, &dn);
@@ -520,8 +519,8 @@ decimal64 * decimal64Canonical(decimal64 *result, const decimal64 *d64) {
 /* This assumes range has been checked and exponent previously 0; */
 /* type of exponent must be unsigned */
 #define decimal64SetExpCon(d, e) {				      \
-  (d)->bytes[0]|=(uint8_t)((e)>>6);				      \
-  (d)->bytes[1]|=(uint8_t)(((e)&0x3F)<<2);}
+  (d)->bytes[0]|=(uByte)((e)>>6);				      \
+  (d)->bytes[1]|=(uByte)(((e)&0x3F)<<2);}
 
 /* ------------------------------------------------------------------ */
 /* decimal64Show -- display a decimal64 in hexadecimal [debug aid]    */
@@ -591,12 +590,12 @@ const uInt COMBMSD[32]={0, 1, 2, 3, 4, 5, 6, 7,
 /* ------------------------------------------------------------------ */
 /* decDigitsToDPD -- pack coefficient into DPD form		      */
 /*								      */
-/*   dn	  is the source number (assumed valid, max DECMAX754 digits)  */
+/*   dn   is the source number (assumed valid, max DECMAX754 digits)  */
 /*   targ is 1, 2, or 4-element uInt array, which the caller must     */
-/*	  have cleared to zeros					      */
+/*	  have cleared to zeros 				      */
 /*   shift is the number of 0 digits to add on the right (normally 0) */
 /*								      */
-/* The coefficient must be known small enough to fit.  The full	      */
+/* The coefficient must be known small enough to fit.  The full       */
 /* coefficient is copied, including the leading 'odd' digit.  This    */
 /* digit is retrieved and packed into the combination field by the    */
 /* caller.							      */
@@ -625,7 +624,7 @@ void decDigitsToDPD(const decNumber *dn, uInt *targ, Int shift) {
   uInt dpd;		      /* densely packed decimal value */
   uInt bin;		      /* binary value 0-999 */
   uInt *uout=targ;	      /* -> current output uInt */
-  uInt	uoff=0;		      /* -> current output offset [from right] */
+  uInt	uoff=0; 	      /* -> current output offset [from right] */
   const Unit *inu=dn->lsu;    /* -> current input unit */
   Unit	uar[DECMAXUNITS];     /* working copy of units, iff shifted */
   #if DECDPUN!=3	      /* not fast path */
@@ -636,7 +635,7 @@ void decDigitsToDPD(const decNumber *dn, uInt *targ, Int shift) {
     /* shift the units array to the left by pad digits and copy */
     /* [this code is a special case of decShiftToMost, which could */
     /* be used instead if exposed and the array were copied first] */
-    const Unit *source;			/* .. */
+    const Unit *source; 		/* .. */
     Unit  *target, *first;		/* .. */
     uInt  next=0;			/* work */
 
@@ -681,12 +680,12 @@ void decDigitsToDPD(const decNumber *dn, uInt *targ, Int shift) {
 
   for(n=0; digits>0; n++) {	   /* each output bunch */
     #if DECDPUN==3		   /* fast path, 3-at-a-time */
-      bin=*inu;			   /* 3 digits ready for convert */
+      bin=*inu; 		   /* 3 digits ready for convert */
       digits-=3;		   /* [may go negative] */
       inu++;			   /* may need another */
 
     #else			   /* must collect digit-by-digit */
-      Unit dig;			   /* current digit */
+      Unit dig; 		   /* current digit */
       Int j;			   /* digit-in-declet count */
       for (j=0; j<3; j++) {
 	#if DECDPUN<=4
@@ -698,7 +697,7 @@ void decDigitsToDPD(const decNumber *dn, uInt *targ, Int shift) {
 	  in=in/10;
 	#endif
 	if (j==0) bin=dig;
-	 else if (j==1)	 bin+=X10(dig);
+	 else if (j==1)  bin+=X10(dig);
 	 else /* j==2 */ bin+=X100(dig);
 	digits--;
 	if (digits==0) break;	   /* [also protects *inu below] */
@@ -750,12 +749,12 @@ void decDigitsFromDPD(decNumber *dn, const uInt *sour, Int declets) {
   Int	n;			   /* counter */
   Unit	*uout=dn->lsu;		   /* -> current output unit */
   Unit	*last=uout;		   /* will be unit containing msd */
-  const uInt *uin=sour;		   /* -> current input uInt */
-  uInt	uoff=0;			   /* -> current input offset [from right] */
+  const uInt *uin=sour; 	   /* -> current input uInt */
+  uInt	uoff=0; 		   /* -> current input offset [from right] */
 
   #if DECDPUN!=3
   uInt	bcd;			   /* BCD result */
-  uInt	nibble;			   /* work */
+  uInt	nibble; 		   /* work */
   Unit	out=0;			   /* accumulator */
   Int	cut=0;			   /* power of ten in current unit */
   #endif
@@ -772,7 +771,7 @@ void decDigitsFromDPD(decNumber *dn, const uInt *sour, Int declets) {
       uoff-=32;
       dpd|=*uin<<(10-uoff);	   /* get waiting bits */
       }
-    dpd&=0x3ff;			   /* clear uninteresting bits */
+    dpd&=0x3ff; 		   /* clear uninteresting bits */
 
   #if DECDPUN==3
     if (dpd==0) *uout=0;
@@ -822,9 +821,9 @@ void decDigitsFromDPD(decNumber *dn, const uInt *sour, Int declets) {
     cut++;
     if (cut==DECDPUN) {*uout=out; if (out) {last=uout; out=0;} uout++; cut=0;}
     } /* n */
-  if (cut!=0) {				/* some more left over */
+  if (cut!=0) { 			/* some more left over */
     *uout=out;				/* write out final unit */
-    if (out) last=uout;			/* and note if non-zero */
+    if (out) last=uout; 		/* and note if non-zero */
     }
   #endif
 
@@ -834,14 +833,14 @@ void decDigitsFromDPD(decNumber *dn, const uInt *sour, Int declets) {
   dn->digits=(last-dn->lsu)*DECDPUN+1;	/* floor of digits, plus */
 					/* must be at least 1 digit */
   #if DECDPUN>1
-  if (*last<10) return;			/* common odd digit or 0 */
-  dn->digits++;				/* must be 2 at least */
+  if (*last<10) return; 		/* common odd digit or 0 */
+  dn->digits++; 			/* must be 2 at least */
   #if DECDPUN>2
   if (*last<100) return;		/* 10-99 */
-  dn->digits++;				/* must be 3 at least */
+  dn->digits++; 			/* must be 3 at least */
   #if DECDPUN>3
   if (*last<1000) return;		/* 100-999 */
-  dn->digits++;				/* must be 4 at least */
+  dn->digits++; 			/* must be 4 at least */
   #if DECDPUN>4
   for (pow=&DECPOWERS[4]; *last>=*pow; pow++) dn->digits++;
   #endif
