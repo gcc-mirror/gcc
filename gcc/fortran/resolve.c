@@ -43,11 +43,12 @@ seq_type;
 
 typedef struct code_stack
 {
-  struct gfc_code *head, *current, *tail;
+  struct gfc_code *head, *current;
   struct code_stack *prev;
 
   /* This bitmap keeps track of the targets valid for a branch from
-     inside this block.  */
+     inside this block except for END {IF|SELECT}s of enclosing
+     blocks.  */
   bitmap reachable_labels;
 }
 code_stack;
@@ -5978,11 +5979,10 @@ resolve_transfer (gfc_code *code)
 /*********** Toplevel code resolution subroutines ***********/
 
 /* Find the set of labels that are reachable from this block.  We also
-   record the last statement in each block so that we don't have to do
-   a linear search to find the END DO statements of the blocks.  */
+   record the last statement in each block.  */
      
 static void
-reachable_labels (gfc_code *block)
+find_reachable_labels (gfc_code *block)
 {
   gfc_code *c;
 
@@ -5991,14 +5991,13 @@ reachable_labels (gfc_code *block)
 
   cs_base->reachable_labels = bitmap_obstack_alloc (&labels_obstack);
 
-  /* Collect labels in this block.  */
+  /* Collect labels in this block.  We don't keep those corresponding
+     to END {IF|SELECT}, these are checked in resolve_branch by going
+     up through the code_stack.  */
   for (c = block; c; c = c->next)
     {
-      if (c->here)
+      if (c->here && c->op != EXEC_END_BLOCK)
 	bitmap_set_bit (cs_base->reachable_labels, c->here->value);
-
-      if (!c->next && cs_base->prev)
-	cs_base->prev->tail = c;
     }
 
   /* Merge with labels from parent block.  */
@@ -6010,7 +6009,7 @@ reachable_labels (gfc_code *block)
     }
 }
 
-/* Given a branch to a label and a namespace, if the branch is conforming.
+/* Given a branch to a label, see if the branch is conforming.
    The code node describes where the branch is located.  */
 
 static void
@@ -6049,46 +6048,30 @@ resolve_branch (gfc_st_label *label, gfc_code *code)
      branching statement.  The hard work has been done by setting up
      the bitmap reachable_labels.  */
 
-  if (!bitmap_bit_p (cs_base->reachable_labels, label->value))
-    {
-      /* The label is not in an enclosing block, so illegal.  This was
-	 allowed in Fortran 66, so we allow it as extension.  No
-	 further checks are necessary in this case.  */
-      gfc_notify_std (GFC_STD_LEGACY, "Label at %L is not in the same block "
-		      "as the GOTO statement at %L", &label->where,
-		      &code->loc);
-      return;
-    }
+  if (bitmap_bit_p (cs_base->reachable_labels, label->value))
+    return;
 
-  /* Step four: Make sure that the branching target is legal if
-     the statement is an END {SELECT,IF}.  */
+  /* Step four:  If we haven't found the label in the bitmap, it may
+    still be the label of the END of the enclosing block, in which
+    case we find it by going up the code_stack.  */
 
   for (stack = cs_base; stack; stack = stack->prev)
     if (stack->current->next && stack->current->next->here == label)
       break;
 
-  if (stack && stack->current->next->op == EXEC_NOP)
+  if (stack)
     {
-      gfc_notify_std (GFC_STD_F95_DEL, "Deleted feature: GOTO at %L jumps to "
-		      "END of construct at %L", &code->loc,
-		      &stack->current->next->loc);
-      return;  /* We know this is not an END DO.  */
+      gcc_assert (stack->current->next->op == EXEC_END_BLOCK);
+      return;
     }
 
-  /* Step five: Make sure that we're not jumping to the end of a DO
-     loop from within the loop.  */
-
-  for (stack = cs_base; stack; stack = stack->prev)
-    if ((stack->current->op == EXEC_DO
-	 || stack->current->op == EXEC_DO_WHILE)
-	&& stack->tail->here == label && stack->tail->op == EXEC_NOP)
-      {
-	gfc_notify_std (GFC_STD_F95_DEL, "Deleted feature: GOTO at %L jumps "
-			"to END of construct at %L", &code->loc,
-			&stack->tail->loc);
-	return;
-
-      }
+  /* The label is not in an enclosing block, so illegal.  This was
+     allowed in Fortran 66, so we allow it as extension.  No
+     further checks are necessary in this case.  */
+  gfc_notify_std (GFC_STD_LEGACY, "Label at %L is not in the same block "
+		  "as the GOTO statement at %L", &label->where,
+		  &code->loc);
+  return;
 }
 
 
@@ -6669,7 +6652,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
   frame.head = code;
   cs_base = &frame;
 
-  reachable_labels (code);
+  find_reachable_labels (code);
 
   for (; code; code = code->next)
     {
@@ -6727,6 +6710,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
       switch (code->op)
 	{
 	case EXEC_NOP:
+	case EXEC_END_BLOCK:
 	case EXEC_CYCLE:
 	case EXEC_PAUSE:
 	case EXEC_STOP:

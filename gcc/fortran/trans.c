@@ -1,6 +1,6 @@
 /* Code translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software
-   Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free
+   Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -1055,6 +1055,7 @@ gfc_trans_code (gfc_code * code)
       switch (code->op)
 	{
 	case EXEC_NOP:
+	case EXEC_END_BLOCK:
 	  res = NULL_TREE;
 	  break;
 

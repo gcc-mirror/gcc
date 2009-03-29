@@ -1465,16 +1465,23 @@ accept_statement (gfc_statement st)
 
       /* If the statement is the end of a block, lay down a special code
 	 that allows a branch to the end of the block from within the
-	 construct.  */
+	 construct.  IF and SELECT are treated differently from DO
+	 (where EXEC_NOP is added inside the loop) for two
+	 reasons:
+         1. END DO has a meaning in the sense that after a GOTO to
+	    it, the loop counter must be increased.
+         2. IF blocks and SELECT blocks can consist of multiple
+	    parallel blocks (IF ... ELSE IF ... ELSE ... END IF).
+	    Putting the label before the END IF would make the jump
+	    from, say, the ELSE IF block to the END IF illegal.  */
 
     case ST_ENDIF:
     case ST_END_SELECT:
       if (gfc_statement_label != NULL)
 	{
-	  new_st.op = EXEC_NOP;
+	  new_st.op = EXEC_END_BLOCK;
 	  add_statement ();
 	}
-
       break;
 
       /* The end-of-program unit statements do not get the special
@@ -2817,7 +2824,6 @@ check_do_closure (void)
 
   if (p->ext.end_do_label == gfc_statement_label)
     {
-
       if (p == gfc_state_stack)
 	return 1;
 
@@ -2895,7 +2901,7 @@ loop:
 	name, but in that case we must have seen ST_ENDDO first).
 	We only complain about this in pedantic mode.  */
      if (gfc_current_block () != NULL)
-	gfc_error_now ("named block DO at %L requires matching ENDDO name",
+	gfc_error_now ("Named block DO at %L requires matching ENDDO name",
 		       &gfc_current_block()->declared_at);
 
       break;
