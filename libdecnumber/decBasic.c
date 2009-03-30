@@ -32,8 +32,8 @@
 /* decBasic.c -- common base code for Basic decimal types	      */
 /* ------------------------------------------------------------------ */
 /* This module comprises code that is shared between decDouble and    */
-/* decQuad (but not decSingle).	 The main arithmetic operations are   */
-/* here (Add, Subtract, Multiply, FMA, and Division operators).	      */
+/* decQuad (but not decSingle).  The main arithmetic operations are   */
+/* here (Add, Subtract, Multiply, FMA, and Division operators).       */
 /*								      */
 /* Unlike decNumber, parameterization takes place at compile time     */
 /* rather than at runtime.  The parameters are set in the decDouble.c */
@@ -59,7 +59,7 @@
 #define DIVIDE	    0x80000000	   /* Divide operations [as flags] */
 #define REMAINDER   0x40000000	   /* .. */
 #define DIVIDEINT   0x20000000	   /* .. */
-#define REMNEAR	    0x10000000	   /* .. */
+#define REMNEAR     0x10000000	   /* .. */
 
 /* Private functions (local, used only by routines in this module) */
 static decFloat *decDivide(decFloat *, const decFloat *,
@@ -81,7 +81,7 @@ static uInt	 decToInt32(const decFloat *, decContext *, enum rounding,
 /* decCanonical -- copy a decFloat, making canonical		      */
 /*								      */
 /*   result gets the canonicalized df				      */
-/*   df	    is the decFloat to copy and make canonical		      */
+/*   df     is the decFloat to copy and make canonical		      */
 /*   returns result						      */
 /*								      */
 /* This is exposed via decFloatCanonical for Double and Quad only.    */
@@ -141,14 +141,14 @@ static decFloat * decCanonical(decFloat *result, const decFloat *df) {
       uoff-=32;
       dpd|=encode<<(10-uoff);	   /* get pending bits */
       }
-    dpd&=0x3ff;			   /* clear uninteresting bits */
+    dpd&=0x3ff; 		   /* clear uninteresting bits */
     if (dpd<0x16e) continue;	   /* must be canonical */
     canon=BIN2DPD[DPD2BIN[dpd]];   /* determine canonical declet */
     if (canon==dpd) continue;	   /* have canonical declet */
     /* need to replace declet */
     if (uoff>=10) {		   /* all within current word */
       encode&=~(0x3ff<<(uoff-10)); /* clear the 10 bits ready for replace */
-      encode|=canon<<(uoff-10);	   /* insert the canonical form */
+      encode|=canon<<(uoff-10);    /* insert the canonical form */
       DFWORD(result, inword)=encode;	/* .. and save */
       continue;
       }
@@ -167,16 +167,16 @@ static decFloat * decCanonical(decFloat *result, const decFloat *df) {
 /* decDivide -- divide operations				      */
 /*								      */
 /*   result gets the result of dividing dfl by dfr:		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
-/*   op	    is the operation selector				      */
+/*   op     is the operation selector				      */
 /*   returns result						      */
 /*								      */
 /* op is one of DIVIDE, REMAINDER, DIVIDEINT, or REMNEAR.	      */
 /* ------------------------------------------------------------------ */
 #define DIVCOUNT  0		   /* 1 to instrument subtractions counter */
-#define DIVBASE	  BILLION	   /* the base used for divide */
+#define DIVBASE   ((uInt)BILLION)  /* the base used for divide */
 #define DIVOPLEN  DECPMAX9	   /* operand length ('digits' base 10**9) */
 #define DIVACCLEN (DIVOPLEN*3)	   /* accumulator length (ditto) */
 static decFloat * decDivide(decFloat *result, const decFloat *dfl,
@@ -184,17 +184,18 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
   decFloat quotient;		   /* for remainders */
   bcdnum num;			   /* for final conversion */
   uInt	 acc[DIVACCLEN];	   /* coefficent in base-billion .. */
-  uInt	 div[DIVOPLEN];		   /* divisor in base-billion .. */
+  uInt	 div[DIVOPLEN]; 	   /* divisor in base-billion .. */
   uInt	 quo[DIVOPLEN+1];	   /* quotient in base-billion .. */
-  uByte	 bcdacc[(DIVOPLEN+1)*9+2]; /* for quotient in BCD, +1, +1 */
+  uByte  bcdacc[(DIVOPLEN+1)*9+2]; /* for quotient in BCD, +1, +1 */
   uInt	 *msua, *msud, *msuq;	   /* -> msu of acc, div, and quo */
   Int	 divunits, accunits;	   /* lengths */
   Int	 quodigits;		   /* digits in quotient */
   uInt	 *lsua, *lsuq;		   /* -> current acc and quo lsus */
   Int	 length, multiplier;	   /* work */
   uInt	 carry, sign;		   /* .. */
-  uInt	 *ua, *ud, *uq;		   /* .. */
-  uByte	 *ub;			   /* .. */
+  uInt	 *ua, *ud, *uq; 	   /* .. */
+  uByte  *ub;			   /* .. */
+  uInt	 uiwork;		   /* for macros */
   uInt	 divtop;		   /* top unit of div adjusted for estimating */
   #if DIVCOUNT
   static uInt maxcount=0;	   /* worst-seen subtractions count */
@@ -235,7 +236,7 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
     if (op&(REMAINDER|REMNEAR)) return decInvalid(result, set); /* bad rem */
     set->status|=DEC_Division_by_zero;
     DFWORD(result, 0)=num.sign;
-    return decInfinity(result, result);	     /* x/0 -> signed Infinity */
+    return decInfinity(result, result);      /* x/0 -> signed Infinity */
     }
   num.exponent=GETEXPUN(dfl)-GETEXPUN(dfr);  /* ideal exponent */
   if (DFISZERO(dfl)) {			     /* 0/x (x!=0) */
@@ -246,7 +247,7 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
       DFWORD(result, 0)|=num.sign;	     /* add sign */
       return result;
       }
-    if (!(op&DIVIDE)) {			     /* a remainder */
+    if (!(op&DIVIDE)) { 		     /* a remainder */
       /* exponent is the minimum of the operands */
       num.exponent=MINI(GETEXPUN(dfl), GETEXPUN(dfr));
       /* if the result is zero the sign shall be sign of dfl */
@@ -289,7 +290,7 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
   #endif
 
   /* set msu and lsu pointers */
-  msua=acc+DIVACCLEN-1;	      /* [leading zeros removed below] */
+  msua=acc+DIVACCLEN-1;       /* [leading zeros removed below] */
   msuq=quo+DIVOPLEN;
   /*[loop for div will terminate because operands are non-zero] */
   for (msud=div+DIVOPLEN-1; *msud==0;) msud--;
@@ -298,7 +299,7 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
   /* This moves one position towards the least possible for each */
   /* iteration */
   divunits=(Int)(msud-div+1); /* precalculate */
-  lsua=msua-divunits+1;	      /* initial working lsu of acc */
+  lsua=msua-divunits+1;       /* initial working lsu of acc */
   lsuq=msuq;		      /* and of quo */
 
   /* set up the estimator for the multiplier; this is the msu of div, */
@@ -371,7 +372,7 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
 	for (ud=msud, ua=msua; ud>div; ud--, ua--) if (*ud!=*ua) break;
 	/* [now at first mismatch or lsu] */
 	if (*ud>*ua) break;			  /* next time... */
-	if (*ud==*ua) {				  /* all compared equal */
+	if (*ud==*ua) { 			  /* all compared equal */
 	  *lsuq+=1;				  /* increment result */
 	  msua=lsua;				  /* collapse acc units */
 	  *msua=0;				  /* .. to a zero */
@@ -418,10 +419,11 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
 	    }
 	   else if (divunits==1) {
 	    mul=(uLong)*msua * DIVBASE + *(msua-1);
-	    mul/=*msud;	      /* no more to the right */
+	    mul/=*msud;       /* no more to the right */
 	    }
 	   else {
-	    mul=(uLong)(*msua) * (uInt)(DIVBASE<<2) + (*(msua-1)<<2);
+	    mul=(uLong)(*msua) * (uInt)(DIVBASE<<2)
+		+ (*(msua-1)<<2);
 	    mul/=divtop;      /* [divtop already allows for sticky bits] */
 	    }
 	  multiplier=(Int)mul;
@@ -540,10 +542,10 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
   /* most significant end [offset by one into bcdacc to leave room */
   /* for a possible carry digit if rounding for REMNEAR is needed] */
   for (uq=msuq, ub=bcdacc+1; uq>=lsuq; uq--, ub+=9) {
-    uInt top, mid, rem;			/* work */
+    uInt top, mid, rem; 		/* work */
     if (*uq==0) {			/* no split needed */
-      UINTAT(ub)=0;			/* clear 9 BCD8s */
-      UINTAT(ub+4)=0;			/* .. */
+      UBFROMUI(ub, 0);			/* clear 9 BCD8s */
+      UBFROMUI(ub+4, 0);		/* .. */
       *(ub+8)=0;			/* .. */
       continue;
       }
@@ -558,11 +560,11 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
     mid=rem/divsplit6;
     rem=rem%divsplit6;
     /* lay out the nine BCD digits (plus one unwanted byte) */
-    UINTAT(ub)	=UINTAT(&BIN2BCD8[top*4]);
-    UINTAT(ub+3)=UINTAT(&BIN2BCD8[mid*4]);
-    UINTAT(ub+6)=UINTAT(&BIN2BCD8[rem*4]);
+    UBFROMUI(ub,   UBTOUI(&BIN2BCD8[top*4]));
+    UBFROMUI(ub+3, UBTOUI(&BIN2BCD8[mid*4]));
+    UBFROMUI(ub+6, UBTOUI(&BIN2BCD8[rem*4]));
     } /* BCD conversion loop */
-  ub--;					/* -> lsu */
+  ub--; 				/* -> lsu */
 
   /* complete the bcdnum; quodigits is correct, so the position of */
   /* the first non-zero is known */
@@ -642,7 +644,7 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
 	num.msd--;			     /* use the 0 .. */
 	num.lsd=num.msd;		     /* .. at the new MSD place */
 	}
-      if (reround!=0) {			     /* discarding non-zero */
+      if (reround!=0) { 		     /* discarding non-zero */
 	uInt bump=0;
 	/* rounding is DEC_ROUND_HALF_EVEN always */
 	if (reround>5) bump=1;		     /* >0.5 goes up */
@@ -651,7 +653,7 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
 	if (bump!=0) {			     /* need increment */
 	  /* increment the coefficient; this might end up with 1000... */
 	  ub=num.lsd;
-	  for (; UINTAT(ub-3)==0x09090909; ub-=4) UINTAT(ub-3)=0;
+	  for (; UBTOUI(ub-3)==0x09090909; ub-=4) UBFROMUI(ub-3, 0);
 	  for (; *ub==9; ub--) *ub=0;	     /* at most 3 more */
 	  *ub+=1;
 	  if (ub<num.msd) num.msd--;	     /* carried */
@@ -680,7 +682,7 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
 /*								      */
 /*   num    gets the result of multiplying dfl and dfr		      */
 /*   bcdacc .. with the coefficient in this array		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*								      */
 /* This effects the multiplication of two decFloats, both known to be */
@@ -695,7 +697,7 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
 /* variables (Ints and uInts) or smaller; the other uses uLongs (for */
 /* multiplication and addition only).  Both implementations cover */
 /* both arithmetic sizes (DOUBLE and QUAD) in order to allow timing */
-/* comparisons.	 In any one compilation only one implementation for */
+/* comparisons.  In any one compilation only one implementation for */
 /* each size can be used, and if DECUSE64 is 0 then use of the 32-bit */
 /* version is forced. */
 /* */
@@ -704,7 +706,7 @@ static decFloat * decDivide(decFloat *result, const decFloat *dfl,
 /* during lazy carry splitting because the initial quotient estimate */
 /* (est) can exceed 32 bits. */
 
-#define MULTBASE  BILLION	   /* the base used for multiply */
+#define MULTBASE  ((uInt)BILLION)  /* the base used for multiply */
 #define MULOPLEN  DECPMAX9	   /* operand length ('digits' base 10**9) */
 #define MULACCLEN (MULOPLEN*2)		    /* accumulator length (ditto) */
 #define LEADZEROS (MULACCLEN*9 - DECPMAX*2) /* leading zeros always */
@@ -723,11 +725,12 @@ static void decFiniteMultiply(bcdnum *num, uByte *bcdacc,
   uInt	 bufl[MULOPLEN];	   /* left  coefficient (base-billion) */
   uInt	 bufr[MULOPLEN];	   /* right coefficient (base-billion) */
   uInt	 *ui, *uj;		   /* work */
-  uByte	 *ub;			   /* .. */
+  uByte  *ub;			   /* .. */
+  uInt	 uiwork;		   /* for macros */
 
   #if DECUSE64
-  uLong	 accl[MULACCLEN];	   /* lazy accumulator (base-billion+) */
-  uLong	 *pl;			   /* work -> lazy accumulator */
+  uLong  accl[MULACCLEN];	   /* lazy accumulator (base-billion+) */
+  uLong  *pl;			   /* work -> lazy accumulator */
   uInt	 acc[MULACCLEN];	   /* coefficent in base-billion .. */
   #else
   uInt	 acc[MULACCLEN*2];	   /* accumulator in base-billion .. */
@@ -760,7 +763,7 @@ static void decFiniteMultiply(bcdnum *num, uByte *bcdacc,
   /* zero the accumulator */
   #if MULACCLEN==4
     accl[0]=0; accl[1]=0; accl[2]=0; accl[3]=0;
-  #else					     /* use a loop */
+  #else 				     /* use a loop */
     /* MULACCLEN is a multiple of four, asserted above */
     for (pl=accl; pl<accl+MULACCLEN; pl+=4) {
       *pl=0; *(pl+1)=0; *(pl+2)=0; *(pl+3)=0;/* [reduce overhead] */
@@ -812,8 +815,8 @@ static void decFiniteMultiply(bcdnum *num, uByte *bcdacc,
   /* */
   /*   Type    OPLEN   A   B	 maxX	 maxError  maxCorrection */
   /*   --------------------------------------------------------- */
-  /*   DOUBLE	 2    29  32  <2*10**18	   0.63	      1 */
-  /*   QUAD	 4    30  31  <4*10**18	   1.17	      2 */
+  /*   DOUBLE	 2    29  32  <2*10**18    0.63       1 */
+  /*   QUAD	 4    30  31  <4*10**18    1.17       2 */
   /* */
   /* In the OPLEN==2 case there is most choice, but the value for B */
   /* of 32 has a big advantage as then the calculation of the */
@@ -840,7 +843,7 @@ static void decFiniteMultiply(bcdnum *num, uByte *bcdacc,
   for (pl=accl, pa=acc; pl<accl+MULACCLEN; pl++, pa++) { /* each column position */
     uInt lo, hop;			/* work */
     uInt est;				/* cannot exceed 4E+9 */
-    if (*pl>MULTBASE) {
+    if (*pl>=MULTBASE) {
       /* *pl holds a binary number which needs to be split */
       hop=(uInt)(*pl>>MULSHIFTA);
       est=(uInt)(((uLong)hop*MULMAGIC)>>MULSHIFTB);
@@ -905,7 +908,7 @@ static void decFiniteMultiply(bcdnum *num, uByte *bcdacc,
   /* quotient/remainder has to be calculated for base-billion (1E+9). */
   /* For this, Clark & Cowlishaw's quotient estimation approach (also */
   /* used in decNumber) is needed, because 64-bit divide is generally */
-  /* extremely slow on 32-bit machines.	 This algorithm splits X */
+  /* extremely slow on 32-bit machines.  This algorithm splits X */
   /* using: */
   /* */
   /*   magic=2**(A+B)/1E+9;   // 'magic number' */
@@ -927,8 +930,8 @@ static void decFiniteMultiply(bcdnum *num, uByte *bcdacc,
   /* */
   /*   Type    OPLEN   A   B	 maxX	 maxError  maxCorrection */
   /*   --------------------------------------------------------- */
-  /*   DOUBLE	 2    29  32  <2*10**18	   0.63	      1 */
-  /*   QUAD	 4    30  31  <4*10**18	   1.17	      2 */
+  /*   DOUBLE	 2    29  32  <2*10**18    0.63       1 */
+  /*   QUAD	 4    30  31  <4*10**18    1.17       2 */
   /* */
   /* In the OPLEN==2 case there is most choice, but the value for B */
   /* of 32 has a big advantage as then the calculation of the */
@@ -952,15 +955,15 @@ static void decFiniteMultiply(bcdnum *num, uByte *bcdacc,
   printf("\n");
   #endif
 
-  for (pa=acc;; pa++) {			/* each low uInt */
+  for (pa=acc;; pa++) { 		/* each low uInt */
     uInt hi, lo;			/* words of exact multiply result */
     uInt hop, estlo;			/* work */
     #if QUAD
-    uInt esthi;				/* .. */
+    uInt esthi; 			/* .. */
     #endif
 
     lo=*pa;
-    hi=*(pa+MULACCLEN);			/* top 32 bits */
+    hi=*(pa+MULACCLEN); 		/* top 32 bits */
     /* hi and lo now hold a binary number which needs to be split */
 
     #if DOUBLE
@@ -1032,7 +1035,7 @@ static void decFiniteMultiply(bcdnum *num, uByte *bcdacc,
       uInt top, mid, rem;		/* work */
       /* *pa is non-zero -- split the base-billion acc digit into */
       /* hi, mid, and low three-digits */
-      #define mulsplit9 1000000		/* divisor */
+      #define mulsplit9 1000000 	/* divisor */
       #define mulsplit6 1000		/* divisor */
       /* The splitting is done by simple divides and remainders, */
       /* assuming the compiler will optimize these where useful */
@@ -1042,13 +1045,13 @@ static void decFiniteMultiply(bcdnum *num, uByte *bcdacc,
       mid=rem/mulsplit6;
       rem=rem%mulsplit6;
       /* lay out the nine BCD digits (plus one unwanted byte) */
-      UINTAT(ub)  =UINTAT(&BIN2BCD8[top*4]);
-      UINTAT(ub+3)=UINTAT(&BIN2BCD8[mid*4]);
-      UINTAT(ub+6)=UINTAT(&BIN2BCD8[rem*4]);
+      UBFROMUI(ub,   UBTOUI(&BIN2BCD8[top*4]));
+      UBFROMUI(ub+3, UBTOUI(&BIN2BCD8[mid*4]));
+      UBFROMUI(ub+6, UBTOUI(&BIN2BCD8[rem*4]));
       }
      else {				/* *pa==0 */
-      UINTAT(ub)=0;			/* clear 9 BCD8s */
-      UINTAT(ub+4)=0;			/* .. */
+      UBFROMUI(ub, 0);			/* clear 9 BCD8s */
+      UBFROMUI(ub+4, 0);		/* .. */
       *(ub+8)=0;			/* .. */
       }
     if (pa==acc) break;
@@ -1068,7 +1071,7 @@ static void decFiniteMultiply(bcdnum *num, uByte *bcdacc,
 /* decFloatAbs -- absolute value, heeding NaNs, etc.		      */
 /*								      */
 /*   result gets the canonicalized df with sign 0		      */
-/*   df	    is the decFloat to abs				      */
+/*   df     is the decFloat to abs				      */
 /*   set    is the context					      */
 /*   returns result						      */
 /*								      */
@@ -1090,26 +1093,45 @@ decFloat * decFloatAbs(decFloat *result, const decFloat *df,
 /* decFloatAdd -- add two decFloats				      */
 /*								      */
 /*   result gets the result of adding dfl and dfr:		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
 /*								      */
 /* ------------------------------------------------------------------ */
+#if QUAD
+/* Table for testing MSDs for fastpath elimination; returns the MSD of */
+/* a decDouble or decQuad (top 6 bits tested) ignoring the sign. */
+/* Infinities return -32 and NaNs return -128 so that summing the two */
+/* MSDs also allows rapid tests for the Specials (see code below). */
+const Int DECTESTMSD[64]={
+  0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5,   6,    7,
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 9, 8, 9, -32, -128,
+  0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5,   6,    7,
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 9, 8, 9, -32, -128};
+#else
+/* The table for testing MSDs is shared between the modules */
+extern const Int DECTESTMSD[64];
+#endif
+
 decFloat * decFloatAdd(decFloat *result,
 		       const decFloat *dfl, const decFloat *dfr,
 		       decContext *set) {
   bcdnum num;			   /* for final conversion */
-  Int	 expl, expr;		   /* left and right exponents */
-  uInt	 *ui, *uj;		   /* work */
-  uByte	 *ub;			   /* .. */
+  Int	 bexpl, bexpr;		   /* left and right biased exponents */
+  uByte  *ub, *us, *ut; 	   /* work */
+  uInt	 uiwork;		   /* for macros */
+  #if QUAD
+  uShort uswork;		   /* .. */
+  #endif
 
   uInt sourhil, sourhir;	   /* top words from source decFloats */
-				   /* [valid only until specials */
-				   /* handled or exponents decoded] */
+				   /* [valid only through end of */
+				   /* fastpath code -- before swap] */
   uInt diffsign;		   /* non-zero if signs differ */
   uInt carry;			   /* carry: 0 or 1 before add loop */
-  Int  overlap;			   /* coefficient overlap (if full) */
+  Int  overlap; 		   /* coefficient overlap (if full) */
+  Int  summ;			   /* sum of the MSDs */
   /* the following buffers hold coefficients with various alignments */
   /* (see commentary and diagrams below) */
   uByte acc[4+2+DECPMAX*3+8];
@@ -1117,48 +1139,116 @@ decFloat * decFloatAdd(decFloat *result,
   uByte *umsd, *ulsd;		   /* local MSD and LSD pointers */
 
   #if DECLITEND
-    #define CARRYPAT 0x01000000	   /* carry=1 pattern */
+    #define CARRYPAT 0x01000000    /* carry=1 pattern */
   #else
-    #define CARRYPAT 0x00000001	   /* carry=1 pattern */
+    #define CARRYPAT 0x00000001    /* carry=1 pattern */
   #endif
 
   /* Start decoding the arguments */
-  /* the initial exponents are placed into the opposite Ints to */
+  /* The initial exponents are placed into the opposite Ints to */
   /* that which might be expected; there are two sets of data to */
   /* keep track of (each decFloat and the corresponding exponent), */
   /* and this scheme means that at the swap point (after comparing */
   /* exponents) only one pair of words needs to be swapped */
-  /* whichever path is taken (thereby minimising worst-case path) */
+  /* whichever path is taken (thereby minimising worst-case path). */
+  /* The calculated exponents will be nonsense when the arguments are */
+  /* Special, but are not used in that path */
   sourhil=DFWORD(dfl, 0);	   /* LHS top word */
-  expr=DECCOMBEXP[sourhil>>26];	   /* get exponent high bits (in place) */
+  summ=DECTESTMSD[sourhil>>26];    /* get first MSD for testing */
+  bexpr=DECCOMBEXP[sourhil>>26];   /* get exponent high bits (in place) */
+  bexpr+=GETECON(dfl);		   /* .. + continuation */
+
   sourhir=DFWORD(dfr, 0);	   /* RHS top word */
-  expl=DECCOMBEXP[sourhir>>26];
+  summ+=DECTESTMSD[sourhir>>26];   /* sum MSDs for testing */
+  bexpl=DECCOMBEXP[sourhir>>26];
+  bexpl+=GETECON(dfr);
+
+  /* here bexpr has biased exponent from lhs, and vice versa */
 
   diffsign=(sourhil^sourhir)&DECFLOAT_Sign;
 
-  if (EXPISSPECIAL(expl | expr)) { /* either is special? */
-    if (DFISNAN(dfl) || DFISNAN(dfr)) return decNaNs(result, dfl, dfr, set);
-    /* one or two infinities */
-    /* two infinities with different signs is invalid */
-    if (diffsign && DFISINF(dfl) && DFISINF(dfr))
-      return decInvalid(result, set);
-    if (DFISINF(dfl)) return decInfinity(result, dfl); /* LHS is infinite */
-    return decInfinity(result, dfr);		       /* RHS must be Infinite */
-    }
+  /* now determine whether to take a fast path or the full-function */
+  /* slow path.  The slow path must be taken when: */
+  /*   -- both numbers are finite, and: */
+  /*	     the exponents are different, or */
+  /*	     the signs are different, or */
+  /*	     the sum of the MSDs is >8 (hence might overflow) */
+  /* specialness and the sum of the MSDs can be tested at once using */
+  /* the summ value just calculated, so the test for specials is no */
+  /* longer on the worst-case path (as of 3.60) */
 
-  /* Here when both arguments are finite */
+  if (summ<=8) {		   /* MSD+MSD is good, or there is a special */
+    if (summ<0) {		   /* there is a special */
+      /* Inf+Inf would give -64; Inf+finite is -32 or higher */
+      if (summ<-64) return decNaNs(result, dfl, dfr, set);  /* one or two NaNs */
+      /* two infinities with different signs is invalid */
+      if (summ==-64 && diffsign) return decInvalid(result, set);
+      if (DFISINF(dfl)) return decInfinity(result, dfl);    /* LHS is infinite */
+      return decInfinity(result, dfr);			    /* RHS must be Inf */
+      }
+    /* Here when both arguments are finite; fast path is possible */
+    /* (currently only for aligned and same-sign) */
+    if (bexpr==bexpl && !diffsign) {
+      uInt tac[DECLETS+1];		/* base-1000 coefficient */
+      uInt encode;			/* work */
 
-  /* complete exponent gathering (keeping swapped) */
-  expr+=GETECON(dfl)-DECBIAS;	   /* .. + continuation and unbias */
-  expl+=GETECON(dfr)-DECBIAS;
-  /* here expr has exponent from lhs, and vice versa */
+      /* Get one coefficient as base-1000 and add the other */
+      GETCOEFFTHOU(dfl, tac);		/* least-significant goes to [0] */
+      ADDCOEFFTHOU(dfr, tac);
+      /* here the sum of the MSDs (plus any carry) will be <10 due to */
+      /* the fastpath test earlier */
+
+      /* construct the result; low word is the same for both formats */
+      encode =BIN2DPD[tac[0]];
+      encode|=BIN2DPD[tac[1]]<<10;
+      encode|=BIN2DPD[tac[2]]<<20;
+      encode|=BIN2DPD[tac[3]]<<30;
+      DFWORD(result, (DECBYTES/4)-1)=encode;
+
+      /* collect next two declets (all that remains, for Double) */
+      encode =BIN2DPD[tac[3]]>>2;
+      encode|=BIN2DPD[tac[4]]<<8;
+
+      #if QUAD
+      /* complete and lay out middling words */
+      encode|=BIN2DPD[tac[5]]<<18;
+      encode|=BIN2DPD[tac[6]]<<28;
+      DFWORD(result, 2)=encode;
+
+      encode =BIN2DPD[tac[6]]>>4;
+      encode|=BIN2DPD[tac[7]]<<6;
+      encode|=BIN2DPD[tac[8]]<<16;
+      encode|=BIN2DPD[tac[9]]<<26;
+      DFWORD(result, 1)=encode;
+
+      /* and final two declets */
+      encode =BIN2DPD[tac[9]]>>6;
+      encode|=BIN2DPD[tac[10]]<<4;
+      #endif
+
+      /* add exponent continuation and sign (from either argument) */
+      encode|=sourhil & (ECONMASK | DECFLOAT_Sign);
+
+      /* create lookup index = MSD + top two bits of biased exponent <<4 */
+      tac[DECLETS]|=(bexpl>>DECECONL)<<4;
+      encode|=DECCOMBFROM[tac[DECLETS]]; /* add constructed combination field */
+      DFWORD(result, 0)=encode; 	 /* complete */
+
+      /* decFloatShow(result, ">"); */
+      return result;
+      } /* fast path OK */
+    /* drop through to slow path */
+    } /* low sum or Special(s) */
+
+  /* Slow path required -- arguments are finite and might overflow,   */
+  /* or require alignment, or might have different signs	      */
 
   /* now swap either exponents or argument pointers */
-  if (expl<=expr) {
+  if (bexpl<=bexpr) {
     /* original left is bigger */
-    Int expswap=expl;
-    expl=expr;
-    expr=expswap;
+    Int bexpswap=bexpl;
+    bexpl=bexpr;
+    bexpr=bexpswap;
     /* printf("left bigger\n"); */
     }
    else {
@@ -1167,7 +1257,7 @@ decFloat * decFloatAdd(decFloat *result,
     dfr=dfswap;
     /* printf("right bigger\n"); */
     }
-  /* [here dfl and expl refer to the datum with the larger exponent, */
+  /* [here dfl and bexpl refer to the datum with the larger exponent, */
   /* of if the exponents are equal then the original LHS argument] */
 
   /* if lhs is zero then result will be the rhs (now known to have */
@@ -1209,19 +1299,19 @@ decFloat * decFloatAdd(decFloat *result,
   #if DOUBLE
     #define COFF 4			/* offset into acc */
   #elif QUAD
-    USHORTAT(acc+4)=0;			/* prefix 00 */
+    UBFROMUS(acc+4, 0); 		/* prefix 00 */
     #define COFF 6			/* offset into acc */
   #endif
 
   GETCOEFF(dfl, acc+COFF);		/* decode from decFloat */
   ulsd=acc+COFF+DECPMAX-1;
   umsd=acc+4;				/* [having this here avoids */
-					/* weird GCC optimizer failure] */
+
   #if DECTRACE
   {bcdnum tum;
   tum.msd=umsd;
   tum.lsd=ulsd;
-  tum.exponent=expl;
+  tum.exponent=bexpl-DECBIAS;
   tum.sign=DFWORD(dfl, 0) & DECFLOAT_Sign;
   decShowNum(&tum, "dflx");}
   #endif
@@ -1235,16 +1325,16 @@ decFloat * decFloatAdd(decFloat *result,
   carry=0;				/* assume no carry */
   if (diffsign) {
     carry=CARRYPAT;			/* for +1 during add */
-    UINTAT(acc+ 4)=0x09090909-UINTAT(acc+ 4);
-    UINTAT(acc+ 8)=0x09090909-UINTAT(acc+ 8);
-    UINTAT(acc+12)=0x09090909-UINTAT(acc+12);
-    UINTAT(acc+16)=0x09090909-UINTAT(acc+16);
+    UBFROMUI(acc+ 4, 0x09090909-UBTOUI(acc+ 4));
+    UBFROMUI(acc+ 8, 0x09090909-UBTOUI(acc+ 8));
+    UBFROMUI(acc+12, 0x09090909-UBTOUI(acc+12));
+    UBFROMUI(acc+16, 0x09090909-UBTOUI(acc+16));
     #if QUAD
-    UINTAT(acc+20)=0x09090909-UINTAT(acc+20);
-    UINTAT(acc+24)=0x09090909-UINTAT(acc+24);
-    UINTAT(acc+28)=0x09090909-UINTAT(acc+28);
-    UINTAT(acc+32)=0x09090909-UINTAT(acc+32);
-    UINTAT(acc+36)=0x09090909-UINTAT(acc+36);
+    UBFROMUI(acc+20, 0x09090909-UBTOUI(acc+20));
+    UBFROMUI(acc+24, 0x09090909-UBTOUI(acc+24));
+    UBFROMUI(acc+28, 0x09090909-UBTOUI(acc+28));
+    UBFROMUI(acc+32, 0x09090909-UBTOUI(acc+32));
+    UBFROMUI(acc+36, 0x09090909-UBTOUI(acc+36));
     #endif
     } /* diffsign */
 
@@ -1252,9 +1342,9 @@ decFloat * decFloatAdd(decFloat *result,
   /* it can be put straight into acc (with an appropriate gap, if */
   /* needed) because no actual addition will be needed (except */
   /* possibly to complete ten's complement) */
-  overlap=DECPMAX-(expl-expr);
+  overlap=DECPMAX-(bexpl-bexpr);
   #if DECTRACE
-  printf("exps: %ld %ld\n", (LI)expl, (LI)expr);
+  printf("exps: %ld %ld\n", (LI)(bexpl-DECBIAS), (LI)(bexpr-DECBIAS));
   printf("Overlap=%ld carry=%08lx\n", (LI)overlap, (LI)carry);
   #endif
 
@@ -1274,13 +1364,13 @@ decFloat * decFloatAdd(decFloat *result,
     /* safe because the lhs is non-zero]. */
     gap=-overlap;
     if (gap>DECPMAX) {
-      expr+=gap-1;
+      bexpr+=gap-1;
       gap=DECPMAX;
       }
     ub=ulsd+gap+1;			/* where MSD will go */
     /* Fill the gap with 0s; note that there is no addition to do */
-    ui=&UINTAT(acc+COFF+DECPMAX);	/* start of gap */
-    for (; ui<&UINTAT(ub); ui++) *ui=0; /* mind the gap */
+    ut=acc+COFF+DECPMAX;		/* start of gap */
+    for (; ut<ub; ut+=4) UBFROMUI(ut, 0); /* mind the gap */
     if (overlap<-DECPMAX) {		/* gap was > DECPMAX */
       *ub=(uByte)(!DFISZERO(dfr));	/* make sticky digit */
       }
@@ -1294,63 +1384,74 @@ decFloat * decFloatAdd(decFloat *result,
    else {				/* overlap>0 */
     /* coefficients overlap (perhaps completely, although also */
     /* perhaps only where zeros) */
-    ub=buf+COFF+DECPMAX-overlap;	/* where MSD will go */
-    /* Fill the prefix gap with 0s; 8 will cover most common */
-    /* unalignments, so start with direct assignments (a loop is */
-    /* then used for any remaining -- the loop (and the one in a */
-    /* moment) is not then on the critical path because the number */
-    /* of additions is reduced by (at least) two in this case) */
-    UINTAT(buf+4)=0;			/* [clears decQuad 00 too] */
-    UINTAT(buf+8)=0;
-    if (ub>buf+12) {
-      ui=&UINTAT(buf+12);		/* start of any remaining */
-      for (; ui<&UINTAT(ub); ui++) *ui=0; /* fill them */
+    if (overlap==DECPMAX) {		/* aligned */
+      ub=buf+COFF;			/* where msd will go */
+      #if QUAD
+      UBFROMUS(buf+4, 0);		/* clear quad's 00 */
+      #endif
+      GETCOEFF(dfr, ub);		/* decode from decFloat */
       }
-    GETCOEFF(dfr, ub);			/* decode from decFloat */
+     else {				/* unaligned */
+      ub=buf+COFF+DECPMAX-overlap;	/* where MSD will go */
+      /* Fill the prefix gap with 0s; 8 will cover most common */
+      /* unalignments, so start with direct assignments (a loop is */
+      /* then used for any remaining -- the loop (and the one in a */
+      /* moment) is not then on the critical path because the number */
+      /* of additions is reduced by (at least) two in this case) */
+      UBFROMUI(buf+4, 0);		/* [clears decQuad 00 too] */
+      UBFROMUI(buf+8, 0);
+      if (ub>buf+12) {
+	ut=buf+12;			/* start any remaining */
+	for (; ut<ub; ut+=4) UBFROMUI(ut, 0); /* fill them */
+	}
+      GETCOEFF(dfr, ub);		/* decode from decFloat */
 
-    /* now move tail of rhs across to main acc; again use direct */
-    /* assignment for 8 digits-worth */
-    UINTAT(acc+COFF+DECPMAX)=UINTAT(buf+COFF+DECPMAX);
-    UINTAT(acc+COFF+DECPMAX+4)=UINTAT(buf+COFF+DECPMAX+4);
-    if (buf+COFF+DECPMAX+8<ub+DECPMAX) {
-      uj=&UINTAT(buf+COFF+DECPMAX+8);	/* source */
-      ui=&UINTAT(acc+COFF+DECPMAX+8);	/* target */
-      for (; uj<&UINTAT(ub+DECPMAX); ui++, uj++) *ui=*uj;
-      }
+      /* now move tail of rhs across to main acc; again use direct */
+      /* copies for 8 digits-worth */
+      UBFROMUI(acc+COFF+DECPMAX,   UBTOUI(buf+COFF+DECPMAX));
+      UBFROMUI(acc+COFF+DECPMAX+4, UBTOUI(buf+COFF+DECPMAX+4));
+      if (buf+COFF+DECPMAX+8<ub+DECPMAX) {
+	us=buf+COFF+DECPMAX+8;		/* source */
+	ut=acc+COFF+DECPMAX+8;		/* target */
+	for (; us<ub+DECPMAX; us+=4, ut+=4) UBFROMUI(ut, UBTOUI(us));
+	}
+      } /* unaligned */
 
     ulsd=acc+(ub-buf+DECPMAX-1);	/* update LSD pointer */
 
-    /* now do the add of the non-tail; this is all nicely aligned, */
+    /* Now do the add of the non-tail; this is all nicely aligned, */
     /* and is over a multiple of four digits (because for Quad two */
-    /* two 0 digits were added on the left); words in both acc and */
+    /* zero digits were added on the left); words in both acc and */
     /* buf (buf especially) will often be zero */
-    /* [byte-by-byte add, here, is about 15% slower than the by-fours] */
+    /* [byte-by-byte add, here, is about 15% slower total effect than */
+    /* the by-fours] */
 
     /* Now effect the add; this is harder on a little-endian */
     /* machine as the inter-digit carry cannot use the usual BCD */
     /* addition trick because the bytes are loaded in the wrong order */
     /* [this loop could be unrolled, but probably scarcely worth it] */
 
-    ui=&UINTAT(acc+COFF+DECPMAX-4);	/* target LSW (acc) */
-    uj=&UINTAT(buf+COFF+DECPMAX-4);	/* source LSW (buf, to add to acc) */
+    ut=acc+COFF+DECPMAX-4;		/* target LSW (acc) */
+    us=buf+COFF+DECPMAX-4;		/* source LSW (buf, to add to acc) */
 
     #if !DECLITEND
-    for (; ui>=&UINTAT(acc+4); ui--, uj--) {
+    for (; ut>=acc+4; ut-=4, us-=4) {	/* big-endian add loop */
       /* bcd8 add */
-      carry+=*uj;			/* rhs + carry */
+      carry+=UBTOUI(us);		/* rhs + carry */
       if (carry==0) continue;		/* no-op */
-      carry+=*ui;			/* lhs */
+      carry+=UBTOUI(ut);		/* lhs */
       /* Big-endian BCD adjust (uses internal carry) */
       carry+=0x76f6f6f6;		/* note top nibble not all bits */
-      *ui=(carry & 0x0f0f0f0f) - ((carry & 0x60606060)>>4); /* BCD adjust */
+      /* apply BCD adjust and save */
+      UBFROMUI(ut, (carry & 0x0f0f0f0f) - ((carry & 0x60606060)>>4));
       carry>>=31;			/* true carry was at far left */
       } /* add loop */
     #else
-    for (; ui>=&UINTAT(acc+4); ui--, uj--) {
+    for (; ut>=acc+4; ut-=4, us-=4) {	/* little-endian add loop */
       /* bcd8 add */
-      carry+=*uj;			/* rhs + carry */
+      carry+=UBTOUI(us);		/* rhs + carry */
       if (carry==0) continue;		/* no-op [common if unaligned] */
-      carry+=*ui;			/* lhs */
+      carry+=UBTOUI(ut);		/* lhs */
       /* Little-endian BCD adjust; inter-digit carry must be manual */
       /* because the lsb from the array will be in the most-significant */
       /* byte of carry */
@@ -1359,12 +1460,13 @@ decFloat * decFloatAdd(decFloat *result,
       carry+=(carry & 0x00800000)>>15;
       carry+=(carry & 0x00008000)>>15;
       carry-=(carry & 0x60606060)>>4;	/* BCD adjust back */
-      *ui=carry & 0x0f0f0f0f;		/* clear debris and save */
+      UBFROMUI(ut, carry & 0x0f0f0f0f); /* clear debris and save */
       /* here, final carry-out bit is at 0x00000080; move it ready */
       /* for next word-add (i.e., to 0x01000000) */
       carry=(carry & 0x00000080)<<17;
       } /* add loop */
     #endif
+
     #if DECTRACE
     {bcdnum tum;
     printf("Add done, carry=%08lx, diffsign=%ld\n", (LI)carry, (LI)diffsign);
@@ -1392,36 +1494,36 @@ decFloat * decFloatAdd(decFloat *result,
       *(ulsd+1)=0;
       #endif
       /* there are always at least four coefficient words */
-      UINTAT(umsd)   =0x09090909-UINTAT(umsd);
-      UINTAT(umsd+4) =0x09090909-UINTAT(umsd+4);
-      UINTAT(umsd+8) =0x09090909-UINTAT(umsd+8);
-      UINTAT(umsd+12)=0x09090909-UINTAT(umsd+12);
+      UBFROMUI(umsd,	0x09090909-UBTOUI(umsd));
+      UBFROMUI(umsd+4,	0x09090909-UBTOUI(umsd+4));
+      UBFROMUI(umsd+8,	0x09090909-UBTOUI(umsd+8));
+      UBFROMUI(umsd+12, 0x09090909-UBTOUI(umsd+12));
       #if DOUBLE
 	#define BNEXT 16
       #elif QUAD
-	UINTAT(umsd+16)=0x09090909-UINTAT(umsd+16);
-	UINTAT(umsd+20)=0x09090909-UINTAT(umsd+20);
-	UINTAT(umsd+24)=0x09090909-UINTAT(umsd+24);
-	UINTAT(umsd+28)=0x09090909-UINTAT(umsd+28);
-	UINTAT(umsd+32)=0x09090909-UINTAT(umsd+32);
+	UBFROMUI(umsd+16, 0x09090909-UBTOUI(umsd+16));
+	UBFROMUI(umsd+20, 0x09090909-UBTOUI(umsd+20));
+	UBFROMUI(umsd+24, 0x09090909-UBTOUI(umsd+24));
+	UBFROMUI(umsd+28, 0x09090909-UBTOUI(umsd+28));
+	UBFROMUI(umsd+32, 0x09090909-UBTOUI(umsd+32));
 	#define BNEXT 36
       #endif
       if (ulsd>=umsd+BNEXT) {		/* unaligned */
 	/* eight will handle most unaligments for Double; 16 for Quad */
-	UINTAT(umsd+BNEXT)=0x09090909-UINTAT(umsd+BNEXT);
-	UINTAT(umsd+BNEXT+4)=0x09090909-UINTAT(umsd+BNEXT+4);
+	UBFROMUI(umsd+BNEXT,   0x09090909-UBTOUI(umsd+BNEXT));
+	UBFROMUI(umsd+BNEXT+4, 0x09090909-UBTOUI(umsd+BNEXT+4));
 	#if DOUBLE
 	#define BNEXTY (BNEXT+8)
 	#elif QUAD
-	UINTAT(umsd+BNEXT+8)=0x09090909-UINTAT(umsd+BNEXT+8);
-	UINTAT(umsd+BNEXT+12)=0x09090909-UINTAT(umsd+BNEXT+12);
+	UBFROMUI(umsd+BNEXT+8,	0x09090909-UBTOUI(umsd+BNEXT+8));
+	UBFROMUI(umsd+BNEXT+12, 0x09090909-UBTOUI(umsd+BNEXT+12));
 	#define BNEXTY (BNEXT+16)
 	#endif
 	if (ulsd>=umsd+BNEXTY) {	/* very unaligned */
-	  ui=&UINTAT(umsd+BNEXTY);	/* -> continue */
-	  for (;;ui++) {
-	    *ui=0x09090909-*ui;		/* invert four digits */
-	    if (ui>=&UINTAT(ulsd-3)) break; /* all done */
+	  ut=umsd+BNEXTY;		/* -> continue */
+	  for (;;ut+=4) {
+	    UBFROMUI(ut, 0x09090909-UBTOUI(ut)); /* invert four digits */
+	    if (ut>=ulsd-3) break;	/* all done */
 	    }
 	  }
 	}
@@ -1446,10 +1548,10 @@ decFloat * decFloatAdd(decFloat *result,
 	umsd=acc+COFF+DECPMAX-1;   /* so far, so zero */
 	if (ulsd>umsd) {	   /* more to check */
 	  umsd++;		   /* to align after checked area */
-	  for (; UINTAT(umsd)==0 && umsd+3<ulsd;) umsd+=4;
+	  for (; UBTOUI(umsd)==0 && umsd+3<ulsd;) umsd+=4;
 	  for (; *umsd==0 && umsd<ulsd;) umsd++;
 	  }
-	if (*umsd==0) {		   /* must be true zero (and diffsign) */
+	if (*umsd==0) { 	   /* must be true zero (and diffsign) */
 	  num.sign=0;		   /* assume + */
 	  if (set->round==DEC_ROUND_FLOOR) num.sign=DECFLOAT_Sign;
 	  }
@@ -1468,9 +1570,9 @@ decFloat * decFloatAdd(decFloat *result,
     #endif
     } /* same sign */
 
-  num.msd=umsd;			   /* set MSD .. */
-  num.lsd=ulsd;			   /* .. and LSD */
-  num.exponent=expr;		   /* set exponent to smaller */
+  num.msd=umsd; 		   /* set MSD .. */
+  num.lsd=ulsd; 		   /* .. and LSD */
+  num.exponent=bexpr-DECBIAS;	   /* set exponent to smaller, unbiassed */
 
   #if DECTRACE
   decFloatShow(dfl, "dfl");
@@ -1484,12 +1586,12 @@ decFloat * decFloatAdd(decFloat *result,
 /* decFloatAnd -- logical digitwise AND of two decFloats	      */
 /*								      */
 /*   result gets the result of ANDing dfl and dfr		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result, which will be canonical with sign=0	      */
 /*								      */
-/* The operands must be positive, finite with exponent q=0, and	      */
+/* The operands must be positive, finite with exponent q=0, and       */
 /* comprise just zeros and ones; if not, Invalid operation results.   */
 /* ------------------------------------------------------------------ */
 decFloat * decFloatAnd(decFloat *result,
@@ -1516,7 +1618,7 @@ decFloat * decFloatAnd(decFloat *result,
 /* decFloatCanonical -- copy a decFloat, making canonical	      */
 /*								      */
 /*   result gets the canonicalized df				      */
-/*   df	    is the decFloat to copy and make canonical		      */
+/*   df     is the decFloat to copy and make canonical		      */
 /*   returns result						      */
 /*								      */
 /* This works on specials, too; no error or exception is possible.    */
@@ -1528,7 +1630,7 @@ decFloat * decFloatCanonical(decFloat *result, const decFloat *df) {
 /* ------------------------------------------------------------------ */
 /* decFloatClass -- return the class of a decFloat		      */
 /*								      */
-/*   df is the decFloat to test					      */
+/*   df is the decFloat to test 				      */
 /*   returns the decClass that df falls into			      */
 /* ------------------------------------------------------------------ */
 enum decClass decFloatClass(const decFloat *df) {
@@ -1560,7 +1662,7 @@ enum decClass decFloatClass(const decFloat *df) {
 /* ------------------------------------------------------------------ */
 /* decFloatClassString -- return the class of a decFloat as a string  */
 /*								      */
-/*   df is the decFloat to test					      */
+/*   df is the decFloat to test 				      */
 /*   returns a constant string describing the class df falls into     */
 /* ------------------------------------------------------------------ */
 const char *decFloatClassString(const decFloat *df) {
@@ -1579,10 +1681,10 @@ const char *decFloatClassString(const decFloat *df) {
   } /* decFloatClassString */
 
 /* ------------------------------------------------------------------ */
-/* decFloatCompare -- compare two decFloats; quiet NaNs allowed	      */
+/* decFloatCompare -- compare two decFloats; quiet NaNs allowed       */
 /*								      */
 /*   result gets the result of comparing dfl and dfr		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result, which may be -1, 0, 1, or NaN (Unordered)	      */
@@ -1606,7 +1708,7 @@ decFloat * decFloatCompare(decFloat *result,
 /* decFloatCompareSignal -- compare two decFloats; all NaNs signal    */
 /*								      */
 /*   result gets the result of comparing dfl and dfr		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result, which may be -1, 0, 1, or NaN (Unordered)	      */
@@ -1633,17 +1735,21 @@ decFloat * decFloatCompareSignal(decFloat *result,
 /* decFloatCompareTotal -- compare two decFloats with total ordering  */
 /*								      */
 /*   result gets the result of comparing dfl and dfr		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   returns result, which may be -1, 0, or 1			      */
 /* ------------------------------------------------------------------ */
 decFloat * decFloatCompareTotal(decFloat *result,
 				const decFloat *dfl, const decFloat *dfr) {
-  Int comp;				     /* work */
+  Int  comp;				     /* work */
+  uInt uiwork;				     /* for macros */
+  #if QUAD
+  uShort uswork;			     /* .. */
+  #endif
   if (DFISNAN(dfl) || DFISNAN(dfr)) {
     Int nanl, nanr;			     /* work */
     /* morph NaNs to +/- 1 or 2, leave numbers as 0 */
-    nanl=DFISSNAN(dfl)+DFISQNAN(dfl)*2;	     /* quiet > signalling */
+    nanl=DFISSNAN(dfl)+DFISQNAN(dfl)*2;      /* quiet > signalling */
     if (DFISSIGNED(dfl)) nanl=-nanl;
     nanr=DFISSNAN(dfr)+DFISQNAN(dfr)*2;
     if (DFISSIGNED(dfr)) nanr=-nanr;
@@ -1654,23 +1760,22 @@ decFloat * decFloatCompareTotal(decFloat *result,
       uByte bufl[DECPMAX+4];		     /* for LHS coefficient + foot */
       uByte bufr[DECPMAX+4];		     /* for RHS coefficient + foot */
       uByte *ub, *uc;			     /* work */
-      Int sigl;				     /* signum of LHS */
+      Int sigl; 			     /* signum of LHS */
       sigl=(DFISSIGNED(dfl) ? -1 : +1);
 
       /* decode the coefficients */
       /* (shift both right two if Quad to make a multiple of four) */
       #if QUAD
-	ub = bufl;                           /* avoid type-pun violation */
-	USHORTAT(ub)=0;
-	uc = bufr;                           /* avoid type-pun violation */
-	USHORTAT(uc)=0;
+	UBFROMUS(bufl, 0);
+	UBFROMUS(bufr, 0);
       #endif
       GETCOEFF(dfl, bufl+QUAD*2);	     /* decode from decFloat */
       GETCOEFF(dfr, bufr+QUAD*2);	     /* .. */
       /* all multiples of four, here */
       comp=0;				     /* assume equal */
       for (ub=bufl, uc=bufr; ub<bufl+DECPMAX+QUAD*2; ub+=4, uc+=4) {
-	if (UINTAT(ub)==UINTAT(uc)) continue; /* so far so same */
+	uInt ui=UBTOUI(ub);
+	if (ui==UBTOUI(uc)) continue; /* so far so same */
 	/* about to find a winner; go by bytes in case little-endian */
 	for (;; ub++, uc++) {
 	  if (*ub==*uc) continue;
@@ -1696,7 +1801,7 @@ decFloat * decFloatCompareTotal(decFloat *result,
 /* decFloatCompareTotalMag -- compare magnitudes with total ordering  */
 /*								      */
 /*   result gets the result of comparing abs(dfl) and abs(dfr)	      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   returns result, which may be -1, 0, or 1			      */
 /* ------------------------------------------------------------------ */
@@ -1747,7 +1852,7 @@ decFloat * decFloatCopyAbs(decFloat *result, const decFloat *dfl) {
 /* ------------------------------------------------------------------ */
 /* decFloatCopyNegate -- copy a decFloat as-is with inverted sign bit */
 /*								      */
-/*   result gets the copy of dfl with sign bit inverted		      */
+/*   result gets the copy of dfl with sign bit inverted 	      */
 /*   dfl    is the decFloat to copy				      */
 /*   returns result						      */
 /*								      */
@@ -1760,10 +1865,10 @@ decFloat * decFloatCopyNegate(decFloat *result, const decFloat *dfl) {
   } /* decFloatCopyNegate */
 
 /* ------------------------------------------------------------------ */
-/* decFloatCopySign -- copy a decFloat with the sign of another	      */
+/* decFloatCopySign -- copy a decFloat with the sign of another       */
 /*								      */
-/*   result gets the result of copying dfl with the sign of dfr	      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   result gets the result of copying dfl with the sign of dfr       */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   returns result						      */
 /*								      */
@@ -1795,7 +1900,7 @@ decFloat * decFloatCopySign(decFloat *result,
 /* next one is used when it is known that the declet must be */
 /* non-zero, or is the final zero declet */
 #define dpdlendun(n, form) {dpd=(form)&0x3ff;	  \
-  if (dpd==0) return 1;				  \
+  if (dpd==0) return 1; 			  \
   return (DECPMAX-1-3*(n))-(3-DPD2BCD8[dpd*4+3]);}
 
 uInt decFloatDigits(const decFloat *df) {
@@ -1819,7 +1924,7 @@ uInt decFloatDigits(const decFloat *df) {
       } /* [cannot drop through] */
     sourlo=DFWORD(df, 1);  /* sourhi not involved now */
     if (sourlo&0xfff00000) {	 /* in one of first two */
-      dpdlenchk(1, sourlo>>30);	 /* very rare */
+      dpdlenchk(1, sourlo>>30);  /* very rare */
       dpdlendun(2, sourlo>>20);
       } /* [cannot drop through] */
     dpdlenchk(3, sourlo>>10);
@@ -1850,7 +1955,7 @@ uInt decFloatDigits(const decFloat *df) {
       } /* [cannot drop through] */
     sourlo=DFWORD(df, 3);
     if (sourlo&0xfff00000) {	 /* in one of first two */
-      dpdlenchk(7, sourlo>>30);	 /* very rare */
+      dpdlenchk(7, sourlo>>30);  /* very rare */
       dpdlendun(8, sourlo>>20);
       } /* [cannot drop through] */
     dpdlenchk(9, sourlo>>10);
@@ -1863,7 +1968,7 @@ uInt decFloatDigits(const decFloat *df) {
 /* decFloatDivide -- divide a decFloat by another		      */
 /*								      */
 /*   result gets the result of dividing dfl by dfr:		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -1880,7 +1985,7 @@ decFloat * decFloatDivide(decFloat *result,
 /* decFloatDivideInteger -- integer divide a decFloat by another      */
 /*								      */
 /*   result gets the result of dividing dfl by dfr:		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -1896,9 +2001,9 @@ decFloat * decFloatDivideInteger(decFloat *result,
 /* decFloatFMA -- multiply and add three decFloats, fused	      */
 /*								      */
 /*   result gets the result of (dfl*dfr)+dff with a single rounding   */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
-/*   dff    is the final decFloat (fhs)				      */
+/*   dff    is the final decFloat (fhs) 			      */
 /*   set    is the context					      */
 /*   returns result						      */
 /*								      */
@@ -1906,21 +2011,23 @@ decFloat * decFloatDivideInteger(decFloat *result,
 decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
 		       const decFloat *dfr, const decFloat *dff,
 		       decContext *set) {
+
   /* The accumulator has the bytes needed for FiniteMultiply, plus */
   /* one byte to the left in case of carry, plus DECPMAX+2 to the */
   /* right for the final addition (up to full fhs + round & sticky) */
-  #define FMALEN (1+ (DECPMAX9*18) +DECPMAX+2)
-  uByte	 acc[FMALEN];		   /* for multiplied coefficient in BCD */
+  #define FMALEN (ROUNDUP4(1+ (DECPMAX9*18+1) +DECPMAX+2))
+  uByte  acc[FMALEN];		   /* for multiplied coefficient in BCD */
 				   /* .. and for final result */
   bcdnum mul;			   /* for multiplication result */
   bcdnum fin;			   /* for final operand, expanded */
-  uByte	 coe[DECPMAX];		   /* dff coefficient in BCD */
+  uByte  coe[ROUNDUP4(DECPMAX)];   /* dff coefficient in BCD */
   bcdnum *hi, *lo;		   /* bcdnum with higher/lower exponent */
   uInt	 diffsign;		   /* non-zero if signs differ */
-  uInt	 hipad;			   /* pad digit for hi if needed */
+  uInt	 hipad; 		   /* pad digit for hi if needed */
   Int	 padding;		   /* excess exponent */
-  uInt	 carry;			   /* +1 for ten's complement and during add */
-  uByte	 *ub, *uh, *ul;		   /* work */
+  uInt	 carry; 		   /* +1 for ten's complement and during add */
+  uByte  *ub, *uh, *ul; 	   /* work */
+  uInt	 uiwork;		   /* for macros */
 
   /* handle all the special values [any special operand leads to a */
   /* special result] */
@@ -1971,8 +2078,8 @@ decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
   GETCOEFF(dff, coe);			/* extract the coefficient */
 
   /* now set hi and lo so that hi points to whichever of mul and fin */
-  /* has the higher exponent and lo point to the other [don't care if */
-  /* the same] */
+  /* has the higher exponent and lo points to the other [don't care, */
+  /* if the same].  One coefficient will be in acc, the other in coe. */
   if (mul.exponent>=fin.exponent) {
     hi=&mul;
     lo=&fin;
@@ -1983,22 +2090,23 @@ decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
     }
 
   /* remove leading zeros on both operands; this will save time later */
-  /* and make testing for zero trivial */
-  for (; UINTAT(hi->msd)==0 && hi->msd+3<hi->lsd;) hi->msd+=4;
+  /* and make testing for zero trivial (tests are safe because acc */
+  /* and coe are rounded up to uInts) */
+  for (; UBTOUI(hi->msd)==0 && hi->msd+3<hi->lsd;) hi->msd+=4;
   for (; *hi->msd==0 && hi->msd<hi->lsd;) hi->msd++;
-  for (; UINTAT(lo->msd)==0 && lo->msd+3<lo->lsd;) lo->msd+=4;
+  for (; UBTOUI(lo->msd)==0 && lo->msd+3<lo->lsd;) lo->msd+=4;
   for (; *lo->msd==0 && lo->msd<lo->lsd;) lo->msd++;
 
   /* if hi is zero then result will be lo (which has the smaller */
   /* exponent), which also may need to be tested for zero for the */
   /* weird IEEE 754 sign rules */
-  if (*hi->msd==0 && hi->msd==hi->lsd) {     /* hi is zero */
+  if (*hi->msd==0) {			     /* hi is zero */
     /* "When the sum of two operands with opposite signs is */
     /* exactly zero, the sign of that sum shall be '+' in all */
     /* rounding modes except round toward -Infinity, in which */
     /* mode that sign shall be '-'." */
     if (diffsign) {
-      if (*lo->msd==0 && lo->msd==lo->lsd) { /* lo is zero */
+      if (*lo->msd==0) {		     /* lo is zero */
 	lo->sign=0;
 	if (set->round==DEC_ROUND_FLOOR) lo->sign=DECFLOAT_Sign;
 	} /* diffsign && lo=0 */
@@ -2006,10 +2114,11 @@ decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
     return decFinalize(result, lo, set);     /* may need clamping */
     } /* numfl is zero */
   /* [here, both are minimal length and hi is non-zero] */
+  /* (if lo is zero then padding with zeros may be needed, below) */
 
   /* if signs differ, take the ten's complement of hi (zeros to the */
-  /* right do not matter because the complement of zero is zero); */
-  /* the +1 is done later, as part of the addition, inserted at the */
+  /* right do not matter because the complement of zero is zero); the */
+  /* +1 is done later, as part of the addition, inserted at the */
   /* correct digit */
   hipad=0;
   carry=0;
@@ -2017,7 +2126,7 @@ decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
     hipad=9;
     carry=1;
     /* exactly the correct number of digits must be inverted */
-    for (uh=hi->msd; uh<hi->lsd-3; uh+=4) UINTAT(uh)=0x09090909-UINTAT(uh);
+    for (uh=hi->msd; uh<hi->lsd-3; uh+=4) UBFROMUI(uh, 0x09090909-UBTOUI(uh));
     for (; uh<=hi->lsd; uh++) *uh=(uByte)(0x09-*uh);
     }
 
@@ -2032,7 +2141,8 @@ decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
   /* printf("FMA pad %ld\n", (LI)padding); */
 
   /* the result of the addition will be built into the accumulator, */
-  /* starting from the far right; this could be either hi or lo */
+  /* starting from the far right; this could be either hi or lo, and */
+  /* will be aligned */
   ub=acc+FMALEN-1;		   /* where lsd of result will go */
   ul=lo->lsd;			   /* lsd of rhs */
 
@@ -2042,45 +2152,43 @@ decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
     /* digit at the right place, as it stays clear of hi digits */
     /* [it must be DECPMAX+2 because during a subtraction the msd */
     /* could become 0 after a borrow from 1.000 to 0.9999...] */
-    Int hilen=(Int)(hi->lsd-hi->msd+1); /* lengths */
-    Int lolen=(Int)(lo->lsd-lo->msd+1); /* .. */
-    Int newexp=MINI(hi->exponent, hi->exponent+hilen-DECPMAX)-3;
-    Int reduce=newexp-lo->exponent;
-    if (reduce>0) {			/* [= case gives reduce=0 nop] */
+
+    Int hilen=(Int)(hi->lsd-hi->msd+1); /* length of hi */
+    Int lolen=(Int)(lo->lsd-lo->msd+1); /* and of lo */
+
+    if (hilen+padding-lolen > DECPMAX+2) {   /* can reduce lo to single */
+      /* make sure it is virtually at least DECPMAX from hi->msd, at */
+      /* least to right of hi->lsd (in case of destructive subtract), */
+      /* and separated by at least two digits from either of those */
+      /* (the tricky DOUBLE case is when hi is a 1 that will become a */
+      /* 0.9999... by subtraction: */
+      /*   hi:	 1				     E+16 */
+      /*   lo:	  .................1000000000000000  E-16 */
+      /* which for the addition pads to: */
+      /*   hi:	 1000000000000000000		     E-16 */
+      /*   lo:	  .................1000000000000000  E-16 */
+      Int newexp=MINI(hi->exponent, hi->exponent+hilen-DECPMAX)-3;
+
       /* printf("FMA reduce: %ld\n", (LI)reduce); */
-      if (reduce>=lolen) {		/* eating all */
-	lo->lsd=lo->msd;		/* reduce to single digit */
-	lo->exponent=newexp;		/* [known to be non-zero] */
-	}
-       else { /* < */
-	uByte *up=lo->lsd;
-	lo->lsd=lo->lsd-reduce;
-	if (*lo->lsd==0)		/* could need sticky bit */
-	 for (; up>lo->lsd; up--) {	/* search discarded digits */
-	  if (*up!=0) {			/* found one... */
-	    *lo->lsd=1;			/* set sticky bit */
-	    break;
-	    }
-	  }
-	lo->exponent+=reduce;
-	}
-      padding=hi->exponent-lo->exponent; /* recalculate */
-      ul=lo->lsd;			 /* .. */
-      } /* maybe reduce */
-    /* padding is now <= DECPMAX+2 but still > 0; tricky DOUBLE case */
-    /* is when hi is a 1 that will become a 0.9999... by subtraction: */
-    /*	 hi:   1				   E+16 */
-    /*	 lo:	.................1000000000000000  E-16 */
-    /* which for the addition pads and reduces to: */
-    /*	 hi:   1000000000000000000		   E-2 */
-    /*	 lo:	.................1		   E-2 */
+      lo->lsd=lo->msd;			     /* to single digit [maybe 0] */
+      lo->exponent=newexp;		     /* new lowest exponent */
+      padding=hi->exponent-lo->exponent;     /* recalculate */
+      ul=lo->lsd;			     /* .. and repoint */
+      }
+
+    /* padding is still > 0, but will fit in acc (less leading carry slot) */
     #if DECCHECK
-      if (padding>DECPMAX+2) printf("FMA excess padding: %ld\n", (LI)padding);
       if (padding<=0) printf("FMA low padding: %ld\n", (LI)padding);
+      if (hilen+padding+1>FMALEN)
+	printf("FMA excess hilen+padding: %ld+%ld \n", (LI)hilen, (LI)padding);
       /* printf("FMA padding: %ld\n", (LI)padding); */
     #endif
+
     /* padding digits can now be set in the result; one or more of */
     /* these will come from lo; others will be zeros in the gap */
+    for (; ul-3>=lo->msd && padding>3; padding-=4, ul-=4, ub-=4) {
+      UBFROMUI(ub-3, UBTOUI(ul-3));	     /* [cannot overlap] */
+      }
     for (; ul>=lo->msd && padding>0; padding--, ul--, ub--) *ub=*ul;
     for (;padding>0; padding--, ub--) *ub=0; /* mind the gap */
     }
@@ -2088,23 +2196,39 @@ decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
   /* addition now complete to the right of the rightmost digit of hi */
   uh=hi->lsd;
 
-  /* carry was set up depending on ten's complement above; do the add... */
+  /* dow do the add from hi->lsd to the left */
+  /* [bytewise, because either operand can run out at any time] */
+  /* carry was set up depending on ten's complement above */
+  /* first assume both operands have some digits */
   for (;; ub--) {
-    uInt hid, lod;
-    if (uh<hi->msd) {
-      if (ul<lo->msd) break;
-      hid=hipad;
-      }
-     else hid=*uh--;
-    if (ul<lo->msd) lod=0;
-     else lod=*ul--;
-    *ub=(uByte)(carry+hid+lod);
-    if (*ub<10) carry=0;
-     else {
+    if (uh<hi->msd || ul<lo->msd) break;
+    *ub=(uByte)(carry+(*uh--)+(*ul--));
+    carry=0;
+    if (*ub<10) continue;
+    *ub-=10;
+    carry=1;
+    } /* both loop */
+
+  if (ul<lo->msd) {	      /* to left of lo */
+    for (;; ub--) {
+      if (uh<hi->msd) break;
+      *ub=(uByte)(carry+(*uh--));  /* [+0] */
+      carry=0;
+      if (*ub<10) continue;
       *ub-=10;
       carry=1;
-      }
-    } /* addition loop */
+      } /* hi loop */
+    }
+   else {		      /* to left of hi */
+    for (;; ub--) {
+      if (ul<lo->msd) break;
+      *ub=(uByte)(carry+hipad+(*ul--));
+      carry=0;
+      if (*ub<10) continue;
+      *ub-=10;
+      carry=1;
+      } /* lo loop */
+    }
 
   /* addition complete -- now handle carry, borrow, etc. */
   /* use lo to set up the num (its exponent is already correct, and */
@@ -2122,7 +2246,7 @@ decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
     if (!carry) {		   /* no carry out means hi<lo */
       /* borrowed -- take ten's complement of the right digits */
       lo->sign=hi->sign;	   /* sign is lhs sign */
-      for (ul=lo->msd; ul<lo->lsd-3; ul+=4) UINTAT(ul)=0x09090909-UINTAT(ul);
+      for (ul=lo->msd; ul<lo->lsd-3; ul+=4) UBFROMUI(ul, 0x09090909-UBTOUI(ul));
       for (; ul<=lo->lsd; ul++) *ul=(uByte)(0x09-*ul); /* [leaves ul at lsd+1] */
       /* complete the ten's complement by adding 1 [cannot overrun] */
       for (ul--; *ul==9; ul--) *ul=0;
@@ -2133,7 +2257,7 @@ decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
       /* all done except for the special IEEE 754 exact-zero-result */
       /* rule (see above); while testing for zero, strip leading */
       /* zeros (which will save decFinalize doing it) */
-      for (; UINTAT(lo->msd)==0 && lo->msd+3<lo->lsd;) lo->msd+=4;
+      for (; UBTOUI(lo->msd)==0 && lo->msd+3<lo->lsd;) lo->msd+=4;
       for (; *lo->msd==0 && lo->msd<lo->lsd;) lo->msd++;
       if (*lo->msd==0) {	   /* must be true zero (and diffsign) */
 	lo->sign=0;		   /* assume + */
@@ -2143,11 +2267,18 @@ decFloat * decFloatFMA(decFloat *result, const decFloat *dfl,
       } /* subtraction gave positive result */
     } /* diffsign */
 
+  #if DECCHECK
+  /* assert no left underrun */
+  if (lo->msd<acc) {
+    printf("FMA underrun by %ld \n", (LI)(acc-lo->msd));
+    }
+  #endif
+
   return decFinalize(result, lo, set);	/* round, check, and lay out */
   } /* decFloatFMA */
 
 /* ------------------------------------------------------------------ */
-/* decFloatFromInt -- initialise a decFloat from an Int		      */
+/* decFloatFromInt -- initialise a decFloat from an Int 	      */
 /*								      */
 /*   result gets the converted Int				      */
 /*   n	    is the Int to convert				      */
@@ -2213,7 +2344,7 @@ decFloat * decFloatFromUInt32(decFloat *result, uInt u) {
 /* decFloatInvert -- logical digitwise INVERT of a decFloat	      */
 /*								      */
 /*   result gets the result of INVERTing df			      */
-/*   df	    is the decFloat to invert				      */
+/*   df     is the decFloat to invert				      */
 /*   set    is the context					      */
 /*   returns result, which will be canonical with sign=0	      */
 /*								      */
@@ -2241,12 +2372,12 @@ decFloat * decFloatInvert(decFloat *result, const decFloat *df,
 /* ------------------------------------------------------------------ */
 /* decFloatIs -- decFloat tests (IsSigned, etc.)		      */
 /*								      */
-/*   df is the decFloat to test					      */
-/*   returns 0 or 1 in an int32_t				      */
+/*   df is the decFloat to test 				      */
+/*   returns 0 or 1 in a uInt					      */
 /*								      */
 /* Many of these could be macros, but having them as real functions   */
-/* is a bit cleaner (and they can be referred to here by the generic  */
-/* names)							      */
+/* is a little cleaner (and they can be referred to here by the       */
+/* generic names)						      */
 /* ------------------------------------------------------------------ */
 uInt decFloatIsCanonical(const decFloat *df) {
   if (DFISSPECIAL(df)) {
@@ -2333,10 +2464,10 @@ uInt decFloatIsZero(const decFloat *df) {
   } /* decFloatIs... */
 
 /* ------------------------------------------------------------------ */
-/* decFloatLogB -- return adjusted exponent, by 754r rules	      */
+/* decFloatLogB -- return adjusted exponent, by 754 rules	      */
 /*								      */
 /*   result gets the adjusted exponent as an integer, or a NaN etc.   */
-/*   df	    is the decFloat to be examined			      */
+/*   df     is the decFloat to be examined			      */
 /*   set    is the context					      */
 /*   returns result						      */
 /*								      */
@@ -2353,12 +2484,12 @@ decFloat * decFloatLogB(decFloat *result, const decFloat *df,
   if (DFISNAN(df)) return decNaNs(result, df, NULL, set);
   if (DFISINF(df)) {
     DFWORD(result, 0)=0;		     /* need +ve */
-    return decInfinity(result, result);	     /* canonical +Infinity */
+    return decInfinity(result, result);      /* canonical +Infinity */
     }
   if (DFISZERO(df)) {
-    set->status|=DEC_Division_by_zero;	     /* as per 754r */
+    set->status|=DEC_Division_by_zero;	     /* as per 754 */
     DFWORD(result, 0)=DECFLOAT_Sign;	     /* make negative */
-    return decInfinity(result, result);	     /* canonical -Infinity */
+    return decInfinity(result, result);      /* canonical -Infinity */
     }
   ae=GETEXPUN(df)			/* get unbiased exponent .. */
     +decFloatDigits(df)-1;		/* .. and make adjusted exponent */
@@ -2381,10 +2512,10 @@ decFloat * decFloatLogB(decFloat *result, const decFloat *df,
   } /* decFloatLogB */
 
 /* ------------------------------------------------------------------ */
-/* decFloatMax -- return maxnum of two operands			      */
+/* decFloatMax -- return maxnum of two operands 		      */
 /*								      */
 /*   result gets the chosen decFloat				      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -2416,7 +2547,7 @@ decFloat * decFloatMax(decFloat *result,
 /* decFloatMaxMag -- return maxnummag of two operands		      */
 /*								      */
 /*   result gets the chosen decFloat				      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -2440,10 +2571,10 @@ decFloat * decFloatMaxMag(decFloat *result,
   } /* decFloatMaxMag */
 
 /* ------------------------------------------------------------------ */
-/* decFloatMin -- return minnum of two operands			      */
+/* decFloatMin -- return minnum of two operands 		      */
 /*								      */
 /*   result gets the chosen decFloat				      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -2475,7 +2606,7 @@ decFloat * decFloatMin(decFloat *result,
 /* decFloatMinMag -- return minnummag of two operands		      */
 /*								      */
 /*   result gets the chosen decFloat				      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -2501,8 +2632,8 @@ decFloat * decFloatMinMag(decFloat *result,
 /* ------------------------------------------------------------------ */
 /* decFloatMinus -- negate value, heeding NaNs, etc.		      */
 /*								      */
-/*   result gets the canonicalized 0-df				      */
-/*   df	    is the decFloat to minus				      */
+/*   result gets the canonicalized 0-df 			      */
+/*   df     is the decFloat to minus				      */
 /*   set    is the context					      */
 /*   returns result						      */
 /*								      */
@@ -2524,8 +2655,8 @@ decFloat * decFloatMinus(decFloat *result, const decFloat *df,
 /* ------------------------------------------------------------------ */
 /* decFloatMultiply -- multiply two decFloats			      */
 /*								      */
-/*   result gets the result of multiplying dfl and dfr:		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   result gets the result of multiplying dfl and dfr: 	      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -2535,7 +2666,7 @@ decFloat * decFloatMultiply(decFloat *result,
 			    const decFloat *dfl, const decFloat *dfr,
 			    decContext *set) {
   bcdnum num;			   /* for final conversion */
-  uByte	 bcdacc[DECPMAX9*18+1];	   /* for coefficent in BCD */
+  uByte  bcdacc[DECPMAX9*18+1];    /* for coefficent in BCD */
 
   if (DFISSPECIAL(dfl) || DFISSPECIAL(dfr)) { /* either is special? */
     /* NaNs are handled as usual */
@@ -2561,7 +2692,7 @@ decFloat * decFloatMultiply(decFloat *result,
 /*   set    is the context					      */
 /*   returns result						      */
 /*								      */
-/* This is 754r nextdown; Invalid is the only status possible (from   */
+/* This is 754 nextdown; Invalid is the only status possible (from    */
 /* an sNaN).							      */
 /* ------------------------------------------------------------------ */
 decFloat * decFloatNextMinus(decFloat *result, const decFloat *dfl,
@@ -2580,19 +2711,19 @@ decFloat * decFloatNextMinus(decFloat *result, const decFloat *dfl,
   /* here (but can be done with normal add if the sign of zero is */
   /* treated carefully, because no Inexactitude is interesting); */
   /* rounding to -Infinity then pushes the result to next below */
-  decFloatZero(&delta);			/* set up tiny delta */
-  DFWORD(&delta, DECWORDS-1)=1;		/* coefficient=1 */
+  decFloatZero(&delta); 		/* set up tiny delta */
+  DFWORD(&delta, DECWORDS-1)=1; 	/* coefficient=1 */
   DFWORD(&delta, 0)=DECFLOAT_Sign;	/* Sign=1 + biased exponent=0 */
   /* set up for the directional round */
-  saveround=set->round;			/* save mode */
+  saveround=set->round; 		/* save mode */
   set->round=DEC_ROUND_FLOOR;		/* .. round towards -Infinity */
-  savestat=set->status;			/* save status */
+  savestat=set->status; 		/* save status */
   decFloatAdd(result, dfl, &delta, set);
   /* Add rules mess up the sign when going from +Ntiny to 0 */
   if (DFISZERO(result)) DFWORD(result, 0)^=DECFLOAT_Sign; /* correct */
   set->status&=DEC_Invalid_operation;	/* preserve only sNaN status */
   set->status|=savestat;		/* restore pending flags */
-  set->round=saveround;			/* .. and mode */
+  set->round=saveround; 		/* .. and mode */
   return result;
   } /* decFloatNextMinus */
 
@@ -2604,7 +2735,7 @@ decFloat * decFloatNextMinus(decFloat *result, const decFloat *dfl,
 /*   set    is the context					      */
 /*   returns result						      */
 /*								      */
-/* This is 754r nextup; Invalid is the only status possible (from     */
+/* This is 754 nextup; Invalid is the only status possible (from      */
 /* an sNaN).							      */
 /* ------------------------------------------------------------------ */
 decFloat * decFloatNextPlus(decFloat *result, const decFloat *dfl,
@@ -2624,19 +2755,19 @@ decFloat * decFloatNextPlus(decFloat *result, const decFloat *dfl,
   /* here (but can be done with normal add if the sign of zero is */
   /* treated carefully, because no Inexactitude is interesting); */
   /* rounding to +Infinity then pushes the result to next above */
-  decFloatZero(&delta);			/* set up tiny delta */
-  DFWORD(&delta, DECWORDS-1)=1;		/* coefficient=1 */
+  decFloatZero(&delta); 		/* set up tiny delta */
+  DFWORD(&delta, DECWORDS-1)=1; 	/* coefficient=1 */
   DFWORD(&delta, 0)=0;			/* Sign=0 + biased exponent=0 */
   /* set up for the directional round */
-  saveround=set->round;			/* save mode */
-  set->round=DEC_ROUND_CEILING;		/* .. round towards +Infinity */
-  savestat=set->status;			/* save status */
+  saveround=set->round; 		/* save mode */
+  set->round=DEC_ROUND_CEILING; 	/* .. round towards +Infinity */
+  savestat=set->status; 		/* save status */
   decFloatAdd(result, dfl, &delta, set);
   /* Add rules mess up the sign when going from -Ntiny to -0 */
   if (DFISZERO(result)) DFWORD(result, 0)^=DECFLOAT_Sign; /* correct */
   set->status&=DEC_Invalid_operation;	/* preserve only sNaN status */
   set->status|=savestat;		/* restore pending flags */
-  set->round=saveround;			/* .. and mode */
+  set->round=saveround; 		/* .. and mode */
   return result;
   } /* decFloatNextPlus */
 
@@ -2649,8 +2780,9 @@ decFloat * decFloatNextPlus(decFloat *result, const decFloat *dfl,
 /*   set    is the context					      */
 /*   returns result						      */
 /*								      */
-/* This is 754r nextafter; status may be set unless the result is a   */
-/* normal number.						      */
+/* This is 754-1985 nextafter, as modified during revision (dropped   */
+/* from 754-2008); status may be set unless the result is a normal    */
+/* number.							      */
 /* ------------------------------------------------------------------ */
 decFloat * decFloatNextToward(decFloat *result,
 			      const decFloat *dfl, const decFloat *dfr,
@@ -2676,7 +2808,7 @@ decFloat * decFloatNextToward(decFloat *result,
       }
     saveround=set->round;		     /* save mode */
     set->round=DEC_ROUND_CEILING;	     /* .. round towards +Infinity */
-    deltatop=0;				     /* positive delta */
+    deltatop=0; 			     /* positive delta */
     }
    else { /* lhs>rhs, do NextMinus, see above for commentary */
     if (DFISINF(dfl) && !DFISSIGNED(dfl)) {  /* +Infinity special case */
@@ -2684,23 +2816,23 @@ decFloat * decFloatNextToward(decFloat *result,
       return result;
       }
     saveround=set->round;		     /* save mode */
-    set->round=DEC_ROUND_FLOOR;		     /* .. round towards -Infinity */
+    set->round=DEC_ROUND_FLOOR; 	     /* .. round towards -Infinity */
     deltatop=DECFLOAT_Sign;		     /* negative delta */
     }
-  savestat=set->status;			     /* save status */
+  savestat=set->status; 		     /* save status */
   /* Here, Inexact is needed where appropriate (and hence Underflow, */
   /* etc.).  Therefore the tiny delta which is otherwise */
   /* unrepresentable (see NextPlus and NextMinus) is constructed */
   /* using the multiplication of FMA. */
-  decFloatZero(&delta);			/* set up tiny delta */
-  DFWORD(&delta, DECWORDS-1)=1;		/* coefficient=1 */
+  decFloatZero(&delta); 		/* set up tiny delta */
+  DFWORD(&delta, DECWORDS-1)=1; 	/* coefficient=1 */
   DFWORD(&delta, 0)=deltatop;		/* Sign + biased exponent=0 */
   decFloatFromString(&pointone, "1E-1", set); /* set up multiplier */
   decFloatFMA(result, &delta, &pointone, dfl, set);
   /* [Delta is truly tiny, so no need to correct sign of zero] */
   /* use new status unless the result is normal */
   if (decFloatIsNormal(result)) set->status=savestat; /* else goes forward */
-  set->round=saveround;			/* restore mode */
+  set->round=saveround; 		/* restore mode */
   return result;
   } /* decFloatNextToward */
 
@@ -2708,12 +2840,12 @@ decFloat * decFloatNextToward(decFloat *result,
 /* decFloatOr -- logical digitwise OR of two decFloats		      */
 /*								      */
 /*   result gets the result of ORing dfl and dfr		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result, which will be canonical with sign=0	      */
 /*								      */
-/* The operands must be positive, finite with exponent q=0, and	      */
+/* The operands must be positive, finite with exponent q=0, and       */
 /* comprise just zeros and ones; if not, Invalid operation results.   */
 /* ------------------------------------------------------------------ */
 decFloat * decFloatOr(decFloat *result,
@@ -2739,14 +2871,14 @@ decFloat * decFloatOr(decFloat *result,
 /* ------------------------------------------------------------------ */
 /* decFloatPlus -- add value to 0, heeding NaNs, etc.		      */
 /*								      */
-/*   result gets the canonicalized 0+df				      */
-/*   df	    is the decFloat to plus				      */
+/*   result gets the canonicalized 0+df 			      */
+/*   df     is the decFloat to plus				      */
 /*   set    is the context					      */
 /*   returns result						      */
 /*								      */
 /* This has the same effect as 0+df where the exponent of the zero is */
 /* the same as that of df (if df is finite).			      */
-/* The effect is also the same as decFloatCopy except that NaNs	      */
+/* The effect is also the same as decFloatCopy except that NaNs       */
 /* are handled normally (the sign of a NaN is not affected, and an    */
 /* sNaN will signal), the result is canonical, and zero gets sign 0.  */
 /* ------------------------------------------------------------------ */
@@ -2762,7 +2894,7 @@ decFloat * decFloatPlus(decFloat *result, const decFloat *df,
 /* decFloatQuantize -- quantize a decFloat			      */
 /*								      */
 /*   result gets the result of quantizing dfl to match dfr	      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs), which sets the exponent     */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -2775,16 +2907,19 @@ decFloat * decFloatQuantize(decFloat *result,
 			    decContext *set) {
   Int	explb, exprb;	      /* left and right biased exponents */
   uByte *ulsd;		      /* local LSD pointer */
-  uInt	*ui;		      /* work */
-  uByte *ub;		      /* .. */
+  uByte *ub, *uc;	      /* work */
   Int	drop;		      /* .. */
   uInt	dpd;		      /* .. */
-  uInt	encode;		      /* encoding accumulator */
+  uInt	encode; 	      /* encoding accumulator */
   uInt	sourhil, sourhir;     /* top words from source decFloats */
+  uInt	uiwork; 	      /* for macros */
+  #if QUAD
+  uShort uswork;	      /* .. */
+  #endif
   /* the following buffer holds the coefficient for manipulation */
-  uByte buf[4+DECPMAX*3];     /* + space for zeros to left or right */
+  uByte buf[4+DECPMAX*3+2*QUAD];   /* + space for zeros to left or right */
   #if DECTRACE
-  bcdnum num;		      /* for trace displays */
+  bcdnum num;			   /* for trace displays */
   #endif
 
   /* Start decoding the arguments */
@@ -2827,7 +2962,7 @@ decFloat * decFloatQuantize(decFloat *result,
   decShowNum(&num, "dfl");
   #endif
 
-  if (drop>0) {				/* [most common case] */
+  if (drop>0) { 			/* [most common case] */
     /* (this code is very similar to that in decFloatFinalize, but */
     /* has many differences so is duplicated here -- so any changes */
     /* may need to be made there, too) */
@@ -2838,7 +2973,7 @@ decFloat * decFloatQuantize(decFloat *result,
     /* there is at least one zero needed to the left, in all but one */
     /* exceptional (all-nines) case, so place four zeros now; this is */
     /* needed almost always and makes rounding all-nines by fours safe */
-    UINTAT(BUFOFF-4)=0;
+    UBFROMUI(BUFOFF-4, 0);
 
     /* Three cases here: */
     /*	 1. new LSD is in coefficient (almost always) */
@@ -2849,7 +2984,7 @@ decFloat * decFloatQuantize(decFloat *result,
 
     /* [duplicate check-stickies code to save a test] */
     /* [by-digit check for stickies as runs of zeros are rare] */
-    if (drop<DECPMAX) {			     /* NB lengths not addresses */
+    if (drop<DECPMAX) { 		     /* NB lengths not addresses */
       roundat=BUFOFF+DECPMAX-drop;
       reround=*roundat;
       for (ub=roundat+1; ub<BUFOFF+DECPMAX; ub++) {
@@ -2932,7 +3067,7 @@ decFloat * decFloatQuantize(decFloat *result,
 	/* increment the coefficient; this could give 1000... (after */
 	/* the all nines case) */
 	ub=ulsd;
-	for (; UINTAT(ub-3)==0x09090909; ub-=4) UINTAT(ub-3)=0;
+	for (; UBTOUI(ub-3)==0x09090909; ub-=4) UBFROMUI(ub-3, 0);
 	/* now at most 3 digits left to non-9 (usually just the one) */
 	for (; *ub==9; ub--) *ub=0;
 	*ub+=1;
@@ -2945,8 +3080,8 @@ decFloat * decFloatQuantize(decFloat *result,
     /* available in the coefficent -- the first word to the left was */
     /* cleared earlier for safe carry; now add any more needed */
     if (drop>4) {
-      UINTAT(BUFOFF-8)=0;		     /* must be at least 5 */
-      for (ui=&UINTAT(BUFOFF-12); ui>&UINTAT(ulsd-DECPMAX-3); ui--) *ui=0;
+      UBFROMUI(BUFOFF-8, 0);		     /* must be at least 5 */
+      for (uc=BUFOFF-12; uc>ulsd-DECPMAX-3; uc-=4) UBFROMUI(uc, 0);
       }
     } /* need round (drop>0) */
 
@@ -2967,18 +3102,21 @@ decFloat * decFloatQuantize(decFloat *result,
       #else
       static const uInt dmask[]={0, 0xff000000, 0xffff0000, 0xffffff00};
       #endif
-      for (ui=&UINTAT(BUFOFF+DECPMAX);; ui++) {
-	*ui=0;
-	if (UINTAT(&UBYTEAT(ui)-DECPMAX)!=0) { /* could be bad */
+      /* note that here zeros to the right are added by fours, so in */
+      /* the Quad case this could write 36 zeros if the coefficient has */
+      /* fewer than three significant digits (hence the +2*QUAD for buf) */
+      for (uc=BUFOFF+DECPMAX;; uc+=4) {
+	UBFROMUI(uc, 0);
+	if (UBTOUI(uc-DECPMAX)!=0) {		  /* could be bad */
 	  /* if all four digits should be zero, definitely bad */
-	  if (ui<=&UINTAT(BUFOFF+DECPMAX+(-drop)-4))
+	  if (uc<=BUFOFF+DECPMAX+(-drop)-4)
 	    return decInvalid(result, set);
 	  /* must be a 1- to 3-digit sequence; check more carefully */
-	  if ((UINTAT(&UBYTEAT(ui)-DECPMAX)&dmask[(-drop)%4])!=0)
+	  if ((UBTOUI(uc-DECPMAX)&dmask[(-drop)%4])!=0)
 	    return decInvalid(result, set);
 	  break;    /* no need for loop end test */
 	  }
-	if (ui>=&UINTAT(BUFOFF+DECPMAX+(-drop)-4)) break; /* done */
+	if (uc>=BUFOFF+DECPMAX+(-drop)-4) break;  /* done */
 	}
       ulsd=BUFOFF+DECPMAX+(-drop)-1;
       } /* pad and check leading zeros */
@@ -3045,7 +3183,7 @@ decFloat * decFloatQuantize(decFloat *result,
 /* decFloatReduce -- reduce finite coefficient to minimum length      */
 /*								      */
 /*   result gets the reduced decFloat				      */
-/*   df	    is the source decFloat				      */
+/*   df     is the source decFloat				      */
 /*   set    is the context					      */
 /*   returns result, which will be canonical			      */
 /*								      */
@@ -3085,7 +3223,7 @@ decFloat * decFloatReduce(decFloat *result, const decFloat *df,
 /* decFloatRemainder -- integer divide and return remainder	      */
 /*								      */
 /*   result gets the remainder of dividing dfl by dfr:		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -3101,7 +3239,7 @@ decFloat * decFloatRemainder(decFloat *result,
 /* decFloatRemainderNear -- integer divide to nearest and remainder   */
 /*								      */
 /*   result gets the remainder of dividing dfl by dfr:		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -3145,7 +3283,7 @@ decFloat * decFloatRotate(decFloat *result,
   if (DFISNAN(dfl)||DFISNAN(dfr)) return decNaNs(result, dfl, dfr, set);
   if (!DFISINT(dfr)) return decInvalid(result, set);
   digits=decFloatDigits(dfr);			 /* calculate digits */
-  if (digits>2) return decInvalid(result, set);	 /* definitely out of range */
+  if (digits>2) return decInvalid(result, set);  /* definitely out of range */
   rotate=DPD2BIN[DFWORD(dfr, DECWORDS-1)&0x3ff]; /* is in bottom declet */
   if (rotate>DECPMAX) return decInvalid(result, set); /* too big */
   /* [from here on no error or status change is possible] */
@@ -3178,16 +3316,16 @@ decFloat * decFloatRotate(decFloat *result,
   num.lsd=num.msd+DECPMAX-1;
   num.sign=DFWORD(dfl, 0)&DECFLOAT_Sign;
   num.exponent=GETEXPUN(dfl);
-  savestat=set->status;			/* record */
+  savestat=set->status; 		/* record */
   decFinalize(result, &num, set);
-  set->status=savestat;			/* restore */
+  set->status=savestat; 		/* restore */
   return result;
   } /* decFloatRotate */
 
 /* ------------------------------------------------------------------ */
 /* decFloatSameQuantum -- test decFloats for same quantum	      */
 /*								      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   returns 1 if the operands have the same quantum, 0 otherwise     */
 /*								      */
@@ -3204,11 +3342,11 @@ uInt decFloatSameQuantum(const decFloat *dfl, const decFloat *dfr) {
   } /* decFloatSameQuantum */
 
 /* ------------------------------------------------------------------ */
-/* decFloatScaleB -- multiply by a power of 10, as per 754r	      */
+/* decFloatScaleB -- multiply by a power of 10, as per 754	      */
 /*								      */
 /*   result gets the result of the operation			      */
-/*   dfl    is the first decFloat (lhs)				      */
-/*   dfr    is the second decFloat (rhs), am integer (with q=0)	      */
+/*   dfl    is the first decFloat (lhs) 			      */
+/*   dfr    is the second decFloat (rhs), am integer (with q=0)       */
 /*   set    is the context					      */
 /*   returns result						      */
 /*								      */
@@ -3229,10 +3367,10 @@ decFloat * decFloatScaleB(decFloat *result,
   digits=decFloatDigits(dfr);		     /* calculate digits */
 
   #if DOUBLE
-  if (digits>3) return decInvalid(result, set);	  /* definitely out of range */
+  if (digits>3) return decInvalid(result, set);   /* definitely out of range */
   expr=DPD2BIN[DFWORD(dfr, 1)&0x3ff];		  /* must be in bottom declet */
   #elif QUAD
-  if (digits>5) return decInvalid(result, set);	  /* definitely out of range */
+  if (digits>5) return decInvalid(result, set);   /* definitely out of range */
   expr=DPD2BIN[DFWORD(dfr, 3)&0x3ff]		  /* in bottom 2 declets .. */
       +DPD2BIN[(DFWORD(dfr, 3)>>10)&0x3ff]*1000;  /* .. */
   #endif
@@ -3241,7 +3379,7 @@ decFloat * decFloatScaleB(decFloat *result,
   if (DFISINF(dfl)) return decInfinity(result, dfl);   /* canonical */
   if (DFISSIGNED(dfr)) expr=-expr;
   /* dfl is finite and expr is valid */
-  *result=*dfl;				     /* copy to target */
+  *result=*dfl; 			     /* copy to target */
   return decFloatSetExponent(result, set, GETEXPUN(result)+expr);
   } /* decFloatScaleB */
 
@@ -3266,23 +3404,24 @@ decFloat * decFloatScaleB(decFloat *result,
 decFloat * decFloatShift(decFloat *result,
 			 const decFloat *dfl, const decFloat *dfr,
 			 decContext *set) {
-  Int shift;				/* dfr as an Int */
-  uByte buf[DECPMAX*2];			/* coefficient + padding */
-  uInt digits, savestat;		/* work */
+  Int	 shift; 			/* dfr as an Int */
+  uByte  buf[DECPMAX*2];		/* coefficient + padding */
+  uInt	 digits, savestat;		/* work */
   bcdnum num;				/* .. */
+  uInt	 uiwork;			/* for macros */
 
   if (DFISNAN(dfl)||DFISNAN(dfr)) return decNaNs(result, dfl, dfr, set);
   if (!DFISINT(dfr)) return decInvalid(result, set);
   digits=decFloatDigits(dfr);			  /* calculate digits */
-  if (digits>2) return decInvalid(result, set);	  /* definitely out of range */
-  shift=DPD2BIN[DFWORD(dfr, DECWORDS-1)&0x3ff];	  /* is in bottom declet */
+  if (digits>2) return decInvalid(result, set);   /* definitely out of range */
+  shift=DPD2BIN[DFWORD(dfr, DECWORDS-1)&0x3ff];   /* is in bottom declet */
   if (shift>DECPMAX) return decInvalid(result, set);   /* too big */
   /* [from here on no error or status change is possible] */
 
   if (DFISINF(dfl)) return decInfinity(result, dfl); /* canonical */
   /* handle no-shift and all-shift (clear to zero) cases */
   if (shift==0) return decCanonical(result, dfl);
-  if (shift==DECPMAX) {			     /* zero with sign */
+  if (shift==DECPMAX) { 		     /* zero with sign */
     uByte sign=(uByte)(DFBYTE(dfl, 0)&0x80); /* save sign bit */
     decFloatZero(result);		     /* make +0 */
     DFBYTE(result, 0)=(uByte)(DFBYTE(result, 0)|sign); /* and set sign */
@@ -3299,23 +3438,23 @@ decFloat * decFloatShift(decFloat *result,
     num.lsd=buf+DECPMAX-shift-1;
     }
    else { /* shift left -- zero padding needed to right */
-    UINTAT(buf+DECPMAX)=0;		/* 8 will handle most cases */
-    UINTAT(buf+DECPMAX+4)=0;		/* .. */
+    UBFROMUI(buf+DECPMAX, 0);		/* 8 will handle most cases */
+    UBFROMUI(buf+DECPMAX+4, 0); 	/* .. */
     if (shift>8) memset(buf+DECPMAX+8, 0, 8+QUAD*18); /* all other cases */
     num.msd+=shift;
     num.lsd=num.msd+DECPMAX-1;
     }
-  savestat=set->status;			/* record */
+  savestat=set->status; 		/* record */
   decFinalize(result, &num, set);
-  set->status=savestat;			/* restore */
+  set->status=savestat; 		/* restore */
   return result;
   } /* decFloatShift */
 
 /* ------------------------------------------------------------------ */
-/* decFloatSubtract -- subtract a decFloat from another		      */
+/* decFloatSubtract -- subtract a decFloat from another 	      */
 /*								      */
 /*   result gets the result of subtracting dfr from dfl:	      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result						      */
@@ -3333,9 +3472,9 @@ decFloat * decFloatSubtract(decFloat *result,
   } /* decFloatSubtract */
 
 /* ------------------------------------------------------------------ */
-/* decFloatToInt -- round to 32-bit binary integer (4 flavours)	      */
+/* decFloatToInt -- round to 32-bit binary integer (4 flavours)       */
 /*								      */
-/*   df	   is the decFloat to round				      */
+/*   df    is the decFloat to round				      */
 /*   set   is the context					      */
 /*   round is the rounding mode to use				      */
 /*   returns a uInt or an Int, rounded according to the name	      */
@@ -3361,12 +3500,12 @@ Int decFloatToInt32Exact(const decFloat *df, decContext *set,
   return (Int)decToInt32(df, set, round, 1, 0);}
 
 /* ------------------------------------------------------------------ */
-/* decFloatToIntegral -- round to integral value (two flavours)	      */
+/* decFloatToIntegral -- round to integral value (two flavours)       */
 /*								      */
 /*   result gets the result					      */
-/*   df	    is the decFloat to round				      */
+/*   df     is the decFloat to round				      */
 /*   set    is the context					      */
-/*   round  is the rounding mode to use				      */
+/*   round  is the rounding mode to use 			      */
 /*   returns result						      */
 /*								      */
 /* No exceptions, even Inexact, are raised except for sNaN input, or  */
@@ -3384,12 +3523,12 @@ decFloat * decFloatToIntegralExact(decFloat *result, const decFloat *df,
 /* decFloatXor -- logical digitwise XOR of two decFloats	      */
 /*								      */
 /*   result gets the result of XORing dfl and dfr		      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs)			      */
 /*   set    is the context					      */
 /*   returns result, which will be canonical with sign=0	      */
 /*								      */
-/* The operands must be positive, finite with exponent q=0, and	      */
+/* The operands must be positive, finite with exponent q=0, and       */
 /* comprise just zeros and ones; if not, Invalid operation results.   */
 /* ------------------------------------------------------------------ */
 decFloat * decFloatXor(decFloat *result,
@@ -3432,14 +3571,14 @@ static decFloat *decInvalid(decFloat *result, decContext *set) {
 /* decInfinity -- set canonical Infinity with sign from a decFloat    */
 /*								      */
 /*   result gets a canonical Infinity				      */
-/*   df	    is source decFloat (only the sign is used)		      */
+/*   df     is source decFloat (only the sign is used)		      */
 /*   returns result						      */
 /*								      */
-/* df may be the same as result					      */
+/* df may be the same as result 				      */
 /* ------------------------------------------------------------------ */
 static decFloat *decInfinity(decFloat *result, const decFloat *df) {
   uInt sign=DFWORD(df, 0);	   /* save source signword */
-  decFloatZero(result);		   /* clear everything */
+  decFloatZero(result); 	   /* clear everything */
   DFWORD(result, 0)=DECFLOAT_Inf | (sign & DECFLOAT_Sign);
   return result;
   } /* decInfinity */
@@ -3449,7 +3588,7 @@ static decFloat *decInfinity(decFloat *result, const decFloat *df) {
 /*								      */
 /*   result gets the result of handling dfl and dfr, one or both of   */
 /*	    which is a NaN					      */
-/*   dfl    is the first decFloat (lhs)				      */
+/*   dfl    is the first decFloat (lhs) 			      */
 /*   dfr    is the second decFloat (rhs) -- may be NULL for a single- */
 /*	    operand operation					      */
 /*   set    is the context					      */
@@ -3476,19 +3615,20 @@ static decFloat *decNaNs(decFloat *result,
   } /* decNaNs */
 
 /* ------------------------------------------------------------------ */
-/* decNumCompare -- numeric comparison of two decFloats		      */
+/* decNumCompare -- numeric comparison of two decFloats 	      */
 /*								      */
 /*   dfl    is the left-hand decFloat, which is not a NaN	      */
 /*   dfr    is the right-hand decFloat, which is not a NaN	      */
 /*   tot    is 1 for total order compare, 0 for simple numeric	      */
-/*   returns -1, 0, or +1 for dfl<dfr, dfl=dfr, dfl>dfr		      */
+/*   returns -1, 0, or +1 for dfl<dfr, dfl=dfr, dfl>dfr 	      */
 /*								      */
-/* No error is possible; status and mode are unchanged.		      */
+/* No error is possible; status and mode are unchanged. 	      */
 /* ------------------------------------------------------------------ */
 static Int decNumCompare(const decFloat *dfl, const decFloat *dfr, Flag tot) {
   Int	sigl, sigr;			/* LHS and RHS non-0 signums */
   Int	shift;				/* shift needed to align operands */
   uByte *ub, *uc;			/* work */
+  uInt	uiwork; 			/* for macros */
   /* buffers +2 if Quad (36 digits), need double plus 4 for safe padding */
   uByte bufl[DECPMAX*2+QUAD*2+4];	/* for LHS coefficient + padding */
   uByte bufr[DECPMAX*2+QUAD*2+4];	/* for RHS coefficient + padding */
@@ -3512,7 +3652,7 @@ static Int decNumCompare(const decFloat *dfl, const decFloat *dfr, Flag tot) {
   sigr=-sigl;				/* sign to return if abs(RHS) wins */
 
   if (DFISINF(dfl)) {
-    if (DFISINF(dfr)) return 0;		/* both infinite & same sign */
+    if (DFISINF(dfr)) return 0; 	/* both infinite & same sign */
     return sigl;			/* inf > n */
     }
   if (DFISINF(dfr)) return sigr;	/* n < inf [dfl is finite] */
@@ -3544,17 +3684,16 @@ static Int decNumCompare(const decFloat *dfl, const decFloat *dfr, Flag tot) {
   /* decode the coefficients */
   /* (shift both right two if Quad to make a multiple of four) */
   #if QUAD
-    ub=bufl;                            /* avoid type-pun violation */
-    UINTAT(ub)=0;
-    uc=bufr;                            /* avoid type-pun violation */
-    UINTAT(uc)=0;
+    UBFROMUI(bufl, 0);
+    UBFROMUI(bufr, 0);
   #endif
   GETCOEFF(dfl, bufl+QUAD*2);		/* decode from decFloat */
   GETCOEFF(dfr, bufr+QUAD*2);		/* .. */
   if (shift==0) {			/* aligned; common and easy */
     /* all multiples of four, here */
     for (ub=bufl, uc=bufr; ub<bufl+DECPMAX+QUAD*2; ub+=4, uc+=4) {
-      if (UINTAT(ub)==UINTAT(uc)) continue; /* so far so same */
+      uInt ui=UBTOUI(ub);
+      if (ui==UBTOUI(uc)) continue;	/* so far so same */
       /* about to find a winner; go by bytes in case little-endian */
       for (;; ub++, uc++) {
 	if (*ub>*uc) return sigl;	/* difference found */
@@ -3565,17 +3704,17 @@ static Int decNumCompare(const decFloat *dfl, const decFloat *dfr, Flag tot) {
    else if (shift>0) {			/* lhs to left */
     ub=bufl;				/* RHS pointer */
     /* pad bufl so right-aligned; most shifts will fit in 8 */
-    UINTAT(bufl+DECPMAX+QUAD*2)=0;	/* add eight zeros */
-    UINTAT(bufl+DECPMAX+QUAD*2+4)=0;	/* .. */
+    UBFROMUI(bufl+DECPMAX+QUAD*2, 0);	/* add eight zeros */
+    UBFROMUI(bufl+DECPMAX+QUAD*2+4, 0); /* .. */
     if (shift>8) {
       /* more than eight; fill the rest, and also worth doing the */
       /* lead-in by fours */
-      uByte *up;			 /* work */
+      uByte *up;			/* work */
       uByte *upend=bufl+DECPMAX+QUAD*2+shift;
-      for (up=bufl+DECPMAX+QUAD*2+8; up<upend; up+=4) UINTAT(up)=0;
+      for (up=bufl+DECPMAX+QUAD*2+8; up<upend; up+=4) UBFROMUI(up, 0);
       /* [pads up to 36 in all for Quad] */
       for (;; ub+=4) {
-	if (UINTAT(ub)!=0) return sigl;
+	if (UBTOUI(ub)!=0) return sigl;
 	if (ub+4>bufl+shift-4) break;
 	}
       }
@@ -3585,7 +3724,8 @@ static Int decNumCompare(const decFloat *dfl, const decFloat *dfr, Flag tot) {
     /* comparison can go for the full length of bufr, which is a */
     /* multiple of 4 bytes */
     for (uc=bufr; ; uc+=4, ub+=4) {
-      if (UINTAT(uc)!=UINTAT(ub)) {	/* mismatch found */
+      uInt ui=UBTOUI(ub);
+      if (ui!=UBTOUI(uc)) {		/* mismatch found */
 	for (;; uc++, ub++) {		/* check from left [little-endian?] */
 	  if (*ub>*uc) return sigl;	/* difference found */
 	  if (*ub<*uc) return sigr;	/* .. */
@@ -3598,17 +3738,17 @@ static Int decNumCompare(const decFloat *dfl, const decFloat *dfr, Flag tot) {
    else { /* shift<0) .. RHS is to left of LHS; mirror shift>0 */
     uc=bufr;				/* RHS pointer */
     /* pad bufr so right-aligned; most shifts will fit in 8 */
-    UINTAT(bufr+DECPMAX+QUAD*2)=0;	/* add eight zeros */
-    UINTAT(bufr+DECPMAX+QUAD*2+4)=0;	/* .. */
+    UBFROMUI(bufr+DECPMAX+QUAD*2, 0);	/* add eight zeros */
+    UBFROMUI(bufr+DECPMAX+QUAD*2+4, 0); /* .. */
     if (shift<-8) {
       /* more than eight; fill the rest, and also worth doing the */
       /* lead-in by fours */
-      uByte *up;			 /* work */
+      uByte *up;			/* work */
       uByte *upend=bufr+DECPMAX+QUAD*2-shift;
-      for (up=bufr+DECPMAX+QUAD*2+8; up<upend; up+=4) UINTAT(up)=0;
+      for (up=bufr+DECPMAX+QUAD*2+8; up<upend; up+=4) UBFROMUI(up, 0);
       /* [pads up to 36 in all for Quad] */
       for (;; uc+=4) {
-	if (UINTAT(uc)!=0) return sigr;
+	if (UBTOUI(uc)!=0) return sigr;
 	if (uc+4>bufr-shift-4) break;
 	}
       }
@@ -3618,7 +3758,8 @@ static Int decNumCompare(const decFloat *dfl, const decFloat *dfr, Flag tot) {
     /* comparison can go for the full length of bufl, which is a */
     /* multiple of 4 bytes */
     for (ub=bufl; ; ub+=4, uc+=4) {
-      if (UINTAT(ub)!=UINTAT(uc)) {	/* mismatch found */
+      uInt ui=UBTOUI(ub);
+      if (ui!=UBTOUI(uc)) {		/* mismatch found */
 	for (;; ub++, uc++) {		/* check from left [little-endian?] */
 	  if (*ub>*uc) return sigl;	/* difference found */
 	  if (*ub<*uc) return sigr;	/* .. */
@@ -3639,10 +3780,10 @@ static Int decNumCompare(const decFloat *dfl, const decFloat *dfr, Flag tot) {
 /* ------------------------------------------------------------------ */
 /* decToInt32 -- local routine to effect ToInteger conversions	      */
 /*								      */
-/*   df	    is the decFloat to convert				      */
+/*   df     is the decFloat to convert				      */
 /*   set    is the context					      */
-/*   rmode  is the rounding mode to use				      */
-/*   exact  is 1 if Inexact should be signalled			      */
+/*   rmode  is the rounding mode to use 			      */
+/*   exact  is 1 if Inexact should be signalled 		      */
 /*   unsign is 1 if the result a uInt, 0 if an Int (cast to uInt)     */
 /*   returns 32-bit result as a uInt				      */
 /*								      */
@@ -3652,13 +3793,13 @@ static Int decNumCompare(const decFloat *dfl, const decFloat *dfr, Flag tot) {
 static uInt decToInt32(const decFloat *df, decContext *set,
 		       enum rounding rmode, Flag exact, Flag unsign) {
   Int  exp;			   /* exponent */
-  uInt sourhi, sourpen, sourlo;	   /* top word from source decFloat .. */
+  uInt sourhi, sourpen, sourlo;    /* top word from source decFloat .. */
   uInt hi, lo;			   /* .. penultimate, least, etc. */
   decFloat zero, result;	   /* work */
   Int  i;			   /* .. */
 
   /* Start decoding the argument */
-  sourhi=DFWORD(df, 0);			/* top word */
+  sourhi=DFWORD(df, 0); 		/* top word */
   exp=DECCOMBEXP[sourhi>>26];		/* get exponent high bits (in place) */
   if (EXPISSPECIAL(exp)) {		/* is special? */
     set->status|=DEC_Invalid_operation; /* signal */
@@ -3730,10 +3871,10 @@ static uInt decToInt32(const decFloat *df, decContext *set,
 /* decToIntegral -- local routine to effect ToIntegral value	      */
 /*								      */
 /*   result gets the result					      */
-/*   df	    is the decFloat to round				      */
+/*   df     is the decFloat to round				      */
 /*   set    is the context					      */
-/*   rmode  is the rounding mode to use				      */
-/*   exact  is 1 if Inexact should be signalled			      */
+/*   rmode  is the rounding mode to use 			      */
+/*   exact  is 1 if Inexact should be signalled 		      */
 /*   returns result						      */
 /* ------------------------------------------------------------------ */
 static decFloat * decToIntegral(decFloat *result, const decFloat *df,
@@ -3746,7 +3887,7 @@ static decFloat * decToIntegral(decFloat *result, const decFloat *df,
   decFloat zero;		   /* work */
 
   /* Start decoding the argument */
-  sourhi=DFWORD(df, 0);		   /* top word */
+  sourhi=DFWORD(df, 0); 	   /* top word */
   exp=DECCOMBEXP[sourhi>>26];	   /* get exponent high bits (in place) */
 
   if (EXPISSPECIAL(exp)) {	   /* is special? */
@@ -3762,12 +3903,12 @@ static decFloat * decToIntegral(decFloat *result, const decFloat *df,
 
   if (exp>=0) return decCanonical(result, df); /* already integral */
 
-  saveround=set->round;			/* save rounding mode .. */
+  saveround=set->round; 		/* save rounding mode .. */
   savestatus=set->status;		/* .. and status */
   set->round=rmode;			/* set mode */
   decFloatZero(&zero);			/* make 0E+0 */
   decFloatQuantize(result, df, &zero, set); /* 'integrate'; cannot fail */
-  set->round=saveround;			/* restore rounding mode .. */
+  set->round=saveround; 		/* restore rounding mode .. */
   if (!exact) set->status=savestatus;	/* .. and status, unless exact */
   return result;
   } /* decToIntegral */
