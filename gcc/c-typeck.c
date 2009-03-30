@@ -1904,6 +1904,7 @@ build_component_ref (tree datum, tree component)
   enum tree_code code = TREE_CODE (type);
   tree field = NULL;
   tree ref;
+  bool datum_lvalue = lvalue_p (datum);
 
   if (!objc_is_public (datum, component))
     return error_mark_node;
@@ -1936,19 +1937,30 @@ build_component_ref (tree datum, tree component)
 	  tree subdatum = TREE_VALUE (field);
 	  int quals;
 	  tree subtype;
+	  bool use_datum_quals;
 
 	  if (TREE_TYPE (subdatum) == error_mark_node)
 	    return error_mark_node;
 
+	  /* If this is an rvalue, it does not have qualifiers in C
+	     standard terms and we must avoid propagating such
+	     qualifiers down to a non-lvalue array that is then
+	     converted to a pointer.  */
+	  use_datum_quals = (datum_lvalue
+			     || TREE_CODE (TREE_TYPE (subdatum)) != ARRAY_TYPE);
+
 	  quals = TYPE_QUALS (strip_array_types (TREE_TYPE (subdatum)));
-	  quals |= TYPE_QUALS (TREE_TYPE (datum));
+	  if (use_datum_quals)
+	    quals |= TYPE_QUALS (TREE_TYPE (datum));
 	  subtype = c_build_qualified_type (TREE_TYPE (subdatum), quals);
 
 	  ref = build3 (COMPONENT_REF, subtype, datum, subdatum,
 			NULL_TREE);
-	  if (TREE_READONLY (datum) || TREE_READONLY (subdatum))
+	  if (TREE_READONLY (subdatum)
+	      || (use_datum_quals && TREE_READONLY (datum)))
 	    TREE_READONLY (ref) = 1;
-	  if (TREE_THIS_VOLATILE (datum) || TREE_THIS_VOLATILE (subdatum))
+	  if (TREE_THIS_VOLATILE (subdatum)
+	      || (use_datum_quals && TREE_THIS_VOLATILE (datum)))
 	    TREE_THIS_VOLATILE (ref) = 1;
 
 	  if (TREE_DEPRECATED (subdatum))
