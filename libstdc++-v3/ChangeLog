@@ -1,3 +1,8 @@
+2009-03-30  Ian Lance Taylor  <iant@google.com>
+
+	* include/backward/hashtable.h (clear): Return quickly if the
+	table is empty.
+
 2009-03-27  Ian Lance Taylor  <iant@google.com>
 
 	* include/backward/hashtable.h (_S_num_primes): Change to 29.
