@@ -1,3 +1,12 @@
+2009-03-30  Ben Elliston  <bje@au.ibm.com>
+
+	* decNumber.c, decNumber.h, decNumberLocal.h, decDouble.c,
+	decDouble.h, decSingle.c, decContext.c, decSingle.h, decPacked.c,
+	decCommon.c, decContext.h, decQuad.c, decPacked.h, decQuad.h,
+	decDPD.h, decBasic.c: Upgrade to decNumber 3.61.
+	* dpd/decimal128.h, dpd/decimal32.c, dpd/decimal32.h,
+	dpd/decimal64.c, dpd/decimal128.c, dpd/decimal64.h: Likewise.
+
 2009-02-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (clean): Don't remove makedepend$(EXEEXT).

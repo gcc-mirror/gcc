@@ -31,42 +31,56 @@
 /* ------------------------------------------------------------------ */
 /* decNumber package local type, tuning, and macro definitions	      */
 /* ------------------------------------------------------------------ */
-/* This header file is included by all modules in the decNumber	      */
+/* This header file is included by all modules in the decNumber       */
 /* library, and contains local type definitions, tuning parameters,   */
-/* etc.	 It should not need to be used by application programs.	      */
+/* etc.  It should not need to be used by application programs.       */
 /* decNumber.h or one of decDouble (etc.) must be included first.     */
 /* ------------------------------------------------------------------ */
 
 #if !defined(DECNUMBERLOC)
   #define DECNUMBERLOC
-  #define DECVERSION	"decNumber 3.53" /* Package Version [16 max.] */
+  #define DECVERSION	"decNumber 3.61" /* Package Version [16 max.] */
   #define DECNLAUTHOR	"Mike Cowlishaw"	      /* Who to blame */
 
   #include <stdlib.h>	      /* for abs			      */
   #include <string.h>	      /* for memset, strcpy		      */
-  #include "dconfig.h"	      /* for WORDS_BIGENDIAN                  */
+  #include "dconfig.h"        /* for WORDS_BIGENDIAN		      */
 
   /* Conditional code flag -- set this to match hardware platform     */
-  /* 1=little-endian, 0=big-endian	                              */
+  /* 1=little-endian, 0=big-endian                                   */
   #if WORDS_BIGENDIAN
   #define DECLITEND 0
   #else
   #define DECLITEND 1
   #endif
 
+  #if !defined(DECLITEND)
+  #define DECLITEND 1	      /* 1=little-endian, 0=big-endian	      */
+  #endif
+
   /* Conditional code flag -- set this to 1 for best performance      */
+  #if !defined(DECUSE64)
   #define DECUSE64  1	      /* 1=use int64s, 0=int32 & smaller only */
+  #endif
 
   /* Conditional check flags -- set these to 0 for best performance   */
+  #if !defined(DECCHECK)
   #define DECCHECK  0	      /* 1 to enable robust checking	      */
+  #endif
+  #if !defined(DECALLOC)
   #define DECALLOC  0	      /* 1 to enable memory accounting	      */
+  #endif
+  #if !defined(DECTRACE)
   #define DECTRACE  0	      /* 1 to trace certain internals, etc.   */
+  #endif
 
   /* Tuning parameter for decNumber (arbitrary precision) module      */
+  #if !defined(DECBUFFER)
   #define DECBUFFER 36	      /* Size basis for local buffers.	This  */
 			      /* should be a common maximum precision */
 			      /* rounded up to a multiple of 4; must  */
 			      /* be zero or positive.		      */
+  #endif
 
   /* ---------------------------------------------------------------- */
   /* Definitions for all modules (general-purpose)		      */
@@ -76,33 +90,34 @@
   /* not use int or long directly.				      */
   #define Flag	 uint8_t
   #define Byte	 int8_t
-  #define uByte	 uint8_t
-  #define Short	 int16_t
+  #define uByte  uint8_t
+  #define Short  int16_t
   #define uShort uint16_t
   #define Int	 int32_t
   #define uInt	 uint32_t
   #define Unit	 decNumberUnit
   #if DECUSE64
   #define Long	 int64_t
-  #define uLong	 uint64_t
+  #define uLong  uint64_t
   #endif
 
   /* Development-use definitions				      */
   typedef long int LI;	      /* for printf arguments only	      */
   #define DECNOINT  0	      /* 1 to check no internal use of 'int'  */
+			      /*   or stdint types		      */
   #if DECNOINT
     /* if these interfere with your C includes, do not set DECNOINT   */
-    #define  int ?	      /* enable to ensure that plain C 'int'  */
-    #define  long ??	      /* .. or 'long' types are not used      */
+    #define int     ?	      /* enable to ensure that plain C 'int'  */
+    #define long    ??	      /* .. or 'long' types are not used      */
   #endif
 
   /* Shared lookup tables					      */
   extern const uByte  DECSTICKYTAB[10]; /* re-round digits if sticky  */
   extern const uInt   DECPOWERS[10];	/* powers of ten table	      */
   /* The following are included from decDPD.h			      */
-#include "decDPDSymbols.h"
-  extern const uShort DPD2BIN[1024];	/* DPD -> 0-999		      */
-  extern const uShort BIN2DPD[1000];	/* 0-999 -> DPD		      */
+  #include "decDPDSymbols.h"
+  extern const uShort DPD2BIN[1024];	/* DPD -> 0-999 	      */
+  extern const uShort BIN2DPD[1000];	/* 0-999 -> DPD 	      */
   extern const uInt   DPD2BINK[1024];	/* DPD -> 0-999000	      */
   extern const uInt   DPD2BINM[1024];	/* DPD -> 0-999000000	      */
   extern const uByte  DPD2BCD8[4096];	/* DPD -> ddd + len	      */
@@ -111,32 +126,42 @@
 
   /* LONGMUL32HI -- set w=(u*v)>>32, where w, u, and v are uInts      */
   /* (that is, sets w to be the high-order word of the 64-bit result; */
-  /* the low-order word is simply u*v.)				      */
+  /* the low-order word is simply u*v.) 			      */
   /* This version is derived from Knuth via Hacker's Delight;	      */
-  /* it seems to optimize better than some others tried		      */
+  /* it seems to optimize better than some others tried 	      */
   #define LONGMUL32HI(w, u, v) {	     \
-    uInt u0, u1, v0, v1, w0, w1, w2, t;	     \
+    uInt u0, u1, v0, v1, w0, w1, w2, t;      \
     u0=u & 0xffff; u1=u>>16;		     \
     v0=v & 0xffff; v1=v>>16;		     \
     w0=u0*v0;				     \
-    t=u1*v0 + (w0>>16);			     \
+    t=u1*v0 + (w0>>16); 		     \
     w1=t & 0xffff; w2=t>>16;		     \
     w1=u0*v1 + w1;			     \
     (w)=u1*v1 + w2 + (w1>>16);}
 
   /* ROUNDUP -- round an integer up to a multiple of n		      */
   #define ROUNDUP(i, n) ((((i)+(n)-1)/n)*n)
+  #define ROUNDUP4(i)	(((i)+3)&~3)	/* special for n=4	      */
 
   /* ROUNDDOWN -- round an integer down to a multiple of n	      */
   #define ROUNDDOWN(i, n) (((i)/n)*n)
-  #define ROUNDDOWN4(i)	  ((i)&~3)	/* special for n=4	      */
+  #define ROUNDDOWN4(i)   ((i)&~3)	/* special for n=4	      */
 
-  /* References to multi-byte sequences under different sizes	      */
-  /* Refer to a uInt from four bytes starting at a char* or uByte*,   */
-  /* etc.							      */
-  #define UINTAT(b)   (*((uInt	 *)(b)))
-  #define USHORTAT(b) (*((uShort *)(b)))
-  #define UBYTEAT(b)  (*((uByte	 *)(b)))
+  /* References to multi-byte sequences under different sizes; these  */
+  /* require locally declared variables, but do not violate strict    */
+  /* aliasing or alignment (as did the UINTAT simple cast to uInt).   */
+  /* Variables needed are uswork, uiwork, etc. [so do not use at same */
+  /* level in an expression, e.g., UBTOUI(x)==UBTOUI(y) may fail].    */
+
+  /* Return a uInt, etc., from bytes starting at a char* or uByte*    */
+  #define UBTOUS(b)  (memcpy((void *)&uswork, b, 2), uswork)
+  #define UBTOUI(b)  (memcpy((void *)&uiwork, b, 4), uiwork)
+
+  /* Store a uInt, etc., into bytes starting at a char* or uByte*.    */
+  /* Returns i, evaluated, for convenience; has to use uiwork because */
+  /* i may be an expression.					      */
+  #define UBFROMUS(b, i)  (uswork=(i), memcpy(b, (void *)&uswork, 2), uswork)
+  #define UBFROMUI(b, i)  (uiwork=(i), memcpy(b, (void *)&uiwork, 4), uiwork)
 
   /* X10 and X100 -- multiply integer i by 10 or 100		      */
   /* [shifts are usually faster than multiply; could be conditional]  */
@@ -149,7 +174,7 @@
 
   /* Useful constants						      */
   #define BILLION      1000000000	     /* 10**9		      */
-  /* CHARMASK: 0x30303030 for ASCII/UTF8; 0xF0F0F0F0 for EBCDIC	      */
+  /* CHARMASK: 0x30303030 for ASCII/UTF8; 0xF0F0F0F0 for EBCDIC       */
   #define CHARMASK ((((((((uInt)'0')<<8)+'0')<<8)+'0')<<8)+'0')
 
 
@@ -172,7 +197,7 @@
     #error Minimum exponent mismatch
   #endif
 
-  /* Set DECDPUNMAX -- the maximum integer that fits in DECDPUN	      */
+  /* Set DECDPUNMAX -- the maximum integer that fits in DECDPUN       */
   /* digits, and D2UTABLE -- the initializer for the D2U table	      */
   #if	DECDPUN==1
     #define DECDPUNMAX 9
@@ -253,7 +278,7 @@
   /* D2N -- return the number of decNumber structs that would be      */
   /* needed to contain that number of digits (and the initial	      */
   /* decNumber struct) safely.	Note that one Unit is included in the */
-  /* initial structure.	 Used for allocating space that is aligned on */
+  /* initial structure.  Used for allocating space that is aligned on */
   /* a decNumber struct boundary. */
   #define D2N(d) \
     ((((SD2U(d)-1)*sizeof(Unit))+sizeof(decNumber)*2-1)/sizeof(decNumber))
@@ -261,7 +286,7 @@
   /* TODIGIT -- macro to remove the leading digit from the unsigned   */
   /* integer u at column cut (counting from the right, LSD=0) and     */
   /* place it as an ASCII character into the character pointed to by  */
-  /* c.	 Note that cut must be <= 9, and the maximum value for u is   */
+  /* c.  Note that cut must be <= 9, and the maximum value for u is   */
   /* 2,000,000,000 (as is needed for negative exponents of	      */
   /* subnormals).  The unsigned integer pow is used as a temporary    */
   /* variable. */
@@ -274,7 +299,7 @@
       pow/=2;				  \
       if ((u)>=pow) {(u)-=pow; *(c)+=4;}  \
       pow/=2;				  \
-      }					  \
+      } 				  \
     if ((u)>=pow) {(u)-=pow; *(c)+=2;}	  \
     pow/=2;				  \
     if ((u)>=pow) {(u)-=pow; *(c)+=1;}	  \
@@ -289,9 +314,9 @@
   /* number, whose coefficient is a string of bcd8 uBytes	      */
   typedef struct {
     uByte   *msd;	      /* -> most significant digit	      */
-    uByte   *lsd;	      /* -> least ditto			      */
+    uByte   *lsd;	      /* -> least ditto 		      */
     uInt     sign;	      /* 0=positive, DECFLOAT_Sign=negative   */
-    Int	     exponent;	      /* Unadjusted signed exponent (q), or   */
+    Int      exponent;	      /* Unadjusted signed exponent (q), or   */
 			      /* DECFLOAT_NaN etc. for a special      */
     } bcdnum;
 
@@ -308,12 +333,12 @@
   #define DECWORDS  (DECBYTES/4)
   #define DECWWORDS (DECWBYTES/4)
   #if DECLITEND
-    #define DFWORD(df, off) ((df)->words[DECWORDS-1-(off)])
-    #define DFBYTE(df, off) ((df)->bytes[DECBYTES-1-(off)])
+    #define DFBYTE(df, off)   ((df)->bytes[DECBYTES-1-(off)])
+    #define DFWORD(df, off)   ((df)->words[DECWORDS-1-(off)])
     #define DFWWORD(dfw, off) ((dfw)->words[DECWWORDS-1-(off)])
   #else
-    #define DFWORD(df, off) ((df)->words[off])
-    #define DFBYTE(df, off) ((df)->bytes[off])
+    #define DFBYTE(df, off)   ((df)->bytes[off])
+    #define DFWORD(df, off)   ((df)->words[off])
     #define DFWWORD(dfw, off) ((dfw)->words[off])
   #endif
 
@@ -338,7 +363,7 @@
   /* Format-dependent macros and constants			      */
   #if defined(DECPMAX)
 
-    /* Useful constants						      */
+    /* Useful constants 					      */
     #define DECPMAX9  (ROUNDUP(DECPMAX, 9)/9)  /* 'Pmax' in 10**9s    */
     /* Top words for a zero					      */
     #define SINGLEZERO	 0x22500000
@@ -350,10 +375,10 @@
     /*	 DFISZERO   -- test for (any) zero			      */
     /*	 DFISCCZERO -- test for coefficient continuation being zero   */
     /*	 DFISCC01   -- test for coefficient contains only 0s and 1s   */
-    /*	 DFISINT    -- test for finite and exponent q=0		      */
+    /*	 DFISINT    -- test for finite and exponent q=0 	      */
     /*	 DFISUINT01 -- test for sign=0, finite, exponent q=0, and     */
     /*		       MSD=0 or 1				      */
-    /*	 ZEROWORD is also defined here.				      */
+    /*	 ZEROWORD is also defined here. 			      */
     /* In DFISZERO the first test checks the least-significant word   */
     /* (most likely to be non-zero); the penultimate tests MSD and    */
     /* DPDs in the signword, and the final test excludes specials and */
@@ -407,26 +432,36 @@
       || ((dpd)&(((uInt)0x6e)<<(k)))!=(((uInt)0x6e)<<(k)))
     /* declet is at offset k (a multiple of 2) in a pair of uInts:    */
     /* [the top 2 bits will always be in the more-significant uInt]   */
-    #define CANONDPDTWO(hi, lo, k) (((hi)&(0x300>>(32-(k))))==0	    \
+    #define CANONDPDTWO(hi, lo, k) (((hi)&(0x300>>(32-(k))))==0     \
       || ((hi)&(0x6e>>(32-(k))))!=(0x6e>>(32-(k)))		    \
       || ((lo)&(((uInt)0x6e)<<(k)))!=(((uInt)0x6e)<<(k)))
 
     /* Macro to test whether a full-length (length DECPMAX) BCD8      */
-    /* coefficient is zero					      */
-    /* test just the LSWord first, then the remainder		      */
+    /* coefficient, starting at uByte u, is all zeros		      */
+    /* Test just the LSWord first, then the remainder as a sequence   */
+    /* of tests in order to avoid same-level use of UBTOUI	      */
     #if DECPMAX==7
-      #define ISCOEFFZERO(u) (UINTAT((u)+DECPMAX-4)==0		    \
-	&& UINTAT((u)+DECPMAX-7)==0)
+      #define ISCOEFFZERO(u) (					    \
+	   UBTOUI((u)+DECPMAX-4)==0				    \
+	&& UBTOUS((u)+DECPMAX-6)==0				    \
+	&& *(u)==0)
     #elif DECPMAX==16
-      #define ISCOEFFZERO(u) (UINTAT((u)+DECPMAX-4)==0		    \
-	&& (UINTAT((u)+DECPMAX-8)+UINTAT((u)+DECPMAX-12)	    \
-	   +UINTAT((u)+DECPMAX-16))==0)
+      #define ISCOEFFZERO(u) (					    \
+	   UBTOUI((u)+DECPMAX-4)==0				    \
+	&& UBTOUI((u)+DECPMAX-8)==0				    \
+	&& UBTOUI((u)+DECPMAX-12)==0				    \
+	&& UBTOUI(u)==0)
     #elif DECPMAX==34
-      #define ISCOEFFZERO(u) (UINTAT((u)+DECPMAX-4)==0		    \
-	&& (UINTAT((u)+DECPMAX-8) +UINTAT((u)+DECPMAX-12)	    \
-	   +UINTAT((u)+DECPMAX-16)+UINTAT((u)+DECPMAX-20)	    \
-	   +UINTAT((u)+DECPMAX-24)+UINTAT((u)+DECPMAX-28)	    \
-	   +UINTAT((u)+DECPMAX-32)+USHORTAT((u)+DECPMAX-34))==0)
+      #define ISCOEFFZERO(u) (					    \
+	   UBTOUI((u)+DECPMAX-4)==0				    \
+	&& UBTOUI((u)+DECPMAX-8)==0				    \
+	&& UBTOUI((u)+DECPMAX-12)==0				    \
+	&& UBTOUI((u)+DECPMAX-16)==0				    \
+	&& UBTOUI((u)+DECPMAX-20)==0				    \
+	&& UBTOUI((u)+DECPMAX-24)==0				    \
+	&& UBTOUI((u)+DECPMAX-28)==0				    \
+	&& UBTOUI((u)+DECPMAX-32)==0				    \
+	&& UBTOUS(u)==0)
     #endif
 
     /* Macros and masks for the exponent continuation field and MSD   */
@@ -448,29 +483,24 @@
     #define ECONNANMASK ((0x01ffffff>>(32-6-DECECONL))<<(32-6-DECECONL))
 
     /* Macros to decode the coefficient in a finite decFloat *df into */
-    /* a BCD string (uByte *bcdin) of length DECPMAX uBytes	      */
+    /* a BCD string (uByte *bcdin) of length DECPMAX uBytes.	      */
 
-    /* In-line sequence to convert 10 bits at right end of uInt dpd   */
-    /* to three BCD8 digits starting at uByte u.  Note that an extra  */
-    /* byte is written to the right of the three digits because this  */
-    /* moves four at a time for speed; the alternative macro moves    */
-    /* exactly three bytes					      */
-    #define dpd2bcd8(u, dpd) {				 \
-      UINTAT(u)=UINTAT(&DPD2BCD8[((dpd)&0x3ff)*4]);}
-
-    #define dpd2bcd83(u, dpd) {				 \
-      *(u)=DPD2BCD8[((dpd)&0x3ff)*4];			 \
-      *(u+1)=DPD2BCD8[((dpd)&0x3ff)*4+1];		 \
-      *(u+2)=DPD2BCD8[((dpd)&0x3ff)*4+2];}
+    /* In-line sequence to convert least significant 10 bits of uInt  */
+    /* dpd to three BCD8 digits starting at uByte u.  Note that an    */
+    /* extra byte is written to the right of the three digits because */
+    /* four bytes are moved at a time for speed; the alternative      */
+    /* macro moves exactly three bytes (usually slower).	      */
+    #define dpd2bcd8(u, dpd)  memcpy(u, &DPD2BCD8[((dpd)&0x3ff)*4], 4)
+    #define dpd2bcd83(u, dpd) memcpy(u, &DPD2BCD8[((dpd)&0x3ff)*4], 3)
 
     /* Decode the declets.  After extracting each one, it is decoded  */
     /* to BCD8 using a table lookup (also used for variable-length    */
-    /* decode).	 Each DPD decode is 3 bytes BCD8 plus a one-byte      */
-    /* length which is not used, here).	 Fixed-length 4-byte moves    */
+    /* decode).  Each DPD decode is 3 bytes BCD8 plus a one-byte      */
+    /* length which is not used, here).  Fixed-length 4-byte moves    */
     /* are fast, however, almost everywhere, and so are used except   */
     /* for the final three bytes (to avoid overrun).  The code below  */
     /* is 36 instructions for Doubles and about 70 for Quads, even    */
-    /* on IA32.							      */
+    /* on IA32. 						      */
 
     /* Two macros are defined for each format:			      */
     /*	 GETCOEFF extracts the coefficient of the current format      */
@@ -478,7 +508,7 @@
     /* The latter is a copy of the next-wider GETCOEFF using DFWWORD. */
 
     #if DECPMAX==7
-    #define GETCOEFF(df, bcd) {				 \
+    #define GETCOEFF(df, bcd) { 			 \
       uInt sourhi=DFWORD(df, 0);			 \
       *(bcd)=(uByte)DECCOMBMSD[sourhi>>26];		 \
       dpd2bcd8(bcd+1, sourhi>>10);			 \
@@ -494,7 +524,7 @@
       dpd2bcd83(bcd+13, sourlo);}
 
     #elif DECPMAX==16
-    #define GETCOEFF(df, bcd) {				 \
+    #define GETCOEFF(df, bcd) { 			 \
       uInt sourhi=DFWORD(df, 0);			 \
       uInt sourlo=DFWORD(df, 1);			 \
       *(bcd)=(uByte)DECCOMBMSD[sourhi>>26];		 \
@@ -522,7 +552,7 @@
       dpd2bcd83(bcd+31, sourlo);}
 
     #elif DECPMAX==34
-    #define GETCOEFF(df, bcd) {				 \
+    #define GETCOEFF(df, bcd) { 			 \
       uInt sourhi=DFWORD(df, 0);			 \
       uInt sourmh=DFWORD(df, 1);			 \
       uInt sourml=DFWORD(df, 2);			 \
@@ -540,12 +570,12 @@
       dpd2bcd8(bcd+28, sourlo>>10);			 \
       dpd2bcd83(bcd+31, sourlo);}
 
-      #define GETWCOEFF(df, bcd) {??} /* [should never be used]	      */
+      #define GETWCOEFF(df, bcd) {??} /* [should never be used]       */
     #endif
 
     /* Macros to decode the coefficient in a finite decFloat *df into */
     /* a base-billion uInt array, with the least-significant	      */
-    /* 0-999999999 'digit' at offset 0.				      */
+    /* 0-999999999 'digit' at offset 0. 			      */
 
     /* Decode the declets.  After extracting each one, it is decoded  */
     /* to binary using a table lookup.	Three tables are used; one    */
@@ -597,8 +627,8 @@
     #endif
 
     /* Macros to decode the coefficient in a finite decFloat *df into */
-    /* a base-thousand uInt array, with the least-significant 0-999   */
-    /* 'digit' at offset 0.					      */
+    /* a base-thousand uInt array (of size DECLETS+1, to allow for    */
+    /* the MSD), with the least-significant 0-999 'digit' at offset 0.*/
 
     /* Decode the declets.  After extracting each one, it is decoded  */
     /* to binary using a table lookup.				      */
@@ -640,8 +670,71 @@
       (buf)[9]=DPD2BIN[((sourhi<<6) | (sourmh>>26))&0x3ff];   \
       (buf)[10]=DPD2BIN[(sourhi>>4)&0x3ff];		      \
       (buf)[11]=DECCOMBMSD[sourhi>>26];}
-
     #endif
+
+
+    /* Macros to decode the coefficient in a finite decFloat *df and  */
+    /* add to a base-thousand uInt array (as for GETCOEFFTHOU).       */
+    /* After the addition then most significant 'digit' in the array  */
+    /* might have a value larger then 10 (with a maximum of 19).      */
+    #if DECPMAX==7
+    #define ADDCOEFFTHOU(df, buf) {			      \
+      uInt sourhi=DFWORD(df, 0);			      \
+      (buf)[0]+=DPD2BIN[sourhi&0x3ff];			      \
+      if (buf[0]>999) {buf[0]-=1000; buf[1]++;} 	      \
+      (buf)[1]+=DPD2BIN[(sourhi>>10)&0x3ff];		      \
+      if (buf[1]>999) {buf[1]-=1000; buf[2]++;} 	      \
+      (buf)[2]+=DECCOMBMSD[sourhi>>26];}
+
+    #elif DECPMAX==16
+    #define ADDCOEFFTHOU(df, buf) {			      \
+      uInt sourhi, sourlo;				      \
+      sourlo=DFWORD(df, 1);				      \
+      (buf)[0]+=DPD2BIN[sourlo&0x3ff];			      \
+      if (buf[0]>999) {buf[0]-=1000; buf[1]++;} 	      \
+      (buf)[1]+=DPD2BIN[(sourlo>>10)&0x3ff];		      \
+      if (buf[1]>999) {buf[1]-=1000; buf[2]++;} 	      \
+      (buf)[2]+=DPD2BIN[(sourlo>>20)&0x3ff];		      \
+      if (buf[2]>999) {buf[2]-=1000; buf[3]++;} 	      \
+      sourhi=DFWORD(df, 0);				      \
+      (buf)[3]+=DPD2BIN[((sourhi<<2) | (sourlo>>30))&0x3ff];  \
+      if (buf[3]>999) {buf[3]-=1000; buf[4]++;} 	      \
+      (buf)[4]+=DPD2BIN[(sourhi>>8)&0x3ff];		      \
+      if (buf[4]>999) {buf[4]-=1000; buf[5]++;} 	      \
+      (buf)[5]+=DECCOMBMSD[sourhi>>26];}
+
+    #elif DECPMAX==34
+    #define ADDCOEFFTHOU(df, buf) {			      \
+      uInt sourhi, sourmh, sourml, sourlo;		      \
+      sourlo=DFWORD(df, 3);				      \
+      (buf)[0]+=DPD2BIN[sourlo&0x3ff];			      \
+      if (buf[0]>999) {buf[0]-=1000; buf[1]++;} 	      \
+      (buf)[1]+=DPD2BIN[(sourlo>>10)&0x3ff];		      \
+      if (buf[1]>999) {buf[1]-=1000; buf[2]++;} 	      \
+      (buf)[2]+=DPD2BIN[(sourlo>>20)&0x3ff];		      \
+      if (buf[2]>999) {buf[2]-=1000; buf[3]++;} 	      \
+      sourml=DFWORD(df, 2);				      \
+      (buf)[3]+=DPD2BIN[((sourml<<2) | (sourlo>>30))&0x3ff];  \
+      if (buf[3]>999) {buf[3]-=1000; buf[4]++;} 	      \
+      (buf)[4]+=DPD2BIN[(sourml>>8)&0x3ff];		      \
+      if (buf[4]>999) {buf[4]-=1000; buf[5]++;} 	      \
+      (buf)[5]+=DPD2BIN[(sourml>>18)&0x3ff];		      \
+      if (buf[5]>999) {buf[5]-=1000; buf[6]++;} 	      \
+      sourmh=DFWORD(df, 1);				      \
+      (buf)[6]+=DPD2BIN[((sourmh<<4) | (sourml>>28))&0x3ff];  \
+      if (buf[6]>999) {buf[6]-=1000; buf[7]++;} 	      \
+      (buf)[7]+=DPD2BIN[(sourmh>>6)&0x3ff];		      \
+      if (buf[7]>999) {buf[7]-=1000; buf[8]++;} 	      \
+      (buf)[8]+=DPD2BIN[(sourmh>>16)&0x3ff];		      \
+      if (buf[8]>999) {buf[8]-=1000; buf[9]++;} 	      \
+      sourhi=DFWORD(df, 0);				      \
+      (buf)[9]+=DPD2BIN[((sourhi<<6) | (sourmh>>26))&0x3ff];  \
+      if (buf[9]>999) {buf[9]-=1000; buf[10]++;}	      \
+      (buf)[10]+=DPD2BIN[(sourhi>>4)&0x3ff];		      \
+      if (buf[10]>999) {buf[10]-=1000; buf[11]++;}	      \
+      (buf)[11]+=DECCOMBMSD[sourhi>>26];}
+    #endif
+
 
     /* Set a decFloat to the maximum positive finite number (Nmax)    */
     #if DECPMAX==7
