@@ -209,6 +209,7 @@ struct c_binding GTY((chain_next ("%h.prev")))
   BOOL_BITFIELD nested : 1;     /* do not set DECL_CONTEXT when popping */
   BOOL_BITFIELD inner_comp : 1; /* incomplete array completed in inner scope */
   /* one free bit */
+  location_t locus;		/* location for nested bindings */
 };
 #define B_IN_SCOPE(b1, b2) ((b1)->depth == (b2)->depth)
 #define B_IN_CURRENT_SCOPE(b) ((b)->depth == current_scope->depth)
@@ -460,7 +461,8 @@ c_print_identifier (FILE *file, tree node, int indent)
    which may be any of several kinds of DECL or TYPE or error_mark_node,
    in the scope SCOPE.  */
 static void
-bind (tree name, tree decl, struct c_scope *scope, bool invisible, bool nested)
+bind (tree name, tree decl, struct c_scope *scope, bool invisible,
+      bool nested, location_t locus)
 {
   struct c_binding *b, **here;
 
@@ -479,6 +481,7 @@ bind (tree name, tree decl, struct c_scope *scope, bool invisible, bool nested)
   b->invisible = invisible;
   b->nested = nested;
   b->inner_comp = 0;
+  b->locus = locus;
 
   b->type = 0;
 
@@ -824,6 +827,29 @@ pop_scope (void)
 	      TREE_CHAIN (p) = BLOCK_VARS (block);
 	      BLOCK_VARS (block) = p;
 	    }
+	  else if (VAR_OR_FUNCTION_DECL_P (p))
+	    {
+	      /* For block local externs add a special
+		 DECL_EXTERNAL decl for debug info generation.  */
+	      tree extp = copy_node (p);
+
+	      DECL_EXTERNAL (extp) = 1;
+	      TREE_STATIC (extp) = 0;
+	      TREE_PUBLIC (extp) = 1;
+	      DECL_INITIAL (extp) = NULL_TREE;
+	      DECL_LANG_SPECIFIC (extp) = NULL;
+	      DECL_CONTEXT (extp) = current_function_decl;
+	      if (TREE_CODE (p) == FUNCTION_DECL)
+		{
+		  DECL_RESULT (extp) = NULL_TREE;
+		  DECL_SAVED_TREE (extp) = NULL_TREE;
+		  DECL_STRUCT_FUNCTION (extp) = NULL;
+		}
+	      if (b->locus != UNKNOWN_LOCATION)
+		DECL_SOURCE_LOCATION (extp) = b->locus;
+	      TREE_CHAIN (extp) = BLOCK_VARS (block);
+	      BLOCK_VARS (block) = extp;
+	    }
 	  /* If this is the file scope, and we are processing more
 	     than one translation unit in this compilation, set
 	     DECL_CONTEXT of each decl to the TRANSLATION_UNIT_DECL.
@@ -905,7 +931,7 @@ push_file_scope (void)
 
   for (decl = visible_builtins; decl; decl = TREE_CHAIN (decl))
     bind (DECL_NAME (decl), decl, file_scope,
-	  /*invisible=*/false, /*nested=*/true);
+	  /*invisible=*/false, /*nested=*/true, DECL_SOURCE_LOCATION (decl));
 }
 
 void
@@ -951,7 +977,8 @@ pushtag (tree name, tree type)
   /* Record the identifier as the type's name if it has none.  */
   if (name && !TYPE_NAME (type))
     TYPE_NAME (type) = name;
-  bind (name, type, current_scope, /*invisible=*/false, /*nested=*/false);
+  bind (name, type, current_scope, /*invisible=*/false, /*nested=*/false,
+	UNKNOWN_LOCATION);
 
   /* Create a fake NULL-named TYPE_DECL node whose TREE_TYPE will be the
      tagged type we just added to the current scope.  This fake
@@ -2051,6 +2078,7 @@ pushdecl (tree x)
   struct c_scope *scope = current_scope;
   struct c_binding *b;
   bool nested = false;
+  location_t locus = DECL_SOURCE_LOCATION (x);
 
   /* Must set DECL_CONTEXT for everything not at file scope or
      DECL_FILE_SCOPE_P won't work.  Local externs don't count
@@ -2069,7 +2097,8 @@ pushdecl (tree x)
   /* Anonymous decls are just inserted in the scope.  */
   if (!name)
     {
-      bind (name, x, scope, /*invisible=*/false, /*nested=*/false);
+      bind (name, x, scope, /*invisible=*/false, /*nested=*/false,
+	    locus);
       return x;
     }
 
@@ -2229,7 +2258,8 @@ pushdecl (tree x)
 	      = build_type_attribute_variant (thistype,
 					      TYPE_ATTRIBUTES (b->type));
 	  TREE_TYPE (b->decl) = thistype;
-	  bind (name, b->decl, scope, /*invisible=*/false, /*nested=*/true);
+	  bind (name, b->decl, scope, /*invisible=*/false, /*nested=*/true,
+		locus);
 	  return b->decl;
 	}
       else if (TREE_PUBLIC (x))
@@ -2247,7 +2277,7 @@ pushdecl (tree x)
 	  else
 	    {
 	      bind (name, x, external_scope, /*invisible=*/true,
-		    /*nested=*/false);
+		    /*nested=*/false, locus);
 	      nested = true;
 	    }
 	}
@@ -2260,7 +2290,7 @@ pushdecl (tree x)
   if (TREE_CODE (x) == TYPE_DECL)
     clone_underlying_type (x);
 
-  bind (name, x, scope, /*invisible=*/false, nested);
+  bind (name, x, scope, /*invisible=*/false, nested, locus);
 
   /* If x's type is incomplete because it's based on a
      structure or union which has not yet been fully declared,
@@ -2309,11 +2339,12 @@ pushdecl_top_level (tree x)
 
   if (TREE_PUBLIC (x))
     {
-      bind (name, x, external_scope, /*invisible=*/true, /*nested=*/false);
+      bind (name, x, external_scope, /*invisible=*/true, /*nested=*/false,
+	    UNKNOWN_LOCATION);
       nested = true;
     }
   if (file_scope)
-    bind (name, x, file_scope, /*invisible=*/false, nested);
+    bind (name, x, file_scope, /*invisible=*/false, nested, UNKNOWN_LOCATION);
 
   return x;
 }
@@ -2368,7 +2399,8 @@ implicitly_declare (tree functionid)
       if (!DECL_BUILT_IN (decl) && DECL_IS_BUILTIN (decl))
 	{
 	  bind (functionid, decl, file_scope,
-		/*invisible=*/false, /*nested=*/true);
+		/*invisible=*/false, /*nested=*/true,
+		DECL_SOURCE_LOCATION (decl));
 	  return decl;
 	}
       else
@@ -2409,7 +2441,8 @@ implicitly_declare (tree functionid)
 	  b->type = TREE_TYPE (decl);
 	  TREE_TYPE (decl) = newtype;
 	  bind (functionid, decl, current_scope,
-		/*invisible=*/false, /*nested=*/true);
+		/*invisible=*/false, /*nested=*/true,
+		DECL_SOURCE_LOCATION (decl));
 	  return decl;
 	}
     }
@@ -2472,7 +2505,8 @@ undeclared_variable (tree id, location_t loc)
 	 will be nonnull but current_function_scope will be null.  */
       scope = current_function_scope ? current_function_scope : current_scope;
     }
-  bind (id, error_mark_node, scope, /*invisible=*/false, /*nested=*/false);
+  bind (id, error_mark_node, scope, /*invisible=*/false, /*nested=*/false,
+	UNKNOWN_LOCATION);
 }
 
 /* Subroutine of lookup_label, declare_label, define_label: construct a
@@ -2526,7 +2560,7 @@ lookup_label (tree name)
 
   /* Ordinary labels go in the current function scope.  */
   bind (name, label, current_function_scope,
-	/*invisible=*/false, /*nested=*/false);
+	/*invisible=*/false, /*nested=*/false, UNKNOWN_LOCATION);
   return label;
 }
 
@@ -2556,7 +2590,7 @@ declare_label (tree name)
 
   /* Declared labels go in the current scope.  */
   bind (name, label, current_scope,
-	/*invisible=*/false, /*nested=*/false);
+	/*invisible=*/false, /*nested=*/false, UNKNOWN_LOCATION);
   return label;
 }
 
@@ -2603,7 +2637,7 @@ define_label (location_t location, tree name)
 
       /* Ordinary labels go in the current function scope.  */
       bind (name, label, current_function_scope,
-	    /*invisible=*/false, /*nested=*/false);
+	    /*invisible=*/false, /*nested=*/false, UNKNOWN_LOCATION);
     }
 
   if (!in_system_header && lookup_name (name))
@@ -2806,7 +2840,7 @@ c_make_fname_decl (tree id, int type_dep)
     {
       DECL_CONTEXT (decl) = current_function_decl;
       bind (id, decl, current_function_scope,
-	    /*invisible=*/false, /*nested=*/false);
+	    /*invisible=*/false, /*nested=*/false, UNKNOWN_LOCATION);
     }
 
   finish_decl (decl, init, NULL_TREE);
@@ -2826,7 +2860,8 @@ c_builtin_function (tree decl)
   /* Should never be called on a symbol with a preexisting meaning.  */
   gcc_assert (!I_SYMBOL_BINDING (id));
 
-  bind (id, decl, external_scope, /*invisible=*/true, /*nested=*/false);
+  bind (id, decl, external_scope, /*invisible=*/true, /*nested=*/false,
+	UNKNOWN_LOCATION);
 
   /* Builtins in the implementation namespace are made visible without
      needing to be explicitly declared.  See push_file_scope.  */
@@ -2851,7 +2886,8 @@ c_builtin_function_ext_scope (tree decl)
   /* Should never be called on a symbol with a preexisting meaning.  */
   gcc_assert (!I_SYMBOL_BINDING (id));
 
-  bind (id, decl, external_scope, /*invisible=*/false, /*nested=*/false);
+  bind (id, decl, external_scope, /*invisible=*/false, /*nested=*/false,
+	UNKNOWN_LOCATION);
 
   /* Builtins in the implementation namespace are made visible without
      needing to be explicitly declared.  See push_file_scope.  */
@@ -6412,7 +6448,8 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
       if (DECL_NAME (decl))
 	{
 	  bind (DECL_NAME (decl), decl, current_scope,
-		/*invisible=*/false, /*nested=*/false);
+		/*invisible=*/false, /*nested=*/false,
+		UNKNOWN_LOCATION);
 	  if (!TREE_USED (decl))
 	    warn_if_shadowing (decl);
 	}
@@ -6429,14 +6466,14 @@ store_parm_decls_newstyle (tree fndecl, const struct c_arg_info *arg_info)
       DECL_CONTEXT (decl) = current_function_decl;
       if (DECL_NAME (decl))
 	bind (DECL_NAME (decl), decl, current_scope,
-	      /*invisible=*/false, /*nested=*/false);
+	      /*invisible=*/false, /*nested=*/false, UNKNOWN_LOCATION);
     }
 
   /* And all the tag declarations.  */
   for (decl = arg_info->tags; decl; decl = TREE_CHAIN (decl))
     if (TREE_PURPOSE (decl))
       bind (TREE_PURPOSE (decl), TREE_VALUE (decl), current_scope,
-	    /*invisible=*/false, /*nested=*/false);
+	    /*invisible=*/false, /*nested=*/false, UNKNOWN_LOCATION);
 }
 
 /* Subroutine of store_parm_decls which handles old-style function
