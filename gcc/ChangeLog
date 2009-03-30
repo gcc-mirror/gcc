@@ -1,3 +1,8 @@
+2009-03-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* optc-gen.awk: Warn if an option flag has multiple different
+	help strings.
+
 2009-03-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* doc/invoke.texi (-floop-interchange, -floop-strip-mine,
