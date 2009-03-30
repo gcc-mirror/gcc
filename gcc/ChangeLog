@@ -1,3 +1,7 @@
+2009-03-30  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (label_to_region_map): Fix thinko.
+
 2009-03-30  Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/38237

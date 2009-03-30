@@ -798,12 +798,9 @@ label_to_region_map (void)
   for (i = cfun->eh->last_region_number; i > 0; --i)
     {
       struct eh_region *r = VEC_index (eh_region, cfun->eh->region_array, i);
-      if (r && r->tree_label && LABEL_DECL_UID (r->tree_label) >= 0)
+      if (r && r->region_number == i
+      	  && r->tree_label && LABEL_DECL_UID (r->tree_label) >= 0)
 	{
-	  if ((unsigned) LABEL_DECL_UID (r->tree_label) >
-	      VEC_length (int, label_to_region))
-	      VEC_safe_grow_cleared (int, heap, label_to_region,
-				     LABEL_DECL_UID (r->tree_label));
 	  VEC_replace (int, label_to_region, LABEL_DECL_UID (r->tree_label),
 		       i);
 	}
