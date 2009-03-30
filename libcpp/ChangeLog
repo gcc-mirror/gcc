@@ -1,3 +1,9 @@
+2009-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39558
+	* macro.c (cpp_get_token): If macro_to_expand returns NULL
+	and used some tokens, add CPP_PADDING before next token.
+
 2009-03-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* Makefile.in (po/$(PACKAGE).pot): Use $(mkinstalldirs) not

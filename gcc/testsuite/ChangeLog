@@ -2,6 +2,9 @@
 
 	* gfortran.dg/bind_c_usage_19.f90: New test.
 
+	PR target/39558
+	* gcc.target/powerpc/altivec-29.c: New test.
+
 2009-03-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

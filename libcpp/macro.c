@@ -1,7 +1,7 @@
 /* Part of CPP library.  (Macro and #define handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
    1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1260,10 +1260,36 @@ cpp_get_token (cpp_reader *pfile)
 
 	  /* Conditional macros require that a predicate be evaluated
 	     first.  */
-	  if (((!(node->flags & NODE_CONDITIONAL))
-	       || (pfile->cb.macro_to_expand
-		   && (node = pfile->cb.macro_to_expand (pfile, result))))
-	      && (ret = enter_macro_context (pfile, node, result)))
+	  if ((node->flags & NODE_CONDITIONAL) != 0)
+	    {
+	      if (pfile->cb.macro_to_expand)
+		{
+		  bool whitespace_after;
+		  const cpp_token *peek_tok = cpp_peek_token (pfile, 0);
+
+		  whitespace_after = (peek_tok->type == CPP_PADDING
+				      || (peek_tok->flags & PREV_WHITE));
+		  node = pfile->cb.macro_to_expand (pfile, result);
+		  if (node)
+		    ret = enter_macro_context (pfile, node, result);
+		  else if (whitespace_after)
+		    {
+		      /* If macro_to_expand hook returned NULL and it
+			 ate some tokens, see if we don't need to add
+			 a padding token in between this and the
+			 next token.  */
+		      peek_tok = cpp_peek_token (pfile, 0);
+		      if (peek_tok->type != CPP_PADDING
+			  && (peek_tok->flags & PREV_WHITE) == 0)
+			_cpp_push_token_context (pfile, NULL,
+						 padding_token (pfile,
+								peek_tok), 1);
+		    }
+		}
+	    }
+	  else
+	    ret = enter_macro_context (pfile, node, result);
+	  if (ret)
  	    {
 	      if (pfile->state.in_directive || ret == 2)
 		continue;
