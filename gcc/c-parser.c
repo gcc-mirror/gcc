@@ -4465,10 +4465,18 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
   c_parser_consume_token (parser);
   if (c_parser_next_token_is (parser, CPP_COLON))
     {
+      tree eptype = NULL_TREE;
       pedwarn (c_parser_peek_token (parser)->location, OPT_pedantic, 
 	       "ISO C forbids omitting the middle term of a ?: expression");
+      if (TREE_CODE (cond.value) == EXCESS_PRECISION_EXPR)
+	{
+	  eptype = TREE_TYPE (cond.value);
+	  cond.value = TREE_OPERAND (cond.value, 0);
+	}
       /* Make sure first operand is calculated only once.  */
       exp1.value = c_save_expr (default_conversion (cond.value));
+      if (eptype)
+	exp1.value = build1 (EXCESS_PRECISION_EXPR, eptype, exp1.value);
       cond.value = c_objc_common_truthvalue_conversion (cond_loc, exp1.value);
       skip_evaluation += cond.value == truthvalue_true_node;
     }

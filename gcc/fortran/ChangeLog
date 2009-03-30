@@ -1,3 +1,11 @@
+2009-03-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR rtl-optimization/323
+	* options.c (gfc_post_options): Set
+	flag_excess_precision_cmdline.  Give an error for
+	-fexcess-precision=standard for processors where the option is
+	significant.
+
 2009-03-29  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/34695

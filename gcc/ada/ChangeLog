@@ -1,3 +1,11 @@
+2009-03-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR rtl-optimization/323
+	* gcc-interface/misc.c (gnat_post_options): Set
+	flag_excess_precision_cmdline.  Give an error for
+	-fexcess-precision=standard for processors where the option is
+	significant.
+
 2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/39323

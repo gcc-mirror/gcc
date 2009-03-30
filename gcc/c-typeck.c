@@ -2553,6 +2553,7 @@ convert_arguments (int nargs, tree *argarray,
   int parmnum;
   const bool type_generic = fundecl
     && lookup_attribute ("type generic", TYPE_ATTRIBUTES(TREE_TYPE (fundecl)));
+  bool type_generic_remove_excess_precision = false;
   tree selector;
 
   /* Change pointer to function to the function itself for
@@ -2564,6 +2565,30 @@ convert_arguments (int nargs, tree *argarray,
   /* Handle an ObjC selector specially for diagnostics.  */
   selector = objc_message_selector ();
 
+  /* For type-generic built-in functions, determine whether excess
+     precision should be removed (classification) or not
+     (comparison).  */
+  if (type_generic
+      && DECL_BUILT_IN (fundecl)
+      && DECL_BUILT_IN_CLASS (fundecl) == BUILT_IN_NORMAL)
+    {
+      switch (DECL_FUNCTION_CODE (fundecl))
+	{
+	case BUILT_IN_ISFINITE:
+	case BUILT_IN_ISINF:
+	case BUILT_IN_ISINF_SIGN:
+	case BUILT_IN_ISNAN:
+	case BUILT_IN_ISNORMAL:
+	case BUILT_IN_FPCLASSIFY:
+	  type_generic_remove_excess_precision = true;
+	  break;
+
+	default:
+	  type_generic_remove_excess_precision = false;
+	  break;
+	}
+    }
+
   /* Scan the given expressions and types, producing individual
      converted arguments and storing them in ARGARRAY.  */
 
@@ -2573,9 +2598,11 @@ convert_arguments (int nargs, tree *argarray,
     {
       tree type = typetail ? TREE_VALUE (typetail) : 0;
       tree val = TREE_VALUE (valtail);
+      tree valtype = TREE_TYPE (val);
       tree rname = function;
       int argnum = parmnum + 1;
       const char *invalid_func_diag;
+      bool excess_precision = false;
       bool npc;
 
       if (type == void_type_node)
@@ -2591,6 +2618,19 @@ convert_arguments (int nargs, tree *argarray,
 	}
 
       npc = null_pointer_constant_p (val);
+
+      /* If there is excess precision and a prototype, convert once to
+	 the required type rather than converting via the semantic
+	 type.  Likewise without a prototype a float value represented
+	 as long double should be converted once to double.  But for
+	 type-generic classification functions excess precision must
+	 be removed here.  */
+      if (TREE_CODE (val) == EXCESS_PRECISION_EXPR
+	  && (type || !type_generic || !type_generic_remove_excess_precision))
+	{
+	  val = TREE_OPERAND (val, 0);
+	  excess_precision = true;
+	}
       val = c_fully_fold (val, false, NULL);
       STRIP_TYPE_NOPS (val);
 
@@ -2615,32 +2655,32 @@ convert_arguments (int nargs, tree *argarray,
 		  unsigned int formal_prec = TYPE_PRECISION (type);
 
 		  if (INTEGRAL_TYPE_P (type)
-		      && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
+		      && TREE_CODE (valtype) == REAL_TYPE)
 		    warning (0, "passing argument %d of %qE as integer "
 			     "rather than floating due to prototype",
 			     argnum, rname);
 		  if (INTEGRAL_TYPE_P (type)
-		      && TREE_CODE (TREE_TYPE (val)) == COMPLEX_TYPE)
+		      && TREE_CODE (valtype) == COMPLEX_TYPE)
 		    warning (0, "passing argument %d of %qE as integer "
 			     "rather than complex due to prototype",
 			     argnum, rname);
 		  else if (TREE_CODE (type) == COMPLEX_TYPE
-			   && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
+			   && TREE_CODE (valtype) == REAL_TYPE)
 		    warning (0, "passing argument %d of %qE as complex "
 			     "rather than floating due to prototype",
 			     argnum, rname);
 		  else if (TREE_CODE (type) == REAL_TYPE
-			   && INTEGRAL_TYPE_P (TREE_TYPE (val)))
+			   && INTEGRAL_TYPE_P (valtype))
 		    warning (0, "passing argument %d of %qE as floating "
 			     "rather than integer due to prototype",
 			     argnum, rname);
 		  else if (TREE_CODE (type) == COMPLEX_TYPE
-			   && INTEGRAL_TYPE_P (TREE_TYPE (val)))
+			   && INTEGRAL_TYPE_P (valtype))
 		    warning (0, "passing argument %d of %qE as complex "
 			     "rather than integer due to prototype",
 			     argnum, rname);
 		  else if (TREE_CODE (type) == REAL_TYPE
-			   && TREE_CODE (TREE_TYPE (val)) == COMPLEX_TYPE)
+			   && TREE_CODE (valtype) == COMPLEX_TYPE)
 		    warning (0, "passing argument %d of %qE as floating "
 			     "rather than complex due to prototype",
 			     argnum, rname);
@@ -2648,7 +2688,7 @@ convert_arguments (int nargs, tree *argarray,
 		     conversions between complex types, but that's too messy
 		     to do now.  */
 		  else if (TREE_CODE (type) == REAL_TYPE
-			   && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
+			   && TREE_CODE (valtype) == REAL_TYPE)
 		    {
 		      /* Warn if any argument is passed as `float',
 			 since without a prototype it would be `double'.  */
@@ -2662,40 +2702,40 @@ convert_arguments (int nargs, tree *argarray,
 			 for decimal float types.  Warn of conversions with
 			 binary float types and of precision narrowing due to
 			 prototype. */
- 		      else if (type != TREE_TYPE (val)
+ 		      else if (type != valtype
 			       && (type == dfloat32_type_node
 				   || type == dfloat64_type_node
 				   || type == dfloat128_type_node
-				   || TREE_TYPE (val) == dfloat32_type_node
-				   || TREE_TYPE (val) == dfloat64_type_node
-				   || TREE_TYPE (val) == dfloat128_type_node)
+				   || valtype == dfloat32_type_node
+				   || valtype == dfloat64_type_node
+				   || valtype == dfloat128_type_node)
 			       && (formal_prec
-				   <= TYPE_PRECISION (TREE_TYPE (val))
+				   <= TYPE_PRECISION (valtype)
 				   || (type == dfloat128_type_node
-				       && (TREE_TYPE (val)
+				       && (valtype
 					   != dfloat64_type_node
-					   && (TREE_TYPE (val)
+					   && (valtype
 					       != dfloat32_type_node)))
 				   || (type == dfloat64_type_node
-				       && (TREE_TYPE (val)
+				       && (valtype
 					   != dfloat32_type_node))))
 			warning (0, "passing argument %d of %qE as %qT "
 				 "rather than %qT due to prototype",
-				 argnum, rname, type, TREE_TYPE (val));
+				 argnum, rname, type, valtype);
 
 		    }
 		  /* Detect integer changing in width or signedness.
 		     These warnings are only activated with
 		     -Wtraditional-conversion, not with -Wtraditional.  */
 		  else if (warn_traditional_conversion && INTEGRAL_TYPE_P (type)
-			   && INTEGRAL_TYPE_P (TREE_TYPE (val)))
+			   && INTEGRAL_TYPE_P (valtype))
 		    {
 		      tree would_have_been = default_conversion (val);
 		      tree type1 = TREE_TYPE (would_have_been);
 
 		      if (TREE_CODE (type) == ENUMERAL_TYPE
 			  && (TYPE_MAIN_VARIANT (type)
-			      == TYPE_MAIN_VARIANT (TREE_TYPE (val))))
+			      == TYPE_MAIN_VARIANT (valtype)))
 			/* No warning if function asks for enum
 			   and the actual arg is that enum type.  */
 			;
@@ -2719,8 +2759,8 @@ convert_arguments (int nargs, tree *argarray,
 			 unsigned type, it doesn't matter whether we
 			 pass it as signed or unsigned; the value
 			 certainly is the same either way.  */
-		      else if (TYPE_PRECISION (TREE_TYPE (val)) < TYPE_PRECISION (type)
-			       && TYPE_UNSIGNED (TREE_TYPE (val)))
+		      else if (TYPE_PRECISION (valtype) < TYPE_PRECISION (type)
+			       && TYPE_UNSIGNED (valtype))
 			;
 		      else if (TYPE_UNSIGNED (type))
 			warning (OPT_Wtraditional_conversion, "passing argument %d of %qE "
@@ -2732,6 +2772,10 @@ convert_arguments (int nargs, tree *argarray,
 		    }
 		}
 
+	      /* Possibly restore an EXCESS_PRECISION_EXPR for the
+		 sake of better warnings from convert_and_check.  */
+	      if (excess_precision)
+		val = build1 (EXCESS_PRECISION_EXPR, valtype, val);
 	      parmval = convert_for_assignment (type, val, ic_argpass, npc,
 						fundecl, function,
 						parmnum + 1);
@@ -2743,10 +2787,10 @@ convert_arguments (int nargs, tree *argarray,
 	    }
 	  argarray[parmnum] = parmval;
 	}
-      else if (TREE_CODE (TREE_TYPE (val)) == REAL_TYPE
-	       && (TYPE_PRECISION (TREE_TYPE (val))
+      else if (TREE_CODE (valtype) == REAL_TYPE
+	       && (TYPE_PRECISION (valtype)
 		   < TYPE_PRECISION (double_type_node))
-	       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (val))))
+	       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (valtype)))
         {
 	  if (type_generic)
 	    argarray[parmnum] = val;
@@ -2754,6 +2798,10 @@ convert_arguments (int nargs, tree *argarray,
 	    /* Convert `float' to `double'.  */
 	    argarray[parmnum] = convert (double_type_node, val);
 	}
+      else if (excess_precision && !type_generic)
+	/* A "double" argument with excess precision being passed
+	   without a prototype or in variable arguments.  */
+	argarray[parmnum] = convert (valtype, val);
       else if ((invalid_func_diag =
 		targetm.calls.invalid_arg_for_unprototyped_fn (typelist, fundecl, val)))
 	{
@@ -2959,6 +3007,7 @@ build_unary_op (location_t location,
   enum tree_code typecode;
   tree val;
   tree ret = error_mark_node;
+  tree eptype = NULL_TREE;
   int noconvert = flag;
   const char *invalid_op_diag;
   bool int_operands;
@@ -2979,6 +3028,12 @@ build_unary_op (location_t location,
     {
       error_at (location, invalid_op_diag);
       return error_mark_node;
+    }
+
+  if (TREE_CODE (arg) == EXCESS_PRECISION_EXPR)
+    {
+      eptype = TREE_TYPE (arg);
+      arg = TREE_OPERAND (arg, 0);
     }
 
   switch (code)
@@ -3077,6 +3132,8 @@ build_unary_op (location_t location,
 	ret = fold_build1 (REALPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
       else
 	ret = arg;
+      if (eptype && TREE_CODE (eptype) == COMPLEX_TYPE)
+	eptype = TREE_TYPE (eptype);
       goto return_build_unary_op;
 
     case IMAGPART_EXPR:
@@ -3086,6 +3143,8 @@ build_unary_op (location_t location,
 	ret = fold_build1 (IMAGPART_EXPR, TREE_TYPE (TREE_TYPE (arg)), arg);
       else
 	ret = omit_one_operand (TREE_TYPE (arg), integer_zero_node, arg);
+      if (eptype && TREE_CODE (eptype) == COMPLEX_TYPE)
+	eptype = TREE_TYPE (eptype);
       goto return_build_unary_op;
 
     case PREINCREMENT_EXPR:
@@ -3333,6 +3392,8 @@ build_unary_op (location_t location,
     ret = build1 (NOP_EXPR, TREE_TYPE (ret), ret);
   else if (TREE_CODE (ret) != INTEGER_CST && int_operands)
     ret = note_integer_operands (ret);
+  if (eptype)
+    ret = build1 (EXCESS_PRECISION_EXPR, eptype, ret);
   protected_set_expr_location (ret, location);
   return ret;
 }
@@ -3512,6 +3573,7 @@ build_conditional_expr (tree ifexp, bool ifexp_bcp, tree op1, tree op2)
   enum tree_code code1;
   enum tree_code code2;
   tree result_type = NULL;
+  tree ep_result_type = NULL;
   tree orig_op1 = op1, orig_op2 = op2;
   bool int_const, op1_int_operands, op2_int_operands, int_operands;
   tree ret;
@@ -3543,6 +3605,28 @@ build_conditional_expr (tree ifexp, bool ifexp_bcp, tree op1, tree op2)
     }
 
   objc_ok = objc_compare_types (type1, type2, -3, NULL_TREE);
+
+  if ((TREE_CODE (op1) == EXCESS_PRECISION_EXPR
+       || TREE_CODE (op2) == EXCESS_PRECISION_EXPR)
+      && (code1 == INTEGER_TYPE || code1 == REAL_TYPE
+	  || code1 == COMPLEX_TYPE)
+      && (code2 == INTEGER_TYPE || code2 == REAL_TYPE
+	  || code2 == COMPLEX_TYPE))
+    {
+      ep_result_type = c_common_type (type1, type2);
+      if (TREE_CODE (op1) == EXCESS_PRECISION_EXPR)
+	{
+	  op1 = TREE_OPERAND (op1, 0);
+	  type1 = TREE_TYPE (op1);
+	  gcc_assert (TREE_CODE (type1) == code1);
+	}
+      if (TREE_CODE (op2) == EXCESS_PRECISION_EXPR)
+	{
+	  op2 = TREE_OPERAND (op2, 0);
+	  type2 = TREE_TYPE (op2);
+	  gcc_assert (TREE_CODE (type2) == code2);
+	}
+    }
 
   /* Quickly detect the usual case where op1 and op2 have the same type
      after promotion.  */
@@ -3741,6 +3825,8 @@ build_conditional_expr (tree ifexp, bool ifexp_bcp, tree op1, tree op2)
       if (int_operands)
 	ret = note_integer_operands (ret);
     }
+  if (ep_result_type)
+    ret = build1 (EXCESS_PRECISION_EXPR, ep_result_type, ret);
 
   return ret;
 }
@@ -3751,7 +3837,16 @@ build_conditional_expr (tree ifexp, bool ifexp_bcp, tree op1, tree op2)
 tree
 build_compound_expr (tree expr1, tree expr2)
 {
+  tree eptype = NULL_TREE;
   tree ret;
+
+  if (TREE_CODE (expr1) == EXCESS_PRECISION_EXPR)
+    expr1 = TREE_OPERAND (expr1, 0);
+  if (TREE_CODE (expr2) == EXCESS_PRECISION_EXPR)
+    {
+      eptype = TREE_TYPE (expr2);
+      expr2 = TREE_OPERAND (expr2, 0);
+    }
 
   if (!TREE_SIDE_EFFECTS (expr1))
     {
@@ -3790,6 +3885,9 @@ build_compound_expr (tree expr1, tree expr2)
       && EXPR_INT_CONST_OPERANDS (expr2))
     ret = note_integer_operands (ret);
 
+  if (eptype)
+    ret = build1 (EXCESS_PRECISION_EXPR, eptype, ret);
+
   return ret;
 }
 
@@ -3798,7 +3896,12 @@ build_compound_expr (tree expr1, tree expr2)
 tree
 build_c_cast (tree type, tree expr)
 {
-  tree value = expr;
+  tree value;
+
+  if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+
+  value = expr;
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
@@ -4058,6 +4161,7 @@ build_modify_expr (location_t location,
 {
   tree result;
   tree newrhs;
+  tree rhs_semantic_type = NULL_TREE;
   tree lhstype = TREE_TYPE (lhs);
   tree olhstype = lhstype;
   bool npc;
@@ -4071,6 +4175,12 @@ build_modify_expr (location_t location,
 
   if (!lvalue_or_else (lhs, lv_assign))
     return error_mark_node;
+
+  if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
+    {
+      rhs_semantic_type = TREE_TYPE (rhs);
+      rhs = TREE_OPERAND (rhs, 0);
+    }
 
   newrhs = rhs;
 
@@ -4131,11 +4241,14 @@ build_modify_expr (location_t location,
       TREE_TYPE (lhs) = lhstype;
     }
 
-  /* Convert new value to destination type.  Fold it first for the
-     sake of conversion warnings.  */
+  /* Convert new value to destination type.  Fold it first, then
+     restore any excess precision information, for the sake of
+     conversion warnings.  */
 
   npc = null_pointer_constant_p (newrhs);
   newrhs = c_fully_fold (newrhs, false, NULL);
+  if (rhs_semantic_type)
+    newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
   newrhs = convert_for_assignment (lhstype, newrhs, ic_assign, npc,
 				   NULL_TREE, NULL_TREE, 0);
   if (TREE_CODE (newrhs) == ERROR_MARK)
@@ -4190,6 +4303,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 			tree fundecl, tree function, int parmnum)
 {
   enum tree_code codel = TREE_CODE (type);
+  tree orig_rhs = rhs;
   tree rhstype;
   enum tree_code coder;
   tree rname = NULL_TREE;
@@ -4241,6 +4355,9 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
         gcc_unreachable ();                                              \
       }                                                                  \
   } while (0)
+
+  if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
+    rhs = TREE_OPERAND (rhs, 0);
 
   rhstype = TREE_TYPE (rhs);
   coder = TREE_CODE (rhstype);
@@ -4334,7 +4451,7 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
       bool save = in_late_binary_op;
       if (codel == BOOLEAN_TYPE)
 	in_late_binary_op = true;
-      ret = convert_and_check (type, rhs);
+      ret = convert_and_check (type, orig_rhs);
       if (codel == BOOLEAN_TYPE)
 	in_late_binary_op = save;
       return ret;
@@ -4979,6 +5096,7 @@ digest_init (tree type, tree init, bool null_pointer_constant,
 {
   enum tree_code code = TREE_CODE (type);
   tree inside_init = init;
+  tree semantic_type = NULL_TREE;
   bool maybe_const = true;
 
   if (type == error_mark_node
@@ -4989,6 +5107,11 @@ digest_init (tree type, tree init, bool null_pointer_constant,
 
   STRIP_TYPE_NOPS (inside_init);
 
+  if (TREE_CODE (inside_init) == EXCESS_PRECISION_EXPR)
+    {
+      semantic_type = TREE_TYPE (inside_init);
+      inside_init = TREE_OPERAND (inside_init, 0);
+    }
   inside_init = c_fully_fold (inside_init, require_constant, &maybe_const);
   inside_init = decl_constant_value_for_optimization (inside_init);
 
@@ -5206,6 +5329,9 @@ digest_init (tree type, tree init, bool null_pointer_constant,
 	  && (TREE_CODE (init) == STRING_CST
 	      || TREE_CODE (init) == COMPOUND_LITERAL_EXPR))
 	inside_init = init = array_to_pointer_conversion (init);
+      if (semantic_type)
+	inside_init = build1 (EXCESS_PRECISION_EXPR, semantic_type,
+			      inside_init);
       inside_init
 	= convert_for_assignment (type, inside_init, ic_init,
 				  null_pointer_constant,
@@ -6587,6 +6713,7 @@ static void
 output_init_element (tree value, bool strict_string, tree type, tree field,
 		     int pending, bool implicit)
 {
+  tree semantic_type = NULL_TREE;
   constructor_elt *celt;
   bool maybe_const = true;
   bool npc;
@@ -6617,6 +6744,11 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
     }
 
   npc = null_pointer_constant_p (value);
+  if (TREE_CODE (value) == EXCESS_PRECISION_EXPR)
+    {
+      semantic_type = TREE_TYPE (value);
+      value = TREE_OPERAND (value, 0);
+    }
   value = c_fully_fold (value, require_constant_value, &maybe_const);
 
   if (value == error_mark_node)
@@ -6658,6 +6790,8 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
 		  || TREE_CHAIN (field)))))
     return;
 
+  if (semantic_type)
+    value = build1 (EXCESS_PRECISION_EXPR, semantic_type, value);
   value = digest_init (type, value, npc, strict_string,
 		       require_constant_value);
   if (value == error_mark_node)
@@ -6972,7 +7106,18 @@ process_init_element (struct c_expr value, bool implicit)
       if (TREE_CODE (value.value) != COMPOUND_LITERAL_EXPR
 	  || !require_constant_value
 	  || flag_isoc99)
-	value.value = c_save_expr (value.value);
+	{
+	  tree semantic_type = NULL_TREE;
+	  if (TREE_CODE (value.value) == EXCESS_PRECISION_EXPR)
+	    {
+	      semantic_type = TREE_TYPE (value.value);
+	      value.value = TREE_OPERAND (value.value, 0);
+	    }
+	  value.value = c_save_expr (value.value);
+	  if (semantic_type)
+	    value.value = build1 (EXCESS_PRECISION_EXPR, semantic_type,
+				  value.value);
+	}
     }
 
   while (1)
@@ -7465,8 +7610,16 @@ c_finish_return (tree retval)
 
   if (retval)
     {
+      tree semantic_type = NULL_TREE;
       npc = null_pointer_constant_p (retval);
+      if (TREE_CODE (retval) == EXCESS_PRECISION_EXPR)
+	{
+	  semantic_type = TREE_TYPE (retval);
+	  retval = TREE_OPERAND (retval, 0);
+	}
       retval = c_fully_fold (retval, false, NULL);
+      if (semantic_type)
+	retval = build1 (EXCESS_PRECISION_EXPR, semantic_type, retval);
     }
 
   if (!retval)
@@ -8281,7 +8434,8 @@ tree
 build_binary_op (location_t location, enum tree_code code,
 		 tree orig_op0, tree orig_op1, int convert_p)
 {
-  tree type0, type1;
+  tree type0, type1, orig_type0, orig_type1;
+  tree eptype;
   enum tree_code code0, code1;
   tree op0, op1;
   tree ret = error_mark_node;
@@ -8296,6 +8450,10 @@ build_binary_op (location_t location, enum tree_code code,
   /* Data type in which the computation is to be performed.
      In the simplest cases this is the common type of the arguments.  */
   tree result_type = NULL;
+
+  /* When the computation is in excess precision, the type of the
+     final EXCESS_PRECISION_EXPR.  */
+  tree real_result_type = NULL;
 
   /* Nonzero means operands have already been type-converted
      in whatever way is necessary.
@@ -8333,6 +8491,10 @@ build_binary_op (location_t location, enum tree_code code,
   /* True means types are compatible as far as ObjC is concerned.  */
   bool objc_ok;
 
+  /* True means this is an arithmetic operation that may need excess
+     precision.  */
+  bool may_need_excess_precision;
+
   if (location == UNKNOWN_LOCATION)
     location = input_location;
 
@@ -8360,8 +8522,8 @@ build_binary_op (location_t location, enum tree_code code,
       op1 = orig_op1;
     }
 
-  type0 = TREE_TYPE (op0);
-  type1 = TREE_TYPE (op1);
+  orig_type0 = type0 = TREE_TYPE (op0);
+  orig_type1 = type1 = TREE_TYPE (op1);
 
   /* The expression codes of the data types of the arguments tell us
      whether the arguments are integers, floating, pointers, etc.  */
@@ -8383,6 +8545,45 @@ build_binary_op (location_t location, enum tree_code code,
     {
       error_at (location, invalid_op_diag);
       return error_mark_node;
+    }
+
+  switch (code)
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case EXACT_DIV_EXPR:
+      may_need_excess_precision = true;
+      break;
+    default:
+      may_need_excess_precision = false;
+      break;
+    }
+  if (TREE_CODE (op0) == EXCESS_PRECISION_EXPR)
+    {
+      op0 = TREE_OPERAND (op0, 0);
+      type0 = TREE_TYPE (op0);
+    }
+  else if (may_need_excess_precision
+	   && (eptype = excess_precision_type (type0)) != NULL_TREE)
+    {
+      type0 = eptype;
+      op0 = convert (eptype, op0);
+    }
+  if (TREE_CODE (op1) == EXCESS_PRECISION_EXPR)
+    {
+      op1 = TREE_OPERAND (op1, 0);
+      type1 = TREE_TYPE (op1);
+    }
+  else if (may_need_excess_precision
+	   && (eptype = excess_precision_type (type1)) != NULL_TREE)
+    {
+      type1 = eptype;
+      op1 = convert (eptype, op1);
     }
 
   objc_ok = objc_compare_types (type0, type1, -3, NULL_TREE);
@@ -8929,7 +9130,14 @@ build_binary_op (location_t location, enum tree_code code,
     }
 
   if (build_type == NULL_TREE)
-    build_type = result_type;
+    {
+      build_type = result_type;
+      if (type0 != orig_type0 || type1 != orig_type1)
+	{
+	  gcc_assert (may_need_excess_precision && common);
+	  real_result_type = c_common_type (orig_type0, orig_type1);
+	}
+    }
 
   /* Treat expressions in initializers specially as they can't trap.  */
   if (int_const_or_overflow)
@@ -8950,6 +9158,8 @@ build_binary_op (location_t location, enum tree_code code,
   else if (TREE_CODE (ret) != INTEGER_CST && int_operands
 	   && !in_late_binary_op)
     ret = note_integer_operands (ret);
+  if (real_result_type)
+    ret = build1 (EXCESS_PRECISION_EXPR, real_result_type, ret);
   protected_set_expr_location (ret, location);
   return ret;
 }

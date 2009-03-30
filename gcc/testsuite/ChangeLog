@@ -1,5 +1,15 @@
 2009-03-30  Joseph Myers  <joseph@codesourcery.com>
 
+	PR rtl-optimization/323
+	* gcc.target/i386/excess-precision-1.c,
+	gcc.target/i386/excess-precision-2.c,
+	gcc.target/i386/excess-precision-3.c,
+	gcc.target/i386/excess-precision-4.c,
+	gcc.target/i386/excess-precision-5.c,
+	gcc.target/i386/excess-precision-6.c: New tests.
+
+2009-03-30  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/35235
 	* gcc.dg/c99-array-lval-8.c: New test.
 

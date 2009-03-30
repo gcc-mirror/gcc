@@ -227,6 +227,21 @@ extern enum ira_region flag_ira_region;
 
 extern unsigned int flag_ira_verbose;
 
+/* The options for excess precision.  */
+enum excess_precision
+{
+  EXCESS_PRECISION_DEFAULT,
+  EXCESS_PRECISION_FAST,
+  EXCESS_PRECISION_STANDARD
+};
+
+/* The excess precision specified on the command line, or defaulted by
+   the front end.  */
+extern enum excess_precision flag_excess_precision_cmdline;
+
+/* The excess precision currently in effect.  */
+extern enum excess_precision flag_excess_precision;
+
 
 /* Other basic status info about current function.  */
 
