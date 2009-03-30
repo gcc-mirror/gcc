@@ -1,3 +1,10 @@
+2009-03-30  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/38237
+	* tree.h (tree_find_value): New declaration.
+	* tree.c (tree_find_value): New function.
+	* varasm.c (assemble_external): Avoid duplicate entries on lists.
+
 2009-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/39563
