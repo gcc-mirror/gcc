@@ -26,10 +26,6 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #include "symtab.h"
 #include "cpp-id-data.h"
 
-#ifndef HAVE_ICONV_H
-#undef HAVE_ICONV
-#endif
-
 #if HAVE_ICONV
 #include <iconv.h>
 #else

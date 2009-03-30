@@ -3619,8 +3619,7 @@ done
 
 
 
-
-for ac_header in iconv.h locale.h fcntl.h limits.h stddef.h \
+for ac_header in locale.h fcntl.h limits.h stddef.h \
 	stdlib.h strings.h string.h sys/file.h unistd.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`

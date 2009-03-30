@@ -1,3 +1,10 @@
+2009-03-30  Sergiy Vyshnevetskiy  <serg@vostok.net>
+
+	PR preprocessor/31932:
+	* internal.h: Don't mention HAVE_ICONV_H.
+	* configure, config.in: Rebuild.
+	* configure.ac: Don't check for iconv.h.
+
 2009-03-30  Tom Tromey  <tromey@redhat.com>
 
 	PR preprocessor/39512:
