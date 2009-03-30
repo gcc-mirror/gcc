@@ -1186,9 +1186,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 #define TREE_OVERFLOW(NODE) (CST_CHECK (NODE)->base.public_flag)
 
-/* ??? This is an obsolete synonym for TREE_OVERFLOW.  */
-#define TREE_CONSTANT_OVERFLOW(NODE) TREE_OVERFLOW(NODE)
-
 /* TREE_OVERFLOW can only be true for EXPR of CONSTANT_CLASS_P.  */
 
 #define TREE_OVERFLOW_P(EXPR) \

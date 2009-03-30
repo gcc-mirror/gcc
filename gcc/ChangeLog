@@ -1,3 +1,13 @@
+2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
+
+	* fold-const.c (const_binop, fold_convert_const_real_from_fixed,
+	fold_convert_const_fixed_from_fixed,
+	fold_convert_const_fixed_from_int,
+	fold_convert_const_fixed_from_real, fold_negate_const): Do not
+	set TREE_CONSTANT_OVERFLOW.
+	* tree.def: Remove mention of TREE_CONSTANT_OVERFLOW.
+	* tree.h (TREE_CONSTANT_OVERFLOW): Delete.
+
 2009-03-30  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vect-loop-manip.c: New file.
