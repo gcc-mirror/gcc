@@ -1,3 +1,12 @@
+2009-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert
+
+	2009-03-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/35652
+	* typeck.c (cp_pointer_sum): Adjust call to pointer_int_sum.
+
 2009-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/39554

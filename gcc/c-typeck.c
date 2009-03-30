@@ -8107,12 +8107,12 @@ build_binary_op (location_t location, enum tree_code code,
       /* Handle the pointer + int case.  */
       if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  ret = pointer_int_sum (location, PLUS_EXPR, op0, op1);
+	  ret = pointer_int_sum (PLUS_EXPR, op0, op1);
 	  goto return_build_binary_op;
 	}
       else if (code1 == POINTER_TYPE && code0 == INTEGER_TYPE)
 	{
-	  ret = pointer_int_sum (location, PLUS_EXPR, op1, op0);
+	  ret = pointer_int_sum (PLUS_EXPR, op1, op0);
 	  goto return_build_binary_op;
 	}
       else
@@ -8131,7 +8131,7 @@ build_binary_op (location_t location, enum tree_code code,
       /* Handle pointer minus int.  Just like pointer plus int.  */
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  ret = pointer_int_sum (location, MINUS_EXPR, op0, op1);
+	  ret = pointer_int_sum (MINUS_EXPR, op0, op1);
 	  goto return_build_binary_op;
 	}
       else
