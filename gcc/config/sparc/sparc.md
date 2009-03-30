@@ -8172,7 +8172,7 @@
 
 ;; (ior (not (op1)) (not (op2))) is the canonical form of NAND.
 
-(define_insn "*nand<V64mode>_vis"
+(define_insn "*nand<V64:mode>_vis"
   [(set (match_operand:V64 0 "register_operand" "=e")
 	(ior:V64 (not:V64 (match_operand:V64 1 "register_operand" "e"))
 		 (not:V64 (match_operand:V64 2 "register_operand" "e"))))]
@@ -8181,7 +8181,7 @@
   [(set_attr "type" "fga")
    (set_attr "fptype" "double")])
 
-(define_insn "*nand<V32mode>_vis"
+(define_insn "*nand<V32:mode>_vis"
   [(set (match_operand:V32 0 "register_operand" "=f")
 	 (ior:V32 (not:V32 (match_operand:V32 1 "register_operand" "f"))
 		  (not:V32 (match_operand:V32 2 "register_operand" "f"))))]
