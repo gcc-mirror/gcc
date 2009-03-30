@@ -1306,10 +1306,14 @@ typedef struct gfc_namespace
 
   /* Set to 1 if namespace is an interface body with "IMPORT" used.  */
   int has_import_set;
+
+  /* Set to 1 if resolved has been called for this namespace.  */
+  int resolved;
 }
 gfc_namespace;
 
 extern gfc_namespace *gfc_current_ns;
+extern gfc_namespace *gfc_global_ns_list;
 
 /* Global symbols are symbols of global scope. Currently we only use
    this to detect collisions already when parsing.
@@ -1328,6 +1332,7 @@ typedef struct gfc_gsymbol
 
   int defined, used;
   locus where;
+  gfc_namespace *ns;
 }
 gfc_gsymbol;
 
@@ -2027,6 +2032,7 @@ typedef struct
   int flag_init_character;
   char flag_init_character_value;
   int flag_align_commons;
+  int flag_whole_file;
 
   int fpe;
   int rtcheck;
@@ -2354,6 +2360,8 @@ void gfc_traverse_user_op (gfc_namespace *, void (*)(gfc_user_op *));
 void gfc_save_all (gfc_namespace *);
 
 void gfc_symbol_state (void);
+void gfc_free_dt_list (void);
+
 
 gfc_gsymbol *gfc_get_gsymbol (const char *);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);

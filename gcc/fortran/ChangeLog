@@ -1,3 +1,34 @@
+2009-03-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/22571
+	PR fortran/26227
+	PR fortran/24886
+	* symbol.c : Add gfc_global_ns_list.
+	* decl.c (add_global_entry): Set the namespace ('ns') field.
+	* gfortran.h : Add the resolved field to gfc_namespace. Add the
+	namespace ('ns') field to gfc_gsymbol.  Add flag_whole_file to
+	gfc_option_t.  Add the prototype for gfc_free_dt_list.
+	* lang.opt : Add the whole-file option.
+	* invoke.texi : Document the whole-file option.
+	* resolve.c (resolve_global_procedure): If the fwhole-file
+	option is set, reorder gsymbols to ensure that translation is
+	in the right order.  Resolve the gsymbol's namespace if that
+	has not occurred and then check interfaces.
+	(resolve_function): Move call to resolve_global_procedure.
+	(resolve_call): The same.
+	(resolve_codes): Store the current labels_obstack.
+	(gfc_resolve) : Return if the namespace is already resolved.
+	trans-decl.c (gfc_get_extern_function_decl): If the whole_file
+	option is selected, use the backend_decl of a gsymbol, if it is
+	available.
+	parse.c (add_global_procedure, add_global_program): If the flag
+	whole-file is set, add the namespace to the gsymbol.
+	(gfc_parse_file): On -fwhole-file, put procedure namespaces on
+	the global namespace list.  Rearrange to do resolution of all
+	the procedures in a file, followed by their translation.
+	* options.c (gfc_init_options): Add -fwhole-file.
+	(gfc_handle_option): The same.
+
 2009-03-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* f95-lang.c (gfc_init_builtin_functions): Define BUILT_IN_HUGE_VAL

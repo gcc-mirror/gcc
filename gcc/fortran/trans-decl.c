@@ -1221,6 +1221,7 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
   char s[GFC_MAX_SYMBOL_LEN + 23]; /* "_gfortran_f2c_specific" and '\0'.  */
   tree name;
   tree mangled_name;
+  gfc_gsymbol *gsym;
 
   if (sym->backend_decl)
     return sym->backend_decl;
@@ -1232,6 +1233,41 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 
   if (sym->attr.proc_pointer)
     return get_proc_pointer_decl (sym);
+
+  /* See if this is an external procedure from the same file.  If so,
+     return the backend_decl.  */
+  gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->name);
+
+  if (gfc_option.flag_whole_file
+	&& !sym->backend_decl
+	&& gsym && gsym->ns
+	&& ((gsym->type == GSYM_SUBROUTINE) || (gsym->type == GSYM_FUNCTION))
+	&& gsym->ns->proc_name->backend_decl)
+    {
+      /* If the namespace has entries, the proc_name is the
+	 entry master.  Find the entry and use its backend_decl.
+	 otherwise, use the proc_name backend_decl.  */
+      if (gsym->ns->entries)
+	{
+	  gfc_entry_list *entry = gsym->ns->entries;
+
+	  for (; entry; entry = entry->next)
+	    {
+	      if (strcmp (gsym->name, entry->sym->name) == 0)
+		{
+	          sym->backend_decl = entry->sym->backend_decl;
+		  break;
+		}
+	    }
+	}
+      else
+	{
+	  sym->backend_decl = gsym->ns->proc_name->backend_decl;
+	}
+
+      if (sym->backend_decl)
+	return sym->backend_decl;
+    }
 
   if (sym->attr.intrinsic)
     {
