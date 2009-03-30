@@ -1,3 +1,23 @@
+2009-03-30  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (jump_func_type): Rename IPA_UNKNOWN, IPA_CONST,
+	IPA_CONST_MEMBER_PTR, and IPA_PASS_THROUGH to IPA_JF_UNKNOWN,
+	IPA_JF_CONST, IPA_JF_CONST_MEMBER_PTR, and IPA_JF_PASS_THROUGH
+	respectively.
+
+	* tree-dfa.c (get_ref_base_and_extent): Return -1 maxsize if
+	seen_variable_array_ref while also traversing a union.
+
+	* tree-inline.c (optimize_inline_calls): Do not call
+	cgraph_node_remove_callees.
+	* cgraphbuild.c (remove_cgraph_callee_edges): New function.
+	(pass_remove_cgraph_callee_edges): New variable.
+	* passes.c (init_optimization_passes): Add
+	pass_remove_cgraph_callee_edges after early inlining and before all
+	late intraprocedural passes.
+
+	* omp-low.c (expand_omp_taskreg): Always set current_function_decl.
+
 2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/sparc/sparc.md (*nand<V64mode>_vis, *nand<V32mode>_vis):

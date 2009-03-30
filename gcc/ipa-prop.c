@@ -293,16 +293,16 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 	  type = jump_func->type;
 
 	  fprintf (f, "       param %d: ", i);
-	  if (type == IPA_UNKNOWN)
+	  if (type == IPA_JF_UNKNOWN)
 	    fprintf (f, "UNKNOWN\n");
-	  else if (type == IPA_CONST)
+	  else if (type == IPA_JF_CONST)
  	    {
 	      tree val = jump_func->value.constant;
 	      fprintf (f, "CONST: ");
 	      print_generic_expr (f, val, 0);
 	      fprintf (f, "\n");
 	    }
-	  else if (type == IPA_CONST_MEMBER_PTR)
+	  else if (type == IPA_JF_CONST_MEMBER_PTR)
 	    {
 	      fprintf (f, "CONST MEMBER PTR: ");
 	      print_generic_expr (f, jump_func->value.member_cst.pfn, 0);
@@ -310,7 +310,7 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 	      print_generic_expr (f, jump_func->value.member_cst.delta, 0);
 	      fprintf (f, "\n");
 	    }
-	  else if (type == IPA_PASS_THROUGH)
+	  else if (type == IPA_JF_PASS_THROUGH)
  	    {
 	      fprintf (f, "PASS THROUGH: ");
 	      fprintf (f, "%d\n", jump_func->value.formal_id);
@@ -353,7 +353,7 @@ compute_scalar_jump_functions (struct ipa_node_params *info,
 
       if (is_gimple_ip_invariant (arg))
 	{
-	  functions[num].type = IPA_CONST;
+	  functions[num].type = IPA_JF_CONST;
 	  functions[num].value.constant = arg;
 	}
       else if ((TREE_CODE (arg) == SSA_NAME) && SSA_NAME_IS_DEFAULT_DEF (arg))
@@ -362,7 +362,7 @@ compute_scalar_jump_functions (struct ipa_node_params *info,
 
 	  if (index >= 0)
 	    {
-	      functions[num].type = IPA_PASS_THROUGH;
+	      functions[num].type = IPA_JF_PASS_THROUGH;
 	      functions[num].value.formal_id = index;
 	    }
 	}
@@ -430,7 +430,7 @@ compute_pass_through_member_ptrs (struct ipa_node_params *info,
 	      gcc_assert (index >=0);
 	      if (!ipa_is_param_modified (info, index))
 		{
-		  functions[num].type = IPA_PASS_THROUGH;
+		  functions[num].type = IPA_JF_PASS_THROUGH;
 		  functions[num].value.formal_id = index;
 		}
 	      else
@@ -451,7 +451,7 @@ static void
 fill_member_ptr_cst_jump_function (struct ipa_jump_func *jfunc,
 				   tree pfn, tree delta)
 {
-  jfunc->type = IPA_CONST_MEMBER_PTR;
+  jfunc->type = IPA_JF_CONST_MEMBER_PTR;
   jfunc->value.member_cst.pfn = pfn;
   jfunc->value.member_cst.delta = delta;
 }
@@ -545,7 +545,7 @@ compute_cst_member_ptr_arguments (struct ipa_jump_func *functions,
     {
       arg = gimple_call_arg (call, num);
 
-      if (functions[num].type == IPA_UNKNOWN
+      if (functions[num].type == IPA_JF_UNKNOWN
 	  && type_like_member_ptr_p (TREE_TYPE (arg), &method_field,
 				     &delta_field))
 	determine_cst_member_ptr (call, arg, method_field, delta_field,
@@ -885,7 +885,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
     {
       struct ipa_jump_func *src, *dst = ipa_get_ith_jump_func (args, i);
 
-      if (dst->type != IPA_PASS_THROUGH)
+      if (dst->type != IPA_JF_PASS_THROUGH)
 	continue;
 
       /* We must check range due to calls with variable number of arguments:  */
@@ -910,7 +910,7 @@ print_edge_addition_message (FILE *f, struct ipa_param_call_note *nt,
 			     struct cgraph_node *node)
 {
   fprintf (f, "ipa-prop: Discovered an indirect call to a known target (");
-  if (jfunc->type == IPA_CONST_MEMBER_PTR)
+  if (jfunc->type == IPA_JF_CONST_MEMBER_PTR)
     {
       print_node_brief (f, "", jfunc->value.member_cst.pfn, 0);
       print_node_brief (f, ", ", jfunc->value.member_cst.delta, 0);
@@ -953,16 +953,17 @@ update_call_notes_after_inlining (struct cgraph_edge *cs,
 	}
 
       jfunc = ipa_get_ith_jump_func (top, nt->formal_id);
-      if (jfunc->type == IPA_PASS_THROUGH)
+      if (jfunc->type == IPA_JF_PASS_THROUGH)
 	nt->formal_id = jfunc->value.formal_id;
-      else if (jfunc->type == IPA_CONST || jfunc->type == IPA_CONST_MEMBER_PTR)
+      else if (jfunc->type == IPA_JF_CONST
+	       || jfunc->type == IPA_JF_CONST_MEMBER_PTR)
 	{
 	  struct cgraph_node *callee;
 	  struct cgraph_edge *new_indirect_edge;
 	  tree decl;
 
 	  nt->processed = true;
-	  if (jfunc->type == IPA_CONST_MEMBER_PTR)
+	  if (jfunc->type == IPA_JF_CONST_MEMBER_PTR)
 	    decl = jfunc->value.member_cst.pfn;
 	  else
 	    decl = jfunc->value.constant;

@@ -25,21 +25,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 
 /* The following definitions and interfaces are used by
-   interprocedural analyses.  */
+   interprocedural analyses or parameters.  */
+
+/* ipa-prop.c stuff (ipa-cp, indirect inlining):  */
 
 /* A jump function for a callsite represents the values passed as actual
    arguments of the callsite. There are three main types of values :
    Formal - the caller's formal parameter is passed as an actual argument.
    Constant - a constant is passed as an actual argument.
    Unknown - neither of the above.
-   Integer and real constants are represented as IPA_CONST.
-   Finally, IPA_CONST_MEMBER_PTR stands for C++ member pointers constants.  */
+   Integer and real constants are represented as IPA_JF_CONST.
+   Finally, IPA_JF_CONST_MEMBER_PTR stands for C++ member pointers
+   constants.  */
 enum jump_func_type
 {
-  IPA_UNKNOWN = 0,     /* newly allocated and zeroed jump functions default */
-  IPA_CONST,
-  IPA_CONST_MEMBER_PTR,
-  IPA_PASS_THROUGH
+  IPA_JF_UNKNOWN = 0,  /* newly allocated and zeroed jump functions default */
+  IPA_JF_CONST,
+  IPA_JF_CONST_MEMBER_PTR,
+  IPA_JF_PASS_THROUGH
 };
 
 /* All formal parameters in the program have a lattice associated with it
@@ -50,7 +53,7 @@ enum jump_func_type
    IPA_CONST_VALUE - simple scalar constant,
    Cval of formal f will have a constant value if all callsites to this
    function have the same constant value passed to f.
-   Integer and real constants are represented as IPA_CONST.  */
+   Integer and real constants are represented as IPA_CONST_VALUE.  */
 enum ipa_lattice_type
 {
   IPA_BOTTOM,

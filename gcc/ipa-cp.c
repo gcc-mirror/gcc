@@ -310,12 +310,12 @@ static void
 ipcp_lattice_from_jfunc (struct ipa_node_params *info, struct ipcp_lattice *lat,
 			 struct ipa_jump_func *jfunc)
 {
-  if (jfunc->type == IPA_CONST)
+  if (jfunc->type == IPA_JF_CONST)
     {
       lat->type = IPA_CONST_VALUE;
       lat->constant = jfunc->value.constant;
     }
-  else if (jfunc->type == IPA_PASS_THROUGH)
+  else if (jfunc->type == IPA_JF_PASS_THROUGH)
     {
       struct ipcp_lattice *caller_lat;
 
@@ -916,7 +916,7 @@ ipcp_need_redirect_p (struct cgraph_edge *cs)
       if (ipcp_lat_is_const (lat))
 	{
 	  jump_func = ipa_get_ith_jump_func (IPA_EDGE_REF (cs), i);
-	  if (jump_func->type != IPA_CONST)
+	  if (jump_func->type != IPA_JF_CONST)
 	    return true;
 	}
     }
