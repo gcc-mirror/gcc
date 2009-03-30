@@ -5949,7 +5949,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
       && TREE_CODE (type) == RECORD_TYPE
       && TYPE_MODE (type) == BLKmode
       && TREE_CODE (orig_size) == INTEGER_CST
-      && !TREE_CONSTANT_OVERFLOW (orig_size)
+      && !TREE_OVERFLOW (orig_size)
       && compare_tree_int (orig_size, MAX_FIXED_MODE_SIZE) <= 0
       && (!size
 	  || (TREE_CODE (size) == INTEGER_CST
