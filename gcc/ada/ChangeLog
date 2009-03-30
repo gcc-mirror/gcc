@@ -1,7 +1,7 @@
 2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
-        * gcc-interface/decl.c (maybe_pad_type): Use TREE_OVERFLOW
-	instead of TREE_CONSTANT_OVERFLOW.
+	* gcc-interface/decl.c (maybe_pad_type): Use TREE_OVERFLOW instead
+	of TREE_CONSTANT_OVERFLOW.
 
 2009-03-30  Joseph Myers  <joseph@codesourcery.com>
 
