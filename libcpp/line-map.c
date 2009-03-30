@@ -41,6 +41,7 @@ linemap_init (struct line_maps *set)
   set->highest_location = 0;
   set->highest_line = 0;
   set->max_column_hint = 0;
+  set->reallocator = 0;
 }
 
 /* Check for and warn about line_maps entered but not exited.  */

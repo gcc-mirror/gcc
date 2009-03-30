@@ -1,3 +1,8 @@
+2009-03-30  Tom Tromey  <tromey@redhat.com>
+
+	PR preprocessor/39512:
+	* line-map.c (linemap_init): Initialize 'reallocator' field.
+
 2009-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39558
