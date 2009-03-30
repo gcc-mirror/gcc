@@ -6230,7 +6230,9 @@ because in Fortran, the elements of an array are stored in memory
 contiguously by column, and the original loop iterates over rows,
 potentially creating at each access a cache miss.  This optimization
 applies to all the languages supported by GCC and is not limited to
-Fortran.
+Fortran.  To use this code transformation, GCC has to be configured
+with @option{--with-ppl} and @option{--with-cloog} to enable the
+Graphite loop transformation infrastructure.
 
 @item -floop-strip-mine
 Perform loop strip mining transformations on loops.  Strip mining
@@ -6251,7 +6253,9 @@ DO II = 1, N, 4
 ENDDO
 @end smallexample
 This optimization applies to all the languages supported by GCC and is
-not limited to Fortran.
+not limited to Fortran.  To use this code transformation, GCC has to
+be configured with @option{--with-ppl} and @option{--with-cloog} to
+enable the Graphite loop transformation infrastructure.
 
 @item -floop-block
 Perform loop blocking transformations on loops.  Blocking strip mines
@@ -6279,7 +6283,10 @@ ENDDO
 which can be beneficial when @code{M} is larger than the caches,
 because the innermost loop will iterate over a smaller amount of data
 that can be kept in the caches.  This optimization applies to all the
-languages supported by GCC and is not limited to Fortran.
+languages supported by GCC and is not limited to Fortran.  To use this
+code transformation, GCC has to be configured with @option{--with-ppl}
+and @option{--with-cloog} to enable the Graphite loop transformation
+infrastructure.
 
 @item -fcheck-data-deps
 @opindex fcheck-data-deps
