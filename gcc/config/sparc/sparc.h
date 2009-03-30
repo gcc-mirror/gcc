@@ -1558,12 +1558,10 @@ function_arg_padding ((MODE), (TYPE))
  ? 128 : PARM_BOUNDARY)
 
 /* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  Note that we can't use "rtx" here
-   since it hasn't been defined!  */
+   stored from the compare operation.  */
 
 extern GTY(()) rtx sparc_compare_op0;
 extern GTY(()) rtx sparc_compare_op1;
-extern GTY(()) rtx sparc_compare_emitted;
 
 
 /* Generate the special assembly code needed to tell the assembler whatever

@@ -282,7 +282,7 @@ static GTY(()) alias_set_type struct_value_alias_set;
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
-rtx sparc_compare_op0, sparc_compare_op1, sparc_compare_emitted;
+rtx sparc_compare_op0, sparc_compare_op1;
 
 /* Vector to say how input registers are mapped to output registers.
    HARD_FRAME_POINTER_REGNUM cannot be remapped by this function to
@@ -2006,17 +2006,15 @@ select_cc_mode (enum rtx_code op, rtx x, rtx y ATTRIBUTE_UNUSED)
 rtx
 gen_compare_reg (enum rtx_code code)
 {
-  rtx x = sparc_compare_op0;
-  rtx y = sparc_compare_op1;
-  enum machine_mode mode = SELECT_CC_MODE (code, x, y);
-  rtx cc_reg;
+  enum machine_mode mode;
+  rtx x, y, cc_reg;
 
-  if (sparc_compare_emitted != NULL_RTX)
-    {
-      cc_reg = sparc_compare_emitted;
-      sparc_compare_emitted = NULL_RTX;
-      return cc_reg;
-    }
+  if (GET_MODE_CLASS (GET_MODE (sparc_compare_op0)) == MODE_CC)
+    return sparc_compare_op0;
+
+  x = sparc_compare_op0;
+  y = sparc_compare_op1;
+  mode = SELECT_CC_MODE (code, x, y);
 
   /* ??? We don't have movcc patterns so we cannot generate pseudo regs for the
      fcc regs (cse can't tell they're really call clobbered regs and will
@@ -2198,7 +2196,7 @@ gen_v9_scc (enum rtx_code compare_code, register rtx *operands)
 void
 emit_v9_brxx_insn (enum rtx_code code, rtx op0, rtx label)
 {
-  gcc_assert (sparc_compare_emitted == NULL_RTX);
+  gcc_assert (GET_MODE_CLASS (GET_MODE (sparc_compare_op0)) != MODE_CC);
   emit_jump_insn (gen_rtx_SET (VOIDmode,
 			   pc_rtx,
 			   gen_rtx_IF_THEN_ELSE (VOIDmode,
@@ -9026,7 +9024,8 @@ sparc_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
 
   emit_insn (gen_rtx_SET (VOIDmode, val, resv));
 
-  sparc_compare_emitted = cc;
+  sparc_compare_op0 = cc;
+  sparc_compare_op1 = const0_rtx;
   emit_jump_insn (gen_bne (loop_label));
 
   emit_label (end_label);

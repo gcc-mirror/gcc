@@ -1,5 +1,16 @@
 2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
+	* config/sparc/sparc.c (sparc_compare_emitted): Remove.
+	(gen_compare_reg, emit_v9_brxx_insn): Handle MODE_CC
+	sparc_compare_op0 like sparc_compare_emitted used to be handled.
+	(sparc_expand_compare_and_swap_12): Set sparc_compare_op0
+	instead of sparc_compare_emitted.
+	* config/sparc/sparc.h (sparc_compare_emitted): Remove.
+	* config/sparc/sparc.md (stack_protect_test): Set sparc_compare_op0
+	instead of sparc_compare_emitted.
+
+2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
+
 	* bb-reorder.c (partition_hot_cold_basic_blocks): Do not
 	enter/exit cfglayout mode.
 	(pass_partition_block): Require it.
