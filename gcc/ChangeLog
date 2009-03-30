@@ -1,3 +1,9 @@
+2009-03-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/35235
+	* c-typeck.c (build_component_ref): Do not copy qualifiers from
+	non-lvalue to component.
+
 2009-03-29  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/34695
