@@ -1,3 +1,8 @@
+2009-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-types.c (gfc_sym_type, gfc_return_by_reference): For
+	sym->attr.result check sym->ns->proc_name->attr.is_bind_c.
+
 2009-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* lang.opt: Unify help texts for -I, -Wconversion, -d, -fopenmp,
