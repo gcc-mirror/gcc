@@ -1076,6 +1076,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     hashtable<_Val, _Key, _HF, _Ex, _Eq, _All>::
     clear()
     {
+      if (_M_num_elements == 0)
+	return;
+
       for (size_type __i = 0; __i < _M_buckets.size(); ++__i)
 	{
 	  _Node* __cur = _M_buckets[__i];
