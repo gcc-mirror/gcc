@@ -1,3 +1,8 @@
+2009-03-30  Sebastian Pop  <sebastian.pop@amd.com>
+
+	* doc/invoke.texi (-floop-interchange, -floop-strip-mine,
+	-floop-block): Document dependences on PPL, CLooG and Graphite.
+
 2009-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Revert
