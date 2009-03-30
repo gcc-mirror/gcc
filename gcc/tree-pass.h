@@ -210,6 +210,7 @@ struct dump_file_info
 #define PROP_rtl		(1 << 7)
 #define PROP_alias		(1 << 8)
 #define PROP_gimple_lomp	(1 << 9)	/* lowered OpenMP directives */
+#define PROP_cfglayout	 	(1 << 10)	/* cfglayout mode on RTL */
 
 #define PROP_trees \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)

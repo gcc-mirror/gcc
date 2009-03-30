@@ -1,5 +1,12 @@
 2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
+        * cfglayout.c (pass_into_cfg_layout_mode, pass_outof_cfg_layout_mode):
+        Provide/destroy PROP_cfglayout respectively.
+        * gcse.c (pass_jump_bypass, pass_gcse): Require it.
+        * tree-pass.h (PROP_cfglayout): New.
+
+2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
+
 	* fold-const.c (const_binop, fold_convert_const_real_from_fixed,
 	fold_convert_const_fixed_from_fixed,
 	fold_convert_const_fixed_from_int,

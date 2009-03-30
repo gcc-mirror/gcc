@@ -6621,7 +6621,7 @@ struct rtl_opt_pass pass_jump_bypass =
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
   TV_BYPASS,                            /* tv_id */
-  0,                                    /* properties_required */
+  PROP_cfglayout,                       /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
@@ -6692,7 +6692,7 @@ struct rtl_opt_pass pass_gcse =
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
   TV_GCSE,                              /* tv_id */
-  0,                                    /* properties_required */
+  PROP_cfglayout,                       /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */

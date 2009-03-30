@@ -365,7 +365,7 @@ struct rtl_opt_pass pass_into_cfg_layout_mode =
   0,                                    /* static_pass_number */
   0,                                    /* tv_id */
   0,                                    /* properties_required */
-  0,                                    /* properties_provided */
+  PROP_cfglayout,                       /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func,                       /* todo_flags_finish */
@@ -385,7 +385,7 @@ struct rtl_opt_pass pass_outof_cfg_layout_mode =
   0,                                    /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
+  PROP_cfglayout,                       /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_dump_func,                       /* todo_flags_finish */
  }
