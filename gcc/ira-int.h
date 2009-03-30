@@ -405,10 +405,10 @@ struct ira_allocno
      preferences of other allocnos not assigned yet during assigning
      to given allocno.  */
   int *conflict_hard_reg_costs, *updated_conflict_hard_reg_costs;
-  /* Number of the same cover class allocnos with TRUE in_graph_p
-     value and conflicting with given allocno during each point of
-     graph coloring.  */
-  int left_conflicts_num;
+  /* Size (in hard registers) of the same cover class allocnos with
+     TRUE in_graph_p value and conflicting with given allocno during
+     each point of graph coloring.  */
+  int left_conflicts_size;
   /* Number of hard registers of the allocno cover class really
      available for the allocno allocation.  */
   int available_regs_num;
@@ -464,7 +464,7 @@ struct ira_allocno
   ((A)->conflict_hard_reg_costs)
 #define ALLOCNO_UPDATED_CONFLICT_HARD_REG_COSTS(A) \
   ((A)->updated_conflict_hard_reg_costs)
-#define ALLOCNO_LEFT_CONFLICTS_NUM(A) ((A)->left_conflicts_num)
+#define ALLOCNO_LEFT_CONFLICTS_SIZE(A) ((A)->left_conflicts_size)
 #define ALLOCNO_COVER_CLASS(A) ((A)->cover_class)
 #define ALLOCNO_COVER_CLASS_COST(A) ((A)->cover_class_cost)
 #define ALLOCNO_UPDATED_COVER_CLASS_COST(A) ((A)->updated_cover_class_cost)
