@@ -1,3 +1,10 @@
+2009-03-30  Joseph Myers  <joseph@codesourcery.com>
+
+	PR rtl-optimization/323
+	* lang.c (java_post_options): Set flag_excess_precision_cmdline.
+	Give an error for -fexcess-precision=standard for processors where
+	the option is significant.
+
 2009-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* lang.opt: Unify help text for -Wdeprecated.

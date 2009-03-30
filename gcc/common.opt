@@ -491,6 +491,10 @@ fexpensive-optimizations
 Common Report Var(flag_expensive_optimizations) Optimization
 Perform a number of minor, expensive optimizations
 
+fexcess-precision=
+Common Joined RejectNegative
+-fexcess-precision=[fast|standard]	Specify handling of excess floating-point precision
+
 ffast-math
 Common
 

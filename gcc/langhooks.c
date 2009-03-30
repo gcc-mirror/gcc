@@ -105,6 +105,9 @@ lhd_return_null_const_tree (const_tree ARG_UNUSED (t))
 bool
 lhd_post_options (const char ** ARG_UNUSED (pfilename))
 {
+  /* Excess precision other than "fast" requires front-end
+     support.  */
+  flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
   return false;
 }
 

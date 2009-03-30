@@ -4040,6 +4040,7 @@ extern bool tree_expr_nonnegative_p (tree);
 extern bool tree_expr_nonnegative_warnv_p (tree, bool *);
 extern bool may_negate_without_overflow_p (const_tree);
 extern tree strip_array_types (tree);
+extern tree excess_precision_type (tree);
 
 /* Construct various nodes representing fract or accum data types.  */
 

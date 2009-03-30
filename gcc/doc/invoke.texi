@@ -329,8 +329,9 @@ Objective-C and Objective-C++ Dialects}.
 -fdata-sections -fdce -fdce @gol
 -fdelayed-branch -fdelete-null-pointer-checks -fdse -fdse @gol
 -fearly-inlining -fexpensive-optimizations -ffast-math @gol
--ffinite-math-only -ffloat-store -fforward-propagate @gol
--ffunction-sections -fgcse -fgcse-after-reload -fgcse-las -fgcse-lm @gol
+-ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
+-fforward-propagate -ffunction-sections @gol
+-fgcse -fgcse-after-reload -fgcse-las -fgcse-lm @gol
 -fgcse-sm -fif-conversion -fif-conversion2 -findirect-inlining @gol
 -finline-functions -finline-functions-called-once -finline-limit=@var{n} @gol
 -finline-small-functions -fipa-cp -fipa-cp-clone -fipa-matrix-reorg -fipa-pta @gol 
@@ -6783,6 +6784,32 @@ good, but a few programs rely on the precise definition of IEEE floating
 point.  Use @option{-ffloat-store} for such programs, after modifying
 them to store all pertinent intermediate computations into variables.
 
+@item -fexcess-precision=@var{style}
+@opindex fexcess-precision
+This option allows further control over excess precision on machines
+where floating-point registers have more precision than the IEEE
+@code{float} and @code{double} types and the processor does not
+support operations rounding to those types.  By default,
+@option{-fexcess-precision=fast} is in effect; this means that
+operations are carried out in the precision of the registers and that
+it is unpredictable when rounding to the types specified in the source
+code takes place.  When compiling C, if
+@option{-fexcess-precision=standard} is specified then excess
+precision will follow the rules specified in ISO C99; in particular,
+both casts and assignments cause values to be rounded to their
+semantic types (whereas @option{-ffloat-store} only affects
+assignments).  This option is enabled by default for C if a strict
+conformance option such as @option{-std=c99} is used.
+
+@opindex mfpmath
+@option{-fexcess-precision=standard} is not implemented for languages
+other than C, and has no effect if
+@option{-funsafe-math-optimizations} or @option{-ffast-math} is
+specified.  On the x86, it also has no effect if @option{-mfpmath=sse}
+or @option{-mfpmath=sse+387} is specified; in the former case, IEEE
+semantics apply without excess precision, and in the latter, rounding
+is unpredictable.
+
 @item -ffast-math
 @opindex ffast-math
 Sets @option{-fno-math-errno}, @option{-funsafe-math-optimizations},
@@ -11000,7 +11027,7 @@ specifying @option{-march=@var{cpu-type}} implies @option{-mtune=@var{cpu-type}}
 A deprecated synonym for @option{-mtune}.
 
 @item -mfpmath=@var{unit}
-@opindex march
+@opindex mfpmath
 Generate floating point arithmetics for selected unit @var{unit}.  The choices
 for @var{unit} are:
 

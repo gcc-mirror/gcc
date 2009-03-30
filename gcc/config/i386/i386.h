@@ -611,6 +611,20 @@ enum target_cpu_default
 #define TARGET_FLT_EVAL_METHOD \
   (TARGET_MIX_SSE_I387 ? -1 : TARGET_SSE_MATH ? 0 : 2)
 
+/* Whether to allow x87 floating-point arithmetic on MODE (one of
+   SFmode, DFmode and XFmode) in the current excess precision
+   configuration.  */
+#define X87_ENABLE_ARITH(MODE) \
+  (flag_excess_precision == EXCESS_PRECISION_FAST || (MODE) == XFmode)
+
+/* Likewise, whether to allow direct conversions from integer mode
+   IMODE (HImode, SImode or DImode) to MODE.  */
+#define X87_ENABLE_FLOAT(MODE, IMODE)			\
+  (flag_excess_precision == EXCESS_PRECISION_FAST	\
+   || (MODE) == XFmode					\
+   || ((MODE) == DFmode && (IMODE) == SImode)		\
+   || (IMODE) == HImode)
+
 /* target machine storage layout */
 
 #define SHORT_TYPE_SIZE 16

@@ -326,7 +326,8 @@ convert_to_real (tree type, tree expr)
 		      && (flag_unsafe_math_optimizations
 			  || (TYPE_PRECISION (newtype) == TYPE_PRECISION (type)
 			      && real_can_shorten_arithmetic (TYPE_MODE (itype),
-							      TYPE_MODE (type)))))
+							      TYPE_MODE (type))
+			      && !excess_precision_type (newtype))))
 		    {
 		      expr = build2 (TREE_CODE (expr), newtype,
 				     fold (convert_to_real (newtype, arg0)),

@@ -98,6 +98,7 @@ builtin_define_float_constants (const char *name_prefix,
   const double log10_2 = .30102999566398119521;
   double log10_b;
   const struct real_format *fmt;
+  const struct real_format *ldfmt;
 
   char name[64], buf[128];
   int dig, min_10_exp, max_10_exp;
@@ -105,6 +106,8 @@ builtin_define_float_constants (const char *name_prefix,
 
   fmt = REAL_MODE_FORMAT (TYPE_MODE (type));
   gcc_assert (fmt->b != 10);
+  ldfmt = REAL_MODE_FORMAT (TYPE_MODE (long_double_type_node));
+  gcc_assert (ldfmt->b != 10);
 
   /* The radix of the exponent representation.  */
   if (type == float_type_node)
@@ -187,7 +190,8 @@ builtin_define_float_constants (const char *name_prefix,
      The only macro we care about is this number for the widest supported
      floating type, but we want this value for rendering constants below.  */
   {
-    double d_decimal_dig = 1 + fmt->p * log10_b;
+    double d_decimal_dig
+      = 1 + (fmt->p < ldfmt->p ? ldfmt->p : fmt->p) * log10_b;
     decimal_dig = d_decimal_dig;
     if (decimal_dig < d_decimal_dig)
       decimal_dig++;

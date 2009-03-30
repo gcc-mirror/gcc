@@ -1728,6 +1728,15 @@ common_handle_option (size_t scode, const char *arg, int value,
 	return 0;
       break;
 
+    case OPT_fexcess_precision_:
+      if (!strcmp (arg, "fast"))
+	flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
+      else if (!strcmp (arg, "standard"))
+	flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
+      else
+	error ("unknown excess precision style \"%s\"", arg);
+      break;
+
     case OPT_ffast_math:
       set_fast_math_flags (value);
       break;

@@ -1013,6 +1013,20 @@ c_common_post_options (const char **pfilename)
   C_COMMON_OVERRIDE_OPTIONS;
 #endif
 
+  /* Excess precision other than "fast" requires front-end
+     support.  */
+  if (c_dialect_cxx ())
+    {
+      if (flag_excess_precision_cmdline == EXCESS_PRECISION_STANDARD
+	  && TARGET_FLT_EVAL_METHOD_NON_DEFAULT)
+	sorry ("-fexcess-precision=standard for C++");
+      flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
+    }
+  else if (flag_excess_precision_cmdline == EXCESS_PRECISION_DEFAULT)
+    flag_excess_precision_cmdline = (flag_iso
+				     ? EXCESS_PRECISION_STANDARD
+				     : EXCESS_PRECISION_FAST);
+
   /* By default we use C99 inline semantics in GNU99 or C99 mode.  C99
      inline semantics are not supported in GNU89 or C89 mode.  */
   if (flag_gnu89_inline == -1)

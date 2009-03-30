@@ -1,5 +1,68 @@
 2009-03-30  Joseph Myers  <joseph@codesourcery.com>
 
+	PR rtl-optimization/323
+	* c-common.c (c_fully_fold, convert_and_check,
+	c_common_truthvalue_conversion): Handle EXCESS_PRECISION_EXPR.
+	(c_fully_fold_internal): Disallow EXCESS_PRECISION_EXPR.
+	* c-common.def (EXCESS_PRECISION_EXPR): New.
+	* c-cppbuiltin.c (builtin_define_float_constants): Define
+	constants with enough digits for long double.
+	* c-lex.c (interpret_float): Interpret constant with excess
+	precision where appropriate.
+	* c-opts.c (c_common_post_options): Set
+	flag_excess_precision_cmdline.  Give an error for
+	-fexcess-precision=standard for C++ for processors where the
+	option is significant.
+	* c-parser.c (c_parser_conditional_expression): Handle excess
+	precision in condition.
+	* c-typeck.c (convert_arguments): Handle arguments with excess
+	precision.
+	(build_unary_op): Move excess precision outside operation.
+	(build_conditional_expr): Likewise.
+	(build_compound_expr): Likewise.
+	(build_c_cast): Do cast on operand of EXCESS_PRECISION_EXPR.
+	(build_modify_expr): Handle excess precision in RHS.
+	(convert_for_assignment): Handle excess precision in converted
+	value.
+	(digest_init, output_init_element, process_init_element): Handle
+	excess precision in initializer.
+	(c_finish_return): Handle excess precision in return value.
+	(build_binary_op): Handle excess precision in operands and add
+	excess precision as needed for operation.
+	* common.opt (-fexcess-precision=): New option.
+	* config/i386/i386.h (X87_ENABLE_ARITH, X87_ENABLE_FLOAT): New.
+	* config/i386/i386.md (float<SSEMODEI24:mode><X87MODEF:mode>2):
+	For standard excess precision, output explicit conversion to and
+	truncation from XFmode.
+	(*float<SSEMODEI24:mode><X87MODEF:mode>2_1,
+	*float<SSEMODEI24:mode><X87MODEF:mode>2_i387_with_temp,
+	*float<SSEMODEI24:mode><X87MODEF:mode>2_i387, two unnamed
+	define_splits, floatdi<X87MODEF:mode>2_i387_with_xmm, two unnamed
+	define_splits, *floatunssi<mode>2_1, two unnamed define_splits,
+	floatunssi<mode>2, add<mode>3, sub<mode>3, mul<mode>3, divdf3,
+	divsf3, *fop_<mode>_comm_i387, *fop_<mode>_1_i387,
+	*fop_<MODEF:mode>_2_i387, *fop_<MODEF:mode>_3_i387,
+	*fop_df_4_i387, *fop_df_5_i387, *fop_df_6_i387, two unnamed
+	define_splits, sqrt<mode>2): Disable where appropriate for
+	standard excess precision.
+	* convert.c (convert_to_real): Do not shorten arithmetic to type
+	for which excess precision would be used.
+	* defaults.h (TARGET_FLT_EVAL_METHOD_NON_DEFAULT): Define.
+	* doc/invoke.texi (-fexcess-precision=): Document option.
+	(-mfpmath=): Correct index entry.
+	* flags.h (enum excess_precision, flag_excess_precision_cmdline,
+	flag_excess_precision): New.
+	* langhooks.c (lhd_post_options): Set
+	flag_excess_precision_cmdline.
+	* opts.c (common_handle_option): Handle -fexcess-precision=.
+	* toplev.c (flag_excess_precision_cmdline, flag_excess_precision,
+	init_excess_precision): New.
+	(lang_dependent_init_target): Call init_excess_precision.
+	* tree.c (excess_precision_type): New.
+	* tree.h (excess_precision_type): Declare.
+
+2009-03-30  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/35235
 	* c-typeck.c (build_component_ref): Do not copy qualifiers from
 	non-lvalue to component.
