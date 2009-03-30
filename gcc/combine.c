@@ -605,6 +605,7 @@ find_single_use_1 (rtx dest, rtx *loc)
 static rtx *
 find_single_use (rtx dest, rtx insn, rtx *ploc)
 {
+  basic_block bb;
   rtx next;
   rtx *result;
   rtx link;
@@ -627,9 +628,10 @@ find_single_use (rtx dest, rtx insn, rtx *ploc)
   if (!REG_P (dest))
     return 0;
 
-  for (next = next_nonnote_insn (insn);
-       next != 0 && !LABEL_P (next);
-       next = next_nonnote_insn (next))
+  bb = BLOCK_FOR_INSN (insn);
+  for (next = NEXT_INSN (insn);
+       next && BLOCK_FOR_INSN (next) == bb;
+       next = NEXT_INSN (next))
     if (INSN_P (next) && dead_or_set_p (next, dest))
       {
 	for (link = LOG_LINKS (next); link; link = XEXP (link, 1))
@@ -1062,17 +1064,19 @@ combine_instructions (rtx f, unsigned int nregs)
      Also set any known values so that we can use it while searching
      for what bits are known to be set.  */
 
-  label_tick = label_tick_ebb_start = 1;
-
   setup_incoming_promotions (first);
 
   create_log_links ();
+  label_tick_ebb_start = ENTRY_BLOCK_PTR->index;
   FOR_EACH_BB (this_basic_block)
     {
       optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
       last_call_luid = 0;
       mem_last_set = -1;
-      label_tick++;
+      label_tick = this_basic_block->index;
+      if (!single_pred_p (this_basic_block)
+	  || single_pred (this_basic_block)->index != label_tick - 1)
+	label_tick_ebb_start = label_tick;
       FOR_BB_INSNS (this_basic_block, insn)
         if (INSN_P (insn) && BLOCK_FOR_INSN (insn))
 	  {
@@ -1098,15 +1102,13 @@ combine_instructions (rtx f, unsigned int nregs)
 	      fprintf(dump_file, "insn_cost %d: %d\n",
 		    INSN_UID (insn), INSN_COST (insn));
 	  }
-	else if (LABEL_P (insn))
-	  label_tick_ebb_start = label_tick;
     }
 
   nonzero_sign_valid = 1;
 
   /* Now scan all the insns in forward order.  */
 
-  label_tick = label_tick_ebb_start = 1;
+  label_tick_ebb_start = ENTRY_BLOCK_PTR->index;
   init_reg_last ();
   setup_incoming_promotions (first);
 
@@ -1115,7 +1117,10 @@ combine_instructions (rtx f, unsigned int nregs)
       optimize_this_for_speed_p = optimize_bb_for_speed_p (this_basic_block);
       last_call_luid = 0;
       mem_last_set = -1;
-      label_tick++;
+      label_tick = this_basic_block->index;
+      if (!single_pred_p (this_basic_block)
+	  || single_pred (this_basic_block)->index != label_tick - 1)
+	label_tick_ebb_start = label_tick;
       rtl_profile_for_bb (this_basic_block);
       for (insn = BB_HEAD (this_basic_block);
 	   insn != NEXT_INSN (BB_END (this_basic_block));
@@ -1268,8 +1273,6 @@ combine_instructions (rtx f, unsigned int nregs)
 	    retry:
 	      ;
 	    }
-	  else if (LABEL_P (insn))
-	    label_tick_ebb_start = label_tick;
 	}
     }
 
@@ -2156,6 +2159,25 @@ reg_subword_p (rtx x, rtx reg)
   return GET_CODE (x) == SUBREG
 	 && SUBREG_REG (x) == reg
 	 && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT;
+}
+
+
+/* Delete the conditional jump INSN and adjust the CFG correspondingly.
+   Note that the INSN should be deleted *after* removing dead edges, so
+   that the kept edge is the fallthrough edge for a (set (pc) (pc))
+   but not for a (set (pc) (label_ref FOO)).  */
+
+static void
+update_cfg_for_uncondjump (rtx insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+
+  if (BB_END (bb) == insn)
+    purge_dead_edges (bb);
+
+  delete_insn (insn);
+  if (EDGE_COUNT (bb->succs) == 1)
+    single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
 }
 
 
@@ -3712,43 +3734,8 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
     if (newi2pat)
       note_stores (newi2pat, set_nonzero_bits_and_sign_copies, NULL);
     note_stores (newpat, set_nonzero_bits_and_sign_copies, NULL);
-
-    /* Set new_direct_jump_p if a new return or simple jump instruction
-       has been created.
-
-       If I3 is now an unconditional jump, ensure that it has a
-       BARRIER following it since it may have initially been a
-       conditional jump.  It may also be the last nonnote insn.  */
-
-    if (returnjump_p (i3) || any_uncondjump_p (i3))
-      {
-	*new_direct_jump_p = 1;
-	mark_jump_label (PATTERN (i3), i3, 0);
-
-	if ((temp = next_nonnote_insn (i3)) == NULL_RTX
-	    || !BARRIER_P (temp))
-	  emit_barrier_after (i3);
-      }
-
-    if (undobuf.other_insn != NULL_RTX
-	&& (returnjump_p (undobuf.other_insn)
-	    || any_uncondjump_p (undobuf.other_insn)))
-      {
-	*new_direct_jump_p = 1;
-
-	if ((temp = next_nonnote_insn (undobuf.other_insn)) == NULL_RTX
-	    || !BARRIER_P (temp))
-	  emit_barrier_after (undobuf.other_insn);
-      }
-
-    /* An NOOP jump does not need barrier, but it does need cleaning up
-       of CFG.  */
-    if (GET_CODE (newpat) == SET
-	&& SET_SRC (newpat) == pc_rtx
-	&& SET_DEST (newpat) == pc_rtx)
-      *new_direct_jump_p = 1;
   }
-  
+
   if (undobuf.other_insn != NULL_RTX)
     {
       if (dump_file)
@@ -3787,6 +3774,34 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	  dump_insn_slim (dump_file, i3);
 	}
       df_insn_rescan (i3);
+    }
+  
+  /* Set new_direct_jump_p if a new return or simple jump instruction
+     has been created.  Adjust the CFG accordingly.  */
+
+  if (returnjump_p (i3) || any_uncondjump_p (i3))
+    {
+      *new_direct_jump_p = 1;
+      mark_jump_label (PATTERN (i3), i3, 0);
+      update_cfg_for_uncondjump (i3);
+    }
+
+  if (undobuf.other_insn != NULL_RTX
+      && (returnjump_p (undobuf.other_insn)
+	  || any_uncondjump_p (undobuf.other_insn)))
+    {
+      *new_direct_jump_p = 1;
+      update_cfg_for_uncondjump (undobuf.other_insn);
+    }
+
+  /* A noop might also need cleaning up of CFG, if it comes from the
+     simplification of a jump.  */
+  if (GET_CODE (newpat) == SET
+      && SET_SRC (newpat) == pc_rtx
+      && SET_DEST (newpat) == pc_rtx)
+    {
+      *new_direct_jump_p = 1;
+      update_cfg_for_uncondjump (i3);
     }
   
   combine_successes++;
@@ -11984,32 +11999,28 @@ reg_dead_at_p (rtx reg, rtx insn)
 	  return 0;
     }
 
-  /* Scan backwards until we find a REG_DEAD note, SET, CLOBBER, label, or
-     beginning of function.  */
-  for (; insn && !LABEL_P (insn) && !BARRIER_P (insn);
-       insn = prev_nonnote_insn (insn))
+  /* Scan backwards until we find a REG_DEAD note, SET, CLOBBER, or
+     beginning of basic block.  */
+  block = BLOCK_FOR_INSN (insn);
+  for (;;)
     {
-      note_stores (PATTERN (insn), reg_dead_at_p_1, NULL);
-      if (reg_dead_flag)
-	return reg_dead_flag == 1 ? 1 : 0;
+      if (INSN_P (insn))
+        {
+	  note_stores (PATTERN (insn), reg_dead_at_p_1, NULL);
+	  if (reg_dead_flag)
+	    return reg_dead_flag == 1 ? 1 : 0;
 
-      if (find_regno_note (insn, REG_DEAD, reg_dead_regno))
-	return 1;
+	  if (find_regno_note (insn, REG_DEAD, reg_dead_regno))
+	    return 1;
+        }
+
+      if (insn == BB_HEAD (block))
+	break;
+
+      insn = PREV_INSN (insn);
     }
 
-  /* Get the basic block that we were in.  */
-  if (insn == 0)
-    block = ENTRY_BLOCK_PTR->next_bb;
-  else
-    {
-      FOR_EACH_BB (block)
-	if (insn == BB_HEAD (block))
-	  break;
-
-      if (block == EXIT_BLOCK_PTR)
-	return 0;
-    }
-
+  /* Look at live-in sets for the basic block that we were in.  */
   for (i = reg_dead_regno; i < reg_dead_endregno; i++)
     if (REGNO_REG_SET_P (df_get_live_in (block), i))
       return 0;
@@ -13025,7 +13036,7 @@ struct rtl_opt_pass pass_combine =
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
   TV_COMBINE,                           /* tv_id */
-  0,                                    /* properties_required */
+  PROP_cfglayout,                       /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
