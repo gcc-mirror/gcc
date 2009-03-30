@@ -93,6 +93,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   gfc_option.flag_default_real = 0;
   gfc_option.flag_dollar_ok = 0;
   gfc_option.flag_underscoring = 1;
+  gfc_option.flag_whole_file = 0;
   gfc_option.flag_f2c = 0;
   gfc_option.flag_second_underscore = -1;
   gfc_option.flag_implicit_none = 0;
@@ -671,6 +672,10 @@ gfc_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_funderscoring:
       gfc_option.flag_underscoring = value;
+      break;
+
+    case OPT_fwhole_file:
+      gfc_option.flag_whole_file = 1;
       break;
 
     case OPT_fsecond_underscore:

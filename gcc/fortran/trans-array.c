@@ -4741,6 +4741,8 @@ get_array_charlen (gfc_expr *expr, gfc_se *se)
 	{
 	  get_array_charlen (expr->value.op.op2, se);
 
+	  gcc_assert (expr->value.op.op == INTRINSIC_CONCAT);
+
 	  /* Add the string lengths and assign them to the expression
 	     string length backend declaration.  */
 	  gfc_add_modify (&se->pre, expr->ts.cl->backend_decl,

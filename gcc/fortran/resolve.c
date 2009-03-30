@@ -1582,12 +1582,19 @@ find_noncopying_intrinsics (gfc_symbol *fnsym, gfc_actual_arglist *actual)
    reference being resolved must correspond to the type of gsymbol.
    Otherwise, the new symbol is equipped with the attributes of the
    reference.  The corresponding code that is called in creating
-   global entities is parse.c.  */
+   global entities is parse.c.
+
+   In addition, for all but -std=legacy, the gsymbols are used to
+   check the interfaces of external procedures from the same file.
+   The namespace of the gsymbol is resolved and then, once this is
+   done the interface is checked.  */
 
 static void
-resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
+resolve_global_procedure (gfc_symbol *sym, locus *where,
+			  gfc_actual_arglist **actual, int sub)
 {
   gfc_gsymbol * gsym;
+  gfc_namespace *ns;
   unsigned int type;
 
   type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
@@ -1596,6 +1603,32 @@ resolve_global_procedure (gfc_symbol *sym, locus *where, int sub)
 
   if ((gsym->type != GSYM_UNKNOWN && gsym->type != type))
     gfc_global_used (gsym, where);
+
+  if (gfc_option.flag_whole_file
+	&& gsym->type != GSYM_UNKNOWN
+	&& gsym->ns
+	&& gsym->ns->proc_name
+	&& gsym->ns->proc_name->formal)
+    {
+      /* Make sure that translation for the gsymbol occurs before
+	 the procedure currently being resolved.  */
+      ns = gsym->ns->resolved ? NULL : gfc_global_ns_list;
+      for (; ns && ns != gsym->ns; ns = ns->sibling)
+	{
+	  if (ns->sibling == gsym->ns)
+	    {
+	      ns->sibling = gsym->ns->sibling;
+	      gsym->ns->sibling = gfc_global_ns_list;
+	      gfc_global_ns_list = gsym->ns;
+	      break;
+	    }
+	}
+
+      if (!gsym->ns->resolved)
+	gfc_resolve (gsym->ns);
+
+      gfc_procedure_use (gsym->ns->proc_name, actual, where);
+    }
 
   if (gsym->type == GSYM_UNKNOWN)
     {
@@ -2310,10 +2343,6 @@ resolve_function (gfc_expr *expr)
       return FAILURE;
     }
 
-  /* If the procedure is external, check for usage.  */
-  if (sym && is_external_proc (sym))
-    resolve_global_procedure (sym, &expr->where, 0);
-
   /* Switch off assumed size checking and do this again for certain kinds
      of procedure, once the procedure itself is resolved.  */
   need_full_assumed_size++;
@@ -2341,6 +2370,11 @@ resolve_function (gfc_expr *expr)
   
   /* Resume assumed_size checking.  */
   need_full_assumed_size--;
+
+  /* If the procedure is external, check for usage.  */
+  if (sym && is_external_proc (sym))
+    resolve_global_procedure (sym, &expr->where,
+			      &expr->value.function.actual, 0);
 
   if (sym && sym->ts.type == BT_CHARACTER
       && sym->ts.cl
@@ -2931,10 +2965,6 @@ resolve_call (gfc_code *c)
 	}
     }
 
-  /* If external, check for usage.  */
-  if (csym && is_external_proc (csym))
-    resolve_global_procedure (csym, &c->loc, 1);
-
   /* Subroutines without the RECURSIVE attribution are not allowed to
    * call themselves.  */
   if (csym && is_illegal_recursion (csym, gfc_current_ns))
@@ -2964,6 +2994,10 @@ resolve_call (gfc_code *c)
 
   /* Resume assumed_size checking.  */
   need_full_assumed_size--;
+
+  /* If external, check for usage.  */
+  if (csym && is_external_proc (csym))
+    resolve_global_procedure (csym, &c->loc, &c->ext.actual, 1);
 
   t = SUCCESS;
   if (c->resolved_sym == NULL)
@@ -10559,6 +10593,7 @@ static void
 resolve_codes (gfc_namespace *ns)
 {
   gfc_namespace *n;
+  bitmap_obstack old_obstack;
 
   for (n = ns->contained; n; n = n->sibling)
     resolve_codes (n);
@@ -10568,9 +10603,13 @@ resolve_codes (gfc_namespace *ns)
   /* Set to an out of range value.  */
   current_entry_id = -1;
 
+  old_obstack = labels_obstack;
   bitmap_obstack_initialize (&labels_obstack);
+
   resolve_code (ns->code, ns);
+
   bitmap_obstack_release (&labels_obstack);
+  labels_obstack = old_obstack;
 }
 
 
@@ -10585,10 +10624,14 @@ gfc_resolve (gfc_namespace *ns)
 {
   gfc_namespace *old_ns;
 
+  if (ns->resolved)
+    return;
+
   old_ns = gfc_current_ns;
 
   resolve_types (ns);
   resolve_codes (ns);
 
   gfc_current_ns = old_ns;
+  ns->resolved = 1;
 }

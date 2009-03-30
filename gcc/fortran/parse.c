@@ -3715,6 +3715,7 @@ add_global_procedure (int sub)
       s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
       s->where = gfc_current_locus;
       s->defined = 1;
+      s->ns = gfc_current_ns;
     }
 }
 
@@ -3737,6 +3738,7 @@ add_global_program (void)
       s->type = GSYM_PROGRAM;
       s->where = gfc_current_locus;
       s->defined = 1;
+      s->ns = gfc_current_ns;
     }
 }
 
@@ -3750,6 +3752,7 @@ gfc_parse_file (void)
   gfc_state_data top, s;
   gfc_statement st;
   locus prog_locus;
+  gfc_namespace *next;
 
   gfc_start_source_files ();
 
@@ -3767,6 +3770,10 @@ gfc_parse_file (void)
 
   if (setjmp (eof_buf))
     return FAILURE;	/* Come here on unexpected EOF */
+
+  /* Prepare the global namespace that will contain the
+     program units.  */
+  gfc_global_ns_list = next = NULL;
 
   seen_program = 0;
 
@@ -3794,6 +3801,8 @@ loop:
       accept_statement (st);
       add_global_program ();
       parse_progunit (ST_NONE);
+      if (gfc_option.flag_whole_file)
+	goto prog_units;
       break;
 
     case ST_SUBROUTINE:
@@ -3801,6 +3810,8 @@ loop:
       push_state (&s, COMP_SUBROUTINE, gfc_new_block);
       accept_statement (st);
       parse_progunit (ST_NONE);
+      if (gfc_option.flag_whole_file)
+	goto prog_units;
       break;
 
     case ST_FUNCTION:
@@ -3808,6 +3819,8 @@ loop:
       push_state (&s, COMP_FUNCTION, gfc_new_block);
       accept_statement (st);
       parse_progunit (ST_NONE);
+      if (gfc_option.flag_whole_file)
+	goto prog_units;
       break;
 
     case ST_BLOCK_DATA:
@@ -3834,9 +3847,12 @@ loop:
       push_state (&s, COMP_PROGRAM, gfc_new_block);
       main_program_symbol (gfc_current_ns, "MAIN__");
       parse_progunit (st);
+      if (gfc_option.flag_whole_file)
+	goto prog_units;
       break;
     }
 
+  /* Handle the non-program units.  */
   gfc_current_ns->code = s.head;
 
   gfc_resolve (gfc_current_ns);
@@ -3862,7 +3878,56 @@ loop:
   gfc_done_2 ();
   goto loop;
 
-done:
+prog_units:
+  /* The main program and non-contained procedures are put
+     in the global namespace list, so that they can be processed
+     later and all their interfaces resolved.  */
+  gfc_current_ns->code = s.head;
+  if (next)
+    next->sibling = gfc_current_ns;
+  else
+    gfc_global_ns_list = gfc_current_ns;
+
+  next = gfc_current_ns;
+
+  pop_state ();
+  goto loop;
+
+  done:
+
+  if (!gfc_option.flag_whole_file)
+    goto termination;
+
+  /* Do the resolution.  */ 
+  gfc_current_ns = gfc_global_ns_list;
+  for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
+    {
+      gfc_current_locus = gfc_current_ns->proc_name->declared_at;
+      gfc_resolve (gfc_current_ns);
+    }
+
+  /* Do the parse tree dump.  */ 
+  gfc_current_ns = gfc_option.dump_parse_tree ? gfc_global_ns_list : NULL;
+  for (; gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
+    {
+      gfc_dump_parse_tree (gfc_current_ns, stdout);
+      fputs ("-----------------------------------------\n\n", stdout);
+    }
+
+  gfc_current_ns = gfc_global_ns_list;
+  gfc_get_errors (NULL, &errors);
+
+  /* Do the translation.  This could be in a different order to
+     resolution if there are forward references in the file.  */
+  for (; !errors && gfc_current_ns; gfc_current_ns = gfc_current_ns->sibling)
+    {
+      gfc_current_locus = gfc_current_ns->proc_name->declared_at;
+      gfc_generate_code (gfc_current_ns);
+    }
+
+termination:
+  gfc_free_dt_list ();
+
   gfc_end_source_files ();
   return SUCCESS;
 
