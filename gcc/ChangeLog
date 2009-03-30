@@ -1,3 +1,16 @@
+2009-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/39563
+	* c-decl.c (struct c_binding): Add locus field.
+	(bind): Add locus argument, set locus field from it.
+	(pop_scope): For b->nested VAR_DECL or FUNCTION_DECL,
+	add a DECL_EXTERNAL copy of b->decl to current BLOCK_VARS.
+	(push_file_scope, pushtag, pushdecl, pushdecl_top_level,
+	implicitly_declare, undeclared_variable, lookup_label,
+	declare_label, c_make_fname_decl, c_builtin_function,
+	c_builtin_function_ext_scope, store_parm_decls_newstyle): Adjust
+	bind callers.
+
 2008-03-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/38781
