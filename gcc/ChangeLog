@@ -1,5 +1,10 @@
 2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
+	* config/sparc/sparc.md (*nand<V64mode>_vis, *nand<V32mode>_vis):
+	Fix typos in names.
+
+2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
+
         * combine.c (simplify_comparison): Use have_insn_for.
         * dojump.c (do_jump): Likewise.
 
