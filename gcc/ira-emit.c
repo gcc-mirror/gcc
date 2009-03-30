@@ -390,9 +390,9 @@ generate_edge_moves (edge e)
     return;
   src_map = src_loop_node->regno_allocno_map;
   dest_map = dest_loop_node->regno_allocno_map;
-  EXECUTE_IF_SET_IN_REG_SET (DF_LR_IN (e->dest),
+  EXECUTE_IF_SET_IN_REG_SET (df_get_live_in (e->dest),
 			     FIRST_PSEUDO_REGISTER, regno, bi)
-    if (bitmap_bit_p (DF_LR_OUT (e->src), regno))
+    if (bitmap_bit_p (df_get_live_out (e->src), regno))
       {
 	src_allocno = src_map[regno];
 	dest_allocno = dest_map[regno];
@@ -1028,15 +1028,16 @@ add_ranges_and_copies (void)
 	 destination block) to use for searching allocnos by their
 	 regnos because of subsequent IR flattening.  */
       node = IRA_BB_NODE (bb)->parent;
-      bitmap_copy (live_through, DF_LR_IN (bb));
+      bitmap_copy (live_through, df_get_live_in (bb));
       add_range_and_copies_from_move_list
 	(at_bb_start[bb->index], node, live_through, REG_FREQ_FROM_BB (bb));
-      bitmap_copy (live_through, DF_LR_OUT (bb));
+      bitmap_copy (live_through, df_get_live_out (bb));
       add_range_and_copies_from_move_list
 	(at_bb_end[bb->index], node, live_through, REG_FREQ_FROM_BB (bb));
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  bitmap_and (live_through, DF_LR_IN (e->dest), DF_LR_OUT (bb));
+	  bitmap_and (live_through, df_get_live_in (e->dest),
+		      df_get_live_out (bb));
 	  add_range_and_copies_from_move_list
 	    ((move_t) e->aux, node, live_through,
 	     REG_FREQ_FROM_EDGE_FREQ (EDGE_FREQUENCY (e)));

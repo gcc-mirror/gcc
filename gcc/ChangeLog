@@ -1,3 +1,17 @@
+2009-03-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* reload.c (push_reload, find_dummy_reload): Use df_get_live_out
+	instead of DF_LR_OUT.
+
+	* ira-lives.c (process_bb_node_lives): Ditto.
+
+	* ira-color.c (ira_loop_edge_freq): Use df_get_live_{out,in}
+	instead of DF_LR_{OUT,IN}.
+
+	* ira-emit.c (generate_edge_moves, add_ranges_and_copies): Ditto.
+
+	* ira-build.c (create_bb_allocnos, create_loop_allocnos): Ditto.
+
 2009-03-30  Jan Hubicka  <jh@suse.cz>
 
 	* except.c (label_to_region_map): Fix thinko.
