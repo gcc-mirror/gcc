@@ -3639,10 +3639,6 @@ optimize_inline_calls (tree fn)
   /* Renumber the lexical scoping (non-code) blocks consecutively.  */
   number_blocks (fn);
 
-  /* We are not going to maintain the cgraph edges up to date.
-     Kill it so it won't confuse us.  */
-  cgraph_node_remove_callees (id.dst_node);
-
   fold_cond_expr_cond ();
 
   /* It would be nice to check SSA/CFG/statement consistency here, but it is

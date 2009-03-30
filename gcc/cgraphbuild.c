@@ -251,3 +251,30 @@ struct gimple_opt_pass pass_rebuild_cgraph_edges =
   0,					/* todo_flags_finish */
  }
 };
+
+
+static unsigned int
+remove_cgraph_callee_edges (void)
+{
+  cgraph_node_remove_callees (cgraph_node (current_function_decl));
+  return 0;
+}
+
+struct gimple_opt_pass pass_remove_cgraph_callee_edges =
+{
+ {
+  GIMPLE_PASS,
+  NULL,					/* name */
+  NULL,					/* gate */
+  remove_cgraph_callee_edges,		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  0,					/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0,					/* todo_flags_finish */
+ }
+};

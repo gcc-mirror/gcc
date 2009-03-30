@@ -801,6 +801,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   tree size_tree = NULL_TREE;
   HOST_WIDE_INT bit_offset = 0;
   bool seen_variable_array_ref = false;
+  bool seen_union = false;
 
   gcc_assert (!SSA_VAR_P (exp));
 
@@ -843,6 +844,9 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	  {
 	    tree field = TREE_OPERAND (exp, 1);
 	    tree this_offset = component_ref_field_offset (exp);
+
+	    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == UNION_TYPE)
+	      seen_union = true;
 
 	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
 	      {
@@ -934,12 +938,22 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
      where we do not know maxsize for variable index accesses to
      the array.  The simplest way to conservatively deal with this
      is to punt in the case that offset + maxsize reaches the
-     base type boundary.  */
+     base type boundary.
+
+     Unfortunately this is difficult to determine reliably when unions are
+     involved and so we are conservative in such cases.
+
+     FIXME: This approach may be too conservative, we probably want to at least
+     check that the union is the last field/element at its level or even
+     propagate the calculated offsets back up the access chain and check
+     there.  */
+
   if (seen_variable_array_ref
-      && maxsize != -1
-      && host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1)
-      && bit_offset + maxsize
-	   == (signed)TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))))
+      && (seen_union
+	  || (maxsize != -1
+	      && host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1)
+	      && bit_offset + maxsize
+	      == (signed) TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))))))
     maxsize = -1;
 
   /* ???  Due to negative offsets in ARRAY_REF we can end up with

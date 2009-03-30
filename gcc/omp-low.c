@@ -3244,6 +3244,7 @@ expand_omp_taskreg (struct omp_region *region)
   basic_block entry_bb, exit_bb, new_bb;
   struct function *child_cfun;
   tree child_fn, block, t, ws_args, *tp;
+  tree save_current;
   gimple_stmt_iterator gsi;
   gimple entry_stmt, stmt;
   edge e;
@@ -3429,6 +3430,8 @@ expand_omp_taskreg (struct omp_region *region)
       /* Fix the callgraph edges for child_cfun.  Those for cfun will be
 	 fixed in a following pass.  */
       push_cfun (child_cfun);
+      save_current = current_function_decl;
+      current_function_decl = child_fn;
       if (optimize)
 	optimize_omp_library_calls (entry_stmt);
       rebuild_cgraph_edges ();
@@ -3440,16 +3443,14 @@ expand_omp_taskreg (struct omp_region *region)
       if (flag_exceptions)
 	{
 	  basic_block bb;
-	  tree save_current = current_function_decl;
 	  bool changed = false;
 
-	  current_function_decl = child_fn;
 	  FOR_EACH_BB (bb)
 	    changed |= gimple_purge_dead_eh_edges (bb);
 	  if (changed)
 	    cleanup_tree_cfg ();
-	  current_function_decl = save_current;
 	}
+      current_function_decl = save_current;
       pop_cfun ();
     }
   
