@@ -10534,7 +10534,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && ((unsigned HOST_WIDE_INT) const_op
 		  < (((unsigned HOST_WIDE_INT) 1
 		      << (GET_MODE_BITSIZE (mode) - 1))))
-	      && optab_handler (cmp_optab, mode)->insn_code != CODE_FOR_nothing)
+	      && have_insn_for (COMPARE, mode))
 	    {
 	      op0 = XEXP (op0, 0);
 	      continue;
@@ -10615,7 +10615,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && (unsigned_comparison_p || equality_comparison_p)
 	      && (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
 	      && ((unsigned HOST_WIDE_INT) const_op < GET_MODE_MASK (mode))
-	      && optab_handler (cmp_optab, mode)->insn_code != CODE_FOR_nothing)
+	      && have_insn_for (COMPARE, mode))
 	    {
 	      op0 = XEXP (op0, 0);
 	      continue;
