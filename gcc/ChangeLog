@@ -1,3 +1,9 @@
+2008-03-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/38781
+	* config/i386/i386.c (classify_argument): Check total size of
+	structure.
+
 2009-03-30  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (jump_func_type): Rename IPA_UNKNOWN, IPA_CONST,
