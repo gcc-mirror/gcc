@@ -917,12 +917,12 @@ gfc_init_builtin_functions (void)
   gfc_define_builtin ("__builtin_fmodf", mfunc_float[1], 
 		      BUILT_IN_FMODF, "fmodf", true);
 
-  gfc_define_builtin ("__builtin_infl", mfunc_longdouble[3], 
-		      BUILT_IN_INFL, "__builtin_infl", true);
-  gfc_define_builtin ("__builtin_inf", mfunc_double[3], 
-		      BUILT_IN_INF, "__builtin_inf", true);
-  gfc_define_builtin ("__builtin_inff", mfunc_float[3], 
-		      BUILT_IN_INFF, "__builtin_inff", true);
+  gfc_define_builtin ("__builtin_huge_vall", mfunc_longdouble[3], 
+		      BUILT_IN_HUGE_VALL, "__builtin_huge_vall", true);
+  gfc_define_builtin ("__builtin_huge_val", mfunc_double[3], 
+		      BUILT_IN_HUGE_VAL, "__builtin_huge_val", true);
+  gfc_define_builtin ("__builtin_huge_valf", mfunc_float[3], 
+		      BUILT_IN_HUGE_VALF, "__builtin_huge_valf", true);
 
   /* lround{f,,l} and llround{f,,l} */
   type = tree_cons (NULL_TREE, float_type_node, void_list_node);

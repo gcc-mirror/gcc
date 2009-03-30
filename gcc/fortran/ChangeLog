@@ -1,3 +1,10 @@
+2009-03-30  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* f95-lang.c (gfc_init_builtin_functions): Define BUILT_IN_HUGE_VAL
+	family of intrinsics instead of BUILT_IN_INF family.
+	* trans-intrinsics.c (gfc_conv_intrinsic_nearest): Use
+	BUILT_IN_HUGE_VAL instead of BUILT_IN_INF.
+
 2009-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-types.c (gfc_sym_type, gfc_return_by_reference): For

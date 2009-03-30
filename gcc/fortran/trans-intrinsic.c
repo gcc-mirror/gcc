@@ -3130,32 +3130,32 @@ gfc_conv_intrinsic_fraction (gfc_se * se, gfc_expr * expr)
 
 
 /* NEAREST (s, dir) is translated into
-     tmp = copysign (INF, dir);
+     tmp = copysign (HUGE_VAL, dir);
      return nextafter (s, tmp);
  */
 static void
 gfc_conv_intrinsic_nearest (gfc_se * se, gfc_expr * expr)
 {
   tree args[2], type, tmp;
-  int nextafter, copysign, inf;
+  int nextafter, copysign, huge_val;
 
   switch (expr->ts.kind)
     {
       case 4:
 	nextafter = BUILT_IN_NEXTAFTERF;
 	copysign = BUILT_IN_COPYSIGNF;
-	inf = BUILT_IN_INFF;
+	huge_val = BUILT_IN_HUGE_VALF;
 	break;
       case 8:
 	nextafter = BUILT_IN_NEXTAFTER;
 	copysign = BUILT_IN_COPYSIGN;
-	inf = BUILT_IN_INF;
+	huge_val = BUILT_IN_HUGE_VAL;
 	break;
       case 10:
       case 16:
 	nextafter = BUILT_IN_NEXTAFTERL;
 	copysign = BUILT_IN_COPYSIGNL;
-	inf = BUILT_IN_INFL;
+	huge_val = BUILT_IN_HUGE_VALL;
 	break;
       default:
 	gcc_unreachable ();
@@ -3164,7 +3164,7 @@ gfc_conv_intrinsic_nearest (gfc_se * se, gfc_expr * expr)
   type = gfc_typenode_for_spec (&expr->ts);
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
   tmp = build_call_expr (built_in_decls[copysign], 2,
-			 build_call_expr (built_in_decls[inf], 0),
+			 build_call_expr (built_in_decls[huge_val], 0),
 			 fold_convert (type, args[1]));
   se->expr = build_call_expr (built_in_decls[nextafter], 2,
 			      fold_convert (type, args[0]), tmp);
