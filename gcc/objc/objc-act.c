@@ -79,6 +79,11 @@ along with GCC; see the file COPYING3.  If not see
 
 static unsigned int should_call_super_dealloc = 0;
 
+/* When building Objective-C++, we need in_late_binary_op.  */
+#ifdef OBJCPLUS
+bool in_late_binary_op = false;
+#endif  /* OBJCPLUS */
+
 /* When building Objective-C++, we are not linking against the C front-end
    and so need to replicate the C tree-construction functions in some way.  */
 #ifdef OBJCPLUS
