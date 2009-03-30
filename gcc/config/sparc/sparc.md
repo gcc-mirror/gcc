@@ -8076,9 +8076,8 @@
   else
     {
       emit_insn (gen_stack_protect_testsi (operands[0], operands[1]));
-      sparc_compare_op0 = operands[0];
-      sparc_compare_op1 = operands[1];
-      sparc_compare_emitted = gen_rtx_REG (CCmode, SPARC_ICC_REG);
+      sparc_compare_op0 = gen_rtx_REG (CCmode, SPARC_ICC_REG);
+      sparc_compare_op1 = const0_rtx;
     }
   emit_jump_insn (gen_beq (operands[2]));
   DONE;
