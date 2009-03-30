@@ -1259,10 +1259,13 @@ OBJS-common = \
 	tree-ssanames.o \
 	tree-stdarg.o \
 	tree-tailcall.o \
-	tree-vect-analyze.o \
 	tree-vect-generic.o \
 	tree-vect-patterns.o \
-	tree-vect-transform.o \
+        tree-vect-data-refs.o \
+        tree-vect-stmts.o \
+        tree-vect-loop.o \
+        tree-vect-loop-manip.o \
+        tree-vect-slp.o \
 	tree-vectorizer.o \
 	tree-vrp.o \
 	tree.o \
@@ -2349,26 +2352,33 @@ graphite.o: graphite.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_FLOW_H) $(TREE_DUMP_H) $(TIMEVAR_H) $(CFGLOOP_H) $(GIMPLE_H) domwalk.h \
    $(TREE_DATA_REF_H) $(SCEV_H) tree-pass.h tree-chrec.h graphite.h pointer-set.h \
    value-prof.h
-tree-vect-analyze.o: tree-vect-analyze.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(GGC_H) $(OPTABS_H) $(TREE_H) $(RECOG_H) $(BASIC_BLOCK_H) \
-   $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(TIMEVAR_H) $(CFGLOOP_H) \
-   tree-vectorizer.h $(TREE_DATA_REF_H) $(SCEV_H) $(EXPR_H) tree-chrec.h \
-   $(TOPLEV_H) $(RECOG_H)
+tree-vect-loop.o: tree-vect-loop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(GGC_H) $(TREE_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) \
+   $(TREE_DUMP_H) $(CFGLOOP_H) $(EXPR_H) $(RECOG_H) $(OPTABS_H) $(TOPLEV_H) \
+   tree-chrec.h $(SCEV_H) tree-vectorizer.h
+tree-vect-loop-manip.o: tree-vect-loop-manip.c $(CONFIG_H) $(SYSTEM_H) \
+   coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) \
+   $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(EXPR_H) $(TOPLEV_H) $(SCEV_H) \
+   tree-vectorizer.h langhooks.h
 tree-vect-patterns.o: tree-vect-patterns.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) \
-   $(TREE_FLOW_H) $(TREE_DUMP_H) $(TIMEVAR_H) $(CFGLOOP_H) $(EXPR_H) \
-   $(OPTABS_H) $(PARAMS_H) $(TREE_DATA_REF_H) tree-vectorizer.h $(RECOG_H) $(TOPLEV_H)
-tree-vect-transform.o: tree-vect-transform.c $(CONFIG_H) $(SYSTEM_H) \
-   coretypes.h $(TM_H) $(GGC_H) $(OPTABS_H) $(RECOG_H) $(TREE_H) $(RTL_H) \
-   $(BASIC_BLOCK_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \
-   $(TIMEVAR_H) $(CFGLOOP_H) $(TARGET_H) tree-pass.h $(EXPR_H) \
-   tree-vectorizer.h $(TREE_DATA_REF_H) $(SCEV_H) langhooks.h $(TOPLEV_H) \
-   tree-chrec.h
+   $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) $(EXPR_H) $(OPTABS_H) $(PARAMS_H) \
+   $(TREE_DATA_REF_H) tree-vectorizer.h $(RECOG_H) $(TOPLEV_H)
+tree-vect-slp.o: tree-vect-slp.c $(CONFIG_H) $(SYSTEM_H) \
+   coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) \
+   $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) \
+   $(EXPR_H) $(RECOG_H) $(OPTABS_H) tree-vectorizer.h
+tree-vect-stmts.o: tree-vect-stmts.c $(CONFIG_H) $(SYSTEM_H) \
+   coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) \
+   $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) \
+   $(EXPR_H) $(RECOG_H) $(OPTABS_H) tree-vectorizer.h langhooks.h
+tree-vect-data-refs.o: tree-vect-data-refs.c $(CONFIG_H) $(SYSTEM_H) \
+   coretypes.h $(TM_H) $(GGC_H) $(TREE_H) $(TARGET_H) $(BASIC_BLOCK_H) \
+   $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(CFGLOOP_H) \
+   $(EXPR_H) $(OPTABS_H) tree-chrec.h $(SCEV_H) tree-vectorizer.h $(TOPLEV_H)
 tree-vectorizer.o: tree-vectorizer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(GGC_H) $(OPTABS_H) $(TREE_H) $(RTL_H) $(BASIC_BLOCK_H) \
-   $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(TIMEVAR_H) $(CFGLOOP_H) \
-   tree-pass.h $(EXPR_H) $(RECOG_H) tree-vectorizer.h $(TREE_DATA_REF_H) $(SCEV_H) \
-   $(INPUT_H) $(TARGET_H) $(CFGLAYOUT_H) $(TOPLEV_H) tree-chrec.h langhooks.h
+   $(TM_H) $(GGC_H) $(TREE_H) $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) \
+   $(CFGLOOP_H) tree-pass.h tree-vectorizer.h $(TIMEVAR_H)
 tree-loop-linear.o: tree-loop-linear.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(GGC_H) $(OPTABS_H) $(TREE_H) $(RTL_H) $(BASIC_BLOCK_H) \
    $(DIAGNOSTIC_H) $(TREE_FLOW_H) $(TREE_DUMP_H) $(TIMEVAR_H) $(CFGLOOP_H) \

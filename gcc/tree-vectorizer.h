@@ -1,5 +1,6 @@
-/* Loop Vectorization
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+/* Vectorizer
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free 
+   Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -20,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_TREE_VECTORIZER_H
 #define GCC_TREE_VECTORIZER_H
+
+#include "tree-data-ref.h"
 
 typedef source_location LOC;
 #define UNKNOWN_LOC UNKNOWN_LOCATION
@@ -687,72 +690,124 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
 
 /* vect_dump will be set to stderr or dump_file if exist.  */
 extern FILE *vect_dump;
+extern LOC vect_loop_location;
+
 extern enum verbosity_levels vect_verbosity_level;
 
 /* Bitmap of virtual variables to be renamed.  */
 extern bitmap vect_memsyms_to_rename;
 
+
 /*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */
 /*-----------------------------------------------------------------*/
 
-/*************************************************************************
-  Simple Loop Peeling Utilities - in tree-vectorizer.c
- *************************************************************************/
-/* Entry point for peeling of simple loops.
-   Peel the first/last iterations of a loop.
-   It can be used outside of the vectorizer for loops that are simple enough
-   (see function documentation).  In the vectorizer it is used to peel the
-   last few iterations when the loop bound is unknown or does not evenly
-   divide by the vectorization factor, and to peel the first few iterations
-   to force the alignment of data references in the loop.  */
-extern struct loop *slpeel_tree_peel_loop_to_edge 
-  (struct loop *, edge, tree, tree, bool, unsigned int, bool);
-extern void set_prologue_iterations (basic_block, tree,
-				     struct loop *, unsigned int);
-struct loop *tree_duplicate_loop_on_edge (struct loop *, edge);
+/* Simple loop peeling and versioning utilities for vectorizer's purposes - 
+   in tree-vect-loop-manip.c.  */
 extern void slpeel_make_loop_iterate_ntimes (struct loop *, tree);
 extern bool slpeel_can_duplicate_loop_p (const struct loop *, const_edge);
-#ifdef ENABLE_CHECKING
-extern void slpeel_verify_cfg_after_peeling (struct loop *, struct loop *);
-#endif
+extern void vect_loop_versioning (loop_vec_info);
+extern void vect_do_peeling_for_loop_bound (loop_vec_info, tree *);
+extern void vect_do_peeling_for_alignment (loop_vec_info);
+extern LOC find_loop_location (struct loop *);
+extern bool vect_can_advance_ivs_p (loop_vec_info);
 
-
-/*************************************************************************
-  General Vectorization Utilities
- *************************************************************************/
-/** In tree-vectorizer.c **/
+/* In tree-vect-stmts.c.  */
 extern tree get_vectype_for_scalar_type (tree);
 extern bool vect_is_simple_use (tree, loop_vec_info, gimple *, tree *,
 				enum vect_def_type *);
-extern bool vect_is_simple_iv_evolution (unsigned, tree, tree *, tree *);
-extern gimple vect_is_simple_reduction (loop_vec_info, gimple);
-extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
-extern enum dr_alignment_support vect_supportable_dr_alignment
-  (struct data_reference *);
-extern bool reduction_code_for_scalar_code (enum tree_code, enum tree_code *);
 extern bool supportable_widening_operation (enum tree_code, gimple, tree,
-  tree *, tree *, enum tree_code *, enum tree_code *, 
-  int *, VEC (tree, heap) **);
+                                            tree *, tree *, enum tree_code *, 
+                                            enum tree_code *, int *, 
+                                            VEC (tree, heap) **);
 extern bool supportable_narrowing_operation (enum tree_code, const_gimple,
-	     tree, enum tree_code *, int *, VEC (tree, heap) **);
-
-/* Creation and deletion of loop and stmt info structs.  */
-extern loop_vec_info new_loop_vec_info (struct loop *loop);
-extern void destroy_loop_vec_info (loop_vec_info, bool);
+                                             tree, enum tree_code *, int *, 
+                                             VEC (tree, heap) **);
 extern stmt_vec_info new_stmt_vec_info (gimple stmt, loop_vec_info);
 extern void free_stmt_vec_info (gimple stmt);
+extern tree vectorizable_function (gimple, tree, tree);
+extern void vect_model_simple_cost (stmt_vec_info, int, enum vect_def_type *,
+                                    slp_tree);
+extern void vect_model_store_cost (stmt_vec_info, int, enum vect_def_type,
+                                   slp_tree);
+extern void vect_model_load_cost (stmt_vec_info, int, slp_tree);
+extern void vect_finish_stmt_generation (gimple, gimple,
+                                         gimple_stmt_iterator *);
+extern bool vect_mark_stmts_to_be_vectorized (loop_vec_info);
+extern int cost_for_stmt (gimple);
+extern tree vect_get_vec_def_for_operand (tree, gimple, tree *);
+extern tree vect_init_vector (gimple, tree, tree,
+                              gimple_stmt_iterator *);
+extern tree vect_get_vec_def_for_stmt_copy (enum vect_def_type, tree);
+extern bool vect_transform_stmt (gimple, gimple_stmt_iterator *,
+                                 bool *, slp_tree, slp_instance);
+extern void vect_remove_stores (gimple);
+extern bool vect_analyze_operations (loop_vec_info);
 
-
-/** In tree-vect-analyze.c  **/
-/* Driver for analysis stage.  */
-extern loop_vec_info vect_analyze_loop (struct loop *);
-extern void vect_free_slp_instance (slp_instance);
-extern loop_vec_info vect_analyze_loop_form (struct loop *);
-extern tree vect_get_smallest_scalar_type (gimple, HOST_WIDE_INT *, 
+/* In tree-vect-data-refs.c.  */
+extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
+extern enum dr_alignment_support vect_supportable_dr_alignment
+                                           (struct data_reference *);
+extern tree vect_get_smallest_scalar_type (gimple, HOST_WIDE_INT *,
                                            HOST_WIDE_INT *);
+extern bool vect_analyze_data_ref_dependences (loop_vec_info);
+extern bool vect_enhance_data_refs_alignment (loop_vec_info);
+extern bool vect_analyze_data_refs_alignment (loop_vec_info);
+extern bool vect_analyze_data_ref_accesses (loop_vec_info);
+extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
+extern bool vect_analyze_data_refs (loop_vec_info);
+extern tree vect_create_data_ref_ptr (gimple, struct loop *, tree, tree *,
+                                      gimple *, bool, bool *, tree);
+extern tree bump_vector_ptr (tree, gimple, gimple_stmt_iterator *, gimple, tree);
+extern tree vect_create_destination_var (tree, tree);
+extern bool vect_strided_store_supported (tree);
+extern bool vect_strided_load_supported (tree);
+extern bool vect_permute_store_chain (VEC(tree,heap) *,unsigned int, gimple,
+                                    gimple_stmt_iterator *, VEC(tree,heap) **);
+extern tree vect_setup_realignment (gimple, gimple_stmt_iterator *, tree *,
+                                    enum dr_alignment_support, tree, 
+                                    struct loop **);
+extern bool vect_permute_load_chain (VEC(tree,heap) *,unsigned int, gimple,
+                                    gimple_stmt_iterator *, VEC(tree,heap) **);
+extern bool vect_transform_strided_load (gimple, VEC(tree,heap) *, int,
+                                         gimple_stmt_iterator *);
+extern int vect_get_place_in_interleaving_chain (gimple, gimple);
+extern tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
+extern tree vect_create_addr_base_for_vector_ref (gimple, gimple_seq *,
+                                                  tree, struct loop *);
 
-/** In tree-vect-patterns.c  **/
+/* In tree-vect-loop.c.  */
+/* FORNOW: Used in tree-parloops.c.  */
+extern void destroy_loop_vec_info (loop_vec_info, bool);
+extern gimple vect_is_simple_reduction (loop_vec_info, gimple);
+/* Drive for loop analysis stage.  */
+extern loop_vec_info vect_analyze_loop (struct loop *);
+/* Drive for loop transformation stage.  */
+extern void vect_transform_loop (loop_vec_info);
+extern loop_vec_info vect_analyze_loop_form (struct loop *);
+extern bool vectorizable_live_operation (gimple, gimple_stmt_iterator *,
+                                         gimple *);
+extern bool vectorizable_reduction (gimple, gimple_stmt_iterator *, gimple *);
+extern bool vectorizable_induction (gimple, gimple_stmt_iterator *, gimple *);
+extern int vect_estimate_min_profitable_iters (loop_vec_info);
+extern tree get_initial_def_for_reduction (gimple, tree, tree *);
+extern int vect_min_worthwhile_factor (enum tree_code);
+
+
+/* In tree-vect-slp.c.  */
+extern void vect_free_slp_instance (slp_instance);
+extern bool vect_transform_slp_perm_load (gimple, VEC (tree, heap) *,
+                                          gimple_stmt_iterator *, int, 
+                                          slp_instance, bool);
+extern bool vect_schedule_slp (loop_vec_info);
+extern void vect_update_slp_costs_according_to_vf (loop_vec_info);
+extern bool vect_analyze_slp (loop_vec_info);
+extern void vect_make_slp_decision (loop_vec_info);
+extern void vect_detect_hybrid_slp (loop_vec_info);
+extern void vect_get_slp_defs (slp_tree, VEC (tree,heap) **,
+                               VEC (tree,heap) **);
+
+/* In tree-vect-patterns.c.  */
 /* Pattern recognition functions.
    Additional pattern recognition functions can (and will) be added
    in the future.  */
@@ -760,46 +815,8 @@ typedef gimple (* vect_recog_func_ptr) (gimple, tree *, tree *);
 #define NUM_PATTERNS 4
 void vect_pattern_recog (loop_vec_info);
 
-
-/** In tree-vect-transform.c  **/
-extern bool vectorizable_load (gimple, gimple_stmt_iterator *, gimple *,
-			       slp_tree, slp_instance);
-extern bool vectorizable_store (gimple, gimple_stmt_iterator *, gimple *,
-				slp_tree);
-extern bool vectorizable_operation (gimple, gimple_stmt_iterator *, gimple *,
-				    slp_tree);
-extern bool vectorizable_type_promotion (gimple, gimple_stmt_iterator *,
-					 gimple *, slp_tree);
-extern bool vectorizable_type_demotion (gimple, gimple_stmt_iterator *,
-					gimple *, slp_tree);
-extern bool vectorizable_conversion (gimple, gimple_stmt_iterator *, gimple *,
-				     slp_tree);
-extern bool vectorizable_assignment (gimple, gimple_stmt_iterator *, gimple *,
-				     slp_tree);
-extern tree vectorizable_function (gimple, tree, tree);
-extern bool vectorizable_call (gimple, gimple_stmt_iterator *, gimple *);
-extern bool vectorizable_condition (gimple, gimple_stmt_iterator *, gimple *);
-extern bool vectorizable_live_operation (gimple, gimple_stmt_iterator *,
-					 gimple *);
-extern bool vectorizable_reduction (gimple, gimple_stmt_iterator *, gimple *);
-extern bool vectorizable_induction (gimple, gimple_stmt_iterator *, gimple *);
-extern int  vect_estimate_min_profitable_iters (loop_vec_info);
-extern void vect_model_simple_cost (stmt_vec_info, int, enum vect_def_type *, 
-				    slp_tree);
-extern void vect_model_store_cost (stmt_vec_info, int, enum vect_def_type, 
-				   slp_tree);
-extern void vect_model_load_cost (stmt_vec_info, int, slp_tree);
-extern bool vect_transform_slp_perm_load (gimple, VEC (tree, heap) *, 
-                             gimple_stmt_iterator *, int, slp_instance, bool);
-
-/* Driver for transformation stage.  */
-extern void vect_transform_loop (loop_vec_info);
-
-/*************************************************************************
-  Vectorization Debug Information - in tree-vectorizer.c
- *************************************************************************/
+/*  Vectorization debug information - in tree-vectorizer.c.  */
 extern bool vect_print_dump_info (enum verbosity_levels);
 extern void vect_set_verbosity_level (const char *);
-extern LOC find_loop_location (struct loop *);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

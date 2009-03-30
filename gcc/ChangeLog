@@ -1,3 +1,51 @@
+2009-03-30  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-loop-manip.c: New file.
+	* tree-vectorizer.c: Update documentation and included files.
+	(vect_loop_location): Make extern.
+	(rename_use_op): Move to tree-vect-loop-manip.c
+	(rename_variables_in_bb, rename_variables_in_loop, 
+	slpeel_update_phis_for_duplicate_loop, 
+	slpeel_update_phi_nodes_for_guard1,
+	slpeel_update_phi_nodes_for_guard2, slpeel_make_loop_iterate_ntimes,
+	slpeel_tree_duplicate_loop_to_edge_cfg, slpeel_add_loop_guard,
+	slpeel_can_duplicate_loop_p, slpeel_verify_cfg_after_peeling,
+	set_prologue_iterations, slpeel_tree_peel_loop_to_edge, 
+	find_loop_location): Likewise.
+	(new_stmt_vec_info): Move to tree-vect-stmts.c.
+	(init_stmt_vec_info_vec, free_stmt_vec_info_vec, free_stmt_vec_info,
+	get_vectype_for_scalar_type, vect_is_simple_use,
+	supportable_widening_operation, supportable_narrowing_operation):
+	Likewise.
+	(bb_in_loop_p): Move to tree-vect-loop.c.
+	(new_loop_vec_info, destroy_loop_vec_info, 
+	reduction_code_for_scalar_code, report_vect_op, 
+	vect_is_simple_reduction, vect_is_simple_iv_evolution): Likewise.
+	(vect_can_force_dr_alignment_p): Move to tree-vect-data-refs.c.
+	(vect_supportable_dr_alignment): Likewise.
+	* tree-vectorizer.h (tree-data-ref.h): Include.
+	(vect_loop_location): Declare.
+	Reorganize function declarations according to the new file structure.
+	* tree-vect-loop.c: New file.
+	* tree-vect-analyze.c: Remove. Move functions to tree-vect-data-refs.c, 
+	tree-vect-stmts.c, tree-vect-slp.c, tree-vect-loop.c.
+	* tree-vect-data-refs.c: New file.
+	* tree-vect-patterns.c (timevar.h): Don't include.
+	* tree-vect-stmts.c: New file.
+	* tree-vect-transform.c: Remove. Move functions to tree-vect-stmts.c, 
+	tree-vect-slp.c, tree-vect-loop.c.
+	* Makefile.in (OBJS-common): Remove tree-vect-analyze.o and 
+	tree-vect-transform.o. Add tree-vect-data-refs.o, tree-vect-stmts.o, 
+	tree-vect-loop.o, tree-vect-loop-manip.o, tree-vect-slp.o.
+	(tree-vect-analyze.o): Remove.
+	(tree-vect-transform.o): Likewise.
+	(tree-vect-data-refs.o): Add rule.
+	(tree-vect-stmts.o, tree-vect-loop.o, tree-vect-loop-manip.o, 
+	tree-vect-slp.o): Likewise.
+	(tree-vect-patterns.o): Remove redundant dependencies.
+	(tree-vectorizer.o): Likewise.
+	* tree-vect-slp.c: New file.
+
 2009-03-30  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* optc-gen.awk: Warn if an option flag has multiple different
