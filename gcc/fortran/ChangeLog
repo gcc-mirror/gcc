@@ -139,6 +139,16 @@
 
 2009-03-31  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/38917
+	* expr.c (gfc_check_assign): Allow pointer components when
+	checking for NULL.
+
+	PR fortran/38918
+	* resolve.c (check_data_variable): Treat pointer arrays with
+	scalars.
+
+2009-03-31  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/38915
 	* trans-expr.c (gfc_trans_assignment_1): Ensure temporaries
 	have a string_length.

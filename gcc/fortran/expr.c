@@ -2913,7 +2913,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 
   if (rvalue->expr_type == EXPR_NULL)
     {  
-      if (lvalue->symtree->n.sym->attr.pointer
+      if (has_pointer && (ref == NULL || ref->next == NULL)
 	  && lvalue->symtree->n.sym->attr.data)
         return SUCCESS;
       else
