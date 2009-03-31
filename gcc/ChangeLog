@@ -1,3 +1,14 @@
+2009-03-31  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* loop-iv.c (suitable_set_for_replacement): Renamed from
+	simplify_using_assignment; changed to return bool and to accept new
+	args DEST and SRC.  Return true iff we find a source/destination pair
+	that can be used to make a replacement, and fill SRC and DEST if so.
+	Remove arg ALTERED.  Don't deal with altered regs here.  All callers
+	changed.
+	(simplify_using_initial_values): Deal with altered regs here and track
+	more precisely the effect they have on the validity of our expression.
+
 2009-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         PR target/27237
