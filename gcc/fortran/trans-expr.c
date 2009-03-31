@@ -4585,6 +4585,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
   stmtblock_t body;
   bool l_is_temp;
   bool scalar_to_array;
+  tree string_length;
 
   /* Assignment of the form lhs = rhs.  */
   gfc_start_block (&block);
@@ -4660,10 +4661,18 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
   /* Translate the expression.  */
   gfc_conv_expr (&rse, expr2);
 
+  /* Stabilize a string length for temporaries.  */
+  if (expr2->ts.type == BT_CHARACTER)
+    string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
+  else
+    string_length = NULL_TREE;
+
   if (l_is_temp)
     {
       gfc_conv_tmp_array_ref (&lse);
       gfc_advance_se_ss_chain (&lse);
+      if (expr2->ts.type == BT_CHARACTER)
+	lse.string_length = string_length;
     }
   else
     gfc_conv_expr (&lse, expr1);
@@ -4717,6 +4726,9 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
 
 	  gcc_assert (lse.ss == gfc_ss_terminator
 		      && rse.ss == gfc_ss_terminator);
+
+	  if (expr2->ts.type == BT_CHARACTER)
+	    rse.string_length = string_length;
 
 	  tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
 					 false, false);
