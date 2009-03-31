@@ -9647,6 +9647,8 @@ check_data_variable (gfc_data_variable *var, locus *where)
   mpz_t section_index[GFC_MAX_DIMENSIONS];
   gfc_ref *ref;
   gfc_array_ref *ar;
+  gfc_symbol *sym;
+  int has_pointer;
 
   if (gfc_resolve_expr (var->expr) == FAILURE)
     return FAILURE;
@@ -9658,21 +9660,39 @@ check_data_variable (gfc_data_variable *var, locus *where)
   if (e->expr_type != EXPR_VARIABLE)
     gfc_internal_error ("check_data_variable(): Bad expression");
 
-  if (e->symtree->n.sym->ns->is_block_data
-      && !e->symtree->n.sym->attr.in_common)
+  sym = e->symtree->n.sym;
+
+  if (sym->ns->is_block_data && !sym->attr.in_common)
     {
       gfc_error ("BLOCK DATA element '%s' at %L must be in COMMON",
-		 e->symtree->n.sym->name, &e->symtree->n.sym->declared_at);
+		 sym->name, &sym->declared_at);
     }
 
-  if (e->ref == NULL && e->symtree->n.sym->as)
+  if (e->ref == NULL && sym->as)
     {
       gfc_error ("DATA array '%s' at %L must be specified in a previous"
-		 " declaration", e->symtree->n.sym->name, where);
+		 " declaration", sym->name, where);
       return FAILURE;
     }
 
-  if (e->rank == 0)
+  has_pointer = sym->attr.pointer;
+
+  for (ref = e->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
+	has_pointer = 1;
+
+      if (has_pointer
+	    && ref->type == REF_ARRAY
+	    && ref->u.ar.type != AR_FULL)
+	  {
+	    gfc_error ("DATA element '%s' at %L is a pointer and so must "
+			"be a full array", sym->name, where);
+	    return FAILURE;
+	  }
+    }
+
+  if (e->rank == 0 || has_pointer)
     {
       mpz_init_set_ui (size, 1);
       ref = NULL;
