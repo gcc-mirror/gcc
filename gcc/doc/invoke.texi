@@ -14407,6 +14407,16 @@ to use or discard it.
 In the future, we may cause GCC to ignore all longcall specifications
 when the linker is known to generate glue.
 
+@item -mtls-markers
+@itemx -mno-tls-markers
+@opindex mtls-markers
+@opindex mno-tls-markers
+Mark (do not mark) calls to @code{__tls_get_addr} with a relocation
+specifying the function argument.  The relocation allows ld to
+reliably associate function call with argument setup instructions for
+TLS optimization, which in turn allows gcc to better schedule the
+sequence.
+
 @item -pthread
 @opindex pthread
 Adds support for multithreading with the @dfn{pthreads} library.

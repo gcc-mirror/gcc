@@ -1,5 +1,18 @@
 2009-03-31  Alan Modra  <amodra@bigpond.net.au>
 
+	* doc/invoke.texi (RS/6000 and PowerPC Options):Document mtls-markers.
+	* configure.ac (HAVE_AS_TLS_MARKERS): New gas feature check.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/rs6000/rs6000.opt (mtls-markers): Add.
+	* config/rs6000/rs6000.h (TARGET_TLS_MARKERS): Define.
+	* config/rs6000/rs6000.md (tls_gd_aix, tls_gd_sysv): Add splitter.
+	(tls_ld_aix, tls_ld_sysv): Likewise.
+	(tls_gd, tls_gd_call_aix, tls_gd_call_sysv): New insns.
+	(tls_ld, tls_ld_call_aix, tls_ld_call_sysv): Likewise.
+
+2009-03-31  Alan Modra  <amodra@bigpond.net.au>
+
 	* config/spu/spu.c (spu_expand_prologue): Delete redundant code.
 
 2009-03-30  Jan Hubicka  <jh@suse.cz>
