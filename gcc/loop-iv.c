@@ -1636,13 +1636,20 @@ simplify_using_condition (rtx cond, rtx *expr, regset altered)
 {
   rtx rev, reve, exp = *expr;
 
-  if (!COMPARISON_P (exp))
-    return;
-
   /* If some register gets altered later, we do not really speak about its
      value at the time of comparison.  */
   if (altered
       && for_each_rtx (&cond, altered_reg_used, altered))
+    return;
+
+  if (GET_CODE (cond) == EQ
+      && REG_P (XEXP (cond, 0)) && CONSTANT_P (XEXP (cond, 1)))
+    {
+      *expr = simplify_replace_rtx (*expr, XEXP (cond, 0), XEXP (cond, 1));
+      return;
+    }
+
+  if (!COMPARISON_P (exp))
     return;
 
   rev = reversed_condition (cond);
@@ -1660,7 +1667,6 @@ simplify_using_condition (rtx cond, rtx *expr, regset altered)
       *expr = const_true_rtx;
       return;
     }
-
 
   if (rev && rtx_equal_p (exp, rev))
     {
@@ -1746,7 +1752,7 @@ static void
 simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 {
   bool expression_valid;
-  rtx head, tail, insn, last_valid_expr;
+  rtx head, tail, insn, cond_list, last_valid_expr;
   rtx neutral, aggr;
   regset altered, this_altered;
   edge e;
@@ -1817,26 +1823,40 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 
   expression_valid = true;
   last_valid_expr = *expr;
+  cond_list = NULL_RTX;
   while (1)
     {
       insn = BB_END (e->src);
       if (any_condjump_p (insn))
 	{
 	  rtx cond = get_condition (BB_END (e->src), NULL, false, true);
-      
+
 	  if (cond && (e->flags & EDGE_FALLTHRU))
 	    cond = reversed_condition (cond);
 	  if (cond)
 	    {
+	      rtx old = *expr;
 	      simplify_using_condition (cond, expr, altered);
-	      if (CONSTANT_P (*expr))
-		goto out;
+	      if (old != *expr)
+		{
+		  rtx note;
+		  if (CONSTANT_P (*expr))
+		    goto out;
+		  for (note = cond_list; note; note = XEXP (note, 1))
+		    {
+		      simplify_using_condition (XEXP (note, 0), expr, altered);
+		      if (CONSTANT_P (*expr))
+			goto out;
+		    }
+		}
+	      cond_list = alloc_EXPR_LIST (0, cond, cond_list);
 	    }
 	}
 
       FOR_BB_INSNS_REVERSE (e->src, insn)
 	{
 	  rtx src, dest;
+	  rtx old = *expr;
 
 	  if (!INSN_P (insn))
 	    continue;
@@ -1855,9 +1875,34 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 
 	  if (suitable_set_for_replacement (insn, &dest, &src))
 	    {
+	      rtx *pnote, *pnote_next;
+
 	      *expr = simplify_replace_rtx (*expr, dest, src);
 	      if (CONSTANT_P (*expr))
 		goto out;
+
+	      for (pnote = &cond_list; *pnote; pnote = pnote_next)
+		{
+		  rtx note = *pnote;
+		  rtx old_cond = XEXP (note, 0);
+
+		  pnote_next = &XEXP (note, 1);
+		  XEXP (note, 0) = simplify_replace_rtx (XEXP (note, 0), dest,
+							 src);
+		  /* We can no longer use a condition that has been simplified
+		     to a constant, and simplify_using_condition will abort if
+		     we try.  */
+		  if (CONSTANT_P (XEXP (note, 0)))
+		    {
+		      *pnote = *pnote_next;
+		      pnote_next = pnote;
+		      free_EXPR_LIST_node (note);
+		    }
+		  /* Retry simplifications with this condition if either the
+		     expression or the condition changed.  */
+		  else if (old_cond != XEXP (note, 0) || old != *expr)
+		    simplify_using_condition (XEXP (note, 0), expr, altered);
+		}
 	    }
 	  else
 	    /* If we did not use this insn to make a replacement, any overlap
@@ -1865,6 +1910,9 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	       expression to become invalid.  */
 	    if (for_each_rtx (expr, altered_reg_used, this_altered))
 	      goto out;
+
+	  if (CONSTANT_P (*expr))
+	    goto out;
 
 	  IOR_REG_SET (altered, this_altered);
 
@@ -1885,6 +1933,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
     }
 
  out:
+  free_EXPR_LIST_list (&cond_list);
   if (!CONSTANT_P (*expr))
     *expr = last_valid_expr;
   FREE_REG_SET (altered);
