@@ -19,6 +19,10 @@
 	(LTU (PLUS a C) C) or (LTU (PLUS a C) a) to (GEU a -C); likewise with
 	GEU/LTU reversed.
 
+	* loop-iv.c (determine_max_iter): New arg OLD_NITER.  All callers
+	changed.  Use this when trying to improve the upper bound.
+	Generate the comparison by using simplify_gen_relational.
+
 2009-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         PR target/27237
