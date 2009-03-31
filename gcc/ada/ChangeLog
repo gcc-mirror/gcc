@@ -1,5 +1,15 @@
 2009-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* system-linux-alpha.ads (Functions_Return_By_DSP): Remove.
+	* system-linux-mips.ads (Functions_Return_By_DSP): Likewise.
+	* system-linux-mipsel.ads (Functions_Return_By_DSP): Likewise.
+	* system-linux-s390.ads (Functions_Return_By_DSP): Likewise.
+	* system-linux-s390x.ads (Functions_Return_By_DSP): Likewise.
+	* system-linux-sparc.ads (Functions_Return_By_DSP): Likewise.
+	* system-linux-sparcv9.ads (Functions_Return_By_DSP): Likewise.
+
+2009-03-31  Eric Botcazou  <ebotcazou@adacore.com>
+
 	Backport from mainline:
 	2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
 	* gcc-interface/decl.c (maybe_pad_type): Use TREE_OVERFLOW instead
