@@ -1,5 +1,10 @@
 2009-03-31  Joseph Myers  <joseph@codesourcery.com>
 
+	PR target/39592
+	* gcc.target/i386/pr39592-1.c: New test.
+
+2009-03-31  Joseph Myers  <joseph@codesourcery.com>
+
 	PR preprocessor/15638
 	* gcc.dg/cpp/missing-header-1.c: New test.
 	* gcc.dg/cpp/include2.c: Only test #include <>.  Expect
