@@ -1878,12 +1878,6 @@ spu_expand_prologue (void)
 	  insn =
 	    frame_emit_add_imm (sp_reg, sp_reg, -total_size, scratch_reg_0);
 	}
-      else if (satisfies_constraint_K (GEN_INT (-total_size)))
-	{
-	  insn = emit_move_insn (scratch_reg_0, sp_reg);
-	  insn =
-	    emit_insn (gen_addsi3 (sp_reg, sp_reg, GEN_INT (-total_size)));
-	}
       else
 	{
 	  insn = emit_move_insn (scratch_reg_0, sp_reg);
