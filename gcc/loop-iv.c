@@ -2114,10 +2114,13 @@ canonicalize_iv_subregs (struct rtx_iv *iv0, struct rtx_iv *iv1,
   return true;
 }
 
-/* Tries to estimate the maximum number of iterations.  */
+/* Tries to estimate the maximum number of iterations in LOOP, and store the
+   result in DESC.  This function is called from iv_number_of_iterations with
+   a number of fields in DESC already filled in.  OLD_NITER is the original
+   expression for the number of iterations, before we tried to simplify it.  */
 
 static unsigned HOST_WIDEST_INT
-determine_max_iter (struct loop *loop, struct niter_desc *desc)
+determine_max_iter (struct loop *loop, struct niter_desc *desc, rtx old_niter)
 {
   rtx niter = desc->niter_expr;
   rtx mmin, mmax, cmp;
@@ -2152,7 +2155,8 @@ determine_max_iter (struct loop *loop, struct niter_desc *desc)
 
   /* We could use a binary search here, but for now improving the upper
      bound by just one eliminates one important corner case.  */
-  cmp = gen_rtx_fmt_ee (desc->signed_p ? LT : LTU, VOIDmode, niter, mmax);
+  cmp = simplify_gen_relational (desc->signed_p ? LT : LTU, VOIDmode,
+				 desc->mode, old_niter, mmax);
   simplify_using_initial_values (loop, UNKNOWN, &cmp);
   if (cmp == const_true_rtx)
     {
@@ -2683,7 +2687,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
   else
     {
       if (!desc->niter_max)
-	desc->niter_max = determine_max_iter (loop, desc);
+	desc->niter_max = determine_max_iter (loop, desc, old_niter);
 
       /* simplify_using_initial_values does a copy propagation on the registers
 	 in the expression for the number of iterations.  This prolongs life
