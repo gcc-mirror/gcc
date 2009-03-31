@@ -1,3 +1,8 @@
+2009-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/15638
+	* cpp.c (cb_cpp_error): Handle CPP_DL_FATAL.
+
 2009-03-30  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/38389

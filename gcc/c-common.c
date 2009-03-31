@@ -8009,6 +8009,9 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level,
     case CPP_DL_NOTE:
       dlevel = DK_NOTE;
       break;
+    case CPP_DL_FATAL:
+      dlevel = DK_FATAL;
+      break;
     default:
       gcc_unreachable ();
     }
