@@ -1,3 +1,14 @@
+2009-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38030, 38850, 39070
+	* pt.c (type_dependent_expression_p_push): New fn.
+	(tsubst_copy_and_build) [CALL_EXPR]: Only do arg-dep lookup when the
+	substitution makes the call non-dependent.  Preserve koenig_p.
+	* parser.c (cp_parser_postfix_expression): Only do arg-dep lookup
+	for non-dependent calls.
+	* semantics.c (finish_call_expr): Revert earlier changes.
+	* cp-tree.h: Revert change to finish_call_expr prototype.
+
 2009-03-29  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/34695
