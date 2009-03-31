@@ -23,6 +23,8 @@
 	changed.  Use this when trying to improve the upper bound.
 	Generate the comparison by using simplify_gen_relational.
 
+	* loop-iv.c (simple_rhs_p): Allow more kinds of expressions.
+
 2009-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         PR target/27237
