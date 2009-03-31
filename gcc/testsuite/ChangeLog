@@ -1,3 +1,7 @@
+2009-03-31  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gcc.c-torture/compile/pr33009.c: Removed.
+
 2009-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* gcc.c-torture/compile/pr33009.c: Delete.
