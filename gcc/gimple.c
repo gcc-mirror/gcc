@@ -1380,7 +1380,8 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
       /* Walk the RHS operands.  A formal temporary LHS may use a
 	 COMPONENT_REF RHS.  */
       if (wi)
-	wi->val_only = !is_gimple_formal_tmp_var (gimple_assign_lhs (stmt));
+	wi->val_only = !is_gimple_reg (gimple_assign_lhs (stmt))
+                       || !gimple_assign_single_p (stmt);
 
       for (i = 1; i < gimple_num_ops (stmt); i++)
 	{
@@ -2559,37 +2560,13 @@ is_gimple_operand (const_tree op)
   return op && get_gimple_rhs_class (TREE_CODE (op)) == GIMPLE_SINGLE_RHS;
 }
 
-
-/* Return true if T is a GIMPLE RHS for an assignment to a temporary.  */
-
-bool
-is_gimple_formal_tmp_rhs (tree t)
-{
-  if (is_gimple_lvalue (t) || is_gimple_val (t))
-    return true;
-
-  return get_gimple_rhs_class (TREE_CODE (t)) != GIMPLE_INVALID_RHS;
-}
-
 /* Returns true iff T is a valid RHS for an assignment to a renamed
    user -- or front-end generated artificial -- variable.  */
 
 bool
 is_gimple_reg_rhs (tree t)
 {
-  /* If the RHS of the MODIFY_EXPR may throw or make a nonlocal goto
-     and the LHS is a user variable, then we need to introduce a formal
-     temporary.  This way the optimizers can determine that the user
-     variable is only modified if evaluation of the RHS does not throw.
-
-     Don't force a temp of a non-renamable type; the copy could be
-     arbitrarily expensive.  Instead we will generate a VDEF for
-     the assignment.  */
-
-  if (is_gimple_reg_type (TREE_TYPE (t)) && tree_could_throw_p (t))
-    return false;
-
-  return is_gimple_formal_tmp_rhs (t);
+  return get_gimple_rhs_class (TREE_CODE (t)) != GIMPLE_INVALID_RHS;
 }
 
 /* Returns true iff T is a valid RHS for an assignment to an un-renamed
@@ -2603,7 +2580,7 @@ is_gimple_mem_rhs (tree t)
   if (is_gimple_reg_type (TREE_TYPE (t)))
     return is_gimple_val (t);
   else
-    return is_gimple_formal_tmp_rhs (t);
+    return is_gimple_val (t) || is_gimple_lvalue (t);
 }
 
 /*  Return true if T is a valid LHS for a GIMPLE assignment expression.  */
@@ -2895,6 +2872,12 @@ is_gimple_reg (tree t)
   if (!is_gimple_variable (t))
     return false;
 
+  /* Complex and vector values must have been put into SSA-like form.
+     That is, no assignments to the individual components.  */
+  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
+      || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+    return DECL_GIMPLE_REG_P (t);
+
   if (!is_gimple_reg_type (TREE_TYPE (t)))
     return false;
 
@@ -2921,44 +2904,9 @@ is_gimple_reg (tree t)
   if (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t))
     return false;
 
-  /* Complex and vector values must have been put into SSA-like form.
-     That is, no assignments to the individual components.  */
-  if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
-      || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
-    return DECL_GIMPLE_REG_P (t);
-
   return true;
 }
 
-
-/* Returns true if T is a GIMPLE formal temporary variable.  */
-
-bool
-is_gimple_formal_tmp_var (tree t)
-{
-  if (TREE_CODE (t) == SSA_NAME)
-    return true;
-
-  return TREE_CODE (t) == VAR_DECL && DECL_GIMPLE_FORMAL_TEMP_P (t);
-}
-
-/* Returns true if T is a GIMPLE formal temporary register variable.  */
-
-bool
-is_gimple_formal_tmp_reg (tree t)
-{
-  /* The intent of this is to get hold of a value that won't change.
-     An SSA_NAME qualifies no matter if its of a user variable or not.  */
-  if (TREE_CODE (t) == SSA_NAME)
-    return true;
-
-  /* We don't know the lifetime characteristics of user variables.  */
-  if (!is_gimple_formal_tmp_var (t))
-    return false;
-
-  /* Finally, it must be capable of being placed in a register.  */
-  return is_gimple_reg (t);
-}
 
 /* Return true if T is a GIMPLE variable whose address is not needed.  */
 
@@ -3006,6 +2954,8 @@ is_gimple_asm_val (tree t)
 bool
 is_gimple_min_lval (tree t)
 {
+  if (!(t = CONST_CAST_TREE (strip_invariant_refs (t))))
+    return false;
   return (is_gimple_id (t) || TREE_CODE (t) == INDIRECT_REF);
 }
 

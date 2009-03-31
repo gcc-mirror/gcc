@@ -1823,6 +1823,25 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
     {
     case GIMPLE_CALL:
     case GIMPLE_ASSIGN:
+      /* If the stmt can throw use a new temporary for the assignment
+         to a LHS.  This makes sure the old value of the LHS is
+	 available on the EH edge.  */
+      if (stmt_could_throw_p (stmt)
+	  && gimple_has_lhs (stmt)
+	  && !tree_could_throw_p (gimple_get_lhs (stmt))
+	  && is_gimple_reg_type (TREE_TYPE (gimple_get_lhs (stmt))))
+	{
+	  tree lhs = gimple_get_lhs (stmt);
+	  tree tmp = create_tmp_var (TREE_TYPE (lhs), NULL);
+	  gimple s = gimple_build_assign (lhs, tmp);
+	  gimple_set_location (s, gimple_location (stmt));
+	  gimple_set_block (s, gimple_block (stmt));
+	  gimple_set_lhs (stmt, tmp);
+	  if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
+	      || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
+	    DECL_GIMPLE_REG_P (tmp) = 1;
+	  gsi_insert_after (gsi, s, GSI_SAME_STMT);
+	}
       /* Look for things that can throw exceptions, and record them.  */
       if (state->cur_region && stmt_could_throw_p (stmt))
 	{

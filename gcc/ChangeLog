@@ -1,3 +1,47 @@
+2009-03-31  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/23401
+	PR middle-end/27810
+	* tree.h (DECL_GIMPLE_FORMAL_TEMP_P): Remove.
+	(struct tree_decl_with_vis): Remove gimple_formal_temp member.
+	* tree-eh.c (lower_eh_constructs_2): Move LHS assignment to
+	a separate statement.
+	* gimplify.c (pop_gimplify_context): Remove formal temp handling.
+	(lookup_tmp_var): Likewise.
+	(is_gimple_formal_tmp_or_call_rhs): Remove.
+	(is_gimple_reg_or_call_rhs): Rename to ...
+	(is_gimple_reg_rhs_or_call): ... this.
+	(is_gimple_mem_or_call_rhs): Rename to ...
+	(is_gimple_mem_rhs_or_call): ... this.
+	(internal_get_tmp_var): Use is_gimple_reg_rhs_or_call.  Set
+	DECL_GIMPLE_REG_P only if is_formal is true.
+	(gimplify_compound_lval): Use is_gimple_reg.  Remove workaround
+	for non-proper post-modify expression gimplification.
+	(gimplify_self_mod_expr): For post-modify expressions gimplify
+	the lvalue to a minimal lvalue.
+	(rhs_predicate_for): Remove formal temp case.
+	(gimplify_modify_expr_rhs): Likewise.
+	(gimplify_addr_expr): Use is_gimple_reg.
+	(gimplify_expr): Remove formal temp cases.
+	(gimple_regimplify_operands): Likewise.
+	* tree-ssa-pre.c (get_or_alloc_expr_for): Treat EXC_PTR_EXPR
+	and FILTER_EXPR like constants.
+	* gimple.c (walk_gimple_op): Fix val_only initialization, use
+	is_gimple_reg.
+	(is_gimple_formal_tmp_rhs): Remove.
+	(is_gimple_reg_rhs): Remove special casing.
+	(is_gimple_mem_rhs): Fix.
+	(is_gimple_reg): Move DECL_GIMPLE_REG_P handling earlier.
+	(is_gimple_formal_tmp_var): Remove.
+	(is_gimple_formal_tmp_reg): Likewise.
+	(is_gimple_min_lval): Allow invariant component ref parts.
+	* gimple.h (is_gimple_formal_tmp_rhs, is_gimple_formal_tmp_var,
+	is_gimple_formal_tmp_reg): Remove declarations.
+	* tree-cfg.c (verify_expr): Verify that variables with address
+	taken do not have DECL_GIMPLE_REG_P set.
+	* tree-mudflap.c (mf_build_check_statement_for): Use
+	force_gimple_operand instead of gimplify_expr.
+
 2009-03-31  Ayal Zaks  <zaks@il.ibm.com>
 
 	* modulo-sched.c (sms_schedule_by_order): Pass the actual
