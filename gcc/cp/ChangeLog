@@ -1,6 +1,9 @@
 2009-03-31  Jason Merrill  <jason@redhat.com>
 
-	PR c++/37806
+	* decl.c (grokdeclarator): Reject pointer to qualified function
+	type.
+
+	PR c++/37806, core issue 547
 	* typeck.c (cp_apply_type_quals_to_decl): Don't apply any quals
 	to a typedef.
 	* tree.c (cp_build_qualified_type_real): Don't apply restrict to a 
