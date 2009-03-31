@@ -1,5 +1,9 @@
 2009-03-31  Jason Merrill  <jason@redhat.com>
 
+	* ptree.c (cxx_print_decl): Pretty-print full name of
+	function/template.
+	(cxx_print_type): Pretty-print full name of class.
+
 	* decl.c (grokdeclarator): Reject pointer to qualified function
 	type.
 
