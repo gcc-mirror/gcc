@@ -257,6 +257,56 @@
   DONE;
 })
 
+;; Single precision floating point division (minimum latency algorithm).
+
+(define_expand "divsf3_internal_lat"
+  [(set (match_operand:SF 0 "fr_register_operand" "")
+        (div:SF (match_operand:SF 1 "fr_register_operand" "")
+                (match_operand:SF 2 "fr_register_operand" "")))]
+  "TARGET_INLINE_FLOAT_DIV"
+{
+  rtx y         = gen_reg_rtx (RFmode);
+  rtx a         = gen_reg_rtx (RFmode);
+  rtx b         = gen_reg_rtx (RFmode);
+  rtx e         = gen_reg_rtx (RFmode);
+  rtx q         = gen_reg_rtx (RFmode);
+  rtx e1        = gen_reg_rtx (RFmode);
+  rtx y1        = gen_reg_rtx (RFmode);
+  rtx q1        = gen_reg_rtx (RFmode);
+  rtx r         = gen_reg_rtx (RFmode);
+  rtx q_res     = gen_reg_rtx (RFmode);
+  rtx cond      = gen_reg_rtx (BImode);
+  rtx zero      = CONST0_RTX (RFmode);
+  rtx one       = CONST1_RTX (RFmode);
+  rtx status0   = CONST0_RTX (SImode);
+  rtx status1   = CONST1_RTX (SImode);
+  rtx trunc_sgl = CONST0_RTX (SImode);
+  rtx trunc_off = CONST2_RTX (SImode);
+
+  /* Empty conversions to put inputs into RFmode.  */
+  emit_insn (gen_extendsfrf2 (a, operands[1]));
+  emit_insn (gen_extendsfrf2 (b, operands[2]));
+  /* y = 1 / b				*/
+  emit_insn (gen_recip_approx_rf (y, a, b, cond, status0));
+  /* q = a * y				*/
+  emit_insn (gen_mulrf3_cond (q, cond, a, y, zero, status1, trunc_off));
+  /* e = 1 - (b * y)			*/
+  emit_insn (gen_m2subrf4_cond (e, cond, one, b, y, zero, status1, trunc_off));
+  /* e1 = e + (e * e)			*/
+  emit_insn (gen_m2addrf4_cond (e1, cond, e, e, e, zero, status1, trunc_off));
+  /* q1 = single(q + (q * e1))		*/
+  emit_insn (gen_m2addrf4_cond (q1, cond, q, q, e1, zero, status1, trunc_sgl));
+  /* y1 = y + (y * e1)			*/
+  emit_insn (gen_m2addrf4_cond (y1, cond, y, y, e1, zero, status1, trunc_off));
+  /* r = a - (q1 * b)			*/
+  emit_insn (gen_m2subrf4_cond (r, cond, a, q1, b, zero, status1, trunc_off));
+  /* Q = single (q1 + (r * y1))		*/
+  emit_insn (gen_m2addrf4_cond (q_res, cond, q1, r, y1, y, status0, trunc_sgl));
+  /* Conversion back into SFmode.	*/
+  emit_insn (gen_truncrfsf2 (operands[0], q_res));
+  DONE;
+})
+
 
 ;; Double precision floating point division (maximum throughput algorithm).
 
@@ -310,5 +360,134 @@
   emit_insn (gen_m2addrf4_cond (q_res, cond, q, r, y3, y, status0, trunc_dbl));
   /* Conversion back into DFmode */
   emit_insn (gen_truncrfdf2 (operands[0], q_res));
+  DONE;
+})
+
+;; Double precision floating point division (minimum latency algorithm).
+
+(define_expand "divdf3_internal_lat"
+  [(set (match_operand:DF 0 "fr_register_operand" "")
+        (div:DF (match_operand:DF 1 "fr_register_operand" "")
+                (match_operand:DF 2 "fr_register_operand" "")))]
+  "TARGET_INLINE_FLOAT_DIV"
+{
+  rtx q_res     = gen_reg_rtx (RFmode);
+  rtx a         = gen_reg_rtx (RFmode);
+  rtx b         = gen_reg_rtx (RFmode);
+  rtx y         = gen_reg_rtx (RFmode);
+  rtx e         = gen_reg_rtx (RFmode);
+  rtx y1        = gen_reg_rtx (RFmode);
+  rtx e1        = gen_reg_rtx (RFmode);
+  rtx q1        = gen_reg_rtx (RFmode);
+  rtx y2        = gen_reg_rtx (RFmode);
+  rtx e2        = gen_reg_rtx (RFmode);
+  rtx q2        = gen_reg_rtx (RFmode);
+  rtx e3        = gen_reg_rtx (RFmode);
+  rtx q         = gen_reg_rtx (RFmode);
+  rtx r1        = gen_reg_rtx (RFmode);
+  rtx cond      = gen_reg_rtx (BImode);
+  rtx zero      = CONST0_RTX (RFmode);
+  rtx one       = CONST1_RTX (RFmode);
+  rtx status0   = CONST0_RTX (SImode);
+  rtx status1   = CONST1_RTX (SImode);
+  rtx trunc_dbl = CONST1_RTX (SImode);
+  rtx trunc_off = CONST2_RTX (SImode);
+
+  /* Empty conversions to put inputs into RFmode */
+  emit_insn (gen_extenddfrf2 (a, operands[1]));
+  emit_insn (gen_extenddfrf2 (b, operands[2]));
+  /* y  = 1 / b			*/
+  emit_insn (gen_recip_approx_rf (y, a, b, cond, status0));
+  /* e  = 1 - (b * y)		*/
+  emit_insn (gen_m2subrf4_cond (e, cond, one, b, y, zero, status1, trunc_off));
+  /* q  = a * y                 */
+  emit_insn (gen_mulrf3_cond (q, cond, a, y, zero, status1, trunc_off));
+  /* e2 = e + (e * e)		*/
+  emit_insn (gen_m2addrf4_cond (e2, cond, e, e, e, zero, status1, trunc_off));
+  /* e1 = e * e                 */
+  emit_insn (gen_mulrf3_cond (e1, cond, e, e, zero, status1, trunc_off));
+  /* e3 = e + (e1 * e1)		*/
+  emit_insn (gen_m2addrf4_cond (e3, cond, e, e1, e1, zero, status1, trunc_off));
+  /* q1 = q + (q * e2)		*/
+  emit_insn (gen_m2addrf4_cond (q1, cond, q, q, e2, zero, status1, trunc_off));
+  /* y1 = y + (y * e2)		*/
+  emit_insn (gen_m2addrf4_cond (y1, cond, y, y, e2, zero, status1, trunc_off));
+  /* q2 = double(q + (q1 * e3))	*/
+  emit_insn (gen_m2addrf4_cond (q2, cond, q, q1, e3, zero, status1, trunc_dbl));
+  /* y2 = y + (y1 * e3)		*/
+  emit_insn (gen_m2addrf4_cond (y2, cond, y, y1, e3, zero, status1, trunc_off));
+  /* r1  = a - (b * q2)		*/
+  emit_insn (gen_m2subrf4_cond (r1, cond, a, b, q2, zero, status1, trunc_off));
+  /* Q  = double (q2 + (r1 * y2))	*/
+  emit_insn (gen_m2addrf4_cond (q_res, cond, q2, r1, y2, y, status0, trunc_dbl));
+  /* Conversion back into DFmode */
+  emit_insn (gen_truncrfdf2 (operands[0], q_res));
+  DONE;
+})
+
+;; Extended precision floating point division.
+
+(define_expand "divxf3_internal"
+  [(set (match_operand:XF 0 "fr_register_operand" "")
+        (div:XF (match_operand:XF 1 "fr_register_operand" "")
+                (match_operand:XF 2 "fr_register_operand" "")))]
+  "TARGET_INLINE_FLOAT_DIV"
+{
+  rtx q_res     = gen_reg_rtx (RFmode);
+  rtx a         = gen_reg_rtx (RFmode);
+  rtx b         = gen_reg_rtx (RFmode);
+  rtx y         = gen_reg_rtx (RFmode);
+  rtx e         = gen_reg_rtx (RFmode);
+  rtx y1        = gen_reg_rtx (RFmode);
+  rtx e1        = gen_reg_rtx (RFmode);
+  rtx q1        = gen_reg_rtx (RFmode);
+  rtx y2        = gen_reg_rtx (RFmode);
+  rtx e2        = gen_reg_rtx (RFmode);
+  rtx y3        = gen_reg_rtx (RFmode);
+  rtx e3        = gen_reg_rtx (RFmode);
+  rtx e4        = gen_reg_rtx (RFmode);
+  rtx q         = gen_reg_rtx (RFmode);
+  rtx r         = gen_reg_rtx (RFmode);
+  rtx r1        = gen_reg_rtx (RFmode);
+  rtx cond      = gen_reg_rtx (BImode);
+  rtx zero      = CONST0_RTX (RFmode);
+  rtx one       = CONST1_RTX (RFmode);
+  rtx status0   = CONST0_RTX (SImode);
+  rtx status1   = CONST1_RTX (SImode);
+  rtx trunc_off = CONST2_RTX (SImode);
+
+  /* Empty conversions to put inputs into RFmode */
+  emit_insn (gen_extendxfrf2 (a, operands[1]));
+  emit_insn (gen_extendxfrf2 (b, operands[2]));
+  /* y  = 1 / b			*/
+  emit_insn (gen_recip_approx_rf (y, a, b, cond, status0));
+  /* e  = 1 - (b * y)		*/
+  emit_insn (gen_m2subrf4_cond (e, cond, one, b, y, zero, status1, trunc_off));
+  /* q  = a * y                 */
+  emit_insn (gen_mulrf3_cond (q, cond, a, y, zero, status1, trunc_off));
+  /* e2 = e + (e * e)		*/
+  emit_insn (gen_m2addrf4_cond (e2, cond, e, e, e, zero, status1, trunc_off));
+  /* e1 = e * e                 */
+  emit_insn (gen_mulrf3_cond (e1, cond, e, e, zero, status1, trunc_off));
+  /* y1 = y + (y * e2)		*/
+  emit_insn (gen_m2addrf4_cond (y1, cond, y, y, e2, zero, status1, trunc_off));
+  /* e3 = e + (e1 * e1)		*/
+  emit_insn (gen_m2addrf4_cond (e3, cond, e, e1, e1, zero, status1, trunc_off));
+  /* y2 = y + (y1 * e3)		*/
+  emit_insn (gen_m2addrf4_cond (y2, cond, y, y1, e3, zero, status1, trunc_off));
+  /* r  = a - (b * q)		*/
+  emit_insn (gen_m2subrf4_cond (r, cond, a, b, q, zero, status1, trunc_off));
+  /* e4  = 1 - (b * y2)		*/
+  emit_insn (gen_m2subrf4_cond (e4, cond, one, b, y2, zero, status1, trunc_off));
+  /* q1 = q + (r * y2)		*/
+  emit_insn (gen_m2addrf4_cond (q1, cond, q, r, y2, zero, status1, trunc_off));
+  /* y3 = y2 + (y2 * e4)	*/
+  emit_insn (gen_m2addrf4_cond (y3, cond, y2, y2, e4, zero, status1, trunc_off));
+  /* r1  = a - (b * q1)		*/
+  emit_insn (gen_m2subrf4_cond (r1, cond, a, b, q1, zero, status1, trunc_off));
+  /* Q  = q1 + (r1 * y3)	*/
+  emit_insn (gen_m2addrf4_cond (q_res, cond, q1, r1, y3, y, status0, trunc_off));
+  /* Conversion back into XFmode */
+  emit_insn (gen_truncrfxf2 (operands[0], q_res));
   DONE;
 })
