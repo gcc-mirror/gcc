@@ -101,7 +101,7 @@ int main()
   auto i4 = add4(1, 2.0);
   // { dg-final { scan-assembler "_Z4add2IidEDTplcvT__EcvT0__EES0_S1_" } }
   auto i2 = add2(1, 2.0);
-  // { dg-final { scan-assembler "_Z4add3IidEDTclL_Z2agEfp_fp0_EET_T0_" } }
+  // { dg-final { scan-assembler "_Z4add3IidEDTcl2agfp_fp0_EET_T0_" } }
   auto i3 = add3(1, 2.0);
   // { dg-final { scan-assembler "_Z1fI1AIiEEDTclptfp_1fEEPT_" } }
   f(p);

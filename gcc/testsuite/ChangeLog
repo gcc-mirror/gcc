@@ -1,3 +1,8 @@
+2009-03-31  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto6.C: Adjust expected mangling.
+	* g++.dg/cpp0x/auto12.C: Likewise.
+
 2009-03-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31029
