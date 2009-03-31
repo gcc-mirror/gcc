@@ -618,8 +618,13 @@ forward_propagate_addr_into_variable_array_index (tree offset,
 						  tree def_rhs,
 						  gimple_stmt_iterator *use_stmt_gsi)
 {
-  tree index;
+  tree index, tunit;
   gimple offset_def, use_stmt = gsi_stmt (*use_stmt_gsi);
+  tree tmp;
+
+  tunit = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (def_rhs)));
+  if (!host_integerp (tunit, 1))
+    return false;
 
   /* Get the offset's defining statement.  */
   offset_def = SSA_NAME_DEF_STMT (offset);
@@ -629,7 +634,7 @@ forward_propagate_addr_into_variable_array_index (tree offset,
      along in case the element size is one. In that case, however, we do not
      allow multiplications because they can be computing index to a higher
      level dimension (PR 37861). */
-  if (integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (def_rhs)))))
+  if (integer_onep (tunit))
     {
       if (is_gimple_assign (offset_def)
 	  && gimple_assign_rhs_code (offset_def) == MULT_EXPR)
@@ -648,18 +653,41 @@ forward_propagate_addr_into_variable_array_index (tree offset,
 	 multiplication of an object by the size of the array elements. 
 	 This implicitly verifies that the size of the array elements
 	 is constant.  */
-     offset = gimple_assign_rhs1 (offset_def);
-     if (gimple_assign_rhs_code (offset_def) != MULT_EXPR
-	 || TREE_CODE (gimple_assign_rhs2 (offset_def)) != INTEGER_CST
-	 || !simple_cst_equal (gimple_assign_rhs2 (offset_def),
-			       TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (def_rhs)))))
+     if (gimple_assign_rhs_code (offset_def) == MULT_EXPR
+	 && TREE_CODE (gimple_assign_rhs2 (offset_def)) == INTEGER_CST
+	 && tree_int_cst_equal (gimple_assign_rhs2 (offset_def), tunit))
+       {
+	 /* The first operand to the MULT_EXPR is the desired index.  */
+	 index = gimple_assign_rhs1 (offset_def);
+       }
+     /* If we have idx * tunit + CST * tunit re-associate that.  */
+     else if ((gimple_assign_rhs_code (offset_def) == PLUS_EXPR
+	       || gimple_assign_rhs_code (offset_def) == MINUS_EXPR)
+	      && TREE_CODE (gimple_assign_rhs1 (offset_def)) == SSA_NAME
+	      && TREE_CODE (gimple_assign_rhs2 (offset_def)) == INTEGER_CST
+	      && (tmp = div_if_zero_remainder (EXACT_DIV_EXPR,
+					       gimple_assign_rhs2 (offset_def),
+					       tunit)) != NULL_TREE)
+       {
+	 gimple offset_def2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (offset_def));
+	 if (gimple_assign_rhs_code (offset_def2) == MULT_EXPR
+	     && TREE_CODE (gimple_assign_rhs2 (offset_def2)) == INTEGER_CST
+	     && tree_int_cst_equal (gimple_assign_rhs2 (offset_def2), tunit))
+	   {
+	     index = fold_build2 (gimple_assign_rhs_code (offset_def),
+				  TREE_TYPE (offset),
+				  gimple_assign_rhs1 (offset_def2), tmp);
+	   }
+	 else
+	   return false;
+       }
+     else
 	return false;
-
-      /* The first operand to the MULT_EXPR is the desired index.  */
-      index = offset;
     }
 
   /* Replace the pointer addition with array indexing.  */
+  index = force_gimple_operand_gsi (use_stmt_gsi, index, true, NULL_TREE,
+				    true, GSI_SAME_STMT);
   gimple_assign_set_rhs_from_tree (use_stmt_gsi, unshare_expr (def_rhs));
   use_stmt = gsi_stmt (*use_stmt_gsi);
   TREE_OPERAND (TREE_OPERAND (gimple_assign_rhs1 (use_stmt), 0), 1)

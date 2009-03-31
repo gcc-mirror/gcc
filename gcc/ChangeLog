@@ -1,3 +1,11 @@
+2009-03-31  Richard Guenther  <rguenther@suse.de>
+
+	* tree.h (div_if_zero_remainder): Declare.
+	* fold-const.c (div_if_zero_remainder): Export.
+	* tree-ssa-forwprop.c
+	(forward_propagate_addr_into_variable_array_index): Handle
+	constant array index addition outside of the variable index.
+
 2009-03-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/39592

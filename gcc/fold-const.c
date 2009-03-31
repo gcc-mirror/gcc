@@ -874,7 +874,7 @@ div_and_round_double (enum tree_code code, int uns,
    of type CODE and returns the quotient.
    Otherwise returns NULL_TREE.  */
 
-static tree
+tree
 div_if_zero_remainder (enum tree_code code, const_tree arg1, const_tree arg2)
 {
   unsigned HOST_WIDE_INT int1l, int2l;
