@@ -1,5 +1,8 @@
 2009-03-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/37806
+	* g++.dg/template/typedef17.C: New test.
+
 	* g++.dg/cpp0x/auto6.C: Adjust expected mangling.
 	* g++.dg/cpp0x/auto12.C: Likewise.
 
