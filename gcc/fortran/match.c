@@ -2222,11 +2222,13 @@ match
 gfc_match_allocate (void)
 {
   gfc_alloc *head, *tail;
-  gfc_expr *stat;
+  gfc_expr *stat, *errmsg, *tmp;
   match m;
+  bool saw_stat, saw_errmsg;
 
   head = tail = NULL;
-  stat = NULL;
+  stat = errmsg = tmp = NULL;
+  saw_stat = saw_errmsg = false;
 
   if (gfc_match_char ('(') != MATCH_YES)
     goto syntax;
@@ -2250,35 +2252,92 @@ gfc_match_allocate (void)
       if (gfc_check_do_variable (tail->expr->symtree))
 	goto cleanup;
 
-      if (gfc_pure (NULL)
-	  && gfc_impure_variable (tail->expr->symtree->n.sym))
+      if (gfc_pure (NULL) && gfc_impure_variable (tail->expr->symtree->n.sym))
 	{
-	  gfc_error ("Bad allocate-object in ALLOCATE statement at %C for a "
-		     "PURE procedure");
+	  gfc_error ("Bad allocate-object at %C for a PURE procedure");
 	  goto cleanup;
 	}
 
       if (tail->expr->ts.type == BT_DERIVED)
 	tail->expr->ts.derived = gfc_use_derived (tail->expr->ts.derived);
 
+      /* FIXME: disable the checking on derived types and arrays.  */
+      if (!(tail->expr->ref
+	   && (tail->expr->ref->type == REF_COMPONENT
+	       || tail->expr->ref->type == REF_ARRAY)) 
+	  && tail->expr->symtree->n.sym
+	  && !(tail->expr->symtree->n.sym->attr.allocatable
+	       || tail->expr->symtree->n.sym->attr.pointer
+	       || tail->expr->symtree->n.sym->attr.proc_pointer))
+	{
+	  gfc_error ("Allocate-object at %C is not a nonprocedure pointer "
+		     "or an allocatable variable");
+	  goto cleanup;
+	}
+
       if (gfc_match_char (',') != MATCH_YES)
 	break;
 
-      m = gfc_match (" stat = %v", &stat);
+alloc_opt_list:
+
+      m = gfc_match (" stat = %v", &tmp);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
-	break;
+	{
+	  if (saw_stat)
+	    {
+	      gfc_error ("Redundant STAT tag found at %L ", &tmp->where);
+	      gfc_free_expr (tmp);
+	      goto cleanup;
+	    }
+
+	  stat = tmp;
+	  saw_stat = true;
+
+	  if (gfc_check_do_variable (stat->symtree))
+	    goto cleanup;
+
+	  if (gfc_match_char (',') == MATCH_YES)
+	    goto alloc_opt_list;
+	}
+
+      m = gfc_match (" errmsg = %v", &tmp);
+      if (m == MATCH_ERROR)
+	goto cleanup;
+      if (m == MATCH_YES)
+	{
+	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ERRMSG at %L",
+			      &tmp->where) == FAILURE)
+	    goto cleanup;
+
+	  if (saw_errmsg)
+	    {
+	      gfc_error ("Redundant ERRMSG tag found at %L ", &tmp->where);
+	      gfc_free_expr (tmp);
+	      goto cleanup;
+	    }
+
+	  errmsg = tmp;
+	  saw_errmsg = true;
+
+	  if (gfc_match_char (',') == MATCH_YES)
+	    goto alloc_opt_list;
+	}
+
+	gfc_gobble_whitespace ();
+
+	if (gfc_peek_char () == ')')
+	  break;
     }
 
-  if (stat != NULL)
-    gfc_check_do_variable(stat->symtree);
 
   if (gfc_match (" )%t") != MATCH_YES)
     goto syntax;
 
   new_st.op = EXEC_ALLOCATE;
   new_st.expr = stat;
+  new_st.expr2 = errmsg;
   new_st.ext.alloc_list = head;
 
   return MATCH_YES;
@@ -2287,6 +2346,7 @@ syntax:
   gfc_syntax_error (ST_ALLOCATE);
 
 cleanup:
+  gfc_free_expr (errmsg);
   gfc_free_expr (stat);
   gfc_free_alloc_list (head);
   return MATCH_ERROR;
@@ -2367,11 +2427,13 @@ match
 gfc_match_deallocate (void)
 {
   gfc_alloc *head, *tail;
-  gfc_expr *stat;
+  gfc_expr *stat, *errmsg, *tmp;
   match m;
+  bool saw_stat, saw_errmsg;
 
   head = tail = NULL;
-  stat = NULL;
+  stat = errmsg = tmp = NULL;
+  saw_stat = saw_errmsg = false;
 
   if (gfc_match_char ('(') != MATCH_YES)
     goto syntax;
@@ -2395,32 +2457,88 @@ gfc_match_deallocate (void)
       if (gfc_check_do_variable (tail->expr->symtree))
 	goto cleanup;
 
-      if (gfc_pure (NULL)
-	  && gfc_impure_variable (tail->expr->symtree->n.sym))
+      if (gfc_pure (NULL) && gfc_impure_variable (tail->expr->symtree->n.sym))
 	{
-	  gfc_error ("Illegal deallocate-expression in DEALLOCATE at %C "
-		     "for a PURE procedure");
+	  gfc_error ("Illegal allocate-object at %C for a PURE procedure");
+	  goto cleanup;
+	}
+
+      /* FIXME: disable the checking on derived types.  */
+      if (!(tail->expr->ref
+	   && (tail->expr->ref->type == REF_COMPONENT
+	       || tail->expr->ref->type == REF_ARRAY)) 
+	  && tail->expr->symtree->n.sym
+	  && !(tail->expr->symtree->n.sym->attr.allocatable
+	       || tail->expr->symtree->n.sym->attr.pointer
+	       || tail->expr->symtree->n.sym->attr.proc_pointer))
+	{
+	  gfc_error ("Allocate-object at %C is not a nonprocedure pointer "
+		     "or an allocatable variable");
 	  goto cleanup;
 	}
 
       if (gfc_match_char (',') != MATCH_YES)
 	break;
 
-      m = gfc_match (" stat = %v", &stat);
+dealloc_opt_list:
+
+      m = gfc_match (" stat = %v", &tmp);
       if (m == MATCH_ERROR)
 	goto cleanup;
       if (m == MATCH_YES)
-	break;
-    }
+	{
+	  if (saw_stat)
+	    {
+	      gfc_error ("Redundant STAT tag found at %L ", &tmp->where);
+	      gfc_free_expr (tmp);
+	      goto cleanup;
+	    }
 
-  if (stat != NULL)
-    gfc_check_do_variable(stat->symtree);
+	  stat = tmp;
+	  saw_stat = true;
+
+	  if (gfc_check_do_variable (stat->symtree))
+	    goto cleanup;
+
+	  if (gfc_match_char (',') == MATCH_YES)
+	    goto dealloc_opt_list;
+	}
+
+      m = gfc_match (" errmsg = %v", &tmp);
+      if (m == MATCH_ERROR)
+	goto cleanup;
+      if (m == MATCH_YES)
+	{
+	  if (gfc_notify_std (GFC_STD_F2003, "Fortran 2003: ERRMSG at %L",
+			      &tmp->where) == FAILURE)
+	    goto cleanup;
+
+	  if (saw_errmsg)
+	    {
+	      gfc_error ("Redundant ERRMSG tag found at %L ", &tmp->where);
+	      gfc_free_expr (tmp);
+	      goto cleanup;
+	    }
+
+	  errmsg = tmp;
+	  saw_errmsg = true;
+
+	  if (gfc_match_char (',') == MATCH_YES)
+	    goto dealloc_opt_list;
+	}
+
+	gfc_gobble_whitespace ();
+
+	if (gfc_peek_char () == ')')
+	  break;
+    }
 
   if (gfc_match (" )%t") != MATCH_YES)
     goto syntax;
 
   new_st.op = EXEC_DEALLOCATE;
   new_st.expr = stat;
+  new_st.expr2 = errmsg;
   new_st.ext.alloc_list = head;
 
   return MATCH_YES;
@@ -2429,6 +2547,7 @@ syntax:
   gfc_syntax_error (ST_DEALLOCATE);
 
 cleanup:
+  gfc_free_expr (errmsg);
   gfc_free_expr (stat);
   gfc_free_alloc_list (head);
   return MATCH_ERROR;
