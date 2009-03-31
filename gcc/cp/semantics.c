@@ -1422,6 +1422,16 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 {
   gcc_assert (TREE_CODE (decl) == FIELD_DECL);
 
+  if (!object && skip_evaluation)
+    {
+      /* DR 613: Can use non-static data members without an associated
+         object in sizeof/decltype/alignof.  */
+      tree scope = qualifying_scope;
+      if (scope == NULL_TREE)
+	scope = context_for_name_lookup (decl);
+      object = maybe_dummy_object (scope, NULL);
+    }
+
   if (!object)
     {
       if (current_function_decl
@@ -1433,7 +1443,8 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 
       return error_mark_node;
     }
-  TREE_USED (current_class_ptr) = 1;
+  if (current_class_ptr)
+    TREE_USED (current_class_ptr) = 1;
   if (processing_template_decl && !qualifying_scope)
     {
       tree type = TREE_TYPE (decl);
@@ -1443,7 +1454,9 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
       else
 	{
 	  /* Set the cv qualifiers.  */
-	  int quals = cp_type_quals (TREE_TYPE (current_class_ref));
+	  int quals = (current_class_ref
+		       ? cp_type_quals (TREE_TYPE (current_class_ref))
+		       : TYPE_UNQUALIFIED);
 
 	  if (DECL_MUTABLE_P (decl))
 	    quals &= ~TYPE_QUAL_CONST;

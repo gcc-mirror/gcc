@@ -3,6 +3,6 @@
 
 struct S
 {
-  int i; // { dg-error "" } non-static data member
-  __typeof( S::i ) f (); // { dg-error "" } referenced here
+  int i;
+  __typeof( S::i ) f ();
 };
