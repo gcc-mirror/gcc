@@ -20,5 +20,5 @@ return 0;
 }
 /* { dg-output "mudflap violation 1.*" } */
 /* { dg-output "Nearby object.*" } */
-/* { dg-output "mudflap object.*buffer.*alloc.*dealloc" } */
+/* { dg-output "mudflap dead object.*buffer.*alloc.*dealloc" } */
 /* { dg-do run { xfail *-*-* } } */
