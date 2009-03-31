@@ -26,6 +26,12 @@
 
 2009-03-31  Jason Merrill  <jason@redhat.com>
 
+	C++ DR 613
+	* g++.old-deja/g++.dg/cpp0x/decltype3.C: Remove expected errors.
+	* g++.old-deja/g++.ext/typeof2.C: Remove expected errors.
+	* g++.old-deja/g++.other/sizeof2.C: Remove some expected errors,
+	xfail others.
+
 	* g++.dg/other/typedef2.C: New test.
 
 	PR c++/37806

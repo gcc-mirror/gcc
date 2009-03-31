@@ -1,5 +1,9 @@
 2009-03-31  Jason Merrill  <jason@redhat.com>
 
+	C++ DR 613
+	* semantics.c (finish_non_static_data_member): Allow such references
+	without an associated object in sizeof/decltype/alignof.
+
 	* ptree.c (cxx_print_decl): Pretty-print full name of
 	function/template.
 	(cxx_print_type): Pretty-print full name of class.
