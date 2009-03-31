@@ -1,3 +1,9 @@
+2009-03-31  Ben Elliston  <bje@au.ibm.com>
+
+	PR target/31635
+	* config/rs6000/rs6000.c (rs6000_handle_option): Handle
+	OPT_mvrsave.
+
 2009-03-31  Alan Modra  <amodra@bigpond.net.au>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options):Document mtls-markers.
