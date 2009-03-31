@@ -1,3 +1,8 @@
+2009-03-31  Ayal Zaks  <zaks@il.ibm.com>
+
+	* modulo-sched.c (sms_schedule_by_order): Pass the actual
+	schedulable rows to compute_split_row.
+
 2009-03-31  Ben Elliston  <bje@au.ibm.com>
 
 	PR target/31635
