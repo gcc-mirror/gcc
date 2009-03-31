@@ -1,8 +1,13 @@
+2009-03-31  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/spu/spu.c (spu_expand_prologue): Delete redundant code.
+
 2009-03-30  Jan Hubicka  <jh@suse.cz>
 
-	* tree-eh.c (make_eh_edges): Set probability 100% to first edge out of RESX.
-	(tree_remove_unreachable_handlers): Cleanup EH predecestor detection and label
-	handling.
+	* tree-eh.c (make_eh_edges): Set probability 100% to first edge
+	out of RESX.
+	(tree_remove_unreachable_handlers): Cleanup EH predecestor
+	detection and label handling.
 
 2009-03-30  Vladimir Makarov  <vmakarov@redhat.com>
 
