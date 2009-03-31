@@ -1037,10 +1037,6 @@ fsection-anchors
 Common Report Var(flag_section_anchors) Optimization
 Access data in the same section from shared anchor points
 
-frtl-abstract-sequences
-Common Report Var(flag_rtl_seqabstr) Optimization
-Perform sequence abstraction optimization on RTL
-
 fsee
 Common Report Var(flag_see) Init(0)
 Eliminate redundant sign extensions using LCM.

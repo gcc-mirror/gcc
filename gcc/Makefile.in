@@ -1169,7 +1169,6 @@ OBJS-common = \
 	reorg.o \
 	resource.o \
 	rtl-error.o \
-	rtl-factoring.o \
 	rtl.o \
 	rtlanal.o \
 	rtlhooks.o \
@@ -2193,10 +2192,6 @@ tree-cfgcleanup.o : tree-cfgcleanup.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_DUMP_H) $(EXCEPT_H) langhooks.h $(CFGLOOP_H) tree-pass.h \
    $(CFGLAYOUT_H) $(BASIC_BLOCK_H) hard-reg-set.h $(HASHTAB_H) $(TOPLEV_H) \
    tree-ssa-propagate.h tree-scalar-evolution.h
-rtl-factoring.o : rtl-factoring.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
-   coretypes.h $(TM_H) $(BASIC_BLOCK_H) $(RESOURCE_H) $(GGC_H) $(REGS_H) \
-   $(PARAMS_H) $(EXPR_H) addresses.h $(TM_P_H) tree-pass.h $(TREE_FLOW_H) \
-   $(TIMEVAR_H) output.h $(DF_H)
 tree-tailcall.o : tree-tailcall.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(FUNCTION_H) $(TM_H) coretypes.h \
    $(TREE_DUMP_H) $(DIAGNOSTIC_H) $(EXCEPT_H) tree-pass.h $(FLAGS_H) langhooks.h \
