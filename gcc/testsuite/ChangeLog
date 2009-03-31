@@ -1,5 +1,11 @@
 2009-03-31  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/31029
+	* gcc.dg/fold-compare-4.c: New testcase.
+	* gcc.dg/fold-compare-5.c: Likewise.
+
+2009-03-31  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/forwprop-12.c: New testcase.
 
 2009-03-31  Joseph Myers  <joseph@codesourcery.com>

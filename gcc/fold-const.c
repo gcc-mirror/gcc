@@ -12191,22 +12191,33 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 					 fold_convert (TREE_TYPE (arg0), arg1),
 					 TREE_OPERAND (arg0, 1)));
 
-      /* Transform comparisons of the form X +- C CMP X.  */
-      if ((TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
+      /* Transform comparisons of the form X +- Y CMP X to Y CMP 0.  */
+      if ((TREE_CODE (arg0) == PLUS_EXPR
+	   || TREE_CODE (arg0) == POINTER_PLUS_EXPR
+	   || TREE_CODE (arg0) == MINUS_EXPR)
 	  && operand_equal_p (TREE_OPERAND (arg0, 0), arg1, 0)
-	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
 	  && (INTEGRAL_TYPE_P (TREE_TYPE (arg0))
 	      || POINTER_TYPE_P (TREE_TYPE (arg0))))
 	{
-	  tree cst = TREE_OPERAND (arg0, 1);
+	  tree val = TREE_OPERAND (arg0, 1);
+	  return omit_two_operands (type,
+				    fold_build2 (code, type,
+						 val,
+						 build_int_cst (TREE_TYPE (val),
+								0)),
+				    TREE_OPERAND (arg0, 0), arg1);
+	}
 
-	  if (code == EQ_EXPR
-	      && !integer_zerop (cst))
-	    return omit_two_operands (type, boolean_false_node,
-				      TREE_OPERAND (arg0, 0), arg1);
-	  else
-	    return omit_two_operands (type, boolean_true_node,
-				      TREE_OPERAND (arg0, 0), arg1);
+      /* Transform comparisons of the form C - X CMP X if C % 2 == 1.  */
+      if (TREE_CODE (arg0) == MINUS_EXPR
+	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == INTEGER_CST
+	  && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0)
+	  && (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 0)) & 1) == 1)
+	{
+	  return omit_two_operands (type,
+				    code == NE_EXPR
+				    ? boolean_true_node : boolean_false_node,
+				    TREE_OPERAND (arg0, 1), arg1);
 	}
 
       /* If we have X - Y == 0, we can convert that to X == Y and similarly
