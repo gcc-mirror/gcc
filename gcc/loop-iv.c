@@ -1368,6 +1368,34 @@ simple_rhs_p (rtx rhs)
     }
 }
 
+/* If REG has a single definition, replace it with its known value in EXPR.
+   Callback for for_each_rtx.  */
+
+static int
+replace_single_def_regs (rtx *reg, void *expr1)
+{
+  unsigned regno;
+  df_ref adef;
+  rtx set;
+  rtx *expr = (rtx *)expr1;
+
+  if (!REG_P (*reg))
+    return 0;
+
+  regno = REGNO (*reg);
+  adef = DF_REG_DEF_CHAIN (regno);
+  if (adef == NULL || DF_REF_NEXT_REG (adef) != NULL
+      || DF_REF_IS_ARTIFICIAL (adef))
+    return -1;
+
+  set = single_set (DF_REF_INSN (adef));
+  if (set == NULL || SET_DEST (set) != *reg || !CONSTANT_P (SET_SRC (set)))
+    return -1;
+
+  *expr = simplify_replace_rtx (*expr, *reg, SET_SRC (set));
+  return 1;
+}
+
 /* A subroutine of simplify_using_initial_values, this function examines INSN
    to see if it contains a suitable set that we can use to make a replacement.
    If it is suitable, return true and set DEST and SRC to the lhs and rhs of
@@ -1398,6 +1426,20 @@ suitable_set_for_replacement (rtx insn, rtx *dest, rtx *src)
   *dest = lhs;
   *src = rhs;
   return true;
+}
+
+/* Using the data returned by suitable_set_for_replacement, replace DEST
+   with SRC in *EXPR and return the new expression.  Also call
+   replace_single_def_regs if the replacement changed something.  */
+static void
+replace_in_expr (rtx *expr, rtx dest, rtx src)
+{
+  rtx old = *expr;
+  *expr = simplify_replace_rtx (*expr, dest, src);
+  if (old == *expr)
+    return;
+  while (for_each_rtx (expr, replace_single_def_regs, expr) != 0)
+    continue;
 }
 
 /* Checks whether A implies B.  */
@@ -1818,6 +1860,12 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 
   gcc_assert (op == UNKNOWN);
 
+  for (;;)
+    if (for_each_rtx (expr, replace_single_def_regs, expr) == 0)
+      break;
+  if (CONSTANT_P (*expr))
+    return;
+
   e = loop_preheader_edge (loop);
   if (e->src == ENTRY_BLOCK_PTR)
     return;
@@ -1881,7 +1929,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 	    {
 	      rtx *pnote, *pnote_next;
 
-	      *expr = simplify_replace_rtx (*expr, dest, src);
+	      replace_in_expr (expr, dest, src);
 	      if (CONSTANT_P (*expr))
 		goto out;
 
@@ -1891,8 +1939,8 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
 		  rtx old_cond = XEXP (note, 0);
 
 		  pnote_next = &XEXP (note, 1);
-		  XEXP (note, 0) = simplify_replace_rtx (XEXP (note, 0), dest,
-							 src);
+		  replace_in_expr (&XEXP (note, 0), dest, src);
+
 		  /* We can no longer use a condition that has been simplified
 		     to a constant, and simplify_using_condition will abort if
 		     we try.  */
