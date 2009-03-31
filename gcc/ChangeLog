@@ -25,6 +25,12 @@
 
 	* loop-iv.c (simple_rhs_p): Allow more kinds of expressions.
 
+	* loop-iv.c (replace_single_def_regs, replace_in_expr): New static
+	functions.
+	(simplify_using_assignment, simplify_using_initial_values): Call 
+	replace_in_expr to make replacements.  Call replace_single_def_regs
+	once on the initial version of the expression.
+
 2009-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         PR target/27237
