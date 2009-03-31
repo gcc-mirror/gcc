@@ -15,6 +15,10 @@
 	and keep using them to simplify new expressions, while applying the
 	same substitutions to them as to the expression.
 
+	* simplify-rtx.c (simplify_relational_operation_1): Simplify
+	(LTU (PLUS a C) C) or (LTU (PLUS a C) a) to (GEU a -C); likewise with
+	GEU/LTU reversed.
+
 2009-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
         PR target/27237
