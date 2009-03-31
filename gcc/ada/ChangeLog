@@ -1,3 +1,10 @@
+2009-03-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* system-linux-alpha.ads (Functions_Return_By_DSP): Remove.
+	* system-linux-s390.ads (Functions_Return_By_DSP): Likewise.
+	* system-linux-s390x.ads (Functions_Return_By_DSP): Likewise.
+	* system-linux-sparc.ads (Functions_Return_By_DSP): Likewise.
+
 2009-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.in (cygwin/mingw): Revert accidental EH_MECHANISM change
