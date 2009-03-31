@@ -1,3 +1,9 @@
+2009-03-31  Ben Elliston  <bje@au.ibm.com>
+
+	PR libmudflap/38462
+	* testsuite/libmudflap.c/fail27-frag.c: Match `mudflap dead
+	object', not `mudflap object'.
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
