@@ -1,3 +1,7 @@
+2009-04-01  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/sysv4.opt (msdata): Improve option description.
+
 2009-03-31  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.md (divsf3_internal_lat): Remove.
