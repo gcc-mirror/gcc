@@ -356,7 +356,7 @@ Objective-C and Objective-C++ Dialects}.
 -freciprocal-math -fregmove -frename-registers -freorder-blocks @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop -freschedule-modulo-scheduled-loops @gol
--frounding-math -frtl-abstract-sequences -fsched2-use-superblocks @gol
+-frounding-math -fsched2-use-superblocks @gol
 -fsched2-use-traces -fsched-spec-load -fsched-spec-load-dangerous @gol
 -fsched-stalled-insns-dep[=@var{n}] -fsched-stalled-insns[=@var{n}] @gol
 -fschedule-insns -fschedule-insns2 -fsection-anchors -fsee @gol
@@ -6953,14 +6953,6 @@ disable all GCC optimizations that are affected by rounding mode.
 Future versions of GCC may provide finer control of this setting
 using C99's @code{FENV_ACCESS} pragma.  This command line option
 will be used to specify the default state for @code{FENV_ACCESS}.
-
-@item -frtl-abstract-sequences
-@opindex frtl-abstract-sequences
-It is a size optimization method. This option is to find identical
-sequences of code, which can be turned into pseudo-procedures  and
-then  replace  all  occurrences with  calls to  the  newly created
-subroutine. It is kind of an opposite of @option{-finline-functions}.
-This optimization runs at RTL level.
 
 @item -fsignaling-nans
 @opindex fsignaling-nans
