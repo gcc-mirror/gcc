@@ -2326,6 +2326,11 @@ rs6000_handle_option (size_t code, const char *arg, int value)
       rs6000_explicit_options.aix_struct_ret = true;
       break;
 
+    case OPT_mvrsave:
+      rs6000_explicit_options.vrsave = true;
+      TARGET_ALTIVEC_VRSAVE = value;
+      break;
+
     case OPT_mvrsave_:
       rs6000_explicit_options.vrsave = true;
       rs6000_parse_yes_no_option ("vrsave", arg, &(TARGET_ALTIVEC_VRSAVE));
