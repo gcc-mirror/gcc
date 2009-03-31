@@ -1,3 +1,8 @@
+2009-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+        PR target/27237
+	* doc/invoke.texi (ARM Options): Update documentation for -mthumb.
+	
 2009-03-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31029

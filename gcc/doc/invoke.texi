@@ -9223,7 +9223,10 @@ Generate code for the Thumb instruction set.  The default is to
 use the 32-bit ARM instruction set.
 This option automatically enables either 16-bit Thumb-1 or
 mixed 16/32-bit Thumb-2 instructions based on the @option{-mcpu=@var{name}}
-and @option{-march=@var{name}} options.
+and @option{-march=@var{name}} options. This option is not passed to the 
+assembler. If you want to force assembler files to be interpreted as Thumb code,
+either add a @samp{.thumb} directive to the source or pass the @option{-mthumb} 
+option directly to the assembler by prefixing it with @option{-Wa}.
 
 @item -mtpcs-frame
 @opindex mtpcs-frame
