@@ -98,7 +98,7 @@ Use alternate register names
 ;; driver passes all -m* options through.
 msdata
 Target
-no description yet
+Use default method for sdata handling
 
 msim
 Target RejectNegative
