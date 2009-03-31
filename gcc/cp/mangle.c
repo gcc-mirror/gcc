@@ -2159,12 +2159,6 @@ write_expression (tree expr)
       code = TREE_CODE (expr);
     }
 
-  if (code == OVERLOAD)
-    {
-      expr = OVL_FUNCTION (expr);
-      code = TREE_CODE (expr);
-    }
-
   /* Handle pointers-to-members by making them look like expression
      nodes.  */
   if (code == PTRMEM_CST)
@@ -2344,7 +2338,25 @@ write_expression (tree expr)
       switch (code)
 	{
 	case CALL_EXPR:
-	  write_expression (CALL_EXPR_FN (expr));
+	  {
+	    tree fn = CALL_EXPR_FN (expr);
+
+	    if (TREE_CODE (fn) == ADDR_EXPR)
+	      fn = TREE_OPERAND (fn, 0);
+
+	    /* Mangle a dependent name as the name, not whatever happens to
+	       be the first function in the overload set.  */
+	    if ((TREE_CODE (fn) == FUNCTION_DECL
+		 || TREE_CODE (fn) == OVERLOAD)
+		&& type_dependent_expression_p_push (expr))
+	      fn = DECL_NAME (get_first_fn (fn));
+
+	    if (TREE_CODE (fn) == IDENTIFIER_NODE)
+	      write_source_name (fn);
+	    else
+	      write_expression (fn);
+	  }
+
 	  for (i = 0; i < call_expr_nargs (expr); ++i)
 	    write_expression (CALL_EXPR_ARG (expr, i));
 	  write_char ('E');
