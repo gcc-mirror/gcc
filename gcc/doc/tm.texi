@@ -1782,6 +1782,51 @@ unsigned int"} that has as much precision as @code{long long unsigned
 int}.
 @end defmac
 
+@defmac SIG_ATOMIC_TYPE
+@defmacx INT8_TYPE
+@defmacx INT16_TYPE
+@defmacx INT32_TYPE
+@defmacx INT64_TYPE
+@defmacx UINT8_TYPE
+@defmacx UINT16_TYPE
+@defmacx UINT32_TYPE
+@defmacx UINT64_TYPE
+@defmacx INT_LEAST8_TYPE
+@defmacx INT_LEAST16_TYPE
+@defmacx INT_LEAST32_TYPE
+@defmacx INT_LEAST64_TYPE
+@defmacx UINT_LEAST8_TYPE
+@defmacx UINT_LEAST16_TYPE
+@defmacx UINT_LEAST32_TYPE
+@defmacx UINT_LEAST64_TYPE
+@defmacx INT_FAST8_TYPE
+@defmacx INT_FAST16_TYPE
+@defmacx INT_FAST32_TYPE
+@defmacx INT_FAST64_TYPE
+@defmacx UINT_FAST8_TYPE
+@defmacx UINT_FAST16_TYPE
+@defmacx UINT_FAST32_TYPE
+@defmacx UINT_FAST64_TYPE
+@defmacx INTPTR_TYPE
+@defmacx UINTPTR_TYPE
+C expressions for the standard types @code{sig_atomic_t},
+@code{int8_t}, @code{int16_t}, @code{int32_t}, @code{int64_t},
+@code{uint8_t}, @code{uint16_t}, @code{uint32_t}, @code{uint64_t},
+@code{int_least8_t}, @code{int_least16_t}, @code{int_least32_t},
+@code{int_least64_t}, @code{uint_least8_t}, @code{uint_least16_t},
+@code{uint_least32_t}, @code{uint_least64_t}, @code{int_fast8_t},
+@code{int_fast16_t}, @code{int_fast32_t}, @code{int_fast64_t},
+@code{uint_fast8_t}, @code{uint_fast16_t}, @code{uint_fast32_t},
+@code{uint_fast64_t}, @code{intptr_t}, and @code{uintptr_t}.  See
+@code{SIZE_TYPE} above for more information.
+
+If any of these macros evaluates to a null pointer, the corresponding
+type is not supported; if GCC is configured to provide
+@code{<stdint.h>} in such a case, the header provided may not conform
+to C99, depending on the type in question.  The defaults for all of
+these macros are null pointers.
+@end defmac
+
 @defmac TARGET_PTRMEMFUNC_VBIT_LOCATION
 The C++ compiler represents a pointer-to-member-function with a struct
 that looks like:

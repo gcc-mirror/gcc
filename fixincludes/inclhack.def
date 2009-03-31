@@ -2430,6 +2430,64 @@ fix = {
 };
 
 
+/* newlib's stdint.h has several failures to conform to C99.  The fix
+   for these removed a comment that can be matched to identify unfixed
+   versions.  */
+fix = {
+    hackname  = newlib_stdint_1;
+    files     = stdint.h;
+    select    = "@todo - Add support for wint_t types";
+    sed       = "s@#define INT32_MIN.*@#define INT32_MIN (-INT32_MAX - 1)@";
+    sed       = "s@#define INT32_MAX.*@#define INT32_MAX __INT32_MAX__@";
+    sed       = "s@#define UINT32_MAX.*@#define UINT32_MAX __UINT32_MAX__@";
+    sed       = "s@#define INT_LEAST32_MIN.*@#define INT_LEAST32_MIN (-INT_LEAST32_MAX - 1)@";
+    sed       = "s@#define INT_LEAST32_MAX.*@#define INT_LEAST32_MAX __INT_LEAST32_MAX__@";
+    sed       = "s@#define UINT_LEAST32_MAX.*@#define UINT_LEAST32_MAX __UINT_LEAST32_MAX__@";
+    sed       = 's@#define INT_FAST\([0-9]*\)_MIN.*@#define INT_FAST\1_MIN (-INT_FAST\1_MAX - 1)@';
+    sed       = 's@#define INT_FAST\([0-9]*\)_MAX.*@#define INT_FAST\1_MAX __INT_FAST\1_MAX__@';
+    sed       = 's@#define UINT_FAST\([0-9]*\)_MAX.*@#define UINT_FAST\1_MAX __UINT_FAST\1_MAX__@';
+    sed       = "s@#define SIZE_MAX.*@#define SIZE_MAX __SIZE_MAX__@";
+    sed       = "s@#define PTRDIFF_MIN.*@#define PTRDIFF_MIN (-PTRDIFF_MAX - 1)@";
+    sed       = "s@#define PTRDIFF_MAX.*@#define PTRDIFF_MAX __PTRDIFF_MAX__@";
+    sed       = "s@#define UINT8_C.*@#define UINT8_C(c) __UINT8_C(c)@";
+    sed       = "s@#define UINT16_C.*@#define UINT16_C(c) __UINT16_C(c)@";
+    test_text = "/* @todo - Add support for wint_t types. */\n"
+                "#define INT32_MIN (-2147483647-1)\n"
+                "#define INT32_MAX 2147483647\n"
+                "#define UINT32_MAX 4294967295U\n"
+                "#define INT_LEAST32_MIN (-2147483647-1)\n"
+                "#define INT_LEAST32_MAX 2147483647\n"
+                "#define UINT_LEAST32_MAX 4294967295U\n"
+                "#define INT_FAST8_MIN INT8_MIN\n"
+                "#define INT_FAST8_MAX INT8_MAX\n"
+                "#define UINT_FAST8_MAX UINT8_MAX\n"
+                "#define SIZE_MAX (__STDINT_EXP(LONG_MAX) * 2UL + 1)\n"
+                "#define PTRDIFF_MIN (-__STDINT_EXP(LONG_MAX) - 1L)\n"
+                "#define PTRDIFF_MAX __STDINT_EXP(LONG_MAX)\n"
+                "#define UINT8_C(x) x##U\n"
+                "#define UINT16_C(x) x##U";
+};
+
+
+fix = {
+    hackname  = newlib_stdint_2;
+    files     = stdint.h;
+    select    = "@todo - Add support for wint_t types";
+    c_fix     = format;
+    c_fix_arg = "#define INTMAX_MAX __INTMAX_MAX__\n"
+                "#define INTMAX_MIN (-INTMAX_MAX - 1)\n"
+                "#define UINTMAX_MAX __UINTMAX_MAX__\n"
+                "#define WCHAR_MAX __WCHAR_MAX__\n"
+                "#define WCHAR_MIN __WCHAR_MIN__\n"
+                "#define WINT_MAX __WINT_MAX__\n"
+                "#define WINT_MIN __WINT_MIN__\n\n"
+                "%0";
+    c_fix_arg = '/\*\* Macros for minimum-width integer constant expressions \*/';
+    test_text = "/* @todo - Add support for wint_t types. */\n"
+                "/** Macros for minimum-width integer constant expressions */";
+};
+
+
 /*
  *  NeXT 3.2 adds const prefix to some math functions.
  *  These conflict with the built-in functions.

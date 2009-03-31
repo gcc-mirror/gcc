@@ -1,3 +1,103 @@
+2009-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/448
+	* Makefile.in (USE_GCC_STDINT): Define.
+	(stmp-int-hdrs): Install stdint.h if applicable.
+	* c-common.c (CHAR16_TYPE): Define in terms of UINT_LEAST16_TYPE
+	if known.
+	(CHAR32_TYPE): Define in terms of UINT_LEAST32_TYPE if known.
+	(SIG_ATOMIC_TYPE, INT8_TYPE, INT16_TYPE, INT32_TYPE, INT64_TYPE,
+	UINT8_TYPE, UINT16_TYPE, UINT32_TYPE, UINT64_TYPE,
+	INT_LEAST8_TYPE, INT_LEAST16_TYPE, INT_LEAST32_TYPE,
+	INT_LEAST64_TYPE, UINT_LEAST8_TYPE, UINT_LEAST16_TYPE,
+	UINT_LEAST32_TYPE, UINT_LEAST64_TYPE, INT_FAST8_TYPE,
+	INT_FAST16_TYPE, INT_FAST32_TYPE, INT_FAST64_TYPE,
+	UINT_FAST8_TYPE, UINT_FAST16_TYPE, UINT_FAST32_TYPE,
+	UINT_FAST64_TYPE, INTPTR_TYPE, UINTPTR_TYPE): Define.
+	(c_common_nodes_and_builtins): Initialize
+	underlying_wchar_type_node.  Do not initialize
+	signed_wchar_type_node or unsigned_wchar_type_node.  Initialize
+	nodes for new types.
+	(c_stddef_cpp_builtins): Define macros for new types.
+	* c-common.h (CTI_SIGNED_WCHAR_TYPE, CTI_UNSIGNED_WCHAR_TYPE):
+	Remove.
+	(CTI_UNDERLYING_WCHAR_TYPE, CTI_SIG_ATOMIC_TYPE, CTI_INT8_TYPE,
+	CTI_INT16_TYPE, CTI_INT32_TYPE, CTI_INT64_TYPE, CTI_UINT8_TYPE,
+	CTI_UINT16_TYPE, CTI_UINT32_TYPE, CTI_UINT64_TYPE,
+	CTI_INT_LEAST8_TYPE, CTI_INT_LEAST16_TYPE, CTI_INT_LEAST32_TYPE,
+	CTI_INT_LEAST64_TYPE, CTI_UINT_LEAST8_TYPE, CTI_UINT_LEAST16_TYPE,
+	CTI_UINT_LEAST32_TYPE, CTI_UINT_LEAST64_TYPE, CTI_INT_FAST8_TYPE,
+	CTI_INT_FAST16_TYPE, CTI_INT_FAST32_TYPE, CTI_INT_FAST64_TYPE,
+	CTI_UINT_FAST8_TYPE, CTI_UINT_FAST16_TYPE, CTI_UINT_FAST32_TYPE,
+	CTI_UINT_FAST64_TYPE, CTI_INTPTR_TYPE, CTI_UINTPTR_TYPE): Define.
+	(signed_wchar_type_node, unsigned_wchar_type_node): Remove.
+	(underlying_wchar_type_node, sig_atomic_type_node, int8_type_node,
+	int16_type_node, int32_type_node, int64_type_node,
+	uint8_type_node, uint16_type_node, c_uint32_type_node,
+	c_uint64_type_node, int_least8_type_node, int_least16_type_node,
+	int_least32_type_node, int_least64_type_node,
+	uint_least8_type_node, uint_least16_type_node,
+	uint_least32_type_node, uint_least64_type_node,
+	int_fast8_type_node, int_fast16_type_node, int_fast32_type_node,
+	int_fast64_type_node, uint_fast8_type_node, uint_fast16_type_node,
+	uint_fast32_type_node, uint_fast64_type_node, intptr_type_node,
+	uintptr_type_node): Define.
+	* c-cppbuiltin.c (builtin_define_constants,
+	builtin_define_type_minmax): New.
+	(builtin_define_stdint_macros): Define more macros.
+	(c_cpp_builtins): Define more limit macros.
+	(type_suffix): New.
+	(builtin_define_type_max): Define in terms of
+	builtin_define_type_minmax.  Remove is_long parameter.  All
+	callers changed.
+	* config.gcc (use_gcc_stdint): Define.
+	(tm_file): Add glibc-stdint.h for targets using glibc or uClibc.
+	Add newlib-stdint.h for generic targets.
+	* config/glibc-stdint.h, config/newlib-stdint.h,
+	ginclude/stdint-gcc.h, ginclude/stdint-wrap.h: New.
+	* config/m32c/m32c.h (UINTPTR_TYPE): Define.
+	* config/score/score.h (UINTPTR_TYPE): Define.
+	* config/sol2.h (SIG_ATOMIC_TYPE, INT8_TYPE, INT16_TYPE,
+	INT32_TYPE, INT64_TYPE, UINT8_TYPE, UINT16_TYPE, UINT32_TYPE,
+	UINT64_TYPE, INT_LEAST8_TYPE, INT_LEAST16_TYPE, INT_LEAST32_TYPE,
+	INT_LEAST64_TYPE, UINT_LEAST8_TYPE, UINT_LEAST16_TYPE,
+	UINT_LEAST32_TYPE, UINT_LEAST64_TYPE, INT_FAST8_TYPE,
+	INT_FAST16_TYPE, INT_FAST32_TYPE, INT_FAST64_TYPE,
+	UINT_FAST8_TYPE, UINT_FAST16_TYPE, UINT_FAST32_TYPE,
+	UINT_FAST64_TYPE, INTPTR_TYPE, UINTPTR_TYPE): Define.
+	* config/spu/spu.h (STDINT_LONG32): Define.
+	* configure.ac (use_gcc_stdint): Substitute.
+	* configure: Regenerate.
+	* doc/cpp.texi (__SIG_ATOMIC_TYPE__, __INT8_TYPE__,
+	__INT16_TYPE__, __INT32_TYPE__, __INT64_TYPE__, __UINT8_TYPE__,
+	__UINT16_TYPE__, __UINT32_TYPE__, __UINT64_TYPE__,
+	__INT_LEAST8_TYPE__, __INT_LEAST16_TYPE__, __INT_LEAST32_TYPE__,
+	__INT_LEAST64_TYPE__, __UINT_LEAST8_TYPE__, __UINT_LEAST16_TYPE__,
+	__UINT_LEAST32_TYPE_, __UINT_LEAST64_TYPE__, __INT_FAST8_TYPE__,
+	__INT_FAST16_TYPE__, __INT_FAST32_TYPE__, __INT_FAST64_TYPE__,
+	__UINT_FAST8_TYPE__, __UINT_FAST16_TYPE__, __UINT_FAST32_TYPE__,
+	__UINT_FAST64_TYPE__, __INTPTR_TYPE__, __UINTPTR_TYPE__,
+	__WINT_MAX__, __SIZE_MAX__, __PTRDIFF_MAX__, __UINTMAX_MAX__,
+	__SIG_ATOMIC_MAX__, __INT8_MAX__, __INT16_MAX__, __INT32_MAX__,
+	__INT64_MAX__, __UINT8_MAX__, __UINT16_MAX__, __UINT32_MAX__,
+	__UINT64_MAX__, __INT_LEAST8_MAX__, __INT_LEAST16_MAX__,
+	__INT_LEAST32_MAX__, __INT_LEAST64_MAX__, __UINT_LEAST8_MAX__,
+	__UINT_LEAST16_MAX__, __UINT_LEAST32_MAX__, __UINT_LEAST64_MAX__,
+	__INT_FAST8_MAX__, __INT_FAST16_MAX__, __INT_FAST32_MAX__,
+	__INT_FAST64_MAX__, __UINT_FAST8_MAX__, __UINT_FAST16_MAX__,
+	__UINT_FAST32_MAX__, __UINT_FAST64_MAX__, __INTPTR_MAX__,
+	__UINTPTR_MAX__, __WCHAR_MIN__, __WINT_MIN__, __SIG_ATOMIC_MIN__,
+	__INT8_C, __INT16_C, __INT32_C, __INT64_C, __UINT8_C, __UINT16_C,
+	__UINT32_C, __UINT64_C, __INTMAX_C, __UINTMAX_C): Document.
+	* doc/tm.texi (SIG_ATOMIC_TYPE, INT8_TYPE, INT16_TYPE, INT32_TYPE,
+	INT64_TYPE, UINT8_TYPE, UINT16_TYPE, UINT32_TYPE, UINT64_TYPE,
+	INT_LEAST8_TYPE, INT_LEAST16_TYPE, INT_LEAST32_TYPE,
+	INT_LEAST64_TYPE, UINT_LEAST8_TYPE, UINT_LEAST16_TYPE,
+	UINT_LEAST32_TYPE, UINT_LEAST64_TYPE, INT_FAST8_TYPE,
+	INT_FAST16_TYPE, INT_FAST32_TYPE, INT_FAST64_TYPE,
+	UINT_FAST8_TYPE, UINT_FAST16_TYPE, UINT_FAST32_TYPE,
+	UINT_FAST64_TYPE, INTPTR_TYPE, UINTPTR_TYPE): Document.
+
 2009-03-31  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* loop-iv.c (suitable_set_for_replacement): Renamed from

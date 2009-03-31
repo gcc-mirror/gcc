@@ -1,5 +1,5 @@
 /* score.h for Sunplus S+CORE processor
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Sunnorth.
 
    This file is part of GCC.
@@ -215,6 +215,8 @@
 
 /* Default definitions for size_t and ptrdiff_t.  */
 #define SIZE_TYPE                       "unsigned int"
+
+#define UINTPTR_TYPE			"long unsigned int"
 
 /* Register Usage
 

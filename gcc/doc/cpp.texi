@@ -11,7 +11,8 @@
 @copying
 @c man begin COPYRIGHT
 Copyright @copyright{} 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+2008, 2009
 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -2117,13 +2118,50 @@ OSF/rose @option{-mno-underscores} option).
 @itemx __WINT_TYPE__
 @itemx __INTMAX_TYPE__
 @itemx __UINTMAX_TYPE__
+@itemx __SIG_ATOMIC_TYPE__
+@itemx __INT8_TYPE__
+@itemx __INT16_TYPE__
+@itemx __INT32_TYPE__
+@itemx __INT64_TYPE__
+@itemx __UINT8_TYPE__
+@itemx __UINT16_TYPE__
+@itemx __UINT32_TYPE__
+@itemx __UINT64_TYPE__
+@itemx __INT_LEAST8_TYPE__
+@itemx __INT_LEAST16_TYPE__
+@itemx __INT_LEAST32_TYPE__
+@itemx __INT_LEAST64_TYPE__
+@itemx __UINT_LEAST8_TYPE__
+@itemx __UINT_LEAST16_TYPE__
+@itemx __UINT_LEAST32_TYPE__
+@itemx __UINT_LEAST64_TYPE__
+@itemx __INT_FAST8_TYPE__
+@itemx __INT_FAST16_TYPE__
+@itemx __INT_FAST32_TYPE__
+@itemx __INT_FAST64_TYPE__
+@itemx __UINT_FAST8_TYPE__
+@itemx __UINT_FAST16_TYPE__
+@itemx __UINT_FAST32_TYPE__
+@itemx __UINT_FAST64_TYPE__
+@itemx __INTPTR_TYPE__
+@itemx __UINTPTR_TYPE__
 These macros are defined to the correct underlying types for the
 @code{size_t}, @code{ptrdiff_t}, @code{wchar_t}, @code{wint_t},
-@code{intmax_t}, and @code{uintmax_t}
-typedefs, respectively.  They exist to make the standard header files
-@file{stddef.h} and @file{wchar.h} work correctly.  You should not use
-these macros directly; instead, include the appropriate headers and use
-the typedefs.
+@code{intmax_t}, @code{uintmax_t}, @code{sig_atomic_t}, @code{int8_t},
+@code{int16_t}, @code{int32_t}, @code{int64_t}, @code{uint8_t},
+@code{uint16_t}, @code{uint32_t}, @code{uint64_t},
+@code{int_least8_t}, @code{int_least16_t}, @code{int_least32_t},
+@code{int_least64_t}, @code{uint_least8_t}, @code{uint_least16_t},
+@code{uint_least32_t}, @code{uint_least64_t}, @code{int_fast8_t},
+@code{int_fast16_t}, @code{int_fast32_t}, @code{int_fast64_t},
+@code{uint_fast8_t}, @code{uint_fast16_t}, @code{uint_fast32_t},
+@code{uint_fast64_t}, @code{intptr_t}, and @code{uintptr_t} typedefs,
+respectively.  They exist to make the standard header files
+@file{stddef.h}, @file{stdint.h}, and @file{wchar.h} work correctly.
+You should not use these macros directly; instead, include the
+appropriate headers and use the typedefs.  Some of these macros may
+not be defined on particular systems if GCC does not provide a
+@file{stdint.h} header on those systems.
 
 @item __CHAR_BIT__
 Defined to the number of bits used in the representation of the
@@ -2137,14 +2175,77 @@ this macro directly; instead, include the appropriate headers.
 @itemx __INT_MAX__
 @itemx __LONG_MAX__
 @itemx __LONG_LONG_MAX__
+@itemx __WINT_MAX__
+@itemx __SIZE_MAX__
+@itemx __PTRDIFF_MAX__
 @itemx __INTMAX_MAX__
+@itemx __UINTMAX_MAX__
+@itemx __SIG_ATOMIC_MAX__
+@itemx __INT8_MAX__
+@itemx __INT16_MAX__
+@itemx __INT32_MAX__
+@itemx __INT64_MAX__
+@itemx __UINT8_MAX__
+@itemx __UINT16_MAX__
+@itemx __UINT32_MAX__
+@itemx __UINT64_MAX__
+@itemx __INT_LEAST8_MAX__
+@itemx __INT_LEAST16_MAX__
+@itemx __INT_LEAST32_MAX__
+@itemx __INT_LEAST64_MAX__
+@itemx __UINT_LEAST8_MAX__
+@itemx __UINT_LEAST16_MAX__
+@itemx __UINT_LEAST32_MAX__
+@itemx __UINT_LEAST64_MAX__
+@itemx __INT_FAST8_MAX__
+@itemx __INT_FAST16_MAX__
+@itemx __INT_FAST32_MAX__
+@itemx __INT_FAST64_MAX__
+@itemx __UINT_FAST8_MAX__
+@itemx __UINT_FAST16_MAX__
+@itemx __UINT_FAST32_MAX__
+@itemx __UINT_FAST64_MAX__
+@itemx __INTPTR_MAX__
+@itemx __UINTPTR_MAX__
+@itemx __WCHAR_MIN__
+@itemx __WINT_MIN__
+@itemx __SIG_ATOMIC_MIN__
 Defined to the maximum value of the @code{signed char}, @code{wchar_t},
 @code{signed short},
-@code{signed int}, @code{signed long}, @code{signed long long}, and
-@code{intmax_t} types
-respectively.  They exist to make the standard header given numerical limits
-work correctly.  You should not use these macros directly; instead, include
-the appropriate headers.
+@code{signed int}, @code{signed long}, @code{signed long long},
+@code{wint_t}, @code{size_t}, @code{ptrdiff_t},
+@code{intmax_t}, @code{uintmax_t}, @code{sig_atomic_t}, @code{int8_t},
+@code{int16_t}, @code{int32_t}, @code{int64_t}, @code{uint8_t},
+@code{uint16_t}, @code{uint32_t}, @code{uint64_t},
+@code{int_least8_t}, @code{int_least16_t}, @code{int_least32_t},
+@code{int_least64_t}, @code{uint_least8_t}, @code{uint_least16_t},
+@code{uint_least32_t}, @code{uint_least64_t}, @code{int_fast8_t},
+@code{int_fast16_t}, @code{int_fast32_t}, @code{int_fast64_t},
+@code{uint_fast8_t}, @code{uint_fast16_t}, @code{uint_fast32_t},
+@code{uint_fast64_t}, @code{intptr_t}, and @code{uintptr_t} types and
+to the minimum value of the @code{wchar_t}, @code{wint_t}, and
+@code{sig_atomic_t} types respectively.  They exist to make the
+standard header given numerical limits work correctly.  You should not
+use these macros directly; instead, include the appropriate headers.
+Some of these macros may not be defined on particular systems if GCC
+does not provide a @file{stdint.h} header on those systems.
+
+@item __INT8_C
+@itemx __INT16_C
+@itemx __INT32_C
+@itemx __INT64_C
+@itemx __UINT8_C
+@itemx __UINT16_C
+@itemx __UINT32_C
+@itemx __UINT64_C
+@itemx __INTMAX_C
+@itemx __UINTMAX_C
+Defined to implementations of the standard @file{stdint.h} macros with
+the same names without the leading @code{__}.  They exist the make the
+implementation of that header work correctly.  You should not use
+these macros directly; instead, include the appropriate headers.  Some
+of these macros may not be defined on particular systems if GCC does
+not provide a @file{stdint.h} header on those systems.
 
 @item __SIZEOF_INT__
 @itemx __SIZEOF_LONG__
