@@ -1,3 +1,11 @@
+2009-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/39310
+	* include/tr1_impl/type_traits (is_function): Add partial
+	specializations with function cv-quals.
+	(__is_function_helper): Remove.
+	(is_member_pointer): Don't define in terms of is_member_*_pointer.
+
 2009-03-30  Ian Lance Taylor  <iant@google.com>
 
 	* include/backward/hashtable.h (clear): Return quickly if the
