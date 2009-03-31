@@ -224,24 +224,34 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     : public integral_constant<bool, __is_class(_Tp)>
     { };
 
-  template<typename>
-    struct __is_function_helper
-    : public false_type { };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct __is_function_helper<_Res(_ArgTypes...)>
-    : public true_type { };
-
-  template<typename _Res, typename... _ArgTypes>
-    struct __is_function_helper<_Res(_ArgTypes......)>
-    : public true_type { };
-
   /// is_function
-  template<typename _Tp>
+  template<typename>
     struct is_function
-    : public integral_constant<bool, (__is_function_helper<typename
-				      remove_cv<_Tp>::type>::value)>
-    { };
+    : public false_type { };
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...)>
+    : public true_type { };
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......)>
+    : public true_type { };
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) const>
+    : public true_type { };
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) const>
+    : public true_type { };
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) volatile>
+    : public true_type { };
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) volatile>
+    : public true_type { };
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) const volatile>
+    : public true_type { };
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) const volatile>
+    : public true_type { };
 
   // composite type traits [4.5.2].
   
@@ -287,10 +297,14 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 
   /// is_member_pointer
   template<typename _Tp>
-    struct is_member_pointer
-    : public integral_constant<bool,
-			       (is_member_object_pointer<_Tp>::value
-				|| is_member_function_pointer<_Tp>::value)>
+    struct __is_member_pointer_helper
+    : public false_type { };
+  _DEFINE_SPEC(2, __is_member_pointer_helper, _Tp _Cp::*, true)
+
+  template<typename _Tp>
+  struct is_member_pointer
+    : public integral_constant<bool, (__is_member_pointer_helper<
+				      typename remove_cv<_Tp>::type>::value)>
     { };
 
   // type properties [4.5.3].

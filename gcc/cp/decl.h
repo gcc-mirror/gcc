@@ -27,6 +27,7 @@ enum decl_context
   FIELD,			/* Declaration inside struct or union */
   BITFIELD,			/* Likewise but with specified width */
   TYPENAME,			/* Typename (inside cast or sizeof)  */
+  TEMPLATE_TYPE_ARG,		/* Almost the same as TYPENAME  */
   MEMFUNCDEF			/* Member function definition */
 };
 
