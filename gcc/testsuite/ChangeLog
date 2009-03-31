@@ -1,3 +1,10 @@
+2009-03-31  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/23401
+	PR middle-end/27810
+	* gcc.dg/tree-ssa/pr23401.c: New testcase.
+	* gcc.dg/tree-ssa/pr27810.c: Likewise.
+
 2009-03-30  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/38389

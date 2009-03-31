@@ -96,26 +96,6 @@ java_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       gcc_unreachable ();
 
     default:
-      /* Java insists on strict left-to-right evaluation of expressions.
-	 A problem may arise if a variable used in the LHS of a binary
-	 operation is altered by an assignment to that value in the RHS
-	 before we've performed the operation.  So, we always copy every
-	 LHS to a temporary variable.  
-
-	 FIXME: Are there any other cases where we should do this?
-	 Parameter lists, maybe?  Or perhaps that's unnecessary because
-	 the front end already generates SAVE_EXPRs.  */
-
-      if (TREE_CODE_CLASS (code) == tcc_binary
-	  || TREE_CODE_CLASS (code) == tcc_comparison)
-	{
-	  enum gimplify_status stat 
-	    = gimplify_expr (&TREE_OPERAND (*expr_p, 0), pre_p, post_p,
-			     is_gimple_formal_tmp_var, fb_rvalue);
-	  if (stat == GS_ERROR)
-	    return stat;
-	}
-
       return GS_UNHANDLED;
     }
 

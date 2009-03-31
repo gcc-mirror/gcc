@@ -503,7 +503,7 @@ mf_build_check_statement_for (tree base, tree limit,
   tree mf_elem;
   tree mf_limit;
   gimple g;
-  gimple_seq seq;
+  gimple_seq seq, stmts;
 
   /* We first need to split the current basic block, and start altering
      the CFG.  This allows us to insert the statements we're about to
@@ -553,14 +553,16 @@ mf_build_check_statement_for (tree base, tree limit,
   /* Build: __mf_base = (uintptr_t) <base address expression>.  */
   seq = gimple_seq_alloc ();
   t = fold_convert (mf_uintptr_type, unshare_expr (base));
-  gimplify_expr (&t, &seq, &seq, is_gimple_reg_rhs, fb_rvalue);
+  t = force_gimple_operand (t, &stmts, false, NULL_TREE);
+  gimple_seq_add_seq (&seq, stmts);
   g = gimple_build_assign (mf_base, t);
   gimple_set_location (g, location);
   gimple_seq_add_stmt (&seq, g);
 
   /* Build: __mf_limit = (uintptr_t) <limit address expression>.  */
   t = fold_convert (mf_uintptr_type, unshare_expr (limit));
-  gimplify_expr (&t, &seq, &seq, is_gimple_reg_rhs, fb_rvalue);
+  t = force_gimple_operand (t, &stmts, false, NULL_TREE);
+  gimple_seq_add_seq (&seq, stmts);
   g = gimple_build_assign (mf_limit, t);
   gimple_set_location (g, location);
   gimple_seq_add_stmt (&seq, g);
@@ -577,7 +579,8 @@ mf_build_check_statement_for (tree base, tree limit,
               TREE_TYPE (TREE_TYPE (mf_cache_array_decl)),
               mf_cache_array_decl, t, NULL_TREE, NULL_TREE);
   t = build1 (ADDR_EXPR, mf_cache_structptr_type, t);
-  gimplify_expr (&t, &seq, &seq, is_gimple_reg_rhs, fb_rvalue);
+  t = force_gimple_operand (t, &stmts, false, NULL_TREE);
+  gimple_seq_add_seq (&seq, stmts);
   g = gimple_build_assign (mf_elem, t);
   gimple_set_location (g, location);
   gimple_seq_add_stmt (&seq, g);
@@ -622,7 +625,8 @@ mf_build_check_statement_for (tree base, tree limit,
      result of the evaluation of 't' in a temporary variable which we
      can use as the condition for the conditional jump.  */
   t = build2 (TRUTH_OR_EXPR, boolean_type_node, t, u);
-  gimplify_expr (&t, &seq, &seq, is_gimple_reg_rhs, fb_rvalue);
+  t = force_gimple_operand (t, &stmts, false, NULL_TREE);
+  gimple_seq_add_seq (&seq, stmts);
   cond = create_tmp_var (boolean_type_node, "__mf_unlikely_cond");
   g = gimple_build_assign  (cond, t);
   gimple_set_location (g, location);
@@ -663,7 +667,8 @@ mf_build_check_statement_for (tree base, tree limit,
   v = fold_build2 (PLUS_EXPR, integer_type_node,
 		   fold_build2 (MINUS_EXPR, mf_uintptr_type, mf_limit, mf_base),
 		   integer_one_node);
-  gimplify_expr (&v, &seq, &seq, is_gimple_mem_rhs, fb_rvalue);
+  v = force_gimple_operand (v, &stmts, true, NULL_TREE);
+  gimple_seq_add_seq (&seq, stmts);
   g = gimple_build_call (mf_check_fndecl, 4, mf_base, v, dirflag, u);
   gimple_seq_add_stmt (&seq, g);
 
