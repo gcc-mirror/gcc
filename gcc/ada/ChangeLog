@@ -1,3 +1,10 @@
+2009-03-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline:
+	2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
+	* gcc-interface/decl.c (maybe_pad_type): Use TREE_OVERFLOW instead
+	of TREE_CONSTANT_OVERFLOW.
+
 2009-03-11  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu) <case N_Slice>: In range
