@@ -3128,6 +3128,12 @@ LCF0:
       [.gnu_attribute 4,1],,
       [AC_DEFINE(HAVE_AS_GNU_ATTRIBUTE, 1,
 	  [Define if your assembler supports .gnu_attribute.])])
+
+    gcc_GAS_CHECK_FEATURE([tls marker support],
+      gcc_cv_as_powerpc_tls_markers, [2,20,0],,
+      [ bl __tls_get_addr(x@tlsgd)],,
+      [AC_DEFINE(HAVE_AS_TLS_MARKERS, 1,
+	  [Define if your assembler supports arg info for __tls_get_addr.])])
     ;;
 
   mips*-*-*)

@@ -240,6 +240,15 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_DFP 0
 #endif
 
+/* Define TARGET_TLS_MARKERS if the target assembler does not support
+   arg markers for __tls_get_addr calls.  */
+#ifndef HAVE_AS_TLS_MARKERS
+#undef  TARGET_TLS_MARKERS
+#define TARGET_TLS_MARKERS 0
+#else
+#define TARGET_TLS_MARKERS tls_markers
+#endif
+
 #ifndef TARGET_SECURE_PLT
 #define TARGET_SECURE_PLT 0
 #endif

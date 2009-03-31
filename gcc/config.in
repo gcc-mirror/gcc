@@ -371,6 +371,12 @@
 #endif
 
 
+/* Define if your assembler supports arg info for __tls_get_addr. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_TLS_MARKERS
+#endif
+
+
 /* Define if your assembler supports VSX instructions. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_VSX

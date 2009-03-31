@@ -23329,6 +23329,43 @@ cat >>confdefs.h <<\_ACEOF
 _ACEOF
 
 fi
+
+    echo "$as_me:$LINENO: checking assembler for tls marker support" >&5
+echo $ECHO_N "checking assembler for tls marker support... $ECHO_C" >&6
+if test "${gcc_cv_as_powerpc_tls_markers+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_powerpc_tls_markers=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 9 \* 1000 \) + 99 \) \* 1000 + 0`
+  then gcc_cv_as_powerpc_tls_markers=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo ' bl __tls_get_addr(x@tlsgd)' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_powerpc_tls_markers=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_powerpc_tls_markers" >&5
+echo "${ECHO_T}$gcc_cv_as_powerpc_tls_markers" >&6
+if test $gcc_cv_as_powerpc_tls_markers = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_TLS_MARKERS 1
+_ACEOF
+
+fi
     ;;
 
   mips*-*-*)

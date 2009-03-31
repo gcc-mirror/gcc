@@ -131,6 +131,10 @@ mfused-madd
 Target Report RejectNegative InverseMask(NO_FUSED_MADD, FUSED_MADD)
 Generate fused multiply/add instructions
 
+mtls-markers
+Target Report Var(tls_markers) Init(1)
+Mark __tls_get_addr calls with argument info
+
 msched-prolog
 Target Report Var(TARGET_SCHED_PROLOG) Init(1)
 Schedule the start and end of the procedure
