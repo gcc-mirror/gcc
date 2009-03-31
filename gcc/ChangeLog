@@ -1,3 +1,14 @@
+2009-03-31  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.md (divsf3_internal_lat): Remove.
+	(divdf3_internal_lat): Remove.
+	(divxf3_internal_lat): Remove.
+	(divxf3_internal_thr): Remove.
+	(divxf): Use divxf3_internal.
+	* config/ia64/div.md (divsf3_internal_lat): New.
+	(divdf3_internal_lat): New.
+	(divxf3_internal): New.
+
 2009-03-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/448
