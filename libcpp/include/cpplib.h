@@ -813,6 +813,8 @@ cpp_num cpp_num_sign_extend (cpp_num, size_t);
 #define CPP_DL_ICE		0x04
 /* An informative note following a warning.  */
 #define CPP_DL_NOTE		0x05
+/* A fatal error.  */
+#define CPP_DL_FATAL		0x06
 
 /* Output a diagnostic of some kind.  */
 extern bool cpp_error (cpp_reader *, int, const char *msgid, ...)

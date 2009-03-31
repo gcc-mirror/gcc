@@ -1,3 +1,11 @@
+2009-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/15638
+	* files.c (_cpp_find_file): Call open_file_failed after diagnosing
+	invalid PCH.
+	(open_file_failed): Make error for missing file fatal.
+	* include/cpplib.h (CPP_DL_FATAL): Define.
+
 2009-03-30  Sergiy Vyshnevetskiy  <serg@vostok.net>
 
 	PR preprocessor/31932:

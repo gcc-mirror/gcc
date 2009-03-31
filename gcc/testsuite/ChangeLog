@@ -1,3 +1,15 @@
+2009-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/15638
+	* gcc.dg/cpp/missing-header-1.c: New test.
+	* gcc.dg/cpp/include2.c: Only test #include <>.  Expect
+	"compilation terminated" message.
+	* gcc.dg/cpp/include2a.c: New test.  Copy of include2.c but only
+	test #include "".
+	* gcc.dg/pch/counter-2.c, gcc.dg/pch/valid-1.c,
+	gcc.dg/pch/valid-2.c, gcc.dg/pch/warn-1.c: Expect "compilation
+	terminated" message.
+
 2009-03-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/23401
