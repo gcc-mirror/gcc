@@ -1,5 +1,11 @@
 2009-03-31  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/31029
+	* fold-const.c (fold_binary): Fold X +- Y CMP X to Y CMP 0 for
+	equality comparisons.  Fold C - X CMP X if C % 2 == 1.
+
+2009-03-31  Richard Guenther  <rguenther@suse.de>
+
 	* tree.h (div_if_zero_remainder): Declare.
 	* fold-const.c (div_if_zero_remainder): Export.
 	* tree-ssa-forwprop.c
