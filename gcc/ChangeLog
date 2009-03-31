@@ -1,3 +1,9 @@
+2009-03-31  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (c_get_ident): New.
+	(c_common_nodes_and_builtins): Call it for type names that may be
+	NULL.
+
 2009-04-01  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/sysv4.opt (msdata): Improve option description.

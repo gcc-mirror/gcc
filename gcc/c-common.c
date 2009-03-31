@@ -4641,6 +4641,16 @@ c_define_builtins (tree va_list_ref_type_node, tree va_list_arg_type_node)
     mudflap_init ();
 }
 
+/* Like get_identifier, but avoid warnings about null arguments when
+   the argument may be NULL for targets where GCC lacks stdint.h type
+   information.  */
+
+static inline tree
+c_get_ident (const char *id)
+{
+  return get_identifier (id);
+}
+
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */
 
@@ -4936,85 +4946,85 @@ c_common_nodes_and_builtins (void)
 
   if (SIG_ATOMIC_TYPE)
     sig_atomic_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (SIG_ATOMIC_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (SIG_ATOMIC_TYPE)));
   if (INT8_TYPE)
     int8_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT8_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT8_TYPE)));
   if (INT16_TYPE)
     int16_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT16_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT16_TYPE)));
   if (INT32_TYPE)
     int32_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT32_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT32_TYPE)));
   if (INT64_TYPE)
     int64_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT64_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT64_TYPE)));
   if (UINT8_TYPE)
     uint8_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT8_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT8_TYPE)));
   if (UINT16_TYPE)
     uint16_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT16_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT16_TYPE)));
   if (UINT32_TYPE)
     c_uint32_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT32_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT32_TYPE)));
   if (UINT64_TYPE)
     c_uint64_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT64_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT64_TYPE)));
   if (INT_LEAST8_TYPE)
     int_least8_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT_LEAST8_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT_LEAST8_TYPE)));
   if (INT_LEAST16_TYPE)
     int_least16_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT_LEAST16_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT_LEAST16_TYPE)));
   if (INT_LEAST32_TYPE)
     int_least32_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT_LEAST32_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT_LEAST32_TYPE)));
   if (INT_LEAST64_TYPE)
     int_least64_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT_LEAST64_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT_LEAST64_TYPE)));
   if (UINT_LEAST8_TYPE)
     uint_least8_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT_LEAST8_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT_LEAST8_TYPE)));
   if (UINT_LEAST16_TYPE)
     uint_least16_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT_LEAST16_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT_LEAST16_TYPE)));
   if (UINT_LEAST32_TYPE)
     uint_least32_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT_LEAST32_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT_LEAST32_TYPE)));
   if (UINT_LEAST64_TYPE)
     uint_least64_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT_LEAST64_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT_LEAST64_TYPE)));
   if (INT_FAST8_TYPE)
     int_fast8_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT_FAST8_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT_FAST8_TYPE)));
   if (INT_FAST16_TYPE)
     int_fast16_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT_FAST16_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT_FAST16_TYPE)));
   if (INT_FAST32_TYPE)
     int_fast32_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT_FAST32_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT_FAST32_TYPE)));
   if (INT_FAST64_TYPE)
     int_fast64_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INT_FAST64_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INT_FAST64_TYPE)));
   if (UINT_FAST8_TYPE)
     uint_fast8_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT_FAST8_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT_FAST8_TYPE)));
   if (UINT_FAST16_TYPE)
     uint_fast16_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT_FAST16_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT_FAST16_TYPE)));
   if (UINT_FAST32_TYPE)
     uint_fast32_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT_FAST32_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT_FAST32_TYPE)));
   if (UINT_FAST64_TYPE)
     uint_fast64_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINT_FAST64_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINT_FAST64_TYPE)));
   if (INTPTR_TYPE)
     intptr_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (INTPTR_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (INTPTR_TYPE)));
   if (UINTPTR_TYPE)
     uintptr_type_node =
-      TREE_TYPE (identifier_global_value (get_identifier (UINTPTR_TYPE)));
+      TREE_TYPE (identifier_global_value (c_get_ident (UINTPTR_TYPE)));
 
   default_function_type = build_function_type (integer_type_node, NULL_TREE);
   ptrdiff_type_node
