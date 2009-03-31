@@ -4832,6 +4832,7 @@ extern tree build_fold_indirect_ref (tree);
 extern tree fold_indirect_ref (tree);
 extern tree constant_boolean_node (int, tree);
 extern tree build_low_bits_mask (tree, unsigned);
+extern tree div_if_zero_remainder (enum tree_code, const_tree, const_tree);
 
 extern bool tree_swap_operands_p (const_tree, const_tree, bool);
 extern enum tree_code swap_tree_comparison (enum tree_code);
