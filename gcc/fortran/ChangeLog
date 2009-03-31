@@ -137,6 +137,12 @@
 	Add 2009 to copyright years.
 	* trans.c (gfc_trans_code): Likewise on both counts.
 
+2009-03-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38915
+	* trans-expr.c (gfc_trans_assignment_1): Ensure temporaries
+	have a string_length.
+
 2009-03-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34656
