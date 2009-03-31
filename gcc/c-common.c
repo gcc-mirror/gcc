@@ -69,11 +69,21 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 #define PID_TYPE "int"
 #endif
 
-#ifndef CHAR16_TYPE
+/* If GCC knows the exact uint_least16_t and uint_least32_t types from
+   <stdint.h>, use them for char16_t and char32_t.  Otherwise, use
+   these guesses; getting the wrong type of a given width will not
+   affect C++ name mangling because in C++ these are distinct types
+   not typedefs.  */
+
+#ifdef UINT_LEAST16_TYPE
+#define CHAR16_TYPE UINT_LEAST16_TYPE
+#else
 #define CHAR16_TYPE "short unsigned int"
 #endif
 
-#ifndef CHAR32_TYPE
+#ifdef UINT_LEAST32_TYPE
+#define CHAR32_TYPE UINT_LEAST32_TYPE
+#else
 #define CHAR32_TYPE "unsigned int"
 #endif
 
@@ -109,6 +119,116 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 			: "long long unsigned int"))
 #endif
 
+/* There are no default definitions of these <stdint.h> types.  */
+
+#ifndef SIG_ATOMIC_TYPE
+#define SIG_ATOMIC_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT8_TYPE
+#define INT8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT16_TYPE
+#define INT16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT32_TYPE
+#define INT32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT64_TYPE
+#define INT64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT8_TYPE
+#define UINT8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT16_TYPE
+#define UINT16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT32_TYPE
+#define UINT32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT64_TYPE
+#define UINT64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_LEAST8_TYPE
+#define INT_LEAST8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_LEAST16_TYPE
+#define INT_LEAST16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_LEAST32_TYPE
+#define INT_LEAST32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_LEAST64_TYPE
+#define INT_LEAST64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_LEAST8_TYPE
+#define UINT_LEAST8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_LEAST16_TYPE
+#define UINT_LEAST16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_LEAST32_TYPE
+#define UINT_LEAST32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_LEAST64_TYPE
+#define UINT_LEAST64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_FAST8_TYPE
+#define INT_FAST8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_FAST16_TYPE
+#define INT_FAST16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_FAST32_TYPE
+#define INT_FAST32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_FAST64_TYPE
+#define INT_FAST64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_FAST8_TYPE
+#define UINT_FAST8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_FAST16_TYPE
+#define UINT_FAST16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_FAST32_TYPE
+#define UINT_FAST32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_FAST64_TYPE
+#define UINT_FAST64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INTPTR_TYPE
+#define INTPTR_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINTPTR_TYPE
+#define UINTPTR_TYPE ((const char *) NULL)
+#endif
+
 /* The following symbols are subsumed in the c_global_trees array, and
    listed here individually for documentation purposes.
 
@@ -131,8 +251,6 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 	tree unsigned_char_type_node;
 	tree signed_char_type_node;
 	tree wchar_type_node;
-	tree signed_wchar_type_node;
-	tree unsigned_wchar_type_node;
 
 	tree char16_type_node;
 	tree char32_type_node;
@@ -4762,6 +4880,7 @@ c_common_nodes_and_builtins (void)
   wchar_type_node = get_identifier (MODIFIED_WCHAR_TYPE);
   wchar_type_node = TREE_TYPE (identifier_global_value (wchar_type_node));
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
+  underlying_wchar_type_node = wchar_type_node;
   if (c_dialect_cxx ())
     {
       if (TYPE_UNSIGNED (wchar_type_node))
@@ -4769,11 +4888,6 @@ c_common_nodes_and_builtins (void)
       else
 	wchar_type_node = make_signed_type (wchar_type_size);
       record_builtin_type (RID_WCHAR, "wchar_t", wchar_type_node);
-    }
-  else
-    {
-      signed_wchar_type_node = c_common_signed_type (wchar_type_node);
-      unsigned_wchar_type_node = c_common_unsigned_type (wchar_type_node);
     }
 
   /* This is for wide string constants.  */
@@ -4819,6 +4933,88 @@ c_common_nodes_and_builtins (void)
     TREE_TYPE (identifier_global_value (get_identifier (INTMAX_TYPE)));
   uintmax_type_node =
     TREE_TYPE (identifier_global_value (get_identifier (UINTMAX_TYPE)));
+
+  if (SIG_ATOMIC_TYPE)
+    sig_atomic_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (SIG_ATOMIC_TYPE)));
+  if (INT8_TYPE)
+    int8_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT8_TYPE)));
+  if (INT16_TYPE)
+    int16_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT16_TYPE)));
+  if (INT32_TYPE)
+    int32_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT32_TYPE)));
+  if (INT64_TYPE)
+    int64_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT64_TYPE)));
+  if (UINT8_TYPE)
+    uint8_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT8_TYPE)));
+  if (UINT16_TYPE)
+    uint16_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT16_TYPE)));
+  if (UINT32_TYPE)
+    c_uint32_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT32_TYPE)));
+  if (UINT64_TYPE)
+    c_uint64_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT64_TYPE)));
+  if (INT_LEAST8_TYPE)
+    int_least8_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT_LEAST8_TYPE)));
+  if (INT_LEAST16_TYPE)
+    int_least16_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT_LEAST16_TYPE)));
+  if (INT_LEAST32_TYPE)
+    int_least32_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT_LEAST32_TYPE)));
+  if (INT_LEAST64_TYPE)
+    int_least64_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT_LEAST64_TYPE)));
+  if (UINT_LEAST8_TYPE)
+    uint_least8_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT_LEAST8_TYPE)));
+  if (UINT_LEAST16_TYPE)
+    uint_least16_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT_LEAST16_TYPE)));
+  if (UINT_LEAST32_TYPE)
+    uint_least32_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT_LEAST32_TYPE)));
+  if (UINT_LEAST64_TYPE)
+    uint_least64_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT_LEAST64_TYPE)));
+  if (INT_FAST8_TYPE)
+    int_fast8_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT_FAST8_TYPE)));
+  if (INT_FAST16_TYPE)
+    int_fast16_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT_FAST16_TYPE)));
+  if (INT_FAST32_TYPE)
+    int_fast32_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT_FAST32_TYPE)));
+  if (INT_FAST64_TYPE)
+    int_fast64_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INT_FAST64_TYPE)));
+  if (UINT_FAST8_TYPE)
+    uint_fast8_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT_FAST8_TYPE)));
+  if (UINT_FAST16_TYPE)
+    uint_fast16_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT_FAST16_TYPE)));
+  if (UINT_FAST32_TYPE)
+    uint_fast32_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT_FAST32_TYPE)));
+  if (UINT_FAST64_TYPE)
+    uint_fast64_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINT_FAST64_TYPE)));
+  if (INTPTR_TYPE)
+    intptr_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (INTPTR_TYPE)));
+  if (UINTPTR_TYPE)
+    uintptr_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (UINTPTR_TYPE)));
 
   default_function_type = build_function_type (integer_type_node, NULL_TREE);
   ptrdiff_type_node
@@ -5522,8 +5718,8 @@ boolean_increment (enum tree_code code, tree arg)
   return val;
 }
 
-/* Built-in macros for stddef.h, that require macros defined in this
-   file.  */
+/* Built-in macros for stddef.h and stdint.h, that require macros
+   defined in this file.  */
 void
 c_stddef_cpp_builtins(void)
 {
@@ -5535,6 +5731,60 @@ c_stddef_cpp_builtins(void)
   builtin_define_with_value ("__UINTMAX_TYPE__", UINTMAX_TYPE, 0);
   builtin_define_with_value ("__CHAR16_TYPE__", CHAR16_TYPE, 0);
   builtin_define_with_value ("__CHAR32_TYPE__", CHAR32_TYPE, 0);
+  if (SIG_ATOMIC_TYPE)
+    builtin_define_with_value ("__SIG_ATOMIC_TYPE__", SIG_ATOMIC_TYPE, 0);
+  if (INT8_TYPE)
+    builtin_define_with_value ("__INT8_TYPE__", INT8_TYPE, 0);
+  if (INT16_TYPE)
+    builtin_define_with_value ("__INT16_TYPE__", INT16_TYPE, 0);
+  if (INT32_TYPE)
+    builtin_define_with_value ("__INT32_TYPE__", INT32_TYPE, 0);
+  if (INT64_TYPE)
+    builtin_define_with_value ("__INT64_TYPE__", INT64_TYPE, 0);
+  if (UINT8_TYPE)
+    builtin_define_with_value ("__UINT8_TYPE__", UINT8_TYPE, 0);
+  if (UINT16_TYPE)
+    builtin_define_with_value ("__UINT16_TYPE__", UINT16_TYPE, 0);
+  if (UINT32_TYPE)
+    builtin_define_with_value ("__UINT32_TYPE__", UINT32_TYPE, 0);
+  if (UINT64_TYPE)
+    builtin_define_with_value ("__UINT64_TYPE__", UINT64_TYPE, 0);
+  if (INT_LEAST8_TYPE)
+    builtin_define_with_value ("__INT_LEAST8_TYPE__", INT_LEAST8_TYPE, 0);
+  if (INT_LEAST16_TYPE)
+    builtin_define_with_value ("__INT_LEAST16_TYPE__", INT_LEAST16_TYPE, 0);
+  if (INT_LEAST32_TYPE)
+    builtin_define_with_value ("__INT_LEAST32_TYPE__", INT_LEAST32_TYPE, 0);
+  if (INT_LEAST64_TYPE)
+    builtin_define_with_value ("__INT_LEAST64_TYPE__", INT_LEAST64_TYPE, 0);
+  if (UINT_LEAST8_TYPE)
+    builtin_define_with_value ("__UINT_LEAST8_TYPE__", UINT_LEAST8_TYPE, 0);
+  if (UINT_LEAST16_TYPE)
+    builtin_define_with_value ("__UINT_LEAST16_TYPE__", UINT_LEAST16_TYPE, 0);
+  if (UINT_LEAST32_TYPE)
+    builtin_define_with_value ("__UINT_LEAST32_TYPE__", UINT_LEAST32_TYPE, 0);
+  if (UINT_LEAST64_TYPE)
+    builtin_define_with_value ("__UINT_LEAST64_TYPE__", UINT_LEAST64_TYPE, 0);
+  if (INT_FAST8_TYPE)
+    builtin_define_with_value ("__INT_FAST8_TYPE__", INT_FAST8_TYPE, 0);
+  if (INT_FAST16_TYPE)
+    builtin_define_with_value ("__INT_FAST16_TYPE__", INT_FAST16_TYPE, 0);
+  if (INT_FAST32_TYPE)
+    builtin_define_with_value ("__INT_FAST32_TYPE__", INT_FAST32_TYPE, 0);
+  if (INT_FAST64_TYPE)
+    builtin_define_with_value ("__INT_FAST64_TYPE__", INT_FAST64_TYPE, 0);
+  if (UINT_FAST8_TYPE)
+    builtin_define_with_value ("__UINT_FAST8_TYPE__", UINT_FAST8_TYPE, 0);
+  if (UINT_FAST16_TYPE)
+    builtin_define_with_value ("__UINT_FAST16_TYPE__", UINT_FAST16_TYPE, 0);
+  if (UINT_FAST32_TYPE)
+    builtin_define_with_value ("__UINT_FAST32_TYPE__", UINT_FAST32_TYPE, 0);
+  if (UINT_FAST64_TYPE)
+    builtin_define_with_value ("__UINT_FAST64_TYPE__", UINT_FAST64_TYPE, 0);
+  if (INTPTR_TYPE)
+    builtin_define_with_value ("__INTPTR_TYPE__", INTPTR_TYPE, 0);
+  if (UINTPTR_TYPE)
+    builtin_define_with_value ("__UINTPTR_TYPE__", UINTPTR_TYPE, 0);
 }
 
 static void

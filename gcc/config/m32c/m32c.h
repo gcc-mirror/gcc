@@ -189,6 +189,9 @@ machine_function;
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE (TARGET_A16 ? "int" : "long int")
 
+#undef UINTPTR_TYPE
+#define UINTPTR_TYPE (TARGET_A16 ? "unsigned int" : "long unsigned int")
+
 /* REGISTER USAGE */
 
 /* Register Basics */
