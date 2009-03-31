@@ -18,9 +18,9 @@ program fc011
   integer, pointer :: PTR
   integer, allocatable :: ALLOCS(:)
 
-  allocate (PTR, stat=PTR) ! { dg-error "allocated in the same statement" }
+  allocate (PTR, stat=PTR) ! { dg-error "in the same ALLOCATE statement" }
 
-  allocate (ALLOCS(10),stat=ALLOCS(1)) ! { dg-error "allocated in the same statement" }
+  allocate (ALLOCS(10),stat=ALLOCS(1)) ! { dg-error "in the same ALLOCATE statement" }
 
   ALLOCATE(PTR,ALLOCS(PTR)) ! { dg-error "same ALLOCATE statement" }
 

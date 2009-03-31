@@ -1,3 +1,19 @@
+2009-03-30  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/38389
+	* trans-stmt.c(gfc_trans_allocate): Add translation of ERRMSG.
+	(gfc_trans_deallocate): Add translation of ERRMSG.  Remove stale
+	comments.  Minor whitespace cleanup.
+	* resolve.c(is_scalar_expr_ptr): Whitespace cleanup.
+	(resolve_deallocate_expr (gfc_expr *e): Update error message.
+	(resolve_allocate_expr):  Remove dead code.  Update error message.
+	Move error checking to ...
+	(resolve_allocate_deallocate): ... here.  Add additional error
+	checking for STAT, ERRMSG, and allocate-objects.
+	* match.c(gfc_match_allocate,gfc_match_deallocate):  Parse ERRMSG.
+	Check for redundant uses of STAT and ERRMSG.  Reword error message
+	and add checking for pointer, allocatable, and proc_pointer attributes.
+
 2009-03-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/22571
