@@ -1,5 +1,12 @@
 2009-03-31  Joseph Myers  <joseph@codesourcery.com>
 
+	PR target/39592
+	* config/i386/i386.md (*floatunssi<mode>2_1, two unnamed
+	define_splits, floatunssi<mode>2): Require x87 conversions from
+	DImode to be permitted.
+
+2009-03-31  Joseph Myers  <joseph@codesourcery.com>
+
 	PR preprocessor/15638
 	* c-common.c (c_cpp_error): Handle CPP_DL_FATAL.
 
