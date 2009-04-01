@@ -778,12 +778,18 @@ pushdecl_maybe_friend (tree x, bool is_friend)
       if ((TREE_CODE (x) == FUNCTION_DECL)
 	  && DECL_EXTERN_C_P (x)
           /* We should ignore declarations happening in system headers.  */
+	  && !DECL_ARTIFICIAL (x)
 	  && !DECL_IN_SYSTEM_HEADER (x))
 	{
 	  cxx_binding *function_binding =
 	      lookup_extern_c_fun_binding_in_all_ns (x);
-	  if (function_binding
-              && !DECL_IN_SYSTEM_HEADER (function_binding->value))
+	  tree previous = (function_binding
+			   ? function_binding->value
+			   : NULL_TREE);
+	  if (previous
+	      && !DECL_ARTIFICIAL (previous)
+              && !DECL_IN_SYSTEM_HEADER (previous)
+	      && DECL_CONTEXT (previous) != DECL_CONTEXT (x))
 	    {
 	      tree previous = function_binding->value;
 
@@ -809,6 +815,14 @@ pushdecl_maybe_friend (tree x, bool is_friend)
 		      pedwarn (input_location, 0, "due to different exception specifications");
 		      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 		    }
+		}
+	      else
+		{
+		  pedwarn (input_location, 0,
+			   "declaration of %q#D with C language linkage", x);
+		  pedwarn (input_location, 0,
+			   "conflicts with previous declaration %q+#D",
+			   previous);
 		}
 	    }
 	}
