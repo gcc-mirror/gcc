@@ -1,3 +1,8 @@
+2009-04-1  Xinliang David Li  <davidxl@google.com>
+
+	* config/i386/i386.c (legitimate_constant_p): Recognize
+	all one vector constant.
+
 2009-04-01	Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
 
 	* gcc/config/vax/vax.c: Add #includes to silence warnings.
