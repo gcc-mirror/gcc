@@ -1216,19 +1216,15 @@ cross: all-build all-gas all-ld
 @endif gcc-no-bootstrap
 
 @if gcc
-.PHONY: check-gcc-c++
-check-gcc-c++:
-	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD_COMMAND}`; export r; \
-	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	  $(HOST_EXPORTS) \
-	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++); \
-	else \
-	  true; \
-	fi
-
-.PHONY: check-c++
-check-c++: check-target-libstdc++-v3 check-gcc-c++
+[+ FOR languages +]
+.PHONY: check-gcc-[+language+] check-[+language+]
+check-gcc-[+language+]:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) [+gcc-check-target+]);
+check-[+language+]: check-gcc-[+language+][+ IF lib-check-target +] [+ lib-check-target +][+ ENDIF lib-check-target +]
+[+ ENDFOR languages +]
 
 # Install the gcc headers files, but not the fixed include files,
 # which Cygnus is not allowed to distribute.  This rule is very
