@@ -8951,9 +8951,8 @@ legitimate_constant_p (rtx x)
       break;
 
     case CONST_VECTOR:
-      if (x == CONST0_RTX (GET_MODE (x)))
-	return true;
-      return false;
+      if (!standard_sse_constant_p (x))
+	return false;
 
     default:
       break;
