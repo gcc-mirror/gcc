@@ -1,3 +1,10 @@
+2009-04-01  Steve Ellcey  <sje@cup.hp.com>
+
+	* Makefil.def (languages): New entries.
+	* Makefile.tpl (check-gcc-*): New generic target.
+	* Makefile.in: Regenerate.
+	* gcc/doc/sourcebuild.texi: Update front-end requirements.
+
 2009-03-25  Erven Rohou <erven.rohou@inria.fr>
 
         * MAINTAINERS:  Update my email address.

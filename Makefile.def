@@ -541,6 +541,19 @@ dependencies = { module=all-target-libgloss; on=all-target-newlib; };
 dependencies = { module=all-target-winsup; on=all-target-libiberty; };
 dependencies = { module=all-target-winsup; on=all-target-libtermcap; };
 
+languages = { language=c;	gcc-check-target=check-gcc; };
+languages = { language=c++;	gcc-check-target=check-c++;
+				lib-check-target=check-target-libstdc++-v3; };
+languages = { language=fortran;	gcc-check-target=check-fortran;
+				lib-check-target=check-target-libgfortran; };
+languages = { language=java;	gcc-check-target=check-java;
+				lib-check-target=check-target-libjava; };
+languages = { language=ada;	gcc-check-target=check-ada;
+				lib-check-target=check-target-libada; };
+languages = { language=objc;	gcc-check-target=check-objc;
+				lib-check-target=check-target-libobjc; };
+languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
+
 // Toplevel bootstrap
 bootstrap_stage = {
 	id=1 ;

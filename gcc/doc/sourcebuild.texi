@@ -499,6 +499,9 @@ directory.  FIXME: document this further.
 @item
 Details of the directories of any runtime libraries in
 @file{gcc/doc/sourcebuild.texi}.
+@item
+Check targets in Makefile.def for the top-level Makefile to check just
+the compiler or the compiler and runtime library for the language.
 @end itemize
 
 If the front end is added to the official GCC source repository, the

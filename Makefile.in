@@ -52921,19 +52921,63 @@ cross: all-build all-gas all-ld
 @endif gcc-no-bootstrap
 
 @if gcc
-.PHONY: check-gcc-c++
-check-gcc-c++:
-	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD_COMMAND}`; export r; \
-	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	  $(HOST_EXPORTS) \
-	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++); \
-	else \
-	  true; \
-	fi
 
-.PHONY: check-c++
-check-c++: check-target-libstdc++-v3 check-gcc-c++
+.PHONY: check-gcc-c check-c
+check-gcc-c:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-gcc);
+check-c: check-gcc-c
+
+.PHONY: check-gcc-c++ check-c++
+check-gcc-c++:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++);
+check-c++: check-gcc-c++ check-target-libstdc++-v3
+
+.PHONY: check-gcc-fortran check-fortran
+check-gcc-fortran:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-fortran);
+check-fortran: check-gcc-fortran check-target-libgfortran
+
+.PHONY: check-gcc-java check-java
+check-gcc-java:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-java);
+check-java: check-gcc-java check-target-libjava
+
+.PHONY: check-gcc-ada check-ada
+check-gcc-ada:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-ada);
+check-ada: check-gcc-ada check-target-libada
+
+.PHONY: check-gcc-objc check-objc
+check-gcc-objc:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-objc);
+check-objc: check-gcc-objc check-target-libobjc
+
+.PHONY: check-gcc-obj-c++ check-obj-c++
+check-gcc-obj-c++:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-obj-c++);
+check-obj-c++: check-gcc-obj-c++
+
 
 # Install the gcc headers files, but not the fixed include files,
 # which Cygnus is not allowed to distribute.  This rule is very
