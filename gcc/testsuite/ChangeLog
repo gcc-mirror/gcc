@@ -1,3 +1,7 @@
+2009-03-31  Jason Merrill  <jason@redhat.com>
+
+	* g++.old-deja/g++.other/using9.C: Add expected errors.
+
 2009-03-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.c-torture/compile/pr33009.c: Removed.

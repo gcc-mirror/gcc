@@ -13,9 +13,9 @@ struct x {};
 using ::x;
 using ::a;
 
-extern "C" void foo ();
+extern "C" void foo ();		// { dg-error "previous declaration" }
 
 namespace {
-  extern "C" int foo ();
+  extern "C" int foo ();	// { dg-error "C.*linkage" }
   using ::foo; // { dg-error "" } already in use
 }

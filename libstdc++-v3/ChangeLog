@@ -1,5 +1,7 @@
 2009-03-31  Jason Merrill  <jason@redhat.com>
 
+	* libsupc++/unwind-cxx.h: Correct __cxa_call_terminate prototype.
+
 	PR libstdc++/39310
 	* include/tr1_impl/type_traits (is_function): Add partial
 	specializations with function cv-quals.
