@@ -1,3 +1,10 @@
+2009-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/39591
+	* omp-low.c (remove_exit_barrier): Don't optimize if there are any
+	addressable variables in the parallel that could go out of scope while
+	running queued tasks.
+
 2009-03-30  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* doc/invoke.texi (-floop-interchange, -floop-strip-mine,

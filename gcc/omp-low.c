@@ -3,7 +3,7 @@
    marshalling to implement data sharing and copying clauses.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
-   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3121,6 +3121,7 @@ remove_exit_barrier (struct omp_region *region)
   edge_iterator ei;
   edge e;
   gimple stmt;
+  int any_addressable_vars = -1;
 
   exit_bb = region->exit;
 
@@ -3146,8 +3147,52 @@ remove_exit_barrier (struct omp_region *region)
       if (gsi_end_p (gsi))
 	continue;
       stmt = gsi_stmt (gsi);
-      if (gimple_code (stmt) == GIMPLE_OMP_RETURN)
-	gimple_omp_return_set_nowait (stmt);
+      if (gimple_code (stmt) == GIMPLE_OMP_RETURN
+	  && !gimple_omp_return_nowait_p (stmt))
+	{
+	  /* OpenMP 3.0 tasks unfortunately prevent this optimization
+	     in many cases.  If there could be tasks queued, the barrier
+	     might be needed to let the tasks run before some local
+	     variable of the parallel that the task uses as shared
+	     runs out of scope.  The task can be spawned either
+	     from within current function (this would be easy to check)
+	     or from some function it calls and gets passed an address
+	     of such a variable.  */
+	  if (any_addressable_vars < 0)
+	    {
+	      gimple parallel_stmt = last_stmt (region->entry);
+	      tree child_fun = gimple_omp_parallel_child_fn (parallel_stmt);
+	      tree local_decls = DECL_STRUCT_FUNCTION (child_fun)->local_decls;
+	      tree block;
+
+	      any_addressable_vars = 0;
+	      for (; local_decls; local_decls = TREE_CHAIN (local_decls))
+		if (TREE_ADDRESSABLE (TREE_VALUE (local_decls)))
+		  {
+		    any_addressable_vars = 1;
+		    break;
+		  }
+	      for (block = gimple_block (stmt);
+		   !any_addressable_vars
+		   && block
+		   && TREE_CODE (block) == BLOCK;
+		   block = BLOCK_SUPERCONTEXT (block))
+		{
+		  for (local_decls = BLOCK_VARS (block);
+		       local_decls;
+		       local_decls = TREE_CHAIN (local_decls))
+		    if (TREE_ADDRESSABLE (local_decls))
+		      {
+			any_addressable_vars = 1;
+			break;
+		      }
+		  if (block == gimple_block (parallel_stmt))
+		    break;
+		}
+	    }
+	  if (!any_addressable_vars)
+	    gimple_omp_return_set_nowait (stmt);
+	}
     }
 }
 
