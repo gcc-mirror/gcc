@@ -612,6 +612,13 @@ interpret_float (const cpp_token *token, unsigned int flags)
   char *copy;
   size_t copylen;
 
+  /* Default (no suffix) is double.  */
+  if (flags & CPP_N_DEFAULT)
+    {
+      flags ^= CPP_N_DEFAULT;
+      flags |= CPP_N_MEDIUM;
+    }
+
   /* Decode _Fract and _Accum.  */
   if (flags & CPP_N_FRACT || flags & CPP_N_ACCUM)
     return interpret_fixed (token, flags);
