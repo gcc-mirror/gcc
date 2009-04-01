@@ -1,3 +1,8 @@
+2009-04-01  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/ia64/ia64.c (ia64_handle_option): Inform user that Itanium1
+	tuning is deprecated if -mtune value is set to an Itanium1 variant.
+
 2009-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39226
