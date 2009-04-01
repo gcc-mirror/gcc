@@ -1,3 +1,16 @@
+2009-04-01  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32c/m32c.h (LIBGCC2_UNITS_PER_WORD): Define if not
+	already defined.
+	* config/m32c/t-m32c (LIB2FUNCS_EXTRA): Add m32c-lib2-trapv.c.
+	* config/m32c/m32c-lib2.c: Remove unused typedefs.  Rename the
+	other typedefs to avoid conflicts with libgcc2.c.  Define labels
+	to gain 16-bit bit-manipulation functions from libgcc2.c and then
+	include it.
+	* config/m32c/m32c-lib2-trapv.c: New file.  Define labels
+	to gain 16-bit trapping arithmetic functions from libgcc2.c and
+	then include it.
+
 2009-04-01  Rafael Avila de Espindola  <espindola@google.com>
 
        * varasm.c (default_function_rodata_section): Declare DOT as const char*.

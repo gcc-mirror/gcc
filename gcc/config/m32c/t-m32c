@@ -29,7 +29,7 @@ LIB1ASMFUNCS = \
 	__m32c_ucmpsi2 \
 	__m32c_jsri16
 
-LIB2FUNCS_EXTRA = $(srcdir)/config/m32c/m32c-lib2.c
+LIB2FUNCS_EXTRA = $(srcdir)/config/m32c/m32c-lib2.c $(srcdir)/config/m32c/m32c-lib2-trapv.c
 
 # floating point emulation libraries
 

@@ -2701,8 +2701,13 @@ m32c_print_operand_punct_valid_p (int c)
 void
 m32c_print_operand_address (FILE * stream, rtx address)
 {
-  gcc_assert (GET_CODE (address) == MEM);
-  m32c_print_operand (stream, XEXP (address, 0), 0);
+  if (GET_CODE (address) == MEM)
+    address = XEXP (address, 0);
+  else
+    /* cf: gcc.dg/asm-4.c.  */
+    gcc_assert (GET_CODE (address) == REG);
+
+  m32c_print_operand (stream, address, 0);
 }
 
 /* Implements ASM_OUTPUT_REG_PUSH.  Control registers are pushed
