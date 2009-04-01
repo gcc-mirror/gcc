@@ -2698,7 +2698,7 @@ tree_remove_unreachable_handlers (void)
 	    int region = VEC_index (int, label_to_region, uid);
 	    SET_BIT (reachable, region);
 	  }
-	if (gimple_code (stmt) == RESX)
+	if (gimple_code (stmt) == GIMPLE_RESX)
 	  SET_BIT (reachable, gimple_resx_region (stmt));
 	if ((region = lookup_stmt_eh_region (stmt)) >= 0)
 	  SET_BIT (contains_stmt, region);
