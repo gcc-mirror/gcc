@@ -1,3 +1,11 @@
+2009-04-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-04-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/35011
+	* g++.dg/other/pr35011.C: New.
+
 2009-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39226
