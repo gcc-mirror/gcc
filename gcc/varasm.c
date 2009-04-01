@@ -869,7 +869,7 @@ default_function_rodata_section (tree decl)
 
       if (DECL_ONE_ONLY (decl) && HAVE_COMDAT_GROUP)
         {
-	  char *dot;
+	  const char *dot;
 	  size_t len;
 	  char* rname;
 
