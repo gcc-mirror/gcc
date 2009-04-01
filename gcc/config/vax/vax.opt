@@ -1,6 +1,6 @@
 ; Options for the VAX port of the compiler.
 
-; Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+; Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -45,3 +45,7 @@ Generate code for UNIX assembler
 mvaxc-alignment
 Target RejectNegative Mask(VAXC_ALIGNMENT)
 Use VAXC structure conventions
+
+mqmath
+Target Mask(QMATH)
+Use new adddi3/subdi3 patterns

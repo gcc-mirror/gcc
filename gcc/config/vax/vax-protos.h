@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  VAX version.
-   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -19,20 +19,24 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void override_options (void);
 
-extern int legitimate_constant_address_p (rtx);
-extern int legitimate_constant_p (rtx);
-extern int legitimate_address_p (enum machine_mode, rtx, int);
-extern int vax_mode_dependent_address_p (rtx);
+extern bool legitimate_constant_address_p (rtx);
+extern bool legitimate_constant_p (rtx);
+extern bool legitimate_pic_operand_p (rtx);
+extern bool legitimate_address_p (enum machine_mode, rtx, bool);
+extern bool vax_mode_dependent_address_p (rtx);
 
 #ifdef RTX_CODE
+extern bool adjacent_operands_p (rtx, rtx, enum machine_mode);
 extern const char *rev_cond_name (rtx);
-extern void split_quadword_operands (rtx *, rtx *, int);
 extern void print_operand_address (FILE *, rtx);
-extern int vax_float_literal (rtx);
+extern void print_operand (FILE *, rtx, int);
 extern void vax_notice_update_cc (rtx, rtx);
+extern void vax_expand_addsub_di_operands (rtx *, enum rtx_code);
 extern const char * vax_output_int_move (rtx, rtx *, enum machine_mode);
 extern const char * vax_output_int_add (rtx, rtx *, enum machine_mode);
+extern const char * vax_output_int_subtract (rtx, rtx *, enum machine_mode);
 extern const char * vax_output_conditional_branch (enum rtx_code);
+extern const char * vax_output_movmemsi (rtx, rtx *);
 #endif /* RTX_CODE */
 
 #ifdef REAL_VALUE_TYPE
