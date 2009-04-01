@@ -83,89 +83,102 @@ static void check_promotion (cpp_reader *, const struct op *);
 static unsigned int
 interpret_float_suffix (const uchar *s, size_t len)
 {
-  size_t f, l, w, q, i, d;
-  size_t r, k, u, h;
+  size_t flags;
+  size_t f, l, w, q, i;
 
-  f = l = w = q = i = d = 0;
-  r = k = u = h = 0;
+  flags = 0;
+  f = l = w = q = i = 0;
 
+  /* Process decimal float suffixes, which are two letters starting
+     with d or D.  Order and case are significant.  */
+  if (len == 2 && (*s == 'd' || *s == 'D'))
+    {
+      bool uppercase = (*s == 'D');
+      switch (s[1])
+      {
+      case 'f': return (!uppercase ? (CPP_N_DFLOAT | CPP_N_SMALL): 0); break;
+      case 'F': return (uppercase ? (CPP_N_DFLOAT | CPP_N_SMALL) : 0); break;
+      case 'd': return (!uppercase ? (CPP_N_DFLOAT | CPP_N_MEDIUM): 0); break;
+      case 'D': return (uppercase ? (CPP_N_DFLOAT | CPP_N_MEDIUM) : 0); break;
+      case 'l': return (!uppercase ? (CPP_N_DFLOAT | CPP_N_LARGE) : 0); break;
+      case 'L': return (uppercase ? (CPP_N_DFLOAT | CPP_N_LARGE) : 0); break;
+      default:
+	return 0;
+      }
+    }
+
+  /* Recognize a fixed-point suffix.  */
+  switch (s[len-1])
+    {
+    case 'k': case 'K': flags = CPP_N_ACCUM; break;
+    case 'r': case 'R': flags = CPP_N_FRACT; break;
+    default: break;
+    }
+
+  /* Continue processing a fixed-point suffix.  The suffix is case
+     insensitive except for ll or LL.  Order is significant.  */
+  if (flags)
+    {
+      if (len == 1)
+	return flags;
+      len--;
+
+      if (*s == 'u' || *s == 'U')
+	{
+	  flags |= CPP_N_UNSIGNED;
+	  if (len == 1)
+	    return flags;
+	  len--;
+	  s++;
+        }
+
+      switch (*s)
+      {
+      case 'h': case 'H':
+	if (len == 1)
+	  return flags |= CPP_N_SMALL;
+	break;
+      case 'l':
+	if (len == 1)
+	  return flags |= CPP_N_MEDIUM;
+	if (len == 2 && s[1] == 'l')
+	  return flags |= CPP_N_LARGE;
+	break;
+      case 'L':
+	if (len == 1)
+	  return flags |= CPP_N_MEDIUM;
+	if (len == 2 && s[1] == 'L')
+	  return flags |= CPP_N_LARGE;
+	break;
+      default:
+	break;
+      }
+      /* Anything left at this point is invalid.  */
+      return 0;
+    }
+
+  /* In any remaining valid suffix, the case and order don't matter.  */
   while (len--)
     switch (s[len])
       {
-      case 'r': case 'R': r++; break;
-      case 'k': case 'K': k++; break;
-      case 'u': case 'U': u++; break;
-      case 'h': case 'H': h++; break;
-      case 'f': case 'F':
-	if (d > 0)
-	  return 0;
-	f++;
-	break;
-      case 'l': case 'L':
-	if (d > 0)
-	  return 0;
-	l++;
-	/* If there are two Ls, they must be adjacent and the same case.  */
-	if (l == 2 && s[len] != s[len + 1])
-	  return 0;
-	break;
-      case 'w': case 'W':
-	if (d > 0)
-	  return 0;
-	w++;
-	break;
-      case 'q': case 'Q':
-	if (d > 0)
-	  return 0;
-	q++;
-	break;
+      case 'f': case 'F': f++; break;
+      case 'l': case 'L': l++; break;
+      case 'w': case 'W': w++; break;
+      case 'q': case 'Q': q++; break;
       case 'i': case 'I':
       case 'j': case 'J': i++; break;
-      case 'd': case 'D': d++; break;
       default:
 	return 0;
       }
 
-  if (r + k > 1 || h > 1 || l > 2 || u > 1)
-    return 0;
-
-  if (r == 1)
-    {
-      if (f || i || d || w || q)
-	return 0;
-
-      return (CPP_N_FRACT
-	      | (u ? CPP_N_UNSIGNED : 0)
-	      | (h ? CPP_N_SMALL :
-		 l == 2 ? CPP_N_LARGE :
-		 l == 1 ? CPP_N_MEDIUM :  0));
-    }
-
-  if (k == 1)
-    {
-      if (f || i || d || w || q)
-	return 0;
-
-      return (CPP_N_ACCUM
-	      | (u ? CPP_N_UNSIGNED : 0)
-	      | (h ? CPP_N_SMALL :
-		 l == 2 ? CPP_N_LARGE :
-		 l == 1 ? CPP_N_MEDIUM :  0));
-    }
-
-  if (f + l + w + q > 1 || i > 1 || h + u > 0)
-    return 0;
-
-  /* Allow dd, df, dl suffixes for decimal float constants.  */
-  if (d && ((d + f + l != 2) || i))
+  if (f + l + w + q > 1 || i > 1)
     return 0;
 
   return ((i ? CPP_N_IMAGINARY : 0)
 	  | (f ? CPP_N_SMALL :
 	     l ? CPP_N_LARGE :
 	     w ? CPP_N_MD_W :
-	     q ? CPP_N_MD_Q : CPP_N_MEDIUM)
-	  | (d ? CPP_N_DFLOAT : 0));
+	     q ? CPP_N_MD_Q : CPP_N_MEDIUM));
 }
 
 /* Subroutine of cpp_classify_number.  S points to an integer suffix
