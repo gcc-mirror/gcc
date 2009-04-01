@@ -457,7 +457,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -msize  -minit-stack=@var{n}  -mno-interrupts @gol
--mcall-prologues  -mno-tablejump  -mtiny-stack  -mint8}
+-mcall-prologues  -mtiny-stack  -mint8}
 
 @emph{Blackfin Options}
 @gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]} @gol
@@ -9312,10 +9312,6 @@ Code size will be smaller.
 @opindex mcall-prologues
 Functions prologues/epilogues expanded as call to appropriate
 subroutines.  Code size will be smaller.
-
-@item -mno-tablejump
-@opindex mno-tablejump
-Do not generate tablejump insns which sometimes increase code size.
 
 @item -mtiny-stack
 @opindex mtiny-stack

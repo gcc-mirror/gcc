@@ -37,10 +37,6 @@ mno-interrupts
 Target Report RejectNegative Mask(NO_INTERRUPTS)
 Change the stack pointer without disabling interrupts
 
-mno-tablejump
-Target Report RejectNegative Mask(NO_TABLEJUMP)
-Do not generate tablejump insns
-
 morder1
 Target Report Undocumented Mask(ORDER_1)
 
