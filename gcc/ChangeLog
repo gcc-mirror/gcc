@@ -1,3 +1,10 @@
+2009-04-01  Kai Tietz  <kai.tietz@onevision.com>
+	    Andrey Galkin <agalkin@hypercom.com>
+
+	PR/39492
+	* config/i386/host-mingw32.c (mingw32_gt_pch_use_address):
+	Make object_name unique for each process.
+
 2009-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/39591
