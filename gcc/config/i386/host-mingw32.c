@@ -120,8 +120,19 @@ mingw32_gt_pch_use_address (void *addr, size_t size, int fd,
      namespace when running an application in a Terminal Server
      session.  This causes failure since, by default, applications 
      don't get SeCreateGlobalPrivilege. We don't need global
-     memory sharing so explicitly put object into Local namespace.  */
-   const char object_name[] = "Local\\MinGWGCCPCH";
+     memory sharing so explicitly put object into Local namespace.
+
+     There is also another issue, which appears if multiple concurrent
+     GCC processes are using PCH functionality. MapViewOfFileEx returns
+     "Access Denied" error. So we need to make the session-wide mapping
+     name unique. Let's use current process ID for that.  */
+#define OBJECT_NAME_FMT "Local\\MinGWGCCPCH-"
+
+  /* Allocate enough space for name prefix and max possible DWORD
+    hexadecimal representation.  */
+  char object_name[sizeof (OBJECT_NAME_FMT) + sizeof (DWORD) * 2];
+  snprintf (object_name, sizeof (object_name), OBJECT_NAME_FMT "%lx",
+            GetCurrentProcessId());
 
   /* However, the documentation for CreateFileMapping says that on NT4
      and earlier, backslashes are invalid in object name.  So, we need
