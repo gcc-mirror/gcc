@@ -1,3 +1,8 @@
+2009-04-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	(restore_ld_library_path_env_vars): Always restore GCC_EXEC_PREFIX
+	to its original value, or unset if it was not defined.
+
 2009-03-31  Jason Merrill  <jason@redhat.com>
 
 	* g++.old-deja/g++.other/using9.C: Add expected errors.
