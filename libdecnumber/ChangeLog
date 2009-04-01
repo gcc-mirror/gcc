@@ -1,3 +1,7 @@
+2009-04-01  Ben Elliston  <bje@au.ibm.com>
+
+        * decContext.h: Include gstdint.h instead of <stdint.h>.
+
 2009-03-30  Ben Elliston  <bje@au.ibm.com>
 
 	* decNumber.c, decNumber.h, decNumberLocal.h, decDouble.c,
