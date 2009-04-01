@@ -1,3 +1,10 @@
+2009-04-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/39588
+	* combine.c (merge_outer_ops): Do not set the constant when this
+	is not necessary.
+	(simplify_shift_const_1): Do not modify it either in this case.
+
 2009-04-01  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/ia64/ia64.c (ia64_handle_option): Inform user that Itanium1
