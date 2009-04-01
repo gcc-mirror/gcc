@@ -15938,7 +15938,6 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
   
   if (frame_reg_rtx != sp_reg_rtx)
     {
-      rs6000_emit_stack_tie ();
       if (sp_offset != 0)
 	emit_insn (gen_addsi3 (sp_reg_rtx, frame_reg_rtx,
 			       GEN_INT (sp_offset)));
