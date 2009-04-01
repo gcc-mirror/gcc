@@ -869,11 +869,18 @@ default_function_rodata_section (tree decl)
 
       if (DECL_ONE_ONLY (decl) && HAVE_COMDAT_GROUP)
         {
-	  size_t len = strlen (name) + 3;
-	  char* rname = (char *) alloca (len);
+	  char *dot;
+	  size_t len;
+	  char* rname;
+
+	  dot = strchr (name + 1, '.');
+	  if (!dot)
+	    dot = name;
+	  len = strlen (dot) + 8;
+	  rname = (char *) alloca (len);
 
 	  strcpy (rname, ".rodata");
-	  strcat (rname, name + 5);
+	  strcat (rname, dot);
 	  return get_section (rname, SECTION_LINKONCE, decl);
 	}
       /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo.  */
