@@ -1,3 +1,8 @@
+2009-03-31  Ian Lance Taylor  <iant@google.com>
+
+	* tree-eh.c (tree_remove_unreachable_handlers): Compare
+	gimple_code with GIMPLE_RESX, not RESX.
+
 2009-03-31  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (c_get_ident): New.
