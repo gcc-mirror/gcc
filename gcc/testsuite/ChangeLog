@@ -1,7 +1,14 @@
+2009-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37772
+	* gcc.dg/pr37772.c: New test.
+	* g++.dg/ext/asm11.C: New test.
+
 2009-04-01  H.J. Lu  <hongjiu.lu@intel.com>
 
-	(restore_ld_library_path_env_vars): Always restore GCC_EXEC_PREFIX
-	to its original value, or unset if it was not defined.
+	* lib/target-libpath.exp (restore_ld_library_path_env_vars): Always
+	restore GCC_EXEC_PREFIX to its original value, or unset if it was not
+	defined.
 
 2009-03-31  Jason Merrill  <jason@redhat.com>
 
