@@ -1,3 +1,8 @@
+2009-04-01  Richard Guenther  <rguenther@suse.de>
+
+	* fold-const.c (fold_plusminus_mult_expr): Do not fold
+	i * 4 + 2 to (i * 2 + 1) * 2.
+
 2009-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/37772
