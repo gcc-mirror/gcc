@@ -213,14 +213,14 @@ proc restore_ld_library_path_env_vars { } {
   global orig_gcc_exec_prefix
   global env
 
-  if { $orig_environment_saved == 0 } {
-    return
-  }
-
   if { $orig_gcc_exec_prefix_saved } {
     setenv GCC_EXEC_PREFIX "$orig_gcc_exec_prefix"
   } elseif [info exists env(GCC_EXEC_PREFIX)] {
     unsetenv GCC_EXEC_PREFIX
+  }
+
+  if { $orig_environment_saved == 0 } {
+    return
   }
 
   if { $orig_ld_library_path_saved } {
