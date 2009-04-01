@@ -1,3 +1,11 @@
+2009-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39226
+	* config/rs6000/rs6000.md (andsi3_internal5_nomc,
+	anddi3_internal2_nomc, anddi3_internal3_nomc): Removed.
+	(booldi3_internal3): Use boolean_or_operator instead of
+	boolean_operator.
+
 2009-04-01  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/39605
