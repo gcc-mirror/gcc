@@ -1,5 +1,11 @@
 2009-04-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/39226
+	* config/rs6000/rs6000.md (andsi3_internal5_nomc,
+	anddi3_internal2_nomc, anddi3_internal3_nomc): Removed.
+	(booldi3_internal3): Use boolean_or_operator instead of
+	boolean_operator.
+
 	PR c/37772
 	* c-parser.c (c_parser_asm_statement): Skip until close paren and
 	return if c_parser_asm_string_literal returned NULL.
