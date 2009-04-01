@@ -1,3 +1,9 @@
+2009-04-01  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.c (avr_override_options): Inform user that
+	-mno-tablejump option is deprecated.
+	* doc/invoke.texi (AVR Options): Update -mno-tablejump.
+
 2009-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/39591

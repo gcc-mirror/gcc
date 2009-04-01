@@ -9295,6 +9295,8 @@ subroutines.  Code size will be smaller.
 @item -mno-tablejump
 @opindex mno-tablejump
 Do not generate tablejump insns which sometimes increase code size.
+The option is now deprecated in favor of the equivalent 
+@option{-fno-jump-tables}
 
 @item -mtiny-stack
 @opindex mtiny-stack

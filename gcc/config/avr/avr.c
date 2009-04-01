@@ -367,6 +367,7 @@ void
 avr_override_options (void)
 {
   const struct mcu_type_s *t;
+  static bool warned_no_tablejump_deprecated = false;
 
   flag_delete_null_pointer_checks = 0;
 
@@ -391,6 +392,15 @@ avr_override_options (void)
   if (optimize && !TARGET_NO_TABLEJUMP)
     avr_case_values_threshold = 
       (!AVR_HAVE_JMP_CALL || TARGET_CALL_PROLOGUES) ? 8 : 17;
+
+  if (TARGET_NO_TABLEJUMP
+      && !warned_no_tablejump_deprecated)
+    {
+      inform (input_location, "the -mno-tablejump switch is deprecated");
+      inform (input_location, "GCC 4.4 is the last release with this switch");
+      inform (input_location, "use the -fno-jump-tables switch instead");
+      warned_no_tablejump_deprecated = true;
+    }
 
   tmp_reg_rtx  = gen_rtx_REG (QImode, TMP_REGNO);
   zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
