@@ -1,3 +1,10 @@
+2009-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/39591
+	* testsuite/libgomp.c/pr39591-1.c: New test.
+	* testsuite/libgomp.c/pr39591-2.c: New test.
+	* testsuite/libgomp.c/pr39591-3.c: New test.
+
 2009-03-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* testsuite/libgomp.c/atomic-5.c: Cleanup cpuid usage.
