@@ -3,6 +3,14 @@
 	Backport from mainline:
 	2009-04-01  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR c++/4926
+	* g++.dg/template/pr4926-1.C: New.
+
+2009-04-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-04-01  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR tree-optimization/35011
 	* g++.dg/other/pr35011.C: New.
 
