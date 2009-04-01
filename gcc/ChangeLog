@@ -1,3 +1,14 @@
+2009-04-01  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.h (avr_case_values_threshold): Remove declaration.
+	(CASE_VALUES_THRESHOLD): Redefine.
+	* config/avr/avr.c (avr_override_options): Remove initialization of
+	avr_case_values_threshold variable.
+	(avr_case_values_threshold): Remove variable. Add new function.
+	* config/avr/avr-protos.h (avr_case_values_threshold): Declare.
+	* config/avr/avr.opt (mno-tablejump): Remove option.
+	* doc/invoke.texi (AVR Options): Remove -mno-tablejump.
+
 2009-04-01  DJ Delorie  <dj@redhat.com>
 
 	* varasm.c (default_function_rodata_section): Don't assume

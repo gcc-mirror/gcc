@@ -308,7 +308,6 @@ static const struct mcu_type_s avr_mcu_types[] = {
   { NULL,           ARCH_UNKNOWN, NULL }
 };
 
-int avr_case_values_threshold = 30000;
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -387,10 +386,6 @@ avr_override_options (void)
 
   avr_current_arch = &avr_arch_types[t->arch];
   avr_extra_arch_macro = t->macro;
-
-  if (optimize && !TARGET_NO_TABLEJUMP)
-    avr_case_values_threshold = 
-      (!AVR_HAVE_JMP_CALL || TARGET_CALL_PROLOGUES) ? 8 : 17;
 
   tmp_reg_rtx  = gen_rtx_REG (QImode, TMP_REGNO);
   zero_reg_rtx = gen_rtx_REG (QImode, ZERO_REGNO);
@@ -6112,6 +6107,13 @@ avr_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
     }
   else
     return false;
+}
+
+/* Worker function for CASE_VALUES_THRESHOLD.  */
+
+unsigned int avr_case_values_threshold (void)
+{
+  return (!AVR_HAVE_JMP_CALL || TARGET_CALL_PROLOGUES) ? 8 : 17;
 }
 
 #include "gt-avr.h"
