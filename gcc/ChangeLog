@@ -1,3 +1,144 @@
+2009-04-01	Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+
+	* gcc/config/vax/vax.c: Add #includes to silence warnings.
+	Change #include order to silence two warnings.
+
+2009-04-01	Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+
+	* gcc/config/vax/linux.h (TARGET_DEFAULT): Add the MASK_QMATH flag bit.
+	(ASM_SPEC): Pass -k to the assembler for PIC code.
+
+2009-04-01	Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+
+	* gcc/config.gcc: Add vax-*-linux* to the switch.
+	* gcc/config/vax/linux.h: New file. (TARGET_VERSION,
+	TARGET_OS_CPP_BUILTINS, TARGET_DEFAULT, CPP_SPEC, LINK_SPEC): Define.
+
+2009-04-01	Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+
+	* gcc/config/vax/vax.c (vax_output_int_move, adjacent_operands_p):
+	Use predicate macros instead of GET_CODE() == foo.
+	* gcc/config/vax/vax.md (movsi_2, movstrictqi, and<mode>3, ashrsi3,
+	ashlsi3, rotrsi3, <unnamed>): Likewise.
+
+2009-04-01	Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+
+	* gcc/config/vax/builtins.md (jbbssiqi, jbbssihi, jbbssisi, jbbcciqi,
+	jbbccihi, jbbccisi): Remova trailing whitespace.
+	* gcc/config/vax/constraints.md: Likewise.
+	* gcc/config/vax/elf.h: (ASM_PREFERRED_EH_DATA_FORMAT): Likewise.
+	* gcc/config/vax/openbsd1.h (OBSD_OLD_GAS): Likewise.
+	* gcc/config/vax/predicates.md: Likewise.
+	* gcc/config/vax/vax.c (print_operand_address, vax_output_int_move,
+	vax_expand_addsub_di_operands, adjacent_operands_p): Likewise.
+	* gcc/config/vax/vax.h: Likewise.
+	* gcc/config/vax/vax.md (nonlocal_goto): Likewise.
+
+2009-04-01	Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+
+	* gcc/config/vax/vax.c (vax_float_literal, vax_output_int_move)
+	(indirectable_address_p, adjacent_operands_p): Add spaces around
+	braces.
+	* gcc/config/vax/vax-protos.h (adjacent_operands_p): Likewise.
+
+2009-04-01	Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+
+	* gcc/config/vax/vax.c (legitimate_constant_address_p,
+	legitimate_constant_p, indirectable_address_p, nonindexed_address_p,
+	index_term_p, reg_plus_index_p, legitimate_address_p,
+	vax_mode_dependent_address_p): Update comments to match functions
+	modified by the recent int->bool conversion.
+
+2009-04-01	Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+
+	* gcc/config/vax/builtins.md: Update copyright message.
+	* gcc/config/vax/constraints.md: Likewise.
+	* gcc/config/vax/netbsd-elf.h: Likewise.
+	* gcc/config/vax/predicates.md: Likewise.
+	* gcc/config/vax/vax-protos.h: Likewise.
+	* gcc/config/vax/vax.c: Likewise.
+	* gcc/config/vax/vax.h: Likewise.
+	* gcc/config/vax/vax.md: Likewise.
+	* gcc/config/vax/vax.opt: Likewise.
+
+2009-04-01	Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+
+	* gcc/config/vax/builtins.md (ffssi2, ffssi2_internal,
+	sync_lock_test_and_set<mode>, sync_lock_release<mode>): Fix indention.
+	* gcc/config/vax/constraints.md (B, R): Likewise.
+	* gcc/config/vax/predicates.md (external_memory_operand,
+	nonimmediate_addsub_di_operand): Likewise.
+	* gcc/config/vax/vax.c (vax_output_int_add): Likewise.
+	* gcc/config/vax/vax.md (movsi, movsi_2, mov<mode>, call_value,
+	untyped_call): Likewise.
+
+2009-04-01	Matt Thomas <matt@3am-software.com>
+
+	* config/vax/predicates.md: New file. (symbolic_operand,
+	local_symbolic_operand, external_symbolic_operand,
+	external_const_operand, nonsymbolic_operand, external_memory_operand,
+	indirect_memory_operand, indexed_memory_operand,
+	illegal_blk_memory_operand, illegal_addsub_di_memory_operand,
+	nonimmediate_addsub_di_operand, general_addsub_di_operand): New
+	predicate.
+	* config/vax/constraints.md: New file. (Z0, U06,  U08, U16, CN6, S08,
+	S16, I, J, K, L, M, N, O, G, Q, B, R, T): New constraint.
+	* config/vax/builtins.md: New file. (ffssi2, ffssi2_internal,
+	sync_lock_test_and_set<mode>, jbbssiqi, jbbssihi, jbbssisi,
+	sync_lock_release<mode>, jbbcciqi, jbbccihi, jbbccisi): Define.
+	* config/vax/vax.opt (mqmath): Add option.
+	* config/vax/vax.md (isfx): Extend with DI.
+	(VAXintQH, VAXintQHSD): Define.
+	(tst<mode>, cmp<mode>, *bit<mode>, movmemhi1, truncsiqi2, truncsihi2,
+	mulsidi3, add<mode>3, sub<mode>, mul<mode>3, div<mode>3, and<mode>,
+	and<mode>_const_int, ior<mode>3, xor<mode>3, neg<mode>2,
+	one_cmpl<mode>2, ashlsi3, lshrsi3, rotlsi3): Update constraints.
+	(movdi): Update constraints and use vax_output_int_move().
+	(movsi, movsi_2, pushlclsymreg, pushextsymreg, movlclsymreg,
+	movextsymreg, adddi3, adcdi3, subdi3, sbcdi3, pushextsym, movextsym,
+	pushlclsym, movlclsym, movaddr<mode>, pushaddr<mode>,
+	nonlocal_goto): New.
+	(mov<mode>): Extend accepted operand types.
+	(subdi3_old): Rename from subdi3, change update constraints and use
+	a new implementation.
+	* gcc/config/vax/vax.h (PCC_BITFIELD_TYPE_MATTERS): Add space.
+	(FRAME_POINTER_CFA_OFFSET, IRA_COVER_CLASSES, CLASS_MAX_NREGS,
+	MOVE_RATIO, CLEAR_RATIO): Define.
+	(REG_CLASS_FROM_LETTER, CONST_OK_FOR_LETTER_P,
+	CONST_DOUBLE_OK_FOR_LETTER_P, EXTRA_CONSTRAINT): Delete.
+	(PRINT_OPERAND): Redefine using a function instead of inlined code.
+	* gcc/config/vax/vax.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Define.
+	(split_quadword_operands): Make static and really allow variable
+	splitting.
+	(print_operand_address): Update for PIC generation.
+	(print_operand, vax_builtin_setjmp_frame_value, vax_output_int_subtract,
+	indexable_address_p, fixup_mathdi_operand,
+	vax_expand_addsub_di_operands, adjacent_operands_p): New.
+	(vax_float_literal, legitimate_constant_p,
+	indirectable_constant_address_p, index_term_p,
+	reg_plus_index_p): Return bool instead of int.
+	(vax_rtx_costs): Fix cost for CONST_INT, indent and use HOST_WIDE_INT
+	where needed.
+	(vax_output_int_move, vax_output_int_add): Extend to allow PIC
+	generation.
+	(vax_output_conditional_branch): Indent.
+	(legitimate_constant_address_p, indirectable_constant_address_p,
+	indirectable_address_p, nonindexed_address_p, legitimate_address_p,
+	vax_mode_dependent_address_p): Return bool instead of int, update for
+	PIC generation.
+	* config/vax/vax-protos.h (legitimate_constant_address_p,
+	legitimate_constant_p, legitimate_address_p,
+	vax_mode_dependent_address_p): Change declaration to bool.
+	(legitimate_pic_operand_p, adjacent_operands_p, print_operand,
+	vax_expand_addsub_di_operands, vax_output_int_subtract,
+	vax_output_movmemsi): Declare.
+	(split_quadword_operands, vax_float_literal): Delete declaration.
+	* config/vax/netbsd-elf.h (CC1_SPEC, CC1PLUS_SPEC) Define.
+	* config/vax/elf.h (NO_EXTERNAL_INDIRECT_ADDRESS,
+	VAX_CC1_AND_CC1PLUS_SPEC, ASM_PREFERRED_EH_DATA_FORMAT,
+	ASM_OUTPUT_DWARF_PCREL): Define.
+	(ASM_SPEC): Change definition to allow PIC generation.
+
 2009-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39226

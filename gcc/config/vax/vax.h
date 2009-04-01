@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  VAX version.
    Copyright (C) 1987, 1988, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -104,7 +104,7 @@ along with GCC; see the file COPYING3.  If not see
 #define STRUCTURE_SIZE_BOUNDARY 8
 
 /* A bit-field declared as `int' forces `int' alignment for the struct.  */
-#define PCC_BITFIELD_TYPE_MATTERS (!TARGET_VAXC_ALIGNMENT)
+#define PCC_BITFIELD_TYPE_MATTERS (! TARGET_VAXC_ALIGNMENT)
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 32
@@ -181,6 +181,9 @@ along with GCC; see the file COPYING3.  If not see
    This is computed in `reload', in reload1.c.  */
 #define FRAME_POINTER_REQUIRED 1
 
+/* Offset from the frame pointer register value to the top of stack.  */
+#define FRAME_POINTER_CFA_OFFSET(FNDECL) 0
+
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM VAX_AP_REGNUM
 
@@ -228,6 +231,20 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define REG_CLASS_NAMES	\
   { "NO_REGS", "ALL_REGS" }
 
+/* The following macro defines cover classes for Integrated Register
+   Allocator.  Cover classes is a set of non-intersected register
+   classes covering all hard registers used for register allocation
+   purpose.  Any move between two registers of a cover class should be
+   cheaper than load or store of the registers.  The macro value is
+   array of register classes with LIM_REG_CLASSES used as the end
+   marker.  */
+#define IRA_COVER_CLASSES { ALL_REGS, LIM_REG_CLASSES }
+
+/* Return the maximum number of consecutive registers
+   needed to represent mode MODE in a register of class CLASS.  */
+#define CLASS_MAX_NREGS(CLASS, MODE)	\
+  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
@@ -245,54 +262,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define INDEX_REG_CLASS ALL_REGS
 #define BASE_REG_CLASS ALL_REGS
-
-/* Get reg_class from a letter such as appears in the machine description.  */
-
-#define REG_CLASS_FROM_LETTER(C) NO_REGS
-
-/* The letters I, J, K, L, M, N, and O in a register constraint string
-   can be used to stand for particular ranges of immediate operands.
-   This macro defines what the ranges are.
-   C is the letter, and VALUE is a constant value.
-   Return 1 if VALUE is in the range specified by C.
-
-   `I' is the constant zero.
-   `J' is a value between 0 .. 63 (inclusive)
-   `K' is a value between -128 and 127 (inclusive)
-   'L' is a value between -32768 and 32767 (inclusive)
-   `M' is a value between 0 and 255 (inclusive)
-   'N' is a value between 0 and 65535 (inclusive)
-   `O' is a value between -63 and -1 (inclusive)  */
-
-#define CONST_OK_FOR_LETTER_P(VALUE, C)				\
-  (  (C) == 'I' ?	(VALUE) == 0				\
-   : (C) == 'J' ?	0 <= (VALUE) && (VALUE) < 64		\
-   : (C) == 'O' ?	-63 <= (VALUE) && (VALUE) < 0		\
-   : (C) == 'K' ?	-128 <= (VALUE) && (VALUE) < 128	\
-   : (C) == 'M' ?	0 <= (VALUE) && (VALUE) < 256		\
-   : (C) == 'L' ?	-32768 <= (VALUE) && (VALUE) < 32768	\
-   : (C) == 'N' ?	0 <= (VALUE) && (VALUE) < 65536		\
-   : 0)
-
-/* Similar, but for floating constants, and defining letters G and H.
-   Here VALUE is the CONST_DOUBLE rtx itself.
-
-   `G' is a floating-point zero.  */
-
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)		\
-  ((C) == 'G' ? ((VALUE) == CONST0_RTX (DFmode)		\
-		 || (VALUE) == CONST0_RTX (SFmode))	\
-   : 0)
-
-/* Optional extra constraints for this machine.
-
-   For the VAX, `Q' means that OP is a MEM that does not have a mode-dependent
-   address.  */
-
-#define EXTRA_CONSTRAINT(OP, C)					\
-  ((C) == 'Q'							\
-   ? MEM_P (OP) && !mode_dependent_address_p (XEXP (OP, 0))	\
-   : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -621,6 +590,11 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    in one reasonably fast instruction.  */
 #define MOVE_MAX 8
 
+/* If a memory-to-memory move would take MOVE_RATIO or more simple
+   move-instruction pairs, we will do a movmem or libcall instead.  */
+#define MOVE_RATIO(speed) ((speed) ? 6 : 3)
+#define CLEAR_RATIO(speed) ((speed) ? 6 : 2)
+
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
 
@@ -851,49 +825,11 @@ VAX operand formatting codes:
 #  define NEG_HWI_PRINT_HEX16 "0xffffffff%08lx"
 #endif
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE)  \
   ((CODE) == '#' || (CODE) == '|')
 
-#define PRINT_OPERAND(FILE, X, CODE)					\
-{ if (CODE == '#') fputc (ASM_DOUBLE_CHAR, FILE);			\
-  else if (CODE == '|')							\
-    fputs (REGISTER_PREFIX, FILE);					\
-  else if (CODE == 'C')							\
-    fputs (rev_cond_name (X), FILE);					\
-  else if (CODE == 'D' && CONST_INT_P (X) && INTVAL (X) < 0)		\
-    fprintf (FILE, "$" NEG_HWI_PRINT_HEX16, INTVAL (X));		\
-  else if (CODE == 'P' && CONST_INT_P (X))				\
-    fprintf (FILE, "$" HOST_WIDE_INT_PRINT_DEC, INTVAL (X) + 1);	\
-  else if (CODE == 'N' && CONST_INT_P (X))				\
-    fprintf (FILE, "$" HOST_WIDE_INT_PRINT_DEC, ~ INTVAL (X));		\
-  /* rotl instruction cannot deal with negative arguments.  */		\
-  else if (CODE == 'R' && CONST_INT_P (X))				\
-    fprintf (FILE, "$" HOST_WIDE_INT_PRINT_DEC, 32 - INTVAL (X));	\
-  else if (CODE == 'H' && CONST_INT_P (X))				\
-    fprintf (FILE, "$%d", (int) (0xffff & ~ INTVAL (X)));		\
-  else if (CODE == 'h' && CONST_INT_P (X))				\
-    fprintf (FILE, "$%d", (short) - INTVAL (x));			\
-  else if (CODE == 'B' && CONST_INT_P (X))				\
-    fprintf (FILE, "$%d", (int) (0xff & ~ INTVAL (X)));			\
-  else if (CODE == 'b' && CONST_INT_P (X))				\
-    fprintf (FILE, "$%d", (int) (0xff & - INTVAL (X)));			\
-  else if (CODE == 'M' && CONST_INT_P (X))				\
-    fprintf (FILE, "$%d", ~((1 << INTVAL (x)) - 1));			\
-  else if (REG_P (X))							\
-    fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
-  else if (MEM_P (X))							\
-    output_address (XEXP (X, 0));					\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
-    { char dstr[30];							\
-      real_to_decimal (dstr, CONST_DOUBLE_REAL_VALUE (X),		\
-		       sizeof (dstr), 0, 1);				\
-      fprintf (FILE, "$0f%s", dstr); }					\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
-    { char dstr[30];							\
-      real_to_decimal (dstr, CONST_DOUBLE_REAL_VALUE (X),		\
-		       sizeof (dstr), 0, 1);				\
-      fprintf (FILE, "$0%c%s", ASM_DOUBLE_CHAR, dstr); }		\
-  else { putc ('$', FILE); output_addr_const (FILE, X); }}
+#define PRINT_OPERAND(FILE, X, CODE)  \
+  print_operand (FILE, X, CODE)
 
 /* Print a memory operand whose address is X, on file FILE.
    This uses a function in output-vax.c.  */

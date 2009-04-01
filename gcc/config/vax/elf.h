@@ -85,8 +85,29 @@ along with GCC; see the file COPYING3.  If not see
     }							\
   while (0)
 
+/* Don't allow *foo which foo is non-local */
+#define NO_EXTERNAL_INDIRECT_ADDRESS
+
+#undef VAX_CC1_AND_CC1PLUS_SPEC
+#define VAX_CC1_AND_CC1PLUS_SPEC \
+  "%{!fno-pic: \
+     %{!fpic: \
+       %{!fPIC:-fPIC}}}"
+
 /* VAX ELF is always gas; override the generic VAX ASM_SPEC.  */
 
 #undef ASM_SPEC
-#define ASM_SPEC ""
+#define ASM_SPEC "%{!fno-pic: %{!mno-asm-pic:-k}}"
 
+/*  We want PCREL dwarf output.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)	\
+  ((GLOBAL ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4)
+
+/* Emit a PC-relative relocation.  */
+#define ASM_OUTPUT_DWARF_PCREL(FILE, SIZE, LABEL)	\
+  do {							\
+    fputs (integer_asm_op (SIZE, FALSE), FILE);		\
+    fprintf (FILE, "%%pcrel%d(", SIZE * 8);		\
+    assemble_name (FILE, LABEL);			\
+    fputc (')', FILE);					\
+  } while (0)

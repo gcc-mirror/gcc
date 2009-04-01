@@ -2351,6 +2351,9 @@ v850-*-*)
 	cxx_target_objs="v850-c.o"
 	use_gcc_stdint=wrap
 	;;
+vax-*-linux*)
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h vax/elf.h vax/linux.h"
+	;;
 vax-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h netbsd.h netbsd-elf.h vax/elf.h vax/netbsd-elf.h"
 	;;
