@@ -1,3 +1,8 @@
+2009-04-01  DJ Delorie  <dj@redhat.com>
+
+	* varasm.c (default_function_rodata_section): Don't assume
+	anything about where the first '.' in the section name is.
+
 2009-04-01  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_emit_stack_reset): Delete redundant
