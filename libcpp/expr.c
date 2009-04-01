@@ -84,10 +84,10 @@ static unsigned int
 interpret_float_suffix (const uchar *s, size_t len)
 {
   size_t flags;
-  size_t f, l, w, q, i;
+  size_t f, d, l, w, q, i;
 
   flags = 0;
-  f = l = w = q = i = 0;
+  f = d = l = w = q = i = 0;
 
   /* Process decimal float suffixes, which are two letters starting
      with d or D.  Order and case are significant.  */
@@ -103,7 +103,9 @@ interpret_float_suffix (const uchar *s, size_t len)
       case 'l': return (!uppercase ? (CPP_N_DFLOAT | CPP_N_LARGE) : 0); break;
       case 'L': return (uppercase ? (CPP_N_DFLOAT | CPP_N_LARGE) : 0); break;
       default:
-	return 0;
+	/* Additional two-character suffixes beginning with D are not
+	   for decimal float constants.  */
+	break;
       }
     }
 
@@ -162,6 +164,7 @@ interpret_float_suffix (const uchar *s, size_t len)
     switch (s[len])
       {
       case 'f': case 'F': f++; break;
+      case 'd': case 'D': d++; break;
       case 'l': case 'L': l++; break;
       case 'w': case 'W': w++; break;
       case 'q': case 'Q': q++; break;
@@ -171,14 +174,15 @@ interpret_float_suffix (const uchar *s, size_t len)
 	return 0;
       }
 
-  if (f + l + w + q > 1 || i > 1)
+  if (f + d + l + w + q > 1 || i > 1)
     return 0;
 
   return ((i ? CPP_N_IMAGINARY : 0)
 	  | (f ? CPP_N_SMALL :
+	     d ? CPP_N_MEDIUM :
 	     l ? CPP_N_LARGE :
 	     w ? CPP_N_MD_W :
-	     q ? CPP_N_MD_Q : CPP_N_MEDIUM));
+	     q ? CPP_N_MD_Q : CPP_N_DEFAULT));
 }
 
 /* Subroutine of cpp_classify_number.  S points to an integer suffix
@@ -364,6 +368,13 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
 	cpp_error (pfile, CPP_DL_WARNING,
 		   "traditional C rejects the \"%.*s\" suffix",
 		   (int) (limit - str), str);
+
+      /* A suffix for double is a GCC extension via decimal float support.
+	 If the suffix also specifies an imaginary value we'll catch that
+	 later.  */
+      if ((result == CPP_N_MEDIUM) && CPP_PEDANTIC (pfile))
+	cpp_error (pfile, CPP_DL_PEDWARN,
+		   "suffix for double constant is a GCC extension");
 
       /* Radix must be 10 for decimal floats.  */
       if ((result & CPP_N_DFLOAT) && radix != 10)

@@ -1,3 +1,8 @@
+2009-04-01  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/29027
+	* c-lex.c (interpret_float): Default (no suffix) is double.
+
 2009-04-1  Xinliang David Li  <davidxl@google.com>
 
 	* config/i386/i386.c (legitimate_constant_p): Recognize
