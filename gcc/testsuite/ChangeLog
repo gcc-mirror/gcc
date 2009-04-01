@@ -1,3 +1,8 @@
+2009-04-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/35240
+	* g++.dg/template/pr35240.C: New.
+
 2009-04-01  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/39605
