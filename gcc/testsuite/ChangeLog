@@ -1,3 +1,9 @@
+2009-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37772
+	* gcc.dg/pr37772.c: New test.
+	* g++.dg/ext/asm11.C: New test.
+
 2009-03-31  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:

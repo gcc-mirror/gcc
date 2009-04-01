@@ -1,3 +1,9 @@
+2009-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/37772
+	* c-parser.c (c_parser_asm_statement): Skip until close paren and
+	return if c_parser_asm_string_literal returned NULL.
+
 2009-04-01  Kai Tietz  <kai.tietz@onevision.com>
             Andrey Galkin <agalkin@hypercom.com>
 
