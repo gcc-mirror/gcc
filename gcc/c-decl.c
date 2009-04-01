@@ -4408,7 +4408,17 @@ grokdeclarator (const struct c_declarator *declarator,
 		       not an integer constant expression.  */
 		    if (!size_int_const)
 		      {
-			this_size_varies = size_varies = 1;
+			/* If this is a file scope declaration of an
+			   ordinary identifier, this is invalid code;
+			   diagnosing it here and not subsequently
+			   treating the type as variable-length avoids
+			   more confusing diagnostics later.  */
+			if ((decl_context == NORMAL || decl_context == FIELD)
+			    && current_scope == file_scope)
+			  pedwarn (input_location, 0,
+				   "variably modified %qs at file scope", name);
+			else
+			  this_size_varies = size_varies = 1;
 			warn_variable_length_array (orig_name, size);
 		      }
 		  }
