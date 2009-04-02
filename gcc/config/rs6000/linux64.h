@@ -99,7 +99,7 @@ extern int dot_symbols;
 	    }							\
 	  if (TARGET_PROTOTYPE)					\
 	    {							\
-	      TARGET_PROTOTYPE = 0;				\
+	      target_prototype = 0;				\
 	      error (INVALID_64BIT, "prototype");		\
 	    }							\
 	  if ((target_flags & MASK_POWERPC64) == 0)		\
@@ -133,6 +133,10 @@ extern int dot_symbols;
 #undef	ASM_DEFAULT_SPEC
 #undef	ASM_SPEC
 #undef	LINK_OS_LINUX_SPEC
+
+/* FIXME: This will quite possibly choose the wrong dynamic linker.  */
+#undef	LINK_OS_GNU_SPEC
+#define	LINK_OS_GNU_SPEC LINK_OS_LINUX_SPEC
 
 #ifndef	RS6000_BI_ARCH
 #define	ASM_DEFAULT_SPEC "-mppc64"
