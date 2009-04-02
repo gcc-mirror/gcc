@@ -1,5 +1,7 @@
 2009-04-02  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/memcpy-1.c: Add compiler option.
+
 	* gcc.dg/and-1.c: Restrict the targets for which the test is run
 	and XFAIL for powerpc and spu.
 
