@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-options "-O2 -mpowerpc64" }
-// { dg-final { scan-assembler-not "stfd"  }  }
+// xfail: PR middle-end/37272
+// { dg-final { scan-assembler-not "stfd" { xfail lp64 }  }  }
 
 // The register allocator should have allocated the temporary long long value in a floating point register.
 

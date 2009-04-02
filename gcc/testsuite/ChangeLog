@@ -1,3 +1,7 @@
+2009-04-02  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.target/powerpc/ppc64-double-1.c: XFAIL for lp64.
+
 2009-04-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20090401-1.c: New test.
