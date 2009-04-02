@@ -1,5 +1,8 @@
 2009-04-02  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/and-1.c: Restrict the targets for which the test is run
+	and XFAIL for powerpc and spu.
+
 	* gcc.target/powerpc/ppc64-double-1.c: XFAIL for lp64.
 
 2009-04-01  Eric Botcazou  <ebotcazou@adacore.com>
