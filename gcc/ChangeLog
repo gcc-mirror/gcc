@@ -1,3 +1,9 @@
+2009-04-02  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/39595
+	* tree-vect-analyze.c (vect_build_slp_tree): Check that the size of
+	interleaved loads group is not greater than the SLP group size.
+
 2009-04-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/39588
