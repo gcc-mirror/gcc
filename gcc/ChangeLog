@@ -1,3 +1,7 @@
+2009-04-03  Alan Modra  <amodra@bigpond.net.au>
+
+	* config.gcc (powerpc-*-linux*): Merge variants.
+
 2009-04-02  Chao-ying Fu  <fu@mips.com>
 	    James Grosbach <james.grosbach@microchip.com>
 

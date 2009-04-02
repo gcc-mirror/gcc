@@ -1805,27 +1805,17 @@ powerpc-*-rtems*)
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-rtems t-rtems rs6000/t-ppccomm"
 	;;
-powerpc-*-linux*altivec*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxaltivec.h glibc-stdint.h"
-	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="rs6000/t-fprules rs6000/t-fprules-softfp soft-fp/t-softfp rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
-	;;
-powerpc-*-linux*spe*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxspe.h rs6000/e500.h glibc-stdint.h"
-	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="t-dfprules rs6000/t-fprules rs6000/t-fprules-softfp soft-fp/t-softfp rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
-	;;
-powerpc-*-linux*paired*)
-        tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h rs6000/750cl.h glibc-stdint.h"
-        extra_options="${extra_options} rs6000/sysv4.opt"
-        tmake_file="rs6000/t-fprules rs6000/t-fprules-softfp soft-fp/t-softfp rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
-        ;;
 powerpc-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	tmake_file="t-dfprules rs6000/t-fprules rs6000/t-fprules-softfp soft-fp/t-softfp rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
-	case ${enable_targets}:${cpu_is_64bit} in
-	    *powerpc64* | all:* | *:yes)
+	maybe_biarch=yes
+	case ${target} in
+	    powerpc-*-linux*spe* | powerpc-*-linux*paired*)
+		maybe_biarch= ;;
+	esac
+	case ${maybe_biarch}:${enable_targets}:${cpu_is_64bit} in
+	    yes:*powerpc64* | yes:all:* | yes:*:yes)
 		if test x$cpu_is_64bit = xyes; then
 		    tm_file="${tm_file} rs6000/default64.h"
 		fi
@@ -1836,6 +1826,14 @@ powerpc-*-linux*)
 	    *)
 		tm_file="${tm_file} rs6000/linux.h glibc-stdint.h"
 		;;
+	esac
+	case ${target} in
+	    powerpc*-*-linux*altivec*)
+		tm_file="${tm_file} rs6000/linuxaltivec.h" ;;
+	    powerpc*-*-linux*spe*)
+		tm_file="${tm_file} rs6000/linuxspe.h rs6000/e500.h" ;;
+	    powerpc*-*-linux*paired*)
+		tm_file="${tm_file} rs6000/750cl.h" ;;
 	esac
 	if test x${enable_secureplt} = xyes; then
 		tm_file="rs6000/secureplt.h ${tm_file}"
