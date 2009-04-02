@@ -1,3 +1,9 @@
+2009-04-02  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/39595
+	* tree-vect-slp.c (vect_build_slp_tree): Check that the size of 
+	interleaved loads group is not  greater than the SLP group size.
+
 2009-04-02  Rafael Avila de Espindola  <espindola@google.com>
 
 	* builtins.c (is_builtin_name): New.
