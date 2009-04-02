@@ -1,3 +1,10 @@
+2009-04-02  David Ayers  <ayers@fsfe.org>
+ 
+	PR objc/27377
+	* c-typeck.c (build_conditional_expr): Emit ObjC warnings
+	by calling objc_compare_types and surpress warnings about
+	incompatible C pointers that are compatible ObjC pointers.
+	
 2009-04-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/39588

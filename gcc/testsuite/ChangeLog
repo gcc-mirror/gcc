@@ -1,3 +1,8 @@
+2009-04-02  David Ayers  <ayers@fsfe.org>
+
+	PR objc/27377
+	* objc.dg/conditional-1.m: New tests.
+	
 2009-04-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20090401-1.c: New test.
