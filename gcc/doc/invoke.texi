@@ -315,7 +315,7 @@ Objective-C and Objective-C++ Dialects}.
 -print-multi-directory  -print-multi-lib @gol
 -print-prog-name=@var{program}  -print-search-dirs  -Q @gol
 -print-sysroot -print-sysroot-headers-suffix @gol
--save-temps  -time}
+-save-temps -save-temps=cwd -save-temps=obj -time}
 
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
@@ -5168,6 +5168,7 @@ And for @var{n} over four, @option{-fsched-verbose} also includes
 dependence info.
 
 @item -save-temps
+@itemx -save-temps=cwd
 @opindex save-temps
 Store the usual ``temporary'' intermediate files permanently; place them
 in the current directory and name them based on the source file.  Thus,
@@ -5181,6 +5182,39 @@ When used in combination with the @option{-x} command line option,
 input source file with the same extension as an intermediate file.
 The corresponding intermediate file may be obtained by renaming the
 source file before using @option{-save-temps}.
+
+If you invoke GCC in parallel, compiling several different source
+files that share a common base name in different subdirectories or the
+same source file compiled for multiple output destinations, it is
+likely that the different parallel compilers will interfere with each
+other, and overwrite the temporary files.  For instance:
+
+@smallexample
+gcc -save-temps -o outdir1/foo.o indir1/foo.c&
+gcc -save-temps -o outdir2/foo.o indir2/foo.c&
+@end smallexample
+
+may result in @file{foo.i} and @file{foo.o} being written to
+simultaneously by both compilers.
+
+@item -save-temps=obj
+@opindex save-temps=obj
+Store the usual ``temporary'' intermediate files permanently.  If the
+@option{-o} option is used, the temporary files are based on the
+object file.  If the @option{-o} option is not used, the
+@option{-save-temps=obj} switch behaves like @option{-save-temps}.
+
+For example:
+
+@smallexample
+gcc -save-temps=obj -c foo.c
+gcc -save-temps=obj -c bar.c -o dir/xbar.o
+gcc -save-temps=obj foobar.c -o dir2/yfoobar
+@end smallexample
+
+would create @file{foo.i}, @file{foo.s}, @file{dir/xbar.i},
+@file{dir/xbar.s}, @file{dir2/yfoobar.i}, @file{dir2/yfoobar.s}, and
+@file{dir2/yfoobar.o}.
 
 @item -time
 @opindex time

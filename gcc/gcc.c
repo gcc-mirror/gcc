@@ -218,7 +218,15 @@ static const char *target_sysroot_hdrs_suffix = 0;
 /* Nonzero means write "temp" files in source directory
    and use the source file's name in them, and don't delete them.  */
 
-static int save_temps_flag;
+static enum save_temps {
+  SAVE_TEMPS_NONE,		/* no -save-temps */
+  SAVE_TEMPS_CWD,		/* -save-temps in current directory */
+  SAVE_TEMPS_OBJ		/* -save-temps in object directory */
+} save_temps_flag;
+
+/* Output file to use to get the object directory for -save-temps=obj  */
+static char *save_temps_prefix = 0;
+static size_t save_temps_length = 0;
 
 /* Nonzero means pass multiple source files to the compiler at one time.  */
 
@@ -393,7 +401,8 @@ or with constant text in a single argument.
  %i     substitute the name of the input file being processed.
  %b     substitute the basename of the input file being processed.
 	This is the substring up to (and not including) the last period
-	and not including the directory.
+	and not including the directory unless -save-temps was specified
+	to put temporaries in a different location.	
  %B	same as %b, but include the file suffix (text after the last period).
  %gSUFFIX
 	substitute a file name that has suffix SUFFIX and is chosen
@@ -817,7 +826,7 @@ static const char *cpp_unique_options =
 static const char *cpp_options =
 "%(cpp_unique_options) %1 %{m*} %{std*&ansi&trigraphs} %{W*&pedantic*} %{w}\
  %{f*} %{g*:%{!g0:%{g*} %{!fno-working-directory:-fworking-directory}}} %{O*}\
- %{undef} %{save-temps:-fpch-preprocess}";
+ %{undef} %{save-temps*:-fpch-preprocess}";
 
 /* This contains cpp options which are not passed when the preprocessor
    output will be used by another program.  */
@@ -996,17 +1005,17 @@ static const struct compiler default_compilers[] =
           %{traditional|ftraditional:\
 %eGNU C no longer supports -traditional without -E}\
        %{!combine:\
-	  %{save-temps|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
-		%(cpp_options) -o %{save-temps:%b.i} %{!save-temps:%g.i} \n\
-		    cc1 -fpreprocessed %{save-temps:%b.i} %{!save-temps:%g.i} \
+	  %{save-temps*|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
+		%(cpp_options) -o %{save-temps*:%b.i} %{!save-temps*:%g.i} \n\
+		    cc1 -fpreprocessed %{save-temps*:%b.i} %{!save-temps*:%g.i} \
 			%(cc1_options)}\
-	  %{!save-temps:%{!traditional-cpp:%{!no-integrated-cpp:\
+	  %{!save-temps*:%{!traditional-cpp:%{!no-integrated-cpp:\
 		cc1 %(cpp_unique_options) %(cc1_options)}}}\
           %{!fsyntax-only:%(invoke_as)}} \
       %{combine:\
-	  %{save-temps|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
-		%(cpp_options) -o %{save-temps:%b.i} %{!save-temps:%g.i}}\
-	  %{!save-temps:%{!traditional-cpp:%{!no-integrated-cpp:\
+	  %{save-temps*|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
+		%(cpp_options) -o %{save-temps*:%b.i} %{!save-temps*:%g.i}}\
+	  %{!save-temps*:%{!traditional-cpp:%{!no-integrated-cpp:\
 		cc1 %(cpp_unique_options) %(cc1_options)}}\
                 %{!fsyntax-only:%(invoke_as)}}}}}}", 0, 1, 1},
   {"-",
@@ -1018,13 +1027,13 @@ static const struct compiler default_compilers[] =
       external preprocessor if -save-temps is given.  */
      "%{E|M|MM:%(trad_capable_cpp) %(cpp_options) %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
-	  %{save-temps|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
-		%(cpp_options) -o %{save-temps:%b.i} %{!save-temps:%g.i} \n\
-		    cc1 -fpreprocessed %{save-temps:%b.i} %{!save-temps:%g.i} \
+	  %{save-temps*|traditional-cpp|no-integrated-cpp:%(trad_capable_cpp) \
+		%(cpp_options) -o %{save-temps*:%b.i} %{!save-temps*:%g.i} \n\
+		    cc1 -fpreprocessed %{save-temps*:%b.i} %{!save-temps*:%g.i} \
 			%(cc1_options)\
                         -o %g.s %{!o*:--output-pch=%i.gch}\
                         %W{o*:--output-pch=%*}%V}\
-	  %{!save-temps:%{!traditional-cpp:%{!no-integrated-cpp:\
+	  %{!save-temps*:%{!traditional-cpp:%{!no-integrated-cpp:\
 		cc1 %(cpp_unique_options) %(cc1_options)\
                     -o %g.s %{!o*:--output-pch=%i.gch}\
                     %W{o*:--output-pch=%*}%V}}}}}}", 0, 0, 0},
@@ -3255,6 +3264,7 @@ display_help (void)
   fputs (_("  -Xlinker <arg>           Pass <arg> on to the linker\n"), stdout);
   fputs (_("  -combine                 Pass multiple source files to compiler at once\n"), stdout);
   fputs (_("  -save-temps              Do not delete intermediate files\n"), stdout);
+  fputs (_("  -save-temps=<arg>        Do not delete intermediate files\n"), stdout);
   fputs (_("  -pipe                    Use pipes rather than intermediate files\n"), stdout);
   fputs (_("  -time                    Time the execution of each subprocess\n"), stdout);
   fputs (_("  -specs=<file>            Override built-in specs with the contents of <file>\n"), stdout);
@@ -3789,8 +3799,19 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	n_infiles++;
       else if (strcmp (argv[i], "-save-temps") == 0)
 	{
-	  save_temps_flag = 1;
+	  save_temps_flag = SAVE_TEMPS_CWD;
 	  n_switches++;
+	}
+      else if (strncmp (argv[i], "-save-temps=", 12) == 0)
+	{
+	  n_switches++;
+	  if (strcmp (argv[i]+12, "cwd") == 0)
+	    save_temps_flag = SAVE_TEMPS_CWD;
+	  else if (strcmp (argv[i]+12, "obj") == 0
+		   || strcmp (argv[i]+12, "object") == 0)
+	    save_temps_flag = SAVE_TEMPS_OBJ;
+	  else
+	    fatal ("'%s' is an unknown -save-temps option", argv[i]);
 	}
       else if (strcmp (argv[i], "-combine") == 0)
 	{
@@ -3965,6 +3986,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	      else
 		argv[i] = convert_filename (argv[i], ! have_c, 0);
 #endif
+	      /* Save the output name in case -save-temps=obj was used.  */
+	      save_temps_prefix = xstrdup ((p[1] == 0) ? argv[i + 1] : argv[i] + 1);
 	      goto normal_switch;
 
 	    default:
@@ -4020,6 +4043,25 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  n_infiles++;
 	  lang_n_infiles++;
 	}
+    }
+
+  /* If -save-temps=obj and -o name, create the prefix to use for %b.
+     Otherwise just make -save-temps=obj the same as -save-temps=cwd.  */
+  if (save_temps_flag == SAVE_TEMPS_OBJ && save_temps_prefix != NULL)
+    {
+      save_temps_length = strlen (save_temps_prefix);
+      temp = strrchr (lbasename (save_temps_prefix), '.');
+      if (temp)
+	{
+	  save_temps_length -= strlen (temp);
+	  save_temps_prefix[save_temps_length] = '\0';
+	}
+
+    }
+  else if (save_temps_prefix != NULL)
+    {
+      free (save_temps_prefix);
+      save_temps_prefix = NULL;
     }
 
   if (save_temps_flag && use_pipes)
@@ -4776,12 +4818,18 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    fatal ("spec '%s' invalid", spec);
 
 	  case 'b':
-	    obstack_grow (&obstack, input_basename, basename_length);
+	    if (save_temps_length)
+	      obstack_grow (&obstack, save_temps_prefix, save_temps_length);
+	    else
+	      obstack_grow (&obstack, input_basename, basename_length);
 	    arg_going = 1;
 	    break;
 
 	  case 'B':
-	    obstack_grow (&obstack, input_basename, suffixed_basename_length);
+	    if (save_temps_length)
+	      obstack_grow (&obstack, save_temps_prefix, save_temps_length);
+	    else
+	      obstack_grow (&obstack, input_basename, suffixed_basename_length);
 	    arg_going = 1;
 	    break;
 
@@ -4927,6 +4975,26 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		    suffix_length += strlen (TARGET_OBJECT_SUFFIX);
 		  }
 
+		/* If -save-temps=obj and -o were specified, use that for the
+		   temp file.  */
+		if (save_temps_length)
+		  {
+		    char *tmp;
+		    temp_filename_length
+		      = save_temps_length + suffix_length + 1;
+		    tmp = (char *) alloca (temp_filename_length);
+		    memcpy (tmp, save_temps_prefix, save_temps_length);
+		    memcpy (tmp + save_temps_length, suffix, suffix_length);
+		    tmp[save_temps_length + suffix_length] = '\0';
+		    temp_filename = save_string (tmp,
+						 temp_filename_length + 1);
+		    obstack_grow (&obstack, temp_filename,
+				  temp_filename_length);
+		    arg_going = 1;
+		    delete_this_arg = 0;
+		    break;
+		  }
+
 		/* If the input_filename has the same suffix specified
 		   for the %g, %u, or %U, and -save-temps is specified,
 		   we could end up using that file as an intermediate
@@ -4938,13 +5006,13 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		if (save_temps_flag)
 		  {
 		    char *tmp;
-		    
-		    temp_filename_length = basename_length + suffix_length;
-		    tmp = (char *) alloca (temp_filename_length + 1);
-		    strncpy (tmp, input_basename, basename_length);
-		    strncpy (tmp + basename_length, suffix, suffix_length);
-		    tmp[temp_filename_length] = '\0';
+		    temp_filename_length = basename_length + suffix_length + 1;
+		    tmp = (char *) alloca (temp_filename_length);
+		    memcpy (tmp, input_basename, basename_length);
+		    memcpy (tmp + basename_length, suffix, suffix_length);
+		    tmp[basename_length + suffix_length] = '\0';
 		    temp_filename = tmp;
+
 		    if (strcmp (temp_filename, input_filename) != 0)
 		      {
 #ifndef HOST_LACKS_INODE_NUMBERS
@@ -6165,16 +6233,7 @@ set_input (const char *filename)
 
   input_filename = filename;
   input_filename_length = strlen (input_filename);
-
-  input_basename = input_filename;
-#ifdef HAVE_DOS_BASED_FILE_SYSTEM
-  /* Skip drive name so 'x:foo' is handled properly.  */
-  if (input_basename[1] == ':')
-    input_basename += 2;
-#endif
-  for (p = input_basename; *p; p++)
-    if (IS_DIR_SEPARATOR (*p))
-      input_basename = p + 1;
+  input_basename = lbasename (input_filename);
 
   /* Find a suffix starting with the last period,
      and set basename_length to exclude that suffix.  */
