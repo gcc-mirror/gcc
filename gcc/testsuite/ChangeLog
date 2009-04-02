@@ -1,3 +1,8 @@
+2009-04-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37221
+	* gcc.c-torture/compile/20090331-1.c: New testcase.
+
 2009-04-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20090401-1.c: New test.
