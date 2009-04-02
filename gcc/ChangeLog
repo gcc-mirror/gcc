@@ -1,3 +1,15 @@
+2009-04-03  Alan Modra  <amodra@bigpond.net.au>
+
+	* config.gcc (powerpc64-*-gnu*): Add rs6000/default64.h to tm_file.
+	Remove a number of t-files from tmake_file.
+	* config/rs6000/sysv4.opt (mprototype): Name variable target_prototype.
+	* config/rs6000/sysv4.h (TARGET_PROTOTYPE): Define.
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Set
+	target_prototype, not TARGET_PROTOTYPE.
+	(LINK_OS_GNU_SPEC): Define.
+	* config/rs6000/t-linux64 (LIB2FUNCS_EXTRA): Delete tramp.S
+	and darwin-ldoubdle.c.
+
 2009-04-02  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR driver/39293
