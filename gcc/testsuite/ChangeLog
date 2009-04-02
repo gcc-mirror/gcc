@@ -1,3 +1,8 @@
+2009-04-02  Janis Johnson  <janis187@us.ibm.com>
+
+	PR tree-optimization/31677
+        * gcc.dg/memcpy-1.c: Add compiler option.
+
 2009-04-02  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39595
