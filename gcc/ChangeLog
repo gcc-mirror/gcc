@@ -1,5 +1,10 @@
 2009-04-02  Rafael Avila de Espindola  <espindola@google.com>
 
+	* c-decl.c (merge_decls): Make sure newdecl and olddecl don't
+	share the argument list.
+
+2009-04-02  Rafael Avila de Espindola  <espindola@google.com>
+
 	Merge
 
 	2009-02-12  Diego Novillo  <dnovillo@google.com>
