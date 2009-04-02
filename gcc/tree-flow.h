@@ -919,6 +919,7 @@ bool simplify_stmt_using_ranges (gimple_stmt_iterator *);
 extern void dump_dominator_optimization_stats (FILE *);
 extern void debug_dominator_optimization_stats (void);
 int loop_depth_of_name (tree);
+tree degenerate_phi_result (gimple);
 
 /* In tree-ssa-copy.c  */
 extern void merge_alias_info (tree, tree);

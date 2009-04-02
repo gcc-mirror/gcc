@@ -2475,7 +2475,7 @@ avail_expr_eq (const void *p1, const void *p2)
 /* Given PHI, return its RHS if the PHI is a degenerate, otherwise return
    NULL.  */
 
-static tree
+tree
 degenerate_phi_result (gimple phi)
 {
   tree lhs = gimple_phi_result (phi);

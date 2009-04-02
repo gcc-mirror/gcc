@@ -1,3 +1,12 @@
+2009-04-02  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/37221
+	* tree-flow.h (degenerate_phi_result): Declare.
+	* tree-ssa-dom.c (degenerate_phi_result): Export.
+	* tree-scalar-evolution.c (analyze_initial_condition): If
+	the initial condition is defined by a degenerate PHI node
+	use the degenerate value.
+
 2009-04-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/39588

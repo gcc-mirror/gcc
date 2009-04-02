@@ -1577,6 +1577,20 @@ analyze_initial_condition (gimple loop_phi_node)
   if (init_cond == chrec_not_analyzed_yet)
     init_cond = chrec_dont_know;
 
+  /* During early loop unrolling we do not have fully constant propagated IL.
+     Handle degenerate PHIs here to not miss important unrollings.  */
+  if (TREE_CODE (init_cond) == SSA_NAME)
+    {
+      gimple def = SSA_NAME_DEF_STMT (init_cond);
+      tree res;
+      if (gimple_code (def) == GIMPLE_PHI
+	  && (res = degenerate_phi_result (def)) != NULL_TREE
+	  /* Only allow invariants here, otherwise we may break
+	     loop-closed SSA form.  */
+	  && is_gimple_min_invariant (res))
+	init_cond = res;
+    }
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  (init_cond = ");
