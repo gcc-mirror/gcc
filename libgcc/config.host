@@ -448,12 +448,6 @@ powerpc-*-eabi*)
 	;;
 powerpc-*-rtems*)
 	;;
-powerpc-*-linux*altivec*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128"
-	;;
-powerpc-*-linux*spe*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp"
-	;;
 powerpc-*-linux*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp"
 	;;
