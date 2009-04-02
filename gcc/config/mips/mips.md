@@ -67,6 +67,12 @@
    (UNSPEC_SET_GOT_VERSION	46)
    (UNSPEC_UPDATE_GOT_VERSION	47)
    (UNSPEC_COPYGP		48)
+   (UNSPEC_ERET			49)
+   (UNSPEC_DERET		50)
+   (UNSPEC_DI			51)
+   (UNSPEC_EHB			52)
+   (UNSPEC_RDPGPR		53)
+   (UNSPEC_COP0			54)
    
    (UNSPEC_ADDRESS_FIRST	100)
 
@@ -5678,6 +5684,60 @@
   "%*j\t%0%/"
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
+
+;; Exception return.
+(define_insn "mips_eret"
+  [(return)
+   (unspec_volatile [(const_int 0)] UNSPEC_ERET)]
+  ""
+  "eret"
+  [(set_attr "type"	"trap")
+   (set_attr "mode"	"none")])
+
+;; Debug exception return.
+(define_insn "mips_deret"
+  [(return)
+   (unspec_volatile [(const_int 0)] UNSPEC_DERET)]
+  ""
+  "deret"
+  [(set_attr "type"	"trap")
+   (set_attr "mode"	"none")])
+
+;; Disable interrupts.
+(define_insn "mips_di"
+  [(unspec_volatile [(const_int 0)] UNSPEC_DI)]
+  ""
+  "di"
+  [(set_attr "type"	"trap")
+   (set_attr "mode"	"none")])
+
+;; Execution hazard barrier.
+(define_insn "mips_ehb"
+  [(unspec_volatile [(const_int 0)] UNSPEC_EHB)]
+  ""
+  "ehb"
+  [(set_attr "type"	"trap")
+   (set_attr "mode"	"none")])
+
+;; Read GPR from previous shadow register set.
+(define_insn "mips_rdpgpr"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(unspec_volatile:SI [(match_operand:SI 1 "register_operand" "d")]
+			    UNSPEC_RDPGPR))]
+  ""
+  "rdpgpr\t%0,%1"
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")])
+
+;; Move involving COP0 registers.
+(define_insn "cop0_move"
+  [(set (match_operand:SI 0 "register_operand" "=B,d")
+	(unspec_volatile:SI [(match_operand:SI 1 "register_operand" "d,B")]
+			    UNSPEC_COP0))]
+  ""
+{ return mips_output_move (operands[0], operands[1]); }
+  [(set_attr "type"	"mtc,mfc")
+   (set_attr "mode"	"SI")])
 
 ;; This is used in compiling the unwind routines.
 (define_expand "eh_return"
