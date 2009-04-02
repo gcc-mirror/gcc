@@ -405,6 +405,9 @@ static int sh2a_function_vector_p (tree);
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG sh_reorg
 
+#undef TARGET_DWARF_REGISTER_SPAN
+#define TARGET_DWARF_REGISTER_SPAN sh_dwarf_register_span
+
 #ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS true
@@ -7424,6 +7427,26 @@ sh_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
     result = build_va_arg_indirect_ref (result);
 
   return result;
+}
+
+/* 64 bit floating points memory transfers are paired single precision loads
+   or store. So DWARF information needs fixing in little endian (unless
+   PR=SZ=1 in FPSCR).  */
+rtx
+sh_dwarf_register_span (rtx reg)
+{
+  unsigned regno = REGNO (reg);
+
+  if (WORDS_BIG_ENDIAN || GET_MODE (reg) != DFmode)
+    return NULL_RTX;
+
+  return
+    gen_rtx_PARALLEL (VOIDmode,
+		      gen_rtvec (2,
+				 gen_rtx_REG (SFmode,
+					      DBX_REGISTER_NUMBER (regno+1)),
+				 gen_rtx_REG (SFmode,
+					      DBX_REGISTER_NUMBER (regno))));
 }
 
 bool
