@@ -1,3 +1,12 @@
+2009-04-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25185
+	* error.c (find_typenames, find_typenames_r): New fns.
+	(dump_function_decl): Call find_typenames.
+	(dump_template_bindings): Print typenames as well.
+	* pt.c (tsubst): Non-static.
+	* cp-tree.h: Declare it.
+
 2009-04-02  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/26693
