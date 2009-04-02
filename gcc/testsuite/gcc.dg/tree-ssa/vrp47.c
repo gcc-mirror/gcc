@@ -30,10 +30,12 @@ int f(int x)
 
 /* Test that x and y are never compared to 0 -- they're always known to be
    0 or 1.  */
-/* { dg-final { scan-tree-dump-times "\[xy\]\[^ \]* !=" 0 "vrp1" } } */
+/* xfail: PR middle-end/38219  */
+/* { dg-final { scan-tree-dump-times "\[xy\]\[^ \]* !=" 0 "vrp1" { xfail powerpc*-*-* }} } */
 
 /* This one needs more copy propagation that only happens in dom1.  */
-/* { dg-final { scan-tree-dump-times "x\[^ \]* & y" 1 "dom1" } } */
+/* xfail: PR middle-end/38219  */
+/* { dg-final { scan-tree-dump-times "x\[^ \]* & y" 1 "dom1" { xfail powerpc*-*-* } } } */
 /* { dg-final { scan-tree-dump-times "x\[^ \]* & y" 1 "vrp1" { xfail *-*-* } } } */
 
 /* These two are fully simplified by VRP.  */
