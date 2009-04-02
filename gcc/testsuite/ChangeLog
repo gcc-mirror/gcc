@@ -1,3 +1,9 @@
+2009-04-02  David Ayers  <ayers@fsfe.org>
+
+	PR objc/18456
+	* objc.dg/bad-receiver-type-2.m: New test contributed by
+	Alexander Mamberg.
+
 2009-04-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/25185
