@@ -1009,6 +1009,8 @@ extern void warn_for_sign_compare (location_t,
 				   tree op0, tree op1, 
 				   tree result_type, 
 				   enum tree_code resultcode);
+extern void set_underlying_type (tree x);
+extern bool is_typedef_decl (tree x);
 
 /* In c-gimplify.c  */
 extern void c_genericize (tree);

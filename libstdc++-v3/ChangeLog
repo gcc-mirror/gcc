@@ -1,3 +1,9 @@
+2009-04-02  Dodji Seketeli  <dodji@redhat.com>
+
+	* include/ext/bitmap_allocator.h: the typedefs should be made public
+	if we want them to be accessible. This has been revealed by the patch
+	that fixes PR c++/26693 in g++.
+
 2009-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
@@ -785,21 +791,12 @@
 	on HPUX.
 	* configure: Regenerate.
 
-2009-01-22  Dodji Seketeli  <dodji@redhat.com>
-
-	* include/ext/bitmap_allocator.h: Reverting changes related to PR
-	c++/26693.
-
 2009-01-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/29_atomics/headers/stdatomic.h/functions.c: Remove
 	atomic_flag_fence.
 
 2009-01-21  Dodji Seketeli  <dodji@redhat.com>
-
-	* include/ext/bitmap_allocator.h: the typedefs should be made public
-	if we want them to be accessible. This has been revealed by the patch
-	that fixes PR c++/26693 in g++.
 
 2009-01-20  Benjamin Kosnik  <bkoz@redhat.com>
 	    Uros Bizjak  <ubizjak@gmail.com>

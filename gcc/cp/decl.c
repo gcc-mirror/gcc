@@ -8823,12 +8823,11 @@ grokdeclarator (const cp_declarator *declarator,
 	  && TYPE_ANONYMOUS_P (type)
 	  && cp_type_quals (type) == TYPE_UNQUALIFIED)
 	{
-	  tree oldname = TYPE_NAME (type);
 	  tree t;
 
 	  /* Replace the anonymous name with the real name everywhere.  */
 	  for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-	    if (TYPE_NAME (t) == oldname)
+	    if (ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
 	      TYPE_NAME (t) = decl;
 
 	  if (TYPE_LANG_SPECIFIC (type))
@@ -10786,6 +10785,9 @@ xref_basetypes (tree ref, tree base_list)
   TYPE_BINFO (ref) = binfo;
   BINFO_OFFSET (binfo) = size_zero_node;
   BINFO_TYPE (binfo) = ref;
+
+  /* Apply base-class info set up to the variants of this type.  */
+  fixup_type_variants (ref);
 
   if (max_bases)
     {

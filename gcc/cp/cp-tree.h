@@ -3181,6 +3181,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    && TREE_CODE (DECL_TEMPLATE_RESULT (NODE)) == TYPE_DECL \
    && !DECL_TEMPLATE_TEMPLATE_PARM_P (NODE))
 
+/* The chained list of typedefs that are referenced in templates.
+   These typedefs need to be access checked at template instantiation time.
+   There are put here at parsing time.  */
+#define MEMBER_TYPES_NEEDING_ACCESS_CHECK(NODE) DECL_ACCESS (NODE)
+
 /* Nonzero if NODE which declares a type.  */
 #define DECL_DECLARES_TYPE_P(NODE) \
   (TREE_CODE (NODE) == TYPE_DECL || DECL_CLASS_TEMPLATE_P (NODE))
@@ -4278,6 +4283,7 @@ extern bool type_has_user_nondefault_constructor (tree);
 extern bool type_has_user_provided_constructor  (tree);
 extern bool type_has_user_provided_default_constructor (tree);
 extern bool defaultable_fn_p			(tree);
+extern void fixup_type_variants			(tree);
 
 /* in cvt.c */
 extern tree convert_to_reference		(tree, tree, int, int, tree);
@@ -4548,6 +4554,7 @@ extern tree check_explicit_specialization	(tree, tree, int, int);
 extern tree make_auto				(void);
 extern tree do_auto_deduction			(tree, tree, tree);
 extern tree type_uses_auto			(tree);
+extern void append_type_to_template_for_access_check (tree, tree, tree);
 extern tree splice_late_return_type		(tree, tree);
 extern bool is_auto				(const_tree);
 extern tree process_template_parm		(tree, tree, bool, bool);

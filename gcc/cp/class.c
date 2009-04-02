@@ -1439,16 +1439,17 @@ determine_primary_bases (tree t)
       BINFO_VIRTUALS (type_binfo) = BINFO_VIRTUALS (primary);
     }
 }
-
-/* Set memoizing fields and bits of T (and its variants) for later
-   use.  */
 
-static void
-finish_struct_bits (tree t)
+/* Update the variant types of T.  */
+
+void
+fixup_type_variants (tree t)
 {
   tree variants;
 
-  /* Fix up variants (if any).  */
+  if (!t)
+    return;
+
   for (variants = TYPE_NEXT_VARIANT (t);
        variants;
        variants = TYPE_NEXT_VARIANT (variants))
@@ -1472,6 +1473,17 @@ finish_struct_bits (tree t)
       /* All variants of a class have the same attributes.  */
       TYPE_ATTRIBUTES (variants) = TYPE_ATTRIBUTES (t);
     }
+}
+
+
+/* Set memoizing fields and bits of T (and its variants) for later
+   use.  */
+
+static void
+finish_struct_bits (tree t)
+{
+  /* Fix up variants (if any).  */
+  fixup_type_variants (t);
 
   if (BINFO_N_BASE_BINFOS (TYPE_BINFO (t)) && TYPE_POLYMORPHIC_P (t))
     /* For a class w/o baseclasses, 'finish_struct' has set
