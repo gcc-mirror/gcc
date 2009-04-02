@@ -1,4 +1,4 @@
-// Copyright (C) 2006, 2007, 2008 Free Software Foundation
+// Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -87,12 +87,13 @@ void* thread_hammer_and_kill(void* opaque_pools)
 {
   shared_and_weak_pools& pools = *static_cast<shared_and_weak_pools*>(opaque_pools);
   // Using the same parameters as in the RNG test cases.
-  std::mersenne_twister<
+  std::mersenne_twister_engine<
     unsigned long, 32, 624, 397, 31,
-    0x9908b0dful, 11, 7,
+    0x9908b0dful, 11,
+    0xfffffffful, 7,
     0x9d2c5680ul, 15,
-    0xefc60000ul, 18> rng;
-  
+    0xefc60000ul, 18, 1812433253ul> rng;
+
   sp_vector_t::iterator cur_shared = pools.shared_pool.begin();
   wp_vector_t::iterator cur_weak = pools.weak_pool.begin();
   
@@ -122,11 +123,13 @@ void* thread_hammer(void* opaque_weak)
 {
   wp_vector_t& weak_pool = *static_cast<wp_vector_t*>(opaque_weak);
   // Using the same parameters as in the RNG test cases.
-  std::mersenne_twister<
+  std::mersenne_twister_engine<
     unsigned long, 32, 624, 397, 31,
-    0x9908b0dful, 11, 7,
+    0x9908b0dful, 11,
+    0xfffffffful, 7,
     0x9d2c5680ul, 15,
-    0xefc60000ul, 18> rng;
+    0xefc60000ul, 18, 1812433253ul> rng;
+
   wp_vector_t::iterator cur_weak = weak_pool.begin();
 
   for (unsigned int i = 0; i < HAMMER_REPEAT; ++i)

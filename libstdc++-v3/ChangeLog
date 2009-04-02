@@ -1,6 +1,324 @@
+2009-04-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc:
+	Change to mersenne_twister_engine, add same defaults as
+	mersenne_twister_engine/cons/default.cc.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc: Same.
+
+	* include/bits/random.tcc (seed_seq::seed_seq): Uglify parameter
+	to __il.
+	* include/bits/random.h (mersenne_twister_engine): Qualify
+	_ShiftMin1 with namespace __detail.
+	(__detail::_ShiftMin1): Use __gnu_cxx::__numeric_traits::max until
+	constexpr std::numeric_limits::max() can be used.
+	(mersenne_twister_engine): Split apart static asserts into one
+	assert per message. Temporarily disable the last three.
+
+2009-04-02  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/Makefile.am: Update to N2836. Modified for new random headers.
+	* include/Makefile.in: Ditto.
+	* include/tr1_impl/random: Moved to tr1/random.h
+	* include/tr1_impl/random.tcc: Moved to tr1
+	* include/tr1/random: Just point to moved tr1 random headers.
+	* include/tr1/random.tcc: Moved from tr1_impl.
+	* include/tr1/random.h: Moved from tr1_impl/random.
+	* include/std/random: Modified to point to std random headers.
+	* include/bits/random.tcc: New implementation of std random facilities.
+	* include/bits/random.h: Ditto.
+	* testsuite/26_numerics/headers/random/std_c++0x_neg.cc: Changed.
+	* testsuite/26_numerics/random/linear_congruential_engine/cons/
+	seed1.cc: New.
+	* testsuite/26_numerics/random/linear_congruential_engine/cons/
+	seed2.cc: New.
+	* testsuite/26_numerics/random/linear_congruential_engine/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/linear_congruential_engine/requirements/
+	non_uint_neg.cc: New.
+	* testsuite/26_numerics/random/linear_congruential_engine/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/linear_congruential_engine/operators/
+	equal.cc: New.
+	* testsuite/26_numerics/random/linear_congruential_engine/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/
+	seed1.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/
+	seed2.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/operators/
+	equal.cc: New.
+	* testsuite/26_numerics/random/mersenne_twister_engine/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	seed1.cc: New.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	seed2.cc: New.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/operators/
+	equal.cc: New.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/discard_block_engine/cons/
+	base_move.cc: New.
+	* testsuite/26_numerics/random/discard_block_engine/cons/
+	seed1.cc: New.
+	* testsuite/26_numerics/random/discard_block_engine/cons/
+	seed2.cc: New.
+	* testsuite/26_numerics/random/discard_block_engine/cons/
+	base_copy.cc: New.
+	* testsuite/26_numerics/random/discard_block_engine/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/discard_block_engine/cons/
+	seed_seq.cc: New.
+	* testsuite/26_numerics/random/discard_block_engine/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/discard_block_engine/operators/
+	equal.cc: New.
+	* testsuite/26_numerics/random/discard_block_engine/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	base_move.cc: New.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	seed1.cc: New.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	seed2.cc: New.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	base_copy.cc: New.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	seed_seq.cc: New.
+	* testsuite/26_numerics/random/independent_bits_engine/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/independent_bits_engine/operators/
+	equal.cc: New.
+	* testsuite/26_numerics/random/independent_bits_engine/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/
+	base_move.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/
+	seed1.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/
+	seed2.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/
+	base_copy.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/cons/
+	seed_seq.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/operators/
+	equal.cc: New.
+	* testsuite/26_numerics/random/shuffle_order_engine/operators/
+	serialize.cc
+	* testsuite/26_numerics/random/mt19937.cc: New.
+	* testsuite/26_numerics/random/mt19937_64.cc: New.
+	* testsuite/26_numerics/random/minstd_rand.cc: New.
+	* testsuite/26_numerics/random/minstd_rand0.cc: New.
+	* testsuite/26_numerics/random/ranlux24_base.cc: New.
+	* testsuite/26_numerics/random/ranlux48_base.cc: New.
+	* testsuite/26_numerics/random/ranlux24.cc: New.
+	* testsuite/26_numerics/random/ranlux48.cc: New.
+	* testsuite/26_numerics/random/knuth_b.cc: New.
+	* testsuite/26_numerics/random/default_random_engine.cc: New.
+	* testsuite/26_numerics/random/chi_squared_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/chi_squared_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/chi_squared_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/chi_squared_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/normal_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/normal_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/normal_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/normal_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/seed_seq/cons/range.cc: New.
+	* testsuite/26_numerics/random/seed_seq/cons/default.cc: New.
+	* testsuite/26_numerics/random/seed_seq/requirements/typedefs.cc: New.
+	* testsuite/26_numerics/random/uniform_int_distribution/cons/
+	parms_neg.cc: New.
+	* testsuite/26_numerics/random/uniform_int_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/uniform_int_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/uniform_int_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/uniform_real_distribution/cons/
+	parms_neg.cc: New.
+	* testsuite/26_numerics/random/uniform_real_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/uniform_real_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/uniform_real_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/poisson_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/poisson_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/poisson_distribution/requirements/
+	typedefs.cc
+	* testsuite/26_numerics/random/poisson_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/bernoulli_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/bernoulli_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/bernoulli_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/bernoulli_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/discrete_distribution/cons/
+	range.cc: New.
+	* testsuite/26_numerics/random/discrete_distribution/cons/
+	initlist.cc: New.
+	* testsuite/26_numerics/random/discrete_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/discrete_distribution/cons/
+	num_xbound_fun.cc: New.
+	* testsuite/26_numerics/random/discrete_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/discrete_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/weibull_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/weibull_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/weibull_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/weibull_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/negative_binomial_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/negative_binomial_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	requirements/typedefs.cc: New.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/serialize.cc: New.
+	* testsuite/26_numerics/random/cauchy_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/cauchy_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/cauchy_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/cauchy_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/gamma_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/gamma_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/gamma_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/gamma_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/fisher_f_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/fisher_f_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/fisher_f_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/fisher_f_distribution/operators/
+	serialize.cc: New.
+
+	* testsuite/26_numerics/random/exponential_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/exponential_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/exponential_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/exponential_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/lognormal_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/lognormal_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/lognormal_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/lognormal_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/binomial_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/binomial_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/binomial_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/binomial_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/random_device/cons/
+	token.cc: New.
+	* testsuite/26_numerics/random/random_device/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/random_device/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/extreme_value_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/extreme_value_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/extreme_value_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/extreme_value_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/
+	range.cc: New.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/
+	num_xbound_fun.cc: New.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/
+	initlist_fun.cc: New.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/
+	requirements/typedefs.cc: New.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/student_t_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/student_t_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/student_t_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/student_t_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/geometric_distribution/cons/
+	parms.cc: New.
+	* testsuite/26_numerics/random/geometric_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/geometric_distribution/requirements/
+	typedefs.cc: New.
+	* testsuite/26_numerics/random/geometric_distribution/operators/
+	serialize.cc: New.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/cons/
+	range.cc: New.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/cons/
+	default.cc: New.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/cons/
+	num_xbound_fun.cc: New.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/cons/
+	initlist_fun.cc: New.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/
+	requirements/typedefs.cc: New.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/
+	operators/serialize.cc: New.
+
 2009-04-02  Dodji Seketeli  <dodji@redhat.com>
 
-	* include/ext/bitmap_allocator.h: the typedefs should be made public
+	* include/ext/bitmap_allocator.h: The typedefs should be made public
 	if we want them to be accessible. This has been revealed by the patch
 	that fixes PR c++/26693 in g++.
 
