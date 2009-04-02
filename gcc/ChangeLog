@@ -1,3 +1,7 @@
+2009-04-02  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/sh/linux-unwind.h: Disable when inhibit_libc is defined.
+
 2009-04-02  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/26693
