@@ -1,3 +1,19 @@
+2009-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Regenerated.
+
 2009-03-31  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/unwind-cxx.h: Correct __cxa_call_terminate prototype.
