@@ -2256,7 +2256,7 @@ incorporeal_function_p (tree decl)
 	return true;
 
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-      if (strncmp (name, "__builtin_", strlen ("__builtin_")) == 0)
+      if (is_builtin_name (name))
 	return true;
     }
   return false;

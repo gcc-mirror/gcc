@@ -1,3 +1,10 @@
+2009-04-02  Rafael Avila de Espindola  <espindola@google.com>
+
+	* builtins.c (is_builtin_name): New.
+	(called_as_built_in): Use is_builtin_name.
+	* tree.h (is_builtin_name): New.
+	* varasm.c (incorporeal_function_p): Use is_builtin_name
+
 2009-04-02  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/sh/linux-unwind.h: Disable when inhibit_libc is defined.

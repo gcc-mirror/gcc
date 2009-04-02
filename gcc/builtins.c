@@ -241,18 +241,28 @@ static tree do_mpfr_bessel_n (tree, tree, tree,
 static tree do_mpfr_remquo (tree, tree, tree);
 static tree do_mpfr_lgamma_r (tree, tree, tree);
 
-/* Return true if NODE should be considered for inline expansion regardless
-   of the optimization level.  This means whenever a function is invoked with
-   its "internal" name, which normally contains the prefix "__builtin".  */
-
-static bool called_as_built_in (tree node)
+bool
+is_builtin_name (const char *name)
 {
-  const char *name = IDENTIFIER_POINTER (DECL_NAME (node));
   if (strncmp (name, "__builtin_", 10) == 0)
     return true;
   if (strncmp (name, "__sync_", 7) == 0)
     return true;
   return false;
+}
+
+/* Return true if NODE should be considered for inline expansion regardless
+   of the optimization level.  This means whenever a function is invoked with
+   its "internal" name, which normally contains the prefix "__builtin".  */
+
+static bool
+called_as_built_in (tree node)
+{
+  /* Note that we must use DECL_NAME, not DECL_ASSEMBLER_NAME_SET_P since
+     we want the name used to call the function, not the name it
+     will have. */
+  const char *name = IDENTIFIER_POINTER (DECL_NAME (node));
+  return is_builtin_name (name);
 }
 
 /* Return the alignment in bits of EXP, an object.
