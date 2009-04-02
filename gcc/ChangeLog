@@ -1,3 +1,8 @@
+2009-04-02  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_abi): Move initialization to ...
+	(override_options): Here.
+
 2009-04-02  Christian Bruel  <christian.bruel@st.com>
 
 	* config/sh/sh.c (sh_dwarf_register_span): New function.
