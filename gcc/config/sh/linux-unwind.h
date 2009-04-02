@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for SH Linux.
-   Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,10 @@ the Free Software Foundation, 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
 /* Do code reading to identify a signal frame, and set the frame
-   state data appropriately.  See unwind-dw2.c for the structs.  */
+   state data appropriately.  See unwind-dw2.c for the structs.
+   Don't use this at all if inhibit_libc is used.  */
+
+#ifndef inhibit_libc
 
 #include <signal.h>
 #include <sys/ucontext.h>
@@ -251,3 +254,5 @@ sh_fallback_frame_state (struct _Unwind_Context *context,
   return _URC_NO_REASON;
 }
 #endif /* defined (__SH5__) */
+
+#endif /* inhibit_libc */
