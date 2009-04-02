@@ -170,7 +170,6 @@ static int eq_local_specializations (const void *, const void *);
 static bool dependent_template_arg_p (tree);
 static bool any_template_arguments_need_structural_equality_p (tree);
 static bool dependent_type_p_r (tree);
-static tree tsubst (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_expr	(tree, tree, tsubst_flags_t, tree, bool);
 static tree tsubst_copy	(tree, tree, tsubst_flags_t, tree);
 static tree tsubst_pack_expansion (tree, tree, tsubst_flags_t, tree);
@@ -9079,7 +9078,7 @@ tsubst_exception_specification (tree fntype,
    This function is used for dealing with types, decls and the like;
    for expressions, use tsubst_expr or tsubst_copy.  */
 
-static tree
+tree
 tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
   tree type, r;
