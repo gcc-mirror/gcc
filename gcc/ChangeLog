@@ -1,3 +1,8 @@
+2009-04-02  Jeff Law  <law@redhat.com>
+
+	* reload1.c (fixup_eh_region_notes): Remove write-only "trap_count"
+	variable.
+
 2009-04-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure.ac: Support -Bstatic/-Bdynamic for linker version > 2.
