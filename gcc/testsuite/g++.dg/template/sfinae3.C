@@ -1,5 +1,5 @@
 // PR c++/24671
-// { dg-options "" }
+// { dg-do compile }
 
 template<typename> struct A
 {
@@ -9,9 +9,9 @@ template<typename> struct A
 
 template<typename> struct B
 {
-  B(const B&); // { dg-message "candidate" }
-  typedef typename A<char[A<B>::i]>::X Y;
-  template<typename T> B(T, Y); // { dg-error "call" }
+  B(const B&);
+  typedef typename A<char[A<B>::i]>::X Y; // { dg-error "forbids zero-size array" }
+  template<typename T> B(T, Y);
 };
 
-B<int> b(0,0); 
+B<int> b(0,0); // { dg-message "instantiated from here" }

@@ -1,3 +1,13 @@
+2009-04-02  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/26693
+	* c-decl.c: (clone_underlying_type): Move this ...
+	* c-common.c (set_underlying_type): ... here.
+	Also, make sure the function properly sets TYPE_STUB_DECL() on
+	the newly created typedef variant type.
+	* c-common.h (is_typedef_decl, set_underlying_type): Declare ...
+	* c-common.c (is_typedef_decl, set_underlying_type): ... new entry points.
+
 2009-04-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/37221

@@ -9172,4 +9172,76 @@ warn_for_sign_compare (location_t location,
     }
 }
 
+/* Setup a TYPE_DECL node as a typedef representation.
+
+   X is a TYPE_DECL for a typedef statement.  Create a brand new
+   ..._TYPE node (which will be just a variant of the existing
+   ..._TYPE node with identical properties) and then install X
+   as the TYPE_NAME of this brand new (duplicate) ..._TYPE node.
+
+   The whole point here is to end up with a situation where each
+   and every ..._TYPE node the compiler creates will be uniquely
+   associated with AT MOST one node representing a typedef name.
+   This way, even though the compiler substitutes corresponding
+   ..._TYPE nodes for TYPE_DECL (i.e. "typedef name") nodes very
+   early on, later parts of the compiler can always do the reverse
+   translation and get back the corresponding typedef name.  For
+   example, given:
+
+	typedef struct S MY_TYPE;
+	MY_TYPE object;
+
+   Later parts of the compiler might only know that `object' was of
+   type `struct S' if it were not for code just below.  With this
+   code however, later parts of the compiler see something like:
+
+	struct S' == struct S
+	typedef struct S' MY_TYPE;
+	struct S' object;
+
+    And they can then deduce (from the node for type struct S') that
+    the original object declaration was:
+
+		MY_TYPE object;
+
+    Being able to do this is important for proper support of protoize,
+    and also for generating precise symbolic debugging information
+    which takes full account of the programmer's (typedef) vocabulary.
+
+    Obviously, we don't want to generate a duplicate ..._TYPE node if
+    the TYPE_DECL node that we are now processing really represents a
+    standard built-in type.  */
+
+void
+set_underlying_type (tree x)
+{
+  if (x == error_mark_node)
+    return;
+  if (DECL_IS_BUILTIN (x))
+    {
+      if (TYPE_NAME (TREE_TYPE (x)) == 0)
+	TYPE_NAME (TREE_TYPE (x)) = x;
+    }
+  else if (TREE_TYPE (x) != error_mark_node
+	   && DECL_ORIGINAL_TYPE (x) == NULL_TREE)
+    {
+      tree tt = TREE_TYPE (x);
+      DECL_ORIGINAL_TYPE (x) = tt;
+      tt = build_variant_type_copy (tt);
+      TYPE_STUB_DECL (tt) = TYPE_STUB_DECL (DECL_ORIGINAL_TYPE (x));
+      TYPE_NAME (tt) = x;
+      TREE_USED (tt) = TREE_USED (x);
+      TREE_TYPE (x) = tt;
+    }
+}
+
+/* Returns true if X is a typedef decl.  */
+
+bool
+is_typedef_decl (tree x)
+{
+  return (x && TREE_CODE (x) == TYPE_DECL
+          && DECL_ORIGINAL_TYPE (x) != NULL_TREE);
+}
+
 #include "gt-c-common.h"
