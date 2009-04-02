@@ -1,3 +1,12 @@
+2009-04-02  Rafael Avila de Espindola  <espindola@google.com>
+
+	Merge
+
+	2009-02-12  Diego Novillo  <dnovillo@google.com>
+
+        	* varpool.c (debug_varpool): New.
+        	* cgraph.h (debug_varpool): Declare.
+
 2009-04-02  Jan Hubicka  <jh@suse.cz>
 
 	* passes.c (init_optimization_passes): Remove two copies of ehcleanup
