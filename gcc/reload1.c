@@ -4086,26 +4086,17 @@ static void
 fixup_eh_region_note (rtx insn, rtx prev, rtx next)
 {
   rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-  unsigned int trap_count;
   rtx i;
 
   if (note == NULL)
     return;
 
-  if (may_trap_p (PATTERN (insn)))
-    trap_count = 1;
-  else
-    {
-      remove_note (insn, note);
-      trap_count = 0;
-    }
+  if (! may_trap_p (PATTERN (insn)))
+    remove_note (insn, note);
 
   for (i = NEXT_INSN (prev); i != next; i = NEXT_INSN (i))
     if (INSN_P (i) && i != insn && may_trap_p (PATTERN (i)))
-      {
-	trap_count++;
-	add_reg_note (i, REG_EH_REGION, XEXP (note, 0));
-      }
+      add_reg_note (i, REG_EH_REGION, XEXP (note, 0));
 }
 
 /* Reload pseudo-registers into hard regs around each insn as needed.
