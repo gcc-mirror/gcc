@@ -381,6 +381,8 @@ bits_headers = \
 	${bits_srcdir}/ostream.tcc \
 	${bits_srcdir}/ostream_insert.h \
 	${bits_srcdir}/postypes.h \
+	${bits_srcdir}/random.h \
+	${bits_srcdir}/random.tcc \
 	${bits_srcdir}/stream_iterator.h \
 	${bits_srcdir}/streambuf_iterator.h \
 	${bits_srcdir}/shared_ptr.h \
@@ -833,6 +835,8 @@ tr1_headers = \
 	${tr1_srcdir}/poly_laguerre.tcc \
 	${tr1_srcdir}/legendre_function.tcc \
 	${tr1_srcdir}/random \
+	${tr1_srcdir}/random.h \
+	${tr1_srcdir}/random.tcc \
 	${tr1_srcdir}/regex \
 	${tr1_srcdir}/riemann_zeta.tcc \
 	${tr1_srcdir}/shared_ptr.h \
@@ -870,8 +874,6 @@ tr1_impl_headers = \
 	${tr1_impl_srcdir}/functional_hash.h \
 	${tr1_impl_srcdir}/hashtable \
 	${tr1_impl_srcdir}/hashtable_policy.h \
-	${tr1_impl_srcdir}/random \
-	${tr1_impl_srcdir}/random.tcc \
 	${tr1_impl_srcdir}/regex \
 	${tr1_impl_srcdir}/type_traits \
 	${tr1_impl_srcdir}/unordered_map \
