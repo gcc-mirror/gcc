@@ -406,6 +406,7 @@ extern GTY(()) struct varpool_node *varpool_nodes;
 struct varpool_node *varpool_node (tree);
 struct varpool_node *varpool_node_for_asm (tree asmname);
 void varpool_mark_needed_node (struct varpool_node *);
+void debug_varpool (void);
 void dump_varpool (FILE *);
 void dump_varpool_node (FILE *, struct varpool_node *);
 

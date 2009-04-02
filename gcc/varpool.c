@@ -164,6 +164,14 @@ dump_varpool (FILE *f)
     dump_varpool_node (f, node);
 }
 
+/* Dump the variable pool to stderr.  */
+
+void
+debug_varpool (void)
+{
+  dump_varpool (stderr);
+}
+
 /* Given an assembler name, lookup node.  */
 struct varpool_node *
 varpool_node_for_asm (tree asmname)
