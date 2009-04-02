@@ -22196,7 +22196,7 @@ echo "$as_me:$LINENO: checking linker -Bstatic/-Bdynamic option" >&5
 echo $ECHO_N "checking linker -Bstatic/-Bdynamic option... $ECHO_C" >&6
 gcc_cv_ld_static_dynamic=no
 if test $in_tree_ld = yes ; then
-  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10 -o "$gcc_cv_gld_major_version" -gt 2; then
     gcc_cv_ld_static_dynamic=yes
   fi
 elif test x$gcc_cv_ld != x; then

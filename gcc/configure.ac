@@ -2756,7 +2756,7 @@ fi
 AC_MSG_CHECKING(linker -Bstatic/-Bdynamic option)
 gcc_cv_ld_static_dynamic=no
 if test $in_tree_ld = yes ; then
-  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10 -o "$gcc_cv_gld_major_version" -gt 2; then
     gcc_cv_ld_static_dynamic=yes
   fi
 elif test x$gcc_cv_ld != x; then
