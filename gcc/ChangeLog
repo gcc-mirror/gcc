@@ -1,3 +1,55 @@
+2009-04-02  Chao-ying Fu  <fu@mips.com>
+	    James Grosbach <james.grosbach@microchip.com>
+
+	* config/mips/mips.c (mips_frame_info): Add acc_mask, num_acc,
+	num_cop0_regs, acc_save_offset, cop0_save_offset, acc_sp_offset,
+	cop0_sp_offset.
+	(machine_function): Add interrupt_handler_p, use_shadow_register_set_p,
+	keep_interrupts_masked_p, use_debug_exception_return_p.
+	(mips_attribute_table): Add interrupt, use_shadow_register_set,
+	keep_interrupts_masked, use_debug_exception_return.
+	(mips_interrupt_type_p, mips_use_shadow_register_set_p,
+	mips_keep_interrupts_masked_p, mips_use_debug_exception_return_p):
+	New functions.
+	(mips_function_ok_for_sibcall): Return false for interrupt handlers.
+	(mips_print_operand): Process COP0 registers to print $0 .. $31
+	correctly for GAS to process.
+	(mips_interrupt_extra_call_saved_reg_p): New function.
+	(mips_cfun_call_saved_reg_p): For interrupt handlers, we need to check
+	extra registers.
+	(mips_cfun_might_clobber_call_saved_reg_p): Likewise.
+	(mips_compute_frame_info): Add supports for interrupt context that
+	includes doubleword accumulators and COP0 registers.
+	(mips_for_each_saved_acc): New function.
+	(mips_for_each_saved_gpr_and_fpr): Change the function name from
+	mips_for_each_saved_reg.
+	(mips_save_reg): Save accumulators.
+	(mips_kernel_reg_p): A new for_each_rtx callback.
+	(mips_expand_prologue): Support interrupt handlers.
+	(mips_restore_reg): Restore accumulators.
+	(mips_expand_epilogue): Support interrupt handlers.
+	(mips_can_use_return_insn): Return false for interrupt handlers.
+	(mips_epilogue_uses): New function.
+	* config/mips/mips.md (UNSPEC_ERET, UNSPEC_DERET, UNSPEC_DI,
+	UNSPEC_EHB, UNSPEC_RDPGPR, UNSPEC_COP0): New UNSPEC.
+	(mips_eret, mips_deret, mips_di, mips_ehb, mips_rdpgpr,
+	cop0_move): New instructions.
+	* config/mips/mips-protos.h (mips_epilogue_uses): Declare.
+	* config/mips/mips.h (K0_REG_NUM, K1_REG_NUM, KERNEL_REG_P): New
+	defines.
+	(COP0_STATUS_REG_NUM, COP0_CAUSE_REG_NUM, COP0_EPC_REG_NUM):
+	New defines.
+	(CAUSE_IPL, SR_IPL, SR_EXL, SR_IE): New defines.
+	(MIPS_PROLOGUE_TEMP_REGNUM, MIPS_EPILOGUE_TEMP_REGNUM): For
+	interrupt handlers, we use K0 as the temporary register.
+	(EPILOGUE_USES): Change to a function call.
+	* config/mips/sde.h (MIPS_EPILOGUE_TEMP_REGNUM): For interrupt
+	handlers, we use K0 as the temporary register.
+	
+	* doc/extend.texi (Function Attributes): Document interrupt,
+	use_shadow_register_set, keep_interrupts_masked,
+	use_debug_exception_return for MIPS attributes.
+
 2009-04-03  Alan Modra  <amodra@bigpond.net.au>
 
 	* config.gcc (powerpc64-*-gnu*): Add rs6000/default64.h to tm_file.

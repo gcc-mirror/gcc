@@ -1622,6 +1622,9 @@ enum mips_code_readable_setting {
 #define GP_REG_LAST  31
 #define GP_REG_NUM   (GP_REG_LAST - GP_REG_FIRST + 1)
 #define GP_DBX_FIRST 0
+#define K0_REG_NUM   (GP_REG_FIRST + 26)
+#define K1_REG_NUM   (GP_REG_FIRST + 27)
+#define KERNEL_REG_P(REGNO)	(IN_RANGE (REGNO, K0_REG_NUM, K1_REG_NUM))
 
 #define FP_REG_FIRST 32
 #define FP_REG_LAST  63
@@ -1649,6 +1652,10 @@ enum mips_code_readable_setting {
 #define COP0_REG_LAST 111
 #define COP0_REG_NUM (COP0_REG_LAST - COP0_REG_FIRST + 1)
 
+#define COP0_STATUS_REG_NUM	(COP0_REG_FIRST + 12)
+#define COP0_CAUSE_REG_NUM	(COP0_REG_FIRST + 13)
+#define COP0_EPC_REG_NUM	(COP0_REG_FIRST + 14)
+
 #define COP2_REG_FIRST 112
 #define COP2_REG_LAST 143
 #define COP2_REG_NUM (COP2_REG_LAST - COP2_REG_FIRST + 1)
@@ -1666,6 +1673,17 @@ enum mips_code_readable_setting {
 #define AT_REGNUM	(GP_REG_FIRST + 1)
 #define HI_REGNUM	(TARGET_BIG_ENDIAN ? MD_REG_FIRST : MD_REG_FIRST + 1)
 #define LO_REGNUM	(TARGET_BIG_ENDIAN ? MD_REG_FIRST + 1 : MD_REG_FIRST)
+
+/* A few bitfield locations for the coprocessor registers.  */
+/* Request Interrupt Priority Level is from bit 10 to bit 15 of
+   the cause register for the EIC interrupt mode.  */
+#define CAUSE_IPL	10
+/* Interrupt Priority Level is from bit 10 to bit 15 of the status register.  */
+#define SR_IPL		10
+/* Exception Level is at bit 1 of the status register.  */
+#define SR_EXL		1
+/* Interrupt Enable is at bit 0 of the status register.  */
+#define SR_IE		0
 
 /* FPSW_REGNUM is the single condition code used if !ISA_HAS_8CC.
    If ISA_HAS_8CC, it should not be used, and an arbitrary ST_REG
@@ -1754,11 +1772,18 @@ enum mips_code_readable_setting {
    incoming arguments, the static chain pointer, or the frame pointer.
    The epilogue temporary mustn't conflict with the return registers,
    the PIC call register ($25), the frame pointer, the EH stack adjustment,
-   or the EH data registers.  */
+   or the EH data registers.
+
+   If we're generating interrupt handlers, we use K0 as a temporary register
+   in prologue/epilogue code.  */
 
 #define MIPS16_PIC_TEMP_REGNUM (GP_REG_FIRST + 2)
-#define MIPS_PROLOGUE_TEMP_REGNUM (GP_REG_FIRST + 3)
-#define MIPS_EPILOGUE_TEMP_REGNUM (GP_REG_FIRST + (TARGET_MIPS16 ? 6 : 8))
+#define MIPS_PROLOGUE_TEMP_REGNUM \
+  (cfun->machine->interrupt_handler_p ? K0_REG_NUM : GP_REG_FIRST + 3)
+#define MIPS_EPILOGUE_TEMP_REGNUM		\
+  (cfun->machine->interrupt_handler_p		\
+   ? K0_REG_NUM					\
+   : GP_REG_FIRST + (TARGET_MIPS16 ? 6 : 8))
 
 #define MIPS16_PIC_TEMP gen_rtx_REG (Pmode, MIPS16_PIC_TEMP_REGNUM)
 #define MIPS_PROLOGUE_TEMP(MODE) gen_rtx_REG (MODE, MIPS_PROLOGUE_TEMP_REGNUM)
@@ -2284,14 +2309,7 @@ typedef struct mips_args {
 	(mips_abi == ABI_EABI && UNITS_PER_FPVALUE >= UNITS_PER_DOUBLE)
 
 
-/* Say that the epilogue uses the return address register.  Note that
-   in the case of sibcalls, the values "used by the epilogue" are
-   considered live at the start of the called function.
-
-   If using a GOT, say that the epilogue also uses GOT_VERSION_REGNUM.
-   See the comment above load_call<mode> for details.  */
-#define EPILOGUE_USES(REGNO) \
-  ((REGNO) == 31 || (TARGET_USE_GOT && (REGNO) == GOT_VERSION_REGNUM))
+#define EPILOGUE_USES(REGNO)	mips_epilogue_uses (REGNO)
 
 /* Treat LOC as a byte offset from the stack pointer and round it up
    to the next fully-aligned offset.  */

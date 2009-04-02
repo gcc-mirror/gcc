@@ -2402,7 +2402,7 @@ This attribute is ignored for R8C target.
 
 @item interrupt
 @cindex interrupt handler functions
-Use this attribute on the ARM, AVR, CRX, M32C, M32R/D, m68k,
+Use this attribute on the ARM, AVR, CRX, M32C, M32R/D, m68k, MIPS
 and Xstormy16 ports to indicate that the specified function is an
 interrupt handler.  The compiler will generate function entry and exit
 sequences suitable for use in an interrupt handler when this attribute
@@ -2424,6 +2424,42 @@ Permissible values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF@.
 
 On ARMv7-M the interrupt type is ignored, and the attribute means the function
 may be called with a word aligned stack pointer.
+
+On MIPS targets, you can use the following attributes to modify the behavior
+of an interrupt handler:
+@table @code
+@item use_shadow_register_set
+@cindex @code{use_shadow_register_set} attribute
+Assume that the handler uses a shadow register set, instead of
+the main general-purpose registers.
+
+@item keep_interrupts_masked
+@cindex @code{keep_interrupts_masked} attribute
+Keep interrupts masked for the whole function.  Without this attribute,
+GCC tries to reenable interrupts for as much of the function as it can.
+
+@item use_debug_exception_return
+@cindex @code{use_debug_exception_return} attribute
+Return using the @code{deret} instruction.  Interrupt handlers that don't
+have this attribute return using @code{eret} instead.
+@end table
+
+You can use any combination of these attributes, as shown below:
+@smallexample
+void __attribute__ ((interrupt)) v0 ();
+void __attribute__ ((interrupt, use_shadow_register_set)) v1 ();
+void __attribute__ ((interrupt, keep_interrupts_masked)) v2 ();
+void __attribute__ ((interrupt, use_debug_exception_return)) v3 ();
+void __attribute__ ((interrupt, use_shadow_register_set,
+		     keep_interrupts_masked)) v4 ();
+void __attribute__ ((interrupt, use_shadow_register_set,
+		     use_debug_exception_return)) v5 ();
+void __attribute__ ((interrupt, keep_interrupts_masked,
+		     use_debug_exception_return)) v6 ();
+void __attribute__ ((interrupt, use_shadow_register_set,
+		     keep_interrupts_masked,
+		     use_debug_exception_return)) v7 ();
+@end smallexample
 
 @item interrupt_handler
 @cindex interrupt handler functions on the Blackfin, m68k, H8/300 and SH processors
