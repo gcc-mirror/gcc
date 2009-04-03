@@ -77,11 +77,11 @@ int test8 (struct A *p, int *q)
 }
 
 /* { dg-final { scan-tree-dump "with 0" "fre" } } */
-/* { dg-final { scan-tree-dump "with 1" "fre" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump "with 3" "fre" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "with 1" "fre" } } */
+/* { dg-final { scan-tree-dump "with 3" "fre" } } */
 /* { dg-final { scan-tree-dump "with 4" "fre" } } */
 /* { dg-final { scan-tree-dump "with 5" "fre" } } */
-/* { dg-final { scan-tree-dump "with 8" "fre" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "with 8" "fre" } } */
 /* { dg-final { scan-tree-dump-not "return 2;" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "return 6;" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "return 7;" "optimized" } } */

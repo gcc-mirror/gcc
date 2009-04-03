@@ -1,5 +1,17 @@
 2009-04-03  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/34743
+	* gcc.dg/pr38984.c: Remove XFAIL, adjust.
+	* gcc.dg/tree-ssa/20070302-1.c: Remove XFAIL.
+	* gcc.dg/tree-ssa/alias-18.c: Likewise.
+	* gcc.dg/tree-ssa/sra-3.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-49.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-53.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-57.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-61.c: Likewise.
+
+2009-04-03  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/13146
 	PR tree-optimization/23940
 	PR tree-optimization/33237
