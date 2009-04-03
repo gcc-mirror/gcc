@@ -162,7 +162,7 @@
 
 (define_insn "extend<mode>rf2"
   [(set (match_operand:RF 0 "fr_register_operand" "=f")
-        (float_extend:RF (match_operand:SDX_F 1 "fr_register_operand" "f")))]
+        (float_extend:RF (match_operand:SDX_F 1 "fr_reg_or_fp01_operand" "fG")))]
   ""
   "#"
   [(set_attr "itanium_class" "fmisc")
@@ -170,17 +170,22 @@
 
 (define_split
   [(set (match_operand:RF 0 "fr_register_operand" "")
-        (float_extend:RF (match_operand:SDX_F 1 "fr_register_operand" "")))]
+        (float_extend:RF (match_operand:SDX_F 1 "fr_reg_or_fp01_operand" "")))]
    "reload_completed"
    [(set (match_dup 0) (match_dup 2))]
 {
-   operands[2] = gen_rtx_REG (RFmode, REGNO (operands[1]));
+   if (operands[1] == CONST0_RTX (<MODE>mode))
+     operands[2] = gen_rtx_REG (RFmode, FR_REG (0));
+   else if (operands[1] == CONST1_RTX (<MODE>mode))
+     operands[2] = gen_rtx_REG (RFmode, FR_REG (1));
+   else
+     operands[2] = gen_rtx_REG (RFmode, REGNO (operands[1]));
 })
 
 
 (define_insn "truncrf<mode>2"
   [(set (match_operand:SDX_F 0 "fr_register_operand" "=f")
-        (float_truncate:SDX_F (match_operand:RF 1 "fr_register_operand" "f")))]
+        (float_truncate:SDX_F (match_operand:RF 1 "fr_reg_or_fp01_operand" "fG")))]
   ""
   "#"
   [(set_attr "itanium_class" "fmisc")
@@ -188,25 +193,30 @@
 
 (define_split
   [(set (match_operand:SDX_F 0 "fr_register_operand" "")
-        (float_truncate:SDX_F (match_operand:RF 1 "fr_register_operand" "")))]
+        (float_truncate:SDX_F (match_operand:RF 1 "fr_reg_or_fp01_operand" "")))]
    "reload_completed"
    [(set (match_dup 0) (match_dup 2))]
 {
-   operands[2] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));
+   if (operands[1] == CONST0_RTX (RFmode))
+     operands[2] = gen_rtx_REG (<MODE>mode, FR_REG (0));
+   else if (operands[1] == CONST1_RTX (RFmode))
+     operands[2] = gen_rtx_REG (<MODE>mode, FR_REG (1));
+   else
+     operands[2] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));
 })
 
 ;; Reciprocal approximation
 
 (define_insn "recip_approx_rf"
   [(set (match_operand:RF 0 "fr_register_operand" "=f")
-        (unspec:RF [(match_operand:RF 1 "fr_register_operand" "f")
-		    (match_operand:RF 2 "fr_register_operand" "f")]
+        (unspec:RF [(match_operand:RF 1 "fr_reg_or_fp01_operand" "fG")
+		    (match_operand:RF 2 "fr_reg_or_fp01_operand" "fG")]
 		   UNSPEC_FR_RECIP_APPROX_RES))
    (set (match_operand:BI 3 "register_operand" "=c")
         (unspec:BI [(match_dup 1) (match_dup 2)] UNSPEC_FR_RECIP_APPROX))
    (use (match_operand:SI 4 "const_int_operand" ""))]
   ""
-  "frcpa.s%4 %0, %3 = %1, %2"
+  "frcpa.s%4 %0, %3 = %F1, %F2"
   [(set_attr "itanium_class" "fmisc")
    (set_attr "predicable" "no")])
 
@@ -214,8 +224,8 @@
 
 (define_expand "divsf3_internal_thr"
   [(set (match_operand:SF 0 "fr_register_operand" "")
-        (div:SF (match_operand:SF 1 "fr_register_operand" "")
-                (match_operand:SF 2 "fr_register_operand" "")))]
+        (div:SF (match_operand:SF 1 "fr_reg_or_fp01_operand" "")
+                (match_operand:SF 2 "fr_reg_or_fp01_operand" "")))]
   "TARGET_INLINE_FLOAT_DIV"
 {
   rtx y     = gen_reg_rtx (RFmode);
@@ -261,8 +271,8 @@
 
 (define_expand "divsf3_internal_lat"
   [(set (match_operand:SF 0 "fr_register_operand" "")
-        (div:SF (match_operand:SF 1 "fr_register_operand" "")
-                (match_operand:SF 2 "fr_register_operand" "")))]
+        (div:SF (match_operand:SF 1 "fr_reg_or_fp01_operand" "")
+                (match_operand:SF 2 "fr_reg_or_fp01_operand" "")))]
   "TARGET_INLINE_FLOAT_DIV"
 {
   rtx y         = gen_reg_rtx (RFmode);
@@ -312,8 +322,8 @@
 
 (define_expand "divdf3_internal_thr"
   [(set (match_operand:DF 0 "fr_register_operand" "")
-        (div:DF (match_operand:DF 1 "fr_register_operand" "")
-                (match_operand:DF 2 "fr_register_operand" "")))]
+        (div:DF (match_operand:DF 1 "fr_reg_or_fp01_operand" "")
+                (match_operand:DF 2 "fr_reg_or_fp01_operand" "")))]
   "TARGET_INLINE_FLOAT_DIV"
 {
   rtx q_res = gen_reg_rtx (RFmode);
@@ -367,8 +377,8 @@
 
 (define_expand "divdf3_internal_lat"
   [(set (match_operand:DF 0 "fr_register_operand" "")
-        (div:DF (match_operand:DF 1 "fr_register_operand" "")
-                (match_operand:DF 2 "fr_register_operand" "")))]
+        (div:DF (match_operand:DF 1 "fr_reg_or_fp01_operand" "")
+                (match_operand:DF 2 "fr_reg_or_fp01_operand" "")))]
   "TARGET_INLINE_FLOAT_DIV"
 {
   rtx q_res     = gen_reg_rtx (RFmode);
@@ -429,8 +439,8 @@
 
 (define_expand "divxf3_internal"
   [(set (match_operand:XF 0 "fr_register_operand" "")
-        (div:XF (match_operand:XF 1 "fr_register_operand" "")
-                (match_operand:XF 2 "fr_register_operand" "")))]
+        (div:XF (match_operand:XF 1 "fr_reg_or_fp01_operand" "")
+                (match_operand:XF 2 "fr_reg_or_fp01_operand" "")))]
   "TARGET_INLINE_FLOAT_DIV"
 {
   rtx q_res     = gen_reg_rtx (RFmode);
