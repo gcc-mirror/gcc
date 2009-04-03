@@ -2857,11 +2857,6 @@ finish_id_expression (tree id_expression,
 	     dependent.  */
 	  if (scope)
 	    {
-	      /* Since this name was dependent, the expression isn't
-		 constant -- yet.  No error is issued because it might
-		 be constant when things are instantiated.  */
-	      if (integral_constant_expression_p)
-		*non_integral_constant_expression_p = true;
 	      if (TYPE_P (scope))
 		{
 		  if (address_p && done)
@@ -2869,7 +2864,7 @@ finish_id_expression (tree id_expression,
 						     done, address_p,
 						     template_p,
 						     template_arg_p);
-		  else if (dependent_type_p (scope))
+		  else if (dependent_scope_p (scope))
 		    decl = build_qualified_name (/*type=*/NULL_TREE,
 						 scope,
 						 id_expression,
