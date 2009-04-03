@@ -1,6 +1,6 @@
 // random number generation (out of line) -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,14 +32,11 @@
  *  You should not attempt to use it directly.
  */
 
-#include <iostream>
-#include <vector>
 #include <numeric>
 #include <algorithm>
 
 namespace std
 {
-
   /*
    * (Further) implementation-space details.
    */
@@ -107,7 +104,7 @@ namespace std
     seed(_UIntType __x0)
     {
       if ((__detail::__mod<_UIntType, 1U, 0U, __m>(__c) == 0U)
-       && (__detail::__mod<_UIntType, 1U, 0U, __m>(__x0) == 0U))
+	  && (__detail::__mod<_UIntType, 1U, 0U, __m>(__x0) == 0U))
 	_M_x = __detail::__mod<_UIntType, 1U, 0U, __m>(1U);
       else
 	_M_x = __detail::__mod<_UIntType, 1U, 0U, __m>(__x0);
@@ -150,7 +147,7 @@ namespace std
       {
 	_UIntType __x0 = __g();
 	if ((__detail::__mod<_UIntType, 1U, 0U, __m>(__c) == 0U)
-	 && (__detail::__mod<_UIntType, 1U, 0U, __m>(__x0) == 0U))
+	    && (__detail::__mod<_UIntType, 1U, 0U, __m>(__x0) == 0U))
 	  _M_x = __detail::__mod<_UIntType, 1U, 0U, __m>(1U);
 	else
 	  _M_x = __detail::__mod<_UIntType, 1U, 0U, __m>(__x0);
@@ -181,9 +178,7 @@ namespace std
 
       const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
-      __os.flags(__ios_base::dec
-	       | __ios_base::fixed
-	       | __ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__os.widen(' '));
 
       __os << __lcr._M_x;
@@ -347,9 +342,7 @@ namespace std
       const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const _CharT __space = __os.widen(' ');
-      __os.flags(__ios_base::dec
-	       | __ios_base::fixed
-	       | __ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__space);
 
       for (size_t __i = 0; __i < __n - 1; ++__i)
@@ -487,9 +480,7 @@ namespace std
       const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const _CharT __space = __os.widen(' ');
-      __os.flags(__ios_base::dec
-	       | __ios_base::fixed
-	       | __ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__space);
 
       for (size_t __i = 0; __i < __r; ++__i)
@@ -550,9 +541,7 @@ namespace std
       const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const _CharT __space = __os.widen(' ');
-      __os.flags(__ios_base::dec
-	       | __ios_base::fixed
-	       | __ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__space);
 
       __os << __x.base() << __space << __x._M_n;
@@ -653,9 +642,7 @@ namespace std
       const typename __ios_base::fmtflags __flags = __os.flags();
       const _CharT __fill = __os.fill();
       const _CharT __space = __os.widen(' ');
-      __os.flags(__ios_base::dec
-	       | __ios_base::fixed
-	       | __ios_base::left);
+      __os.flags(__ios_base::dec | __ios_base::fixed | __ios_base::left);
       __os.fill(__space);
 
       __os << __x.base();
@@ -2331,9 +2318,7 @@ namespace std
     piecewise_constant_distribution<_RealType>::param_type::
     param_type()
     : _M_int(), _M_den(), _M_cp()
-    {
-      _M_initialize();
-    }
+    { _M_initialize(); }
 
   template<typename _RealType>
     template<typename _InputIteratorB, typename _InputIteratorW>
@@ -2532,9 +2517,7 @@ namespace std
     piecewise_linear_distribution<_RealType>::param_type::
     param_type()
     : _M_int(), _M_den(), _M_cp(), _M_m()
-    {
-      _M_initialize();
-    }
+    { _M_initialize(); }
 
   template<typename _RealType>
     template<typename _InputIteratorB, typename _InputIteratorW>
@@ -2790,5 +2773,4 @@ namespace std
 	}
       return __sum / __tmp;
     }
-
 }

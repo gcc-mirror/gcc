@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+// Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,10 +37,6 @@
 
 #pragma GCC system_header
 
-#if defined(_GLIBCXX_INCLUDE_AS_CXX0X)
-#  error TR1 header cannot be included from C++0x header
-#endif
-
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -54,14 +50,10 @@
 #include <tr1/type_traits>
 #include <tr1/cmath>
 
-#if defined(_GLIBCXX_INCLUDE_AS_TR1)
-#  include <tr1/random.h>
-#else
-#  define _GLIBCXX_INCLUDE_AS_TR1
-#  define _GLIBCXX_TR1 tr1::
-#  include <tr1/random.h>
-#  undef _GLIBCXX_TR1
-#  undef _GLIBCXX_INCLUDE_AS_TR1
+#include <tr1/random.h>
+
+#ifndef _GLIBCXX_EXPORT_TEMPLATE
+# include <tr1/random.tcc>
 #endif
 
 #endif // _GLIBCXX_TR1_RANDOM
