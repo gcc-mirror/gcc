@@ -1,5 +1,6 @@
 2009-04-03  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR rtl-optimization/39607
 	* g++.dg/opt/pr39607.C: New.
 
 2009-04-03  Tobias Burnus  <burnus@net-b.de>
