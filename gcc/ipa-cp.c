@@ -1382,7 +1382,7 @@ struct ipa_opt_pass pass_ipa_cp =
   0,				/* static_pass_number */
   TV_IPA_CONSTANT_PROP,		/* tv_id */
   0,				/* properties_required */
-  PROP_trees,			/* properties_provided */
+  0,				/* properties_provided */
   0,				/* properties_destroyed */
   0,				/* todo_flags_start */
   TODO_dump_cgraph | TODO_dump_func |

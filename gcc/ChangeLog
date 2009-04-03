@@ -1,3 +1,19 @@
+2009-04-03  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* omp-low.c (pass_expand_omp): Don't claim to provide PROP_gimple_lomp.
+	(execute_lower_omp): Always run but take the short way out if -fopenmp
+	is not given.
+	(gate_lower_omp): Remove, forcing the pass manager to always run the
+	pass and always set PROP_gimple_lomp.
+	(pass_lower_omp): Remove gate function.
+	* matrix-reorg.c (pass_ipa_matrix_reorg): Don't claim to provide
+	PROP_trees.  Instead, require it.
+	* ipa-cp.c (pass_ipa_cp): Likewise.
+	* ipa-inline.c (pass_early_inline): Don't claim to provide PROP_cfg.
+	(pass_ipa_early_inline, pass_inline_parameters, pass_ipa_inline): Idem.
+	* tree-profile.c (pass_tree_profile): Don't claim to provide PROP_cfg
+	and PROP_gimple_leh.
+
 2009-04-03  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/13146

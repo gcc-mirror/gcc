@@ -492,7 +492,7 @@ struct gimple_opt_pass pass_tree_profile =
   0,					/* static_pass_number */
   TV_BRANCH_PROB,			/* tv_id */
   PROP_gimple_leh | PROP_cfg,		/* properties_required */
-  PROP_gimple_leh | PROP_cfg,		/* properties_provided */
+  0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_verify_stmts | TODO_dump_func	/* todo_flags_finish */
