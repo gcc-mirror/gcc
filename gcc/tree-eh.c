@@ -2824,8 +2824,29 @@ cleanup_empty_eh (basic_block bb)
          similar updating as jump threading does.  */
 
       for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
-	mark_sym_for_renaming (SSA_NAME_VAR (PHI_RESULT (gsi_stmt (si))));
+	{
+	  tree res = PHI_RESULT (gsi_stmt (si));
+	  gimple stmt;
+	  imm_use_iterator iter;
+	  use_operand_p use_p;
 
+	  /* As we are going to delete this block we will release all
+	     defs which makes the immediate uses on use stmts invalid.
+	     Avoid that by replacing all uses with the bare variable
+	     and updating the stmts.  */
+	  FOR_EACH_IMM_USE_STMT (stmt, iter, res)
+	    {
+	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		SET_USE (use_p, SSA_NAME_VAR (res));
+	      update_stmt (stmt);
+	    }
+	  mark_sym_for_renaming (SSA_NAME_VAR (res));
+	}
+
+      /* We want to thread over the current receiver to the next reachable
+         one.  Do so by deleting all outgoing EH edges from all
+	 predecessors of the receiver block we are going to delete and
+	 rebuild EH edges for them.  */
       while ((e = ei_safe_edge (ei_start (bb->preds))))
 	{
 	  basic_block src = e->src;
@@ -2843,6 +2864,8 @@ cleanup_empty_eh (basic_block bb)
 	  if (!stmt_can_throw_internal (last_stmt (src)))
 	    continue;
 	  make_eh_edges (last_stmt (src));
+	  /* Make sure to also rename symbols that feed into receivers
+	     that are now newly reachable from current src.  */
 	  FOR_EACH_EDGE (e, ei, src->succs)
 	    if (e->flags & EDGE_EH)
 	      {

@@ -87,6 +87,8 @@ init_ssanames (struct function *fn, int size)
      least 50 elements reserved in it.  */
   VEC_quick_push (tree, SSANAMES (fn), NULL_TREE);
   FREE_SSANAMES (fn) = NULL;
+
+  SYMS_TO_RENAME (fn) = BITMAP_GGC_ALLOC ();
 }
 
 /* Finalize management of SSA_NAMEs.  */
@@ -267,12 +269,6 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
 
   new_ptr_info = GGC_NEW (struct ptr_info_def);
   *new_ptr_info = *ptr_info;
-
-  if (ptr_info->pt_vars)
-    {
-      new_ptr_info->pt_vars = BITMAP_GGC_ALLOC ();
-      bitmap_copy (new_ptr_info->pt_vars, ptr_info->pt_vars);
-    }
 
   SSA_NAME_PTR_INFO (name) = new_ptr_info;
 }

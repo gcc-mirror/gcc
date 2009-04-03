@@ -140,8 +140,6 @@ static inline void
 check_decl (funct_state local, 
 	    tree t, bool checking_write)
 {
-  if (MTAG_P (t))
-    return;
   /* Do not want to do anything with volatile except mark any
      function that uses one to be not const or pure.  */
   if (TREE_THIS_VOLATILE (t)) 
@@ -377,26 +375,59 @@ check_call (funct_state local, gimple call, bool ipa)
   /* Direct functions calls are handled by IPA propagation.  */
 }
 
-/* Look into pointer pointed to by GSIP and figure out what interesting side effects
-   it have.  */
+/* Look into pointer pointed to by GSIP and figure out what interesting side
+   effects it has.  */
 static void
 check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 {
   gimple stmt = gsi_stmt (*gsip);
   unsigned int i = 0;
-  bitmap_iterator bi;
 
   if (dump_file)
     {
       fprintf (dump_file, "  scanning: ");
       print_gimple_stmt (dump_file, stmt, 0, 0);
     }
-  if (gimple_loaded_syms (stmt))
-    EXECUTE_IF_SET_IN_BITMAP (gimple_loaded_syms (stmt), 0, i, bi)
-      check_decl (local, referenced_var_lookup (i), false);
-  if (gimple_stored_syms (stmt))
-    EXECUTE_IF_SET_IN_BITMAP (gimple_stored_syms (stmt), 0, i, bi)
-      check_decl (local, referenced_var_lookup (i), true);
+
+  /* Look for direct loads and stores.  */
+  if (gimple_has_lhs (stmt))
+    {
+      tree lhs = get_base_address (gimple_get_lhs (stmt));
+      if (lhs && DECL_P (lhs))
+	check_decl (local, lhs, true);
+    }
+  if (gimple_assign_single_p (stmt))
+    {
+      tree rhs = get_base_address (gimple_assign_rhs1 (stmt));
+      if (rhs && DECL_P (rhs))
+	check_decl (local, rhs, false);
+    }
+  else if (is_gimple_call (stmt))
+    {
+      for (i = 0; i < gimple_call_num_args (stmt); ++i)
+	{
+	  tree rhs = get_base_address (gimple_call_arg (stmt, i));
+	  if (rhs && DECL_P (rhs))
+	    check_decl (local, rhs, false);
+	}
+    }
+  else if (gimple_code (stmt) == GIMPLE_ASM)
+    {
+      for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
+	{
+	  tree op = TREE_VALUE (gimple_asm_input_op (stmt, i));
+	  op = get_base_address (op);
+	  if (op && DECL_P (op))
+	    check_decl (local, op, false);
+	}
+      for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
+	{
+	  tree op = TREE_VALUE (gimple_asm_output_op (stmt, i));
+	  op = get_base_address (op);
+	  if (op && DECL_P (op))
+	    check_decl (local, op, true);
+	}
+    }
 
   if (gimple_code (stmt) != GIMPLE_CALL
       && stmt_could_throw_p (stmt))

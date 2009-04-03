@@ -1307,8 +1307,6 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
   stmt_vec_info next_stmt_info;
   int i, group_size, stride, dr_chain_size;
   tree first_vec, second_vec, data_ref;
-  tree sym;
-  ssa_op_iter iter;
   VEC (tree, heap) *params = NULL;
 
   /* Create a vector mask.  */
@@ -1346,12 +1344,6 @@ vect_create_mask_and_perm (gimple stmt, gimple next_scalar_stmt,
       data_ref = make_ssa_name (perm_dest, perm_stmt);
       gimple_call_set_lhs (perm_stmt, data_ref);
       vect_finish_stmt_generation (stmt, perm_stmt, gsi);
-      FOR_EACH_SSA_TREE_OPERAND (sym, perm_stmt, iter, SSA_OP_ALL_VIRTUALS)
-        {
-          if (TREE_CODE (sym) == SSA_NAME)
-            sym = SSA_NAME_VAR (sym);
-          mark_sym_for_renaming (sym);
-        }
 
       /* Store the vector statement in NODE.  */ 
       VEC_replace (gimple, SLP_TREE_VEC_STMTS (node), 

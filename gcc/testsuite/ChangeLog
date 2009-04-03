@@ -1,3 +1,62 @@
+2009-04-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/13146
+	PR tree-optimization/23940
+	PR tree-optimization/33237
+	PR middle-end/33974
+	PR middle-end/34093
+	PR tree-optimization/36201
+	PR tree-optimization/36230
+	PR tree-optimization/38049
+	PR tree-optimization/38207
+	PR tree-optimization/38230
+	PR tree-optimization/38301
+	PR tree-optimization/38585
+	PR middle-end/38895
+	PR tree-optimization/38985
+	PR tree-optimization/39299
+	* gcc.dg/pr19633-1.c: Adjust.
+	* gcc.dg/torture/pta-callused-1.c: Likewise.
+	* gcc.dg/torture/pr39074-2.c: Likewise.
+	* gcc.dg/torture/pr39074.c: Likewise.
+	* gcc.dg/torture/pta-ptrarith-3.c: New testcase.
+	* gcc.dg/torture/pr30375.c: Adjust.
+	* gcc.dg/torture/pr33563.c: Likewise.
+	* gcc.dg/torture/pr33870.c: Likewise.
+	* gcc.dg/torture/pr33560.c: Likewise.
+	* gcc.dg/torture/pta-structcopy-1.c: New testcase.
+	* gcc.dg/torture/ssa-pta-fn-1.c: Likewise.
+	* gcc.dg/tree-ssa/alias-15.c: Remove.
+	* gcc.dg/tree-ssa/ssa-dce-4.c: New testcase.
+	* gcc.dg/tree-ssa/pr26421.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-fre-10.c: XFAIL.
+	* gcc.dg/tree-ssa/ssa-dce-5.c: New testcase.
+	* gcc.dg/tree-ssa/pr23382.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-fre-20.c: New testcase.
+	* gcc.dg/tree-ssa/alias-16.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-fre-13.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-14.c: Likewise.
+	* gcc.dg/tree-ssa/alias-18.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-15.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-lim-3.c: Likewise.
+	* gcc.dg/tree-ssa/alias-19.c: Likewise.
+	* gcc.dg/tree-ssa/pta-ptrarith-1.c: New testcase.
+	* gcc.dg/tree-ssa/pr13146.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-23.c: Likewise.
+	* gcc.dg/tree-ssa/pta-ptrarith-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-18.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-pre-24.c: New XFAILed testcase.
+	* gcc.dg/tree-ssa/ssa-fre-19.c: New testcase.
+	* gcc.dg/tree-ssa/alias-20.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-12.c: Likewise.
+	* gcc.dg/tree-ssa/pr38895.c: Likewise.
+	* gcc.dg/uninit-B.c: XFAIL.
+	* gcc.dg/vect/no-vfa-vect-43.c: Adjust.
+	* gcc.dg/uninit-pr19430.c: XFAIL.
+	* g++.dg/tree-ssa/pr13146.C: New testcase.
+	* g++.dg/opt/pr36187.C: Adjust.
+	* g++.dg/torture/20090329-1.C: New testcase.
+
 2009-04-02  Chao-ying Fu  <fu@mips.com>
 
 	* gcc.target/mips/interrupt_handler.c: New test.

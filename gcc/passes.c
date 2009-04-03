@@ -543,7 +543,6 @@ init_optimization_passes (void)
       NEXT_PASS (pass_expand_omp);
 
       NEXT_PASS (pass_referenced_vars);
-      NEXT_PASS (pass_reset_cc_flags);
       NEXT_PASS (pass_build_ssa);
       NEXT_PASS (pass_early_warn_uninitialized);
       NEXT_PASS (pass_all_early_optimizations);
@@ -560,7 +559,6 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_merge_phi);
 	  NEXT_PASS (pass_cd_dce);
-	  NEXT_PASS (pass_simple_dse);
 	  NEXT_PASS (pass_tail_recursion);
 	  NEXT_PASS (pass_convert_switch);
           NEXT_PASS (pass_cleanup_eh);
@@ -937,7 +935,7 @@ execute_function_todo (void *data)
 	 SSA form to become out-of-date (see PR 22037).  So, even
 	 if the parent pass had not scheduled an SSA update, we may
 	 still need to do one.  */
-      if (!(flags & TODO_update_ssa_any) && need_ssa_update_p ())
+      if (!(flags & TODO_update_ssa_any) && need_ssa_update_p (cfun))
 	flags |= TODO_update_ssa;
     }
 
@@ -948,8 +946,13 @@ execute_function_todo (void *data)
       cfun->last_verified &= ~TODO_verify_ssa;
     }
   
+  if (flags & TODO_update_address_taken)
+    execute_update_addresses_taken (true);
+
   if (flags & TODO_rebuild_alias)
     {
+      if (!(flags & TODO_update_address_taken))
+	execute_update_addresses_taken (true);
       compute_may_aliases ();
       cfun->curr_properties |= PROP_alias;
     }
@@ -1021,7 +1024,8 @@ static void
 execute_todo (unsigned int flags)
 {
 #if defined ENABLE_CHECKING
-  if (need_ssa_update_p ())
+  if (cfun
+      && need_ssa_update_p (cfun))
     gcc_assert (flags & TODO_update_ssa_any);
 #endif
 
@@ -1265,6 +1269,8 @@ execute_one_pass (struct opt_pass *pass)
      This is a hack until the new folder is ready.  */
   in_gimple_form = (cfun && (cfun->curr_properties & PROP_trees)) != 0;
 
+  initializing_dump = pass_init_dump_file (pass);
+
   /* Run pre-pass verification.  */
   execute_todo (pass->todo_flags_start);
 
@@ -1272,8 +1278,6 @@ execute_one_pass (struct opt_pass *pass)
   do_per_function (verify_curr_properties,
 		   (void *)(size_t)pass->properties_required);
 #endif
-
-  initializing_dump = pass_init_dump_file (pass);
 
   /* If a timevar is present, start it.  */
   if (pass->tv_id)

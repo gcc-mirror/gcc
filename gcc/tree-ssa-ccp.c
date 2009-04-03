@@ -274,8 +274,7 @@ tree
 get_symbol_constant_value (tree sym)
 {
   if (TREE_STATIC (sym)
-      && TREE_READONLY (sym)
-      && !MTAG_P (sym))
+      && TREE_READONLY (sym))
     {
       tree val = DECL_INITIAL (sym);
       if (val)
@@ -528,8 +527,10 @@ likely_value (gimple stmt)
 	has_constant_operand = true;
     }
 
-  /* There may be constants in regular rhs operands.  */
-  for (i = is_gimple_call (stmt) + gimple_has_lhs (stmt);
+  /* There may be constants in regular rhs operands.  For calls we
+     have to ignore lhs, fndecl and static chain, otherwise only
+     the lhs.  */
+  for (i = (is_gimple_call (stmt) ? 2 : 0) + gimple_has_lhs (stmt);
        i < gimple_num_ops (stmt); ++i)
     {
       tree op = gimple_op (stmt, i);
@@ -601,7 +602,7 @@ surely_varying_stmt_p (gimple stmt)
     }
 
   /* Any other store operation is not interesting.  */
-  else if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
+  else if (gimple_vdef (stmt))
     return true;
 
   /* Anything other than assignments and conditional jumps are not
@@ -3172,11 +3173,16 @@ gimplify_and_update_call_from_tree (gimple_stmt_iterator *si_p, tree expr)
   }
 
   if (lhs == NULL_TREE)
-    new_stmt = gimple_build_nop ();
+    {
+      new_stmt = gimple_build_nop ();
+      unlink_stmt_vdef (stmt);
+      release_defs (stmt);
+    }
   else
     {
       new_stmt = gimple_build_assign (lhs, tmp);
-      copy_virtual_operands (new_stmt, stmt);
+      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
       move_ssa_defining_stmt_for_defs (new_stmt, stmt);
     }
 
@@ -3264,10 +3270,7 @@ execute_fold_all_builtins (void)
 	  push_stmt_changes (gsi_stmt_ptr (&i));
 
           if (!update_call_from_tree (&i, result))
-            {
-              gimplify_and_update_call_from_tree (&i, result);
-              todoflags |= TODO_rebuild_alias;
-            }
+	    gimplify_and_update_call_from_tree (&i, result);
 
 	  stmt = gsi_stmt (i);
 	  pop_stmt_changes (gsi_stmt_ptr (&i));

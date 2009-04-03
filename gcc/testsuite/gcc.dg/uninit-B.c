@@ -9,7 +9,7 @@ void
 baz (void)
 {
   int i;
-  if (i) /* { dg-warning "is used uninitialized" "uninit i warning" } */
+  if (i) /* { dg-warning "is used uninitialized" "uninit i warning" { xfail *-*-* } } */
     bar (i);
   foo (&i);
 }

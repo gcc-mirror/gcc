@@ -1993,17 +1993,13 @@ chain_of_csts_start (struct loop *loop, tree x)
 
   code = gimple_assign_rhs_code (stmt);
   if (gimple_references_memory_p (stmt)
-      /* Before alias information is computed, operand scanning marks
-	 statements that write memory volatile.  However, the statements
-	 that only read memory are not marked, thus gimple_references_memory_p
-	 returns false for them.  */
       || TREE_CODE_CLASS (code) == tcc_reference
-      || TREE_CODE_CLASS (code) == tcc_declaration
-      || SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF) == NULL_DEF_OPERAND_P)
+      || (code == ADDR_EXPR
+	  && !is_gimple_min_invariant (gimple_assign_rhs1 (stmt))))
     return NULL;
 
   use = SINGLE_SSA_TREE_OPERAND (stmt, SSA_OP_USE);
-  if (use == NULL_USE_OPERAND_P)
+  if (use == NULL_TREE)
     return NULL;
 
   return chain_of_csts_start (loop, use);

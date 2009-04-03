@@ -518,6 +518,98 @@ component_uses_parent_alias_set (const_tree t)
     }
 }
 
+/* Return the alias set for the memory pointed to by T, which may be
+   either a type or an expression.  Return -1 if there is nothing
+   special about dereferencing T.  */
+
+static alias_set_type
+get_deref_alias_set_1 (tree t)
+{
+  /* If we're not doing any alias analysis, just assume everything
+     aliases everything else.  */
+  if (!flag_strict_aliasing)
+    return 0;
+
+  if (! TYPE_P (t))
+    {
+      tree decl = find_base_decl (t);
+
+      if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
+	{
+	  /* If we haven't computed the actual alias set, do it now.  */
+	  if (DECL_POINTER_ALIAS_SET (decl) == -2)
+	    {
+	      tree pointed_to_type = TREE_TYPE (TREE_TYPE (decl));
+
+	      /* No two restricted pointers can point at the same thing.
+		 However, a restricted pointer can point at the same thing
+		 as an unrestricted pointer, if that unrestricted pointer
+		 is based on the restricted pointer.  So, we make the
+		 alias set for the restricted pointer a subset of the
+		 alias set for the type pointed to by the type of the
+		 decl.  */
+	      alias_set_type pointed_to_alias_set
+		  = get_alias_set (pointed_to_type);
+
+	      if (pointed_to_alias_set == 0)
+		/* It's not legal to make a subset of alias set zero.  */
+		DECL_POINTER_ALIAS_SET (decl) = 0;
+	      else if (AGGREGATE_TYPE_P (pointed_to_type))
+		/* For an aggregate, we must treat the restricted
+		   pointer the same as an ordinary pointer.  If we
+		   were to make the type pointed to by the
+		   restricted pointer a subset of the pointed-to
+		   type, then we would believe that other subsets
+		   of the pointed-to type (such as fields of that
+		   type) do not conflict with the type pointed to
+		   by the restricted pointer.  */
+		DECL_POINTER_ALIAS_SET (decl)
+		    = pointed_to_alias_set;
+	      else
+		{
+		  DECL_POINTER_ALIAS_SET (decl) = new_alias_set ();
+		  record_alias_subset (pointed_to_alias_set,
+				       DECL_POINTER_ALIAS_SET (decl));
+		}
+	    }
+
+	  /* We use the alias set indicated in the declaration.  */
+	  return DECL_POINTER_ALIAS_SET (decl);
+	}
+
+      /* Now all we care about is the type.  */
+      t = TREE_TYPE (t);
+    }
+
+  /* If we have an INDIRECT_REF via a void pointer, we don't
+     know anything about what that might alias.  Likewise if the
+     pointer is marked that way.  */
+  if (TREE_CODE (TREE_TYPE (t)) == VOID_TYPE
+      || TYPE_REF_CAN_ALIAS_ALL (t))
+    return 0;
+
+  return -1;
+}
+
+/* Return the alias set for the memory pointed to by T, which may be
+   either a type or an expression.  */
+
+alias_set_type
+get_deref_alias_set (tree t)
+{
+  alias_set_type set = get_deref_alias_set_1 (t);
+
+  /* Fall back to the alias-set of the pointed-to type.  */
+  if (set == -1)
+    {
+      if (! TYPE_P (t))
+	t = TREE_TYPE (t);
+      set = get_alias_set (TREE_TYPE (t));
+    }
+
+  return set;
+}
+
 /* Return the alias set for T, which may be either a type or an
    expression.  Call language-specific routine for help, if needed.  */
 
@@ -558,66 +650,11 @@ get_alias_set (tree t)
 	  STRIP_NOPS (inner);
 	}
 
-      /* Check for accesses through restrict-qualified pointers.  */
       if (INDIRECT_REF_P (inner))
 	{
-	  tree decl;
-
-	  if (TREE_CODE (TREE_OPERAND (inner, 0)) == SSA_NAME)
-	    decl = SSA_NAME_VAR (TREE_OPERAND (inner, 0));
- 	  else
-	    decl = find_base_decl (TREE_OPERAND (inner, 0));
-
-	  if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
-	    {
-	      /* If we haven't computed the actual alias set, do it now.  */
-	      if (DECL_POINTER_ALIAS_SET (decl) == -2)
-		{
-		  tree pointed_to_type = TREE_TYPE (TREE_TYPE (decl));
-
-		  /* No two restricted pointers can point at the same thing.
-		     However, a restricted pointer can point at the same thing
-		     as an unrestricted pointer, if that unrestricted pointer
-		     is based on the restricted pointer.  So, we make the
-		     alias set for the restricted pointer a subset of the
-		     alias set for the type pointed to by the type of the
-		     decl.  */
-		  alias_set_type pointed_to_alias_set
-		    = get_alias_set (pointed_to_type);
-
-		  if (pointed_to_alias_set == 0)
-		    /* It's not legal to make a subset of alias set zero.  */
-		    DECL_POINTER_ALIAS_SET (decl) = 0;
-		  else if (AGGREGATE_TYPE_P (pointed_to_type))
-		    /* For an aggregate, we must treat the restricted
-		       pointer the same as an ordinary pointer.  If we
-		       were to make the type pointed to by the
-		       restricted pointer a subset of the pointed-to
-		       type, then we would believe that other subsets
-		       of the pointed-to type (such as fields of that
-		       type) do not conflict with the type pointed to
-		       by the restricted pointer.  */
-		    DECL_POINTER_ALIAS_SET (decl)
-		      = pointed_to_alias_set;
-		  else
-		    {
-		      DECL_POINTER_ALIAS_SET (decl) = new_alias_set ();
-		      record_alias_subset (pointed_to_alias_set,
-					   DECL_POINTER_ALIAS_SET (decl));
-		    }
-		}
-
-	      /* We use the alias set indicated in the declaration.  */
-	      return DECL_POINTER_ALIAS_SET (decl);
-	    }
-
-	  /* If we have an INDIRECT_REF via a void pointer, we don't
-	     know anything about what that might alias.  Likewise if the
-	     pointer is marked that way.  */
-	  else if (TREE_CODE (TREE_TYPE (inner)) == VOID_TYPE
-		   || (TYPE_REF_CAN_ALIAS_ALL
-		       (TREE_TYPE (TREE_OPERAND (inner, 0)))))
-	    return 0;
+	  set = get_deref_alias_set_1 (TREE_OPERAND (inner, 0));
+	  if (set != -1)
+	    return set;
 	}
 
       /* Otherwise, pick up the outermost object that we could have a pointer

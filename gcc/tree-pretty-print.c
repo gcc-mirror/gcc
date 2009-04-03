@@ -881,13 +881,10 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	}
       break;
 
-    case SYMBOL_MEMORY_TAG:
-    case NAME_MEMORY_TAG:
     case VAR_DECL:
     case PARM_DECL:
     case FIELD_DECL:
     case NAMESPACE_DECL:
-    case MEMORY_PARTITION_TAG:
       dump_decl_name (buffer, node, flags);
       break;
 

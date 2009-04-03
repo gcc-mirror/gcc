@@ -88,7 +88,6 @@ struct dr_alias
 {
   /* The alias information that should be used for new pointers to this
      location.  SYMBOL_TAG is either a DECL or a SYMBOL_MEMORY_TAG.  */
-  tree symbol_tag;
   struct ptr_info_def *ptr_info;
 
   /* The set of virtual operands corresponding to this memory reference,
@@ -204,9 +203,7 @@ struct data_reference
 #define DR_OFFSET(DR)              (DR)->innermost.offset
 #define DR_INIT(DR)                (DR)->innermost.init
 #define DR_STEP(DR)                (DR)->innermost.step
-#define DR_SYMBOL_TAG(DR)          (DR)->alias.symbol_tag
 #define DR_PTR_INFO(DR)            (DR)->alias.ptr_info
-#define DR_VOPS(DR)		   (DR)->alias.vops
 #define DR_ALIGNED_TO(DR)          (DR)->innermost.aligned_to
 #define DR_ACCESS_MATRIX(DR)       (DR)->access_matrix
 

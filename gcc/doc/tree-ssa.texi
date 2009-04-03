@@ -795,230 +795,100 @@ is popped.
 @cindex flow-sensitive alias analysis
 @cindex flow-insensitive alias analysis
 
-Alias analysis proceeds in 4 main phases:
+Alias analysis in GIMPLE SSA form consists of two pieces.  First
+the virtual SSA web ties conflicting memory accesses and provides
+a SSA use-def chain and SSA immediate-use chains for walking
+possibly dependent memory accesses.  Second an alias-oracle can
+be queried to disambiguate explicit and implicit memory references.
 
 @enumerate
-@item   Structural alias analysis.
+@item Memory SSA form.
 
-This phase walks the types for structure variables, and determines which
-of the fields can overlap using offset and size of each field.  For each
-field, a ``subvariable'' called a ``Structure field tag'' (SFT)@ is
-created, which represents that field as a separate variable.  All
-accesses that could possibly overlap with a given field will have
-virtual operands for the SFT of that field.
+All statements that may use memory have exactly one accompanied use of
+a virtual SSA name that represents the state of memory at the
+given point in the IL.
+
+All statements that may define memory have exactly one accompanied
+definition of a virtual SSA name using the previous state of memory
+and defining the new state of memory after the given point in the IL.
 
 @smallexample
-struct foo
+int i;
+int foo (void)
 @{
-  int a;
-  int b;
-@}
-struct foo temp;
-int bar (void)
-@{
-  int tmp1, tmp2, tmp3;
-  SFT.0_2 = VDEF <SFT.0_1>
-  temp.a = 5;
-  SFT.1_4 = VDEF <SFT.1_3>
-  temp.b = 6;
-  
-  VUSE <SFT.1_4>
-  tmp1_5 = temp.b;
-  VUSE <SFT.0_2>
-  tmp2_6 = temp.a;
-
-  tmp3_7 = tmp1_5 + tmp2_6;
-  return tmp3_7;
+  # .MEM_3 = VDEF <.MEM_2(D)>
+  i = 1;
+  # VUSE <.MEM_3>
+  return i;
 @}
 @end smallexample
 
-If you copy the symbol tag for a variable for some reason, you probably
-also want to copy the subvariables for that variable.
+The virtual SSA names in this case are @code{.MEM_2(D)} and
+@code{.MEM_3}.  The store to the global variable @code{i}
+defines @code{.MEM_3} invalidating @code{.MEM_2(D)}.  The
+load from @code{i} uses that new state @code{.MEM_3}.
+
+The virtual SSA web serves as constraints to SSA optimizers
+preventing illegitimate code-motion and optimization.  It
+also provides a way to walk related memory statements.
 
 @item Points-to and escape analysis.
 
-This phase walks the use-def chains in the SSA web looking for
-three things:
+Points-to analysis builds a set of constraints from the GIMPLE
+SSA IL representing all pointer operations and facts we do
+or do not know about pointers.  Solving this set of constraints
+yields a conservatively correct solution for each pointer
+variable in the program (though we are only interested in
+SSA name pointers) as to what it may possibly point to.
+
+This points-to solution for a given SSA name pointer is stored
+in the @code{pt_solution} sub-structure of the
+@code{SSA_NAME_PTR_INFO} record.  The following accessor
+functions are available:
 
 @itemize @bullet
-@item Assignments of the form @code{P_i = &VAR}
-@item Assignments of the form P_i = malloc()
-@item Pointers and ADDR_EXPR that escape the current function.
+@item @code{pt_solution_includes}
+@item @code{pt_solutions_intersect}
 @end itemize
 
-The concept of `escaping' is the same one used in the Java world.
-When a pointer or an ADDR_EXPR escapes, it means that it has been
-exposed outside of the current function.  So, assignment to
-global variables, function arguments and returning a pointer are
-all escape sites.
+Points-to analysis also computes the solution for two special
+set of pointers, @code{ESCAPED} and @code{CALLUSED}.  Those
+represent all memory that has escaped the scope of analysis
+or that is used by pure or nested const calls.
 
-This is where we are currently limited.  Since not everything is
-renamed into SSA, we lose track of escape properties when a
-pointer is stashed inside a field in a structure, for instance.
-In those cases, we are assuming that the pointer does escape.
+@item Type-based alias analysis
 
-We use escape analysis to determine whether a variable is
-call-clobbered.  Simply put, if an ADDR_EXPR escapes, then the
-variable is call-clobbered.  If a pointer P_i escapes, then all
-the variables pointed-to by P_i (and its memory tag) also escape.
-
-@item Compute flow-sensitive aliases
-
-We have two classes of memory tags.  Memory tags associated with
-the pointed-to data type of the pointers in the program.  These
-tags are called ``symbol memory tag'' (SMT)@.  The other class are
-those associated with SSA_NAMEs, called ``name memory tag'' (NMT)@.
-The basic idea is that when adding operands for an INDIRECT_REF
-*P_i, we will first check whether P_i has a name tag, if it does
-we use it, because that will have more precise aliasing
-information.  Otherwise, we use the standard symbol tag.
-
-In this phase, we go through all the pointers we found in
-points-to analysis and create alias sets for the name memory tags
-associated with each pointer P_i.  If P_i escapes, we mark
-call-clobbered the variables it points to and its tag.
-
-
-@item Compute flow-insensitive aliases
-
-This pass will compare the alias set of every symbol memory tag and
-every addressable variable found in the program.  Given a symbol
-memory tag SMT and an addressable variable V@.  If the alias sets
-of SMT and V conflict (as computed by may_alias_p), then V is
-marked as an alias tag and added to the alias set of SMT@.
+Type-based alias analysis is frontend dependent though generic
+support is provided by the middle-end in @code{alias.c}.  TBAA
+code is used by both tree optimizers and RTL optimizers.
 
 Every language that wishes to perform language-specific alias analysis
 should define a function that computes, given a @code{tree}
 node, an alias set for the node.  Nodes in different alias sets are not
 allowed to alias.  For an example, see the C front-end function
 @code{c_get_alias_set}.
+
+@item Tree alias-oracle
+
+The tree alias-oracle provides means to disambiguate two memory
+references and memory references against statements.  The following
+queries are available:
+
+@itemize @bullet
+@item @code{refs_may_alias_p}
+@item @code{ref_maybe_used_by_stmt_p}
+@item @code{stmt_may_clobber_ref_p}
+@end itemize
+
+In addition to those two kind of statement walkers are available
+walking statements related to a reference ref.
+@code{walk_non_aliased_vuses} walks over dominating memory defining
+statements and calls back if the statement does not clobber ref
+providing the non-aliased VUSE.  The walk stops at
+the first clobbering statement or if asked to.
+@code{walk_aliased_vdefs} walks over dominating memory defining
+statements and calls back on each statement clobbering ref
+providing its aliasing VDEF.  The walk stops if asked to.
+
 @end enumerate
 
-For instance, consider the following function:
-
-@smallexample
-foo (int i)
-@{
-  int *p, *q, a, b;
-
-  if (i > 10)
-    p = &a;
-  else
-    q = &b;
-
-  *p = 3;
-  *q = 5;
-  a = b + 2;
-  return *p;
-@}
-@end smallexample
-
-After aliasing analysis has finished, the symbol memory tag for
-pointer @code{p} will have two aliases, namely variables @code{a} and
-@code{b}.
-Every time pointer @code{p} is dereferenced, we want to mark the
-operation as a potential reference to @code{a} and @code{b}.
-
-@smallexample
-foo (int i)
-@{
-  int *p, a, b;
-
-  if (i_2 > 10)
-    p_4 = &a;
-  else
-    p_6 = &b;
-  # p_1 = PHI <p_4(1), p_6(2)>;
-
-  # a_7 = VDEF <a_3>;
-  # b_8 = VDEF <b_5>;
-  *p_1 = 3;
-
-  # a_9 = VDEF <a_7>
-  # VUSE <b_8>
-  a_9 = b_8 + 2;
-
-  # VUSE <a_9>;
-  # VUSE <b_8>;
-  return *p_1;
-@}
-@end smallexample
-
-In certain cases, the list of may aliases for a pointer may grow
-too large.  This may cause an explosion in the number of virtual
-operands inserted in the code.  Resulting in increased memory
-consumption and compilation time.
-
-When the number of virtual operands needed to represent aliased
-loads and stores grows too large (configurable with @option{--param
-max-aliased-vops}), alias sets are grouped to avoid severe
-compile-time slow downs and memory consumption.  The alias
-grouping heuristic proceeds as follows:
-
-@enumerate
-@item Sort the list of pointers in decreasing number of contributed
-virtual operands.
-
-@item Take the first pointer from the list and reverse the role
-of the memory tag and its aliases.  Usually, whenever an
-aliased variable Vi is found to alias with a memory tag
-T, we add Vi to the may-aliases set for T@.  Meaning that
-after alias analysis, we will have:
-
-@smallexample
-may-aliases(T) = @{ V1, V2, V3, @dots{}, Vn @}
-@end smallexample
-
-This means that every statement that references T, will get
-@code{n} virtual operands for each of the Vi tags.  But, when
-alias grouping is enabled, we make T an alias tag and add it
-to the alias set of all the Vi variables:
-
-@smallexample
-may-aliases(V1) = @{ T @}
-may-aliases(V2) = @{ T @}
-@dots{}
-may-aliases(Vn) = @{ T @}
-@end smallexample
-
-This has two effects: (a) statements referencing T will only get
-a single virtual operand, and, (b) all the variables Vi will now
-appear to alias each other.  So, we lose alias precision to
-improve compile time.  But, in theory, a program with such a high
-level of aliasing should not be very optimizable in the first
-place.
-
-@item Since variables may be in the alias set of more than one
-memory tag, the grouping done in step (2) needs to be extended
-to all the memory tags that have a non-empty intersection with
-the may-aliases set of tag T@.  For instance, if we originally
-had these may-aliases sets:
-
-@smallexample
-may-aliases(T) = @{ V1, V2, V3 @}
-may-aliases(R) = @{ V2, V4 @}
-@end smallexample
-
-In step (2) we would have reverted the aliases for T as:
-
-@smallexample
-may-aliases(V1) = @{ T @}
-may-aliases(V2) = @{ T @}
-may-aliases(V3) = @{ T @}
-@end smallexample
-
-But note that now V2 is no longer aliased with R@.  We could
-add R to may-aliases(V2), but we are in the process of
-grouping aliases to reduce virtual operands so what we do is
-add V4 to the grouping to obtain:
-
-@smallexample
-may-aliases(V1) = @{ T @}
-may-aliases(V2) = @{ T @}
-may-aliases(V3) = @{ T @}
-may-aliases(V4) = @{ T @}
-@end smallexample
-
-@item If the total number of virtual operands due to aliasing is
-still above the threshold set by max-alias-vops, go back to (2).
-@end enumerate

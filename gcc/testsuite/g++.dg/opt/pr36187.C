@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 --param max-aliased-vops=20" } */
+/* { dg-options "-O2" } */
 
 extern "C" void abort (void);
 enum SbxDataType { SbxINTEGER, SbxDECIMAL, SbxBYREF = 0x4000 };

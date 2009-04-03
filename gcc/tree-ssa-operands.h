@@ -30,8 +30,8 @@ typedef tree *def_operand_p;
 typedef ssa_use_operand_t *use_operand_p;
 
 /* NULL operand types.  */
-#define NULL_USE_OPERAND_P 		NULL
-#define NULL_DEF_OPERAND_P 		NULL
+#define NULL_USE_OPERAND_P 		((use_operand_p)NULL)
+#define NULL_DEF_OPERAND_P 		((def_operand_p)NULL)
 
 /* This represents the DEF operands of a stmt.  */
 struct def_optype_d
@@ -49,63 +49,6 @@ struct use_optype_d
 };
 typedef struct use_optype_d *use_optype_p;
 
-typedef struct vuse_element_d
-{
-  tree use_var;
-  struct ssa_use_operand_d use_ptr;
-} vuse_element_t;
-
-typedef struct vuse_vec_d
-{
-  unsigned int num_vuse;
-  vuse_element_t uses[1];
-} vuse_vec_t;
-typedef struct vuse_vec_d *vuse_vec_p;
-
-#define VUSE_VECT_NUM_ELEM(V)		(V).num_vuse
-#define VUSE_VECT_ELEMENT_NC(V,X)	(V).uses[(X)]
-#define VUSE_ELEMENT_PTR_NC(V,X)	(&(VUSE_VECT_ELEMENT_NC ((V),(X)).use_ptr))
-#define VUSE_ELEMENT_VAR_NC(V,X)	(VUSE_VECT_ELEMENT_NC ((V),(X)).use_var)
-
-#ifdef ENABLE_CHECKING
-#define VUSE_VECT_ELEMENT(V,X)						\
-    (gcc_assert (((unsigned int) (X)) < VUSE_VECT_NUM_ELEM (V)),	\
-     VUSE_VECT_ELEMENT_NC (V,X))
-
-#define VUSE_ELEMENT_PTR(V,X)						\
-    (gcc_assert (((unsigned int) (X)) < VUSE_VECT_NUM_ELEM (V)),	\
-     VUSE_ELEMENT_PTR_NC (V, X))
-
-#define SET_VUSE_VECT_ELEMENT(V,X,N)					\
-    (gcc_assert (((unsigned int) (X)) < VUSE_VECT_NUM_ELEM (V)),	\
-     VUSE_VECT_ELEMENT_NC (V,X) = (N))
-
-#define SET_VUSE_ELEMENT_VAR(V,X,N)					\
-    (gcc_assert (((unsigned int) (X)) < VUSE_VECT_NUM_ELEM (V)),	\
-     VUSE_VECT_ELEMENT_NC ((V),(X)).use_var = (N))
-
-#define SET_VUSE_ELEMENT_PTR(V,X,N)					\
-    (gcc_assert (((unsigned int) (X)) < VUSE_VECT_NUM_ELEM (V)),	\
-     VUSE_ELEMENT_PTR_NC (V, X) = (N))
-#else
-#define VUSE_VECT_ELEMENT(V,X) VUSE_VECT_ELEMENT_NC(V,X)
-#define VUSE_ELEMENT_PTR(V,X) VUSE_ELEMENT_PTR_NC(V,X)
-#define SET_VUSE_VECT_ELEMENT(V,X,N) VUSE_VECT_ELEMENT_NC(V,X) = (N)
-#define SET_VUSE_ELEMENT_PTR(V,X,N) VUSE_ELEMENT_PTR_NC(V,X) = (N)
-#define SET_VUSE_ELEMENT_VAR(V,X,N) VUSE_VECT_ELEMENT_NC ((V),(X)).use_var = (N)
-#endif
-
-#define VUSE_ELEMENT_VAR(V,X)	(VUSE_VECT_ELEMENT ((V),(X)).use_var)
-
-/* This represents the virtual ops of a stmt.  */
-struct voptype_d
-{
-  struct voptype_d *next;
-  tree def_var;
-  vuse_vec_t usev;
-};
-typedef struct voptype_d *voptype_p;
-
 /* This structure represents a variable sized buffer which is allocated by the
    operand memory manager.  Operands are suballocated out of this block.  The
    MEM array varies in size.  */
@@ -115,9 +58,6 @@ struct ssa_operand_memory_d GTY((chain_next("%h.next")))
   struct ssa_operand_memory_d *next;
   char mem[1];
 };
-
-/* Number of different size free buckets for virtual operands.  */
-#define NUM_VOP_FREE_BUCKETS		29
 
 /* Per-function operand caches.  */
 struct ssa_operands GTY(()) {
@@ -130,27 +70,7 @@ struct ssa_operands GTY(()) {
 
    struct def_optype_d * GTY ((skip (""))) free_defs;
    struct use_optype_d * GTY ((skip (""))) free_uses;
-   struct voptype_d * GTY ((skip (""))) vop_free_buckets[NUM_VOP_FREE_BUCKETS];
-   VEC(tree,heap) * GTY ((skip (""))) mpt_table;
 };
-
-/* This represents the operand cache for a stmt.  */
-struct stmt_operands_d
-{
-  /* Statement operands.  */
-  struct def_optype_d * def_ops;
-  struct use_optype_d * use_ops;
-                                                                              
-  /* Virtual operands (VDEF, VUSE).  */
-  struct voptype_d * vdef_ops;
-  struct voptype_d * vuse_ops;
-
-  /* Sets of memory symbols loaded and stored.  */
-  bitmap stores;
-  bitmap loads;
-};
-                                                                              
-typedef struct stmt_operands_d *stmt_operands_p;
                                                                               
 #define USE_FROM_PTR(PTR)	get_use_from_ptr (PTR)
 #define DEF_FROM_PTR(PTR)	get_def_from_ptr (PTR)
@@ -164,20 +84,6 @@ typedef struct stmt_operands_d *stmt_operands_p;
 
 #define DEF_OP_PTR(OP)		((OP)->def_ptr)
 #define DEF_OP(OP)		(DEF_FROM_PTR (DEF_OP_PTR (OP)))
-
-#define VUSE_OP_PTR(OP,X)	VUSE_ELEMENT_PTR ((OP)->usev, (X)) 
-#define VUSE_OP(OP,X)		VUSE_ELEMENT_VAR ((OP)->usev, (X))
-#define SET_VUSE_OP(OP,X,N)	SET_VUSE_ELEMENT_VAR ((OP)->usev, (X), (N))
-#define VUSE_NUM(OP)		VUSE_VECT_NUM_ELEM ((OP)->usev)
-#define VUSE_VECT(OP)		&((OP)->usev)
-
-#define VDEF_RESULT_PTR(OP)	(&((OP)->def_var))
-#define VDEF_RESULT(OP)		((OP)->def_var)
-#define VDEF_OP_PTR(OP,X)	VUSE_OP_PTR (OP, X)
-#define VDEF_OP(OP,X)		VUSE_OP (OP, X)
-#define SET_VDEF_OP(OP,X,N)	SET_VUSE_OP (OP, X, N)
-#define VDEF_NUM(OP)		VUSE_VECT_NUM_ELEM ((OP)->usev)
-#define VDEF_VECT(OP)		&((OP)->usev)
 
 #define PHI_RESULT_PTR(PHI)	gimple_phi_result_ptr (PHI)
 #define PHI_RESULT(PHI)		DEF_FROM_PTR (PHI_RESULT_PTR (PHI))
@@ -200,10 +106,6 @@ extern void update_stmt_operands (gimple);
 extern void free_stmt_operands (gimple);
 extern bool verify_imm_links (FILE *f, tree var);
 
-extern void copy_virtual_operands (gimple, gimple);
-extern int operand_build_cmp (const void *, const void *);
-extern void create_ssa_artificial_load_stmt (gimple, gimple, bool);
-
 extern void dump_immediate_uses (FILE *file);
 extern void dump_immediate_uses_for (FILE *file, tree var);
 extern void debug_immediate_uses (void);
@@ -216,14 +118,14 @@ extern bool ssa_operands_active (void);
 extern void push_stmt_changes (gimple *);
 extern void pop_stmt_changes (gimple *);
 extern void discard_stmt_changes (gimple *);
-void add_to_addressable_set (tree, bitmap *);
+
+extern void unlink_stmt_vdef (gimple);
 
 enum ssa_op_iter_type {
   ssa_op_iter_none = 0,
   ssa_op_iter_tree,
   ssa_op_iter_use,
-  ssa_op_iter_def,
-  ssa_op_iter_vdef
+  ssa_op_iter_def
 };
 
 /* This structure is used in the operand iterator loops.  It contains the 
@@ -233,18 +135,13 @@ enum ssa_op_iter_type {
 
 typedef struct ssa_operand_iterator_d
 {
+  bool done;
+  enum ssa_op_iter_type iter_type;
   def_optype_p defs;
   use_optype_p uses;
-  voptype_p vuses;
-  voptype_p vdefs;
-  voptype_p mayuses;
-  enum ssa_op_iter_type iter_type;
   int phi_i;
   int num_phi;
   gimple phi_stmt;
-  bool done;
-  unsigned int vuse_index;
-  unsigned int mayuse_index;
 } ssa_op_iter;
 
 /* These flags are used to determine which operands are returned during 
@@ -252,11 +149,10 @@ typedef struct ssa_operand_iterator_d
 #define SSA_OP_USE		0x01	/* Real USE operands.  */
 #define SSA_OP_DEF		0x02	/* Real DEF operands.  */
 #define SSA_OP_VUSE		0x04	/* VUSE operands.  */
-#define SSA_OP_VMAYUSE		0x08	/* USE portion of VDEFS.  */
-#define SSA_OP_VDEF		0x10	/* DEF portion of VDEFS.  */
+#define SSA_OP_VDEF		0x08	/* VDEF operands.  */
 
 /* These are commonly grouped operand flags.  */
-#define SSA_OP_VIRTUAL_USES	(SSA_OP_VUSE | SSA_OP_VMAYUSE)
+#define SSA_OP_VIRTUAL_USES	(SSA_OP_VUSE)
 #define SSA_OP_VIRTUAL_DEFS	(SSA_OP_VDEF)
 #define SSA_OP_ALL_VIRTUALS     (SSA_OP_VIRTUAL_USES | SSA_OP_VIRTUAL_DEFS)
 #define SSA_OP_ALL_USES		(SSA_OP_VIRTUAL_USES | SSA_OP_USE)
@@ -286,14 +182,6 @@ typedef struct ssa_operand_iterator_d
   for (DEFVAR = op_iter_init_def (&(ITER), STMT, FLAGS);	\
        !op_iter_done (&(ITER));					\
        DEFVAR = op_iter_next_def (&(ITER)))
-
-/* This macro executes a loop over the VDEF operands of STMT.  The def
-   and use vector for each VDEF is returned in DEFVAR and USEVECT. 
-   ITER is an ssa_op_iter structure used to control the loop.  */
-#define FOR_EACH_SSA_VDEF_OPERAND(DEFVAR, USEVECT, STMT, ITER)	\
-  for (op_iter_init_vdef (&(ITER), STMT, &(USEVECT), &(DEFVAR));	\
-       !op_iter_done (&(ITER));					\
-       op_iter_next_vdef (&(USEVECT), &(DEFVAR), &(ITER)))
 
 /* This macro will execute a loop over all the arguments of a PHI which
    match FLAGS.   A use_operand_p is always returned via USEVAR.  FLAGS

@@ -115,7 +115,6 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
   int p1, p2, p3;
   tree root1, root2;
   tree rep1, rep2;
-  var_ann_t ann1, ann2, ann3;
   bool ign1, ign2, abnorm;
 
   gcc_assert (TREE_CODE (var1) == SSA_NAME);
@@ -143,9 +142,6 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
   rep2 = partition_to_var (map, p2);
   root1 = SSA_NAME_VAR (rep1);
   root2 = SSA_NAME_VAR (rep2);
-
-  ann1 = var_ann (root1);
-  ann2 = var_ann (root2);
 
   if (p1 == p2)
     {
@@ -207,16 +203,6 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
 	}
     }
 
-  /* Don't coalesce if there are two different memory tags.  */
-  if (ann1->symbol_mem_tag
-      && ann2->symbol_mem_tag
-      && ann1->symbol_mem_tag != ann2->symbol_mem_tag)
-    {
-      if (debug)
-	fprintf (debug, " : 2 memory tags. No coalesce.\n");
-      return false;
-    }
-
   /* If both values have default defs, we can't coalesce.  If only one has a 
      tag, make sure that variable is the new root partition.  */
   if (gimple_default_def (cfun, root1))
@@ -252,8 +238,7 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
       && POINTER_TYPE_P (TREE_TYPE (root2))
       && ((get_alias_set (TREE_TYPE (TREE_TYPE (root1)))
 	   != get_alias_set (TREE_TYPE (TREE_TYPE (root2))))
-	  || ((DECL_P (root1) && !MTAG_P (root1))
-	      && (DECL_P (root2) && !MTAG_P (root2))
+	  || (DECL_P (root1) && DECL_P (root2)
 	      && DECL_NO_TBAA_P (root1) != DECL_NO_TBAA_P (root2))))
     {
       if (debug)
@@ -271,13 +256,6 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
     replace_ssa_name_symbol (partition_to_var (map, p3), root2);
   else if (!ign1)
     replace_ssa_name_symbol (partition_to_var (map, p3), root1);
-
-  /* Update the various flag widgitry of the current base representative.  */
-  ann3 = var_ann (SSA_NAME_VAR (partition_to_var (map, p3)));
-  if (ann1->symbol_mem_tag)
-    ann3->symbol_mem_tag = ann1->symbol_mem_tag;
-  else
-    ann3->symbol_mem_tag = ann2->symbol_mem_tag;
 
   if (debug)
     {

@@ -361,12 +361,6 @@ DEFTREECODE (PARM_DECL, "parm_decl", tcc_declaration, 0)
 DEFTREECODE (TYPE_DECL, "type_decl", tcc_declaration, 0)
 DEFTREECODE (RESULT_DECL, "result_decl", tcc_declaration, 0)
 
-/* Memory tags used in tree-ssa to represent memory locations in
-   virtual SSA.  */
-DEFTREECODE (NAME_MEMORY_TAG, "name_memory_tag", tcc_declaration, 0)
-DEFTREECODE (SYMBOL_MEMORY_TAG, "symbol_memory_tag", tcc_declaration, 0)
-DEFTREECODE (MEMORY_PARTITION_TAG, "memory_partition_tag", tcc_declaration, 0)
-
 /* A namespace declaration.  Namespaces appear in DECL_CONTEXT of other
    _DECLs, providing a hierarchy of names.  */
 DEFTREECODE (NAMESPACE_DECL, "namespace_decl", tcc_declaration, 0)
@@ -992,10 +986,9 @@ DEFTREECODE (REALIGN_LOAD_EXPR, "realign_load", tcc_expression, 3)
    sizetype or a pointer type (if SYMBOL is NULL).
    
    The sixth argument is the reference to the original memory access, which
-   is preserved for the purposes of the RTL alias analysis.  The seventh
-   argument is a tag representing results of the tree level alias analysis.  */
+   is preserved for the purposes of the RTL alias analysis.  */
 
-DEFTREECODE (TARGET_MEM_REF, "target_mem_ref", tcc_reference, 7)
+DEFTREECODE (TARGET_MEM_REF, "target_mem_ref", tcc_reference, 6)
 
 /* The ordering of the codes between OMP_PARALLEL and OMP_CRITICAL is
    exposed to TREE_RANGE_CHECK.  */

@@ -502,7 +502,7 @@ gather_memory_references (struct loop *loop, bool *no_other_refs)
 
 	  if (gimple_code (stmt) != GIMPLE_ASSIGN)
 	    {
-	      if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS)
+	      if (gimple_vuse (stmt)
 		  || (is_gimple_call (stmt)
 		      && !(gimple_call_flags (stmt) & ECF_CONST)))
 		*no_other_refs = false;

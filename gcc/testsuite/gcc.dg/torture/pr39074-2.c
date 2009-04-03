@@ -30,5 +30,5 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "y.._., name memory tag: NMT..., is dereferenced, points-to vars: { i }" "alias" } } */
+/* { dg-final { scan-tree-dump "y.._., points-to vars: { i }" "alias" } } */
 /* { dg-final { cleanup-tree-dump "alias" } } */

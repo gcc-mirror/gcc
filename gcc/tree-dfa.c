@@ -254,8 +254,9 @@ dump_referenced_vars (FILE *file)
     {
       fprintf (file, "Variable: ");
       dump_variable (file, var);
-      fprintf (file, "\n");
     }
+
+  fprintf (file, "\n");
 }
 
 
@@ -297,12 +298,6 @@ dump_variable (FILE *file, tree var)
   fprintf (file, ", ");
   print_generic_expr (file, TREE_TYPE (var), dump_flags);
 
-  if (ann && ann->symbol_mem_tag)
-    {
-      fprintf (file, ", symbol memory tag: ");
-      print_generic_expr (file, ann->symbol_mem_tag, dump_flags);
-    }
-
   if (TREE_ADDRESSABLE (var))
     fprintf (file, ", is addressable");
   
@@ -312,36 +307,10 @@ dump_variable (FILE *file, tree var)
   if (TREE_THIS_VOLATILE (var))
     fprintf (file, ", is volatile");
 
-  dump_mem_sym_stats_for_var (file, var);
-
   if (is_call_clobbered (var))
-    {
-      const char *s = "";
-      var_ann_t va = var_ann (var);
-      unsigned int escape_mask = va->escape_mask;
-
-      fprintf (file, ", call clobbered");
-      fprintf (file, " (");
-      if (escape_mask & ESCAPE_STORED_IN_GLOBAL)
-	{ fprintf (file, "%sstored in global", s); s = ", "; }
-      if (escape_mask & ESCAPE_TO_ASM)
-	{ fprintf (file, "%sgoes through ASM", s); s = ", "; }
-      if (escape_mask & ESCAPE_TO_CALL)
-	{ fprintf (file, "%spassed to call", s); s = ", "; }
-      if (escape_mask & ESCAPE_BAD_CAST)
-	{ fprintf (file, "%sbad cast", s); s = ", "; }
-      if (escape_mask & ESCAPE_TO_RETURN)
-	{ fprintf (file, "%sreturned from func", s); s = ", "; }
-      if (escape_mask & ESCAPE_TO_PURE_CONST)
-	{ fprintf (file, "%spassed to pure/const", s); s = ", "; }
-      if (escape_mask & ESCAPE_IS_GLOBAL)
-	{ fprintf (file, "%sis global var", s); s = ", "; }
-      if (escape_mask & ESCAPE_IS_PARM)
-	{ fprintf (file, "%sis incoming pointer", s); s = ", "; }
-      if (escape_mask & ESCAPE_UNKNOWN)
-	{ fprintf (file, "%sunknown escape", s); s = ", "; }
-      fprintf (file, ")");
-    }
+    fprintf (file, ", call clobbered");
+  else if (is_call_used (var))
+    fprintf (file, ", call used");
 
   if (ann->noalias_state == NO_ALIAS)
     fprintf (file, ", NO_ALIAS (does not alias other NO_ALIAS symbols)");
@@ -355,27 +324,6 @@ dump_variable (FILE *file, tree var)
     {
       fprintf (file, ", default def: ");
       print_generic_expr (file, gimple_default_def (cfun, var), dump_flags);
-    }
-
-  if (MTAG_P (var) && may_aliases (var))
-    {
-      fprintf (file, ", may aliases: ");
-      dump_may_aliases_for (file, var);
-    }
-
-  if (!is_gimple_reg (var))
-    {
-      if (memory_partition (var))
-	{
-	  fprintf (file, ", belongs to partition: ");
-	  print_generic_expr (file, memory_partition (var), dump_flags);
-	}
-
-      if (TREE_CODE (var) == MEMORY_PARTITION_TAG)
-	{
-	  fprintf (file, ", partition symbols: ");
-	  dump_decl_set (file, MPT_SYMBOLS (var));
-	}
     }
 
   fprintf (file, "\n");
@@ -516,8 +464,8 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p ATTRIBUTE_UNUSED)
 	  gimple stmt = gsi_stmt (si);
 	  dfa_stats_p->num_defs += NUM_SSA_OPERANDS (stmt, SSA_OP_DEF);
 	  dfa_stats_p->num_uses += NUM_SSA_OPERANDS (stmt, SSA_OP_USE);
-	  dfa_stats_p->num_vdefs += NUM_SSA_OPERANDS (stmt, SSA_OP_VDEF);
-	  dfa_stats_p->num_vuses += NUM_SSA_OPERANDS (stmt, SSA_OP_VUSE);
+	  dfa_stats_p->num_vdefs += gimple_vdef (stmt) ? 1 : 0;
+	  dfa_stats_p->num_vuses += gimple_vuse (stmt) ? 1 : 0;
 	}
     }
 }
@@ -650,13 +598,6 @@ add_referenced_var (tree var)
   /* Insert VAR into the referenced_vars has table if it isn't present.  */
   if (referenced_var_check_and_insert (var))
     {
-      /* This is the first time we found this variable, annotate it with
-	 attributes that are intrinsic to the variable.  */
-      
-      /* Tag's don't have DECL_INITIAL.  */
-      if (MTAG_P (var))
-	return true;
-
       /* Scan DECL_INITIAL for pointer variables as they may contain
 	 address arithmetic referencing the address of other
 	 variables.  
@@ -684,22 +625,12 @@ remove_referenced_var (tree var)
   void **loc;
   unsigned int uid = DECL_UID (var);
 
-  clear_call_clobbered (var);
-  bitmap_clear_bit (gimple_call_used_vars (cfun), uid);
-  if ((v_ann = var_ann (var)))
+  /* Preserve var_anns of globals.  */
+  if (!is_global_var (var)
+      && (v_ann = var_ann (var)))
     {
-      /* Preserve var_anns of globals, but clear their alias info.  */
-      if (MTAG_P (var)
-	  || (!TREE_STATIC (var) && !DECL_EXTERNAL (var)))
-	{
-	  ggc_free (v_ann);
-	  var->base.ann = NULL;
-	}
-      else
-	{
-	  v_ann->mpt = NULL_TREE;
-	  v_ann->symbol_mem_tag = NULL_TREE;
-	}
+      ggc_free (v_ann);
+      var->base.ann = NULL;
     }
   gcc_assert (DECL_P (var));
   in.uid = uid;
@@ -802,8 +733,6 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
   HOST_WIDE_INT bit_offset = 0;
   bool seen_variable_array_ref = false;
   bool seen_union = false;
-
-  gcc_assert (!SSA_VAR_P (exp));
 
   /* First get the final access size from just the outermost expression.  */
   if (TREE_CODE (exp) == COMPONENT_REF)
@@ -984,242 +913,3 @@ stmt_references_abnormal_ssa_name (gimple stmt)
   return false;
 }
 
-/* Return true, if the two memory references REF1 and REF2 may alias.  */
-
-bool
-refs_may_alias_p (tree ref1, tree ref2)
-{
-  tree base1, base2;
-  HOST_WIDE_INT offset1 = 0, offset2 = 0;
-  HOST_WIDE_INT size1 = -1, size2 = -1;
-  HOST_WIDE_INT max_size1 = -1, max_size2 = -1;
-  bool strict_aliasing_applies;
-
-  gcc_assert ((SSA_VAR_P (ref1)
-	       || handled_component_p (ref1)
-	       || INDIRECT_REF_P (ref1)
-	       || TREE_CODE (ref1) == TARGET_MEM_REF)
-	      && (SSA_VAR_P (ref2)
-		  || handled_component_p (ref2)
-		  || INDIRECT_REF_P (ref2)
-		  || TREE_CODE (ref2) == TARGET_MEM_REF));
-
-  /* Defer to TBAA if possible.  */
-  if (flag_strict_aliasing
-      && !alias_sets_conflict_p (get_alias_set (ref1), get_alias_set (ref2)))
-    return false;
-
-  /* Decompose the references into their base objects and the access.  */
-  base1 = ref1;
-  if (handled_component_p (ref1))
-    base1 = get_ref_base_and_extent (ref1, &offset1, &size1, &max_size1);
-  base2 = ref2;
-  if (handled_component_p (ref2))
-    base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &max_size2);
-
-  /* If both references are based on different variables, they cannot alias.
-     If both references are based on the same variable, they cannot alias if
-     the accesses do not overlap.  */
-  if (SSA_VAR_P (base1)
-      && SSA_VAR_P (base2))
-    {
-      if (!operand_equal_p (base1, base2, 0))
-	return false;
-      return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
-    }
-
-  /* If one base is a ref-all pointer weird things are allowed.  */
-  strict_aliasing_applies = (flag_strict_aliasing
-			     && (!INDIRECT_REF_P (base1)
-				 || get_alias_set (base1) != 0)
-			     && (!INDIRECT_REF_P (base2)
-				 || get_alias_set (base2) != 0));
-
-  /* If strict aliasing applies the only way to access a scalar variable
-     is through a pointer dereference or through a union (gcc extension).  */
-  if (strict_aliasing_applies
-      && ((SSA_VAR_P (ref2)
-	   && !AGGREGATE_TYPE_P (TREE_TYPE (ref2))
-	   && !INDIRECT_REF_P (ref1)
-	   && TREE_CODE (TREE_TYPE (base1)) != UNION_TYPE)
-	  || (SSA_VAR_P (ref1)
-	      && !AGGREGATE_TYPE_P (TREE_TYPE (ref1))
-	      && !INDIRECT_REF_P (ref2)
-	      && TREE_CODE (TREE_TYPE (base2)) != UNION_TYPE)))
-    return false;
-
-  /* If both references are through the same type, or if strict aliasing
-     doesn't apply they are through two same pointers, they do not alias
-     if the accesses do not overlap.  */
-  if ((strict_aliasing_applies
-       && (TYPE_MAIN_VARIANT (TREE_TYPE (base1))
-	   == TYPE_MAIN_VARIANT (TREE_TYPE (base2))))
-      || (TREE_CODE (base1) == INDIRECT_REF
-	  && TREE_CODE (base2) == INDIRECT_REF
-	  && operand_equal_p (TREE_OPERAND (base1, 0),
-			      TREE_OPERAND (base2, 0), 0)))
-    return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
-
-  /* If both are component references through pointers try to find a
-     common base and apply offset based disambiguation.  This handles
-     for example
-       struct A { int i; int j; } *q;
-       struct B { struct A a; int k; } *p;
-     disambiguating q->i and p->a.j.  */
-  if (strict_aliasing_applies
-      && (TREE_CODE (base1) == INDIRECT_REF
-	  || TREE_CODE (base2) == INDIRECT_REF)
-      && handled_component_p (ref1)
-      && handled_component_p (ref2))
-    {
-      tree *refp;
-      /* Now search for the type of base1 in the access path of ref2.  This
-	 would be a common base for doing offset based disambiguation on.  */
-      refp = &ref2;
-      while (handled_component_p (*refp)
-	     /* Note that the following is only conservative if there are
-		never copies of types appearing as sub-structures.  */
-	     && (TYPE_MAIN_VARIANT (TREE_TYPE (*refp))
-		 != TYPE_MAIN_VARIANT (TREE_TYPE (base1))))
-	refp = &TREE_OPERAND (*refp, 0);
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (*refp))
-	  == TYPE_MAIN_VARIANT (TREE_TYPE (base1)))
-	{
-	  HOST_WIDE_INT offadj, sztmp, msztmp;
-	  get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp);
-	  offset2 -= offadj;
-	  return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
-	}
-      /* The other way around.  */
-      refp = &ref1;
-      while (handled_component_p (*refp)
-	     && (TYPE_MAIN_VARIANT (TREE_TYPE (*refp))
-		 != TYPE_MAIN_VARIANT (TREE_TYPE (base2))))
-	refp = &TREE_OPERAND (*refp, 0);
-      if (TYPE_MAIN_VARIANT (TREE_TYPE (*refp))
-	  == TYPE_MAIN_VARIANT (TREE_TYPE (base2)))
-	{
-	  HOST_WIDE_INT offadj, sztmp, msztmp;
-	  get_ref_base_and_extent (*refp, &offadj, &sztmp, &msztmp);
-	  offset1 -= offadj;
-	  return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
-	}
-      /* If we can be sure to catch all equivalent types in the search
-	 for the common base then we could return false here.  In that
-	 case we would be able to disambiguate q->i and p->k.  */
-    }
-
-  return true;
-}
-
-/* Given a stmt STMT that references memory, return the single stmt
-   that is reached by following the VUSE -> VDEF link.  Returns
-   NULL_TREE, if there is no single stmt that defines all VUSEs of
-   STMT.
-   Note that for a stmt with a single virtual operand this may return
-   a PHI node as well.  Note that if all VUSEs are default definitions
-   this function will return an empty statement.  */
-
-gimple
-get_single_def_stmt (gimple stmt)
-{
-  gimple def_stmt = NULL;
-  tree use;
-  ssa_op_iter iter;
-
-  FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_VIRTUAL_USES)
-    {
-      gimple tmp = SSA_NAME_DEF_STMT (use);
-
-      /* ???  This is too simplistic for multiple virtual operands
-	 reaching different PHI nodes of the same basic blocks or for
-	 reaching all default definitions.  */
-      if (def_stmt
-	  && def_stmt != tmp
-	  && !(gimple_nop_p (def_stmt)
-	       && gimple_nop_p (tmp)))
-	return NULL;
-
-      def_stmt = tmp;
-    }
-
-  return def_stmt;
-}
-
-/* Given a PHI node of virtual operands, tries to eliminate cyclic
-   reached definitions if they do not alias REF and returns the
-   defining statement of the single virtual operand that flows in
-   from a non-backedge.  Returns NULL_TREE if such statement within
-   the above conditions cannot be found.  */
-
-gimple
-get_single_def_stmt_from_phi (tree ref, gimple phi)
-{
-  tree def_arg = NULL_TREE;
-  unsigned i;
-
-  /* Find the single PHI argument that is not flowing in from a
-     back edge and verify that the loop-carried definitions do
-     not alias the reference we look for.  */
-  for (i = 0; i < gimple_phi_num_args (phi); ++i)
-    {
-      tree arg = PHI_ARG_DEF (phi, i);
-      gimple def_stmt;
-
-      if (!(gimple_phi_arg_edge (phi, i)->flags & EDGE_DFS_BACK))
-	{
-	  /* Multiple non-back edges?  Do not try to handle this.  */
-	  if (def_arg)
-	    return NULL;
-	  def_arg = arg;
-	  continue;
-	}
-
-      /* Follow the definitions back to the original PHI node.  Bail
-	 out once a definition is found that may alias REF.  */
-      def_stmt = SSA_NAME_DEF_STMT (arg);
-      do
-	{
-	  if (!is_gimple_assign (def_stmt)
-	      || refs_may_alias_p (ref, gimple_assign_lhs (def_stmt)))
-	    return NULL;
-	  /* ???  This will only work, reaching the PHI node again if
-	     there is a single virtual operand on def_stmt.  */
-	  def_stmt = get_single_def_stmt (def_stmt);
-	  if (!def_stmt)
-	    return NULL;
-	}
-      while (def_stmt != phi);
-    }
-
-  return SSA_NAME_DEF_STMT (def_arg);
-}
-
-/* Return the single reference statement defining all virtual uses
-   on STMT or NULL_TREE, if there are multiple defining statements.
-   Take into account only definitions that alias REF if following
-   back-edges when looking through a loop PHI node.  */
-
-gimple
-get_single_def_stmt_with_phi (tree ref, gimple stmt)
-{
-  switch (NUM_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_USES))
-    {
-    case 0:
-      gcc_unreachable ();
-
-    case 1:
-      {
-	gimple def_stmt = SSA_NAME_DEF_STMT (SINGLE_SSA_TREE_OPERAND
-					     (stmt, SSA_OP_VIRTUAL_USES));
-	/* We can handle lookups over PHI nodes only for a single
-	   virtual operand.  */
-	if (gimple_code (def_stmt) == GIMPLE_PHI)
-	  return get_single_def_stmt_from_phi (ref, def_stmt);
-	return def_stmt;
-      }
-
-    default:
-      return get_single_def_stmt (stmt);
-    }
-}

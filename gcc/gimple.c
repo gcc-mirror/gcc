@@ -1902,7 +1902,7 @@ gimple_set_bb (gimple stmt, basic_block bb)
 	  LABEL_DECL_UID (t) = uid = cfun->cfg->last_label_uid++;
 	  if (old_len <= (unsigned) uid)
 	    {
-	      unsigned new_len = 3 * uid / 2;
+	      unsigned new_len = 3 * uid / 2 + 1;
 
 	      VEC_safe_grow_cleared (basic_block, gc, label_to_block_map,
 				     new_len);
@@ -2209,13 +2209,12 @@ gimple_copy (gimple stmt)
 
       if (gimple_has_mem_ops (stmt))
 	{
-	  gimple_set_vdef_ops (copy, NULL);
-	  gimple_set_vuse_ops (copy, NULL);
-	  copy->gsmem.membase.stores = NULL;
-	  copy->gsmem.membase.loads = NULL;
+	  gimple_set_vdef (copy, gimple_vdef (stmt));
+	  gimple_set_vuse (copy, gimple_vuse (stmt));
 	}
 
-      update_stmt (copy);
+      /* SSA operands need to be updated.  */
+      gimple_set_modified (copy, true);
     }
 
   return copy;
@@ -2453,46 +2452,6 @@ dump_gimple_statistics (void)
 #else
   fprintf (stderr, "No gimple statistics\n");
 #endif
-}
-
-
-/* Deep copy SYMS into the set of symbols stored by STMT.  If SYMS is
-   NULL or empty, the storage used is freed up.  */
-
-void
-gimple_set_stored_syms (gimple stmt, bitmap syms, bitmap_obstack *obs)
-{
-  gcc_assert (gimple_has_mem_ops (stmt));
-
-  if (syms == NULL || bitmap_empty_p (syms))
-    BITMAP_FREE (stmt->gsmem.membase.stores);
-  else
-    {
-      if (stmt->gsmem.membase.stores == NULL)
-	stmt->gsmem.membase.stores = BITMAP_ALLOC (obs);
-
-      bitmap_copy (stmt->gsmem.membase.stores, syms);
-    }
-}
-
-
-/* Deep copy SYMS into the set of symbols loaded by STMT.  If SYMS is
-   NULL or empty, the storage used is freed up.  */
-
-void
-gimple_set_loaded_syms (gimple stmt, bitmap syms, bitmap_obstack *obs)
-{
-  gcc_assert (gimple_has_mem_ops (stmt));
-
-  if (syms == NULL || bitmap_empty_p (syms))
-    BITMAP_FREE (stmt->gsmem.membase.loads);
-  else
-    {
-      if (stmt->gsmem.membase.loads == NULL)
-	stmt->gsmem.membase.loads = BITMAP_ALLOC (obs);
-
-      bitmap_copy (stmt->gsmem.membase.loads, syms);
-    }
 }
 
 
@@ -2866,9 +2825,6 @@ is_gimple_reg (tree t)
   if (TREE_CODE (t) == SSA_NAME)
     t = SSA_NAME_VAR (t);
 
-  if (MTAG_P (t))
-    return false;
-
   if (!is_gimple_variable (t))
     return false;
 
@@ -3127,6 +3083,9 @@ gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
   if (gimple_call_lhs (stmt))
     gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 
+  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+
   gimple_set_block (new_stmt, gimple_block (stmt));
   if (gimple_has_location (stmt))
     gimple_set_location (new_stmt, gimple_location (stmt));
@@ -3138,7 +3097,101 @@ gimple_call_copy_skip_args (gimple stmt, bitmap args_to_skip)
   gimple_call_set_return_slot_opt (new_stmt, gimple_call_return_slot_opt_p (stmt));
   gimple_call_set_from_thunk (new_stmt, gimple_call_from_thunk_p (stmt));
   gimple_call_set_va_arg_pack (new_stmt, gimple_call_va_arg_pack_p (stmt));
+
+  gimple_set_modified (new_stmt, true);
+
   return new_stmt;
+}
+
+
+/* Data structure used to count the number of dereferences to PTR
+   inside an expression.  */
+struct count_ptr_d
+{
+  tree ptr;
+  unsigned num_stores;
+  unsigned num_loads;
+};
+
+/* Helper for count_uses_and_derefs.  Called by walk_tree to look for
+   (ALIGN/MISALIGNED_)INDIRECT_REF nodes for the pointer passed in DATA.  */
+
+static tree
+count_ptr_derefs (tree *tp, int *walk_subtrees, void *data)
+{
+  struct walk_stmt_info *wi_p = (struct walk_stmt_info *) data;
+  struct count_ptr_d *count_p = (struct count_ptr_d *) wi_p->info;
+
+  /* Do not walk inside ADDR_EXPR nodes.  In the expression &ptr->fld,
+     pointer 'ptr' is *not* dereferenced, it is simply used to compute
+     the address of 'fld' as 'ptr + offsetof(fld)'.  */
+  if (TREE_CODE (*tp) == ADDR_EXPR)
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  if (INDIRECT_REF_P (*tp) && TREE_OPERAND (*tp, 0) == count_p->ptr)
+    {
+      if (wi_p->is_lhs)
+	count_p->num_stores++;
+      else
+	count_p->num_loads++;
+    }
+
+  return NULL_TREE;
+}
+
+/* Count the number of direct and indirect uses for pointer PTR in
+   statement STMT.  The number of direct uses is stored in
+   *NUM_USES_P.  Indirect references are counted separately depending
+   on whether they are store or load operations.  The counts are
+   stored in *NUM_STORES_P and *NUM_LOADS_P.  */
+
+void
+count_uses_and_derefs (tree ptr, gimple stmt, unsigned *num_uses_p,
+		       unsigned *num_loads_p, unsigned *num_stores_p)
+{
+  ssa_op_iter i;
+  tree use;
+
+  *num_uses_p = 0;
+  *num_loads_p = 0;
+  *num_stores_p = 0;
+
+  /* Find out the total number of uses of PTR in STMT.  */
+  FOR_EACH_SSA_TREE_OPERAND (use, stmt, i, SSA_OP_USE)
+    if (use == ptr)
+      (*num_uses_p)++;
+
+  /* Now count the number of indirect references to PTR.  This is
+     truly awful, but we don't have much choice.  There are no parent
+     pointers inside INDIRECT_REFs, so an expression like
+     '*x_1 = foo (x_1, *x_1)' needs to be traversed piece by piece to
+     find all the indirect and direct uses of x_1 inside.  The only
+     shortcut we can take is the fact that GIMPLE only allows
+     INDIRECT_REFs inside the expressions below.  */
+  if (is_gimple_assign (stmt)
+      || gimple_code (stmt) == GIMPLE_RETURN
+      || gimple_code (stmt) == GIMPLE_ASM
+      || is_gimple_call (stmt))
+    {
+      struct walk_stmt_info wi;
+      struct count_ptr_d count;
+
+      count.ptr = ptr;
+      count.num_stores = 0;
+      count.num_loads = 0;
+
+      memset (&wi, 0, sizeof (wi));
+      wi.info = &count;
+      walk_gimple_op (stmt, count_ptr_derefs, &wi);
+
+      *num_stores_p = count.num_stores;
+      *num_loads_p = count.num_loads;
+    }
+
+  gcc_assert (*num_uses_p >= *num_loads_p + *num_stores_p);
 }
 
 #include "gt-gimple.h"

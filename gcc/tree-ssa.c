@@ -271,6 +271,12 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
       return true;
     }
 
+  if (is_virtual && SSA_NAME_VAR (ssa_name) != gimple_vop (cfun))
+    {
+      error ("virtual SSA name for non-VOP decl");
+      return true;
+    }
+
   if (!is_virtual && !is_gimple_reg (ssa_name))
     {
       error ("found a real definition for a non-register");
@@ -520,232 +526,6 @@ error:
 }
 
 
-static void
-verify_flow_insensitive_alias_info (void)
-{
-  tree var;
-  referenced_var_iterator rvi;
-
-  FOR_EACH_REFERENCED_VAR (var, rvi)
-    {
-      unsigned int j;
-      bitmap aliases;
-      tree alias;
-      bitmap_iterator bi;
-
-      if (!MTAG_P (var) || !MTAG_ALIASES (var))
-	continue;
-      
-      aliases = MTAG_ALIASES (var);
-
-      EXECUTE_IF_SET_IN_BITMAP (aliases, 0, j, bi)
-	{
-	  alias = referenced_var (j);
-
-	  if (TREE_CODE (alias) != MEMORY_PARTITION_TAG
-	      && !may_be_aliased (alias))
-	    {
-	      error ("non-addressable variable inside an alias set");
-	      debug_variable (alias);
-	      goto err;
-	    }
-	}
-    }
-
-  return;
-
-err:
-  debug_variable (var);
-  internal_error ("verify_flow_insensitive_alias_info failed");
-}
-
-
-static void
-verify_flow_sensitive_alias_info (void)
-{
-  size_t i;
-  tree ptr;
-
-  for (i = 1; i < num_ssa_names; i++)
-    {
-      tree var;
-      var_ann_t ann;
-      struct ptr_info_def *pi;
- 
-
-      ptr = ssa_name (i);
-      if (!ptr)
-	continue;
-
-      /* We only care for pointers that are actually referenced in the
-	 program.  */
-      if (!POINTER_TYPE_P (TREE_TYPE (ptr)) || !TREE_VISITED (ptr))
-	continue;
-
-      /* RESULT_DECL is special.  If it's a GIMPLE register, then it
-	 is only written-to only once in the return statement.
-	 Otherwise, aggregate RESULT_DECLs may be written-to more than
-	 once in virtual operands.  */
-      var = SSA_NAME_VAR (ptr);
-      if (TREE_CODE (var) == RESULT_DECL
-	  && is_gimple_reg (ptr))
-	continue;
-
-      pi = SSA_NAME_PTR_INFO (ptr);
-      if (pi == NULL)
-	continue;
-
-      ann = var_ann (var);
-      if (pi->memory_tag_needed && !pi->name_mem_tag && !ann->symbol_mem_tag)
-	{
-	  error ("dereferenced pointers should have a name or a symbol tag");
-	  goto err;
-	}
-
-      if (pi->name_mem_tag
-	  && (pi->pt_vars == NULL || bitmap_empty_p (pi->pt_vars)))
-	{
-	  error ("pointers with a memory tag, should have points-to sets");
-	  goto err;
-	}
-
-      if (pi->value_escapes_p
-	  && pi->escape_mask & ~ESCAPE_TO_RETURN
-	  && pi->name_mem_tag)
-	{
-	  tree t = memory_partition (pi->name_mem_tag);
-	  if (t == NULL_TREE)
-	    t = pi->name_mem_tag;
-	  
-	  if (!is_call_clobbered (t))
-	    {
-	      error ("pointer escapes but its name tag is not call-clobbered");
-	      goto err;
-	    }
-	}
-    }
-
-  return;
-
-err:
-  debug_variable (ptr);
-  internal_error ("verify_flow_sensitive_alias_info failed");
-}
-
-
-/* Verify the consistency of call clobbering information.  */
-
-static void
-verify_call_clobbering (void)
-{
-  unsigned int i;
-  bitmap_iterator bi;
-  tree var;
-  referenced_var_iterator rvi;
-
-  /* At all times, the result of the call_clobbered flag should
-     match the result of the call_clobbered_vars bitmap.  Verify both
-     that everything in call_clobbered_vars is marked
-     call_clobbered, and that everything marked
-     call_clobbered is in call_clobbered_vars.  */
-  EXECUTE_IF_SET_IN_BITMAP (gimple_call_clobbered_vars (cfun), 0, i, bi)
-    {
-      var = referenced_var (i);
-
-      if (memory_partition (var))
-	var = memory_partition (var);
-
-      if (!MTAG_P (var) && !var_ann (var)->call_clobbered)
-	{
-	  error ("variable in call_clobbered_vars but not marked "
-	         "call_clobbered");
-	  debug_variable (var);
-	  goto err;
-	}
-    }
-
-  FOR_EACH_REFERENCED_VAR (var, rvi)
-    {
-      if (is_gimple_reg (var))
-	continue;
-
-      if (memory_partition (var))
-	var = memory_partition (var);
-
-      if (!MTAG_P (var)
-	  && var_ann (var)->call_clobbered
-	  && !bitmap_bit_p (gimple_call_clobbered_vars (cfun), DECL_UID (var)))
-	{
-	  error ("variable marked call_clobbered but not in "
-	         "call_clobbered_vars bitmap.");
-	  debug_variable (var);
-	  goto err;
-	}
-    }
-
-  return;
-
- err:
-    internal_error ("verify_call_clobbering failed");
-}
-
-
-/* Verify invariants in memory partitions.  */
-
-static void
-verify_memory_partitions (void)
-{
-  unsigned i;
-  tree mpt;
-  VEC(tree,heap) *mpt_table = gimple_ssa_operands (cfun)->mpt_table;
-  struct pointer_set_t *partitioned_syms = pointer_set_create ();
-
-  for (i = 0; VEC_iterate (tree, mpt_table, i, mpt); i++)
-    {
-      unsigned j;
-      bitmap_iterator bj;
-
-      if (MPT_SYMBOLS (mpt) == NULL)
-	{
-	  error ("Memory partitions should have at least one symbol");
-	  debug_variable (mpt);
-	  goto err;
-	}
-
-      EXECUTE_IF_SET_IN_BITMAP (MPT_SYMBOLS (mpt), 0, j, bj)
-	{
-	  tree var = referenced_var (j);
-	  if (pointer_set_insert (partitioned_syms, var))
-	    {
-	      error ("Partitioned symbols should belong to exactly one "
-		     "partition");
-	      debug_variable (var);
-	      goto err;
-	    }
-	}
-    }
-
-  pointer_set_destroy (partitioned_syms);
-
-  return;
-
-err:
-  internal_error ("verify_memory_partitions failed");
-}
-
-
-/* Verify the consistency of aliasing information.  */
-
-static void
-verify_alias_info (void)
-{
-  verify_flow_sensitive_alias_info ();
-  verify_call_clobbering ();
-  verify_flow_insensitive_alias_info ();
-  verify_memory_partitions ();
-}
-
-
 /* Verify common invariants in the SSA web.
    TODO: verify the variable annotations.  */
 
@@ -760,7 +540,7 @@ verify_ssa (bool check_modified_stmt)
   enum dom_state orig_dom_state = dom_info_state (CDI_DOMINATORS);
   bitmap names_defined_in_bb = BITMAP_ALLOC (NULL);
 
-  gcc_assert (!need_ssa_update_p ());
+  gcc_assert (!need_ssa_update_p (cfun));
 
   verify_stmts ();
 
@@ -824,6 +604,7 @@ verify_ssa (bool check_modified_stmt)
 	{
 	  gimple stmt = gsi_stmt (gsi);
 	  use_operand_p use_p;
+	  bool has_err;
 
 	  if (check_modified_stmt && gimple_modified_p (stmt))
 	    {
@@ -842,10 +623,8 @@ verify_ssa (bool check_modified_stmt)
 	      base_address = get_base_address (lhs);
 
 	      if (base_address
-		  && gimple_aliases_computed_p (cfun)
 		  && SSA_VAR_P (base_address)
-		  && !gimple_has_volatile_ops (stmt)
-		  && ZERO_SSA_OPERANDS (stmt, SSA_OP_VDEF))
+		  && !gimple_vdef (stmt))
 		{
 		  error ("statement makes a memory store, but has no VDEFS");
 		  print_gimple_stmt (stderr, stmt, 0, TDF_VOPS);
@@ -853,14 +632,42 @@ verify_ssa (bool check_modified_stmt)
 		}
 	    }
 
-	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_VIRTUALS)
+	  /* Verify the single virtual operand and its constraints.  */
+	  has_err = false;
+	  if (gimple_vdef (stmt))
 	    {
-	      if (verify_ssa_name (op, true))
+	      if (gimple_vdef_op (stmt) == NULL_DEF_OPERAND_P)
 		{
-		  error ("in statement");
-		  print_gimple_stmt (stderr, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
-		  goto err;
+		  error ("statement has VDEF operand not in defs list");
+		  has_err = true;
 		}
+	      if (!gimple_vuse (stmt))
+		{
+		  error ("statement has VDEF but no VUSE operand");
+		  has_err = true;
+		}
+	      else if (SSA_NAME_VAR (gimple_vdef (stmt))
+		       != SSA_NAME_VAR (gimple_vuse (stmt)))
+		{
+		  error ("VDEF and VUSE do not use the same symbol");
+		  has_err = true;
+		}
+	      has_err |= verify_ssa_name (gimple_vdef (stmt), true);
+	    }
+	  if (gimple_vuse (stmt))
+	    {
+	      if  (gimple_vuse_op (stmt) == NULL_USE_OPERAND_P)
+		{
+		  error ("statement has VUSE operand not in uses list");
+		  has_err = true;
+		}
+	      has_err |= verify_ssa_name (gimple_vuse (stmt), true);
+	    }
+	  if (has_err)
+	    {
+	      error ("in statement");
+	      print_gimple_stmt (stderr, stmt, 0, TDF_VOPS|TDF_MEMSYMS);
+	      goto err;
 	    }
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_USE|SSA_OP_DEF)
@@ -882,15 +689,23 @@ verify_ssa (bool check_modified_stmt)
 	    }
 
 	  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_ALL_DEFS)
-	    bitmap_set_bit (names_defined_in_bb, SSA_NAME_VERSION (op));
+	    {
+	      if (SSA_NAME_DEF_STMT (op) != stmt)
+		{
+		  error ("SSA_NAME_DEF_STMT is wrong");
+		  fprintf (stderr, "Expected definition statement:\n");
+		  print_gimple_stmt (stderr, stmt, 4, TDF_VOPS);
+		  fprintf (stderr, "\nActual definition statement:\n");
+		  print_gimple_stmt (stderr, SSA_NAME_DEF_STMT (op),
+				     4, TDF_VOPS);
+		  goto err;
+		}
+	      bitmap_set_bit (names_defined_in_bb, SSA_NAME_VERSION (op));
+	    }
 	}
 
       bitmap_clear (names_defined_in_bb);
     }
-
-  /* Finally, verify alias information.  */
-  if (gimple_aliases_computed_p (cfun))
-    verify_alias_info ();
 
   free (definition_block);
 
@@ -974,9 +789,8 @@ init_tree_ssa (struct function *fn)
 				     		    uid_decl_map_eq, NULL);
   fn->gimple_df->default_defs = htab_create_ggc (20, uid_ssaname_map_hash, 
 				                 uid_ssaname_map_eq, NULL);
-  fn->gimple_df->call_clobbered_vars = BITMAP_GGC_ALLOC ();
-  fn->gimple_df->call_used_vars = BITMAP_GGC_ALLOC ();
-  fn->gimple_df->addressable_vars = BITMAP_GGC_ALLOC ();
+  pt_solution_reset (&fn->gimple_df->escaped);
+  pt_solution_reset (&fn->gimple_df->callused);
   init_ssanames (fn, 0);
   init_phinodes ();
 }
@@ -1024,10 +838,8 @@ delete_tree_ssa (void)
 
 	  if (gimple_has_mem_ops (stmt))
 	    {
-	      gimple_set_vdef_ops (stmt, NULL);
-	      gimple_set_vuse_ops (stmt, NULL);
-	      BITMAP_FREE (stmt->gsmem.membase.stores);
-	      BITMAP_FREE (stmt->gsmem.membase.loads);
+	      gimple_set_vdef (stmt, NULL_TREE);
+	      gimple_set_vuse (stmt, NULL_TREE);
 	    }
 
 	  gimple_set_modified (stmt, true);
@@ -1038,13 +850,8 @@ delete_tree_ssa (void)
   /* Remove annotations from every referenced local variable.  */
   FOR_EACH_REFERENCED_VAR (var, rvi)
     {
-      if (!MTAG_P (var)
-	  && (TREE_STATIC (var) || DECL_EXTERNAL (var)))
-	{
-	  var_ann (var)->mpt = NULL_TREE;
-	  var_ann (var)->symbol_mem_tag = NULL_TREE;
-	  continue;
-	}
+      if (is_global_var (var))
+	continue;
       if (var->base.ann)
         ggc_free (var->base.ann);
       var->base.ann = NULL;
@@ -1059,22 +866,13 @@ delete_tree_ssa (void)
   if (ssa_operands_active ())
     fini_ssa_operands ();
 
-  cfun->gimple_df->global_var = NULL_TREE;
-  
+  delete_alias_heapvars ();
+
   htab_delete (cfun->gimple_df->default_defs);
   cfun->gimple_df->default_defs = NULL;
-  cfun->gimple_df->call_clobbered_vars = NULL;
-  cfun->gimple_df->call_used_vars = NULL;
-  cfun->gimple_df->addressable_vars = NULL;
+  pt_solution_reset (&cfun->gimple_df->escaped);
+  pt_solution_reset (&cfun->gimple_df->callused);
   cfun->gimple_df->modified_noreturn_calls = NULL;
-  if (gimple_aliases_computed_p (cfun))
-    {
-      delete_alias_heapvars ();
-      gcc_assert (!need_ssa_update_p ());
-    }
-  cfun->gimple_df->aliases_computed_p = false;
-  delete_mem_ref_stats (cfun);
-
   cfun->gimple_df = NULL;
 
   /* We no longer need the edge variable maps.  */
@@ -1507,15 +1305,14 @@ warn_uninitialized_var (tree *tp, int *walk_subtrees, void *data_)
 	/* If there is not gimple stmt, 
 	   or alias information has not been computed,
 	   then we cannot check VUSE ops.  */
-	if (data->stmt == NULL
-            || !gimple_aliases_computed_p (cfun))
+	if (data->stmt == NULL)
 	  return NULL_TREE;
 
 	/* If the load happens as part of a call do not warn about it.  */
 	if (is_gimple_call (data->stmt))
 	  return NULL_TREE;
 
-	vuse = SINGLE_SSA_USE_OPERAND (data->stmt, SSA_OP_VUSE);
+	vuse = gimple_vuse_op (data->stmt);
 	if (vuse == NULL_USE_OPERAND_P)
 	  return NULL_TREE;
 
@@ -1689,8 +1486,8 @@ struct gimple_opt_pass pass_late_warn_uninitialized =
 
 /* Compute TREE_ADDRESSABLE and DECL_GIMPLE_REG_P for local variables.  */
 
-static unsigned int
-execute_update_addresses_taken (void)
+void
+execute_update_addresses_taken (bool do_optimize)
 {
   tree var;
   referenced_var_iterator rvi;
@@ -1698,7 +1495,6 @@ execute_update_addresses_taken (void)
   basic_block bb;
   bitmap addresses_taken = BITMAP_ALLOC (NULL);
   bitmap not_reg_needs = BITMAP_ALLOC (NULL);
-  bitmap vars_updated = BITMAP_ALLOC (NULL);
   bool update_vops = false;
 
   /* Collect into ADDRESSES_TAKEN all variables whose address is taken within
@@ -1747,69 +1543,69 @@ execute_update_addresses_taken (void)
 
   /* When possible, clear ADDRESSABLE bit or set the REGISTER bit
      and mark variable for conversion into SSA.  */
-  FOR_EACH_REFERENCED_VAR (var, rvi)
-    {
-      /* Global Variables, result decls cannot be changed.  */
-      if (is_global_var (var)
-          || TREE_CODE (var) == RESULT_DECL
-	  || bitmap_bit_p (addresses_taken, DECL_UID (var)))
-	continue;
-	
-      if (TREE_ADDRESSABLE (var)
-	  /* Do not change TREE_ADDRESSABLE if we need to preserve var as
-	     a non-register.  Otherwise we are confused and forget to
-	     add virtual operands for it.  */
-	  && (!is_gimple_reg_type (TREE_TYPE (var))
-	      || !bitmap_bit_p (not_reg_needs, DECL_UID (var))))
-	{
-	  TREE_ADDRESSABLE (var) = 0;
-	  if (is_gimple_reg (var))
+  if (optimize && do_optimize)
+    FOR_EACH_REFERENCED_VAR (var, rvi)
+      {
+	/* Global Variables, result decls cannot be changed.  */
+	if (is_global_var (var)
+	    || TREE_CODE (var) == RESULT_DECL
+	    || bitmap_bit_p (addresses_taken, DECL_UID (var)))
+	  continue;
+
+	if (TREE_ADDRESSABLE (var)
+	    /* Do not change TREE_ADDRESSABLE if we need to preserve var as
+	       a non-register.  Otherwise we are confused and forget to
+	       add virtual operands for it.  */
+	    && (!is_gimple_reg_type (TREE_TYPE (var))
+		|| !bitmap_bit_p (not_reg_needs, DECL_UID (var))))
+	  {
+	    TREE_ADDRESSABLE (var) = 0;
+	    if (is_gimple_reg (var))
+	      mark_sym_for_renaming (var);
+	    update_vops = true;
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "No longer having address taken ");
+		print_generic_expr (dump_file, var, 0);
+		fprintf (dump_file, "\n");
+	      }
+	  }
+	if (!DECL_GIMPLE_REG_P (var)
+	    && !bitmap_bit_p (not_reg_needs, DECL_UID (var))
+	    && (TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
+		|| TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE))
+	  {
+	    DECL_GIMPLE_REG_P (var) = 1;
 	    mark_sym_for_renaming (var);
-	  update_vops = true;
-	  bitmap_set_bit (vars_updated, DECL_UID (var));
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "No longer having address taken ");
-	      print_generic_expr (dump_file, var, 0);
-	      fprintf (dump_file, "\n");
-	    }
-	}
-      if (!DECL_GIMPLE_REG_P (var)
-	  && !bitmap_bit_p (not_reg_needs, DECL_UID (var))
-	  && (TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
-	      || TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE))
-	{
-	  DECL_GIMPLE_REG_P (var) = 1;
-	  mark_sym_for_renaming (var);
-	  update_vops = true;
-	  bitmap_set_bit (vars_updated, DECL_UID (var));
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Decl is now a gimple register ");
-	      print_generic_expr (dump_file, var, 0);
-	      fprintf (dump_file, "\n");
-	    }
-	}
+	    update_vops = true;
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "Decl is now a gimple register ");
+		print_generic_expr (dump_file, var, 0);
+		fprintf (dump_file, "\n");
+	      }
+	  }
       }
 
   /* Operand caches needs to be recomputed for operands referencing the updated
      variables.  */
   if (update_vops)
-    FOR_EACH_BB (bb)
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple stmt = gsi_stmt (gsi);
+    {
+      FOR_EACH_BB (bb)
+	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple stmt = gsi_stmt (gsi);
 
-	  if ((gimple_loaded_syms (stmt)
-	       && bitmap_intersect_p (gimple_loaded_syms (stmt), vars_updated))
-	      || (gimple_stored_syms (stmt)
-		  && bitmap_intersect_p (gimple_stored_syms (stmt), vars_updated)))
-	    update_stmt (stmt);
-	}
+	      if (gimple_references_memory_p (stmt))
+		update_stmt (stmt);
+	    }
+
+      /* Update SSA form here, we are called as non-pass as well.  */
+      update_ssa (TODO_update_ssa);
+    }
+
   BITMAP_FREE (not_reg_needs);
   BITMAP_FREE (addresses_taken);
-  BITMAP_FREE (vars_updated);
-  return 0;
 }
 
 struct gimple_opt_pass pass_update_address_taken =
@@ -1818,7 +1614,7 @@ struct gimple_opt_pass pass_update_address_taken =
   GIMPLE_PASS,
   "addressables",			/* name */
   NULL,					/* gate */
-  execute_update_addresses_taken,	/* execute */
+  NULL,					/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
@@ -1827,6 +1623,7 @@ struct gimple_opt_pass pass_update_address_taken =
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
-  TODO_update_ssa                       /* todo_flags_finish */
+  TODO_update_address_taken
+  | TODO_dump_func			/* todo_flags_finish */
  }
 };

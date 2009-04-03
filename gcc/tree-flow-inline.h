@@ -35,46 +35,6 @@ gimple_in_ssa_p (const struct function *fun)
   return fun && fun->gimple_df && fun->gimple_df->in_ssa_p;
 }
 
-/* 'true' after aliases have been computed (see compute_may_aliases).  */
-static inline bool
-gimple_aliases_computed_p (const struct function *fun)
-{
-  gcc_assert (fun && fun->gimple_df);
-  return fun->gimple_df->aliases_computed_p;
-}
-
-/* Addressable variables in the function.  If bit I is set, then
-   REFERENCED_VARS (I) has had its address taken.  Note that
-   CALL_CLOBBERED_VARS and ADDRESSABLE_VARS are not related.  An
-   addressable variable is not necessarily call-clobbered (e.g., a
-   local addressable whose address does not escape) and not all
-   call-clobbered variables are addressable (e.g., a local static
-   variable).  */
-static inline bitmap
-gimple_addressable_vars (const struct function *fun)
-{
-  gcc_assert (fun && fun->gimple_df);
-  return fun->gimple_df->addressable_vars;
-}
-
-/* Call clobbered variables in the function.  If bit I is set, then
-   REFERENCED_VARS (I) is call-clobbered.  */
-static inline bitmap
-gimple_call_clobbered_vars (const struct function *fun)
-{
-  gcc_assert (fun && fun->gimple_df);
-  return fun->gimple_df->call_clobbered_vars;
-}
-
-/* Call-used variables in the function.  If bit I is set, then
-   REFERENCED_VARS (I) is call-used at pure function call-sites.  */
-static inline bitmap
-gimple_call_used_vars (const struct function *fun)
-{
-  gcc_assert (fun && fun->gimple_df);
-  return fun->gimple_df->call_used_vars;
-}
-
 /* Array of all variables referenced in the function.  */
 static inline htab_t
 gimple_referenced_vars (const struct function *fun)
@@ -84,14 +44,6 @@ gimple_referenced_vars (const struct function *fun)
   return fun->gimple_df->referenced_vars;
 }
 
-/* Artificial variable used to model the effects of function calls.  */
-static inline tree
-gimple_global_var (const struct function *fun)
-{
-  gcc_assert (fun && fun->gimple_df);
-  return fun->gimple_df->global_var;
-}
-
 /* Artificial variable used to model the effects of nonlocal
    variables.  */
 static inline tree
@@ -99,6 +51,14 @@ gimple_nonlocal_all (const struct function *fun)
 {
   gcc_assert (fun && fun->gimple_df);
   return fun->gimple_df->nonlocal_all;
+}
+
+/* Artificial variable used for the virtual operand FUD chain.  */
+static inline tree
+gimple_vop (const struct function *fun)
+{
+  gcc_assert (fun && fun->gimple_df);
+  return fun->gimple_df->vop;
 }
 
 /* Initialize the hashtable iterator HTI to point to hashtable TABLE */
@@ -261,14 +221,6 @@ static inline enum tree_ann_type
 ann_type (tree_ann_t ann)
 {
   return ann->common.type;
-}
-
-/* Return the may_aliases bitmap for variable VAR, or NULL if it has
-   no may aliases.  */
-static inline bitmap
-may_aliases (const_tree var)
-{
-  return MTAG_ALIASES (var);
 }
 
 /* Return the line number for EXPR, or return -1 if we have no line
@@ -592,16 +544,26 @@ set_is_used (tree var)
 }
 
 
-/* Return true if T (assumed to be a DECL) is a global variable.  */
+/* Return true if T (assumed to be a DECL) is a global variable.
+   A variable is considered global if its storage is not automatic.  */
 
 static inline bool
 is_global_var (const_tree t)
 {
-  if (MTAG_P (t))
-    return MTAG_GLOBAL (t);
-  else
-    return (TREE_STATIC (t) || DECL_EXTERNAL (t));
+  return (TREE_STATIC (t) || DECL_EXTERNAL (t));
 }
+
+
+/* Return true if VAR may be aliased.  A variable is considered as
+   maybe aliased if it has its address taken by the local TU
+   or possibly by another TU.  */
+
+static inline bool
+may_be_aliased (const_tree var)
+{
+  return (TREE_PUBLIC (var) || DECL_EXTERNAL (var) || TREE_ADDRESSABLE (var));
+}
+
 
 /* PHI nodes should contain only ssa_names and invariants.  A test
    for ssa_name is definitely simpler; don't let invalid contents
@@ -632,77 +594,22 @@ loop_containing_stmt (gimple stmt)
 }
 
 
-/* Return the memory partition tag associated with symbol SYM.  */
-
-static inline tree
-memory_partition (tree sym)
-{
-  tree tag;
-
-  /* MPTs belong to their own partition.  */
-  if (TREE_CODE (sym) == MEMORY_PARTITION_TAG)
-    return sym;
-
-  gcc_assert (!is_gimple_reg (sym));
-  /* Autoparallelization moves statements from the original function (which has
-     aliases computed) to the new one (which does not).  When rebuilding
-     operands for the statement in the new function, we do not want to
-     record the memory partition tags of the original function.  */
-  if (!gimple_aliases_computed_p (cfun))
-    return NULL_TREE;
-  tag = get_var_ann (sym)->mpt;
-
-#if defined ENABLE_CHECKING
-  if (tag)
-    gcc_assert (TREE_CODE (tag) == MEMORY_PARTITION_TAG);
-#endif
-
-  return tag;
-}
-
-/* Return true if NAME is a memory factoring SSA name (i.e., an SSA
-   name for a memory partition.  */
-
+/* Return true if VAR is clobbered by function calls.  */
 static inline bool
-factoring_name_p (const_tree name)
+is_call_clobbered (const_tree var)
 {
-  return TREE_CODE (SSA_NAME_VAR (name)) == MEMORY_PARTITION_TAG;
+  return (is_global_var (var)
+	  || (may_be_aliased (var)
+	      && pt_solution_includes (&cfun->gimple_df->escaped, var)));
 }
 
 /* Return true if VAR is used by function calls.  */
 static inline bool
 is_call_used (const_tree var)
 {
-  return (var_ann (var)->call_clobbered
-	  || bitmap_bit_p (gimple_call_used_vars (cfun), DECL_UID (var)));
-}
-
-/* Return true if VAR is clobbered by function calls.  */
-static inline bool
-is_call_clobbered (const_tree var)
-{
-  return var_ann (var)->call_clobbered;
-}
-
-/* Mark variable VAR as being clobbered by function calls.  */
-static inline void
-mark_call_clobbered (tree var, unsigned int escape_type)
-{
-  var_ann (var)->escape_mask |= escape_type;
-  var_ann (var)->call_clobbered = true;
-  bitmap_set_bit (gimple_call_clobbered_vars (cfun), DECL_UID (var));
-}
-
-/* Clear the call-clobbered attribute from variable VAR.  */
-static inline void
-clear_call_clobbered (tree var)
-{
-  var_ann_t ann = var_ann (var);
-  ann->escape_mask = 0;
-  if (MTAG_P (var))
-    MTAG_GLOBAL (var) = 0;
-  var_ann (var)->call_clobbered = false;
-  bitmap_clear_bit (gimple_call_clobbered_vars (cfun), DECL_UID (var));
+  return (is_call_clobbered (var)
+	  || (may_be_aliased (var)
+	      && pt_solution_includes (&cfun->gimple_df->callused, var)));
 }
 
 /* Return the common annotation for T.  Return NULL if the annotation
@@ -751,26 +658,6 @@ op_iter_next_use (ssa_op_iter *ptr)
       ptr->uses = ptr->uses->next;
       return use_p;
     }
-  if (ptr->vuses)
-    {
-      use_p = VUSE_OP_PTR (ptr->vuses, ptr->vuse_index);
-      if (++(ptr->vuse_index) >= VUSE_NUM (ptr->vuses))
-        {
-	  ptr->vuse_index = 0;
-	  ptr->vuses = ptr->vuses->next;
-	}
-      return use_p;
-    }
-  if (ptr->mayuses)
-    {
-      use_p = VDEF_OP_PTR (ptr->mayuses, ptr->mayuse_index);
-      if (++(ptr->mayuse_index) >= VDEF_NUM (ptr->mayuses))
-        {
-	  ptr->mayuse_index = 0;
-	  ptr->mayuses = ptr->mayuses->next;
-	}
-      return use_p;
-    }
   if (ptr->phi_i < ptr->num_phi)
     {
       return PHI_ARG_DEF_PTR (ptr->phi_stmt, (ptr->phi_i)++);
@@ -793,12 +680,6 @@ op_iter_next_def (ssa_op_iter *ptr)
       ptr->defs = ptr->defs->next;
       return def_p;
     }
-  if (ptr->vdefs)
-    {
-      def_p = VDEF_RESULT_PTR (ptr->vdefs);
-      ptr->vdefs = ptr->vdefs->next;
-      return def_p;
-    }
   ptr->done = true;
   return NULL_DEF_OPERAND_P;
 }
@@ -817,36 +698,10 @@ op_iter_next_tree (ssa_op_iter *ptr)
       ptr->uses = ptr->uses->next;
       return val;
     }
-  if (ptr->vuses)
-    {
-      val = VUSE_OP (ptr->vuses, ptr->vuse_index);
-      if (++(ptr->vuse_index) >= VUSE_NUM (ptr->vuses))
-        {
-	  ptr->vuse_index = 0;
-	  ptr->vuses = ptr->vuses->next;
-	}
-      return val;
-    }
-  if (ptr->mayuses)
-    {
-      val = VDEF_OP (ptr->mayuses, ptr->mayuse_index);
-      if (++(ptr->mayuse_index) >= VDEF_NUM (ptr->mayuses))
-        {
-	  ptr->mayuse_index = 0;
-	  ptr->mayuses = ptr->mayuses->next;
-	}
-      return val;
-    }
   if (ptr->defs)
     {
       val = DEF_OP (ptr->defs);
       ptr->defs = ptr->defs->next;
-      return val;
-    }
-  if (ptr->vdefs)
-    {
-      val = VDEF_RESULT (ptr->vdefs);
-      ptr->vdefs = ptr->vdefs->next;
       return val;
     }
 
@@ -865,34 +720,36 @@ clear_and_done_ssa_iter (ssa_op_iter *ptr)
 {
   ptr->defs = NULL;
   ptr->uses = NULL;
-  ptr->vuses = NULL;
-  ptr->vdefs = NULL;
-  ptr->mayuses = NULL;
   ptr->iter_type = ssa_op_iter_none;
   ptr->phi_i = 0;
   ptr->num_phi = 0;
   ptr->phi_stmt = NULL;
   ptr->done = true;
-  ptr->vuse_index = 0;
-  ptr->mayuse_index = 0;
 }
 
 /* Initialize the iterator PTR to the virtual defs in STMT.  */
 static inline void
 op_iter_init (ssa_op_iter *ptr, gimple stmt, int flags)
 {
-  ptr->defs = (flags & SSA_OP_DEF) ? gimple_def_ops (stmt) : NULL;
-  ptr->uses = (flags & SSA_OP_USE) ? gimple_use_ops (stmt) : NULL;
-  ptr->vuses = (flags & SSA_OP_VUSE) ? gimple_vuse_ops (stmt) : NULL;
-  ptr->vdefs = (flags & SSA_OP_VDEF) ? gimple_vdef_ops (stmt) : NULL;
-  ptr->mayuses = (flags & SSA_OP_VMAYUSE) ? gimple_vdef_ops (stmt) : NULL;
+  /* We do not support iterating over virtual defs or uses without
+     iterating over defs or uses at the same time.  */
+  gcc_assert ((!(flags & SSA_OP_VDEF) || (flags & SSA_OP_DEF))
+	      && (!(flags & SSA_OP_VUSE) || (flags & SSA_OP_USE)));
+  ptr->defs = (flags & (SSA_OP_DEF|SSA_OP_VDEF)) ? gimple_def_ops (stmt) : NULL;
+  if (!(flags & SSA_OP_VDEF)
+      && ptr->defs
+      && gimple_vdef (stmt) != NULL_TREE)
+    ptr->defs = ptr->defs->next;
+  ptr->uses = (flags & (SSA_OP_USE|SSA_OP_VUSE)) ? gimple_use_ops (stmt) : NULL;
+  if (!(flags & SSA_OP_VUSE)
+      && ptr->uses
+      && gimple_vuse (stmt) != NULL_TREE)
+    ptr->uses = ptr->uses->next;
   ptr->done = false;
 
   ptr->phi_i = 0;
   ptr->num_phi = 0;
   ptr->phi_stmt = NULL;
-  ptr->vuse_index = 0;
-  ptr->mayuse_index = 0;
 }
 
 /* Initialize iterator PTR to the use operands in STMT based on FLAGS. Return
@@ -900,7 +757,8 @@ op_iter_init (ssa_op_iter *ptr, gimple stmt, int flags)
 static inline use_operand_p
 op_iter_init_use (ssa_op_iter *ptr, gimple stmt, int flags)
 {
-  gcc_assert ((flags & SSA_OP_ALL_DEFS) == 0);
+  gcc_assert ((flags & SSA_OP_ALL_DEFS) == 0
+	      && (flags & SSA_OP_USE));
   op_iter_init (ptr, stmt, flags);
   ptr->iter_type = ssa_op_iter_use;
   return op_iter_next_use (ptr);
@@ -911,7 +769,8 @@ op_iter_init_use (ssa_op_iter *ptr, gimple stmt, int flags)
 static inline def_operand_p
 op_iter_init_def (ssa_op_iter *ptr, gimple stmt, int flags)
 {
-  gcc_assert ((flags & SSA_OP_ALL_USES) == 0);
+  gcc_assert ((flags & SSA_OP_ALL_USES) == 0
+	      && (flags & SSA_OP_DEF));
   op_iter_init (ptr, stmt, flags);
   ptr->iter_type = ssa_op_iter_def;
   return op_iter_next_def (ptr);
@@ -925,58 +784,6 @@ op_iter_init_tree (ssa_op_iter *ptr, gimple stmt, int flags)
   op_iter_init (ptr, stmt, flags);
   ptr->iter_type = ssa_op_iter_tree;
   return op_iter_next_tree (ptr);
-}
-
-/* Get the next iterator mustdef value for PTR, returning the mustdef values in
-   KILL and DEF.  */
-static inline void
-op_iter_next_vdef (vuse_vec_p *use, def_operand_p *def, 
-			 ssa_op_iter *ptr)
-{
-#ifdef ENABLE_CHECKING
-  gcc_assert (ptr->iter_type == ssa_op_iter_vdef);
-#endif
-  if (ptr->mayuses)
-    {
-      *def = VDEF_RESULT_PTR (ptr->mayuses);
-      *use = VDEF_VECT (ptr->mayuses);
-      ptr->mayuses = ptr->mayuses->next;
-      return;
-    }
-
-  *def = NULL_DEF_OPERAND_P;
-  *use = NULL;
-  ptr->done = true;
-  return;
-}
-
-
-static inline void
-op_iter_next_mustdef (use_operand_p *use, def_operand_p *def, 
-			 ssa_op_iter *ptr)
-{
-  vuse_vec_p vp;
-  op_iter_next_vdef (&vp, def, ptr);
-  if (vp != NULL)
-    {
-      gcc_assert (VUSE_VECT_NUM_ELEM (*vp) == 1);
-      *use = VUSE_ELEMENT_PTR (*vp, 0);
-    }
-  else
-    *use = NULL_USE_OPERAND_P;
-}
-
-/* Initialize iterator PTR to the operands in STMT.  Return the first operands
-   in USE and DEF.  */
-static inline void
-op_iter_init_vdef (ssa_op_iter *ptr, gimple stmt, vuse_vec_p *use, 
-		     def_operand_p *def)
-{
-  gcc_assert (gimple_code (stmt) != GIMPLE_PHI);
-
-  op_iter_init (ptr, stmt, SSA_OP_VMAYUSE);
-  ptr->iter_type = ssa_op_iter_vdef;
-  op_iter_next_vdef (use, def, ptr);
 }
 
 
@@ -1074,52 +881,6 @@ delink_stmt_imm_use (gimple stmt)
 }
 
 
-/* This routine will compare all the operands matching FLAGS in STMT1 to those
-   in STMT2.  TRUE is returned if they are the same.  STMTs can be NULL.  */
-static inline bool
-compare_ssa_operands_equal (gimple stmt1, gimple stmt2, int flags)
-{
-  ssa_op_iter iter1, iter2;
-  tree op1 = NULL_TREE;
-  tree op2 = NULL_TREE;
-  bool look1, look2;
-
-  if (stmt1 == stmt2)
-    return true;
-
-  look1 = stmt1 != NULL;
-  look2 = stmt2 != NULL;
-
-  if (look1)
-    {
-      op1 = op_iter_init_tree (&iter1, stmt1, flags);
-      if (!look2)
-        return op_iter_done (&iter1);
-    }
-  else
-    clear_and_done_ssa_iter (&iter1);
-
-  if (look2)
-    {
-      op2 = op_iter_init_tree (&iter2, stmt2, flags);
-      if (!look1)
-        return op_iter_done (&iter2);
-    }
-  else
-    clear_and_done_ssa_iter (&iter2);
-
-  while (!op_iter_done (&iter1) && !op_iter_done (&iter2))
-    {
-      if (op1 != op2)
-	return false;
-      op1 = op_iter_next_tree (&iter1);
-      op2 = op_iter_next_tree (&iter2);
-    }
-
-  return (op_iter_done (&iter1) && op_iter_done (&iter2));
-}
-
-
 /* If there is a single DEF in the PHI node which matches FLAG, return it.
    Otherwise return NULL_DEF_OPERAND_P.  */
 static inline tree
@@ -1177,11 +938,12 @@ op_iter_init_phidef (ssa_op_iter *ptr, gimple phi, int flags)
 
   comp = (is_gimple_reg (phi_def) ? SSA_OP_DEF : SSA_OP_VIRTUAL_DEFS);
     
-  /* If the PHI node doesn't the operand type we care about, we're done.  */
+  /* If the PHI node doesn't have the operand type we care about,
+     we're done.  */
   if ((flags & comp) == 0)
     {
       ptr->done = true;
-      return NULL_USE_OPERAND_P;
+      return NULL_DEF_OPERAND_P;
     }
 
   ptr->iter_type = ssa_op_iter_def;
@@ -1261,9 +1023,17 @@ link_use_stmts_after (use_operand_p head, imm_use_iterator *imm)
     }
   else
     {
-      FOR_EACH_SSA_USE_OPERAND (use_p, head_stmt, op_iter, flag)
-	if (USE_FROM_PTR (use_p) == use)
-	  last_p = move_use_after_head (use_p, head, last_p);
+      if (flag == SSA_OP_USE)
+	{
+	  FOR_EACH_SSA_USE_OPERAND (use_p, head_stmt, op_iter, flag)
+	    if (USE_FROM_PTR (use_p) == use)
+	      last_p = move_use_after_head (use_p, head, last_p);
+	}
+      else if ((use_p = gimple_vuse_op (head_stmt)) != NULL_USE_OPERAND_P)
+	{
+	  if (USE_FROM_PTR (use_p) == use)
+	    last_p = move_use_after_head (use_p, head, last_p);
+	}
     }
   /* Link iter node in after last_p.  */
   if (imm->iter_node.prev != NULL)
@@ -1287,7 +1057,7 @@ first_imm_use_stmt (imm_use_iterator *imm, tree var)
   imm->iter_node.prev = NULL_USE_OPERAND_P;
   imm->iter_node.next = NULL_USE_OPERAND_P;
   imm->iter_node.loc.stmt = NULL;
-  imm->iter_node.use = NULL_USE_OPERAND_P;
+  imm->iter_node.use = NULL;
 
   if (end_imm_use_stmt_p (imm))
     return NULL;
@@ -1355,9 +1125,6 @@ unmodifiable_var_p (const_tree var)
   if (TREE_CODE (var) == SSA_NAME)
     var = SSA_NAME_VAR (var);
 
-  if (MTAG_P (var))
-    return false;
-
   return TREE_READONLY (var) && (TREE_STATIC (var) || DECL_EXTERNAL (var));
 }
 
@@ -1414,47 +1181,11 @@ ranges_overlap_p (unsigned HOST_WIDE_INT pos1,
   return false;
 }
 
-/* Return the memory tag associated with symbol SYM.  */
-
-static inline tree
-symbol_mem_tag (tree sym)
-{
-  tree tag = get_var_ann (sym)->symbol_mem_tag;
-
-#if defined ENABLE_CHECKING
-  if (tag)
-    gcc_assert (TREE_CODE (tag) == SYMBOL_MEMORY_TAG);
-#endif
-
-  return tag;
-}
-
-
-/* Set the memory tag associated with symbol SYM.  */
-
-static inline void
-set_symbol_mem_tag (tree sym, tree tag)
-{
-#if defined ENABLE_CHECKING
-  if (tag)
-    gcc_assert (TREE_CODE (tag) == SYMBOL_MEMORY_TAG);
-#endif
-
-  get_var_ann (sym)->symbol_mem_tag = tag;
-}
-
 /* Accessor to tree-ssa-operands.c caches.  */
 static inline struct ssa_operands *
 gimple_ssa_operands (const struct function *fun)
 {
   return &fun->gimple_df->ssa_operands;
-}
-
-/* Map describing reference statistics for function FN.  */
-static inline struct mem_ref_stats_d *
-gimple_mem_ref_stats (const struct function *fn)
-{
-  return &fn->gimple_df->mem_ref_stats;
 }
 
 /* Given an edge_var_map V, return the PHI arg definition.  */

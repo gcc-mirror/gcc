@@ -126,7 +126,7 @@ vect_stmt_relevant_p (gimple stmt, loop_vec_info loop_vinfo,
 
   /* changing memory.  */
   if (gimple_code (stmt) != GIMPLE_PHI)
-    if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
+    if (gimple_vdef (stmt))
       {
 	if (vect_print_dump_info (REPORT_DETAILS))
 	  fprintf (vect_dump, "vec_stmt_relevant_p: stmt has vdefs.");
@@ -1270,7 +1270,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt)
       return false;
     }
 
-  gcc_assert (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS));
+  gcc_assert (!gimple_vuse (stmt));
 
   if (modifier == NARROW)
     ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits_out;
@@ -1436,8 +1436,6 @@ vect_gen_widened_results_half (enum tree_code code,
 { 
   gimple new_stmt;
   tree new_temp; 
-  tree sym; 
-  ssa_op_iter iter;
  
   /* Generate half of the widened result:  */ 
   if (code == CALL_EXPR) 
@@ -1462,16 +1460,6 @@ vect_gen_widened_results_half (enum tree_code code,
       gimple_assign_set_lhs (new_stmt, new_temp);
     } 
   vect_finish_stmt_generation (stmt, new_stmt, gsi);
-
-  if (code == CALL_EXPR)
-    {
-      FOR_EACH_SSA_TREE_OPERAND (sym, new_stmt, iter, SSA_OP_ALL_VIRTUALS)
-        {
-          if (TREE_CODE (sym) == SSA_NAME)
-            sym = SSA_NAME_VAR (sym);
-          mark_sym_for_renaming (sym);
-        }
-    }
 
   return new_stmt;
 }
@@ -1637,9 +1625,6 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
     case NONE:
       for (j = 0; j < ncopies; j++)
 	{
-	  tree sym;
-	  ssa_op_iter iter;
-
 	  if (j == 0)
 	    vect_get_vec_defs (op0, NULL, stmt, &vec_oprnds0, NULL, slp_node); 
 	  else
@@ -1654,13 +1639,6 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	      new_temp = make_ssa_name (vec_dest, new_stmt);
 	      gimple_call_set_lhs (new_stmt, new_temp);
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
-	      FOR_EACH_SSA_TREE_OPERAND (sym, new_stmt, iter, 
-					 SSA_OP_ALL_VIRTUALS)
-		{
-		  if (TREE_CODE (sym) == SSA_NAME)
-		    sym = SSA_NAME_VAR (sym);
-		  mark_sym_for_renaming (sym);
-		}
 	      if (slp_node)
 		VEC_quick_push (gimple, SLP_TREE_VEC_STMTS (slp_node), new_stmt);
 	    }
@@ -3071,7 +3049,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 						 TREE_TYPE (vec_oprnd)));
 	  dataref_ptr = vect_create_data_ref_ptr (first_stmt, NULL, NULL_TREE, 
 						  &dummy, &ptr_incr, false, 
-						  &inv_p, NULL);
+						  &inv_p);
 	  gcc_assert (!inv_p);
 	}
       else 
@@ -3120,6 +3098,10 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    vec_oprnd = VEC_index (tree, result_chain, i);
 
 	  data_ref = build_fold_indirect_ref (dataref_ptr);
+	  /* If accesses through a pointer to vectype do not alias the original
+	     memory reference we have a problem.  This should never happen.  */
+	  gcc_assert (alias_sets_conflict_p (get_alias_set (data_ref),
+		      get_alias_set (gimple_assign_lhs (stmt))));
 
 	  /* Arguments are ready. Create the new vector stmt.  */
 	  new_stmt = gimple_build_assign (data_ref, vec_oprnd);
@@ -3456,7 +3438,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
         dataref_ptr = vect_create_data_ref_ptr (first_stmt,
 					        at_loop, offset, 
 						&dummy, &ptr_incr, false, 
-						&inv_p, NULL_TREE);
+						&inv_p);
       else
         dataref_ptr = 
 		bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt, NULL_TREE);
@@ -3500,9 +3482,9 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		new_stmt = gimple_build_assign (vec_dest, data_ref);
 		new_temp = make_ssa_name (vec_dest, new_stmt);
 		gimple_assign_set_lhs (new_stmt, new_temp);
+		gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+		gimple_set_vuse (new_stmt, gimple_vuse (stmt));
 		vect_finish_stmt_generation (stmt, new_stmt, gsi);
-		copy_virtual_operands (new_stmt, stmt);
-		mark_symbols_for_renaming (new_stmt);
 		msq = new_temp;
 
 		bump = size_binop (MULT_EXPR, vs_minus_1,
@@ -3517,6 +3499,10 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    default:
 	      gcc_unreachable ();
 	    }
+	  /* If accesses through a pointer to vectype do not alias the original
+	     memory reference we have a problem.  This should never happen. */
+	  gcc_assert (alias_sets_conflict_p (get_alias_set (data_ref),
+		      get_alias_set (gimple_assign_rhs1 (stmt))));
 	  vec_dest = vect_create_destination_var (scalar_dest, vectype);
 	  new_stmt = gimple_build_assign (vec_dest, data_ref);
 	  new_temp = make_ssa_name (vec_dest, new_stmt);

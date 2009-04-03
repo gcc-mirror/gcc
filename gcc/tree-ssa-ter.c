@@ -412,7 +412,7 @@ is_replaceable_p (gimple stmt)
     return false;
 
   /* There must be no VDEFs.  */
-  if (!(ZERO_SSA_OPERANDS (stmt, SSA_OP_VDEF)))
+  if (gimple_vdef (stmt))
     return false;
 
   /* Without alias info we can't move around loads.  */
@@ -504,7 +504,7 @@ process_replaceable (temp_expr_table_p tab, gimple stmt)
   tab->expr_decl_uids[version] = def_vars;
 
   /* If there are VUSES, add a dependence on virtual defs.  */
-  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VUSE))
+  if (gimple_vuse (stmt))
     {
       make_dependent_on_partition (tab, version, VIRTUAL_PARTITION (tab));
       add_to_partition_kill_list (tab, VIRTUAL_PARTITION (tab), version);
@@ -639,7 +639,7 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 
       /* A V_{MAY,MUST}_DEF kills any expression using a virtual operand,
 	 including the current stmt.  */
-      if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
+      if (gimple_vdef (stmt))
         kill_virtual_exprs (tab);
     }
 }

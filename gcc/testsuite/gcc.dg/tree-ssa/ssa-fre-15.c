@@ -1,9 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fno-tree-sra --param max-aliased-vops=0 --param max-fields-for-field-sensitive=0 -fdump-tree-fre-details" } */
+/* { dg-options "-O -fno-tree-sra -fdump-tree-fre-details" } */
 
-/* Should be optimized, propagating &a into (*p)[i] with parameters
-     --param max-aliased-vops=0 --param max-fields-for-field-sensitive=0
-   which means max 1 VOP per stmt and no SFTs.  */
+/* Should be optimized, propagating &a into (*p)[i].  */
 
 struct Foo
 {
