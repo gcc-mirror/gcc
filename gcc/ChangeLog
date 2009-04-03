@@ -1,3 +1,26 @@
+2009-04-03  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.md (extendsfdf2, extendsfxf2, extenddfxf2,
+	truncdfsf2, truncxfsf2, truncxfdf2, floatdixf2, fix_truncsfdi2,
+	fix_truncdfdi2, fix_truncxfdi2, fix_truncxfdi2_alts, floatunsdisf2,
+	floatunsdidf2, floatunsdixf2, fixuns_truncsfdi2, fixuns_truncdfdi2,
+	fixuns_truncxfdi2, fixuns_truncxfdi2_alts, divsi3_internal,
+	smuldi3_highpart, umuldi3_highpart, ctzdi2, *getf_exp_xf,
+	divdi3_internal_lat, divdi3_internal_thr, mulditi3, *mulditi3_internal,
+	umulditi3, *umulditi3_internal, addsf3, mulsf3, abssf2, negsf2,
+	*nabssf2, sminsf3, smaxsf3, *maddsf4, *msubsf4, *nmulsf3, *nmaddsf4,
+	*nmaddsf4_alts, divsf3, *sqrt_approx, sqrtsf2, sqrtsf2_internal_thr,
+	adddf3, *adddf3_trunc, muldf3, *muldf3_trunc, absdf2, negdf2, *nabsdf2,
+	smindf3, smaxdf3, *madddf4, *madddf4_trunc, *msubdf4, *msubdf4_trunc,
+	*nmuldf3, *nmuldf3_trunc, *nmadddf4, *nmadddf4_alts, *nmadddf4_truncsf,
+	*nmadddf4_truncsf_alts, divdf3, sqrtdf2, sqrtdf2_internal_thr, divxf3,
+	sqrtxf2, sqrtxf2_internal_thr, *recip_approx):
+	Use fr_reg_or_fp01_operand instead of fr_register_operand
+
+	* config/ia64/div.md (extend<mode>rf2, truncrf<mode>2,
+	recip_approx_rf, divsf3_internal_thr, divsf3_internal_lat,
+	divdf3_internal_thr, divdf3_internal_lat divxf3_internal): Ditto.
+
 2009-04-03  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/39607
