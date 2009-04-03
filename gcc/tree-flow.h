@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-operands.h"
 #include "cgraph.h"
 #include "ipa-reference.h"
+#include "tree-ssa-alias.h"
 
 /* Forward declare structures for the garbage collector GTY markers.  */
 #ifndef GCC_BASIC_BLOCK_H
@@ -39,98 +40,6 @@ struct basic_block_def;
 typedef struct basic_block_def *basic_block;
 #endif
 struct static_var_ann_d;
-
-/* The reasons a variable may escape a function.  */
-enum escape_type 
-{
-  NO_ESCAPE = 0,			/* Doesn't escape.  */
-  ESCAPE_STORED_IN_GLOBAL = 1 << 0,
-  ESCAPE_TO_ASM = 1 << 1,		/* Passed by address to an assembly
-					   statement.  */
-  ESCAPE_TO_CALL = 1 << 2,		/* Escapes to a function call.  */
-  ESCAPE_BAD_CAST = 1 << 3,		/* Cast from pointer to integer */
-  ESCAPE_TO_RETURN = 1 << 4,		/* Returned from function.  */
-  ESCAPE_TO_PURE_CONST = 1 << 5,	/* Escapes to a pure or constant
-					   function call.  */
-  ESCAPE_IS_GLOBAL = 1 << 6,		/* Is a global variable.  */
-  ESCAPE_IS_PARM = 1 << 7,		/* Is an incoming function argument.  */
-  ESCAPE_UNKNOWN = 1 << 8		/* We believe it escapes for
-					   some reason not enumerated
-					   above.  */
-};
-
-/* Memory reference statistics for individual memory symbols,
-   collected during alias analysis.  */
-struct mem_sym_stats_d GTY(())
-{
-  /* Memory symbol.  */
-  tree var;
-
-  /* Nonzero if this entry has been assigned a partition.  */
-  unsigned int partitioned_p : 1;
-
-  /* Nonzero if VAR is a memory partition tag that already contains
-     call-clobbered variables in its partition set.  */
-  unsigned int has_call_clobbered_vars : 1;
-
-  /* Number of direct reference sites.  A direct reference to VAR is any
-     reference of the form 'VAR = ' or ' = VAR'.  For GIMPLE reg
-     pointers, this is the number of sites where the pointer is
-     dereferenced.  */
-  long num_direct_writes;
-  long num_direct_reads;
-
-  /* Number of indirect reference sites.  An indirect reference to VAR
-     is any reference via a pointer that contains VAR in its points-to
-     set or, in the case of call-clobbered symbols, a function call.  */
-  long num_indirect_writes;
-  long num_indirect_reads;
-
-  /* Execution frequency.  This is the sum of the execution
-     frequencies of all the statements that reference this object
-     weighted by the number of references in each statement.  This is
-     the main key used to sort the list of symbols to partition.
-     Symbols with high execution frequencies are put at the bottom of
-     the work list (ie, they are partitioned last).
-     Execution frequencies are taken directly from each basic block,
-     so compiling with PGO enabled will increase the precision of this
-     estimate.  */
-  long frequency_reads;
-  long frequency_writes;
-
-  /* Set of memory tags that contain VAR in their alias set.  */
-  bitmap parent_tags;
-};
-
-typedef struct mem_sym_stats_d *mem_sym_stats_t;
-DEF_VEC_P(mem_sym_stats_t);
-DEF_VEC_ALLOC_P(mem_sym_stats_t, heap);
-
-/* Memory reference statistics collected during alias analysis.  */
-struct mem_ref_stats_d GTY(())
-{
-  /* Number of statements that make memory references.  */
-  long num_mem_stmts;
-
-  /* Number of statements that make function calls.  */
-  long num_call_sites;
-
-  /* Number of statements that make calls to pure/const functions.  */
-  long num_pure_const_call_sites;
-
-  /* Number of ASM statements.  */
-  long num_asm_sites;
-
-  /* Estimated number of virtual operands needed as computed by
-   compute_memory_partitions.  */
-  long num_vuses;
-  long num_vdefs;
-
-  /* This maps every symbol used to make "memory" references
-     (pointers, arrays, structures, etc) to an instance of struct
-     mem_sym_stats_d describing reference statistics for the symbol.  */
-  struct pointer_map_t * GTY((skip)) mem_sym_stats;
-};
 
 
 /* Gimple dataflow datastructure. All publicly available fields shall have
@@ -151,29 +60,18 @@ struct gimple_df GTY(())
   /* Array of all SSA_NAMEs used in the function.  */
   VEC(tree,gc) *ssa_names;
 
-  /* Artificial variable used to model the effects of function calls.  */
-  tree global_var;
+  /* Artificial variable used for the virtual operand FUD chain.  */
+  tree vop;
 
   /* Artificial variable used to model the effects of nonlocal
      variables.  */
   tree nonlocal_all;
 
-  /* Call clobbered variables in the function.  If bit I is set, then
-     REFERENCED_VARS (I) is call-clobbered.  */
-  bitmap call_clobbered_vars;
+  /* The PTA solution for the ESCAPED artificial variable.  */
+  struct pt_solution escaped;
 
-  /* Call-used variables in the function.  If bit I is set, then
-     REFERENCED_VARS (I) is call-used at pure function call-sites.  */
-  bitmap call_used_vars;
-
-  /* Addressable variables in the function.  If bit I is set, then
-     REFERENCED_VARS (I) has had its address taken.  Note that
-     CALL_CLOBBERED_VARS and ADDRESSABLE_VARS are not related.  An
-     addressable variable is not necessarily call-clobbered (e.g., a
-     local addressable whose address does not escape) and not all
-     call-clobbered variables are addressable (e.g., a local static
-     variable).  */
-  bitmap addressable_vars;
+  /* The PTA solution for the CALLUSED artificial variable.  */
+  struct pt_solution callused;
 
   /* Free list of SSA_NAMEs.  */
   tree free_ssanames;
@@ -184,18 +82,14 @@ struct gimple_df GTY(())
      for this variable with an empty defining statement.  */
   htab_t GTY((param_is (union tree_node))) default_defs;
 
-  /* 'true' after aliases have been computed (see compute_may_aliases).  */
-  unsigned int aliases_computed_p : 1;
+  /* Symbols whose SSA form needs to be updated or created for the first
+     time.  */
+  bitmap syms_to_rename;
 
   /* True if the code is in ssa form.  */
   unsigned int in_ssa_p : 1;
 
   struct ssa_operands ssa_operands;
-
-  /* Memory reference statistics collected during alias analysis.
-     This information is used to drive the memory partitioning
-     heuristics in compute_memory_partitions.  */
-  struct mem_ref_stats_d mem_ref_stats;
 };
 
 /* Accessors for internal use only.  Generic code should use abstraction
@@ -204,6 +98,7 @@ struct gimple_df GTY(())
 #define SSANAMES(fun) (fun)->gimple_df->ssa_names
 #define MODIFIED_NORETURN_CALLS(fun) (fun)->gimple_df->modified_noreturn_calls
 #define DEFAULT_DEFS(fun) (fun)->gimple_df->default_defs
+#define SYMS_TO_RENAME(fun) (fun)->gimple_df->syms_to_rename
 
 typedef struct
 {
@@ -231,37 +126,8 @@ typedef struct
 /* Aliasing information for SSA_NAMEs representing pointer variables.  */
 struct ptr_info_def GTY(())
 {
-  /* Mask of reasons this pointer's value escapes the function.  */
-  ENUM_BITFIELD (escape_type) escape_mask : 9;
-
-  /* Nonzero if points-to analysis couldn't determine where this pointer
-     is pointing to.  */
-  unsigned int pt_anything : 1;
-
-  /* Nonzero if the value of this pointer escapes the current function.  */
-  unsigned int value_escapes_p : 1;
-
-  /* Nonzero if a memory tag is needed for this pointer.  This is
-     true if this pointer is eventually dereferenced.  */
-  unsigned int memory_tag_needed : 1;
-
-  /* Nonzero if this pointer is really dereferenced.  */
-  unsigned int is_dereferenced : 1;
-
-  /* Nonzero if this pointer points to a global variable.  */
-  unsigned int pt_global_mem : 1;
-
-  /* Nonzero if this pointer points to NULL.  */
-  unsigned int pt_null : 1;
-
-  /* Set of variables that this pointer may point to.  */
-  bitmap pt_vars;
-
-  /* If this pointer has been dereferenced, and points-to information is
-     more precise than type-based aliasing, indirect references to this
-     pointer will be represented by this memory tag, instead of the type
-     tag computed by TBAA.  */
-  tree name_mem_tag;
+  /* The points-to solution, TBAA-pruned if the pointer is dereferenced.  */
+  struct pt_solution pt;
 };
 
 
@@ -359,41 +225,14 @@ struct var_ann_d GTY(())
      states.  */
   ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
 
-  /* Used during operand processing to determine if this variable is already 
-     in the VUSE list.  */
-  unsigned in_vuse_list : 1;
-
-  /* Used during operand processing to determine if this variable is already 
-     in the VDEF list.  */
-  unsigned in_vdef_list : 1;
-
   /* True for HEAP artificial variables.  These variables represent
      the memory area allocated by a call to malloc.  */
   unsigned is_heapvar : 1;
-
-  /* True if the variable is call clobbered.  */
-  unsigned call_clobbered : 1;
 
   /* This field describes several "no alias" attributes that some
      symbols are known to have.  See the enum's definition for more
      information on each attribute.  */
   ENUM_BITFIELD (noalias_state) noalias_state : 2;
-
-  /* Mask of values saying the reasons why this variable has escaped
-     the function.  */
-  ENUM_BITFIELD (escape_type) escape_mask : 9;
-
-  /* Memory partition tag assigned to this symbol.  */
-  tree mpt;
-
-  /* If this variable is a pointer P that has been dereferenced, this
-     field is an artificial variable that represents the memory
-     location *P.  Every other pointer Q that is type-compatible with
-     P will also have the same memory tag.  If the variable is not a
-     pointer or if it is never dereferenced, this must be NULL.
-     FIXME, do we really need this here?  How much slower would it be
-     to convert to hash table?  */
-  tree symbol_mem_tag;
 
   /* Used when going out of SSA form to indicate which partition this
      variable represents storage for.  */
@@ -535,7 +374,6 @@ static inline function_ann_t function_ann (const_tree);
 static inline function_ann_t get_function_ann (tree);
 static inline enum tree_ann_type ann_type (tree_ann_t);
 static inline void update_stmt (gimple);
-static inline bitmap may_aliases (const_tree);
 static inline int get_lineno (const_gimple);
 
 /*---------------------------------------------------------------------------
@@ -776,10 +614,8 @@ extern tree make_rename_temp (tree, const char *);
 extern void set_default_def (tree, tree);
 extern tree gimple_default_def (struct function *, tree);
 extern bool stmt_references_abnormal_ssa_name (gimple);
-extern bool refs_may_alias_p (tree, tree);
-extern gimple get_single_def_stmt (gimple);
-extern gimple get_single_def_stmt_from_phi (tree, gimple);
-extern gimple get_single_def_stmt_with_phi (tree, gimple);
+extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
+				     HOST_WIDE_INT *, HOST_WIDE_INT *);
 
 /* In tree-phinodes.c  */
 extern void reserve_phi_args_for_new_edge (basic_block);
@@ -803,43 +639,6 @@ extern void record_vars (tree);
 extern bool block_may_fallthru (const_tree);
 extern bool gimple_seq_may_fallthru (gimple_seq);
 extern bool gimple_stmt_may_fallthru (gimple);
-
-/* In tree-ssa-alias.c  */
-extern unsigned int compute_may_aliases (void);
-extern void dump_may_aliases_for (FILE *, tree);
-extern void debug_may_aliases_for (tree);
-extern void dump_alias_info (FILE *);
-extern void debug_alias_info (void);
-extern void dump_points_to_info (FILE *);
-extern void debug_points_to_info (void);
-extern void dump_points_to_info_for (FILE *, tree);
-extern void debug_points_to_info_for (tree);
-extern bool may_be_aliased (tree);
-extern bool may_alias_p (tree, alias_set_type, tree, alias_set_type, bool);
-extern struct ptr_info_def *get_ptr_info (tree);
-extern bool may_point_to_global_var (tree);
-extern void new_type_alias (tree, tree, tree);
-extern void count_uses_and_derefs (tree, gimple, unsigned *, unsigned *,
-				   unsigned *);
-static inline bool ref_contains_array_ref (const_tree);
-static inline bool array_ref_contains_indirect_ref (const_tree);
-extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
-				     HOST_WIDE_INT *, HOST_WIDE_INT *);
-extern tree create_tag_raw (enum tree_code, tree, const char *);
-extern void delete_mem_ref_stats (struct function *);
-extern void dump_mem_ref_stats (FILE *);
-extern void debug_mem_ref_stats (void);
-extern void debug_memory_partitions (void);
-extern void debug_mem_sym_stats (tree var);
-extern void dump_mem_sym_stats_for_var (FILE *, tree);
-extern void debug_all_mem_sym_stats (void);
-
-/* Call-back function for walk_use_def_chains().  At each reaching
-   definition, a function with this prototype is called.  */
-typedef bool (*walk_use_def_chains_fn) (tree, gimple, void *);
-
-/* In tree-ssa-alias-warnings.c  */
-extern void strict_aliasing_warning_backend (void);
 
 
 /* In tree-ssa.c  */
@@ -869,8 +668,14 @@ extern edge ssa_redirect_edge (edge, basic_block);
 extern void flush_pending_stmts (edge);
 extern void verify_ssa (bool);
 extern void delete_tree_ssa (void);
-extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
 extern bool ssa_undefined_value_p (tree);
+extern void execute_update_addresses_taken (bool);
+
+/* Call-back function for walk_use_def_chains().  At each reaching
+   definition, a function with this prototype is called.  */
+typedef bool (*walk_use_def_chains_fn) (tree, gimple, void *);
+
+extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
 
 
 /* In tree-into-ssa.c  */
@@ -878,7 +683,7 @@ void update_ssa (unsigned);
 void delete_update_ssa (void);
 void register_new_name_mapping (tree, tree);
 tree create_new_def_for (tree, gimple, def_operand_p);
-bool need_ssa_update_p (void);
+bool need_ssa_update_p (struct function *);
 bool name_mappings_registered_p (void);
 bool name_registered_for_update_p (tree);
 bitmap ssa_names_to_replace (void);
@@ -1065,9 +870,10 @@ char *get_lsm_tmp_name (tree, unsigned);
 
 /* In tree-flow-inline.h  */
 static inline bool is_call_clobbered (const_tree);
-static inline void mark_call_clobbered (tree, unsigned int);
 static inline void set_is_used (tree);
 static inline bool unmodifiable_var_p (const_tree);
+static inline bool ref_contains_array_ref (const_tree);
+static inline bool array_ref_contains_indirect_ref (const_tree);
 
 /* In tree-eh.c  */
 extern void make_eh_edges (gimple);
@@ -1149,11 +955,6 @@ tree force_gimple_operand_gsi (gimple_stmt_iterator *, tree, bool, tree,
 tree gimple_fold_indirect_ref (tree);
 void mark_addressable (tree);
 
-/* In tree-ssa-structalias.c */
-bool find_what_p_points_to (tree);
-bool clobber_what_escaped (void);
-void compute_call_used_vars (void);
-
 /* In tree-ssa-live.c */
 extern void remove_unused_locals (void);
 extern void dump_scope_blocks (FILE *, int);
@@ -1174,8 +975,6 @@ rtx addr_for_mem_ref (struct mem_address *, bool);
 void get_address_description (tree, struct mem_address *);
 tree maybe_fold_tmr (tree);
 
-void init_alias_heapvars (void);
-void delete_alias_heapvars (void);
 unsigned int execute_fixup_cfg (void);
 
 #include "tree-flow-inline.h"

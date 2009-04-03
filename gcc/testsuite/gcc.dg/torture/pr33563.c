@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-options "--param max-aliased-vops=0" } */
 
 struct T
 {

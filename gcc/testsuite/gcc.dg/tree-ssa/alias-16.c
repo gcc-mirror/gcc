@@ -1,9 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O --param max-aliased-vops=1" } */
 
-/* Compile with -O --param max-aliased-vops=1.  This partitions all
-   the initial SFTs for 'm' which was causing the operand scanner to
-   miss adding the right SFTs to p->b[2].  */
 extern void abort (void);
 
 struct X {

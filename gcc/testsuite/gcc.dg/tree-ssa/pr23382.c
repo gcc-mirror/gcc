@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-alias-vops" } */
+/* { dg-options "-O2 -fdump-tree-pre-details" } */
 struct a
 {
   int length;
@@ -13,5 +13,5 @@ int f(void)
    struct a *a = malloc(sizeof(struct a));
    return a->length;
 }
-/* { dg-final { scan-tree-dump-times "VDEF <HEAP" 1 "alias"} } */
-/* { dg-final { cleanup-tree-dump "alias" } } */
+/* { dg-final { scan-tree-dump-times "Variable: HEAP" 1 "pre"} } */
+/* { dg-final { cleanup-tree-dump "pre" } } */

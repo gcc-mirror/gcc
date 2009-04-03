@@ -105,12 +105,11 @@ static bool
 phivn_valid_p (struct phiprop_d *phivn, tree name, basic_block bb)
 {
   gimple vop_stmt = phivn[SSA_NAME_VERSION (name)].vop_stmt;
-  ssa_op_iter ui;
   tree vuse;
 
   /* The def stmts of all virtual uses need to be post-dominated
      by bb.  */
-  FOR_EACH_SSA_TREE_OPERAND (vuse, vop_stmt, ui, SSA_OP_VUSE)
+  if ((vuse = gimple_vuse (vop_stmt)))
     {
       gimple use_stmt;
       imm_use_iterator ui2;
@@ -120,7 +119,7 @@ phivn_valid_p (struct phiprop_d *phivn, tree name, basic_block bb)
 	{
 	  /* If BB does not dominate a VDEF, the value is invalid.  */
 	  if (((is_gimple_assign (use_stmt)
-	        && !ZERO_SSA_OPERANDS (use_stmt, SSA_OP_VDEF))
+	        && gimple_vdef (use_stmt))
 	       || gimple_code (use_stmt) == GIMPLE_PHI)
 	      && !dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt), bb))
 	    {
@@ -229,8 +228,7 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
   ssa_op_iter i;
   bool phi_inserted;
 
-  if (MTAG_P (SSA_NAME_VAR (ptr))
-      || !POINTER_TYPE_P (TREE_TYPE (ptr))
+  if (!POINTER_TYPE_P (TREE_TYPE (ptr))
       || !is_gimple_reg_type (TREE_TYPE (TREE_TYPE (ptr))))
     return false;
 
@@ -271,7 +269,6 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
   phi_inserted = false;
   FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
     {
-      ssa_op_iter ui2;
       tree vuse;
 
       /* Check whether this is a load of *ptr.  */
@@ -285,7 +282,7 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
 
       /* Check if we can move the loads.  The def stmts of all virtual uses
 	 need to be post-dominated by bb.  */
-      FOR_EACH_SSA_TREE_OPERAND (vuse, use_stmt, ui2, SSA_OP_VUSE)
+      if ((vuse = gimple_vuse (use_stmt)) != NULL_TREE)
 	{
 	  gimple def_stmt = SSA_NAME_DEF_STMT (vuse);
 	  if (!SSA_NAME_IS_DEFAULT_DEF (vuse)

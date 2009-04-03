@@ -134,10 +134,6 @@ static VEC(expr_hash_elt_t,heap) *avail_exprs_stack;
    expressions are removed from AVAIL_EXPRS.  Else we may change the
    hash code for an expression and be unable to find/remove it from
    AVAIL_EXPRS.  */
-typedef gimple *gimple_p;
-DEF_VEC_P(gimple_p);
-DEF_VEC_ALLOC_P(gimple_p,heap);
-
 static VEC(gimple_p,heap) *stmts_to_rescan;
 
 /* Structure for entries in the expression hash table.  */
@@ -1841,7 +1837,7 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi)
   if (! def
       || TREE_CODE (def) != SSA_NAME
       || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def)
-      || !ZERO_SSA_OPERANDS (stmt, SSA_OP_VDEF)
+      || gimple_vdef (stmt)
       /* Do not record equivalences for increments of ivs.  This would create
 	 overlapping live ranges for a very questionable gain.  */
       || simple_iv_increment_p (stmt))
@@ -2021,7 +2017,7 @@ record_equivalences_from_stmt (gimple stmt, int may_optimize_p)
       else
         new_stmt = gimple_build_assign (rhs, lhs);
 
-      create_ssa_artificial_load_stmt (new_stmt, stmt, true);
+      gimple_set_vuse (new_stmt, gimple_vdef (stmt));
 
       /* Finally enter the statement into the available expression
 	 table.  */
@@ -2405,7 +2401,6 @@ avail_expr_hash (const void *p)
   gimple stmt = ((const struct expr_hash_elt *)p)->stmt;
   const struct hashable_expr *expr = &((const struct expr_hash_elt *)p)->expr;
   tree vuse;
-  ssa_op_iter iter;
   hashval_t val = 0;
 
   val = iterative_hash_hashable_expr (expr, val);
@@ -2416,11 +2411,11 @@ avail_expr_hash (const void *p)
   if (!stmt)
     return val;
 
-  /* Add the SSA version numbers of every vuse operand.  This is important
+  /* Add the SSA version numbers of the vuse operand.  This is important
      because compound variables like arrays are not renamed in the
      operands.  Rather, the rename is done on the virtual variable
      representing all the elements of the array.  */
-  FOR_EACH_SSA_TREE_OPERAND (vuse, stmt, iter, SSA_OP_VUSE)
+  if ((vuse = gimple_vuse (stmt)))
     val = iterative_hash_expr (vuse, val);
 
   return val;
@@ -2462,8 +2457,8 @@ avail_expr_eq (const void *p1, const void *p2)
       && types_compatible_p (expr1->type, expr2->type))
     {
       /* Note that STMT1 and/or STMT2 may be NULL.  */
-      bool ret = compare_ssa_operands_equal (stmt1, stmt2, SSA_OP_VUSE);
-      return ret;
+      return ((stmt1 ? gimple_vuse (stmt1) : NULL_TREE)
+	      == (stmt2 ? gimple_vuse (stmt2) : NULL_TREE));
     }
 
   return false;

@@ -594,8 +594,6 @@ tidy_after_forward_propagate_addr (gimple stmt)
 
   if (TREE_CODE (gimple_assign_rhs1 (stmt)) == ADDR_EXPR)
      recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
-
-  mark_symbols_for_renaming (stmt);
 }
 
 /* DEF_RHS contains the address of the 0th element in an array.
@@ -930,17 +928,23 @@ forward_propagate_addr_expr (tree name, tree rhs)
 	  continue;
 	}
 
-      push_stmt_changes (&use_stmt);
-
       {
 	gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+	push_stmt_changes (&use_stmt);
 	result = forward_propagate_addr_expr_1 (name, rhs, &gsi,
 						single_use_p);
-	use_stmt = gsi_stmt (gsi);
+	/* If the use has moved to a different statement adjust
+	   the update machinery.  */
+	if (use_stmt != gsi_stmt (gsi))
+	  {
+	    pop_stmt_changes (&use_stmt);
+	    use_stmt = gsi_stmt (gsi);
+	    update_stmt (use_stmt);
+	  }
+	else
+	  pop_stmt_changes (&use_stmt);
       }
       all &= result;
-
-      pop_stmt_changes (&use_stmt);
 
       /* Remove intermediate now unused copy and conversion chains.  */
       use_rhs = gimple_assign_rhs1 (use_stmt);

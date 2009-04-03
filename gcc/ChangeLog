@@ -1,3 +1,507 @@
+2009-04-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/13146
+	PR tree-optimization/23940
+	PR tree-optimization/33237
+	PR middle-end/33974
+	PR middle-end/34093
+	PR tree-optimization/36201
+	PR tree-optimization/36230
+	PR tree-optimization/38049
+	PR tree-optimization/38207
+	PR tree-optimization/38230
+	PR tree-optimization/38301
+	PR tree-optimization/38585
+	PR middle-end/38895
+	PR tree-optimization/38985
+	PR tree-optimization/39299
+	* tree-ssa-structalias.h: Remove.
+	* tree-ssa-operands.h (NULL_USE_OPERAND_P): Make of type use_operand_p.
+	(NULL_DEF_OPERAND_P): Make of type def_operand_p.
+	(struct vuse_element_d): Remove.
+	(struct vuse_vec_d): Likewise.
+	(VUSE_VECT_NUM_ELEM, VUSE_VECT_ELEMENT_NC, VUSE_ELEMENT_PTR_NC,
+	VUSE_ELEMENT_VAR_NC, VUSE_VECT_ELEMENT, VUSE_ELEMENT_PTR,
+	SET_VUSE_VECT_ELEMENT, SET_VUSE_ELEMENT_VAR, SET_VUSE_ELEMENT_PTR,
+	VUSE_ELEMENT_VAR): Likewise.
+	(struct voptype_d): Likewise.
+	(NUM_VOP_FREE_BUCKETS): Likewise.
+	(struct ssa_operands): Remove vop_free_buckets and mpt_table fields.
+	(struct stmt_operands_d): Remove.
+	(VUSE_OP_PTR, VUSE_OP, SET_VUSE_OP, VUSE_NUM, VUSE_VECT,
+	VDEF_RESULT_PTR, VDEF_RESULT, VDEF_OP_PTR, VDEF_OP, SET_VDEF_OP,
+	VDEF_NUM, VDEF_VECT): Likewise.
+	(copy_virtual_operands): Remove.
+	(operand_build_cmp): Likewise.
+	(create_ssa_artificial_load_stmt): Likewise.
+	(enum ssa_op_iter_type): Remove ssa_op_iter_vdef.
+	(struct ssa_operand_iterator_d): Remove vuses, vdefs, mayusesm
+	vuse_index and mayuse_index members.  Pack and move done and iter_type
+	members to the front.
+	(SSA_OP_VMAYUSE): Remove.
+	(SSA_OP_VIRTUAL_USES): Adjust.
+	(FOR_EACH_SSA_VDEF_OPERAND): Remove.
+	(unlink_stmt_vdef): Declare.
+	(add_to_addressable_set): Remove.
+	* tree-vrp.c (stmt_interesting_for_vrp): Adjust.
+	(vrp_visit_stmt): Likewise.
+	* doc/tree-ssa.texi (Alias analysis): Update.
+	* doc/invoke.texi (max-aliased-vops): Remove docs.
+	(avg-aliased-vops): Likewise.
+	* tree-into-ssa.c (syms_to_rename): Remove.
+	(need_to_update_vops_p): Likewise.
+	(need_to_initialize_update_ssa_p): Rename to ...
+	(update_ssa_initialized_fn): ... this.  Track function we are
+	initialized for.
+	(symbol_marked_for_renaming): Simplify.
+	(add_new_name_mapping): Do not set need_to_update_vops_p.
+	(dump_currdefs): Use SYMS_TO_RENAME.
+	(rewrite_update_stmt): Always walk all uses/defs.
+	(dump_update_ssa): Adjust.
+	(init_update_ssa): Take function argument.  Track what we are
+	initialized for.
+	(delete_update_ssa): Reset SYMS_TO_RENAME and update_ssa_initialized_fn.
+	(create_new_def_for): Initialize for cfun, assert we are initialized
+	for cfun.
+	(mark_sym_for_renaming): Simplify.
+	(mark_set_for_renaming): Do not initialize update-ssa.
+	(need_ssa_update_p): Simplify.  Take function argument.
+	(name_mappings_registered_p): Assert we ask for the correct function.
+	(name_registered_for_update_p): Likewise.
+	(ssa_names_to_replace): Likewise.
+	(release_ssa_name_after_update_ssa): Likewise.
+	(update_ssa): Likewise.  Use SYMS_TO_RENAME.
+	(dump_decl_set): Do not print a newline.
+	(debug_decl_set): Do it here.
+	(dump_update_ssa): And here.
+	* tree-ssa-loop-im.c (move_computations): Adjust.
+	(movement_possibility): Likewise.
+	(determine_max_movement): Likewise.
+	(gather_mem_refs_stmt): Likewise.
+	* tree-dump.c (dequeue_and_dump): Do not handle SYMBOL_MEMORY_TAG
+	or NAME_MEMORY_TAG.
+	* tree-complex.c (update_all_vops): Remove.
+	(expand_complex_move): Adjust.
+	* tree-ssa-loop-niter.c (chain_of_csts_start): Use NULL_TREE.
+	Simplify test for memory referencing statement.  Exclude
+	non-invariant ADDR_EXPRs.
+	* tree-pretty-print.c (dump_generic_node): Do not handle memory tags.
+	* tree-loop-distribution.c (generate_memset_zero): Adjust.
+	(rdg_flag_uses): Likewise.
+	* tree-tailcall.c (suitable_for_tail_opt_p): Remove memory-tag
+	related code.
+	(tree_optimize_tail_calls_1): Also split the
+	edge from the entry block if we have degenerate PHI nodes in
+	the first basic block.
+	* tree.c (init_ttree): Remove memory-tag related code.
+	(tree_code_size): Likewise.
+	(tree_node_structure): Likewise.
+	(build7_stat): Re-write to be build6_stat.
+	* tree.h (MTAG_P, TREE_MEMORY_TAG_CHECK, TMR_TAG): Remove.
+	(SSA_VAR_P): Adjust.
+	(struct tree_memory_tag): Remove.
+	(struct tree_memory_partition_tag): Likewise.
+	(union tree_node): Adjust.
+	(build7): Re-write to be build6.
+	* tree-pass.h (pass_reset_cc_flags): Remove.
+	(TODO_update_address_taken): New flag.
+	(pass_simple_dse): Remove.
+	* ipa-cp.c (ipcp_update_callgraph): Update SSA form.
+	* params.h (MAX_ALIASED_VOPS): Remove.
+	(AVG_ALIASED_VOPS): Likewise.
+	* omp-low.c (expand_omp_taskreg): Update SSA form.
+	* tree-ssa-dse.c (dse_optimize_stmt): Properly query if the rhs
+	aliases the lhs in a copy stmt.
+	* tree-ssa-dse.c (struct address_walk_data): Remove.
+	(memory_ssa_name_same): Likewise.
+	(memory_address_same): Likewise.
+	(get_kill_of_stmt_lhs): Likewise.
+	(dse_possible_dead_store_p): Simplify, use the oracle.  Handle
+	unused stores.  Look through PHI nodes into post-dominated regions.
+	(dse_optimize_stmt): Simplify.  Properly remove stores.
+	(tree_ssa_dse): Compute dominators.
+	(execute_simple_dse): Remove.
+	(pass_simple_dse): Likewise.
+	* ipa-reference.c (scan_stmt_for_static_refs): Open-code
+	gimple_loaded_syms and gimple_stored_syms computation.
+	* toplev.c (dump_memory_report): Dump alias and pta stats.
+	* tree-ssa-sccvn.c (vn_reference_compute_hash): Simplify.
+	(vn_reference_eq): Likewise.
+	(vuses_to_vec, copy_vuses_from_stmt, vdefs_to_vec,
+	copy_vdefs_from_stmt, shared_lookup_vops, shared_vuses_from_stmt,
+	valueize_vuses): Remove.
+	(get_def_ref_stmt_vuses): Simplify.  Rename to ...
+	(get_def_ref_stmt_vuse): ... this.
+	(vn_reference_lookup_2): New function.
+	(vn_reference_lookup_pieces): Use walk_non_aliased_vuses for
+	walking equivalent vuses.  Simplify.
+	(vn_reference_lookup): Likewise.
+	(vn_reference_insert): Likewise.
+	(vn_reference_insert_pieces): Likewise.
+	(visit_reference_op_call): Simplify.
+	(visit_reference_op_load): Likewise.
+	(visit_reference_op_store): Likewise.
+	(init_scc_vn): Remove shared_lookup_vuses initialization.
+	(free_scc_vn): Remove shared_lookup_vuses freeing.
+	(sort_vuses, sort_vuses_heap): Remove.
+	(get_ref_from_reference_ops): Export.
+	* tree-ssa-sccvn.h (struct vn_reference_s): Replace vuses
+	vector with single vuse pointer.
+	(vn_reference_lookup_pieces, vn_reference_lookup,
+	vn_reference_insert, vn_reference_insert_pieces): Adjust prototypes.
+	(shared_vuses_from_stmt): Remove.
+	(get_ref_from_reference_ops): Declare.
+	* tree-ssa-loop-manip.c (slpeel_can_duplicate_loop_p): Adjust.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Remove
+	memory-tag related code.
+	* tree-ssa-ccp.c (get_symbol_constant_value): Remove memory-tag code.
+	(likely_value): Add comment, skip static-chain of call statements.
+	(surely_varying_stmt_p): Adjust.
+	(gimplify_and_update_call_from_tree): Likewise.
+	(execute_fold_all_builtins): Do not rebuild alias info.
+	(gimplify_and_update_call_from_tree): Properly update VOPs.
+	* tree-ssa-loop-ivopts.c (get_ref_tag): Remove.
+	(copy_ref_info): Remove memory-tag related code.
+	* tree-call-cdce.c (tree_call_cdce): Rename the VOP.
+	* ipa-pure-const.c (check_decl): Remove memory-tag related code.
+	(check_stmt): Open-code gimple_loaded_syms and gimple_stored_syms
+	computation.
+	* tree-ssa-dom.c (gimple_p): Remove typedef.
+	(eliminate_redundant_computations): Adjust.
+	(record_equivalences_from_stmt): Likewise.
+	(avail_expr_hash): Likewise.
+	(avail_expr_eq): Likewise.
+	* tree-ssa-propagate.c (update_call_from_tree): Properly
+	update VOPs.
+	(stmt_makes_single_load): Likewise.
+	(stmt_makes_single_store): Likewise.
+	* tree-ssa-alias.c: Rewrite completely.
+	(debug_memory_partitions, dump_mem_ref_stats, debug_mem_ref_stats,
+	debug_mem_sym_stats, dump_mem_sym_stats_for_var,
+	debug_all_mem_sym_stats, debug_mp_info, update_mem_sym_stats_from_stmt,
+	delete_mem_ref_stats, create_tag_raw, dump_points_to_info,
+	dump_may_aliases_for, debug_may_aliases_for, new_type_alias):
+	Remove public functions.
+	(pass_reset_cc_flags): Remove.
+	(pass_build_alias): Move ...
+	* tree-ssa-structalias.c (pass_build_alias): ... here.
+	* tree-ssa-alias.c (may_be_aliased): Move ...
+	* tree-flow-inline.h (may_be_aliased): ... here.
+	tree-ssa-alias.c (struct count_ptr_d, count_ptr_derefs,
+	count_uses_and_derefs): Move ...
+	* gimple.c: ... here.
+	* gimple.h (count_uses_and_derefs): Declare.
+	* tree-ssa-alias.c (dump_alias_stats, ptr_deref_may_alias_global_p,
+	ptr_deref_may_alias_decl_p, ptr_derefs_may_alias_p,
+	same_type_for_tbaa, nonaliasing_component_refs_p, decl_refs_may_alias_p,
+	indirect_ref_may_alias_decl_p, indirect_refs_may_alias_p,
+	ref_maybe_used_by_call_p, ref_maybe_used_by_stmt_p,
+	call_may_clobber_ref_p, stmt_may_clobber_ref_p, maybe_skip_until,
+	get_continuation_for_phi, walk_non_aliased_vuses, walk_aliased_vdefs):
+	New functions.
+	* tree-dfa.c (refs_may_alias_p): Move ...
+	* tree-ssa-alias.c (refs_may_alias_p): ... here.  Extend.
+	* tree-ssa-alias.h: New file.
+	* tree-ssa-sink.c (is_hidden_global_store): Adjust.
+	(statement_sink_location): Likewise.
+	* opts.c (decode_options): Do not adjust max-aliased-vops or
+	avg-aliased-vops values.
+	* timevar.def (TV_TREE_MAY_ALIAS): Remove.
+	(TV_CALL_CLOBBER): Likewise.
+	(TV_FLOW_SENSITIVE): Likewise.
+	(TV_FLOW_INSENSITIVE): Likewise.
+	(TV_MEMORY_PARTITIONING): Likewise.
+	(TV_ALIAS_STMT_WALK): New timevar.
+	* tree-ssa-loop-ivcanon.c (empty_loop_p): Adjust.
+	* tree-ssa-address.c (create_mem_ref_raw): Use build6.
+	(get_address_description): Remove memory-tag related code.
+	* tree-ssa-ifcombine.c (bb_no_side_effects_p): Adjust.
+	* treestruct.def (TS_MEMORY_TAG, TS_MEMORY_PARTITION_TAG): Remove.
+	* tree-eh.c (cleanup_empty_eh): Do not leave stale SSA_NAMEs
+	and immediate uses in statements.  Document.
+	* gimple-pretty-print.c (dump_gimple_mem_ops): Adjust.
+	(dump_symbols): Remove.
+	(dump_gimple_mem_ops): Do not dump loaded or stored syms.
+	* alias.c (get_deref_alias_set): New function split out from ...
+	(get_alias_set): ... here.
+	* alias.h (get_deref_alias_set): Declare.
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Remove unused
+	type parameter.  Remove restrict pointer handling.  Create a
+	ref-all pointer in case type-based alias sets do not conflict.
+	(vect_analyze_data_refs): Remove SMT related code.
+	* tree-vect-stmts.c (vectorizable_store): Re-instantiate TBAA assert.
+	(vectorizable_load): Likewise.
+	* tree-data-ref.h (struct dr_alias): Remove symbol_tag field.
+	(DR_SYMBOL_TAG, DR_VOPS): Remove.
+	* tree-data-ref.c (dr_may_alias_p): Use the alias-oracle.
+	Ignore vops and SMTs.
+	(dr_analyze_alias): Likewise..
+	(free_data_ref): Likewise.
+	(create_data_ref): Likewise.
+	(analyze_all_data_dependences): Likewise.
+	(get_references_in_stmt): Adjust.
+	* tree-flow-inline.h (gimple_aliases_computed_p,
+	gimple_addressable_vars, gimple_call_clobbered_vars,
+	gimple_call_used_vars, gimple_global_var, may_aliases, memory_partition,
+	factoring_name_p, mark_call_clobbered, clear_call_clobbered,
+	compare_ssa_operands_equal, symbol_mem_tag, set_symbol_mem_tag,
+	gimple_mem_ref_stats): Remove.
+	(gimple_vop): New function.
+	(op_iter_next_use): Remove vuses and mayuses cases.
+	(op_iter_next_def): Remove vdefs case.
+	(op_iter_next_tree): Remove vuses, mayuses and vdefs cases.
+	(clear_and_done_ssa_iter): Do not set removed fields.
+	(op_iter_init): Likewise.  Skip vuse and/or vdef if requested.
+	Assert we are not iterating over vuses or vdefs if not also
+	iterating over uses or defs.
+	(op_iter_init_use): Likewise.
+	(op_iter_init_def): Likewise.
+	(op_iter_next_vdef): Remove.
+	(op_iter_next_mustdef): Likewise.
+	(op_iter_init_vdef): Likewise.
+	(compare_ssa_operands_equal): Likewise.
+	(link_use_stmts_after): Handle vuse operand.
+	(is_call_used): Use is_call_clobbered.
+	(is_call_clobbered): Global variables are always call clobbered,
+	query the call-clobbers bitmap.
+	(mark_call_clobbered): Ignore global variables.
+	(clear_call_clobbered): Likewise.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Adjust
+	virtual operands sanity check.
+	* tree.def (NAME_MEMORY_TAG, SYMBOL_MEMORY_TAG, MEMORY_PARTITION_TAG):
+	Remove.
+	(TARGET_MEM_REF): Remove TMR_TAG operand.
+	* tree-dfa.c (add_referenced_var): Initialize call-clobber state.
+	Remove call-clobber related code.
+	(remove_referenced_var): Likewise.  Do not clear mpt or symbol_mem_tag.
+	(dump_variable): Do not dump SMTs, memory stats, may-aliases or
+	partitions or escape reason.
+	(get_single_def_stmt, get_single_def_stmt_from_phi,
+	get_single_def_stmt_with_phi): Remove.
+	(dump_referenced_vars): Tidy.
+	(get_ref_base_and_extent): Allow bare decls.
+	(collect_dfa_stats): Adjust.
+	* graphite.c (rename_variables_in_stmt): Adjust.
+	(graphite_copy_stmts_from_block): Likewise.
+	(translate_clast): Likewise.
+	* tree-ssa-pre.c (struct bb_bitmap_sets): Add expr_dies bitmap.
+	(EXPR_DIES): New.
+	(translate_vuse_through_block): Use the oracle.
+	(phi_translate_1): Adjust.
+	(value_dies_in_block_x): Use the oracle.  Cache the outcome
+	in EXPR_DIES.
+	(valid_in_sets): Check if the VUSE for
+	a REFERENCE is available.
+	(eliminate): Do not remove stmts during elimination,
+	instead queue and remove them afterwards.
+	(do_pre): Do not rebuild alias info.
+	(pass_pre): Run TODO_rebuild_alias before PRE.
+	* tree-ssa-live.c (remove_unused_locals): Remove memory-tag code.
+	* tree-sra.c (sra_walk_function): Use gimple_references_memory_p.
+	(mark_all_v_defs_stmt): Remove.
+	(mark_all_v_defs_seq): Adjust.
+	(sra_replace): Likewise.
+	(scalarize_use): Likewise.
+	(scalarize_copy): Likewise.
+	(scalarize_init): Likewise.
+	(scalarize_ldst): Likewise.
+	(todoflags): Remove.
+	(tree_sra): Do not rebuild alias info.
+	(tree_sra_early): Adjust.
+	(pass_sra): Run TODO_update_address_taken before SRA.
+	* tree-predcom.c (set_alias_info): Remove.
+	(prepare_initializers_chain): Do not call it.
+	(mark_virtual_ops_for_renaming): Adjust.
+	(mark_virtual_ops_for_renaming_list): Remove.
+	(initialize_root_vars): Adjust.
+	(initialize_root_vars_lm): Likewise.
+	(prepare_initializers_chain): Likewise.
+	* tree-ssa-copy.c (may_propagate_copy): Remove memory-tag related code.
+	(may_propagate_copy_into_stmt): Likewise.
+	(merge_alias_info): Do nothing for now.
+	(propagate_tree_value_into_stmt): Adjust.
+	(stmt_may_generate_copy): Likewise.
+	* tree-ssa-forwprop.c (tidy_after_forward_propagate_addr): Do
+	not mark symbols for renaming.
+	(forward_propagate_addr_expr): Match up push/pop_stmt_changes
+	with the same statement, make sure to update the new pointed-to one.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Do not copy
+	call statements, do not mark symbols for renaming.
+	(mark_operand_necessary): Dump something.
+	(ref_may_be_aliased): New function.
+	(mark_aliased_reaching_defs_necessary_1): New helper function.
+	(mark_aliased_reaching_defs_necessary): Likewise.
+	(mark_all_reaching_defs_necessary_1): Likewise.
+	(mark_all_reaching_defs_necessary): Likewise.
+	(propagate_necessity): Do not process virtual PHIs.  For
+	non-aliased loads mark all reaching definitions as necessary.
+	For aliased loads and stores mark the immediate dominating
+	aliased clobbers as necessary.
+	(visited): New global static.
+	(perform_tree_ssa_dce): Free visited bitmap after propagating
+	necessity.
+	(remove_dead_phis): Perform simple dead virtual PHI removal.
+	(remove_dead_stmt): Properly unlink virtual operands when
+	removing stores.
+	(eliminate_unnecessary_stmts): Schedule PHI removal after
+	stmt removal.
+	* tree-ssa-ter.c (is_replaceable_p): Adjust.
+	(process_replaceable): Likewise.
+	(find_replaceable_in_bb): Likewise.
+	* tree-ssa.c (verify_ssa_name): Verify all VOPs are
+	based on the single gimple vop.
+	(verify_flow_insensitive_alias_info): Remove.
+	(verify_flow_sensitive_alias_info): Likewise.
+	(verify_call_clobbering): Likewise.
+	(verify_memory_partitions): Likewise.
+	(verify_alias_info): Likewise.
+	(verify_ssa): Adjust..
+	(execute_update_addresses_taken): Export.  Update SSA
+	manually.  Optimize only when optimizing.  Use a local bitmap.
+	(pass_update_address_taken): Remove TODO_update_ssa, add
+	TODO_dump_func.
+	(pass_update_address_taken): Just use TODO_update_address_taken.
+	(init_tree_ssa): Do not initialize addressable_vars.
+	(verify_ssa): Verify new VUSE / VDEF properties.
+	Verify that all stmts definitions have the stmt as SSA_NAME_DEF_STMT.
+	Do not call verify_alias_info.
+	(delete_tree_ssa): Clear the VUSE, VDEF operands.
+	Do not free the loaded and stored syms bitmaps.  Reset the escaped
+	and callused solutions.  Do not free addressable_vars.
+	Remove memory-tag related code.
+	(warn_uninitialized_var): Aliases are always available.
+	* tree-ssa-loop-prefetch.c (gather_memory_references): Adjust.
+	* lambda-code.c (can_put_in_inner_loop): Adjust.
+	(can_put_after_inner_loop): Likewise.
+	(perfect_nestify): Likewise.
+	* tree-vect-stmts.c (vect_stmt_relevant_p): Adjust.
+	(vect_gen_widened_results_half): Remove CALL_EXPR handling.
+	(vectorizable_conversion): Do not mark symbols for renaming.
+	* tree-inline.c (remap_gimple_stmt): Clear VUSE/VDEF.
+	(expand_call_inline): Unlink the calls virtual operands before
+	replacing it.
+	(tree_function_versioning): Do not call update_ssa if we are not
+	updating clones.  Simplify.
+	* tree-ssa-phiprop.c (phivn_valid_p): Adjust.
+	(propagate_with_phi): Likewise..
+	* tree-outof-ssa.c (create_temp): Remove memory tag and call
+	clobber code.  Assert we are not aliased or global.
+	* tree-flow.h: Include tree-ssa-alias.h
+	(enum escape_type): Remove.
+	(struct mem_sym_stats_d): Likewise.
+	(struct mem_ref_stats_d): Likewise.
+	(struct gimple_df): Add vop member.  Remove global_var,
+	call_clobbered_vars, call_used_vars, addressable_vars,
+	aliases_compted_p and mem_ref_stats members.  Add syms_to_rename,
+	escaped and callused members.
+	(struct ptr_info_def): Remove all members, add points-to solution
+	member pt.
+	(struct var_ann_d): Remove in_vuse_list, in_vdef_list,
+	call_clobbered, escape_mask, mpt and symbol_mem_tag members.
+	* Makefile.in (TREE_FLOW_H): Add tree-ssa-alias.h.
+	(tree-ssa-structalias.o): Remove tree-ssa-structalias.h.
+	(tree-ssa-alias.o): Likewise.
+	(toplev.o): Add tree-ssa-alias.h
+	(GTFILES): Remove tree-ssa-structalias.h, add tree-ssa-alias.h.
+	* gimple.c (gimple_set_bb): Fix off-by-one error.
+	(is_gimple_reg): Do not handle memory tags.
+	(gimple_copy): Also copy virtual operands.
+	Delay updating the statement.  Do not reset loaded and stored syms.
+	(gimple_set_stored_syms): Remove.
+	(gimple_set_loaded_syms): Likewise.
+	(gimple_call_copy_skip_args): Copy the virtual operands
+	and mark the new statement modified.
+	* tree-ssa-structalias.c (may_alias_p): Remove.
+	(set_uids_in_ptset): Take the alias set to prune with as
+	parameter.  Fold in the alias test of may_alias_p.
+	(compute_points_to_sets): Compute whether a ptr is dereferenced
+	in a local sbitmap.
+	(process_constraint): Deal with &ANYTHING on the lhs, reject all
+	other ADDRESSOF constraints on the lhs.
+	(get_constraint_for_component_ref): Assert that we don't get
+	ADDRESSOF constraints from the base of the reference.
+	Properly generate UNKNOWN_OFFSET for DEREF if needed.
+	(struct variable_info): Remove collapsed_to member.
+	(get_varinfo_fc): Remove.
+	(new_var_info): Do not set collapsed_to.
+	(dump_constraint): Do not follow cycles.
+	(dump_constraint_graph): Likewise.
+	(build_pred_graph): Likewise.
+	(build_succ_graph): Likewise.
+	(rewrite_constraints): Likewise.
+	(do_simple_structure_copy): Remove.
+	(do_rhs_deref_structure_copy): Remove.
+	(do_lhs_deref_structure_copy): Remove.
+	(collapse_rest_of_var): Remove.
+	(do_structure_copy): Re-implement.
+	(pta_stats): New global variable.
+	(dump_pta_stats): New function.
+	(struct constraint_expr): Make offset signed.
+	(UNKNOWN_OFFSET): Define special value.
+	(dump_constraint): Dump UNKNOWN_OFFSET as UNKNOWN.
+	(solution_set_expand): New helper function split out from ...
+	(do_sd_constraint): ... here.
+	(solution_set_add): Handle UNKNOWN_OFFSET.  Handle negative offsets.
+	(do_ds_constraint): Likewise.
+	(do_sd_constraint): Likewise.  Do not special-case ESCAPED = *ESCAPED
+	and CALLUSED = *CALLUSED.
+	(set_union_with_increment): Make inc argument signed.
+	(type_safe): Remove.
+	(get_constraint_for_ptr_offset): Handle unknown and negative
+	constant offsets.
+	(first_vi_for_offset): Handle offsets before start.  Bail
+	out early for offsets beyond the variable extent.
+	(first_or_preceding_vi_for_offset): New function.
+	(init_base_vars): Add ESCAPED = ESCAPED + UNKNOWN_OFFSET constraint.
+	Together with ESCAPED = *ESCAPED this properly computes reachability.
+	(find_what_var_points_to): New function.
+	(find_what_p_points_to): Implement in terms of find_what_var_points_to.
+	(pt_solution_reset, pt_solution_empty_p, pt_solution_includes_global,
+	pt_solution_includes_1, pt_solution_includes, pt_solutions_intersect_1,
+	pt_solutions_intersect): New functions.
+	(compute_call_used_vars): Remove.
+	(compute_may_aliases): New main entry into PTA computation.
+	* gimple.h (gimple_p): New typedef.
+	(struct gimple_statement_base): Remove references_memory_p.
+	(struct gimple_statement_with_memory_ops_base): Remove
+	vdef_ops, vuse_ops, stores and loads members.  Add vdef and vuse
+	members.
+	(gimple_vuse_ops, gimple_set_vuse_ops, gimple_vdef_ops,
+	gimple_set_vdef_ops, gimple_loaded_syms, gimple_stored_syms,
+	gimple_set_references_memory): Remove.
+	(gimple_vuse_op, gimple_vdef_op, gimple_vuse, gimple_vdef,
+	gimple_vuse_ptr, gimple_vdef_ptri, gimple_set_vuse, gimple_set_vdef):
+	New functions.
+	* tree-cfg.c (move_block_to_fn): Fix off-by-one error.
+	(verify_expr): Allow RESULT_DECL.
+	(gimple_duplicate_bb): Do not copy virtual operands.
+	(gimple_duplicate_sese_region): Adjust.
+	(gimple_duplicate_sese_tail): Likewise.
+	(mark_virtual_ops_in_region): Remove.
+	(move_sese_region_to_fn): Do not call it.
+	* passes.c (init_optimization_passes): Remove pass_reset_cc_flags
+	and pass_simple_dse.
+	(execute_function_todo): Handle TODO_update_address_taken,
+	call execute_update_addresses_taken for TODO_rebuild_alias.
+	(execute_todo): Adjust.
+	(execute_one_pass): Init dump files early.
+	* ipa-struct-reorg.c (finalize_var_creation): Do not mark vars
+	call-clobbered.
+	(create_general_new_stmt): Clear vops.
+	* tree-ssa-reassoc.c (get_rank): Adjust.
+	* tree-vect-slp.c (vect_create_mask_and_perm): Do not mark
+	symbols for renaming.
+	* params.def (PARAM_MAX_ALIASED_VOPS): Remove.
+	(PARAM_AVG_ALIASED_VOPS): Likewise.
+	* tree-ssanames.c (init_ssanames): Allocate SYMS_TO_RENAME.
+	(duplicate_ssa_name_ptr_info): No need to copy the shared bitmaps.
+	* tree-ssa-operands.c: Simplify for new virtual operand
+	representation.
+	(operand_build_cmp, copy_virtual_operands,
+	create_ssa_artificial_load_stmt, add_to_addressable_set,
+	gimple_add_to_addresses_taken): Remove public functions.
+	(unlink_stmt_vdef): New function.
+
 2009-04-03  Alan Modra  <amodra@bigpond.net.au>
 
 	* config.gcc (powerpc-*-linux*): Merge variants.

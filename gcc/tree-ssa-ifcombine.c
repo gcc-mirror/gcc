@@ -108,7 +108,7 @@ bb_no_side_effects_p (basic_block bb)
       gimple stmt = gsi_stmt (gsi);
 
       if (gimple_has_volatile_ops (stmt)
-	  || !ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
+	  || gimple_vuse (stmt))
 	return false;
     }
 

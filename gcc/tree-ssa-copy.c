@@ -72,24 +72,6 @@ may_propagate_copy (tree dest, tree orig)
   if (TREE_CODE (dest) == SSA_NAME
       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (dest))
     return false;
-
-  /* For memory partitions, copies are OK as long as the memory symbol
-     belongs to the partition.  */
-  if (TREE_CODE (dest) == SSA_NAME
-      && TREE_CODE (SSA_NAME_VAR (dest)) == MEMORY_PARTITION_TAG)
-    return (TREE_CODE (orig) == SSA_NAME
-            && !is_gimple_reg (orig)
-	    && (SSA_NAME_VAR (dest) == SSA_NAME_VAR (orig)
-	        || bitmap_bit_p (MPT_SYMBOLS (SSA_NAME_VAR (dest)),
-	                         DECL_UID (SSA_NAME_VAR (orig)))));
-
-  if (TREE_CODE (orig) == SSA_NAME
-      && TREE_CODE (SSA_NAME_VAR (orig)) == MEMORY_PARTITION_TAG)
-    return (TREE_CODE (dest) == SSA_NAME
-            && !is_gimple_reg (dest)
-	    && (SSA_NAME_VAR (dest) == SSA_NAME_VAR (orig)
-                || bitmap_bit_p (MPT_SYMBOLS (SSA_NAME_VAR (orig)),
-	                         DECL_UID (SSA_NAME_VAR (dest)))));
   
   /* Do not copy between types for which we *do* need a conversion.  */
   if (!useless_type_conversion_p (type_d, type_o))
@@ -136,48 +118,21 @@ may_propagate_copy (tree dest, tree orig)
       && POINTER_TYPE_P (type_d)
       && POINTER_TYPE_P (type_o))
     {
-      tree mt_dest = symbol_mem_tag (SSA_NAME_VAR (dest));
-      tree mt_orig = symbol_mem_tag (SSA_NAME_VAR (orig));
-      if (mt_dest && mt_orig && mt_dest != mt_orig)
+      if (get_alias_set (TREE_TYPE (type_d))
+	  != get_alias_set (TREE_TYPE (type_o)))
 	return false;
-      else if (get_alias_set (TREE_TYPE (type_d)) != 
-	       get_alias_set (TREE_TYPE (type_o)))
+      else if (DECL_NO_TBAA_P (SSA_NAME_VAR (dest))
+	       != DECL_NO_TBAA_P (SSA_NAME_VAR (orig)))
 	return false;
-      else if (!MTAG_P (SSA_NAME_VAR (dest))
-	       && !MTAG_P (SSA_NAME_VAR (orig))
-	       && (DECL_NO_TBAA_P (SSA_NAME_VAR (dest))
-		   != DECL_NO_TBAA_P (SSA_NAME_VAR (orig))))
-	return false;
-
-      /* Also verify flow-sensitive information is compatible.  */
-      if (SSA_NAME_PTR_INFO (orig) && SSA_NAME_PTR_INFO (dest))
-	{
-	  struct ptr_info_def *orig_ptr_info = SSA_NAME_PTR_INFO (orig);
-	  struct ptr_info_def *dest_ptr_info = SSA_NAME_PTR_INFO (dest);
-
-	  if (orig_ptr_info->name_mem_tag
-	      && dest_ptr_info->name_mem_tag
-	      && orig_ptr_info->pt_vars
-	      && dest_ptr_info->pt_vars
-	      && !bitmap_intersect_p (dest_ptr_info->pt_vars,
-				      orig_ptr_info->pt_vars))
-	    return false;
-	}
     }
 
-  /* If the destination is a SSA_NAME for a virtual operand, then we have
-     some special cases to handle.  */
+  /* Propagating virtual operands is always ok.  */
   if (TREE_CODE (dest) == SSA_NAME && !is_gimple_reg (dest))
     {
-      /* If both operands are SSA_NAMEs referring to virtual operands, then
-	 we can always propagate.  */
-      if (TREE_CODE (orig) == SSA_NAME
-	  && !is_gimple_reg (orig))
-	return true;
+      /* But only between virtual operands.  */
+      gcc_assert (TREE_CODE (orig) == SSA_NAME && !is_gimple_reg (orig));
 
-      /* We have a "copy" from something like a constant into a virtual
-	 operand.  Reject these.  */
-      return false;
+      return true;
     }
 
   /* Anything else is OK.  */
@@ -211,8 +166,7 @@ may_propagate_copy_into_stmt (gimple dest, tree orig)
      is much simpler.  */
 
   if (TREE_CODE (orig) == SSA_NAME
-      && (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig)
-          ||  TREE_CODE (SSA_NAME_VAR (orig)) == MEMORY_PARTITION_TAG))
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig))
     return false;
 
   if (is_gimple_assign (dest))
@@ -252,29 +206,13 @@ may_propagate_copy_into_asm (tree dest)
 void
 merge_alias_info (tree orig_name, tree new_name)
 {
-  tree new_sym = SSA_NAME_VAR (new_name);
-  tree orig_sym = SSA_NAME_VAR (orig_name);
-  var_ann_t new_ann = var_ann (new_sym);
-  var_ann_t orig_ann = var_ann (orig_sym);
-
-  /* No merging necessary when memory partitions are involved.  */
-  if (factoring_name_p (new_name))
-    {
-      gcc_assert (!is_gimple_reg (orig_sym));
-      return;
-    }
-  else if (factoring_name_p (orig_name))
-    {
-      gcc_assert (!is_gimple_reg (new_sym));
-      return;
-    }
-
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (orig_name))
 	      && POINTER_TYPE_P (TREE_TYPE (new_name)));
 
 #if defined ENABLE_CHECKING
   gcc_assert (useless_type_conversion_p (TREE_TYPE (orig_name),
-					TREE_TYPE (new_name)));
+					 TREE_TYPE (new_name)));
+#endif
 
   /* Check that flow-sensitive information is compatible.  Notice that
      we may not merge flow-sensitive information here.  This function
@@ -290,58 +228,12 @@ merge_alias_info (tree orig_name, tree new_name)
      same in every block dominated by the predicate.
 
      Since we cannot distinguish one case from another in this
-     function, we can only make sure that if P_i and Q_j have
-     flow-sensitive information, they should be compatible.
+     function, we cannot merge flow-sensitive information by
+     intersecting.  Instead the only thing we can do is to _not_
+     merge flow-sensitive information.
 
-     As callers of merge_alias_info are supposed to call may_propagate_copy
-     first, the following check is redundant.  Thus, only do it if checking
-     is enabled.  */
-  if (SSA_NAME_PTR_INFO (orig_name) && SSA_NAME_PTR_INFO (new_name))
-    {
-      struct ptr_info_def *orig_ptr_info = SSA_NAME_PTR_INFO (orig_name);
-      struct ptr_info_def *new_ptr_info = SSA_NAME_PTR_INFO (new_name);
-
-      /* Note that pointer NEW and ORIG may actually have different
-	 pointed-to variables (e.g., PR 18291 represented in
-	 testsuite/gcc.c-torture/compile/pr18291.c).  However, since
-	 NEW is being copy-propagated into ORIG, it must always be
-	 true that the pointed-to set for pointer NEW is the same, or
-	 a subset, of the pointed-to set for pointer ORIG.  If this
-	 isn't the case, we shouldn't have been able to do the
-	 propagation of NEW into ORIG.  */
-      if (orig_ptr_info->name_mem_tag
-	  && new_ptr_info->name_mem_tag
-	  && orig_ptr_info->pt_vars
-	  && new_ptr_info->pt_vars)
-	gcc_assert (bitmap_intersect_p (new_ptr_info->pt_vars,
-					orig_ptr_info->pt_vars));
-    }
-#endif
-
-  /* Synchronize the symbol tags.  If both pointers had a tag and they
-     are different, then something has gone wrong.  Symbol tags can
-     always be merged because they are flow insensitive, all the SSA
-     names of the same base DECL share the same symbol tag.  */
-  if (new_ann->symbol_mem_tag == NULL_TREE)
-    new_ann->symbol_mem_tag = orig_ann->symbol_mem_tag;
-  else if (orig_ann->symbol_mem_tag == NULL_TREE)
-    orig_ann->symbol_mem_tag = new_ann->symbol_mem_tag;
-  else
-    gcc_assert (new_ann->symbol_mem_tag == orig_ann->symbol_mem_tag);
-
-  /* Copy flow-sensitive alias information in case that NEW_NAME
-     didn't get a NMT but was set to pt_anything for optimization
-     purposes.  In case ORIG_NAME has a NMT we can safely use its
-     flow-sensitive alias information as a conservative estimate.  */
-  if (SSA_NAME_PTR_INFO (orig_name)
-      && SSA_NAME_PTR_INFO (orig_name)->name_mem_tag
-      && (!SSA_NAME_PTR_INFO (new_name)
-	  || !SSA_NAME_PTR_INFO (new_name)->name_mem_tag))
-    {
-      struct ptr_info_def *orig_ptr_info = SSA_NAME_PTR_INFO (orig_name);
-      struct ptr_info_def *new_ptr_info = get_ptr_info (new_name);
-      memcpy (new_ptr_info, orig_ptr_info, sizeof (struct ptr_info_def));
-    }
+     ???  At some point we should enhance this machinery to distinguish
+     both cases in the caller.  */
 }
 
 
@@ -464,8 +356,7 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
 
       tree expr = NULL_TREE;
       propagate_tree_value (&expr, val);
-      new_stmt  = gimple_build_assign (gimple_call_lhs (stmt), expr);
-      copy_virtual_operands (new_stmt, stmt);
+      new_stmt = gimple_build_assign (gimple_call_lhs (stmt), expr);
       move_ssa_defining_stmt_for_defs (new_stmt, stmt);
       gsi_replace (gsi, new_stmt, false);
     }
@@ -513,7 +404,7 @@ stmt_may_generate_copy (gimple stmt)
     return false;
 
   /* Statements with loads and/or stores will never generate a useful copy.  */
-  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
+  if (gimple_vuse (stmt))
     return false;
 
   /* Otherwise, the only statements that generate useful copies are
@@ -864,8 +755,10 @@ copy_prop_visit_phi_node (gimple phi)
 	 Otherwise, this may move loop variant variables outside of
 	 their loops and prevent coalescing opportunities.  If the
 	 value was loop invariant, it will be hoisted by LICM and
-	 exposed for copy propagation.  */
-      if (loop_depth_of_name (arg) > loop_depth_of_name (lhs))
+	 exposed for copy propagation.  Not a problem for virtual
+	 operands though.  */
+      if (is_gimple_reg (lhs)
+	  && loop_depth_of_name (arg) > loop_depth_of_name (lhs))
 	{
 	  phi_val.value = lhs;
 	  break;

@@ -29,7 +29,7 @@ void frob(int *pi);
 int main(void)
 {
   int i; 
-  printf("i = %d\n", i); /* { dg-warning "'i' is used uninitialized in this function" } */
+  printf("i = %d\n", i); /* { dg-warning "'i' is used uninitialized in this function" "" { xfail *-*-* } } */
   frob(&i);
 
   return 0;
@@ -38,6 +38,6 @@ int main(void)
 void foo3(int*);
 void bar3(void) { 
   int x; 
-  if(x) /* { dg-warning "'x' is used uninitialized in this function" "uninitialized" } */
+  if(x) /* { dg-warning "'x' is used uninitialized in this function" "uninitialized" { xfail *-*-* } } */
     foo3(&x); 
 }

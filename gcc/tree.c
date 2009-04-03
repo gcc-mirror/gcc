@@ -320,15 +320,6 @@ init_ttree (void)
   tree_contains_struct[TRANSLATION_UNIT_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[LABEL_DECL][TS_DECL_MINIMAL] = 1;
   tree_contains_struct[FIELD_DECL][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[NAME_MEMORY_TAG][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[SYMBOL_MEMORY_TAG][TS_DECL_MINIMAL] = 1;
-  tree_contains_struct[MEMORY_PARTITION_TAG][TS_DECL_MINIMAL] = 1;
-
-  tree_contains_struct[NAME_MEMORY_TAG][TS_MEMORY_TAG] = 1;
-  tree_contains_struct[SYMBOL_MEMORY_TAG][TS_MEMORY_TAG] = 1;
-  tree_contains_struct[MEMORY_PARTITION_TAG][TS_MEMORY_TAG] = 1;
-
-  tree_contains_struct[MEMORY_PARTITION_TAG][TS_MEMORY_PARTITION_TAG] = 1;
 
   tree_contains_struct[VAR_DECL][TS_DECL_WITH_VIS] = 1;
   tree_contains_struct[FUNCTION_DECL][TS_DECL_WITH_VIS] = 1;
@@ -465,11 +456,6 @@ tree_code_size (enum tree_code code)
 	    return sizeof (struct tree_type_decl);
 	  case FUNCTION_DECL:
 	    return sizeof (struct tree_function_decl);
-	  case NAME_MEMORY_TAG:
-	  case SYMBOL_MEMORY_TAG:
-	    return sizeof (struct tree_memory_tag);
-	  case MEMORY_PARTITION_TAG:
-	    return sizeof (struct tree_memory_partition_tag);
 	  default:
 	    return sizeof (struct tree_decl_non_common);
 	  }
@@ -2409,10 +2395,6 @@ tree_node_structure (const_tree t)
 	    return TS_TYPE_DECL;
 	  case FUNCTION_DECL:
 	    return TS_FUNCTION_DECL;
-	  case SYMBOL_MEMORY_TAG:
-	  case NAME_MEMORY_TAG:
-	  case MEMORY_PARTITION_TAG:
-	    return TS_MEMORY_TAG;
 	  default:
 	    return TS_DECL_NON_COMMON;
 	  }
@@ -3433,9 +3415,8 @@ build5_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 }
 
 tree
-build7_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
-	     tree arg2, tree arg3, tree arg4, tree arg5,
-	     tree arg6 MEM_STAT_DECL)
+build6_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
+	     tree arg2, tree arg3, tree arg4, tree arg5 MEM_STAT_DECL)
 {
   bool constant, read_only, side_effects;
   tree t;
@@ -3453,7 +3434,6 @@ build7_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   PROCESS_ARG(3);
   PROCESS_ARG(4);
   PROCESS_ARG(5);
-  PROCESS_ARG(6);
 
   TREE_SIDE_EFFECTS (t) = side_effects;
   TREE_THIS_VOLATILE (t) = 0;

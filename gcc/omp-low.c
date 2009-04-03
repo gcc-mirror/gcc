@@ -3495,6 +3495,8 @@ expand_omp_taskreg (struct omp_region *region)
 	  if (changed)
 	    cleanup_tree_cfg ();
 	}
+      if (gimple_in_ssa_p (cfun))
+	update_ssa (TODO_update_ssa);
       current_function_decl = save_current;
       pop_cfun ();
     }

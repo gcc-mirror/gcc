@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-fre-details -fdump-tree-optimized --param max-aliased-vops=0" } */
+/* { dg-options "-O2 -fdump-tree-fre-details -fdump-tree-optimized" } */
 
 struct A {
   int i;

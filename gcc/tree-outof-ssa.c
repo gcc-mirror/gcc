@@ -122,14 +122,10 @@ create_temp (tree t)
   DECL_GIMPLE_REG_P (tmp) = DECL_GIMPLE_REG_P (t);
   add_referenced_var (tmp);
 
-  /* add_referenced_var will create the annotation and set up some
-     of the flags in the annotation.  However, some flags we need to
-     inherit from our original variable.  */
-  set_symbol_mem_tag (tmp, symbol_mem_tag (t));
-  if (is_call_clobbered (t))
-    mark_call_clobbered (tmp, var_ann (t)->escape_mask);
-  if (bitmap_bit_p (gimple_call_used_vars (cfun), DECL_UID (t)))
-    bitmap_set_bit (gimple_call_used_vars (cfun), DECL_UID (tmp));
+  /* We should never have copied variables in non-automatic storage
+     or variables that have their address taken.  So it is pointless
+     to try to copy call-clobber state here.  */
+  gcc_assert (!may_be_aliased (t) && !is_global_var (t));
 
   return tmp;
 }

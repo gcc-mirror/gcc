@@ -105,14 +105,6 @@ extern const enum tree_code_class tree_code_type[];
 #define DECL_P(CODE)\
         (TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_declaration)
 
-/* Nonzero if CODE represents a memory tag.  */
-
-#define MTAG_P(CODE) \
-  (TREE_CODE (CODE) == NAME_MEMORY_TAG		\
-   || TREE_CODE (CODE) == SYMBOL_MEMORY_TAG	\
-   || TREE_CODE (CODE) == MEMORY_PARTITION_TAG)
-
-
 /* Nonzero if DECL represents a VAR_DECL or FUNCTION_DECL.  */
 
 #define VAR_OR_FUNCTION_DECL_P(DECL)\
@@ -933,7 +925,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 #define TYPE_CHECK(T)		TREE_CLASS_CHECK (T, tcc_type)
 #define DECL_MINIMAL_CHECK(T)   CONTAINS_STRUCT_CHECK (T, TS_DECL_MINIMAL)
-#define TREE_MEMORY_TAG_CHECK(T)       CONTAINS_STRUCT_CHECK (T, TS_MEMORY_TAG)
 #define DECL_COMMON_CHECK(T)    CONTAINS_STRUCT_CHECK (T, TS_DECL_COMMON)
 #define DECL_WRTL_CHECK(T)      CONTAINS_STRUCT_CHECK (T, TS_DECL_WRTL)
 #define DECL_WITH_VIS_CHECK(T)  CONTAINS_STRUCT_CHECK (T, TS_DECL_WITH_VIS)
@@ -1613,7 +1604,6 @@ extern void protected_set_expr_location (tree, location_t);
 #define TMR_STEP(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 3))
 #define TMR_OFFSET(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 4))
 #define TMR_ORIGINAL(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 5))
-#define TMR_TAG(NODE) (TREE_OPERAND (TARGET_MEM_REF_CHECK (NODE), 6))
 
 /* The operands of a BIND_EXPR.  */
 #define BIND_EXPR_VARS(NODE) (TREE_OPERAND (BIND_EXPR_CHECK (NODE), 0))
@@ -2438,12 +2428,10 @@ struct tree_binfo GTY (())
 	(TREE_CODE (DECL) == VAR_DECL					\
 	 || TREE_CODE (DECL) == PARM_DECL				\
 	 || TREE_CODE (DECL) == RESULT_DECL				\
-	 || MTAG_P (DECL)						\
 	 || (TREE_CODE (DECL) == SSA_NAME				\
 	     && (TREE_CODE (SSA_NAME_VAR (DECL)) == VAR_DECL		\
 		 || TREE_CODE (SSA_NAME_VAR (DECL)) == PARM_DECL	\
-		 || TREE_CODE (SSA_NAME_VAR (DECL)) == RESULT_DECL	\
-		 || MTAG_P (SSA_NAME_VAR (DECL)))))
+		 || TREE_CODE (SSA_NAME_VAR (DECL)) == RESULT_DECL)))
 
 
 
@@ -2497,49 +2485,6 @@ struct tree_decl_minimal GTY(())
   tree name;
   tree context;
 };
-
-/* When computing aliasing information, we represent the memory pointed-to
-   by pointers with artificial variables called "memory tags" (MT).  There
-   are two kinds of tags, namely symbol and name:
-
-   Symbol tags (SMT) are used in flow-insensitive alias analysis, they
-   represent all the pointed-to locations and variables pointed-to by
-   the same pointer symbol.  Usually, this set is computed using
-   type-based analysis (i.e., alias set classes), but this may not
-   always be the case.
-
-   Name tags (NMT) are used in flow-sensitive points-to alias
-   analysis, they represent the variables and memory locations
-   pointed-to by a specific SSA_NAME pointer.
-
-   In general, given a pointer P with a symbol tag SMT, the alias set
-   of SMT should be the union of all the alias sets of the NMTs of
-   every SSA_NAME for P.  */
-struct tree_memory_tag GTY(())
-{
-  struct tree_decl_minimal common;
-
-  bitmap GTY ((skip)) aliases;
-
-  /* True if this tag has global scope.  */
-  unsigned int is_global : 1;
-};
-
-#define MTAG_GLOBAL(NODE) (TREE_MEMORY_TAG_CHECK (NODE)->mtag.is_global)
-#define MTAG_ALIASES(NODE) (TREE_MEMORY_TAG_CHECK (NODE)->mtag.aliases)
-
-/* Memory Partition Tags (MPTs) group memory symbols under one
-   common name for the purposes of placing memory PHI nodes.  */
-
-struct tree_memory_partition_tag GTY(())
-{
-  struct tree_memory_tag common;
-  
-  /* Set of symbols grouped under this MPT.  */
-  bitmap symbols;
-};
-
-#define MPT_SYMBOLS(NODE)	(MEMORY_PARTITION_TAG_CHECK (NODE)->mpt.symbols)
 
 
 /* For any sort of a ..._DECL node, this points to the original (abstract)
@@ -3448,9 +3393,7 @@ union tree_node GTY ((ptr_alias (union lang_tree_node),
   struct tree_binfo GTY ((tag ("TS_BINFO"))) binfo;
   struct tree_statement_list GTY ((tag ("TS_STATEMENT_LIST"))) stmt_list;
   struct tree_constructor GTY ((tag ("TS_CONSTRUCTOR"))) constructor;
-  struct tree_memory_tag GTY ((tag ("TS_MEMORY_TAG"))) mtag;
   struct tree_omp_clause GTY ((tag ("TS_OMP_CLAUSE"))) omp_clause;
-  struct tree_memory_partition_tag GTY ((tag ("TS_MEMORY_PARTITION_TAG"))) mpt;
   struct tree_optimization_option GTY ((tag ("TS_OPTIMIZATION"))) optimization;
   struct tree_target_option GTY ((tag ("TS_TARGET_OPTION"))) target_option;
 };
@@ -3942,10 +3885,10 @@ extern tree build4_stat (enum tree_code, tree, tree, tree, tree,
 extern tree build5_stat (enum tree_code, tree, tree, tree, tree, tree,
 			 tree MEM_STAT_DECL);
 #define build5(c,t1,t2,t3,t4,t5,t6) build5_stat (c,t1,t2,t3,t4,t5,t6 MEM_STAT_INFO)
-extern tree build7_stat (enum tree_code, tree, tree, tree, tree, tree,
-			 tree, tree, tree MEM_STAT_DECL);
-#define build7(c,t1,t2,t3,t4,t5,t6,t7,t8) \
-  build7_stat (c,t1,t2,t3,t4,t5,t6,t7,t8 MEM_STAT_INFO)
+extern tree build6_stat (enum tree_code, tree, tree, tree, tree, tree,
+			 tree, tree MEM_STAT_DECL);
+#define build6(c,t1,t2,t3,t4,t5,t6,t7) \
+  build6_stat (c,t1,t2,t3,t4,t5,t6,t7 MEM_STAT_INFO)
 
 extern tree build_int_cst (tree, HOST_WIDE_INT);
 extern tree build_int_cst_type (tree, HOST_WIDE_INT);

@@ -1815,16 +1815,6 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
           return false;
         }
 
-      if (!DR_SYMBOL_TAG (dr))
-        {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
-            {
-              fprintf (vect_dump, "not vectorized: no memory tag for ");
-              print_generic_expr (vect_dump, DR_REF (dr), TDF_SLIM);
-            }
-          return false;
-        }
-
       base = unshare_expr (DR_BASE_ADDRESS (dr));
       offset = unshare_expr (DR_OFFSET (dr));
       init = unshare_expr (DR_INIT (dr));
@@ -2186,7 +2176,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
 tree
 vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
 			  tree offset, tree *initial_address, gimple *ptr_incr,
-			  bool only_init, bool *inv_p, tree type)
+			  bool only_init, bool *inv_p)
 {
   tree base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
@@ -2197,7 +2187,6 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree vect_ptr_type;
   tree vect_ptr;
-  tree tag;
   tree new_temp;
   gimple vec_stmt;
   gimple_seq new_stmt_list = NULL;
@@ -2245,41 +2234,33 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
     }
 
   /** (1) Create the new vector-pointer variable:  **/
-  if (type)
-    vect_ptr_type = build_pointer_type (type);
-  else
-    vect_ptr_type = build_pointer_type (vectype);
-
-  if (TREE_CODE (DR_BASE_ADDRESS (dr)) == SSA_NAME
-      && TYPE_RESTRICT (TREE_TYPE (DR_BASE_ADDRESS (dr))))
-    vect_ptr_type = build_qualified_type (vect_ptr_type, TYPE_QUAL_RESTRICT);
+  vect_ptr_type = build_pointer_type (vectype);
   vect_ptr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
                                     get_name (base_name));
-  if (TREE_CODE (DR_BASE_ADDRESS (dr)) == SSA_NAME
-      && TYPE_RESTRICT (TREE_TYPE (DR_BASE_ADDRESS (dr))))
+  /* If any of the data-references in the stmt group does not conflict
+     with the created vector data-reference use a ref-all pointer instead.  */
+  if (STMT_VINFO_DR_GROUP_SIZE (stmt_info) > 1)
     {
-      get_alias_set (base_name);
-      DECL_POINTER_ALIAS_SET (vect_ptr)
-	= DECL_POINTER_ALIAS_SET (SSA_NAME_VAR (DR_BASE_ADDRESS (dr)));
+      gimple orig_stmt = STMT_VINFO_DR_GROUP_FIRST_DR (stmt_info);
+      do
+	{
+	  tree lhs = gimple_assign_lhs (orig_stmt);
+	  if (!alias_sets_conflict_p (get_deref_alias_set (vect_ptr),
+				      get_alias_set (lhs)))
+	    {
+	      vect_ptr_type = build_pointer_type_for_mode (vectype,
+							   ptr_mode, true);
+	      vect_ptr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
+						get_name (base_name));
+	      break;
+	    }
+
+	  orig_stmt = STMT_VINFO_DR_GROUP_NEXT_DR (vinfo_for_stmt (orig_stmt));
+	}
+      while (orig_stmt);
     }
 
   add_referenced_var (vect_ptr);
-
-  /** (2) Add aliasing information to the new vector-pointer:
-          (The points-to info (DR_PTR_INFO) may be defined later.)  **/
-  
-  tag = DR_SYMBOL_TAG (dr);
-  gcc_assert (tag);
-
-  /* If tag is a variable (and NOT_A_TAG) than a new symbol memory
-     tag must be created with tag added to its may alias list.  */
-  if (!MTAG_P (tag))
-    new_type_alias (vect_ptr, tag, DR_REF (dr));
-  else
-    {
-      set_symbol_mem_tag (vect_ptr, tag);
-      mark_sym_for_renaming (tag);
-    }
 
   /** Note: If the dataref is in an inner-loop nested in LOOP, and we are
       vectorizing LOOP (i.e. outer-loop vectorization), we need to create two
@@ -2858,7 +2839,7 @@ vect_setup_realignment (gimple stmt, gimple_stmt_iterator *gsi,
       pe = loop_preheader_edge (loop_for_initial_load);
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       ptr = vect_create_data_ref_ptr (stmt, loop_for_initial_load, NULL_TREE,
-		                  &init_addr, &inc, true, &inv_p, NULL_TREE);
+				      &init_addr, &inc, true, &inv_p);
       data_ref = build1 (ALIGN_INDIRECT_REF, vectype, ptr);
       new_stmt = gimple_build_assign (vec_dest, data_ref);
       new_temp = make_ssa_name (vec_dest, new_stmt);

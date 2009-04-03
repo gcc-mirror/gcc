@@ -1,9 +1,5 @@
 /* { dg-do run } */
-
-/* The max-aliased-vops setting is a temporary workaround to avoid the
-   random failures as described in PR 30194.  This test case does not
-   need alias sets bigger than 13 elements.  */
-/* { dg-options "-O2 --param max-aliased-vops=15" } */
+/* { dg-options "-O2" } */
 
 extern void abort (void);
 

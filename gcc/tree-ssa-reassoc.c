@@ -242,7 +242,7 @@ get_rank (tree e)
 	return 0;
 
       if (!is_gimple_assign (stmt)
-	  || !ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS))
+	  || gimple_vdef (stmt))
 	return bb_rank[gimple_bb (stmt)->index];
 
       /* If we already have a rank for this expression, use that.  */

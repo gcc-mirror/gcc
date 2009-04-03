@@ -757,7 +757,7 @@ extern bool vect_analyze_data_ref_accesses (loop_vec_info);
 extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_analyze_data_refs (loop_vec_info);
 extern tree vect_create_data_ref_ptr (gimple, struct loop *, tree, tree *,
-                                      gimple *, bool, bool *, tree);
+                                      gimple *, bool, bool *);
 extern tree bump_vector_ptr (tree, gimple, gimple_stmt_iterator *, gimple, tree);
 extern tree vect_create_destination_var (tree, tree);
 extern bool vect_strided_store_supported (tree);

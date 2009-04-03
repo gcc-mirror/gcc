@@ -78,9 +78,6 @@ along with GCC; see the file COPYING3.  If not see
 /* True if this is the "early" pass, before inlining.  */
 static bool early_sra;
 
-/* The set of todo flags to return from tree_sra.  */
-static unsigned int todoflags;
-
 /* The set of aggregate variables that are candidates for scalarization.  */
 static bitmap sra_candidates;
 
@@ -210,7 +207,6 @@ extern void debug_sra_elt_name (struct sra_elt *);
 static tree generate_element_ref (struct sra_elt *);
 static gimple_seq sra_build_assignment (tree dst, tree src);
 static void mark_all_v_defs_seq (gimple_seq);
-static void mark_all_v_defs_stmt (gimple);
 
 
 /* Return true if DECL is an SRA candidate.  */
@@ -1057,11 +1053,10 @@ sra_walk_function (const struct sra_walk_fns *fns)
 	ni = si;
 	gsi_next (&ni);
 
-	/* If the statement has no virtual operands, then it doesn't
+	/* If the statement does not reference memory, then it doesn't
 	   make any structure references that we care about.  */
-	if (gimple_aliases_computed_p (cfun)
-	    && ZERO_SSA_OPERANDS (stmt, (SSA_OP_VIRTUAL_DEFS | SSA_OP_VUSE)))
-	      continue;
+	if (!gimple_references_memory_p (stmt))
+	  continue;
 
 	switch (gimple_code (stmt))
 	  {
@@ -2008,27 +2003,6 @@ decide_instantiations (void)
 
 /* Phase Four: Update the function to match the replacements created.  */
 
-/* Mark all the variables in VDEF/VUSE operators for STMT for
-   renaming. This becomes necessary when we modify all of a
-   non-scalar.  */
-
-static void
-mark_all_v_defs_stmt (gimple stmt)
-{
-  tree sym;
-  ssa_op_iter iter;
-
-  update_stmt_if_modified (stmt);
-
-  FOR_EACH_SSA_TREE_OPERAND (sym, stmt, iter, SSA_OP_ALL_VIRTUALS)
-    {
-      if (TREE_CODE (sym) == SSA_NAME)
-	sym = SSA_NAME_VAR (sym);
-      mark_sym_for_renaming (sym);
-    }
-}
-
-
 /* Mark all the variables in virtual operands in all the statements in
    LIST for renaming.  */
 
@@ -2038,7 +2012,7 @@ mark_all_v_defs_seq (gimple_seq seq)
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start (seq); !gsi_end_p (gsi); gsi_next (&gsi))
-    mark_all_v_defs_stmt (gsi_stmt (gsi));
+    update_stmt_if_modified (gsi_stmt (gsi));
 }
 
 /* Mark every replacement under ELT with TREE_NO_WARNING.  */
@@ -2863,6 +2837,7 @@ static void
 sra_replace (gimple_stmt_iterator *gsi, gimple_seq seq)
 {
   sra_insert_before (gsi, seq);
+  unlink_stmt_vdef (gsi_stmt (*gsi));
   gsi_remove (gsi, false);
   if (gsi_end_p (*gsi))
     *gsi = gsi_last (gsi_seq (*gsi));
@@ -3138,7 +3113,7 @@ scalarize_use (struct sra_elt *elt, tree *expr_p, gimple_stmt_iterator *gsi,
 	  replacement = tmp;
 	}
       if (is_output)
-	  mark_all_v_defs_stmt (stmt);
+	  update_stmt_if_modified (stmt);
       *expr_p = REPLDUP (replacement);
       update_stmt (stmt);
     }
@@ -3358,7 +3333,7 @@ scalarize_copy (struct sra_elt *lhs_elt, struct sra_elt *rhs_elt,
 	 original block copy statement.  */
 
       stmt = gsi_stmt (*gsi);
-      mark_all_v_defs_stmt (stmt);
+      update_stmt_if_modified (stmt);
 
       seq = NULL;
       generate_element_copy (lhs_elt, rhs_elt, &seq);
@@ -3425,7 +3400,7 @@ scalarize_init (struct sra_elt *lhs_elt, tree rhs, gimple_stmt_iterator *gsi)
       /* The LHS is fully instantiated.  The list of initializations
 	 replaces the original structure assignment.  */
       gcc_assert (seq);
-      mark_all_v_defs_stmt (gsi_stmt (*gsi));
+      update_stmt_if_modified (gsi_stmt (*gsi));
       mark_all_v_defs_seq (seq);
       sra_replace (gsi, seq);
     }
@@ -3476,7 +3451,7 @@ scalarize_ldst (struct sra_elt *elt, tree other,
       gimple_seq seq = NULL;
       gimple stmt = gsi_stmt (*gsi);
 
-      mark_all_v_defs_stmt (stmt);
+      update_stmt_if_modified (stmt);
       generate_copy_inout (elt, is_output, other, &seq);
       gcc_assert (seq);
       mark_all_v_defs_seq (seq);
@@ -3637,7 +3612,6 @@ static unsigned int
 tree_sra (void)
 {
   /* Initialize local variables.  */
-  todoflags = 0;
   gcc_obstack_init (&sra_obstack);
   sra_candidates = BITMAP_ALLOC (NULL);
   needs_copy_in = BITMAP_ALLOC (NULL);
@@ -3650,8 +3624,6 @@ tree_sra (void)
       scan_function ();
       decide_instantiations ();
       scalarize_function ();
-      if (!bitmap_empty_p (sra_candidates))
-	todoflags |= TODO_rebuild_alias;
     }
 
   /* Free allocated memory.  */
@@ -3662,7 +3634,7 @@ tree_sra (void)
   BITMAP_FREE (sra_type_decomp_cache);
   BITMAP_FREE (sra_type_inst_cache);
   obstack_free (&sra_obstack, NULL);
-  return todoflags;
+  return 0;
 }
 
 static unsigned int
@@ -3674,7 +3646,7 @@ tree_sra_early (void)
   ret = tree_sra ();
   early_sra = false;
 
-  return ret & ~TODO_rebuild_alias;
+  return ret;
 }
 
 static bool
@@ -3719,7 +3691,7 @@ struct gimple_opt_pass pass_sra =
   PROP_cfg | PROP_ssa,			/* properties_required */
   0,					/* properties_provided */
   0,				        /* properties_destroyed */
-  0,					/* todo_flags_start */
+  TODO_update_address_taken,		/* todo_flags_start */
   TODO_dump_func
   | TODO_update_ssa
   | TODO_ggc_collect

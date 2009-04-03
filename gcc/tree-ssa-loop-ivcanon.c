@@ -442,7 +442,7 @@ empty_loop_p (struct loop *loop)
 	{
 	  gimple stmt = gsi_stmt (gsi);
 
-	  if (!ZERO_SSA_OPERANDS (stmt, SSA_OP_VIRTUAL_DEFS)
+	  if (gimple_vdef (stmt)
 	      || gimple_has_volatile_ops (stmt))
 	    {
 	      free (body);

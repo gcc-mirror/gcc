@@ -510,10 +510,6 @@ dequeue_and_dump (dump_info_p di)
     case CONST_DECL:
       dump_child ("cnst", DECL_INITIAL (t));
       break;
-      
-    case SYMBOL_MEMORY_TAG:
-    case NAME_MEMORY_TAG:
-      break;
 
     case VAR_DECL:
     case PARM_DECL:

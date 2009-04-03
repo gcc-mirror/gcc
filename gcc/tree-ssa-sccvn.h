@@ -79,20 +79,19 @@ typedef const vn_reference_op_s *const_vn_reference_op_t;
 DEF_VEC_O(vn_reference_op_s);
 DEF_VEC_ALLOC_O(vn_reference_op_s, heap);
 
-/* A reference operation in the hashtable is representation as a
-   collection of vuses, representing the memory state at the time of
+/* A reference operation in the hashtable is representation as
+   the vuse, representing the memory state at the time of
    the operation, and a collection of operands that make up the
    addressing calculation.  If two vn_reference_t's have the same set
    of operands, they access the same memory location. We also store
-   the resulting value number, and the hashcode.  The vuses are
-   always stored in order sorted by ssa name version.  */
+   the resulting value number, and the hashcode.  */
 
 typedef struct vn_reference_s
 {
   /* Unique identifier that all expressions with the same value have. */
   unsigned int value_id;
   hashval_t hashcode;
-  VEC (tree, gc) *vuses;
+  tree vuse;
   VEC (vn_reference_op_s, heap) *operands;
   tree result;
 } *vn_reference_t;
@@ -176,12 +175,13 @@ vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
 				       tree, tree, unsigned int);
 void copy_reference_ops_from_ref (tree, VEC(vn_reference_op_s, heap) **);
 void copy_reference_ops_from_call (gimple, VEC(vn_reference_op_s, heap) **);
-tree vn_reference_lookup_pieces (VEC (tree, gc) *,
+tree get_ref_from_reference_ops (VEC(vn_reference_op_s, heap) *ops);
+tree vn_reference_lookup_pieces (tree,
 				 VEC (vn_reference_op_s, heap) *,
 				 vn_reference_t *, bool);
-tree vn_reference_lookup (tree, VEC (tree, gc) *, bool, vn_reference_t *);
-vn_reference_t vn_reference_insert (tree, tree, VEC (tree, gc) *);
-vn_reference_t vn_reference_insert_pieces (VEC (tree, gc) *,
+tree vn_reference_lookup (tree, tree, bool, vn_reference_t *);
+vn_reference_t vn_reference_insert (tree, tree, tree);
+vn_reference_t vn_reference_insert_pieces (tree,
 					   VEC (vn_reference_op_s, heap) *,
 					   tree, unsigned int);
 
@@ -195,5 +195,4 @@ unsigned int get_next_value_id (void);
 unsigned int get_constant_value_id (tree);
 unsigned int get_or_alloc_constant_value_id (tree);
 bool value_id_constant_p (unsigned int);
-VEC (tree, gc) *shared_vuses_from_stmt (gimple);
 #endif /* TREE_SSA_SCCVN_H  */

@@ -333,9 +333,9 @@ create_mem_ref_raw (tree type, struct mem_address *addr)
   if (addr->offset && integer_zerop (addr->offset))
     addr->offset = NULL_TREE;
 
-  return build7 (TARGET_MEM_REF, type,
+  return build6 (TARGET_MEM_REF, type,
 		 addr->symbol, addr->base, addr->index,
-		 addr->step, addr->offset, NULL, NULL);
+		 addr->step, addr->offset, NULL);
 }
 
 /* Returns true if OBJ is an object whose address is a link time constant.  */
@@ -709,9 +709,6 @@ get_address_description (tree op, struct mem_address *addr)
 void
 copy_mem_ref_info (tree to, tree from)
 {
-  /* Copy the annotation, to preserve the aliasing information.  */
-  TMR_TAG (to) = TMR_TAG (from);
-
   /* And the info about the original reference.  */
   TMR_ORIGINAL (to) = TMR_ORIGINAL (from);
 }

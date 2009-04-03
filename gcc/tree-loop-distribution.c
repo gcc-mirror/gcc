@@ -77,9 +77,6 @@ static bitmap remaining_stmts;
    predecessor a node that writes to memory.  */
 static bitmap upstream_mem_writes;
 
-/* TODOs we need to run after the pass.  */
-static unsigned int todo;
-
 /* Update the PHI nodes of NEW_LOOP.  NEW_LOOP is a duplicate of
    ORIG_LOOP.  */
 
@@ -241,14 +238,13 @@ static bool
 generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
 		      gimple_stmt_iterator bsi)
 {
-  tree t, addr_base;
+  tree addr_base;
   tree nb_bytes = NULL;
   bool res = false;
   gimple_seq stmts = NULL, stmt_list = NULL;
   gimple fn_call;
   tree mem, fndecl, fntype, fn;
   gimple_stmt_iterator i;
-  ssa_op_iter iter;
   struct data_reference *dr = XCNEW (struct data_reference);
 
   DR_STMT (dr) = stmt;
@@ -303,29 +299,6 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
     {
       gimple s = gsi_stmt (i);
       update_stmt_if_modified (s);
-
-      FOR_EACH_SSA_TREE_OPERAND (t, s, iter, SSA_OP_VIRTUAL_DEFS)
-	{
-	  if (TREE_CODE (t) == SSA_NAME)
-	    t = SSA_NAME_VAR (t);
-	  mark_sym_for_renaming (t);
-	}
-    }
-
-  /* Mark also the uses of the VDEFS of STMT to be renamed.  */
-  FOR_EACH_SSA_TREE_OPERAND (t, stmt, iter, SSA_OP_VIRTUAL_DEFS)
-    {
-      if (TREE_CODE (t) == SSA_NAME)
-	{
-	  gimple s;
-	  imm_use_iterator imm_iter;
-
-	  FOR_EACH_IMM_USE_STMT (s, imm_iter, t)
-	    update_stmt (s);
-
-	  t = SSA_NAME_VAR (t);
-	}
-      mark_sym_for_renaming (t);
     }
 
   gsi_insert_seq_after (&bsi, stmt_list, GSI_CONTINUE_LINKING);
@@ -333,8 +306,6 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "generated memset zero\n");
-
-  todo |= TODO_rebuild_alias;
 
  end:
   free_data_ref (dr);
@@ -606,7 +577,6 @@ static void
 rdg_flag_uses (struct graph *rdg, int u, bitmap partition, bitmap loops,
 	       bitmap processed, bool *part_has_writes)
 {
-  ssa_op_iter iter;
   use_operand_p use_p;
   struct vertex *x = &(rdg->vertices[u]);
   gimple stmt = RDGV_STMT (x);
@@ -626,7 +596,7 @@ rdg_flag_uses (struct graph *rdg, int u, bitmap partition, bitmap loops,
 
   if (gimple_code (stmt) != GIMPLE_PHI)
     {
-      FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_VIRTUAL_USES)
+      if ((use_p = gimple_vuse_op (stmt)) != NULL_USE_OPERAND_P)
 	{
 	  tree use = USE_FROM_PTR (use_p);
 
@@ -1211,8 +1181,6 @@ tree_loop_distribution (void)
   loop_iterator li;
   int nb_generated_loops = 0;
 
-  todo = 0;
-
   FOR_EACH_LOOP (li, loop, 0)
     {
       VEC (gimple, heap) *work_list = VEC_alloc (gimple, heap, 3);
@@ -1244,7 +1212,7 @@ tree_loop_distribution (void)
       VEC_free (gimple, heap, work_list);
     }
 
-  return todo;
+  return 0;
 }
 
 static bool

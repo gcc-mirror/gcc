@@ -792,34 +792,15 @@ dr_analyze_indices (struct data_reference *dr, struct loop *nest)
 static void
 dr_analyze_alias (struct data_reference *dr)
 {
-  gimple stmt = DR_STMT (dr);
   tree ref = DR_REF (dr);
-  tree base = get_base_address (ref), addr, smt = NULL_TREE;
-  ssa_op_iter it;
-  tree op;
-  bitmap vops;
+  tree base = get_base_address (ref), addr;
 
-  if (DECL_P (base))
-    smt = base;
-  else if (INDIRECT_REF_P (base))
+  if (INDIRECT_REF_P (base))
     {
       addr = TREE_OPERAND (base, 0);
       if (TREE_CODE (addr) == SSA_NAME)
-	{
-	  smt = symbol_mem_tag (SSA_NAME_VAR (addr));
-	  DR_PTR_INFO (dr) = SSA_NAME_PTR_INFO (addr);
-	}
+	DR_PTR_INFO (dr) = SSA_NAME_PTR_INFO (addr);
     }
-
-  DR_SYMBOL_TAG (dr) = smt;
-
-  vops = BITMAP_ALLOC (NULL);
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, it, SSA_OP_VIRTUAL_USES)
-    {
-      bitmap_set_bit (vops, DECL_UID (SSA_NAME_VAR (op)));
-    }
-
-  DR_VOPS (dr) = vops;
 }
 
 /* Returns true if the address of DR is invariant.  */
@@ -842,7 +823,6 @@ dr_address_invariant_p (struct data_reference *dr)
 void
 free_data_ref (data_reference_p dr)
 {
-  BITMAP_FREE (DR_VOPS (dr));
   VEC_free (tree, heap, DR_ACCESS_FNS (dr));
   free (dr);
 }
@@ -887,8 +867,6 @@ create_data_ref (struct loop *nest, tree memref, gimple stmt, bool is_read)
       print_generic_expr (dump_file, DR_ALIGNED_TO (dr), TDF_SLIM);
       fprintf (dump_file, "\n\tbase_object: ");
       print_generic_expr (dump_file, DR_BASE_OBJECT (dr), TDF_SLIM);
-      fprintf (dump_file, "\n\tsymbol tag: ");
-      print_generic_expr (dump_file, DR_SYMBOL_TAG (dr), TDF_SLIM);
       fprintf (dump_file, "\n");
     }
 
@@ -1238,23 +1216,21 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b)
   const_tree type_a, type_b;
   const_tree decl_a = NULL_TREE, decl_b = NULL_TREE;
 
-  /* If the sets of virtual operands are disjoint, the memory references do not
-     alias.  */
-  if (!bitmap_intersect_p (DR_VOPS (a), DR_VOPS (b)))
-    return false;
-
   /* If the accessed objects are disjoint, the memory references do not
      alias.  */
   if (disjoint_objects_p (DR_BASE_OBJECT (a), DR_BASE_OBJECT (b)))
     return false;
 
+  /* Query the alias oracle.  */
+  if (!refs_may_alias_p (DR_REF (a), DR_REF (b)))
+    return false;
+
   if (!addr_a || !addr_b)
     return true;
 
-  /* If the references are based on different static objects, they cannot alias
-     (PTA should be able to disambiguate such accesses, but often it fails to,
-     since currently we cannot distinguish between pointer and offset in pointer
-     arithmetics).  */
+  /* If the references are based on different static objects, they cannot
+     alias (PTA should be able to disambiguate such accesses, but often
+     it fails to).  */
   if (TREE_CODE (addr_a) == ADDR_EXPR
       && TREE_CODE (addr_b) == ADDR_EXPR)
     return TREE_OPERAND (addr_a, 0) == TREE_OPERAND (addr_b, 0);
@@ -4050,7 +4026,7 @@ get_references_in_stmt (gimple stmt, VEC (data_ref_loc, heap) **references)
 	  && gimple_asm_volatile_p (stmt)))
     clobbers_memory = true;
 
-  if (ZERO_SSA_OPERANDS (stmt, SSA_OP_ALL_VIRTUALS))
+  if (!gimple_vuse (stmt))
     return clobbers_memory;
 
   if (stmt_code == GIMPLE_ASSIGN)
@@ -4358,7 +4334,6 @@ analyze_all_data_dependences (struct loop *loop)
 	{
 	  unsigned nb_top_relations = 0;
 	  unsigned nb_bot_relations = 0;
-	  unsigned nb_basename_differ = 0;
 	  unsigned nb_chrec_relations = 0;
 	  struct data_dependence_relation *ddr;
 
@@ -4368,15 +4343,7 @@ analyze_all_data_dependences (struct loop *loop)
 		nb_top_relations++;
 	  
 	      else if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
-		{
-		  struct data_reference *a = DDR_A (ddr);
-		  struct data_reference *b = DDR_B (ddr);
-
-		  if (!bitmap_intersect_p (DR_VOPS (a), DR_VOPS (b)))
-		    nb_basename_differ++;
-		  else
-		    nb_bot_relations++;
-		}
+		nb_bot_relations++;
 	  
 	      else 
 		nb_chrec_relations++;
@@ -4939,7 +4906,7 @@ stores_from_loop (struct loop *loop, VEC (gimple, heap) **stmts)
       gimple_stmt_iterator bsi;
 
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	if (!ZERO_SSA_OPERANDS (gsi_stmt (bsi), SSA_OP_VDEF))
+	if (gimple_vdef (gsi_stmt (bsi)))
 	  VEC_safe_push (gimple, heap, *stmts, gsi_stmt (bsi));
     }
 

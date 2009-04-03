@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-lim-details" } */
+/* { dg-options "-O -fdump-tree-lim-details" } */
 
 struct { int x; int y; } global;
 void foo(int n)

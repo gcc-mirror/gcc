@@ -797,11 +797,9 @@ remove_unused_locals (void)
      pass is performed.  */
   FOR_EACH_REFERENCED_VAR (t, rvi)
     if (!is_global_var (t)
-	&& !MTAG_P (t)
 	&& TREE_CODE (t) != PARM_DECL
 	&& TREE_CODE (t) != RESULT_DECL
 	&& !(ann = var_ann (t))->used
-	&& !ann->symbol_mem_tag
 	&& !TREE_ADDRESSABLE (t)
 	&& (optimize || DECL_ARTIFICIAL (t)))
       remove_referenced_var (t);

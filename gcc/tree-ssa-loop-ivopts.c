@@ -5222,63 +5222,6 @@ unshare_and_remove_ssa_names (tree ref)
   return ref;
 }
 
-/* Extract the alias analysis info for the memory reference REF.  There are
-   several ways how this information may be stored and what precisely is
-   its semantics depending on the type of the reference, but there always is
-   somewhere hidden one _DECL node that is used to determine the set of
-   virtual operands for the reference.  The code below deciphers this jungle
-   and extracts this single useful piece of information.  */
-
-static tree
-get_ref_tag (tree ref, tree orig)
-{
-  tree var = get_base_address (ref);
-  tree aref = NULL_TREE, tag, sv;
-  HOST_WIDE_INT offset, size, maxsize;
-
-  for (sv = orig; handled_component_p (sv); sv = TREE_OPERAND (sv, 0))
-    {
-      aref = get_ref_base_and_extent (sv, &offset, &size, &maxsize);
-      if (ref)
-	break;
-    }
-
-  if (!var)
-    return NULL_TREE;
-
-  if (TREE_CODE (var) == INDIRECT_REF)
-    {
-      /* If the base is a dereference of a pointer, first check its name memory
-	 tag.  If it does not have one, use its symbol memory tag.  */
-      var = TREE_OPERAND (var, 0);
-      if (TREE_CODE (var) != SSA_NAME)
-	return NULL_TREE;
-
-      if (SSA_NAME_PTR_INFO (var))
-	{
-	  tag = SSA_NAME_PTR_INFO (var)->name_mem_tag;
-	  if (tag)
-	    return tag;
-	}
- 
-      var = SSA_NAME_VAR (var);
-      tag = symbol_mem_tag (var);
-      gcc_assert (tag != NULL_TREE);
-      return tag;
-    }
-  else
-    { 
-      if (!DECL_P (var))
-	return NULL_TREE;
-
-      tag = symbol_mem_tag (var);
-      if (tag)
-	return tag;
-
-      return var;
-    }
-}
-
 /* Copies the reference information from OLD_REF to NEW_REF.  */
 
 static void
@@ -5287,10 +5230,7 @@ copy_ref_info (tree new_ref, tree old_ref)
   if (TREE_CODE (old_ref) == TARGET_MEM_REF)
     copy_mem_ref_info (new_ref, old_ref);
   else
-    {
-      TMR_ORIGINAL (new_ref) = unshare_and_remove_ssa_names (old_ref);
-      TMR_TAG (new_ref) = get_ref_tag (old_ref, TMR_ORIGINAL (new_ref));
-    }
+    TMR_ORIGINAL (new_ref) = unshare_and_remove_ssa_names (old_ref);
 }
 
 /* Rewrites USE (address that is an iv) using candidate CAND.  */

@@ -433,33 +433,51 @@ scan_stmt_for_static_refs (gimple_stmt_iterator *gsip,
   if (fn)
     local = get_reference_vars_info (fn)->local;
 
-  if (gimple_loaded_syms (stmt))
-    EXECUTE_IF_SET_IN_BITMAP (gimple_loaded_syms (stmt), 0, i, bi)
-      mark_load (local, referenced_var_lookup (i));
-  if (gimple_stored_syms (stmt))
-    EXECUTE_IF_SET_IN_BITMAP (gimple_stored_syms (stmt), 0, i, bi)
-      mark_store (local, referenced_var_lookup (i));
+  /* Look for direct loads and stores.  */
+  if (gimple_has_lhs (stmt))
+    {
+      tree lhs = get_base_address (gimple_get_lhs (stmt));
+      if (lhs && DECL_P (lhs))
+        mark_store (local, lhs);
+    }
+  if (gimple_assign_single_p (stmt))
+    {
+      tree rhs = get_base_address (gimple_assign_rhs1 (stmt));
+      if (rhs && DECL_P (rhs))
+	mark_load (local, rhs);
+    }
+  else if (is_gimple_call (stmt))
+    {
+      for (i = 0; i < gimple_call_num_args (stmt); ++i)
+	{
+	  tree rhs = get_base_address (gimple_call_arg (stmt, i));
+	  if (rhs && DECL_P (rhs))
+	    mark_load (local, rhs);
+	}
+      check_call (local, stmt);
+    }
+  else if (gimple_code (stmt) == GIMPLE_ASM)
+    {
+      for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
+	{
+	  tree op = TREE_VALUE (gimple_asm_input_op (stmt, i));
+	  op = get_base_address (op);
+	  if (op && DECL_P (op))
+	    mark_load (local, op);
+	}
+      for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
+	{
+	  tree op = TREE_VALUE (gimple_asm_output_op (stmt, i));
+	  op = get_base_address (op);
+	  if (op && DECL_P (op))
+	    mark_store (local, op);
+	}
+      check_asm_memory_clobber (local, stmt);
+    }
+
   if (gimple_addresses_taken (stmt))
     EXECUTE_IF_SET_IN_BITMAP (gimple_addresses_taken (stmt), 0, i, bi)
       mark_address_taken (referenced_var_lookup (i));
-
-  switch (gimple_code (stmt))
-    {
-    case GIMPLE_CALL:
-      check_call (local, stmt);
-      break;
-      
-    case GIMPLE_ASM:
-      check_asm_memory_clobber (local, stmt);
-      break;
-
-    /* We used to check nonlocal labels here and set them as potentially modifying
-       everything.  This is not needed, since we can get to nonlocal label only
-       from callee and thus we will get info propagated.  */
-
-    default:
-      break;
-    }
   
   return NULL;
 }
