@@ -1,3 +1,16 @@
+2009-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1_impl/random: Remove, empty.
+	* include/tr1_impl/random.tcc: Likewise.
+
+	* include/std/random: Minor clean-ups, formatting fixes, adjust
+	copyright years.
+	* include/bits/random.tcc: Likewise.
+	* include/bits/random.h: Likewise.
+	* include/tr1/random: Likewise.
+	* include/tr1/random.tcc: Likewise.
+	* include/tr1/random.h: Likewise.
+
 2009-04-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc:

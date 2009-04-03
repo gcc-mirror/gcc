@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2007, 2008, 2009 Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,7 +64,8 @@ namespace std
   namespace __detail
   {
     template<typename _UIntType, size_t __w,
-	     bool = __w < static_cast<size_t>(std::numeric_limits<_UIntType>::digits)>
+	     bool = __w < static_cast<size_t>
+			  (std::numeric_limits<_UIntType>::digits)>
       struct _Shift
       { static const _UIntType __value = 0; };
 
@@ -74,9 +75,13 @@ namespace std
 
     // XXX need constexpr
     template<typename _UIntType, size_t __w,
-	     bool = __w <static_cast<size_t>(std::numeric_limits<_UIntType>::digits)>
+	     bool = __w <static_cast<size_t>
+			 (std::numeric_limits<_UIntType>::digits)>
       struct _ShiftMin1
-      { static const _UIntType __value = __gnu_cxx::__numeric_traits<_UIntType>::max; };
+      { 
+	static const _UIntType __value =
+	  __gnu_cxx::__numeric_traits<_UIntType>::max;
+      };
 
     template<typename _UIntType, size_t __w>
       struct _ShiftMin1<_UIntType, __w, true>
