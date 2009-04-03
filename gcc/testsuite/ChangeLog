@@ -1,3 +1,8 @@
+2009-04-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39594
+	* gfortran.dg/common_12.f90: New.
+
 2009-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39608
