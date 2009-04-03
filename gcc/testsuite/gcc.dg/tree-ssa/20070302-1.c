@@ -1,5 +1,4 @@
 /* { dg-do link } */
-/* { dg-xfail-if "" { *-*-* } { "*" } { "" } }  See PR34743.  */
 /* { dg-options "-O2" } */
 
 struct A

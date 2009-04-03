@@ -10,10 +10,8 @@ int f(int *p)
   return *p == a;
 }
 
-/* Currently fails because of PR38985.  */
-
-/* { dg-final { scan-tree-dump-times " = \\\*p" 2 "optimized" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-not "return 1" "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "\\\*p" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-not "return 1" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 
 
