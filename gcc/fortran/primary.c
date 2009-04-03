@@ -1401,6 +1401,13 @@ match_actual_arg (gfc_expr **result)
 	      && sym->attr.flavor != FL_UNKNOWN)
 	    break;
 
+	  if (sym->attr.in_common && !sym->attr.proc_pointer)
+	    {
+	      gfc_add_flavor (&sym->attr, FL_VARIABLE, sym->name,
+			      &sym->declared_at);
+	      break;
+	    }
+
 	  /* If the symbol is a function with itself as the result and
 	     is being defined, then we have a variable.  */
 	  if (sym->attr.function && sym->result == sym)

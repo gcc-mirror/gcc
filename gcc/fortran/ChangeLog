@@ -1,3 +1,10 @@
+2009-04-03  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39594
+	* resolve.c (resolve_common_vars): Add FL_VARIABLE to symbol
+	if it is not a procedure pointer.
+	* primary.c (match_actual_arg): Ditto.
+
 2009-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-types.c (gfc_sym_type, gfc_return_by_reference): For
