@@ -5456,7 +5456,7 @@ struct gimple_opt_pass pass_expand_omp =
   0,					/* static_pass_number */
   0,					/* tv_id */
   PROP_gimple_any,			/* properties_required */
-  PROP_gimple_lomp,			/* properties_provided */
+  0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func			/* todo_flags_finish */
@@ -6577,6 +6577,11 @@ execute_lower_omp (void)
 {
   gimple_seq body;
 
+  /* This pass always runs, to provide PROP_gimple_lomp.
+     But there is nothing to do unless -fopenmp is given.  */
+  if (flag_openmp == 0)
+    return 0;
+
   all_contexts = splay_tree_new (splay_tree_compare_pointers, 0,
 				 delete_omp_context);
 
@@ -6604,18 +6609,12 @@ execute_lower_omp (void)
   return 0;
 }
 
-static bool
-gate_lower_omp (void)
-{
-  return flag_openmp != 0;
-}
-
 struct gimple_opt_pass pass_lower_omp = 
 {
  {
   GIMPLE_PASS,
   "omplower",				/* name */
-  gate_lower_omp,			/* gate */
+  NULL,					/* gate */
   execute_lower_omp,			/* execute */
   NULL,					/* sub */
   NULL,					/* next */
