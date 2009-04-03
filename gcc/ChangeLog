@@ -1,5 +1,7 @@
 2009-04-03  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR rtl-optimization/39607
+	PR rtl-optimization/39631
 	Revert
 	2009-03-30  Vladimir Makarov  <vmakarov@redhat.com>
 	* reload.c (push_reload, find_dummy_reload): Use df_get_live_out
