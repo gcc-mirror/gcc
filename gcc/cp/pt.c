@@ -9999,7 +9999,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   enum tree_code code;
   tree r;
 
-  if (t == NULL_TREE || t == error_mark_node)
+  if (t == NULL_TREE || t == error_mark_node || args == NULL_TREE)
     return t;
 
   code = TREE_CODE (t);
@@ -16168,7 +16168,8 @@ dependent_type_p (tree type)
 bool
 dependent_scope_p (tree scope)
 {
-  return dependent_type_p (scope) && !currently_open_class (scope);
+  return (scope && TYPE_P (scope) && dependent_type_p (scope)
+	  && !currently_open_class (scope));
 }
 
 /* Returns TRUE if EXPRESSION is dependent, according to CRITERION.  */

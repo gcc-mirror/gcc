@@ -1,3 +1,8 @@
+2009-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39608
+	* g++.dg/template/const2.C: New test.
+
 2009-04-03  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/2480

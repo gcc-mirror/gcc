@@ -1,3 +1,12 @@
+2009-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39608
+	* semantics.c (finish_id_expression): Don't assume a dependent
+	member of the current instantiation isn't a valid integral
+	constant expression.  Check dependent_scope_p.
+	* pt.c (dependent_scope_p): Check TYPE_P.
+	(tsubst_copy): If args is null, just return.
+
 2009-04-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/25185
