@@ -1,5 +1,13 @@
 2009-04-04  Jan Hubicka  <jh@suse.cz>
 
+	* except.c (remove_eh_handler_and_replace): Break out from ...
+	(remove_eh_handler): ... here.
+	(bring_to_root): New function.
+	(remove_unreachable_regions): Collect MUST_NOT_THROW, unify runtime
+	handled ones, bring others to root of tree.
+
+2009-04-04  Jan Hubicka  <jh@suse.cz>
+
 	* tree-eh.c (tree_empty_eh_handler_p): Pattern match more curefully.
 	(all_phis_safe_to_merge): New function.
 	(update_info): New structure.
