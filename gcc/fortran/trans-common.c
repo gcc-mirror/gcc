@@ -1124,11 +1124,6 @@ translate_common (gfc_common_head *common, gfc_symbol *var_list)
 				 s->sym->name, &common->where);
 		}
 	    }
-	  else
-	    {
-	      /* Offset the whole common block.  */
-	      apply_segment_offset (common_segment, offset);
-	    }
 
 	  /* Apply the offset to the new segments.  */
 	  apply_segment_offset (current_segment, offset);
