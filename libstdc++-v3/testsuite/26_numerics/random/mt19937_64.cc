@@ -2,7 +2,7 @@
 //
 // 2008-11-18  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2006, 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@ test01()
   std::mt19937_64 a;
   a.discard(9999);
 
-  VERIFY( a() == 9981545732273789042ul );
+  VERIFY( a() == 9981545732273789042ull );
 }
 
 int main()

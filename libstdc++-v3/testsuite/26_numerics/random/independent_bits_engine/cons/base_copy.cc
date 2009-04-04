@@ -2,7 +2,7 @@
 //
 // 2008-12-07  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -36,7 +36,7 @@ test01()
 
   base_engine b;
 
-  std::independent_bits_engine<base_engine, 48, unsigned long> e(b);
+  std::independent_bits_engine<base_engine, 48, uint_fast64_t> e(b);
 }
 
 int main()

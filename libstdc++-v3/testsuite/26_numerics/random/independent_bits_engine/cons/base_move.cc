@@ -2,7 +2,7 @@
 //
 // 2008-12-07  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@ test01()
   typedef std::subtract_with_carry_engine<uint_fast64_t, 48, 5, 12>
     base_engine;
 
-  std::independent_bits_engine<base_engine, 48, unsigned long>
+  std::independent_bits_engine<base_engine, 48, uint_fast64_t>
     e(std::move(base_engine()));
 }
 
