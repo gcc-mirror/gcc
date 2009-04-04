@@ -1,3 +1,12 @@
+2009-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2.h (_Unwind_FrameState): Add REG_UNDEFINED enum value.
+	* unwind-dw2.c (execute_cfa_program): Set how to REG_UNDEFINED
+	instead of REG_UNSAVED for DW_CFA_undefined.
+	(uw_update_context_1): Handle REG_UNDEFINED the same as REG_UNSAVED.
+	(uw_update_context): If RA column is REG_UNDEFINED, mark it as
+	outermost frame.
+
 2009-04-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/39501
