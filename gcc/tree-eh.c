@@ -2734,6 +2734,8 @@ tree_remove_unreachable_handlers (void)
    <<<exception object>>> = save_eptr.6351_663;
    <<<filter object>>> = save_filt.6352_662;
    resx 1
+
+   And various minor variants after DCE or copy propagation.
  */
 
 static int
@@ -2741,6 +2743,8 @@ tree_empty_eh_handler_p (basic_block bb)
 {
   gimple_stmt_iterator gsi;
   int region;
+  use_operand_p imm_use;
+  gimple use_stmt;
 
   gsi = gsi_last_bb (bb);
 
@@ -2755,49 +2759,259 @@ tree_empty_eh_handler_p (basic_block bb)
   gsi_prev (&gsi);
   if (gsi_end_p (gsi))
     return 0;
-  if (gimple_code (gsi_stmt (gsi)) != GIMPLE_ASSIGN)
-    return 0;
-  if (TREE_CODE (gimple_assign_lhs (gsi_stmt (gsi))) != FILTER_EXPR)
-    return 0;
+  if (gimple_code (gsi_stmt (gsi)) == GIMPLE_ASSIGN)
+    {
+      tree filter_tmp;
+      tree exc_ptr_tmp;
 
-  /* filter_object set.  */
-  gsi_prev (&gsi);
-  if (gsi_end_p (gsi))
-    return 0;
-  if (gimple_code (gsi_stmt (gsi)) != GIMPLE_ASSIGN)
-    return 0;
-  if (TREE_CODE (gimple_assign_lhs (gsi_stmt (gsi))) != EXC_PTR_EXPR)
-    return 0;
+      if (TREE_CODE (gimple_assign_lhs (gsi_stmt (gsi))) != FILTER_EXPR)
+	return 0;
+      filter_tmp = gimple_assign_rhs1 (gsi_stmt (gsi));
 
-  /* filter_object get.  */
-  gsi_prev (&gsi);
-  if (gsi_end_p (gsi))
-    return 0;
-  if (gimple_code (gsi_stmt (gsi)) != GIMPLE_ASSIGN)
-    return 0;
-  if (TREE_CODE (gimple_assign_rhs1 (gsi_stmt (gsi))) != EXC_PTR_EXPR)
-    return 0;
+      /* filter_object set.  */
+      gsi_prev (&gsi);
+      if (gsi_end_p (gsi))
+	return 0;
+      if (gimple_code (gsi_stmt (gsi)) != GIMPLE_ASSIGN)
+	return 0;
+      if (TREE_CODE (gimple_assign_lhs (gsi_stmt (gsi))) != EXC_PTR_EXPR)
+	return 0;
+      exc_ptr_tmp = gimple_assign_rhs1 (gsi_stmt (gsi));
 
-  /* filter_object get.  */
-  gsi_prev (&gsi);
-  if (gsi_end_p (gsi))
-    return 0;
-  if (gimple_code (gsi_stmt (gsi)) != GIMPLE_ASSIGN)
-    return 0;
-  if (TREE_CODE (gimple_assign_rhs1 (gsi_stmt (gsi))) != FILTER_EXPR)
-    return 0;
+      /* exc_ptr get.  */
+      if (TREE_CODE (exc_ptr_tmp) != EXC_PTR_EXPR)
+	{
+	  gsi_prev (&gsi);
+	  if (gsi_end_p (gsi))
+	    return 0;
+	  if (gimple_code (gsi_stmt (gsi)) != GIMPLE_ASSIGN)
+	    return 0;
+	  if (TREE_CODE (gimple_assign_rhs1 (gsi_stmt (gsi))) != EXC_PTR_EXPR)
+	    return 0;
+	  if (exc_ptr_tmp != gimple_assign_lhs (gsi_stmt (gsi)))
+	    return 0;
+	  if (!single_imm_use (exc_ptr_tmp, &imm_use, &use_stmt))
+	    return 0;
+	}
 
-  /* label.  */
-  gsi_prev (&gsi);
-  if (gsi_end_p (gsi))
-    return 0;
-  if (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
-    return region;
-  else
-    return 0;
+      /* filter_object get.  */
+      if (TREE_CODE (filter_tmp) != FILTER_EXPR)
+	{
+	  gsi_prev (&gsi);
+	  if (gsi_end_p (gsi))
+	    return 0;
+	  if (gimple_code (gsi_stmt (gsi)) != GIMPLE_ASSIGN)
+	    return 0;
+	  if (TREE_CODE (gimple_assign_rhs1 (gsi_stmt (gsi))) != FILTER_EXPR)
+	    return 0;
+	  if (filter_tmp != gimple_assign_lhs (gsi_stmt (gsi)))
+	    return 0;
+	  if (!single_imm_use (filter_tmp, &imm_use, &use_stmt))
+	    return 0;
+	}
+
+      /* label.  */
+      gsi_prev (&gsi);
+      if (gsi_end_p (gsi))
+	return 0;
+    }
+  while (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
+    {
+      if (gimple_label_label (gsi_stmt (gsi))
+      	  == get_eh_region_no_tree_label (region))
+        return region;
+      gsi_prev (&gsi);
+      if (gsi_end_p (gsi))
+	return 0;
+    }
+  return 0;
+}
+
+/* Return true if it is possible to remove basic block BB and propagate
+   through PHIs.  
+
+   This means that every PHI in BB has all uses such that they are PHIs
+   of basic blocks reachable througt BB and they appears only in use
+   reachable by the edge from BB to the block contianing the use.  
+   
+   This is same as in merge-phi code, but in slightly more general setting
+   because BB can have multiple successors.  */
+
+static bool
+all_phis_safe_to_merge (basic_block bb)
+{
+  gimple_stmt_iterator si;
+  bool ok = true;
+
+  for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+    {
+      gimple phi = gsi_stmt (si);
+      tree result = gimple_phi_result (phi);
+      gimple stmt;
+      use_operand_p imm_use;
+      imm_use_iterator imm_iter;
+
+      /* If the PHI's result is never used, then we can just
+	 ignore it.  */
+      if (has_zero_uses (result))
+        continue;
+      /* We can always rebuild virtuals if needed.  */
+      if (!is_gimple_reg (result))
+	continue;
+      FOR_EACH_IMM_USE_STMT (stmt, imm_iter, result)
+        {
+	  if (gimple_code (stmt) != GIMPLE_PHI)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+	        fprintf (dump_file,
+			 "PHI result has use in non-PHI statement.\n");
+	      ok = false;
+	      BREAK_FROM_IMM_USE_STMT (imm_iter);
+	    }
+	  else
+            FOR_EACH_IMM_USE_ON_STMT (imm_use, imm_iter)
+	      {
+               edge e;
+	       e = gimple_phi_arg_edge (stmt, PHI_ARG_INDEX_FROM_USE (imm_use));
+	       if (e->src != bb)
+	         {
+	          if (dump_file && (dump_flags & TDF_DETAILS))
+	            fprintf (dump_file, "PHI has use in PHI not reached from"
+		    	     "empty cleanup itself.\n");
+	          ok = false;
+		  break;
+	         }
+	      }
+	   if (!ok)
+	     BREAK_FROM_IMM_USE_STMT (imm_iter);
+	 }
+       if (!ok)
+         return false;
+    }
+  return ok;
 }
 
 static bool dominance_info_invalidated;
+
+/* Information to pass into make_eh_edge_and_update_phi.  */
+
+struct update_info
+{
+  basic_block bb_to_remove, bb;
+  edge edge_to_remove;
+};
+
+/* DATA points to update-info structure.
+   Like make_eh_edge create EH edge from DATA->bb to basic block containing
+   handler of REGION.  In addition also update PHI operands by copying
+   operands from DATA->bb_to_remove.  */
+
+static void
+make_eh_edge_and_update_phi (struct eh_region *region, void *data)
+{
+  struct update_info *info = (struct update_info *) data;
+  edge e, e2;
+  tree lab;
+  basic_block src, dst;
+  gimple_stmt_iterator si;
+
+  lab = get_eh_region_tree_label (region);
+
+  src = info->bb;
+  dst = label_to_block (lab);
+
+  e = find_edge (src, dst);
+  if (e)
+    {
+      gcc_assert (e->flags & EDGE_EH);
+      e->aux = e;
+      return;
+    }
+  dominance_info_invalidated = true;
+  e2 = find_edge (info->bb_to_remove, dst);
+  e = make_edge (src, dst, EDGE_ABNORMAL | EDGE_EH);
+  e->aux = e;
+  gcc_assert (e2);
+  for (si = gsi_start_phis (dst); !gsi_end_p (si); gsi_next (&si))
+    {
+      gimple phi = gsi_stmt (si);
+      tree use = USE_FROM_PTR (PHI_ARG_DEF_PTR_FROM_EDGE (phi, e2));
+      gimple def = (TREE_CODE (use) == SSA_NAME
+      		    ? SSA_NAME_DEF_STMT (use) : NULL);
+
+      if (def && gimple_bb (def) == info->bb_to_remove)
+        {
+	  use = USE_FROM_PTR (PHI_ARG_DEF_PTR_FROM_EDGE (def,
+	  						 info->edge_to_remove));
+	  gcc_assert (info->bb_to_remove == info->edge_to_remove->dest);
+          def = TREE_CODE (use) == SSA_NAME ? SSA_NAME_DEF_STMT (use) : NULL;
+	  gcc_assert (!def
+	  	      || gimple_bb (def) != info->bb_to_remove
+	  	      || !is_gimple_reg (use));
+        }
+      SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (phi, e), use);
+    }
+}
+
+/* Make EH edges corresponding to STMT while updating PHI nodes after removal
+   empty cleanup BB_TO_REMOVE joined to BB containing STMT
+   by EDGE_TO_REMOVE.  */
+
+static void
+update_eh_edges (gimple stmt, basic_block bb_to_remove, edge edge_to_remove)
+{
+  int region_nr;
+  bool is_resx;
+  bool inlinable = false;
+  struct update_info info;
+  edge_iterator ei;
+  edge e;
+  int probability_sum = 0;
+
+  info.bb_to_remove = bb_to_remove;
+  info.bb = gimple_bb (stmt);
+  info.edge_to_remove = edge_to_remove;
+
+  if (gimple_code (stmt) == GIMPLE_RESX)
+    {
+      region_nr = gimple_resx_region (stmt);
+      is_resx = true;
+    }
+  else
+    {
+      region_nr = lookup_stmt_eh_region (stmt);
+      if (region_nr < 0)
+	return;
+      is_resx = false;
+      inlinable = inlinable_call_p (stmt);
+    }
+
+  /* First add new edges as neccesary.  */
+  foreach_reachable_handler (region_nr, is_resx, inlinable,
+  			     make_eh_edge_and_update_phi, &info);
+
+  /* And remove edges we didn't marked. */
+  for (ei = ei_start (info.bb->succs); (e = ei_safe_edge (ei)); )
+    {
+      if ((e->flags & EDGE_EH) && !e->aux && e != edge_to_remove)
+	{
+	  dominance_info_invalidated = true;
+	  remove_edge (e);
+	}
+      else
+        {
+	  e->aux = NULL;
+	  probability_sum += e->probability;
+	  ei_next (&ei);
+	}
+    }
+
+  /* Make CFG profile more consistent assuming that exception will resume to
+     first available EH handler.  In practice this makes little difference, but
+     we get fewer consistency errors in the dumps.  */
+  if (is_resx && EDGE_COUNT (info.bb->succs) && !probability_sum)
+    EDGE_SUCC (info.bb, 0)->probability = REG_BR_PROB_BASE;
+}
 
 /* Look for basic blocks containing empty exception handler and remove them.
    This is similar to jump forwarding, just across EH edges.  */
@@ -2806,78 +3020,77 @@ static bool
 cleanup_empty_eh (basic_block bb)
 {
   int region;
+  gimple_stmt_iterator si;
 
   /* When handler of EH region winds up to be empty, we can safely
      remove it.  This leads to inner EH regions to be redirected
      to outer one, if present in function. So we need to rebuild
      EH edges in all sources.   */
-  if ((region = tree_empty_eh_handler_p (bb)))
+  if ((region = tree_empty_eh_handler_p (bb))
+      && all_phis_safe_to_merge (bb))
     {
-      edge_iterator ei;
       edge e;
-      gimple_stmt_iterator si;
 
       remove_eh_region (region);
 
-      /* It is safe to mark symbol for renaming because we have abnormal PHI
-         here.  Once EH edges are made redirectable we might need to add here
-         similar updating as jump threading does.  */
-
-      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
-	{
-	  tree res = PHI_RESULT (gsi_stmt (si));
-	  gimple stmt;
-	  imm_use_iterator iter;
-	  use_operand_p use_p;
-
-	  /* As we are going to delete this block we will release all
-	     defs which makes the immediate uses on use stmts invalid.
-	     Avoid that by replacing all uses with the bare variable
-	     and updating the stmts.  */
-	  FOR_EACH_IMM_USE_STMT (stmt, iter, res)
-	    {
-	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
-		SET_USE (use_p, SSA_NAME_VAR (res));
-	      update_stmt (stmt);
-	    }
-	  mark_sym_for_renaming (SSA_NAME_VAR (res));
-	}
-
-      /* We want to thread over the current receiver to the next reachable
-         one.  Do so by deleting all outgoing EH edges from all
-	 predecessors of the receiver block we are going to delete and
-	 rebuild EH edges for them.  */
       while ((e = ei_safe_edge (ei_start (bb->preds))))
 	{
 	  basic_block src = e->src;
 	  gcc_assert (e->flags & EDGE_EH);
-	  for (ei = ei_start (src->succs); (e = ei_safe_edge (ei));)
-	    {
-	      if (e->flags & EDGE_EH)
-		{
-		  remove_edge (e);
-		  dominance_info_invalidated = true;
-		}
-	      else
-		ei_next (&ei);
-	    }
-	  if (!stmt_can_throw_internal (last_stmt (src)))
-	    continue;
-	  make_eh_edges (last_stmt (src));
-	  /* Make sure to also rename symbols that feed into receivers
-	     that are now newly reachable from current src.  */
-	  FOR_EACH_EDGE (e, ei, src->succs)
-	    if (e->flags & EDGE_EH)
-	      {
-		dominance_info_invalidated = true;
-		for (si = gsi_start_phis (e->dest); !gsi_end_p (si);
-		     gsi_next (&si))
-		  mark_sym_for_renaming (SSA_NAME_VAR
-					 (PHI_RESULT (gsi_stmt (si))));
-	      }
+	  if (stmt_can_throw_internal (last_stmt (src)))
+	    update_eh_edges (last_stmt (src), bb, e);
+	  remove_edge (e);
 	}
       if (dump_file)
 	fprintf (dump_file, "Empty EH handler %i removed\n", region);
+
+      /* Verify that we eliminated all uses of PHI we are going to remove.
+         If we didn't, rebuild SSA on affected variable (this is allowed only
+         for virtuals).  */
+      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+        {
+          gimple phi = gsi_stmt (si);
+          tree result = gimple_phi_result (phi);
+          if (!has_zero_uses (result))
+	    {
+              use_operand_p use_p;
+              imm_use_iterator iter;
+	      gimple stmt;
+
+	      FOR_EACH_IMM_USE_STMT (stmt, iter, result)
+		{
+		  /* We have use, see if it won't disappear after
+		     removing BB.  */
+		  if (gimple_bb (stmt) == bb)
+		    continue;
+		  if (gimple_code (stmt) == GIMPLE_PHI)
+		    {
+		      bool bad = false;
+
+		      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	                if (gimple_phi_arg_edge (stmt,
+				PHI_ARG_INDEX_FROM_USE (use_p))->src != bb)
+			  {
+			    bad = true;
+			    break;
+			  }
+
+		      if (!bad)
+		        continue;
+		    }
+
+	          gcc_assert (!is_gimple_reg (result));
+	          mark_sym_for_renaming (SSA_NAME_VAR (result));
+	          /* As we are going to delete this block we will release all
+		     defs which makes the immediate uses on use stmts invalid.
+		     Avoid that by replacing all uses with the bare variable
+		     and updating the stmts.  */
+		  FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+		    SET_USE (use_p, SSA_NAME_VAR (result));
+		  update_stmt (stmt);
+		}
+	    }
+	}
       delete_basic_block (bb);
       return true;
     }

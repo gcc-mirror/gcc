@@ -97,6 +97,7 @@ extern struct eh_region *gen_eh_region_allowed (struct eh_region *, tree);
 extern struct eh_region *gen_eh_region_must_not_throw (struct eh_region *);
 extern int get_eh_region_number (struct eh_region *);
 extern bool get_eh_region_may_contain_throw (struct eh_region *);
+extern tree get_eh_region_no_tree_label (int);
 extern tree get_eh_region_tree_label (struct eh_region *);
 extern void set_eh_region_tree_label (struct eh_region *, tree);
 
