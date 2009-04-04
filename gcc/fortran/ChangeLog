@@ -1,3 +1,9 @@
+2009-04-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/37614
+	* trans-common.c (translate_common): Do not offset the whole
+	coomon block.
+
 2009-04-03  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39594
