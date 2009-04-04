@@ -1,6 +1,6 @@
 /* DWARF2 exception handling and frame unwind runtime interface routines.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2008  Free Software Foundation, Inc.
+   2008, 2009  Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -943,10 +943,14 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN(reg)].how = REG_UNSAVED;
 	  break;
 
-	case DW_CFA_undefined:
 	case DW_CFA_same_value:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN(reg)].how = REG_UNSAVED;
+	  break;
+
+	case DW_CFA_undefined:
+	  insn_ptr = read_uleb128 (insn_ptr, &reg);
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN(reg)].how = REG_UNDEFINED;
 	  break;
 
 	case DW_CFA_nop:
@@ -1319,6 +1323,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
     switch (fs->regs.reg[i].how)
       {
       case REG_UNSAVED:
+      case REG_UNDEFINED:
 	break;
 
       case REG_SAVED_OFFSET:
@@ -1387,10 +1392,22 @@ uw_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
   uw_update_context_1 (context, fs);
 
-  /* Compute the return address now, since the return address column
-     can change from frame to frame.  */
-  context->ra = __builtin_extract_return_addr
-    (_Unwind_GetPtr (context, fs->retaddr_column));
+  /* In general this unwinder doesn't make any distinction between
+     undefined and same_value rule.  Call-saved registers are assumed
+     to have same_value rule by default and explicit undefined
+     rule is handled like same_value.  The only exception is
+     DW_CFA_undefined on retaddr_column which is supposed to
+     mark outermost frame in DWARF 3.  */
+  if (fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (fs->retaddr_column)].how
+      == REG_UNDEFINED)
+    /* uw_frame_state_for uses context->ra == 0 check to find outermost
+       stack frame.  */
+    context->ra = 0;
+  else
+    /* Compute the return address now, since the return address column
+       can change from frame to frame.  */
+    context->ra = __builtin_extract_return_addr
+      (_Unwind_GetPtr (context, fs->retaddr_column));
 }
 
 static void

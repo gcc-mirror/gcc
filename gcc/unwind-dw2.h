@@ -1,5 +1,5 @@
 /* DWARF2 frame unwind data structure.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2009
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -55,7 +55,8 @@ typedef struct
 	REG_SAVED_REG,
 	REG_SAVED_EXP,
 	REG_SAVED_VAL_OFFSET,
-	REG_SAVED_VAL_EXP
+	REG_SAVED_VAL_EXP,
+	REG_UNDEFINED
       } how;
     } reg[DWARF_FRAME_REGISTERS+1];
 
