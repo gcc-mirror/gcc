@@ -2070,6 +2070,7 @@ set_sizetype (tree type)
   /* Replace our original stub sizetype.  */
   memcpy (sizetype, t, tree_size (sizetype));
   TYPE_MAIN_VARIANT (sizetype) = sizetype;
+  TYPE_CANONICAL (sizetype) = sizetype;
 
   t = make_node (INTEGER_TYPE);
   TYPE_NAME (t) = get_identifier ("bit_size_type");
@@ -2084,6 +2085,7 @@ set_sizetype (tree type)
   /* Replace our original stub bitsizetype.  */
   memcpy (bitsizetype, t, tree_size (bitsizetype));
   TYPE_MAIN_VARIANT (bitsizetype) = bitsizetype;
+  TYPE_CANONICAL (bitsizetype) = bitsizetype;
 
   if (TYPE_UNSIGNED (type))
     {
