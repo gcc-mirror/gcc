@@ -1,3 +1,10 @@
+2009-04-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/39501
+	* arm.md (movsfcc): Disable if not TARGET_HARD_FLOAT.
+	* testsuite/gcc.c-torture/execute/pr39501.c: New file.
+	* testsuite/gcc.c-torture/execute/pr39501.x: New file.
+
 2009-04-04  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/8781
