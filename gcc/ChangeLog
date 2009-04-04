@@ -1,3 +1,7 @@
+2009-04-03  Jason Merrill  <jason@redhat.com>
+
+	* stor-layout.c (set_sizetype): Set TYPE_CANONICAL.
+
 2009-04-03  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.md (extendsfdf2, extendsfxf2, extenddfxf2,
