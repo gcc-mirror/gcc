@@ -525,6 +525,12 @@ get_eh_region_tree_label (struct eh_region *region)
   return region->tree_label;
 }
 
+tree
+get_eh_region_no_tree_label (int region)
+{
+  return VEC_index (eh_region, cfun->eh->region_array, region)->tree_label;
+}
+
 void
 set_eh_region_tree_label (struct eh_region *region, tree lab)
 {
