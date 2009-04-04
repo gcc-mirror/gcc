@@ -1788,27 +1788,18 @@ parse_derived (void)
       /* Look for allocatable components.  */
       if (c->allocatable
 	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.alloc_comp))
-	{
-	  sym->attr.alloc_comp = 1;
-	  break;
-	}
+	sym->attr.alloc_comp = 1;
 
       /* Look for pointer components.  */
       if (c->pointer
 	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.pointer_comp))
-	{
-	  sym->attr.pointer_comp = 1;
-	  break;
-	}
+	sym->attr.pointer_comp = 1;
 
       /* Look for private components.  */
       if (sym->component_access == ACCESS_PRIVATE
 	  || c->access == ACCESS_PRIVATE
 	  || (c->ts.type == BT_DERIVED && c->ts.derived->attr.private_comp))
-	{
-	  sym->attr.private_comp = 1;
-	  break;
-	}
+	sym->attr.private_comp = 1;
     }
 
   if (!seen_component)
