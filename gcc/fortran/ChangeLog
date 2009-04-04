@@ -1,3 +1,9 @@
+2009-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39577
+	* trans-decl.c (gfc_generate_function_code): Move recursive
+	check to the right position.
+
 2009-04-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37614

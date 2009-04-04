@@ -3718,6 +3718,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   tree recurcheckvar = NULL;
   gfc_symbol *sym;
   int rank;
+  bool is_recursive;
 
   sym = ns->proc_name;
 
@@ -3883,7 +3884,10 @@ gfc_generate_function_code (gfc_namespace * ns)
       gfc_add_expr_to_block (&body, tmp);
     }
 
-   if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !sym->attr.recursive)
+   is_recursive = sym->attr.recursive
+		  || (sym->attr.entry_master
+		      && sym->ns->entries->sym->attr.recursive);
+   if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive)
      {
        char * msg;
 
@@ -3953,6 +3957,13 @@ gfc_generate_function_code (gfc_namespace * ns)
 
       gfc_add_expr_to_block (&block, tmp);
 
+      /* Reset recursion-check variable.  */
+      if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive)
+      {
+	gfc_add_modify (&block, recurcheckvar, boolean_false_node);
+	recurcheckvar = NULL;
+      }
+
       if (result == NULL_TREE)
 	{
 	  /* TODO: move to the appropriate place in resolve.c.  */
@@ -3975,11 +3986,16 @@ gfc_generate_function_code (gfc_namespace * ns)
 	}
     }
   else
-    gfc_add_expr_to_block (&block, tmp);
+    {
+      gfc_add_expr_to_block (&block, tmp);
+      /* Reset recursion-check variable.  */
+      if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !is_recursive)
+      {
+	gfc_add_modify (&block, recurcheckvar, boolean_false_node);
+	recurcheckvar = NULL;
+      }
+    }
 
- /* Reset recursion-check variable.  */
- if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION) && !sym->attr.recursive)
-   gfc_add_modify (&block, recurcheckvar, boolean_false_node);
 
   /* Add all the decls we created during processing.  */
   decl = saved_function_decls;

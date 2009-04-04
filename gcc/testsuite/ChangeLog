@@ -1,3 +1,14 @@
+2009-04-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39577
+	* gfortran.dg/recursive_check_8.f90: New.
+	* gfortran.dg/recursive_check_9.f90: New.
+	* gfortran.dg/recursive_check_10.f90: New.
+	* gfortran.dg/recursive_check_11.f90: New.
+	* gfortran.dg/recursive_check_12.f90: New.
+	* gfortran.dg/recursive_check_13.f90: New.
+	* gfortran.dg/recursive_check_14.f90: New.
+
 2009-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/25185
