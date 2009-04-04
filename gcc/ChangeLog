@@ -1,5 +1,28 @@
 2009-04-04  Richard Guenther  <rguenther@suse.de>
 
+	* Makefile.in (tree-ssa-copy.o): Add $(CFGLOOP_H) dependency.
+	* tree-ssa-copy.c (init_copy_prop): Do not propagate through
+	single-argument PHIs if we are in loop-closed SSA form.
+	* tree-vect-loop-manip.c (slpeel_add_loop_guard): Pass extra guards
+	for the pre-condition.
+	(slpeel_tree_peel_loop_to_edge): Likewise.
+	(vect_build_loop_niters): Take an optional sequence to append stmts.
+	(vect_generate_tmps_on_preheader): Likewise.
+	(vect_do_peeling_for_loop_bound): Take extra guards for the
+	pre-condition.
+	(vect_do_peeling_for_alignment): Adjust.  Unconditionally apply
+	the cost model check.
+	(vect_loop_versioning): Take stmt and stmt list to put pre-condition
+	guards if we are going to peel.  Do not apply versioning in that
+	case.
+	* tree-vectorizer.h (vect_loop_versioning): Adjust declaration.
+	(vect_do_peeling_for_loop_bound): Likewise.
+	* tree-vect-loop.c (vect_transform_loop): If we are peeling for
+	loop bound only record extra pre-conditions, do not apply loop
+	versioning.
+
+2009-04-04  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-operands.c (pop_stmt_changes): Remove automatic
 	renaming code.
 

@@ -3388,23 +3388,33 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   bool strided_store;
   bool slp_scheduled = false;
   unsigned int nunits;
+  tree cond_expr = NULL_TREE;
+  gimple_seq cond_expr_stmt_list = NULL;
+  bool do_peeling_for_loop_bound;
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vec_transform_loop ===");
-
-  if (VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
-      || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
-    vect_loop_versioning (loop_vinfo);
-
-  /* CHECKME: we wouldn't need this if we called update_ssa once
-     for all loops.  */
-  bitmap_zero (vect_memsyms_to_rename);
 
   /* Peel the loop if there are data refs with unknown alignment.
      Only one data ref with unknown store is allowed.  */
 
   if (LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
     vect_do_peeling_for_alignment (loop_vinfo);
+
+  do_peeling_for_loop_bound
+    = (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+       || (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+	   && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0));
+
+  if (VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
+      || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+    vect_loop_versioning (loop_vinfo,
+			  !do_peeling_for_loop_bound,
+			  &cond_expr, &cond_expr_stmt_list);
+
+  /* CHECKME: we wouldn't need this if we called update_ssa once
+     for all loops.  */
+  bitmap_zero (vect_memsyms_to_rename);
   
   /* If the loop has a symbolic number of iterations 'n' (i.e. it's not a
      compile time constant), or it is a constant that doesn't divide by the
@@ -3414,10 +3424,9 @@ vect_transform_loop (loop_vec_info loop_vinfo)
      will remain scalar and will compute the remaining (n%VF) iterations.
      (VF is the vectorization factor).  */
 
-  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      || (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-          && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0))
-    vect_do_peeling_for_loop_bound (loop_vinfo, &ratio);
+  if (do_peeling_for_loop_bound)
+    vect_do_peeling_for_loop_bound (loop_vinfo, &ratio,
+				    cond_expr, cond_expr_stmt_list);
   else
     ratio = build_int_cst (TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo)),
 		LOOP_VINFO_INT_NITERS (loop_vinfo) / vectorization_factor);
