@@ -1,11 +1,11 @@
-2009-04-05  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
+2009-04-04  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	* include/bits/random.h (struct _ShiftMin1): Fix small typo and
 	thinko.
 	* testsuite/26_numerics/random/mersenne_twister_engine/cons/
 	default.cc: Enable.
 
-2009-04-05  Paolo Carlini  <paolo.carlini@oracle.com>
+2009-04-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/39629 (partial)
 	* testsuite/26_numerics/random/independent_bits_engine/cons/
