@@ -1,5 +1,12 @@
 2009-04-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/25185
+	* error.c (dump_template_bindings): Look through typedefs in
+	typename results.
+	(dump_type) [TYPENAME_TYPE]: Print the typedef name if any.
+	(find_typenames_r): Also collect typedefs.
+	* pt.c (unify): Strip typedefs.
+
 	PR c++/39608
 	* semantics.c (finish_id_expression): Don't assume a dependent
 	member of the current instantiation isn't a valid integral

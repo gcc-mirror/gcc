@@ -13538,6 +13538,9 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	     ISO C++, so we can do as we please here.  */
 	  if (variably_modified_type_p (arg, NULL_TREE))
 	    return 1;
+
+	  /* Strip typedefs as in convert_template_argument.  */
+	  arg = canonical_type_variant (arg);
 	}
 
       /* If ARG is a parameter pack or an expansion, we cannot unify
