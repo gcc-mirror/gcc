@@ -78,14 +78,17 @@ namespace std
 	     bool = __w <static_cast<size_t>
 			 (std::numeric_limits<_UIntType>::digits)>
       struct _ShiftMin1
-      { 
+      {
 	static const _UIntType __value =
-	  __gnu_cxx::__numeric_traits<_UIntType>::max;
+	  __gnu_cxx::__numeric_traits<_UIntType>::__max;
       };
 
     template<typename _UIntType, size_t __w>
       struct _ShiftMin1<_UIntType, __w, true>
-      { static const _UIntType __value = _UIntType(1) << __w - _UIntType(1); };
+      {
+	static const _UIntType __value =
+	  (_UIntType(1) << __w) - _UIntType(1);
+      };
 
     template<typename _Tp, _Tp __a, _Tp __c, _Tp __m, bool>
       struct _Mod;

@@ -40,7 +40,7 @@ test01()
     0xefc60000ul, 18, 1812433253ul> x;
 
   VERIFY( x.min() == 0 );
-  // XXX  VERIFY( x.max() == 4294967295ul);
+  VERIFY( x.max() == 4294967295ul );
   VERIFY( x() == 3499211612ul );
 }
 

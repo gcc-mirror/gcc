@@ -2,7 +2,7 @@
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@ test01()
   std::stringstream str;
   std::independent_bits_engine
     <std::subtract_with_carry_engine<uint_fast64_t, 48, 5, 12>,
-     48, unsigned long> u, v;
+     48, uint_fast64_t> u, v;
 
   u(); // advance
   str << u;

@@ -1,3 +1,33 @@
+2009-04-05  Edward M. Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/bits/random.h (struct _ShiftMin1): Fix small typo and
+	thinko.
+	* testsuite/26_numerics/random/mersenne_twister_engine/cons/
+	default.cc: Enable.
+
+2009-04-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/39629 (partial)
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	base_move.cc: Use uint_fast64_t instead of unsigned long.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	seed1.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	seed2.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	base_copy.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	default.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/cons/
+	seed_seq.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/
+	requirements/typedefs.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/
+	operators/equal.cc: Likewise.
+	* testsuite/26_numerics/random/independent_bits_engine/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/mt19937_64.cc: Use ull.
+
 2009-04-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1_impl/random: Remove, empty.
