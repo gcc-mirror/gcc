@@ -1,3 +1,10 @@
+2009-04-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39636
+	* tree-ssa-forwprop.c
+	(forward_propagate_addr_into_variable_array_index): Check for
+	GIMPLE_ASSIGN before accessing the rhs code.
+
 2009-04-03  Jason Merrill  <jason@redhat.com>
 
 	* stor-layout.c (set_sizetype): Set TYPE_CANONICAL.
