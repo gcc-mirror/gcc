@@ -1,3 +1,8 @@
+2009-04-04  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39636
+	* gcc.c-torture/compile/pr39636.c: New testcase.
+
 2009-04-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR rtl-optimization/39607

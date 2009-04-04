@@ -668,7 +668,8 @@ forward_propagate_addr_into_variable_array_index (tree offset,
 					       tunit)) != NULL_TREE)
        {
 	 gimple offset_def2 = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (offset_def));
-	 if (gimple_assign_rhs_code (offset_def2) == MULT_EXPR
+	 if (is_gimple_assign (offset_def2)
+	     && gimple_assign_rhs_code (offset_def2) == MULT_EXPR
 	     && TREE_CODE (gimple_assign_rhs2 (offset_def2)) == INTEGER_CST
 	     && tree_int_cst_equal (gimple_assign_rhs2 (offset_def2), tunit))
 	   {
