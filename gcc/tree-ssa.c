@@ -624,7 +624,8 @@ verify_ssa (bool check_modified_stmt)
 
 	      if (base_address
 		  && SSA_VAR_P (base_address)
-		  && !gimple_vdef (stmt))
+		  && !gimple_vdef (stmt)
+		  && optimize > 0)
 		{
 		  error ("statement makes a memory store, but has no VDEFS");
 		  print_gimple_stmt (stderr, stmt, 0, TDF_VOPS);
