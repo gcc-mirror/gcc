@@ -275,11 +275,15 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
     {
       if (need_comma)
 	pp_separate_with_comma (cxx_pp);
-      dump_type (t, 0);
+      dump_type (t, TFF_PLAIN_IDENTIFIER);
       pp_cxx_whitespace (cxx_pp);
       pp_equal (cxx_pp);
       pp_cxx_whitespace (cxx_pp);
-      dump_type (tsubst (t, args, tf_none, NULL_TREE), 0);
+      t = tsubst (t, args, tf_none, NULL_TREE);
+      /* Strip typedefs.  We can't just use TFF_CHASE_TYPEDEF because
+	 pp_simple_type_specifier doesn't know about it.  */
+      t = canonical_type_variant (t);
+      dump_type (t, TFF_PLAIN_IDENTIFIER);
     }
 }
 
@@ -390,6 +394,12 @@ dump_type (tree t, int flags)
       break;
     }
     case TYPENAME_TYPE:
+      if (! (flags & TFF_CHASE_TYPEDEF)
+	  && DECL_ORIGINAL_TYPE (TYPE_NAME (t)))
+	{
+	  dump_decl (TYPE_NAME (t), TFF_PLAIN_IDENTIFIER);
+	  break;
+	}
       pp_cxx_cv_qualifier_seq (cxx_pp, t);
       pp_cxx_identifier (cxx_pp,
 			 TYPENAME_IS_ENUM_P (t) ? "enum"
@@ -1089,7 +1099,7 @@ dump_template_decl (tree t, int flags)
 }
 
 /* find_typenames looks through the type of the function template T
-   and returns a VEC containing any TYPENAME_TYPEs it finds.  */
+   and returns a VEC containing any typedefs or TYPENAME_TYPEs it finds.  */
 
 struct find_typenames_t
 {
@@ -1098,26 +1108,27 @@ struct find_typenames_t
 };
 
 static tree
-find_typenames_r (tree *tp, int *walk_subtrees, void *data)
+find_typenames_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED, void *data)
 {
   struct find_typenames_t *d = (struct find_typenames_t *)data;
+  tree mv = NULL_TREE;
 
-  if (TREE_CODE (*tp) == TYPENAME_TYPE)
-    {
-      /* Discard any cv-qualifiers.  */
-      tree mv = TYPE_MAIN_VARIANT (*tp);
-      if (mv == *tp || !pointer_set_insert (d->p_set, mv))
-	VEC_safe_push (tree, gc, d->typenames, mv);
-      *walk_subtrees = 0;
-    }
+  if (TYPE_P (*tp) && is_typedef_decl (TYPE_NAME (*tp)))
+    /* Add the type of the typedef without any additional cv-quals.  */
+    mv = TREE_TYPE (TYPE_NAME (*tp));
+  else if (TREE_CODE (*tp) == TYPENAME_TYPE)
+    /* Add the typename without any cv-qualifiers.  */
+    mv = TYPE_MAIN_VARIANT (*tp);
+
+  if (mv && (mv == *tp || !pointer_set_insert (d->p_set, mv)))
+    VEC_safe_push (tree, gc, d->typenames, mv);
+
   /* Search into class template arguments, which cp_walk_subtrees
      doesn't do.  */
-  else if (CLASS_TYPE_P (*tp) && CLASSTYPE_TEMPLATE_INFO (*tp))
-    {
-      cp_walk_tree (&CLASSTYPE_TI_ARGS (*tp), find_typenames_r,
-		    data, d->p_set);
-      *walk_subtrees = 0;
-    }
+  if (CLASS_TYPE_P (*tp) && CLASSTYPE_TEMPLATE_INFO (*tp))
+    cp_walk_tree (&CLASSTYPE_TI_ARGS (*tp), find_typenames_r,
+		  data, d->p_set);
+
   return NULL_TREE;
 }
 

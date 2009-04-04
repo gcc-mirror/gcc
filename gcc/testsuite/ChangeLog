@@ -1,3 +1,8 @@
+2009-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25185
+	* g++.dg/template/error38.C: Add more tests.
+
 2009-04-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/37614
