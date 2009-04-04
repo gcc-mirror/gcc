@@ -177,7 +177,7 @@ associate_equivalences_with_edges (void)
 	      && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (cond))
 	    {
 	      int i, n_labels = gimple_switch_num_labels (stmt);
-	      tree *info = XCNEWVEC (tree, n_basic_blocks);
+	      tree *info = XCNEWVEC (tree, last_basic_block);
 
 	      /* Walk over the case label vector.  Record blocks
 		 which are reached by a single case label which represents
