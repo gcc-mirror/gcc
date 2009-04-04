@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
+#include "cfgloop.h"
 
 /* This file implements the copy propagation pass and provides a
    handful of interfaces for performing const/copy propagation and
@@ -885,7 +886,13 @@ init_copy_prop (void)
           tree def;
 
 	  def = gimple_phi_result (phi);
-	  if (!is_gimple_reg (def))
+	  if (!is_gimple_reg (def)
+	      /* In loop-closed SSA form do not copy-propagate through
+	         PHI nodes.  Technically this is only needed for loop
+		 exit PHIs, but this is difficult to query.  */
+	      || (current_loops
+		  && gimple_phi_num_args (phi) == 1
+		  && loops_state_satisfies_p (LOOP_CLOSED_SSA)))
             prop_set_simulate_again (phi, false);
 	  else
             prop_set_simulate_again (phi, true);

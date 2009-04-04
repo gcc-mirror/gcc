@@ -792,11 +792,12 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
 /* Given the condition statement COND, put it as the last statement
    of GUARD_BB; EXIT_BB is the basic block to skip the loop;
    Assumes that this is the single exit of the guarded loop.  
-   Returns the skip edge.  */
+   Returns the skip edge, inserts new stmts on the COND_EXPR_STMT_LIST.  */
 
 static edge
-slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb,
-		       basic_block dom_bb)
+slpeel_add_loop_guard (basic_block guard_bb, tree cond,
+		       gimple_seq cond_expr_stmt_list,
+		       basic_block exit_bb, basic_block dom_bb)
 {
   gimple_stmt_iterator gsi;
   edge new_e, enter_e;
@@ -809,11 +810,13 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond, basic_block exit_bb,
   gsi = gsi_last_bb (guard_bb);
 
   cond = force_gimple_operand (cond, &gimplify_stmt_list, true, NULL_TREE);
+  if (gimplify_stmt_list)
+    gimple_seq_add_seq (&cond_expr_stmt_list, gimplify_stmt_list);
   cond_stmt = gimple_build_cond (NE_EXPR,
 				 cond, build_int_cst (TREE_TYPE (cond), 0),
 				 NULL_TREE, NULL_TREE);
-  if (gimplify_stmt_list)
-    gsi_insert_seq_after (&gsi, gimplify_stmt_list, GSI_NEW_STMT);
+  if (cond_expr_stmt_list)
+    gsi_insert_seq_after (&gsi, cond_expr_stmt_list, GSI_NEW_STMT);
 
   gsi = gsi_last_bb (guard_bb);
   gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
@@ -1011,6 +1014,10 @@ set_prologue_iterations (basic_block bb_before_first_loop,
    The second guard is:
      if (FIRST_NITERS == NITERS) then skip the second loop.
 
+   If the optional COND_EXPR and COND_EXPR_STMT_LIST arguments are given
+   then the generated condition is combined with COND_EXPR and the
+   statements in COND_EXPR_STMT_LIST are emitted together with it.
+
    FORNOW only simple loops are supported (see slpeel_can_duplicate_loop_p).
    FORNOW the resulting code will not be in loop-closed-ssa form.
 */
@@ -1019,7 +1026,8 @@ static struct loop*
 slpeel_tree_peel_loop_to_edge (struct loop *loop, 
 			       edge e, tree first_niters, 
 			       tree niters, bool update_first_loop_count,
-			       unsigned int th, bool check_profitability)
+			       unsigned int th, bool check_profitability,
+			       tree cond_expr, gimple_seq cond_expr_stmt_list)
 {
   struct loop *new_loop = NULL, *first_loop, *second_loop;
   edge skip_e;
@@ -1149,7 +1157,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
          profitable than the vector one. This occurs when
 	 this function is invoked for epilogue generation
 	 and the cost model check needs to be done at run
-	 time.
+	 time.  This check is combined with any pre-existing
+	 check in COND_EXPR to avoid versioning.
 
          Resulting CFG after prologue peeling would be:
 
@@ -1193,6 +1202,14 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 	  pre_condition = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
 				       cost_pre_condition, pre_condition);
 	}
+      if (cond_expr)
+	{
+	  pre_condition =
+	    fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+			 pre_condition,
+			 fold_build1 (TRUTH_NOT_EXPR, boolean_type_node,
+				      cond_expr));
+	}
     }
 
   /* Prologue peeling.  */  
@@ -1208,6 +1225,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
     }
 
   skip_e = slpeel_add_loop_guard (bb_before_first_loop, pre_condition,
+				  cond_expr_stmt_list,
                                   bb_before_second_loop, bb_before_first_loop);
   slpeel_update_phi_nodes_for_guard1 (skip_e, first_loop,
 				      first_loop == new_loop,
@@ -1245,7 +1263,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop,
 
   pre_condition = 
 	fold_build2 (EQ_EXPR, boolean_type_node, first_niters, niters);
-  skip_e = slpeel_add_loop_guard (bb_between_loops, pre_condition,
+  skip_e = slpeel_add_loop_guard (bb_between_loops, pre_condition, NULL,
                                   bb_after_second_loop, bb_before_first_loop);
   slpeel_update_phi_nodes_for_guard2 (skip_e, second_loop,
                                      second_loop == new_loop, &new_exit_bb);
@@ -1303,10 +1321,11 @@ find_loop_location (struct loop *loop)
 
 
 /* This function builds ni_name = number of iterations loop executes
-   on the loop preheader.  */
+   on the loop preheader.  If SEQ is given the stmt is instead emitted
+   there.  */
 
 static tree
-vect_build_loop_niters (loop_vec_info loop_vinfo)
+vect_build_loop_niters (loop_vec_info loop_vinfo, gimple_seq seq)
 {
   tree ni_name, var;
   gimple_seq stmts = NULL;
@@ -1321,8 +1340,13 @@ vect_build_loop_niters (loop_vec_info loop_vinfo)
   pe = loop_preheader_edge (loop);
   if (stmts)
     {
-      basic_block new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-      gcc_assert (!new_bb);
+      if (seq)
+	gimple_seq_add_seq (&seq, stmts);
+      else
+	{
+	  basic_block new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+	  gcc_assert (!new_bb);
+	}
     }
 
   return ni_name;
@@ -1335,13 +1359,15 @@ vect_build_loop_niters (loop_vec_info loop_vinfo)
  ratio = ni_name / vf
  ratio_mult_vf_name = ratio * vf
 
- and places them at the loop preheader edge.  */
+ and places them at the loop preheader edge or in COND_EXPR_STMT_LIST
+ if that is non-NULL.  */
 
 static void 
 vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo, 
 				 tree *ni_name_ptr,
 				 tree *ratio_mult_vf_name_ptr, 
-				 tree *ratio_name_ptr)
+				 tree *ratio_name_ptr,
+				 gimple_seq cond_expr_stmt_list)
 {
 
   edge pe;
@@ -1361,7 +1387,7 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
   /* Generate temporary variable that contains 
      number of iterations loop executes.  */
 
-  ni_name = vect_build_loop_niters (loop_vinfo);
+  ni_name = vect_build_loop_niters (loop_vinfo, cond_expr_stmt_list);
   log_vf = build_int_cst (TREE_TYPE (ni), exact_log2 (vf));
 
   /* Create: ratio = ni >> log2(vf) */
@@ -1374,9 +1400,14 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
 
       stmts = NULL;
       ratio_name = force_gimple_operand (ratio_name, &stmts, true, var);
-      pe = loop_preheader_edge (loop);
-      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-      gcc_assert (!new_bb);
+      if (cond_expr_stmt_list)
+	gimple_seq_add_seq (&cond_expr_stmt_list, stmts);
+      else
+	{
+	  pe = loop_preheader_edge (loop);
+	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+	  gcc_assert (!new_bb);
+	}
     }
        
   /* Create: ratio_mult_vf = ratio << log2 (vf).  */
@@ -1391,9 +1422,14 @@ vect_generate_tmps_on_preheader (loop_vec_info loop_vinfo,
       stmts = NULL;
       ratio_mult_vf_name = force_gimple_operand (ratio_mult_vf_name, &stmts,
 						 true, var);
-      pe = loop_preheader_edge (loop);
-      new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
-      gcc_assert (!new_bb);
+      if (cond_expr_stmt_list)
+	gimple_seq_add_seq (&cond_expr_stmt_list, stmts);
+      else
+	{
+	  pe = loop_preheader_edge (loop);
+	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
+	  gcc_assert (!new_bb);
+	}
     }
 
   *ni_name_ptr = ni_name;
@@ -1664,10 +1700,14 @@ conservative_cost_threshold (loop_vec_info loop_vinfo,
    NITERS % VECTORIZATION_FACTOR times.
    
    The original loop will later be made to iterate 
-   NITERS / VECTORIZATION_FACTOR times (this value is placed into RATIO).  */
+   NITERS / VECTORIZATION_FACTOR times (this value is placed into RATIO).
+
+   COND_EXPR and COND_EXPR_STMT_LIST are combined with a new generated
+   test.  */
 
 void 
-vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
+vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
+				tree cond_expr, gimple_seq cond_expr_stmt_list)
 {
   tree ni_name, ratio_mult_vf_name;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -1690,7 +1730,8 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
      ratio = ni_name / vf
      ratio_mult_vf_name = ratio * vf  */
   vect_generate_tmps_on_preheader (loop_vinfo, &ni_name,
-				   &ratio_mult_vf_name, ratio);
+				   &ratio_mult_vf_name, ratio,
+				   cond_expr_stmt_list);
 
   loop_num  = loop->num; 
 
@@ -1698,7 +1739,8 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
      peeling for alignment.  */
   if (!VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
       && !VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo))
-      && !LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
+      && !LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo)
+      && !cond_expr)
     {
       check_profitability = true;
 
@@ -1711,7 +1753,8 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio)
 
   new_loop = slpeel_tree_peel_loop_to_edge (loop, single_exit (loop),
                                             ratio_mult_vf_name, ni_name, false,
-                                            th, check_profitability);
+                                            th, check_profitability,
+					    cond_expr, cond_expr_stmt_list);
   gcc_assert (new_loop);
   gcc_assert (loop_num == loop->num);
 #ifdef ENABLE_CHECKING
@@ -1926,7 +1969,6 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
   tree niters_of_prolog_loop, ni_name;
   tree n_iters;
   struct loop *new_loop;
-  bool check_profitability = false;
   unsigned int th = 0;
   int min_profitable_iters;
 
@@ -1935,28 +1977,20 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo)
 
   initialize_original_copy_tables ();
 
-  ni_name = vect_build_loop_niters (loop_vinfo);
+  ni_name = vect_build_loop_niters (loop_vinfo, NULL);
   niters_of_prolog_loop = vect_gen_niters_for_prolog_loop (loop_vinfo, ni_name);
   
 
-  /* If cost model check not done during versioning.  */
-  if (!VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
-      && !VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
-    {
-      check_profitability = true;
-
-      /* Get profitability threshold for vectorized loop.  */
-      min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
-
-      th = conservative_cost_threshold (loop_vinfo, 
-					min_profitable_iters);
-    }
+  /* Get profitability threshold for vectorized loop.  */
+  min_profitable_iters = LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo);
+  th = conservative_cost_threshold (loop_vinfo,
+				    min_profitable_iters);
 
   /* Peel the prolog loop and iterate it niters_of_prolog_loop.  */
   new_loop =
     slpeel_tree_peel_loop_to_edge (loop, loop_preheader_edge (loop),
 				   niters_of_prolog_loop, ni_name, true,
-				   th, check_profitability);
+				   th, true, NULL_TREE, NULL);
 
   gcc_assert (new_loop);
 #ifdef ENABLE_CHECKING
@@ -2273,15 +2307,18 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
   
    The test generated to check which version of loop is executed
    is modified to also check for profitability as indicated by the 
-   cost model initially.  */
+   cost model initially.
+
+   The versioning precondition(s) are placed in *COND_EXPR and
+   *COND_EXPR_STMT_LIST.  If DO_VERSIONING is true versioning is
+   also performed, otherwise only the conditions are generated.  */
 
 void
-vect_loop_versioning (loop_vec_info loop_vinfo)
+vect_loop_versioning (loop_vec_info loop_vinfo, bool do_versioning,
+		      tree *cond_expr, gimple_seq *cond_expr_stmt_list)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   struct loop *nloop;
-  tree cond_expr = NULL_TREE;
-  gimple_seq cond_expr_stmt_list = NULL;
   basic_block condition_bb;
   gimple_stmt_iterator gsi, cond_exp_gsi;
   basic_block merge_bb;
@@ -2301,29 +2338,34 @@ vect_loop_versioning (loop_vec_info loop_vinfo)
   th = conservative_cost_threshold (loop_vinfo,
 				    min_profitable_iters);
 
-  cond_expr =
+  *cond_expr =
     fold_build2 (GT_EXPR, boolean_type_node, scalar_loop_iters, 
  	         build_int_cst (TREE_TYPE (scalar_loop_iters), th));
 
-  cond_expr = force_gimple_operand (cond_expr, &cond_expr_stmt_list,
-				    false, NULL_TREE);
+  *cond_expr = force_gimple_operand (*cond_expr, cond_expr_stmt_list,
+				     false, NULL_TREE);
 
   if (VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
-      vect_create_cond_for_align_checks (loop_vinfo, &cond_expr,
-					 &cond_expr_stmt_list);
+      vect_create_cond_for_align_checks (loop_vinfo, cond_expr,
+					 cond_expr_stmt_list);
 
   if (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
-    vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr, 
-				       &cond_expr_stmt_list);
+    vect_create_cond_for_alias_checks (loop_vinfo, cond_expr,
+				       cond_expr_stmt_list);
 
-  cond_expr =
-    fold_build2 (NE_EXPR, boolean_type_node, cond_expr, integer_zero_node);
-  cond_expr =
-    force_gimple_operand (cond_expr, &gimplify_stmt_list, true, NULL_TREE);
-  gimple_seq_add_seq (&cond_expr_stmt_list, gimplify_stmt_list);
+  *cond_expr =
+    fold_build2 (NE_EXPR, boolean_type_node, *cond_expr, integer_zero_node);
+  *cond_expr =
+    force_gimple_operand (*cond_expr, &gimplify_stmt_list, true, NULL_TREE);
+  gimple_seq_add_seq (cond_expr_stmt_list, gimplify_stmt_list);
+
+  /* If we only needed the extra conditions and a new loop copy
+     bail out here.  */
+  if (!do_versioning)
+    return;
 
   initialize_original_copy_tables ();
-  nloop = loop_version (loop, cond_expr, &condition_bb,
+  nloop = loop_version (loop, *cond_expr, &condition_bb,
 			prob, prob, REG_BR_PROB_BASE - prob, true);
   free_original_copy_tables();
 
@@ -2354,10 +2396,13 @@ vect_loop_versioning (loop_vec_info loop_vinfo)
   /* End loop-exit-fixes after versioning.  */
 
   update_ssa (TODO_update_ssa);
-  if (cond_expr_stmt_list)
+  if (*cond_expr_stmt_list)
     {
       cond_exp_gsi = gsi_last_bb (condition_bb);
-      gsi_insert_seq_before (&cond_exp_gsi, cond_expr_stmt_list, GSI_SAME_STMT);
+      gsi_insert_seq_before (&cond_exp_gsi, *cond_expr_stmt_list,
+			     GSI_SAME_STMT);
+      *cond_expr_stmt_list = NULL;
     }
+  *cond_expr = NULL_TREE;
 }
 
