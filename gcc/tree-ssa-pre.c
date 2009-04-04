@@ -1563,11 +1563,12 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	tree newvuse = vuse;
 	VEC (vn_reference_op_s, heap) *newoperands = NULL;
 	bool changed = false;
-	unsigned int i;
+	unsigned int i, j;
 	vn_reference_op_t operand;
 	vn_reference_t newref;
 
-	for (i = 0; VEC_iterate (vn_reference_op_s, operands, i, operand); i++)
+	for (i = 0, j = 0;
+	     VEC_iterate (vn_reference_op_s, operands, i, operand); i++, j++)
 	  {
 	    pre_expr opresult;
 	    pre_expr leader;
@@ -1642,7 +1643,13 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    newop.op0 = op0;
 	    newop.op1 = op1;
 	    newop.op2 = op2;
-	    VEC_replace (vn_reference_op_s, newoperands, i, &newop);
+	    VEC_replace (vn_reference_op_s, newoperands, j, &newop);
+	    /* If it transforms from an SSA_NAME to an address, fold with
+	       a preceding indirect reference.  */
+	    if (j > 0 && op0 && TREE_CODE (op0) == ADDR_EXPR
+		&& VEC_index (vn_reference_op_s,
+			      newoperands, j - 1)->opcode == INDIRECT_REF)
+	      vn_reference_fold_indirect (&newoperands, &j);
 	  }
 	if (i != VEC_length (vn_reference_op_s, operands))
 	  {
@@ -4096,6 +4103,29 @@ eliminate (void)
 		    gimple_cond_make_true (stmt);
 		  update_stmt (stmt);
 		  todo = TODO_cleanup_cfg;
+		}
+	    }
+	  /* Visit indirect calls and turn them into direct calls if
+	     possible.  */
+	  if (gimple_code (stmt) == GIMPLE_CALL
+	      && TREE_CODE (gimple_call_fn (stmt)) == SSA_NAME)
+	    {
+	      tree fn = VN_INFO (gimple_call_fn (stmt))->valnum;
+	      if (TREE_CODE (fn) == ADDR_EXPR
+		  && TREE_CODE (TREE_OPERAND (fn, 0)) == FUNCTION_DECL)
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "Replacing call target with ");
+		      print_generic_expr (dump_file, fn, 0);
+		      fprintf (dump_file, " in ");
+		      print_gimple_stmt (dump_file, stmt, 0, 0);
+		    }
+
+		  gimple_call_set_fn (stmt, fn);
+		  update_stmt (stmt);
+		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
+		    gimple_purge_dead_eh_edges (b);
 		}
 	    }
 	}

@@ -744,36 +744,52 @@ create_reference_ops_from_call (gimple call)
   return result;
 }
 
-static VEC(vn_reference_op_s, heap) *shared_lookup_references;
-
-/* Create a vector of vn_reference_op_s structures from REF, a
-   REFERENCE_CLASS_P tree.  The vector is shared among all callers of
-   this function.  */
-
-static VEC(vn_reference_op_s, heap) *
-shared_reference_ops_from_ref (tree ref)
+/* Fold *& at position *I_P in a vn_reference_op_s vector *OPS.  Updates
+   *I_P to point to the last element of the replacement.  */
+void
+vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **ops,
+			    unsigned int *i_p)
 {
-  if (!ref)
-    return NULL;
-  VEC_truncate (vn_reference_op_s, shared_lookup_references, 0);
-  copy_reference_ops_from_ref (ref, &shared_lookup_references);
-  return shared_lookup_references;
+  VEC(vn_reference_op_s, heap) *mem = NULL;
+  vn_reference_op_t op;
+  unsigned int i = *i_p;
+  unsigned int j;
+
+  /* Get ops for the addressed object.  */
+  op = VEC_index (vn_reference_op_s, *ops, i);
+  copy_reference_ops_from_ref (TREE_OPERAND (op->op0, 0), &mem);
+
+  /* Do the replacement - we should have at least one op in mem now.  */
+  if (VEC_length (vn_reference_op_s, mem) == 1)
+    {
+      VEC_replace (vn_reference_op_s, *ops, i - 1,
+		   VEC_index (vn_reference_op_s, mem, 0));
+      VEC_ordered_remove (vn_reference_op_s, *ops, i);
+      i--;
+    }
+  else if (VEC_length (vn_reference_op_s, mem) == 2)
+    {
+      VEC_replace (vn_reference_op_s, *ops, i - 1,
+		   VEC_index (vn_reference_op_s, mem, 0));
+      VEC_replace (vn_reference_op_s, *ops, i,
+		   VEC_index (vn_reference_op_s, mem, 1));
+    }
+  else if (VEC_length (vn_reference_op_s, mem) > 2)
+    {
+      VEC_replace (vn_reference_op_s, *ops, i - 1,
+		   VEC_index (vn_reference_op_s, mem, 0));
+      VEC_replace (vn_reference_op_s, *ops, i,
+		   VEC_index (vn_reference_op_s, mem, 1));
+      /* ???  There is no VEC_splice.  */
+      for (j = 2; VEC_iterate (vn_reference_op_s, mem, j, op); j++)
+	VEC_safe_insert (vn_reference_op_s, heap, *ops, ++i, op);
+    }
+  else
+    gcc_unreachable ();
+
+  VEC_free (vn_reference_op_s, heap, mem);
+  *i_p = i;
 }
-
-/* Create a vector of vn_reference_op_s structures from CALL, a
-   call statement.  The vector is shared among all callers of
-   this function.  */
-
-static VEC(vn_reference_op_s, heap) *
-shared_reference_ops_from_call (gimple call)
-{
-  if (!call)
-    return NULL;
-  VEC_truncate (vn_reference_op_s, shared_lookup_references, 0);
-  copy_reference_ops_from_call (call, &shared_lookup_references);
-  return shared_lookup_references;
-}
-
 
 /* Transform any SSA_NAME's in a vector of vn_reference_op_s
    structures into their value numbers.  This is done in-place, and
@@ -783,7 +799,7 @@ static VEC (vn_reference_op_s, heap) *
 valueize_refs (VEC (vn_reference_op_s, heap) *orig)
 {
   vn_reference_op_t vro;
-  int i;
+  unsigned int i;
 
   for (i = 0; VEC_iterate (vn_reference_op_s, orig, i, vro); i++)
     {
@@ -795,13 +811,52 @@ valueize_refs (VEC (vn_reference_op_s, heap) *orig)
 	     the opcode.  */
 	  if (TREE_CODE (vro->op0) != SSA_NAME && vro->opcode == SSA_NAME)
 	    vro->opcode = TREE_CODE (vro->op0);
+	  /* If it transforms from an SSA_NAME to an address, fold with
+	     a preceding indirect reference.  */
+	  if (i > 0 && TREE_CODE (vro->op0) == ADDR_EXPR
+	      && VEC_index (vn_reference_op_s,
+			    orig, i - 1)->opcode == INDIRECT_REF)
+	    vn_reference_fold_indirect (&orig, &i);
 	}
-      /* TODO: Do we want to valueize op2 and op1 of
-	 ARRAY_REF/COMPONENT_REF for Ada */
-      
+      if (vro->op1 && TREE_CODE (vro->op1) == SSA_NAME)
+	vro->op1 = SSA_VAL (vro->op1);
+      if (vro->op2 && TREE_CODE (vro->op2) == SSA_NAME)
+	vro->op2 = SSA_VAL (vro->op2);
     }
 
   return orig;
+}
+
+static VEC(vn_reference_op_s, heap) *shared_lookup_references;
+
+/* Create a vector of vn_reference_op_s structures from REF, a
+   REFERENCE_CLASS_P tree.  The vector is shared among all callers of
+   this function.  */
+
+static VEC(vn_reference_op_s, heap) *
+valueize_shared_reference_ops_from_ref (tree ref)
+{
+  if (!ref)
+    return NULL;
+  VEC_truncate (vn_reference_op_s, shared_lookup_references, 0);
+  copy_reference_ops_from_ref (ref, &shared_lookup_references);
+  shared_lookup_references = valueize_refs (shared_lookup_references);
+  return shared_lookup_references;
+}
+
+/* Create a vector of vn_reference_op_s structures from CALL, a
+   call statement.  The vector is shared among all callers of
+   this function.  */
+
+static VEC(vn_reference_op_s, heap) *
+valueize_shared_reference_ops_from_call (gimple call)
+{
+  if (!call)
+    return NULL;
+  VEC_truncate (vn_reference_op_s, shared_lookup_references, 0);
+  copy_reference_ops_from_call (call, &shared_lookup_references);
+  shared_lookup_references = valueize_refs (shared_lookup_references);
+  return shared_lookup_references;
 }
 
 /* Lookup a SCCVN reference operation VR in the current hash table.
@@ -914,7 +969,7 @@ vn_reference_lookup (tree op, tree vuse, bool maywalk,
     *vnresult = NULL;
 
   vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
-  vr1.operands = valueize_refs (shared_reference_ops_from_ref (op));
+  vr1.operands = valueize_shared_reference_ops_from_ref (op);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
 
   if (maywalk
@@ -1585,7 +1640,7 @@ visit_reference_op_call (tree lhs, gimple stmt)
   tree vuse = gimple_vuse (stmt);
 
   vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
-  vr1.operands = valueize_refs (shared_reference_ops_from_call (stmt));
+  vr1.operands = valueize_shared_reference_ops_from_call (stmt);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   result = vn_reference_lookup_1 (&vr1, NULL);
   if (result)

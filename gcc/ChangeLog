@@ -1,5 +1,21 @@
 2009-04-04  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/8781
+	PR tree-optimization/37892
+	* tree-ssa-sccvn.h (vn_reference_fold_indirect): Declare.
+	* tree-ssa-sccvn.c (vn_reference_fold_indirect): New function.
+	(valueize_refs): Call it for *& valueizations.
+	(shared_reference_ops_from_ref): Rename to ...
+	(valueize_shared_reference_ops_from_ref): ... this and valueize.
+	(shared_reference_ops_from_call): Rename to ...
+	(valueize_shared_reference_ops_from_call): ... this and valueize.
+	(vn_reference_lookup): Update.
+	(visit_reference_op_call): Likewise.
+	* tree-ssa-pre.c (phi_translate_1): Fold *&.
+	(eliminate): Value-replace the call address in call statements.
+
+2009-04-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/39636
 	* tree-ssa-forwprop.c
 	(forward_propagate_addr_into_variable_array_index): Check for
