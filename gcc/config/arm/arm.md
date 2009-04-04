@@ -8260,7 +8260,7 @@
 	(if_then_else:SF (match_operand 1 "arm_comparison_operator" "")
 			 (match_operand:SF 2 "s_register_operand" "")
 			 (match_operand:SF 3 "nonmemory_operand" "")))]
-  "TARGET_32BIT"
+  "TARGET_32BIT && TARGET_HARD_FLOAT"
   "
   {
     enum rtx_code code = GET_CODE (operands[1]);
