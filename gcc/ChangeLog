@@ -1,3 +1,9 @@
+2009-04-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa.c (verify_ssa): With -O0 we do not need VOPs.
+	* tree-ssa-operands.c (append_vdef): Do not append VOPs at -O0.
+	(append_vuse): Likewise.
+
 2009-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* unwind-dw2.h (_Unwind_FrameState): Add REG_UNDEFINED enum value.
