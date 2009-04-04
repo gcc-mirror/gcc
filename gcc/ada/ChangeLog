@@ -1,3 +1,8 @@
+2009-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (finish_record_type): Force structural equality
+	checks if the record type is discriminated.
+
 2009-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system-linux-alpha.ads (Functions_Return_By_DSP): Remove.
