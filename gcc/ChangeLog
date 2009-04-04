@@ -1,3 +1,8 @@
+2009-04-04  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (pop_stmt_changes): Remove automatic
+	renaming code.
+
 2009-04-04  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-uncprop.c (associate_equivalences_with_edges): Use

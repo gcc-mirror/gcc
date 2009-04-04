@@ -1380,8 +1380,6 @@ void
 pop_stmt_changes (gimple *stmt_p)
 {
   gimple *stmt2_p, stmt = *stmt_p;
-  ssa_op_iter iter;
-  tree op;
 
   /* It makes no sense to keep track of PHI nodes.  */
   if (gimple_code (stmt) == GIMPLE_PHI)
@@ -1394,15 +1392,6 @@ pop_stmt_changes (gimple *stmt_p)
      exposed variables.  This also will mark the virtual operand
      for renaming if necessary.  */
   update_stmt (stmt);
-
-  /* Mark all the naked GIMPLE register operands for renaming.
-     ???  Especially this is considered bad behavior of the caller,
-     it should have updated SSA form manually.  Even more so as
-     we do not have a way to verify that no SSA names for op are
-     already in use.  */
-  FOR_EACH_SSA_TREE_OPERAND (op, stmt, iter, SSA_OP_DEF|SSA_OP_USE)
-    if (DECL_P (op))
-      mark_sym_for_renaming (op);
 }
 
 /* Discard the topmost stmt from SCB_STACK.  This is useful
