@@ -173,6 +173,8 @@ vn_nary_op_t vn_nary_op_insert_stmt (gimple, tree);
 vn_nary_op_t vn_nary_op_insert_pieces (unsigned int, enum tree_code,
 				       tree, tree, tree, tree,
 				       tree, tree, unsigned int);
+void vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **,
+				 unsigned int *);
 void copy_reference_ops_from_ref (tree, VEC(vn_reference_op_s, heap) **);
 void copy_reference_ops_from_call (gimple, VEC(vn_reference_op_s, heap) **);
 tree get_ref_from_reference_ops (VEC(vn_reference_op_s, heap) *ops);

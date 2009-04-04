@@ -1,5 +1,12 @@
 2009-04-04  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/8781
+	PR tree-optimization/37892
+	* g++.dg/tree-ssa/pr8781.C: New testcase.
+	* gcc.dg/tree-ssa/ssa-pre-25.c: Likewise.
+
+2009-04-04  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/39636
 	* gcc.c-torture/compile/pr39636.c: New testcase.
 
