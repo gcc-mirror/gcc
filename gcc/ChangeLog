@@ -1,3 +1,9 @@
+2009-04-04  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (sjlj_find_directly_reachable_regions): Be ready for removed toplevel
+	regions.
+	(sjlj_mark_call_sites): Likewise.
+
 2009-04-04  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config.gcc (cygwin tm_file):  Add cygwin-stdint.h.
