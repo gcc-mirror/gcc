@@ -1,3 +1,9 @@
+2009-04-05  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/29458
+	* trans-array.c (gfc_trans_array_constructor_value): Shadow
+	implied do-loop variable to avoid spurious middle-end warnings.
+
 2009-04-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39577

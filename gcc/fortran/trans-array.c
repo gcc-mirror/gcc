@@ -1183,12 +1183,29 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
   gfc_se se;
   mpz_t size;
 
+  tree shadow_loopvar = NULL_TREE;
+  gfc_saved_var saved_loopvar;
+
   mpz_init (size);
   for (; c; c = c->next)
     {
       /* If this is an iterator or an array, the offset must be a variable.  */
       if ((c->iterator || c->expr->rank > 0) && INTEGER_CST_P (*poffset))
 	gfc_put_offset_into_var (pblock, poffset, offsetvar);
+
+      /* Shadowing the iterator avoids changing its value and saves us from
+	 keeping track of it. Further, it makes sure that there's always a
+	 backend-decl for the symbol, even if there wasn't one before,
+	 e.g. in the case of an iterator that appears in a specification
+	 expression in an interface mapping.  */
+      if (c->iterator)
+	{
+	  gfc_symbol *sym = c->iterator->var->symtree->n.sym;
+	  tree type = gfc_typenode_for_spec (&sym->ts);
+
+	  shadow_loopvar = gfc_create_var (type, "shadow_loopvar");
+	  gfc_shadow_sym (sym, shadow_loopvar, &saved_loopvar);
+	}
 
       gfc_start_block (&body);
 
@@ -1312,53 +1329,35 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
       else
 	{
 	  /* Build the implied do-loop.  */
+	  stmtblock_t implied_do_block;
 	  tree cond;
 	  tree end;
 	  tree step;
-	  tree loopvar;
 	  tree exit_label;
 	  tree loopbody;
 	  tree tmp2;
-	  tree tmp_loopvar;
 
 	  loopbody = gfc_finish_block (&body);
 
-	  if (c->iterator->var->symtree->n.sym->backend_decl)
-	    {
-	      gfc_init_se (&se, NULL);
-	      gfc_conv_expr (&se, c->iterator->var);
-	      gfc_add_block_to_block (pblock, &se.pre);
-	      loopvar = se.expr;
-	    }
-	  else
-	    {
-	      /* If the iterator appears in a specification expression in
-		 an interface mapping, we need to make a temp for the loop
-		 variable because it is not declared locally.  */
-	      loopvar = gfc_typenode_for_spec (&c->iterator->var->ts);
-	      loopvar = gfc_create_var (loopvar, "loopvar");
-	    }
-
-	  /* Make a temporary, store the current value in that
-	     and return it, once the loop is done.  */
-	  tmp_loopvar = gfc_create_var (TREE_TYPE (loopvar), "loopvar");
-	  gfc_add_modify (pblock, tmp_loopvar, loopvar);
+	  /* Create a new block that holds the implied-do loop. A temporary
+	     loop-variable is used.  */
+	  gfc_start_block(&implied_do_block);
 
 	  /* Initialize the loop.  */
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr_val (&se, c->iterator->start);
-	  gfc_add_block_to_block (pblock, &se.pre);
-	  gfc_add_modify (pblock, loopvar, se.expr);
+	  gfc_add_block_to_block (&implied_do_block, &se.pre);
+	  gfc_add_modify (&implied_do_block, shadow_loopvar, se.expr);
 
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr_val (&se, c->iterator->end);
-	  gfc_add_block_to_block (pblock, &se.pre);
-	  end = gfc_evaluate_now (se.expr, pblock);
+	  gfc_add_block_to_block (&implied_do_block, &se.pre);
+	  end = gfc_evaluate_now (se.expr, &implied_do_block);
 
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr_val (&se, c->iterator->step);
-	  gfc_add_block_to_block (pblock, &se.pre);
-	  step = gfc_evaluate_now (se.expr, pblock);
+	  gfc_add_block_to_block (&implied_do_block, &se.pre);
+	  step = gfc_evaluate_now (se.expr, &implied_do_block);
 
 	  /* If this array expands dynamically, and the number of iterations
 	     is not constant, we won't have allocated space for the static
@@ -1366,7 +1365,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  if (dynamic && gfc_iterator_has_dynamic_bounds (c->iterator))
 	    {
 	      /* Get the number of iterations.  */
-	      tmp = gfc_get_iteration_count (loopvar, end, step);
+	      tmp = gfc_get_iteration_count (shadow_loopvar, end, step);
 
 	      /* Get the static part of C->EXPR's size.  */
 	      gfc_get_array_constructor_element_size (&size, c->expr);
@@ -1374,7 +1373,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 
 	      /* Grow the array by TMP * TMP2 elements.  */
 	      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type, tmp, tmp2);
-	      gfc_grow_array (pblock, desc, tmp);
+	      gfc_grow_array (&implied_do_block, desc, tmp);
 	    }
 
 	  /* Generate the loop body.  */
@@ -1388,9 +1387,9 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 			     build_int_cst (TREE_TYPE (step), 0));
 	  cond = fold_build3 (COND_EXPR, boolean_type_node, tmp,
 			      fold_build2 (GT_EXPR, boolean_type_node,
-					   loopvar, end),
+					   shadow_loopvar, end),
 			      fold_build2 (LT_EXPR, boolean_type_node,
-					   loopvar, end));
+					   shadow_loopvar, end));
 	  tmp = build1_v (GOTO_EXPR, exit_label);
 	  TREE_USED (exit_label) = 1;
 	  tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
@@ -1400,20 +1399,23 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 	  gfc_add_expr_to_block (&body, loopbody);
 
 	  /* Increase loop variable by step.  */
-	  tmp = fold_build2 (PLUS_EXPR, TREE_TYPE (loopvar), loopvar, step);
-	  gfc_add_modify (&body, loopvar, tmp);
+	  tmp = fold_build2 (PLUS_EXPR, TREE_TYPE (shadow_loopvar), shadow_loopvar, step);
+	  gfc_add_modify (&body, shadow_loopvar, tmp);
 
 	  /* Finish the loop.  */
 	  tmp = gfc_finish_block (&body);
 	  tmp = build1_v (LOOP_EXPR, tmp);
-	  gfc_add_expr_to_block (pblock, tmp);
+	  gfc_add_expr_to_block (&implied_do_block, tmp);
 
 	  /* Add the exit label.  */
 	  tmp = build1_v (LABEL_EXPR, exit_label);
-	  gfc_add_expr_to_block (pblock, tmp);
+	  gfc_add_expr_to_block (&implied_do_block, tmp);
 
-	  /* Restore the original value of the loop counter.  */
-	  gfc_add_modify (pblock, loopvar, tmp_loopvar);
+	  /* Finishe the implied-do loop.  */
+	  tmp = gfc_finish_block(&implied_do_block);
+	  gfc_add_expr_to_block(pblock, tmp);
+
+	  gfc_restore_sym (c->iterator->var->symtree->n.sym, &saved_loopvar);
 	}
     }
   mpz_clear (size);
