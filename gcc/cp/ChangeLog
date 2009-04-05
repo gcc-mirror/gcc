@@ -1,4 +1,5 @@
-2009-04-05  Jason Merrill  <jason@redhat.com>
+2009-04-05  Giovanni Bajo <giovannibajo@libero.it>
+	    Jason Merrill  <jason@redhat.com>
 
 	PR c++/14912
 	* error.c (count_non_default_template_args): New fn.

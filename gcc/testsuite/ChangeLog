@@ -1,3 +1,8 @@
+2009-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/14912
+	* g++.dg/template/error39.C: New.
+
 2009-04-05  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/29458
