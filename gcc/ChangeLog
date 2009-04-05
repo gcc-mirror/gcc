@@ -1,3 +1,9 @@
+2009-04-04  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config.gcc (cygwin tm_file):  Add cygwin-stdint.h.
+	(cygwin tm clause use_gcc_stdint):  Set to wrap.
+	* config/i386/cygwin-stdint.h:  New file.
+
 2009-04-04  Richard Guenther  <rguenther@suse.de>
 
 	* Makefile.in (tree-ssa-copy.o): Add $(CFGLOOP_H) dependency.
