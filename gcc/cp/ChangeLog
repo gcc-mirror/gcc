@@ -1,3 +1,13 @@
+2009-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/14912
+	* error.c (count_non_default_template_args): New fn.
+	(dump_template_parms): Call it.
+	(dump_template_argument_list): Call it.  Add parms parm.
+	(dump_template_argument): Adjust call to dump_template_argument_list.
+	(dump_type, dump_decl): Likewise.
+	(dump_template_bindings): Refactor logic.
+
 2009-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/25185
