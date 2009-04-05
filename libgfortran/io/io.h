@@ -49,34 +49,59 @@ struct st_parameter_dt;
 
 typedef struct stream
 {
-  char *(*alloc_w_at) (struct stream *, int *);
-  try (*sfree) (struct stream *);
-  try (*close) (struct stream *);
-  try (*seek) (struct stream *, gfc_offset);
-  try (*trunc) (struct stream *);
-  int (*read) (struct stream *, void *, size_t *);
-  int (*write) (struct stream *, const void *, size_t *);
-  try (*set) (struct stream *, int, size_t);
+  ssize_t (*read) (struct stream *, void *, ssize_t);
+  ssize_t (*write) (struct stream *, const void *, ssize_t);
+  off_t (*seek) (struct stream *, off_t, int);
+  off_t (*tell) (struct stream *);
+  int (*truncate) (struct stream *, off_t);
+  int (*flush) (struct stream *);
+  int (*close) (struct stream *);
 }
 stream;
 
-typedef enum
-{ SYNC_BUFFERED, SYNC_UNBUFFERED, ASYNC }
-io_mode;
+/* Inline functions for doing file I/O given a stream.  */
+static inline ssize_t
+sread (stream * s, void * buf, ssize_t nbyte)
+{
+  return s->read (s, buf, nbyte);
+}
 
-/* Macros for doing file I/O given a stream.  */
+static inline ssize_t
+swrite (stream * s, const void * buf, ssize_t nbyte)
+{
+  return s->write (s, buf, nbyte);
+}
 
-#define sfree(s) ((s)->sfree)(s)
-#define sclose(s) ((s)->close)(s)
+static inline off_t
+sseek (stream * s, off_t offset, int whence)
+{
+  return s->seek (s, offset, whence);
+}
 
-#define salloc_w(s, len) ((s)->alloc_w_at)(s, len)
+static inline off_t
+stell (stream * s)
+{
+  return s->tell (s);
+}
 
-#define sseek(s, pos) ((s)->seek)(s, pos)
-#define struncate(s) ((s)->trunc)(s)
-#define sread(s, buf, nbytes) ((s)->read)(s, buf, nbytes)
-#define swrite(s, buf, nbytes) ((s)->write)(s, buf, nbytes)
+static inline int
+struncate (stream * s, off_t length)
+{
+  return s->truncate (s, length);
+}
 
-#define sset(s, c, n) ((s)->set)(s, c, n)
+static inline int
+sflush (stream * s)
+{
+  return s->flush (s);
+}
+
+static inline int
+sclose (stream * s)
+{
+  return s->close (s);
+}
+
 
 /* Macros for testing what kinds of I/O we are doing.  */
 
@@ -106,6 +131,18 @@ typedef struct array_loop_spec
 }
 array_loop_spec;
 
+/* A stucture to build a hash table for format data.  */
+
+#define FORMAT_HASH_SIZE 16 
+
+typedef struct format_hash_entry
+{
+  char *key;
+  gfc_charlen_type key_len;
+  struct format_data *hashed_fmt;
+}
+format_hash_entry;
+
 /* Representation of a namelist object in libgfortran
 
    Namelist Records
@@ -127,7 +164,6 @@ array_loop_spec;
 
 typedef struct namelist_type
 {
-
   /* Object type, stored as GFC_DTYPE_xxxx.  */
   bt type;
 
@@ -538,10 +574,9 @@ unit_flags;
 typedef struct fbuf
 {
   char *buf;			/* Start of buffer.  */
-  size_t len;			/* Length of buffer.  */
-  size_t act;			/* Active bytes in buffer.  */
-  size_t flushed;		/* Flushed bytes from beginning of buffer.  */
-  size_t pos;			/* Current position in buffer.  */
+  int len;			/* Length of buffer.  */
+  int act;			/* Active bytes in buffer.  */
+  int pos;			/* Current position in buffer.  */
 }
 fbuf;
 
@@ -599,6 +634,9 @@ typedef struct gfc_unit
 
   int file_len;
   char *file;
+
+  /* The format hash table.  */
+  struct format_hash_entry format_hash_table[FORMAT_HASH_SIZE];
   
   /* Formatting buffer.  */
   struct fbuf *fbuf;
@@ -683,6 +721,12 @@ internal_proto(open_external);
 extern stream *open_internal (char *, int, gfc_offset);
 internal_proto(open_internal);
 
+extern char * mem_alloc_w (stream *, int *);
+internal_proto(mem_alloc_w);
+
+extern char * mem_alloc_r (stream *, int *);
+internal_proto(mem_alloc_w);
+
 extern stream *input_stream (void);
 internal_proto(input_stream);
 
@@ -697,12 +741,6 @@ internal_proto(compare_file_filename);
 
 extern gfc_unit *find_file (const char *file, gfc_charlen_type file_len);
 internal_proto(find_file);
-
-extern int stream_at_bof (stream *);
-internal_proto(stream_at_bof);
-
-extern int stream_at_eof (stream *);
-internal_proto(stream_at_eof);
 
 extern int delete_file (gfc_unit *);
 internal_proto(delete_file);
@@ -734,9 +772,6 @@ internal_proto(inquire_readwrite);
 extern gfc_offset file_length (stream *);
 internal_proto(file_length);
 
-extern gfc_offset file_position (stream *);
-internal_proto(file_position);
-
 extern int is_seekable (stream *);
 internal_proto(is_seekable);
 
@@ -752,17 +787,11 @@ internal_proto(flush_if_preconnected);
 extern void empty_internal_buffer(stream *);
 internal_proto(empty_internal_buffer);
 
-extern try flush (stream *);
-internal_proto(flush);
-
 extern int stream_isatty (stream *);
 internal_proto(stream_isatty);
 
 extern char * stream_ttyname (stream *);
 internal_proto(stream_ttyname);
-
-extern gfc_offset stream_offset (stream *s);
-internal_proto(stream_offset);
 
 extern int unpack_filename (char *, const char *, int);
 internal_proto(unpack_filename);
@@ -807,6 +836,9 @@ internal_proto(update_position);
 extern void finish_last_advance_record (gfc_unit *u);
 internal_proto (finish_last_advance_record);
 
+extern int unit_truncate (gfc_unit *, gfc_offset, st_parameter_common *);
+internal_proto (unit_truncate);
+
 /* open.c */
 
 extern gfc_unit *new_unit (st_parameter_open *, gfc_unit *, unit_flags *);
@@ -826,8 +858,17 @@ internal_proto(unget_format);
 extern void format_error (st_parameter_dt *, const fnode *, const char *);
 internal_proto(format_error);
 
-extern void free_format_data (st_parameter_dt *);
+extern void free_format_data (struct format_data *);
 internal_proto(free_format_data);
+
+extern void free_format_hash_table (gfc_unit *);
+internal_proto(free_format_hash_table);
+
+extern void init_format_hash (st_parameter_dt *);
+internal_proto(init_format_hash);
+
+extern void free_format_hash (st_parameter_dt *);
+internal_proto(free_format_hash);
 
 /* transfer.c */
 
@@ -836,7 +877,7 @@ internal_proto(free_format_data);
 extern const char *type_name (bt);
 internal_proto(type_name);
 
-extern try read_block_form (st_parameter_dt *, void *, size_t *);
+extern void * read_block_form (st_parameter_dt *, int *);
 internal_proto(read_block_form);
 
 extern char *read_sf (st_parameter_dt *, int *, int);
@@ -861,6 +902,9 @@ internal_proto (reverse_memcpy);
 
 extern void st_wait (st_parameter_wait *);
 export_proto(st_wait);
+
+extern void hit_eof (st_parameter_dt *);
+internal_proto(hit_eof);
 
 /* read.c */
 
@@ -968,23 +1012,38 @@ extern size_t size_from_complex_kind (int);
 internal_proto(size_from_complex_kind);
 
 /* fbuf.c */
-extern void fbuf_init (gfc_unit *, size_t);
+extern void fbuf_init (gfc_unit *, int);
 internal_proto(fbuf_init);
 
 extern void fbuf_destroy (gfc_unit *);
 internal_proto(fbuf_destroy);
 
-extern void fbuf_reset (gfc_unit *);
+extern int fbuf_reset (gfc_unit *);
 internal_proto(fbuf_reset);
 
-extern char * fbuf_alloc (gfc_unit *, size_t);
+extern char * fbuf_alloc (gfc_unit *, int);
 internal_proto(fbuf_alloc);
 
-extern int fbuf_flush (gfc_unit *, int);
+extern int fbuf_flush (gfc_unit *, unit_mode);
 internal_proto(fbuf_flush);
 
-extern int fbuf_seek (gfc_unit *, gfc_offset);
+extern int fbuf_seek (gfc_unit *, int, int);
 internal_proto(fbuf_seek);
+
+extern char * fbuf_read (gfc_unit *, int *);
+internal_proto(fbuf_read);
+
+/* Never call this function, only use fbuf_getc().  */
+extern int fbuf_getc_refill (gfc_unit *);
+internal_proto(fbuf_getc_refill);
+
+static inline int
+fbuf_getc (gfc_unit * u)
+{
+  if (u->fbuf->pos < u->fbuf->act)
+    return (unsigned char) u->fbuf->buf[u->fbuf->pos++];
+  return fbuf_getc_refill (u);
+}
 
 /* lock.c */
 extern void free_ionml (st_parameter_dt *);

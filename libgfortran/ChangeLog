@@ -1,3 +1,204 @@
+2009-04-05  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38654
+	* io/read.c (read_f): Reworked to speed up floating point parsing.
+	(convert_real): Use pointer-casting instead of memcpy and temporaries.
+
+2009-04-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+        PR libfortran/37754
+	* io/io.h (format_hash_entry): New structure for hash table.
+	(format_hash_table): The hash table itself.
+	(free_format_data): Revise function prototype.
+	(free_format_hash_table, init_format_hash,
+	free_format_hash): New function prototypes.
+	* io/unit.c (close_unit_1): Use free_format_hash_table.
+	* io/transfer.c (st_read_done, st_write_done): Free format data if
+	internal unit.
+	* io/format.c (free_format_hash_table): New function that frees any
+	memory allocated previously for cached format data.
+	(reset_node): New static helper function to reset the format counters
+	for a format node.
+	(reset_fnode_counters): New static function recursively calls reset_node
+	to traverse the	fnode tree.
+	(format_hash): New simple hash function based on XOR, probabalistic,
+	tosses collisions.
+	(save_parsed_format): New static function to save the parsed format
+	data to use again.
+	(find_parsed_format): New static function searches the hash table
+	looking for a match.
+	(free_format_data): Revised to accept pointer to format data rather than
+	the dtp pointer so that the function can be used in more places.
+	(format_lex): Editorial.
+	(parse_format_list): Set flag used to determine of format data hashing
+	is to be used.  Internal units are not persistent enough for this.
+	(revert): Move to ne location in file.
+	(parse_format): Use new functions to look for previously parsed
+	format strings and use them rather than re-parse.  If not found, saves
+	the parsed format data for later use.
+	
+2009-04-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+        PR libfortran/37754
+	* io/transfer.c (formatted_transfer_scalar): Remove this function by
+	factoring it into two new functions, one for read and one for write,
+	eliminating all the conditionals for read or write mode.
+	(formatted transfer_scalar_read): New function.
+	(formatted transfer_scalar_write): New function.
+	(formatted_transfer): Use new functions.
+
+2009-04-05  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        PR libfortran/25561 libfortran/37754
+	* io/io.h (struct stream): Define new stream interface function
+	pointers, and inline functions for accessing it.
+	(struct fbuf): Use int instead of size_t, remove flushed element.
+	(mem_alloc_w): New prototype.
+	(mem_alloc_r): New prototype.
+	(stream_at_bof): Remove prototype.
+	(stream_at_eof): Remove prototype.
+	(file_position): Remove prototype.
+	(flush): Remove prototype.
+	(stream_offset): Remove prototype.
+	(unit_truncate): New prototype.
+	(read_block_form): Change to return pointer, int* argument.
+	(hit_eof): New prototype.
+	(fbuf_init): Change prototype.
+	(fbuf_reset): Change prototype.
+	(fbuf_alloc): Change prototype.
+	(fbuf_flush): Change prototype.
+	(fbuf_seek): Change prototype.
+	(fbuf_read): New prototype.
+	(fbuf_getc_refill): New prototype.
+	(fbuf_getc): New inline function.
+        * io/fbuf.c (fbuf_init): Use int, get rid of flushed.
+	(fbuf_debug): New function.
+	(fbuf_reset): Flush, and return position offset.
+	(fbuf_alloc): Simplify, don't flush, just realloc.
+	(fbuf_flush): Make usable for read mode, salvage remaining bytes.
+	(fbuf_seek): New whence argument.
+	(fbuf_read): New function.
+	(fbuf_getc_refill): New function.
+	* io/file_pos.c (formatted_backspace): Use new stream interface.
+	(unformatted_backspace): Likewise.
+	(st_backspace): Make sure format buffer is reset, use new stream
+	interface, use unit_truncate.
+	(st_endfile): Likewise.
+	(st_rewind): Likewise.
+	* io/intrinsics.c: Use new stream interface.
+	* io/list_read.c (push_char): Don't use u.p.scratch, use realloc
+	to resize.
+	(free_saved): Don't check u.p.scratch.
+	(next_char): Use new stream interface, use fbuf_getc() for external files.
+	(finish_list_read): flush format buffer.
+	(nml_query): Update to use modified interface:s
+	* io/open.c (test_endfile): Use new stream interface.
+	(edit_modes): Likewise.
+	(new_unit): Likewise, set bytes_left to 1 for stream files.
+	* io/read.c (read_l): Use new read_block_form interface.
+	(read_utf8): Likewise.
+	(read_utf8_char1): Likewise.
+	(read_default_char1): Likewise.
+	(read_utf8_char4): Likewise.
+	(read_default_char4): Likewise.
+	(read_a): Likewise.
+	(read_a_char4): Likewise.
+	(read_decimal): Likewise.
+	(read_radix): Likewise.
+	(read_f): Likewise.
+	* io/transfer.c (read_sf): Use fbuf_read and mem_alloc_r, remove
+	usage of u.p.line_buffer.
+	(read_block_form): Update interface to return pointer, use
+	fbuf_read for direct access.
+	(read_block_direct): Update to new stream interface.
+	(write_block): Use mem_alloc_w for internal I/O.
+	(write_buf): Update to new stream interface.
+	(formatted_transfer_scalar): Don't use u.p.line_buffer, use
+	fbuf_seek for external files.
+	(us_read): Update to new stream interface.
+	(us_write): Likewise.
+	(data_transfer_init): Always check if we switch modes and flush.
+	(skip_record): Use new stream interface, fix comparison.
+	(next_record_r): Check for and reset u.p.at_eof, use new stream
+	interface, use fbuf_getc for spacing.
+	(write_us_marker): Update to new stream interface, don't inline.
+	(next_record_w_unf): Likewise.
+	(sset): New function.
+	(next_record_w): Use new stream interface, use fbuf for printing
+	newline.
+	(next_record): Use new stream interface.
+	(finalize_transfer): Remove sfree call, use new stream interface.
+	(st_iolength_done): Don't use u.p.scratch.
+	(st_read): Don't check for end of file.
+	(st_read_done): Don't use u.p.scratch, use unit_truncate.
+	(hit_eof): New function.
+	* io/unit.c (init_units): Always init fbuf for formatted units.
+	(update_position): Use new stream interface.
+	(unit_truncate): New function.
+	(finish_last_advance_record): Use fbuf to print newline.
+	* io/unix.c: Remove unused SSIZE_MAX macro.
+	(BUFFER_SIZE): Make static const variable rather than macro.
+	(struct unix_stream): Remove dirty_offset, len, method,
+	small_buffer. Order elements by decreasing size.
+	(struct int_stream): Remove.
+	(move_pos_offset): Remove usage of dirty_offset.
+	(reset_stream): Remove.
+	(do_read): Rename to raw_read, update to match new stream
+	interface.
+	(do_write): Rename to raw_write, update to new stream interface.
+	(raw_seek): New function.
+	(raw_tell): New function.
+	(raw_truncate): New function.
+	(raw_close): New function.
+	(raw_flush): New function.
+	(raw_init): New function.
+	(fd_alloc): Remove.
+	(fd_alloc_r_at): Remove.
+	(fd_alloc_w_at): Remove.
+	(fd_sfree): Remove.
+	(fd_seek): Remove.
+	(fd_truncate): Remove.
+	(fd_sset): Remove.
+	(fd_read): Remove.
+	(fd_write): Remove.
+	(fd_close): Remove.
+	(fd_open): Remove.
+	(fd_flush): Rename to buf_flush, update to new stream interface
+	and unix_stream.
+	(buf_read): New function.
+	(buf_write): New function.
+	(buf_seek): New function.
+	(buf_tell): New function.
+	(buf_truncate): New function.
+	(buf_close): New function.
+	(buf_init): New function.
+	(mem_alloc_r_at): Rename to mem_alloc_r, change prototype.
+	(mem_alloc_w_at): Rename to mem_alloc_w, change prototype.
+	(mem_read): Change to match new stream interface.
+	(mem_write): Likewise.
+	(mem_seek): Likewise.
+	(mem_tell): Likewise.
+	(mem_truncate): Likewise.
+	(mem_close): Likewise.
+	(mem_flush): New function.
+	(mem_sfree): Remove.
+	(empty_internal_buffer): Cast to correct type.
+	(open_internal): Use correct type, init function pointers.
+	(fd_to_stream): Test whether to open file as buffered or raw.
+	(output_stream): Remove mode set.
+	(error_stream): Likewise.
+	(flush_all_units_1): Use new stream interface.
+	(flush_all_units): Likewise.
+	(stream_at_bof): Remove.
+	(stream_at_eof): Remove.
+	(file_position): Remove.
+	(file_length): Update logic to use stream interface.
+	(flush): Remove.
+	(stream_offset): Remove.
+	* io/write.c (write_utf8_char4): Use int instead of size_t.
+	(write_x): Extra safety check.
+	(namelist_write_newline): Use new stream interface.
+
 2009-03-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR fortran/33595

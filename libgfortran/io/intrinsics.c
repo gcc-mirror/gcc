@@ -54,13 +54,13 @@ PREFIX(fgetc) (const int * unit, char * c, gfc_charlen_type c_len)
 
   s = 1;
   memset (c, ' ', c_len);
-  ret = sread (u->s, c, &s);
+  ret = sread (u->s, c, s);
   unlock_unit (u);
 
-  if (ret != 0)
+  if (ret < 0)
     return ret;
 
-  if (s != 1)
+  if (ret != 1)
     return -1;
   else
     return 0;
@@ -119,17 +119,17 @@ int
 PREFIX(fputc) (const int * unit, char * c,
 	       gfc_charlen_type c_len __attribute__((unused)))
 {
-  size_t s;
-  int ret;
+  ssize_t s;
   gfc_unit * u = find_unit (*unit);
 
   if (u == NULL)
     return -1;
 
-  s = 1;
-  ret = swrite (u->s, c, &s);
+  s = swrite (u->s, c, 1);
   unlock_unit (u);
-  return ret;
+  if (s < 0)
+    return -1;
+  return 0;
 }
 
 
@@ -196,7 +196,7 @@ flush_i4 (GFC_INTEGER_4 *unit)
       us = find_unit (*unit);
       if (us != NULL)
 	{
-	  flush (us->s);
+	  sflush (us->s);
 	  unlock_unit (us);
 	}
     }
@@ -219,7 +219,7 @@ flush_i8 (GFC_INTEGER_8 *unit)
       us = find_unit (*unit);
       if (us != NULL)
 	{
-	  flush (us->s);
+	  sflush (us->s);
 	  unlock_unit (us);
 	}
     }
@@ -234,22 +234,17 @@ void
 fseek_sub (int * unit, GFC_IO_INT * offset, int * whence, int * status)
 {
   gfc_unit * u = find_unit (*unit);
-  try result = FAILURE;
+  ssize_t result = -1;
 
   if (u != NULL && is_seekable(u->s))
     {
-      if (*whence == 0)
-        result = sseek(u->s, *offset);                       /* SEEK_SET */
-      else if (*whence == 1)
-        result = sseek(u->s, file_position(u->s) + *offset); /* SEEK_CUR */
-      else if (*whence == 2)
-        result = sseek(u->s, file_length(u->s) + *offset);   /* SEEK_END */
+      result = sseek(u->s, *offset, *whence);
 
       unlock_unit (u);
     }
 
   if (status)
-    *status = (result == FAILURE ? -1 : 0);
+    *status = (result < 0 ? -1 : 0);
 }
 
 
@@ -266,7 +261,7 @@ PREFIX(ftell) (int * unit)
   size_t ret;
   if (u == NULL)
     return ((size_t) -1);
-  ret = (size_t) stream_offset (u->s);
+  ret = (size_t) stell (u->s);
   unlock_unit (u);
   return ret;
 }
@@ -282,7 +277,7 @@ PREFIX(ftell) (int * unit)
       *offset = -1; \
     else \
       { \
-	*offset = stream_offset (u->s); \
+	*offset = stell (u->s); \
 	unlock_unit (u); \
       } \
   }

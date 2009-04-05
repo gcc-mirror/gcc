@@ -46,17 +46,17 @@ formatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
 {
   gfc_offset base;
   char p[READ_CHUNK];
-  size_t n;
+  ssize_t n;
 
-  base = file_position (u->s) - 1;
+  base = stell (u->s) - 1;
 
   do
     {
       n = (base < READ_CHUNK) ? base : READ_CHUNK;
       base -= n;
-      if (sseek (u->s, base) == FAILURE)
+      if (sseek (u->s, base, SEEK_SET) < 0)
         goto io_error;
-      if (sread (u->s, p, &n) != 0)
+      if (sread (u->s, p, n) != n)
 	goto io_error;
 
       /* We have moved backwards from the current position, it should
@@ -81,7 +81,7 @@ formatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
 
   /* base is the new pointer.  Seek to it exactly.  */
  done:
-  if (sseek (u->s, base) == FAILURE)
+  if (sseek (u->s, base, SEEK_SET) < 0)
     goto io_error;
   u->last_record--;
   u->endfile = NO_ENDFILE;
@@ -100,10 +100,10 @@ formatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
 static void
 unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
 {
-  gfc_offset m, new;
+  gfc_offset m, slen;
   GFC_INTEGER_4 m4;
   GFC_INTEGER_8 m8;
-  size_t length;
+  ssize_t length;
   int continued;
   char p[sizeof (GFC_INTEGER_8)];
 
@@ -114,9 +114,10 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
 
   do
     {
-      if (sseek (u->s, file_position (u->s) - length) == FAILURE)
+      slen = - (gfc_offset) length;
+      if (sseek (u->s, slen, SEEK_CUR) < 0)
         goto io_error;
-      if (sread (u->s, p, &length) != 0)
+      if (sread (u->s, p, length) != length)
         goto io_error;
 
       /* Only GFC_CONVERT_NATIVE and GFC_CONVERT_SWAP are valid here.  */
@@ -164,10 +165,7 @@ unformatted_backspace (st_parameter_filepos *fpp, gfc_unit *u)
       if (continued)
 	m = -m;
 
-      if ((new = file_position (u->s) - m - 2*length) < 0)
-	new = 0;
-
-      if (sseek (u->s, new) == FAILURE)
+      if (sseek (u->s, -m -2 * length, SEEK_CUR) < 0)
 	goto io_error;
     } while (continued);
 
@@ -206,15 +204,21 @@ st_backspace (st_parameter_filepos *fpp)
       goto done;
     }
 
-    if (u->flags.access == ACCESS_STREAM && u->flags.form == FORM_UNFORMATTED)
-      {
-	generate_error (&fpp->common, LIBERROR_OPTION_CONFLICT,
-			"Cannot BACKSPACE an unformatted stream file");
-	goto done;
-      }
+  if (u->flags.access == ACCESS_STREAM && u->flags.form == FORM_UNFORMATTED)
+    {
+      generate_error (&fpp->common, LIBERROR_OPTION_CONFLICT,
+                      "Cannot BACKSPACE an unformatted stream file");
+      goto done;
+    }
 
-  /* Make sure format buffer is flushed.  */
-  fbuf_flush (u, 1);
+  /* Make sure format buffer is flushed and reset.  */
+  if (u->flags.form == FORM_FORMATTED)
+    {
+      int pos = fbuf_reset (u);
+      if (pos != 0)
+        sseek (u->s, pos, SEEK_CUR);
+    }
+
   
   /* Check for special cases involving the ENDFILE record first.  */
 
@@ -222,11 +226,11 @@ st_backspace (st_parameter_filepos *fpp)
     {
       u->endfile = AT_ENDFILE;
       u->flags.position = POSITION_APPEND;
-      flush (u->s);
+      sflush (u->s);
     }
   else
     {
-      if (file_position (u->s) == 0)
+      if (stell (u->s) == 0)
 	{
 	  u->flags.position = POSITION_REWIND;
 	  goto done;		/* Common special case */
@@ -243,8 +247,7 @@ st_backspace (st_parameter_filepos *fpp)
 
 	  u->previous_nonadvancing_write = 0;
 
-	  flush (u->s);
-	  struncate (u->s);
+	  unit_truncate (u, stell (u->s), &fpp->common);
 	  u->mode = READING;
         }
 
@@ -253,7 +256,7 @@ st_backspace (st_parameter_filepos *fpp)
       else
 	unformatted_backspace (fpp, u);
 
-      update_position (u);
+      u->flags.position = POSITION_UNSPECIFIED;
       u->endfile = NO_ENDFILE;
       u->current_record = 0;
       u->bytes_left = 0;
@@ -305,10 +308,10 @@ st_endfile (st_parameter_filepos *fpp)
 	  next_record (&dtp, 1);
 	}
 
-      flush (u->s);
-      struncate (u->s);
+      unit_truncate (u, stell (u->s), &fpp->common);
       u->endfile = AFTER_ENDFILE;
-      update_position (u);
+      if (0 == stell (u->s))
+        u->flags.position = POSITION_REWIND;
     done:
       unlock_unit (u);
     }
@@ -347,14 +350,25 @@ st_rewind (st_parameter_filepos *fpp)
 	       written record is the last record in the file, so truncate the
 	       file now.  Reset to read mode so two consecutive rewind
 	       statements do not delete the file contents.  */
-	  flush (u->s);
-	  if (u->mode == WRITING && u->flags.access != ACCESS_STREAM)
-	    struncate (u->s);
+	  if (u->mode == WRITING)
+	    {
+	      /* unit_truncate takes care of flushing.  */
+	      unit_truncate (u, stell (u->s), &fpp->common);
+	      /* .. but we still need to reset since we're going to seek.  */
+	      fbuf_reset (u);
+	    }
+          else
+            {
+              /* Make sure buffers are reset.  */
+              if (u->flags.form == FORM_FORMATTED)
+                fbuf_reset (u);
+              sflush (u->s);
+            }              
 
 	  u->mode = READING;
 	  u->last_record = 0;
 
-	  if (file_position (u->s) != 0 && sseek (u->s, 0) == FAILURE)
+	  if (sseek (u->s, 0, SEEK_SET) < 0)
 	    generate_error (&fpp->common, LIBERROR_OS, NULL);
 
 	  /* Handle special files like /dev/null differently.  */
@@ -366,7 +380,7 @@ st_rewind (st_parameter_filepos *fpp)
 	  else
 	    {
 	      /* Set this for compatibilty with g77 for /dev/null.  */
-	      if (file_length (u->s) == 0  && file_position (u->s) == 0)
+	      if (file_length (u->s) == 0  && stell (u->s) == 0)
 		u->endfile = AT_ENDFILE;
 	      /* Future refinements on special files can go here.  */
 	    }
@@ -397,7 +411,11 @@ st_flush (st_parameter_filepos *fpp)
   u = find_unit (fpp->common.unit);
   if (u != NULL)
     {
-      flush (u->s);
+      /* Make sure format buffer is flushed.  */
+      if (u->flags.form == FORM_FORMATTED)
+        fbuf_flush (u, u->mode);
+
+      sflush (u->s);
       unlock_unit (u);
     }
   else
