@@ -118,7 +118,9 @@ namespace std
     linear_congruential_engine<_UIntType, __a, __c, __m>::
     seed(seed_seq& __q)
     {
-      const _UIntType __k = (std::log2(__m) + 31) / 32;
+      const _UIntType __k0 = __m == 0 ? std::numeric_limits<_UIntType>::digits
+	                              : (std::__lg(__m) + 31);
+      const _UIntType __k = __k0 / 32;
       _UIntType __arr[__k + 3];
       __q.generate(__arr + 0, __arr + 3);
       _UIntType __factor = 1U;
@@ -130,7 +132,7 @@ namespace std
         }
 
       if ((__detail::__mod<_UIntType, 1U, 0U, __m>(__c) == 0U)
-       && (__detail::__mod<_UIntType, 1U, 0U, __m>(__sum) == 0U))
+	  && (__detail::__mod<_UIntType, 1U, 0U, __m>(__sum) == 0U))
         _M_x = __detail::__mod<_UIntType, 1U, 0U, __m>(1U);
       else
         _M_x = __detail::__mod<_UIntType, 1U, 0U, __m>(__sum);
@@ -578,7 +580,7 @@ namespace std
     {
       const long double __r = static_cast<long double>(this->max())
 			    - static_cast<long double>(this->min()) + 1.0L;
-      const result_type __m = std::log2l(__r);
+      const result_type __m = std::log10(__r) / std::log10(2.0L);
       result_type __n, __n0, __y0, __y1, __s0, __s1;
       for (size_t __i = 0; __i < 2; ++__i)
 	{
@@ -2762,7 +2764,7 @@ namespace std
                    __bits);
       const long double __r = static_cast<long double>(__urng.max())
 			    - static_cast<long double>(__urng.min()) + 1.0L;
-      const size_t __log2r = std::log2l(__r);
+      const size_t __log2r = std::log10(__r) / std::log10(2.0L);
       size_t __k = std::max<size_t>(1UL, (__b + __log2r - 1UL) / __log2r);
       _RealType __sum = _RealType(0);
       _RealType __tmp = _RealType(1);
