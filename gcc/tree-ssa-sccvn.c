@@ -757,6 +757,23 @@ vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **ops,
 
   /* Get ops for the addressed object.  */
   op = VEC_index (vn_reference_op_s, *ops, i);
+  /* ???  If this is our usual typeof &ARRAY vs. &ARRAY[0] problem, work
+     around it to avoid later ICEs.  */
+  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (op->op0, 0))) == ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (op->op0))) != ARRAY_TYPE)
+    {
+      vn_reference_op_s aref;
+      tree dom;
+      aref.type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (op->op0)));
+      aref.opcode = ARRAY_REF;
+      aref.op0 = integer_zero_node;
+      if ((dom = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (op->op0, 0))))
+	  && TYPE_MIN_VALUE (dom))
+	aref.op0 = TYPE_MIN_VALUE (dom);
+      aref.op1 = NULL_TREE;
+      aref.op2 = NULL_TREE;
+      VEC_safe_push (vn_reference_op_s, heap, mem, &aref);
+    }
   copy_reference_ops_from_ref (TREE_OPERAND (op->op0, 0), &mem);
 
   /* Do the replacement - we should have at least one op in mem now.  */
