@@ -1,3 +1,11 @@
+2009-04-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-04-05  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39648
+	* gcc.c-torture/compile/pr39648.c: New testcase.
+
 2009-04-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline:
