@@ -1930,6 +1930,8 @@ sjlj_find_directly_reachable_regions (struct sjlj_lp_info *lp_info)
 	continue;
 
       region = VEC_index (eh_region, cfun->eh->region_array, INTVAL (XEXP (note, 0)));
+      if (!region)
+	continue;
 
       type_thrown = NULL_TREE;
       if (region->type == ERT_THROW)
@@ -2040,7 +2042,17 @@ sjlj_mark_call_sites (struct sjlj_lp_info *lp_info)
 	continue;
 
       note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-      if (!note)
+
+      /* Calls that are known to not throw need not be marked.  */
+      if (note && INTVAL (XEXP (note, 0)) <= 0)
+	continue;
+
+      if (note)
+	region = VEC_index (eh_region, cfun->eh->region_array, INTVAL (XEXP (note, 0)));
+      else
+        region = NULL;
+
+      if (!region)
 	{
 	  /* Calls (and trapping insns) without notes are outside any
 	     exception handling region in this function.  Mark them as
@@ -2053,14 +2065,7 @@ sjlj_mark_call_sites (struct sjlj_lp_info *lp_info)
 	    continue;
 	}
       else
-	{
-	  /* Calls that are known to not throw need not be marked.  */
-	  if (INTVAL (XEXP (note, 0)) <= 0)
-	    continue;
-
-	  region = VEC_index (eh_region, cfun->eh->region_array, INTVAL (XEXP (note, 0)));
-	  this_call_site = lp_info[region->region_number].call_site_index;
-	}
+	this_call_site = lp_info[region->region_number].call_site_index;
 
       if (this_call_site == last_call_site)
 	continue;
