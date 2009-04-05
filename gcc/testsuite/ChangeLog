@@ -1,3 +1,9 @@
+2009-04-05  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/38654
+	* gfortran.dg/read_float_2.f03
+	* gfortran.dg/read_float_3.f90
+
 2009-04-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39648
