@@ -2595,7 +2595,7 @@ namespace std
 						 - 4.0 * __a * __c), __b));
 #else
 			 + (__b < 0.0 ? -1.0 : 1.0)
-			 * std::sqrt(__b * __b - 4.0 * __a * __c)));
+			 * std::sqrt(__b * __b - 4.0 * __a * __c));
 #endif
 	const double __x0 = __param._M_int[__i];
 	const double __x1 = __q / __a;
