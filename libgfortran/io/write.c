@@ -113,7 +113,7 @@ write_utf8_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
   gfc_char4_t c;
   static const uchar masks[6] =  { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
   static const uchar limits[6] = { 0x80, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
-  size_t nbytes;
+  int nbytes;
   uchar buf[6], d, *q; 
 
   /* Take care of preceding blanks.  */
@@ -784,8 +784,7 @@ write_x (st_parameter_dt *dtp, int len, int nspaces)
   p = write_block (dtp, len);
   if (p == NULL)
     return;
-
-  if (nspaces > 0)
+  if (nspaces > 0 && len - nspaces >= 0)
     memset (&p[len - nspaces], ' ', nspaces);
 }
 
@@ -1173,7 +1172,7 @@ namelist_write_newline (st_parameter_dt *dtp)
 	  /* Now seek to this record */
 	  record = record * dtp->u.p.current_unit->recl;
 
-	  if (sseek (dtp->u.p.current_unit->s, record) == FAILURE)
+	  if (sseek (dtp->u.p.current_unit->s, record, SEEK_SET) < 0)
 	    {
 	      generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
 	      return;

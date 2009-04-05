@@ -155,7 +155,7 @@ static const st_option async_opt[] =
 static void
 test_endfile (gfc_unit * u)
 {
-  if (u->endfile == NO_ENDFILE && file_length (u->s) == file_position (u->s))
+  if (u->endfile == NO_ENDFILE && file_length (u->s) == stell (u->s))
     u->endfile = AT_ENDFILE;
 }
 
@@ -271,7 +271,7 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
       break;
 
     case POSITION_REWIND:
-      if (sseek (u->s, 0) == FAILURE)
+      if (sseek (u->s, 0, SEEK_SET) != 0)
 	goto seek_error;
 
       u->current_record = 0;
@@ -281,7 +281,7 @@ edit_modes (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
       break;
 
     case POSITION_APPEND:
-      if (sseek (u->s, file_length (u->s)) == FAILURE)
+      if (sseek (u->s, 0, SEEK_END) < 0)
 	goto seek_error;
 
       if (flags->access != ACCESS_STREAM)
@@ -557,7 +557,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
 
   if (flags->position == POSITION_APPEND)
     {
-      if (sseek (u->s, file_length (u->s)) == FAILURE)
+      if (sseek (u->s, 0, SEEK_END) < 0)
 	generate_error (&opp->common, LIBERROR_OS, NULL);
       u->endfile = AT_ENDFILE;
     }
@@ -611,7 +611,8 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
     {
       u->maxrec = max_offset;
       u->recl = 1;
-      u->strm_pos = file_position (u->s) + 1;
+      u->bytes_left = 1;
+      u->strm_pos = stell (u->s) + 1;
     }
 
   memmove (u->file, opp->file, opp->file_len);
@@ -627,7 +628,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags * flags)
   if (flags->status == STATUS_SCRATCH && opp->file != NULL)
     free_mem (opp->file);
     
-  if (flags->form == FORM_FORMATTED && (flags->action != ACTION_READ))
+  if (flags->form == FORM_FORMATTED)
     {
       if ((opp->common.flags & IOPARM_OPEN_HAS_RECL_IN))
         fbuf_init (u, u->recl);

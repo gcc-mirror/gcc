@@ -540,6 +540,8 @@ init_units (void)
       u->file_len = strlen (stdin_name);
       u->file = get_mem (u->file_len);
       memmove (u->file, stdin_name, u->file_len);
+
+      fbuf_init (u, 0);
     
       __gthread_mutex_unlock (&u->lock);
     }
@@ -640,7 +642,8 @@ close_unit_1 (gfc_unit *u, int locked)
     free_mem (u->file);
   u->file = NULL;
   u->file_len = 0;
-  
+
+  free_format_hash_table (u);  
   fbuf_destroy (u);
 
   if (!locked)
@@ -697,12 +700,59 @@ close_units (void)
 void
 update_position (gfc_unit *u)
 {
-  if (file_position (u->s) == 0)
+  if (stell (u->s) == 0)
     u->flags.position = POSITION_REWIND;
-  else if (file_length (u->s) == file_position (u->s))
+  else if (file_length (u->s) == stell (u->s))
     u->flags.position = POSITION_APPEND;
   else
     u->flags.position = POSITION_ASIS;
+}
+
+
+/* High level interface to truncate a file safely, i.e. flush format
+   buffers, check that it's a regular file, and generate error if that
+   occurs.  Just like POSIX ftruncate, returns 0 on success, -1 on
+   failure.  */
+
+int
+unit_truncate (gfc_unit * u, gfc_offset pos, st_parameter_common * common)
+{
+  int ret;
+
+  /* Make sure format buffer is flushed.  */
+  if (u->flags.form == FORM_FORMATTED)
+    {
+      if (u->mode == READING)
+	pos += fbuf_reset (u);
+      else
+	fbuf_flush (u, u->mode);
+    }
+  
+  /* Don't try to truncate a special file, just pretend that it
+     succeeds.  */
+  if (is_special (u->s) || !is_seekable (u->s))
+    {
+      sflush (u->s);
+      return 0;
+    }
+
+  /* struncate() should flush the stream buffer if necessary, so don't
+     bother calling sflush() here.  */
+  ret = struncate (u->s, pos);
+
+  if (ret != 0)
+    {
+      generate_error (common, LIBERROR_OS, NULL);
+      u->endfile = NO_ENDFILE;
+      u->flags.position = POSITION_ASIS;
+    }
+  else
+    {
+      u->endfile = AT_ENDFILE;
+      u->flags.position = POSITION_APPEND;
+    }
+
+  return ret;
 }
 
 
@@ -746,23 +796,25 @@ finish_last_advance_record (gfc_unit *u)
 {
   
   if (u->saved_pos > 0)
-    fbuf_seek (u, u->saved_pos);
-    
-  fbuf_flush (u, 1);
+    fbuf_seek (u, u->saved_pos, SEEK_CUR);
 
   if (!(u->unit_number == options.stdout_unit
 	|| u->unit_number == options.stderr_unit))
     {
-      size_t len;
-
-      const char crlf[] = "\r\n";
 #ifdef HAVE_CRLF
-      len = 2;
+      const int len = 2;
 #else
-      len = 1;
+      const int len = 1;
 #endif
-      if (swrite (u->s, &crlf[2-len], &len) != 0)
+      char *p = fbuf_alloc (u, len);
+      if (!p)
 	os_error ("Completing record after ADVANCE_NO failed");
+#ifdef HAVE_CRLF
+      *(p++) = '\r';
+#endif
+      *p = '\n';
     }
+
+  fbuf_flush (u, u->mode);
 }
 
