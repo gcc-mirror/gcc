@@ -1,5 +1,11 @@
 2009-04-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/random.tcc (piecewise_linear_distribution<>::
+	operator()(_UniformRandomNumberGenerator&, const param_type&)):
+	Remove spurious closed parenthesis.
+
+2009-04-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/39644 (partial)
 	* include/bits/random.tcc (linear_congruential_engine<>::
 	seed(seed_seq&), independent_bits_engine<>::operator(),
