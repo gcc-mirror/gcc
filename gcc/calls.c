@@ -3634,6 +3634,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
+      unsigned int parm_align = argvec[argnum].locate.boundary;
       int lower_bound = 0, upper_bound = 0, i;
 
       if (! (reg != 0 && partial == 0))
@@ -3695,7 +3696,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 		}
 	    }
 
-	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, PARM_BOUNDARY,
+	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, parm_align,
 			  partial, reg, 0, argblock,
 			  GEN_INT (argvec[argnum].locate.offset.constant),
 			  reg_parm_stack_space,
