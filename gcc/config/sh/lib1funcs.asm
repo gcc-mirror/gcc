@@ -1,5 +1,5 @@
 /* Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2006
+   2004, 2005, 2006, 2009
    Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
@@ -2084,8 +2084,9 @@ GLOBAL(ic_invalidate):
 GLOBAL(ic_invalidate):
 	ocbwb	@r4
 	synco
-	rts
 	icbi	@r4
+	rts
+	  nop
 	ENDFUNC(GLOBAL(ic_invalidate))
 #elif defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) || (defined(__SH4_NOFPU__) && !defined(__SH5__))
 	/* For system code, we use ic_invalidate_line_i, but user code
@@ -2151,8 +2152,10 @@ GLOBAL(ic_invalidate):
 GLOBAL(ic_invalidate_array):
 	add	r1,r4
 	synco
-	rts
 	icbi	@r4
+	rts
+	  nop
+	.align 2
 	.long	0
 	ENDFUNC(GLOBAL(ic_invalidate_array))
 #elif defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) || (defined(__SH4_NOFPU__) && !defined(__SH5__))
