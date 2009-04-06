@@ -1251,7 +1251,7 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	use_gcc_stdint=wrap
 	;;
 i[34567]86-*-mingw* | x86_64-*-mingw*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/mingw32.h"
+	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/mingw32.h i386/mingw-stdint.h"
 	xm_file=i386/xm-mingw32.h
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
 	if test x$sjlj = x0; then
@@ -1266,6 +1266,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"
 	default_use_cxa_atexit=yes
+	use_gcc_stdint=wrap
 	case ${enable_threads} in
 	  "" | yes | win32)
 	  thread_file='win32'
