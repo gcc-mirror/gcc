@@ -1,3 +1,10 @@
+2009-04-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (operator==): Mark all inline.
+	(mersenne_twister_engine): Enable #if 0 checks.
+
+	* include/bits/random.h: Formatting tweaks.
+
 2009-04-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.tcc (piecewise_linear_distribution<>::
