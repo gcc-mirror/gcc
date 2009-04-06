@@ -1,3 +1,10 @@
+2009-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35146
+	* pt.c (fn_type_unification): For DEDUCE_EXACT check that
+	the deduced template arguments give us the parameter types
+	we're looking for.
+
 2009-04-05  Giovanni Bajo <giovannibajo@libero.it>
 	    Jason Merrill  <jason@redhat.com>
 
