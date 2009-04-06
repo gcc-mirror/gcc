@@ -2046,15 +2046,18 @@ initialize_sizetypes (bool signed_p)
 void
 set_sizetype (tree type)
 {
+  tree t;
   int oprecision = TYPE_PRECISION (type);
   /* The *bitsizetype types use a precision that avoids overflows when
      calculating signed sizes / offsets in bits.  However, when
      cross-compiling from a 32 bit to a 64 bit host, we are limited to 64 bit
      precision.  */
-  int precision = MIN (MIN (oprecision + BITS_PER_UNIT_LOG + 1,
-			    MAX_FIXED_MODE_SIZE),
-		       2 * HOST_BITS_PER_WIDE_INT);
-  tree t;
+  int precision
+    = MIN (oprecision + BITS_PER_UNIT_LOG + 1, MAX_FIXED_MODE_SIZE);
+  precision
+    = GET_MODE_PRECISION (smallest_mode_for_size (precision, MODE_INT));
+  if (precision > HOST_BITS_PER_WIDE_INT * 2)
+    precision = HOST_BITS_PER_WIDE_INT * 2;
 
   gcc_assert (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (sizetype));
 
