@@ -17,5 +17,5 @@ void vnum_test8(int *data)
   } 
 } 
 /* We should eliminate m - n, and set n = n + k into n = m. */
-/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "fre"} } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "fre"} } */
 /* { dg-final { cleanup-tree-dump "fre" } } */
