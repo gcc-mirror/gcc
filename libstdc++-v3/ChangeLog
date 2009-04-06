@@ -1,5 +1,10 @@
 2009-04-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/bits/random.tcc (linear_congruential_engine<>::
+	seed(seed_seq&)): Fix typo in last fix for __m == 0.
+
+2009-04-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/random.h (operator==): Mark all inline.
 	(mersenne_twister_engine): Enable #if 0 checks.
 
