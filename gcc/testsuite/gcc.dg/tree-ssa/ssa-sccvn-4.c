@@ -23,5 +23,5 @@ int vnum_test8(int *data)
 } 
 /* We should eliminate m - n, n + k, set data[5] = 0, eliminate the
    address arithmetic for data[5], and set p = 0.
-/* { dg-final { scan-tree-dump-times "Eliminated: 5" 1 "fre"} } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 6" 1 "fre"} } */
 /* { dg-final { cleanup-tree-dump "fre" } } */

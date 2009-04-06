@@ -1,3 +1,11 @@
+2009-04-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/28868
+	* gcc.dg/tree-ssa/ssa-fre-21.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-sccvn-1.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-sccvn-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-sccvn-4.c: Likewise.
+
 2009-04-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gcc.dg/pragma-isr-trapa2.c: Skip test for FPU-less architectures.

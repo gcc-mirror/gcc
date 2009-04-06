@@ -2597,6 +2597,7 @@ can_PRE_operation (tree op)
    for performing quick dead code elimination of insertions we made
    that didn't turn out to be necessary.   */
 static VEC(gimple,heap) *inserted_exprs;
+static bitmap inserted_phi_names;
 
 /* Pool allocated fake store expressions are placed onto this
    worklist, which, after performing dead code elimination, is walked
@@ -3242,6 +3243,8 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   VN_INFO_GET (gimple_phi_result (phi))->valnum = gimple_phi_result (phi);
   VN_INFO (gimple_phi_result (phi))->value_id = val;
   VEC_safe_push (gimple, heap, inserted_exprs, phi);
+  bitmap_set_bit (inserted_phi_names,
+		  SSA_NAME_VERSION (gimple_phi_result (phi)));
   FOR_EACH_EDGE (pred, ei, block->preds)
     {
       pre_expr ae = avail[pred->src->index];
@@ -4129,16 +4132,95 @@ eliminate (void)
 		}
 	    }
 	}
+
+      for (gsi = gsi_start_phis (b); !gsi_end_p (gsi);)
+	{
+	  gimple stmt, phi = gsi_stmt (gsi);
+	  tree sprime = NULL_TREE, res = PHI_RESULT (phi);
+	  pre_expr sprimeexpr, resexpr;
+	  gimple_stmt_iterator gsi2;
+
+	  /* We want to perform redundant PHI elimination.  Do so by
+	     replacing the PHI with a single copy if possible.
+	     Do not touch inserted, single-argument or virtual PHIs.  */
+	  if (gimple_phi_num_args (phi) == 1
+	      || !is_gimple_reg (res)
+	      || bitmap_bit_p (inserted_phi_names, SSA_NAME_VERSION (res)))
+	    {
+	      gsi_next (&gsi);
+	      continue;
+	    }
+
+	  resexpr = get_or_alloc_expr_for_name (res);
+	  sprimeexpr = bitmap_find_leader (AVAIL_OUT (b),
+					   get_expr_value_id (resexpr), NULL);
+	  if (sprimeexpr)
+	    {
+	      if (sprimeexpr->kind == CONSTANT)
+		sprime = PRE_EXPR_CONSTANT (sprimeexpr);
+	      else if (sprimeexpr->kind == NAME)
+		sprime = PRE_EXPR_NAME (sprimeexpr);
+	      else
+		gcc_unreachable ();
+	    }
+	  if (!sprimeexpr
+	      || sprime == res)
+	    {
+	      gsi_next (&gsi);
+	      continue;
+	    }
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Replaced redundant PHI node defining ");
+	      print_generic_expr (dump_file, res, 0);
+	      fprintf (dump_file, " with ");
+	      print_generic_expr (dump_file, sprime, 0);
+	      fprintf (dump_file, "\n");
+	    }
+
+	  remove_phi_node (&gsi, false);
+
+	  stmt = gimple_build_assign (res, sprime);
+	  SSA_NAME_DEF_STMT (res) = stmt;
+	  if (TREE_CODE (sprime) == SSA_NAME)
+	    gimple_set_plf (SSA_NAME_DEF_STMT (sprime),
+			    NECESSARY, true);
+	  gsi2 = gsi_after_labels (b);
+	  gsi_insert_before (&gsi2, stmt, GSI_NEW_STMT);
+	  /* Queue the copy for eventual removal.  */
+	  VEC_safe_push (gimple, heap, to_remove, stmt);
+	  pre_stats.eliminations++;
+	}
     }
 
   /* We cannot remove stmts during BB walk, especially not release SSA
-     names there as this confuses the VN machinery.  */
+     names there as this confuses the VN machinery.  The stmts ending
+     up in to_remove are either stores or simple copies.  */
   for (i = 0; VEC_iterate (gimple, to_remove, i, stmt); ++i)
     {
-      gsi = gsi_for_stmt (stmt);
-      unlink_stmt_vdef (stmt);
-      gsi_remove (&gsi, true);
-      release_defs (stmt);
+      tree lhs = gimple_assign_lhs (stmt);
+      use_operand_p use_p;
+      gimple use_stmt;
+
+      /* If there is a single use only, propagate the equivalency
+	 instead of keeping the copy.  */
+      if (TREE_CODE (lhs) == SSA_NAME
+	  && single_imm_use (lhs, &use_p, &use_stmt))
+	{
+	  SET_USE (use_p, gimple_assign_rhs1 (stmt));
+	  update_stmt (stmt);
+	}
+
+      /* If this is a store or a now unused copy, remove it.  */
+      if (TREE_CODE (lhs) != SSA_NAME
+	  || has_zero_uses (lhs))
+	{
+	  gsi = gsi_for_stmt (stmt);
+	  unlink_stmt_vdef (stmt);
+	  gsi_remove (&gsi, true);
+	  release_defs (stmt);
+	}
     }
   VEC_free (gimple, heap, to_remove);
 
@@ -4296,6 +4378,7 @@ init_pre (bool do_fre)
   calculate_dominance_info (CDI_DOMINATORS);
 
   bitmap_obstack_initialize (&grand_bitmap_obstack);
+  inserted_phi_names = BITMAP_ALLOC (&grand_bitmap_obstack);
   phi_translate_table = htab_create (5110, expr_pred_trans_hash,
 				     expr_pred_trans_eq, free);
   expression_to_id = htab_create (num_ssa_names * 3,
