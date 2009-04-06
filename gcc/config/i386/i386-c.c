@@ -119,6 +119,10 @@ ix86_target_macros_internal (int isa_flag,
       def_or_undef (parse_in, "__core2");
       def_or_undef (parse_in, "__core2__");
       break;
+    case PROCESSOR_ATOM:
+      def_or_undef (parse_in, "__atom");
+      def_or_undef (parse_in, "__atom__");
+      break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
       break;
@@ -186,6 +190,9 @@ ix86_target_macros_internal (int isa_flag,
       break;
     case PROCESSOR_CORE2:
       def_or_undef (parse_in, "__tune_core2__");
+      break;
+    case PROCESSOR_ATOM:
+      def_or_undef (parse_in, "__tune_atom__");
       break;
     case PROCESSOR_GENERIC32:
     case PROCESSOR_GENERIC64:
