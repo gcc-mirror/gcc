@@ -1,3 +1,8 @@
+2009-04-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (set_sizetype): Use the full precision of their
+	machine mode for bitsize types.
+
 2009-04-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md: Revert 2 accidental checkins.
