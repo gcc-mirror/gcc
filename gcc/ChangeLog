@@ -1,3 +1,11 @@
+2009-04-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39643
+	* tree-ssa-ccp.c (ccp_fold): Fold REALPART_EXPRs and
+	IMAGPART_EXPRs of complex constants.
+	(execute_fold_all_builtins): If we folded a call queue
+	TODO_update_address_taken.
+
 2009-04-06  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/39659
