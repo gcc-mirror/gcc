@@ -1,3 +1,9 @@
+2009-04-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/38863
+	* dependency.c (ref_same_as_full_array): New function.
+	(gfc_dep_resolver): Call it.
+
 2009-04-06  Janus Weil  <janus@gcc.gnu.org>
 
        PR fortran/39414
