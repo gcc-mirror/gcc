@@ -7,5 +7,5 @@ struct A
 
 void foo(void)
 {
-  A<void> a = 0;		// dg-error { "A<void"> }
+  A<void> a = 0;		// { dg-error "A<void>" }
 }
