@@ -1,4 +1,6 @@
 /* { dg-do compile { target { { sh-*-* sh4*-*-* } && nonpic } } } */
+/* { dg-skip-if "FPU Required" { "sh*-*-*" } { "-m*nofpu*" } { "" } } */
+/* { dg-skip-if "FPU Required" { "sh*-*-*" } { "-m4al*" } { "" } } */
 /* { dg-options "-O -m4" } */
 
 extern void foo ();

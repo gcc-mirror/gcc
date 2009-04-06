@@ -1,5 +1,9 @@
 2009-04-06  Andrew Stubbs  <ams@codesourcery.com>
 
+	* gcc.dg/pragma-isr-trapa2.c: Skip test for FPU-less architectures.
+
+2009-04-06  Andrew Stubbs  <ams@codesourcery.com>
+
 	* gcc.target/sh/sh4a-memmovua.c: Include string.h instead of stdlib.h.
 
 2009-04-06  Andrew Stubbs  <ams@codesourcery.com>
