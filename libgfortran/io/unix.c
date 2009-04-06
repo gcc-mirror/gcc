@@ -356,7 +356,7 @@ raw_init (unix_stream * s)
   s->st.write = (void *) raw_write;
   s->st.seek = (void *) raw_seek;
   s->st.tell = (void *) raw_tell;
-  s->st.truncate = (void *) raw_truncate;
+  s->st.trunc = (void *) raw_truncate;
   s->st.close = (void *) raw_close;
   s->st.flush = (void *) raw_flush;
 
@@ -565,7 +565,7 @@ buf_init (unix_stream * s)
   s->st.write = (void *) buf_write;
   s->st.seek = (void *) buf_seek;
   s->st.tell = (void *) buf_tell;
-  s->st.truncate = (void *) buf_truncate;
+  s->st.trunc = (void *) buf_truncate;
   s->st.close = (void *) buf_close;
   s->st.flush = (void *) buf_flush;
 
@@ -768,7 +768,7 @@ open_internal (char *base, int length, gfc_offset offset)
   s->st.close = (void *) mem_close;
   s->st.seek = (void *) mem_seek;
   s->st.tell = (void *) mem_tell;
-  s->st.truncate = (void *) mem_truncate;
+  s->st.trunc = (void *) mem_truncate;
   s->st.read = (void *) mem_read;
   s->st.write = (void *) mem_write;
   s->st.flush = (void *) mem_flush;

@@ -53,7 +53,8 @@ typedef struct stream
   ssize_t (*write) (struct stream *, const void *, ssize_t);
   off_t (*seek) (struct stream *, off_t, int);
   off_t (*tell) (struct stream *);
-  int (*truncate) (struct stream *, off_t);
+  /* Avoid keyword truncate due to AIX namespace collision.  */
+  int (*trunc) (struct stream *, off_t);
   int (*flush) (struct stream *);
   int (*close) (struct stream *);
 }
@@ -87,7 +88,7 @@ stell (stream * s)
 static inline int
 struncate (stream * s, off_t length)
 {
-  return s->truncate (s, length);
+  return s->trunc (s, length);
 }
 
 static inline int

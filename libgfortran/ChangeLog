@@ -1,3 +1,11 @@
+2009-04-06  David Edelsohn  <edelsohn@gnu.org>
+	
+	* io/io.h (struct stream): Rename truncate to trunc.
+	(struncate): Same.
+	* io/unix.c (raw_init): Rename truncate to trunc.
+	(buf_init): Same.
+	(open_internal): Same.
+	
 2009-04-05  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38654
