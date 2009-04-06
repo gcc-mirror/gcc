@@ -4207,12 +4207,20 @@ got_ts:
       /* Set interface.  */
       if (proc_if != NULL)
 	{
+          if (sym->ts.type != BT_UNKNOWN)
+	    {
+	      gfc_error ("Procedure '%s' at %L already has basic type of %s",
+			 sym->name, &gfc_current_locus,
+			 gfc_basic_typename (sym->ts.type));
+	      return MATCH_ERROR;
+	    }
 	  sym->ts.interface = proc_if;
 	  sym->attr.untyped = 1;
 	}
       else if (current_ts.type != BT_UNKNOWN)
 	{
-	  sym->ts = current_ts;
+	  if (gfc_add_type (sym, &current_ts, &gfc_current_locus) == FAILURE)
+	    return MATCH_ERROR;
 	  sym->ts.interface = gfc_new_symbol ("", gfc_current_ns);
 	  sym->ts.interface->ts = current_ts;
 	  sym->ts.interface->attr.function = 1;
