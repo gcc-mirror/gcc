@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR37707 Namelist read of array of derived type incorrect
 ! Test case from Tobias Burnus
   IMPLICIT NONE

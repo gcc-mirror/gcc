@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options "-fbackslash" }
 ! PR36546 Namelist error with tab following a comma and newline
       program check1

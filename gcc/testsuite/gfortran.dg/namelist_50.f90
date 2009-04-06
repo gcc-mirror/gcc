@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR36657 Namelist string constant immediately followed by comment
 program gfcbug79
   implicit none
