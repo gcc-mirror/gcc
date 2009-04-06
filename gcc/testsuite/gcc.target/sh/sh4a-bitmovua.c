@@ -35,15 +35,15 @@ long long f4() {
 }
 
 /* Aligned.  */
-struct u0 { unsigned long long d : 32; } y0;
+struct u0 { unsigned long long d : 32; } y_0;
 unsigned long long g0() {
-  return y0.d;
+  return y_0.d;
 }
 
 /* Unaligned load.  */
-struct u1 { long long c : 8; unsigned long long d : 32; } y1;
+struct u1 { long long c : 8; unsigned long long d : 32; } y_1;
 unsigned long long g1() {
-  return y1.d;
+  return y_1.d;
 }
 
 /* Unaligned load.  */

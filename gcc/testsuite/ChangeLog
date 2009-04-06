@@ -1,3 +1,13 @@
+2009-04-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/sh/sh4a-memmovua.c: Include string.h instead of stdlib.h.
+
+2009-04-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/sh/sh4a-bitmovua.c (y0): Rename to y_0 to avoid a clash
+	with the built-in y0, and the subsequent warning.
+	(y1): Likewise, rename to y_1.
+
 2009-04-06  Janus Weil  <janus@gcc.gnu.org>
 
        PR fortran/39414

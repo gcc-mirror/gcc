@@ -5,7 +5,7 @@
 /* { dg-final { scan-assembler-times "\tmovua\\.l\t(.*)+" 2 } } */
 
 #ifdef __SH4A__
-#include <stdlib.h>
+#include <string.h>
 
 struct s { int i; char a[10], b[10]; } x;
 int f() {
