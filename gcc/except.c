@@ -853,6 +853,7 @@ remove_unreachable_regions (sbitmap reachable, sbitmap contains_stmt)
 		     r->region_number,
 		     first_must_not_throw->region_number);
 	  remove_eh_handler_and_replace (r, first_must_not_throw);
+	  first_must_not_throw->may_contain_throw |= r->may_contain_throw;
 	}
       else
 	bring_to_root (r);
