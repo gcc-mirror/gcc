@@ -344,7 +344,12 @@ raw_close (unix_stream * s)
 {
   int retval;
   
-  retval = close (s->fd);
+  if (s->fd != STDOUT_FILENO
+      && s->fd != STDERR_FILENO
+      && s->fd != STDIN_FILENO)
+    retval = close (s->fd);
+  else
+    retval = SUCCESS;
   free_mem (s);
   return retval;
 }
