@@ -1,3 +1,8 @@
+2009-04-06  Paul Thomas  <pault@gcc.gnu.org
+
+        PR fortran/36091
+        * gfortran.dg/forall_13.f90: Add -fbounds-check option.
+
 2009-04-06  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gfortran.dg/namelist_51.f90, gfortran.dg/utf8_2.f03,

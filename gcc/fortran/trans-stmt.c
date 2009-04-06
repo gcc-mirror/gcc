@@ -1754,6 +1754,7 @@ forall_make_variable_temp (gfc_code *c, stmtblock_t *pre, stmtblock_t *post)
   new_sym = gfc_new_symbol (old_sym->name, NULL);
   new_sym->ts = old_sym->ts;
   new_sym->attr.referenced = 1;
+  new_sym->attr.temporary = 1;
   new_sym->attr.dimension = old_sym->attr.dimension;
   new_sym->attr.flavor = old_sym->attr.flavor;
 

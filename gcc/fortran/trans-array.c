@@ -2452,6 +2452,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
   tree tmp;
   tree stride;
   gfc_se indexse;
+  gfc_se tmpse;
 
   /* Handle scalarized references separately.  */
   if (ar->type != AR_ELEMENT)
@@ -2482,6 +2483,15 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 
 	  /* Lower bound.  */
 	  tmp = gfc_conv_array_lbound (se->expr, n);
+	  if (sym->attr.temporary)
+	    {
+	      gfc_init_se (&tmpse, se);
+	      gfc_conv_expr_type (&tmpse, ar->as->lower[n],
+				  gfc_array_index_type);
+	      gfc_add_block_to_block (&se->pre, &tmpse.pre);
+	      tmp = tmpse.expr;
+	    }
+
 	  cond = fold_build2 (LT_EXPR, boolean_type_node, 
 			      indexse.expr, tmp);
 	  asprintf (&msg, "%s for array '%s', "
@@ -2499,6 +2509,15 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 	      || (ar->as->type != AS_ASSUMED_SIZE && !ar->as->cp_was_assumed))
 	    {
 	      tmp = gfc_conv_array_ubound (se->expr, n);
+	      if (sym->attr.temporary)
+		{
+		  gfc_init_se (&tmpse, se);
+		  gfc_conv_expr_type (&tmpse, ar->as->upper[n],
+				      gfc_array_index_type);
+		  gfc_add_block_to_block (&se->pre, &tmpse.pre);
+		  tmp = tmpse.expr;
+		}
+
 	      cond = fold_build2 (GT_EXPR, boolean_type_node, 
 				  indexse.expr, tmp);
 	      asprintf (&msg, "%s for array '%s', "

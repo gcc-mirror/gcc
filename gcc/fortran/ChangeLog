@@ -1,3 +1,13 @@
+2009-04-06  Paul Thomas  <pault@gcc.gnu.org>
+
+        PR fortran/36091
+        * trans-array.c (gfc_conv_array_ref): If the symbol has the
+	temporary attribute use the array_spec for the bounds.
+	* gfortran.h : Add the temporary field to the structure
+	'symbol_attribute'.
+	* trans-stmt.c (forall_make_variable_temp): Set the symbol's
+	temporary attribute.
+
 2009-04-05  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/29458
