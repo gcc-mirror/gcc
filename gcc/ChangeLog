@@ -1,3 +1,9 @@
+2009-04-06  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/39659
+	* except.c (remove_unreachable_regions): Propagate may_contain_throw
+	flag.
+
 2009-04-06  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/sh/lib1funcs.asm (ic_invalidate): Move ICBI out of the
