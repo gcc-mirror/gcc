@@ -1,3 +1,8 @@
+2009-04-06  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/cpu/sh/atomicity.h: Put the SH4A specific functions in the
+	__gnu_cxx namespace.  Remove "static inline".
+
 2009-04-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.tcc (linear_congruential_engine<>::
