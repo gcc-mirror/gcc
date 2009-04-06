@@ -1,4 +1,9 @@
-2009-04-06  Paul Thomas  <pault@gcc.gnu.org
+2009-04-06  Janus Weil  <janus@gcc.gnu.org>
+
+       PR fortran/39414
+       * gfortran.dg/proc_decl_21.f90: New.
+
+2009-04-06  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/36091
         * gfortran.dg/forall_13.f90: Add -fbounds-check option.

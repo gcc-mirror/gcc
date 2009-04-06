@@ -1,3 +1,10 @@
+2009-04-06  Janus Weil  <janus@gcc.gnu.org>
+
+       PR fortran/39414
+       * decl.c (match_procedure_decl): Fix double declaration problems with
+       PROCEDURE statements.
+       * symbol.c (gfc_add_type): Ditto.
+
 2009-04-06  Paul Thomas  <pault@gcc.gnu.org>
 
         PR fortran/36091
