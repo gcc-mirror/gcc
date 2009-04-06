@@ -1,3 +1,9 @@
+2009-04-06  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config.gcc (mingw32 tm_file):  Add mingw-stdint.h.
+	(mingw32 tm clause use_gcc_stdint):  Set to wrap.
+	* config/i386/mingw-stdint.h:  New file.
+
 2009-04-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39648
