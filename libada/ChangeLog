@@ -1,3 +1,8 @@
+2009-04-06  Laurent GUERBY  <laurent@guerby.net>
+
+        * Makefile.in (ADA_RTS_DIR): Define.
+        * Makefile.in (gnatlib-*): Link adainclude and adalib to it.
+
 2008-09-21  Laurent Guerby  <laurent@guerby.net>
             Paolo Bonzini  <bonzini@gnu.org>
 	

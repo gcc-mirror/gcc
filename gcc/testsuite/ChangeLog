@@ -1,3 +1,7 @@
+2009-04-06  Laurent GUERBY  <laurent@guerby.net>
+
+        * lib/gnat.exp: Handle multilib.
+	
 2009-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35146
