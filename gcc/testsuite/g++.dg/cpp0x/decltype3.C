@@ -47,10 +47,10 @@ CHECK_DECLTYPE(decltype(caa.a), int);
 
 class B { 
 public:
-  int a;  // { dg-error "invalid use" }
+  int a;
   enum B_enum { b }; 
-  decltype(a) c; // { dg-error "from this location" }
-  decltype(a) foo() { } // { dg-error "from this location" }
+  decltype(a) c;
+  decltype(a) foo() { }
   decltype(b) enums_are_in_scope() { return b; } // ok 
 }; 
 

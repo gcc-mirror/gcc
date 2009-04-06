@@ -1,3 +1,9 @@
+2009-04-05  Jason Merrill  <jason@redhat.com>
+
+	C++ DR 613
+	* semantics.c (finish_non_static_data_member): Allow such references
+	without an associated object in sizeof/decltype/alignof.
+
 2009-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39608
