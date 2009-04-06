@@ -83,17 +83,22 @@ proc gnat_init { args } {
     global gluefile wrap_flags
     global gnat_initialized
     global GNAT_UNDER_TEST
+    global GNAT_UNDER_TEST_ORIG
     global TOOL_EXECUTABLE
     global gnat_libgcc_s_path
+    global gnat_target_current
+
+    set gnat_target_current ""
 
     if { $gnat_initialized == 1 } { return }
 
     if ![info exists GNAT_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
-	    set GNAT_UNDER_TEST $TOOL_EXECUTABLE
+	    set GNAT_UNDER_TEST "$TOOL_EXECUTABLE"
 	} else {
-	    set GNAT_UNDER_TEST [find_gnatmake]
+	    set GNAT_UNDER_TEST "[local_find_gnatmake]"
 	}
+        set GNAT_UNDER_TEST_ORIG "$GNAT_UNDER_TEST"
     }
 
     if ![info exists tmpdir] then {
@@ -124,14 +129,26 @@ proc gnat_target_compile { source dest type options } {
     global gluefile wrap_flags
     global srcdir
     global GNAT_UNDER_TEST
+    global GNAT_UNDER_TEST_ORIG
     global TOOL_OPTIONS
     global ld_library_path
     global gnat_libgcc_s_path
+    global gnat_target_current
 
-    setenv ADA_INCLUDE_PATH "${rootme}/ada/rts"
+    # If we detect a change of target we need to recompute
+    # the appropriate RTS by calling get_multilibs.
+    if { $gnat_target_current!="[current_target_name]" } {
+	set gnat_target_current "[current_target_name]"
+	if [info exists TOOL_OPTIONS] {
+	    set gnat_rts_opt "--RTS=[get_multilibs ${TOOL_OPTIONS}]/libada"
+	} else {
+	    set gnat_rts_opt "--RTS=[get_multilibs]/libada"
+	}
+        set GNAT_UNDER_TEST "$GNAT_UNDER_TEST_ORIG $gnat_rts_opt"
+    }
+
     set ld_library_path ".:${gnat_libgcc_s_path}"
     lappend options "compiler=$GNAT_UNDER_TEST -q -f"
-    lappend options "incdir=${rootme}/ada/rts"
     lappend options "timeout=[timeout_value]"
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
@@ -150,6 +167,7 @@ proc gnat_target_compile { source dest type options } {
 
 #    set sourcename [string range $source 0 [expr [string length $source] - 5]]
 #    set dest ""
+
     return [target_compile $source $dest $type $options]
 }
 
@@ -232,29 +250,27 @@ proc prune_gnat_output { text } {
     return $text
 }
 
-# If this is an older version of DejaGnu (without find_gnatmake), provide one.
-# This can be deleted after next DejaGnu release.
+# find_gnatmake for some version of DejaGnu will hardcode a -I...rts/ada flag
+# which prevent multilib from working, so define a new one.
 
-if { [info procs find_gnatmake] == "" } {
-    proc find_gnatmake {} {
-	global tool_root_dir
-
-	if ![is_remote host] {
-	    set file [lookfor_file $tool_root_dir gnatmake]
-	    if { $file == "" } {
-		set file [lookfor_file $tool_root_dir gcc/gnatmake]
-	    }
-	    if { $file != "" } {
-		set root [file dirname $file]
-		set CC "$file -I$root/ada/rts --GCC=$root/xgcc --GNATBIND=$root/gnatbind --GNATLINK=$root/gnatlink -cargs -B$root -largs --GCC=$root/xgcc -B$root -margs";
-	    } else {
-		set CC [transform gnatmake]
-	    }
-	} else {
-	    set CC [transform gnatmake]
-	}
-	return $CC
+proc local_find_gnatmake {} {
+    global tool_root_dir
+    
+    if ![is_remote host] {
+        set file [lookfor_file $tool_root_dir gnatmake]
+        if { $file == "" } {
+    	set file [lookfor_file $tool_root_dir gcc/gnatmake]
+        }
+        if { $file != "" } {
+    	set root [file dirname $file]
+    	set CC "$file --GCC=$root/xgcc --GNATBIND=$root/gnatbind --GNATLINK=$root/gnatlink -cargs -B$root -largs -B$root -margs -B$root";
+        } else {
+    	set CC [transform gnatmake]
+        }
+    } else {
+        set CC [transform gnatmake]
     }
+    return $CC
 }
 
 # If this is an older version of DejaGnu (without runtest_file_p),

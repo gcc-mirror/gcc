@@ -1,3 +1,7 @@
+2009-04-06  Laurent GUERBY  <laurent@guerby.net>
+
+        * lib/gnat.exp: Handle multilib.
+	
 2009-04-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38863
