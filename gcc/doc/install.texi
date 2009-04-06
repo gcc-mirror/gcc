@@ -2726,7 +2726,7 @@ information are.
 @item
 @uref{#x-x-interix,,*-*-interix}
 @item
-@uref{#x-x-mingw,,*-*-mingw}
+@uref{#x-x-mingw32,,*-*-mingw32}
 @item
 @uref{#os2,,OS/2}
 @item
@@ -4124,7 +4124,7 @@ and which C libraries are used.
 Linux API emulation layer in the Win32 subsystem.
 @item Interix @uref{#x-x-interix,,*-*-interix}: The Interix subsystem 
 provides native support for POSIX.
-@item MinGW @uref{#x-x-mingw,,*-*-mingw}: MinGW is a native GCC port for 
+@item MinGW @uref{#x-x-mingw32,,*-*-mingw32}: MinGW is a native GCC port for 
 the Win32 subsystem that provides a subset of POSIX.
 @item MKS i386-pc-mks: NuTCracker from MKS.  See 
 @uref{http://www.mkssoftware.com/} for more information.

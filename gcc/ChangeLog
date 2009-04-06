@@ -1,3 +1,7 @@
+2009-04-06  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Specific): Fix two cross-references to MinGW.
+
 2009-04-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/28868
