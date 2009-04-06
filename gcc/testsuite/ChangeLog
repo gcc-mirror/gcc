@@ -1,3 +1,14 @@
+2009-04-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/namelist_51.f90, gfortran.dg/utf8_2.f03,
+	gfortran.dg/namelist_48.f90, gfortran.dg/read_repeat.f90,
+	gfortran.dg/streamio_9.f90, gfortran.dg/widechar_IO_1.f90,
+	gfortran.dg/namelist_50.f90, gfortran.dg/namelist_52.f90,
+	gfortran.dg/utf8_1.f03, gfortran.dg/namelist_56.f90,
+	gfortran.dg/namelist_49.f90: Gate test on effective_target
+	fd_truncate.
+	* gfortran.dg/widechar_IO_3.f90: Ditto.  Fix typo in comment.
+
 2009-04-05  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/38654

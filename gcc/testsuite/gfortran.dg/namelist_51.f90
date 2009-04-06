@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR36676 Namelist comment problems
 ! test case from PR, reduced by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 program mem_nml

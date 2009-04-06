@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR36582 Namelist I/O error: Bogus "Cannot match namelist object"
 ! Test case derived from PR.
 module mod1

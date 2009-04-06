@@ -1,5 +1,5 @@
-! { dg-do run }
-! Wide chracter I/O test 3, unformatted arrays
+! { dg-do run { target fd_truncate } }
+! Wide character I/O test 3, unformatted arrays
 ! Test case developed by Jerry DeLisle <jvdelisle@gcc.gnu.org>
 program test1
   integer, parameter :: k4 = 4
