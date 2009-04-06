@@ -949,12 +949,14 @@ ccp_fold (gimple stmt)
 
               if (kind == tcc_reference)
 		{
-		  if (TREE_CODE (rhs) == VIEW_CONVERT_EXPR
+		  if ((TREE_CODE (rhs) == VIEW_CONVERT_EXPR
+		       || TREE_CODE (rhs) == REALPART_EXPR
+		       || TREE_CODE (rhs) == IMAGPART_EXPR)
 		      && TREE_CODE (TREE_OPERAND (rhs, 0)) == SSA_NAME)
 		    {
 		      prop_value_t *val = get_value (TREE_OPERAND (rhs, 0));
 		      if (val->lattice_val == CONSTANT)
-			return fold_unary (VIEW_CONVERT_EXPR,
+			return fold_unary (TREE_CODE (rhs),
 					   TREE_TYPE (rhs), val->value);
 		    }
 		  else if (TREE_CODE (rhs) == INDIRECT_REF
@@ -3270,7 +3272,10 @@ execute_fold_all_builtins (void)
 	  push_stmt_changes (gsi_stmt_ptr (&i));
 
           if (!update_call_from_tree (&i, result))
-	    gimplify_and_update_call_from_tree (&i, result);
+	    {
+	      gimplify_and_update_call_from_tree (&i, result);
+	      todoflags |= TODO_update_address_taken;
+	    }
 
 	  stmt = gsi_stmt (i);
 	  pop_stmt_changes (gsi_stmt_ptr (&i));
