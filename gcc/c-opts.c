@@ -808,6 +808,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       flag_threadsafe_statics = value;
       break;
 
+    case OPT_fpretty_templates:
+      flag_pretty_templates = value;
+      break;
+
     case OPT_fzero_link:
       flag_zero_link = value;
       break;

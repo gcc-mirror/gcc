@@ -163,7 +163,7 @@ count_non_default_template_args (tree args, tree params)
   int n = TREE_VEC_LENGTH (args);
   int last;
 
-  if (params == NULL_TREE)
+  if (params == NULL_TREE || !flag_pretty_templates)
     return n;
 
   for (last = n - 1; last >= 0; --last)
@@ -1206,7 +1206,8 @@ dump_function_decl (tree t, int flags)
   exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (t));
 
   /* Pretty print template instantiations only.  */
-  if (DECL_USE_TEMPLATE (t) && DECL_TEMPLATE_INFO (t))
+  if (DECL_USE_TEMPLATE (t) && DECL_TEMPLATE_INFO (t)
+      && flag_pretty_templates)
     {
       tree tmpl;
 
