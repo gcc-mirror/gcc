@@ -260,7 +260,7 @@ package body Prep is
          Result := True_Value;
 
       elsif Index = Definition'First then
-         Fail ("invalid symbol definition """, Definition, """");
+         Fail ("invalid symbol definition """ & Definition & """");
 
       else
          --  Put the symbol in the name buffer
@@ -280,9 +280,9 @@ package body Prep is
                      null;
 
                   when others =>
-                     Fail ("illegal value """,
-                           Definition (Index + 1 .. Definition'Last),
-                           """");
+                     Fail ("illegal value """
+                           & Definition (Index + 1 .. Definition'Last)
+                           & """");
                end case;
             end loop;
          end if;
@@ -301,9 +301,9 @@ package body Prep is
       if Name_Buffer (1) not in 'a' .. 'z'
         and then Name_Buffer (1) not in 'A' .. 'Z'
       then
-         Fail ("symbol """,
-               Name_Buffer (1 .. Name_Len),
-               """ does not start with a letter");
+         Fail ("symbol """
+               & Name_Buffer (1 .. Name_Len)
+               & """ does not start with a letter");
       end if;
 
       for J in 2 .. Name_Len loop
@@ -313,20 +313,20 @@ package body Prep is
 
             when '_' =>
                if J = Name_Len then
-                  Fail ("symbol """,
-                        Name_Buffer (1 .. Name_Len),
-                        """ end with a '_'");
+                  Fail ("symbol """
+                        & Name_Buffer (1 .. Name_Len)
+                        & """ end with a '_'");
 
                elsif Name_Buffer (J + 1) = '_' then
-                  Fail ("symbol """,
-                        Name_Buffer (1 .. Name_Len),
-                        """ contains consecutive '_'");
+                  Fail ("symbol """
+                        & Name_Buffer (1 .. Name_Len)
+                        & """ contains consecutive '_'");
                end if;
 
             when others =>
-               Fail ("symbol """,
-                     Name_Buffer (1 .. Name_Len),
-                     """ contains illegal character(s)");
+               Fail ("symbol """
+                     & Name_Buffer (1 .. Name_Len)
+                     & """ contains illegal character(s)");
          end case;
       end loop;
 

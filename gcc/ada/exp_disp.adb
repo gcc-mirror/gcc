@@ -3479,6 +3479,7 @@ package body Exp_Disp is
            or else not Is_Limited_Type (Typ)
            or else not Has_Interfaces (Typ)
            or else not Build_Thunks
+           or else not RTE_Record_Component_Available (RE_OSD_Table)
          then
             --  No OSD table required
 

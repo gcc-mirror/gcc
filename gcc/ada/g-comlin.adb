@@ -1404,7 +1404,7 @@ package body GNAT.Command_Line is
       function Group_Analysis
         (Prefix : String;
          Group  : String) return Boolean;
-      --  Perform the analysis of a group of switches.
+      --  Perform the analysis of a group of switches
 
       --------------------
       -- Group_Analysis --

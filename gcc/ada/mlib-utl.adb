@@ -150,7 +150,7 @@ package body MLib.Utl is
          end if;
 
          if Ar_Exec = null then
-            Fail (Ar_Name.all, " not found in path");
+            Fail (Ar_Name.all & " not found in path");
 
          elsif Opt.Verbose_Mode then
             Write_Str  ("found ");
@@ -275,7 +275,7 @@ package body MLib.Utl is
       end if;
 
       if not Success then
-         Fail (Ar_Name.all, " execution error.");
+         Fail (Ar_Name.all & " execution error.");
       end if;
 
       --  If we have found ranlib, run it over the library
@@ -293,7 +293,7 @@ package body MLib.Utl is
             Success);
 
          if not Success then
-            Fail (Ranlib_Name.all, " execution error.");
+            Fail (Ranlib_Name.all & " execution error.");
          end if;
       end if;
    end Ar;
@@ -418,7 +418,7 @@ package body MLib.Utl is
             Gcc_Exec := Locate_Exec_On_Path (Gcc_Name.all);
 
             if Gcc_Exec = null then
-               Fail (Gcc_Name.all, " not found in path");
+               Fail (Gcc_Name.all & " not found in path");
             end if;
          end if;
 
@@ -428,7 +428,7 @@ package body MLib.Utl is
          Driver := Locate_Exec_On_Path (Get_Name_String (Driver_Name));
 
          if Driver = null then
-            Fail (Get_Name_String (Driver_Name), " not found in path");
+            Fail (Get_Name_String (Driver_Name) & " not found in path");
          end if;
       end if;
 
@@ -586,9 +586,9 @@ package body MLib.Utl is
 
       if not Success then
          if Driver_Name = No_Name then
-            Fail (Gcc_Name.all, " execution error");
+            Fail (Gcc_Name.all & " execution error");
          else
-            Fail (Get_Name_String (Driver_Name), " execution error");
+            Fail (Get_Name_String (Driver_Name) & " execution error");
          end if;
       end if;
    end Gcc;

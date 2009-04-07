@@ -240,9 +240,9 @@ package body Prepcomp is
 
       if Source_Index_Of_Preproc_Data_File = No_Source_File then
          Get_Name_String (N);
-         Fail ("preprocessing data file """,
-               Name_Buffer (1 .. Name_Len),
-               """ not found");
+         Fail ("preprocessing data file """
+               & Name_Buffer (1 .. Name_Len)
+               & """ not found");
       end if;
 
       --  Initialize scanner and set its behavior for processing a data file
@@ -561,9 +561,8 @@ package body Prepcomp is
       if Total_Errors_Detected > T then
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
-         Fail ("errors found in preprocessing data file """,
-               Get_Name_String (N),
-               """");
+         Fail ("errors found in preprocessing data file """
+               & Get_Name_String (N) & """");
       end if;
 
       --  Record the dependency on the preprocessor data file
@@ -656,9 +655,9 @@ package body Prepcomp is
 
          begin
             if Deffile = No_Source_File then
-               Fail ("definition file """,
-                     Get_Name_String (N),
-                     """ cannot be found");
+               Fail ("definition file """
+                     & Get_Name_String (N)
+                     & """ cannot be found");
             end if;
 
             --  Initialize the preprocessor and set the characteristics of the
@@ -688,9 +687,9 @@ package body Prepcomp is
             if T /= Total_Errors_Detected then
                Errout.Finalize (Last_Call => True);
                Errout.Output_Messages;
-               Fail ("errors found in definition file """,
-                     Get_Name_String (N),
-                     """");
+               Fail ("errors found in definition file """
+                     & Get_Name_String (N)
+                     & """");
             end if;
 
             for Index in 1 .. Dependencies.Last loop

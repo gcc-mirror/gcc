@@ -241,7 +241,7 @@ package body Prj.Makr is
 
       if Output_FD = Invalid_FD then
          Prj.Com.Fail
-           ("cannot create new """, Path_Name (1 .. Path_Last), """");
+           ("cannot create new """ & Path_Name (1 .. Path_Last) & """");
       end if;
 
       if Project_File then
@@ -257,7 +257,7 @@ package body Prj.Makr is
                Success => Discard);
          end;
 
-         --  And create a new source list file. Fail if file cannot be created.
+         --  And create a new source list file, fail if file cannot be created
 
          Source_List_FD := Create_New_File
            (Name  => Source_List_Path (1 .. Source_List_Last),
@@ -265,9 +265,9 @@ package body Prj.Makr is
 
          if Source_List_FD = Invalid_FD then
             Prj.Com.Fail
-              ("cannot create file """,
-               Source_List_Path (1 .. Source_List_Last),
-               """");
+              ("cannot create file """
+               & Source_List_Path (1 .. Source_List_Last)
+               & """");
          end if;
 
          if Opt.Verbose_Mode then
@@ -703,9 +703,9 @@ package body Prj.Makr is
 
          if Output_FD = Invalid_FD then
             Prj.Com.Fail
-              ("cannot create new """,
-               Project_Naming_File_Name (1 .. Project_Naming_Last),
-               """");
+              ("cannot create new """
+               & Project_Naming_File_Name (1 .. Project_Naming_Last)
+               & """");
          end if;
 
          --  Output the naming project file
@@ -1023,9 +1023,9 @@ package body Prj.Makr is
          exception
             when Directory_Error =>
                Prj.Com.Fail
-                 ("unknown directory """,
-                  Path_Name (1 .. Directory_Last),
-                  """");
+                 ("unknown directory """
+                  & Path_Name (1 .. Directory_Last)
+                  & """");
          end;
       end if;
    end Initialize;
@@ -1091,7 +1091,7 @@ package body Prj.Makr is
                Open (Dir, Dir_Name);
             exception
                when Directory_Error =>
-                  Prj.Com.Fail ("cannot open directory """, Dir_Name, """");
+                  Prj.Com.Fail ("cannot open directory """ & Dir_Name & """");
             end;
 
             --  Process each regular file in the directory

@@ -169,8 +169,8 @@ begin
 
             if Source_Config_File = No_Source_File then
                Osint.Fail
-                 ("cannot find configuration pragmas file ",
-                  Config_File_Names (Index).all);
+                 ("cannot find configuration pragmas file "
+                  & Config_File_Names (Index).all);
             end if;
 
             Initialize_Scanner (No_Unit, Source_Config_File);

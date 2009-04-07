@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,10 +30,7 @@ with Osint;
 
 package Prj.Com is
 
-   type Fail_Proc is access procedure
-     (S1 : String;
-      S2 : String := "";
-      S3 : String := "");
+   type Fail_Proc is access procedure (S : String);
 
    Fail : Fail_Proc := Osint.Fail'Access;
    --  This procedure is used in the project facility, instead of directly

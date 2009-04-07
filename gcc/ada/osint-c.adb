@@ -64,8 +64,8 @@ package body Osint.C is
 
       if not Status then
          Fail
-           ("error while closing expanded source file ",
-            Get_Name_String (Output_File_Name));
+           ("error while closing expanded source file "
+            & Get_Name_String (Output_File_Name));
       end if;
    end Close_Debug_File;
 
@@ -81,8 +81,8 @@ package body Osint.C is
 
       if not Status then
          Fail
-           ("error while closing list file ",
-            Get_Name_String (Output_File_Name));
+           ("error while closing list file "
+            & Get_Name_String (Output_File_Name));
       end if;
    end Close_List_File;
 
@@ -98,8 +98,8 @@ package body Osint.C is
 
       if not Status then
          Fail
-           ("error while closing ALI file ",
-            Get_Name_String (Output_File_Name));
+           ("error while closing ALI file "
+            & Get_Name_String (Output_File_Name));
       end if;
    end Close_Output_Library_Info;
 
@@ -115,8 +115,8 @@ package body Osint.C is
 
       if not Status then
          Fail
-           ("error while closing representation info file ",
-            Get_Name_String (Output_File_Name));
+           ("error while closing representation info file "
+            & Get_Name_String (Output_File_Name));
       end if;
    end Close_Repinfo_File;
 
@@ -401,8 +401,8 @@ package body Osint.C is
 
       if not Status then
          Fail
-           ("error while closing tree file ",
-            Get_Name_String (Output_File_Name));
+           ("error while closing tree file "
+            & Get_Name_String (Output_File_Name));
       end if;
    end Tree_Close;
 

@@ -643,7 +643,7 @@ package body Osint is
       Fdesc := Create_File (Name_Buffer'Address, Fmode);
 
       if Fdesc = Invalid_FD then
-         Fail ("Cannot create: ", Name_Buffer (1 .. Name_Len));
+         Fail ("Cannot create: " & Name_Buffer (1 .. Name_Len));
       end if;
    end Create_File_And_Check;
 
@@ -900,7 +900,7 @@ package body Osint is
    -- Fail --
    ----------
 
-   procedure Fail (S1 : String; S2 : String := ""; S3 : String := "") is
+   procedure Fail (S : String) is
    begin
       --  We use Output in case there is a special output set up.
       --  In this case Set_Standard_Error will have no immediate effect.
@@ -908,9 +908,7 @@ package body Osint is
       Set_Standard_Error;
       Osint.Write_Program_Name;
       Write_Str (": ");
-      Write_Str (S1);
-      Write_Str (S2);
-      Write_Str (S3);
+      Write_Str (S);
       Write_Eol;
 
       Exit_Program (E_Fatal);
@@ -2102,7 +2100,7 @@ package body Osint is
 
       if Current_Full_Lib_Name = No_File then
          if Fatal_Err then
-            Fail ("Cannot find: ", Name_Buffer (1 .. Name_Len));
+            Fail ("Cannot find: " & Name_Buffer (1 .. Name_Len));
          else
             Current_Full_Obj_Stamp := Empty_Time_Stamp;
             return null;
@@ -2121,7 +2119,7 @@ package body Osint is
 
       if Lib_FD = Invalid_FD then
          if Fatal_Err then
-            Fail ("Cannot open: ",  Name_Buffer (1 .. Name_Len));
+            Fail ("Cannot open: " & Name_Buffer (1 .. Name_Len));
          else
             Current_Full_Obj_Stamp := Empty_Time_Stamp;
             return null;
@@ -2147,7 +2145,7 @@ package body Osint is
 
                --  No need to check the status, we fail anyway
 
-               Fail ("Cannot find: ", Name_Buffer (1 .. Name_Len));
+               Fail ("Cannot find: " & Name_Buffer (1 .. Name_Len));
 
             else
                Current_Full_Obj_Stamp := Empty_Time_Stamp;
@@ -2240,7 +2238,7 @@ package body Osint is
 
          if N = Current_Main then
             Get_Name_String (N);
-            Fail ("Cannot find: ", Name_Buffer (1 .. Name_Len));
+            Fail ("Cannot find: " & Name_Buffer (1 .. Name_Len));
          end if;
 
          Src := null;
@@ -2561,7 +2559,7 @@ package body Osint is
 
    exception
       when others =>
-         Fail ("erroneous directory spec: ", Host_Dir);
+         Fail ("erroneous directory spec: " & Host_Dir);
          return null;
    end To_Canonical_Dir_Spec;
 
@@ -2654,7 +2652,7 @@ package body Osint is
 
    exception
       when others =>
-         Fail ("erroneous file spec: ", Host_File);
+         Fail ("erroneous file spec: " & Host_File);
          return null;
    end To_Canonical_File_Spec;
 
@@ -2687,7 +2685,7 @@ package body Osint is
 
    exception
       when others =>
-         Fail ("erroneous path spec: ", Host_Path);
+         Fail ("erroneous path spec: " & Host_Path);
          return null;
    end To_Canonical_Path_Spec;
 

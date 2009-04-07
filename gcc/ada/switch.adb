@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,12 +34,12 @@ package body Switch is
 
    procedure Bad_Switch (Switch : Character) is
    begin
-      Osint.Fail ("invalid switch: ", (1 => Switch));
+      Osint.Fail ("invalid switch: " & Switch);
    end Bad_Switch;
 
    procedure Bad_Switch (Switch : String) is
    begin
-      Osint.Fail ("invalid switch: ", Switch);
+      Osint.Fail ("invalid switch: " & Switch);
    end Bad_Switch;
 
    ------------------------------
@@ -163,7 +163,7 @@ package body Switch is
       Result := 0;
 
       if Ptr > Max or else Switch_Chars (Ptr) not in '0' .. '9' then
-         Osint.Fail ("missing numeric value for switch: ", (1 => Switch));
+         Osint.Fail ("missing numeric value for switch: " & Switch);
 
       else
          while Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' loop
@@ -172,8 +172,7 @@ package body Switch is
             Ptr := Ptr + 1;
 
             if Result > Switch_Max_Value then
-               Osint.Fail
-                 ("numeric value out of range for switch: ", (1 => Switch));
+               Osint.Fail ("numeric value out of range for switch: " & Switch);
             end if;
          end loop;
       end if;
@@ -196,7 +195,7 @@ package body Switch is
       Scan_Nat (Switch_Chars, Max, Ptr, Temp, Switch);
 
       if Temp = 0 then
-         Osint.Fail ("numeric value out of range for switch: ", (1 => Switch));
+         Osint.Fail ("numeric value out of range for switch: " & Switch);
       end if;
 
       Result := Temp;

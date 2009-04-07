@@ -121,11 +121,11 @@ package Osint is
    --  Writes name of program as invoked to the current output (normally
    --  standard output).
 
-   procedure Fail (S1 : String; S2 : String := ""; S3 : String := "");
+   procedure Fail (S : String);
    pragma No_Return (Fail);
-   --  Outputs error messages S1 & S2 & S3 preceded by the name of the
-   --  executing program and exits with E_Fatal. The output goes to standard
-   --  error, except if special output is in effect (see Output).
+   --  Outputs error message S preceded by the name of the executing program
+   --  and exits with E_Fatal. The output goes to standard error, except if
+   --  special output is in effect (see Output).
 
    function Is_Directory_Separator (C : Character) return Boolean;
    --  Returns True if C is a directory separator

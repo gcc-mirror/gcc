@@ -515,9 +515,10 @@ package body Prj.Part is
 
          if Path_Name = "" then
             Prj.Com.Fail
-              ("project file """,
-               Project_File_Name,
-               """ not found in " & Project_Path);
+              ("project file """
+               & Project_File_Name
+               & """ not found in "
+               & Project_Path);
             Project := Empty_Node;
             return;
          end if;

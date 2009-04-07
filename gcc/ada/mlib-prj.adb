@@ -828,7 +828,7 @@ package body MLib.Prj is
       --  Fail if project is not a library project
 
       if not Data.Library then
-         Com.Fail ("project """, Project_Name, """ has no library");
+         Com.Fail ("project """ & Project_Name & """ has no library");
       end if;
 
       --  Do not attempt to build the library if it is externally built
@@ -868,11 +868,11 @@ package body MLib.Prj is
 
          if Bind then
             if Gnatbind_Path = null then
-               Com.Fail ("unable to locate ", Gnatbind);
+               Com.Fail ("unable to locate " & Gnatbind);
             end if;
 
             if Gcc_Path = null then
-               Com.Fail ("unable to locate ", Gcc);
+               Com.Fail ("unable to locate " & Gcc);
             end if;
 
             --  Allocate Arguments, if it is the first time we see a standalone
@@ -1176,8 +1176,8 @@ package body MLib.Prj is
             end if;
 
             if not Success then
-               Com.Fail ("could not bind standalone library ",
-                         Get_Name_String (Data.Library_Name));
+               Com.Fail ("could not bind standalone library "
+                         & Get_Name_String (Data.Library_Name));
             end if;
          end if;
 
@@ -1268,8 +1268,8 @@ package body MLib.Prj is
 
             if not Success then
                Com.Fail
-                 ("could not compile binder generated file for library ",
-                  Get_Name_String (Data.Library_Name));
+                ("could not compile binder generated file for library "
+                  & Get_Name_String (Data.Library_Name));
             end if;
 
             --  Process binder generated file for pragmas Linker_Options
@@ -1532,10 +1532,10 @@ package body MLib.Prj is
 
                exception
                   when Directory_Error =>
-                     Com.Fail ("cannot find object directory """,
-                               Get_Name_String
-                                 (Data.Object_Directory.Display_Name),
-                               """");
+                     Com.Fail ("cannot find object directory """
+                               & Get_Name_String
+                                  (Data.Object_Directory.Display_Name)
+                               & """");
                end;
             end if;
 
@@ -1817,9 +1817,9 @@ package body MLib.Prj is
             exception
                when others =>
                   Com.Fail
-                    ("unable to access library directory """,
-                     Name_Buffer (1 .. Name_Len),
-                     """");
+                    ("unable to access library directory """
+                     & Name_Buffer (1 .. Name_Len)
+                     & """");
             end;
 
             Open (Dir, ".");
@@ -1972,9 +1972,9 @@ package body MLib.Prj is
             exception
                when others =>
                   Com.Fail
-                    ("unable to access library source copy directory """,
-                     Name_Buffer (1 .. Name_Len),
-                     """");
+                    ("unable to access library source copy directory """
+                     & Name_Buffer (1 .. Name_Len)
+                     & """");
             end;
 
             declare
@@ -2060,7 +2060,7 @@ package body MLib.Prj is
    procedure Check (Filename : String) is
    begin
       if not Is_Regular_File (Filename) then
-         Com.Fail (Filename, " not found.");
+         Com.Fail (Filename & " not found.");
       end if;
    end Check;
 

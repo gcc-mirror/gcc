@@ -70,20 +70,22 @@ package body MLib is
       end if;
 
       if Name'Length > Max_Characters_In_Library_Name then
-         Prj.Com.Fail ("illegal library name """, Name, """: too long");
+         Prj.Com.Fail ("illegal library name """
+                       & Name
+                       & """: too long");
       end if;
 
       if not Is_Letter (Name (Name'First)) then
-         Prj.Com.Fail ("illegal library name """,
-                       Name,
-                       """: should start with a letter");
+         Prj.Com.Fail ("illegal library name """
+                       & Name
+                       & """: should start with a letter");
       end if;
 
       for Index in Name'Range loop
          if not Is_Alphanumeric (Name (Index)) then
-            Prj.Com.Fail ("illegal library name """,
-                          Name,
-                          """: should include only letters and digits");
+            Prj.Com.Fail ("illegal library name """
+                          & Name
+                          & """: should include only letters and digits");
          end if;
       end loop;
    end Check_Library_Name;

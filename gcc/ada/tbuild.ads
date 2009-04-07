@@ -256,12 +256,11 @@ package Tbuild is
    function New_Occurrence_Of
      (Def_Id : Entity_Id;
       Loc    : Source_Ptr) return Node_Id;
-   --  New_Occurrence_Of creates an N_Identifier node which is an
-   --  occurrence of the defining identifier which is passed as its
-   --  argument. The Entity and Etype of the result are set from
-   --  the given defining identifier as follows: Entity is simply
-   --  a copy of Def_Id. Etype is a copy of Def_Id for types, and
-   --  a copy of the Etype of Def_Id for other entities.
+   --  New_Occurrence_Of creates an N_Identifier node which is an occurrence
+   --  of the defining identifier which is passed as its argument. The Entity
+   --  and Etype of the result are set from the given defining identifier as
+   --  follows: Entity is simply a copy of Def_Id. Etype is a copy of Def_Id
+   --  for types, and a copy of the Etype of Def_Id for other entities.
 
    function New_Reference_To
      (Def_Id : Entity_Id;

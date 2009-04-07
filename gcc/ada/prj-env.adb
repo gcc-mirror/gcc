@@ -2574,7 +2574,7 @@ package body Prj.Env is
    begin
       if Host_Spec = null then
          Prj.Com.Fail
-           ("could not convert file name """, Value, """ to host spec");
+           ("could not convert file name """ & Value & """ to host spec");
       else
          Setenv (Name, Host_Spec.all);
          Free (Host_Spec);

@@ -196,8 +196,9 @@ package body MLib.Tgt.Specific is
 
             exception
                when Constraint_Error =>
-                  Fail ("illegal version """, Lib_Version,
-                        """ (on VMS version must be a positive number)");
+                  Fail ("illegal version """
+                        & Lib_Version
+                        & """ (on VMS version must be a positive number)");
                   return "";
             end;
          end if;
@@ -239,7 +240,7 @@ package body MLib.Tgt.Specific is
          Gnatsym_Path := Locate_Exec_On_Path (Gnatsym_Name);
 
          if Gnatsym_Path = null then
-            Fail (Gnatsym_Name, " not found in path");
+            Fail (Gnatsym_Name & " not found in path");
          end if;
       end if;
 
@@ -313,8 +314,9 @@ package body MLib.Tgt.Specific is
                end if;
 
                if not OK then
-                  Fail ("creation of auto-init assembly file """,
-                        Macro_File_Name, """ failed");
+                  Fail ("creation of auto-init assembly file """
+                        & Macro_File_Name
+                        & """ failed");
                end if;
             end;
 
@@ -330,8 +332,9 @@ package body MLib.Tgt.Specific is
                                    mode (mode'First)'Address);
 
             if Popen_Result = Null_Address then
-               Fail ("assembly of auto-init assembly file """,
-                     Macro_File_Name, """ failed");
+               Fail ("assembly of auto-init assembly file """
+                     & Macro_File_Name
+                     & """ failed");
             end if;
 
             --  Wait for the end of execution of the macro-assembler
@@ -339,8 +342,9 @@ package body MLib.Tgt.Specific is
             Pclose_Result := pclose (Popen_Result);
 
             if Pclose_Result < 0 then
-               Fail ("assembly of auto init assembly file """,
-                     Macro_File_Name, """ failed");
+               Fail ("assembly of auto init assembly file """
+                     & Macro_File_Name
+                     & """ failed");
             end if;
 
             --  Add the generated object file to the list of objects to be
@@ -432,8 +436,9 @@ package body MLib.Tgt.Specific is
              Success      => Success);
 
       if not Success then
-         Fail ("unable to create symbol file for library """,
-               Lib_Filename, """");
+         Fail ("unable to create symbol file for library """
+               & Lib_Filename
+               & """");
       end if;
 
       Free (Arguments);
