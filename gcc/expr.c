@@ -588,27 +588,9 @@ convert_move (rtx to, rtx from, int unsignedp)
       if (unsignedp)
 	fill_value = const0_rtx;
       else
-	{
-#ifdef HAVE_slt
-	  if (HAVE_slt
-	      && insn_data[(int) CODE_FOR_slt].operand[0].mode == word_mode
-	      && STORE_FLAG_VALUE == -1)
-	    {
-	      emit_cmp_insn (lowfrom, const0_rtx, NE, NULL_RTX,
-			     lowpart_mode, 0);
-	      fill_value = gen_reg_rtx (word_mode);
-	      emit_insn (gen_slt (fill_value));
-	    }
-	  else
-#endif
-	    {
-	      fill_value
-		= expand_shift (RSHIFT_EXPR, lowpart_mode, lowfrom,
-				size_int (GET_MODE_BITSIZE (lowpart_mode) - 1),
-				NULL_RTX, 0);
-	      fill_value = convert_to_mode (word_mode, fill_value, 1);
-	    }
-	}
+	fill_value = emit_store_flag (gen_reg_rtx (word_mode),
+				      LT, lowfrom, const0_rtx,
+				      VOIDmode, 0, -1);
 
       /* Fill the remaining words.  */
       for (i = GET_MODE_SIZE (lowpart_mode) / UNITS_PER_WORD; i < nwords; i++)
