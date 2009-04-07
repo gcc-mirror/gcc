@@ -1,3 +1,14 @@
+2009-04-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Restore_Scope_Stack): First_Private_Entity is only
+	relevant to packages.
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb: Minor reformatting
+
+	* sem_ch6.adb: Minor reformatting
+
 2009-04-07  Tristan Gingold  <gingold@adacore.com>
 
 	* socket.c: Add more protections against S_resolvLib_ macros.
