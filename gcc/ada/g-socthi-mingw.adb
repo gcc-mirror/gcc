@@ -300,16 +300,16 @@ package body GNAT.Sockets.Thin is
       Last : aliased C.int;
 
    begin
-      --  Asynchronous connection failures are notified in the
-      --  exception fd set instead of the write fd set. To ensure
-      --  POSIX compatibility, copy write fd set into exception fd
-      --  set. Once select() returns, check any socket present in the
-      --  exception fd set and peek at incoming out-of-band data. If
-      --  the test is not successful, and the socket is present in
-      --  the initial write fd set, then move the socket from the
+      --  Asynchronous connection failures are notified in the exception fd set
+      --  instead of the write fd set. To ensure POSIX compatibility, copy
+      --  write fd set into exception fd set. Once select() returns, check any
+      --  socket present in the exception fd set and peek at incoming
+      --  out-of-band data. If the test is not successful, and the socket is
+      --  present in the initial write fd set, then move the socket from the
       --  exception fd set to the write fd set.
 
       if Writefds /= No_Fd_Set_Access then
+
          --  Add any socket present in write fd set into exception fd set
 
          declare

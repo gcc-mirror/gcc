@@ -122,7 +122,7 @@ package GNAT.Sockets.Thin_Common is
       Sa_Family : Sockaddr_Length_And_Family;
       --  Address family (and address length on some platforms)
 
-      Sa_Data   : C.char_array (1 .. 14) := (others => C.nul);
+      Sa_Data : C.char_array (1 .. 14) := (others => C.nul);
       --  Family-specific data
       --  Note that some platforms require that all unused (reserved) bytes
       --  in addresses be initialized to 0 (e.g. VxWorks).
@@ -169,14 +169,15 @@ package GNAT.Sockets.Thin_Common is
       Sin_Family : Sockaddr_Length_And_Family;
       --  Address family (and address length on some platforms)
 
-      Sin_Port   : C.unsigned_short;
+      Sin_Port : C.unsigned_short;
       --  Port in network byte order
 
-      Sin_Addr   : In_Addr;
+      Sin_Addr : In_Addr;
       --  IPv4 address
 
-      Sin_Zero   : C.char_array (1 .. 8) := (others => C.nul);
+      Sin_Zero : C.char_array (1 .. 8) := (others => C.nul);
       --  Padding
+      --
       --  Note that some platforms require that all unused (reserved) bytes
       --  in addresses be initialized to 0 (e.g. VxWorks).
    end record;
@@ -272,8 +273,8 @@ package GNAT.Sockets.Thin_Common is
    --  value if it is, zero if it is not.
 
    procedure Last_Socket_In_Set
-     (Set    : access Fd_Set;
-      Last   : Int_Access);
+     (Set  : access Fd_Set;
+      Last : Int_Access);
    --  Find the largest socket in the socket set. This is needed for select().
    --  When Last_Socket_In_Set is called, parameter Last is a maximum value of
    --  the largest socket. This hint is used to avoid scanning very large

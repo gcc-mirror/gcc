@@ -7154,20 +7154,26 @@ package body Sem_Ch6 is
                --  odd case where both are derived operations declared at the
                --  same point, both operations should be declared, and in that
                --  case we bypass the following test and proceed to the next
-               --  part (this can only occur for certain obscure cases
-               --  involving homographs in instances and can't occur for
-               --  dispatching operations ???). Note that the following
-               --  condition is less than clear. For example, it's not at all
-               --  clear why there's a test for E_Entry here. ???
+               --  part. This can only occur for certain obscure cases in
+               --  instances, when an operation on a type derived from a formal
+               --  private type does not override a homograph inherited from
+               --  the actual. In subsequent derivations of such a type, the
+               --  DT positions of these operations remain distinct, if they
+               --  have been set.
 
                if Present (Alias (S))
                  and then (No (Alias (E))
+                            or else Is_Abstract_Subprogram (S)
                             or else Comes_From_Source (E)
-                            or else Is_Dispatching_Operation (E))
-                 and then
-                   (Ekind (E) = E_Entry
-                     or else Ekind (E) /= E_Enumeration_Literal)
+                            or else
+                              (Is_Dispatching_Operation (E)
+                                and then Present (DTC_Entity (Alias (S)))
+                                and then Present (DTC_Entity (Alias (E)))
+                                and then DT_Position (Alias (S))
+                                   = DT_Position (Alias (E))))
+                 and then Ekind (E) /= E_Enumeration_Literal
                then
+
                   --  When an derived operation is overloaded it may be due to
                   --  the fact that the full view of a private extension
                   --  re-inherits. It has to be dealt with.
