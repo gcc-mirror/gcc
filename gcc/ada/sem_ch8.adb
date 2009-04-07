@@ -767,7 +767,46 @@ package body Sem_Ch8 is
                 (Related_Nod => N,
                  N           => Access_Definition (N));
 
-         Analyze_And_Resolve (Nam, T);
+         Analyze (Nam);
+
+         --  Ada 2005 AI05-105: if the declaration has an anonymous access
+         --  type, the renamed object must also have an anonymous type, and
+         --  this is a name resolution rule. This was implicit in the last
+         --  part of the first sentence in 8.5.1.(3/2), and is made explicit
+         --  by this recent AI.
+
+         if not Is_Overloaded (Nam) then
+            if Ekind (Etype (Nam)) /= Ekind (T) then
+               Error_Msg_N
+                 ("Expect anonymous access type is object renaming", N);
+            end if;
+         else
+            declare
+               I   : Interp_Index;
+               It  : Interp;
+               Typ : Entity_Id := Empty;
+
+            begin
+               Get_First_Interp (Nam, I, It);
+               while Present (It.Typ) loop
+                  if No (Typ) then
+                     if Ekind (It.Typ) = Ekind (T)
+                       and then Covers (T, It.Typ)
+                     then
+                        Typ := It.Typ;
+                        Set_Etype (Nam, Typ);
+                        Set_Is_Overloaded (Nam, False);
+                     end if;
+                  else
+                     Error_Msg_N ("ambiguous expression in renaming", N);
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+            end;
+         end if;
+
+         Resolve (Nam, T);
 
          --  Ada 2005 (AI-231): "In the case where the type is defined by an
          --  access_definition, the renamed entity shall be of an access-to-

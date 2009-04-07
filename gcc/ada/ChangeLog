@@ -1,3 +1,56 @@
+2009-04-07  Thomas Quinot  <quinot@adacore.com>
+
+	* g-sothco.ads (Int_Access): Remove extraneous access type (use
+	anonymous access instead).
+	(Get_Socket_From_Set): Fix incorrectly reverted formals
+	Last and Socket to match the underlying C routine.
+
+	* g-socket.adb
+	(Get): Use named parameter associations instead of positional ones in
+	call go Get_Socket_From_Set, since this routine has two formals of the
+	same type.
+
+	* g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.adb,
+	g-socthi-vxworks.ads, g-socthi-mingw.ads, g-socthi.adb, g-socthi.ads:
+	(C_Ioctl, Syscall_Ioctl): use "access C.int" instead of "Int_Access"
+	for type of Arg formal.
+
+	* sem_warn.adb: Minor reformatting
+
+2009-04-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Has_Tagged_Component): Fix typo in loop that iterates
+	over record components.
+
+2009-04-07  Nicolas Roche  <roche@adacore.com>
+
+	* gsocket.h:
+	Don't include resolvLib.h on VxWorks 6 (kernel and rtp). This library
+	has disappeared between VxWorks 6.4 and VxWorks 6.5
+	In RTP mode use time.h instead of times.h
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Concat): Improve lower bound handling
+
+2009-04-07  Kevin Pouget  <pouget@adacore.com>
+
+	* exp_dist.adb: Modify Build_From_Any_Fonction procedure to correct
+	expanded code for constrained types.
+
+2009-04-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Overloaded_Selected_Component): implement
+	AI05-105: in an object renaming declaration, anonymousness is a name
+	resolution rule.
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Ditto.
+
+2009-04-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-comlin.adb (Expansion): Fix old regression: also return directory
+	names when matching.
+
 2009-04-07  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb:

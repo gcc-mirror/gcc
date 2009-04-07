@@ -4831,7 +4831,7 @@ package body Sem_Util is
                return True;
             end if;
 
-            Comp := Next_Component (Typ);
+            Next_Component (Comp);
          end loop;
 
          return False;

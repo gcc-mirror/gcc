@@ -2638,14 +2638,36 @@ package body Sem_Ch4 is
                if Chars (Comp) = Chars (Sel)
                  and then Is_Visible_Component (Comp)
                then
-                  Set_Entity (Sel, Comp);
-                  Set_Etype (Sel, Etype (Comp));
-                  Add_One_Interp (N, Etype (Comp), Etype (Comp));
 
-                  --  This also specifies a candidate to resolve the name.
-                  --  Further overloading will be resolved from context.
+                  --  AI05-105:  if the context is an object renaming with
+                  --  an anonymous access type, the expected type of the
+                  --  object must be anonymous. This is a name resolution rule.
 
-                  Set_Etype (Nam, It.Typ);
+                  if Nkind (Parent (N)) /= N_Object_Renaming_Declaration
+                    or else No (Access_Definition (Parent (N)))
+                    or else Ekind (Etype (Comp)) = E_Anonymous_Access_Type
+                    or else
+                      Ekind (Etype (Comp)) = E_Anonymous_Access_Subprogram_Type
+                  then
+                     Set_Entity (Sel, Comp);
+                     Set_Etype (Sel, Etype (Comp));
+                     Add_One_Interp (N, Etype (Comp), Etype (Comp));
+
+                     --  This also specifies a candidate to resolve the name.
+                     --  Further overloading will be resolved from context.
+                     --  The selector name itself does not carry overloading
+                     --  information.
+
+                     Set_Etype (Nam, It.Typ);
+
+                  else
+
+                     --  Nnamed access type in the context of a renaming
+                     --  declaration with an access definition. Remove
+                     --  inapplicable candidate.
+
+                     Remove_Interp (I);
+                  end if;
                end if;
 
                Next_Entity (Comp);

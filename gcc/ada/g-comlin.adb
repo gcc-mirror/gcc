@@ -263,24 +263,25 @@ package body GNAT.Command_Line is
                     (It.Levels (Current).Dir, It.Dir_Name (1 .. NL));
                end if;
             end if;
-
-         --  If not a directory, check the relative path against the pattern
-
-         else
-            declare
-               Name : String :=
-                        It.Dir_Name (It.Start .. It.Levels (Current).Name_Last)
-                          & S (1 .. Last);
-            begin
-               Canonical_Case_File_Name (Name);
-
-               --  If it matches return the relative path
-
-               if GNAT.Regexp.Match (Name, Iterator.Regexp) then
-                  return Name;
-               end if;
-            end;
          end if;
+
+         --  Check the relative path against the pattern.
+         --  Note that we try to match also against directory names, since
+         --  clients of this function may expect to retrieve directories.
+
+         declare
+            Name : String :=
+                     It.Dir_Name (It.Start .. It.Levels (Current).Name_Last)
+                       & S (1 .. Last);
+         begin
+            Canonical_Case_File_Name (Name);
+
+            --  If it matches return the relative path
+
+            if GNAT.Regexp.Match (Name, Iterator.Regexp) then
+               return Name;
+            end if;
+         end;
       end loop;
    end Expansion;
 
