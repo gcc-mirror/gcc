@@ -1,3 +1,14 @@
+2009-04-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): When processing a tagged
+	derived type that has discriminants, propagate the list of interfaces
+	to the corresponding new base type. In addition, propagate also
+	attribute Limited_Present (found working in this patch).
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Rewrite concatenation expansion.
+
 2009-04-07  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Restore_Scope_Stack): First_Private_Entity is only
