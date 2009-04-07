@@ -1,3 +1,7 @@
+2009-04-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/invoke.texi: Document Atom support.
+
 2009-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/25185
