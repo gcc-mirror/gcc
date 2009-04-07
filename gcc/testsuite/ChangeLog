@@ -1,3 +1,8 @@
+2009-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/35146
+	* g++.dg/template/fnspec1.C: New.
+
 2009-04-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/39528
