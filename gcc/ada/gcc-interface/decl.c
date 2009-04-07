@@ -1384,7 +1384,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
     case E_Void:
       /* Return a TYPE_DECL for "void" that we previously made.  */
-      gnu_decl = void_type_decl_node;
+      gnu_decl = TYPE_NAME (void_type_node);
       break;
 
     case E_Enumeration_Type:
@@ -2033,7 +2033,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* Give the fat pointer type a name.  */
 	create_type_decl (create_concat_name (gnat_entity, "XUP"),
-			  gnu_fat_type, NULL, !Comes_From_Source (gnat_entity),
+			  gnu_fat_type, NULL, true,
 			  debug_info_p, gnat_entity);
 
        /* Create the type to be used as what a thin pointer designates: an
@@ -2048,9 +2048,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* Give the thin pointer type a name.  */
 	create_type_decl (create_concat_name (gnat_entity, "XUX"),
-			  build_pointer_type (tem), NULL,
-			  !Comes_From_Source (gnat_entity), debug_info_p,
-			  gnat_entity);
+			  build_pointer_type (tem), NULL, true,
+			  debug_info_p, gnat_entity);
       }
       break;
 
@@ -2352,6 +2351,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		TYPE_NONALIASED_COMPONENT (gnu_type) = 1;
 	    }
 
+	  /* Attach the TYPE_STUB_DECL in case we have a parallel type.  */
+	  if (need_index_type_struct)
+	    TYPE_STUB_DECL (gnu_type)
+	      = create_type_stub_decl (gnu_entity_id, gnu_type);
+
 	  /* If we are at file level and this is a multi-dimensional array, we
 	     need to make a variable corresponding to the stride of the
 	     inner dimensions.   */
@@ -2395,40 +2399,35 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 
 	  /* If we need to write out a record type giving the names of
-	     the bounds, do it now.  */
+	     the bounds, do it now.  Make sure to reference the index
+	     types themselves, not just their names, as the debugger
+	     may fall back on them in some cases.  */
 	  if (need_index_type_struct && debug_info_p)
 	    {
-	      tree gnu_bound_rec_type = make_node (RECORD_TYPE);
+	      tree gnu_bound_rec = make_node (RECORD_TYPE);
 	      tree gnu_field_list = NULL_TREE;
 	      tree gnu_field;
 
-	      TYPE_NAME (gnu_bound_rec_type)
+	      TYPE_NAME (gnu_bound_rec)
 		= create_concat_name (gnat_entity, "XA");
 
 	      for (index = array_dim - 1; index >= 0; index--)
 		{
-		  tree gnu_type_name
-		    = TYPE_NAME (TYPE_INDEX_TYPE (gnu_index_type[index]));
+		  tree gnu_index = TYPE_INDEX_TYPE (gnu_index_type[index]);
+		  tree gnu_index_name = TYPE_NAME (gnu_index);
 
-		  if (TREE_CODE (gnu_type_name) == TYPE_DECL)
-		    gnu_type_name = DECL_NAME (gnu_type_name);
+		  if (TREE_CODE (gnu_index_name) == TYPE_DECL)
+		    gnu_index_name = DECL_NAME (gnu_index_name);
 
-		  gnu_field = create_field_decl (gnu_type_name,
-						 integer_type_node,
-						 gnu_bound_rec_type,
+		  gnu_field = create_field_decl (gnu_index_name, gnu_index,
+						 gnu_bound_rec,
 						 0, NULL_TREE, NULL_TREE, 0);
 		  TREE_CHAIN (gnu_field) = gnu_field_list;
 		  gnu_field_list = gnu_field;
 		}
 
-	      finish_record_type (gnu_bound_rec_type, gnu_field_list,
-				  0, false);
-
-	      TYPE_STUB_DECL (gnu_type)
-		= build_decl (TYPE_DECL, NULL_TREE, gnu_type);
-
-	      add_parallel_type
-		(TYPE_STUB_DECL (gnu_type), gnu_bound_rec_type);
+	      finish_record_type (gnu_bound_rec, gnu_field_list, 0, false);
+	      add_parallel_type (TYPE_STUB_DECL (gnu_type), gnu_bound_rec);
 	    }
 
 	  TYPE_CONVENTION_FORTRAN_P (gnu_type)
@@ -2459,25 +2458,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	}
 
       /* If this is a packed type, make this type the same as the packed
-	 array type, but do some adjusting in the type first.   */
-
+	 array type, but do some adjusting in the type first.  */
       if (Present (Packed_Array_Type (gnat_entity)))
 	{
 	  Entity_Id gnat_index;
 	  tree gnu_inner_type;
 
 	  /* First finish the type we had been making so that we output
-	     debugging information for it  */
+	     debugging information for it.  */
 	  gnu_type
 	    = build_qualified_type (gnu_type,
 				    (TYPE_QUALS (gnu_type)
 				     | (TYPE_QUAL_VOLATILE
 					* Treat_As_Volatile (gnat_entity))));
-	  gnu_decl = create_type_decl (gnu_entity_id, gnu_type, attr_list,
-				       !Comes_From_Source (gnat_entity),
-				       debug_info_p, gnat_entity);
-	  if (!Comes_From_Source (gnat_entity))
-	    DECL_ARTIFICIAL (gnu_decl) = 1;
+
+	  /* Make it artificial only if the base type was artificial as well.
+	     That's sort of "morally" true and will make it possible for the
+	     debugger to look it up by name in DWARF more easily.  */
+	  gnu_decl
+	    = create_type_decl (gnu_entity_id, gnu_type, attr_list,
+				!Comes_From_Source (gnat_entity)
+				&& !Comes_From_Source (Etype (gnat_entity)),
+				debug_info_p, gnat_entity);
 
 	  /* Save it as our equivalent in case the call below elaborates
 	     this type again.  */
@@ -4195,7 +4197,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	if (No (full_view))
 	  {
 	    if (kind == E_Incomplete_Type)
-	      gnu_type = make_dummy_type (gnat_entity);
+	      {
+		gnu_type = make_dummy_type (gnat_entity);
+		gnu_decl = TYPE_STUB_DECL (gnu_type);
+	      }
 	    else
 	      {
 		gnu_decl = gnat_to_gnu_entity (Etype (gnat_entity),
@@ -4227,14 +4232,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 
 	/* For incomplete types, make a dummy type entry which will be
-	   replaced later.  */
+	   replaced later.  Save it as the full declaration's type so
+	   we can do any needed updates when we see it.  */
 	gnu_type = make_dummy_type (gnat_entity);
-
-	/* Save this type as the full declaration's type so we can do any
-	   needed updates when we see it.  */
-	gnu_decl = create_type_decl (gnu_entity_id, gnu_type, attr_list,
-				     !Comes_From_Source (gnat_entity),
-				     debug_info_p, gnat_entity);
+	gnu_decl = TYPE_STUB_DECL (gnu_type);
 	save_gnu_tree (full_view, gnu_decl, 0);
 	break;
       }
@@ -4790,10 +4791,7 @@ rest_of_type_decl_compilation_no_defer (tree decl)
 	continue;
 
       if (!TYPE_STUB_DECL (t))
-	{
-	  TYPE_STUB_DECL (t) = build_decl (TYPE_DECL, DECL_NAME (decl), t);
-	  DECL_ARTIFICIAL (TYPE_STUB_DECL (t)) = 1;
-	}
+	TYPE_STUB_DECL (t) = create_type_stub_decl (DECL_NAME (decl), t);
 
       rest_of_type_compilation (t, toplev);
     }
