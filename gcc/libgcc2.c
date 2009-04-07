@@ -1807,7 +1807,7 @@ NAME (TYPE x, int m)
 #define isfinite(x)	__builtin_expect (!isnan((x) - (x)), 1)
 #define isinf(x)	__builtin_expect (!isnan(x) & !isfinite(x), 0)
 
-#define INFINITY	CONCAT2(__builtin_inf, CEXT) ()
+#define INFINITY	CONCAT2(__builtin_huge_val, CEXT) ()
 #define I		1i
 
 /* Helpers to make the following code slightly less gross.  */
