@@ -46,7 +46,7 @@ with System.CRTL;      use System.CRTL;
 
 package body MLib.Tgt.Specific is
 
-   --  Non default subprogram. See comment in mlib-tgt.ads.
+   --  Non default subprogram, see comment in mlib-tgt.ads
 
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;

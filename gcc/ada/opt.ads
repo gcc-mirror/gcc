@@ -1024,6 +1024,10 @@ package Opt is
    --  option for GNATBIND and to False when using the -static option. The
    --  value of this flag is set by Gnatbind.Scan_Bind_Arg.
 
+   Sprint_Line_Limit : Nat := 72;
+   --  Limit values for chopping long lines in Sprint output, can be reset
+   --  by use of NNN parameter with -gnatG or -gnatD switches.
+
    Stack_Checking_Enabled : Boolean;
    --  GNAT
    --  Set to indicate if -fstack-check switch is set for the compilation. True
