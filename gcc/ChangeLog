@@ -1,3 +1,10 @@
+2009-04-07  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Non-aliased
+	decls are only used if passes as parameters or if they are
+	local statics and the call is not to a builtin.
+	(call_may_clobber_ref_p_1): Likewise.
+
 2009-04-07  Paolo Bonzini  <bonzini@gnu.org>
 
 	* expr.c (do_store_flag): Remove last argument.  Simplify code

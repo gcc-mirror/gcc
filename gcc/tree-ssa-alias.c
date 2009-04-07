@@ -737,7 +737,7 @@ refs_may_alias_p (tree ref1, tree ref2)
 static bool
 ref_maybe_used_by_call_p_1 (gimple call, tree ref)
 {
-  tree base;
+  tree base, fndecl;
   unsigned i;
   int flags = gimple_call_flags (call);
 
@@ -753,6 +753,20 @@ ref_maybe_used_by_call_p_1 (gimple call, tree ref)
   if (!base
       || !DECL_P (base))
     return true;
+
+  /* If the reference is based on a decl that is not aliased the call
+     cannot possibly use it.  */
+  if (DECL_P (base)
+      && !may_be_aliased (base)
+      /* But local statics can be used through recursion!  */
+      && (!is_global_var (base)
+	  /* But not via builtins.
+	     ???  We just assume that this is true if we are not a
+	     builtin function ourself.  */
+	  || (!DECL_BUILT_IN (cfun->decl)
+	      && (fndecl = gimple_call_fndecl (call))
+	      && DECL_BUILT_IN (fndecl))))
+    goto process_args;
 
   /* Check if base is a global static variable that is not read
      by the function.  */
@@ -851,7 +865,7 @@ ref_maybe_used_by_stmt_p (gimple stmt, tree ref)
 static bool
 call_may_clobber_ref_p_1 (gimple call, tree ref)
 {
-  tree base;
+  tree fndecl, base;
 
   /* If the call is pure or const it cannot clobber anything.  */
   if (gimple_call_flags (call)
@@ -864,6 +878,21 @@ call_may_clobber_ref_p_1 (gimple call, tree ref)
 
   if (TREE_CODE (base) == SSA_NAME
       || CONSTANT_CLASS_P (base))
+    return false;
+
+  /* If the reference is based on a decl that is not aliased the call
+     cannot possibly clobber it.  */
+  if (DECL_P (base)
+      && !may_be_aliased (base)
+      /* But local non-readonly statics can be modified through recursion!  */
+      && (TREE_READONLY (base)
+	  || !is_global_var (base)
+	  /* But not via builtins.
+	     ???  We just assume that this is true if we are not a
+	     builtin function ourself.  */
+	  || (!DECL_BUILT_IN (cfun->decl)
+	      && (fndecl = gimple_call_fndecl (call))
+	      && DECL_BUILT_IN (fndecl))))
     return false;
 
   /* Check if base is a global static variable that is not written
