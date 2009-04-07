@@ -32,7 +32,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Deallocation;
---  with Ada.Exceptions;
 
 with System.Case_Util;
 
@@ -205,6 +204,7 @@ package body System.Regexp is
          J                 : Integer := S'First;
          Parenthesis_Level : Integer := 0;
          Curly_Level       : Integer := 0;
+         Last_Open         : Integer := S'First - 1;
 
       --  Start of processing for Create_Mapping
 
@@ -282,6 +282,7 @@ package body System.Regexp is
                when Open_Paren =>
                   if not Glob then
                      Parenthesis_Level := Parenthesis_Level + 1;
+                     Last_Open := J;
                   else
                      Add_In_Map (Open_Paren);
                   end if;
@@ -296,7 +297,7 @@ package body System.Regexp is
                            & "expression", J);
                      end if;
 
-                     if S (J - 1) = Open_Paren then
+                     if J = Last_Open + 1 then
                         Raise_Exception
                           ("Empty parenthesis not allowed in regular "
                            & "expression", J);

@@ -1,3 +1,14 @@
+2009-04-07  Emmanuel Briot  <briot@adacore.com>
+
+	* s-regexp.adb (Create_Mapping): Ignore excaped open parenthesis when
+	looking for the end of a parenthesis group
+
+2009-04-07  Tristan Gingold  <gingold@adacore.com>
+
+	* gsocket.h Don't #include resolvLib.h if __RTP__ is defined.
+
+	* socket.c Don't use resolvLib_ macros if not defined.
+
 2009-04-07  Robert Dewar  <dewar@adacore.com>
 
 	* g-socket.adb: Minor reformatting.

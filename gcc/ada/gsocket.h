@@ -66,7 +66,9 @@
 #include <vxWorks.h>
 #include <ioLib.h>
 #include <hostLib.h>
+#ifndef __RTP__
 #include <resolvLib.h>
+#endif
 #define SHUT_RD		0
 #define SHUT_WR		1
 #define SHUT_RDWR	2
