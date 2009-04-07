@@ -657,9 +657,11 @@ package body Lib.Xref is
          and then Sloc (E) > No_Location
          and then Sloc (N) > No_Location
 
-         --  We ignore references from within an instance
+         --  We ignore references from within an instance, except for default
+         --  subprograms, for which we generate an implicit reference.
 
-         and then Instantiation_Location (Sloc (N)) = No_Location
+         and then
+           (Instantiation_Location (Sloc (N)) = No_Location or else Typ = 'i')
 
          --  Ignore dummy references
 

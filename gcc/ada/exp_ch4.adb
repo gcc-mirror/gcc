@@ -2216,7 +2216,7 @@ package body Exp_Ch4 is
 
       function To_Intyp (X : Node_Id) return Node_Id is
       begin
-         if Ityp = Intyp then
+         if Base_Type (Ityp) = Base_Type (Intyp) then
             return X;
 
          elsif Is_Enumeration_Type (Ityp) then
@@ -2237,10 +2237,7 @@ package body Exp_Ch4 is
 
       function To_Ityp (X : Node_Id) return Node_Id is
       begin
-         if Intyp = Ityp then
-            return X;
-
-         elsif Is_Enumeration_Type (Ityp) then
+         if Is_Enumeration_Type (Ityp) then
             return
               Make_Attribute_Reference (Loc,
                 Prefix         => New_Occurrence_Of (Ityp, Loc),
@@ -2279,7 +2276,11 @@ package body Exp_Ch4 is
                raise Concatenation_Error;
 
             else
-               return Convert_To (Ityp, X);
+               if Base_Type (Ityp) = Base_Type (Intyp) then
+                  return X;
+               else
+                  return Convert_To (Ityp, X);
+               end if;
             end if;
          end if;
       end To_Ityp;
@@ -2316,57 +2317,26 @@ package body Exp_Ch4 is
       if Is_Enumeration_Type (Ityp) then
          Intyp := Standard_Integer;
 
-      elsif Atyp = Standard_String then
-         Intyp := Standard_Natural;
+      --  For modular types, we use a 32-bit modular type for types whose size
+      --  is in the range 1-31 bits. For 32-bit unsigned types, we use the
+      --  identity type, and for larger unsigned types we use 64-bits.
 
-      --  For unsigned types, we can safely use a 32-bit unsigned type for any
-      --  type whose size is in the range 1-31 bits, and we can safely use a
-      --  64-bit unsigned type for any type whose size is in the range 33-63
-      --  bits. So those case are easy. For 64-bit unsigned types, there is no
-      --  possible type to use, since the maximum length is 2**64 which is not
-      --  representable in any type. We just use a 64-bit unsigned type anyway,
-      --  and won't be able to handle objects that big, which is no loss in
-      --  practice (we will raise CE in this case).
-
-      --  32-bit unsigned types are a bit of a problem. If we are on a 64-bit
-      --  machine where 64-bit arithmetic is presumably efficient, then we can
-      --  just use the 64-bit type. But we really hate to do that on a 32-bit
-      --  machine since it could be quite inefficient. So on a 32-bit machine,
-      --  we use the 32-bit unsigned type, and too bad if we can't handle
-      --  arrays with 2**32 elements (the programmer can always get around
-      --  this by using a 64-bit type as an index).
-
-      elsif Is_Unsigned_Type (Ityp) then
-         if RM_Size (Ityp) < RM_Size (Standard_Unsigned) then
+      elsif Is_Modular_Integer_Type (Ityp) then
+         if RM_Size (Base_Type (Ityp)) < RM_Size (Standard_Unsigned) then
             Intyp := Standard_Unsigned;
-
-         elsif RM_Size (Ityp) = RM_Size (Standard_Unsigned)
-           and then System_Address_Size = 32
-         then
-            Intyp := Ityp;
-
+         elsif RM_Size (Base_Type (Ityp)) = RM_Size (Standard_Unsigned) then
+            Intyp := Base_Type (Ityp);
          else
             Intyp := RTE (RE_Long_Long_Unsigned);
          end if;
 
-      --  For signed types, the considerations are similar to the unsigned case
-      --  for types with sizes in the range 1-30 or 33-64, but now 30 and 31
-      --  are both problems (the 31-bit type can have a length of 2**31 which
-      --  is out of the range of standard integer), but again, we don't want
-      --  the inefficiency of using 64-bit arithmetic on a 32-bit machine.
+      --  Similar treatment for signed types
 
       else
-         if RM_Size (Ityp) < (RM_Size (Standard_Integer) - 1)
-           or (RM_Size (Ityp) = (RM_Size (Standard_Integer) - 1)
-                and then System_Address_Size = 32)
-         then
+         if RM_Size (Base_Type (Ityp)) < RM_Size (Standard_Integer) then
             Intyp := Standard_Integer;
-
-         elsif RM_Size (Ityp) = RM_Size (Standard_Integer)
-           and then System_Address_Size = 32
-         then
-            Intyp := Ityp;
-
+         elsif RM_Size (Base_Type (Ityp)) = RM_Size (Standard_Integer) then
+            Intyp := Base_Type (Ityp);
          else
             Intyp := Standard_Long_Long_Integer;
          end if;
@@ -2395,10 +2365,10 @@ package body Exp_Ch4 is
             Is_Fixed_Length (NN) := True;
             Fixed_Length (NN) := Uint_1;
 
-            --  Set lower bound to 1, that's right for characters, but is
-            --  it really right for other types ???
+            --  Set lower bound to lower bound of index subtype. This is not
+            --  right where the index subtype bound is dynamic ???
 
-            Fixed_Low_Bound (NN) := Uint_1;
+            Fixed_Low_Bound (NN) := Expr_Value (Type_Low_Bound (Ityp));
             Set := True;
 
          --  String literal case (can only occur for strings of course)
