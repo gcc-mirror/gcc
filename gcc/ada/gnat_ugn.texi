@@ -3867,6 +3867,10 @@ it will be ignored.
 @cindex @option{-gnatb} (@command{gcc})
 Generate brief messages to @file{stderr} even if verbose mode set.
 
+@item -gnatB
+@cindex @option{-gnatB} (@command{gcc})
+Assume no invalid (bad) values except for 'Valid attribute use.
+
 @item -gnatc
 @cindex @option{-gnatc} (@command{gcc})
 Check syntax and semantics only (no code generation attempted).
@@ -5585,6 +5589,12 @@ where unmodified values might lead to erroneous execution are case
 statements (where a wild jump might result from an invalid value),
 and subscripts on the left hand side (where memory corruption could
 occur as a result of an invalid value).
+
+The @option{-gnatB} switch tells the compiler to assume that all
+values are valid (that is, within their declared subtype range)
+except in the context of a use of the Valid attribute. This means
+the compiler can generate more efficient code, since the range
+of values is better known at compile time.
 
 The @option{-gnatV^@var{x}^^} switch allows more control over the validity
 checking mode.

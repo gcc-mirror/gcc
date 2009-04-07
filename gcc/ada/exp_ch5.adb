@@ -3306,19 +3306,31 @@ package body Exp_Ch5 is
    -- Expand_N_Loop_Statement --
    -----------------------------
 
-   --  1. Deal with while condition for C/Fortran boolean
-   --  2. Deal with loops with a non-standard enumeration type range
-   --  3. Deal with while loops where Condition_Actions is set
-   --  4. Insert polling call if required
+   --  1. Remove null loop entirely
+   --  2. Deal with while condition for C/Fortran boolean
+   --  3. Deal with loops with a non-standard enumeration type range
+   --  4. Deal with while loops where Condition_Actions is set
+   --  5. Insert polling call if required
 
    procedure Expand_N_Loop_Statement (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
       Isc  : constant Node_Id    := Iteration_Scheme (N);
 
    begin
+      --  Delete null loop
+
+      if Is_Null_Loop (N) then
+         Rewrite (N, Make_Null_Statement (Loc));
+         return;
+      end if;
+
+      --  Deal with condition for C/Fortran Boolean
+
       if Present (Isc) then
          Adjust_Condition (Condition (Isc));
       end if;
+
+      --  Generate polling call
 
       if Is_Non_Empty_List (Statements (N)) then
          Generate_Poll_Call (First (Statements (N)));

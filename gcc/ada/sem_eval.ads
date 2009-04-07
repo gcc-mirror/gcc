@@ -327,10 +327,11 @@ package Sem_Eval is
    --  known at compile time but not static, then the result is not static.
 
    function Is_In_Range
-     (N         : Node_Id;
-      Typ       : Entity_Id;
-      Fixed_Int : Boolean := False;
-      Int_Real  : Boolean := False) return Boolean;
+     (N            : Node_Id;
+      Typ          : Entity_Id;
+      Assume_Valid : Boolean := False;
+      Fixed_Int    : Boolean := False;
+      Int_Real     : Boolean := False) return Boolean;
    --  Returns True if it can be guaranteed at compile time that expression is
    --  known to be in range of the subtype Typ. If the values of N or of either
    --  bounds of Type are unknown at compile time, False will always be
@@ -345,13 +346,16 @@ package Sem_Eval is
    --  value (i.e. the underlying integer value is used). In this case we use
    --  the corresponding integer value, both for the bounds of Typ, and for the
    --  value of the expression N. If Typ is a discrete type and Fixed_Int as
-   --  well as Int_Real are false, integer values are used throughout.
+   --  well as Int_Real are false, integer values are used throughout. The
+   --  Assume_Valid parameter determines whether values are to be assumed to
+   --  be valid (True), or invalid values can occur (False).
 
    function Is_Out_Of_Range
-     (N         : Node_Id;
-      Typ       : Entity_Id;
-      Fixed_Int : Boolean := False;
-      Int_Real  : Boolean := False) return Boolean;
+     (N            : Node_Id;
+      Typ          : Entity_Id;
+      Assume_Valid : Boolean := False;
+      Fixed_Int    : Boolean := False;
+      Int_Real     : Boolean := False) return Boolean;
    --  Returns True if it can be guaranteed at compile time that expression is
    --  known to be out of range of the subtype Typ. True is returned if Typ is
    --  a scalar type, at least one of whose bounds is known at compile time,
@@ -359,7 +363,9 @@ package Sem_Eval is
    --  outside a compile_time known bound of Typ. A result of False does not
    --  mean that the expression is in range, but rather merely that it cannot
    --  be determined at compile time that it is out of range. Flags Int_Real
-   --  and Fixed_Int are used as in routine Is_In_Range above.
+   --  and Fixed_Int are used as in routine Is_In_Range above. The Assume_Valid
+   --  parameter determines whether values are to be assumed to be valid
+   --  (True), or invalid values can occur (False).
 
    function In_Subrange_Of
      (T1           : Entity_Id;

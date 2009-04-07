@@ -2623,6 +2623,14 @@ package body Sinfo is
       return Node5 (N);
    end Subtype_Indication;
 
+   function Suppress_Loop_Warnings
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Loop_Statement);
+      return Flag17 (N);
+   end Suppress_Loop_Warnings;
+
    function Subtype_Mark
       (N : Node_Id) return Node_Id is
    begin
@@ -5410,6 +5418,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Use_Type_Clause);
       Set_List2_With_Parent (N, Val);
    end Set_Subtype_Marks;
+
+   procedure Set_Suppress_Loop_Warnings
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Loop_Statement);
+      Set_Flag17 (N, Val);
+   end Set_Suppress_Loop_Warnings;
 
    procedure Set_Synchronized_Present
      (N : Node_Id; Val : Boolean := True) is

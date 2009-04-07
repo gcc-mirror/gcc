@@ -3826,16 +3826,17 @@ package body Exp_Ch4 is
             Lo_Orig : constant Node_Id := Original_Node (Lo);
             Hi_Orig : constant Node_Id := Original_Node (Hi);
 
-            Lcheck : constant Compare_Result :=
-                       Compile_Time_Compare (Lop, Lo, Assume_Valid => True);
-            Ucheck : constant Compare_Result :=
-                       Compile_Time_Compare (Lop, Hi, Assume_Valid => True);
+            Lcheck : Compare_Result;
+            Ucheck : Compare_Result;
 
             Warn1 : constant Boolean :=
                       Constant_Condition_Warnings
-                        and then Comes_From_Source (N);
+                        and then Comes_From_Source (N)
+                        and then not In_Instance;
             --  This must be true for any of the optimization warnings, we
             --  clearly want to give them only for source with the flag on.
+            --  We also skip these warnings in an instance since it may be
+            --  the case that different instantiations have different ranges.
 
             Warn2 : constant Boolean :=
                       Warn1
@@ -3893,12 +3894,15 @@ package body Exp_Ch4 is
             --  If we have an explicit range, do a bit of optimization based
             --  on range analysis (we may be able to kill one or both checks).
 
+            Lcheck := Compile_Time_Compare (Lop, Lo, Assume_Valid => False);
+            Ucheck := Compile_Time_Compare (Lop, Hi, Assume_Valid => False);
+
             --  If either check is known to fail, replace result by False since
             --  the other check does not matter. Preserve the static flag for
             --  legality checks, because we are constant-folding beyond RM 4.9.
 
             if Lcheck = LT or else Ucheck = GT then
-               if Warn1 and then not In_Instance then
+               if Warn1 then
                   Error_Msg_N ("?range test optimized away", N);
                   Error_Msg_N ("\?value is known to be out of range", N);
                end if;
@@ -3914,7 +3918,7 @@ package body Exp_Ch4 is
             --  since we know we are in range.
 
             elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
-               if Warn1 and then not In_Instance then
+               if Warn1 then
                   Error_Msg_N ("?range test optimized away", N);
                   Error_Msg_N ("\?value is known to be in range", N);
                end if;
@@ -3962,6 +3966,41 @@ package body Exp_Ch4 is
 
                return;
             end if;
+
+            --  We couldn't optimize away the range check, but there is one
+            --  more issue. If we are checking constant conditionals, then we
+            --  see if we can determine the outcome assuming everything is
+            --  valid, and if so give an appropriate warning.
+
+            if Warn1 and then not Assume_No_Invalid_Values then
+               Lcheck := Compile_Time_Compare (Lop, Lo, Assume_Valid => True);
+               Ucheck := Compile_Time_Compare (Lop, Hi, Assume_Valid => True);
+
+               --  Result is out of range for valid value
+
+               if Lcheck = LT or else Ucheck = GT then
+                  Error_Msg_N
+                    ("?value can only be in range if it is invalid", N);
+
+               --  Result is in range for valid value
+
+               elsif Lcheck in Compare_GE and then Ucheck in Compare_LE then
+                  Error_Msg_N
+                    ("?value can only be out of range if it is invalid", N);
+
+               --  Lower bound check succeeds if value is valid
+
+               elsif Warn2 and then Lcheck in Compare_GE then
+                  Error_Msg_N
+                    ("?lower bound check only fails if it is invalid", Lo);
+
+               --  Upper bound  check succeeds if value is valid
+
+               elsif Warn2 and then Ucheck in Compare_LE then
+                  Error_Msg_N
+                    ("?upper bound check only fails for invalid values", Hi);
+               end if;
+            end if;
          end;
 
          --  For all other cases of an explicit range, nothing to be done
@@ -3998,7 +4037,8 @@ package body Exp_Ch4 is
 
             --  If type is scalar type, rewrite as x in t'first .. t'last.
             --  This reason we do this is that the bounds may have the wrong
-            --  type if they come from the original type definition.
+            --  type if they come from the original type definition. Also this
+            --  way we get all the processing above for an explicit range.
 
             elsif Is_Scalar_Type (Typ) then
                Rewrite (Rop,
@@ -9013,6 +9053,13 @@ package body Exp_Ch4 is
    ------------------------
 
    procedure Rewrite_Comparison (N : Node_Id) is
+      Warning_Generated : Boolean := False;
+      --  Set to True if first pass with Assume_Valid generates a warning in
+      --  which case we skip the second pass to avoid warning overloaded.
+
+      Result : Node_Id;
+      --  Set to Standard_True or Standard_False
+
    begin
       if Nkind (N) = N_Type_Conversion then
          Rewrite_Comparison (Expression (N));
@@ -9022,20 +9069,29 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      declare
-         Typ : constant Entity_Id := Etype (N);
-         Op1 : constant Node_Id   := Left_Opnd (N);
-         Op2 : constant Node_Id   := Right_Opnd (N);
+      --  Now start looking at the comparison in detail. We potentially go
+      --  through this loop twice. The first time, Assume_Valid is set False
+      --  in the call to Compile_Time_Compare. If this call results in a
+      --  clear result of always True or Always False, that's decisive and
+      --  we are done. Otherwise we repeat the processing with Assume_Valid
+      --  set to True to generate additional warnings. We can stil that step
+      --  if Constant_Condition_Warnings is False.
 
-         Res : constant Compare_Result :=
-                 Compile_Time_Compare (Op1, Op2, Assume_Valid => True);
-         --  Res indicates if compare outcome can be compile time determined
+      for AV in False .. True loop
+         declare
+            Typ : constant Entity_Id := Etype (N);
+            Op1 : constant Node_Id   := Left_Opnd (N);
+            Op2 : constant Node_Id   := Right_Opnd (N);
 
-         True_Result  : Boolean;
-         False_Result : Boolean;
+            Res : constant Compare_Result :=
+                    Compile_Time_Compare (Op1, Op2, Assume_Valid => AV);
+            --  Res indicates if compare outcome can be compile time determined
 
-      begin
-         case N_Op_Compare (Nkind (N)) is
+            True_Result  : Boolean;
+            False_Result : Boolean;
+
+         begin
+            case N_Op_Compare (Nkind (N)) is
             when N_Op_Eq =>
                True_Result  := Res = EQ;
                False_Result := Res = LT or else Res = GT or else Res = NE;
@@ -9054,6 +9110,7 @@ package body Exp_Ch4 is
                then
                   Error_Msg_N
                     ("can never be greater than, could replace by ""'=""?", N);
+                  Warning_Generated := True;
                end if;
 
             when N_Op_Gt =>
@@ -9078,28 +9135,62 @@ package body Exp_Ch4 is
                then
                   Error_Msg_N
                     ("can never be less than, could replace by ""'=""?", N);
+                  Warning_Generated := True;
                end if;
 
             when N_Op_Ne =>
                True_Result  := Res = NE or else Res = GT or else Res = LT;
                False_Result := Res = EQ;
-         end case;
+            end case;
 
-         if True_Result then
-            Rewrite (N,
-              Convert_To (Typ,
-                New_Occurrence_Of (Standard_True, Sloc (N))));
-            Analyze_And_Resolve (N, Typ);
-            Warn_On_Known_Condition (N);
+            --  If this is the first iteration, then we actually convert the
+            --  comparison into True or False, if the result is certain.
 
-         elsif False_Result then
-            Rewrite (N,
-              Convert_To (Typ,
-                New_Occurrence_Of (Standard_False, Sloc (N))));
-            Analyze_And_Resolve (N, Typ);
-            Warn_On_Known_Condition (N);
-         end if;
-      end;
+            if AV = False then
+               if True_Result or False_Result then
+                  if True_Result then
+                     Result := Standard_True;
+                  else
+                     Result := Standard_False;
+                  end if;
+
+                  Rewrite (N,
+                    Convert_To (Typ,
+                      New_Occurrence_Of (Result, Sloc (N))));
+                  Analyze_And_Resolve (N, Typ);
+                  Warn_On_Known_Condition (N);
+                  return;
+               end if;
+
+            --  If this is the second iteration (AV = True), and the original
+            --  node comes from source and we are not in an instance, then
+            --  give a warning if we know result would be True or False. Note
+            --  we know Constant_Condition_Warnings is set if we get here.
+
+            elsif Comes_From_Source (Original_Node (N))
+              and then not In_Instance
+            then
+               if True_Result then
+                  Error_Msg_N
+                    ("condition can only be False if invalid values present?",
+                     N);
+               elsif False_Result then
+                  Error_Msg_N
+                    ("condition can only be True if invalid values present?",
+                     N);
+               end if;
+            end if;
+         end;
+
+         --  Skip second iteration if not warning on constant conditions or
+         --  if the first iteration already generated a warning of some kind
+         --  or if we are in any case assuming all values are valid (so that
+         --  the first iteration took care of the valid case).
+
+         exit when not Constant_Condition_Warnings;
+         exit when Warning_Generated;
+         exit when Assume_No_Invalid_Values;
+      end loop;
    end Rewrite_Comparison;
 
    ----------------------------
