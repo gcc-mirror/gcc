@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,8 +80,7 @@ package body Switch.B is
 
          exception
             when Constraint_Error =>
-               Osint.Fail
-                 ("numeric value out of range for switch: ", (1 => S));
+               Osint.Fail ("numeric value out of range for switch: " & S);
          end;
 
          return Result;
@@ -104,8 +103,8 @@ package body Switch.B is
       if Switch_Chars'Last >= Ptr + 3
         and then Switch_Chars (Ptr .. Ptr + 3) = "gnat"
       then
-         Osint.Fail ("invalid switch: """, Switch_Chars, """"
-            & " (gnat not needed here)");
+         Osint.Fail ("invalid switch: """ & Switch_Chars & """"
+                     & " (gnat not needed here)");
       end if;
 
       --  Loop to scan through switches given in switch string

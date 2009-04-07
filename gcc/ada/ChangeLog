@@ -1,5 +1,35 @@
 2009-04-07  Robert Dewar  <dewar@adacore.com>
 
+	(Osint.Fail): Change calling sequence to have one string arg
+	(Make.Make_Failed): Same change
+	All callers are adjusted to use concatenation
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Fix documentation typo
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* tbuild.ads: Minor reformatting
+
+2009-04-07  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_DT): Avoid the generation of the OSD_Table
+	when compiling under ZFP runtime.
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* g-comlin.adb: Minor reformatting
+
+2009-04-07  Thomas Quinot  <quinot@adacore.com>
+
+	* socket.c, g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.adb,
+	g-socthi-vxworks.ads, g-socthi-mingw.adb, g-socthi-mingw.ads,
+	g-socthi.adb, g-socthi.ads, g-socket.adb, g-socket.ads, g-sothco.ads:
+	Remove dynamic allocation of Fd_Set in Socket_Set_Type objects.
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_ugn.texi: Document -gnatDnn/-gnatGnn
 
 	* opt.ads (Sprint_Line_Limit): New parameter

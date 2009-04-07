@@ -52,7 +52,10 @@ with Ada.Exceptions;
 with Ada.Streams;
 with Ada.Unchecked_Deallocation;
 
+with Interfaces.C;
+
 with System.OS_Constants;
+with System.Storage_Elements;
 
 package GNAT.Sockets is
 
@@ -963,9 +966,9 @@ package GNAT.Sockets is
 
    type Socket_Set_Type is limited private;
    --  This type allows to manipulate sets of sockets. It allows to wait for
-   --  events on multiple endpoints at one time. This is an access type on a
-   --  system dependent structure. To avoid memory leaks it is highly
-   --  recommended to clean the access value with procedure Empty.
+   --  events on multiple endpoints at one time. This type used to contain
+   --  a pointer to dynamically allocated storage, but this is not the case
+   --  anymore, and no special precautions are required to avoid memory leaks.
 
    procedure Clear (Item : in out Socket_Set_Type; Socket : Socket_Type);
    --  Remove Socket from Item
@@ -974,7 +977,7 @@ package GNAT.Sockets is
    --  Copy Source into Target as Socket_Set_Type is limited private
 
    procedure Empty (Item : in out Socket_Set_Type);
-   --  Remove all Sockets from Item and deallocate internal data
+   --  Remove all Sockets from Item
 
    procedure Get (Item : in out Socket_Set_Type; Socket : out Socket_Type);
    --  Extract a Socket from socket set Item. Socket is set to
@@ -1053,8 +1056,7 @@ package GNAT.Sockets is
    procedure Abort_Selector (Selector : Selector_Type);
    --  Send an abort signal to the selector
 
-   type Fd_Set_Access is private;
-   No_Fd_Set_Access : constant Fd_Set_Access;
+   type Fd_Set is private;
    --  ??? This type must not be used directly, it needs to be visible because
    --  it is used in the visible part of GNAT.Sockets.Thin_Common. This is
    --  really an inversion of abstraction. The private part of GNAT.Sockets
@@ -1076,14 +1078,17 @@ private
 
    pragma Volatile (Selector_Type);
 
-   type Fd_Set is null record;
+   type Fd_Set is
+     new System.Storage_Elements.Storage_Array (1 .. SOSC.SIZEOF_fd_set);
+   for Fd_Set'Alignment use Interfaces.C.int'Alignment;
+
    type Fd_Set_Access is access all Fd_Set;
    pragma Convention (C, Fd_Set_Access);
    No_Fd_Set_Access : constant Fd_Set_Access := null;
 
    type Socket_Set_Type is record
-      Last : Socket_Type       := No_Socket;
-      Set  : Fd_Set_Access;
+      Last : Socket_Type := No_Socket;
+      Set  : aliased Fd_Set;
    end record;
 
    subtype Inet_Addr_Comp_Type is Natural range 0 .. 255;

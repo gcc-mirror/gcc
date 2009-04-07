@@ -918,9 +918,9 @@ package body Binde is
                      end if;
 
                      Osint.Fail
-                       ("could not find unit ",
-                        Withed (Withed'First .. Last_Withed) & " needed by " &
-                        Withing (Withing'First .. Last_Withing) & Spec_Body);
+                       ("could not find unit "
+                        & Withed (Withed'First .. Last_Withed) & " needed by "
+                        & Withing (Withing'First .. Last_Withing) & Spec_Body);
                   end;
                end if;
 

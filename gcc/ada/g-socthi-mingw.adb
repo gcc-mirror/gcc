@@ -58,9 +58,9 @@ package body GNAT.Sockets.Thin is
 
    function Standard_Select
      (Nfds      : C.int;
-      Readfds   : Fd_Set_Access;
-      Writefds  : Fd_Set_Access;
-      Exceptfds : Fd_Set_Access;
+      Readfds   : access Fd_Set;
+      Writefds  : access Fd_Set;
+      Exceptfds : access Fd_Set;
       Timeout   : Timeval_Access) return C.int;
    pragma Import (Stdcall, Standard_Select, "select");
 
@@ -286,17 +286,15 @@ package body GNAT.Sockets.Thin is
 
    function C_Select
      (Nfds      : C.int;
-      Readfds   : Fd_Set_Access;
-      Writefds  : Fd_Set_Access;
-      Exceptfds : Fd_Set_Access;
+      Readfds   : access Fd_Set;
+      Writefds  : access Fd_Set;
+      Exceptfds : access Fd_Set;
       Timeout   : Timeval_Access) return C.int
    is
       pragma Warnings (Off, Exceptfds);
 
-      RFS  : constant Fd_Set_Access := Readfds;
-      WFS  : constant Fd_Set_Access := Writefds;
-      WFSC : Fd_Set_Access := No_Fd_Set_Access;
-      EFS  : Fd_Set_Access := Exceptfds;
+      Original_WFS : aliased constant Fd_Set := Writefds.all;
+
       Res  : C.int;
       S    : aliased C.int;
       Last : aliased C.int;
@@ -311,36 +309,27 @@ package body GNAT.Sockets.Thin is
       --  the initial write fd set, then move the socket from the
       --  exception fd set to the write fd set.
 
-      if WFS /= No_Fd_Set_Access then
+      if Writefds /= No_Fd_Set_Access then
          --  Add any socket present in write fd set into exception fd set
 
-         if EFS = No_Fd_Set_Access then
-            EFS := New_Socket_Set (WFS);
-
-         else
-            WFSC := New_Socket_Set (WFS);
-
+         declare
+            WFS : aliased Fd_Set := Writefds.all;
+         begin
             Last := Nfds - 1;
             loop
                Get_Socket_From_Set
-                 (WFSC, S'Unchecked_Access, Last'Unchecked_Access);
+                 (WFS'Access, S'Unchecked_Access, Last'Unchecked_Access);
                exit when S = -1;
-               Insert_Socket_In_Set (EFS, S);
+               Insert_Socket_In_Set (Exceptfds, S);
             end loop;
-
-            Free_Socket_Set (WFSC);
-         end if;
-
-         --  Keep a copy of write fd set
-
-         WFSC := New_Socket_Set (WFS);
+         end;
       end if;
 
-      Res := Standard_Select (Nfds, RFS, WFS, EFS, Timeout);
+      Res := Standard_Select (Nfds, Readfds, Writefds, Exceptfds, Timeout);
 
-      if EFS /= No_Fd_Set_Access then
+      if Exceptfds /= No_Fd_Set_Access then
          declare
-            EFSC    : constant Fd_Set_Access := New_Socket_Set (EFS);
+            EFSC    : aliased Fd_Set := Exceptfds.all;
             Flag    : constant C.int := SOSC.MSG_PEEK + SOSC.MSG_OOB;
             Buffer  : Character;
             Length  : C.int;
@@ -350,7 +339,7 @@ package body GNAT.Sockets.Thin is
             Last := Nfds - 1;
             loop
                Get_Socket_From_Set
-                 (EFSC, S'Unchecked_Access, Last'Unchecked_Access);
+                 (EFSC'Access, S'Unchecked_Access, Last'Unchecked_Access);
 
                --  No more sockets in EFSC
 
@@ -359,42 +348,27 @@ package body GNAT.Sockets.Thin is
                --  Check out-of-band data
 
                Length := C_Recvfrom
-                 (S, Buffer'Address, 1, Flag,
-                  null, Fromlen'Unchecked_Access);
+                 (S, Buffer'Address, 1, Flag, null, Fromlen'Unchecked_Access);
 
                --  If the signal is not an out-of-band data, then it
                --  is a connection failure notification.
 
                if Length = -1 then
-                  Remove_Socket_From_Set (EFS, S);
+                  Remove_Socket_From_Set (Exceptfds, S);
 
-                  --  If S is present in the initial write fd set,
-                  --  move it from exception fd set back to write fd
-                  --  set. Otherwise, ignore this event since the user
-                  --  is not watching for it.
+                  --  If S is present in the initial write fd set, move it from
+                  --  exception fd set back to write fd set. Otherwise, ignore
+                  --  this event since the user is not watching for it.
 
-                  if WFSC /= No_Fd_Set_Access
-                    and then (Is_Socket_In_Set (WFSC, S) /= 0)
+                  if Writefds /= No_Fd_Set_Access
+                    and then (Is_Socket_In_Set (Original_WFS'Access, S) /= 0)
                   then
-                     Insert_Socket_In_Set (WFS, S);
+                     Insert_Socket_In_Set (Writefds, S);
                   end if;
                end if;
             end loop;
-
-            Free_Socket_Set (EFSC);
          end;
-
-         if Exceptfds = No_Fd_Set_Access then
-            Free_Socket_Set (EFS);
-         end if;
       end if;
-
-      --  Free any copy of write fd set
-
-      if WFSC /= No_Fd_Set_Access then
-         Free_Socket_Set (WFSC);
-      end if;
-
       return Res;
    end C_Select;
 

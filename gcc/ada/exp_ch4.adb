@@ -4547,8 +4547,8 @@ package body Exp_Ch4 is
    --
    --    0  None available
    --    2  RE_Str_Concat available, RE_Str_Concat_3 not available
-   --    3  RE_Str_Concat/Concat_2 available, RE_Str_Concat_4 not available
-   --    4  RE_Str_Concat/Concat_2/3 available, RE_Str_Concat_5 not available
+   --    3  RE_Str_Concat/Concat_3 available, RE_Str_Concat_4 not available
+   --    4  RE_Str_Concat/Concat_3/4 available, RE_Str_Concat_5 not available
    --    5  All routines including RE_Str_Concat_5 available
 
    Char_Concat_Available : Boolean;

@@ -250,11 +250,8 @@ package GNAT.Sockets.Thin_Common is
    pragma Convention (C, Int_Access);
    --  Access to C integers
 
-   procedure Free_Socket_Set (Set : Fd_Set_Access);
-   --  Free system-dependent socket set
-
    procedure Get_Socket_From_Set
-     (Set    : Fd_Set_Access;
+     (Set    : access Fd_Set;
       Socket : Int_Access;
       Last   : Int_Access);
    --  Get last socket in Socket and remove it from the socket set. The
@@ -264,18 +261,18 @@ package GNAT.Sockets.Thin_Common is
    --  socket set.
 
    procedure Insert_Socket_In_Set
-     (Set    : Fd_Set_Access;
+     (Set    : access Fd_Set;
       Socket : C.int);
    --  Insert socket in the socket set
 
    function  Is_Socket_In_Set
-     (Set    : Fd_Set_Access;
+     (Set    : access constant Fd_Set;
       Socket : C.int) return C.int;
    --  Check whether Socket is in the socket set, return a non-zero
    --  value if it is, zero if it is not.
 
    procedure Last_Socket_In_Set
-     (Set    : Fd_Set_Access;
+     (Set    : access Fd_Set;
       Last   : Int_Access);
    --  Find the largest socket in the socket set. This is needed for select().
    --  When Last_Socket_In_Set is called, parameter Last is a maximum value of
@@ -283,16 +280,11 @@ package GNAT.Sockets.Thin_Common is
    --  socket sets. After the call, Last is set back to the real largest socket
    --  in the socket set.
 
-   function  New_Socket_Set
-     (Set : Fd_Set_Access) return Fd_Set_Access;
-   --  Allocate a new socket set which is a system-dependent structure and
-   --  initialize by copying Set if it is non-null, by making it empty
-   --  otherwise.
-
-   procedure Remove_Socket_From_Set
-     (Set    : Fd_Set_Access;
-      Socket : C.int);
+   procedure Remove_Socket_From_Set (Set : access Fd_Set; Socket : C.int);
    --  Remove socket from the socket set
+
+   procedure Reset_Socket_Set (Set : access Fd_Set);
+   --  Make Set empty
 
    ------------------------------------------
    -- Pairs of signalling file descriptors --
@@ -313,12 +305,10 @@ package GNAT.Sockets.Thin_Common is
    --  file descriptors.
 
 private
-
-   pragma Import (C, Free_Socket_Set, "__gnat_free_socket_set");
    pragma Import (C, Get_Socket_From_Set, "__gnat_get_socket_from_set");
    pragma Import (C, Is_Socket_In_Set, "__gnat_is_socket_in_set");
    pragma Import (C, Last_Socket_In_Set, "__gnat_last_socket_in_set");
-   pragma Import (C, New_Socket_Set, "__gnat_new_socket_set");
    pragma Import (C, Insert_Socket_In_Set, "__gnat_insert_socket_in_set");
    pragma Import (C, Remove_Socket_From_Set, "__gnat_remove_socket_from_set");
+   pragma Import (C, Reset_Socket_Set, "__gnat_reset_socket_set");
 end GNAT.Sockets.Thin_Common;

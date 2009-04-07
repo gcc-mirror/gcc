@@ -393,8 +393,7 @@ begin
          if Targparm.GCC_ZCX_Support_On_Target then
             Exception_Mechanism := Back_End_Exceptions;
          else
-            Osint.Fail
-              ("Zero Cost Exceptions not supported on this target");
+            Osint.Fail ("Zero Cost Exceptions not supported on this target");
          end if;
       end if;
 

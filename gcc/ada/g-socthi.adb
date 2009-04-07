@@ -44,8 +44,7 @@ with Interfaces.C; use Interfaces.C;
 
 package body GNAT.Sockets.Thin is
 
-   Non_Blocking_Sockets : constant Fd_Set_Access :=
-                            New_Socket_Set (No_Fd_Set_Access);
+   Non_Blocking_Sockets : aliased Fd_Set;
    --  When this package is initialized with Process_Blocking_IO set
    --  to True, sockets are set in non-blocking mode to avoid blocking
    --  the whole process when a thread wants to perform a blocking IO
@@ -195,32 +194,29 @@ package body GNAT.Sockets.Thin is
       end if;
 
       declare
-         WSet : Fd_Set_Access;
+         WSet : aliased Fd_Set;
          Now  : aliased Timeval;
 
       begin
-         WSet := New_Socket_Set (No_Fd_Set_Access);
+         Reset_Socket_Set (WSet'Access);
          loop
-            Insert_Socket_In_Set (WSet, S);
+            Insert_Socket_In_Set (WSet'Access, S);
             Now := Immediat;
             Res := C_Select
               (S + 1,
                No_Fd_Set_Access,
-               WSet,
+               WSet'Access,
                No_Fd_Set_Access,
                Now'Unchecked_Access);
 
             exit when Res > 0;
 
             if Res = Failure then
-               Free_Socket_Set (WSet);
                return Res;
             end if;
 
             delay Quantum;
          end loop;
-
-         Free_Socket_Set (WSet);
       end;
 
       Res := Syscall_Connect (S, Name, Namelen);
@@ -412,6 +408,7 @@ package body GNAT.Sockets.Thin is
    procedure Initialize is
    begin
       Disable_All_SIGPIPEs;
+      Reset_Socket_Set (Non_Blocking_Sockets'Access);
    end Initialize;
 
    -------------------------
@@ -422,7 +419,7 @@ package body GNAT.Sockets.Thin is
       R : Boolean;
    begin
       Task_Lock.Lock;
-      R := (Is_Socket_In_Set (Non_Blocking_Sockets, S) /= 0);
+      R := (Is_Socket_In_Set (Non_Blocking_Sockets'Access, S) /= 0);
       Task_Lock.Unlock;
       return R;
    end Non_Blocking_Socket;
@@ -436,9 +433,9 @@ package body GNAT.Sockets.Thin is
       Task_Lock.Lock;
 
       if V then
-         Insert_Socket_In_Set (Non_Blocking_Sockets, S);
+         Insert_Socket_In_Set (Non_Blocking_Sockets'Access, S);
       else
-         Remove_Socket_From_Set (Non_Blocking_Sockets, S);
+         Remove_Socket_From_Set (Non_Blocking_Sockets'Access, S);
       end if;
 
       Task_Lock.Unlock;

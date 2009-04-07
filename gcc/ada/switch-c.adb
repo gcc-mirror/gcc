@@ -133,8 +133,7 @@ package body Switch.C is
                elsif
                  RTS_Specified.all /= Switch_Chars (Ptr + 4 .. Max)
                then
-                  Osint.Fail
-                    ("--RTS cannot be specified multiple times");
+                  Osint.Fail ("--RTS cannot be specified multiple times");
                end if;
 
                --  Valid --RTS switch

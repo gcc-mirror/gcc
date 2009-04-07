@@ -57,13 +57,13 @@ extern int  __gnat_create_signalling_fds (int *fds);
 extern int  __gnat_read_signalling_fd (int rsig);
 extern int  __gnat_write_signalling_fd (int wsig);
 extern void  __gnat_close_signalling_fd (int sig);
-extern void __gnat_free_socket_set (fd_set *);
 extern void __gnat_last_socket_in_set (fd_set *, int *);
 extern void __gnat_get_socket_from_set (fd_set *, int *, int *);
 extern void __gnat_insert_socket_in_set (fd_set *, int);
 extern int __gnat_is_socket_in_set (fd_set *, int);
 extern fd_set *__gnat_new_socket_set (fd_set *);
 extern void __gnat_remove_socket_from_set (fd_set *, int);
+extern void __gnat_reset_socket_set (fd_set *set);
 extern int  __gnat_get_h_errno (void);
 
 /* Disable the sending of SIGPIPE for writes on a broken stream */
@@ -266,14 +266,6 @@ __gnat_safe_getservbyport (int port, const char *proto,
 }
 #endif
 
-/* Free socket set. */
-
-void
-__gnat_free_socket_set (fd_set *set)
-{
-  __gnat_free (set);
-}
-
 /* Find the largest socket in the socket set SET. This is needed for
    `select'.  LAST is the maximum value for the largest socket. This hint is
    used to avoid scanning very large socket sets.  On return, LAST is the
@@ -334,34 +326,19 @@ __gnat_is_socket_in_set (fd_set *set, int socket)
   return FD_ISSET (socket, set);
 }
 
-/* Allocate a new socket set and set it as empty.  */
-
-fd_set *
-__gnat_new_socket_set (fd_set *set)
-{
-  fd_set *new;
-
-#ifdef VMS
-extern void *__gnat_malloc32 (__SIZE_TYPE__);
-  new = (fd_set *) __gnat_malloc32 (sizeof (fd_set));
-#else
-  new = (fd_set *) __gnat_malloc (sizeof (fd_set));
-#endif
-
-  if (set)
-    memcpy (new, set, sizeof (fd_set));
-  else
-    FD_ZERO (new);
-
-  return new;
-}
-
 /* Remove SOCKET from the socket set SET. */
 
 void
 __gnat_remove_socket_from_set (fd_set *set, int socket)
 {
   FD_CLR (socket, set);
+}
+
+/* Reset SET */
+void
+__gnat_reset_socket_set (fd_set *set)
+{
+  FD_ZERO (set);
 }
 
 /* Get the value of the last host error */

@@ -149,9 +149,9 @@ package GNAT.Sockets.Thin is
 
    function C_Select
      (Nfds      : C.int;
-      Readfds   : Fd_Set_Access;
-      Writefds  : Fd_Set_Access;
-      Exceptfds : Fd_Set_Access;
+      Readfds   : access Fd_Set;
+      Writefds  : access Fd_Set;
+      Exceptfds : access Fd_Set;
       Timeout   : Timeval_Access) return C.int;
 
    function C_Send

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -160,7 +160,7 @@ procedure Gnatsym is
                Version_String := new String'(GNAT.Command_Line.Parameter);
 
             when others =>
-               Fail ("invalid switch: ", Full_Switch);
+               Fail ("invalid switch: " & Full_Switch);
          end case;
       end loop;
 
@@ -181,7 +181,7 @@ procedure Gnatsym is
    exception
       when Invalid_Switch =>
          Usage;
-         Fail ("invalid switch : ", Full_Switch);
+         Fail ("invalid switch : " & Full_Switch);
    end Parse_Cmd_Line;
 
    -----------

@@ -1625,7 +1625,7 @@ package body Clean is
 
             procedure Bad_Argument is
             begin
-               Fail ("invalid argument """, Arg, """");
+               Fail ("invalid argument """ & Arg & """");
             end Bad_Argument;
 
          begin
@@ -1680,7 +1680,7 @@ package body Clean is
                               Dir : constant String := Arg (3 .. Arg'Last);
                            begin
                               if not Is_Directory (Dir) then
-                                 Fail (Dir, " is not a directory");
+                                 Fail (Dir & " is not a directory");
                               else
                                  Add_Lib_Search_Dir (Dir);
                               end if;
@@ -1697,7 +1697,7 @@ package body Clean is
                               Dir : constant String := Argument (Index);
                            begin
                               if not Is_Directory (Dir) then
-                                 Fail (Dir, " is not a directory");
+                                 Fail (Dir & " is not a directory");
                               else
                                  Add_Lib_Search_Dir (Dir);
                               end if;
@@ -1853,8 +1853,9 @@ package body Clean is
 
                            else
                               Fail
-                                ("illegal external assignment '",
-                                 Ext_Asgn, "'");
+                                ("illegal external assignment '"
+                                 & Ext_Asgn
+                                 & "'");
                            end if;
                         end;
 

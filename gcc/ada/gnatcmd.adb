@@ -1479,9 +1479,9 @@ begin
             if Command_List (The_Command).VMS_Only then
                Non_VMS_Usage;
                Fail
-                 ("Command """,
-                  Command_List (The_Command).Cname.all,
-                  """ can only be used on VMS");
+                 ("Command """
+                  & Command_List (The_Command).Cname.all
+                  & """ can only be used on VMS");
             end if;
 
          exception
@@ -1500,7 +1500,7 @@ begin
                exception
                   when Constraint_Error =>
                      Non_VMS_Usage;
-                     Fail ("Unknown command: ", Argument (Command_Arg));
+                     Fail ("Unknown command: " & Argument (Command_Arg));
                end;
          end;
 
@@ -1750,7 +1750,7 @@ begin
                         when '2' =>
                            Current_Verbosity := Prj.High;
                         when others =>
-                           Fail ("Invalid switch: ", Argv.all);
+                           Fail ("Invalid switch: " & Argv.all);
                      end case;
 
                      Remove_Switch (Arg_Num);
@@ -1763,9 +1763,10 @@ begin
 
                      if Project_File /= null then
                         Fail
-                          (Argv.all,
-                           ": second project file forbidden (first is """,
-                           Project_File.all & """)");
+                          (Argv.all
+                           & ": second project file forbidden (first is """
+                           & Project_File.all
+                           & """)");
 
                      --  The two style project files (-p and -P) cannot be
                      --  used together.
@@ -1824,8 +1825,8 @@ begin
                                 Value => Argv (Equal_Pos + 1 .. Argv'Last));
                         else
                            Fail
-                             (Argv.all,
-                              " is not a valid external assignment.");
+                             (Argv.all
+                              & " is not a valid external assignment.");
                         end if;
                      end;
 
@@ -1882,7 +1883,7 @@ begin
             Packages_To_Check => Packages_To_Check);
 
          if Project = Prj.No_Project then
-            Fail ("""", Project_File.all, """ processing failed");
+            Fail ("""" & Project_File.all & """ processing failed");
          end if;
 
          --  Check if a package with the name of the tool is in the project

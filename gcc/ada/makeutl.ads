@@ -32,10 +32,7 @@ with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package Makeutl is
 
-   type Fail_Proc is access procedure
-     (S1 : String;
-      S2 : String := "";
-      S3 : String := "");
+   type Fail_Proc is access procedure (S : String);
    Do_Fail : Fail_Proc := Osint.Fail'Access;
    --  Failing procedure called from procedure Test_If_Relative_Path below.
    --  May be redirected.

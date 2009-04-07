@@ -186,7 +186,7 @@ procedure Gnatname is
       Excluded_Pattern_Expected : Boolean;
 
       procedure Check_Regular_Expression (S : String);
-      --  Compile string S into a Regexp. Fail if any error.
+      --  Compile string S into a Regexp, fail if any error
 
       -----------------------------
       -- Check_Regular_Expression--
@@ -199,7 +199,7 @@ procedure Gnatname is
          Dummy := Compile (S, Glob => True);
       exception
          when Error_In_Regexp =>
-            Fail ("invalid regular expression """, S, """");
+            Fail ("invalid regular expression """ & S & """");
       end Check_Regular_Expression;
 
    --  Start of processing for Scan_Args

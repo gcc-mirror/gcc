@@ -670,9 +670,9 @@ package body Makeutl is
                if not Is_Absolute_Path (Sw (Start .. Sw'Last)) then
                   if Parent = null or else Parent'Length = 0 then
                      Do_Fail
-                       ("relative search path switches (""",
-                        Sw,
-                        """) are not allowed");
+                       ("relative search path switches ("""
+                        & Sw
+                        & """) are not allowed");
 
                   else
                      Switch :=
@@ -688,7 +688,7 @@ package body Makeutl is
                if not Is_Absolute_Path (Sw) then
                   if Parent = null or else Parent'Length = 0 then
                      Do_Fail
-                       ("relative paths (""", Sw, """) are not allowed");
+                       ("relative paths (""" & Sw & """) are not allowed");
 
                   else
                      Switch :=
