@@ -420,12 +420,6 @@ pdp11-*-*)
 	;;
 picochip-*-*)
         ;;
-powerpc64-*-linux*)
-	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp"
-	;;
-powerpc64-*-gnu*)
-	tmake_file="${tmake_file} rs6000/t-ldbl128 t-softfp"
-	;;
 powerpc-*-darwin*)
 	;;
 powerpc64-*-darwin*)
@@ -448,8 +442,11 @@ powerpc-*-eabi*)
 	;;
 powerpc-*-rtems*)
 	;;
-powerpc-*-linux*)
+powerpc-*-linux* | powerpc64-*-linux*)
 	tmake_file="${tmake_file} rs6000/t-ppccomm rs6000/t-ldbl128 t-softfp"
+	;;
+powerpc64-*-gnu*)
+	tmake_file="${tmake_file} rs6000/t-ldbl128 t-softfp"
 	;;
 powerpc-*-gnu-gnualtivec*)
 	tmake_file="${tmake_file} rs6000/t-ldbl128"
