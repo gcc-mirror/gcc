@@ -131,7 +131,7 @@ package body Uintp is
    --  This procedure puts the value of UI into the vector in canonical
    --  multiple precision format. The parameter should be of the correct size
    --  as determined by a previous call to N_Digits (UI). The first digit of
-   --  Vec contains the sign, all other digits are always non- negative. Note
+   --  Vec contains the sign, all other digits are always non-negative. Note
    --  that the input may be directly represented, and in this case Vec will
    --  contain the corresponding one or two digit value. The low bound of Vec
    --  is always 1.

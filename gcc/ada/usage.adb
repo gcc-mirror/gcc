@@ -157,7 +157,7 @@ begin
    Write_Switch_Char ("D");
    Write_Line ("Debug expanded generated code (max line length = 72)");
    Write_Switch_Char ("Dnn");
-   Write_Line ("Debug expanded generated code (max line length = nnn)");
+   Write_Line ("Debug expanded generated code (max line length = nn)");
 
    --  Line for -gnatec switch
 

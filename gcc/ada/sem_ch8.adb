@@ -53,6 +53,7 @@ with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
+with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
@@ -778,7 +779,7 @@ package body Sem_Ch8 is
          if not Is_Overloaded (Nam) then
             if Ekind (Etype (Nam)) /= Ekind (T) then
                Error_Msg_N
-                 ("Expect anonymous access type is object renaming", N);
+                 ("expect anonymous access type in object renaming", N);
             end if;
          else
             declare
@@ -818,6 +819,23 @@ package body Sem_Ch8 is
          then
             Error_Msg_N ("(Ada 2005): the renamed object is not "
                          & "access-to-constant (RM 8.5.1(6))", N);
+
+         elsif not Constant_Present (Access_Definition (N))
+           and then Is_Access_Constant (Etype (Nam))
+         then
+            Error_Msg_N ("(Ada 2005): the renamed object is not "
+                         & "access-to-variable (RM 8.5.1(6))", N);
+         end if;
+
+         if Is_Access_Subprogram_Type (Etype (Nam)) then
+            Check_Subtype_Conformant
+              (Designated_Type (T), Designated_Type (Etype (Nam)));
+
+         elsif not Subtypes_Statically_Match
+                     (Designated_Type (T), Designated_Type (Etype (Nam)))
+         then
+            Error_Msg_N
+              ("subtype of renamed object does not statically match", N);
          end if;
       end if;
 

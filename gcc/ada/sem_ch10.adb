@@ -3924,11 +3924,12 @@ package body Sem_Ch10 is
 
             procedure Check_Pragma_Import (P : Node_Id);
             --  If a pragma import applies to a previous subprogram, the
-            --  enclosing unit may not need a body. The processing is
-            --  syntactic and does not require a declaration to be analyzed,
-            --  The code below also handles pragma import when applied to
-            --  a subprogram that renames another. In this case the pragma
-            --  applies to the renamed entity
+            --  enclosing unit may not need a body. The processing is syntactic
+            --  and does not require a declaration to be analyzed. The code
+            --  below also handles pragma Import when applied to a subprogram
+            --  that renames another. In this case the pragma applies to the
+            --  renamed entity.
+            --
             --  Chains of multiple renames are not handled by the code below.
             --  It is probably impossible to handle all cases without proper
             --  name resolution. In such cases the algorithm is conservative
@@ -3945,20 +3946,19 @@ package body Sem_Ch10 is
                Imported : Node_Id;
 
                procedure Remove_Homonyms (E : Node_Id);
-               --  Make one pass over list of subprograms, Called again if
+               --  Make one pass over list of subprograms. Called again if
                --  subprogram is a renaming. E is known to be an identifier.
 
                ---------------------
                -- Remove_Homonyms --
                ---------------------
 
-               procedure Remove_Homonyms (E : Entity_Id) is
+               procedure Remove_Homonyms (E : Node_Id) is
                   R : Entity_Id := Empty;
-                  --  Name of renamed entity, if any.
+                  --  Name of renamed entity, if any
 
                begin
                   Subp_Id := First_Elmt (Subp_List);
-
                   while Present (Subp_Id) loop
                      if Chars (Node (Subp_Id)) = Chars (E) then
                         if Nkind (Parent (Parent (Node (Subp_Id))))
@@ -3983,18 +3983,17 @@ package body Sem_Ch10 is
                      elsif Nkind (R) = N_Selected_Component then
                         Remove_Homonyms (Selector_Name (R));
 
-                     else
-                        --  renaming of attribute
+                     --  Renaming of attribute
 
+                     else
                         null;
                      end if;
                   end if;
                end Remove_Homonyms;
 
-               --  Start of processing for Check_Pragma_Import
+            --  Start of processing for Check_Pragma_Import
 
             begin
-
                --  Find name of entity in Import pragma. We have not analyzed
                --  the construct, so we must guard against syntax errors.
 
@@ -4010,6 +4009,8 @@ package body Sem_Ch10 is
 
                Remove_Homonyms (Imported);
             end Check_Pragma_Import;
+
+         --  Start of processing for Check_Declarations
 
          begin
             --  Search for Elaborate Body pragma
