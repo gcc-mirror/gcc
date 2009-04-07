@@ -1810,7 +1810,7 @@ package body Sem_Ch12 is
          Find_Type (Subtype_Mark (N));
          T := Entity (Subtype_Mark (N));
 
-         --  Verify that there is no redundant null exclusion.
+         --  Verify that there is no redundant null exclusion
 
          if Null_Exclusion_Present (N) then
             if not Is_Access_Type (T) then

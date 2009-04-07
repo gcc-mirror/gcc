@@ -344,7 +344,6 @@ package Osint is
    --
    --    CR
    --    CR/LF
-   --    LF/CR
    --    LF
 
    --  The source is terminated by an EOF (16#1A#) character, which is the last

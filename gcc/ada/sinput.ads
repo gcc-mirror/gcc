@@ -54,15 +54,13 @@
 --    significance, but they are significant for error reporting purposes,
 --    since errors are identified by line and column location.
 
---  In GNAT, a physical line is ended by any of the sequences LF, CR/LF, CR or
---  LF/CR. LF is used in typical Unix systems, CR/LF in DOS systems, and CR
---  alone in System 7. We don't know of any system using LF/CR, but it seems
---  reasonable to include this case for consistency. In addition, we recognize
---  any of these sequences in any of the operating systems, for better
---  behavior in treating foreign files (e.g. a Unix file with LF terminators
---  transferred to a DOS system). Finally, wide character codes in categories
---  Separator, Line and Separator, Paragraph are considered to be physical
---  line terminators.
+--  In GNAT, a physical line is ended by any of the sequences LF, CR/LF, or
+--  CR. LF is used in typical Unix systems, CR/LF in DOS systems, and CR
+--  alone in System 7. In addition, we recognize any of these sequences in
+--  any of the operating systems, for better behavior in treating foreign
+--  files (e.g. a Unix file with LF terminators transferred to a DOS system).
+--  Finally, wide character codes in categories Separator, Line and Separator,
+--  Paragraph are considered to be physical line terminators.
 
 with Alloc;
 with Casing; use Casing;
@@ -575,8 +573,16 @@ package Sinput is
    --     CR on its own (MAC System 7)
    --     LF on its own (Unix and unix-like systems)
    --     CR/LF (DOS, Windows)
-   --     LF/CR (not used, but recognized in any case)
    --     Wide character in Separator,Line or Separator,Paragraph category
+   --
+   --     Note: we no longer recognize LF/CR (which we did in some earlier
+   --     versions of GNAT. The reason for this is that this sequence is not
+   --     used and recognizing it generated confusion. For example given the
+   --     sequence LF/CR/LF we were interpreting that as (LF/CR) ending the
+   --     first line and a blank line ending with CR following, but it is
+   --     clearly better to interpret this as LF, with a blank line terminated
+   --     by CR/LF, given that LF and CR/LF are both in common use, but no
+   --     system we know of uses LF/CR.
    --
    --  A logical line ending (that is not a physical line ending) is one of:
    --

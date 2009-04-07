@@ -3280,12 +3280,14 @@ package body Sem_Ch6 is
       Skip_Controlling_Formals : Boolean := False)
    is
       procedure Conformance_Error (Msg : String; N : Node_Id := New_Id);
-      --  Post error message for conformance error on given node. Two messages
-      --  are output. The first points to the previous declaration with a
-      --  general "no conformance" message. The second is the detailed reason,
-      --  supplied as Msg. The parameter N provide information for a possible
-      --  & insertion in the message, and also provides the location for
-      --  posting the message in the absence of a specified Err_Loc location.
+      --  Sets Conforms to False. If Errmsg is False, then that's all it does.
+      --  If Errmsg is True, then processing continues to post an error message
+      --  for conformance error on given node. Two messages are output. The
+      --  first message points to the previous declaration with a general "no
+      --  conformance" message. The second is the detailed reason, supplied as
+      --  Msg. The parameter N provide information for a possible & insertion
+      --  in the message, and also provides the location for posting the
+      --  message in the absence of a specified Err_Loc location.
 
       -----------------------
       -- Conformance_Error --
@@ -3579,7 +3581,15 @@ package body Sem_Ch6 is
                       Get_Inst => Get_Inst)
            and then not Access_Types_Match
          then
-            Conformance_Error ("\type of & does not match!", New_Formal);
+            --  Don't give error message if old type is Any_Type. This test
+            --  avoids some cascaded errors, e.g. in case of a bad spec.
+
+            if Errmsg and then Old_Formal_Base = Any_Type then
+               Conforms := False;
+            else
+               Conformance_Error ("\type of & does not match!", New_Formal);
+            end if;
+
             return;
          end if;
 

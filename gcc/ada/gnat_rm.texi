@@ -102,6 +102,7 @@ Implementation Defined Pragmas
 * Pragma Ada_2005::
 * Pragma Annotate::
 * Pragma Assert::
+* Pragma Assume_No_Invalid_Values::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
@@ -703,6 +704,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Ada_2005::
 * Pragma Annotate::
 * Pragma Assert::
+* Pragma Assume_No_Invalid_Values::
 * Pragma Ast_Entry::
 * Pragma C_Pass_By_Copy::
 * Pragma Check::
@@ -995,6 +997,49 @@ setting of the assertions mode, resulting in assertions that have an
 effect on the program.  However, the expressions are analyzed for
 semantic correctness whether or not assertions are enabled, so turning
 assertions on and off cannot affect the legality of a program.
+
+@node Pragma Assume_No_Invalid_Values
+@unnumberedsec Pragma Assume_No_Invalid_Values
+@findex Assume_No_Invalid_Values
+@cindex Invalid representations
+@cindex Invalid values
+@noindent
+Syntax:
+@smallexample @c ada
+pragma Assume_No_Invalid_Values (On | Off);
+@end smallexample
+
+@noindent
+This is a configuration pragma that controls the assumptions made by the
+compiler about the occurrence of invalid representations (invalid values)
+in the code.
+
+The default behavior (corresponding to an Off argument for this pragma), is
+to assume that values may in general be invalid unless the compiler can
+prove they are valid. Consider the following example:
+
+@smallexample @c ada
+V1 : Integer range 1 .. 10;
+V2 : Integer range 11 .. 20;
+...
+for J in V2 .. V1 loop
+   ...
+end loop;
+@end smallexample
+
+@noindent
+if V1 and V2 have valid values, then the loop is known at compile
+time not to execute since the lower bound must be greater than the
+upper bound. However in default mode, no such assumption is made,
+and the loop may execute. If @code{Assume_No_Invalid_Values (On)}
+is given, the compiler will assume that any occurrence of a variable
+other than in an explicit @code{'Valid} test always has a valid
+value, and the loop above will be optimized away.
+
+The use of @code{Assume_No_Invalid_Values (On)} is appropriate if
+you know your code is free of uninitialized variables and other
+possible sources of invalid representations, and may result in
+more efficient code.
 
 @node Pragma Ast_Entry
 @unnumberedsec Pragma Ast_Entry

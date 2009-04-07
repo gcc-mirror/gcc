@@ -493,11 +493,9 @@ procedure Gnatchop is
          First := Ptr + 1;
       end if;
 
-      --  Recognize CR/LF or LF/CR combination
+      --  Recognize CR/LF
 
-      if (Source (Ptr + 1) = ASCII.CR or Source (Ptr + 1) = ASCII.LF)
-         and then Source (Ptr) /= Source (Ptr + 1)
-      then
+      if Source (Ptr) = ASCII.CR and then Source (Ptr + 1) = ASCII.LF then
          Last := First + 1;
       end if;
 

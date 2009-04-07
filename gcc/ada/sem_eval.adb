@@ -3542,10 +3542,9 @@ package body Sem_Eval is
    --------------------
 
    function In_Subrange_Of
-     (T1           : Entity_Id;
-      T2           : Entity_Id;
-      Assume_Valid : Boolean;
-      Fixed_Int    : Boolean := False) return Boolean
+     (T1        : Entity_Id;
+      T2        : Entity_Id;
+      Fixed_Int : Boolean := False) return Boolean
    is
       L1 : Node_Id;
       H1 : Node_Id;
@@ -3572,9 +3571,9 @@ package body Sem_Eval is
 
          --  Check bounds to see if comparison possible at compile time
 
-         if Compile_Time_Compare (L1, L2, Assume_Valid) in Compare_GE
+         if Compile_Time_Compare (L1, L2, Assume_Valid => True) in Compare_GE
               and then
-            Compile_Time_Compare (H1, H2, Assume_Valid) in Compare_LE
+            Compile_Time_Compare (H1, H2, Assume_Valid => True) in Compare_LE
          then
             return True;
          end if;
@@ -3653,6 +3652,12 @@ package body Sem_Eval is
       Val  : Uint;
       Valr : Ureal;
 
+      pragma Warnings (Off, Assume_Valid);
+      --  For now Assume_Valid is unreferenced since the current implementation
+      --  always returns False if N is not a compile time known value, but we
+      --  keep the parameter to allow for future enhancements in which we try
+      --  to get the information in the variable case as well.
+
    begin
       --  Universal types have no range limits, so always in range
 
@@ -3678,21 +3683,10 @@ package body Sem_Eval is
             Hi       : Node_Id;
             LB_Known : Boolean;
             UB_Known : Boolean;
-            Typt     : Entity_Id;
 
          begin
-            if Assume_Valid
-              or else Assume_No_Invalid_Values
-              or else (Is_Entity_Name (N)
-                        and then Is_Known_Valid (Entity (N)))
-            then
-               Typt := Typ;
-            else
-               Typt := Underlying_Type (Base_Type (Typ));
-            end if;
-
-            Lo := Type_Low_Bound  (Typt);
-            Hi := Type_High_Bound (Typt);
+            Lo := Type_Low_Bound  (Typ);
+            Hi := Type_High_Bound (Typ);
 
             LB_Known := Compile_Time_Known_Value (Lo);
             UB_Known := Compile_Time_Known_Value (Hi);
@@ -3700,8 +3694,8 @@ package body Sem_Eval is
             --  Fixed point types should be considered as such only in
             --  flag Fixed_Int is set to False.
 
-            if Is_Floating_Point_Type (Typt)
-              or else (Is_Fixed_Point_Type (Typt) and then not Fixed_Int)
+            if Is_Floating_Point_Type (Typ)
+              or else (Is_Fixed_Point_Type (Typ) and then not Fixed_Int)
               or else Int_Real
             then
                Valr := Expr_Value_R (N);
@@ -3853,6 +3847,12 @@ package body Sem_Eval is
       Val  : Uint;
       Valr : Ureal;
 
+      pragma Warnings (Off, Assume_Valid);
+      --  For now Assume_Valid is unreferenced since the current implementation
+      --  always returns False if N is not a compile time known value, but we
+      --  keep the parameter to allow for future enhancements in which we try
+      --  to get the information in the variable case as well.
+
    begin
       --  Universal types have no range limits, so always in range
 
@@ -3885,23 +3885,10 @@ package body Sem_Eval is
             Hi       : Node_Id;
             LB_Known : Boolean;
             UB_Known : Boolean;
-            Typt     : Entity_Id;
 
          begin
-            --  Go to base type if we could have invalid values
-
-            if Assume_Valid
-              or else Assume_No_Invalid_Values
-              or else (Is_Entity_Name (N)
-                        and then Is_Known_Valid (Entity (N)))
-            then
-               Typt := Typ;
-            else
-               Typt := Underlying_Type (Base_Type (Typ));
-            end if;
-
-            Lo := Type_Low_Bound (Typt);
-            Hi := Type_High_Bound (Typt);
+            Lo := Type_Low_Bound (Typ);
+            Hi := Type_High_Bound (Typ);
 
             LB_Known := Compile_Time_Known_Value (Lo);
             UB_Known := Compile_Time_Known_Value (Hi);
@@ -3910,8 +3897,8 @@ package body Sem_Eval is
             --  as being of a real type if the flag Fixed_Int is set,
             --  since in that case they are regarded as integer types).
 
-            if Is_Floating_Point_Type (Typt)
-              or else (Is_Fixed_Point_Type (Typt) and then not Fixed_Int)
+            if Is_Floating_Point_Type (Typ)
+              or else (Is_Fixed_Point_Type (Typ) and then not Fixed_Int)
               or else Int_Real
             then
                Valr := Expr_Value_R (N);
