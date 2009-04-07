@@ -9771,7 +9771,8 @@ enum ia64_builtins
   IA64_BUILTIN_COPYSIGNQ,
   IA64_BUILTIN_FABSQ,
   IA64_BUILTIN_FLUSHRS,
-  IA64_BUILTIN_INFQ
+  IA64_BUILTIN_INFQ,
+  IA64_BUILTIN_HUGE_VALQ
 };
 
 void
@@ -9806,6 +9807,10 @@ ia64_init_builtins (void)
       ftype = build_function_type (float128_type, void_list_node);
       add_builtin_function ("__builtin_infq", ftype,
 			    IA64_BUILTIN_INFQ, BUILT_IN_MD,
+			    NULL, NULL_TREE);
+
+      add_builtin_function ("__builtin_huge_valq", ftype,
+			    IA64_BUILTIN_HUGE_VALQ, BUILT_IN_MD,
 			    NULL, NULL_TREE);
 
       ftype = build_function_type_list (float128_type,
@@ -9882,6 +9887,7 @@ ia64_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       return const0_rtx;
 
     case IA64_BUILTIN_INFQ:
+    case IA64_BUILTIN_HUGE_VALQ:
       {
 	REAL_VALUE_TYPE inf;
 	rtx tmp;
