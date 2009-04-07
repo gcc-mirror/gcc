@@ -3905,9 +3905,6 @@ package body Sem_Ch10 is
       -- Check_Body_Required --
       -------------------------
 
-      --  ??? misses pragma Import on subprograms
-      --  ??? misses pragma Import on renamed subprograms
-
       procedure Check_Body_Required is
          PA : constant List_Id :=
                 Pragmas_After (Aux_Decls_Node (Parent (P_Unit)));
@@ -3922,6 +3919,97 @@ package body Sem_Ch10 is
          procedure Check_Declarations (Spec : Node_Id) is
             Decl             : Node_Id;
             Incomplete_Decls : constant Elist_Id := New_Elmt_List;
+
+            Subp_List        : constant Elist_Id := New_Elmt_List;
+
+            procedure Check_Pragma_Import (P : Node_Id);
+            --  If a pragma import applies to a previous subprogram, the
+            --  enclosing unit may not need a body. The processing is
+            --  syntactic and does not require a declaration to be analyzed,
+            --  The code below also handles pragma import when applied to
+            --  a subprogram that renames another. In this case the pragma
+            --  applies to the renamed entity
+            --  Chains of multiple renames are not handled by the code below.
+            --  It is probably impossible to handle all cases without proper
+            --  name resolution. In such cases the algorithm is conservative
+            --  and will indicate that a body is needed???
+
+            -------------------------
+            -- Check_Pragma_Import --
+            -------------------------
+
+            procedure Check_Pragma_Import (P : Node_Id) is
+               Arg      : Node_Id;
+               Prev_Id  : Elmt_Id;
+               Subp_Id  : Elmt_Id;
+               Imported : Node_Id;
+
+               procedure Remove_Homonyms (E : Node_Id);
+               --  Make one pass over list of subprograms, Called again if
+               --  subprogram is a renaming. E is known to be an identifier.
+
+               ---------------------
+               -- Remove_Homonyms --
+               ---------------------
+
+               procedure Remove_Homonyms (E : Entity_Id) is
+                  R : Entity_Id := Empty;
+                  --  Name of renamed entity, if any.
+
+               begin
+                  Subp_Id := First_Elmt (Subp_List);
+
+                  while Present (Subp_Id) loop
+                     if Chars (Node (Subp_Id)) = Chars (E) then
+                        if Nkind (Parent (Parent (Node (Subp_Id))))
+                          /=  N_Subprogram_Renaming_Declaration
+                        then
+                           Prev_Id := Subp_Id;
+                           Next_Elmt (Subp_Id);
+                           Remove_Elmt (Subp_List, Prev_Id);
+                        else
+                           R := Name (Parent (Parent (Node (Subp_Id))));
+                           exit;
+                        end if;
+                     else
+                        Next_Elmt (Subp_Id);
+                     end if;
+                  end loop;
+
+                  if Present (R) then
+                     if Nkind (R) = N_Identifier then
+                        Remove_Homonyms (R);
+
+                     elsif Nkind (R) = N_Selected_Component then
+                        Remove_Homonyms (Selector_Name (R));
+
+                     else
+                        --  renaming of attribute
+
+                        null;
+                     end if;
+                  end if;
+               end Remove_Homonyms;
+
+               --  Start of processing for Check_Pragma_Import
+
+            begin
+
+               --  Find name of entity in Import pragma. We have not analyzed
+               --  the construct, so we must guard against syntax errors.
+
+               Arg := Next (First (Pragma_Argument_Associations (P)));
+
+               if No (Arg)
+                 or else Nkind (Expression (Arg)) /= N_Identifier
+               then
+                  return;
+               else
+                  Imported := Expression (Arg);
+               end if;
+
+               Remove_Homonyms (Imported);
+            end Check_Pragma_Import;
 
          begin
             --  Search for Elaborate Body pragma
@@ -3942,15 +4030,15 @@ package body Sem_Ch10 is
 
             while Present (Decl) loop
 
-               --  Subprogram that comes from source means body required
-               --  This is where a test for Import is missing ???
+               --  Subprogram that comes from source means body may be needed.
+               --  Save for subsequent examination of import pragmas.
 
                if Comes_From_Source (Decl)
                  and then (Nkind_In (Decl, N_Subprogram_Declaration,
+                                           N_Subprogram_Renaming_Declaration,
                                            N_Generic_Subprogram_Declaration))
                then
-                  Set_Body_Required (Library_Unit (N));
-                  return;
+                  Append_Elmt (Defining_Entity (Decl), Subp_List);
 
                --  Package declaration of generic package declaration. We need
                --  to recursively examine nested declarations.
@@ -3959,6 +4047,11 @@ package body Sem_Ch10 is
                                      N_Generic_Package_Declaration)
                then
                   Check_Declarations (Specification (Decl));
+
+               elsif Nkind (Decl) = N_Pragma
+                 and then Pragma_Name (Decl) = Name_Import
+               then
+                  Check_Pragma_Import (Decl);
                end if;
 
                Next (Decl);
@@ -3972,9 +4065,10 @@ package body Sem_Ch10 is
             while Present (Decl) loop
                if Comes_From_Source (Decl)
                  and then (Nkind_In (Decl, N_Subprogram_Declaration,
+                                           N_Subprogram_Renaming_Declaration,
                                            N_Generic_Subprogram_Declaration))
                then
-                  Set_Body_Required (Library_Unit (N));
+                  Append_Elmt (Defining_Entity (Decl), Subp_List);
 
                elsif Nkind_In (Decl, N_Package_Declaration,
                                      N_Generic_Package_Declaration)
@@ -3985,6 +4079,11 @@ package body Sem_Ch10 is
 
                elsif Nkind (Decl) = N_Incomplete_Type_Declaration then
                   Append_Elmt (Decl, Incomplete_Decls);
+
+               elsif Nkind (Decl) = N_Pragma
+                 and then Pragma_Name (Decl) = Name_Import
+               then
+                  Check_Pragma_Import (Decl);
                end if;
 
                Next (Decl);
@@ -4022,6 +4121,29 @@ package body Sem_Ch10 is
                   Next_Elmt (Inc);
                end loop;
             end;
+
+            --  Finally, check whether there are subprograms that still
+            --  require a body.
+
+            if not Is_Empty_Elmt_List (Subp_List) then
+               declare
+                  Subp_Id : Elmt_Id;
+
+               begin
+                  Subp_Id := First_Elmt (Subp_List);
+
+                  while Present (Subp_Id) loop
+                     if Nkind (Parent (Parent (Node (Subp_Id))))
+                        /= N_Subprogram_Renaming_Declaration
+                     then
+                        Set_Body_Required (Library_Unit (N));
+                        return;
+                     end if;
+
+                     Next_Elmt (Subp_Id);
+                  end loop;
+               end;
+            end if;
          end Check_Declarations;
 
       --  Start of processing for Check_Body_Required

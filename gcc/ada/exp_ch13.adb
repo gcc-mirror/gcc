@@ -34,6 +34,7 @@ with Exp_Util; use Exp_Util;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
+with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch7;  use Sem_Ch7;
@@ -91,6 +92,14 @@ package body Exp_Ch13 is
             --  call to the init proc, and must be respected. Note that for
             --  packed types we do not build equivalent aggregates.
 
+            --  Also, if Init_Or_Norm_Scalars applies, then we need to retain
+            --  any default initialization for objects of scalar types and
+            --  types with scalar components. Normally a composite type will
+            --  have an init_proc in the presence of Init_Or_Norm_Scalars,
+            --  so when that flag is set we have just have to do a test for
+            --  scalar and string types (the predefined string types such as
+            --  String and Wide_String don't have an init_proc).
+
             declare
                Decl : constant Node_Id := Declaration_Node (Ent);
                Typ  : constant Entity_Id := Etype (Ent);
@@ -106,6 +115,13 @@ package body Exp_Ch13 is
                       Present (Static_Initialization (Base_Init_Proc (Typ)))
                   then
                      null;
+
+                  elsif Init_Or_Norm_Scalars
+                    and then
+                      (Is_Scalar_Type (Typ) or else Is_String_Type (Typ))
+                  then
+                     null;
+
                   else
                      Set_Expression (Decl, Empty);
                   end if;
