@@ -1,3 +1,17 @@
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb:
+	(Expand_N_Op_Concat): Call Expand_Concatenate for all cases
+	(Expand_Concatenate): New name for Expand_Concatenate_String which has
+	been rewritten to handle all types.
+	(Expand_Concatenate_Other): Remove
+
+2009-04-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): A default subprogram in an
+	instance appears within the tree for the instance, but generates an
+	implicit reference in the ALI.
+
 2009-04-07  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Record_Type): When processing a tagged
