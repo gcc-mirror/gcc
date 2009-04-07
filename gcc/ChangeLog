@@ -1,3 +1,9 @@
+2009-04-07  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/39634
+	* config.gcc (powerpc-*-linux*): Include soft-fp/t-softfp after
+	rs6000/t-linux64.
+
 2009-04-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/39501
