@@ -1,5 +1,6 @@
 /* Decimal floating point support.
-   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software
+   Foundation, Inc.
 
 This file is part of GCC.
 
@@ -139,7 +140,7 @@ encode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decimal_to_decnumber (r, &dn); 
   decimal32FromNumber (&d32, &dn, &set);
 
-  buf[0] = *(uint32_t *) d32.bytes;
+  memcpy (&buf[0], d32.bytes, sizeof (uint32_t));
 }
 
 /* Decode an IEEE 754 decimal32 type into a real.  */
@@ -155,7 +156,7 @@ decode_decimal32 (const struct real_format *fmt ATTRIBUTE_UNUSED,
   decContextDefault (&set, DEC_INIT_DECIMAL128);
   set.traps = 0;
 
-  *((uint32_t *) d32.bytes) = (uint32_t) buf[0];
+  memcpy (&d32.bytes, &buf[0], sizeof (uint32_t));
 
   decimal32ToNumber (&d32, &dn);
   decimal_from_decnumber (r, &dn, &set); 
@@ -179,13 +180,13 @@ encode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (WORDS_BIGENDIAN == FLOAT_WORDS_BIG_ENDIAN)
     {
-      buf[0] = *(uint32_t *) &d64.bytes[0];
-      buf[1] = *(uint32_t *) &d64.bytes[4];
+      memcpy (&buf[0], &d64.bytes[0], sizeof (uint32_t));
+      memcpy (&buf[1], &d64.bytes[4], sizeof (uint32_t));
     }
   else
     {
-      buf[0] = *(uint32_t *) &d64.bytes[4];
-      buf[1] = *(uint32_t *) &d64.bytes[0];
+      memcpy (&buf[0], &d64.bytes[4], sizeof (uint32_t));
+      memcpy (&buf[1], &d64.bytes[0], sizeof (uint32_t));
     }
 }
 
@@ -204,13 +205,13 @@ decode_decimal64 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (WORDS_BIGENDIAN == FLOAT_WORDS_BIG_ENDIAN)
     {
-      *((uint32_t *) &d64.bytes[0]) = (uint32_t) buf[0];
-      *((uint32_t *) &d64.bytes[4]) = (uint32_t) buf[1];
+      memcpy (&d64.bytes[0], &buf[0], sizeof (uint32_t));
+      memcpy (&d64.bytes[4], &buf[1], sizeof (uint32_t));
     }
   else
     {
-      *((uint32_t *) &d64.bytes[0]) = (uint32_t) buf[1];
-      *((uint32_t *) &d64.bytes[4]) = (uint32_t) buf[0];
+      memcpy (&d64.bytes[0], &buf[1], sizeof (uint32_t));
+      memcpy (&d64.bytes[4], &buf[0], sizeof (uint32_t));
     }
 
   decimal64ToNumber (&d64, &dn);
@@ -235,17 +236,17 @@ encode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (WORDS_BIGENDIAN == FLOAT_WORDS_BIG_ENDIAN)
     {
-      buf[0] = *(uint32_t *) &d128.bytes[0];
-      buf[1] = *(uint32_t *) &d128.bytes[4];
-      buf[2] = *(uint32_t *) &d128.bytes[8];
-      buf[3] = *(uint32_t *) &d128.bytes[12];
+      memcpy (&buf[0], &d128.bytes[0], sizeof (uint32_t));
+      memcpy (&buf[1], &d128.bytes[4], sizeof (uint32_t));
+      memcpy (&buf[2], &d128.bytes[8], sizeof (uint32_t));
+      memcpy (&buf[3], &d128.bytes[12], sizeof (uint32_t));
     }
   else
     {
-      buf[0] = *(uint32_t *) &d128.bytes[12];
-      buf[1] = *(uint32_t *) &d128.bytes[8];
-      buf[2] = *(uint32_t *) &d128.bytes[4];
-      buf[3] = *(uint32_t *) &d128.bytes[0];
+      memcpy (&buf[0], &d128.bytes[12], sizeof (uint32_t));
+      memcpy (&buf[1], &d128.bytes[8], sizeof (uint32_t));
+      memcpy (&buf[2], &d128.bytes[4], sizeof (uint32_t));
+      memcpy (&buf[3], &d128.bytes[0], sizeof (uint32_t));
     }
 }
 
@@ -264,17 +265,17 @@ decode_decimal128 (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (WORDS_BIGENDIAN == FLOAT_WORDS_BIG_ENDIAN)
     {
-      *((uint32_t *) &d128.bytes[0])  = (uint32_t) buf[0];
-      *((uint32_t *) &d128.bytes[4])  = (uint32_t) buf[1];
-      *((uint32_t *) &d128.bytes[8])  = (uint32_t) buf[2];
-      *((uint32_t *) &d128.bytes[12]) = (uint32_t) buf[3];
+      memcpy (&d128.bytes[0],  &buf[0], sizeof (uint32_t));
+      memcpy (&d128.bytes[4],  &buf[1], sizeof (uint32_t));
+      memcpy (&d128.bytes[8],  &buf[2], sizeof (uint32_t));
+      memcpy (&d128.bytes[12], &buf[3], sizeof (uint32_t));
     }
   else
     {
-      *((uint32_t *) &d128.bytes[0])  = (uint32_t) buf[3];
-      *((uint32_t *) &d128.bytes[4])  = (uint32_t) buf[2];
-      *((uint32_t *) &d128.bytes[8])  = (uint32_t) buf[1];
-      *((uint32_t *) &d128.bytes[12]) = (uint32_t) buf[0];
+      memcpy (&d128.bytes[0],  &buf[3], sizeof (uint32_t));
+      memcpy (&d128.bytes[4],  &buf[2], sizeof (uint32_t));
+      memcpy (&d128.bytes[8],  &buf[1], sizeof (uint32_t));
+      memcpy (&d128.bytes[12], &buf[0], sizeof (uint32_t));
     }
 
   decimal128ToNumber (&d128, &dn);
