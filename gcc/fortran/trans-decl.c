@@ -1015,10 +1015,12 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->backend_decl)
     return sym->backend_decl;
 
-  /* Catch function declarations.  Only used for actual parameters.  */
+  /* Catch function declarations.  Only used for actual parameters and
+     procedure pointers.  */
   if (sym->attr.flavor == FL_PROCEDURE)
     {
       decl = gfc_get_extern_function_decl (sym);
+      gfc_set_decl_location (decl, &sym->declared_at);
       return decl;
     }
 
