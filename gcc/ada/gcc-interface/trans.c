@@ -2123,6 +2123,9 @@ establish_gnat_vms_condition_handler (void)
 							 ptr_void_type_node,
 							 NULL_TREE),
 			       NULL_TREE, 0, 1, 1, 0, Empty);
+
+      /* ??? DECL_CONTEXT shouldn't have been set because of DECL_EXTERNAL.  */
+      DECL_CONTEXT (gnat_vms_condition_handler_decl) = NULL_TREE;
     }
 
   /* Do nothing if the establish builtin is not available, which might happen
@@ -2242,7 +2245,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
      this happens.  The foreign or exported condition is expected to satisfy
      all the constraints.  */
   if (TARGET_ABI_OPEN_VMS
-      && (Has_Foreign_Convention (gnat_node) || Is_Exported (gnat_node)))
+      && (Has_Foreign_Convention (gnat_subprog_id)
+	  || Is_Exported (gnat_subprog_id)))
     establish_gnat_vms_condition_handler ();
 
   process_decls (Declarations (gnat_node), Empty, Empty, true, true);

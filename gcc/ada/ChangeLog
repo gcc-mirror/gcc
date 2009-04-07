@@ -1,5 +1,11 @@
 2009-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (establish_gnat_vms_condition_handler): Clear
+	DECL_CONTEXT.
+	(Subprogram_Body_to_gnu): Fix pasto.
+
+2009-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (standard_datatypes): Remove ADT_void_type_decl.
 	(void_type_decl_node): Remove.
 	(init_gigi_decls): Likewise.
