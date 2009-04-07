@@ -58,6 +58,10 @@ package body GNAT.Sockets is
 
    ENOERROR : constant := 0;
 
+   Empty_Socket_Set : Socket_Set_Type;
+   --  Variable set in Initialize, and then used internally to provide an
+   --  initial value for Socket_Set_Type objects.
+
    Netdb_Buffer_Size : constant := SOSC.Need_Netdb_Buffer * 1024;
    --  The network database functions gethostbyname, gethostbyaddr,
    --  getservbyname and getservbyport can either be guaranteed task safe by
@@ -426,7 +430,7 @@ package body GNAT.Sockets is
       Status       : out Selector_Status;
       Timeout      : Selector_Duration := Forever)
    is
-      E_Socket_Set : Socket_Set_Type; --  (No_Socket, No_Fd_Set_Access)
+      E_Socket_Set : Socket_Set_Type := Empty_Socket_Set;
    begin
       Check_Selector
         (Selector, R_Socket_Set, W_Socket_Set, E_Socket_Set, Status, Timeout);
@@ -813,7 +817,7 @@ package body GNAT.Sockets is
    begin
       if Item.Last /= No_Socket then
          Get_Socket_From_Set
-           (Item.Set'Access, L'Unchecked_Access, S'Unchecked_Access);
+           (Item.Set'Access, Last => L'Access, Socket => S'Access);
          Item.Last := Socket_Type (L);
          Socket    := Socket_Type (S);
       else
@@ -1208,6 +1212,33 @@ package body GNAT.Sockets is
       return Socket'Img;
    end Image;
 
+   -----------
+   -- Image --
+   -----------
+
+   function Image (Item : Socket_Set_Type) return String is
+      Socket_Set : Socket_Set_Type := Item;
+   begin
+      declare
+         Last_Img : constant String := Socket_Set.Last'Img;
+         Buffer   : String
+                      (1 .. (Integer (Socket_Set.Last) + 1) * Last_Img'Length);
+         Index    : Positive := 1;
+         Socket   : Socket_Type;
+      begin
+         while not Is_Empty (Socket_Set) loop
+            Get (Socket_Set, Socket);
+            declare
+               Socket_Img : constant String := Socket'Img;
+            begin
+               Buffer (Index .. Index + Socket_Img'Length - 1) := Socket_Img;
+               Index := Index + Socket_Img'Length;
+            end;
+         end loop;
+         return "[" & Last_Img & "]" & Buffer (1 .. Index - 1);
+      end;
+   end Image;
+
    ---------------
    -- Inet_Addr --
    ---------------
@@ -1270,6 +1301,8 @@ package body GNAT.Sockets is
    begin
       if not Initialized then
          Initialized := True;
+         Empty_Socket_Set.Last := No_Socket;
+         Reset_Socket_Set (Empty_Socket_Set.Set'Access);
          Thin.Initialize;
       end if;
    end Initialize;

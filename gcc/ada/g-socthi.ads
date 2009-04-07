@@ -123,7 +123,7 @@ package GNAT.Sockets.Thin is
    function C_Ioctl
      (S    : C.int;
       Req  : C.int;
-      Arg  : Int_Access) return C.int;
+      Arg  : access C.int) return C.int;
 
    function C_Listen
      (S       : C.int;

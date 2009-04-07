@@ -79,7 +79,7 @@ package body GNAT.Sockets.Thin is
    function Syscall_Ioctl
      (S    : C.int;
       Req  : C.int;
-      Arg  : Int_Access) return C.int;
+      Arg  : access C.int) return C.int;
    pragma Import (C, Syscall_Ioctl, "ioctl");
 
    function Syscall_Recv
@@ -164,7 +164,7 @@ package body GNAT.Sockets.Thin is
          --  tracks sockets set in non-blocking mode by user.
 
          Set_Non_Blocking_Socket (R, Non_Blocking_Socket (S));
-         Discard := Syscall_Ioctl (R, SOSC.FIONBIO, Val'Unchecked_Access);
+         Discard := Syscall_Ioctl (R, SOSC.FIONBIO, Val'Access);
       end if;
 
       Disable_SIGPIPE (R);
@@ -237,7 +237,7 @@ package body GNAT.Sockets.Thin is
    function C_Ioctl
      (S   : C.int;
       Req : C.int;
-      Arg : Int_Access) return C.int
+      Arg : access C.int) return C.int
    is
    begin
       if not SOSC.Thread_Blocking_IO
@@ -379,7 +379,7 @@ package body GNAT.Sockets.Thin is
          --  Do not use C_Ioctl as this subprogram tracks sockets set
          --  in non-blocking mode by user.
 
-         Discard := Syscall_Ioctl (R, SOSC.FIONBIO, Val'Unchecked_Access);
+         Discard := Syscall_Ioctl (R, SOSC.FIONBIO, Val'Access);
          Set_Non_Blocking_Socket (R, False);
       end if;
       Disable_SIGPIPE (R);

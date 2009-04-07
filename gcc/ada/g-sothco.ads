@@ -247,14 +247,10 @@ package GNAT.Sockets.Thin_Common is
    -- Socket sets management --
    ----------------------------
 
-   type Int_Access is access all C.int;
-   pragma Convention (C, Int_Access);
-   --  Access to C integers
-
    procedure Get_Socket_From_Set
      (Set    : access Fd_Set;
-      Socket : Int_Access;
-      Last   : Int_Access);
+      Last   : access C.int;
+      Socket : access C.int);
    --  Get last socket in Socket and remove it from the socket set. The
    --  parameter Last is a maximum value of the largest socket. This hint is
    --  used to avoid scanning very large socket sets. After a call to
@@ -274,7 +270,7 @@ package GNAT.Sockets.Thin_Common is
 
    procedure Last_Socket_In_Set
      (Set  : access Fd_Set;
-      Last : Int_Access);
+      Last : access C.int);
    --  Find the largest socket in the socket set. This is needed for select().
    --  When Last_Socket_In_Set is called, parameter Last is a maximum value of
    --  the largest socket. This hint is used to avoid scanning very large

@@ -9114,39 +9114,82 @@ package body Exp_Dist is
                         New_Occurrence_Of (Any_Parameter, Loc),
                         New_Occurrence_Of (Strm, Loc))));
 
-                  --  declare
-                  --     Res : constant T := T'Input (Strm);
-                  --  begin
-                  --     Release_Buffer (Strm);
-                  --     return Res;
-                  --  end;
+                  if Transmit_As_Unconstrained (Typ) then
 
-                  Append_To (Stms, Make_Block_Statement (Loc,
-                    Declarations => New_List (
-                      Make_Object_Declaration (Loc,
-                        Defining_Identifier => Res,
-                        Constant_Present    => True,
-                        Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                        Expression          =>
-                            Make_Attribute_Reference (Loc,
-                              Prefix         => New_Occurrence_Of (Typ, Loc),
-                              Attribute_Name => Name_Input,
-                              Expressions => New_List (
-                                Make_Attribute_Reference (Loc,
-                                  Prefix => New_Occurrence_Of (Strm, Loc),
-                                  Attribute_Name => Name_Access))))),
+                     --  declare
+                     --     Res : constant T := T'Input (Strm);
+                     --  begin
+                     --     Release_Buffer (Strm);
+                     --     return Res;
+                     --  end;
 
-                    Handled_Statement_Sequence =>
-                      Make_Handled_Sequence_Of_Statements (Loc,
-                        Statements => New_List (
-                          Make_Procedure_Call_Statement (Loc,
-                            Name =>
-                              New_Occurrence_Of (RTE (RE_Release_Buffer), Loc),
-                            Parameter_Associations =>
-                              New_List (New_Occurrence_Of (Strm, Loc))),
-                          Make_Simple_Return_Statement (Loc,
-                            Expression => New_Occurrence_Of (Res, Loc))))));
+                     Append_To (Stms, Make_Block_Statement (Loc,
+                       Declarations               => New_List (
+                         Make_Object_Declaration (Loc,
+                           Defining_Identifier => Res,
+                           Constant_Present    => True,
+                           Object_Definition   => New_Occurrence_Of (Typ, Loc),
+                           Expression          =>
+                             Make_Attribute_Reference (Loc,
+                               Prefix         => New_Occurrence_Of (Typ, Loc),
+                               Attribute_Name => Name_Input,
+                               Expressions    => New_List (
+                                 Make_Attribute_Reference (Loc,
+                                   Prefix         =>
+                                     New_Occurrence_Of (Strm, Loc),
+                                   Attribute_Name => Name_Access))))),
 
+                       Handled_Statement_Sequence =>
+                         Make_Handled_Sequence_Of_Statements (Loc,
+                           Statements => New_List (
+                             Make_Procedure_Call_Statement (Loc,
+                               Name                   =>
+                                 New_Occurrence_Of
+                                   (RTE (RE_Release_Buffer), Loc),
+                               Parameter_Associations =>
+                                 New_List (New_Occurrence_Of (Strm, Loc))),
+                             Make_Simple_Return_Statement (Loc,
+                               Expression => New_Occurrence_Of (Res, Loc))))));
+                  else
+
+                     --  declare
+                     --     Res : T;
+                     --  begin
+                     --     T'Read (Strm, Res);
+                     --     Release_Buffer (Strm);
+                     --     return Res;
+                     --  end;
+
+                     Append_To (Stms, Make_Block_Statement (Loc,
+                       Declarations               => New_List (
+                         Make_Object_Declaration (Loc,
+                           Defining_Identifier => Res,
+                           Constant_Present    => False,
+                           Object_Definition   =>
+                             New_Occurrence_Of (Typ, Loc))),
+
+                       Handled_Statement_Sequence =>
+                         Make_Handled_Sequence_Of_Statements (Loc,
+                           Statements => New_List (
+                             Make_Attribute_Reference (Loc,
+                               Prefix         => New_Occurrence_Of (Typ, Loc),
+                               Attribute_Name => Name_Read,
+                               Expressions    => New_List (
+                                 Make_Attribute_Reference (Loc,
+                                   Prefix         =>
+                                     New_Occurrence_Of (Strm, Loc),
+                                   Attribute_Name => Name_Access),
+                                New_Occurrence_Of (Res, Loc))),
+                             Make_Procedure_Call_Statement (Loc,
+                               Name                   =>
+                                 New_Occurrence_Of
+                                   (RTE (RE_Release_Buffer), Loc),
+                               Parameter_Associations =>
+                                 New_List (New_Occurrence_Of (Strm, Loc))),
+                             Make_Simple_Return_Statement (Loc,
+                               Expression => New_Occurrence_Of (Res, Loc))))));
+
+                  end if;
                end;
             end if;
 

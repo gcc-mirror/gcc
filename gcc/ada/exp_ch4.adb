@@ -2368,7 +2368,14 @@ package body Exp_Ch4 is
             --  Set lower bound to lower bound of index subtype. This is not
             --  right where the index subtype bound is dynamic ???
 
-            Fixed_Low_Bound (NN) := Expr_Value (Type_Low_Bound (Ityp));
+            if Compile_Time_Known_Value (Type_Low_Bound (Ityp)) then
+               Fixed_Low_Bound (NN) :=
+                 Expr_Value (Type_Low_Bound (Ityp));
+            else
+               Fixed_Low_Bound (NN) :=
+                 Expr_Value (Type_Low_Bound (Base_Type (Ityp)));
+            end if;
+
             Set := True;
 
          --  String literal case (can only occur for strings of course)
