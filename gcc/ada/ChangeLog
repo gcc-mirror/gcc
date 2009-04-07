@@ -1,5 +1,12 @@
 2009-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* decl.c (compile_time_known_address_p): Rewrite and move around.
+	(gnat_to_gnu_type): Move around.
+	(get_unpadded_type): Likewise.
+	* utils.c (update_pointer_to): Use synthetic macro.  Tidy comments.
+
+2009-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (check_for_eliminated_entity): New function.
 	(Attribute_to_gnu): Invoke it for Access- and Address-like attributes.
 	(call_to_gnu): Invoke it instead of manually checking.

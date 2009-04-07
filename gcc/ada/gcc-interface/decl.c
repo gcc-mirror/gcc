@@ -139,6 +139,7 @@ static tree gnat_to_gnu_param (Entity_Id, Mechanism_Type, Entity_Id, bool,
 			       bool *);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
 static bool array_type_has_nonaliased_component (Entity_Id, tree);
+static bool compile_time_known_address_p (Node_Id);
 static void components_to_record (tree, Node_Id, tree, int, bool, tree *,
 				  bool, bool, bool, bool);
 static Uint annotate_value (tree);
@@ -152,36 +153,6 @@ static unsigned int ceil_alignment (unsigned HOST_WIDE_INT);
 static void check_ok_for_atomic (tree, Entity_Id, bool);
 static int compatible_signatures_p (tree ftype1, tree ftype2);
 static void rest_of_type_decl_compilation_no_defer (tree);
-
-/* Return true if GNAT_ADDRESS is a compile time known value.
-   In particular catch System'To_Address.  */
-
-static bool
-compile_time_known_address_p (Node_Id gnat_address)
-{
-  return ((Nkind (gnat_address) == N_Unchecked_Type_Conversion
-	   && Compile_Time_Known_Value (Expression (gnat_address)))
-	  || Compile_Time_Known_Value (gnat_address));
-}
-
-/* Given GNAT_ENTITY, an entity in the incoming GNAT tree, return a
-   GCC type corresponding to that entity.  GNAT_ENTITY is assumed to
-   refer to an Ada type.  */
-
-tree
-gnat_to_gnu_type (Entity_Id gnat_entity)
-{
-  tree gnu_decl;
-
-  /* The back end never attempts to annotate generic types */
-  if (Is_Generic_Type (gnat_entity) && type_annotate_only)
-     return void_type_node;
-
-  /* Convert the ada entity type into a GCC TYPE_DECL node.  */
-  gnu_decl = gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
-  gcc_assert (TREE_CODE (gnu_decl) == TYPE_DECL);
-  return TREE_TYPE (gnu_decl);
-}
 
 /* Given GNAT_ENTITY, a GNAT defining identifier node, which denotes some Ada
    entity, this routine returns the equivalent GCC tree for that entity
@@ -4757,6 +4728,38 @@ gnat_to_gnu_field_decl (Entity_Id gnat_entity)
   return gnu_field;
 }
 
+/* Similar, but GNAT_ENTITY is assumed to refer to a GNAT type.  Return
+   the GCC type corresponding to that entity.  */
+
+tree
+gnat_to_gnu_type (Entity_Id gnat_entity)
+{
+  tree gnu_decl;
+
+  /* The back end never attempts to annotate generic types.  */
+  if (Is_Generic_Type (gnat_entity) && type_annotate_only)
+     return void_type_node;
+
+  gnu_decl = gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
+  gcc_assert (TREE_CODE (gnu_decl) == TYPE_DECL);
+
+  return TREE_TYPE (gnu_decl);
+}
+
+/* Similar, but GNAT_ENTITY is assumed to refer to a GNAT type.  Return
+   the unpadded version of the GCC type corresponding to that entity.  */
+
+tree
+get_unpadded_type (Entity_Id gnat_entity)
+{
+  tree type = gnat_to_gnu_type (gnat_entity);
+
+  if (TREE_CODE (type) == RECORD_TYPE && TYPE_IS_PADDING_P (type))
+    type = TREE_TYPE (TYPE_FIELDS (type));
+
+  return type;
+}
+
 /* Wrap up compilation of DECL, a TYPE_DECL, possibly deferring it.
    Every TYPE_DECL generated for a type definition must be passed
    to this function once everything else has been done for it.  */
@@ -5092,6 +5095,18 @@ array_type_has_nonaliased_component (Entity_Id gnat_type, tree gnu_type)
     return false;
 
   return type_for_nonaliased_component_p (TREE_TYPE (gnu_type));
+}
+
+/* Return true if GNAT_ADDRESS is a value known at compile-time.  */
+
+static bool
+compile_time_known_address_p (Node_Id gnat_address)
+{
+  /* Catch System'To_Address.  */
+  if (Nkind (gnat_address) == N_Unchecked_Type_Conversion)
+    gnat_address = Expression (gnat_address);
+
+  return Compile_Time_Known_Value (gnat_address);
 }
 
 /* Given GNAT_ENTITY, elaborate all expressions that are required to
@@ -5438,19 +5453,6 @@ prepend_attributes (Entity_Id gnat_entity, struct attrib ** attr_list)
 	   Present (Next (First (gnat_assoc)))
 	   ? Expression (Next (First (gnat_assoc))) : gnat_temp);
       }
-}
-
-/* Get the unpadded version of a GNAT type.  */
-
-tree
-get_unpadded_type (Entity_Id gnat_entity)
-{
-  tree type = gnat_to_gnu_type (gnat_entity);
-
-  if (TREE_CODE (type) == RECORD_TYPE && TYPE_IS_PADDING_P (type))
-    type = TREE_TYPE (TYPE_FIELDS (type));
-
-  return type;
 }
 
 /* Called when we need to protect a variable object using a save_expr.  */

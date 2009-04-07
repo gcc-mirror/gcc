@@ -3738,9 +3738,9 @@ shift_unc_components_for_thin_pointers (tree type)
   DECL_FIELD_BIT_OFFSET (array_field) = bitsize_zero_node;
 }
 
-/* Update anything previously pointing to OLD_TYPE to point to NEW_TYPE.  In
-   the normal case this is just two adjustments, but we have more to do
-   if NEW is an UNCONSTRAINED_ARRAY_TYPE.  */
+/* Update anything previously pointing to OLD_TYPE to point to NEW_TYPE.
+   In the normal case this is just two adjustments, but we have more to
+   do if NEW_TYPE is an UNCONSTRAINED_ARRAY_TYPE.  */
 
 void
 update_pointer_to (tree old_type, tree new_type)
@@ -3756,35 +3756,34 @@ update_pointer_to (tree old_type, tree new_type)
 	 type = TYPE_NEXT_VARIANT (type))
       update_pointer_to (type, new_type);
 
-  /* If no pointer or reference, we are done.  */
+  /* If no pointers and no references, we are done.  */
   if (!ptr && !ref)
     return;
 
   /* Merge the old type qualifiers in the new type.
 
      Each old variant has qualifiers for specific reasons, and the new
-     designated type as well. Each set of qualifiers represents useful
+     designated type as well.  Each set of qualifiers represents useful
      information grabbed at some point, and merging the two simply unifies
      these inputs into the final type description.
 
      Consider for instance a volatile type frozen after an access to constant
-     type designating it. After the designated type freeze, we get here with a
-     volatile new_type and a dummy old_type with a readonly variant, created
-     when the access type was processed. We shall make a volatile and readonly
+     type designating it; after the designated type's freeze, we get here with
+     a volatile NEW_TYPE and a dummy OLD_TYPE with a readonly variant, created
+     when the access type was processed.  We will make a volatile and readonly
      designated type, because that's what it really is.
 
-     We might also get here for a non-dummy old_type variant with different
-     qualifiers than the new_type ones, for instance in some cases of pointers
+     We might also get here for a non-dummy OLD_TYPE variant with different
+     qualifiers than those of NEW_TYPE, for instance in some cases of pointers
      to private record type elaboration (see the comments around the call to
-     this routine from gnat_to_gnu_entity/E_Access_Type). We have to merge the
-     qualifiers in those cases too, to avoid accidentally discarding the
-     initial set, and will often end up with old_type == new_type then.  */
-  new_type = build_qualified_type (new_type,
-				   TYPE_QUALS (old_type)
-				   | TYPE_QUALS (new_type));
+     this routine in gnat_to_gnu_entity <E_Access_Type>).  We have to merge
+     the qualifiers in those cases too, to avoid accidentally discarding the
+     initial set, and will often end up with OLD_TYPE == NEW_TYPE then.  */
+  new_type
+    = build_qualified_type (new_type,
+			    TYPE_QUALS (old_type) | TYPE_QUALS (new_type));
 
-  /* If the new type and the old one are identical, there is nothing to
-     update.  */
+  /* If old type and new type are identical, there is nothing to do.  */
   if (old_type == new_type)
     return;
 
@@ -3805,10 +3804,10 @@ update_pointer_to (tree old_type, tree new_type)
 	  TREE_TYPE (ref1) = new_type;
     }
 
-  /* Now deal with the unconstrained array case. In this case the "pointer"
+  /* Now deal with the unconstrained array case.  In this case the "pointer"
      is actually a RECORD_TYPE where both fields are pointers to dummy nodes.
      Turn them into pointers to the correct types using update_pointer_to.  */
-  else if (TREE_CODE (ptr) != RECORD_TYPE || !TYPE_IS_FAT_POINTER_P (ptr))
+  else if (!TYPE_FAT_POINTER_P (ptr))
     gcc_unreachable ();
 
   else
@@ -3826,26 +3825,25 @@ update_pointer_to (tree old_type, tree new_type)
 	 TREE_TYPE (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (new_ptr)))));
 
       /* The references to the template bounds present in the array type
-	 are made through a PLACEHOLDER_EXPR of type new_ptr.  Since we
-	 are updating ptr to make it a full replacement for new_ptr as
-	 pointer to new_type, we must rework the PLACEHOLDER_EXPR so as
-	 to make it of type ptr.  */
+	 are made through a PLACEHOLDER_EXPR of type NEW_PTR.  Since we
+	 are updating PTR to make it a full replacement for NEW_PTR as
+	 pointer to NEW_TYPE, we must rework the PLACEHOLDER_EXPR so as
+	 to make it of type PTR.  */
       new_ref = build3 (COMPONENT_REF, TREE_TYPE (bounds_field),
 			build0 (PLACEHOLDER_EXPR, ptr),
 			bounds_field, NULL_TREE);
 
-      /* Create the new array for the new PLACEHOLDER_EXPR and make
-	 pointers to the dummy array point to it.
+      /* Create the new array for the new PLACEHOLDER_EXPR and make pointers
+	 to the dummy array point to it.
 
-	 ??? This is now the only use of substitute_in_type,
-	 which is a very "heavy" routine to do this, so it
-	 should be replaced at some point.  */
+	 ??? This is now the only use of substitute_in_type, which is a very
+	 "heavy" routine to do this, it should be replaced at some point.  */
       update_pointer_to
 	(TREE_TYPE (TREE_TYPE (array_field)),
 	 substitute_in_type (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (new_ptr))),
 			     TREE_CHAIN (TYPE_FIELDS (new_ptr)), new_ref));
 
-      /* Make ptr the pointer to new_type.  */
+      /* Make PTR the pointer to NEW_TYPE.  */
       TYPE_POINTER_TO (new_type) = TYPE_REFERENCE_TO (new_type)
 	= TREE_TYPE (new_type) = ptr;
 
