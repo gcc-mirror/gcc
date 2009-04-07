@@ -1,6 +1,6 @@
 2009-04-07  Janus Weil  <janus@gcc.gnu.org>
 
-	PR fortran/38920
+	PR fortran/38290
 	* expr.c (gfc_check_pointer_assign): Enable interface check for
 	procedure pointers.
 	* gfortran.h: Add copy_formal_args_intr.

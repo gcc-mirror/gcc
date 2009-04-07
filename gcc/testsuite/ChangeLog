@@ -4,7 +4,7 @@
 
 2009-04-07  Janus Weil  <janus@gcc.gnu.org>
 
-	PR fortran/38920
+	PR fortran/38290
 	* gfortran.dg/proc_decl_1.f90: Modified.
 	* gfortran.dg/proc_ptr_11.f90: Extended.
 	* gfortran.dg/proc_ptr_13.f90: Modified.
