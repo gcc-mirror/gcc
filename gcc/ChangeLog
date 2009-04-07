@@ -1,5 +1,10 @@
 2009-04-07  Paolo Bonzini  <bonzini@gnu.org>
 
+        * optabs.c (can_compare_p): Test the predicate of a
+        cbranch and cstore pattern.
+
+2009-04-07  Paolo Bonzini  <bonzini@gnu.org>
+
         * expr.c (convert_move): Use emit_store_flag instead of
         "emulating" it.
 
