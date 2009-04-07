@@ -1,3 +1,10 @@
+2009-04-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config.gcc (sh-*-*): Add sysroot-suffix.h to tm_file.
+	Add t-sysroot-suffix to tmake_file.
+	* config/print-sysroot-suffix.sh: New file.
+	* config/t-sysroot-suffix: New file.
+
 2009-04-07  Ben Elliston  <bje@au.ibm.com>
 
 	* libgcc2.c (INFINITY): Use __builtin_huge_val, not __builtin_inf,
