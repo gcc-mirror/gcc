@@ -730,7 +730,8 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, int aliased)
 	 attached to the CONST_DECL.  */
       return (aliased != 0
 	      /* This should match the constant case of the renaming code.  */
-	      || Is_Composite_Type (Etype (Name (gnat_parent)))
+	      || Is_Composite_Type
+		 (Underlying_Type (Etype (Name (gnat_parent))))
 	      || Nkind (Name (gnat_parent)) == N_Identifier);
 
     default:
