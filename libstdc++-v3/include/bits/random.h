@@ -236,7 +236,7 @@ namespace std
 
       /**
        * @brief Reseeds the %linear_congruential_engine random number generator
-       *        engine sequence to the seed @g __s.
+       *        engine sequence to the seed @p __s.
        *
        * @param __s The new seed.
        */
@@ -2368,7 +2368,7 @@ namespace std
    * @brief A cauchy_distribution random number distribution.
    *
    * The formula for the normal probability mass function is
-   * @f$ p(x|a,b) = \( \pi b \( 1 + \( \frac{x-a}{b} \)^2 \) \)^{-1} @f$
+   * @f$ p(x|a,b) = (\pi b (1 + (\frac{x-a}{b})^2))^{-1} @f$
    */
   template<typename _RealType = double>
     class cauchy_distribution
@@ -2522,8 +2522,8 @@ namespace std
    *
    * The formula for the normal probability mass function is
    * @f$ p(x|m,n) = \frac{\Gamma((m+n)/2)}{\Gamma(m/2)\Gamma(n/2)}
-   *                \(\frac{m}{n}\)^{m/2} x^{(m/2)-1}
-   *                \( 1 + \frac{mx}{n} \)^{-(m+n)/2} @f$
+   *                (\frac{m}{n})^{m/2} x^{(m/2)-1}
+   *                (1 + \frac{mx}{n})^{-(m+n)/2} @f$
    */
   template<typename _RealType = double>
     class fisher_f_distribution
@@ -2677,7 +2677,7 @@ namespace std
    *
    * The formula for the normal probability mass function is
    * @f$ p(x|n) = \frac{1}{\sqrt(n\pi)} \frac{\Gamma((n+1)/2)}{\Gamma(n/2)}
-   *              \( 1 + \frac{x^2}{n} \) ^{-(n+1)/2} @f$
+   *              (1 + \frac{x^2}{n}) ^{-(n+1)/2} @f$
    */
   template<typename _RealType = double>
     class student_t_distribution
