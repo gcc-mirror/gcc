@@ -7239,6 +7239,9 @@ cp_apply_type_quals_to_decl (int type_quals, tree decl)
   if (type == error_mark_node)
     return;
 
+  if (TREE_CODE (decl) == TYPE_DECL)
+    return;
+
   if (TREE_CODE (type) == FUNCTION_TYPE
       && type_quals != TYPE_UNQUALIFIED)
     {

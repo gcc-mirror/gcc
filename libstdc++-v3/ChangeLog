@@ -1,3 +1,11 @@
+2009-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/39310
+	* include/tr1_impl/type_traits (is_function): Add partial
+	specializations with function cv-quals.
+	(__is_function_helper): Remove.
+	(is_member_pointer): Don't define in terms of is_member_*_pointer.
+
 2009-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
