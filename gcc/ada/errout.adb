@@ -1090,7 +1090,9 @@ package body Errout is
             return;
          end if;
 
-         --  Suppress if inside loop that is known to be null
+         --  Suppress if inside loop that is known to be null or is probably
+         --  null (case where loop executes only if invalid values present).
+         --  In either case warnings in the loop are likely to be junk.
 
          declare
             P : Node_Id;
@@ -1098,7 +1100,9 @@ package body Errout is
          begin
             P := Parent (N);
             while Present (P) loop
-               if Nkind (P) = N_Loop_Statement and then Is_Null_Loop (P) then
+               if Nkind (P) = N_Loop_Statement
+                 and then Suppress_Loop_Warnings (P)
+               then
                   return;
                end if;
 

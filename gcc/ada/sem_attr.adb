@@ -4840,7 +4840,7 @@ package body Sem_Attr is
 
          --  Check that result is in bounds of the type if it is static
 
-         if Is_In_Range (N, T) then
+         if Is_In_Range (N, T, Assume_Valid => False) then
             null;
 
          elsif Is_Out_Of_Range (N, T) then

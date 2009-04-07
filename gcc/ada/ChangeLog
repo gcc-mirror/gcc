@@ -1,3 +1,52 @@
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Determine_Range): Add Assume_Valid parameter
+	
+	* checks.ads (Determine_Range): Add Assume_Valid parameter
+	
+	* errout.adb (Error_Msg_NEL): Use Suppress_Loop_Warnings rather than
+	 Is_Null_Loop to suppress warnings in a loop body.
+	
+	* exp_ch4.adb:
+	(Rewrite_Comparison): Major rewrite to accomodate invalid values
+	
+	* exp_ch5.adb:
+	(Expand_N_Loop_Statement): Delete loop known not to execute
+	
+	* opt.ads:
+	(Assume_No_Invalid_Values): Now set to False, and as documented, this
+	 fully enables the proper handling of invalid values.
+	
+	* sem_attr.adb:
+	New calling sequence for Is_In_Range
+	
+	* sem_ch5.adb:
+	(Analyze_Iteration_Scheme): Accomodate possible invalid values
+	 in determining if a loop range is null.
+	
+	* sem_eval.adb:
+	(Is_In_Range): Add Assume_Valid parameter
+	(Is_Out_Of_Range): Add Assume_Valid_Parameter
+	(Compile_Time_Compare): Major rewrite to accomodate invalid values and
+	 also to do more accurate and complete range analysis, catching more
+	 cases.
+	
+	* sem_eval.ads:
+	(Is_In_Range): Add Assume_Valid parameter
+	(Is_Out_Of_Range): Add Assume_Valid_Parameter
+	
+	* sem_util.adb:
+	New calling sequence for Is_In_Range
+	
+	* sinfo.adb:
+	(Suppress_Loop_Warnings): New flag
+	
+	* sinfo.ads:
+	(Is_Null_Loop): Update documentation
+	(Suppress_Loop_Warnings): New flag
+	
+	* gnat_ugn.texi: Document -gnatB switch
+
 2009-04-07  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnatvsn.ads: Bump version number.

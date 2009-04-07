@@ -241,7 +241,7 @@ package body Sem_Eval is
 
       if not Is_Static_Expression (N) then
          if Is_Floating_Point_Type (T)
-           and then Is_Out_Of_Range (N, Base_Type (T))
+           and then Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True)
          then
             Error_Msg_N
               ("?float value out of range, infinity will be generated", N);
@@ -271,7 +271,7 @@ package body Sem_Eval is
          --  number, so as not to lose case where value overflows in the
          --  least significant bit or less. See B490001.
 
-         if Is_Out_Of_Range (N, Base_Type (T)) then
+         if Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True) then
             Out_Of_Range (N);
             return;
          end if;
@@ -325,21 +325,21 @@ package body Sem_Eval is
 
       --  Check out of range of base type
 
-      elsif Is_Out_Of_Range (N, Base_Type (T)) then
+      elsif Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True) then
          Out_Of_Range (N);
 
-      --  Give warning if outside subtype (where one or both of the
-      --  bounds of the subtype is static). This warning is omitted
-      --  if the expression appears in a range that could be null
-      --  (warnings are handled elsewhere for this case).
+      --  Give warning if outside subtype (where one or both of the bounds of
+      --  the subtype is static). This warning is omitted if the expression
+      --  appears in a range that could be null (warnings are handled elsewhere
+      --  for this case).
 
       elsif T /= Base_Type (T)
         and then Nkind (Parent (N)) /= N_Range
       then
-         if Is_In_Range (N, T) then
+         if Is_In_Range (N, T, Assume_Valid => True) then
             null;
 
-         elsif Is_Out_Of_Range (N, T) then
+         elsif Is_Out_Of_Range (N, T, Assume_Valid => True) then
             Apply_Compile_Time_Constraint_Error
               (N, "value not in range of}?", CE_Range_Check_Failed);
 
@@ -574,16 +574,17 @@ package body Sem_Eval is
 
       begin
          --  Values are the same if they refer to the same entity and the
-         --  entity is a constant object (E_Constant). This does not however
-         --  apply to Float types, since we may have two NaN values and they
-         --  should never compare equal.
+         --  entity is non-volatile. This does not however apply to Float
+         --  types, since we may have two NaN values and they should never
+         --  compare equal.
 
          if Nkind_In (Lf, N_Identifier, N_Expanded_Name)
            and then Nkind_In (Rf, N_Identifier, N_Expanded_Name)
            and then Entity (Lf) = Entity (Rf)
            and then Present (Entity (Lf))
            and then not Is_Floating_Point_Type (Etype (L))
-           and then Is_Constant_Object (Entity (Lf))
+           and then not Is_Volatile_Reference (L)
+           and then not Is_Volatile_Reference (R)
          then
             return True;
 
@@ -748,7 +749,7 @@ package body Sem_Eval is
          --  not known to have valid representations. This takes care of
          --  properly dealing with invalid representations.
 
-         if not Assume_Valid then
+         if not Assume_Valid and then not Assume_No_Invalid_Values then
             if Is_Entity_Name (L) and then not Is_Known_Valid (Entity (L)) then
                Ltyp := Base_Type (Ltyp);
             end if;
@@ -757,6 +758,39 @@ package body Sem_Eval is
                Rtyp := Base_Type (Rtyp);
             end if;
          end if;
+
+         --  Try range analysis on variables and see if ranges are disjoint
+
+         declare
+            LOK, ROK : Boolean;
+            LLo, LHi : Uint;
+            RLo, RHi : Uint;
+
+         begin
+            Determine_Range (L, LOK, LLo, LHi, Assume_Valid);
+            Determine_Range (R, ROK, RLo, RHi, Assume_Valid);
+
+            if LOK and ROK then
+               if LHi < RLo then
+                  return LT;
+
+               elsif RHi < LLo then
+                  return GT;
+
+               elsif LLo = LHi
+                 and then RLo = RHi
+                 and then LLo = RLo
+               then
+                  return EQ;
+
+               elsif LHi = RLo then
+                  return LE;
+
+               elsif RHi = LLo then
+                  return GE;
+               end if;
+            end if;
+         end;
 
          --  Here is where we check for comparisons against maximum bounds of
          --  types, where we know that no value can be outside the bounds of
@@ -1812,7 +1846,7 @@ package body Sem_Eval is
       --  Modular integer literals must be in their base range
 
       if Is_Modular_Integer_Type (T)
-        and then Is_Out_Of_Range (N, Base_Type (T))
+        and then Is_Out_Of_Range (N, Base_Type (T), Assume_Valid => True)
       then
          Out_Of_Range (N);
       end if;
@@ -2276,7 +2310,7 @@ package body Sem_Eval is
 
       Set_Is_Static_Expression (N, Stat);
 
-      if Is_Out_Of_Range (N, Etype (N)) then
+      if Is_Out_Of_Range (N, Etype (N), Assume_Valid => True) then
          Out_Of_Range (N);
       end if;
    end Eval_Qualified_Expression;
@@ -2998,7 +3032,7 @@ package body Sem_Eval is
          Fold_Uint (N, Expr_Value (Operand), Stat);
       end if;
 
-      if Is_Out_Of_Range (N, Etype (N)) then
+      if Is_Out_Of_Range (N, Etype (N), Assume_Valid => True) then
          Out_Of_Range (N);
       end if;
 
@@ -3610,10 +3644,11 @@ package body Sem_Eval is
    -----------------
 
    function Is_In_Range
-     (N         : Node_Id;
-      Typ       : Entity_Id;
-      Fixed_Int : Boolean := False;
-      Int_Real  : Boolean := False) return Boolean
+     (N            : Node_Id;
+      Typ          : Entity_Id;
+      Assume_Valid : Boolean := False;
+      Fixed_Int    : Boolean := False;
+      Int_Real     : Boolean := False) return Boolean
    is
       Val  : Uint;
       Valr : Ureal;
@@ -3635,19 +3670,38 @@ package body Sem_Eval is
       elsif not Compile_Time_Known_Value (N) then
          return False;
 
+      --  General processing with a known compile time value
+
       else
          declare
-            Lo       : constant Node_Id := Type_Low_Bound  (Typ);
-            Hi       : constant Node_Id := Type_High_Bound (Typ);
-            LB_Known : constant Boolean := Compile_Time_Known_Value (Lo);
-            UB_Known : constant Boolean := Compile_Time_Known_Value (Hi);
+            Lo       : Node_Id;
+            Hi       : Node_Id;
+            LB_Known : Boolean;
+            UB_Known : Boolean;
+            Typt     : Entity_Id;
 
          begin
+            if Assume_Valid
+              or else Assume_No_Invalid_Values
+              or else (Is_Entity_Name (N)
+                        and then Is_Known_Valid (Entity (N)))
+            then
+               Typt := Typ;
+            else
+               Typt := Underlying_Type (Base_Type (Typ));
+            end if;
+
+            Lo := Type_Low_Bound  (Typt);
+            Hi := Type_High_Bound (Typt);
+
+            LB_Known := Compile_Time_Known_Value (Lo);
+            UB_Known := Compile_Time_Known_Value (Hi);
+
             --  Fixed point types should be considered as such only in
             --  flag Fixed_Int is set to False.
 
-            if Is_Floating_Point_Type (Typ)
-              or else (Is_Fixed_Point_Type (Typ) and then not Fixed_Int)
+            if Is_Floating_Point_Type (Typt)
+              or else (Is_Fixed_Point_Type (Typt) and then not Fixed_Int)
               or else Int_Real
             then
                Valr := Expr_Value_R (N);
@@ -3792,6 +3846,7 @@ package body Sem_Eval is
    function Is_Out_Of_Range
      (N            : Node_Id;
       Typ          : Entity_Id;
+      Assume_Valid : Boolean := False;
       Fixed_Int    : Boolean := False;
       Int_Real     : Boolean := False) return Boolean
    is
@@ -3826,18 +3881,37 @@ package body Sem_Eval is
 
       else
          declare
-            Lo       : constant Node_Id := Type_Low_Bound  (Typ);
-            Hi       : constant Node_Id := Type_High_Bound (Typ);
-            LB_Known : constant Boolean := Compile_Time_Known_Value (Lo);
-            UB_Known : constant Boolean := Compile_Time_Known_Value (Hi);
+            Lo       : Node_Id;
+            Hi       : Node_Id;
+            LB_Known : Boolean;
+            UB_Known : Boolean;
+            Typt     : Entity_Id;
 
          begin
+            --  Go to base type if we could have invalid values
+
+            if Assume_Valid
+              or else Assume_No_Invalid_Values
+              or else (Is_Entity_Name (N)
+                        and then Is_Known_Valid (Entity (N)))
+            then
+               Typt := Typ;
+            else
+               Typt := Underlying_Type (Base_Type (Typ));
+            end if;
+
+            Lo := Type_Low_Bound (Typt);
+            Hi := Type_High_Bound (Typt);
+
+            LB_Known := Compile_Time_Known_Value (Lo);
+            UB_Known := Compile_Time_Known_Value (Hi);
+
             --  Real types (note that fixed-point types are not treated
             --  as being of a real type if the flag Fixed_Int is set,
             --  since in that case they are regarded as integer types).
 
-            if Is_Floating_Point_Type (Typ)
-              or else (Is_Fixed_Point_Type (Typ) and then not Fixed_Int)
+            if Is_Floating_Point_Type (Typt)
+              or else (Is_Fixed_Point_Type (Typt) and then not Fixed_Int)
               or else Int_Real
             then
                Valr := Expr_Value_R (N);

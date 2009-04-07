@@ -842,14 +842,16 @@ package body Checks is
                Tlo := Expr_Value (Type_Low_Bound  (Target_Type));
                Thi := Expr_Value (Type_High_Bound (Target_Type));
 
-               Determine_Range (Left_Opnd  (N), LOK, Llo, Lhi);
-               Determine_Range (Right_Opnd (N), ROK, Rlo, Rhi);
+               Determine_Range
+                 (Left_Opnd  (N), LOK, Llo, Lhi, Assume_Valid => True);
+               Determine_Range
+                 (Right_Opnd (N), ROK, Rlo, Rhi, Assume_Valid => True);
 
                if (LOK and ROK)
                  and then Tlo <= Llo and then Lhi <= Thi
                  and then Tlo <= Rlo and then Rhi <= Thi
                then
-                  Determine_Range (N, VOK, Vlo, Vhi);
+                  Determine_Range (N, VOK, Vlo, Vhi, Assume_Valid => True);
 
                   if VOK and then Tlo <= Vlo and then Vhi <= Thi then
                      Rewrite (Left_Opnd (N),
@@ -1459,7 +1461,7 @@ package body Checks is
         and then not Backend_Divide_Checks_On_Target
         and then Check_Needed (Right, Division_Check)
       then
-         Determine_Range (Right, ROK, Rlo, Rhi);
+         Determine_Range (Right, ROK, Rlo, Rhi, Assume_Valid => True);
 
          --  See if division by zero possible, and if so generate test. This
          --  part of the test is not controlled by the -gnato switch.
@@ -1482,7 +1484,7 @@ package body Checks is
             if Nkind (N) = N_Op_Divide
               and then Is_Signed_Integer_Type (Typ)
             then
-               Determine_Range (Left, LOK, Llo, Lhi);
+               Determine_Range (Left, LOK, Llo, Lhi, Assume_Valid => True);
                LLB := Expr_Value (Type_Low_Bound (Base_Type (Typ)));
 
                if ((not ROK) or else (Rlo <= (-1) and then (-1) <= Rhi))
@@ -2003,7 +2005,7 @@ package body Checks is
 
                   --  Otherwise determine range of value
 
-                  Determine_Range (Expr, OK, Lo, Hi);
+                  Determine_Range (Expr, OK, Lo, Hi, Assume_Valid => True);
 
                   if OK then
 
@@ -2046,11 +2048,18 @@ package body Checks is
                            Assume_Valid => True,
                            Fixed_Int    => Fixed_Int)
              or else
-           Is_In_Range (Expr, Target_Typ, Fixed_Int, Int_Real))
+               Is_In_Range (Expr, Target_Typ,
+                            Assume_Valid => True,
+                            Fixed_Int => Fixed_Int,
+                            Int_Real  => Int_Real))
       then
          return;
 
-      elsif Is_Out_Of_Range (Expr, Target_Typ, Fixed_Int, Int_Real) then
+      elsif Is_Out_Of_Range (Expr, Target_Typ,
+                             Assume_Valid => True,
+                             Fixed_Int    => Fixed_Int,
+                             Int_Real     => Int_Real)
+      then
          Bad_Value;
          return;
 
@@ -3010,6 +3019,7 @@ package body Checks is
    --  Determine size of below cache (power of 2 is more efficient!)
 
    Determine_Range_Cache_N  : array (Cache_Index) of Node_Id;
+   Determine_Range_Cache_V  : array (Cache_Index) of Boolean;
    Determine_Range_Cache_Lo : array (Cache_Index) of Uint;
    Determine_Range_Cache_Hi : array (Cache_Index) of Uint;
    --  The above arrays are used to implement a small direct cache for
@@ -3018,13 +3028,15 @@ package body Checks is
    --  on the way up the tree, a quadratic behavior can otherwise be
    --  encountered in large expressions. The cache entry for node N is stored
    --  in the (N mod Cache_Size) entry, and can be validated by checking the
-   --  actual node value stored there.
+   --  actual node value stored there. The Range_Cache_V array records the
+   --  setting of Assume_Valid for the cache entry.
 
    procedure Determine_Range
-     (N  : Node_Id;
-      OK : out Boolean;
-      Lo : out Uint;
-      Hi : out Uint)
+     (N            : Node_Id;
+      OK           : out Boolean;
+      Lo           : out Uint;
+      Hi           : out Uint;
+      Assume_Valid : Boolean := False)
    is
       Typ : Entity_Id := Etype (N);
       --  Type to use, may get reset to base type for possibly invalid entity
@@ -3064,13 +3076,15 @@ package body Checks is
 
       function OK_Operands return Boolean is
       begin
-         Determine_Range (Left_Opnd  (N), OK1, Lo_Left,  Hi_Left);
+         Determine_Range
+           (Left_Opnd  (N), OK1, Lo_Left,  Hi_Left, Assume_Valid);
 
          if not OK1 then
             return False;
          end if;
 
-         Determine_Range (Right_Opnd (N), OK1, Lo_Right, Hi_Right);
+         Determine_Range
+           (Right_Opnd (N), OK1, Lo_Right, Hi_Right, Assume_Valid);
          return OK1;
       end OK_Operands;
 
@@ -3111,7 +3125,10 @@ package body Checks is
 
       Cindex := Cache_Index (N mod Cache_Size);
 
-      if Determine_Range_Cache_N (Cindex) = N then
+      if Determine_Range_Cache_N (Cindex) = N
+           and then
+         Determine_Range_Cache_V (Cindex) = Assume_Valid
+      then
          Lo := Determine_Range_Cache_Lo (Cindex);
          Hi := Determine_Range_Cache_Hi (Cindex);
          return;
@@ -3122,14 +3139,15 @@ package body Checks is
       --  overflow situation, which is a separate check, we are talking here
       --  only about the expression value).
 
-      --  First step, change to use base type if the expression is an entity
-      --  which we do not know is valid.
+      --  First step, change to use base type unless we know the value is valid
 
-      if Is_Entity_Name (N)
-        and then not Is_Known_Valid (Entity (N))
-        and then not Assume_No_Invalid_Values
+      if (Is_Entity_Name (N) and then Is_Known_Valid (Entity (N)))
+        or else Assume_No_Invalid_Values
+        or else Assume_Valid
       then
-         Typ := Base_Type (Typ);
+         null;
+      else
+         Typ := Underlying_Type (Base_Type (Typ));
       end if;
 
       --  We use the actual bound unless it is dynamic, in which case use the
@@ -3186,12 +3204,14 @@ package body Checks is
          --  For unary plus, result is limited by range of operand
 
          when N_Op_Plus =>
-            Determine_Range (Right_Opnd (N), OK1, Lor, Hir);
+            Determine_Range
+              (Right_Opnd (N), OK1, Lor, Hir, Assume_Valid);
 
          --  For unary minus, determine range of operand, and negate it
 
          when N_Op_Minus =>
-            Determine_Range (Right_Opnd (N), OK1, Lo_Right, Hi_Right);
+            Determine_Range
+              (Right_Opnd (N), OK1, Lo_Right, Hi_Right, Assume_Valid);
 
             if OK1 then
                Lor := -Hi_Right;
@@ -3298,7 +3318,8 @@ package body Checks is
                --  possible range of values of the attribute expression
 
                when Name_Pos | Name_Val =>
-                  Determine_Range (First (Expressions (N)), OK1, Lor, Hir);
+                  Determine_Range
+                    (First (Expressions (N)), OK1, Lor, Hir, Assume_Valid);
 
                --  For Length attribute, use the bounds of the corresponding
                --  index type to refine the range.
@@ -3341,11 +3362,13 @@ package body Checks is
                      end loop;
 
                      Determine_Range
-                       (Type_Low_Bound (Etype (Indx)), OK1, LL, LU);
+                       (Type_Low_Bound (Etype (Indx)), OK1, LL, LU,
+                        Assume_Valid);
 
                      if OK1 then
                         Determine_Range
-                          (Type_High_Bound (Etype (Indx)), OK1, UL, UU);
+                          (Type_High_Bound (Etype (Indx)), OK1, UL, UU,
+                           Assume_Valid);
 
                         if OK1 then
 
@@ -3353,7 +3376,7 @@ package body Checks is
                            --  possible gap between the values of the bounds.
                            --  But of course, this value cannot be negative.
 
-                           Hir := UI_Max (Uint_0, UU - LL);
+                           Hir := UI_Max (Uint_0, UU - LL + 1);
 
                            --  For constrained arrays, the minimum value for
                            --  Length is taken from the actual value of the
@@ -3361,7 +3384,7 @@ package body Checks is
                            --  this subtype.
 
                            if Is_Constrained (Atyp) then
-                              Lor := UI_Max (Uint_0, UL - LU);
+                              Lor := UI_Max (Uint_0, UL - LU + 1);
 
                            --  For an unconstrained array, the minimum value
                            --  for length is always zero.
@@ -3385,7 +3408,7 @@ package body Checks is
          --  refine the range using the converted value.
 
          when N_Type_Conversion =>
-            Determine_Range (Expression (N), OK1, Lor, Hir);
+            Determine_Range (Expression (N), OK1, Lor, Hir, Assume_Valid);
 
          --  Nothing special to do for all other expression kinds
 
@@ -3430,6 +3453,7 @@ package body Checks is
       --  Set cache entry for future call and we are all done
 
       Determine_Range_Cache_N  (Cindex) := N;
+      Determine_Range_Cache_V  (Cindex) := Assume_Valid;
       Determine_Range_Cache_Lo (Cindex) := Lo;
       Determine_Range_Cache_Hi (Cindex) := Hi;
       return;
@@ -3546,7 +3570,7 @@ package body Checks is
       --  different.
 
       if Nkind (N) /= N_Type_Conversion then
-         Determine_Range (N, OK, Lo, Hi);
+         Determine_Range (N, OK, Lo, Hi, Assume_Valid => True);
 
          --  Note in the test below that we assume that the range is not OK
          --  if a bound of the range is equal to that of the type. That's not
@@ -6954,7 +6978,6 @@ package body Checks is
                begin
                   Opnd_Index := First_Index (Get_Actual_Subtype (Ck_Node));
                   Targ_Index := First_Index (T_Typ);
-
                   while Present (Opnd_Index) loop
 
                      --  If the index is a range, use its bounds. If it is an
@@ -6970,11 +6993,13 @@ package body Checks is
                      end if;
 
                      if Nkind (Opnd_Range) = N_Range then
-                        if Is_In_Range
-                             (Low_Bound (Opnd_Range), Etype (Targ_Index))
+                        if  Is_In_Range
+                             (Low_Bound (Opnd_Range), Etype (Targ_Index),
+                              Assume_Valid => True)
                           and then
                             Is_In_Range
-                             (High_Bound (Opnd_Range), Etype (Targ_Index))
+                             (High_Bound (Opnd_Range), Etype (Targ_Index),
+                              Assume_Valid => True)
                         then
                            null;
 
@@ -6991,10 +7016,12 @@ package body Checks is
                            null;
 
                         elsif Is_Out_Of_Range
-                                (Low_Bound (Opnd_Range), Etype (Targ_Index))
+                                (Low_Bound (Opnd_Range), Etype (Targ_Index),
+                                 Assume_Valid => True)
                           or else
                               Is_Out_Of_Range
-                                (High_Bound (Opnd_Range), Etype (Targ_Index))
+                                (High_Bound (Opnd_Range), Etype (Targ_Index),
+                                 Assume_Valid => True)
                         then
                            Add_Check
                              (Compile_Time_Constraint_Error

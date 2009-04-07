@@ -184,10 +184,11 @@ package Checks is
    --  to make sure that the universal result is in range.
 
    procedure Determine_Range
-     (N  : Node_Id;
-      OK : out Boolean;
-      Lo : out Uint;
-      Hi : out Uint);
+     (N            : Node_Id;
+      OK           : out Boolean;
+      Lo           : out Uint;
+      Hi           : out Uint;
+      Assume_Valid : Boolean := False);
    --  N is a node for a subexpression. If N is of a discrete type with no
    --  error indications, and no other peculiarities (e.g. missing type
    --  fields), then OK is True on return, and Lo and Hi are set to a
@@ -197,7 +198,10 @@ package Checks is
    --  type, or some kind of error condition is detected, then OK is False on
    --  exit, and Lo/Hi are set to No_Uint. Thus the significance of OK being
    --  False on return is that no useful information is available on the range
-   --  of the expression.
+   --  of the expression. Assume_Valid determines whether the processing is
+   --  allowed to assume that values are in range of their subtypes. If it is
+   --  set to True, then this assumption is valid, if False, then processing
+   --  is done using base types to allow invalid values.
 
    procedure Install_Null_Excluding_Check (N : Node_Id);
    --  Determines whether an access node requires a runtime access check and

@@ -1200,9 +1200,8 @@ package Sinfo is
 
    --  Is_Null_Loop (Flag16-Sem)
    --    This flag is set in an N_Loop_Statement node if the corresponding loop
-   --    can be determined to be null at compile time. This is used to suppress
-   --    any warnings that would otherwise be issued inside the loop since they
-   --    are probably not useful.
+   --    can be determined to be null at compile time. This is used to remove
+   --    the loop entirely at expansion time.
 
    --  Is_Overloaded (Flag5-Sem)
    --    A flag present in all expression nodes. Used temporarily during
@@ -1596,6 +1595,12 @@ package Sinfo is
    --    of a return statement, this field is set only if the function returns
    --    value of a type whose size is not known at compile time on the
    --    secondary stack.
+
+   --  Suppress_Loop_Warnings (Flag17-Sem)
+   --    Used in N_Loop_Statement node to indicate that warnings within the
+   --    body of the loop should be suppressed. This is set when the range
+   --    of a FOR loop is known to be null, or is probably null (loop would
+   --    only execute if invalid values are present).
 
    --  Target_Type (Node2-Sem)
    --    Used in an N_Validate_Unchecked_Conversion node to point to the target
@@ -3940,6 +3945,7 @@ package Sinfo is
       --  End_Label (Node4)
       --  Has_Created_Identifier (Flag15)
       --  Is_Null_Loop (Flag16)
+      --  Suppress_Loop_Warnings (Flag17)
 
       --------------------------
       -- 5.5 Iteration Scheme --
@@ -8252,6 +8258,9 @@ package Sinfo is
    function Subtype_Marks
      (N : Node_Id) return List_Id;    -- List2
 
+   function Suppress_Loop_Warnings
+     (N : Node_Id) return Boolean;    -- Flag17
+
    function Synchronized_Present
      (N : Node_Id) return Boolean;    -- Flag7
 
@@ -9130,6 +9139,9 @@ package Sinfo is
 
    procedure Set_Subtype_Marks
      (N : Node_Id; Val : List_Id);            -- List2
+
+   procedure Set_Suppress_Loop_Warnings
+     (N : Node_Id; Val : Boolean := True);    -- Flag17
 
    procedure Set_Synchronized_Present
      (N : Node_Id; Val : Boolean := True);    -- Flag7
@@ -11108,6 +11120,7 @@ package Sinfo is
    pragma Inline (Subtype_Indication);
    pragma Inline (Subtype_Mark);
    pragma Inline (Subtype_Marks);
+   pragma Inline (Suppress_Loop_Warnings);
    pragma Inline (Synchronized_Present);
    pragma Inline (Tagged_Present);
    pragma Inline (Target_Type);
@@ -11397,6 +11410,7 @@ package Sinfo is
    pragma Inline (Set_Subtype_Indication);
    pragma Inline (Set_Subtype_Mark);
    pragma Inline (Set_Subtype_Marks);
+   pragma Inline (Set_Suppress_Loop_Warnings);
    pragma Inline (Set_Synchronized_Present);
    pragma Inline (Set_Tagged_Present);
    pragma Inline (Set_Target_Type);

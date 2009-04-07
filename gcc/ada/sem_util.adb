@@ -2963,7 +2963,8 @@ package body Sem_Util is
                elsif Is_Entity_Name (Choice)
                  and then Is_Type (Entity (Choice))
                then
-                  exit Search when Is_In_Range (Expr, Etype (Choice));
+                  exit Search when Is_In_Range (Expr, Etype (Choice),
+                                                Assume_Valid => False);
 
                --  Choice is a subtype indication
 

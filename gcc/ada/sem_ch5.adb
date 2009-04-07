@@ -1843,23 +1843,12 @@ package body Sem_Ch5 is
                         L : constant Node_Id := Low_Bound  (DS);
                         H : constant Node_Id := High_Bound (DS);
 
-                        Llo : Uint;
-                        Lhi : Uint;
-                        LOK : Boolean;
-                        Hlo : Uint;
-                        Hhi : Uint;
-                        HOK : Boolean;
-
-                        pragma Warnings (Off, Hlo);
-
                      begin
-                        Determine_Range (L, LOK, Llo, Lhi);
-                        Determine_Range (H, HOK, Hlo, Hhi);
-
                         --  If range of loop is null, issue warning
 
-                        if (LOK and HOK) and then Llo > Hhi then
-
+                        if Compile_Time_Compare
+                            (L, H, Assume_Valid => True) = GT
+                        then
                            --  Suppress the warning if inside a generic
                            --  template or instance, since in practice
                            --  they tend to be dubious in these cases since
@@ -1868,21 +1857,46 @@ package body Sem_Ch5 is
                            if not Inside_A_Generic
                               and then not In_Instance
                            then
-                              Error_Msg_N
-                                ("?loop range is null, loop will not execute",
-                                 DS);
+                              --  Specialize msg if invalid values could make
+                              --  the loop non-null after all.
+
+                              if Compile_Time_Compare
+                                   (L, H, Assume_Valid => False) = GT
+                              then
+                                 Error_Msg_N
+                                   ("?loop range is null, "
+                                    & "loop will not execute",
+                                    DS);
+
+                                 --  Since we know the range of the loop is
+                                 --  null, set the appropriate flag to remove
+                                 --  the loop entirely during expansion.
+
+                                 Set_Is_Null_Loop (Parent (N));
+
+                              --  Here is where the loop could execute because
+                              --  of invalid values, so issue appropriate
+                              --  message and in this case we do not set the
+                              --  Is_Null_Loop flag since the loop may execute.
+
+                              else
+                                 Error_Msg_N
+                                   ("?loop range may be null, "
+                                    & "loop may not execute",
+                                    DS);
+                                 Error_Msg_N
+                                   ("?can only execute if invalid values "
+                                    & "are present",
+                                    DS);
+                              end if;
                            end if;
 
-                           --  Since we know the range of the loop is null,
-                           --  set the appropriate flag to suppress any
-                           --  warnings that would otherwise be issued in
-                           --  the body of the loop that will not execute.
-                           --  We do this even in the generic case, since
-                           --  if it is dubious to warn on the null loop
-                           --  itself, it is certainly dubious to warn for
-                           --  conditions that occur inside it!
+                           --  In either case, suppress warnings in the body of
+                           --  the loop, since it is likely that these warnings
+                           --  will be inappropriate if the loop never actually
+                           --  executes, which is unlikely.
 
-                           Set_Is_Null_Loop (Parent (N));
+                           Set_Suppress_Loop_Warnings (Parent (N));
 
                         --  The other case for a warning is a reverse loop
                         --  where the upper bound is the integer literal
@@ -1898,10 +1912,9 @@ package body Sem_Ch5 is
                         elsif Reverse_Present (LP)
                           and then Nkind (Original_Node (H)) =
                                                           N_Integer_Literal
-                          and then (Intval (H) = Uint_0
+                          and then (Intval (Original_Node (H)) = Uint_0
                                       or else
-                                    Intval (H) = Uint_1)
-                          and then Lhi > Hhi
+                                    Intval (Original_Node (H)) = Uint_1)
                         then
                            Error_Msg_N ("?loop range may be null", DS);
                            Error_Msg_N ("\?bounds may be wrong way round", DS);
