@@ -2517,7 +2517,7 @@ package body Exp_Ch3 is
 
          --  Loop through visible declarations of task types and protected
          --  types moving any expanded code from the spec to the body of the
-         --  init procedure
+         --  init procedure.
 
          if Is_Task_Record_Type (Rec_Type)
            or else Is_Protected_Record_Type (Rec_Type)
@@ -3082,7 +3082,7 @@ package body Exp_Ch3 is
          --  for public types in case Initialize_Scalars applies to a client.
          --  However, such a procedure is not needed in the case where either
          --  of restrictions No_Initialize_Scalars or No_Default_Initialization
-         --  apply. No_Initialize_Scalars excludes the possibility of using
+         --  applies. No_Initialize_Scalars excludes the possibility of using
          --  Initialize_Scalars in any partition, and No_Default_Initialization
          --  implies that no initialization should ever be done for objects of
          --  the type, so is incompatible with Initialize_Scalars.

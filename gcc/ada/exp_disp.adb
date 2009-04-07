@@ -6170,7 +6170,7 @@ package body Exp_Disp is
                       Prefix => New_Reference_To (Prim, Loc),
                       Attribute_Name => Name_Unrestricted_Access))));
 
-            --  Register copy of the pointer to the 'size primitive in the TSD.
+            --  Register copy of the pointer to the 'size primitive in the TSD
 
             if Chars (Prim) = Name_uSize
               and then RTE_Record_Component_Available (RE_Size_Func)
@@ -6531,7 +6531,7 @@ package body Exp_Disp is
 
          procedure Set_Fixed_Prim (Pos : Nat) is
          begin
-            pragma Assert (Pos >= 0 and then Pos <= Count_Prim);
+            pragma Assert (Pos <= Count_Prim);
             Fixed_Prim (Pos) := True;
          exception
             when Constraint_Error =>
