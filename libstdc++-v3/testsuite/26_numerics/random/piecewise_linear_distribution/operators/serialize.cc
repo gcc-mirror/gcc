@@ -2,7 +2,7 @@
 //
 // 2008-12-05  Edward M. Smith-Rowland <3dw4rd@verizon.net>
 //
-// Copyright (C) 2008 Free Software Foundation, Inc.
+// Copyright (C) 2008, 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,10 +33,13 @@ test01()
   bool test __attribute__((unused)) = true;
 
   std::stringstream str;
+
+  typedef double value_type;
+  typedef std::piecewise_linear_distribution<double> distribution_type;
   std::vector<double> x = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0};
   std::vector<double> wt = {0.0, 1.0, 2.5, 1.5, 0.5, 0.0};
-  std::piecewise_linear_distribution<double>
-     u(x.begin(), x.end(), wt.begin()), v;
+  distribution_type u(x.begin(), x.end(), wt.begin());
+  distribution_type v;
   std::minstd_rand0 rng;
 
   u(rng); // advance
