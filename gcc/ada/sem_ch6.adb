@@ -3096,7 +3096,7 @@ package body Sem_Ch6 is
       if Nkind (Decl) = N_Subprogram_Declaration
         and then Present (Body_To_Inline (Decl))
       then
-         return;    --  Done already.
+         return;    --  Done already
 
       --  Functions that return unconstrained composite types require
       --  secondary stack handling, and cannot currently be inlined, unless
@@ -6473,6 +6473,15 @@ package body Sem_Ch6 is
       --  set when freezing entities, so we must examine the place of the
       --  declaration in the tree, and recognize wrapper packages as well.
 
+      function Is_Overriding_Alias
+        (Old_E : Entity_Id;
+         New_E : Entity_Id) return Boolean;
+      --  Check whether new subprogram and old subprogram are both inherited
+      --  from subprograms that have distinct dispatch table entries. This can
+      --  occur with derivations from instances with accidental homonyms.
+      --  The function is conservative given that the converse is only true
+      --  within instances that contain accidental overloadings.
+
       ------------------------------------
       -- Check_For_Primitive_Subprogram --
       ------------------------------------
@@ -7027,6 +7036,24 @@ package body Sem_Ch6 is
          end if;
       end Is_Private_Declaration;
 
+      --------------------------
+      -- Is_Overriding_Alias --
+      --------------------------
+
+      function Is_Overriding_Alias
+        (Old_E : Entity_Id;
+         New_E : Entity_Id) return Boolean
+      is
+         AO : constant Entity_Id := Alias (Old_E);
+         AN : constant Entity_Id := Alias (New_E);
+
+      begin
+         return Scope (AO) /= Scope (AN)
+           or else No (DTC_Entity (AO))
+           or else No (DTC_Entity (AN))
+           or else DT_Position (AO) = DT_Position (AN);
+      end Is_Overriding_Alias;
+
    --  Start of processing for New_Overloaded_Entity
 
    begin
@@ -7163,14 +7190,11 @@ package body Sem_Ch6 is
 
                if Present (Alias (S))
                  and then (No (Alias (E))
-                            or else Is_Abstract_Subprogram (S)
                             or else Comes_From_Source (E)
+                            or else Is_Abstract_Subprogram (S)
                             or else
                               (Is_Dispatching_Operation (E)
-                                and then Present (DTC_Entity (Alias (S)))
-                                and then Present (DTC_Entity (Alias (E)))
-                                and then DT_Position (Alias (S))
-                                   = DT_Position (Alias (E))))
+                                 and then Is_Overriding_Alias (E, S)))
                  and then Ekind (E) /= E_Enumeration_Literal
                then
 

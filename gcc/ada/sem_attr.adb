@@ -5517,7 +5517,7 @@ package body Sem_Attr is
          --  an optimization, but it falls out essentially free, so why not.
          --  Again we compute the variable Static for easy reference later
          --  (note that no array attributes are static in Ada 83).
-         --  we also need to set Static properly for subsequent legality checks
+         --  We also need to set Static properly for subsequent legality checks
          --  which might otherwise accept non-static constants in contexts
          --  where they are not legal.
 
