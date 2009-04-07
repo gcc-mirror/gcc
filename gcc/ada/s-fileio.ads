@@ -72,7 +72,7 @@ package System.File_IO is
    --    Mode is the required mode
    --
    --    Name is the file name, with a null string indicating that a temporary
-   --    file is to be created (only permitted in create mode, not open mode)
+   --    file is to be created (only permitted in create mode, not open mode).
    --
    --    Creat is True for a create call, and false for an open call
    --
@@ -80,16 +80,16 @@ package System.File_IO is
    --    of the usual binary mode open (w+b or r+b).
    --
    --    Form is the form string given in the open or create call, this is
-   --    stored in the AFCB, but otherwise is not used by this or any other
-   --    routine in this unit (except Form which retrieves the original value)
+   --    stored in the AFCB.
    --
-   --    Amethod indicates the access method
+   --    Amethod indicates the access method:
    --
    --      D = Direct_IO
    --      Q = Sequential_IO
    --      S = Stream_IO
    --      T = Text_IO
    --      W = Wide_Text_IO
+   --      ??? Wide_Wide_Text_IO ???
    --
    --    C_Stream is left at its default value for the normal case of an
    --    Open or Create call as defined in the RM. The only time this is
