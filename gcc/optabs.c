@@ -3980,8 +3980,12 @@ int
 can_compare_p (enum rtx_code code, enum machine_mode mode,
 	       enum can_compare_purpose purpose)
 {
+  rtx test;
+  test = gen_rtx_fmt_ee (code, mode, const0_rtx, const0_rtx);
   do
     {
+      int icode;
+
       if (optab_handler (cmp_optab, mode)->insn_code != CODE_FOR_nothing)
 	{
 	  if (purpose == ccp_jump)
@@ -3993,15 +3997,19 @@ can_compare_p (enum rtx_code code, enum machine_mode mode,
 	    return 1;
 	}
       if (purpose == ccp_jump
-	  && optab_handler (cbranch_optab, mode)->insn_code != CODE_FOR_nothing)
-	return 1;
+          && (icode = optab_handler (cbranch_optab, mode)->insn_code) != CODE_FOR_nothing
+          && insn_data[icode].operand[0].predicate (test, mode))
+        return 1;
+      if (purpose == ccp_store_flag
+          && (icode = optab_handler (cstore_optab, mode)->insn_code) != CODE_FOR_nothing
+          && insn_data[icode].operand[1].predicate (test, mode))
+        return 1;
       if (purpose == ccp_cmov
 	  && optab_handler (cmov_optab, mode)->insn_code != CODE_FOR_nothing)
 	return 1;
-      if (purpose == ccp_store_flag
-	  && optab_handler (cstore_optab, mode)->insn_code != CODE_FOR_nothing)
-	return 1;
+
       mode = GET_MODE_WIDER_MODE (mode);
+      PUT_MODE (test, mode);
     }
   while (mode != VOIDmode);
 
