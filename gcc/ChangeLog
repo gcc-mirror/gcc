@@ -1,3 +1,9 @@
+2009-04-07  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/39634
+	* config.gcc: Merge powerpc-*-linux* and powerpc64-*-linux*.
+	Include soft-fp/t-softfp after rs6000/t-linux64.
+
 2009-04-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (set_sizetype): Use the full precision of their

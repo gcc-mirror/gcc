@@ -1713,22 +1713,6 @@ picochip-*)
 #	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-fprules-fpbit "
 #	extra_headers=
 #	;;
-powerpc64-*-linux*)
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
-	test x$with_cpu != x || cpu_is_64bit=yes
-	test x$cpu_is_64bit != xyes || tm_file="${tm_file} rs6000/default64.h"
-	tm_file="rs6000/biarch64.h ${tm_file} rs6000/linux64.h glibc-stdint.h"
-	if test x${enable_secureplt} = xyes; then
-		tm_file="rs6000/secureplt.h ${tm_file}"
-	fi
-	extra_options="${extra_options} rs6000/sysv4.opt rs6000/linux64.opt"
-	tmake_file="t-dfprules rs6000/t-fprules ${tmake_file} rs6000/t-ppccomm rs6000/t-linux64 rs6000/t-fprules-softfp soft-fp/t-softfp"
-	;;
-powerpc64-*-gnu*)
-	tm_file="${tm_file} elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/default64.h rs6000/linux64.h rs6000/gnu.h glibc-stdint.h"
-	extra_options="${extra_options} rs6000/sysv4.opt rs6000/linux64.opt"
-	tmake_file="t-slibgcc-elf-ver t-gnu"
-	;;
 powerpc-*-darwin*)
 	extra_options="${extra_options} rs6000/darwin.opt"
 	extra_parts="crt2.o"
@@ -1807,14 +1791,22 @@ powerpc-*-rtems*)
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	tmake_file="rs6000/t-fprules rs6000/t-fprules-fpbit rs6000/t-rtems t-rtems rs6000/t-ppccomm"
 	;;
-powerpc-*-linux*)
+powerpc-*-linux* | powerpc64-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
-	tmake_file="t-dfprules rs6000/t-fprules rs6000/t-fprules-softfp soft-fp/t-softfp rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
+	tmake_file="t-dfprules rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
 	maybe_biarch=yes
 	case ${target} in
+	    powerpc64-*-linux*spe* | powerpc64-*-linux*paired*)
+	    	echo "*** Configuration ${target} not supported" 1>&2
+		exit 1
+		;;
 	    powerpc-*-linux*spe* | powerpc-*-linux*paired*)
-		maybe_biarch= ;;
+		maybe_biarch=
+		;;
+	    powerpc64-*-linux*)
+	    	test x$with_cpu != x || cpu_is_64bit=yes
+		;;
 	esac
 	case ${maybe_biarch}:${enable_targets}:${cpu_is_64bit} in
 	    yes:*powerpc64* | yes:all:* | yes:*:yes)
@@ -1829,6 +1821,7 @@ powerpc-*-linux*)
 		tm_file="${tm_file} rs6000/linux.h glibc-stdint.h"
 		;;
 	esac
+	tmake_file="${tmake_file} rs6000/t-fprules-softfp soft-fp/t-softfp"
 	case ${target} in
 	    powerpc*-*-linux*altivec*)
 		tm_file="${tm_file} rs6000/linuxaltivec.h" ;;
@@ -1840,6 +1833,11 @@ powerpc-*-linux*)
 	if test x${enable_secureplt} = xyes; then
 		tm_file="rs6000/secureplt.h ${tm_file}"
 	fi
+	;;
+powerpc64-*-gnu*)
+	tm_file="${tm_file} elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/default64.h rs6000/linux64.h rs6000/gnu.h glibc-stdint.h"
+	extra_options="${extra_options} rs6000/sysv4.opt rs6000/linux64.opt"
+	tmake_file="t-slibgcc-elf-ver t-gnu"
 	;;
 powerpc-*-gnu-gnualtivec*)
 	tm_file="${cpu_type}/${cpu_type}.h elfos.h svr4.h freebsd-spec.h gnu.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxaltivec.h rs6000/gnu.h glibc-stdint.h"
