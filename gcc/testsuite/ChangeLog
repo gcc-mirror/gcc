@@ -1,3 +1,10 @@
+2009-04-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/38920
+	* gfortran.dg/proc_decl_1.f90: Modified.
+	* gfortran.dg/proc_ptr_11.f90: Extended.
+	* gfortran.dg/proc_ptr_13.f90: Modified.
+
 2009-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35146

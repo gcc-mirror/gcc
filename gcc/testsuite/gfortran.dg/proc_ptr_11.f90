@@ -16,12 +16,34 @@ program bsp
   procedure( up ) , pointer :: pptr
   procedure(isign), pointer :: q
 
-  ! TODO. See PR 38290.
-  !pptr => add   ! { "Interfaces don't match" }
+  procedure(iabs),pointer :: p1
+  procedure(f), pointer :: p2
+
+  pointer :: p3
+  interface
+    function p3(x)
+      real(8) :: p3,x
+    end function p3
+  end interface
+
+  pptr => add   ! { dg-error "Interfaces don't match" }
 
   q => add
 
   print *, pptr()   ! { dg-error "is not a function" }
+
+  p1 => iabs
+  p2 => iabs
+  p1 => f
+  p2 => f
+  p2 => p1
+  p1 => p2
+
+  p1 => abs   ! { dg-error "Interfaces don't match" }
+  p2 => abs   ! { dg-error "Interfaces don't match" }
+
+  p3 => dsin
+  p3 => sin   ! { dg-error "Interfaces don't match" }
 
   contains
 
@@ -30,5 +52,10 @@ program bsp
       integer, intent( in ) :: a, b
       add = a + b
     end function add
+
+    integer function f(x)
+      integer :: x
+      f = 317 + x
+    end function
 
 end program bsp 
