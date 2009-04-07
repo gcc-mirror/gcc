@@ -6412,6 +6412,8 @@ package body Prj.Nmsc is
    is
       Mains : constant Variable_Value :=
                 Prj.Util.Value_Of (Name_Main, Data.Decl.Attributes, In_Tree);
+      List  : String_List_Id;
+      Elem  : String_Element;
 
    begin
       Data.Mains := Mains.Values;
@@ -6432,6 +6434,24 @@ package body Prj.Nmsc is
            (Project, In_Tree,
             "a library project file cannot have Main specified",
             Mains.Location);
+
+      --  Normal case where Main was specified
+
+      else
+         List := Mains.Values;
+         while List /= Nil_String loop
+            Elem := In_Tree.String_Elements.Table (List);
+
+            if Length_Of_Name (Elem.Value) = 0 then
+               Error_Msg
+                 (Project, In_Tree,
+                  "?a main cannot have an empty name",
+                  Elem.Location);
+               exit;
+            end if;
+
+            List := Elem.Next;
+         end loop;
       end if;
    end Get_Mains;
 

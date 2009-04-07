@@ -3466,13 +3466,24 @@ package body Sem_Ch6 is
 
       Old_Formal := First_Formal (Old_Id);
       New_Formal := First_Formal (New_Id);
-
       while Present (Old_Formal) and then Present (New_Formal) loop
          if Is_Controlling_Formal (Old_Formal)
            and then Is_Controlling_Formal (New_Formal)
            and then Skip_Controlling_Formals
          then
-            goto Skip_Controlling_Formal;
+            --  The controlling formals will have different types when
+            --  comparing an interface operation with its match, but both
+            --  or neither must be access parameters.
+
+            if Is_Access_Type (Etype (Old_Formal))
+                 =
+               Is_Access_Type (Etype (New_Formal))
+            then
+               goto Skip_Controlling_Formal;
+            else
+               Conformance_Error
+                 ("\access parameter does not match!", New_Formal);
+            end if;
          end if;
 
          if Ctype = Fully_Conformant then

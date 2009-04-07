@@ -278,7 +278,7 @@ package body Switch.C is
             when 'D' =>
                Ptr := Ptr + 1;
 
-               --  Scan option integer line limit value
+               --  Scan optional integer line limit value
 
                if Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' then
                   Scan_Nat (Switch_Chars, Max, Ptr, Sprint_Line_Limit, 'D');
@@ -528,7 +528,7 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Print_Generated_Code := True;
 
-               --  Scan option integer line limit value
+               --  Scan optional integer line limit value
 
                if Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' then
                   Scan_Nat (Switch_Chars, Max, Ptr, Sprint_Line_Limit, 'G');

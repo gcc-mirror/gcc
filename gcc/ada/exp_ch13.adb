@@ -103,6 +103,7 @@ package body Exp_Ch13 is
             declare
                Decl : constant Node_Id := Declaration_Node (Ent);
                Typ  : constant Entity_Id := Etype (Ent);
+
             begin
                if Nkind (Decl) = N_Object_Declaration
                   and then Present (Expression (Decl))

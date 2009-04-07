@@ -2383,23 +2383,14 @@ package body Exp_Ch4 is
             Fixed_Length (NN) := Uint_1;
             Result_May_Be_Null := False;
 
-            --  Set bounds of operand
+            --  Set bounds of operand (no need to set high bound since we know
+            --  for sure that result won't be null, so we won't ever use
+            --  Opnd_High_Bound).
 
             Opnd_Low_Bound (NN) :=
               Make_Attribute_Reference (Loc,
                 Prefix         => New_Reference_To (Ityp, Loc),
                 Attribute_Name => Name_First);
-
-            --  ??? The addition below is dubious, what if Ityp is an enum
-            --  type, shouldn't this be Ityp'Succ (Ityp'First)?
-
-            Opnd_High_Bound (NN) :=
-              Make_Op_Add (Loc,
-                Left_Opnd =>
-                  Make_Attribute_Reference (Loc,
-                    Prefix         => New_Reference_To (Ityp, Loc),
-                    Attribute_Name => Name_First),
-                Right_Opnd => Make_Integer_Literal (Loc, 1));
 
             Set := True;
 
@@ -2477,15 +2468,13 @@ package body Exp_Ch4 is
                         Is_Fixed_Length (NN) := True;
                         Fixed_Length (NN)    := Len;
 
-                        --  ??? case where Ityp is an enum type?
-
-                        Opnd_Low_Bound (NN) :=
+                        Opnd_Low_Bound (NN) := To_Ityp (
                           Make_Integer_Literal (Loc,
-                            Intval => Expr_Value (Lo));
+                            Intval => Expr_Value (Lo)));
 
-                        Opnd_High_Bound (NN) :=
+                        Opnd_High_Bound (NN) := To_Ityp (
                           Make_Integer_Literal (Loc,
-                            Intval => Expr_Value (Hi));
+                            Intval => Expr_Value (Hi)));
 
                         Set := True;
                      end;
