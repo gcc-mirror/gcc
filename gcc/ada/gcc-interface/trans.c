@@ -1390,16 +1390,9 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
-      /* Always perform division using unsigned arithmetic as the size cannot
-	 be negative, but may be an overflowed positive value. This provides
-	 correct results for sizes up to 512 MB.
-
-	 ??? Size should be calculated in storage elements directly.  */
-
       if (attribute == Attr_Max_Size_In_Storage_Elements)
-	gnu_result = convert (sizetype,
-			      fold_build2 (CEIL_DIV_EXPR, bitsizetype,
-					   gnu_result, bitsize_unit_node));
+	gnu_result = fold_build2 (CEIL_DIV_EXPR, bitsizetype,
+				  gnu_result, bitsize_unit_node);
       break;
 
     case Attr_Alignment:
