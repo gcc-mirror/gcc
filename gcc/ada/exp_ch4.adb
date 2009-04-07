@@ -62,6 +62,7 @@ with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
@@ -145,11 +146,9 @@ package body Exp_Ch4 is
    --  singleton operands into singleton aggregates.
 
    procedure Expand_Concatenate_String (Cnode : Node_Id; Opnds : List_Id);
-   --  Routine to expand concatenation of 2-5 operands (in the list Operands)
-   --  and replace node Cnode with the result of the concatenation. If there
-   --  are two operands, they can be string or character. If there are more
-   --  than two operands, then are always of type string (i.e. the caller has
-   --  already converted character operands to strings in this case).
+   --  Routine to expand concatenation a sequence of two or more operands (in
+   --  the list Operands) and replace node Cnode with the result of the
+   --  concatenation. The operands can be of type String or Character.
 
    procedure Fixup_Universal_Fixed_Operation (N : Node_Id);
    --  N is a N_Op_Divide or N_Op_Multiply node whose result is universal
@@ -2761,74 +2760,440 @@ package body Exp_Ch4 is
    -------------------------------
 
    procedure Expand_Concatenate_String (Cnode : Node_Id; Opnds : List_Id) is
-      Loc   : constant Source_Ptr := Sloc (Cnode);
-      Opnd1 : constant Node_Id    := First (Opnds);
-      Opnd2 : constant Node_Id    := Next (Opnd1);
-      Typ1  : constant Entity_Id  := Base_Type (Etype (Opnd1));
-      Typ2  : constant Entity_Id  := Base_Type (Etype (Opnd2));
+      Loc : constant Source_Ptr := Sloc (Cnode);
 
-      R : RE_Id;
-      --  RE_Id value for function to be called
+      N : constant Nat := List_Length (Opnds);
+      --  Number of concatenation operands including nulls
+
+      NN : Nat := 0;
+      --  Number of operands excluding any known to be null
+
+      --  Arrays describing the operands, only the first NN entries of each
+      --  array are set (NN < N when we exclude known null operands).
+
+      Is_Fixed_Length : array (1 .. N) of Boolean;
+      --  True if length of corresponding operand known at compile time
+
+      Operands : array (1 .. N) of Node_Id;
+      --  Set to the corresponding entry in the Opnds list
+
+      Fixed_Length : array (1 .. N) of Uint;
+      --  Set to length of operand. Entries in this array are set only if
+      --  the corresponding entry in Is_Fixed_Length is True. Note that the
+      --  values in this array are always greater than zero, since we exclude
+      --  any
+
+      Fixed_Low_Bound : array (1 .. N) of Uint;
+      --  Set to lower bound of operand. Entries in this array are set only
+      --  if the corresponding entry in Is_Fixed_Length are True.
+
+      Var_Length : array (1 .. N) of Entity_Id;
+      --  Set to an entity of type Natural that contains the length of an
+      --  operand whose length is not known at compile time. Entries in this
+      --  array are set only if the corresponding entry in Is_Fixed_Length
+      --  is False.
+
+      Aggr_Length : array (0 .. N) of Node_Id;
+      --  The J'th entry in an expression node that represents the total
+      --  length of operands 1 through J. It is either an integer literal
+      --  node, or a reference to a constant entity with the right value,
+      --  so it is fine to just do a Copy_Node to get an appropriate copy.
+      --  The extra zero'th entry always is set to zero.
+
+      Low_Bound : Node_Id;
+      --  An tree node representing the low bound of the result. This is either
+      --  an integer literal node, or an identifier reference to a constant
+      --  entity initialized to the appropriate value.
+
+      Result : Node_Id;
+      --  Result of the concatenation
+
+      Opnd : Node_Id;
+      Ent  : Entity_Id;
+      Len  : Uint;
+      J    : Nat;
+      Clen : Node_Id;
+      Set  : Boolean;
 
    begin
-      --  In all cases, we build a call to a routine giving the list of
-      --  arguments as the parameter list to the routine.
+      Aggr_Length (0) := Make_Integer_Literal (Loc, 0);
 
-      case List_Length (Opnds) is
-         when 2 =>
-            if Typ1 = Standard_Character then
-               if Typ2 = Standard_Character then
-                  R := RE_Str_Concat_CC;
+      --  Go through operands settinn up the above arrays
 
-               else
-                  pragma Assert (Typ2 = Standard_String);
-                  R := RE_Str_Concat_CS;
-               end if;
+      J := 1;
+      while J <= N loop
+         Opnd := Remove_Head (Opnds);
+         Set_Parent (Opnd, Parent (Cnode));
+         Set := False;
 
-            elsif Typ1 = Standard_String then
-               if Typ2 = Standard_Character then
-                  R := RE_Str_Concat_SC;
+         --  Character or Character literal case
 
-               else
-                  pragma Assert (Typ2 = Standard_String);
-                  R := RE_Str_Concat;
-               end if;
+         if Base_Type (Etype (Opnd)) = Standard_Character then
+            NN := NN + 1;
+            Operands (NN) := Opnd;
+            Is_Fixed_Length (NN) := True;
+            Fixed_Length (NN) := Uint_1;
+            Fixed_Low_Bound (NN) := Uint_1;
+            Set := True;
 
-            --  If we have anything other than Standard_Character or
-            --  Standard_String, then we must have had a serious error
-            --  earlier, so we just abandon the attempt at expansion.
+         --  String literal case
 
-            else
-               pragma Assert (Serious_Errors_Detected > 0);
-               return;
+         elsif Nkind (Opnd) = N_String_Literal then
+            Len := UI_From_Int (String_Length (Strval (Opnd)));
+
+            if Len = 0 then
+               goto Continue;
             end if;
 
-         when 3 =>
-            R := RE_Str_Concat_3;
+            NN := NN + 1;
+            Operands (NN) := Opnd;
+            Is_Fixed_Length (NN) := True;
+            Fixed_Length (NN) := Len;
+            Fixed_Low_Bound (NN) := Uint_1;
+            Set := True;
 
-         when 4 =>
-            R := RE_Str_Concat_4;
+         --  All other cases
 
-         when 5 =>
-            R := RE_Str_Concat_5;
+         else
+            --  Check constrained case with known bounds
 
-         when others =>
-            R := RE_Null;
-            raise Program_Error;
-      end case;
+            if Is_Constrained (Etype (Opnd)) then
+               declare
+                  Opnd_Typ : constant Entity_Id := Etype (Opnd);
+                  Index    : constant Node_Id   := First_Index (Opnd_Typ);
+                  Indx_Typ : constant Entity_Id := Etype (Index);
+                  Lo       : constant Node_Id   := Type_Low_Bound  (Indx_Typ);
+                  Hi       : constant Node_Id   := Type_High_Bound (Indx_Typ);
 
-      --  Now generate the appropriate call
+               begin
+                  --  Fixed length constrained string type with known at
+                  --  compile time bounds is last case of fixed length
 
-      Rewrite (Cnode,
-        Make_Function_Call (Sloc (Cnode),
-          Name => New_Occurrence_Of (RTE (R), Loc),
-          Parameter_Associations => Opnds));
+                  if Compile_Time_Known_Value (Lo)
+                       and then
+                     Compile_Time_Known_Value (Hi)
+                  then
+                     declare
+                        Loval : constant Uint := Expr_Value (Lo);
+                        Hival : constant Uint := Expr_Value (Hi);
+                        Len   : constant Uint :=
+                                  UI_Max (Hival - Loval + 1, Uint_0);
 
+                     begin
+                        --  Exclude the null length case where the lower bound
+                        --  is other than 1 because annoyingly we need to keep
+                        --  such an operand around in case it is the one that
+                        --  supplies a lower bound to the result.
+
+                        if Loval = 1 or Len > 0 then
+
+                           --  Skip null case (we know that low bound is 1)
+
+                           if Len = 0 then
+                              goto Continue;
+                           end if;
+
+                           NN := NN + 1;
+                           Operands (NN) := Opnd;
+                           Is_Fixed_Length (NN) := True;
+                           Fixed_Length (NN)    := Len;
+                           Fixed_Low_Bound (NN) := Expr_Value (Lo);
+                           Set := True;
+                        end if;
+                     end;
+                  end if;
+               end;
+            end if;
+
+            --  All cases where the length is not known at compile time, or the
+            --  special case of an operand which is known to be null but has a
+            --  lower bound other than 1. Capture length of operand in entity.
+            --  separate entities
+
+            if not Set then
+               NN := NN + 1;
+               Operands (NN) := Opnd;
+               Is_Fixed_Length (NN) := False;
+
+               Var_Length (NN) :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_Internal_Name ('L'));
+
+               Insert_Action (Cnode,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Var_Length (NN),
+                   Constant_Present    => True,
+
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc),
+
+                   Expression          =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         =>
+                         Duplicate_Subexpr (Opnd, Name_Req => True),
+                       Attribute_Name => Name_Length)),
+
+                 Suppress => All_Checks);
+            end if;
+         end if;
+
+         --  Set next entry in aggregate length array
+
+         --  For first entry, make either integer literal for fixed length
+         --  or a reference to the saved length for variable length
+
+         if NN = 1 then
+            if Is_Fixed_Length (1) then
+               Aggr_Length (1) :=
+                 Make_Integer_Literal (Loc,
+                   Intval => Fixed_Length (1));
+            else
+               Aggr_Length (1) :=
+                 New_Reference_To (Var_Length (1), Loc);
+            end if;
+
+         --  If entry is fixed length and only fixed lengths so far, make
+         --  appropriate new integer literal adding new length.
+
+         elsif Is_Fixed_Length (NN)
+           and then Nkind (Aggr_Length (NN - 1)) = N_Integer_Literal
+         then
+            Aggr_Length (NN) :=
+              Make_Integer_Literal (Loc,
+                Intval => Fixed_Length (NN) + Intval (Aggr_Length (NN - 1)));
+
+            --  All other cases, construct an addition node for the length and
+            --  create an entity initialized to this length.
+
+         else
+            Ent :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_Internal_Name ('L'));
+
+            if Is_Fixed_Length (NN) then
+               Clen := Make_Integer_Literal (Loc, Fixed_Length (NN));
+            else
+               Clen := New_Reference_To (Var_Length (NN), Loc);
+            end if;
+
+            Insert_Action (Cnode,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Ent,
+                Constant_Present    => True,
+
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Natural, Loc),
+
+                Expression          =>
+                  Make_Op_Add (Loc,
+                    Left_Opnd  => New_Copy (Aggr_Length (NN - 1)),
+                    Right_Opnd => Clen)),
+
+              Suppress => All_Checks);
+
+            Aggr_Length (NN) :=
+              Make_Identifier (Loc,
+                Chars => Chars (Ent));
+         end if;
+
+      <<Continue>>
+         J := J + 1;
+      end loop;
+
+      --  If we have only null operands, return a null string literal. Note
+      --  that this means the lower bound is 1, but we retained any known null
+      --  operands whose lower bound was not 1, so this is legitimate.
+
+      if NN = 0 then
+         Start_String;
+         Result :=
+           Make_String_Literal (Loc,
+             Strval => End_String);
+         goto Done;
+      end if;
+
+      --  If we have only one non-null operand, return it and we are done.
+      --  There is one case in which this cannot be done, and that is when
+      --  the sole operand is of a character type, in which case it must be
+      --  converted to a string, and the easiest way of doing that is to go
+      --  through the normal general circuit.
+
+      if NN = 1
+        and then Base_Type (Etype (Operands (1))) /= Standard_Character
+      then
+         Result := Operands (1);
+         goto Done;
+      end if;
+
+      --  Cases where we have a real concatenation
+
+      --  Next step is to find the low bound for the result string that we
+      --  will allocate. Annoyingly this is not simply the low bound of the
+      --  first argument, because of the darned null string special exception.
+
+      --  If the first operand in the list has known length we know that
+      --  the lower bound of the result is the lower bound of this operand.
+
+      if Is_Fixed_Length (1) then
+         Low_Bound :=
+           Make_Integer_Literal (Loc,
+             Intval => Fixed_Low_Bound (1));
+
+      --  OK, we don't know the lower bound, we have to build a horrible
+      --  expression actions node of the form
+
+      --     if Cond1'Length /= 0 then
+      --        Opnd1'First
+      --     else
+      --        if Opnd2'Length /= 0 then
+      --          Opnd2'First
+      --        else
+      --           ...
+
+      --  The nesting ends either when we hit an operand whose length is known
+      --  at compile time, or on reaching the last operand, whose low bound we
+      --  take unconditionally whether or not it is null. It's easiest to do
+      --  this with a recursive procedure:
+
+      else
+         declare
+            function Get_Known_Bound (J : Nat) return Node_Id;
+            --  Returns the lower bound determined by operands J .. NN
+
+            ---------------------
+            -- Get_Known_Bound --
+            ---------------------
+
+            function Get_Known_Bound (J : Nat) return Node_Id is
+               Lo : Node_Id;
+
+            begin
+               if Is_Fixed_Length (J) then
+                  return
+                    Make_Integer_Literal (Loc,
+                      Intval => Fixed_Low_Bound (J));
+               end if;
+
+               Lo :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix =>
+                     Duplicate_Subexpr (Operands (J), Name_Req => True),
+                   Attribute_Name => Name_First);
+
+               if J = NN then
+                  return Lo;
+
+               else
+                  return
+                    Make_Conditional_Expression (Loc,
+                      Expressions => New_List (
+
+                        Make_Op_Ne (Loc,
+                          Left_Opnd  => New_Reference_To (Var_Length (J), Loc),
+                          Right_Opnd => Make_Integer_Literal (Loc, 0)),
+
+                        Lo,
+                        Get_Known_Bound (J + 1)));
+               end if;
+            end Get_Known_Bound;
+
+         begin
+            Ent :=
+              Make_Defining_Identifier (Loc,
+                Chars => New_Internal_Name ('L'));
+
+            Insert_Action (Cnode,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Ent,
+                Constant_Present    => True,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Natural, Loc),
+                Expression          => Get_Known_Bound (1)),
+              Suppress => All_Checks);
+
+            Low_Bound := New_Reference_To (Ent, Loc);
+         end;
+      end if;
+
+      --  Now we build the result, which is a reference to the string entity
+      --  we will construct with appropriate bounds.
+
+      Ent :=
+        Make_Defining_Identifier (Loc,
+          Chars => New_Internal_Name ('S'));
+
+      Insert_Action (Cnode,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Ent,
+
+          Object_Definition   =>
+            Make_Subtype_Indication (Loc,
+              Subtype_Mark => New_Occurrence_Of (Standard_String, Loc),
+              Constraint   =>
+                Make_Index_Or_Discriminant_Constraint (Loc,
+                  Constraints => New_List (
+                    Make_Range (Loc,
+                      Low_Bound => New_Copy (Low_Bound),
+                      High_Bound =>
+                        Make_Op_Add (Loc,
+                          Left_Opnd  => New_Copy (Low_Bound),
+                          Right_Opnd =>
+                            Make_Op_Subtract (Loc,
+                              Left_Opnd  => New_Copy (Aggr_Length (NN)),
+                              Right_Opnd =>
+                                Make_Integer_Literal (Loc, 1)))))))),
+
+        Suppress => All_Checks);
+
+      --  Now we will generate the assignments to do the actual concatenation
+
+      for J in 1 .. NN loop
+         declare
+            Lo : constant Node_Id :=
+                   Make_Op_Add (Loc,
+                     Left_Opnd  => New_Copy (Low_Bound),
+                     Right_Opnd => Aggr_Length (J - 1));
+
+            Hi : constant Node_Id :=
+                   Make_Op_Add (Loc,
+                     Left_Opnd  => New_Copy (Low_Bound),
+                     Right_Opnd =>
+                       Make_Op_Subtract (Loc,
+                         Left_Opnd  => Aggr_Length (J),
+                         Right_Opnd => Make_Integer_Literal (Loc, 1)));
+
+         begin
+            if Base_Type (Etype (Operands (J))) = Standard_Character then
+               Insert_Action (Cnode,
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Indexed_Component (Loc,
+                       Prefix      => New_Occurrence_Of (Ent, Loc),
+                       Expressions => New_List (Lo)),
+                   Expression => Operands (J)),
+                 Suppress => All_Checks);
+
+            else
+               Insert_Action (Cnode,
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Slice (Loc,
+                       Prefix         => New_Occurrence_Of (Ent, Loc),
+                       Discrete_Range =>
+                         Make_Range (Loc,
+                           Low_Bound  => Lo,
+                           High_Bound => Hi)),
+                   Expression => Operands (J)),
+                 Suppress => All_Checks);
+            end if;
+         end;
+      end loop;
+
+      Result := New_Reference_To (Ent, Loc);
+
+   <<Done>>
+      Rewrite (Cnode, Result);
       Analyze_And_Resolve (Cnode, Standard_String);
-
-   exception
-      when RE_Not_Available =>
-         return;
    end Expand_Concatenate_String;
 
    ------------------------
@@ -4540,21 +4905,6 @@ package body Exp_Ch4 is
    -- Expand_N_Op_Concat --
    ------------------------
 
-   Max_Available_String_Operands : Int := -1;
-   --  This is initialized the first time this routine is called. It records
-   --  a value of 0,2,3,4,5 depending on what Str_Concat_n procedures are
-   --  available in the run-time:
-   --
-   --    0  None available
-   --    2  RE_Str_Concat available, RE_Str_Concat_3 not available
-   --    3  RE_Str_Concat/Concat_3 available, RE_Str_Concat_4 not available
-   --    4  RE_Str_Concat/Concat_3/4 available, RE_Str_Concat_5 not available
-   --    5  All routines including RE_Str_Concat_5 available
-
-   Char_Concat_Available : Boolean;
-   --  Records if the routines RE_Str_Concat_CC/CS/SC are available. True if
-   --  all three are available, False if any one of these is unavailable.
-
    procedure Expand_N_Op_Concat (N : Node_Id) is
       Opnds : List_Id;
       --  List of operands to be concatenated
@@ -4573,37 +4923,6 @@ package body Exp_Ch4 is
       --  Component type of concatenation represented by Cnode
 
    begin
-      --  Initialize global variables showing run-time status
-
-      if Max_Available_String_Operands < 1 then
-
-         --  See what routines are available and set max operand count
-         --  according to the highest count available in the run-time.
-
-         if not RTE_Available (RE_Str_Concat) then
-            Max_Available_String_Operands := 0;
-
-         elsif not RTE_Available (RE_Str_Concat_3) then
-            Max_Available_String_Operands := 2;
-
-         elsif not RTE_Available (RE_Str_Concat_4) then
-            Max_Available_String_Operands := 3;
-
-         elsif not RTE_Available (RE_Str_Concat_5) then
-            Max_Available_String_Operands := 4;
-
-         else
-            Max_Available_String_Operands := 5;
-         end if;
-
-         Char_Concat_Available :=
-           RTE_Available (RE_Str_Concat_CC)
-             and then
-           RTE_Available (RE_Str_Concat_CS)
-             and then
-           RTE_Available (RE_Str_Concat_SC);
-      end if;
-
       --  Ensure validity of both operands
 
       Binary_Op_Validity_Checks (N);
@@ -4632,29 +4951,16 @@ package body Exp_Ch4 is
       --  nodes above, so now we process bottom up, doing the operations. We
       --  gather a string that is as long as possible up to five operands
 
-      --  The outer loop runs more than once if there are more than five
-      --  concatenations of type Standard.String, the most we handle for
-      --  this case, or if more than one concatenation type is involved.
+      --  The outer loop runs more than once if more than one concatenation
+      --  type is involved.
 
       Outer : loop
          Opnds := New_List (Left_Opnd (Cnode), Right_Opnd (Cnode));
          Set_Parent (Opnds, N);
 
-         --  The inner loop gathers concatenation operands. We gather any
-         --  number of these in the non-string case, or if no concatenation
-         --  routines are available for string (since in that case we will
-         --  treat string like any other non-string case). Otherwise we only
-         --  gather as many operands as can be handled by the available
-         --  procedures in the run-time library (normally 5, but may be
-         --  less for the configurable run-time case).
+         --  The inner loop gathers concatenation operands
 
          Inner : while Cnode /= N
-                   and then (Base_Type (Etype (Cnode)) /= Standard_String
-                               or else
-                             Max_Available_String_Operands = 0
-                               or else
-                             List_Length (Opnds) <
-                                               Max_Available_String_Operands)
                    and then Base_Type (Etype (Cnode)) =
                             Base_Type (Etype (Parent (Cnode)))
          loop
@@ -4662,17 +4968,15 @@ package body Exp_Ch4 is
             Append (Right_Opnd (Cnode), Opnds);
          end loop Inner;
 
-         --  Here we process the collected operands. First we convert singleton
-         --  operands to singleton aggregates. This is skipped however for the
-         --  case of two operands of type String since we have special routines
-         --  for these cases.
+         --  Here we process the collected operands. First convert singleton
+         --  operands to singleton aggregates. This is skipped however for
+         --  the case of operands of type Character/String since the string
+         --  concatenation routine can handle these special cases.
 
          Atyp := Base_Type (Etype (Cnode));
          Ctyp := Base_Type (Component_Type (Etype (Cnode)));
 
-         if (List_Length (Opnds) > 2 or else Atyp /= Standard_String)
-           or else not Char_Concat_Available
-         then
+         if Atyp /= Standard_String then
             Opnd := First (Opnds);
             loop
                if Base_Type (Etype (Opnd)) = Ctyp then
@@ -4689,9 +4993,7 @@ package body Exp_Ch4 is
 
          --  Now call appropriate continuation routine
 
-         if Atyp = Standard_String
-           and then Max_Available_String_Operands > 0
-         then
+         if Atyp = Standard_String then
             Expand_Concatenate_String (Cnode, Opnds);
          else
             Expand_Concatenate_Other (Cnode, Opnds);

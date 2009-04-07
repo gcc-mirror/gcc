@@ -1830,6 +1830,7 @@ package body GNAT.Sockets is
    procedure Set (Item : in out Socket_Set_Type; Socket : Socket_Type) is
    begin
       if Item.Last = No_Socket then
+
          --  Uninitialized socket set, make sure it is properly zeroed out
 
          Reset_Socket_Set (Item.Set'Access);
@@ -1838,6 +1839,7 @@ package body GNAT.Sockets is
       elsif Item.Last < Socket then
          Item.Last := Socket;
       end if;
+
       Insert_Socket_In_Set (Item.Set'Access, C.int (Socket));
    end Set;
 

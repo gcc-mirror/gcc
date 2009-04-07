@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,10 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the function for concatenating four strings
+
+--  NOTE: This package is obsolescent. It is no longer used by the compiler
+--  which now generates concatenation inline. It is retained only because
+--  it may be used during bootstrapping using old versions of the compiler.
 
 pragma Warnings (Off);
 pragma Compiler_Unit;

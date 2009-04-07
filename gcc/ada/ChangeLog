@@ -1,5 +1,35 @@
 2009-04-07  Robert Dewar  <dewar@adacore.com>
 
+	* g-socket.adb: Minor reformatting.
+
+	* g-socthi-mingw.adb: Minor reformatting
+
+	* g-sothco.ads: Minor reformatting
+
+	* exp_ch4.adb:
+	(Expand_Concatenate_String): Complete rewrite to generate efficient code
+	inline instead of relying on external library routines.
+
+	* s-strops.ads, s-sopco5.ads, s-sopco5.adb, s-sopco4.ads, s-sopco4.adb,
+	s-sopco3.ads, s-sopco3.adb, s-strops.adb: Note that this unit is now
+	obsolescent
+
+2009-04-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb:
+	(Eval_Attribute): for attributes of array objects that are not strings,
+	attributes are not static if nominal subtype of object is unconstrained.
+
+2009-04-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity): If two implicit homonym
+	operations for a type T in an instance do not override each other,
+	when T is derived from a formal private type, the corresponding
+	operations inherited by a type derived from T outside
+	of the instance do not override each other either.
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
 	(Osint.Fail): Change calling sequence to have one string arg
 	(Make.Make_Failed): Same change
 	All callers are adjusted to use concatenation
