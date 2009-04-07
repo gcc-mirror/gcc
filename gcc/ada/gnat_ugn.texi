@@ -3886,7 +3886,7 @@ programmers, and these are documented at appropriate points in this
 users guide.
 
 @item -gnatD
-@cindex @option{-gnatD} (@command{gcc})
+@cindex @option{-gnatD[nn]} (@command{gcc})
 Create expanded source files for source level debugging. This switch
 also suppress generation of cross-reference information
 (see @option{-gnatx}).
@@ -3952,8 +3952,8 @@ Note that @option{^-gnatg^/GNAT_INTERNAL^} implies
 so that all standard warnings and all standard style options are turned on.
 All warnings and style error messages are treated as errors.
 
-@item -gnatG
-@cindex @option{-gnatG} (@command{gcc})
+@item -gnatGnn
+@cindex @option{-gnatG[nn]} (@command{gcc})
 List generated expanded code in source form.
 
 @item ^-gnath^/HELP^
@@ -6781,7 +6781,7 @@ switches in the body of the @code{Debug} unit in the compiler source
 file @file{debug.adb}.
 @end ifclear
 
-@item -gnatG
+@item -gnatG[nn]
 @cindex @option{-gnatG} (@command{gcc})
 This switch causes the compiler to generate auxiliary output containing
 a pseudo-source listing of the generated expanded code. Like most Ada
@@ -6795,6 +6795,11 @@ Ada (e.g.@: the use of controlled types), where simple Ada statements can
 generate a lot of run-time code. By using @option{-gnatG} you can identify
 these cases, and consider whether it may be desirable to modify the coding
 approach to improve efficiency.
+
+The optional parameter @code{nn} if present after -gnatG specifies an
+alternative maximum line length that overrides the normal default of 72.
+This value is in the range 40-999999, values less than 40 being silently
+reset to 40.
 
 The format of the output is very similar to standard Ada source, and is
 easily understood by an Ada programmer. The following special syntactic
@@ -6879,7 +6884,7 @@ representation in base 2-16 (for example, the result of compile time
 evaluation of the expression 1.0/27.0).
 @end table
 
-@item -gnatD
+@item -gnatD[nn]
 @cindex @option{-gnatD} (@command{gcc})
 When used in conjunction with @option{-gnatG}, this switch causes
 the expanded source, as described above for
@@ -6906,6 +6911,11 @@ If the switch @option{-gnatL} is used in conjunction with
 @cindex @option{-gnatL} (@command{gcc})
 @option{-gnatDG}, then the original source lines are interspersed
 in the expanded source (as comment lines with the original line number).
+
+The optional parameter @code{nn} if present after -gnatD specifies an
+alternative maximum line length that overrides the normal default of 72.
+This value is in the range 40-999999, values less than 40 being silently
+reset to 40.
 
 @item -gnatr
 @cindex @option{-gnatr} (@command{gcc})

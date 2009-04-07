@@ -279,6 +279,13 @@ package body Switch.C is
             when 'D' =>
                Ptr := Ptr + 1;
 
+               --  Scan option integer line limit value
+
+               if Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' then
+                  Scan_Nat (Switch_Chars, Max, Ptr, Sprint_Line_Limit, 'D');
+                  Sprint_Line_Limit := Nat'Max (Sprint_Line_Limit, 40);
+               end if;
+
                --  Note: -gnatD also sets -gnatx (to turn off cross-reference
                --  generation in the ali file) since otherwise this generation
                --  gets confused by the "wrong" Sloc values put in the tree.
@@ -521,6 +528,13 @@ package body Switch.C is
             when 'G' =>
                Ptr := Ptr + 1;
                Print_Generated_Code := True;
+
+               --  Scan option integer line limit value
+
+               if Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' then
+                  Scan_Nat (Switch_Chars, Max, Ptr, Sprint_Line_Limit, 'G');
+                  Sprint_Line_Limit := Nat'Max (Sprint_Line_Limit, 40);
+               end if;
 
             --  Processing for h switch
 

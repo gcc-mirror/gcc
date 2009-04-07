@@ -87,9 +87,6 @@ package body Sprint is
    --  This keeps track of the physical line number of the last source line
    --  that has been output. The value is only valid in Dump_Source_Text mode.
 
-   Line_Limit : constant := 72;
-   --  Limit value for chopping long lines
-
    -------------------------------
    -- Operator Precedence Table --
    -------------------------------
@@ -355,7 +352,7 @@ package body Sprint is
 
    procedure Col_Check (N : Nat) is
    begin
-      if N + Column > Line_Limit then
+      if N + Column > Sprint_Line_Limit then
          Write_Indent_Str ("  ");
       end if;
    end Col_Check;
@@ -1119,7 +1116,7 @@ package body Sprint is
             Sprint_Indented_List (Statements (Node));
 
          when N_Character_Literal =>
-            if Column > 70 then
+            if Column > Sprint_Line_Limit - 2 then
                Write_Indent_Str ("  ");
             end if;
 
@@ -2723,7 +2720,7 @@ package body Sprint is
             Write_Char (')');
 
          when N_String_Literal =>
-            if String_Length (Strval (Node)) + Column > 75 then
+            if String_Length (Strval (Node)) + Column > Sprint_Line_Limit then
                Write_Indent_Str ("  ");
             end if;
 
@@ -4216,7 +4213,7 @@ package body Sprint is
 
    procedure Write_Str_With_Col_Check (S : String) is
    begin
-      if Int (S'Last) + Column > Line_Limit then
+      if Int (S'Last) + Column > Sprint_Line_Limit then
          Write_Indent_Str ("  ");
 
          if S (S'First) = ' ' then
@@ -4236,7 +4233,7 @@ package body Sprint is
 
    procedure Write_Str_With_Col_Check_Sloc (S : String) is
    begin
-      if Int (S'Last) + Column > Line_Limit then
+      if Int (S'Last) + Column > Sprint_Line_Limit then
          Write_Indent_Str ("  ");
 
          if S (S'First) = ' ' then

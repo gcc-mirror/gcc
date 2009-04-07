@@ -1888,7 +1888,7 @@ package body Make is
                         return;
                      end if;
 
-                     --  Do the same check for each of the withed units.
+                     --  Do the same check for each of the withed units
 
                      W_Check :
                      for W in Units.Table (U).First_With

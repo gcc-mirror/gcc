@@ -1,5 +1,29 @@
 2009-04-07  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_ugn.texi: Document -gnatDnn/-gnatGnn
+
+	* opt.ads (Sprint_Line_Limit): New parameter
+	
+	* sprint.adb: Usa Sprint_Line_Limit instead of Line_Limit throughout
+	
+	* switch-c.adb: Recognize -gnatDnnn and -gnatGnnn switches
+	
+	* usage.adb: Output information for -gnatGnn -gnatDnn
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb: Minor reformatting
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* mlib-tgt-specific-vms-alpha.adb: Minor reformatting
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* mlib-tgt-specific-vms-ia64.adb: Minor reformatting
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb:
 	Remove Assume_Valid parameter from In_Subrange_Of calls
 	
