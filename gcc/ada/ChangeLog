@@ -1,3 +1,9 @@
+2009-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (check_for_eliminated_entity): New function.
+	(Attribute_to_gnu): Invoke it for Access- and Address-like attributes.
+	(call_to_gnu): Invoke it instead of manually checking.
+
 2009-04-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (finish_record_type): Force structural equality

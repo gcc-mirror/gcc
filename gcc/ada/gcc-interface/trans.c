@@ -823,6 +823,24 @@ Pragma_to_gnu (Node_Id gnat_node)
 
   return gnu_result;
 }
+
+/* Issue an error message if GNAT_NODE references an eliminated entity.  */
+
+static void
+check_for_eliminated_entity (Node_Id gnat_node)
+{
+  switch (Nkind (gnat_node))
+    {
+    case N_Identifier:
+    case N_Operator_Symbol:
+    case N_Expanded_Name:
+    case N_Attribute_Reference:
+      if (Is_Eliminated (Entity (gnat_node)))
+	Eliminate_Error_Msg (gnat_node, Entity (gnat_node));
+      break;
+    }
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, an N_Attribute,
    to a GCC tree, which is returned.  GNU_RESULT_TYPE_P is a pointer to
    where we should place the result type.  ATTRIBUTE is the attribute ID.  */
@@ -963,6 +981,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	 don't try to build a trampoline.  */
       if (attribute == Attr_Code_Address)
 	{
+	  check_for_eliminated_entity (Prefix (gnat_node));
+
 	  for (gnu_expr = gnu_result;
 	       CONVERT_EXPR_P (gnu_expr);
 	       gnu_expr = TREE_OPERAND (gnu_expr, 0))
@@ -977,6 +997,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	 a useful warning with -Wtrampolines.  */
       else if (TREE_CODE (TREE_TYPE (gnu_prefix)) == FUNCTION_TYPE)
 	{
+	  check_for_eliminated_entity (Prefix (gnat_node));
+
 	  for (gnu_expr = gnu_result;
 	       CONVERT_EXPR_P (gnu_expr);
 	       gnu_expr = TREE_OPERAND (gnu_expr, 0))
@@ -2098,15 +2120,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
   tree gnu_after_list = NULL_TREE;
   tree gnu_subprog_call;
 
-  switch (Nkind (Name (gnat_node)))
-    {
-    case N_Identifier:
-    case N_Operator_Symbol:
-    case N_Expanded_Name:
-    case N_Attribute_Reference:
-      if (Is_Eliminated (Entity (Name (gnat_node))))
-	Eliminate_Error_Msg (gnat_node, Entity (Name (gnat_node)));
-    }
+  check_for_eliminated_entity (Name (gnat_node));
 
   gcc_assert (TREE_CODE (gnu_subprog_type) == FUNCTION_TYPE);
 
