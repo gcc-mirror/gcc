@@ -1,3 +1,13 @@
+2009-04-07  Paolo Bonzini  <bonzini@gnu.org>
+
+        * config/i386/i386.c (ix86_compare_emitted): Remove.
+        (ix86_expand_compare, ix86_expand_branch): Handle MODE_CC
+        ix86_compare_op0 like ix86_compare_emitted used to be handled.
+        * config/i386/i386.h (ix86_compare_emitted): Remove.
+        * config/i386/i386.md (stack_protect_test): Set ix86_compare_op0
+        instead of ix86_compare_emitted.
+        * config/i386/sync.md (sync_compare_and_swap_cc): Likewise.
+
 2009-04-07  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config.gcc (sh-*-*): Add sysroot-suffix.h to tm_file.

@@ -168,9 +168,8 @@
   "TARGET_CMPXCHG"
 {
   operands[4] = gen_rtx_REG (CCZmode, FLAGS_REG);
-  ix86_compare_op0 = operands[3];
-  ix86_compare_op1 = NULL;
-  ix86_compare_emitted = operands[4];
+  ix86_compare_op0 = operands[4];
+  ix86_compare_op1 = const0_rtx;
   if ((<MODE>mode == DImode && !TARGET_64BIT) || <MODE>mode == TImode)
     {
       enum machine_mode hmode = <MODE>mode == DImode ? SImode : DImode;
