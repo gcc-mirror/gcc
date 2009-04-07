@@ -605,16 +605,20 @@ package body Styleg is
          end if;
       end if;
 
-      --  Check DOS line terminator (ignore EOF, since we only get called
-      --  with an EOF if it is the last character in the buffer, and was
-      --  therefore not present in the sources
+      --  Check DOS line terminator
 
       if Style_Check_DOS_Line_Terminator then
+
+      --  Ignore EOF, since we only get called with an EOF if it is the last
+      --  character in the buffer (and was therefore not in the source file),
+      --  since the terminating EOF is added to stop the scan.
+
          if Source (Scan_Ptr) = EOF then
             null;
-         elsif Source (Scan_Ptr) /= LF
-           or else Source (Scan_Ptr + 1) = CR
-         then
+
+         --  Bad terminator if we don't have an LF
+
+         elsif Source (Scan_Ptr) /= LF then
             Error_Msg_S ("(style) incorrect line terminator");
          end if;
       end if;

@@ -2044,9 +2044,7 @@ package body Checks is
         and then
            Is_Discrete_Type (S_Typ) = Is_Discrete_Type (Target_Typ)
         and then
-          (In_Subrange_Of (S_Typ, Target_Typ,
-                           Assume_Valid => True,
-                           Fixed_Int    => Fixed_Int)
+          (In_Subrange_Of (S_Typ, Target_Typ, Fixed_Int)
              or else
                Is_In_Range (Expr, Target_Typ,
                             Assume_Valid => True,
@@ -2361,9 +2359,7 @@ package body Checks is
          begin
             if not Overflow_Checks_Suppressed (Target_Base)
               and then not
-                In_Subrange_Of (Expr_Type, Target_Base,
-                                Assume_Valid => True,
-                                Fixed_Int    => Conv_OK)
+                In_Subrange_Of (Expr_Type, Target_Base, Fixed_Int => Conv_OK)
               and then not Float_To_Int
             then
                Activate_Overflow_Check (N);
@@ -4601,7 +4597,7 @@ package body Checks is
       --  case the literal has already been labeled as having the subtype of
       --  the target.
 
-      if In_Subrange_Of (Source_Type, Target_Type, Assume_Valid => True)
+      if In_Subrange_Of (Source_Type, Target_Type)
         and then not
           (Nkind (N) = N_Integer_Literal
              or else
@@ -4656,9 +4652,7 @@ package body Checks is
 
       --  The conversions will always work and need no check
 
-      elsif In_Subrange_Of
-             (Target_Type, Source_Base_Type, Assume_Valid => True)
-      then
+      elsif In_Subrange_Of (Target_Type, Source_Base_Type) then
          Insert_Action (N,
            Make_Raise_Constraint_Error (Loc,
              Condition =>
@@ -4690,9 +4684,7 @@ package body Checks is
       --  If that is the case, we can freely convert the source to the target,
       --  and then test the target result against the bounds.
 
-      elsif In_Subrange_Of
-             (Source_Type, Target_Base_Type, Assume_Valid => True)
-      then
+      elsif In_Subrange_Of (Source_Type, Target_Base_Type) then
 
          --  We make a temporary to hold the value of the converted value
          --  (converted to the base type), and then we will do the test against
@@ -6855,7 +6847,7 @@ package body Checks is
          --  range of the target type.
 
          else
-            if not In_Subrange_Of (S_Typ, T_Typ, Assume_Valid => True) then
+            if not In_Subrange_Of (S_Typ, T_Typ) then
                Cond := Discrete_Expr_Cond (Ck_Node, T_Typ);
             end if;
          end if;

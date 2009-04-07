@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2490,8 +2490,9 @@ package body Sem_Prag is
             then
                if Scope (E) /= Scope (Alias (E)) then
                   Error_Pragma_Ref
-                    ("cannot apply pragma% to non-local renaming&#", E);
+                    ("cannot apply pragma% to non-local entity&#", E);
                end if;
+
                E := Alias (E);
 
             elsif Nkind_In (Parent (E), N_Full_Type_Declaration,
@@ -2630,8 +2631,10 @@ package body Sem_Prag is
                     and then Scope (E1) /= Scope (Alias (E1))
                   then
                      Error_Pragma_Ref
-                       ("cannot apply pragma% to non-local renaming&#", E1);
+                       ("cannot apply pragma% to non-local entity& declared#",
+                        E1);
                   end if;
+
                   Set_Convention_From_Pragma (E1);
 
                   if Prag_Id = Pragma_Import then

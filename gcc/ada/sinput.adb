@@ -657,11 +657,7 @@ package body Sinput is
          end if;
 
       elsif Chr = LF then
-         if Source (P + 1) = CR then
-            P := P + 2;
-         else
-            P := P + 1;
-         end if;
+         P := P + 1;
 
       elsif Chr = FF or else Chr = VT then
          P := P + 1;

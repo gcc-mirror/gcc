@@ -3715,7 +3715,7 @@ package VMS_Data is
    --   Specifies the main project file to be used. The project files rooted
    --   at the main project file will be parsed before looking for sources.
    --   The source and object directories to be searched will be communicated
-   --   to gnatfind  through logical names ADA_PRJ_INCLUDE_FILE and
+   --   to gnatfind through logical names ADA_PRJ_INCLUDE_FILE and
    --   ADA_PRJ_OBJECTS_FILE.
 
    S_Find_Ref     : aliased constant S := "/REFERENCES "                   &
@@ -5829,6 +5829,7 @@ package VMS_Data is
    --
    --   Specify the case of Ada keywords. The default is keywords in lower
    --   case.
+   --
    --   keyword-option may be one of the following:
    --
    --      LOWER_CASE (D)
@@ -5845,9 +5846,9 @@ package VMS_Data is
    --        /MAX_INDENT=nnn
    --
    --   Do not use an additional indentation level for case alternatives
-   --   and variants if their number is nnn or more. The default is  10.
-   --   If nnn is zero, an additional indentation level is  used for any number
-   --   of case alternatives and variants.
+   --   and variants if their number is nnn or more. The default is 10.
+   --   If nnn is zero, an additional indentation level is used for any
+   --   number of case alternatives and variants.
 
    S_Pretty_Mess      : aliased constant S := "/MESSAGES_PROJECT_FILE="    &
                                             "DEFAULT "                     &

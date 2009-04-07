@@ -1,5 +1,36 @@
 2009-04-07  Robert Dewar  <dewar@adacore.com>
 
+	* checks.adb:
+	Remove Assume_Valid parameter from In_Subrange_Of calls
+	
+	* sem_eval.adb:
+	(Is_Subrange_Of): Remove Assume_Valid parameter, not needed
+	(Is_In_Range): Remove incorrect use of Assume_Valid
+	(Is_Out_Of_Range): Remove incorrect use of Assume_Valid
+	
+	* sem_eval.ads:
+	(Is_Subrange_Of): Remove Assume_Valid parameter, not needed
+	(Is_In_Range): Documentation cleanup
+	(Is_Out_Of_Range): Documentation cleanup
+
+	* gnat_rm.texi:
+	Add documentation for Assume_No_Invalid_Values pragma
+
+	* sem_ch12.adb: Minor reformatting
+
+	* sem_ch6.adb: (Check_Conformance): Avoid cascaded errors
+
+	* sem_prag.adb: Improve error message.
+
+	* gnatchop.adb, osint.ads, sinput.adb, sinput.ads, styleg.adb:
+	LF/CR no longer recognized as line terminator
+
+	* switch.ads: Minor documentation improvement
+
+	* vms_data.ads: Minor reformatting
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
 	* checks.adb (Determine_Range): Add Assume_Valid parameter
 	
 	* checks.ads (Determine_Range): Add Assume_Valid parameter
