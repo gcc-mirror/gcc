@@ -1,3 +1,9 @@
+2009-04-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/ia64/ia64.c (ia64_builtins): Add IA64_BUILTIN_HUGE_VALQ.
+	(ia64_init_builtins): Handle IA64_BUILTIN_HUGE_VALQ.
+	(ia64_expand_builtin): Likewise.
+
 2009-04-07  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-ssa-alias.c (refs_may_alias_p_1): Check for
@@ -19,23 +25,23 @@
 
 2009-04-07  Paolo Bonzini  <bonzini@gnu.org>
 
-        * optabs.c (can_compare_p): Test the predicate of a
-        cbranch and cstore pattern.
+	* optabs.c (can_compare_p): Test the predicate of a
+	cbranch and cstore pattern.
 
 2009-04-07  Paolo Bonzini  <bonzini@gnu.org>
 
-        * expr.c (convert_move): Use emit_store_flag instead of
-        "emulating" it.
+	* expr.c (convert_move): Use emit_store_flag instead of
+	"emulating" it.
 
 2009-04-07  Paolo Bonzini  <bonzini@gnu.org>
 
-        * config/i386/i386.c (ix86_compare_emitted): Remove.
-        (ix86_expand_compare, ix86_expand_branch): Handle MODE_CC
-        ix86_compare_op0 like ix86_compare_emitted used to be handled.
-        * config/i386/i386.h (ix86_compare_emitted): Remove.
-        * config/i386/i386.md (stack_protect_test): Set ix86_compare_op0
-        instead of ix86_compare_emitted.
-        * config/i386/sync.md (sync_compare_and_swap_cc): Likewise.
+	* config/i386/i386.c (ix86_compare_emitted): Remove.
+	(ix86_expand_compare, ix86_expand_branch): Handle MODE_CC
+	ix86_compare_op0 like ix86_compare_emitted used to be handled.
+	* config/i386/i386.h (ix86_compare_emitted): Remove.
+	* config/i386/i386.md (stack_protect_test): Set ix86_compare_op0
+	instead of ix86_compare_emitted.
+	* config/i386/sync.md (sync_compare_and_swap_cc): Likewise.
 
 2009-04-07  Andrew Stubbs  <ams@codesourcery.com>
 
@@ -1450,7 +1456,7 @@
 
 2009-03-31  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        PR target/27237
+	PR target/27237
 	* doc/invoke.texi (ARM Options): Update documentation for -mthumb.
 	
 2009-03-31  Richard Guenther  <rguenther@suse.de>
@@ -1652,8 +1658,8 @@
 
 2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
-        * combine.c (simplify_comparison): Use have_insn_for.
-        * dojump.c (do_jump): Likewise.
+	* combine.c (simplify_comparison): Use have_insn_for.
+	* dojump.c (do_jump): Likewise.
 
 2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -1680,10 +1686,10 @@
 
 2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
-        * cfglayout.c (pass_into_cfg_layout_mode, pass_outof_cfg_layout_mode):
-        Provide/destroy PROP_cfglayout respectively.
-        * gcse.c (pass_jump_bypass, pass_gcse): Require it.
-        * tree-pass.h (PROP_cfglayout): New.
+	* cfglayout.c (pass_into_cfg_layout_mode, pass_outof_cfg_layout_mode):
+	Provide/destroy PROP_cfglayout respectively.
+	* gcse.c (pass_jump_bypass, pass_gcse): Require it.
+	* tree-pass.h (PROP_cfglayout): New.
 
 2009-03-30  Paolo Bonzini  <bonzini@gnu.org>
 
