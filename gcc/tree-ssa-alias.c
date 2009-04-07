@@ -688,9 +688,9 @@ refs_may_alias_p_1 (tree ref1, tree ref2)
      *D.1663_44 = VIEW_CONVERT_EXPR<struct DB_LSN>(__tmp$B0F64_59);
      which is seen as a struct copy.  */
   if (TREE_CODE (base1) == SSA_NAME
-      || CONSTANT_CLASS_P (base1)
       || TREE_CODE (base2) == SSA_NAME
-      || CONSTANT_CLASS_P (base2))
+      || is_gimple_min_invariant (base1)
+      || is_gimple_min_invariant (base2))
     return false;
 
   var1_p = SSA_VAR_P (base1);

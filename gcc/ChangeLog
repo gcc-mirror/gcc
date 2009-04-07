@@ -1,3 +1,9 @@
+2009-04-07  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-ssa-alias.c (refs_may_alias_p_1): Check for
+	is_gimple_min_invariant rather than CONSTANT_CLASS_P so that invariant
+	ADDR_EXPRS are include too.
+
 2009-04-07  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Non-aliased
