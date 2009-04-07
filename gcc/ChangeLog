@@ -1,3 +1,11 @@
+2009-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25185
+	* c-common.h, c-common.c: Add flag_pretty_templates.
+	* c-opts.c (c_common_handle_option): Set it.
+	* c.opt: Add -fno-pretty-templates.
+	* doc/invoke.texi (C++ Dialect Options): Likewise.
+
 2009-04-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/ia64/ia64.c (ia64_builtins): Add IA64_BUILTIN_HUGE_VALQ.

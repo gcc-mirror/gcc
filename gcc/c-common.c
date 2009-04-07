@@ -593,6 +593,11 @@ int flag_enforce_eh_specs = 1;
 
 int flag_threadsafe_statics = 1;
 
+/* Nonzero if we want to pretty-print template specializations as the
+   template signature followed by the arguments.  */
+
+int flag_pretty_templates = 1;
+
 /* Nonzero means warn about implicit declarations.  */
 
 int warn_implicit = 1;

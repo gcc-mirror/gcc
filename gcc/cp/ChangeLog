@@ -1,3 +1,11 @@
+2009-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25185
+	* error.c (dump_function_decl): Don't pretty-print templates
+	if -fno-pretty-templates.
+	(count_non_default_template_args): Print all args if
+	-fno-pretty-templates.
+
 2009-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/35146

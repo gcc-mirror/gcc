@@ -716,6 +716,10 @@ fpreprocessed
 C ObjC C++ ObjC++
 Treat the input file as already preprocessed
 
+fpretty-templates
+C++ ObjC++
+-fno-pretty-templates Do not pretty-print template specializations as the template signature followed by the arguments
+
 freplace-objc-classes
 ObjC ObjC++
 Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime
