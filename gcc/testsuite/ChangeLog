@@ -1,3 +1,7 @@
+2009-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/subp_elim_errors.ad[sb]: New test.
+
 2009-04-07  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/38920
