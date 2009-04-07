@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6613,7 +6613,11 @@ package body Sem_Ch8 is
 
                Next_Entity (E);
 
-               if not Full_Vis then
+               if not Full_Vis
+                 and then Is_Package_Or_Generic_Package (S)
+               then
+                  --  We are in the visible part of the package scope
+
                   exit when E = First_Private_Entity (S);
                end if;
             end loop;
