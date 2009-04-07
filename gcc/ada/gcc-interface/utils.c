@@ -210,7 +210,7 @@ init_gnat_to_gnu (void)
 
 /* GNAT_ENTITY is a GNAT tree node for an entity.   GNU_DECL is the GCC tree
    which is to be associated with GNAT_ENTITY. Such GCC tree node is always
-   a ..._DECL node.  If NO_CHECK is nonzero, the latter check is suppressed.
+   a ..._DECL node.  If NO_CHECK is true, the latter check is suppressed.
 
    If GNU_DECL is zero, a previous association is to be reset.  */
 
@@ -1252,13 +1252,11 @@ get_parallel_type (tree type)
 }
 
 /* Utility function of above to merge LAST_SIZE, the previous size of a record
-   with FIRST_BIT and SIZE that describe a field.  SPECIAL is nonzero
-   if this represents a QUAL_UNION_TYPE in which case we must look for
-   COND_EXPRs and replace a value of zero with the old size.  If HAS_REP
-   is nonzero, we must take the MAX of the end position of this field
-   with LAST_SIZE.  In all other cases, we use FIRST_BIT plus SIZE.
-
-   We return an expression for the size.  */
+   with FIRST_BIT and SIZE that describe a field.  SPECIAL is true if this
+   represents a QUAL_UNION_TYPE in which case we must look for COND_EXPRs and
+   replace a value of zero with the old size.  If HAS_REP is true, we take the
+   MAX of the end position of this field with LAST_SIZE.  In all other cases,
+   we use FIRST_BIT plus SIZE.  Return an expression for the size.  */
 
 static tree
 merge_sizes (tree last_size, tree first_bit, tree size, bool special,
@@ -1499,7 +1497,7 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
    definition to be made visible outside of the current compilation unit, for
    instance variable definitions in a package specification.
 
-   EXTERN_FLAG is nonzero when processing an external variable declaration (as
+   EXTERN_FLAG is true when processing an external variable declaration (as
    opposed to a definition: no storage is to be allocated for the variable).
 
    STATIC_FLAG is only relevant when not at top level.  In that case

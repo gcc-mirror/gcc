@@ -1,9 +1,17 @@
 2009-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
-	* decl.c (compile_time_known_address_p): Rewrite and move around.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Reorder local variables.
+	* gcc-interface/trans.c: Fix formatting throughout.  Fix comments.
+	* gcc-interface/utils.c: Fix comments.
+
+2009-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (compile_time_known_address_p): Rewrite and
+	move around.
 	(gnat_to_gnu_type): Move around.
 	(get_unpadded_type): Likewise.
-	* utils.c (update_pointer_to): Use synthetic macro.  Tidy comments.
+	* gcc-interface/utils.c (update_pointer_to): Use synthetic macro.
+	Tidy comments.
 
 2009-04-07  Eric Botcazou  <ebotcazou@adacore.com>
 
