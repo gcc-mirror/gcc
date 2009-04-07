@@ -1,5 +1,11 @@
 2009-04-07  Ben Elliston  <bje@au.ibm.com>
 
+	* libgcc2.c (INFINITY): Use __builtin_huge_val, not __builtin_inf,
+	as the latter produces a warning when the target does not support
+	infinity.
+
+2009-04-07  Ben Elliston  <bje@au.ibm.com>
+
 	* dfp.c: Replace type punning assignments with memcpy throughout.
 	* Makefile.in (dfp.o-warn): Remove.
 	
