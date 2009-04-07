@@ -1,3 +1,8 @@
+2009-04-07  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR testsuite/39325
+	* gcc.misc-tests/linkage.exp: Use -m64 for 64-bit *86*-darwin.
+
 2009-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/25185
