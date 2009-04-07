@@ -1,5 +1,10 @@
 2009-04-07  Paolo Bonzini  <bonzini@gnu.org>
 
+        * expr.c (convert_move): Use emit_store_flag instead of
+        "emulating" it.
+
+2009-04-07  Paolo Bonzini  <bonzini@gnu.org>
+
         * config/i386/i386.c (ix86_compare_emitted): Remove.
         (ix86_expand_compare, ix86_expand_branch): Handle MODE_CC
         ix86_compare_op0 like ix86_compare_emitted used to be handled.
