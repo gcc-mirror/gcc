@@ -490,7 +490,13 @@ package body Sem_Warn is
                   P := Parent (P);
                   exit when P = Loop_Statement;
 
-                  if Nkind (P) = N_Procedure_Call_Statement then
+                  --  Abandon if at procedure call, or something strange is
+                  --  going on (perhaps a node with no parent that should
+                  --  have one but does not?) As always, for a warning we
+                  --  prefer to just abandon the warning than get into the
+                  --  business of complaining about the tree structure here!
+
+                  if No (P) or else Nkind (P) = N_Procedure_Call_Statement then
                      return Abandon;
                   end if;
                end loop;

@@ -322,10 +322,6 @@ package Rtsfind is
       System_Storage_Elements,
       System_Storage_Pools,
       System_Stream_Attributes,
-      System_String_Ops,
-      System_String_Ops_Concat_3,
-      System_String_Ops_Concat_4,
-      System_String_Ops_Concat_5,
       System_Task_Info,
       System_Tasking,
       System_Threads,
@@ -1319,17 +1315,6 @@ package Rtsfind is
      RE_W_U,                             -- System.Stream_Attributes
      RE_W_WC,                            -- System.Stream_Attributes
      RE_W_WWC,                           -- System.Stream_Attributes
-
-     RE_Str_Concat,                      -- System.String_Ops
-     RE_Str_Concat_CC,                   -- System.String_Ops
-     RE_Str_Concat_CS,                   -- System.String_Ops
-     RE_Str_Concat_SC,                   -- System.String_Ops
-
-     RE_Str_Concat_3,                    -- System.String_Ops_Concat_3
-
-     RE_Str_Concat_4,                    -- System.String_Ops_Concat_4
-
-     RE_Str_Concat_5,                    -- System.String_Ops_Concat_5
 
      RE_String_Input,                    -- System.Strings.Stream_Ops
      RE_String_Input_Blk_IO,             -- System.Strings.Stream_Ops
@@ -2473,17 +2458,6 @@ package Rtsfind is
      RE_W_U                              => System_Stream_Attributes,
      RE_W_WC                             => System_Stream_Attributes,
      RE_W_WWC                            => System_Stream_Attributes,
-
-     RE_Str_Concat                       => System_String_Ops,
-     RE_Str_Concat_CC                    => System_String_Ops,
-     RE_Str_Concat_CS                    => System_String_Ops,
-     RE_Str_Concat_SC                    => System_String_Ops,
-
-     RE_Str_Concat_3                     => System_String_Ops_Concat_3,
-
-     RE_Str_Concat_4                     => System_String_Ops_Concat_4,
-
-     RE_Str_Concat_5                     => System_String_Ops_Concat_5,
 
      RE_String_Input                     => System_Strings_Stream_Ops,
      RE_String_Input_Blk_IO              => System_Strings_Stream_Ops,

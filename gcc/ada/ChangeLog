@@ -1,3 +1,36 @@
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Check_Infinite_Loop_Warning.Test_Ref): Add defence
+	against missing parent.
+
+2009-04-07  Thomas Quinot  <quinot@adacore.com>
+
+	* xoscons.adb: Minor reformatting
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* rtsfind.ads: Remove obsolete string concatenation entries
+
+2009-04-07  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Redo handling of bounds
+
+2009-04-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Check_Body_Required): Handle properly imported
+	subprograms.
+
+2009-04-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch13.adb (Expand_N_Attribute_Definition_Clause, case
+	Attribute_Address): When Init_Or_Norm_Scalars is True and the object
+	is of a scalar or string type then suppress the setting of the
+	expression to Empty.
+
+	* freeze.adb (Warn_Overlay): Also emit the warnings about default
+	initialization for the cases of scalar and string objects when
+	Init_Or_Norm_Scalars is True.
+
 2009-04-07  Bob Duff  <duff@adacore.com>
 
 	* s-secsta.ads, g-pehage.ads, s-fileio.ads: Minor comment fixes

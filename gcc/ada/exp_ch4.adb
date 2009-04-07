@@ -2158,6 +2158,12 @@ package body Exp_Ch4 is
       Concatenation_Error : exception;
       --  Raised if concatenation is sure to raise a CE
 
+      Result_May_Be_Null : Boolean := True;
+      --  Reset to False if at least one operand is encountered which is known
+      --  at compile time to be non-null. Used for handling the special case
+      --  of setting the high bound to the last operand high bound for a null
+      --  result, thus ensuring a proper high bound in the super-flat case.
+
       N : constant Nat := List_Length (Opnds);
       --  Number of concatenation operands including possibly null operands
 
@@ -2177,38 +2183,47 @@ package body Exp_Ch4 is
       --  Set to length of operand. Entries in this array are set only if the
       --  corresponding entry in Is_Fixed_Length is True.
 
-      Fixed_Low_Bound : array (1 .. N) of Uint;
-      --  Set to lower bound of operand. Entries in this array are set only
-      --  if the corresponding entry in Is_Fixed_Length is True.
+      Opnd_Low_Bound : array (1 .. N) of Node_Id;
+      --  Set to lower bound of operand. Either an integer literal in the case
+      --  where the bound is known at compile time, else actual lower bound.
+      --  The operand low bound is of type Ityp.
+
+      Opnd_High_Bound : array (1 .. N) of Node_Id;
+      --  Set to upper bound of operand. Either an integer literal in the case
+      --  where the bound is known at compile time, else actual upper bound.
+      --  The operand bound is of type Ityp.
 
       Var_Length : array (1 .. N) of Entity_Id;
       --  Set to an entity of type Natural that contains the length of an
       --  operand whose length is not known at compile time. Entries in this
       --  array are set only if the corresponding entry in Is_Fixed_Length
-      --  is False.
+      --  is False. The entity is of type Intyp.
 
       Aggr_Length : array (0 .. N) of Node_Id;
       --  The J'th entry in an expression node that represents the total length
       --  of operands 1 through J. It is either an integer literal node, or a
       --  reference to a constant entity with the right value, so it is fine
       --  to just do a Copy_Node to get an appropriate copy. The extra zero'th
-      --  entry always is set to zero.
+      --  entry always is set to zero. The length is of type Intyp.
 
       Low_Bound : Node_Id;
-      --  An tree node representing the low bound of the result. This is either
-      --  an integer literal node, or an identifier reference to a constant
-      --  entity initialized to the appropriate value.
+      --  A tree node representing the low bound of the result (of type Ityp).
+      --  This is either an integer literal node, or an identifier reference to
+      --  a constant entity initialized to the appropriate value.
+
+      High_Bound : Node_Id;
+      --  A tree node representing the high bound of the result (of type Ityp)
 
       Result : Node_Id;
-      --  Result of the concatenation
+      --  Result of the concatenation (of type Ityp)
 
       function To_Intyp (X : Node_Id) return Node_Id;
       --  Given a node of type Ityp, returns the corresponding value of type
       --  Intyp. For non-enumeration types, this is the identity. For enum
-      --  types. the Pos of the value is returned.
+      --  types, the Pos of the value is returned.
 
       function To_Ityp (X : Node_Id) return Node_Id;
-      --  The inverse function (uses Val in the case of enumeration types
+      --  The inverse function (uses Val in the case of enumeration types)
 
       --------------
       -- To_Intyp --
@@ -2247,9 +2262,9 @@ package body Exp_Ch4 is
          --  Case where we will do a type conversion
 
          else
-            --  If the value is known at compile time, and known to be out
-            --  of range of the index type or the base type, we can signal
-            --  that we are sure to have a constraint error at run time.
+            --  If the value is known at compile time, and known to be out of
+            --  range of the index type or the base type, we can signal that
+            --  we are sure to have a constraint error at run time.
 
             --  There are two reasons for doing this. First of all, it is of
             --  course nice to detect situations of certain exceptions, and
@@ -2287,12 +2302,13 @@ package body Exp_Ch4 is
 
       --  Local Declarations
 
-      Opnd : Node_Id;
-      Ent  : Entity_Id;
-      Len  : Uint;
-      J    : Nat;
-      Clen : Node_Id;
-      Set  : Boolean;
+      Opnd     : Node_Id;
+      Opnd_Typ : Entity_Id;
+      Ent      : Entity_Id;
+      Len      : Uint;
+      J        : Nat;
+      Clen     : Node_Id;
+      Set      : Boolean;
 
    begin
       Aggr_Length (0) := Make_Integer_Literal (Loc, 0);
@@ -2312,7 +2328,7 @@ package body Exp_Ch4 is
       --  For enumeration types, we can simply use Standard_Integer, this is
       --  sufficient since the actual number of enumeration literals cannot
       --  possibly exceed the range of integer (remember we will be doing the
-      --  arithmetic with POS values, not represaentation values).
+      --  arithmetic with POS values, not representation values).
 
       if Is_Enumeration_Type (Ityp) then
          Intyp := Standard_Integer;
@@ -2347,6 +2363,7 @@ package body Exp_Ch4 is
       J := 1;
       while J <= N loop
          Opnd := Remove_Head (Opnds);
+         Opnd_Typ := Etype (Opnd);
 
          --  The parent got messed up when we put the operands in a list,
          --  so now put back the proper parent for the saved operand.
@@ -2359,52 +2376,71 @@ package body Exp_Ch4 is
 
          --  Singleton element (or character literal) case
 
-         if Base_Type (Etype (Opnd)) = Ctyp then
+         if Base_Type (Opnd_Typ) = Ctyp then
             NN := NN + 1;
             Operands (NN) := Opnd;
             Is_Fixed_Length (NN) := True;
             Fixed_Length (NN) := Uint_1;
+            Result_May_Be_Null := False;
 
-            --  Set lower bound to lower bound of index subtype. This is not
-            --  right where the index subtype bound is dynamic ???
+            --  Set bounds of operand
 
-            if Compile_Time_Known_Value (Type_Low_Bound (Ityp)) then
-               Fixed_Low_Bound (NN) :=
-                 Expr_Value (Type_Low_Bound (Ityp));
-            else
-               Fixed_Low_Bound (NN) :=
-                 Expr_Value (Type_Low_Bound (Base_Type (Ityp)));
-            end if;
+            Opnd_Low_Bound (NN) :=
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Reference_To (Ityp, Loc),
+                Attribute_Name => Name_First);
+
+            --  ??? The addition below is dubious, what if Ityp is an enum
+            --  type, shouldn't this be Ityp'Succ (Ityp'First)?
+
+            Opnd_High_Bound (NN) :=
+              Make_Op_Add (Loc,
+                Left_Opnd =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => New_Reference_To (Ityp, Loc),
+                    Attribute_Name => Name_First),
+                Right_Opnd => Make_Integer_Literal (Loc, 1));
 
             Set := True;
 
          --  String literal case (can only occur for strings of course)
 
          elsif Nkind (Opnd) = N_String_Literal then
-            Len := UI_From_Int (String_Length (Strval (Opnd)));
+            Len := String_Literal_Length (Opnd_Typ);
 
-            --  We can safely skip null string literals, since they are
-            --  considered to have a lower bound of 1.
+            --  Skip null string literal unless last operand
 
-            if Len = 0 then
+            if J < N and then Len = 0 then
                goto Continue;
             end if;
 
             NN := NN + 1;
             Operands (NN) := Opnd;
             Is_Fixed_Length (NN) := True;
+
+            --  Set length and bounds
+
             Fixed_Length (NN) := Len;
-            Fixed_Low_Bound (NN) := Uint_1;
+
+            Opnd_Low_Bound (NN) :=
+              New_Copy_Tree (String_Literal_Low_Bound (Opnd_Typ));
+
+            Opnd_High_Bound (NN) :=
+              Make_Op_Add (Loc,
+                Left_Opnd  =>
+                  New_Copy_Tree (String_Literal_Low_Bound (Opnd_Typ)),
+                Right_Opnd => Make_Integer_Literal (Loc, 1));
+
             Set := True;
+            Result_May_Be_Null := False;
 
          --  All other cases
 
          else
             --  Check constrained case with known bounds
 
-            if Is_Constrained (Etype (Opnd)) then
+            if Is_Constrained (Opnd_Typ) then
                declare
-                  Opnd_Typ : constant Entity_Id := Etype (Opnd);
                   Index    : constant Node_Id   := First_Index (Opnd_Typ);
                   Indx_Typ : constant Entity_Id := Etype (Index);
                   Lo       : constant Node_Id   := Type_Low_Bound  (Indx_Typ);
@@ -2425,40 +2461,61 @@ package body Exp_Ch4 is
                                   UI_Max (Hival - Loval + 1, Uint_0);
 
                      begin
-                        --  Exclude the null length case where the lower bound
-                        --  is other than 1 or the type is other than string,
-                        --  because annoyingly we need to keep such an operand
-                        --  around in case it is the one that supplies a lower
-                        --  bound to the result.
-
-                        if (Loval = 1 and then Atyp = Standard_String)
-                          or Len > 0
-                        then
-                           --  Skip null string case (lower bound = 1)
-
-                           if Len = 0 then
-                              goto Continue;
-                           end if;
-
-                           NN := NN + 1;
-                           Operands (NN) := Opnd;
-                           Is_Fixed_Length (NN) := True;
-                           Fixed_Length (NN)    := Len;
-                           Fixed_Low_Bound (NN) := Expr_Value (Lo);
-                           Set := True;
+                        if Len > 0 then
+                           Result_May_Be_Null := False;
                         end if;
+
+                        --  Exclude null length case except for last operand
+                        --  (where we may need it to get proper bounds).
+
+                        if Len = 0 and then J < N then
+                           goto Continue;
+                        end if;
+
+                        NN := NN + 1;
+                        Operands (NN) := Opnd;
+                        Is_Fixed_Length (NN) := True;
+                        Fixed_Length (NN)    := Len;
+
+                        --  ??? case where Ityp is an enum type?
+
+                        Opnd_Low_Bound (NN) :=
+                          Make_Integer_Literal (Loc,
+                            Intval => Expr_Value (Lo));
+
+                        Opnd_High_Bound (NN) :=
+                          Make_Integer_Literal (Loc,
+                            Intval => Expr_Value (Hi));
+
+                        Set := True;
                      end;
                   end if;
                end;
             end if;
 
-            --  All cases where the length is not known at compile time, or
-            --  the special case of an operand which is known to be null but
-            --  has a lower bound other than 1 or is other than a string type.
-            --  Capture length of operand in entity.
+            --  All cases where the length is not known at compile time, or the
+            --  special case of an operand which is known to be null but has a
+            --  lower bound other than 1 or is other than a string type.
 
             if not Set then
                NN := NN + 1;
+
+               --  Capture operand bounds
+
+               Opnd_Low_Bound (NN) :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                     Duplicate_Subexpr (Opnd, Name_Req => True),
+                   Attribute_Name => Name_First);
+
+               Opnd_High_Bound (NN) :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                     Duplicate_Subexpr (Opnd, Name_Req => True),
+                   Attribute_Name => Name_Last);
+
+               --  Capture length of operand in entity
+
                Operands (NN) := Opnd;
                Is_Fixed_Length (NN) := False;
 
@@ -2487,7 +2544,7 @@ package body Exp_Ch4 is
          --  Set next entry in aggregate length array
 
          --  For first entry, make either integer literal for fixed length
-         --  or a reference to the saved length for variable length
+         --  or a reference to the saved length for variable length.
 
          if NN = 1 then
             if Is_Fixed_Length (1) then
@@ -2554,9 +2611,7 @@ package body Exp_Ch4 is
 
       if NN = 0 then
          Start_String;
-         Result :=
-           Make_String_Literal (Loc,
-             Strval => End_String);
+         Result := Make_String_Literal (Loc, Strval => End_String);
          goto Done;
       end if;
 
@@ -2586,28 +2641,26 @@ package body Exp_Ch4 is
       --  ancestor is the first subtype of this root type.
 
       if Is_Constrained (First_Subtype (Root_Type (Atyp))) then
-         Low_Bound := To_Intyp (
+         Low_Bound :=
            Make_Attribute_Reference (Loc,
              Prefix         =>
                New_Occurrence_Of (First_Subtype (Root_Type (Atyp)), Loc),
-             Attribute_Name => Name_First));
+             Attribute_Name => Name_First);
 
       --  If the first operand in the list has known length we know that
       --  the lower bound of the result is the lower bound of this operand.
 
       elsif Is_Fixed_Length (1) then
-         Low_Bound :=
-           Make_Integer_Literal (Loc,
-             Intval => Fixed_Low_Bound (1));
+         Low_Bound := Opnd_Low_Bound (1);
 
       --  OK, we don't know the lower bound, we have to build a horrible
       --  expression actions node of the form
 
       --     if Cond1'Length /= 0 then
-      --        Opnd1'First
+      --        Opnd1 low bound
       --     else
       --        if Opnd2'Length /= 0 then
-      --          Opnd2'First
+      --          Opnd2 low bound
       --        else
       --           ...
 
@@ -2626,23 +2679,9 @@ package body Exp_Ch4 is
             ---------------------
 
             function Get_Known_Bound (J : Nat) return Node_Id is
-               Lo : Node_Id;
-
             begin
-               if Is_Fixed_Length (J) then
-                  return
-                    Make_Integer_Literal (Loc,
-                      Intval => Fixed_Low_Bound (J));
-               end if;
-
-               Lo := To_Intyp (
-                 Make_Attribute_Reference (Loc,
-                   Prefix =>
-                     Duplicate_Subexpr (Operands (J), Name_Req => True),
-                   Attribute_Name => Name_First));
-
-               if J = NN then
-                  return Lo;
+               if Is_Fixed_Length (J) or else J = NN then
+                  return New_Copy (Opnd_Low_Bound (J));
 
                else
                   return
@@ -2653,7 +2692,7 @@ package body Exp_Ch4 is
                           Left_Opnd  => New_Reference_To (Var_Length (J), Loc),
                           Right_Opnd => Make_Integer_Literal (Loc, 0)),
 
-                        Lo,
+                        New_Copy (Opnd_Low_Bound (J)),
                         Get_Known_Bound (J + 1)));
                end if;
             end Get_Known_Bound;
@@ -2667,8 +2706,7 @@ package body Exp_Ch4 is
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Ent,
                 Constant_Present    => True,
-                Object_Definition   =>
-                  New_Occurrence_Of (Intyp, Loc),
+                Object_Definition   => New_Occurrence_Of (Ityp, Loc),
                 Expression          => Get_Known_Bound (1)),
               Suppress => All_Checks);
 
@@ -2676,8 +2714,32 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      --  Now we build the result, which is a reference to the array entity
-      --  we will construct with appropriate bounds.
+      --  Now find the upper bound. This is normally the Low_Bound + Length - 1
+      --  but there is one exception, namely when the result is null in which
+      --  case the bounds come from the last operand (so that we get the proper
+      --  bounds if the last operand is super-flat).
+
+      High_Bound :=
+        To_Ityp (
+          Make_Op_Add (Loc,
+            Left_Opnd  => To_Intyp (New_Copy (Low_Bound)),
+            Right_Opnd =>
+              Make_Op_Subtract (Loc,
+                Left_Opnd  => New_Copy (Aggr_Length (NN)),
+                Right_Opnd => Make_Integer_Literal (Loc, 1))));
+
+      if Result_May_Be_Null then
+         High_Bound :=
+           Make_Conditional_Expression (Loc,
+             Expressions => New_List (
+               Make_Op_Eq (Loc,
+                 Left_Opnd  => New_Copy (Aggr_Length (NN)),
+                 Right_Opnd => Make_Integer_Literal (Loc, 0)),
+               Opnd_High_Bound (NN),
+               High_Bound));
+      end if;
+
+      --  Now we construct an array object with appropriate bounds
 
       Ent :=
         Make_Defining_Identifier (Loc,
@@ -2686,7 +2748,6 @@ package body Exp_Ch4 is
       Insert_Action (Cnode,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Ent,
-
           Object_Definition   =>
             Make_Subtype_Indication (Loc,
               Subtype_Mark => New_Occurrence_Of (Atyp, Loc),
@@ -2694,16 +2755,8 @@ package body Exp_Ch4 is
                 Make_Index_Or_Discriminant_Constraint (Loc,
                   Constraints => New_List (
                     Make_Range (Loc,
-                      Low_Bound => To_Ityp (New_Copy (Low_Bound)),
-                      High_Bound => To_Ityp (
-                        Make_Op_Add (Loc,
-                          Left_Opnd  => New_Copy (Low_Bound),
-                          Right_Opnd =>
-                            Make_Op_Subtract (Loc,
-                              Left_Opnd  => New_Copy (Aggr_Length (NN)),
-                              Right_Opnd =>
-                                Make_Integer_Literal (Loc,
-                                  Intval => Uint_1))))))))),
+                      Low_Bound  => Low_Bound,
+                      High_Bound => High_Bound))))),
 
         Suppress => All_Checks);
 
@@ -2713,18 +2766,16 @@ package body Exp_Ch4 is
          declare
             Lo : constant Node_Id :=
                    Make_Op_Add (Loc,
-                     Left_Opnd  => New_Copy (Low_Bound),
+                     Left_Opnd  => To_Intyp (New_Copy (Low_Bound)),
                      Right_Opnd => Aggr_Length (J - 1));
 
             Hi : constant Node_Id :=
                    Make_Op_Add (Loc,
-                     Left_Opnd  => New_Copy (Low_Bound),
+                     Left_Opnd  => To_Intyp (New_Copy (Low_Bound)),
                      Right_Opnd =>
                        Make_Op_Subtract (Loc,
                          Left_Opnd  => Aggr_Length (J),
-                         Right_Opnd =>
-                           Make_Integer_Literal (Loc,
-                             Intval => 1)));
+                         Right_Opnd => Make_Integer_Literal (Loc, 1)));
 
          begin
             --  Singleton case, simple assignment
@@ -2756,6 +2807,8 @@ package body Exp_Ch4 is
             end if;
          end;
       end loop;
+
+      --  Finally we build the result, which is a reference to the array object
 
       Result := New_Reference_To (Ent, Loc);
 
