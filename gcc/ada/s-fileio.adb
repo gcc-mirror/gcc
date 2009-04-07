@@ -739,6 +739,8 @@ package body System.File_IO is
       Formstr : aliased String (1 .. Form'Length + 1);
       --  Form string with ASCII.NUL appended, folded to lower case
 
+      Is_Text_File : Boolean;
+
       Tempfile : constant Boolean := (Name'Length = 0);
       --  Indicates temporary file case
 
@@ -800,7 +802,7 @@ package body System.File_IO is
          end if;
       end;
 
-      --  Acquire setting of shared parameter
+      --  Acquire setting of encoding parameter
 
       declare
          V1, V2 : Natural;
@@ -821,6 +823,18 @@ package body System.File_IO is
             raise Use_Error;
          end if;
       end;
+
+      --  Acquire setting of text_translation parameter. Only needed if this is
+      --  a [Wide_[Wide_]]Text_IO file, in which case we default to True, but
+      --  if the Form says Text_Translation=No, we use binary mode, so new-line
+      --  will be just LF, even on Windows.
+
+      Is_Text_File := Text;
+
+      if Is_Text_File then
+         Is_Text_File :=
+           Form_Boolean (Formstr, "text_translation", Default => True);
+      end if;
 
       --  If we were given a stream (call from xxx.C_Streams.Open), then set
       --  the full name to the given one, and skip to end of processing.
@@ -962,7 +976,7 @@ package body System.File_IO is
          --  Open specified file if we did not find an existing stream
 
          if Stream = NULL_Stream then
-            Fopen_Mode (Mode, Text, Creat, Amethod, Fopstr);
+            Fopen_Mode (Mode, Is_Text_File, Creat, Amethod, Fopstr);
 
             --  A special case, if we are opening (OPEN case) a file and the
             --  mode returned by Fopen_Mode is not "r" or "r+", then we first
@@ -1026,7 +1040,7 @@ package body System.File_IO is
 
       File_Ptr.Is_Regular_File   := (is_regular_file (fileno (Stream)) /= 0);
       File_Ptr.Is_System_File    := False;
-      File_Ptr.Is_Text_File      := Text;
+      File_Ptr.Is_Text_File      := Is_Text_File;
       File_Ptr.Shared_Status     := Shared;
       File_Ptr.Access_Method     := Amethod;
       File_Ptr.Stream            := Stream;

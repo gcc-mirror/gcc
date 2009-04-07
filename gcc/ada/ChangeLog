@@ -1,3 +1,20 @@
+2009-04-07  Bob Duff  <duff@adacore.com>
+
+	* s-secsta.ads, g-pehage.ads, s-fileio.ads: Minor comment fixes
+
+2009-04-07  Bob Duff  <duff@adacore.com>
+
+	* gnat_rm.texi, s-fileio.adb (System.File_IO.Open): New feature: A
+	Form parameter of Text_Translation=No allows binary mode for Text_IO
+	files.
+
+	* gnat_rm.texi: Document Form parameter Text_Translation=xxx.
+
+2009-04-07  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array): Add implicit conversion when
+	processing the bounds for bit packed arrays or VM target machines.
+
 2009-04-07  Thomas Quinot  <quinot@adacore.com>
 
 	* g-sothco.ads (Int_Access): Remove extraneous access type (use

@@ -851,12 +851,23 @@ package body Exp_Ch5 is
             --  conversions ???
 
             else
-               --  Copy the bounds and reset the Analyzed flag, because the
-               --  bounds of the index type itself may be universal, and must
-               --  must be reaanalyzed to acquire the proper type for Gigi.
+               --  Copy the bounds
 
                Cleft_Lo  := New_Copy_Tree (Left_Lo);
                Cright_Lo := New_Copy_Tree (Right_Lo);
+
+               --  If the types do not match we add an implicit conversion
+               --  here to ensure proper match
+
+               if Etype (Left_Lo) /= Etype (Right_Lo) then
+                  Cright_Lo :=
+                    Unchecked_Convert_To (Etype (Left_Lo), Cright_Lo);
+               end if;
+
+               --  Reset the Analyzed flag, because the bounds of the index
+               --  type itself may be universal, and must must be reaanalyzed
+               --  to acquire the proper type for the back end.
+
                Set_Analyzed (Cleft_Lo, False);
                Set_Analyzed (Cright_Lo, False);
 

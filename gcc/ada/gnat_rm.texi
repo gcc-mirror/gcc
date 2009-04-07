@@ -278,6 +278,7 @@ The Implementation of Standard I/O
 * Wide_Text_IO::
 * Wide_Wide_Text_IO::
 * Stream_IO::
+* Text Translation::
 * Shared Files::
 * Filenames encoding::
 * Open Modes::
@@ -12161,6 +12162,7 @@ these additional facilities are also described in this chapter.
 * Wide_Text_IO::
 * Wide_Wide_Text_IO::
 * Stream_IO::
+* Text Translation::
 * Shared Files::
 * Filenames encoding::
 * Open Modes::
@@ -12237,11 +12239,13 @@ The format of a FORM string in GNAT is:
 @noindent
 where letters may be in upper or lower case, and there are no spaces
 between values.  The order of the entries is not important.  Currently
-there are two keywords defined.
+the following keywords defined.
 
 @smallexample
+TEXT_TRANSLATION=[YES|NO]
 SHARED=[YES|NO]
 WCEM=[n|h|u|s|e|8|b]
+ENCODING=[UTF8|8BITS]
 @end smallexample
 
 @noindent
@@ -12940,6 +12944,20 @@ sequence of stream elements with no control information.
 The stream attributes applied to a stream file transfer data in the
 manner described for stream attributes.
 @end itemize
+
+@node Text Translation
+@section Text Translation
+
+@noindent
+@samp{Text_Translation=@var{xxx}} may be used as the Form parameter
+passed to Text_IO.Create and Text_IO.Open:
+@samp{Text_Translation=@var{Yes}} is the default, which means to
+translate LF to/from CR/LF on Windows systems.
+@samp{Text_Translation=@var{No}} disables this translation; i.e. it
+uses binary mode. For output files, @samp{Text_Translation=@var{No}}
+may be used to create Unix-style files on
+Windows. @samp{Text_Translation=@var{xxx}} has no effect on Unix
+systems.
 
 @node Shared Files
 @section Shared Files

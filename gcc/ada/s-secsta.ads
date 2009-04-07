@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,7 +60,7 @@ package System.Secondary_Stack is
    --
    --  Otherwise (Sec_Stack_Ratio between 0 and 100), Stk is an IN parameter
    --  that is already pointing to a Stack_Id. The secondary stack in this case
-   --  is fixed, and any attempt to allocated more than the initial size will
+   --  is fixed, and any attempt to allocate more than the initial size will
    --  result in a Storage_Error being raised.
    --
    --  Note: the reason that Stk is passed is that SS_Init is called before
