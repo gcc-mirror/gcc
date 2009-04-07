@@ -1,3 +1,17 @@
+2009-04-07  Tristan Gingold  <gingold@adacore.com>
+
+	* socket.c: Add more protections against S_resolvLib_ macros.
+
+2009-04-07  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_attr.adb: Minor reformatting
+
+2009-04-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity): New predicate
+	Is_Overriding_Alias to handle properly types that inherit two homonym
+	operations that have distinct dispatch table entries.
+
 2009-04-07  Emmanuel Briot  <briot@adacore.com>
 
 	* s-regexp.adb (Create_Mapping): Ignore excaped open parenthesis when

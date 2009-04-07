@@ -355,15 +355,20 @@ __gnat_get_h_errno (void) {
 #ifdef S_resolvLib_HOST_NOT_FOUND
     case S_resolvLib_HOST_NOT_FOUND:
 #endif
-    case S_hostLib_UNKNOWN_HOST:
+#ifdef S_hostLib_HOST_NOT_FOUND
     case S_hostLib_HOST_NOT_FOUND:
+#endif
+    case S_hostLib_UNKNOWN_HOST:
       return HOST_NOT_FOUND;
 
 #ifdef S_resolvLib_TRY_AGAIN
     case S_resolvLib_TRY_AGAIN:
+      return TRY_AGAIN;
 #endif
+#ifdef S_hostLib_TRY_AGAIN
     case S_hostLib_TRY_AGAIN:
       return TRY_AGAIN;
+#endif
 
 #ifdef S_resolvLib_NO_RECOVERY
     case S_resolvLib_NO_RECOVERY:
@@ -377,8 +382,13 @@ __gnat_get_h_errno (void) {
 #ifdef S_resolvLib_INVALID_ADDRESS
     case S_resolvLib_INVALID_ADDRESS:
 #endif
-    case S_hostLib_INVALID_PARAMETER:
+#ifdef S_hostLib_NO_RECOVERY
     case S_hostLib_NO_RECOVERY:
+#endif
+#ifdef S_hostLib_NETDB_INTERNAL
+    case S_hostLib_NETDB_INTERNAL:
+#endif
+    case S_hostLib_INVALID_PARAMETER:
       return NO_RECOVERY;
 
 #ifdef S_resolvLib_NO_DATA
