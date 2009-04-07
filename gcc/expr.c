@@ -151,7 +151,7 @@ static int is_aligning_offset (const_tree, const_tree);
 static void expand_operands (tree, tree, rtx, rtx*, rtx*,
 			     enum expand_modifier);
 static rtx reduce_to_bit_field_precision (rtx, rtx, tree);
-static rtx do_store_flag (tree, rtx, enum machine_mode, int);
+static rtx do_store_flag (tree, rtx, enum machine_mode);
 #ifdef PUSH_ROUNDING
 static void emit_single_push_insn (enum machine_mode, rtx, tree);
 #endif
@@ -9024,7 +9024,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case LTGT_EXPR:
       temp = do_store_flag (exp,
 			    modifier != EXPAND_STACK_PARM ? target : NULL_RTX,
-			    tmode != VOIDmode ? tmode : mode, 0);
+			    tmode != VOIDmode ? tmode : mode);
       if (temp != 0)
 	return temp;
 
@@ -9679,9 +9679,6 @@ string_constant (tree arg, tree *ptr_offset)
 
    If TARGET is nonzero, store the result there if convenient.
 
-   If ONLY_CHEAP is nonzero, only do this if it is likely to be very
-   cheap.
-
    Return zero if there is no suitable set-flag instruction
    available on this machine.
 
@@ -9694,7 +9691,7 @@ string_constant (tree arg, tree *ptr_offset)
    set/jump/set sequence.  */
 
 static rtx
-do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
+do_store_flag (tree exp, rtx target, enum machine_mode mode)
 {
   enum rtx_code code;
   tree arg0, arg1, type;
@@ -9703,7 +9700,6 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
   int invert = 0;
   int unsignedp;
   rtx op0, op1;
-  enum insn_code icode;
   rtx subtarget = target;
   rtx result, label;
 
@@ -9846,37 +9842,6 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
   /* Now see if we are likely to be able to do this.  Return if not.  */
   if (! can_compare_p (code, operand_mode, ccp_store_flag))
     return 0;
-
-  icode = setcc_gen_code[(int) code];
-
-  if (icode == CODE_FOR_nothing)
-    {
-      enum machine_mode wmode;
-
-      for (wmode = operand_mode;
-	   icode == CODE_FOR_nothing && wmode != VOIDmode;
-	   wmode = GET_MODE_WIDER_MODE (wmode))
-	icode = optab_handler (cstore_optab, wmode)->insn_code;
-    }
-
-  if (icode == CODE_FOR_nothing
-      || (only_cheap && insn_data[(int) icode].operand[0].mode != mode))
-    {
-      /* We can only do this if it is one of the special cases that
-	 can be handled without an scc insn.  */
-      if ((code == LT && integer_zerop (arg1))
-	  || (! only_cheap && code == GE && integer_zerop (arg1)))
-	;
-      else if (! only_cheap && (code == NE || code == EQ)
-	       && TREE_CODE (type) != REAL_TYPE
-	       && ((optab_handler (abs_optab, operand_mode)->insn_code
-		    != CODE_FOR_nothing)
-		   || (optab_handler (ffs_optab, operand_mode)->insn_code
-		       != CODE_FOR_nothing)))
-	;
-      else
-	return 0;
-    }
 
   if (! get_subtarget (target)
       || GET_MODE (subtarget) != operand_mode)
