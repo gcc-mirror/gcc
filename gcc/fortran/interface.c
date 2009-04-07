@@ -967,6 +967,9 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, int generic_flag)
 {
   gfc_formal_arglist *f1, *f2;
 
+  if (s2->attr.intrinsic)
+    return compare_intr_interfaces (s1, s2);
+
   if (s1->attr.function != s2->attr.function
       || s1->attr.subroutine != s2->attr.subroutine)
     return 0;		/* Disagreement between function/subroutine.  */
@@ -1006,6 +1009,21 @@ compare_intr_interfaces (gfc_symbol *s1, gfc_symbol *s2)
   gfc_intrinsic_arg *fi, *f2;
   gfc_intrinsic_sym *isym;
 
+  isym = gfc_find_function (s2->name);
+  if (isym)
+    {
+      if (!s2->attr.function)
+	gfc_add_function (&s2->attr, s2->name, &gfc_current_locus);
+      s2->ts = isym->ts;
+    }
+  else
+    {
+      isym = gfc_find_subroutine (s2->name);
+      gcc_assert (isym);
+      if (!s2->attr.subroutine)
+	gfc_add_subroutine (&s2->attr, s2->name, &gfc_current_locus);
+    }
+
   if (s1->attr.function != s2->attr.function
       || s1->attr.subroutine != s2->attr.subroutine)
     return 0;		/* Disagreement between function/subroutine.  */
@@ -1021,12 +1039,6 @@ compare_intr_interfaces (gfc_symbol *s1, gfc_symbol *s2)
       if (s1->attr.if_source == IFSRC_DECL)
 	return 1;
     }
-
-  isym = gfc_find_function (s2->name);
-  
-  /* This should already have been checked in
-     resolve.c (resolve_actual_arglist).  */
-  gcc_assert (isym);
 
   f1 = s1->formal;
   f2 = isym->formal;
@@ -1463,12 +1475,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	  || actual->symtree->n.sym->attr.external)
 	return 1;		/* Assume match.  */
 
-      if (actual->symtree->n.sym->attr.intrinsic)
-	{
-	 if (!compare_intr_interfaces (formal, actual->symtree->n.sym))
-	   goto proc_fail;
-	}
-      else if (!gfc_compare_interfaces (formal, actual->symtree->n.sym, 0))
+      if (!gfc_compare_interfaces (formal, actual->symtree->n.sym, 0))
 	goto proc_fail;
 
       return 1;

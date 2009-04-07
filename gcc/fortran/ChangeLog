@@ -1,3 +1,22 @@
+2009-04-07  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/38920
+	* expr.c (gfc_check_pointer_assign): Enable interface check for
+	procedure pointers.
+	* gfortran.h: Add copy_formal_args_intr.
+	* interface.c (gfc_compare_interfaces): Call gfc_compare_intr_interfaces
+	if second argument is an intrinsic.
+	(compare_intr_interfaces): Correctly set attr.function, attr.subroutine
+	and ts.
+	(compare_parameter): Call gfc_compare_interfaces also for intrinsics.
+	* resolve.c (resolve_specific_f0,resolve_specific_s0): Don't resolve
+	intrinsic interfaces here. Must happen earlier.
+	(resolve_symbol): Resolution of intrinsic interfaces moved here from
+	resolve_specific_..., and formal args are now copied from intrinsic
+	interfaces.
+	* symbol.c (copy_formal_args_intr): New function to copy the formal
+	arguments from an intinsic procedure.
+
 2009-04-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38863

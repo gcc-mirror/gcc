@@ -1742,23 +1742,6 @@ resolve_specific_f0 (gfc_symbol *sym, gfc_expr *expr)
 {
   match m;
 
-  /* See if we have an intrinsic interface.  */
-
-  if (sym->ts.interface != NULL && sym->ts.interface->attr.intrinsic)
-    {
-      gfc_intrinsic_sym *isym;
-      isym = gfc_find_function (sym->ts.interface->name);
-
-      /* Existence of isym should be checked already.  */
-      gcc_assert (isym);
-
-      sym->ts.type = isym->ts.type;
-      sym->ts.kind = isym->ts.kind;
-      sym->attr.function = 1;
-      sym->attr.proc = PROC_EXTERNAL;
-      goto found;
-    }
-
   if (sym->attr.external || sym->attr.if_source == IFSRC_IFBODY)
     {
       if (sym->attr.dummy)
@@ -2794,24 +2777,6 @@ static match
 resolve_specific_s0 (gfc_code *c, gfc_symbol *sym)
 {
   match m;
-
-  /* See if we have an intrinsic interface.  */
-  if (sym->ts.interface != NULL && !sym->ts.interface->attr.abstract
-      && !sym->ts.interface->attr.subroutine
-      && sym->ts.interface->attr.intrinsic)
-    {
-      gfc_intrinsic_sym *isym;
-
-      isym = gfc_find_function (sym->ts.interface->name);
-
-      /* Existence of isym should be checked already.  */
-      gcc_assert (isym);
-
-      sym->ts.type = isym->ts.type;
-      sym->ts.kind = isym->ts.kind;
-      sym->attr.subroutine = 1;
-      goto found;
-    }
 
   if(sym->attr.is_iso_c)
     {
@@ -9201,10 +9166,33 @@ resolve_symbol (gfc_symbol *sym)
       if (sym->ts.interface->attr.if_source || sym->ts.interface->attr.intrinsic)
 	{
 	  gfc_symbol *ifc = sym->ts.interface;
-	  sym->ts = ifc->ts;
-	  sym->ts.interface = ifc;
-	  sym->attr.function = ifc->attr.function;
-	  sym->attr.subroutine = ifc->attr.subroutine;
+
+	  if (ifc->attr.intrinsic)
+	    {
+	      gfc_intrinsic_sym *isym = gfc_find_function (sym->ts.interface->name);
+	      if (isym)
+		{
+		  sym->attr.function = 1;
+		  sym->ts = isym->ts;
+		  sym->ts.interface = ifc;
+		}
+	      else
+		{
+		  isym = gfc_find_subroutine (sym->ts.interface->name);
+		  gcc_assert (isym);
+		  sym->attr.subroutine = 1;
+		}
+	      copy_formal_args_intr (sym, isym);
+	    }
+	  else
+	    {
+	      sym->ts = ifc->ts;
+	      sym->ts.interface = ifc;
+	      sym->attr.function = ifc->attr.function;
+	      sym->attr.subroutine = ifc->attr.subroutine;
+	      copy_formal_args (sym, ifc);
+	    }
+
 	  sym->attr.allocatable = ifc->attr.allocatable;
 	  sym->attr.pointer = ifc->attr.pointer;
 	  sym->attr.pure = ifc->attr.pure;
@@ -9212,7 +9200,6 @@ resolve_symbol (gfc_symbol *sym)
 	  sym->attr.dimension = ifc->attr.dimension;
 	  sym->attr.recursive = ifc->attr.recursive;
 	  sym->attr.always_explicit = ifc->attr.always_explicit;
-	  copy_formal_args (sym, ifc);
 	  /* Copy array spec.  */
 	  sym->as = gfc_copy_array_spec (ifc->as);
 	  if (sym->as)

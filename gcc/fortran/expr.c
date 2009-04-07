@@ -3142,7 +3142,6 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 		     "in procedure pointer assignment at %L",
 		     rvalue->symtree->name, &rvalue->where);
 	}
-      /* TODO. See PR 38290.
       if (rvalue->expr_type == EXPR_VARIABLE
 	  && lvalue->symtree->n.sym->attr.if_source != IFSRC_UNKNOWN
 	  && !gfc_compare_interfaces (lvalue->symtree->n.sym,
@@ -3151,7 +3150,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  gfc_error ("Interfaces don't match "
 		     "in procedure pointer assignment at %L", &rvalue->where);
 	  return FAILURE;
-	}*/
+	}
       return SUCCESS;
     }
 
