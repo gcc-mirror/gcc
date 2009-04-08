@@ -94,10 +94,11 @@
 	(Get_Socket_From_Set): Fix incorrectly reverted formals
 	Last and Socket to match the underlying C routine.
 
-	* g-socket.adb
+	* g-socket.adb, g-socket.ads
 	(Get): Use named parameter associations instead of positional ones in
 	call go Get_Socket_From_Set, since this routine has two formals of the
 	same type.
+	(Image): New procedure.
 
 	* g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.adb,
 	g-socthi-vxworks.ads, g-socthi-mingw.ads, g-socthi.adb, g-socthi.ads:
