@@ -2146,8 +2146,13 @@ package body Exp_Ch4 is
       --  Component type. Elements of this component type can appear as one
       --  of the operands of concatenation as well as arrays.
 
-      Ityp : constant Entity_Id := Etype (First_Index (Atyp));
-      --  Index type
+      Istyp : constant Entity_Id := Etype (First_Index (Atyp));
+      --  Index subtype
+
+      Ityp : constant Entity_Id := Base_Type (Istyp);
+      --  Index type. This is the base type of the index subtype, and is used
+      --  for all computed bounds (which may be out of range of Istyp in the
+      --  case of null ranges).
 
       Intyp : Entity_Id;
       --  This is the type we use to do arithmetic to compute the bounds and
@@ -2239,7 +2244,7 @@ package body Exp_Ch4 is
 
       function To_Intyp (X : Node_Id) return Node_Id is
       begin
-         if Base_Type (Ityp) = Base_Type (Intyp) then
+         if Ityp = Base_Type (Intyp) then
             return X;
 
          elsif Is_Enumeration_Type (Ityp) then
@@ -2271,7 +2276,7 @@ package body Exp_Ch4 is
 
          else
             --  If the value is known at compile time, and known to be out of
-            --  range of the index type or the base type, we can signal that
+            --  range of the index subtype or its base type, we can signal that
             --  we are sure to have a constraint error at run time.
 
             --  There are two reasons for doing this. First of all, it is of
@@ -2285,11 +2290,11 @@ package body Exp_Ch4 is
             Analyze_And_Resolve (X);
 
             if Compile_Time_Compare
-                 (X, Type_High_Bound (Ityp),
+                 (X, Type_High_Bound (Istyp),
                   Assume_Valid => False) = GT
               or else
                Compile_Time_Compare
-                 (X, Type_High_Bound (Base_Type (Ityp)),
+                 (X, Type_High_Bound (Ityp),
                   Assume_Valid => False) = GT
             then
                Apply_Compile_Time_Constraint_Error
@@ -2299,7 +2304,7 @@ package body Exp_Ch4 is
                raise Concatenation_Error;
 
             else
-               if Base_Type (Ityp) = Base_Type (Intyp) then
+               if Ityp = Base_Type (Intyp) then
                   return X;
                else
                   return Convert_To (Ityp, X);
@@ -2345,10 +2350,10 @@ package body Exp_Ch4 is
       --  identity type, and for larger unsigned types we use 64-bits.
 
       elsif Is_Modular_Integer_Type (Ityp) then
-         if RM_Size (Base_Type (Ityp)) < RM_Size (Standard_Unsigned) then
+         if RM_Size (Ityp) < RM_Size (Standard_Unsigned) then
             Intyp := Standard_Unsigned;
-         elsif RM_Size (Base_Type (Ityp)) = RM_Size (Standard_Unsigned) then
-            Intyp := Base_Type (Ityp);
+         elsif RM_Size (Ityp) = RM_Size (Standard_Unsigned) then
+            Intyp := Ityp;
          else
             Intyp := RTE (RE_Long_Long_Unsigned);
          end if;
@@ -2356,10 +2361,10 @@ package body Exp_Ch4 is
       --  Similar treatment for signed types
 
       else
-         if RM_Size (Base_Type (Ityp)) < RM_Size (Standard_Integer) then
+         if RM_Size (Ityp) < RM_Size (Standard_Integer) then
             Intyp := Standard_Integer;
-         elsif RM_Size (Base_Type (Ityp)) = RM_Size (Standard_Integer) then
-            Intyp := Base_Type (Ityp);
+         elsif RM_Size (Ityp) = RM_Size (Standard_Integer) then
+            Intyp := Ityp;
          else
             Intyp := Standard_Long_Long_Integer;
          end if;
@@ -2395,7 +2400,7 @@ package body Exp_Ch4 is
 
             Opnd_Low_Bound (NN) :=
               Make_Attribute_Reference (Loc,
-                Prefix         => New_Reference_To (Ityp, Loc),
+                Prefix         => New_Reference_To (Istyp, Loc),
                 Attribute_Name => Name_First);
 
             Set := True;

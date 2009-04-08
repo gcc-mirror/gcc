@@ -725,7 +725,8 @@ package Prj is
       --  Dependency file time stamp
 
       Switches            : File_Name_Type        := No_File;
-      --  File name of the switches file
+      --  File name of the switches file. For all languages, this is a file
+      --  that ends with the .cswi extension.
 
       Switches_Path       : Path_Name_Type        := No_Path;
       --  Path name of the switches file
