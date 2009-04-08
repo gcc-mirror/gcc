@@ -6411,8 +6411,15 @@ package body Sem_Util is
    --  Start of processing for Is_Protected_Self_Reference
 
    begin
+      --  Verify that prefix is analyzed and has the proper form. Note that
+      --  the attributes Elab_Spec, Elab_Body, and UET_Address, which also
+      --  produce the address of an entity, do not analyze their prefix
+      --  because they denote entities that are not necessarily visible.
+      --  Neither of them can apply to a protected type.
+
       return Ada_Version >= Ada_05
         and then Is_Entity_Name (N)
+        and then Present (Entity (N))
         and then Is_Protected_Type (Entity (N))
         and then In_Open_Scopes (Entity (N))
         and then not In_Access_Definition (N);

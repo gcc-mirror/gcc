@@ -2242,6 +2242,8 @@ package VMS_Data is
                                                "-gnaty-n "                 &
                                             "ORDERED_SUBPROGRAMS "         &
                                                "-gnatyo "                  &
+                                            "OVERRIDING_INDICATORS "       &
+                                               "-gnatyO "                  &
                                             "NOORDERED_SUBPROGRAMS "       &
                                                "-gnaty-o "                 &
                                             "PRAGMA "                      &

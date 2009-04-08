@@ -32,7 +32,7 @@
 --  checks, is to attempt to detect at compilation time that a constraint
 --  error will occur. If this is detected a warning or error is issued and the
 --  offending expression or statement replaced with a constraint error node.
---  This always occurs whether checks are suppressed or not.  Dynamic range
+--  This always occurs whether checks are suppressed or not. Dynamic range
 --  checks are, of course, not inserted if checks are suppressed.
 
 with Namet;  use Namet;
@@ -233,9 +233,9 @@ package Checks is
    --  First this routine determines if an overflow check is needed by doing
    --  an appropriate range check. If a check is not needed, then the call
    --  has no effect. If a check is needed then this routine sets the flag
-   --  Set Do_Overflow_Check in node N to True, unless it can be determined
-   --  that the check is not needed. The only condition under which this is
-   --  the case is if there was an identical check earlier on.
+   --  Do_Overflow_Check in node N to True, unless it can be determined that
+   --  the check is not needed. The only condition under which this is the
+   --  case is if there was an identical check earlier on.
 
    procedure Enable_Range_Check (N : Node_Id);
    --  Set Do_Range_Check flag in node N True, unless it can be determined
@@ -445,7 +445,7 @@ package Checks is
    --  Some of the earlier processing for checks results in temporarily setting
    --  the Do_Range_Check flag rather than actually generating checks. Now we
    --  are moving the generation of such checks into the front end for reasons
-   --  of efficiency and simplicity (there were difficutlies in handling this
+   --  of efficiency and simplicity (there were difficulties in handling this
    --  in the back end when side effects were present in the expressions being
    --  checked).
 
