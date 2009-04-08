@@ -1,5 +1,11 @@
 2009-04-08  Janne Blomqvist  <jb@gcc.gnu.org>
 
+        * io/open.c (already_open): Test for POSIX close return value.
+        * io/unit.c (close_unit_1): Likewise.
+        * io/unix.c (raw_close): Return 0 for success for preconnected units.
+
+2009-04-08  Janne Blomqvist  <jb@gcc.gnu.org>
+
         * runtime/string.c (compare0): Use gfc_charlen_type.
         * runtime/error.c (gfc_itoa): Move to io/write.c
         (xtoa): Rename to gfc_xtoa.

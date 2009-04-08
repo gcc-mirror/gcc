@@ -626,7 +626,7 @@ close_unit_1 (gfc_unit *u, int locked)
   if (u->previous_nonadvancing_write)
     finish_last_advance_record (u);
 
-  rc = (u->s == NULL) ? 0 : sclose (u->s) == FAILURE;
+  rc = (u->s == NULL) ? 0 : sclose (u->s) == -1;
 
   u->closed = 1;
   if (!locked)
