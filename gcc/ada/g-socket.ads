@@ -386,8 +386,8 @@ package GNAT.Sockets is
 
    procedure Initialize (Process_Blocking_IO : Boolean);
    pragma Obsolescent
-     (Entity => Initialize,
-      "passing a parameter to Initialize is not supported anymore");
+     (Entity  => Initialize,
+      Message => "passing a parameter to Initialize is not supported anymore");
    --  Previous versions of GNAT.Sockets used to require the user to indicate
    --  whether socket I/O was process- or thread-blocking on the platform.
    --  This property is now determined automatically when the run-time library

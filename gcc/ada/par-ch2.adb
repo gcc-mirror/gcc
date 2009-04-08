@@ -469,10 +469,13 @@ package body Ch2 is
    is
       Scan_State      : Saved_Scan_State;
       Identifier_Node : Node_Id;
+      Id_Present      : Boolean;
 
    begin
       Association := New_Node (N_Pragma_Argument_Association, Token_Ptr);
       Set_Chars (Association, No_Name);
+
+      --  Argument starts with identifier
 
       if Token = Tok_Identifier then
          Identifier_Node := Token_Node;
@@ -483,17 +486,24 @@ package body Ch2 is
             Identifier_Seen := True;
             Scan; -- past arrow
             Set_Chars (Association, Chars (Identifier_Node));
+            Id_Present := True;
 
          --  Case of argument with no identifier
 
          else
             Restore_Scan_State (Scan_State); -- to Identifier
-
-            if Identifier_Seen then
-               Error_Msg_SC
-                 ("|pragma argument identifier required here (RM 2.8(4))");
-            end if;
+            Id_Present := False;
          end if;
+
+      --  Argument does not start with identifier
+
+      else
+         Id_Present := False;
+      end if;
+
+      if Identifier_Seen and not Id_Present then
+         Error_Msg_SC
+           ("|pragma argument identifier required here (RM 2.8(4))");
       end if;
 
       Set_Expression (Association, P_Expression);

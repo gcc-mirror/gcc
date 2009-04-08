@@ -1171,7 +1171,9 @@ are mentioned in @code{with} clauses).
 @noindent
 Syntax:
 @smallexample @c ada
-pragma Check_Policy ([Name =>] Identifier, POLICY_IDENTIFIER);
+pragma Check_Policy
+ ([Name   =>] Identifier,
+  [Policy =>] POLICY_IDENTIFIER);
 
 POLICY_IDENTIFIER ::= On | Off | Check | Ignore
 @end smallexample
@@ -3462,7 +3464,9 @@ Syntax:
 
 @smallexample @c ada
 pragma Obsolescent
-  [(Entity => NAME [, static_string_EXPRESSION [,Ada_05]])];
+  [([Entity  =>] NAME
+  [,[Message =>] static_string_EXPRESSION
+  [,[Version =>] Ada_05]])];
 @end smallexample
 
 @noindent
@@ -3508,17 +3512,20 @@ The following examples show typical uses of this pragma:
 @smallexample @c ada
 package p is
    pragma Obsolescent
-     (Entity => p, "use pp instead of p");
+     (Entity => p, Message => "use pp instead of p");
 end p;
 
 package q is
    procedure q2;
    pragma Obsolescent
-     (Entity => q2, "use q2new instead");
+     (Entity  => q2,
+      Message => "use q2new instead");
 
    type R is new integer;
    pragma Obsolescent
-     (Entity => R, "use RR in Ada 2005", Ada_05);
+     (Entity  => R,
+      Message => "use RR in Ada 2005",
+      Version => Ada_05);
 
    type M is record
       F1 : Integer;
