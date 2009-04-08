@@ -49,7 +49,7 @@ static int sc = INT_MAX + 1; /* { dg-warning "integer overflow in expression" } 
 void *p = 0 * (INT_MAX + 1); /* { dg-warning "integer overflow in expression" } */
 /* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } 49 } */
 void *q = 0 * (1 / 0); /* { dg-warning "division by zero" } */
-/* { dg-error "initializer element is not constant" "constant" { target *-*-* } 51 } */
+/* { dg-error "initializer element is not computable at load time" "constant" { target *-*-* } 51 } */
 /* { dg-warning "initialization makes pointer from integer without a cast" "null" { target *-*-* } 51 } */
 void *r = (1 ? 0 : INT_MAX+1);
 

@@ -1,3 +1,20 @@
+2009-04-08  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/39614
+	PR c/39673
+	* gcc.c-torture/compile/pr39614-1.c,
+	gcc.c-torture/compile/pr39614-2.c,
+	gcc.c-torture/compile/pr39614-3.c,
+	gcc.c-torture/compile/pr39614-4.c,
+	gcc.c-torture/compile/pr39614-5.c,
+	gcc.c-torture/compile/pr39673-1.c,
+	gcc.c-torture/compile/pr39673-2.c: New tests.
+	* gcc.dg/gnu89-const-expr-2.c, gcc.dg/gnu99-const-expr-2.c: Test
+	more cases.
+	* gcc.dg/overflow-warn-1.c, gcc.dg/overflow-warn-2.c,
+	gcc.dg/overflow-warn-3.c, gcc.dg/overflow-warn-4.c: Update
+	expected errors.
+
 2009-04-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PRc++/39637

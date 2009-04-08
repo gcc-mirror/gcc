@@ -1,3 +1,20 @@
+2009-04-08  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/39614
+	PR c/39673
+	* c-common.h (C_MAYBE_CONST_EXPR_PRE, C_MAYBE_CONST_EXPR_EXPR,
+	C_MAYBE_CONST_EXPR_INT_OPERANDS, C_MAYBE_CONST_EXPR_NON_CONST,
+	EXPR_INT_CONST_OPERANDS): Remove duplicate definitions.
+	* c-convert.c (convert): Do not call fold on results of conversion
+	functions when the result is a C_MAYBE_CONST_EXPR.
+	* c-parser.c (c_parser_postfix_expression): Do not fold condition
+	of __builtin_choose_expr.
+	* c-typeck.c (remove_c_maybe_const_expr): New.
+	(build_unary_op, build_conditional_expr, build_compound_expr,
+	build_binary_op, c_objc_common_truthvalue_conversion): Call
+	remove_c_maybe_const_expr on any input C_MAYBE_CONST_EXPR with
+	integer operands.
+
 2009-04-08 Bingfeng Mei <bmei@broadcom.com>
 
 	* fold-const.c (const_binop): Combine two VECTOR_CST under operation 

@@ -70,6 +70,7 @@ convert (tree type, tree expr)
   tree e = expr;
   enum tree_code code = TREE_CODE (type);
   const char *invalid_conv_diag;
+  tree ret;
 
   if (type == error_mark_node
       || expr == error_mark_node
@@ -97,26 +98,56 @@ convert (tree type, tree expr)
       error ("void value not ignored as it ought to be");
       return error_mark_node;
     }
-  if (code == VOID_TYPE)
-    return fold_convert (type, e);
-  if (code == INTEGER_TYPE || code == ENUMERAL_TYPE)
-    return fold (convert_to_integer (type, e));
-  if (code == BOOLEAN_TYPE)
-    return fold_convert 
-      (type, c_objc_common_truthvalue_conversion (input_location, expr));
-  if (code == POINTER_TYPE || code == REFERENCE_TYPE)
-    return fold (convert_to_pointer (type, e));
-  if (code == REAL_TYPE)
-    return fold (convert_to_real (type, e));
-  if (code == FIXED_POINT_TYPE)
-    return fold (convert_to_fixed (type, e));
-  if (code == COMPLEX_TYPE)
-    return fold (convert_to_complex (type, e));
-  if (code == VECTOR_TYPE)
-    return fold (convert_to_vector (type, e));
-  if ((code == RECORD_TYPE || code == UNION_TYPE)
-      && lang_hooks.types_compatible_p (type, TREE_TYPE (expr)))
-      return e;
+
+  switch (code)
+    {
+    case VOID_TYPE:
+      return fold_convert (type, e);
+
+    case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+      ret = convert_to_integer (type, e);
+      goto maybe_fold;
+
+    case BOOLEAN_TYPE:
+      return fold_convert 
+	(type, c_objc_common_truthvalue_conversion (input_location, expr));
+
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      ret = convert_to_pointer (type, e);
+      goto maybe_fold;
+
+    case REAL_TYPE:
+      ret = convert_to_real (type, e);
+      goto maybe_fold;
+
+    case FIXED_POINT_TYPE:
+      ret = convert_to_fixed (type, e);
+      goto maybe_fold;
+
+    case COMPLEX_TYPE:
+      ret = convert_to_complex (type, e);
+      goto maybe_fold;
+
+    case VECTOR_TYPE:
+      ret = convert_to_vector (type, e);
+      goto maybe_fold;
+
+    case RECORD_TYPE:
+    case UNION_TYPE:
+      if (lang_hooks.types_compatible_p (type, TREE_TYPE (expr)))
+	return e;
+      break;
+
+    default:
+      break;
+
+    maybe_fold:
+      if (TREE_CODE (ret) != C_MAYBE_CONST_EXPR)
+	ret = fold (ret);
+      return ret;
+    }
 
   error ("conversion to non-scalar type requested");
   return error_mark_node;
