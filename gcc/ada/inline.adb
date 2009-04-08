@@ -403,6 +403,7 @@ package body Inline is
               or else Nkind (N) = N_Function_Call
             then
                if Is_Entity_Name (Name (N))
+                 and then Comes_From_Source (Entity (Name (N)))
                  and then
                     Nkind (Unit_Declaration_Node (Entity (Name (N))))
                       = N_Subprogram_Body
