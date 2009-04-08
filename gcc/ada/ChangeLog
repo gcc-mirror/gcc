@@ -1,3 +1,23 @@
+2009-04-08  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_util.adb: Minor comment fix
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
+	* g-socket.ads: Fix bad syntax in pragma Obsolescent
+
+	* par-ch2.adb (Scan_Pragma_Argument_Association): Check for error of
+	argument with no identifier following one that has an identifier. Was
+	missed in some cases.
+
+	* sem_prag.adb (Analyze_Pragma, case Check_Policy): Allow Policy
+	identifier.
+	(Analyze_Pragma, case Obsolescent): Allow Message, Version identifiers
+
+	* snames.adb: Add Name_Policy
+
+	* snames.ads: Add Name_Policy
+
 2009-04-08  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Minor reformatting

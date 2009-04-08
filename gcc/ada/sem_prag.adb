@@ -5789,8 +5789,9 @@ package body Sem_Prag is
          -- Check_Policy --
          ------------------
 
-         --  pragma Check_Policy ([Name =>] IDENTIFIER,
-         --                       POLICY_IDENTIFIER;
+         --  pragma Check_Policy (
+         --    [Name   =>] IDENTIFIER,
+         --    [Policy =>] POLICY_IDENTIFIER);
 
          --  POLICY_IDENTIFIER ::= ON | OFF | CHECK | IGNORE
 
@@ -5800,8 +5801,8 @@ package body Sem_Prag is
          when Pragma_Check_Policy =>
             GNAT_Pragma;
             Check_Arg_Count (2);
-            Check_No_Identifier (Arg2);
             Check_Optional_Identifier (Arg1, Name_Name);
+            Check_Optional_Identifier (Arg2, Name_Policy);
             Check_Arg_Is_One_Of
               (Arg2, Name_On, Name_Off, Name_Check, Name_Ignore);
 
@@ -6627,12 +6628,11 @@ package body Sem_Prag is
          ---------------
 
          --  pragma Eliminate (
-         --      [Unit_Name       =>]  IDENTIFIER |
-         --                            SELECTED_COMPONENT
-         --    [,[Entity          =>]  IDENTIFIER |
-         --                            SELECTED_COMPONENT |
-         --                            STRING_LITERAL]
-         --    [,]OVERLOADING_RESOLUTION);
+         --      [Unit_Name  =>] IDENTIFIER | SELECTED_COMPONENT,
+         --    [,[Entity     =>] IDENTIFIER |
+         --                      SELECTED_COMPONENT |
+         --                      STRING_LITERAL]
+         --    [,                OVERLOADING_RESOLUTION]);
 
          --  OVERLOADING_RESOLUTION ::= PARAMETER_AND_RESULT_TYPE_PROFILE |
          --                             SOURCE_LOCATION
@@ -9059,8 +9059,9 @@ package body Sem_Prag is
          -----------------
 
          --  pragma Obsolescent [(
-         --    [Entity => NAME,]
-         --    [(static_string_EXPRESSION [, Ada_05])];
+         --    [Entity  => NAME,]
+         --    [Message => static_string_EXPRESSION
+         --  [,[Version => Ada_05]] )];
 
          when Pragma_Obsolescent => Obsolescent : declare
             Ename : Node_Id;
@@ -9210,7 +9211,13 @@ package body Sem_Prag is
                Ename := Empty;
             end if;
 
-            Check_No_Identifiers;
+            if Arg_Count >= 1 then
+               Check_Optional_Identifier (Arg1, Name_Message);
+
+               if Arg_Count = 2 then
+                  Check_Optional_Identifier (Arg2, Name_Version);
+               end if;
+            end if;
 
             --  Get immediately preceding declaration
 

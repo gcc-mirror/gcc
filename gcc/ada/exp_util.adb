@@ -4844,7 +4844,7 @@ package body Exp_Util is
 
       --  If the expression has an access type (object or subprogram) we
       --  assume that the conversion is safe, because the size of the target
-      --  is safe, even it is a record (which might be treated as having
+      --  is safe, even if it is a record (which might be treated as having
       --  unknown size at this point).
 
       elsif Is_Access_Type (Ityp) then

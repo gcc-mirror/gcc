@@ -403,6 +403,7 @@ package body Snames is
      "no_task_attributes#" &
      "no_task_attributes_package#" &
      "on#" &
+     "policy#" &
      "parameter_types#" &
      "reference#" &
      "restricted#" &
