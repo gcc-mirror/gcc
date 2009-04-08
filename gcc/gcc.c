@@ -445,7 +445,7 @@ or with constant text in a single argument.
         it is subsequently output with %*. SUFFIX is terminated by the next
         space or %.
  %d	marks the argument containing or following the %d as a
-	temporary file name, so that that file will be deleted if CC exits
+	temporary file name, so that that file will be deleted if GCC exits
 	successfully.  Unlike %g, this contributes no text to the argument.
  %w	marks the argument containing or following the %w as the
 	"output file" of this compilation.  This puts the argument
@@ -514,12 +514,12 @@ or with constant text in a single argument.
 	argument vector in the usual fashion.  The function returns
 	a string which is processed as if it had appeared literally
 	as part of the current spec.
- %{S}   substitutes the -S switch, if that switch was given to CC.
+ %{S}   substitutes the -S switch, if that switch was given to GCC.
 	If that switch was not specified, this substitutes nothing.
 	Here S is a metasyntactic variable.
- %{S*}  substitutes all the switches specified to CC whose names start
+ %{S*}  substitutes all the switches specified to GCC whose names start
 	with -S.  This is used for -o, -I, etc; switches that take
-	arguments.  CC considers `-o foo' as being one switch whose
+	arguments.  GCC considers `-o foo' as being one switch whose
 	name starts with `o'.  %{o*} would substitute this text,
 	including the space; thus, two arguments would be generated.
  %{S*&T*} likewise, but preserve order of S and T options (the order
@@ -527,10 +527,10 @@ or with constant text in a single argument.
 	of ampersand-separated variables; for each the wild card is
 	optional.  Useful for CPP as %{D*&U*&A*}.
 
- %{S:X}   substitutes X, if the -S switch was given to CC.
- %{!S:X}  substitutes X, if the -S switch was NOT given to CC.
+ %{S:X}   substitutes X, if the -S switch was given to GCC.
+ %{!S:X}  substitutes X, if the -S switch was NOT given to GCC.
  %{S*:X}  substitutes X if one or more switches whose names start
-          with -S was given to CC.  Normally X is substituted only
+          with -S was given to GCC.  Normally X is substituted only
           once, no matter how many such switches appeared.  However,
           if %* appears somewhere in X, then X will be substituted
           once for each matching switch, with the %* replaced by the
@@ -540,13 +540,13 @@ or with constant text in a single argument.
  %{,S:X}  substitutes X, if processing a file which will use spec S.
  %{!,S:X} substitutes X, if NOT processing a file which will use spec S.
 	  
- %{S|T:X} substitutes X if either -S or -T was given to CC.  This may be
+ %{S|T:X} substitutes X if either -S or -T was given to GCC.  This may be
 	  combined with '!', '.', ',', and '*' as above binding stronger
 	  than the OR.
 	  If %* appears in X, all of the alternatives must be starred, and
 	  only the first matching alternative is substituted.
- %{S:X;   if S was given to CC, substitutes X;
-   T:Y;   else if T was given to CC, substitutes Y;
+ %{S:X;   if S was given to GCC, substitutes X;
+   T:Y;   else if T was given to GCC, substitutes Y;
     :D}   else substitutes D.  There can be as many clauses as you need.
           This may be combined with '.', '!', ',', '|', and '*' as above.
 
@@ -570,15 +570,15 @@ The character | at the beginning of the predicate text is used to indicate
 that a command should be piped to the following command, but only if -pipe
 is specified.
 
-Note that it is built into CC which switches take arguments and which
+Note that it is built into GCC which switches take arguments and which
 do not.  You might think it would be useful to generalize this to
 allow each compiler's spec to say which switches take arguments.  But
-this cannot be done in a consistent fashion.  CC cannot even decide
+this cannot be done in a consistent fashion.  GCC cannot even decide
 which input files have been specified without knowing which switches
 take arguments, and it must know which input files to compile in order
 to tell which compilers to run.
 
-CC also knows implicitly that arguments starting in `-l' are to be
+GCC also knows implicitly that arguments starting in `-l' are to be
 treated as compiler output files, and passed to the linker in their
 proper position among the other output files.  */
 
