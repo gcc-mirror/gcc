@@ -402,8 +402,8 @@ package body Sem_Ch8 is
    --  references the package in question.
 
    procedure Attribute_Renaming (N : Node_Id);
-   --  Analyze renaming of attribute as function. The renaming declaration N
-   --  is rewritten as a function body that returns the attribute reference
+   --  Analyze renaming of attribute as subprogram. The renaming declaration N
+   --  is rewritten as a subprogram body that returns the attribute reference
    --  applied to the formals of the function.
 
    procedure Check_Frozen_Renaming (N : Node_Id; Subp : Entity_Id);
@@ -2546,9 +2546,9 @@ package body Sem_Ch8 is
             end if;
 
          else
-            --  If the use_type_clause appears in a compilation context,
+            --  If the use_type_clause appears in a compilation unit context,
             --  check whether it comes from a unit that may appear in a
-            --  limited with_clause, for a better error message.
+            --  limited_with_clause, for a better error message.
 
             if Nkind (Parent (N)) = N_Compilation_Unit
               and then Nkind (Id) /= N_Identifier
@@ -2558,32 +2558,31 @@ package body Sem_Ch8 is
                   Pref : Node_Id;
 
                   function Mentioned (Nam : Node_Id) return Boolean;
-                  --  check whether the prefix of expanded name for the
-                  --  type appears in the prefix of some limited_with_clause.
+                  --  Check whether the prefix of expanded name for the type
+                  --  appears in the prefix of some limited_with_clause.
+
+                  ---------------
+                  -- Mentioned --
+                  ---------------
 
                   function Mentioned (Nam : Node_Id) return Boolean is
                   begin
-                     if Nkind (Name (Item)) = N_Selected_Component
-                       and then Chars (Prefix (Name (Item))) = Chars (Nam)
-                     then
-                        return True;
-                     else
-                        return False;
-                     end if;
+                     return Nkind (Name (Item)) = N_Selected_Component
+                              and then
+                            Chars (Prefix (Name (Item))) = Chars (Nam);
                   end Mentioned;
 
                begin
                   Pref := Prefix (Id);
                   Item := First (Context_Items (Parent (N)));
-                  while Present (Item)
-                    and then Item /= N
-                  loop
+
+                  while Present (Item) and then Item /= N loop
                      if Nkind (Item) = N_With_Clause
                        and then Limited_Present (Item)
                        and then Mentioned (Pref)
                      then
-                        Change_Error_Text (Get_Msg_Id,
-                           "premature usage of incomplete type");
+                        Change_Error_Text
+                          (Get_Msg_Id, "premature usage of incomplete type");
                      end if;
 
                      Next (Item);
@@ -2650,11 +2649,11 @@ package body Sem_Ch8 is
    begin
       Generate_Definition (New_S);
 
-      --  This procedure is called in the context of subprogram renaming,
-      --  and thus the attribute must be one that is a subprogram. All of
-      --  those have at least one formal parameter, with the singular
-      --  exception of AST_Entry (which is a real oddity, it is odd that
-      --  this can be renamed at all!)
+      --  This procedure is called in the context of subprogram renaming, and
+      --  thus the attribute must be one that is a subprogram. All of those
+      --  have at least one formal parameter, with the singular exception of
+      --  AST_Entry (which is a real oddity, it is odd that this can be renamed
+      --  at all!)
 
       if not Is_Non_Empty_List (Parameter_Specifications (Spec)) then
          if Aname /= Name_AST_Entry then
@@ -2689,22 +2688,22 @@ package body Sem_Ch8 is
                 Chars => Chars (Defining_Identifier (Param_Spec))));
 
             --  The expressions in the attribute reference are not freeze
-            --   points. Neither is the attribute as a whole, see below.
+            --  points. Neither is the attribute as a whole, see below.
 
             Set_Must_Not_Freeze (Last (Expr_List));
             Next (Param_Spec);
          end loop;
       end if;
 
-      --  Immediate error if too many formals. Other mismatches in numbers
-      --  of number of types of parameters are detected when we analyze the
-      --  body of the subprogram that we construct.
+      --  Immediate error if too many formals. Other mismatches in number or
+      --  types of parameters are detected when we analyze the body of the
+      --  subprogram that we construct.
 
       if Form_Num > 2 then
          Error_Msg_N ("too many formals for attribute", N);
 
-      --  Error if the attribute reference has expressions that look
-      --  like formal parameters.
+      --  Error if the attribute reference has expressions that look like
+      --  formal parameters.
 
       elsif Present (Expressions (Nam)) then
          Error_Msg_N ("illegal expressions in attribute reference", Nam);
@@ -2731,10 +2730,10 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      --  AST_Entry is an odd case. It doesn't really make much sense to
-      --  allow it to be renamed, but that's the DEC rule, so we have to
-      --  do it right. The point is that the AST_Entry call should be made
-      --  now, and what the function will return is the returned value.
+      --  AST_Entry is an odd case. It doesn't really make much sense to allow
+      --  it to be renamed, but that's the DEC rule, so we have to do it right.
+      --  The point is that the AST_Entry call should be made now, and what the
+      --  function will return is the returned value.
 
       --  Note that there is no Expr_List in this case anyway
 

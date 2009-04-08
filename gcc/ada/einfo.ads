@@ -1611,6 +1611,10 @@ package Einfo is
 --       Pure_Function was given for the entity. In some cases, we need to
 --       know that Is_Pure was explicitly set using this pragma.
 
+--    Has_Pragma_Thread_Local_Storage (Flag169)
+--       Present in all entities. If set, indicates that a valid pragma
+--       Thread_Local_Storage was given for the entity.
+
 --    Has_Pragma_Unmodified (Flag233)
 --       Present in all entities. Can only be set for variables (E_Variable,
 --       E_Out_Parameter, E_In_Out_Parameter). Set if a valid pragma Unmodified
@@ -4562,6 +4566,7 @@ package Einfo is
    --    Has_Pragma_Pack                     (Flag121)  (base type only)
    --    Has_Pragma_Pure                     (Flag203)
    --    Has_Pragma_Pure_Function            (Flag179)
+   --    Has_Pragma_Thread_Local_Storage     (Flag169)
    --    Has_Pragma_Unmodified               (Flag233)
    --    Has_Pragma_Unreferenced             (Flag180)
    --    Has_Private_Declaration             (Flag155)
@@ -5885,6 +5890,7 @@ package Einfo is
    function Has_Pragma_Preelab_Init             (Id : E) return B;
    function Has_Pragma_Pure                     (Id : E) return B;
    function Has_Pragma_Pure_Function            (Id : E) return B;
+   function Has_Pragma_Thread_Local_Storage     (Id : E) return B;
    function Has_Pragma_Unmodified               (Id : E) return B;
    function Has_Pragma_Unreferenced             (Id : E) return B;
    function Has_Pragma_Unreferenced_Objects     (Id : E) return B;
@@ -6442,6 +6448,7 @@ package Einfo is
    procedure Set_Has_Pragma_Preelab_Init         (Id : E; V : B := True);
    procedure Set_Has_Pragma_Pure                 (Id : E; V : B := True);
    procedure Set_Has_Pragma_Pure_Function        (Id : E; V : B := True);
+   procedure Set_Has_Pragma_Thread_Local_Storage (Id : E; V : B := True);
    procedure Set_Has_Pragma_Unmodified           (Id : E; V : B := True);
    procedure Set_Has_Pragma_Unreferenced         (Id : E; V : B := True);
    procedure Set_Has_Pragma_Unreferenced_Objects (Id : E; V : B := True);
@@ -7089,6 +7096,7 @@ package Einfo is
    pragma Inline (Has_Pragma_Preelab_Init);
    pragma Inline (Has_Pragma_Pure);
    pragma Inline (Has_Pragma_Pure_Function);
+   pragma Inline (Has_Pragma_Thread_Local_Storage);
    pragma Inline (Has_Pragma_Unmodified);
    pragma Inline (Has_Pragma_Unreferenced);
    pragma Inline (Has_Pragma_Unreferenced_Objects);
@@ -7514,6 +7522,7 @@ package Einfo is
    pragma Inline (Set_Has_Pragma_Preelab_Init);
    pragma Inline (Set_Has_Pragma_Pure);
    pragma Inline (Set_Has_Pragma_Pure_Function);
+   pragma Inline (Set_Has_Pragma_Thread_Local_Storage);
    pragma Inline (Set_Has_Pragma_Unmodified);
    pragma Inline (Set_Has_Pragma_Unreferenced);
    pragma Inline (Set_Has_Pragma_Unreferenced_Objects);

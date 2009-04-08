@@ -421,6 +421,7 @@ package body Einfo is
    --    Debug_Info_Off                  Flag166
    --    Sec_Stack_Needed_For_Return     Flag167
    --    Materialize_Entity              Flag168
+   --    Has_Pragma_Thread_Local_Storage Flag169
    --    Is_Known_Valid                  Flag170
 
    --    Is_Hidden_Open_Scope            Flag171
@@ -1345,6 +1346,11 @@ package body Einfo is
    begin
       return Flag179 (Id);
    end Has_Pragma_Pure_Function;
+
+   function Has_Pragma_Thread_Local_Storage (Id : E) return B is
+   begin
+      return Flag169 (Id);
+   end Has_Pragma_Thread_Local_Storage;
 
    function Has_Pragma_Unmodified (Id : E) return B is
    begin
@@ -3770,6 +3776,11 @@ package body Einfo is
    begin
       Set_Flag179 (Id, V);
    end Set_Has_Pragma_Pure_Function;
+
+   procedure Set_Has_Pragma_Thread_Local_Storage (Id : E; V : B := True) is
+   begin
+      Set_Flag169 (Id, V);
+   end Set_Has_Pragma_Thread_Local_Storage;
 
    procedure Set_Has_Pragma_Unmodified (Id : E; V : B := True) is
    begin
@@ -7516,6 +7527,7 @@ package body Einfo is
       W ("Has_Pragma_Preelab_Init",         Flag221 (Id));
       W ("Has_Pragma_Pure",                 Flag203 (Id));
       W ("Has_Pragma_Pure_Function",        Flag179 (Id));
+      W ("Has_Pragma_Thread_Local_Storage", Flag169 (Id));
       W ("Has_Pragma_Unmodified",           Flag233 (Id));
       W ("Has_Pragma_Unreferenced",         Flag180 (Id));
       W ("Has_Pragma_Unreferenced_Objects", Flag212 (Id));

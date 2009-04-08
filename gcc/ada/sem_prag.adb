@@ -11239,6 +11239,42 @@ package body Sem_Prag is
             end if;
          end Task_Storage;
 
+         --------------------------
+         -- Thread_Local_Storage --
+         --------------------------
+
+         --  pragma Thread_Local_Storage ([Entity =>] LOCAL_NAME);
+
+         when Pragma_Thread_Local_Storage => Thread_Local_Storage : declare
+            Id : Node_Id;
+            E  : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_Arg_Count (1);
+            Check_Optional_Identifier (Arg1, Name_Entity);
+            Check_Arg_Is_Local_Name (Arg1);
+
+            Id := Expression (Arg1);
+            Analyze (Id);
+
+            if not Is_Entity_Name (Id)
+              or else Ekind (Entity (Id)) /= E_Variable
+            then
+               Error_Pragma_Arg ("local variable name required", Arg1);
+            end if;
+
+            E := Entity (Id);
+
+            if Rep_Item_Too_Early (E, N)
+              or else Rep_Item_Too_Late (E, N)
+            then
+               raise Pragma_Exit;
+            end if;
+
+            Set_Has_Pragma_Thread_Local_Storage (E);
+         end Thread_Local_Storage;
+
          ----------------
          -- Time_Slice --
          ----------------
@@ -12367,6 +12403,7 @@ package body Sem_Prag is
       Pragma_Task_Info                     => -1,
       Pragma_Task_Name                     => -1,
       Pragma_Task_Storage                  =>  0,
+      Pragma_Thread_Local_Storage          =>  0,
       Pragma_Time_Slice                    => -1,
       Pragma_Title                         => -1,
       Pragma_Unchecked_Union               =>  0,

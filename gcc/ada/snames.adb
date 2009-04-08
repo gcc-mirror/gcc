@@ -327,6 +327,7 @@ package body Snames is
      "task_info#" &
      "task_name#" &
      "task_storage#" &
+     "thread_local_storage#" &
      "time_slice#" &
      "title#" &
      "unchecked_union#" &
