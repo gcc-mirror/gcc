@@ -682,7 +682,7 @@ already_open (st_parameter_open *opp, gfc_unit * u, unit_flags * flags)
 	}
 #endif
 
-      if (sclose (u->s) == FAILURE)
+      if (sclose (u->s) == -1)
 	{
 	  unlock_unit (u);
 	  generate_error (&opp->common, LIBERROR_OS,
