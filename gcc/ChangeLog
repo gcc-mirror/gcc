@@ -1,3 +1,10 @@
+2009-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (class_scope_p): New static inline.
+	(class_or_namespace_scope_p): Use it.
+	(gen_variable_die): Use DW_TAG_member tag for static data member
+	declarations instead of DW_TAG_variable.
+
 2009-04-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (valueize_refs): Do not continue to
