@@ -2242,10 +2242,12 @@ package VMS_Data is
                                                "-gnaty-n "                 &
                                             "ORDERED_SUBPROGRAMS "         &
                                                "-gnatyo "                  &
-                                            "OVERRIDING_INDICATORS "       &
-                                               "-gnatyO "                  &
                                             "NOORDERED_SUBPROGRAMS "       &
                                                "-gnaty-o "                 &
+                                            "OVERRIDING_INDICATORS "       &
+                                               "-gnatyO "                  &
+                                            "NOOVERRIDING_INDICATORS "     &
+                                               "-gnaty-O "                 &
                                             "PRAGMA "                      &
                                                "-gnatyp "                  &
                                             "NOPRAGMA "                    &
@@ -2484,6 +2486,12 @@ package VMS_Data is
    --                           suffix, then the value of this suffix is used
    --                           in the ordering (e.g. Junk2 comes before
    --                           Junk10).
+   --
+   --      OVERRIDING_INDICATORS Check that overriding subprograms are
+   --                           explicitly marked as such. The declaration of
+   --                           a primitive operation of a type extension that
+   --                           overrides an inherited operation must carry
+   --                           an overriding indicator.
    --
    --      PRAGMA               Check pragma casing.
    --                           Pragma names must be written in mixed case,

@@ -1,3 +1,17 @@
+2009-04-08  Thomas Quinot  <quinot@adacore.com>
+
+	* checks.adb: Minor reformatting
+
+2009-04-08  Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads: Add documentation for new style keyword
+	OVERRIDING_INDICATORS
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb (Check_Completion.Post_Error): Post error on spec if the
+	spec is in the current unit.
+
 2009-04-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_util.adb (Is_Protected_Self_Reference): Add guard to check for

@@ -8274,6 +8274,30 @@ package body Sem_Ch3 is
       ----------------
 
       procedure Post_Error is
+
+         procedure Missing_Body;
+         --  Output missing body message
+
+         ------------------
+         -- Missing_Body --
+         ------------------
+
+         procedure Missing_Body is
+         begin
+            --  Spec is in same unit, so we can post on spec
+
+            if In_Same_Source_Unit (Body_Id, E) then
+               Error_Msg_N ("missing body for &", E);
+
+            --  Spec is in a separate unit, so we have to post on the body
+
+            else
+               Error_Msg_NE ("missing body for & declared#!", Body_Id, E);
+            end if;
+         end Missing_Body;
+
+      --  Start of processing for Post_Error
+
       begin
          if not Comes_From_Source (E) then
 
@@ -8363,13 +8387,12 @@ package body Sem_Ch3 is
                         Check_Type_Conformant (Candidate, E);
 
                      else
-                        Error_Msg_NE ("missing body for & declared#!",
-                           Body_Id, E);
+                        Missing_Body;
                      end if;
                   end;
+
                else
-                  Error_Msg_NE ("missing body for & declared#!",
-                     Body_Id, E);
+                  Missing_Body;
                end if;
             end if;
          end if;

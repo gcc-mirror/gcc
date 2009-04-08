@@ -4821,7 +4821,7 @@ package body Checks is
               Suppress  => All_Checks);
 
          --  Only remaining possibility is that the source is signed and
-         --  the target is unsigned
+         --  the target is unsigned.
 
          else
             pragma Assert (not Is_Unsigned_Type (Source_Base_Type)
@@ -5484,6 +5484,7 @@ package body Checks is
          return Scope_Suppress (Overflow_Check);
       end if;
    end Overflow_Checks_Suppressed;
+
    -----------------------------
    -- Range_Checks_Suppressed --
    -----------------------------
