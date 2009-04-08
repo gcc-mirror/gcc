@@ -1,3 +1,8 @@
+2009-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* doc/install.texi: Update minimum GMP version.  Remove obsolete
+	text in MPFR section.
+
 2009-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (class_scope_p): New static inline.
