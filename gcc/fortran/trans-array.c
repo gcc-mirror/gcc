@@ -5825,8 +5825,8 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
       gfc_trans_vla_type_sizes (sym, &fnblock);
     }
 
-  /* Dummy and use associated variables don't need anything special.  */
-  if (sym->attr.dummy || sym->attr.use_assoc)
+  /* Dummy, use associated and result variables don't need anything special.  */
+  if (sym->attr.dummy || sym->attr.use_assoc || sym->attr.result)
     {
       gfc_add_expr_to_block (&fnblock, body);
 
