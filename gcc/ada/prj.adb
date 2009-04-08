@@ -857,6 +857,7 @@ package body Prj is
       Units_Htable.Reset            (Tree.Units_HT);
       Files_Htable.Reset            (Tree.Files_HT);
       Source_Paths_Htable.Reset     (Tree.Source_Paths_HT);
+      Unit_Sources_Htable.Reset     (Tree.Unit_Sources_HT);
 
       --  Private part table
 

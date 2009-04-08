@@ -656,6 +656,13 @@ package body Prj.Nmsc is
          Source_Paths_Htable.Set (In_Tree.Source_Paths_HT, Path, Id);
       end if;
 
+      --  Add the source id to the Unit_Sources_HT hash table, if the unit name
+      --  is not null.
+
+      if Unit /= No_Name then
+         Unit_Sources_Htable.Set (In_Tree.Unit_Sources_HT, Unit, Id);
+      end if;
+
       --  Add the source to the global list
 
       Src_Data.Next_In_Sources := In_Tree.First_Source;
@@ -806,8 +813,9 @@ package body Prj.Nmsc is
                   Source := Data.First_Source;
                   Source_Loop : while Source /= No_Source loop
                      declare
-                        Src_Data      : Source_Data renames
-                          In_Tree.Sources.Table (Source);
+                        Src_Data : Source_Data renames
+                                     In_Tree.Sources.Table (Source);
+
                      begin
                         exit Source_Loop when Src_Data.Language = Language;
 
@@ -2513,7 +2521,7 @@ package body Prj.Nmsc is
             while Source /= No_Source loop
                declare
                   Src_Data : Source_Data renames
-                    In_Tree.Sources.Table (Source);
+                               In_Tree.Sources.Table (Source);
                begin
                   Src_Data.In_Interfaces := False;
                   Source := Src_Data.Next_In_Project;
@@ -2542,7 +2550,8 @@ package body Prj.Nmsc is
                while Source /= No_Source loop
                   declare
                      Src_Data : Source_Data renames
-                       In_Tree.Sources.Table (Source);
+                                  In_Tree.Sources.Table (Source);
+
                   begin
                      if Src_Data.File = Name then
                         if not Src_Data.Locally_Removed then
@@ -2604,7 +2613,8 @@ package body Prj.Nmsc is
             while Source /= No_Source loop
                declare
                   Src_Data : Source_Data renames
-                    In_Tree.Sources.Table (Source);
+                               In_Tree.Sources.Table (Source);
+
                begin
                   if not Src_Data.Declared_In_Interfaces then
                      Src_Data.In_Interfaces := False;
@@ -2634,8 +2644,10 @@ package body Prj.Nmsc is
       --  Check that a list of unit names contains only valid names
 
       procedure Get_Exceptions (Kind : Source_Kind);
+      --  Comment required ???
 
       procedure Get_Unit_Exceptions (Kind : Source_Kind);
+      --  Comment required ???
 
       ----------------------
       -- Check_Unit_Names --
@@ -3553,12 +3565,10 @@ package body Prj.Nmsc is
                Src_Id := Proj_Data.First_Source;
                while Src_Id /= No_Source loop
                   declare
-                     Src       : Source_Data renames
-                       In_Tree.Sources.Table (Src_Id);
+                     Src : Source_Data renames In_Tree.Sources.Table (Src_Id);
                   begin
                      exit when Src.Lang_Kind /= File_Based
                        or else Src.Kind /= Spec;
-
                      Src_Id := Src.Next_In_Project;
                   end;
                end loop;
@@ -7394,16 +7404,16 @@ package body Prj.Nmsc is
          --  For other language, the source is simply removed.
 
          declare
-            Source   : Source_Id;
+            Source : Source_Id;
 
          begin
             Source := Data.First_Source;
             while Source /= No_Source loop
                declare
                   Src_Data : Source_Data renames
-                    In_Tree.Sources.Table (Source);
-               begin
+                               In_Tree.Sources.Table (Source);
 
+               begin
                   if Src_Data.Naming_Exception
                     and then Src_Data.Path = No_Path_Information
                   then
@@ -8145,15 +8155,15 @@ package body Prj.Nmsc is
             while Source /= No_Source loop
                declare
                   Src_Data : Source_Data renames
-                    In_Tree.Sources.Table (Source);
+                               In_Tree.Sources.Table (Source);
 
                begin
                   if Unit /= No_Name
                     and then Src_Data.Unit = Unit
                     and then
                       ((Src_Data.Kind = Spec and then Kind = Impl)
-                       or else
-                         (Src_Data.Kind = Impl and then Kind = Spec))
+                         or else
+                       (Src_Data.Kind = Impl and then Kind = Spec))
                   then
                      Other_Part := Source;
 
@@ -8481,12 +8491,10 @@ package body Prj.Nmsc is
          Source := Data.First_Source;
          while Source /= No_Source loop
             declare
-               Src_Data : Source_Data renames
-                 In_Tree.Sources.Table (Source);
+               Src_Data : Source_Data renames In_Tree.Sources.Table (Source);
 
             begin
-               --  A file that is excluded cannot also be an exception file
-               --  name
+               --  An excluded file cannot also be an exception file name
 
                if Excluded_Sources_Htable.Get (Src_Data.File) /=
                  No_File_Found
@@ -8514,13 +8522,12 @@ package body Prj.Nmsc is
 
                Source_Names.Set (K => Src_Data.File, E => Name_Loc);
 
-               --  If this is an Ada exception, record it in table
-               --  Unit_Exceptions
+               --  If this is an Ada exception, record in table Unit_Exceptions
 
                if Src_Data.Unit /= No_Name then
                   declare
                      Unit_Except : Unit_Exception :=
-                       Unit_Exceptions.Get (Src_Data.Unit);
+                                     Unit_Exceptions.Get (Src_Data.Unit);
 
                   begin
                      Unit_Except.Name := Src_Data.Unit;
@@ -8548,11 +8555,10 @@ package body Prj.Nmsc is
          while FF /= No_File_Found loop
             OK     := False;
             Source := In_Tree.First_Source;
-
             while Source /= No_Source loop
                declare
                   Src_Data : Source_Data renames
-                    In_Tree.Sources.Table (Source);
+                               In_Tree.Sources.Table (Source);
 
                begin
                   if Src_Data.File = FF.File then
@@ -8625,12 +8631,12 @@ package body Prj.Nmsc is
             while Src_Id /= No_Source loop
                declare
                   Src_Data : Source_Data renames
-                    In_Tree.Sources.Table (Src_Id);
+                               In_Tree.Sources.Table (Src_Id);
 
                begin
                   if Src_Data.Compiled and then Src_Data.Object_Exists
                     and then Project_Extends
-                      (Project, Src_Data.Project, In_Tree)
+                               (Project, Src_Data.Project, In_Tree)
                   then
                      if Src_Data.Unit = No_Name then
                         if Src_Data.Kind = Impl then
@@ -8656,10 +8662,9 @@ package body Prj.Nmsc is
 
                                  declare
                                     Src_Ind : constant Source_File_Index :=
-                                      Sinput.P.Load_Project_File
-                                        (Get_Name_String
-                                             (Src_Data.Path.Name));
-
+                                                Sinput.P.Load_Project_File
+                                                 (Get_Name_String
+                                                   (Src_Data.Path.Name));
                                  begin
                                     if Sinput.P.Source_File_Is_Subunit
                                       (Src_Ind)
