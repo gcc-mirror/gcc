@@ -1,5 +1,26 @@
 2009-04-08  Emmanuel Briot  <briot@adacore.com>
 
+	* prj.ads: Update comment on switches file
+
+	* prj-nmsc.adb: Code clean up. Use renaming clauses.
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Further fixes to bounds handling
+
+2009-04-08  Thomas Quinot  <quinot@adacore.com>
+
+	* ali-util.adb: Minor comment fix
+
+2009-04-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Use_Type): Improve error message when clause
+	appears in a context clause, and the enclosing package is mentioned in
+	a limited_with_clause.
+	(Use_One_Type): Reject clause if type is still incomplete.
+
+2009-04-08  Emmanuel Briot  <briot@adacore.com>
+
 	* prj-nmsc.adb (Check_File, Process_Sources_In_Multi_Language_Mode):
 	avoid copies of Source_Data variables when possible, since these
 	involve calls to memcpy() which are done too many times.

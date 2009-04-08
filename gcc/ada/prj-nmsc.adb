@@ -50,8 +50,6 @@ with Ada.Strings.Maps.Constants; use Ada.Strings.Maps.Constants;
 
 package body Prj.Nmsc is
 
-   type Source_Data_Access is access Source_Data;
-
    No_Continuation_String : aliased String := "";
    Continuation_String    : aliased String := "\";
    --  Used in Check_Library for continuation error messages at the same
@@ -798,7 +796,6 @@ package body Prj.Nmsc is
             declare
                Language      : Language_Index;
                Source        : Source_Id;
-               Src_Data      : Source_Data_Access;
                Alt_Lang      : Alternate_Language_Id;
                Alt_Lang_Data : Alternate_Language_Data;
                Continuation  : Boolean := False;
@@ -808,23 +805,25 @@ package body Prj.Nmsc is
                while Language /= No_Language_Index loop
                   Source := Data.First_Source;
                   Source_Loop : while Source /= No_Source loop
-                     Src_Data :=
-                       In_Tree.Sources.Table (Source)'Unrestricted_Access;
+                     declare
+                        Src_Data      : Source_Data renames
+                          In_Tree.Sources.Table (Source);
+                     begin
+                        exit Source_Loop when Src_Data.Language = Language;
 
-                     exit Source_Loop when Src_Data.Language = Language;
+                        Alt_Lang := Src_Data.Alternate_Languages;
 
-                     Alt_Lang := Src_Data.Alternate_Languages;
+                        Alternate_Loop :
+                        while Alt_Lang /= No_Alternate_Language loop
+                           Alt_Lang_Data :=
+                             In_Tree.Alt_Langs.Table (Alt_Lang);
+                           exit Source_Loop
+                           when Alt_Lang_Data.Language = Language;
+                           Alt_Lang := Alt_Lang_Data.Next;
+                        end loop Alternate_Loop;
 
-                     Alternate_Loop :
-                     while Alt_Lang /= No_Alternate_Language loop
-                        Alt_Lang_Data :=
-                          In_Tree.Alt_Langs.Table (Alt_Lang);
-                        exit Source_Loop
-                               when Alt_Lang_Data.Language = Language;
-                        Alt_Lang := Alt_Lang_Data.Next;
-                     end loop Alternate_Loop;
-
-                     Source := Src_Data.Next_In_Project;
+                        Source := Src_Data.Next_In_Project;
+                     end;
                   end loop Source_Loop;
 
                   if Source = No_Source then
@@ -2497,7 +2496,6 @@ package body Prj.Nmsc is
       Name    : File_Name_Type;
 
       Source   : Source_Id;
-      Src_Data : Source_Data_Access;
 
       Project_2 : Project_Id;
       Data_2     : Project_Data;
@@ -2513,9 +2511,13 @@ package body Prj.Nmsc is
          loop
             Source := Data_2.First_Source;
             while Source /= No_Source loop
-               Src_Data := In_Tree.Sources.Table (Source)'Unrestricted_Access;
-               Src_Data.In_Interfaces := False;
-               Source := Src_Data.Next_In_Project;
+               declare
+                  Src_Data : Source_Data renames
+                    In_Tree.Sources.Table (Source);
+               begin
+                  Src_Data.In_Interfaces := False;
+                  Source := Src_Data.Next_In_Project;
+               end;
             end loop;
 
             Project_2 := Data_2.Extends;
@@ -2538,31 +2540,35 @@ package body Prj.Nmsc is
             loop
                Source := Data_2.First_Source;
                while Source /= No_Source loop
-                  Src_Data :=
-                    In_Tree.Sources.Table (Source)'Unrestricted_Access;
-                  if Src_Data.File = Name then
-                     if not Src_Data.Locally_Removed then
-                        Src_Data.In_Interfaces := True;
-                        Src_Data.Declared_In_Interfaces := True;
+                  declare
+                     Src_Data : Source_Data renames
+                       In_Tree.Sources.Table (Source);
+                  begin
+                     if Src_Data.File = Name then
+                        if not Src_Data.Locally_Removed then
+                           Src_Data.In_Interfaces := True;
+                           Src_Data.Declared_In_Interfaces := True;
 
-                        if Src_Data.Other_Part /= No_Source then
-                           In_Tree.Sources.Table
-                             (Src_Data.Other_Part).In_Interfaces := True;
-                           In_Tree.Sources.Table
-                             (Src_Data.Other_Part).Declared_In_Interfaces :=
-                             True;
+                           if Src_Data.Other_Part /= No_Source then
+                              In_Tree.Sources.Table
+                                (Src_Data.Other_Part).In_Interfaces := True;
+                              In_Tree.Sources.Table
+                                (Src_Data.Other_Part).Declared_In_Interfaces :=
+                                True;
+                           end if;
+
+                           if Current_Verbosity = High then
+                              Write_Str ("   interface: ");
+                              Write_Line
+                                (Get_Name_String (Src_Data.Path.Name));
+                           end if;
                         end if;
 
-                        if Current_Verbosity = High then
-                           Write_Str ("   interface: ");
-                           Write_Line (Get_Name_String (Src_Data.Path.Name));
-                        end if;
+                        exit Big_Loop;
                      end if;
 
-                     exit Big_Loop;
-                  end if;
-
-                  Source := Src_Data.Next_In_Project;
+                     Source := Src_Data.Next_In_Project;
+                  end;
                end loop;
 
                Project_2 := Data_2.Extends;
@@ -2596,13 +2602,16 @@ package body Prj.Nmsc is
          if Data.Interfaces_Defined then
             Source := Data.First_Source;
             while Source /= No_Source loop
-               Src_Data := In_Tree.Sources.Table (Source)'Unrestricted_Access;
+               declare
+                  Src_Data : Source_Data renames
+                    In_Tree.Sources.Table (Source);
+               begin
+                  if not Src_Data.Declared_In_Interfaces then
+                     Src_Data.In_Interfaces := False;
+                  end if;
 
-               if not Src_Data.Declared_In_Interfaces then
-                  Src_Data.In_Interfaces := False;
-               end if;
-
-               Source := Src_Data.Next_In_Project;
+                  Source := Src_Data.Next_In_Project;
+               end;
             end loop;
          end if;
       end if;
@@ -3530,7 +3539,6 @@ package body Prj.Nmsc is
       procedure Check_Library (Proj : Project_Id; Extends : Boolean) is
          Proj_Data : Project_Data;
          Src_Id    : Source_Id;
-         Src       : Source_Data_Access;
 
       begin
          if Proj /= No_Project then
@@ -3544,12 +3552,15 @@ package body Prj.Nmsc is
 
                Src_Id := Proj_Data.First_Source;
                while Src_Id /= No_Source loop
-                  Src := In_Tree.Sources.Table (Src_Id)'Unrestricted_Access;
+                  declare
+                     Src       : Source_Data renames
+                       In_Tree.Sources.Table (Src_Id);
+                  begin
+                     exit when Src.Lang_Kind /= File_Based
+                       or else Src.Kind /= Spec;
 
-                  exit when Src.Lang_Kind /= File_Based
-                    or else Src.Kind /= Spec;
-
-                  Src_Id := Src.Next_In_Project;
+                     Src_Id := Src.Next_In_Project;
+                  end;
                end loop;
 
                if Src_Id /= No_Source then
@@ -6413,6 +6424,8 @@ package body Prj.Nmsc is
    is
       Mains : constant Variable_Value :=
                 Prj.Util.Value_Of (Name_Main, Data.Decl.Attributes, In_Tree);
+      List  : String_List_Id;
+      Elem  : String_Element;
 
    begin
       Data.Mains := Mains.Values;
@@ -6433,6 +6446,22 @@ package body Prj.Nmsc is
            (Project, In_Tree,
             "a library project file cannot have Main specified",
             Mains.Location);
+
+      else
+         List := Mains.Values;
+         while List /= Nil_String loop
+            Elem := In_Tree.String_Elements.Table (List);
+
+            if Length_Of_Name (Elem.Value) = 0 then
+               Error_Msg
+                 (Project, In_Tree,
+                  "?a main cannot have an empty name",
+                  Elem.Location);
+               exit;
+            end if;
+
+            List := Elem.Next;
+         end loop;
       end if;
    end Get_Mains;
 
@@ -7366,29 +7395,32 @@ package body Prj.Nmsc is
 
          declare
             Source   : Source_Id;
-            Src_Data : Source_Data_Access;
 
          begin
             Source := Data.First_Source;
             while Source /= No_Source loop
-               Src_Data := In_Tree.Sources.Table (Source)'Unrestricted_Access;
+               declare
+                  Src_Data : Source_Data renames
+                    In_Tree.Sources.Table (Source);
+               begin
 
-               if Src_Data.Naming_Exception
-                 and then Src_Data.Path = No_Path_Information
-               then
-                  if Src_Data.Unit /= No_Name then
-                     Error_Msg_Name_1 := Name_Id (Src_Data.Display_File);
-                     Error_Msg_Name_2 := Name_Id (Src_Data.Unit);
-                     Error_Msg
-                       (Project, In_Tree,
-                        "source file %% for unit %% not found",
-                        No_Location);
+                  if Src_Data.Naming_Exception
+                    and then Src_Data.Path = No_Path_Information
+                  then
+                     if Src_Data.Unit /= No_Name then
+                        Error_Msg_Name_1 := Name_Id (Src_Data.Display_File);
+                        Error_Msg_Name_2 := Name_Id (Src_Data.Unit);
+                        Error_Msg
+                          (Project, In_Tree,
+                           "source file %% for unit %% not found",
+                           No_Location);
+                     end if;
+
+                     Remove_Source (Source, No_Source, Project, Data, In_Tree);
                   end if;
 
-                  Remove_Source (Source, No_Source, Project, Data, In_Tree);
-               end if;
-
-               Source := Src_Data.Next_In_Project;
+                  Source := Src_Data.Next_In_Project;
+               end;
             end loop;
          end;
 
@@ -8112,10 +8144,10 @@ package body Prj.Nmsc is
             Add_Src := True;
             while Source /= No_Source loop
                declare
-                  Src_Data : constant Source_Data_Access :=
-                    In_Tree.Sources.Table (Source)'Unrestricted_Access;
-               begin
+                  Src_Data : Source_Data renames
+                    In_Tree.Sources.Table (Source);
 
+               begin
                   if Unit /= No_Name
                     and then Src_Data.Unit = Unit
                     and then
@@ -8129,10 +8161,10 @@ package body Prj.Nmsc is
                          and then Src_Data.Unit = Unit
                          and then
                            (Src_Data.Kind = Kind
-                            or else
-                              (Src_Data.Kind = Sep and then Kind = Impl)
-                            or else
-                              (Src_Data.Kind = Impl and then Kind = Sep)))
+                             or else
+                               (Src_Data.Kind = Sep  and then Kind = Impl)
+                             or else
+                               (Src_Data.Kind = Impl and then Kind = Sep)))
                     or else
                       (Unit = No_Name and then Src_Data.File = File_Name)
                   then
@@ -8437,7 +8469,6 @@ package body Prj.Nmsc is
 
       procedure Process_Sources_In_Multi_Language_Mode is
          Source   : Source_Id;
-         Src_Data : Source_Data_Access;
          Name_Loc : Name_Location;
          OK       : Boolean;
          FF       : File_Found;
@@ -8449,57 +8480,63 @@ package body Prj.Nmsc is
 
          Source := Data.First_Source;
          while Source /= No_Source loop
-            Src_Data := In_Tree.Sources.Table (Source)'Unrestricted_Access;
+            declare
+               Src_Data : Source_Data renames
+                 In_Tree.Sources.Table (Source);
 
-            --  A file that is excluded cannot also be an exception file name
+            begin
+               --  A file that is excluded cannot also be an exception file
+               --  name
 
-            if Excluded_Sources_Htable.Get (Src_Data.File) /=
-              No_File_Found
-            then
-               Error_Msg_File_1 := Src_Data.File;
-               Error_Msg
-                 (Project, In_Tree,
-                  "{ cannot be both excluded and an exception file name",
-                  No_Location);
-            end if;
+               if Excluded_Sources_Htable.Get (Src_Data.File) /=
+                 No_File_Found
+               then
+                  Error_Msg_File_1 := Src_Data.File;
+                  Error_Msg
+                    (Project, In_Tree,
+                     "{ cannot be both excluded and an exception file name",
+                     No_Location);
+               end if;
 
-            Name_Loc := (Name     => Src_Data.File,
-                         Location => No_Location,
-                         Source   => Source,
-                         Except   => Src_Data.Unit /= No_Name,
-                         Found    => False);
+               Name_Loc := (Name     => Src_Data.File,
+                            Location => No_Location,
+                            Source   => Source,
+                            Except   => Src_Data.Unit /= No_Name,
+                            Found    => False);
 
-            if Current_Verbosity = High then
-               Write_Str ("Putting source #");
-               Write_Str (Source'Img);
-               Write_Str (", file ");
-               Write_Str (Get_Name_String (Src_Data.File));
-               Write_Line (" in Source_Names");
-            end if;
+               if Current_Verbosity = High then
+                  Write_Str ("Putting source #");
+                  Write_Str (Source'Img);
+                  Write_Str (", file ");
+                  Write_Str (Get_Name_String (Src_Data.File));
+                  Write_Line (" in Source_Names");
+               end if;
 
-            Source_Names.Set (K => Src_Data.File, E => Name_Loc);
+               Source_Names.Set (K => Src_Data.File, E => Name_Loc);
 
-            --  If this is an Ada exception, record it in table Unit_Exceptions
+               --  If this is an Ada exception, record it in table
+               --  Unit_Exceptions
 
-            if Src_Data.Unit /= No_Name then
-               declare
-                  Unit_Except : Unit_Exception :=
-                                  Unit_Exceptions.Get (Src_Data.Unit);
+               if Src_Data.Unit /= No_Name then
+                  declare
+                     Unit_Except : Unit_Exception :=
+                       Unit_Exceptions.Get (Src_Data.Unit);
 
-               begin
-                  Unit_Except.Name := Src_Data.Unit;
+                  begin
+                     Unit_Except.Name := Src_Data.Unit;
 
-                  if Src_Data.Kind = Spec then
-                     Unit_Except.Spec := Src_Data.File;
-                  else
-                     Unit_Except.Impl := Src_Data.File;
-                  end if;
+                     if Src_Data.Kind = Spec then
+                        Unit_Except.Spec := Src_Data.File;
+                     else
+                        Unit_Except.Impl := Src_Data.File;
+                     end if;
 
-                  Unit_Exceptions.Set (Src_Data.Unit, Unit_Except);
-               end;
-            end if;
+                     Unit_Exceptions.Set (Src_Data.Unit, Unit_Except);
+                  end;
+               end if;
 
-            Source := Src_Data.Next_In_Project;
+               Source := Src_Data.Next_In_Project;
+            end;
          end loop;
 
          Find_Explicit_Sources
@@ -8513,25 +8550,29 @@ package body Prj.Nmsc is
             Source := In_Tree.First_Source;
 
             while Source /= No_Source loop
-               Src_Data := In_Tree.Sources.Table (Source)'Unrestricted_Access;
+               declare
+                  Src_Data : Source_Data renames
+                    In_Tree.Sources.Table (Source);
 
-               if Src_Data.File = FF.File then
+               begin
+                  if Src_Data.File = FF.File then
 
-                  --  Check that this is from this project or a project that
-                  --  the current project extends.
+                     --  Check that this is from this project or a project that
+                     --  the current project extends.
 
-                  if Src_Data.Project = Project or else
-                    Is_Extending (Project, Src_Data.Project, In_Tree)
-                  then
-                     Src_Data.Locally_Removed := True;
-                     Src_Data.In_Interfaces := False;
-                     Add_Forbidden_File_Name (FF.File);
-                     OK := True;
-                     exit;
+                     if Src_Data.Project = Project or else
+                       Is_Extending (Project, Src_Data.Project, In_Tree)
+                     then
+                        Src_Data.Locally_Removed := True;
+                        Src_Data.In_Interfaces := False;
+                        Add_Forbidden_File_Name (FF.File);
+                        OK := True;
+                        exit;
+                     end if;
                   end if;
-               end if;
 
-               Source := Src_Data.Next_In_Sources;
+                  Source := Src_Data.Next_In_Sources;
+               end;
             end loop;
 
             if not FF.Found and not OK then
@@ -8547,10 +8588,9 @@ package body Prj.Nmsc is
 
          Check_Object_File_Names : declare
             Src_Id      : Source_Id;
-            Src_Data    : Source_Data_Access;
             Source_Name : File_Name_Type;
 
-            procedure Check_Object;
+            procedure Check_Object (Src_Data : Source_Data);
             --  Check if object file name of the current source is already in
             --  hash table Object_File_Names. If it is, report an error. If it
             --  is not, put it there with the file name of the current source.
@@ -8559,7 +8599,7 @@ package body Prj.Nmsc is
             -- Check_Object --
             ------------------
 
-            procedure Check_Object is
+            procedure Check_Object (Src_Data : Source_Data) is
             begin
                Source_Name := Object_File_Names.Get (Src_Data.Object);
 
@@ -8583,54 +8623,60 @@ package body Prj.Nmsc is
             Object_File_Names.Reset;
             Src_Id := In_Tree.First_Source;
             while Src_Id /= No_Source loop
-               Src_Data := In_Tree.Sources.Table (Src_Id)'Unrestricted_Access;
+               declare
+                  Src_Data : Source_Data renames
+                    In_Tree.Sources.Table (Src_Id);
 
-               if Src_Data.Compiled and then Src_Data.Object_Exists
-                 and then Project_Extends (Project, Src_Data.Project, In_Tree)
-               then
-                  if Src_Data.Unit = No_Name then
-                     if Src_Data.Kind = Impl then
-                        Check_Object;
+               begin
+                  if Src_Data.Compiled and then Src_Data.Object_Exists
+                    and then Project_Extends
+                      (Project, Src_Data.Project, In_Tree)
+                  then
+                     if Src_Data.Unit = No_Name then
+                        if Src_Data.Kind = Impl then
+                           Check_Object (Src_Data);
+                        end if;
+
+                     else
+                        case Src_Data.Kind is
+                           when Spec =>
+                              if Src_Data.Other_Part = No_Source then
+                                 Check_Object (Src_Data);
+                              end if;
+
+                           when Sep =>
+                              null;
+
+                           when Impl =>
+                              if Src_Data.Other_Part /= No_Source then
+                                 Check_Object (Src_Data);
+
+                              else
+                                 --  Check if it is a subunit
+
+                                 declare
+                                    Src_Ind : constant Source_File_Index :=
+                                      Sinput.P.Load_Project_File
+                                        (Get_Name_String
+                                             (Src_Data.Path.Name));
+
+                                 begin
+                                    if Sinput.P.Source_File_Is_Subunit
+                                      (Src_Ind)
+                                    then
+                                       In_Tree.Sources.Table (Src_Id).Kind :=
+                                         Sep;
+                                    else
+                                       Check_Object (Src_Data);
+                                    end if;
+                                 end;
+                              end if;
+                        end case;
                      end if;
-
-                  else
-                     case Src_Data.Kind is
-                        when Spec =>
-                           if Src_Data.Other_Part = No_Source then
-                              Check_Object;
-                           end if;
-
-                        when Sep =>
-                           null;
-
-                        when Impl =>
-                           if Src_Data.Other_Part /= No_Source then
-                              Check_Object;
-
-                           else
-                              --  Check if it is a subunit
-
-                              declare
-                                 Src_Ind : constant Source_File_Index :=
-                                             Sinput.P.Load_Project_File
-                                               (Get_Name_String
-                                                  (Src_Data.Path.Name));
-
-                              begin
-                                 if Sinput.P.Source_File_Is_Subunit
-                                     (Src_Ind)
-                                 then
-                                    In_Tree.Sources.Table (Src_Id).Kind := Sep;
-                                 else
-                                    Check_Object;
-                                 end if;
-                              end;
-                           end if;
-                     end case;
                   end if;
-               end if;
 
-               Src_Id := Src_Data.Next_In_Sources;
+                  Src_Id := Src_Data.Next_In_Sources;
+               end;
             end loop;
          end Check_Object_File_Names;
       end Process_Sources_In_Multi_Language_Mode;

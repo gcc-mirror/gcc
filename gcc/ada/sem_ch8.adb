@@ -2515,7 +2515,7 @@ package body Sem_Ch8 is
 
    procedure Analyze_Use_Type (N : Node_Id) is
       E  : Entity_Id;
-      Id : Entity_Id;
+      Id : Node_Id;
 
    begin
       Set_Hidden_By_Use_Clause (N, No_Elist);
@@ -2543,6 +2543,52 @@ package body Sem_Ch8 is
                then
                   Check_In_Previous_With_Clause (N, Prefix (Id));
                end if;
+            end if;
+
+         else
+            --  If the use_type_clause appears in a compilation context,
+            --  check whether it comes from a unit that may appear in a
+            --  limited with_clause, for a better error message.
+
+            if Nkind (Parent (N)) = N_Compilation_Unit
+              and then Nkind (Id) /= N_Identifier
+            then
+               declare
+                  Item : Node_Id;
+                  Pref : Node_Id;
+
+                  function Mentioned (Nam : Node_Id) return Boolean;
+                  --  check whether the prefix of expanded name for the
+                  --  type appears in the prefix of some limited_with_clause.
+
+                  function Mentioned (Nam : Node_Id) return Boolean is
+                  begin
+                     if Nkind (Name (Item)) = N_Selected_Component
+                       and then Chars (Prefix (Name (Item))) = Chars (Nam)
+                     then
+                        return True;
+                     else
+                        return False;
+                     end if;
+                  end Mentioned;
+
+               begin
+                  Pref := Prefix (Id);
+                  Item := First (Context_Items (Parent (N)));
+                  while Present (Item)
+                    and then Item /= N
+                  loop
+                     if Nkind (Item) = N_With_Clause
+                       and then Limited_Present (Item)
+                       and then Mentioned (Pref)
+                     then
+                        Change_Error_Text (Get_Msg_Id,
+                           "premature usage of incomplete type");
+                     end if;
+
+                     Next (Item);
+                  end loop;
+               end;
             end if;
          end if;
 
@@ -7064,7 +7110,10 @@ package body Sem_Ch8 is
       Set_Redundant_Use (Id,
         Is_Known_Used or else Is_Potentially_Use_Visible (T));
 
-      if In_Open_Scopes (Scope (T)) then
+      if Ekind (T) = E_Incomplete_Type then
+         Error_Msg_N ("premature usage of incomplete type", Id);
+
+      elsif In_Open_Scopes (Scope (T)) then
          null;
 
       --  A limited view cannot appear in a use_type clause. However, an
