@@ -1,3 +1,8 @@
+2009-04-08  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/39670
+	* invoke.texi (fdollar-ok): Clarify limitations.
+
 2009-04-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38863
