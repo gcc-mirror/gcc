@@ -1,5 +1,12 @@
 2009-04-08  Robert Dewar  <dewar@adacore.com>
 
+	* sem_cat.adb (Check_Categorization_Dependencies): Handle Preelaborate
+	properly in the presence of Remote_Types or Remote_Call_Interface.
+
+	* sem_util.adb: Add comment.
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
 	* ug_words: Add /ASSUME_VALID for -gnatB
 
 	* vms_data.ads: Add /ASSUME_VALID for -gnatB

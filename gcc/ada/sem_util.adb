@@ -6802,6 +6802,11 @@ package body Sem_Util is
         and then Present (Etype (Orig_Node))
         and then Is_Access_Type (Etype (Orig_Node))
       then
+         --  Note that if the prefix is an explicit dereference that does not
+         --  come from source, we must check for a rewritten function call in
+         --  prefixed notation before other forms of rewriting, to prevent a
+         --  compiler crash.
+
          return
            (Nkind (Orig_Node) = N_Function_Call
              and then not Is_Access_Constant (Etype (Prefix (N))))
