@@ -2198,8 +2198,6 @@ cleanup_cfg (int mode)
 static unsigned int
 rest_of_handle_jump (void)
 {
-  delete_unreachable_blocks ();
-
   if (crtl->tail_call_emit)
     fixup_tail_calls ();
   return 0;
