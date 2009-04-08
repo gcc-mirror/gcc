@@ -1,3 +1,37 @@
+2009-04-08  Janne Blomqvist  <jb@gcc.gnu.org>
+
+        * runtime/string.c (compare0): Use gfc_charlen_type.
+        * runtime/error.c (gfc_itoa): Move to io/write.c
+        (xtoa): Rename to gfc_xtoa.
+        * runtime/backtrace.c (show_backtrace): Call gfc_xtoa.
+        * intrinsics/cshift0.c (cshift0): Use index_type for shift arg.
+        * intrinsics/date_and_time.c (date_and_time): Use index_type.
+        (itime_i4): Likewise.
+        (itime_i8): Likewise.
+        (idate_i4): Likewise.
+        (idate_i8): Likewise.
+        (gmtime_i4): Likewise.
+        (gmtime_i8): Likewise.
+        (ltime_i4): Likewise.
+        (ltime_i8): Likewise.
+        * libgfortran.h (gfc_itoa): Remove prototype.
+        (xtoa): Rename prototype to gfc_xtoa.
+        * io/list_read.c (nml_read_obj): Use size_t for string length.
+        * io/transfer.c (read_block_direct): Change nbytes arg from
+        pointer to value.
+        (unformatted_read): Minor cleanup, call read_block_directly properly.
+        (skip_record): Use ssize_t.
+        (next_record_w_unf): Avoid stell() call by calling sseek with SEEK_CUR.
+        (iolength_transfer): Make sure to multiply before cast.
+        * io/intrinsics.c (fgetc): Remove unnecessary variable.
+        * io/format.c (format_hash): Use gfc_charlen_type.
+        * io/write.c (itoa): Move from runtime/error.c:gfc_itoa, rename,
+        make static.
+        (write_i): Call with pointer to itoa.
+        (write_z): Call with pointer to gfc_xtoa.
+        (write_integer): Pointer to itoa.
+        (nml_write_obj): Type cleanup, don't call strlen in loop.
+	
 2009-04-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libgfortran/39664

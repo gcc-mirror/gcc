@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    Namelist transfer functions contributed by Paul Thomas
@@ -397,7 +397,7 @@ read_block_form (st_parameter_dt *dtp, int * nbytes)
    unformatted files.  */
 
 static void
-read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
+read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
 {
   ssize_t to_read_record;
   ssize_t have_read_record;
@@ -407,9 +407,8 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 
   if (is_stream_io (dtp))
     {
-      to_read_record = *nbytes;
       have_read_record = sread (dtp->u.p.current_unit->s, buf, 
-				to_read_record);
+				nbytes);
       if (unlikely (have_read_record < 0))
 	{
 	  generate_error (&dtp->common, LIBERROR_OS, NULL);
@@ -418,29 +417,27 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 
       dtp->u.p.current_unit->strm_pos += (gfc_offset) have_read_record; 
 
-      if (unlikely (to_read_record != have_read_record))
+      if (unlikely ((ssize_t) nbytes != have_read_record))
 	{
 	  /* Short read,  e.g. if we hit EOF.  For stream files,
 	   we have to set the end-of-file condition.  */
           hit_eof (dtp);
-	  return;
 	}
       return;
     }
 
   if (dtp->u.p.current_unit->flags.access == ACCESS_DIRECT)
     {
-      if (dtp->u.p.current_unit->bytes_left < (gfc_offset) *nbytes)
+      if (dtp->u.p.current_unit->bytes_left < (gfc_offset) nbytes)
 	{
 	  short_record = 1;
-	  to_read_record = (size_t) dtp->u.p.current_unit->bytes_left;
-	  *nbytes = to_read_record;
+	  to_read_record = dtp->u.p.current_unit->bytes_left;
+	  nbytes = to_read_record;
 	}
-
       else
 	{
 	  short_record = 0;
-	  to_read_record = *nbytes;
+	  to_read_record = nbytes;
 	}
 
       dtp->u.p.current_unit->bytes_left -= to_read_record;
@@ -452,18 +449,16 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 	  return;
 	}
 
-      if (to_read_record != (ssize_t) *nbytes)  
+      if (to_read_record != (ssize_t) nbytes)  
 	{
 	  /* Short read, e.g. if we hit EOF.  Apparently, we read
 	   more than was written to the last record.  */
-	  *nbytes = to_read_record;
 	  return;
 	}
 
       if (unlikely (short_record))
 	{
 	  generate_error (&dtp->common, LIBERROR_SHORT_RECORD, NULL);
-	  return;
 	}
       return;
     }
@@ -475,14 +470,14 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
   /* Check whether we exceed the total record length.  */
 
   if (dtp->u.p.current_unit->flags.has_recl
-      && (*nbytes > (size_t) dtp->u.p.current_unit->bytes_left))
+      && (nbytes > dtp->u.p.current_unit->bytes_left))
     {
-      to_read_record = (ssize_t) dtp->u.p.current_unit->bytes_left;
+      to_read_record = dtp->u.p.current_unit->bytes_left;
       short_record = 1;
     }
   else
     {
-      to_read_record = *nbytes;
+      to_read_record = nbytes;
       short_record = 0;
     }
   have_read_record = 0;
@@ -492,7 +487,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
       if (dtp->u.p.current_unit->bytes_left_subrecord
 	  < (gfc_offset) to_read_record)
 	{
-	  to_read_subrecord = (ssize_t) dtp->u.p.current_unit->bytes_left_subrecord;
+	  to_read_subrecord = dtp->u.p.current_unit->bytes_left_subrecord;
 	  to_read_record -= to_read_subrecord;
 	}
       else
@@ -520,7 +515,6 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t *nbytes)
 	     structure has been corrupted, or the trailing record
 	     marker would still be present.  */
 
-	  *nbytes = have_read_record;
 	  generate_error (&dtp->common, LIBERROR_CORRUPT_FILE, NULL);
 	  return;
 	}
@@ -737,20 +731,18 @@ static void
 unformatted_read (st_parameter_dt *dtp, bt type,
 		  void *dest, int kind, size_t size, size_t nelems)
 {
-  size_t i, sz;
-
   if (likely (dtp->u.p.current_unit->flags.convert == GFC_CONVERT_NATIVE)
       || kind == 1)
     {
-      sz = size * nelems;
       if (type == BT_CHARACTER)
-	sz *= GFC_SIZE_OF_CHAR_KIND(kind);
-      read_block_direct (dtp, dest, &sz);
+	size *= GFC_SIZE_OF_CHAR_KIND(kind);
+      read_block_direct (dtp, dest, size * nelems);
     }
   else
     {
       char buffer[16];
       char *p;
+      size_t i;
 
       p = dest;
 
@@ -773,7 +765,7 @@ unformatted_read (st_parameter_dt *dtp, bt type,
       
       for (i = 0; i < nelems; i++)
 	{
- 	  read_block_direct (dtp, buffer, &size);
+ 	  read_block_direct (dtp, buffer, size);
  	  reverse_memcpy (p, buffer, size);
  	  p += size;
  	}
@@ -2571,11 +2563,10 @@ next_array_record (st_parameter_dt *dtp, array_loop_spec *ls, int *finished)
    position.  */
 
 static void
-skip_record (st_parameter_dt *dtp, size_t bytes)
+skip_record (st_parameter_dt *dtp, ssize_t bytes)
 {
-  size_t rlength;
-  ssize_t readb;
-  static const size_t MAX_READ = 4096;
+  ssize_t rlength, readb;
+  static const ssize_t MAX_READ = 4096;
   char p[MAX_READ];
 
   dtp->u.p.current_unit->bytes_left_subrecord += bytes;
@@ -2595,8 +2586,8 @@ skip_record (st_parameter_dt *dtp, size_t bytes)
       while (dtp->u.p.current_unit->bytes_left_subrecord > 0)
 	{
 	  rlength = 
-	    (MAX_READ < (size_t) dtp->u.p.current_unit->bytes_left_subrecord) ?
-	    MAX_READ : (size_t) dtp->u.p.current_unit->bytes_left_subrecord;
+	    (MAX_READ < dtp->u.p.current_unit->bytes_left_subrecord) ?
+	    MAX_READ : dtp->u.p.current_unit->bytes_left_subrecord;
 
 	  readb = sread (dtp->u.p.current_unit->s, p, rlength);
 	  if (readb < 0)
@@ -2811,13 +2802,11 @@ write_us_marker (st_parameter_dt *dtp, const gfc_offset buf)
 static void
 next_record_w_unf (st_parameter_dt *dtp, int next_subrecord)
 {
-  gfc_offset c, m, m_write;
-  size_t record_marker;
+  gfc_offset m, m_write, record_marker;
 
   /* Bytes written.  */
   m = dtp->u.p.current_unit->recl_subrecord
     - dtp->u.p.current_unit->bytes_left_subrecord;
-  c = stell (dtp->u.p.current_unit->s);
 
   /* Write the length tail.  If we finish a record containing
      subrecords, we write out the negative length.  */
@@ -2838,8 +2827,8 @@ next_record_w_unf (st_parameter_dt *dtp, int next_subrecord)
   /* Seek to the head and overwrite the bogus length with the real
      length.  */
 
-  if (unlikely (sseek (dtp->u.p.current_unit->s, c - m - record_marker, 
-		       SEEK_SET) < 0))
+  if (unlikely (sseek (dtp->u.p.current_unit->s, - m - 2 * record_marker, 
+		       SEEK_CUR) < 0))
     goto io_error;
 
   if (next_subrecord)
@@ -2852,8 +2841,8 @@ next_record_w_unf (st_parameter_dt *dtp, int next_subrecord)
 
   /* Seek past the end of the current record.  */
 
-  if (unlikely (sseek (dtp->u.p.current_unit->s, c + record_marker, 
-		       SEEK_SET) < 0))
+  if (unlikely (sseek (dtp->u.p.current_unit->s, m + record_marker, 
+		       SEEK_CUR) < 0))
     goto io_error;
 
   return;
@@ -3207,7 +3196,7 @@ iolength_transfer (st_parameter_dt *dtp, bt type __attribute__((unused)),
 		   size_t size, size_t nelems)
 {
   if ((dtp->common.flags & IOPARM_DT_HAS_IOLENGTH) != 0)
-    *dtp->iolength += (GFC_IO_INT) size * nelems;
+    *dtp->iolength += (GFC_IO_INT) (size * nelems);
 }
 
 

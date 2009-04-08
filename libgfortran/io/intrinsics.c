@@ -1,6 +1,6 @@
 /* Implementation of the FGET, FGETC, FPUT, FPUTC, FLUSH 
    FTELL, TTYNAM and ISATTY intrinsics.
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -46,15 +46,13 @@ int
 PREFIX(fgetc) (const int * unit, char * c, gfc_charlen_type c_len)
 {
   int ret;
-  size_t s;
   gfc_unit * u = find_unit (*unit);
 
   if (u == NULL)
     return -1;
 
-  s = 1;
   memset (c, ' ', c_len);
-  ret = sread (u->s, c, s);
+  ret = sread (u->s, c, 1);
   unlock_unit (u);
 
   if (ret < 0)

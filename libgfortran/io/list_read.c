@@ -2305,7 +2305,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
   int dim;
   index_type dlen;
   index_type m;
-  index_type obj_name_len;
+  size_t obj_name_len;
   void * pdata;
 
   /* This object not touched in name parsing.  */
