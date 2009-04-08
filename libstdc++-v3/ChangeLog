@@ -1,3 +1,10 @@
+2009-04-08  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/abi/post/mips64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/mips64-linux-gnu/64/baseline_symbols.txt: New
+	file.
+
 2009-04-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (${pch1a_output}): Use gnu++0x flags instead
