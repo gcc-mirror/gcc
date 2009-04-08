@@ -1,3 +1,8 @@
+2009-04-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_svn: Run this script under plain /bin/sh
+	as opposed to /bin/sh -x.
+
 2009-03-30  Joseph Myers  <joseph@codesourcery.com>
 
 	* update_version_svn (IGNORE_BRANCHES): Add 4.2 branch.
