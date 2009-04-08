@@ -5435,6 +5435,10 @@ prepend_attributes (Entity_Id gnat_entity, struct attrib ** attr_list)
 	    etype = ATTR_WEAK_EXTERNAL;
 	    break;
 
+	  case Pragma_Thread_Local_Storage:
+	    etype = ATTR_THREAD_LOCAL_STORAGE;
+	    break;
+
 	  default:
 	    continue;
 	  }
