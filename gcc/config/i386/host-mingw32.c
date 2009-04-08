@@ -1,5 +1,5 @@
 /* mingw32 host-specific hook definitions.
-   Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2007, 2009 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -122,23 +122,19 @@ mingw32_gt_pch_use_address (void *addr, size_t size, int fd,
      don't get SeCreateGlobalPrivilege. We don't need global
      memory sharing so explicitly put object into Local namespace.
 
-     There is also another issue, which appears if multiple concurrent
-     GCC processes are using PCH functionality. MapViewOfFileEx returns
-     "Access Denied" error. So we need to make the session-wide mapping
-     name unique. Let's use current process ID for that.  */
+     If multiple concurrent GCC processes are using PCH functionality,
+     MapViewOfFileEx returns "Access Denied" error.  So we ensure the
+     session-wide mapping name is unique by appending process ID.  */
+
 #define OBJECT_NAME_FMT "Local\\MinGWGCCPCH-"
 
-  /* Allocate enough space for name prefix and max possible DWORD
-    hexadecimal representation.  */
-  char object_name[sizeof (OBJECT_NAME_FMT) + sizeof (DWORD) * 2];
-  snprintf (object_name, sizeof (object_name), OBJECT_NAME_FMT "%lx",
-            GetCurrentProcessId());
-
+  char* object_name = NULL;
   /* However, the documentation for CreateFileMapping says that on NT4
      and earlier, backslashes are invalid in object name.  So, we need
      to check if we are on Windows2000 or higher.  */
   OSVERSIONINFO version_info;
-  
+  version_info.dwOSVersionInfoSize = sizeof (version_info);
+
   if (size == 0)
     return 0; 
 
@@ -147,14 +143,23 @@ mingw32_gt_pch_use_address (void *addr, size_t size, int fd,
   if ((offset & (va_granularity - 1)) != 0 || size > pch_VA_max_size)
     return -1;
 
-  /* Determine the version of Windows we are running on.  */
-  version_info.dwOSVersionInfoSize = sizeof (version_info);
-  GetVersionEx (&version_info);
 
+  /* Determine the version of Windows we are running on and use a
+     uniquely-named local object if running > 4.  */
+  GetVersionEx (&version_info);
+  if (version_info.dwMajorVersion > 4)
+    {
+      char local_object_name [sizeof (OBJECT_NAME_FMT)
+			      + sizeof (DWORD) * 2];
+      snprintf (local_object_name, sizeof (local_object_name),
+		OBJECT_NAME_FMT "%lx", GetCurrentProcessId());
+      object_name = local_object_name;
+    }
+     
   mmap_handle = CreateFileMappingA ((HANDLE) _get_osfhandle (fd), NULL,
 				    PAGE_WRITECOPY | SEC_COMMIT, 0, 0,
-				    version_info.dwMajorVersion > 4
-				    ? object_name : NULL);
+				    object_name);
+
   if (mmap_handle == NULL)
     {
       w32_error (__FUNCTION__,  __FILE__, __LINE__, "CreateFileMapping");
