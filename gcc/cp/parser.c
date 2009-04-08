@@ -12011,6 +12011,11 @@ cp_parser_enumerator_definition (cp_parser* parser, tree type)
   else
     value = NULL_TREE;
 
+  /* If we are processing a template, make sure the initializer of the
+     enumerator doesn't contain any bare template parameter pack.  */
+  if (check_for_bare_parameter_packs (value))
+    value = error_mark_node;
+
   /* Create the enumerator.  */
   build_enumerator (identifier, value, type);
 }
