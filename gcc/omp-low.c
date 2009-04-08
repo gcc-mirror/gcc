@@ -3412,6 +3412,14 @@ expand_omp_taskreg (struct omp_region *region)
       /* Declare local variables needed in CHILD_CFUN.  */
       block = DECL_INITIAL (child_fn);
       BLOCK_VARS (block) = list2chain (child_cfun->local_decls);
+      /* The gimplifier could record temporaries in parallel/task block
+	 rather than in containing function's local_decls chain,
+	 which would mean cgraph missed finalizing them.  Do it now.  */
+      for (t = BLOCK_VARS (block); t; t = TREE_CHAIN (t))
+	if (TREE_CODE (t) == VAR_DECL
+	    && TREE_STATIC (t)
+	    && !DECL_EXTERNAL (t))
+	  varpool_finalize_decl (t);
       DECL_SAVED_TREE (child_fn) = NULL;
       gimple_set_body (child_fn, bb_seq (single_succ (entry_bb)));
       TREE_USED (block) = 1;
