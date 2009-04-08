@@ -1,3 +1,15 @@
+2009-04-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Back_End_Cannot_Inline): Do not mark a body as inlineable
+	by the back-end if it contains a call to a subprogram without a
+	previous spec that is declared in the same unit.
+
+	* errout.ads: Update comments on uses of dirs
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Make sure nodes are properly typed
+
 2009-04-08  Tristan Gingold  <gingold@adacore.com>
 
 	* sem_prag.adb: Restrict pragma Thread_Local_Storage to library level
