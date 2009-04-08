@@ -1,3 +1,12 @@
+2009-04-08  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/36291
+	* tree-dfa.c (add_referenced_var): Do not recurse into
+	global initializers.
+	* tree-ssa-ccp.c (get_symbol_constant_value): Add newly
+	exposed variables.
+	(fold_const_aggregate_ref): Likewise.
+
 2009-04-08  Paolo Bonzini  <bonzini@gnu.org>
 
         * recog.c (ordered_comparison_operator): New.

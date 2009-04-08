@@ -281,7 +281,15 @@ get_symbol_constant_value (tree sym)
 	{
 	  STRIP_USELESS_TYPE_CONVERSION (val);
 	  if (is_gimple_min_invariant (val))
-	    return val;
+	    {
+	      if (TREE_CODE (val) == ADDR_EXPR)
+		{
+		  tree base = get_base_address (TREE_OPERAND (val, 0));
+		  if (base && TREE_CODE (base) == VAR_DECL)
+		    add_referenced_var (base);
+		}
+	      return val;
+	    }
 	}
       /* Variables declared 'const' without an initializer
 	 have zero as the initializer if they may not be
@@ -1243,6 +1251,12 @@ fold_const_aggregate_ref (tree t)
 	if (tree_int_cst_equal (cfield, idx))
 	  {
 	    STRIP_USELESS_TYPE_CONVERSION (cval);
+	    if (TREE_CODE (cval) == ADDR_EXPR)
+	      {
+		tree base = get_base_address (TREE_OPERAND (cval, 0));
+		if (base && TREE_CODE (base) == VAR_DECL)
+		  add_referenced_var (base);
+	      }
 	    return cval;
 	  }
       break;
@@ -1286,6 +1300,12 @@ fold_const_aggregate_ref (tree t)
 	    && ! DECL_BIT_FIELD (cfield))
 	  {
 	    STRIP_USELESS_TYPE_CONVERSION (cval);
+	    if (TREE_CODE (cval) == ADDR_EXPR)
+	      {
+		tree base = get_base_address (TREE_OPERAND (cval, 0));
+		if (base && TREE_CODE (base) == VAR_DECL)
+		  add_referenced_var (base);
+	      }
 	    return cval;
 	  }
       break;
