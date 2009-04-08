@@ -113,22 +113,18 @@ package body Sem_Cat is
       Info_Node       : Node_Id;
       Is_Subunit      : Boolean)
    is
-      N : constant Node_Id := Info_Node;
+      N   : constant Node_Id := Info_Node;
+      Err : Boolean;
 
       --  Here we define an enumeration type to represent categorization types,
       --  ordered so that a unit with a given categorization can only WITH
       --  units with lower or equal categorization type.
-
-      --  Note that we take advantage of E.2(14) to define a category
-      --  Preelaborated and treat pragma Preelaborate as a categorization
-      --  pragma that defines that category.
 
       type Categorization is
         (Pure,
          Shared_Passive,
          Remote_Types,
          Remote_Call_Interface,
-         Preelaborated,
          Normal);
 
       function Get_Categorization (E : Entity_Id) return Categorization;
@@ -165,9 +161,6 @@ package body Sem_Cat is
          elsif Is_Remote_Call_Interface (E) then
             return Remote_Call_Interface;
 
-         elsif Is_Preelaborated (E) then
-            return Preelaborated;
-
          else
             return Normal;
          end if;
@@ -186,73 +179,87 @@ package body Sem_Cat is
          return;
       end if;
 
+      --  First check 10.2.1 (11/1) rules on preelaborate packages
+
+      if Is_Preelaborated (Unit_Entity)
+        and then not Is_Preelaborated (Depended_Entity)
+        and then not Is_Pure (Depended_Entity)
+      then
+         Err := True;
+      else
+         Err := False;
+      end if;
+
+      --  Check categorization rules of RM E.2(5)
+
       Unit_Category := Get_Categorization (Unit_Entity);
       With_Category := Get_Categorization (Depended_Entity);
-
-      --  These messages are warnings in GNAT mode, to allow it to be
-      --  judiciously turned off. Otherwise it is a real error.
-
-      Error_Msg_Warn := GNAT_Mode;
-
-      --  Check for possible error
 
       if With_Category > Unit_Category then
 
          --  Special case: Remote_Types and Remote_Call_Interface are allowed
-         --  with anything in the package body, per (RM E.2(5)).
+         --  to WITH anything in the package body, per (RM E.2(5)).
 
          if (Unit_Category = Remote_Types
                or else Unit_Category = Remote_Call_Interface)
            and then In_Package_Body (Unit_Entity)
          then
             null;
+         else
+            Err := True;
+         end if;
+      end if;
 
-         --  Here we have an error
+      --  Here if we have an error
+
+      if Err then
+
+         --  These messages are warnings in GNAT mode, to allow it to be
+         --  judiciously turned off. Otherwise it is a real error.
+
+         Error_Msg_Warn := GNAT_Mode;
+
+         --  Don't give error if main unit is not an internal unit, and the
+         --  unit generating the message is an internal unit. This is the
+         --  situation in which such messages would be ignored in any case,
+         --  so it is convenient not to generate them (since it causes
+         --  annoying interference with debugging).
+
+         if Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
+           and then not Is_Internal_File_Name (Unit_File_Name (Main_Unit))
+         then
+            return;
+
+         --  Subunit case
+
+         elsif Is_Subunit then
+            Error_Msg_NE
+              ("<subunit cannot depend on& " &
+               "(parent has wrong categorization)", N, Depended_Entity);
+
+         --  Normal unit, not subunit
 
          else
-            --  Don't give error if main unit is not an internal unit, and the
-            --  unit generating the message is an internal unit. This is the
-            --  situation in which such messages would be ignored in any case,
-            --  so it is convenient not to generate them (since it causes
-            --  annoying interference with debugging).
+            Error_Msg_NE
+              ("<cannot depend on& " &
+               "(wrong categorization)", N, Depended_Entity);
+         end if;
 
-            if Is_Internal_File_Name (Unit_File_Name (Current_Sem_Unit))
-              and then not Is_Internal_File_Name (Unit_File_Name (Main_Unit))
-            then
-               return;
+         --  Add further explanation for Pure/Preelaborate common cases
 
-            --  Subunit case
+         if Unit_Category = Pure then
+            Error_Msg_NE
+              ("\<pure unit cannot depend on non-pure unit",
+               N, Depended_Entity);
 
-            elsif Is_Subunit then
-               Error_Msg_NE
-                 ("<subunit cannot depend on& " &
-                  "(parent has wrong categorization)", N, Depended_Entity);
-
-            --  Normal unit, not subunit
-
-            else
-               Error_Msg_NE
-                 ("<cannot depend on& " &
-                  "(wrong categorization)", N, Depended_Entity);
-            end if;
-
-            --  Add further explanation for common cases
-
-            case Unit_Category is
-               when Pure =>
-                  Error_Msg_NE
-                    ("\<pure unit cannot depend on non-pure unit",
-                    N, Depended_Entity);
-
-               when Preelaborated =>
-                  Error_Msg_NE
-                    ("\<preelaborated unit cannot depend on " &
-                     "non-preelaborated unit",
-                     N, Depended_Entity);
-
-               when others =>
-                  null;
-            end case;
+         elsif Is_Preelaborated (Unit_Entity)
+           and then not Is_Preelaborated (Depended_Entity)
+           and then not Is_Pure (Depended_Entity)
+         then
+            Error_Msg_NE
+              ("\<preelaborated unit cannot depend on "
+               & "non-preelaborated unit",
+               N, Depended_Entity);
          end if;
       end if;
    end Check_Categorization_Dependencies;
