@@ -6152,25 +6152,33 @@ resolve_address_of_overloaded_function (tree target_type,
     }
   else if (TREE_CHAIN (matches))
     {
-      /* There were too many matches.  */
+      /* There were too many matches.  First check if they're all
+	 the same function.  */
+      tree match;
 
-      if (flags & tf_error)
+      fn = TREE_PURPOSE (matches);
+      for (match = TREE_CHAIN (matches); match; match = TREE_CHAIN (match))
+	if (!decls_match (fn, TREE_PURPOSE (matches)))
+	  break;
+
+      if (match)
 	{
-	  tree match;
+	  if (flags & tf_error)
+	    {
+	      error ("converting overloaded function %qD to type %q#T is ambiguous",
+		     DECL_NAME (OVL_FUNCTION (overload)),
+		     target_type);
 
-	  error ("converting overloaded function %qD to type %q#T is ambiguous",
-		    DECL_NAME (OVL_FUNCTION (overload)),
-		    target_type);
+	      /* Since print_candidates expects the functions in the
+		 TREE_VALUE slot, we flip them here.  */
+	      for (match = matches; match; match = TREE_CHAIN (match))
+		TREE_VALUE (match) = TREE_PURPOSE (match);
 
-	  /* Since print_candidates expects the functions in the
-	     TREE_VALUE slot, we flip them here.  */
-	  for (match = matches; match; match = TREE_CHAIN (match))
-	    TREE_VALUE (match) = TREE_PURPOSE (match);
+	      print_candidates (matches);
+	    }
 
-	  print_candidates (matches);
+	  return error_mark_node;
 	}
-
-      return error_mark_node;
     }
 
   /* Good, exactly one match.  Now, convert it to the correct type.  */
