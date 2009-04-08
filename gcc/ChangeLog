@@ -1,3 +1,9 @@
+2009-04-08  Paolo Bonzini  <bonzini@gnu.org>
+
+        * recog.c (ordered_comparison_operator): New.
+        * gensupport.c (std_preds): Add it.
+	* doc/md.texi (Machine-Independent Predicates): Document it.
+
 2009-04-08  Jan Hubicka  <jh@suse.cz>
 
 	* tree-eh.c (cleanup_eh): When not optimizing, do not try EH merging.

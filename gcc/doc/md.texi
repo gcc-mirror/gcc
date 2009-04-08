@@ -860,12 +860,20 @@ valid for @var{mode}.
 @end defun
 
 @noindent
-Finally, there is one generic operator predicate.
+Finally, there are two generic operator predicates.
 
 @defun comparison_operator
 This predicate matches any expression which performs an arithmetic
 comparison in @var{mode}; that is, @code{COMPARISON_P} is true for the
 expression code.
+@end defun
+
+@defun ordered_comparison_operator
+This predicate matches any expression which performs an arithmetic
+comparison in @var{mode} and whose expression code is valid for integer
+modes; that is, the expression code will be one of @code{eq}, @code{ne},
+@code{lt}, @code{ltu}, @code{le}, @code{leu}, @code{gt}, @code{gtu},
+@code{ge}, @code{geu}.
 @end defun
 
 @node Defining Predicates
