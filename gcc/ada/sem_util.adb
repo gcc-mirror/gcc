@@ -6383,8 +6383,8 @@ package body Sem_Util is
    -- Is_Protected_Self_Reference --
    ---------------------------------
 
-   function Is_Protected_Self_Reference (N : Node_Id) return Boolean
-   is
+   function Is_Protected_Self_Reference (N : Node_Id) return Boolean is
+
       function In_Access_Definition (N : Node_Id) return Boolean;
       --  Returns true if N belongs to an access definition
 
@@ -6392,16 +6392,19 @@ package body Sem_Util is
       -- In_Access_Definition --
       --------------------------
 
-      function In_Access_Definition (N : Node_Id) return Boolean
-      is
-         P : Node_Id := Parent (N);
+      function In_Access_Definition (N : Node_Id) return Boolean is
+         P : Node_Id;
+
       begin
+         P := Parent (N);
          while Present (P) loop
             if Nkind (P) = N_Access_Definition then
                return True;
             end if;
+
             P := Parent (P);
          end loop;
+
          return False;
       end In_Access_Definition;
 

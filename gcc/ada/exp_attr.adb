@@ -867,7 +867,9 @@ package body Exp_Attr is
             --  If the prefix of an Access attribute is a dereference of an
             --  access parameter (or a renaming of such a dereference, or a
             --  subcomponent of such a dereference) and the context is a
-            --  general access type (but not an anonymous access type), then
+            --  general access type (including the type of an object or
+            --  component with an access_definition, but not the anonymous
+            --  type of an access parameter or access discriminant), then
             --  apply an accessibility check to the access parameter. We used
             --  to rewrite the access parameter as a type conversion, but that
             --  could only be done if the immediate prefix of the Access
@@ -882,7 +884,8 @@ package body Exp_Attr is
             elsif Id = Attribute_Access
               and then Nkind (Enc_Object) = N_Explicit_Dereference
               and then Is_Entity_Name (Prefix (Enc_Object))
-              and then Ekind (Btyp) = E_General_Access_Type
+              and then (Ekind (Btyp) = E_General_Access_Type
+                         or else Is_Local_Anonymous_Access (Btyp))
               and then Ekind (Entity (Prefix (Enc_Object))) in Formal_Kind
               and then Ekind (Etype (Entity (Prefix (Enc_Object))))
                          = E_Anonymous_Access_Type

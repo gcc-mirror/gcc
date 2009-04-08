@@ -1,5 +1,9 @@
 2009-04-08  Robert Dewar  <dewar@adacore.com>
 
+	* exp_attr.adb, sem_attr.adb, sem_util.adb: Code clean up.
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
 	* sem_cat.adb (Check_Categorization_Dependencies): Handle Preelaborate
 	properly in the presence of Remote_Types or Remote_Call_Interface.
 
