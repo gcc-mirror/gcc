@@ -9058,10 +9058,16 @@ package body Sem_Prag is
          -- Obsolescent --
          -----------------
 
-         --  pragma Obsolescent [(
-         --    [Entity  => NAME,]
-         --    [Message => static_string_EXPRESSION
-         --  [,[Version => Ada_05]] )];
+         --  pragma Obsolescent;
+
+         --  pragma Obsolescent (
+         --    [Message =>] static_string_EXPRESSION
+         --  [,[Version =>] Ada_05]]);
+
+         --  pragma Obsolescent (
+         --    [Entity  =>] NAME
+         --  [,[Message =>] static_string_EXPRESSION
+         --  [,[Version =>] Ada_05]] );
 
          when Pragma_Obsolescent => Obsolescent : declare
             Ename : Node_Id;
@@ -9186,18 +9192,14 @@ package body Sem_Prag is
             --  See if first argument specifies an entity name
 
             if Arg_Count >= 1
-              and then Chars (Arg1) = Name_Entity
+              and then
+                (Chars (Arg1) = Name_Entity
+                   or else
+                     Nkind_In (Get_Pragma_Arg (Arg1), N_Character_Literal,
+                                                      N_Identifier,
+                                                      N_Operator_Symbol))
             then
                Ename := Get_Pragma_Arg (Arg1);
-
-               if Nkind (Ename) /= N_Character_Literal
-                    and then
-                  Nkind (Ename) /= N_Identifier
-                    and then
-                  Nkind (Ename) /= N_Operator_Symbol
-               then
-                  Error_Pragma_Arg ("entity name expected for pragma%", Arg1);
-               end if;
 
                --  Eliminate first argument, so we can share processing
 

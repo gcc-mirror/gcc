@@ -3463,19 +3463,26 @@ will always generate an invalid value if one exists.
 Syntax:
 
 @smallexample @c ada
-pragma Obsolescent
-  [([Entity  =>] NAME
-  [,[Message =>] static_string_EXPRESSION
-  [,[Version =>] Ada_05]])];
+pragma Obsolescent;
+
+pragma Obsolescent (
+  [Message =>] static_string_EXPRESSION
+[,[Version =>] Ada_05]]);
+
+pragma Obsolescent (
+  [Entity  =>] NAME
+[,[Message =>] static_string_EXPRESSION
+[,[Version =>] Ada_05]] );
 @end smallexample
 
 @noindent
 This pragma can occur immediately following a declaration of an entity,
-including the case of a record component, and usually the Entity name
-must match the name of the entity declared by this declaration.
-Alternatively, the pragma can immediately follow an
-enumeration type declaration, where the entity argument names one of the
-enumeration literals.
+including the case of a record component. If no Entity argument is present,
+then this declaration is the one to which the pragma applies. If an Entity
+parameter is present, it must either match the name of the entity in this
+declaration, or alternatively, the pragma can immediately follow an enumeration
+type declaration, where the Entity argument names one of the enumeration
+literals.
 
 This pragma is used to indicate that the named entity
 is considered obsolescent and should not be used. Typically this is
@@ -3484,13 +3491,12 @@ existing subprograms or other entities. The pragma can be used at an
 intermediate stage when the entity is still present, but will be
 removed later.
 
-The effect of this pragma is to output a warning message on
-a call to a program thus marked that the
-subprogram is obsolescent if the appropriate warning option in the
-compiler is activated. If the string parameter is present, then a second
-warning message is given containing this text.
-In addition, a call to such a program is considered a violation of
-pragma Restrictions (No_Obsolescent_Features).
+The effect of this pragma is to output a warning message on a reference to
+an entity thus marked that the subprogram is obsolescent if the appropriate
+warning option in the compiler is activated. If the Message parameter is
+present, then a second warning message is given containing this text. In
+addition, a reference to the eneity is considered to be a violation of pragma
+Restrictions (No_Obsolescent_Features).
 
 This pragma can also be used as a program unit pragma for a package,
 in which case the entity name is the name of the package, and the
@@ -3499,7 +3505,7 @@ obsolescent. In this case a client @code{with}'ing such a package
 violates the restriction, and the @code{with} statement is
 flagged with warnings if the warning option is set.
 
-If the optional third parameter is present (which must be exactly
+If the Version parameter is present (which must be exactly
 the identifier Ada_05, no other argument is allowed), then the
 indication of obsolescence applies only when compiling in Ada 2005
 mode. This is primarily intended for dealing with the situations
@@ -3511,15 +3517,12 @@ The following examples show typical uses of this pragma:
 
 @smallexample @c ada
 package p is
-   pragma Obsolescent
-     (Entity => p, Message => "use pp instead of p");
+   pragma Obsolescent (p, Message => "use pp instead of p");
 end p;
 
 package q is
    procedure q2;
-   pragma Obsolescent
-     (Entity  => q2,
-      Message => "use q2new instead");
+   pragma Obsolescent ("use q2new instead");
 
    type R is new integer;
    pragma Obsolescent
@@ -3530,7 +3533,7 @@ package q is
    type M is record
       F1 : Integer;
       F2 : Integer;
-      pragma Obsolescent (Entity => F2);
+      pragma Obsolescent;
       F3 : Integer;
    end record;
 
@@ -3545,11 +3548,10 @@ end;
 @end smallexample
 
 @noindent
-In an earlier version of GNAT, the Entity parameter was not required,
-and this form is still accepted for compatibility purposes. If the
-Entity parameter is omitted, then the pragma applies to the declaration
-immediately preceding the pragma (this form cannot be used for the
-enumeration literal case).
+Note that, as for all pragmas, if you use a pragma argument identifier,
+then all subsequent parameters must also use a pragma argument identifier.
+So if you specify "Entity =>" for the Entity argument, and a Message
+argument is present, it must be preceded by "Message =>".
 
 @node Pragma Optimize_Alignment
 @unnumberedsec Pragma Optimize_Alignment

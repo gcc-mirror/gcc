@@ -6059,6 +6059,11 @@ of letters, except that if there is a trailing numeric suffix, then
 the value of this suffix is used in the ordering (e.g.@: Junk2 comes
 before Junk10).
 
+@item ^O^OVERRIDING_INDICATORS^
+@emph{Check that overriding subprograms are explicitly marked as such.}
+The declaration of a primitive operation of a type extension that overrides
+an inherited operation must carry an overriding indicator.
+
 @item ^p^PRAGMA^
 @emph{Check pragma casing.}
 Pragma names must be written in mixed case, that is, the

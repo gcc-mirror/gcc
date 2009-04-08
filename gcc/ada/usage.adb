@@ -525,6 +525,7 @@ begin
    Write_Line ("        Mnn  check line length <= nn characters");
    Write_Line ("        N    turn off all checks");
    Write_Line ("        o    check subprogram bodies in alphabetical order");
+   Write_Line ("        O    check overriding indicators");
    Write_Line ("        p    check pragma casing");
    Write_Line ("        r    check casing for identifier references");
    Write_Line ("        s    check separate subprogram specs present");
