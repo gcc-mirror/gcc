@@ -994,6 +994,9 @@ package GNAT.Sockets is
    procedure Set (Item : in out Socket_Set_Type; Socket : Socket_Type);
    --  Insert Socket into Item
 
+   function Image (Item : Socket_Set_Type) return String;
+   --  Return a printable image of Item, for debugging purposes
+
    --  The select(2) system call waits for events to occur on any of a set of
    --  file descriptors. Usually, three independent sets of descriptors are
    --  watched (read, write  and exception). A timeout gives an upper bound
