@@ -1,3 +1,8 @@
+2009-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-types.c (gfc_init_types): Ensure gfc_integer_types doesn't
+	contain TYPE_STRING_FLAG types.
+
 2009-04-08  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/39670
