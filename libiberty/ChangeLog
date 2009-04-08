@@ -1,3 +1,8 @@
+2009-04-07  Arnaud Patard <apatard@mandriva.com>
+
+       * libiberty/configure.ac: Fix Linux/MIPS matching rule.
+       * libiberty/configure: Regenerate.
+
 2008-03-27  Ian Lance Taylor  <iant@google.com>
 
 	* memmem.c: New file, from gnulib.
