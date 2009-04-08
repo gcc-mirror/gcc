@@ -89,19 +89,19 @@ test_exact (void)
   CHECK_WIDTH_EQUALS(int16_t, 16);
   CHECK_SIGNED_LIMITS(int16_t, INT16_MIN, INT16_MAX);
 #else
-  CHECK_WIDTH_AT_LEAST(int_least8_t, 17);
+  CHECK_WIDTH_AT_LEAST(int_least16_t, 17);
 #endif
 #ifdef INT32_MIN
   CHECK_WIDTH_EQUALS(int32_t, 32);
   CHECK_SIGNED_LIMITS(int32_t, INT32_MIN, INT32_MAX);
 #else
-  CHECK_WIDTH_AT_LEAST(int_least8_t, 33);
+  CHECK_WIDTH_AT_LEAST(int_least32_t, 33);
 #endif
 #ifdef INT64_MIN
   CHECK_WIDTH_EQUALS(int64_t, 64);
   CHECK_SIGNED_LIMITS(int64_t, INT64_MIN, INT64_MAX);
 #else
-  CHECK_WIDTH_AT_LEAST(int_least8_t, 65);
+  CHECK_WIDTH_AT_LEAST(int_least64_t, 65);
 #endif
 #ifdef UINT8_MAX
   CHECK_WIDTH_EQUALS(uint8_t, 8);
@@ -113,19 +113,19 @@ test_exact (void)
   CHECK_WIDTH_EQUALS(uint16_t, 16);
   CHECK_UNSIGNED_LIMITS(uint16_t, UINT16_MAX);
 #else
-  CHECK_WIDTH_AT_LEAST(uint_least8_t, 17);
+  CHECK_WIDTH_AT_LEAST(uint_least16_t, 17);
 #endif
 #ifdef UINT32_MAX
   CHECK_WIDTH_EQUALS(uint32_t, 32);
   CHECK_UNSIGNED_LIMITS(uint32_t, UINT32_MAX);
 #else
-  CHECK_WIDTH_AT_LEAST(uint_least8_t, 33);
+  CHECK_WIDTH_AT_LEAST(uint_least32_t, 33);
 #endif
 #ifdef UINT64_MAX
   CHECK_WIDTH_EQUALS(uint64_t, 64);
   CHECK_UNSIGNED_LIMITS(uint64_t, UINT64_MAX);
 #else
-  CHECK_WIDTH_AT_LEAST(uint_least8_t, 65);
+  CHECK_WIDTH_AT_LEAST(uint_least64_t, 65);
 #endif
 }
 
