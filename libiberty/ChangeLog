@@ -1,3 +1,8 @@
+2009-04-07  Arnaud Patard <apatard@mandriva.com>
+
+	* configure.ac: Fix Linux/MIPS matching rule.
+	* configure: Regenerate.
+
 2009-03-23  Jason Merrill  <jason@redhat.com>
 
 	* cp-demangle.c (d_expression): Handle pack expansion.
