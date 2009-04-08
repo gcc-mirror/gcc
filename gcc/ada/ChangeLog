@@ -1,5 +1,27 @@
 2009-04-08  Robert Dewar  <dewar@adacore.com>
 
+	* ug_words: Add /ASSUME_VALID for -gnatB
+
+	* vms_data.ads: Add /ASSUME_VALID for -gnatB
+
+	* sem_cat.adb: Add clarifying commment
+
+	* a-direio.ads (Bytes): Make sure value is non-zero
+
+2009-04-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Variable): If the prefix is an explicit dereference
+	that does not come from source, check for a rewritten function call in
+	prefixed notation before other forms of rewriting.
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
+	* Makefile.rtl: Remove s-strops and s-sopco? from the run time, since
+	these are now obsolescent units used only for bootrapping with an
+	older compiler.
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Add documentation for pragma Thread_Local_Storage
 
 	* sem_ch3.adb: Minor comment updates

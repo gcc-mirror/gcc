@@ -199,7 +199,7 @@ package body Sem_Cat is
       if With_Category > Unit_Category then
 
          --  Special case: Remote_Types and Remote_Call_Interface are allowed
-         --  to be with'ed in package body.
+         --  with anything in the package body, per (RM E.2(5)).
 
          if (Unit_Category = Remote_Types
                or else Unit_Category = Remote_Call_Interface)
