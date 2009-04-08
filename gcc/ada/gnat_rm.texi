@@ -2857,7 +2857,9 @@ maskable interrupts, in place of the normal return instruction.
 Syntax:
 
 @smallexample @c ada
-pragma Interrupt_State (Name => value, State => SYSTEM | RUNTIME | USER);
+pragma Interrupt_State
+ ([Name  =>] value,
+  [State =>] SYSTEM | RUNTIME | USER);
 @end smallexample
 
 @noindent
@@ -3276,9 +3278,9 @@ pragma Main
  (MAIN_OPTION [, MAIN_OPTION]);
 
 MAIN_OPTION ::=
-  [STACK_SIZE              =>] static_integer_EXPRESSION
-| [TASK_STACK_SIZE_DEFAULT =>] static_integer_EXPRESSION
-| [TIME_SLICING_ENABLED    =>] static_boolean_EXPRESSION
+  [Stack_Size              =>] static_integer_EXPRESSION
+| [Task_Stack_Size_Default =>] static_integer_EXPRESSION
+| [Time_Slicing_Enabled    =>] static_boolean_EXPRESSION
 @end smallexample
 
 @noindent
@@ -4238,19 +4240,19 @@ to apply to all files.
 
 @smallexample @c ada
 pragma Source_File_Name
-  (Spec_File_Name => STRING_LITERAL
-   [,Casing => CASING_SPEC]
-   [,Dot_Replacement => STRING_LITERAL]);
+  (  [Spec_File_Name  =>] STRING_LITERAL
+   [,[Casing          =>] CASING_SPEC]
+   [,[Dot_Replacement =>] STRING_LITERAL]);
 
 pragma Source_File_Name
-  (Body_File_Name => STRING_LITERAL
-   [,Casing => CASING_SPEC]
-   [,Dot_Replacement => STRING_LITERAL]);
+  (  [Body_File_Name  =>] STRING_LITERAL
+   [,[Casing          =>] CASING_SPEC]
+   [,[Dot_Replacement =>] STRING_LITERAL]);
 
 pragma Source_File_Name
-  (Subunit_File_Name => STRING_LITERAL
-   [,Casing => CASING_SPEC]
-   [,Dot_Replacement => STRING_LITERAL]);
+  (  [Subunit_File_Name =>] STRING_LITERAL
+   [,[Casing            =>] CASING_SPEC]
+   [,[Dot_Replacement   =>] STRING_LITERAL]);
 
 CASING_SPEC ::= Lowercase | Uppercase | Mixedcase
 @end smallexample

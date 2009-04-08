@@ -1,5 +1,11 @@
 2009-04-08  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Minor reformatting
+
+	* par-ch2.adb: Minor reformatting
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
 	* exp_attr.adb, sem_attr.adb, sem_util.adb: Code clean up.
 
 2009-04-08  Robert Dewar  <dewar@adacore.com>

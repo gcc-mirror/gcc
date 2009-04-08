@@ -484,7 +484,7 @@ package body Ch2 is
             Scan; -- past arrow
             Set_Chars (Association, Chars (Identifier_Node));
 
-            --  Case of argument with no identifier
+         --  Case of argument with no identifier
 
          else
             Restore_Scan_State (Scan_State); -- to Identifier
