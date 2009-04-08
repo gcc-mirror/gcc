@@ -2154,7 +2154,7 @@ package body Exp_Ch4 is
       --  for all computed bounds (which may be out of range of Istyp in the
       --  case of null ranges).
 
-      Intyp : Entity_Id;
+      Artyp : Entity_Id;
       --  This is the type we use to do arithmetic to compute the bounds and
       --  lengths of operands. The choice of this type is a little subtle and
       --  is discussed in a separate section at the start of the body code.
@@ -2204,14 +2204,14 @@ package body Exp_Ch4 is
       --  Set to an entity of type Natural that contains the length of an
       --  operand whose length is not known at compile time. Entries in this
       --  array are set only if the corresponding entry in Is_Fixed_Length
-      --  is False. The entity is of type Intyp.
+      --  is False. The entity is of type Artyp.
 
       Aggr_Length : array (0 .. N) of Node_Id;
       --  The J'th entry in an expression node that represents the total length
       --  of operands 1 through J. It is either an integer literal node, or a
       --  reference to a constant entity with the right value, so it is fine
       --  to just do a Copy_Node to get an appropriate copy. The extra zero'th
-      --  entry always is set to zero. The length is of type Intyp.
+      --  entry always is set to zero. The length is of type Artyp.
 
       Low_Bound : Node_Id;
       --  A tree node representing the low bound of the result (of type Ityp).
@@ -2230,21 +2230,21 @@ package body Exp_Ch4 is
       Result : Node_Id;
       --  Result of the concatenation (of type Ityp)
 
-      function To_Intyp (X : Node_Id) return Node_Id;
+      function To_Artyp (X : Node_Id) return Node_Id;
       --  Given a node of type Ityp, returns the corresponding value of type
-      --  Intyp. For non-enumeration types, this is the identity. For enum
+      --  Artyp. For non-enumeration types, this is the identity. For enum
       --  types, the Pos of the value is returned.
 
       function To_Ityp (X : Node_Id) return Node_Id;
       --  The inverse function (uses Val in the case of enumeration types)
 
       --------------
-      -- To_Intyp --
+      -- To_Artyp --
       --------------
 
-      function To_Intyp (X : Node_Id) return Node_Id is
+      function To_Artyp (X : Node_Id) return Node_Id is
       begin
-         if Ityp = Base_Type (Intyp) then
+         if Ityp = Base_Type (Artyp) then
             return X;
 
          elsif Is_Enumeration_Type (Ityp) then
@@ -2255,9 +2255,9 @@ package body Exp_Ch4 is
                 Expressions    => New_List (X));
 
          else
-            return Convert_To (Intyp, X);
+            return Convert_To (Artyp, X);
          end if;
-      end To_Intyp;
+      end To_Artyp;
 
       -------------
       -- To_Ityp --
@@ -2287,15 +2287,13 @@ package body Exp_Ch4 is
             --  we analyzed and resolved the expression.
 
             Set_Parent (X, Cnode);
-            Analyze_And_Resolve (X);
+            Analyze_And_Resolve (X, Artyp);
 
             if Compile_Time_Compare
-                 (X, Type_High_Bound (Istyp),
-                  Assume_Valid => False) = GT
+                 (X, Type_High_Bound (Istyp), Assume_Valid => False) = GT
               or else
                Compile_Time_Compare
-                 (X, Type_High_Bound (Ityp),
-                  Assume_Valid => False) = GT
+                 (X, Type_High_Bound (Ityp), Assume_Valid => False) = GT
             then
                Apply_Compile_Time_Constraint_Error
                  (N      => Cnode,
@@ -2304,7 +2302,7 @@ package body Exp_Ch4 is
                raise Concatenation_Error;
 
             else
-               if Ityp = Base_Type (Intyp) then
+               if Ityp = Base_Type (Artyp) then
                   return X;
                else
                   return Convert_To (Ityp, X);
@@ -2343,7 +2341,7 @@ package body Exp_Ch4 is
       --  arithmetic with POS values, not representation values).
 
       if Is_Enumeration_Type (Ityp) then
-         Intyp := Standard_Integer;
+         Artyp := Standard_Integer;
 
       --  For modular types, we use a 32-bit modular type for types whose size
       --  is in the range 1-31 bits. For 32-bit unsigned types, we use the
@@ -2351,22 +2349,22 @@ package body Exp_Ch4 is
 
       elsif Is_Modular_Integer_Type (Ityp) then
          if RM_Size (Ityp) < RM_Size (Standard_Unsigned) then
-            Intyp := Standard_Unsigned;
+            Artyp := Standard_Unsigned;
          elsif RM_Size (Ityp) = RM_Size (Standard_Unsigned) then
-            Intyp := Ityp;
+            Artyp := Ityp;
          else
-            Intyp := RTE (RE_Long_Long_Unsigned);
+            Artyp := RTE (RE_Long_Long_Unsigned);
          end if;
 
       --  Similar treatment for signed types
 
       else
          if RM_Size (Ityp) < RM_Size (Standard_Integer) then
-            Intyp := Standard_Integer;
+            Artyp := Standard_Integer;
          elsif RM_Size (Ityp) = RM_Size (Standard_Integer) then
-            Intyp := Ityp;
+            Artyp := Ityp;
          else
-            Intyp := Standard_Long_Long_Integer;
+            Artyp := Standard_Long_Long_Integer;
          end if;
       end if;
 
@@ -2543,7 +2541,7 @@ package body Exp_Ch4 is
                    Constant_Present    => True,
 
                    Object_Definition   =>
-                     New_Occurrence_Of (Intyp, Loc),
+                     New_Occurrence_Of (Artyp, Loc),
 
                    Expression          =>
                      Make_Attribute_Reference (Loc,
@@ -2600,7 +2598,7 @@ package body Exp_Ch4 is
                 Constant_Present    => True,
 
                 Object_Definition   =>
-                  New_Occurrence_Of (Intyp, Loc),
+                  New_Occurrence_Of (Artyp, Loc),
 
                 Expression          =>
                   Make_Op_Add (Loc,
@@ -2729,7 +2727,7 @@ package body Exp_Ch4 is
       High_Bound :=
         To_Ityp (
           Make_Op_Add (Loc,
-            Left_Opnd  => To_Intyp (New_Copy (Low_Bound)),
+            Left_Opnd  => To_Artyp (New_Copy (Low_Bound)),
             Right_Opnd =>
               Make_Op_Subtract (Loc,
                 Left_Opnd  => New_Copy (Aggr_Length (NN)),
@@ -2777,12 +2775,12 @@ package body Exp_Ch4 is
          declare
             Lo : constant Node_Id :=
                    Make_Op_Add (Loc,
-                     Left_Opnd  => To_Intyp (New_Copy (Low_Bound)),
+                     Left_Opnd  => To_Artyp (New_Copy (Low_Bound)),
                      Right_Opnd => Aggr_Length (J - 1));
 
             Hi : constant Node_Id :=
                    Make_Op_Add (Loc,
-                     Left_Opnd  => To_Intyp (New_Copy (Low_Bound)),
+                     Left_Opnd  => To_Artyp (New_Copy (Low_Bound)),
                      Right_Opnd =>
                        Make_Op_Subtract (Loc,
                          Left_Opnd  => Aggr_Length (J),

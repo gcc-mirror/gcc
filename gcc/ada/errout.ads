@@ -269,8 +269,10 @@ package Errout is
 
    --      Normally warning messages issued in other than the main unit are
    --      suppressed. If the message ends with !! then this suppression is
-   --      avoided. This is currently only used by the Compile_Time_Warning
-   --      pragma to ensure the message for a with'ed unit is output.
+   --      avoided. This is currently used by the Compile_Time_Warning pragma
+   --      to ensure the message for a with'ed unit is output, and for warnings
+   --      on ineffective back-end inlining, which is detected in units that
+   --      contain subprograms to be inlined in the main program.
 
    --    Insertion character ? (Question: warning message)
    --      The character ? appearing anywhere in a message makes the message
