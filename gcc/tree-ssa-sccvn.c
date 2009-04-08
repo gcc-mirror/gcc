@@ -833,7 +833,10 @@ valueize_refs (VEC (vn_reference_op_s, heap) *orig)
 	  if (i > 0 && TREE_CODE (vro->op0) == ADDR_EXPR
 	      && VEC_index (vn_reference_op_s,
 			    orig, i - 1)->opcode == INDIRECT_REF)
-	    vn_reference_fold_indirect (&orig, &i);
+	    {
+	      vn_reference_fold_indirect (&orig, &i);
+	      continue;
+	    }
 	}
       if (vro->op1 && TREE_CODE (vro->op1) == SSA_NAME)
 	vro->op1 = SSA_VAL (vro->op1);

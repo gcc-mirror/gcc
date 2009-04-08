@@ -1,3 +1,8 @@
+2009-04-08  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (valueize_refs): Do not continue to
+	valueize random data.
+
 2009-04-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* config.gcc (aix tm_file):  Add aix-stdint.h.
