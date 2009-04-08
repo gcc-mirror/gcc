@@ -1,3 +1,15 @@
+2009-04-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	* genoutput.c (validate_optab_operands): New.
+	(gen_insn, gen_expand): Call it.
+
+	* genflags.c (gen_insn): Detect misused iterators.
+	(main): Pass line_no to gen_insn, exit with status 1 on error.
+
+	* genextract.c (line_no): Make global.
+	(VEC_safe_set_locstr): Change assertion to error message.
+	(main): Exit with status 1 on error.
+
 2009-04-08  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/39614

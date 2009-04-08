@@ -80,6 +80,8 @@ struct accum_extract
   VEC(char,heap)   *pathstr;
 };
 
+int line_no;
+
 /* Forward declarations.  */
 static void walk_rtx (rtx, struct accum_extract *);
 
@@ -187,8 +189,13 @@ VEC_safe_set_locstr (VEC(locstr,heap) **vp, unsigned int ix, char *str)
 {
   if (ix < VEC_length (locstr, *vp))
     {
-      gcc_assert (VEC_index (locstr, *vp, ix) == 0);
-      VEC_replace (locstr, *vp, ix, str);
+      if (VEC_index (locstr, *vp, ix))
+	{
+	  message_with_line (line_no, "repeated operand number %d", ix);
+	  have_error = 1;
+	}
+      else
+        VEC_replace (locstr, *vp, ix, str);
     }
   else
     {
@@ -399,7 +406,6 @@ main (int argc, char **argv)
   struct code_ptr *link;
   const char *name;
   int insn_code_number;
-  int line_no;
 
   progname = "genextract";
 
@@ -422,6 +428,9 @@ main (int argc, char **argv)
 	  peepholes = link;
 	}
     }
+
+  if (have_error)
+    return FATAL_EXIT_CODE;
 
   print_header ();
 

@@ -830,6 +830,22 @@ validate_insn_operands (struct data *d)
 	have_error = 1;
       }
 }
+
+static void
+validate_optab_operands (struct data *d)
+{
+  if (!d->name || d->name[0] == '\0' || d->name[0] == '*')
+    return;
+
+  /* Miscellaneous tests.  */
+  if (strncmp (d->name, "cstore", 6) == 0
+      && d->name[strlen (d->name) - 1] == '4'
+      && d->operand[0].mode == VOIDmode)
+    {
+      message_with_line (d->lineno, "missing mode for operand 0 of cstore");
+      have_error = 1;
+    }
+}
 
 /* Look at a define_insn just read.  Assign its code number.  Record
    on idata the template and the number of arguments.  If the insn has
@@ -871,6 +887,7 @@ gen_insn (rtx insn, int lineno)
 #endif
   validate_insn_operands (d);
   validate_insn_alternatives (d);
+  validate_optab_operands (d);
   place_operands (d);
   process_template (d, XTMPL (insn, 3));
 }
@@ -956,6 +973,7 @@ gen_expand (rtx insn, int lineno)
   d->output_format = INSN_OUTPUT_FORMAT_NONE;
 
   validate_insn_alternatives (d);
+  validate_optab_operands (d);
   place_operands (d);
 }
 
