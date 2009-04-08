@@ -11253,7 +11253,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_Optional_Identifier (Arg1, Name_Entity);
-            Check_Arg_Is_Local_Name (Arg1);
+            Check_Arg_Is_Library_Level_Local_Name (Arg1);
 
             Id := Expression (Arg1);
             Analyze (Id);
@@ -11273,6 +11273,7 @@ package body Sem_Prag is
             end if;
 
             Set_Has_Pragma_Thread_Local_Storage (E);
+            Set_Has_Gigi_Rep_Item (E);
          end Thread_Local_Storage;
 
          ----------------
