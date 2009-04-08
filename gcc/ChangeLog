@@ -1,3 +1,9 @@
+2009-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/39573
+	* omp-low.c (expand_omp_taskreg): Finalize taskreg static local_decls
+	variables.
+
 2009-04-08  David Ayers  <ayers@fsfe.org>
 
 	PR objc/27377
