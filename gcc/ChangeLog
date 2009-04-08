@@ -1,3 +1,9 @@
+2009-04-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* config.gcc (aix tm_file):  Add aix-stdint.h.
+	(aix tm clause use_gcc_stdint):  Set to wrap.
+	* config/rs6000/aix-stdint.h:  New file.
+	
 2009-04-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36291
