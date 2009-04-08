@@ -600,13 +600,11 @@ add_referenced_var (tree var)
     {
       /* Scan DECL_INITIAL for pointer variables as they may contain
 	 address arithmetic referencing the address of other
-	 variables.  
-	 Even non-constant initializers need to be walked, because
-	 IPA passes might prove that their are invariant later on.  */
+	 variables.  As we are only interested in directly referenced
+	 globals or referenced locals restrict this to initializers
+	 than can refer to local variables.  */
       if (DECL_INITIAL (var)
-	  /* Initializers of external variables are not useful to the
-	     optimizers.  */
-          && !DECL_EXTERNAL (var))
+          && DECL_CONTEXT (var) == current_function_decl)
       	walk_tree (&DECL_INITIAL (var), find_vars_r, NULL, 0);
 
       return true;
