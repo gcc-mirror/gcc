@@ -1,3 +1,8 @@
+2009-04-08 Bingfeng Mei <bmei@broadcom.com>
+
+	* fold-const.c (const_binop): Combine two VECTOR_CST under operation 
+        CODE to produce a new one. Add a prototype to use fold_convert_const
+
 2009-04-08  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR bootstrap/39660
