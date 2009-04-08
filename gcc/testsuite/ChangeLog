@@ -1,3 +1,8 @@
+2009-04-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/38152
+	* gfortran.dg/proc_ptr_13.f90: Add "-g" option.
+
 2009-04-02  David Ayers  <ayers@fsfe.org>
 
 	PR objc/27377
