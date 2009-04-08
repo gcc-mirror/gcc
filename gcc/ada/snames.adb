@@ -790,6 +790,7 @@ package body Snames is
      "pretty_printer#" &
      "prefix#" &
      "project#" &
+     "project_dir#" &
      "roots#" &
      "required_switches#" &
      "run_path_option#" &

@@ -1114,49 +1114,50 @@ package Snames is
    Name_Pretty_Printer                 : constant Name_Id := N + 729;
    Name_Prefix                         : constant Name_Id := N + 730;
    Name_Project                        : constant Name_Id := N + 731;
-   Name_Roots                          : constant Name_Id := N + 732;
-   Name_Required_Switches              : constant Name_Id := N + 733;
-   Name_Run_Path_Option                : constant Name_Id := N + 734;
-   Name_Runtime_Project                : constant Name_Id := N + 735;
-   Name_Shared_Library_Minimum_Switches : constant Name_Id := N + 736;
-   Name_Shared_Library_Prefix          : constant Name_Id := N + 737;
-   Name_Shared_Library_Suffix          : constant Name_Id := N + 738;
-   Name_Separate_Suffix                : constant Name_Id := N + 739;
-   Name_Source_Dirs                    : constant Name_Id := N + 740;
-   Name_Source_Files                   : constant Name_Id := N + 741;
-   Name_Source_List_File               : constant Name_Id := N + 742;
-   Name_Spec                           : constant Name_Id := N + 743;
-   Name_Spec_Suffix                    : constant Name_Id := N + 744;
-   Name_Specification                  : constant Name_Id := N + 745;
-   Name_Specification_Exceptions       : constant Name_Id := N + 746;
-   Name_Specification_Suffix           : constant Name_Id := N + 747;
-   Name_Stack                          : constant Name_Id := N + 748;
-   Name_Switches                       : constant Name_Id := N + 749;
-   Name_Symbolic_Link_Supported        : constant Name_Id := N + 750;
-   Name_Sync                           : constant Name_Id := N + 751;
-   Name_Synchronize                    : constant Name_Id := N + 752;
-   Name_Toolchain_Description          : constant Name_Id := N + 753;
-   Name_Toolchain_Version              : constant Name_Id := N + 754;
-   Name_Runtime_Library_Dir            : constant Name_Id := N + 755;
+   Name_Project_Dir                    : constant Name_Id := N + 732;
+   Name_Roots                          : constant Name_Id := N + 733;
+   Name_Required_Switches              : constant Name_Id := N + 734;
+   Name_Run_Path_Option                : constant Name_Id := N + 735;
+   Name_Runtime_Project                : constant Name_Id := N + 736;
+   Name_Shared_Library_Minimum_Switches : constant Name_Id := N + 737;
+   Name_Shared_Library_Prefix          : constant Name_Id := N + 738;
+   Name_Shared_Library_Suffix          : constant Name_Id := N + 739;
+   Name_Separate_Suffix                : constant Name_Id := N + 740;
+   Name_Source_Dirs                    : constant Name_Id := N + 741;
+   Name_Source_Files                   : constant Name_Id := N + 742;
+   Name_Source_List_File               : constant Name_Id := N + 743;
+   Name_Spec                           : constant Name_Id := N + 744;
+   Name_Spec_Suffix                    : constant Name_Id := N + 745;
+   Name_Specification                  : constant Name_Id := N + 746;
+   Name_Specification_Exceptions       : constant Name_Id := N + 747;
+   Name_Specification_Suffix           : constant Name_Id := N + 748;
+   Name_Stack                          : constant Name_Id := N + 749;
+   Name_Switches                       : constant Name_Id := N + 750;
+   Name_Symbolic_Link_Supported        : constant Name_Id := N + 751;
+   Name_Sync                           : constant Name_Id := N + 752;
+   Name_Synchronize                    : constant Name_Id := N + 753;
+   Name_Toolchain_Description          : constant Name_Id := N + 754;
+   Name_Toolchain_Version              : constant Name_Id := N + 755;
+   Name_Runtime_Library_Dir            : constant Name_Id := N + 756;
 
    --  Other miscellaneous names used in front end
 
-   Name_Unaligned_Valid                : constant Name_Id := N + 756;
+   Name_Unaligned_Valid                : constant Name_Id := N + 757;
 
    --  Ada 2005 reserved words
 
-   First_2005_Reserved_Word            : constant Name_Id := N + 757;
-   Name_Interface                      : constant Name_Id := N + 757;
-   Name_Overriding                     : constant Name_Id := N + 758;
-   Name_Synchronized                   : constant Name_Id := N + 759;
-   Last_2005_Reserved_Word             : constant Name_Id := N + 759;
+   First_2005_Reserved_Word            : constant Name_Id := N + 758;
+   Name_Interface                      : constant Name_Id := N + 758;
+   Name_Overriding                     : constant Name_Id := N + 759;
+   Name_Synchronized                   : constant Name_Id := N + 760;
+   Last_2005_Reserved_Word             : constant Name_Id := N + 760;
 
    subtype Ada_2005_Reserved_Words is
      Name_Id range First_2005_Reserved_Word .. Last_2005_Reserved_Word;
 
    --  Mark last defined name for consistency check in Snames body
 
-   Last_Predefined_Name                : constant Name_Id := N + 759;
+   Last_Predefined_Name                : constant Name_Id := N + 760;
 
    ---------------------------------------
    -- Subtypes Defining Name Categories --

@@ -3560,12 +3560,19 @@ package body Checks is
          pg (Union_Id (N));
       end if;
 
+      --  No check if overflow checks suppressed for type of node
+
+      if Present (Etype (N))
+        and then Overflow_Checks_Suppressed (Etype (N))
+      then
+         return;
+
       --  Nothing to do if the range of the result is known OK. We skip this
       --  for conversions, since the caller already did the check, and in any
       --  case the condition for deleting the check for a type conversion is
       --  different.
 
-      if Nkind (N) /= N_Type_Conversion then
+      elsif Nkind (N) /= N_Type_Conversion then
          Determine_Range (N, OK, Lo, Hi, Assume_Valid => True);
 
          --  Note in the test below that we assume that the range is not OK
