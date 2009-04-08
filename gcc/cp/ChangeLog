@@ -1,3 +1,9 @@
+2009-04-08  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/39637
+	* parser.c (cp_parser_enumerator_definition): Make sure the
+	initializer of the enumerator doesn't contain any bare parameter pack.
+
 2009-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/34691
