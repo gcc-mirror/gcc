@@ -1,3 +1,8 @@
+2009-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.ac: Bump minimum GMP/MPFR versions to 4.2 and 2.3.1.
+	* configure: Regenerate.
+
 2009-04-01  Steve Ellcey  <sje@cup.hp.com>
 
 	* Makefil.def (languages): New entries.
