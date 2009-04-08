@@ -36,6 +36,7 @@ with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
+with Layout;   use Layout;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Namet;    use Namet;
@@ -557,7 +558,7 @@ package body Exp_Disp is
          Res_Typ := Etype (Subp);
       end if;
 
-      Subp_Typ := Create_Itype (E_Subprogram_Type, Call_Node);
+      Subp_Typ     := Create_Itype (E_Subprogram_Type, Call_Node);
       Subp_Ptr_Typ := Create_Itype (E_Access_Subprogram_Type, Call_Node);
       Set_Etype          (Subp_Typ, Res_Typ);
       Set_Returns_By_Ref (Subp_Typ, Returns_By_Ref (Subp));
@@ -615,9 +616,14 @@ package body Exp_Disp is
          Create_Extra_Formals (Subp_Typ);
       end;
 
+      --  Complete description of pointer type, including size information, as
+      --  must be done with itypes to prevent order-of-elaboration anomalies
+      --  in gigi.
+
       Set_Etype (Subp_Ptr_Typ, Subp_Ptr_Typ);
       Set_Directly_Designated_Type (Subp_Ptr_Typ, Subp_Typ);
       Set_Convention (Subp_Ptr_Typ, Convention (Subp_Typ));
+      Layout_Type    (Subp_Ptr_Typ);
 
       --  If the controlling argument is a value of type Ada.Tag or an abstract
       --  interface class-wide type then use it directly. Otherwise, the tag
