@@ -5403,7 +5403,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  {
 	    tree c;
 
-	    c = fold (e1.value);
+	    c = e1.value;
 	    if (TREE_CODE (c) != INTEGER_CST
 		|| !INTEGRAL_TYPE_P (TREE_TYPE (c)))
 	      error_at (loc,

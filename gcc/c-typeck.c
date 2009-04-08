@@ -151,6 +151,20 @@ note_integer_operands (tree expr)
   return ret;
 }
 
+/* Having checked whether EXPR may appear in an unevaluated part of an
+   integer constant expression and found that it may, remove any
+   C_MAYBE_CONST_EXPR noting this fact and return the resulting
+   expression.  */
+
+static inline tree
+remove_c_maybe_const_expr (tree expr)
+{
+  if (TREE_CODE (expr) == C_MAYBE_CONST_EXPR)
+    return C_MAYBE_CONST_EXPR_EXPR (expr);
+  else
+    return expr;
+}
+
 /* This is a cache to hold if two types are compatible or not.  */
 
 struct tagged_tu_seen_cache {
@@ -3013,6 +3027,8 @@ build_unary_op (location_t location,
   bool int_operands;
 
   int_operands = EXPR_INT_CONST_OPERANDS (xarg);
+  if (int_operands)
+    arg = remove_c_maybe_const_expr (arg);
 
   if (code != ADDR_EXPR)
     arg = require_complete_type (arg);
@@ -3576,8 +3592,19 @@ build_conditional_expr (tree ifexp, bool ifexp_bcp, tree op1, tree op2)
   tree ep_result_type = NULL;
   tree orig_op1 = op1, orig_op2 = op2;
   bool int_const, op1_int_operands, op2_int_operands, int_operands;
+  bool ifexp_int_operands;
   tree ret;
   bool objc_ok;
+
+  op1_int_operands = EXPR_INT_CONST_OPERANDS (orig_op1);
+  if (op1_int_operands)
+    op1 = remove_c_maybe_const_expr (op1);
+  op2_int_operands = EXPR_INT_CONST_OPERANDS (orig_op2);
+  if (op2_int_operands)
+    op2 = remove_c_maybe_const_expr (op2);
+  ifexp_int_operands = EXPR_INT_CONST_OPERANDS (ifexp);
+  if (ifexp_int_operands)
+    ifexp = remove_c_maybe_const_expr (ifexp);
 
   /* Promote both alternatives.  */
 
@@ -3793,8 +3820,6 @@ build_conditional_expr (tree ifexp, bool ifexp_bcp, tree op1, tree op2)
   if (result_type != TREE_TYPE (op2))
     op2 = convert_and_check (result_type, op2);
 
-  op1_int_operands = EXPR_INT_CONST_OPERANDS (orig_op1);
-  op2_int_operands = EXPR_INT_CONST_OPERANDS (orig_op2);
   if (ifexp_bcp && ifexp == truthvalue_true_node)
     {
       op2_int_operands = true;
@@ -3805,7 +3830,7 @@ build_conditional_expr (tree ifexp, bool ifexp_bcp, tree op1, tree op2)
       op1_int_operands = true;
       op2 = c_fully_fold (op2, require_constant_value, NULL);
     }
-  int_const = int_operands = (EXPR_INT_CONST_OPERANDS (ifexp)
+  int_const = int_operands = (ifexp_int_operands
 			      && op1_int_operands
 			      && op2_int_operands);
   if (int_operands)
@@ -3837,8 +3862,16 @@ build_conditional_expr (tree ifexp, bool ifexp_bcp, tree op1, tree op2)
 tree
 build_compound_expr (tree expr1, tree expr2)
 {
+  bool expr1_int_operands, expr2_int_operands;
   tree eptype = NULL_TREE;
   tree ret;
+
+  expr1_int_operands = EXPR_INT_CONST_OPERANDS (expr1);
+  if (expr1_int_operands)
+    expr1 = remove_c_maybe_const_expr (expr1);
+  expr2_int_operands = EXPR_INT_CONST_OPERANDS (expr2);
+  if (expr2_int_operands)
+    expr2 = remove_c_maybe_const_expr (expr2);
 
   if (TREE_CODE (expr1) == EXCESS_PRECISION_EXPR)
     expr1 = TREE_OPERAND (expr1, 0);
@@ -3881,8 +3914,8 @@ build_compound_expr (tree expr1, tree expr2)
   ret = build2 (COMPOUND_EXPR, TREE_TYPE (expr2), expr1, expr2);
 
   if (flag_isoc99
-      && EXPR_INT_CONST_OPERANDS (expr1)
-      && EXPR_INT_CONST_OPERANDS (expr2))
+      && expr1_int_operands
+      && expr2_int_operands)
     ret = note_integer_operands (ret);
 
   if (eptype)
@@ -8440,6 +8473,7 @@ build_binary_op (location_t location, enum tree_code code,
   tree op0, op1;
   tree ret = error_mark_node;
   const char *invalid_op_diag;
+  bool op0_int_operands, op1_int_operands;
   bool int_const, int_const_or_overflow, int_operands;
 
   /* Expression code to give to the expression when it is built.
@@ -8498,8 +8532,16 @@ build_binary_op (location_t location, enum tree_code code,
   if (location == UNKNOWN_LOCATION)
     location = input_location;
 
-  int_operands = (EXPR_INT_CONST_OPERANDS (orig_op0)
-		  && EXPR_INT_CONST_OPERANDS (orig_op1));
+  op0 = orig_op0;
+  op1 = orig_op1;
+
+  op0_int_operands = EXPR_INT_CONST_OPERANDS (orig_op0);
+  if (op0_int_operands)
+    op0 = remove_c_maybe_const_expr (op0);
+  op1_int_operands = EXPR_INT_CONST_OPERANDS (orig_op1);
+  if (op1_int_operands)
+    op1 = remove_c_maybe_const_expr (op1);
+  int_operands = (op0_int_operands && op1_int_operands);
   if (int_operands)
     {
       int_const_or_overflow = (TREE_CODE (orig_op0) == INTEGER_CST
@@ -8513,13 +8555,8 @@ build_binary_op (location_t location, enum tree_code code,
 
   if (convert_p)
     {
-      op0 = default_conversion (orig_op0);
-      op1 = default_conversion (orig_op1);
-    }
-  else
-    {
-      op0 = orig_op0;
-      op1 = orig_op1;
+      op0 = default_conversion (op0);
+      op1 = default_conversion (op1);
     }
 
   orig_type0 = type0 = TREE_TYPE (op0);
@@ -9196,6 +9233,8 @@ c_objc_common_truthvalue_conversion (location_t location, tree expr)
 
   int_const = (TREE_CODE (expr) == INTEGER_CST && !TREE_OVERFLOW (expr));
   int_operands = EXPR_INT_CONST_OPERANDS (expr);
+  if (int_operands)
+    expr = remove_c_maybe_const_expr (expr);
 
   /* ??? Should we also give an error for void and vectors rather than
      leaving those to give errors later?  */
