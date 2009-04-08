@@ -156,8 +156,6 @@ struct rtl_eh GTY(())
   rtx sjlj_fc;
   rtx sjlj_exit_after;
 
-  htab_t GTY ((param_is (struct ehl_map_entry))) exception_handler_label_map;
-
   VEC(tree,gc) *ttype_data;
   varray_type ehspec_data;
   varray_type action_record_data;

@@ -62,7 +62,6 @@ extern void init_eh (void);
 extern void init_eh_for_function (void);
 
 extern rtx reachable_handlers (rtx);
-extern void maybe_remove_eh_handler (rtx);
 void remove_eh_region (int);
 
 extern void convert_from_eh_region_ranges (void);

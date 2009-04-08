@@ -379,8 +379,6 @@ rtl_delete_block (basic_block b)
      label for an exception handler which can't be reached.  We need
      to remove the label from the exception_handler_label list.  */
   insn = BB_HEAD (b);
-  if (LABEL_P (insn))
-    maybe_remove_eh_handler (insn);
 
   end = get_last_bb_insn (b);
 
@@ -572,10 +570,6 @@ rtl_merge_blocks (basic_block a, basic_block b)
   /* If there was a CODE_LABEL beginning B, delete it.  */
   if (LABEL_P (b_head))
     {
-      /* This might have been an EH label that no longer has incoming
-	 EH edges.  Update data structures to match.  */
-      maybe_remove_eh_handler (b_head);
-
       /* Detect basic blocks with nothing but a label.  This can happen
 	 in particular at the end of a function.  */
       if (b_head == b_end)
@@ -2598,10 +2592,6 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   /* If there was a CODE_LABEL beginning B, delete it.  */
   if (LABEL_P (BB_HEAD (b)))
     {
-      /* This might have been an EH label that no longer has incoming
-	 EH edges.  Update data structures to match.  */
-      maybe_remove_eh_handler (BB_HEAD (b));
-
       delete_insn (BB_HEAD (b));
     }
 

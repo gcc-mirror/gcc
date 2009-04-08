@@ -1,3 +1,21 @@
+2009-04-08  Jan Hubicka  <jh@suse.cz>
+
+	* tree-eh.c (cleanup_eh): When not optimizing, do not try EH merging.
+	* function.h (rtl_eh): Remove exception_handler_label_map.
+	* except.c (ehl_hash, ehl_eq, add_ehl_entry,
+	remove_exception_handler_label, for_each_eh_label_1): Remove.
+	(rtl_remove_unreachable_regions): Remove.
+	(convert_from_eh_region_ranges): Do not remove unreachable regions.
+	(find_exception_handler_labels): Don't build the hashtable.
+	(maybe_remove_eh_handler): Remove.
+	(for_each_eh_label): Rewrite to walk the tree.
+	(rest_of_handle_eh): Do not cleanup cfg prior EH construction.
+	* except.h (maybe_remove_eh_handler): Remove.
+	* passes.c (init_optimization_passes): Schedule second EH cleanup
+	before out-of-ssa.
+	* cfgrtl.c (rtl_delete_block, rtl_merge_blocks,
+	cfg_layout_merge_blocks): Do not call maybe_remove_eh_handler.
+
 2009-04-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	* genoutput.c (validate_optab_operands): New.

@@ -3121,23 +3121,26 @@ cleanup_eh (void)
       dump_eh_tree (dump_file, cfun);
     }
 
-  dominance_info_invalidated = false;
-  /* We cannot use FOR_EACH_BB, since the basic blocks may get removed.  */
-  for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
+  if (optimize)
     {
-      bb = BASIC_BLOCK (i);
-      if (bb)
-	changed |= cleanup_empty_eh (bb);
-    }
-  if (dominance_info_invalidated)
-    {
-      free_dominance_info (CDI_DOMINATORS);
-      free_dominance_info (CDI_POST_DOMINATORS);
-    }
+      dominance_info_invalidated = false;
+      /* We cannot use FOR_EACH_BB, since the basic blocks may get removed.  */
+      for (i = NUM_FIXED_BLOCKS; i < last_basic_block; i++)
+	{
+	  bb = BASIC_BLOCK (i);
+	  if (bb)
+	    changed |= cleanup_empty_eh (bb);
+	}
+      if (dominance_info_invalidated)
+	{
+	  free_dominance_info (CDI_DOMINATORS);
+	  free_dominance_info (CDI_POST_DOMINATORS);
+	}
 
-  /* Removing contained cleanup can render MUST_NOT_THROW regions empty.  */
-  if (changed)
-    delete_unreachable_blocks ();
+      /* Removing contained cleanup can render MUST_NOT_THROW regions empty.  */
+      if (changed)
+	delete_unreachable_blocks ();
+    }
 
   tree_remove_unreachable_handlers ();
   if (dump_file)
