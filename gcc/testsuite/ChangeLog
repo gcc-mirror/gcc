@@ -1,3 +1,8 @@
+2009-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/34691
+	* g++.dg/overload/extern-C-1.C: New.
+
 2009-04-07  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR testsuite/39325

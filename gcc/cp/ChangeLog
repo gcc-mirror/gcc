@@ -1,5 +1,15 @@
 2009-04-07  Jason Merrill  <jason@redhat.com>
 
+	PR c++/34691
+	* name-lookup.c	(merge_functions): Keep multiple extern "C" functions.
+	* call.c (joust): Complain about mismatched default arguments
+	in extern "C" functions.
+	* class.c (resolve_address_of_overloaded_function): Handle multiple
+	extern "C" functions.
+	* pt.c (resolve_overloaded_unification): Likewise.
+
+2009-04-07  Jason Merrill  <jason@redhat.com>
+
 	PR c++/25185
 	* error.c (dump_function_decl): Don't pretty-print templates
 	if -fno-pretty-templates.
