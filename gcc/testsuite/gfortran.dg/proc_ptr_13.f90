@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-g" }
 !
 ! PR 38152: Procedure pointers as module variables.
 !
