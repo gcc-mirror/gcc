@@ -189,7 +189,7 @@ package body Sem_Eval is
    --  it is not technically static (e.g. the static lower bound of a range
    --  whose upper bound is non-static).
    --
-   --  If Stat is set False on return, then Expression_Is_Foldable makes a
+   --  If Stat is set False on return, then Test_Expression_Is_Foldable makes a
    --  call to Check_Non_Static_Context on the operand. If Fold is False on
    --  return, then all processing is complete, and the caller should
    --  return, since there is nothing else to do.

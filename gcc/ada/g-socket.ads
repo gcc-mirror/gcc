@@ -383,6 +383,8 @@ package GNAT.Sockets is
    --  Note that this operation is a no-op on UNIX platforms, but applications
    --  should make sure to call it if portability is expected: some platforms
    --  (such as Windows) require initialization before any socket operation.
+   --  This is now a no-op (initialization and finalization are done
+   --  automatically).
 
    procedure Initialize (Process_Blocking_IO : Boolean);
    pragma Obsolescent
@@ -394,10 +396,14 @@ package GNAT.Sockets is
    --  is built. The old version of Initialize, taking a parameter, is kept
    --  for compatibility reasons, but this interface is obsolete (and if the
    --  value given is wrong, an exception will be raised at run time).
+   --  This is now a no-op (initialization and finalization are done
+   --  automatically).
 
    procedure Finalize;
    --  After Finalize is called it is not possible to use any routines
    --  exported in by this package. This procedure is idempotent.
+   --  This is now a no-op (initialization and finalization are done
+   --  automatically).
 
    type Socket_Type is private;
    --  Sockets are used to implement a reliable bi-directional point-to-point,

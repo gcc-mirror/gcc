@@ -68,6 +68,7 @@ package body Prj.Attr is
    --  General
 
    "SVRname#" &
+   "SVRproject_dir#" &
    "lVmain#" &
    "LVlanguages#" &
    "SVmain_language#" &

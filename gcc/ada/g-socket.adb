@@ -33,6 +33,7 @@
 
 with Ada.Streams;              use Ada.Streams;
 with Ada.Exceptions;           use Ada.Exceptions;
+with Ada.Finalization;
 with Ada.Unchecked_Conversion;
 
 with Interfaces.C.Strings;
@@ -52,9 +53,6 @@ package body GNAT.Sockets is
    package C renames Interfaces.C;
 
    use type C.int;
-
-   Finalized   : Boolean := False;
-   Initialized : Boolean := False;
 
    ENOERROR : constant := 0;
 
@@ -241,6 +239,15 @@ package body GNAT.Sockets is
    --  If For_Read is True, Socket is added to the read set for this call, else
    --  it is added to the write set. If no selector is provided, a local one is
    --  created for this call and destroyed prior to returning.
+
+   type Sockets_Library_Controller is new Ada.Finalization.Limited_Controlled
+     with null record;
+   --  This type is used to generate automatic calls to Initialize and Finalize
+   --  during the elaboration and finalization of this package. A single object
+   --  of this type must exist at library level.
+
+   procedure Initialize (X : in out Sockets_Library_Controller);
+   procedure Finalize   (X : in out Sockets_Library_Controller);
 
    ---------
    -- "+" --
@@ -793,14 +800,24 @@ package body GNAT.Sockets is
    -- Finalize --
    --------------
 
+   procedure Finalize (X : in out Sockets_Library_Controller) is
+      pragma Unreferenced (X);
+   begin
+      --  Finalization operation for the GNAT.Sockets package
+
+      Thin.Finalize;
+   end Finalize;
+
+   --------------
+   -- Finalize --
+   --------------
+
    procedure Finalize is
    begin
-      if not Finalized
-        and then Initialized
-      then
-         Finalized := True;
-         Thin.Finalize;
-      end if;
+      --  This is a dummy placeholder for an obsolete API.
+      --  The real finalization actions are in Initialize primitive operation
+      --  of Sockets_Library_Controller.
+      null;
    end Finalize;
 
    ---------
@@ -1218,6 +1235,7 @@ package body GNAT.Sockets is
 
    function Image (Item : Socket_Set_Type) return String is
       Socket_Set : Socket_Set_Type := Item;
+
    begin
       declare
          Last_Img : constant String := Socket_Set.Last'Img;
@@ -1225,9 +1243,11 @@ package body GNAT.Sockets is
                       (1 .. (Integer (Socket_Set.Last) + 1) * Last_Img'Length);
          Index    : Positive := 1;
          Socket   : Socket_Type;
+
       begin
          while not Is_Empty (Socket_Set) loop
             Get (Socket_Set, Socket);
+
             declare
                Socket_Img : constant String := Socket'Img;
             begin
@@ -1235,6 +1255,7 @@ package body GNAT.Sockets is
                Index := Index + Socket_Img'Length;
             end;
          end loop;
+
          return "[" & Last_Img & "]" & Buffer (1 .. Index - 1);
       end;
    end Image;
@@ -1281,6 +1302,20 @@ package body GNAT.Sockets is
    -- Initialize --
    ----------------
 
+   procedure Initialize (X : in out Sockets_Library_Controller) is
+      pragma Unreferenced (X);
+   begin
+      --  Initialization operation for the GNAT.Sockets package
+
+      Empty_Socket_Set.Last := No_Socket;
+      Reset_Socket_Set (Empty_Socket_Set.Set'Access);
+      Thin.Initialize;
+   end Initialize;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
    procedure Initialize (Process_Blocking_IO : Boolean) is
       Expected : constant Boolean := not SOSC.Thread_Blocking_IO;
 
@@ -1290,7 +1325,11 @@ package body GNAT.Sockets is
            "incorrect Process_Blocking_IO setting, expected " & Expected'Img;
       end if;
 
-      Initialize;
+      --  This is a dummy placeholder for an obsolete API.
+      --  Real initialization actions are in Initialize primitive operation
+      --  of Sockets_Library_Controller.
+
+      null;
    end Initialize;
 
    ----------------
@@ -1299,12 +1338,10 @@ package body GNAT.Sockets is
 
    procedure Initialize is
    begin
-      if not Initialized then
-         Initialized := True;
-         Empty_Socket_Set.Last := No_Socket;
-         Reset_Socket_Set (Empty_Socket_Set.Set'Access);
-         Thin.Initialize;
-      end if;
+      --  This is a dummy placeholder for an obsolete API.
+      --  Real initialization actions are in Initialize primitive operation
+      --  of Sockets_Library_Controller.
+      null;
    end Initialize;
 
    --------------
@@ -2329,5 +2366,10 @@ package body GNAT.Sockets is
          raise Socket_Error;
       end if;
    end Write;
+
+   Sockets_Library_Controller_Object : Sockets_Library_Controller;
+   pragma Unreferenced (Sockets_Library_Controller_Object);
+   --  The elaboration and finalization of this object perform the required
+   --  initialization and cleanup actions for the sockets library.
 
 end GNAT.Sockets;

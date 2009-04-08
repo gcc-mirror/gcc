@@ -1,3 +1,40 @@
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
+	* checks.adb (Enable_Overflow_Check): Do not enable if overflow checks
+	suppressed.
+	
+	* exp_ch4.adb (Expand_Concatenate): Make sure checks are off for all
+	resolution steps.
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): Remove test for
+	No_Local_Allocators restriction preventing local instantiation.
+
+2009-04-08  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_eval.adb: Minor comment fix
+
+2009-04-08  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.adb, g-socket.ads (GNAT.Sockets.Sockets_Library_Controller):
+	New limited controlled type used to automate the initialization and
+	finalization of the sockets implementation.
+	(GNAT.Sockets.Initialize, Finalize): Make these no-ops
+
+2009-04-08  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New read-only project-level attribute Project_Dir
+
+	* prj-proc.adb (Add_Attributes): New parameter Project_Dir, value of
+	read-only attribute of the same name.
+	(Process_Declarative_Items): Call Add_Attributes with Project_Dir
+	(Recursive_Process): Ditto
+
+	* snames.adb: Add new standard name Project_Dir
+
+	* snames.ads: Add new standard name Project_Dir
+
 2009-04-08  Thomas Quinot  <quinot@adacore.com>
 
 	* checks.adb: Minor reformatting

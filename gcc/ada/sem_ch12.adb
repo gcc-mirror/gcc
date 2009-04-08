@@ -3435,14 +3435,16 @@ package body Sem_Ch12 is
 
       Validate_Categorization_Dependency (N, Act_Decl_Id);
 
-      --  Check restriction, but skip this if something went wrong in the above
-      --  analysis, indicated by Act_Decl_Id being void.
+      --  There used to be a check here to prevent instantiations in local
+      --  contexts if the No_Local_Allocators restriction was active. This
+      --  check was removed by a binding interpretation in AI-95-00130/07,
+      --  but we retain the code for documentation purposes.
 
-      if Ekind (Act_Decl_Id) /= E_Void
-        and then not Is_Library_Level_Entity (Act_Decl_Id)
-      then
-         Check_Restriction (No_Local_Allocators, N);
-      end if;
+      --  if Ekind (Act_Decl_Id) /= E_Void
+      --    and then not Is_Library_Level_Entity (Act_Decl_Id)
+      --  then
+      --     Check_Restriction (No_Local_Allocators, N);
+      --  end if;
 
       if Inline_Now then
          Inline_Instance_Body (N, Gen_Unit, Act_Decl);

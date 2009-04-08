@@ -2287,7 +2287,7 @@ package body Exp_Ch4 is
             --  we analyzed and resolved the expression.
 
             Set_Parent (X, Cnode);
-            Analyze_And_Resolve (X, Artyp);
+            Analyze_And_Resolve (X, Artyp, Suppress => All_Checks);
 
             if Compile_Time_Compare
                  (X, Type_High_Bound (Istyp), Assume_Valid => False) = GT

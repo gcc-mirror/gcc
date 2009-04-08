@@ -66,6 +66,7 @@ package body Prj.Proc is
    procedure Add_Attributes
      (Project       : Project_Id;
       Project_Name  : Name_Id;
+      Project_Dir   : Name_Id;
       In_Tree       : Project_Tree_Ref;
       Decl          : in out Declarations;
       First         : Attribute_Node_Id;
@@ -183,6 +184,7 @@ package body Prj.Proc is
    procedure Add_Attributes
      (Project       : Project_Id;
       Project_Name  : Name_Id;
+      Project_Dir   : Name_Id;
       In_Tree       : Project_Tree_Ref;
       Decl          : in out Declarations;
       First         : Attribute_Node_Id;
@@ -217,13 +219,20 @@ package body Prj.Proc is
                         Value    => Empty_String,
                         Index    => 0);
 
-                     --  Special case of <project>'Name
+                     --  Special cases of <project>'Name and
+                     --  <project>'Project_Dir.
 
-                     if Project_Level
-                       and then Attribute_Name_Of (The_Attribute) =
-                                  Snames.Name_Name
-                     then
-                        New_Attribute.Value := Project_Name;
+                     if Project_Level then
+                        if Attribute_Name_Of (The_Attribute) =
+                          Snames.Name_Name
+                        then
+                           New_Attribute.Value := Project_Name;
+
+                        elsif Attribute_Name_Of (The_Attribute) =
+                          Snames.Name_Project_Dir
+                        then
+                           New_Attribute.Value := Project_Dir;
+                        end if;
                      end if;
 
                   --  List attributes have a default value of nil list
@@ -1372,6 +1381,8 @@ package body Prj.Proc is
                         Add_Attributes
                           (Project,
                            In_Tree.Projects.Table (Project).Name,
+                           Name_Id
+                             (In_Tree.Projects.Table (Project).Directory.Name),
                            In_Tree,
                            In_Tree.Packages.Table (New_Pkg).Decl,
                            First_Attribute_Of
@@ -2607,6 +2618,7 @@ package body Prj.Proc is
             Add_Attributes
               (Project,
                Name,
+               Name_Id (Processed_Data.Directory.Name),
                In_Tree,
                Processed_Data.Decl,
                Prj.Attr.Attribute_First,
