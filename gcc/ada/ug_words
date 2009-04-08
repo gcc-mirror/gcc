@@ -52,6 +52,7 @@ gcc -c          ^ GNAT COMPILE
 -gnata          ^ /CHECKS=ASSERTIONS
 -gnatA          ^ /NO_GNAT_ADC
 -gnatb          ^ /REPORT_ERRORS=BRIEF
+-gnatB          ^ /ASSUME_VALID
 -gnatc          ^ /NOLOAD
 -gnatdc         ^ /TRACE_UNITS
 -gnatdO         ^ /REPORT_ERRORS=IMMEDIATE

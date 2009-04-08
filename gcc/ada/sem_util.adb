@@ -6802,10 +6802,11 @@ package body Sem_Util is
         and then Present (Etype (Orig_Node))
         and then Is_Access_Type (Etype (Orig_Node))
       then
-         return Is_Variable_Prefix (Original_Node (Prefix (N)))
+         return
+           (Nkind (Orig_Node) = N_Function_Call
+             and then not Is_Access_Constant (Etype (Prefix (N))))
            or else
-             (Nkind (Orig_Node) = N_Function_Call
-               and then not Is_Access_Constant (Etype (Prefix (N))));
+             Is_Variable_Prefix (Original_Node (Prefix (N)));
 
       --  A function call is never a variable
 

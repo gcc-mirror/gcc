@@ -545,9 +545,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-secsta$(objext) \
   s-sequio$(objext) \
   s-shasto$(objext) \
-  s-sopco3$(objext) \
-  s-sopco4$(objext) \
-  s-sopco5$(objext) \
   s-stache$(objext) \
   s-stausa$(objext) \
   s-stchop$(objext) \
@@ -555,7 +552,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-stoele$(objext) \
   s-stopoo$(objext) \
   s-stratt$(objext) \
-  s-strops$(objext) \
   s-ststop$(objext) \
   s-soflin$(objext) \
   s-memory$(objext) \

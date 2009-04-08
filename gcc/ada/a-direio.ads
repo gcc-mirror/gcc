@@ -167,8 +167,12 @@ private
    type File_Type is new System.Direct_IO.File_Type;
 
    Bytes : constant Interfaces.C_Streams.size_t :=
-             Element_Type'Max_Size_In_Storage_Elements;
-   --  Size of an element in storage units
+             Interfaces.C_Streams.size_t'Max
+               (1, Element_Type'Max_Size_In_Storage_Elements);
+   --  Size of an element in storage units. The Max operation here is to ensure
+   --  that we allocate a single byte for zero-sized elements. It's a bit weird
+   --  to instantiate Direct_IO with zero sized elements, but it is legal and
+   --  this adjustment ensures that we don't get anomolous behavior.
 
    pragma Inline (Close);
    pragma Inline (Create);

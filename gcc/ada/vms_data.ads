@@ -1228,6 +1228,17 @@ package VMS_Data is
    --   filetype, instead of the object file. This may be useful if you need
    --   to examine the generated assembly code.
 
+   S_GCC_AValid  : aliased constant S := "/ASSUME_VALID "                  &
+                                             "-gnatB";
+   --        /NO_ASSUME_VALID (D)
+   --        /ASSUME_VALID
+   --
+   --   Use to tell the compiler to assume that all objects have valid values
+   --   except those occurring as prefixes to 'Valid attributes. In the default
+   --   mode, the compiler assumes that values may be invalid unless it can
+   --   be sure that they are valid, and code is generated to allow for this
+   --   possibility. The use of /ASSUME_VALID will improve the code.
+
    S_GCC_Checks  : aliased constant S := "/CHECKS="                        &
                                              "FULL "                       &
                                                 "-gnato,!-gnatE,!-gnatp "  &
@@ -3346,6 +3357,7 @@ package VMS_Data is
                      S_GCC_Ada_05  'Access,
                      S_GCC_Add     'Access,
                      S_GCC_Asm     'Access,
+                     S_GCC_AValid  'Access,
                      S_GCC_Checks  'Access,
                      S_GCC_ChecksX 'Access,
                      S_GCC_Compres 'Access,
