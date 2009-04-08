@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: gcc 4.4-b20081121\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2008-11-18 20:02+0000\n"
-"PO-Revision-Date: 2009-02-22 23:28+0800\n"
+"PO-Revision-Date: 2009-04-01 13:53+0800\n"
 "Last-Translator: Meng Jie <zuxy.meng@gmail.com>\n"
 "Language-Team: Chinese (simplified) <translation-team-zh-cn@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -2401,7 +2401,7 @@ msgstr "当前和最频繁的结构计数比例阈值"
 
 #: params.def:85
 msgid "Maximal esitmated outcome of branch considered predictable"
-msgstr ""
+msgstr "条件跳转被认为可以预测的阈值"
 
 #: params.def:102
 msgid "The maximum number of instructions in a single function eligible for inlining"
@@ -2738,7 +2738,7 @@ msgstr ""
 
 #: params.def:597
 msgid "Maximum number of times that an insn could be scheduled"
-msgstr ""
+msgstr "指定一条指令最多能被调度几次"
 
 #: params.def:602
 #, fuzzy
@@ -2825,7 +2825,7 @@ msgstr ""
 
 #: params.def:764
 msgid "The maximum ratio between array size and switch branches for a switch conversion to take place"
-msgstr ""
+msgstr "当数组大小与开关分支的比率大于此值时开关转换不会发生"
 
 #: config/alpha/alpha.c:5025
 #, c-format
@@ -3481,7 +3481,7 @@ msgstr "MMIX 内部错误：这不是一个常量："
 
 #: config/picochip/picochip.c:2398
 msgid "picochip_print_memory_address - Operand isn't memory based"
-msgstr ""
+msgstr "picochip_print_memory_address - 操作数不是内存地址"
 
 #: config/picochip/picochip.c:2657
 msgid "Unknown mode in print_operand (CONST_DOUBLE) :"
@@ -4827,9 +4827,9 @@ msgid "Fortran 2008: BIND(C) attribute at %L may not be specified for an interna
 msgstr "扩展：不能在%L处为内部过程指定 BIND(C) 属性"
 
 #: fortran/decl.c:4137
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Interface '%s' at %C may not be generic"
-msgstr "%L处游标步进不能为零"
+msgstr "%$2C处的接口‘%$1s’不能是泛型"
 
 #: fortran/decl.c:4142
 #, fuzzy, no-c-format
@@ -4864,7 +4864,7 @@ msgstr "%C处 PROCEDURE 语句语法错误"
 #: fortran/decl.c:4296
 #, no-c-format
 msgid "PROCEDURE at %C must be in a generic interface"
-msgstr ""
+msgstr "%C处的 PROCEDURE 必须在一个泛型接口内"
 
 #: fortran/decl.c:4349
 #, no-c-format
@@ -5027,7 +5027,7 @@ msgstr "需要标号‘%s’，为 %s 语句，于 %C"
 #: fortran/decl.c:5320
 #, no-c-format
 msgid "Missing array specification at %L in DIMENSION statement"
-msgstr ""
+msgstr "%L处的 DIMENSION 语句缺少数组指定"
 
 #: fortran/decl.c:5328
 #, no-c-format
@@ -5177,7 +5177,7 @@ msgstr "%C处的 VOLATILE 语句语法错误"
 #: fortran/decl.c:6213
 #, no-c-format
 msgid "MODULE PROCEDURE at %C must be in a generic module interface"
-msgstr ""
+msgstr "%C处的 MODULE PROCEDURE 必须在一个泛型接口内"
 
 #: fortran/decl.c:6295
 #, fuzzy, no-c-format
@@ -5295,9 +5295,9 @@ msgid "Expected access-specifier at %C"
 msgstr "%C 需要一个无名接口"
 
 #: fortran/decl.c:6870
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected binding attribute at %C"
-msgstr "%C处需要结束名"
+msgstr "%C处需要绑定属性"
 
 #: fortran/decl.c:6910
 #, no-c-format
@@ -5310,9 +5310,9 @@ msgid "Expected '::' after binding-attributes at %C"
 msgstr "%C处需要结束名"
 
 #: fortran/decl.c:6942
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected binding name at %C"
-msgstr "%C处需要结束名"
+msgstr "%C处需要绑定名"
 
 #: fortran/decl.c:6955
 #, no-c-format
@@ -5340,14 +5340,14 @@ msgid "GENERIC at %C must be inside a derived-type CONTAINS"
 msgstr ""
 
 #: fortran/decl.c:7045
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected '::' at %C"
-msgstr "在%C处需要‘(’"
+msgstr "在%C处需要‘::’"
 
 #: fortran/decl.c:7055
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected generic name at %C"
-msgstr "在%C处需要变量名"
+msgstr "在%C处需要泛型名"
 
 #: fortran/decl.c:7066
 #, no-c-format
@@ -5360,9 +5360,9 @@ msgid "Binding at %C must have the same access as already defined binding '%s'"
 msgstr ""
 
 #: fortran/decl.c:7103
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected specific binding name at %C"
-msgstr "%C处需要结束名"
+msgstr "%C处需要特定的绑定名"
 
 #: fortran/decl.c:7114
 #, fuzzy, no-c-format
@@ -5372,7 +5372,7 @@ msgstr "对子进程名‘%s’非预期的使用，在%C处"
 #: fortran/decl.c:7132
 #, no-c-format
 msgid "Junk after GENERIC binding at %C"
-msgstr ""
+msgstr "%C 处的泛型绑定后有垃圾字符"
 
 #: fortran/decl.c:7157
 #, no-c-format
@@ -5387,7 +5387,7 @@ msgstr "%C处 MODULE 中的派生类型只能是 PUBLIC"
 #: fortran/decl.c:7190
 #, no-c-format
 msgid "Empty FINAL at %C"
-msgstr ""
+msgstr "%C处的 FINAL 为空"
 
 #: fortran/decl.c:7197
 #, fuzzy, no-c-format
@@ -5395,14 +5395,14 @@ msgid "Expected module procedure name at %C"
 msgstr "参数‘%s’在%L处需要一个过程"
 
 #: fortran/decl.c:7207
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected ',' at %C"
-msgstr "在%C处需要‘(’"
+msgstr "在%C处需要‘,’"
 
 #: fortran/decl.c:7213
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Unknown procedure name \"%s\" at %C"
-msgstr "未知的操作符‘%s’在 %%L处"
+msgstr "%2$C的过程名“%1$s”未知"
 
 #: fortran/decl.c:7227
 #, fuzzy, no-c-format
@@ -5637,9 +5637,9 @@ msgid "Expression at %L must be scalar"
 msgstr "%L处的表达式必须具有标量类型"
 
 #: fortran/expr.c:2773
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Incompatible ranks in %s (%d and %d) at %L"
-msgstr "%s 中秩不兼容，位于 %L"
+msgstr "%4$L%1$s 中秩(%2$d 和 %3$d)不兼容"
 
 #: fortran/expr.c:2787
 #, no-c-format
@@ -5825,9 +5825,9 @@ msgid "no input files; unwilling to write output files"
 msgstr "没有输入文件；不能写入输出文件"
 
 #: fortran/gfortranspec.c:432
-#, fuzzy, c-format
+#, c-format
 msgid "Warning: Using -M <directory> is deprecated, use -J instead\n"
-msgstr "不建议使用此开关；请改用 -Wextra"
+msgstr "警告：-M <目录> 已过时，请改用 -J\n"
 
 #: fortran/gfortranspec.c:578
 #, c-format
@@ -5837,7 +5837,7 @@ msgstr "驱动："
 #: fortran/interface.c:173
 #, no-c-format
 msgid "Syntax error in generic specification at %C"
-msgstr "%C 一般指定语法错误"
+msgstr "%C 泛型指定语法错误"
 
 #: fortran/interface.c:200
 #, no-c-format
@@ -5845,9 +5845,9 @@ msgid "Syntax error: Trailing garbage in INTERFACE statement at %C"
 msgstr ""
 
 #: fortran/interface.c:219
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dummy procedure '%s' at %C cannot have a generic interface"
-msgstr "哑元‘%s’在%L处不能有初始值设定"
+msgstr "哑过程‘%s’在%C处不能有泛型接口"
 
 #: fortran/interface.c:252
 #, no-c-format
@@ -6262,9 +6262,8 @@ msgid "Unexpected end of format string"
 msgstr "非预期的格式字符串结尾"
 
 #: fortran/io.c:493
-#, fuzzy
 msgid "Zero width in format descriptor"
-msgstr "%s 格式字符串中域宽为 0"
+msgstr "格式描述中域宽为 0"
 
 #: fortran/io.c:512
 msgid "Missing leading left parenthesis"
@@ -6300,9 +6299,8 @@ msgid "Repeat count cannot follow P descriptor"
 msgstr "重复记数不能在 P 描述符之后"
 
 #: fortran/io.c:665
-#, fuzzy
 msgid "Positive width required with T descriptor"
-msgstr "需要正的宽度"
+msgstr "T 描述符需要正的宽度"
 
 #: fortran/io.c:680
 #, no-c-format
@@ -6326,7 +6324,7 @@ msgstr "需要正的指数宽度"
 #: fortran/io.c:834
 #, no-c-format
 msgid "The H format specifier at %C is a Fortran 95 deleted feature"
-msgstr ""
+msgstr "%C处的 H 格式限定符已在 Fortran 95 中被删除"
 
 #: fortran/io.c:919 fortran/io.c:976
 #, no-c-format
@@ -6334,9 +6332,9 @@ msgid "Extension: Missing comma at %C"
 msgstr "扩展：%C处缺少逗号"
 
 #: fortran/io.c:989
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "%s in format string at %L"
-msgstr "%s 出现在%C处的格式字符串中"
+msgstr "%s 出现在%L处的格式字符串中"
 
 #: fortran/io.c:1034
 #, fuzzy, no-c-format
@@ -6456,27 +6454,27 @@ msgstr "OPEN 语句不允许出现在%C处的 PURE 过程中"
 #: fortran/io.c:1649
 #, no-c-format
 msgid "Fortran 2003: ASYNCHRONOUS= at %C not allowed in Fortran 95"
-msgstr ""
+msgstr "Fortran 2003：%C处的 ASYNCHRONOUS= 不允许用在 Fortran 95 中"
 
 #: fortran/io.c:1667 fortran/io.c:3045
 #, no-c-format
 msgid "Fortran 2003: BLANK= at %C not allowed in Fortran 95"
-msgstr ""
+msgstr "Fortran 2003：%C处的 BLANK= 不允许用在 Fortran 95 中"
 
 #: fortran/io.c:1685 fortran/io.c:3024
 #, no-c-format
 msgid "Fortran 2003: DECIMAL= at %C not allowed in Fortran 95"
-msgstr ""
+msgstr "Fortran 2003：%C处的 DECIMAL= 不允许用在 Fortran 95 中"
 
 #: fortran/io.c:1703 fortran/io.c:3135
 #, no-c-format
 msgid "Fortran 2003: DELIM= at %C not allowed in Fortran 95"
-msgstr ""
+msgstr "Fortran 2003：%C处的 DELIM= 不允许用在 Fortran 95 中"
 
 #: fortran/io.c:1721
 #, no-c-format
 msgid "Fortran 2003: ENCODING= at %C not allowed in Fortran 95"
-msgstr ""
+msgstr "Fortran 2003：%C处的 ENCODING= 不允许用在 Fortran 95 中"
 
 #. When implemented, change the following to use gfc_notify_std F2003.
 #: fortran/io.c:1773
@@ -6487,7 +6485,7 @@ msgstr "Fortran 2003：%C处的派生类型定义没有组件"
 #: fortran/io.c:1792
 #, no-c-format
 msgid "Fortran 2003: SIGN= at %C not allowed in Fortran 95"
-msgstr ""
+msgstr "Fortran 2003：%C处的 SIGN= 不允许用在 Fortran 95 中"
 
 #: fortran/io.c:2005
 #, no-c-format
@@ -6690,14 +6688,14 @@ msgid "WAIT statement not allowed in PURE procedure at %C"
 msgstr "OPEN 语句不允许出现在%C处的 PURE 过程中"
 
 #: fortran/match.c:158
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing ')' in statement at or before %L"
-msgstr "%L 前语句中缺少‘)’"
+msgstr "语句在%L前缺少‘)’"
 
 #: fortran/match.c:163
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Missing '(' in statement at or before %L"
-msgstr "%L 前语句中缺少‘(’"
+msgstr "语句在%L前缺少‘(’"
 
 #: fortran/match.c:360
 #, no-c-format
@@ -7013,9 +7011,9 @@ msgid "Expected initialization expression in CASE at %C"
 msgstr "%C处 CASE 中需要初始化表达式"
 
 #: fortran/match.c:3497
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected the name of the SELECT CASE construct at %C"
-msgstr "%C 需要一个无名接口"
+msgstr "%C处需要 SELECT CASE 构造的名字"
 
 #: fortran/match.c:3509
 #, no-c-format
@@ -7106,7 +7104,7 @@ msgstr "Fortran 2003：%C处的“USE :: module”"
 #: fortran/module.c:593
 #, no-c-format
 msgid "Missing generic specification in USE statement at %C"
-msgstr ""
+msgstr "%C处的 USE 语句缺少泛型指定"
 
 #: fortran/module.c:601
 #, fuzzy, no-c-format
@@ -7596,9 +7594,9 @@ msgid "Flag -fmax-stack-var-size=%d overwrites -frecursive implied by -fopenmp"
 msgstr "选项 -fmax-stack-var-size=%d 覆盖了为-fopenmp 所隐式打开的 -frecursive"
 
 #: fortran/options.c:404
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "gfortran: Only one -J option allowed"
-msgstr "gfortran：只允许使用一个 -M 选项\n"
+msgstr "gfortran：只允许使用一个 -J 选项"
 
 #: fortran/options.c:447
 #, no-c-format
@@ -7767,9 +7765,9 @@ msgid "Fortran 2003:  Type-bound procedure at %C"
 msgstr "Fortran 2003：%C处的“USE :: module”"
 
 #: fortran/parse.c:1759
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003:  GENERIC binding at %C"
-msgstr "Fortran 2003：%L处的 IOMSG 标记"
+msgstr "Fortran 2003：%L处的 GENERIC 绑定"
 
 #: fortran/parse.c:1769
 #, fuzzy, no-c-format
@@ -7859,12 +7857,12 @@ msgstr "非预期的 %s 语句出现在%C处的 INTERFACE 块中"
 #: fortran/parse.c:2166
 #, no-c-format
 msgid "SUBROUTINE at %C does not belong in a generic function interface"
-msgstr ""
+msgstr "%C处的 SUBROUTINE 不属于一个泛型函数接口"
 
 #: fortran/parse.c:2170
 #, no-c-format
 msgid "FUNCTION at %C does not belong in a generic subroutine interface"
-msgstr ""
+msgstr "%C处的 FUNCTION 不属于一个泛型函数接口"
 
 #: fortran/parse.c:2180
 #, fuzzy, no-c-format
@@ -8190,9 +8188,9 @@ msgid "Expected structure component name at %C"
 msgstr "%C处需要结构组件名"
 
 #: fortran/primary.c:1801
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Expected argument list at %C"
-msgstr "%C处形参列表中有非预期的垃圾字符"
+msgstr "%C处需要实参列表"
 
 #: fortran/primary.c:2095
 #, fuzzy, no-c-format
@@ -8495,9 +8493,9 @@ msgid "'%s' at %L is ambiguous"
 msgstr "‘%s’(位于 %L)有歧义"
 
 #: fortran/resolve.c:1069
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "GENERIC procedure '%s' is not allowed as an actual argument at %L"
-msgstr "语句函数‘%s’在%L处不允许用作实参"
+msgstr "GENERIC 过程‘%s’在%L处不允许用作实参"
 
 #: fortran/resolve.c:1100 fortran/resolve.c:5928 fortran/resolve.c:6683
 #, no-c-format
@@ -8709,9 +8707,9 @@ msgid "Subroutine call to '%s' at %L is not PURE"
 msgstr ""
 
 #: fortran/resolve.c:2555
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "There is no specific subroutine for the generic '%s' at %L"
-msgstr "对子进程名‘%s’非预期的使用，在%C处"
+msgstr "泛型‘%s’在%L处没有特定的子进程"
 
 #: fortran/resolve.c:2564
 #, no-c-format
@@ -8964,14 +8962,14 @@ msgid "Found no matching specific binding for the call to the GENERIC '%s' at %L
 msgstr ""
 
 #: fortran/resolve.c:4585
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %L should be a SUBROUTINE"
-msgstr "‘%s’在%L处不是一个 VALUE"
+msgstr "%2$L处的‘%1$s’应该是一个 SUBROUTINE"
 
 #: fortran/resolve.c:4621
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "'%s' at %L should be a FUNCTION"
-msgstr "%2$L处的用户运算符‘%1$s’必须是一个 FUNCTION"
+msgstr "%2$L处的‘%1$s’应该是一个 FUNCTION"
 
 #: fortran/resolve.c:4757
 #, no-c-format
@@ -9532,9 +9530,9 @@ msgid "Finalization at %L is not yet implemented"
 msgstr "初始化不允许出现在%C处的 PURE 过程中"
 
 #: fortran/resolve.c:8059
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Can't overwrite GENERIC '%s' at %L"
-msgstr "不能将 %s 转换为 %s，于 %L"
+msgstr "不能覆盖‘%1$L’处的 GENERIC‘%2$s’"
 
 #: fortran/resolve.c:8071
 #, no-c-format
@@ -10500,9 +10498,9 @@ msgid "Duplicate EXTENDS attribute specified at %L"
 msgstr "%L处指定了重复的 BIND 属性"
 
 #: fortran/symbol.c:1498
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Fortran 2003: EXTENDS at %L"
-msgstr "Fortran 2003：%L处的 BIND(C)"
+msgstr "Fortran 2003：%L处的 EXTENDS"
 
 #: fortran/symbol.c:1520
 #, no-c-format
@@ -10667,9 +10665,9 @@ msgstr ""
 
 #: fortran/trans-array.c:641 fortran/trans-array.c:4368
 #: fortran/trans-array.c:5299 fortran/trans-intrinsic.c:3635
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Creating array temporary at %L"
-msgstr "生成%qT的数组"
+msgstr "在%L处建立临时数组"
 
 #. Problems occur when we get something like
 #. integer :: a(lots) = (/(i, i=1, lots)/)
@@ -10828,19 +10826,18 @@ msgid "Out of memory"
 msgstr "内存不足"
 
 #: fortran/trans.c:737
-#, fuzzy, c-format
+#, c-format
 msgid "Attempting to allocate already allocated array '%s'"
-msgstr "试图分配已经分配的数组"
+msgstr "试图分配已经分配的数组‘%s’"
 
 #: fortran/trans.c:743
-#, fuzzy
 msgid "Attempting to allocate already allocatedarray"
 msgstr "试图分配已经分配的数组"
 
 #: fortran/trans.c:852
-#, fuzzy, c-format
+#, c-format
 msgid "Attempt to DEALLOCATE unallocated '%s'"
-msgstr "试图释放已经释放的内存。"
+msgstr "试图 DEALLOCATE 未分配的‘%s’"
 
 #: java/jcf-dump.c:1068
 #, c-format
@@ -11079,14 +11076,12 @@ msgid "-E or -x required when input is from standard input"
 msgstr "当输入来自标准输入设备时，需要 -E 或 -x"
 
 #: fortran/lang-specs.h:45 fortran/lang-specs.h:58
-#, fuzzy
 msgid "gfortran does not support -E without -cpp"
-msgstr "GCC 只允许 -E 与 -C 或 -CC 合用"
+msgstr "gfortran 不支持单独使用 -E 而不带 -cpp"
 
 #: config/bfin/elf.h:31
-#, fuzzy
 msgid "no processor type specified for linking"
-msgstr "spec 文件没有对链接的设定"
+msgstr "没有指定链接用的处理器类型"
 
 #: config/vxworks.h:71
 msgid "-Xbind-now and -Xbind-lazy are incompatible"
@@ -11313,9 +11308,8 @@ msgid "Warn about missing ampersand in continued character constants"
 msgstr "若延续字符常量中缺少 & 则给出警告"
 
 #: fortran/lang.opt:85
-#, fuzzy
 msgid "Warn about creation of array temporaries"
-msgstr "当在算术表达式中使用函数指针时给出警告"
+msgstr "创建临时数组时给出警告"
 
 #: fortran/lang.opt:89
 msgid "Warn about truncated character expressions"
@@ -11334,9 +11328,8 @@ msgid "Warn about truncated source lines"
 msgstr "对被截断的源文件行给出警告"
 
 #: fortran/lang.opt:105
-#, fuzzy
 msgid "Warn on intrinsics not part of the selected standard"
-msgstr "%2$L处的内建函数‘%1$s’不为所选择的标准所包含"
+msgstr "当内建函数不是所选标准的一部分时给出警告"
 
 #: fortran/lang.opt:113
 msgid "Warn about \"suspicious\" constructs"
@@ -11368,7 +11361,7 @@ msgstr ""
 
 #: fortran/lang.opt:141
 msgid "Enable alignment of COMMON blocks"
-msgstr ""
+msgstr "对齐 COMMON 块"
 
 #: fortran/lang.opt:145
 msgid "All intrinsics procedures are available regardless of selected standard"
@@ -11591,9 +11584,8 @@ msgid "Conform to the ISO Fortran 2003 standard"
 msgstr "遵循 ISO Fortran 2003 标准"
 
 #: fortran/lang.opt:401
-#, fuzzy
 msgid "Conform to the ISO Fortran 2008 standard"
-msgstr "遵循 ISO Fortran 2003 标准"
+msgstr "遵循 ISO Fortran 2008 标准"
 
 #: fortran/lang.opt:405
 msgid "Conform to the ISO Fortran 95 standard"
@@ -12075,7 +12067,7 @@ msgstr "及早放置停止位，以取得更好的调度效果"
 #: config/ia64/ia64.opt:89 config/spu/spu.opt:72 config/sh/sh.opt:253
 #: config/pa/pa.opt:51
 msgid "Specify range of registers to make fixed"
-msgstr ""
+msgstr "指定不使用的寄存器范围"
 
 #: config/ia64/ia64.opt:101
 msgid "Use data speculation before reload"
@@ -12122,9 +12114,8 @@ msgid "Count speculative dependencies while calculating priority of instructions
 msgstr "计算指令优先级时计入投机依赖"
 
 #: config/ia64/ia64.opt:145
-#, fuzzy
 msgid "Place a stop bit after every cycle when scheduling"
-msgstr "及早放置停止位，以取得更好的调度效果"
+msgstr "调度时在每周期后都放置停止位"
 
 #: config/ia64/ia64.opt:149
 msgid "Assume that floating-point stores and loads are not likely to cause conflict when placed into one instruction group"
@@ -12464,7 +12455,7 @@ msgstr "为指定的目标 CPU 或架构优化"
 
 #: config/m68k/m68k.opt:184
 msgid "Support more than 8192 GOT entries on ColdFire"
-msgstr ""
+msgstr "在 ColdFire 上支持超过 8192 个 GOT 条目"
 
 #: config/m68k/ieee.opt:24 config/i386/i386.opt:137
 msgid "Use IEEE math for fp comparisons"
@@ -12964,9 +12955,8 @@ msgid "Generate Cell microcode"
 msgstr "生成 Cell 微代码"
 
 #: config/rs6000/rs6000.opt:242
-#, fuzzy
 msgid "Warn when a Cell microcoded instruction is emitted"
-msgstr "当所有构造函数和析构函数都是私有时给出警告"
+msgstr "生成 Cell 微代码时给出警告"
 
 #: config/rs6000/rs6000.opt:246
 msgid "Warn about deprecated 'vector long ...' AltiVec type usage"
@@ -14577,7 +14567,7 @@ msgstr "假定 VxWorks vThreads 环境"
 
 #: config/darwin.opt:23
 msgid "Generate code suitable for fast turn around debugging"
-msgstr ""
+msgstr "生成适合于快速转换调试的代码"
 
 #: config/darwin.opt:31
 msgid "The earliest MacOS X version on which this program will run"
@@ -14745,7 +14735,7 @@ msgstr "当把函数转换为不兼容类型时给出警告"
 
 #: c.opt:136
 msgid "Warn when a built-in preprocessor macro is undefined or redefined"
-msgstr ""
+msgstr "当内建预处理宏未定义或重定义时给出警告"
 
 #: c.opt:140
 msgid "Warn about C constructs that are not in the common subset of C and C++"
@@ -14801,7 +14791,7 @@ msgstr "对编译时发现的零除给出警告"
 
 #: c.opt:192
 msgid "Warn about violations of Effective C++ style rules"
-msgstr "对不遵循 Effetive C++ 的风格给出警告"
+msgstr "对不遵循《Effetive C++》的风格给出警告"
 
 #: c.opt:196
 msgid "Warn about an empty body in an if or else statement"
@@ -15029,7 +15019,7 @@ msgstr "当备选方法的类型签字不完全匹配时给出警告"
 
 #: c.opt:433
 msgid "Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are used"
-msgstr ""
+msgstr "当 __sync_fetch_and_nand 和 __sync_nand_and_fetch 内建函数被使用时给出警告"
 
 #: c.opt:437
 msgid "Deprecated.  This switch has no effect"
@@ -15081,7 +15071,7 @@ msgstr "当一个寄存器变量被声明为 volatile 时给出警告"
 
 #: c.opt:485
 msgid "In C++, nonzero means warn about deprecated conversion from string literals to `char *'.  In C, similar warning, except that the conversion is of course not deprecated by the ISO C standard."
-msgstr "在 C++ 中，非零值表示将字面字符串转换为‘char *’时给出警告。在 C 中，给出相似的警行，但这种类型转换并未为 ISO C 标准所不鼓励。"
+msgstr "在 C++ 中，非零值表示将字面字符串转换为‘char *’时给出警告。在 C 中，给出相似的警告，但这种类型转换是符合 ISO C 标准的。"
 
 #: c.opt:489
 msgid "Warn when a pointer differs in signedness in an assignment"
@@ -15585,7 +15575,7 @@ msgstr "当函数可能是 __attribute__((noreturn)) 的备选时给出警告"
 
 #: common.opt:146
 msgid "Warn about constructs not instrumented by -fmudflap"
-msgstr ""
+msgstr "当构造未被 -fmudflap 处理时给出警告"
 
 #: common.opt:150
 msgid "Warn about overflow in arithmetic expressions"
@@ -15765,7 +15755,7 @@ msgstr "不将未初始化的全局数据放在公共节中"
 
 #: common.opt:390
 msgid "Do not perform optimizations increasing noticeably stack usage"
-msgstr ""
+msgstr "不进行可能导致堆栈使用明显增长的优化"
 
 #: common.opt:394
 msgid "Perform a register copy-propagation optimization pass"
@@ -15789,7 +15779,7 @@ msgstr "当进行复数除法时省略缩减范围的步骤"
 
 #: common.opt:414
 msgid "Complex multiplication and division follow Fortran rules"
-msgstr ""
+msgstr "复数乘除遵循 Fortran 规则"
 
 #: common.opt:418
 msgid "Place data items into their own section"
@@ -15841,7 +15831,7 @@ msgstr "在调试转储中不输出指令数、行号标记和地址"
 
 #: common.opt:468
 msgid "Enable CFI tables via GAS assembler directives."
-msgstr ""
+msgstr "用 GAS 汇编指示来启用 CFI 表"
 
 #: common.opt:472
 msgid "Perform early inlining"
@@ -16314,20 +16304,19 @@ msgstr "分配寄存器后重新调度指令"
 
 #: common.opt:994
 msgid "Schedule instructions using selective scheduling algorithm"
-msgstr ""
+msgstr "用选择性调度算法调度指令"
 
 #: common.opt:998
-#, fuzzy
 msgid "Run selective scheduling after reload"
-msgstr "在重加载后使用数据投机"
+msgstr "在重加载后使用选择性调度"
 
 #: common.opt:1002
 msgid "Perform software pipelining of inner loops during selective scheduling"
-msgstr ""
+msgstr "在选择性调度中对内层循环进行软件流水化"
 
 #: common.opt:1006
 msgid "Perform software pipelining of outer loops during selective scheduling"
-msgstr ""
+msgstr "在选择性调度中对外层循环进行软件流水化"
 
 #: common.opt:1010
 msgid "Reschedule pipelined regions without pipelining"
@@ -16390,9 +16379,8 @@ msgid "Insert stack checking code into the program"
 msgstr "在程序中插入检查栈溢出的代码"
 
 #: common.opt:1080
-#, fuzzy
 msgid "Insert stack checking code into the program.  Same as -fstack-check=specific"
-msgstr "在程序中插入检查栈溢出的代码"
+msgstr "在程序中插入检查栈溢出的代码。与 fstack-check=specific 相同"
 
 #: common.opt:1087
 msgid "Trap if the stack goes past <register>"
@@ -16475,9 +16463,8 @@ msgid "Transform condition stores into unconditional ones"
 msgstr "将条件存储转换为非条件存储"
 
 #: common.opt:1186
-#, fuzzy
 msgid "Perform conversions of switch initializations."
-msgstr "将条件跳转替换为条件执行"
+msgstr "转换开关初始化"
 
 #: common.opt:1190
 msgid "Enable SSA dead code elimination optimization on trees"
@@ -17362,9 +17349,9 @@ msgid "section of %q+D conflicts with previous declaration"
 msgstr "%q+D的节与早先的声明冲突"
 
 #: c-common.c:5877
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "section of %q+D cannot be overridden"
-msgstr "%q+#D无法被重载"
+msgstr "节%q+D无法被重载"
 
 #: c-common.c:5885
 #, gcc-internal-format
@@ -23364,14 +23351,14 @@ msgid "__builtin_saveregs not supported by this target"
 msgstr "__builtin_saveregs 不为此目标所支持"
 
 #: targhooks.c:728
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "target attribute is not supported on this machine"
-msgstr "%qE属性在此平台上不受支持"
+msgstr "target 属性在此目标机上不受支持"
 
 #: targhooks.c:738
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "#pragma GCC target is not supported for this machine"
-msgstr "#pragma extern_prefix 在此目标机上不受支持"
+msgstr "#pragma GCC target 在此目标机上不受支持"
 
 #: tlink.c:482
 #, gcc-internal-format
@@ -23696,12 +23683,12 @@ msgstr "比较表达式类型不匹配"
 #: tree-cfg.c:3302
 #, gcc-internal-format
 msgid "non-register as LHS of unary operation"
-msgstr ""
+msgstr "非寄存器作为单目操作的左操作数"
 
 #: tree-cfg.c:3308
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operand in unary operation"
-msgstr "单目非操作数无效"
+msgstr "单目操作中操作数无效"
 
 #: tree-cfg.c:3343
 #, gcc-internal-format
@@ -23709,9 +23696,9 @@ msgid "invalid types in nop conversion"
 msgstr "空转换中类型无效"
 
 #: tree-cfg.c:3357
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid types in fixed-point conversion"
-msgstr "空转换中类型无效"
+msgstr "整点转换中类型无效"
 
 #: tree-cfg.c:3370
 #, gcc-internal-format
@@ -23724,19 +23711,19 @@ msgid "invalid types in conversion to integer"
 msgstr "向整数转换时类型无效"
 
 #: tree-cfg.c:3418
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-trivial conversion in unary operation"
-msgstr "赋值时不平凡的转换"
+msgstr "单目操作时不平凡的转换"
 
 #: tree-cfg.c:3445
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "non-register as LHS of binary operation"
-msgstr "基本二元操作"
+msgstr "非寄存器作为二元操作的左操作数"
 
 #: tree-cfg.c:3452
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operands in binary operation"
-msgstr "二元表达式中操作数无效"
+msgstr "二元操作中中操作数无效"
 
 #: tree-cfg.c:3467
 #, gcc-internal-format
@@ -23749,9 +23736,9 @@ msgid "type mismatch in shift expression"
 msgstr "移位表达式类型不匹配"
 
 #: tree-cfg.c:3506
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "type mismatch in vector shift expression"
-msgstr "移位表达式类型不匹配"
+msgstr "矢量移位表达式类型不匹配"
 
 #: tree-cfg.c:3522
 #, gcc-internal-format
@@ -23794,19 +23781,19 @@ msgid "invalid rhs for gimple memory store"
 msgstr ""
 
 #: tree-cfg.c:3793
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid operand in return statement"
-msgstr "开关语句操作数无效"
+msgstr "返回语句操作数无效"
 
 #: tree-cfg.c:3805
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid conversion in return statement"
-msgstr "开关语句操作数无效"
+msgstr "返回语句转换无效"
 
 #: tree-cfg.c:3829
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "goto destination is neither a label nor a pointer"
-msgstr "下标运算的左操作数既非数组也非指针"
+msgstr "goto 的目标既非标号亦非指针"
 
 #: tree-cfg.c:3844
 #, gcc-internal-format
@@ -23814,9 +23801,9 @@ msgid "invalid operand to switch statement"
 msgstr "开关语句操作数无效"
 
 #: tree-cfg.c:3864
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Invalid PHI result"
-msgstr "无效的 IACC 实参"
+msgstr "无效的 PHI 结果"
 
 #: tree-cfg.c:3876
 #, gcc-internal-format
@@ -23839,9 +23826,9 @@ msgid "invalid function in call statement"
 msgstr "约束中出现无效的标点%qc"
 
 #: tree-cfg.c:4052
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid pure const state for function"
-msgstr "函数%qs的存储类无效"
+msgstr "纯常函数状态无效"
 
 #: tree-cfg.c:4062 tree-ssa.c:845 tree-ssa.c:855
 #, gcc-internal-format
@@ -23884,9 +23871,9 @@ msgid "incorrect sharing of tree nodes"
 msgstr "对树结节的共享不正确"
 
 #: tree-cfg.c:4237
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid GIMPLE statement"
-msgstr "不是一个有效的 GIMPLE 语句"
+msgstr "无效的 GIMPLE 语句"
 
 #: tree-cfg.c:4246
 #, gcc-internal-format
@@ -23896,7 +23883,7 @@ msgstr ""
 #: tree-cfg.c:4258
 #, gcc-internal-format
 msgid "incorrect entry in label_to_block_map.\n"
-msgstr ""
+msgstr "label_to_block_map 中条目不正确。\n"
 
 #: tree-cfg.c:4283
 #, gcc-internal-format
@@ -23984,9 +23971,9 @@ msgid "%H%<noreturn%> function does return"
 msgstr "%H%<noreturn%>函数确实会返回"
 
 #: tree-cfg.c:7056
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "control reaches end of non-void function"
-msgstr "%H在有返回值的函数中，控制流程到达函数尾"
+msgstr "在有返回值的函数中，控制流程到达函数尾"
 
 #: tree-cfg.c:7118
 #, gcc-internal-format
@@ -24171,9 +24158,9 @@ msgid "%Hlikely type-punning may break strict-aliasing rules: object %<%s%s%> of
 msgstr "%H可能的类型双关会破坏强重叠规则：对象%<%s%s%>作为类型%qT在%s:%d或附近的引用可能与对象%<%s%s%>作为类型%qT在%s:%d或附近的引用重叠。"
 
 #: tree-ssa-alias-warnings.c:969
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "dereferencing type-punned pointer %D will break strict-aliasing rules"
-msgstr "提领类型双关的指针将破坏强重叠规则"
+msgstr "提领类型双关的指针 %D 将破坏强重叠规则"
 
 #: tree-ssa.c:252
 #, gcc-internal-format
@@ -24521,9 +24508,9 @@ msgid "verify_histograms failed"
 msgstr "verify_histograms 失败"
 
 #: value-prof.c:467
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "Correcting inconsistent value profile: %s profiler overall count (%d) does not match BB count (%d)"
-msgstr "%H损坏的值取样：%s 取样总数(%d)与基本块数(%d)不匹配"
+msgstr "更正不一致的值取样：%s 取样总数(%d)与基本块数(%d)不匹配"
 
 #: value-prof.c:477
 #, gcc-internal-format
@@ -25216,7 +25203,7 @@ msgstr "不能同时指定 -msep-data 和 -mid-shared-library"
 #: config/bfin/bfin.c:2631
 #, gcc-internal-format
 msgid "-mmulticore can only be used with BF561"
-msgstr ""
+msgstr "-mmulticore 只能用于 BF561"
 
 #: config/bfin/bfin.c:2634
 #, gcc-internal-format
@@ -26080,14 +26067,14 @@ msgid "%qs does not support MIPS16 code"
 msgstr "%qs不支持 MIPS16 代码"
 
 #: config/mips/mips.c:13491
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "MIPS16 PIC for ABIs other than o32 and o64"
-msgstr "硬件浮点 MIPS16 代码的 ABI 不是 o32 或 o64"
+msgstr "MIPS16 PIC 代码的 ABI 不是 o32 或 o64"
 
 #: config/mips/mips.c:13494
 #, gcc-internal-format
 msgid "MIPS16 -mxgot code"
-msgstr ""
+msgstr "MIPS16 -mxgot 代码"
 
 #: config/mips/mips.c:13497
 #, gcc-internal-format
@@ -26175,9 +26162,9 @@ msgid "%qs requires a target that provides the %qs instruction"
 msgstr "%qs需要一个能提供%qs指令的目标机"
 
 #: config/mips/mips.c:14049
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%qs requires branch-likely instructions"
-msgstr "%qs架构不支持 Branch-Likely 指令"
+msgstr "%qs需要 Branch-Likely 指令"
 
 #. Output assembler code to FILE to increment profiler label # LABELNO
 #. for profiling a function entry.
@@ -26268,9 +26255,9 @@ msgid "-munix=98 option required for C89 Amendment 1 features.\n"
 msgstr "使用 C89 修订版 1 的特性必须指定 -munix=98 选项。\n"
 
 #: config/picochip/picochip.c:369
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "invalid AE type specified (%s)\n"
-msgstr "%qs的实参类型无效"
+msgstr "指定了无效的 AE 类型(%s)\n"
 
 #: config/picochip/picochip.c:392
 #, gcc-internal-format
@@ -26315,12 +26302,12 @@ msgstr ""
 #: config/picochip/picochip.c:2168
 #, gcc-internal-format
 msgid "Unknown short branch in %s (type %d)\n"
-msgstr ""
+msgstr "%s 中的短跳转未知(类型 %d)\n"
 
 #: config/picochip/picochip.c:2205
 #, gcc-internal-format
 msgid "Unknown long branch in %s (type %d)\n"
-msgstr ""
+msgstr "%s 中的长跳转未知(类型 %d)\n"
 
 #: config/picochip/picochip.c:2245 config/picochip/picochip.c:2313
 #, gcc-internal-format
@@ -26335,28 +26322,28 @@ msgstr ""
 #: config/picochip/picochip.c:3122
 #, gcc-internal-format
 msgid "Too many ALU instructions emitted (%d)\n"
-msgstr ""
+msgstr "生成了太多的 ALU 指令(%d 条)\n"
 
 #: config/picochip/picochip.c:3753 config/picochip/picochip.c:3846
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: Second source operand is not a constant"
-msgstr "‘o’操作数不是一个常量"
+msgstr "%s：第二个源操作数不是一个常量"
 
 #: config/picochip/picochip.c:3756 config/picochip/picochip.c:3807
 #: config/picochip/picochip.c:3849
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: Third source operand is not a constant"
-msgstr "‘o’操作数不是一个常量"
+msgstr "%s：第三个源操作数不是一个常量"
 
 #: config/picochip/picochip.c:3810
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "%s: Fourth source operand is not a constant"
-msgstr "‘o’操作数不是一个常量"
+msgstr "%s：第四个源操作数不是一个常量"
 
 #: config/picochip/picochip.c:4144
 #, gcc-internal-format
 msgid "%s (disable warning using -mno-inefficient-warnings)"
-msgstr ""
+msgstr "%s (使用 -mno-inefficient-warnings 禁用警告)"
 
 #: config/rs6000/host-darwin.c:62
 #, gcc-internal-format
@@ -26435,12 +26422,12 @@ msgstr "%s 只接受 2 个参数"
 #: config/rs6000/rs6000-c.c:3067
 #, gcc-internal-format
 msgid "vec_extract only accepts 2 arguments"
-msgstr ""
+msgstr "vec_extract 只接受两个参数"
 
 #: config/rs6000/rs6000-c.c:3124
 #, gcc-internal-format
 msgid "vec_insert only accepts 3 arguments"
-msgstr ""
+msgstr "vec_insert 只接受三个参数"
 
 #: config/rs6000/rs6000-c.c:3206
 #, gcc-internal-format
@@ -26695,12 +26682,12 @@ msgstr "在 AltiVec 类型中使用十进制浮点类型无效"
 #: config/rs6000/rs6000.c:22851
 #, gcc-internal-format
 msgid "emitting microcode insn %s\t[%s] #%d"
-msgstr ""
+msgstr "生成微代码指令 %s\t[%s] #%d"
 
 #: config/rs6000/rs6000.c:22855
 #, gcc-internal-format
 msgid "emitting conditional microcode insn %s\t[%s] #%d"
-msgstr ""
+msgstr "生成条件微代码指令 %s\t[%s] #%d"
 
 #: config/rs6000/aix43.h:38 config/rs6000/aix51.h:37 config/rs6000/aix52.h:38
 #: config/rs6000/aix53.h:38 config/rs6000/aix61.h:38
@@ -30722,7 +30709,7 @@ msgstr "%qD的声明中有显式的限定"
 #: cp/name-lookup.c:3100
 #, gcc-internal-format
 msgid "%qD should have been declared inside %qD"
-msgstr "%qD应当已在%qD内部声明过"
+msgstr "%qD应当先在%qD内声明"
 
 #: cp/name-lookup.c:3145
 #, gcc-internal-format
