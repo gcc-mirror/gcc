@@ -5,6 +5,10 @@
 	(gen_variable_die): Use DW_TAG_member tag for static data member
 	declarations instead of DW_TAG_variable.
 
+	PR middle-end/39573
+	* omp-low.c (expand_omp_taskreg): Finalize taskreg static local_decls
+	variables.
+
 2009-04-08  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (valueize_refs): Do not continue to
