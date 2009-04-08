@@ -1,3 +1,8 @@
+2009-04-08  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/39670
+	* invoke.texi (fdollar-ok): Fix typo.
+	
 2009-04-08  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/39670
