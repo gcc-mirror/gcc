@@ -537,14 +537,22 @@ dump_aggr_type (tree t, int flags)
   if (flags & TFF_CLASS_KEY_OR_ENUM)
     pp_cxx_identifier (cxx_pp, variety);
 
-  if (flags & TFF_CHASE_TYPEDEF)
-    t = TYPE_MAIN_VARIANT (t);
-
   name = TYPE_NAME (t);
 
   if (name)
     {
       typdef = !DECL_ARTIFICIAL (name);
+
+      if (typdef
+	  && ((flags & TFF_CHASE_TYPEDEF)
+	      || (!flag_pretty_templates && DECL_LANG_SPECIFIC (name)
+		  && DECL_TEMPLATE_INFO (name))))
+	{
+	  t = TYPE_MAIN_VARIANT (t);
+	  name = TYPE_NAME (t);
+	  typdef = 0;
+	}
+
       tmplate = !typdef && TREE_CODE (t) != ENUMERAL_TYPE
 		&& TYPE_LANG_SPECIFIC (t) && CLASSTYPE_TEMPLATE_INFO (t)
 		&& (TREE_CODE (CLASSTYPE_TI_TEMPLATE (t)) != TEMPLATE_DECL

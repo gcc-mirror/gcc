@@ -1,3 +1,9 @@
+2009-04-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/25185
+	* error.c (dump_aggr_type): Chase template typedefs if
+	-fno-pretty-templates.
+
 2009-04-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/39637
