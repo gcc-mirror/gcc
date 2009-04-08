@@ -1,3 +1,15 @@
+2009-04-08  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch8.adb: Minor reformatting.
+	Minor code reorganization.
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
+	* snames.h, einfo.adb, einfo.ads, sem_prag.adb, snames.adb,
+	snames.ads, freeze.adb, par-prag.adb: Add implementation of
+	pragma Thread_Local_Storage, setting new flag
+	Has_Pragma_Thread_Local_Storage in corresponding entities.
+
 2009-04-08  Emmanuel Briot  <briot@adacore.com>
 
 	* prj.ads: Update comment on switches file
