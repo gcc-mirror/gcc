@@ -4842,6 +4842,14 @@ package body Exp_Util is
       then
          return True;
 
+      --  If the expression has an access type (object or subprogram) we
+      --  assume that the conversion is safe, because the size of the target
+      --  is safe, even it is a record (which might be treated as having
+      --  unknown size at this point).
+
+      elsif Is_Access_Type (Ityp) then
+         return True;
+
       --  If the size of output type is known at compile time, there is
       --  never a problem.  Note that unconstrained records are considered
       --  to be of known size, but we can't consider them that way here,
