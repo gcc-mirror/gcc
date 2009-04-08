@@ -62,7 +62,6 @@ with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
-with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
@@ -2168,7 +2167,14 @@ package body Exp_Ch4 is
       --  Number of concatenation operands including possibly null operands
 
       NN : Nat := 0;
-      --  Number of operands excluding any known to be null
+      --  Number of operands excluding any known to be null, except that the
+      --  last operand is always retained, in case it provides the bounds for
+      --  a null result.
+
+      Opnd : Node_Id;
+      --  Current operand being processed in the loop through operands. After
+      --  this loop is complete, always contains the last operand (which is not
+      --  the same as Operands (NN), since null operands are skipped).
 
       --  Arrays describing the operands, only the first NN entries of each
       --  array are set (NN < N when we exclude known null operands).
@@ -2177,7 +2183,8 @@ package body Exp_Ch4 is
       --  True if length of corresponding operand known at compile time
 
       Operands : array (1 .. N) of Node_Id;
-      --  Set to the corresponding entry in the Opnds list
+      --  Set to the corresponding entry in the Opnds list (but note that null
+      --  operands are excluded, so not all entries in the list are stored).
 
       Fixed_Length : array (1 .. N) of Uint;
       --  Set to length of operand. Entries in this array are set only if the
@@ -2187,11 +2194,6 @@ package body Exp_Ch4 is
       --  Set to lower bound of operand. Either an integer literal in the case
       --  where the bound is known at compile time, else actual lower bound.
       --  The operand low bound is of type Ityp.
-
-      Opnd_High_Bound : array (1 .. N) of Node_Id;
-      --  Set to upper bound of operand. Either an integer literal in the case
-      --  where the bound is known at compile time, else actual upper bound.
-      --  The operand bound is of type Ityp.
 
       Var_Length : array (1 .. N) of Entity_Id;
       --  Set to an entity of type Natural that contains the length of an
@@ -2210,6 +2212,12 @@ package body Exp_Ch4 is
       --  A tree node representing the low bound of the result (of type Ityp).
       --  This is either an integer literal node, or an identifier reference to
       --  a constant entity initialized to the appropriate value.
+
+      Last_Opnd_High_Bound : Node_Id;
+      --  A tree node representing the high bound of the last operand. This
+      --  need only be set if the result could be null. It is used for the
+      --  special case of setting the right high bound for a null result.
+      --  This is of type Ityp.
 
       High_Bound : Node_Id;
       --  A tree node representing the high bound of the result (of type Ityp)
@@ -2274,7 +2282,7 @@ package body Exp_Ch4 is
             --  we analyzed and resolved the expression.
 
             Set_Parent (X, Cnode);
-            Analyze_And_Resolve (X, Intyp);
+            Analyze_And_Resolve (X);
 
             if Compile_Time_Compare
                  (X, Type_High_Bound (Ityp),
@@ -2302,7 +2310,6 @@ package body Exp_Ch4 is
 
       --  Local Declarations
 
-      Opnd     : Node_Id;
       Opnd_Typ : Entity_Id;
       Ent      : Entity_Id;
       Len      : Uint;
@@ -2383,9 +2390,8 @@ package body Exp_Ch4 is
             Fixed_Length (NN) := Uint_1;
             Result_May_Be_Null := False;
 
-            --  Set bounds of operand (no need to set high bound since we know
-            --  for sure that result won't be null, so we won't ever use
-            --  Opnd_High_Bound).
+            --  Set low bound of operand (no need to set Last_Opnd_High_Bound
+            --  since we know that the result cannot be null).
 
             Opnd_Low_Bound (NN) :=
               Make_Attribute_Reference (Loc,
@@ -2399,7 +2405,21 @@ package body Exp_Ch4 is
          elsif Nkind (Opnd) = N_String_Literal then
             Len := String_Literal_Length (Opnd_Typ);
 
-            --  Skip null string literal unless last operand
+            if Len /= 0 then
+               Result_May_Be_Null := False;
+            end if;
+
+            --  Capture last operand high bound if result could be null
+
+            if J = N and then Result_May_Be_Null then
+               Last_Opnd_High_Bound :=
+                 Make_Op_Add (Loc,
+                   Left_Opnd  =>
+                     New_Copy_Tree (String_Literal_Low_Bound (Opnd_Typ)),
+                   Right_Opnd => Make_Integer_Literal (Loc, 1));
+            end if;
+
+            --  Skip null string literal
 
             if J < N and then Len = 0 then
                goto Continue;
@@ -2416,14 +2436,7 @@ package body Exp_Ch4 is
             Opnd_Low_Bound (NN) :=
               New_Copy_Tree (String_Literal_Low_Bound (Opnd_Typ));
 
-            Opnd_High_Bound (NN) :=
-              Make_Op_Add (Loc,
-                Left_Opnd  =>
-                  New_Copy_Tree (String_Literal_Low_Bound (Opnd_Typ)),
-                Right_Opnd => Make_Integer_Literal (Loc, 1));
-
             Set := True;
-            Result_May_Be_Null := False;
 
          --  All other cases
 
@@ -2456,10 +2469,18 @@ package body Exp_Ch4 is
                            Result_May_Be_Null := False;
                         end if;
 
-                        --  Exclude null length case except for last operand
-                        --  (where we may need it to get proper bounds).
+                        --  Capture last operand bound if result could be null
 
-                        if Len = 0 and then J < N then
+                        if J = N and then Result_May_Be_Null then
+                           Last_Opnd_High_Bound :=
+                             Convert_To (Ityp,
+                               Make_Integer_Literal (Loc,
+                                 Intval => Expr_Value (Hi)));
+                        end if;
+
+                        --  Exclude null length case unless last operand
+
+                        if J < N and then Len = 0 then
                            goto Continue;
                         end if;
 
@@ -2471,10 +2492,6 @@ package body Exp_Ch4 is
                         Opnd_Low_Bound (NN) := To_Ityp (
                           Make_Integer_Literal (Loc,
                             Intval => Expr_Value (Lo)));
-
-                        Opnd_High_Bound (NN) := To_Ityp (
-                          Make_Integer_Literal (Loc,
-                            Intval => Expr_Value (Hi)));
 
                         Set := True;
                      end;
@@ -2497,11 +2514,14 @@ package body Exp_Ch4 is
                      Duplicate_Subexpr (Opnd, Name_Req => True),
                    Attribute_Name => Name_First);
 
-               Opnd_High_Bound (NN) :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix         =>
-                     Duplicate_Subexpr (Opnd, Name_Req => True),
-                   Attribute_Name => Name_Last);
+               if J = N and Result_May_Be_Null then
+                  Last_Opnd_High_Bound :=
+                    Convert_To (Ityp,
+                      Make_Attribute_Reference (Loc,
+                        Prefix         =>
+                          Duplicate_Subexpr (Opnd, Name_Req => True),
+                        Attribute_Name => Name_Last));
+               end if;
 
                --  Capture length of operand in entity
 
@@ -2593,14 +2613,10 @@ package body Exp_Ch4 is
          J := J + 1;
       end loop;
 
-      --  If we have only skipped null operands, return a null string literal.
-      --  Note that this means the lower bound is 1 and the type is string,
-      --  since we retained any null operands with a type other than string,
-      --  or a lower bound other than one, so this is a legitimate assumption.
+      --  If we have only skipped null operands, return the last operand
 
       if NN = 0 then
-         Start_String;
-         Result := Make_String_Literal (Loc, Strval => End_String);
+         Result := Opnd;
          goto Done;
       end if;
 
@@ -2703,10 +2719,7 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      --  Now find the upper bound. This is normally the Low_Bound + Length - 1
-      --  but there is one exception, namely when the result is null in which
-      --  case the bounds come from the last operand (so that we get the proper
-      --  bounds if the last operand is super-flat).
+      --  Now find the upper bound, normally this is Low_Bound + Length - 1
 
       High_Bound :=
         To_Ityp (
@@ -2717,6 +2730,10 @@ package body Exp_Ch4 is
                 Left_Opnd  => New_Copy (Aggr_Length (NN)),
                 Right_Opnd => Make_Integer_Literal (Loc, 1))));
 
+      --  But there is one exception, namely when the result is null in which
+      --  case the bounds come from the last operand (so that we get the proper
+      --  bounds if the last operand is super-flat).
+
       if Result_May_Be_Null then
          High_Bound :=
            Make_Conditional_Expression (Loc,
@@ -2724,7 +2741,7 @@ package body Exp_Ch4 is
                Make_Op_Eq (Loc,
                  Left_Opnd  => New_Copy (Aggr_Length (NN)),
                  Right_Opnd => Make_Integer_Literal (Loc, 0)),
-               Opnd_High_Bound (NN),
+               Last_Opnd_High_Bound,
                High_Bound));
       end if;
 

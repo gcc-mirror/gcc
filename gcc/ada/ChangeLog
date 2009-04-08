@@ -1,3 +1,13 @@
+2009-04-08  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Check_File, Process_Sources_In_Multi_Language_Mode):
+	avoid copies of Source_Data variables when possible, since these
+	involve calls to memcpy() which are done too many times.
+
+2009-04-08  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Clean up code
+
 2009-04-07  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch4.adb (Expand_Concatenate): Add missing conversion to index
