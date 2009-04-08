@@ -869,8 +869,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     {
       const size_type __n = _M_bkt_num_key(__key);
       _Node* __first = _M_buckets[__n];
+      _Node* __saved_slot = 0;
       size_type __erased = 0;
-      
+
       if (__first)
 	{
 	  _Node* __cur = __first;
@@ -879,11 +880,20 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    {
 	      if (_M_equals(_M_get_key(__next->_M_val), __key))
 		{
-		  __cur->_M_next = __next->_M_next;
-		  _M_delete_node(__next);
-		  __next = __cur->_M_next;
-		  ++__erased;
-		  --_M_num_elements;
+		  if (&_M_get_key(__next->_M_val) != &__key)
+		    {
+		      __cur->_M_next = __next->_M_next;
+		      _M_delete_node(__next);
+		      __next = __cur->_M_next;
+		      ++__erased;
+		      --_M_num_elements;
+		    }
+		  else
+		    {
+		      __saved_slot = __cur;
+		      __cur = __next;
+		      __next = __cur->_M_next;
+		    }
 		}
 	      else
 		{
@@ -895,6 +905,14 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	    {
 	      _M_buckets[__n] = __first->_M_next;
 	      _M_delete_node(__first);
+	      ++__erased;
+	      --_M_num_elements;
+	    }
+	  if (__saved_slot)
+	    {
+	      __next = __saved_slot->_M_next;
+	      __saved_slot->_M_next = __next->_M_next;
+	      _M_delete_node(__next);
 	      ++__erased;
 	      --_M_num_elements;
 	    }
