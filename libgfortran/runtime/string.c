@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2005, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2007, 2009 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -37,7 +37,7 @@ Boston, MA 02110-1301, USA.  */
 static int
 compare0 (const char *s1, gfc_charlen_type s1_len, const char *s2)
 {
-  size_t len;
+  gfc_charlen_type len;
 
   /* Strip trailing blanks from the Fortran string.  */
   len = fstrlen (s1, s1_len);

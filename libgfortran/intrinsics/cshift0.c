@@ -1,5 +1,5 @@
 /* Generic implementation of the CSHIFT intrinsic
-   Copyright 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright 2003, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
    Contributed by Feng Wang <wf_cs@yahoo.com>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -35,7 +35,7 @@ Boston, MA 02110-1301, USA.  */
 
 static void
 cshift0 (gfc_array_char * ret, const gfc_array_char * array,
-	 ssize_t shift, int which, index_type size)
+	 index_type shift, int which, index_type size)
 {
   /* r.* indicates the return array.  */
   index_type rstride[GFC_MAX_DIMENSIONS];
@@ -311,7 +311,7 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   rptr = ret->data;
   sptr = array->data;
 
-  shift = len == 0 ? 0 : shift % (ssize_t)len;
+  shift = len == 0 ? 0 : shift % len;
   if (shift < 0)
     shift += len;
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2005, 2006, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -116,47 +116,10 @@ sys_exit (int code)
  * Other error returns are reserved for the STOP statement with a numeric code.
  */
 
-/* gfc_itoa()-- Integer to decimal conversion. */
+/* gfc_xtoa()-- Integer to hexadecimal conversion.  */
 
 const char *
-gfc_itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
-{
-  int negative;
-  char *p;
-  GFC_UINTEGER_LARGEST t;
-
-  assert (len >= GFC_ITOA_BUF_SIZE);
-
-  if (n == 0)
-    return "0";
-
-  negative = 0;
-  t = n;
-  if (n < 0)
-    {
-      negative = 1;
-      t = -n; /*must use unsigned to protect from overflow*/
-    }
-
-  p = buffer + GFC_ITOA_BUF_SIZE - 1;
-  *p = '\0';
-
-  while (t != 0)
-    {
-      *--p = '0' + (t % 10);
-      t /= 10;
-    }
-
-  if (negative)
-    *--p = '-';
-  return p;
-}
-
-
-/* xtoa()-- Integer to hexadecimal conversion.  */
-
-const char *
-xtoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
+gfc_xtoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
 {
   int digit;
   char *p;

@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+/* Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
    F2003 I/O support contributed by Jerry DeLisle
@@ -140,9 +140,9 @@ static inline
 uint32_t format_hash (st_parameter_dt *dtp)
 {
   char *key;
-  size_t key_len;
+  gfc_charlen_type key_len;
   uint32_t hash = 0;
-  size_t i;
+  gfc_charlen_type i;
 
   /* Hash the format string. Super simple, but what the heck!  */
   key = dtp->format;
