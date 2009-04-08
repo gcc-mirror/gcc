@@ -1,3 +1,8 @@
+2009-04-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c99-stdint-1.c: Fix cut-and-paste mistakes in test.
+	* gcc.dg/c99-stdint-7.c, gcc.dg/c99-stdint-8.c: New tests.
+
 2009-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/debug/dwarf2/static-data-member1.C: New test.
