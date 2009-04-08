@@ -1,3 +1,10 @@
+2009-04-08  Ian Lance Taylor  <iant@google.com>
+
+	* include/backward/hashtable.h (erase): Correctly handle erasing a
+	reference to an entry in the hash table.
+	* testsuite/backward/hash_map/25896.cc: New.
+	* testsuite/backward/hash_set/25896.cc: New.
+
 2009-04-08  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/abi/post/mips64-linux-gnu/baseline_symbols.txt:
