@@ -194,6 +194,7 @@ Implementation Defined Pragmas
 * Pragma Task_Info::
 * Pragma Task_Name::
 * Pragma Task_Storage::
+* Pragma Thread_Local_Storage::
 * Pragma Time_Slice::
 * Pragma Title::
 * Pragma Unchecked_Union::
@@ -683,8 +684,7 @@ compiler system.
 @noindent
 Ada defines a set of pragmas that can be used to supply additional
 information to the compiler.  These language defined pragmas are
-implemented in GNAT and work as described in the Ada Reference
-Manual.
+implemented in GNAT and work as described in the Ada Reference Manual.
 
 In addition, Ada allows implementations to define additional pragmas
 whose meaning is defined by the implementation.  GNAT provides a number
@@ -797,6 +797,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Task_Info::
 * Pragma Task_Name::
 * Pragma Task_Storage::
+* Pragma Thread_Local_Storage::
 * Pragma Time_Slice::
 * Pragma Title::
 * Pragma Unchecked_Union::
@@ -4655,6 +4656,35 @@ means that either no guard area is created or a minimal guard area is
 created, depending on the target.  This pragma can appear anywhere a
 @code{Storage_Size} attribute definition clause is allowed for a task
 type.
+
+@node Pragma Thread_Local_Storage
+@unnumberedsec Pragma Thread_Local_Storage
+@findex Thread_Local_Storage
+@cindex Task specific storage
+@cindex TLS (Thread Local Storage)
+Syntax:
+
+@smallexample @c ada
+pragma Thread_Local_Storage ([Entity =>] LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma specifies that the specified entity, which must be
+a variable declared in a library level package, is to be marked as
+"Thread Local Storage" (@code{TLS}). On systems supporting this (which
+include Solaris, GNU/Linux and VxWorks 6), this causes each thread
+(and hence each Ada task) to see a distinct copy of the variable.
+
+The variable may not have default initialization, and if there is
+an explicit initialization, it must be either @code{null} for an
+access variable, or a static expression for a scalar variable.
+This provides a low level mechanism similar to that provided by
+the @code{Ada.Task_Attributes} package, but much more efficient
+and is also useful in writing interface code that will interact
+with foreign threads.
+
+If this pragma is used on a system where @code{TLS} is not supported,
+then an error message will be generated and the program will be rejected.
 
 @node Pragma Time_Slice
 @unnumberedsec Pragma Time_Slice

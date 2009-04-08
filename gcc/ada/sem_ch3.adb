@@ -140,7 +140,7 @@ package body Sem_Ch3 is
       Derived_Type : Entity_Id);
    --  Subsidiary procedure to Build_Derived_Type. For a derived enumeration
    --  type, we must create a new list of literals. Types derived from
-   --  Character and Wide_Character are special-cased.
+   --  Character and [Wide_]Wide_Character are special-cased.
 
    procedure Build_Derived_Numeric_Type
      (N            : Node_Id;
@@ -4962,7 +4962,7 @@ package body Sem_Ch3 is
       Rang_Expr     : Node_Id;
 
    begin
-      --  Since types Standard.Character and Standard.Wide_Character do
+      --  Since types Standard.Character and Standard.[Wide_]Wide_Character do
       --  not have explicit literals lists we need to process types derived
       --  from them specially. This is handled by Derived_Standard_Character.
       --  If the parent type is a generic type, there are no literals either,
