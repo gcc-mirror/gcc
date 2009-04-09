@@ -1,3 +1,14 @@
+2009-04-09  Bob Duff  <duff@adacore.com>
+
+	* exp_ch11.adb (Expand_Exception_Handlers, Prepend_Call_To_Handler):
+	Set Sloc of generated nodes for calls to Undefer_Aborts and
+	Save_Occurrence to No_Location, so the debugger ignores them and
+	therefore does not jump back and forth when single stepping.
+
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
+	* switch-b.adb: Minor reformatting.
+
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aggr.adb, exp_ch5.adb, sem_ch3.adb, exp_atag.adb, layout.adb,

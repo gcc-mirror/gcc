@@ -402,10 +402,10 @@ package body Switch.B is
             case Switch_Chars (Ptr) is
 
                when 'e' =>
-                  Warning_Mode  := Treat_As_Error;
+                  Warning_Mode := Treat_As_Error;
 
                when 's' =>
-                  Warning_Mode  := Suppress;
+                  Warning_Mode := Suppress;
 
                when others =>
                   Bad_Switch (Switch_Chars);
