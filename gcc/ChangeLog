@@ -11,8 +11,7 @@
 	* unwind-compat.c: Change copyright header to refer to version
 	3 of the GNU General Public License with version 3.1 of the
 	GCC Runtime Library Exception and to point readers at the
-	COPYING3 and COPYING3.RUNTIME files and the FSF's license web
-	page.
+	COPYING3 and COPYING3.RUNTIME files and the FSF's license web page.
 	* config/alpha/crtfastmath.c: Likewise.
 	* config/alpha/linux-unwind.h: Likewise.
 	* config/alpha/qrnnd.asm: Likewise.
@@ -380,41 +379,6 @@
         * genopinit.c (optabs): Delete sync_compare_and_swap_cc.
         * doc/md.texi (sync_compare_and_swap_cc): Merge with
         sync_compare_and_swap documentation.
-=======
-	* config/i386/i386.md (cmpcc): New.
-	* config/i386/sync.md (sync_compare_and_swap*): Set FLAGS_REG.
-	(sync_compare_and_swap_cc*): Delete.
-
-	* config/s390/s390.c (s390_compare_emitted): Remove.
-	(s390_emit_compare): Handle MODE_CC s390_compare_op0 like
-	s390_compare_emitted used to be handled.  Assert that modes match.
-	(s390_emit_compare_and_swap): Use s390_emit_compare, do not
-	refer to sync_compare_and_swap_ccsi.
-	* config/s390/s390.h (s390_compare_emitted): Remove.
-	* config/s390/s390.md (seq): Look for MODE_CC s390_compare_op0
-	instead of s390_compare_emitted.
-	(stack_protect_test, sync_compare_and_swap_cc): Set s390_compare_op0
-	instead of s390_compare_emitted.
-	* config/s390/s390.md (cmpcc): New.
-	(sync_compare_and_swapqi, sync_compare_and_swaphi): Clobber
-	CC_REGNUM, do not pretend it's set.
-	(sync_compare_and_swap_cc*): Delete.
-	* config/s390/predicates.md (cc_reg_operand): New.
-
-	* expr.c (sync_compare_and_swap_cc): Delete.
-	* optabs.h (sync_compare_and_swap_cc): Delete.
-	* optabs.c (prepare_cmp_insn): Ignore which specific CCmode
-	is being used with can_compare_p.
-	(emit_cmp_and_jump_insn_1): Likewise when looking in the optab.
-	(find_cc_set): New.
-	(expand_bool_compare_and_swap): Do not use sync_compare_and_swap_cc,
-	look for a MODE_CC set instead.  Use emit_store_flag.
-	(expand_compare_and_swap_loop): Likewise, with some additional
-	complication to avoid a force_reg when useless.  Use
-	emit_cmp_and_jump_insns.
-	* genopinit.c (optabs): Delete sync_compare_and_swap_cc.
-	* doc/md.texi (sync_compare_and_swap_cc): Merge with
-	sync_compare_and_swap documentation.
 
 2009-04-09  Jan Hubicka  <jh@suse.cz>
 
@@ -819,8 +783,7 @@
 	(vect_do_peeling_for_alignment): Adjust.  Unconditionally apply
 	the cost model check.
 	(vect_loop_versioning): Take stmt and stmt list to put pre-condition
-	guards if we are going to peel.  Do not apply versioning in that
-	case.
+	guards if we are going to peel.  Do not apply versioning in that case.
 	* tree-vectorizer.h (vect_loop_versioning): Adjust declaration.
 	(vect_do_peeling_for_loop_bound): Likewise.
 	* tree-vect-loop.c (vect_transform_loop): If we are peeling for
@@ -932,7 +895,9 @@
 
 	PR rtl-optimization/39607
 	PR rtl-optimization/39631
-	Revert
+
+	Revert:
+	
 	2009-03-30  Vladimir Makarov  <vmakarov@redhat.com>
 	* reload.c (push_reload, find_dummy_reload): Use df_get_live_out
 	instead of DF_LR_OUT.
@@ -1131,8 +1096,7 @@
 	(record_equivalences_from_stmt): Likewise.
 	(avail_expr_hash): Likewise.
 	(avail_expr_eq): Likewise.
-	* tree-ssa-propagate.c (update_call_from_tree): Properly
-	update VOPs.
+	* tree-ssa-propagate.c (update_call_from_tree): Properly update VOPs.
 	(stmt_makes_single_load): Likewise.
 	(stmt_makes_single_store): Likewise.
 	* tree-ssa-alias.c: Rewrite completely.
@@ -1455,8 +1419,7 @@
 	(PARAM_AVG_ALIASED_VOPS): Likewise.
 	* tree-ssanames.c (init_ssanames): Allocate SYMS_TO_RENAME.
 	(duplicate_ssa_name_ptr_info): No need to copy the shared bitmaps.
-	* tree-ssa-operands.c: Simplify for new virtual operand
-	representation.
+	* tree-ssa-operands.c: Simplify for new virtual operand representation.
 	(operand_build_cmp, copy_virtual_operands,
 	create_ssa_artificial_load_stmt, add_to_addressable_set,
 	gimple_add_to_addresses_taken): Remove public functions.
@@ -1611,7 +1574,8 @@
 	Also, make sure the function properly sets TYPE_STUB_DECL() on
 	the newly created typedef variant type.
 	* c-common.h (is_typedef_decl, set_underlying_type): Declare ...
-	* c-common.c (is_typedef_decl, set_underlying_type): ... new entry points.
+	* c-common.c (is_typedef_decl, set_underlying_type): ... new entry
+	points.
 
 2009-04-02  Richard Guenther  <rguenther@suse.de>
 
@@ -1720,18 +1684,20 @@
 
 2009-04-01  Matt Thomas <matt@3am-software.com>
 
-	* config/vax/predicates.md: New file. (symbolic_operand,
-	local_symbolic_operand, external_symbolic_operand,
+	* config/vax/predicates.md: New file.
+	(symbolic_operand, local_symbolic_operand, external_symbolic_operand,
 	external_const_operand, nonsymbolic_operand, external_memory_operand,
 	indirect_memory_operand, indexed_memory_operand,
 	illegal_blk_memory_operand, illegal_addsub_di_memory_operand,
 	nonimmediate_addsub_di_operand, general_addsub_di_operand): New
 	predicate.
-	* config/vax/constraints.md: New file. (Z0, U06,  U08, U16, CN6, S08,
-	S16, I, J, K, L, M, N, O, G, Q, B, R, T): New constraint.
-	* config/vax/builtins.md: New file. (ffssi2, ffssi2_internal,
-	sync_lock_test_and_set<mode>, jbbssiqi, jbbssihi, jbbssisi,
-	sync_lock_release<mode>, jbbcciqi, jbbccihi, jbbccisi): Define.
+	* config/vax/constraints.md: New file.
+	(Z0, U06,  U08, U16, CN6, S08, S16, I, J, K, L, M, N, O, G, Q, B, R, T):
+	New constraint.
+	* config/vax/builtins.md: New file.
+	(ffssi2, ffssi2_internal, sync_lock_test_and_set<mode>, jbbssiqi,
+	jbbssihi, jbbssisi, sync_lock_release<mode>, jbbcciqi, jbbccihi,
+	jbbccisi): Define.
 	* config/vax/vax.opt (mqmath): Add option.
 	* config/vax/vax.md (isfx): Extend with DI.
 	(VAXintQH, VAXintQHSD): Define.
@@ -1831,7 +1797,8 @@
 
 2009-04-01  Rafael Avila de Espindola  <espindola@google.com>
 
-       * varasm.c (default_function_rodata_section): Declare DOT as const char*.
+	* varasm.c (default_function_rodata_section): Declare DOT as
+	const char*.
 
 2009-04-01  Kai Tietz  <kai.tietz@onevision.com>
 	    Andrey Galkin <agalkin@hypercom.com>
@@ -1876,8 +1843,7 @@
 2009-03-31  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (c_get_ident): New.
-	(c_common_nodes_and_builtins): Call it for type names that may be
-	NULL.
+	(c_common_nodes_and_builtins): Call it for type names that may be NULL.
 
 2009-04-01  Ben Elliston  <bje@au.ibm.com>
 
