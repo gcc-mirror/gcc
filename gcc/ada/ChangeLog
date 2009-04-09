@@ -1,3 +1,15 @@
+2009-04-09  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Record_Type): Fix typo.
+	(Derive_Progenitor_Subprograms): Handle interfaces in subtypes of
+	tagged types.
+
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
+	* s-direio.adb: Minor reformatting
+
+	* exp_ch4.adb (Expand_Concatenate): Avoid overflow checks for String
+
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb (Expand_Concatenate): Improve handling of overflow cases

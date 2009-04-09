@@ -6467,7 +6467,7 @@ package body Sem_Ch3 is
          --  could still refer to the full type prior the change to the new
          --  subtype and hence would not match the new base type created here.
 
-         Derive_Subprograms (Parent_Type, Base_Type (Derived_Type));
+         Derive_Subprograms (Parent_Type, Derived_Type);
 
          --  For tagged types the Discriminant_Constraint of the new base itype
          --  is inherited from the first subtype so that no subtype conformance
@@ -11496,8 +11496,8 @@ package body Sem_Ch3 is
       --  Step 2: Add primitives of progenitors that are not implemented by
       --  parents of Tagged_Type
 
-      if Present (Interfaces (Tagged_Type)) then
-         Iface_Elmt := First_Elmt (Interfaces (Tagged_Type));
+      if Present (Interfaces (Base_Type (Tagged_Type))) then
+         Iface_Elmt := First_Elmt (Interfaces (Base_Type (Tagged_Type)));
          while Present (Iface_Elmt) loop
             Iface := Node (Iface_Elmt);
 
