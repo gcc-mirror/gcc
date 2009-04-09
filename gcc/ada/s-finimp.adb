@@ -90,11 +90,11 @@ package body System.Finalization_Implementation is
    -- Adjust --
    ------------
 
-   procedure Adjust (Object : in out Record_Controller) is
+   overriding procedure Adjust (Object : in out Record_Controller) is
 
       First_Comp : Finalizable_Ptr;
-      My_Offset : constant SSE.Storage_Offset :=
-                    Object.My_Address - Object'Address;
+      My_Offset  : constant SSE.Storage_Offset :=
+                     Object.My_Address - Object'Address;
 
       procedure Ptr_Adjust (Ptr : in out Finalizable_Ptr);
       --  Subtract the offset to the pointer
@@ -125,7 +125,7 @@ package body System.Finalization_Implementation is
             Ptr_Adjust (P.Next);
             Reverse_Adjust (P.Next);
             Adjust (P.all);
-            Object.F := P;   --  Successfully adjusted, so place in list.
+            Object.F := P;   --  Successfully adjusted, so place in list
          end if;
       end Reverse_Adjust;
 
@@ -263,7 +263,6 @@ package body System.Finalization_Implementation is
 
    procedure Detach_From_Final_List (Obj : in out Finalizable) is
    begin
-
       --  When objects are not properly attached to a doubly linked list do
       --  not try to detach them. The only case where it can happen is when
       --  dealing with Finalize_Storage_Only objects which are not always
@@ -293,7 +292,7 @@ package body System.Finalization_Implementation is
    -- Finalize --
    --------------
 
-   procedure Finalize   (Object : in out Limited_Record_Controller) is
+   overriding procedure Finalize (Object : in out Limited_Record_Controller) is
    begin
       Finalize_List (Object.F);
    end Finalize;
@@ -392,7 +391,7 @@ package body System.Finalization_Implementation is
 
    begin
       --  Fetch the controller from the Parent or above if necessary
-      --  when there are no controller at this level
+      --  when there are no controller at this level.
 
       while Offset = -2 loop
          The_Tag := Ada.Tags.Parent_Tag (The_Tag);
@@ -455,13 +454,15 @@ package body System.Finalization_Implementation is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Object : in out Limited_Record_Controller) is
+   overriding procedure Initialize
+     (Object : in out Limited_Record_Controller)
+   is
       pragma Warnings (Off, Object);
    begin
       null;
    end Initialize;
 
-   procedure Initialize (Object : in out Record_Controller) is
+   overriding procedure Initialize (Object : in out Record_Controller) is
    begin
       Object.My_Address := Object'Address;
    end Initialize;
@@ -503,8 +504,8 @@ package body System.Finalization_Implementation is
       From_Abort : Boolean;
       E_Occ      : Exception_Occurrence)
    is
-      P   : Finalizable_Ptr := L;
-      Q   : Finalizable_Ptr;
+      P : Finalizable_Ptr := L;
+      Q : Finalizable_Ptr;
 
    begin
       --  We already got an exception. We now finalize the remainder of
@@ -538,5 +539,4 @@ package body System.Finalization_Implementation is
 
 begin
    SSL.Finalize_Global_List := Finalize_Global_List'Access;
-
 end System.Finalization_Implementation;

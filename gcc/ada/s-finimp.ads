@@ -132,10 +132,10 @@ package System.Finalization_Implementation is
       F : SFR.Finalizable_Ptr;
    end record;
 
-   procedure Initialize (Object : in out Limited_Record_Controller);
+   overriding procedure Initialize (Object : in out Limited_Record_Controller);
    --  Does nothing currently
 
-   procedure Finalize (Object : in out Limited_Record_Controller);
+   overriding procedure Finalize (Object : in out Limited_Record_Controller);
    --  Finalize the controlled components of the enclosing record by following
    --  the list starting at Object.F.
 
@@ -144,10 +144,10 @@ package System.Finalization_Implementation is
          My_Address : System.Address;
       end record;
 
-   procedure Initialize (Object : in out Record_Controller);
+   overriding procedure Initialize (Object : in out Record_Controller);
    --  Initialize the field My_Address to the Object'Address
 
-   procedure Adjust (Object : in out Record_Controller);
+   overriding procedure Adjust (Object : in out Record_Controller);
    --  Adjust the components and their finalization pointers by subtracting by
    --  the offset of the target and the source addresses of the assignment.
 

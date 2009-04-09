@@ -3,7 +3,7 @@
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
 --                              E X P _ C H 4                               --
---                                                                          --
+--                                                               g           --
 --                                 B o d y                                  --
 --                                                                          --
 --          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
@@ -2230,6 +2230,17 @@ package body Exp_Ch4 is
       Result : Node_Id;
       --  Result of the concatenation (of type Ityp)
 
+      Known_Non_Null_Operand_Seen : Boolean;
+      --  Set True during generation of the assignements of operands into
+      --  result once an operand known to be non-null has been seen.
+
+      function Make_Artyp_Literal (Val : Nat) return Node_Id;
+      --  This function makes an N_Integer_Literal node that is returned in
+      --  analyzed form with the type set to Artyp. Importantly this literal
+      --  is not flagged as static, so that if we do computations with it that
+      --  result in statically detected out of range conditions, we will not
+      --  generate error messages but instead warning messages.
+
       function To_Artyp (X : Node_Id) return Node_Id;
       --  Given a node of type Ityp, returns the corresponding value of type
       --  Artyp. For non-enumeration types, this is a plain integer conversion.
@@ -2238,9 +2249,18 @@ package body Exp_Ch4 is
       function To_Ityp (X : Node_Id) return Node_Id;
       --  The inverse function (uses Val in the case of enumeration types)
 
-      Known_Non_Null_Operand_Seen : Boolean;
-      --  Set True during generation of the assignements of operands into
-      --  result once an operand known to be non-null has been seen.
+      ------------------------
+      -- Make_Artyp_Literal --
+      ------------------------
+
+      function Make_Artyp_Literal (Val : Nat) return Node_Id is
+         Result : constant Node_Id := Make_Integer_Literal (Loc, Val);
+      begin
+         Set_Etype (Result, Artyp);
+         Set_Analyzed (Result, True);
+         Set_Is_Static_Expression (Result, False);
+         return Result;
+      end Make_Artyp_Literal;
 
       --------------
       -- To_Artyp --
@@ -2296,11 +2316,7 @@ package body Exp_Ch4 is
       Clen     : Node_Id;
       Set      : Boolean;
 
-      Saved_In_Inlined_Body : Boolean;
-
    begin
-      Aggr_Length (0) := Make_Integer_Literal (Loc, 0);
-
       --  Choose an appropriate computational type
 
       --  We will be doing calculations of lengths and bounds in this routine
@@ -2345,6 +2361,10 @@ package body Exp_Ch4 is
             Artyp := Standard_Long_Long_Integer;
          end if;
       end if;
+
+      --  Supply dummy entry at start of length array
+
+      Aggr_Length (0) := Make_Artyp_Literal (0);
 
       --  Go through operands setting up the above arrays
 
@@ -2397,7 +2417,7 @@ package body Exp_Ch4 is
                  Make_Op_Add (Loc,
                    Left_Opnd  =>
                      New_Copy_Tree (String_Literal_Low_Bound (Opnd_Typ)),
-                   Right_Opnd => Make_Integer_Literal (Loc, 1));
+                   Right_Opnd => Make_Artyp_Literal (1));
             end if;
 
             --  Skip null string literal
@@ -2707,7 +2727,7 @@ package body Exp_Ch4 is
             Right_Opnd =>
               Make_Op_Subtract (Loc,
                 Left_Opnd  => New_Copy (Aggr_Length (NN)),
-                Right_Opnd => Make_Integer_Literal (Loc, 1))));
+                Right_Opnd => Make_Artyp_Literal (1))));
 
       --  Now force overflow checking on High_Bound
 
@@ -2723,7 +2743,7 @@ package body Exp_Ch4 is
              Expressions => New_List (
                Make_Op_Eq (Loc,
                  Left_Opnd  => New_Copy (Aggr_Length (NN)),
-                 Right_Opnd => Make_Integer_Literal (Loc, 0)),
+                 Right_Opnd => Make_Artyp_Literal (0)),
                Last_Opnd_High_Bound,
                High_Bound));
       end if;
@@ -2734,16 +2754,10 @@ package body Exp_Ch4 is
         Make_Defining_Identifier (Loc,
           Chars => New_Internal_Name ('S'));
 
-      --  Kludge! Kludge! ???
       --  If the bound is statically known to be out of range, we do not want
-      --  to abort, we want a warning and a runtime constraint error, so we
-      --  pretend this comes from an inlined body (otherwise a static out
-      --  of range value would be an illegality).
-
-      --  This is horrible, we really must find a better way ???
-
-      Saved_In_Inlined_Body := In_Inlined_Body;
-      In_Inlined_Body := True;
+      --  to abort, we want a warning and a runtime constraint error. Note that
+      --  we have arranged that the result will not be treated as a static
+      --  constant, so we won't get an illegality during this insertion.
 
       Insert_Action (Cnode,
         Make_Object_Declaration (Loc,
@@ -2758,8 +2772,6 @@ package body Exp_Ch4 is
                       Low_Bound  => Low_Bound,
                       High_Bound => High_Bound))))),
         Suppress => All_Checks);
-
-      In_Inlined_Body := Saved_In_Inlined_Body;
 
       --  Catch the static out of range case now
 
@@ -2784,7 +2796,7 @@ package body Exp_Ch4 is
                      Right_Opnd =>
                        Make_Op_Subtract (Loc,
                          Left_Opnd  => Aggr_Length (J),
-                         Right_Opnd => Make_Integer_Literal (Loc, 1)));
+                         Right_Opnd => Make_Artyp_Literal (1)));
 
          begin
             --  Singleton case, simple assignment
@@ -2839,6 +2851,7 @@ package body Exp_Ch4 is
                          Then_Statements =>
                            New_List (Assign));
                   end if;
+
                   Insert_Action (Cnode, Assign, Suppress => All_Checks);
                end;
             end if;

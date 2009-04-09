@@ -385,7 +385,7 @@ package body Ada.Containers.Indefinite_Vectors is
    -- "=" --
    ---------
 
-   function "=" (Left, Right : Vector) return Boolean is
+   overriding function "=" (Left, Right : Vector) return Boolean is
    begin
       if Left'Address = Right'Address then
          return True;

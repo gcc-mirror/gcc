@@ -108,7 +108,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
    function Is_Equal is new HT_Ops.Generic_Equal (Find_Equal_Key);
 
-   function "=" (Left, Right : Map) return Boolean is
+   overriding function "=" (Left, Right : Map) return Boolean is
    begin
       return Is_Equal (Left.HT, Right.HT);
    end "=";
