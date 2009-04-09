@@ -802,6 +802,7 @@ package body GNAT.Sockets is
 
    procedure Finalize (X : in out Sockets_Library_Controller) is
       pragma Unreferenced (X);
+
    begin
       --  Finalization operation for the GNAT.Sockets package
 
@@ -817,6 +818,7 @@ package body GNAT.Sockets is
       --  This is a dummy placeholder for an obsolete API.
       --  The real finalization actions are in Initialize primitive operation
       --  of Sockets_Library_Controller.
+
       null;
    end Finalize;
 
@@ -1304,6 +1306,7 @@ package body GNAT.Sockets is
 
    procedure Initialize (X : in out Sockets_Library_Controller) is
       pragma Unreferenced (X);
+
    begin
       --  Initialization operation for the GNAT.Sockets package
 
@@ -1325,7 +1328,8 @@ package body GNAT.Sockets is
            "incorrect Process_Blocking_IO setting, expected " & Expected'Img;
       end if;
 
-      --  This is a dummy placeholder for an obsolete API.
+      --  This is a dummy placeholder for an obsolete API
+
       --  Real initialization actions are in Initialize primitive operation
       --  of Sockets_Library_Controller.
 
@@ -1338,9 +1342,11 @@ package body GNAT.Sockets is
 
    procedure Initialize is
    begin
-      --  This is a dummy placeholder for an obsolete API.
+      --  This is a dummy placeholder for an obsolete API
+
       --  Real initialization actions are in Initialize primitive operation
       --  of Sockets_Library_Controller.
+
       null;
    end Initialize;
 

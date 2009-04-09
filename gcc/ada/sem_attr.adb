@@ -1554,7 +1554,9 @@ package body Sem_Attr is
             end if;
          end if;
 
-         --  Check for violation of restriction No_Stream_Attributes
+         --  Check restriction violations
+
+         Check_Restriction (No_Streams, P);
 
          if Is_RTE (P_Type, RE_Exception_Id)
               or else

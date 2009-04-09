@@ -379,6 +379,9 @@ package GNAT.Sockets is
    --  including through this renaming.
 
    procedure Initialize;
+   pragma Obsolescent
+     (Entity  => Initialize,
+      Message => "explicit initialization is no longer required");
    --  Initialize must be called before using any other socket routines.
    --  Note that this operation is a no-op on UNIX platforms, but applications
    --  should make sure to call it if portability is expected: some platforms
@@ -389,7 +392,7 @@ package GNAT.Sockets is
    procedure Initialize (Process_Blocking_IO : Boolean);
    pragma Obsolescent
      (Entity  => Initialize,
-      Message => "passing a parameter to Initialize is not supported anymore");
+      Message => "passing a parameter to Initialize is no longer supported");
    --  Previous versions of GNAT.Sockets used to require the user to indicate
    --  whether socket I/O was process- or thread-blocking on the platform.
    --  This property is now determined automatically when the run-time library
@@ -400,6 +403,9 @@ package GNAT.Sockets is
    --  automatically).
 
    procedure Finalize;
+   pragma Obsolescent
+     (Entity  => Finalize,
+      Message => "explicit finalization is no longer required");
    --  After Finalize is called it is not possible to use any routines
    --  exported in by this package. This procedure is idempotent.
    --  This is now a no-op (initialization and finalization are done
