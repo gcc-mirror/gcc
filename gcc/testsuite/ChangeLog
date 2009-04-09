@@ -1,3 +1,9 @@
+2009-04-09  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+	    Rafael Avila de Espindola  <espindola@google.com>
+
+	* gcc.misc-tests/help.exp: New file.
+	* lib/options.exp: New file.
+
 2009-04-09  Janis Johnson  <janis187@us.ibm.com>
 
 	PR libobjc/36610
