@@ -1,3 +1,20 @@
+2009-04-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39678
+	* g++.dg/torture/pr39678.C: New.
+	* gcc.dg/compat/struct-complex-2.h: Likewise.
+	* gcc.dg/compat/struct-complex-2_main.c: Likewise.
+	* gcc.dg/compat/struct-complex-2_x.c: Likewise.
+	* gcc.dg/compat/struct-complex-2_y.c: Likewise.
+	* gcc.dg/torture/pr39678.c: Likewise.
+	* gcc.target/i386/pr39678.c: Likewise.
+
+	* gcc.dg/compat/struct-complex-1_x.c: Add -Wno-psabi.
+	* gcc.dg/compat/struct-complex-1_y.c: Likewise.
+
+	* gcc.target/x86_64/abi/test_passing_structs.c: Include
+	<complex.h>.  Add tests for structure with complex float.
+
 2009-04-10  Ben Elliston  <bje@au.ibm.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 

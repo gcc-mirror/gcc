@@ -1,3 +1,9 @@
+2009-04-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39678
+	* config/i386/i386.c (classify_argument): Handle SCmode with
+	(bit_offset % 64) != 0.
+
 2009-04-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/invoke.texi (Optimize Options): Add cross-reference to
