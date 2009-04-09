@@ -2236,7 +2236,7 @@ package Einfo is
 --       The purpose of this flag is to implement the requirement stated
 --       in (RM 13.9.1(9-11)) which require that the use of possibly invalid
 --       values may not cause programs to become erroneous. See the function
---       Exp_Util.Expr_Known_Valid for further details. Note that the setting
+--       Checks.Expr_Known_Valid for further details. Note that the setting
 --       is conservative, in the sense that if the flag is set, it must be
 --       right. If the flag is not set, nothing is known about the validity.
 --
