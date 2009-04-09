@@ -7,7 +7,7 @@
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 2, or (at your option)
+// Free Software Foundation; either version 3, or (at your option)
 // any later version.
 
 // This library is distributed in the hope that it will be useful,
@@ -16,9 +16,8 @@
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with this library; see the file COPYING.  If not, write to
-// the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-// Boston, MA 02110-1301, USA.
+// along with this library; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
 
 #include <ratio>
 
@@ -47,9 +46,9 @@ test04()
   std::ratio<1,0> r1;
 }
 
-// { dg-error "instantiated from here" "" { target *-*-* } 35 }
-// { dg-error "instantiated from here" "" { target *-*-* } 41 }
-// { dg-error "instantiated from here" "" { target *-*-* } 47 }
-// { dg-error "denominator cannot be zero" "" { target *-*-* } 158 }
-// { dg-error "out of range" "" { target *-*-* } 159 }
+// { dg-error "instantiated from here" "" { target *-*-* } 34 }
+// { dg-error "instantiated from here" "" { target *-*-* } 40 }
+// { dg-error "instantiated from here" "" { target *-*-* } 46 }
+// { dg-error "denominator cannot be zero" "" { target *-*-* } 153 }
+// { dg-error "out of range" "" { target *-*-* } 154 }
 // { dg-excess-errors "In instantiation of" }

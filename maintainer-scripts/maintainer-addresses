@@ -3,13 +3,25 @@
 # Extract all maintainers' addresses from the GCC MAINTAINERS file, only
 # skipping those addresses specified in $OMIT.
 # 
-# Copyright (c) 2003 Free Software Foundation.
+# Copyright (c) 2003, 2009 Free Software Foundation.
 #
 # Written by Gerald Pfeifer <gerald@pfeifer.com>, June 2003/October 2003
 #
-# This script is Free Software, and it can be copied, distributed and
-# modified as defined in the GNU General Public License.  A copy of
-# its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
 
 my $OMIT='rms@gnu.org|config-patches@gnu.org';
 

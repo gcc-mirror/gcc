@@ -1,3 +1,29 @@
+2009-04-09  Nick Clifton  <nickc@redhat.com>
+
+	* strcat-chk.c: Change copyright header to refer to version 3
+	of the GNU General Public License with version 3.1 of the GCC
+	Runtime Library Exception and to point readers at the COPYING3
+	and COPYING3.RUNTIME files and the FSF's license web page.
+	* gets-chk.c: Likewise.
+	* memcpy-chk.c: Likewise.
+	* memmove-chk.c: Likewise.
+	* mempcpy-chk.c: Likewise.
+	* memset-chk.c: Likewise.
+	* snprintf-chk.c: Likewise.
+	* sprintf-chk.c: Likewise.
+	* ssp-local.c: Likewise.
+	* ssp.c: Likewise.
+	* ssp/ssp.h.in: Likewise.
+	* ssp/stdio.h: Likewise.
+	* ssp/string.h: Likewise.
+	* ssp/unistd.h: Likewise.
+	* stpcpy-chk.c: Likewise.
+	* strcpy-chk.c: Likewise.
+	* strncat-chk.c: Likewise.
+	* strncpy-chk.c: Likewise.
+	* vsnprintf-chk.c: Likewise.
+	* vsprintf-chk.c: Likewise.
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

@@ -1,3 +1,8 @@
+2009-04-09  Nick Clifton  <nickc@redhat.com>
+
+	* COPYING.RUNTIME: New file: Contains a copy of version 3.1 of
+	the GCC Runtime Library Exception.
+
 2009-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac: Bump minimum GMP/MPFR versions to 4.2 and 2.3.1.

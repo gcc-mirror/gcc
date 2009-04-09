@@ -2,13 +2,13 @@
 
 // Test for Container using non-standard pointer types.
 
-// Copyright (C) 2008
+// Copyright (C) 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 2, or (at your option)
+// Free Software Foundation; either version 3, or (at your option)
 // any later version.
 
 // This library is distributed in the hope that it will be useful,
@@ -17,18 +17,9 @@
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License along
-// with this library; see the file COPYING.  If not, write to the Free
-// Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-// USA.
+// with this library; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
 
-// As a special exception, you may use this file as part of a free software
-// library without restriction.  Specifically, if other files instantiate
-// templates or use macros or inline functions from this file, or you compile
-// this file and link it with other files to produce an executable, this
-// file does not by itself cause the resulting executable to be covered by
-// the GNU General Public License.  This exception does not however
-// invalidate any other reasons why the executable file might be covered by
-// the GNU General Public License.
 
 // { dg-do compile }
 
@@ -100,13 +91,13 @@ void test01(void) {
   aptr5 = __const_pointer_cast<B_pointer>(cbptr);  // ok
 }
 
-// { dg-error "invalid conversion " "" { target *-*-* } 299 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 299 }
-// { dg-error "invalid conversion " "" { target *-*-* } 305 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 305 }
-// { dg-error "invalid conversion " "" { target *-*-* } 322 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 322 }
-// { dg-error "invalid conversion " "" { target *-*-* } 330 }
-// { dg-error "initializing argument 1 of" "" { target *-*-* } 330 }
+// { dg-error "invalid conversion " "" { target *-*-* } 294 }
+// { dg-error "initializing argument 1 of" "" { target *-*-* } 294 }
+// { dg-error "invalid conversion " "" { target *-*-* } 300 }
+// { dg-error "initializing argument 1 of" "" { target *-*-* } 300 }
+// { dg-error "invalid conversion " "" { target *-*-* } 317 }
+// { dg-error "initializing argument 1 of" "" { target *-*-* } 317 }
+// { dg-error "invalid conversion " "" { target *-*-* } 325 }
+// { dg-error "initializing argument 1 of" "" { target *-*-* } 325 }
 // { dg-excess-errors "In constructor" }
 

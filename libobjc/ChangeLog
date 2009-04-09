@@ -1,3 +1,65 @@
+2009-04-09  Nick Clifton  <nickc@redhat.com>
+
+	* sendmsg.c: Change copyright header to refer to version 3 of
+	the GNU General Public License with version 3.1 of the GCC
+	Runtime Library Exception and to point readers at the COPYING3
+	and COPYING3.RUNTIME files and the FSF's license web page.
+	* NXConstStr.m: Likewise.
+	* Object.m: Likewise.
+	* Protocol.m: Likewise.
+	* archive.c: Likewise.
+	* class.c: Likewise.
+	* encoding.c: Likewise.
+	* exception.c: Likewise.
+	* gc.c: Likewise.
+	* hash.c: Likewise.
+	* init.c: Likewise.
+	* libobjc_entry.c: Likewise.
+	* linking.m: Likewise.
+	* misc.c: Likewise.
+	* nil_method.c: Likewise.
+	* objc/NXConstStr.h: Likewise.
+	* objc/Object.h: Likewise.
+	* objc/Protocol.h: Likewise.
+	* objc/encoding.h: Likewise.
+	* objc/hash.h: Likewise.
+	* objc/objc-api.h: Likewise.
+	* objc/objc-decls.h: Likewise.
+	* objc/objc-list.h: Likewise.
+	* objc/objc.h: Likewise.
+	* objc/runtime.h: Likewise.
+	* objc/sarray.h: Likewise.
+	* objc/thr.h: Likewise.
+	* objc/typedstream.h: Likewise.
+	* objects.c: Likewise.
+	* sarray.c: Likewise.
+	* selector.c: Likewise.
+	* thr-dce.c: Likewise.
+	* thr-decosf1.c: Likewise.
+	* thr-irix.c: Likewise.
+	* thr-mach.c: Likewise.
+	* thr-objc.c: Likewise.
+	* thr-os2.c: Likewise.
+	* thr-posix.c: Likewise.
+	* thr-pthreads.c: Likewise.
+	* thr-rtems.c: Likewise.
+	* thr-single.c: Likewise.
+	* thr-solaris.c: Likewise.
+	* thr-vxworks.c: Likewise.
+	* thr-win32.c: Likewise.
+	* thr.c: Likewise.
+	* libobjc.def: Change copyright header to refer to version 3 of
+	the GNU General Public License and to point readers at the COPYING3
+	file and the FSF's license web page.
+	* makefile.dos: Likewise.
+
+2009-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in: Change copyright header to refer to version
+	3 of the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+	* configure.ac: Likewise.
+
 2009-03-12  Richard Frith-Macdonald  <rfm@gnu.org>
 	    David Ayers  <ayers@fsfe.org>
 

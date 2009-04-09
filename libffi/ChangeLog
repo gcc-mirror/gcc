@@ -1,3 +1,11 @@
+2009-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/lib/libffi-dg.exp: Change copyright header to refer to
+	version 3 of the GNU General Public License and to point readers
+	at the COPYING3 file and the FSF's license web page.
+	* testsuite/libffi.call/call.exp: Likewise.
+	* testsuite/libffi.special/special.exp: Likewise.
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.

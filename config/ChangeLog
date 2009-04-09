@@ -1,3 +1,10 @@
+2009-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* lead-dot.m4: Change copyright header to refer to version
+	3 of the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+	* warnings.m4: Likewise.
+
 2009-02-11  Kai Tietz  <kai.tietz@onevision.com>
 
 	* mh-cygwin (LDFLAGS): Add linker option to increase stack limit
