@@ -148,6 +148,24 @@ package body Switch is
         and then Switch_Chars (Switch_Chars'First) = '-';
    end Is_Switch;
 
+   -----------------
+   -- Nat_Present --
+   -----------------
+
+   function Nat_Present
+     (Switch_Chars : String;
+      Max          : Integer;
+      Ptr          : Integer) return Boolean
+   is
+   begin
+      return (Ptr <= Max
+                and then Switch_Chars (Ptr) in '0' .. '9')
+        or else
+             (Ptr < Max
+                and then Switch_Chars (Ptr) = '='
+                and then Switch_Chars (Ptr + 1) in '0' .. '9');
+   end Nat_Present;
+
    --------------
    -- Scan_Nat --
    --------------
@@ -162,20 +180,24 @@ package body Switch is
    begin
       Result := 0;
 
-      if Ptr > Max or else Switch_Chars (Ptr) not in '0' .. '9' then
+      if not Nat_Present (Switch_Chars, Max, Ptr) then
          Osint.Fail ("missing numeric value for switch: " & Switch);
-
-      else
-         while Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' loop
-            Result := Result * 10 +
-              Character'Pos (Switch_Chars (Ptr)) - Character'Pos ('0');
-            Ptr := Ptr + 1;
-
-            if Result > Switch_Max_Value then
-               Osint.Fail ("numeric value out of range for switch: " & Switch);
-            end if;
-         end loop;
       end if;
+
+      if Switch_Chars (Ptr) = '=' then
+         Ptr := Ptr + 1;
+      end if;
+
+      while Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' loop
+         Result :=
+           Result * 10 +
+             Character'Pos (Switch_Chars (Ptr)) - Character'Pos ('0');
+         Ptr := Ptr + 1;
+
+         if Result > Switch_Max_Value then
+            Osint.Fail ("numeric value out of range for switch: " & Switch);
+         end if;
+      end loop;
    end Scan_Nat;
 
    --------------
