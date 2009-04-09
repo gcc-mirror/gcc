@@ -1033,6 +1033,23 @@ duplicate_eh_regions_1 (eh_region old, eh_region outer, int eh_offset)
   return ret;
 }
 
+/* Return prev_try pointers catch subregions of R should
+   point to.  */
+
+static struct eh_region *
+find_prev_try (struct eh_region * r)
+{
+  for (; r && r->type != ERT_TRY; r = r->outer)
+    if (r->type == ERT_MUST_NOT_THROW
+	|| (r->type == ERT_ALLOWED_EXCEPTIONS
+	    && !r->u.allowed.type_list))
+      {
+	r = NULL;
+	break;
+      }
+  return r;
+}
+
 /* Duplicate the EH regions of IFUN, rooted at COPY_REGION, into current
    function and root the tree below OUTER_REGION.  Remap labels using MAP
    callback.  The special case of COPY_REGION of 0 means all regions.  */
@@ -1041,7 +1058,7 @@ int
 duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
 		      void *data, int copy_region, int outer_region)
 {
-  eh_region cur, prev_try, outer, *splice;
+  eh_region cur, prev_try, old_prev_try, outer, *splice;
   int i, min_region, max_region, eh_offset, cfun_last_region_number;
   int num_regions;
 
@@ -1061,10 +1078,15 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
       max_region = 0;
 
       cur = VEC_index (eh_region, ifun->eh->region_array, copy_region);
+      old_prev_try = find_prev_try (cur);
       duplicate_eh_regions_0 (cur, &min_region, &max_region);
     }
   else
-    min_region = 1, max_region = ifun->eh->last_region_number;
+    {
+      min_region = 1;
+      max_region = ifun->eh->last_region_number;
+      old_prev_try = NULL;
+    }
   num_regions = max_region - min_region + 1;
   cfun_last_region_number = cfun->eh->last_region_number;
   eh_offset = cfun_last_region_number + 1 - min_region;
@@ -1134,16 +1156,7 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
      the prev_try short-cuts for ERT_CLEANUP regions.  */
   prev_try = NULL;
   if (outer_region > 0)
-    for (prev_try =
-	 VEC_index (eh_region, cfun->eh->region_array, outer_region);
-	 prev_try && prev_try->type != ERT_TRY; prev_try = prev_try->outer)
-      if (prev_try->type == ERT_MUST_NOT_THROW
-	  || (prev_try->type == ERT_ALLOWED_EXCEPTIONS
-	      && !prev_try->u.allowed.type_list))
-	{
-	  prev_try = NULL;
-	  break;
-	}
+    prev_try = find_prev_try (VEC_index (eh_region, cfun->eh->region_array, outer_region));
 
   /* Remap all of the internal catch and cleanup linkages.  Since we 
      duplicate entire subtrees, all of the referenced regions will have
@@ -1192,7 +1205,7 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
 	  break;
 
 	case ERT_CLEANUP:
-	  if (cur->u.cleanup.prev_try)
+	  if (cur->u.cleanup.prev_try != old_prev_try)
 	    REMAP (cur->u.cleanup.prev_try);
 	  else
 	    cur->u.cleanup.prev_try = prev_try;
@@ -3968,6 +3981,28 @@ dump_eh_tree (FILE * out, struct function *fun)
 	  fprintf (out, " tree_label:");
 	  print_generic_expr (out, i->tree_label, 0);
 	}
+      if (i->label)
+	fprintf (out, " label:%i", INSN_UID (i->label));
+      if (i->landing_pad)
+	{
+          fprintf (out, " landing_pad:%i", INSN_UID (i->landing_pad));
+	  if (GET_CODE (i->landing_pad) == NOTE)
+	    fprintf (out, " (deleted)");
+        }
+      if (i->post_landing_pad)
+	{
+          fprintf (out, " post_landing_pad:%i", INSN_UID (i->post_landing_pad));
+	  if (GET_CODE (i->post_landing_pad) == NOTE)
+	    fprintf (out, " (deleted)");
+	}
+      if (i->resume)
+	{
+          fprintf (out, " resume:%i", INSN_UID (i->resume));
+	  if (GET_CODE (i->resume) == NOTE)
+	    fprintf (out, " (deleted)");
+	}
+      if (i->may_contain_throw)
+        fprintf (out, " may_contain_throw");
       switch (i->type)
 	{
 	case ERT_CLEANUP:
@@ -3992,15 +4027,17 @@ dump_eh_tree (FILE * out, struct function *fun)
 	  if (i->u.eh_catch.next_catch)
 	    fprintf (out, " next %i",
 		     i->u.eh_catch.next_catch->region_number);
+	  fprintf (out, " type:");
+	  print_generic_expr (out, i->u.eh_catch.type_list, 0);
 	  break;
 
 	case ERT_ALLOWED_EXCEPTIONS:
-	  fprintf (out, "filter :%i types:", i->u.allowed.filter);
+	  fprintf (out, " filter :%i types:", i->u.allowed.filter);
 	  print_generic_expr (out, i->u.allowed.type_list, 0);
 	  break;
 
 	case ERT_THROW:
-	  fprintf (out, "type:");
+	  fprintf (out, " type:");
 	  print_generic_expr (out, i->u.eh_throw.type, 0);
 	  break;
 
@@ -4039,8 +4076,90 @@ dump_eh_tree (FILE * out, struct function *fun)
     }
 }
 
-/* Verify some basic invariants on EH datastructures.  Could be extended to
-   catch more.  */
+/* Verify EH region invariants.  */
+
+static bool
+verify_eh_region (struct eh_region *region, struct eh_region *prev_try)
+{
+  bool found = false;
+  if (!region)
+    return false;
+  switch (region->type)
+    {
+    case ERT_CLEANUP:
+      if (region->u.cleanup.prev_try != prev_try)
+	{
+	  error ("Wrong prev_try pointer in EH region %i",
+		 region->region_number);
+	  found = true;
+	}
+      break;
+    case ERT_TRY:
+      {
+	struct eh_region *c, *prev = NULL;
+	if (region->u.eh_try.eh_catch->u.eh_catch.prev_catch)
+	  {
+	    error ("Try region %i has wrong rh_catch pointer to %i",
+		   region->region_number,
+		   region->u.eh_try.eh_catch->region_number);
+	    found = true;
+	  }
+	for (c = region->u.eh_try.eh_catch; c; c = c->u.eh_catch.next_catch)
+	  {
+	    if (c->outer != region->outer)
+	      {
+		error
+		  ("Catch region %i has different outer region than try region %i",
+		   c->region_number, region->region_number);
+		found = true;
+	      }
+	    if (c->u.eh_catch.prev_catch != prev)
+	      {
+		error ("Catch region %i has corrupted catchlist",
+		       c->region_number);
+		found = true;
+	      }
+	    prev = c;
+	  }
+	if (prev != region->u.eh_try.last_catch)
+	  {
+	    error
+	      ("Try region %i has wrong last_catch pointer to %i instead of %i",
+	       region->region_number,
+	       region->u.eh_try.last_catch->region_number,
+	       prev->region_number);
+	    found = true;
+	  }
+      }
+      break;
+    case ERT_CATCH:
+      if (!region->u.eh_catch.prev_catch
+          && (!region->next_peer || region->next_peer->type != ERT_TRY))
+	{
+	  error ("Catch region %i should be followed by try", region->region_number);
+	  found = true;
+	}
+      break;
+    case ERT_ALLOWED_EXCEPTIONS:
+    case ERT_MUST_NOT_THROW:
+    case ERT_THROW:
+      break;
+    case ERT_UNKNOWN:
+      gcc_unreachable ();
+    }
+  if (region->type == ERT_TRY)
+    prev_try = region;
+  else if (region->type == ERT_MUST_NOT_THROW
+	   || (region->type == ERT_ALLOWED_EXCEPTIONS
+	       && !region->u.allowed.type_list))
+    prev_try = NULL;
+  for (region = region->inner; region; region = region->next_peer)
+    found |= verify_eh_region (region, prev_try);
+  return found;
+}
+
+/* Verify invariants on EH datastructures.  */
+
 void
 verify_eh_tree (struct function *fun)
 {
@@ -4117,6 +4236,10 @@ verify_eh_tree (struct function *fun)
 		      error ("array does not match the region tree");
 		      err = true;
 		    }
+		  if (!err)
+		    for (i = fun->eh->region_tree; i; i = i->next_peer)
+		      err |= verify_eh_region (i, NULL);
+		  
 		  if (err)
 		    {
 		      dump_eh_tree (stderr, fun);
