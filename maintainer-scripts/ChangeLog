@@ -1,3 +1,10 @@
+2009-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc_release: Change copyright header to refer to version
+	3 of the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+	* maintainer-addresses: Likewise.
+
 2009-02-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_version_svn (ADD_BRANCHES): Remove autovect-branch

@@ -9,7 +9,7 @@
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
 // terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 2, or (at your option)
+// Free Software Foundation; either version 3, or (at your option)
 // any later version.
 
 // This library is distributed in the hope that it will be useful,
@@ -18,9 +18,8 @@
 // GNU General Public License for more details.
 
 // You should have received a copy of the GNU General Public License
-// along with this library; see the file COPYING.  If not, write to
-// the Free Software Foundation, 51 Franklin Street, Fifth Floor,
-// Boston, MA 02110-1301, USA.
+// along with this library; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
 
 #include <ratio>
 
@@ -37,12 +36,12 @@ test02()
   std::ratio_multiply<std::ratio<INTMAX_MAX>, std::ratio<INTMAX_MAX>>::type r2;
 }
 
-// { dg-error "instantiated from here" "" { target *-*-* } 30 }
+// { dg-error "instantiated from here" "" { target *-*-* } 29 }
+// { dg-error "instantiated from here" "" { target *-*-* } 35 }
 // { dg-error "instantiated from here" "" { target *-*-* } 36 }
-// { dg-error "instantiated from here" "" { target *-*-* } 37 }
-// { dg-error "overflow in addition" "" { target *-*-* } 135 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 103 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 105 }
-// { dg-error "overflow in multiplication" "" { target *-*-* } 107 }
+// { dg-error "overflow in addition" "" { target *-*-* } 130 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 98 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 100 }
+// { dg-error "overflow in multiplication" "" { target *-*-* } 102 }
 // { dg-excess-errors "In instantiation of" }
 // { dg-excess-errors "out of range" }

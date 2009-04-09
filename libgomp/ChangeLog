@@ -1,3 +1,72 @@
+2009-04-09  Nick Clifton  <nickc@redhat.com>
+
+	* iter.c: Change copyright header to refer to version 3 of the
+	GNU General Public License with version 3.1 of the GCC Runtime
+	Library Exception and to point readers at the COPYING3 and
+	COPYING3.RUNTIME files and the FSF's license web page.
+	* alloc.c: Likewise.
+	* barrier.c: Likewise.
+	* config/bsd/proc.c: Likewise.
+	* config/linux/affinity.c: Likewise.
+	* config/linux/alpha/futex.h: Likewise.
+	* config/linux/bar.c: Likewise.
+	* config/linux/bar.h: Likewise.
+	* config/linux/ia64/futex.h: Likewise.
+	* config/linux/ia64/mutex.h: Likewise.
+	* config/linux/lock.c: Likewise.
+	* config/linux/mips/futex.h: Likewise.
+	* config/linux/mutex.c: Likewise.
+	* config/linux/mutex.h: Likewise.
+	* config/linux/powerpc/futex.h: Likewise.
+	* config/linux/proc.c: Likewise.
+	* config/linux/ptrlock.c: Likewise.
+	* config/linux/ptrlock.h: Likewise.
+	* config/linux/s390/futex.h: Likewise.
+	* config/linux/sem.c: Likewise.
+	* config/linux/sem.h: Likewise.
+	* config/linux/sparc/futex.h: Likewise.
+	* config/linux/wait.h: Likewise.
+	* config/linux/x86/futex.h: Likewise.
+	* config/mingw32/proc.c: Likewise.
+	* config/mingw32/time.c: Likewise.
+	* config/posix/affinity.c: Likewise.
+	* config/posix/bar.c: Likewise.
+	* config/posix/bar.h: Likewise.
+	* config/posix/lock.c: Likewise.
+	* config/posix/mutex.h: Likewise.
+	* config/posix/proc.c: Likewise.
+	* config/posix/ptrlock.h: Likewise.
+	* config/posix/sem.c: Likewise.
+	* config/posix/sem.h: Likewise.
+	* config/posix/time.c: Likewise.
+	* config/posix95/lock.c: Likewise.
+	* critical.c: Likewise.
+	* env.c: Likewise.
+	* error.c: Likewise.
+	* fortran.c: Likewise.
+	* iter_ull.c: Likewise.
+	* libgomp.h: Likewise.
+	* libgomp_f.h.in: Likewise.
+	* libgomp_g.h: Likewise.
+	* loop.c: Likewise.
+	* loop_ull.c: Likewise.
+	* omp.h.in: Likewise.
+	* omp_lib.f90.in: Likewise.
+	* omp_lib.h.in: Likewise.
+	* ordered.c: Likewise.
+	* parallel.c: Likewise.
+	* sections.c: Likewise.
+	* single.c: Likewise.
+	* task.c: Likewise.
+	* team.c: Likewise.
+	* work.c: Likewise.
+
+2009-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/config/default.exp: Change copyright header to refer to
+	version 3 of the GNU General Public License and to point readers
+	at the COPYING3 file and the FSF's license web page.
+
 2009-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/39573
