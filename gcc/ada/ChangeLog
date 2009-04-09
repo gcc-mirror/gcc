@@ -1,3 +1,14 @@
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Improve handling of overflow cases
+
+2009-04-09  Pascal Obry  <obry@adacore.com>
+
+	* a-cihama.adb, a-cihama.ads, a-coinve.adb, a-coinve.ads,
+	s-tpoben.adb, s-tpoben.ads, s-finimp.adb, s-finimp.ads,
+	a-convec.adb, a-convec.ads, a-finali.adb, a-finali.ads,
+	a-filico.ads: Add some missing overriding keywords.
+
 2009-04-09  Pascal Obry  <obry@adacore.com>
 
 	* a-cihama.adb, a-cihama.ads, a-coinve.adb, a-coorma.ads, a-cihase.adb,

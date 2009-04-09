@@ -63,7 +63,7 @@ package Ada.Containers.Indefinite_Hashed_Maps is
    --  Cursor objects declared without an initialization expression are
    --  initialized to the value No_Element.
 
-   function "=" (Left, Right : Map) return Boolean;
+   overriding function "=" (Left, Right : Map) return Boolean;
    --  For each key/element pair in Left, equality attempts to find the key in
    --  Right; if a search fails the equality returns False. The search works by
    --  calling Hash to find the bucket in the Right map that corresponds to the

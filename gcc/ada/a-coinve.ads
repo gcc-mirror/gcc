@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -62,7 +62,7 @@ package Ada.Containers.Indefinite_Vectors is
 
    No_Element : constant Cursor;
 
-   function "=" (Left, Right : Vector) return Boolean;
+   overriding function "=" (Left, Right : Vector) return Boolean;
 
    function To_Vector (Length : Count_Type) return Vector;
 

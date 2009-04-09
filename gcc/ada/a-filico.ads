@@ -52,7 +52,7 @@ package Ada.Finalization.List_Controller is
       --  while those temporaries are still in use, they will be reclaimed
       --  by the normal finalization mechanism.
 
-   procedure Finalize (Object : in out Simple_List_Controller);
+   overriding procedure Finalize (Object : in out Simple_List_Controller);
 
    ---------------------
    -- List_Controller --
@@ -98,7 +98,7 @@ package Ada.Finalization.List_Controller is
    --  objects makes sure that they get finalized upon exit from
    --  the access type that defined them
 
-   procedure Initialize (Object : in out List_Controller);
-   procedure Finalize   (Object : in out List_Controller);
+   overriding procedure Initialize (Object : in out List_Controller);
+   overriding procedure Finalize   (Object : in out List_Controller);
 
 end Ada.Finalization.List_Controller;

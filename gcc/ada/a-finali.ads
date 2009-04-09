@@ -63,9 +63,9 @@ private
 
    type Controlled is abstract new SFR.Root_Controlled with null record;
 
-   function "=" (A, B : Controlled) return Boolean;
+   overriding function "=" (A, B : Controlled) return Boolean;
    --  Need to be defined explicitly because we don't want to compare the
-   --  hidden pointers
+   --  hidden pointers.
 
    type Limited_Controlled is
      abstract new SFR.Root_Controlled with null record;

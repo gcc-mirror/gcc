@@ -78,7 +78,7 @@ package body System.Tasking.Protected_Objects.Entries is
    -- Finalize --
    --------------
 
-   procedure Finalize (Object : in out Protection_Entries) is
+   overriding procedure Finalize (Object : in out Protection_Entries) is
       Entry_Call        : Entry_Call_Link;
       Caller            : Task_Id;
       Ceiling_Violation : Boolean;

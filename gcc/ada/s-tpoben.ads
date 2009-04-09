@@ -225,7 +225,7 @@ package System.Tasking.Protected_Objects.Entries is
 
 private
 
-   procedure Finalize (Object : in out Protection_Entries);
+   overriding procedure Finalize (Object : in out Protection_Entries);
    --  Clean up a Protection object; in particular, finalize the associated
    --  Lock object.
 
