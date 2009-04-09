@@ -286,7 +286,7 @@ package body Switch.B is
             end if;
 
             Ptr := Ptr + 1;
-            Scan_Pos (Switch_Chars, Max, Ptr, Maximum_Errors, C);
+            Scan_Pos (Switch_Chars, Max, Ptr, Maximum_Messages, C);
 
          --  Processing for n switch
 

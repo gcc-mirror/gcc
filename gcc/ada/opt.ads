@@ -806,10 +806,11 @@ package Opt is
    --  File name of mapping between unit names, file names and path names.
    --  (given by switch -gnatem)
 
-   Maximum_Errors : Int := 9999;
+   Maximum_Messages : Int := 9999;
    --  GNAT, GNATBIND
-   --  Maximum default number of errors before compilation is terminated.
-   --  Can be overridden using -gnatm (GNAT) or -m (GNATBIND) switch.
+   --  Maximum default number of errors before compilation is terminated, or in
+   --  the case of GNAT, maximum number of warnings before further warnings are
+   --  suppressed. Can be overridden by -gnatm (GNAT) or -m (GNATBIND) switch.
 
    Maximum_File_Name_Length : Int;
    --  GNAT, GNATBIND

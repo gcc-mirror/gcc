@@ -142,7 +142,7 @@ package body Bindusg is
 
       --  Line for -m switch
 
-      Write_Line ("  -mnnn     Limit number of detected errors " &
+      Write_Line ("  -mnnn     Limit number of detected errors/warnings " &
                   "to nnn (1-999999)");
 
       --  Line for -M switch

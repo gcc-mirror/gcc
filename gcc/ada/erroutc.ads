@@ -481,7 +481,8 @@ package Erroutc is
    --  Determines if given location is covered by a warnings off suppression
    --  range in the warnings table (or is suppressed by compilation option,
    --  which generates a warning range for the whole source file). This routine
-   --  only deals with the general ON/OFF case, not specific warnings
+   --  only deals with the general ON/OFF case, not specific warnings. True
+   --  is also returned if warnings are globally suppressed.
 
    function Warning_Specifically_Suppressed
      (Loc : Source_Ptr;

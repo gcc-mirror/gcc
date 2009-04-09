@@ -548,13 +548,18 @@ package body Errutil is
          Set_Standard_Output;
       end if;
 
-      if Maximum_Errors /= 0
-        and then Total_Errors_Detected + Warnings_Detected = Maximum_Errors
-      then
-         Set_Standard_Error;
-         Write_Str ("fatal error: maximum errors reached");
-         Write_Eol;
-         Set_Standard_Output;
+      if Maximum_Messages /= 0 then
+         if Warnings_Detected >= Maximum_Messages then
+            Set_Standard_Error;
+            Write_Line ("maximum number of warnings detected");
+            Warning_Mode := Suppress;
+         end if;
+
+         if Total_Errors_Detected >= Maximum_Messages then
+            Set_Standard_Error;
+            Write_Line ("fatal error: maximum errors reached");
+            Set_Standard_Output;
+         end if;
       end if;
 
       if Warning_Mode = Treat_As_Error then
