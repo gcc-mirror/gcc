@@ -63,7 +63,6 @@ package body System.Direct_IO is
 
    function AFCB_Allocate (Control_Block : Direct_AFCB) return FCB.AFCB_Ptr is
       pragma Unreferenced (Control_Block);
-
    begin
       return new Direct_AFCB;
    end AFCB_Allocate;
@@ -76,7 +75,6 @@ package body System.Direct_IO is
 
    procedure AFCB_Close (File : not null access Direct_AFCB) is
       pragma Unreferenced (File);
-
    begin
       null;
    end AFCB_Close;
@@ -110,8 +108,8 @@ package body System.Direct_IO is
    is
       Dummy_File_Control_Block : Direct_AFCB;
       pragma Warnings (Off, Dummy_File_Control_Block);
-      --  Yes, we know this is never assigned a value, only the tag
-      --  is used for dispatching purposes, so that's expected.
+      --  Yes, we know this is never assigned a value, only the tag is used for
+      --  dispatching purposes, so that's expected.
 
    begin
       FIO.Open (File_Ptr  => AP (File),
@@ -156,8 +154,8 @@ package body System.Direct_IO is
    is
       Dummy_File_Control_Block : Direct_AFCB;
       pragma Warnings (Off, Dummy_File_Control_Block);
-      --  Yes, we know this is never assigned a value, only the tag
-      --  is used for dispatching purposes, so that's expected.
+      --  Yes, we know this is never assigned a value, only the tag is used for
+      --  dispatching purposes, so that's expected.
 
    begin
       FIO.Open (File_Ptr  => AP (File),
@@ -254,10 +252,9 @@ package body System.Direct_IO is
       pragma Warnings (Off, File);
       --  File is actually modified via Unrestricted_Access below, but
       --  GNAT will generate a warning anyway.
-      --  Note that we do not use pragma Unmodified here, since in -gnatc
-      --  mode, GNAT will complain that File is modified for
-      --  "File.Index := 1;"
-
+      --
+      --  Note that we do not use pragma Unmodified here, since in -gnatc mode,
+      --  GNAT will complain that File is modified for "File.Index := 1;"
    begin
       FIO.Reset (AP (File)'Unrestricted_Access, Mode);
       File.Index := 1;
@@ -267,7 +264,6 @@ package body System.Direct_IO is
    procedure Reset (File : in out File_Type) is
       pragma Warnings (Off, File);
       --  See above (other Reset procedure) for explanations on this pragma
-
    begin
       FIO.Reset (AP (File)'Unrestricted_Access);
       File.Index := 1;
