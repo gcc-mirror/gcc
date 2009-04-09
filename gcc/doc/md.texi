@@ -5091,19 +5091,15 @@ memory operations before the atomic operation occur before the atomic
 operation and all memory operations after the atomic operation occur
 after the atomic operation.
 
-@cindex @code{sync_compare_and_swap_cc@var{mode}} instruction pattern
-@item @samp{sync_compare_and_swap_cc@var{mode}}
-
-This pattern is just like @code{sync_compare_and_swap@var{mode}}, except
-it should act as if compare part of the compare-and-swap were issued via
-@code{cmp@var{m}}.  This comparison will only be used with @code{EQ} and
-@code{NE} branches and @code{setcc} operations.
-
-Some targets do expose the success or failure of the compare-and-swap
-operation via the status flags.  Ideally we wouldn't need a separate
-named pattern in order to take advantage of this, but the combine pass
-does not handle patterns with multiple sets, which is required by
-definition for @code{sync_compare_and_swap@var{mode}}.
+For targets where the success or failure of the compare-and-swap
+operation is available via the status flags, it is possible
+to avoid a separate compare operation and issue the subsequent
+setcc or branch immediately after the compare-and-swap.  To this
+end, GCC will look for a @code{MODE_CC} set in the output of
+@code{sync_compare_and_swap@var{mode}}; if the machine description
+includes such a set, the target should also define a special @code{cmpcc}
+instruction.  GCC will then be able to take the destination of the
+@code{MODE_CC} set and use it as the first operand of @code{cmpcc}.
 
 @cindex @code{sync_add@var{mode}} instruction pattern
 @cindex @code{sync_sub@var{mode}} instruction pattern

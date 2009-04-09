@@ -670,7 +670,6 @@ extern enum insn_code sync_new_nand_optab[NUM_MACHINE_MODES];
 
 /* Atomic compare and swap.  */
 extern enum insn_code sync_compare_and_swap[NUM_MACHINE_MODES];
-extern enum insn_code sync_compare_and_swap_cc[NUM_MACHINE_MODES];
 
 /* Atomic exchange with acquire semantics.  */
 extern enum insn_code sync_lock_test_and_set[NUM_MACHINE_MODES];

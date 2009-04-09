@@ -1,3 +1,9 @@
+2009-04-09  Paolo Bonzini  <bonzini@gnu.org>
+
+        * builtins.c (compareAndSwapLong_builtin,
+        compareAndSwapInt_builtin, compareAndSwapObject_builtin,
+        VMSupportsCS8_builtin): Do not look at sync_compare_and_swap_cc.
+
 2009-03-31  Richard Guenther  <rguenther@suse.de>
 
 	* java-gimplify.c (java_gimplify_expr): Do not manually gimplify

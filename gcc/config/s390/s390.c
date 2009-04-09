@@ -224,12 +224,9 @@ struct processor_costs z10_cost =
 extern int reload_completed;
 
 /* Save information from a "cmpxx" operation until the branch or scc is
-   emitted.  */
+   emitted.  A pair of a MODE_CC register and a const0_rtx if a compare
+   has been emitted already.  */
 rtx s390_compare_op0, s390_compare_op1;
-
-/* Save the result of a compare_and_swap  until the branch or scc is
-   emitted.  */
-rtx s390_compare_emitted = NULL_RTX;
 
 /* Structure used to hold the components of a S/390 memory
    address.  A legitimate address on S/390 is of the general
@@ -814,23 +811,23 @@ rtx
 s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
 {
   enum machine_mode mode = s390_select_ccmode (code, op0, op1);
-  rtx ret = NULL_RTX;
+  rtx cc;
 
   /* Do not output a redundant compare instruction if a compare_and_swap
      pattern already computed the result and the machine modes are compatible.  */
-  if (s390_compare_emitted 
-      && (s390_cc_modes_compatible (GET_MODE (s390_compare_emitted), mode)
-	  == GET_MODE (s390_compare_emitted)))
-    ret = gen_rtx_fmt_ee (code, VOIDmode, s390_compare_emitted, const0_rtx); 
+  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
+    {
+      gcc_assert (s390_cc_modes_compatible (GET_MODE (op0), mode)
+		  == GET_MODE (op0));
+      cc = op0;
+    }
   else
     {
-      rtx cc = gen_rtx_REG (mode, CC_REGNUM);
-      
+      cc = gen_rtx_REG (mode, CC_REGNUM);
       emit_insn (gen_rtx_SET (VOIDmode, cc, gen_rtx_COMPARE (mode, op0, op1)));
-      ret = gen_rtx_fmt_ee (code, VOIDmode, cc, const0_rtx); 
     }
-  s390_compare_emitted = NULL_RTX;
-  return ret;
+
+  return gen_rtx_fmt_ee (code, VOIDmode, cc, const0_rtx); 
 }
 
 /* Emit a SImode compare and swap instruction setting MEM to NEW_RTX if OLD
@@ -841,14 +838,8 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
 static rtx
 s390_emit_compare_and_swap (enum rtx_code code, rtx old, rtx mem, rtx cmp, rtx new_rtx)
 {
-  rtx ret;
-
-  emit_insn (gen_sync_compare_and_swap_ccsi (old, mem, cmp, new_rtx));
-  ret = gen_rtx_fmt_ee (code, VOIDmode, s390_compare_emitted, const0_rtx);
-
-  s390_compare_emitted = NULL_RTX;
-
-  return ret;
+  emit_insn (gen_sync_compare_and_swapsi (old, mem, cmp, new_rtx));
+  return s390_emit_compare (code, gen_rtx_REG (CCZ1mode, CC_REGNUM), const0_rtx);
 }
 
 /* Emit a jump instruction to TARGET.  If COND is NULL_RTX, emit an
