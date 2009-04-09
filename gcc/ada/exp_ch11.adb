@@ -848,14 +848,16 @@ package body Exp_Ch11 is
          Ent : constant Entity_Id := RTE (Proc);
 
       begin
-         --  If we have no Entity, then we are probably in no run time mode
-         --  or some weird error has occurred. In either case do nothing!
+         --  If we have no Entity, then we are probably in no run time mode or
+         --  some weird error has occurred. In either case do nothing. Note use
+         --  of No_Location to hide this code from the debugger, so single
+         --  stepping doesn't jump back and forth.
 
          if Present (Ent) then
             declare
                Call : constant Node_Id :=
-                        Make_Procedure_Call_Statement (Loc,
-                          Name => New_Occurrence_Of (RTE (Proc), Loc),
+                        Make_Procedure_Call_Statement (No_Location,
+                          Name => New_Occurrence_Of (RTE (Proc), No_Location),
                           Parameter_Associations => Args);
 
             begin
@@ -1016,17 +1018,23 @@ package body Exp_Ch11 is
                      Save  : Node_Id;
 
                   begin
+                     --  Note use of No_Location to hide this code from the
+                     --  debugger, so single stepping doesn't jump back and
+                     --  forth.
+
                      Save :=
-                       Make_Procedure_Call_Statement (Loc,
+                       Make_Procedure_Call_Statement (No_Location,
                          Name =>
-                           New_Occurrence_Of (RTE (RE_Save_Occurrence), Loc),
+                           New_Occurrence_Of (RTE (RE_Save_Occurrence),
+                                              No_Location),
                          Parameter_Associations => New_List (
                            New_Occurrence_Of (Cparm, Cloc),
-                           Make_Explicit_Dereference (Loc,
-                             Make_Function_Call (Loc,
-                               Name => Make_Explicit_Dereference (Loc,
+                           Make_Explicit_Dereference (No_Location,
+                             Make_Function_Call (No_Location,
+                               Name => Make_Explicit_Dereference (No_Location,
                                  New_Occurrence_Of
-                                   (RTE (RE_Get_Current_Excep), Loc))))));
+                                   (RTE (RE_Get_Current_Excep),
+                                    No_Location))))));
 
                      Mark_Rewrite_Insertion (Save);
                      Prepend (Save, Statements (Handler));
