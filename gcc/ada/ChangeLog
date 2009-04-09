@@ -1,3 +1,16 @@
+2009-04-09  Pascal Obry  <obry@adacore.com>
+
+	* a-cihama.adb, a-cihama.ads, a-coinve.adb, a-coorma.ads, a-cihase.adb,
+	a-cihase.ads, a-cohama.adb, a-cohama.ads, a-coorse.adb, a-coorse.ads,
+	a-coormu.adb, a-coormu.ads, a-cohase.adb, a-cohase.ads: Minor
+	reformatting.
+
+2009-04-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Overriding_Indicator): Do not generate warning on
+	missing overriding indicator if the new declaration is not seen as
+	primitive.
+
 2009-04-09  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch4.adb (Expand_Concatenate): Add circuitry to properly handle

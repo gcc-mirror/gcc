@@ -4196,7 +4196,15 @@ package body Sem_Ch6 is
             Set_Is_Overriding_Operation (Subp);
          end if;
 
-         if Style_Check and then not Must_Override (Spec) then
+         --  If primitive flag is set, operation is overriding at the
+         --  point of its declaration, so warn if necessary. Otherwise
+         --  it may have been declared before the operation it overrides
+         --  and no check is required.
+
+         if Style_Check
+            and then not Must_Override (Spec)
+            and then Is_Primitive
+         then
             Style.Missing_Overriding (Decl, Subp);
          end if;
 

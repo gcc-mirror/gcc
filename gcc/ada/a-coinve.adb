@@ -26,7 +26,7 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- This unit has originally being developed by Matthew J Heaney.            --
+-- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
 with Ada.Containers.Generic_Array_Sort;
@@ -996,14 +996,13 @@ package body Ada.Containers.Indefinite_Vectors is
       -- Sort --
       ----------
 
-      procedure Sort (Container : in out Vector)
-      is
-         procedure Sort is
-            new Generic_Array_Sort
-             (Index_Type   => Index_Type,
-              Element_Type => Element_Access,
-              Array_Type   => Elements_Array,
-              "<"          => Is_Less);
+      procedure Sort (Container : in out Vector) is
+
+         procedure Sort is new Generic_Array_Sort
+           (Index_Type   => Index_Type,
+            Element_Type => Element_Access,
+            Array_Type   => Elements_Array,
+            "<"          => Is_Less);
 
       --  Start of processing for Sort
 
@@ -1045,7 +1044,7 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Item  : Element_Type;
       Count     : Count_Type := 1)
    is
-      N : constant Int := Int (Count);
+      N               : constant Int := Int (Count);
 
       First           : constant Int := Int (Index_Type'First);
       New_Last_As_Int : Int'Base;
@@ -1053,7 +1052,7 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Length      : UInt;
       Max_Length      : constant UInt := UInt (Count_Type'Last);
 
-      Dst : Elements_Access;
+      Dst             : Elements_Access;
 
    begin
       if Before < Index_Type'First then
@@ -1507,7 +1506,7 @@ package body Ada.Containers.Indefinite_Vectors is
       Before    : Extended_Index;
       Count     : Count_Type := 1)
    is
-      N : constant Int := Int (Count);
+      N               : constant Int := Int (Count);
 
       First           : constant Int := Int (Index_Type'First);
       New_Last_As_Int : Int'Base;
@@ -1515,7 +1514,7 @@ package body Ada.Containers.Indefinite_Vectors is
       New_Length      : UInt;
       Max_Length      : constant UInt := UInt (Count_Type'Last);
 
-      Dst : Elements_Access;
+      Dst             : Elements_Access;
 
    begin
       if Before < Index_Type'First then
