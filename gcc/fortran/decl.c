@@ -1667,6 +1667,17 @@ variable_decl (int elem)
 	}
     }
 
+  /* Procedure pointer as function result.  */
+  if (gfc_current_state () == COMP_FUNCTION
+      && strcmp ("ppr@", gfc_current_block ()->name) == 0
+      && strcmp (name, gfc_current_block ()->ns->proc_name->name) == 0)
+    strcpy (name, "ppr@");
+
+  if (gfc_current_state () == COMP_FUNCTION
+      && strcmp (name, gfc_current_block ()->name) == 0
+      && gfc_current_block ()->result
+      && strcmp ("ppr@", gfc_current_block ()->result->name) == 0)
+    strcpy (name, "ppr@");
 
   /* OK, we've successfully matched the declaration.  Now put the
      symbol in the current namespace, because it might be used in the
@@ -4069,6 +4080,66 @@ gfc_match_suffix (gfc_symbol *sym, gfc_symbol **result)
 }
 
 
+/* Procedure pointer return value without RESULT statement:
+   Add "hidden" result variable named "ppr@".  */
+
+static gfc_try
+add_hidden_procptr_result (gfc_symbol *sym)
+{
+  bool case1,case2;
+
+  if (gfc_notification_std (GFC_STD_F2003) == ERROR)
+    return FAILURE;
+
+  /* First usage case: PROCEDURE and EXTERNAL statements.  */
+  case1 = gfc_current_state () == COMP_FUNCTION && gfc_current_block ()
+	  && strcmp (gfc_current_block ()->name, sym->name) == 0
+	  && sym->attr.external;
+  /* Second usage case: INTERFACE statements.  */
+  case2 = gfc_current_state () == COMP_INTERFACE && gfc_state_stack->previous
+	  && gfc_state_stack->previous->state == COMP_FUNCTION
+	  && strcmp (gfc_state_stack->previous->sym->name, sym->name) == 0;
+
+  if (case1 || case2)
+    {
+      gfc_symtree *stree;
+      if (case1)
+        gfc_get_sym_tree ("ppr@", gfc_current_ns, &stree);
+      else if (case2)
+        gfc_get_sym_tree ("ppr@", gfc_current_ns->parent, &stree);
+      sym->result = stree->n.sym;
+
+      sym->result->attr.proc_pointer = sym->attr.proc_pointer;
+      sym->result->attr.pointer = sym->attr.pointer;
+      sym->result->attr.external = sym->attr.external;
+      sym->result->attr.referenced = sym->attr.referenced;
+      sym->attr.proc_pointer = 0;
+      sym->attr.pointer = 0;
+      sym->attr.external = 0;
+      if (sym->result->attr.external && sym->result->attr.pointer)
+	{
+	  sym->result->attr.pointer = 0;
+	  sym->result->attr.proc_pointer = 1;
+	}
+
+      return gfc_add_result (&sym->result->attr, sym->result->name, NULL);
+    }
+  /* POINTER after PROCEDURE/EXTERNAL/INTERFACE statement.  */
+  else if (sym->attr.function && !sym->attr.external && sym->attr.pointer
+	   && sym->result && sym->result != sym && sym->result->attr.external
+	   && sym == gfc_current_ns->proc_name
+	   && sym == sym->result->ns->proc_name
+	   && strcmp ("ppr@", sym->result->name) == 0)
+    {
+      sym->result->attr.proc_pointer = 1;
+      sym->attr.pointer = 0;
+      return SUCCESS;
+    }
+  else
+    return FAILURE;
+}
+
+
 /* Match a PROCEDURE declaration (R1211).  */
 
 static match
@@ -4201,6 +4272,10 @@ got_ts:
 
       if (gfc_add_external (&sym->attr, NULL) == FAILURE)
 	return MATCH_ERROR;
+
+      if (add_hidden_procptr_result (sym) == SUCCESS)
+	sym = sym->result;
+
       if (gfc_add_proc (&sym->attr, sym->name, NULL) == FAILURE)
 	return MATCH_ERROR;
 
@@ -4415,6 +4490,10 @@ gfc_match_function_decl (void)
     }
   if (get_proc_name (name, &sym, false))
     return MATCH_ERROR;
+
+  if (add_hidden_procptr_result (sym) == SUCCESS)
+    sym = sym->result;
+
   gfc_new_block = sym;
 
   m = gfc_match_formal_arglist (sym, 0, 0);
@@ -4812,6 +4891,10 @@ gfc_match_subroutine (void)
 
   if (get_proc_name (name, &sym, false))
     return MATCH_ERROR;
+
+  if (add_hidden_procptr_result (sym) == SUCCESS)
+    sym = sym->result;
+
   gfc_new_block = sym;
 
   /* Check what next non-whitespace character is so we can tell if there
@@ -5259,9 +5342,18 @@ gfc_match_end (gfc_statement *st)
   if (block_name == NULL)
     goto syntax;
 
-  if (strcmp (name, block_name) != 0)
+  if (strcmp (name, block_name) != 0 && strcmp (block_name, "ppr@") != 0)
     {
       gfc_error ("Expected label '%s' for %s statement at %C", block_name,
+		 gfc_ascii_statement (*st));
+      goto cleanup;
+    }
+  /* Procedure pointer as function result.  */
+  else if (strcmp (block_name, "ppr@") == 0
+	   && strcmp (name, gfc_current_block ()->ns->proc_name->name) != 0)
+    {
+      gfc_error ("Expected label '%s' for %s statement at %C",
+		 gfc_current_block ()->ns->proc_name->name,
 		 gfc_ascii_statement (*st));
       goto cleanup;
     }
@@ -5374,6 +5466,8 @@ attr_decl1 (void)
       m = MATCH_ERROR;
       goto cleanup;
     }
+
+  add_hidden_procptr_result (sym);
 
   return MATCH_YES;
 

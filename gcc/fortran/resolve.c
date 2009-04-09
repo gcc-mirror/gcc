@@ -344,7 +344,7 @@ resolve_contained_fntype (gfc_symbol *sym, gfc_namespace *ns)
 	  if (sym->result == sym)
 	    gfc_error ("Contained function '%s' at %L has no IMPLICIT type",
 		       sym->name, &sym->declared_at);
-	  else
+	  else if (!sym->result->attr.proc_pointer)
 	    gfc_error ("Result '%s' of contained function '%s' at %L has "
 		       "no IMPLICIT type", sym->result->name, sym->name,
 		       &sym->result->declared_at);
@@ -2530,7 +2530,8 @@ resolve_function (gfc_expr *expr)
   if (expr->ts.type == BT_UNKNOWN)
     {
       if (expr->symtree->n.sym->result
-	    && expr->symtree->n.sym->result->ts.type != BT_UNKNOWN)
+	    && expr->symtree->n.sym->result->ts.type != BT_UNKNOWN
+	    && !expr->symtree->n.sym->result->attr.proc_pointer)
 	expr->ts = expr->symtree->n.sym->result->ts;
     }
 
@@ -4196,7 +4197,11 @@ resolve_variable (gfc_expr *e)
     return FAILURE;
 
   sym = e->symtree->n.sym;
-  if (sym->attr.flavor == FL_PROCEDURE && !sym->attr.function)
+  if (sym->attr.flavor == FL_PROCEDURE
+      && (!sym->attr.function
+	  || (sym->attr.function && sym->result
+	      && sym->result->attr.proc_pointer
+	      && !sym->result->attr.function)))
     {
       e->ts.type = BT_PROCEDURE;
       goto resolve_procedure;
@@ -8034,18 +8039,41 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 	}
     }
   
-  if (sym->attr.save == SAVE_EXPLICIT && !sym->attr.proc_pointer)
+  if (!sym->attr.proc_pointer)
     {
-      gfc_error ("PROCEDURE attribute conflicts with SAVE attribute "
-		 "in '%s' at %L", sym->name, &sym->declared_at);
-      return FAILURE;
-    }
-
-  if (sym->attr.intent && !sym->attr.proc_pointer)
-    {
-      gfc_error ("PROCEDURE attribute conflicts with INTENT attribute "
-		 "in '%s' at %L", sym->name, &sym->declared_at);
-      return FAILURE;
+      if (sym->attr.save == SAVE_EXPLICIT)
+	{
+	  gfc_error ("PROCEDURE attribute conflicts with SAVE attribute "
+		     "in '%s' at %L", sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+      if (sym->attr.intent)
+	{
+	  gfc_error ("PROCEDURE attribute conflicts with INTENT attribute "
+		     "in '%s' at %L", sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+      if (sym->attr.subroutine && sym->attr.result)
+	{
+	  gfc_error ("PROCEDURE attribute conflicts with RESULT attribute "
+		     "in '%s' at %L", sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+      if (sym->attr.external && sym->attr.function
+	  && ((sym->attr.if_source == IFSRC_DECL && !sym->attr.procedure)
+	      || sym->attr.contained))
+	{
+	  gfc_error ("EXTERNAL attribute conflicts with FUNCTION attribute "
+		     "in '%s' at %L", sym->name, &sym->declared_at);
+	  return FAILURE;
+	}
+      if (strcmp ("ppr@", sym->name) == 0)
+	{
+	  gfc_error ("Procedure pointer result '%s' at %L "
+		     "is missing the pointer attribute",
+		     sym->ns->proc_name->name, &sym->declared_at);
+	  return FAILURE;
+	}
     }
 
   return SUCCESS;
@@ -9310,11 +9338,14 @@ resolve_symbol (gfc_symbol *sym)
 	      /* Result may be in another namespace.  */
 	      resolve_symbol (sym->result);
 
-	      sym->ts = sym->result->ts;
-	      sym->as = gfc_copy_array_spec (sym->result->as);
-	      sym->attr.dimension = sym->result->attr.dimension;
-	      sym->attr.pointer = sym->result->attr.pointer;
-	      sym->attr.allocatable = sym->result->attr.allocatable;
+	      if (!sym->result->attr.proc_pointer)
+		{
+		  sym->ts = sym->result->ts;
+		  sym->as = gfc_copy_array_spec (sym->result->as);
+		  sym->attr.dimension = sym->result->attr.dimension;
+		  sym->attr.pointer = sym->result->attr.pointer;
+		  sym->attr.allocatable = sym->result->attr.allocatable;
+		}
 	    }
 	}
     }
