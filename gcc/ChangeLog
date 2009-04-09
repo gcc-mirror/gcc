@@ -1,3 +1,9 @@
+2009-04-09  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/39613
+	* c-typeck.c (do_case): If case label is not an INTEGER_CST, fold
+	it and pedwarn if this results in an INTEGER_CST.
+
 2009-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi: Update minimum GMP version.  Remove obsolete

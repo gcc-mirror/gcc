@@ -7851,6 +7851,22 @@ do_case (tree low_value, tree high_value)
 {
   tree label = NULL_TREE;
 
+  if (low_value && TREE_CODE (low_value) != INTEGER_CST)
+    {
+      low_value = c_fully_fold (low_value, false, NULL);
+      if (TREE_CODE (low_value) == INTEGER_CST)
+	pedwarn (input_location, OPT_pedantic,
+		 "case label is not an integer constant expression");
+    }
+
+  if (high_value && TREE_CODE (high_value) != INTEGER_CST)
+    {
+      high_value = c_fully_fold (high_value, false, NULL);
+      if (TREE_CODE (high_value) == INTEGER_CST)
+	pedwarn (input_location, OPT_pedantic,
+		 "case label is not an integer constant expression");
+    }
+
   if (c_switch_stack && !c_switch_stack->blocked_stmt_expr
       && !c_switch_stack->blocked_vm)
     {
