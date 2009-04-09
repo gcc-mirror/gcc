@@ -88,8 +88,8 @@ package body Sem_Ch5 is
       Decl : Node_Id;
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
-      --  N is the node for the left hand side of an assignment, and it
-      --  is not a variable. This routine issues an appropriate diagnostic.
+      --  N is the node for the left hand side of an assignment, and it is not
+      --  a variable. This routine issues an appropriate diagnostic.
 
       procedure Kill_Lhs;
       --  This is called to kill current value settings of a simple variable

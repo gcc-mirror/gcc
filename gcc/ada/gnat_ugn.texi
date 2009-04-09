@@ -3882,8 +3882,13 @@ debug options. Certain debug options are relevant to applications
 programmers, and these are documented at appropriate points in this
 users guide.
 
+@ifclear vms
 @item -gnatD
 @cindex @option{-gnatD[nn]} (@command{gcc})
+@end ifclear
+@ifset vms
+@item /XDEBUG /LXDEBUG=nnn
+@end ifset
 Create expanded source files for source level debugging. This switch
 also suppress generation of cross-reference information
 (see @option{-gnatx}).
@@ -3949,8 +3954,13 @@ Note that @option{^-gnatg^/GNAT_INTERNAL^} implies
 so that all standard warnings and all standard style options are turned on.
 All warnings and style error messages are treated as errors.
 
+@ifclear vms
 @item -gnatG=nn
 @cindex @option{-gnatG[nn]} (@command{gcc})
+@end ifclear
+@ifset vms
+@item /EXPAND_SOURCE, /LEXPAND_SOURCE=nnn
+@end ifset
 List generated expanded code in source form.
 
 @item ^-gnath^/HELP^
@@ -20362,8 +20372,8 @@ a generic instantiation a full source location is a chain from the location
 of this construct in the generic unit to the place where this unit is
 instantiated.
 
-@cindex @option{^-m^/DIAGNOSIS_LIMIT^} (@command{gnatcheck})
-@item ^-m@i{nnn}^/DIAGNOSIS_LIMIT=@i{nnn}^
+@cindex @option{^-m^/DIAGNOSTIC_LIMIT^} (@command{gnatcheck})
+@item ^-m@i{nnn}^/DIAGNOSTIC_LIMIT=@i{nnn}^
 Maximum number of diagnoses to be sent to Stdout, @i{nnn} from o@dots{}1000,
 the default value is 500. Zero means that there is no limitation on
 the number of diagnostic messages to be printed into Stdout.

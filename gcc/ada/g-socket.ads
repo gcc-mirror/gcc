@@ -1095,7 +1095,7 @@ private
 
    type Fd_Set is
      new System.Storage_Elements.Storage_Array (1 .. SOSC.SIZEOF_fd_set);
-   for Fd_Set'Alignment use Interfaces.C.int'Alignment;
+   for Fd_Set'Alignment use Interfaces.C.long'Alignment;
 
    type Fd_Set_Access is access all Fd_Set;
    pragma Convention (C, Fd_Set_Access);
