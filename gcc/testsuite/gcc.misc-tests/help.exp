@@ -1,0 +1,80 @@
+# Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file contains a set of test that check that gcc options are
+# documented in --help, and that the various --help* options work.
+
+load_lib options.exp
+
+# Document --version.  Ideally, there should be no undocumented switches
+# in --help.
+check_for_options c "--help" "--version" "This switch lacks documentation" ""
+
+# Output from different subprocesses should not be intermingled
+# (we check for some patterns that could be seen with a missing
+# fflush in gcc.c).
+check_for_options c "-v --help" "" {
+[^\n]The following options
+-Wconversion[^\n]*lacks documentation
+"  -g  "
+} ""
+
+# There are still undocumented switches in -v --help.
+check_for_options c "-v --help" "" "This switch lacks documentation" "xfail"
+
+# Check whether multiline conversion in optc-gen is broken.
+check_for_options c "-v --help" "" {are likely to\n  -std} ""
+
+# Try various --help= classes and qualifiers.
+check_for_options c "--help=optimizers" "-O" "  -g  " ""
+check_for_options c "--help=params" "maximum number of" "-Wunsafe-loop-optimizations" ""
+check_for_options c "--help=C" "-ansi" "-gnatO" ""
+check_for_options c {--help=C++} {-std=c\+\+} "-gnatO" ""
+check_for_options c "--help=common" "-dumpbase" "-gnatO" ""
+check_for_options c "--help=undocumented" "This switch lacks documentation" "" ""
+
+# Undocumented flags are not yet consistently marked as such.
+check_for_options c "--help=^undocumented" "-Wall" "This switch lacks documentation" "xfail"
+
+# Try some --help=* examples from the manual.
+check_for_options c "--help=target,undocumented" "" "" ""
+check_for_options c "--help=target,optimizers" "" "" ""
+check_for_options c "--help=warnings,^joined,^undocumented" "" "" ""
+check_for_options c "-Q -O2 --help=optimizers" {
+-O
+-ftree-vectorize[^\n]*disabled
+} "  -g  " ""
+check_for_options c "-Q -O3 --help=optimizers" {
+-O
+-ftree-vectorize[^\n]*enabled
+} "  -g  " ""
+# Try repeated --help=.
+check_for_options c "--help=params --help=optimizers" {
+maximum number of
+-O
+} "" ""
+
+# Ensure PR 37805 is fixed.
+check_for_options c "--help=joined" "Wformat=" "-fstrict-prototype" ""
+check_for_options c "--help=separate" "-MF" "-fstrict-prototype" ""
+check_for_options c "--help=warnings,joined" "Wformat=" "Wtrigraphs" ""
+check_for_options c "--help=warnings,^joined" "Wtrigraphs" "Wformat=" ""
+check_for_options c "--help=joined,separate" "-I" "" ""
+check_for_options c "--help=^joined,separate" "--param " "" ""
+check_for_options c "--help=joined,^separate" "--help=" "" ""
+check_for_options c "--help=joined,undocumented" "" "" ""
+# Listing only excludes gives empty results.
+check_for_options c "--help=^joined,^separate" "" "" ""

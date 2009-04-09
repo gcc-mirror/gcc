@@ -1,0 +1,69 @@
+# Copyright (C) 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# We set LC_ALL and LANG to C so that we get the same error messages as expected.
+setenv LC_ALL C
+setenv LANG C
+
+# Run the LANGUAGE compiler with GCC_OPTIONS and inspect the compiler
+# output to make sure that they match the newline-separated patterns
+# in COMPILER_PATTERNS but not the patterns in COMPILER_NON_PATTERNS.
+# In case of failure, xfail if XFAIL is nonempty.
+
+proc check_for_options {language gcc_options compiler_patterns compiler_non_patterns expected_failure} {
+    set filename test-[pid]
+    set fd [open $filename.c w]
+    puts $fd "int main (void) { return 0; }"
+    close $fd
+    remote_download host $filename.c
+
+    set test "compiler driver $gcc_options option(s):"
+    set gcc_options "\{additional_flags=$gcc_options\}"
+
+    switch "$language" {
+	"c" { set compiler cc1 }
+	default { error "unknown language" }
+    }
+    set gcc_output [gcc_target_compile $filename.c $filename.x executable $gcc_options]
+    remote_file build delete $filename.c $filename.x $filename.gcno
+
+    foreach pattern [split $compiler_patterns "\n"] {
+	if {$pattern ne ""} {
+	    if {[regexp -- "$pattern" $gcc_output]} {
+		pass "$test $pattern"
+	    } else {
+		if {$expected_failure ne ""} {
+		    xfail "$test $pattern"
+		} else {
+		    fail "$test $pattern"
+		}
+	    }
+	}
+    }
+    foreach pattern [split $compiler_non_patterns "\n"] {
+	if {$pattern ne ""} {
+	    if {![regexp -- "$pattern" $gcc_output]} {
+		pass "$test $pattern"
+	    } else {
+		if {$expected_failure ne ""} {
+		    xfail "$test $pattern"
+		} else {
+		    fail "$test $pattern"
+		}
+	    }
+	}
+    }
+}
