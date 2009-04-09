@@ -1806,10 +1806,11 @@ powerpc-*-linux* | powerpc64-*-linux*)
 		;;
 	    powerpc64-*-linux*)
 	    	test x$with_cpu != x || cpu_is_64bit=yes
+		maybe_biarch=always
 		;;
 	esac
 	case ${maybe_biarch}:${enable_targets}:${cpu_is_64bit} in
-	    yes:*powerpc64* | yes:all:* | yes:*:yes)
+	    always:* | yes:*powerpc64* | yes:all:* | yes:*:yes)
 		if test x$cpu_is_64bit = xyes; then
 		    tm_file="${tm_file} rs6000/default64.h"
 		fi
