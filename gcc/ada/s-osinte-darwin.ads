@@ -525,7 +525,7 @@ private
    CLOCK_REALTIME : constant clockid_t := 0;
 
    type struct_timeval is record
-      tv_sec  : int32_t;
+      tv_sec  : time_t;
       tv_usec : int32_t;
    end record;
    pragma Convention (C, struct_timeval);

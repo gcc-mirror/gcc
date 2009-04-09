@@ -6453,7 +6453,8 @@ package body Make is
 
                      else
                         Last_Arg := Last_Arg + 1;
-                        Args (Last_Arg) := Linker_Switches.Table (J);
+                        Args (Last_Arg) :=
+                          new String'(Linker_Switches.Table (J).all);
                      end if;
                   end loop;
 

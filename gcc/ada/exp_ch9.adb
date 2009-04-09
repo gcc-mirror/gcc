@@ -740,7 +740,7 @@ package body Exp_Ch9 is
       --  processing, has already been added for the expansion of requeue
       --  statements.
 
-      Call := Build_Runtime_Call (Loc, RE_Complete_Rendezvous);
+      Call := Build_Runtime_Call (No_Location, RE_Complete_Rendezvous);
       Insert_Before (Last (Statements (Stats)), Call);
       Analyze (Call);
 
@@ -751,7 +751,7 @@ package body Exp_Ch9 is
          Hand := First (Exception_Handlers (Stats));
 
          while Present (Hand) loop
-            Call := Build_Runtime_Call (Loc, RE_Complete_Rendezvous);
+            Call := Build_Runtime_Call (No_Location, RE_Complete_Rendezvous);
             Append (Call, Statements (Hand));
             Analyze (Call);
             Next (Hand);
@@ -786,13 +786,13 @@ package body Exp_Ch9 is
             Exception_Choices => New_List (Ohandle),
 
             Statements =>  New_List (
-              Make_Procedure_Call_Statement (Loc,
+              Make_Procedure_Call_Statement (No_Location,
                 Name => New_Reference_To (
-                  RTE (RE_Exceptional_Complete_Rendezvous), Loc),
+                  RTE (RE_Exceptional_Complete_Rendezvous), No_Location),
                 Parameter_Associations => New_List (
-                  Make_Function_Call (Loc,
+                  Make_Function_Call (No_Location,
                     Name => New_Reference_To (
-                      RTE (RE_Get_GNAT_Exception), Loc))))))));
+                      RTE (RE_Get_GNAT_Exception), No_Location))))))));
 
       Set_Parent (New_S, Astat); -- temp parent for Analyze call
       Analyze_Exception_Handlers (Exception_Handlers (New_S));
@@ -4663,14 +4663,14 @@ package body Exp_Ch9 is
                while Present (Formal) loop
                   Comp  := Entry_Component (Formal);
                   New_F :=
-                    Make_Defining_Identifier (Sloc (Formal), Chars (Formal));
+                    Make_Defining_Identifier (Loc, Chars (Formal));
 
                   Set_Etype (New_F, Etype (Formal));
                   Set_Scope (New_F, Ent);
 
-               --  Now we set debug info needed on New_F even though it does
-               --  not come from source, so that the debugger will get the
-               --  right information for these generated names.
+                  --  Now we set debug info needed on New_F even though it does
+                  --  not come from source, so that the debugger will get the
+                  --  right information for these generated names.
 
                   Set_Debug_Info_Needed (New_F);
 
@@ -8561,6 +8561,7 @@ package body Exp_Ch9 is
       procedure Add_Accept (Alt : Node_Id) is
          Acc_Stm   : constant Node_Id    := Accept_Statement (Alt);
          Ename     : constant Node_Id    := Entry_Direct_Name (Acc_Stm);
+         Eloc      : constant Source_Ptr := Sloc (Ename);
          Eent      : constant Entity_Id  := Entity (Ename);
          Index     : constant Node_Id    := Entry_Index (Acc_Stm);
          Null_Body : Node_Id;
@@ -8576,29 +8577,29 @@ package body Exp_Ch9 is
 
          if Present (Condition (Alt)) then
             Expr :=
-              Make_Conditional_Expression (Loc, New_List (
+              Make_Conditional_Expression (Eloc, New_List (
                 Condition (Alt),
-                Entry_Index_Expression (Loc, Eent, Index, Scope (Eent)),
-                New_Reference_To (RTE (RE_Null_Task_Entry), Loc)));
+                Entry_Index_Expression (Eloc, Eent, Index, Scope (Eent)),
+                New_Reference_To (RTE (RE_Null_Task_Entry), Eloc)));
          else
             Expr :=
               Entry_Index_Expression
-                (Loc, Eent, Index, Scope (Eent));
+                (Eloc, Eent, Index, Scope (Eent));
          end if;
 
          if Present (Handled_Statement_Sequence (Accept_Statement (Alt))) then
-            Null_Body := New_Reference_To (Standard_False, Loc);
+            Null_Body := New_Reference_To (Standard_False, Eloc);
 
             if Abort_Allowed then
-               Call := Make_Procedure_Call_Statement (Loc,
-                 Name => New_Reference_To (RTE (RE_Abort_Undefer), Loc));
+               Call := Make_Procedure_Call_Statement (Eloc,
+                 Name => New_Reference_To (RTE (RE_Abort_Undefer), Eloc));
                Insert_Before (First (Statements (Handled_Statement_Sequence (
                  Accept_Statement (Alt)))), Call);
                Analyze (Call);
             end if;
 
             PB_Ent :=
-              Make_Defining_Identifier (Sloc (Ename),
+              Make_Defining_Identifier (Eloc,
                 New_External_Name (Chars (Ename), 'A', Num_Accept));
 
             if Comes_From_Source (Alt) then
@@ -8606,9 +8607,9 @@ package body Exp_Ch9 is
             end if;
 
             Proc_Body :=
-              Make_Subprogram_Body (Loc,
+              Make_Subprogram_Body (Eloc,
                 Specification =>
-                  Make_Procedure_Specification (Loc,
+                  Make_Procedure_Specification (Eloc,
                     Defining_Unit_Name => PB_Ent),
                Declarations => Declarations (Acc_Stm),
                Handled_Statement_Sequence =>
@@ -8624,7 +8625,7 @@ package body Exp_Ch9 is
             Append (Proc_Body, Body_List);
 
          else
-            Null_Body := New_Reference_To (Standard_True,  Loc);
+            Null_Body := New_Reference_To (Standard_True,  Eloc);
 
             --  if accept statement has declarations, insert above, given that
             --  we are not creating a body for the accept.
@@ -8635,7 +8636,7 @@ package body Exp_Ch9 is
          end if;
 
          Append_To (Accept_List,
-           Make_Aggregate (Loc, Expressions => New_List (Null_Body, Expr)));
+           Make_Aggregate (Eloc, Expressions => New_List (Null_Body, Expr)));
 
          Num_Accept := Num_Accept + 1;
       end Add_Accept;
@@ -8705,9 +8706,9 @@ package body Exp_Ch9 is
               Make_Integer_Literal (Loc, Index));
 
             Alt_Stats := New_List (
-              Make_Procedure_Call_Statement (Loc,
+              Make_Procedure_Call_Statement (Sloc (Proc),
                 Name => New_Reference_To (
-                  Defining_Unit_Name (Specification (Proc)), Loc)));
+                  Defining_Unit_Name (Specification (Proc)), Sloc (Proc))));
          end if;
 
          if Statements (Alt) /= Empty_List then

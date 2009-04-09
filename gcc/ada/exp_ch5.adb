@@ -3631,7 +3631,7 @@ package body Exp_Ch5 is
          Call :=
            Make_Procedure_Call_Statement (Loc,
              Name => New_Reference_To
-                       (RTE (RE_Complete_Rendezvous), Loc));
+                       (RTE (RE_Complete_Rendezvous), No_Location));
          Insert_Before (N, Call);
          --  why not insert actions here???
          Analyze (Call);
