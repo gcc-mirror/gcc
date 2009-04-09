@@ -1,5 +1,19 @@
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 
+	* g-comver.adb: Minor reformatting.
+
+2009-04-09  Thomas Quinot  <quinot@adacore.com>
+
+	* lib-load.ads (Load_Unit): Update documentation.
+
+2009-04-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-load.adb (Load_Unit): When loading the parent of a child unit
+	named in a with_clause, retain the with_clause to preserve a
+	limited_with indication.
+
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch7.adb, sem_ch10.adb, sem_prag.adb, sem_ch12.adb, sem_util.adb,
 	exp_ch13.adb, sem_ch6.adb, exp_disp.adb, sem_ch8.adb, sem_warn.adb,
 	sem_cat.adb: Code clean up: use Is_Package_Or_Generic_Package where

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2005,2008 AdaCore                 --
+--                     Copyright (C) 2002-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,6 +59,7 @@ package body GNAT.Compiler_Version is
          if GNAT_Version (J) = ')' then
             return GNAT_Version (Ver_Prefix'Length + 1 .. J);
          end if;
+
          if GNAT_Version (J) = Character'Val (0) then
             return GNAT_Version (Ver_Prefix'Length + 1 .. J - 1);
          end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -148,9 +148,9 @@ package Lib.Load is
    --  set to True, then Load_Name may not be the real unit name and it
    --  is necessary to load parents to find the real name.
    --
-   --  From_Limited_With is True if we are loading a unit X found in a
-   --  limited-with clause, or some unit in the context of X. It is used to
-   --  avoid the check on circular dependency (Ada 2005, AI-50217)
+   --  With_Node is set to the with_clause or limited_with_clause causing
+   --  the unit to be loaded, and is used to bypass the circular dependency
+   --  check in the case of a limited_with_clause (Ada 2005, AI-50217).
 
    procedure Change_Main_Unit_To_Spec;
    --  This procedure is called if the main unit file contains a No_Body pragma
