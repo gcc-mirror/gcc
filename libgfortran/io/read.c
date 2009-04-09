@@ -126,8 +126,10 @@ max_value (int length, int signed_flag)
 
 /* convert_real()-- Convert a character representation of a floating
  * point number to the machine number.  Returns nonzero if there is a
- * range problem during conversion.  TODO: handle not-a-numbers and
- * infinities.  */
+ * range problem during conversion.  Note: many architectures
+ * (e.g. IA-64, HP-PA) require that the storage pointed to by the dest
+ * argument is properly aligned for the type in question.  TODO:
+ * handle not-a-numbers and infinities.  */
 
 int
 convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)

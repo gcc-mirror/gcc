@@ -1,3 +1,9 @@
+2009-04-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/39665
+	* io/io.h (st_parameter_dt): Add aligned attribute to u.p.value.
+	* io/read.c (convert_real): Add note about alignment requirements.
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* m4/cshift0.m4: Change copyright header to refer to version 3
