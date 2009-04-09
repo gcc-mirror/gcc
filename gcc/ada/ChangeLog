@@ -1,3 +1,25 @@
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
+	* binderr.adb, errout.adb, errutil.adb: New circuitry for handling
+	Maximum_Messages.
+	
+	* erroutc.adb, erroutc.ads (Warnings_Suppressed): Now tests global
+	warning status as well.
+	
+	* opt.ads (Maximum_Messages): New name for Maximum_Errors.
+	
+	* switch-b.adb, switch-c.adb: Change name Maximum_Errors to
+	Maximum_Messages.
+	
+	* bindusg.adb, usage.adb: Update line for -gnatm switch
+
+	* gnat_ugn.texi: Update documentation for -gnatmnn compiler switch and
+	-mnn binder switch.
+
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch10.adb: Minor reformatting.
+
 2009-04-09  Bob Duff  <duff@adacore.com>
 
 	* exp_ch11.adb (Expand_Exception_Handlers, Prepend_Call_To_Handler):

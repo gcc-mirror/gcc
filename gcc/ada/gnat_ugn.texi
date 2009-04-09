@@ -3995,9 +3995,13 @@ source output.
 @item -gnatm=@var{n}
 @cindex @option{-gnatm} (@command{gcc})
 Limit number of detected error or warning messages to @var{n}
-where @var{n} is in the range 1..999_999. The default setting if
-no switch is given is 9999. Compilation is terminated if this
-limit is exceeded. The equal sign here is optional.
+where @var{n} is in the range 1..999999. The default setting if
+no switch is given is 9999. If the number of warnings reaches this
+limit, then a message is output and further warnings are suppressed,
+but the compilation is continued. If the number of error messages
+reaches this limit, then a message is output and the compilation
+is abandoned. The equal sign here is optional. A value of zero
+means that no limit applies.
 
 @item -gnatn
 @cindex @option{-gnatn} (@command{gcc})
@@ -4488,15 +4492,24 @@ format message or full listing (which as usual is written to
 The @code{m} stands for maximum.
 @end ifclear
 @var{n} is a decimal integer in the
-range of 1 to 999 and limits the number of error messages to be
-generated. For example, using @option{-gnatm2} might yield
+range of 1 to 999999 and limits the number of error or warning
+messages to be generated. For example, using
+@option{-gnatm2} might yield
 
 @smallexample
 e.adb:3:04: Incorrect spelling of keyword "function"
 e.adb:5:35: missing ".."
-fatal error: maximum errors reached
+fatal error: maximum number of errors detected
 compilation abandoned
 @end smallexample
+
+@noindent
+The default setting if
+no switch is given is 9999. If the number of warnings reaches this
+limit, then a message is output and further warnings are suppressed,
+but the compilation is continued. If the number of error messages
+reaches this limit, then a message is output and the compilation
+is abandoned. A value of zero means that no limit applies.
 
 @noindent
 Note that the equal sign is optional, so the switches
@@ -7799,9 +7812,15 @@ supported on cross environments only.
 
 @item ^-m^/ERROR_LIMIT=^@var{n}
 @cindex @option{^-m^/ERROR_LIMIT^} (@command{gnatbind})
-Limit number of detected errors to @var{n}, where @var{n} is
-in the range 1..999_999. The default value if no switch is
-given is 9999. Binding is terminated if the limit is exceeded.
+Limit number of detected errors or warnings to @var{n}, where @var{n} is
+in the range 1..999999. The default value if no switch is
+given is 9999. If the number of warnings reaches this limit, then a
+message is output and further warnings are suppressed, the bind
+continues in this case. If the number of errors reaches this
+limit, then a message is output and the bind is abandoned.
+A value of zero means that no limit is enforced. The equal
+sign is optional.
+
 @ifset unw
 Furthermore, under Windows, the sources pointed to by the libraries path
 set in the registry are not searched for.

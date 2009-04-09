@@ -633,7 +633,7 @@ package body Switch.C is
                   Ptr := Ptr + 1;
                end if;
 
-               Scan_Nat (Switch_Chars, Max, Ptr, Maximum_Errors, C);
+               Scan_Nat (Switch_Chars, Max, Ptr, Maximum_Messages, C);
 
             --  Processing for n switch
 

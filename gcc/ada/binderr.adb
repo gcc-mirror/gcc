@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,10 +64,24 @@ package body Binderr is
          Error_Msg_Output (Msg, Info => False);
       end if;
 
-      if Warnings_Detected + Errors_Detected > Maximum_Errors then
-         raise Unrecoverable_Error;
+      --  If too many warnings print message and then turn off warnings
+
+      if Warnings_Detected = Maximum_Messages then
+         Set_Standard_Error;
+         Write_Line ("maximum number of warnings reached");
+         Write_Line ("further warnings will be suppressed");
+         Set_Standard_Output;
+         Warning_Mode := Suppress;
       end if;
 
+      --  If too many errors print message and give fatal error
+
+      if Errors_Detected = Maximum_Messages then
+         Set_Standard_Error;
+         Write_Line ("fatal error: maximum number of errors exceeded");
+         Set_Standard_Output;
+         raise Unrecoverable_Error;
+      end if;
    end Error_Msg;
 
    --------------------
@@ -99,7 +113,7 @@ package body Binderr is
       Warning         : Boolean := False;
 
    begin
-      if Warnings_Detected + Errors_Detected > Maximum_Errors then
+      if Warnings_Detected + Errors_Detected > Maximum_Messages then
          Write_Str ("error: maximum errors exceeded");
          Write_Eol;
          return;

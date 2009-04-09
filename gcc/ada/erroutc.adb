@@ -1340,6 +1340,10 @@ package body Erroutc is
 
    function Warnings_Suppressed (Loc : Source_Ptr) return Boolean is
    begin
+      if Warning_Mode = Suppress then
+         return True;
+      end if;
+
       --  Loop through table of ON/OFF warnings
 
       for J in Warnings.First .. Warnings.Last loop

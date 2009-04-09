@@ -3369,7 +3369,7 @@ package body Sem_Ch10 is
                                                         N_Subprogram_Body,
                                                         N_Subunit)
          then
-            --  Current unit is private, of descendant of a private unit.
+            --  Current unit is private, of descendant of a private unit
 
             null;
 

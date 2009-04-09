@@ -261,7 +261,7 @@ begin
    --  Line for -gnatm switch
 
    Write_Switch_Char ("mnn");
-   Write_Line ("Limit number of detected errors to nn (1-999999)");
+   Write_Line ("Limit number of detected errors/warnings to nn (1-999999)");
 
    --  Line for -gnatn switch
 
