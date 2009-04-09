@@ -3998,10 +3998,8 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 		      {
 			/* Most significant bit of divisor is set; emit an scc
 			   insn.  */
-			quotient = emit_store_flag (tquotient, GEU, op0, op1,
-						    compute_mode, 1, 1);
-			if (quotient == 0)
-			  goto fail1;
+			quotient = emit_store_flag_force (tquotient, GEU, op0, op1,
+							  compute_mode, 1, 1);
 		      }
 		    else
 		      {

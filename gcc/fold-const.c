@@ -15018,8 +15018,8 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	  return false;
 
 	/* Weak declarations may link to NULL.  */
-	if (VAR_OR_FUNCTION_DECL_P (base))
-	  return !DECL_WEAK (base);
+	if (DECL_P (base) && flag_delete_null_pointer_checks)
+	  return !VAR_OR_FUNCTION_DECL_P (base) || !DECL_WEAK (base);
 
 	/* Constants are never weak.  */
 	if (CONSTANT_CLASS_P (base))
