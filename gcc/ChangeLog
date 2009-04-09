@@ -1,3 +1,10 @@
+2009-04-09  David Ayers  <ayers@fsfe.org>
+
+	PR objc/29200
+	* objc/objc-act.c (warn_with_method): Remove helper function.
+	(check_duplicates): Call warning and inform directly.
+	(really_start_method): Likewise.
+
 2009-04-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* expmed.c (expand_divmod): Always use a comparison for a division
