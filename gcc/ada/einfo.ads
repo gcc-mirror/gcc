@@ -382,18 +382,6 @@ package Einfo is
 --       definition clause with an (obsolescent) mod clause is converted
 --       into an attribute definition clause for this purpose.
 
---    Ancestor_Subtype (synthesized)
---       Applies to all type and subtype entities. If the argument is a
---       subtype then it returns the subtype or type from which the subtype
---       was obtained, otherwise it returns Empty.
-
---    Available_View (synthesized)
---       Applies to types that have the With_Type flag set. Returns the
---       non-limited view of the type, if available, otherwise the type
---       itself. For class-wide types, there is no direct link in the tree,
---       so we have to retrieve the class-wide type of the non-limited view
---       of the Etype.
-
 --    Associated_Formal_Package (Node12)
 --       Present in packages that are the actuals of formal_packages. Points
 --       to the entity in the declaration for the formal package.
@@ -584,14 +572,6 @@ package Einfo is
 
 --    Component_Type (Node20) [implementation base type only]
 --       Present in array types and string types. References component type.
-
---    Constant_Value (synthesized)
---       Applies to variables, constants, named integers, and named reals.
---       Obtains the initialization expression for the entity. Will return
---       Empty for a deferred constant whose full view is not available
---       or in some other cases of internal entities, which cannot be treated
---       as constants from the point of view of constant folding. Empty is
---       also returned for variables with no initialization expression.
 
 --    Corresponding_Concurrent_Type (Node18)
 --       Present in record types that are constructed by the expander to
@@ -814,7 +794,7 @@ package Einfo is
 --    Discriminant_Number (Uint15)
 --       Present in discriminants. Gives the ranking of a discriminant in
 --       the list of discriminants of the type, i.e. a sequential integer
---       index starting at 1 and ranging up to Number_Discriminants.
+--       index starting at 1 and ranging up to number of discriminants.
 
 --    Dispatch_Table_Wrappers (Elist26) [implementation base type only]
 --       Present in library level record type entities if we are generating
@@ -885,10 +865,6 @@ package Einfo is
 --       flag is only for preventing multiple execution of the elaboration
 --       code, then if there is no other elaboration code, obviously there
 --       is no need to set the flag.
-
---    Enclosing_Dynamic_Scope (synthesized)
---       Applies to all entities. Returns the closest dynamic scope in which
---       the entity is declared or Standard_Standard for library-level entities
 
 --    Enclosing_Scope (Node18)
 --       Present in labels. Denotes the innermost enclosing construct that
@@ -1130,13 +1106,6 @@ package Einfo is
 --      Similar to First_Component, but discriminants are not skipped, so will
 --      find the first discriminant if discriminants are present.
 
---    First_Discriminant (synthesized)
---       Applies to types with discriminants. The discriminants are the first
---       entities declared in the type, so normally this is equivalent to
---       First_Entity. The exception arises for tagged types, where the tag
---       itself is prepended to the front of the entity chain, so the
---       First_Discriminant function steps past the tag if it is present.
-
 --    First_Entity (Node17)
 --       Present in all entities which act as scopes to which a list of
 --       associated entities is attached (blocks, class subtypes and types,
@@ -1228,40 +1197,6 @@ package Einfo is
 --       messages can easily locate the relevant nodes for posting errors.
 --       Note in particular that size clauses are present only for this
 --       purpose, and should only be accessed if Has_Size_Clause is set.
-
---    First_Stored_Discriminant (synthesized)
---       Applies to types with discriminants. Gives the first discriminant
---       stored in the object. In many cases, these are the same as the
---       normal visible discriminants for the type, but in the case of
---       renamed discriminants, this is not always the case.
---
---       For tagged types, and untagged types which are root types or
---       derived types but which do not rename discriminants in their
---       root type, the stored discriminants are the same as the actual
---       discriminants of the type, and hence this function is the same
---       as First_Discriminant.
---
---       For derived non-tagged types that rename discriminants in the root
---       type this is the first of the discriminants that occur in the
---       root type. To be precise, in this case stored discriminants are
---       entities attached to the entity chain of the derived type which
---       are a copy of the discriminants of the root type. Furthermore their
---       Is_Completely_Hidden flag is set since although they are actually
---       stored in the object, they are not in the set of discriminants that
---       is visble in the type.
---
---       For derived untagged types, stored discriminants are the real
---       discriminants from Gigi's standpoint, i.e. those that will be
---       stored in actual objects of the type.
-
---    First_Subtype (synthesized)
---       Applies to all types and subtypes. For types, yields the first subtype
---       of the type. For subtypes, yields the first subtype of the base type
---       of the subtype.
-
---    First_Tag_Component (synthesized)
---       Applies to tagged record types, returns the entity for the first
---       _Tag field in this record.
 
 --    Freeze_Node (Node7)
 --       Present in all entities. If there is an associated freeze node for
@@ -1939,14 +1874,6 @@ package Einfo is
 --       Applies to all entities, true for boolean types and subtypes,
 --       i.e. Standard.Boolean and all types ultimately derived from it.
 
---    Is_By_Copy_Type (synthesized)
---       Applies to all type entities. Returns true if the entity is
---       a by copy type (RM 6.2(3)).
-
---    Is_By_Reference_Type (synthesized)
---       Applies to all type entities. True if the type is required to
---       be passed by reference, as defined in (RM 6.2(4-9)).
-
 --    Is_Called (Flag102)
 --       Present in subprograms. Returns true if the subprogram is called
 --       in the unit being compiled or in a unit in the context. Used for
@@ -2042,10 +1969,6 @@ package Einfo is
 --    Is_Decimal_Fixed_Point_Type (synthesized)
 --       Applies to all type entities, true for decimal fixed point
 --       types and subtypes.
-
---    Is_Derived_Type (synthesized)
---       Applies to all entities. Determine if given entity is a derived type.
---       Always false if argument is not a type.
 
 --    Is_Descendent_Of_Address (Flag223)
 --       Present in all type and subtype entities. Indicates that a type is an
@@ -2196,12 +2119,6 @@ package Einfo is
 
 --    Is_Incomplete_Type (synthesized)
 --       Applies to all entities, true for incomplete types and subtypes
-
---    Is_Indefinite_Subtype (synthesized)
---       Applies to all entities for types and subtypes. Determines if given
---       entity is an unconstrained array type or subtype, a discriminated
---       record type or subtype with no initial discriminant values or a
---       class wide type or subtype.
 
 --    Is_Inlined (Flag11)
 --       Present in all entities. Set for functions and procedures which are
@@ -2362,12 +2279,6 @@ package Einfo is
 --       Present in all entities. Set to true for record (sub)types if the
 --       record is declared to be limited. Note that this flag is not set
 --       simply because some components of the record are limited.
-
---    Is_Limited_Type (synthesized)
---       Applies to all entities. True if entity is a limited type (limited
---       private type, limited interface type, task type, protected type,
---       composite containing a limited component, or a subtype of any of
---       these types).
 
 --    Is_Local_Anonymous_Access (Flag194)
 --       Present in access types. Set for an anonymous access type to indicate
@@ -2612,15 +2523,6 @@ package Einfo is
 --       which the Renamed_Object field is non-empty and for which the
 --       renaming is handled by the front end, by macro substitution of
 --       a copy of the (evaluated) name tree whereever the variable is used.
-
---    Is_Inherently_Limited_Type (synthesized)
---       Applies to all type entities. True if the type is "inherently"
---       limited (i.e. cannot become nonlimited). From the Ada 2005
---       RM-7.5(8.1/2), "a type with a part that is of a task, protected, or
---       explicitly limited record type". These are the types that are defined
---       as return-by-reference types in Ada 95 (see RM95-6.5(11-16)). In Ada
---       2005, these are the types that require build-in-place for function
---       calls. Note that build-in-place is allowed for other types, too.
 
 --    Is_Return_Object (Flag209)
 --       Present in all object entities. True if the object is the return
@@ -3044,10 +2946,6 @@ package Einfo is
 --       Empty if applied to the last literal. This is actually a synonym
 --       for Next, but its use is preferred in this context.
 
---    Next_Tag_Component (synthesized)
---       Applies to components of tagged record types. Given a _Tag field
---       of a record, returns the next _Tag field in this record.
-
 --    Non_Binary_Modulus (Flag58) [base type only]
 --       Present in all subtype and type entities. Set for modular integer
 --       types if the modulus value is other than a power of 2.
@@ -3109,10 +3007,6 @@ package Einfo is
 --    Number_Dimensions (synthesized)
 --       Applies to array types and subtypes. Returns the number of dimensions
 --       of the array type or subtype as a value of type Pos.
-
---    Number_Discriminants (synthesized)
---       Applies to all types with discriminants. Yields the number of
---       discriminants as a value of type Pos.
 
 --    Number_Entries (synthesized)
 --       Applies to concurrent types. Returns the number of entries that are
@@ -4642,11 +4536,8 @@ package Einfo is
    --    Was_Hidden                          (Flag196)
 
    --    Declaration_Node                    (synth)
-   --    Enclosing_Dynamic_Scope             (synth)
    --    Has_Foreign_Convention              (synth)
-   --    Is_Derived_Type                     (synth)
    --    Is_Dynamic_Scope                    (synth)
-   --    Is_Limited_Type                     (synth)
    --    Is_Standard_Character_Type          (synth)
    --    Underlying_Type                     (synth)
    --    all classification attributes       (synth)
@@ -4722,15 +4613,10 @@ package Einfo is
    --    Universal_Aliasing                  (Flag216)  (base type only)
 
    --    Alignment_Clause                    (synth)
-   --    Ancestor_Subtype                    (synth)
    --    Base_Type                           (synth)
-   --    First_Subtype                       (synth)
    --    Has_Private_Ancestor                (synth)
    --    Implementation_Base_Type            (synth)
    --    Is_Access_Protected_Subprogram_Type (synth)
-   --    Is_By_Copy_Type                     (synth)
-   --    Is_By_Reference_Type                (synth)
-   --    Is_Inherently_Limited_Type          (synth)
    --    Root_Type                           (synth)
    --    Size_Clause                         (synth)
 
@@ -4757,7 +4643,7 @@ package Einfo is
    --    Storage_Size_Variable               (Node15)   (base type only)
    --    Master_Id                           (Node17)
    --    Directly_Designated_Type            (Node20)
-   --    Associated_Storage_Pool             (Node22)   (base type only)
+   --    Associated_Storage_Pool             (Node22)   (root type only)
    --    Associated_Final_Chain              (Node23)
    --    Has_Pragma_Controlled               (Flag27)   (base type only)
    --    Has_Storage_Size_Clause             (Flag23)   (base type only)
@@ -4827,8 +4713,7 @@ package Einfo is
    --    Last_Entity                         (Node20)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
-   --    First_Discriminant                  (synth)
-   --        (plus type attributes)
+   --    (plus type attributes)
 
    --  E_Component
    --    Normalized_First_Bit                (Uint8)
@@ -4856,7 +4741,6 @@ package Einfo is
    --    Is_Return_Object                    (Flag209)
    --    Next_Component                      (synth)
    --    Next_Component_Or_Discriminant      (synth)
-   --    Next_Tag_Component                  (synth)
 
    --  E_Constant
    --  E_Loop_Parameter
@@ -4889,7 +4773,6 @@ package Einfo is
    --    Treat_As_Volatile                   (Flag41)
    --    Address_Clause                      (synth)
    --    Alignment_Clause                    (synth)
-   --    Constant_Value                      (synth)
    --    Size_Clause                         (synth)
 
    --  E_Decimal_Fixed_Point_Type
@@ -4903,7 +4786,7 @@ package Einfo is
    --    Machine_Radix_10                    (Flag84)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
-   --          (plus type attributes)
+   --    (plus type attributes)
 
    --  E_Discriminant
    --    Normalized_First_Bit                (Uint8)
@@ -4974,7 +4857,7 @@ package Einfo is
    --    Nonzero_Is_True                     (Flag162)  (base type only)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
-   --        (plus type attributes)
+   --    (plus type attributes)
 
    --  E_Exception
    --    Esize                               (Uint12)
@@ -4989,7 +4872,7 @@ package Einfo is
 
    --  E_Exception_Type
    --    Equivalent_Type                     (Node18)
-   --        (plus type attributes)
+   --    (plus type attributes)
 
    --  E_Floating_Point_Type
    --  E_Floating_Point_Subtype
@@ -4997,7 +4880,7 @@ package Einfo is
    --    Scalar_Range                        (Node20)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
-   --        (plus type attributes)
+   --    (plus type attributes)
 
    --  E_Function
    --  E_Generic_Function
@@ -5073,7 +4956,7 @@ package Einfo is
    --    Storage_Size_Variable               (Node15)   (base type only)
    --    Master_Id                           (Node17)
    --    Directly_Designated_Type            (Node20)
-   --    Associated_Storage_Pool             (Node22)   (base type only)
+   --    Associated_Storage_Pool             (Node22)   (root type only)
    --    Associated_Final_Chain              (Node23)
    --    (plus type attributes)
 
@@ -5095,8 +4978,6 @@ package Einfo is
    --    Private_Dependents                  (Elist18)
    --    Discriminant_Constraint             (Elist21)
    --    Stored_Constraint                   (Elist23)
-   --    First_Discriminant                  (synth)
-   --    First_Stored_Discriminant           (synth)
    --    (plus type attributes)
 
    --  E_In_Parameter
@@ -5141,8 +5022,6 @@ package Einfo is
    --    Private_View                        (Node22)
    --    Stored_Constraint                   (Elist23)
    --    Has_Completion                      (Flag26)
-   --    First_Discriminant                  (synth)
-   --    First_Stored_Discriminant           (synth)
    --    (plus type attributes)
 
    --  E_Loop
@@ -5162,10 +5041,8 @@ package Einfo is
    --    (plus type attributes)
 
    --  E_Named_Integer
-   --    Constant_Value                      (synth)
 
    --  E_Named_Real
-   --    Constant_Value                      (synth)
 
    --  E_Operator
    --    First_Entity                        (Node17)
@@ -5190,7 +5067,7 @@ package Einfo is
    --    Has_Small_Clause                    (Flag67)
    --    Type_Low_Bound                      (synth)
    --    Type_High_Bound                     (synth)
-   --        (plus type attributes)
+   --    (plus type attributes)
 
    --  E_Package
    --  E_Generic_Package
@@ -5260,8 +5137,6 @@ package Einfo is
    --    Has_Completion                      (Flag26)
    --    Is_Controlled                       (Flag42)   (base type only)
    --    Is_For_Access_Subtype               (Flag118)  (subtype only)
-   --    First_Discriminant                  (synth)
-   --    First_Stored_Discriminant           (synth)
    --    (plus type attributes)
 
    --  E_Procedure
@@ -5386,9 +5261,6 @@ package Einfo is
    --    Reverse_Bit_Order                   (Flag164)  (base type only)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
-   --    First_Discriminant                  (synth)
-   --    First_Stored_Discriminant           (synth)
-   --    First_Tag_Component                 (synth)
    --    (plus type attributes)
 
    --  E_Record_Type_With_Private
@@ -5416,9 +5288,6 @@ package Einfo is
    --    Reverse_Bit_Order                   (Flag164)  (base type only)
    --    First_Component                     (synth)
    --    First_Component_Or_Discriminant     (synth)
-   --    First_Discriminant                  (synth)
-   --    First_Stored_Discriminant           (synth)
-   --    First_Tag_Component                 (synth)
    --    (plus type attributes)
 
    --  E_Return_Statement
@@ -5523,7 +5392,6 @@ package Einfo is
    --    Treat_As_Volatile                   (Flag41)
    --    Address_Clause                      (synth)
    --    Alignment_Clause                    (synth)
-   --    Constant_Value                      (synth)
    --    Size_Clause                         (synth)
 
    --  E_Void
@@ -6191,20 +6059,13 @@ package Einfo is
 
    function Address_Clause                      (Id : E) return N;
    function Alignment_Clause                    (Id : E) return N;
-   function Ancestor_Subtype                    (Id : E) return E;
-   function Available_View                      (Id : E) return E;
    function Base_Type                           (Id : E) return E;
-   function Constant_Value                      (Id : E) return N;
    function Declaration_Node                    (Id : E) return N;
    function Designated_Type                     (Id : E) return E;
-   function Enclosing_Dynamic_Scope             (Id : E) return E;
    function First_Component                     (Id : E) return E;
    function First_Component_Or_Discriminant     (Id : E) return E;
-   function First_Discriminant                  (Id : E) return E;
    function First_Formal                        (Id : E) return E;
    function First_Formal_With_Extras            (Id : E) return E;
-   function First_Stored_Discriminant           (Id : E) return E;
-   function First_Subtype                       (Id : E) return E;
    function Has_Attach_Handler                  (Id : E) return B;
    function Has_Entries                         (Id : E) return B;
    function Has_Foreign_Convention              (Id : E) return B;
@@ -6212,19 +6073,13 @@ package Einfo is
    function Has_Private_Declaration             (Id : E) return B;
    function Implementation_Base_Type            (Id : E) return E;
    function Is_Boolean_Type                     (Id : E) return B;
-   function Is_By_Copy_Type                     (Id : E) return B;
-   function Is_By_Reference_Type                (Id : E) return B;
    function Is_Constant_Object                  (Id : E) return B;
-   function Is_Derived_Type                     (Id : E) return B;
    function Is_Discriminal                      (Id : E) return B;
    function Is_Dynamic_Scope                    (Id : E) return B;
-   function Is_Indefinite_Subtype               (Id : E) return B;
-   function Is_Limited_Type                     (Id : E) return B;
    function Is_Package_Or_Generic_Package       (Id : E) return B;
    function Is_Prival                           (Id : E) return B;
    function Is_Protected_Component              (Id : E) return B;
    function Is_Protected_Record_Type            (Id : E) return B;
-   function Is_Inherently_Limited_Type          (Id : E) return B;
    function Is_Standard_Character_Type          (Id : E) return B;
    function Is_String_Type                      (Id : E) return B;
    function Is_Task_Record_Type                 (Id : E) return B;
@@ -6237,16 +6092,13 @@ package Einfo is
    function Next_Literal                        (Id : E) return E;
    function Next_Stored_Discriminant            (Id : E) return E;
    function Number_Dimensions                   (Id : E) return Pos;
-   function Number_Discriminants                (Id : E) return Pos;
    function Number_Entries                      (Id : E) return Nat;
    function Number_Formals                      (Id : E) return Pos;
-   function Parameter_Mode                      (Id : E) return Formal_Kind;
    function Root_Type                           (Id : E) return E;
+   function Parameter_Mode                      (Id : E) return Formal_Kind;
    function Scope_Depth_Set                     (Id : E) return B;
    function Size_Clause                         (Id : E) return N;
    function Stream_Size_Clause                  (Id : E) return N;
-   function First_Tag_Component                 (Id : E) return E;
-   function Next_Tag_Component                  (Id : E) return E;
    function Type_High_Bound                     (Id : E) return N;
    function Type_Low_Bound                      (Id : E) return N;
    function Underlying_Type                     (Id : E) return E;

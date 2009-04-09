@@ -46,6 +46,7 @@ with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sdefault; use Sdefault;
 with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;

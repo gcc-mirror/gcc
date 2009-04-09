@@ -30,6 +30,7 @@ with Exp_Util; use Exp_Util;
 with Lib;      use Lib;
 with Restrict; use Restrict;
 with Rident;   use Rident;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 

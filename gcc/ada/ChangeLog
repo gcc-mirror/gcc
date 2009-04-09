@@ -1,5 +1,19 @@
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 
+	* sem_aggr.adb, exp_ch5.adb, sem_ch3.adb, exp_atag.adb, layout.adb,
+	sem_dist.adb, exp_ch7.adb, sem_ch5.adb, sem_type.adb, exp_imgv.adb,
+	exp_util.adb, sem_aux.adb, sem_aux.ads, exp_attr.adb, exp_ch9.adb,
+	sem_ch7.adb, inline.adb, fe.h, sem_ch9.adb, exp_code.adb, einfo.adb,
+	einfo.ads, exp_pakd.adb, checks.adb, sem_ch12.adb, exp_smem.adb,
+	tbuild.adb, freeze.adb, sem_util.adb, sem_res.adb, sem_attr.adb,
+	exp_dbug.adb, sem_case.adb, exp_tss.adb, exp_ch4.adb, exp_ch6.adb,
+	sem_smem.adb, sem_ch4.adb, sem_mech.adb, sem_ch6.adb, exp_disp.adb,
+	sem_ch8.adb, exp_aggr.adb, sem_eval.adb, sem_cat.adb, exp_dist.adb,
+	sem_ch13.adb, exp_strm.adb, lib-xref.adb, sem_disp.adb, exp_ch3.adb:
+	Reorganize einfo/sem_aux, moving routines from einfo to sem_aux
+
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
 	* exp_util.adb (Silly_Boolean_Array_Xor_Test): Simplify existing code.
 
 	* atree.h: Add Elist26

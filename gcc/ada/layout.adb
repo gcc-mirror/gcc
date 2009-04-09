@@ -36,6 +36,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Repinfo;  use Repinfo;
 with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Eval; use Sem_Eval;
 with Sem_Util; use Sem_Util;

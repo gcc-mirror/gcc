@@ -50,6 +50,7 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Aggr; use Sem_Aggr;
 with Sem_Attr; use Sem_Attr;
 with Sem_Cat;  use Sem_Cat;

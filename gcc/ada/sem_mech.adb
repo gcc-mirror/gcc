@@ -29,6 +29,7 @@ with Errout;   use Errout;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;

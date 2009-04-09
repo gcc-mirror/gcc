@@ -179,6 +179,22 @@ extern void Check_No_Implicit_Heap_Alloc   (Node_Id);
 extern void Check_Elaboration_Code_Allowed (Node_Id);
 extern void Check_Implicit_Dynamic_Code_Allowed (Node_Id);
 
+/* sem_aux:  */
+
+#define Ancestor_Subtype               sem_aux__ancestor_subtype
+#define First_Discriminant             sem_aux__first_discriminant
+#define First_Stored_Discriminant      sem_aux__first_stored_discriminant
+#define First_Subtype                  sem_aux__first_subtype
+#define Is_By_Reference_Type           sem_aux__is_by_reference_type
+#define Is_Derived_Type                sem_aux__is_derived_type
+
+extern Entity_Id  Ancestor_Subtype             (Entity_Id);
+extern Entity_Id  First_Discriminant           (Entity_Id);
+extern Entity_Id  First_Stored_Discriminant    (Entity_Id);
+extern Entity_Id  First_Subtype                (Entity_Id);
+extern Boolean    Is_By_Reference_Type         (Entity_Id);
+extern Boolean    Is_Derived_Type              (Entity_Id);
+
 /* sem_elim: */
 
 #define Eliminate_Error_Msg    sem_elim__eliminate_error_msg
