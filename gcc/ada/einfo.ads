@@ -816,11 +816,11 @@ package Einfo is
 --       the list of discriminants of the type, i.e. a sequential integer
 --       index starting at 1 and ranging up to Number_Discriminants.
 
---    Dispatch_Table_Wrapper (Node26) [implementation base type only]
+--    Dispatch_Table_Wrappers (Elist26) [implementation base type only]
 --       Present in library level record type entities if we are generating
 --       statically allocated dispatch tables. For a tagged type, points to
---       the dispatch table wrapper associated with the tagged type. For a
---       non-tagged record, contains Empty.
+--       the list of dispatch table wrappers associated with the tagged type.
+--       For a non-tagged record, contains No_Elist.
 
 --    DTC_Entity (Node16)
 --       Present in function and procedure entities. Set to Empty unless
@@ -5360,7 +5360,7 @@ package Einfo is
    --  E_Record_Subtype
    --    Primitive_Operations                (Elist15)
    --    Access_Disp_Table                   (Elist16)  (base type only)
-   --    Dispatch_Table_Wrapper              (Node26)   (base type only)
+   --    Dispatch_Table_Wrappers             (Elist26)  (base type only)
    --    Cloned_Subtype                      (Node16)   (subtype case only)
    --    First_Entity                        (Node17)
    --    Corresponding_Concurrent_Type       (Node18)
@@ -5395,7 +5395,7 @@ package Einfo is
    --  E_Record_Subtype_With_Private
    --    Primitive_Operations                (Elist15)
    --    Access_Disp_Table                   (Elist16)  (base type only)
-   --    Dispatch_Table_Wrapper              (Node26)   (base type only)
+   --    Dispatch_Table_Wrappers             (Elist26)  (base type only)
    --    First_Entity                        (Node17)
    --    Private_Dependents                  (Elist18)
    --    Underlying_Full_View                (Node19)
@@ -5785,7 +5785,7 @@ package Einfo is
    function Current_Value                       (Id : E) return N;
    function Debug_Info_Off                      (Id : E) return B;
    function Debug_Renaming_Link                 (Id : E) return E;
-   function Dispatch_Table_Wrapper              (Id : E) return E;
+   function Dispatch_Table_Wrappers             (Id : E) return L;
    function DTC_Entity                          (Id : E) return E;
    function DT_Entry_Count                      (Id : E) return U;
    function DT_Offset_To_Top_Func               (Id : E) return E;
@@ -6313,7 +6313,7 @@ package Einfo is
 
    procedure Set_Accept_Address                  (Id : E; V : L);
    procedure Set_Access_Disp_Table               (Id : E; V : L);
-   procedure Set_Dispatch_Table_Wrapper          (Id : E; V : E);
+   procedure Set_Dispatch_Table_Wrappers         (Id : E; V : L);
    procedure Set_Actual_Subtype                  (Id : E; V : E);
    procedure Set_Address_Taken                   (Id : E; V : B := True);
    procedure Set_Alias                           (Id : E; V : E);
@@ -6994,7 +6994,7 @@ package Einfo is
    pragma Inline (Current_Value);
    pragma Inline (Debug_Info_Off);
    pragma Inline (Debug_Renaming_Link);
-   pragma Inline (Dispatch_Table_Wrapper);
+   pragma Inline (Dispatch_Table_Wrappers);
    pragma Inline (DTC_Entity);
    pragma Inline (DT_Entry_Count);
    pragma Inline (DT_Offset_To_Top_Func);
@@ -7421,7 +7421,7 @@ package Einfo is
    pragma Inline (Set_Current_Value);
    pragma Inline (Set_Debug_Info_Off);
    pragma Inline (Set_Debug_Renaming_Link);
-   pragma Inline (Set_Dispatch_Table_Wrapper);
+   pragma Inline (Set_Dispatch_Table_Wrappers);
    pragma Inline (Set_DTC_Entity);
    pragma Inline (Set_DT_Entry_Count);
    pragma Inline (Set_DT_Offset_To_Top_Func);

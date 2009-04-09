@@ -1356,10 +1356,19 @@ package body Sem_Util is
       -------------
 
       procedure Collect (Typ : Entity_Id) is
-         Tag_Comp : Entity_Id;
+         Tag_Comp   : Entity_Id;
+         Parent_Typ : Entity_Id;
 
       begin
-         if Etype (Typ) /= Typ
+         --  Handle private types
+
+         if Present (Full_View (Etype (Typ))) then
+            Parent_Typ := Full_View (Etype (Typ));
+         else
+            Parent_Typ := Etype (Typ);
+         end if;
+
+         if Parent_Typ /= Typ
 
             --  Protect the frontend against wrong sources. For example:
 
@@ -1372,9 +1381,9 @@ package body Sem_Util is
             --      type C is new B with null record;
             --    end P;
 
-           and then Etype (Typ) /= Tagged_Type
+           and then Parent_Typ /= Tagged_Type
          then
-            Collect (Etype (Typ));
+            Collect (Parent_Typ);
          end if;
 
          --  Collect the components containing tags of secondary dispatch
