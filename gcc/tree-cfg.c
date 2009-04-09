@@ -3697,11 +3697,8 @@ verify_gimple_assign_single (gimple stmt)
 	    return true;
 	  }
 
-	if (!one_pointer_to_useless_type_conversion_p (lhs_type, TREE_TYPE (op))
-	    /* FIXME: a longstanding wart, &a == &a[0].  */
-	    && (TREE_CODE (TREE_TYPE (op)) != ARRAY_TYPE
-		|| !one_pointer_to_useless_type_conversion_p (lhs_type,
-		      TREE_TYPE (TREE_TYPE (op)))))
+	if (!one_pointer_to_useless_type_conversion_p (lhs_type,
+						       TREE_TYPE (op)))
 	  {
 	    error ("type mismatch in address expression");
 	    debug_generic_stmt (lhs_type);
