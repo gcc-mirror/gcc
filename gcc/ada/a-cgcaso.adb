@@ -26,7 +26,7 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- This unit has originally being developed by Matthew J Heaney.            --
+-- This unit was originally developed by Matthew J Heaney.                  --
 ------------------------------------------------------------------------------
 
 --  This algorithm was adapted from GNAT.Heap_Sort_G (see g-hesorg.ad[sb])
