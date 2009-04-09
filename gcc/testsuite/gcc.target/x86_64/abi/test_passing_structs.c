@@ -2,6 +2,7 @@
 
 #include "defines.h"
 #include "args.h"
+#include <complex.h>
 
 struct IntegerRegisters iregs;
 struct FloatRegisters fregs;
@@ -116,6 +117,45 @@ check_struct_passing8 (struct flex2_struct is ATTRIBUTE_UNUSED)
   check_int_arguments;
 }
 
+struct complex1_struct
+{
+  int c;
+  __complex__ float x;
+};
+
+struct complex1a_struct
+{
+  long l;
+  float f;
+};
+
+struct complex2_struct
+{
+  int c;
+  __complex__ float x;
+  float y;
+};
+
+struct complex2a_struct
+{
+  long l;
+  double d;
+};
+
+void
+check_struct_passing9 (struct complex1_struct is ATTRIBUTE_UNUSED)
+{
+  check_int_arguments;
+  check_float_arguments;
+}
+
+void
+check_struct_passing10 (struct complex2_struct is ATTRIBUTE_UNUSED)
+{
+  check_int_arguments;
+  check_double_arguments;
+}
+
 static struct flex1_struct f1s = { 60, { } };
 static struct flex2_struct f2s = { 61, { } };
 
@@ -136,6 +176,18 @@ main (void)
   };
   int i;
 #endif
+  struct complex1_struct c1s = { 4, ( -13.4 + 3.5*I ) };
+  union
+    {
+      struct complex1_struct c;
+      struct complex1a_struct u;
+    } c1u;
+  struct complex2_struct c2s = { 4, ( -13.4 + 3.5*I ), -34.5 };
+  union
+    {
+      struct complex2_struct c;
+      struct complex2a_struct u;
+    } c2u;
 
   clear_struct_registers;
   iregs.I0 = is.i;
@@ -184,6 +236,26 @@ main (void)
   num_iregs = 1;
   clear_int_hardware_registers;
   WRAP_CALL (check_struct_passing8)(f2s);
+
+  clear_struct_registers;
+  c1u.c = c1s;
+  iregs.I0 = c1u.u.l;
+  num_iregs = 1;
+  fregs.xmm0._float [0] = c1u.u.f;
+  num_fregs = 1;
+  clear_int_hardware_registers;
+  clear_float_hardware_registers;
+  WRAP_CALL (check_struct_passing9)(c1s);
+
+  clear_struct_registers;
+  c2u.c = c2s;
+  iregs.I0 = c2u.u.l;
+  num_iregs = 1;
+  fregs.xmm0._double[0] = c2u.u.d;
+  num_fregs = 1;
+  clear_int_hardware_registers;
+  clear_float_hardware_registers;
+  WRAP_CALL (check_struct_passing10)(c2s);
 
   return 0;
 }
