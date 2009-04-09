@@ -70,8 +70,8 @@ namespace std
 
     // XXX need constexpr
     template<typename _UIntType, size_t __w,
-	     bool = __w <static_cast<size_t>
-			 (std::numeric_limits<_UIntType>::digits)>
+	     bool = __w < static_cast<size_t>
+			  (std::numeric_limits<_UIntType>::digits)>
       struct _ShiftMin1
       {
 	static const _UIntType __value =
@@ -206,7 +206,7 @@ namespace std
       static const result_type increment    = __c;
       /** The modulus. */
       static const result_type modulus      = __m;
-      static const result_type default_seed = 1UL;
+      static const result_type default_seed = 1u;
 
       /**
        * @brief Constructs a %linear_congruential_engine random number
@@ -258,7 +258,7 @@ namespace std
        */
       result_type
       min() const
-      { return (__detail::__mod<_UIntType, 1, 0, __m>(__c) == 0) ? 1 : 0; }
+      { return __c == 0u ? 1u : 0u; }
 
       /**
        * @brief Gets the largest possible value in the output range.
@@ -267,7 +267,7 @@ namespace std
        */
       result_type
       max() const
-      { return __m - 1; }
+      { return __m - 1u; }
 
       /**
        * @brief Discard a sequence of random numbers.
@@ -340,15 +340,6 @@ namespace std
 		   __c1, __m1>&);
 
     private:
-      template<typename _Gen>
-	void
-	seed(_Gen& __g, true_type)
-	{ return seed(static_cast<unsigned long>(__g)); }
-
-      template<typename _Gen>
-	void
-	seed(_Gen& __g, false_type);
-
       _UIntType _M_x;
     };
 
@@ -429,7 +420,7 @@ namespace std
       static const result_type tempering_c               = __c;
       static const size_t      tempering_l               = __l;
       static const size_t      initialization_multiplier = __f;
-      static const result_type default_seed = 5489UL;
+      static const result_type default_seed = 5489u;
 
       // constructors and member function
       explicit
@@ -554,15 +545,6 @@ namespace std
 		   __l1, __f1>&);
 
     private:
-      template<typename _Gen>
-	void
-	seed(_Gen& __g, true_type)
-	{ return seed(static_cast<unsigned long>(__g)); }
-
-      template<typename _Gen>
-	void
-	seed(_Gen& __g, false_type);
-
       _UIntType _M_x[state_size];
       size_t    _M_p;
     };
@@ -602,7 +584,7 @@ namespace std
       static const size_t      word_size    = __w;
       static const size_t      short_lag    = __s;
       static const size_t      long_lag     = __r;
-      static const result_type default_seed = 19780503;
+      static const result_type default_seed = 19780503u;
 
       /**
        * @brief Constructs an explicitly seeded % subtract_with_carry_engine
@@ -662,7 +644,7 @@ namespace std
        */
       result_type
       max() const
-      { return _S_modulus - 1U; }
+      { return __detail::_ShiftMin1<_UIntType, __w>::__value; }
 
       /**
        * @brief Discard a sequence of random numbers.
@@ -736,18 +718,6 @@ namespace std
 		   __s1, __r1>&);
 
     private:
-      template<typename _Gen>
-	void
-	seed(_Gen& __g, true_type)
-	{ return seed(static_cast<unsigned long>(__g)); }
-
-      template<typename _Gen>
-	void
-	seed(_Gen& __g, false_type);
-
-      static const size_t _S_modulus
-	= __detail::_Shift<_UIntType, __w>::__value;
-
       _UIntType  _M_x[long_lag];
       _UIntType  _M_carry;
       size_t     _M_p;
@@ -1564,10 +1534,6 @@ namespace std
 	b() const
 	{ return _M_b; }
 
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_a == __p2._M_a) && (__p1._M_b == __p2._M_b); }
-
       private:
 	_IntType _M_a;
 	_IntType _M_b;
@@ -1682,16 +1648,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two uniform integer distributions have
-   *        the same parameters.
-   */
-  template<typename _IntType>
-    inline bool
-    operator==(const std::uniform_int_distribution<_IntType>& __d1,
-	       const std::uniform_int_distribution<_IntType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %uniform_int_distribution random number
    *        distribution @p __x into the output stream @p os.
    *
@@ -1754,10 +1710,6 @@ namespace std
 	result_type
 	b() const
 	{ return _M_b; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_a == __p2._M_a) && (__p1._M_b == __p2._M_b); }
 
       private:
 	_RealType _M_a;
@@ -1851,16 +1803,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two uniform real distributions have
-   *        the same parameters.
-   */
-  template<typename _IntType>
-    inline bool
-    operator==(const std::uniform_real_distribution<_IntType>& __d1,
-	       const std::uniform_real_distribution<_IntType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %uniform_real_distribution random number
    *        distribution @p __x into the output stream @p __os.
    *
@@ -1930,11 +1872,6 @@ namespace std
 	_RealType
 	stddev() const
 	{ return _M_stddev; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_mean == __p2._M_mean)
-	      && (__p1._M_stddev == __p2._M_stddev); }
 
       private:
 	_RealType _M_mean;
@@ -2018,15 +1955,6 @@ namespace std
 		   const param_type& __p);
 
       /**
-       * @brief Return true if two normal distributions have
-       *        the same parameters.
-       */
-      template<typename _RealType1>
-	friend bool
-        operator==(const std::normal_distribution<_RealType1>& __d1,
-		   const std::normal_distribution<_RealType1>& __d2);
-
-      /**
        * @brief Inserts a %normal_distribution random number distribution
        * @p __x into the output stream @p __os.
        *
@@ -2094,10 +2022,6 @@ namespace std
 	_RealType
 	s() const
 	{ return _M_s; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_m == __p2._M_m) && (__p1._M_s == __p2._M_s); }
 
       private:
 	_RealType _M_m;
@@ -2177,16 +2101,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two lognormal distributions have
-   *        the same parameters.
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::lognormal_distribution<_RealType>& __d1,
-	       const std::lognormal_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %lognormal_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -2242,10 +2156,6 @@ namespace std
 	_RealType
 	n() const
 	{ return _M_n; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_n == __p2._M_n; }
 
       private:
 	_RealType _M_n;
@@ -2319,16 +2229,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two Chi-squared distributions have
-   *        the same parameters.
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::chi_squared_distribution<_RealType>& __d1,
-	       const std::chi_squared_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %chi_squared_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -2389,10 +2289,6 @@ namespace std
 	_RealType
 	b() const
 	{ return _M_b; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_a == __p2._M_a) && (__p1._M_b == __p2._M_b); }
 
       private:
 	_RealType _M_a;
@@ -2472,16 +2368,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two Cauchy distributions have
-   *        the same parameters.
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::cauchy_distribution<_RealType>& __d1,
-	       const std::cauchy_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %cauchy_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -2544,10 +2430,6 @@ namespace std
 	_RealType
 	n() const
 	{ return _M_n; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_m == __p2._M_m) && (__p1._M_n == __p2._M_n); }
 
       private:
 	_RealType _M_m;
@@ -2627,16 +2509,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two Fisher f distributions have
-   *        the same parameters.
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::fisher_f_distribution<_RealType>& __d1,
-	       const std::fisher_f_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %fisher_f_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -2693,10 +2565,6 @@ namespace std
 	_RealType
 	n() const
 	{ return _M_n; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_n == __p2._M_n; }
 
       private:
 	_RealType _M_n;
@@ -2775,16 +2643,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two Student t distributions have
-   *        the same parameters.
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::student_t_distribution<_RealType>& __d1,
-	       const std::student_t_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %student_t_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -2848,10 +2706,6 @@ namespace std
       double
       p() const
       { return _M_p; }
-
-      friend bool
-      operator==(const param_type& __p1, const param_type& __p2)
-      { return __p1._M_p == __p2._M_p; }
 
     private:
       double _M_p;
@@ -2951,15 +2805,6 @@ namespace std
   };
 
   /**
-   * @brief Return true if two Bernoulli distributions have
-   *        the same parameters.
-   */
-  inline bool
-  operator==(const std::bernoulli_distribution& __d1,
-	     const std::bernoulli_distribution& __d2)
-  { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %bernoulli_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -3033,10 +2878,6 @@ namespace std
 	double
 	p() const
 	{ return _M_p; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_t == __p2._M_t) && (__p1._M_p == __p2._M_p); }
 
       private:
 	void
@@ -3114,17 +2955,6 @@ namespace std
       result_type
       max() const
       { return _M_param.t(); }
-
-      /**
-       * @brief Return true if two binomial distributions have
-       *        the same parameters.
-       */
-      template<typename _IntType1>
-	friend bool
-        operator==(const std::binomial_distribution<_IntType1>& __d1,
-		   const std::binomial_distribution<_IntType1>& __d2)
-	{ return ((__d1.param() == __d2.param())
-		  && (__d1._M_nd == __d2._M_nd)); }
 
       template<typename _UniformRandomNumberGenerator>
 	result_type
@@ -3214,10 +3044,6 @@ namespace std
 	p() const
 	{ return _M_p; }
 
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_p == __p2._M_p; }
-
       private:
 	void
 	_M_initialize()
@@ -3298,16 +3124,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two geometric distributions have
-   *        the same parameters.
-   */
-  template<typename _IntType>
-    inline bool
-    operator==(const geometric_distribution<_IntType>& __d1,
-	       const geometric_distribution<_IntType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %geometric_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -3371,10 +3187,6 @@ namespace std
 	double
 	p() const
 	{ return _M_p; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_k == __p2._M_k) && (__p1._M_p == __p2._M_p); }
 
       private:
 	_IntType _M_k;
@@ -3456,16 +3268,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two negative binomial distributions have
-   *        the same parameters.
-   */
-  template<typename _IntType>
-    inline bool
-    operator==(const std::negative_binomial_distribution<_IntType>& __d1,
-	       const std::negative_binomial_distribution<_IntType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %negative_binomial_distribution random
    *        number distribution @p __x into the output stream @p __os.
    *
@@ -3536,10 +3338,6 @@ namespace std
 	double
 	mean() const
 	{ return _M_mean; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_mean == __p2._M_mean; }
 
       private:
 	// Hosts either log(mean) or the threshold of the simple method.
@@ -3619,17 +3417,6 @@ namespace std
 		   const param_type& __p);
 
       /**
-       * @brief Return true if two Poisson distributions have the same
-       *        parameters.
-       */
-      template<typename _IntType1>
-	friend bool
-        operator==(const std::poisson_distribution<_IntType1>& __d1,
-		   const std::poisson_distribution<_IntType1>& __d2)
-	{ return ((__d1.param() == __d2.param())
-		  && (__d1._M_nd == __d2._M_nd)); }
-
-      /**
        * @brief Inserts a %poisson_distribution random number distribution
        * @p __x into the output stream @p __os.
        *
@@ -3702,10 +3489,6 @@ namespace std
 	_RealType
 	lambda() const
 	{ return _M_lambda; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_lambda == __p2._M_lambda; }
 
       private:
 	_RealType _M_lambda;
@@ -3794,16 +3577,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two exponential distributions have the same
-   *        parameters.
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::exponential_distribution<_RealType>& __d1,
-	       const std::exponential_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %exponential_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -3869,11 +3642,6 @@ namespace std
 	_RealType
 	beta() const
 	{ return _M_beta; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return ((__p1._M_alpha == __p2._M_alpha)
-		  && (__p1._M_beta == __p2._M_beta)); }
 
       private:
 	void
@@ -3968,16 +3736,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two gamma distributions have the same
-   *        parameters.
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::gamma_distribution<_RealType>& __d1,
-	       const std::gamma_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %gamma_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -4038,10 +3796,6 @@ namespace std
 	_RealType
 	b() const
 	{ return _M_b; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_a == __p2._M_a) && (__p1._M_b == __p2._M_b); }
 
       private:
 	_RealType _M_a;
@@ -4130,16 +3884,6 @@ namespace std
     };
 
   /**
-   * @brief Return true if two Weibull distributions have the same
-   *        parameters.
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::weibull_distribution<_RealType>& __d1,
-	       const std::weibull_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %weibull_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -4201,10 +3945,6 @@ namespace std
 	_RealType
 	b() const
 	{ return _M_b; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return (__p1._M_a == __p2._M_a) && (__p1._M_b == __p2._M_b); }
 
       private:
 	_RealType _M_a;
@@ -4287,15 +4027,6 @@ namespace std
     };
 
   /**
-   *
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::extreme_value_distribution<_RealType>& __d1,
-	       const std::extreme_value_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
-  /**
    * @brief Inserts a %extreme_value_distribution random number distribution
    * @p __x into the output stream @p __os.
    *
@@ -4367,10 +4098,6 @@ namespace std
 	std::vector<double>
 	probabilities() const
 	{ return _M_prob; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return __p1._M_prob == __p2._M_prob; }
 
       private:
 	void
@@ -4493,15 +4220,6 @@ namespace std
       param_type _M_param;
     };
 
-  /**
-   *
-   */
-  template<typename _IntType>
-    inline bool
-    operator==(const std::discrete_distribution<_IntType>& __d1,
-	       const std::discrete_distribution<_IntType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
 
   /**
    * @brief A piecewise_constant_distribution random number distribution.
@@ -4542,11 +4260,6 @@ namespace std
 	std::vector<double>
 	densities() const
 	{ return _M_den; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return ((__p1._M_int == __p2._M_int)
-		  && (__p1._M_den == __p2._M_den)); }
 
       private:
 	void
@@ -4683,15 +4396,6 @@ namespace std
       param_type _M_param;
     };
 
-  /**
-   *
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::piecewise_constant_distribution<_RealType>& __d1,
-	       const std::piecewise_constant_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
-
 
   /**
    * @brief A piecewise_linear_distribution random number distribution.
@@ -4732,11 +4436,6 @@ namespace std
 	std::vector<double>
 	densities() const
 	{ return _M_den; }
-
-	friend bool
-	operator==(const param_type& __p1, const param_type& __p2)
-	{ return ((__p1._M_int == __p2._M_int)
-		  && (__p1._M_den == __p2._M_den)); }
 
       private:
 	void
@@ -4875,14 +4574,6 @@ namespace std
       param_type _M_param;
     };
 
-  /**
-   *
-   */
-  template<typename _RealType>
-    inline bool
-    operator==(const std::piecewise_linear_distribution<_RealType>& __d1,
-	       const std::piecewise_linear_distribution<_RealType>& __d2)
-    { return __d1.param() == __d2.param(); }
 
   /* @} */ // group std_random_distributions_poisson
 

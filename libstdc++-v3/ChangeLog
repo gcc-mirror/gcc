@@ -1,3 +1,92 @@
+2009-04-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/39629 (final bits)
+	* include/bits/random.h (subtract_with_carry_engine<>::_S_modulus):
+	Remove, consistently use __detail::_Shift<_UIntType, __w>::__value.
+	* include/bits/random.tcc (shuffle_order_engine<>::operator()()):
+	Fix formula for __j.
+	* include/bits/random.tcc (operator==(const normal_distribution<>&,
+	const normal_distribution<>&): Remove.
+	* include/bits/random.h (operator==(const uniform_int_distribution<>&,
+	const uniform_int_distribution<>&), operator==(const
+	uniform_real_distribution<>&, const uniform_real_distribution<>&),
+	operator==(const normal_distribution<>&, const normal_distribution<>&), 
+	operator==(const lognormal_distribution<>&,
+	const lognormal_distribution<>&), operator==(const
+	chi_squared_distribution<>&, const chi_squared_distribution<>&),
+	operator==(const cauchy_distribution<>&, const cauchy_distribution<>&),
+	operator==(const fisher_distribution<>&, const fisher_distribution<>&),
+	operator==(const student_t_distribution<>&,
+	const student_t_distribution<>&), operator==(const
+	bernoulli_distribution<>&, const bernoulli_distribution<>&),
+	operator==(const binomial_distribution<>&, const
+	binomial_distribution<>&), operator==(const geometric_distribution<>&,
+	const geometric_distribution<>&), operator==(const
+	negative_binomial_distribution<>&, const 
+	negative_binomial_distribution<>&), operator==(const
+	poisson_distribution<>&, const poisson_distribution<>&),
+	operator==(const exponential_distribution<>&,
+	const exponential_distribution<>&), operator==(const
+	gamma_distribution<>&, const gamma_distribution<>&), operator==(const
+	weibull_distribution<>&, const weibull_distribution<>&),
+	operator==(const extreme_value_distribution<>&,
+	const extreme_value_distribution<>&), operator==(const
+	discrete_distribution<>&, const discrete_distribution<>&),
+	operator==(const piecewise_constant_distribution<>&,
+	const piecewise_constant_distribution<>&), operator==(const
+	piecewise_linear_distribution<>&, const
+	piecewise_linear_distribution<>&)): Remove.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/
+	serialize.cc: Remove.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/chi_squared_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/poisson_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/bernoulli_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/discrete_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/weibull_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/gamma_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/fisher_f_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/exponential_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/lognormal_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/binomial_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/
+	operators/serialize.cc: Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/operators/
+	serialize.cc: Likewise.
+	* testsuite/26_numerics/random/geometric_distribution/operators/
+	serialize.cc: Likewise.
+
+	* include/bits/random.h (linear_congruential_engine<>::seed(_Gen&,
+	true_type), linear_congruential_engine<>::seed(_Gen&, false_type),
+	mersenne_twister_engine<>::seed(_Gen&,
+	true_type), mersenne_twister_engine<>::seed(_Gen&, false_type),
+	subtract_with_carry_engine<>::seed(_Gen&,
+	true_type), subtract_with_carry_engine<>::seed(_Gen&, false_type)):
+	Remove, unused.
+	* include/bits/random.tcc (linear_congruential_engine<>::
+	seed(_Gen&, false_type): Likewise.
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* src/allocator-inst.cc: Change copyright header to refer to
