@@ -1,3 +1,9 @@
+2009-04-10  Ben Elliston  <bje@au.ibm.com>
+
+	PR target/36800
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Do not set
+	regalign for the reg == fpr and TDmode case.
+
 2009-04-09  David Ayers  <ayers@fsfe.org>
 
 	PR objc/29200
