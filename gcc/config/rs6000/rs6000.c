@@ -7092,7 +7092,6 @@ rs6000_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	 reg number is 0 for f1, so we want to make it odd.  */
       else if (reg == fpr && TYPE_MODE (type) == TDmode)
 	{
-	  regalign = 1;
 	  t = build2 (BIT_IOR_EXPR, TREE_TYPE (reg), unshare_expr (reg),
 		      build_int_cst (TREE_TYPE (reg), 1));
 	  u = build2 (MODIFY_EXPR, void_type_node, unshare_expr (reg), t);
