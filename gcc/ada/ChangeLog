@@ -1544,9 +1544,12 @@
 
 2009-04-08  Tristan Gingold  <gingold@adacore.com>
 
-	* gcc-interface/utils.c, gcc-interface/decl.c, gcc-interface/gigi.h:
-	Add support for pragma Thread_Local_Storage
-	
+	* gcc-interface/gigi.h (enum attr_type): Add ATTR_THREAD_LOCAL_STORAGE.
+	* gcc-interface/decl.c (prepend_attributes): New case
+	Pragma_Thread_Local_Storage.
+	* gcc-interface/utils.c (process_attributes): New case
+	ATTR_THREAD_LOCAL_STORAGE.
+
 2009-04-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* inline.adb (Back_End_Cannot_Inline): Do not mark a body as inlineable
