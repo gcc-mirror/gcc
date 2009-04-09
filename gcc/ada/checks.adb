@@ -5125,10 +5125,12 @@ package body Checks is
       Exp : Node_Id;
 
    begin
-      --  Do not insert if checks off, or if not checking validity
+      --  Do not insert if checks off, or if not checking validity or
+      --  if expression is known to be valid
 
       if not Validity_Checks_On
         or else Range_Or_Validity_Checks_Suppressed (Expr)
+        or else Expr_Known_Valid (Expr)
       then
          return;
       end if;
@@ -5151,6 +5153,14 @@ package body Checks is
 
       begin
          Set_Do_Range_Check (Exp, False);
+
+         --  Force evaluation to avoid multiple reads for atomic/volatile
+
+         if Is_Entity_Name (Exp)
+           and then Is_Volatile (Entity (Exp))
+         then
+            Force_Evaluation (Exp, Name_Req => True);
+         end if;
 
          --  Insert the validity check. Note that we do this with validity
          --  checks turned off, to avoid recursion, we do not want validity
