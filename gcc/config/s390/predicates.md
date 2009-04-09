@@ -172,6 +172,11 @@
   return (s390_branch_condition_mask (op) >= 0);
 })
 
+;; Return true if op is the cc register.
+(define_predicate "cc_reg_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == CC_REGNUM")))
+
 (define_predicate "s390_signed_integer_comparison"
   (match_code "eq, ne, lt, gt, le, ge")
 {

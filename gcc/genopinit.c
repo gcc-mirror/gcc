@@ -234,7 +234,6 @@ static const char * const optabs[] =
   "sync_new_xor_optab[$A] = CODE_FOR_$(sync_new_xor$I$a$)",
   "sync_new_nand_optab[$A] = CODE_FOR_$(sync_new_nand$I$a$)",
   "sync_compare_and_swap[$A] = CODE_FOR_$(sync_compare_and_swap$I$a$)",
-  "sync_compare_and_swap_cc[$A] = CODE_FOR_$(sync_compare_and_swap_cc$I$a$)",
   "sync_lock_test_and_set[$A] = CODE_FOR_$(sync_lock_test_and_set$I$a$)",
   "sync_lock_release[$A] = CODE_FOR_$(sync_lock_release$I$a$)",
   "optab_handler (vec_set_optab, $A)->insn_code = CODE_FOR_$(vec_set$a$)",

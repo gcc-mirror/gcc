@@ -70,7 +70,11 @@
 	     (match_operand:CASMODE 2 "register_operand" "")
 	     (match_operand:CASMODE 3 "register_operand" "")]
 	    UNSPECV_CMPXCHG))
-     (clobber (reg:CC FLAGS_REG))])]
+   (set (reg:CCZ FLAGS_REG)
+        (compare:CCZ
+          (unspec_volatile:CASMODE
+            [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG)
+          (match_dup 2)))])]
   "TARGET_CMPXCHG"
 {
   if ((<MODE>mode == DImode && !TARGET_64BIT) || <MODE>mode == TImode)
@@ -109,7 +113,11 @@
 	   (match_operand:IMODE 2 "register_operand" "a")
 	   (match_operand:IMODE 3 "register_operand" "<modeconstraint>")]
 	  UNSPECV_CMPXCHG))
-   (clobber (reg:CC FLAGS_REG))]
+   (set (reg:CCZ FLAGS_REG)
+        (compare:CCZ
+          (unspec_volatile:IMODE
+            [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG)
+          (match_dup 2)))]
   "TARGET_CMPXCHG"
   "lock{%;| }cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
 
@@ -123,7 +131,12 @@
 	   (match_operand:<DCASHMODE> 3 "register_operand" "b")
 	   (match_operand:<DCASHMODE> 4 "register_operand" "c")]
 	  UNSPECV_CMPXCHG))
-   (clobber (reg:CC FLAGS_REG))]
+   (set (reg:CCZ FLAGS_REG)
+        (compare:CCZ
+          (unspec_volatile:DCASMODE
+            [(match_dup 1) (match_dup 2) (match_dup 3) (match_dup 4)]
+	    UNSPECV_CMPXCHG)
+          (match_dup 2)))]
   ""
   "lock{%;| }cmpxchg<doublemodesuffix>b\t%1")
 
@@ -137,105 +150,6 @@
 ;; just enumerate all regs possible here, which (as this is !TARGET_64BIT)
 ;; are just esi and edi.
 (define_insn "*sync_double_compare_and_swapdi_pic"
-  [(set (match_operand:DI 0 "register_operand" "=A")
-	(match_operand:DI 1 "cmpxchg8b_pic_memory_operand" "+m"))
-   (set (match_dup 1)
-	(unspec_volatile:DI
-	  [(match_dup 1)
-	   (match_operand:DI 2 "register_operand" "A")
-	   (match_operand:SI 3 "register_operand" "SD")
-	   (match_operand:SI 4 "register_operand" "c")]
-	  UNSPECV_CMPXCHG))
-   (clobber (reg:CC FLAGS_REG))]
-  "!TARGET_64BIT && TARGET_CMPXCHG8B && flag_pic"
-  "xchg{l}\t%%ebx, %3\;lock{%;| }cmpxchg8b\t%1\;xchg{l}\t%%ebx, %3")
-
-(define_expand "sync_compare_and_swap_cc<mode>"
-  [(parallel
-    [(set (match_operand:CASMODE 0 "register_operand" "")
-	  (match_operand:CASMODE 1 "memory_operand" ""))
-     (set (match_dup 1)
-	  (unspec_volatile:CASMODE
-	    [(match_dup 1)
-	     (match_operand:CASMODE 2 "register_operand" "")
-	     (match_operand:CASMODE 3 "register_operand" "")]
-	    UNSPECV_CMPXCHG))
-     (set (match_dup 4)
-	  (compare:CCZ
-	    (unspec_volatile:CASMODE
-	      [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG)
-	    (match_dup 2)))])]
-  "TARGET_CMPXCHG"
-{
-  operands[4] = gen_rtx_REG (CCZmode, FLAGS_REG);
-  ix86_compare_op0 = operands[4];
-  ix86_compare_op1 = const0_rtx;
-  if ((<MODE>mode == DImode && !TARGET_64BIT) || <MODE>mode == TImode)
-    {
-      enum machine_mode hmode = <MODE>mode == DImode ? SImode : DImode;
-      rtx low = simplify_gen_subreg (hmode, operands[3], <MODE>mode, 0);
-      rtx high = simplify_gen_subreg (hmode, operands[3], <MODE>mode,
-				      GET_MODE_SIZE (hmode));
-      low = force_reg (hmode, low);
-      high = force_reg (hmode, high);
-      if (<MODE>mode == DImode)
-	{
-	  if (flag_pic && !cmpxchg8b_pic_memory_operand (operands[1], DImode))
-	    operands[1] = replace_equiv_address (operands[1],
-						 force_reg (Pmode,
-							    XEXP (operands[1],
-								  0)));
-	  emit_insn (gen_sync_double_compare_and_swap_ccdi
-		     (operands[0], operands[1], operands[2], low, high));
-	}
-      else if (<MODE>mode == TImode)
-	emit_insn (gen_sync_double_compare_and_swap_ccti
-		   (operands[0], operands[1], operands[2], low, high));
-      else
-	gcc_unreachable ();
-      DONE;
-    }
-})
-
-(define_insn "*sync_compare_and_swap_cc<mode>"
-  [(set (match_operand:IMODE 0 "register_operand" "=a")
-	(match_operand:IMODE 1 "memory_operand" "+m"))
-   (set (match_dup 1)
-	(unspec_volatile:IMODE
-	  [(match_dup 1)
-	   (match_operand:IMODE 2 "register_operand" "a")
-	   (match_operand:IMODE 3 "register_operand" "<modeconstraint>")]
-	  UNSPECV_CMPXCHG))
-   (set (reg:CCZ FLAGS_REG)
-	(compare:CCZ
-	  (unspec_volatile:IMODE
-	    [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPECV_CMPXCHG)
-	  (match_dup 2)))]
-  "TARGET_CMPXCHG"
-  "lock{%;| }cmpxchg{<modesuffix>}\t{%3, %1|%1, %3}")
-
-(define_insn "sync_double_compare_and_swap_cc<mode>"
-  [(set (match_operand:DCASMODE 0 "register_operand" "=A")
-	(match_operand:DCASMODE 1 "memory_operand" "+m"))
-   (set (match_dup 1)
-	(unspec_volatile:DCASMODE
-	  [(match_dup 1)
-	   (match_operand:DCASMODE 2 "register_operand" "A")
-	   (match_operand:<DCASHMODE> 3 "register_operand" "b")
-	   (match_operand:<DCASHMODE> 4 "register_operand" "c")]
-	  UNSPECV_CMPXCHG))
-   (set (reg:CCZ FLAGS_REG)
-	(compare:CCZ
-	  (unspec_volatile:DCASMODE
-	    [(match_dup 1) (match_dup 2) (match_dup 3) (match_dup 4)]
-	    UNSPECV_CMPXCHG)
-	  (match_dup 2)))]
-  ""
-  "lock{%;| }cmpxchg<doublemodesuffix>b\t%1")
-
-;; See above for the explanation of using the constraint "SD" for
-;; operand 3.
-(define_insn "*sync_double_compare_and_swap_ccdi_pic"
   [(set (match_operand:DI 0 "register_operand" "=A")
 	(match_operand:DI 1 "cmpxchg8b_pic_memory_operand" "+m"))
    (set (match_dup 1)

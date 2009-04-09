@@ -304,8 +304,7 @@ compareAndSwapInt_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			   tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (int_type_node);
-  if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
-      || sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
     {
       tree addr, stmt;
       UNMARSHAL5 (orig_call);
@@ -324,8 +323,7 @@ compareAndSwapLong_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			    tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
-  if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
-      || sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
     {
       tree addr, stmt;
       UNMARSHAL5 (orig_call);
@@ -343,8 +341,7 @@ compareAndSwapObject_builtin (tree method_return_type ATTRIBUTE_UNUSED,
 			      tree orig_call)
 {
   enum machine_mode mode = TYPE_MODE (ptr_type_node);
-  if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
-      || sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
   {
     tree addr, stmt;
     int builtin;
@@ -422,8 +419,7 @@ VMSupportsCS8_builtin (tree method_return_type,
 {
   enum machine_mode mode = TYPE_MODE (long_type_node);
   gcc_assert (method_return_type == boolean_type_node);
-  if (sync_compare_and_swap_cc[mode] != CODE_FOR_nothing 
-      || sync_compare_and_swap[mode] != CODE_FOR_nothing)
+  if (sync_compare_and_swap[mode] != CODE_FOR_nothing)
     return boolean_true_node;
   else
     return boolean_false_node;

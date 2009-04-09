@@ -817,7 +817,7 @@ do {									\
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  Note that we can't use "rtx" here
    since it hasn't been defined!  */
-extern struct rtx_def *s390_compare_op0, *s390_compare_op1, *s390_compare_emitted;
+extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
 
 
 /* Relative costs of operations.  */
