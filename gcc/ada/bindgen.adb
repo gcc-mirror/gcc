@@ -2631,16 +2631,16 @@ package body Bindgen is
 
       Gen_Elab_Defs_C;
 
-      --  Imported variables used only when we have a runtime.
+      --  Imported variables used only when we have a runtime
 
       if not Suppress_Standard_Library_On_Target then
 
-         --  Track elaboration/finalization phase.
+         --  Track elaboration/finalization phase
 
          WBI ("extern int  __gnat_handler_installed;");
          WBI ("");
 
-         --  Track feature enable/disable on VMS.
+         --  Track feature enable/disable on VMS
 
          if OpenVMS_On_Target then
             WBI ("extern int  __gnat_features_set;");
@@ -2676,7 +2676,6 @@ package body Bindgen is
          end if;
 
          --  Similarly deal with exit status
-         --  are in the run-time library.
 
          if not Configurable_Run_Time_On_Target then
             WBI ("extern int gnat_exit_status;");
