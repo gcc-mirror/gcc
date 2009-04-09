@@ -1,3 +1,12 @@
+2009-04-09  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (find_prev_try): Break out from ....
+	(duplicate_eh_regions): ... here; properly update prev_try pointers
+	when duplication part of tree.
+	(dump_eh_tree): Improve dumping.
+	(verify_eh_region): New.
+	(verify_eh_tree): Use it.
+
 2009-04-06  Richard Guenther  <rguenther@suse.de>
 
 	* c-gimplify.c (c_gimplify_expr): Fix the invalid GENERIC
