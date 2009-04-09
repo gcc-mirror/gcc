@@ -34,6 +34,7 @@ with Nmake;    use Nmake;
 with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Res;  use Sem_Res;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;

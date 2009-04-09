@@ -30,7 +30,381 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Atree;  use Atree;
+with Einfo;  use Einfo;
+with Namet;  use Namet;
+with Sinfo;  use Sinfo;
+with Snames; use Snames;
+with Stand;  use Stand;
+
 package body Sem_Aux is
+
+   ----------------------
+   -- Ancestor_Subtype --
+   ----------------------
+
+   function Ancestor_Subtype (Typ : Entity_Id) return Entity_Id is
+   begin
+      --  If this is first subtype, or is a base type, then there is no
+      --  ancestor subtype, so we return Empty to indicate this fact.
+
+      if Is_First_Subtype (Typ) or else Typ = Base_Type (Typ) then
+         return Empty;
+      end if;
+
+      declare
+         D : constant Node_Id := Declaration_Node (Typ);
+
+      begin
+         --  If we have a subtype declaration, get the ancestor subtype
+
+         if Nkind (D) = N_Subtype_Declaration then
+            if Nkind (Subtype_Indication (D)) = N_Subtype_Indication then
+               return Entity (Subtype_Mark (Subtype_Indication (D)));
+            else
+               return Entity (Subtype_Indication (D));
+            end if;
+
+         --  If not, then no subtype indication is available
+
+         else
+            return Empty;
+         end if;
+      end;
+   end Ancestor_Subtype;
+
+   --------------------
+   -- Available_View --
+   --------------------
+
+   function Available_View (Typ : Entity_Id) return Entity_Id is
+   begin
+      if Is_Incomplete_Type (Typ)
+        and then Present (Non_Limited_View (Typ))
+      then
+         --  The non-limited view may itself be an incomplete type, in which
+         --  case get its full view.
+
+         return Get_Full_View (Non_Limited_View (Typ));
+
+      elsif Is_Class_Wide_Type (Typ)
+        and then Is_Incomplete_Type (Etype (Typ))
+        and then Present (Non_Limited_View (Etype (Typ)))
+      then
+         return Class_Wide_Type (Non_Limited_View (Etype (Typ)));
+
+      else
+         return Typ;
+      end if;
+   end Available_View;
+
+   --------------------
+   -- Constant_Value --
+   --------------------
+
+   function Constant_Value (Ent : Entity_Id) return Node_Id is
+      D      : constant Node_Id := Declaration_Node (Ent);
+      Full_D : Node_Id;
+
+   begin
+      --  If we have no declaration node, then return no constant value.
+      --  Not clear how this can happen, but it does sometimes and this is
+      --  the safest approach.
+
+      if No (D) then
+         return Empty;
+
+      --  Normal case where a declaration node is present
+
+      elsif Nkind (D) = N_Object_Renaming_Declaration then
+         return Renamed_Object (Ent);
+
+      --  If this is a component declaration whose entity is constant, it
+      --  is a prival within a protected function. It does not have
+      --  a constant value.
+
+      elsif Nkind (D) = N_Component_Declaration then
+         return Empty;
+
+      --  If there is an expression, return it
+
+      elsif Present (Expression (D)) then
+         return (Expression (D));
+
+      --  For a constant, see if we have a full view
+
+      elsif Ekind (Ent) = E_Constant
+        and then Present (Full_View (Ent))
+      then
+         Full_D := Parent (Full_View (Ent));
+
+         --  The full view may have been rewritten as an object renaming
+
+         if Nkind (Full_D) = N_Object_Renaming_Declaration then
+            return Name (Full_D);
+         else
+            return Expression (Full_D);
+         end if;
+
+      --  Otherwise we have no expression to return
+
+      else
+         return Empty;
+      end if;
+   end Constant_Value;
+
+   -----------------------------
+   -- Enclosing_Dynamic_Scope --
+   -----------------------------
+
+   function Enclosing_Dynamic_Scope (Ent : Entity_Id) return Entity_Id is
+      S  : Entity_Id;
+
+   begin
+      --  The following test is an error defense against some syntax
+      --  errors that can leave scopes very messed up.
+
+      if Ent = Standard_Standard then
+         return Ent;
+      end if;
+
+      --  Normal case, search enclosing scopes
+
+      --  Note: the test for Present (S) should not be required, it is a
+      --  defence against an ill-formed tree.
+
+      S := Scope (Ent);
+      loop
+         --  If we somehow got an empty value for Scope, the tree must be
+         --  malformed. Rather than blow up we return Standard in this case.
+
+         if No (S) then
+            return Standard_Standard;
+
+         --  Quit if we get to standard or a dynamic scope
+
+         elsif S = Standard_Standard
+           or else Is_Dynamic_Scope (S)
+         then
+            return S;
+
+         --  Otherwise keep climbing
+
+         else
+            S := Scope (S);
+         end if;
+      end loop;
+   end Enclosing_Dynamic_Scope;
+
+   ------------------------
+   -- First_Discriminant --
+   ------------------------
+
+   function First_Discriminant (Typ : Entity_Id) return Entity_Id is
+      Ent : Entity_Id;
+
+   begin
+      pragma Assert
+        (Has_Discriminants (Typ)
+          or else Has_Unknown_Discriminants (Typ));
+
+      Ent := First_Entity (Typ);
+
+      --  The discriminants are not necessarily contiguous, because access
+      --  discriminants will generate itypes. They are not the first entities
+      --  either, because tag and controller record must be ahead of them.
+
+      if Chars (Ent) = Name_uTag then
+         Ent := Next_Entity (Ent);
+      end if;
+
+      if Chars (Ent) = Name_uController then
+         Ent := Next_Entity (Ent);
+      end if;
+
+      --  Skip all hidden stored discriminants if any
+
+      while Present (Ent) loop
+         exit when Ekind (Ent) = E_Discriminant
+           and then not Is_Completely_Hidden (Ent);
+
+         Ent := Next_Entity (Ent);
+      end loop;
+
+      pragma Assert (Ekind (Ent) = E_Discriminant);
+
+      return Ent;
+   end First_Discriminant;
+
+   -------------------------------
+   -- First_Stored_Discriminant --
+   -------------------------------
+
+   function First_Stored_Discriminant (Typ : Entity_Id) return Entity_Id is
+      Ent : Entity_Id;
+
+      function Has_Completely_Hidden_Discriminant
+        (Typ : Entity_Id) return Boolean;
+      --  Scans the Discriminants to see whether any are Completely_Hidden
+      --  (the mechanism for describing non-specified stored discriminants)
+
+      ----------------------------------------
+      -- Has_Completely_Hidden_Discriminant --
+      ----------------------------------------
+
+      function Has_Completely_Hidden_Discriminant
+        (Typ : Entity_Id) return Boolean
+      is
+         Ent : Entity_Id;
+
+      begin
+         pragma Assert (Ekind (Typ) = E_Discriminant);
+
+         Ent := Typ;
+         while Present (Ent) and then Ekind (Ent) = E_Discriminant loop
+            if Is_Completely_Hidden (Ent) then
+               return True;
+            end if;
+
+            Ent := Next_Entity (Ent);
+         end loop;
+
+         return False;
+      end Has_Completely_Hidden_Discriminant;
+
+   --  Start of processing for First_Stored_Discriminant
+
+   begin
+      pragma Assert
+        (Has_Discriminants (Typ)
+          or else Has_Unknown_Discriminants (Typ));
+
+      Ent := First_Entity (Typ);
+
+      if Chars (Ent) = Name_uTag then
+         Ent := Next_Entity (Ent);
+      end if;
+
+      if Chars (Ent) = Name_uController then
+         Ent := Next_Entity (Ent);
+      end if;
+
+      if Has_Completely_Hidden_Discriminant (Ent) then
+
+         while Present (Ent) loop
+            exit when Is_Completely_Hidden (Ent);
+            Ent := Next_Entity (Ent);
+         end loop;
+
+      end if;
+
+      pragma Assert (Ekind (Ent) = E_Discriminant);
+
+      return Ent;
+   end First_Stored_Discriminant;
+
+   -------------------
+   -- First_Subtype --
+   -------------------
+
+   function First_Subtype (Typ : Entity_Id) return Entity_Id is
+      B   : constant Entity_Id := Base_Type (Typ);
+      F   : constant Node_Id   := Freeze_Node (B);
+      Ent : Entity_Id;
+
+   begin
+      --  If the base type has no freeze node, it is a type in standard,
+      --  and always acts as its own first subtype unless it is one of
+      --  the predefined integer types. If the type is formal, it is also
+      --  a first subtype, and its base type has no freeze node. On the other
+      --  hand, a subtype of a generic formal is not its own first_subtype.
+      --  Its base type, if anonymous, is attached to the formal type decl.
+      --  from which the first subtype is obtained.
+
+      if No (F) then
+
+         if B = Base_Type (Standard_Integer) then
+            return Standard_Integer;
+
+         elsif B = Base_Type (Standard_Long_Integer) then
+            return Standard_Long_Integer;
+
+         elsif B = Base_Type (Standard_Short_Short_Integer) then
+            return Standard_Short_Short_Integer;
+
+         elsif B = Base_Type (Standard_Short_Integer) then
+            return Standard_Short_Integer;
+
+         elsif B = Base_Type (Standard_Long_Long_Integer) then
+            return Standard_Long_Long_Integer;
+
+         elsif Is_Generic_Type (Typ) then
+            if Present (Parent (B)) then
+               return Defining_Identifier (Parent (B));
+            else
+               return Defining_Identifier (Associated_Node_For_Itype (B));
+            end if;
+
+         else
+            return B;
+         end if;
+
+      --  Otherwise we check the freeze node, if it has a First_Subtype_Link
+      --  then we use that link, otherwise (happens with some Itypes), we use
+      --  the base type itself.
+
+      else
+         Ent := First_Subtype_Link (F);
+
+         if Present (Ent) then
+            return Ent;
+         else
+            return B;
+         end if;
+      end if;
+   end First_Subtype;
+
+   -------------------------
+   -- First_Tag_Component --
+   -------------------------
+
+   function First_Tag_Component (Typ : Entity_Id) return Entity_Id is
+      Comp : Entity_Id;
+      Ctyp : Entity_Id;
+
+   begin
+      Ctyp := Typ;
+      pragma Assert (Is_Tagged_Type (Ctyp));
+
+      if Is_Class_Wide_Type (Ctyp) then
+         Ctyp := Root_Type (Ctyp);
+      end if;
+
+      if Is_Private_Type (Ctyp) then
+         Ctyp := Underlying_Type (Ctyp);
+
+         --  If the underlying type is missing then the source program has
+         --  errors and there is nothing else to do (the full-type declaration
+         --  associated with the private type declaration is missing).
+
+         if No (Ctyp) then
+            return Empty;
+         end if;
+      end if;
+
+      Comp := First_Entity (Ctyp);
+      while Present (Comp) loop
+         if Is_Tag (Comp) then
+            return Comp;
+         end if;
+
+         Comp := Next_Entity (Comp);
+      end loop;
+
+      --  No tag component found
+
+      return Empty;
+   end First_Tag_Component;
 
    ----------------
    -- Initialize --
@@ -40,6 +414,345 @@ package body Sem_Aux is
    begin
       Obsolescent_Warnings.Init;
    end Initialize;
+
+   ---------------------
+   -- Is_By_Copy_Type --
+   ---------------------
+
+   function Is_By_Copy_Type (Ent : Entity_Id) return Boolean is
+   begin
+      --  If Id is a private type whose full declaration has not been seen,
+      --  we assume for now that it is not a By_Copy type. Clearly this
+      --  attribute should not be used before the type is frozen, but it is
+      --  needed to build the associated record of a protected type. Another
+      --  place where some lookahead for a full view is needed ???
+
+      return
+        Is_Elementary_Type (Ent)
+          or else (Is_Private_Type (Ent)
+                     and then Present (Underlying_Type (Ent))
+                     and then Is_Elementary_Type (Underlying_Type (Ent)));
+   end Is_By_Copy_Type;
+
+   --------------------------
+   -- Is_By_Reference_Type --
+   --------------------------
+
+   function Is_By_Reference_Type (Ent : Entity_Id) return Boolean is
+      Btype : constant Entity_Id := Base_Type (Ent);
+
+   begin
+      if Error_Posted (Ent)
+        or else Error_Posted (Btype)
+      then
+         return False;
+
+      elsif Is_Private_Type (Btype) then
+         declare
+            Utyp : constant Entity_Id := Underlying_Type (Btype);
+         begin
+            if No (Utyp) then
+               return False;
+            else
+               return Is_By_Reference_Type (Utyp);
+            end if;
+         end;
+
+      elsif Is_Incomplete_Type (Btype) then
+         declare
+            Ftyp : constant Entity_Id := Full_View (Btype);
+         begin
+            if No (Ftyp) then
+               return False;
+            else
+               return Is_By_Reference_Type (Ftyp);
+            end if;
+         end;
+
+      elsif Is_Concurrent_Type (Btype) then
+         return True;
+
+      elsif Is_Record_Type (Btype) then
+         if Is_Limited_Record (Btype)
+           or else Is_Tagged_Type (Btype)
+           or else Is_Volatile (Btype)
+         then
+            return True;
+
+         else
+            declare
+               C : Entity_Id;
+
+            begin
+               C := First_Component (Btype);
+               while Present (C) loop
+                  if Is_By_Reference_Type (Etype (C))
+                    or else Is_Volatile (Etype (C))
+                  then
+                     return True;
+                  end if;
+
+                  C := Next_Component (C);
+               end loop;
+            end;
+
+            return False;
+         end if;
+
+      elsif Is_Array_Type (Btype) then
+         return
+           Is_Volatile (Btype)
+             or else Is_By_Reference_Type (Component_Type (Btype))
+             or else Is_Volatile (Component_Type (Btype))
+             or else Has_Volatile_Components (Btype);
+
+      else
+         return False;
+      end if;
+   end Is_By_Reference_Type;
+
+   ---------------------
+   -- Is_Derived_Type --
+   ---------------------
+
+   function Is_Derived_Type (Ent : E) return B is
+      Par : Node_Id;
+
+   begin
+      if Is_Type (Ent)
+        and then Base_Type (Ent) /= Root_Type (Ent)
+        and then not Is_Class_Wide_Type (Ent)
+      then
+         if not Is_Numeric_Type (Root_Type (Ent)) then
+            return True;
+
+         else
+            Par := Parent (First_Subtype (Ent));
+
+            return Present (Par)
+              and then Nkind (Par) = N_Full_Type_Declaration
+              and then Nkind (Type_Definition (Par)) =
+                         N_Derived_Type_Definition;
+         end if;
+
+      else
+         return False;
+      end if;
+   end Is_Derived_Type;
+
+   ---------------------------
+   -- Is_Indefinite_Subtype --
+   ---------------------------
+
+   function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean is
+      K : constant Entity_Kind := Ekind (Ent);
+
+   begin
+      if Is_Constrained (Ent) then
+         return False;
+
+      elsif K in Array_Kind
+        or else K in Class_Wide_Kind
+        or else Has_Unknown_Discriminants (Ent)
+      then
+         return True;
+
+      --  Known discriminants: indefinite if there are no default values
+
+      elsif K in Record_Kind
+        or else Is_Incomplete_Or_Private_Type (Ent)
+        or else Is_Concurrent_Type (Ent)
+      then
+         return (Has_Discriminants (Ent)
+           and then
+             No (Discriminant_Default_Value (First_Discriminant (Ent))));
+
+      else
+         return False;
+      end if;
+   end Is_Indefinite_Subtype;
+
+   --------------------------------
+   -- Is_Inherently_Limited_Type --
+   --------------------------------
+
+   function Is_Inherently_Limited_Type (Ent : Entity_Id) return Boolean is
+      Btype : constant Entity_Id := Base_Type (Ent);
+
+   begin
+      if Is_Private_Type (Btype) then
+         declare
+            Utyp : constant Entity_Id := Underlying_Type (Btype);
+         begin
+            if No (Utyp) then
+               return False;
+            else
+               return Is_Inherently_Limited_Type (Utyp);
+            end if;
+         end;
+
+      elsif Is_Concurrent_Type (Btype) then
+         return True;
+
+      elsif Is_Record_Type (Btype) then
+         if Is_Limited_Record (Btype) then
+            return not Is_Interface (Btype)
+              or else Is_Protected_Interface (Btype)
+              or else Is_Synchronized_Interface (Btype)
+              or else Is_Task_Interface (Btype);
+
+         elsif Is_Class_Wide_Type (Btype) then
+            return Is_Inherently_Limited_Type (Root_Type (Btype));
+
+         else
+            declare
+               C : Entity_Id;
+
+            begin
+               C := First_Component (Btype);
+               while Present (C) loop
+                  if Is_Inherently_Limited_Type (Etype (C)) then
+                     return True;
+                  end if;
+
+                  C := Next_Component (C);
+               end loop;
+            end;
+
+            return False;
+         end if;
+
+      elsif Is_Array_Type (Btype) then
+         return Is_Inherently_Limited_Type (Component_Type (Btype));
+
+      else
+         return False;
+      end if;
+   end Is_Inherently_Limited_Type;
+
+   ---------------------
+   -- Is_Limited_Type --
+   ---------------------
+
+   function Is_Limited_Type (Ent : Entity_Id) return Boolean is
+      Btype : constant E := Base_Type (Ent);
+      Rtype : constant E := Root_Type (Btype);
+
+   begin
+      if not Is_Type (Ent) then
+         return False;
+
+      elsif Ekind (Btype) = E_Limited_Private_Type
+        or else Is_Limited_Composite (Btype)
+      then
+         return True;
+
+      elsif Is_Concurrent_Type (Btype) then
+         return True;
+
+         --  The Is_Limited_Record flag normally indicates that the type is
+         --  limited. The exception is that a type does not inherit limitedness
+         --  from its interface ancestor. So the type may be derived from a
+         --  limited interface, but is not limited.
+
+      elsif Is_Limited_Record (Ent)
+        and then not Is_Interface (Ent)
+      then
+         return True;
+
+      --  Otherwise we will look around to see if there is some other reason
+      --  for it to be limited, except that if an error was posted on the
+      --  entity, then just assume it is non-limited, because it can cause
+      --  trouble to recurse into a murky erroneous entity!
+
+      elsif Error_Posted (Ent) then
+         return False;
+
+      elsif Is_Record_Type (Btype) then
+
+         if Is_Limited_Interface (Ent) then
+            return True;
+
+         --  AI-419: limitedness is not inherited from a limited interface
+
+         elsif Is_Limited_Record (Rtype) then
+            return not Is_Interface (Rtype)
+              or else Is_Protected_Interface (Rtype)
+              or else Is_Synchronized_Interface (Rtype)
+              or else Is_Task_Interface (Rtype);
+
+         elsif Is_Class_Wide_Type (Btype) then
+            return Is_Limited_Type (Rtype);
+
+         else
+            declare
+               C : E;
+
+            begin
+               C := First_Component (Btype);
+               while Present (C) loop
+                  if Is_Limited_Type (Etype (C)) then
+                     return True;
+                  end if;
+
+                  C := Next_Component (C);
+               end loop;
+            end;
+
+            return False;
+         end if;
+
+      elsif Is_Array_Type (Btype) then
+         return Is_Limited_Type (Component_Type (Btype));
+
+      else
+         return False;
+      end if;
+   end Is_Limited_Type;
+
+   ------------------------
+   -- Next_Tag_Component --
+   ------------------------
+
+   function Next_Tag_Component (Tag : Entity_Id) return Entity_Id is
+      Comp : Entity_Id;
+
+   begin
+      pragma Assert (Is_Tag (Tag));
+
+      Comp := Next_Entity (Tag);
+      while Present (Comp) loop
+         if Is_Tag (Comp) then
+            pragma Assert (Chars (Comp) /= Name_uTag);
+            return Comp;
+         end if;
+
+         Comp := Next_Entity (Comp);
+      end loop;
+
+      --  No tag component found
+
+      return Empty;
+   end Next_Tag_Component;
+
+   --------------------------
+   -- Number_Discriminants --
+   --------------------------
+
+   function Number_Discriminants (Typ : Entity_Id) return Pos is
+      N     : Int;
+      Discr : Entity_Id;
+
+   begin
+      N := 0;
+      Discr := First_Discriminant (Typ);
+      while Present (Discr) loop
+         N := N + 1;
+         Discr := Next_Discriminant (Discr);
+      end loop;
+
+      return N;
+   end Number_Discriminants;
 
    ---------------
    -- Tree_Read --

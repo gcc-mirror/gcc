@@ -33,13 +33,14 @@
 --  Package containing utility procedures used throughout the compiler,
 --  and also by ASIS so dependencies are limited to ASIS included packages.
 
---  Note: contents are minimal for now, the intent is to move stuff from
---  Sem_Util that meets the ASIS dependency requirements, and also stuff
---  from Einfo, where Einfo had excessive semantic knowledge of the tree.
+--  Historical note. Many of the routines here were originally in Einfo, but
+--  Einfo is supposed to be a relatively low level package dealing with the
+--  content of entities in the tree, so this package is used for routines that
+--  require more than minimal semantic knowldge.
 
-with Alloc;   use Alloc;
+with Alloc; use Alloc;
 with Table;
-with Types;   use Types;
+with Types; use Types;
 
 package Sem_Aux is
 
@@ -66,21 +67,125 @@ package Sem_Aux is
      Table_Increment      => Alloc.Obsolescent_Warnings_Increment,
      Table_Name           => "Obsolescent_Warnings");
 
-   -----------------
-   -- Subprograms --
-   -----------------
-
    procedure Initialize;
    --  Called at the start of compilation of each new main source file to
    --  initialize the allocation of the Obsolescent_Warnings table. Note that
    --  Initialize must not be called if Tree_Read is used.
 
    procedure Tree_Read;
-   --  Initializes internal tables from current tree file using the relevant
-   --  Table.Tree_Read routines.
+   --  Initializes Obsolescent_Warnings table from current tree file using the
+   --  relevant Table.Tree_Read routine.
 
    procedure Tree_Write;
-   --  Writes out internal tables to current tree file using the relevant
-   --  Table.Tree_Write routines.
+   --  Writes out Obsolescent_Warnings table to current tree file using the
+   --  relevant Table.Tree_Write routine.
+
+   -----------------
+   -- Subprograms --
+   -----------------
+
+   function Ancestor_Subtype (Typ : Entity_Id) return Entity_Id;
+   --  The argument Id is a type or subtype entity. If the argument is a
+   --  subtype then it returns the subtype or type from which the subtype was
+   --  obtained, otherwise it returns Empty.
+
+   function Available_View (Typ : Entity_Id) return Entity_Id;
+   --  Typ is typically a type that has the With_Type flag set. Returns the
+   --  non-limited view of the type, if available, otherwise the type itself.
+   --  For class-wide types, there is no direct link in the tree, so we have
+   --  to retrieve the class-wide type of the non-limited view of the Etype.
+   --  Returns the argument unchanged if it is not one of these cases.
+
+   function Constant_Value (Ent : Entity_Id) return Node_Id;
+   --  Id is a variable, constant, named integer, or named real entity. This
+   --  call obtains the initialization expression for the entity. Will return
+   --  Empty for for a deferred constant whose full view is not available or
+   --  in some other cases of internal entities, which cannot be treated as
+   --  constants from the point of view of constant folding. Empty is also
+   --  returned for variables with no initialization expression.
+
+   function Enclosing_Dynamic_Scope (Ent : Entity_Id) return Entity_Id;
+   --  For any entity, Ent, returns the closest dynamic scope in which the
+   --  entity is declared or Standard_Standard for library-level entities
+
+   function First_Discriminant (Typ : Entity_Id) return Entity_Id;
+   --  Typ is a type with discriminants. The discriminants are the first
+   --  entities declared in the type, so normally this is equivalent to
+   --  First_Entity. The exception arises for tagged types, where the tag
+   --  itself is prepended to the front of the entity chain, so the
+   --  First_Discriminant function steps past the tag if it is present.
+
+   function First_Stored_Discriminant (Typ : Entity_Id) return Entity_Id;
+   --  Typ is a type with discriminants. Gives the first discriminant stored
+   --  in an object of this type. In many cases, these are the same as the
+   --  normal visible discriminants for the type, but in the case of renamed
+   --  discriminants, this is not always the case.
+   --
+   --  For tagged types, and untagged types which are root types or derived
+   --  types but which do not rename discriminants in their root type, the
+   --  stored discriminants are the same as the actual discriminants of the
+   --  type, and hence this function is the same as First_Discriminant.
+   --
+   --  For derived non-tagged types that rename discriminants in the root type
+   --  this is the first of the discriminants that occur in the root type. To
+   --  be precise, in this case stored discriminants are entities attached to
+   --  the entity chain of the derived type which are a copy of the
+   --  discriminants of the root type. Furthermore their Is_Completely_Hidden
+   --  flag is set since although they are actually stored in the object, they
+   --  are not in the set of discriminants that is visble in the type.
+   --
+   --  For derived untagged types, the set of stored discriminants are the real
+   --  discriminants from Gigi's standpoint, i.e. those that will be stored in
+   --  actual objects of the type.
+
+   function First_Subtype (Typ : Entity_Id) return Entity_Id;
+   --  Applies to all types and subtypes. For types, yields the first subtype
+   --  of the type. For subtypes, yields the first subtype of the base type of
+   --  the subtype.
+
+   function First_Tag_Component (Typ : Entity_Id) return Entity_Id;
+   --  Typ must be a tagged record type. This function returns the Entity for
+   --  the first _Tag field in the record type.
+
+   function Is_By_Copy_Type (Ent : Entity_Id) return Boolean;
+   --  Ent is any entity. Returns True if Ent is a type entity where the type
+   --  is required to be passed by copy, as defined in (RM 6.2(3)).
+
+   function Is_By_Reference_Type (Ent : Entity_Id) return Boolean;
+   --  Ent is any entity. Returns True if Ent is a type entity where the type
+   --  is required to be passed by reference, as defined in (RM 6.2(4-9)).
+
+   function Is_Derived_Type (Ent : Entity_Id) return Boolean;
+   --  Determines if the given entity Ent is a derived type. Result is always
+   --  false if argument is not a type.
+
+   function Is_Indefinite_Subtype (Ent : Entity_Id) return Boolean;
+   --  Ent is any entity. Determines if given entity is an unconstrained array
+   --  type or subtype, a discriminated record type or subtype with no initial
+   --  discriminant values or a class wide type or subtype and returns True if
+   --  so. False for other type entities, or any entities that are not types.
+
+   function Is_Inherently_Limited_Type (Ent : Entity_Id) return Boolean;
+   --  Ent is any entity. True for a type that is "inherently" limited (i.e.
+   --  cannot become nonlimited). From the Ada 2005 RM-7.5(8.1/2), "a type with
+   --  a part that is of a task, protected, or explicitly limited record type".
+   --  These are the types that are defined as return-by-reference types in Ada
+   --  95 (see RM95-6.5(11-16)). In Ada 2005, these are the types that require
+   --  build-in-place for function calls. Note that build-in-place is allowed
+   --  for other types, too.
+
+   function Is_Limited_Type (Ent : Entity_Id) return Boolean;
+   --  Ent is any entity. Returns true if Ent is a limited type (limited
+   --  private type, limited interface type, task type, protected type,
+   --  composite containing a limited component, or a subtype of any of
+   --  these types).
+
+   function Next_Tag_Component (Tag : Entity_Id) return Entity_Id;
+   --  Tag must be an entity representing a _Tag field of a tagged record.
+   --  The result returned is the next _Tag field in this record, or Empty
+   --  if this is the last such field.
+
+   function Number_Discriminants (Typ : Entity_Id) return Pos;
+   --  Typ is a type with discriminants, yields number of discriminants in type
 
 end Sem_Aux;
