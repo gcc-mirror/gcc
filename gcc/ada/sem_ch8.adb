@@ -6757,8 +6757,7 @@ package body Sem_Ch8 is
                Full_Vis := True;
 
             elsif Is_Package_Or_Generic_Package (S)
-              and then (In_Private_Part (S)
-                         or else In_Package_Body (S))
+              and then (In_Private_Part (S) or else In_Package_Body (S))
             then
                Full_Vis := True;
 

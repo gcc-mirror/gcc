@@ -1301,7 +1301,7 @@ package body Sem_Warn is
                              (Ekind (E1) = E_Package
                                 and then
                                   not Is_Package_Or_Generic_Package
-                                    (Cunit_Entity (Current_Sem_Unit))))
+                                        (Cunit_Entity (Current_Sem_Unit))))
 
                --  Exclude instantiations, since there is no reason why every
                --  entity in an instantiation should be referenced.

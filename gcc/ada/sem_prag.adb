@@ -1269,10 +1269,9 @@ package body Sem_Prag is
             elsif Nkind (P) = N_Handled_Sequence_Of_Statements then
                exit;
 
-            elsif Nkind (P) = N_Package_Specification then
-               return;
-
-            elsif Nkind (P) = N_Block_Statement then
+            elsif Nkind_In (P, N_Package_Specification,
+                               N_Block_Statement)
+            then
                return;
 
             --  Note: the following tests seem a little peculiar, because
@@ -3540,8 +3539,8 @@ package body Sem_Prag is
          elsif (C = Convention_Java or else C = Convention_CIL)
            and then
              (Is_Package_Or_Generic_Package (Def_Id)
-                or else Ekind (Def_Id) = E_Exception
-                or else Nkind (Parent (Def_Id)) = N_Component_Declaration)
+               or else Ekind (Def_Id) = E_Exception
+               or else Nkind (Parent (Def_Id)) = N_Component_Declaration)
          then
             Set_Imported (Def_Id);
             Set_Is_Public (Def_Id);
@@ -6580,9 +6579,8 @@ package body Sem_Prag is
             Cunit_Node := Cunit (Current_Sem_Unit);
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
 
-            if Nkind (Unit (Cunit_Node)) = N_Package_Body
-                 or else
-               Nkind (Unit (Cunit_Node)) = N_Subprogram_Body
+            if Nkind_In (Unit (Cunit_Node), N_Package_Body,
+                                            N_Subprogram_Body)
             then
                Error_Pragma ("pragma% must refer to a spec, not a body");
             else
@@ -7417,9 +7415,8 @@ package body Sem_Prag is
             begin
                GP := Parent (Parent (N));
 
-               if Nkind (GP) = N_Package_Declaration
-                    or else
-                  Nkind (GP) = N_Generic_Package_Declaration
+               if Nkind_In (GP, N_Package_Declaration,
+                                N_Generic_Package_Declaration)
                then
                   GP := Parent (GP);
                end if;
@@ -8082,9 +8079,7 @@ package body Sem_Prag is
                Preanalyze_Spec_Expression (Arg, RTE (RE_Interrupt_Priority));
             end if;
 
-            if Nkind (P) /= N_Task_Definition
-              and then Nkind (P) /= N_Protected_Definition
-            then
+            if not Nkind_In (P, N_Task_Definition, N_Protected_Definition) then
                Pragma_Misplaced;
                return;
 
@@ -9261,8 +9256,8 @@ package body Sem_Prag is
                  and then Nkind (Decl) not in N_Generic_Declaration
                then
                   Error_Pragma
-                    ("pragma% misplaced, " &
-                     "must immediately follow a declaration");
+                    ("pragma% misplaced, "
+                     & "must immediately follow a declaration");
 
                else
                   Set_Obsolescent (Defining_Entity (Decl));
@@ -9797,10 +9792,7 @@ package body Sem_Prag is
 
             --  Task or Protected, must be of type Integer
 
-            elsif Nkind (P) = N_Protected_Definition
-                    or else
-                  Nkind (P) = N_Task_Definition
-            then
+            elsif Nkind_In (P, N_Protected_Definition, N_Task_Definition) then
                Arg := Expression (Arg1);
 
                --  The expression must be analyzed in the special manner
@@ -9824,10 +9816,7 @@ package body Sem_Prag is
             else
                Set_Has_Priority_Pragma (P, True);
 
-               if Nkind (P) = N_Protected_Definition
-                    or else
-                  Nkind (P) = N_Task_Definition
-               then
+               if Nkind_In (P, N_Protected_Definition, N_Task_Definition) then
                   Record_Rep_Item (Defining_Identifier (Parent (P)), N);
                   --  exp_ch9 should use this ???
                end if;
@@ -10073,10 +10062,7 @@ package body Sem_Prag is
                X : constant Node_Id := Original_Node (Arg);
 
             begin
-               if Nkind (X) /= N_String_Literal
-                    and then
-                  Nkind (X) /= N_Identifier
-               then
+               if not Nkind_In (X, N_String_Literal, N_Identifier) then
                   Error_Pragma_Arg
                     ("inappropriate argument for pragma %", Arg);
                end if;
@@ -10223,6 +10209,7 @@ package body Sem_Prag is
             if not GNAT_Mode then
                Error_Pragma ("pragma% only available in GNAT mode");
             end if;
+
             if Nkind (N) = N_Null_Statement then
                return;
             end if;
@@ -10444,12 +10431,11 @@ package body Sem_Prag is
             Cunit_Node := Cunit (Current_Sem_Unit);
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
 
-            if Nkind (Unit (Cunit_Node)) /= N_Package_Declaration
-              and then
-              Nkind (Unit (Cunit_Node)) /= N_Generic_Package_Declaration
+            if not Nkind_In (Unit (Cunit_Node), N_Package_Declaration,
+                                                N_Generic_Package_Declaration)
             then
-               Error_Pragma (
-                 "pragma% can only apply to a package declaration");
+               Error_Pragma
+                 ("pragma% can only apply to a package declaration");
             end if;
 
             Set_Is_Remote_Types (Cunit_Ent);
@@ -10576,12 +10562,11 @@ package body Sem_Prag is
             Cunit_Node := Cunit (Current_Sem_Unit);
             Cunit_Ent  := Cunit_Entity (Current_Sem_Unit);
 
-            if Nkind (Unit (Cunit_Node)) /= N_Package_Declaration
-              and then
-              Nkind (Unit (Cunit_Node)) /= N_Generic_Package_Declaration
+            if not Nkind_In (Unit (Cunit_Node), N_Package_Declaration,
+                                                N_Generic_Package_Declaration)
             then
-               Error_Pragma (
-                 "pragma% can only apply to a package declaration");
+               Error_Pragma
+                 ("pragma% can only apply to a package declaration");
             end if;
 
             Set_Is_Shared_Passive (Cunit_Ent);
@@ -12154,7 +12139,7 @@ package body Sem_Prag is
         and then
           (Is_Generic_Instance (Result)
             or else Nkind (Parent (Declaration_Node (Result))) =
-                    N_Subprogram_Renaming_Declaration)
+                                         N_Subprogram_Renaming_Declaration)
         and then Present (Alias (Result))
       loop
          Result := Alias (Result);
