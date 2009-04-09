@@ -9148,10 +9148,11 @@ package body Exp_Dist is
                                    (RTE (RE_Release_Buffer), Loc),
                                Parameter_Associations =>
                                  New_List (New_Occurrence_Of (Strm, Loc))),
+
                              Make_Simple_Return_Statement (Loc,
                                Expression => New_Occurrence_Of (Res, Loc))))));
-                  else
 
+                  else
                      --  declare
                      --     Res : T;
                      --  begin
@@ -9179,16 +9180,17 @@ package body Exp_Dist is
                                    Prefix         =>
                                      New_Occurrence_Of (Strm, Loc),
                                    Attribute_Name => Name_Access),
-                                New_Occurrence_Of (Res, Loc))),
+                                 New_Occurrence_Of (Res, Loc))),
+
                              Make_Procedure_Call_Statement (Loc,
                                Name                   =>
                                  New_Occurrence_Of
                                    (RTE (RE_Release_Buffer), Loc),
                                Parameter_Associations =>
                                  New_List (New_Occurrence_Of (Strm, Loc))),
+
                              Make_Simple_Return_Statement (Loc,
                                Expression => New_Occurrence_Of (Res, Loc))))));
-
                   end if;
                end;
             end if;

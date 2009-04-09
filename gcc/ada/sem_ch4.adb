@@ -2661,8 +2661,7 @@ package body Sem_Ch4 is
                      Set_Etype (Nam, It.Typ);
 
                   else
-
-                     --  Nnamed access type in the context of a renaming
+                     --  Named access type in the context of a renaming
                      --  declaration with an access definition. Remove
                      --  inapplicable candidate.
 
