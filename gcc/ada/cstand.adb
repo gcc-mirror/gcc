@@ -933,17 +933,17 @@ package body CStand is
       Set_Ekind (Standard_Debug_Renaming_Type, E_Signed_Integer_Subtype);
       Set_Scope (Standard_Debug_Renaming_Type, Standard_Standard);
       Set_Etype (Standard_Debug_Renaming_Type, Base_Type (Standard_Integer));
-      Init_Esize         (Standard_Debug_Renaming_Type, 0);
-      Init_RM_Size       (Standard_Debug_Renaming_Type, 0);
+      Init_Esize          (Standard_Debug_Renaming_Type, 0);
+      Init_RM_Size        (Standard_Debug_Renaming_Type, 0);
       Set_Size_Known_At_Compile_Time (Standard_Debug_Renaming_Type);
-      Set_Integer_Bounds (Standard_Debug_Renaming_Type,
-        Typ => Base_Type (Standard_Debug_Renaming_Type),
+      Set_Integer_Bounds  (Standard_Debug_Renaming_Type,
+        Typ => Base_Type  (Standard_Debug_Renaming_Type),
         Lb  => Uint_1,
         Hb  => Uint_0);
-      Set_Is_Constrained (Standard_Debug_Renaming_Type);
+      Set_Is_Constrained  (Standard_Debug_Renaming_Type);
       Set_Has_Size_Clause (Standard_Debug_Renaming_Type);
 
-      Make_Name      (Standard_Debug_Renaming_Type, "_renaming_type");
+      Make_Name           (Standard_Debug_Renaming_Type, "_renaming_type");
 
       --  Note on type names. The type names for the following special types
       --  are constructed so that they will look reasonable should they ever
@@ -1144,6 +1144,7 @@ package body CStand is
       Set_Is_Unsigned_Type  (Standard_Unsigned);
       Set_Size_Known_At_Compile_Time
                             (Standard_Unsigned);
+      Set_Is_Known_Valid    (Standard_Unsigned, True);
 
       R_Node := New_Node (N_Range, Stloc);
       Set_Low_Bound  (R_Node, Make_Integer (Uint_0));
@@ -1311,7 +1312,6 @@ package body CStand is
       begin
          Comp      := First_Entity (Standard_Exception_Type);
          Comp_List := New_List;
-
          while Present (Comp) loop
             Append (
               Make_Component_Declaration (Stloc,
@@ -1487,7 +1487,6 @@ package body CStand is
 
    function Identifier_For (S : Standard_Entity_Type) return Node_Id is
       Ident_Node : Node_Id;
-
    begin
       Ident_Node := New_Node (N_Identifier, Stloc);
       Set_Chars (Ident_Node, Chars (Standard_Entity (S)));

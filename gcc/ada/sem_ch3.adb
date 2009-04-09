@@ -603,7 +603,7 @@ package body Sem_Ch3 is
    --  given kind of type (index constraint to an array type, for example).
 
    procedure Modular_Type_Declaration (T : Entity_Id; Def : Node_Id);
-   --  Create new modular type. Verify that modulus is in  bounds and is
+   --  Create new modular type. Verify that modulus is in bounds and is
    --  a power of two (implementation restriction).
 
    procedure New_Concatenation_Op (Typ : Entity_Id);
@@ -3382,6 +3382,7 @@ package body Sem_Ch3 is
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Machine_Radix_10     (Id, Machine_Radix_10   (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
+               Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
                Set_RM_Size              (Id, RM_Size            (T));
 
             when Enumeration_Kind =>
@@ -3390,6 +3391,7 @@ package body Sem_Ch3 is
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Character_Type    (Id, Is_Character_Type  (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
+               Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
                Set_RM_Size              (Id, RM_Size            (T));
 
             when Ordinary_Fixed_Point_Kind =>
@@ -3398,6 +3400,7 @@ package body Sem_Ch3 is
                Set_Small_Value          (Id, Small_Value        (T));
                Set_Delta_Value          (Id, Delta_Value        (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
+               Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
                Set_RM_Size              (Id, RM_Size            (T));
 
             when Float_Kind =>
@@ -3410,12 +3413,14 @@ package body Sem_Ch3 is
                Set_Ekind                (Id, E_Signed_Integer_Subtype);
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
+               Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
                Set_RM_Size              (Id, RM_Size            (T));
 
             when Modular_Integer_Kind =>
                Set_Ekind                (Id, E_Modular_Integer_Subtype);
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
+               Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
                Set_RM_Size              (Id, RM_Size            (T));
 
             when Class_Wide_Kind =>
@@ -5205,6 +5210,7 @@ package body Sem_Ch3 is
       Set_Size_Info      (Implicit_Base,                 Parent_Base);
       Set_First_Rep_Item (Implicit_Base, First_Rep_Item (Parent_Base));
       Set_Parent         (Implicit_Base, Parent (Derived_Type));
+      Set_Is_Known_Valid (Implicit_Base, Is_Known_Valid (Parent_Base));
 
       --  Set RM Size for discrete type or decimal fixed-point type
       --  Ordinary fixed-point is excluded, why???
@@ -5258,6 +5264,8 @@ package body Sem_Ch3 is
          if Has_Infinities (Parent_Type) then
             Set_Includes_Infinities (Scalar_Range (Derived_Type));
          end if;
+
+         Set_Is_Known_Valid (Derived_Type, Is_Known_Valid (Parent_Type));
       end if;
 
       Set_Is_Descendent_Of_Address (Derived_Type,
@@ -5272,6 +5280,9 @@ package body Sem_Ch3 is
 
          Set_Non_Binary_Modulus
            (Implicit_Base, Non_Binary_Modulus (Parent_Base));
+
+         Set_Is_Known_Valid
+           (Implicit_Base, Is_Known_Valid (Parent_Base));
 
       elsif Is_Floating_Point_Type (Parent_Type) then
 
@@ -14880,6 +14891,12 @@ package body Sem_Ch3 is
 
          else
             Init_Esize (T, System_Max_Binary_Modulus_Power);
+         end if;
+
+         if not Non_Binary_Modulus (T)
+           and then Esize (T) = RM_Size (T)
+         then
+            Set_Is_Known_Valid (T);
          end if;
       end Set_Modular_Size;
 
