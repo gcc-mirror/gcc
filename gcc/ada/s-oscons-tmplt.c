@@ -32,6 +32,9 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+pragma Style_Checks ("M32766");
+--  Allow long lines
+
 */
 
 /**
@@ -100,6 +103,10 @@
 
 #ifdef HAVE_TERMIOS
 # include <termios.h>
+#endif
+
+#ifdef __APPLE__
+# include <_types.h>
 #endif
 
 #ifdef NATIVE
@@ -1203,6 +1210,46 @@ CND(WSAEDISCON,         "Disconnected")
 
 #ifdef NATIVE
    putchar ('\n');
+#endif
+
+#ifdef __APPLE__
+/*
+
+   -------------------------------
+   -- Darwin-specific constants --
+   -------------------------------
+
+   --  These constants may be used only within the Darwin version of the GNAT
+   --  runtime library.
+*/
+
+#define PTHREAD_SIZE __PTHREAD_SIZE__
+CND(PTHREAD_SIZE, "Pad in pthread_t")
+
+#define PTHREAD_ATTR_SIZE __PTHREAD_ATTR_SIZE__
+CND(PTHREAD_ATTR_SIZE, "Pad in pthread_attr_t")
+
+#define PTHREAD_MUTEXATTR_SIZE __PTHREAD_MUTEXATTR_SIZE__
+CND(PTHREAD_MUTEXATTR_SIZE, "Pad in pthread_mutexattr_t")
+
+#define PTHREAD_MUTEX_SIZE __PTHREAD_MUTEX_SIZE__
+CND(PTHREAD_MUTEX_SIZE, "Pad in pthread_mutex_t")
+
+#define PTHREAD_CONDATTR_SIZE __PTHREAD_CONDATTR_SIZE__
+CND(PTHREAD_CONDATTR_SIZE, "Pad in pthread_condattr_t")
+
+#define PTHREAD_COND_SIZE __PTHREAD_COND_SIZE__
+CND(PTHREAD_COND_SIZE, "Pad in pthread_cond_t")
+
+#define PTHREAD_RWLOCKATTR_SIZE __PTHREAD_RWLOCKATTR_SIZE__
+CND(PTHREAD_RWLOCKATTR_SIZE, "Pad in pthread_rwlockattr_t")
+
+#define PTHREAD_RWLOCK_SIZE __PTHREAD_RWLOCK_SIZE__
+CND(PTHREAD_RWLOCK_SIZE, "Pad in pthread_rwlock_t")
+
+#define PTHREAD_ONCE_SIZE __PTHREAD_ONCE_SIZE__
+CND(PTHREAD_ONCE_SIZE, "Pad in pthread_once_t")
+
 #endif
 
 /*

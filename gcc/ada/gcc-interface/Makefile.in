@@ -1729,7 +1729,25 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
       LIBGNAT_TARGET_PAIRS += \
       system.ads<system-darwin-x86.ads
     endif
-  else
+  endif
+
+  ifeq ($(strip $(filter-out %x86_64,$(arch))),)
+    LIBGNAT_TARGET_PAIRS = \
+    a-intnam.ads<a-intnam-darwin.ads \
+    s-inmaop.adb<s-inmaop-posix.adb \
+    s-intman.adb<s-intman-posix.adb \
+    s-osinte.adb<s-osinte-darwin.adb \
+    s-osinte.ads<s-osinte-darwin.ads \
+    s-osprim.adb<s-osprim-posix.adb \
+    s-taprop.adb<s-taprop-posix.adb \
+    s-taspri.ads<s-taspri-posix.ads \
+    s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
+    a-numaux.ads<a-numaux-x86.ads \
+    a-numaux.adb<a-numaux-x86.adb \
+    system.ads<system-darwin-x86_64.ads
+  endif
+
+  ifeq ($(strip $(filter-out powerpc%,$(arch))),)
     LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
     s-inmaop.adb<s-inmaop-posix.adb \

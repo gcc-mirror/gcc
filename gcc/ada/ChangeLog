@@ -1,5 +1,52 @@
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch5.adb: Minor reformatting
+
+2009-04-09  Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads:
+	Change GNAT CHECK qualifier /DIAGNOSIS_LIMIT to /DIAGNOSTIC_LIMIT
+	New qualifier /LEXPAND_SOURCE=nnn for -gnatGnnn
+	New qualifier /LXDEBUG=nnn for -gnatDnnn
+	For H820-010
+
+	* gnat_ugn.texi:
+	Update documentation for VMS qualifiers equivalent to -gnatGnn and
+	-gnatDnn
+
+2009-04-09  Nicolas Setton  <setton@adacore.com>
+
+	* s-osinte-darwin.ads: (Pad_Type): Make this an array of unsigned_long,
+	to match layout of siginfo_t in sys/signal.h.
+
+	* gcc-interface/Makefile.in: Add section for x86_64 darwin.
+
+2009-04-09  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.ads: (Fd_Set): Use Interfaces.C.long alignment.
+
+2009-04-09  Nicolas Setton  <setton@adacore.com>
+
+	* s-oscons-tmplt.c: Allow long lines in the generated spec.
+	Add generation of Darwin-specific constants needed when binding to the
+	pthread library.
+
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
+        * checks.adb:
+        (Insert_Valid_Check): Avoid unnecessary generation of junk declaration
+        when no invalid values exist, Avoid duplicate read of atomic variable.
+
+        * cstand.adb (Build_Signed_Integer_Type): Set Is_Known_Valid
+        (Standard_Unsigned): Set Is_Known_Valid
+
+        * sem_ch3.adb (Analyze_Subtype_Declaration): Copy Is_Known_Valid on
+	subtype declaration if no constraint.
+        (Set_Modular_Size): Set Is_Known_Valid if appropriate
+        (Build_Derived_Numeric_Type): Copy Is_Known_Valid if no constraint
+
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
 	* switch-c.adb, gnat_ugn.texi, vms_data.ads, switch.adb,
 	switch.ads: for numeric switches, an optional equal sign is always
 	allowed.
