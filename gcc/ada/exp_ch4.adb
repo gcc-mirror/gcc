@@ -2232,11 +2232,15 @@ package body Exp_Ch4 is
 
       function To_Artyp (X : Node_Id) return Node_Id;
       --  Given a node of type Ityp, returns the corresponding value of type
-      --  Artyp. For non-enumeration types, this is the identity. For enum
-      --  types, the Pos of the value is returned.
+      --  Artyp. For non-enumeration types, this is a plain integer conversion.
+      --  For enum types, the Pos of the value is returned.
 
       function To_Ityp (X : Node_Id) return Node_Id;
       --  The inverse function (uses Val in the case of enumeration types)
+
+      Known_Non_Null_Operand_Seen : Boolean;
+      --  Set True during generation of the assignements of operands into
+      --  result once an operand known to be non-null has been seen.
 
       --------------
       -- To_Artyp --
@@ -2275,38 +2279,10 @@ package body Exp_Ch4 is
          --  Case where we will do a type conversion
 
          else
-            --  If the value is known at compile time, and known to be out of
-            --  range of the index subtype or its base type, we can signal that
-            --  we are sure to have a constraint error at run time.
-
-            --  There are two reasons for doing this. First of all, it is of
-            --  course nice to detect situations of certain exceptions, and
-            --  generate a warning. But there is a more important reason. If
-            --  the high bound is out of range of the base type, and is a
-            --  literal, then that would cause a compilation illegality when
-            --  we analyzed and resolved the expression.
-
-            Set_Parent (X, Cnode);
-            Analyze_And_Resolve (X, Artyp, Suppress => All_Checks);
-
-            if Compile_Time_Compare
-                 (X, Type_High_Bound (Istyp), Assume_Valid => False) = GT
-              or else
-               Compile_Time_Compare
-                 (X, Type_High_Bound (Ityp), Assume_Valid => False) = GT
-            then
-               Apply_Compile_Time_Constraint_Error
-                 (N      => Cnode,
-                  Msg    => "concatenation result upper bound out of range?",
-                  Reason => CE_Range_Check_Failed);
-               raise Concatenation_Error;
-
+            if Ityp = Base_Type (Artyp) then
+               return X;
             else
-               if Ityp = Base_Type (Artyp) then
-                  return X;
-               else
-                  return Convert_To (Ityp, X);
-               end if;
+               return Convert_To (Ityp, X);
             end if;
          end if;
       end To_Ityp;
@@ -2319,6 +2295,8 @@ package body Exp_Ch4 is
       J        : Nat;
       Clen     : Node_Id;
       Set      : Boolean;
+
+      Saved_In_Inlined_Body : Boolean;
 
    begin
       Aggr_Length (0) := Make_Integer_Literal (Loc, 0);
@@ -2607,9 +2585,7 @@ package body Exp_Ch4 is
 
               Suppress => All_Checks);
 
-            Aggr_Length (NN) :=
-              Make_Identifier (Loc,
-                Chars => Chars (Ent));
+            Aggr_Length (NN) := Make_Identifier (Loc, Chars => Chars (Ent));
          end if;
 
       <<Continue>>
@@ -2707,8 +2683,7 @@ package body Exp_Ch4 is
 
          begin
             Ent :=
-              Make_Defining_Identifier (Loc,
-                Chars => New_Internal_Name ('L'));
+              Make_Defining_Identifier (Loc, Chars => New_Internal_Name ('L'));
 
             Insert_Action (Cnode,
               Make_Object_Declaration (Loc,
@@ -2722,7 +2697,8 @@ package body Exp_Ch4 is
          end;
       end if;
 
-      --  Now find the upper bound, normally this is Low_Bound + Length - 1
+      --  Now we can safely compute the upper bound, normally
+      --  Low_Bound + Length - 1.
 
       High_Bound :=
         To_Ityp (
@@ -2733,7 +2709,11 @@ package body Exp_Ch4 is
                 Left_Opnd  => New_Copy (Aggr_Length (NN)),
                 Right_Opnd => Make_Integer_Literal (Loc, 1))));
 
-      --  But there is one exception, namely when the result is null in which
+      --  Now force overflow checking on High_Bound
+
+      Activate_Overflow_Check (High_Bound);
+
+      --  Handle the exceptional case where the result is null, in which case
       --  case the bounds come from the last operand (so that we get the proper
       --  bounds if the last operand is super-flat).
 
@@ -2754,6 +2734,17 @@ package body Exp_Ch4 is
         Make_Defining_Identifier (Loc,
           Chars => New_Internal_Name ('S'));
 
+      --  Kludge! Kludge! ???
+      --  If the bound is statically known to be out of range, we do not want
+      --  to abort, we want a warning and a runtime constraint error, so we
+      --  pretend this comes from an inlined body (otherwise a static out
+      --  of range value would be an illegality).
+
+      --  This is horrible, we really must find a better way ???
+
+      Saved_In_Inlined_Body := In_Inlined_Body;
+      In_Inlined_Body := True;
+
       Insert_Action (Cnode,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Ent,
@@ -2766,10 +2757,19 @@ package body Exp_Ch4 is
                     Make_Range (Loc,
                       Low_Bound  => Low_Bound,
                       High_Bound => High_Bound))))),
-
         Suppress => All_Checks);
 
+      In_Inlined_Body := Saved_In_Inlined_Body;
+
+      --  Catch the static out of range case now
+
+      if Raises_Constraint_Error (High_Bound) then
+         raise Concatenation_Error;
+      end if;
+
       --  Now we will generate the assignments to do the actual concatenation
+
+      Known_Non_Null_Operand_Seen := False;
 
       for J in 1 .. NN loop
          declare
@@ -2790,6 +2790,7 @@ package body Exp_Ch4 is
             --  Singleton case, simple assignment
 
             if Base_Type (Etype (Operands (J))) = Ctyp then
+               Known_Non_Null_Operand_Seen := True;
                Insert_Action (Cnode,
                  Make_Assignment_Statement (Loc,
                    Name       =>
@@ -2799,20 +2800,47 @@ package body Exp_Ch4 is
                    Expression => Operands (J)),
                  Suppress => All_Checks);
 
-            --  Array case, slice assignment
+            --  Array case, slice assignment, skipped when argument is fixed
+            --  length and known to be null.
 
-            else
-               Insert_Action (Cnode,
-                 Make_Assignment_Statement (Loc,
-                   Name       =>
-                     Make_Slice (Loc,
-                       Prefix         => New_Occurrence_Of (Ent, Loc),
-                       Discrete_Range =>
-                         Make_Range (Loc,
-                           Low_Bound  => To_Ityp (Lo),
-                           High_Bound => To_Ityp (Hi))),
-                   Expression => Operands (J)),
-                 Suppress => All_Checks);
+            elsif (not Is_Fixed_Length (J)) or else (Fixed_Length (J) > 0) then
+               declare
+                  Assign : Node_Id :=
+                             Make_Assignment_Statement (Loc,
+                               Name       =>
+                                 Make_Slice (Loc,
+                                   Prefix         =>
+                                     New_Occurrence_Of (Ent, Loc),
+                                   Discrete_Range =>
+                                     Make_Range (Loc,
+                                       Low_Bound  => To_Ityp (Lo),
+                                       High_Bound => To_Ityp (Hi))),
+                               Expression => Operands (J));
+               begin
+                  if Is_Fixed_Length (J) then
+                     Known_Non_Null_Operand_Seen := True;
+
+                  elsif not Known_Non_Null_Operand_Seen then
+
+                     --  Here if operand length is not statically known and no
+                     --  operand known to be non-null has been processed yet.
+                     --  If operand length is 0, we do not need to perform the
+                     --  assignment, and we must avoid the evaluation of the
+                     --  high bound of the slice, since it may underflow if the
+                     --  low bound is Ityp'First.
+
+                     Assign :=
+                       Make_Implicit_If_Statement (Cnode,
+                         Condition =>
+                           Make_Op_Ne (Loc,
+                             Left_Opnd =>
+                               New_Occurrence_Of (Var_Length (J), Loc),
+                             Right_Opnd => Make_Integer_Literal (Loc, 0)),
+                         Then_Statements =>
+                           New_List (Assign));
+                  end if;
+                  Insert_Action (Cnode, Assign, Suppress => All_Checks);
+               end;
             end if;
          end;
       end loop;
@@ -2827,7 +2855,17 @@ package body Exp_Ch4 is
 
    exception
       when Concatenation_Error =>
-         Set_Etype (Cnode, Atyp);
+
+         --  Kill warning generated for the declaration of the static out of
+         --  range high bound, and instead generate a Constraint_Error with
+         --  an appropriate specific message.
+
+         Kill_Dead_Code (Declaration_Node (Entity (High_Bound)));
+         Apply_Compile_Time_Constraint_Error
+           (N      => Cnode,
+            Msg    => "concatenation result upper bound out of range?",
+            Reason => CE_Range_Check_Failed);
+         --  Set_Etype (Cnode, Atyp);
    end Expand_Concatenate;
 
    ------------------------

@@ -1,3 +1,13 @@
+2009-04-09  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Add circuitry to properly handle
+	overflows in computation of bounds.
+
+2009-04-09  Pascal Obry  <obry@adacore.com>
+
+	* a-cihama.adb, a-cgcaso.adb, a-cihase.adb, a-cohase.adb: Fix some
+	typos in comment.
+
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 
 	* sem_attr.adb (Check_Stream_Attribute): Check violation of
