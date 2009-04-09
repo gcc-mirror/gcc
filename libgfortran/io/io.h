@@ -498,10 +498,11 @@ typedef struct st_parameter_dt
 	  /* A flag used to identify when a non-standard expanded namelist read
 	     has occurred.  */
 	  int expanded_read;
-	  /* Storage area for values except for strings.  Must be large
-	     enough to hold a complex value (two reals) of the largest
-	     kind.  */
-	  char value[32];
+	  /* Storage area for values except for strings.  Must be
+	     large enough to hold a complex value (two reals) of the
+	     largest kind.  It must also be sufficiently aligned for
+	     assigning any type we use into it.  */
+	  char value[32]  __attribute__ ((aligned (__BIGGEST_ALIGNMENT__)));
 	  GFC_IO_INT size_used;
 	} p;
       /* This pad size must be equal to the pad_size declared in
