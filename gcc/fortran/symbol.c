@@ -320,7 +320,7 @@ gfc_check_function_type (gfc_namespace *ns)
 	      proc->attr.allocatable = proc->result->attr.allocatable;
 	    }
 	}
-      else
+      else if (!proc->result->attr.proc_pointer)
 	{
 	  gfc_error ("Function result '%s' at %L has no IMPLICIT type",
 		     proc->result->name, &proc->result->declared_at);
@@ -453,10 +453,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (entry, intrinsic);
 
   if ((attr->if_source == IFSRC_DECL && !attr->procedure) || attr->contained)
-    {
-      conf (external, subroutine);
-      conf (external, function);
-    }
+    conf (external, subroutine);
 
   conf (allocatable, pointer);
   conf_std (allocatable, dummy, GFC_STD_F2003);
@@ -626,14 +623,13 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
       break;
 
     case FL_PROCEDURE:
-      /* Conflicts with INTENT will be checked at resolution stage,
-	 see "resolve_fl_procedure".  */
+      /* Conflicts with INTENT, SAVE and RESULT will be checked
+	 at resolution stage, see "resolve_fl_procedure".  */
 
       if (attr->subroutine)
 	{
 	  conf2 (target);
 	  conf2 (allocatable);
-	  conf2 (result);
 	  conf2 (in_namelist);
 	  conf2 (dimension);
 	  conf2 (function);

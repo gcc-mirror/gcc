@@ -1,3 +1,27 @@
+2009-04-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36704
+	* decl.c (add_hidden_procptr_result): New function for handling
+	procedure pointer return values by adding a hidden result variable.
+	(variable_decl,match_procedure_decl,gfc_match_function_decl,
+	gfc_match_subroutine,gfc_match_end,attr_decl1): Handle procedure pointer
+	return values.
+	* parse.c (parse_interface): Add EXTERNAL attribute only after
+	FUNCTION/SUBROUTINE declaration is complete.
+	* primary.c (replace_hidden_procptr_result): New function for replacing
+	function symbol by hidden result variable.
+	(gfc_match_rvalue,match_variable): Replace symbol by hidden result
+	variable.
+	* resolve.c (resolve_contained_fntype,resolve_function,resolve_variable,
+	resolve_symbol): Allow for procedure pointer function results.
+	(resolve_fl_procedure): Conflict detection moved here from
+	'check_conflict'.
+	* symbol.c (gfc_check_function_type): Allow for procedure pointer
+	function results.
+	(check_conflict): Move some conflict detection to resolution stage.
+	* trans-types.c (gfc_sym_type,gfc_get_function_type): Handle hidden
+	result variables.
+
 2009-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-types.c (gfc_init_types): Ensure gfc_integer_types doesn't
