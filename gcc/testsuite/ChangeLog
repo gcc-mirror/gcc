@@ -1,5 +1,16 @@
 2009-04-09  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/vect/vect-54.c: Make constant input data file-scope
+	to prevent constant propagation.
+	* gcc.dg/vect/vect-56.c: Likewise.
+	* gcc.dg/vect/vect-58.c: Likewise.
+	* gcc.dg/vect/vect-60.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-57.c: Likewise.
+	* gcc.dg/vect/no-vfa-vect-61.c: Likewise.
+	* gcc.dg/tree-prof/stringop-2.c: Adjust expected outcome.
+
+2009-04-09  Richard Guenther  <rguenther@suse.de>
+
 	* gcc.dg/tree-ssa/ssa-ccp-25.c: New testcase.
 	* gcc.dg/tree-ssa/ssa-ccp-26.c: Likewise.
 

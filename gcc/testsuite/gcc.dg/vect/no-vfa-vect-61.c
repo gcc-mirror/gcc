@@ -2,6 +2,7 @@
 /* { dg-require-effective-target vect_float } */
 
 #include <stdarg.h>
+#include <string.h>
 #include "tree-vect.h"
 
 #define N 256
@@ -21,6 +22,15 @@ void bar (float *pa, float *pb, float *pc)
   return;
 }
 
+__attribute__ ((noinline))
+void foo (float *pb, float *pc)
+{
+  float b[N] = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57};
+  float c[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+  memcpy (pb, b, sizeof (b));
+  memcpy (pc, c, sizeof (c));
+}
+
 /* Unaligned pointer read accesses with known alignment,
    and an unaligned write access with unknown alignment.
    The loop bound is iunknown.
@@ -34,10 +44,12 @@ __attribute__ ((noinline)) int
 main1 (int n , float *pa)
 {
   int i;
-  float b[N] __attribute__ ((__aligned__(16))) = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57};
-  float c[N] __attribute__ ((__aligned__(16))) = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+  float b[N] __attribute__ ((__aligned__(16)));
+  float c[N] __attribute__ ((__aligned__(16)));
   float *pb = b;
   float *pc = c;
+
+  foo (pb, pc);
 
   for (i = 0; i < n/2; i++)
     {

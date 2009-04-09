@@ -196,5 +196,19 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
       && !warn_init_self)
     TREE_NO_WARNING (DECL_EXPR_DECL (*expr_p)) = 1;
 
+  /* The C frontend is the only one producing &ARRAY with pointer-to-element
+     type.  This is invalid in gimple, so produce a properly typed
+     ADDR_EXPR instead and wrap a conversion around it.  */
+  if (code == ADDR_EXPR
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (*expr_p, 0))) == ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (*expr_p))) != ARRAY_TYPE)
+    {
+      tree type = TREE_TYPE (*expr_p);
+      TREE_TYPE (*expr_p)
+	= build_pointer_type (TREE_TYPE (TREE_OPERAND (*expr_p, 0)));
+      *expr_p = build1 (NOP_EXPR, type, *expr_p);
+      return GS_OK;
+    }
+
   return GS_UNHANDLED;
 }

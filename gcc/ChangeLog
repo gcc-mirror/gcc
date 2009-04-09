@@ -1,3 +1,11 @@
+2009-04-06  Richard Guenther  <rguenther@suse.de>
+
+	* c-gimplify.c (c_gimplify_expr): Fix the invalid GENERIC
+	&ARRAY addresses by adjusting their types and prepending
+	a conversion.
+	* tree-cfg.c (verify_gimple_assign_single): Verify that
+	addresses are correct.
+
 2009-04-09  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (maybe_fold_stmt_addition): Move non-constant

@@ -14,7 +14,7 @@ main()
    return 0;
 }
 /* { dg-final-use { scan-tree-dump "Single value 4 stringop" "tree_profile"} } */
-/* Really this ought to simplify into assignment, but we are not there yet.  */
-/* { dg-final-use { scan-tree-dump "memset.*4\\)" "optimized"} } */
+/* The versioned memset of size 4 should be optimized to an assignment.  */
+/* { dg-final-use { scan-tree-dump "a\\\[0\\\] = 168430090" "optimized"} } */
 /* { dg-final-use { cleanup-tree-dump "optimized" } } */
 /* { dg-final-use { cleanup-tree-dump "tree_profile" } } */
