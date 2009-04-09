@@ -1,3 +1,9 @@
+2009-04-09  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* configure.ac: Restore match for darwin9 or later. Use double
+	brackets since regeneration eats one pair.
+	* configure: Regenerate.
+
 2009-04-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR gas/10039
