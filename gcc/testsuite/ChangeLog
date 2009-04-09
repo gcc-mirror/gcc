@@ -1,3 +1,8 @@
+2009-04-09  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-ccp-25.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-ccp-26.c: Likewise.
+
 2009-04-09  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/39613

@@ -1,3 +1,10 @@
+2009-04-09  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-ccp.c (maybe_fold_stmt_addition): Move non-constant
+	indices into an array reference if possible.
+	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_vars):
+	Fold POINTER_PLUS_EXPR statements with invariant address.
+
 2009-04-09  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/39634

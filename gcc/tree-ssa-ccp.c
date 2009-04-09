@@ -2114,13 +2114,46 @@ maybe_fold_stmt_addition (tree res_type, tree op0, tree op1)
   tree ptd_type;
   tree t;
 
-  /* It had better be a constant.  */
-  if (TREE_CODE (op1) != INTEGER_CST)
-    return NULL_TREE;
   /* The first operand should be an ADDR_EXPR.  */
   if (TREE_CODE (op0) != ADDR_EXPR)
     return NULL_TREE;
   op0 = TREE_OPERAND (op0, 0);
+
+  /* It had better be a constant.  */
+  if (TREE_CODE (op1) != INTEGER_CST)
+    {
+      /* Or op0 should now be A[0] and the non-constant offset defined
+	 via a multiplication by the array element size.  */
+      if (TREE_CODE (op0) == ARRAY_REF
+	  && integer_zerop (TREE_OPERAND (op0, 1))
+	  && TREE_CODE (op1) == SSA_NAME
+	  && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (op0)), 1))
+	{
+	  gimple offset_def = SSA_NAME_DEF_STMT (op1);
+	  if (!is_gimple_assign (offset_def))
+	    return NULL_TREE;
+
+	  if (gimple_assign_rhs_code (offset_def) == MULT_EXPR
+	      && TREE_CODE (gimple_assign_rhs2 (offset_def)) == INTEGER_CST
+	      && tree_int_cst_equal (gimple_assign_rhs2 (offset_def),
+				     TYPE_SIZE_UNIT (TREE_TYPE (op0))))
+	    return build1 (ADDR_EXPR, res_type,
+			   build4 (ARRAY_REF, TREE_TYPE (op0),
+				   TREE_OPERAND (op0, 0),
+				   gimple_assign_rhs1 (offset_def),
+				   TREE_OPERAND (op0, 2),
+				   TREE_OPERAND (op0, 3)));
+	  else if (integer_onep (TYPE_SIZE_UNIT (TREE_TYPE (op0)))
+		   && gimple_assign_rhs_code (offset_def) != MULT_EXPR)
+	    return build1 (ADDR_EXPR, res_type,
+			   build4 (ARRAY_REF, TREE_TYPE (op0),
+				   TREE_OPERAND (op0, 0),
+				   op1,
+				   TREE_OPERAND (op0, 2),
+				   TREE_OPERAND (op0, 3)));
+	}
+      return NULL_TREE;
+    }
 
   /* If the first operand is an ARRAY_REF, expand it so that we can fold
      the offset into it.  */

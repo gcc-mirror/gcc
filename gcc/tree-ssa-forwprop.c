@@ -1256,6 +1256,15 @@ tree_ssa_forward_propagate_single_use_vars (void)
 		  else
 		    gsi_next (&gsi);
 		}
+	      else if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
+		       && is_gimple_min_invariant (rhs))
+		{
+		  /* Make sure to fold &a[0] + off_1 here.  */
+		  fold_stmt_inplace (stmt);
+		  update_stmt (stmt);
+		  if (gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR)
+		    gsi_next (&gsi);
+		}
 	      else if ((gimple_assign_rhs_code (stmt) == BIT_NOT_EXPR
 		        || gimple_assign_rhs_code (stmt) == NEGATE_EXPR)
 		       && TREE_CODE (rhs) == SSA_NAME)
