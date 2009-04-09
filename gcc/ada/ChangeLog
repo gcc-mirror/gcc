@@ -1,5 +1,34 @@
 2009-04-09  Javier Miranda  <miranda@adacore.com>
 
+	* exp_disp.adb (Export_DT): Addition of a new argument (Index); used to
+	retrieve from the Dispatch_Table_Wrappers list the external name.
+	Addition of documentation.
+	(Make_Secondary_DT): Addition of a new argument (Suffix_Index) that is
+	used to export secondary dispatch tables (in the previous version of
+	the frontend only primary dispatch tables were exported). Addition of
+	documentation.
+	(Import_DT): New subprogram (internal of Make_Tags). Used to import a
+	dispatch table of a given tagged type. 
+	(Make_Tags): Modified to import secondary dispatch tables.
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Code cleanup.
+	(Constant_Redeclaration): Code cleanup.
+
+	* einfo.ads (Dispatch_Table_Wrapper): Renamed to
+	Dispatch_Table_Wrappers.  Update documentation.
+
+	* einfo.adb (Dispatch_Table_Wrapper, Set_Dispatch_Table_Wrapper):
+	Renamed to Dispatch_Table_Wrappers.
+
+	* sem_util.adb (Collect_Interface_Components): Improve handling of
+	private types.
+
+	* atree.ads (Elist26, Set_Elist26): New subprograms
+
+	* atree.adb (Elist26, Set_Elist26): New subprograms
+
+2009-04-09  Javier Miranda  <miranda@adacore.com>
+
 	* sem_ch3.adb (Build_Derived_Record_Type): Fix typo.
 	(Derive_Progenitor_Subprograms): Handle interfaces in subtypes of
 	tagged types.

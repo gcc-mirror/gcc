@@ -214,7 +214,7 @@ package body Einfo is
    --    DT_Offset_To_Top_Func           Node25
    --    Task_Body_Procedure             Node25
 
-   --    Dispatch_Table_Wrapper          Node26
+   --    Dispatch_Table_Wrappers         Elist26
    --    Last_Assignment                 Node26
    --    Overridden_Operation            Node26
    --    Package_Instantiation           Node26
@@ -851,11 +851,11 @@ package body Einfo is
       return Uint15 (Id);
    end Discriminant_Number;
 
-   function Dispatch_Table_Wrapper (Id : E) return E is
+   function Dispatch_Table_Wrappers (Id : E) return L is
    begin
       pragma Assert (Is_Tagged_Type (Id));
-      return Node26 (Implementation_Base_Type (Id));
-   end Dispatch_Table_Wrapper;
+      return Elist26 (Implementation_Base_Type (Id));
+   end Dispatch_Table_Wrappers;
 
    function DT_Entry_Count (Id : E) return U is
    begin
@@ -3262,11 +3262,11 @@ package body Einfo is
       Set_Uint15 (Id, V);
    end Set_Discriminant_Number;
 
-   procedure Set_Dispatch_Table_Wrapper (Id : E; V : E) is
+   procedure Set_Dispatch_Table_Wrappers (Id : E; V : L) is
    begin
       pragma Assert (Is_Tagged_Type (Id) and then Id = Base_Type (Id));
-      Set_Node26 (Id, V);
-   end Set_Dispatch_Table_Wrapper;
+      Set_Elist26 (Id, V);
+   end Set_Dispatch_Table_Wrappers;
 
    procedure Set_DT_Entry_Count (Id : E; V : U) is
    begin
@@ -8659,10 +8659,10 @@ package body Einfo is
 
          when E_Record_Type                                |
               E_Record_Type_With_Private                   =>
-            Write_Str ("Dispatch_Table_Wrapper");
+            Write_Str ("Dispatch_Table_Wrappers");
 
-         when E_In_Out_Parameter                               |
-              E_Out_Parameter                           |
+         when E_In_Out_Parameter                           |
+              E_Out_Parameter                              |
               E_Variable                                   =>
             Write_Str ("Last_Assignment");
 

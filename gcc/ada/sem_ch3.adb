@@ -2416,17 +2416,6 @@ package body Sem_Ch3 is
       if Constant_Present (N)
         and then No (E)
       then
-         --  We exclude forward references to tags
-
-         if Is_Imported (Defining_Identifier (N))
-           and then
-             (T = RTE (RE_Tag)
-               or else
-                 (Present (Full_View (T))
-                   and then Full_View (T) = RTE (RE_Tag)))
-         then
-            null;
-
          --  A deferred constant may appear in the declarative part of the
          --  following constructs:
 
@@ -2444,7 +2433,7 @@ package body Sem_Ch3 is
          --  return statements are flagged as invalid contexts because they do
          --  not have a declarative part and so cannot accommodate the pragma.
 
-         elsif Ekind (Current_Scope) = E_Return_Statement then
+         if Ekind (Current_Scope) = E_Return_Statement then
             Error_Msg_N
               ("invalid context for deferred constant declaration (RM 7.4)",
                N);
@@ -9328,19 +9317,10 @@ package body Sem_Ch3 is
             Error_Msg_N ("ALIASED required (see declaration#)", N);
          end if;
 
-         --  Allow incomplete declaration of tags (used to handle forward
-         --  references to tags). The check on Ada_Tags avoids circularities
-         --  when rebuilding the compiler.
-
-         if RTU_Loaded (Ada_Tags)
-           and then T = RTE (RE_Tag)
-         then
-            null;
-
          --  Check that placement is in private part and that the incomplete
          --  declaration appeared in the visible part.
 
-         elsif Ekind (Current_Scope) = E_Package
+         if Ekind (Current_Scope) = E_Package
            and then not In_Private_Part (Current_Scope)
          then
             Error_Msg_Sloc := Sloc (Prev);
