@@ -1,3 +1,8 @@
+2009-04-09  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/39696
+	* ssa-ccp-25.c: Adjust pattern.
+
 2009-04-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36704
