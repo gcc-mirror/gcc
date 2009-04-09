@@ -1,3 +1,20 @@
+2009-04-09  Nicolas Setton  <setton@adacore.com>
+
+	* s-osinte-darwin.ads: Fix wrong binding to struc timeval.
+
+	* s-osinte-darwin.adb (To_Timeval): Adapt to fixed implementation of
+	struct_timeval.
+
+2009-04-09  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb, exp_ch9.adb: Correct miscellaneous Slocs in
+	internally-generated nodes related to select statements to avoid
+	confusing the debugger.
+
+2009-04-09  Pascal Obry  <obry@adacore.com>
+
+	* make.adb: Ensure that all linker arguments are duplicated.
+
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch5.adb: Minor reformatting

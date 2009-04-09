@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 1999-2006 Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,11 +95,11 @@ package body System.OS_Interface is
    ----------------
 
    function To_Timeval (D : Duration) return struct_timeval is
-      S : int32_t;
+      S : time_t;
       F : Duration;
 
    begin
-      S := int32_t (D);
+      S := time_t (D);
       F := D - Duration (S);
 
       --  If F has negative value due to a round-up, adjust for positive F
