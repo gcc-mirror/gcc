@@ -29,9 +29,6 @@
 --  to these subprograms are only made if Opt.Style_Check is set True.
 --  Styleg does not depends on the GNAT tree (Atree, Sinfo, ...).
 
---  For the compiler, there is also a child package Styleg.C that depends
---  on the GNAT tree.
-
 with Types; use Types;
 
 generic
@@ -172,10 +169,5 @@ package Styleg is
    --  lower case letters. On entry Token_Ptr points to the keyword token.
    --  This is not used for keywords appearing as attribute designators,
    --  where instead Check_Attribute_Name (True) is called.
-
-   function RM_Column_Check return Boolean;
-   pragma Inline (RM_Column_Check);
-   --  Determines whether style checking is active and the RM column check
-   --  mode is set requiring checking of RM format layout.
 
 end Styleg;

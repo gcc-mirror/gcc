@@ -1029,7 +1029,7 @@ package body Endh is
             --  Right in this context means exactly right, or on the same
             --  line as the opener.
 
-            if Style.RM_Column_Check then
+            if RM_Column_Check then
                if End_Column /= Scope.Table (Scope.Last).Ecol
                  and then Current_Line_Start > Scope.Table (Scope.Last).Sloc
 

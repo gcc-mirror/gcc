@@ -210,10 +210,4 @@ package Style is
    --  lower case letters. On entry Token_Ptr points to the keyword token.
    --  This is not used for keywords appearing as attribute designators,
    --  where instead Check_Attribute_Name (True) is called.
-
-   function RM_Column_Check return Boolean
-     renames Style_Inst.RM_Column_Check;
-   --  Determines whether style checking is active and the RM column check
-   --  mode is set requiring checking of RM format layout.
-
 end Style;

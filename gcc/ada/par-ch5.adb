@@ -1104,7 +1104,7 @@ package body Ch5 is
 
       procedure Check_If_Column is
       begin
-         if Style.RM_Column_Check and then Token_Is_At_Start_Of_Line
+         if RM_Column_Check and then Token_Is_At_Start_Of_Line
            and then Start_Column /= Scope.Table (Scope.Last).Ecol
          then
             Error_Msg_Col := Scope.Table (Scope.Last).Ecol;
@@ -2076,7 +2076,7 @@ package body Ch5 is
 
             Error_Msg_Col := Scope.Table (Scope.Last).Ecol;
 
-            if Style.RM_Column_Check
+            if RM_Column_Check
               and then Token_Is_At_Start_Of_Line
               and then Start_Column /= Error_Msg_Col
             then

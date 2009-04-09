@@ -1430,8 +1430,8 @@ package Opt is
 
    Assume_No_Invalid_Values_Config : Boolean;
    --  GNAT
-   --  This is the value of the configuration switch for assuming no invalid
-   --  values enabled mode mode, as possibly set by the command line switch
+   --  This is the value of the configuration switch for assuming "no invalid
+   --  values enabled" mode, as possibly set by the command line switch
    --  -gnatB, and possibly modified by the use of the configuration pragma
    --  Assume_No_Invalid_Values.
 

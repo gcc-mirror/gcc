@@ -42,6 +42,7 @@ with Sinput.L; use Sinput.L;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Style;
+with Stylesw;  use Stylesw;
 with Table;
 with Tbuild;   use Tbuild;
 

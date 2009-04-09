@@ -61,6 +61,15 @@ package body Stylesw is
       Style_Check_Xtra_Parens           := False;
    end Reset_Style_Check_Options;
 
+   ---------------------
+   -- RM_Column_Check --
+   ---------------------
+
+   function RM_Column_Check return Boolean is
+   begin
+      return Style_Check and Style_Check_Layout;
+   end RM_Column_Check;
+
    ------------------------------
    -- Save_Style_Check_Options --
    ------------------------------
