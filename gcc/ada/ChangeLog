@@ -1,5 +1,12 @@
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch7.adb, sem_ch10.adb, sem_prag.adb, sem_ch12.adb, sem_util.adb,
+	exp_ch13.adb, sem_ch6.adb, exp_disp.adb, sem_ch8.adb, sem_warn.adb,
+	sem_cat.adb: Code clean up: use Is_Package_Or_Generic_Package where
+	possible to replace an OR of two separate tests.
+
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
 	* binderr.adb, errout.adb, errutil.adb: New circuitry for handling
 	Maximum_Messages.
 	
