@@ -27564,7 +27564,7 @@ case "${host}" in
  m68*-*-linux*)
     SIGNAL_HANDLER=include/dwarf2-signal.h
     ;;
- powerpc*-*-darwin* | i?86-*-darwin9* | x86_64-*-darwin9*)
+ powerpc*-*-darwin* | i?86-*-darwin[912]* | x86_64-*-darwin[912]*)
     SIGNAL_HANDLER=include/darwin-signal.h
     ;;
  powerpc*-*-aix*)
