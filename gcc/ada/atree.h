@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2007, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -473,6 +473,7 @@ extern Node_Id Current_Error_Node;
 #define Elist21(N)    Field21 (N)
 #define Elist23(N)    Field23 (N)
 #define Elist25(N)    Field25 (N)
+#define Elist26(N)    Field26 (N)
 
 #define Name1(N)      Field1  (N)
 #define Name2(N)      Field2  (N)

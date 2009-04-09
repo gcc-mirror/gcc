@@ -1,3 +1,12 @@
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
+	* exp_util.adb (Silly_Boolean_Array_Xor_Test): Simplify existing code.
+
+	* atree.h: Add Elist26
+
+	* gnat_ugn.texi: Complete documentation deprecating -gnatN for non-gcc
+	backends.
+
 2009-04-09  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.adb (Export_DT): Addition of a new argument (Index); used to

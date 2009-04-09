@@ -2372,9 +2372,6 @@ The use of @option{-gnatN} activates  inlining optimization
 that is performed by the front end of the compiler. This inlining does
 not require that the code generation be optimized. Like @option{-gnatn},
 the use of this switch generates additional dependencies.
-Note that
-@option{-gnatN} automatically implies @option{-gnatn} so it is not necessary
-to specify both options.
 
 When using a gcc-based back end (in practice this means using any version
 of GNAT other than the JGNAT, .NET or GNAAMP versions), then the use of
@@ -4014,14 +4011,12 @@ Activate front end inlining for subprograms for which
 pragma @code{Inline} is specified. This inlining is performed
 by the front end and will be visible in the
 @option{-gnatG} output.
-In some cases, this has proved more effective than the back end
-inlining resulting from the use of
-@option{-gnatn}.
-Note that
-@option{-gnatN} automatically implies
-@option{-gnatn} so it is not necessary
-to specify both options. There are a few cases that the back-end inlining
-catches that cannot be dealt with in the front-end.
+
+When using a gcc-based back end (in practice this means using any version
+of GNAT other than the JGNAT, .NET or GNAAMP versions), then the use of
+@option{-gnatN} is deprecated, and the use of @option{-gnatn} is preferred.
+Historically front end inlining was more extensive than the gcc back end
+inlining, but that is no longer the case.
 
 @item -gnato
 @cindex @option{-gnato} (@command{gcc})
@@ -6716,12 +6711,14 @@ see @ref{Inlining of Subprograms}.
 
 @item -gnatN
 @cindex @option{-gnatN} (@command{gcc})
-The front end inlining activated by this switch is generally more extensive,
-and quite often more effective than the standard @option{-gnatn} inlining mode.
-It will also generate additional dependencies.
-Note that
-@option{-gnatN} automatically implies @option{-gnatn} so it is not necessary
-to specify both options.
+This switch activates front-end inlining which also
+generates additional dependencies.
+
+When using a gcc-based back end (in practice this means using any version
+of GNAT other than the JGNAT, .NET or GNAAMP versions), then the use of
+@option{-gnatN} is deprecated, and the use of @option{-gnatn} is preferred.
+Historically front end inlining was more extensive than the gcc back end
+inlining, but that is no longer the case.
 @end table
 
 @node Auxiliary Output Control
