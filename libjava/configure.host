@@ -295,11 +295,11 @@ EOF
 	slow_pthread_self=
 	can_unwind_signal=no
 	;;
-  i?86-*-darwin9*)
+  i?86-*-darwin[912]*)
 	can_unwind_signal=yes
 	DIVIDESPEC=-f%{m32:no-}%{!m32:%{!m64:no-}}%{m64:}use-divide-subroutine
         ;;
-  x86_64-*-darwin9*)
+  x86_64-*-darwin[912]*)
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=
 	can_unwind_signal=yes
