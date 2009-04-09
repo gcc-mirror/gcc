@@ -1,3 +1,54 @@
+2009-04-09  Nick Clifton  <nickc@redhat.com>
+
+	* decRound.c: Change copyright header to refer to version 3 of
+	the GNU General Public License with version 3.1 of the GCC
+	Runtime Library Exception and to point readers at the COPYING3
+	and COPYING3.RUNTIME files and the FSF's license web page.
+	* bid/bid-dpd.h: Likewise.
+	* bid/bid2dpd_dpd2bid.c: Likewise.
+	* bid/bid2dpd_dpd2bid.h: Likewise.
+	* bid/decimal128.c: Likewise.
+	* bid/decimal32.c: Likewise.
+	* bid/decimal64.c: Likewise.
+	* bid/host-ieee128.c: Likewise.
+	* bid/host-ieee32.c: Likewise.
+	* bid/host-ieee64.c: Likewise.
+	* dconfig.h: Likewise.
+	* decBasic.c: Likewise.
+	* decCommon.c: Likewise.
+	* decContext.c: Likewise.
+	* decContext.h: Likewise.
+	* decDPD.h: Likewise.
+	* decDouble.c: Likewise.
+	* decDouble.h: Likewise.
+	* decExcept.c: Likewise.
+	* decExcept.h: Likewise.
+	* decLibrary.c: Likewise.
+	* decNumber.c: Likewise.
+	* decNumber.h: Likewise.
+	* decNumberLocal.h: Likewise.
+	* decPacked.c: Likewise.
+	* decPacked.h: Likewise.
+	* decQuad.c: Likewise.
+	* decQuad.h: Likewise.
+	* decRound.h: Likewise.
+	* decSingle.c: Likewise.
+	* decSingle.h: Likewise.
+	* dpd/decimal128.c: Likewise.
+	* dpd/decimal128.h: Likewise.
+	* dpd/decimal128Local.h: Likewise.
+	* dpd/decimal32.c: Likewise.
+	* dpd/decimal32.h: Likewise.
+	* dpd/decimal64.c: Likewise.
+	* dpd/decimal64.h: Likewise.
+
+2009-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in: Change copyright header to refer to version
+	3 of the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+	* configure.ac: Likewise.
+
 2009-04-01  Ben Elliston  <bje@au.ibm.com>
 
         * decContext.h: Include gstdint.h instead of <stdint.h>.

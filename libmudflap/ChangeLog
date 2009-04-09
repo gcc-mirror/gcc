@@ -1,3 +1,23 @@
+2009-04-09  Nick Clifton  <nickc@redhat.com>
+
+	* mf-hooks1.c: Change copyright header to refer to version 3
+	of the GNU General Public License with version 3.1 of the GCC
+	Runtime Library Exception and to point readers at the COPYING3
+	and COPYING3.RUNTIME files and the FSF's license web page.
+	* mf-heuristics.c: Likewise.
+	* mf-hooks2.c: Likewise.
+	* mf-hooks3.c: Likewise.
+	* mf-impl.h: Likewise.
+	* mf-runtime.c: Likewise.
+	* mf-runtime.h: Likewise.
+
+2009-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/lib/mfdg.exp: Change copyright header to refer to
+	version 3 of the GNU General Public License and to point readers
+	at the COPYING3 file and the FSF's license web page.
+	* testsuite/lib/libmudflap.exp: Likewise.
+
 2009-03-31  Ben Elliston  <bje@au.ibm.com>
 
 	PR libmudflap/38462

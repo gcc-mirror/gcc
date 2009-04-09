@@ -1,9 +1,9 @@
 /* Make ucnid.h from various sources.
-   Copyright (C) 2005 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2009 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 2, or (at your option) any
+Free Software Foundation; either version 3, or (at your option) any
 later version.
 
 This program is distributed in the hope that it will be useful,
@@ -12,8 +12,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+along with this program; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
 
 /* Run this program as
    ./makeucnid ucnid.tab UnicodeData.txt DerivedNormalizationProps.txt \
@@ -273,7 +273,7 @@ write_copyright (void)
 \n\
    This program is free software; you can redistribute it and/or modify it\n\
    under the terms of the GNU General Public License as published by the\n\
-   Free Software Foundation; either version 2, or (at your option) any\n\
+   Free Software Foundation; either version 3, or (at your option) any\n\
    later version.\n\
 \n\
    This program is distributed in the hope that it will be useful,\n\
@@ -282,8 +282,8 @@ write_copyright (void)
    GNU General Public License for more details.\n\
 \n\
    You should have received a copy of the GNU General Public License\n\
-   along with this program; if not, write to the Free Software\n\
-   Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.\n\
+   along with this program; see the file COPYING3.  If not see\n\
+   <http://www.gnu.org/licenses/>.\n\
 \n\
 \n\
    Copyright (C) 1991-2005 Unicode, Inc.  All rights reserved.\n\

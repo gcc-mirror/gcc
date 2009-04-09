@@ -1,3 +1,19 @@
+2009-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in: Change copyright header to refer to version
+	3 of the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+	* fixfixes.c: Likewise.
+	* fixinc.in: Likewise.
+	* fixincl.c: Likewise.
+	* fixlib.c: Likewise.
+	* fixlib.h: Likewise.
+	* fixopts.c: Likewise.
+	* fixtests.c: Likewise.
+	* genfixes: Likewise.
+	* mkheaders.in: Likewise.
+	* system.h: Likewise.
+
 2009-03-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/448

@@ -1,23 +1,26 @@
-!   Copyright 2003, 2004 Free Software Foundation, Inc.
+!   Copyright 2003, 2004, 2009 Free Software Foundation, Inc.
 !   Contributed by Kejia Zhao <kejia_zh@yahoo.com.cn>
 !
-!This file is part of the GNU Fortran 95 runtime library (libgfor).
+!This file is part of the GNU Fortran 95 runtime library (libgfortran).
 !
-!GNU libgfor is free software; you can redistribute it and/or
-!modify it under the terms of the GNU Lesser General Public
+!Libgfortran is free software; you can redistribute it and/or
+!modify it under the terms of the GNU General Public
 !License as published by the Free Software Foundation; either
-!version 2.1 of the License, or (at your option) any later version.
+!version 3 of the License, or (at your option) any later version.
 !
-!GNU libgfor is distributed in the hope that it will be useful,
+!Libgfortran is distributed in the hope that it will be useful,
 !but WITHOUT ANY WARRANTY; without even the implied warranty of
 !MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!GNU Lesser General Public License for more details.
+!GNU General Public License for more details.
 !
-!You should have received a copy of the GNU Lesser General Public
-!License along with libgfor; see the file COPYING.  If not,
-!write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-!Boston, MA 02110-1301, USA.
+!Under Section 7 of GPL version 3, you are granted additional
+!permissions described in the GCC Runtime Library Exception, version
+!3.1, as published by the Free Software Foundation.
 !
+!You should have received a copy of the GNU General Public License and
+!a copy of the GCC Runtime Library Exception along with this program;
+!see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+!<http://www.gnu.org/licenses/>.
 
 function _gfortran_selected_int_kind (r)
   implicit none

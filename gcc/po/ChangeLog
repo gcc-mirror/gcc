@@ -1,3 +1,9 @@
+2009-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* exgettext: Change copyright header to refer to version
+	3 of the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+
 2009-04-08  Joseph Myers  <joseph@codesourcery.com>
 
 	* zh_CN.po: Update.
