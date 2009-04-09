@@ -436,9 +436,8 @@ private
       Element : Element_Type;
    end record;
 
-   package Tree_Types is new Red_Black_Trees.Generic_Tree_Types
-     (Node_Type,
-      Node_Access);
+   package Tree_Types is
+     new Red_Black_Trees.Generic_Tree_Types (Node_Type, Node_Access);
 
    type Set is new Ada.Finalization.Controlled with record
       Tree : Tree_Types.Tree_Type;

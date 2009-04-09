@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,23 +82,21 @@ package body Ada.Containers.Hashed_Maps is
    -- Local Instantiations --
    --------------------------
 
-   package HT_Ops is
-      new Hash_Tables.Generic_Operations
-       (HT_Types          => HT_Types,
-        Hash_Node         => Hash_Node,
-        Next              => Next,
-        Set_Next          => Set_Next,
-        Copy_Node         => Copy_Node,
-        Free              => Free);
+   package HT_Ops is new Hash_Tables.Generic_Operations
+     (HT_Types  => HT_Types,
+      Hash_Node => Hash_Node,
+      Next      => Next,
+      Set_Next  => Set_Next,
+      Copy_Node => Copy_Node,
+      Free      => Free);
 
-   package Key_Ops is
-      new Hash_Tables.Generic_Keys
-       (HT_Types  => HT_Types,
-        Next      => Next,
-        Set_Next  => Set_Next,
-        Key_Type  => Key_Type,
-        Hash      => Hash,
-        Equivalent_Keys => Equivalent_Key_Node);
+   package Key_Ops is new Hash_Tables.Generic_Keys
+     (HT_Types        => HT_Types,
+      Next            => Next,
+      Set_Next        => Set_Next,
+      Key_Type        => Key_Type,
+      Hash            => Hash,
+      Equivalent_Keys => Equivalent_Key_Node);
 
    function Is_Equal is new HT_Ops.Generic_Equal (Find_Equal_Key);
 

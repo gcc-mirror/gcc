@@ -402,15 +402,13 @@ private
 
    type Element_Access is access Element_Type;
 
-   type Node_Type is
-      limited record
-         Element : Element_Access;
-         Next    : Node_Access;
-      end record;
+   type Node_Type is limited record
+      Element : Element_Access;
+      Next    : Node_Access;
+   end record;
 
-   package HT_Types is new Hash_Tables.Generic_Hash_Table_Types
-     (Node_Type,
-      Node_Access);
+   package HT_Types is
+     new Hash_Tables.Generic_Hash_Table_Types (Node_Type, Node_Access);
 
    type Set is new Ada.Finalization.Controlled with record
       HT : HT_Types.Hash_Table_Type;
@@ -429,11 +427,10 @@ private
    type Set_Access is access all Set;
    for Set_Access'Storage_Size use 0;
 
-   type Cursor is
-      record
-         Container : Set_Access;
-         Node      : Node_Access;
-      end record;
+   type Cursor is record
+      Container : Set_Access;
+      Node      : Node_Access;
+   end record;
 
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
@@ -447,9 +444,7 @@ private
 
    for Cursor'Read use Read;
 
-   No_Element : constant Cursor :=
-                  (Container => null,
-                   Node      => null);
+   No_Element : constant Cursor := (Container => null, Node => null);
 
    procedure Write
      (Stream    : not null access Root_Stream_Type'Class;

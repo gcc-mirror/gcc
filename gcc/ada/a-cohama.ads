@@ -281,9 +281,8 @@ private
       Next    : Node_Access;
    end record;
 
-   package HT_Types is new Hash_Tables.Generic_Hash_Table_Types
-     (Node_Type,
-      Node_Access);
+   package HT_Types is
+     new Hash_Tables.Generic_Hash_Table_Types (Node_Type, Node_Access);
 
    type Map is new Ada.Finalization.Controlled with record
       HT : HT_Types.Hash_Table_Type;
@@ -315,11 +314,10 @@ private
    type Map_Access is access constant Map;
    for Map_Access'Storage_Size use 0;
 
-   type Cursor is
-      record
-         Container : Map_Access;
-         Node      : Node_Access;
-      end record;
+   type Cursor is record
+      Container : Map_Access;
+      Node      : Node_Access;
+   end record;
 
    procedure Read
      (Stream : not null access Root_Stream_Type'Class;

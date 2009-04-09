@@ -103,23 +103,21 @@ package body Ada.Containers.Hashed_Sets is
    -- Local Instantiations --
    --------------------------
 
-   package HT_Ops is
-      new Hash_Tables.Generic_Operations
-       (HT_Types  => HT_Types,
-        Hash_Node => Hash_Node,
-        Next      => Next,
-        Set_Next  => Set_Next,
-        Copy_Node => Copy_Node,
-        Free      => Free);
+   package HT_Ops is new Hash_Tables.Generic_Operations
+     (HT_Types  => HT_Types,
+      Hash_Node => Hash_Node,
+      Next      => Next,
+      Set_Next  => Set_Next,
+      Copy_Node => Copy_Node,
+      Free      => Free);
 
-   package Element_Keys is
-      new Hash_Tables.Generic_Keys
-       (HT_Types  => HT_Types,
-        Next      => Next,
-        Set_Next  => Set_Next,
-        Key_Type  => Element_Type,
-        Hash      => Hash,
-        Equivalent_Keys => Equivalent_Keys);
+   package Element_Keys is new Hash_Tables.Generic_Keys
+     (HT_Types        => HT_Types,
+      Next            => Next,
+      Set_Next        => Set_Next,
+      Key_Type        => Element_Type,
+      Hash            => Hash,
+      Equivalent_Keys => Equivalent_Keys);
 
    function Is_Equal is
       new HT_Ops.Generic_Equal (Find_Equal_Key);

@@ -42,8 +42,8 @@ generic
 
    with function Hash (Element : Element_Type) return Hash_Type;
 
-   with function Equivalent_Elements (Left, Right : Element_Type)
-                                     return Boolean;
+   with function Equivalent_Elements
+          (Left, Right : Element_Type) return Boolean;
 
    with function "=" (Left, Right : Element_Type) return Boolean is <>;
 
@@ -402,15 +402,13 @@ private
    type Node_Type;
    type Node_Access is access Node_Type;
 
-   type Node_Type is
-      limited record
-         Element : Element_Type;
-         Next    : Node_Access;
-      end record;
+   type Node_Type is limited record
+      Element : Element_Type;
+      Next    : Node_Access;
+   end record;
 
-   package HT_Types is new Hash_Tables.Generic_Hash_Table_Types
-     (Node_Type,
-      Node_Access);
+   package HT_Types is
+     new Hash_Tables.Generic_Hash_Table_Types (Node_Type, Node_Access);
 
    type Set is new Ada.Finalization.Controlled with record
       HT : HT_Types.Hash_Table_Type;
@@ -429,11 +427,10 @@ private
    type Set_Access is access all Set;
    for Set_Access'Storage_Size use 0;
 
-   type Cursor is
-      record
-         Container : Set_Access;
-         Node      : Node_Access;
-      end record;
+   type Cursor is record
+      Container : Set_Access;
+      Node      : Node_Access;
+   end record;
 
    procedure Write
      (Stream : not null access Root_Stream_Type'Class;
