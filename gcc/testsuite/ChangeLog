@@ -1,3 +1,7 @@
+2009-04-09  Paolo Bonzini  <bonzini@gnu.org>
+
+        * gcc.dg/pr27150-1.c: Change to a link test.
+
 2009-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/lookup/using2.C: Change copyright header to refer to version
