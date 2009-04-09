@@ -1,3 +1,9 @@
+2009-04-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR gas/10039
+	* configure.ac: Require texinfo 4.7.
+	* configure: Regenerated.
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* COPYING.RUNTIME: New file: Contains a copy of version 3.1 of
@@ -17,15 +23,15 @@
 
 2009-03-25  Erven Rohou <erven.rohou@inria.fr>
 
-        * MAINTAINERS:  Update my email address.
+	* MAINTAINERS:  Update my email address.
 
 2009-03-18  Tom Tromey  <tromey@redhat.com>
 
-        * configure: Rebuild.
-        * configure.ac (host_libs): Add libiconv.
-        * Makefile.in: Rebuild.
-        * Makefile.def (host_modules): Add libiconv.
-        (configure-gdb, all-gdb): Depend on libiconv.
+	* configure: Rebuild.
+	* configure.ac (host_libs): Add libiconv.
+	* Makefile.in: Rebuild.
+	* Makefile.def (host_modules): Add libiconv.
+	(configure-gdb, all-gdb): Depend on libiconv.
 
 2009-03-16  Tristan Gingold  <gingold@adacore.com>
 
