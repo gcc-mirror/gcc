@@ -1,3 +1,23 @@
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb (Check_Stream_Attribute): Check violation of
+	restriction No_Streams
+
+	* gnat_rm.texi: Clarify No_Streams restriction
+
+	* g-socket.adb: Minor reformatting.
+
+2009-04-09  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.ads: Mark Initialize and Finalize as obsolesent interfaces.
+
+2009-04-09  Geert Bosch  <bosch@adacore.com>
+
+	* exp_fixd.adb (Build_Conversion): Accept new optional Trunc argument.
+	(Set_Result): Likewise.
+	(Expand_Convert_Float_To_Fixed): Have Set_Result truncate the
+	conversion, as required by RM 4.6(31).
+
 2009-04-08  Robert Dewar  <dewar@adacore.com>
 
 	* checks.adb (Enable_Overflow_Check): Do not enable if overflow checks

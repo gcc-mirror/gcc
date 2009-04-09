@@ -8592,11 +8592,12 @@ user-defined storage pool.
 @item No_Streams
 @findex No_Streams
 This restriction ensures at compile/bind time that there are no
-stream objects created (and therefore no actual stream operations).
+stream objects created and no use of stream attributes.
 This restriction does not forbid dependences on the package
 @code{Ada.Streams}. So it is permissible to with
 @code{Ada.Streams} (or another package that does so itself)
-as long as no actual stream objects are created.
+as long as no actual stream objects are created and no
+stream attributes are used.
 
 @item No_Task_Attributes_Package
 @findex No_Task_Attributes_Package

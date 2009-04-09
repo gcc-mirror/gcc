@@ -57,16 +57,19 @@ package body Exp_Fixd is
    --  still dealing with a normal fixed-point operation and mess it up).
 
    function Build_Conversion
-     (N    : Node_Id;
-      Typ  : Entity_Id;
-      Expr : Node_Id;
-      Rchk : Boolean := False) return Node_Id;
+     (N     : Node_Id;
+      Typ   : Entity_Id;
+      Expr  : Node_Id;
+      Rchk  : Boolean := False;
+      Trunc : Boolean := False) return Node_Id;
    --  Build an expression that converts the expression Expr to type Typ,
    --  taking the source location from Sloc (N). If the conversions involve
    --  fixed-point types, then the Conversion_OK flag will be set so that the
    --  resulting conversions do not get re-expanded. On return the resulting
    --  node has its Etype set. If Rchk is set, then Do_Range_Check is set
-   --  in the resulting conversion node.
+   --  in the resulting conversion node. If Trunc is set, then the
+   --  Float_Truncate flag is set on the conversion, which must be from
+   --  a floating-point type to an integer type.
 
    function Build_Divide (N : Node_Id; L, R : Node_Id) return Node_Id;
    --  Builds an N_Op_Divide node from the given left and right operand
@@ -203,7 +206,11 @@ package body Exp_Fixd is
    --  Returns True if N is a node that contains the Rounded_Result flag
    --  and if the flag is true or the target type is an integer type.
 
-   procedure Set_Result (N : Node_Id; Expr : Node_Id; Rchk : Boolean := False);
+   procedure Set_Result
+     (N     : Node_Id;
+      Expr  : Node_Id;
+      Rchk  : Boolean := False;
+      Trunc : Boolean := False);
    --  N is the node for the current conversion, division or multiplication
    --  operation, and Expr is an expression representing the result. Expr may
    --  be of floating-point or integer type. If the operation result is fixed-
@@ -211,18 +218,20 @@ package body Exp_Fixd is
    --  (i.e. small's have already been dealt with). The result of the call is
    --  to replace N by an appropriate conversion to the result type, dealing
    --  with rounding for the decimal types case. The node is then analyzed and
-   --  resolved using the result type. If Rchk is True, then Do_Range_Check is
-   --  set in the resulting conversion.
+   --  resolved using the result type. If Rchk or Trunc are True, then
+   --  respectively Do_Range_Check and Float_Truncate are set in the
+   --  resulting conversion.
 
    ----------------------
    -- Build_Conversion --
    ----------------------
 
    function Build_Conversion
-     (N    : Node_Id;
-      Typ  : Entity_Id;
-      Expr : Node_Id;
-      Rchk : Boolean := False) return Node_Id
+     (N     : Node_Id;
+      Typ   : Entity_Id;
+      Expr  : Node_Id;
+      Rchk  : Boolean := False;
+      Trunc : Boolean := False) return Node_Id
    is
       Loc    : constant Source_Ptr := Sloc (N);
       Result : Node_Id;
@@ -269,6 +278,8 @@ package body Exp_Fixd is
               Make_Type_Conversion (Loc,
                 Subtype_Mark => New_Occurrence_Of (Typ, Loc),
                 Expression   => Expr);
+
+            Set_Float_Truncate (Result, Trunc);
          end if;
 
          --  Set Conversion_OK if either result or expression type is a
@@ -1687,7 +1698,7 @@ package body Exp_Fixd is
       --  Optimize small = 1, where we can avoid the multiply completely
 
       if Small = Ureal_1 then
-         Set_Result (N, Expr, Rng_Check);
+         Set_Result (N, Expr, Rng_Check, Trunc => True);
 
       --  Normal case where multiply is required
 
@@ -1696,7 +1707,7 @@ package body Exp_Fixd is
            Build_Multiply (N,
              Fpt_Value (Expr),
              Real_Literal (N, Ureal_1 / Small)),
-           Rng_Check);
+           Rng_Check, Trunc => True);
       end if;
    end Expand_Convert_Float_To_Fixed;
 
@@ -2349,9 +2360,10 @@ package body Exp_Fixd is
    ----------------
 
    procedure Set_Result
-     (N    : Node_Id;
-      Expr : Node_Id;
-      Rchk : Boolean := False)
+     (N     : Node_Id;
+      Expr  : Node_Id;
+      Rchk  : Boolean := False;
+      Trunc : Boolean := False)
    is
       Cnode : Node_Id;
 
@@ -2359,15 +2371,15 @@ package body Exp_Fixd is
       Result_Type : constant Entity_Id := Etype (N);
 
    begin
-      --  No conversion required if types match and no range check
+      --  No conversion required if types match and no range check or truncate
 
-      if Result_Type = Expr_Type and then not Rchk then
+      if Result_Type = Expr_Type and then not (Rchk or Trunc) then
          Cnode := Expr;
 
       --  Else perform required conversion
 
       else
-         Cnode := Build_Conversion (N, Result_Type, Expr, Rchk);
+         Cnode := Build_Conversion (N, Result_Type, Expr, Rchk, Trunc);
       end if;
 
       Rewrite (N, Cnode);
