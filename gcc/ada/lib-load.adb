@@ -358,6 +358,8 @@ package body Lib.Load is
    begin
       --  If renamings are allowed and we have a child unit name, then we
       --  must first load the parent to deal with finding the real name.
+      --  Retain the with_clause that names the child, so that if it is
+      --  limited, the parent is loaded under the same condition.
 
       if Renamings and then Is_Child_Name (Load_Name) then
          Unump :=
@@ -366,7 +368,8 @@ package body Lib.Load is
               Required   => Required,
               Subunit    => False,
               Renamings  => True,
-              Error_Node => Error_Node);
+              Error_Node => Error_Node,
+              With_Node  => With_Node);
 
          if Unump = No_Unit then
             return No_Unit;
