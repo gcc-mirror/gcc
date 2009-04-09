@@ -265,7 +265,8 @@ package body GNAT.Command_Line is
             end if;
          end if;
 
-         --  Check the relative path against the pattern.
+         --  Check the relative path against the pattern
+
          --  Note that we try to match also against directory names, since
          --  clients of this function may expect to retrieve directories.
 
@@ -273,6 +274,7 @@ package body GNAT.Command_Line is
             Name : String :=
                      It.Dir_Name (It.Start .. It.Levels (Current).Name_Last)
                        & S (1 .. Last);
+
          begin
             Canonical_Case_File_Name (Name);
 
