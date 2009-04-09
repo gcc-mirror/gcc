@@ -3949,7 +3949,7 @@ Note that @option{^-gnatg^/GNAT_INTERNAL^} implies
 so that all standard warnings and all standard style options are turned on.
 All warnings and style error messages are treated as errors.
 
-@item -gnatGnn
+@item -gnatG=nn
 @cindex @option{-gnatG[nn]} (@command{gcc})
 List generated expanded code in source form.
 
@@ -6796,7 +6796,7 @@ switches in the body of the @code{Debug} unit in the compiler source
 file @file{debug.adb}.
 @end ifclear
 
-@item -gnatG[nn]
+@item -gnatG[=nn]
 @cindex @option{-gnatG} (@command{gcc})
 This switch causes the compiler to generate auxiliary output containing
 a pseudo-source listing of the generated expanded code. Like most Ada
@@ -6814,7 +6814,7 @@ approach to improve efficiency.
 The optional parameter @code{nn} if present after -gnatG specifies an
 alternative maximum line length that overrides the normal default of 72.
 This value is in the range 40-999999, values less than 40 being silently
-reset to 40.
+reset to 40. The equal sign is optional.
 
 The format of the output is very similar to standard Ada source, and is
 easily understood by an Ada programmer. The following special syntactic
@@ -6899,7 +6899,7 @@ representation in base 2-16 (for example, the result of compile time
 evaluation of the expression 1.0/27.0).
 @end table
 
-@item -gnatD[nn]
+@item -gnatD[=nn]
 @cindex @option{-gnatD} (@command{gcc})
 When used in conjunction with @option{-gnatG}, this switch causes
 the expanded source, as described above for
@@ -6930,7 +6930,7 @@ in the expanded source (as comment lines with the original line number).
 The optional parameter @code{nn} if present after -gnatD specifies an
 alternative maximum line length that overrides the normal default of 72.
 This value is in the range 40-999999, values less than 40 being silently
-reset to 40.
+reset to 40. The equal sign is optional.
 
 @item -gnatr
 @cindex @option{-gnatr} (@command{gcc})

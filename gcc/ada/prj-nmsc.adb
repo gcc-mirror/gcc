@@ -6779,38 +6779,42 @@ package body Prj.Nmsc is
             end;
          end if;
 
-         --  Check if the casing is right
+         --  Check if the file casing is right
 
          declare
             Src      : String := File (First .. Last);
             Src_Last : Positive := Last;
 
          begin
-            case Naming.Casing is
-               when All_Lower_Case =>
-                  Fixed.Translate
-                    (Source  => Src,
-                     Mapping => Lower_Case_Map);
+            --  If casing is significant, deal with upper/lower case translate
 
-               when All_Upper_Case =>
-                  Fixed.Translate
-                    (Source  => Src,
-                     Mapping => Upper_Case_Map);
+            if File_Names_Case_Sensitive then
+               case Naming.Casing is
+                  when All_Lower_Case =>
+                     Fixed.Translate
+                       (Source  => Src,
+                        Mapping => Lower_Case_Map);
 
-               when Mixed_Case | Unknown =>
-                  null;
-            end case;
+                  when All_Upper_Case =>
+                     Fixed.Translate
+                       (Source  => Src,
+                        Mapping => Upper_Case_Map);
 
-            if Src /= File (First .. Last) then
-               if Current_Verbosity = High then
-                  Write_Line ("   Not a valid file name (casing).");
+                  when Mixed_Case | Unknown =>
+                     null;
+               end case;
+
+               if Src /= File (First .. Last) then
+                  if Current_Verbosity = High then
+                     Write_Line ("   Not a valid file name (casing).");
+                  end if;
+
+                  Unit_Name := No_Name;
+                  return;
                end if;
-
-               Unit_Name := No_Name;
-               return;
             end if;
 
-            --  We put the name in lower case
+            --  Put the name in lower case
 
             Fixed.Translate
               (Source  => Src,

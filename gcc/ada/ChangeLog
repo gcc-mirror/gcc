@@ -1,3 +1,14 @@
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
+	* switch-c.adb, gnat_ugn.texi, vms_data.ads, switch.adb,
+	switch.ads: for numeric switches, an optional equal sign is always
+	allowed.
+
+2009-04-09  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Get_Unit): Do not consider Casing on platform where
+	the case of file names is not significant.
+
 2009-04-09  Vincent Celier  <celier@adacore.com>
 
 	* errout.adb: Remove dependency on package Style

@@ -280,7 +280,7 @@ package body Switch.C is
 
                --  Scan optional integer line limit value
 
-               if Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' then
+               if Nat_Present (Switch_Chars, Max, Ptr) then
                   Scan_Nat (Switch_Chars, Max, Ptr, Sprint_Line_Limit, 'D');
                   Sprint_Line_Limit := Nat'Max (Sprint_Line_Limit, 40);
                end if;
@@ -530,7 +530,7 @@ package body Switch.C is
 
                --  Scan optional integer line limit value
 
-               if Ptr <= Max and then Switch_Chars (Ptr) in '0' .. '9' then
+               if Nat_Present (Switch_Chars, Max, Ptr) then
                   Scan_Nat (Switch_Chars, Max, Ptr, Sprint_Line_Limit, 'G');
                   Sprint_Line_Limit := Nat'Max (Sprint_Line_Limit, 40);
                end if;
@@ -582,13 +582,6 @@ package body Switch.C is
 
             when 'j' =>
                Ptr := Ptr + 1;
-
-               --  There may be an equal sign between -gnatj and the value
-
-               if Ptr <= Max and then Switch_Chars (Ptr) = '=' then
-                  Ptr := Ptr + 1;
-               end if;
-
                Scan_Nat (Switch_Chars, Max, Ptr, Error_Msg_Line_Length, C);
 
             --  Processing for k switch
@@ -626,13 +619,6 @@ package body Switch.C is
 
             when 'm' =>
                Ptr := Ptr + 1;
-
-               --  There may be an equal sign between -gnatm and the value
-
-               if Ptr <= Max and then Switch_Chars (Ptr) = '=' then
-                  Ptr := Ptr + 1;
-               end if;
-
                Scan_Nat (Switch_Chars, Max, Ptr, Maximum_Messages, C);
 
             --  Processing for n switch

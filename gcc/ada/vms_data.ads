@@ -131,7 +131,7 @@ package VMS_Data is
    --  no space is inserted between the switch and the file name.
 
    --  The NUMERIC_TRANSLATION format is similar to the FILE_TRANSLATION case
-   --  except that the parameter is a decimal integer in the range 0 to 999.
+   --  except that the parameter is a decimal integer in the range 0 to 999999.
 
    --  For the OPTIONS_TRANSLATION case, GNATCmd similarly permits one or
    --  more options to appear (although only in some cases does the use of
@@ -1484,14 +1484,15 @@ package VMS_Data is
                                             "-gnatm999999";
    --  NODOC (see /ERROR_LIMIT)
 
-   S_GCC_Expand  : aliased constant S := "/EXPAND_SOURCE "                 &
+   S_GCC_Expand  : aliased constant S := "/EXPAND_SOURCE=#"                 &
                                             "-gnatG";
-   --        /NOEXPAND_SOURCE (D)
+   --        /NOEXPAND_SOURCE[=nnn] (D)
    --        /EXPAND_SOURCE
    --
    --   Produces a listing of the expanded code in Ada source form. For
    --   example, all tasking constructs are reduced to appropriate run-time
-   --   library calls.
+   --   library calls. The parameter is the maximum line length for the
+   --   listing (default is 72).
 
    S_GCC_Extend  : aliased constant S := "/EXTENSIONS_ALLOWED "            &
                                             "-gnatX";
@@ -3329,9 +3330,9 @@ package VMS_Data is
                                              "-gnatWn";
    --  NODOC (see /WIDE_CHARACTER_ENCODING)
 
-   S_GCC_Xdebug  : aliased constant S := "/XDEBUG "                        &
+   S_GCC_Xdebug  : aliased constant S := "/XDEBUG=#"                        &
                                              "-gnatD";
-   --        /NOXDEBUG (D)
+   --        /NOXDEBUG[=nnn] (D)
    --        /XDEBUG
    --
    --   Output expanded source files for source level debugging.
@@ -3341,7 +3342,8 @@ package VMS_Data is
    --   refer to the generated file. This allows source level debugging using
    --   the generated code which is sometimes useful for complex code, for
    --   example to find out exactly which part of a complex construction
-   --   raised an exception.
+   --   raised an exception. The parameter if present is the maximum line
+   --   length for the output (default 72).
 
    S_GCC_Xref    : aliased constant S := "/XREF="                          &
                                             "GENERATE "                    &
