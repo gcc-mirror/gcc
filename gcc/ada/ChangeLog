@@ -1,5 +1,12 @@
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 
+	* gcc-interface/Make-lang.in, style.ads, style.adb: Reorganize style
+	units.
+
+	* styleg-c.ads, styleg-c.adb: Removed, no longer used.
+
+2009-04-09  Robert Dewar  <dewar@adacore.com>
+
 	* g-comver.adb: Minor reformatting.
 
 2009-04-09  Thomas Quinot  <quinot@adacore.com>
