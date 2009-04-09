@@ -272,6 +272,10 @@ package Stylesw is
    -- Subprograms --
    -----------------
 
+   function RM_Column_Check return Boolean;
+   --  Determines whether style checking is active and the RM column check
+   --  mode is set requiring checking of RM format layout.
+
    procedure Set_Default_Style_Check_Options;
    --  This procedure is called to set the default style checking options in
    --  response to a -gnaty switch with no suboptions or from -gnatyy.

@@ -30,6 +30,7 @@ with Opt;      use Opt;
 with Output;   use Output;
 with Scans;    use Scans;
 with Sinput;   use Sinput;
+with Stylesw;  use Stylesw;
 
 package body Errutil is
 
@@ -658,7 +659,7 @@ package body Errutil is
 
    procedure Set_Msg_Insertion_Column is
    begin
-      if Style.RM_Column_Check then
+      if RM_Column_Check then
          Set_Msg_Str (" in column ");
          Set_Msg_Int (Int (Error_Msg_Col) + 1);
       end if;

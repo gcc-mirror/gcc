@@ -52,11 +52,11 @@ package body Einfo is
    ----------------------------------------------
 
    --  Four of these fields are defined in Sinfo, since they in are the
-   --  base part of the node. The access routines for these fields and
-   --  the corresponding set procedures are defined in Sinfo. These fields
-   --  are present in all entities. Note that Homonym is also in the base
-   --  part of the node, but has access routines that are more properly
-   --  part of Einfo, which is why they are defined here.
+   --  base part of the node. The access routines for these fields and the
+   --  corresponding set procedures are defined in Sinfo. These fields are
+   --  present in all entities. Note that Homonym is also in the base part of
+   --  the node, but has access routines that are more properly part of Einfo,
+   --  which is why they are defined here.
 
    --    Chars                           Name1
    --    Next_Entity                     Node2

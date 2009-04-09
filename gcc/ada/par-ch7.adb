@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -200,7 +200,7 @@ package body Ch7 is
                if Token = Tok_Private then
                   Error_Msg_Col := Scope.Table (Scope.Last).Ecol;
 
-                  if Style.RM_Column_Check then
+                  if RM_Column_Check then
                      if Token_Is_At_Start_Of_Line
                        and then Start_Column /= Error_Msg_Col
                      then

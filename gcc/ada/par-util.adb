@@ -158,7 +158,7 @@ package body Util is
 
    procedure Check_Bad_Layout is
    begin
-      if Style.RM_Column_Check and then Token_Is_At_Start_Of_Line
+      if RM_Column_Check and then Token_Is_At_Start_Of_Line
         and then Start_Column <= Scope.Table (Scope.Last).Ecol
       then
          Error_Msg_BC ("(style) incorrect layout");

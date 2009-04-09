@@ -1006,13 +1006,4 @@ package body Styleg is
       end if;
    end Require_Preceding_Space;
 
-   ---------------------
-   -- RM_Column_Check --
-   ---------------------
-
-   function RM_Column_Check return Boolean is
-   begin
-      return Style_Check and Style_Check_Layout;
-   end RM_Column_Check;
-
 end Styleg;
