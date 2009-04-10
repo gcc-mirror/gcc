@@ -5396,10 +5396,7 @@ package body Make is
                --  JVM machine since ".class" files are generated instead.
 
                Check_Object_Consistency := False;
-
-               Gcc := new String'("jgnat");
-               Gnatbind := new String'("jgnatbind");
-               Gnatlink := new String'("jgnatlink");
+               Gcc := new String'("jvm-gnatcompile");
 
             when Targparm.CLI_Target =>
                Gcc := new String'("dotnet-gnatcompile");

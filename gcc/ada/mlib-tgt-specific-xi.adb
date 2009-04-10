@@ -148,12 +148,20 @@ package body MLib.Tgt.Specific is
          Index := Index + 1;
       end loop;
 
-      if Target_Name (Target_Name'First .. Index) = "erc32" then
+      if Target_Name (Target_Name'First .. Index) = "avr" then
+         return "avr-";
+      elsif Target_Name (Target_Name'First .. Index) = "erc32" then
          return "erc32-elf-";
       elsif Target_Name (Target_Name'First .. Index) = "leon" then
          return "leon-elf-";
       elsif Target_Name (Target_Name'First .. Index) = "powerpc" then
-         return "powerpc-elf-";
+         if Target_Name'Last - 6 >= Target_Name'First and then
+           Target_Name (Target_Name'Last - 6 .. Target_Name'Last) = "eabispe"
+         then
+            return "powerpc-eabispe-";
+         else
+            return "powerpc-elf-";
+         end if;
       else
          return "";
       end if;

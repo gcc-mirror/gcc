@@ -1619,7 +1619,7 @@ begin
 
    if VM_Target /= No_VM then
       case VM_Target is
-         when JVM_Target => Gcc := new String'("jgnat");
+         when JVM_Target => Gcc := new String'("jvm-gnatcompile");
          when CLI_Target => Gcc := new String'("dotnet-gnatcompile");
          when No_VM      => raise Program_Error;
       end case;

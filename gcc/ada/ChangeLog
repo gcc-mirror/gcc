@@ -1,3 +1,29 @@
+2009-04-10  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c: Install signal handler on Darwin.
+
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting
+
+	* exp_util.adb (Make_Non_Empty_Check): New function
+	(Silly_Boolean_Array_Not_Test): Add call to Make_Non_Empty_Check
+	(Silly_Boolean_Array_Xor_Test): Use Make_Non_Empty_Check
+
+2009-04-10  Arnaud Charlet  <charlet@adacore.com>
+
+	* make.adb, gnatlink.adb: Rename JGNAT toolchain.
+
+2009-04-10  Jose Ruiz  <ruiz@adacore.com>
+
+	* mlib-tgt-specific-xi.adb (Get_Target_Prefix): Insert the appropriate
+	tool prefix for AVR and PowerPC 55xx targets.
+
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Within_Postcondition): New function
+	(Check_Unset_Reference): Use Within_Postcondition to stop bad warning
+
 2009-04-10  Robert Dewar  <dewar@adacore.com>
 
 	* sem_warn.adb: Minor reformatting

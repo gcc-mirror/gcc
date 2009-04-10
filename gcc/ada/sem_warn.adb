@@ -1610,9 +1610,36 @@ package body Sem_Warn is
                   --  As always, it is possible to construct cases where the
                   --  warning is wrong, that is why it is a warning!
 
-                  declare
+                  Potential_Unset_Reference : declare
                      SR : Entity_Id;
                      SE : constant Entity_Id := Scope (E);
+
+                     function Within_Postcondition return Boolean;
+                     --  Returns True iff N is within a Precondition
+
+                     --------------------------
+                     -- Within_Postcondition --
+                     --------------------------
+
+                     function Within_Postcondition return Boolean is
+                        Nod : Node_Id;
+
+                     begin
+                        Nod := Parent (N);
+                        while Present (Nod) loop
+                           if Nkind (Nod) = N_Pragma
+                             and then Pragma_Name (Nod) = Name_Postcondition
+                           then
+                              return True;
+                           end if;
+
+                           Nod := Parent (Nod);
+                        end loop;
+
+                        return False;
+                     end Within_Postcondition;
+
+                  --  Start of processing for Potential_Unset_Reference
 
                   begin
                      SR := Current_Scope;
@@ -1732,26 +1759,33 @@ package body Sem_Warn is
                         end Access_Type_Case;
                      end if;
 
-                     --  Here we definitely have a case for giving a warning
-                     --  for a reference to an unset value. But we don't give
-                     --  the warning now. Instead we set the Unset_Reference
-                     --  field of the identifier involved. The reason for this
-                     --  is that if we find the variable is never ever assigned
-                     --  a value then that warning is more important and there
-                     --  is no point in giving the reference warning.
+                     --  One more check, don't bother if we are within a
+                     --  postcondition pragma, since the expression occurs
+                     --  in a place unrelated to the actual test.
 
-                     --  If this is an identifier, set the field directly
+                     if not Within_Postcondition then
 
-                     if Nkind (N) = N_Identifier then
-                        Set_Unset_Reference (E, N);
+                        --  Here we definitely have a case for giving a warning
+                        --  for a reference to an unset value. But we don't
+                        --  give the warning now. Instead set Unset_Reference
+                        --  in the identifier involved. The reason for this is
+                        --  that if we find the variable is never ever assigned
+                        --  a value then that warning is more important and
+                        --  there is no point in giving the reference warning.
 
-                     --  Otherwise it is an expanded name, so set the field of
-                     --  the actual identifier for the reference.
+                        --  If this is an identifier, set the field directly
 
-                     else
-                        Set_Unset_Reference (E, Selector_Name (N));
+                        if Nkind (N) = N_Identifier then
+                           Set_Unset_Reference (E, N);
+
+                        --  Otherwise it is an expanded name, so set the field
+                        --  of the actual identifier for the reference.
+
+                        else
+                           Set_Unset_Reference (E, Selector_Name (N));
+                        end if;
                      end if;
-                  end;
+                  end Potential_Unset_Reference;
                end if;
             end;
 
