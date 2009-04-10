@@ -158,7 +158,7 @@ package body Sem_Aux is
    -----------------------------
 
    function Enclosing_Dynamic_Scope (Ent : Entity_Id) return Entity_Id is
-      S  : Entity_Id;
+      S : Entity_Id;
 
    begin
       --  The following test is an error defense against some syntax
@@ -709,6 +709,19 @@ package body Sem_Aux is
          return False;
       end if;
    end Is_Limited_Type;
+
+   ---------------------------
+   -- Nearest_Dynamic_Scope --
+   ---------------------------
+
+   function Nearest_Dynamic_Scope (Ent : Entity_Id) return Entity_Id is
+   begin
+      if Is_Dynamic_Scope (Ent) then
+         return Ent;
+      else
+         return Enclosing_Dynamic_Scope (Ent);
+      end if;
+   end Nearest_Dynamic_Scope;
 
    ------------------------
    -- Next_Tag_Component --

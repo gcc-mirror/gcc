@@ -5150,7 +5150,8 @@ package body Sem_Res is
 
       if Inside_Freezing_Actions = 0
         and then (not Is_Library_Level_Entity (Nam)
-                   or else Suppress_Value_Tracking_On_Call (Current_Scope))
+                   or else Suppress_Value_Tracking_On_Call
+                             (Nearest_Dynamic_Scope (Current_Scope)))
         and then (Comes_From_Source (Nam)
                    or else (Present (Alias (Nam))
                              and then Comes_From_Source (Alias (Nam))))

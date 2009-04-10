@@ -1,5 +1,13 @@
 2009-04-10  Robert Dewar  <dewar@adacore.com>
 
+	* sem_aux.ads, sem_aux.adb (Nearest_Current_Scope): New function.
+
+	* sem_res.adb (Resolve_Call): Fix test for
+	Suppress_Value_Tracking_On_Call (was wrong for the case of a call from
+	a non-dynamic scope).
+
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
 	* make.adb: Add comment.
 	Minor reformatting
 
