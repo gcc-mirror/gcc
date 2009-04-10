@@ -4799,7 +4799,7 @@ package body Exp_Ch4 is
 
          --  Check for 64-bit division available, or long shifts if the divisor
          --  is a small power of 2 (since such divides will be converted into
-         --  long shifts.
+         --  long shifts).
 
          if Esize (Ltyp) > 32
            and then not Support_64_Bit_Divides_On_Target
@@ -5715,7 +5715,7 @@ package body Exp_Ch4 is
 
       --  Otherwise we have to introduce conversions (conversions are also
       --  required in the universal cases, since the runtime routine is
-      --  typed using one of the standard types.
+      --  typed using one of the standard types).
 
       else
          Rewrite (N,
@@ -7936,72 +7936,6 @@ package body Exp_Ch4 is
             or else
           (Is_Fixed_Point_Type (Target_Type) and then Conversion_OK (N)))
       then
-         --  Handle case in which type conversions from real types to integers
-         --  are truncated instead of rounded. For example, in the .NET target
-         --  the only instructions available for conversion from float types to
-         --  integers truncate the result. That is, the result of Integer (3.9)
-         --  is 3 instead of 4. The frontend expansion done here to handle also
-         --  negative values is the following composition of conditional
-         --  expressions:
-
-         --    (if Abs (Operand - Float(Integer(Operand))) >= 0.5 then
-         --        (if Operand >= 0.0 then
-         --            Integer(Operand) + 1
-         --         else
-         --            Integer(Operand) - 1)
-         --     else
-         --       Integer(Operand))
-
-         if Integer_Truncation_On_Target and then Comes_From_Source (N) then
-            declare
-               Conv_Node : Node_Id;
-
-            begin
-               --  This code is weird, why are we doing all these copy tree
-               --  operations, instead of just capturing Integer(Operand)
-               --  once and then reusing the value instead of forcing this
-               --  conversion to be done four times! ???
-
-               --  There should be no New_Copy_Tree operations in the below
-               --  code at all???
-
-               Conv_Node := New_Copy_Tree (N);
-               Set_Parent (Conv_Node, Parent (N));
-               Set_Comes_From_Source (Conv_Node, False);
-               Analyze_And_Resolve (Conv_Node, Target_Type);
-
-               Rewrite (N,
-                 Make_Conditional_Expression (Loc,
-                   Expressions => New_List (
-                     Make_Op_Ge (Loc,
-                       Left_Opnd =>
-                         Make_Op_Abs (Loc,
-                           Make_Op_Subtract (Loc,
-                             New_Copy_Tree (Operand),
-                             Make_Type_Conversion (Loc,
-                               New_Reference_To (Etype (Operand), Loc),
-                               New_Copy_Tree (Conv_Node)))),
-                       Right_Opnd => Make_Real_Literal (Loc, Ureal_Half)),
-
-                     Make_Conditional_Expression (Loc,
-                       Expressions => New_List (
-                         Make_Op_Ge (Loc,
-                           Left_Opnd  => New_Copy_Tree (Operand),
-                           Right_Opnd => Make_Real_Literal (Loc, Ureal_0)),
-                         Make_Op_Add (Loc,
-                           New_Copy_Tree (Conv_Node),
-                           Make_Integer_Literal (Loc, 1)),
-                         Make_Op_Subtract (Loc,
-                           New_Copy_Tree (Conv_Node),
-                           Make_Integer_Literal (Loc, 1)))),
-
-                     New_Copy_Tree (Conv_Node))));
-
-               Analyze_And_Resolve (N, Target_Type);
-               return;
-            end;
-         end if;
-
          --  One more check here, gcc is still not able to do conversions of
          --  this type with proper overflow checking, and so gigi is doing an
          --  approximation of what is required by doing floating-point compares
