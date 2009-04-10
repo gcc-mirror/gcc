@@ -83,8 +83,8 @@ package body Sem_Disp is
       List : constant Elist_Id := Primitive_Operations (Tagged_Type);
 
    begin
-      --  The dispatching operation may already be on the list, if it the
-      --  wrapper for an inherited function of a null extension (see exp_ch3
+      --  The dispatching operation may already be on the list, if it is the
+      --  wrapper for an inherited function of a null extension (see Exp_Ch3
       --  for the construction of function wrappers). The list of primitive
       --  operations must not contain duplicates.
 
@@ -185,7 +185,7 @@ package body Sem_Disp is
                Set_Has_Controlling_Result (Subp);
 
                --  Check that result subtype statically matches first subtype
-               --  (Ada 2005) : Subp may have a controlling access result.
+               --  (Ada 2005): Subp may have a controlling access result.
 
                if Subtypes_Statically_Match (Typ, Etype (Subp))
                  or else (Ekind (Etype (Subp)) = E_Anonymous_Access_Type
@@ -236,8 +236,8 @@ package body Sem_Disp is
                Tagged_Type := Base_Type (Designated_Type (T));
             end if;
 
-         --  Ada 2005 : an incomplete type can be tagged. An operation with
-         --  an access parameter of the type is dispatching.
+         --  Ada 2005: an incomplete type can be tagged. An operation with an
+         --  access parameter of the type is dispatching.
 
          elsif Scope (Designated_Type (T)) = Current_Scope then
             Tagged_Type := Designated_Type (T);
@@ -256,14 +256,12 @@ package body Sem_Disp is
          end if;
       end if;
 
-      if No (Tagged_Type)
-        or else Is_Class_Wide_Type (Tagged_Type)
-      then
+      if No (Tagged_Type) or else Is_Class_Wide_Type (Tagged_Type) then
          return Empty;
 
-      --  The dispatching type and the primitive operation must be defined
-      --  in the same scope, except in the case of internal operations and
-      --  formal abstract subprograms.
+      --  The dispatching type and the primitive operation must be defined in
+      --  the same scope, except in the case of internal operations and formal
+      --  abstract subprograms.
 
       elsif ((Scope (Subp) = Scope (Tagged_Type) or else Is_Internal (Subp))
                and then (not Is_Generic_Type (Tagged_Type)
@@ -300,7 +298,7 @@ package body Sem_Disp is
 
       Static_Tag : Node_Id := Empty;
       --  If a controlling formal has a statically tagged actual, the tag of
-      --  this actual is to be used for any tag-indeterminate actual
+      --  this actual is to be used for any tag-indeterminate actual.
 
       procedure Check_Dispatching_Context;
       --  If the call is tag-indeterminate and the entity being called is
@@ -323,8 +321,8 @@ package body Sem_Disp is
               and then not Is_Abstract_Subprogram (Alias (Subp))
               and then No (DTC_Entity (Subp))
             then
-               --  Private overriding of inherited abstract operation,
-               --  call is legal.
+               --  Private overriding of inherited abstract operation, call is
+               --  legal.
 
                Set_Entity (Name (N), Alias (Subp));
                return;
@@ -399,7 +397,7 @@ package body Sem_Disp is
 
             --  If the formal is controlling but the actual is not, the type
             --  of the actual is statically known, and may be used as the
-            --  controlling tag for some other-indeterminate actual.
+            --  controlling tag for some other tag-indeterminate actual.
 
             elsif Is_Controlling_Formal (Formal)
               and then Is_Entity_Name (Actual)
@@ -412,18 +410,19 @@ package body Sem_Disp is
             Next_Formal (Formal);
          end loop;
 
-         --  If the call doesn't have a controlling actual but does have
-         --  an indeterminate actual that requires dispatching treatment,
-         --  then an object is needed that will serve as the controlling
-         --  argument for a dispatching call on the indeterminate actual.
-         --  This can only occur in the unusual situation of a default
-         --  actual given by a tag-indeterminate call and where the type
-         --  of the call is an ancestor of the type associated with a
-         --  containing call to an inherited operation (see AI-239).
-         --  Rather than create an object of the tagged type, which would
-         --  be problematic for various reasons (default initialization,
-         --  discriminants), the tag of the containing call's associated
-         --  tagged type is directly used to control the dispatching.
+         --  If the call doesn't have a controlling actual but does have an
+         --  indeterminate actual that requires dispatching treatment, then an
+         --  object is needed that will serve as the controlling argument for a
+         --  dispatching call on the indeterminate actual. This can only occur
+         --  in the unusual situation of a default actual given by a
+         --  tag-indeterminate call and where the type of the call is an
+         --  ancestor of the type associated with a containing call to an
+         --  inherited operation (see AI-239).
+
+         --  Rather than create an object of the tagged type, which would be
+         --  problematic for various reasons (default initialization,
+         --  discriminants), the tag of the containing call's associated tagged
+         --  type is directly used to control the dispatching.
 
          if No (Control)
            and then Indeterm_Ancestor_Call
@@ -460,11 +459,11 @@ package body Sem_Disp is
 
                   elsif Is_Tag_Indeterminate (Actual) then
 
-                     --  The tag is inherited from the enclosing call (the
-                     --  node we are currently analyzing). Explicitly expand
-                     --  the actual, since the previous call to Expand
-                     --  (from Resolve_Call) had no way of knowing about
-                     --  the required dispatching.
+                     --  The tag is inherited from the enclosing call (the node
+                     --  we are currently analyzing). Explicitly expand the
+                     --  actual, since the previous call to Expand (from
+                     --  Resolve_Call) had no way of knowing about the required
+                     --  dispatching.
 
                      Propagate_Tag (Control, Actual);
 
@@ -885,8 +884,8 @@ package body Sem_Disp is
 
       if Present (Old_Subp) then
 
-         --  If the type has interfaces we complete this check after we
-         --  set attribute Is_Dispatching_Operation
+         --  If the type has interfaces we complete this check after we set
+         --  attribute Is_Dispatching_Operation.
 
          Check_Subtype_Conformant (Subp, Old_Subp);
 

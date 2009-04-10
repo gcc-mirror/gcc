@@ -35,18 +35,24 @@ with Ada.Strings.Unbounded.Text_IO; use Ada.Strings.Unbounded.Text_IO;
 with Ada.Strings.Maps;              use Ada.Strings.Maps;
 with Ada.Strings.Maps.Constants;    use Ada.Strings.Maps.Constants;
 with Ada.Text_IO;                   use Ada.Text_IO;
+with Ada.Streams.Stream_IO;         use Ada.Streams.Stream_IO;
 
 with GNAT.Spitbol;                  use GNAT.Spitbol;
 with GNAT.Spitbol.Patterns;         use GNAT.Spitbol.Patterns;
 
+with XUtil;                         use XUtil;
+
 procedure XSnamesT is
 
-   InB  : File_Type;
-   InT  : File_Type;
-   OutS : File_Type;
-   OutB : File_Type;
-   InH  : File_Type;
-   OutH : File_Type;
+   subtype VString is GNAT.Spitbol.VString;
+
+   InS  : Ada.Text_IO.File_Type;
+   InB  : Ada.Text_IO.File_Type;
+   InH  : Ada.Text_IO.File_Type;
+
+   OutS : Ada.Streams.Stream_IO.File_Type;
+   OutB : Ada.Streams.Stream_IO.File_Type;
+   OutH : Ada.Streams.Stream_IO.File_Type;
 
    A, B  : VString := Nul;
    Line  : VString := Nul;
@@ -131,7 +137,7 @@ procedure XSnamesT is
 
       if Header_Current_Symbol /= S then
          declare
-            Name2 : Vstring;
+            Name2 : VString;
             Pat : constant Pattern := "#define  "
                                        & Header_Prefix (S).all
                                        & Break (' ') * Name2;
@@ -175,7 +181,7 @@ procedure XSnamesT is
 --  Start of processing for XSnames
 
 begin
-   Open (InT, In_File, "snames.ads-tmpl");
+   Open (InS, In_File, "snames.ads-tmpl");
    Open (InB, In_File, "snames.adb-tmpl");
    Open (InH, In_File, "snames.h-tmpl");
 
@@ -194,8 +200,8 @@ begin
 
    Put_Line (OutB, Line);
 
-   LoopN : while not End_Of_File (InT) loop
-      Line := Get_Line (InT);
+   LoopN : while not End_Of_File (InS) loop
+      Line := Get_Line (InS);
 
       if not Match (Line, Name_Ref) then
          Put_Line (OutS, Line);

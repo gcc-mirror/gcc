@@ -107,9 +107,9 @@ package body Sem_Aux is
       Full_D : Node_Id;
 
    begin
-      --  If we have no declaration node, then return no constant value.
-      --  Not clear how this can happen, but it does sometimes and this is
-      --  the safest approach.
+      --  If we have no declaration node, then return no constant value. Not
+      --  clear how this can happen, but it does sometimes and this is the
+      --  safest approach.
 
       if No (D) then
          return Empty;
@@ -119,9 +119,9 @@ package body Sem_Aux is
       elsif Nkind (D) = N_Object_Renaming_Declaration then
          return Renamed_Object (Ent);
 
-      --  If this is a component declaration whose entity is constant, it
-      --  is a prival within a protected function. It does not have
-      --  a constant value.
+      --  If this is a component declaration whose entity is constant, it is
+      --  a prival within a protected function. It does not have a constant
+      --  value.
 
       elsif Nkind (D) = N_Component_Declaration then
          return Empty;
@@ -161,8 +161,8 @@ package body Sem_Aux is
       S : Entity_Id;
 
    begin
-      --  The following test is an error defense against some syntax
-      --  errors that can leave scopes very messed up.
+      --  The following test is an error defense against some syntax errors
+      --  that can leave scopes very messed up.
 
       if Ent = Standard_Standard then
          return Ent;
@@ -314,12 +314,12 @@ package body Sem_Aux is
 
    begin
       --  If the base type has no freeze node, it is a type in standard,
-      --  and always acts as its own first subtype unless it is one of
-      --  the predefined integer types. If the type is formal, it is also
-      --  a first subtype, and its base type has no freeze node. On the other
-      --  hand, a subtype of a generic formal is not its own first_subtype.
-      --  Its base type, if anonymous, is attached to the formal type decl.
-      --  from which the first subtype is obtained.
+      --  and always acts as its own first subtype unless it is one of the
+      --  predefined integer types. If the type is formal, it is also a first
+      --  subtype, and its base type has no freeze node. On the other hand, a
+      --  subtype of a generic formal is not its own first_subtype. Its base
+      --  type, if anonymous, is attached to the formal type decl. from which
+      --  the first subtype is obtained.
 
       if No (F) then
 
