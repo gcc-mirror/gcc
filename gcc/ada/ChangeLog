@@ -1,5 +1,26 @@
 2009-04-10  Robert Dewar  <dewar@adacore.com>
 
+	* sem_warn.ads, sem_warn.adb (Check_Low_Bound_Tested): Catch more cases
+	for warning suppression.
+
+2009-04-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Use_One_Type): If the two use_type clauses are
+	identical, there is no redudancy to check.
+
+2009-04-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb (Expand_N_Extended_Return_Statement): Delete redundant
+	calls initializing SS_Allocator (which is initialized in following
+	code).
+	(Expand_Simple_Function_Return): Add comment about False value for
+	Comes_From_Source on secondary-stack allocator.
+
+	* exp_ch9.adb (Build_Entry_Family_Name): Add comment.
+	(Build_Entry_Name): Add comment.
+
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
 	* einfo.ads, einfo.adb (Low_Bound_Tested): New name for Low_Bound_Known
 
 	* sem_prag.adb (Analyze_Pragma, case Check): Remove check for lower

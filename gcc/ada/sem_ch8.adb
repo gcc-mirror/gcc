@@ -7219,6 +7219,15 @@ package body Sem_Ch8 is
                        and then
                      Nkind (Parent (Clause2)) = N_Compilation_Unit
                   then
+
+                     --  If the unit is a subprogram body that acts as spec,
+                     --  the context clause is shared with the constructed
+                     --  subprogram spec. Clearly there is no redundancy.
+
+                     if Clause1 = Clause2 then
+                        return;
+                     end if;
+
                      Unit1 := Unit (Parent (Clause1));
                      Unit2 := Unit (Parent (Clause2));
 

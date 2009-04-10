@@ -170,10 +170,11 @@ package Sem_Warn is
 
    procedure Check_Low_Bound_Tested (Expr : Node_Id);
    --  Expr is the node for a comparison operation. This procedure checks if
-   --  the comparison is a source comparison of P'First with a literal and if
-   --  so, sets the Low_Bound_Tested flag in Expr to suppress warnings about
-   --  improper low bound assumptions (we assume that if the code explicitly
-   --  checks X'First, then it is not operating in blind assumption mode).
+   --  the comparison is a source comparison of P'First with some other value
+   --  and if so, sets the Low_Bound_Tested flag in Expr to suppress warnings
+   --  about improper low bound assumptions (we assume that if the code has a
+   --  test that explicitly checks X'First, then it is not operating in blind
+   --  assumption mode).
 
    procedure Warn_On_Known_Condition (C : Node_Id);
    --  C is a node for a boolean expression resulting from a relational

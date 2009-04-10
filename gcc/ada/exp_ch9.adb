@@ -1221,6 +1221,10 @@ package body Exp_Ch9 is
          --  Generate:
          --    new String'("<Entry name>" & Lnn'Img);
 
+         --  This is an implicit heap allocation, and Comes_From_Source is
+         --  False, which ensures that it will get flagged as a violation of
+         --  No_Implicit_Heap_Allocations when that restriction applies.
+
          Val :=
            Make_Allocator (Loc,
              Make_Qualified_Expression (Loc,
@@ -1268,6 +1272,11 @@ package body Exp_Ch9 is
 
       begin
          Get_Name_String (Chars (Id));
+
+         --  This is an implicit heap allocation, and Comes_From_Source is
+         --  False, which ensures that it will get flagged as a violation of
+         --  No_Implicit_Heap_Allocations when that restriction applies.
+
          Val :=
            Make_Allocator (Loc,
              Make_Qualified_Expression (Loc,

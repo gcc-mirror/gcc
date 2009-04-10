@@ -619,9 +619,16 @@ package body Sem_Warn is
               and then Attribute_Name (L) = Name_First
               and then Is_Entity_Name (Prefix (L))
               and then Is_Formal (Entity (Prefix (L)))
-              and then Nkind (R) = N_Integer_Literal
             then
                Set_Low_Bound_Tested (Entity (Prefix (L)));
+            end if;
+
+            if Nkind (R) = N_Attribute_Reference
+              and then Attribute_Name (R) = Name_First
+              and then Is_Entity_Name (Prefix (R))
+              and then Is_Formal (Entity (Prefix (R)))
+            then
+               Set_Low_Bound_Tested (Entity (Prefix (R)));
             end if;
          end;
       end if;
