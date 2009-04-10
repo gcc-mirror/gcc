@@ -1,3 +1,27 @@
+2009-04-10  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads:
+	Add qualifier for new gnatstub option '--no-exception'
+
+	* gnat_ugn.texi:
+	Add the description of the new gnatstub option '--no-exception'
+
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* rtsfind.adb: Minor reformatting
+
+2009-04-10  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_disp.adb: Minor reformatting.
+	Add comment pointing to RM clause for the case of warning against a
+	(failed) attempt at declaring a primitive operation elsewhere than in a
+	package spec.
+
+2009-04-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Denotes_Formal_Package): Check whether the package is
+	an actual for a previous formal package of the current instance.
+
 2009-04-10  Bob Duff  <duff@adacore.com>
 
 	* rtsfind.adb (RTE): Put implicit with_clauses on whatever unit needs

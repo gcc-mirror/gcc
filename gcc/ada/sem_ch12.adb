@@ -424,15 +424,19 @@ package body Sem_Ch12 is
    --  illegal circular instantiation.
 
    function Denotes_Formal_Package
-     (Pack    : Entity_Id;
-      On_Exit : Boolean := False) return Boolean;
+     (Pack     : Entity_Id;
+      On_Exit  : Boolean := False;
+      Instance : Entity_Id := Empty) return Boolean;
    --  Returns True if E is a formal package of an enclosing generic, or
    --  the actual for such a formal in an enclosing instantiation. If such
    --  a package is used as a formal in an nested generic, or as an actual
    --  in a nested instantiation, the visibility of ITS formals should not
    --  be modified. When called from within Restore_Private_Views, the flag
    --  On_Exit is true, to indicate that the search for a possible enclosing
-   --  instance should ignore the current one.
+   --  instance should ignore the current one. In that case Instance denotes
+   --  the declaration for which this is an actual. This declaration may be
+   --  an instantiation in the source, or the internal instantiation that
+   --  corresponds to the actual for a formal package.
 
    function Find_Actual_Type
      (Typ       : Entity_Id;
@@ -6130,12 +6134,45 @@ package body Sem_Ch12 is
    ----------------------------
 
    function Denotes_Formal_Package
-     (Pack    : Entity_Id;
-      On_Exit : Boolean := False) return Boolean
+     (Pack     : Entity_Id;
+      On_Exit  : Boolean := False;
+      Instance : Entity_Id := Empty) return Boolean
    is
       Par  : Entity_Id;
       Scop : constant Entity_Id := Scope (Pack);
       E    : Entity_Id;
+
+      function Is_Actual_Of_Previous_Formal (P : Entity_Id) return Boolean;
+      --  The package in question may be an actual for a previous formal
+      --  package P of the current instance, so examine its actuals as well.
+
+      ----------------------------------
+      -- Is_Actual_Of_Previous_Formal --
+      ----------------------------------
+
+      function Is_Actual_Of_Previous_Formal (P : Entity_Id) return Boolean is
+         E1 : Entity_Id;
+
+      begin
+         E1 := First_Entity (E);
+         while Present (E1) and then  E1 /= Instance loop
+            if Ekind (E1) = E_Package
+              and then Nkind (Parent (E1)) = N_Package_Renaming_Declaration
+              and then Renamed_Object (E1) = Pack
+            then
+               return True;
+
+            elsif Renamed_Object (E1) = P then
+               return False;
+            end if;
+
+            Next_Entity (E1);
+         end loop;
+
+         return False;
+      end Is_Actual_Of_Previous_Formal;
+
+   --  Start processing of Denotes_Formal_Package
 
    begin
       if On_Exit then
@@ -6176,6 +6213,10 @@ package body Sem_Ch12 is
 
             elsif Renamed_Object (E) = Pack then
                return True;
+
+            elsif Is_Actual_Of_Previous_Formal (E) then
+               return True;
+
             end if;
 
             Next_Entity (E);
@@ -11142,7 +11183,9 @@ package body Sem_Ch12 is
             elsif Nkind (Parent (E)) /= N_Package_Renaming_Declaration then
                null;
 
-            elsif Denotes_Formal_Package (Renamed_Object (E), True) then
+            elsif
+              Denotes_Formal_Package (Renamed_Object (E), True, Pack_Id)
+            then
                Set_Is_Hidden (E, False);
 
             else

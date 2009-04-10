@@ -1069,7 +1069,7 @@ package body Rtsfind is
       --  for a call issued from RTE_Available.
 
    <<Found>>
-      if (not U.Withed) and then not RTE_Available_Call then
+      if not U.Withed and then not RTE_Available_Call then
          U.Withed := True;
 
          declare

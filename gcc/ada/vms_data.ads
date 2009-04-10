@@ -6511,6 +6511,13 @@ package VMS_Data is
    --      HIGH         A great number of messages are output, most of them not
    --                   being useful for the user.
 
+   S_Stub_No_Exc  : aliased constant S := "/NO_EXCEPTION "                 &
+                                          "--no-exception";
+   --        /NONO_EXCEPTION (D)
+   --        /NO_EXCEPTION
+   --
+   --  Avoid raising PROGRAM_ERROR in the generated program unit stubs.
+
    S_Stub_Output  : aliased constant S := "/OUTPUT=@"                      &
                                             "-o@";
    --        /OUTPUT=filespec
@@ -6607,6 +6614,7 @@ package VMS_Data is
                       S_Stub_Mess       'Access,
                       S_Stub_Output     'Access,
                       S_Stub_Project    'Access,
+                      S_Stub_No_Exc     'Access,
                       S_Stub_Quiet      'Access,
                       S_Stub_Search     'Access,
                       S_Stub_Subdirs    'Access,
