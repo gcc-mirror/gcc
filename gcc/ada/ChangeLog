@@ -1,3 +1,15 @@
+2009-04-10  Bob Duff  <duff@adacore.com>
+
+	* rtsfind.ads: Minor code change: make RE_Unit_Table constant.
+
+	* rtsfind.adb: Minor comment changes, and remove useless code.
+
+	* sinfo.ads: Add ??? comment.
+
+2009-04-10  Vincent Celier  <celier@adacore.com>
+
+	* vms_data.ads: Add missing GNAT SYNC VMS qualifiers -main= and -U
+
 2009-04-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference, case 'Tag): If the tagged
