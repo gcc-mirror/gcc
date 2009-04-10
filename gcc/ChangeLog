@@ -1,3 +1,13 @@
+2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/39701
+	* common.opt (-fdelete-null-pointer-checks): Initialize to 1.
+
+	* opts.c (decode_options): Don't set flag_delete_null_pointer_checks
+	here.
+
+	* doc/invoke.texi: Update -fdelete-null-pointer-checks.
+
 2009-04-10  Chao-ying Fu  <fu@mips.com>
 
 	* doc/tm.texi (Instruction Output): Document
@@ -18,8 +28,8 @@
 2009-04-10  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR middle-end/39701
-        * fold-const.c (tree_single_nonzero_warnv_p): Pass non-static
-        variables as non-NULL even with -fdelete-null-pointer-checks.
+	* fold-const.c (tree_single_nonzero_warnv_p): Pass non-static
+	variables as non-NULL even with -fdelete-null-pointer-checks.
 
 2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -54,8 +64,8 @@
 	* expmed.c (expand_divmod): Always use a comparison for a division
 	by a large unsigned integer.
 
-        * fold-const.c (tree_single_nonzero_warnv_p): Always treat decls
-        for things others than variables or functions as nonzero.
+	* fold-const.c (tree_single_nonzero_warnv_p): Always treat decls
+	for things others than variables or functions as nonzero.
 
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
@@ -396,40 +406,40 @@
 
 2009-04-09  Paolo Bonzini  <bonzini@gnu.org>
 
-        * config/i386/i386.md (cmpcc): New.
-        * config/i386/sync.md (sync_compare_and_swap*): Set FLAGS_REG.
-        (sync_compare_and_swap_cc*): Delete.
+	* config/i386/i386.md (cmpcc): New.
+	* config/i386/sync.md (sync_compare_and_swap*): Set FLAGS_REG.
+	(sync_compare_and_swap_cc*): Delete.
 
-        * config/s390/s390.c (s390_compare_emitted): Remove.
-        (s390_emit_compare): Handle MODE_CC s390_compare_op0 like
-        s390_compare_emitted used to be handled.  Assert that modes match.
-        (s390_emit_compare_and_swap): Use s390_emit_compare, do not
-        refer to sync_compare_and_swap_ccsi.
-        * config/s390/s390.h (s390_compare_emitted): Remove.
-        * config/s390/s390.md (seq): Look for MODE_CC s390_compare_op0
-        instead of s390_compare_emitted.
-        (stack_protect_test, sync_compare_and_swap_cc): Set s390_compare_op0
-        instead of s390_compare_emitted.
-        * config/s390/s390.md (cmpcc): New.
-        (sync_compare_and_swapqi, sync_compare_and_swaphi): Clobber
-        CC_REGNUM, do not pretend it's set.
-        (sync_compare_and_swap_cc*): Delete.
-        * config/s390/predicates.md (cc_reg_operand): New.
+	* config/s390/s390.c (s390_compare_emitted): Remove.
+	(s390_emit_compare): Handle MODE_CC s390_compare_op0 like
+	s390_compare_emitted used to be handled.  Assert that modes match.
+	(s390_emit_compare_and_swap): Use s390_emit_compare, do not
+	refer to sync_compare_and_swap_ccsi.
+	* config/s390/s390.h (s390_compare_emitted): Remove.
+	* config/s390/s390.md (seq): Look for MODE_CC s390_compare_op0
+	instead of s390_compare_emitted.
+	(stack_protect_test, sync_compare_and_swap_cc): Set s390_compare_op0
+	instead of s390_compare_emitted.
+	* config/s390/s390.md (cmpcc): New.
+	(sync_compare_and_swapqi, sync_compare_and_swaphi): Clobber
+	CC_REGNUM, do not pretend it's set.
+	(sync_compare_and_swap_cc*): Delete.
+	* config/s390/predicates.md (cc_reg_operand): New.
 
-        * expr.c (sync_compare_and_swap_cc): Delete.
-        * optabs.h (sync_compare_and_swap_cc): Delete.
-        * optabs.c (prepare_cmp_insn): Ignore which specific CCmode
-        is being used with can_compare_p.
-        (emit_cmp_and_jump_insn_1): Likewise when looking in the optab.
-        (find_cc_set): New.
-        (expand_bool_compare_and_swap): Do not use sync_compare_and_swap_cc,
-        look for a MODE_CC set instead.  Use emit_store_flag.
-        (expand_compare_and_swap_loop): Likewise, with some additional
-        complication to avoid a force_reg when useless.  Use
-        emit_cmp_and_jump_insns.
-        * genopinit.c (optabs): Delete sync_compare_and_swap_cc.
-        * doc/md.texi (sync_compare_and_swap_cc): Merge with
-        sync_compare_and_swap documentation.
+	* expr.c (sync_compare_and_swap_cc): Delete.
+	* optabs.h (sync_compare_and_swap_cc): Delete.
+	* optabs.c (prepare_cmp_insn): Ignore which specific CCmode
+	is being used with can_compare_p.
+	(emit_cmp_and_jump_insn_1): Likewise when looking in the optab.
+	(find_cc_set): New.
+	(expand_bool_compare_and_swap): Do not use sync_compare_and_swap_cc,
+	look for a MODE_CC set instead.  Use emit_store_flag.
+	(expand_compare_and_swap_loop): Likewise, with some additional
+	complication to avoid a force_reg when useless.  Use
+	emit_cmp_and_jump_insns.
+	* genopinit.c (optabs): Delete sync_compare_and_swap_cc.
+	* doc/md.texi (sync_compare_and_swap_cc): Merge with
+	sync_compare_and_swap documentation.
 
 2009-04-09  Jan Hubicka  <jh@suse.cz>
 
