@@ -1,3 +1,20 @@
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb: Minor reformatting
+
+	* make.adb: Minor reformatting.
+
+2009-04-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch7.adb (Find_Final_List): When creating a finalization-chain
+	entity and the scope is a subprogram, retrieve the Sloc of the
+	subprogram's body rather than using the sloc of the spec, for better
+	line-stepping behavior in gdb.
+	(Wrap_Transient_Declaration): For the Sloc of nodes created with a list
+	controller, use the Sloc of the first declaration of the containing list
+	rather than that of the node that triggered creation of the list
+	controller.
+
 2009-04-10  Vincent Celier  <celier@adacore.com>
 
 	* prj-nmsc.adb (Check_Naming_Schemes): Initialize local variable Casing
