@@ -989,7 +989,7 @@ package Snames is
 
    --  Names used in processing intrinsic calls
 
-   Name_Free                             : constant Name_Id := N + 628;
+   Name_Free                             : constant Name_Id := N + $;
 
    --  Reserved words used only in Ada 95
 
@@ -1007,7 +1007,7 @@ package Snames is
 
    --  Miscellaneous names used in semantic checking
 
-   Name_Raise_Exception                  : constant Name_Id := N + 635;
+   Name_Raise_Exception                  : constant Name_Id := N + $;
 
    --  Additional reserved words and identifiers used in GNAT Project Files
    --  Note that Name_External is already previously declared
