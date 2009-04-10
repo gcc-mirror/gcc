@@ -1282,12 +1282,38 @@ package body Sem_Ch6 is
             Set_Is_Local_Anonymous_Access (Typ);
             Set_Etype (Designator, Typ);
 
+            --  Ada 2005 (AI-231): Ensure proper usage of null exclusion
+
+            Null_Exclusion_Static_Checks (N);
+
          --  Subtype_Mark case
 
          else
             Find_Type (Result_Definition (N));
             Typ := Entity (Result_Definition (N));
             Set_Etype (Designator, Typ);
+
+            --  Ada 2005 (AI-231): Ensure proper usage of null exclusion
+
+            Null_Exclusion_Static_Checks (N);
+
+            --  If a null exclusion is imposed on the result type, then create
+            --  a null-excluding itype (an access subtype) and use it as the
+            --  function's Etype. Note that the null exclusion checks are done
+            --  right before this, because they don't get applied to types that
+            --  do not come from source.
+
+            if Is_Access_Type (Typ)
+              and then Null_Exclusion_Present (N)
+            then
+               Set_Etype  (Designator,
+                 Create_Null_Excluding_Itype
+                   (T           => Typ,
+                    Related_Nod => N,
+                    Scope_Id    => Scope (Current_Scope)));
+            else
+               Set_Etype (Designator, Typ);
+            end if;
 
             if Ekind (Typ) = E_Incomplete_Type
               and then Is_Value_Type (Typ)
@@ -1303,10 +1329,6 @@ package body Sem_Ch6 is
                  ("invalid use of incomplete type", Result_Definition (N));
             end if;
          end if;
-
-         --  Ada 2005 (AI-231): Ensure proper usage of null exclusion
-
-         Null_Exclusion_Static_Checks (N);
 
       --  Case where result definition does indicate an error
 
@@ -2731,8 +2753,18 @@ package body Sem_Ch6 is
 
          End_Scope;
 
+      --  The subprogram scope is pushed and popped around the processing of
+      --  the return type for consistency with call above to Process_Formals
+      --  (which itself can call Analyze_Return_Type), and to ensure that any
+      --  itype created for the return type will be associated with the proper
+      --  scope.
+
       elsif Nkind (N) = N_Function_Specification then
+         Push_Scope (Designator);
+
          Analyze_Return_Type (N);
+
+         End_Scope;
       end if;
 
       if Nkind (N) = N_Function_Specification then

@@ -102,7 +102,7 @@ package body Itypes is
                              Scope_Id    => Scope_Id);
 
       Set_Directly_Designated_Type (I_Typ, Directly_Designated_Type (T));
-      Set_Etype                    (I_Typ, T);
+      Set_Etype                    (I_Typ, Base_Type (T));
       Set_Depends_On_Private       (I_Typ, Depends_On_Private (T));
       Set_Is_Public                (I_Typ, Is_Public          (T));
       Set_From_With_Type           (I_Typ, From_With_Type     (T));

@@ -1118,7 +1118,27 @@ package body Sem_Ch3 is
 
          else
             Analyze (Result_Definition (T_Def));
-            Set_Etype (Desig_Type, Entity (Result_Definition (T_Def)));
+
+            declare
+               Typ : constant Entity_Id := Entity (Result_Definition (T_Def));
+
+            begin
+               --  If a null exclusion is imposed on the result type, then
+               --  create a null-excluding itype (an access subtype) and use
+               --  it as the function's Etype.
+
+               if Is_Access_Type (Typ)
+                 and then Null_Exclusion_In_Return_Present (T_Def)
+               then
+                  Set_Etype  (Desig_Type,
+                    Create_Null_Excluding_Itype
+                      (T           => Typ,
+                       Related_Nod => T_Def,
+                       Scope_Id    => Current_Scope));
+               else
+                  Set_Etype (Desig_Type, Typ);
+               end if;
+            end;
          end if;
 
          if not (Is_Type (Etype (Desig_Type))) then

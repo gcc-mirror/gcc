@@ -3738,8 +3738,11 @@ pragma Postcondition (
 The @code{Postcondition} pragma allows specification of automatic
 postcondition checks for subprograms. These checks are similar to
 assertions, but are automatically inserted just prior to the return
-statements of the subprogram with which they are associated.
-Furthermore, the boolean expression which is the condition which
+statements of the subprogram with which they are associated (including
+implicit returns at the end of procedure bodies and associated
+exception handlers).
+
+In addition, the boolean expression which is the condition which
 must be true may contain references to function'Result in the case
 of a function to refer to the returned value.
 
