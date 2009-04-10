@@ -77,6 +77,7 @@ package body Einfo is
    --    Hiding_Loop_Variable            Node8
    --    Mechanism                       Uint8 (but returns Mechanism_Type)
    --    Normalized_First_Bit            Uint8
+   --    Postcondition_Proc              Node8
    --    Return_Applies_To               Node8
 
    --    Class_Wide_Type                 Node9
@@ -2354,6 +2355,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Record_Type);
       return Node19 (Id);
    end Parent_Subtype;
+
+   function Postcondition_Proc (Id : E) return E is
+   begin
+      pragma Assert (Ekind (Id) = E_Procedure);
+      return Node8 (Id);
+   end Postcondition_Proc;
 
    function Primitive_Operations (Id : E) return L is
    begin
@@ -4824,6 +4831,12 @@ package body Einfo is
       Set_Node19 (Id, V);
    end Set_Parent_Subtype;
 
+   procedure Set_Postcondition_Proc (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) = E_Procedure);
+      Set_Node8 (Id, V);
+   end Set_Postcondition_Proc;
+
    procedure Set_Primitive_Operations (Id : E; V : L) is
    begin
       pragma Assert (Is_Tagged_Type (Id));
@@ -7174,6 +7187,9 @@ package body Einfo is
 
          when E_Package                                    =>
             Write_Str ("Dependent_Instances");
+
+         when E_Procedure                                  =>
+            Write_Str ("Postcondition_Proc");
 
          when E_Return_Statement                           =>
             Write_Str ("Return_Applies_To");

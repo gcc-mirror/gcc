@@ -3104,6 +3104,12 @@ package Einfo is
 --       Present in E_Record_Type. Points to the subtype to use for a
 --       field that references the parent record.
 
+--    Postcondition_Proc (Node8)
+--       Present only in procedure entities, saves the entity of the generated
+--       postcondition proc if one is present, otherwise is set to Empty. Used
+--       to generate the call to this procedure in case the expander inserts
+--       implicit return statements.
+
 --    Primitive_Operations (Elist15)
 --       Present in tagged record types and subtypes and in tagged private
 --       types. Points to an element list of entities for primitive operations
@@ -5139,6 +5145,7 @@ package Einfo is
 
    --  E_Procedure
    --  E_Generic_Procedure
+   --    Postcondition_Proc                  (Node8)
    --    Renaming_Map                        (Uint9)
    --    Handler_Records                     (List10)   (non-generic case only)
    --    Protected_Body_Subprogram           (Node11)
@@ -5923,6 +5930,7 @@ package Einfo is
    function Package_Instantiation               (Id : E) return N;
    function Packed_Array_Type                   (Id : E) return E;
    function Parent_Subtype                      (Id : E) return E;
+   function Postcondition_Proc                  (Id : E) return E;
    function Primitive_Operations                (Id : E) return L;
    function Prival                              (Id : E) return E;
    function Prival_Link                         (Id : E) return E;
@@ -6473,6 +6481,7 @@ package Einfo is
    procedure Set_Package_Instantiation           (Id : E; V : N);
    procedure Set_Packed_Array_Type               (Id : E; V : E);
    procedure Set_Parent_Subtype                  (Id : E; V : E);
+   procedure Set_Postcondition_Proc              (Id : E; V : E);
    procedure Set_Primitive_Operations            (Id : E; V : L);
    procedure Set_Prival                          (Id : E; V : E);
    procedure Set_Prival_Link                     (Id : E; V : E);
@@ -7164,6 +7173,7 @@ package Einfo is
    pragma Inline (Packed_Array_Type);
    pragma Inline (Parameter_Mode);
    pragma Inline (Parent_Subtype);
+   pragma Inline (Postcondition_Proc);
    pragma Inline (Primitive_Operations);
    pragma Inline (Prival);
    pragma Inline (Prival_Link);
@@ -7548,6 +7558,7 @@ package Einfo is
    pragma Inline (Set_Package_Instantiation);
    pragma Inline (Set_Packed_Array_Type);
    pragma Inline (Set_Parent_Subtype);
+   pragma Inline (Set_Postcondition_Proc);
    pragma Inline (Set_Primitive_Operations);
    pragma Inline (Set_Prival);
    pragma Inline (Set_Prival_Link);

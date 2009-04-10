@@ -1,5 +1,12 @@
 2009-04-10  Robert Dewar  <dewar@adacore.com>
 
+	* einfo.ads, einfo.adb (Postcondition_Proc): New attribute for
+	procedures.
+
+	* sem_ch6.adb: Minor code clean up.
+
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
 	* mlib-tgt-specific-xi.adb: Minor reformatting
 
 2009-04-10  Bob Duff  <duff@adacore.com>
