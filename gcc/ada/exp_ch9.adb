@@ -2394,7 +2394,10 @@ package body Exp_Ch9 is
       --  in internal scopes, unless present already.. Required for nested
       --  limited aggregates, where the expansion of task components may
       --  generate inner blocks. If the block is the rewriting of a call
-      --  this is valid master.
+      --  or the scope is an extended return statement this is valid master.
+      --  The master in an extended return is only used within the return,
+      --  and is subsequently overwritten in Move_Activation_Chain, but it
+      --  must exist now.
 
       if Ada_Version >= Ada_05 then
          while Is_Internal (S) loop
@@ -2402,6 +2405,8 @@ package body Exp_Ch9 is
               and then
                 Nkind (Original_Node (Parent (S))) = N_Procedure_Call_Statement
             then
+               exit;
+            elsif Ekind (S) = E_Return_Statement then
                exit;
             else
                S := Scope (S);

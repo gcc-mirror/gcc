@@ -733,6 +733,8 @@ package body Sem_Aux is
    begin
       pragma Assert (Is_Tag (Tag));
 
+      --  Loop to look for next tag component
+
       Comp := Next_Entity (Tag);
       while Present (Comp) loop
          if Is_Tag (Comp) then

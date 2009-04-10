@@ -44,6 +44,10 @@ package body Scn is
 
    use ASCII;
 
+   Obsolescent_Check_Flag : Boolean := True;
+   --  Obsolescent check activation. Set to False during integrated
+   --  preprocessing.
+
    Used_As_Identifier : array (Token_Type) of Boolean;
    --  Flags set True if a given keyword is used as an identifier (used to
    --  make sure that we only post an error message for incorrect use of a
@@ -342,12 +346,15 @@ package body Scn is
 
    procedure Obsolescent_Check (S : Source_Ptr) is
    begin
-      --  This is a pain in the neck case, since we normally need a node to
-      --  call Check_Restrictions, and all we have is a source pointer. The
-      --  easiest thing is to construct a dummy node. A bit kludgy, but this
-      --  is a marginal case. It's not worth trying to do things more cleanly.
+      if Obsolescent_Check_Flag then
+         --  This is a pain in the neck case, since we normally need a node to
+         --  call Check_Restrictions, and all we have is a source pointer. The
+         --  easiest thing is to construct a dummy node. A bit kludgy, but this
+         --  is a marginal case. It's not worth trying to do things more
+         --  cleanly.
 
-      Check_Restriction (No_Obsolescent_Features, New_Node (N_Empty, S));
+         Check_Restriction (No_Obsolescent_Features, New_Node (N_Empty, S));
+      end if;
    end Obsolescent_Check;
 
    ---------------
@@ -419,5 +426,14 @@ package body Scn is
       Token_Node := New_Node (N_Identifier, Token_Ptr);
       Set_Chars (Token_Node, Token_Name);
    end Scan_Reserved_Identifier;
+
+   ---------------------------
+   -- Set_Obsolescent_Check --
+   ---------------------------
+
+   procedure Set_Obsolescent_Check (Value : Boolean) is
+   begin
+      Obsolescent_Check_Flag := Value;
+   end Set_Obsolescent_Check;
 
 end Scn;

@@ -7843,11 +7843,39 @@ package body Sem_Ch6 is
       Subp  : Entity_Id;
       Parms : List_Id;
 
+      procedure Add_Post_Call (Stms : List_Id; Post_Proc : Entity_Id);
+      --  Add a call to Post_Proc at the end of the statement list
+
       function Grab_PPC (Nam : Name_Id) return Node_Id;
       --  Prag contains an analyzed precondition or postcondition pragma.
       --  This function copies the pragma, changes it to the corresponding
       --  Check pragma and returns the Check pragma as the result. The
       --  argument Nam is either Name_Precondition or Name_Postcondition.
+
+      -------------------
+      -- Add_Post_Call --
+      -------------------
+
+      procedure Add_Post_Call (Stms : List_Id; Post_Proc : Entity_Id) is
+         Last_Stm : Node_Id;
+      begin
+         --  Get last statement, ignoring irrelevant nodes
+
+         Last_Stm := Last (Stms);
+         while Nkind (Last_Stm) in N_Pop_xxx_Label loop
+            Prev (Last_Stm);
+         end loop;
+
+         --  Append the call to the list. This is unnecessary (but harmless) if
+         --  the end of the list is unreachable, so we do a simple check for
+         --  Is_Transfer here.
+
+         if not Is_Transfer (Last_Stm) then
+            Append_To (Stms,
+                       Make_Procedure_Call_Statement (Loc,
+                         Name => New_Reference_To (Post_Proc, Loc)));
+         end if;
+      end Add_Post_Call;
 
       --------------
       -- Grab_PPC --
@@ -7964,12 +7992,12 @@ package body Sem_Ch6 is
 
                Next (Prag);
 
-               --  Not a pragma, if comes from source, then end scan
+            --  Not a pragma, if comes from source, then end scan
 
             elsif Comes_From_Source (Prag) then
                exit;
 
-               --  Skip stuff not coming from source
+            --  Skip stuff not coming from source
 
             else
                Next (Prag);
@@ -8004,7 +8032,7 @@ package body Sem_Ch6 is
       end if;
 
       --  If we had any postconditions and expansion is enabled, build
-      --  the Postconditions procedure.
+      --  the _Postconditions procedure.
 
       if Present (Plist)
         and then Expander_Active
@@ -8022,20 +8050,46 @@ package body Sem_Ch6 is
             Parms := No_List;
          end if;
 
-         Prepend_To (Declarations (N),
-           Make_Subprogram_Body (Loc,
-             Specification =>
-               Make_Procedure_Specification (Loc,
-                 Defining_Unit_Name =>
+         declare
+            Post_Proc : constant Entity_Id :=
                    Make_Defining_Identifier (Loc,
-                     Chars => Name_uPostconditions),
-                 Parameter_Specifications => Parms),
+                     Chars => Name_uPostconditions);
+            --  The entity for the _Postconditions procedure
+            HSS : constant Node_Id := Handled_Statement_Sequence (N);
+            Handler : Node_Id;
+         begin
 
-             Declarations => Empty_List,
+            Prepend_To (Declarations (N),
+              Make_Subprogram_Body (Loc,
+                Specification =>
+                  Make_Procedure_Specification (Loc,
+                    Defining_Unit_Name => Post_Proc,
+                    Parameter_Specifications => Parms),
 
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Plist)));
+                Declarations => Empty_List,
+
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => Plist)));
+
+            --  If this is a procedure, add a call to _postconditions to every
+            --  place where it could return implicitly (not via a return
+            --  statement, which are handled elsewhere). This is not necessary
+            --  for functions, since functions always return via a return
+            --  statement, or raise an exception.
+
+            if Etype (Subp) = Standard_Void_Type then
+               Add_Post_Call (Statements (HSS), Post_Proc);
+
+               if Present (Exception_Handlers (HSS)) then
+                  Handler := First_Non_Pragma (Exception_Handlers (HSS));
+                  while Present (Handler) loop
+                     Add_Post_Call (Statements (Handler), Post_Proc);
+                     Next_Non_Pragma (Handler);
+                  end loop;
+               end if;
+            end if;
+         end;
 
          if Present (Spec_Id) then
             Set_Has_Postconditions (Spec_Id);
