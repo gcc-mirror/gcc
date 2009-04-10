@@ -740,7 +740,8 @@ package body Exp_Ch9 is
       --  processing, has already been added for the expansion of requeue
       --  statements.
 
-      Call := Build_Runtime_Call (No_Location, RE_Complete_Rendezvous);
+      Call := Build_Runtime_Call (Sloc (Last (Statements (Stats))),
+                                  RE_Complete_Rendezvous);
       Insert_Before (Last (Statements (Stats)), Call);
       Analyze (Call);
 
@@ -751,7 +752,8 @@ package body Exp_Ch9 is
          Hand := First (Exception_Handlers (Stats));
 
          while Present (Hand) loop
-            Call := Build_Runtime_Call (No_Location, RE_Complete_Rendezvous);
+            Call := Build_Runtime_Call (Sloc (Last (Statements (Hand))),
+                                        RE_Complete_Rendezvous);
             Append (Call, Statements (Hand));
             Analyze (Call);
             Next (Hand);
@@ -786,13 +788,13 @@ package body Exp_Ch9 is
             Exception_Choices => New_List (Ohandle),
 
             Statements =>  New_List (
-              Make_Procedure_Call_Statement (No_Location,
+              Make_Procedure_Call_Statement (Sloc (Stats),
                 Name => New_Reference_To (
-                  RTE (RE_Exceptional_Complete_Rendezvous), No_Location),
+                  RTE (RE_Exceptional_Complete_Rendezvous), Sloc (Stats)),
                 Parameter_Associations => New_List (
-                  Make_Function_Call (No_Location,
+                  Make_Function_Call (Sloc (Stats),
                     Name => New_Reference_To (
-                      RTE (RE_Get_GNAT_Exception), No_Location))))))));
+                      RTE (RE_Get_GNAT_Exception), Sloc (Stats)))))))));
 
       Set_Parent (New_S, Astat); -- temp parent for Analyze call
       Analyze_Exception_Handlers (Exception_Handlers (New_S));
