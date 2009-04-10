@@ -1,3 +1,13 @@
+2009-04-10  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_attr.adb: Minor reformatting
+
+2009-04-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Check_Precondition_Postcondition): Within a generic,
+	analyze the expression for a postcondition, even if the compiler mode
+	is Generate_Code.
+
 2009-04-10  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aux.adb: Minor reformatting

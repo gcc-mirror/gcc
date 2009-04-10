@@ -119,7 +119,7 @@ package body Sem_Aux is
       elsif Nkind (D) = N_Object_Renaming_Declaration then
          return Renamed_Object (Ent);
 
-      --  If this is a component declaration whose entity is constant, it is
+      --  If this is a component declaration whose entity is a constant, it is
       --  a prival within a protected function (and so has no constant value).
 
       elsif Nkind (D) = N_Component_Declaration then
