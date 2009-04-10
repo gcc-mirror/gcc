@@ -5898,7 +5898,7 @@ safely dereference null pointers.  Use
 @option{-fno-delete-null-pointer-checks} to disable this optimization
 for programs which depend on that behavior.
 
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled by default.
 
 @item -fexpensive-optimizations
 @opindex fexpensive-optimizations

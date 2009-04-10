@@ -894,7 +894,6 @@ decode_options (unsigned int argc, const char **argv)
   flag_regmove = opt2;
   flag_strict_aliasing = opt2;
   flag_strict_overflow = opt2;
-  flag_delete_null_pointer_checks = opt2;
   flag_reorder_blocks = opt2;
   flag_reorder_functions = opt2;
   flag_tree_vrp = opt2;

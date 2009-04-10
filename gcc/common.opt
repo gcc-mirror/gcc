@@ -436,7 +436,7 @@ Common Report Var(flag_delayed_branch) Optimization
 Attempt to fill delay slots of branch instructions
 
 fdelete-null-pointer-checks
-Common Report Var(flag_delete_null_pointer_checks) Optimization
+Common Report Var(flag_delete_null_pointer_checks) Init(1) Optimization
 Delete useless null pointer checks
 
 fdiagnostics-show-location=
