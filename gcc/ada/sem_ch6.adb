@@ -1933,6 +1933,8 @@ package body Sem_Ch6 is
             Set_Convention (Spec_Id, Convention_Protected);
          end;
 
+      --  Case where a separate spec is present
+
       elsif Present (Spec_Id) then
          Spec_Decl := Unit_Declaration_Node (Spec_Id);
          Verify_Overriding_Indicator;
@@ -1958,7 +1960,18 @@ package body Sem_Ch6 is
             Set_Has_Delayed_Freeze (Spec_Id);
             Insert_Actions (N, Freeze_Entity (Spec_Id, Loc));
          end if;
+
+      --  The missing else branch here is for the case where there is no
+      --  separate spec and either we don't have a protected operation, or the
+      --  node is compiler generated. Is it really right that nothing needs to
+      --  be done in this case. At the very least a comment is appropriate as
+      --  to why nothing needs to be done in this case ???
+
+      else
+         null;
       end if;
+
+      --  Mark presence of postcondition proc in current scope
 
       if Chars (Body_Id) = Name_uPostconditions then
          Set_Has_Postconditions (Current_Scope);
