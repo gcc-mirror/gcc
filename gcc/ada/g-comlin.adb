@@ -92,8 +92,9 @@ package body GNAT.Command_Line is
       Index_In_Switches : out Integer;
       Switch_Length     : out Integer;
       Param             : out Switch_Parameter_Type);
-   --  return the Longest switch from Switches that matches at least
-   --  partially Arg. Index_In_Switches is set to 0 if none matches
+   --  Return the Longest switch from Switches that at least partially
+   --  partially Arg. Index_In_Switches is set to 0 if none matches.
+   --  What are other parameters??? in particular Param is not always set???
 
    procedure Unchecked_Free is new Ada.Unchecked_Deallocation
      (Argument_List, Argument_List_Access);

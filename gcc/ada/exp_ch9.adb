@@ -738,22 +738,25 @@ package body Exp_Ch9 is
       --  At the end of the statement sequence, Complete_Rendezvous is called.
       --  A label skipping the Complete_Rendezvous, and all other accept
       --  processing, has already been added for the expansion of requeue
-      --  statements.
+      --  statements. The Sloc is copied from the last statement since it
+      --  is really part of this last statement.
 
-      Call := Build_Runtime_Call (Sloc (Last (Statements (Stats))),
-                                  RE_Complete_Rendezvous);
+      Call :=
+        Build_Runtime_Call
+          (Sloc (Last (Statements (Stats))), RE_Complete_Rendezvous);
       Insert_Before (Last (Statements (Stats)), Call);
       Analyze (Call);
 
       --  If exception handlers are present, then append Complete_Rendezvous
-      --  calls to the handlers, and construct the required outer block.
+      --  calls to the handlers, and construct the required outer block. As
+      --  above, the Sloc is copied from the last statement in the sequence.
 
       if Present (Exception_Handlers (Stats)) then
          Hand := First (Exception_Handlers (Stats));
-
          while Present (Hand) loop
-            Call := Build_Runtime_Call (Sloc (Last (Statements (Hand))),
-                                        RE_Complete_Rendezvous);
+            Call :=
+              Build_Runtime_Call
+                (Sloc (Last (Statements (Hand))), RE_Complete_Rendezvous);
             Append (Call, Statements (Hand));
             Analyze (Call);
             Next (Hand);
@@ -11996,11 +11999,11 @@ package body Exp_Ch9 is
          --  side effects.
 
          Append_To (Args,
-           New_Copy_Tree (
-             Expression (First (
-               Pragma_Argument_Associations (
-                 Find_Task_Or_Protected_Pragma
-                   (Tdef, Name_Task_Name))))));
+           New_Copy_Tree
+             (Expression (First
+                           (Pragma_Argument_Associations
+                             (Find_Task_Or_Protected_Pragma
+                               (Tdef, Name_Task_Name))))));
 
       else
          Append_To (Args, Make_Identifier (Loc, Name_uTask_Name));

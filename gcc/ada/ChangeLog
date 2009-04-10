@@ -1,3 +1,21 @@
+2009-04-10  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Check_Naming_Schemes): Initialize local variable Casing
+	to avoid gcc warning.
+
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* g-comlin.adb: Add ??? comment
+
+2009-04-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Check_Unused_Withs): Do not emit message about
+	unreferenced entities for a package with no visible declarations.
+
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb: Minor reformatting
+
 2009-04-10  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_prag.adb: Minor reformatting
