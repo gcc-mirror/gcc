@@ -1,5 +1,12 @@
 2009-04-10  Janne Blomqvist  <jb@gcc.gnu.org>
 
+        * io/io.h (move_pos_offset): Remove prototype.
+        * io/transfer.c (formatted_transfer_scalar_read): Use sseek
+        instead of move_pos_offset.
+        * io/unix.c (move_pos_offset): Remove.
+
+2009-04-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
 	PR libfortran/39665 libfortran/39702 libfortran/39709
 	* io/io.h (st_parameter_dt): Revert aligned attribute from u.p.value.
         * io/list_read.c (read_complex): Read directly into user pointer.

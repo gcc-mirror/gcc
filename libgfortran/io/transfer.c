@@ -1153,7 +1153,7 @@ formatted_transfer_scalar_read (st_parameter_dt *dtp, bt type, void *p, int kind
 	  if (dtp->u.p.skips < 0)
 	    {
               if (is_internal_unit (dtp))  
-                move_pos_offset (dtp->u.p.current_unit->s, dtp->u.p.skips);
+                sseek (dtp->u.p.current_unit->s, dtp->u.p.skips, SEEK_CUR);
               else
                 fbuf_seek (dtp->u.p.current_unit, dtp->u.p.skips, SEEK_CUR);
 	      dtp->u.p.current_unit->bytes_left -= (gfc_offset) dtp->u.p.skips;
@@ -1329,7 +1329,7 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  if (dtp->u.p.skips < 0)
 	    {
               if (is_internal_unit (dtp))  
-	        move_pos_offset (dtp->u.p.current_unit->s, dtp->u.p.skips);
+	        sseek (dtp->u.p.current_unit->s, dtp->u.p.skips, SEEK_CUR);
               else
                 fbuf_seek (dtp->u.p.current_unit, dtp->u.p.skips, SEEK_CUR);
 	      dtp->u.p.current_unit->bytes_left -= (gfc_offset) dtp->u.p.skips;
