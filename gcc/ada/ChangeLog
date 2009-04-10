@@ -1,3 +1,8 @@
+2009-04-10  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb, exp_ch9.adb: Avoid use of No_Position in Sloc of
+	generated nodes, because it might confuse various circuits in the FE.
+
 2009-04-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Task_Name): Do not expand argument
