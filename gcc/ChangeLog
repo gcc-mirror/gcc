@@ -1,3 +1,9 @@
+2009-04-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/39701
+        * fold-const.c (tree_single_nonzero_warnv_p): Pass non-static
+        variables as non-NULL even with -fdelete-null-pointer-checks.
+
 2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/rs6000/darwin-vecsave.asm: Remove extra "*/".

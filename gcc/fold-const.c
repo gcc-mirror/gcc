@@ -15017,8 +15017,12 @@ tree_single_nonzero_warnv_p (tree t, bool *strict_overflow_p)
 	if (!base)
 	  return false;
 
-	/* Weak declarations may link to NULL.  */
-	if (DECL_P (base) && flag_delete_null_pointer_checks)
+	/* Weak declarations may link to NULL.  Other things may also be NULL
+	   so protect with -fdelete-null-pointer-checks; but not variables
+	   allocated on the stack.  */
+	if (DECL_P (base)
+	    && (flag_delete_null_pointer_checks
+		|| (TREE_CODE (base) == VAR_DECL && !TREE_STATIC (base))))
 	  return !VAR_OR_FUNCTION_DECL_P (base) || !DECL_WEAK (base);
 
 	/* Constants are never weak.  */
