@@ -188,11 +188,11 @@ package body Sem_Ch6 is
      (N       : Node_Id;
       Spec_Id : Entity_Id;
       Body_Id : Entity_Id);
-   --  Called from Analyze_Body to deal with scanning post conditions for the
-   --  body and assembling and inserting the _postconditions procedure. N is
-   --  the node for the subprogram body and Body_Id/Spec_Id are the entities
-   --  for the body and separate spec (if there is no separate spec, Spec_Id
-   --  is Empty).
+   --  Called from Analyze[_Generic]_Subprogram_Body to deal with scanning post
+   --  conditions for the body and assembling and inserting the _postconditions
+   --  procedure. N is the node for the subprogram body and Body_Id/Spec_Id are
+   --  the entities for the body and separate spec (if there is no separate
+   --  spec, Spec_Id is Empty).
 
    procedure Set_Formal_Validity (Formal_Id : Entity_Id);
    --  Formal_Id is an formal parameter entity. This procedure deals with
