@@ -1210,7 +1210,12 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 	    }
 
 	  gcc_assert (begin->rank == 1);
-	  gcc_assert (begin->shape);
+	  /* Zero-sized arrays have no shape and no elements, stop early.  */
+	  if (!begin->shape) 
+	    {
+	      mpz_init_set_ui (nelts, 0);
+	      break;
+	    }
 
 	  vecsub[d] = begin->value.constructor;
 	  mpz_set (ctr[d], vecsub[d]->expr->value.integer);
