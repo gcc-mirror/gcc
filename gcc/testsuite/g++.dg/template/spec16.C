@@ -7,5 +7,5 @@ struct A {
   template<int M> void B () ; 
 }; 
 
-void A<0>::B<0>() {    // { dg-error "parameter-lists" }
+void A<0>::B<0>() {    // { dg-error "specializing member 'A<0>::B<0>' requires 'template<>' syntax" }
 } 

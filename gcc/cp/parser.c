@@ -1913,7 +1913,7 @@ static tree cp_parser_maybe_treat_template_as_class
 static bool cp_parser_check_declarator_template_parameters
   (cp_parser *, cp_declarator *, location_t);
 static bool cp_parser_check_template_parameters
-  (cp_parser *, unsigned, location_t);
+  (cp_parser *, unsigned, location_t, cp_declarator *);
 static tree cp_parser_simple_cast_expression
   (cp_parser *);
 static tree cp_parser_global_scope_opt
@@ -11765,7 +11765,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	     there were no qualifying templates.  */
 	  if (!cp_parser_check_template_parameters (parser,
 						    /*num_templates=*/0,
-						    token->location))
+						    token->location,
+						    /*declarator=*/NULL))
 	    return error_mark_node;
 	  type = xref_tag (tag_type, identifier, ts, template_p);
 	}
@@ -15402,7 +15403,8 @@ cp_parser_class_head (cp_parser* parser,
   /* Make sure that the right number of template parameters were
      present.  */
   if (!cp_parser_check_template_parameters (parser, num_templates,
-					    type_start_token->location))
+					    type_start_token->location,
+					    /*declarator=*/NULL))
     {
       /* If something went wrong, there is no point in even trying to
 	 process the class-definition.  */
@@ -17311,9 +17313,9 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
 	   additional level of template parameters.  */
 	++num_templates;
 
-      return cp_parser_check_template_parameters (parser,
-						  num_templates,
-						  declarator_location);
+      return cp_parser_check_template_parameters 
+	(parser, num_templates, declarator_location, declarator);
+
 
     case cdk_function:
     case cdk_array:
@@ -17334,22 +17336,15 @@ cp_parser_check_declarator_template_parameters (cp_parser* parser,
 
 /* NUM_TEMPLATES were used in the current declaration.  If that is
    invalid, return FALSE and issue an error messages.  Otherwise,
-   return TRUE.  */
+   return TRUE.  If DECLARATOR is non-NULL, then we are checking a
+   declarator and we can print more accurate diagnostics.  */
 
 static bool
 cp_parser_check_template_parameters (cp_parser* parser,
 				     unsigned num_templates,
-				     location_t location)
+				     location_t location,
+				     cp_declarator *declarator)
 {
-  /* If there are more template classes than parameter lists, we have
-     something like:
-
-       template <class T> void S<T>::R<T>::f ();  */
-  if (parser->num_template_parameter_lists < num_templates)
-    {
-      error ("%Htoo few template-parameter-lists", &location);
-      return false;
-    }
   /* If there are the same number of template classes and parameter
      lists, that's OK.  */
   if (parser->num_template_parameter_lists == num_templates)
@@ -17357,7 +17352,22 @@ cp_parser_check_template_parameters (cp_parser* parser,
   /* If there are more, but only one more, then we are referring to a
      member template.  That's OK too.  */
   if (parser->num_template_parameter_lists == num_templates + 1)
-      return true;
+    return true;
+  /* If there are more template classes than parameter lists, we have
+     something like:
+
+       template <class T> void S<T>::R<T>::f ();  */
+  if (parser->num_template_parameter_lists < num_templates)
+    {
+      if (declarator)
+	error_at (location, "specializing member %<%T::%E%> "
+		  "requires %<template<>%> syntax", 
+		  declarator->u.id.qualifying_scope,
+		  declarator->u.id.unqualified_name);
+      else 
+	error_at (location, "too few template-parameter-lists");
+      return false;
+    }
   /* Otherwise, there are too many template parameter lists.  We have
      something like:
 
