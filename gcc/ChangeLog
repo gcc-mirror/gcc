@@ -1,3 +1,7 @@
+2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/rs6000/darwin-vecsave.asm: Remove extra "*/".
+
 2009-04-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39678
