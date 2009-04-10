@@ -1,3 +1,45 @@
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document that postconditions are tested on implicit
+	returns.
+
+	* sem_aux.adb: Minor reformatting
+
+2009-04-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* itypes.adb (Create_Null_Excluding_Itype): Apply Base_Type when
+	setting Etype.
+	
+	* par-ch3.adb (P_Access_Type_Definition): Set new attribute
+	Null_Exclusion_In_Return_Present when an access-to-function type has a
+	result type with an explicit not null.
+
+	* sem_ch3.adb (Access_Subprogram_Definition): If a null exclusion is
+	given on the result type, then create a null-excluding itype for the
+	function.
+
+	* sem_ch6.adb (Analyze_Return_Type): Create a null-excluding itype in
+	the case where a null exclusion is imposed on a named access type.
+	(Analyze_Subprogram_Specification): Push and pop the scope of the
+	function around the call to Analyze_Return_Type in the case of no
+	formals, for consistency with handling when formals are present
+	(Process_Formals does this). Ensures that any itype created for the
+	return type will be associated with the proper scope.
+
+	* sem_ch12.adb (Analyze_Generic_Subprogram_Declaration): If a null
+	exclusion is given on a generic function's result type, then create a
+	null-excluding itype for the generic function.
+	(Instantiate_Object): Set Null_Exclusion_Present of a constant created
+	for an actual for a formal in object according to the setting on the
+	formal. Ensures null exclusion checks are done when the association is
+	elaborated.
+
+	* sinfo.ads: Add new flag Null_Exclusion_In_Return_Present on
+	N_Access_Function_Definition.
+
+	* sinfo.adb: Add Get_ and Set_ operations for
+	Null_Exclusion_In_Return_Present.
+
 2009-04-10  Bob Duff  <duff@adacore.com>
 
 	* exp_ch5.adb, exp_ch6.adb, sem_ch6.adb: Move the code that creates a

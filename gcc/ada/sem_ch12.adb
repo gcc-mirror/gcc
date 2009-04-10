@@ -32,6 +32,7 @@ with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Freeze;   use Freeze;
 with Hostparm;
+with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Lib.Xref; use Lib.Xref;
@@ -2740,6 +2741,7 @@ package body Sem_Ch12 is
       New_N       : Node_Id;
       Result_Type : Entity_Id;
       Save_Parent : Node_Id;
+      Typ         : Entity_Id;
 
    begin
       --  Create copy of generic unit, and save for instantiation. If the unit
@@ -2788,7 +2790,23 @@ package body Sem_Ch12 is
             Set_Etype (Id, Result_Type);
          else
             Find_Type (Result_Definition (Spec));
-            Set_Etype (Id, Entity (Result_Definition (Spec)));
+            Typ := Entity (Result_Definition (Spec));
+
+            --  If a null exclusion is imposed on the result type, then create
+            --  a null-excluding itype (an access subtype) and use it as the
+            --  function's Etype.
+
+            if Is_Access_Type (Typ)
+              and then Null_Exclusion_Present (Spec)
+            then
+               Set_Etype  (Id,
+                 Create_Null_Excluding_Itype
+                   (T           => Typ,
+                    Related_Nod => Spec,
+                    Scope_Id    => Defining_Unit_Name (Spec)));
+            else
+               Set_Etype (Id, Typ);
+            end if;
          end if;
 
       else
@@ -8310,10 +8328,11 @@ package body Sem_Ch12 is
 
             Decl_Node :=
               Make_Object_Declaration (Loc,
-                Defining_Identifier => New_Copy (Formal_Id),
-                Constant_Present    => True,
-                Object_Definition   => New_Copy_Tree (Def),
-                Expression          => Actual);
+                Defining_Identifier    => New_Copy (Formal_Id),
+                Constant_Present       => True,
+                Null_Exclusion_Present => Null_Exclusion_Present (Formal),
+                Object_Definition      => New_Copy_Tree (Def),
+                Expression             => Actual);
 
             Set_Corresponding_Generic_Association (Decl_Node, Act_Assoc);
 
@@ -8379,11 +8398,12 @@ package body Sem_Ch12 is
 
             Decl_Node :=
               Make_Object_Declaration (Sloc (Formal),
-                Defining_Identifier => New_Copy (Formal_Id),
-                Constant_Present    => True,
-                Object_Definition   => New_Copy (Def),
-                Expression          => New_Copy_Tree
-                                         (Default_Expression (Formal)));
+                Defining_Identifier    => New_Copy (Formal_Id),
+                Constant_Present       => True,
+                Null_Exclusion_Present => Null_Exclusion_Present (Formal),
+                Object_Definition      => New_Copy (Def),
+                Expression             => New_Copy_Tree
+                                            (Default_Expression (Formal)));
 
             Append (Decl_Node, List);
             Set_Analyzed (Expression (Decl_Node), False);
@@ -8410,10 +8430,11 @@ package body Sem_Ch12 is
 
                Decl_Node :=
                  Make_Object_Declaration (Loc,
-                   Defining_Identifier => New_Copy (Formal_Id),
-                   Constant_Present    => True,
-                   Object_Definition   => New_Copy (Def),
-                   Expression          =>
+                   Defining_Identifier    => New_Copy (Formal_Id),
+                   Constant_Present       => True,
+                   Null_Exclusion_Present => Null_Exclusion_Present (Formal),
+                   Object_Definition      => New_Copy (Def),
+                   Expression             =>
                      Make_Attribute_Reference (Sloc (Formal_Id),
                        Attribute_Name => Name_First,
                        Prefix         => New_Copy (Def)));

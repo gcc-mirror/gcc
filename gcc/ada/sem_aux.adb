@@ -120,8 +120,7 @@ package body Sem_Aux is
          return Renamed_Object (Ent);
 
       --  If this is a component declaration whose entity is constant, it is
-      --  a prival within a protected function. It does not have a constant
-      --  value.
+      --  a prival within a protected function (and so has no constant value).
 
       elsif Nkind (D) = N_Component_Declaration then
          return Empty;

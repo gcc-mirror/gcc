@@ -2088,6 +2088,14 @@ package body Sinfo is
       return Flag11 (N);
    end Null_Exclusion_Present;
 
+   function Null_Exclusion_In_Return_Present
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Access_Function_Definition);
+      return Flag14 (N);
+   end Null_Exclusion_In_Return_Present;
+
    function Null_Record_Present
       (N : Node_Id) return Boolean is
    begin
@@ -4859,6 +4867,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Subtype_Declaration);
       Set_Flag11 (N, Val);
    end Set_Null_Exclusion_Present;
+
+   procedure Set_Null_Exclusion_In_Return_Present
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Access_Function_Definition);
+      Set_Flag14 (N, Val);
+   end Set_Null_Exclusion_In_Return_Present;
 
    procedure Set_Null_Record_Present
       (N : Node_Id; Val : Boolean := True) is

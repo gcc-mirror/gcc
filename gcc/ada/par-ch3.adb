@@ -3827,13 +3827,14 @@ package body Ch3 is
          else
             Result_Node := P_Subtype_Mark;
             No_Constraint;
-         end if;
 
-         --  Note: A null exclusion given on the result type needs to
-         --  be coded by a distinct flag, since Null_Exclusion_Present
-         --  on an access-to-function type pertains to a null exclusion
-         --  on the access type itself (as set above). ???
-         --  Set_Null_Exclusion_Present??? (Type_Def_Node, Result_Not_Null);
+            --  A null exclusion on the result type must be recorded in a flag
+            --  distinct from the one used for the access-to-subprogram type's
+            --  null exclusion.
+
+            Set_Null_Exclusion_In_Return_Present
+              (Type_Def_Node, Result_Not_Null);
+         end if;
 
          Set_Result_Definition (Type_Def_Node, Result_Node);
 
