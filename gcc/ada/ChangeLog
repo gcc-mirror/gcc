@@ -1,3 +1,18 @@
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb: Add comment.
+	Minor reformatting
+
+2009-04-10  Nicolas Setton  <setton@adacore.com>
+
+	* s-osprim-darwin.adb: New file.
+
+	* s-osinte-darwin.adb, s-osinte-darwin.ads: Fix binding to timespec.
+
+2009-04-10  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.ads: Add comment clarifying alignment requirement for Fd_Set
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* adadecode.h: Change copyright header to refer to version
