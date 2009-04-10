@@ -2083,6 +2083,76 @@ __gnat_install_handler(void)
   __gnat_handler_installed = 1;
 }
 
+/******************/
+/* Darwin Section */
+/******************/
+
+#elif defined(__APPLE__)
+
+#include <signal.h>
+
+static void __gnat_error_handler (int sig, siginfo_t * si, void * uc);
+
+static void
+__gnat_error_handler (int sig, siginfo_t * si, void * uc)
+{
+  struct Exception_Data *exception;
+  const char *msg;
+
+  switch (sig)
+    {
+    case SIGSEGV:
+      /* FIXME: we need to detect the case of a *real* SIGSEGV.  */
+      exception = &storage_error;
+      msg = "stack overflow or erroneous memory access";
+      break;
+
+    case SIGBUS:
+      exception = &constraint_error;
+      msg = "SIGBUS";
+      break;
+
+    case SIGFPE:
+      exception = &constraint_error;
+      msg = "SIGFPE";
+      break;
+
+    default:
+      exception = &program_error;
+      msg = "unhandled signal";
+    }
+
+  Raise_From_Signal_Handler (exception, msg);
+}
+
+void
+__gnat_install_handler (void)
+{
+  struct sigaction act;
+
+  /* Set up signal handler to map synchronous signals to appropriate
+     exceptions.  Make sure that the handler isn't interrupted by another
+     signal that might cause a scheduling event!  */
+
+  act.sa_flags = SA_NODEFER | SA_RESTART | SA_SIGINFO;
+  act.sa_sigaction = __gnat_error_handler;
+  sigemptyset (&act.sa_mask);
+
+  /* Do not install handlers if interrupt state is "System".  */
+  if (__gnat_get_interrupt_state (SIGABRT) != 's')
+    sigaction (SIGABRT, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGFPE) != 's')
+    sigaction (SIGFPE,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGILL) != 's')
+    sigaction (SIGILL,  &act, NULL);
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGBUS) != 's')
+    sigaction (SIGBUS,  &act, NULL);
+
+  __gnat_handler_installed = 1;
+}
+
 #else
 
 /* For all other versions of GNAT, the handler does nothing.  */
