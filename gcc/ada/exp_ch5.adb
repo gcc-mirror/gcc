@@ -2814,8 +2814,6 @@ package body Exp_Ch5 is
                                 Expression =>
                                   New_Copy_Tree (Return_Obj_Expr)));
 
-                        SS_Allocator := New_Copy_Tree (Heap_Allocator);
-
                      else
                         --  If the function returns a class-wide type we cannot
                         --  use the return type for the allocator. Instead we
@@ -2841,19 +2839,20 @@ package body Exp_Ch5 is
                         --  then the object will be default initialized twice.
 
                         Set_No_Initialization (Heap_Allocator);
-
-                        SS_Allocator := New_Copy_Tree (Heap_Allocator);
                      end if;
 
                      --  If the No_Allocators restriction is active, then only
                      --  an allocator for secondary stack allocation is needed.
+                     --  It's OK for such allocators to have Comes_From_Source
+                     --  set to False, because gigi knows not to flag them as
+                     --  being a violation of No_Implicit_Heap_Allocations.
 
                      if Restriction_Active (No_Allocators) then
                         SS_Allocator   := Heap_Allocator;
                         Heap_Allocator := Make_Null (Loc);
 
-                     --  Otherwise the heap allocator may be needed, so we
-                     --  make another allocator for secondary stack allocation.
+                     --  Otherwise the heap allocator may be needed, so we make
+                     --  another allocator for secondary stack allocation.
 
                      else
                         SS_Allocator := New_Copy_Tree (Heap_Allocator);
@@ -2863,7 +2862,7 @@ package body Exp_Ch5 is
                         --  allocator (that is, it will only be executed on
                         --  behalf of callers that call the function as
                         --  initialization for such an allocator). This
-                        --  prevents errors when No_Implicit_Heap_Allocation
+                        --  prevents errors when No_Implicit_Heap_Allocations
                         --  is in force.
 
                         Set_Comes_From_Source (Heap_Allocator, True);
@@ -3924,6 +3923,10 @@ package body Exp_Ch5 is
                Set_Ekind (Acc_Typ, E_Access_Type);
 
                Set_Associated_Storage_Pool (Acc_Typ, RTE (RE_SS_Pool));
+
+               --  This is an allocator for the secondary stack, and it's fine
+               --  to have Comes_From_Source set False on it, as gigi knows not
+               --  to flag it as a violation of No_Implicit_Heap_Allocations.
 
                Alloc_Node :=
                  Make_Allocator (Loc,
