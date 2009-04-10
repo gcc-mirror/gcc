@@ -1887,6 +1887,11 @@ package body Sem_Warn is
          --  warn that the context clause could be moved to the body, because
          --  the renaming may be intended to re-export the unit.
 
+         function Has_Visible_Entities (P : Entity_Id) return Boolean;
+         --  If a package has no declared entities, inhibit warning because
+         --  there is nothing to be referenced. The package may be in the
+         --  context just in order to carry a linker pragma for example.
+
          -------------------------
          -- Check_Inner_Package --
          -------------------------
@@ -2011,6 +2016,47 @@ package body Sem_Warn is
             return Empty;
          end Find_Package_Renaming;
 
+         --------------------------
+         -- Has_Visible_Entities --
+         --------------------------
+
+         function Has_Visible_Entities (P : Entity_Id) return Boolean is
+            E : Entity_Id;
+
+         begin
+
+            --  If unit in context is not a package, it is a subprogram that
+            --  is not called or a generic unit that is not instantiated
+            --  in the current unit, and warning is appropriate.
+
+            if Ekind (P) /= E_Package then
+               return True;
+            end if;
+
+            --  If unit comes from a limited_with clause, look for declaration
+            --  of shadow entities.
+
+            if Present (Limited_View (P)) then
+               E := First_Entity (Limited_View (P));
+            else
+               E := First_Entity (P);
+            end if;
+
+            while Present (E)
+              and then E /= First_Private_Entity (P)
+            loop
+               if Comes_From_Source (E)
+                 or else Present (Limited_View (P))
+               then
+                  return True;
+               end if;
+
+               Next_Entity (E);
+            end loop;
+
+            return False;
+         end Has_Visible_Entities;
+
       --  Start of processing for Check_One_Unit
 
       begin
@@ -2066,7 +2112,7 @@ package body Sem_Warn is
 
                      --  Otherwise simple unreferenced message
 
-                     else
+                     elsif Has_Visible_Entities (Entity (Name (Item))) then
                         Error_Msg_N
                           ("?unit& is not referenced!", Name (Item));
                      end if;

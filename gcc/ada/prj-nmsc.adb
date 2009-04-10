@@ -3280,7 +3280,7 @@ package body Prj.Nmsc is
             --  value in the language config.
 
             declare
-               Dot_Repl        : constant  Variable_Value :=
+               Dot_Repl        : constant Variable_Value :=
                                    Util.Value_Of
                                      (Name_Dot_Replacement,
                                       Naming.Decl.Attributes, In_Tree);
@@ -3291,17 +3291,21 @@ package body Prj.Nmsc is
                                    (Name_Casing,
                                     Naming.Decl.Attributes,
                                     In_Tree);
-               Casing          : Casing_Type;
-               Casing_Defined  : Boolean := False;
+
+               Casing : Casing_Type := All_Lower_Case;
+               --  Casing type (junk initialization to stop bad gcc warning)
+
+               Casing_Defined : Boolean := False;
 
                Sep_Suffix : constant Variable_Value :=
                               Prj.Util.Value_Of
                                 (Variable_Name => Name_Separate_Suffix,
                                  In_Variables  => Naming.Decl.Attributes,
                                  In_Tree       => In_Tree);
-               Separate_Suffix : File_Name_Type := No_File;
 
-               Lang_Id : Language_Index;
+               Separate_Suffix : File_Name_Type := No_File;
+               Lang_Id         : Language_Index;
+
             begin
                --  Check attribute Dot_Replacement
 
