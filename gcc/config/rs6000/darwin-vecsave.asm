@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License and
  * a copy of the GCC Runtime Library Exception along with this program;
  * see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
- * <http://www.gnu.org/licenses/>.  */
+ * <http://www.gnu.org/licenses/>.
  */ 
 
 /* Vector save/restore routines for Darwin.  Note that each vector
