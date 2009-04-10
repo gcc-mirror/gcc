@@ -1219,7 +1219,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
    what it is right away.  */
 
 static void
-read_complex (st_parameter_dt *dtp, int kind, size_t size)
+read_complex (st_parameter_dt *dtp, void * dest, int kind, size_t size)
 {
   char message[100];
   char c;
@@ -1243,7 +1243,7 @@ read_complex (st_parameter_dt *dtp, int kind, size_t size)
     }
 
   eat_spaces (dtp);
-  if (parse_real (dtp, dtp->u.p.value, kind))
+  if (parse_real (dtp, dest, kind))
     return;
 
 eol_1:
@@ -1266,7 +1266,7 @@ eol_2:
   else
     unget_char (dtp, c);
 
-  if (parse_real (dtp, dtp->u.p.value + size / 2, kind))
+  if (parse_real (dtp, dest + size / 2, kind))
     return;
 
   eat_spaces (dtp);
@@ -1300,7 +1300,7 @@ eol_2:
 /* Parse a real number with a possible repeat count.  */
 
 static void
-read_real (st_parameter_dt *dtp, int length)
+read_real (st_parameter_dt *dtp, void * dest, int length)
 {
   char c, message[100];
   int seen_dp;
@@ -1513,7 +1513,7 @@ read_real (st_parameter_dt *dtp, int length)
   unget_char (dtp, c);
   eat_separator (dtp);
   push_char (dtp, '\0');
-  if (convert_real (dtp, dtp->u.p.value, dtp->u.p.saved_string, length))
+  if (convert_real (dtp, dest, dtp->u.p.saved_string, length))
     return;
 
   free_saved (dtp);
@@ -1757,10 +1757,16 @@ list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
       read_character (dtp, kind);
       break;
     case BT_REAL:
-      read_real (dtp, kind);
+      read_real (dtp, p, kind);
+      /* Copy value back to temporary if needed.  */
+      if (dtp->u.p.repeat_count > 0)
+	memcpy (dtp->u.p.value, p, kind);
       break;
     case BT_COMPLEX:
-      read_complex (dtp, kind, size);
+      read_complex (dtp, p, kind, size);
+      /* Copy value back to temporary if needed.  */
+      if (dtp->u.p.repeat_count > 0)
+	memcpy (dtp->u.p.value, p, size);
       break;
     default:
       internal_error (&dtp->common, "Bad type for list read");
@@ -1776,8 +1782,12 @@ list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
   switch (dtp->u.p.saved_type)
     {
     case BT_COMPLEX:
-    case BT_INTEGER:
     case BT_REAL:
+      if (dtp->u.p.repeat_count > 0)
+	memcpy (p, dtp->u.p.value, size);
+      break;
+
+    case BT_INTEGER:
     case BT_LOGICAL:
       memcpy (p, dtp->u.p.value, size);
       break;
@@ -2379,12 +2389,17 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info * nl, index_type offset,
               break;
 
 	  case GFC_DTYPE_REAL:
-	      read_real (dtp, len);
-              break;
+	    /* Need to copy data back from the real location to the temp in order
+	       to handle nml reads into arrays.  */
+	    read_real (dtp, pdata, len);
+	    memcpy (dtp->u.p.value, pdata, dlen);
+	    break;
 
 	  case GFC_DTYPE_COMPLEX:
-              read_complex (dtp, len, dlen);
-              break;
+	    /* Same as for REAL, copy back to temp.  */
+	    read_complex (dtp, pdata, len, dlen);
+	    memcpy (dtp->u.p.value, pdata, dlen);
+	    break;
 
 	  case GFC_DTYPE_DERIVED:
 	    obj_name_len = strlen (nl->var_name) + 1;

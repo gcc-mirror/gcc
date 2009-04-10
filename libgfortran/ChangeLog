@@ -1,3 +1,12 @@
+2009-04-10  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/39665 libfortran/39702 libfortran/39709
+	* io/io.h (st_parameter_dt): Revert aligned attribute from u.p.value.
+        * io/list_read.c (read_complex): Read directly into user pointer.
+        (read_real): Likewise.
+        (list_formatted_read_scalar): Update read_complex and read_real calls.
+        (nml_read_obj): Read directly into user pointer.
+
 2009-04-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/39665
