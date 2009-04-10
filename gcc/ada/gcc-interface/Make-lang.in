@@ -762,7 +762,7 @@ ada.uninstall:
 ada.mostlyclean:
 	-$(RM) ada/*$(objext) ada/*.ali ada/b_*.c
 	-$(RM) ada/*$(coverageexts)
-	-$(RM) ada/sdefault.adb ada/stamp-sdefault
+	-$(RM) ada/sdefault.adb ada/stamp-sdefault ada/stamp-snames
 	-$(RMDIR) ada/tools
 ada.clean:
 ada.distclean:
@@ -792,6 +792,7 @@ ada.maintainer-clean:
 	-$(RM) ada/nmake.adb
 	-$(RM) ada/nmake.ads
 	-$(RM) ada/treeprs.ads
+	-$(RM) ada/snames.ads ada/snames.adb ada/snames.h
 
 # Stage hooks:
 # The main makefile has already created stage?/ada
@@ -914,7 +915,7 @@ gnatstage2: force
 # Ada language specific files.
 
 ada_extra_files : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
-	ada/nmake.ads
+	ada/nmake.ads ada/snames.ads ada/snames.adb ada/snames.h
 
 ada/b_gnat1.c : $(GNAT1_ADA_OBJS)
 	$(GNATBIND) -C $(ADA_INCLUDES) -o ada/b_gnat1.c -n ada/gnat1drv.ali
@@ -942,6 +943,16 @@ ada/sinfo.h : ada/sinfo.ads ada/xsinfo.adb
 	$(RM) $(addprefix ada/bldtools/sinfo/,$(notdir $^))
 	$(CP) $^ ada/bldtools/sinfo
 	(cd ada/bldtools/sinfo && $(GNATMAKE) -q xsinfo && ./xsinfo ../../sinfo.h )
+
+ada/snames.h ada/snames.ads ada/snames.adb : ada/stamp-snames
+	@true
+
+ada/stamp-snames : ada/snames.ads-tmpl ada/snames.adb-tmpl ada/snames.h-tmpl ada/xsnamest.adb
+	-$(MKDIR) ada/bldtools/snamest
+	$(RM) $(addprefix ada/bldtools/snamest/,$(notdir $^))
+	$(CP) $^ ada/bldtools/snamest
+	(cd ada/bldtools/snamest; gnatmake -q xsnamest ; ./xsnamest ; cp snames.ns ../../snames.ads ; cp snames.nb ../../snames.adb ; cp snames.nh ../../snames.h)
+	touch $@
 
 ada/nmake.adb : ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/xutil.ads ada/xutil.adb
 	-$(MKDIR) ada/bldtools/nmake_b

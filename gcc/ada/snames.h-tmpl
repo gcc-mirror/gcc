@@ -1,0 +1,66 @@
+/****************************************************************************
+ *                                                                          *
+ *                         GNAT COMPILER COMPONENTS                         *
+ *                                                                          *
+ *                               S N A M E S                                *
+ *                                                                          *
+ *                              C Header File                               *
+ *                                                                          *
+ *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
+ *                                                                          *
+ * GNAT is free software;  you can  redistribute it  and/or modify it under *
+ * terms of the  GNU General Public License as published  by the Free Soft- *
+ * ware  Foundation;  either version 3,  or (at your option) any later ver- *
+ * sion.  GNAT is distributed in the hope that it will be useful, but WITH- *
+ * OUT ANY WARRANTY;  without even the  implied warranty of MERCHANTABILITY *
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License *
+ * for  more details.  You should have  received  a copy of the GNU General *
+ * Public License  distributed with GNAT; see file COPYING3.  If not, go to *
+ * http://www.gnu.org/licenses for a complete copy of the license.          *
+ *                                                                          *
+ * GNAT was originally developed  by the GNAT team at  New York University. *
+ * Extensive contributions were provided by Ada Core Technologies Inc.      *
+ *                                                                          *
+ ****************************************************************************/
+
+/* This is the C file that corresponds to the Ada package specification
+   Snames. It was created automatically from the file snames.ads. */
+
+/* Name_Id values */
+
+#define  Name_ !! TEMPLATE INSERTION POINT
+
+/* Define the function to return one of the numeric values below. Note
+   that it actually returns a char since an enumeration value of less
+   than 256 entries is represented that way in Ada.  The operand is a Chars
+   field value.  */
+
+#define Get_Attribute_Id snames__get_attribute_id
+extern unsigned char Get_Attribute_Id (int);
+
+/* Define the numeric values for attributes.  */
+
+#define  Attr_ !! TEMPLATE INSERTION POINT
+
+/* Define the numeric values for the conventions.  */
+
+#define  Convention_ !! TEMPLATE INSERTION POINT
+
+/* Define the function to check if a Name_Id value is a valid pragma */
+
+#define Is_Pragma_Name snames__is_pragma_name
+extern Boolean Is_Pragma_Name (Name_Id);
+
+/* Define the function to return one of the numeric values below.  Note
+   that it actually returns a char since an enumeration value of less
+   than 256 entries is represented that way in Ada.  The operand is a Chars
+   field value.  */
+
+#define Get_Pragma_Id snames__get_pragma_id
+extern unsigned char Get_Pragma_Id (int);
+
+/* Define the numeric values for the pragmas. */
+
+#define  Pragma_ !! TEMPLATE_INSERTION_POINT
+
+/* End of snames.h (C version of Snames package spec) */
