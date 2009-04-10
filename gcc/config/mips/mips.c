@@ -14697,6 +14697,46 @@ mips_epilogue_uses (unsigned int regno)
 
   return false;
 }
+
+/* A for_each_rtx callback.  Stop the search if *X is an AT register.  */
+
+static int
+mips_at_reg_p (rtx *x, void *data ATTRIBUTE_UNUSED)
+{
+  return GET_CODE (*x) == REG && REGNO (*x) == AT_REGNUM;
+}
+
+
+/* Implement FINAL_PRESCAN_INSN.  */
+
+void
+mips_final_prescan_insn (rtx insn, rtx *opvec, int noperands)
+{
+  int i;
+
+  /* We need to emit ".set noat" before an instruction that accesses
+     $1 (AT).  */
+  if (recog_memoized (insn) >= 0)
+    for (i = 0; i < noperands; i++)
+      if (for_each_rtx (&opvec[i], mips_at_reg_p, NULL))
+	if (set_noat++ == 0)
+	  fprintf (asm_out_file, "\t.set\tnoat\n");
+}
+
+/* Implement TARGET_ASM_FINAL_POSTSCAN_INSN.  */
+
+void
+mips_final_postscan_insn (FILE *file, rtx insn, rtx *opvec, int noperands)
+{
+  int i;
+
+  /* Close any ".set noat" block opened by mips_final_prescan_insn.  */
+  if (recog_memoized (insn) >= 0)
+    for (i = 0; i < noperands; i++)
+      if (for_each_rtx (&opvec[i], mips_at_reg_p, NULL))
+	if (--set_noat == 0)
+	  fprintf (file, "\t.set\tat\n");
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -14864,6 +14904,9 @@ mips_epilogue_uses (unsigned int regno)
 
 #undef TARGET_IRA_COVER_CLASSES
 #define TARGET_IRA_COVER_CLASSES mips_ira_cover_classes
+
+#undef TARGET_ASM_FINAL_POSTSCAN_INSN
+#define TARGET_ASM_FINAL_POSTSCAN_INSN mips_final_postscan_insn
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

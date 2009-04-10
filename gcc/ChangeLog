@@ -1,3 +1,20 @@
+2009-04-10  Chao-ying Fu  <fu@mips.com>
+
+	* doc/tm.texi (Instruction Output): Document
+	TARGET_ASM_FINAL_POSTSCAN_INSN.
+	* target.h (final_postscan_insn): New field in asm_out.
+	* target-def.h (TARGET_ASM_FINAL_POSTSCAN_INSN): New define.
+	(TARGET_ASM_OUT): Add TARGET_ASM_FINAL_POSTSCAN_INSN.
+	* final.c (final_scan_insn): Call
+	targetm.asm_out.final_postscan_insn after outputting
+	an asm macro and a normal instruction.
+
+	* config/mips/mips.h (FINAL_PRESCAN_INSN): New define.
+	* config/mips/mips-protos.h (mips_final_prescan_insn): Declare.
+	* config/mips/mips.c (mips_at_reg_p): New for_each_rtx callback.
+	(mips_final_prescan_insn, mips_final_postscan_insn): New functions.
+	(TARGET_ASM_FINAL_POSTSCAN_INSN): New define.
+
 2009-04-10  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR middle-end/39701

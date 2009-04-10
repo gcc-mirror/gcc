@@ -333,5 +333,6 @@ extern void mips_expand_atomic_qihi (union mips_gen_fn_ptrs,
 extern void mips_expand_vector_init (rtx, rtx);
 
 extern bool mips_epilogue_uses (unsigned int);
+extern void mips_final_prescan_insn (rtx, rtx *, int);
 
 #endif /* ! GCC_MIPS_PROTOS_H */
