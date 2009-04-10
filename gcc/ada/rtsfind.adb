@@ -596,9 +596,9 @@ package body Rtsfind is
 
       procedure Save_Private_Visibility;
       --  If the current unit is the body of child unit or the spec of a
-      --  private child unit, the private declarations of the parent (s)
-      --  are visible. If the unit to be loaded is another public sibling,
-      --  its compilation will affect the visibility of the common ancestors.
+      --  private child unit, the private declarations of the parent(s) are
+      --  visible. If the unit to be loaded is another public sibling, its
+      --  compilation will affect the visibility of the common ancestors.
       --  Indicate those that must be restored.
 
       procedure Restore_Private_Visibility;
@@ -666,13 +666,6 @@ package body Rtsfind is
       U.Uname  := Get_Unit_Name (U_Id);
       U.Withed := False;
 
-      declare
-         Loaded : Boolean;
-         pragma Warnings (Off, Loaded);
-      begin
-         Loaded := Is_Loaded (U.Uname);
-      end;
-
       --  Now do the load call, note that setting Error_Node to Empty is
       --  a signal to Load_Unit that we will regard a failure to find the
       --  file as a fatal error, and that it should not output any kind
@@ -730,7 +723,7 @@ package body Rtsfind is
 
          if not Analyzed (Cunit (U.Unum)) then
 
-            --  If the unit is already loaded through a limited_with clauses,
+            --  If the unit is already loaded through a limited_with clause,
             --  the relevant entities must already be available. We do not
             --  want to load and analyze the unit because this would create
             --  a real semantic dependence when the purpose of the limited_with

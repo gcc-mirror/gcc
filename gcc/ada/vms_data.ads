@@ -6632,6 +6632,15 @@ package VMS_Data is
    --  components of the GNAT RTL when building and analyzing the global
    --  structure for checking the global rules.
 
+   S_Sync_Allproj : aliased constant S := "/ALL_PROJECTS "                 &
+                                            "-U";
+   --        /NOALL_PROJECTS (D)
+   --        /ALL_PROJECTS
+   --
+   --   When GNAT SYNC is used with a Project File and no source is
+   --   specified, the underlying tool gnatsync is called for all the
+   --   sources of all the Project Files in the project tree.
+
    S_Sync_Ext     : aliased constant S := "/EXTERNAL_REFERENCE=" & '"'     &
                                              "-X" & '"';
    --       /EXTERNAL_REFERENCE="name=val"
@@ -6655,6 +6664,12 @@ package VMS_Data is
    --        /FOLLOW_LINKS_FOR_FILES
    --
    --    Follow links when parsing project files
+
+   S_Sync_Main    : aliased constant S := "/MAIN_SUBPROGRAM=@"             &
+                                            "-main=@";
+   --        /MAIN_SUBPROGRAM=filename
+   --
+   --   Specify the name of the file containing the main subprogram
 
    S_Sync_Mess    : aliased constant S := "/MESSAGES_PROJECT_FILE="        &
                                              "DEFAULT "                    &
@@ -6748,9 +6763,11 @@ package VMS_Data is
    Sync_Switches : aliased constant Switches :=
                       (S_Sync_Add      'Access,
                        S_Sync_All      'Access,
+                       S_Sync_Allproj  'Access,
                        S_Sync_Ext      'Access,
                        S_Sync_Follow   'Access,
                        S_Sync_Files    'Access,
+                       S_Sync_Main     'Access,
                        S_Sync_Mess     'Access,
                        S_Sync_Project  'Access,
                        S_Sync_Quiet    'Access,

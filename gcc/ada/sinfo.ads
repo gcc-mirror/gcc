@@ -1135,7 +1135,8 @@ package Sinfo is
    --    This flag is set in the N_With_Clause node that is implicitly
    --    generated for runtime units that are loaded by the expander, and also
    --    for package System, if it is loaded implicitly by a use of the
-   --    'Address or 'Tag attribute.
+   --    'Address or 'Tag attribute. ???There are other implicit with clauses
+   --    as well.
 
    --  Includes_Infinities (Flag11-Sem)
    --    This flag is present in N_Range nodes. It is set for the range of

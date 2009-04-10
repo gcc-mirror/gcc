@@ -1607,7 +1607,7 @@ package Rtsfind is
    --  function to determine the unit containing the given entity. This table
    --  is sorted in order of package names.
 
-   RE_Unit_Table : array (RE_Id) of RTU_Id := (
+   RE_Unit_Table : constant array (RE_Id) of RTU_Id := (
 
      RE_Null                             => RTU_Null,
 
