@@ -1,3 +1,16 @@
+2009-04-10  Thomas Quinot  <quinot@adacore.com>
+
+	* snames.h, snames.ads, snames.adb: Remove files, now generated from
+	templates.
+
+	* snames.h-tmpl, snames.ads-tmpl, snames.adb-tmpl: Templates for the
+	above.
+
+	* xsnamest.adb: New file.
+
+	* gcc-interface/Make-lang.in: New target for automated generation of
+	snames.ads, snames.adb and snames.h
+
 2009-04-10  Tristan Gingold  <gingold@adacore.com>
 
 	* gcc-interface/Makefile.in, gcc-interface/utils.c: Include "rtl.h" to
