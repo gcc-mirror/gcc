@@ -1,3 +1,12 @@
+2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/28301
+	* parser.c (cp_parser_skip_to_end_of_block_or_statement): Return
+	if we see a close brace without an open brace.
+
 2009-04-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/39637

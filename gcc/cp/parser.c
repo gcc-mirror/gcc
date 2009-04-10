@@ -2624,6 +2624,8 @@ cp_parser_skip_to_end_of_block_or_statement (cp_parser* parser)
 	  /* Stop if this is an unnested '}', or closes the outermost
 	     nesting level.  */
 	  nesting_depth--;
+	  if (nesting_depth < 0)
+	    return;
 	  if (!nesting_depth)
 	    nesting_depth = -1;
 	  break;
