@@ -1,5 +1,9 @@
 2009-04-10  Thomas Quinot  <quinot@adacore.com>
 
+	* sem_eval.adb: Minor reformatting
+
+2009-04-10  Thomas Quinot  <quinot@adacore.com>
+
 	* snames.h, snames.ads, snames.adb: Remove files, now generated from
 	templates.
 
