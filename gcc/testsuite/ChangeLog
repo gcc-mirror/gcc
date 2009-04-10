@@ -1,5 +1,26 @@
 2009-04-09  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR testsuite/35621
+	* gcc.target/i386/avx-vpabsb-1.c: Add -fno-strict-aliasing.
+	* gcc.target/i386/avx-vpabsb-1.c: Likewise.
+	* gcc.target/i386/avx-vpabsd-1.c: Likewise.
+	* gcc.target/i386/avx-vpabsw-1.c: Likewise.
+	* gcc.target/i386/avx-vpalignr-1.c: Likewise.
+	* gcc.target/i386/avx-vphaddd-1.c: Likewise.
+	* gcc.target/i386/avx-vphaddsw-1.c: Likewise.
+	* gcc.target/i386/avx-vphaddw-1.c: Likewise.
+	* gcc.target/i386/avx-vphsubd-1.c: Likewise.
+	* gcc.target/i386/avx-vphsubsw-1.c: Likewise.
+	* gcc.target/i386/avx-vphsubw-1.c: Likewise.
+	* gcc.target/i386/avx-vpmaddubsw-1.c: Likewise.
+	* gcc.target/i386/avx-vpmulhrsw-1.c: Likewise.
+	* gcc.target/i386/avx-vpshufb-1.c: Likewise.
+	* gcc.target/i386/avx-vpsignb-1.c: Likewise.
+	* gcc.target/i386/avx-vpsignd-1.c: Likewise.
+	* gcc.target/i386/avx-vpsignw-1.c: Likewise.
+
+2009-04-09  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/39678
 	* g++.dg/torture/pr39678.C: New.
 	* gcc.dg/compat/struct-complex-2.h: Likewise.
