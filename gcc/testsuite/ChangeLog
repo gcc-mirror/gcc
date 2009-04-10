@@ -1,3 +1,8 @@
+2009-04-10  Chao-ying Fu  <fu@mips.com>
+
+	* gcc.target/mips/interrupt_handler.c: Change from compile to
+	assemble.
+
 2009-04-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc/execute/forward-1.x: Fix x86_64 entry typos.

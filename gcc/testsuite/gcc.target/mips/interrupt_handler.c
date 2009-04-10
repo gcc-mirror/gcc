@@ -1,5 +1,5 @@
 /* Test attributes for interrupt handlers */
-/* { dg-do compile } */
+/* { dg-do assemble } */
 /* { dg-options "-mips32r2 -msoft-float" } */
 
 void f () { }
