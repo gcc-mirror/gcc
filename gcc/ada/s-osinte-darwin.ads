@@ -517,7 +517,7 @@ private
 
    type timespec is record
       tv_sec  : time_t;
-      tv_nsec : int32_t;
+      tv_nsec : long;
    end record;
    pragma Convention (C, timespec);
 
@@ -564,8 +564,6 @@ private
    --  Darwin specific pthread implementation
    --
    type pthread_t is new System.Address;
-
-   type pthread_lock_t is new long;
 
    type pthread_attr_t is record
       sig    : long;

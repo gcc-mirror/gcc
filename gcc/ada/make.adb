@@ -6451,6 +6451,13 @@ package body Make is
                      then
                         Skip := True;
 
+                     --  Here we capture and duplicate the linker argument. We
+                     --  need to do the duplication since the arguments will
+                     --  get normalized. Not doing so will result in calling
+                     --  normalized two times for the same set of arguments if
+                     --  gnatmake is passed multiple mains. This can result in
+                     --  the wrong argument being passed to the linker.
+
                      else
                         Last_Arg := Last_Arg + 1;
                         Args (Last_Arg) :=
