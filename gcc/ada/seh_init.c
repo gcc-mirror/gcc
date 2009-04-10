@@ -59,7 +59,7 @@ extern struct Exception_Data _abort_signal;
 extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
 
 
-#ifdef _WIN32
+#if defined (_WIN32) && !defined (_WIN64)
 
 #include <windows.h>
 #include <excpt.h>
@@ -224,7 +224,7 @@ __gnat_install_SEH_handler (void *ER)
   asm ("mov %ecx,%fs:(0)");
 }
 
-#else /* _WIN32 */
+#else /* defined (_WIN32) && !defined (_WIN64) */
 /* For all non Windows targets we provide a dummy SEH install handler.  */
 void __gnat_install_SEH_handler (void *eh ATTRIBUTE_UNUSED)
 {

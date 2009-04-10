@@ -1,5 +1,35 @@
 2009-04-10  Thomas Quinot  <quinot@adacore.com>
 
+	* xsnamest.adb: Use XUtil to have uniform line endings (UNIX style) in
+	generated files on all platforms.
+
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aux.adb: Minor reformatting
+
+2009-04-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Definition): Handle properly the case of a
+	protected function with formals that returns an anonymous access type.
+
+2009-04-10  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_disp.adb: Minor reformatting
+
+2009-04-10  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* seh_init.c: Do not use the 32-bit specific implementation of
+	__gnat_install_SEH_handler on 64-bit Windows target (64-bit specific
+	version TBD).
+
+2009-04-10  Jose Ruiz  <ruiz@adacore.com>
+
+	* mlib-tgt-specific-xi.adb (Get_Target_Prefix): Target_Name may contain
+	a '/' at the end so we better use the complete target name to determine
+	whether it is a PowerPC 55xx target.
+
+2009-04-10  Thomas Quinot  <quinot@adacore.com>
+
 	* sem_eval.adb: Minor reformatting
 
 2009-04-10  Thomas Quinot  <quinot@adacore.com>

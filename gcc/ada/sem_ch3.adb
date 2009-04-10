@@ -726,11 +726,12 @@ package body Sem_Ch3 is
      (Related_Nod : Node_Id;
       N           : Node_Id) return Entity_Id
    is
-      Loc        : constant Source_Ptr := Sloc (Related_Nod);
-      Anon_Type  : Entity_Id;
-      Anon_Scope : Entity_Id;
-      Desig_Type : Entity_Id;
-      Decl       : Entity_Id;
+      Loc                 : constant Source_Ptr := Sloc (Related_Nod);
+      Anon_Type           : Entity_Id;
+      Anon_Scope          : Entity_Id;
+      Desig_Type          : Entity_Id;
+      Decl                : Entity_Id;
+      Enclosing_Prot_Type : Entity_Id := Empty;
 
    begin
       if Is_Entry (Current_Scope)
@@ -767,9 +768,23 @@ package body Sem_Ch3 is
          --  is associated with one of the protected operations, and must
          --  be available in the scope that encloses the protected declaration.
          --  Otherwise the type is in the scope enclosing the subprogram.
+         --  If the function has formals, The return type of a subprogram
+         --  declaration is analyzed in the scope of the subprogram (see
+         --  Process_Formals) and thus the protected type, if present, is
+         --  the scope of the current function scope.
 
          if Ekind (Current_Scope) = E_Protected_Type then
-            Anon_Scope := Scope (Scope (Defining_Entity (Related_Nod)));
+            Enclosing_Prot_Type := Current_Scope;
+
+         elsif Ekind (Current_Scope) = E_Function
+           and then Ekind (Scope (Current_Scope)) = E_Protected_Type
+         then
+            Enclosing_Prot_Type := Scope (Current_Scope);
+         end if;
+
+         if Present (Enclosing_Prot_Type) then
+            Anon_Scope := Scope (Enclosing_Prot_Type);
+
          else
             Anon_Scope := Scope (Defining_Entity (Related_Nod));
          end if;
@@ -947,8 +962,8 @@ package body Sem_Ch3 is
       elsif Nkind (Related_Nod) = N_Function_Specification
         and then not From_With_Type (Anon_Type)
       then
-         if Ekind (Current_Scope) = E_Protected_Type then
-            Build_Itype_Reference (Anon_Type, Parent (Current_Scope));
+         if Present (Enclosing_Prot_Type) then
+            Build_Itype_Reference (Anon_Type, Parent (Enclosing_Prot_Type));
 
          elsif Is_List_Member (Parent (Related_Nod))
            and then Nkind (Parent (N)) /= N_Parameter_Specification

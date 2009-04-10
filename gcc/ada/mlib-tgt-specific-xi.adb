@@ -155,8 +155,9 @@ package body MLib.Tgt.Specific is
       elsif Target_Name (Target_Name'First .. Index) = "leon" then
          return "leon-elf-";
       elsif Target_Name (Target_Name'First .. Index) = "powerpc" then
-         if Target_Name'Last - 6 >= Target_Name'First and then
-           Target_Name (Target_Name'Last - 6 .. Target_Name'Last) = "eabispe"
+         if Target_Name'Length >= 23 and then
+           Target_Name (Target_Name'First .. Target_Name'First + 22) =
+           "powerpc-unknown-eabispe"
          then
             return "powerpc-eabispe-";
          else
