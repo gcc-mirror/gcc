@@ -1,3 +1,10 @@
+2009-04-10  Tristan Gingold  <gingold@adacore.com>
+
+	* gcc-interface/Makefile.in, gcc-interface/utils.c: Include "rtl.h" to
+	avoid compile time warnings.
+	Do not add gcc/config in include search list while compiling the RTS.
+	Pragma Thread_Local_Storage is available on any target.
+
 2009-04-10  Bob Duff  <duff@adacore.com>
 
 	* sem.ads, par.adb, sem_ch6.adb, sem_ch8.adb: Minor comment fixes.
