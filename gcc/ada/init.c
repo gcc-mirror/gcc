@@ -1782,8 +1782,9 @@ getpid (void)
 }
 #endif
 
-/* VxWorks expects the field excCnt to be zeroed when a signal is handled.
-   The VxWorks version of longjmp does this; GCC's builtin_longjmp doesn't.  */
+/* VxWorks 653 vThreads expects the field excCnt to be zeroed when a signal is.
+   handled. The VxWorks version of longjmp does this; GCC's builtin_longjmp
+   doesn't.  */
 void
 __gnat_clear_exception_count (void)
 {
@@ -1822,19 +1823,31 @@ __gnat_map_signal (int sig)
       msg = "SIGBUS: possible stack overflow";
       break;
 #else
-#ifdef __RTP__
-    /* In RTP mode a SIGSEGV is most likely due to a stack overflow,
-       since stack checking uses the probing mechanism.  */
+#if (_WRS_VXWORKS_MAJOR = 6)
     case SIGILL:
       exception = &constraint_error;
       msg = "SIGILL";
       break;
+#ifdef __RTP__
+    /* In RTP mode a SIGSEGV is most likely due to a stack overflow,
+       since stack checking uses the probing mechanism.  */
     case SIGSEGV:
       exception = &storage_error;
       msg = "SIGSEGV: possible stack overflow";
       break;
 #else
-    /* In kernel mode a SIGILL is most likely due to a stack overflow,
+      /* VxWorks 6 kernel mode with probing. SIGBUS for guard page hit */
+    case SIGSEGV:
+      exception = &program_error;
+      msg = "SIGSEGV";
+      break;
+    case SIGBUS:
+      exception = &storage_error;
+      msg = "SIGBUS: possible stack overflow";
+      break;
+#endif
+#else
+    /* VxWorks 5: a SIGILL is most likely due to a stack overflow,
        since stack checking uses the stack limit mechanism.  */
     case SIGILL:
       exception = &storage_error;

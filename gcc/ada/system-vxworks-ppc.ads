@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                          (VxWorks Version PPC)                           --
+--                         (VxWorks 5 Version PPC)                          --
 --                                                                          --
 --          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
