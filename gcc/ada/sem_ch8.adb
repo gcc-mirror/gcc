@@ -3384,10 +3384,10 @@ package body Sem_Ch8 is
       --  Saves start of homonym chain
 
       Nvis_Entity : Boolean;
-      --  Set True to indicate that at there is at least one entity on the
-      --  homonym chain which, while not visible, is visible enough from the
-      --  user point of view to warrant an error message of "not visible"
-      --  rather than undefined.
+      --  Set True to indicate that there is at least one entity on the homonym
+      --  chain which, while not visible, is visible enough from the user point
+      --  of view to warrant an error message of "not visible" rather than
+      --  undefined.
 
       Nvis_Is_Private_Subprg : Boolean := False;
       --  Ada 2005 (AI-262): Set True to indicate that a form of Beaujolais
