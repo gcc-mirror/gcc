@@ -10,4 +10,4 @@ namespace s
     using _List_base<i>::_M_impl;
   }
 }  /* { dg-error "expected unqualified-id before '\}'" } */
-s::list<1> OutputModuleListType;  /* { dg-error "expected" } */
+s::list<1> OutputModuleListType;

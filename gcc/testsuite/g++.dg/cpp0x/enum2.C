@@ -2,4 +2,4 @@
 // { dg-do compile }
 // { dg-options "-std=c++0x" }
 
-template<int> enum E : int { e };	// { dg-error "template declaration of" }
+template<int> enum E : int { e };	// { dg-error "declaration|expected" }
