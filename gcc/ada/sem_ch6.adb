@@ -1381,7 +1381,7 @@ package body Sem_Ch6 is
       --  the case where there is no separate spec.
 
       procedure Check_Anonymous_Return;
-      --  (Ada 2005): if a function returns an access type that denotes a task,
+      --  Ada 2005: if a function returns an access type that denotes a task,
       --  or a type that contains tasks, we must create a master entity for
       --  the anonymous type, which typically will be used in an allocator
       --  in the body of the function.
@@ -4048,6 +4048,20 @@ package body Sem_Ch6 is
          else
             Analyze (Discriminant_Type (New_Discr));
             New_Discr_Type := Etype (Discriminant_Type (New_Discr));
+
+            --  Ada 2005: if the discriminant definition carries a null
+            --  exclusion, create an itype to check properly for consistency
+            --  with partial declaration.
+
+            if Is_Access_Type (New_Discr_Type)
+                 and then Null_Exclusion_Present (New_Discr)
+            then
+               New_Discr_Type :=
+                 Create_Null_Excluding_Itype
+                   (T           => New_Discr_Type,
+                    Related_Nod => New_Discr,
+                    Scope_Id    => Current_Scope);
+            end if;
          end if;
 
          if not Conforming_Types
