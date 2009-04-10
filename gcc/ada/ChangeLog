@@ -1,3 +1,15 @@
+2009-04-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case 'Tag): If the tagged
+	type is a synchronized type, retrieve tag information from the
+	corresponding record, which has the dispatch table link.
+
+2009-04-10  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g-comlin.adb (Group_Analysis): Take care of switches that might be
+	decomposed afterwards, but are present as-is in the command line
+	configuration, and thus should be kept as-is.
+
 2009-04-10  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Document that postconditions are tested on implicit
