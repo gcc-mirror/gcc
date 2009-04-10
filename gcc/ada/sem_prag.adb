@@ -1456,7 +1456,9 @@ package body Sem_Prag is
          if Nkind (Parent (N)) = N_Subprogram_Body
            and then List_Containing (N) = Declarations (Parent (N))
          then
-            if Operating_Mode /= Generate_Code then
+            if Operating_Mode /= Generate_Code
+              or else Inside_A_Generic
+            then
 
                --  Analyze expression in pragma, for correctness
                --  and for ASIS use.
