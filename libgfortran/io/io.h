@@ -707,9 +707,6 @@ fnode;
 
 /* unix.c */
 
-extern int move_pos_offset (stream *, int);
-internal_proto(move_pos_offset);
-
 extern int compare_files (stream *, stream *);
 internal_proto(compare_files);
 

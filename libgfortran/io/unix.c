@@ -146,31 +146,6 @@ typedef struct
 unix_stream;
 
 
-/*move_pos_offset()--  Move the record pointer right or left
- *relative to current position */
-
-int
-move_pos_offset (stream* st, int pos_off)
-{
-  unix_stream * str = (unix_stream*)st;
-  if (pos_off < 0)
-    {
-      str->logical_offset += pos_off;
-
-      if (str->ndirty > str->logical_offset)
-	{
-	  if (str->ndirty + pos_off > 0)
-	    str->ndirty += pos_off;
-	  else
-            str->ndirty = 0;
-	}
-
-    return pos_off;
-  }
-  return 0;
-}
-
-
 /* fix_fd()-- Given a file descriptor, make sure it is not one of the
  * standard descriptors, returning a non-standard descriptor.  If the
  * user specifies that system errors should go to standard output,
