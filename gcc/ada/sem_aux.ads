@@ -180,6 +180,11 @@ package Sem_Aux is
    --  composite containing a limited component, or a subtype of any of
    --  these types).
 
+   function Nearest_Dynamic_Scope (Ent : Entity_Id) return Entity_Id;
+   --  This is similar to Enclosing_Dynamic_Scope except that if Ent is itself
+   --  a dynamic scope, then it is returned. Otherwise the result is the same
+   --  as that returned by Enclosing_Dynamic_Scope.
+
    function Next_Tag_Component (Tag : Entity_Id) return Entity_Id;
    --  Tag must be an entity representing a _Tag field of a tagged record.
    --  The result returned is the next _Tag field in this record, or Empty
