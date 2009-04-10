@@ -135,6 +135,12 @@ package body Exp_Util is
    --          (Literal_Type'Pos (Low_Bound (Literal_Type))
    --             + (Length (Literal_Typ) -1))
 
+   function Make_Non_Empty_Check
+     (Loc : Source_Ptr;
+      N   : Node_Id) return Node_Id;
+   --  Produce a boolean expression checking that the unidimensional array
+   --  node N is not empty.
+
    function New_Class_Wide_Subtype
      (CW_Typ : Entity_Id;
       N      : Node_Id) return Entity_Id;
@@ -3742,6 +3748,25 @@ package body Exp_Util is
              High_Bound => Hi);
    end Make_Literal_Range;
 
+   --------------------------
+   -- Make_Non_Empty_Check --
+   --------------------------
+
+   function Make_Non_Empty_Check
+     (Loc : Source_Ptr;
+      N   : Node_Id) return Node_Id
+   is
+   begin
+      return
+        Make_Op_Ne (Loc,
+          Left_Opnd =>
+            Make_Attribute_Reference (Loc,
+              Attribute_Name => Name_Length,
+              Prefix => Duplicate_Subexpr_No_Checks (N, Name_Req => True)),
+          Right_Opnd =>
+            Make_Integer_Literal (Loc, 0));
+   end Make_Non_Empty_Check;
+
    ----------------------------
    -- Make_Subtype_From_Expr --
    ----------------------------
@@ -5116,6 +5141,10 @@ package body Exp_Util is
    --  that constraint error is raised. The reason is that the NOT is bound
    --  to cause CE in this case, and we will not otherwise catch it.
 
+   --  No such check is required for AND and OR, since for both these cases
+   --  False op False = False, and True op True = True. For the XOR case,
+   --  see Silly_Boolean_Array_Xor_Test.
+
    --  Believe it or not, this was reported as a bug. Note that nearly
    --  always, the test will evaluate statically to False, so the code will
    --  be statically removed, and no extra overhead caused.
@@ -5125,19 +5154,34 @@ package body Exp_Util is
       CT  : constant Entity_Id  := Component_Type (T);
 
    begin
+      --  The check we install is
+
+      --    constraint_error when
+      --      component_type'first = component_type'last
+      --        and then array_type'Length /= 0)
+
+      --  We need the last guard because we don't want to raise CE for empty
+      --  arrays since no out of range values result. (Empty arrays with a
+      --  component type of True .. True -- very useful -- even the ACATS
+      --  does not test that marginal case!)
+
       Insert_Action (N,
         Make_Raise_Constraint_Error (Loc,
           Condition =>
-            Make_Op_Eq (Loc,
+            Make_And_Then (Loc,
               Left_Opnd =>
-                Make_Attribute_Reference (Loc,
-                  Prefix         => New_Occurrence_Of (CT, Loc),
-                  Attribute_Name => Name_First),
+                Make_Op_Eq (Loc,
+                  Left_Opnd =>
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Occurrence_Of (CT, Loc),
+                      Attribute_Name => Name_First),
 
-              Right_Opnd =>
-                Make_Attribute_Reference (Loc,
-                  Prefix         => New_Occurrence_Of (CT, Loc),
-                  Attribute_Name => Name_Last)),
+                  Right_Opnd =>
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Occurrence_Of (CT, Loc),
+                      Attribute_Name => Name_Last)),
+
+              Right_Opnd => Make_Non_Empty_Check (Loc, Right_Opnd (N))),
           Reason => CE_Range_Check_Failed));
    end Silly_Boolean_Array_Not_Test;
 
@@ -5151,7 +5195,9 @@ package body Exp_Util is
    --  will not be generated otherwise (cf Expand_Packed_Not).
 
    --  No such check is required for AND and OR, since for both these cases
-   --  False op False = False, and True op True = True.
+   --  False op False = False, and True op True = True, and no check is
+   --  required for the case of False .. False, since False xor False = False.
+   --  See also Silly_Boolean_Array_Not_Test
 
    procedure Silly_Boolean_Array_Xor_Test (N : Node_Id; T : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (N);
@@ -5188,14 +5234,7 @@ package body Exp_Util is
                         Prefix         => New_Occurrence_Of (CT, Loc),
                         Attribute_Name => Name_Last))),
 
-              Right_Opnd =>
-                Make_Op_Ne (Loc,
-                  Left_Opnd =>
-                    Make_Attribute_Reference (Loc,
-                      Prefix => New_Reference_To (T, Loc),
-                      Attribute_Name => Name_Length),
-                  Right_Opnd => Make_Integer_Literal (Loc, 0))),
-
+              Right_Opnd => Make_Non_Empty_Check (Loc, Right_Opnd (N))),
           Reason => CE_Range_Check_Failed));
    end Silly_Boolean_Array_Xor_Test;
 
