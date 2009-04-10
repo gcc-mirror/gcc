@@ -1,3 +1,7 @@
+2009-04-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* objc/execute/forward-1.x: Fix x86_64 entry typos.
+
 2009-04-10  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/38709
