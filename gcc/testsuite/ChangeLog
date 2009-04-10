@@ -1,3 +1,15 @@
+2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/28301
+	* g++.dg/debug/pr22514.C: Updated.
+	* g++.dg/parse/enum2.C: Likewise.
+	* g++.dg/parse/enum3.C: Likewise.
+
+	* g++.dg/template/pr28301.C: New.
+
 2009-04-08  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/39637
