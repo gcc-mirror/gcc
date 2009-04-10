@@ -1744,9 +1744,9 @@ package body Exp_Ch7 is
             S := Enclosing_Dynamic_Scope (E);
          end if;
 
-         --  When the finalization chain entity is 'Error', it means that
-         --  there should not be any chain at that level and that the
-         --  enclosing one should be used
+         --  When the finalization chain entity is 'Error', it means that there
+         --  should not be any chain at that level and that the enclosing one
+         --  should be used.
 
          --  This is a nasty kludge, see ??? note in exp_ch11
 
@@ -1758,9 +1758,34 @@ package body Exp_Ch7 is
             return New_Reference_To (RTE (RE_Global_Final_List), Sloc (E));
          else
             if No (Finalization_Chain_Entity (S)) then
-               Id :=
-                 Make_Defining_Identifier (Sloc (S),
-                   Chars => New_Internal_Name ('F'));
+
+               --  In the case where the scope is a subprogram, retrieve the
+               --  Sloc of subprogram's body for association with the chain,
+               --  since using the Sloc of the spec would be confusing during
+               --  source-line stepping within the debugger.
+
+               declare
+                  Flist_Loc : Source_Ptr := Sloc (S);
+                  Subp_Body : Node_Id;
+
+               begin
+                  if Ekind (S) in Subprogram_Kind then
+                     Subp_Body := Unit_Declaration_Node (S);
+
+                     if Nkind (Subp_Body) /= N_Subprogram_Body then
+                        Subp_Body := Corresponding_Body (Subp_Body);
+                     end if;
+
+                     if Present (Subp_Body) then
+                        Flist_Loc := Sloc (Subp_Body);
+                     end if;
+                  end if;
+
+                  Id :=
+                    Make_Defining_Identifier (Flist_Loc,
+                      Chars => New_Internal_Name ('F'));
+               end;
+
                Set_Finalization_Chain_Entity (S, Id);
 
                --  Set momentarily some semantics attributes to allow normal
@@ -3367,13 +3392,14 @@ package body Exp_Ch7 is
    --    Finalize_One (_v2);
 
    procedure Wrap_Transient_Declaration (N : Node_Id) is
-      S           : Entity_Id;
-      LC          : Entity_Id := Empty;
-      Nodes       : List_Id;
-      Loc         : constant Source_Ptr := Sloc (N);
-      Enclosing_S : Entity_Id;
-      Uses_SS     : Boolean;
-      Next_N      : constant Node_Id := Next (N);
+      S              : Entity_Id;
+      LC             : Entity_Id := Empty;
+      Nodes          : List_Id;
+      Loc            : constant Source_Ptr := Sloc (N);
+      First_Decl_Loc : Source_Ptr;
+      Enclosing_S    : Entity_Id;
+      Uses_SS        : Boolean;
+      Next_N         : constant Node_Id := Next (N);
 
    begin
       S := Current_Scope;
@@ -3397,19 +3423,26 @@ package body Exp_Ch7 is
       if Present (Finalization_Chain_Entity (S)) then
          LC := Make_Defining_Identifier (Loc, New_Internal_Name ('L'));
 
+         --  Use the Sloc of the first declaration of N's containing list, to
+         --  maintain monotonicity of source-line stepping during debugging.
+
+         First_Decl_Loc := Sloc (First (List_Containing (N)));
+
          Nodes := New_List (
-           Make_Object_Declaration (Loc,
+           Make_Object_Declaration (First_Decl_Loc,
              Defining_Identifier => LC,
              Object_Definition   =>
-               New_Reference_To (RTE (RE_Simple_List_Controller), Loc)),
+               New_Reference_To
+                 (RTE (RE_Simple_List_Controller), First_Decl_Loc)),
 
-           Make_Object_Renaming_Declaration (Loc,
+           Make_Object_Renaming_Declaration (First_Decl_Loc,
              Defining_Identifier => Finalization_Chain_Entity (S),
-             Subtype_Mark => New_Reference_To (RTE (RE_Finalizable_Ptr), Loc),
+             Subtype_Mark =>
+               New_Reference_To (RTE (RE_Finalizable_Ptr), First_Decl_Loc),
              Name =>
                Make_Selected_Component (Loc,
-                 Prefix        => New_Reference_To (LC, Loc),
-                 Selector_Name => Make_Identifier (Loc, Name_F))));
+                 Prefix        => New_Reference_To (LC, First_Decl_Loc),
+                 Selector_Name => Make_Identifier (First_Decl_Loc, Name_F))));
 
          --  Put the declaration at the beginning of the declaration part
          --  to make sure it will be before all other actions that have been

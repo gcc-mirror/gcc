@@ -4112,10 +4112,10 @@ package body Make is
 
             --  Never display -gnatea nor -gnatez
 
-            if Args (J).all /= "-gnatea" and then
-              Args (J).all /= "-gnatez"
+            if Args (J).all /= "-gnatea"
+                 and then
+               Args (J).all /= "-gnatez"
             then
-
                --  Do not display the mapping file argument automatically
                --  created when using a project file.
 

@@ -1888,9 +1888,9 @@ package body Sem_Warn is
          --  the renaming may be intended to re-export the unit.
 
          function Has_Visible_Entities (P : Entity_Id) return Boolean;
-         --  If a package has no declared entities, inhibit warning because
-         --  there is nothing to be referenced. The package may be in the
-         --  context just in order to carry a linker pragma for example.
+         --  This function determines if a package has any visible entities.
+         --  True is returned if there is at least one declared visible entity,
+         --  otherwise False is returned (e.g. case of only pragmas present).
 
          -------------------------
          -- Check_Inner_Package --
@@ -2024,7 +2024,6 @@ package body Sem_Warn is
             E : Entity_Id;
 
          begin
-
             --  If unit in context is not a package, it is a subprogram that
             --  is not called or a generic unit that is not instantiated
             --  in the current unit, and warning is appropriate.
@@ -2110,7 +2109,11 @@ package body Sem_Warn is
                      if Unit = Spec_Unit then
                         Set_Unreferenced_In_Spec (Item);
 
-                     --  Otherwise simple unreferenced message
+                     --  Otherwise simple unreferenced message, but skip this
+                     --  if no visible entities, because that is most likely a
+                     --  case where warning would be false positive (e.g. a
+                     --  package with only a linker options pragma and nothing
+                     --  else or a pragma elaborate with a body library task).
 
                      elsif Has_Visible_Entities (Entity (Name (Item))) then
                         Error_Msg_N
