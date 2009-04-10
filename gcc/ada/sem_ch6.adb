@@ -1869,9 +1869,11 @@ package body Sem_Ch6 is
 
       Check_Inline_Pragma (Spec_Id);
 
-      --  Case of fully private operation in the body of the protected type.
-      --  We must create a declaration for the subprogram, in order to attach
-      --  the protected subprogram that will be used in internal calls.
+      --  Deal with special case of a fully private operation in the body of
+      --  the protected type. We must create a declaration for the subprogram,
+      --  in order to attach the protected subprogram that will be used in
+      --  internal calls. We exclude compiler generated bodies from the
+      --  expander since the issue does not arise for those cases.
 
       if No (Spec_Id)
         and then Comes_From_Source (N)
@@ -1932,10 +1934,11 @@ package body Sem_Ch6 is
             Set_Has_Completion (Spec_Id);
             Set_Convention (Spec_Id, Convention_Protected);
          end;
+      end if;
 
-      --  Case where a separate spec is present
+      --  If a sep[arate spec is present, then deal with freezing issues
 
-      elsif Present (Spec_Id) then
+      if Present (Spec_Id) then
          Spec_Decl := Unit_Declaration_Node (Spec_Id);
          Verify_Overriding_Indicator;
 
@@ -1960,15 +1963,6 @@ package body Sem_Ch6 is
             Set_Has_Delayed_Freeze (Spec_Id);
             Insert_Actions (N, Freeze_Entity (Spec_Id, Loc));
          end if;
-
-      --  The missing else branch here is for the case where there is no
-      --  separate spec and either we don't have a protected operation, or the
-      --  node is compiler generated. Is it really right that nothing needs to
-      --  be done in this case. At the very least a comment is appropriate as
-      --  to why nothing needs to be done in this case ???
-
-      else
-         null;
       end if;
 
       --  Mark presence of postcondition proc in current scope
