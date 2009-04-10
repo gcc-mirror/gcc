@@ -11169,7 +11169,7 @@ package body Sem_Prag is
 
             Arg := Expression (Arg1);
 
-            --  The expression is used in the call to create_task, and must
+            --  The expression is used in the call to Create_Task, and must
             --  be expanded there, not in the context of the current spec.
 
             Preanalyze_And_Resolve (New_Copy_Tree (Arg), Standard_String);
