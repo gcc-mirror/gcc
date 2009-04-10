@@ -1,3 +1,9 @@
+2009-04-10  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR  c++/20118
+	* g++.dg/parse/pr20118.C: New.
+	* g++.dg/template/spec16.C: Update.
+
 2009-04-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/35621
@@ -678,7 +684,7 @@
 	* gfortran.dg/typebound_proc_11.f03: New test.
 	* gfortran.dg/abstract_type_5.f03: New test.
 
-2008-03-29  Tobias Schl�ter  <tobi@gcc.gnu.org>
+2008-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/38507
 	* gfortran.dg/do_4.f: New.
