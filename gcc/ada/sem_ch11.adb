@@ -156,7 +156,7 @@ package body Sem_Ch11 is
          return False;
       end Others_Present;
 
-   --  Start processing for Analyze_Exception_Handlers
+   --  Start of processing for Analyze_Exception_Handlers
 
    begin
       Handler := First (L);

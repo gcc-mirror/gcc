@@ -146,7 +146,7 @@ package body GNAT.Directory_Operations is
          end Check_For_Standard_Dirs;
       end Basename;
 
-   --  Start processing for Base_Name
+   --  Start of processing for Base_Name
 
    begin
       if Path'Length <= Suffix'Length then

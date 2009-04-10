@@ -185,6 +185,11 @@ begin
    Open (InB, In_File, "snames.adb-tmpl");
    Open (InH, In_File, "snames.h-tmpl");
 
+   --  Note that we do not generate snames.{ads,adb,h} directly. Instead
+   --  we output them to snames.n{s,b,h} so that Makefiles can use
+   --  move-if-change to not touch previously generated files if the
+   --  new ones are identical.
+
    Create (OutS, Out_File, "snames.ns");
    Create (OutB, Out_File, "snames.nb");
    Create (OutH, Out_File, "snames.nh");

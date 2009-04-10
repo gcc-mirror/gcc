@@ -4395,7 +4395,7 @@ package body Sem_Ch4 is
          end if;
       end Check_Right_Argument;
 
-   --  Start processing for Find_Arithmetic_Types
+   --  Start of processing for Find_Arithmetic_Types
 
    begin
       if not Is_Overloaded (L) then
@@ -4576,7 +4576,7 @@ package body Sem_Ch4 is
          end if;
       end Try_One_Interp;
 
-   --  Start processing for Find_Comparison_Types
+   --  Start of processing for Find_Comparison_Types
 
    begin
       --  If left operand is aggregate, the right operand has to

@@ -278,7 +278,7 @@ package body Errout is
          return;
       end if;
 
-      --  Start processing of new message
+      --  Start of processing for new message
 
       Sindex := Get_Source_File_Index (Flag_Location);
       Test_Style_Warning_Serious_Msg (Msg);

@@ -2416,7 +2416,7 @@ package body Sem_Type is
          end if;
       end Check_Right_Argument;
 
-   --  Start processing for Intersect_Types
+   --  Start of processing for Intersect_Types
 
    begin
       if Etype (L) = Any_Type or else Etype (R) = Any_Type then

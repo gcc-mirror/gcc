@@ -6158,12 +6158,13 @@ package body Sem_Ch12 is
          while Present (E1) and then  E1 /= Instance loop
             if Ekind (E1) = E_Package
               and then Nkind (Parent (E1)) = N_Package_Renaming_Declaration
-              and then Renamed_Object (E1) = Pack
             then
-               return True;
+               if Renamed_Object (E1) = Pack then
+                  return True;
 
-            elsif Renamed_Object (E1) = P then
-               return False;
+               elsif Renamed_Object (E1) = P then
+                  return False;
+               end if;
             end if;
 
             Next_Entity (E1);
@@ -6172,7 +6173,7 @@ package body Sem_Ch12 is
          return False;
       end Is_Actual_Of_Previous_Formal;
 
-   --  Start processing of Denotes_Formal_Package
+   --  Start of processing for Denotes_Formal_Package
 
    begin
       if On_Exit then

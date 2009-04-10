@@ -8434,7 +8434,7 @@ package body Sem_Ch3 is
          end if;
       end Post_Error;
 
-   --  Start processing for Check_Completion
+   --  Start of processing for Check_Completion
 
    begin
       E := First_Entity (Current_Scope);
@@ -13243,7 +13243,7 @@ package body Sem_Ch3 is
          end if;
       end Tag_Mismatch;
 
-   --  Start processing for Find_Type_Name
+   --  Start of processing for Find_Type_Name
 
    begin
       --  Find incomplete declaration, if one was given
