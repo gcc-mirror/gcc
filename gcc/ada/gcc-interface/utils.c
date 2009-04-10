@@ -48,6 +48,7 @@
 #include "tree-dump.h"
 #include "pointer-set.h"
 #include "langhooks.h"
+#include "rtl.h"
 
 #include "ada.h"
 #include "types.h"
@@ -1633,11 +1634,8 @@ process_attributes (tree decl, struct attrib *attr_list)
 	break;
 
       case ATTR_THREAD_LOCAL_STORAGE:
-	if (targetm.have_tls)
-	  DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
-	else
-	  post_error ("thread-local storage not supported for this target",
-		      attr_list->error_point);
+	DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
+	DECL_COMMON (decl) = 0;
 	break;
       }
 }

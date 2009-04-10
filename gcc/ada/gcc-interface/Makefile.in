@@ -238,7 +238,7 @@ INCLUDES = -I- -I. -I.. -I$(srcdir)/ada -I$(srcdir) -I$(srcdir)/config \
 
 ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 
-INCLUDES_FOR_SUBDIR = -I. -I.. -I../.. -I$(fsrcdir)/ada -I$(fsrcdir)/config \
+INCLUDES_FOR_SUBDIR = -I. -I.. -I../.. -I$(fsrcdir)/ada \
 	-I$(fsrcdir)/../include -I$(fsrcdir)
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 
@@ -473,8 +473,9 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
 
   ifeq ($(strip $(filter-out rtp,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
-    s-osinte.adb<s-osinte-vxworks-rtp.adb \
-    s-osinte.ads<s-osinte-vxworks6.ads \
+    s-osinte.adb<s-osinte-vxworks.adb \
+    s-vxwext.ads<s-vxwext-rtp.ads \
+    s-vxwext.adb<s-vxwext-rtp.adb \
     s-tpopsp.adb<s-tpopsp-vxworks-rtp.adb \
     system.ads<system-vxworks-ppc-rtp.ads
 
@@ -487,12 +488,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
 
     ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
-      s-osinte.ads<s-osinte-vxworks6.ads \
-      s-osinte.adb<s-osinte-vxworks-kernel.adb
-    else
-      LIBGNAT_TARGET_PAIRS += \
-      s-osinte.ads<s-osinte-vxworks.ads \
-      s-osinte.adb<s-osinte-vxworks.adb
+      s-vxwext.ads<s-vxwext-kernel.ads
     endif
 
     EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-vxwexc.o
@@ -627,8 +623,9 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
 
   ifeq ($(strip $(filter-out rtp,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
-    s-osinte.adb<s-osinte-vxworks-rtp.adb \
-    s-osinte.ads<s-osinte-vxworks6.ads \
+    s-osinte.adb<s-osinte-vxworks.adb \
+    s-vxwext.ads<s-vxwext-rtp.ads \
+    s-vxwext.adb<s-vxwext-rtp.adb \
     s-tpopsp.adb<s-tpopsp-vxworks-rtp.adb \
     system.ads<system-vxworks-x86-rtp.ads
 
@@ -641,12 +638,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
 
     ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
-      s-osinte.ads<s-osinte-vxworks6.ads \
-      s-osinte.adb<s-osinte-vxworks-kernel.adb
-    else
-      LIBGNAT_TARGET_PAIRS += \
-      s-osinte.ads<s-osinte-vxworks.ads \
-      s-osinte.adb<s-osinte-vxworks.adb
+      s-vxwext.ads<s-vxwext-kernel.ads
     endif
 
     EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-vxwexc.o
