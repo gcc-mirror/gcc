@@ -1489,8 +1489,8 @@ package body Sem_Eval is
    -- Eval_Concatenation --
    ------------------------
 
-   --  Concatenation is a static function, so the result is static if
-   --  both operands are static (RM 4.9(7), 4.9(21)).
+   --  Concatenation is a static function, so the result is static if both
+   --  operands are static (RM 4.9(7), 4.9(21)).
 
    procedure Eval_Concatenation (N : Node_Id) is
       Left  : constant Node_Id   := Left_Opnd (N);
@@ -1500,8 +1500,8 @@ package body Sem_Eval is
       Fold  : Boolean;
 
    begin
-      --  Concatenation is never static in Ada 83, so if Ada 83
-      --  check operand non-static context
+      --  Concatenation is never static in Ada 83, so if Ada 83 check operand
+      --  non-static context.
 
       if Ada_Version = Ada_83
         and then Comes_From_Source (N)
@@ -1520,20 +1520,16 @@ package body Sem_Eval is
 
       Test_Expression_Is_Foldable (N, Left, Right, Stat, Fold);
 
-      if Is_Standard_Character_Type (C_Typ)
-        and then Fold
-      then
-         null;
-      else
+      if not (Is_Standard_Character_Type (C_Typ) and then Fold) then
          Set_Is_Static_Expression (N, False);
          return;
       end if;
 
       --  Compile time string concatenation
 
-      --  ??? Note that operands that are aggregates can be marked as
-      --  static, so we should attempt at a later stage to fold
-      --  concatenations with such aggregates.
+      --  ??? Note that operands that are aggregates can be marked as static,
+      --  so we should attempt at a later stage to fold concatenations with
+      --  such aggregates.
 
       declare
          Left_Str   : constant Node_Id := Get_String_Val (Left);
