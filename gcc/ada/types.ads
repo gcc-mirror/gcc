@@ -210,19 +210,19 @@ package Types is
 
    subtype Source_Ptr is Text_Ptr;
    --  Type used to represent a source location, which is a subscript of a
-   --  character in the source buffer. As noted above, different source
-   --  buffers have different ranges, so it is possible to tell from a
-   --  Source_Ptr value which source it refers to. Note that negative numbers
-   --  are allowed to accommodate the following special values.
+   --  character in the source buffer. As noted above, different source buffers
+   --  have different ranges, so it is possible to tell from a Source_Ptr value
+   --  which source it refers to. Note that negative numbers are allowed to
+   --  accommodate the following special values.
 
    No_Location : constant Source_Ptr := -1;
-   --  Value used to indicate no source position set in a node. A test for
-   --  a Source_Ptr value being > No_Location is the approved way to test
-   --  for a standard value that does not include No_Location or any of the
-   --  following special definitions. One important use of No_Location is to
-   --  label generated nodes that we don't want the debugger to see in normal
-   --  mode (very often we conditionalize so that we set No_Location in normal
-   --  mode and the corresponding source line in -gnatD mode).
+   --  Value used to indicate no source position set in a node. A test for a
+   --  Source_Ptr value being > No_Location is the approved way to test for a
+   --  standard value that does not include No_Location or any of the following
+   --  special definitions. One important use of No_Location is to label
+   --  generated nodes that we don't want the debugger to see in normal mode
+   --  (very often we conditionalize so that we set No_Location in normal mode
+   --  and the corresponding source line in -gnatD mode).
 
    Standard_Location : constant Source_Ptr := -2;
    --  Used for all nodes in the representation of package Standard other than
