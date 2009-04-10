@@ -4341,6 +4341,13 @@ package body Exp_Attr is
 
          Ttyp := Underlying_Type (Ttyp);
 
+         --  Ada 2005: The type may be a synchronized tagged type, in which
+         --  case the tag information is stored in the corresponding record.
+
+         if Is_Concurrent_Type (Ttyp) then
+            Ttyp := Corresponding_Record_Type (Ttyp);
+         end if;
+
          if Prefix_Is_Type then
 
             --  For VMs we leave the type attribute unexpanded because
