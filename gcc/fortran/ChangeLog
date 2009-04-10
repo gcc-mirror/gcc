@@ -1,3 +1,8 @@
+2009-04-10  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/38709
+	* expr.c (find_array_section): Leave early on zero-sized arrays.
+
 2009-04-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36704
