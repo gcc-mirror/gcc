@@ -5045,20 +5045,20 @@ package body Sem_Res is
 
       --  There are several notable exceptions:
 
-      --  a) in init procs, the transient scope overhead is not needed, and is
+      --  a) In init procs, the transient scope overhead is not needed, and is
       --  even incorrect when the call is a nested initialization call for a
       --  component whose expansion may generate adjust calls. However, if the
       --  call is some other procedure call within an initialization procedure
       --  (for example a call to Create_Task in the init_proc of the task
       --  run-time record) a transient scope must be created around this call.
 
-      --  b) enumeration literal pseudo-calls need no transient scope.
+      --  b) Enumeration literal pseudo-calls need no transient scope
 
-      --  c) intrinsic subprograms (Unchecked_Conversion and source info
+      --  c) Intrinsic subprograms (Unchecked_Conversion and source info
       --  functions) do not use the secondary stack even though the return
-      --  type may be unconstrained;
+      --  type may be unconstrained.
 
-      --  d) calls to a build-in-place function, since such functions may
+      --  d) Calls to a build-in-place function, since such functions may
       --  allocate their result directly in a target object, and cases where
       --  the result does get allocated in the secondary stack are checked for
       --  within the specialized Exp_Ch6 procedures for expanding those
