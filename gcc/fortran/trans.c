@@ -605,8 +605,8 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
 			 fold_build1 (INDIRECT_REF, status_type, status),
 			 build_int_cst (status_type, 0));
       tmp = fold_build3 (COND_EXPR, void_type_node,
-			 fold_build2 (NE_EXPR, boolean_type_node,
-				      status, build_int_cst (status_type, 0)),
+			 fold_build2 (NE_EXPR, boolean_type_node, status,
+				      build_int_cst (TREE_TYPE (status), 0)),
 			 tmp, build_empty_stmt ());
       gfc_add_expr_to_block (block, tmp);
     }
@@ -630,7 +630,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
 			   build_int_cst (pvoid_type_node, 0));
 
       tmp = fold_build2 (EQ_EXPR, boolean_type_node, status,
-			 build_int_cst (status_type, 0));
+			 build_int_cst (TREE_TYPE (status), 0));
       error = fold_build3 (COND_EXPR, void_type_node, tmp, error,
 			   gfc_finish_block (&set_status_block));
     }
@@ -653,7 +653,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
       tree tmp2;
 
       cond = fold_build2 (EQ_EXPR, boolean_type_node, status,
-			  build_int_cst (status_type, 0));
+			  build_int_cst (TREE_TYPE (status), 0));
       tmp2 = fold_build2 (MODIFY_EXPR, status_type,
 			  fold_build1 (INDIRECT_REF, status_type, status),
 			  build_int_cst (status_type, LIBERROR_ALLOCATION));

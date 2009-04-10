@@ -1,3 +1,9 @@
+2009-04-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/39701
+	* trans.c (gfc_allocate_with_status): Fix type mismatches
+	on "pstat == 0".
+
 2009-04-10  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/38709
