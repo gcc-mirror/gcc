@@ -1,3 +1,18 @@
+2009-04-10  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch6.ads (Check_Subtype_Conformant): Add ??? comment for
+	undocumented formal.
+	Minor reformatting
+
+	* a-direio.ads: Fix typo in comment
+
+	* sem_ch3.adb, g-dirope.adb, sem_type.adb, sem_ch12.adb, sem_case.adb,
+	errout.adb, sem_ch4.adb, sem_ch11.adb, exp_dist.adb, sem_ch13.adb:
+	Use uniform phrasing for comment at start of subprogram body.
+
+	* xsnamest.adb: Add note to explain why we use specific names for the
+	newly generated files instead of generating snames.{ads,adb,h} directly
+
 2009-04-10  Sergey Rybin  <rybin@adacore.com>
 
 	* vms_data.ads:

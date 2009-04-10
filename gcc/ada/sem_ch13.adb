@@ -4051,7 +4051,7 @@ package body Sem_Ch13 is
                   end if;
                end Same_Rep;
 
-            --  Start processing for Record_Case
+            --  Start of processing for Record_Case
 
             begin
                if Has_Discriminants (T1) then

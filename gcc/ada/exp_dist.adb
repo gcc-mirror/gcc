@@ -9595,7 +9595,7 @@ package body Exp_Dist is
                                  return Nod;
                               end Make_Discriminant_Reference;
 
-                           --  Start processing for Variant_Part
+                           --  Start of processing for Variant_Part
 
                            begin
                               Append_To (Stmts,

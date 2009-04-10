@@ -170,7 +170,7 @@ private
    --  Size of an element in storage units. The Max operation here is to ensure
    --  that we allocate a single byte for zero-sized elements. It's a bit weird
    --  to instantiate Direct_IO with zero sized elements, but it is legal and
-   --  this adjustment ensures that we don't get anomolous behavior.
+   --  this adjustment ensures that we don't get anomalous behavior.
 
    pragma Inline (Close);
    pragma Inline (Create);
