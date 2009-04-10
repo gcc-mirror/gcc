@@ -75,14 +75,15 @@
 #include "version.h"
 #endif
 
+#if defined (__MINGW32__)
+
 #if defined (RTX)
 #include <windows.h>
 #include <Rtapi.h>
-#include <sys/utime.h>
-
-#elif defined (__MINGW32__)
-
+#else
 #include "mingw32.h"
+#endif
+
 #include <sys/utime.h>
 
 /* For isalpha-like tests in the compiler, we're expected to resort to

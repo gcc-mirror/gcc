@@ -11168,7 +11168,11 @@ package body Sem_Prag is
             Check_Arg_Count (1);
 
             Arg := Expression (Arg1);
-            Analyze_And_Resolve (Arg, Standard_String);
+
+            --  The expression is used in the call to create_task, and must
+            --  be expanded there, not in the context of the current spec.
+
+            Preanalyze_And_Resolve (New_Copy_Tree (Arg), Standard_String);
 
             if Nkind (P) /= N_Task_Definition then
                Pragma_Misplaced;

@@ -11990,8 +11990,11 @@ package body Exp_Ch9 is
       if Present (Tdef)
         and then Has_Task_Name_Pragma (Tdef)
       then
+         --  Copy expression in full, because it may be dynamic and have
+         --  side effects.
+
          Append_To (Args,
-           New_Copy (
+           New_Copy_Tree (
              Expression (First (
                Pragma_Argument_Associations (
                  Find_Task_Or_Protected_Pragma
