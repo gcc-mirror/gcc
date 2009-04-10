@@ -1,3 +1,9 @@
+2009-04-10  Ed Falis  <falis@adacore.com>
+
+	* init.c: Change VxWorks 6 stack overflow checking for kernel apps.
+
+	* system-vxworks-ppc.ads, system-vxworks-x86.ads: Update header.
+
 2009-04-10  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch6.ads (Check_Subtype_Conformant): Add ??? comment for
