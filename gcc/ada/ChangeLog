@@ -1,3 +1,23 @@
+2009-04-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Task_Name): Do not expand argument
+	of pragma. It will be recopied and analyzed when used in call to
+	Create_Task.
+
+	* sem_res.adb (Resolve_Call): Clarify use of secondary stack within
+	initialization operations and recognize use of it in procedure calls
+	within init_procs.
+
+	* exp_ch9.adb (Make_Task_Create_Call): Copy full tree of Task_Name
+	argument, because it may have side-effects.
+
+	* exp_ch2.adb: Remove obsolete comments on default functions
+
+2009-04-10  Jose Ruiz  <ruiz@adacore.com>
+
+	* adaint.c (RTX section): Do for RTX the same thing as we do for
+	Windows (include ctype.h and define a fallback ISALPHA if IN_RTS).
+
 2009-04-10  Robert Dewar  <dewar@adacore.com>
 
 	* sem_aux.ads, sem_aux.adb (Nearest_Current_Scope): New function.

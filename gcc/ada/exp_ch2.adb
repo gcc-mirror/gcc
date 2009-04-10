@@ -267,11 +267,9 @@ package body Exp_Ch2 is
          end loop;
 
          --  If the discriminant occurs within the default expression for a
-         --  formal of an entry or protected operation, create a default
-         --  function for it, and replace the discriminant with a reference to
-         --  the discriminant of the formal of the default function. The
-         --  discriminant entity is the one defined in the corresponding
-         --  record.
+         --  formal of an entry or protected operation, replace it with a
+         --  reference to the discriminant of the formal of the enclosing
+         --  operation.
 
          if Present (Parent_P)
            and then Present (Corresponding_Spec (Parent_P))
@@ -284,8 +282,9 @@ package body Exp_Ch2 is
                Disc   : Entity_Id;
 
             begin
-               --  Verify that we are within a default function: the type of
-               --  its formal parameter is the same task or protected type.
+               --  Verify that we are within the body of an entry or protected
+               --  operation. Its first formal parameter is the synchronized
+               --  type itself.
 
                if Present (Formal)
                  and then Etype (Formal) = Scope (Entity (N))
