@@ -449,8 +449,8 @@ package body Sem_Ch8 is
    --  private with on E.
 
    procedure Find_Expanded_Name (N : Node_Id);
-   --  Selected component is known to be expanded name. Verify legality
-   --  of selector given the scope denoted by prefix.
+   --  Selected component is known to be expanded name. Verify legality of
+   --  selector given the scope denoted by prefix.
 
    function Find_Renamed_Entity
      (N         : Node_Id;

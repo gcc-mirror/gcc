@@ -5145,7 +5145,7 @@ package Einfo is
 
    --  E_Procedure
    --  E_Generic_Procedure
-   --    Postcondition_Proc                  (Node8)
+   --    Postcondition_Proc                  (Node8)    (non-generic case only)
    --    Renaming_Map                        (Uint9)
    --    Handler_Records                     (List10)   (non-generic case only)
    --    Protected_Body_Subprogram           (Node11)
