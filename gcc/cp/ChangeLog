@@ -1,3 +1,8 @@
+2008-04-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* parser.c (cp_parser_class_specifier): Remove the unused
+	has_trailing_semicolon.
+
 2009-04-10  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR  c++/20118

@@ -14948,10 +14948,8 @@ cp_parser_class_name (cp_parser *parser,
 static tree
 cp_parser_class_specifier (cp_parser* parser)
 {
-  cp_token *token;
   tree type;
   tree attributes = NULL_TREE;
-  int has_trailing_semicolon;
   bool nested_name_specifier_p;
   unsigned saved_num_template_parameter_lists;
   bool saved_in_function_body;
@@ -15029,10 +15027,6 @@ cp_parser_class_specifier (cp_parser* parser)
 
   /* Look for the trailing `}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, "%<}%>");
-  /* We get better error messages by noticing a common problem: a
-     missing trailing `;'.  */
-  token = cp_lexer_peek_token (parser->lexer);
-  has_trailing_semicolon = (token->type == CPP_SEMICOLON);
   /* Look for trailing attributes to apply to this class.  */
   if (cp_parser_allow_gnu_extensions_p (parser))
     attributes = cp_parser_attributes_opt (parser);
