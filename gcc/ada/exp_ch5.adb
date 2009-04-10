@@ -2825,12 +2825,14 @@ package body Exp_Ch5 is
                         if Is_Class_Wide_Type (Return_Obj_Typ) then
                            Heap_Allocator :=
                              Make_Allocator (Loc,
-                               New_Reference_To
-                                 (Etype (Return_Obj_Expr), Loc));
+                               Expression =>
+                                 New_Reference_To
+                                   (Etype (Return_Obj_Expr), Loc));
                         else
                            Heap_Allocator :=
                              Make_Allocator (Loc,
-                               New_Reference_To (Return_Obj_Typ, Loc));
+                               Expression =>
+                                 New_Reference_To (Return_Obj_Typ, Loc));
                         end if;
 
                         --  If the object requires default initialization then

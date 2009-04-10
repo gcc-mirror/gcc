@@ -245,6 +245,12 @@ package body Prj.Attr is
    "SVlib_dir_switch#" &
    "SVlib_name_switch#" &
 
+   --  Configuration - Response files
+
+   "SVmax_command_line_length#" &
+   "SVresponse_file_format#" &
+   "LVresponse_file_switches#" &
+
    --  package Cross_Reference
 
    "Pcross_reference#" &

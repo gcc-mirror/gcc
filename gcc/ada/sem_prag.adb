@@ -5733,25 +5733,6 @@ package body Sem_Prag is
             else
                Analyze_And_Resolve (Expr, Any_Boolean);
             end if;
-
-            --  If assertion is of the form (X'First = literal), where X is
-            --  a formal, then set Low_Bound_Known flag on this formal.
-
-            if Nkind (Expr) = N_Op_Eq then
-               declare
-                  Right : constant Node_Id := Right_Opnd (Expr);
-                  Left  : constant Node_Id := Left_Opnd  (Expr);
-               begin
-                  if Nkind (Left) = N_Attribute_Reference
-                    and then Attribute_Name (Left) = Name_First
-                    and then Is_Entity_Name (Prefix (Left))
-                    and then Is_Formal (Entity (Prefix (Left)))
-                    and then Nkind (Right) = N_Integer_Literal
-                  then
-                     Set_Low_Bound_Known (Entity (Prefix (Left)));
-                  end if;
-               end;
-            end if;
          end Check;
 
          ----------------
@@ -9608,10 +9589,10 @@ package body Sem_Prag is
 
             Check_Precondition_Postcondition (In_Body);
 
-            --  If in spec, nothing to do. If in body, then we convert the
-            --  pragma to pragma Check (Precondition, cond [, msg]). Note we
-            --  do this whether or not precondition checks are enabled. That
-            --  works fine since pragma Check will do this check.
+            --  If in spec, nothing more to do. If in body, then we convert the
+            --  pragma to pragma Check (Precondition, cond [, msg]). Note we do
+            --  this whether or not precondition checks are enabled. That works
+            --  fine since pragma Check will do this check.
 
             if In_Body then
                if Arg_Count = 2 then

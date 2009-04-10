@@ -604,6 +604,29 @@ package body Sem_Warn is
       end if;
    end Check_Infinite_Loop_Warning;
 
+   ----------------------------
+   -- Check_Low_Bound_Tested --
+   ----------------------------
+
+   procedure Check_Low_Bound_Tested (Expr : Node_Id) is
+   begin
+      if Comes_From_Source (Expr) then
+         declare
+            L : constant Node_Id := Left_Opnd (Expr);
+            R : constant Node_Id := Right_Opnd (Expr);
+         begin
+            if Nkind (L) = N_Attribute_Reference
+              and then Attribute_Name (L) = Name_First
+              and then Is_Entity_Name (Prefix (L))
+              and then Is_Formal (Entity (Prefix (L)))
+              and then Nkind (R) = N_Integer_Literal
+            then
+               Set_Low_Bound_Tested (Entity (Prefix (L)));
+            end if;
+         end;
+      end if;
+   end Check_Low_Bound_Tested;
+
    ----------------------
    -- Check_References --
    ----------------------
@@ -3633,7 +3656,7 @@ package body Sem_Warn is
 
             if Is_Formal (Ent)
               and then Is_Suspicious_Type (Typ)
-              and then not Low_Bound_Known (Ent)
+              and then not Low_Bound_Tested (Ent)
             then
                Test_Suspicious_Index;
             end if;

@@ -119,7 +119,9 @@ package Sem_Ch6 is
    --  are subtype conformant, post error message if not (RM 6.3.1(16)),
    --  the flag being placed on the Err_Loc node if it is specified, and
    --  on the appropriate component of the New_Id construct if not.
-   --  What is the semantics of Skip_Controlling_Formals???
+   --  Skip_Controlling_Formals is True when checking the conformance of
+   --  a subprogram that implements an interface operation. In that case,
+   --  only the non-controlling formals can (and must) be examined.
 
    procedure Check_Type_Conformant
      (New_Id  : Entity_Id;
