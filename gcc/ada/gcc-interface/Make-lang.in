@@ -944,15 +944,16 @@ ada/sinfo.h : ada/sinfo.ads ada/xsinfo.adb
 	$(CP) $^ ada/bldtools/sinfo
 	(cd ada/bldtools/sinfo && $(GNATMAKE) -q xsinfo && ./xsinfo ../../sinfo.h )
 
-ada/snames.h ada/snames.ads ada/snames.adb : ada/stamp-snames
-	@true
-
+ada/snames.h ada/snames.ads ada/snames.adb : ada/stamp-snames ; @true
 ada/stamp-snames : ada/snames.ads-tmpl ada/snames.adb-tmpl ada/snames.h-tmpl ada/xsnamest.adb ada/xutil.ads ada/xutil.adb
 	-$(MKDIR) ada/bldtools/snamest
 	$(RM) $(addprefix ada/bldtools/snamest/,$(notdir $^))
 	$(CP) $^ ada/bldtools/snamest
-	(cd ada/bldtools/snamest; gnatmake -q xsnamest ; ./xsnamest ; cp snames.ns ../../snames.ads ; cp snames.nb ../../snames.adb ; cp snames.nh ../../snames.h)
-	touch $@
+	(cd ada/bldtools/snamest; gnatmake -q xsnamest ; ./xsnamest )
+	$(srcdir)/../move-if-change ada/bldtools/snamest/snames.ns ada/snames.ads
+	$(srcdir)/../move-if-change ada/bldtools/snamest/snames.nb ada/snames.adb
+	$(srcdir)/../move-if-change ada/bldtools/snamest/snames.nh ada/snames.h
+	touch ada/stamp-snames
 
 ada/nmake.adb : ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/xutil.ads ada/xutil.adb
 	-$(MKDIR) ada/bldtools/nmake_b
