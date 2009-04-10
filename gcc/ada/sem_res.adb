@@ -5393,6 +5393,7 @@ package body Sem_Res is
             Check_Unset_Reference (L);
             Check_Unset_Reference (R);
             Generate_Operator_Reference (N, T);
+            Check_Low_Bound_Tested (N);
             Eval_Relational_Op (N);
          end if;
       end if;
@@ -6135,6 +6136,7 @@ package body Sem_Res is
          Check_Unset_Reference (L);
          Check_Unset_Reference (R);
          Generate_Operator_Reference (N, T);
+         Check_Low_Bound_Tested (N);
 
          --  If this is an inequality, it may be the implicit inequality
          --  created for a user-defined operation, in which case the corres-

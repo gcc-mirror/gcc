@@ -1,3 +1,67 @@
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.ads, einfo.adb (Low_Bound_Tested): New name for Low_Bound_Known
+
+	* sem_prag.adb (Analyze_Pragma, case Check): Remove check for lower
+	bound tested, since this is now done more generally in Sem_Res.
+
+	* sem_res.adb (Resolve_Comparison_Op): Add call to
+	Check_Lower_Bound_Tested.
+	(Resolve_Equality_Op): Add call to Check_Lower_Bound_Tested
+
+	* sem_warn.ads, sem_warn.adb (Check_Low_Bound_Tested): New procedure
+	(Low_Bound_Tested): New name for Low_Bound_Known flag
+
+	* exp_ch5.adb: Minor reformatting
+
+	* exp_ch4.adb:
+	Add comments on copying the Comes_From_Source flag for allocators
+
+	* sinfo.ads:
+	Add comments on copying the Comes_From_Source flag for allocators
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Copy
+	Comes_From_Source flag from old allocator to new one.
+
+2009-04-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.ads: Address missing documentation query
+
+2009-04-10  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb:
+	Add new Linker attributes Max_Command_Line_Length, Response_File_Format
+	and Response_File_Switches.
+
+	* prj-nmsc.adb (Process_Linker): Process new attributes
+	Max_Command_Line_Length, Response_File_Format and
+	Response_File_Switches.
+
+	* prj.ads (Response_File_Format): New enumeration type
+	(Project_Configuration): New componants Max_Command_Line_Length,
+	Resp_File_Format and Resp_File_Options.
+
+	* snames.ads-tmpl: Add new standard names for linking response files
+	for gprbuild: GNU, None, Object_List, Option_List,
+	Max_Command_Line_Length, Response_File_Format and
+	Response_File_Switches.
+
+2009-04-10  Geert Bosch  <bosch@adacore.com>
+
+	* system-aix.ads, system-darwin-ppc.ads, system-darwin-x86.ads,
+	system-freebsd-x86.ads, system-hpux.ads, system-hpux-ia64.ads,
+	system-irix-n32.ads, system-irix-o32.ads, system-linux-alpha.ads,
+	system-linux-hppa.ads, system-linux-ia64.ads, system-linux-ppc.ads,
+	system-linux-s390.ads, system-linux-s390x.ads, system-linux-sh4.ads,
+	system-linux-sparc.ads, system-linux-x86_64.ads, system-linux-x86.ads,
+	system-mingw.ads, system-solaris-sparc.ads, system-solaris-sparcv9.ads,
+	system-solaris-x86.ads, system-tru64.ads, system-vms_64.ads,
+	system-vms.ads, system-vms-ia64.ads, system-vms-zcx.ads,
+	system-vxworks-arm.ads, system-vxworks-m68k.ads,
+	system-vxworks-mips.ads, system-vxworks-ppc.ads,
+	system-vxworks-sparcv9.ads, system-vxworks-x86.ads
+	(Backend_Overflow_Checks): Set to True.
+
 2009-04-10  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_attr.adb: Minor reformatting

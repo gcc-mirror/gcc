@@ -460,7 +460,7 @@ package body Einfo is
    --    Itype_Printed                   Flag202
    --    Has_Pragma_Pure                 Flag203
    --    Is_Known_Null                   Flag204
-   --    Low_Bound_Known                 Flag205
+   --    Low_Bound_Tested                Flag205
    --    Is_Visible_Formal               Flag206
    --    Known_To_Have_Preelab_Init      Flag207
    --    Must_Have_Preelab_Init          Flag208
@@ -2160,10 +2160,10 @@ package body Einfo is
       return Node16 (Id);
    end Lit_Strings;
 
-   function Low_Bound_Known (Id : E) return B is
+   function Low_Bound_Tested (Id : E) return B is
    begin
       return Flag205 (Id);
-   end Low_Bound_Known;
+   end Low_Bound_Tested;
 
    function Machine_Radix_10 (Id : E) return B is
    begin
@@ -4627,11 +4627,11 @@ package body Einfo is
       Set_Node16 (Id, V);
    end Set_Lit_Strings;
 
-   procedure Set_Low_Bound_Known (Id : E; V : B := True) is
+   procedure Set_Low_Bound_Tested (Id : E; V : B := True) is
    begin
       pragma Assert (Is_Formal (Id));
       Set_Flag205 (Id, V);
-   end Set_Low_Bound_Known;
+   end Set_Low_Bound_Tested;
 
    procedure Set_Machine_Radix_10 (Id : E; V : B := True) is
    begin
@@ -6971,7 +6971,7 @@ package body Einfo is
       W ("Kill_Range_Checks",               Flag33  (Id));
       W ("Kill_Tag_Checks",                 Flag34  (Id));
       W ("Known_To_Have_Preelab_Init",      Flag207 (Id));
-      W ("Low_Bound_Known",                 Flag205 (Id));
+      W ("Low_Bound_Tested",                Flag205 (Id));
       W ("Machine_Radix_10",                Flag84  (Id));
       W ("Materialize_Entity",              Flag168 (Id));
       W ("Must_Be_On_Byte_Boundary",        Flag183 (Id));

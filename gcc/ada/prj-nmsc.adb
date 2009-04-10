@@ -484,9 +484,9 @@ package body Prj.Nmsc is
    --  Locate a directory. Name is the directory name. Parent is the root
    --  directory, if Name a relative path name. Dir is set to the canonical
    --  case path name of the directory, and Display is the directory path name
-   --  for display purposes. If the directory does not exist and Project_Setup
+   --  for display purposes. If the directory does not exist and Setup_Projects
    --  is True and Create is a non null string, an attempt is made to create
-   --  the directory. If the directory does not exist and Project_Setup is
+   --  the directory. If the directory does not exist and Setup_Projects is
    --  false, then Dir and Display are set to No_Name.
    --
    --  Current_Dir should represent the current directory, and is passed for
@@ -1839,6 +1839,57 @@ package body Prj.Nmsc is
 
                   elsif Attribute.Name = Name_Map_File_Option then
                      Data.Config.Map_File_Option := Attribute.Value.Value;
+
+                  elsif Attribute.Name = Name_Max_Command_Line_Length then
+                     begin
+                        Data.Config.Max_Command_Line_Length :=
+                          Natural'Value (Get_Name_String
+                                         (Attribute.Value.Value));
+
+                     exception
+                        when Constraint_Error =>
+                           Error_Msg
+                             (Project,
+                              In_Tree,
+                              "value must be positive or equal to 0",
+                              Attribute.Value.Location);
+                     end;
+
+                  elsif Attribute.Name = Name_Response_File_Format then
+                     declare
+                        Name  : Name_Id;
+
+                     begin
+                        Get_Name_String (Attribute.Value.Value);
+                        To_Lower (Name_Buffer (1 .. Name_Len));
+                        Name := Name_Find;
+
+                        if Name = Name_None then
+                           Data.Config.Resp_File_Format := None;
+
+                        elsif Name = Name_Gnu then
+                           Data.Config.Resp_File_Format := GNU;
+
+                        elsif Name = Name_Object_List then
+                           Data.Config.Resp_File_Format := Object_List;
+
+                        elsif Name = Name_Option_List then
+                           Data.Config.Resp_File_Format := Option_List;
+
+                        else
+                           Error_Msg
+                             (Project,
+                              In_Tree,
+                              "illegal response file format",
+                              Attribute.Value.Location);
+                        end if;
+                     end;
+
+                  elsif Attribute.Name = Name_Response_File_Switches then
+                     Put (Into_List =>
+                            Data.Config.Resp_File_Options,
+                          From_List => Attribute.Value.Values,
+                          In_Tree   => In_Tree);
                   end if;
                end if;
 

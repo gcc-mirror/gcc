@@ -3728,6 +3728,13 @@ package Sinfo is
       --  Is_Dynamic_Coextension (Flag18-Sem)
       --  plus fields for expression
 
+      --  Note: like all nodes, the N_Allocator has the Comes_From_Source flag.
+      --  This flag has a special function in conjunction with the restriction
+      --  No_Implicit_Heap_Allocations, which will be triggered if this flag
+      --  is not set. This means that if a source allocator is replaced with
+      --  a constructed allocator, the Comes_From_Source flag should be copied
+      --  to the newly created allocator.
+
       ---------------------------------
       -- 5.1  Sequence Of Statements --
       ---------------------------------

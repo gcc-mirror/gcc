@@ -2757,15 +2757,13 @@ package Einfo is
 --       the nature and use of this entity for implementing the Image and
 --       Value attributes for the enumeration type in question.
 
---    Low_Bound_Known (Flag205)
+--    Low_Bound_Tested (Flag205)
 --       Present in all entities. Currently this can only be set True for
 --       formal parameter entries of a standard unconstrained one-dimensional
---       array or string type, where the lower bound of the index type is zero
---       or one. Indicates that the low bound is known to be equal to the lower
---       bound of the index type (e.g. 1 for String, since the index type is
---       Positive). This flag can only be set by a pragma Assert which
---       specifies this. If this flag is set, warnings about assuming the index
---       low bound to be zero or one are suppressed.
+--       array or string type. Indicates that an explicit test of the low bound
+--       of the formal appeared in the code, e.g. in a pragma Assert. If this
+--       flag is set, warnings about assuming the index low bound to be one
+--       are suppressed.
 
 --    Machine_Radix_10 (Flag84)
 --       Present in decimal types and subtypes, set if the Machine_Radix
@@ -4520,7 +4518,7 @@ package Einfo is
    --    Kill_Elaboration_Checks             (Flag32)
    --    Kill_Range_Checks                   (Flag33)
    --    Kill_Tag_Checks                     (Flag34)
-   --    Low_Bound_Known                     (Flag205)
+   --    Low_Bound_Tested                    (Flag205)
    --    Materialize_Entity                  (Flag168)
    --    Needs_Debug_Info                    (Flag147)
    --    Never_Set_In_Source                 (Flag115)
@@ -5008,7 +5006,7 @@ package Einfo is
    --    Is_Controlling_Formal               (Flag97)
    --    Is_Only_Out_Parameter               (Flag226)
    --    Is_Optional_Parameter               (Flag134)
-   --    Low_Bound_Known                     (Flag205)
+   --    Low_Bound_Tested                    (Flag205)
    --    Is_Return_Object                    (Flag209)
    --    Parameter_Mode                      (synth)
 
@@ -5899,7 +5897,7 @@ package Einfo is
    function Limited_View                        (Id : E) return E;
    function Lit_Indexes                         (Id : E) return E;
    function Lit_Strings                         (Id : E) return E;
-   function Low_Bound_Known                     (Id : E) return B;
+   function Low_Bound_Tested                    (Id : E) return B;
    function Machine_Radix_10                    (Id : E) return B;
    function Master_Id                           (Id : E) return E;
    function Materialize_Entity                  (Id : E) return B;
@@ -6450,7 +6448,7 @@ package Einfo is
    procedure Set_Limited_View                    (Id : E; V : E);
    procedure Set_Lit_Indexes                     (Id : E; V : E);
    procedure Set_Lit_Strings                     (Id : E; V : E);
-   procedure Set_Low_Bound_Known                 (Id : E; V : B := True);
+   procedure Set_Low_Bound_Tested                (Id : E; V : B := True);
    procedure Set_Machine_Radix_10                (Id : E; V : B := True);
    procedure Set_Master_Id                       (Id : E; V : E);
    procedure Set_Materialize_Entity              (Id : E; V : B := True);
@@ -7139,7 +7137,7 @@ package Einfo is
    pragma Inline (Limited_View);
    pragma Inline (Lit_Indexes);
    pragma Inline (Lit_Strings);
-   pragma Inline (Low_Bound_Known);
+   pragma Inline (Low_Bound_Tested);
    pragma Inline (Machine_Radix_10);
    pragma Inline (Master_Id);
    pragma Inline (Materialize_Entity);
@@ -7527,7 +7525,7 @@ package Einfo is
    pragma Inline (Set_Limited_View);
    pragma Inline (Set_Lit_Indexes);
    pragma Inline (Set_Lit_Strings);
-   pragma Inline (Set_Low_Bound_Known);
+   pragma Inline (Set_Low_Bound_Tested);
    pragma Inline (Set_Machine_Radix_10);
    pragma Inline (Set_Master_Id);
    pragma Inline (Set_Materialize_Entity);

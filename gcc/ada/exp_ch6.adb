@@ -5005,11 +5005,18 @@ package body Exp_Ch6 is
          --  is handled separately further below.
 
          New_Allocator :=
-           Make_Allocator (Loc, New_Reference_To (Result_Subt, Loc));
-
-         Set_Storage_Pool      (New_Allocator, Storage_Pool (Allocator));
-         Set_Procedure_To_Call (New_Allocator, Procedure_To_Call (Allocator));
+           Make_Allocator (Loc,
+             Expression => New_Reference_To (Result_Subt, Loc));
          Set_No_Initialization (New_Allocator);
+
+         --  Copy attributes to new allocator. Note that the new allocator
+         --  logically comes from source if the original one did, so copy the
+         --  relevant flag. This ensures proper treatment of the restriction
+         --  No_Implicit_Heap_Allocations in this case.
+
+         Set_Storage_Pool      (New_Allocator, Storage_Pool      (Allocator));
+         Set_Procedure_To_Call (New_Allocator, Procedure_To_Call (Allocator));
+         Set_Comes_From_Source (New_Allocator, Comes_From_Source (Allocator));
 
          Rewrite (Allocator, New_Allocator);
 
