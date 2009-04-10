@@ -3581,14 +3581,21 @@ package body Exp_Ch5 is
       Lab_Node    : Node_Id;
 
    begin
-      --  Call postconditions procedure if procedure with active postconditions
+      --  Call _Postconditions procedure if procedure with active
+      --  postconditions. Here, we use the Postcondition_Proc attribute, which
+      --  is needed for implicitly-generated returns. Functions never
+      --  have implicitly-generated returns, and there's no room for
+      --  Postcondition_Proc in E_Function, so we look up the identifier
+      --  Name_uPostconditions for function returns (see
+      --  Expand_Simple_Function_Return).
 
       if Ekind (Scope_Id) = E_Procedure
         and then Has_Postconditions (Scope_Id)
       then
+         pragma Assert (Present (Postcondition_Proc (Scope_Id)));
          Insert_Action (N,
            Make_Procedure_Call_Statement (Loc,
-             Name => Make_Identifier (Loc, Name_uPostconditions)));
+             Name => New_Reference_To (Postcondition_Proc (Scope_Id), Loc)));
       end if;
 
       --  If it is a return from a procedure do no extra steps

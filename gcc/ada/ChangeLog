@@ -1,3 +1,11 @@
+2009-04-10  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb, exp_ch6.adb, sem_ch6.adb: Move the code that creates a
+	call to the _Postconditions procedure in the case of implicit returns
+	from analysis to expansion. This eliminates some duplicated code. Use
+	the Postcondition_Proc to find the identity of this procedure during
+	expansion.
+
 2009-04-10  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch6.adb: Minor code clean up.
