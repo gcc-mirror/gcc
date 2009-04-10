@@ -3,7 +3,7 @@
 struct A
 {
   A(int);
-  template<int> enum { e }; // { dg-error "template" }
-};
+  template<int> enum { e }; // { dg-error "template|expected" }
+}; // { dg-error "expected" }
 
-A a(A::e); // { dg-error "not a member" }
+A a(A::e);

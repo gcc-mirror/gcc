@@ -1,5 +1,5 @@
 // PR c++/28261
 
-struct A {}; // { dg-error "A" }
+struct A {};
 
-A::A (enum { e }) {} // { dg-error "defined|match" }
+A::A (enum { e }) {} // { dg-error "defined|token" }

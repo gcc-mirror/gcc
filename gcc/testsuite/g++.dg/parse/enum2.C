@@ -4,4 +4,4 @@
 
 // PR c++/18123: ICE pushing tag from invalid template.
 
-template<int> enum E { e }; // { dg-error "template declaration" }
+template<int> enum E { e }; // { dg-error "declaration|expected" }

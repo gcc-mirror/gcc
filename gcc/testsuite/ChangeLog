@@ -1,3 +1,13 @@
+2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c++/28301
+	* g++.dg/cpp0x/enum2.C: Updated.
+	* g++.dg/debug/pr22514.C: Likewise.
+	* g++.dg/parse/enum2.C: Likewise.
+	* g++.dg/parse/enum3.C: Likewise.
+	* g++.dg/template/crash79.C: Likewise.
+	* g++.old-deja/g++.jason/cond.C: Likewise.
+
 2009-04-10  Chao-ying Fu  <fu@mips.com>
 
 	* gcc.target/mips/interrupt_handler.c: Change from compile to
