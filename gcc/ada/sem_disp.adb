@@ -764,11 +764,10 @@ package body Sem_Disp is
                   --  be delayed until after the spec is seen, but that's
                   --  a tricky change to the delicate freezing code.
 
-                  --  Look at each declaration following the type up
-                  --  until the new subprogram body. If any of the
-                  --  declarations is a body then the type has been
-                  --  frozen already so the overriding primitive is
-                  --  illegal.
+                  --  Look at each declaration following the type up until the
+                  --  new subprogram body. If any of the declarations is a body
+                  --  then the type has been frozen already so the overriding
+                  --  primitive is illegal.
 
                   while Present (Decl_Item)
                     and then (Decl_Item /= Subp_Body)
@@ -788,9 +787,8 @@ package body Sem_Disp is
                   end loop;
 
                   --  If the subprogram doesn't follow in the list of
-                  --  declarations including the type then the type
-                  --  has definitely been frozen already and the body
-                  --  is illegal.
+                  --  declarations including the type then the type has
+                  --  definitely been frozen already and the body is illegal.
 
                   if No (Decl_Item) then
                      Error_Msg_N ("overriding of& is too late!", Subp);
@@ -852,7 +850,8 @@ package body Sem_Disp is
 
          --  If the type is not frozen yet and we are not in the overriding
          --  case it looks suspiciously like an attempt to define a primitive
-         --  operation.
+         --  operation, which requires the declaration to be in a package spec
+         --  (3.2.3(6)).
 
          elsif not Is_Frozen (Tagged_Type) then
             Error_Msg_N
