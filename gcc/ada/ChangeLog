@@ -1,5 +1,16 @@
 2009-04-10  Bob Duff  <duff@adacore.com>
 
+	* rtsfind.adb (RTE): Put implicit with_clauses on whatever unit needs
+	them first, rather than on the extended main unit.
+
+2009-04-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Discriminant_Conformance): If discriminant
+	specification of full view carries a null exclusion indicator, create
+	an itype for it, to check for conformance with partial view.
+
+2009-04-10  Bob Duff  <duff@adacore.com>
+
 	* rtsfind.ads: Minor code change: make RE_Unit_Table constant.
 
 	* rtsfind.adb: Minor comment changes, and remove useless code.
