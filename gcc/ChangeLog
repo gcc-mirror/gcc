@@ -1,3 +1,10 @@
+2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/rs6000/darwin-vecsave.asm: Remove extra "*/".
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* unwind-compat.c: Change copyright header to refer to version
