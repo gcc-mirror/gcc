@@ -157,7 +157,7 @@ package body MLib.Tgt.Specific is
       elsif Target_Name (Target_Name'First .. Index) = "powerpc" then
          if Target_Name'Length >= 23 and then
            Target_Name (Target_Name'First .. Target_Name'First + 22) =
-           "powerpc-unknown-eabispe"
+                                              "powerpc-unknown-eabispe"
          then
             return "powerpc-eabispe-";
          else

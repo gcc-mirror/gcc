@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,6 +50,9 @@ package Scn is
    procedure Obsolescent_Check (S : Source_Ptr);
    --  Called to handle pragma restrictions check for usage of obsolescent
    --  character replacements during the scan.
+
+   procedure Set_Obsolescent_Check (Value : Boolean);
+   --  Activate or not obsolescent check
 
    procedure Post_Scan;
    pragma Inline (Post_Scan);

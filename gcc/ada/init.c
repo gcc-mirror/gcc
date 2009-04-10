@@ -290,28 +290,21 @@ extern char *__gnat_get_code_loc (struct sigcontext *);
 extern void __gnat_set_code_loc (struct sigcontext *, char *);
 extern size_t __gnat_machine_state_length (void);
 
-/* __gnat_adjust_context_for_raise - see comments along with the default
-   version later in this file.  */
-
 #define HAVE_GNAT_ADJUST_CONTEXT_FOR_RAISE
 
 void
-__gnat_adjust_context_for_raise (int signo, void *context)
+__gnat_adjust_context_for_raise (int signo, void *ucontext)
 {
-  struct sigcontext * sigcontext = (struct sigcontext *) context;
+  struct sigcontext *sigcontext = (struct sigcontext *) ucontext;
 
-  /* The fallback code fetches the faulting insn address from sc_pc, so
-     adjust that when need be.  For SIGFPE, the required adjustment depends
-     on the trap shadow situation (see man ieee).  */
+  /* The unwinder expects the signal context to contain the address of the
+     faulting instruction.  For SIGFPE, this depends on the trap shadow
+     situation (see man ieee).  We nonetheless always compensate for it,
+     considering that PC designates the instruction following the one that
+     trapped.  This is not necessarily true but corresponds to what we have
+     always observed.  */
   if (signo == SIGFPE)
-    {
-      /* ??? We never adjust here, considering that sc_pc always
-	 designates the instruction following the one which trapped.
-	 This is not necessarily true but corresponds to what we have
-	 always observed.  */
-    }
-  else
-    sigcontext->sc_pc ++;
+    sigcontext->sc_pc--;
 }
 
 static void
@@ -2224,8 +2217,9 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED,
 				 void *ucontext ATTRIBUTE_UNUSED)
 {
   /* We used to compensate here for the raised from call vs raised from signal
-     exception discrepancy with the GCC ZCX scheme, but this is now dealt with
-     generically (except for the Alpha and IA-64), see GCC PR other/26208.
+     exception discrepancy with the GCC ZCX scheme, but this now can be dealt
+     with generically in the unwinder (see GCC PR other/26208).  Only the VMS
+     ports still do the compensation described in the few lines below.
 
      *** Call vs signal exception discrepancy with GCC ZCX scheme ***
 

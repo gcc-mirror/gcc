@@ -1,3 +1,50 @@
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* mlib-tgt-specific-xi.adb: Minor reformatting
+
+2009-04-10  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads: Minor comment fixes
+
+2009-04-10  Vincent Celier  <celier@adacore.com>
+
+	* snames.ads-tmpl: Remove names that are no longer used in the
+	Project Manager.
+	Mark specifically those that are used only in gprbuild
+
+2009-04-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c: Adjust EH support code on Alpha/Tru64.
+
+2009-04-10  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Process_PPCs): Add a call to the _Postconditions
+	procedure on every path that could return implicitly (not via a return
+	statement) from a procedure.
+
+2009-04-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Build_Master_Entity): An extended return statement is a
+	valid scope for a task declarations and therefore for a master id.
+
+2009-04-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aux.adb: Minor reformatting
+
+2009-04-10  Vincent Celier  <celier@adacore.com>
+
+	* scn.adb (Obsolescent_Check_Flag): New Boolean flag, initialized to
+	True.
+	(Obsolescent_Check): Do nothing if Obsolescent_Check_Flag is False
+	(Set_Obsolescent_Check): New procedure to change the value of
+	Obsolescent_Check_Flag.
+
+	* scn.ads (Set_Obsolescent_Check): New procedure to control
+	Obsolescent_Check.
+
+	* sinput-l.adb (Load_File): Do not check for pragma Restrictions on
+	obsolescent features while preprocessing.
+
 2009-04-10  Thomas Quinot  <quinot@adacore.com>
 
 	* xsnamest.adb: Use XUtil to have uniform line endings (UNIX style) in
