@@ -2235,6 +2235,10 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 #endif
 	      }
 
+	    if (targetm.asm_out.final_postscan_insn)
+	      targetm.asm_out.final_postscan_insn (file, insn, ops,
+						   insn_noperands);
+
 	    this_is_asm_operands = 0;
 	    break;
 	  }
@@ -2636,6 +2640,12 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 
 	/* Output assembler code from the template.  */
 	output_asm_insn (templ, recog_data.operand);
+
+	/* Some target machines need to postscan each insn after
+	   it is output.  */
+	if (targetm.asm_out.final_postscan_insn)
+	  targetm.asm_out.final_postscan_insn (file, insn, recog_data.operand,
+					       recog_data.n_operands);
 
 	/* If necessary, report the effect that the instruction has on
 	   the unwind info.   We've already done this for delay slots

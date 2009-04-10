@@ -8193,6 +8193,19 @@ writing conditional output routines in those patterns.
 If this macro is not defined, it is equivalent to a null statement.
 @end defmac
 
+@deftypefn {Target Hook} void TARGET_ASM_FINAL_POSTSCAN_INSN (FILE *@var{FILE}, rtx @var{insn}, rtx *@var{opvec}, int @var{noperands})
+If defined, this target hook is a function which is executed just after the
+output of assembler code for @var{insn}, to change the mode of the assembler
+if necessary.
+
+Here the argument @var{opvec} is the vector containing the operands
+extracted from @var{insn}, and @var{noperands} is the number of
+elements of the vector which contain meaningful data for this insn.
+The contents of this vector are what was used to convert the insn
+template into assembler code, so you can change the assembler mode
+by checking the contents of the vector.
+@end deftypefn
+
 @defmac PRINT_OPERAND (@var{stream}, @var{x}, @var{code})
 A C compound statement to output to stdio stream @var{stream} the
 assembler syntax for an instruction operand @var{x}.  @var{x} is an

@@ -3459,3 +3459,6 @@ extern enum mips_code_readable_setting mips_code_readable;
 
 /* Enable querying of DFA units.  */
 #define CPU_UNITS_QUERY 1
+
+#define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)	\
+  mips_final_prescan_insn (INSN, OPVEC, NOPERANDS)

@@ -245,6 +245,8 @@ struct gcc_target
     /* Output a DTP-relative reference to a TLS symbol.  */
     void (*output_dwarf_dtprel) (FILE *file, int size, rtx x);
 
+    /* Some target machines need to postscan each insn after it is output.  */
+    void (*final_postscan_insn) (FILE *, rtx, rtx *, int);
   } asm_out;
 
   /* Functions relating to instruction scheduling.  */
