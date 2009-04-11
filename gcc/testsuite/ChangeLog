@@ -1,3 +1,17 @@
+2009-04-11  Daniel Kraft  <d@domob.eu>
+
+	PR fortran/37746
+	* gfortran.dg/bounds_check_strlen_1.f90: New test.
+	* gfortran.dg/bounds_check_strlen_2.f90: New test.
+	* gfortran.dg/bounds_check_strlen_3.f90: New test.
+	* gfortran.dg/bounds_check_strlen_4.f90: New test.
+	* gfortran.dg/bounds_check_strlen_5.f90: New test.
+	* gfortran.dg/bounds_check_strlen_6.f90: New test.
+	* gfortran.dg/bounds_check_strlen_7.f90: New test.
+	* gfortran.fortran-torture/execute/intrinsic_index.f90: Fix wrong
+	expected string length that failed with -fbounds-check now.
+	* gfortran.fortran-torture/execute/intrinsic_trim.f90: Ditto.
+
 2009-04-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39692
