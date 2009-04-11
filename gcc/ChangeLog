@@ -1,3 +1,9 @@
+2009-04-11  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39713
+	* tree-ssa-sccvn.c (vn_get_expr_for): Make sure built
+	reference trees have SSA_NAME operands.
+
 2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
