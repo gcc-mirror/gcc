@@ -877,13 +877,12 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
 static tree
 gfc_create_string_length (gfc_symbol * sym)
 {
-  tree length;
-
   gcc_assert (sym->ts.cl);
   gfc_conv_const_charlen (sym->ts.cl);
-  
+
   if (sym->ts.cl->backend_decl == NULL_TREE)
     {
+      tree length;
       char name[GFC_MAX_MANGLED_SYMBOL_LEN + 2];
 
       /* Also prefix the mangled name.  */
@@ -895,9 +894,11 @@ gfc_create_string_length (gfc_symbol * sym)
       TREE_USED (length) = 1;
       if (sym->ns->proc_name->tlink != NULL)
 	gfc_defer_symbol_init (sym);
+
       sym->ts.cl->backend_decl = length;
     }
 
+  gcc_assert (sym->ts.cl->backend_decl != NULL_TREE);
   return sym->ts.cl->backend_decl;
 }
 
@@ -1646,7 +1647,8 @@ create_function_arglist (gfc_symbol * sym)
 	  TREE_READONLY (length) = 1;
 	  gfc_finish_decl (length);
 
-	  /* TODO: Check string lengths when -fbounds-check.  */
+	  /* Remember the passed value.  */
+	  f->sym->ts.cl->passed_length = length;
 
 	  /* Use the passed value for assumed length variables.  */
 	  if (!f->sym->ts.cl->length)
@@ -3704,6 +3706,86 @@ gfc_trans_entry_master_switch (gfc_entry_list * el)
 }
 
 
+/* Add code to string lengths of actual arguments passed to a function against
+   the expected lengths of the dummy arguments.  */
+
+static void
+add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
+{
+  gfc_formal_arglist *formal;
+
+  for (formal = sym->formal; formal; formal = formal->next)
+    if (formal->sym && formal->sym->ts.type == BT_CHARACTER)
+      {
+	enum tree_code comparison;
+	tree cond;
+	tree argname;
+	gfc_symbol *fsym;
+	gfc_charlen *cl;
+	const char *message;
+
+	fsym = formal->sym;
+	cl = fsym->ts.cl;
+
+	gcc_assert (cl);
+	gcc_assert (cl->passed_length != NULL_TREE);
+	gcc_assert (cl->backend_decl != NULL_TREE);
+
+	/* For POINTER, ALLOCATABLE and assumed-shape dummy arguments, the
+	   string lengths must match exactly.  Otherwise, it is only required
+	   that the actual string length is *at least* the expected one.  */
+	if (fsym->attr.pointer || fsym->attr.allocatable
+	    || (fsym->as && fsym->as->type == AS_ASSUMED_SHAPE))
+	  {
+	    comparison = NE_EXPR;
+	    message = _("Actual string length does not match the declared one"
+			" for dummy argument '%s' (%ld/%ld)");
+	  }
+	else
+	  {
+	    comparison = LT_EXPR;
+	    message = _("Actual string length is shorter than the declared one"
+			" for dummy argument '%s' (%ld/%ld)");
+	  }
+
+	/* Build the condition.  For optional arguments, an actual length
+	   of 0 is also acceptable if the associated string is NULL, which
+	   means the argument was not passed.  */
+	cond = fold_build2 (comparison, boolean_type_node,
+			    cl->passed_length, cl->backend_decl);
+	if (fsym->attr.optional)
+	  {
+	    tree not_absent;
+	    tree not_0length;
+	    tree absent_failed;
+
+	    not_0length = fold_build2 (NE_EXPR, boolean_type_node,
+				       cl->passed_length,
+				       fold_convert (gfc_charlen_type_node,
+						     integer_zero_node));
+	    not_absent = fold_build2 (NE_EXPR, boolean_type_node,
+				      fsym->backend_decl, null_pointer_node);
+
+	    absent_failed = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+					 not_0length, not_absent);
+
+	    cond = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+				cond, absent_failed);
+	  }
+
+	/* Build the runtime check.  */
+	argname = gfc_build_cstring_const (fsym->name);
+	argname = gfc_build_addr_expr (pchar_type_node, argname);
+	gfc_trans_runtime_check (true, false, cond, block, &fsym->declared_at,
+				 message, argname,
+				 fold_convert (long_integer_type_node,
+					       cl->passed_length),
+				 fold_convert (long_integer_type_node,
+					       cl->backend_decl));
+      }
+}
+
+
 /* Generate code for a function.  */
 
 void
@@ -3919,6 +4001,12 @@ gfc_generate_function_code (gfc_namespace * ns)
       tmp = gfc_trans_entry_master_switch (ns->entries);
       gfc_add_expr_to_block (&body, tmp);
     }
+
+  /* If bounds-checking is enabled, generate code to check passed in actual
+     arguments against the expected dummy argument attributes (e.g. string
+     lengths).  */
+  if (flag_bounds_check)
+    add_argument_checking (&body, sym);
 
   tmp = gfc_trans_code (ns->code);
   gfc_add_expr_to_block (&body, tmp);

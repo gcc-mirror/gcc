@@ -3,7 +3,7 @@ program intrinsic_trim
   character(len=8) a
   character(len=4) b,work
   a='1234    '
-  b=work(9,a)
+  b=work(8,a)
   if (llt(b,"1234")) call abort()
   a='     '
   b=trim(a)

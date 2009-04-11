@@ -8,7 +8,7 @@ program test
 end
 
 function w(str)
-  character(len=8) str
+  character(len=7) str
   integer w
   w = index(str, "R")
 end
