@@ -4209,7 +4209,7 @@ eliminate (void)
 	  && single_imm_use (lhs, &use_p, &use_stmt))
 	{
 	  SET_USE (use_p, gimple_assign_rhs1 (stmt));
-	  update_stmt (stmt);
+	  update_stmt (use_stmt);
 	}
 
       /* If this is a store or a now unused copy, remove it.  */
