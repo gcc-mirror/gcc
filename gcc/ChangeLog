@@ -1,3 +1,9 @@
+2009-04-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR tree-optimization/39701
+	* doc/invoke.texi (Optimization Options): Document change in
+	meaning and initialization of -fdelete-null-pointer-checks.
+
 2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/39701
