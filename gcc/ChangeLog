@@ -1,3 +1,7 @@
+2009-04-11  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-pre.c (eliminate): Fix call of update_stmt.
+
 2009-04-11  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/39732
