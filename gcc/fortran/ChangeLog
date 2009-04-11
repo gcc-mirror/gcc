@@ -1,4 +1,9 @@
-2009-04-11  Daniel Franke  <frake.daniel@gmail.com>
+2009-04-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39692
+	* symbol.c (check_conflict): Reject procedure pointers for -std=f95.
+
+2009-04-11  Daniel Franke  <franke.daniel@gmail.com>
 
 	* resolve.c (resolve_global_procedure): Enable whole-file checking for
 	procedures that are declared later in the file.
