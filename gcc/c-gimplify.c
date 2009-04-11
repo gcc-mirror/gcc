@@ -201,7 +201,8 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
      ADDR_EXPR instead and wrap a conversion around it.  */
   if (code == ADDR_EXPR
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (*expr_p, 0))) == ARRAY_TYPE
-      && TREE_CODE (TREE_TYPE (TREE_TYPE (*expr_p))) != ARRAY_TYPE)
+      && !lang_hooks.types_compatible_p (TREE_TYPE (TREE_TYPE (*expr_p)),
+					 TREE_TYPE (TREE_OPERAND (*expr_p, 0))))
     {
       tree type = TREE_TYPE (*expr_p);
       TREE_TYPE (*expr_p)

@@ -1,3 +1,9 @@
+2009-04-11  Richard Guenther  <rguenther@suse.de>
+
+	PR c/39712
+	* c-gimplify.c (c_gimplify_expr): Adjust check for mismatched
+	address expressions.
+
 2009-04-11  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config/i386/cygwin-stdint.h (INT_LEAST32_TYPE):  Update to
