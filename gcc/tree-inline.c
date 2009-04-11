@@ -2386,7 +2386,10 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
   STRIP_USELESS_TYPE_CONVERSION (use);
 
   if (DECL_BY_REFERENCE (result))
-    var = build_fold_addr_expr (var);
+    {
+      TREE_ADDRESSABLE (var) = 1;
+      var = build_fold_addr_expr (var);
+    }
 
  done:
   /* Register the VAR_DECL as the equivalent for the RESULT_DECL; that

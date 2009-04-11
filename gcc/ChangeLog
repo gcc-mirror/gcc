@@ -1,5 +1,11 @@
 2009-04-11  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/39732
+	* tree-inline.c (declare_return_variable): Mark DECL_BY_REFERENCE
+	return variables as TREE_ADDRESSABLE.
+
+2009-04-11  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/39713
 	* tree-ssa-sccvn.c (vn_get_expr_for): Make sure built
 	reference trees have SSA_NAME operands.
