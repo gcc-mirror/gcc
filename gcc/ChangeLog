@@ -1,3 +1,10 @@
+2009-04-11  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config/i386/cygwin-stdint.h (INT_LEAST32_TYPE):  Update to
+	match changes in Cygwin 1.7
+	(UINT_LEAST32_TYPE, INT_FAST16_TYPE, INT_FAST32_TYPE,
+	UINT_FAST16_TYPE, UINT_FAST32_TYPE):  Likewise.
+
 2009-04-10  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/39701
