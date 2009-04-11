@@ -1,3 +1,8 @@
+2009-04-11  Daniel Franke  <frake.daniel@gmail.com>
+
+	* resolve.c (resolve_global_procedure): Enable whole-file checking for
+	procedures that are declared later in the file.
+	
 2009-04-10  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR middle-end/39701

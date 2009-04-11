@@ -1610,8 +1610,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
   if (gfc_option.flag_whole_file
 	&& gsym->type != GSYM_UNKNOWN
 	&& gsym->ns
-	&& gsym->ns->proc_name
-	&& gsym->ns->proc_name->formal)
+	&& gsym->ns->proc_name)
     {
       /* Make sure that translation for the gsymbol occurs before
 	 the procedure currently being resolved.  */
