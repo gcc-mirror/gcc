@@ -257,9 +257,10 @@ vn_get_expr_for (tree name)
   switch (TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt)))
     {
     case tcc_reference:
-      if (gimple_assign_rhs_code (def_stmt) == VIEW_CONVERT_EXPR
-	  || gimple_assign_rhs_code (def_stmt) == REALPART_EXPR
-	  || gimple_assign_rhs_code (def_stmt) == IMAGPART_EXPR)
+      if ((gimple_assign_rhs_code (def_stmt) == VIEW_CONVERT_EXPR
+	   || gimple_assign_rhs_code (def_stmt) == REALPART_EXPR
+	   || gimple_assign_rhs_code (def_stmt) == IMAGPART_EXPR)
+	  && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
 	expr = fold_build1 (gimple_assign_rhs_code (def_stmt),
 			    gimple_expr_type (def_stmt),
 			    TREE_OPERAND (gimple_assign_rhs1 (def_stmt), 0));
