@@ -455,6 +455,10 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   if ((attr->if_source == IFSRC_DECL && !attr->procedure) || attr->contained)
     conf (external, subroutine);
 
+  if (attr->proc_pointer && gfc_notify_std (GFC_STD_F2003,
+			    "Fortran 2003: Procedure pointer at %C") == FAILURE)
+    return FAILURE;
+
   conf (allocatable, pointer);
   conf_std (allocatable, dummy, GFC_STD_F2003);
   conf_std (allocatable, function, GFC_STD_F2003);
