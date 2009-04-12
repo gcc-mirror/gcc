@@ -2892,7 +2892,16 @@ can_throw_external (const_rtx insn)
 
   if (NONJUMP_INSN_P (insn)
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    insn = XVECEXP (PATTERN (insn), 0, 0);
+    {
+      rtx seq = PATTERN (insn);
+      int i, n = XVECLEN (seq, 0);
+
+      for (i = 0; i < n; i++)
+	if (can_throw_external (XVECEXP (seq, 0, i)))
+	  return true;
+
+      return false;
+    }
 
   note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
   if (!note)

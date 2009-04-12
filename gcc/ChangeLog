@@ -1,3 +1,9 @@
+2009-04-12  Adam Nemet  <anemet@caviumnetworks.com>
+
+	PR middle-end/39651
+	* except.c (can_throw_external): Look at each insn in a SEQUENCE
+	when deciding whether the whole SEQUENCE can throw.
+
 2009-04-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/39740
