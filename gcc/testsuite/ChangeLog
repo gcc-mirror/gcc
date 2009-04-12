@@ -1,4 +1,9 @@
-009-04-12  Uros Bizjak  <ubizjak@gmail.com>
+2009-04-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/enum1.adb: New test.
+	* gnat.dg/enum1_pkg.ads: New helper.
+
+2009-04-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/39740
 	* gcc.target/alpha/pr39740.c: New test.
