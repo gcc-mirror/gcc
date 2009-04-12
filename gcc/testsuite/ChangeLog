@@ -1,3 +1,8 @@
+009-04-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39740
+	* gcc.target/alpha/pr39740.c: New test.
+
 2009-04-11  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37746
