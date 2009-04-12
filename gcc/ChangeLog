@@ -1,3 +1,8 @@
+2009-04-12 Eric Botcazou <ebotcazou@adacore.com>
+
+	* fold-const.c (build_range_check): Properly deal with enumeral and
+	boolean base types.
+
 2009-04-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/invoke.texi (max_gcse_passes): Remove documentation.

@@ -4671,8 +4671,8 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh,
 static tree
 build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 {
-  tree etype = TREE_TYPE (exp);
-  tree value;
+  tree etype = TREE_TYPE (exp), value;
+  enum tree_code code;
 
 #ifdef HAVE_canonicalize_funcptr_for_compare
   /* Disable this optimization for function pointer expressions
@@ -4756,20 +4756,25 @@ build_range_check (tree type, tree exp, int in_p, tree low, tree high)
 
   /* Optimize (c>=low) && (c<=high) into (c-low>=0) && (c-low<=high-low).
      This requires wrap-around arithmetics for the type of the expression.  */
-  switch (TREE_CODE (etype))
+  code = TREE_CODE (etype);
+  switch (code)
     {
     case INTEGER_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
       /* There is no requirement that LOW be within the range of ETYPE
 	 if the latter is a subtype.  It must, however, be within the base
 	 type of ETYPE.  So be sure we do the subtraction in that type.  */
-      if (TREE_TYPE (etype))
-	etype = TREE_TYPE (etype);
-      break;
+      if (code == INTEGER_TYPE && TREE_TYPE (etype))
+	{
+	  etype = TREE_TYPE (etype);
+	  /* But not in an enumeral or boolean type though.  */
+	  code = TREE_CODE (etype);
+	}
 
-    case ENUMERAL_TYPE:
-    case BOOLEAN_TYPE:
-      etype = lang_hooks.types.type_for_size (TYPE_PRECISION (etype),
-					      TYPE_UNSIGNED (etype));
+      if (code != INTEGER_TYPE)
+	etype = lang_hooks.types.type_for_size (TYPE_PRECISION (etype),
+						TYPE_UNSIGNED (etype));
       break;
 
     default:
