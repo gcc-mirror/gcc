@@ -223,11 +223,7 @@ DEFPARAM(PARAM_MAX_GCSE_MEMORY,
 	 "max-gcse-memory",
 	 "The maximum amount of memory to be allocated by GCSE",
 	 50 * 1024 * 1024, 0, 0)
-/* The number of repetitions of copy/const prop and PRE to run.  */
-DEFPARAM(PARAM_MAX_GCSE_PASSES,
-	"max-gcse-passes",
-	"The maximum number of passes to make when doing GCSE",
-	1, 1, 0)
+
 /* This is the threshold ratio when to perform partial redundancy
    elimination after reload. We perform partial redundancy elimination
    when the following holds:

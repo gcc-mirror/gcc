@@ -7330,9 +7330,6 @@ order to perform the global common subexpression elimination
 optimization.  If more memory than specified is required, the
 optimization will not be done.
 
-@item max-gcse-passes
-The maximum number of passes of GCSE to run.  The default is 1.
-
 @item max-pending-list-length
 The maximum number of pending dependencies scheduling will allow
 before flushing the current state and starting over.  Large functions
