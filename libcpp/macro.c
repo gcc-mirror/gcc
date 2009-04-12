@@ -369,7 +369,9 @@ stringify_arg (cpp_reader *pfile, macro_arg *arg)
 
       if (token->type == CPP_PADDING)
 	{
-	  if (source == NULL)
+	  if (source == NULL
+	      || (!(source->flags & PREV_WHITE)
+		  && token->val.source == NULL))
 	    source = token->val.source;
 	  continue;
 	}

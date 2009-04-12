@@ -1,3 +1,10 @@
+2009-04-12  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/31869
+	* macro.c (stringify_arg): Handle NULL source token in padding
+	token where previous padding token did not have source token with
+	preceding whitespace.
+
 2009-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in: Change copyright header to refer to version
