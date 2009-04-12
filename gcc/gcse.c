@@ -190,16 +190,18 @@ along with GCC; see the file COPYING3.  If not see
 
    We perform the following steps:
 
-   1) Compute basic block information.
+   1) Compute table of places where registers are set.
 
-   2) Compute table of places where registers are set.
+   2) Perform copy/constant propagation.
 
-   3) Perform copy/constant propagation.
-
-   4) Perform global cse using lazy code motion if not optimizing
+   3) Perform global cse using lazy code motion if not optimizing
       for size, or code hoisting if we are.
 
-   5) Perform another pass of copy/constant propagation.
+   4) Perform another pass of copy/constant propagation.  Try to bypass
+      conditional jumps if the condition can be computed from a value of
+      an incoming edge.
+
+   5) Perform store motion.
 
    Two passes of copy/constant propagation are done because the first one
    enables more GCSE and the second one helps to clean up the copies that
@@ -211,6 +213,11 @@ along with GCC; see the file COPYING3.  If not see
    Expressions we are interested in GCSE-ing are of the form
    (set (pseudo-reg) (expression)).
    Function want_to_gcse_p says what these are.
+
+   In addition, expressions in REG_EQUAL notes are candidates for GXSE-ing.
+   This allows PRE to hoist expressions that are expressed in multiple insns,
+   such as comprex address calculations (e.g. for PIC code, or loads with a 
+   high part and as lowe part).
 
    PRE handles moving invariant expressions out of loops (by treating them as
    partially redundant).
@@ -235,9 +242,13 @@ along with GCC; see the file COPYING3.  If not see
    It was found doing copy propagation between each pass enables further
    substitutions.
 
+   This study was done before expressions in REG_EQUAL notes were added as
+   candidate expressions for optimization, and before the GIMPLE optimizers
+   were added.  Probably, multiple passes is even less efficient now than
+   at the time when the study was conducted.
+
    PRE is quite expensive in complicated functions because the DFA can take
-   a while to converge.  Hence we only perform one pass.  The parameter
-   max-gcse-passes can be modified if one wants to experiment.
+   a while to converge.  Hence we only perform one pass.
 
    **********************
 
@@ -661,11 +672,7 @@ static bool is_too_expensive (const char *);
 static int
 gcse_main (rtx f ATTRIBUTE_UNUSED)
 {
-  int changed, pass;
-  /* Bytes used at start of pass.  */
-  int initial_bytes_used;
-  /* Maximum number of bytes used by a pass.  */
-  int max_pass_bytes;
+  int changed;
   /* Point to release obstack data from for each pass.  */
   char *gcse_obstack_bottom;
 
@@ -697,6 +704,7 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
 
   /* We need alias.  */
   init_alias_analysis ();
+
   /* Record where pseudo-registers are set.  This data is kept accurate
      during each pass.  ??? We could also record hard-reg information here
      [since it's unchanging], however it is currently done during hash table
@@ -704,99 +712,86 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
 
      It may be tempting to compute MEM set information here too, but MEM sets
      will be subject to code motion one day and thus we need to compute
-     information about memory sets when we build the hash tables.  */
+     information about memory sets when we build the hash tables.
+     
+     ??? Actually, we already know the information that compute_sets computes
+     because it is available from DF.  FIXME.  */
 
   alloc_reg_set_mem (max_gcse_regno);
   compute_sets ();
 
-  pass = 0;
-  initial_bytes_used = bytes_used;
-  max_pass_bytes = 0;
   gcse_obstack_bottom = GOBNEWVAR (char, 1);
-  changed = 1;
-  while (changed && pass < MAX_GCSE_PASSES)
+  changed = 0;
+ 
+  if (dump_file)
+    fprintf (dump_file, "GCSE pass\n\n");
+
+  max_gcse_regno = max_reg_num ();
+
+  alloc_gcse_mem ();
+
+  /* Don't allow constant propagation to modify jumps
+     during this pass.  */
+  if (dbg_cnt (cprop1))
     {
-      changed = 0;
-      if (dump_file)
-	fprintf (dump_file, "GCSE pass %d\n\n", pass + 1);
+      timevar_push (TV_CPROP1);
+      changed = one_cprop_pass (1, false, false);
+      timevar_pop (TV_CPROP1);
+    }
 
-      /* Initialize bytes_used to the space for the pred/succ lists,
-	 and the reg_set_table data.  */
-      bytes_used = initial_bytes_used;
-
-      /* Each pass may create new registers, so recalculate each time.  */
-      max_gcse_regno = max_reg_num ();
-
-      alloc_gcse_mem ();
-
-      /* Don't allow constant propagation to modify jumps
-	 during this pass.  */
-      if (dbg_cnt (cprop1))
+  if (optimize_function_for_speed_p (cfun))
+    {
+      timevar_push (TV_PRE);
+      changed |= one_pre_gcse_pass (1);
+      /* We may have just created new basic blocks.  Release and
+	 recompute various things which are sized on the number of
+	 basic blocks.
+	 ??? There would be no need for this if we used a block
+	 based Lazy Code Motion variant, with all (or selected)
+	 edges split before running the pass.  That would also
+	 help find_implicit_sets for cprop.  FIXME.  */
+      if (changed)
 	{
-	  timevar_push (TV_CPROP1);
-	  changed = one_cprop_pass (pass + 1, false, false);
-	  timevar_pop (TV_CPROP1);
+	  free_modify_mem_tables ();
+	  modify_mem_list = GCNEWVEC (rtx, last_basic_block);
+	  canon_modify_mem_list = GCNEWVEC (rtx, last_basic_block);
 	}
 
-      if (optimize_function_for_speed_p (cfun))
-	{
-	  timevar_push (TV_PRE);
-	  changed |= one_pre_gcse_pass (pass + 1);
-	  /* We may have just created new basic blocks.  Release and
-	     recompute various things which are sized on the number of
-	     basic blocks.  */
-	  if (changed)
-	    {
-	      free_modify_mem_tables ();
-	      modify_mem_list = GCNEWVEC (rtx, last_basic_block);
-	      canon_modify_mem_list = GCNEWVEC (rtx, last_basic_block);
-	    }
-	  free_reg_set_mem ();
-	  alloc_reg_set_mem (max_reg_num ());
-	  compute_sets ();
-	  run_jump_opt_after_gcse = 1;
-	  timevar_pop (TV_PRE);
-	}
-
-      if (max_pass_bytes < bytes_used)
-	max_pass_bytes = bytes_used;
-
-      /* Free up memory, then reallocate for code hoisting.  We can
-	 not re-use the existing allocated memory because the tables
-	 will not have info for the insns or registers created by
-	 partial redundancy elimination.  */
-      free_gcse_mem ();
-
-      /* It does not make sense to run code hoisting unless we are optimizing
+      /* ??? When we allocate this at the start of the function,
+	 the comment says that "this data is kept accurate during
+	 each pass".  Apparently this is not so?  FIXME.  */
+      free_reg_set_mem ();
+      alloc_reg_set_mem (max_reg_num ());
+      compute_sets ();
+      run_jump_opt_after_gcse = 1;
+      timevar_pop (TV_PRE);
+    }
+  else
+    {
+      /* This function is being optimized for code size.
+	 It does not make sense to run code hoisting unless we are optimizing
 	 for code size -- it rarely makes programs faster, and can make
 	 them bigger if we did partial redundancy elimination (when optimizing
 	 for space, we don't run the partial redundancy algorithms).  */
-      if (optimize_function_for_size_p (cfun))
-	{
-	  timevar_push (TV_HOIST);
-	  max_gcse_regno = max_reg_num ();
-	  alloc_gcse_mem ();
-	  changed |= one_code_hoisting_pass ();
-	  free_gcse_mem ();
-
-	  if (max_pass_bytes < bytes_used)
-	    max_pass_bytes = bytes_used;
-	  timevar_pop (TV_HOIST);
-	}
-
-      if (dump_file)
-	{
-	  fprintf (dump_file, "\n");
-	  fflush (dump_file);
-	}
-
-      obstack_free (&gcse_obstack, gcse_obstack_bottom);
-      pass++;
+      timevar_push (TV_HOIST);
+      max_gcse_regno = max_reg_num ();
+      alloc_gcse_mem ();
+      one_code_hoisting_pass ();
+      timevar_pop (TV_HOIST);
     }
 
-  /* Do one last pass of copy propagation, including cprop into
-     conditional jumps.  */
+  free_gcse_mem ();
 
+  if (dump_file)
+    {
+      fprintf (dump_file, "\n");
+      fflush (dump_file);
+    }
+
+  obstack_free (&gcse_obstack, gcse_obstack_bottom);
+
+  /* Do the second const/copy propagation pass, including cprop into
+     conditional jumps.  */
   if (dbg_cnt (cprop2))
     {
       max_gcse_regno = max_reg_num ();
@@ -804,7 +799,7 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
 
       /* This time, go ahead and allow cprop to alter jumps.  */
       timevar_push (TV_CPROP2);
-      one_cprop_pass (pass + 1, true, true);
+      one_cprop_pass (2, true, true);
       timevar_pop (TV_CPROP2);
       free_gcse_mem ();
     }
@@ -813,16 +808,17 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
     {
       fprintf (dump_file, "GCSE of %s: %d basic blocks, ",
 	       current_function_name (), n_basic_blocks);
-      fprintf (dump_file, "%d pass%s, %d bytes\n\n",
-	       pass, pass > 1 ? "es" : "", max_pass_bytes);
+      fprintf (dump_file, "pass 1, %d bytes\n\n", bytes_used);
     }
 
   obstack_free (&gcse_obstack, NULL);
   free_reg_set_mem ();
 
-  /* We are finished with alias.  */
+  /* We are finished with alias.
+     ??? Actually we recompute alias in store_motion.  */
   end_alias_analysis ();
 
+  /* Run store motion.  */
   if (optimize_function_for_speed_p (cfun) && flag_gcse_sm)
     {
       timevar_push (TV_LSM);
@@ -6530,7 +6526,7 @@ bypass_jumps (void)
 
   max_gcse_regno = max_reg_num ();
   alloc_gcse_mem ();
-  changed = one_cprop_pass (MAX_GCSE_PASSES + 2, true, true);
+  changed = one_cprop_pass (3, true, true);
   free_gcse_mem ();
 
   if (dump_file)
