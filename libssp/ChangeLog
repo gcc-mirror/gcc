@@ -1,3 +1,11 @@
+2009-04-13  Ozkan Sezer  <sezeroz@gmail.com>
+
+	PR target/39062
+	* ssp.c: Also include malloc.h for alloca(). MinGW needs it.
+	* configure.ac: Also check for malloc.h.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* strcat-chk.c: Change copyright header to refer to version 3
