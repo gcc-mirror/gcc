@@ -1,3 +1,11 @@
+2009-04-13  Michael Eager <eager@eagercon.com>
+
+	* config/rs6000/rs6000-c.c: generate defines if rs6000_xilinx_fpu:
+	_XFPU, _XFPU_SP_LITE, _XFPU_SP_FULL, _XFPU_DP_LITE, _XFPU_DP_FULL
+	* config/rs6000/xilinx.h: New.  Spec for powerpc-xilinx-eabi
+	* config.gcc (powerpc-xilinx-eabi): add xilinx.h to tm_file, 
+	remove duplicate config
+
 2009-04-13  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 
 	* ipa-inline.c (cgraph_decide_inlining_of_small_function): Dump
