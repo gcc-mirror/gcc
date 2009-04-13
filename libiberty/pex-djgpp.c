@@ -49,7 +49,7 @@ static pid_t pex_djgpp_exec_child (struct pex_obj *, int, const char *,
 				  int, int, int, int,
 				  const char **, int *);
 static int pex_djgpp_close (struct pex_obj *, int);
-static int pex_djgpp_wait (struct pex_obj *, pid_t, int *, struct pex_time *,
+static pid_t pex_djgpp_wait (struct pex_obj *, pid_t, int *, struct pex_time *,
 			   int, const char **, int *);
 
 /* The list of functions we pass to the common routines.  */
@@ -276,7 +276,7 @@ pex_djgpp_exec_child (struct pex_obj *obj, int flags, const char *executable,
    has already completed, and we just need to return the exit
    status.  */
 
-static int
+static pid_t
 pex_djgpp_wait (struct pex_obj *obj, pid_t pid, int *status,
 		struct pex_time *time, int done ATTRIBUTE_UNUSED,
 		const char **errmsg ATTRIBUTE_UNUSED,

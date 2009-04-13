@@ -70,7 +70,7 @@ struct pex_obj
   /* Number of child processes.  */
   int count;
   /* PIDs of child processes; array allocated using malloc.  */
-  long *children;
+  pid_t *children;
   /* Exit statuses of child processes; array allocated using malloc.  */
   int *status;
   /* Time used by child processes; array allocated using malloc.  */
@@ -126,7 +126,7 @@ struct pex_funcs
      and time in *TIME (if it is not null).  CHILD is from fork.  DONE
      is 1 if this is called via pex_free.  ERRMSG and ERR are as in
      fork.  Return 0 on success, -1 on error.  */
-  int (*wait) (struct pex_obj *, pid_t /* child */, int * /* status */,
+  pid_t (*wait) (struct pex_obj *, pid_t /* child */, int * /* status */,
                struct pex_time * /* time */, int /* done */,
                const char ** /* errmsg */, int * /* err */);
   /* Create a pipe (only called if PEX_USE_PIPES is set) storing two

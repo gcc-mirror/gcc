@@ -160,7 +160,7 @@ pex_run_in_environment (struct pex_obj *obj, int flags, const char *executable,
   int outname_allocated;
   int p[2];
   int toclose;
-  long pid;
+  pid_t pid;
 
   in = -1;
   out = -1;
@@ -345,7 +345,7 @@ pex_run_in_environment (struct pex_obj *obj, int flags, const char *executable,
     goto error_exit;
 
   ++obj->count;
-  obj->children = XRESIZEVEC (long, obj->children, obj->count);
+  obj->children = XRESIZEVEC (pid_t, obj->children, obj->count);
   obj->children[obj->count - 1] = pid;
 
   return NULL;

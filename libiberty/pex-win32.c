@@ -84,7 +84,7 @@ static pid_t pex_win32_exec_child (struct pex_obj *, int, const char *,
                                   int, int, int, int,
 				  const char **, int *);
 static int pex_win32_close (struct pex_obj *, int);
-static int pex_win32_wait (struct pex_obj *, pid_t, int *,
+static pid_t pex_win32_wait (struct pex_obj *, pid_t, int *,
 			   struct pex_time *, int, const char **, int *);
 static int pex_win32_pipe (struct pex_obj *, int *, int);
 static FILE *pex_win32_fdopenr (struct pex_obj *, int, int);
@@ -705,7 +705,7 @@ spawn_script (const char *executable, char *const *argv,
 				     dwCreationFlags, si, pi);
 		  if (executable1 != newex)
 		    free ((char *) newex);
-		  if ((long) pid < 0)
+		  if (pid == (pid_t) -1)
 		    {
 		      newex = msys_rootify (executable1);
 		      if (newex != executable1)
@@ -722,7 +722,7 @@ spawn_script (const char *executable, char *const *argv,
 	    }
 	}
     }
-  if ((long) pid < 0)
+  if (pid == (pid_t) -1)
     errno = save_errno;
   return pid;
 }
@@ -840,7 +840,7 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
    status == 3.  We fix the status code to conform to the usual WIF*
    macros.  Note that WIFSIGNALED will never be true under CRTDLL. */
 
-static int
+static pid_t
 pex_win32_wait (struct pex_obj *obj ATTRIBUTE_UNUSED, pid_t pid,
 		int *status, struct pex_time *time, int done ATTRIBUTE_UNUSED,
 		const char **errmsg, int *err)

@@ -59,7 +59,7 @@ static pid_t pex_msdos_exec_child (struct pex_obj *, int, const char *,
 				  int, int, int, int,
 				  int, const char **, int *);
 static int pex_msdos_close (struct pex_obj *, int);
-static int pex_msdos_wait (struct pex_obj *, pid_t, int *, struct pex_time *,
+static pid_t pex_msdos_wait (struct pex_obj *, pid_t, int *, struct pex_time *,
 			   int, const char **, int *);
 static void pex_msdos_cleanup (struct pex_obj *);
 
@@ -282,7 +282,7 @@ pex_msdos_exec_child (struct pex_obj *obj, int flags, const char *executable,
    has already completed, and we just need to return the exit
    status.  */
 
-static int
+static pid_t
 pex_msdos_wait (struct pex_obj *obj, pid_t pid, int *status,
 		struct pex_time *time, int done ATTRIBUTE_UNUSED,
 		const char **errmsg ATTRIBUTE_UNUSED,
