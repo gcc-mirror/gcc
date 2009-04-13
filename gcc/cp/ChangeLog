@@ -1,3 +1,8 @@
+2009-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39750
+	* pt.c (uses_template_parms): Handle CONSTRUCTOR.
+
 2009-04-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39742
