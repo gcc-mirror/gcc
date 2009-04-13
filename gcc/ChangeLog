@@ -1,3 +1,10 @@
+2009-04-13  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* except.c (pass_set_nothrow_function_flags): Set name and add
+	TODO_dump_func.
+	(set_nothrow_function_flags): Mention in the dump file when
+	changing a function to nothrow.
+
 2009-04-13  Ozkan Sezer  <sezeroz@gmail.com>
 
 	PR/39066
@@ -6,18 +13,18 @@
 
 2009-04-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-       * config/arm/arm.c (return_used_this_function): Remove.
-       (arm_output_function_prologue): Remove use of
+	* config/arm/arm.c (return_used_this_function): Remove.
+	(arm_output_function_prologue): Remove use of
 	return_used_this_function.
-       (output_return_instruction): Replace use of
+	(output_return_instruction): Replace use of
 	return_used_this_function
 	by cfun->machine->return_used_this_function.
-       (arm_output_epilogue): Likewise.
-       (arm_output_function_epilogue): Likewise.
-       (thumb_unexpanded_epilogue): Likewise.
-       * config/arm/arm.h (struct machine_function):
+	(arm_output_epilogue): Likewise.
+	(arm_output_function_epilogue): Likewise.
+	(thumb_unexpanded_epilogue): Likewise.
+	* config/arm/arm.h (struct machine_function):
 	New member return_used_this_function.
-	
+
 2009-04-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/install.texi: Correct description of default directory for
