@@ -900,10 +900,12 @@ cgraph_decide_inlining_of_small_functions (void)
 		   cgraph_node_name (edge->callee),
 		   edge->callee->global.insns);
 	  fprintf (dump_file, 
-		   " to be inlined into %s\n"
+		   " to be inlined into %s in %s:%i\n"
 		   " Estimated growth after inlined into all callees is %+i insns.\n"
 		   " Estimated badness is %i, frequency %.2f.\n",
 		   cgraph_node_name (edge->caller),
+		   gimple_filename ((const_gimple) edge->call_stmt),
+		   gimple_lineno ((const_gimple) edge->call_stmt),
 		   cgraph_estimate_growth (edge->callee),
 		   cgraph_edge_badness (edge),
 		   edge->frequency / (double)CGRAPH_FREQ_BASE);
