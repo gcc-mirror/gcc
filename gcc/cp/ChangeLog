@@ -1,3 +1,9 @@
+2009-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39480
+	* call.c (build_over_call): Don't call memcpy if the target is
+	the same as the source.
+
 2009-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39750

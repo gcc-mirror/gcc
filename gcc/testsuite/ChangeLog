@@ -1,3 +1,8 @@
+2009-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39480
+	* g++.dg/init/copy7.C: New.
+
 2009-04-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/39733
