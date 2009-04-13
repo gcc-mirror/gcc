@@ -582,10 +582,6 @@ enum machine_mode output_memory_reference_mode;
 /* The register number to be used for the PIC offset register.  */
 unsigned arm_pic_register = INVALID_REGNUM;
 
-/* Set to 1 when a return insn is output, this means that the epilogue
-   is not needed.  */
-int return_used_this_function;
-
 /* Set to 1 after arm_reorg has started.  Reset to start at the start of
    the next function.  */
 static int after_arm_reorg = 0;
@@ -11618,7 +11614,7 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 
   sprintf (conditional, "%%?%%%c0", reverse ? 'D' : 'd');
 
-  return_used_this_function = 1;
+  cfun->machine->return_used_this_function = 1;
 
   offsets = arm_get_frame_offsets ();
   live_regs_mask = offsets->saved_regs_mask;
@@ -11883,7 +11879,6 @@ arm_output_function_prologue (FILE *f, HOST_WIDE_INT frame_size)
   if (crtl->calls_eh_return)
     asm_fprintf (f, "\t@ Calls __builtin_eh_return.\n");
 
-  return_used_this_function = 0;
 }
 
 const char *
@@ -11904,7 +11899,8 @@ arm_output_epilogue (rtx sibling)
 
   /* If we have already generated the return instruction
      then it is futile to generate anything else.  */
-  if (use_return_insn (FALSE, sibling) && return_used_this_function)
+  if (use_return_insn (FALSE, sibling) && 
+      (cfun->machine->return_used_this_function != 0))
     return "";
 
   func_type = arm_current_func_type ();
@@ -12351,7 +12347,7 @@ arm_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
       /* ??? Probably not safe to set this here, since it assumes that a
 	 function will be emitted as assembly immediately after we generate
 	 RTL for it.  This does not happen for inline functions.  */
-      return_used_this_function = 0;
+      cfun->machine->return_used_this_function = 0;
     }
   else /* TARGET_32BIT */
     {
@@ -12359,7 +12355,7 @@ arm_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
       offsets = arm_get_frame_offsets ();
 
       gcc_assert (!use_return_insn (FALSE, NULL)
-		  || !return_used_this_function
+		  || (cfun->machine->return_used_this_function != 0)
 		  || offsets->saved_regs == offsets->outgoing_args
 		  || frame_pointer_needed);
 
@@ -17300,7 +17296,7 @@ thumb_unexpanded_epilogue (void)
   int had_to_push_lr;
   int size;
 
-  if (return_used_this_function)
+  if (cfun->machine->return_used_this_function != 0)
     return "";
 
   if (IS_NAKED (arm_current_func_type ()))
