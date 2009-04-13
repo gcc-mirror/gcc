@@ -347,6 +347,26 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
   /* Let the compiled code know if 'f' class registers will not be available.  */
   if (TARGET_SOFT_FLOAT || !TARGET_FPRS)
     builtin_define ("__NO_FPRS__");
+
+  /* Generate defines for Xilinx FPU. */
+  if (rs6000_xilinx_fpu) 
+    {
+      builtin_define ("_XFPU");
+      if (rs6000_single_float && ! rs6000_double_float)
+	{
+	  if (rs6000_simple_fpu) 
+	    builtin_define ("_XFPU_SP_LITE"); 
+	  else 
+	    builtin_define ("_XFPU_SP_FULL");
+	}
+      if (rs6000_double_float)
+	{
+	  if (rs6000_simple_fpu) 
+	    builtin_define ("_XFPU_DP_LITE");
+	  else
+	    builtin_define ("_XFPU_DP_FULL");
+        }
+    }
 }
 
 
