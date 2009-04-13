@@ -90,7 +90,7 @@ LDFLAGS="$save_LDFLAGS"
 AC_MSG_RESULT($ssp_use_symver)
 AM_CONDITIONAL(LIBSSP_USE_SYMVER, [test "x$ssp_use_symver" = xyes])
 
-AC_CHECK_HEADERS(alloca.h paths.h syslog.h string.h unistd.h fcntl.h stdio.h limits.h)
+AC_CHECK_HEADERS(alloca.h malloc.h paths.h syslog.h string.h unistd.h fcntl.h stdio.h limits.h)
 
 if test x$gcc_no_link = xyes; then
   # Presume the ISO C functions are available; add target-specific
