@@ -1610,6 +1610,9 @@ typedef struct machine_function GTY(())
      register.  We can never call via LR or PC.  We can call via SP if a
      trampoline happens to be on the top of the stack.  */
   rtx call_via[14];
+  /* Set to 1 when a return insn is output, this means that the epilogue
+     is not needed.  */
+  int return_used_this_function;
 }
 machine_function;
 
