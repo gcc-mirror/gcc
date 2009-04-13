@@ -1,3 +1,9 @@
+2009-04-13  Ozkan Sezer  <sezeroz@gmail.com>
+
+	PR/39066
+	* gbl-ctors.h (DO_GLOBAL_CTORS_BODY): Use __SIZE_TYPE__
+	instead of unsigned long.
+
 2009-04-13  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
        * config/arm/arm.c (return_used_this_function): Remove.
