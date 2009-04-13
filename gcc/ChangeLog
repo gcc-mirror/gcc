@@ -1,3 +1,8 @@
+2009-04-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/install.texi: Correct description of default directory for
+	--with-gxx-include-dir.
+
 2009-04-12 Eric Botcazou <ebotcazou@adacore.com>
 
 	* fold-const.c (build_range_check): Properly deal with enumeral and
