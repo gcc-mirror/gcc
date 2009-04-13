@@ -1,3 +1,31 @@
+2009-04-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c: Put blank after comma.
+	(automaton_decls): New.
+	(struct unit_usage): Add comments to member next.
+	(store_alt_unit_usage): Keep the list ordered.
+	(unit_present_on_list_p, equal_alternatives_p): New.
+	(check_regexp_units_distribution): Check units distribution
+	correctness correctly.
+	(main): Don't write automata if error is found.  Return correct
+	exit code.
+	
+	* config/m68k/cf.md (cfv4_ds): Remove.
+	(cfv4_pOEP1, cfv4_sOEP1, cfv4_pOEP2,cfv4_sOEP2, cfv4_pOEP3,
+	cfv4_sOEP3): Assign to cfv4_oep instead of cfv4_ds.
+
+	* config/rs6000/power4.md (lsuq_power4, iq_power4, fpq_power4,
+	power4-load-ext, power4-store, power4-store-update,
+	power4-fpstore, power4-fpstore-update, power4-two, power4-three,
+	power4-insert, power4-compare, power4-lmul-cmp, power4-imul-cmp,
+	power4-lmul, , power4-imul, power4-imul3, power4-sdiv,
+	power4-sqrt, power4-isync): Modify reservation to make correct
+	unit distribution to automata.
+
+	* config/rs6000/power5.md (iq_power5, fpq_power5, power5-store,
+	power5-store-update, power5-two, power5-three, power5-lmul,
+	power5-imul, power5-imul3, power5-sdiv, power5-sqrt): Ditto.
+	
 2009-04-13  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* except.c (pass_set_nothrow_function_flags): Set name and add

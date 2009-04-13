@@ -1872,15 +1872,12 @@ move_l,tst_l"))
 (define_cpu_unit "cfv4_oag,cfv4_oc1,cfv4_oc2,cfv4_ex,cfv4_da"
   "cfv4_oep")
 
-;; This automaton is used to support CFv4 dual-issue.
-(define_automaton "cfv4_ds")
-
 ;; V4 has 3 cases of dual-issue.
 ;; After issuing a cfv4_pOEPx instruction, it'll be possible to issue
 ;; a cfv4_sOEPx instruction on the same cycle (see final_presence_sets below).
 (define_cpu_unit "cfv4_pOEP1,cfv4_sOEP1,
                   cfv4_pOEP2,cfv4_sOEP2,
-                  cfv4_pOEP3,cfv4_sOEP3" "cfv4_ds")
+                  cfv4_pOEP3,cfv4_sOEP3" "cfv4_oep")
 
 (final_presence_set "cfv4_sOEP1" "cfv4_pOEP1")
 (final_presence_set "cfv4_sOEP2" "cfv4_pOEP2")
