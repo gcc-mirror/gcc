@@ -1,3 +1,8 @@
+2009-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39750
+	* g++.dg/template/crash90.C: New.
+
 2009-04-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39742
