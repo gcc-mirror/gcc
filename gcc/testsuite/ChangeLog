@@ -1,3 +1,9 @@
+2009-04-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/39733
+	* gcc.misc-tests/options.exp (check_for_options): Renamed to ...
+	(check_for_all_options): This.
+
 2009-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39750
