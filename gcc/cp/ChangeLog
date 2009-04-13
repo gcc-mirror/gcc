@@ -1,3 +1,8 @@
+2009-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39742
+	* call.c (joust): Don't crash on variadic fn.
+
 2009-04-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/28301

@@ -6801,6 +6801,9 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
 
       for (i = 0; i < len; ++i)
 	{
+	  /* Don't crash if the fn is variadic.  */
+	  if (!parms1)
+	    break;
 	  parms1 = TREE_CHAIN (parms1);
 	  parms2 = TREE_CHAIN (parms2);
 	}
