@@ -720,8 +720,9 @@ manual.)
 
 @item --with-gxx-include-dir=@var{dirname}
 Specify
-the installation directory for G++ header files.  The default is
-@file{@var{prefix}/include/c++/@var{version}}.
+the installation directory for G++ header files.  The default depends
+on other configuration options, and differs between cross and native
+configurations.
 
 @end table
 
