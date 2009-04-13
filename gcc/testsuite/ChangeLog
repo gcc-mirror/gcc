@@ -1,4 +1,4 @@
-2009-04-09  Jason Merrill  <jason@redhat.com>
+2009-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39480
 	* g++.dg/init/copy7.C: New.
