@@ -1639,9 +1639,9 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       if (POINTER_TYPE_P (TREE_TYPE (init_expr)))
 	ni = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (init_expr), 
 			  init_expr, 
-			  fold_convert (sizetype, 
-					fold_build2 (MULT_EXPR, TREE_TYPE (niters),
-						     niters, step_expr)));
+			  fold_build2 (MULT_EXPR, sizetype,
+				       fold_convert (sizetype, niters),
+				       step_expr));
       else
 	ni = fold_build2 (PLUS_EXPR, TREE_TYPE (init_expr),
 			  fold_build2 (MULT_EXPR, TREE_TYPE (init_expr),
@@ -1926,7 +1926,8 @@ vect_update_init_of_dr (struct data_reference *dr, tree niters)
   niters = fold_build2 (MULT_EXPR, sizetype,
 			fold_convert (sizetype, niters),
 			fold_convert (sizetype, DR_STEP (dr)));
-  offset = fold_build2 (PLUS_EXPR, sizetype, offset, niters);
+  offset = fold_build2 (PLUS_EXPR, sizetype,
+			fold_convert (sizetype, offset), niters);
   DR_OFFSET (dr) = offset;
 }
 
