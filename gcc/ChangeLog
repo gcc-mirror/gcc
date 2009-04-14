@@ -1,3 +1,9 @@
+2009-04-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sol2.h (LINK_ARCH32_SPEC_BASE): Use %R with absolute
+	library paths.
+	* config/sparc/sol2-bi.h (LINK_ARCH64_SPEC_BASE): Likewise.
+
 2009-04-14  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/arm/arm.c (arm_rtx_costs_1): Treat a minus with a shift
