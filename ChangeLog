@@ -1,3 +1,12 @@
+2009-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Change copyright header to refer to version
+	3 of the GNU General Public License and to point readers at the
+	COPYING3 file and the FSF's license web page.
+	* Makefile.def: Likewise.
+	* Makefile.tpl: Likewise.
+	* Makefile.in: Regenerate.
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* COPYING.RUNTIME: New file: Contains a copy of version 3.1 of
