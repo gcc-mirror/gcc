@@ -854,6 +854,14 @@ fpie
 Common Report Var(flag_pie,1) VarExists
 Generate position-independent code for executables if possible (small mode)
 
+fplugin=
+Common Joined RejectNegative
+Specify a plugin to load
+
+fplugin-arg-
+Common Joined RejectNegative
+-fplugin-arg-<name>-<key>[=<value>] Specify argument <key>=<value> for plugin <name>
+
 fpredictive-commoning
 Common Report Var(flag_predictive_commoning) Optimization
 Run predictive commoning optimization.

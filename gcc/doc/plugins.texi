@@ -1,0 +1,137 @@
+@c Copyright (c) 2009 Free Software Foundation, Inc.
+@c Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node Plugins
+@chapter Plugins
+@cindex Plugins
+
+@section Loading Plugins
+
+Plugins are supported on platforms that support @option{-ld
+-rdynamic}.  They are loaded by the compiler using @code{dlopen}
+and invoked at pre-determined locations in the compilation
+process.
+
+Plugins are loaded with 
+
+@option{-fplugin=/path/to/NAME.so} @option{-fplugin-arg-NAME-<key1>[=<value1>]}
+
+The plugin arguments are parsed by GCC and passed to respective
+plugins as key-value pairs. Multiple plugins can be invoked by
+specifying multiple @option{-fplugin} arguments.
+
+
+@section Plugin API
+
+Plugins are activated by the compiler at specific events as defined in
+@file{gcc-plugin.h}.  For each event of interest, the plugin should
+call @code{register_callback} specifying the name of the event and
+address of the callback function that will handle that event.
+
+@subsection Plugin initialization
+
+Every plugin should export a function called @code{plugin_init} that
+is called right after the plugin is loaded. This function is
+responsible for registering all the callbacks required by the plugin
+and do any other required initialization.
+
+This function is called from @code{compile_file} right before invoking
+the parser.  The arguments to @code{plugin_init} are:
+
+@itemize @bullet
+@item @code{plugin_name}: Name of the plugin.
+@item @code{argc}: Number of arguments specified with @option{-fplugin-arg-...}.
+@item @code{argv}: Array of @code{argc} key-value pairs.
+@end itemize
+
+If initialization fails, @code{plugin_init} must return a non-zero
+value.  Otherwise, it should return 0.
+
+@subsection Plugin callbacks
+
+Callback functions have the following prototype:
+
+@smallexample
+/* The prototype for a plugin callback function.
+     gcc_data  - event-specific data provided by GCC
+     user_data - plugin-specific data provided by the plug-in.  */
+typedef void (*plugin_callback_func)(void *gcc_data, void *user_data);
+@end smallexample
+
+Callbacks can be invoked at the following pre-determined events:
+
+
+@smallexample
+enum plugin_event
+@{
+  PLUGIN_PASS_MANAGER_SETUP,    /* To hook into pass manager.  */
+  PLUGIN_FINISH_TYPE,           /* After finishing parsing a type.  */
+  PLUGIN_FINISH_UNIT,           /* Useful for summary processing.  */
+  PLUGIN_CXX_CP_PRE_GENERICIZE, /* Allows to see low level AST in C++ FE.  */
+  PLUGIN_FINISH,                /* Called before GCC exits.  */
+  PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
+                                   array.  */
+@};
+@end smallexample
+
+To register a callback, the plugin calls @code{register_callback} with the arguments:
+
+@itemize
+@item @code{char *name}: Plugin name.
+@item @code{enum plugin_event event}: The event code.
+@item @code{plugin_callback_func callback}: The function that handles @code{event}.
+@item @code{void *user_data}: Pointer to plugin-specific data.
+@end itemize
+
+
+@section Interacting with the pass manager
+
+There needs to be a way to add/reorder/remove passes dynamically. This
+is useful for both analysis plugins (plugging in after a certain pass
+such as CFG or an IPA pass) and optimization plugins.
+
+Basic support for inserting new passes or replacing existing passes is
+provided. A plugin registers a new pass with GCC by calling
+@code{register_callback} with the @code{PLUGIN_PASS_MANAGER_SETUP}
+event and a pointer to a @code{struct plugin_pass} object defined as follows
+
+@smallexample
+enum pass_positioning_ops
+@{
+  PASS_POS_INSERT_AFTER,  // Insert after the reference pass.
+  PASS_POS_INSERT_BEFORE, // Insert before the reference pass.
+  PASS_POS_REPLACE        // Replace the reference pass.
+@};
+
+struct plugin_pass
+@{
+  struct opt_pass *pass;            /* New pass provided by the plugin.  */
+  const char *reference_pass_name;  /* Name of the reference pass for hooking
+                                       up the new pass.  */
+  int ref_pass_instance_number;     /* Insert the pass at the specified
+                                       instance number of the reference pass.  */
+                                    /* Do it for every instance if it is 0.  */
+  enum pass_positioning_ops pos_op; /* how to insert the new pass.  */
+@};
+
+
+/* Sample plugin code that registers a new pass.  */
+int
+plugin_init (const char *plugin_name, int argc, struct plugin_argument *argv)
+@{
+  struct plugin_pass pass_info;
+
+  ...
+
+  /* Code to fill in the pass_info object with new pass information.  */
+
+  ...
+
+  /* Register the new pass.  */
+  register_callback (plugin_name, PLUGIN_PASS_MANAGER_SETUP, NULL, &pass_info);
+
+  ...
+@}
+@end smallexample

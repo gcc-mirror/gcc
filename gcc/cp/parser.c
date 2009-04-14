@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cgraph.h"
 #include "c-common.h"
+#include "plugin.h"
 
 
 /* The lexer.  */
@@ -13889,6 +13890,8 @@ cp_parser_type_specifier_seq (cp_parser* parser,
 	     type-specifier-seq is complete.  */
 	  break;
 	}
+
+      invoke_plugin_callbacks (PLUGIN_FINISH_TYPE, type_specifier);
 
       seen_type_specifier = true;
       /* The standard says that a condition can be:
