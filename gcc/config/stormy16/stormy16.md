@@ -903,7 +903,7 @@
 	(if_then_else (match_operator:HI 4 "xstormy16_ineqsi_operator"
 		       [(minus:HI (match_operand:HI 1 "register_operand" "T,r,r")
 			   (zero_extend:HI (reg:BI CARRY_REG)))
-			(match_operand:HI 3 "nonmemory_operand" "L,Ir,i")])
+			(match_operand:HI 3 "nonmemory_operand" "L,r,i")])
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))
    (set (match_operand:HI 2 "register_operand" "=1,1,1")

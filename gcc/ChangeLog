@@ -1,3 +1,9 @@
+2009-04-14  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy16.md (ineqbranch_1): Do not assume that
+	comparisons with small integers will always produce a short
+	branch.
+
 2009-04-14  Rafael Avila de Espindola  <espindola@google.com>
 
 	Merge:
