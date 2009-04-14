@@ -5118,17 +5118,33 @@ build_over_call (struct z_candidate *cand, int flags)
       else
 	{
 	  /* We must only copy the non-tail padding parts.
-	     Use __builtin_memcpy for the bitwise copy.  */
+	     Use __builtin_memcpy for the bitwise copy.
+	     FIXME fix 22488 so we can go back to using MODIFY_EXPR
+	     instead of an explicit call to memcpy.  */
 	
 	  tree arg0, arg1, arg2, t;
+	  tree test = NULL_TREE;
 
 	  arg2 = TYPE_SIZE_UNIT (as_base);
 	  arg1 = arg;
 	  arg0 = build_unary_op (ADDR_EXPR, to, 0);
+
+	  if (!(optimize && flag_tree_ter))
+	    {
+	      /* When TER is off get_pointer_alignment returns 0, so a call
+		 to __builtin_memcpy is expanded as a call to memcpy, which
+		 is invalid with identical args.  When TER is on it is
+		 expanded as a block move, which should be safe.  */
+	      arg0 = save_expr (arg0);
+	      arg1 = save_expr (arg1);
+	      test = build2 (EQ_EXPR, boolean_type_node, arg0, arg1);
+	    }
 	  t = implicit_built_in_decls[BUILT_IN_MEMCPY];
 	  t = build_call_n (t, 3, arg0, arg1, arg2);
 
 	  t = convert (TREE_TYPE (arg0), t);
+	  if (test)
+	    t = build3 (COND_EXPR, TREE_TYPE (t), test, arg0, t);
 	  val = build_indirect_ref (t, 0);
 	}
 
