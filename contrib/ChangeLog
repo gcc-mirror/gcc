@@ -1,3 +1,7 @@
+2009-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Reference GCC 4.4 web pages.
+
 2009-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* reghunt/date_based/reg_periodic: Change copyright header to refer
