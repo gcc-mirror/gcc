@@ -1,3 +1,9 @@
+2009-04-14  Le-Chun Wu  <lcwu@google.com>
+
+	* Make-lang.in: Modify dependencies of files including plugin.h.
+	* decl.c (finish_function): Call invoke_plugin_callbacks.
+	* parser.c (cp_parser_type_specifier): Call invoke_plugin_callbacks.
+
 2009-04-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39763

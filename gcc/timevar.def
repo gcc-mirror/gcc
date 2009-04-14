@@ -195,6 +195,8 @@ DEFTIMEVAR (TV_FINAL                 , "final")
 DEFTIMEVAR (TV_SYMOUT                , "symout")
 DEFTIMEVAR (TV_VAR_TRACKING          , "variable tracking")
 DEFTIMEVAR (TV_TREE_IFCOMBINE        , "tree if-combine")
+DEFTIMEVAR (TV_PLUGIN_INIT           , "plugin initialization")
+DEFTIMEVAR (TV_PLUGIN_RUN            , "plugin execution")
 
 /* Everything else in rest_of_compilation not included above.  */
 DEFTIMEVAR (TV_REST_OF_COMPILATION   , "rest of compilation")

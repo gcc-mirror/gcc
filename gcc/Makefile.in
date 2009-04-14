@@ -283,6 +283,9 @@ PPLINC = @PPLINC@
 CLOOGLIBS = @CLOOGLIBS@
 CLOOGINC = @CLOOGINC@
 
+# Libs and linker option needed for plugin support
+PLUGINLIBS = @pluginlibs@
+
 CPPLIB = ../libcpp/libcpp.a
 CPPINC = -I$(srcdir)/../libcpp/include
 
@@ -872,6 +875,7 @@ EBIMAP_H = ebitmap.h sbitmap.h
 IPA_PROP_H = ipa-prop.h $(TREE_H) vec.h $(CGRAPH_H)
 GSTAB_H = gstab.h stab.def
 BITMAP_H = bitmap.h $(HASHTAB_H) statistics.h
+PLUGIN_H = plugin.h gcc-plugin.h
 
 #
 # Now figure out from those variables how to compile and link.
@@ -906,7 +910,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 # How to link with both our special library facilities
 # and the system's installed libraries.
 LIBS = @LIBS@ $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY) $(LIBDECNUMBER)
-BACKENDLIBS = $(CLOOGLIBS) $(PPLLIBS) $(GMPLIBS)
+BACKENDLIBS = $(CLOOGLIBS) $(PPLLIBS) $(GMPLIBS) $(PLUGINLIBS)
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
 
@@ -1148,6 +1152,7 @@ OBJS-common = \
 	opts.o \
 	params.o \
 	passes.o \
+	plugin.o \
 	pointer-set.o \
 	postreload-gcse.o \
 	postreload.o \
@@ -1800,7 +1805,7 @@ c-errors.o: c-errors.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 c-parser.o : c-parser.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(GGC_H) $(TIMEVAR_H) $(C_TREE_H) $(INPUT_H) $(FLAGS_H) $(TOPLEV_H) output.h \
     $(CPPLIB_H) gt-c-parser.h $(RTL_H) langhooks.h $(C_COMMON_H) $(C_PRAGMA_H) \
-    vec.h $(TARGET_H) $(CGRAPH_H)
+    vec.h $(TARGET_H) $(CGRAPH_H) $(PLUGIN_H)
 
 srcextra: gcc.srcextra lang.srcextra
 
@@ -2422,11 +2427,12 @@ fold-const.o : fold-const.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(GIMPLE_H)
 diagnostic.o : diagnostic.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) version.h $(TM_P_H) $(FLAGS_H) $(INPUT_H) $(TOPLEV_H) intl.h \
-   $(DIAGNOSTIC_H) langhooks.h $(LANGHOOKS_DEF_H) diagnostic.def opts.h
+   $(DIAGNOSTIC_H) langhooks.h $(LANGHOOKS_DEF_H) diagnostic.def opts.h \
+   $(PLUGIN_H)
 opts.o : opts.c opts.h options.h $(TOPLEV_H) $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_H) $(TM_H) langhooks.h $(GGC_H) $(EXPR_H) $(RTL_H) \
    output.h $(DIAGNOSTIC_H) $(TM_P_H) $(INSN_ATTR_H) intl.h $(TARGET_H) \
-   $(FLAGS_H) $(PARAMS_H) tree-pass.h $(DBGCNT_H) debug.h varray.h
+   $(FLAGS_H) $(PARAMS_H) tree-pass.h $(DBGCNT_H) debug.h varray.h $(PLUGIN_H)
 opts-common.o : opts-common.c opts.h $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h intl.h
 targhooks.o : targhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
@@ -2443,7 +2449,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h insn-flags.h $(CFGLAYOUT_H) $(CFGLOOP_H) hosthooks.h \
    $(CGRAPH_H) $(COVERAGE_H) alloc-pool.h $(GGC_H) $(INTEGRATE_H) \
    opts.h params.def tree-mudflap.h $(REAL_H) tree-pass.h $(GIMPLE_H) \
-   tree-ssa-alias.h
+   tree-ssa-alias.h $(PLUGIN_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -c $(srcdir)/toplev.c $(OUTPUT_OPTION)
@@ -2458,6 +2464,9 @@ passes.o : passes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    hosthooks.h $(CGRAPH_H) $(COVERAGE_H) tree-pass.h $(TREE_DUMP_H) \
    $(GGC_H) $(INTEGRATE_H) $(CPPLIB_H) opts.h $(TREE_FLOW_H) $(TREE_INLINE_H) \
    gt-passes.h $(DF_H) $(PREDICT_H)
+
+plugin.o : plugin.c $(PLUGIN_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   errors.h $(TOPLEV_H) $(TREE_H) tree-pass.h intl.h
 
 main.o : main.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TOPLEV_H)
 
@@ -4247,6 +4256,10 @@ site.exp: ./config.status Makefile
 	@echo "set TEST_GCC_EXEC_PREFIX \"$(libdir)/gcc/\"" >> ./tmp0
 	@echo "set TESTING_IN_BUILD_TREE 1" >> ./tmp0
 	@echo "set HAVE_LIBSTDCXX_V3 1" >> ./tmp0
+	@if test "@enable_plugin@" = "yes" ; then \
+	  echo "set ENABLE_PLUGIN 1" >> ./tmp0; \
+	  echo "set GMPINC \"$(GMPINC)\"" >> ./tmp0; \
+	fi
 # If newlib has been configured, we need to pass -B to gcc so it can find
 # newlib's crt0.o if it exists.  This will cause a "path prefix not used"
 # message if it doesn't, but the testsuite is supposed to ignore the message -

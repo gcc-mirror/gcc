@@ -368,7 +368,7 @@ get_pass_for_id (int id)
    to do this depth first, and independent of whether the pass is
    enabled or not.  */
 
-static void
+void
 register_one_dump_file (struct opt_pass *pass)
 {
   char *dot_name, *flag_name, *glob_name;

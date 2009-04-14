@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "gimple.h"
 #include "tree-ssa-alias.h"
+#include "plugin.h"
 
 #if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
 #include "dwarf2out.h"
@@ -968,6 +969,7 @@ compile_file (void)
   init_final (main_input_filename);
   coverage_init (aux_base_name);
   statistics_init ();
+  initialize_plugins ();
 
   timevar_push (TV_PARSE);
 
@@ -2241,6 +2243,9 @@ do_compile (void)
 	compile_file ();
 
       finalize ();
+
+      /* Invoke registered plugin callbacks.  */
+      invoke_plugin_callbacks (PLUGIN_FINISH_UNIT, NULL);
     }
 
   /* Stop timing and print the times.  */
@@ -2274,6 +2279,9 @@ toplev_main (unsigned int argc, const char **argv)
 
   if (warningcount || errorcount) 
     print_ignored_options ();
+
+  /* Invoke registered plugin callbacks if any.  */
+  invoke_plugin_callbacks (PLUGIN_FINISH, NULL);
 
   if (errorcount || sorrycount)
     return (FATAL_EXIT_CODE);

@@ -1,3 +1,47 @@
+2009-04-14  Diego Novillo  <dnovillo@google.com>
+	    Le-Chun Wu  <lcwu@google.com>
+
+	* configure.ac: Add --enable-plugin support.
+	Define ENABLE_PLUGIN and PLUGINLIBS when specified.
+	* Makefile.in (PLUGIN_H): Define.
+	Export ENABLE_PLUGIN and GMPINC to site.exp.
+	Add PLUGINLIBS to link command.
+	Add/modify dependencies for plugin.o and files including plugin.h.
+	(plugin.o): New.
+	* config.in: Regenerate.
+	
+	* opts.c (common_handle_option): Handle OPT_fplugin_ and
+	OPT_fplugin_arg_.
+
+2009-04-14  Le-Chun Wu  <lcwu@google.com>
+
+	* tree-pass.h (register_one_dump_file): Add a prototype for
+	register_one_dump_file.
+	* toplev.c (compile_file): Call initialize_plugins.
+	(do_compile): Call invoke_plugin_callbacks.
+	(toplev_main): Call invoke_plugin_callbacks.
+	* common.opt: Add -fplugin= and -fplugin-arg-.
+	* gcc-plugin.h: New public header file for plugins to include.
+	* plugin.c: New source file.
+	* plugin.h: New internal header file.
+	* passes.c (register_one_dump_file): Make it external.
+	
+	* c-parser.c (c_parser_declspecs): Call invoke_plugin_callbacks.
+
+2009-04-14  Diego Novillo  <dnovillo@google.com>
+
+	* doc/plugins.texi: New.
+	* doc/gccint.texi: Add reference to Plugins chapter.
+	* doc/invoke.texi: Document -fplugin and -fplugin-arg
+	* diagnostic.c (diagnostic_report_diagnostic): Warn about
+	loaded plugins, if any.
+	* timevar.def (TV_PLUGIN_INIT): Define.
+	(TV_PLUGIN_RUN): Define.
+	* plugin.c: Include timevar.h
+	(plugins_active_p): New.
+	(dump_active_plugins): New.
+	(debug_active_plugins): New.
+
 2009-04-14  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/sol2.h (LINK_ARCH32_SPEC_BASE): Use %R with absolute
@@ -21,7 +65,7 @@
 
 	2008-12-19  Diego Novillo  <dnovillo@google.com>
 
-        	* cgraph.c (dump_cgraph_node): Show memory address of NODE.
+	       	* cgraph.c (dump_cgraph_node): Show memory address of NODE.
 
 2000-04-14  Richard Guenther  <rguenther@suse.de>
 

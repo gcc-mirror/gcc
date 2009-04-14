@@ -108,6 +108,12 @@
 #endif
 
 
+/* Define to enable plugin support. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_PLUGIN
+#endif
+
+
 /* Define if you want all operations on RTL (the basic data structure of the
    optimizer and back end) to be checked for dynamic type safety at runtime.
    This is quite expensive. */
