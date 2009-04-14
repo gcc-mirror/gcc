@@ -1,3 +1,8 @@
+2009-04-14  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_dwarf_register_span): Fix debug
+	output for other floating point modes.
+
 2009-04-14  Diego Novillo  <dnovillo@google.com>
 	    Le-Chun Wu  <lcwu@google.com>
 
