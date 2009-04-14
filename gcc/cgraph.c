@@ -1154,7 +1154,8 @@ void
 dump_cgraph_node (FILE *f, struct cgraph_node *node)
 {
   struct cgraph_edge *edge;
-  fprintf (f, "%s/%i(%i):", cgraph_node_name (node), node->uid, node->pid);
+  fprintf (f, "%s/%i(%i) [%p]:", cgraph_node_name (node), node->uid,
+	   node->pid, (void *) node);
   if (node->global.inlined_to)
     fprintf (f, " (inline copy in %s/%i)",
 	     cgraph_node_name (node->global.inlined_to),
