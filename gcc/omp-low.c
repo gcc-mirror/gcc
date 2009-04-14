@@ -5074,7 +5074,8 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   /* Build the compare&swap statement.  */
   new_storedi = build_call_expr (cmpxchg, 3, iaddr, loadedi, storedi);
   new_storedi = force_gimple_operand_gsi (&si,
-					  fold_convert (itype, new_storedi),
+					  fold_convert (TREE_TYPE (loadedi),
+							new_storedi),
 					  true, NULL_TREE,
 					  true, GSI_SAME_STMT);
 
@@ -5082,7 +5083,7 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
     old_vali = loadedi;
   else
     {
-      old_vali = create_tmp_var (itype, NULL);
+      old_vali = create_tmp_var (TREE_TYPE (loadedi), NULL);
       if (gimple_in_ssa_p (cfun))
 	add_referenced_var (old_vali);
       stmt = gimple_build_assign (old_vali, loadedi);

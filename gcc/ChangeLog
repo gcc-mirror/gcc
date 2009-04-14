@@ -1,3 +1,17 @@
+2000-04-14  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_assign_unary): Adjust vector code
+	verification.
+	(verify_gimple_assign_binary): Likewise.  Handle shifts and
+	rotates correctly.
+	(verify_gimple_phi): Print the mismatched argument position.
+	* tree-vect-loop-manip.c (vect_update_ivs_after_vectorizer):
+	Fix types.
+	(vect_update_init_of_dr): Likewise.
+	* matrix-reorg.c (transform_access_sites): Do what the
+	comment suggests.
+	* omp-low.c (expand_omp_atomic_pipeline): Use the correct types.
+
 2009-04-13  Michael Eager <eager@eagercon.com>
 
 	* config/rs6000/rs6000-c.c: generate defines if rs6000_xilinx_fpu:
