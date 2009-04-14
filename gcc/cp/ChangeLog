@@ -1,3 +1,9 @@
+2009-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/39763
+	* name-lookup.c (pushdecl_maybe_friend): Avoid all warnings
+	about shadowing by tentative parms.
+
 2009-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39480
