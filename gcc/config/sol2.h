@@ -157,12 +157,12 @@ along with GCC; see the file COPYING3.  If not see
    %{YP,*} \
    %{R*} \
    %{compat-bsd: \
-     %{!YP,*:%{p|pg:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-             %{!p:%{!pg:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}}} \
-             -R /usr/ucblib} \
+     %{!YP,*:%{p|pg:-Y P,%R/usr/ucblib:%R/usr/ccs/lib/libp:%R/usr/lib/libp:%R/usr/ccs/lib:%R/usr/lib} \
+             %{!p:%{!pg:-Y P,%R/usr/ucblib:%R/usr/ccs/lib:%R/usr/lib}}} \
+             -R %R/usr/ucblib} \
    %{!compat-bsd: \
-     %{!YP,*:%{p|pg:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-             %{!p:%{!pg:-Y P,/usr/ccs/lib:/usr/lib}}}}"
+     %{!YP,*:%{p|pg:-Y P,%R/usr/ccs/lib/libp:%R/usr/lib/libp:%R/usr/ccs/lib:%R/usr/lib} \
+             %{!p:%{!pg:-Y P,%R/usr/ccs/lib:%R/usr/lib}}}}"
 
 #undef LINK_ARCH32_SPEC
 #define LINK_ARCH32_SPEC LINK_ARCH32_SPEC_BASE
