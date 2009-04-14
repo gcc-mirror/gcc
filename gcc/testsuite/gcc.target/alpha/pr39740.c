@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -std=c99" } */
+/* { dg-options "-O3 -std=c99 -mexplicit-relocs" } */
 
 typedef int R_len_t;
 typedef unsigned int SEXPTYPE;
@@ -151,8 +151,7 @@ D (SEXP expr, SEXP var)
 }
 
 SEXP
-  __attribute__ ((visibility ("hidden"))) do_D (SEXP call, SEXP op, SEXP args,
-						SEXP env)
+do_D (SEXP call, SEXP op, SEXP args, SEXP env)
 {
   SEXP expr, var;
   var = Rf_install ();

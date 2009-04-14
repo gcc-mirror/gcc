@@ -1,3 +1,8 @@
+2009-04-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/alpha/pr39740.c (dg-options): Add -mexplicit-relocs.
+	(do_D): Remove attribute hidden.
+
 2009-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/39480
