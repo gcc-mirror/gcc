@@ -324,13 +324,13 @@
 (define_predicate "local_symbolic_operand"
   (match_code "label_ref,const,symbol_ref")
 {
-  if (GET_CODE (op) == LABEL_REF)
-    return 1;
-
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
     op = XEXP (XEXP (op, 0), 0);
+
+  if (GET_CODE (op) == LABEL_REF)
+    return 1;
 
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
