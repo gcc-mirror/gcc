@@ -1,3 +1,12 @@
+2009-04-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-04-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39678
+	* config/i386/i386.c (classify_argument): Handle SCmode with
+	(bit_offset % 64) != 0.
+
 2009-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
