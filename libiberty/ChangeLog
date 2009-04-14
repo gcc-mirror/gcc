@@ -1,3 +1,11 @@
+2009-04-14  Eli Zaretskii  <eliz@gnu.org>
+
+	* configure.ac  (setobjs, msdosdjgpp): Move a-priori setting of
+	existing and required library functions to with_target_subdir
+	section, so that the native build does detect them at configure
+	time.
+	* configure: Regenerated.
+	
 2009-04-13  Ozkan Sezer  <sezeroz@gmail.com>
 
         PR target/39397

@@ -6375,6 +6375,59 @@ _ACEOF
     setobjs=yes
     ;;
 
+  *-*-msdosdjgpp)
+    case $LIBOBJS in
+    "vasprintf.$ac_objext"   | \
+  *" vasprintf.$ac_objext"   | \
+    "vasprintf.$ac_objext "* | \
+  *" vasprintf.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS vasprintf.$ac_objext" ;;
+esac
+
+    case $LIBOBJS in
+    "vsnprintf.$ac_objext"   | \
+  *" vsnprintf.$ac_objext"   | \
+    "vsnprintf.$ac_objext "* | \
+  *" vsnprintf.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS vsnprintf.$ac_objext" ;;
+esac
+
+    case $LIBOBJS in
+    "snprintf.$ac_objext"   | \
+  *" snprintf.$ac_objext"   | \
+    "snprintf.$ac_objext "* | \
+  *" snprintf.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS snprintf.$ac_objext" ;;
+esac
+
+    case $LIBOBJS in
+    "asprintf.$ac_objext"   | \
+  *" asprintf.$ac_objext"   | \
+    "asprintf.$ac_objext "* | \
+  *" asprintf.$ac_objext "* ) ;;
+  *) LIBOBJS="$LIBOBJS asprintf.$ac_objext" ;;
+esac
+
+
+    for f in atexit basename bcmp bcopy bsearch bzero calloc clock ffs \
+             getcwd getpagesize getrusage gettimeofday \
+             index insque memchr memcmp memcpy memmove memset psignal \
+             putenv random rename rindex sbrk setenv stpcpy strcasecmp \
+             strchr strdup strerror strncasecmp strrchr strstr strtod \
+             strtol strtoul sysconf times tmpnam vfprintf vprintf \
+             vsprintf waitpid
+    do
+      n=HAVE_`echo $f | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+      cat >>confdefs.h <<_ACEOF
+#define $n 1
+_ACEOF
+
+    done
+
+
+    setobjs=yes
+    ;;
+
   esac
 
   # We may wish to install the target headers somewhere.
@@ -6533,26 +6586,6 @@ _ACEOF
     cat >>confdefs.h <<\_ACEOF
 #define HAVE_STRERROR 1
 _ACEOF
-
-
-    setobjs=yes
-    ;;
-
-  *-*-msdosdjgpp)
-    for f in atexit basename bcmp bcopy bsearch bzero calloc clock ffs \
-             getcwd getpagesize getrusage gettimeofday \
-             index insque memchr memcmp memcpy memmove memset psignal \
-             putenv random rename rindex sbrk setenv stpcpy strcasecmp \
-             strchr strdup strerror strncasecmp strrchr strstr strtod \
-             strtol strtoul sysconf times tmpnam vfprintf vprintf \
-             vsprintf waitpid
-    do
-      n=HAVE_`echo $f | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-      cat >>confdefs.h <<_ACEOF
-#define $n 1
-_ACEOF
-
-    done
 
 
     setobjs=yes
