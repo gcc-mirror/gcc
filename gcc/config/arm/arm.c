@@ -5139,6 +5139,17 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	  return true;
 	}
 
+      /* A shift as a part of RSB costs no more than RSB itself.  */
+      if (GET_CODE (XEXP (x, 0)) == MULT
+	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+	  && ((INTVAL (XEXP (XEXP (x, 0), 1))
+	       & (INTVAL (XEXP (XEXP (x, 0), 1)) - 1)) == 0))
+	{
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), code, speed);
+	  *total += rtx_cost (XEXP (x, 1), code, speed);
+	  return true;
+	}
+
       if (subcode == MULT
 	  && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT
 	  && ((INTVAL (XEXP (XEXP (x, 1), 1)) &

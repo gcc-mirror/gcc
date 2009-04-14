@@ -1,3 +1,8 @@
+2009-04-14  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/arm/arm.c (arm_rtx_costs_1): Treat a minus with a shift
+	the same as a minus without a shift.
+
 2009-04-14  Nick Clifton  <nickc@redhat.com>
 
 	* config/stormy16/stormy16.md (ineqbranch_1): Do not assume that
