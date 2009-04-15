@@ -1816,7 +1816,7 @@ __gnat_map_signal (int sig)
       break;
     case SIGSEGV:
       exception = &storage_error;
-      msg = "SIGSEGV: possible stack overflow";
+      msg = "SIGSEGV";
       break;
     case SIGBUS:
       exception = &storage_error;
@@ -1841,7 +1841,7 @@ __gnat_map_signal (int sig)
 #else
       /* VxWorks 6 kernel mode with probing. SIGBUS for guard page hit */
     case SIGSEGV:
-      exception = &program_error;
+      exception = &storage_error;
       msg = "SIGSEGV";
       break;
     case SIGBUS:
@@ -1857,7 +1857,7 @@ __gnat_map_signal (int sig)
       msg = "SIGILL: possible stack overflow";
       break;
     case SIGSEGV:
-      exception = &program_error;
+      exception = &storage_error;
       msg = "SIGSEGV";
       break;
     case SIGBUS:

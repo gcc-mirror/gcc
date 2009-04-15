@@ -6209,150 +6209,10 @@ package body Prj.Nmsc is
          Write_Line ("Starting to look for directories");
       end if;
 
-      --  Check the object directory
-
-      pragma Assert (Object_Dir.Kind = Single,
-                     "Object_Dir is not a single string");
-
-      --  We set the object directory to its default
+      --  We set the object directory to its default. It may be set to nil, if
+      --  there is no sources in the project.
 
       Data.Object_Directory := Data.Directory;
-
-      if Object_Dir.Value /= Empty_String then
-         Get_Name_String (Object_Dir.Value);
-
-         if Name_Len = 0 then
-            Error_Msg
-              (Project, In_Tree,
-               "Object_Dir cannot be empty",
-               Object_Dir.Location);
-
-         else
-            --  We check that the specified object directory does exist
-
-            Locate_Directory
-              (Project,
-               In_Tree,
-               File_Name_Type (Object_Dir.Value),
-               Data.Directory.Display_Name,
-               Data.Object_Directory.Name,
-               Data.Object_Directory.Display_Name,
-               Create           => "object",
-               Location         => Object_Dir.Location,
-               Current_Dir      => Current_Dir,
-               Externally_Built => Data.Externally_Built);
-
-            if Data.Object_Directory = No_Path_Information then
-
-               --  The object directory does not exist, report an error if the
-               --  project is not externally built.
-
-               if not Data.Externally_Built then
-                  Err_Vars.Error_Msg_File_1 :=
-                    File_Name_Type (Object_Dir.Value);
-                  Error_Msg
-                    (Project, In_Tree,
-                     "the object directory { cannot be found",
-                     Data.Location);
-               end if;
-
-               --  Do not keep a nil Object_Directory. Set it to the specified
-               --  (relative or absolute) path. This is for the benefit of
-               --  tools that recover from errors; for example, these tools
-               --  could create the non existent directory.
-
-               Data.Object_Directory.Display_Name :=
-                 Path_Name_Type (Object_Dir.Value);
-
-               if Osint.File_Names_Case_Sensitive then
-                  Data.Object_Directory.Name :=
-                    Path_Name_Type (Object_Dir.Value);
-               else
-                  Get_Name_String (Object_Dir.Value);
-                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-                  Data.Object_Directory.Name := Name_Find;
-               end if;
-            end if;
-         end if;
-
-      elsif Subdirs /= null then
-         Name_Len := 1;
-         Name_Buffer (1) := '.';
-         Locate_Directory
-           (Project,
-            In_Tree,
-            Name_Find,
-            Data.Directory.Display_Name,
-            Data.Object_Directory.Name,
-            Data.Object_Directory.Display_Name,
-            Create           => "object",
-            Location         => Object_Dir.Location,
-            Current_Dir      => Current_Dir,
-            Externally_Built => Data.Externally_Built);
-      end if;
-
-      if Current_Verbosity = High then
-         if Data.Object_Directory = No_Path_Information then
-            Write_Line ("No object directory");
-         else
-            Write_Str ("Object directory: """);
-            Write_Str (Get_Name_String (Data.Object_Directory.Display_Name));
-            Write_Line ("""");
-         end if;
-      end if;
-
-      --  Check the exec directory
-
-      pragma Assert (Exec_Dir.Kind = Single,
-                     "Exec_Dir is not a single string");
-
-      --  We set the object directory to its default
-
-      Data.Exec_Directory   := Data.Object_Directory;
-
-      if Exec_Dir.Value /= Empty_String then
-         Get_Name_String (Exec_Dir.Value);
-
-         if Name_Len = 0 then
-            Error_Msg
-              (Project, In_Tree,
-               "Exec_Dir cannot be empty",
-               Exec_Dir.Location);
-
-         else
-            --  We check that the specified exec directory does exist
-
-            Locate_Directory
-              (Project,
-               In_Tree,
-               File_Name_Type (Exec_Dir.Value),
-               Data.Directory.Display_Name,
-               Data.Exec_Directory.Name,
-               Data.Exec_Directory.Display_Name,
-               Create           => "exec",
-               Location         => Exec_Dir.Location,
-               Current_Dir      => Current_Dir,
-               Externally_Built => Data.Externally_Built);
-
-            if Data.Exec_Directory = No_Path_Information then
-               Err_Vars.Error_Msg_File_1 := File_Name_Type (Exec_Dir.Value);
-               Error_Msg
-                 (Project, In_Tree,
-                  "the exec directory { cannot be found",
-                  Data.Location);
-            end if;
-         end if;
-      end if;
-
-      if Current_Verbosity = High then
-         if Data.Exec_Directory = No_Path_Information then
-            Write_Line ("No exec directory");
-         else
-            Write_Str ("Exec directory: """);
-            Write_Str (Get_Name_String (Data.Exec_Directory.Display_Name));
-            Write_Line ("""");
-         end if;
-      end if;
 
       --  Look for the source directories
 
@@ -6492,6 +6352,148 @@ package body Prj.Nmsc is
          end loop;
       end;
 
+      --  Check the object directory
+
+      pragma Assert (Object_Dir.Kind = Single,
+                     "Object_Dir is not a single string");
+
+      if Object_Dir.Value /= Empty_String then
+         Get_Name_String (Object_Dir.Value);
+
+         if Name_Len = 0 then
+            Error_Msg
+              (Project, In_Tree,
+               "Object_Dir cannot be empty",
+               Object_Dir.Location);
+
+         else
+            --  We check that the specified object directory does exist
+
+            Locate_Directory
+              (Project,
+               In_Tree,
+               File_Name_Type (Object_Dir.Value),
+               Data.Directory.Display_Name,
+               Data.Object_Directory.Name,
+               Data.Object_Directory.Display_Name,
+               Create           => "object",
+               Location         => Object_Dir.Location,
+               Current_Dir      => Current_Dir,
+               Externally_Built => Data.Externally_Built);
+
+            if Data.Object_Directory = No_Path_Information then
+
+               --  The object directory does not exist, report an error if the
+               --  project is not externally built.
+
+               if not Data.Externally_Built then
+                  Err_Vars.Error_Msg_File_1 :=
+                    File_Name_Type (Object_Dir.Value);
+                  Error_Msg
+                    (Project, In_Tree,
+                     "the object directory { cannot be found",
+                     Data.Location);
+               end if;
+
+               --  Do not keep a nil Object_Directory. Set it to the specified
+               --  (relative or absolute) path. This is for the benefit of
+               --  tools that recover from errors; for example, these tools
+               --  could create the non existent directory.
+
+               Data.Object_Directory.Display_Name :=
+                 Path_Name_Type (Object_Dir.Value);
+
+               if Osint.File_Names_Case_Sensitive then
+                  Data.Object_Directory.Name :=
+                    Path_Name_Type (Object_Dir.Value);
+               else
+                  Get_Name_String (Object_Dir.Value);
+                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+                  Data.Object_Directory.Name := Name_Find;
+               end if;
+            end if;
+         end if;
+
+      elsif Data.Object_Directory /= No_Path_Information and then
+        Subdirs /= null
+      then
+         Name_Len := 1;
+         Name_Buffer (1) := '.';
+         Locate_Directory
+           (Project,
+            In_Tree,
+            Name_Find,
+            Data.Directory.Display_Name,
+            Data.Object_Directory.Name,
+            Data.Object_Directory.Display_Name,
+            Create           => "object",
+            Location         => Object_Dir.Location,
+            Current_Dir      => Current_Dir,
+            Externally_Built => Data.Externally_Built);
+      end if;
+
+      if Current_Verbosity = High then
+         if Data.Object_Directory = No_Path_Information then
+            Write_Line ("No object directory");
+         else
+            Write_Str ("Object directory: """);
+            Write_Str (Get_Name_String (Data.Object_Directory.Display_Name));
+            Write_Line ("""");
+         end if;
+      end if;
+
+      --  Check the exec directory
+
+      pragma Assert (Exec_Dir.Kind = Single,
+                     "Exec_Dir is not a single string");
+
+      --  We set the object directory to its default
+
+      Data.Exec_Directory   := Data.Object_Directory;
+
+      if Exec_Dir.Value /= Empty_String then
+         Get_Name_String (Exec_Dir.Value);
+
+         if Name_Len = 0 then
+            Error_Msg
+              (Project, In_Tree,
+               "Exec_Dir cannot be empty",
+               Exec_Dir.Location);
+
+         else
+            --  We check that the specified exec directory does exist
+
+            Locate_Directory
+              (Project,
+               In_Tree,
+               File_Name_Type (Exec_Dir.Value),
+               Data.Directory.Display_Name,
+               Data.Exec_Directory.Name,
+               Data.Exec_Directory.Display_Name,
+               Create           => "exec",
+               Location         => Exec_Dir.Location,
+               Current_Dir      => Current_Dir,
+               Externally_Built => Data.Externally_Built);
+
+            if Data.Exec_Directory = No_Path_Information then
+               Err_Vars.Error_Msg_File_1 := File_Name_Type (Exec_Dir.Value);
+               Error_Msg
+                 (Project, In_Tree,
+                  "the exec directory { cannot be found",
+                  Data.Location);
+            end if;
+         end if;
+      end if;
+
+      if Current_Verbosity = High then
+         if Data.Exec_Directory = No_Path_Information then
+            Write_Line ("No exec directory");
+         else
+            Write_Str ("Exec directory: """);
+            Write_Str (Get_Name_String (Data.Exec_Directory.Display_Name));
+            Write_Line ("""");
+         end if;
+      end if;
    end Get_Directories;
 
    ---------------

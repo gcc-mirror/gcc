@@ -1,3 +1,34 @@
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Use_One_Type): If both clauses appear on the same unit,
+	the second is redundant, regardless of scopes.
+
+2009-04-15  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Get_Directories): Check for sources before checking
+	the object directory as when there are no sources, they may not be any
+	object directory.
+
+	* make.adb (Gnatmake): Do not attempt to get the path name of the exec
+	directory, when there are no exec directory.
+
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Remove_Conversions): In order to resolve spurious
+	ambiguities, refine removal of universal interpretations from complex
+	expressions with literal arguments, when some numeric operators have
+	been declared abstract.
+
+2009-04-15  Ed Falis  <falis@adacore.com>
+
+	* init.c: Map SIGSEGV to Storage_Error for all targets for uniformity
+	and backward compatibility for targets using probing for stack overflow
+
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case 'Obsolescent): Pragma is legal
+	after any declaration, including renaming declarations.
+
 2009-04-15  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

@@ -5718,7 +5718,11 @@ package body Make is
             end if;
          end if;
 
-         if Main_Project /= No_Project then
+         if Main_Project /= No_Project
+           and then
+             Project_Tree.Projects.Table
+               (Main_Project).Exec_Directory /= No_Path_Information
+         then
             declare
                Exec_File_Name : constant String :=
                                   Get_Name_String (Executable);
