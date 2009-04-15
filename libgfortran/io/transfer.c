@@ -3169,7 +3169,6 @@ finalize_transfer (st_parameter_dt *dtp)
       dtp->u.p.current_unit->saved_pos =
 	dtp->u.p.max_pos > 0 ? dtp->u.p.max_pos - bytes_written : 0;
       fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
-      sflush (dtp->u.p.current_unit->s);
       return;
     }
   else if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED 
