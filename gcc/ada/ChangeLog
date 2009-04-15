@@ -1,3 +1,10 @@
+2009-04-15  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Locate_Directory): New Boolean parameter
+	Externally_Built indicating if the project is externally built. If it
+	is, and --subdirs is specified, but the subdir does not exist, look
+	for the specified directory, without the subdir.
+
 2009-04-15  Gary Dismukes  <dismukes@adacore.com>
 
 	* a-tasatt.adb: Fix typo, plus minor reformatting
