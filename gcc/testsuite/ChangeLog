@@ -1,3 +1,7 @@
+2009-04-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/ext/altivec-17.C: New.
+
 2009-04-15  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat.dg/sync1.ads: Fix error now flagged by gnat.
