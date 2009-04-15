@@ -2504,8 +2504,10 @@ package body Sem_Eval is
                --  Start of processing for Extract_Length
 
                begin
-                  Decompose_Expr (Type_Low_Bound  (T), Ent1, Kind1, Cons1);
-                  Decompose_Expr (Type_High_Bound (T), Ent2, Kind2, Cons2);
+                  Decompose_Expr
+                    (Original_Node (Type_Low_Bound  (T)), Ent1, Kind1, Cons1);
+                  Decompose_Expr
+                    (Original_Node (Type_High_Bound (T)), Ent2, Kind2, Cons2);
 
                   if Present (Ent1)
                     and then Kind1 = Kind2

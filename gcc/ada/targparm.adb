@@ -408,10 +408,10 @@ package body Targparm is
 
          --  Suppress_Exception_Locations
 
-         elsif System_Text (P .. P + 34) =
-                                "pragma Suppress_Exception_Locations;"
+         elsif System_Text (P .. P + 35) =
+                                   "pragma Suppress_Exception_Locations;"
          then
-            P := P + 35;
+            P := P + 36;
             Opt.Exception_Locations_Suppressed := True;
             goto Line_Loop_Continue;
 

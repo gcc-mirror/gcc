@@ -1,5 +1,19 @@
 2009-04-15  Robert Dewar  <dewar@adacore.com>
 
+	* sem_eval.adb (Get_Static_Length): Go to origin node for array bounds
+	in case they were rewritten by expander (Force_Evaluation).
+
+	* targparm.adb (Get_Target_Parameters): Correct check for
+	Suppress_Exception_Locations.
+
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call): If an in-parameter in a call to be
+	inlined  is of an array type that is not bit-packed, use a renaming
+	declaration to capture its value, rather than a constant declaration.
+
+2009-04-15  Robert Dewar  <dewar@adacore.com>
+
 	* rtsfind.adb: Minor reformatting.
 
 2009-04-15  Emmanuel Briot  <briot@adacore.com>
