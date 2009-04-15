@@ -4,9 +4,9 @@
 --                                                                          --
 --                     S Y S T E M . V X W O R K S . E X T                  --
 --                                                                          --
---                                   S p e c                                --
+--                                   B o d y                                --
 --                                                                          --
---            Copyright (C) 2009, Free Software Foundation, Inc.            --
+--            Copyright (C) 2008-2009, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software;  you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,50 +29,29 @@
 --  This package provides vxworks specific support functions needed
 --  by System.OS_Interface.
 
---  This is the VxWorks 6 kernel version of this package
+--  This is the VxWorks <= 6.5 kernel version of this package
+--  Also works for 6.6 uniprocessor
 
-with Interfaces.C;
+package body System.VxWorks.Ext is
 
-package System.VxWorks.Ext is
-   pragma Preelaborate;
+   ERROR : constant := -1;
 
-   type t_id is new Long_Integer;
-   subtype int is Interfaces.C.int;
+   --------------
+   -- Int_Lock --
+   --------------
 
-   type Interrupt_Handler is access procedure (parameter : System.Address);
-   pragma Convention (C, Interrupt_Handler);
+   function intLock return int;
+   pragma Import (C, intLock, "intLock");
 
-   type Interrupt_Vector is new System.Address;
+   function Int_Lock return int renames intLock;
 
-   function Int_Lock return int;
-   pragma Inline (Int_Lock);
+   ----------------
+   -- Int_Unlock --
+   ----------------
 
-   function Int_Unlock return int;
-   pragma Inline (Int_Unlock);
+   function intUnlock return int;
+   pragma Import (C, intUnlock, "intUnlock");
 
-   function Interrupt_Connect
-     (Vector    : Interrupt_Vector;
-      Handler   : Interrupt_Handler;
-      Parameter : System.Address := System.Null_Address) return int;
-   pragma Import (C, Interrupt_Connect, "intConnect");
-
-   function Interrupt_Number_To_Vector
-     (intNum : int) return Interrupt_Vector;
-   pragma Import (C, Interrupt_Number_To_Vector, "__gnat_inum_to_ivec");
-
-   function Task_Cont (tid : t_id) return int;
-   pragma Import (C, Task_Cont, "taskCont");
-
-   function Task_Stop (tid : t_id) return int;
-   pragma Import (C, Task_Stop, "taskStop");
-
-   function kill (pid : t_id; sig : int) return int;
-   pragma Import (C, kill, "kill");
-
-   function getpid return t_id;
-   pragma Import (C, getpid, "taskIdSelf");
-
-   function Set_Time_Slice (ticks : int) return int;
-   pragma Import (C, Set_Time_Slice, "kernelTimeSlice");
+   function Int_Unlock return int renames intUnlock;
 
 end System.VxWorks.Ext;

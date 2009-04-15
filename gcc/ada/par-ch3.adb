@@ -763,7 +763,16 @@ package body Ch3 is
                      Typedef_Node := P_Derived_Type_Def_Or_Private_Ext_Decl;
 
                      if Saved_Token = Tok_Synchronized then
-                        Set_Synchronized_Present (Typedef_Node);
+                        if Nkind (Typedef_Node) =
+                          N_Derived_Type_Definition
+                        then
+                           Error_Msg_N
+                             ("SYNCHRONIZED not allowed for record extension",
+                              Typedef_Node);
+                        else
+                           Set_Synchronized_Present (Typedef_Node);
+                        end if;
+
                      else
                         Error_Msg_SC ("invalid kind of private extension");
                      end if;
