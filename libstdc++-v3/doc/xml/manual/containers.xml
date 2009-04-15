@@ -17,7 +17,10 @@
   </keywordset>
 </partinfo>
 
-<title>Containers</title>
+<title>
+  Containers
+  <indexterm><primary>Containers</primary></indexterm>
+</title>
 
 <!-- Chapter 01 : Sequences -->
 <chapter id="manual.containers.sequences" xreflabel="Sequences">

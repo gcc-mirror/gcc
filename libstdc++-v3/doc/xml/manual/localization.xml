@@ -17,7 +17,10 @@
   </keywordset>
 </partinfo>
 
-<title>Localization</title>
+<title>
+  Localization
+  <indexterm><primary>Localization</primary></indexterm>
+</title>
 
 <!-- Chapter 01 : Locale -->
 <chapter id="manual.localization.locales" xreflabel="Locales">

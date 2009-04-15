@@ -10,14 +10,14 @@
 
 <bookinfo>
   <copyright>
-    <year>2008</year>
+    <year>2009</year>
     <holder>
       <ulink url="http://fsf.org">FSF</ulink>
     </holder>
   </copyright>
   <legalnotice>
     <para>
-      <ulink url="17_intro/license.html">License</ulink>
+      <link linkend="manual.intro.status.license">License</link>
     </para>
   </legalnotice>
 </bookinfo>
@@ -100,12 +100,15 @@
 
 <!-- Appendix D -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
-	    parse="xml" href="../gnu/gpl-2.0.xml">
+	    parse="xml" href="../gnu/gpl-3.0.xml">
 </xi:include>
 
 <!-- Appendix E -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
 	    parse="xml" href="../gnu/fdl-1.2.xml">
 </xi:include>
+
+<!-- Index -->
+<index/> 
 
 </book>

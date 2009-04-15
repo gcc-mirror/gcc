@@ -20,7 +20,10 @@
   </keywordset>
 </partinfo>
 
-<title>Algorithms</title>
+<title>
+  Algorithms
+  <indexterm><primary>Algorithms</primary></indexterm>
+</title>
 
 <preface>
   <title></title>
