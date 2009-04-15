@@ -4549,6 +4549,7 @@ static void dwarf2out_imported_module_or_decl_1 (tree, tree, tree,
 static void dwarf2out_abstract_function (tree);
 static void dwarf2out_var_location (rtx);
 static void dwarf2out_begin_function (tree);
+static void dwarf2out_set_name (tree, tree);
 
 /* The debug hooks structure.  */
 
@@ -4582,6 +4583,7 @@ const struct gcc_debug_hooks dwarf2_debug_hooks =
   debug_nothing_int,		/* handle_pch */
   dwarf2out_var_location,
   dwarf2out_switch_text_section,
+  dwarf2out_set_name,
   1                             /* start_end_main_source_file */
 };
 #endif
@@ -5929,12 +5931,9 @@ debug_str_eq (const void *x1, const void *x2)
 		 (const char *)x2) == 0;
 }
 
-/* Add a string attribute value to a DIE.  */
-
-static inline void
-add_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind, const char *str)
+static struct indirect_string_node *
+find_AT_string (const char *str)
 {
-  dw_attr_node attr;
   struct indirect_string_node *node;
   void **slot;
 
@@ -5955,6 +5954,18 @@ add_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind, const char *str)
     node = (struct indirect_string_node *) *slot;
 
   node->refcount++;
+  return node;
+}
+
+/* Add a string attribute value to a DIE.  */
+
+static inline void
+add_AT_string (dw_die_ref die, enum dwarf_attribute attr_kind, const char *str)
+{
+  dw_attr_node attr;
+  struct indirect_string_node *node;
+
+  node = find_AT_string (str);
 
   attr.dw_attr = attr_kind;
   attr.dw_attr_val.val_class = dw_val_class_str;
@@ -15763,6 +15774,31 @@ maybe_emit_file (struct dwarf_file_data * fd)
   return fd->emitted_number;
 }
 
+/* Replace DW_AT_name for the decl with name.  */
+ 
+static void
+dwarf2out_set_name (tree decl, tree name)
+{
+  dw_die_ref die;
+  dw_attr_ref attr;
+
+  die = TYPE_SYMTAB_DIE (decl);
+  if (!die)
+    return;
+
+  attr = get_AT (die, DW_AT_name);
+  if (attr)
+    {
+      struct indirect_string_node *node;
+
+      node = find_AT_string (dwarf2_name (name, 0));
+      /* replace the string.  */
+      attr->dw_attr_val.v.val_str = node;
+    }
+
+  else
+    add_name_attribute (die, dwarf2_name (name, 0));
+}
 /* Called by the final INSN scan whenever we see a var location.  We
    use it to drop labels in the right places, and throw the location in
    our lookup table.  */
