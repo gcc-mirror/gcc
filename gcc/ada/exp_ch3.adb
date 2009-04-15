@@ -814,22 +814,26 @@ package body Exp_Ch3 is
          Analyze (Decl);
          Set_Has_Master_Entity (Scope (T));
 
-         --  Now mark the containing scope as a task master
+         --  Now mark the containing scope as a task master. Masters
+         --  associated with return statements are already marked at
+         --  this stage (see Analyze_Subprogram_Body).
 
-         Par := P;
-         while Nkind (Par) /= N_Compilation_Unit loop
-            Par := Parent (Par);
+         if Ekind (Current_Scope) /= E_Return_Statement then
+            Par := P;
+            while Nkind (Par) /= N_Compilation_Unit loop
+               Par := Parent (Par);
 
             --  If we fall off the top, we are at the outer level, and the
             --  environment task is our effective master, so nothing to mark.
 
-            if Nkind_In
-                (Par, N_Task_Body, N_Block_Statement, N_Subprogram_Body)
-            then
-               Set_Is_Task_Master (Par, True);
-               exit;
-            end if;
-         end loop;
+               if Nkind_In
+                   (Par, N_Task_Body, N_Block_Statement, N_Subprogram_Body)
+               then
+                  Set_Is_Task_Master (Par, True);
+                  exit;
+               end if;
+            end loop;
+         end if;
       end if;
 
       --  Now define the renaming of the master_id
@@ -3949,15 +3953,13 @@ package body Exp_Ch3 is
 
          --  Create a class-wide master because a Master_Id must be generated
          --  for access-to-limited-class-wide types whose root may be extended
-         --  with task components, and for access-to-limited-interfaces because
-         --  they can be used to reference tasks implementing such interface.
+         --  with task components.
+
+         --  Note: This code covers access-to-limited-interfaces because they
+         --        can be used to reference tasks implementing them.
 
          elsif Is_Class_Wide_Type (Designated_Type (Def_Id))
-           and then (Is_Limited_Type (Designated_Type (Def_Id))
-                       or else
-                        (Is_Interface (Designated_Type (Def_Id))
-                           and then
-                             Is_Limited_Interface (Designated_Type (Def_Id))))
+           and then Is_Limited_Type (Designated_Type (Def_Id))
            and then Tasking_Allowed
 
             --  Do not create a class-wide master for types whose convention is

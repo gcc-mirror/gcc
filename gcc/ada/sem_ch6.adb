@@ -1426,6 +1426,7 @@ package body Sem_Ch6 is
 
       procedure Check_Anonymous_Return is
          Decl : Node_Id;
+         Par  : Node_Id;
          Scop : Entity_Id;
 
       begin
@@ -1437,7 +1438,12 @@ package body Sem_Ch6 is
 
          if Ekind (Scop) = E_Function
            and then Ekind (Etype (Scop)) = E_Anonymous_Access_Type
-           and then Has_Task (Designated_Type (Etype (Scop)))
+           and then not Is_Thunk (Scop)
+           and then (Has_Task (Designated_Type (Etype (Scop)))
+                      or else
+                       (Is_Class_Wide_Type (Designated_Type (Etype (Scop)))
+                          and then
+                        Is_Limited_Record (Designated_Type (Etype (Scop)))))
            and then Expander_Active
          then
             Decl :=
@@ -1459,6 +1465,25 @@ package body Sem_Ch6 is
 
             Set_Master_Id (Etype (Scop), Defining_Identifier (Decl));
             Set_Has_Master_Entity (Scop);
+
+            --  Now mark the containing scope as a task master
+
+            Par := N;
+            while Nkind (Par) /= N_Compilation_Unit loop
+               Par := Parent (Par);
+               pragma Assert (Present (Par));
+
+               --  If we fall off the top, we are at the outer level, and
+               --  the environment task is our effective master, so nothing
+               --  to mark.
+
+               if Nkind_In
+                   (Par, N_Task_Body, N_Block_Statement, N_Subprogram_Body)
+               then
+                  Set_Is_Task_Master (Par, True);
+                  exit;
+               end if;
+            end loop;
          end if;
       end Check_Anonymous_Return;
 

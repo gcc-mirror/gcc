@@ -6708,8 +6708,17 @@ package body Sem_Ch8 is
             E := First_Entity (S);
             while Present (E) loop
                if Is_Child_Unit (E) then
-                  Set_Is_Immediately_Visible (E,
-                    Is_Visible_Child_Unit (E) or else In_Open_Scopes (E));
+                  if not From_With_Type (E) then
+                     Set_Is_Immediately_Visible (E,
+                       Is_Visible_Child_Unit (E) or else In_Open_Scopes (E));
+                  else
+                     pragma Assert
+                       (Nkind (Parent (E)) = N_Defining_Program_Unit_Name
+                          and then
+                        Nkind (Parent (Parent (E))) = N_Package_Specification);
+                     Set_Is_Immediately_Visible (E,
+                       Limited_View_Installed (Parent (Parent (E))));
+                  end if;
                else
                   Set_Is_Immediately_Visible (E, True);
                end if;
