@@ -1,3 +1,10 @@
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Type_Declaration): Create freeze node for access
+	type even if the designated type comes from a limited_with clause, to
+	ensure that the symbol for the finalization list of the access type is
+	created.
+
 2009-04-10  Robert Dewar  <dewar@adacore.com>
 
 	* sem_warn.ads, sem_warn.adb (Check_Low_Bound_Tested): Catch more cases
