@@ -3954,9 +3954,9 @@ package body Sem_Ch6 is
       procedure Possible_Freeze (T : Entity_Id);
       --  T is the type of either a formal parameter or of the return type.
       --  If T is not yet frozen and needs a delayed freeze, then the
-      --  subprogram itself must be delayed. If T is the limited view of
-      --  of an incomplete type the subprogram must be frozen as well,
-      --  because T may depend on local types that have not been frozen yet.
+      --  subprogram itself must be delayed. If T is the limited view of an
+      --  incomplete type the subprogram must be frozen as well, because
+      --  T may depend on local types that have not been frozen yet.
 
       ---------------------
       -- Possible_Freeze --
@@ -3964,9 +3964,7 @@ package body Sem_Ch6 is
 
       procedure Possible_Freeze (T : Entity_Id) is
       begin
-         if Has_Delayed_Freeze (T)
-           and then not Is_Frozen (T)
-         then
+         if Has_Delayed_Freeze (T) and then not Is_Frozen (T) then
             Set_Has_Delayed_Freeze (Designator);
 
          elsif Is_Access_Type (T)
@@ -3975,11 +3973,10 @@ package body Sem_Ch6 is
          then
             Set_Has_Delayed_Freeze (Designator);
 
-         elsif Ekind (T) = E_Incomplete_Type
-           and then From_With_Type (T)
-         then
+         elsif Ekind (T) = E_Incomplete_Type and then From_With_Type (T) then
             Set_Has_Delayed_Freeze (Designator);
          end if;
+
       end Possible_Freeze;
 
    --  Start of processing for Check_Delayed_Subprogram
