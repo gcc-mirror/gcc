@@ -1409,8 +1409,11 @@ package body Exp_Ch7 is
       --  expansion is complete. See body of Exp_Aggr for the treatment of
       --  other controlled components.
 
-      if Nkind (Parent (N)) = N_Aggregate
-        and then Is_Array_Type (Etype (Parent (N)))
+      if (Nkind (Parent (N)) = N_Aggregate
+            and then Is_Array_Type (Etype (Parent (N))))
+        or else
+         (Nkind (Parent (N)) = N_Component_Association
+            and then Is_Array_Type (Etype (Parent (Parent (N)))))
       then
          return;
       end if;
