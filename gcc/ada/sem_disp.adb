@@ -42,6 +42,7 @@ with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Ch6;  use Sem_Ch6;
+with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Type; use Sem_Type;
 with Sem_Util; use Sem_Util;
@@ -482,6 +483,10 @@ package body Sem_Disp is
 
             Set_Controlling_Argument (N, Control);
             Check_Restriction (No_Dispatching_Calls, N);
+
+            if Is_Eliminated (Ultimate_Alias (Subp_Entity)) then
+               Eliminate_Error_Msg (N, Ultimate_Alias (Subp_Entity));
+            end if;
 
          --  If there is a statically tagged actual and a tag-indeterminate
          --  call to a function of the ancestor (such as that provided by a

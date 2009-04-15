@@ -1425,30 +1425,29 @@ package body Sem_Type is
                elsif Is_Numeric_Type (Etype (F1))
                  and then Has_Abstract_Interpretation (Act1)
                then
-
-                  --  Current interpretation is not the right one because
-                  --  it expects a numeric operand. Examine all the other
-                  --  ones.
+                  --  Current interpretation is not the right one because it
+                  --  expects a numeric operand. Examine all the other ones.
 
                   declare
-                     I : Interp_Index;
+                     I  : Interp_Index;
                      It : Interp;
 
                   begin
                      Get_First_Interp (N, I, It);
-
                      while Present (It.Typ) loop
                         if
                           not Is_Numeric_Type (Etype (First_Formal (It.Nam)))
                         then
                            if No (Act2)
                              or else not Has_Abstract_Interpretation (Act2)
-                             or else not Is_Numeric_Type
-                               (Etype (Next_Formal (First_Formal (It.Nam))))
+                             or else not
+                               Is_Numeric_Type
+                                 (Etype (Next_Formal (First_Formal (It.Nam))))
                            then
                               return It;
                            end if;
                         end if;
+
                         Get_Next_Interp (I, It);
                      end loop;
 
