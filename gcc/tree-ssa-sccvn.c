@@ -2886,7 +2886,8 @@ run_scc_vn (bool may_insert_arg)
       if (!name)
 	continue;
       info = VN_INFO (name);
-      if (info->valnum == name)
+      if (info->valnum == name
+	  || info->valnum == VN_TOP)
 	info->value_id = get_next_value_id ();
       else if (is_gimple_min_invariant (info->valnum))
 	info->value_id = get_or_alloc_constant_value_id (info->valnum);

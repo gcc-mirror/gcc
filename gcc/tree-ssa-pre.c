@@ -4181,6 +4181,8 @@ eliminate (void)
 
 	  remove_phi_node (&gsi, false);
 
+	  if (!useless_type_conversion_p (TREE_TYPE (res), TREE_TYPE (sprime)))
+	    sprime = fold_convert (TREE_TYPE (res), sprime);
 	  stmt = gimple_build_assign (res, sprime);
 	  SSA_NAME_DEF_STMT (res) = stmt;
 	  if (TREE_CODE (sprime) == SSA_NAME)

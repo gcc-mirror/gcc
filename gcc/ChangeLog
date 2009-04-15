@@ -1,5 +1,13 @@
 2009-04-15  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-pre.c (eliminate): When replacing a PHI node carry
+	out a necessary conversion.
+	* tree-ssa-sccvn.c (run_scc_vn): Also assign value-ids to
+	names we didn't value number.
+	* tree-mudflap.c (mf_build_check_statement_for): Use correct types.
+
+2009-04-15  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/39764
 	* tree-ssa-ccp.c (get_value): Canonicalize value with
 	canonicalize_float_value.
