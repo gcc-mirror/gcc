@@ -5189,9 +5189,9 @@ also be used as a configuration pragma.
 The fourth form, with an On|Off parameter and a string, is used to
 control individual messages, based on their text. The string argument
 is a pattern that is used to match against the text of individual
-warning messages (not including the initial "warnings: " tag).
+warning messages (not including the initial "warning: " tag).
 
-The pattern may contain asterisks which match zero or more characters in
+The pattern may contain asterisks, which match zero or more characters in
 the message. For example, you can use
 @code{pragma Warnings (Off, "*bits of*unused")} to suppress the warning
 message @code{warning: 960 bits of "a" unused}. No other regular

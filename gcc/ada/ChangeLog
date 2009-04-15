@@ -1,3 +1,21 @@
+2009-04-15  Bob Duff  <duff@adacore.com>
+
+	* sem_ch5.adb (Analyze_Loop_Statement): Don't check for infinite loop
+	warnings unless the loop comes from source, because checking generated
+	loops is a waste of time, and makes it harder to debug
+	Check_Infinite_Loop_Warning.
+
+	* sem_warn.adb (Check_Infinite_Loop_Warning): If the local variable
+	tested in the while loop is a renaming, do not warn. Otherwise, we get
+	false alarms, because it's usually renaming something that we can't
+	deal with (an indexed component, a global variable, ...).
+
+	* gnat_rm.texi: Fix typo
+
+2009-04-15  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch6.adb: Minor reformatting
+
 2009-04-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch7.adb (Expand_Ctrl_Function_Call): Check for the case where the

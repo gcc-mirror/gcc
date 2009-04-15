@@ -2031,7 +2031,12 @@ package body Sem_Ch5 is
       Process_End_Label (Loop_Statement, 'e', Ent);
       End_Scope;
       Kill_Current_Values;
-      Check_Infinite_Loop_Warning (N);
+
+      --  No point in checking for warnings in code we generated
+
+      if Comes_From_Source (N) then
+         Check_Infinite_Loop_Warning (N);
+      end if;
 
       --  Code after loop is unreachable if the loop has no WHILE or FOR
       --  and contains no EXIT statements within the body of the loop.

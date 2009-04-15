@@ -541,7 +541,7 @@ package body Sem_Warn is
    --  Start of processing for Check_Infinite_Loop_Warning
 
    begin
-      --  We need a while iteration with no condition actions. Conditions
+      --  We need a while iteration with no condition actions. Condition
       --  actions just make things too complicated to get the warning right.
 
       if No (Iter)
@@ -556,12 +556,15 @@ package body Sem_Warn is
 
       Find_Var (Condition (Iter));
 
-      --  Nothing to do if local variable from source not found
+      --  Nothing to do if local variable from source not found. If it's a
+      --  renaming, it is probably renaming something too complicated to deal
+      --  with here.
 
       if No (Var)
         or else Ekind (Var) /= E_Variable
         or else Is_Library_Level_Entity (Var)
         or else not Comes_From_Source (Var)
+        or else Nkind (Parent (Var)) = N_Object_Renaming_Declaration
       then
          return;
 
