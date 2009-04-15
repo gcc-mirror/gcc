@@ -2332,10 +2332,13 @@ package body Bindgen is
             """__gnat_ada_main_program_name"");");
       end if;
 
-      WBI ("");
-      WBI ("   procedure " & Ada_Final_Name.all & ";");
-      WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
-           Ada_Final_Name.all & """);");
+      if not Cumulative_Restrictions.Set (No_Finalization) then
+         WBI ("");
+         WBI ("   procedure " & Ada_Final_Name.all & ";");
+         WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
+              Ada_Final_Name.all & """);");
+      end if;
+
       WBI ("");
       WBI ("   procedure " & Ada_Init_Name.all & ";");
       WBI ("   pragma Export (C, " & Ada_Init_Name.all & ", """ &
@@ -2507,7 +2510,11 @@ package body Bindgen is
 
       Gen_Adainit_Ada;
 
-      Gen_Adafinal_Ada;
+      --  Generate the adafinal routine unless there is no finalization to do.
+
+      if not Cumulative_Restrictions.Set (No_Finalization) then
+         Gen_Adafinal_Ada;
+      end if;
 
       if Bind_Main_Program and then VM_Target = No_VM then
 

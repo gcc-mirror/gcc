@@ -2606,10 +2606,10 @@ package body Freeze is
                           ("?foreign convention function& should not " &
                            "return unconstrained array!", E);
 
-                     --  Ada 2005 (AI-326): Check wrong use of tagged
+                     --  Ada 2005 (AI-326): Check wrong use of
                      --  incomplete type
 
-                     --    type T is tagged;
+                     --    type T;   --  tagged or just incomplete.
                      --    function F (X : Boolean) return T; -- ERROR
 
                      --  The type must be declared in the current scope for the
@@ -2617,13 +2617,11 @@ package body Freeze is
                      --  when the construct that mentions it is frozen.
 
                      elsif Ekind (Etype (E)) = E_Incomplete_Type
-                       and then Is_Tagged_Type (Etype (E))
                        and then No (Full_View (Etype (E)))
                        and then not Is_Value_Type (Etype (E))
                      then
-                        Error_Msg_N
-                          ("(Ada 2005): invalid use of tagged incomplete type",
-                            E);
+                        Error_Msg_NE
+                          ("invalid use of incomplete type&", E, Etype (E));
                      end if;
                   end if;
                end;
@@ -3510,10 +3508,25 @@ package body Freeze is
 
          --  For access subprogram, freeze types of all formals, the return
          --  type was already frozen, since it is the Etype of the function.
+         --  Formal types can be tagged Taft amendment types, but otherwise
+         --  they cannot be incomplete;
 
          elsif Ekind (E) = E_Subprogram_Type then
             Formal := First_Formal (E);
+
             while Present (Formal) loop
+               if Ekind (Etype (Formal)) = E_Incomplete_Type
+                 and then No (Full_View (Etype (Formal)))
+                 and then not Is_Value_Type (Etype (Formal))
+               then
+                  if Is_Tagged_Type (Etype (Formal)) then
+                     null;
+                  else
+                     Error_Msg_NE
+                       ("invalid use of incomplete type&", E, Etype (Formal));
+                  end if;
+               end if;
+
                Freeze_And_Append (Etype (Formal), Loc, Result);
                Next_Formal (Formal);
             end loop;
@@ -3522,16 +3535,15 @@ package body Freeze is
 
             --  Ada 2005 (AI-326): Check wrong use of tag incomplete type
 
-            --    type T is tagged;
+            --    type T;  --   tagged or untagged, may be from limited view;
             --    type Acc is access function (X : T) return T; -- ERROR
 
             if Ekind (Etype (E)) = E_Incomplete_Type
-              and then Is_Tagged_Type (Etype (E))
               and then No (Full_View (Etype (E)))
               and then not Is_Value_Type (Etype (E))
             then
-               Error_Msg_N
-                 ("(Ada 2005): invalid use of tagged incomplete type", E);
+               Error_Msg_NE
+                 ("invalid use of incomplete type&", E, Etype (E));
             end if;
 
          --  For access to a protected subprogram, freeze the equivalent type
@@ -3557,12 +3569,11 @@ package body Freeze is
                end if;
 
                if Ekind (Etyp) = E_Incomplete_Type
-                 and then Is_Tagged_Type (Etyp)
                  and then No (Full_View (Etyp))
                  and then not Is_Value_Type (Etype (E))
                then
-                  Error_Msg_N
-                    ("(Ada 2005): invalid use of tagged incomplete type", E);
+                  Error_Msg_NE
+                    ("invalid use of incomplete type&", E, Etyp);
                end if;
             end;
 

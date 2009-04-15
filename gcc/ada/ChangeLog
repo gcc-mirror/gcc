@@ -1,3 +1,32 @@
+2009-04-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.adb: Add new constant Nanos_In_Four_Years.
+	(Formatting_Operations.Time_Of): Change the way four year chunks of
+	nanoseconds are added to the intermediate result.
+
+2009-04-15  Nicolas Setton  <setton@adacore.com>
+
+	* sysdep.c: Add __APPLE__ in the list of systems where get_immediate
+	does not need to wait for a carriage return.
+
+2009-04-15  Tristan Gingold  <gingold@adacore.com>
+
+	* bindgen.adb: Do not generate adafinal if No_Finalization restriction
+	is set.
+
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): improve error message for improper use of
+	incomplete types.
+	Diagnose additional illegal uses of incomplete types in formal parts.
+	appearing in formal parts.
+
+	* sem_ch6.adb (Process_Formals, Analyze_Return_Type): ditto.
+
+2009-04-15  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Install test for object too large.
+
 2009-04-15  Nicolas Roche  <roche@adacore.com>
 
 	* adaint.c: Add function __gnat_lwp_self that retrieves the LWP of the
