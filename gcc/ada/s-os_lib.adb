@@ -848,7 +848,7 @@ package body System.OS_Lib is
       R : Integer;
 
       function unlink (A : Address) return Integer;
-      pragma Import (C, unlink, "unlink");
+      pragma Import (C, unlink, "__gnat_unlink");
 
    begin
       R := unlink (Name);
@@ -2246,7 +2246,7 @@ package body System.OS_Lib is
       Success  : out Boolean)
    is
       function rename (From, To : Address) return Integer;
-      pragma Import (C, rename, "rename");
+      pragma Import (C, rename, "__gnat_rename");
       R : Integer;
    begin
       R := rename (Old_Name, New_Name);

@@ -106,7 +106,7 @@ package body GNAT.Serial_Communications is
          Success := CloseHandle (HANDLE (Port.H.all));
       end if;
 
-      Port.H.all := CreateFile
+      Port.H.all := CreateFileA
         (lpFileName            => C_Name (C_Name'First)'Address,
          dwDesiredAccess       => GENERIC_READ or GENERIC_WRITE,
          dwShareMode           => 0,
