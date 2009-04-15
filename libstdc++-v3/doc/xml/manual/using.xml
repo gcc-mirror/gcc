@@ -4,7 +4,7 @@
 [ ]>
 
 <chapter id="manual.intro.using" xreflabel="Using">
-<?dbhtml filename="using.html"?>
+  <?dbhtml filename="using.html"?>
 
 <title>Using</title>
 
@@ -78,6 +78,7 @@
   </sect1>
 
   <sect1 id="manual.intro.using.headers" xreflabel="Headers">
+    <?dbhtml filename="using_headers.html"?>
     <title>Headers</title>
 
     <sect2 id="manual.intro.using.headers.all" xreflabel="Header Files">
@@ -706,6 +707,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
   </sect1>
 
   <sect1 id="manual.intro.using.namespaces" xreflabel="Namespaces">
+    <?dbhtml filename="using_namespaces.html"?>
     <title>Namespaces</title>
 
     <sect2 id="manual.intro.using.namespaces.all" xreflabel="Available Namespaces">
@@ -817,6 +819,7 @@ namespace gtk
   </sect1>
 
   <sect1 id="manual.intro.using.macros" xreflabel="Macros">
+    <?dbhtml filename="using_macros.html"?>
     <title>Macros</title>
 
    <para>All pre-processor switches and configurations are all gathered
@@ -943,6 +946,7 @@ namespace gtk
   </sect1>  
   
   <sect1 id="manual.intro.using.concurrency" xreflabel="Concurrency">
+    <?dbhtml filename="using_concurrency.html"?>
     <title>Concurrency</title>
 
    <para>This section discusses issues surrounding the proper compilation
@@ -1261,6 +1265,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
   </sect1>
 
   <sect1 id="manual.intro.using.exception" xreflabel="Exceptions">
+    <?dbhtml filename="using_exceptions.html"?>
     <title>Exceptions</title>
 
   <sect2 id="intro.using.exception.propagating" xreflabel="Propagating Exceptions">

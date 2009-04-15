@@ -24,9 +24,11 @@
 
 <!-- Chapter 01 : Sequences -->
 <chapter id="manual.containers.sequences" xreflabel="Sequences">
+<?dbhtml filename="sequences.html"?>
   <title>Sequences</title>
 
 <sect1 id="containers.sequences.list" xreflabel="list">
+<?dbhtml filename="list.html"?>
   <title>list</title>
   <sect2 id="sequences.list.size" xreflabel="list::size() is O(n)">
     <title>list::size() is O(n)</title>
@@ -80,6 +82,7 @@
 </sect1>
 
 <sect1 id="containers.sequences.vector" xreflabel="vector">
+<?dbhtml filename="vector.html"?>
   <title>vector</title>
   <para>
   </para>
@@ -108,6 +111,7 @@
 
 <!-- Chapter 02 : Associative -->
 <chapter id="manual.containers.associative" xreflabel="Associative">
+<?dbhtml filename="associative.html"?>
   <title>Associative</title>
 
   <sect1 id="containers.associative.insert_hints" xreflabel="Insertion Hints">
@@ -219,6 +223,7 @@
 
 
   <sect1 id="containers.associative.bitset" xreflabel="bitset">
+    <?dbhtml filename="bitset.html"?>
     <title>bitset</title>
     <sect2 id="associative.bitset.size_variable" xreflabel="Variable">
       <title>Size Variable</title>
@@ -362,6 +367,7 @@
 
 <!-- Chapter 03 : Interacting with C -->
 <chapter id="manual.containers.c" xreflabel="Interacting with C">
+<?dbhtml filename="containers_and_c.html"?>
   <title>Interacting with C</title>
 
   <sect1 id="containers.c.vs_array" xreflabel="Containers vs. Arrays">
