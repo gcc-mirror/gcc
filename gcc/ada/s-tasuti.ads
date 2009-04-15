@@ -52,7 +52,7 @@ package System.Tasking.Utilities is
    --  then it will abort all the level 2 tasks. See Finalize_Global_Tasks
    --  procedure for more information.
    --
-   --  This is a dangerous operation, and should only be used on nested tasks
+   --  This is a dangerous operation, and should never be used on nested tasks
    --  or tasks that depend on any objects that might be finalized earlier than
    --  the termination of the environment task. It is for internal use by the
    --  GNARL, to prevent such internal server tasks from preventing a partition
