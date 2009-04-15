@@ -5213,6 +5213,20 @@ package body Sem_Ch4 is
                Error_Msg_N ("access parameter is not allowed to be null", L);
                Error_Msg_N ("\(call would raise Constraint_Error)", L);
                return;
+
+            --  Another special case for exponentiation, where the right
+            --  operand must be Natural, independently of the base.
+
+            elsif Nkind (N) = N_Op_Expon
+              and then Is_Numeric_Type (Etype (L))
+              and then not Is_Overloaded (R)
+              and then
+                First_Subtype (Base_Type (Etype (R))) /= Standard_Integer
+              and then Base_Type (Etype (R)) /= Universal_Integer
+            then
+               Error_Msg_NE
+                 ("exponent must be of type Natural, found}", R, Etype (R));
+               return;
             end if;
 
             --  If we fall through then just give general message. Note that in
