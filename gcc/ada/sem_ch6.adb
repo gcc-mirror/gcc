@@ -196,8 +196,8 @@ package body Sem_Ch6 is
 
    procedure Set_Formal_Validity (Formal_Id : Entity_Id);
    --  Formal_Id is an formal parameter entity. This procedure deals with
-   --  setting the proper validity status for this entity, which depends
-   --  on the kind of parameter and the validity checking mode.
+   --  setting the proper validity status for this entity, which depends on
+   --  the kind of parameter and the validity checking mode.
 
    ------------------------------
    -- Analyze_Return_Statement --
@@ -3928,7 +3928,9 @@ package body Sem_Ch6 is
       procedure Possible_Freeze (T : Entity_Id);
       --  T is the type of either a formal parameter or of the return type.
       --  If T is not yet frozen and needs a delayed freeze, then the
-      --  subprogram itself must be delayed.
+      --  subprogram itself must be delayed. If T is the limited view of
+      --  of an incomplete type the subprogram must be frozen as well,
+      --  because T may depend on local types that have not been frozen yet.
 
       ---------------------
       -- Possible_Freeze --
@@ -3944,6 +3946,11 @@ package body Sem_Ch6 is
          elsif Is_Access_Type (T)
            and then Has_Delayed_Freeze (Designated_Type (T))
            and then not Is_Frozen (Designated_Type (T))
+         then
+            Set_Has_Delayed_Freeze (Designator);
+
+         elsif Ekind (T) = E_Incomplete_Type
+           and then From_With_Type (T)
          then
             Set_Has_Delayed_Freeze (Designator);
          end if;
