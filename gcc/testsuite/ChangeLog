@@ -1,3 +1,8 @@
+2009-04-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/sync1.ads: Fix error now flagged by gnat.
+	* gnat.dg/specs/limited1.ads: Ditto.
+
 2009-04-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR testsuite/39769
