@@ -1,3 +1,10 @@
+2009-04-15  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+	* gcc-interface/Makefile.in: Reorganization of s-osinte-vxworks*
+	and s-vxwext*.
+
 2009-04-15  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch13.adb (Unchecked_Conversions): Store source location instead
