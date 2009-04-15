@@ -1388,6 +1388,7 @@ package body System.Tasking.Stages is
       --  unwound. The common notification routine has been called at the
       --  raise point already.
 
+      Initialization.Task_Lock (Self_Id);
       To_Stderr ("task ");
 
       if Self_Id.Common.Task_Image_Len /= 0 then
@@ -1400,6 +1401,7 @@ package body System.Tasking.Stages is
       To_Stderr (" terminated by unhandled exception");
       To_Stderr ((1 => ASCII.LF));
       To_Stderr (Tailored_Exception_Information (Excep.all));
+      Initialization.Task_Unlock (Self_Id);
    end Trace_Unhandled_Exception_In_Task;
 
    ------------------------------------

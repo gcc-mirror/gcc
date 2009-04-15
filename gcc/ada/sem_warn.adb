@@ -3006,6 +3006,7 @@ package body Sem_Warn is
 
          when 'X' =>
             Warn_On_Non_Local_Exception         := False;
+            No_Warn_On_Non_Local_Exception      := True;
 
          when others =>
             return False;
@@ -3078,6 +3079,8 @@ package body Sem_Warn is
             Warn_On_Unrecognized_Pragma         := False;
             Warn_On_Unrepped_Components         := False;
             Warn_On_Warnings_Off                := False;
+
+            No_Warn_On_Non_Local_Exception      := True;
 
          when 'b' =>
             Warn_On_Bad_Fixed_Value             := True;

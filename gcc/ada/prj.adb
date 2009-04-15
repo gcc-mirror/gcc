@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Ada.Unchecked_Deallocation;
 
 with Debug;
 with Output;   use Output;
@@ -826,17 +827,51 @@ package body Prj is
       end if;
    end Register_Default_Naming_Scheme;
 
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Tree : in out Project_Tree_Ref) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Project_Tree_Data, Project_Tree_Ref);
+   begin
+      if Tree /= null then
+         Language_Data_Table.Free (Tree.Languages_Data);
+         Name_List_Table.Free (Tree.Name_Lists);
+         String_Element_Table.Free (Tree.String_Elements);
+         Variable_Element_Table.Free (Tree.Variable_Elements);
+         Array_Element_Table.Free (Tree.Array_Elements);
+         Array_Table.Free (Tree.Arrays);
+         Package_Table.Free (Tree.Packages);
+         Project_List_Table.Free (Tree.Project_Lists);
+         Project_Table.Free (Tree.Projects);
+         Source_Data_Table.Free (Tree.Sources);
+         Alternate_Language_Table.Free (Tree.Alt_Langs);
+         Unit_Table.Free (Tree.Units);
+         Units_Htable.Reset (Tree.Units_HT);
+         Files_Htable.Reset (Tree.Files_HT);
+         Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
+         Unit_Sources_Htable.Reset (Tree.Unit_Sources_HT);
+
+         --  Private part
+
+         Naming_Table.Free (Tree.Private_Part.Namings);
+         Path_File_Table.Free (Tree.Private_Part.Path_Files);
+         Source_Path_Table.Free (Tree.Private_Part.Source_Paths);
+         Object_Path_Table.Free (Tree.Private_Part.Object_Paths);
+
+         --  Naming data (nothing to free ?)
+         null;
+
+         Unchecked_Free (Tree);
+      end if;
+   end Free;
+
    -----------
    -- Reset --
    -----------
 
    procedure Reset (Tree : Project_Tree_Ref) is
-
-      --  Def_Lang : constant Name_Node :=
-      --             (Name => Name_Ada,
-      --              Next => No_Name_List);
-      --  Why is the above commented out ???
-
    begin
       Prj.Env.Initialize;
 

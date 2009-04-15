@@ -116,6 +116,9 @@ package Prj is
 
    No_Project_Tree : constant Project_Tree_Ref;
 
+   procedure Free (Tree : in out Project_Tree_Ref);
+   --  Free memory associated with the tree
+
    function Default_Ada_Spec_Suffix return File_Name_Type;
    pragma Inline (Default_Ada_Spec_Suffix);
    --  The name for the standard GNAT suffix for Ada spec source file name

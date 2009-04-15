@@ -415,6 +415,12 @@ package Opt is
    --  to make a single long message, and then this message is split up into
    --  multiple lines not exceeding the specified length. Set by -gnatj=nn.
 
+   Exception_Handler_Encountered : Boolean := False;
+   --  GNAT
+   --  This flag is set true if the parser encounters an exception handler.
+   --  It is used to set Warn_On_Exception_Propagation True if the restriction
+   --  No_Exception_Propagation is set.
+
    Exception_Locations_Suppressed : Boolean := False;
    --  GNAT
    --  This flag is set True if a Suppress_Exception_Locations configuration
@@ -1309,7 +1315,15 @@ package Opt is
    --  Set to True to generate warnings for non-local exception raises and also
    --  handlers that can never handle a local raise. This warning is only ever
    --  generated if pragma Restrictions (No_Exception_Propagation) is set. The
-   --  default is not to generate the warnings even if the restriction is set.
+   --  default is not to generate the warnings except that if the source has
+   --  at least one exception, and this restriction is set, and the warning
+   --  was not explicitly turned off, then it is turned on by default.
+
+   No_Warn_On_Non_Local_Exception : Boolean := False;
+   --  GNAT
+   --  This is set to True if the above warning is explicitly suppressed. We
+   --  use this to avoid turning it on by default when No_Exception_Propagation
+   --  restriction is set.
 
    Warn_On_Obsolescent_Feature : Boolean := False;
    --  GNAT

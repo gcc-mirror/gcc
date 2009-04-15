@@ -2449,6 +2449,8 @@ package body GNAT.Command_Line is
          Free (Config.Aliases);
          Free (Config.Expansions);
          Free (Config.Prefixes);
+         Free (Config.Sections);
+         Free (Config.Switches);
          Unchecked_Free (Config);
       end if;
    end Free;

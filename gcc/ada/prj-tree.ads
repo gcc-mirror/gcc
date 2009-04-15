@@ -1300,6 +1300,9 @@ package Prj.Tree is
    end record;
    --  The data for a project node tree
 
+   procedure Free (Prj : in out Project_Node_Tree_Ref);
+   --  Free memory used by Prj
+
 private
    type Comment_Array is array (Positive range <>) of Comment_Data;
    type Comments_Ptr is access Comment_Array;

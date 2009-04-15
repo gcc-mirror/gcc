@@ -1,3 +1,32 @@
+2009-04-15  Robert Dewar  <dewar@adacore.com>
+
+	* frontend.adb (Frontend): Set proper default for
+	Warn_On_Non_Local_Exception.
+
+	* opt.ads (Exception_Handler_Encountered): New flag
+	(No_Warn_On_Non_Local_Exception): New flag
+
+	* par-ch11.adb (P_Exception_Handler): Set Exception_Handler_Encountered
+
+	* sem_warn.adb (Set_Warning_Switch): Set No_Warn_On_Non_Local_Exception
+	(Set_Dot_Warning_Switch): Set No_Warn_On_Non_Local_Exception
+
+2009-04-15  Cyrille Comar  <comar@adacore.com>
+
+	* s-tassta.adb, a-exextr.adb, a-elchha.adb
+	(Ada.Exception.Last_Chance_Handler): Do not print unhandled exception
+	message when exception traces are active since it would generate
+	redundant information.
+	(Exception_Traces.Notify_Exception): put message output by a critical
+	section to avoid unsynchronized output.
+	(Trace_Unhandled_Exception_In_Task): put message output by a critical
+	section to avoid unsynchronized output.
+
+2009-04-15  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb, prj-tree.adb, prj-tree.ads, prj.adb, prj.ads
+	(Free): New subprogram.
+
 2009-04-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* a-calend.adb: Add new constant Nanos_In_Four_Years.
