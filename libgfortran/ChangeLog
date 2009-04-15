@@ -1,6 +1,6 @@
 2009-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
-	PR libfortran/38688
+	PR libfortran/38668
 	* io/transfer.c (finalize_transfer): Don't flush for advance='no'.
 
 2009-04-15 Danny Smith  <dannysmith@clear.net.nz>
