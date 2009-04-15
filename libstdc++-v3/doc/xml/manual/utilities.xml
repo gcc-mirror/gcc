@@ -17,7 +17,10 @@
   </keywordset>
 </partinfo>
 
-<title>Utilities</title>
+<title>
+  Utilities
+  <indexterm><primary>Utilities</primary></indexterm>
+</title>
 
 <!-- Chapter 01 : Functors -->
 <chapter id="manual.util.functors" xreflabel="Functors">

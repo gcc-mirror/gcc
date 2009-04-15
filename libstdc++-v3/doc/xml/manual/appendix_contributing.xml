@@ -17,7 +17,13 @@
   </keywordset>
 </appendixinfo>
 
-<title>Contributing</title>
+<title>
+  Contributing
+  <indexterm>
+    <primary>Appendix</primary>
+    <secondary>Contributing</secondary>
+  </indexterm>
+</title>
 
 <para> 
   The GNU C++ Library follows an open development model. Active
