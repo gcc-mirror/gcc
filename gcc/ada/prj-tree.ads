@@ -131,9 +131,9 @@ package Prj.Tree is
    --  Save in variable S the comment state. Called before scanning a new
    --  project file.
 
-   procedure Restore (S : Comment_State);
+   procedure Restore_And_Free (S : in out Comment_State);
    --  Restore the comment state to a previously saved value. Called after
-   --  scanning a project file.
+   --  scanning a project file. Frees the memory occupied by S
 
    procedure Reset_State;
    --  Set the comment state to its initial value. Called before scanning a

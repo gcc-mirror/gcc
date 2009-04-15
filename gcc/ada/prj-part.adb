@@ -1738,7 +1738,7 @@ package body Prj.Part is
 
       --  And restore the comment state that was saved
 
-      Tree.Restore (Project_Comment_State);
+      Tree.Restore_And_Free (Project_Comment_State);
    end Parse_Single_Project;
 
    -----------------------
