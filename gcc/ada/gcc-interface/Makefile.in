@@ -424,7 +424,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
   TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_SRCS+=vx_stack_info.c
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
@@ -446,6 +446,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
+  s-osinte.ads<s-osinte-vxworks.ads \
   s-osprim.adb<s-osprim-vxworks.adb \
   s-parame.ads<s-parame-vxworks.ads \
   s-parame.adb<s-parame-vxworks.adb \
@@ -460,7 +461,9 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   g-sttsne.adb<g-sttsne-vxworks.adb \
   g-sttsne.ads<g-sttsne-locking.ads
 
-  TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb
+  TOOLS_TARGET_PAIRS=\
+  mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
+  indepsw.adb<indepsw-gnu.adb
 
   ifeq ($(strip $(filter-out yes,$(TRACE))),)
     LIBGNAT_TARGET_PAIRS += \
@@ -483,18 +486,21 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
   else
     LIBGNAT_TARGET_PAIRS += \
     s-interr.adb<s-interr-hwint.adb \
-    s-tpopsp.adb<s-tpopsp-vxworks.adb \
-    system.ads<system-vxworks-ppc.ads
+    s-tpopsp.adb<s-tpopsp-vxworks.adb
 
     ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
-      s-vxwext.ads<s-vxwext-kernel.ads
+      s-vxwext.ads<s-vxwext-kernel.ads \
+      system.ads<system-vxworks-ppc-kernel.ads
+    else
+      LIBGNAT_TARGET_PAIRS += \
+      system.ads<system-vxworks-ppc.ads
     endif
 
     EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-vxwexc.o
   endif
 
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_SRCS+=vx_stack_info.c
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
@@ -529,10 +535,69 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(targ))),)
   g-sttsne.ads<g-sttsne-locking.ads \
   system.ads<system-vxworks-ppc-vthread.ads
 
-  TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb
+  TOOLS_TARGET_PAIRS=\
+  mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
+  indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-vxwexc.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
+
+  # Extra pairs for the vthreads runtime
+  ifeq ($(strip $(filter-out vthreads,$(THREAD_KIND))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-thread.adb<s-thread-ae653.adb
+    EXTRA_GNATRTL_NONTASKING_OBJS += s-thread.o
+  endif
+
+  ifeq ($(strip $(filter-out yes,$(TRACE))),)
+    LIBGNAT_TARGET_PAIRS += \
+    s-traces.adb<s-traces-default.adb \
+    s-trafor.adb<s-trafor-default.adb \
+    s-trafor.ads<s-trafor-default.ads \
+    s-tratas.adb<s-tratas-default.adb \
+    s-tfsetr.adb<s-tfsetr-vxworks.adb
+  endif
+endif
+
+# vxworksae / vxworks 653 for x86 (vxsim)
+ifeq ($(strip $(filter-out %86 wrs vxworksae,$(targ))),)
+  # target pairs for kernel + vthreads runtime
+  LIBGNAT_TARGET_PAIRS = \
+  a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
+  a-intnam.ads<a-intnam-vxworks.ads \
+  a-numaux.ads<a-numaux-x86.ads \
+  a-numaux.adb<a-numaux-x86.adb \
+  a-sytaco.ads<1asytaco.ads \
+  a-sytaco.adb<1asytaco.adb \
+  g-bytswa.adb<g-bytswa-x86.adb \
+  g-io.adb<g-io-vxworks-ppc-cert.adb \
+  g-io.ads<g-io-vxworks-ppc-cert.ads \
+  s-inmaop.adb<s-inmaop-posix.adb \
+  s-interr.adb<s-interr-hwint.adb \
+  s-intman.ads<s-intman-vxworks.ads \
+  s-intman.adb<s-intman-vxworks.adb \
+  s-osinte.adb<s-osinte-vxworks-kernel.adb \
+  s-osinte.ads<s-osinte-vxworks.ads \
+  s-osprim.adb<s-osprim-vxworks.adb \
+  s-parame.ads<s-parame-ae653.ads \
+  s-taprop.adb<s-taprop-vxworks.adb \
+  s-taspri.ads<s-taspri-vxworks.ads \
+  s-thread.adb<s-thread-ae653.adb \
+  s-tpopsp.adb<s-tpopsp-vxworks.adb \
+  s-vxwork.ads<s-vxwork-x86.ads \
+  g-socthi.ads<g-socthi-vxworks.ads \
+  g-socthi.adb<g-socthi-vxworks.adb \
+  g-stsifd.adb<g-stsifd-sockets.adb \
+  g-sttsne.adb<g-sttsne-vxworks.adb \
+  g-sttsne.ads<g-sttsne-locking.ads \
+  system.ads<system-vxworks-x86.ads
+
+  TOOLS_TARGET_PAIRS=\
+  mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
+  indepsw.adb<indepsw-gnu.adb
+
+  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-vxwexc.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   # Extra pairs for the vthreads runtime
   ifeq ($(strip $(filter-out vthreads,$(THREAD_KIND))),)
@@ -577,10 +642,12 @@ ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
   g-sttsne.ads<g-sttsne-locking.ads \
   system.ads<system-vxworks-sparcv9.ads   \
 
-  TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb
+  TOOLS_TARGET_PAIRS=\
+  mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
+  indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_SRCS+=vx_stack_info.c
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
@@ -590,6 +657,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   i-vxwork.ads<i-vxwork-x86.ads \
+  s-osinte.ads<s-osinte-vxworks.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.ads<s-intman-vxworks.ads \
   s-intman.adb<s-intman-vxworks.adb \
@@ -610,7 +678,9 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
   g-sttsne.adb<g-sttsne-vxworks.adb \
   g-sttsne.ads<g-sttsne-locking.ads
 
-  TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb
+  TOOLS_TARGET_PAIRS=\
+  mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
+  indepsw.adb<indepsw-gnu.adb
 
   ifeq ($(strip $(filter-out yes,$(TRACE))),)
     LIBGNAT_TARGET_PAIRS += \
@@ -633,18 +703,21 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
   else
     LIBGNAT_TARGET_PAIRS += \
     s-interr.adb<s-interr-hwint.adb \
-    s-tpopsp.adb<s-tpopsp-vxworks.adb \
-    system.ads<system-vxworks-x86.ads
+    s-tpopsp.adb<s-tpopsp-vxworks.adb 
 
     ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
-      s-vxwext.ads<s-vxwext-kernel.ads
+      s-vxwext.ads<s-vxwext-kernel.ads \
+      system.ads<system-vxworks-x86-kernel.ads
+    else
+      LIBGNAT_TARGET_PAIRS += \
+      system.ads<system-vxworks-x86.ads
     endif
 
     EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-vxwexc.o
   endif
 
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_SRCS+=vx_stack_info.c
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
@@ -676,10 +749,12 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
   g-sttsne.ads<g-sttsne-locking.ads \
   system.ads<system-vxworks-arm.ads
 
-  TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb
+  TOOLS_TARGET_PAIRS=\
+  mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
+  indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_SRCS+=vx_stack_info.c
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
@@ -711,10 +786,12 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   g-sttsne.ads<g-sttsne-locking.ads \
   system.ads<system-vxworks-mips.ads
 
-  TOOLS_TARGET_PAIRS=mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb
+  TOOLS_TARGET_PAIRS=\
+  mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
+  indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_SRCS+=vx_stack_info.c
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
@@ -986,7 +1063,8 @@ ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
   endif
 
   TOOLS_TARGET_PAIRS =  \
-    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb
+    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
+    indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EH_MECHANISM=-gcc
