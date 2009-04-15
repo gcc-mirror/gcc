@@ -1,3 +1,9 @@
+2009-04-15  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_smem.adb (Make_Shared_Var_Procs): For a protected type,
+	instantiate generic shared object package with the corresponding
+	record type.
+
 2009-04-15  Arnaud Charlet  <charlet@adacore.com>
 
 	* system-linux-sparc.ads: Remove obsolete entries.
