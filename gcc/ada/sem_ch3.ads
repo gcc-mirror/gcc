@@ -177,10 +177,10 @@ package Sem_Ch3 is
 
    procedure Make_Class_Wide_Type (T : Entity_Id);
    --  A Class_Wide_Type is created for each tagged type definition. The
-   --  attributes of a class wide type are inherited from those of the type T.
+   --  attributes of a class-wide type are inherited from those of the type T.
    --  If T is introduced by a private declaration, the corresponding class
    --  wide type is created at the same time, and therefore there is a private
-   --  and a full declaration for the class wide type as well.
+   --  and a full declaration for the class-wide type as well.
 
    function OK_For_Limited_Init_In_05 (Exp : Node_Id) return Boolean;
    --  Presuming Exp is an expression of an inherently limited type, returns

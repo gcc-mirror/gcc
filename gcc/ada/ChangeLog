@@ -1,3 +1,17 @@
+2009-04-15  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-tasatt.adb: Fix typo, plus minor reformatting
+
+	* sem_ch3.ads: Add missing hyphen ("class wide" => "class-wide").
+
+	* sem_ch10.adb: Add missing hyphen ("use visible" => "use-visible").
+
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Private_Extension_Declaration): Verify that a
+	private extension whose parent is a synchronized interface carries an
+	explicit synchronized keyword.
+
 2009-04-15  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_smem.adb (Make_Shared_Var_Procs): For a protected type,
