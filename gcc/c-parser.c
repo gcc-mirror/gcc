@@ -3044,6 +3044,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p)
       struct c_expr ret;
       ret.value = error_mark_node;
       ret.original_code = ERROR_MARK;
+      ret.original_type = NULL;
       c_parser_skip_until_found (parser, CPP_CLOSE_BRACE, "expected %<}%>");
       pop_init_level (0);
       return ret;
@@ -3100,6 +3101,7 @@ c_parser_initelt (c_parser *parser)
 		  struct c_expr init;
 		  init.value = error_mark_node;
 		  init.original_code = ERROR_MARK;
+		  init.original_type = NULL;
 		  c_parser_error (parser, "expected identifier");
 		  c_parser_skip_until_found (parser, CPP_COMMA, NULL);
 		  process_init_element (init, false);
@@ -3174,6 +3176,7 @@ c_parser_initelt (c_parser *parser)
 		  mexpr.value
 		    = objc_build_message_expr (build_tree_list (rec, args));
 		  mexpr.original_code = ERROR_MARK;
+		  mexpr.original_type = NULL;
 		  /* Now parse and process the remainder of the
 		     initializer, starting with this message
 		     expression as a primary-expression.  */
@@ -3223,6 +3226,7 @@ c_parser_initelt (c_parser *parser)
 		  struct c_expr init;
 		  init.value = error_mark_node;
 		  init.original_code = ERROR_MARK;
+		  init.original_type = NULL;
 		  c_parser_error (parser, "expected %<=%>");
 		  c_parser_skip_until_found (parser, CPP_COMMA, NULL);
 		  process_init_element (init, false);
@@ -4438,6 +4442,7 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after)
       TREE_NO_WARNING (ret.value) = 1;
       ret.original_code = ERROR_MARK;
     }
+  ret.original_type = NULL;
   return ret;
 }
 
@@ -4485,6 +4490,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
       exp1.value = c_save_expr (default_conversion (cond.value));
       if (eptype)
 	exp1.value = build1 (EXCESS_PRECISION_EXPR, eptype, exp1.value);
+      exp1.original_type = NULL;
       cond.value = c_objc_common_truthvalue_conversion (cond_loc, exp1.value);
       skip_evaluation += cond.value == truthvalue_true_node;
     }
@@ -4503,6 +4509,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
       skip_evaluation -= cond.value == truthvalue_true_node;
       ret.value = error_mark_node;
       ret.original_code = ERROR_MARK;
+      ret.original_type = NULL;
       return ret;
     }
   exp2 = c_parser_conditional_expression (parser, NULL);
@@ -4512,6 +4519,24 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
 				      cond.original_code == C_MAYBE_CONST_EXPR,
 				      exp1.value, exp2.value);
   ret.original_code = ERROR_MARK;
+  if (exp1.value == error_mark_node || exp2.value == error_mark_node)
+    ret.original_type = NULL;
+  else
+    {
+      tree t1, t2;
+
+      /* If both sides are enum type, the default conversion will have
+	 made the type of the result be an integer type.  We want to
+	 remember the enum types we started with.  */
+      t1 = exp1.original_type ? exp1.original_type : TREE_TYPE (exp1.value);
+      t2 = exp2.original_type ? exp2.original_type : TREE_TYPE (exp2.value);
+      ret.original_type = ((t1 != error_mark_node
+			    && t2 != error_mark_node
+			    && (TYPE_MAIN_VARIANT (t1)
+				== TYPE_MAIN_VARIANT (t2)))
+			   ? t1
+			   : NULL);
+    }
   return ret;
 }
 
@@ -4800,6 +4825,7 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
 	{
 	  ret.value = error_mark_node;
 	  ret.original_code = ERROR_MARK;
+	  ret.original_type = NULL;
 	  return ret;
 	}
 
@@ -4813,6 +4839,7 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
       expr = default_function_array_conversion (expr);
       ret.value = c_cast_expr (type_name, expr.value);
       ret.original_code = ERROR_MARK;
+      ret.original_type = NULL;
       return ret;
     }
   else
@@ -4852,6 +4879,8 @@ c_parser_unary_expression (c_parser *parser)
   int ext;
   struct c_expr ret, op;
   location_t loc = c_parser_peek_token (parser)->location;
+  ret.original_code = ERROR_MARK;
+  ret.original_type = NULL;
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_PLUS_PLUS:
@@ -4874,7 +4903,6 @@ c_parser_unary_expression (c_parser *parser)
       op = c_parser_cast_expression (parser, NULL);
       op = default_function_array_conversion (op);
       ret.value = build_indirect_ref (loc, op.value, "unary *");
-      ret.original_code = ERROR_MARK;
       return ret;
     case CPP_PLUS:
       if (!c_dialect_objc () && !in_system_header)
@@ -4914,7 +4942,6 @@ c_parser_unary_expression (c_parser *parser)
 	  c_parser_error (parser, "expected identifier");
 	  ret.value = error_mark_node;
 	}
-	ret.original_code = ERROR_MARK;
 	return ret;
     case CPP_KEYWORD:
       switch (c_parser_peek_token (parser)->keyword)
@@ -4975,6 +5002,7 @@ c_parser_sizeof_expression (c_parser *parser)
 	  in_sizeof--;
 	  ret.value = error_mark_node;
 	  ret.original_code = ERROR_MARK;
+	  ret.original_type = NULL;
 	  return ret;
 	}
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
@@ -5029,6 +5057,7 @@ c_parser_alignof_expression (c_parser *parser)
 	  in_alignof--;
 	  ret.value = error_mark_node;
 	  ret.original_code = ERROR_MARK;
+	  ret.original_type = NULL;
 	  return ret;
 	}
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
@@ -5042,6 +5071,7 @@ c_parser_alignof_expression (c_parser *parser)
       in_alignof--;
       ret.value = c_alignof (groktypename (type_name, NULL, NULL));
       ret.original_code = ERROR_MARK;
+      ret.original_type = NULL;
       return ret;
     }
   else
@@ -5053,6 +5083,7 @@ c_parser_alignof_expression (c_parser *parser)
       in_alignof--;
       ret.value = c_alignof_expr (expr.value);
       ret.original_code = ERROR_MARK;
+      ret.original_type = NULL;
       return ret;
     }
 }
@@ -5116,11 +5147,12 @@ c_parser_postfix_expression (c_parser *parser)
   struct c_expr expr, e1, e2, e3;
   struct c_type_name *t1, *t2;
   location_t loc;
+  expr.original_code = ERROR_MARK;
+  expr.original_type = NULL;
   switch (c_parser_peek_token (parser)->type)
     {
     case CPP_NUMBER:
       expr.value = c_parser_peek_token (parser)->value;
-      expr.original_code = ERROR_MARK;
       loc = c_parser_peek_token (parser)->location;
       c_parser_consume_token (parser);
       if (TREE_CODE (expr.value) == FIXED_CST
@@ -5135,7 +5167,6 @@ c_parser_postfix_expression (c_parser *parser)
     case CPP_CHAR32:
     case CPP_WCHAR:
       expr.value = c_parser_peek_token (parser)->value;
-      expr.original_code = ERROR_MARK;
       c_parser_consume_token (parser);
       break;
     case CPP_STRING:
@@ -5150,7 +5181,6 @@ c_parser_postfix_expression (c_parser *parser)
       gcc_assert (c_dialect_objc ());
       expr.value
 	= objc_build_string_object (c_parser_peek_token (parser)->value);
-      expr.original_code = ERROR_MARK;
       c_parser_consume_token (parser);
       break;
     case CPP_NAME:
@@ -5158,7 +5188,6 @@ c_parser_postfix_expression (c_parser *parser)
 	{
 	  c_parser_error (parser, "expected expression");
 	  expr.value = error_mark_node;
-	  expr.original_code = ERROR_MARK;
 	  break;
 	}
       {
@@ -5167,8 +5196,8 @@ c_parser_postfix_expression (c_parser *parser)
 	c_parser_consume_token (parser);
 	expr.value = build_external_ref (id,
 					 (c_parser_peek_token (parser)->type
-					  == CPP_OPEN_PAREN), loc);
-	expr.original_code = ERROR_MARK;
+					  == CPP_OPEN_PAREN), loc,
+					 &expr.original_type);
       }
       break;
     case CPP_OPEN_PAREN:
@@ -5189,7 +5218,6 @@ c_parser_postfix_expression (c_parser *parser)
 	      c_parser_skip_until_found (parser, CPP_CLOSE_BRACE, NULL);
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  stmt = c_begin_stmt_expr ();
@@ -5199,7 +5227,6 @@ c_parser_postfix_expression (c_parser *parser)
 	  pedwarn (here, OPT_pedantic, 
 		   "ISO C forbids braced-groups within expressions");
 	  expr.value = c_finish_stmt_expr (stmt);
-	  expr.original_code = ERROR_MARK;
 	}
       else if (c_token_starts_typename (c_parser_peek_2nd_token (parser)))
 	{
@@ -5215,7 +5242,6 @@ c_parser_postfix_expression (c_parser *parser)
 	  if (type_name == NULL)
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	    }
 	  else
 	    expr = c_parser_postfix_expression_after_paren_type (parser,
@@ -5230,6 +5256,7 @@ c_parser_postfix_expression (c_parser *parser)
 	    TREE_NO_WARNING (expr.value) = 1;
 	  if (expr.original_code != C_MAYBE_CONST_EXPR)
 	    expr.original_code = ERROR_MARK;
+	  /* Don't change EXPR.ORIGINAL_TYPE.  */
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
 	}
@@ -5243,7 +5270,6 @@ c_parser_postfix_expression (c_parser *parser)
 	  expr.value = fname_decl (c_parser_peek_token (parser)->location,
 				   c_parser_peek_token (parser)->keyword,
 				   c_parser_peek_token (parser)->value);
-	  expr.original_code = ERROR_MARK;
 	  c_parser_consume_token (parser);
 	  break;
 	case RID_VA_ARG:
@@ -5251,7 +5277,6 @@ c_parser_postfix_expression (c_parser *parser)
 	  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  e1 = c_parser_expr_no_commas (parser, NULL);
@@ -5260,7 +5285,6 @@ c_parser_postfix_expression (c_parser *parser)
 	    {
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  t1 = c_parser_type_name (parser);
@@ -5269,7 +5293,6 @@ c_parser_postfix_expression (c_parser *parser)
 	  if (t1 == NULL)
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	    }
 	  else
 	    {
@@ -5284,7 +5307,6 @@ c_parser_postfix_expression (c_parser *parser)
 				       expr.value);
 		  C_MAYBE_CONST_EXPR_NON_CONST (expr.value) = true;
 		}
-	      expr.original_code = ERROR_MARK;
 	    }
 	  break;
 	case RID_OFFSETOF:
@@ -5292,21 +5314,18 @@ c_parser_postfix_expression (c_parser *parser)
 	  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  t1 = c_parser_type_name (parser);
 	  if (t1 == NULL)
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
 	    {
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  {
@@ -5371,7 +5390,6 @@ c_parser_postfix_expression (c_parser *parser)
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
 	    expr.value = fold_offsetof (offsetof_ref, NULL_TREE);
-	    expr.original_code = ERROR_MARK;
 	  }
 	  break;
 	case RID_CHOOSE_EXPR:
@@ -5379,7 +5397,6 @@ c_parser_postfix_expression (c_parser *parser)
 	  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  loc = c_parser_peek_token (parser)->location;
@@ -5388,7 +5405,6 @@ c_parser_postfix_expression (c_parser *parser)
 	    {
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  e2 = c_parser_expr_no_commas (parser, NULL);
@@ -5396,7 +5412,6 @@ c_parser_postfix_expression (c_parser *parser)
 	    {
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  e3 = c_parser_expr_no_commas (parser, NULL);
@@ -5420,28 +5435,24 @@ c_parser_postfix_expression (c_parser *parser)
 	  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  t1 = c_parser_type_name (parser);
 	  if (t1 == NULL)
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
 	    {
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  t2 = c_parser_type_name (parser);
 	  if (t2 == NULL)
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
@@ -5455,7 +5466,6 @@ c_parser_postfix_expression (c_parser *parser)
 	    expr.value = comptypes (e1, e2)
 	      ? build_int_cst (NULL_TREE, 1)
 	      : build_int_cst (NULL_TREE, 0);
-	    expr.original_code = ERROR_MARK;
 	  }
 	  break;
 	case RID_AT_SELECTOR:
@@ -5464,7 +5474,6 @@ c_parser_postfix_expression (c_parser *parser)
 	  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  {
@@ -5472,7 +5481,6 @@ c_parser_postfix_expression (c_parser *parser)
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
 	    expr.value = objc_build_selector_expr (sel);
-	    expr.original_code = ERROR_MARK;
 	  }
 	  break;
 	case RID_AT_PROTOCOL:
@@ -5481,7 +5489,6 @@ c_parser_postfix_expression (c_parser *parser)
 	  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  if (c_parser_next_token_is_not (parser, CPP_NAME))
@@ -5489,7 +5496,6 @@ c_parser_postfix_expression (c_parser *parser)
 	      c_parser_error (parser, "expected identifier");
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  {
@@ -5498,7 +5504,6 @@ c_parser_postfix_expression (c_parser *parser)
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
 	    expr.value = objc_build_protocol_expr (id);
-	    expr.original_code = ERROR_MARK;
 	  }
 	  break;
 	case RID_AT_ENCODE:
@@ -5508,14 +5513,12 @@ c_parser_postfix_expression (c_parser *parser)
 	  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      break;
 	    }
 	  t1 = c_parser_type_name (parser);
 	  if (t1 == NULL)
 	    {
 	      expr.value = error_mark_node;
-	      expr.original_code = ERROR_MARK;
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      break;
 	    }
@@ -5524,13 +5527,11 @@ c_parser_postfix_expression (c_parser *parser)
 	  {
 	    tree type = groktypename (t1, NULL, NULL);
 	    expr.value = objc_build_encode_expr (type);
-	    expr.original_code = ERROR_MARK;
 	  }
 	  break;
 	default:
 	  c_parser_error (parser, "expected expression");
 	  expr.value = error_mark_node;
-	  expr.original_code = ERROR_MARK;
 	  break;
 	}
       break;
@@ -5545,14 +5546,12 @@ c_parser_postfix_expression (c_parser *parser)
 				     "expected %<]%>");
 	  expr.value = objc_build_message_expr (build_tree_list (receiver,
 								 args));
-	  expr.original_code = ERROR_MARK;
 	  break;
 	}
       /* Else fall through to report error.  */
     default:
       c_parser_error (parser, "expected expression");
       expr.value = error_mark_node;
-      expr.original_code = ERROR_MARK;
       break;
     }
   return c_parser_postfix_expression_after_primary (parser, expr);
@@ -5597,6 +5596,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
   non_const |= !type_expr_const;
   expr.value = build_compound_literal (type, init.value, non_const);
   expr.original_code = ERROR_MARK;
+  expr.original_type = NULL;
   if (type_expr)
     {
       if (TREE_CODE (expr.value) == C_MAYBE_CONST_EXPR)
@@ -5637,6 +5637,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 				     "expected %<]%>");
 	  expr.value = build_array_ref (expr.value, idx, loc);
 	  expr.original_code = ERROR_MARK;
+	  expr.original_type = NULL;
 	  break;
 	case CPP_OPEN_PAREN:
 	  /* Function call.  */
@@ -5655,6 +5656,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	      && DECL_BUILT_IN_CLASS (orig_expr.value) == BUILT_IN_NORMAL
 	      && DECL_FUNCTION_CODE (orig_expr.value) == BUILT_IN_CONSTANT_P)
 	    expr.original_code = C_MAYBE_CONST_EXPR;
+	  expr.original_type = NULL;
 	  break;
 	case CPP_DOT:
 	  /* Structure element reference.  */
@@ -5667,11 +5669,23 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	      c_parser_error (parser, "expected identifier");
 	      expr.value = error_mark_node;
 	      expr.original_code = ERROR_MARK;
+              expr.original_type = NULL;
 	      return expr;
 	    }
 	  c_parser_consume_token (parser);
 	  expr.value = build_component_ref (expr.value, ident);
 	  expr.original_code = ERROR_MARK;
+	  if (TREE_CODE (expr.value) != COMPONENT_REF)
+	    expr.original_type = NULL;
+	  else
+	    {
+	      /* Remember the original type of a bitfield.  */
+	      tree field = TREE_OPERAND (expr.value, 1);
+	      if (TREE_CODE (field) != FIELD_DECL)
+		expr.original_type = NULL;
+	      else
+		expr.original_type = DECL_BIT_FIELD_TYPE (field);
+	    }
 	  break;
 	case CPP_DEREF:
 	  /* Structure element reference.  */
@@ -5684,6 +5698,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	      c_parser_error (parser, "expected identifier");
 	      expr.value = error_mark_node;
 	      expr.original_code = ERROR_MARK;
+	      expr.original_type = NULL;
 	      return expr;
 	    }
 	  c_parser_consume_token (parser);
@@ -5692,6 +5707,17 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 								"->"),
 					    ident);
 	  expr.original_code = ERROR_MARK;
+	  if (TREE_CODE (expr.value) != COMPONENT_REF)
+	    expr.original_type = NULL;
+	  else
+	    {
+	      /* Remember the original type of a bitfield.  */
+	      tree field = TREE_OPERAND (expr.value, 1);
+	      if (TREE_CODE (field) != FIELD_DECL)
+		expr.original_type = NULL;
+	      else
+		expr.original_type = DECL_BIT_FIELD_TYPE (field);
+	    }
 	  break;
 	case CPP_PLUS_PLUS:
 	  /* Postincrement.  */
@@ -5700,6 +5726,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  expr.value = build_unary_op (loc,
 				       POSTINCREMENT_EXPR, expr.value, 0);
 	  expr.original_code = ERROR_MARK;
+	  expr.original_type = NULL;
 	  break;
 	case CPP_MINUS_MINUS:
 	  /* Postdecrement.  */
@@ -5708,6 +5735,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  expr.value = build_unary_op (loc,
 				       POSTDECREMENT_EXPR, expr.value, 0);
 	  expr.original_code = ERROR_MARK;
+	  expr.original_type = NULL;
 	  break;
 	default:
 	  return expr;
@@ -5735,6 +5763,7 @@ c_parser_expression (c_parser *parser)
       next = default_function_array_conversion (next);
       expr.value = build_compound_expr (expr.value, next.value);
       expr.original_code = COMPOUND_EXPR;
+      expr.original_type = NULL;
     }
   return expr;
 }

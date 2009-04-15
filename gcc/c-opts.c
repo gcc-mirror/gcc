@@ -412,6 +412,12 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	     can turn it off only if it's not explicit.  */
 	  if (warn_main == -1)
 	    warn_main = (value ? 2 : 0);
+
+	  /* In C, -Wall turns on -Wenum-compare, which we do here.
+	     In C++ it is on by default, which is done in
+	     c_common_post_options.  */
+          if (warn_enum_compare == -1)
+            warn_enum_compare = value;
 	}
       else
 	{
@@ -436,6 +442,13 @@ c_common_handle_option (size_t scode, const char *arg, int value)
     case OPT_Wcomment:
     case OPT_Wcomments:
       cpp_opts->warn_comments = value;
+      break;
+
+    case OPT_Wc___compat:
+      /* Because -Wenum-compare is the default in C++, -Wc++-compat
+	 implies -Wenum-compare.  */
+      if (warn_enum_compare == -1 && value)
+	warn_enum_compare = value;
       break;
 
     case OPT_Wdeprecated:
@@ -1098,6 +1111,12 @@ c_common_post_options (const char **pfilename)
      -Wsign-conversion needs to be requested explicitly.  */
   if (warn_sign_conversion == -1)
     warn_sign_conversion =  (c_dialect_cxx ()) ? 0 : warn_conversion;
+
+  /* In C, -Wall and -Wc++-compat enable -Wenum-compare, which we do
+     in c_common_handle_option; if it has not yet been set, it is
+     disabled by default.  In C++, it is enabled by default.  */
+  if (warn_enum_compare == -1)
+    warn_enum_compare = c_dialect_cxx () ? 1 : 0;
 
   /* -Wpacked-bitfield-compat is on by default for the C languages.  The
      warning is issued in stor-layout.c which is not part of the front-end so
