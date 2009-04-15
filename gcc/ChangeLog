@@ -1,3 +1,14 @@
+2009-04-15  Richard Guenther  <rguenther@suse.de>
+
+	* omp-low.c (lower_rec_input_clauses): Build correct address
+	expressions.
+	(expand_omp_for_generic): Fix multiplication type.
+	* tree-loop-distribution.c (build_size_arg): Build a
+	size_t argument.
+	(generate_memset_zero): Fix types.
+	* tree-profile.c (prepare_instrumented_value): Correctly
+	widen a pointer.
+
 2009-04-15  Ian Lance Taylor  <iant@google.com>
 
 	* c.opt (Wenum-compare): Enable for C and Objc.  Initialize to -1.
