@@ -3609,11 +3609,7 @@ package body Exp_Ch4 is
                      --  on the global final list which is singly-linked.
                      --  Work needed for access discriminants in Ada 2005 ???
 
-                     if Ekind (PtrT) = E_Anonymous_Access_Type
-                       and then
-                         Nkind (Associated_Node_For_Itype (PtrT))
-                     not in N_Subprogram_Specification
-                     then
+                     if Ekind (PtrT) = E_Anonymous_Access_Type then
                         Attach_Level := Uint_1;
                      else
                         Attach_Level := Uint_2;

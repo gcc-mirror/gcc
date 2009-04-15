@@ -1,3 +1,20 @@
+2009-04-15  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Code cleanup.
+
+	* sem_ch6.adb (Check_Anonymous_Return): Add missing support for
+	functions returning anonymous access to class-wide limited types. Mark
+	also the containing scope as a task master.
+
+	* sem_ch8.adb (Restore_Scope_Stack): Add missing management for
+	limited-withed packages. Required to restore their visibility after
+	processing packages associated with implicit with-clauses.
+
+	* exp_ch3.adb (Build_Class_Wide_Master): Avoid marking masters
+	associated with return statements because this work is now done by
+	Check_Anonymous_Return.
+	(Build_Master): Code cleanup.
+
 2009-04-15  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_warn.ads: Minor reformatting
