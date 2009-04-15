@@ -1,3 +1,21 @@
+2009-04-15  Pascal Obry  <obry@adacore.com>
+
+	Add support for Win32 native encoding for delete/rename routines.
+	
+	* adaint.c (__gnat_unlink): New routine.
+	(__gnat_rename): New routine.
+	Simple wrapper routines used to convert to proper encoding on
+	Windows.
+
+	* s-os_lib.adb: Use __gnat_unlink and __gnat_rename instead of direct
+	call to the C library.
+
+	* g-sercom-mingw.adb, s-win32.ads: Update Win32 binding.
+
+2009-04-15  Robert Dewar  <dewar@adacore.com>
+
+	* s-tassta.adb: Minor reformatting
+
 2009-04-15  Robert Dewar  <dewar@adacore.com>
 
 	* frontend.adb (Frontend): Set proper default for

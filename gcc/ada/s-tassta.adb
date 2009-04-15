@@ -1388,6 +1388,8 @@ package body System.Tasking.Stages is
       --  unwound. The common notification routine has been called at the
       --  raise point already.
 
+      --  Lock to prevent unsynchronized output
+
       Initialization.Task_Lock (Self_Id);
       To_Stderr ("task ");
 

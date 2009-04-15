@@ -82,51 +82,53 @@ package System.Win32 is
    -- Files --
    -----------
 
-   GENERIC_READ  : constant := 16#80000000#;
-   GENERIC_WRITE : constant := 16#40000000#;
+   CP_UTF8                            : constant := 65001;
 
-   CREATE_NEW        : constant := 1;
-   CREATE_ALWAYS     : constant := 2;
-   OPEN_EXISTING     : constant := 3;
-   OPEN_ALWAYS       : constant := 4;
-   TRUNCATE_EXISTING : constant := 5;
+   GENERIC_READ                       : constant := 16#80000000#;
+   GENERIC_WRITE                      : constant := 16#40000000#;
 
-   FILE_SHARE_DELETE : constant := 16#00000004#;
-   FILE_SHARE_READ   : constant := 16#00000001#;
-   FILE_SHARE_WRITE  : constant := 16#00000002#;
+   CREATE_NEW                         : constant := 1;
+   CREATE_ALWAYS                      : constant := 2;
+   OPEN_EXISTING                      : constant := 3;
+   OPEN_ALWAYS                        : constant := 4;
+   TRUNCATE_EXISTING                  : constant := 5;
 
-   FILE_BEGIN        : constant := 0;
-   FILE_CURRENT      : constant := 1;
-   FILE_END          : constant := 2;
+   FILE_SHARE_DELETE                  : constant := 16#00000004#;
+   FILE_SHARE_READ                    : constant := 16#00000001#;
+   FILE_SHARE_WRITE                   : constant := 16#00000002#;
 
-   PAGE_NOACCESS       : constant := 16#0001#;
-   PAGE_READONLY       : constant := 16#0002#;
-   PAGE_READWRITE      : constant := 16#0004#;
-   PAGE_WRITECOPY      : constant := 16#0008#;
-   PAGE_EXECUTE        : constant := 16#0010#;
+   FILE_BEGIN                         : constant := 0;
+   FILE_CURRENT                       : constant := 1;
+   FILE_END                           : constant := 2;
 
-   FILE_MAP_ALL_ACCESS : constant := 16#F001f#;
-   FILE_MAP_READ       : constant := 4;
-   FILE_MAP_WRITE      : constant := 2;
-   FILE_MAP_COPY       : constant := 1;
+   PAGE_NOACCESS                      : constant := 16#0001#;
+   PAGE_READONLY                      : constant := 16#0002#;
+   PAGE_READWRITE                     : constant := 16#0004#;
+   PAGE_WRITECOPY                     : constant := 16#0008#;
+   PAGE_EXECUTE                       : constant := 16#0010#;
 
-   FILE_ADD_FILE             : constant := 16#0002#;
-   FILE_ADD_SUBDIRECTORY     : constant := 16#0004#;
-   FILE_APPEND_DATA          : constant := 16#0004#;
-   FILE_CREATE_PIPE_INSTANCE : constant := 16#0004#;
-   FILE_DELETE_CHILD         : constant := 16#0040#;
-   FILE_EXECUTE              : constant := 16#0020#;
-   FILE_LIST_DIRECTORY       : constant := 16#0001#;
-   FILE_READ_ATTRIBUTES      : constant := 16#0080#;
-   FILE_READ_DATA            : constant := 16#0001#;
-   FILE_READ_EA              : constant := 16#0008#;
-   FILE_TRAVERSE             : constant := 16#0020#;
-   FILE_WRITE_ATTRIBUTES     : constant := 16#0100#;
-   FILE_WRITE_DATA           : constant := 16#0002#;
-   FILE_WRITE_EA             : constant := 16#0010#;
-   STANDARD_RIGHTS_READ      : constant := 16#20000#;
-   STANDARD_RIGHTS_WRITE     : constant := 16#20000#;
-   SYNCHRONIZE               : constant := 16#100000#;
+   FILE_MAP_ALL_ACCESS                : constant := 16#F001f#;
+   FILE_MAP_READ                      : constant := 4;
+   FILE_MAP_WRITE                     : constant := 2;
+   FILE_MAP_COPY                      : constant := 1;
+
+   FILE_ADD_FILE                      : constant := 16#0002#;
+   FILE_ADD_SUBDIRECTORY              : constant := 16#0004#;
+   FILE_APPEND_DATA                   : constant := 16#0004#;
+   FILE_CREATE_PIPE_INSTANCE          : constant := 16#0004#;
+   FILE_DELETE_CHILD                  : constant := 16#0040#;
+   FILE_EXECUTE                       : constant := 16#0020#;
+   FILE_LIST_DIRECTORY                : constant := 16#0001#;
+   FILE_READ_ATTRIBUTES               : constant := 16#0080#;
+   FILE_READ_DATA                     : constant := 16#0001#;
+   FILE_READ_EA                       : constant := 16#0008#;
+   FILE_TRAVERSE                      : constant := 16#0020#;
+   FILE_WRITE_ATTRIBUTES              : constant := 16#0100#;
+   FILE_WRITE_DATA                    : constant := 16#0002#;
+   FILE_WRITE_EA                      : constant := 16#0010#;
+   STANDARD_RIGHTS_READ               : constant := 16#20000#;
+   STANDARD_RIGHTS_WRITE              : constant := 16#20000#;
+   SYNCHRONIZE                        : constant := 16#100000#;
 
    FILE_ATTRIBUTE_READONLY            : constant := 16#00000001#;
    FILE_ATTRIBUTE_HIDDEN              : constant := 16#00000002#;
@@ -159,6 +161,16 @@ package System.Win32 is
       bInheritHandle      : BOOL;
    end record;
 
+   function CreateFileA
+     (lpFileName            : Address;
+      dwDesiredAccess       : DWORD;
+      dwShareMode           : DWORD;
+      lpSecurityAttributes  : access SECURITY_ATTRIBUTES;
+      dwCreationDisposition : DWORD;
+      dwFlagsAndAttributes  : DWORD;
+      hTemplateFile         : HANDLE) return HANDLE;
+   pragma Import (Stdcall, CreateFileA, "CreateFileA");
+
    function CreateFile
      (lpFileName            : Address;
       dwDesiredAccess       : DWORD;
@@ -167,7 +179,7 @@ package System.Win32 is
       dwCreationDisposition : DWORD;
       dwFlagsAndAttributes  : DWORD;
       hTemplateFile         : HANDLE) return HANDLE;
-   pragma Import (Stdcall, CreateFile, "CreateFileA");
+   pragma Import (Stdcall, CreateFile, "CreateFileW");
 
    function GetFileSize
      (hFile          : HANDLE;
@@ -219,6 +231,15 @@ package System.Win32 is
 
    function UnmapViewOfFile (lpBaseAddress : System.Address) return BOOL;
    pragma Import (Stdcall, UnmapViewOfFile, "UnmapViewOfFile");
+
+   function MultiByteToWideChar
+     (CodePage       : WORD;
+      dwFlags        : DWORD;
+      lpMultiByteStr : System.Address;
+      cchMultiByte   : WORD;
+      lpWideCharStr  : System.Address;
+      cchWideChar    : WORD) return BOOL;
+   pragma Import (Stdcall, MultiByteToWideChar, "MultiByteToWideChar");
 
    ------------------------
    -- System Information --
