@@ -101,9 +101,13 @@ package body Exception_Traces is
 
       if not Excep.Id.Not_Handled_By_Others
         and then
-        (Exception_Trace = Every_Raise
-          or else (Exception_Trace = Unhandled_Raise and then Is_Unhandled))
+          (Exception_Trace = Every_Raise
+            or else (Exception_Trace = Unhandled_Raise and then Is_Unhandled))
       then
+         --  Exception trace messages need to be protected when several tasks
+         --  can issue them at the same time.
+
+         Lock_Task.all;
          To_Stderr (Nline);
 
          if Is_Unhandled then
@@ -113,6 +117,7 @@ package body Exception_Traces is
          To_Stderr ("Exception raised");
          To_Stderr (Nline);
          To_Stderr (Tailored_Exception_Information (Excep.all));
+         Unlock_Task.all;
       end if;
 
       --  Call the user-specific actions

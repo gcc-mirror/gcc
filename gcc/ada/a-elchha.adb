@@ -79,7 +79,7 @@ begin
    System.Soft_Links.Task_Termination_Handler :=
      System.Soft_Links.Task_Termination_NT'Access;
 
-   --  Let's shutdown the runtime now. The rest of the procedure needs to be
+   --  We shutdown the runtime now. The rest of the procedure needs to be
    --  careful not to use anything that would require runtime support. In
    --  particular, functions returning strings are banned since the sec stack
    --  is no longer functional. This is particularly important to note for the
@@ -93,11 +93,16 @@ begin
 
    System.Standard_Library.Adafinal;
 
+   --  Print a message only when exception traces are not active
+
+   if Exception_Trace /= RM_Convention then
+      null;
+
    --  Check for special case of raising _ABORT_SIGNAL, which is not
    --  really an exception at all. We recognize this by the fact that
    --  it is the only exception whose name starts with underscore.
 
-   if To_Ptr (Except.Id.Full_Name) (1) = '_' then
+   elsif To_Ptr (Except.Id.Full_Name) (1) = '_' then
       To_Stderr (Nline);
       To_Stderr ("Execution terminated by abort of environment task");
       To_Stderr (Nline);

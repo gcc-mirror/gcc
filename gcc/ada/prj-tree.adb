@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Unchecked_Deallocation;
 with Prj.Err;
 
 package body Prj.Tree is
@@ -983,6 +984,21 @@ package body Prj.Tree is
       Project_Node_Table.Init (Tree.Project_Nodes);
       Projects_Htable.Reset (Tree.Projects_HT);
    end Initialize;
+
+   ----------
+   -- Free --
+   ----------
+
+   procedure Free (Prj : in out Project_Node_Tree_Ref) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Project_Node_Tree_Data, Project_Node_Tree_Ref);
+   begin
+      if Prj /= null then
+         Project_Node_Table.Free (Prj.Project_Nodes);
+         Projects_Htable.Reset (Prj.Projects_HT);
+         Unchecked_Free (Prj);
+      end if;
+   end Free;
 
    -------------------------------
    -- Is_Followed_By_Empty_Line --

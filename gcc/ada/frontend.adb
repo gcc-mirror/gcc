@@ -43,6 +43,8 @@ with Opt;      use Opt;
 with Osint;
 with Par;
 with Prepcomp;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;
 with Sprint;
 with Scn;      use Scn;
@@ -64,12 +66,12 @@ procedure Frontend is
    --  Gather configuration pragmas
 
 begin
-   --  Carry out package initializations. These are initializations which
-   --  might logically be performed at elaboration time, were it not for
-   --  the fact that we may be doing things more than once in the big loop
-   --  over files. Like elaboration, the order in which these calls are
-   --  made is in some cases important. For example, Lib cannot be
-   --  initialized until Namet, since it uses names table entries.
+   --  Carry out package initializations. These are initializations which might
+   --  logically be performed at elaboration time, were it not for the fact
+   --  that we may be doing things more than once in the big loop over files.
+   --  Like elaboration, the order in which these calls are made is in some
+   --  cases important. For example, Lib cannot be initialized until Namet,
+   --  since it uses names table entries.
 
    Rtsfind.Initialize;
    Atree.Initialize;
@@ -273,6 +275,17 @@ begin
             Next (Prag);
          end loop;
       end;
+   end if;
+
+   --  If we have restriction No_Exception_Propagation, and we did not have
+   --  an explicit switch turning off Warn_On_Local_Exception, then turn on
+   --  this warning by default if we have encountered an exception handler.
+
+   if Restriction_Active (No_Exception_Propagation)
+     and then not No_Warn_On_Non_Local_Exception
+     and then Exception_Handler_Encountered
+   then
+      Warn_On_Non_Local_Exception := True;
    end if;
 
    --  Now on to the semantics. Skip if in syntax only mode

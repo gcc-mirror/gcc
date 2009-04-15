@@ -92,6 +92,7 @@ package body Ch11 is
       Choice_Param_Node : Node_Id;
 
    begin
+      Exception_Handler_Encountered := True;
       Handler_Node := New_Node (N_Exception_Handler, Token_Ptr);
       Set_Local_Raise_Statements (Handler_Node, No_Elist);
 
