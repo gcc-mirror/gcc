@@ -2957,6 +2957,23 @@ package body Sem_Ch12 is
 
       --  Verify that it is the name of a generic package
 
+      --  A visibility glitch: if the instance is a child unit and the generic
+      --  is the generic unit of a parent instance (i.e. both the parent and
+      --  the child units are instances of the same package) the name now
+      --  denotes the renaming within the parent, not the intended generic
+      --  unit. See if there is a homonym that is the desired generic. The
+      --  renaming declaration must be visible inside the instance of the
+      --  child, but not when analyzing the name in the instantiation itself.
+
+      if Ekind (Gen_Unit) = E_Package
+        and then Present (Renamed_Entity (Gen_Unit))
+        and then In_Open_Scopes (Renamed_Entity (Gen_Unit))
+        and then Is_Generic_Instance (Renamed_Entity (Gen_Unit))
+        and then Present (Homonym (Gen_Unit))
+      then
+         Gen_Unit := Homonym (Gen_Unit);
+      end if;
+
       if Etype (Gen_Unit) = Any_Type then
          Restore_Env;
          return;
@@ -6145,6 +6162,7 @@ package body Sem_Ch12 is
       function Is_Actual_Of_Previous_Formal (P : Entity_Id) return Boolean;
       --  The package in question may be an actual for a previous formal
       --  package P of the current instance, so examine its actuals as well.
+      --  This must be recursive over other formal packages.
 
       ----------------------------------
       -- Is_Actual_Of_Previous_Formal --
@@ -6154,7 +6172,8 @@ package body Sem_Ch12 is
          E1 : Entity_Id;
 
       begin
-         E1 := First_Entity (E);
+         E1 := First_Entity (P);
+
          while Present (E1) and then  E1 /= Instance loop
             if Ekind (E1) = E_Package
               and then Nkind (Parent (E1)) = N_Package_Renaming_Declaration
@@ -6162,8 +6181,13 @@ package body Sem_Ch12 is
                if Renamed_Object (E1) = Pack then
                   return True;
 
-               elsif Renamed_Object (E1) = P then
+               elsif E1 = P
+                 or else  Renamed_Object (E1) = P
+               then
                   return False;
+
+               elsif Is_Actual_Of_Previous_Formal (E1) then
+                  return True;
                end if;
             end if;
 

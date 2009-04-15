@@ -7224,19 +7224,28 @@ package body Sem_Util is
          when N_Assignment_Statement =>
             return N = Name (P);
 
-         --  Test prefix of component or attribute
+         --  Test prefix of component or attribute. Note that the prefix of an
+         --  explicit or implicit dereference cannot be an l-value.
 
          when N_Attribute_Reference =>
             return N = Prefix (P)
               and then Name_Implies_Lvalue_Prefix (Attribute_Name (P));
 
          when N_Expanded_Name        |
-              N_Explicit_Dereference |
               N_Indexed_Component    |
-              N_Reference            |
               N_Selected_Component   |
               N_Slice                =>
-            return N = Prefix (P);
+            if Is_Access_Type (Etype (N)) then
+               return False;  --  P is an implicit dereference
+            else
+               return N = Prefix (P);
+            end if;
+
+         when N_Reference            =>
+               return N = Prefix (P);
+
+         when N_Explicit_Dereference =>
+            return False;
 
          --  Function call arguments are never lvalues
 

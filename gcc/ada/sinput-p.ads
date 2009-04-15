@@ -31,6 +31,13 @@ with Scans; use Scans;
 
 package Sinput.P is
 
+   procedure Clear_Source_File_Table;
+   --  This procedure frees memory allocated in the Source_File table (in the
+   --  private part of package Sinput). It should only be used when it is
+   --  guaranteed that all source files that have been loaded so far will not
+   --  be accessed before being reloaded. It is intended for tools that parse
+   --  several times sources, to avoid memory leaks.
+
    function Load_Project_File (Path : String) return Source_File_Index;
    --  Load the source of a project source file into memory and initialize the
    --  Scans state.

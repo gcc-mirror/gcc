@@ -236,11 +236,14 @@ package body Sem_Warn is
       Iter : constant Node_Id := Iteration_Scheme (Loop_Statement);
 
       Ref : Node_Id := Empty;
-      --  Reference in iteration scheme to variable that may not be modified in
-      --  loop, indicating a possible infinite loop.
+      --  Reference in iteration scheme to variable that might not be modified
+      --  in loop, indicating a possible infinite loop.
 
       Var : Entity_Id := Empty;
       --  Corresponding entity (entity of Ref)
+
+      Function_Call_Found : Boolean := False;
+      --  True if Find_Var found a function call in the condition
 
       procedure Find_Var (N : Node_Id);
       --  Inspect condition to see if it depends on a single entity reference.
@@ -304,6 +307,8 @@ package body Sem_Warn is
          --  Case of condition is function call
 
          elsif Nkind (N) = N_Function_Call then
+
+            Function_Call_Found := True;
 
             --  Forget it if function name is not entity, who knows what
             --  we might be calling?
@@ -570,8 +575,11 @@ package body Sem_Warn is
 
       --  Nothing to do if there is some indirection involved (assume that the
       --  designated variable might be modified in some way we don't see).
+      --  However, if no function call was found, then we don't care about
+      --  indirections, because the condition must be something like "while X
+      --  /= null loop", so we don't care if X.all is modified in the loop.
 
-      elsif Has_Indirection (Etype (Var)) then
+      elsif Function_Call_Found and then Has_Indirection (Etype (Var)) then
          return;
 
       --  Same sort of thing for volatile variable, might be modified by
