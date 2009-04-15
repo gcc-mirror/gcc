@@ -2936,9 +2936,10 @@ package body Exp_Ch4 is
       --  and their unrestricted access used instead of the coextension.
 
       function Size_In_Storage_Elements (E : Entity_Id) return Node_Id;
-      --  Given a type E, returns a node representing the code to compute the
-      --  size in storage elements for the given type. This is not as trivial
-      --  as one might expect, as explained in the body.
+      --  Given a constrained array type E, returns a node representing the
+      --  code to compute the size in storage elements for the given type.
+      --  This is done without using the attribute (which malfunctins for
+      --  large sizes ???)
 
       ---------------------------------------
       -- Complete_Coextension_Finalization --
@@ -3180,10 +3181,7 @@ package body Exp_Ch4 is
          --  32-bit limit on a 32-bit machine, and precisely the trouble
          --  is that we get overflows when sizes are greater than 2**31.
 
-         --  So what we end up doing is using this expression for non-array
-         --  types, where it is not quite right, but should be good enough
-         --  most of the time. But for non-packed arrays, instead we compute
-         --  the expression:
+         --  So what we end up doing for array types is to use the expression:
 
          --    number-of-elements * component_type'Max_Size_In_Storage_Elements
 
@@ -3192,48 +3190,38 @@ package body Exp_Ch4 is
          --  are too large, and which in the absence of a check results in
          --  undetected chaos ???
 
-         if Is_Array_Type (E) and then Is_Constrained (E) then
-            declare
-               Len : Node_Id;
-               Res : Node_Id;
+         declare
+            Len : Node_Id;
+            Res : Node_Id;
 
-            begin
-               for J in 1 .. Number_Dimensions (E) loop
-                  Len :=
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => New_Occurrence_Of (E, Loc),
-                      Attribute_Name => Name_Length,
-                      Expressions    => New_List (
-                        Make_Integer_Literal (Loc, J)));
+         begin
+            for J in 1 .. Number_Dimensions (E) loop
+               Len :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (E, Loc),
+                   Attribute_Name => Name_Length,
+                   Expressions    => New_List (
+                     Make_Integer_Literal (Loc, J)));
 
-                  if J = 1 then
-                     Res := Len;
+               if J = 1 then
+                  Res := Len;
 
-                  else
-                     Res :=
-                       Make_Op_Multiply (Loc,
-                         Left_Opnd  => Res,
-                         Right_Opnd => Len);
-                  end if;
-               end loop;
+               else
+                  Res :=
+                    Make_Op_Multiply (Loc,
+                      Left_Opnd  => Res,
+                      Right_Opnd => Len);
+               end if;
+            end loop;
 
-               return
-                 Make_Op_Multiply (Loc,
-                   Left_Opnd  => Len,
-                   Right_Opnd =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix => New_Occurrence_Of (Component_Type (E), Loc),
-                       Attribute_Name => Name_Max_Size_In_Storage_Elements));
-            end;
-
-            --  Here for other than non-bit-packed array
-
-         else
             return
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Occurrence_Of (E, Loc),
-                Attribute_Name => Name_Max_Size_In_Storage_Elements);
-         end if;
+              Make_Op_Multiply (Loc,
+                Left_Opnd  => Len,
+                Right_Opnd =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix => New_Occurrence_Of (Component_Type (E), Loc),
+                    Attribute_Name => Name_Max_Size_In_Storage_Elements));
+         end;
       end Size_In_Storage_Elements;
 
    --  Start of processing for Expand_N_Allocator
@@ -3363,18 +3351,25 @@ package body Exp_Ch4 is
          --    raise Storage_Error;
          --  end if;
 
-         --  where 3.5 gigabytes is a constant large enough to accomodate
-         --  any reasonable request for
+         --  where 3.5 gigabytes is a constant large enough to accomodate any
+         --  reasonable request for. But we can't do it this way because at
+         --  least at the moment we don't compute this attribute right, and
+         --  can silently give wrong results when the result gets large. Since
+         --  this is all about large results, that's bad, so instead we only
+         --  applly the check for constrained arrays, and manually compute the
+         --  value of the attribute ???
 
-         Insert_Action (N,
-           Make_Raise_Storage_Error (Loc,
-             Condition =>
-               Make_Op_Gt (Loc,
-                 Left_Opnd => Size_In_Storage_Elements (Etyp),
-                 Right_Opnd =>
-                   Make_Integer_Literal (Loc,
-                     Intval => Uint_7 * (Uint_2 ** 29))),
-             Reason    => SE_Object_Too_Large));
+         if Is_Array_Type (Etyp) and then Is_Constrained (Etyp) then
+            Insert_Action (N,
+              Make_Raise_Storage_Error (Loc,
+                Condition =>
+                  Make_Op_Gt (Loc,
+                    Left_Opnd  => Size_In_Storage_Elements (Etyp),
+                    Right_Opnd =>
+                      Make_Integer_Literal (Loc,
+                        Intval => Uint_7 * (Uint_2 ** 29))),
+                Reason    => SE_Object_Too_Large));
+         end if;
       end if;
 
       --  Handle case of qualified expression (other than optimization above)
