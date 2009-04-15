@@ -1,3 +1,11 @@
+2009-04-15  Le-Chun Wu  <lcwu@google.com>
+
+	PR c++/39551
+	* call.c (build_over_call): Set TREE_NO_WARNING on the
+	compiler-generated INDIRECT_REF expression.
+	* cvt.c (convert_to_void): Emit warning when stripping off
+	INDIRECT_REF.
+
 2009-04-14  Diego Novillo  <dnovillo@google.com>
 
 	* parser.c (cp_parser_type_specifier_seq): Move call to

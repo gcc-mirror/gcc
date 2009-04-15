@@ -5419,6 +5419,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  if (test)
 	    t = build3 (COND_EXPR, TREE_TYPE (t), test, arg0, t);
 	  val = cp_build_indirect_ref (t, 0, complain);
+          TREE_NO_WARNING (val) = 1;
 	}
 
       return val;
