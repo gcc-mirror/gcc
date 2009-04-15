@@ -3326,6 +3326,21 @@ package body Sem_Ch3 is
             end if;
          end if;
 
+      --  A consequence of 3.9.4 (6/2) and 7.3 (7.2/2) is that a private
+      --  extension with a synchronized parent must be explicitly declared
+      --  synchronized, because the full view will be a synchronized type.
+      --  This must be checked before the check for limited types below,
+      --  to ensure that types declared limited are not allowed extend
+      --  synchronized interfaces.
+
+      elsif Is_Interface (Parent_Type)
+        and then Is_Synchronized_Interface (Parent_Type)
+        and then not Synchronized_Present (N)
+      then
+         Error_Msg_NE
+           ("private extension of& must be explicitly synchronized",
+             N, Parent_Type);
+
       elsif Limited_Present (N) then
          Set_Is_Limited_Record (T);
 
@@ -3337,18 +3352,6 @@ package body Sem_Ch3 is
             Error_Msg_NE ("parent type& of limited extension must be limited",
               N, Parent_Type);
          end if;
-
-      --  A consequence of 3.9.4 (6/2) and 7.3 (2.2/2) is that a private
-      --  extension with a synchronized parent must be explicitly declared
-      --  synchronized, because the full view will be a synchronized type.
-
-      elsif Is_Interface (Parent_Type)
-        and then Is_Synchronized_Interface (Parent_Type)
-        and then not Synchronized_Present (N)
-      then
-         Error_Msg_NE
-           ("private extension of& must be explicitly synchronized",
-             N, Parent_Type);
       end if;
    end Analyze_Private_Extension_Declaration;
 
@@ -8710,6 +8713,33 @@ package body Sem_Ch3 is
 
          elsif Is_Protected_Interface (Iface_Id) then
             Is_Protected := True;
+         end if;
+
+         if Is_Synchronized_Interface (Iface_Id) then
+
+            --  A consequence of 3.9.4 (6/2) and 7.3 (7.2/2) is that a private
+            --  extension derived from a synchronized interface must explicitly
+            --  be declared synchronized, because the full view will be a
+            --  synchronized type.
+
+            if Nkind (N) = N_Private_Extension_Declaration then
+               if not Synchronized_Present (N) then
+                  Error_Msg_NE
+                    ("private extension of& must be explicitly synchronized",
+                      N, Iface_Id);
+               end if;
+
+            --  However, by 3.9.4(16/2), a full type that is a record extension
+            --  is never allowed to derive from a synchronized interface (note
+            --  that interfaces must be excluded from this check, because those
+            --  are represented by derived type definitions in some cases).
+
+            elsif Nkind (Type_Definition (N)) = N_Derived_Type_Definition
+              and then not Interface_Present (Type_Definition (N))
+            then
+               Error_Msg_N ("record extension cannot derive from synchronized"
+                             & " interface", Error_Node);
+            end if;
          end if;
 
          --  Check that the characteristics of the progenitor are compatible

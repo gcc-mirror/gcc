@@ -797,7 +797,7 @@ package body Rtsfind is
 
    procedure Maybe_Add_With (E : RE_Id; U : in out RT_Unit_Table_Record) is
       Is_Main : constant Boolean :=
-        In_Extended_Main_Code_Unit (Cunit_Entity (Current_Sem_Unit));
+                  In_Extended_Main_Code_Unit (Cunit_Entity (Current_Sem_Unit));
 
    begin
       --  We do not need to generate a with_clause for a call issued from
@@ -831,18 +831,18 @@ package body Rtsfind is
       --  Here if we've decided to add the with_clause
 
       declare
-         Lib_Unit : constant Node_Id := Unit (Cunit (U.Unum));
-         Withn    : constant Node_Id :=
-           Make_With_Clause (Standard_Location,
-             Name =>
-               Make_Unit_Name
-                 (E, Defining_Unit_Name (Specification (Lib_Unit))));
+         LibUnit : constant Node_Id := Unit (Cunit (U.Unum));
+         Withn   : constant Node_Id :=
+                     Make_With_Clause (Standard_Location,
+                       Name =>
+                         Make_Unit_Name
+                           (E, Defining_Unit_Name (Specification (LibUnit))));
 
       begin
-         Set_Library_Unit          (Withn, Cunit (U.Unum));
-         Set_Corresponding_Spec    (Withn, U.Entity);
-         Set_First_Name            (Withn, True);
-         Set_Implicit_With         (Withn, True);
+         Set_Library_Unit       (Withn, Cunit (U.Unum));
+         Set_Corresponding_Spec (Withn, U.Entity);
+         Set_First_Name         (Withn, True);
+         Set_Implicit_With      (Withn, True);
 
          Mark_Rewrite_Insertion (Withn);
          Append (Withn, Context_Items (Cunit (Current_Sem_Unit)));

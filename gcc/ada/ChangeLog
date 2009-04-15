@@ -1,3 +1,23 @@
+2009-04-15  Robert Dewar  <dewar@adacore.com>
+
+	* rtsfind.adb: Minor reformatting.
+
+2009-04-15  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-part.adb, prj-tree.adb, prj-tree.ads (Restore_And_Free): renames
+	Restore, and free the saved context.
+
+2009-04-15  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Analyze_Private_Extension_Declaration): Move error check
+	for illegal private extension from a synchronized interface parent in
+	front of check for illegal limited extension so that limited extension
+	from a synchronized interface will be rejected.
+	(Check_Ifaces): Check that a private extension that has a synchronized
+	interface as a progenitor must be explicitly declared synchronized.
+	Also check that a record extension cannot derive from a synchronized
+	interface.
+
 2009-04-15  Pascal Obry  <obry@adacore.com>
 
 	* adaint.h (__gnat_unlink): Add spec.
