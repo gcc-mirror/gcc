@@ -3346,3 +3346,13 @@ __gnat_pthread_setaffinity_np (pthread_t th ATTRIBUTE_UNUSED,
 }
 #endif
 #endif
+
+#if defined (linux)
+/* There is no function in the glibc to retrieve the LWP of the current
+   thread. We need to do a system call in order to retrieve this
+   information. */
+#include <sys/syscall.h>
+void *__gnat_lwp_self (void) {
+   return (void *) syscall (__NR_gettid);
+}
+#endif

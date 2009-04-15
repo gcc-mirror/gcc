@@ -1,3 +1,12 @@
+2009-04-15  Nicolas Roche  <roche@adacore.com>
+
+	* adaint.c: Add function __gnat_lwp_self that retrieves the LWP of the
+	current thread.
+
+	* s-osinte-linux.ads: Import the __gnat_lwp_self function as lwp_self
+
+	* s-taprop-linux.adb (Enter_Task): Store the LWP in the TCB
+
 2009-04-15  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb: improve error message on exponentiation.

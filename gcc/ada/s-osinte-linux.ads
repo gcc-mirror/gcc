@@ -464,6 +464,9 @@ package System.OS_Interface is
    function pthread_self return pthread_t;
    pragma Import (C, pthread_self, "pthread_self");
 
+   function lwp_self return System.Address;
+   pragma Import (C, lwp_self, "__gnat_lwp_self");
+
    --------------------------
    -- POSIX.1c  Section 17 --
    --------------------------
