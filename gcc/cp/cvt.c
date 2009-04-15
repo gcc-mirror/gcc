@@ -870,7 +870,20 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
                        implicit ? implicit : "void context");
           }
 	if (is_reference || !is_volatile || !is_complete || TREE_ADDRESSABLE (type))
-	  expr = TREE_OPERAND (expr, 0);
+          {
+            /* Emit a warning (if enabled) when the "effect-less" INDIRECT_REF
+               operation is stripped off. Note that we don't warn about
+               - an expression with TREE_NO_WARNING set. (For an example of
+                 such expressions, see build_over_call in call.c.)
+               - automatic dereferencing of references, since the user cannot
+                 control it. (See also warn_if_unused_value() in stmt.c.)  */
+            if (warn_unused_value
+                && (complain & tf_warning)
+                && !TREE_NO_WARNING (expr)
+                && !is_reference)
+              warning (OPT_Wunused_value, "value computed is not used");
+            expr = TREE_OPERAND (expr, 0);
+          }
 
 	break;
       }
