@@ -1,3 +1,14 @@
+2009-04-15  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_warn.ads: Minor reformatting
+
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: better error message for illegal interfaces
+
+	* sem_ch6.adb (Possible_Freeze): Delay freezing a subprogram if a
+	formal is an incomplete type from a limited_with clause.
+
 2009-04-15  Vincent Celier  <celier@adacore.com>
 
 	* prj-nmsc.adb (Locate_Directory): New Boolean parameter

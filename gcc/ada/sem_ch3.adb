@@ -8734,6 +8734,7 @@ package body Sem_Ch3 is
                 or else Protected_Present (Iface_Def)
                 or else Synchronized_Present (Iface_Def))
               and then Nkind (N) /= N_Private_Extension_Declaration
+              and then not Error_Posted (N)
             then
                Error_Msg_NE
                  ("progenitor& must be limited interface",
@@ -12627,19 +12628,21 @@ package body Sem_Ch3 is
                   null;
 
                elsif Protected_Present (Iface_Def) then
-                  Error_Msg_N
-                    ("(Ada 2005) limited interface cannot "
-                     & "inherit from protected interface", Indic);
+                  Error_Msg_NE
+                    ("descendant of& must be declared"
+                       & " as a protected interface",
+                         N, Parent_Type);
 
                elsif Synchronized_Present (Iface_Def) then
-                  Error_Msg_N
-                    ("(Ada 2005) limited interface cannot "
-                     & "inherit from synchronized interface", Indic);
+                  Error_Msg_NE
+                    ("descendant of& must be declared"
+                       & " as a synchronized interface",
+                         N, Parent_Type);
 
                elsif Task_Present (Iface_Def) then
-                  Error_Msg_N
-                    ("(Ada 2005) limited interface cannot "
-                     & "inherit from task interface", Indic);
+                  Error_Msg_NE
+                    ("descendant of& must be declared as a task interface",
+                       N, Parent_Type);
 
                else
                   Error_Msg_N
@@ -12658,20 +12661,21 @@ package body Sem_Ch3 is
                   null;
 
                elsif Protected_Present (Iface_Def) then
-                  Error_Msg_N
-                    ("(Ada 2005) non-limited interface cannot "
-                     & "inherit from protected interface", Indic);
+                  Error_Msg_NE
+                    ("descendant of& must be declared"
+                       & " as a protected interface",
+                         N, Parent_Type);
 
                elsif Synchronized_Present (Iface_Def) then
-                  Error_Msg_N
-                    ("(Ada 2005) non-limited interface cannot "
-                     & "inherit from synchronized interface", Indic);
+                  Error_Msg_NE
+                    ("descendant of& must be declared"
+                       & " as a synchronized interface",
+                         N, Parent_Type);
 
                elsif Task_Present (Iface_Def) then
-                  Error_Msg_N
-                    ("(Ada 2005) non-limited interface cannot "
-                     & "inherit from task interface", Indic);
-
+                  Error_Msg_NE
+                    ("descendant of& must be declared as a task interface",
+                       N, Parent_Type);
                else
                   null;
                end if;
