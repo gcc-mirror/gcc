@@ -1,3 +1,8 @@
+2009-04-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39764
+	* g++.dg/torture/pr39764.C: New testcase.
+
 2009-04-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/ext/altivec-17.C: New.

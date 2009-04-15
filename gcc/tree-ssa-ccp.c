@@ -228,6 +228,8 @@ typedef enum
    doing the store).  */
 static prop_value_t *const_val;
 
+static void canonicalize_float_value (prop_value_t *);
+
 /* Dump constant propagation value VAL to file OUTF prefixed by PREFIX.  */
 
 static void
@@ -386,6 +388,8 @@ get_value (tree var)
   val = &const_val[SSA_NAME_VERSION (var)];
   if (val->lattice_val == UNINITIALIZED)
     *val = get_default_value (var);
+
+  canonicalize_float_value (val);
 
   return val;
 }
