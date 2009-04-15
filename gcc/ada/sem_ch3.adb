@@ -4002,7 +4002,17 @@ package body Sem_Ch3 is
             Set_First_Subtype_Link (Freeze_Node (B), T);
          end if;
 
-         if not From_With_Type (T) then
+         --  A type that is imported through a limited_with clause cannot
+         --  generate any code, and thus need not be frozen. However, an
+         --  access type with an imported designated type needs a finalization
+         --  list, which may be referenced in some other package that has
+         --  non-limited visibility on the designated type. Thus we must
+         --  create the finalization list at the point the access type is
+         --  frozen, to prevent unsatisfied references at link time.
+
+         if not From_With_Type (T)
+           or else Is_Access_Type (T)
+         then
             Set_Has_Delayed_Freeze (T);
          end if;
       end;
