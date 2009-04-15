@@ -9374,6 +9374,8 @@ build_opaque_vector_type (tree node, int nunits)
 static void
 rs6000_init_builtins (void)
 {
+  tree tdecl;
+  
   V2SI_type_node = build_vector_type (intSI_type_node, 2);
   V2SF_type_node = build_vector_type (float_type_node, 2);
   V4HI_type_node = build_vector_type (intHI_type_node, 4);
@@ -9411,60 +9413,75 @@ rs6000_init_builtins (void)
   float_type_internal_node = float_type_node;
   void_type_internal_node = void_type_node;
 
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__bool char"),
-					    bool_char_type_node));
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__bool short"),
-					    bool_short_type_node));
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__bool int"),
-					    bool_int_type_node));
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__pixel"),
-					    pixel_type_node));
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__bool char"),
+		      bool_char_type_node);
+  TYPE_NAME (bool_char_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__bool short"),
+		      bool_short_type_node);
+  TYPE_NAME (bool_short_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__bool int"),
+		      bool_int_type_node);
+  TYPE_NAME (bool_int_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__pixel"),
+		      pixel_type_node);
+  TYPE_NAME (pixel_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
 
   bool_V16QI_type_node = build_vector_type (bool_char_type_node, 16);
   bool_V8HI_type_node = build_vector_type (bool_short_type_node, 8);
   bool_V4SI_type_node = build_vector_type (bool_int_type_node, 4);
   pixel_V8HI_type_node = build_vector_type (pixel_type_node, 8);
 
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector unsigned char"),
-					    unsigned_V16QI_type_node));
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector signed char"),
-					    V16QI_type_node));
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector __bool char"),
-					    bool_V16QI_type_node));
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector unsigned char"),
+		      unsigned_V16QI_type_node);
+  TYPE_NAME (unsigned_V16QI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector signed char"),
+		      V16QI_type_node);
+  TYPE_NAME (V16QI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector __bool char"),
+		      bool_V16QI_type_node);
+  TYPE_NAME ( bool_V16QI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector unsigned short"),
-					    unsigned_V8HI_type_node));
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector signed short"),
-					    V8HI_type_node));
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector __bool short"),
-					    bool_V8HI_type_node));
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector unsigned short"),
+		      unsigned_V8HI_type_node);
+  TYPE_NAME (unsigned_V8HI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector signed short"),
+		      V8HI_type_node);
+  TYPE_NAME (V8HI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector __bool short"),
+		      bool_V8HI_type_node);
+  TYPE_NAME (bool_V8HI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector unsigned int"),
-					    unsigned_V4SI_type_node));
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector signed int"),
-					    V4SI_type_node));
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector __bool int"),
-					    bool_V4SI_type_node));
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector unsigned int"),
+		      unsigned_V4SI_type_node);
+  TYPE_NAME (unsigned_V4SI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector signed int"),
+		      V4SI_type_node);
+  TYPE_NAME (V4SI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector __bool int"),
+		      bool_V4SI_type_node);
+  TYPE_NAME (bool_V4SI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
 
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector float"),
-					    V4SF_type_node));
-  (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
-					    get_identifier ("__vector __pixel"),
-					    pixel_V8HI_type_node));
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector float"),
+		      V4SF_type_node);
+  TYPE_NAME (V4SF_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
+  tdecl = build_decl (TYPE_DECL, get_identifier ("__vector __pixel"),
+		      pixel_V8HI_type_node);
+  TYPE_NAME (pixel_V8HI_type_node) = tdecl;
+  (*lang_hooks.decls.pushdecl) (tdecl);
 
   if (TARGET_PAIRED_FLOAT)
     paired_init_builtins ();

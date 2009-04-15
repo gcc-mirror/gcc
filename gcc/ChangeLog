@@ -1,3 +1,8 @@
+2009-04-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Set TYPE_NAME of
+	our distinct integral and vector types.
+
 2009-04-15  Rafael Avila de Espindola  <espindola@google.com>
 
 	* class.c (build_vtbl_ref_1): Remove call to assemble_external.
