@@ -3568,6 +3568,11 @@ package body Checks is
       then
          return;
 
+      --  Nothing to do for unsigned integer types, which do not overflow
+
+      elsif Is_Modular_Integer_Type (Typ) then
+         return;
+
       --  Nothing to do if the range of the result is known OK. We skip this
       --  for conversions, since the caller already did the check, and in any
       --  case the condition for deleting the check for a type conversion is

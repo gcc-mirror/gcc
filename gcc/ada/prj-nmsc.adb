@@ -746,8 +746,8 @@ package body Prj.Nmsc is
       if Data.Qualifier = Dry and then Data.Source_Dirs /= Nil_String then
          Error_Msg
            (Project, In_Tree,
-            "an abstract project need to have no language, no sources or no " &
-            "source directories",
+            "an abstract project needs to have no language, no sources " &
+            "or no source directories",
             Data.Location);
       end if;
 
@@ -5347,7 +5347,7 @@ package body Prj.Nmsc is
             then
                Error_Msg
                  (Project, In_Tree,
-                  "a reference symbol file need to be defined",
+                  "a reference symbol file needs to be defined",
                   Lib_Symbol_Policy.Location);
             end if;
 

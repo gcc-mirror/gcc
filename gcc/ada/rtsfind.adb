@@ -79,11 +79,16 @@ package body Rtsfind is
    --  the latter case it is critical to make a call to Set_RTU_Loaded to
    --  ensure that the entry in this table reflects the load.
 
+   --  Withed is True if an implicit with_clause has been added from some unit
+   --  other than the main unit to this unit. Withed_By_Main is the same,
+   --  except from the main unit.
+
    type RT_Unit_Table_Record is record
-      Entity : Entity_Id;
-      Uname  : Unit_Name_Type;
-      Unum   : Unit_Number_Type;
-      Withed : Boolean;
+      Entity         : Entity_Id;
+      Uname          : Unit_Name_Type;
+      Unum           : Unit_Number_Type;
+      Withed         : Boolean;
+      Withed_By_Main : Boolean;
    end record;
 
    RT_Unit_Table : array (RTU_Id) of RT_Unit_Table_Record;
@@ -106,22 +111,19 @@ package body Rtsfind is
 
    RE_Table : array (RE_Id) of Entity_Id;
 
-   --------------------------
-   -- Generation of WITH's --
-   --------------------------
+   --------------------------------
+   -- Generation of with_clauses --
+   --------------------------------
 
    --  When a unit is implicitly loaded as a result of a call to RTE, it is
-   --  necessary to create an implicit WITH to ensure that the object is
-   --  correctly loaded by the binder. We originally added such WITH clauses
-   --  only if the extended main unit required them, and added them only to the
-   --  extended main unit. They are currently added to whatever unit first
-   --  needs them, which is not necessarily the main unit. This works because
-   --  if the main unit requires some runtime unit also required by some other
-   --  unit, the other unit's implicit WITH will force a correct elaboration
-   --  order. This method is necessary for SofCheck Inspector.
+   --  necessary to create one or two implicit with_clauses. We add such
+   --  with_clauses to the extended main unit if needed, and also to whatever
+   --  unit first needs them, which is not necessarily the main unit. The
+   --  former ensures that the object is correctly loaded by the binder. The
+   --  latter is necessary for SofCheck Inspector.
 
-   --  The flag Withed in the unit table record is initially set to False. It
-   --  is set True if a WITH has been generated for the corresponding unit.
+   --  The flags Withed and Withed_By_Main in the unit table record are used to
+   --  avoid duplicates.
 
    -----------------------
    -- Local Subprograms --
@@ -177,6 +179,10 @@ package body Rtsfind is
    function Make_Unit_Name (E : RE_Id; N : Node_Id) return Node_Id;
    --  If the unit is a child unit, build fully qualified name for use in
    --  With_Clause.
+
+   procedure Maybe_Add_With (E : RE_Id; U : in out RT_Unit_Table_Record);
+   --  If necessary, add an implicit with_clause from the current unit to the
+   --  one represented by E and U.
 
    procedure Output_Entity_Name (Id : RE_Id; Msg : String);
    --  Output continuation error message giving qualified name of entity
@@ -661,8 +667,9 @@ package body Rtsfind is
       --  Otherwise we need to load the unit, First build unit name
       --  from the enumeration literal name in type RTU_Id.
 
-      U.Uname  := Get_Unit_Name (U_Id);
-      U.Withed := False;
+      U.Uname          := Get_Unit_Name (U_Id);
+      U.Withed         := False;
+      U.Withed_By_Main := False;
 
       --  Now do the load call, note that setting Error_Node to Empty is
       --  a signal to Load_Unit that we will regard a failure to find the
@@ -721,7 +728,7 @@ package body Rtsfind is
 
          if not Analyzed (Cunit (U.Unum)) then
 
-            --  If the unit is already loaded through a limited_with clause,
+            --  If the unit is already loaded through a limited_with_clause,
             --  the relevant entities must already be available. We do not
             --  want to load and analyze the unit because this would create
             --  a real semantic dependence when the purpose of the limited_with
@@ -784,7 +791,66 @@ package body Rtsfind is
       return Nam;
    end Make_Unit_Name;
 
-   -----------------------
+   --------------------
+   -- Maybe_Add_With --
+   --------------------
+
+   procedure Maybe_Add_With (E : RE_Id; U : in out RT_Unit_Table_Record) is
+      Is_Main : constant Boolean :=
+        In_Extended_Main_Code_Unit (Cunit_Entity (Current_Sem_Unit));
+
+   begin
+      --  We do not need to generate a with_clause for a call issued from
+      --  RTE_Component_Available.
+
+      if RTE_Available_Call then
+         return;
+      end if;
+
+      --  If the current unit is the main one, add the with_clause unless it's
+      --  already been done.
+
+      if Is_Main then
+         if U.Withed_By_Main then
+            return;
+         else
+            U.Withed_By_Main := True;
+         end if;
+
+      --  If the current unit is not the main one, add the with_clause unless
+      --  it's already been done for some non-main unit.
+
+      else
+         if U.Withed then
+            return;
+         else
+            U.Withed := True;
+         end if;
+      end if;
+
+      --  Here if we've decided to add the with_clause
+
+      declare
+         Lib_Unit : constant Node_Id := Unit (Cunit (U.Unum));
+         Withn    : constant Node_Id :=
+           Make_With_Clause (Standard_Location,
+             Name =>
+               Make_Unit_Name
+                 (E, Defining_Unit_Name (Specification (Lib_Unit))));
+
+      begin
+         Set_Library_Unit          (Withn, Cunit (U.Unum));
+         Set_Corresponding_Spec    (Withn, U.Entity);
+         Set_First_Name            (Withn, True);
+         Set_Implicit_With         (Withn, True);
+
+         Mark_Rewrite_Insertion (Withn);
+         Append (Withn, Context_Items (Cunit (Current_Sem_Unit)));
+         Check_Restriction_No_Dependence (Name (Withn), Current_Error_Node);
+      end;
+   end Maybe_Add_With;
+
+   ------------------------
    -- Output_Entity_Name --
    ------------------------
 
@@ -1063,36 +1129,8 @@ package body Rtsfind is
          end if;
       end if;
 
-      --  See if we have to generate a WITH for this entity. We generate a WITH
-      --  if we have not already added the with. The WITH is added to the
-      --  appropriate unit (the current one). We do not need to generate a WITH
-      --  for a call issued from RTE_Available.
-
    <<Found>>
-      if not U.Withed and then not RTE_Available_Call then
-         U.Withed := True;
-
-         declare
-            Withn    : Node_Id;
-            Lib_Unit : Node_Id;
-
-         begin
-            Lib_Unit := Unit (Cunit (U.Unum));
-            Withn :=
-              Make_With_Clause (Standard_Location,
-                Name =>
-                  Make_Unit_Name
-                    (E, Defining_Unit_Name (Specification (Lib_Unit))));
-            Set_Library_Unit          (Withn, Cunit (U.Unum));
-            Set_Corresponding_Spec    (Withn, U.Entity);
-            Set_First_Name            (Withn, True);
-            Set_Implicit_With         (Withn, True);
-
-            Mark_Rewrite_Insertion (Withn);
-            Append (Withn, Context_Items (Cunit (Current_Sem_Unit)));
-            Check_Restriction_No_Dependence (Name (Withn), Current_Error_Node);
-         end;
-      end if;
+      Maybe_Add_With (E, U);
 
       Front_End_Inlining := Save_Front_End_Inlining;
       return Check_CRT (E, RE_Table (E));
@@ -1197,39 +1235,7 @@ package body Rtsfind is
       --  If we didn't find the entity we want, something is wrong. The
       --  appropriate action will be taken by Check_CRT when we exit.
 
-      --  Generate a with-clause if the current unit is part of the extended
-      --  main code unit, and if we have not already added the with. The clause
-      --  is added to the appropriate unit (the current one). We do not need to
-      --  generate it for a call issued from RTE_Component_Available.
-
-      if (not U.Withed)
-        and then
-          In_Extended_Main_Code_Unit (Cunit_Entity (Current_Sem_Unit))
-        and then not RTE_Available_Call
-      then
-         U.Withed := True;
-
-         declare
-            Withn    : Node_Id;
-            Lib_Unit : Node_Id;
-
-         begin
-            Lib_Unit := Unit (Cunit (U.Unum));
-            Withn :=
-              Make_With_Clause (Standard_Location,
-                Name =>
-                  Make_Unit_Name
-                    (E, Defining_Unit_Name (Specification (Lib_Unit))));
-            Set_Library_Unit          (Withn, Cunit (U.Unum));
-            Set_Corresponding_Spec    (Withn, U.Entity);
-            Set_First_Name            (Withn, True);
-            Set_Implicit_With         (Withn, True);
-
-            Mark_Rewrite_Insertion (Withn);
-            Append (Withn, Context_Items (Cunit (Current_Sem_Unit)));
-            Check_Restriction_No_Dependence (Name (Withn), Current_Error_Node);
-         end;
-      end if;
+      Maybe_Add_With (E, U);
 
       Front_End_Inlining := Save_Front_End_Inlining;
       return Check_CRT (E, Found_E);
@@ -1334,10 +1340,11 @@ package body Rtsfind is
                --  If entry is not set, set it now
 
                if No (U.Entity) then
-                  U.Entity := E;
-                  U.Uname  := Get_Unit_Name (U_Id);
-                  U.Unum   := Unum;
-                  U.Withed := False;
+                  U := (Entity         => E,
+                        Uname          => Get_Unit_Name (U_Id),
+                        Unum           => Unum,
+                        Withed         => False,
+                        Withed_By_Main => False);
                end if;
 
                return;

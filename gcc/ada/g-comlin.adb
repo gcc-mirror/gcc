@@ -1277,7 +1277,7 @@ package body GNAT.Command_Line is
 
                         if Separator (Parser) = ASCII.NUL then
                            Add_Switch
-                             (Cmd, Sw & Parameter (Parser), "");
+                             (Cmd, Sw & Parameter (Parser), "", ASCII.NUL);
                         else
                            Add_Switch
                              (Cmd, Sw, Parameter (Parser), Separator (Parser));

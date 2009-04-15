@@ -70,6 +70,9 @@ extern int    __gnat_open_new_temp		   (char *, int);
 extern int    __gnat_mkdir			   (char *);
 extern int    __gnat_stat			   (char *,
 						    struct stat *);
+extern int    __gnat_unlink                        (char *);
+extern int    __gnat_rename                        (char *, char *);
+
 extern FILE  *__gnat_fopen			   (char *, char *, int);
 extern FILE  *__gnat_freopen			   (char *, char *, FILE *,
 				                    int);

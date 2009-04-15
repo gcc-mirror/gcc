@@ -2394,9 +2394,8 @@ package body Exp_Ch3 is
                           and then Convention (Prim) = Convention_CPP
                           and then not Present (Interface_Alias (Prim))
                         then
-                           Register_Primitive (Loc,
-                             Prim    => Prim,
-                             Ins_Nod => Last (Init_Tags_List));
+                           Append_List_To (Init_Tags_List,
+                             Register_Primitive (Loc, Prim => Prim));
                         end if;
 
                         Next_Elmt (E);

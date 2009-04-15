@@ -1316,14 +1316,14 @@ package Opt is
    --  handlers that can never handle a local raise. This warning is only ever
    --  generated if pragma Restrictions (No_Exception_Propagation) is set. The
    --  default is not to generate the warnings except that if the source has
-   --  at least one exception, and this restriction is set, and the warning
-   --  was not explicitly turned off, then it is turned on by default.
+   --  at least one exception handler, and this restriction is set, and the
+   --  warning was not explicitly turned off, then it is turned on by default.
 
    No_Warn_On_Non_Local_Exception : Boolean := False;
    --  GNAT
    --  This is set to True if the above warning is explicitly suppressed. We
    --  use this to avoid turning it on by default when No_Exception_Propagation
-   --  restriction is set.
+   --  restriction is set and an exception handler is present.
 
    Warn_On_Obsolescent_Feature : Boolean := False;
    --  GNAT

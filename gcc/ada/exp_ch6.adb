@@ -4911,9 +4911,8 @@ package body Exp_Ch6 is
                      Register_Predefined_DT_Entry (Subp);
                   end if;
 
-                  Register_Primitive (Loc,
-                    Prim    => Subp,
-                    Ins_Nod => N);
+                  Insert_Actions_After (N,
+                    Register_Primitive (Loc, Prim => Subp));
                end if;
             end if;
          end;
