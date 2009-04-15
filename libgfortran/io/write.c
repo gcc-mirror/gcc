@@ -707,10 +707,15 @@ btoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
 }
 
 
-/* itoa()-- Integer to decimal conversion. */
+/* gfc_itoa()-- Integer to decimal conversion.
+   The itoa function is a widespread non-standard extension to standard
+   C, often declared in <stdlib.h>.  Even though the itoa defined here
+   is a static function we take care not to conflict with any prior
+   non-static declaration.  Hence the 'gfc_' prefix, which is normally
+   reserved for functions with external linkage.  */
 
 static const char *
-itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
+gfc_itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
 {
   int negative;
   char *p;
@@ -747,7 +752,7 @@ itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
 void
 write_i (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 {
-  write_decimal (dtp, f, p, len, (void *) itoa);
+  write_decimal (dtp, f, p, len, (void *) gfc_itoa);
 }
 
 
@@ -862,7 +867,7 @@ write_integer (st_parameter_dt *dtp, const char *source, int length)
   int width;
   char itoa_buf[GFC_ITOA_BUF_SIZE];
 
-  q = itoa (extract_int (source, length), itoa_buf, sizeof (itoa_buf));
+  q = gfc_itoa (extract_int (source, length), itoa_buf, sizeof (itoa_buf));
 
   switch (length)
     {
