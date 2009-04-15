@@ -865,9 +865,8 @@ particular release.
       <entry>Y</entry>
       <entry>
 	<para>
-	  Uses code from the
-	  <ulink url="http://www.boost.org/libs/smart_ptr/shared_ptr.htm">Boost 
-	    shared_ptr</ulink> library.
+	  Uses code from
+	  <ulink url="http://www.boost.org/libs/smart_ptr/shared_ptr.htm">boost::shared_ptr</ulink>.
 	</para>  
       </entry>
     </row>

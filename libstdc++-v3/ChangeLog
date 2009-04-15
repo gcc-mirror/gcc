@@ -1,3 +1,8 @@
+2009-04-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* doc/xml/manual/status_cxxtr1.xml: Update to  new table style.
+	* doc/xml/manual/status_cxx200x.xml: Adjust.
+
 2009-04-14  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/spine.xml: Remove unused license entity, update
