@@ -29,7 +29,7 @@
 --  This package provides vxworks specific support functions needed
 --  by System.OS_Interface.
 
---  This is the VxWorks 6 rtp version of this package
+--  This is the VxWorks 6 RTP version of this package
 
 with Interfaces.C;
 
@@ -39,11 +39,10 @@ package System.VxWorks.Ext is
    type t_id is new Long_Integer;
    subtype int is Interfaces.C.int;
 
-   function Task_Cont (tid : t_id) return int;
-   pragma Inline (Task_Cont);
+   type Interrupt_Handler is access procedure (parameter : System.Address);
+   pragma Convention (C, Interrupt_Handler);
 
-   function Task_Stop (tid : t_id) return int;
-   pragma Inline (Task_Stop);
+   type Interrupt_Vector is new System.Address;
 
    function Int_Lock return int;
    pragma Inline (Int_Lock);
@@ -51,13 +50,29 @@ package System.VxWorks.Ext is
    function Int_Unlock return int;
    pragma Inline (Int_Unlock);
 
+   function Interrupt_Connect
+     (Vector    : Interrupt_Vector;
+      Handler   : Interrupt_Handler;
+      Parameter : System.Address := System.Null_Address) return int;
+   pragma Convention (C, Interrupt_Connect);
+
+   function Interrupt_Number_To_Vector
+     (intNum : int) return Interrupt_Vector;
+   pragma Convention (C, Interrupt_Number_To_Vector);
+
+   function Task_Cont (tid : t_id) return int;
+   pragma Import (C, Task_Cont, "taskResume");
+
+   function Task_Stop (tid : t_id) return int;
+   pragma Import (C, Task_Stop, "taskSuspend");
+
    function kill (pid : t_id; sig : int) return int;
    pragma Import (C, kill, "taskKill");
 
-   function Set_Time_Slice (ticks : int) return int;
-   pragma Inline (Set_Time_Slice);
-
    function getpid return t_id;
    pragma Import (C, getpid, "getpid");
+
+   function Set_Time_Slice (ticks : int) return int;
+   pragma Inline (Set_Time_Slice);
 
 end System.VxWorks.Ext;

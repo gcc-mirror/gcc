@@ -26,40 +26,57 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks 6 rtp version of this package
+--  This package provides vxworks specific support functions needed
+--  by System.OS_Interface.
+
+--  This is the VxWorks 6 RTP version of this package
 
 package body System.VxWorks.Ext is
 
-   function Task_Cont (tid : t_id) return int is
-      pragma Unreferenced (tid);
-   begin
-      --  Operation not allowed in an RTP
-      return 0;
-   end Task_Cont;
+   ERROR : constant := -1;
 
-   function Task_Stop (tid : t_id) return int is
-      pragma Unreferenced (tid);
-   begin
-      --  Operation not allowed in an RTP
-      return 0;
-   end Task_Stop;
+   --------------
+   -- Int_Lock --
+   --------------
 
    function Int_Lock return int is
    begin
-      --  Operation not allowed in an RTP
-      return 0;
+      return ERROR;
    end Int_Lock;
+
+   ----------------
+   -- Int_Unlock --
+   ----------------
 
    function Int_Unlock return int is
    begin
-      --  Operation not allowed in an RTP
-      return 0;
+      return ERROR;
    end Int_Unlock;
+
+   --------------------
+   -- Set_Time_Slice --
+   --------------------
 
    function Set_Time_Slice (ticks : int) return int is
       pragma Unreferenced (ticks);
    begin
-      return 0;
+      return ERROR;
    end Set_Time_Slice;
+
+   function Interrupt_Connect
+     (Vector    : Interrupt_Vector;
+      Handler   : Interrupt_Handler;
+      Parameter : System.Address := System.Null_Address) return int is
+      pragma Unreferenced (Vector, Handler, Parameter);
+   begin
+      return ERROR;
+   end Interrupt_Connect;
+
+   function Interrupt_Number_To_Vector
+     (intNum : int) return Interrupt_Vector is
+      pragma Unreferenced (intNum);
+   begin
+      return 0;
+   end Interrupt_Number_To_Vector;
 
 end System.VxWorks.Ext;

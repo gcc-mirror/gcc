@@ -28,7 +28,8 @@
 
 	* s-osinte-vxworks-kernel.adb, s-osinte-vxworks.adb,
 	s-osinte-vxworks.ads s-vxwext.ads, s-vxwext-kernel.adb,
-	s-vxwext-kernel.ads: Reorganize s-osinte-vxworks* and s-vxwext*.
+	s-vxwext-kernel.ads, s-vxwext-rtp.ads, s-vxwext-rtp.adb: Reorganize
+	s-osinte-vxworks* and s-vxwext*.
 
 2009-04-15  Arnaud Charlet  <charlet@adacore.com>
 
