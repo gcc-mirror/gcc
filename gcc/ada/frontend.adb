@@ -70,7 +70,7 @@ begin
    --  logically be performed at elaboration time, were it not for the fact
    --  that we may be doing things more than once in the big loop over files.
    --  Like elaboration, the order in which these calls are made is in some
-   --  cases important. For example, Lib cannot be initialized until Namet,
+   --  cases important. For example, Lib cannot be initialized before Namet,
    --  since it uses names table entries.
 
    Rtsfind.Initialize;
@@ -277,8 +277,8 @@ begin
       end;
    end if;
 
-   --  If we have restriction No_Exception_Propagation, and we did not have
-   --  an explicit switch turning off Warn_On_Local_Exception, then turn on
+   --  If we have restriction No_Exception_Propagation, and we did not have an
+   --  explicit switch turning off Warn_On_Non_Local_Exception, then turn on
    --  this warning by default if we have encountered an exception handler.
 
    if Restriction_Active (No_Exception_Propagation)

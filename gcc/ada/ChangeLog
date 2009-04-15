@@ -1,3 +1,18 @@
+2009-04-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Expand_Ctrl_Function_Call): Check for the case where the
+	immediate parent of the controlled function call is a component
+	association.
+
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Use_One_Type): If the type is tagged, indicate that the
+	corresponding class-wide type is also in use.
+
+2009-04-15  Thomas Quinot  <quinot@adacore.com>
+
+	* frontend.adb: Minor comment fix
+
 2009-04-15  Robert Dewar  <dewar@adacore.com>
 
 	* gnatchop.adb (BOM_Length): New global variable

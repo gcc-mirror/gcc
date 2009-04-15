@@ -7143,6 +7143,14 @@ package body Sem_Ch8 is
 
       elsif not Redundant_Use (Id) then
          Set_In_Use (T);
+
+         --  If T is tagged, primitive operators on class-wide operands
+         --  are also available.
+
+         if Is_Tagged_Type (T) then
+            Set_In_Use (Class_Wide_Type (T));
+         end if;
+
          Set_Current_Use_Clause (T, Parent (Id));
          Op_List := Collect_Primitive_Operations (T);
 
