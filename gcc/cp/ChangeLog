@@ -1,3 +1,9 @@
+2009-04-14  Diego Novillo  <dnovillo@google.com>
+
+	* parser.c (cp_parser_type_specifier_seq): Move call to
+	invoke_plugin_callbacks ...
+	(cp_parser_type_specifier_seq): ... here.
+
 2009-04-14  Le-Chun Wu  <lcwu@google.com>
 
 	* Make-lang.in: Modify dependencies of files including plugin.h.

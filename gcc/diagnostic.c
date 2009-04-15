@@ -372,10 +372,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 
   context->lock++;
 
-  if ((diagnostic->kind == DK_ERROR
-       || diagnostic->kind == DK_WARNING
-       || diagnostic->kind == DK_ICE)
-      && plugins_active_p ())
+  if (diagnostic->kind == DK_ICE && plugins_active_p ())
     {
       fnotice (stderr, "*** WARNING *** there are active plugins, do not report"
 	       " this as a bug unless you can reproduce it without enabling"

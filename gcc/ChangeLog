@@ -4,6 +4,15 @@
 	output for other floating point modes.
 
 2009-04-14  Diego Novillo  <dnovillo@google.com>
+
+	* diagnostic.c (diagnostic_report_diagnostic): Do not
+	warn about loaded plugins for DK_ERROR and DK_WARNING.
+	* c-decl.c (declspecs_add_type): Move call to
+	invoke_plugin_callbacks ...
+	* c-parser.c (c_parser_declspecs): ... here.
+	* plugin.c (dump_active_plugins): Tidy output.
+
+2009-04-14  Diego Novillo  <dnovillo@google.com>
 	    Le-Chun Wu  <lcwu@google.com>
 
 	* configure.ac: Add --enable-plugin support.
