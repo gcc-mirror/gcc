@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Directory Layout and Source Conventions</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_contributing.html" title="Appendix A.  Contributing" /><link rel="prev" href="appendix_contributing.html" title="Appendix A.  Contributing" /><link rel="next" href="source_code_style.html" title="Coding Style" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Directory Layout and Source Conventions</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="appendix_contributing.html">Prev</a> </td><th width="60%" align="center">Appendix A. 
+  Contributing
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="source_code_style.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="contrib.organization"></a>Directory Layout and Source Conventions</h2></div></div></div><p>
+    The unpacked source directory of libstdc++ contains the files
+    needed to create the GNU C++ Library.
+  </p><div class="literallayout"><p><br />
+It has subdirectories:<br />
+<br />
+  doc<br />
+    Files in HTML and text format that document usage, quirks of the<br />
+    implementation, and contributor checklists.<br />
+<br />
+  include<br />
+    All header files for the C++ library are within this directory,<br />
+    modulo specific runtime-related files that are in the libsupc++<br />
+    directory.<br />
+<br />
+    include/std<br />
+      Files meant to be found by #include &lt;name&gt; directives in<br />
+      standard-conforming user programs.  <br />
+<br />
+    include/c<br />
+      Headers intended to directly include standard C headers. <br />
+      [NB: this can be enabled via --enable-cheaders=c]<br />
+<br />
+    include/c_global <br />
+      Headers intended to include standard C headers in<br />
+      the global namespace, and put select names into the std::<br />
+      namespace.  [NB: this is the default, and is the same as<br />
+      --enable-cheaders=c_global]<br />
+<br />
+    include/c_std <br />
+      Headers intended to include standard C headers<br />
+      already in namespace std, and put select names into the std::<br />
+      namespace.  [NB: this is the same as --enable-cheaders=c_std]<br />
+<br />
+    include/bits<br />
+      Files included by standard headers and by other files in<br />
+      the bits directory. <br />
+<br />
+    include/backward<br />
+      Headers provided for backward compatibility, such as &lt;iostream.h&gt;.<br />
+      They are not used in this library.<br />
+<br />
+    include/ext<br />
+      Headers that define extensions to the standard library.  No<br />
+      standard header refers to any of them.<br />
+<br />
+  scripts<br />
+    Scripts that are used during the configure, build, make, or test<br />
+    process.<br />
+<br />
+  src<br />
+    Files that are used in constructing the library, but are not<br />
+    installed.<br />
+<br />
+  testsuites/[backward, demangle, ext, performance, thread, 17_* to 27_*]<br />
+    Test programs are here, and may be used to begin to exercise the <br />
+    library.  Support for "make check" and "make check-install" is<br />
+    complete, and runs through all the subdirectories here when this<br />
+    command is issued from the build directory.  Please note that<br />
+    "make check" requires DejaGNU 1.4 or later to be installed.  Please<br />
+    note that "make check-script" calls the script mkcheck, which<br />
+    requires bash, and which may need the paths to bash adjusted to<br />
+    work properly, as /bin/bash is assumed.<br />
+<br />
+Other subdirectories contain variant versions of certain files<br />
+that are meant to be copied or linked by the configure script.<br />
+Currently these are:<br />
+<br />
+  config/abi<br />
+  config/cpu<br />
+  config/io<br />
+  config/locale<br />
+  config/os<br />
+<br />
+In addition, a subdirectory holds the convenience library libsupc++.<br />
+<br />
+  libsupc++<br />
+    Contains the runtime library for C++, including exception<br />
+    handling and memory allocation and deallocation, RTTI, terminate<br />
+    handlers, etc.<br />
+<br />
+Note that glibc also has a bits/ subdirectory.  We will either<br />
+need to be careful not to collide with names in its bits/<br />
+directory; or rename bits to (e.g.) cppbits/.<br />
+<br />
+In files throughout the system, lines marked with an "XXX" indicate<br />
+a bug or incompletely-implemented feature.  Lines marked "XXX MT"<br />
+indicate a place that may require attention for multi-thread safety.<br />
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="appendix_contributing.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_contributing.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="source_code_style.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Appendix A. 
+  Contributing
+  
+ </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Coding Style</td></tr></table></div></body></html>

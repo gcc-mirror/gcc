@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ABI Policy and Guidelines</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      ABI&#10;    , &#10;      version&#10;    , &#10;      dynamic&#10;    , &#10;      shared&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_porting.html" title="Appendix B. Porting and Maintenance" /><link rel="prev" href="internals.html" title="Porting to New Hardware or Operating Systems" /><link rel="next" href="api.html" title="API Evolution and Deprecation History" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">ABI Policy and Guidelines</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="internals.html">Prev</a> </td><th width="60%" align="center">Appendix B. Porting and Maintenance</th><td width="20%" align="right"> <a accesskey="n" href="api.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.abi"></a>ABI Policy and Guidelines</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ABI Policy and Guidelines</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      ABI&#10;    , &#10;      version&#10;    , &#10;      dynamic&#10;    , &#10;      shared&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /><link rel="prev" href="internals.html" title="Porting to New Hardware or Operating Systems" /><link rel="next" href="api.html" title="API Evolution and Deprecation History" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">ABI Policy and Guidelines</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="internals.html">Prev</a> </td><th width="60%" align="center">Appendix B. 
+  Porting and Maintenance
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="api.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="appendix.porting.abi"></a>ABI Policy and Guidelines</h2></div></div></div><p>
 </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="abi.cxx_interface"></a>The C++ Interface</h3></div></div></div><p>
   C++ applications often dependent on specific language support
   routines, say for throwing exceptions, or catching exceptions, and
@@ -461,54 +464,54 @@ gcc test.c -g -O2 -L. -lone -ltwo /usr/lib/libstdc++.so.5 /usr/lib/libstdc++.so.
 <a class="ulink" href="http://gcc.gnu.org/PR24660" target="_top">24660: versioning weak symbols in libstdc++</a>
 </p><p>
 <a class="ulink" href="http://gcc.gnu.org/PR19664" target="_top">19664: libstdc++ headers should have pop/push of the visibility around the declarations</a>
-</p></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id571553"></a><p><span class="title"><i>
+</p></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="abi.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id570943"></a><p><span class="title"><i>
       ABIcheck, a vague idea of checking ABI compatibility
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://abicheck.sourceforge.net/" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id571570"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id570961"></a><p><span class="title"><i>
       C++ ABI Reference
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://www.codesourcery.com/cxx-abi" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id571588"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id570979"></a><p><span class="title"><i>
       Intel® Compilers for Linux* -Compatibility with the GNU Compilers
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://developer.intel.com/software/products/compilers/techtopics/LinuxCompilersCompatibility.htm" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id571606"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id570996"></a><p><span class="title"><i>
       Intel® Compilers for Linux* -Compatibility with the GNU Compilers
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://developer.intel.com/software/products/compilers/techtopics/LinuxCompilersCompatibility.htm" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id571623"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id571014"></a><p><span class="title"><i>
       Sun Solaris 2.9 : Linker and Libraries Guide (document 816-1386)
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://docs.sun.com/?p=/doc/816-1386&amp;a=load" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id571640"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id571030"></a><p><span class="title"><i>
       Sun Solaris 2.9 : C++ Migration Guide (document 816-2459)
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://docs.sun.com/db/prod/solaris.9" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id571658"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id571048"></a><p><span class="title"><i>
       ELF Symbol Versioning
     </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="biblioid">
       <a class="ulink" href="http://people.redhat.com/drepper/symbol-versioning" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id571686"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id571076"></a><p><span class="title"><i>
       C++ ABI for the ARM Architecture
     </i>. </span><span class="biblioid">
       <a class="ulink" href="http://www.arm.com/miscPDFs/8033.pdf" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id571703"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id571094"></a><p><span class="title"><i>
       Dynamic Shared Objects: Survey and Issues
     </i>. </span><span class="subtitle">
       ISO C++ J16/06-0046
     . </span><span class="author"><span class="firstname">Benjamin</span> <span class="surname">Kosnik</span>. </span><span class="biblioid">
       <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1976.html" target="_top">
       </a>
-    . </span></p></div><div class="biblioentry"><a id="id571735"></a><p><span class="title"><i>
+    . </span></p></div><div class="biblioentry"><a id="id571126"></a><p><span class="title"><i>
       Versioning With Namespaces
     </i>. </span><span class="subtitle">
       ISO C++ J16/06-0083

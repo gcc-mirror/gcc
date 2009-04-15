@@ -164,7 +164,7 @@
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.how"></a><a id="q-how"></a><p><b>1.5.</b></p></td><td align="left" valign="top"><p>
       How do I contribute to the effort?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-how"></a></td><td align="left" valign="top"><p>
-    Here is <a class="link" href="manual/appendix_contributing.html" title="Appendix A. Contributing">a page devoted to
+    Here is <a class="link" href="manual/appendix_contributing.html" title="Appendix A.  Contributing">a page devoted to
     this topic</a>. Subscribing to the mailing list (see above, or
     the homepage) is a very good idea if you have something to
     contribute, or if you have spare time and want to
@@ -204,7 +204,7 @@
     </a></dt></dl></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.license.what"></a><a id="q-license.what"></a><p><b>2.1.</b></p></td><td align="left" valign="top"><p>
       What are the license terms for libstdc++?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-license.what"></a></td><td align="left" valign="top"><p>
-    See <a class="link" href="manual/bk01pt01ch01s02.html" title="License">our license description</a>
+    See <a class="link" href="manual/license.html" title="License">our license description</a>
     for these and related questions.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.license.any_program"></a><a id="q-license.any_program"></a><p><b>2.2.</b></p></td><td align="left" valign="top"><p>
       So any program which uses libstdc++ falls under the GPL?
@@ -243,7 +243,7 @@
     the source: please consult your vendor for details.
     </p><p> 
     To build and install from the GNU GCC sources, please consult the 
-    <a class="link" href="manual/bk01pt01ch02.html" title="Chapter 2. Setup">setup
+    <a class="link" href="manual/setup.html" title="Chapter 2. Setup">setup
     documentation</a> for detailed
     instructions. You may wish to browse those files ahead
     of time to get a feel for what's required.
@@ -320,7 +320,7 @@
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-what_is_libsupcxx"></a></td><td align="left" valign="top"><p>
       If the only functions from <code class="filename">libstdc++.a</code>
       which you need are language support functions (those listed in
-      <a class="link" href="manual/support.html" title="Part II. Support">clause 18</a> of the
+      <a class="link" href="manual/support.html" title="Part II.  Support">clause 18</a> of the
       standard, e.g., <code class="function">new</code> and
       <code class="function">delete</code>), then try linking against
       <code class="filename">libsupc++.a</code>, which is a subset of
@@ -506,9 +506,9 @@
     long</span> specializations, and details of thread support.
     </p><p>    
     Long answer: See the implementation status pages for 
-    <a class="link" href="manual/bk01pt01ch01.html#manual.intro.status.standard.1998" title="C++ 1998">C++98</a>,
-    <a class="link" href="manual/bk01pt01ch01.html#manual.intro.status.standard.tr1" title="C++ TR1">TR1</a>, and 
-    <a class="link" href="manual/bk01pt01ch01.html#manual.intro.status.standard.200x" title="C++ 200x">C++0x</a>.
+    <a class="link" href="manual/status.html#manual.intro.status.standard.1998" title="C++ 1998/2003">C++98</a>,
+    <a class="link" href="manual/status.html#manual.intro.status.standard.tr1" title="C++ TR1">TR1</a>, and 
+    <a class="link" href="manual/status.html#manual.intro.status.standard.200x" title="C++ 200x">C++0x</a>.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.standard_bugs"></a><a id="q-standard_bugs"></a><p><b>5.2.</b></p></td><td align="left" valign="top"><p>
       Bugs in the ISO C++ language or library specification
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-standard_bugs"></a></td><td align="left" valign="top"><p>
@@ -579,12 +579,12 @@
     reason is that the state flags are <span class="emphasis"><em>not</em></span> cleared
     on a successful call to open().  The standard unfortunately did
     not specify behavior in this case, and to everybody's great sorrow,
-    the <a class="link" href="manual/bk01pt01ch01s03.html" title="Bugs">proposed LWG resolution in
+    the <a class="link" href="manual/bugs.html" title="Bugs">proposed LWG resolution in
       DR #22</a> is to leave the flags unchanged.  You must insert a call
     to <code class="function">fs.clear()</code> between the calls to close() and open(),
     and then everything will work like we all expect it to work.
     <span class="emphasis"><em>Update:</em></span> for GCC 4.0 we implemented the resolution
-    of <a class="link" href="manual/bk01pt01ch01s03.html" title="Bugs">DR #409</a> and open() 
+    of <a class="link" href="manual/bugs.html" title="Bugs">DR #409</a> and open() 
     now calls <code class="function">clear()</code> on success!
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.wefcxx_verbose"></a><a id="q-wefcxx_verbose"></a><p><b>6.2.</b></p></td><td align="left" valign="top"><p>
       -Weffc++ complains too much
@@ -685,7 +685,7 @@
       list::size() is O(n)!
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-list_size_on"></a></td><td align="left" valign="top"><p>
     See
-    the <a class="link" href="manual/containers.html" title="Part VII. Containers">Containers</a>
+    the <a class="link" href="manual/containers.html" title="Part VII.  Containers">Containers</a>
     chapter.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.easy_to_fix"></a><a id="q-easy_to_fix"></a><p><b>6.9.</b></p></td><td align="left" valign="top"><p>
       Aw, that's easy to fix!
@@ -696,7 +696,7 @@
     patches</a> that covers the procedure, but for libstdc++ you
     should also send the patch to our mailing list in addition to
     the GCC patches mailing list.  The libstdc++
-    <a class="link" href="manual/appendix_contributing.html" title="Appendix A. Contributing">contributors' page</a>
+    <a class="link" href="manual/appendix_contributing.html" title="Appendix A.  Contributing">contributors' page</a>
     also talks about how to submit patches.
     </p><p>
     In addition to the description, the patch, and the ChangeLog
@@ -789,7 +789,7 @@
     <a class="ulink" href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf" target="_top">
          Technical Report 1</a>.
     </p><p>
-    The implementation status of TR1 in libstdc++ can be tracked <a class="link" href="manual/bk01pt01ch01.html#manual.intro.status.standard.tr1" title="C++ TR1">on the TR1 status
+    The implementation status of TR1 in libstdc++ can be tracked <a class="link" href="manual/status.html#manual.intro.status.standard.tr1" title="C++ TR1">on the TR1 status
     page</a>.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.get_iso_cxx"></a><a id="q-get_iso_cxx"></a><p><b>7.6.</b></p></td><td align="left" valign="top"><p>How do I get a copy of the ISO C++ Standard?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-get_iso_cxx"></a></td><td align="left" valign="top"><p>

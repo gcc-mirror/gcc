@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 23. Interacting with C</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="numerics.html" title="Part X.  Numerics" /><link rel="prev" href="generalized_numeric_operations.html" title="Chapter 22. Generalized Operations" /><link rel="next" href="bk01pt10ch23s02.html" title="C99" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 23. Interacting with C</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="generalized_numeric_operations.html">Prev</a> </td><th width="60%" align="center">Part X. 
+  Numerics
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="bk01pt10ch23s02.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.numerics.c"></a>Chapter 23. Interacting with C</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="numerics_and_c.html#numerics.c.array">Numerics vs. Arrays</a></span></dt><dt><span class="sect1"><a href="bk01pt10ch23s02.html">C99</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="numerics.c.array"></a>Numerics vs. Arrays</h2></div></div></div><p>One of the major reasons why FORTRAN can chew through numbers so well
+      is that it is defined to be free of pointer aliasing, an assumption
+      that C89 is not allowed to make, and neither is C++98.  C99 adds a new
+      keyword, <code class="code">restrict</code>, to apply to individual pointers.  The
+      C++ solution is contained in the library rather than the language
+      (although many vendors can be expected to add this to their compilers
+      as an extension).
+   </p><p>That library solution is a set of two classes, five template classes,
+      and "a whole bunch" of functions.  The classes are required
+      to be free of pointer aliasing, so compilers can optimize the
+      daylights out of them the same way that they have been for FORTRAN.
+      They are collectively called <code class="code">valarray</code>, although strictly
+      speaking this is only one of the five template classes, and they are
+      designed to be familiar to people who have worked with the BLAS
+      libraries before.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="generalized_numeric_operations.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="numerics.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bk01pt10ch23s02.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 22. Generalized Operations </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> C99</td></tr></table></div></body></html>

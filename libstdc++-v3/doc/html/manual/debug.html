@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Debugging Support</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      debug&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="bk01pt01ch03s06.html" title="Exceptions" /><link rel="next" href="support.html" title="Part II. Support" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Debugging Support</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt01ch03s06.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="support.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.debug"></a>Debugging Support</h2></div></div></div><p>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Debugging Support</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      C++&#10;    , &#10;      debug&#10;    " /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="using.html" title="Chapter 3. Using" /><link rel="prev" href="using_exceptions.html" title="Exceptions" /><link rel="next" href="support.html" title="Part II.  Support" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Debugging Support</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="using_exceptions.html">Prev</a> </td><th width="60%" align="center">Chapter 3. Using</th><td width="20%" align="right"> <a accesskey="n" href="support.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.intro.using.debug"></a>Debugging Support</h2></div></div></div><p>
   There are numerous things that can be done to improve the ease with
   which C++ binaries are debugged when using the GNU tool chain. Here
   are some of them.
@@ -67,7 +67,7 @@
   thing of great importance to keep in mind when debugging C++ code
   that uses <code class="code">new</code> and <code class="code">delete</code>: there are
   different kinds of allocation schemes that can be used by <code class="code">
-  std::allocator </code>. For implementation details, see the <a class="link" href="bk01pt12ch32.html#manual.ext.allocator.mt" title="mt_allocator">mt allocator</a> documentation and
+  std::allocator </code>. For implementation details, see the <a class="link" href="ext_allocators.html#manual.ext.allocator.mt" title="mt_allocator">mt allocator</a> documentation and
   look specifically for <code class="code">GLIBCXX_FORCE_NEW</code>.
 </p><p>
   In a nutshell, the default allocator used by <code class="code">
@@ -138,12 +138,15 @@
    set print demangle on
    set demangle-style gnu-v3
 </pre></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.exceptions"></a>Tracking uncaught exceptions</h3></div></div></div><p>
-  The <a class="link" href="bk01pt02ch06s02.html" title="Verbose Terminate Handler">verbose
+  The <a class="link" href="verbose_termination.html" title="Verbose Terminate Handler">verbose
   termination handler</a> gives information about uncaught
   exceptions which are killing the program.  It is described in the
   linked-to page.
 </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.debug_mode"></a>Debug Mode</h3></div></div></div><p> The <a class="link" href="debug_mode.html" title="Chapter 30. Debug Mode">Debug Mode</a>
   has compile and run-time checks for many containers.
-  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compile_time_checks"></a>Compile Time Checking</h3></div></div></div><p> The <a class="link" href="bk01pt12ch29.html" title="Chapter 29. Compile Time Checks">Compile-Time
+  </p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compile_time_checks"></a>Compile Time Checking</h3></div></div></div><p> The <a class="link" href="ext_compile_checks.html" title="Chapter 29. Compile Time Checks">Compile-Time
   Checks</a> Extension has compile-time checks for many algorithms.
-  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt01ch03s06.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="support.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Exceptions </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Part II. Support</td></tr></table></div></body></html>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_exceptions.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="support.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Exceptions </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Part II. 
+  Support
+  
+</td></tr></table></div></body></html>

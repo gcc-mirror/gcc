@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 6. Termination</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="support.html" title="Part II.  Support" /><link rel="prev" href="dynamic_memory.html" title="Chapter 5. Dynamic Memory" /><link rel="next" href="verbose_termination.html" title="Verbose Terminate Handler" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 6. Termination</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="dynamic_memory.html">Prev</a> </td><th width="60%" align="center">Part II. 
+  Support
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="verbose_termination.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.support.termination"></a>Chapter 6. Termination</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="termination.html#support.termination.handlers">Termination Handlers</a></span></dt><dt><span class="sect1"><a href="verbose_termination.html">Verbose Terminate Handler</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="support.termination.handlers"></a>Termination Handlers</h2></div></div></div><p>
+      Not many changes here to <code class="filename">cstdlib</code>.  You should note that the
+      <code class="function">abort()</code> function does not call the
+      destructors of automatic nor static objects, so if you're
+      depending on those to do cleanup, it isn't going to happen.
+      (The functions registered with <code class="function">atexit()</code>
+      don't get called either, so you can forget about that
+      possibility, too.)
+    </p><p>
+      The good old <code class="function">exit()</code> function can be a bit
+      funky, too, until you look closer.  Basically, three points to
+      remember are:
+    </p><div class="orderedlist"><ol type="1"><li><p>
+	Static objects are destroyed in reverse order of their creation.
+	</p></li><li><p>
+	Functions registered with <code class="function">atexit()</code> are called in
+        reverse order of registration, once per registration call.
+        (This isn't actually new.)
+	</p></li><li><p>
+	The previous two actions are “<span class="quote">interleaved,</span>” that is,
+        given this pseudocode:
+	</p><pre class="programlisting">
+  extern "C or C++" void  f1 (void);
+  extern "C or C++" void  f2 (void);
+  
+  static Thing obj1;
+  atexit(f1);
+  static Thing obj2;
+  atexit(f2);
+</pre><p>
+        then at a call of <code class="function">exit()</code>,
+        <code class="varname">f2</code> will be called, then
+        <code class="varname">obj2</code> will be destroyed, then
+        <code class="varname">f1</code> will be called, and finally
+        <code class="varname">obj1</code> will be destroyed. If
+        <code class="varname">f1</code> or <code class="varname">f2</code> allow an
+        exception to propagate out of them, Bad Things happen.
+	</p></li></ol></div><p>
+      Note also that <code class="function">atexit()</code> is only required to store 32
+      functions, and the compiler/library might already be using some of
+      those slots.  If you think you may run out, we recommend using
+      the <code class="function">xatexit</code>/<code class="function">xexit</code> combination from <code class="literal">libiberty</code>, which has no such limit.
+    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="dynamic_memory.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="support.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="verbose_termination.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 5. Dynamic Memory </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Verbose Terminate Handler</td></tr></table></div></body></html>

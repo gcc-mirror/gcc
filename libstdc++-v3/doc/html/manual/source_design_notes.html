@@ -1,0 +1,863 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Design Notes</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_contributing.html" title="Appendix A.  Contributing" /><link rel="prev" href="documentation_style.html" title="Documentation Style" /><link rel="next" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Design Notes</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="documentation_style.html">Prev</a> </td><th width="60%" align="center">Appendix A. 
+  Contributing
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="appendix_porting.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="contrib.design_notes"></a>Design Notes</h2></div></div></div><p>
+  </p><div class="literallayout"><p><br />
+<br />
+    The Library<br />
+    -----------<br />
+<br />
+    This paper is covers two major areas:<br />
+<br />
+    - Features and policies not mentioned in the standard that<br />
+    the quality of the library implementation depends on, including<br />
+    extensions and "implementation-defined" features;<br />
+<br />
+    - Plans for required but unimplemented library features and<br />
+    optimizations to them.<br />
+<br />
+    Overhead<br />
+    --------<br />
+<br />
+    The standard defines a large library, much larger than the standard<br />
+    C library. A naive implementation would suffer substantial overhead<br />
+    in compile time, executable size, and speed, rendering it unusable<br />
+    in many (particularly embedded) applications. The alternative demands<br />
+    care in construction, and some compiler support, but there is no<br />
+    need for library subsets.<br />
+<br />
+    What are the sources of this overhead?  There are four main causes:<br />
+<br />
+    - The library is specified almost entirely as templates, which<br />
+    with current compilers must be included in-line, resulting in<br />
+    very slow builds as tens or hundreds of thousands of lines<br />
+    of function definitions are read for each user source file.<br />
+    Indeed, the entire SGI STL, as well as the dos Reis valarray,<br />
+    are provided purely as header files, largely for simplicity in<br />
+    porting. Iostream/locale is (or will be) as large again.<br />
+<br />
+    - The library is very flexible, specifying a multitude of hooks<br />
+    where users can insert their own code in place of defaults.<br />
+    When these hooks are not used, any time and code expended to<br />
+    support that flexibility is wasted.<br />
+<br />
+    - Templates are often described as causing to "code bloat". In<br />
+    practice, this refers (when it refers to anything real) to several<br />
+    independent processes. First, when a class template is manually<br />
+    instantiated in its entirely, current compilers place the definitions<br />
+    for all members in a single object file, so that a program linking<br />
+    to one member gets definitions of all. Second, template functions<br />
+    which do not actually depend on the template argument are, under<br />
+    current compilers, generated anew for each instantiation, rather<br />
+    than being shared with other instantiations. Third, some of the<br />
+    flexibility mentioned above comes from virtual functions (both in<br />
+    regular classes and template classes) which current linkers add<br />
+    to the executable file even when they manifestly cannot be called.<br />
+<br />
+    - The library is specified to use a language feature, exceptions,<br />
+    which in the current gcc compiler ABI imposes a run time and<br />
+    code space cost to handle the possibility of exceptions even when<br />
+    they are not used. Under the new ABI (accessed with -fnew-abi),<br />
+    there is a space overhead and a small reduction in code efficiency<br />
+    resulting from lost optimization opportunities associated with<br />
+    non-local branches associated with exceptions.<br />
+<br />
+    What can be done to eliminate this overhead?  A variety of coding<br />
+    techniques, and compiler, linker and library improvements and<br />
+    extensions may be used, as covered below. Most are not difficult,<br />
+    and some are already implemented in varying degrees.<br />
+<br />
+    Overhead: Compilation Time<br />
+    --------------------------<br />
+<br />
+    Providing "ready-instantiated" template code in object code archives<br />
+    allows us to avoid generating and optimizing template instantiations<br />
+    in each compilation unit which uses them. However, the number of such<br />
+    instantiations that are useful to provide is limited, and anyway this<br />
+    is not enough, by itself, to minimize compilation time. In particular,<br />
+    it does not reduce time spent parsing conforming headers.<br />
+<br />
+    Quicker header parsing will depend on library extensions and compiler<br />
+    improvements.  One approach is some variation on the techniques<br />
+    previously marketed as "pre-compiled headers", now standardized as<br />
+    support for the "export" keyword. "Exported" template definitions<br />
+    can be placed (once) in a "repository" -- really just a library, but<br />
+    of template definitions rather than object code -- to be drawn upon<br />
+    at link time when an instantiation is needed, rather than placed in<br />
+    header files to be parsed along with every compilation unit.<br />
+<br />
+    Until "export" is implemented we can put some of the lengthy template<br />
+    definitions in #if guards or alternative headers so that users can skip<br />
+    over the full definitions when they need only the ready-instantiated<br />
+    specializations.<br />
+<br />
+    To be precise, this means that certain headers which define<br />
+    templates which users normally use only for certain arguments<br />
+    can be instrumented to avoid exposing the template definitions<br />
+    to the compiler unless a macro is defined. For example, in<br />
+    &lt;string&gt;, we might have:<br />
+<br />
+    template &lt;class _CharT, ... &gt; class basic_string {<br />
+    ... // member declarations<br />
+    };<br />
+    ... // operator declarations<br />
+<br />
+    #ifdef _STRICT_ISO_<br />
+    # if _G_NO_TEMPLATE_EXPORT<br />
+    #   include &lt;bits/std_locale.h&gt;  // headers needed by definitions<br />
+    #   ...<br />
+    #   include &lt;bits/string.tcc&gt;  // member and global template definitions.<br />
+    # endif<br />
+    #endif<br />
+<br />
+    Users who compile without specifying a strict-ISO-conforming flag<br />
+    would not see many of the template definitions they now see, and rely<br />
+    instead on ready-instantiated specializations in the library. This<br />
+    technique would be useful for the following substantial components:<br />
+    string, locale/iostreams, valarray. It would *not* be useful or<br />
+    usable with the following: containers, algorithms, iterators,<br />
+    allocator. Since these constitute a large (though decreasing)<br />
+    fraction of the library, the benefit the technique offers is<br />
+    limited.<br />
+<br />
+    The language specifies the semantics of the "export" keyword, but<br />
+    the gcc compiler does not yet support it. When it does, problems<br />
+    with large template inclusions can largely disappear, given some<br />
+    minor library reorganization, along with the need for the apparatus<br />
+    described above.<br />
+<br />
+    Overhead: Flexibility Cost<br />
+    --------------------------<br />
+<br />
+    The library offers many places where users can specify operations<br />
+    to be performed by the library in place of defaults. Sometimes<br />
+    this seems to require that the library use a more-roundabout, and<br />
+    possibly slower, way to accomplish the default requirements than<br />
+    would be used otherwise.<br />
+<br />
+    The primary protection against this overhead is thorough compiler<br />
+    optimization, to crush out layers of inline function interfaces.<br />
+    Kuck &amp; Associates has demonstrated the practicality of this kind<br />
+    of optimization.<br />
+<br />
+    The second line of defense against this overhead is explicit<br />
+    specialization. By defining helper function templates, and writing<br />
+    specialized code for the default case, overhead can be eliminated<br />
+    for that case without sacrificing flexibility. This takes full<br />
+    advantage of any ability of the optimizer to crush out degenerate<br />
+    code.<br />
+<br />
+    The library specifies many virtual functions which current linkers<br />
+    load even when they cannot be called. Some minor improvements to the<br />
+    compiler and to ld would eliminate any such overhead by simply<br />
+    omitting virtual functions that the complete program does not call.<br />
+    A prototype of this work has already been done. For targets where<br />
+    GNU ld is not used, a "pre-linker" could do the same job.<br />
+<br />
+    The main areas in the standard interface where user flexibility<br />
+    can result in overhead are:<br />
+<br />
+    - Allocators:  Containers are specified to use user-definable<br />
+    allocator types and objects, making tuning for the container<br />
+    characteristics tricky.<br />
+<br />
+    - Locales: the standard specifies locale objects used to implement<br />
+    iostream operations, involving many virtual functions which use<br />
+    streambuf iterators.<br />
+<br />
+    - Algorithms and containers: these may be instantiated on any type,<br />
+    frequently duplicating code for identical operations.<br />
+<br />
+    - Iostreams and strings: users are permitted to use these on their<br />
+    own types, and specify the operations the stream must use on these<br />
+    types.<br />
+<br />
+    Note that these sources of overhead are _avoidable_. The techniques<br />
+    to avoid them are covered below.<br />
+<br />
+    Code Bloat<br />
+    ----------<br />
+<br />
+    In the SGI STL, and in some other headers, many of the templates<br />
+    are defined "inline" -- either explicitly or by their placement<br />
+    in class definitions -- which should not be inline. This is a<br />
+    source of code bloat. Matt had remarked that he was relying on<br />
+    the compiler to recognize what was too big to benefit from inlining,<br />
+    and generate it out-of-line automatically. However, this also can<br />
+    result in code bloat except where the linker can eliminate the extra<br />
+    copies.<br />
+<br />
+    Fixing these cases will require an audit of all inline functions<br />
+    defined in the library to determine which merit inlining, and moving<br />
+    the rest out of line. This is an issue mainly in chapters 23, 25, and<br />
+    27. Of course it can be done incrementally, and we should generally<br />
+    accept patches that move large functions out of line and into ".tcc"<br />
+    files, which can later be pulled into a repository. Compiler/linker<br />
+    improvements to recognize very large inline functions and move them<br />
+    out-of-line, but shared among compilation units, could make this<br />
+    work unnecessary.<br />
+<br />
+    Pre-instantiating template specializations currently produces large<br />
+    amounts of dead code which bloats statically linked programs. The<br />
+    current state of the static library, libstdc++.a, is intolerable on<br />
+    this account, and will fuel further confused speculation about a need<br />
+    for a library "subset". A compiler improvement that treats each<br />
+    instantiated function as a separate object file, for linking purposes,<br />
+    would be one solution to this problem. An alternative would be to<br />
+    split up the manual instantiation files into dozens upon dozens of<br />
+    little files, each compiled separately, but an abortive attempt at<br />
+    this was done for &lt;string&gt; and, though it is far from complete, it<br />
+    is already a nuisance. A better interim solution (just until we have<br />
+    "export") is badly needed.<br />
+<br />
+    When building a shared library, the current compiler/linker cannot<br />
+    automatically generate the instantiations needed. This creates a<br />
+    miserable situation; it means any time something is changed in the<br />
+    library, before a shared library can be built someone must manually<br />
+    copy the declarations of all templates that are needed by other parts<br />
+    of the library to an "instantiation" file, and add it to the build<br />
+    system to be compiled and linked to the library. This process is<br />
+    readily automated, and should be automated as soon as possible.<br />
+    Users building their own shared libraries experience identical<br />
+    frustrations.<br />
+<br />
+    Sharing common aspects of template definitions among instantiations<br />
+    can radically reduce code bloat. The compiler could help a great<br />
+    deal here by recognizing when a function depends on nothing about<br />
+    a template parameter, or only on its size, and giving the resulting<br />
+    function a link-name "equate" that allows it to be shared with other<br />
+    instantiations. Implementation code could take advantage of the<br />
+    capability by factoring out code that does not depend on the template<br />
+    argument into separate functions to be merged by the compiler.<br />
+<br />
+    Until such a compiler optimization is implemented, much can be done<br />
+    manually (if tediously) in this direction. One such optimization is<br />
+    to derive class templates from non-template classes, and move as much<br />
+    implementation as possible into the base class. Another is to partial-<br />
+    specialize certain common instantiations, such as vector&lt;T*&gt;, to share<br />
+    code for instantiations on all types T. While these techniques work,<br />
+    they are far from the complete solution that a compiler improvement<br />
+    would afford.<br />
+<br />
+    Overhead: Expensive Language Features<br />
+    -------------------------------------<br />
+<br />
+    The main "expensive" language feature used in the standard library<br />
+    is exception support, which requires compiling in cleanup code with<br />
+    static table data to locate it, and linking in library code to use<br />
+    the table. For small embedded programs the amount of such library<br />
+    code and table data is assumed by some to be excessive. Under the<br />
+    "new" ABI this perception is generally exaggerated, although in some<br />
+    cases it may actually be excessive.<br />
+<br />
+    To implement a library which does not use exceptions directly is<br />
+    not difficult given minor compiler support (to "turn off" exceptions<br />
+    and ignore exception constructs), and results in no great library<br />
+    maintenance difficulties. To be precise, given "-fno-exceptions",<br />
+    the compiler should treat "try" blocks as ordinary blocks, and<br />
+    "catch" blocks as dead code to ignore or eliminate. Compiler<br />
+    support is not strictly necessary, except in the case of "function<br />
+    try blocks"; otherwise the following macros almost suffice:<br />
+<br />
+    #define throw(X)<br />
+    #define try      if (true)<br />
+    #define catch(X) else if (false)<br />
+<br />
+    However, there may be a need to use function try blocks in the<br />
+    library implementation, and use of macros in this way can make<br />
+    correct diagnostics impossible. Furthermore, use of this scheme<br />
+    would require the library to call a function to re-throw exceptions<br />
+    from a try block. Implementing the above semantics in the compiler<br />
+    is preferable.<br />
+<br />
+    Given the support above (however implemented) it only remains to<br />
+    replace code that "throws" with a call to a well-documented "handler"<br />
+    function in a separate compilation unit which may be replaced by<br />
+    the user. The main source of exceptions that would be difficult<br />
+    for users to avoid is memory allocation failures, but users can<br />
+    define their own memory allocation primitives that never throw.<br />
+    Otherwise, the complete list of such handlers, and which library<br />
+    functions may call them, would be needed for users to be able to<br />
+    implement the necessary substitutes. (Fortunately, they have the<br />
+    source code.)<br />
+<br />
+    Opportunities<br />
+    -------------<br />
+<br />
+    The template capabilities of C++ offer enormous opportunities for<br />
+    optimizing common library operations, well beyond what would be<br />
+    considered "eliminating overhead". In particular, many operations<br />
+    done in Glibc with macros that depend on proprietary language<br />
+    extensions can be implemented in pristine Standard C++. For example,<br />
+    the chapter 25 algorithms, and even C library functions such as strchr,<br />
+    can be specialized for the case of static arrays of known (small) size.<br />
+<br />
+    Detailed optimization opportunities are identified below where<br />
+    the component where they would appear is discussed. Of course new<br />
+    opportunities will be identified during implementation.<br />
+<br />
+    Unimplemented Required Library Features<br />
+    ---------------------------------------<br />
+<br />
+    The standard specifies hundreds of components, grouped broadly by<br />
+    chapter. These are listed in excruciating detail in the CHECKLIST<br />
+    file.<br />
+<br />
+    17 general<br />
+    18 support<br />
+    19 diagnostics<br />
+    20 utilities<br />
+    21 string<br />
+    22 locale<br />
+    23 containers<br />
+    24 iterators<br />
+    25 algorithms<br />
+    26 numerics<br />
+    27 iostreams<br />
+    Annex D  backward compatibility<br />
+<br />
+    Anyone participating in implementation of the library should obtain<br />
+    a copy of the standard, ISO 14882.  People in the U.S. can obtain an<br />
+    electronic copy for US$18 from ANSI's web site. Those from other<br />
+    countries should visit http://www.iso.ch/ to find out the location<br />
+    of their country's representation in ISO, in order to know who can<br />
+    sell them a copy.<br />
+<br />
+    The emphasis in the following sections is on unimplemented features<br />
+    and optimization opportunities.<br />
+<br />
+    Chapter 17  General<br />
+    -------------------<br />
+<br />
+    Chapter 17 concerns overall library requirements.<br />
+<br />
+    The standard doesn't mention threads. A multi-thread (MT) extension<br />
+    primarily affects operators new and delete (18), allocator (20),<br />
+    string (21), locale (22), and iostreams (27). The common underlying<br />
+    support needed for this is discussed under chapter 20.<br />
+<br />
+    The standard requirements on names from the C headers create a<br />
+    lot of work, mostly done. Names in the C headers must be visible<br />
+    in the std:: and sometimes the global namespace; the names in the<br />
+    two scopes must refer to the same object. More stringent is that<br />
+    Koenig lookup implies that any types specified as defined in std::<br />
+    really are defined in std::. Names optionally implemented as<br />
+    macros in C cannot be macros in C++. (An overview may be read at<br />
+    &lt;http://www.cantrip.org/cheaders.html&gt;). The scripts "inclosure"<br />
+    and "mkcshadow", and the directories shadow/ and cshadow/, are the<br />
+    beginning of an effort to conform in this area.<br />
+<br />
+    A correct conforming definition of C header names based on underlying<br />
+    C library headers, and practical linking of conforming namespaced<br />
+    customer code with third-party C libraries depends ultimately on<br />
+    an ABI change, allowing namespaced C type names to be mangled into<br />
+    type names as if they were global, somewhat as C function names in a<br />
+    namespace, or C++ global variable names, are left unmangled. Perhaps<br />
+    another "extern" mode, such as 'extern "C-global"' would be an<br />
+    appropriate place for such type definitions. Such a type would<br />
+    affect mangling as follows:<br />
+<br />
+    namespace A {<br />
+    struct X {};<br />
+    extern "C-global" {  // or maybe just 'extern "C"'<br />
+    struct Y {};<br />
+    };<br />
+    }<br />
+    void f(A::X*);  // mangles to f__FPQ21A1X<br />
+    void f(A::Y*);  // mangles to f__FP1Y<br />
+<br />
+    (It may be that this is really the appropriate semantics for regular<br />
+    'extern "C"', and 'extern "C-global"', as an extension, would not be<br />
+    necessary.) This would allow functions declared in non-standard C headers<br />
+    (and thus fixable by neither us nor users) to link properly with functions<br />
+    declared using C types defined in properly-namespaced headers. The<br />
+    problem this solves is that C headers (which C++ programmers do persist<br />
+    in using) frequently forward-declare C struct tags without including<br />
+    the header where the type is defined, as in<br />
+<br />
+    struct tm;<br />
+    void munge(tm*);<br />
+<br />
+    Without some compiler accommodation, munge cannot be called by correct<br />
+    C++ code using a pointer to a correctly-scoped tm* value.<br />
+<br />
+    The current C headers use the preprocessor extension "#include_next",<br />
+    which the compiler complains about when run "-pedantic".<br />
+    (Incidentally, it appears that "-fpedantic" is currently ignored,<br />
+    probably a bug.)  The solution in the C compiler is to use<br />
+    "-isystem" rather than "-I", but unfortunately in g++ this seems<br />
+    also to wrap the whole header in an 'extern "C"' block, so it's<br />
+    unusable for C++ headers. The correct solution appears to be to<br />
+    allow the various special include-directory options, if not given<br />
+    an argument, to affect subsequent include-directory options additively,<br />
+    so that if one said<br />
+<br />
+    -pedantic -iprefix $(prefix) \<br />
+    -idirafter -ino-pedantic -ino-extern-c -iwithprefix -I g++-v3 \<br />
+    -iwithprefix -I g++-v3/ext<br />
+<br />
+    the compiler would search $(prefix)/g++-v3 and not report<br />
+    pedantic warnings for files found there, but treat files in<br />
+    $(prefix)/g++-v3/ext pedantically. (The undocumented semantics<br />
+    of "-isystem" in g++ stink. Can they be rescinded?  If not it<br />
+    must be replaced with something more rationally behaved.)<br />
+<br />
+    All the C headers need the treatment above; in the standard these<br />
+    headers are mentioned in various chapters. Below, I have only<br />
+    mentioned those that present interesting implementation issues.<br />
+<br />
+    The components identified as "mostly complete", below, have not been<br />
+    audited for conformance. In many cases where the library passes<br />
+    conformance tests we have non-conforming extensions that must be<br />
+    wrapped in #if guards for "pedantic" use, and in some cases renamed<br />
+    in a conforming way for continued use in the implementation regardless<br />
+    of conformance flags.<br />
+<br />
+    The STL portion of the library still depends on a header<br />
+    stl/bits/stl_config.h full of #ifdef clauses. This apparatus<br />
+    should be replaced with autoconf/automake machinery.<br />
+<br />
+    The SGI STL defines a type_traits&lt;&gt; template, specialized for<br />
+    many types in their code including the built-in numeric and<br />
+    pointer types and some library types, to direct optimizations of<br />
+    standard functions. The SGI compiler has been extended to generate<br />
+    specializations of this template automatically for user types,<br />
+    so that use of STL templates on user types can take advantage of<br />
+    these optimizations. Specializations for other, non-STL, types<br />
+    would make more optimizations possible, but extending the gcc<br />
+    compiler in the same way would be much better. Probably the next<br />
+    round of standardization will ratify this, but probably with<br />
+    changes, so it probably should be renamed to place it in the<br />
+    implementation namespace.<br />
+<br />
+    The SGI STL also defines a large number of extensions visible in<br />
+    standard headers. (Other extensions that appear in separate headers<br />
+    have been sequestered in subdirectories ext/ and backward/.)  All<br />
+    these extensions should be moved to other headers where possible,<br />
+    and in any case wrapped in a namespace (not std!), and (where kept<br />
+    in a standard header) girded about with macro guards. Some cannot be<br />
+    moved out of standard headers because they are used to implement<br />
+    standard features.  The canonical method for accommodating these<br />
+    is to use a protected name, aliased in macro guards to a user-space<br />
+    name. Unfortunately C++ offers no satisfactory template typedef<br />
+    mechanism, so very ad-hoc and unsatisfactory aliasing must be used<br />
+    instead.<br />
+<br />
+    Implementation of a template typedef mechanism should have the highest<br />
+    priority among possible extensions, on the same level as implementation<br />
+    of the template "export" feature.<br />
+<br />
+    Chapter 18  Language support<br />
+    ----------------------------<br />
+<br />
+    Headers: &lt;limits&gt; &lt;new&gt; &lt;typeinfo&gt; &lt;exception&gt;<br />
+    C headers: &lt;cstddef&gt; &lt;climits&gt; &lt;cfloat&gt;  &lt;cstdarg&gt; &lt;csetjmp&gt;<br />
+    &lt;ctime&gt;   &lt;csignal&gt; &lt;cstdlib&gt; (also 21, 25, 26)<br />
+<br />
+    This defines the built-in exceptions, rtti, numeric_limits&lt;&gt;,<br />
+    operator new and delete. Much of this is provided by the<br />
+    compiler in its static runtime library.<br />
+<br />
+    Work to do includes defining numeric_limits&lt;&gt; specializations in<br />
+    separate files for all target architectures. Values for integer types<br />
+    except for bool and wchar_t are readily obtained from the C header<br />
+    &lt;limits.h&gt;, but values for the remaining numeric types (bool, wchar_t,<br />
+    float, double, long double) must be entered manually. This is<br />
+    largely dog work except for those members whose values are not<br />
+    easily deduced from available documentation. Also, this involves<br />
+    some work in target configuration to identify the correct choice of<br />
+    file to build against and to install.<br />
+<br />
+    The definitions of the various operators new and delete must be<br />
+    made thread-safe, which depends on a portable exclusion mechanism,<br />
+    discussed under chapter 20.  Of course there is always plenty of<br />
+    room for improvements to the speed of operators new and delete.<br />
+<br />
+    &lt;cstdarg&gt;, in Glibc, defines some macros that gcc does not allow to<br />
+    be wrapped into an inline function. Probably this header will demand<br />
+    attention whenever a new target is chosen. The functions atexit(),<br />
+    exit(), and abort() in cstdlib have different semantics in C++, so<br />
+    must be re-implemented for C++.<br />
+<br />
+    Chapter 19  Diagnostics<br />
+    -----------------------<br />
+<br />
+    Headers: &lt;stdexcept&gt;<br />
+    C headers: &lt;cassert&gt; &lt;cerrno&gt;<br />
+<br />
+    This defines the standard exception objects, which are "mostly complete".<br />
+    Cygnus has a version, and now SGI provides a slightly different one.<br />
+    It makes little difference which we use.<br />
+<br />
+    The C global name "errno", which C allows to be a variable or a macro,<br />
+    is required in C++ to be a macro. For MT it must typically result in<br />
+    a function call.<br />
+<br />
+    Chapter 20  Utilities<br />
+    ---------------------<br />
+    Headers: &lt;utility&gt; &lt;functional&gt; &lt;memory&gt;<br />
+    C header: &lt;ctime&gt; (also in 18)<br />
+<br />
+    SGI STL provides "mostly complete" versions of all the components<br />
+    defined in this chapter. However, the auto_ptr&lt;&gt; implementation<br />
+    is known to be wrong. Furthermore, the standard definition of it<br />
+    is known to be unimplementable as written. A minor change to the<br />
+    standard would fix it, and auto_ptr&lt;&gt; should be adjusted to match.<br />
+<br />
+    Multi-threading affects the allocator implementation, and there must<br />
+    be configuration/installation choices for different users' MT<br />
+    requirements. Anyway, users will want to tune allocator options<br />
+    to support different target conditions, MT or no.<br />
+<br />
+    The primitives used for MT implementation should be exposed, as an<br />
+    extension, for users' own work. We need cross-CPU "mutex" support,<br />
+    multi-processor shared-memory atomic integer operations, and single-<br />
+    processor uninterruptible integer operations, and all three configurable<br />
+    to be stubbed out for non-MT use, or to use an appropriately-loaded<br />
+    dynamic library for the actual runtime environment, or statically<br />
+    compiled in for cases where the target architecture is known.<br />
+<br />
+    Chapter 21  String<br />
+    ------------------<br />
+    Headers: &lt;string&gt;<br />
+    C headers: &lt;cctype&gt; &lt;cwctype&gt; &lt;cstring&gt; &lt;cwchar&gt; (also in 27)<br />
+    &lt;cstdlib&gt; (also in 18, 25, 26)<br />
+<br />
+    We have "mostly-complete" char_traits&lt;&gt; implementations. Many of the<br />
+    char_traits&lt;char&gt; operations might be optimized further using existing<br />
+    proprietary language extensions.<br />
+<br />
+    We have a "mostly-complete" basic_string&lt;&gt; implementation. The work<br />
+    to manually instantiate char and wchar_t specializations in object<br />
+    files to improve link-time behavior is extremely unsatisfactory,<br />
+    literally tripling library-build time with no commensurate improvement<br />
+    in static program link sizes. It must be redone. (Similar work is<br />
+    needed for some components in chapters 22 and 27.)<br />
+<br />
+    Other work needed for strings is MT-safety, as discussed under the<br />
+    chapter 20 heading.<br />
+<br />
+    The standard C type mbstate_t from &lt;cwchar&gt; and used in char_traits&lt;&gt;<br />
+    must be different in C++ than in C, because in C++ the default constructor<br />
+    value mbstate_t() must be the "base" or "ground" sequence state.<br />
+    (According to the likely resolution of a recently raised Core issue,<br />
+    this may become unnecessary. However, there are other reasons to<br />
+    use a state type not as limited as whatever the C library provides.)<br />
+    If we might want to provide conversions from (e.g.) internally-<br />
+    represented EUC-wide to externally-represented Unicode, or vice-<br />
+    versa, the mbstate_t we choose will need to be more accommodating<br />
+    than what might be provided by an underlying C library.<br />
+<br />
+    There remain some basic_string template-member functions which do<br />
+    not overload properly with their non-template brethren. The infamous<br />
+    hack akin to what was done in vector&lt;&gt; is needed, to conform to<br />
+    23.1.1 para 10. The CHECKLIST items for basic_string marked 'X',<br />
+    or incomplete, are so marked for this reason.<br />
+<br />
+    Replacing the string iterators, which currently are simple character<br />
+    pointers, with class objects would greatly increase the safety of the<br />
+    client interface, and also permit a "debug" mode in which range,<br />
+    ownership, and validity are rigorously checked. The current use of<br />
+    raw pointers as string iterators is evil. vector&lt;&gt; iterators need the<br />
+    same treatment. Note that the current implementation freely mixes<br />
+    pointers and iterators, and that must be fixed before safer iterators<br />
+    can be introduced.<br />
+<br />
+    Some of the functions in &lt;cstring&gt; are different from the C version.<br />
+    generally overloaded on const and non-const argument pointers. For<br />
+    example, in &lt;cstring&gt; strchr is overloaded. The functions isupper<br />
+    etc. in &lt;cctype&gt; typically implemented as macros in C are functions<br />
+    in C++, because they are overloaded with others of the same name<br />
+    defined in &lt;locale&gt;.<br />
+<br />
+    Many of the functions required in &lt;cwctype&gt; and &lt;cwchar&gt; cannot be<br />
+    implemented using underlying C facilities on intended targets because<br />
+    such facilities only partly exist.<br />
+<br />
+    Chapter 22  Locale<br />
+    ------------------<br />
+    Headers: &lt;locale&gt;<br />
+    C headers: &lt;clocale&gt;<br />
+<br />
+    We have a "mostly complete" class locale, with the exception of<br />
+    code for constructing, and handling the names of, named locales.<br />
+    The ways that locales are named (particularly when categories<br />
+    (e.g. LC_TIME, LC_COLLATE) are different) varies among all target<br />
+    environments. This code must be written in various versions and<br />
+    chosen by configuration parameters.<br />
+<br />
+    Members of many of the facets defined in &lt;locale&gt; are stubs. Generally,<br />
+    there are two sets of facets: the base class facets (which are supposed<br />
+    to implement the "C" locale) and the "byname" facets, which are supposed<br />
+    to read files to determine their behavior. The base ctype&lt;&gt;, collate&lt;&gt;,<br />
+    and numpunct&lt;&gt; facets are "mostly complete", except that the table of<br />
+    bitmask values used for "is" operations, and corresponding mask values,<br />
+    are still defined in libio and just included/linked. (We will need to<br />
+    implement these tables independently, soon, but should take advantage<br />
+    of libio where possible.)  The num_put&lt;&gt;::put members for integer types<br />
+    are "mostly complete".<br />
+<br />
+    A complete list of what has and has not been implemented may be<br />
+    found in CHECKLIST. However, note that the current definition of<br />
+    codecvt&lt;wchar_t,char,mbstate_t&gt; is wrong. It should simply write<br />
+    out the raw bytes representing the wide characters, rather than<br />
+    trying to convert each to a corresponding single "char" value.<br />
+<br />
+    Some of the facets are more important than others. Specifically,<br />
+    the members of ctype&lt;&gt;, numpunct&lt;&gt;, num_put&lt;&gt;, and num_get&lt;&gt; facets<br />
+    are used by other library facilities defined in &lt;string&gt;, &lt;istream&gt;,<br />
+    and &lt;ostream&gt;, and the codecvt&lt;&gt; facet is used by basic_filebuf&lt;&gt;<br />
+    in &lt;fstream&gt;, so a conforming iostream implementation depends on<br />
+    these.<br />
+<br />
+    The "long long" type eventually must be supported, but code mentioning<br />
+    it should be wrapped in #if guards to allow pedantic-mode compiling.<br />
+<br />
+    Performance of num_put&lt;&gt; and num_get&lt;&gt; depend critically on<br />
+    caching computed values in ios_base objects, and on extensions<br />
+    to the interface with streambufs.<br />
+<br />
+    Specifically: retrieving a copy of the locale object, extracting<br />
+    the needed facets, and gathering data from them, for each call to<br />
+    (e.g.) operator&lt;&lt; would be prohibitively slow.  To cache format<br />
+    data for use by num_put&lt;&gt; and num_get&lt;&gt; we have a _Format_cache&lt;&gt;<br />
+    object stored in the ios_base::pword() array. This is constructed<br />
+    and initialized lazily, and is organized purely for utility. It<br />
+    is discarded when a new locale with different facets is imbued.<br />
+<br />
+    Using only the public interfaces of the iterator arguments to the<br />
+    facet functions would limit performance by forbidding "vector-style"<br />
+    character operations. The streambuf iterator optimizations are<br />
+    described under chapter 24, but facets can also bypass the streambuf<br />
+    iterators via explicit specializations and operate directly on the<br />
+    streambufs, and use extended interfaces to get direct access to the<br />
+    streambuf internal buffer arrays. These extensions are mentioned<br />
+    under chapter 27. These optimizations are particularly important<br />
+    for input parsing.<br />
+<br />
+    Unused virtual members of locale facets can be omitted, as mentioned<br />
+    above, by a smart linker.<br />
+<br />
+    Chapter 23  Containers<br />
+    ----------------------<br />
+    Headers: &lt;deque&gt; &lt;list&gt; &lt;queue&gt; &lt;stack&gt; &lt;vector&gt; &lt;map&gt; &lt;set&gt; &lt;bitset&gt;<br />
+<br />
+    All the components in chapter 23 are implemented in the SGI STL.<br />
+    They are "mostly complete"; they include a large number of<br />
+    nonconforming extensions which must be wrapped. Some of these<br />
+    are used internally and must be renamed or duplicated.<br />
+<br />
+    The SGI components are optimized for large-memory environments. For<br />
+    embedded targets, different criteria might be more appropriate. Users<br />
+    will want to be able to tune this behavior. We should provide<br />
+    ways for users to compile the library with different memory usage<br />
+    characteristics.<br />
+<br />
+    A lot more work is needed on factoring out common code from different<br />
+    specializations to reduce code size here and in chapter 25. The<br />
+    easiest fix for this would be a compiler/ABI improvement that allows<br />
+    the compiler to recognize when a specialization depends only on the<br />
+    size (or other gross quality) of a template argument, and allow the<br />
+    linker to share the code with similar specializations. In its<br />
+    absence, many of the algorithms and containers can be partial-<br />
+    specialized, at least for the case of pointers, but this only solves<br />
+    a small part of the problem. Use of a type_traits-style template<br />
+    allows a few more optimization opportunities, more if the compiler<br />
+    can generate the specializations automatically.<br />
+<br />
+    As an optimization, containers can specialize on the default allocator<br />
+    and bypass it, or take advantage of details of its implementation<br />
+    after it has been improved upon.<br />
+<br />
+    Replacing the vector iterators, which currently are simple element<br />
+    pointers, with class objects would greatly increase the safety of the<br />
+    client interface, and also permit a "debug" mode in which range,<br />
+    ownership, and validity are rigorously checked. The current use of<br />
+    pointers for iterators is evil.<br />
+<br />
+    As mentioned for chapter 24, the deque iterator is a good example of<br />
+    an opportunity to implement a "staged" iterator that would benefit<br />
+    from specializations of some algorithms.<br />
+<br />
+    Chapter 24  Iterators<br />
+    ---------------------<br />
+    Headers: &lt;iterator&gt;<br />
+<br />
+    Standard iterators are "mostly complete", with the exception of<br />
+    the stream iterators, which are not yet templatized on the<br />
+    stream type. Also, the base class template iterator&lt;&gt; appears<br />
+    to be wrong, so everything derived from it must also be wrong,<br />
+    currently.<br />
+<br />
+    The streambuf iterators (currently located in stl/bits/std_iterator.h,<br />
+    but should be under bits/) can be rewritten to take advantage of<br />
+    friendship with the streambuf implementation.<br />
+<br />
+    Matt Austern has identified opportunities where certain iterator<br />
+    types, particularly including streambuf iterators and deque<br />
+    iterators, have a "two-stage" quality, such that an intermediate<br />
+    limit can be checked much more quickly than the true limit on<br />
+    range operations. If identified with a member of iterator_traits,<br />
+    algorithms may be specialized for this case. Of course the<br />
+    iterators that have this quality can be identified by specializing<br />
+    a traits class.<br />
+<br />
+    Many of the algorithms must be specialized for the streambuf<br />
+    iterators, to take advantage of block-mode operations, in order<br />
+    to allow iostream/locale operations' performance not to suffer.<br />
+    It may be that they could be treated as staged iterators and<br />
+    take advantage of those optimizations.<br />
+<br />
+    Chapter 25  Algorithms<br />
+    ----------------------<br />
+    Headers: &lt;algorithm&gt;<br />
+    C headers: &lt;cstdlib&gt; (also in 18, 21, 26))<br />
+<br />
+    The algorithms are "mostly complete". As mentioned above, they<br />
+    are optimized for speed at the expense of code and data size.<br />
+<br />
+    Specializations of many of the algorithms for non-STL types would<br />
+    give performance improvements, but we must use great care not to<br />
+    interfere with fragile template overloading semantics for the<br />
+    standard interfaces. Conventionally the standard function template<br />
+    interface is an inline which delegates to a non-standard function<br />
+    which is then overloaded (this is already done in many places in<br />
+    the library). Particularly appealing opportunities for the sake of<br />
+    iostream performance are for copy and find applied to streambuf<br />
+    iterators or (as noted elsewhere) for staged iterators, of which<br />
+    the streambuf iterators are a good example.<br />
+<br />
+    The bsearch and qsort functions cannot be overloaded properly as<br />
+    required by the standard because gcc does not yet allow overloading<br />
+    on the extern-"C"-ness of a function pointer.<br />
+<br />
+    Chapter 26  Numerics<br />
+    --------------------<br />
+    Headers: &lt;complex&gt; &lt;valarray&gt; &lt;numeric&gt;<br />
+    C headers: &lt;cmath&gt;, &lt;cstdlib&gt; (also 18, 21, 25)<br />
+<br />
+    Numeric components: Gabriel dos Reis's valarray, Drepper's complex,<br />
+    and the few algorithms from the STL are "mostly done".  Of course<br />
+    optimization opportunities abound for the numerically literate. It<br />
+    is not clear whether the valarray implementation really conforms<br />
+    fully, in the assumptions it makes about aliasing (and lack thereof)<br />
+    in its arguments.<br />
+<br />
+    The C div() and ldiv() functions are interesting, because they are the<br />
+    only case where a C library function returns a class object by value.<br />
+    Since the C++ type div_t must be different from the underlying C type<br />
+    (which is in the wrong namespace) the underlying functions div() and<br />
+    ldiv() cannot be re-used efficiently. Fortunately they are trivial to<br />
+    re-implement.<br />
+<br />
+    Chapter 27  Iostreams<br />
+    ---------------------<br />
+    Headers: &lt;iosfwd&gt; &lt;streambuf&gt; &lt;ios&gt; &lt;ostream&gt; &lt;istream&gt; &lt;iostream&gt;<br />
+    &lt;iomanip&gt; &lt;sstream&gt; &lt;fstream&gt;<br />
+    C headers: &lt;cstdio&gt; &lt;cwchar&gt; (also in 21)<br />
+<br />
+    Iostream is currently in a very incomplete state. &lt;iosfwd&gt;, &lt;iomanip&gt;,<br />
+    ios_base, and basic_ios&lt;&gt; are "mostly complete". basic_streambuf&lt;&gt; and<br />
+    basic_ostream&lt;&gt; are well along, but basic_istream&lt;&gt; has had little work<br />
+    done. The standard stream objects, &lt;sstream&gt; and &lt;fstream&gt; have been<br />
+    started; basic_filebuf&lt;&gt; "write" functions have been implemented just<br />
+    enough to do "hello, world".<br />
+<br />
+    Most of the istream and ostream operators &lt;&lt; and &gt;&gt; (with the exception<br />
+    of the op&lt;&lt;(integer) ones) have not been changed to use locale primitives,<br />
+    sentry objects, or char_traits members.<br />
+<br />
+    All these templates should be manually instantiated for char and<br />
+    wchar_t in a way that links only used members into user programs.<br />
+<br />
+    Streambuf is fertile ground for optimization extensions. An extended<br />
+    interface giving iterator access to its internal buffer would be very<br />
+    useful for other library components.<br />
+<br />
+    Iostream operations (primarily operators &lt;&lt; and &gt;&gt;) can take advantage<br />
+    of the case where user code has not specified a locale, and bypass locale<br />
+    operations entirely. The current implementation of op&lt;&lt;/num_put&lt;&gt;::put,<br />
+    for the integer types, demonstrates how they can cache encoding details<br />
+    from the locale on each operation. There is lots more room for<br />
+    optimization in this area.<br />
+<br />
+    The definition of the relationship between the standard streams<br />
+    cout et al. and stdout et al. requires something like a "stdiobuf".<br />
+    The SGI solution of using double-indirection to actually use a<br />
+    stdio FILE object for buffering is unsatisfactory, because it<br />
+    interferes with peephole loop optimizations.<br />
+<br />
+    The &lt;sstream&gt; header work has begun. stringbuf can benefit from<br />
+    friendship with basic_string&lt;&gt; and basic_string&lt;&gt;::_Rep to use<br />
+    those objects directly as buffers, and avoid allocating and making<br />
+    copies.<br />
+<br />
+    The basic_filebuf&lt;&gt; template is a complex beast. It is specified to<br />
+    use the locale facet codecvt&lt;&gt; to translate characters between native<br />
+    files and the locale character encoding. In general this involves<br />
+    two buffers, one of "char" representing the file and another of<br />
+    "char_type", for the stream, with codecvt&lt;&gt; translating. The process<br />
+    is complicated by the variable-length nature of the translation, and<br />
+    the need to seek to corresponding places in the two representations.<br />
+    For the case of basic_filebuf&lt;char&gt;, when no translation is needed,<br />
+    a single buffer suffices. A specialized filebuf can be used to reduce<br />
+    code space overhead when no locale has been imbued. Matt Austern's<br />
+    work at SGI will be useful, perhaps directly as a source of code, or<br />
+    at least as an example to draw on.<br />
+<br />
+    Filebuf, almost uniquely (cf. operator new), depends heavily on<br />
+    underlying environmental facilities. In current releases iostream<br />
+    depends fairly heavily on libio constant definitions, but it should<br />
+    be made independent.  It also depends on operating system primitives<br />
+    for file operations. There is immense room for optimizations using<br />
+    (e.g.) mmap for reading. The shadow/ directory wraps, besides the<br />
+    standard C headers, the libio.h and unistd.h headers, for use mainly<br />
+    by filebuf. These wrappings have not been completed, though there<br />
+    is scaffolding in place.<br />
+<br />
+    The encapsulation of certain C header &lt;cstdio&gt; names presents an<br />
+    interesting problem. It is possible to define an inline std::fprintf()<br />
+    implemented in terms of the 'extern "C"' vfprintf(), but there is no<br />
+    standard vfscanf() to use to implement std::fscanf(). It appears that<br />
+    vfscanf but be re-implemented in C++ for targets where no vfscanf<br />
+    extension has been defined. This is interesting in that it seems<br />
+    to be the only significant case in the C library where this kind of<br />
+    rewriting is necessary. (Of course Glibc provides the vfscanf()<br />
+    extension.)  (The functions related to exit() must be rewritten<br />
+    for other reasons.)<br />
+<br />
+<br />
+    Annex D<br />
+    -------<br />
+    Headers: &lt;strstream&gt;<br />
+<br />
+    Annex D defines many non-library features, and many minor<br />
+    modifications to various headers, and a complete header.<br />
+    It is "mostly done", except that the libstdc++-2 &lt;strstream&gt;<br />
+    header has not been adopted into the library, or checked to<br />
+    verify that it matches the draft in those details that were<br />
+    clarified by the committee. Certainly it must at least be<br />
+    moved into the std namespace.<br />
+<br />
+    We still need to wrap all the deprecated features in #if guards<br />
+    so that pedantic compile modes can detect their use.<br />
+<br />
+    Nonstandard Extensions<br />
+    ----------------------<br />
+    Headers: &lt;iostream.h&gt; &lt;strstream.h&gt; &lt;hash&gt; &lt;rbtree&gt;<br />
+    &lt;pthread_alloc&gt; &lt;stdiobuf&gt; (etc.)<br />
+<br />
+    User code has come to depend on a variety of nonstandard components<br />
+    that we must not omit. Much of this code can be adopted from<br />
+    libstdc++-v2 or from the SGI STL. This particularly includes<br />
+    &lt;iostream.h&gt;, &lt;strstream.h&gt;, and various SGI extensions such<br />
+    as &lt;hash_map.h&gt;. Many of these are already placed in the<br />
+    subdirectories ext/ and backward/. (Note that it is better to<br />
+    include them via "&lt;backward/hash_map.h&gt;" or "&lt;ext/hash_map&gt;" than<br />
+    to search the subdirectory itself via a "-I" directive.<br />
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="documentation_style.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_contributing.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="appendix_porting.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Documentation Style </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Appendix B. 
+  Porting and Maintenance
+  
+</td></tr></table></div></body></html>

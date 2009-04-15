@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 39. Demangling</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="extensions.html" title="Part XII.  Extensions" /><link rel="prev" href="ext_io.html" title="Chapter 38. Input and Output" /><link rel="next" href="ext_concurrency.html" title="Chapter 40. Concurrency" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 39. Demangling</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ext_io.html">Prev</a> </td><th width="60%" align="center">Part XII. 
+  Extensions
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="ext_concurrency.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.demangle"></a>Chapter 39. Demangling</h2></div></div></div><p>
+    Transforming C++ ABI identifiers (like RTTI symbols) into the
+    original C++ source identifiers is called
+    “<span class="quote">demangling.</span>”
+  </p><p>
+    If you have read the <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaceabi.html" target="_top">source
+    documentation for <code class="code">namespace abi</code></a> then you are
+    aware of the cross-vendor C++ ABI in use by GCC.  One of the
+    exposed functions is used for demangling,
+    <code class="code">abi::__cxa_demangle</code>.
+  </p><p>
+    In programs like <span class="command"><strong>c++filt</strong></span>, the linker, and other tools
+    have the ability to decode C++ ABI names, and now so can you.
+  </p><p>
+    (The function itself might use different demanglers, but that's the
+    whole point of abstract interfaces.  If we change the implementation,
+    you won't notice.)
+  </p><p>
+    Probably the only times you'll be interested in demangling at runtime
+    are when you're seeing <code class="code">typeid</code> strings in RTTI, or when
+    you're handling the runtime-support exception classes.  For example:
+  </p><pre class="programlisting">
+#include &lt;exception&gt;
+#include &lt;iostream&gt;
+#include &lt;cxxabi.h&gt;
+
+struct empty { };
+
+template &lt;typename T, int N&gt;
+  struct bar { };
+
+
+int main()
+{
+  int     status;
+  char   *realname;
+
+  // exception classes not in &lt;stdexcept&gt;, thrown by the implementation
+  // instead of the user
+  std::bad_exception  e;
+  realname = abi::__cxa_demangle(e.what(), 0, 0, &amp;status);
+  std::cout &lt;&lt; e.what() &lt;&lt; "\t=&gt; " &lt;&lt; realname &lt;&lt; "\t: " &lt;&lt; status &lt;&lt; '\n';
+  free(realname);
+
+
+  // typeid
+  bar&lt;empty,17&gt;          u;
+  const std::type_info  &amp;ti = typeid(u);
+
+  realname = abi::__cxa_demangle(ti.name(), 0, 0, &amp;status);
+  std::cout &lt;&lt; ti.name() &lt;&lt; "\t=&gt; " &lt;&lt; realname &lt;&lt; "\t: " &lt;&lt; status &lt;&lt; '\n';
+  free(realname);
+
+  return 0;
+}
+   </pre><p>
+     This prints
+   </p><pre class="screen">
+   <code class="computeroutput">
+      St13bad_exception       =&gt; std::bad_exception   : 0
+      3barI5emptyLi17EE       =&gt; bar&lt;empty, 17&gt;       : 0 
+   </code>
+   </pre><p>
+     The demangler interface is described in the source documentation
+     linked to above.  It is actually written in C, so you don't need to
+     be writing C++ in order to demangle C++.  (That also means we have to
+     use crummy memory management facilities, so don't forget to free()
+     the returned char array.)
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ext_io.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ext_concurrency.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 38. Input and Output </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 40. Concurrency</td></tr></table></div></body></html>
