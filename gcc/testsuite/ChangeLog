@@ -1,3 +1,7 @@
+2009-04-15  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wenum-compare-1.c: New testcase.
+
 2009-04-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39764

@@ -1,3 +1,39 @@
+2009-04-15  Ian Lance Taylor  <iant@google.com>
+
+	* c.opt (Wenum-compare): Enable for C and Objc.  Initialize to -1.
+	* c-opts.c (c_common_handle_option): For C, set warn_enum_compare
+	for -Wall and for -Wc++-compat.
+	(c_common_post_options): For C++, set warn_enum_compare if not
+	already set.
+	* c-tree.h (struct c_expr): Add field original_type.
+	(build_external_ref): Update declaration.
+	* c-parser.c (c_parser_braced_init): Set original_type.
+	(c_parser_initelt): Likewise.
+	(c_parser_expr_no_commas): Likewise.
+	(c_parser_conditional_expression): Likewise.
+	(c_parser_cast_expression): Likewise.
+	(c_parser_unary_expression): Likewise.  Pull setting of
+	original_code to top of function.
+	(c_parser_sizeof_expression): Set original_type.
+	(c_parser_alignof_expression): Likewise.
+	(c_parser_postfix_expression): Likewise.  Pull setting of
+	original_code to top of function.
+	(c_parser_postfix_expression_after_paren_type): Set
+	original_type.
+	(c_parser_postfix_expression_after_primary): Likewise.
+	(c_parser_expression): Likewise.
+	* c-typeck.c (build_external_ref): Add type parameter.  Change all
+	callers.
+	(c_expr_sizeof_expr): Set original_type field.
+	(parser_build_unary_op): Likewise.
+	(parser_build_binary_op): Likewise.  Optionally warn about
+	comparisons of enums of different types.
+	(digest_init): Set original_type field.
+	(really_start_incremental_init): Likewise.
+	(push_init_level, pop_init_level): Likewise.
+	* doc/invoke.texi (Warning Options): -Wenum-compare now
+	supported in C.
+
 2009-04-15  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (eliminate): When replacing a PHI node carry

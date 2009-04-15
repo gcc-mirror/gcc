@@ -163,6 +163,11 @@ struct c_expr
      initializers, or ERROR_MARK for other expressions (including
      parenthesized expressions).  */
   enum tree_code original_code;
+  /* If not NULL, the original type of an expression.  This will
+     differ from the type of the value field for an enum constant.
+     The type of an enum constant is a plain integer type, but this
+     field will be the enum type.  */
+  tree original_type;
 };
 
 /* A kind of type specifier.  Note that this information is currently
@@ -577,7 +582,7 @@ extern struct c_expr default_function_array_conversion (struct c_expr);
 extern tree composite_type (tree, tree);
 extern tree build_component_ref (tree, tree);
 extern tree build_array_ref (tree, tree, location_t);
-extern tree build_external_ref (tree, int, location_t);
+extern tree build_external_ref (tree, int, location_t, tree *);
 extern void pop_maybe_used (bool);
 extern struct c_expr c_expr_sizeof_expr (struct c_expr);
 extern struct c_expr c_expr_sizeof_type (struct c_type_name *);
