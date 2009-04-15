@@ -121,10 +121,14 @@ package body Sem_Ch13 is
    --  processing is to take advantage of back-annotations of size and
    --  alignment values performed by the back end.
 
+   --  Note: the reason we store a Source_Ptr value instead of a Node_Id
+   --  is that by the time Validate_Unchecked_Conversions is called, Sprint
+   --  will already have modified all Sloc values if the -gnatD option is set.
+
    type UC_Entry is record
-      Enode  : Node_Id;   -- node used for posting warnings
-      Source : Entity_Id; -- source type for unchecked conversion
-      Target : Entity_Id; -- target type for unchecked conversion
+      Eloc   : Source_Ptr; -- node used for posting warnings
+      Source : Entity_Id;  -- source type for unchecked conversion
+      Target : Entity_Id;  -- target type for unchecked conversion
    end record;
 
    package Unchecked_Conversions is new Table.Table (
@@ -4398,7 +4402,7 @@ package body Sem_Ch13 is
       if Warn_On_Unchecked_Conversion then
          Unchecked_Conversions.Append
            (New_Val => UC_Entry'
-              (Enode  => N,
+              (Eloc   => Sloc (N),
                Source => Source,
                Target => Target));
 
@@ -4455,9 +4459,9 @@ package body Sem_Ch13 is
          declare
             T : UC_Entry renames Unchecked_Conversions.Table (N);
 
-            Enode  : constant Node_Id   := T.Enode;
-            Source : constant Entity_Id := T.Source;
-            Target : constant Entity_Id := T.Target;
+            Eloc   : constant Source_Ptr := T.Eloc;
+            Source : constant Entity_Id  := T.Source;
+            Target : constant Entity_Id  := T.Target;
 
             Source_Siz    : Uint;
             Target_Siz    : Uint;
@@ -4477,17 +4481,16 @@ package body Sem_Ch13 is
                Target_Siz := RM_Size (Target);
 
                if Source_Siz /= Target_Siz then
-                  Error_Msg_N
+                  Error_Msg
                     ("?types for unchecked conversion have different sizes!",
-                     Enode);
+                     Eloc);
 
                   if All_Errors_Mode then
                      Error_Msg_Name_1 := Chars (Source);
                      Error_Msg_Uint_1 := Source_Siz;
                      Error_Msg_Name_2 := Chars (Target);
                      Error_Msg_Uint_2 := Target_Siz;
-                     Error_Msg_N
-                       ("\size of % is ^, size of % is ^?", Enode);
+                     Error_Msg ("\size of % is ^, size of % is ^?", Eloc);
 
                      Error_Msg_Uint_1 := UI_Abs (Source_Siz - Target_Siz);
 
@@ -4495,46 +4498,46 @@ package body Sem_Ch13 is
                        and then Is_Discrete_Type (Target)
                      then
                         if Source_Siz > Target_Siz then
-                           Error_Msg_N
+                           Error_Msg
                              ("\?^ high order bits of source will be ignored!",
-                              Enode);
+                              Eloc);
 
                         elsif Is_Unsigned_Type (Source) then
-                           Error_Msg_N
+                           Error_Msg
                              ("\?source will be extended with ^ high order " &
-                              "zero bits?!", Enode);
+                              "zero bits?!", Eloc);
 
                         else
-                           Error_Msg_N
+                           Error_Msg
                              ("\?source will be extended with ^ high order " &
                               "sign bits!",
-                              Enode);
+                              Eloc);
                         end if;
 
                      elsif Source_Siz < Target_Siz then
                         if Is_Discrete_Type (Target) then
                            if Bytes_Big_Endian then
-                              Error_Msg_N
+                              Error_Msg
                                 ("\?target value will include ^ undefined " &
                                  "low order bits!",
-                                 Enode);
+                                 Eloc);
                            else
-                              Error_Msg_N
+                              Error_Msg
                                 ("\?target value will include ^ undefined " &
                                  "high order bits!",
-                                 Enode);
+                                 Eloc);
                            end if;
 
                         else
-                           Error_Msg_N
+                           Error_Msg
                              ("\?^ trailing bits of target value will be " &
-                              "undefined!", Enode);
+                              "undefined!", Eloc);
                         end if;
 
                      else pragma Assert (Source_Siz > Target_Siz);
-                        Error_Msg_N
+                        Error_Msg
                           ("\?^ trailing bits of source will be ignored!",
-                           Enode);
+                           Eloc);
                      end if;
                   end if;
                end if;
@@ -4568,15 +4571,16 @@ package body Sem_Ch13 is
                         then
                            Error_Msg_Uint_1 := Target_Align;
                            Error_Msg_Uint_2 := Source_Align;
+                           Error_Msg_Node_1 := D_Target;
                            Error_Msg_Node_2 := D_Source;
-                           Error_Msg_NE
+                           Error_Msg
                              ("?alignment of & (^) is stricter than " &
-                              "alignment of & (^)!", Enode, D_Target);
+                              "alignment of & (^)!", Eloc);
 
                            if All_Errors_Mode then
-                              Error_Msg_N
+                              Error_Msg
                                 ("\?resulting access value may have invalid " &
-                                 "alignment!", Enode);
+                                 "alignment!", Eloc);
                            end if;
                         end if;
                      end;

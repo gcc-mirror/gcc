@@ -1,5 +1,17 @@
 2009-04-15  Robert Dewar  <dewar@adacore.com>
 
+	* sem_ch13.adb (Unchecked_Conversions): Store source location instead
+	of node for location for warning messages.
+
+	* gnatchop.adb: Minor reformatting
+
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb: additional guard for renaming declarations for in
+	parameters of an array type.
+
+2009-04-15  Robert Dewar  <dewar@adacore.com>
+
 	* sem_eval.adb (Get_Static_Length): Go to origin node for array bounds
 	in case they were rewritten by expander (Force_Evaluation).
 

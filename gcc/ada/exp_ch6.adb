@@ -3806,6 +3806,7 @@ package body Exp_Ch6 is
               and then not Is_Tagged_Type  (Etype (A))
               and then
                (not Is_Array_Type (Etype (A))
+                 or else not Is_Object_Reference (A)
                  or else Is_Bit_Packed_Array (Etype (A)))
             then
                Decl :=
