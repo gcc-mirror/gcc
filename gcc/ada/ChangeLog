@@ -1,5 +1,57 @@
 2009-04-15  Pascal Obry  <obry@adacore.com>
 
+	* adaint.h (__gnat_unlink): Add spec.
+	(__gnat_rename): Likewise.
+
+2009-04-15  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb: Minor spelling error corrections in error messages
+
+2009-04-15  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Minor comment update
+
+	* opt.ads: Minor comment updates
+
+	* checks.adb (Enable_Overflow_Check): Do not set Do_Overflow_Check for
+	modular type.
+
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.ads, exp_disp.adb (Register_Primitive): Is now a function
+	that generates the code needed to update a dispatch table when a
+	primitive operation is declared with a subprogram body without previous
+	spec. Insertion of the generated code is responsibility of the caller.
+	(Make_DT): When building static tables, append the code created by
+	Register_Primitive to update a secondary table after it has been
+	constructed.
+
+	* exp_ch3.adb, exp_ch6.adb: use new version of Register_Primitive.
+
+	* sem_disp.adb (Check_Dispatching_Operation): Call Register_Primitive
+	on an overriding operation that implements an interface operation only
+	if not building static dispatch tables.
+
+2009-04-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-caldel-vms.adb (To_Duration): Declare a "safe" end of time which
+	does not cause overflow when converted to Duration. Use the safe value
+	as the maximum allowable time delay..
+
+2009-04-15  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g-comlin.adb (Set_Command_Line): When adding a switch with attached
+	parameter, specify that the delimiter is NUL, otherwise "-j2" will be
+	translated to "-j 2".
+
+2009-04-15  Bob Duff  <duff@adacore.com>
+
+	* rtsfind.adb (Maybe_Add_With): Split out procedure to add implicit
+	with_clauses, to avoid code duplication. Change this processing so we
+	always add a with_clause on the main unit if needed.
+
+2009-04-15  Pascal Obry  <obry@adacore.com>
+
 	Add support for Win32 native encoding for delete/rename routines.
 	
 	* adaint.c (__gnat_unlink): New routine.

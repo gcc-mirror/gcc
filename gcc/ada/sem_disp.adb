@@ -28,6 +28,7 @@ with Debug;    use Debug;
 with Elists;   use Elists;
 with Einfo;    use Einfo;
 with Exp_Disp; use Exp_Disp;
+with Exp_Util; use Exp_Util;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Tss;  use Exp_Tss;
 with Errout;   use Errout;
@@ -835,9 +836,9 @@ package body Sem_Disp is
                               end if;
 
                            else
-                              Register_Primitive (Sloc (Subp_Body),
-                                Prim    => Subp,
-                                Ins_Nod => Subp_Body);
+                              Insert_Actions_After (Subp_Body,
+                                Register_Primitive (Sloc (Subp_Body),
+                                Prim    => Subp));
                            end if;
 
                            Generate_Reference (Tagged_Type, Subp, 'p', False);
@@ -909,7 +910,9 @@ package body Sem_Disp is
             --  Ada 2005 (AI-251): In case of late overriding of a primitive
             --  that covers abstract interface subprograms we must register it
             --  in all the secondary dispatch tables associated with abstract
-            --  interfaces.
+            --  interfaces. We do this now only if not building static tables.
+            --  Otherwise the patch code is emitted after those tables are
+            --  built, to prevent access_before_elaboration in gigi.
 
             if Body_Is_Last_Primitive then
                declare
@@ -925,10 +928,10 @@ package body Sem_Disp is
                      if Present (Alias (Prim))
                        and then Present (Interface_Alias (Prim))
                        and then Alias (Prim) = Subp
+                       and then not Building_Static_DT (Tagged_Type)
                      then
-                        Register_Primitive (Sloc (Prim),
-                          Prim    => Prim,
-                          Ins_Nod => Subp_Body);
+                        Insert_Actions_After (Subp_Body,
+                          Register_Primitive (Sloc (Subp_Body), Prim => Prim));
                      end if;
 
                      Next_Elmt (Elmt);

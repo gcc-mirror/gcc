@@ -6273,17 +6273,16 @@ package body Exp_Disp is
    -- Register_Primitive --
    ------------------------
 
-   procedure Register_Primitive
+   function Register_Primitive
      (Loc     : Source_Ptr;
-      Prim    : Entity_Id;
-      Ins_Nod : Node_Id)
+      Prim    : Entity_Id) return List_Id
    is
       DT_Ptr        : Entity_Id;
       Iface_Prim    : Entity_Id;
       Iface_Typ     : Entity_Id;
       Iface_DT_Ptr  : Entity_Id;
       Iface_DT_Elmt : Elmt_Id;
-      L             : List_Id;
+      L             : constant List_Id := New_List;
       Pos           : Uint;
       Tag           : Entity_Id;
       Tag_Typ       : Entity_Id;
@@ -6294,7 +6293,7 @@ package body Exp_Disp is
       pragma Assert (not Restriction_Active (No_Dispatching_Calls));
 
       if not RTE_Available (RE_Tag) then
-         return;
+         return L;
       end if;
 
       if not Present (Interface_Alias (Prim)) then
@@ -6308,7 +6307,7 @@ package body Exp_Disp is
             DT_Ptr :=
               Node (Next_Elmt (First_Elmt (Access_Disp_Table (Tag_Typ))));
 
-            Insert_After (Ins_Nod,
+            Append_To (L,
               Build_Set_Predefined_Prim_Op_Address (Loc,
                 Tag_Node     => New_Reference_To (DT_Ptr, Loc),
                 Position     => Pos,
@@ -6324,7 +6323,7 @@ package body Exp_Disp is
               and then RTE_Record_Component_Available (RE_Size_Func)
             then
                DT_Ptr := Node (First_Elmt (Access_Disp_Table (Tag_Typ)));
-               Insert_After (Ins_Nod,
+               Append_To (L,
                  Build_Set_Size_Function (Loc,
                    Tag_Node  => New_Reference_To (DT_Ptr, Loc),
                    Size_Func => Prim));
@@ -6334,7 +6333,7 @@ package body Exp_Disp is
             pragma Assert (Pos /= Uint_0 and then Pos <= DT_Entry_Count (Tag));
 
             DT_Ptr := Node (First_Elmt (Access_Disp_Table (Tag_Typ)));
-            Insert_After (Ins_Nod,
+            Append_To (L,
               Build_Set_Prim_Op_Address (Loc,
                 Typ          => Tag_Typ,
                 Tag_Node     => New_Reference_To (DT_Ptr, Loc),
@@ -6363,12 +6362,6 @@ package body Exp_Disp is
          if not Is_Ancestor (Iface_Typ, Tag_Typ)
            and then Present (Thunk_Code)
          then
-            --  Comment needed on why checks are suppressed. This is not just
-            --  efficiency, but fundamental functionality (see 1.295 RH, which
-            --  still does not answer this question) ???
-
-            Insert_Action (Ins_Nod, Thunk_Code, Suppress => All_Checks);
-
             --  Generate the code necessary to fill the appropriate entry of
             --  the secondary dispatch table of Prim's controlling type with
             --  Thunk_Id's address.
@@ -6380,7 +6373,8 @@ package body Exp_Disp is
             Iface_Prim := Interface_Alias (Prim);
             Pos        := DT_Position (Iface_Prim);
             Tag        := First_Tag_Component (Iface_Typ);
-            L          := New_List;
+
+            Prepend_To (L, Thunk_Code);
 
             if Is_Predefined_Dispatching_Operation (Prim)
               or else Is_Predefined_Dispatching_Alias (Prim)
@@ -6411,8 +6405,6 @@ package body Exp_Disp is
                        Make_Attribute_Reference (Loc,
                          Prefix => New_Reference_To (Alias (Prim), Loc),
                          Attribute_Name  => Name_Unrestricted_Access))));
-
-               Insert_Actions_After (Ins_Nod, L);
 
             else
                pragma Assert (Pos /= Uint_0
@@ -6445,10 +6437,11 @@ package body Exp_Disp is
                          Prefix => New_Reference_To (Alias (Prim), Loc),
                          Attribute_Name => Name_Unrestricted_Access))));
 
-               Insert_Actions_After (Ins_Nod, L);
             end if;
          end if;
       end if;
+
+      return L;
    end Register_Primitive;
 
    -------------------------
