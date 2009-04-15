@@ -126,6 +126,8 @@ struct gcc_debug_hooks
      text sections.  */
   void (* switch_text_section) (void);
 
+  void (* set_name) (tree, tree);
+
   /* This is 1 if the debug writer wants to see start and end commands for the
      main source files, and 0 otherwise.  */
   int start_end_main_source_file;
@@ -140,6 +142,7 @@ extern void debug_nothing_int_charstar (unsigned int, const char *);
 extern void debug_nothing_int (unsigned int);
 extern void debug_nothing_int_int (unsigned int, unsigned int);
 extern void debug_nothing_tree (tree);
+extern void debug_nothing_tree_tree (tree, tree);
 extern void debug_nothing_tree_int (tree, int);
 extern void debug_nothing_tree_tree_tree_bool (tree, tree, tree, bool);
 extern bool debug_true_const_tree (const_tree);
