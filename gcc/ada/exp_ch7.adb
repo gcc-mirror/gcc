@@ -1404,12 +1404,14 @@ package body Exp_Ch7 is
 
       --    Attach_To_Final_List (_Lx, Resx (Resx'last)._controller, 3);
 
-      --  If the context is an aggregate, the call will be expanded into an
-      --  assignment, and the attachment will be done when the aggregate
+      --  If the context is an array aggregate, the call will be expanded into
+      --  an assignment, and the attachment will be done when the aggregate
       --  expansion is complete. See body of Exp_Aggr for the treatment of
       --  other controlled components.
 
-      if Nkind (Parent (N)) = N_Aggregate then
+      if Nkind (Parent (N)) = N_Aggregate
+        and then Is_Array_Type (Etype (Parent (N)))
+      then
          return;
       end if;
 
@@ -1424,10 +1426,10 @@ package body Exp_Ch7 is
             if Is_Array_Type (T2) then
                Len_Ref :=
                  Make_Attribute_Reference (Loc,
-                 Prefix =>
-                   Duplicate_Subexpr_Move_Checks
-                     (Unchecked_Convert_To (T2, Ref)),
-                 Attribute_Name => Name_Length);
+                   Prefix =>
+                     Duplicate_Subexpr_Move_Checks
+                       (Unchecked_Convert_To (T2, Ref)),
+                   Attribute_Name => Name_Length);
             end if;
 
             while Is_Array_Type (T2) loop

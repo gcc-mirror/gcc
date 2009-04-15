@@ -45,15 +45,6 @@ package body System.OS_Interface is
    Low_Priority : constant := 255;
    --  VxWorks native (default) lowest scheduling priority
 
-   ----------
-   -- kill --
-   ----------
-
-   function kill (pid : t_id; sig : Signal) return int is
-   begin
-      return System.VxWorks.Ext.kill (pid, int (sig));
-   end kill;
-
    -------------
    -- sigwait --
    -------------
@@ -73,7 +64,7 @@ package body System.OS_Interface is
 
       if Result /= -1 then
          sig.all := Signal (Result);
-         return 0;
+         return OK;
       else
          sig.all := 0;
          return errno;
@@ -142,7 +133,7 @@ package body System.OS_Interface is
 
    begin
       if D < 0.0 then
-         return -1;
+         return ERROR;
       end if;
 
       --  Ensure that the duration can be converted to ticks
@@ -213,6 +204,15 @@ package body System.OS_Interface is
       return semFlush (SEM_ID (ID));
    end Binary_Semaphore_Flush;
 
+   ----------
+   -- kill --
+   ----------
+
+   function kill (pid : t_id; sig : Signal) return int is
+   begin
+      return System.VxWorks.Ext.kill (pid, int (sig));
+   end kill;
+
    -----------------------
    -- Interrupt_Connect --
    -----------------------
@@ -220,11 +220,13 @@ package body System.OS_Interface is
    function Interrupt_Connect
      (Vector    : Interrupt_Vector;
       Handler   : Interrupt_Handler;
-      Parameter : System.Address := System.Null_Address) return int
-   is
-      pragma Unreferenced (Vector, Handler, Parameter);
+      Parameter : System.Address := System.Null_Address) return int is
    begin
-      return 0;
+      return
+        System.VxWorks.Ext.Interrupt_Connect
+        (System.VxWorks.Ext.Interrupt_Vector (Vector),
+         System.VxWorks.Ext.Interrupt_Handler (Handler),
+         Parameter);
    end Interrupt_Connect;
 
    --------------------------------
@@ -234,7 +236,8 @@ package body System.OS_Interface is
    function Interrupt_Number_To_Vector
      (intNum : int) return Interrupt_Vector is
    begin
-      return Interrupt_Vector (intNum);
+      return Interrupt_Vector
+        (System.VxWorks.Ext.Interrupt_Number_To_Vector (intNum));
    end Interrupt_Number_To_Vector;
 
 end System.OS_Interface;

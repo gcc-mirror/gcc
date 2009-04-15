@@ -30,13 +30,14 @@ with Ada.Streams.Stream_IO;      use Ada.Streams;
 with Ada.Text_IO;                use Ada.Text_IO;
 with System.CRTL;                use System; use System.CRTL;
 
+with GNAT.Byte_Order_Mark;       use GNAT.Byte_Order_Mark;
 with GNAT.Command_Line;          use GNAT.Command_Line;
 with GNAT.OS_Lib;                use GNAT.OS_Lib;
 with GNAT.Heap_Sort_G;
 with GNAT.Table;
 
 with Hostparm;
-with Switch;   use Switch;
+with Switch;                     use Switch;
 with Types;
 
 procedure Gnatchop is
@@ -66,6 +67,9 @@ procedure Gnatchop is
    --  Special character to signal end of file. Not required in input files,
    --  but properly treated if present. Not generated in output files except
    --  as a result of copying input file.
+
+   BOM_Length : Natural := 0;
+   --  Reset to non-zero value if BOM detected at start of file
 
    --------------------
    -- File arguments --
@@ -323,11 +327,15 @@ procedure Gnatchop is
    --  of line sequence to be written at the end of the pragma.
 
    procedure Write_Unit
-     (Source  : not null access String;
-      Num     : Unit_Num;
-      TS_Time : OS_Time;
-      Success : out Boolean);
-   --  Write one compilation unit of the source to file
+     (Source    : not null access String;
+      Num       : Unit_Num;
+      TS_Time   : OS_Time;
+      Write_BOM : Boolean;
+      Success   : out Boolean);
+   --  Write one compilation unit of the source to file. Source is the pointer
+   --  to the input string, Num is the unit number, TS_Time is the timestamp,
+   --  Write_BOM is set True to write a UTF-8 BOM at the start of the file.
+   --  Success is set True unless the write attempt fails.
 
    ---------
    -- dup --
@@ -1426,6 +1434,10 @@ procedure Gnatchop is
       Success : Boolean;
       TS_Time : OS_Time;
 
+      BOM_Present : Boolean;
+      BOM         : BOM_Kind;
+      --  Record presence of UTF8 BOM in input
+
    begin
       FD := Open_Read (Name'Address, Binary);
       TS_Time := File_Time_Stamp (FD);
@@ -1447,11 +1459,21 @@ procedure Gnatchop is
          Put_Line ("splitting " & File.Table (Input).Name.all & " into:");
       end if;
 
+      --  Test for presence of BOM
+
+      Read_BOM (Buffer.all, BOM_Length, BOM, False);
+      BOM_Present := BOM /= Unknown;
+
       --  Only chop those units that come from this file
 
-      for Num in 1 .. Unit.Last loop
-         if Unit.Table (Num).Chop_File = Input then
-            Write_Unit (Buffer, Num, TS_Time, Success);
+      for Unit_Number in 1 .. Unit.Last loop
+         if Unit.Table (Unit_Number).Chop_File = Input then
+            Write_Unit
+              (Source    => Buffer,
+               Num       => Unit_Number,
+               TS_Time   => TS_Time,
+               Write_BOM => BOM_Present and then Unit_Number /= 1,
+               Success   => Success);
             exit when not Success;
          end if;
       end loop;
@@ -1613,10 +1635,11 @@ procedure Gnatchop is
    ----------------
 
    procedure Write_Unit
-     (Source  : not null access String;
-      Num     : Unit_Num;
-      TS_Time : OS_Time;
-      Success : out Boolean)
+     (Source    : not null access String;
+      Num       : Unit_Num;
+      TS_Time   : OS_Time;
+      Write_BOM : Boolean;
+      Success   : out Boolean)
    is
 
       procedure OS_Filename
@@ -1693,6 +1716,14 @@ procedure Gnatchop is
             Length := Source'Last - (Source'First + Info.Offset);
          else
             Length := Info.Length;
+         end if;
+
+         --  Write BOM if required
+
+         if Write_BOM then
+            String'Write
+              (Stream_IO.Stream (File),
+               Source.all (Source'First .. Source'First + BOM_Length - 1));
          end if;
 
          --  Prepend configuration pragmas if necessary

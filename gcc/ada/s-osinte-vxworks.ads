@@ -32,7 +32,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks 5.x and 6.x version of this package
+--  This is the VxWorks version of this package
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by the tasking run-time (libgnarl).
@@ -72,7 +72,7 @@ package System.OS_Interface is
    FUNC_ERR  : constant := -1;
 
    ----------------------------
-   -- Signals and Interrupts --
+   -- Signals and interrupts --
    ----------------------------
 
    NSIG : constant := 64;
@@ -304,6 +304,8 @@ package System.OS_Interface is
    pragma Import (C, sysClkRateGet, "sysClkRateGet");
 
    --  VxWorks 5.x specific functions
+   --  Must not be called from run-time for versions that do not support
+   --  taskVarLib: eg VxWorks 6 RTPs
 
    function taskVarAdd
      (tid : t_id; pVar : access System.Address) return int;
@@ -325,6 +327,8 @@ package System.OS_Interface is
    pragma Import (C, taskVarGet, "taskVarGet");
 
    --  VxWorks 6.x specific functions
+   --  Can only be called from the VxWorks 6 run-time libary that supports
+   --  tlsLib, and not by the VxWorks 6.6 SMP library
 
    function tlsKeyCreate return int;
    pragma Import (C, tlsKeyCreate, "tlsKeyCreate");
@@ -364,8 +368,8 @@ package System.OS_Interface is
 
    function Set_Time_Slice (ticks : int) return int
      renames System.VxWorks.Ext.Set_Time_Slice;
-   --  Calls kernelTimeSlice under VxWorks 5.x
-   --  Do nothing under VxWorks 6.x
+   --  Calls kernelTimeSlice under VxWorks 5.x, VxWorks 653, or in VxWorks 6
+   --  kernel apps. Returns ERROR for RTPs, VxWorks 5 /CERT
 
    function taskPriorityGet (tid : t_id; pPriority : access int) return int;
    pragma Import (C, taskPriorityGet, "taskPriorityGet");
@@ -433,7 +437,7 @@ package System.OS_Interface is
    --  Release all threads blocked on the semaphore
 
    ------------------------------------------------------------
-   --   Binary Semaphore Wrapper to Support Interrupt Tasks  --
+   --   Binary Semaphore Wrapper to Support interrupt Tasks  --
    ------------------------------------------------------------
 
    type Binary_Semaphore_Id is new Long_Integer;
@@ -468,7 +472,7 @@ package System.OS_Interface is
       Parameter : System.Address := System.Null_Address) return int;
    pragma Inline (Interrupt_Connect);
    --  Use this to set up an user handler. The routine installs a
-   --  a user handler which is invoked after RTEMS has saved enough
+   --  a user handler which is invoked after the OS has saved enough
    --  context for a high-level language routine to be safely invoked.
 
    function Interrupt_Number_To_Vector (intNum : int) return Interrupt_Vector;

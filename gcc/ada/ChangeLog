@@ -1,3 +1,35 @@
+2009-04-15  Robert Dewar  <dewar@adacore.com>
+
+	* gnatchop.adb (BOM_Length): New global variable
+	(Write_Unit): Add new parameter Write_BOM
+	(Write_Chopped_Files): Check for BOM and set Write_BOM for call
+	to Write_Unit
+
+	* gnat_ugn.texi: Add note on propagation of BOM by gnatchop
+
+2009-04-15  Geert Bosch  <bosch@adacore.com>
+
+	* system-mingw-x86_64.ads, system-darwin-x86_64.ads
+	(Backend_Overflow_Checks): Set to True.
+
+2009-04-15  Gary Dismukes  <dismukes@adacore.com>
+
+	* par-ch3.adb (P_Type_Declaration): Issue an error if the synchronized
+	keyword is given in a record extension.
+
+2009-04-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Expand_Ctrl_Function_Call): Procede with the expansion
+	of a controlled function call in the context of a record aggregate.
+	This does not apply to array aggregates since the call will be expanded
+	into assignments.
+
+2009-04-15  Ed Falis  <falis@adacore.com>
+
+	* s-osinte-vxworks-kernel.adb, s-osinte-vxworks.adb,
+	s-osinte-vxworks.ads s-vxwext.ads, s-vxwext-kernel.adb,
+	s-vxwext-kernel.ads: Reorganize s-osinte-vxworks* and s-vxwext*.
+
 2009-04-15  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

@@ -39,11 +39,10 @@ package System.VxWorks.Ext is
    type t_id is new Long_Integer;
    subtype int is Interfaces.C.int;
 
-   function Task_Cont (tid : t_id) return int;
-   pragma Import (C, Task_Cont, "taskResume");
+   type Interrupt_Handler is access procedure (parameter : System.Address);
+   pragma Convention (C, Interrupt_Handler);
 
-   function Task_Stop (tid : t_id) return int;
-   pragma Import (C, Task_Stop, "taskSuspend");
+   type Interrupt_Vector is new System.Address;
 
    function Int_Lock return int;
    pragma Import (C, Int_Lock, "intLock");
@@ -51,13 +50,29 @@ package System.VxWorks.Ext is
    function Int_Unlock return int;
    pragma Import (C, Int_Unlock, "intUnlock");
 
+   function Interrupt_Connect
+     (Vector    : Interrupt_Vector;
+      Handler   : Interrupt_Handler;
+      Parameter : System.Address := System.Null_Address) return int;
+   pragma Import (C, Interrupt_Connect, "intConnect");
+
+   function Interrupt_Number_To_Vector
+     (intNum : int) return Interrupt_Vector;
+   pragma Import (C, Interrupt_Number_To_Vector, "__gnat_inum_to_ivec");
+
+   function Task_Cont (tid : t_id) return int;
+   pragma Import (C, Task_Cont, "taskResume");
+
+   function Task_Stop (tid : t_id) return int;
+   pragma Import (C, Task_Stop, "taskSuspend");
+
    function kill (pid : t_id; sig : int) return int;
    pragma Import (C, kill, "kill");
 
-   function Set_Time_Slice (ticks : int) return int;
-   pragma Import (C, Set_Time_Slice, "kernelTimeSlice");
-
    function getpid return t_id;
    pragma Import (C, getpid, "taskIdSelf");
+
+   function Set_Time_Slice (ticks : int) return int;
+   pragma Import (C, Set_Time_Slice, "kernelTimeSlice");
 
 end System.VxWorks.Ext;
