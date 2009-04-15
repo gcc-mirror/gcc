@@ -177,6 +177,10 @@ package body Ada.Calendar is
    Unix_Min : constant Time_Rep :=
                 Ada_Low + Time_Rep (17 * 366 + 52 * 365) * Nanos_In_Day;
 
+   Epoch_Offset : constant Time_Rep := (136 * 365 + 44 * 366) * Nanos_In_Day;
+   --  The difference between 2150-1-1 UTC and 1970-1-1 UTC expressed in
+   --  nanoseconds. Note that year 2100 is non-leap.
+
    Cumulative_Days_Before_Month :
      constant array (Month_Number) of Natural :=
        (0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334);
@@ -765,11 +769,6 @@ package body Ada.Calendar is
 
    package body Conversion_Operations is
 
-      Epoch_Offset : constant Time_Rep :=
-                       (136 * 365 + 44 * 366) * Nanos_In_Day;
-      --  The difference between 2150-1-1 UTC and 1970-1-1 UTC expressed in
-      --  nanoseconds. Note that year 2100 is non-leap.
-
       -----------------
       -- To_Ada_Time --
       -----------------
@@ -972,6 +971,15 @@ package body Ada.Calendar is
       -----------------
 
       function To_Duration (Date : Time) return Duration is
+         pragma Unsuppress (Overflow_Check);
+
+         Safe_Ada_High : constant Time_Rep := Ada_High - Epoch_Offset;
+         --  This value represents a "safe" end of time. In order to perform a
+         --  proper conversion to Unix duration, we will have to shift origins
+         --  at one point. For very distant dates, this means an overflow check
+         --  failure. To prevent this, the function returns the "safe" end of
+         --  time (roughly 2219) which is still distant enough.
+
          Elapsed_Leaps : Natural;
          Next_Leap_N   : Time_Rep;
          Res_N         : Time_Rep;
@@ -979,8 +987,8 @@ package body Ada.Calendar is
       begin
          Res_N := Time_Rep (Date);
 
-         --  If the target supports leap seconds, remove any leap seconds
-         --  elapsed up to the input date.
+         --  Step 1: If the target supports leap seconds, remove any leap
+         --  seconds elapsed up to the input date.
 
          if Leap_Support then
             Cumulative_Leap_Seconds
@@ -1000,10 +1008,17 @@ package body Ada.Calendar is
 
          Res_N := Res_N - Time_Rep (Elapsed_Leaps) * Nano;
 
-         --  Perform a shift in origins, note that enforcing type Time on
-         --  both operands will invoke Ada.Calendar."-".
+         --  Step 2: Perform a shift in origins to obtain a Unix equivalent of
+         --  the input. Guard against very large delay values such as the end
+         --  of time since the computation will overflow.
 
-         return Time (Res_N) - Time (Unix_Min);
+         if Res_N > Safe_Ada_High then
+            Res_N := Safe_Ada_High;
+         else
+            Res_N := Res_N + Epoch_Offset;
+         end if;
+
+         return Time_Rep_To_Duration (Res_N);
       end To_Duration;
 
    end Delay_Operations;

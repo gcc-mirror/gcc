@@ -1,3 +1,16 @@
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb: improve error message on exponentiation.
+
+2009-04-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.adb: Move constant Epoch_Offset from package
+	Conversion_Operations to top level.
+	(Delay_Operations.To_Duration): Define a constant which represents
+	"end of time" and use it as a guard against very distant delay dates.
+	Protect the code against overflow when performing the origin shift to
+	Unix time.
+
 2009-04-15  Robert Dewar  <dewar@adacore.com>
 
 	* sem_prag.adb: Minor reformatting.
