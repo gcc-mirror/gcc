@@ -1,3 +1,9 @@
+2009-04-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39764
+	* tree-ssa-ccp.c (get_value): Canonicalize value with
+	canonicalize_float_value.
+
 2009-04-15  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.def (va_start, va_end, va_copy): Fix my previous commit.
