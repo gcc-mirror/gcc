@@ -1,3 +1,9 @@
+2009-04-15 Danny Smith  <dannysmith@clear.net.nz>
+
+       * io/write.c (itoa) : Rename back to gfc_itoa.
+       (write_i): Adjust call to write_decimal.
+       (write_integer):  Use gfc_itoa.
+
 2009-04-10  Janne Blomqvist  <jb@gcc.gnu.org>
 
         * io/io.h (move_pos_offset): Remove prototype.
