@@ -719,9 +719,9 @@ begin
                In_Use := In_Use or Two_To_J;
                Local.Index := J;
 
-               --  This unchecked conversions can give a warning when the
-               --  alignment is incorrect, but it will not be used in such a
-               --  case anyway, so the warning can be safely ignored.
+               --  This unchecked conversion can give a warning when the
+               --  alignment is incorrect, but it will not be used in such
+               --  a case anyway, so the warning can be safely ignored.
 
                pragma Warnings (Off);
                To_Attribute_Handle (Local.Initial_Value'Access).all :=

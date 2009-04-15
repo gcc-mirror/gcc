@@ -3337,6 +3337,18 @@ package body Sem_Ch3 is
             Error_Msg_NE ("parent type& of limited extension must be limited",
               N, Parent_Type);
          end if;
+
+      --  A consequence of 3.9.4 (6/2) and 7.3 (2.2/2) is that a private
+      --  extension with a synchronized parent must be explicitly declared
+      --  synchronized, because the full view will be a synchronized type.
+
+      elsif Is_Interface (Parent_Type)
+        and then Is_Synchronized_Interface (Parent_Type)
+        and then not Synchronized_Present (N)
+      then
+         Error_Msg_NE
+           ("private extension of& must be explicitly synchronized",
+             N, Parent_Type);
       end if;
    end Analyze_Private_Extension_Declaration;
 
