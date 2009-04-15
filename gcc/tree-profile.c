@@ -208,6 +208,8 @@ static tree
 prepare_instrumented_value (gimple_stmt_iterator *gsi, histogram_value value)
 {
   tree val = value->hvalue.value;
+  if (POINTER_TYPE_P (TREE_TYPE (val)))
+    val = fold_convert (sizetype, val);
   return force_gimple_operand_gsi (gsi, fold_convert (gcov_type_node, val),
 				   true, NULL_TREE, true, GSI_SAME_STMT);
 }

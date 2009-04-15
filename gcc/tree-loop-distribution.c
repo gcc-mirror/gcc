@@ -216,7 +216,7 @@ generate_loops_for_partition (struct loop *loop, bitmap partition, bool copy_p)
   return true;
 }
 
-/* Build size argument.  */
+/* Build the size argument for a memset call.  */
 
 static inline tree
 build_size_arg (tree nb_iter, tree op, gimple_seq* stmt_list)
@@ -224,8 +224,10 @@ build_size_arg (tree nb_iter, tree op, gimple_seq* stmt_list)
     tree nb_bytes;
     gimple_seq stmts = NULL;
 
-    nb_bytes = fold_build2 (MULT_EXPR, TREE_TYPE (nb_iter),
-			    nb_iter, TYPE_SIZE_UNIT (TREE_TYPE (op)));
+    nb_bytes = fold_build2 (MULT_EXPR, size_type_node,
+			    fold_convert (size_type_node, nb_iter),
+			    fold_convert (size_type_node,
+					  TYPE_SIZE_UNIT (TREE_TYPE (op))));
     nb_bytes = force_gimple_operand (nb_bytes, &stmts, true, NULL);
     gimple_seq_add_seq (stmt_list, stmts);
 
@@ -272,7 +274,8 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
     {
       nb_bytes = build_size_arg (nb_iter, op0, &stmt_list);
       addr_base = size_binop (PLUS_EXPR, DR_OFFSET (dr), DR_INIT (dr));
-      addr_base = fold_build2 (MINUS_EXPR, sizetype, addr_base, nb_bytes);
+      addr_base = fold_build2 (MINUS_EXPR, sizetype, addr_base,
+			       fold_convert (sizetype, nb_bytes));
       addr_base = force_gimple_operand (addr_base, &stmts, true, NULL);
       gimple_seq_add_seq (&stmt_list, stmts);
 
@@ -291,7 +294,7 @@ generate_memset_zero (gimple stmt, tree op0, tree nb_iter,
   fn = build1 (ADDR_EXPR, build_pointer_type (fntype), fndecl);
 
   if (!nb_bytes)
-      nb_bytes = build_size_arg (nb_iter, op0, &stmt_list);
+    nb_bytes = build_size_arg (nb_iter, op0, &stmt_list);
   fn_call = gimple_build_call (fn, 3, mem, integer_zero_node, nb_bytes);
   gimple_seq_add_stmt (&stmt_list, fn_call);
 

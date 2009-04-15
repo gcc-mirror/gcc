@@ -2318,14 +2318,14 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 					  name);
 		  gimple_add_tmp_var (x);
 		  TREE_ADDRESSABLE (x) = 1;
-		  x = build_fold_addr_expr_with_type (x, TREE_TYPE (new_var));
+		  x = build_fold_addr_expr (x);
 		}
 	      else
 		{
 		  x = build_call_expr (built_in_decls[BUILT_IN_ALLOCA], 1, x);
-		  x = fold_convert (TREE_TYPE (new_var), x);
 		}
 
+	      x = fold_convert (TREE_TYPE (new_var), x);
 	      gimplify_assign (new_var, x, ilist);
 
 	      new_var = build_fold_indirect_ref (new_var);
@@ -3843,7 +3843,8 @@ expand_omp_for_generic (struct omp_region *region,
 	    itype = lang_hooks.types.type_for_size (TYPE_PRECISION (vtype), 0);
 	  t = fold_build2 (TRUNC_MOD_EXPR, type, tem, counts[i]);
 	  t = fold_convert (itype, t);
-	  t = fold_build2 (MULT_EXPR, itype, t, fd->loops[i].step);
+	  t = fold_build2 (MULT_EXPR, itype, t,
+			   fold_convert (itype, fd->loops[i].step));
 	  if (POINTER_TYPE_P (vtype))
 	    t = fold_build2 (POINTER_PLUS_EXPR, vtype,
 			     fd->loops[i].n1, fold_convert (sizetype, t));
