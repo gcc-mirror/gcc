@@ -647,7 +647,7 @@ dump_active_plugins (FILE *file)
   if (!plugins_active_p ())
     return;
 
-  fprintf (stderr, "Event\t\tPlugins\n");
+  fprintf (stderr, "Event\t\t\tPlugins\n");
   for (event = PLUGIN_PASS_MANAGER_SETUP; event < PLUGIN_EVENT_LAST; event++)
     if (plugin_callbacks[event])
       {

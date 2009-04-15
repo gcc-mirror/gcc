@@ -7262,9 +7262,6 @@ struct c_declspecs *
 declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 {
   tree type = spec.spec;
-
-  invoke_plugin_callbacks (PLUGIN_FINISH_TYPE, type);
-
   specs->non_sc_seen_p = true;
   specs->declspecs_seen_p = true;
   specs->type_seen_p = true;

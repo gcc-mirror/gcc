@@ -11015,6 +11015,7 @@ cp_parser_type_specifier (cp_parser* parser,
       cp_parser_parse_tentatively (parser);
       /* Look for the class-specifier.  */
       type_spec = cp_parser_class_specifier (parser);
+      invoke_plugin_callbacks (PLUGIN_FINISH_TYPE, type_spec);
       /* If that worked, we're done.  */
       if (cp_parser_parse_definitely (parser))
 	{
@@ -13890,8 +13891,6 @@ cp_parser_type_specifier_seq (cp_parser* parser,
 	     type-specifier-seq is complete.  */
 	  break;
 	}
-
-      invoke_plugin_callbacks (PLUGIN_FINISH_TYPE, type_specifier);
 
       seen_type_specifier = true;
       /* The standard says that a condition can be:
