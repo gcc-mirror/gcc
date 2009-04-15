@@ -1,3 +1,8 @@
+2009-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/38688
+	* io/transfer.c (finalize_transfer): Don't flush for advance='no'.
+
 2009-04-15 Danny Smith  <dannysmith@clear.net.nz>
 
        * io/write.c (itoa) : Rename back to gfc_itoa.
