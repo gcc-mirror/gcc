@@ -701,6 +701,7 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Self_ID.Common.LL.Thread := pthread_self;
+      Self_ID.Common.LL.LWP := lwp_self;
 
       Specific.Set (Self_ID);
 
