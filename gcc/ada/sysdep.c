@@ -348,7 +348,7 @@ __gnat_ttyname (int filedes)
   || defined (__MACHTEN__) || defined (__hpux__) || defined (_AIX) \
   || (defined (__svr4__) && defined (i386)) || defined (__Lynx__) \
   || defined (__CYGWIN__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
-  || defined (__GLIBC__)
+  || defined (__GLIBC__) || defined (__APPLE__)
 
 #ifdef __MINGW32__
 #if OLD_MINGW
@@ -406,7 +406,7 @@ getc_immediate_common (FILE *stream,
     || defined (__CYGWIN32__) || defined (__MACHTEN__) || defined (__hpux__) \
     || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
     || defined (__Lynx__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
-    || defined (__GLIBC__)
+    || defined (__GLIBC__) || defined (__APPLE__)
   char c;
   int nread;
   int good_one = 0;
@@ -426,7 +426,7 @@ getc_immediate_common (FILE *stream,
     || defined (__osf__) || defined (__MACHTEN__) || defined (__hpux__) \
     || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
     || defined (__Lynx__) || defined (__FreeBSD__) || defined (__OpenBSD__) \
-    || defined (__GLIBC__)
+    || defined (__GLIBC__) || defined (__APPLE__)
       eof_ch = termios_rec.c_cc[VEOF];
 
       /* If waiting (i.e. Get_Immediate (Char)), set MIN = 1 and wait for

@@ -148,6 +148,7 @@ package body Ada.Calendar is
    Ada_Min_Year          : constant Year_Number := Year_Number'First;
    Secs_In_Four_Years    : constant := (3 * 365 + 366) * Secs_In_Day;
    Secs_In_Non_Leap_Year : constant := 365 * Secs_In_Day;
+   Nanos_In_Four_Years   : constant := Secs_In_Four_Years * Nano;
 
    --  Lower and upper bound of Ada time. The zero (0) value of type Time is
    --  positioned at year 2150. Note that the lower and upper bound account
@@ -1317,7 +1318,9 @@ package body Ada.Calendar is
          --  the input date.
 
          Count := (Year - Year_Number'First) / 4;
-         Res_N := Res_N + Time_Rep (Count) * Secs_In_Four_Years * Nano;
+         for Four_Year_Segments in 1 .. Count loop
+            Res_N := Res_N + Nanos_In_Four_Years;
+         end loop;
 
          --  Note that non-leap centennial years are automatically considered
          --  leap in the operation above. An adjustment of several days is

@@ -1326,8 +1326,8 @@ package body Sem_Ch6 is
                          and then
                            Ekind (Root_Type (Typ)) = E_Incomplete_Type)
             then
-               Error_Msg_N
-                 ("invalid use of incomplete type", Result_Definition (N));
+               Error_Msg_NE
+                 ("invalid use of incomplete type&", Designator, Typ);
             end if;
          end if;
 
@@ -7719,15 +7719,13 @@ package body Sem_Ch6 is
                elsif not Nkind_In (Parent (T), N_Access_Function_Definition,
                                                N_Access_Procedure_Definition)
                then
-                  Error_Msg_N ("invalid use of incomplete type", Param_Spec);
+                  Error_Msg_NE
+                    ("invalid use of incomplete type&",
+                       Param_Spec, Formal_Type);
 
-               --  An incomplete type that is not tagged is allowed in an
-               --  access-to-subprogram type only if it is a local declaration
-               --  with a forthcoming completion (3.10.1 (9.2/2)).
-
-               elsif Scope (Formal_Type) /= Scope (Current_Scope) then
-                  Error_Msg_N
-                    ("invalid use of limited view of type", Param_Spec);
+                  --  Further checks on the legality of incomplete types
+                  --  in formal parts must be delayed until the freeze point
+                  --  of the enclosing subprogram or access to subprogram.
                end if;
 
             elsif Ekind (Formal_Type) = E_Void then
