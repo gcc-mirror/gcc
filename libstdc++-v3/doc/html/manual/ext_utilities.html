@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 34. Utilities</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="extensions.html" title="Part XII.  Extensions" /><link rel="prev" href="bk01pt12ch33s03.html" title="Deprecated HP/SGI" /><link rel="next" href="ext_algorithms.html" title="Chapter 35. Algorithms" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 34. Utilities</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt12ch33s03.html">Prev</a> </td><th width="60%" align="center">Part XII. 
+  Extensions
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="ext_algorithms.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.util"></a>Chapter 34. Utilities</h2></div></div></div><p>
+    The &lt;functional&gt; header contains many additional functors
+    and helper functions, extending section 20.3.  They are
+    implemented in the file stl_function.h:
+  </p><div class="itemizedlist"><ul type="disc"><li><p><code class="code">identity_element</code> for addition and multiplication. * 
+  </p></li><li><p>The functor <code class="code">identity</code>, whose <code class="code">operator()</code>
+      returns the argument unchanged. * 
+  </p></li><li><p>Composition functors <code class="code">unary_function</code> and
+      <code class="code">binary_function</code>, and their helpers <code class="code">compose1</code>
+      and <code class="code">compose2</code>. * 
+    </p></li><li><p><code class="code">select1st</code> and <code class="code">select2nd</code>, to strip pairs. * 
+  </p></li><li><p><code class="code">project1st</code> and <code class="code">project2nd</code>. * </p></li><li><p>A set of functors/functions which always return the same result.  They
+      are <code class="code">constant_void_fun</code>, <code class="code">constant_binary_fun</code>,
+      <code class="code">constant_unary_fun</code>, <code class="code">constant0</code>,
+      <code class="code">constant1</code>, and <code class="code">constant2</code>. * </p></li><li><p>The class <code class="code">subtractive_rng</code>. * </p></li><li><p>mem_fun adaptor helpers <code class="code">mem_fun1</code> and
+      <code class="code">mem_fun1_ref</code> are provided for backwards compatibility. </p></li></ul></div><p>
+  20.4.1 can use several different allocators; they are described on the
+   main extensions page.
+</p><p>
+  20.4.3 is extended with a special version of
+  <code class="code">get_temporary_buffer</code> taking a second argument.  The
+  argument is a pointer, which is ignored, but can be used to specify
+  the template type (instead of using explicit function template
+  arguments like the standard version does).  That is, in addition to
+</p><pre class="programlisting">
+get_temporary_buffer&lt;int&gt;(5);
+</pre><p>
+you can also use
+</p><pre class="programlisting">
+get_temporary_buffer(5, (int*)0);
+</pre><p>
+  A class <code class="code">temporary_buffer</code> is given in stl_tempbuf.h. *
+</p><p>
+  The specialized algorithms of section 20.4.4 are extended with
+  <code class="code">uninitialized_copy_n</code>. *
+</p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt12ch33s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ext_algorithms.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Deprecated HP/SGI </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 35. Algorithms</td></tr></table></div></body></html>

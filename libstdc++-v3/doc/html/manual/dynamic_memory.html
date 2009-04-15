@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 5. Dynamic Memory</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="support.html" title="Part II.  Support" /><link rel="prev" href="bk01pt02ch04s03.html" title="NULL" /><link rel="next" href="termination.html" title="Chapter 6. Termination" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 5. Dynamic Memory</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt02ch04s03.html">Prev</a> </td><th width="60%" align="center">Part II. 
+  Support
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="termination.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.support.memory"></a>Chapter 5. Dynamic Memory</h2></div></div></div><p>
+    There are six flavors each of <code class="function">new</code> and
+    <code class="function">delete</code>, so make certain that you're using the right
+    ones. Here are quickie descriptions of <code class="function">new</code>:
+  </p><div class="itemizedlist"><ul type="disc"><li><p>
+	single object form, throwing a
+	<code class="classname">bad_alloc</code> on errors; this is what most
+	people are used to using
+      </p></li><li><p>
+	Single object "nothrow" form, returning NULL on errors
+      </p></li><li><p>
+	Array <code class="function">new</code>, throwing
+	<code class="classname">bad_alloc</code> on errors
+      </p></li><li><p>
+	Array nothrow <code class="function">new</code>, returning
+	<code class="constant">NULL</code> on errors
+      </p></li><li><p>
+	Placement <code class="function">new</code>, which does nothing (like
+	it's supposed to)
+      </p></li><li><p>
+	Placement array <code class="function">new</code>, which also does
+	nothing
+      </p></li></ul></div><p>
+     They are distinguished by the parameters that you pass to them, like
+     any other overloaded function.  The six flavors of <code class="function">delete</code>
+     are distinguished the same way, but none of them are allowed to throw
+     an exception under any circumstances anyhow.  (They match up for
+     completeness' sake.)
+   </p><p>
+     Remember that it is perfectly okay to call <code class="function">delete</code> on a
+     NULL pointer!  Nothing happens, by definition.  That is not the
+     same thing as deleting a pointer twice.
+   </p><p>
+     By default, if one of the “<span class="quote">throwing <code class="function">new</code>s</span>” can't
+     allocate the memory requested, it tosses an instance of a
+     <code class="classname">bad_alloc</code> exception (or, technically, some class derived
+     from it).  You can change this by writing your own function (called a
+     new-handler) and then registering it with <code class="function">set_new_handler()</code>:
+   </p><pre class="programlisting">
+   typedef void (*PFV)(void);
+
+   static char*  safety;
+   static PFV    old_handler;
+
+   void my_new_handler ()
+   {
+       delete[] safety;
+       popup_window ("Dude, you are running low on heap memory.  You
+                      should, like, close some windows, or something.
+                      The next time you run out, we're gonna burn!");
+       set_new_handler (old_handler);
+       return;
+   }
+
+   int main ()
+   {
+       safety = new char[500000];
+       old_handler = set_new_handler (&amp;my_new_handler);
+       ...
+   }
+   </pre><p>
+     <code class="classname">bad_alloc</code> is derived from the base <code class="classname">exception</code>
+     class defined in Chapter 19.
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt02ch04s03.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="support.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="termination.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">NULL </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 6. Termination</td></tr></table></div></body></html>

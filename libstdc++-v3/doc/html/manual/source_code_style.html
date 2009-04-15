@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Coding Style</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="appendix_contributing.html" title="Appendix A.  Contributing" /><link rel="prev" href="source_organization.html" title="Directory Layout and Source Conventions" /><link rel="next" href="documentation_style.html" title="Documentation Style" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Coding Style</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="source_organization.html">Prev</a> </td><th width="60%" align="center">Appendix A. 
+  Contributing
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="documentation_style.html">Next</a></td></tr></table><hr /></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="contrib.coding_style"></a>Coding Style</h2></div></div></div><p>
+  </p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="coding_style.bad_identifiers"></a>Bad Identifiers</h3></div></div></div><p>
+      Identifiers that conflict and should be avoided.
+    </p><div class="literallayout"><p><br />
+      This is the list of names “<span class="quote">reserved to the<br />
+      implementation</span>” that have been claimed by certain<br />
+      compilers and system headers of interest, and should not be used<br />
+      in the library. It will grow, of course.  We generally are<br />
+      interested in names that are not all-caps, except for those like<br />
+      "_T"<br />
+<br />
+      For Solaris:<br />
+      _B<br />
+      _C<br />
+      _L<br />
+      _N<br />
+      _P<br />
+      _S<br />
+      _U<br />
+      _X<br />
+      _E1<br />
+      ..<br />
+      _E24<br />
+<br />
+      Irix adds:<br />
+      _A<br />
+      _G<br />
+<br />
+      MS adds:<br />
+      _T<br />
+<br />
+      BSD adds:<br />
+      __used<br />
+      __unused<br />
+      __inline<br />
+      _Complex<br />
+      __istype<br />
+      __maskrune<br />
+      __tolower<br />
+      __toupper<br />
+      __wchar_t<br />
+      __wint_t<br />
+      _res<br />
+      _res_ext<br />
+      __tg_*<br />
+<br />
+      SPU adds:<br />
+      __ea<br />
+<br />
+      For GCC:<br />
+<br />
+      [Note that this list is out of date. It applies to the old<br />
+      name-mangling; in G++ 3.0 and higher a different name-mangling is<br />
+      used. In addition, many of the bugs relating to G++ interpreting<br />
+      these names as operators have been fixed.]<br />
+<br />
+      The full set of __* identifiers (combined from gcc/cp/lex.c and<br />
+      gcc/cplus-dem.c) that are either old or new, but are definitely <br />
+      recognized by the demangler, is:<br />
+<br />
+      __aa<br />
+      __aad<br />
+      __ad<br />
+      __addr<br />
+      __adv<br />
+      __aer<br />
+      __als<br />
+      __alshift<br />
+      __amd<br />
+      __ami<br />
+      __aml<br />
+      __amu<br />
+      __aor<br />
+      __apl<br />
+      __array<br />
+      __ars<br />
+      __arshift<br />
+      __as<br />
+      __bit_and<br />
+      __bit_ior<br />
+      __bit_not<br />
+      __bit_xor<br />
+      __call<br />
+      __cl<br />
+      __cm<br />
+      __cn<br />
+      __co<br />
+      __component<br />
+      __compound<br />
+      __cond<br />
+      __convert<br />
+      __delete<br />
+      __dl<br />
+      __dv<br />
+      __eq<br />
+      __er<br />
+      __ge<br />
+      __gt<br />
+      __indirect<br />
+      __le<br />
+      __ls<br />
+      __lt<br />
+      __max<br />
+      __md<br />
+      __method_call<br />
+      __mi<br />
+      __min<br />
+      __minus<br />
+      __ml<br />
+      __mm<br />
+      __mn<br />
+      __mult<br />
+      __mx<br />
+      __ne<br />
+      __negate<br />
+      __new<br />
+      __nop<br />
+      __nt<br />
+      __nw<br />
+      __oo<br />
+      __op<br />
+      __or<br />
+      __pl<br />
+      __plus<br />
+      __postdecrement<br />
+      __postincrement<br />
+      __pp<br />
+      __pt<br />
+      __rf<br />
+      __rm<br />
+      __rs<br />
+      __sz<br />
+      __trunc_div<br />
+      __trunc_mod<br />
+      __truth_andif<br />
+      __truth_not<br />
+      __truth_orif<br />
+      __vc<br />
+      __vd<br />
+      __vn<br />
+<br />
+      SGI badnames:<br />
+      __builtin_alloca<br />
+      __builtin_fsqrt<br />
+      __builtin_sqrt<br />
+      __builtin_fabs<br />
+      __builtin_dabs<br />
+      __builtin_cast_f2i<br />
+      __builtin_cast_i2f<br />
+      __builtin_cast_d2ll<br />
+      __builtin_cast_ll2d<br />
+      __builtin_copy_dhi2i<br />
+      __builtin_copy_i2dhi<br />
+      __builtin_copy_dlo2i<br />
+      __builtin_copy_i2dlo<br />
+      __add_and_fetch<br />
+      __sub_and_fetch<br />
+      __or_and_fetch<br />
+      __xor_and_fetch<br />
+      __and_and_fetch<br />
+      __nand_and_fetch<br />
+      __mpy_and_fetch<br />
+      __min_and_fetch<br />
+      __max_and_fetch<br />
+      __fetch_and_add<br />
+      __fetch_and_sub<br />
+      __fetch_and_or<br />
+      __fetch_and_xor<br />
+      __fetch_and_and<br />
+      __fetch_and_nand<br />
+      __fetch_and_mpy<br />
+      __fetch_and_min<br />
+      __fetch_and_max<br />
+      __lock_test_and_set<br />
+      __lock_release<br />
+      __lock_acquire<br />
+      __compare_and_swap<br />
+      __synchronize<br />
+      __high_multiply<br />
+      __unix<br />
+      __sgi<br />
+      __linux__<br />
+      __i386__<br />
+      __i486__<br />
+      __cplusplus<br />
+      __embedded_cplusplus<br />
+      // long double conversion members mangled as __opr<br />
+      // http://gcc.gnu.org/ml/libstdc++/1999-q4/msg00060.html<br />
+      _opr<br />
+    </p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="coding_style.example"></a>By Example</h3></div></div></div><div class="literallayout"><p><br />
+      This library is written to appropriate C++ coding standards. As such,<br />
+      it is intended to precede the recommendations of the GNU Coding<br />
+      Standard, which can be referenced in full here:<br />
+<br />
+      http://www.gnu.org/prep/standards/standards.html#Formatting<br />
+<br />
+      The rest of this is also interesting reading, but skip the "Design<br />
+      Advice" part.<br />
+<br />
+      The GCC coding conventions are here, and are also useful:<br />
+      http://gcc.gnu.org/codingconventions.html<br />
+<br />
+      In addition, because it doesn't seem to be stated explicitly anywhere<br />
+      else, there is an 80 column source limit.<br />
+<br />
+      ChangeLog entries for member functions should use the<br />
+      classname::member function name syntax as follows:<br />
+<br />
+      1999-04-15  Dennis Ritchie  &lt;dr@att.com&gt;<br />
+<br />
+      * src/basic_file.cc (__basic_file::open): Fix thinko in<br />
+      _G_HAVE_IO_FILE_OPEN bits.<br />
+<br />
+      Notable areas of divergence from what may be previous local practice<br />
+      (particularly for GNU C) include:<br />
+<br />
+      01. Pointers and references<br />
+      char* p = "flop";<br />
+      char&amp; c = *p;<br />
+      -NOT-<br />
+      char *p = "flop";  // wrong<br />
+      char &amp;c = *p;      // wrong<br />
+      <br />
+      Reason: In C++, definitions are mixed with executable code. Here,       <br />
+      p is being initialized, not *p. This is near-universal<br />
+      practice among C++ programmers; it is normal for C hackers<br />
+      to switch spontaneously as they gain experience.<br />
+<br />
+      02. Operator names and parentheses<br />
+      operator==(type)<br />
+      -NOT-<br />
+      operator == (type)  // wrong<br />
+      <br />
+      Reason: The == is part of the function name. Separating<br />
+      it makes the declaration look like an expression. <br />
+<br />
+      03. Function names and parentheses<br />
+      void mangle()<br />
+      -NOT-<br />
+      void mangle ()  // wrong<br />
+<br />
+      Reason: no space before parentheses (except after a control-flow<br />
+      keyword) is near-universal practice for C++. It identifies the<br />
+      parentheses as the function-call operator or declarator, as <br />
+      opposed to an expression or other overloaded use of parentheses.<br />
+<br />
+      04. Template function indentation<br />
+      template&lt;typename T&gt;<br />
+      void <br />
+      template_function(args)<br />
+      { }<br />
+      -NOT-<br />
+      template&lt;class T&gt;<br />
+      void template_function(args) {};<br />
+      <br />
+      Reason: In class definitions, without indentation whitespace is<br />
+      needed both above and below the declaration to distinguish<br />
+      it visually from other members. (Also, re: "typename"<br />
+      rather than "class".)  T often could be int, which is <br />
+      not a class. ("class", here, is an anachronism.)<br />
+<br />
+      05. Template class indentation<br />
+      template&lt;typename _CharT, typename _Traits&gt;<br />
+      class basic_ios : public ios_base<br />
+      {<br />
+      public:<br />
+      // Types:<br />
+      };<br />
+      -NOT-<br />
+      template&lt;class _CharT, class _Traits&gt;<br />
+      class basic_ios : public ios_base<br />
+      {<br />
+      public:<br />
+      // Types:<br />
+      };<br />
+      -NOT-<br />
+      template&lt;class _CharT, class _Traits&gt;<br />
+      class basic_ios : public ios_base<br />
+      {<br />
+      public:<br />
+      // Types:<br />
+      };<br />
+<br />
+      06. Enumerators<br />
+      enum<br />
+      {<br />
+      space = _ISspace,<br />
+      print = _ISprint,<br />
+      cntrl = _IScntrl<br />
+      };<br />
+      -NOT-<br />
+      enum { space = _ISspace, print = _ISprint, cntrl = _IScntrl };<br />
+<br />
+      07. Member initialization lists<br />
+      All one line, separate from class name.<br />
+<br />
+      gribble::gribble() <br />
+      : _M_private_data(0), _M_more_stuff(0), _M_helper(0);<br />
+      { }<br />
+      -NOT-<br />
+      gribble::gribble() : _M_private_data(0), _M_more_stuff(0), _M_helper(0);<br />
+      { }<br />
+<br />
+      08. Try/Catch blocks<br />
+      try <br />
+      {<br />
+      //<br />
+      }   <br />
+      catch (...)<br />
+      {<br />
+      //<br />
+      }   <br />
+      -NOT-<br />
+      try {<br />
+      // <br />
+      } catch(...) { <br />
+      //<br />
+      }<br />
+<br />
+      09. Member functions declarations and definitions<br />
+      Keywords such as extern, static, export, explicit, inline, etc<br />
+      go on the line above the function name. Thus<br />
+<br />
+      virtual int   <br />
+      foo()<br />
+      -NOT-<br />
+      virtual int foo()<br />
+<br />
+      Reason: GNU coding conventions dictate return types for functions<br />
+      are on a separate line than the function name and parameter list<br />
+      for definitions. For C++, where we have member functions that can<br />
+      be either inline definitions or declarations, keeping to this<br />
+      standard allows all member function names for a given class to be<br />
+      aligned to the same margin, increasing readability.<br />
+<br />
+<br />
+      10. Invocation of member functions with "this-&gt;"<br />
+      For non-uglified names, use this-&gt;name to call the function.<br />
+<br />
+      this-&gt;sync()<br />
+      -NOT-<br />
+      sync()<br />
+<br />
+      Reason: Koenig lookup.<br />
+<br />
+      11. Namespaces<br />
+      namespace std<br />
+      {<br />
+      blah blah blah;<br />
+      } // namespace std<br />
+<br />
+      -NOT-<br />
+<br />
+      namespace std {<br />
+      blah blah blah;<br />
+      } // namespace std<br />
+<br />
+      12. Spacing under protected and private in class declarations:<br />
+      space above, none below<br />
+      i.e.<br />
+<br />
+      public:<br />
+      int foo;<br />
+<br />
+      -NOT-<br />
+      public:<br />
+      <br />
+      int foo;<br />
+<br />
+      13. Spacing WRT return statements.<br />
+      no extra spacing before returns, no parenthesis<br />
+      i.e.<br />
+<br />
+      }<br />
+      return __ret;<br />
+<br />
+      -NOT-<br />
+      }<br />
+<br />
+      return __ret;<br />
+<br />
+      -NOT-<br />
+<br />
+      }<br />
+      return (__ret);<br />
+<br />
+<br />
+      14. Location of global variables.<br />
+      All global variables of class type, whether in the "user visible"<br />
+      space (e.g., cin) or the implementation namespace, must be defined<br />
+      as a character array with the appropriate alignment and then later<br />
+      re-initialized to the correct value.<br />
+<br />
+      This is due to startup issues on certain platforms, such as AIX.<br />
+      For more explanation and examples, see src/globals.cc. All such<br />
+      variables should be contained in that file, for simplicity.<br />
+<br />
+      15. Exception abstractions<br />
+      Use the exception abstractions found in functexcept.h, which allow<br />
+      C++ programmers to use this library with -fno-exceptions. (Even if<br />
+      that is rarely advisable, it's a necessary evil for backwards<br />
+      compatibility.)<br />
+<br />
+      16. Exception error messages<br />
+      All start with the name of the function where the exception is<br />
+      thrown, and then (optional) descriptive text is added. Example:<br />
+<br />
+      __throw_logic_error(__N("basic_string::_S_construct NULL not valid"));<br />
+<br />
+      Reason: The verbose terminate handler prints out exception::what(),<br />
+      as well as the typeinfo for the thrown exception. As this is the<br />
+      default terminate handler, by putting location info into the<br />
+      exception string, a very useful error message is printed out for<br />
+      uncaught exceptions. So useful, in fact, that non-programmers can<br />
+      give useful error messages, and programmers can intelligently<br />
+      speculate what went wrong without even using a debugger.<br />
+<br />
+      17. The doxygen style guide to comments is a separate document,<br />
+      see index.<br />
+<br />
+      The library currently has a mixture of GNU-C and modern C++ coding<br />
+      styles. The GNU C usages will be combed out gradually.<br />
+<br />
+      Name patterns:<br />
+<br />
+      For nonstandard names appearing in Standard headers, we are constrained <br />
+      to use names that begin with underscores. This is called "uglification".<br />
+      The convention is:<br />
+<br />
+      Local and argument names:  __[a-z].*<br />
+<br />
+      Examples:  __count  __ix  __s1  <br />
+<br />
+      Type names and template formal-argument names: _[A-Z][^_].*<br />
+<br />
+      Examples:  _Helper  _CharT  _N <br />
+<br />
+      Member data and function names: _M_.*<br />
+<br />
+      Examples:  _M_num_elements  _M_initialize ()<br />
+<br />
+      Static data members, constants, and enumerations: _S_.*<br />
+<br />
+      Examples: _S_max_elements  _S_default_value<br />
+<br />
+      Don't use names in the same scope that differ only in the prefix, <br />
+      e.g. _S_top and _M_top. See BADNAMES for a list of forbidden names.<br />
+      (The most tempting of these seem to be and "_T" and "__sz".)<br />
+<br />
+      Names must never have "__" internally; it would confuse name<br />
+      unmanglers on some targets. Also, never use "__[0-9]", same reason.<br />
+<br />
+      --------------------------<br />
+<br />
+      [BY EXAMPLE]<br />
+      <br />
+      #ifndef  _HEADER_<br />
+      #define  _HEADER_ 1<br />
+<br />
+      namespace std<br />
+      {<br />
+      class gribble<br />
+      {<br />
+      public:<br />
+      gribble() throw();<br />
+<br />
+      gribble(const gribble&amp;);<br />
+<br />
+      explicit <br />
+      gribble(int __howmany);<br />
+<br />
+      gribble&amp; <br />
+      operator=(const gribble&amp;);<br />
+<br />
+      virtual <br />
+      ~gribble() throw ();<br />
+<br />
+      // Start with a capital letter, end with a period.<br />
+      inline void  <br />
+      public_member(const char* __arg) const;<br />
+<br />
+      // In-class function definitions should be restricted to one-liners.<br />
+      int <br />
+      one_line() { return 0 }<br />
+<br />
+      int <br />
+      two_lines(const char* arg) <br />
+      { return strchr(arg, 'a'); }<br />
+<br />
+      inline int <br />
+      three_lines();  // inline, but defined below.<br />
+<br />
+      // Note indentation.<br />
+      template&lt;typename _Formal_argument&gt;<br />
+      void <br />
+      public_template() const throw();<br />
+<br />
+      template&lt;typename _Iterator&gt;<br />
+      void <br />
+      other_template();<br />
+<br />
+      private:<br />
+      class _Helper;<br />
+<br />
+      int _M_private_data;<br />
+      int _M_more_stuff;<br />
+      _Helper* _M_helper;<br />
+      int _M_private_function();<br />
+<br />
+      enum _Enum <br />
+      { <br />
+      _S_one, <br />
+      _S_two <br />
+      };<br />
+<br />
+      static void <br />
+      _S_initialize_library();<br />
+      };<br />
+<br />
+      // More-or-less-standard language features described by lack, not presence.<br />
+      # ifndef _G_NO_LONGLONG<br />
+      extern long long _G_global_with_a_good_long_name;  // avoid globals!<br />
+      # endif<br />
+<br />
+      // Avoid in-class inline definitions, define separately;<br />
+      // likewise for member class definitions:<br />
+      inline int<br />
+      gribble::public_member() const<br />
+      { int __local = 0; return __local; }<br />
+<br />
+      class gribble::_Helper<br />
+      {<br />
+      int _M_stuff;<br />
+<br />
+      friend class gribble;<br />
+      };<br />
+      }<br />
+<br />
+      // Names beginning with "__": only for arguments and<br />
+      //   local variables; never use "__" in a type name, or<br />
+      //   within any name; never use "__[0-9]".<br />
+<br />
+      #endif /* _HEADER_ */<br />
+<br />
+<br />
+      namespace std <br />
+      {<br />
+      template&lt;typename T&gt;  // notice: "typename", not "class", no space<br />
+      long_return_value_type&lt;with_many, args&gt;  <br />
+      function_name(char* pointer,               // "char *pointer" is wrong.<br />
+      char* argument, <br />
+      const Reference&amp; ref)<br />
+      {<br />
+      // int a_local;  /* wrong; see below. */<br />
+      if (test) <br />
+      { <br />
+      nested code <br />
+      }<br />
+      <br />
+      int a_local = 0;  // declare variable at first use.<br />
+<br />
+      //  char a, b, *p;   /* wrong */<br />
+      char a = 'a';<br />
+      char b = a + 1;<br />
+      char* c = "abc";  // each variable goes on its own line, always.<br />
+<br />
+      // except maybe here...<br />
+      for (unsigned i = 0, mask = 1; mask; ++i, mask &lt;&lt;= 1) {<br />
+      // ...<br />
+      }<br />
+      }<br />
+      <br />
+      gribble::gribble()<br />
+      : _M_private_data(0), _M_more_stuff(0), _M_helper(0);<br />
+      { }<br />
+<br />
+      inline int <br />
+      gribble::three_lines()<br />
+      {<br />
+      // doesn't fit in one line.<br />
+      }<br />
+      } // namespace std<br />
+    </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="source_organization.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_contributing.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="documentation_style.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Directory Layout and Source Conventions </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Documentation Style</td></tr></table></div></body></html>

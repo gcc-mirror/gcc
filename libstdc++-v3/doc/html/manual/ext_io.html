@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 38. Input and Output</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="extensions.html" title="Part XII.  Extensions" /><link rel="prev" href="ext_iterators.html" title="Chapter 37. Iterators" /><link rel="next" href="ext_demangling.html" title="Chapter 39. Demangling" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 38. Input and Output</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ext_iterators.html">Prev</a> </td><th width="60%" align="center">Part XII. 
+  Extensions
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="ext_demangling.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.ext.io"></a>Chapter 38. Input and Output</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="ext_io.html#manual.ext.io.filebuf_derived">Derived filebufs</a></span></dt></dl></div><p>
+    Extensions allowing <code class="code">filebuf</code>s to be constructed from
+    "C" types like  FILE*s and file descriptors.
+  </p><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.ext.io.filebuf_derived"></a>Derived filebufs</h2></div></div></div><p>The v2 library included non-standard extensions to construct
+      <code class="code">std::filebuf</code>s from C stdio types such as
+      <code class="code">FILE*</code>s and POSIX file descriptors.
+      Today the recommended way to use stdio types with libstdc++
+      IOStreams is via the <code class="code">stdio_filebuf</code> class (see below),
+      but earlier releases provided slightly different mechanisms.
+   </p><div class="itemizedlist"><ul type="disc"><li><p>3.0.x <code class="code">filebuf</code>s have another ctor with this signature:
+        <code class="code">basic_filebuf(__c_file_type*, ios_base::openmode, int_type);
+	</code>
+         This comes in very handy in a number of places, such as
+         attaching Unix sockets, pipes, and anything else which uses file
+         descriptors, into the IOStream buffering classes.  The three
+         arguments are as follows:
+         </p><div class="itemizedlist"><ul type="circle"><li><p><code class="code">__c_file_type*      F   </code>
+              // the __c_file_type typedef usually boils down to stdio's FILE
+          </p></li><li><p><code class="code">ios_base::openmode  M   </code>
+              // same as all the other uses of openmode
+          </p></li><li><p><code class="code">int_type            B   </code>
+              // buffer size, defaults to BUFSIZ if not specified
+          </p></li></ul></div><p>
+         For those wanting to use file descriptors instead of FILE*'s, I
+         invite you to contemplate the mysteries of C's <code class="code">fdopen()</code>.
+     </p></li><li><p>In library snapshot 3.0.95 and later, <code class="code">filebuf</code>s bring
+         back an old extension:  the <code class="code">fd()</code> member function.  The
+         integer returned from this function can be used for whatever file
+         descriptors can be used for on your platform.  Naturally, the
+         library cannot track what you do on your own with a file descriptor,
+         so if you perform any I/O directly, don't expect the library to be
+         aware of it.
+     </p></li><li><p>Beginning with 3.1, the extra <code class="code">filebuf</code> constructor and
+         the <code class="code">fd()</code> function were removed from the standard
+         filebuf.  Instead, <code class="code">&lt;ext/stdio_filebuf.h&gt;</code> contains
+         a derived class called
+         <a class="ulink" href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/class____gnu__cxx_1_1stdio__filebuf.html" target="_top"><code class="code">__gnu_cxx::stdio_filebuf</code></a>.
+         This class can be constructed from a C <code class="code">FILE*</code> or a file
+         descriptor, and provides the <code class="code">fd()</code> function.
+     </p></li></ul></div><p>If you want to access a <code class="code">filebuf</code>'s file descriptor to
+      implement file locking (e.g. using the <code class="code">fcntl()</code> system
+      call) then you might be interested in Henry Suter's
+      <a class="ulink" href="http://suter.home.cern.ch/suter/RWLock.html" target="_top">RWLock</a>
+      class.
+   </p><p>
+    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ext_iterators.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extensions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ext_demangling.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 37. Iterators </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 39. Demangling</td></tr></table></div></body></html>
