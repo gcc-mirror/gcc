@@ -1,3 +1,33 @@
+2009-04-15  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch9.adb: Comment improvements.
+	(Build_Entry_Family_Name): Add parentheses around the index of a entry
+	family member.
+
+2009-04-15  Bob Duff  <duff@adacore.com>
+
+	* sem_warn.adb (Check_Infinite_Loop_Warning): Catch cases like
+	"while X /= null loop" where X is unchanged inside the loop. We were
+	not warning in this case, because of the pointers -- we feared that the
+	loop variable could be updated via a pointer, if there are any pointers
+	around the place. But that is impossible in this case.
+
+	* sem_util.adb (May_Be_Lvalue): This routine was overly pessimistic in
+	the case of dereferences. In X.all, X cannot be an l-value. We now
+	catch that case (and implicit dereferences, too).
+
+2009-04-15  Vincent Celier  <celier@adacore.com>
+
+	* sinput-p.ads, sinput-p.adb (Clear_Source_File_Table): New procedure
+
+2009-04-15  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Is_Actual_Of_Previous_Formal): Make fully recursive.
+	From code reading.
+	(Analyze_Package_Instantiation): If generic unit in child instance is
+	the same as generic unit in parent instance, look for an outer homonym
+	to locate the desired generic.
+
 2009-04-15  Bob Duff  <duff@adacore.com>
 
 	* sem_ch5.adb (Analyze_Loop_Statement): Don't check for infinite loop

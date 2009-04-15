@@ -23,8 +23,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Unchecked_Conversion;
+with Ada.Unchecked_Deallocation;
+
 with Prj.Err;
 with Sinput.C;
+
+with System;
 
 package body Sinput.P is
 
@@ -33,6 +38,56 @@ package body Sinput.P is
    --  to set Main_Source_File.
    --  The flag is reset to False at the first call to Load_Project_File.
    --  Calling Reset_First sets it back to True.
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Lines_Table_Type, Lines_Table_Ptr);
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Logical_Lines_Table_Type, Logical_Lines_Table_Ptr);
+
+   -----------------------------
+   -- Clear_Source_File_Table --
+   -----------------------------
+
+   procedure Clear_Source_File_Table is
+      use System;
+   begin
+      for X in 1 .. Source_File.Last loop
+         declare
+            S : Source_File_Record renames Source_File.Table (X);
+            Lo : constant Source_Ptr := S.Source_First;
+            Hi : constant Source_Ptr := S.Source_Last;
+            subtype Actual_Source_Buffer is Source_Buffer (Lo .. Hi);
+            --  Physical buffer allocated
+
+            type Actual_Source_Ptr is access Actual_Source_Buffer;
+            --  This is the pointer type for the physical buffer allocated
+
+            procedure Free is new Ada.Unchecked_Deallocation
+              (Actual_Source_Buffer, Actual_Source_Ptr);
+
+            pragma Suppress (All_Checks);
+
+            pragma Warnings (Off);
+            --  The following unchecked conversion is aliased safe, since it
+            --  is not used to create improperly aliased pointer values.
+
+            function To_Actual_Source_Ptr is new
+              Ada.Unchecked_Conversion (Address, Actual_Source_Ptr);
+
+            Actual_Ptr : Actual_Source_Ptr :=
+                           To_Actual_Source_Ptr (S.Source_Text (Lo)'Address);
+
+         begin
+            Free (Actual_Ptr);
+            Free (S.Lines_Table);
+            Free (S.Logical_Lines_Table);
+         end;
+      end loop;
+
+      Source_File.Free;
+      Source_File.Init;
+   end Clear_Source_File_Table;
 
    -----------------------
    -- Load_Project_File --

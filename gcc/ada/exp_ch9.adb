@@ -1132,8 +1132,9 @@ package body Exp_Ch9 is
       --    for Lnn in Family_Low .. Family_High loop
       --       Inn := Inn + 1;
       --       Set_Entry_Name
-      --         (_init._object, Inn, new String ("<Entry name> " & Lnn'Img));
-      --          _init._task_id
+      --         (_init._object <or> _init._task_id,
+      --          Inn,
+      --          new String ("<Entry name>(" & Lnn'Img & ")"));
       --    end loop;
       --  Note that the bounds of the range may reference discriminants. The
       --  above construct is added directly to the statements of the block.
@@ -1141,8 +1142,10 @@ package body Exp_Ch9 is
       procedure Build_Entry_Name (Id : Entity_Id);
       --  Generate:
       --    Inn := Inn + 1;
-      --    Set_Entry_Name (_init._task_id, Inn, new String ("<Entry name>");
-      --                    _init._object
+      --    Set_Entry_Name
+      --      (_init._object <or>_init._task_id,
+      --       Inn,
+      --       new String ("<Entry name>");
       --  The above construct is added directly to the statements of the block.
 
       function Build_Set_Entry_Name_Call (Arg3 : Node_Id) return Node_Id;
@@ -1213,13 +1216,13 @@ package body Exp_Ch9 is
       begin
          Get_Name_String (Chars (Id));
 
-         if Is_Enumeration_Type (Etype (Def)) then
-            Name_Len := Name_Len + 1;
-            Name_Buffer (Name_Len) := ' ';
-         end if;
+         --  Add a leading '('
+
+         Name_Len := Name_Len + 1;
+         Name_Buffer (Name_Len) := '(';
 
          --  Generate:
-         --    new String'("<Entry name>" & Lnn'Img);
+         --    new String'("<Entry name>(" & Lnn'Img & ")");
 
          --  This is an implicit heap allocation, and Comes_From_Source is
          --  False, which ensures that it will get flagged as a violation of
@@ -1233,13 +1236,18 @@ package body Exp_Ch9 is
                Expression =>
                  Make_Op_Concat (Loc,
                    Left_Opnd =>
-                     Make_String_Literal (Loc,
-                       String_From_Name_Buffer),
+                     Make_Op_Concat (Loc,
+                       Left_Opnd =>
+                         Make_String_Literal (Loc,
+                           Strval => String_From_Name_Buffer),
+                       Right_Opnd =>
+                         Make_Attribute_Reference (Loc,
+                           Prefix =>
+                             New_Reference_To (L_Id, Loc),
+                               Attribute_Name => Name_Img)),
                    Right_Opnd =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix =>
-                         New_Reference_To (L_Id, Loc),
-                           Attribute_Name => Name_Img))));
+                     Make_String_Literal (Loc,
+                       Strval => ")"))));
 
          Increment_Index (L_Stmts);
          Append_To (L_Stmts, Build_Set_Entry_Name_Call (Val));
@@ -1247,7 +1255,8 @@ package body Exp_Ch9 is
          --  Generate:
          --    for Lnn in Family_Low .. Family_High loop
          --       Inn := Inn + 1;
-         --       Set_Entry_Name (_init._task_id, Inn, <Val>);
+         --       Set_Entry_Name
+         --         (_init._object <or> _init._task_id, Inn, <Val>);
          --    end loop;
 
          Append_To (B_Stmts,
