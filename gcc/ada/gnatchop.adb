@@ -303,7 +303,7 @@ procedure Gnatchop is
 
    function Get_Config_Pragmas
      (Input : File_Num;
-      U     : Unit_Num) return  String_Access;
+      U     : Unit_Num) return String_Access;
    --  Call to read configuration pragmas from given unit entry, and
    --  return a buffer containing the pragmas to be appended to
    --  following units. Input is the file number for the chop file and
@@ -419,8 +419,7 @@ procedure Gnatchop is
 
    function Get_Config_Pragmas
      (Input : File_Num;
-      U     : Unit_Num)
-      return  String_Access
+      U     : Unit_Num) return String_Access
    is
       Info    : Unit_Info renames Unit.Table (U);
       FD      : File_Descriptor;
@@ -464,8 +463,7 @@ procedure Gnatchop is
 
    function Get_EOL
      (Source : not null access String;
-      Start  : Positive)
-      return   EOL_String
+      Start  : Positive) return EOL_String
    is
       Ptr   : Positive := Start;
       First : Positive;
@@ -1643,12 +1641,10 @@ procedure Gnatchop is
       W_Name   : aliased constant Wide_String := To_Wide_String (Name);
       EOL      : constant EOL_String :=
                    Get_EOL (Source, Source'First + Info.Offset);
-
       OS_Name  : aliased String (1 .. Name'Length * 2);
       O_Length : aliased Natural := OS_Name'Length;
       Encoding : aliased String (1 .. 64);
       E_Length : aliased Natural := Encoding'Length;
-
       Length   : File_Offset;
 
    begin
