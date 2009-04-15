@@ -70,6 +70,7 @@
 	* gcc-interface/Make-lang.in: Update dependencies.
 
 	* gcc-interface/Makefile.in: Fix VxWorks target pairs.
+	Update xenomai target pairs.
 
 2009-04-15  Javier Miranda  <miranda@adacore.com>
 

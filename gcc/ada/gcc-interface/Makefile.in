@@ -915,11 +915,9 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   g-bytswa.adb<g-bytswa-x86.adb \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  s-osprim.adb<s-osprim-posix.adb \
   s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
-  g-sercom.adb<g-sercom-linux.adb \
-  system.ads<system-linux-x86.ads
+  g-sercom.adb<g-sercom-linux.adb
 
   ifeq ($(strip $(filter-out marte,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
@@ -931,7 +929,9 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
     a-rttiev.ads<a-rttiev-linux-marte.ads \
     s-osinte.adb<s-osinte-linux-marte.adb \
     s-osinte.ads<s-osinte-linux-marte.ads \
-    s-taprop.adb<s-taprop-linux-marte.adb
+    s-osprim.adb<s-osprim-posix.adb \
+    s-taprop.adb<s-taprop-linux-marte.adb \
+    system.ads<system-linux-x86.ads
 
     EXTRA_GNATRTL_TASKING_OBJS=a-exetim.o a-extiti.o
 
@@ -945,15 +945,19 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
     ifeq ($(strip $(filter-out xenomai,$(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
       s-osinte.ads<s-osinte-linux-xenomai.ads \
-      s-taprop.adb<s-taprop-linux-xenomai.adb
+      s-osprim.adb<s-osprim-linux-xenomai.adb \
+      s-taprop.adb<s-taprop-linux-xenomai.adb \
+      system.ads<system-linux-x86-xenomai.ads
 
-      EH_MECHANISM=
+      EH_MECHANISM=-gcc
     else
       LIBGNAT_TARGET_PAIRS += \
       s-osinte.ads<s-osinte-linux.ads \
+      s-osprim.adb<s-osprim-posix.adb \
       s-taprop.adb<s-taprop-linux.adb \
       s-tasinf.ads<s-tasinf-linux.ads \
-      s-tasinf.adb<s-tasinf-linux.adb
+      s-tasinf.adb<s-tasinf-linux.adb \
+      system.ads<system-linux-x86.ads
 
       EH_MECHANISM=-gcc
     endif
