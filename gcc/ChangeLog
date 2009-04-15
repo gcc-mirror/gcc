@@ -1,3 +1,11 @@
+2009-04-15  Michael Eager <eager@eagercon.com>
+
+	* config/rs6000/rs6000.c: rs6000_function_value: set function return
+	reg for single-precision FPU
+	* config/rs6000/rs6000.md: (movsi_internal1): only for !TARGET_SINGLE_FPU
+	(movsi_internal1_single): New: add pattern to move SI values to/from
+	single-precision FP regs.
+
 2009-04-15  Richard Guenther  <rguenther@suse.de>
 
 	* omp-low.c (lower_rec_input_clauses): Build correct address
