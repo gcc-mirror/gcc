@@ -23,23 +23,24 @@
 </title>
 <!-- Chapter 01 : Status -->
 <chapter id="manual.intro.status" xreflabel="Status">
+  <?dbhtml filename="status.html"?>
   <title>Status</title>
 
-
-  <sect1 id="manual.intro.status.standard" xreflabel="Implementation Status">
+  <!-- Section 01 : Implementation Status -->
+  <sect1 id="manual.intro.status.standard" xreflabel="Status">
     <title>Implementation Status</title>
 
-    <!-- Section 01 : Status C++ 1998 -->
+    <!-- Section 01.1 : Status C++ 1998 -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
 		parse="xml" href="status_cxx1998.xml">
     </xi:include>
 
-    <!-- Section 02 : Status C++ TR1 -->
+    <!-- Section 01.2 : Status C++ TR1 -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
 		parse="xml" href="status_cxxtr1.xml">
     </xi:include>
 
-    <!-- Section 03 : Status C++ 200x -->
+    <!-- Section 01.3 : Status C++ 200x -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
 		parse="xml" href="status_cxx200x.xml">
     </xi:include>    
@@ -47,6 +48,7 @@
 
   <!-- Section 02 : License -->
   <sect1 id="manual.intro.status.license" xreflabel="License">
+    <?dbhtml filename="license.html"?>
     <title>License</title>
     <para>
     There are two licenses affecting GNU libstdc++: one for the code,
@@ -181,6 +183,7 @@ requirements of the license of GCC.
   
   <!-- Section 03 : Known Bugs -->
   <sect1 id="manual.intro.status.bugs" xreflabel="Bugs">
+    <?dbhtml filename="bugs.html"?>
     <title>Bugs</title>
 
     <sect2 id="manual.intro.status.bugs.impl" xreflabel="Bugs impl">
@@ -783,6 +786,7 @@ requirements of the license of GCC.
 
 <!-- Chapter 02 : Setup -->
 <chapter id="manual.intro.setup" xreflabel="Setup">
+  <?dbhtml filename="setup.html"?>
   <title>Setup</title>
 
    <para>To transform libstdc++ sources into installed include files
@@ -821,6 +825,7 @@ requirements of the license of GCC.
 
   <!-- Section 03 : Make -->
 <sect1 id="manual.intro.setup.make" xreflabel="Make">
+  <?dbhtml filename="make.html"?>
 <title>Make</title>
    <para>If you have never done this before, you should read the basic
       <ulink url="http://gcc.gnu.org/install/">GCC Installation

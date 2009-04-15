@@ -2,6 +2,7 @@
 <!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <appendix id="appendix.gpl-3.0">
+  <?dbhtml filename="appendix_gpl.html"?>
   <title>
     <acronym>GNU</acronym> General Public License version 3
   </title>

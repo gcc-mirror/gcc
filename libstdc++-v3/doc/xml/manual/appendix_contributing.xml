@@ -216,6 +216,7 @@
 </sect1>
 
 <sect1 id="contrib.organization" xreflabel="Source Organization">
+  <?dbhtml filename="source_organization.html"?>
   <title>Directory Layout and Source Conventions</title>
   
   <para>
@@ -313,6 +314,7 @@ indicate a place that may require attention for multi-thread safety.
 </sect1>
 
 <sect1 id="contrib.coding_style" xreflabel="Coding Style">
+  <?dbhtml filename="source_code_style.html"?>
   <title>Coding Style</title>
   <para>
   </para>
@@ -911,6 +913,7 @@ indicate a place that may require attention for multi-thread safety.
 </sect1>  
 
 <sect1 id="contrib.doc_style" xreflabel="Documentation Style">
+  <?dbhtml filename="documentation_style.html"?>
   <title>Documentation Style</title>
   <sect2 id="doc_style.doxygen" xreflabel="doc_style.doxygen">
     <title>Doxygen</title>
@@ -1383,6 +1386,7 @@ table below.
 </sect1>  
 
 <sect1 id="contrib.design_notes" xreflabel="Design Notes">
+  <?dbhtml filename="source_design_notes.html"?>
   <title>Design Notes</title>
   <para>
   </para>

@@ -4,7 +4,7 @@
 [ ]>
 
 <chapter id="manual.ext.concurrency" xreflabel="Concurrency Extensions">
-<?dbhtml filename="concurrency.html"?>
+<?dbhtml filename="ext_concurrency.html"?>
 
 <chapterinfo>
   <keywordset>

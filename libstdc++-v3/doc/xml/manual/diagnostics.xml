@@ -23,6 +23,7 @@
 </title>
 
 <chapter id="manual.diagnostics.exceptions" xreflabel="Exceptions">
+  <?dbhtml filename="exceptions.html"?>
   <title>Exceptions</title>
 
   <sect1 id="manual.diagnostics.exceptions.hierarchy" xreflabel="Exception Classes">
