@@ -367,6 +367,7 @@ package body Sem_Ch6 is
       end if;
 
       Generate_Reference_To_Formals (Designator);
+      Check_Eliminated (Designator);
    end Analyze_Abstract_Subprogram_Declaration;
 
    ----------------------------------------

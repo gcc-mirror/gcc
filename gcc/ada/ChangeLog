@@ -1,3 +1,26 @@
+2009-04-15  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
+	* sem_type.adb: Minor reformatting
+
+2009-04-15  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Analyze_Abstract_Subprogram_Declaration): Add missing
+	support to check eliminated subprograms.
+
+	* sem_elim.ads (Eliminate_Error_Msg): Update documentation.
+
+	* sem_elim.adb (Set_Eliminated): Add support for elimination of
+	dispatching subprograms.
+
+	* exp_disp.adb (Make_DT): Minor code cleanup when freezing primitive
+	operations. Initialize with "null" the slots of eliminated dispaching
+	primitives.
+	(Write_DT): Add output for eliminated primitives.
+
+	* sem_disp.adb (Check_Dispatching_Call): Check eliminated primitives.
+
 2009-04-15  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Use_One_Type): If both clauses appear on the same unit,

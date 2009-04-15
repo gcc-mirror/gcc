@@ -269,7 +269,7 @@ package body Sem_Elim is
 
       Elmt := Elim_Hash_Table.Get (Chars (E));
       while Elmt /= null loop
-         declare
+         Check_Homonyms : declare
             procedure Set_Eliminated;
             --  Set current subprogram entity as eliminated
 
@@ -279,15 +279,25 @@ package body Sem_Elim is
 
             procedure Set_Eliminated is
             begin
-               --  Never try to eliminate dispatching operation, since we
-               --  can't properly process the eliminated result. This could
-               --  be fixed, but is not worth it.
+               if Is_Dispatching_Operation (E) then
 
-               if not Is_Dispatching_Operation (E) then
-                  Set_Is_Eliminated (E);
-                  Elim_Entities.Append ((Prag => Elmt.Prag, Subp => E));
+                  --  If an overriding dispatching primitive is eliminated then
+                  --  its parent must have been eliminated
+
+                  if Is_Overriding_Operation (E)
+                    and then not Is_Eliminated (Overridden_Operation (E))
+                  then
+                     Error_Msg_Name_1 := Chars (E);
+                     Error_Msg_N ("cannot eliminate subprogram %", E);
+                     return;
+                  end if;
                end if;
+
+               Set_Is_Eliminated (E);
+               Elim_Entities.Append ((Prag => Elmt.Prag, Subp => E));
             end Set_Eliminated;
+
+         --  Start of processing for Check_Homonyms
 
          begin
             --  First we check that the name of the entity matches
@@ -643,7 +653,7 @@ package body Sem_Elim is
                Set_Eliminated;
                return;
             end if;
-         end;
+         end Check_Homonyms;
 
       <<Continue>>
          Elmt := Elmt.Homonym;

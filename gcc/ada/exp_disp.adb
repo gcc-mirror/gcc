@@ -3941,27 +3941,29 @@ package body Exp_Disp is
       then
          declare
             Save      : constant Boolean := Freezing_Library_Level_Tagged_Type;
+            Prim      : Entity_Id;
             Prim_Elmt : Elmt_Id;
             Frnodes   : List_Id;
 
          begin
             Freezing_Library_Level_Tagged_Type := True;
+
             Prim_Elmt := First_Elmt (Primitive_Operations (Typ));
             while Present (Prim_Elmt) loop
-               Frnodes := Freeze_Entity (Node (Prim_Elmt), Loc);
+               Prim    := Node (Prim_Elmt);
+               Frnodes := Freeze_Entity (Prim, Loc);
 
                declare
-                  Subp : constant Entity_Id := Node (Prim_Elmt);
                   F : Entity_Id;
 
                begin
-                  F := First_Formal (Subp);
+                  F := First_Formal (Prim);
                   while Present (F) loop
-                     Check_Premature_Freezing (Subp, Etype (F));
+                     Check_Premature_Freezing (Prim, Etype (F));
                      Next_Formal (F);
                   end loop;
 
-                  Check_Premature_Freezing (Subp, Etype (Subp));
+                  Check_Premature_Freezing (Prim, Etype (Prim));
                end;
 
                if Present (Frnodes) then
@@ -3970,6 +3972,7 @@ package body Exp_Disp is
 
                Next_Elmt (Prim_Elmt);
             end loop;
+
             Freezing_Library_Level_Tagged_Type := Save;
          end;
       end if;
@@ -5145,6 +5148,7 @@ package body Exp_Disp is
                   if Is_Imported (Prim)
                     or else Present (Interface_Alias (Prim))
                     or else Is_Predefined_Dispatching_Operation (Prim)
+                    or else Is_Eliminated (Prim)
                   then
                      null;
 
@@ -7178,6 +7182,10 @@ package body Exp_Disp is
            and then Null_Present (Parent (Prim))
          then
             Write_Str (" is null;");
+         end if;
+
+         if Is_Eliminated (Ultimate_Alias (Prim)) then
+            Write_Str (" (eliminated)");
          end if;
 
          Write_Eol;

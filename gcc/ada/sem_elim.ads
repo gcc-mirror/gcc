@@ -53,8 +53,8 @@ package Sem_Elim is
    --  flag on the given entity.
 
    procedure Eliminate_Error_Msg (N : Node_Id; E : Entity_Id);
-   --  Called by the back end on encountering a call to an eliminated
-   --  subprogram. N is the node for the call, and E is the entity of
-   --  the subprogram being eliminated.
+   --  Called by the front-end and back-end on encountering a call to an
+   --  eliminated subprogram. N is the node for the call, and E is the
+   --  entity of the subprogram being eliminated.
 
 end Sem_Elim;
