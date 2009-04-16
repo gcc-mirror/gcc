@@ -220,8 +220,7 @@ package body Exp_Code is
 
       Name_Len := 0;
       loop
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := C;
+         Add_Char_To_Name_Buffer (C);
          Clobber_Ptr := Clobber_Ptr + 1;
          exit when Clobber_Ptr > Len;
          C := Get_Character (Get_String_Char (Str, Clobber_Ptr));

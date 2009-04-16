@@ -313,26 +313,11 @@ package body Sem_Case is
       --  the pos value passed as an argument to Choice_Image.
 
       Get_Name_String (Chars (First_Subtype (Ctype)));
-      Name_Len := Name_Len + 1;
-      Name_Buffer (Name_Len) := ''';
-      Name_Len := Name_Len + 1;
-      Name_Buffer (Name_Len) := 'v';
-      Name_Len := Name_Len + 1;
-      Name_Buffer (Name_Len) := 'a';
-      Name_Len := Name_Len + 1;
-      Name_Buffer (Name_Len) := 'l';
-      Name_Len := Name_Len + 1;
-      Name_Buffer (Name_Len) := '(';
 
+      Add_Str_To_Name_Buffer ("'val(");
       UI_Image (Value);
-
-      for J in 1 .. UI_Image_Length loop
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := UI_Image_Buffer (J);
-      end loop;
-
-      Name_Len := Name_Len + 1;
-      Name_Buffer (Name_Len) := ')';
+      Add_Str_To_Name_Buffer (UI_Image_Buffer (1 .. UI_Image_Length));
+      Add_Char_To_Name_Buffer (')');
       return Name_Find;
    end Choice_Image;
 

@@ -1218,8 +1218,7 @@ package body Exp_Ch9 is
 
          --  Add a leading '('
 
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := '(';
+         Add_Char_To_Name_Buffer ('(');
 
          --  Generate:
          --    new String'("<Entry name>(" & Lnn'Img & ")");
@@ -3176,13 +3175,9 @@ package body Exp_Ch9 is
          Name_Len := Name_Len - 1;
       end if;
 
-      Name_Buffer (Name_Len + 1) := '_';
-      Name_Buffer (Name_Len + 2) := '_';
-
-      Name_Len := Name_Len + 2;
+      Add_Str_To_Name_Buffer ("__");
       for J in 1 .. Select_Len loop
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := Select_Buffer (J);
+         Add_Char_To_Name_Buffer (Select_Buffer (J));
       end loop;
 
       --  Now add the Append_Char if specified. The encoding to follow
@@ -3195,13 +3190,10 @@ package body Exp_Ch9 is
 
       if Append_Char /= ' ' then
          if Append_Char = 'P' or Append_Char = 'N' then
-            Name_Len := Name_Len + 1;
-            Name_Buffer (Name_Len) := Append_Char;
+            Add_Char_To_Name_Buffer (Append_Char);
             return Name_Find;
          else
-            Name_Buffer (Name_Len + 1) := '_';
-            Name_Buffer (Name_Len + 2) := Append_Char;
-            Name_Len := Name_Len + 2;
+            Add_Str_To_Name_Buffer ((1 => '_', 2 => Append_Char));
             return New_External_Name (Name_Find, ' ', -1);
          end if;
       else
