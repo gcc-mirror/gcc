@@ -28,6 +28,7 @@ enum plugin_event
   PLUGIN_FINISH_UNIT,           /* Useful for summary processing.  */
   PLUGIN_CXX_CP_PRE_GENERICIZE, /* Allows to see low level AST in C++ FE.  */
   PLUGIN_FINISH,                /* Called before GCC exits.  */
+  PLUGIN_INFO,                  /* Information about the plugin */
   PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
                                    array.  */
 };
@@ -56,6 +57,13 @@ struct plugin_pass
                                        instance number of the reference pass.
                                        Do it for every instance if it is 0.  */
   enum pass_positioning_ops pos_op; /* how to insert the new pass.  */
+};
+
+/* Additional information about the plugin. Used by --help and --version. */
+
+struct plugin_info
+{
+  const char *version;
 };
 
 /* Function type for the plugin initialization routine. Each plugin module

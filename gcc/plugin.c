@@ -47,6 +47,7 @@ const char *plugin_event_name[] =
   "PLUGIN_FINISH_UNIT",
   "PLUGIN_CXX_CP_PRE_GENERICIZE",
   "PLUGIN_FINISH",
+  "PLUGIN_INFO",
   "PLUGIN_EVENT_LAST"
 };
 
@@ -59,6 +60,7 @@ struct plugin_name_args
   const char *full_name;
   int argc;
   struct plugin_argument *argv;
+  const char *version;
 };
 
 /* Hash table for the plugin_name_args objects created during command-line
@@ -450,6 +452,17 @@ register_pass (const char *plugin_name, struct plugin_pass *pass_info)
 }
 
 
+/* Register additional plugin information. NAME is the name passed to
+   plugin_init. INFO is the information that should be registered. */
+
+static void
+register_plugin_info (const char* name, struct plugin_info *info)
+{
+  void **slot = htab_find_slot (plugin_name_args_tab, name, NO_INSERT);
+  struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
+  plugin->version = info->version;
+}
+
 /* Called from the plugin's initialization code. Register a single callback.
    This function can be called multiple times.
 
@@ -469,6 +482,9 @@ register_callback (const char *plugin_name,
       case PLUGIN_PASS_MANAGER_SETUP:
         register_pass (plugin_name, (struct plugin_pass *) user_data);
         break;
+      case PLUGIN_INFO:
+	register_plugin_info (plugin_name, (struct plugin_info *) user_data);
+	break;
       case PLUGIN_FINISH_TYPE:
       case PLUGIN_FINISH_UNIT:
       case PLUGIN_CXX_CP_PRE_GENERICIZE:
@@ -541,18 +557,11 @@ invoke_plugin_callbacks (enum plugin_event event, void *gcc_data)
 #define PTR_UNION_AS_VOID_PTR(NAME) (NAME._q)
 #define PTR_UNION_AS_CAST_PTR(NAME) (NAME._nq)
 
-/* Routine to dlopen and initialize one plugin. This function is passed to
-   (and called by) the hash table traverse routine. Return 1 for the
-   htab_traverse to continue scan, 0 to stop.
+/* Try to initialize PLUGIN. Return true if successful. */
 
-   SLOT - slot of the hash table element
-   INFO - auxiliary pointer handed to hash table traverse routine
-          (unused in this function)  */
-
-static int
-init_one_plugin (void **slot, void * ARG_UNUSED (info))
+static bool
+try_init_one_plugin (struct plugin_name_args *plugin)
 {
-  struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
   void *dl_handle;
   plugin_init_func plugin_init;
   char *err;
@@ -562,7 +571,7 @@ init_one_plugin (void **slot, void * ARG_UNUSED (info))
   if (!dl_handle)
     {
       error ("Cannot load plugin %s\n%s", plugin->full_name, dlerror ());
-      return 1;
+      return false;
     }
 
   /* Clear any existing error.  */
@@ -576,24 +585,41 @@ init_one_plugin (void **slot, void * ARG_UNUSED (info))
     {
       error ("Cannot find %s in plugin %s\n%s", str_plugin_init_func_name,
              plugin->full_name, err);
-      return 1;
+      return false;
     }
 
   /* Call the plugin-provided initialization routine with the arguments.  */
   if ((*plugin_init) (plugin->base_name, plugin->argc, plugin->argv))
     {
       error ("Fail to initialize plugin %s", plugin->full_name);
-      return 1;
+      return false;
     }
 
-  /* We can now delete the plugin_name_args object as it will no longer
-     be used. Note that base_name and argv fields (both of which were also
-     dynamically allocated) are not freed as they could still be used by
-     the plugin code.  */
-  XDELETE (plugin);
+  return true;
+}
 
+
+/* Routine to dlopen and initialize one plugin. This function is passed to
+   (and called by) the hash table traverse routine. Return 1 for the
+   htab_traverse to continue scan, 0 to stop.
+
+   SLOT - slot of the hash table element
+   INFO - auxiliary pointer handed to hash table traverse routine
+          (unused in this function)  */
+
+static int
+init_one_plugin (void **slot, void * ARG_UNUSED (info))
+{
+  struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
+  bool ok = try_init_one_plugin (plugin);
+  if (!ok)
+    {
+      htab_remove_elt (plugin_name_args_tab, plugin->base_name);
+      XDELETE (plugin);
+    }
   return 1;
 }
+
 #endif	/* ENABLE_PLUGIN  */
 
 /* Main plugin initialization function.  Called from compile_file() in
@@ -613,11 +639,73 @@ initialize_plugins (void)
   htab_traverse_noresize (plugin_name_args_tab, init_one_plugin, NULL);
 #endif
 
+  timevar_pop (TV_PLUGIN_INIT);
+}
+
+/* Release memory used by one plugin. */
+
+static int
+finalize_one_plugin (void **slot, void * ARG_UNUSED (info))
+{
+  struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
+  XDELETE (plugin);
+  return 1;
+}
+
+/* Free memory allocated by the plugin system. */
+
+void
+finalize_plugins (void)
+{
+  if (!plugin_name_args_tab)
+    return;
+
+  /* We can now delete the plugin_name_args object as it will no longer
+     be used. Note that base_name and argv fields (both of which were also
+     dynamically allocated) are not freed as they could still be used by
+     the plugin code.  */
+
+  htab_traverse_noresize (plugin_name_args_tab, finalize_one_plugin, NULL);
+
   /* PLUGIN_NAME_ARGS_TAB is no longer needed, just delete it.  */
   htab_delete (plugin_name_args_tab);
   plugin_name_args_tab = NULL;
+}
 
-  timevar_pop (TV_PLUGIN_INIT);
+/* Used to pass options to htab_traverse callbacks. */
+
+struct print_options
+{
+  FILE *file;
+  const char *indent;
+};
+
+/* Print the version of one plugin. */
+
+static int
+print_version_one_plugin (void **slot, void *data)
+{
+  struct print_options *opt = (struct print_options *) data;
+  struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
+  const char *version = plugin->version ? plugin->version : "Unknown version.";
+
+  fprintf (opt->file, " %s%s: %s\n", opt->indent, plugin->base_name, version);
+  return 1;
+}
+
+/* Print the version of each plugin. */
+
+void
+print_plugins_versions (FILE *file, const char *indent)
+{
+  struct print_options opt;
+  opt.file = file;
+  opt.indent = indent;
+  if (!plugin_name_args_tab || htab_elements (plugin_name_args_tab) == 0)
+    return;
+
+  fprintf (file, "%sVersions of loaded plugins:\n", indent);
+  htab_traverse_noresize (plugin_name_args_tab, print_version_one_plugin, &opt);
 }
 
 
