@@ -112,6 +112,7 @@
 	  || satisfies_constraint_Css (op))
 	return 1;
       else if (GET_CODE (op) == TRUNCATE
+	       && GET_CODE (XEXP (op, 0)) == REG
 	       && ! system_reg_operand (XEXP (op, 0), VOIDmode)
 	       && (mode == VOIDmode || mode == GET_MODE (op))
 	       && (GET_MODE_SIZE (GET_MODE (op))

@@ -1,3 +1,9 @@
+2009-04-16  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/39767
+	* config/sh/predicates.md (arith_operand): Check if the operand
+	of TRUNCATE is a REG.
+
 2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cfgrtl.c (delete_insn_chain_and_edges): Remove.
