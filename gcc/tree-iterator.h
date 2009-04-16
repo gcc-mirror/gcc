@@ -113,9 +113,6 @@ extern void tsi_link_after (tree_stmt_iterator *, tree,
 
 void tsi_delink (tree_stmt_iterator *);
 
-tree tsi_split_statement_list_after (const tree_stmt_iterator *);
-tree tsi_split_statement_list_before (tree_stmt_iterator *);
-
 void append_to_statement_list (tree, tree *);
 void append_to_statement_list_force (tree, tree *);
 
