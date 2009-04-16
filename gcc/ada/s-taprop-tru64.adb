@@ -1332,6 +1332,12 @@ package body System.Task_Primitives.Operations is
 
       Specific.Initialize (Environment_Task);
 
+      --  Make environment task known here because it doesn't go through
+      --  Activate_Tasks, which does it for all other tasks.
+
+      Known_Tasks (Known_Tasks'First) := Environment_Task;
+      Environment_Task.Known_Tasks_Index := Known_Tasks'First;
+
       Enter_Task (Environment_Task);
 
       --  Install the abort-signal handler
