@@ -1,3 +1,9 @@
+2009-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h: Remove default std::allocator<_Tp>
+	from base classes.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Adjust.
+
 2009-04-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/xml/manual/status_cxx200x.xml: Edit for branch status.
@@ -59,7 +65,6 @@
 	* doc/xml/gnu/fdl-1.2.xml: Same.
 
 	* doc/xml/manual/status_cxx200x.xml: Re-write.
-
 
 2009-04-14  Benjamin Kosnik  <bkoz@redhat.com>
 
