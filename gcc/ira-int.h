@@ -730,21 +730,24 @@ ira_allocno_set_iter_next (ira_allocno_set_iterator *i)
 extern HARD_REG_SET ira_reg_mode_hard_regset
                     [FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
 
-/* Arrays analogous to macros MEMORY_MOVE_COST and
-   REGISTER_MOVE_COST.  */
+/* Arrays analogous to macros MEMORY_MOVE_COST and REGISTER_MOVE_COST.
+   Don't use ira_register_move_cost directly.  Use function of
+   ira_get_may_move_cost instead.  */
 extern short ira_memory_move_cost[MAX_MACHINE_MODE][N_REG_CLASSES][2];
 extern move_table *ira_register_move_cost[MAX_MACHINE_MODE];
 
 /* Similar to may_move_in_cost but it is calculated in IRA instead of
    regclass.  Another difference we take only available hard registers
    into account to figure out that one register class is a subset of
-   the another one.  */
+   the another one.  Don't use it directly.  Use function of
+   ira_get_may_move_cost instead.  */
 extern move_table *ira_may_move_in_cost[MAX_MACHINE_MODE];
 
 /* Similar to may_move_out_cost but it is calculated in IRA instead of
    regclass.  Another difference we take only available hard registers
    into account to figure out that one register class is a subset of
-   the another one.  */
+   the another one.  Don't use it directly.  Use function of
+   ira_get_may_move_cost instead.  */
 extern move_table *ira_may_move_out_cost[MAX_MACHINE_MODE];
 
 /* Register class subset relation: TRUE if the first class is a subset
@@ -938,6 +941,34 @@ extern void ira_color (void);
 
 /* ira-emit.c */
 extern void ira_emit (bool);
+
+
+
+/* Return cost of moving value of MODE from register of class FROM to
+   register of class TO.  */
+static inline int
+ira_get_register_move_cost (enum machine_mode mode,
+			    enum reg_class from, enum reg_class to)
+{
+  if (ira_register_move_cost[mode] == NULL)
+    ira_init_register_move_cost (mode);
+  return ira_register_move_cost[mode][from][to];
+}
+
+/* Return cost of moving value of MODE from register of class FROM to
+   register of class TO.  Return zero if IN_P is true and FROM is
+   subset of TO or if IN_P is false and FROM is superset of TO.  */
+static inline int
+ira_get_may_move_cost (enum machine_mode mode,
+		       enum reg_class from, enum reg_class to,
+		       bool in_p)
+{
+  if (ira_register_move_cost[mode] == NULL)
+    ira_init_register_move_cost (mode);
+  return (in_p
+	  ? ira_may_move_in_cost[mode][from][to]
+	  : ira_may_move_out_cost[mode][from][to]);
+}
 
 
 

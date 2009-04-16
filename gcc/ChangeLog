@@ -1,3 +1,35 @@
+2009-04-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/39762
+	* ira-int.h (ira_register_move_cost, ira_may_move_in_cost,
+	ira_may_move_out_cost): Add comments about way of their usage.
+	(ira_get_register_move_cost, ira_get_may_move_cost): New
+	functions.
+	
+	* ira-conflicts.c (process_regs_for_copy): Use function
+	ira_get_register_move_cost instead of global
+	ira_register_move_cost.
+
+	* ira-color.c (update_copy_costs, calculate_allocno_spill_cost,
+	color_pass, move_spill_restore, update_curr_costs): Ditto.
+
+	* ira-lives.c (process_single_reg_class_operands): Ditto.
+
+	* ira-emit.c (emit_move_list): Ditto.
+
+	* ira-costs.c (copy_cost): Don't call ira_init_register_move_cost.
+	(record_reg_classes): Ditto.  Use functions
+	ira_get_register_move_cost and ira_get_may_move_cost instead of
+	global vars ira_register_move_cost, ira_may_move_out_cost and
+	ira_may_move_in_cost.
+	(record_address_regs): Don't call ira_init_register_move_cost.
+	Use function ira_get_may_move_cost instead of global
+	ira_may_move_in_cost.
+	(process_bb_node_for_hard_reg_moves): Use function
+	ira_get_register_move_cost instead of global
+	ira_register_move_cost.
+	(ira_costs): Don't call ira_init_register_move_cost.
+	
 2009-04-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_gimple_assign_binary):
