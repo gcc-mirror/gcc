@@ -1,3 +1,9 @@
+2009-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/forward_list.h: Remove default std::allocator<_Tp>
+	from base classes.
+	* testsuite/23_containers/forward_list/capacity/1.cc: Adjust.
+
 2009-04-15  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* doc/html: Regenerate.

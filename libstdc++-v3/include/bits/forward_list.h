@@ -81,7 +81,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    *          This is just a linked list with a data value in each node.
    *          There is a sorting utility method.
    */
-  template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
+  template<typename _Tp, typename _Alloc>
     struct _Fwd_list_node : public _Fwd_list_node_base<_Alloc>
     {
       typedef typename _Alloc::template rebind<_Fwd_list_node<_Tp, _Alloc> >
@@ -104,7 +104,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    * 
    *   All the functions are op overloads.
    */
-  template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
+  template<typename _Tp, typename _Alloc>
     struct _Fwd_list_iterator
     {
       typedef _Fwd_list_iterator<_Tp, _Alloc>   _Self;
@@ -171,7 +171,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
    * 
    *   All the functions are op overloads.
    */
-  template<typename _Tp, typename _Alloc = std::allocator<_Tp> >
+  template<typename _Tp, typename _Alloc>
     struct _Fwd_list_const_iterator
     {
       typedef _Fwd_list_const_iterator<_Tp, _Alloc>   _Self;
@@ -240,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  @brief  Forward list iterator equality comparison.
    */
-  template<typename _Tp,class _Alloc>
+  template<typename _Tp, typename _Alloc>
     inline bool
     operator==(const _Fwd_list_iterator<_Tp, _Alloc>& __x,
                const _Fwd_list_const_iterator<_Tp, _Alloc>& __y)
@@ -249,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  @brief  Forward list iterator inequality comparison.
    */
-  template<typename _Tp,class _Alloc>
+  template<typename _Tp, typename _Alloc>
     inline bool
     operator!=(const _Fwd_list_iterator<_Tp, _Alloc>& __x,
                const _Fwd_list_const_iterator<_Tp, _Alloc>& __y)
@@ -258,7 +258,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   /**
    *  @brief  Base class for %forward_list.
    */
-  template<typename _Tp, typename _Alloc = allocator<_Tp> >
+  template<typename _Tp, typename _Alloc>
     struct _Fwd_list_base
     {
     protected:
