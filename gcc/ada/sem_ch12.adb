@@ -10888,8 +10888,31 @@ package body Sem_Ch12 is
       Act   : Node_Id;
       Errs  : constant Int := Serious_Errors_Detected;
 
+      Cur   : Entity_Id := Empty;
+      --  Current homograph of the instance name
+
+      Vis   : Boolean;
+      --  Saved visibility status of the current homograph
+
    begin
       Assoc := First (Generic_Associations (N));
+
+      --  If the instance is a child unit, its name may hide an outer homonym,
+      --  so make it invisible to perform name resolution on the actuals.
+
+      if Nkind (Defining_Unit_Name (N)) = N_Defining_Program_Unit_Name
+        and then Present
+          (Current_Entity (Defining_Identifier (Defining_Unit_Name (N))))
+      then
+         Cur := Current_Entity (Defining_Identifier (Defining_Unit_Name (N)));
+         if Is_Compilation_Unit (Cur) then
+            Vis := Is_Immediately_Visible (Cur);
+            Set_Is_Immediately_Visible (Cur, False);
+         else
+            Cur := Empty;
+         end if;
+      end if;
+
       while Present (Assoc) loop
          if Nkind (Assoc) /= N_Others_Choice then
             Act := Explicit_Generic_Actual_Parameter (Assoc);
@@ -10924,8 +10947,8 @@ package body Sem_Ch12 is
                   if Nkind (Expr) = N_Subtype_Indication then
                      Analyze (Subtype_Mark (Expr));
 
-                     --  Analyze separately each discriminant constraint,
-                     --  when given with a named association.
+                     --  Analyze separately each discriminant constraint, when
+                     --  given with a named association.
 
                      declare
                         Constr : Node_Id;
@@ -10967,12 +10990,25 @@ package body Sem_Ch12 is
                   Set_Is_Instantiated (Entity (Name (N)));
                end if;
 
+               if Present (Cur) then
+                  --  For the case of a child instance hiding an outer homonym,
+                  --  provide additional warning which might explain the error.
+
+                  Set_Is_Immediately_Visible (Cur, Vis);
+                  Error_Msg_NE ("& hides outer unit with the same name?",
+                    N, Defining_Unit_Name (N));
+               end if;
+
                Abandon_Instantiation (Act);
             end if;
          end if;
 
          Next (Assoc);
       end loop;
+
+      if Present (Cur) then
+         Set_Is_Immediately_Visible (Cur, Vis);
+      end if;
    end Preanalyze_Actuals;
 
    -------------------

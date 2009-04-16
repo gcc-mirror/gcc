@@ -1,3 +1,13 @@
+2009-04-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Preanalyze_Actuals): If the instance is a child unit
+	that hides an outer homograph, make that homograph invisible when
+	analyzing the actuals, to to prevent illegal direct visibility on it.
+
+2009-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g-pehage.adb (Initialize): Fix off-by-one error.
+
 2009-04-16  Tristan Gingold  <gingold@adacore.com>
 
 	* init.c: Detect real stack overflow on Darwin.
