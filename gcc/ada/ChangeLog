@@ -168,7 +168,7 @@
 
 	* rtsfind.ads: Add entries for s-conca? routines
 
-2009-04-15  Arnaud Charlet  <charlet@adacore.com>
+2009-04-16  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.
 

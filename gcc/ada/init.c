@@ -2117,17 +2117,13 @@ __gnat_error_handler (int sig, siginfo_t * si, void * uc)
   switch (sig)
     {
     case SIGSEGV:
+    case SIGBUS:
       /* FIXME: we need to detect the case of a *real* SIGSEGV.  */
       exception = &storage_error;
       msg = "stack overflow or erroneous memory access";
       /* Reset the use of alt stack, so that the alt stack will be used
 	 for the next signal delivery.  */
       sigreturn (NULL, UC_RESET_ALT_STACK);
-      break;
-
-    case SIGBUS:
-      exception = &constraint_error;
-      msg = "SIGBUS";
       break;
 
     case SIGFPE:
@@ -2172,12 +2168,12 @@ __gnat_install_handler (void)
     sigaction (SIGFPE,  &act, NULL);
   if (__gnat_get_interrupt_state (SIGILL) != 's')
     sigaction (SIGILL,  &act, NULL);
-  if (__gnat_get_interrupt_state (SIGBUS) != 's')
-    sigaction (SIGBUS,  &act, NULL);
 
   act.sa_flags |= SA_ONSTACK;
   if (__gnat_get_interrupt_state (SIGSEGV) != 's')
     sigaction (SIGSEGV, &act, NULL);
+  if (__gnat_get_interrupt_state (SIGBUS) != 's')
+    sigaction (SIGBUS,  &act, NULL);
 
   __gnat_handler_installed = 1;
 }
