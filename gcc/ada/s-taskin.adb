@@ -114,25 +114,25 @@ package body System.Tasking is
          return;
       end if;
 
-      T.Common.Parent := Parent;
-      T.Common.Base_Priority := Base_Priority;
-      T.Common.Current_Priority := 0;
+      --  Wouldn't the following be better done using an assignment of an
+      --  aggregate so that we could be sure no components were forgotten???
+
+      T.Common.Parent                   := Parent;
+      T.Common.Base_Priority            := Base_Priority;
+      T.Common.Current_Priority         := 0;
       T.Common.Protected_Action_Nesting := 0;
-      T.Common.Call := null;
-      T.Common.Task_Arg := Task_Arg;
-      T.Common.Task_Entry_Point := Task_Entry_Point;
-      T.Common.Activator := Self_ID;
-      T.Common.Wait_Count := 0;
-      T.Common.Elaborated := Elaborated;
-      T.Common.Activation_Failed := False;
-      T.Common.Task_Info := Task_Info;
+      T.Common.Call                     := null;
+      T.Common.Task_Arg                 := Task_Arg;
+      T.Common.Task_Entry_Point         := Task_Entry_Point;
+      T.Common.Activator                := Self_ID;
+      T.Common.Wait_Count               := 0;
+      T.Common.Elaborated               := Elaborated;
+      T.Common.Activation_Failed        := False;
+      T.Common.Task_Info                := Task_Info;
       T.Common.Global_Task_Lock_Nesting := 0;
-      T.Common.Fall_Back_Handler := null;
-      T.Common.Specific_Handler  := null;
-      T.Common.Debug_Events :=
-        (False, False, False, False, False, False, False, False,
-         False, False, False, False, False, False, False, False);
-      --  Wouldn't (others => False) be clearer ???
+      T.Common.Fall_Back_Handler        := null;
+      T.Common.Specific_Handler         := null;
+      T.Common.Debug_Events             := (others => False);
 
       if T.Common.Parent = null then
 

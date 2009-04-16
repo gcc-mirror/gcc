@@ -131,8 +131,9 @@ package System.Tasking is
       --  TCB initialized but not task has not been created.
       --  It cannot be executing.
 
-      Activating,
-      --  Task has been created and is being made Runnable.
+--    Activating,
+--    --  ??? Temporarily at end of list for GDB compatibility
+--    --  Task has been created and is being made Runnable.
 
       --  Active states
       --  For all states from here down, the task has been activated.
@@ -156,8 +157,9 @@ package System.Tasking is
       Acceptor_Sleep,
       --  Task is waiting on an accept or select with terminate
 
-      Acceptor_Delay_Sleep,
-      --  Task is waiting on an selective wait statement
+--    Acceptor_Delay_Sleep,
+--    --  ??? Temporarily at end of list for GDB compatibility
+--    --  Task is waiting on an selective wait statement
 
       Entry_Caller_Sleep,
       --  Task is waiting on an entry call
@@ -193,9 +195,15 @@ package System.Tasking is
       Asynchronous_Hold,
       --  The task has been held by Asynchronous_Task_Control.Hold_Task
 
-      Interrupt_Server_Blocked_On_Event_Flag
+      Interrupt_Server_Blocked_On_Event_Flag,
       --  The task has been blocked on a system call waiting for a
       --  completion event/signal to occur.
+
+      Activating,
+      --  Task has been created and is being made Runnable.
+
+      Acceptor_Delay_Sleep
+      --  Task is waiting on an selective wait statement
      );
 
    type Call_Modes is

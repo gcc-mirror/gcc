@@ -1,5 +1,27 @@
 2009-04-16  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch12.adb (Map_Formal_Package_Entities): renamed from Map_Entities
+	and made global, to be used when installing parents of a child
+	instance, to provide mappings for entities declared in formal packages
+	of ancestor units. Now called from Install_Formal_Packages.
+
+2009-04-16  Doug Rupp  <rupp@adacore.com>
+
+	* s-taskin.adb (Initialize_ATCB): Initialize Debug_Events with others
+	notation for clarity.
+
+	* s-taprop-vxworks.adb, s-taprop-tru64.adb, s-taprop-vms.adb,
+	s-taprop-mingw.adb, s-taprop-linux.adb, s-taprop-solaris.adb,
+	s-taprop-irix.adb, s-taprop-hpux-dce.adb, s-taprop-posix.adb
+	(Initialize): Initialize Known_Tasks with Environment task.
+
+	* s-taskin.ads (Task_States): Move new states to end for the sake of
+	GDB compatibility.
+
+	* s-tassta.adb (Task_Wrapper): Fix comment about Enter_Task.
+
+2009-04-16  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): If a protected
 	operation has an inline pragma, propagate the flag to the internal
 	unprotected subprogram.
