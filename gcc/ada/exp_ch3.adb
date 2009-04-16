@@ -4145,7 +4145,6 @@ package body Exp_Ch3 is
       Expr_Q   : Node_Id;
       Id_Ref   : Node_Id;
       New_Ref  : Node_Id;
-      BIP_Call : Boolean := False;
 
       Init_After : Node_Id := N;
       --  Node after which the init proc call is to be inserted. This is
@@ -4409,21 +4408,25 @@ package body Exp_Ch3 is
          if Is_Delayed_Aggregate (Expr_Q) then
             Convert_Aggr_In_Object_Decl (N);
 
+         --  Ada 2005 (AI-318-02): If the initialization expression is a call
+         --  to a build-in-place function, then access to the declared object
+         --  must be passed to the function. Currently we limit such functions
+         --  to those with constrained limited result subtypes, but eventually
+         --  plan to expand the allowed forms of functions that are treated as
+         --  build-in-place.
+
+         elsif Ada_Version >= Ada_05
+           and then Is_Build_In_Place_Function_Call (Expr_Q)
+         then
+            Make_Build_In_Place_Call_In_Object_Declaration (N, Expr_Q);
+
+            --  The previous call expands the expression initializing the
+            --  built-in-place object into further code that will be analyzed
+            --  later. No further expansion needed here.
+
+            return;
+
          else
-            --  Ada 2005 (AI-318-02): If the initialization expression is a
-            --  call to a build-in-place function, then access to the declared
-            --  object must be passed to the function. Currently we limit such
-            --  functions to those with constrained limited result subtypes,
-            --  but eventually we plan to expand the allowed forms of functions
-            --  that are treated as build-in-place.
-
-            if Ada_Version >= Ada_05
-              and then Is_Build_In_Place_Function_Call (Expr_Q)
-            then
-               Make_Build_In_Place_Call_In_Object_Declaration (N, Expr_Q);
-               BIP_Call := True;
-            end if;
-
             --  In most cases, we must check that the initial value meets any
             --  constraint imposed by the declared type. However, there is one
             --  very important exception to this rule. If the entity has an
@@ -4571,7 +4574,6 @@ package body Exp_Ch3 is
 
             if Needs_Finalization (Typ)
               and then not Is_Inherently_Limited_Type (Typ)
-              and then not BIP_Call
             then
                Insert_Actions_After (Init_After,
                  Make_Adjust_Call (

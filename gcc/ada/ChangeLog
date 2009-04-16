@@ -1,3 +1,25 @@
+2009-04-16  Robert Dewar  <dewar@adacore.com>
+
+	* g-pehage.adb: Minor reformatting
+
+	* sem_ch12.adb: Minor reformatting
+
+	* exp_dist.adb: Minor reformatting
+
+	* bindgen.adb: Minor style fixes.
+
+2009-04-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_eval.adb (Eval_Indexed_Component): Extend constant-folding of
+	indexed components to the case where the prefix is a static string
+	literal.
+
+2009-04-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): In case of build-in-place
+	objects avoid any further expansion of the expression initializing the
+	object.
+
 2009-04-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Preanalyze_Actuals): If the instance is a child unit

@@ -7667,9 +7667,9 @@ package body Exp_Dist is
          Request := Make_Defining_Identifier (Loc, Name_R);
 
          RPC_Receiver_Spec :=
-           Build_RPC_Receiver_Specification (
-             RPC_Receiver      => RPC_Receiver,
-             Request_Parameter => Request);
+           Build_RPC_Receiver_Specification
+             (RPC_Receiver      => RPC_Receiver,
+              Request_Parameter => Request);
 
          Subp_Id    := Make_Defining_Identifier (Loc, Name_P);
          Subp_Index := Make_Defining_Identifier (Loc, Name_I);

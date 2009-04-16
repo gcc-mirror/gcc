@@ -1149,6 +1149,7 @@ package body GNAT.Perfect_Hash_Generators is
       for W in Reduced (0) .. WT.Last loop
          Free_Word (WT.Table (W));
       end loop;
+
       IT.Init;
 
       --  Initialize of computation variables

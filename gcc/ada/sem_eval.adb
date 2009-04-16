@@ -1779,6 +1779,32 @@ package body Sem_Eval is
                         Set_Sloc (N, Loc);
                      end if;
                   end if;
+
+               --  We can also constant-fold if the prefix is a string literal.
+               --  This will be useful in an instantiation or an inlining.
+
+               elsif Compile_Time_Known_Value (Sub)
+                 and then Nkind (Arr) = N_String_Literal
+                 and then Compile_Time_Known_Value (Lbd)
+                 and then Expr_Value (Lbd) = 1
+                 and then Expr_Value (Sub) <=
+                   String_Literal_Length (Etype (Arr))
+               then
+                  declare
+                     C : constant Char_Code :=
+                           Get_String_Char (Strval (Arr),
+                             UI_To_Int (Expr_Value (Sub)));
+                  begin
+                     Set_Character_Literal_Name (C);
+
+                     Elm :=
+                       Make_Character_Literal (Loc,
+                         Chars              => Name_Find,
+                         Char_Literal_Value => UI_From_CC (C));
+                     Set_Etype (Elm, Component_Type (Atyp));
+                     Rewrite (N, Duplicate_Subexpr_No_Checks (Elm));
+                     Set_Is_Static_Expression (N, False);
+                  end;
                end if;
             end if;
          end;
