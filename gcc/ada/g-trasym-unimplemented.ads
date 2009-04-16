@@ -31,9 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Run-time symbolic traceback support
+--  Version used on unimplemented targets
 
---  This capability is currently supported on the following targets:
+--  Run-time symbolic traceback is currently supported on the following
+--  targets:
 
 --     HP-UX hppa and ia64
 --     IRIX
@@ -44,51 +45,20 @@
 --     OpenVMS/Alpha
 --     Windows NT/XP/Vista
 
---  The routines provided in this package assume that your application has
---  been compiled with debugging information turned on, since this information
---  is used to build a symbolic traceback.
-
---  If you want to retrieve tracebacks from exception occurrences, it is also
---  necessary to invoke the binder with -E switch. Please refer to the gnatbind
---  documentation for more information.
-
---  Note that it is also possible (and often recommended) to compute symbolic
---  traceback outside the program execution, which in addition allows you
---  to distribute the executable with no debug info:
---
---  - build your executable with debug info
---  - archive this executable
---  - strip a copy of the executable and distribute/deploy this version
---  - at run time, compute absolute traceback (-bargs -E) from your
---    executable and log it using Ada.Exceptions.Exception_Information
---  - off line, compute the symbolic traceback using the executable archived
---    with debug info and addr2line or gdb (using info line *<addr>) on the
---    absolute addresses logged by your application.
-
---  In order to retrieve symbolic information, functions in this package will
---  read on disk all the debug information of the executable file (found via
---  Argument (0), and looked in the PATH if needed), and load them in memory,
---  causing a significant cpu and memory overhead.
-
---  On all platforms except VMS, this package is not intended to be used
---  within a shared library, symbolic tracebacks are only supported for the
---  main executable and not for shared libraries. You should consider using
---  gdb to obtain symbolic traceback in such cases.
-
---  On VMS, there is no restriction on using this facility with shared
---  libraries. However, the OS should be at least v7.3-1 and OS patch
---  VMS731_TRACE-V0100 must be applied in order to use this package.
+--  This version is used on all other targets, it generates a warning at
+--  compile time if it is with'ed, and the bodies generate messages saying
+--  that the functions are not implemented.
 
 with Ada.Exceptions; use Ada.Exceptions;
 
 package GNAT.Traceback.Symbolic is
    pragma Elaborate_Body;
 
+--     pragma Compile_Time_Warning
+--       (True, "symbolic traceback not implemented on this target");
+
    function Symbolic_Traceback (Traceback : Tracebacks_Array) return String;
    --  Build a string containing a symbolic traceback of the given call chain
-   --
-   --  Note: This procedure may be installed by Set_Trace_Decorator, to get a
-   --  symbolic traceback on all exceptions raised (see GNAT.Exception_Traces).
 
    function Symbolic_Traceback (E : Exception_Occurrence) return String;
    --  Build string containing symbolic traceback of given exception occurrence

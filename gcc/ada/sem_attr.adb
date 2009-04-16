@@ -2049,6 +2049,24 @@ package body Sem_Attr is
                      Error_Attr_P
                        ("prefix of % attribute cannot be Inline_Always" &
                         " subprogram");
+
+                  --  It is illegal to apply 'Address to an intrinsic
+                  --  subprogram. This is now formalized in AI05-0095.
+                  --  In an instance, an attempt to obtain 'Address of an
+                  --  intrinsic subprogram (e.g the renaming of a predefined
+                  --  operator that is an actual) raises Program_Error.
+
+                  elsif Convention (Ent) = Convention_Intrinsic then
+                     if In_Instance then
+                        Rewrite (N,
+                          Make_Raise_Program_Error (Loc,
+                            Reason => PE_Misaligned_Address_Value));
+                        --   ??? why Misaligned_Address_Value, seems wrong
+
+                     else
+                        Error_Msg_N
+                         ("cannot take Address of intrinsic subprogram", N);
+                     end if;
                   end if;
 
                elsif Is_Object (Ent)
