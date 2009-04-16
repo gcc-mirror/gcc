@@ -1,4 +1,5 @@
 <appendix id="appendix.gfdl-1.2">
+  <?dbhtml filename="appendix_gfdl.html"?>
   <title>GNU Free Documentation License</title>
   <para>
     Copyright (C) 2000, 2001, 2002 Free Software Foundation,
@@ -8,7 +9,7 @@
     distribute verbatim copies of this license document, but changing it is
     not allowed.
   </para>
-  <bridgehead id="Preamble" renderas="sect1">
+  <bridgehead id="fdl-1-preamble" renderas="sect1">
     0. PREAMBLE
   </bridgehead>
   <para>
@@ -34,7 +35,7 @@
     for any textual work, regardless of subject matter or whether it is
     published as a printed book.  We recommend this License principally for
     works whose purpose is instruction or reference.</para>
-  <bridgehead id="Definitions" renderas="sect1">
+  <bridgehead id="fdl-1-definitions" renderas="sect1">
     1. APPLICABILITY AND DEFINITIONS
   </bridgehead>
   <para>
@@ -425,7 +426,7 @@
     "Dedications", or "History", the requirement (section 4) to Preserve its
     Title (section 1) will typically require changing the actual title.
   </para>
-  <bridgehead id="Termination" renderas="sect1">
+  <bridgehead id="fdl-1-termination" renderas="sect1">
     9. TERMINATION
   </bridgehead>
   <para>

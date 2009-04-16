@@ -17,10 +17,14 @@
   </keywordset>
 </partinfo>
 
-<title>Localization</title>
+<title>
+  Localization
+  <indexterm><primary>Localization</primary></indexterm>
+</title>
 
 <!-- Chapter 01 : Locale -->
 <chapter id="manual.localization.locales" xreflabel="Locales">
+<?dbhtml filename="locales.html"?>
   <title>Locales</title>
 
   <!--  Section 01 : locale -->
@@ -31,6 +35,7 @@
 
 <!-- Chapter 02 : Facet -->
 <chapter id="manual.localization.facet" xreflabel="facet">
+<?dbhtml filename="facets.html"?>
   <title>Facets aka Categories</title>
 
   <!--  Section 01 : ctype -->

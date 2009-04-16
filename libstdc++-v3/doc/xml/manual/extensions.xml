@@ -17,7 +17,10 @@
   </keywordset>
 </partinfo>
 
-<title>Extensions</title>
+<title>
+  Extensions
+  <indexterm><primary>Extensions</primary></indexterm>
+</title>
 
 <preface>
   <title></title>
@@ -54,6 +57,7 @@ extensions, be aware of two things:
 
 <!-- Chapter 01 : Compile Time Checks -->
 <chapter id="manual.ext.compile_checks" xreflabel="Compile Time Checks">
+<?dbhtml filename="ext_compile_checks.html"?>
   <title>Compile Time Checks</title>
   <para>
     Also known as concept checking.
@@ -112,6 +116,7 @@ extensions, be aware of two things:
 
 <!-- Chapter 04 : Allocators -->
 <chapter id="manual.ext.allocator" xreflabel="Allocators">
+<?dbhtml filename="ext_allocators.html"?>
   <title>Allocators</title>
 
   <!-- Section 01 : __mt_alloc -->
@@ -128,6 +133,7 @@ extensions, be aware of two things:
 
 <!-- Chapter 05 : Containers -->
 <chapter id="manual.ext.containers" xreflabel="Containers">
+<?dbhtml filename="ext_containers.html"?>
   <title>Containers</title>
   <para>
   </para>
@@ -263,6 +269,7 @@ extensions, be aware of two things:
 
 <!-- Chapter 06 : Utilities -->
 <chapter id="manual.ext.util" xreflabel="Utilities">
+<?dbhtml filename="ext_utilities.html"?>
   <title>Utilities</title>
   <para>
     The &lt;functional&gt; header contains many additional functors
@@ -332,6 +339,7 @@ get_temporary_buffer(5, (int*)0);
 
 <!-- Chapter 07 : Algorithms -->
 <chapter id="manual.ext.algorithms" xreflabel="Algorithms">
+<?dbhtml filename="ext_algorithms.html"?>
   <title>Algorithms</title>
 <para>25.1.6 (count, count_if) is extended with two more versions of count
    and count_if.  The standard versions return their results.  The
@@ -369,6 +377,7 @@ get_temporary_buffer(5, (int*)0);
 
 <!-- Chapter 08 : Numerics -->
 <chapter id="manual.ext.numerics" xreflabel="Numerics">
+<?dbhtml filename="ext_numerics.html"?>
   <title>Numerics</title>
 <para>26.4, the generalized numeric operations such as accumulate, are extended
    with the following functions:
@@ -393,6 +402,7 @@ get_temporary_buffer(5, (int*)0);
 
 <!-- Chapter 09 : Iterators -->
 <chapter id="manual.ext.iterators" xreflabel="Iterators">
+<?dbhtml filename="ext_iterators.html"?>
   <title>Iterators</title>
 <para>24.3.2 describes <code>struct iterator</code>, which didn't exist in the
    original HP STL implementation (the language wasn't rich enough at the
@@ -416,6 +426,7 @@ get_temporary_buffer(5, (int*)0);
 
 <!-- Chapter 08 : IO -->
 <chapter id="manual.ext.io" xreflabel="IO">
+<?dbhtml filename="ext_io.html"?>
   <title>Input and Output</title>
 
   <para>
@@ -484,8 +495,9 @@ get_temporary_buffer(5, (int*)0);
   </sect1>
 </chapter>
 
-<!-- Chapter 11 : Demangling -->
+<!-- Chapter 09 : Demangling -->
 <chapter id="manual.ext.demangle" xreflabel="Demangling">
+<?dbhtml filename="ext_demangling.html"?>
   <title>Demangling</title>
   <para>
     Transforming C++ ABI identifiers (like RTTI symbols) into the
@@ -569,7 +581,7 @@ int main()
    </para>
 </chapter>
 
-<!-- Chapter 12 : Concurrency -->
+<!-- Chapter 10 : Concurrency -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 
 	    parse="xml" href="concurrency.xml">
 </xi:include>

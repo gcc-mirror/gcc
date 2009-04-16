@@ -17,10 +17,14 @@
   </keywordset>
 </partinfo>
 
-<title>Utilities</title>
+<title>
+  Utilities
+  <indexterm><primary>Utilities</primary></indexterm>
+</title>
 
 <!-- Chapter 01 : Functors -->
 <chapter id="manual.util.functors" xreflabel="Functors">
+<?dbhtml filename="functors.html"?>
   <title>Functors</title>
    <para>If you don't know what functors are, you're not alone.  Many people
       get slightly the wrong idea.  In the interest of not reinventing
@@ -33,6 +37,7 @@
 
 <!-- Chapter 02 : Pairs -->
 <chapter id="manual.util.pairs" xreflabel="Pairs">
+<?dbhtml filename="pairs.html"?>
   <title>Pairs</title>
    <para>The <code>pair&lt;T1,T2&gt;</code> is a simple and handy way to
       carry around a pair of objects.  One is of type T1, and another of
@@ -88,7 +93,7 @@
 
 <!-- Chapter 03 : Memory -->
 <chapter id="manual.util.memory" xreflabel="Memory">
-
+<?dbhtml filename="memory.html"?>
   <title>Memory</title>
   <para>
     Memory contains three general areas. First, function and operator
@@ -117,6 +122,7 @@
 
 <!-- Chapter 04 : Traits -->
 <chapter id="manual.util.traits" xreflabel="Traits">
+<?dbhtml filename="traits.html"?>
   <title>Traits</title>
   <para>
   </para>

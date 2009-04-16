@@ -17,10 +17,14 @@
   </keywordset>
 </partinfo>
 
-<title>Input and Output</title>
+<title>
+  Input and Output
+  <indexterm><primary>Input and Output</primary></indexterm>
+</title>
 
 <!-- Chapter 01 : Iostream Objects -->
 <chapter id="manual.io.objects" xreflabel="IO Objects">
+<?dbhtml filename="iostream_objects.html"?>
   <title>Iostream Objects</title>
 
    <para>To minimize the time you have to wait on the compiler, it's good to
@@ -157,6 +161,7 @@
 
 <!-- Chapter 02 : Stream Buffers -->
 <chapter id="manual.io.streambufs" xreflabel="Stream Buffers">
+<?dbhtml filename="streambufs.html"?>
   <title>Stream Buffers</title>
 
   <sect1 id="io.streambuf.derived" xreflabel="Derived streambuf Classes">
@@ -320,6 +325,7 @@
 
 <!-- Chapter 03 : Memory-based Streams -->
 <chapter id="manual.io.memstreams" xreflabel="Memory Streams">
+<?dbhtml filename="stringstreams.html"?>
   <title>Memory Based Streams</title>
   <sect1 id="manual.io.memstreams.compat" xreflabel="Compatibility strstream">
     <title>Compatibility With strstream</title>
@@ -366,6 +372,7 @@
 
 <!-- Chapter 04 : File-based Streams -->
 <chapter id="manual.io.filestreams" xreflabel="File Streams">
+<?dbhtml filename="fstreams.html"?>
   <title>File Based Streams</title>
 
   <sect1 id="manual.io.filestreams.copying_a_file" xreflabel="Copying a File">
@@ -588,6 +595,7 @@
 
 <!-- Chapter 03 : Interacting with C -->
 <chapter id="manual.io.c" xreflabel="Interacting with C">
+<?dbhtml filename="io_and_c.html"?>
   <title>Interacting with C</title>
 
 

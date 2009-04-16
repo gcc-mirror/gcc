@@ -1,5 +1,5 @@
 <sect2 id="manual.intro.status.standard.200x" xreflabel="Status C++ 200x">
-<?dbhtml filename="standard_cxx200x.html"?>
+<?dbhtml filename="status_iso_cxx200x.html"?>
  
 <sect2info>
   <keywordset>
@@ -16,7 +16,7 @@
 
 <para>
 This table is based on the table of contents of ISO/IEC 
-Doc No: N2461=07-0331 Date: 2007-10-22
+Doc No: N2857=09-0047 Date: 2009-03-23
 Working Draft, Standard for Programming Language C++
 </para>
 
@@ -33,2209 +33,2540 @@ This page describes the C++0x support in mainline GCC SVN, not in any
 particular release.
 </para>
 
+<!-- Status is Yes or No, Broken/Partial-->
+<!-- 
+   Yes
+
+   No 
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+   Broken/Partial 
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+-->
 <table frame='all'>
 <title>C++ 200x Implementation Status</title>
-<tgroup cols='6' align='left' colsep='1' rowsep='1'>
+<tgroup cols='4' align='left' colsep='0' rowsep='1'>
 <colspec colname='c1'></colspec>
 <colspec colname='c2'></colspec>
 <colspec colname='c3'></colspec>
 <colspec colname='c4'></colspec>
-<colspec colname='c5'></colspec>
-<colspec colname='c6'></colspec>
-
   <thead>
     <row>
       <entry>Section</entry>
       <entry>Description</entry>
-      <entry>Done</entry>
-      <entry>Broken</entry>
-      <entry>Missing</entry>
+      <entry>Status</entry>
       <entry>Comments</entry>
     </row>
   </thead>
 
   <tbody>
     <row>
-      <entry><emphasis>20</emphasis></entry>
-      <entry namest="c2" nameend="c6" align="left"><emphasis>General Utilities</emphasis></entry>
+      <entry>
+	<emphasis>18</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Language support</emphasis>
+      </entry>
     </row>
+
     <row>
-      <entry>20.2</entry>
-      <entry>Utility Components</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>incomplete</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.2.1</entry>
-      <entry>Operators</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>partial</entry>
+      <entry>18.1</entry>
+      <entry>General</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.2.2</entry>
-      <entry>forward/move helpers</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>partial</entry>
-      <entry></entry>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>18.2</entry>
+      <entry>Types</entry>
+      <entry>Partial</entry>
+      <entry>Missing offsetof, max_align_t, nullptr_t</entry>
     </row>
     <row>
-      <entry>20.2.3</entry>
-      <entry>Pairs</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>18.3</entry>
+      <entry>Implementation properties</entry>
       <entry></entry>
       <entry></entry>
     </row>
 
     <row>
-      <entry>20.3</entry>
-      <entry>Header <code>&lt;tuple&gt;</code> synopsis</entry>
-      <entry>done</entry>
+      <entry>18.3.1</entry>
+      <entry>Numeric Limits</entry>
       <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.3.1.1</entry>
+      <entry>Class template <code>numeric_limits</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>18.3.1.2</entry>
+      <entry><code>numeric_limits</code> members</entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>18.3.1.3</entry>
+      <entry><code>float_round_style</code></entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>18.3.1.4</entry>
+      <entry><code>float_denorm_style</code></entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.3.1.5</entry>
+      <entry><code>numeric_limits</code> specializations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+
+    <row>
+      <entry>18.3.2</entry>
+      <entry>C Library</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+
+    <row>
+      <entry>18.4</entry>
+      <entry>Integer types</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.4.1</entry>
+      <entry>Header <code>&lt;cstdint&gt;</code> synopsis</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>18.4.2</entry>
+      <entry>The header <code>&lt;stdint.h&gt;</code></entry>
+      <entry>Partial</entry>
+      <entry>May use configure-generated stdint.h via GCC_HEADER_STDINT</entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>18.5</entry>
+      <entry>Start and termination</entry>
+      <entry>Partial</entry>
+      <entry>Missing quick_exit, at_quick_exit</entry>
+    </row>
+    <row>
+      <entry>18.6</entry>
+      <entry>Dynamic memory management</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.7</entry>
+      <entry>Type identification</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.7.1</entry>
+      <entry>Class type_info</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>18.7.2</entry>
+      <entry>Class type_index</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.7.3</entry>
+      <entry>Class bad_cast</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.7.4</entry>
+      <entry>Class bad_typeid</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.8</entry>
+      <entry>Exception handling</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.8.1</entry>
+      <entry>Class exception</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.8.2</entry>
+      <entry>Violation exception-specifications</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.8.3</entry>
+      <entry>Abnormal termination</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.8.4</entry>
+      <entry><code>uncaught_exception</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.8.5</entry>
+      <entry>Propagation</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>18.8.6</entry>
+      <entry>Class <code>nested_exception</code></entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.9</entry>
+      <entry>Initializer lists</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.9.1</entry>
+      <entry>Initializer list constructors</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.9.2</entry>
+      <entry>Initializer list access</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>18.9.3</entry>
+      <entry>Initializer list concept maps</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>18.10</entry>
+      <entry>Other runtime support</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>
+	<emphasis>19</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Diagnostics</emphasis>
+      </entry>
+    </row>
+    <row>
+      <entry>19.1</entry>
+      <entry>General</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>19.2</entry>
+      <entry>Exception classes</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>19.3</entry>
+      <entry>Assertions</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>19.4</entry>
+      <entry>Error numbers</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>19.5</entry>
+      <entry>System error support</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>19.5.1</entry>
+      <entry>Class <code>error_category</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>19.5.2</entry>
+      <entry>Class <code>error_code</code></entry>
+      <entry>Partial</entry>
+      <entry>Missing concept ErrorCodeEnum</entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>19.5.3</entry>
+      <entry>Class <code>error_condition</code></entry>
+      <entry>Partial</entry>
+      <entry>Missing concept ErrorConditionEnum</entry>
+    </row>
+    <row>
+      <entry>19.5.4</entry>
+      <entry>Comparison operators</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>19.5.5</entry>
+      <entry>Class <code>system_error</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>
+	<emphasis>20</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>General utilities</emphasis>
+      </entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>20.1</entry>
+      <entry>General</entry>
+      <entry>Partial</entry>
+      <entry>Missing all concepts</entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.2</entry>
+      <entry>Concepts</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.3</entry>
+      <entry>Utility components</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.3.1</entry>
-      <entry>Class template <code>tuple</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Operators</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.3.1.1</entry>
-      <entry>Construction</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>20.3.2</entry>
+      <entry><code>forward</code> and <code>move</code> helpers</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.3.1.2</entry>
-      <entry>Tuple creation functions</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>20.3.3</entry>
+      <entry><code>pair</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.3.1.3</entry>
-      <entry>Tuple helper classes</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>20.3.4</entry>
+      <entry>tuple-like access to <code>pair</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.3.1.4</entry>
-      <entry>Element access</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.3.5</entry>
+      <entry>Range concept maps for <code>pair</code></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>20.3.1.5</entry>
-      <entry>Relational operators</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>20.3.6</entry>
+      <entry>Class template <code>bitset</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
-
     <row>
       <entry>20.4</entry>
-      <entry namest="c2" nameend="c6" align="left"><emphasis>Metaprogramming and type traits</emphasis></entry>
+      <entry>Compile-time rational arithmetic</entry>
+      <entry></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>20.4.1</entry>
-      <entry>Requirements</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Class template <code>ratio</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.4.2</entry>
-      <entry>Header <code>&lt;type_traits&gt;</code> synopsis</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Arithmetic on <code>ratio</code> types</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.4.3</entry>
-      <entry>Helper classes</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Comparison of <code>ratio</code> types</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.4.4</entry>
-      <entry>General Requirements</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.5</entry>
-      <entry>Unary Type Traits</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.5.1</entry>
-      <entry>Primary Type Categories</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.5.2</entry>
-      <entry>Composite type traits</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.5.3</entry>
-      <entry>Type properties</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.6</entry>
-      <entry>Relationships between types</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.7</entry>
-      <entry>Transformations between types</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.7.1</entry>
-      <entry>Const-volatile modifications</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.7.2</entry>
-      <entry>Reference modifications</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.7.3</entry>
-      <entry>Array modifications</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.7.4</entry>
-      <entry>Pointer modifications</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.8</entry>
-      <entry>Other transformations</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.4.9</entry>
-      <entry>Implementation requirements</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5 </entry>
-      <entry>Function Objects</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>SI types</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.5</entry>
-      <entry>Additions to header <code>&lt;functional&gt;</code> synopsis</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>Tuples</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.5.1</entry>
-      <entry>Definitions</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>General</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
       <entry>20.5.2</entry>
-      <entry>Requirements</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.3</entry>
-      <entry>Base</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.4</entry>
-      <entry>Function return types</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.5</entry>
-      <entry>Class template <code>reference_wrapper</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.5.1</entry>
-      <entry><code>reference_wrapper</code> construct/copy/destroy</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.5.2</entry>
-      <entry><code>reference_wrapper</code> assignment</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.5.3</entry>
-      <entry><code>reference_wrapper</code> access</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.5.4</entry>
-      <entry><code>reference_wrapper</code> invocation</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.5.5</entry>
-      <entry><code>reference_wrapper</code> helper functions</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.14</entry>
-      <entry>Function template <code>mem_fn</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.11</entry>
-      <entry>Template function bind</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-
-    <row>
-      <entry>20.5.11.1</entry>
-      <entry>Function object binders</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.11.1.1</entry>
-      <entry>Class template <code>is_bind_expression</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.11.1.2</entry>
-      <entry>Class template <code>is_placeholder</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.11.1.3</entry>
-      <entry>Function template <code>bind</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.11.1.4</entry>
-      <entry>Placeholders</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15</entry>
-      <entry>Polymorphic function wrappers</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15.1</entry>
-      <entry>Class <code>bad_function_call<code></code></code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15.1.1</entry>
-      <entry><code>bad_function_call</code> constructor</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15.2</entry>
-      <entry>Class template <code>function</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15.2.1</entry>
-      <entry><code>function</code> construct/copy/destroy</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15.2.2</entry>
-      <entry><code>function</code> modifiers</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15.2.3</entry>
-      <entry><code>function</code> capacity</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15.2.4</entry>
-      <entry><code>function</code> invocation</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15.2.5</entry>
-      <entry><code>function</code> target access</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15.2.7</entry>
-      <entry>null pointer comparison operators</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.15.2.8</entry>
-      <entry>specialized algorithms</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.5.16</entry>
-      <entry>Class template <code>hash</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Class template <code>tuple</code></entry>
+      <entry>Partial</entry>
+      <entry>Missing range concept maps</entry>
     </row>
     <row>
       <entry>20.6</entry>
-      <entry>Additions to header <code>&lt;memory&gt;</code> synopsis</entry>
+      <entry>Metaprogramming and type traits</entry>
       <entry></entry>
       <entry></entry>
-      <entry>partial</entry>
-      <entry>missing <code>unique_ptr</code></entry>
+    </row>
+    <row>
+      <entry>20.6.1</entry>
+      <entry>Requirements</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>20.6.2</entry>
+      <entry>Header <code>&lt;type_traits&gt;</code> synopsis</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.6.3</entry>
+      <entry>Helper classes</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.6.4</entry>
+      <entry>Unary Type Traits</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.6.4.1</entry>
+      <entry>Primary type categories</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.6.4.2</entry>
+      <entry>Composite type traits</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>20.6.4.3</entry>
+      <entry>Type properties</entry>
+      <entry>Partial</entry>
+      <entry>Missing is_system_layout</entry>
     </row>
     <row>
       <entry>20.6.5</entry>
-      <entry>Class template <code>unique_ptr</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>Relationships between types</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.6.6</entry>
-      <entry>Smart pointers</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>Transformations between types</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.6.6.1</entry>
-      <entry>Class <code>bad_weak_ptr</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Const-volatile modifications</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.6.6.2</entry>
-      <entry>Class template <code>shared_ptr</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>See Footnotes.</entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.1</entry>
-      <entry><code>shared_ptr</code> constructors</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.2</entry>
-      <entry><code>shared_ptr</code> destructor</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.3</entry>
-      <entry><code>shared_ptr</code> assignment</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.4</entry>
-      <entry><code>shared_ptr</code> modifiers</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.5</entry>
-      <entry><code>shared_ptr</code> observers</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.6</entry>
-      <entry><code>shared_ptr</code> creation</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>
-      <ulink url="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2351.htm">N2351</ulink>
-      </entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.7</entry>
-      <entry><code>shared_ptr</code> comparison</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.8</entry>
-      <entry><code>shared_ptr</code> I/O</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.9</entry>
-      <entry><code>shared_ptr</code> specialized algorithms</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.10</entry>
-      <entry><code>shared_ptr</code> casts</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.2.11</entry>
-      <entry><code>get_deleter</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Reference modifications</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.6.6.3</entry>
-      <entry>Class template <code>weak_ptr</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.3.1</entry>
-      <entry><code>weak_ptr</code> constructors</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.3.2</entry>
-      <entry><code>weak_ptr</code> destructor</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.3.3</entry>
-      <entry><code>weak_ptr</code> assignment</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.3.4</entry>
-      <entry><code>weak_ptr</code> modifiers</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.3.5</entry>
-      <entry><code>weak_ptr</code> observers</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.3.6</entry>
-      <entry><code>weak_ptr</code> comparison</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>20.6.6.3.7</entry>
-      <entry><code>weak_ptr</code> specialized algorithms</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Sign modifications</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>20.6.6.4</entry>
-      <entry>Class template <code>enable_shared_from_this</code></entry>
-      <entry>done</entry>
+      <entry>Array modifications</entry>
+      <entry>Y</entry>
       <entry></entry>
+    </row>
+    <row>
+      <entry>20.6.6.5</entry>
+      <entry>Pointer modifications</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>20.6.7</entry>
+      <entry>Other transformations</entry>
+      <entry>Partial</entry>
+      <entry>Missing decay</entry>
+    </row>
+    <row>
+      <entry>20.7</entry>
+      <entry>Function objects</entry>
       <entry></entry>
       <entry></entry>
     </row>
-
-
-
     <row>
-      <entry><emphasis>23</emphasis></entry>
-      <entry namest="c2" nameend="c6" align="left"><emphasis>Containers</emphasis></entry>
+      <entry>20.7.1</entry>
+      <entry>Definitions</entry>
+      <entry>Y</entry>
+      <entry></entry>
     </row>
     <row>
+      <entry>20.7.3</entry>
+      <entry>Base</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.4</entry>
+      <entry>Function object return types</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.5</entry>
+      <entry>Class template <code>reference_wrapper</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.7.6</entry>
+      <entry>Identity operation</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.7</entry>
+      <entry>Arithmetic operation</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.8</entry>
+      <entry>Comparisons</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.9</entry>
+      <entry>Logical operations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.10</entry>
+      <entry>Bitwise operations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.11</entry>
+      <entry>Negators</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.12</entry>
+      <entry>Template <code>function</code> and function template <code>bind</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.13</entry>
+      <entry>Adaptors for pointers to functions</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.14</entry>
+      <entry>Adaptors for pointers to members</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.15</entry>
+      <entry>Function template <code>mem_fn</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.16</entry>
+      <entry>Polymorphic function wrappers</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.16.1</entry>
+      <entry>Class <code>bad_function_call</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.16.2</entry>
+      <entry>Class template <code>function</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.7.17</entry>
+      <entry>Class template <code>hash</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.7.18</entry>
+      <entry>Class template <code>reference_closure</code></entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8</entry>
+      <entry>Memory</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.01</entry>
+      <entry>Allocator argument tag</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.02</entry>
+      <entry>Allocators</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.02.1</entry>
+      <entry>General</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.02.2</entry>
+      <entry>Allocator concept</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.02.3</entry>
+      <entry>Support for legacy allocators</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.02.4</entry>
+      <entry>Allocator and Legacy Allocator members</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.03</entry>
+      <entry>Allocator-related element concepts</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.04</entry>
+      <entry>Allocator propagation traits</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.05</entry>
+      <entry>Allocator propagation map</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.06</entry>
+      <entry>The default allocator</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.07</entry>
+      <entry>Scoped allocator adaptor</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.07.1</entry>
+      <entry><code>scoped_allocator_adaptor_base</code></entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.07.2</entry>
+      <entry><code>scoped_allocator_adaptor constructors</code></entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.07.3</entry>
+      <entry><code>scoped_allocator_adaptor2</code></entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.07.3</entry>
+      <entry>scoped_allocator_adaptor members</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.07.4</entry>
+      <entry><code>scoped_allocator_adaptor globals</code></entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.08</entry>
+      <entry>Raw storage iterator</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.09</entry>
+      <entry>Temporary buffers</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.10</entry>
+      <entry><code>construct_element</code></entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.11</entry>
+      <entry>Specialized algorithms</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.11.1</entry>
+      <entry><code>addressof</code></entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.11.2</entry>
+      <entry><code>uninitialized_copy</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.11.3</entry>
+      <entry><code>uninitialized_fill</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.11.4</entry>
+      <entry><code>uninitialized_fill_n</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.12</entry>
+      <entry>Class template <code>unique_ptr</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.13</entry>
+      <entry>Smart pointers</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.13.1</entry>
+      <entry>Class <code>bad_weak_ptr</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.13.2</entry>
+      <entry>Class template <code>shared_ptr</code></entry>
+      <entry>Y</entry>
+      <entry>
+	<para>
+	  Uses code from
+	  <ulink url="http://www.boost.org/libs/smart_ptr/shared_ptr.htm">boost::shared_ptr</ulink>.
+	</para>  
+      </entry>
+    </row>
+    <row>
+      <entry>20.8.13.3</entry>
+      <entry>Class template <code>weak_ptr</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.13.4</entry>
+      <entry>Class template <code>owner_less</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.13.5</entry>
+      <entry>Class template <code>emable_shared_from_this</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>20.8.13.6</entry>
+      <entry><code>shared_ptr</code> atomic access</entry>
+      <entry>Partial</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>20.8.13.7</entry>
+      <entry>Pointer safety</entry>
+      <entry>Partial</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>20.8.14</entry>
+      <entry>Align</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.8.15</entry>
+      <entry>C library</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9</entry>
+      <entry>Time utilities</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.1</entry>
+      <entry>Clock requirements</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.2</entry>
+      <entry>Time-related traits</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.2.1</entry>
+      <entry><code>treat_as_floating_point</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.2.2</entry>
+      <entry><code>duration_values</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.2.3</entry>
+      <entry>Specializations of <code>common_type</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.3</entry>
+      <entry>Class template <code>duration</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.4</entry>
+      <entry>Class template <code>time_point</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.5</entry>
+      <entry>Clocks</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.5.1</entry>
+      <entry>Class <code>system_clock</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.5.2</entry>
+      <entry>Class <code>monotonic_clock</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.9.5.3</entry>
+      <entry>Class <code>high_resolution_clock</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>20.10</entry>
+      <entry>Date and time functions</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>
+	<emphasis>21</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Strings</emphasis>
+      </entry>
+    </row>
+    <row>
+      <entry>21.1</entry>
+      <entry>General</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.2</entry>
+      <entry>Character traits</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.2.1</entry>
+      <entry>Character traits requirements</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.2.2</entry>
+      <entry>traits typedef</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.2.3</entry>
+      <entry><code>char_traits</code> specializations</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.2.3.1</entry>
+      <entry>struct <code>char_traits&lt;char&gt;</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.2.3.2</entry>
+      <entry>struct <code>char_traits&lt;char16_t&gt;</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.2.3.3</entry>
+      <entry>struct <code>char_traits&lt;char32_t&gt;</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.2.3.4</entry>
+      <entry>struct <code>char_traits&lt;wchar_t&gt;</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.3</entry>
+      <entry>String classes</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.4</entry>
+      <entry>Class template <code>basic_string</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.5</entry>
+      <entry>Numeric Conversions</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>21.6</entry>
+      <entry>Null-terminated sequence utilities</entry>
+      <entry>Y</entry>
+      <entry>C library dependency</entry>
+    </row>
+    <row>
+      <entry>
+      	<emphasis>22</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Localization</emphasis>
+      </entry>
+    </row>
+    <row>
+      <entry>22.1</entry>
+      <entry>General</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.2</entry>
+      <entry>Header <code>&lt;locale&gt;</code> synopsis</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.3</entry>
+      <entry>Locales</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.3.1</entry>
+      <entry>Class <code>locale</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.3.2</entry>
+      <entry><code>locale</code> globals</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.3.3</entry>
+      <entry>Convenience interfaces</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.3.3.1</entry>
+      <entry>Character classification</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.3.3.2</entry>
+      <entry>Conversions</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.3.3.2.1</entry>
+      <entry>Character</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>22.3.3.2.2</entry>
+      <entry>String</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>22.3.3.2.3</entry>
+      <entry>Buffer</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4</entry>
+      <entry>Standard locale categories</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.1</entry>
+      <entry><code>ctype</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.2</entry>
+      <entry>Numeric</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.2.1</entry>
+      <entry><code>num_get</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.2.2</entry>
+      <entry><code>num_put</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.3</entry>
+      <entry><code>num_punct</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.4</entry>
+      <entry><code>collate</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.5</entry>
+      <entry>Time</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.5.1</entry>
+      <entry><code>time_get</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.5.2</entry>
+      <entry><code>time_get_byname</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.5.3</entry>
+      <entry><code>time_put</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.5.3</entry>
+      <entry><code>time_put_byname</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.6</entry>
+      <entry>Monetary</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.6.1</entry>
+      <entry><code>money_get</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.6.2</entry>
+      <entry><code>money_put</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.6.3</entry>
+      <entry><code>money_punct</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.6.4</entry>
+      <entry><code>money_punct_byname</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.7</entry>
+      <entry><code>messages</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.4.8</entry>
+      <entry>Program-defined facets</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>22.5</entry>
+      <entry>Standard code conversion facets</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>22.6</entry>
+      <entry>C Library Locales</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>
+	<emphasis>23</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Containers</emphasis>
+      </entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>23.1</entry>
+      <entry>General</entry>
+      <entry>Partial</entry>
+      <entry>Missing concepts</entry>
+    </row>
+    <row>
+      <entry>23.2</entry>
+      <entry>Container requirements</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
       <entry>23.2.1</entry>
-      <entry>Header <code>&lt;array&gt;</code> synopsis</entry>
-      <entry>done</entry>
+      <entry>General requirements</entry>
+      <entry>Partial</entry>
+      <entry>Missing construct_element</entry>
+    </row>
+    <row>
+      <entry>23.2.2</entry>
+      <entry>Data races</entry>
+      <entry>Y</entry>
       <entry></entry>
+    </row>
+    <row>
+      <entry>23.3</entry>
+      <entry>Sequence containers</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>23.2.1</entry>
-      <entry>Class template array</entry>
-      <entry>done</entry>
+      <entry>23.3.1</entry>
+      <entry>Class template <code>array</code></entry>
+      <entry>Y</entry>
       <entry></entry>
+    </row>
+    <row>
+      <entry>23.3.2</entry>
+      <entry>Class template <code>deque</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>23.3.3</entry>
+      <entry>Class template <code>forward_list</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>23.3.4</entry>
+      <entry>Class template <code>list</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>23.3.5</entry>
+      <entry>Adaptors</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>23.2.1.1</entry>
-      <entry><code>array</code> constructors, copy, and assignment</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>23.3.5.1</entry>
+      <entry>Class template <code>queue</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>23.2.1.2</entry>
-      <entry><code>array</code> specialized algorithms</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>23.3.5.2</entry>
+      <entry>Class template <code>priority_queue</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>23.2.1.3</entry>
-      <entry><code>array </code>size</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>23.3.5.3</entry>
+      <entry>Class template <code>stack</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>23.2.1.4</entry>
-      <entry><code>array </code>data</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>23.3.6</entry>
+      <entry>Class template <code>vector</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>23.2.1.5</entry>
-      <entry>Zero sized <code>array</code>s</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>23.3.7</entry>
+      <entry>Class <code>vector&lt;bool&gt;</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
-    <row>
-      <entry>23.2.1.6</entry>
-      <entry>Tuple interface to class template <code>array</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-
     <row>
       <entry>23.4</entry>
-      <entry>Unordered associative containers</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>Associative containers</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>23.4.1</entry>
-      <entry>Class template <code>unordered_map</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>23.4.1.1</entry>
-      <entry><code>unordered_map</code> constructors</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>23.4.1.2</entry>
-      <entry><code>unordered_map</code> element access</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>23.4.1.3</entry>
-      <entry><code>unordered_map</code> swap</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Class template <code>map</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>23.4.2</entry>
-      <entry>Class template <code>unordered_multimap</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>23.4.2.1</entry>
-      <entry><code>unordered_multimap</code> constructors</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>23.4.2.2</entry>
-      <entry><code>unordered_multimap</code> swap</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Class template <code>multimap</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>23.4.3</entry>
-      <entry>Class template <code>unordered_set</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>23.4.3.1</entry>
-      <entry><code>unordered_set</code> constructors</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>23.4.3.2</entry>
-      <entry><code>unordered_set</code> swap</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>Class template <code>set</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
       <entry>23.4.4</entry>
-      <entry>Class template <code>unordered_multiset<code></code></code></entry>
-      <entry>done</entry>
+      <entry>Class template <code>multiset</code></entry>
+      <entry>Y</entry>
       <entry></entry>
+    </row>
+    <row>
+      <entry>23.5</entry>
+      <entry>Unordered associative containers</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>23.4.4.1</entry>
-      <entry><code>unordered_multiset</code> constructors</entry>
-      <entry>done</entry>
+      <entry>23.5.1</entry>
+      <entry>Class template <code>unordered_map</code></entry>
+      <entry>Y</entry>
       <entry></entry>
+    </row>
+    <row>
+      <entry>23.5.2</entry>
+      <entry>Class template <code>unordered_multimap</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>23.5.3</entry>
+      <entry>Class template <code>unordered_set</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>23.5.4</entry>
+      <entry>Class template <code>unordered_multiset</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>
+	<emphasis>24</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Iterators</emphasis>
+      </entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>24.1</entry>
+      <entry>General</entry>
+      <entry>Partial</entry>
+      <entry>Missing concepts</entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>24.2</entry>
+      <entry>Iterator concepts</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>24.3</entry>
+      <entry>Header <code>&lt;iterator&gt;</code> synopsis</entry>
+      <entry>Partial</entry>
+      <entry>Missing concepts</entry>
+    </row>
+    <row>
+      <entry>24.4</entry>
+      <entry>Iterator operations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>24.5</entry>
+      <entry>Predefined iterators and Iterator adaptors</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>23.4.4.2</entry>
-      <entry><code>unordered_multiset</code> swap</entry>
-      <entry>done</entry>
+      <entry>24.5.1</entry>
+      <entry>Reverse iterators</entry>
+      <entry>Y</entry>
       <entry></entry>
+    </row>
+    <row>
+      <entry>24.5.2</entry>
+      <entry>Insert iterators</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>24.5.3</entry>
+      <entry>Move iterators</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>24.6</entry>
+      <entry>Stream iterators</entry>
       <entry></entry>
       <entry></entry>
     </row>
-
     <row>
-      <entry><emphasis>26</emphasis></entry>
-      <entry namest="c2" nameend="c6" align="left"><emphasis>Numerics</emphasis></entry>
+      <entry>24.6.1</entry>
+      <entry>Class template <code>istream_iterator</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>24.6.2</entry>
+      <entry>Class template <code>ostream_iterator</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>24.6.3</entry>
+      <entry>Class template <code>istreambuf_iterator</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>24.6.4</entry>
+      <entry>Class template <code>ostreambuf_iterator</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>24.7</entry>
+      <entry>Insert iterators</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>24.7.1</entry>
+      <entry>Class template <code>back_insert_iterator</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>24.7.3</entry>
+      <entry>Class template <code>front_insert_iterator</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>24.7.5</entry>
+      <entry>Class template <code>insert_iterator</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>
+	<emphasis>25</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Algorithms</emphasis>
+      </entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>25.1</entry>
+      <entry>General</entry>
+      <entry>Partial</entry>
+      <entry>Missing concepts</entry>
+    </row>
+    <row>
+      <entry>25.2</entry>
+      <entry>Header <code>&lt;algorithm&gt;</code> synopsis</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>25.3</entry>
+      <entry>Non-modifying sequence operations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>25.4</entry>
+      <entry>Mutating sequence operations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>25.5</entry>
+      <entry>Sorting and related operations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>25.6</entry>
+      <entry>C library algorithms</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>
+      <emphasis>26</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Numerics</emphasis>
+      </entry>
+    </row>
+    <row>
+      <entry>26.1</entry>
+      <entry>General</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.2</entry>
+      <entry>Numeric type requirements</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.3</entry>
+      <entry>The floating-point environment</entry>
+      <entry>Y</entry>
+      <entry></entry>
     </row>
     <row>
       <entry>26.4</entry>
+      <entry>Complex numbers</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.5</entry>
       <entry>Random number generation</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>26.4.1</entry>
-      <entry>Requirements</entry>
-      <entry>done</entry>
-      <entry></entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.2</entry>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>26.5.1</entry>
       <entry>Header <code>&lt;random&gt;</code> synopsis</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>partial</entry>
+      <entry>Partial</entry>
+      <entry>Missing concepts, based on TR1</entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.2</entry>
+      <entry>Concepts and related requirements</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.3</entry>
-      <entry>Random number engine class templates</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>26.5.3</entry>
+      <entry>Random number engines</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.3.1</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.3.1</entry>
       <entry>Class template <code>linear_congruential_engine</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.3.2</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.3.2</entry>
       <entry>Class template <code>mersenne_twister_engine</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.3.3</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.3.3</entry>
       <entry>Class template <code>subtract_with_carry_engine</code></entry>
-      <entry>done</entry>
+      <entry>N</entry>
       <entry></entry>
+    </row>
+    <row>
+      <entry>26.5.4</entry>
+      <entry>Random number engine adaptors</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.4</entry>
-      <entry>Random number engine adaptor class templates</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-
-    <row>
-      <entry>26.4.4.1</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.4.1</entry>
       <entry>Class template <code>discard_block_engine</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.4.2</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.4.2</entry>
       <entry>Class template <code>independent_bits_engine</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.4.3</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.4.3</entry>
       <entry>Class template <code>shuffle_order_engine</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.4.4</entry>
-      <entry>Class template <code>xor_combine_engine</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>operator()() per N2079</entry>
-    </row>
-    <row>
-      <entry>26.4.5</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.5</entry>
       <entry>Engines and engine adaptors with predefined parameters</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.6</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.6</entry>
       <entry>Class <code>random_device</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.7</entry>
+      <entry>26.5.7</entry>
       <entry>Utilities</entry>
-      <entry>done</entry>
-      <entry></entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.7.1</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.7.1</entry>
       <entry>Class <code>seed_seq</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.7.2</entry>
-      <entry>Function template <code>generate_canonical</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.7.2</entry>
+      <entry>Function template generate_canonical</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8</entry>
-      <entry>Random number generation class templates</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>26.5.8</entry>
+      <entry>Random number distributions</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.1</entry>
+      <entry>26.5.8.1</entry>
       <entry>Uniform distributions</entry>
       <entry></entry>
       <entry></entry>
-      <entry>partial</entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.1</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.1.1</entry>
       <entry>Class template <code>uniform_int_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.1</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.1.2</entry>
       <entry>Class template <code>uniform_real_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
-   <row>
-      <entry>26.4.8.2</entry>
+    <row>
+      <entry>26.5.8.2</entry>
       <entry>Bernoulli distributions</entry>
       <entry></entry>
       <entry></entry>
-      <entry>partial</entry>
-      <entry></entry>
     </row>
-
     <row>
-      <entry>26.4.8.2.1</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.2.1</entry>
       <entry>Class <code>bernoulli_distribution</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.2.2</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.2.2</entry>
       <entry>Class template <code>binomial_distribution</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.2.3</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.2.3</entry>
       <entry>Class template <code>geometric_distribution</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.2.4</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.2.4</entry>
       <entry>Class template <code>negative_binomial_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.3</entry>
+      <entry>26.5.8.3</entry>
       <entry>Poisson distributions</entry>
       <entry></entry>
       <entry></entry>
-      <entry>partial</entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.3.1</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.3.1</entry>
       <entry>Class template <code>poisson_distribution</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.3.2</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.3.2</entry>
       <entry>Class template <code>exponential_distribution</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.3.3</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.3.3</entry>
       <entry>Class template <code>gamma_distribution</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.3.4</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.3.4</entry>
       <entry>Class template <code>weibull_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.3.5</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.3.5</entry>
       <entry>Class template <code>extreme_value_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.4</entry>
+      <entry>26.5.8.4</entry>
       <entry>Normal distributions</entry>
       <entry></entry>
       <entry></entry>
-      <entry>partial</entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.4.1</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.4.1</entry>
       <entry>Class template <code>normal_distribution</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.4.2</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.4.2</entry>
       <entry>Class template <code>lognormal_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.4.3</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.4.3</entry>
       <entry>Class template <code>chi_squared_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.4.4</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.4.4</entry>
       <entry>Class template <code>cauchy_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.4.5</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.4.5</entry>
       <entry>Class template <code>fisher_f_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.4.6</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.4.6</entry>
       <entry>Class template <code>student_t_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.5</entry>
+      <entry>26.5.8.5</entry>
       <entry>Sampling distributions</entry>
       <entry></entry>
       <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.5.1</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.5.1</entry>
       <entry>Class template <code>discrete_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.5.1</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.5.2</entry>
       <entry>Class template <code>piecewise_constant_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>26.4.8.5.1</entry>
-      <entry>Class template <code>general_pdf_distribution</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-
-   <row>
-      <entry><emphasis>28</emphasis></entry>
-      <entry namest="c2" nameend="c6" align="left"><emphasis>Regular Expressions</emphasis></entry>
-    </row>
-    <row>
-      <entry>28.1</entry>
-      <entry>Definitions</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>26.5.8.5.3</entry>
+      <entry>Class template <code>piecewise_linear_distribution</code></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.2</entry>
+      <entry>26.6</entry>
+      <entry>Numeric arrays</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.6.1</entry>
+      <entry>Header <code>&lt;valarray&gt;</code> synopsis</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.6.2</entry>
+      <entry>Class template <code>valarray</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.6.3</entry>
+      <entry><code>valarray</code> non-member operations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.6.4</entry>
+      <entry>Class <code>slice</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.6.5</entry>
+      <entry>Class template <code>slice_array</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.6.6</entry>
+      <entry>Class <code>gslice</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.6.7</entry>
+      <entry>Class template <code>gslice_array</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.6.8</entry>
+      <entry>Class template <code>mask_array</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.6.9</entry>
+      <entry>Class template <code>indirect_array</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.7</entry>
+      <entry>Generalized numeric operations</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.7.1</entry>
+      <entry><code>accumulate</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.7.2</entry>
+      <entry><code>inner_product</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.7.3</entry>
+      <entry><code>partial_sum</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.7.4</entry>
+      <entry><code>adjacent_difference</code></entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.7.5</entry>
+      <entry>iota</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>26.8</entry>
+      <entry>C Library</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>
+	<emphasis>27</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Input/output</emphasis>
+      </entry>
+    </row>
+    <row>
+      <entry>27.1</entry>
+      <entry>General</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.2</entry>
       <entry>Requirements</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.3</entry>
+      <entry>27.2.1</entry>
+      <entry>Imbue limitations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.2.2</entry>
+      <entry>Positioning type limitations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>27.2.3</entry>
+      <entry>Thread safety</entry>
+      <entry>Partial</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.3</entry>
+      <entry>Forward declarations</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.4</entry>
+      <entry>Standard iostream objects</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.4.1</entry>
+      <entry>Narrow stream objects</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.4.2</entry>
+      <entry>Wide stream objects</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.5</entry>
+      <entry>Iostreams base classes</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.6</entry>
+      <entry>Stream buffers</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.7</entry>
+      <entry>Formatting and manipulators</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.8</entry>
+      <entry>String-based streams</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>27.9</entry>
+      <entry>File-based streams</entry>
+      <entry>Y</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>
+	<emphasis>28</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Regular expressions</emphasis>
+      </entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>28.01</entry>
+      <entry>General</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>28.02</entry>
+      <entry>Definitions</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>28.03</entry>
+      <entry>Requirements</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>28.04</entry>
       <entry>Regular expressions summary</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.4</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>28.05</entry>
       <entry>Header <code>&lt;regex&gt;</code> synopsis</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.5</entry>
-      <entry>Namespace <code>tr1::regex_constants</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>28.06</entry>
+      <entry>Namespace <code>std::regex_constants</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.5.1</entry>
-      <entry>Bitmask Type <code>syntax_option_type</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.5.2</entry>
-      <entry>Bitmask Type <code>regex_constants::match_flag_type</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.5.3</entry>
-      <entry>Implementation defined <code>error_type</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.6</entry>
+      <entry>28.07</entry>
       <entry>Class <code>regex_error</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.7</entry>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>28.08</entry>
       <entry>Class template <code>regex_traits</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>Partial</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.8</entry>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>28.09</entry>
       <entry>Class template <code>basic_regex</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>Partial</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.8.1</entry>
-      <entry><code>basic_regex</code> constants</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.8.2</entry>
-      <entry><code>basic_regex</code> constructors</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.8.3</entry>
-      <entry><code>basic_regex</code> assign</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.8.4</entry>
-      <entry><code>basic_regex</code> constant operations</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.8.5</entry>
-      <entry><code>basic_regex</code> locale</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.8.6</entry>
-      <entry><code>basic_regex</code> swap</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.8.7</entry>
-      <entry><code>basic_regex</code> non-member functions</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.8.7.1</entry>
-      <entry><code>basic_regex</code> non-member swap</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.9</entry>
-      <entry>Class template <code>sub_match</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.9.1</entry>
-      <entry><code>sub_match</code> members</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.9.2</entry>
-      <entry><code>sub_match</code> non-member operators</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
       <entry>28.10</entry>
-      <entry>Class template <code>match_results</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>Class template <code>sub_match</code></entry>
+      <entry>Partial</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.10.1</entry>
-      <entry><code>match_results</code> constructors</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.10.2</entry>
-      <entry><code>match_results</code> size</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.10.3</entry>
-      <entry><code>match_results</code> element access</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.10.4</entry>
-      <entry><code>match_results</code> formatting</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.10.5</entry>
-      <entry><code>match_results</code> allocator</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.10.6</entry>
-      <entry><code>match_results</code> swap</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
       <entry>28.11</entry>
-      <entry>Regular expression algorithms</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>Class template <code>match_results</code></entry>
+      <entry>Partial</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.11.1</entry>
-      <entry>exceptions</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.11.2</entry>
-      <entry><code>regex_match</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.11.3</entry>
-      <entry><code>regex_search</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.11.4</entry>
-      <entry><code>regex_replace</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
       <entry>28.12</entry>
-      <entry>Regular expression Iterators</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
+      <entry>Regular expression algorithms</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>28.12.1</entry>
-      <entry>Class template <code>regex_iterator</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.12.1.1</entry>
-      <entry><code>regex_iterator</code> constructors</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.12.1.2</entry>
-      <entry><code>regex_iterator</code> comparisons</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.12.1.3</entry>
-      <entry><code>regex_iterator</code> dereference</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.12.1.4</entry>
-      <entry><code>regex_iterator</code> increment</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.12.2</entry>
-      <entry>Class template <code>regex_token_iterator</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.12.2.1</entry>
-      <entry><code>regex_token_iterator</code> constructors</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.12.2.2</entry>
-      <entry><code>regex_token_iterator</code> comparisons</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.12.2.3</entry>
-      <entry><code>regex_token_iterator</code> dereference</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>28.12.2.4</entry>
-      <entry><code>regex_token_iterator</code> increment</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
       <entry>28.13</entry>
+      <entry>Regular expression Iterators</entry>
+      <entry>N</entry>
+      <entry></entry>
+    </row>
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>28.14</entry>
       <entry>Modified ECMAScript regular expression grammar</entry>
+      <entry>N</entry>
       <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry><emphasis>C</emphasis></entry>
-      <entry namest="c2" nameend="c6" align="left"><emphasis>C Compatibility</emphasis></entry>
-    </row>
-    <row>
-      <entry>C2.1</entry>
-      <entry>Additions to header <code>&lt;complex&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.1.1</entry>
-      <entry>Synopsis</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.1.2</entry>
-      <entry>Function <code>acos</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.1.3</entry>
-      <entry>Function <code>asin</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.1.4</entry>
-      <entry>Function <code>atan</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.1.5</entry>
-      <entry>Function <code>acosh</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.1.6</entry>
-      <entry>Function <code>asinh</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.1.7</entry>
-      <entry>Function <code>atanh</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.1.8</entry>
-      <entry>Function <code>fabs</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.1.9</entry>
-      <entry>Additional Overloads</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.2</entry>
-      <entry>Header <code>&lt;ccomplex&gt;</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry>DR 551</entry>
-    </row>
-    <row>
-      <entry>C2.3</entry>
-      <entry>Header <code>&lt;complex.h&gt;</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry>DR 551</entry>
-    </row>
-    <row>
-      <entry>C2.4</entry>
-      <entry>Additions to header <code>&lt;cctype&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.4.1</entry>
-      <entry>Synopsis</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.4.2</entry>
-      <entry>Function <code>isblank</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.5</entry>
-      <entry>Additions to header <code>&lt;ctype.h&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.6</entry>
-      <entry>Header <code>&lt;cfenv&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.6.1</entry>
-      <entry>Synopsis</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>C2.6.2</entry>
-      <entry>Definitions</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.7</entry>
-      <entry>Header <code>&lt;fenv.h&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>
+	<emphasis>29</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Atomic operations</emphasis>
+      </entry>
     </row>
     <row>
-      <entry>C2.8</entry>
-      <entry>Additions to header <code>&lt;cfloat&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>29.1</entry>
+      <entry>General</entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.9</entry>
-      <entry>Additions to header <code>&lt;float.h&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>29.2</entry>
+      <entry>Header <code>&lt;cstdatomic&gt;</code> synopsis</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>C2.10</entry>
-      <entry>Additions to header <code>&lt;ios&gt;</code></entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>29.3</entry>
+      <entry>Order and consistency</entry>
+      <entry>N</entry>
       <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.10.1</entry>
-      <entry>Synopsis</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
+      <entry>29.4</entry>
+      <entry>Lock-free property</entry>
+      <entry>Y</entry>
+      <entry>Based on _GLIBCXX_ATOMIC_PROPERTY</entry>
     </row>
     <row>
-      <entry>C2.10.2</entry>
-      <entry>Function <code>hexfloat</code></entry>
-      <entry></entry>
+      <entry>29.5</entry>
+      <entry>Atomic types</entry>
       <entry></entry>
-      <entry>missing</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>C2.11</entry>
-      <entry>Header <code>&lt;cinttypes&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>29.5.1</entry>
+      <entry>Integral types</entry>
+      <entry>Y</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
-      <entry>C2.11.1</entry>
-      <entry>Synopsis</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>DR 557</entry>
+      <entry>29.5.2</entry>
+      <entry>Address types</entry>
+      <entry>Y</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
-      <entry>C2.11.2</entry>
-      <entry>Definitions</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>29.5.3</entry>
+      <entry>Generic types</entry>
+      <entry>Y</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
-      <entry>C2.12</entry>
-      <entry>Header <code>&lt;inttypes.h&gt;</code></entry>
-      <entry>done</entry>
+      <entry>29.6</entry>
+      <entry>Operations on atomic types</entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.13</entry>
-      <entry>Additions to header <code>&lt;climits&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>29.7</entry>
+      <entry>Flag Type and operations</entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.14</entry>
-      <entry>Additions to header <code>&lt;limits.h&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>29.8</entry>
+      <entry>Fences</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>C2.15</entry>
-      <entry>Additions to header <code>&lt;locale&gt;</code></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>missing</entry>
-      <entry></entry>
+      <entry>
+	<emphasis>30</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Thread support</emphasis>
+      </entry>
     </row>
     <row>
-      <entry>C2.16</entry>
-      <entry>Additions to header <code>&lt;cmath&gt;</code></entry>
-      <entry>done</entry>
+      <entry>30.1</entry>
+      <entry>General</entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.16.1</entry>
-      <entry>Synopsis</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>30.2</entry>
+      <entry>Requirements</entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.16.2</entry>
-      <entry>Definitions</entry>
-      <entry>done</entry>
+      <entry>30.3</entry>
+      <entry>Threads</entry>
       <entry></entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.16.3</entry>
-      <entry>Function template definitions</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>30.3.1</entry>
+      <entry>Class <code>thread</code></entry>
+      <entry>Partial</entry>
+      <entry>Missing futures</entry>
     </row>
     <row>
-      <entry>C2.16.4</entry>
-      <entry>Additional overloads</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>30.3.2</entry>
+      <entry>Namespace <code>this_thread</code></entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry>DR 568; DR 550</entry>
     </row>
     <row>
-      <entry>C2.17</entry>
-      <entry>Additions to header <code>&lt;math.h&gt;</code></entry>
-      <entry>done</entry>
+      <entry>30.4</entry>
+      <entry>Mutual exclusion</entry>
       <entry></entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.18</entry>
-      <entry>Additions to header <code>&lt;cstdarg&gt;</code></entry>
-      <entry>done</entry>
+      <entry>30.4.1</entry>
+      <entry>Mutex requirements</entry>
       <entry></entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.19</entry>
-      <entry>Additions to header <code>&lt;stdarg.h&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>30.4.1.1</entry>
+      <entry>Class <code>mutex</code></entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.20</entry>
-      <entry>The header <code>&lt;cstdbool&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>30.4.1.2</entry>
+      <entry>Class <code>recursive_mutex</code></entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.21</entry>
-      <entry>The header <code>&lt;stdbool.h&gt;</code></entry>
-      <entry>done</entry>
+      <entry>30.4.2</entry>
+      <entry>Timed mutex requirements</entry>
       <entry></entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.22</entry>
-      <entry>The header <code>&lt;cstdint&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>30.4.2.1</entry>
+      <entry>Class <code>timed_mutex</code></entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.22.1</entry>
-      <entry>Synopsis</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>30.4.2.2</entry>
+      <entry>Class <code>recursive_timed_mutex</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>C2.22.2</entry>
-      <entry>Definitions</entry>
-      <entry>done</entry>
+      <entry>30.4.3</entry>
+      <entry>Locks</entry>
       <entry></entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.23</entry>
-      <entry>The header <code>&lt;stdint.h&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>30.4.3.1</entry>
+      <entry>Class template <code>lock_guard</code></entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>C2.24</entry>
-      <entry>Additions to header <code>&lt;cstdio&gt;</code></entry>
-      <entry>done</entry>
+      <entry>30.4.3.2</entry>
+      <entry>Class template <code>unique_lock</code></entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.24.1</entry>
-      <entry>Synopsis</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>30.4.4</entry>
+      <entry>Generic locking algorithms</entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.24.2</entry>
-      <entry>Definitions</entry>
-      <entry>done</entry>
+      <entry>30.4.5</entry>
+      <entry>Call once</entry>
       <entry></entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.24.3</entry>
-      <entry>Additional format specifiers</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>30.4.5.1</entry>
+      <entry><code>once_flag</code></entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry>C library responsibility</entry>
     </row>
     <row>
-      <entry>C2.24.4</entry>
-      <entry>Additions to header <code>&lt;stdio.h&gt;</code></entry>
-      <entry>done</entry>
+      <entry>30.4.5.2</entry>
+      <entry><code>call_once</code></entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.25</entry>
-      <entry>Additions to header <code>&lt;cstdlib&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>30.5</entry>
+      <entry>Condition variables</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>C2.25.1</entry>
-      <entry>Synopsis</entry>
-      <entry>done</entry>
+      <entry>30.5.1</entry>
+      <entry>Class <code>condition_variable</code></entry>
+      <entry>Y</entry>
       <entry></entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.25.2</entry>
-      <entry>Definitions</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <?dbhtml bgcolor="#B0B0B0" ?>  
+      <entry>30.5.2</entry>
+      <entry>Class <code>condition_variable_any</code></entry>
+      <entry>Partial</entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.25.3</entry>
-      <entry>Function <code>abs</code></entry>
-      <entry>done</entry>
+      <entry>30.6</entry>
+      <entry>Futures</entry>
       <entry></entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.25.4</entry>
-      <entry>Function <code>div</code></entry>
-      <entry>done</entry>
-      <entry></entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>30.6.1</entry>
+      <entry>Overview</entry>
+      <entry>N</entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.26</entry>
-      <entry>Additions to header <code>&lt;stdlib.h&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>30.6.2</entry>
+      <entry>Error handling</entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>C2.27</entry>
-      <entry>Header <code>&lt;ctgmath&gt;</code></entry>
-      <entry>done</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>30.6.3</entry>
+      <entry>Class <code>future_error</code></entry>
+      <entry>N</entry>
       <entry></entry>
-      <entry></entry>
-      <entry>DR 551</entry>
     </row>
     <row>
-      <entry>C2.28</entry>
-      <entry>Header <code>&lt;tgmath.h&gt;</code></entry>
-      <entry>done</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>30.6.4</entry>
+      <entry>Class template <code>unique_future</code></entry>
+      <entry>N</entry>
       <entry></entry>
-      <entry></entry>
-      <entry>DR 551</entry>
     </row>
     <row>
-      <entry>C2.29</entry>
-      <entry>Additions to header <code>&lt;ctime&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>30.6.5</entry>
+      <entry>Class template <code>shared_future</code></entry>
+      <entry>N</entry>
       <entry></entry>
-      <entry>C library responsibility</entry>
     </row>
     <row>
-      <entry>C2.30</entry>
-      <entry>Additions to header <code>&lt;cwchar&gt;</code></entry>
-      <entry>done</entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>30.6.6</entry>
+      <entry>Class template <code>promise</code></entry>
+      <entry>N</entry>
       <entry></entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.30.1</entry>
-      <entry>Synopsis</entry>
-      <entry>done</entry>
-      <entry></entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>30.6.7</entry>
+      <entry>Allocator templates</entry>
+      <entry>N</entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.30.2</entry>
-      <entry>Definitions</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
+      <?dbhtml bgcolor="#C8B0B0" ?> 
+      <entry>30.6.8</entry>
+      <entry>Class template <code>packaged_task</code></entry>
+      <entry>N</entry>
       <entry></entry>
     </row>
     <row>
-      <entry>C2.30.3</entry>
-      <entry>Additional wide format specifiers</entry>
-      <entry>done</entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>C library responsibility</entry>
+      <entry>
+      	<emphasis>Appendix D</emphasis>
+      </entry>
+      <entry namest="c2" nameend="c4" align="left">
+	<emphasis>Compatibility features</emphasis>
+      </entry>
     </row>
     <row>
-      <entry>C2.31</entry>
-      <entry>Additions to header <code>&lt;wchar.h&gt;</code></entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>D.1</entry>
+      <entry>Increment operator with bool operand</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>C2.32</entry>
-      <entry>Additions to header <code>&lt;cwctype&gt;</code></entry>
-      <entry>done</entry>
+      <entry>D.2</entry>
+      <entry><code>static</code> keyword</entry>
       <entry></entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.32.1</entry>
-      <entry>Synopsis</entry>
-      <entry>done</entry>
+      <entry>D.3</entry>
+      <entry>Access declarations</entry>
       <entry></entry>
       <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>C2.32.2</entry>
-      <entry>Function <code>iswblank</code></entry>
-      <entry>done</entry>
-      <entry></entry>
+      <entry>D.4</entry>
+      <entry>Implicit conversion from const strings</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>C2.33</entry>
-      <entry>Additions to header <code>&lt;wctype.h&gt;</code></entry>
-      <entry>done</entry>
+      <entry>D.5</entry>
+      <entry>C standard library headers</entry>
       <entry></entry>
       <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry><emphasis>D</emphasis></entry>
-      <entry namest="c2" nameend="c6" align="left"><emphasis>Compatibility Features</emphasis></entry>
     </row>
     <row>
       <entry>D.6</entry>
-      <entry>Old iostream members</entry>
-      <entry>done</entry>
+      <entry>Old iostreams members</entry>
       <entry></entry>
+      <entry></entry>
+    </row>
+    <row>
+      <entry>D.7</entry>
+      <entry>char* streams</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
       <entry>D.8</entry>
       <entry>Binders</entry>
-      <entry>done</entry>
       <entry></entry>
       <entry></entry>
-      <entry><ulink url="http://gcc.gnu.org/PR33911">33911</ulink></entry>
     </row>
     <row>
       <entry>D.9</entry>
-      <entry>Class template <code>auto_ptr</code></entry>
-      <entry>done</entry>
+      <entry><code>auto_ptr</code></entry>
       <entry></entry>
       <entry></entry>
-      <entry><ulink url="http://gcc.gnu.org/PR33911">33911</ulink></entry>
     </row>
+    <row>
+      <entry>D.10</entry>
+      <entry>Iterator primitives</entry>
+      <entry></entry>
+      <entry></entry>
+    </row>
+
   </tbody>
 </tgroup>
 </table>
 
-<para>
-Footnotes
-</para>
-
-<para>
-  The shared_ptr implementation uses some code from the
-  <ulink url="http://www.boost.org/libs/smart_ptr/shared_ptr.htm">Boost 
-    shared_ptr</ulink> library.
-</para>  
 
 </sect2>

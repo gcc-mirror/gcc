@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 14. Locales</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="localization.html" title="Part VI.  Localization" /><link rel="prev" href="localization.html" title="Part VI.  Localization" /><link rel="next" href="facets.html" title="Chapter 15. Facets aka Categories" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 14. Locales</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="localization.html">Prev</a> </td><th width="60%" align="center">Part VI. 
+  Localization
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="facets.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.localization.locales"></a>Chapter 14. Locales</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="locales.html#manual.localization.locales.locale">locale</a></span></dt><dd><dl><dt><span class="sect2"><a href="locales.html#locales.locale.req">Requirements</a></span></dt><dt><span class="sect2"><a href="locales.html#locales.locale.design">Design</a></span></dt><dt><span class="sect2"><a href="locales.html#locales.locale.impl">Implementation</a></span></dt><dt><span class="sect2"><a href="locales.html#locales.locale.future">Future</a></span></dt></dl></dd></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.localization.locales.locale"></a>locale</h2></div></div></div><p>
+Describes the basic locale object, including nested
+classes id, facet, and the reference-counted implementation object,
+class _Impl.
+</p><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.req"></a>Requirements</h3></div></div></div><p>
+Class locale is non-templatized and has two distinct types nested
+inside of it:
+</p><div class="blockquote"><blockquote class="blockquote"><p>
+<span class="emphasis"><em>
+class facet
+22.1.1.1.2 Class locale::facet
+</em></span>
+</p></blockquote></div><p>
+Facets actually implement locale functionality. For instance, a facet
+called numpunct is the data objects that can be used to query for the
+thousands separator is in the German locale.
+</p><p>
+Literally, a facet is strictly defined:
+</p><div class="itemizedlist"><ul type="disc"><li><p>
+      Containing the following public data member:
+    </p><p>
+      <code class="code">static locale::id id;</code>
+    </p></li><li><p>
+      Derived from another facet:
+    </p><p>
+      <code class="code">class gnu_codecvt: public std::ctype&lt;user-defined-type&gt;</code>
+    </p></li></ul></div><p>
+Of interest in this class are the memory management options explicitly
+specified as an argument to facet's constructor. Each constructor of a
+facet class takes a std::size_t __refs argument: if __refs == 0, the
+facet is deleted when the locale containing it is destroyed. If __refs
+== 1, the facet is not destroyed, even when it is no longer
+referenced.
+</p><div class="blockquote"><blockquote class="blockquote"><p>
+<span class="emphasis"><em>
+class id
+22.1.1.1.3 - Class locale::id
+</em></span>
+</p></blockquote></div><p>
+Provides an index for looking up specific facets.
+</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.design"></a>Design</h3></div></div></div><p>
+The major design challenge is fitting an object-orientated and
+non-global locale design on top of POSIX and other relevant standards,
+which include the Single Unix (nee X/Open.)
+</p><p>
+Because C and earlier versions of POSIX fall down so completely,
+portability is an issue.
+</p></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.impl"></a>Implementation</h3></div></div></div><div class="sect3" lang="en" xml:lang="en"><div class="titlepage"><div><div><h4 class="title"><a id="locale.impl.c"></a>Interacting with "C" locales</h4></div></div></div><div class="itemizedlist"><ul type="disc"><li><p> 
+       <code class="code">`locale -a`</code> displays available locales. 
+     </p><div class="blockquote"><blockquote class="blockquote"><pre class="programlisting">
+af_ZA
+ar_AE
+ar_AE.utf8
+ar_BH
+ar_BH.utf8
+ar_DZ
+ar_DZ.utf8
+ar_EG
+ar_EG.utf8
+ar_IN
+ar_IQ
+ar_IQ.utf8
+ar_JO
+ar_JO.utf8
+ar_KW
+ar_KW.utf8
+ar_LB
+ar_LB.utf8
+ar_LY
+ar_LY.utf8
+ar_MA
+ar_MA.utf8
+ar_OM
+ar_OM.utf8
+ar_QA
+ar_QA.utf8
+ar_SA
+ar_SA.utf8
+ar_SD
+ar_SD.utf8
+ar_SY
+ar_SY.utf8
+ar_TN
+ar_TN.utf8
+ar_YE
+ar_YE.utf8
+be_BY
+be_BY.utf8
+bg_BG
+bg_BG.utf8
+br_FR
+bs_BA
+C
+ca_ES
+ca_ES@euro
+ca_ES.utf8
+ca_ES.utf8@euro
+cs_CZ
+cs_CZ.utf8
+cy_GB
+da_DK
+da_DK.iso885915
+da_DK.utf8
+de_AT
+de_AT@euro
+de_AT.utf8
+de_AT.utf8@euro
+de_BE
+de_BE@euro
+de_BE.utf8
+de_BE.utf8@euro
+de_CH
+de_CH.utf8
+de_DE
+de_DE@euro
+de_DE.utf8
+de_DE.utf8@euro
+de_LU
+de_LU@euro
+de_LU.utf8
+de_LU.utf8@euro
+el_GR
+el_GR.utf8
+en_AU
+en_AU.utf8
+en_BW
+en_BW.utf8
+en_CA
+en_CA.utf8
+en_DK
+en_DK.utf8
+en_GB
+en_GB.iso885915
+en_GB.utf8
+en_HK
+en_HK.utf8
+en_IE
+en_IE@euro
+en_IE.utf8
+en_IE.utf8@euro
+en_IN
+en_NZ
+en_NZ.utf8
+en_PH
+en_PH.utf8
+en_SG
+en_SG.utf8
+en_US
+en_US.iso885915
+en_US.utf8
+en_ZA
+en_ZA.utf8
+en_ZW
+en_ZW.utf8
+es_AR
+es_AR.utf8
+es_BO
+es_BO.utf8
+es_CL
+es_CL.utf8
+es_CO
+es_CO.utf8
+es_CR
+es_CR.utf8
+es_DO
+es_DO.utf8
+es_EC
+es_EC.utf8
+es_ES
+es_ES@euro
+es_ES.utf8
+es_ES.utf8@euro
+es_GT
+es_GT.utf8
+es_HN
+es_HN.utf8
+es_MX
+es_MX.utf8
+es_NI
+es_NI.utf8
+es_PA
+es_PA.utf8
+es_PE
+es_PE.utf8
+es_PR
+es_PR.utf8
+es_PY
+es_PY.utf8
+es_SV
+es_SV.utf8
+es_US
+es_US.utf8
+es_UY
+es_UY.utf8
+es_VE
+es_VE.utf8
+et_EE
+et_EE.utf8
+eu_ES
+eu_ES@euro
+eu_ES.utf8
+eu_ES.utf8@euro
+fa_IR
+fi_FI
+fi_FI@euro
+fi_FI.utf8
+fi_FI.utf8@euro
+fo_FO
+fo_FO.utf8
+fr_BE
+fr_BE@euro
+fr_BE.utf8
+fr_BE.utf8@euro
+fr_CA
+fr_CA.utf8
+fr_CH
+fr_CH.utf8
+fr_FR
+fr_FR@euro
+fr_FR.utf8
+fr_FR.utf8@euro
+fr_LU
+fr_LU@euro
+fr_LU.utf8
+fr_LU.utf8@euro
+ga_IE
+ga_IE@euro
+ga_IE.utf8
+ga_IE.utf8@euro
+gl_ES
+gl_ES@euro
+gl_ES.utf8
+gl_ES.utf8@euro
+gv_GB
+gv_GB.utf8
+he_IL
+he_IL.utf8
+hi_IN
+hr_HR
+hr_HR.utf8
+hu_HU
+hu_HU.utf8
+id_ID
+id_ID.utf8
+is_IS
+is_IS.utf8
+it_CH
+it_CH.utf8
+it_IT
+it_IT@euro
+it_IT.utf8
+it_IT.utf8@euro
+iw_IL
+iw_IL.utf8
+ja_JP.eucjp
+ja_JP.utf8
+ka_GE
+kl_GL
+kl_GL.utf8
+ko_KR.euckr
+ko_KR.utf8
+kw_GB
+kw_GB.utf8
+lt_LT
+lt_LT.utf8
+lv_LV
+lv_LV.utf8
+mi_NZ
+mk_MK
+mk_MK.utf8
+mr_IN
+ms_MY
+ms_MY.utf8
+mt_MT
+mt_MT.utf8
+nl_BE
+nl_BE@euro
+nl_BE.utf8
+nl_BE.utf8@euro
+nl_NL
+nl_NL@euro
+nl_NL.utf8
+nl_NL.utf8@euro
+nn_NO
+nn_NO.utf8
+no_NO
+no_NO.utf8
+oc_FR
+pl_PL
+pl_PL.utf8
+POSIX
+pt_BR
+pt_BR.utf8
+pt_PT
+pt_PT@euro
+pt_PT.utf8
+pt_PT.utf8@euro
+ro_RO
+ro_RO.utf8
+ru_RU
+ru_RU.koi8r
+ru_RU.utf8
+ru_UA
+ru_UA.utf8
+se_NO
+sk_SK
+sk_SK.utf8
+sl_SI
+sl_SI.utf8
+sq_AL
+sq_AL.utf8
+sr_YU
+sr_YU@cyrillic
+sr_YU.utf8
+sr_YU.utf8@cyrillic
+sv_FI
+sv_FI@euro
+sv_FI.utf8
+sv_FI.utf8@euro
+sv_SE
+sv_SE.iso885915
+sv_SE.utf8
+ta_IN
+te_IN
+tg_TJ
+th_TH
+th_TH.utf8
+tl_PH
+tr_TR
+tr_TR.utf8
+uk_UA
+uk_UA.utf8
+ur_PK
+uz_UZ
+vi_VN
+vi_VN.tcvn
+wa_BE
+wa_BE@euro
+yi_US
+zh_CN
+zh_CN.gb18030
+zh_CN.gbk
+zh_CN.utf8
+zh_HK
+zh_HK.utf8
+zh_TW
+zh_TW.euctw
+zh_TW.utf8
+</pre></blockquote></div></li><li><p> 
+       <code class="code">`locale`</code> displays environmental variables that
+       impact how locale("") will be deduced.
+     </p><div class="blockquote"><blockquote class="blockquote"><pre class="programlisting">
+LANG=en_US
+LC_CTYPE="en_US"
+LC_NUMERIC="en_US"
+LC_TIME="en_US"
+LC_COLLATE="en_US"
+LC_MONETARY="en_US"
+LC_MESSAGES="en_US"
+LC_PAPER="en_US"
+LC_NAME="en_US"
+LC_ADDRESS="en_US"
+LC_TELEPHONE="en_US"
+LC_MEASUREMENT="en_US"
+LC_IDENTIFICATION="en_US"
+LC_ALL=
+</pre></blockquote></div></li></ul></div><p>
+From Josuttis, p. 697-698, which says, that "there is only *one*
+relation (of the C++ locale mechanism) to the C locale mechanism: the
+global C locale is modified if a named C++ locale object is set as the
+global locale" (emphasis Paolo), that is:
+</p><pre class="programlisting">std::locale::global(std::locale(""));</pre><p>affects the C functions as if the following call was made:</p><pre class="programlisting">std::setlocale(LC_ALL, "");</pre><p>
+  On the other hand, there is *no* vice versa, that is, calling
+  setlocale has *no* whatsoever on the C++ locale mechanism, in
+  particular on the working of locale(""), which constructs the locale
+  object from the environment of the running program, that is, in
+  practice, the set of LC_ALL, LANG, etc. variable of the shell.
+</p></div></div><div class="sect2" lang="en" xml:lang="en"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.future"></a>Future</h3></div></div></div><div class="itemizedlist"><ul type="disc"><li><p>
+       Locale initialization: at what point does _S_classic, _S_global
+       get initialized? Can named locales assume this initialization
+       has already taken place? 
+     </p></li><li><p> 
+       Document how named locales error check when filling data
+       members. I.e., a fr_FR locale that doesn't have
+       numpunct::truename(): does it use "true"? Or is it a blank
+       string? What's the convention? 
+   </p></li><li><p> 
+       Explain how locale aliasing happens. When does "de_DE" use "de"
+       information? What is the rule for locales composed of just an
+       ISO language code (say, "de") and locales with both an ISO
+       language code and ISO country code (say, "de_DE"). 
+     </p></li><li><p> 
+       What should non-required facet instantiations do?  If the
+       generic implementation is provided, then how to end-users
+       provide specializations? 
+   </p></li></ul></div></div><div class="bibliography"><div class="titlepage"><div><div><h3 class="title"><a id="locales.locale.biblio"></a>Bibliography</h3></div></div></div><div class="biblioentry"><a id="id458449"></a><p><span class="title"><i>
+      The GNU C Library
+    </i>. </span><span class="author"><span class="firstname">Roland</span> <span class="surname">McGrath</span>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2007 FSF. </span><span class="pagenums">Chapters 6 Character Set Handling and 7 Locales and Internationalization. </span></p></div><div class="biblioentry"><a id="id435397"></a><p><span class="title"><i>
+      Correspondence
+    </i>. </span><span class="author"><span class="firstname">Ulrich</span> <span class="surname">Drepper</span>. </span><span class="copyright">Copyright © 2002 . </span></p></div><div class="biblioentry"><a id="id435426"></a><p><span class="title"><i>
+      ISO/IEC 14882:1998 Programming languages - C++
+    </i>. </span><span class="copyright">Copyright © 1998 ISO. </span></p></div><div class="biblioentry"><a id="id458376"></a><p><span class="title"><i>
+      ISO/IEC 9899:1999 Programming languages - C
+    </i>. </span><span class="copyright">Copyright © 1999 ISO. </span></p></div><div class="biblioentry"><a id="id458395"></a><p><span class="title"><i>
+      System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)
+    </i>. </span><span class="copyright">Copyright © 1999 
+      The Open Group/The Institute of Electrical and Electronics Engineers, Inc.. </span><span class="biblioid">
+      <a class="ulink" href="http://www.opennc.org/austin/docreg.html" target="_top">
+      </a>
+    . </span></p></div><div class="biblioentry"><a id="id462775"></a><p><span class="title"><i>
+      The C++ Programming Language, Special Edition
+    </i>. </span><span class="author"><span class="firstname">Bjarne</span> <span class="surname">Stroustrup</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley, Inc.. </span><span class="pagenums">Appendix D. </span><span class="publisher"><span class="publishername">
+	Addison Wesley
+      . </span></span></p></div><div class="biblioentry"><a id="id428064"></a><p><span class="title"><i>
+      Standard C++ IOStreams and Locales
+    </i>. </span><span class="subtitle">
+      Advanced Programmer's Guide and Reference
+    . </span><span class="author"><span class="firstname">Angelika</span> <span class="surname">Langer</span>. </span><span class="author"><span class="firstname">Klaus</span> <span class="surname">Kreft</span>. </span><span class="copyright">Copyright © 2000 Addison Wesley Longman, Inc.. </span><span class="publisher"><span class="publishername">
+	Addison Wesley Longman
+      . </span></span></p></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="localization.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="localization.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="facets.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Part VI. 
+  Localization
+  
+ </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 15. Facets aka Categories</td></tr></table></div></body></html>

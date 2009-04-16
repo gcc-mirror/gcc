@@ -17,9 +17,13 @@
   </keywordset>
 </partinfo>
 
-<title>Diagnostics</title>
+<title>
+  Diagnostics
+  <indexterm><primary>Diagnostics</primary></indexterm>
+</title>
 
 <chapter id="manual.diagnostics.exceptions" xreflabel="Exceptions">
+  <?dbhtml filename="exceptions.html"?>
   <title>Exceptions</title>
 
   <sect1 id="manual.diagnostics.exceptions.hierarchy" xreflabel="Exception Classes">

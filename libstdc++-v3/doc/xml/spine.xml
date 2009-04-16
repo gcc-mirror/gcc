@@ -3,7 +3,6 @@
  "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" 
 [
 <!ENTITY authors SYSTEM "authors.xml"> 
-<!ENTITY license SYSTEM "license.xml"> 
 ]>
 
 <set id="set-index" xreflabel="The GNU C++ Library Documentation">
@@ -21,6 +20,7 @@
     <year>2006</year>
     <year>2007</year>
     <year>2008</year>
+    <year>2009</year>
     <holder>
       <ulink url="http://fsf.org">FSF</ulink>
     </holder>

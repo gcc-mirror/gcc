@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE appendix PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<appendix>
+<appendix id="appendix.gpl-3.0">
+  <?dbhtml filename="appendix_gpl.html"?>
   <title>
     <acronym>GNU</acronym> General Public License version 3
   </title>
@@ -16,7 +17,7 @@
     Everyone is permitted to copy and distribute verbatim copies of this license
     document, but changing it is not allowed.
   </para>
-  <bridgehead id="Preamble" renderas="sect1">
+  <bridgehead id="gpl-3-preamble" renderas="sect1">
     Preamble
   </bridgehead>
   <para>
@@ -94,7 +95,7 @@
   <bridgehead>
     TERMS AND CONDITIONS
   </bridgehead>
-  <bridgehead id="Definitions" renderas="sect1">
+  <bridgehead id="gpl-3-definitions" renderas="sect1">
     0. Definitions.
   </bridgehead>
   <para>
@@ -519,7 +520,7 @@
      of a separately written license, or stated as exceptions; the above
      requirements apply either way.
    </para>
-   <bridgehead id="Termination" renderas="sect1">
+   <bridgehead id="gpl-3-termination" renderas="sect1">
      8. Termination.
    </bridgehead>
    <para>

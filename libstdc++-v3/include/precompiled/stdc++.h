@@ -51,6 +51,7 @@
 #include <ccomplex>
 #include <cfenv>
 #include <cinttypes>
+#include <cstdatomic>
 #include <cstdbool>
 #include <cstdint>
 #include <ctgmath>
@@ -95,11 +96,14 @@
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
 #include <array>
 #include <chrono>
+#include <condition_variable>
 #include <forward_list>
+#include <mutex>
 #include <random>
 #include <ratio>
 #include <regex>
 #include <system_error>
+#include <thread>
 #include <tuple>
 #include <type_traits>
 #include <unordered_map>

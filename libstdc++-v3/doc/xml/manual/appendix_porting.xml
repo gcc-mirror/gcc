@@ -17,7 +17,13 @@
   </keywordset>
 </appendixinfo>
 
-<title>Porting and Maintenance</title>
+<title>
+  Porting and Maintenance
+  <indexterm>
+    <primary>Appendix</primary>
+    <secondary>Porting and Maintenance</secondary>
+  </indexterm>
+</title>
 
   <!-- Hacking the Build System -->
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" 

@@ -17,7 +17,10 @@
   </keywordset>
 </partinfo>
 
-<title>Support</title>
+<title>
+  Support
+  <indexterm><primary>Support</primary></indexterm>
+</title>
 
 <preface>
   <title></title>
@@ -35,6 +38,7 @@
 </preface>
 
 <chapter id="manual.support.types" xreflabel="Types">
+  <?dbhtml filename="fundamental_types.html"?>
   <title>Types</title>
   <sect1 id="manual.support.types.fundamental" xreflabel="Fundamental Types">
     <title>Fundamental Types</title>
@@ -196,6 +200,7 @@
 </chapter>
 
 <chapter id="manual.support.memory" xreflabel="Dynamic Memory">
+  <?dbhtml filename="dynamic_memory.html"?>
   <title>Dynamic Memory</title>
   <para>
     There are six flavors each of <function>new</function> and
@@ -277,6 +282,7 @@
 </chapter>
 
 <chapter id="manual.support.termination" xreflabel="Termination">
+  <?dbhtml filename="termination.html"?>
   <title>Termination</title>
   <sect1 id="support.termination.handlers" xreflabel="Termination Handlers">
     <title>Termination Handlers</title>
@@ -342,6 +348,7 @@
   </sect1>
 
   <sect1 id="support.termination.verbose" xreflabel="Verbose Terminate Handler">
+  <?dbhtml filename="verbose_termination.html"?>
     <title>Verbose Terminate Handler</title>
     <para>
       If you are having difficulty with uncaught exceptions and want a

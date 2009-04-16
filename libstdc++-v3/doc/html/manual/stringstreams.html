@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 26. Memory Based Streams</title><meta name="generator" content="DocBook XSL Stylesheets V1.74.0" /><meta name="keywords" content="&#10;      ISO C++&#10;    , &#10;      library&#10;    " /><link rel="home" href="../spine.html" title="The GNU C++ Library Documentation" /><link rel="up" href="io.html" title="Part XI.  Input and Output" /><link rel="prev" href="bk01pt11ch25s02.html" title="Buffering" /><link rel="next" href="fstreams.html" title="Chapter 27. File Based Streams" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Chapter 26. Memory Based Streams</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="bk01pt11ch25s02.html">Prev</a> </td><th width="60%" align="center">Part XI. 
+  Input and Output
+  
+</th><td width="20%" align="right"> <a accesskey="n" href="fstreams.html">Next</a></td></tr></table><hr /></div><div class="chapter" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title"><a id="manual.io.memstreams"></a>Chapter 26. Memory Based Streams</h2></div></div></div><div class="toc"><p><b>Table of Contents</b></p><dl><dt><span class="sect1"><a href="stringstreams.html#manual.io.memstreams.compat">Compatibility With strstream</a></span></dt></dl></div><div class="sect1" lang="en" xml:lang="en"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="manual.io.memstreams.compat"></a>Compatibility With strstream</h2></div></div></div><p>
+    </p><p>Stringstreams (defined in the header <code class="code">&lt;sstream&gt;</code>)
+      are in this author's opinion one of the coolest things since
+      sliced time.  An example of their use is in the Received Wisdom
+      section for Chapter 21 (Strings),
+      <a class="ulink" href="../21_strings/howto.html#1.1internal" target="_top"> describing how to
+      format strings</a>.
+   </p><p>The quick definition is:  they are siblings of ifstream and ofstream,
+      and they do for <code class="code">std::string</code> what their siblings do for
+      files.  All that work you put into writing <code class="code">&lt;&lt;</code> and
+      <code class="code">&gt;&gt;</code> functions for your classes now pays off
+      <span class="emphasis"><em>again!</em></span>  Need to format a string before passing the string
+      to a function?  Send your stuff via <code class="code">&lt;&lt;</code> to an
+      ostringstream.  You've read a string as input and need to parse it?
+      Initialize an istringstream with that string, and then pull pieces
+      out of it with <code class="code">&gt;&gt;</code>.  Have a stringstream and need to
+      get a copy of the string inside?  Just call the <code class="code">str()</code>
+      member function.
+   </p><p>This only works if you've written your
+      <code class="code">&lt;&lt;</code>/<code class="code">&gt;&gt;</code> functions correctly, though,
+      and correctly means that they take istreams and ostreams as
+      parameters, not i<span class="emphasis"><em>f</em></span>streams and o<span class="emphasis"><em>f</em></span>streams.  If they
+      take the latter, then your I/O operators will work fine with
+      file streams, but with nothing else -- including stringstreams.
+   </p><p>If you are a user of the strstream classes, you need to update
+      your code.  You don't have to explicitly append <code class="code">ends</code> to
+      terminate the C-style character array, you don't have to mess with
+      "freezing" functions, and you don't have to manage the
+      memory yourself.  The strstreams have been officially deprecated,
+      which means that 1) future revisions of the C++ Standard won't
+      support them, and 2) if you use them, people will laugh at you.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="bk01pt11ch25s02.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="io.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="fstreams.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Buffering </td><td width="20%" align="center"><a accesskey="h" href="../spine.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 27. File Based Streams</td></tr></table></div></body></html>

@@ -17,10 +17,14 @@
   </keywordset>
 </partinfo>
 
-<title>Numerics</title>
+<title>
+  Numerics
+  <indexterm><primary>Numerics</primary></indexterm>
+</title>
 
 <!-- Chapter 01 : Complex -->
 <chapter id="manual.numerics.complex" xreflabel="complex">
+<?dbhtml filename="complex.html"?>
   <title>Complex</title>
   <para>
   </para>
@@ -50,6 +54,7 @@
 
 <!-- Chapter 02 : Generalized Operations -->
 <chapter id="manual.numerics.generalized_ops" xreflabel="Generalized Ops">
+<?dbhtml filename="generalized_numeric_operations.html"?>
   <title>Generalized Operations</title>
   <para>
   </para>
@@ -92,6 +97,7 @@
 
 <!-- Chapter 03 : Interacting with C -->
 <chapter id="manual.numerics.c" xreflabel="Interacting with C">
+<?dbhtml filename="numerics_and_c.html"?>
   <title>Interacting with C</title>
 
   <sect1 id="numerics.c.array" xreflabel="Numerics vs. Arrays">

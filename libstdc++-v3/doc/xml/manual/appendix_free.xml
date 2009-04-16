@@ -17,7 +17,13 @@
   </keywordset>
 </appendixinfo>
 
-<title>Free Software Needs Free Documentation</title>
+<title>
+  Free Software Needs Free Documentation
+  <indexterm>
+    <primary>Appendix</primary>
+    <secondary>Free Documentation</secondary>
+  </indexterm>
+</title>
 
 <para>
 The biggest deficiency in free operating systems is not in the
