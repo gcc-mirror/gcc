@@ -1,3 +1,8 @@
+2009-04-16  Le-Chun Wu  <lcwu@google.com>
+
+	* decl.c (check_initializer): Use TYPE_VECTOR_OPAQUE
+	instead of targetm.vector_opaque_p.
+
 2009-04-15  Le-Chun Wu  <lcwu@google.com>
 
 	PR c++/39551

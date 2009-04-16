@@ -478,10 +478,6 @@
 #define TARGET_VECTOR_MODE_SUPPORTED_P hook_bool_mode_false
 #endif
 
-#ifndef TARGET_VECTOR_OPAQUE_P
-#define TARGET_VECTOR_OPAQUE_P hook_bool_const_tree_false
-#endif
-
 /* In hooks.c.  */
 #define TARGET_CANNOT_MODIFY_JUMPS_P hook_bool_void_false
 #define TARGET_BRANCH_TARGET_REGISTER_CLASS hook_int_void_no_regs
@@ -886,7 +882,6 @@
   TARGET_VALID_POINTER_MODE,                    \
   TARGET_SCALAR_MODE_SUPPORTED_P,		\
   TARGET_VECTOR_MODE_SUPPORTED_P,               \
-  TARGET_VECTOR_OPAQUE_P,			\
   TARGET_RTX_COSTS,				\
   TARGET_ADDRESS_COST,				\
   TARGET_ALLOCATE_INITIAL_VALUE,		\

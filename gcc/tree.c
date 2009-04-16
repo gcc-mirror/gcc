@@ -7970,6 +7970,19 @@ build_vector_type (tree innertype, int nunits)
   return make_vector_type (innertype, nunits, VOIDmode);
 }
 
+/* Similarly, but takes the inner type and number of units, which must be
+   a power of two.  */
+
+tree
+build_opaque_vector_type (tree innertype, int nunits)
+{
+  tree t;
+  innertype = build_distinct_type_copy (innertype);
+  t = make_vector_type (innertype, nunits, VOIDmode);
+  TYPE_VECTOR_OPAQUE (t) = true;
+  return t;
+}
+
 
 /* Build RESX_EXPR with given REGION_NUMBER.  */
 tree

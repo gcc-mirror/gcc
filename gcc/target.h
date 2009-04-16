@@ -674,9 +674,6 @@ struct gcc_target
      for further details.  */
   bool (* vector_mode_supported_p) (enum machine_mode mode);
 
-  /* True if a vector is opaque.  */
-  bool (* vector_opaque_p) (const_tree);
-
   /* Compute a (partial) cost for rtx X.  Return true if the complete
      cost has been computed, and false if subexpressions should be
      scanned.  In either case, *TOTAL contains the cost result.  */

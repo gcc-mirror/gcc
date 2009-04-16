@@ -586,6 +586,9 @@ struct tree_common GTY(())
        STMT_IN_SSA_EDGE_WORKLIST in
            all expressions (tree-ssa-propagate.c)
 
+	TYPE_VECTOR_OPAQUE in
+	   VECTOR_TYPE
+
    visited:
 
        TREE_VISITED in
@@ -2220,6 +2223,11 @@ extern enum machine_mode vector_type_mode (const_tree);
 /* Set precision to n when we have 2^n sub-parts of the vector.  */
 #define SET_TYPE_VECTOR_SUBPARTS(VECTOR_TYPE, X) \
   (VECTOR_TYPE_CHECK (VECTOR_TYPE)->type.precision = exact_log2 (X))
+
+/* Nonzero in an IDENTIFIER_NODE if the name is a local alias, whose
+   uses are to be substituted for uses of the TREE_CHAINed identifier.  */
+#define TYPE_VECTOR_OPAQUE(NODE) \
+  (VECTOR_TYPE_CHECK (NODE)->base.deprecated_flag)
 
 /* Indicates that objects of this type must be initialized by calling a
    function when they are created.  */
@@ -3938,6 +3946,7 @@ extern tree build_reference_type_for_mode (tree, enum machine_mode, bool);
 extern tree build_reference_type (tree);
 extern tree build_vector_type_for_mode (tree, enum machine_mode);
 extern tree build_vector_type (tree innertype, int nunits);
+extern tree build_opaque_vector_type (tree innertype, int nunits);
 extern tree build_type_no_quals (tree);
 extern tree build_index_type (tree);
 extern tree build_index_2_type (tree, tree);
