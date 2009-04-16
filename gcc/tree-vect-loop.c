@@ -2267,25 +2267,25 @@ get_initial_def_for_reduction (gimple stmt, tree init_val, tree *adjustment_def)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree vectype = STMT_VINFO_VECTYPE (stmt_vinfo);
-  int nunits =  TYPE_VECTOR_SUBPARTS (vectype);
-  tree scalar_type = TREE_TYPE (vectype);
+  tree scalar_type = TREE_TYPE (init_val);
+  tree vectype = get_vectype_for_scalar_type (scalar_type);
+  int nunits;
   enum tree_code code = gimple_assign_rhs_code (stmt);
-  tree type = TREE_TYPE (init_val);
-  tree vecdef;
   tree def_for_init;
   tree init_def;
   tree t = NULL_TREE;
   int i;
   bool nested_in_vect_loop = false; 
 
-  gcc_assert (POINTER_TYPE_P (type) || INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type));
+  gcc_assert (vectype);
+  nunits = TYPE_VECTOR_SUBPARTS (vectype);
+
+  gcc_assert (POINTER_TYPE_P (scalar_type) || INTEGRAL_TYPE_P (scalar_type)
+	      || SCALAR_FLOAT_TYPE_P (scalar_type));
   if (nested_in_vect_loop_p (loop, stmt))
     nested_in_vect_loop = true;
   else
     gcc_assert (loop == (gimple_bb (stmt))->loop_father);
-
-  vecdef = vect_get_vec_def_for_operand (init_val, stmt, NULL);
 
   switch (code)
   {
@@ -2293,7 +2293,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val, tree *adjustment_def)
   case DOT_PROD_EXPR:
   case PLUS_EXPR:
     if (nested_in_vect_loop)
-      *adjustment_def = vecdef;
+      *adjustment_def = vect_get_vec_def_for_operand (init_val, stmt, NULL);
     else
       *adjustment_def = init_val;
     /* Create a vector of zeros for init_def.  */
@@ -2310,7 +2310,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val, tree *adjustment_def)
   case MIN_EXPR:
   case MAX_EXPR:
     *adjustment_def = NULL_TREE;
-    init_def = vecdef;
+    init_def = vect_get_vec_def_for_operand (init_val, stmt, NULL);
     break;
 
   default:
