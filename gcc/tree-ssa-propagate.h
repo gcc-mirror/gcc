@@ -118,7 +118,6 @@ bool valid_gimple_rhs_p (tree);
 bool valid_gimple_call_p (tree);
 void move_ssa_defining_stmt_for_defs (gimple, gimple);
 bool update_call_from_tree (gimple_stmt_iterator *, tree);
-bool stmt_makes_single_load (gimple);
 bool stmt_makes_single_store (gimple);
 bool substitute_and_fold (prop_value_t *, bool);
 

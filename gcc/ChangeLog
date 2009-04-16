@@ -1,5 +1,11 @@
 2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
+	* tree-ssa-propagate.c (stmt_makes_single_load): Remove.
+	* tree-ssa-propagate.h: Remove the prototype for
+	stmt_makes_single_load.
+
+2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
+
 	* emit-rtl.c (set_mem_attrs_from_reg): Remove.
 	* rtl.h: Remove the prototype for set_mem_attrs_from_reg.
 
