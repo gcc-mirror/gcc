@@ -1,5 +1,13 @@
 2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
+	* tree-iterator.c (tsi_split_statement_list_after,
+	tsi_split_statement_list_before): Remove.
+	* tree-iterator.h: Remove the prototypes for
+	tsi_split_statement_list_after and
+	tsi_split_statement_list_before.
+
+2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
+
 	* tree-ssa-propagate.c (stmt_makes_single_load): Remove.
 	* tree-ssa-propagate.h: Remove the prototype for
 	stmt_makes_single_load.
