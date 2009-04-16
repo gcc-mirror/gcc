@@ -10,6 +10,8 @@
 
 2009-04-16  Robert Dewar  <dewar@adacore.com>
 
+	* Make-lang.in: Add entries for s-conca?.o
+
 	* Makefile.rtl: Add entries for s-conca?
 
 	* debug.adb: Add debug flags -gnatd.c and -gnatd.C to control behavior
