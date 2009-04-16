@@ -375,7 +375,29 @@ make_blocks (gimple_seq seq)
       /* If STMT is a basic block terminator, set START_NEW_BLOCK for the
 	 next iteration.  */
       if (stmt_ends_bb_p (stmt))
-	start_new_block = true;
+	{
+	  /* If the stmt can make abnormal goto use a new temporary
+	     for the assignment to the LHS.  This makes sure the old value
+	     of the LHS is available on the abnormal edge.  Otherwise
+	     we will end up with overlapping life-ranges for abnormal
+	     SSA names.  */
+	  if (gimple_has_lhs (stmt)
+	      && stmt_can_make_abnormal_goto (stmt)
+	      && is_gimple_reg_type (TREE_TYPE (gimple_get_lhs (stmt))))
+	    {
+	      tree lhs = gimple_get_lhs (stmt);
+	      tree tmp = create_tmp_var (TREE_TYPE (lhs), NULL);
+	      gimple s = gimple_build_assign (lhs, tmp);
+	      gimple_set_location (s, gimple_location (stmt));
+	      gimple_set_block (s, gimple_block (stmt));
+	      gimple_set_lhs (stmt, tmp);
+	      if (TREE_CODE (TREE_TYPE (tmp)) == COMPLEX_TYPE
+		  || TREE_CODE (TREE_TYPE (tmp)) == VECTOR_TYPE)
+		DECL_GIMPLE_REG_P (tmp) = 1;
+	      gsi_insert_after (&i, s, GSI_SAME_STMT);
+	    }
+	  start_new_block = true;
+	}
 
       gsi_next (&i);
       first_stmt_of_seq = false;

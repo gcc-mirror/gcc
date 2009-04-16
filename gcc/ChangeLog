@@ -1,3 +1,9 @@
+2009-04-16  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/39625
+	* tree-cfg.c (make_blocks): Split statements with to-be
+	abnormal SSA names on the lhs.
+
 2009-04-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* c-common.c (vector_targets_convertible_p, vector_types_convertible_p):
