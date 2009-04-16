@@ -1146,7 +1146,7 @@ package body GNAT.Perfect_Hash_Generators is
       --  words already there because a previous computation failed. We are
       --  currently retrying and the reduced words have to be deallocated.
 
-      for W in NK .. WT.Last loop
+      for W in Reduced (0) .. WT.Last loop
          Free_Word (WT.Table (W));
       end loop;
       IT.Init;
