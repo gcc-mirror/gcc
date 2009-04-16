@@ -336,21 +336,22 @@ mark_address_taken (tree x)
 
 /* Mark load of T.  */
 
-static void
-mark_load (ipa_reference_local_vars_info_t local, 
-	   tree t)
+static bool
+mark_load (gimple stmt ATTRIBUTE_UNUSED, tree t, void *data)
 {
+  ipa_reference_local_vars_info_t local = (ipa_reference_local_vars_info_t)data;
   if (TREE_CODE (t) == VAR_DECL
       && has_proper_scope_for_analysis (t))
     bitmap_set_bit (local->statics_read, DECL_UID (t));
+  return false;
 }
 
 /* Mark store of T.  */
 
-static void
-mark_store (ipa_reference_local_vars_info_t local, 
-	   tree t)
+static bool
+mark_store (gimple stmt ATTRIBUTE_UNUSED, tree t, void *data)
 {
+  ipa_reference_local_vars_info_t local = (ipa_reference_local_vars_info_t)data;
   if (TREE_CODE (t) == VAR_DECL
       && has_proper_scope_for_analysis (t))
     {
@@ -361,6 +362,7 @@ mark_store (ipa_reference_local_vars_info_t local,
       if (module_statics_written)
 	bitmap_set_bit (module_statics_written, DECL_UID (t));
     }
+  return false;
 }
 
 /* Look for memory clobber and set read_all/write_all if present.  */
@@ -434,46 +436,12 @@ scan_stmt_for_static_refs (gimple_stmt_iterator *gsip,
     local = get_reference_vars_info (fn)->local;
 
   /* Look for direct loads and stores.  */
-  if (gimple_has_lhs (stmt))
-    {
-      tree lhs = get_base_address (gimple_get_lhs (stmt));
-      if (lhs && DECL_P (lhs))
-        mark_store (local, lhs);
-    }
-  if (gimple_assign_single_p (stmt))
-    {
-      tree rhs = get_base_address (gimple_assign_rhs1 (stmt));
-      if (rhs && DECL_P (rhs))
-	mark_load (local, rhs);
-    }
-  else if (is_gimple_call (stmt))
-    {
-      for (i = 0; i < gimple_call_num_args (stmt); ++i)
-	{
-	  tree rhs = get_base_address (gimple_call_arg (stmt, i));
-	  if (rhs && DECL_P (rhs))
-	    mark_load (local, rhs);
-	}
-      check_call (local, stmt);
-    }
+  walk_stmt_load_store_addr_ops (stmt, local, mark_load, mark_store, NULL);
+
+  if (is_gimple_call (stmt))
+    check_call (local, stmt);
   else if (gimple_code (stmt) == GIMPLE_ASM)
-    {
-      for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
-	{
-	  tree op = TREE_VALUE (gimple_asm_input_op (stmt, i));
-	  op = get_base_address (op);
-	  if (op && DECL_P (op))
-	    mark_load (local, op);
-	}
-      for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
-	{
-	  tree op = TREE_VALUE (gimple_asm_output_op (stmt, i));
-	  op = get_base_address (op);
-	  if (op && DECL_P (op))
-	    mark_store (local, op);
-	}
-      check_asm_memory_clobber (local, stmt);
-    }
+    check_asm_memory_clobber (local, stmt);
 
   if (gimple_addresses_taken (stmt))
     EXECUTE_IF_SET_IN_BITMAP (gimple_addresses_taken (stmt), 0, i, bi)

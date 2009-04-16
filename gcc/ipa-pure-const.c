@@ -209,36 +209,28 @@ check_decl (funct_state local,
    variable T is legal in a function that is either pure or const.  */
 
 static inline void 
-check_op (funct_state local, 
-	    tree t, bool checking_write)
+check_op (funct_state local, tree t, bool checking_write)
 {
-  while (t && handled_component_p (t))
-    t = TREE_OPERAND (t, 0);
-  if (!t)
-    return;
-  if (INDIRECT_REF_P (t) || TREE_CODE (t) == TARGET_MEM_REF)
+  if (TREE_THIS_VOLATILE (t))
     {
-      if (TREE_THIS_VOLATILE (t)) 
-	{ 
-	  local->pure_const_state = IPA_NEITHER;
-	  if (dump_file)
-	    fprintf (dump_file, "    Volatile indirect ref is not const/pure\n");
-	  return;
-	}
-      else if (checking_write)
-	{ 
-	  local->pure_const_state = IPA_NEITHER;
-	  if (dump_file)
-	    fprintf (dump_file, "    Indirect ref write is not const/pure\n");
-	  return;
-	}
-       else
-        {
-	  if (dump_file)
-	    fprintf (dump_file, "    Indirect ref read is not const\n");
-          if (local->pure_const_state == IPA_CONST)
-	    local->pure_const_state = IPA_PURE;
-	}
+      local->pure_const_state = IPA_NEITHER;
+      if (dump_file)
+	fprintf (dump_file, "    Volatile indirect ref is not const/pure\n");
+      return;
+    }
+  else if (checking_write)
+    {
+      local->pure_const_state = IPA_NEITHER;
+      if (dump_file)
+	fprintf (dump_file, "    Indirect ref write is not const/pure\n");
+      return;
+    }
+  else
+    {
+      if (dump_file)
+	fprintf (dump_file, "    Indirect ref read is not const\n");
+      if (local->pure_const_state == IPA_CONST)
+	local->pure_const_state = IPA_PURE;
     }
 }
 
@@ -375,6 +367,30 @@ check_call (funct_state local, gimple call, bool ipa)
   /* Direct functions calls are handled by IPA propagation.  */
 }
 
+/* Wrapper around check_decl for loads.  */
+
+static bool
+check_load (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+{
+  if (DECL_P (op))
+    check_decl ((funct_state)data, op, false);
+  else
+    check_op ((funct_state)data, op, false);
+  return false;
+}
+
+/* Wrapper around check_decl for stores.  */
+
+static bool
+check_store (gimple stmt ATTRIBUTE_UNUSED, tree op, void *data)
+{
+  if (DECL_P (op))
+    check_decl ((funct_state)data, op, true);
+  else
+    check_op ((funct_state)data, op, true);
+  return false;
+}
+
 /* Look into pointer pointed to by GSIP and figure out what interesting side
    effects it has.  */
 static void
@@ -389,45 +405,8 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
       print_gimple_stmt (dump_file, stmt, 0, 0);
     }
 
-  /* Look for direct loads and stores.  */
-  if (gimple_has_lhs (stmt))
-    {
-      tree lhs = get_base_address (gimple_get_lhs (stmt));
-      if (lhs && DECL_P (lhs))
-	check_decl (local, lhs, true);
-    }
-  if (gimple_assign_single_p (stmt))
-    {
-      tree rhs = get_base_address (gimple_assign_rhs1 (stmt));
-      if (rhs && DECL_P (rhs))
-	check_decl (local, rhs, false);
-    }
-  else if (is_gimple_call (stmt))
-    {
-      for (i = 0; i < gimple_call_num_args (stmt); ++i)
-	{
-	  tree rhs = get_base_address (gimple_call_arg (stmt, i));
-	  if (rhs && DECL_P (rhs))
-	    check_decl (local, rhs, false);
-	}
-    }
-  else if (gimple_code (stmt) == GIMPLE_ASM)
-    {
-      for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
-	{
-	  tree op = TREE_VALUE (gimple_asm_input_op (stmt, i));
-	  op = get_base_address (op);
-	  if (op && DECL_P (op))
-	    check_decl (local, op, false);
-	}
-      for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
-	{
-	  tree op = TREE_VALUE (gimple_asm_output_op (stmt, i));
-	  op = get_base_address (op);
-	  if (op && DECL_P (op))
-	    check_decl (local, op, true);
-	}
-    }
+  /* Look for loads and stores.  */
+  walk_stmt_load_store_ops (stmt, local, check_load, check_store);
 
   if (gimple_code (stmt) != GIMPLE_CALL
       && stmt_could_throw_p (stmt))
@@ -447,13 +426,7 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
     }
   switch (gimple_code (stmt))
     {
-    case GIMPLE_ASSIGN:
-      check_op (local, gimple_assign_lhs (stmt), true);
-      i = 1;
-      break;
     case GIMPLE_CALL:
-      check_op (local, gimple_call_lhs (stmt), true);
-      i = 1;
       check_call (local, stmt, ipa);
       break;
     case GIMPLE_LABEL:
@@ -466,10 +439,6 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 	}
       break;
     case GIMPLE_ASM:
-      for (i = 0; i < gimple_asm_noutputs (stmt); i++)
-         check_op (local, TREE_VALUE (gimple_asm_output_op (stmt, i)), true);
-      for (i = 0; i < gimple_asm_ninputs (stmt); i++)
-         check_op (local, TREE_VALUE (gimple_asm_input_op (stmt, i)), false);
       for (i = 0; i < gimple_asm_nclobbers (stmt); i++)
 	{
 	  tree op = gimple_asm_clobber_op (stmt, i);
@@ -493,9 +462,6 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
     default:
       break;
     }
-
-  for (; i < gimple_num_ops (stmt); i++)
-    check_op (local, gimple_op (stmt, i), false);
 }
 
 

@@ -1,3 +1,17 @@
+2009-04-16  Richard Guenther  <rguenther@suse.de>
+
+	* gimple.h (walk_stmt_load_store_addr_ops): Declare.
+	(walk_stmt_load_store_ops): Likewise.
+	* gimple.c (get_base_loadstore): New function.
+	(walk_stmt_load_store_addr_ops): Likewise.
+	(walk_stmt_load_store_ops): Likewise.
+	* ipa-pure-const.c (check_op): Simplify.
+	(check_load, check_store): New functions.
+	(check_stmt): Use walk_stmt_load_store_ops.
+	* ipa-reference.c (mark_load): Adjust signature.
+	(mark_store): Likewise.
+	(scan_stmt_for_static_refs): Use walk_stmt_load_store_addr_ops.
+
 2009-04-16  Rafael Avila de Espindola  <espindola@google.com>
 
 	* gcc-plugin.h (plugin_event): Add PLUGIN_INFO.

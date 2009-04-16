@@ -3194,4 +3194,202 @@ count_uses_and_derefs (tree ptr, gimple stmt, unsigned *num_uses_p,
   gcc_assert (*num_uses_p >= *num_loads_p + *num_stores_p);
 }
 
+/* From a tree operand OP return the base of a load or store operation
+   or NULL_TREE if OP is not a load or a store.  */
+
+static tree
+get_base_loadstore (tree op)
+{
+  while (handled_component_p (op))
+    op = TREE_OPERAND (op, 0);
+  if (DECL_P (op)
+      || INDIRECT_REF_P (op)
+      || TREE_CODE (op) == TARGET_MEM_REF)
+    return op;
+  return NULL_TREE;
+}
+
+/* For the statement STMT call the callbacks VISIT_LOAD, VISIT_STORE and
+   VISIT_ADDR if non-NULL on loads, store and address-taken operands
+   passing the STMT, the base of the operand and DATA to it.  The base
+   will be either a decl, an indirect reference (including TARGET_MEM_REF)
+   or the argument of an address expression.
+   Returns the results of these callbacks or'ed.  */
+
+bool
+walk_stmt_load_store_addr_ops (gimple stmt, void *data,
+			       bool (*visit_load)(gimple, tree, void *),
+			       bool (*visit_store)(gimple, tree, void *),
+			       bool (*visit_addr)(gimple, tree, void *))
+{
+  bool ret = false;
+  unsigned i;
+  if (gimple_assign_single_p (stmt))
+    {
+      tree lhs, rhs;
+      if (visit_store)
+	{
+	  lhs = get_base_loadstore (gimple_assign_lhs (stmt));
+	  if (lhs)
+	    ret |= visit_store (stmt, lhs, data);
+	}
+      rhs = gimple_assign_rhs1 (stmt);
+      if (visit_addr)
+	{
+	  if (TREE_CODE (rhs) == ADDR_EXPR)
+	    ret |= visit_addr (stmt, TREE_OPERAND (rhs, 0), data);
+	  else if (TREE_CODE (rhs) == TARGET_MEM_REF
+		   && TREE_CODE (TMR_BASE (rhs)) == ADDR_EXPR)
+	    ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (rhs), 0), data);
+	  else if (TREE_CODE (rhs) == OBJ_TYPE_REF
+		   && TREE_CODE (OBJ_TYPE_REF_OBJECT (rhs)) == ADDR_EXPR)
+	    ret |= visit_addr (stmt, TREE_OPERAND (OBJ_TYPE_REF_OBJECT (rhs),
+						   0), data);
+	}
+      if (visit_load)
+	{
+	  rhs = get_base_loadstore (rhs);
+	  if (rhs)
+	    ret |= visit_load (stmt, rhs, data);
+	}
+    }
+  else if (visit_addr
+	   && (is_gimple_assign (stmt)
+	       || gimple_code (stmt) == GIMPLE_COND
+	       || gimple_code (stmt) == GIMPLE_CHANGE_DYNAMIC_TYPE))
+    {
+      for (i = 0; i < gimple_num_ops (stmt); ++i)
+	if (gimple_op (stmt, i)
+	    && TREE_CODE (gimple_op (stmt, i)) == ADDR_EXPR)
+	  ret |= visit_addr (stmt, TREE_OPERAND (gimple_op (stmt, i), 0), data);
+    }
+  else if (is_gimple_call (stmt))
+    {
+      if (visit_store)
+	{
+	  tree lhs = gimple_call_lhs (stmt);
+	  if (lhs)
+	    {
+	      lhs = get_base_loadstore (lhs);
+	      if (lhs)
+		ret |= visit_store (stmt, lhs, data);
+	    }
+	}
+      if (visit_load || visit_addr)
+	for (i = 0; i < gimple_call_num_args (stmt); ++i)
+	  {
+	    tree rhs = gimple_call_arg (stmt, i);
+	    if (visit_addr
+		&& TREE_CODE (rhs) == ADDR_EXPR)
+	      ret |= visit_addr (stmt, TREE_OPERAND (rhs, 0), data);
+	    else if (visit_load)
+	      {
+		rhs = get_base_loadstore (rhs);
+		if (rhs)
+		  ret |= visit_load (stmt, rhs, data);
+	      }
+	  }
+      if (visit_addr
+	  && gimple_call_chain (stmt)
+	  && TREE_CODE (gimple_call_chain (stmt)) == ADDR_EXPR)
+	ret |= visit_addr (stmt, TREE_OPERAND (gimple_call_chain (stmt), 0),
+			   data);
+    }
+  else if (gimple_code (stmt) == GIMPLE_ASM)
+    {
+      unsigned noutputs;
+      const char *constraint;
+      const char **oconstraints;
+      bool allows_mem, allows_reg, is_inout;
+      noutputs = gimple_asm_noutputs (stmt);
+      oconstraints = XALLOCAVEC (const char *, noutputs);
+      if (visit_store || visit_addr)
+	for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
+	  {
+	    tree link = gimple_asm_output_op (stmt, i);
+	    tree op = get_base_loadstore (TREE_VALUE (link));
+	    if (op && visit_store)
+	      ret |= visit_store (stmt, op, data);
+	    if (visit_addr)
+	      {
+		constraint = TREE_STRING_POINTER
+		    (TREE_VALUE (TREE_PURPOSE (link)));
+		oconstraints[i] = constraint;
+		parse_output_constraint (&constraint, i, 0, 0, &allows_mem,
+					 &allows_reg, &is_inout);
+		if (op && !allows_reg && allows_mem)
+		  ret |= visit_addr (stmt, op, data);
+	      }
+	  }
+      if (visit_load || visit_addr)
+	for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
+	  {
+	    tree link = gimple_asm_input_op (stmt, i);
+	    tree op = TREE_VALUE (link);
+	    if (visit_addr
+		&& TREE_CODE (op) == ADDR_EXPR)
+	      ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
+	    else if (visit_load || visit_addr)
+	      {
+		op = get_base_loadstore (op);
+		if (op)
+		  {
+		    if (visit_load)
+		      ret |= visit_load (stmt, op, data);
+		    if (visit_addr)
+		      {
+			constraint = TREE_STRING_POINTER
+			    (TREE_VALUE (TREE_PURPOSE (link)));
+			parse_input_constraint (&constraint, 0, 0, noutputs,
+						0, oconstraints,
+						&allows_mem, &allows_reg);
+			if (!allows_reg && allows_mem)
+			  ret |= visit_addr (stmt, op, data);
+		      }
+		  }
+	      }
+	  }
+    }
+  else if (gimple_code (stmt) == GIMPLE_RETURN)
+    {
+      tree op = gimple_return_retval (stmt);
+      if (op)
+	{
+	  if (visit_addr
+	      && TREE_CODE (op) == ADDR_EXPR)
+	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
+	  else if (visit_load)
+	    {
+	      op = get_base_loadstore (op);
+	      if (op)
+		ret |= visit_load (stmt, op, data);
+	    }
+	}
+    }
+  else if (visit_addr
+	   && gimple_code (stmt) == GIMPLE_PHI)
+    {
+      for (i = 0; i < gimple_phi_num_args (stmt); ++i)
+	{
+	  tree op = PHI_ARG_DEF (stmt, i);
+	  if (TREE_CODE (op) == ADDR_EXPR)
+	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
+	}
+    }
+
+  return ret;
+}
+
+/* Like walk_stmt_load_store_addr_ops but with NULL visit_addr.  IPA-CP
+   should make a faster clone for this case.  */
+
+bool
+walk_stmt_load_store_ops (gimple stmt, void *data,
+			  bool (*visit_load)(gimple, tree, void *),
+			  bool (*visit_store)(gimple, tree, void *))
+{
+  return walk_stmt_load_store_addr_ops (stmt, data,
+					visit_load, visit_store, NULL);
+}
+
 #include "gt-gimple.h"
