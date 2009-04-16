@@ -1,5 +1,10 @@
 2009-04-16  Andrew Pinski  <pinskia@gmail.com>
 
+	PR C++/17570
+	* g++.dg/template/defarg11.C: New test.
+
+2009-04-16  Andrew Pinski  <pinskia@gmail.com>
+
 	PR C++/28766
 	* g++.dg/ext/complit11.C: New testcase.
 
