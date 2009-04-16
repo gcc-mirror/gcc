@@ -1041,7 +1041,15 @@ value, and the loop above will be optimized away.
 The use of @code{Assume_No_Invalid_Values (On)} is appropriate if
 you know your code is free of uninitialized variables and other
 possible sources of invalid representations, and may result in
-more efficient code.
+more efficient code. A program that accesses an invalid representation
+with this pragma in effect is erroneous, so no guarantees can be made
+about its behavior.
+
+It is peculiar though permissible to use this pragma in conjunction
+with validity checking (-gnatVa). In such cases, accessing invalid
+values will generally give an exception, though formally the program
+is erroneous so there are no guarantees that this will always be the
+case, and it is recommended that these two options not be used together.
 
 @node Pragma Ast_Entry
 @unnumberedsec Pragma Ast_Entry
