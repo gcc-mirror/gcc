@@ -1,3 +1,16 @@
+2009-04-16  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Make sure that pragma pack is not
+	taken into account for VM targets.
+
+2009-04-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* g-calend.ads, g-calend.adb (Week_In_Year): Now calls
+	Year_Week_In_Year.
+	(Year_Week_In_Year): New routine which contains the original code from
+	Week_In_Year. Add the missing special case for January 1st falling on
+	a Monday.
+
 2009-04-16  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_dist.adb (Build_From_Any_Call): For a subtype that is a generic

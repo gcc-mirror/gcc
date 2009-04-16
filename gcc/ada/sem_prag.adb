@@ -9365,14 +9365,14 @@ package body Sem_Prag is
                else
                   if not Rep_Item_Too_Late (Typ, N) then
                      if VM_Target = No_VM then
-                        Set_Is_Packed (Base_Type (Typ));
+                        Set_Is_Packed            (Base_Type (Typ));
+                        Set_Has_Pragma_Pack      (Base_Type (Typ));
+                        Set_Has_Non_Standard_Rep (Base_Type (Typ));
+
                      elsif not GNAT_Mode then
                         Error_Pragma
                           ("?pragma% ignored in this configuration");
                      end if;
-
-                     Set_Has_Pragma_Pack      (Base_Type (Typ));
-                     Set_Has_Non_Standard_Rep (Base_Type (Typ));
                   end if;
                end if;
 
@@ -9381,13 +9381,13 @@ package body Sem_Prag is
             else pragma Assert (Is_Record_Type (Typ));
                if not Rep_Item_Too_Late (Typ, N) then
                   if VM_Target = No_VM then
-                     Set_Is_Packed (Base_Type (Typ));
+                     Set_Is_Packed            (Base_Type (Typ));
+                     Set_Has_Pragma_Pack      (Base_Type (Typ));
+                     Set_Has_Non_Standard_Rep (Base_Type (Typ));
+
                   elsif not GNAT_Mode then
                      Error_Pragma ("?pragma% ignored in this configuration");
                   end if;
-
-                  Set_Has_Pragma_Pack      (Base_Type (Typ));
-                  Set_Has_Non_Standard_Rep (Base_Type (Typ));
                end if;
             end if;
          end Pack;

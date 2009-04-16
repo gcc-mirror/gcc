@@ -293,7 +293,23 @@ package body GNAT.Calendar is
    ------------------
 
    function Week_In_Year (Date : Time) return Week_In_Year_Number is
-      Year       : Year_Number;
+      Year : Year_Number;
+      Week : Week_In_Year_Number;
+      pragma Unreferenced (Year);
+   begin
+      Year_Week_In_Year (Date, Year, Week);
+      return Week;
+   end Week_In_Year;
+
+   -----------------------
+   -- Year_Week_In_Year --
+   -----------------------
+
+   procedure Year_Week_In_Year
+     (Date : Time;
+      Year : out Year_Number;
+      Week : out Week_In_Year_Number)
+   is
       Month      : Month_Number;
       Day        : Day_Number;
       Hour       : Hour_Number;
@@ -381,14 +397,13 @@ package body GNAT.Calendar is
       is
          Last_Jan_1 : constant Day_Name :=
                         Jan_1_Day_Of_Week (Jan_1, Year, Last_Year => True);
+
       begin
          --  These two cases are illustrated in the table below
 
          return
            Last_Jan_1 = Thursday
-             or else
-               (Last_Jan_1 = Wednesday
-                  and then Is_Leap (Year - 1));
+             or else (Last_Jan_1 = Wednesday and then Is_Leap (Year - 1));
       end Last_Year_Has_53_Weeks;
 
    --  Start of processing for Week_In_Year
@@ -437,9 +452,7 @@ package body GNAT.Calendar is
       --  when special casing the first week of January and the last week of
       --  December.
 
-      if Day = 1
-        and then Month = 1
-      then
+      if Day = 1 and then Month = 1 then
          Jan_1 := Day_Of_Week (Date);
       else
          Jan_1 := Day_Of_Week (Time_Of (Year, 1, 1, 0.0));
@@ -461,19 +474,23 @@ package body GNAT.Calendar is
          --    +-----+-----+-----+=====+-----+-----+-----+
 
          if (Day = 1 and then Jan_1 in Friday .. Sunday)
-           or else
+               or else
             (Day = 2 and then Jan_1 in Friday .. Saturday)
-           or else
+               or else
             (Day = 3 and then Jan_1 = Friday)
          then
             if Last_Year_Has_53_Weeks (Jan_1, Year) then
-               return 53;
+               Week := 53;
             else
-               return 52;
+               Week := 52;
             end if;
 
-         --  Special case 2: January 1, 2, 3, 4, 5 and 6 of the first week. In
-         --  this scenario January 1 does not fall on a Monday.
+            --  January 1, 2 and 3 belong to the previous year
+
+            Year := Year - 1;
+            return;
+
+         --  Special case 2: January 1, 2, 3, 4, 5, 6 and 7 of the first week
 
          --    +-----+-----+-----+=====+-----+-----+-----+
          --    | Mon | Tue | Wed # Thu # Fri | Sat | Sun |
@@ -484,14 +501,19 @@ package body GNAT.Calendar is
          --    +-----+-----+-----+-----+-----+-----+-----+
          --    | 31  |  1  |  2  #  3  #  4  |  5  |  6  |
          --    +-----+-----+-----+-----+-----+-----+-----+
+         --    |  1  |  2  |  3  #  4  #  5  |  6  |  7  |
+         --    +-----+-----+-----+=====+-----+-----+-----+
 
-         elsif (Day <= 4 and then Jan_1 in Tuesday .. Thursday)
-           or else
-               (Day = 5  and then Jan_1 in Tuesday .. Wednesday)
-           or else
-               (Day = 6  and then Jan_1 = Tuesday)
+         elsif (Day <= 4 and then Jan_1 in Monday .. Thursday)
+                  or else
+               (Day = 5  and then Jan_1 in Monday .. Wednesday)
+                  or else
+               (Day = 6  and then Jan_1 in Monday ..  Tuesday)
+                  or else
+               (Day = 7  and then Jan_1 = Monday)
          then
-            return 1;
+            Week := 1;
+            return;
          end if;
 
       --  Special case 3: December 29, 30 and 31. These days may belong to
@@ -507,20 +529,20 @@ package body GNAT.Calendar is
       --    | 31  |  1  |  2  #  3  #  4  |  5  |  6  |
       --    +-----+-----+-----+=====+-----+-----+-----+
 
-      elsif Month = 12
-        and then Day > 28
-      then
+      elsif Month = 12 and then Day > 28 then
          declare
             Next_Jan_1 : constant Day_Name :=
                            Jan_1_Day_Of_Week (Jan_1, Year, Next_Year => True);
          begin
             if (Day = 29 and then Next_Jan_1 = Thursday)
-              or else
+                  or else
                (Day = 30 and then Next_Jan_1 in Wednesday .. Thursday)
-              or else
+                  or else
                (Day = 31 and then Next_Jan_1 in Tuesday .. Thursday)
             then
-               return 1;
+               Year := Year + 1;
+               Week := 1;
+               return;
             end if;
          end;
       end if;
@@ -541,7 +563,7 @@ package body GNAT.Calendar is
       --  origin which falls on Monday.
 
       Shift := 7 - Day_Name'Pos (Jan_1);
-      return Start_Week + (Day_In_Year (Date) - Shift - 1) / 7;
-   end Week_In_Year;
+      Week  := Start_Week + (Day_In_Year (Date) - Shift - 1) / 7;
+   end Year_Week_In_Year;
 
 end GNAT.Calendar;
