@@ -1371,6 +1371,7 @@ endif
   s-osprim.adb<s-osprim-vms.adb \
   s-osprim.ads<s-osprim-vms.ads \
   s-taprop.adb<s-taprop-vms.adb \
+  s-tasdeb.adb<s-tasdeb-vms.adb \
   s-taspri.ads<s-taspri-vms.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   s-tpopde.adb<s-tpopde-vms.adb \
