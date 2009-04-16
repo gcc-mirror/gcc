@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
@@ -3906,12 +3906,10 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
       /* Rewritten from cfgrtl.c.  */
       if (flag_reorder_blocks_and_partition
 	  && targetm.have_named_sections)
-	/* We don't need the same note for the check because
-	   any_condjump_p (check) == true.  */
 	{
-	  REG_NOTES (jump) = gen_rtx_EXPR_LIST (REG_CROSSING_JUMP,
-						NULL_RTX,
-						REG_NOTES (jump));
+	  /* We don't need the same note for the check because
+	     any_condjump_p (check) == true.  */
+	  add_reg_note (jump, REG_CROSSING_JUMP, NULL_RTX);
 	}
       edge_flags = EDGE_CROSSING;
     }

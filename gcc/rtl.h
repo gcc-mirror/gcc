@@ -1759,6 +1759,7 @@ extern rtx find_reg_equal_equiv_note (const_rtx);
 extern rtx find_constant_src (const_rtx);
 extern int find_reg_fusage (const_rtx, enum rtx_code, const_rtx);
 extern int find_regno_fusage (const_rtx, enum rtx_code, unsigned int);
+extern rtx alloc_reg_note (enum reg_note, rtx, rtx);
 extern void add_reg_note (rtx, enum reg_note, rtx);
 extern void remove_note (rtx, const_rtx);
 extern void remove_reg_equal_equiv_notes (rtx);

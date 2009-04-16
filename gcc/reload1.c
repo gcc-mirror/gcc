@@ -2686,7 +2686,7 @@ eliminate_regs_1 (rtx x, enum machine_mode mem_mode, rtx insn,
 			? eliminate_regs_1 (XEXP (x, 1), mem_mode, insn, true)
 			: NULL_RTX);
 
-	      x = gen_rtx_EXPR_LIST (REG_NOTE_KIND (x), new_rtx, XEXP (x, 1));
+	      x = alloc_reg_note (REG_NOTE_KIND (x), new_rtx, XEXP (x, 1));
 	    }
 	}
 
