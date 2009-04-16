@@ -644,6 +644,10 @@ case "${target}" in
   frv-*-*)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
+  moxie-*-*)
+    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs gprof"
+    ;;
   h8300*-*-*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
