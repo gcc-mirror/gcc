@@ -2279,6 +2279,9 @@ toplev_main (unsigned int argc, const char **argv)
   if (version_flag)
     print_version (stderr, "");
 
+  if (help_flag)
+    print_plugins_help (stderr, "");
+
   /* Exit early if we can (e.g. -help).  */
   if (!exit_after_options)
     do_compile ();

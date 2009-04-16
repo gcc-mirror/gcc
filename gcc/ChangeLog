@@ -1,3 +1,14 @@
+2009-04-16  Rafael Avila de Espindola  <espindola@google.com>
+
+	* common.opt (fhelp): Add Var(help_flag).
+	* gcc-plugin.h (plugin_info): Add help.
+	* plugin.c (plugin_name_args): Add help.
+	(register_plugin_info): Set plugin->help.
+	(print_help_one_plugin): New.
+	(print_plugins_help): New.
+	* plugin.h (print_plugins_help): New.
+	* toplev.c (toplev_main): Call print_plugins_help if needed.
+
 2009-04-16  Richard Guenther  <rguenther@suse.de>
 
 	* gimple.c (gimple_copy): Do not clear addresses_taken bitmap.
