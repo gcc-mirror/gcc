@@ -93,7 +93,7 @@ package body Debug is
 
    --  d.a
    --  d.b
-   --  d.c
+   --  d.c  Generate inline concatenation, do not call procedure
    --  d.d
    --  d.e
    --  d.f  Inhibit folding of static expressions
@@ -120,7 +120,7 @@ package body Debug is
 
    --  d.A
    --  d.B
-   --  d.C
+   --  d.C  Generate concatenation call, do not generate inline code
    --  d.D
    --  d.E
    --  d.F
@@ -498,6 +498,10 @@ package body Debug is
    --         - In case of abstract subprograms the text "is abstract" is
    --           added at the end of the line.
 
+   --  d.c  Generate inline concatenation, instead of calling one of the
+   --       System.Concat_n.Str_Concat_n routines in cases where the latter
+   --       routines would normally be called.
+
    --  d.f  Suppress folding of static expressions. This of course results
    --       in seriously non-conforming behavior, but is useful sometimes
    --       when tracking down handling of complex expressions.
@@ -541,6 +545,9 @@ package body Debug is
    --       handlers to be eliminated from the generated code. They are still
    --       fully compiled and analyzed, they just get eliminated from the
    --       code generation step.
+
+   --  d.C  Generate call to System.Concat_n.Str_Concat_n routines in cases
+   --       where we would normally generate inline concatenation code.
 
    --  d.I  Inspector mode. Relevant for VM_Target /= None. Try to generate
    --       byte code, even in case of unsupported construct, for the sake

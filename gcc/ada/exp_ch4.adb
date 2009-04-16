@@ -25,6 +25,7 @@
 
 with Atree;    use Atree;
 with Checks;   use Checks;
+with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -2757,9 +2758,10 @@ package body Exp_Ch4 is
                 Right_Opnd => Make_Artyp_Literal (1))));
 
       --  Note that calculation of the high bound may cause overflow in some
-      --  very weird cases, so in the general case we need an overflow check
-      --  on the high bound. We can avoid this for the common case of string
-      --  types since we chose a wider range for the arithmetic type.
+      --  very weird cases, so in the general case we need an overflow check on
+      --  the high bound. We can avoid this for the common case of string types
+      --  and other types whose index is Positive, since we chose a wider range
+      --  for the arithmetic type.
 
       if Istyp /= Standard_Positive then
          Activate_Overflow_Check (High_Bound);
@@ -2812,6 +2814,82 @@ package body Exp_Ch4 is
       end if;
 
       --  Now we will generate the assignments to do the actual concatenation
+
+      --  There is one case in which we will not do this, namely when all the
+      --  following conditions are met:
+
+      --    The result type is Standard.String
+
+      --    There are nine or fewer retained (non-null) operands
+
+      --    The optimization level is -O0 or -Os
+
+      --    The corresponding System.Concat_n.Str_Concat_n routine is
+      --    available in the run time.
+
+      --    The debug flag gnatd.c is not set
+
+      --  If all these conditions are met then we generate a call to the
+      --  relevant concatenation routine. The purpose of this is to avoid
+      --  undesirable code bloat at -O0.
+
+      if Atyp = Standard_String
+        and then NN in 2 .. 9
+        and then (Opt.Optimization_Level = 0
+                   or else Opt.Optimize_Size = 1
+                   or else Debug_Flag_Dot_CC)
+        and then not Debug_Flag_Dot_C
+      then
+         declare
+            RR : constant array (Nat range 2 .. 9) of RE_Id :=
+                   (RE_Str_Concat_2,
+                    RE_Str_Concat_3,
+                    RE_Str_Concat_4,
+                    RE_Str_Concat_5,
+                    RE_Str_Concat_6,
+                    RE_Str_Concat_7,
+                    RE_Str_Concat_8,
+                    RE_Str_Concat_9);
+
+         begin
+            if RTE_Available (RR (NN)) then
+               declare
+                  Opnds : constant List_Id :=
+                            New_List (New_Occurrence_Of (Ent, Loc));
+
+               begin
+                  for J in 1 .. NN loop
+                     if Is_List_Member (Operands (J)) then
+                        Remove (Operands (J));
+                     end if;
+
+                     if Base_Type (Etype (Operands (J))) = Ctyp then
+                        Append_To (Opnds,
+                          Make_Aggregate (Loc,
+                            Component_Associations => New_List (
+                              Make_Component_Association (Loc,
+                                Choices => New_List (
+                                  Make_Integer_Literal (Loc, 1)),
+                                Expression => Operands (J)))));
+
+                     else
+                        Append_To (Opnds, Operands (J));
+                     end if;
+                  end loop;
+
+                  Insert_Action (Cnode,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name => New_Reference_To (RTE (RR (NN)), Loc),
+                      Parameter_Associations => Opnds));
+
+                  Result := New_Reference_To (Ent, Loc);
+                  goto Done;
+               end;
+            end if;
+         end;
+      end if;
+
+      --  Not special case so generate the assignments
 
       Known_Non_Null_Operand_Seen := False;
 

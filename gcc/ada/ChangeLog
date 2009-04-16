@@ -1,5 +1,22 @@
 2009-04-16  Robert Dewar  <dewar@adacore.com>
 
+	* Makefile.rtl: Add entries for s-conca?
+
+	* debug.adb: Add debug flags -gnatd.c and -gnatd.C to control behavior
+	of concatenation expansion
+
+	* exp_ch4.adb (Expand_Concatenation): Generate calls for certain
+	string cases instead of expanding assignments inline.
+
+	* opt.ads (Optimize_Size): New flag
+
+	* s-conca2.ads, s-conca2.adb, s-conca3.adb, s-conca3.ads,
+	s-conca4.adb, s-conca4.ads, s-conca5.adb, s-conca5.ads, s-conca6.adb,
+	s-conca6.ads, s-conca7.ads, s-conca7.adb, s-conca8.adb, s-conca8.ads,
+	s-conca9.adb, s-conca9.ads: New file.
+
+2009-04-16  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch6.adb: Add comments
 
 	* rtsfind.ads: Add entries for s-conca? routines
