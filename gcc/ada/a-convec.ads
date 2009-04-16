@@ -310,6 +310,7 @@ private
    pragma Inline (Query_Element);
    pragma Inline (Update_Element);
    pragma Inline (Replace_Element);
+   pragma Inline (Is_Empty);
    pragma Inline (Contains);
    pragma Inline (Next);
    pragma Inline (Previous);

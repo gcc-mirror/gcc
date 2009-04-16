@@ -89,7 +89,7 @@ package body Sinput.P is
       end loop;
 
       Source_File.Free;
-      Source_File.Init;
+      Sinput.Initialize;
    end Clear_Source_File_Table;
 
    -----------------------
