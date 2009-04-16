@@ -828,36 +828,6 @@ ssa_propagate (ssa_prop_visit_stmt_fn visit_stmt,
 }
 
 
-/* Return true if STMT is of the form 'LHS = mem_ref', where 'mem_ref'
-   is a non-volatile pointer dereference, a structure reference or a
-   reference to a single _DECL.  Ignore volatile memory references
-   because they are not interesting for the optimizers.  */
-
-bool
-stmt_makes_single_load (gimple stmt)
-{
-  tree rhs;
-
-  if (gimple_code (stmt) != GIMPLE_ASSIGN)
-    return false;
-
-  /* Only a GIMPLE_SINGLE_RHS assignment may have a
-     declaration or reference as its RHS.  */
-  if (get_gimple_rhs_class (gimple_assign_rhs_code (stmt))
-      != GIMPLE_SINGLE_RHS)
-    return false;
-
-  if (!gimple_vuse (stmt))
-    return false;
-
-  rhs = gimple_assign_rhs1 (stmt);
-
-  return (!TREE_THIS_VOLATILE (rhs)
-	  && (DECL_P (rhs)
-	      || REFERENCE_CLASS_P (rhs)));
-}
-
-
 /* Return true if STMT is of the form 'mem_ref = RHS', where 'mem_ref'
    is a non-volatile pointer dereference, a structure reference or a
    reference to a single _DECL.  Ignore volatile memory references
