@@ -1,0 +1,99 @@
+#! /bin/bash
+
+# Compare the assembly language output for all the gcc tests.
+# Copyright (C) 2009 Free Software Foundation, Inc.
+# Contributed by Paolo Bonzini.
+#
+# Invoke it as "bash compare-all-tests target1 target2 ... targetN".
+# Assumptions are:
+#
+# 1) that the base and patched compilers reside respectively in
+# base-$target-build and $target-build, where $target is the commandline
+# argument to compare-all-tests, and should match the variables in the
+# script itself so that the correct set of options is tested.  Both
+# compilers should be fully built (including target libraries).
+# 
+# 2) that the testsuite has been run on the base compiler (since it's
+# just compilation testing, using RUNTESTFLAGS=--target_board=basic-sim
+# usually suffices).
+# 
+# Tests that fail to compile on the base compiler are not compared.
+
+alpha_opts='-mlong-double-64/-mieee -mlong-double-64 -mlong-double-128/-mieee -mlong-double-128'
+arm_opts='-mthumb/-march=armv5t -mthumb/-march=armv6t2 -march=armv5 -mthumb/-march=armv6t2/-mfpu=vfp/-mfloat-abi=softfp -march=armv5/-mfpu=vfp/-mfloat-abi=softfp'
+cris_opts='-march=v32 -march=v1'
+h8300_opts='/ -mh -mh/-mn -ms -ms/-mn -msx -msx/-mn -mint32 -mh/-mint32 -mh/-mn/-mint32 -ms/-mint32 -ms/-mn/-mint32 -msx/-mint32 -msx/-mn/-mint32'
+i386_opts='-m32 -m64 -m32/-msse/-msse2/-mfpmath=sse'
+m32c_opts='-mcpu=r8c -mcpu=m16c -mcpu=m32c'
+m68k_opts='-m68000 -m68020 -m68020/-m68881 -m68040/-m68881 -m68060/-m68881 -mcfv4e'
+mips_opts='-msoft-float/-mgp32/-mips16 -mabi=32/-mfp32/-mgp32/-mips16 -mabi=o64/-mfp64/-mgp64/-mips16 -msoft-float/-mgp32 -mfp32/-mgp32 -march=mips64r2/-mabi=32/-mfp64/-mgp32 -msoft-float/-mgp64 -msingle-float/-mfp32/-mgp64 -mfp64/-mgp64'
+mn10300_opts='-mam33 -mam33-2'
+pa_opts='-march=2.0 -march=1.0 -march=1.1'
+ppc_opts='-m32 -m64'
+s390_opts='-m31 -m31/-mzarch -m64'
+score_opts='-mscore3 -mscore7'
+sh64_opts='-m5-32media -m5-32media-nofpu -m5-64media -m5-64media-nofpu -m5-compact -m5-compact-nofpu'
+sh_opts='-m3 -m3e -m4 -m4a -m4al -m4/-mieee -m1 -m1/-mno-cbranchdi -m2a -m2a/-mieee -m2e -m2e/-mieee'
+sparc_opts='-mcpu=v8/-m32 -mcpu=v9/-m32 -m64'
+
+all_targets='alpha arm avr bfin cris crx fr30 frv h8300 ia64 iq2000 m32c m32r m68hc11 m68k mcore mips mmix mn10300 pa pdp11 picochip ppc score sh sh64 sparc spu v850 vax xstormy16 xtensa' # e500 
+
+test_one_file ()
+{
+  local bdir pdir opts bline pline
+  bdir=base-$1-gcc-build
+  pdir=$1-gcc-build
+  bline=$2
+  pline=${2//$bdir/$pdir}
+  opts=${3//\// }
+  echo "$pline $opts"
+  $bline $opts 2>/dev/null >/dev/null || return 0
+  diff -L "$bdir/gcc/cc1 $opts" -L "$pdir/gcc/cc1 $opts" -u \
+    <( $bline $opts 2>&1 ) <( $pline $opts 2>&1 ) || { echo -n . >&2; return 1; }
+}
+  
+test_all_opts ()
+{
+  eval opts=\$${1}_opts
+  if test -z "$opts"; then
+    test_one_file $1 "$2"
+  else
+    for opt in $opts; do
+      test_one_file $1 "$2" $opt
+    done
+  fi
+}
+
+for target in ${*-$all_targets}; do
+  mkdir -p $target-gcc-build/gcc/testsuite/gcc
+  cp -R base-$target-gcc-build/gcc/testsuite/gcc/gcc.dg-struct-layout-1 \
+    $target-gcc-build/gcc/testsuite/gcc/gcc.dg-struct-layout-1 
+
+  # Provide targ-include files for newlib
+  # for newlib_path in `echo base-$target-gcc-build/*/newlib`; do
+  #   test -d $newlib_path && ln -sf ../../$newlib_path ${newlib_path/base-}
+  # done
+
+  echo -n Testing $target >&2
+  sed '/^Executing on host: /!d
+    /xgcc -B/!d
+    / -E /d
+    / -g/d
+    / -print-prog-name=/d
+    s/^Executing on host: //
+    s/   *(timeout.*//
+    s/ -fverbose-asm / /
+    s/ -frtl-abstract-sequences / /
+    s/ -fdump[-a-z0-9]* / /g
+    s/ -da / /g
+    s/ -\{1,2\}save-temps / /
+    s/ -c / -S /
+    / -S /! s/ -o / -S -o /
+    s/ -o [^ ]*/ -frandom-seed=0 -o -/' base-$target-gcc-build/gcc/testsuite/gcc/gcc.log | while read line; do
+    case "$line" in
+      *" -m"*) test_one_file $target "$line" "" ;;
+      *) test_all_opts $target "$line" ;;
+    esac
+  done > compare-$target.log
+  echo >&2
+done
