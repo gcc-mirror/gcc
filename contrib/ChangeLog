@@ -1,3 +1,7 @@
+2009-04-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* compare-all-tests: New.
+
 2009-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gennews (files): Reference GCC 4.4 web pages.
