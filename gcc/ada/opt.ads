@@ -908,13 +908,20 @@ package Opt is
    Optimization_Level : Int;
    pragma Import (C, Optimization_Level, "optimize");
    --  Constant reflecting the optimization level (0,1,2,3 for -O0,-O1,-O2,-O3)
+   --  See jmissing.c and aamissing.c for definitions for dotnet/jgnat and
+   --  GNAAMP back ends.
+
+   Optimize_Size : Int;
+   pragma Import (C, Optimize_Size, "optimize_size");
+   --  Constant reflecting setting of -Os (optimize for size). Set to 1 in
+   --  -Os mode and set to 0 otherwise. See jmissing.c and aamissing.c for
+   --  definitions for dotnet/jgnat and GNAAMP backends
 
    Output_File_Name_Present : Boolean := False;
    --  GNATBIND, GNAT, GNATMAKE, GPRMAKE
-   --  Set to True when the output C file name is given with option -o
-   --  for GNATBIND, when the object file name is given with option
-   --  -gnatO for GNAT or when the executable is given with option -o
-   --  for GNATMAKE or GPRMAKE.
+   --  Set to True when the output C file name is given with option -o for
+   --  GNATBIND, when the object file name is given with option -gnatO for GNAT
+   --  or when the executable is given with option -o for GNATMAKE or GPRMAKE.
 
    Output_Linker_Option_List : Boolean := False;
    --  GNATBIND

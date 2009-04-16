@@ -416,6 +416,14 @@ GNATRTL_NONTASKING_OBJS= \
   s-caun32$(objext) \
   s-caun64$(objext) \
   s-chepoo$(objext) \
+  s-conca2$(objext) \
+  s-conca3$(objext) \
+  s-conca4$(objext) \
+  s-conca5$(objext) \
+  s-conca6$(objext) \
+  s-conca7$(objext) \
+  s-conca8$(objext) \
+  s-conca9$(objext) \
   s-crtl$(objext)   \
   s-crc32$(objext)  \
   s-direio$(objext) \
