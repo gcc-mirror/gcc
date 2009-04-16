@@ -10888,10 +10888,10 @@ package body Sem_Ch12 is
       Act   : Node_Id;
       Errs  : constant Int := Serious_Errors_Detected;
 
-      Cur   : Entity_Id := Empty;
+      Cur : Entity_Id := Empty;
       --  Current homograph of the instance name
 
-      Vis   : Boolean;
+      Vis : Boolean;
       --  Saved visibility status of the current homograph
 
    begin
@@ -10905,6 +10905,7 @@ package body Sem_Ch12 is
           (Current_Entity (Defining_Identifier (Defining_Unit_Name (N))))
       then
          Cur := Current_Entity (Defining_Identifier (Defining_Unit_Name (N)));
+
          if Is_Compilation_Unit (Cur) then
             Vis := Is_Immediately_Visible (Cur);
             Set_Is_Immediately_Visible (Cur, False);
@@ -10991,6 +10992,7 @@ package body Sem_Ch12 is
                end if;
 
                if Present (Cur) then
+
                   --  For the case of a child instance hiding an outer homonym,
                   --  provide additional warning which might explain the error.
 

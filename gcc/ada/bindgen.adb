@@ -2273,7 +2273,7 @@ package body Bindgen is
 
                --  If the standard library is not suppressed, these variables
                --  are in the runtime data area for easy access from the
-               --  runtime
+               --  runtime.
 
                if not Suppress_Standard_Library_On_Target then
                   WBI ("");
@@ -2510,7 +2510,7 @@ package body Bindgen is
 
       Gen_Adainit_Ada;
 
-      --  Generate the adafinal routine unless there is no finalization to do.
+      --  Generate the adafinal routine unless there is no finalization to do
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
          Gen_Adafinal_Ada;
