@@ -138,16 +138,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     };
 
   _Rb_tree_node_base*
-  _Rb_tree_increment(_Rb_tree_node_base* __x);
+  _Rb_tree_increment(_Rb_tree_node_base* __x) throw ();
 
   const _Rb_tree_node_base*
-  _Rb_tree_increment(const _Rb_tree_node_base* __x);
+  _Rb_tree_increment(const _Rb_tree_node_base* __x) throw ();
 
   _Rb_tree_node_base*
-  _Rb_tree_decrement(_Rb_tree_node_base* __x);
+  _Rb_tree_decrement(_Rb_tree_node_base* __x) throw ();
 
   const _Rb_tree_node_base*
-  _Rb_tree_decrement(const _Rb_tree_node_base* __x);
+  _Rb_tree_decrement(const _Rb_tree_node_base* __x) throw ();
 
   template<typename _Tp>
     struct _Rb_tree_iterator
@@ -310,11 +310,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   _Rb_tree_insert_and_rebalance(const bool __insert_left,
                                 _Rb_tree_node_base* __x,
                                 _Rb_tree_node_base* __p,
-                                _Rb_tree_node_base& __header);
+                                _Rb_tree_node_base& __header) throw ();
 
   _Rb_tree_node_base*
   _Rb_tree_rebalance_for_erase(_Rb_tree_node_base* const __z,
-			       _Rb_tree_node_base& __header);
+			       _Rb_tree_node_base& __header) throw ();
 
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -1450,7 +1450,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   unsigned int
   _Rb_tree_black_count(const _Rb_tree_node_base* __node,
-                       const _Rb_tree_node_base* __root);
+                       const _Rb_tree_node_base* __root) throw ();
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
            typename _Compare, typename _Alloc>
