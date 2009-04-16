@@ -1,5 +1,27 @@
 2009-04-16  Rafael Avila de Espindola  <espindola@google.com>
 
+	* gcc-plugin.h (plugin_event): Add PLUGIN_INFO.
+	(plugin_info): New.
+	* opts.c (common_handle_option): Don't call print_version.
+	* plugin.c (plugin_name_args): Add version.
+	(register_plugin_info): New.
+	(register_callback): Handle PLUGIN_INFO.
+	(try_init_one_plugin): New.
+	(init_one_plugin): Use try_init_one_plugin. Only free plugin_name_args
+	if failed to init.
+	(finalize_one_plugin): New.
+	(finalize_plugins): New.
+	(print_one_plugin): New.
+	(print_plugins_versions): New.
+	* plugin.h (print_plugins_versions): New.
+	(finalize_plugins): New.
+	* toplev.c (compile_file): Don't call initialize_plugins.
+	(print_version): Call print_plugins_versions.
+	(toplev_main): Call initialize_plugins. Print version if needed.
+	Call finalize_plugins.
+
+2009-04-16  Rafael Avila de Espindola  <espindola@google.com>
+
 	* common.opt (fversion): New.
 	* gcc.c (print_version): New.
 	(process_command): Don't print the version. Just set print_version.

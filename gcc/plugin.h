@@ -29,5 +29,7 @@ extern void initialize_plugins (void);
 extern bool plugins_active_p (void);
 extern void dump_active_plugins (FILE *);
 extern void debug_active_plugins (void);
+extern void print_plugins_versions (FILE *file, const char *indent);
+extern void finalize_plugins (void);
 
 #endif /* PLUGIN_H */
