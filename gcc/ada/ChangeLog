@@ -1,5 +1,18 @@
 2009-04-16  Jerome Lambourg  <lambourg@adacore.com>
 
+	* sem_prag.adb (Process_Import_Or_Interface): With .NET,
+	Access_Subprogram types can also be imported.
+	(Check_Form_Of_Interface_Name): Accept '/' character in entity CIL
+	names.
+
+2009-04-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration):
+	preserve homonym chain when the declaration is rewritten into a
+	renaming declaration, in order to preserve visibility structure.
+
+2009-04-16  Jerome Lambourg  <lambourg@adacore.com>
+
 	* sem_prag.adb (Analyze_Pragma): Make sure that pragma pack is not
 	taken into account for VM targets.
 
