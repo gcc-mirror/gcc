@@ -5588,7 +5588,7 @@ package body Exp_Ch6 is
          --  in current scope). The Next_Entity links of the two entities also
          --  have to be swapped since the entities are part of the return
          --  scope's entity list and the list structure would otherwise be
-         --  corrupted.
+         --  corrupted. Finally, the homonym chain must be preserved as well.
 
          declare
             Renaming_Def_Id  : constant Entity_Id :=
@@ -5602,6 +5602,7 @@ package body Exp_Ch6 is
 
             Set_Next_Entity (Renaming_Def_Id, Next_Entity (Obj_Def_Id));
             Set_Next_Entity (Obj_Def_Id, Next_Entity_Temp);
+            Set_Homonym     (Renaming_Def_Id, Homonym (Obj_Def_Id));
 
             Exchange_Entities (Renaming_Def_Id, Obj_Def_Id);
          end;
