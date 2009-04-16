@@ -1,3 +1,8 @@
+2009-04-16  Andrew Pinski  <pinskia@gmail.com>
+
+	PR C++/28766
+	* g++.dg/ext/complit11.C: New testcase.
+
 2009-04-15  Le-Chun Wu  <lcwu@google.com>
 
 	PR c++/39551
