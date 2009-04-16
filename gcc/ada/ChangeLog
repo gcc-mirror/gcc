@@ -1,3 +1,29 @@
+2009-04-16  Thomas Quinot  <quinot@adacore.com>
+
+	* snames.ads-tmpl (Name_Defined): New predefined name for use by the
+	integrated preprocessor.
+
+	* prep.ads, prep.adb (Setup_Hooks): New subprogram.
+	(Initialize): Split into two subprograms, Initialize (to be called
+	prior to compiler command line processing) and Setup_Hooks (to be called
+	later on when the first source file is loaded).
+
+	* gprep.adb: Change call to Prep.Initialize to call to Prep.Setup_Hooks.
+	Add call to Prep.Initialize.
+
+	* sinput-l.adb, prepcomp.adb: Change call to Prep.Initialize to call
+	to Prep.Setup_Hooks.
+
+2009-04-16  Pascal Obry  <obry@adacore.com>
+
+	* adaint.h, adaint.c (__gnat_chdir): New routine.
+	Simple wrapper routines used to convert to proper encoding on
+	Windows.
+
+	* s-crtl.ads: Use __gnat_chdir instead of direct call to the C library.
+
+	* a-direct.adb, g-dirope.adb: Use chdir from System.CRTL.
+
 2009-04-16  Quentin Ochem  <ochem@adacore.com>
 
 	* sinput-p.adb (Clear_Source_File_Table): Use Sinput.Initialize instead

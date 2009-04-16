@@ -167,6 +167,9 @@ package System.CRTL is
    procedure rmdir (dir_name : String);
    pragma Import (C, rmdir, "rmdir");
 
+   function chdir (dir_name : String) return int;
+   pragma Import (C, chdir, "__gnat_chdir");
+
    function setvbuf
      (stream : FILEs;
       buffer : chars;

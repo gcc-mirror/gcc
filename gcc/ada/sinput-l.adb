@@ -494,9 +494,9 @@ package body Sinput.L is
 
                Prep_Buffer_Last := 0;
 
-               --  Initialize the preprocessor
+               --  Initialize the preprocessor hooks
 
-               Prep.Initialize
+               Prep.Setup_Hooks
                  (Error_Msg         => Errout.Error_Msg'Access,
                   Scan              => Scn.Scanner.Scan'Access,
                   Set_Ignore_Errors => Errout.Set_Ignore_Errors'Access,

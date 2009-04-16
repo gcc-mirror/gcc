@@ -42,6 +42,7 @@ with Nlists;   use Nlists;
 with Opt;      use Opt;
 with Osint;
 with Par;
+with Prep;
 with Prepcomp;
 with Restrict; use Restrict;
 with Rident;   use Rident;
@@ -84,6 +85,7 @@ begin
    Fname.UF.Initialize;
    Checks.Initialize;
    Sem_Warn.Initialize;
+   Prep.Initialize;
 
    --  Create package Standard
 

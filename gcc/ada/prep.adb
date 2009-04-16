@@ -119,9 +119,6 @@ package body Prep is
    String_False : String_Id;
    --  "false", as a string_id
 
-   Name_Defined : Name_Id;
-   --  defined, as a name_id
-
    ---------------
    -- Behaviour --
    ---------------
@@ -691,13 +688,7 @@ package body Prep is
    -- Initialize --
    ----------------
 
-   procedure Initialize
-     (Error_Msg         : Error_Msg_Proc;
-      Scan              : Scan_Proc;
-      Set_Ignore_Errors : Set_Ignore_Errors_Proc;
-      Put_Char          : Put_Char_Proc;
-      New_EOL           : New_EOL_Proc)
-   is
+   procedure Initialize is
    begin
       if not Already_Initialized then
          Start_String;
@@ -707,22 +698,12 @@ package body Prep is
          Start_String;
          Empty_String := End_String;
 
-         Name_Len := 7;
-         Name_Buffer (1 .. Name_Len) := "defined";
-         Name_Defined := Name_Find;
-
          Start_String;
          Store_String_Chars ("False");
          String_False := End_String;
 
          Already_Initialized := True;
       end if;
-
-      Prep.Error_Msg         := Error_Msg;
-      Prep.Scan              := Scan;
-      Prep.Set_Ignore_Errors := Set_Ignore_Errors;
-      Prep.Put_Char          := Put_Char;
-      Prep.New_EOL           := New_EOL;
    end Initialize;
 
    ------------------
@@ -1469,5 +1450,26 @@ package body Prep is
 
       Source_Modified := No_Error_Found and Modified;
    end Preprocess;
+
+   -----------------
+   -- Setup_Hooks --
+   -----------------
+
+   procedure Setup_Hooks
+     (Error_Msg         : Error_Msg_Proc;
+      Scan              : Scan_Proc;
+      Set_Ignore_Errors : Set_Ignore_Errors_Proc;
+      Put_Char          : Put_Char_Proc;
+      New_EOL           : New_EOL_Proc)
+   is
+   begin
+      pragma Assert (Already_Initialized);
+
+      Prep.Error_Msg         := Error_Msg;
+      Prep.Scan              := Scan;
+      Prep.Set_Ignore_Errors := Set_Ignore_Errors;
+      Prep.Put_Char          := Put_Char;
+      Prep.New_EOL           := New_EOL;
+   end Setup_Hooks;
 
 end Prep;

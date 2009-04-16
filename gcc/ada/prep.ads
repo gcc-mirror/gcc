@@ -95,12 +95,16 @@ package Prep is
 
    type New_EOL_Proc is access procedure;
 
-   procedure Initialize
+   procedure Initialize;
+   --  Initialize the preprocessor's global structures
+
+   procedure Setup_Hooks
      (Error_Msg         : Error_Msg_Proc;
       Scan              : Scan_Proc;
       Set_Ignore_Errors : Set_Ignore_Errors_Proc;
       Put_Char          : Put_Char_Proc;
       New_EOL           : New_EOL_Proc);
+   --  Set the i/o hooks used by the preprocessor
 
    procedure Parse_Def_File;
    --  Parse the definition file. The definition file must have already been

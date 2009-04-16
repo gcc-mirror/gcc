@@ -220,6 +220,10 @@ package Snames is
    Name_Put_Line                       : constant Name_Id := N + $;
    Name_To                             : constant Name_Id := N + $;
 
+   --  Name used by the integrated preprocessor
+
+   Name_Defined                        : constant Name_Id := N + $;
+
    --  Names for packages that are treated specially by the compiler
 
    Name_Exception_Traces               : constant Name_Id := N + $;
