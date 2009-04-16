@@ -606,13 +606,17 @@ gen_size (tree num, tree type, tree *res)
   if (exact_log2 (struct_size_int) == -1)
     {
       tree size = build_int_cst (TREE_TYPE (num), struct_size_int);
-      new_stmt = gimple_build_assign_with_ops (MULT_EXPR, *res, num, size);
+      new_stmt = gimple_build_assign (*res, fold_build2 (MULT_EXPR,
+							 TREE_TYPE (num),
+							 num, size));
     }
   else
     {
       tree C = build_int_cst (TREE_TYPE (num), exact_log2 (struct_size_int));
  
-      new_stmt = gimple_build_assign_with_ops (LSHIFT_EXPR, *res, num, C);
+      new_stmt = gimple_build_assign (*res, fold_build2 (LSHIFT_EXPR,
+							 TREE_TYPE (num),
+							 num, C));
     }
 
   finalize_stmt (new_stmt);
@@ -1291,6 +1295,8 @@ create_general_new_stmt (struct access_site *acc, tree new_type)
 	    {
 	      pos = find_pos_in_stmt (new_stmt, var);
 	      gcc_assert (pos);
+	      /* ???  This misses adjustments to the type of the
+	         INDIRECT_REF we possibly replace the operand of.  */
 	      *pos = new_var;
 	    }      
 	}
