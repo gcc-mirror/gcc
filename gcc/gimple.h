@@ -327,15 +327,10 @@ struct gimple_statement_base GTY(())
 
 struct gimple_statement_with_ops_base GTY(())
 {
-  /* [ WORD  1-4 ]  */
+  /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
-  /* [ WORD 5 ]
-     Symbols whose addresses are taken by this statement (i.e., they
-     appear inside ADDR_EXPR nodes).  */
-  bitmap GTY((skip (""))) addresses_taken;
-
-  /* [ WORD 6-7 ]
+  /* [ WORD 5-6 ]
      SSA operand vectors.  NOTE: It should be possible to
      amalgamate these vectors with the operand vector OP.  However,
      the SSA operand vectors are organized differently and contain
@@ -349,10 +344,10 @@ struct gimple_statement_with_ops_base GTY(())
 
 struct gimple_statement_with_ops GTY(())
 {
-  /* [ WORD 1-7 ]  */
+  /* [ WORD 1-6 ]  */
   struct gimple_statement_with_ops_base opbase;
 
-  /* [ WORD 8 ]
+  /* [ WORD 7 ]
      Operand vector.  NOTE!  This must always be the last field
      of this structure.  In particular, this means that this
      structure cannot be embedded inside another one.  */
@@ -364,10 +359,10 @@ struct gimple_statement_with_ops GTY(())
 
 struct gimple_statement_with_memory_ops_base GTY(())
 {
-  /* [ WORD 1-7 ]  */
+  /* [ WORD 1-6 ]  */
   struct gimple_statement_with_ops_base opbase;
 
-  /* [ WORD 8-9 ]
+  /* [ WORD 7-8 ]
      Virtual operands for this statement.  The GC will pick them
      up via the ssa_names array.  */
   tree GTY((skip (""))) vdef;
@@ -379,10 +374,10 @@ struct gimple_statement_with_memory_ops_base GTY(())
 
 struct gimple_statement_with_memory_ops GTY(())
 {
-  /* [ WORD 1-9 ]  */
+  /* [ WORD 1-8 ]  */
   struct gimple_statement_with_memory_ops_base membase;
 
-  /* [ WORD 10 ]
+  /* [ WORD 9 ]
      Operand vector.  NOTE!  This must always be the last field
      of this structure.  In particular, this means that this
      structure cannot be embedded inside another one.  */
@@ -545,20 +540,20 @@ struct gimple_statement_wce GTY(())
 
 struct gimple_statement_asm GTY(())
 {
-  /* [ WORD 1-9 ]  */
+  /* [ WORD 1-8 ]  */
   struct gimple_statement_with_memory_ops_base membase;
 
-  /* [ WORD 10 ]
+  /* [ WORD 9 ]
      __asm__ statement.  */
   const char *string;
 
-  /* [ WORD 11 ]
+  /* [ WORD 10 ]
        Number of inputs, outputs and clobbers.  */
   unsigned char ni;
   unsigned char no;
   unsigned short nc;
 
-  /* [ WORD 12 ]
+  /* [ WORD 11 ]
      Operand vector.  NOTE!  This must always be the last field
      of this structure.  In particular, this means that this
      structure cannot be embedded inside another one.  */
@@ -916,6 +911,7 @@ extern bool walk_stmt_load_store_addr_ops (gimple, void *,
 extern bool walk_stmt_load_store_ops (gimple, void *,
 				      bool (*)(gimple, tree, void *),
 				      bool (*)(gimple, tree, void *));
+extern bool gimple_ior_addresses_taken (bitmap, gimple);
 
 /* In gimplify.c  */
 extern tree create_tmp_var_raw (tree, const char *);
@@ -1240,41 +1236,6 @@ static inline bool
 gimple_has_mem_ops (const_gimple g)
 {
   return gimple_code (g) >= GIMPLE_ASSIGN && gimple_code (g) <= GIMPLE_RETURN;
-}
-
-/* Return the set of addresses taken by statement G.  */
-
-static inline bitmap
-gimple_addresses_taken (const_gimple g)
-{
-  if (gimple_has_ops (g))
-    return g->gsops.opbase.addresses_taken;
-  else
-    return NULL;
-}
-
-
-/* Return a pointer to the set of addresses taken by statement G.  */
-
-static inline bitmap *
-gimple_addresses_taken_ptr (gimple g)
-{
-  if (gimple_has_ops (g))
-    return &g->gsops.opbase.addresses_taken;
-  else
-    return NULL;
-}
-
-
-/* Set B to be the set of addresses taken by statement G.  The
-   previous set is freed.  */
-
-static inline void
-gimple_set_addresses_taken (gimple g, bitmap b)
-{
-  gcc_assert (gimple_has_ops (g));
-  BITMAP_FREE (g->gsops.opbase.addresses_taken);
-  g->gsops.opbase.addresses_taken = b;
 }
 
 

@@ -334,6 +334,18 @@ mark_address_taken (tree x)
     bitmap_set_bit (module_statics_escape, DECL_UID (x));
 }
 
+/* Wrapper around mark_address_taken for the stmt walker.  */
+
+static bool
+mark_address (gimple stmt ATTRIBUTE_UNUSED, tree addr,
+	      void *data ATTRIBUTE_UNUSED)
+{
+  while (handled_component_p (addr))
+    addr = TREE_OPERAND (addr, 0);
+  mark_address_taken (addr);
+  return false;
+}
+
 /* Mark load of T.  */
 
 static bool
@@ -429,23 +441,18 @@ scan_stmt_for_static_refs (gimple_stmt_iterator *gsip,
 {
   gimple stmt = gsi_stmt (*gsip);
   ipa_reference_local_vars_info_t local = NULL;
-  unsigned int i;
-  bitmap_iterator bi;
 
   if (fn)
     local = get_reference_vars_info (fn)->local;
 
   /* Look for direct loads and stores.  */
-  walk_stmt_load_store_addr_ops (stmt, local, mark_load, mark_store, NULL);
+  walk_stmt_load_store_addr_ops (stmt, local, mark_load, mark_store,
+				 mark_address);
 
   if (is_gimple_call (stmt))
     check_call (local, stmt);
   else if (gimple_code (stmt) == GIMPLE_ASM)
     check_asm_memory_clobber (local, stmt);
-
-  if (gimple_addresses_taken (stmt))
-    EXECUTE_IF_SET_IN_BITMAP (gimple_addresses_taken (stmt), 0, i, bi)
-      mark_address_taken (referenced_var_lookup (i));
   
   return NULL;
 }
