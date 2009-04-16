@@ -7470,9 +7470,26 @@ package body Exp_Ch9 is
       E_Count      : Int;
       Object_Comp  : Node_Id;
 
+      procedure Check_Inlining (Subp : Entity_Id);
+      --  If the original operation has a pragma Inline, propagate the flag
+      --  to the internal body, for possible inlining later on. The source
+      --  operation is invisible to the back-end and is never actually called.
+
       procedure Register_Handler;
       --  For a protected operation that is an interrupt handler, add the
       --  freeze action that will register it as such.
+
+      --------------------
+      -- Check_Inlining --
+      --------------------
+
+      procedure Check_Inlining (Subp : Entity_Id) is
+      begin
+         if Is_Inlined (Subp) then
+            Set_Is_Inlined (Protected_Body_Subprogram (Subp));
+            Set_Is_Inlined (Subp, False);
+         end if;
+      end Check_Inlining;
 
       ----------------------
       -- Register_Handler --
@@ -7722,7 +7739,7 @@ package body Exp_Ch9 is
                Set_Protected_Body_Subprogram
                  (Defining_Unit_Name (Specification (Priv)),
                   Defining_Unit_Name (Specification (Sub)));
-
+               Check_Inlining (Defining_Unit_Name (Specification (Priv)));
                Current_Node := Sub;
 
                Sub :=
@@ -7809,6 +7826,7 @@ package body Exp_Ch9 is
             Set_Protected_Body_Subprogram
               (Defining_Unit_Name (Specification (Comp)),
                Defining_Unit_Name (Specification (Sub)));
+               Check_Inlining (Defining_Unit_Name (Specification (Comp)));
 
             --  Make the protected version of the subprogram available for
             --  expansion of external calls.
