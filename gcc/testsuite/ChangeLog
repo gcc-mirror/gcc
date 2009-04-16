@@ -1,3 +1,9 @@
+2009-04-15  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	PR tree-optimization/39764
+	* g++.dg/torture/pr39764.C: New testcase.
+
 2009-04-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
