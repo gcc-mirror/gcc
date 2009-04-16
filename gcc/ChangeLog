@@ -1,3 +1,20 @@
+2009-04-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-common.c (vector_targets_convertible_p, vector_types_convertible_p):
+	Use TYPE_VECTOR_OPAQUE instead of targetm.vector_opaque_p.
+	* c-typeck.c (really_start_incremental_init): Likewise.
+	* target-def.h (TARGET_VECTOR_OPAQUE_P): Remove.
+	(TARGET_INITIALIZER): Remove it.
+	* target.h (struct target): Remove vector_opaque_p.
+	* tree.c (build_opaque_vector_type): New.
+	* tree.h (TYPE_VECTOR_OPAQUE): New.
+	(build_opaque_vector_type): Declare.
+	* doc/tm.texi (TARGET_VECTOR_OPAQUE_P): Remove.
+	* config/rs6000/rs6000.c (build_opaque_vector_type,
+	rs6000_is_vector_type, TARGET_VECTOR_OPAQUE_P): Remove.
+	(rs6000_init_builtins): Use build_opaque_vector_type for
+	opaque_V4SI_type_node.
+
 2009-04-15  Catherine Moore  <clm@codesourcery.com>
 
         * debug.h (set_name):  Declare.

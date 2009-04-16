@@ -885,7 +885,6 @@ static rtx paired_expand_predicate_builtin (enum insn_code, tree, rtx);
 static void enable_mask_for_builtins (struct builtin_description *, int,
 				      enum rs6000_builtins,
 				      enum rs6000_builtins);
-static tree build_opaque_vector_type (tree, int);
 static void spe_init_builtins (void);
 static rtx spe_expand_builtin (tree, rtx, bool *);
 static rtx spe_expand_stv_builtin (enum insn_code, tree);
@@ -916,7 +915,6 @@ static void compute_save_world_info (rs6000_stack_t *info_ptr);
 static void is_altivec_return_reg (rtx, void *);
 static rtx generate_set_vrsave (rtx, rs6000_stack_t *, int);
 int easy_vector_constant (rtx, enum machine_mode);
-static bool rs6000_is_opaque_type (const_tree);
 static rtx rs6000_dwarf_register_span (rtx);
 static void rs6000_init_dwarf_reg_sizes_extra (tree);
 static rtx rs6000_legitimize_tls_address (rtx, enum tls_model);
@@ -1190,9 +1188,6 @@ static const char alt_reg_names[][8] =
 #define TARGET_RTX_COSTS rs6000_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST hook_int_rtx_bool_0
-
-#undef TARGET_VECTOR_OPAQUE_P
-#define TARGET_VECTOR_OPAQUE_P rs6000_is_opaque_type
 
 #undef TARGET_DWARF_REGISTER_SPAN
 #define TARGET_DWARF_REGISTER_SPAN rs6000_dwarf_register_span
@@ -9362,15 +9357,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
-static tree
-build_opaque_vector_type (tree node, int nunits)
-{
-  node = copy_node (node);
-  TYPE_MAIN_VARIANT (node) = node;
-  TYPE_CANONICAL (node) = node;
-  return build_vector_type (node, nunits);
-}
-
 static void
 rs6000_init_builtins (void)
 {
@@ -9391,7 +9377,7 @@ rs6000_init_builtins (void)
   opaque_V2SF_type_node = build_opaque_vector_type (float_type_node, 2);
   opaque_V2SI_type_node = build_opaque_vector_type (intSI_type_node, 2);
   opaque_p_V2SI_type_node = build_pointer_type (opaque_V2SI_type_node);
-  opaque_V4SI_type_node = copy_node (V4SI_type_node);
+  opaque_V4SI_type_node = build_opaque_vector_type (intSI_type_node, 4);
 
   /* The 'vector bool ...' types must be kept distinct from 'vector unsigned ...'
      types, especially in C++ land.  Similarly, 'vector pixel' is distinct from
@@ -22692,16 +22678,6 @@ rs6000_initial_elimination_offset (int from, int to)
     gcc_unreachable ();
 
   return offset;
-}
-
-/* Return true if TYPE is a SPE or AltiVec opaque type.  */
-
-static bool
-rs6000_is_opaque_type (const_tree type)
-{
-  return (type == opaque_V2SI_type_node
-	      || type == opaque_V2SF_type_node
-	      || type == opaque_V4SI_type_node);
 }
 
 static rtx

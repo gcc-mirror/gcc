@@ -5700,7 +5700,8 @@ really_start_incremental_init (tree type)
   if (type == 0)
     type = TREE_TYPE (constructor_decl);
 
-  if (targetm.vector_opaque_p (type))
+  if (TREE_CODE (type) == VECTOR_TYPE
+      && TYPE_VECTOR_OPAQUE (type))
     error ("opaque vector types cannot be initialized");
 
   p->type = constructor_type;

@@ -5157,7 +5157,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
 		       decl);
 	      init = build_tree_list (NULL_TREE, init);
 	    }
-	  else if ((*targetm.vector_opaque_p) (type))
+	  else if (TREE_CODE (type) == VECTOR_TYPE && TYPE_VECTOR_OPAQUE (type))
 	    {
 	      error ("opaque vector types cannot be initialized");
 	      init = error_mark_node;

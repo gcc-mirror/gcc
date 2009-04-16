@@ -1882,7 +1882,7 @@ bool
 vector_targets_convertible_p (const_tree t1, const_tree t2)
 {
   if (TREE_CODE (t1) == VECTOR_TYPE && TREE_CODE (t2) == VECTOR_TYPE
-      && (targetm.vector_opaque_p (t1) || targetm.vector_opaque_p (t2))
+      && (TYPE_VECTOR_OPAQUE (t1) || TYPE_VECTOR_OPAQUE (t2))
       && tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2)))
     return true;
 
@@ -1900,7 +1900,7 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
   static bool emitted_lax_note = false;
   bool convertible_lax;
 
-  if ((targetm.vector_opaque_p (t1) || targetm.vector_opaque_p (t2))
+  if ((TYPE_VECTOR_OPAQUE (t1) || TYPE_VECTOR_OPAQUE (t2))
       && tree_int_cst_equal (TYPE_SIZE (t1), TYPE_SIZE (t2)))
     return true;
 

@@ -1424,14 +1424,6 @@ floating-point arithmetic.
 The default definition of this macro returns false for all sizes.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_VECTOR_OPAQUE_P (tree @var{type})
-This target hook should return @code{true} a vector is opaque.  That
-is, if no cast is needed when copying a vector value of type
-@var{type} into another vector lvalue of the same size.  Vector opaque
-types cannot be initialized.  The default is that there are no such
-types.
-@end deftypefn
-
 @deftypefn {Target Hook} bool TARGET_MS_BITFIELD_LAYOUT_P (tree @var{record_type})
 This target hook returns @code{true} if bit-fields in the given
 @var{record_type} are to be laid out following the rules of Microsoft
