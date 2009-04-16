@@ -2623,7 +2623,7 @@ package body Prj.Nmsc is
                                 (Src_Data.Other_Part).In_Interfaces := True;
                               In_Tree.Sources.Table
                                 (Src_Data.Other_Part).Declared_In_Interfaces :=
-                                True;
+                                  True;
                            end if;
 
                            if Current_Verbosity = High then
@@ -2654,8 +2654,8 @@ package body Prj.Nmsc is
                Error_Msg
                  (Project,
                   In_Tree,
-                  "{ cannot be an interface of project %% " &
-                  "as it is not one of its sources",
+                  "{ cannot be an interface of project %% "
+                  & "as it is not one of its sources",
                   Element.Location);
             end if;
 
