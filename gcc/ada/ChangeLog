@@ -1,3 +1,15 @@
+2009-04-16  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb (Build_From_Any_Call): For a subtype that is a generic
+	actual type, use the base type to build the To_Any function.
+	(Build_From_Any_Function): Remove junk, useless subtype conversion.
+
+2009-04-16  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch9.adb, exp_code.adb, tbuild.adb, sem_case.adb,
+	restrict.adb: Minor code reorganization (use
+	Add_{Char,Str}_To_Name_Buffer instead of inlining it by hand).
+
 2009-04-16  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.ads, exp_ch6.adb (Is_Build_In_Place_Function_Return): Remove,
