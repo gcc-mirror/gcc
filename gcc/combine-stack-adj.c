@@ -1,6 +1,6 @@
 /* Combine stack adjustments.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -333,9 +333,7 @@ adjust_frame_related_expr (rtx last_sp_set, rtx insn,
   if (note)
     XEXP (note, 0) = new_expr;
   else
-    REG_NOTES (last_sp_set)
-      = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, new_expr,
-			   REG_NOTES (last_sp_set));
+    add_reg_note (last_sp_set, REG_FRAME_RELATED_EXPR, new_expr);
 }
 
 /* Subroutine of combine_stack_adjustments, called for each basic block.  */
@@ -561,4 +559,3 @@ struct rtl_opt_pass pass_stack_adjustments =
   TODO_ggc_collect,                     /* todo_flags_finish */
  }
 };
-

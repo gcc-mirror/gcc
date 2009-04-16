@@ -1,3 +1,16 @@
+2009-04-16  Ian Lance Taylor  <iant@google.com>
+
+	* rtlanal.c (alloc_reg_note): New function, broken out of
+	add_reg_note.
+	(add_reg_note): Call alloc_reg_note.
+	* rtl.h (alloc_reg_note): Declare.
+	* combine.c (try_combine): Use alloc_reg_note.
+	(recog_for_combine, move_deaths): Likewise.
+	(distribute_notes): Use alloc_reg_note and add_reg_note.
+	* haifa-sched.c (sched_create_recovery_edges): Use add_reg_note.
+	* combine-stack-adj.c (adjust_frame_related_expr): Likewise.
+	* reload1.c (eliminate_regs_1): Use alloc_reg_note.
+
 2009-04-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/39762
