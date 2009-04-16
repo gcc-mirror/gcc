@@ -1,5 +1,10 @@
 2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
+	* cfgrtl.c (delete_insn_chain_and_edges): Remove.
+	* rtl.h: Remove the prototype for delete_insn_chain_and_edges.
+
+2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
+
 	* tree-iterator.c (tsi_split_statement_list_after,
 	tsi_split_statement_list_before): Remove.
 	* tree-iterator.h: Remove the prototypes for
