@@ -1,3 +1,12 @@
+2009-04-16  Rafael Avila de Espindola  <espindola@google.com>
+
+	* common.opt (fversion): New.
+	* gcc.c (print_version): New.
+	(process_command): Don't print the version. Just set print_version.
+	(main): Print version. Call subprocesses if print_version and
+	verbose_flag are set.
+	* opts.c (common_handle_option): Handle OPT_fversion.
+
 2009-04-16  Richard Guenther  <rguenther@suse.de>
 	Ira Rosen  <irar@il.ibm.com>
 
