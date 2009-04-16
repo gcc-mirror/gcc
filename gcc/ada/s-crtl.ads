@@ -188,7 +188,7 @@ package System.CRTL is
    pragma Import (C, ungetc, "ungetc");
 
    function unlink (filename : chars) return int;
-   pragma Import (C, unlink, "unlink");
+   pragma Import (C, unlink, "__gnat_unlink");
 
    function open (filename : chars; oflag : int) return int;
    pragma Import (C, open, "open");
