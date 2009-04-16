@@ -1,3 +1,16 @@
+2009-04-16  Jan Hubicka  <jh@suse.cz>
+
+	* tree.cc (_Rb_tree_increment, _Rb_tree_decrement,
+	_Rb_tree_rebalance_for_erase, _Rb_tree_black_count): Mark nothrow;
+	update uses of _Rb_tree_rotate_left, _Rb_tree_rotate_right.
+	(_Rb_tree_rotate_left, _Rb_tree_rotate_right): Make wrapper and break
+	out body to ...
+	(local_Rb_tree_rotate_left, local_Rb_tree_rotate_right): New static
+	functions.
+	* stl_tree.h (_Rb_tree_increment, _Rb_tree_decrement,
+	_Rb_tree_insert_and_rebalance, _Rb_tree_rebalance_for_erase,
+	_Rb_tree_black_count): Mark nothrow.
+
 2009-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/forward_list.h: Remove default std::allocator<_Tp>
