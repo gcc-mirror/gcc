@@ -1,4 +1,18 @@
 2009-04-16  Richard Guenther  <rguenther@suse.de>
+	Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/39698
+	* tree-vect-loop.c (get_initial_def_for_reduction): Use the
+	type of the reduction variable.  Only generate the def if
+	it is needed.
+
+	* omp-low.c (expand_omp_for_generic): When converting to a pointer
+	make sure to first convert to an integer of the same precision.
+	* tree-vect-loop-manip.c (vect_update_ivs_after_vectorizer): Retain
+	the type of the evolution correctly in computing the new
+	induction variable base.
+
+2009-04-16  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/39625
 	* tree-cfg.c (make_blocks): Split statements with to-be

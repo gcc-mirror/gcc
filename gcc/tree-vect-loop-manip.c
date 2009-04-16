@@ -1593,7 +1593,8 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       tree access_fn = NULL;
       tree evolution_part;
       tree init_expr;
-      tree step_expr;
+      tree step_expr, off;
+      tree type;
       tree var, ni, ni_name;
       gimple_stmt_iterator last_gsi;
 
@@ -1623,6 +1624,11 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
 
       access_fn = analyze_scalar_evolution (loop, PHI_RESULT (phi)); 
       gcc_assert (access_fn);
+      /* We can end up with an access_fn like
+           (short int) {(short unsigned int) i_49, +, 1}_1
+	 for further analysis we need to strip the outer cast but we
+	 need to preserve the original type.  */
+      type = TREE_TYPE (access_fn);
       STRIP_NOPS (access_fn);
       evolution_part =
 	 unshare_expr (evolution_part_in_loop_num (access_fn, loop->num));
@@ -1635,22 +1641,19 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
       step_expr = evolution_part;
       init_expr = unshare_expr (initial_condition_in_loop_num (access_fn, 
 							       loop->num));
+      init_expr = fold_convert (type, init_expr);
 
+      off = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
+			 fold_convert (TREE_TYPE (step_expr), niters),
+			 step_expr);
       if (POINTER_TYPE_P (TREE_TYPE (init_expr)))
 	ni = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (init_expr), 
-			  init_expr, 
-			  fold_build2 (MULT_EXPR, sizetype,
-				       fold_convert (sizetype, niters),
-				       step_expr));
+			  init_expr,
+			  fold_convert (sizetype, off));
       else
 	ni = fold_build2 (PLUS_EXPR, TREE_TYPE (init_expr),
-			  fold_build2 (MULT_EXPR, TREE_TYPE (init_expr),
-				       fold_convert (TREE_TYPE (init_expr),
-						     niters),
-				       step_expr),
-			  init_expr);
-
-
+			  init_expr,
+			  fold_convert (TREE_TYPE (init_expr), off));
 
       var = create_tmp_var (TREE_TYPE (init_expr), "tmp");
       add_referenced_var (var);

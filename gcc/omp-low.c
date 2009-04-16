@@ -3812,21 +3812,25 @@ expand_omp_for_generic (struct omp_region *region,
 
   /* Iteration setup for sequential loop goes in L0_BB.  */
   gsi = gsi_start_bb (l0_bb);
+  t = istart0;
   if (bias)
-    t = fold_convert (type, fold_build2 (MINUS_EXPR, fd->iter_type,
-					 istart0, bias));
-  else
-    t = fold_convert (type, istart0);
+    t = fold_build2 (MINUS_EXPR, fd->iter_type, t, bias);
+  if (POINTER_TYPE_P (type))
+    t = fold_convert (lang_hooks.types.type_for_size (TYPE_PRECISION (type),
+						      0), t);
+  t = fold_convert (type, t);
   t = force_gimple_operand_gsi (&gsi, t, false, NULL_TREE,
 				false, GSI_CONTINUE_LINKING);
   stmt = gimple_build_assign (fd->loop.v, t);
   gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 
+  t = iend0;
   if (bias)
-    t = fold_convert (type, fold_build2 (MINUS_EXPR, fd->iter_type,
-					 iend0, bias));
-  else
-    t = fold_convert (type, iend0);
+    t = fold_build2 (MINUS_EXPR, fd->iter_type, t, bias);
+  if (POINTER_TYPE_P (type))
+    t = fold_convert (lang_hooks.types.type_for_size (TYPE_PRECISION (type),
+						      0), t);
+  t = fold_convert (type, t);
   iend = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 				   false, GSI_CONTINUE_LINKING);
   if (fd->collapse > 1)
