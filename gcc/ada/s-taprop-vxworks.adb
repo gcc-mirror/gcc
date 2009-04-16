@@ -833,18 +833,6 @@ package body System.Task_Primitives.Operations is
 
       Install_Signal_Handlers;
 
-      Lock_RTS;
-
-      for J in Known_Tasks'Range loop
-         if Known_Tasks (J) = null then
-            Known_Tasks (J) := Self_ID;
-            Self_ID.Known_Tasks_Index := J;
-            exit;
-         end if;
-      end loop;
-
-      Unlock_RTS;
-
       --  If stack checking is enabled, set the stack limit for this task
 
       if Set_Stack_Limit_Hook /= null then

@@ -128,17 +128,17 @@ package System.Tasking is
 
    type Task_States is
      (Unactivated,
-      --  Task has been created but has not been activated.
+      --  TCB initialized but not task has not been created.
       --  It cannot be executing.
+
+      Activating,
+      --  Task has been created and is being made Runnable.
 
       --  Active states
       --  For all states from here down, the task has been activated.
       --  For all states from here down, except for Terminated, the task
       --  may be executing.
       --  Activator = null iff it has not yet completed activating.
-
-      --  For all states from here down,
-      --  the task has been activated, and may be executing.
 
       Runnable,
       --  Task is not blocked for any reason known to Ada.
@@ -154,7 +154,10 @@ package System.Tasking is
       --  Task is waiting for created tasks to complete activation
 
       Acceptor_Sleep,
-      --  Task is waiting on an accept or selective wait statement
+      --  Task is waiting on an accept or select with terminate
+
+      Acceptor_Delay_Sleep,
+      --  Task is waiting on an selective wait statement
 
       Entry_Caller_Sleep,
       --  Task is waiting on an entry call
@@ -389,6 +392,15 @@ package System.Tasking is
    --  is in general a non-static value that can depend on discriminants
    --  of the task.
 
+   type Bit_Array is array (Integer range <>) of Boolean;
+   pragma Pack (Bit_Array);
+
+   subtype Debug_Event_Array is Bit_Array (1 .. 16);
+
+   Global_Task_Debug_Event_Set : Boolean := False;
+   --  Set True when running under debugger control and a task debug
+   --  event signal has been requested.
+
    ----------------------------------------------
    -- Ada_Task_Control_Block (ATCB) definition --
    ----------------------------------------------
@@ -608,6 +620,10 @@ package System.Tasking is
       --  any of its dependent tasks.
       --
       --  Protection: Self.L
+
+      Debug_Events : Debug_Event_Array;
+      --  Word length array of per task debug events, of which 11 kinds are
+      --  currently defined in System.Tasking.Debugging package.
    end record;
 
    ---------------------------------------

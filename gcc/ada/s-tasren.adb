@@ -1525,7 +1525,7 @@ package body System.Tasking.Rendezvous is
             --  Wait for a normal call and a pending action until the
             --  Wakeup_Time is reached.
 
-            Self_Id.Common.State := Acceptor_Sleep;
+            Self_Id.Common.State := Acceptor_Delay_Sleep;
 
             --  Try to remove calls to Sleep in the loop below by letting the
             --  caller a chance of getting ready immediately, using Unlock
@@ -1557,7 +1557,7 @@ package body System.Tasking.Rendezvous is
                exit when Self_Id.Open_Accepts = null;
 
                if Timedout then
-                  Sleep (Self_Id, Acceptor_Sleep);
+                  Sleep (Self_Id, Acceptor_Delay_Sleep);
                else
                   if Parameters.Runtime_Traces then
                      Send_Trace_Info (WT_Select,
@@ -1567,7 +1567,7 @@ package body System.Tasking.Rendezvous is
                   end if;
 
                   STPO.Timed_Sleep (Self_Id, Timeout, Mode,
-                    Acceptor_Sleep, Timedout, Yielded);
+                    Acceptor_Delay_Sleep, Timedout, Yielded);
                end if;
 
                if Timedout then
@@ -1613,9 +1613,9 @@ package body System.Tasking.Rendezvous is
             --  3) Spurious wakeup
 
             Self_Id.Open_Accepts := null;
-            Self_Id.Common.State := Acceptor_Sleep;
+            Self_Id.Common.State := Acceptor_Delay_Sleep;
 
-            STPO.Timed_Sleep (Self_Id, Timeout, Mode, Acceptor_Sleep,
+            STPO.Timed_Sleep (Self_Id, Timeout, Mode, Acceptor_Delay_Sleep,
               Timedout, Yielded);
 
             Self_Id.Common.State := Runnable;

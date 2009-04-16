@@ -246,6 +246,18 @@ package body System.Tasking.Debug is
       STPO.Self.User_State := Value;
    end Set_User_State;
 
+   ------------------------
+   -- Signal_Debug_Event --
+   ------------------------
+
+   procedure Signal_Debug_Event
+     (Event_Kind : Event_Kind_Type;
+      Task_Value : Task_Id)
+   is
+   begin
+      null;
+   end Signal_Debug_Event;
+
    --------------------
    -- Stop_All_Tasks --
    --------------------

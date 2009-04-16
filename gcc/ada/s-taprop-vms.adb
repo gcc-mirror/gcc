@@ -689,20 +689,7 @@ package body System.Task_Primitives.Operations is
    procedure Enter_Task (Self_ID : Task_Id) is
    begin
       Self_ID.Common.LL.Thread := pthread_self;
-
       Specific.Set (Self_ID);
-
-      Lock_RTS;
-
-      for J in Known_Tasks'Range loop
-         if Known_Tasks (J) = null then
-            Known_Tasks (J) := Self_ID;
-            Self_ID.Known_Tasks_Index := J;
-            exit;
-         end if;
-      end loop;
-
-      Unlock_RTS;
    end Enter_Task;
 
    --------------
@@ -1238,6 +1225,25 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Initialize (Environment_Task : Task_Id) is
+
+      --  The DEC Ada facility code defined in Starlet
+      Ada_Facility : constant := 49;
+
+      function DBGEXT (Control_Block : System.Address)
+        return System.Aux_DEC.Unsigned_Word;
+      --  DBGEXT is imported  from s-tasdeb.adb and its parameter re-typed
+      --  as Address to avoid having a VMS specific s-tasdeb.ads.
+      pragma Interface (C, DBGEXT);
+      pragma Import_Function (DBGEXT, "GNAT$DBGEXT");
+
+      type Facility_Type is range 0 .. 65535;
+
+      procedure Debug_Register
+        (ADBGEXT    : System.Address;
+         ATCB_Key   : pthread_key_t;
+         Facility   : Facility_Type;
+         Std_Prolog : Integer);
+      pragma Import (C, Debug_Register, "CMA$DEBUG_REGISTER");
    begin
       Environment_Task_Id := Environment_Task;
 
@@ -1248,6 +1254,15 @@ package body System.Task_Primitives.Operations is
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
 
       Specific.Initialize (Environment_Task);
+
+      --  Pass the context key on to CMA along with the other parameters
+      Debug_Register
+       (
+        DBGEXT'Address,    --  Our DEBUG handling entry point
+        ATCB_Key,          --  CMA context key for our Ada TCB's
+        Ada_Facility,      --  Out facility code
+        0                  --  False, we don't have the std TCB prolog
+       );
 
       Enter_Task (Environment_Task);
    end Initialize;

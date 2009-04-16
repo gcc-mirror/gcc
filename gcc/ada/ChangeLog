@@ -1,3 +1,40 @@
+2009-04-16  Doug Rupp  <rupp@adacore.com>
+
+	* s-taprop-vxworks.adb, s-taprop-tru64.adb, s-taprop-mingw.adb,
+	s-taprop-linux.adb, s-taprop-solaris.adb, s-taprop-irix.adb, 
+	s-taprop-hpux-dce.adb, s-taprop-posix.adb
+	(Enter_Task): Move Known_Tasks initialization to s-tassta.adb
+
+	* s-taprop-vms.adb (Enter_Task): Likewise.
+	(Initialize): Import DBEXT, Debug_Register. Register DBGEXT callback.
+
+	* s-tassta.adb (Activate_Tasks): After task creation set state to
+	Activating, vice Runnable. Initialize Known_Tasks, moved here from
+	s-taprop.adb (Enter_Task). Set Debug_Event_Activating for debugger.
+	Set state to Runnable after above.
+	(Task_Wrapper): Set Debug_Event_Run. In exception block set
+	Debug_Event_Terminated.
+
+	* s-taskin.ads (Task_States): Add new states Activiting and
+	Activator_Delay_Sleep.
+	(Bit_Array, Debug_Event_Array): New types.
+	(Global_Task_Debug_Event_Set: New flag.
+	(Common_ATCB): New field Debug_Events.
+
+	* s-taskin.adb (Initialize_ATCB): Initialize Debug_Events.
+
+	* s-tasren.adb (Timed_Selective_Wait): Set Activator_Delay_Sleep vice
+	Activator_Sleep.
+
+	* s-tasini.adb (Locked_Abort_To_Level): Add case alternatives for when
+	Activating and when Acceptor_Delay_Sleep.
+
+	* s-tasdeb.ads: Add constants for Debug_Events.
+	(Debug_Event_Kind_Type): New subtype.
+	(Signal_Debug_Event): New subprogram.
+
+	* s-tasdeb.adb (Signal_Debug_Event): New null subprogram.
+
 2009-04-16  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_elim.adb: Minor reformatting
