@@ -1094,13 +1094,7 @@ static const struct mips_rtx_cost_data mips_rtx_cost_data[PROCESSOR_MAX] = {
     DEFAULT_COSTS
   },
   { /* XLR */
-    /* Need to replace first five with the costs of calling the appropriate 
-       libgcc routine.  */
-    COSTS_N_INSNS (256),          /* fp_add */
-    COSTS_N_INSNS (256),          /* fp_mult_sf */
-    COSTS_N_INSNS (256),          /* fp_mult_df */
-    COSTS_N_INSNS (256),          /* fp_div_sf */
-    COSTS_N_INSNS (256),          /* fp_div_df */
+    SOFT_FP_COSTS,
     COSTS_N_INSNS (8),            /* int_mult_si */
     COSTS_N_INSNS (8),            /* int_mult_di */
     COSTS_N_INSNS (72),           /* int_div_si */

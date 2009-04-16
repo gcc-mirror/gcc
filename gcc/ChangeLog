@@ -1,3 +1,12 @@
+2009-04-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/mips/mips.c (mips_rtx_cost_data): Use SOFT_FP_COSTS in
+	XLR entry.
+	* config/mips/mips.h (MIPS_ISA_LEVEL_SPEC, MIPS_ARCH_FLOAT_SPEC):
+	Handle -march=xlr.
+	* config/mips/xlr.md (ir_xlr_alu): Also accept insn types move,
+	logical and signext.
+
 2009-04-16  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR target/39767
