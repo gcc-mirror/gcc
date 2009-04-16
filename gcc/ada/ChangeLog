@@ -1,3 +1,8 @@
+2009-04-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Makefile.in: Change g-trasym to g-trasym-unimplemented
+	for the targets where GNAT.Traceback.Symbolic is not supported.
+
 2009-04-16  Ed Schonberg  <schonberg@adacore.com>
 
 	* sprint.adb (Write_Itype): If the itype is an array subtype, preserve
