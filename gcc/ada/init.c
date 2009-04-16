@@ -2098,6 +2098,8 @@ __gnat_install_handler(void)
 #elif defined(__APPLE__)
 
 #include <signal.h>
+#include <mach/mach_vm.h>
+#include <mach/vm_statistics.h>
 
 /* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
 char __gnat_alternate_stack[64 * 1024]; /* 2 * MINSIGSTKSZ */
@@ -2107,6 +2109,31 @@ static void __gnat_error_handler (int sig, siginfo_t * si, void * uc);
 /* Defined in xnu unix_signal.c  */
 #define	UC_RESET_ALT_STACK	0x80000000
 extern int sigreturn (void *uc, int flavour);
+
+/* Return true if ADDR is within a stack guard area.  */
+static int
+__gnat_is_stack_guard (mach_vm_address_t addr)
+{
+  kern_return_t kret;
+  vm_region_submap_info_data_64_t info;
+  mach_vm_address_t start;
+  mach_vm_size_t size;
+  natural_t depth;
+  mach_msg_type_number_t count;
+
+  count = VM_REGION_SUBMAP_INFO_COUNT_64;
+  start = addr;
+  size = -1;
+  depth = 9999;
+  kret = mach_vm_region_recurse (mach_task_self (), &start, &size, &depth,
+				 (vm_region_recurse_info_t) &info, &count);
+  if (kret == KERN_SUCCESS
+      && addr >= start && addr < (start + size)
+      && info.protection == VM_PROT_NONE
+      && info.user_tag == VM_MEMORY_STACK)
+    return 1;
+  return 0;
+}
 
 static void
 __gnat_error_handler (int sig, siginfo_t * si, void * uc)
@@ -2118,9 +2145,16 @@ __gnat_error_handler (int sig, siginfo_t * si, void * uc)
     {
     case SIGSEGV:
     case SIGBUS:
-      /* FIXME: we need to detect the case of a *real* SIGSEGV.  */
-      exception = &storage_error;
-      msg = "stack overflow or erroneous memory access";
+      if (__gnat_is_stack_guard ((mach_vm_address_t)si->si_addr))
+	{
+	  exception = &storage_error;
+	  msg = "stack overflow";
+	}
+      else
+	{
+	  exception = &constraint_error;
+	  msg = "erroneous memory access";
+	}
       /* Reset the use of alt stack, so that the alt stack will be used
 	 for the next signal delivery.  */
       sigreturn (NULL, UC_RESET_ALT_STACK);

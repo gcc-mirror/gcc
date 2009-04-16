@@ -317,7 +317,8 @@ struct layout
 #define FRAME_OFFSET(FP) 0
 #define PC_ADJUST -2
 #define STOP_FRAME(CURRENT, TOP_STACK) \
-  (IS_BAD_PTR((long)(CURRENT)->return_address) \
+  (IS_BAD_PTR((long)(CURRENT)) \
+   || IS_BAD_PTR((long)(CURRENT)->return_address) \
    || (CURRENT)->return_address == 0|| (CURRENT)->next == 0  \
    || (void *) (CURRENT) < (TOP_STACK))
 
