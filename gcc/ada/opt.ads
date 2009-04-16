@@ -913,9 +913,9 @@ package Opt is
 
    Optimize_Size : Int;
    pragma Import (C, Optimize_Size, "optimize_size");
-   --  Constant reflecting setting of -Os (optimize for size). Set to 1 in
-   --  -Os mode and set to 0 otherwise. See jmissing.c and aamissing.c for
-   --  definitions for dotnet/jgnat and GNAAMP backends
+   --  Constant reflecting setting of -Os (optimize for size). Set to nonzero
+   --  in -Os mode and set to zero otherwise. See jmissing.c and aamissing.c
+   --  for definitions of "optimize_size" for dotnet/jgnat and GNAAMP backends
 
    Output_File_Name_Present : Boolean := False;
    --  GNATBIND, GNAT, GNATMAKE, GPRMAKE
