@@ -4697,17 +4697,19 @@ package body Sem_Ch4 is
       Scop  : Entity_Id := Empty;
 
       procedure Try_One_Interp (T1 : Entity_Id);
-      --  The context of the operator plays no role in resolving the
-      --  arguments,  so that if there is more than one interpretation
-      --  of the operands that is compatible with equality, the construct
-      --  is ambiguous and an error can be emitted now, after trying to
-      --  disambiguate, i.e. applying preference rules.
+      --  The context of the equality operator plays no role in resolving the
+      --  arguments, so that if there is more than one interpretation of the
+      --  operands that is compatible with equality, the construct is ambiguous
+      --  and an error can be emitted now, after trying to disambiguate, i.e.
+      --  applying preference rules.
 
       --------------------
       -- Try_One_Interp --
       --------------------
 
       procedure Try_One_Interp (T1 : Entity_Id) is
+         Bas : constant Entity_Id := Base_Type (T1);
+
       begin
          --  If the operator is an expanded name, then the type of the operand
          --  must be defined in the corresponding scope. If the type is
@@ -4725,7 +4727,7 @@ package body Sem_Ch4 is
               or else T1 = Any_String
               or else T1 = Any_Composite
               or else (Ekind (T1) = E_Access_Subprogram_Type
-                          and then not Comes_From_Source (T1))
+                        and then not Comes_From_Source (T1))
             then
                null;
 
@@ -4739,6 +4741,32 @@ package body Sem_Ch4 is
 
                return;
             end if;
+
+         --  If we have infix notation, the operator must be usable.
+         --  Within an instance, if the type is already established we
+         --  know it is correct.
+         --  In Ada 2005, the equality on anonymous access types is declared
+         --  in Standard, and is always visible.
+
+         elsif In_Open_Scopes (Scope (Bas))
+           or else Is_Potentially_Use_Visible (Bas)
+           or else In_Use (Bas)
+           or else (In_Use (Scope (Bas))
+                     and then not Is_Hidden (Bas))
+           or else (In_Instance
+                     and then First_Subtype (T1) = First_Subtype (Etype (R)))
+           or else Ekind (T1) = E_Anonymous_Access_Type
+         then
+            null;
+
+         else
+            --  Save candidate type for subsquent error message, if any.
+
+            if not Is_Limited_Type (T1) then
+               Candidate_Type := T1;
+            end if;
+
+            return;
          end if;
 
          --  Ada 2005 (AI-230): Keep restriction imposed by Ada 83 and 95:

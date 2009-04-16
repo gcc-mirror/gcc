@@ -1,5 +1,15 @@
 2009-04-16  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document effect of Assume_No_Invalid_Values and -gnatVa
+	used together.
+
+2009-04-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Find_Equality_Types): Filter out types that are not
+	usable before calling Add_One_Interp, to resolve spurious ambiguities.
+
+2009-04-16  Robert Dewar  <dewar@adacore.com>
+
 	* Makefile.rtl: Add entries for s-conca?
 
 	* debug.adb: Add debug flags -gnatd.c and -gnatd.C to control behavior
