@@ -2938,7 +2938,7 @@ package body Exp_Ch4 is
       function Size_In_Storage_Elements (E : Entity_Id) return Node_Id;
       --  Given a constrained array type E, returns a node representing the
       --  code to compute the size in storage elements for the given type.
-      --  This is done without using the attribute (which malfunctins for
+      --  This is done without using the attribute (which malfunctions for
       --  large sizes ???)
 
       ---------------------------------------
@@ -3356,7 +3356,7 @@ package body Exp_Ch4 is
          --  least at the moment we don't compute this attribute right, and
          --  can silently give wrong results when the result gets large. Since
          --  this is all about large results, that's bad, so instead we only
-         --  applly the check for constrained arrays, and manually compute the
+         --  apply the check for constrained arrays, and manually compute the
          --  value of the attribute ???
 
          if Is_Array_Type (Etyp) and then Is_Constrained (Etyp) then

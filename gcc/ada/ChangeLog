@@ -1,3 +1,11 @@
+2009-04-16  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_elim.adb: Minor reformatting
+
+	* freeze.adb: Minor reformatting
+
+	* exp_ch4.adb: Minor reformatting
+
 2009-04-16  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-nmsc.adb (Path_Name_Of): fix memory leak
