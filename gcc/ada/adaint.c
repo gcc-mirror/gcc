@@ -725,6 +725,23 @@ __gnat_chdir (char *path)
 #endif
 }
 
+/* Removing a directory.  */
+
+int
+__gnat_rmdir (char *path)
+{
+#if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+  {
+    TCHAR wpath[GNAT_MAX_PATH_LEN];
+
+    S2WSU (wpath, path, GNAT_MAX_PATH_LEN);
+    return _trmdir (wpath);
+  }
+#else
+  return rmdir (path);
+#endif
+}
+
 FILE *
 __gnat_fopen (char *path, char *mode, int encoding ATTRIBUTE_UNUSED)
 {

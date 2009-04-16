@@ -1,5 +1,16 @@
 2009-04-16  Pascal Obry  <obry@adacore.com>
 
+	* adaint.h, adaint.c (__gnat_rmdir): New routine.
+	Simple wrapper routines used to convert to proper encoding on
+	Windows.
+
+	* s-crtl.ads: Use __gnat_rmdir instead of direct call to the C library.
+
+	* g-dirope.adb (Remove_Dir): Fix a bug, the root directory was removed
+	twice.
+
+2009-04-16  Pascal Obry  <obry@adacore.com>
+
 	* s-crtl.ads, s-os_lib.adb: Minor code clean-up.
 
 2009-04-16  Thomas Quinot  <quinot@adacore.com>

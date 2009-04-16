@@ -73,6 +73,7 @@ extern int    __gnat_stat			   (char *,
 extern int    __gnat_unlink                        (char *);
 extern int    __gnat_rename                        (char *, char *);
 extern int    __gnat_chdir                         (char *);
+extern int    __gnat_rmdir                         (char *);
 
 extern FILE  *__gnat_fopen			   (char *, char *, int);
 extern FILE  *__gnat_freopen			   (char *, char *, FILE *,
