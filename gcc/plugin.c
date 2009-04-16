@@ -61,6 +61,7 @@ struct plugin_name_args
   int argc;
   struct plugin_argument *argv;
   const char *version;
+  const char *help;
 };
 
 /* Hash table for the plugin_name_args objects created during command-line
@@ -461,6 +462,7 @@ register_plugin_info (const char* name, struct plugin_info *info)
   void **slot = htab_find_slot (plugin_name_args_tab, name, NO_INSERT);
   struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
   plugin->version = info->version;
+  plugin->help = info->help;
 }
 
 /* Called from the plugin's initialization code. Register a single callback.
@@ -706,6 +708,51 @@ print_plugins_versions (FILE *file, const char *indent)
 
   fprintf (file, "%sVersions of loaded plugins:\n", indent);
   htab_traverse_noresize (plugin_name_args_tab, print_version_one_plugin, &opt);
+}
+
+/* Print help for one plugin. SLOT is the hash table slot. DATA is the
+   argument to htab_traverse_noresize. */
+
+static int
+print_help_one_plugin (void **slot, void *data)
+{
+  struct print_options *opt = (struct print_options *) data;
+  struct plugin_name_args *plugin = (struct plugin_name_args *) *slot;
+  const char *help = plugin->help ? plugin->help : "No help available .";
+
+  char *dup = xstrdup (help);
+  char *p, *nl;
+  fprintf (opt->file, " %s%s:\n", opt->indent, plugin->base_name);
+
+  for (p = nl = dup; nl; p = nl)
+    {
+      nl = strchr (nl, '\n');
+      if (nl)
+	{
+	  *nl = '\0';
+	  nl++;
+	}
+      fprintf (opt->file, "   %s %s\n", opt->indent, p);
+    }
+
+  free (dup);
+  return 1;
+}
+
+/* Print help for each plugin. The output goes to FILE and every line starts
+   with INDENT. */
+
+void
+print_plugins_help (FILE *file, const char *indent)
+{
+  struct print_options opt;
+  opt.file = file;
+  opt.indent = indent;
+  if (!plugin_name_args_tab || htab_elements (plugin_name_args_tab) == 0)
+    return;
+
+  fprintf (file, "%sHelp for the loaded plugins:\n", indent);
+  htab_traverse_noresize (plugin_name_args_tab, print_help_one_plugin, &opt);
 }
 
 

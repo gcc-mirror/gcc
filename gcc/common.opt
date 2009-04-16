@@ -39,7 +39,7 @@ Alias for --help=target
 ;; program's insatiable desire to turn options starting with a
 ;; double dash (--) into options starting with a dash f (-f).
 fhelp
-Common
+Common Var(help_flag)
 
 fhelp=
 Common Joined
