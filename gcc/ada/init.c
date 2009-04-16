@@ -2194,7 +2194,7 @@ __gnat_install_handler (void)
 void
 __gnat_init_float (void)
 {
-#if defined (__i386__) || defined (i386)
+#if defined (__i386__) || defined (i386) || defined (__x86_64)
 
   /* This is used to properly initialize the FPU on an x86 for each
      process thread.  */

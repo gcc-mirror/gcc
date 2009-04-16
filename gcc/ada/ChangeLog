@@ -1,3 +1,20 @@
+2009-04-16  Quentin Ochem  <ochem@adacore.com>
+
+	* sinput-p.adb (Clear_Source_File_Table): Use Sinput.Initialize instead
+	of Source.Init.
+
+2009-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* a-convec.ads (Is_Empty): Mark inline.
+
+2009-04-16  Nicolas Roche  <roche@adacore.com>
+
+	* init.c (__gnat_init_float): Initialize FPU on x86_64 windows
+
+2009-04-16  Thomas Quinot  <quinot@adacore.com>
+
+	* prepcomp.adb: Minor reformatting
+
 2009-04-16  Jerome Lambourg  <lambourg@adacore.com>
 
 	* sem_prag.adb (Process_Import_Or_Interface): With .NET,
