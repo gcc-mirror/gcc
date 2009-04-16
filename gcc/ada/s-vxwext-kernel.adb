@@ -34,8 +34,6 @@
 
 package body System.VxWorks.Ext is
 
-   ERROR : constant := -1;
-
    --------------
    -- Int_Lock --
    --------------

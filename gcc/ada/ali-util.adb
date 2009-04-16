@@ -139,7 +139,7 @@ package body ALI.Util is
       Full_Name := Find_File (Fname, Osint.Source);
 
       --  If we cannot find the file, then return an impossible checksum,
-      --  impossible becaues checksums have the high order bit zero, so
+      --  impossible because checksums have the high order bit zero, so
       --  that checksums do not match.
 
       if Full_Name = No_File then
