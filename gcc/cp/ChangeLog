@@ -1,3 +1,8 @@
+2009-04-16  Ian Lance Taylor  <iant@google.com>
+
+	* cp-tree.h (enum tsubst_flags): Rename from enum tsubst_flags_t.
+	(tsubst_flags_t): Change typedef from enum type to int.
+
 2009-04-16  Le-Chun Wu  <lcwu@google.com>
 
 	* decl.c (check_initializer): Use TYPE_VECTOR_OPAQUE
