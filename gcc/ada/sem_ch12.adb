@@ -6173,7 +6173,6 @@ package body Sem_Ch12 is
 
       begin
          E1 := First_Entity (P);
-
          while Present (E1) and then  E1 /= Instance loop
             if Ekind (E1) = E_Package
               and then Nkind (Parent (E1)) = N_Package_Renaming_Declaration

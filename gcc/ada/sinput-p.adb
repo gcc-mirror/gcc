@@ -51,10 +51,11 @@ package body Sinput.P is
 
    procedure Clear_Source_File_Table is
       use System;
+
    begin
       for X in 1 .. Source_File.Last loop
          declare
-            S : Source_File_Record renames Source_File.Table (X);
+            S  : Source_File_Record renames Source_File.Table (X);
             Lo : constant Source_Ptr := S.Source_First;
             Hi : constant Source_Ptr := S.Source_Last;
             subtype Actual_Source_Buffer is Source_Buffer (Lo .. Hi);
@@ -74,6 +75,8 @@ package body Sinput.P is
 
             function To_Actual_Source_Ptr is new
               Ada.Unchecked_Conversion (Address, Actual_Source_Ptr);
+
+            pragma Warnings (On);
 
             Actual_Ptr : Actual_Source_Ptr :=
                            To_Actual_Source_Ptr (S.Source_Text (Lo)'Address);
@@ -155,11 +158,10 @@ package body Sinput.P is
       Prj.Err.Scanner.Set_Special_Character ('#');
       Prj.Err.Scanner.Set_Special_Character ('$');
 
-      --  We scan past junk to the first interesting compilation unit
-      --  token, to see if it is SEPARATE. We ignore WITH keywords during
-      --  this and also PRIVATE. The reason for ignoring PRIVATE is that
-      --  it handles some error situations, and also to handle PRIVATE WITH
-      --  in Ada 2005 mode.
+      --  We scan past junk to the first interesting compilation unit token, to
+      --  see if it is SEPARATE. We ignore WITH keywords during this and also
+      --  PRIVATE. The reason for ignoring PRIVATE is that it handles some
+      --  error situations, and also to handle PRIVATE WITH in Ada 2005 mode.
 
       while Token = Tok_With
         or else Token = Tok_Private

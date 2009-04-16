@@ -2032,7 +2032,8 @@ package body Sem_Ch5 is
       End_Scope;
       Kill_Current_Values;
 
-      --  No point in checking for warnings in code we generated
+      --  Check for infinite loop. We skip this check for generated code, since
+      --  it justs waste time and makes debugging the routine called harder.
 
       if Comes_From_Source (N) then
          Check_Infinite_Loop_Warning (N);

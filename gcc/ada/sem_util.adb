@@ -7242,7 +7242,7 @@ package body Sem_Util is
             end if;
 
          when N_Reference            =>
-               return N = Prefix (P);
+            return N = Prefix (P);
 
          when N_Explicit_Dereference =>
             return False;

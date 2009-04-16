@@ -321,9 +321,10 @@ package body Fmap is
             if (Last < First + 2) or else (SP (Last - 1) /= '%')
               or else (SP (Last) /= 's' and then SP (Last) /= 'b')
             then
-               Write_Str ("warning: mapping file """);
-               Write_Str (File_Name);
-               Write_Line (""" is incorrectly formatted");
+               Write_Line
+                 ("warning: mapping file """ & File_Name &
+                  """ is incorrectly formatted");
+               Write_Line ("Line = """ & SP (First .. Last) & '"');
                Empty_Tables;
                return;
             end if;
