@@ -411,9 +411,9 @@ process_regs_for_copy (rtx reg1, rtx reg2, bool constraint_p,
     /* Can not be tied.  It is not in the cover class.  */
     return false;
   if (HARD_REGISTER_P (reg1))
-    cost = ira_register_move_cost[mode][cover_class][rclass] * freq;
+    cost = ira_get_register_move_cost (mode, cover_class, rclass) * freq;
   else
-    cost = ira_register_move_cost[mode][rclass][cover_class] * freq;
+    cost = ira_get_register_move_cost (mode, rclass, cover_class) * freq;
   for (;;)
     {
       ira_allocate_and_set_costs

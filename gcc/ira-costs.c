@@ -138,9 +138,6 @@ copy_cost (rtx x, enum machine_mode mode, enum reg_class rclass, bool to_p,
   sri.extra_cost = 0;
   secondary_class = targetm.secondary_reload (to_p, x, rclass, mode, &sri);
 
-  if (ira_register_move_cost[mode] == NULL)
-    ira_init_register_move_cost (mode);
-
   if (secondary_class != NO_REGS)
     {
       if (!move_cost[mode])
@@ -294,19 +291,17 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		     needs to do a copy, which is one insn.  */
 		  struct costs *pp = this_op_costs[i];
 
-		  if (ira_register_move_cost[mode] == NULL)
-		    ira_init_register_move_cost (mode);
-
 		  for (k = 0; k < cost_classes_num; k++)
 		    {
 		      rclass = cost_classes[k];
 		      pp->cost[k]
-			= ((recog_data.operand_type[i] != OP_OUT
-			    ? ira_may_move_in_cost[mode][rclass]
-			      [classes[i]] * frequency : 0)
-			   + (recog_data.operand_type[i] != OP_IN
-			      ? ira_may_move_out_cost[mode][classes[i]]
-			        [rclass] * frequency : 0));
+			= (((recog_data.operand_type[i] != OP_OUT
+			     ? ira_get_may_move_cost (mode, rclass,
+						      classes[i], true) : 0)
+			    + (recog_data.operand_type[i] != OP_IN
+			       ? ira_get_may_move_cost (mode, classes[i],
+							rclass, false) : 0))
+			   * frequency);
 		    }
 
 		  /* If the alternative actually allows memory, make
@@ -342,8 +337,9 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 				 : 0));
 		      else if (ira_reg_class_intersect
 			       [pref_class][classes[i]] == NO_REGS)
-			alt_cost += (ira_register_move_cost
-				     [mode][pref_class][classes[i]]);
+			alt_cost += ira_get_register_move_cost (mode,
+								pref_class,
+								classes[i]);
 		    }
 		  if (REGNO (ops[i]) != REGNO (ops[j])
 		      && ! find_reg_note (insn, REG_DEAD, op))
@@ -540,19 +536,17 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		{
 		  struct costs *pp = this_op_costs[i];
 
-		  if (ira_register_move_cost[mode] == NULL)
-		    ira_init_register_move_cost (mode);
-
 		  for (k = 0; k < cost_classes_num; k++)
 		    {
 		      rclass = cost_classes[k];
 		      pp->cost[k]
-			= ((recog_data.operand_type[i] != OP_OUT
-			    ? ira_may_move_in_cost[mode][rclass]
-			      [classes[i]] * frequency : 0)
-			   + (recog_data.operand_type[i] != OP_IN
-			      ? ira_may_move_out_cost[mode][classes[i]]
-			        [rclass] * frequency : 0));
+			= (((recog_data.operand_type[i] != OP_OUT
+			     ? ira_get_may_move_cost (mode, rclass,
+						      classes[i], true) : 0)
+			    + (recog_data.operand_type[i] != OP_IN
+			       ? ira_get_may_move_cost (mode, classes[i],
+							rclass, false) : 0))
+			   * frequency);
 		    }
 
 		  /* If the alternative actually allows memory, make
@@ -587,8 +581,9 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 				 : 0));
 		      else if (ira_reg_class_intersect[pref_class][classes[i]]
 			       == NO_REGS)
-			alt_cost += (ira_register_move_cost
-				     [mode][pref_class][classes[i]]);
+			alt_cost += ira_get_register_move_cost (mode,
+								pref_class,
+								classes[i]);
 		    }
 		}
 	    }
@@ -901,13 +896,11 @@ record_address_regs (enum machine_mode mode, rtx x, int context,
 			       ALLOCNO_NUM (ira_curr_regno_allocno_map
 					    [REGNO (x)]));
 	pp->mem_cost += (ira_memory_move_cost[Pmode][rclass][1] * scale) / 2;
-	if (ira_register_move_cost[Pmode] == NULL)
-	  ira_init_register_move_cost (Pmode);
 	for (k = 0; k < cost_classes_num; k++)
 	  {
 	    i = cost_classes[k];
 	    pp->cost[k]
-	      += (ira_may_move_in_cost[Pmode][i][rclass] * scale) / 2;
+	      += (ira_get_may_move_cost (Pmode, i, rclass, true) * scale) / 2;
 	  }
       }
       break;
@@ -1425,8 +1418,9 @@ process_bb_node_for_hard_reg_moves (ira_loop_tree_node_t loop_tree_node)
 	continue;
       mode = ALLOCNO_MODE (a);
       hard_reg_class = REGNO_REG_CLASS (hard_regno);
-      cost = (to_p ? ira_register_move_cost[mode][hard_reg_class][rclass]
-	      : ira_register_move_cost[mode][rclass][hard_reg_class]) * freq;
+      cost
+	= (to_p ? ira_get_register_move_cost (mode, hard_reg_class, rclass)
+	   : ira_get_register_move_cost (mode, rclass, hard_reg_class)) * freq;
       ira_allocate_and_set_costs (&ALLOCNO_HARD_REG_COSTS (a), rclass,
 				  ALLOCNO_COVER_CLASS_COST (a));
       ira_allocate_and_set_costs (&ALLOCNO_CONFLICT_HARD_REG_COSTS (a),
@@ -1579,9 +1573,6 @@ ira_finish_costs_once (void)
 void
 ira_costs (void)
 {
-  ira_allocno_t a;
-  ira_allocno_iterator ai;
-
   allocno_costs = (struct costs *) ira_allocate (max_struct_costs_size
 					       * ira_allocnos_num);
   total_costs = (struct costs *) ira_allocate (max_struct_costs_size
@@ -1594,12 +1585,6 @@ ira_costs (void)
 				       * max_reg_num ());
   find_allocno_class_costs ();
   setup_allocno_cover_class_and_costs ();
-  /* Because we could process operands only as subregs, check mode of
-     the registers themselves too.  */
-  FOR_EACH_ALLOCNO (a, ai)
-    if (ira_register_move_cost[ALLOCNO_MODE (a)] == NULL
-	&& have_regs_of_mode[ALLOCNO_MODE (a)])
-      ira_init_register_move_cost (ALLOCNO_MODE (a));
   ira_free (common_classes);
   ira_free (allocno_pref_buffer);
   ira_free (total_costs);
