@@ -8528,7 +8528,7 @@ package body Exp_Dist is
                     Parameter_Type => New_Occurrence_Of (RTE (RE_Any), Loc))),
                 Result_Definition => New_Occurrence_Of (Typ, Loc));
 
-            --  The following  is taken care of by Exp_Dist.Add_RACW_From_Any
+            --  The RACW case is taken care of by Exp_Dist.Add_RACW_From_Any
 
             pragma Assert
               (not (Is_Remote_Access_To_Class_Wide_Type (Typ)));

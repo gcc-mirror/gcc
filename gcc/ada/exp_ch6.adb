@@ -4748,22 +4748,6 @@ package body Exp_Ch6 is
       end if;
    end Is_Build_In_Place_Function_Call;
 
-   ---------------------------------------
-   -- Is_Build_In_Place_Function_Return --
-   ---------------------------------------
-
-   function Is_Build_In_Place_Function_Return (N : Node_Id) return Boolean is
-   begin
-      if Nkind_In (N, N_Simple_Return_Statement,
-                      N_Extended_Return_Statement)
-      then
-         return Is_Build_In_Place_Function
-                  (Return_Applies_To (Return_Statement_Entity (N)));
-      else
-         return False;
-      end if;
-   end Is_Build_In_Place_Function_Return;
-
    -----------------------
    -- Freeze_Subprogram --
    -----------------------

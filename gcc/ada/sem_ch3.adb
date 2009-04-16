@@ -3330,7 +3330,7 @@ package body Sem_Ch3 is
       --  extension with a synchronized parent must be explicitly declared
       --  synchronized, because the full view will be a synchronized type.
       --  This must be checked before the check for limited types below,
-      --  to ensure that types declared limited are not allowed extend
+      --  to ensure that types declared limited are not allowed to extend
       --  synchronized interfaces.
 
       elsif Is_Interface (Parent_Type)
