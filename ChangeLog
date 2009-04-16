@@ -1,3 +1,8 @@
+2009-04-15  Anthony Green  <green@moxielogic.com>
+
+	* configure.ac: Add moxie support.
+	* configure: Rebuilt.
+
 2009-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Change copyright header to refer to version
