@@ -1,5 +1,9 @@
 2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
+	* tree-iterator.c (EXPR_LAST_BODY): Remove.
+
+2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
+
 	* except.c (eh_region_outer_p): Remove.
 	* except.h: Remove the prototype for eh_region_outer_p.
 
