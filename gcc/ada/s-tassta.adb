@@ -300,7 +300,7 @@ package body System.Tasking.Stages is
             --  racing ahead.
 
             if Success then
-               C.Common.State := Runnable;
+               C.Common.State := Activating;
                C.Awake_Count := 1;
                C.Alive_Count := 1;
                P.Awake_Count := P.Awake_Count + 1;
@@ -312,6 +312,21 @@ package body System.Tasking.Stages is
                   pragma Assert (Self_ID /= P);
                   P.Common.Wait_Count := P.Common.Wait_Count + 1;
                end if;
+
+               for J in System.Tasking.Debug.Known_Tasks'Range loop
+                  if System.Tasking.Debug.Known_Tasks (J) = null then
+                     System.Tasking.Debug.Known_Tasks (J) := C;
+                     C.Known_Tasks_Index := J;
+                     exit;
+                  end if;
+               end loop;
+
+               if Global_Task_Debug_Event_Set then
+                  Debug.Signal_Debug_Event
+                   (Debug.Debug_Event_Activating, C);
+               end if;
+
+               C.Common.State := Runnable;
 
                Unlock (C);
                Unlock (P);
@@ -1130,6 +1145,11 @@ package body System.Tasking.Stages is
          Self_ID.Deferral_Level := 0;
       end if;
 
+      if Global_Task_Debug_Event_Set then
+         Debug.Signal_Debug_Event
+          (Debug.Debug_Event_Run, Self_ID);
+      end if;
+
       begin
          --  We are separating the following portion of the code in order to
          --  place the exception handlers in a different block. In this way,
@@ -1168,8 +1188,18 @@ package body System.Tasking.Stages is
 
             if Self_ID.Terminate_Alternative then
                Cause := Normal;
+
+               if Global_Task_Debug_Event_Set then
+                  Debug.Signal_Debug_Event
+                   (Debug.Debug_Event_Terminated, Self_ID);
+               end if;
             else
                Cause := Abnormal;
+
+               if Global_Task_Debug_Event_Set then
+                  Debug.Signal_Debug_Event
+                   (Debug.Debug_Event_Abort_Terminated, Self_ID);
+               end if;
             end if;
          when others =>
             --  ??? Using an E : others here causes CD2C11A to fail on Tru64
@@ -1194,7 +1224,13 @@ package body System.Tasking.Stages is
             --  procedure, as well as the associated Exception_Occurrence.
 
             Cause := Unhandled_Exception;
+
             Save_Occurrence (EO, SSL.Get_Current_Excep.all.all);
+
+            if Global_Task_Debug_Event_Set then
+               Debug.Signal_Debug_Event
+                 (Debug.Debug_Event_Exception_Terminated, Self_ID);
+            end if;
       end;
 
       --  Look for a task termination handler. This code is for all tasks but

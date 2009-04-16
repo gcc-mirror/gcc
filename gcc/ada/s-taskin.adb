@@ -62,9 +62,9 @@ package body System.Tasking is
    function Detect_Blocking return Boolean is
       GL_Detect_Blocking : Integer;
       pragma Import (C, GL_Detect_Blocking, "__gl_detect_blocking");
-      --  Global variable exported by the binder generated file.
-      --  A value equal to 1 indicates that pragma Detect_Blocking is active,
-      --  while 0 is used for the pragma not being present.
+      --  Global variable exported by the binder generated file. A value equal
+      --  to 1 indicates that pragma Detect_Blocking is active, while 0 is used
+      --  for the pragma not being present.
 
    begin
       return GL_Detect_Blocking = 1;
@@ -101,7 +101,8 @@ package body System.Tasking is
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Size       : System.Parameters.Size_Type;
       T                : Task_Id;
-      Success          : out Boolean) is
+      Success          : out Boolean)
+   is
    begin
       T.Common.State := Unactivated;
 
@@ -128,14 +129,18 @@ package body System.Tasking is
       T.Common.Global_Task_Lock_Nesting := 0;
       T.Common.Fall_Back_Handler := null;
       T.Common.Specific_Handler  := null;
+      T.Common.Debug_Events :=
+        (False, False, False, False, False, False, False, False,
+         False, False, False, False, False, False, False, False);
+      --  Wouldn't (others => False) be clearer ???
 
       if T.Common.Parent = null then
-         --  For the environment task, the adjusted stack size is
-         --  meaningless. For example, an unspecified Stack_Size means
-         --  that the stack size is determined by the environment, or
-         --  can grow dynamically. The Stack_Checking algorithm
-         --  therefore needs to use the requested size, or 0 in
-         --  case of an unknown size.
+
+         --  For the environment task, the adjusted stack size is meaningless.
+         --  For example, an unspecified Stack_Size means that the stack size
+         --  is determined by the environment, or can grow dynamically. The
+         --  Stack_Checking algorithm therefore needs to use the requested
+         --  size, or 0 in case of an unknown size.
 
          T.Common.Compiler_Data.Pri_Stack_Info.Size :=
             Storage_Elements.Storage_Offset (Stack_Size);
@@ -161,9 +166,9 @@ package body System.Tasking is
 
    Main_Priority : Integer;
    pragma Import (C, Main_Priority, "__gl_main_priority");
-   --  Priority for main task. Note that this is of type Integer, not
-   --  Priority, because we use the value -1 to indicate the default
-   --  main priority, and that is of course not in Priority'range.
+   --  Priority for main task. Note that this is of type Integer, not Priority,
+   --  because we use the value -1 to indicate the default main priority, and
+   --  that is of course not in Priority'range.
 
    Initialized : Boolean := False;
    --  Used to prevent multiple calls to Initialize

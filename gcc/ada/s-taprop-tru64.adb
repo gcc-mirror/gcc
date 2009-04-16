@@ -707,19 +707,8 @@ package body System.Task_Primitives.Operations is
    begin
       Hide_Unhide_Yellow_Zone (Hide => True);
       Self_ID.Common.LL.Thread := pthread_self;
+
       Specific.Set (Self_ID);
-
-      Lock_RTS;
-
-      for J in Known_Tasks'Range loop
-         if Known_Tasks (J) = null then
-            Known_Tasks (J) := Self_ID;
-            Self_ID.Known_Tasks_Index := J;
-            exit;
-         end if;
-      end loop;
-
-      Unlock_RTS;
    end Enter_Task;
 
    --------------

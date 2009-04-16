@@ -69,6 +69,26 @@ package System.Tasking.Debug is
    --  Global array of tasks read by gdb, and updated by Create_Task and
    --  Finalize_TCB
 
+   Debug_Event_Activating           : constant := 1;
+   Debug_Event_Run                  : constant := 2;
+   Debug_Event_Suspended            : constant := 3;
+   Debug_Event_Preempted            : constant := 4;
+   Debug_Event_Terminated           : constant := 5;
+   Debug_Event_Abort_Terminated     : constant := 6;
+   Debug_Event_Exception_Terminated : constant := 7;
+   Debug_Event_Rendezvous_Exception : constant := 8;
+   Debug_Event_Handled              : constant := 9;
+   Debug_Event_Dependents_Exception : constant := 10;
+   Debug_Event_Handled_Others       : constant := 11;
+
+   subtype Event_Kind_Type is Positive range 1 .. 11;
+   --  Event kinds currently defined for debugging, used globally
+   --  below and on a per taak basis.
+
+   procedure Signal_Debug_Event
+     (Event_Kind : Event_Kind_Type;
+      Task_Value : Task_Id);
+
    ----------------------------------
    -- VxWorks specific GDB support --
    ----------------------------------

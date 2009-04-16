@@ -705,18 +705,6 @@ package body System.Task_Primitives.Operations is
 
       Specific.Set (Self_ID);
 
-      Lock_RTS;
-
-      for J in Known_Tasks'Range loop
-         if Known_Tasks (J) = null then
-            Known_Tasks (J) := Self_ID;
-            Self_ID.Known_Tasks_Index := J;
-            exit;
-         end if;
-      end loop;
-
-      Unlock_RTS;
-
       if Use_Alternate_Stack then
          declare
             Stack  : aliased stack_t;
