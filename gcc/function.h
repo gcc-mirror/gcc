@@ -677,8 +677,6 @@ extern rtx get_arg_pointer_save_area (void);
 
 /* Returns the name of the current function.  */
 extern const char *current_function_name (void);
-/* Returns the assembler name (raw, mangled) of the current function.  */
-extern const char *current_function_assembler_name (void);
 
 extern void do_warn_unused_parameter (tree);
 

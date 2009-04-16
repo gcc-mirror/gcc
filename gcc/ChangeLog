@@ -1,3 +1,9 @@
+2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
+
+	* function.c (current_function_assembler_name): Remove.
+	* function.h: Remove the prototype for
+	current_function_assembler_name.
+
 2009-04-16  Ian Lance Taylor  <iant@google.com>
 
 	* rtlanal.c (alloc_reg_note): New function, broken out of
