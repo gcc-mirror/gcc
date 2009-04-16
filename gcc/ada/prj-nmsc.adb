@@ -2290,6 +2290,14 @@ package body Prj.Nmsc is
                           (Lang_Index).Config.Runtime_Library_Dir :=
                           Element.Value.Value;
 
+                     when Name_Runtime_Source_Dir =>
+
+                        --  Attribute Runtime_Library_Dir (<language>)
+
+                        In_Tree.Languages_Data.Table
+                          (Lang_Index).Config.Runtime_Source_Dir :=
+                          Element.Value.Value;
+
                      when Name_Object_Generated =>
                         declare
                            pragma Unsuppress (All_Checks);
@@ -7724,7 +7732,7 @@ package body Prj.Nmsc is
       Config         : Language_Config;
       Lang           : Name_List_Index := Data.Languages;
       Header_File    : Boolean := False;
-      First_Language : Language_Index;
+      First_Language : Language_Index := No_Language_Index;
       OK             : Boolean;
 
       Last_Spec : Natural;
@@ -7732,8 +7740,15 @@ package body Prj.Nmsc is
       Last_Sep  : Natural;
 
    begin
-      Unit := No_Name;
-      Alternate_Languages := No_Alternate_Language;
+      --  Default values
+
+      Alternate_Languages   := No_Alternate_Language;
+      Language              := No_Language_Index;
+      Language_Name         := No_Name;
+      Display_Language_Name := No_Name;
+      Unit                  := No_Name;
+      Lang_Kind             := File_Based;
+      Kind                  := Spec;
 
       while Lang /= No_Name_List loop
          Language_Name := In_Tree.Name_Lists.Table (Lang).Name;

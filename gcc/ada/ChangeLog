@@ -1,3 +1,27 @@
+2009-04-16  Ed Schonberg  <schonberg@adacore.com>
+
+	* sprint.adb (Write_Itype): If the itype is an array subtype, preserve
+	the original location of the index expressions and the index subtypes,
+	to prevent spurious out-of-scope references in gigi.
+
+2009-04-16  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c, s-osinte-darwin.ads, system-darwin-x86_64.ads:
+	Add support for stack checking on darwin.
+
+2009-04-16  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New attribute Runtime_Source_Dir
+
+	* prj-nmsc.adb (Process_Project_Level_Array_Attributes): Process
+	attribute Runtime_Source_Dir.
+	(Check_Naming_Schemes): Give default values to out parameters to avoid
+	invalid data.
+
+	* prj.ads (Language_Config): New component Runtime_Source_Dir
+
+	* snames.ads-tmpl: New standard name Runtime_Source_Dir
+
 2009-04-16  Pascal Obry  <obry@adacore.com>
 
 	* adaint.h, adaint.c (__gnat_rmdir): New routine.
