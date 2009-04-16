@@ -36,37 +36,36 @@ package Rtsfind is
    -- Runtime Unit Table --
    ------------------------
 
-   --  The following type includes an enumeration entry for each runtime
-   --  unit. The enumeration literal represents the fully qualified
-   --  name of the unit, as follows:
+   --  The following type includes an enumeration entry for each runtime unit.
+   --  The enumeration literal represents the fully qualified name of the unit,
+   --  as follows:
 
-   --    Names of the form Ada_xxx are first level children of Ada, whose
-   --    name is Ada.xxx. For example, the name Ada_Tags refers to package
-   --    Ada.Tags.
+   --    Names of the form Ada_xxx are first level children of Ada, whose name
+   --    is Ada.xxx. For example, the name Ada_Tags refers to package Ada.Tags.
 
-   --    Names of the form Ada_Calendar_xxx are second level children
-   --    of Ada.Calendar. This is part of a temporary implementation of
-   --    delays; eventually, packages implementing delays will be found
-   --    relative to the package that declares the time type.
+   --    Names of the form Ada_Calendar_xxx are second level children of
+   --    Ada.Calendar. This is part of a temporary implementation of delays;
+   --    eventually, packages implementing delays will be found relative to
+   --    the package that declares the time type.
 
-   --    Names of the form Ada_Finalization_xxx are second level children
-   --    of Ada.Finalization.
+   --    Names of the form Ada_Finalization_xxx are second level children of
+   --    Ada.Finalization.
 
-   --    Names of the form Ada_Interrupts_xxx are second level children
-   --    of Ada.Interrupts. This is needed for Ada.Interrupts.Names which
-   --    is used by pragma Interrupt_State.
+   --    Names of the form Ada_Interrupts_xxx are second level children of
+   --    Ada.Interrupts. This is needed for Ada.Interrupts.Names which is used
+   --    by pragma Interrupt_State.
 
-   --    Names of the form Ada_Real_Time_xxx are second level children
-   --    of Ada.Real_Time.
+   --    Names of the form Ada_Real_Time_xxx are second level children of
+   --    Ada.Real_Time.
 
    --    Names of the form Ada_Streams_xxx are second level children
    --    of Ada.Streams.
 
-   --    Names of the form Ada_Text_IO_xxx are second level children
-   --    of Ada.Text_IO.
+   --    Names of the form Ada_Text_IO_xxx are second level children of
+   --    Ada.Text_IO.
 
-   --    Names of the form Ada_Wide_Text_IO_xxx are second level children
-   --    of Ada.Wide_Text_IO.
+   --    Names of the form Ada_Wide_Text_IO_xxx are second level children of
+   --    Ada.Wide_Text_IO.
 
    --    Names of the form Ada_Wide_Wide_Text_IO_xxx are second level children
    --    of Ada.Wide_Wide_Text_IO.
@@ -88,22 +87,22 @@ package Rtsfind is
    --    Other names stand for themselves (e.g. System for package System)
 
    --  This list can contain both subprogram and package unit names. For
-   --  packages, the accessible entities in the package are separately
-   --  listed in the package entity table. The units must be either library
-   --  level package declarations, or library level subprogram declarations.
-   --  Generic units, library level instantiations and subprogram bodies
-   --  acting as specs may not be referenced (all these cases could be added
-   --  at the expense of additional complexity in the body of Rtsfind, but
-   --  it doesn't seem worthwhile, since the implementation controls the
-   --  set of units that are referenced, and this restriction is easily met.
+   --  packages, the accessible entities in the package are separately listed
+   --  in the package entity table. The units must be either library level
+   --  package declarations, or library level subprogram declarations. Generic
+   --  units, library level instantiations and subprogram bodies acting as
+   --  specs may not be referenced (all these cases could be added at the
+   --  expense of additional complexity in the body of Rtsfind, but it doesn't
+   --  seem worthwhile, since the implementation controls the set of units that
+   --  are referenced, and this restriction is easily met.
 
-   --  IMPORTANT NOTE: the specs of packages and procedures with'ed using
-   --  this mechanism may not contain use clauses. This is because these
-   --  subprograms are compiled in the current visibility environment, and
-   --  it would be too much trouble to establish a clean environment for the
-   --  compilation. The presence of extraneous visible stuff has no effect
-   --  on the compilation except in the presence of use clauses (which might
-   --  result in unexpected ambiguities).
+   --  IMPORTANT NOTE: the specs of packages and procedures with'ed using this
+   --  mechanism may not contain use clauses. This is because these subprograms
+   --  are compiled in the current visibility environment, and it would be too
+   --  much trouble to establish a clean environment for the compilation. The
+   --  presence of extraneous visible stuff has no effect on the compilation
+   --  except in the presence of use clauses (which might result in unexpected
+   --  ambiguities).
 
    type RTU_Id is (
       --  Runtime packages, for list of accessible entities in each
@@ -208,6 +207,14 @@ package Rtsfind is
       System_Compare_Array_Unsigned_32,
       System_Compare_Array_Unsigned_64,
       System_Compare_Array_Unsigned_8,
+      System_Concat_2,
+      System_Concat_3,
+      System_Concat_4,
+      System_Concat_5,
+      System_Concat_6,
+      System_Concat_7,
+      System_Concat_8,
+      System_Concat_9,
       System_DSA_Services,
       System_DSA_Types,
       System_Exception_Table,
@@ -688,6 +695,15 @@ package Rtsfind is
      RE_Compare_Array_U32,               -- System.Compare_Array_Unsigned_16
 
      RE_Compare_Array_U64,               -- System.Compare_Array_Unsigned_16
+
+     RE_Str_Concat_2,                    -- System.Concat_2
+     RE_Str_Concat_3,                    -- System.Concat_3
+     RE_Str_Concat_4,                    -- System.Concat_4
+     RE_Str_Concat_5,                    -- System.Concat_5
+     RE_Str_Concat_6,                    -- System.Concat_6
+     RE_Str_Concat_7,                    -- System.Concat_7
+     RE_Str_Concat_8,                    -- System.Concat_8
+     RE_Str_Concat_9,                    -- System.Concat_9
 
      RE_Get_Active_Partition_Id,         -- System.DSA_Services
      RE_Get_Local_Partition_Id,          -- System.DSA_Services
@@ -1831,6 +1847,15 @@ package Rtsfind is
      RE_Compare_Array_U32                => System_Compare_Array_Unsigned_32,
 
      RE_Compare_Array_U64                => System_Compare_Array_Unsigned_64,
+
+     RE_Str_Concat_2                     => System_Concat_2,
+     RE_Str_Concat_3                     => System_Concat_3,
+     RE_Str_Concat_4                     => System_Concat_4,
+     RE_Str_Concat_5                     => System_Concat_5,
+     RE_Str_Concat_6                     => System_Concat_6,
+     RE_Str_Concat_7                     => System_Concat_7,
+     RE_Str_Concat_8                     => System_Concat_8,
+     RE_Str_Concat_9                     => System_Concat_9,
 
      RE_Get_Active_Partition_Id          => System_DSA_Services,
      RE_Get_Local_Partition_Id           => System_DSA_Services,
