@@ -3509,7 +3509,7 @@ package body Freeze is
          --  For access subprogram, freeze types of all formals, the return
          --  type was already frozen, since it is the Etype of the function.
          --  Formal types can be tagged Taft amendment types, but otherwise
-         --  they cannot be incomplete;
+         --  they cannot be incomplete.
 
          elsif Ekind (E) = E_Subprogram_Type then
             Formal := First_Formal (E);
@@ -3535,7 +3535,7 @@ package body Freeze is
 
             --  Ada 2005 (AI-326): Check wrong use of tag incomplete type
 
-            --    type T;  --   tagged or untagged, may be from limited view;
+            --    type T;  --   tagged or untagged, may be from limited view
             --    type Acc is access function (X : T) return T; -- ERROR
 
             if Ekind (Etype (E)) = E_Incomplete_Type

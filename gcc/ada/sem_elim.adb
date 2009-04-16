@@ -282,7 +282,7 @@ package body Sem_Elim is
                if Is_Dispatching_Operation (E) then
 
                   --  If an overriding dispatching primitive is eliminated then
-                  --  its parent must have been eliminated
+                  --  its parent must have been eliminated.
 
                   if Is_Overriding_Operation (E)
                     and then not Is_Eliminated (Overridden_Operation (E))
