@@ -117,10 +117,15 @@ package System.OS_Interface is
    type Signal_Set is array (Natural range <>) of Signal;
 
    Unmasked : constant Signal_Set :=
-     (SIGTTIN, SIGTTOU, SIGSTOP, SIGTSTP);
+                (SIGTTIN, SIGTTOU, SIGSTOP, SIGTSTP);
 
    Reserved : constant Signal_Set :=
-     (SIGKILL, SIGSTOP);
+                (SIGKILL, SIGSTOP);
+
+   Exception_Signals : constant Signal_Set :=
+                         (SIGFPE, SIGILL, SIGSEGV, SIGBUS);
+   --  These signals (when runtime or system) will be caught and converted
+   --  into an Ada exception.
 
    type sigset_t is private;
 
