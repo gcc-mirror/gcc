@@ -469,7 +469,7 @@ __gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
 /* Try to lock a file, return 1 if success.  */
 
 #if defined (__vxworks) || defined (__nucleus__) || defined (MSDOS) \
-  || defined (_WIN32)
+  || defined (_WIN32) || defined (__EMX__) || defined (VMS)
 
 /* Version that does not use link. */
 
@@ -493,27 +493,6 @@ __gnat_try_lock (char *dir, char *file)
   sprintf (full_path, "%s%c%s", dir, DIR_SEPARATOR, file);
   fd = open (full_path, O_CREAT | O_EXCL, 0600);
 #endif
-
-  if (fd < 0)
-    return 0;
-
-  close (fd);
-  return 1;
-}
-
-#elif defined (__EMX__) || defined (VMS)
-
-/* More cases that do not use link; identical code, to solve too long
-   line problem ??? */
-
-int
-__gnat_try_lock (char *dir, char *file)
-{
-  char full_path[256];
-  int fd;
-
-  sprintf (full_path, "%s%c%s", dir, DIR_SEPARATOR, file);
-  fd = open (full_path, O_CREAT | O_EXCL, 0600);
 
   if (fd < 0)
     return 0;

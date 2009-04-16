@@ -4760,7 +4760,7 @@ package body Sem_Ch4 is
             null;
 
          else
-            --  Save candidate type for subsquent error message, if any.
+            --  Save candidate type for subsquent error message, if any
 
             if not Is_Limited_Type (T1) then
                Candidate_Type := T1;

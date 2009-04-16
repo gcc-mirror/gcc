@@ -112,11 +112,6 @@ package Exp_Ch6 is
    --  that requires handling as a build-in-place call or is a qualified
    --  expression applied to such a call; otherwise returns False.
 
-   function Is_Build_In_Place_Function_Return (N : Node_Id) return Boolean;
-   --  Ada 2005 (AI-318-02): Returns True if N is an N_Simple_Return_Statement
-   --  or N_Extended_Return_Statement and it applies to a build-in-place
-   --  function or generic function.
-
    procedure Make_Build_In_Place_Call_In_Allocator
      (Allocator     : Node_Id;
       Function_Call : Node_Id);
