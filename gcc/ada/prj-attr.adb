@@ -140,6 +140,7 @@ package body Prj.Attr is
    "LVshared_library_minimum_switches#" &
    "LVlibrary_version_switches#" &
    "Saruntime_library_dir#" &
+   "Saruntime_source_dir#" &
 
    --  package Naming
 

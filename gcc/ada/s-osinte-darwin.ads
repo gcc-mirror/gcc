@@ -279,10 +279,11 @@ package System.OS_Interface is
    pragma Import (C, sigaltstack, "sigaltstack");
 
    Alternate_Stack : aliased System.Address;
-   --  This is a dummy definition, never used (Alternate_Stack_Size is null)
+   pragma Import (C, Alternate_Stack, "__gnat_alternate_stack");
+   --  The alternate signal stack for stack overflows
 
-   Alternate_Stack_Size : constant := 0;
-   --  No alternate signal stack is used on this platform
+   Alternate_Stack_Size : constant := 64 * 1024;
+   --  This must be in keeping with init.c:__gnat_alternate_stack
 
    Stack_Base_Available : constant Boolean := False;
    --  Indicates whether the stack base is available on this target. This

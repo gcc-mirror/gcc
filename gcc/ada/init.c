@@ -2099,7 +2099,14 @@ __gnat_install_handler(void)
 
 #include <signal.h>
 
+/* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
+char __gnat_alternate_stack[64 * 1024]; /* 2 * MINSIGSTKSZ */
+
 static void __gnat_error_handler (int sig, siginfo_t * si, void * uc);
+
+/* Defined in xnu unix_signal.c  */
+#define	UC_RESET_ALT_STACK	0x80000000
+extern int sigreturn (void *uc, int flavour);
 
 static void
 __gnat_error_handler (int sig, siginfo_t * si, void * uc)
@@ -2113,6 +2120,9 @@ __gnat_error_handler (int sig, siginfo_t * si, void * uc)
       /* FIXME: we need to detect the case of a *real* SIGSEGV.  */
       exception = &storage_error;
       msg = "stack overflow or erroneous memory access";
+      /* Reset the use of alt stack, so that the alt stack will be used
+	 for the next signal delivery.  */
+      sigreturn (NULL, UC_RESET_ALT_STACK);
       break;
 
     case SIGBUS:
@@ -2140,7 +2150,16 @@ __gnat_install_handler (void)
 
   /* Set up signal handler to map synchronous signals to appropriate
      exceptions.  Make sure that the handler isn't interrupted by another
-     signal that might cause a scheduling event!  */
+     signal that might cause a scheduling event!  Also setup an alternate
+     stack region for the handler execution so that stack overflows can be
+     handled properly, avoiding a SEGV generation from stack usage by the
+     handler itself (and it is required by Darwin).  */
+
+  stack_t stack;
+  stack.ss_sp = __gnat_alternate_stack;
+  stack.ss_size = sizeof (__gnat_alternate_stack);
+  stack.ss_flags = 0;
+  sigaltstack (&stack, NULL);
 
   act.sa_flags = SA_NODEFER | SA_RESTART | SA_SIGINFO;
   act.sa_sigaction = __gnat_error_handler;
@@ -2153,10 +2172,12 @@ __gnat_install_handler (void)
     sigaction (SIGFPE,  &act, NULL);
   if (__gnat_get_interrupt_state (SIGILL) != 's')
     sigaction (SIGILL,  &act, NULL);
-  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
-    sigaction (SIGSEGV, &act, NULL);
   if (__gnat_get_interrupt_state (SIGBUS) != 's')
     sigaction (SIGBUS,  &act, NULL);
+
+  act.sa_flags |= SA_ONSTACK;
+  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
+    sigaction (SIGSEGV, &act, NULL);
 
   __gnat_handler_installed = 1;
 }

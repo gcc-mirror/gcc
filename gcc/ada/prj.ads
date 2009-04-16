@@ -456,6 +456,9 @@ package Prj is
       Runtime_Library_Dir        : Name_Id := No_Name;
       --  Path name of the runtime library directory, if any
 
+      Runtime_Source_Dir        : Name_Id := No_Name;
+      --  Path name of the runtime source directory, if any
+
       Mapping_File_Switches  : Name_List_Index := No_Name_List;
       --  The option(s) to provide a mapping file to the compiler. Specified in
       --  the configuration. When value is No_Name_List, there is no mapping
@@ -558,6 +561,7 @@ package Prj is
                            Object_Generated             => True,
                            Objects_Linked               => True,
                            Runtime_Library_Dir          => No_Name,
+                           Runtime_Source_Dir           => No_Name,
                            Mapping_File_Switches        => No_Name_List,
                            Mapping_Spec_Suffix          => No_File,
                            Mapping_Body_Suffix          => No_File,
