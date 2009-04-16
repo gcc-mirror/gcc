@@ -19708,7 +19708,8 @@ Debug Pool info:
 The @code{gnatmem} utility monitors dynamic allocation and
 deallocation activity in a program, and displays information about
 incorrect deallocations and possible sources of memory leaks.
-It provides three type of information:
+It is designed to work in association with a static runtime library
+only and in this context provides three types of information:
 @itemize @bullet
 @item
 General information concerning memory management, such as the total

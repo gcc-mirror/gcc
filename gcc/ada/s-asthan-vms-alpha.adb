@@ -133,9 +133,6 @@ package body System.AST_Handling is
 
    type Descriptor_Type is new SSE.Storage_Array (1 .. 48);
    for  Descriptor_Type'Alignment use Standard'Maximum_Alignment;
-   pragma Warnings (Off, Descriptor_Type);
-   --  Suppress harmless warnings about alignment.
-   --  Should explain why this warning is harmless ???
 
    type Descriptor_Ref is access all Descriptor_Type;
 
@@ -459,11 +456,17 @@ package body System.AST_Handling is
       Process_AST_Ptr : constant AST_Handler := Process_AST'Access;
       --  Reference to standard procedure descriptor for Process_AST
 
+      pragma Warnings (Off, "*alignment*");
+      --  Suppress harmless warnings about alignment.
+      --  Should explain why this warning is harmless ???
+
       function To_Descriptor_Ref is new Ada.Unchecked_Conversion
         (AST_Handler, Descriptor_Ref);
 
       Original_Descriptor_Ref : constant Descriptor_Ref :=
                                   To_Descriptor_Ref (Process_AST_Ptr);
+
+      pragma Warnings (On, "*alignment*");
 
    begin
       if ATID.Is_Terminated (Taskid) then

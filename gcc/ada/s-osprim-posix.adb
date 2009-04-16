@@ -78,6 +78,14 @@ package body System.OS_Primitives is
       pragma Unreferenced (Result);
 
    begin
+      --  The return codes for gettimeofday are as follows (from man pages):
+      --    EPERM  settimeofday is called by someone other than the superuser
+      --    EINVAL Timezone (or something else) is invalid
+      --    EFAULT One of tv or tz pointed outside accessible address space
+
+      --  None of these codes signal a potential clock skew, hence the return
+      --  value is never checked.
+
       Result := gettimeofday (TV'Access, null);
       return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
    end Clock;

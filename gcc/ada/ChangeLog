@@ -1,3 +1,28 @@
+2009-04-16  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat_ugn.texi (gnatmem description): Make it explicit that
+	gnatmem is designed to work in association with static runtime
+	library only.
+
+2009-04-16  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_type.adb: Minor reformatting
+
+2009-04-16  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* s-osprim-darwin.adb, s-osprim-posix.adb (Clock): Add comment
+	concerning return codes of gettimeofday and return value check.
+
+2009-04-16  Ed Falis  <falis@adacore.com>
+
+	* s-vxwext-kernel.ads (Int_Lock, Int_Unlock): set to convention C so
+	body can be renaming of imported routines.
+
+2009-04-16  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* s-asthan-vms-alpha.adb: Disable warnings on alignment in a more
+	targeted fashion.
+
 2009-04-15  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch9.adb: Comment improvements.

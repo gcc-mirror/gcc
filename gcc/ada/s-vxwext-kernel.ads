@@ -45,10 +45,10 @@ package System.VxWorks.Ext is
    type Interrupt_Vector is new System.Address;
 
    function Int_Lock return int;
-   pragma Inline (Int_Lock);
+   pragma Convention (C, Int_Lock);
 
    function Int_Unlock return int;
-   pragma Inline (Int_Unlock);
+   pragma Convention (C, Int_Unlock);
 
    function Interrupt_Connect
      (Vector    : Interrupt_Vector;

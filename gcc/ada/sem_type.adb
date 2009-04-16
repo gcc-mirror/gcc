@@ -885,7 +885,7 @@ package body Sem_Type is
       then
          return True;
 
-      --  An aggregate is compatible with an array or record type.
+      --  An aggregate is compatible with an array or record type
 
       elsif T2 = Any_Composite
         and then Ekind (T1) in E_Array_Type .. E_Record_Subtype
