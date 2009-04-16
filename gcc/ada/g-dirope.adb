@@ -739,9 +739,7 @@ package body GNAT.Directory_Operations is
       --  Remove the directory only if it is empty
 
       if not Recursive then
-         rmdir (C_Dir_Name);
-
-         if GNAT.OS_Lib.Is_Directory (Dir_Name) then
+         if rmdir (C_Dir_Name) /= 0 then
             raise Directory_Error;
          end if;
 
@@ -764,7 +762,6 @@ package body GNAT.Directory_Operations is
                      Str (1 .. Last) /= ".."
                   then
                      Remove_Dir (Str (1 .. Last), True);
-                     Remove_Dir (Str (1 .. Last));
                   end if;
 
                else

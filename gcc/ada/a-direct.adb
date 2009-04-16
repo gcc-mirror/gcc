@@ -70,7 +70,7 @@ package body Ada.Directories is
 
    type Search_Data is record
       Is_Valid      : Boolean := False;
-      Name          : Ada.Strings.Unbounded.Unbounded_String;
+      Name          : Unbounded_String;
       Pattern       : Regexp;
       Filter        : Filter_Type;
       Dir           : Dir_Type_Value := No_Dir;
@@ -481,9 +481,7 @@ package body Ada.Directories is
             C_Dir_Name : constant String := Directory & ASCII.NUL;
 
          begin
-            rmdir (C_Dir_Name);
-
-            if System.OS_Lib.Is_Directory (Directory) then
+            if rmdir (C_Dir_Name) /= 0 then
                raise Use_Error with
                  "deletion of directory """ & Directory & """ failed";
             end if;
@@ -565,9 +563,7 @@ package body Ada.Directories is
             C_Dir_Name : constant String := Directory & ASCII.NUL;
 
          begin
-            rmdir (C_Dir_Name);
-
-            if System.OS_Lib.Is_Directory (Directory) then
+            if rmdir (C_Dir_Name) /= 0 then
                raise Use_Error with
                  "directory tree rooted at """ &
                    Directory & """ could not be deleted";
