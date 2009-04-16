@@ -1561,6 +1561,7 @@ common_handle_option (size_t scode, const char *arg, int value,
 	break;
       }
 
+    case OPT_fversion:
     case OPT__version:
       print_version (stderr, "");
       exit_after_options = true;

@@ -35,7 +35,7 @@ Common Report Joined
 Common
 Alias for --help=target
 
-;; The following three entries are to work around the gcc driver
+;; The following four entries are to work around the gcc driver
 ;; program's insatiable desire to turn options starting with a
 ;; double dash (--) into options starting with a dash f (-f).
 fhelp
@@ -45,6 +45,9 @@ fhelp=
 Common Joined
 
 ftarget-help
+Common
+
+fversion
 Common
 
 -param

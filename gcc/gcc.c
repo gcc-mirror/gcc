@@ -169,6 +169,10 @@ static int print_multi_lib;
 
 static int print_help_list;
 
+/* Flag saying to print the version of gcc and its sub-processes.  */
+
+static int print_version;
+
 /* Flag saying to print the sysroot suffix used for searching for
    headers.  */
 
@@ -3650,14 +3654,17 @@ process_command (int argc, const char **argv)
       else if (strcmp (argv[i], "-fversion") == 0)
 	{
 	  /* translate_options () has turned --version into -fversion.  */
-	  printf (_("%s %s%s\n"), programname, pkgversion_string,
-		  version_string);
-	  printf ("Copyright %s 2009 Free Software Foundation, Inc.\n",
-		  _("(C)"));
-	  fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
-		 stdout);
-	  exit (0);
+	  print_version = 1;
+
+	  /* We will be passing a dummy file on to the sub-processes.  */
+	  n_infiles++;
+	  n_switches++;
+
+	  /* CPP driver cannot obtain switch from cc1_options.  */
+	  if (is_cpp_driver)
+	    add_preprocessor_option ("--version", strlen ("--version"));
+	  add_assembler_option ("--version", strlen ("--version"));
+	  add_linker_option ("--version", strlen ("--version"));
 	}
       else if (strcmp (argv[i], "-fhelp") == 0)
 	{
@@ -4364,7 +4371,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
     error ("warning: '-x %s' after last input file has no effect", spec_lang);
 
   /* Ensure we only invoke each subprocess once.  */
-  if (print_subprocess_help || print_help_list)
+  if (print_subprocess_help || print_help_list || print_version)
     {
       n_infiles = 1;
 
@@ -6663,6 +6670,24 @@ main (int argc, char **argv)
 	 called 'help-dummy' which needs to be compiled, and we pass this
 	 on the various sub-processes, along with the --help switch.
 	 Ensure their output appears after ours.  */
+      fputc ('\n', stdout);
+      fflush (stdout);
+    }
+
+  if (print_version)
+    {
+      printf (_("%s %s%s\n"), programname, pkgversion_string,
+	      version_string);
+      printf ("Copyright %s 2009 Free Software Foundation, Inc.\n",
+	      _("(C)"));
+      fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
+	     stdout);
+      if (! verbose_flag)
+	return 0;
+
+      /* We do not exit here. We use the same mechanism of --help to print
+	 the version of the sub-processes. */
       fputc ('\n', stdout);
       fflush (stdout);
     }
