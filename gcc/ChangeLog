@@ -1,5 +1,10 @@
 2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
+	* emit-rtl.c (set_mem_attrs_from_reg): Remove.
+	* rtl.h: Remove the prototype for set_mem_attrs_from_reg.
+
+2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
+
 	* tree-iterator.c (EXPR_LAST_BODY): Remove.
 
 2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
