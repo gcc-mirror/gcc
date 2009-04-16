@@ -634,16 +634,21 @@ package body Exp_Ch5 is
             end if;
          end if;
 
-         --  If after that analysis, Forwards_OK is still True, and
-         --  Loop_Required is False, meaning that we have not discovered some
-         --  non-overlap reason for requiring a loop, then we can still let
-         --  gigi handle it.
+         --  If after that analysis Loop_Required is False, meaning that we
+         --  have not discovered some non-overlap reason for requiring a loop,
+         --  then the outcome depends on the capabilities of the back end.
 
          if not Loop_Required then
 
-            --  Assume gigi can handle it if Forwards_OK is set
+            --  The GCC back end can deal with all cases of overlap by falling
+            --  back to memmove if it cannot use a more efficient approach.
 
-            if Forwards_OK (N) then
+            if VM_Target = No_VM and not AAMP_On_Target then
+               return;
+
+            --  Assume other back ends can handle it if Forwards_OK is set
+
+            elsif Forwards_OK (N) then
                return;
 
             --  If Forwards_OK is not set, the back end will need something
