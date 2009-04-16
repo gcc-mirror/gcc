@@ -1,3 +1,7 @@
+2009-04-16  Pascal Obry  <obry@adacore.com>
+
+	* s-crtl.ads, s-os_lib.adb: Minor code clean-up.
+
 2009-04-16  Thomas Quinot  <quinot@adacore.com>
 
 	* snames.ads-tmpl (Name_Defined): New predefined name for use by the

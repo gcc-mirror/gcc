@@ -846,12 +846,8 @@ package body System.OS_Lib is
 
    procedure Delete_File (Name : Address; Success : out Boolean) is
       R : Integer;
-
-      function unlink (A : Address) return Integer;
-      pragma Import (C, unlink, "__gnat_unlink");
-
    begin
-      R := unlink (Name);
+      R := System.CRTL.unlink (Name);
       Success := (R = 0);
    end Delete_File;
 
