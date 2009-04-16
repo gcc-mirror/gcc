@@ -1,3 +1,10 @@
+2009-04-16  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	Backport from mainline:
+	PR target/39767
+	* config/sh/predicates.md (arith_operand): Check if the operand
+	of TRUNCATE is a REG.
+
 2009-04-15  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline:
