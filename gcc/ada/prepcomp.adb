@@ -662,7 +662,7 @@ package body Prepcomp is
             --  Initialize the preprocessor and set the characteristics of the
             --  scanner for a definition file.
 
-            Prep.Initialize
+            Prep.Setup_Hooks
               (Error_Msg         => Errout.Error_Msg'Access,
                Scan              => Scn.Scanner.Scan'Access,
                Set_Ignore_Errors => Errout.Set_Ignore_Errors'Access,

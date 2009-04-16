@@ -1044,10 +1044,6 @@ package body Ada.Directories is
 
    procedure Set_Directory (Directory : String) is
       C_Dir_Name : constant String := Directory & ASCII.NUL;
-
-      function chdir (Dir_Name : String) return Integer;
-      pragma Import (C, chdir, "chdir");
-
    begin
       if not Is_Valid_Path_Name (Directory) then
          raise Name_Error with

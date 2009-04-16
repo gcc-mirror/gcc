@@ -167,10 +167,11 @@ package body GPrep is
       Namet.Initialize;
       Snames.Initialize;
       Stringt.Initialize;
+      Prep.Initialize;
 
       --  Initialize the preprocessor
 
-      Prep.Initialize
+      Prep.Setup_Hooks
         (Error_Msg         => Errutil.Error_Msg'Access,
          Scan              => Scanner.Scan'Access,
          Set_Ignore_Errors => Errutil.Set_Ignore_Errors'Access,

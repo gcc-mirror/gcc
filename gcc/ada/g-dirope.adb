@@ -168,10 +168,6 @@ package body GNAT.Directory_Operations is
 
    procedure Change_Dir (Dir_Name : Dir_Name_Str) is
       C_Dir_Name : constant String := Dir_Name & ASCII.NUL;
-
-      function chdir (Dir_Name : String) return Integer;
-      pragma Import (C, chdir, "chdir");
-
    begin
       if chdir (C_Dir_Name) /= 0 then
          raise Directory_Error;
