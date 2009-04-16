@@ -1,3 +1,10 @@
+2009-04-16  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_assign_binary):
+	Allow POINTER_PLUS_EXPR-like PLUS_EXPR for vectors.
+	* ipa-struct-reorg.c (gen_size): Fold the built expressions.
+	(create_general_new_stmt): Note that this function is broken.
+
 2009-04-16  Rafael Avila de Espindola  <espindola@google.com>
 
 	* common.opt (fhelp): Add Var(help_flag).
