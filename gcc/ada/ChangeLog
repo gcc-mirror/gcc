@@ -1,3 +1,8 @@
+2009-04-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array): For the GCC back-end, do not
+	generate an assignment loop in case of overlap.
+
 2009-04-16  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat_ugn.texi (gnatmem description): Make it explicit that
