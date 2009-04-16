@@ -1,3 +1,27 @@
+2009-04-16  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Path_Name_Of): fix memory leak
+
+2009-04-16  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads (Backwards_OK, Forwards_OK): Clarify documentation
+
+2009-04-16  Vincent Celier  <celier@adacore.com>
+
+	* fmap.adb (Initialize): Show the current line when the mapping file
+	is detected as "incorrectly formatted".
+
+2009-04-16  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch12.adb: Minor reformatting
+
+	* sem_ch5.adb: Minor comment addition
+
+	* sem_util.adb: Minor reformatting
+
+	* sinput-p.adb: Minor reformatting
+	Add missing pragma Warnings (On)
+
 2009-04-16  Ed Falis  <falis@adacore.com>
 
 	* s-vxwext-kernel.adb: (ERROR): deleted unused constant

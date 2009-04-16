@@ -8827,8 +8827,13 @@ package body Prj.Nmsc is
       if Result = null then
          return "";
       else
-         Canonical_Case_File_Name (Result.all);
-         return Result.all;
+         declare
+            R : String := Result.all;
+         begin
+            Free (Result);
+            Canonical_Case_File_Name (R);
+            return R;
+         end;
       end if;
    end Path_Name_Of;
 
