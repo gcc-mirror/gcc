@@ -1,5 +1,28 @@
 2009-04-16  Richard Guenther  <rguenther@suse.de>
 
+	* gimple.c (gimple_copy): Do not clear addresses_taken bitmap.
+	(gimple_ior_addresses_taken_1): New function.
+	(gimple_ior_addresses_taken): Likewise.
+	* gimple.h (struct gimple_statement_with_ops_base): Remove
+	addresses_taken member.
+	(gimple_ior_addresses_taken): Declare.
+	(gimple_addresses_taken, gimple_addresses_taken_ptr,
+	gimple_set_addresses_taken): Remove.
+	* ipa-reference.c (mark_address): New function.
+	(scan_stmt_for_static_refs): Use it for marking addresses taken.
+	* tree-ssa-operands.c (add_to_addressable_set): Rename to ...
+	(mark_address_taken): ... this.  Just set TREE_ADDRESSABLE.
+	(gimple_add_to_addresses_taken): Remove.
+	(get_tmr_operands): Call mark_address_taken.
+	(get_asm_expr_operands): Likewise.
+	(get_expr_operands): Likewise.
+	(build_ssa_operands): Do not clear the addresses_taken bitmap.
+	(free_stmt_operands): Do not free it.
+	* tree-ssa.c (delete_tree_ssa): Likewise.
+	(execute_update_addresses_taken): Use gimple_ior_addresses_taken.
+
+2009-04-16  Richard Guenther  <rguenther@suse.de>
+
 	* gimple.h (walk_stmt_load_store_addr_ops): Declare.
 	(walk_stmt_load_store_ops): Likewise.
 	* gimple.c (get_base_loadstore): New function.

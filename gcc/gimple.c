@@ -2195,16 +2195,11 @@ gimple_copy (gimple stmt)
       for (i = 0; i < num_ops; i++)
 	gimple_set_op (copy, i, unshare_expr (gimple_op (stmt, i)));
 
-      /* Clear out SSA operand vectors on COPY.  Note that we cannot
-	 call the API functions for setting addresses_taken, stores
-	 and loads.  These functions free the previous values, and we
-	 cannot do that on COPY as it will affect the original
-	 statement.  */
+      /* Clear out SSA operand vectors on COPY.  */
       if (gimple_has_ops (stmt))
 	{
 	  gimple_set_def_ops (copy, NULL);
 	  gimple_set_use_ops (copy, NULL);
-	  copy->gsops.opbase.addresses_taken = NULL;
 	}
 
       if (gimple_has_mem_ops (stmt))
@@ -3390,6 +3385,34 @@ walk_stmt_load_store_ops (gimple stmt, void *data,
 {
   return walk_stmt_load_store_addr_ops (stmt, data,
 					visit_load, visit_store, NULL);
+}
+
+/* Helper for gimple_ior_addresses_taken_1.  */
+
+static bool
+gimple_ior_addresses_taken_1 (gimple stmt ATTRIBUTE_UNUSED,
+			      tree addr, void *data)
+{
+  bitmap addresses_taken = (bitmap)data;
+  while (handled_component_p (addr))
+    addr = TREE_OPERAND (addr, 0);
+  if (DECL_P (addr))
+    {
+      bitmap_set_bit (addresses_taken, DECL_UID (addr));
+      return true;
+    }
+  return false;
+}
+
+/* Set the bit for the uid of all decls that have their address taken
+   in STMT in the ADDRESSES_TAKEN bitmap.  Returns true if there
+   were any in this stmt.  */
+
+bool
+gimple_ior_addresses_taken (bitmap addresses_taken, gimple stmt)
+{
+  return walk_stmt_load_store_addr_ops (stmt, addresses_taken, NULL, NULL,
+					gimple_ior_addresses_taken_1);
 }
 
 #include "gt-gimple.h"

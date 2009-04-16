@@ -834,7 +834,6 @@ delete_tree_ssa (void)
 	    {
 	      gimple_set_def_ops (stmt, NULL);
 	      gimple_set_use_ops (stmt, NULL);
-	      gimple_set_addresses_taken (stmt, NULL);
 	    }
 
 	  if (gimple_has_mem_ops (stmt))
@@ -1504,13 +1503,12 @@ execute_update_addresses_taken (bool do_optimize)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
-	  const_gimple stmt = gsi_stmt (gsi);
+	  gimple stmt = gsi_stmt (gsi);
 	  enum gimple_code code = gimple_code (stmt);
-	  bitmap taken = gimple_addresses_taken (stmt);
-	  
-	  if (taken)
-	    bitmap_ior_into (addresses_taken, taken);
-	  
+
+	  /* Note all addresses taken by the stmt.  */
+	  gimple_ior_addresses_taken (addresses_taken, stmt);
+
 	  /* If we have a call or an assignment, see if the lhs contains
 	     a local decl that requires not to be a gimple register.  */
 	  if (code == GIMPLE_ASSIGN || code == GIMPLE_CALL)

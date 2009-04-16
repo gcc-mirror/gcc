@@ -686,10 +686,13 @@ add_stmt_operand (tree *var_p, gimple stmt, int flags)
     add_virtual_operand (stmt, flags);
 }
 
-/* Add the base address of REF to SET.  */
+/* Mark the base address of REF as having its address taken.
+   REF may be a single variable whose address has been taken or any
+   other valid GIMPLE memory reference (structure reference, array,
+   etc).  */
 
 static void
-add_to_addressable_set (tree ref, bitmap *set)
+mark_address_taken (tree ref)
 {
   tree var;
 
@@ -699,27 +702,8 @@ add_to_addressable_set (tree ref, bitmap *set)
      be referenced using pointer arithmetic.  See PR 21407 and the
      ensuing mailing list discussion.  */
   var = get_base_address (ref);
-  if (var && SSA_VAR_P (var))
-    {
-      if (*set == NULL)
-	*set = BITMAP_ALLOC (&operands_bitmap_obstack);
-
-      bitmap_set_bit (*set, DECL_UID (var));
-      TREE_ADDRESSABLE (var) = 1;
-    }
-}
-
-/* Add the base address of REF to the set of addresses taken by STMT.
-   REF may be a single variable whose address has been taken or any
-   other valid GIMPLE memory reference (structure reference, array,
-   etc).  If the base address of REF is a decl that has sub-variables,
-   also add all of its sub-variables.  */
-
-static void
-gimple_add_to_addresses_taken (gimple stmt, tree ref)
-{
-  gcc_assert (gimple_has_ops (stmt));
-  add_to_addressable_set (ref, gimple_addresses_taken_ptr (stmt));
+  if (var && DECL_P (var))
+    TREE_ADDRESSABLE (var) = 1;
 }
 
 
@@ -763,7 +747,7 @@ get_tmr_operands (gimple stmt, tree expr, int flags)
   get_expr_operands (stmt, &TMR_INDEX (expr), opf_use);
 
   if (TMR_SYMBOL (expr))
-    gimple_add_to_addresses_taken (stmt, TMR_SYMBOL (expr));
+    mark_address_taken (TMR_SYMBOL (expr));
 
   add_virtual_operand (stmt, flags);
 }
@@ -824,7 +808,7 @@ get_asm_expr_operands (gimple stmt)
 	{
 	  tree t = get_base_address (TREE_VALUE (link));
 	  if (t && DECL_P (t))
-	    gimple_add_to_addresses_taken (stmt, t);
+	    mark_address_taken (t);
 	}
 
       get_expr_operands (stmt, &TREE_VALUE (link), opf_def);
@@ -844,7 +828,7 @@ get_asm_expr_operands (gimple stmt)
 	{
 	  tree t = get_base_address (TREE_VALUE (link));
 	  if (t && DECL_P (t))
-	    gimple_add_to_addresses_taken (stmt, t);
+	    mark_address_taken (t);
 	}
 
       get_expr_operands (stmt, &TREE_VALUE (link), 0);
@@ -887,7 +871,7 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
 	 reference to it, but the fact that the statement takes its
 	 address will be of interest to some passes (e.g. alias
 	 resolution).  */
-      gimple_add_to_addresses_taken (stmt, TREE_OPERAND (expr, 0));
+      mark_address_taken (TREE_OPERAND (expr, 0));
 
       /* If the address is invariant, there may be no interesting
 	 variable references inside.  */
@@ -1091,13 +1075,8 @@ parse_ssa_operands (gimple stmt)
 static void
 build_ssa_operands (gimple stmt)
 {
-  /* Initially assume that the statement has no volatile operands and
-     makes no memory references.  */
+  /* Initially assume that the statement has no volatile operands.  */
   gimple_set_has_volatile_ops (stmt, false);
-
-  /* Just clear the bitmap so we don't end up reallocating it over and over.  */
-  if (gimple_addresses_taken (stmt))
-    bitmap_clear (gimple_addresses_taken (stmt));
 
   start_ssa_stmt_operands ();
   parse_ssa_operands (stmt);
@@ -1132,9 +1111,6 @@ free_stmt_operands (gimple stmt)
       gimple_ssa_operands (cfun)->free_uses = uses;
       gimple_set_use_ops (stmt, NULL);
     }
-
-  if (gimple_has_ops (stmt))
-    gimple_set_addresses_taken (stmt, NULL);
 
   if (gimple_has_mem_ops (stmt))
     {
