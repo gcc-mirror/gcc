@@ -45,6 +45,7 @@
 #include "tsystem.h"
 /* We don't have libiberty, so use malloc.  */
 #define xmalloc(S) malloc (S)
+#define xrealloc(V,S) realloc (V,S)
 #else
 #include "config.h"
 #include "system.h"
@@ -83,17 +84,8 @@ append_arg (int *index, LPWSTR value, char ***argv, int *last)
 
   if (*last < *index)
     {
-      char **old_argv = *argv;
-      int old_last = *last;
-      int k;
-
       *last += EXPAND_ARGV_RATE;
-      *argv = (char **) xmalloc ((*last) * sizeof (char *));
-
-      for (k=0; k<=old_last; k++)
-	(*argv)[k] = old_argv[k];
-
-      free (old_argv);
+      *argv = (char **) xrealloc (*argv, (*last) * sizeof (char *));
     }
 
   size = WS2SC (NULL, value, 0);
@@ -101,20 +93,6 @@ append_arg (int *index, LPWSTR value, char ***argv, int *last)
   WS2SC ((*argv)[*index], value, size);
 
   (*index)++;
-}
-
-static void
-adjust_arg (int last, char ***argv)
-{
-  char **old_argv = *argv;
-  int k;
-
-  *argv = (char **) xmalloc (last * sizeof (char *));
-
-  for (k=0; k<last; k++)
-    (*argv)[k] = old_argv[k];
-
-  free (old_argv);
 }
 #endif
 
@@ -200,7 +178,8 @@ __gnat_initialize (void *eh)
 
 	 LocalFree (wargv);
 	 gnat_argc = argc_expanded;
-	 adjust_arg (argc_expanded, &gnat_argv);
+	 gnat_argv = (char **) xrealloc
+	   (gnat_argv, argc_expanded * sizeof (char *));
        }
    }
 #endif
