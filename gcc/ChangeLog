@@ -1,3 +1,51 @@
+2009-04-17  Andrew Stubbs  <ams@codesourcery.com>
+
+	* configure.ac: Add new AC_SUBST for TM_ENDIAN_CONFIG,
+	TM_MULTILIB_CONFIG and TM_MULTILIB_EXCEPTIONS_CONFIG.
+	(--with-multilib-list): Add default value.
+	* configure: Regenerate.
+	* Makefile.in (TM_ENDIAN_CONFIG): Define.
+	(TM_MULTILIB_CONFIG, TM_MULTILIB_EXCEPTIONS_CONFIG): Define.
+	* config.gcc (sh-*-*): Switch to using TM_ENDIAN_CONFIG,
+	TM_MULTILIB_CONFIG, and TM_MULTILIB_EXCEPTIONS_CONFIG.
+	Don't add default cpu to multilib list unnecessarily, but do enable
+	the relevant compiler option..
+	Add support for --with-multilib-list=<blank> and
+	--with-multilib-list=!<somelib> to supress unwanted multilibs.
+	* config/sh/t-sh (DEFAULT_ENDIAN, OTHER_ENDIAN): New variables.
+	(MULTILIB_ENDIAN, MULTILIB_CPUS): Delete variables.
+	(MULTILIB_OPTIONS): Redefine using OTHER_ENDIAN and
+	TM_MULTILIB_CONFIG.
+	(MULTILIB_EXCEPTIONS): Add TM_MULTILIB_EXCEPTIONS_CONFIG.
+	(MULTILIB_OSDIRNAMES): New variable.
+	* config/sh/t-1e: Delete file.
+	* config/sh/t-mlib-sh1: Delete file.
+	* config/sh/t-mlib-sh2: Delete file.
+	* config/sh/t-mlib-sh2a: Delete file.
+	* config/sh/t-mlib-sh2a-nofpu: Delete file.
+	* config/sh/t-mlib-sh2a-single: Delete file.
+	* config/sh/t-mlib-sh2a-single-only: Delete file.
+	* config/sh/t-mlib-sh2e: Delete file.
+	* config/sh/t-mlib-sh3e: Delete file.
+	* config/sh/t-mlib-sh4: Delete file.
+	* config/sh/t-mlib-sh4-nofpu: Delete file.
+	* config/sh/t-mlib-sh4-single: Delete file.
+	* config/sh/t-mlib-sh4-single-only: Delete file.
+	* config/sh/t-mlib-sh4a: Delete file.
+	* config/sh/t-mlib-sh4a-nofpu: Delete file.
+	* config/sh/t-mlib-sh4a-single: Delete file.
+	* config/sh/t-mlib-sh4a-single-only: Delete file.
+	* config/sh/t-mlib-sh4al: Delete file.
+	* config/sh/t-mlib-sh5-32media: Delete file.
+	* config/sh/t-mlib-sh5-32media-nofpu: Delete file.
+	* config/sh/t-mlib-sh5-64media: Delete file.
+	* config/sh/t-mlib-sh5-64media-nofpu: Delete file.
+	* config/sh/t-mlib-sh5-compact: Delete file.
+	* config/sh/t-mlib-sh5-compact-nofpu: Delete file.
+	* config/sh/t-linux: Don't override MULTILIB_EXCEPTIONS.
+	* doc/install.texi (Options specification): Add
+	--with-multilib-list and --with-endian.
+
 2009-04-17  Rafael Avila de Espindola  <espindola@google.com>
 
 	* Makefile.in (REVISION_s): Always include quotes. Change ifdef to use

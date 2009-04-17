@@ -403,6 +403,9 @@ TARGET_SYSTEM_ROOT = @TARGET_SYSTEM_ROOT@
 
 xmake_file=@xmake_file@
 tmake_file=@tmake_file@
+TM_ENDIAN_CONFIG=@TM_ENDIAN_CONFIG@
+TM_MULTILIB_CONFIG=@TM_MULTILIB_CONFIG@
+TM_MULTILIB_EXCEPTIONS_CONFIG=@TM_MULTILIB_EXCEPTIONS_CONFIG@
 out_file=$(srcdir)/config/@out_file@
 out_object_file=@out_object_file@
 md_file=$(srcdir)/config/@md_file@
