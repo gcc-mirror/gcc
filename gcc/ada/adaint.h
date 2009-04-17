@@ -142,7 +142,6 @@ extern FILE  *__gnat_constant_stdin	  	   (void);
 extern FILE  *__gnat_constant_stdout	  	   (void);
 extern char  *__gnat_full_name		  	   (char *, char *);
 
-extern void   __gnat_init_args                     (int, char **, char **);
 extern int    __gnat_arg_count			   (void);
 extern int    __gnat_len_arg			   (int);
 extern void   __gnat_fill_arg			   (char *, int);

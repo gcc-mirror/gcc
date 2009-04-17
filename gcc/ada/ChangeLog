@@ -1,17 +1,24 @@
+2009-04-17  Pascal Obry  <obry@adacore.com>
+
+	* initialize.c: Set gnat_argv with UTF-8 encoded strings on Windows.
+
+	* init.c: Fix minor typo and style fix.
+
+2009-04-17  Robert Dewar  <dewar@adacore.com>
+
+	* a-except.adb, a-except-2005.adb: Add PE_Address_Of_Intrinsic
+
+	* sem_attr.adb (Analyze_Attribute, case Address): Use
+	PE_Address_Of_Intrinsic.
+
+	* types.ads: Add PE_Address_Of_Intrinsic
+
+	* types.h: Add PE_Address_Of_Intrinsic
+
 2009-04-17  Nicolas Setton  <setton@adacore.com>
 
 	* gcc-interface/Makefile.in: Under darwin, build shared libraries
 	with install_name starting with "@rpath/".
-
-2009-04-17  Pascal Obry  <obry@adacore.com>
-
-	* adaint.h, argv.c (__gnat_init_args): New routine used to initialize
-	command line arguments.
-
-	* bindgen.adb: Call __gnat_init_args instead of simple assignments of
-	argc, argv and envp parameters.
-
-	* init.c: Fix minor typo and style fix.
 
 2009-04-17  Nicolas Setton  <setton@adacore.com>
 

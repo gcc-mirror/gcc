@@ -2060,9 +2060,7 @@ package body Sem_Attr is
                      if In_Instance then
                         Rewrite (N,
                           Make_Raise_Program_Error (Loc,
-                            Reason => PE_Misaligned_Address_Value));
-                        --   ??? why Misaligned_Address_Value, seems wrong
-
+                            Reason => PE_Address_Of_Intrinsic));
                      else
                         Error_Msg_N
                          ("cannot take Address of intrinsic subprogram", N);

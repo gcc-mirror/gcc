@@ -787,24 +787,25 @@ package Types is
 
       PE_Access_Before_Elaboration,      -- 14
       PE_Accessibility_Check_Failed,     -- 15
-      PE_All_Guards_Closed,              -- 16
-      PE_Current_Task_In_Entry_Body,     -- 17
-      PE_Duplicated_Entry_Address,       -- 18
-      PE_Explicit_Raise,                 -- 19
-      PE_Finalize_Raised_Exception,      -- 20
-      PE_Implicit_Return,                -- 21
-      PE_Misaligned_Address_Value,       -- 22
-      PE_Missing_Return,                 -- 23
-      PE_Overlaid_Controlled_Object,     -- 24
-      PE_Potentially_Blocking_Operation, -- 25
-      PE_Stubbed_Subprogram_Called,      -- 26
-      PE_Unchecked_Union_Restriction,    -- 27
-      PE_Non_Transportable_Actual,       -- 28
+      PE_Address_Of_Intrinsic,           -- 16
+      PE_All_Guards_Closed,              -- 17
+      PE_Current_Task_In_Entry_Body,     -- 18
+      PE_Duplicated_Entry_Address,       -- 19
+      PE_Explicit_Raise,                 -- 20
+      PE_Finalize_Raised_Exception,      -- 21
+      PE_Implicit_Return,                -- 22
+      PE_Misaligned_Address_Value,       -- 23
+      PE_Missing_Return,                 -- 24
+      PE_Overlaid_Controlled_Object,     -- 25
+      PE_Potentially_Blocking_Operation, -- 26
+      PE_Stubbed_Subprogram_Called,      -- 27
+      PE_Unchecked_Union_Restriction,    -- 28
+      PE_Non_Transportable_Actual,       -- 29
 
-      SE_Empty_Storage_Pool,             -- 29
-      SE_Explicit_Raise,                 -- 30
-      SE_Infinite_Recursion,             -- 31
-      SE_Object_Too_Large);              -- 32
+      SE_Empty_Storage_Pool,             -- 30
+      SE_Explicit_Raise,                 -- 31
+      SE_Infinite_Recursion,             -- 32
+      SE_Object_Too_Large);              -- 33
 
    subtype RT_CE_Exceptions is RT_Exception_Code range
      CE_Access_Check_Failed ..

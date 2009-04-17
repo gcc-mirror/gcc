@@ -359,23 +359,24 @@ typedef Int Mechanism_Type;
 
 #define PE_Access_Before_Elaboration       14
 #define PE_Accessibility_Check_Failed      15
-#define PE_All_Guards_Closed               16
-#define PE_Current_Task_In_Entry_Body      17
-#define PE_Duplicated_Entry_Address        18
-#define PE_Explicit_Raise                  19
-#define PE_Finalize_Raised_Exception       20
-#define PE_Implicit_Return                 21
-#define PE_Misaligned_Address_Value        22
-#define PE_Missing_Return                  23
-#define PE_Overlaid_Controlled_Object      24
-#define PE_Potentially_Blocking_Operation  25
-#define PE_Stubbed_Subprogram_Called       26
-#define PE_Unchecked_Union_Restriction     27
-#define PE_Non_Transportable_Actual        28
+#define PE_Address_Of_Intrinsic            16
+#define PE_All_Guards_Closed               17
+#define PE_Current_Task_In_Entry_Body      18
+#define PE_Duplicated_Entry_Address        19
+#define PE_Explicit_Raise                  20
+#define PE_Finalize_Raised_Exception       21
+#define PE_Implicit_Return                 22
+#define PE_Misaligned_Address_Value        23
+#define PE_Missing_Return                  24
+#define PE_Overlaid_Controlled_Object      25
+#define PE_Potentially_Blocking_Operation  26
+#define PE_Stubbed_Subprogram_Called       27
+#define PE_Unchecked_Union_Restriction     28
+#define PE_Non_Transportable_Actual        29
 
-#define SE_Empty_Storage_Pool              29
-#define SE_Explicit_Raise                  30
-#define SE_Infinite_Recursion              31
-#define SE_Object_Too_Large                32
+#define SE_Empty_Storage_Pool              30
+#define SE_Explicit_Raise                  31
+#define SE_Infinite_Recursion              32
+#define SE_Object_Too_Large                33
 
-#define LAST_REASON_CODE                   32
+#define LAST_REASON_CODE                   33
