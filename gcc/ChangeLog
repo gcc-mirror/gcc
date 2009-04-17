@@ -1,3 +1,11 @@
+2009-04-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-dom.c (gimple_assign_unary_useless_conversion_p): Remove.
+	(record_equivalences_from_stmt): Remove useless checks and
+	simplifications.
+	* tree-ssa-pre.c (eliminate): Avoid converting a constant if
+	the type is already suitable.
+
 2009-04-17  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/sh/sh.h (FUNCTION_VALUE): Fix call to sh_promote_prototypes.
