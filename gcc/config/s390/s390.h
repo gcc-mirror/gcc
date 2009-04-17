@@ -60,6 +60,10 @@ enum processor_flags
 extern enum processor_type s390_tune;
 extern enum processor_flags s390_tune_flags;
 
+/* This is necessary to avoid a warning about comparing different enum
+   types.  */
+#define s390_tune_attr ((enum attr_cpu)s390_tune)
+
 extern enum processor_type s390_arch;
 extern enum processor_flags s390_arch_flags;
 

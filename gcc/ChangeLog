@@ -1,3 +1,8 @@
+2009-04-17  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.h (s390_tune_attr): New macro definition.
+	* config/s390/s390.md (cpu attribute): Map to s390_tune_attr.
+
 2009-04-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-ccp.c (struct fold_stmt_r_data): Remove.
