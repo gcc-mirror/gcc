@@ -1,4 +1,4 @@
-! { dg-do compile } 
+! { dg-do compile { target fopenmp } } 
 ! { dg-options "-c -fopenmp -fexceptions -O2 -ftree-vectorize" } 
 
       subroutine adw_trajsp (F_u,i0,in,j0,jn)
