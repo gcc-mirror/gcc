@@ -1743,7 +1743,7 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 		 || TREE_CODE (VALTYPE) == BOOLEAN_TYPE			\
 		 || TREE_CODE (VALTYPE) == REAL_TYPE			\
 		 || TREE_CODE (VALTYPE) == OFFSET_TYPE))		\
-             && sh_promote_prototypes (VALTYPE)				\
+             && sh_promote_prototypes (FUNC)				\
 	    ? (TARGET_SHMEDIA64 ? DImode : SImode) : TYPE_MODE (VALTYPE)), \
 	   BASE_RETURN_VALUE_REG (TYPE_MODE (VALTYPE)))
 

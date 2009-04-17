@@ -1,3 +1,7 @@
+2009-04-17  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/sh/sh.h (FUNCTION_VALUE): Fix call to sh_promote_prototypes.
+
 2009-04-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/arm/sfp-machine.h (__gcc_CMPtype): New typedef.
