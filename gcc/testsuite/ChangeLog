@@ -1,3 +1,8 @@
+2009-04-17  Diego Novillo  <dnovillo@google.com>
+
+	* gcc.c-torture/execute/builtins/strlen-3.c: Fix ODR
+	violation for variable 'inside_main'.
+
 2009-04-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* gfortran.fortran-torture/execute/getarg_1.x: New file.

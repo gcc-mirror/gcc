@@ -1,3 +1,17 @@
+2009-04-17  Diego Novillo  <dnovillo@google.com>
+
+	* omp-low.c (create_omp_child_function): Set DECL_CONTEXT
+	for DECL.
+	* cgraphunit.c (cgraph_build_static_cdtor): Likewise.
+	* tree-dfa.c (find_referenced_vars_in): Factor out of ...
+	(find_vars_r): ... here.
+	* tree-flow.h (find_referenced_vars_in): Declare.
+	* tree-ssa-pre.c (create_expression_by_pieces): Assert
+	that AVAIL_OUT exists for BLOCK.
+	* Makefile.in (CGRAPH_H): Add dependency on cif-code.def
+	(tree-loop-distribution.o): Fix dependency on TREE_VECTORIZER_H.
+	(tree-parloops.o): Likewise.
+
 2009-04-17  Simon Baldwin  <simonb@google.com>
 
 	* toplev.c (default_tree_printer): Add handling for %E format.

@@ -1577,6 +1577,7 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   t = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
   DECL_ARTIFICIAL (t) = 1;
   DECL_IGNORED_P (t) = 1;
+  DECL_CONTEXT (t) = decl;
   DECL_RESULT (decl) = t;
 
   t = build_decl (PARM_DECL, get_identifier (".omp_data_i"), ptr_type_node);
