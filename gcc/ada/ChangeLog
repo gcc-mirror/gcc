@@ -1,3 +1,11 @@
+2009-04-17  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting
+
+2009-04-17  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c: Add __gnat_use_acl global variable to control use of ACL.
+
 2009-04-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Enumeration_Type): Diagnose properly

@@ -4033,6 +4033,7 @@ package body Sem_Ch3 is
          --  pre-allocate a freeze node, and set the proper link to the first
          --  subtype. Freeze_Entity will use this preallocated freeze node when
          --  it freezes the entity.
+
          --  This does not apply if the base type is a generic type, whose
          --  declaration is independent of the current derived definition.
 
@@ -5063,27 +5064,26 @@ package body Sem_Ch3 is
                Lo :=
                   Make_Attribute_Reference (Loc,
                     Attribute_Name => Name_First,
-                    Prefix => New_Reference_To (Derived_Type, Loc));
+                    Prefix         => New_Reference_To (Derived_Type, Loc));
                Set_Etype (Lo, Derived_Type);
 
                Hi :=
                   Make_Attribute_Reference (Loc,
                     Attribute_Name => Name_Last,
-                    Prefix => New_Reference_To (Derived_Type, Loc));
+                    Prefix         => New_Reference_To (Derived_Type, Loc));
                Set_Etype (Hi, Derived_Type);
 
                Set_Scalar_Range (Derived_Type,
                   Make_Range (Loc,
-                    Low_Bound => Lo,
+                    Low_Bound  => Lo,
                     High_Bound => Hi));
             else
 
                --   Analyze subtype indication and verify compatibility
                --   with parent type.
 
-               if
-                  Base_Type
-                    (Process_Subtype (Indic, N)) /= Base_Type (Parent_Type)
+               if Base_Type (Process_Subtype (Indic, N)) /=
+                  Base_Type (Parent_Type)
                then
                   Error_Msg_N
                     ("illegal constraint for formal discrete type", N);
@@ -13607,7 +13607,7 @@ package body Sem_Ch3 is
                     "full declaration of } must be a record extension",
                     Prev, Id);
 
-                  --  Set some attributes to produce a usable full view.
+                  --  Set some attributes to produce a usable full view
 
                   Set_Is_Tagged_Type (Id);
                   Set_Primitive_Operations (Id, New_Elmt_List);
