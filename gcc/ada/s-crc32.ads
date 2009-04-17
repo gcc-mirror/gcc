@@ -54,9 +54,7 @@
 --  "Computation of Cyclic Redundancy Checks via Table Look-Up", Communications
 --  of the ACM, Vol. 31 No. 8, pp.1008-1013 Aug. 1988. Sarwate, D.V.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 with Interfaces;
 

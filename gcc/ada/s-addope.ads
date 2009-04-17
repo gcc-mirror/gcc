@@ -40,9 +40,7 @@
 --  inappropriate use by applications programs). In addition, the logical
 --  operations may not be available if type Address is a signed integer.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 package System.Address_Operations is
    pragma Pure;

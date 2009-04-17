@@ -41,9 +41,7 @@
 --  you can remove the calls to Abort_Defer.all and Abort_Undefer.all from
 --  this unit.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 with Ada.Exceptions;
 with System.Soft_Links;

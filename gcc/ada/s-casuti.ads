@@ -37,9 +37,7 @@
 --  Note that all the routines in this package are available to the user
 --  via GNAT.Case_Util, which imports all the entities from this package.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 package System.Case_Util is
    pragma Pure;

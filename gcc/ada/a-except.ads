@@ -44,13 +44,11 @@
 --  2005 functionality is required. In particular, it is used for building
 --  run times on all targets.
 
+pragma Compiler_Unit;
+
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
 --  elaboration circularities with ourself.
-
-pragma Warnings (Off);
-pragma Compiler_Unit;
-pragma Warnings (On);
 
 with System;
 with System.Parameters;

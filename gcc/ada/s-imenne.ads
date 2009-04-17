@@ -40,9 +40,7 @@
 --  for bootstrapping with older versions of the compiler which expect to find
 --  functions in this package.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 package System.Img_Enum_New is
    pragma Pure;

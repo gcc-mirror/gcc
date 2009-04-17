@@ -67,7 +67,8 @@ package body Signalling_Fds is
       --  Address of listening socket
 
       Res : C.int;
-      --  Return status of system calls
+      pragma Warnings (Off, Res);
+      --  Return status of system calls (usually ignored, hence warnings off)
 
    begin
       Fds.all := (Read_End | Write_End => Failure);
@@ -153,9 +154,7 @@ package body Signalling_Fds is
          pragma Assert (Res = Failure
                           and then
                         Socket_Errno = SOSC.EADDRINUSE);
-         pragma Warnings (Off); -- useless assignment to "Res"
          Res := C_Close (W_Sock);
-         pragma Warnings (On);
          W_Sock := Failure;
          Res := C_Close (R_Sock);
          R_Sock := Failure;

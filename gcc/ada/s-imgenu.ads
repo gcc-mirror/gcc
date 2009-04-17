@@ -41,9 +41,7 @@
 --  these functions. The new compiler will search for procedures in the new
 --  version of the unit.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 package System.Img_Enum is
    pragma Pure;

@@ -43,9 +43,7 @@
 --  this facility is accessed from run time routines, but clients should
 --  always access the version supplied via GNAT.HTable.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 with System.HTable;
 

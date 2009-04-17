@@ -33,9 +33,7 @@
 --  registered exception names, for the implementation of the mapping
 --  of names to exceptions (used for exception streams and attributes)
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 with System.Standard_Library;
 
