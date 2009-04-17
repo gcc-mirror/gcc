@@ -1,3 +1,12 @@
+2009-04-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array): Do not set Forwards_OK and
+	Backwards_OK if either operand has an address clause.
+
+2009-04-17  Pascal Obry  <obry@adacore.com>
+
+	* initialize.c: Code clean up, use realloc.
+
 2009-04-17  Pascal Obry  <obry@adacore.com>
 
 	* initialize.c: Do not get Unicode command line if Unicode support not
