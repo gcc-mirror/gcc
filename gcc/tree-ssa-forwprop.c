@@ -186,8 +186,7 @@ get_prop_dest_stmt (tree name, tree *final_name_p)
       return NULL;
 
     /* If this is not a trivial copy, we found it.  */
-    if (!gimple_assign_copy_p (use_stmt)
-	|| TREE_CODE (gimple_assign_lhs (use_stmt)) != SSA_NAME
+    if (!gimple_assign_ssa_name_copy_p (use_stmt)
 	|| gimple_assign_rhs1 (use_stmt) != name)
       break;
 
@@ -225,12 +224,11 @@ get_prop_source_stmt (tree name, bool single_use_only, bool *single_use_p)
       }
 
     /* If name is defined by a PHI node or is the default def, bail out.  */
-    if (gimple_code (def_stmt) != GIMPLE_ASSIGN)
+    if (!is_gimple_assign (def_stmt))
       return NULL;
 
-    /* If name is not a simple copy destination, we found it.  */
-    if (!gimple_assign_copy_p (def_stmt)
-        || TREE_CODE (gimple_assign_rhs1 (def_stmt)) != SSA_NAME)
+    /* If def_stmt is not a simple copy, we possibly found it.  */
+    if (!gimple_assign_ssa_name_copy_p (def_stmt))
       {
 	tree rhs;
 
@@ -266,6 +264,7 @@ can_propagate_from (gimple def_stmt)
   ssa_op_iter iter;
 
   gcc_assert (is_gimple_assign (def_stmt));
+
   /* If the rhs has side-effects we cannot propagate from it.  */
   if (gimple_has_volatile_ops (def_stmt))
     return false;
@@ -276,8 +275,8 @@ can_propagate_from (gimple def_stmt)
     return false;
 
   /* Constants can be always propagated.  */
-  if (is_gimple_min_invariant 
-      (rhs_to_tree (TREE_TYPE (gimple_assign_lhs (def_stmt)), def_stmt)))
+  if (gimple_assign_single_p (def_stmt)
+      && is_gimple_min_invariant (gimple_assign_rhs1 (def_stmt)))
     return true;
 
   /* We cannot propagate ssa names that occur in abnormal phi nodes.  */
@@ -289,14 +288,14 @@ can_propagate_from (gimple def_stmt)
      then we can not apply optimizations as some targets require
      function pointers to be canonicalized and in this case this
      optimization could eliminate a necessary canonicalization.  */
-  if (is_gimple_assign (def_stmt)
-      && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt))))
+  if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
     {
       tree rhs = gimple_assign_rhs1 (def_stmt);
       if (POINTER_TYPE_P (TREE_TYPE (rhs))
           && TREE_CODE (TREE_TYPE (TREE_TYPE (rhs))) == FUNCTION_TYPE)
         return false;
     }
+
   return true;
 }
 
