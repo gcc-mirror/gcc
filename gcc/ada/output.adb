@@ -40,6 +40,17 @@ package body Output is
    --  Record argument to last call to Set_Special_Output. If this is
    --  non-null, then we are in special output mode.
 
+   Indentation_Amount : constant Positive := 3;
+   --  Number of spaces to output for each indentation level
+
+   Indentation_Limit : constant Positive := 40;
+   --  Indentation beyond this number of spaces wraps around
+   pragma Assert (Indentation_Limit < Buffer_Max / 2);
+   --  Make sure this is substantially shorter than the line length
+
+   Cur_Indentation : Natural := 0;
+   --  Number of spaces to indent each line
+
    -----------------------
    -- Local_Subprograms --
    -----------------------
@@ -70,42 +81,100 @@ package body Output is
    ------------------
 
    procedure Flush_Buffer is
-      Len : constant Natural := Next_Col - 1;
+      Write_Error : exception;
+      --  Raised if Write fails
 
-   begin
-      if Len /= 0 then
+      ------------------
+      -- Write_Buffer --
+      ------------------
 
+      procedure Write_Buffer (Buf : String);
+      --  Write out Buf, either using Special_Output_Proc, or the normal way
+      --  using Write. Raise Write_Error if Write fails (presumably due to disk
+      --  full). Write_Error is not used in the case of Special_Output_Proc.
+
+      procedure Write_Buffer (Buf : String) is
+      begin
          --  If Special_Output_Proc has been set, then use it
 
          if Special_Output_Proc /= null then
-            Special_Output_Proc.all (Buffer (1 .. Len));
+            Special_Output_Proc.all (Buf);
 
          --  If output is not set, then output to either standard output
          --  or standard error.
 
-         elsif Len /= Write (Current_FD, Buffer'Address, Len) then
+         elsif Write (Current_FD, Buf'Address, Buf'Length) /= Buf'Length then
+            raise Write_Error;
 
-            --  If there are errors with standard error, just quit
+         end if;
+      end Write_Buffer;
 
-            if Current_FD = Standerr then
-               OS_Exit (2);
+      Len : constant Natural := Next_Col - 1;
 
-            --  Otherwise, set the output to standard error before
-            --  reporting a failure and quitting.
+   begin
+      if Len /= 0 then
+         begin
+            --  If there's no indentation, or if the line is too long with
+            --  indentation, just write the buffer.
+
+            if Cur_Indentation = 0
+              or else Cur_Indentation + Len > Buffer_Max
+            then
+               Write_Buffer (Buffer (1 .. Len));
+
+            --  Otherwise, construct a new buffer with preceding spaces, and
+            --  write that.
 
             else
-               Current_FD := Standerr;
-               Next_Col := 1;
-               Write_Line ("fatal error: disk full");
-               OS_Exit (2);
+               declare
+                  Indented_Buffer : constant String
+                    := (1 .. Cur_Indentation => ' ') & Buffer (1 .. Len);
+               begin
+                  Write_Buffer (Indented_Buffer);
+               end;
             end if;
-         end if;
+
+         exception
+            when Write_Error =>
+               --  If there are errors with standard error, just quit.
+               --  Otherwise, set the output to standard error before reporting
+               --  a failure and quitting.
+
+               if Current_FD /= Standerr then
+                  Current_FD := Standerr;
+                  Next_Col := 1;
+                  Write_Line ("fatal error: disk full");
+               end if;
+
+               OS_Exit (2);
+         end;
 
          --  Buffer is now empty
 
          Next_Col := 1;
       end if;
    end Flush_Buffer;
+
+   ------------
+   -- Indent --
+   ------------
+
+   procedure Indent is
+   begin
+      Cur_Indentation :=
+        (Cur_Indentation + Indentation_Amount) mod Indentation_Limit;
+      --  The "mod" is to wrap around in case there's too much indentation.
+   end Indent;
+
+   -------------
+   -- Outdent --
+   -------------
+
+   procedure Outdent is
+   begin
+      Cur_Indentation :=
+        (Cur_Indentation - Indentation_Amount) mod Indentation_Limit;
+   end Outdent;
 
    ---------------------------
    -- Restore_Output_Buffer --
@@ -114,6 +183,7 @@ package body Output is
    procedure Restore_Output_Buffer (S : Saved_Output_Buffer) is
    begin
       Next_Col := S.Next_Col;
+      Cur_Indentation := S.Cur_Indentation;
       Buffer (1 .. Next_Col - 1) := S.Buffer (1 .. Next_Col - 1);
    end Restore_Output_Buffer;
 
@@ -126,7 +196,9 @@ package body Output is
    begin
       S.Buffer (1 .. Next_Col - 1) := Buffer (1 .. Next_Col - 1);
       S.Next_Col := Next_Col;
+      S.Cur_Indentation := Cur_Indentation;
       Next_Col := 1;
+      Cur_Indentation := 0;
       return S;
    end Save_Output_Buffer;
 
@@ -147,7 +219,6 @@ package body Output is
    begin
       if Special_Output_Proc = null then
          Flush_Buffer;
-         Next_Col := 1;
       end if;
 
       Current_FD := Standerr;
@@ -161,7 +232,6 @@ package body Output is
    begin
       if Special_Output_Proc = null then
          Flush_Buffer;
-         Next_Col := 1;
       end if;
 
       Current_FD := Standout;

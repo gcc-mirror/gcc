@@ -90,6 +90,9 @@ package body Sem_Ch7 is
    -- Local Subprograms --
    -----------------------
 
+   procedure Analyze_Package_Body_Helper (N : Node_Id);
+   --  Does all the real work of Analyze_Package_Body
+
    procedure Check_Anonymous_Access_Types
      (Spec_Id : Entity_Id;
       P_Body  : Node_Id);
@@ -135,7 +138,38 @@ package body Sem_Ch7 is
    --------------------------
 
    procedure Analyze_Package_Body (N : Node_Id) is
-      Loc              : constant Source_Ptr := Sloc (N);
+      Loc : constant Source_Ptr := Sloc (N);
+
+   begin
+      if Debug_Flag_C then
+         Write_Str ("==> package body ");
+         Write_Name (Chars (Defining_Entity (N)));
+         Write_Str (" from ");
+         Write_Location (Loc);
+         Write_Eol;
+         Indent;
+      end if;
+
+      --  The real work is split out into the helper, so it can do "return;"
+      --  without skipping the debug output.
+
+      Analyze_Package_Body_Helper (N);
+
+      if Debug_Flag_C then
+         Outdent;
+         Write_Str ("<== package body ");
+         Write_Name (Chars (Defining_Entity (N)));
+         Write_Str (" from ");
+         Write_Location (Loc);
+         Write_Eol;
+      end if;
+   end Analyze_Package_Body;
+
+   ---------------------------------
+   -- Analyze_Package_Body_Helper --
+   ---------------------------------
+
+   procedure Analyze_Package_Body_Helper (N : Node_Id) is
       HSS              : Node_Id;
       Body_Id          : Entity_Id;
       Spec_Id          : Entity_Id;
@@ -172,7 +206,7 @@ package body Sem_Ch7 is
          end loop;
       end Install_Composite_Operations;
 
-   --  Start of processing for Analyze_Package_Body
+   --  Start of processing for Analyze_Package_Body_Helper
 
    begin
       --  Find corresponding package specification, and establish the current
@@ -181,14 +215,6 @@ package body Sem_Ch7 is
       --  declarations are attached to the defining entity for the body, but
       --  the later is never used for name resolution. In this fashion there
       --  is only one visible entity that denotes the package.
-
-      if Debug_Flag_C then
-         Write_Str ("====  Compiling package body ");
-         Write_Name (Chars (Defining_Entity (N)));
-         Write_Str (" from ");
-         Write_Location (Loc);
-         Write_Eol;
-      end if;
 
       --  Set Body_Id. Note that this Will be reset to point to the generic
       --  copy later on in the generic case.
@@ -634,7 +660,7 @@ package body Sem_Ch7 is
             Qualify_Entity_Names (N);
          end if;
       end if;
-   end Analyze_Package_Body;
+   end Analyze_Package_Body_Helper;
 
    ---------------------------------
    -- Analyze_Package_Declaration --
@@ -664,6 +690,15 @@ package body Sem_Ch7 is
          return;
       end if;
 
+      if Debug_Flag_C then
+         Write_Str ("==> package spec ");
+         Write_Name (Chars (Id));
+         Write_Str (" from ");
+         Write_Location (Sloc (N));
+         Write_Eol;
+         Indent;
+      end if;
+
       Generate_Definition (Id);
       Enter_Name (Id);
       Set_Ekind (Id, E_Package);
@@ -675,14 +710,6 @@ package body Sem_Ch7 is
       Set_Is_Pure (Id, PF);
 
       Set_Categorization_From_Pragmas (N);
-
-      if Debug_Flag_C then
-         Write_Str ("====  Compiling package spec ");
-         Write_Name (Chars (Id));
-         Write_Str (" from ");
-         Write_Location (Sloc (N));
-         Write_Eol;
-      end if;
 
       Analyze (Specification (N));
       Validate_Categorization_Dependency (N, Id);
@@ -724,6 +751,15 @@ package body Sem_Ch7 is
 
       if Comp_Unit then
          Validate_RT_RAT_Component (N);
+      end if;
+
+      if Debug_Flag_C then
+         Outdent;
+         Write_Str ("<== package spec ");
+         Write_Name (Chars (Id));
+         Write_Str (" from ");
+         Write_Location (Sloc (N));
+         Write_Eol;
       end if;
    end Analyze_Package_Declaration;
 
