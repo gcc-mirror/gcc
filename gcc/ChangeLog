@@ -1,3 +1,8 @@
+2009-04-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (refs_may_alias_p_1): Do not use TBAA
+	for decl-vs-decl disambiguation.
+
 2009-04-17  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.h (s390_tune_attr): New macro definition.
