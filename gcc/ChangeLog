@@ -1,3 +1,10 @@
+2009-04-17  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (get_prop_dest_stmt): Clean up
+	tuplification.
+	(get_prop_source_stmt): Likewise.
+	(can_propagate_from): Likewise.
+
 2009-04-17  Andrew Stubbs  <ams@codesourcery.com>
 
 	* configure.ac: Add new AC_SUBST for TM_ENDIAN_CONFIG,
