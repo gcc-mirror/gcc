@@ -709,11 +709,18 @@ package body Prj is
    -----------------
 
    function Object_Name
-     (Source_File_Name : File_Name_Type)
+     (Source_File_Name   : File_Name_Type;
+      Object_File_Suffix : Name_Id := No_Name)
       return File_Name_Type
    is
    begin
-      return Extend_Name (Source_File_Name, Object_Suffix);
+      if Object_File_Suffix = No_Name then
+         return Extend_Name (Source_File_Name, Object_Suffix);
+
+      else
+         return Extend_Name
+           (Source_File_Name, Get_Name_String (Object_File_Suffix));
+      end if;
    end Object_Name;
 
    ----------------------

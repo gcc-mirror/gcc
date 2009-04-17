@@ -215,9 +215,14 @@ package body Ch6 is
          --  already been given, so no need to give another message here.
 
          --  An overriding indicator is allowed for subprogram declarations,
-         --  bodies, renamings, stubs, and instantiations.
+         --  bodies, renamings, stubs, and instantiations. The test against
+         --  Pf_Decl_Pbod is added to account for the case of subprograms
+         --  declared in a protected type, where only subprogram declarations
+         --  and bodies can occur.
 
-         if Pf_Flags /= Pf_Decl_Gins_Pbod_Rnam_Stub then
+         if Pf_Flags /= Pf_Decl_Gins_Pbod_Rnam_Stub
+           and then Pf_Flags /= Pf_Decl_Pbod
+         then
             Error_Msg_SC ("overriding indicator not allowed here!");
 
          elsif Token /= Tok_Function

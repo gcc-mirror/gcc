@@ -173,6 +173,7 @@ package body Prj.Attr is
    "Larequired_switches#" &
    "Lapic_option#" &
    "Sapath_syntax#" &
+   "Saobject_file_suffix#" &
 
    --  Configuration - Mapping files
 

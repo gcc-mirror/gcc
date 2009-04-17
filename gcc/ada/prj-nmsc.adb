@@ -646,7 +646,8 @@ package body Prj.Nmsc is
       Src_Data.Naming_Exception    := Naming_Exception;
 
       if Src_Data.Compiled and then Src_Data.Object_Exists then
-         Src_Data.Object   := Object_Name (File_Name);
+         Src_Data.Object   :=
+           Object_Name (File_Name, Config.Object_File_Suffix);
          Src_Data.Dep_Name :=
            Dependency_Name (File_Name, Src_Data.Dependency);
          Src_Data.Switches := Switches_Name (File_Name);
@@ -1540,6 +1541,19 @@ package body Prj.Nmsc is
                                     "invalid value for Path_Syntax",
                                     Element.Value.Location);
                            end;
+
+                        when Name_Object_File_Suffix =>
+                           if Get_Name_String (Element.Value.Value) = "" then
+                              Error_Msg
+                                (Project, In_Tree,
+                                 "object file suffix cannot be empty",
+                                 Element.Value.Location);
+
+                           else
+                              In_Tree.Languages_Data.Table
+                                (Lang_Index).Config.Object_File_Suffix :=
+                                Element.Value.Value;
+                           end if;
 
                         when Name_Pic_Option =>
 
@@ -5796,11 +5810,11 @@ package body Prj.Nmsc is
                       Util.Value_Of
                         (Name_Source_Files, Data.Decl.Attributes, In_Tree);
 
+      Last_Source_Dir : String_List_Id  := Nil_String;
+
       Languages : constant Variable_Value :=
                       Prj.Util.Value_Of
                         (Name_Languages, Data.Decl.Attributes, In_Tree);
-
-      Last_Source_Dir : String_List_Id  := Nil_String;
 
       procedure Find_Source_Dirs
         (From     : File_Name_Type;

@@ -1766,10 +1766,12 @@ package body Sem_Ch6 is
                  ("subprogram & overrides predefined operator ",
                     Body_Spec, Spec_Id);
 
-            --  If this is not a primitive operation the overriding indicator
-            --  is altogether illegal.
+            --  If this is not a primitive operation or protected subprogram,
+            --  then the overriding indicator is altogether illegal.
 
-            elsif not Is_Primitive (Spec_Id) then
+            elsif not Is_Primitive (Spec_Id)
+              and then Ekind (Scope (Spec_Id)) /= E_Protected_Type
+            then
                Error_Msg_N ("overriding indicator only allowed " &
                 "if subprogram is primitive",
                 Body_Spec);
@@ -4281,14 +4283,15 @@ package body Sem_Ch6 is
             Set_Is_Overriding_Operation (Subp);
          end if;
 
-         --  If primitive flag is set, operation is overriding at the
-         --  point of its declaration, so warn if necessary. Otherwise
-         --  it may have been declared before the operation it overrides
-         --  and no check is required.
+         --  If primitive flag is set or this is a protected operation, then
+         --  the operation is overriding at the point of its declaration, so
+         --  warn if necessary. Otherwise it may have been declared before the
+         --  operation it overrides and no check is required.
 
          if Style_Check
-            and then not Must_Override (Spec)
-            and then Is_Primitive
+           and then not Must_Override (Spec)
+           and then (Is_Primitive
+                      or else Ekind (Scope (Subp)) = E_Protected_Type)
          then
             Style.Missing_Overriding (Decl, Subp);
          end if;
@@ -4306,7 +4309,13 @@ package body Sem_Ch6 is
       elsif Nkind (Subp) = N_Defining_Operator_Symbol then
 
          if Must_Not_Override (Spec) then
-            if not Is_Primitive then
+
+            --  If this is not a primitive operation or protected subprogram,
+            --  then "not overriding" is illegal.
+
+            if not Is_Primitive
+              and then Ekind (Scope (Subp)) /= E_Protected_Type
+            then
                Error_Msg_N
                  ("overriding indicator only allowed "
                     & "if subprogram is primitive", Subp);

@@ -1097,6 +1097,7 @@ package Snames is
    Name_Metrics                          : constant Name_Id := N + $;
    Name_Naming                           : constant Name_Id := N + $;
    Name_None                             : constant Name_Id := N + $;
+   Name_Object_File_Suffix               : constant Name_Id := N + $;
    Name_Object_Generated                 : constant Name_Id := N + $;
    Name_Object_List                      : constant Name_Id := N + $;
    Name_Objects_Linked                   : constant Name_Id := N + $;
