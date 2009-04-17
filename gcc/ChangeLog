@@ -1,3 +1,8 @@
+2009-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dbxout.c (dbxout_block): Reinstate test on TREE_USED.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Update TREE_USED bit.
+
 2009-04-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (get_constraint_for_component_ref):
