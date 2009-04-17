@@ -488,6 +488,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case TREE_BINFO:
       dump_generic_node (buffer, BINFO_TYPE (node), spc, flags, false);
+      break;
 
     case TREE_VEC:
       {
@@ -551,14 +552,31 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	    else if (TREE_CODE (node) == VECTOR_TYPE)
 	      {
 		pp_string (buffer, "vector ");
-		dump_generic_node (buffer, TREE_TYPE (node), 
-				   spc, flags, false);
+		dump_generic_node (buffer, TREE_TYPE (node), spc, flags, false);
 	      }
 	    else if (TREE_CODE (node) == INTEGER_TYPE)
 	      {
 		pp_string (buffer, (TYPE_UNSIGNED (node)
 				    ? "<unnamed-unsigned:"
 				    : "<unnamed-signed:"));
+		pp_decimal_int (buffer, TYPE_PRECISION (node));
+		pp_string (buffer, ">");
+	      }
+	    else if (TREE_CODE (node) == COMPLEX_TYPE)
+	      {
+		pp_string (buffer, "__complex__ ");
+		dump_generic_node (buffer, TREE_TYPE (node), spc, flags, false);
+	      }
+	    else if (TREE_CODE (node) == REAL_TYPE)
+	      {
+		pp_string (buffer, "<float:");
+		pp_decimal_int (buffer, TYPE_PRECISION (node));
+		pp_string (buffer, ">");
+	      }
+	    else if (TREE_CODE (node) == FIXED_POINT_TYPE)
+	      {
+		pp_string (buffer, "<fixed-point-");
+		pp_string (buffer, TYPE_SATURATING (node) ? "sat:" : "nonsat:");
 		pp_decimal_int (buffer, TYPE_PRECISION (node));
 		pp_string (buffer, ">");
 	      }
@@ -572,7 +590,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     case REFERENCE_TYPE:
       str = (TREE_CODE (node) == POINTER_TYPE ? "*" : "&");
 
-      if (TREE_CODE (TREE_TYPE (node)) == FUNCTION_TYPE)
+      if (TREE_TYPE (node) == NULL)
+        {
+	  pp_string (buffer, str);
+          pp_string (buffer, "<null type>");
+        }
+      else if (TREE_CODE (TREE_TYPE (node)) == FUNCTION_TYPE)
         {
 	  tree fnode = TREE_TYPE (node);
 
@@ -610,11 +633,6 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
     case OFFSET_TYPE:
       NIY;
-      break;
-
-    case METHOD_TYPE:
-      dump_decl_name (buffer, TYPE_NAME (TYPE_METHOD_BASETYPE (node)), flags);
-      pp_string (buffer, "::");
       break;
 
     case TARGET_MEM_REF:
@@ -710,7 +728,12 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 
         if (TYPE_NAME (node))
 	  dump_generic_node (buffer, TYPE_NAME (node), spc, flags, false);
-        else
+	else if (!(flags & TDF_SLIM))
+	  /* FIXME: If we eliminate the 'else' above and attempt
+	     to show the fields for named types, we may get stuck
+	     following a cycle of pointers to structs.  The alleged
+	     self-reference check in print_struct_decl will not detect
+	     cycles involving more than one pointer or struct type.  */
 	  print_struct_decl (buffer, node, spc, flags);
         break;
       }
@@ -836,6 +859,23 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      dump_generic_node (buffer, TREE_TYPE (node), spc, flags, false);
+      pp_space (buffer);
+      if (TREE_CODE (node) == METHOD_TYPE)
+	{
+	  if (TYPE_METHOD_BASETYPE (node))
+	    dump_decl_name (buffer, TYPE_NAME (TYPE_METHOD_BASETYPE (node)),
+			    flags);
+	  else
+	    pp_string (buffer, "<null method basetype>");
+	  pp_string (buffer, "::");
+	}
+      if (TYPE_NAME (node) && DECL_NAME (TYPE_NAME (node)))
+	dump_decl_name (buffer, TYPE_NAME (node), flags);
+      else
+	pp_printf (buffer, "<T%x>", TYPE_UID (node));
+      dump_function_declaration (buffer, node, spc, flags);
       break;
 
     case FUNCTION_DECL:
@@ -2206,8 +2246,8 @@ print_struct_decl (pretty_printer *buffer, const_tree node, int spc, int flags)
 	   Maybe this could be solved by looking at the scope in which the
 	   structure was declared.  */
 	if (TREE_TYPE (tmp) != node
-	    || (TREE_CODE (TREE_TYPE (tmp)) == POINTER_TYPE
-		&& TREE_TYPE (TREE_TYPE (tmp)) != node))
+	    && (TREE_CODE (TREE_TYPE (tmp)) != POINTER_TYPE
+		|| TREE_TYPE (TREE_TYPE (tmp)) != node))
 	  {
 	    print_declaration (buffer, tmp, spc+2, flags);
 	    pp_newline (buffer);
