@@ -1,5 +1,14 @@
 2009-04-17  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-ccp.c (struct fold_stmt_r_data): Remove.
+	(fold_stmt_r): Likewise.
+	(maybe_fold_reference): New function.
+	(fold_gimple_assign): Handle cases fold_stmt_r did.
+	(fold_stmt): Do not use fold_stmt_r.
+	(fold_stmt_inplace): Likewise.
+
+2009-04-17  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-dom.c (gimple_assign_unary_useless_conversion_p): Remove.
 	(record_equivalences_from_stmt): Remove useless checks and
 	simplifications.

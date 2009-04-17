@@ -1616,7 +1616,7 @@ struct gimple_opt_pass pass_ccp =
 };
 
 
-/* A subroutine of fold_stmt_r.  Attempts to fold *(A+O) to A[X].
+/* A subroutine of fold_stmt.  Attempts to fold *(A+O) to A[X].
    BASE is an array type.  OFFSET is a byte displacement.  ORIG_TYPE
    is the desired result type.  */
 
@@ -2001,7 +2001,7 @@ maybe_fold_offset_to_address (tree addr, tree offset, tree orig_type)
   return NULL_TREE;
 }
 
-/* A subroutine of fold_stmt_r.  Attempt to simplify *(BASE+OFFSET).
+/* A subroutine of fold_stmt.  Attempt to simplify *(BASE+OFFSET).
    Return the simplified expression, or NULL if nothing could be done.  */
 
 static tree
@@ -2220,179 +2220,63 @@ maybe_fold_stmt_addition (tree res_type, tree op0, tree op1)
   return t;
 }
 
-/* For passing state through walk_tree into fold_stmt_r and its
-   children.  */
-
-struct fold_stmt_r_data
-{
-  gimple stmt;
-  bool *changed_p;
-  bool *inside_addr_expr_p;
-};
-
-/* Subroutine of fold_stmt called via walk_tree.  We perform several
-   simplifications of EXPR_P, mostly having to do with pointer arithmetic.  */
+/* Subroutine of fold_stmt.  We perform several simplifications of the
+   memory reference tree EXPR and make sure to re-gimplify them properly
+   after propagation of constant addresses.  IS_LHS is true if the
+   reference is supposed to be an lvalue.  */
 
 static tree
-fold_stmt_r (tree *expr_p, int *walk_subtrees, void *data)
+maybe_fold_reference (tree expr, bool is_lhs)
 {
-  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
-  struct fold_stmt_r_data *fold_stmt_r_data;
-  bool *inside_addr_expr_p;
-  bool *changed_p;
-  tree expr = *expr_p, t;
-  bool volatile_p = TREE_THIS_VOLATILE (expr);
+  tree *t = &expr;
 
-  fold_stmt_r_data = (struct fold_stmt_r_data *) wi->info;
-  inside_addr_expr_p = fold_stmt_r_data->inside_addr_expr_p;
-  changed_p = fold_stmt_r_data->changed_p;
-
-  /* ??? It'd be nice if walk_tree had a pre-order option.  */
-  switch (TREE_CODE (expr))
+  if (TREE_CODE (expr) == ARRAY_REF
+      && !is_lhs)
     {
-    case INDIRECT_REF:
-      t = walk_tree (&TREE_OPERAND (expr, 0), fold_stmt_r, data, NULL);
-      if (t)
-	return t;
-      *walk_subtrees = 0;
-
-      t = maybe_fold_stmt_indirect (expr, TREE_OPERAND (expr, 0),
-				    integer_zero_node);
-      /* Avoid folding *"abc" = 5 into 'a' = 5.  */
-      if (wi->is_lhs && t && TREE_CODE (t) == INTEGER_CST)
-	t = NULL_TREE;
-      if (!t
-	  && TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR)
-	/* If we had a good reason for propagating the address here,
-	   make sure we end up with valid gimple.  See PR34989.  */
-	t = TREE_OPERAND (TREE_OPERAND (expr, 0), 0);
-      break;
-
-    case NOP_EXPR:
-      t = walk_tree (&TREE_OPERAND (expr, 0), fold_stmt_r, data, NULL);
-      if (t)
-	return t;
-      *walk_subtrees = 0;
-
-      if (POINTER_TYPE_P (TREE_TYPE (expr))
-          && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (expr)))
-	  && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)))
-	  && (t = maybe_fold_offset_to_address (TREE_OPERAND (expr, 0),
-						integer_zero_node,
-						TREE_TYPE (TREE_TYPE (expr)))))
-	return t;
-      break;
-
-      /* ??? Could handle more ARRAY_REFs here, as a variant of INDIRECT_REF.
-	 We'd only want to bother decomposing an existing ARRAY_REF if
-	 the base array is found to have another offset contained within.
-	 Otherwise we'd be wasting time.  */
-    case ARRAY_REF:
-      /* If we are not processing expressions found within an
-	 ADDR_EXPR, then we can fold constant array references.
-	 Don't fold on LHS either, to avoid folding "abc"[0] = 5
-	 into 'a' = 5.  */
-      if (!*inside_addr_expr_p && !wi->is_lhs)
-	t = fold_read_from_constant_string (expr);
-      else
-	t = NULL;
-      break;
-
-    case ADDR_EXPR:
-      *inside_addr_expr_p = true;
-      t = walk_tree (&TREE_OPERAND (expr, 0), fold_stmt_r, data, NULL);
-      *inside_addr_expr_p = false;
-      if (t)
-	return t;
-      *walk_subtrees = 0;
-
-      /* Make sure the value is properly considered constant, and so gets
-	 propagated as expected.  */
-      if (*changed_p)
-        recompute_tree_invariant_for_addr_expr (expr);
-      return NULL_TREE;
-
-    case COMPONENT_REF:
-      t = walk_tree (&TREE_OPERAND (expr, 0), fold_stmt_r, data, NULL);
-      if (t)
-        return t;
-      *walk_subtrees = 0;
-
-      /* Make sure the FIELD_DECL is actually a field in the type on the lhs.
-	 We've already checked that the records are compatible, so we should
-	 come up with a set of compatible fields.  */
-      {
-	tree expr_record = TREE_TYPE (TREE_OPERAND (expr, 0));
-	tree expr_field = TREE_OPERAND (expr, 1);
-
-        if (DECL_FIELD_CONTEXT (expr_field) != TYPE_MAIN_VARIANT (expr_record))
-	  {
-	    expr_field = find_compatible_field (expr_record, expr_field);
-	    TREE_OPERAND (expr, 1) = expr_field;
-	  }
-      }
-      break;
-
-    case TARGET_MEM_REF:
-      t = maybe_fold_tmr (expr);
-      break;
-
-    case POINTER_PLUS_EXPR:
-      t = walk_tree (&TREE_OPERAND (expr, 0), fold_stmt_r, data, NULL);
-      if (t)
-        return t;
-      t = walk_tree (&TREE_OPERAND (expr, 1), fold_stmt_r, data, NULL);
-      if (t)
-        return t;
-      *walk_subtrees = 0;
-
-      t = maybe_fold_stmt_addition (TREE_TYPE (expr),
-                                    TREE_OPERAND (expr, 0),
-                                    TREE_OPERAND (expr, 1));
-      break;
-
-    case COND_EXPR:
-      if (COMPARISON_CLASS_P (TREE_OPERAND (expr, 0)))
-        {
-	  tree op0 = TREE_OPERAND (expr, 0);
-          tree tem;
-	  bool set;
-
-	  fold_defer_overflow_warnings ();
-	  tem = fold_binary (TREE_CODE (op0), TREE_TYPE (op0),
-			     TREE_OPERAND (op0, 0),
-			     TREE_OPERAND (op0, 1));
-          /* This is actually a conditional expression, not a GIMPLE
-             conditional statement, however, the valid_gimple_rhs_p
-             test still applies.  */
-	  set = tem && is_gimple_condexpr (tem) && valid_gimple_rhs_p (tem);
-	  fold_undefer_overflow_warnings (set, fold_stmt_r_data->stmt, 0);
-	  if (set)
-	    {
-              COND_EXPR_COND (expr) = tem;
-	      t = expr;
-	      break;
-	    }
-        }
-      return NULL_TREE;
-
-    default:
-      return NULL_TREE;
+      tree tem = fold_read_from_constant_string (expr);
+      if (tem)
+	return tem;
     }
 
-  if (t)
+  /* ???  We might want to open-code the relevant remaining cases
+     to avoid using the generic fold.  */
+  if (handled_component_p (*t)
+      && CONSTANT_CLASS_P (TREE_OPERAND (*t, 0)))
     {
-      /* Preserve volatileness of the original expression.
-	 We can end up with a plain decl here which is shared
-	 and we shouldn't mess with its flags.  */
-      if (!SSA_VAR_P (t))
-	TREE_THIS_VOLATILE (t) = volatile_p;
-      *expr_p = t;
-      *changed_p = true;
+      tree tem = fold (*t);
+      if (tem != *t)
+	return tem;
+    }
+
+  while (handled_component_p (*t))
+    t = &TREE_OPERAND (*t, 0);
+
+  if (TREE_CODE (*t) == INDIRECT_REF)
+    {
+      tree tem = maybe_fold_stmt_indirect (*t, TREE_OPERAND (*t, 0),
+					   integer_zero_node);
+      /* Avoid folding *"abc" = 5 into 'a' = 5.  */
+      if (is_lhs && tem && CONSTANT_CLASS_P (tem))
+	tem = NULL_TREE;
+      if (!tem
+	  && TREE_CODE (TREE_OPERAND (*t, 0)) == ADDR_EXPR)
+	/* If we had a good reason for propagating the address here,
+	   make sure we end up with valid gimple.  See PR34989.  */
+	tem = TREE_OPERAND (TREE_OPERAND (*t, 0), 0);
+
+      if (tem)
+	{
+	  *t = tem;
+	  tem = maybe_fold_reference (expr, is_lhs);
+	  if (tem)
+	    return tem;
+	  return expr;
+	}
     }
 
   return NULL_TREE;
 }
+
 
 /* Return the string length, maximum string length or maximum value of
    ARG in LENGTH.
@@ -2713,22 +2597,60 @@ fold_gimple_assign (gimple_stmt_iterator *si)
   gimple stmt = gsi_stmt (*si);
   enum tree_code subcode = gimple_assign_rhs_code (stmt);
 
-  tree result = NULL;
+  tree result = NULL_TREE;
 
   switch (get_gimple_rhs_class (subcode))
     {
     case GIMPLE_SINGLE_RHS:
       {
         tree rhs = gimple_assign_rhs1 (stmt);
-        
+
         /* Try to fold a conditional expression.  */
         if (TREE_CODE (rhs) == COND_EXPR)
           {
-            tree temp = fold (COND_EXPR_COND (rhs));
-            if (temp != COND_EXPR_COND (rhs))
-              result = fold_build3 (COND_EXPR, TREE_TYPE (rhs), temp,
-                                    COND_EXPR_THEN (rhs), COND_EXPR_ELSE (rhs));
+	    tree op0 = COND_EXPR_COND (rhs);
+	    tree tem;
+	    bool set = false;
+
+	    if (COMPARISON_CLASS_P (op0))
+	      {
+		fold_defer_overflow_warnings ();
+		tem = fold_binary (TREE_CODE (op0), TREE_TYPE (op0),
+				   TREE_OPERAND (op0, 0),
+				   TREE_OPERAND (op0, 1));
+		/* This is actually a conditional expression, not a GIMPLE
+		   conditional statement, however, the valid_gimple_rhs_p
+		   test still applies.  */
+		set = (tem && is_gimple_condexpr (tem)
+		       && valid_gimple_rhs_p (tem));
+		fold_undefer_overflow_warnings (set, stmt, 0);
+	      }
+	    else if (is_gimple_min_invariant (op0))
+	      {
+		tem = op0;
+		set = true;
+	      }
+	    else
+	      return NULL_TREE;
+
+	    if (set)
+	      result = fold_build3 (COND_EXPR, TREE_TYPE (rhs), tem,
+				    COND_EXPR_THEN (rhs), COND_EXPR_ELSE (rhs));
           }
+
+	else if (TREE_CODE (rhs) == TARGET_MEM_REF)
+	  return maybe_fold_tmr (rhs);
+
+	else if (REFERENCE_CLASS_P (rhs))
+	  return maybe_fold_reference (rhs, false);
+
+	else if (TREE_CODE (rhs) == ADDR_EXPR)
+	  {
+	    tree tem = maybe_fold_reference (TREE_OPERAND (rhs, 0), true);
+	    if (tem)
+	      result = fold_convert (TREE_TYPE (rhs),
+				     build_fold_addr_expr (tem));
+	  }
 
         /* If we couldn't fold the RHS, hand over to the generic
            fold routines.  */
@@ -2742,11 +2664,8 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 
         if (result != rhs && valid_gimple_rhs_p (result))
 	  return result;
-        else
-          /* It is possible that fold_stmt_r simplified the RHS.
-             Make sure that the subcode of this statement still
-             reflects the principal operator of the rhs operand. */
-          return rhs;
+
+	return NULL_TREE;
       }
       break;
 
@@ -2919,31 +2838,16 @@ fold_gimple_call (gimple_stmt_iterator *gsi)
 
 /* Fold the statement pointed to by GSI.  In some cases, this function may
    replace the whole statement with a new one.  Returns true iff folding
-   makes any changes.  */
+   makes any changes.
+   The statement pointed to by GSI should be in valid gimple form but may
+   be in unfolded state as resulting from for example constant propagation
+   which can produce *&x = 0.  */
 
 bool
 fold_stmt (gimple_stmt_iterator *gsi)
 {
-  tree res;
-  struct fold_stmt_r_data fold_stmt_r_data;
-  struct walk_stmt_info wi;
-
   bool changed = false;
-  bool inside_addr_expr = false;
-
   gimple stmt = gsi_stmt (*gsi);
-
-  fold_stmt_r_data.stmt = stmt;
-  fold_stmt_r_data.changed_p = &changed;
-  fold_stmt_r_data.inside_addr_expr_p = &inside_addr_expr;
-
-  memset (&wi, 0, sizeof (wi));
-  wi.info = &fold_stmt_r_data;
-
-  /* Fold the individual operands.
-     For example, fold instances of *&VAR into VAR, etc.  */
-  res = walk_gimple_op (stmt, fold_stmt_r, &wi);
-  gcc_assert (!res);
 
   /* Fold the main computation performed by the statement.  */
   switch (gimple_code (stmt))
@@ -2956,7 +2860,6 @@ fold_stmt (gimple_stmt_iterator *gsi)
 	    gimple_assign_set_rhs_from_tree (gsi, new_rhs);
 	    changed = true;
 	  }
-	stmt = gsi_stmt (*gsi);
 	break;
       }
     case GIMPLE_COND:
@@ -2972,42 +2875,39 @@ fold_stmt (gimple_stmt_iterator *gsi)
       break;
     }
 
+  stmt = gsi_stmt (*gsi);
+
+  /* Fold *& on the lhs.  */
+  if (gimple_has_lhs (stmt))
+    {
+      tree lhs = gimple_get_lhs (stmt);
+      if (lhs && REFERENCE_CLASS_P (lhs))
+	{
+	  tree new_lhs = maybe_fold_reference (lhs, true);
+	  if (new_lhs)
+	    {
+	      gimple_set_lhs (stmt, new_lhs);
+	      changed = true;
+	    }
+	}
+    }
+
   return changed;
 }
 
 /* Perform the minimal folding on statement STMT.  Only operations like
    *&x created by constant propagation are handled.  The statement cannot
    be replaced with a new one.  Return true if the statement was
-   changed, false otherwise.  */
+   changed, false otherwise.
+   The statement STMT should be in valid gimple form but may
+   be in unfolded state as resulting from for example constant propagation
+   which can produce *&x = 0.  */
 
 bool
 fold_stmt_inplace (gimple stmt)
 {
-  tree res;
-  struct fold_stmt_r_data fold_stmt_r_data;
-  struct walk_stmt_info wi;
   gimple_stmt_iterator si;
-
   bool changed = false;
-  bool inside_addr_expr = false;
-
-  fold_stmt_r_data.stmt = stmt;
-  fold_stmt_r_data.changed_p = &changed;
-  fold_stmt_r_data.inside_addr_expr_p = &inside_addr_expr;
-
-  memset (&wi, 0, sizeof (wi));
-  wi.info = &fold_stmt_r_data;
-
-  /* Fold the individual operands.
-     For example, fold instances of *&VAR into VAR, etc.
-
-     It appears that, at one time, maybe_fold_stmt_indirect
-     would cause the walk to return non-null in order to
-     signal that the entire statement should be replaced with
-     a call to _builtin_trap.  This functionality is currently
-     disabled, as noted in a FIXME, and cannot be supported here.  */
-  res = walk_gimple_op (stmt, fold_stmt_r, &wi);
-  gcc_assert (!res);
 
   /* Fold the main computation performed by the statement.  */
   switch (gimple_code (stmt))
@@ -3034,6 +2934,21 @@ fold_stmt_inplace (gimple stmt)
 
     default:
       break;
+    }
+
+  /* Fold *& on the lhs.  */
+  if (gimple_has_lhs (stmt))
+    {
+      tree lhs = gimple_get_lhs (stmt);
+      if (lhs && REFERENCE_CLASS_P (lhs))
+	{
+	  tree new_lhs = maybe_fold_reference (lhs, true);
+	  if (new_lhs)
+	    {
+	      gimple_set_lhs (stmt, new_lhs);
+	      changed = true;
+	    }
+	}
     }
 
   return changed;
