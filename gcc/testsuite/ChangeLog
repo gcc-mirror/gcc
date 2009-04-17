@@ -1,3 +1,8 @@
+2009-04-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat.dg/ref_type.ads, gnat.dg/ref_type.adb: Fix test after proper
+	rule enforced by gnat on taft types.
+
 2009-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/39792
