@@ -5522,11 +5522,12 @@ package body Sem_Ch3 is
          then
             declare
                Full_Der : constant Entity_Id :=
-                 Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
-               Decl : Node_Id;
-               New_Ext : constant Node_Id :=
-                           Copy_Separate_Tree
-                             (Record_Extension_Part (Type_Definition (N)));
+                            Make_Defining_Identifier (Loc,
+                              Chars => New_Internal_Name ('T'));
+               Decl     : Node_Id;
+               New_Ext  : constant Node_Id :=
+                            Copy_Separate_Tree
+                              (Record_Extension_Part (Type_Definition (N)));
 
             begin
                Build_Derived_Record_Type
@@ -5561,7 +5562,7 @@ package body Sem_Ch3 is
                Set_Underlying_Record_View (Derived_Type, Full_Der);
             end;
 
-         --  if discriminants are known, build derived record.
+         --  if discriminants are known, build derived record
 
          else
             Build_Derived_Record_Type
@@ -5600,8 +5601,8 @@ package body Sem_Ch3 is
                      Build_Underlying_Full_View (N, Derived_Type, Parent_Type);
 
                   elsif Is_Constrained (Full_View (Parent_Type)) then
-                     Set_Underlying_Full_View (Derived_Type,
-                       Full_View (Parent_Type));
+                     Set_Underlying_Full_View
+                       (Derived_Type, Full_View (Parent_Type));
                   end if;
 
                else

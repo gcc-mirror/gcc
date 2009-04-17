@@ -164,13 +164,12 @@ package body Exp_Disp is
             --  Handle full type declarations and derivations of library
             --  level tagged types
 
-            elsif (Nkind (D) = N_Full_Type_Declaration
-                     or else Nkind (D) = N_Derived_Type_Definition)
+            elsif Nkind_In (D, N_Full_Type_Declaration,
+                               N_Derived_Type_Definition)
               and then Is_Library_Level_Tagged_Type (Defining_Entity (D))
               and then Ekind (Defining_Entity (D)) /= E_Record_Subtype
               and then not Is_Private_Type (Defining_Entity (D))
             then
-
                --  We do not generate dispatch tables for the internal type
                --  created for a type extension with unknown discriminants
                --  The needed information is shared with the source type,
@@ -180,7 +179,7 @@ package body Exp_Disp is
                  and then
                    Has_Unknown_Discriminants (Etype (Defining_Entity (D)))
                  and then
-                    not Comes_From_Source (First_Subtype (Defining_Entity (D)))
+                   not Comes_From_Source (First_Subtype (Defining_Entity (D)))
                then
                   null;
 
