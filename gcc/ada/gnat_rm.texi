@@ -8610,6 +8610,12 @@ This restriction does not forbid dependences on the package
 as long as no actual stream objects are created and no
 stream attributes are used.
 
+Note that the use of restriction allows optimization of tagged types,
+since they do not need to worry about dispatching stream operations.
+To take maximum advantage of this space-saving optimization, any
+unit declaring a tagged type should be compiled with the restriction,
+though this is not required.
+
 @item No_Task_Attributes_Package
 @findex No_Task_Attributes_Package
 This restriction ensures at compile time that there are no implicit or

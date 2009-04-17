@@ -1,3 +1,48 @@
+2009-04-17  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Add documentation about No_Streams restriction
+
+	* sem_attr.adb (Check_Stream_Attribute): Exclude implicit stream
+	attributes when checking No_Streams restriction.
+
+2009-04-17  Thomas Quinot  <quinot@adacore.com>
+
+	* rtsfind.ads (RE_Request_Destroy): New PolyORB s-parint entity.
+
+	* exp_dist.adb (PolyORB_Support.Build_General_Calling_Stubs): Add
+	missing calls to RE_Request_Destroy to deallocate request objects after
+	use.
+
+2009-04-17  Nicolas Setton  <setton@adacore.com>
+
+	* link.c: Fix support for passing a response file under Darwin.
+
+2009-04-17  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.adb (Free): new subprogram.
+
+2009-04-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb: additional initialization on incomplete subtypes.
+	
+	* sem_ch6.adb (Process_Formals): if the subprogram is in the private
+	part and one of the formals is an incomplete tagged type, attach to
+	list of private dependends of the type for later validation.
+
+	* sem_ch7.adb (Uninstall_Declarations): diagnose attempts to declare
+	primitive operations of a Taft-amendmment type.
+
+	* freeze.adb (Freeze_Entity): Remove tests on formals of an incomplete
+	type. The check is performed on package exit, possibly after the
+	subprogram is frozen.
+
+2009-04-17  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Get_Directories): Get the object and exec directory
+	before looking for source directories, but make sure that there are nil
+	if they are not explicitely declared and there is explicitely no
+	sources in the project.
+
 2009-04-17  Pascal Obry  <obry@adacore.com>
 
 	* initialize.c: Set gnat_argv with UTF-8 encoded strings on Windows.

@@ -2261,11 +2261,32 @@ package body Sem_Ch7 is
             end if;
 
          elsif Ekind (Id) = E_Incomplete_Type
+           and then Comes_From_Source (Id)
            and then No (Full_View (Id))
          then
-            --  Mark Taft amendment types
+
+            --  Mark Taft amendment types. Verify that there are no
+            --  primitive operations declared for the type (3.10.1 (9)).
 
             Set_Has_Completion_In_Body (Id);
+
+            declare
+               Elmt : Elmt_Id;
+               Subp : Entity_Id;
+
+            begin
+               Elmt := First_Elmt (Private_Dependents (Id));
+               while Present (Elmt) loop
+                  Subp := Node (Elmt);
+                  if Is_Overloadable (Subp) then
+                     Error_Msg_NE
+                       ("type& must be completed in the private part",
+                         Parent (Subp), Id);
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end;
 
          elsif not Is_Child_Unit (Id)
            and then (not Is_Private_Type (Id)
