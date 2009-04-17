@@ -1,3 +1,14 @@
+2009-04-17  Diego Novillo  <dnovillo@google.com>
+
+	* tree-pretty-print.c (dump_generic_node): Add break
+	after TREE_BINFO handler.
+	Handle COMPLEX_TYPE, REAL_TYPE and FIXED_POINT_TYPE
+	Handle NULL TREE_TYPEs.
+	Handle METHOD_TYPE and FUNCTION_TYPE together.
+	Call print_struct_decl when printing structures and
+	TDF_SLIM is not given.
+	(print_struct_decl): Fix logic for detecting recursion.
+
 2009-04-17  Rafael Avila de Espindola  <espindola@google.com>
 
 	PR 31567
