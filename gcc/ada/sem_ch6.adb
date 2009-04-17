@@ -107,6 +107,9 @@ package body Sem_Ch6 is
    --  specification, in a context where the formals are visible and hide
    --  outer homographs.
 
+   procedure Analyze_Subprogram_Body_Helper (N : Node_Id);
+   --  Does all the real work of Analyze_Subprogram_Body
+
    procedure Analyze_Generic_Subprogram_Body (N : Node_Id; Gen_Id : Entity_Id);
    --  Analyze a generic subprogram body. N is the body to be analyzed, and
    --  Gen_Id is the defining entity Id for the corresponding spec.
@@ -1342,12 +1345,48 @@ package body Sem_Ch6 is
    -- Analyze_Subprogram_Body --
    -----------------------------
 
+   procedure Analyze_Subprogram_Body (N : Node_Id) is
+      Loc       : constant Source_Ptr := Sloc (N);
+      Body_Spec : constant Node_Id    := Specification (N);
+      Body_Id   : constant Entity_Id  := Defining_Entity (Body_Spec);
+
+   begin
+      if Debug_Flag_C then
+         Write_Str ("==> subprogram body ");
+         Write_Name (Chars (Body_Id));
+         Write_Str (" from ");
+         Write_Location (Loc);
+         Write_Eol;
+         Indent;
+      end if;
+
+      Trace_Scope (N, Body_Id, " Analyze subprogram: ");
+
+      --  The real work is split out into the helper, so it can do "return;"
+      --  without skipping the debug output:
+
+      Analyze_Subprogram_Body_Helper (N);
+
+      if Debug_Flag_C then
+         Outdent;
+         Write_Str ("<== subprogram body ");
+         Write_Name (Chars (Body_Id));
+         Write_Str (" from ");
+         Write_Location (Loc);
+         Write_Eol;
+      end if;
+   end Analyze_Subprogram_Body;
+
+   ------------------------------------
+   -- Analyze_Subprogram_Body_Helper --
+   ------------------------------------
+
    --  This procedure is called for regular subprogram bodies, generic bodies,
    --  and for subprogram stubs of both kinds. In the case of stubs, only the
    --  specification matters, and is used to create a proper declaration for
    --  the subprogram, or to perform conformance checks.
 
-   procedure Analyze_Subprogram_Body (N : Node_Id) is
+   procedure Analyze_Subprogram_Body_Helper (N : Node_Id) is
       Loc          : constant Source_Ptr := Sloc (N);
       Body_Deleted : constant Boolean    := False;
       Body_Spec    : constant Node_Id    := Specification (N);
@@ -1785,19 +1824,9 @@ package body Sem_Ch6 is
          end if;
       end Verify_Overriding_Indicator;
 
-   --  Start of processing for Analyze_Subprogram_Body
+   --  Start of processing for Analyze_Subprogram_Body_Helper
 
    begin
-      if Debug_Flag_C then
-         Write_Str ("====  Compiling subprogram body ");
-         Write_Name (Chars (Body_Id));
-         Write_Str (" from ");
-         Write_Location (Loc);
-         Write_Eol;
-      end if;
-
-      Trace_Scope (N, Body_Id, " Analyze subprogram: ");
-
       --  Generic subprograms are handled separately. They always have a
       --  generic specification. Determine whether current scope has a
       --  previous declaration.
@@ -2558,7 +2587,7 @@ package body Sem_Ch6 is
             Check_References (Body_Id);
          end if;
       end;
-   end Analyze_Subprogram_Body;
+   end Analyze_Subprogram_Body_Helper;
 
    ------------------------------------
    -- Analyze_Subprogram_Declaration --
@@ -2572,6 +2601,15 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Declaration
 
    begin
+      if Debug_Flag_C then
+         Write_Str ("==> subprogram spec ");
+         Write_Name (Chars (Designator));
+         Write_Str (" from ");
+         Write_Location (Sloc (N));
+         Write_Eol;
+         Indent;
+      end if;
+
       Generate_Definition (Designator);
 
       --  Check for RCI unit subprogram declarations for illegal inlined
@@ -2584,14 +2622,6 @@ package body Sem_Ch6 is
         (N,
          Defining_Entity (N),
          " Analyze subprogram spec: ");
-
-      if Debug_Flag_C then
-         Write_Str ("====  Compiling subprogram spec ");
-         Write_Name (Chars (Designator));
-         Write_Str (" from ");
-         Write_Location (Sloc (N));
-         Write_Eol;
-      end if;
 
       New_Overloaded_Entity (Designator);
       Check_Delayed_Subprogram (Designator);
@@ -2711,6 +2741,15 @@ package body Sem_Ch6 is
             Error_Msg_N
               ("protected operation cannot be a null procedure", N);
          end if;
+      end if;
+
+      if Debug_Flag_C then
+         Outdent;
+         Write_Str ("<== subprogram spec ");
+         Write_Name (Chars (Designator));
+         Write_Str (" from ");
+         Write_Location (Sloc (N));
+         Write_Eol;
       end if;
    end Analyze_Subprogram_Declaration;
 

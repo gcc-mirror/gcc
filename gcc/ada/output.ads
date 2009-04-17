@@ -81,9 +81,17 @@ package Output is
    --  has been cancelled. Output to standard output is the default mode
    --  before any call to either of the Set procedures.
 
+   procedure Indent;
+   --  Increases the current indentation level. Whenever a line is written
+   --  (triggered by Eol), an appropriate amount of whitespace is added to the
+   --  beginning of the line, wrapping around if it gets to long.
+
+   procedure Outdent;
+   --  Decreases the current indentation level.
+
    procedure Write_Char (C : Character);
-   --  Write one character to the standard output file. Note that the
-   --  character should not be LF or CR (use Write_Eol for end of line)
+   --  Write one character to the standard output file. If the character is LF,
+   --  this is equivalent to Write_Eol.
 
    procedure Write_Erase_Char (C : Character);
    --  If last character in buffer matches C, erase it, otherwise no effect
@@ -177,7 +185,7 @@ private
    --  subprograms defined in this package, and cannot be directly modified or
    --  accessed by a client.
 
-   Buffer : String (1 .. Buffer_Max + 1);
+   Buffer : String (1 .. Buffer_Max + 1) := (others => '*');
    for Buffer'Alignment use 4;
    --  Buffer used to build output line. We do line buffering because it
    --  is needed for the support of the debug-generated-code option (-gnatD).
@@ -194,6 +202,7 @@ private
    type Saved_Output_Buffer is record
       Buffer   : String (1 .. Buffer_Max + 1);
       Next_Col : Positive;
+      Cur_Indentation : Natural;
    end record;
 
 end Output;
