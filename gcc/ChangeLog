@@ -1,3 +1,8 @@
+2009-04-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/arm/sfp-machine.h (__gcc_CMPtype): New typedef.
+	(CMPtype): Define as __gcc_CMPtype.
+
 2009-04-17  Aurelien Jarno  <aurelien@aurel32.net>
 
 	* config.gcc: Add soft-fp/t-softfp and i386/t-linux to tmake_file
