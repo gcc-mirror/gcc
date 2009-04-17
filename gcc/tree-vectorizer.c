@@ -305,7 +305,7 @@ struct simple_ipa_opt_pass pass_ipa_increase_alignment =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  0,                                    /* tv_id */
+  TV_NONE,                              /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -313,5 +313,3 @@ struct simple_ipa_opt_pass pass_ipa_increase_alignment =
   0                                     /* todo_flags_finish */
  }
 };
-
-

@@ -1,3 +1,91 @@
+2009-04-16  Ian Lance Taylor  <iant@google.com>
+
+	* df.h: Include "timevar.h".
+	(struct df_problem): Change tv_id field to timevar_id_t.
+	* tree-pass.h: Include "timevar.h".
+	(struct opt_pass): Change tv_id field to timevar_id_t.
+	* timevar.h (timevar_id_t): Define TV_NONE.
+	* passes.c (execute_one_ipa_transform_pass): Check for tv_id !=
+	TV_NONE rather than tv_id != 0.
+	(execute_one_pass): Likewise.
+	* Makefile.in (DF_H): Add $(TIMEVAR_H).
+	(TREE_PASS_H): Define.  Change all instances of tree-pass.h in
+	dependencies to $(TREE_PASS_H).
+	* bt-load.c (pass_branch_target_load_optimize1): Set tv_id field
+	to TV_NONE.
+	(pass_branch_target_load_optimize2): Likewise.
+	* cfglayout.c (pass_into_cfg_layout_mode): Likewise.
+	(pass_outof_cfg_layout_mode): Likewise.
+	* cgraphbuild.c (pass_remove_cgraph_callee_edges): Likewise.
+	(pass_rebuild_cgraph_edges): Likewise.
+	(pass_remove_cgraph_callee_edges): Likewise.
+	* df-core.c (pass_df_initialize_opt): Likewise.
+	(pass_df_initialize_no_opt): Likewise.
+	(pass_df_finish): Likewise.
+	* emit-rtl.c (pass_unshare_all_rtl): Likewise.
+	* except.c (pass_set_nothrow_function_flags): Likewise.
+	(pass_convert_to_eh_region_ranges): Likewise.
+	* final.c (pass_compute_alignments): Likewise.
+	* function.c (pass_instantiate_virtual_regs): Likewise.
+	(pass_init_function): Likewise.
+	(pass_leaf_regs): Likewise.
+	(pass_match_asm_constraints): Likewise.
+	* gimple-low.c (pass_lower_cf): Likewise.
+	(pass_mark_used_blocks): Likewise.
+	* init-regs.c (pass_initialize_regs): Likewise.
+	* integrate.c (pass_initial_value_sets): Likewise.
+	* ira.c (pass_ira): Likewise.
+	* jump.c (pass_cleanup_barriers): Likewise.
+	* omp-low.c (pass_expand_omp): Likewise.
+	(pass_lower_omp): Likewise.
+	* matrix-reorg.c (pass_ipa_matrix_reorg): Likewise.
+	* recog.c (pass_split_all_insns): Likewise.
+	(pass_split_after_reload): Likewise.
+	(pass_split_before_regstack): Likewise.
+	(pass_split_before_sched2): Likewise.
+	(pass_split_for_shorten_branches): Likewise.
+	* reginfo.c (pass_reginfo_init): Likewise.
+	(pass_subregs_of_mode_init): Likewise.
+	(pass_subregs_of_mode_finish): Likewise.
+	* passes.c (pass_postreload): Likewise.
+	* stack-ptr-mod.c (pass_stack_ptr_mod): Likewise.
+	* tree-cfg.c (pass_remove_useless_stmts): Likewise.
+	(pass_warn_function_return): Likewise.
+	(pass_warn_function_noreturn): Likewise.
+	* tree-complex.c (pass_lower_complex): Likewise.
+	(pass_lower_complex_O0): Likewise.
+	* tree-if-conv.c (pass_if_conversion): Likewise.
+	* tree-into-ssa.c (pass_build_ssa): Likewise.
+	* tree-mudflap.c (pass_mudflap_1): Likewise.
+	(pass_mudflap_2): Likewise.
+	* tree-nomudflap.c (pass_mudflap_1): Likewise.
+	(pass_mudflap_2): Likewise.
+	* tree-nrv.c (pass_return_slot): Likewise.
+	* tree-object-size.c (pass_object_sizes): Likewise.
+	* tree-optimize.c (pass_all_optimizations): Likewise.
+	(pass_early_local_passes): Likewise.
+	(pass_all_early_optimizations): Likewise.
+	(pass_cleanup_cfg): Likewise.
+	(pass_cleanup_cfg_post_optimizing): Likewise.
+	(pass_free_datastructures): Likewise.
+	(pass_free_cfg_annotations): Likewise.
+	(pass_fixup_cfg): Likewise.
+	(pass_init_datastructures): Likewise.
+	* tree-ssa.c (pass_early_warn_uninitialized): Likewise.
+	(pass_late_warn_uninitialized): Likewise.
+	(pass_update_address_taken): Likewise.
+	* tree-ssa-ccp.c (pass_fold_builtins): Likewise.
+	* tree-ssa-math-opts.c (pass_cse_reciprocals): Likewise.
+	(pass_cse_sincos): Likewise.
+	(pass_convert_to_rsqrt): Likewise.
+	* tree-ssa-structalias.c (pass_build_alias): Likewise.
+	* tree-stdarg.c (pass_stdarg): Likewise.
+	* tree-tailcall.c (pass_tail_recursion): Likewise.
+	(pass_tail_calls): Likewise.
+	* tree-vect-generic.c (pass_lower_vector): Likewise.
+	(pass_lower_vector_ssa): Likewise.
+	* tree-vectorizer.c (pass_ipa_increase_alignment): Likewise.
+
 2009-04-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/mips/mips.c (mips_rtx_cost_data): Use SOFT_FP_COSTS in

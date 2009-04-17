@@ -1,5 +1,6 @@
 /* Timing variables for measuring compiler performance.
-   Copyright (C) 2000, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004, 2005, 2007, 2009
+   Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -72,6 +73,7 @@ struct timevar_time_def
     identifier__,
 typedef enum
 {
+  TV_NONE,
 #include "timevar.def"
   TIMEVAR_LAST
 }

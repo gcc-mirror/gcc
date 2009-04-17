@@ -1,5 +1,5 @@
 /* Perform branch target register load optimizations.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1513,7 +1513,7 @@ struct rtl_opt_pass pass_branch_target_load_optimize1 =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  0,		                        /* tv_id */
+  TV_NONE,	                        /* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -1563,7 +1563,7 @@ struct rtl_opt_pass pass_branch_target_load_optimize2 =
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  0,					/* tv_id */
+  TV_NONE,				/* tv_id */
   0,                                    /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -1572,4 +1572,3 @@ struct rtl_opt_pass pass_branch_target_load_optimize2 =
   TODO_ggc_collect,                     /* todo_flags_finish */
  }
 };
-
