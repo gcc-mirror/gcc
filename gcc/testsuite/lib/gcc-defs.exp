@@ -155,6 +155,10 @@ proc ${tool}_check_unsupported_p { output } {
     if [regexp "(^|\n)\[^\n\]*: region \[^\n\]* is full" $output] {
 	return "memory full"
     }
+    if {[istarget spu-*-*] && \
+            [string match "*exceeds local store*" $output]} {
+	return "memory full"
+    }
     return ""
 }
 

@@ -27,6 +27,7 @@ load_lib prune.exp
 load_lib gcc-defs.exp
 load_lib timeout.exp
 load_lib target-libpath.exp
+load_lib target-supports.exp
 
 #
 # GFORTRAN_UNDER_TEST is the compiler under test.
@@ -175,6 +176,13 @@ proc gfortran_init { args } {
 
     if [info exists TOOL_OPTIONS] {
 	lappend ALWAYS_GFORTRANFLAGS "additional_flags=$TOOL_OPTIONS"
+    }
+
+    # On the SPU, most of the fortran test cases exceed local store size.
+    # Use automatic overlay support to make them fit.
+    if { [check_effective_target_spu_auto_overlay] } {
+	lappend ALWAYS_GFORTRANFLAGS "ldflags=-Wl,--auto-overlay"
+	lappend ALWAYS_GFORTRANFLAGS "ldflags=-Wl,--reserved-space=131072"
     }
 
     verbose -log "ALWAYS_GFORTRANFLAGS set to $ALWAYS_GFORTRANFLAGS"
