@@ -2261,16 +2261,18 @@ do_compile (void)
    It is not safe to call this function more than once.  */
 
 int
-toplev_main (unsigned int argc, const char **argv)
+toplev_main (int argc, char **argv)
 {
-  save_argv = argv;
+  expandargv (&argc, &argv);
+
+  save_argv = (const char **) argv;
 
   /* Initialization of GCC's environment, and diagnostics.  */
   general_init (argv[0]);
 
   /* Parse the options and do minimal processing; basically just
      enough to default flags appropriately.  */
-  decode_options (argc, argv);
+  decode_options (argc, (const char **) argv);
 
   init_local_tick ();
 
