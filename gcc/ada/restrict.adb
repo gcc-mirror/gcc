@@ -316,6 +316,15 @@ package body Restrict is
       DU : Node_Id;
 
    begin
+      --  Ignore call if node U is not in the main source unit. This avoids
+      --  cascaded errors, e.g. when Ada.Containers units with other units.
+
+      if not In_Extended_Main_Source_Unit (U) then
+         return;
+      end if;
+
+      --  Loop through entries in No_Dependence table to check each one in turn
+
       for J in No_Dependence.First .. No_Dependence.Last loop
          DU := No_Dependence.Table (J).Unit;
 

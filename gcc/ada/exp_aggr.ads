@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package Exp_Aggr is
       Aggr  : Node_Id);
    --  Alloc is the allocator whose expression is the aggregate Aggr.
    --  Decl is an N_Object_Declaration created during allocator expansion.
-   --  This procedure perform in-place aggregate assignment into the
+   --  This procedure performs in-place aggregate assignment into the
    --  temporary declared in Decl, and the allocator becomes an access to
    --  that temporary.
 

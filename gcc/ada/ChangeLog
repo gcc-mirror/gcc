@@ -1,3 +1,25 @@
+2009-04-17  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.adb: Minor reformatting
+
+2009-04-17  Robert Dewar  <dewar@adacore.com>
+
+	* restrict.adb (Check_Restriction_No_Dependence): Don't check
+	restriction if outside main extended source unit.
+
+	* sem_ch10.adb (Analyze_With_Clause): Check No_Dependence restriction
+	for parents of child units as well as the child unit itself.
+
+2009-04-17  Bob Duff  <duff@adacore.com>
+
+	* checks.ads: Minor comment fix
+
+	* exp_aggr.ads: Minor comment fix
+
+2009-04-17  Nicolas Roche  <roche@adacore.com>
+
+	* adaint.c: Improve cross compiler detection and handling.
+
 2009-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Expand_Concatenation): Do not use calls at -Os.

@@ -1371,36 +1371,36 @@ package body Exp_Ch7 is
       end if;
 
       --  Resolution is now finished, make sure we don't start analysis again
-      --  because of the duplication
+      --  because of the duplication.
 
       Set_Analyzed (N);
       Ref := Duplicate_Subexpr_No_Checks (N);
 
-      --  Now we can generate the Attach Call, note that this value is
-      --  always in the (secondary) stack and thus is attached to a singly
-      --  linked final list:
+      --  Now we can generate the Attach Call. Note that this value is always
+      --  on the (secondary) stack and thus is attached to a singly linked
+      --  final list:
 
       --    Resx := F (X)'reference;
       --    Attach_To_Final_List (_Lx, Resx.all, 1);
 
-      --  or when there are controlled components
+      --  or when there are controlled components:
 
       --    Attach_To_Final_List (_Lx, Resx._controller, 1);
 
-      --  or when it is both is_controlled and has_controlled_components
+      --  or when it is both Is_Controlled and Has_Controlled_Components:
 
       --    Attach_To_Final_List (_Lx, Resx._controller, 1);
       --    Attach_To_Final_List (_Lx, Resx, 1);
 
-      --  or if it is an array with is_controlled (and has_controlled)
+      --  or if it is an array with Is_Controlled (and Has_Controlled)
 
       --    Attach_To_Final_List (_Lx, Resx (Resx'last), 3);
-      --    An attach level of 3 means that a whole array is to be
-      --    attached to the finalization list (including the controlled
-      --    components)
 
-      --  or if it is an array with has_controlled components but not
-      --  is_controlled
+      --    An attach level of 3 means that a whole array is to be attached to
+      --    the finalization list (including the controlled components).
+
+      --  or if it is an array with Has_Controlled_Components but not
+      --  Is_Controlled:
 
       --    Attach_To_Final_List (_Lx, Resx (Resx'last)._controller, 3);
 
@@ -1466,8 +1466,8 @@ package body Exp_Ch7 is
             end if;
          end;
 
-         --  Here we know that 'Ref' has a controller so we may as well
-         --  attach it directly
+         --  Here we know that 'Ref' has a controller so we may as well attach
+         --  it directly.
 
          Action :=
            Make_Attach_Call (
@@ -1485,12 +1485,12 @@ package body Exp_Ch7 is
                 With_Attach  => Make_Integer_Literal (Loc, Attach_Level));
          end if;
 
-      --  Here, we have a controlled type that does not seem to have
-      --  controlled components but it could be a class wide type whose
-      --  further derivations have controlled components. So we don't know
-      --  if the object itself needs to be attached or if it has a record
-      --  controller. We need to call a runtime function (Deep_Tag_Attach)
-      --  which knows what to do thanks to the RC_Offset in the dispatch table.
+      --  Here, we have a controlled type that does not seem to have controlled
+      --  components but it could be a class wide type whose further
+      --  derivations have controlled components. So we don't know if the
+      --  object itself needs to be attached or if it has a record controller.
+      --  We need to call a runtime function (Deep_Tag_Attach) which knows what
+      --  to do thanks to the RC_Offset in the dispatch table.
 
       else
          Action :=
