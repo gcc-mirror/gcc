@@ -1,3 +1,7 @@
+2009-04-17  Simon Baldwin  <simonb@google.com>
+
+	* toplev.c (default_tree_printer): Add handling for %E format.
+
 2009-04-17  Diego Novillo  <dnovillo@google.com>
 
 	* tree-pretty-print.c (dump_generic_node): Add break
