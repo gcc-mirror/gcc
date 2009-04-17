@@ -3768,11 +3768,13 @@ package body Sprint is
 
                      Write_Char (')');
 
-                  --  Signed integer types, and modular integer subtypes
+                  --  Signed integer types, and modular integer subtypes,
+                  --  and also enumeration subtypes.
 
                   when E_Signed_Integer_Type     |
                        E_Signed_Integer_Subtype  |
-                       E_Modular_Integer_Subtype =>
+                       E_Modular_Integer_Subtype |
+                       E_Enumeration_Subtype     =>
 
                      Write_Header (Ekind (Typ) = E_Signed_Integer_Type);
 

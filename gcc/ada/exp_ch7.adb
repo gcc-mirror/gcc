@@ -87,11 +87,11 @@ package body Exp_Ch7 is
    --      (See Wrap_Transient_Expression for details)
 
    --   3. In a expression of an object_declaration. No wrapping is possible
-   --      here, so the finalization actions, if any are done right after the
+   --      here, so the finalization actions, if any, are done right after the
    --      declaration and the secondary stack deallocation is done in the
    --      proper enclosing scope (see Wrap_Transient_Declaration for details)
 
-   --  Note about functions returning tagged types: It has been decided to
+   --  Note about functions returning tagged types: it has been decided to
    --  always allocate their result in the secondary stack, even though is not
    --  absolutely mandatory when the tagged type is constrained because the
    --  caller knows the size of the returned object and thus could allocate the
@@ -124,10 +124,9 @@ package body Exp_Ch7 is
    --------------------------------------------------
 
    function Find_Node_To_Be_Wrapped (N : Node_Id) return Node_Id;
-   --  N is a node which may generate a transient scope. Loop over the
-   --  parent pointers of N until it find the appropriate node to
-   --  wrap. It it returns Empty, it means that no transient scope is
-   --  needed in this context.
+   --  N is a node which may generate a transient scope. Loop over the parent
+   --  pointers of N until it find the appropriate node to wrap. If it returns
+   --  Empty, it means that no transient scope is needed in this context.
 
    function Make_Clean
      (N                          : Node_Id;
@@ -158,14 +157,14 @@ package body Exp_Ch7 is
 
    procedure Insert_Actions_In_Scope_Around (N : Node_Id);
    --  Insert the before-actions kept in the scope stack before N, and the
-   --  after after-actions, after N which must be a member of a list.
+   --  after-actions after N, which must be a member of a list.
 
    function Make_Transient_Block
      (Loc    : Source_Ptr;
       Action : Node_Id) return Node_Id;
-   --  Create a transient block whose name is Scope, which is also a
-   --  controlled block if Flist is not empty and whose only code is
-   --  Action (either a single statement or single declaration).
+   --  Create a transient block whose name is Scope, which is also a controlled
+   --  block if Flist is not empty and whose only code is Action (either a
+   --  single statement or single declaration).
 
    type Final_Primitives is (Initialize_Case, Adjust_Case, Finalize_Case);
    --  This enumeration type is defined in order to ease sharing code for
@@ -193,26 +192,24 @@ package body Exp_Ch7 is
      (Prim  : Final_Primitives;
       Typ   : Entity_Id;
       Stmts : List_Id) return Node_Id;
-   --  This function generates the tree for Deep_Initialize, Deep_Adjust
-   --  or Deep_Finalize procedures according to the first parameter,
-   --  these procedures operate on the type Typ. The Stmts parameter
-   --  gives the body of the procedure.
+   --  This function generates the tree for Deep_Initialize, Deep_Adjust or
+   --  Deep_Finalize procedures according to the first parameter, these
+   --  procedures operate on the type Typ. The Stmts parameter gives the body
+   --  of the procedure.
 
    function Make_Deep_Array_Body
      (Prim : Final_Primitives;
       Typ  : Entity_Id) return List_Id;
    --  This function generates the list of statements for implementing
-   --  Deep_Initialize, Deep_Adjust or Deep_Finalize procedures
-   --  according to the first parameter, these procedures operate on the
-   --  array type Typ.
+   --  Deep_Initialize, Deep_Adjust or Deep_Finalize procedures according to
+   --  the first parameter, these procedures operate on the array type Typ.
 
    function Make_Deep_Record_Body
      (Prim : Final_Primitives;
       Typ  : Entity_Id) return List_Id;
    --  This function generates the list of statements for implementing
-   --  Deep_Initialize, Deep_Adjust or Deep_Finalize procedures
-   --  according to the first parameter, these procedures operate on the
-   --  record type Typ.
+   --  Deep_Initialize, Deep_Adjust or Deep_Finalize procedures according to
+   --  the first parameter, these procedures operate on the record type Typ.
 
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;

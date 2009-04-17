@@ -1,3 +1,19 @@
+2009-04-17  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads, exp_aggr.adb, exp_aggr.ads: Minor reformatting
+
+	* exp_ch7.adb: Minor reformatting
+
+2009-04-17  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): In an initialized
+	allocator, check that the expression of the qualified expression obeys
+	the constraints of the subtype of the qualified expression.
+
+2009-04-17  Thomas Quinot  <quinot@adacore.com>
+
+	* sprint.adb (Write_Itype): Add handling of enumeration subtypes.
+
 2009-04-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch4.adb (Expand_Allocator_Expression): Apply constraint check to
