@@ -72,6 +72,52 @@ extern char **gnat_argv;
 extern void __gnat_plist_init (void);
 #endif
 
+#ifdef GNAT_UNICODE_SUPPORT
+
+#define EXPAND_ARGV_RATE 128
+
+static void
+append_arg (int *index, LPWSTR value, char ***argv, int *last)
+{
+  int size;
+
+  if (*last < *index)
+    {
+      char **old_argv = *argv;
+      int old_last = *last;
+      int k;
+
+      *last += EXPAND_ARGV_RATE;
+      *argv = (char **) xmalloc ((*last) * sizeof (char *));
+
+      for (k=0; k<=old_last; k++)
+	(*argv)[k] = old_argv[k];
+
+      free (old_argv);
+    }
+
+  size = WS2SC (NULL, value, 0);
+  (*argv)[*index] = (char *) xmalloc (size + 1);
+  WS2SC ((*argv)[*index], value, size);
+
+  (*index)++;
+}
+
+static void
+adjust_arg (int last, char ***argv)
+{
+  char **old_argv = *argv;
+  int k;
+
+  *argv = (char **) xmalloc (last * sizeof (char *));
+
+  for (k=0; k<last; k++)
+    (*argv)[k] = old_argv[k];
+
+  free (old_argv);
+}
+#endif
+
 void
 __gnat_initialize (void *eh)
 {
@@ -91,37 +137,73 @@ __gnat_initialize (void *eh)
 
      if (codepage != NULL)
        if (strcmp (codepage, "CP_ACP") == 0)
-	 CurrentCodePage = CP_ACP;
+         CurrentCodePage = CP_ACP;
        else if (strcmp (codepage, "CP_UTF8") == 0)
-	 CurrentCodePage = CP_UTF8;
+         CurrentCodePage = CP_UTF8;
    }
-#endif
 
    /* Adjust gnat_argv to support Unicode characters. */
    {
      LPWSTR *wargv;
      int wargc;
      int k;
-     int size;
+     int last;
+     int argc_expanded = 0;
+     TCHAR result [MAX_PATH];
 
      wargv = CommandLineToArgvW (GetCommandLineW(), &wargc);
 
      if (wargv != NULL)
        {
 	 /* Set gnat_argv with arguments encoded in UTF-8. */
-	 gnat_argv = (char **) xmalloc ((wargc + 1) * sizeof (char *));
+	 last = wargc + 1;
+	 gnat_argv = (char **) xmalloc ((last) * sizeof (char *));
 
-	 for (k=0; k<wargc; k++)
+	 /* argv[0] is the executable full path-name. */
+
+	 SearchPath (NULL, wargv[0], _T(".exe"), MAX_PATH, result, NULL);
+	 append_arg (&argc_expanded, result, &gnat_argv, &last);
+
+	 for (k=1; k<wargc; k++)
 	   {
-	     size = WS2SC (NULL, wargv[k], 0);
-	     gnat_argv[k] = (char *) xmalloc (size + 1);
-	     WS2SC (gnat_argv[k], wargv[k], size);
+	     /* Check for wildcard expansion. */
+	     if (_tcsstr (wargv[k], _T("?")) != 0 ||
+		 _tcsstr (wargv[k], _T("*")) != 0)
+	       {
+		 /* Wilcards are present, append all corresponding matches. */
+		 WIN32_FIND_DATA FileData;
+		 HANDLE hDir = FindFirstFile (wargv[k], &FileData);
+
+		 if (hDir == INVALID_HANDLE_VALUE)
+		   {
+		     /* No match, append arg as-is. */
+		     append_arg (&argc_expanded, wargv[k], &gnat_argv, &last);
+		   }
+		 else
+		   {
+		     /* Append first match and all remaining ones.  */
+
+		     do {
+		       append_arg (&argc_expanded,
+				   FileData.cFileName, &gnat_argv, &last);
+		     } while (FindNextFile (hDir, &FileData));
+
+		     FindClose (hDir);
+		   }
+	       }
+	     else
+	       {
+		 /*  No wildcard. Store parameter as-is. */
+		 append_arg (&argc_expanded, wargv[k], &gnat_argv, &last);
+	       }
 	   }
 
 	 LocalFree (wargv);
-	 gnat_argc = wargc;
+	 gnat_argc = argc_expanded;
+	 adjust_arg (argc_expanded, &gnat_argv);
        }
-    }
+   }
+#endif
 
    /* Note that we do not activate this for the compiler itself to avoid a
       bootstrap path problem.  Older version of gnatbind will generate a call

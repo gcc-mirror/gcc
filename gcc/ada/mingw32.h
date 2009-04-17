@@ -93,6 +93,8 @@ extern UINT CurrentCodePage;
 #define WS2S(str,wstr,len) \
    WideCharToMultiByte (CP_ACP,0,wstr,-1,str,len,NULL,NULL)
 #else
+#define S2WSC(wstr,str,len) strncpy(wstr,str,len)
+#define WS2SC(str,wstr,len) strncpy(str,wstr,len)
 #define S2WSU(wstr,str,len) strncpy(wstr,str,len)
 #define WS2SU(str,wstr,len) strncpy(str,wstr,len)
 #define S2WS(wstr,str,len) strncpy(wstr,str,len)

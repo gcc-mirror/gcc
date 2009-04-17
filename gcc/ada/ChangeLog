@@ -1,3 +1,11 @@
+2009-04-17  Pascal Obry  <obry@adacore.com>
+
+	* initialize.c: Do not get Unicode command line if Unicode support not
+	activated.
+	Add support for wildcard expansion for Unicode parameters on Win32.
+
+	* mingw32.h: Add missing macros when Unicode support not activated.
+
 2009-04-17  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch6.adb (Check_Anonymous_Return): Add missing checks to
