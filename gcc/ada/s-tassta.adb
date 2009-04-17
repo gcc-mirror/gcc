@@ -938,7 +938,7 @@ package body System.Tasking.Stages is
       Initialization.Undefer_Abort (Self_ID);
    end Move_Activation_Chain;
 
-   --  Compiler interface only. Do not call from within the RTS.
+   --  Compiler interface only. Do not call from within the RTS
 
    --------------------
    -- Set_Entry_Name --

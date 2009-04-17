@@ -46,9 +46,7 @@
 --       or
 --     String_Output_Blk_IO (Some_Stream, Some_String);
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 with Ada.Streams;
 

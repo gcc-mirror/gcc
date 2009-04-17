@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2006, AdaCore                     --
+--                     Copyright (C) 2000-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,32 +47,17 @@ package body GNAT.Most_Recent_Exception is
       use type Ada.Exceptions.Exception_Occurrence_Access;
 
    begin
-      pragma Warnings (Off);
-      if EOA = null then
-         return Ada.Exceptions.Null_Occurrence;
-      else
-         return EOA.all;
-      end if;
-      pragma Warnings (On);
-
-      --  ???Note that both of the above return statements violate the Ada
-      --  2005 rule forbidding copying of limited objects (see RM-7.5(2.8/2)).
-      --  When compiled with -gnatg, the compiler gives a warning instead of
-      --  an error, so we can turn it off.
-      --  To fix this, remove the pragmas Warnings above, and use the following
-      --  code. We can't do that yet, because AI-318 is not yet implemented.
-      --
-      --  return Result : Ada.Exceptions.Exception_Occurrence do
-      --     if EOA = null then
-      --        Ada.Exceptions.Save_Occurrence
-      --          (Target => Result,
-      --           Source => Ada.Exceptions.Null_Occurrence);
-      --     else
-      --        Ada.Exceptions.Save_Occurrence
-      --          (Target => Result,
-      --           Source => EOA.all);
-      --     end if;
-      --  end return;
+      return Result : Ada.Exceptions.Exception_Occurrence do
+         if EOA = null then
+            Ada.Exceptions.Save_Occurrence
+              (Target => Result,
+               Source => Ada.Exceptions.Null_Occurrence);
+         else
+            Ada.Exceptions.Save_Occurrence
+              (Target => Result,
+               Source => EOA.all);
+         end if;
+      end return;
    end Occurrence;
 
    -----------------------

@@ -105,6 +105,7 @@ package System.Aux_DEC is
    --  Floating point type declarations for VAX floating point data types
 
    pragma Warnings (Off);
+   --  ??? needs comment
 
    type F_Float is digits 6;
    pragma Float_Representation (VAX_Float, F_Float);

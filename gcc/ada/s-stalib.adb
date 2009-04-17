@@ -29,9 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 --  The purpose of this body is simply to ensure that the two with'ed units
 --  are properly included in the link. They are not with'ed from the spec
@@ -43,7 +41,8 @@ pragma Polling (Off);
 --  elaboration circularities with Ada.Exceptions if polling is on.
 
 pragma Warnings (Off);
---  Kill warnings from unused withs
+--  Kill warnings from unused withs. These unused with's are here to make
+--  sure the relevant units are loaded and properly elaborated.
 
 with System.Soft_Links;
 --  Referenced directly from generated code using external symbols so it

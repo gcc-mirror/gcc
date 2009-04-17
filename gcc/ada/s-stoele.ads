@@ -37,9 +37,7 @@
 --  extra declarations that can be introduced into System using Extend_System.
 --  It is a good idea to avoid use clauses for this package!
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 package System.Storage_Elements is
    pragma Pure;
@@ -66,12 +64,8 @@ package System.Storage_Elements is
    type Storage_Element is mod 2 ** Storage_Unit;
    for Storage_Element'Size use Storage_Unit;
 
-   pragma Warnings (Off);
    pragma Universal_Aliasing (Storage_Element);
-   pragma Warnings (On);
-   --  This type is used by the expansion to implement aggregate copy.
-   --  We turn off warnings for this pragma to deal with being compiled
-   --  with an earlier GNAT version that does not recognize this pragma.
+   --  This type is used by the expander to implement aggregate copy
 
    type Storage_Array is
      array (Storage_Offset range <>) of aliased Storage_Element;

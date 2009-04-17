@@ -45,8 +45,11 @@ package body Prepcomp is
 
    Source_Index_Of_Preproc_Data_File : Source_File_Index := No_Source_File;
 
-   --  The following variable should be a constant, but this is not
-   --  possible. Warnings are Off because it is never assigned a value.
+   --  The following variable should be a constant, but this is not possible
+   --  because its type GNAT.Dynamic_Tables.Instance has a component P of
+   --  unitialized private type GNAT.Dynamic_Tables.Table_Private and there are
+   --  no exported values for this private type.
+   --  Warnings are Off because it is never assigned a value.
 
    pragma Warnings (Off);
    No_Mapping : Prep.Symbol_Table.Instance;

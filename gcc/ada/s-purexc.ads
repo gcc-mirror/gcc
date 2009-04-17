@@ -33,9 +33,7 @@
 --  an exception message. It can be used from Pure units. This unit is for
 --  internal use only, it is not generally available to applications.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 package System.Pure_Exceptions is
    pragma Pure;

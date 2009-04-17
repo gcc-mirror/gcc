@@ -35,9 +35,7 @@
 --  which now generates concatenation inline. It is retained only because
 --  it may be used during bootstrapping using old versions of the compiler.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 package System.String_Ops_Concat_3 is
    pragma Pure;

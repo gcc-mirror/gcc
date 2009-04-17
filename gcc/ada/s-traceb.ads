@@ -29,14 +29,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides a method for generating a traceback of the
---  current execution location. The traceback shows the locations of
---  calls in the call chain, up to either the top or a designated
---  number of levels.
+--  This package provides a method for generating a traceback of the current
+--  execution location. The traceback shows the locations of calls in the call
+--  chain, up to either the top or a designated number of levels.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
@@ -61,12 +58,11 @@ package System.Traceback is
    --    Traceback is the address of an array of addresses where the
    --    result will be stored.
    --
-   --    Max_Len is the length of the Traceback array. If the call chain
-   --    is longer than this, then additional entries are discarded, and
-   --    the traceback is missing some of the highest level entries.
+   --    Max_Len is the length of the Traceback array. If the call chain is
+   --    longer than this, then additional entries are discarded, and the
+   --    traceback is missing some of the highest level entries.
    --
-   --    Len is the returned actual number of addresses stored
-   --    in the Traceback array.
+   --    Len is the returned number of addresses stored in the Traceback array
    --
    --    Exclude_Min/Exclude_Max, if non null, provide a range of addresses
    --    to ignore from the computation of the traceback.
@@ -77,9 +73,9 @@ package System.Traceback is
    --    this procedure, 2 means 1 + exclude the frame for this procedure's
    --    caller, ...
    --
-   --  On return, the Traceback array is filled in, and Len indicates
-   --  the number of stored entries. The first entry is the most recent
-   --  call, and the last entry is the highest level call.
+   --  On return, the Traceback array is filled in, and Len indicates the
+   --  number of stored entries. The first entry is the most recent call,
+   --  and the last entry is the highest level call.
 
    function C_Call_Chain
      (Traceback : System.Address;

@@ -37,11 +37,6 @@
 --  initialized to non-tasking versions, and then if the tasking support is
 --  initialized, they are set to the real tasking versions.
 
-pragma Warnings (Off);
---  When compiling this package with older compilers, there are many warnings,
---  so we suppress them throughout most of this file. Pragmas Compiler_Unit,
---  Preelaborate_05, and Favor_Top_Level are not supported by older compilers.
-
 pragma Compiler_Unit;
 
 with Ada.Exceptions;
@@ -130,7 +125,6 @@ package System.Soft_Links is
                Len       : Natural)
                return      String;
    pragma Favor_Top_Level (Traceback_Decorator_Wrapper_Call);
-   pragma Warnings (On);
 
    --  Declarations for the no tasking versions of the required routines
 
@@ -312,35 +306,35 @@ package System.Soft_Links is
    ------------------------
 
    --  Here we define a single type that encapsulates the various task
-   --  specific data. This type is used to store the necessary data into
-   --  the Task_Control_Block or into a global variable in the non tasking
-   --  case.
+   --  specific data. This type is used to store the necessary data into the
+   --  Task_Control_Block or into a global variable in the non tasking case.
 
    type TSD is record
       Pri_Stack_Info : aliased Stack_Checking.Stack_Info;
-      --  Information on stack (Base/Limit/Size) that is used
-      --  by System.Stack_Checking. If this TSD does not belong to
-      --  the environment task, the Size field must be initialized
-      --  to the tasks requested stack size before the task can do
-      --  its first stack check.
+      --  Information on stack (Base/Limit/Size) used by System.Stack_Checking.
+      --  If this TSD does not belong to the environment task, the Size field
+      --  must be initialized to the tasks requested stack size before the task
+      --  can do its first stack check.
 
       pragma Warnings (Off);
+      --  Needed because we are giving a non-static default to an object in
+      --  a preelaborated unit, which is formally not permitted, but OK here.
+
       Jmpbuf_Address : System.Address := System.Null_Address;
-      --  Address of jump buffer used to store the address of the
-      --  current longjmp/setjmp buffer for exception management.
-      --  These buffers are threaded into a stack, and the address
-      --  here is the top of the stack. A null address means that
-      --  no exception handler is currently active.
+      --  Address of jump buffer used to store the address of the current
+      --  longjmp/setjmp buffer for exception management. These buffers are
+      --  threaded into a stack, and the address here is the top of the stack.
+      --  A null address means that no exception handler is currently active.
 
       Sec_Stack_Addr : System.Address := System.Null_Address;
       pragma Warnings (On);
       --  Address of currently allocated secondary stack
 
       Current_Excep : aliased EO;
-      --  Exception occurrence that contains the information for the
-      --  current exception. Note that any exception in the same task
-      --  destroys this information, so the data in this variable must
-      --  be copied out before another exception can occur.
+      --  Exception occurrence that contains the information for the current
+      --  exception. Note that any exception in the same task destroys this
+      --  information, so the data in this variable must be copied out before
+      --  another exception can occur.
       --
       --  Also act as a list of the active exceptions in the case of the GCC
       --  exception mechanism, organized as a stack with the most recent first.
