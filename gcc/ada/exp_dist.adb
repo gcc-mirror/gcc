@@ -3645,9 +3645,7 @@ package body Exp_Dist is
         (Vis_Decl : Node_Id;
          RAS_Type : Entity_Id)
       is
-         pragma Warnings (Off);
          pragma Unreferenced (RAS_Type);
-         pragma Warnings (On);
       begin
          Add_RAS_Access_TSS (Vis_Decl);
       end Add_RAST_Features;
@@ -4111,10 +4109,8 @@ package body Exp_Dist is
          --  List of statements for extra formal parameters. It will appear
          --  after the regular statements for writing out parameters.
 
-         pragma Warnings (Off);
          pragma Unreferenced (RACW_Type);
          --  Used only for the PolyORB case
-         pragma Warnings (On);
 
       begin
          --  The general form of a calling stub for a given subprogram is:
@@ -5601,9 +5597,7 @@ package body Exp_Dist is
          RPC_Receiver_Decl : Node_Id;
          Body_Decls        : List_Id)
       is
-         pragma Warnings (Off);
          pragma Unreferenced (RPC_Receiver_Decl);
-         pragma Warnings (On);
 
       begin
          Add_RACW_From_Any
@@ -5730,9 +5724,8 @@ package body Exp_Dist is
          Stub_Type_Access : Entity_Id;
          Body_Decls       : List_Id)
       is
-         pragma Warnings (Off);
          pragma Unreferenced (Stub_Type, Stub_Type_Access);
-         pragma Warnings (On);
+
          Loc : constant Source_Ptr := Sloc (RACW_Type);
 
          Proc_Decl : Node_Id;
@@ -6047,9 +6040,7 @@ package body Exp_Dist is
          Stub_Type_Access : Entity_Id;
          Body_Decls       : List_Id)
       is
-         pragma Warnings (Off);
          pragma Unreferenced (Stub_Type, Stub_Type_Access);
-         pragma Warnings (On);
 
          Loc : constant Source_Ptr := Sloc (RACW_Type);
 
@@ -7629,9 +7620,8 @@ package body Exp_Dist is
          RPC_Receiver_Decl : out Node_Id)
       is
          Loc : constant Source_Ptr := Sloc (Stub_Type);
-         pragma Warnings (Off);
+
          pragma Unreferenced (RACW_Type);
-         pragma Warnings (On);
 
       begin
          Stub_Type_Decl :=
@@ -9894,9 +9884,7 @@ package body Exp_Dist is
                      Counter : Entity_Id;
                      Datum   : Node_Id)
                   is
-                     pragma Warnings (Off);
                      pragma Unreferenced (Counter);
-                     pragma Warnings (On);
 
                      Element_Any : Node_Id;
 
@@ -10387,9 +10375,7 @@ package body Exp_Dist is
                Rec     : Entity_Id;
                Field   : Node_Id)
             is
-               pragma Warnings (Off);
                pragma Unreferenced (Any, Counter, Rec);
-               pragma Warnings (On);
 
             begin
                if Nkind (Field) = N_Defining_Identifier then

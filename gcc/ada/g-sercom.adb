@@ -67,7 +67,8 @@ package body GNAT.Serial_Communications is
 
    procedure Open
      (Port : out Serial_Port;
-      Name : Port_Name) is
+      Name : Port_Name)
+   is
    begin
       Unimplemented;
    end Open;
@@ -83,7 +84,8 @@ package body GNAT.Serial_Communications is
       Stop_Bits : Stop_Bits_Number := One;
       Parity    : Parity_Check     := None;
       Block     : Boolean          := True;
-      Timeout   : Duration         := 10.0) is
+      Timeout   : Duration         := 10.0)
+   is
    begin
       Unimplemented;
    end Set;
@@ -95,7 +97,8 @@ package body GNAT.Serial_Communications is
    overriding procedure Read
      (Port   : in out Serial_Port;
       Buffer : out Stream_Element_Array;
-      Last   : out Stream_Element_Offset) is
+      Last   : out Stream_Element_Offset)
+   is
    begin
       Unimplemented;
    end Read;
@@ -106,7 +109,8 @@ package body GNAT.Serial_Communications is
 
    overriding procedure Write
      (Port   : in out Serial_Port;
-      Buffer : Stream_Element_Array) is
+      Buffer : Stream_Element_Array)
+   is
    begin
       Unimplemented;
    end Write;

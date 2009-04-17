@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2007, AdaCore                     --
+--                     Copyright (C) 1998-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,9 +39,7 @@
 --  codes for ASCII characters in the range 16#20#..16#7F# have their normal
 --  expected encoding values (e.g. the Pos value 16#31# must be digit 1).
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 package GNAT.Spelling_Checker_Generic is
    pragma Pure;

@@ -1158,9 +1158,8 @@ package body Exp_Imgv is
             --  as is done with other ZFP violations.
 
             declare
-               pragma Warnings (Off); -- since Discard is unreferenced
                Discard : constant Entity_Id := RTE (RE_Null);
-               pragma Warnings (On);
+               pragma Unreferenced (Discard);
             begin
                return;
             end;

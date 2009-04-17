@@ -300,7 +300,7 @@ package body Osint is
 
          Status : Boolean;
          pragma Warnings (Off, Status);
-         --  For the call to Close
+         --  For the call to Close where status is ignored
 
       begin
          File_FD := Open_Read (Buffer'Address, Binary);

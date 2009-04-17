@@ -38,14 +38,10 @@ package Interfaces.C.Strings is
 
    type char_array_access is access all char_array;
 
-   pragma Warnings (Off);
    pragma No_Strict_Aliasing (char_array_access);
-   pragma Warnings (On);
    --  Since this type is used for external interfacing, with the pointer
    --  coming from who knows where, it seems a good idea to turn off any
-   --  strict aliasing assumptions for this type. We turn off warnings for
-   --  this pragma to deal with being compiled with an earlier GNAT version
-   --  that does not recognize this pragma.
+   --  strict aliasing assumptions for this type.
 
    type chars_ptr is private;
 

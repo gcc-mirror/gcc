@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2007, AdaCore                     --
+--                     Copyright (C) 1998-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 with GNAT.Spelling_Checker_Generic;
 

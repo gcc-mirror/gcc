@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2007, AdaCore                     --
+--                     Copyright (C) 1998-2008, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,9 +36,7 @@
 --  This package provides a utility routine for checking for bad spellings
 --  for the case of System.WCh_Cnv.UTF_32_String arguments.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 with System.WCh_Cnv;
 

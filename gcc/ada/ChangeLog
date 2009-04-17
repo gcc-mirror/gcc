@@ -1,5 +1,21 @@
 2009-04-17  Robert Dewar  <dewar@adacore.com>
 
+	* s-conca5.adb, g-sercom.adb, s-conca5.ads, s-conca7.adb, exp_imgv.adb,
+	s-conca7.ads, s-crc32.adb, s-crc32.ads, s-conca9.adb, s-conca9.ads,
+	s-addope.adb, i-cstrin.ads, s-addope.ads, s-carun8.adb, s-carun8.ads,
+	g-htable.ads, g-hesora.adb, g-hesora.ads, s-htable.adb, s-htable.ads,
+	s-conca2.adb, s-conca2.ads, a-except.adb, s-conca4.adb, a-except.ads,
+	s-conca4.ads, s-except.adb, s-except.ads, s-conca6.adb, s-conca6.ads,
+	g-spchge.adb, g-spchge.ads, g-u3spch.adb, g-u3spch.ads, s-conca8.adb,
+	s-conca8.ads, g-byorma.adb, g-byorma.ads, s-memory.adb, s-memory.ads,
+	g-speche.adb, g-speche.ads, g-stsifd-sockets.adb, exp_dist.adb,
+	s-imgenu.adb, s-imgenu.ads, s-mastop.adb, s-mastop.ads, s-exctab.adb,
+	s-exctab.ads, s-imenne.adb, s-imenne.ads, s-casuti.adb, osint.adb,
+	s-assert.adb, s-casuti.ads, s-assert.ads, s-os_lib.adb, s-conca3.adb,
+	s-conca3.ads: Remove unneeded pragma Warnings
+
+2009-04-17  Robert Dewar  <dewar@adacore.com>
+
 	* g-moreex.adb: Add comments.
 
 	* s-auxdec.ads: Add ??? comment for uncommented pragma Warnings (Off)

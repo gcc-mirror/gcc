@@ -32,9 +32,7 @@
 --  This package contains a procedure for runtime concatenation of eight string
 --  operands. It is used when we want to save space in the generated code.
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 package System.Concat_8 is
 
