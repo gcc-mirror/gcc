@@ -234,7 +234,7 @@ get_lineno (const_gimple stmt)
     return -1;
 
   loc = gimple_location (stmt);
-  if (loc != UNKNOWN_LOCATION)
+  if (loc == UNKNOWN_LOCATION)
     return -1;
 
   return LOCATION_LINE (loc);
