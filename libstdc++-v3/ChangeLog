@@ -1,3 +1,7 @@
+2009-04-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Regenerated.
+
 2009-04-16  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/forward_list.h: Remove default std::allocator<_Tp>
@@ -6312,8 +6316,7 @@
 
 	* config/abi/post/mips64-linux-gnu/baseline_symbols.txt:
 	Regenerate
-	* config/abi/post/mips64-linux-gnu/64/baseline_symbols.txt: New
-	file.
+	* config/abi/post/mips64-linux-gnu/64/baseline_symbols.txt: New file.
 
 2009-04-07  Jason Merrill  <jason@redhat.com>
 
