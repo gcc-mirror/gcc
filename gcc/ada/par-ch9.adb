@@ -736,9 +736,16 @@ package body Ch9 is
          if Token = Tok_Entry or else Bad_Spelling_Of (Tok_Entry) then
             Append (P_Entry_Body, Item_List);
 
+         --  If the operation starts with procedure, function, or an overriding
+         --  indicator ("overriding" or "not overriding"), parse a subprogram.
+
          elsif Token = Tok_Function or else Bad_Spelling_Of (Tok_Function)
                  or else
                Token = Tok_Procedure or else Bad_Spelling_Of (Tok_Procedure)
+                 or else
+               Token = Tok_Overriding or else Bad_Spelling_Of (Tok_Overriding)
+                 or else
+               Token = Tok_Not or else Bad_Spelling_Of (Tok_Not)
          then
             Append (P_Subprogram (Pf_Decl_Pbod), Item_List);
 

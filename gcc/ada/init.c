@@ -2144,7 +2144,7 @@ __gnat_error_handler (int sig, siginfo_t * si, void * uc)
     {
     case SIGSEGV:
     case SIGBUS:
-      if (__gnat_is_stack_guard ((mach_vm_address_t)si->si_addr))
+      if (__gnat_is_stack_guard ((unsigned long)si->si_addr))
 	{
 	  exception = &storage_error;
 	  msg = "stack overflow";

@@ -1,3 +1,41 @@
+2009-04-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* par-ch6.adb (P_Subprogram): Overriding indicators should be allowed
+	on protected subprogram bodies, so exclude the case where Pf_Flags is
+	Pf_Decl_Pbod from the error check.
+
+	* par-ch9.adb (P_Protected_Operation_Items): Permit overriding
+	indicators on subprograms in protected bodies, and proceed with parsing
+	the subprogram.
+
+	* sem_ch6.adb (Verify_Overriding_Indicator): Exclude protected
+	subprograms from the check for primitiveness on subprograms with
+	overriding indicators.
+	(Check_Overriding_Indicator): Include protected subprograms in the
+	style check for missing overriding indicators.
+
+2009-04-17  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c: Fix stack checking for x86 Darwin.
+
+2009-04-17  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New project level attribute Object_File_Suffix
+	(<language>).
+	
+	* prj-nmsc.adb (Add_Source): Use the object file suffix to get the
+	object file name
+	(Process_Compiler): Process attribute Object_File_Suffix
+
+	* prj.adb (Object_Name): Use suffix Object_File_Suffix instead of
+	platform suffix, when specified.
+
+	* prj.ads (Language_Config): New component Object_File_Suffix,
+	defaulted to No_Name.
+	(Object_Name): New parameter Object_File_Suffix, defaulted to No_Name
+
+	* snames.ads-tmpl: New standard name Object_File_Suffix
+
 2009-04-17  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Add documentation about No_Streams restriction
