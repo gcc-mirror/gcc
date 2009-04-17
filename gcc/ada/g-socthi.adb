@@ -98,13 +98,6 @@ package body GNAT.Sockets.Thin is
       Fromlen : not null access C.int) return C.int;
    pragma Import (C, Syscall_Recvfrom, "recvfrom");
 
-   function Syscall_Send
-     (S     : C.int;
-      Msg   : System.Address;
-      Len   : C.int;
-      Flags : C.int) return C.int;
-   pragma Import (C, Syscall_Send, "send");
-
    function Syscall_Sendto
      (S     : C.int;
       Msg   : System.Address;
@@ -302,31 +295,6 @@ package body GNAT.Sockets.Thin is
 
       return Res;
    end C_Recvfrom;
-
-   ------------
-   -- C_Send --
-   ------------
-
-   function C_Send
-     (S     : C.int;
-      Msg   : System.Address;
-      Len   : C.int;
-      Flags : C.int) return C.int
-   is
-      Res : C.int;
-
-   begin
-      loop
-         Res := Syscall_Send (S, Msg, Len, Flags);
-         exit when SOSC.Thread_Blocking_IO
-           or else Res /= Failure
-           or else Non_Blocking_Socket (S)
-           or else Errno /= SOSC.EWOULDBLOCK;
-         delay Quantum;
-      end loop;
-
-      return Res;
-   end C_Send;
 
    --------------
    -- C_Sendto --

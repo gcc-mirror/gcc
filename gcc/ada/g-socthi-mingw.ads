@@ -153,12 +153,6 @@ package GNAT.Sockets.Thin is
       Exceptfds : access Fd_Set;
       Timeout   : Timeval_Access) return C.int;
 
-   function C_Send
-     (S     : C.int;
-      Msg   : System.Address;
-      Len   : C.int;
-      Flags : C.int) return C.int;
-
    function C_Sendto
      (S     : C.int;
       Msg   : System.Address;
@@ -243,7 +237,6 @@ private
    pragma Import (Stdcall, C_Listen, "listen");
    pragma Import (Stdcall, C_Recv, "recv");
    pragma Import (Stdcall, C_Recvfrom, "recvfrom");
-   pragma Import (Stdcall, C_Send, "send");
    pragma Import (Stdcall, C_Sendto, "sendto");
    pragma Import (Stdcall, C_Setsockopt, "setsockopt");
    pragma Import (Stdcall, C_Shutdown, "shutdown");
