@@ -29,9 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get an
@@ -309,7 +307,7 @@ package body System.Soft_Links is
    -------------------------
 
    procedure Task_Termination_NT (Excep : EO) is
-      pragma Warnings (Off, Excep);
+      pragma Unreferenced (Excep);
    begin
       null;
    end Task_Termination_NT;

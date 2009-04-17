@@ -23,14 +23,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This program generates the spec of System.OS_Constants (s-oscons.ads).
+--  This program generates the spec of System.OS_Constants (s-oscons.ads)
 
 --  It works in conjunction with a C template file which must be pre-processed
 --  and compiled using the cross compiler. Two input files are used:
 --    - the preprocessed C file: s-oscons-tmplt.i
 --    - the generated assembly file: s-oscons-tmplt.s
 
---  The contents of s-oscons.ads is written on standard output.
+--  The contents of s-oscons.ads is written on standard output
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Exceptions;          use Ada.Exceptions;

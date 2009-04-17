@@ -29,9 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 --  As noted in the spec, this dummy body is present because otherwise we
 --  have bootstrapping path problems (there used to be a real body).

@@ -35,13 +35,6 @@
 
 with Types; use Types;
 
---  Do we really need the with of Namet?
-
-pragma Warnings (Off);
-with Namet; use Namet;
-pragma Elaborate_All (Namet);
-pragma Warnings (On);
-
 package Stand is
 
    type Standard_Entity_Type is (

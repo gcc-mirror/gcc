@@ -276,8 +276,7 @@ package body Ada.Task_Attributes is
    --  For reference to directly addressed task attributes
 
    pragma Warnings (On);
-   --  End of warnings off region for directly addressed
-   --  attribute conversion functions.
+   --  End warnings off region for directly addressed attribute conversions
 
    function To_Access_Address is new Ada.Unchecked_Conversion
      (Access_Node, Access_Address);
@@ -306,8 +305,6 @@ package body Ada.Task_Attributes is
    function To_Lib_Level_Deallocator is new Ada.Unchecked_Conversion
      (Local_Deallocator, Deallocator);
    --  To defeat accessibility check
-
-   pragma Warnings (On);
 
    ------------------------
    -- Storage Management --

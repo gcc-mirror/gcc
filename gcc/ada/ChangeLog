@@ -1,3 +1,38 @@
+2009-04-17  Robert Dewar  <dewar@adacore.com>
+
+	* g-moreex.adb: Add comments.
+
+	* s-auxdec.ads: Add ??? comment for uncommented pragma Warnings (Off)
+
+	* s-auxdec-vms_64.ads: Add ??? comment for uncommented pragma
+	Warnings (Off)
+
+	* prepcomp.adb: Add ??? comment
+
+	* a-tasatt.adb: Minor reformatting
+
+	* g-trasym-vms-alpha.adb: Add ??? comment
+
+	* g-trasym-vms-ia64.adb: Add ??? comment
+
+	* xoscons.adb: Minor reformatting
+
+	* s-tassta.adb: Minor reformatting
+
+	* s-scaval.adb: Add ??? comment
+
+	* stand.ads: Minor code clean up (remove junk with of Namet)
+
+	* s-strcom.adb, s-strcom.ads, s-string.adb, s-string.ads, s-sopco3.adb,
+	s-sopco3.ads, s-strops.adb, s-strops.ads, s-sopco5.adb, s-sopco5.ads,
+	s-wchcnv.adb, s-wchcnv.ads, s-ststop.adb, s-ststop.ads, s-soflin.adb,
+	s-soflin.ads, s-traceb.adb, s-traceb.ads, s-traent.adb, s-traent.ads,
+	s-secsta.adb, s-secsta.ads, s-utf_32.adb, s-utf_32.ads, s-wchcon.adb,
+	s-wchjis.adb, s-wchcon.ads, s-wchjis.ads, s-sopco4.adb, s-sopco4.ads,
+	s-stache.adb, s-stache.ads, s-stoele.adb, s-stoele.ads, s-stalib.adb,
+	s-stalib.ads, s-os_lib.ads, s-purexc.ads: Remove no longer needed
+	Warnings off pragmas.
+
 2009-04-17  Pascal Obry  <obry@adacore.com>
 
 	* initialize.c: Fix test for reallocating the arguments array.

@@ -39,7 +39,7 @@ with System.Traceback_Entries;
 
 package body GNAT.Traceback.Symbolic is
 
-   pragma Warnings (Off);
+   pragma Warnings (Off); --  ??? needs comment
    pragma Linker_Options ("--for-linker=sys$library:trace.exe");
 
    use System;

@@ -35,9 +35,7 @@
 --  be used by other predefined packages. User access to this package is via
 --  a renaming of this package in GNAT.String (file g-string.ads).
 
-pragma Warnings (Off);
 pragma Compiler_Unit;
-pragma Warnings (On);
 
 with Ada.Unchecked_Deallocation;
 

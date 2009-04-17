@@ -71,7 +71,7 @@ package body System.Scalar_Values is
       --  On other targets the type is 8 bytes, and type Byte8 is used for
       --  values that are then converted to ByteLF.
 
-      pragma Warnings (Off);
+      pragma Warnings (Off); --  why ???
       function To_ByteLF is new Ada.Unchecked_Conversion (Byte8, ByteLF);
       pragma Warnings (On);
 
