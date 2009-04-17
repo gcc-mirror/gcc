@@ -1,3 +1,18 @@
+2009-04-17  Thomas Quinot  <quinot@adacore.com>
+
+	PR ada/35953
+
+	* g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.adb,
+	g-socthi-vxworks.ads, g-socthi-mingw.adb, g-socthi-mingw.ads,
+	g-socthi.adb, g-stsifd-sockets.adb, g-socthi.ads, g-socket.adb,
+	g-socket.ads (GNAT.Sockets.Thin.C_Send,
+	GNAT.Sockets.Thin.Syscall_Send): Remove unused subprograms.
+	Replace calls to send(2) with equivalent sendto(2) calls.
+	(GNAT.Sockets.Send_Socket): Factor common code in inlined subprogram.
+	(GNAT.Sockets.Write): Account for the case of hyper-empty arrays, do not
+	report an error in that case. Factor code common to the two versions
+	(datagram and stream) in common routine Stream_Write.
+
 2009-04-17  Robert Dewar  <dewar@adacore.com>
 
 	* exp_disp.adb: Minor reformatting

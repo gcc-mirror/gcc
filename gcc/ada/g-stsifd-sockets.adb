@@ -226,7 +226,11 @@ package body Signalling_Fds is
    function Write (Wsig : C.int) return C.int is
       Buf : aliased Character := ASCII.NUL;
    begin
-      return C_Send (Wsig, Buf'Address, 1, SOSC.MSG_Forced_Flags);
+      return C_Sendto
+        (Wsig, Buf'Address, 1,
+         Flags => SOSC.MSG_Forced_Flags,
+         To    => null,
+         Tolen =>  0);
    end Write;
 
 end Signalling_Fds;

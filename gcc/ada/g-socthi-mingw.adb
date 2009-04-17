@@ -390,11 +390,13 @@ package body GNAT.Sockets.Thin is
 
    begin
       for J in Iovec'Range loop
-         Res := C_Send
+         Res := C_Sendto
            (Fd,
             Iovec (J).Base.all'Address,
             C.int (Iovec (J).Length),
-            0);
+            Flags => 0,
+            To    => null,
+            Tolen => 0);
 
          if Res < 0 then
             return Res;

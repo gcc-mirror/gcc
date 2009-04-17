@@ -155,12 +155,6 @@ package GNAT.Sockets.Thin is
       Exceptfds : access Fd_Set;
       Timeout   : Timeval_Access) return C.int;
 
-   function C_Send
-     (S     : C.int;
-      Msg   : System.Address;
-      Len   : C.int;
-      Flags : C.int) return C.int;
-
    function C_Sendto
      (S     : C.int;
       Msg   : System.Address;
