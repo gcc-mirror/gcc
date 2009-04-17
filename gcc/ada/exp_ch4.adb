@@ -977,15 +977,14 @@ package body Exp_Ch4 is
             Rewrite (Exp, New_Copy (Expression (Exp)));
          end if;
       else
-         --  First check against the type of the qualified expression
-         --
-         --  NOTE: The commented call should be correct, but for some reason
-         --  causes the compiler to bomb (sigsegv) on ACVC test c34007g, so for
-         --  now we just perform the old (incorrect) test against the
-         --  designated subtype with no sliding in the else part of the if
-         --  statement below. ???
-         --
-         --  Apply_Constraint_Check (Exp, T, No_Sliding => True);
+         --  If we have:
+         --    type A is access T1;
+         --    X : A := new T2'(...);
+         --  T1 and T2 can be different subtypes, and we might need to check
+         --  both constraints. First check against the type of the qualified
+         --  expression.
+
+         Apply_Constraint_Check (Exp, T, No_Sliding => True);
 
          --  A check is also needed in cases where the designated subtype is
          --  constrained and differs from the subtype given in the qualified
@@ -997,14 +996,6 @@ package body Exp_Ch4 is
          then
             Apply_Constraint_Check
               (Exp, DesigT, No_Sliding => False);
-
-         --  The nonsliding check should really be performed (unconditionally)
-         --  against the subtype of the qualified expression, but that causes a
-         --  problem with c34007g (see above), so for now we retain this.
-
-         else
-            Apply_Constraint_Check
-              (Exp, DesigT, No_Sliding => True);
          end if;
 
          --  For an access to unconstrained packed array, GIGI needs to see an

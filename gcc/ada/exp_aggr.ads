@@ -34,9 +34,9 @@ package Exp_Aggr is
    --  Returns True if N is an aggregate of some kind whose Expansion_Delayed
    --  flag is set (see sinfo for meaning of flag).
 
-   procedure Convert_Aggr_In_Object_Decl  (N : Node_Id);
-   --  N is a N_Object_Declaration with an expression which must be
-   --  an N_Aggregate or N_Extension_Aggregate with Expansion_Delayed
+   procedure Convert_Aggr_In_Object_Decl (N : Node_Id);
+   --  N is a N_Object_Declaration with an expression which must be an
+   --  N_Aggregate or N_Extension_Aggregate with Expansion_Delayed.
    --  This procedure performs in-place aggregate assignment.
 
    procedure Convert_Aggr_In_Allocator

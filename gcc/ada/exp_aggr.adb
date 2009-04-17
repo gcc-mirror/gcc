@@ -3506,10 +3506,10 @@ package body Exp_Aggr is
                  Is_Controlled (Typ) or else Has_Controlled_Component (Typ));
       end if;
 
-      --  If the aggregate is non-limited, create a temporary. If it is
-      --  limited and the context is an assignment, this is a subaggregate
-      --  for an enclosing aggregate being expanded. It must be built in place,
-      --  so use the target of the current assignment.
+      --  If the aggregate is non-limited, create a temporary. If it is limited
+      --  and the context is an assignment, this is a subaggregate for an
+      --  enclosing aggregate being expanded. It must be built in place, so use
+      --  the target of the current assignment.
 
       if Is_Limited_Type (Typ)
         and then Nkind (Parent (N)) = N_Assignment_Statement
@@ -4947,8 +4947,8 @@ package body Exp_Aggr is
 
       --  STEP 3
 
-      --  Delay expansion for nested aggregates it will be taken care of
-      --  when the parent aggregate is expanded
+      --  Delay expansion for nested aggregates: it will be taken care of
+      --  when the parent aggregate is expanded.
 
       Parent_Node := Parent (N);
       Parent_Kind := Nkind (Parent_Node);
@@ -4979,7 +4979,7 @@ package body Exp_Aggr is
 
       --  STEP 4
 
-      --  Look if in place aggregate expansion is possible
+      --  Look if in place aggregate expansion is possible.
 
       --  For object declarations we build the aggregate in place, unless
       --  the array is bit-packed or the component is controlled.
@@ -5018,8 +5018,8 @@ package body Exp_Aggr is
               and then In_Place_Assign_OK);
       end if;
 
-      --  If  this is an array of tasks, it will be expanded into build-in-
-      --  -place assignments. Build an activation chain for the tasks now
+      --  If this is an array of tasks, it will be expanded into build-in-place
+      --  assignments. Build an activation chain for the tasks now.
 
       if Has_Task (Etype (N)) then
          Build_Activation_Chain_Entity (N);
@@ -5114,8 +5114,8 @@ package body Exp_Aggr is
          Set_No_Initialization (Tmp_Decl, True);
 
          --  If we are within a loop, the temporary will be pushed on the
-         --  stack at each iteration. If the aggregate is the expression for
-         --  an allocator, it will be immediately copied to the heap and can
+         --  stack at each iteration. If the aggregate is the expression for an
+         --  allocator, it will be immediately copied to the heap and can
          --  be reclaimed at once. We create a transient scope around the
          --  aggregate for this purpose.
 
@@ -5128,9 +5128,9 @@ package body Exp_Aggr is
          Insert_Action (N, Tmp_Decl);
       end if;
 
-      --  Construct and insert the aggregate code. We can safely suppress
-      --  index checks because this code is guaranteed not to raise CE
-      --  on index checks. However we should *not* suppress all checks.
+      --  Construct and insert the aggregate code. We can safely suppress index
+      --  checks because this code is guaranteed not to raise CE on index
+      --  checks. However we should *not* suppress all checks.
 
       declare
          Target : Node_Id;
