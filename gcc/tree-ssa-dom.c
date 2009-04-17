@@ -1915,26 +1915,6 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi)
   return retval;
 }
 
-/* Return true if statement GS is an assignment that peforms a useless
-   type conversion.  It is is intended to be a tuples analog of function
-   tree_ssa_useless_type_conversion.  */
-
-static bool
-gimple_assign_unary_useless_conversion_p (gimple gs)
-{
-  if (is_gimple_assign (gs)
-      && (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (gs))
-          || gimple_assign_rhs_code (gs) == VIEW_CONVERT_EXPR
-          || gimple_assign_rhs_code (gs) == NON_LVALUE_EXPR))
-    {
-      tree lhs_type = TREE_TYPE (gimple_assign_lhs (gs));
-      tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (gs));
-      return useless_type_conversion_p (lhs_type, rhs_type);
-    }
-  
-  return false;
-}
-
 /* STMT, a GIMPLE_ASSIGN, may create certain equivalences, in either
    the available expressions table or the const_and_copies table.
    Detect and record those equivalences.  */
@@ -1953,14 +1933,10 @@ record_equivalences_from_stmt (gimple stmt, int may_optimize_p)
   lhs_code = TREE_CODE (lhs);
 
   if (lhs_code == SSA_NAME
-      && (gimple_assign_single_p (stmt)
-          || gimple_assign_unary_useless_conversion_p (stmt)))
+      && gimple_assign_single_p (stmt))
     {
       tree rhs = gimple_assign_rhs1 (stmt);
                
-      /* Strip away any useless type conversions.  */
-      STRIP_USELESS_TYPE_CONVERSION (rhs);
-
       /* If the RHS of the assignment is a constant or another variable that
 	 may be propagated, register it in the CONST_AND_COPIES table.  We
 	 do not need to record unwind data for this, since this is a true

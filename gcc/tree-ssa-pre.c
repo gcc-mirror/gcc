@@ -3981,8 +3981,10 @@ eliminate (void)
 		 value is constant, use that constant.  */
 	      if (!sprime && is_gimple_min_invariant (VN_INFO (lhs)->valnum))
 		{
-		  sprime = fold_convert (TREE_TYPE (lhs),
-					 VN_INFO (lhs)->valnum);
+		  sprime = VN_INFO (lhs)->valnum;
+		  if (!useless_type_conversion_p (TREE_TYPE (lhs),
+						  TREE_TYPE (sprime)))
+		    sprime = fold_convert (TREE_TYPE (lhs), sprime);
 
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
