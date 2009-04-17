@@ -4033,8 +4033,12 @@ package body Sem_Ch3 is
          --  pre-allocate a freeze node, and set the proper link to the first
          --  subtype. Freeze_Entity will use this preallocated freeze node when
          --  it freezes the entity.
+         --  This does not apply if the base type is a generic type, whose
+         --  declaration is independent of the current derived definition.
 
-         if B /= T then
+         if B /= T
+           and then not Is_Generic_Type (B)
+         then
             Ensure_Freeze_Node (B);
             Set_First_Subtype_Link (Freeze_Node (B), T);
          end if;
@@ -5055,22 +5059,36 @@ package body Sem_Ch3 is
             Hi : Node_Id;
 
          begin
-            Lo :=
-               Make_Attribute_Reference (Loc,
-                 Attribute_Name => Name_First,
-                 Prefix => New_Reference_To (Derived_Type, Loc));
-            Set_Etype (Lo, Derived_Type);
+            if Nkind (Indic) /= N_Subtype_Indication then
+               Lo :=
+                  Make_Attribute_Reference (Loc,
+                    Attribute_Name => Name_First,
+                    Prefix => New_Reference_To (Derived_Type, Loc));
+               Set_Etype (Lo, Derived_Type);
 
-            Hi :=
-               Make_Attribute_Reference (Loc,
-                 Attribute_Name => Name_Last,
-                 Prefix => New_Reference_To (Derived_Type, Loc));
-            Set_Etype (Hi, Derived_Type);
+               Hi :=
+                  Make_Attribute_Reference (Loc,
+                    Attribute_Name => Name_Last,
+                    Prefix => New_Reference_To (Derived_Type, Loc));
+               Set_Etype (Hi, Derived_Type);
 
-            Set_Scalar_Range (Derived_Type,
-               Make_Range (Loc,
-                 Low_Bound => Lo,
-                 High_Bound => Hi));
+               Set_Scalar_Range (Derived_Type,
+                  Make_Range (Loc,
+                    Low_Bound => Lo,
+                    High_Bound => Hi));
+            else
+
+               --   Analyze subtype indication and verify compatibility
+               --   with parent type.
+
+               if
+                  Base_Type
+                    (Process_Subtype (Indic, N)) /= Base_Type (Parent_Type)
+               then
+                  Error_Msg_N
+                    ("illegal constraint for formal discrete type", N);
+               end if;
+            end if;
          end;
 
       else
