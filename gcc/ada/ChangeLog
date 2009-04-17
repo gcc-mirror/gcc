@@ -1,3 +1,8 @@
+2009-04-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Enumeration_Type): Diagnose properly
+	illegal constraints on type derived from formal discrete types.
+
 2009-04-17  Thomas Quinot  <quinot@adacore.com>
 
 	PR ada/35953
