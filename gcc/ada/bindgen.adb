@@ -1456,6 +1456,17 @@ package body Bindgen is
 
          WBI ("   is");
 
+         --  ??? the following code needs commenting
+
+         if not Configurable_Run_Time_Mode then
+            WBI ("      procedure Init_Args");
+            WBI ("        (argc : Integer;");
+            WBI ("         argv : System.Address;");
+            WBI ("         envp : System.Address);");
+            WBI ("      pragma Import (C, Init_Args, ""__gnat_init_args"");");
+            WBI ("");
+         end if;
+
       else
          if Exit_Status_Supported_On_Target then
             Set_String (" return Integer is");
@@ -1569,9 +1580,16 @@ package body Bindgen is
       --  Acquire command line arguments if present on target
 
       if Command_Line_Args_On_Target then
-         WBI ("      gnat_argc := argc;");
-         WBI ("      gnat_argv := argv;");
-         WBI ("      gnat_envp := envp;");
+         if Configurable_Run_Time_Mode then
+            WBI ("      gnat_argc := argc;");
+            WBI ("      gnat_argv := argv;");
+            WBI ("      gnat_envp := envp;");
+
+         --  ??? this else needs a comment
+         else
+            WBI ("      Init_Args (argc, argv, envp);");
+         end if;
+
          WBI ("");
 
       --  If configurable run time and no command line args, then nothing
@@ -1732,9 +1750,16 @@ package body Bindgen is
       --  arguments are present on target
 
       if Command_Line_Args_On_Target then
-         WBI ("   gnat_argc = argc;");
-         WBI ("   gnat_argv = argv;");
-         WBI ("   gnat_envp = envp;");
+         if Configurable_Run_Time_Mode then
+            WBI ("   gnat_argc = argc;");
+            WBI ("   gnat_argv = argv;");
+            WBI ("   gnat_envp = envp;");
+
+         --  ??? this call must be commented
+         else
+            WBI ("   __gnat_init_args (argc, argv, envp);");
+         end if;
+
          WBI (" ");
 
       --  If configurable run-time, then nothing to do, since in this case
