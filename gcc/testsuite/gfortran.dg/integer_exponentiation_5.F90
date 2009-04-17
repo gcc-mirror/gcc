@@ -1,4 +1,5 @@
-! { dg-do run }
+! { dg-do run { xfail spu-*-* } }
+! FAILs on SPU because of invalid result of 1.0/0.0 inline code
 ! { dg-options "-fno-range-check" }
 ! { dg-options "-fno-range-check -mieee" { target alpha*-*-* } } */
 module mod_check

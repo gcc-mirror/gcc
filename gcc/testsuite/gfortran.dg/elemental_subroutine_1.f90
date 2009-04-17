@@ -48,7 +48,7 @@ end module pr22146
 ! Test an expression in the INTENT(IN) argument
   x = (/1.0, 2.0/)
   call foobar (cos (x) + u, y)
-  if (any(abs (y + cos (x) + u) .gt. 2.0e-6)) call abort ()
+  if (any(abs (y + cos (x) + u) .gt. 4.0e-6)) call abort ()
 
 contains
 

@@ -1,5 +1,35 @@
 2009-04-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
+	* gfortran.fortran-torture/execute/nan_inf_fmt.x: Skip on spu-*-*.
+	* gfortran.fortran-torture/execute/intrinsic_nearest.x: Likewise.
+	* gfortran.fortran-torture/execute/intrinsic_set_exponent.x: Likewise.
+	* gfortran.dg/nearest_1.f90: Likewise.
+	* gfortran.dg/nearest_3.f90: Likewise.
+	* gfortran.dg/isnan_1.f90: Likewise.
+	* gfortran.dg/isnan_2.f90: Likewise.
+	* gfortran.dg/nan_1.f90: Likewise.
+	* gfortran.dg/nan_2.f90: Likewise.
+	* gfortran.dg/nan_3.f90: Likewise.
+	* gfortran.dg/nan_4.f90: Likewise.
+	* gfortran.dg/module_nan.f90: Likewise.
+	* gfortran.dg/int_conv_2.f90: Likewise.
+	* gfortran.dg/init_flag_3.f90: Likewise.
+	* gfortran.dg/namelist_42.f90: Likewise.
+	* gfortran.dg/namelist_43.f90: Likewise.
+	* gfortran.dg/real_const_3.f90: Likewise.
+	* gfortran.dg/transfer_simplify_1.f90: Likewise.
+
+	* gfortran.dg/default_format_1.f90: XFAIL on spu-*-*.
+	* gfortran.dg/default_format_denormal_1.f90: XFAIL on spu-*-*.
+	* gfortran.dg/scalar_mask_2.f90: XFAIL on spu-*-*.
+	* gfortran.dg/integer_exponentiation_3.F90: XFAIL on spu-*-*.
+	* gfortran.dg/integer_exponentiation_5.F90: XFAIL on spu-*-*.
+
+	* gfortran.dg/elemental_subroutine_1.f90: Relax "epsilon" check.
+	* gfortran.dg/gamma_5.f90: Likewise.
+
+2009-04-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
 	* lib/gcc-dg.exp (gcc-dg-prune): Make linker message check
 	less strict so it also works with auto-overlay support.
 	* lib/gcc-defs.exp (${tool}_check_unsupported_p): Add check
