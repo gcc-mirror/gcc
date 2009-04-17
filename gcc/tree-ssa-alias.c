@@ -670,16 +670,6 @@ refs_may_alias_p_1 (tree ref1, tree ref2)
 		  || INDIRECT_REF_P (ref2)
 		  || TREE_CODE (ref2) == TARGET_MEM_REF));
 
-  /* Defer to TBAA if possible.  */
-  if (flag_strict_aliasing
-      && !alias_sets_conflict_p (get_alias_set (ref1), get_alias_set (ref2)))
-    return false;
-
-  /* If one reference is a TARGET_MEM_REF weird things are allowed.  */
-  if (TREE_CODE (ref1) == TARGET_MEM_REF
-      || TREE_CODE (ref2) == TARGET_MEM_REF)
-    return true;
-
   /* Decompose the references into their base objects and the access.  */
   base1 = get_ref_base_and_extent (ref1, &offset1, &size1, &max_size1);
   base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &max_size2);
@@ -693,14 +683,32 @@ refs_may_alias_p_1 (tree ref1, tree ref2)
       || is_gimple_min_invariant (base2))
     return false;
 
+  /* Defer to simple offset based disambiguation if we have
+     references based on two decls.  Do this before defering to
+     TBAA to handle must-alias cases in conformance with the
+     GCC extension of allowing type-punning through unions.  */
   var1_p = SSA_VAR_P (base1);
   var2_p = SSA_VAR_P (base2);
-  ind1_p = INDIRECT_REF_P (base1);
-  ind2_p = INDIRECT_REF_P (base2);
   if (var1_p && var2_p)
     return decl_refs_may_alias_p (base1, offset1, max_size1,
 				  base2, offset2, max_size2);
-  else if (var1_p && ind2_p)
+
+  /* First defer to TBAA if possible.  */
+  if (flag_strict_aliasing
+      && !alias_sets_conflict_p (get_alias_set (ref1), get_alias_set (ref2)))
+    return false;
+
+  /* If one reference is a TARGET_MEM_REF weird things are allowed.  Still
+     TBAA disambiguation based on the access type is possible, so bail
+     out only after that check.  */
+  if (TREE_CODE (ref1) == TARGET_MEM_REF
+      || TREE_CODE (ref2) == TARGET_MEM_REF)
+    return true;
+
+  /* Dispatch to the pointer-vs-decl or pointer-vs-pointer disambiguators.  */
+  ind1_p = INDIRECT_REF_P (base1);
+  ind2_p = INDIRECT_REF_P (base2);
+  if (var1_p && ind2_p)
     return indirect_ref_may_alias_decl_p (ref2, TREE_OPERAND (base2, 0),
 					  offset2, max_size2, -1,
 					  ref1, base1,
