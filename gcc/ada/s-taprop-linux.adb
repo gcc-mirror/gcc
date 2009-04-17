@@ -1083,7 +1083,19 @@ package body System.Task_Primitives.Operations is
             S.State := False;
          else
             S.Waiting := True;
-            Result := pthread_cond_wait (S.CV'Access, S.L'Access);
+
+            loop
+               --  loop in case pthread_cond_wait returns earlier than
+               --  expected (e.g. in case of EINTR caused by a signal).
+               --  This should not happen on current implementation of pthread
+               --  under Linux, but POSIX does not guarantee it, so this may
+               --  change in the future.
+
+               Result := pthread_cond_wait (S.CV'Access, S.L'Access);
+               pragma Assert (Result = 0 or else Result = EINTR);
+
+               exit when not S.Waiting;
+            end loop;
          end if;
 
          Result := pthread_mutex_unlock (S.L'Access);
