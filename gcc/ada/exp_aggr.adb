@@ -1226,10 +1226,10 @@ package body Exp_Aggr is
             if Present (Comp_Type)
               and then Needs_Finalization (Comp_Type)
               and then not Is_Limited_Type (Comp_Type)
-              and then
-                (not Is_Array_Type (Comp_Type)
-                   or else not Is_Controlled (Component_Type (Comp_Type))
-                   or else Nkind (Expr) /= N_Aggregate)
+              and then not
+                (Is_Array_Type (Comp_Type)
+                   and then Is_Controlled (Component_Type (Comp_Type))
+                   and then Nkind (Expr) = N_Aggregate)
             then
                Append_List_To (L,
                  Make_Adjust_Call (
