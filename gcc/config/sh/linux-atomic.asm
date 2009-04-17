@@ -135,4 +135,7 @@ ATOMIC_FETCH_AND_COMBOP(nand,and,not,1,b,extu.b)
 ATOMIC_FETCH_AND_COMBOP(nand,and,not,2,w,extu.w)
 ATOMIC_FETCH_AND_COMBOP(nand,and,not,4,l,mov)
 
+.section .note.GNU-stack,"",%progbits
+.previous
+
 #endif /* ! __SH5__ */

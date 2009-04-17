@@ -30,6 +30,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 !! recoded in assembly by Toshiyasu Morita
 !! tm@netcom.com
 
+#if defined(__ELF__) && defined(__linux__)
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
 /* SH2 optimizations for ___ashrsi3, ___ashlsi3, ___lshrsi3 and
    ELF local label prefixes by J"orn Rennecke
    amylaar@cygnus.com  */
