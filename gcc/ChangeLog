@@ -1,3 +1,10 @@
+2009-04-17  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39746
+	* tree-ssa-alias.c (ref_maybe_used_by_call_p_1): Remove
+	special-casing for builtins and static variable use/def.
+	(call_may_clobber_ref_p_1): Likewise.
+
 2009-04-16  Ian Lance Taylor  <iant@google.com>
 
 	* df.h: Include "timevar.h".
