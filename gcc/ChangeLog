@@ -1,3 +1,7 @@
+2009-04-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* dbxout.c (xcoff_debug_hooks): Add set_name_debug_nothing.
+
 2009-04-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dbxout.c (dbxout_block): Reinstate test on TREE_USED.
