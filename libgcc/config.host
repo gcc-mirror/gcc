@@ -590,6 +590,7 @@ esac
 
 case ${host} in
 i[34567]86-*-darwin* | x86_64-*-darwin* | \
+  i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu | \
   i[34567]86-*-linux* | x86_64-*-linux*)
 	if test "${host_address}" = 32; then
 		tmake_file="${tmake_file} t-softfp i386/${host_address}/t-fprules-softfp"
