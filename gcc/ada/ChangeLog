@@ -1,3 +1,12 @@
+2009-04-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Apply constraint check to
+	aggregate, using context imposed by subtype mark in allocator.
+
+2009-04-17  Pascal Obry  <obry@adacore.com>
+
+	* gnat_rm.texi: Document GNAT_CODE_PAGE environment variable
+
 2009-04-17  Nicolas Roche  <roche@adacore.com>
 
 	* initialize.c (__gnat_initialize): remove MAX_PATH limitation on each
