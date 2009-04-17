@@ -876,6 +876,57 @@ package Sem_Util is
    --  formal. Used in Ada 2005 mode to solve the syntactic ambiguity that
    --  results from an indexing of a function call written in prefix form.
 
+   function New_Copy_List_Tree (List : List_Id) return List_Id;
+   --  Copy recursively an analyzed list of nodes. Uses New_Copy_Tree defined
+   --  below. As for New_Copy_Tree, it is illegal to attempt to copy extended
+   --  nodes (entities) either directly or indirectly using this function.
+
+   function New_Copy_Tree
+     (Source    : Node_Id;
+      Map       : Elist_Id   := No_Elist;
+      New_Sloc  : Source_Ptr := No_Location;
+      New_Scope : Entity_Id  := Empty) return Node_Id;
+   --  Given a node that is the root of a subtree, Copy_Tree copies the entire
+   --  syntactic subtree, including recursively any descendents whose parent
+   --  field references a copied node (descendents not linked to a copied node
+   --  by the parent field are not copied, instead the copied tree references
+   --  the same descendent as the original in this case, which is appropriate
+   --  for non-syntactic fields such as Etype). The parent pointers in the
+   --  copy are properly set. Copy_Tree (Empty/Error) returns Empty/Error.
+   --  The one exception to the rule of not copying semantic fields is that
+   --  any implicit types attached to the subtree are duplicated, so that
+   --  the copy contains a distinct set of implicit type entities. Thus this
+   --  function is used when it is necessary to duplicate an analyzed tree,
+   --  declared in the same or some other compilation unit. This function is
+   --  declared here rather than in atree because it uses semantic information
+   --  in particular concerning the structure of itypes and the generation of
+   --  public symbols.
+
+   --  The Map argument, if set to a non-empty Elist, specifies a set of
+   --  mappings to be applied to entities in the tree. The map has the form:
+   --
+   --     old entity 1
+   --     new entity to replace references to entity 1
+   --     old entity 2
+   --     new entity to replace references to entity 2
+   --     ...
+   --
+   --  The call destroys the contents of Map in this case
+   --
+   --  The parameter New_Sloc, if set to a value other than No_Location, is
+   --  used as the Sloc value for all nodes in the new copy. If New_Sloc is
+   --  set to its default value No_Location, then the Sloc values of the
+   --  nodes in the copy are simply copied from the corresponding original.
+   --
+   --  The Comes_From_Source indication is unchanged if New_Sloc is set to
+   --  the default No_Location value, but is reset if New_Sloc is given, since
+   --  in this case the result clearly is neither a source node or an exact
+   --  copy of a source node.
+   --
+   --  The parameter New_Scope, if set to a value other than Empty, is the
+   --  value to use as the Scope for any Itypes that are copied. The most
+   --  typical value for this parameter, if given, is Current_Scope.
+
    function New_External_Entity
      (Kind         : Entity_Kind;
       Scope_Id     : Entity_Id;

@@ -169,14 +169,14 @@ package body Lib.Load is
              Chars => Chars (Selector_Name (Name (With_Node))));
          Du_Name :=
            Make_Defining_Program_Unit_Name (No_Location,
-             Name => New_Copy_Tree (Prefix (Name (With_Node))),
+             Name => Copy_Separate_Tree (Prefix (Name (With_Node))),
              Defining_Identifier => Cunit_Entity);
 
          Set_Is_Child_Unit (Cunit_Entity);
 
          End_Lab :=
            Make_Designator (No_Location,
-             Name => New_Copy_Tree (Prefix (Name (With_Node))),
+             Name => Copy_Separate_Tree (Prefix (Name (With_Node))),
              Identifier => New_Occurrence_Of (Cunit_Entity, No_Location));
       end if;
 

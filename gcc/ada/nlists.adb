@@ -745,31 +745,6 @@ package body Nlists is
       end if;
    end New_Copy_List_Original;
 
-   ------------------------
-   -- New_Copy_List_Tree --
-   ------------------------
-
-   function New_Copy_List_Tree (List : List_Id) return List_Id is
-      NL : List_Id;
-      E  : Node_Id;
-
-   begin
-      if List = No_List then
-         return No_List;
-
-      else
-         NL := New_List;
-         E := First (List);
-
-         while Present (E) loop
-            Append (New_Copy_Tree (E), NL);
-            E := Next (E);
-         end loop;
-
-         return NL;
-      end if;
-   end New_Copy_List_Tree;
-
    --------------
    -- New_List --
    --------------

@@ -105,8 +105,6 @@ package body Atree is
    use Atree_Private_Part;
    --  We are also allowed to see our private data structures!
 
-   function E_To_N is new Unchecked_Conversion (Entity_Kind, Node_Kind);
-   function N_To_E is new Unchecked_Conversion (Node_Kind, Entity_Kind);
    --  Functions used to store Entity_Kind value in Nkind field
 
    --  The following declarations are used to store flags 65-72 in the
@@ -394,91 +392,6 @@ package body Atree is
 
    function To_Flag_Word5_Ptr is new
      Unchecked_Conversion (Union_Id_Ptr, Flag_Word5_Ptr);
-
-   --  Default value used to initialize default nodes. Note that some of the
-   --  fields get overwritten, and in particular, Nkind always gets reset.
-
-   Default_Node : Node_Record := (
-      Is_Extension      => False,
-      Pflag1            => False,
-      Pflag2            => False,
-      In_List           => False,
-      Unused_1          => False,
-      Rewrite_Ins       => False,
-      Analyzed          => False,
-      Comes_From_Source => False, -- modified by Set_Comes_From_Source_Default
-      Error_Posted      => False,
-      Flag4             => False,
-
-      Flag5             => False,
-      Flag6             => False,
-      Flag7             => False,
-      Flag8             => False,
-      Flag9             => False,
-      Flag10            => False,
-      Flag11            => False,
-      Flag12            => False,
-
-      Flag13            => False,
-      Flag14            => False,
-      Flag15            => False,
-      Flag16            => False,
-      Flag17            => False,
-      Flag18            => False,
-
-      Nkind             => N_Unused_At_Start,
-
-      Sloc              => No_Location,
-      Link              => Empty_List_Or_Node,
-      Field1            => Empty_List_Or_Node,
-      Field2            => Empty_List_Or_Node,
-      Field3            => Empty_List_Or_Node,
-      Field4            => Empty_List_Or_Node,
-      Field5            => Empty_List_Or_Node);
-
-   --  Default value used to initialize node extensions (i.e. the second
-   --  and third and fourth components of an extended node). Note we are
-   --  cheating a bit here when it comes to Node12, which really holds
-   --  flags an (for the third component), the convention. But it works
-   --  because Empty, False, Convention_Ada, all happen to be all zero bits.
-
-   Default_Node_Extension : constant Node_Record := (
-      Is_Extension      => True,
-      Pflag1            => False,
-      Pflag2            => False,
-      In_List           => False,
-      Unused_1          => False,
-      Rewrite_Ins       => False,
-      Analyzed          => False,
-      Comes_From_Source => False,
-      Error_Posted      => False,
-      Flag4             => False,
-
-      Flag5             => False,
-      Flag6             => False,
-      Flag7             => False,
-      Flag8             => False,
-      Flag9             => False,
-      Flag10            => False,
-      Flag11            => False,
-      Flag12            => False,
-
-      Flag13            => False,
-      Flag14            => False,
-      Flag15            => False,
-      Flag16            => False,
-      Flag17            => False,
-      Flag18            => False,
-
-      Nkind             => E_To_N (E_Void),
-
-      Field6            => Empty_List_Or_Node,
-      Field7            => Empty_List_Or_Node,
-      Field8            => Empty_List_Or_Node,
-      Field9            => Empty_List_Or_Node,
-      Field10           => Empty_List_Or_Node,
-      Field11           => Empty_List_Or_Node,
-      Field12           => Empty_List_Or_Node);
 
    --------------------------------------------------
    -- Implementation of Tree Substitution Routines --
@@ -1218,7 +1131,7 @@ package body Atree is
 
    --  Start of processing for New_Copy_Tree function
 
-   function New_Copy_Tree
+   function New_Copy_Tree1
      (Source    : Node_Id;
       Map       : Elist_Id := No_Elist;
       New_Sloc  : Source_Ptr := No_Location;
@@ -1835,12 +1748,9 @@ package body Atree is
          --  The new Itype has all the attributes of the old one, and
          --  we just copy the contents of the entity. However, the back-end
          --  needs different names for debugging purposes, so we create a
-         --  new internal name by appending the letter 'c' (copy) to the
-         --  name of the original.
+         --  new internal name for it in all cases.
 
-         Get_Name_String (Chars (Old_Itype));
-         Add_Char_To_Name_Buffer ('c');
-         Set_Chars (New_Itype, Name_Enter);
+         --  Set_Chars (New_Itype, New_Internal_Name ('T'));
 
          --  If our associated node is an entity that has already been copied,
          --  then set the associated node of the copy to point to the right
@@ -1952,6 +1862,10 @@ package body Atree is
                             Old_Itype);
             end if;
          end if;
+         Get_Name_String (Chars (Old_Itype));
+         Add_Char_To_Name_Buffer ('c');
+         Add_Nat_To_Name_Buffer (Int (Associated_Node_For_Itype (New_Itype)));
+         Set_Chars (New_Itype, Name_Enter);
       end Visit_Itype;
 
       ----------------
@@ -2085,7 +1999,7 @@ package body Atree is
       --  Now we can copy the actual tree
 
       return Copy_Node_With_Replacement (Source);
-   end New_Copy_Tree;
+   end New_Copy_Tree1;
 
    ----------------
    -- New_Entity --

@@ -1,3 +1,35 @@
+2009-04-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Definition): Additional checks on
+	illegal uses of incomplete types in formal parts and return types.
+
+	* sem_ch6.adb (Process_Formals): Taft-amendment types are legal in
+	access to subprograms.
+
+	* sem_ch7.adb (Uninstall_Declarations): diagnose attempts to use
+	Taft-amendment types as the return type of an access_to_function type.
+
+	* freeze.adb (Freeze_Entity): Remove tests on formals of an incomplete
+	type for access_to_subprograms. The check is performed on package exit.
+
+2009-04-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* atree.ads, atree.adb: Move New_Copy_Tree.to sem_util.
+
+	* nlists.ads, nlists.adb: Move New_Copy_List to sem_util.
+	
+	* lib-load.adb: Use Copy_Separate_Tree rather than New_Copy_Tree
+
+	* sem_util.ads, sem_util.adb: New_Copy_Tree and New_Copy_List belong in
+	semantic units, because the handling of itypes in the copied tree
+	requires semantic information that does not belong in atree.
+
+2009-04-17  Robert Dewar  <dewar@adacore.com>
+
+	* par-ch6.adb: Minor reformatting
+
+	* prj.adb: Minor reformatting
+
 2009-04-17  Gary Dismukes  <dismukes@adacore.com>
 
 	* par-ch6.adb (P_Subprogram): Overriding indicators should be allowed
