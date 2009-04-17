@@ -1,3 +1,7 @@
+2009-04-17  Cary Coutant  <ccoutant@google.com>
+
+	* tree-flow-inline.h (get_lineno): Fix inverted test.
+
 2009-04-17  Diego Novillo  <dnovillo@google.com>
 
 	* tree-ssa-pre.c (create_expression_by_pieces): Remove
