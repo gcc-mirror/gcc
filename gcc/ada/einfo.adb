@@ -206,6 +206,7 @@ package body Einfo is
    --    Stored_Constraint               Elist23
 
    --    Spec_PPC_List                   Node24
+   --    Underlying_Record_View          Node24
 
    --    Interface_Alias                 Node25
    --    Interfaces                      Elist25
@@ -2671,6 +2672,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) in Private_Kind);
       return Node19 (Id);
    end Underlying_Full_View;
+
+   function Underlying_Record_View (Id : E) return E is
+   begin
+      pragma Assert (Ekind (Id) = E_Record_Type);
+      return Node24 (Id);
+   end Underlying_Record_View;
 
    function Universal_Aliasing (Id : E) return B is
    begin
@@ -5151,6 +5158,12 @@ package body Einfo is
       pragma Assert (Ekind (Id) in Private_Kind);
       Set_Node19 (Id, V);
    end Set_Underlying_Full_View;
+
+   procedure Set_Underlying_Record_View (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) = E_Record_Type);
+      Set_Node24 (Id, V);
+   end Set_Underlying_Record_View;
 
    procedure Set_Universal_Aliasing (Id : E; V : B := True) is
    begin
@@ -7908,6 +7921,9 @@ package body Einfo is
       case Ekind (Id) is
          when Subprogram_Kind                              =>
             Write_Str ("Spec_PPC_List");
+
+         when E_Record_Type                                =>
+            Write_Str ("Underlying record view");
 
          when others                                       =>
             Write_Str ("???");

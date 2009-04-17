@@ -3007,7 +3007,9 @@ package body Exp_Ch3 is
          --  If it is a type derived from a type with unknown discriminants,
          --  we cannot build an initialization procedure for it.
 
-         if Has_Unknown_Discriminants (Rec_Id) then
+         if Has_Unknown_Discriminants (Rec_Id)
+           or else Has_Unknown_Discriminants (Etype (Rec_Id))
+         then
             return False;
          end if;
 
@@ -3888,6 +3890,16 @@ package body Exp_Ch3 is
 
       else
          Par_Subtype := Process_Subtype (New_Copy_Tree (Indic), Def);
+      end if;
+
+      --  If this is an extension of a type with unknown discriminants, use
+      --  full view to provide proper discriminants to gigi.
+
+      if Has_Unknown_Discriminants (Par_Subtype)
+        and then Is_Private_Type (Par_Subtype)
+        and then Present (Full_View (Par_Subtype))
+      then
+         Par_Subtype := Full_View (Par_Subtype);
       end if;
 
       Set_Parent_Subtype (T, Par_Subtype);
@@ -5732,6 +5744,27 @@ package body Exp_Ch3 is
                end if;
             end if;
 
+            --  If the type has unknown discriminants, propagate dispatching
+            --  information to its underlying record view, which does not get
+            --  its own dispatch table.
+
+            if Is_Derived_Type (Def_Id)
+              and then Has_Unknown_Discriminants (Def_Id)
+              and then Present (Underlying_Record_View (Def_Id))
+            then
+               declare
+                  Rep : constant Entity_Id :=
+                           Underlying_Record_View (Def_Id);
+               begin
+                  Set_Access_Disp_Table
+                    (Rep, Access_Disp_Table       (Def_Id));
+                  Set_Dispatch_Table_Wrappers
+                    (Rep, Dispatch_Table_Wrappers (Def_Id));
+                  Set_Primitive_Operations
+                    (Rep, Primitive_Operations    (Def_Id));
+               end;
+            end if;
+
             --  Make sure that the primitives Initialize, Adjust and Finalize
             --  are Frozen before other TSS subprograms. We don't want them
             --  Frozen inside.
@@ -7526,7 +7559,7 @@ package body Exp_Ch3 is
                        Null_Exclusion_Present =>
                          Null_Exclusion_Present (Parent (Formal)),
                        Parameter_Type =>
-                         New_Reference_To (Etype (Formal), Loc),
+                         New_Occurrence_Of (Etype (Formal), Loc),
                        Expression =>
                          New_Copy_Tree (Expression (Parent (Formal)))),
                      Formal_List);

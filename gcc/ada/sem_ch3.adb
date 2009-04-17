@@ -5462,6 +5462,7 @@ package body Sem_Ch3 is
       Is_Completion : Boolean;
       Derive_Subps  : Boolean := True)
    is
+      Loc         : constant Source_Ptr := Sloc (N);
       Der_Base    : Entity_Id;
       Discr       : Entity_Id;
       Full_Decl   : Node_Id := Empty;
@@ -5504,8 +5505,69 @@ package body Sem_Ch3 is
 
    begin
       if Is_Tagged_Type (Parent_Type) then
-         Build_Derived_Record_Type
-           (N, Parent_Type, Derived_Type, Derive_Subps);
+
+         --  A type extension of a type with unknown discriminants is an
+         --  indefinite type that the back-end cannot handle directly.
+         --  We treat it as a private type, and build a completion that is
+         --  derived from the full view of the parent, and hopefully has
+         --  known discriminants.  The implementation of more complex chains
+         --  of derivation with unknown discriminants is left to the more
+         --  enterprising reader.
+
+         if Has_Unknown_Discriminants (Parent_Type)
+           and then Present (Full_View (Parent_Type))
+           and then not In_Open_Scopes (Par_Scope)
+           and then not Is_Completion
+           and then Expander_Active
+         then
+            declare
+               Full_Der : constant Entity_Id :=
+                 Make_Defining_Identifier (Loc, New_Internal_Name ('T'));
+               Decl : Node_Id;
+               New_Ext : constant Node_Id :=
+                           Copy_Separate_Tree
+                             (Record_Extension_Part (Type_Definition (N)));
+
+            begin
+               Build_Derived_Record_Type
+                 (N, Parent_Type, Derived_Type, Derive_Subps);
+
+               --  Build anonymous completion, as a derivation from the full
+               --  view of the parent.
+
+               Decl :=
+                 Make_Full_Type_Declaration (Loc,
+                   Defining_Identifier => Full_Der,
+                   Type_Definition     =>
+                     Make_Derived_Type_Definition (Loc,
+                       Subtype_Indication =>
+                         New_Copy_Tree
+                           (Subtype_Indication (Type_Definition (N))),
+                       Record_Extension_Part => New_Ext));
+               Set_Has_Private_Declaration (Full_Der);
+               Set_Has_Private_Declaration (Derived_Type);
+
+               Install_Private_Declarations (Par_Scope);
+               Install_Visible_Declarations (Par_Scope);
+               Insert_Before (N, Decl);
+               Analyze (Decl);
+               Uninstall_Declarations (Par_Scope);
+
+               --  Freeze the underlying record view, to prevent generation
+               --  of useless dispatching information, which is simply shared
+               --  with the real derived type.
+
+               Set_Is_Frozen (Full_Der);
+               Set_Underlying_Record_View (Derived_Type, Full_Der);
+            end;
+
+         --  if discriminants are known, build derived record.
+
+         else
+            Build_Derived_Record_Type
+              (N, Parent_Type, Derived_Type, Derive_Subps);
+         end if;
+
          return;
 
       elsif Has_Discriminants (Parent_Type) then
