@@ -1,3 +1,8 @@
+2009-04-17  Diego Novillo  <dnovillo@google.com>
+
+	* tree-ssa-pre.c (create_expression_by_pieces): Remove
+	assertion for AVAIL_OUT.
+
 2009-04-17  Mike Frysinger  <vapier@gentoo.org>
 
 	PR target/38627
