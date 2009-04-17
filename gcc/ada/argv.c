@@ -46,28 +46,72 @@
 #include "tconfig.h"
 #include "tsystem.h"
 #include <sys/stat.h>
+/* We don't have libiberty, so use malloc.  */
+#define xmalloc(S) malloc (S)
 #else
 #include "config.h"
 #include "system.h"
 #endif
 
-#include "adaint.h"
-
 /* argc and argv of the main program are saved under gnat_argc and gnat_argv,
    envp of the main program is saved under gnat_envp.  */
 
 int gnat_argc = 0;
-const char **gnat_argv = (const char **) 0;
+char **gnat_argv = (char **) 0;
 const char **gnat_envp = (const char **) 0;
 
 #if defined (_WIN32) && !defined (RTX)
 /* Note that on Windows environment the environ point to a buffer that could
    be reallocated if needed. It means that gnat_envp needs to be updated
-   before using gnat_envp to point to the right environment space */
+   before using gnat_envp to point to the right environment space. */
+#include "mingw32.h"
+#include <windows.h>
 #include <stdlib.h>
 /* for the environ variable definition */
 #define gnat_envp (environ)
 #endif
+
+#include "adaint.h"
+
+void
+__gnat_init_args (int argc, char **argv ATTRIBUTE_UNUSED, char **envp)
+{
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+  char arg_utf8[MAX_PATH];
+  LPWSTR *wargv;
+  int wargc;
+  int k;
+
+  wargv = CommandLineToArgvW (GetCommandLineW(), &wargc);
+
+  if (wargv == NULL)
+    {
+      /* CommandLineToArgvW was not successful, use standard argc/argv. */
+      gnat_argv = argv;
+      gnat_argc = argc;
+    }
+  else
+    {
+      /* Set gnat_argv with arguments encoded in UTF-8. */
+      gnat_argv = (char **) xmalloc ((wargc + 1) * sizeof (char *));
+
+      for (k=0; k<wargc; k++)
+	{
+	  WS2SU (arg_utf8, wargv[k], MAX_PATH);
+	  gnat_argv[k] = (char *) xmalloc (strlen (arg_utf8) + 1);
+	  strcpy (gnat_argv[k], arg_utf8);
+	}
+
+      LocalFree (wargv);
+      gnat_argc = wargc;
+    }
+#else
+  gnat_argv = argv;
+  gnat_argc = argc;
+#endif
+
+  gnat_envp = envp;
+}
 
 int
 __gnat_arg_count (void)

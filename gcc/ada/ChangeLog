@@ -1,3 +1,17 @@
+2009-04-17  Pascal Obry  <obry@adacore.com>
+
+	* adaint.h, argv.c (__gnat_init_args): New routine used to initialize
+	command line arguments.
+
+	* bindgen.adb: Call __gnat_init_args instead of simple assignments of
+	argc, argv and envp parameters.
+
+	* init.c: Fix minor typo and style fix.
+
+2009-04-17  Nicolas Setton  <setton@adacore.com>
+
+	* link.c: Add darwin section
+
 2009-04-16  Robert Dewar  <dewar@adacore.com>
 
 	* g-pehage.adb: Minor reformatting

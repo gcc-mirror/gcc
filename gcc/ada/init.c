@@ -53,7 +53,7 @@
 #include "tsystem.h"
 #include <sys/stat.h>
 
-/* We don't have libiberty, so us malloc.  */
+/* We don't have libiberty, so use malloc.  */
 #define xmalloc(S) malloc (S)
 #else
 #include "config.h"
@@ -1963,7 +1963,6 @@ __gnat_init_float (void)
    The use of a hook avoids to drag stack checking subprograms if stack
    checking is not used.  */
 void (*__gnat_set_stack_limit_hook)(void) = (void (*)(void))0;
-
 
 /******************/
 /* NetBSD Section */
