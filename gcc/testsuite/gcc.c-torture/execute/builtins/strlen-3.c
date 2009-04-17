@@ -10,7 +10,7 @@ extern char *strcpy (char *, const char *);
 static const char bar[] = "Hello, World!";
 static const char baz[] = "hello, world?";
 static const char larger[20] = "short string";
-extern volatile int inside_main;
+extern int inside_main;
 
 int l1 = 1;
 int x = 6;

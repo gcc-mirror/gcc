@@ -3003,6 +3003,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	      add_to_value (VN_INFO (forcedname)->value_id, nameexpr);
 	      if (!in_fre)
 		bitmap_value_replace_in_set (NEW_SETS (block), nameexpr);
+	      gcc_assert (AVAIL_OUT (block));
 	      bitmap_value_replace_in_set (AVAIL_OUT (block), nameexpr);
 	    }
 	  mark_symbols_for_renaming (stmt);
