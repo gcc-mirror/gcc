@@ -1,3 +1,8 @@
+2009-04-17  Aurelien Jarno  <aurelien@aurel32.net>
+
+	* config.host: Add i386/${host_address}/t-fprules-softfp to
+	tmake_file for i[34567]86-*-kfreebsd*-gnu, x86_64-*-kfreebsd*-gnu*.
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* config/ia64/tf-signs.c: Change copyright header to refer to
