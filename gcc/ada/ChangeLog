@@ -1,3 +1,17 @@
+2009-04-17  Pascal Obry  <obry@adacore.com>
+
+	* initialize.c: Fix test for reallocating the arguments array.
+
+2009-04-17  Geert Bosch  <bosch@adacore.com>
+
+	* exp_fixd.adb (Expand_Convert_Float_To_Fixed): Have float to fixed
+	conversion truncate only for decimal fixed point types.
+
+2009-04-17  Jerome Lambourg  <lambourg@adacore.com>
+
+	* g-comlin.adb (Initialize_Scan_Option): Make sure the sections are
+	reinitialized.
+
 2009-04-17  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch5.adb (Expand_Assign_Array): Do not set Forwards_OK and

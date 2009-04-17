@@ -1701,13 +1701,15 @@ package body Exp_Fixd is
          Set_Result (N, Expr, Rng_Check, Trunc => True);
 
       --  Normal case where multiply is required
+      --  Rounding is truncating for decimal fixed point types only,
+      --  see RM 4.6(29).
 
       else
          Set_Result (N,
            Build_Multiply (N,
              Fpt_Value (Expr),
              Real_Literal (N, Ureal_1 / Small)),
-           Rng_Check, Trunc => True);
+           Rng_Check, Trunc => Is_Decimal_Fixed_Point_Type (Result_Type));
       end if;
    end Expand_Convert_Float_To_Fixed;
 
