@@ -4,7 +4,7 @@
 #   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
 #   Free Software Foundation, Inc.
 
-timestamp='2008-12-18'
+timestamp='2009-02-03'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -1154,6 +1154,16 @@ EOF
     3[34]??:*:4.0:* | 3[34]??,*:*:4.0:*)
         /bin/uname -p 2>/dev/null | grep 86 >/dev/null \
           && { echo i486-ncr-sysv4; exit; } ;;
+    NCR*:*:4.2:* | MPRAS*:*:4.2:*)
+	OS_REL='.3'
+	test -r /etc/.relid \
+	    && OS_REL=.`sed -n 's/[^ ]* [^ ]* \([0-9][0-9]\).*/\1/p' < /etc/.relid`
+	/bin/uname -p 2>/dev/null | grep 86 >/dev/null \
+	    && { echo i486-ncr-sysv4.3${OS_REL}; exit; }
+	/bin/uname -p 2>/dev/null | /bin/grep entium >/dev/null \
+	    && { echo i586-ncr-sysv4.3${OS_REL}; exit; }
+	/bin/uname -p 2>/dev/null | /bin/grep pteron >/dev/null \
+	    && { echo i586-ncr-sysv4.3${OS_REL}; exit; } ;;
     m68*:LynxOS:2.*:* | m68*:LynxOS:3.0*:*)
 	echo m68k-unknown-lynxos${UNAME_RELEASE}
 	exit ;;
@@ -1339,6 +1349,9 @@ EOF
 	exit ;;
     i*86:rdos:*:*)
 	echo ${UNAME_MACHINE}-pc-rdos
+	exit ;;
+    i*86:AROS:*:*)
+	echo ${UNAME_MACHINE}-pc-aros
 	exit ;;
 esac
 

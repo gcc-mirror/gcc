@@ -1,3 +1,7 @@
+2009-04-17  Ben Elliston  <bje@au.ibm.com>
+
+	* config.sub, config.guess: Update from upstream sources.
+
 2009-04-15  Anthony Green  <green@moxielogic.com>
 
 	* configure.ac: Add moxie support.
