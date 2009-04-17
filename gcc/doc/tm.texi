@@ -750,10 +750,10 @@ This variable is declared in @file{options.h}, which is included before
 any target-specific headers.
 @end deftypevar
 
-@deftypevar {Target Hook} int TARGET_DEFAULT_TARGET_FLAGS
+@deftypevr {Target Hook} int TARGET_DEFAULT_TARGET_FLAGS
 This variable specifies the initial value of @code{target_flags}.
 Its default setting is 0.
-@end deftypevar
+@end deftypevr
 
 @cindex optional hardware or system features
 @cindex features, optional, in system conventions
@@ -5672,18 +5672,18 @@ in order to make effective use of section anchors.  It won't use
 section anchors at all unless either @code{TARGET_MIN_ANCHOR_OFFSET}
 or @code{TARGET_MAX_ANCHOR_OFFSET} is set to a nonzero value.
 
-@deftypevar {Target Hook} HOST_WIDE_INT TARGET_MIN_ANCHOR_OFFSET
+@deftypevr {Target Hook} HOST_WIDE_INT TARGET_MIN_ANCHOR_OFFSET
 The minimum offset that should be applied to a section anchor.
 On most targets, it should be the smallest offset that can be
 applied to a base register while still giving a legitimate address
 for every mode.  The default value is 0.
-@end deftypevar
+@end deftypevr
 
-@deftypevar {Target Hook} HOST_WIDE_INT TARGET_MAX_ANCHOR_OFFSET
+@deftypevr {Target Hook} HOST_WIDE_INT TARGET_MAX_ANCHOR_OFFSET
 Like @code{TARGET_MIN_ANCHOR_OFFSET}, but the maximum (inclusive)
 offset that should be applied to section anchors.  The default
 value is 0.
-@end deftypevar
+@end deftypevr
 
 @deftypefn {Target Hook} void TARGET_ASM_OUTPUT_ANCHOR (rtx @var{x})
 Write the assembly code to define section anchor @var{x}, which is a
@@ -6831,10 +6831,10 @@ Returns true if @var{exp} should be placed into a ``small data'' section.
 The default version of this hook always returns false.
 @end deftypefn
 
-@deftypevar {Target Hook} bool TARGET_HAVE_SRODATA_SECTION
+@deftypevr {Target Hook} bool TARGET_HAVE_SRODATA_SECTION
 Contains the value true if the target places read-only
 ``small data'' into a separate section.  The default value is false.
-@end deftypevar
+@end deftypevr
 
 @deftypefn {Target Hook} bool TARGET_BINDS_LOCAL_P (tree @var{exp})
 Returns true if @var{exp} names an object for which name resolution
@@ -6846,10 +6846,10 @@ for ELF, which has a looser model of global name binding than other
 currently supported object file formats.
 @end deftypefn
 
-@deftypevar {Target Hook} bool TARGET_HAVE_TLS
+@deftypevr {Target Hook} bool TARGET_HAVE_TLS
 Contains the value true if the target supports thread-local storage.
 The default value is false.
-@end deftypevar
+@end deftypevr
 
 
 @node PIC
@@ -8490,10 +8490,10 @@ Define this macro if your target has ABI specified unwind tables.  Usually
 these will be output by @code{TARGET_UNWIND_EMIT}.
 @end defmac
 
-@deftypevar {Target Hook} bool TARGET_UNWIND_TABLES_DEFAULT
+@deftypevr {Target Hook} bool TARGET_UNWIND_TABLES_DEFAULT
 This variable should be set to @code{true} if the target ABI requires unwinding
 tables even when exceptions are not used.
-@end deftypevar
+@end deftypevr
 
 @defmac MUST_USE_SJLJ_EXCEPTIONS
 This macro need only be defined if @code{DWARF2_UNWIND_INFO} is
@@ -8517,12 +8517,12 @@ minimum alignment otherwise.  @xref{SDB and DWARF}.  Only applicable if
 the target supports DWARF 2 frame unwind information.
 @end defmac
 
-@deftypevar {Target Hook} bool TARGET_TERMINATE_DW2_EH_FRAME_INFO
+@deftypevr {Target Hook} bool TARGET_TERMINATE_DW2_EH_FRAME_INFO
 Contains the value true if the target should add a zero word onto the
 end of a Dwarf-2 frame info section when used for exception handling.
 Default value is false if @code{EH_FRAME_SECTION_NAME} is defined, and
 true otherwise.
-@end deftypevar
+@end deftypevr
 
 @deftypefn {Target Hook} rtx TARGET_DWARF_REGISTER_SPAN (rtx @var{reg})
 Given a register, this hook should return a parallel of registers to

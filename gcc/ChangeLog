@@ -1,3 +1,11 @@
+2009-04-17  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* doc/tm.texi (TARGET_DEFAULT_TARGET_FLAGS,
+	TARGET_MIN_ANCHOR_OFFSET, TARGET_MAX_ANCHOR_OFFSET,
+	TARGET_HAVE_SRODATA_SECTION, TARGET_HAVE_TLS,
+	TARGET_UNWIND_TABLES_DEFAULT, TARGET_TERMINATE_DW2_EH_FRAME_INFO):
+	Use @deftypevr rather than @deftypevar.
+
 2009-04-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (get_prop_dest_stmt): Clean up
