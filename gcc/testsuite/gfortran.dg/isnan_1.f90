@@ -2,6 +2,7 @@
 !
 ! { dg-do run }
 ! { dg-options "-pedantic-errors -mieee" { target alpha*-*-* sh*-*-* } }
+! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
 !
   implicit none
   real :: x

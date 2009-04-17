@@ -1,6 +1,7 @@
 ! { dg-do run }
 ! { dg-options "-O0 -ffloat-store" }
 ! { dg-options "-O0 -ffloat-store -mieee" { target alpha*-*-* } }
+! { dg-skip-if "Denormals not supported" { spu-*-* } { "*" } { "" } }
 ! PR fortran/27021
 ! Original code submitted by Dominique d'Humieres
 ! Converted to Dejagnu for the testsuite by Steven G. Kargl

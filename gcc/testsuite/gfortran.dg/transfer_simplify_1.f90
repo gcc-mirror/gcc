@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-O2" }
+! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
 ! Tests that the PRs caused by the lack of gfc_simplify_transfer are
 ! now fixed. These were brought together in the meta-bug PR31237
 ! (TRANSFER intrinsic).
