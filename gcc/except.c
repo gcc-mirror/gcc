@@ -114,119 +114,15 @@ static int sjlj_fc_personality_ofs;
 static int sjlj_fc_lsda_ofs;
 static int sjlj_fc_jbuf_ofs;
 
-/* Describes one exception region.  */
-struct eh_region GTY(())
-{
-  /* The immediately surrounding region.  */
-  struct eh_region *outer;
-
-  /* The list of immediately contained regions.  */
-  struct eh_region *inner;
-  struct eh_region *next_peer;
-
-  /* An identifier for this region.  */
-  int region_number;
-
-  /* When a region is deleted, its parents inherit the REG_EH_REGION
-     numbers already assigned.  */
-  bitmap aka;
-
-  /* Each region does exactly one thing.  */
-  enum eh_region_type
-  {
-    ERT_UNKNOWN = 0,
-    ERT_CLEANUP,
-    ERT_TRY,
-    ERT_CATCH,
-    ERT_ALLOWED_EXCEPTIONS,
-    ERT_MUST_NOT_THROW,
-    ERT_THROW
-  } type;
-
-  /* Holds the action to perform based on the preceding type.  */
-  union eh_region_u {
-    /* A list of catch blocks, a surrounding try block,
-       and the label for continuing after a catch.  */
-    struct eh_region_u_try {
-      struct eh_region *eh_catch;
-      struct eh_region *last_catch;
-    } GTY ((tag ("ERT_TRY"))) eh_try;
-
-    /* The list through the catch handlers, the list of type objects
-       matched, and the list of associated filters.  */
-    struct eh_region_u_catch {
-      struct eh_region *next_catch;
-      struct eh_region *prev_catch;
-      tree type_list;
-      tree filter_list;
-    } GTY ((tag ("ERT_CATCH"))) eh_catch;
-
-    /* A tree_list of allowed types.  */
-    struct eh_region_u_allowed {
-      tree type_list;
-      int filter;
-    } GTY ((tag ("ERT_ALLOWED_EXCEPTIONS"))) allowed;
-
-    /* The type given by a call to "throw foo();", or discovered
-       for a throw.  */
-    struct eh_region_u_throw {
-      tree type;
-    } GTY ((tag ("ERT_THROW"))) eh_throw;
-
-    /* Retain the cleanup expression even after expansion so that
-       we can match up fixup regions.  */
-    struct eh_region_u_cleanup {
-      struct eh_region *prev_try;
-    } GTY ((tag ("ERT_CLEANUP"))) cleanup;
-  } GTY ((desc ("%0.type"))) u;
-
-  /* Entry point for this region's handler before landing pads are built.  */
-  rtx label;
-  tree tree_label;
-
-  /* Entry point for this region's handler from the runtime eh library.  */
-  rtx landing_pad;
-
-  /* Entry point for this region's handler from an inner region.  */
-  rtx post_landing_pad;
-
-  /* The RESX insn for handing off control to the next outermost handler,
-     if appropriate.  */
-  rtx resume;
-
-  /* True if something in this region may throw.  */
-  unsigned may_contain_throw : 1;
-};
-
-typedef struct eh_region *eh_region;
 
 struct call_site_record GTY(())
 {
   rtx landing_pad;
   int action;
 };
-
-DEF_VEC_P(eh_region);
-DEF_VEC_ALLOC_P(eh_region, gc);
-DEF_VEC_ALLOC_P(eh_region, heap);
-
-/* Used to save exception status for each function.  */
-struct eh_status GTY(())
-{
-  /* The tree of all regions for this function.  */
-  struct eh_region *region_tree;
-
-  /* The same information as an indexable array.  */
-  VEC(eh_region,gc) *region_array;
-  int last_region_number;
-
-  htab_t GTY((param_is (struct throw_stmt_node))) throw_stmt_table;
-};
 
 static int t2r_eq (const void *, const void *);
 static hashval_t t2r_hash (const void *);
-static void add_type_for_runtime (tree);
-static tree lookup_type_for_runtime (tree);
 
 static int ttypes_filter_eq (const void *, const void *);
 static hashval_t ttypes_filter_hash (const void *);
@@ -1282,7 +1178,7 @@ t2r_hash (const void *pentry)
   return TREE_HASH (TREE_PURPOSE (entry));
 }
 
-static void
+void
 add_type_for_runtime (tree type)
 {
   tree *slot;
@@ -1296,7 +1192,7 @@ add_type_for_runtime (tree type)
     }
 }
 
-static tree
+tree
 lookup_type_for_runtime (tree type)
 {
   tree *slot;
@@ -4065,6 +3961,15 @@ dump_eh_tree (FILE * out, struct function *fun)
 	}
     }
 }
+
+/* Dump the EH tree for FN on stderr.  */
+
+void
+debug_eh_tree (struct function *fn)
+{
+  dump_eh_tree (stderr, fn);
+}
+
 
 /* Verify EH region invariants.  */
 
