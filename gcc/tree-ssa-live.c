@@ -595,6 +595,8 @@ remove_unused_scope_block_p (tree scope)
    /* Verfify that only blocks with source location set
       are entry points to the inlined functions.  */
      gcc_assert (BLOCK_SOURCE_LOCATION (scope) == UNKNOWN_LOCATION);
+
+   TREE_USED (scope) = !unused;
    return unused;
 }
 
