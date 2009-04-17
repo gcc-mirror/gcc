@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-options "" }
 
 struct A { int i; };
 
