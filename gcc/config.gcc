@@ -1989,9 +1989,14 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 		*)				   with_endian=big,little ;;
 		esac
 	fi
+	# TM_ENDIAN_CONFIG is used by t-sh to determine multilibs.
+	#  First word : the default endian.
+	#  Second word: the secondary endian (optional).
 	case ${with_endian} in
-	big|little)	tmake_file="${tmake_file} sh/t-1e" ;;
-	big,little|little,big) ;;
+	big)		TM_ENDIAN_CONFIG=mb ;;
+	little)		TM_ENDIAN_CONFIG=ml ;;
+	big,little)	TM_ENDIAN_CONFIG="mb ml" ;;
+	little,big)	TM_ENDIAN_CONFIG="ml mb" ;;
 	*)	echo "with_endian=${with_endian} not supported."; exit 1 ;;
 	esac
 	case ${with_endian} in
@@ -2101,7 +2106,7 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	*)	echo "with_cpu=$with_cpu not supported"; exit 1 ;;
 	esac
 	sh_multilibs=${with_multilib_list}
-	if test x${sh_multilibs} = x ; then
+	if test "$sh_multilibs" = "default" ; then
 		case ${target} in
 		sh64-superh-linux* | \
 		sh[1234]*)	sh_multilibs=${sh_cpu_target} ;;
@@ -2117,25 +2122,32 @@ sh-*-symbianelf* | sh[12346l]*-*-symbianelf* | \
 	fi
 	target_cpu_default=SELECT_`echo ${sh_cpu_default}|tr abcdefghijklmnopqrstuvwxyz- ABCDEFGHIJKLMNOPQRSTUVWXYZ_`
 	tm_defines=${tm_defines}' SH_MULTILIB_CPU_DEFAULT=\"'`echo $sh_cpu_default|sed s/sh/m/`'\"'
-	sh_multilibs=`echo $sh_multilibs,$sh_cpu_default | sed -e 's/[ 	,/][ 	,]*/ /g' -e 's/ $//' -e 's/^m/sh/' -e 's/ m/ sh/g' | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ_ abcdefghijklmnopqrstuvwxyz-`
+	tm_defines="$tm_defines SUPPORT_`echo $sh_cpu_default | sed 's/^m/sh/' | tr abcdefghijklmnopqrstuvwxyz- ABCDEFGHIJKLMNOPQRSTUVWXYZ_`=1"
+	sh_multilibs=`echo $sh_multilibs | sed -e 's/,/ /g' -e 's/^sh/m/i' -e 's/ sh/ m/gi' | tr ABCDEFGHIJKLMNOPQRSTUVWXYZ_ abcdefghijklmnopqrstuvwxyz-`
 	for sh_multilib in ${sh_multilibs}; do
 		case ${sh_multilib} in
-		sh1 | sh2 | sh2e | sh3 | sh3e | \
-		sh4 | sh4-single | sh4-single-only | sh4-nofpu | sh4-300 |\
-		sh4a | sh4a-single | sh4a-single-only | sh4a-nofpu | sh4al | \
-		sh2a | sh2a-single | sh2a-single-only | sh2a-nofpu | \
-		sh5-64media | sh5-64media-nofpu | \
-		sh5-32media | sh5-32media-nofpu | \
-		sh5-compact | sh5-compact-nofpu)
-			tmake_file="${tmake_file} sh/t-mlib-${sh_multilib}"
-			tm_defines="$tm_defines SUPPORT_`echo $sh_multilib|tr abcdefghijklmnopqrstuvwxyz- ABCDEFGHIJKLMNOPQRSTUVWXYZ_`=1"
+		m1 | m2 | m2e | m3 | m3e | \
+		m4 | m4-single | m4-single-only | m4-nofpu | m4-300 |\
+		m4a | m4a-single | m4a-single-only | m4a-nofpu | m4al | \
+		m2a | m2a-single | m2a-single-only | m2a-nofpu | \
+		m5-64media | m5-64media-nofpu | \
+		m5-32media | m5-32media-nofpu | \
+		m5-compact | m5-compact-nofpu)
+			# TM_MULTILIB_CONFIG is used by t-sh for the non-endian multilib definition
+			# It is passed to MULTIILIB_OPTIONS verbatim.
+			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG}/${sh_multilib}"
+			tm_defines="$tm_defines SUPPORT_`echo $sh_multilib | sed 's/^m/sh/' | tr abcdefghijklmnopqrstuvwxyz- ABCDEFGHIJKLMNOPQRSTUVWXYZ_`=1"
 			;;
+		\!*)	# TM_MULTILIB_EXCEPTIONS_CONFIG is used by t-sh
+			# It is passed the MULTILIB_EXCEPTIONS verbatim.
+			TM_MULTILIB_EXCEPTIONS_CONFIG="${TM_MULTILIB_EXCEPTIONS_CONFIG} `echo $sh_multilib | sed 's/^!//'`" ;;
 		*)
 			echo "with_multilib_list=${sh_multilib} not supported."
 			exit 1
 			;;
 		esac
 	done
+	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's:^/::'`
 	if test x${enable_incomplete_targets} = xyes ; then
 		tm_defines="$tm_defines SUPPORT_SH1=1 SUPPORT_SH2E=1 SUPPORT_SH4=1 SUPPORT_SH4_SINGLE=1 SUPPORT_SH2A=1 SUPPORT_SH2A_SINGLE=1 SUPPORT_SH5_32MEDIA=1 SUPPORT_SH5_32MEDIA_NOFPU=1 SUPPORT_SH5_64MEDIA=1 SUPPORT_SH5_64MEDIA_NOFPU=1"
 	fi

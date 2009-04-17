@@ -983,6 +983,57 @@ sysv, aix.
 
 @end table
 
+@item --with-multilib-list=@var{list}
+@itemx --without-multilib-list
+Specify what multilibs to build.
+Currently only implemented for sh*-*-*.
+
+@var{list} is a comma separated list of CPU names.  These must be of the
+form @code{sh*} or @code{m*} (in which case they match the compiler option
+for that processor).  The list should not contain any endian options -
+these are handled by @option{--with-endian}.
+
+If @var{list} is empty, then there will be no multilibs for extra
+processors.  The multilib for the secondary endian remains enabled.
+
+As a special case, if an entry in the list starts with a @code{!}
+(exclamation point), then it is added to the list of excluded multilibs.
+Entries of this sort should be compatible with @samp{MULTILIB_EXCLUDES}
+(once the leading @code{!} has been stripped).
+
+If @option{--with-multilib-list} is not given, then a default set of
+multilibs is selected based on the value of @option{--target}.  This is
+usually the complete set of libraries, but some targets imply a more
+specialized subset.
+
+Example 1: to configure a compiler for SH4A only, but supporting both
+endians, with little endian being the default:
+@smallexample
+--with-cpu=sh4a --with-endian=little,big --with-multilib-list=
+@end smallexample
+
+Example 2: to configure a compiler for both SH4A and SH4AL-DSP, but with
+only little endian SH4AL:
+@smallexample
+--with-cpu=sh4a --with-endian=little,big --with-multilib-list=sh4al,!mb/m4al
+@end smallexample
+
+@item --with-endian=@var{endians}
+Specify what endians to use.
+Currently only implemented for sh*-*-*.
+
+@var{endians} may be one of the following:
+@table @code
+@item big
+Use big endian exclusively.
+@item little
+Use little endian exclusively.
+@item big,little
+Use big endian by default.  Provide a multilib for little endian.
+@item little,big
+Use little endian by default.  Provide a multilib for big endian.
+@end table
+
 @item --enable-threads
 Specify that the target
 supports threads.  This affects the Objective-C compiler and runtime

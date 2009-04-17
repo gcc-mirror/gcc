@@ -27,10 +27,10 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#endif' 		>> fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
-MULTILIB_ENDIAN = ml/mb
-MULTILIB_CPUS= $(ML_sh1)$(ML_sh2a)$(ML_sh2a_nofpu)$(ML_sh2a_single_only)$(ML_sh2a_single)$(ML_sh2e)$(ML_sh2)$(ML_sh3e)$(ML_sh3)$(ML_sh4_nofpu)$(ML_sh4_single_only)$(ML_sh4_single)$(ML_sh4)$(ML_sh4a_nofpu)$(ML_sh4a_single_only)$(ML_sh4a_single)$(ML_sh4a)$(ML_sh5_32media)$(ML_sh5_32media_nofpu)$(ML_sh5_compact)$(ML_sh5_compact_nofpu)$(ML_sh5_64media)$(ML_sh5_64media_nofpu)
+DEFAULT_ENDIAN = $(word 1,$(TM_ENDIAN_CONFIG))
+OTHER_ENDIAN = $(word 2,$(TM_ENDIAN_CONFIG))
 
-MULTILIB_OPTIONS= $(MULTILIB_ENDIAN) $(MULTILIB_CPUS:/=)
+MULTILIB_OPTIONS= $(OTHER_ENDIAN) $(TM_MULTILIB_CONFIG)
 MULTILIB_DIRNAMES= 
 
 # The separate entries for m2a-nofpu and m2a-single-only with
@@ -58,7 +58,34 @@ MULTILIB_MATCHES = $(shell \
   done)
 
 # SH1 only supports big endian.
-MULTILIB_EXCEPTIONS = ml/m1 ml/m2a*
+MULTILIB_EXCEPTIONS = ml/m1 ml/m2a* $(TM_MULTILIB_EXCEPTIONS_CONFIG)
+
+MULTILIB_OSDIRNAMES = \
+	$(OTHER_ENDIAN)=!$(OTHER_ENDIAN) \
+	m1=!m1 $(OTHER_ENDIAN)/m1=!$(OTHER_ENDIAN)/m1 \
+	m2a=!m2a $(OTHER_ENDIAN)/m2a=!$(OTHER_ENDIAN)/m2a \
+	m2a-nofpu=!m2a-nofpu $(OTHER_ENDIAN)/m2a-nofpu=!$(OTHER_ENDIAN)/m2a-nofpu \
+	m2a-single-only=!m2a-single-only $(OTHER_ENDIAN)/m2a-single-only=!$(OTHER_ENDIAN)/m2a-single-only \
+	m2a-single=!m2a-single $(OTHER_ENDIAN)/m2a-single=!$(OTHER_ENDIAN)/m2a-single \
+	m2e=!m2e $(OTHER_ENDIAN)/m2e=!$(OTHER_ENDIAN)/m2e \
+	m2=!m2 $(OTHER_ENDIAN)/m2=!$(OTHER_ENDIAN)/m2 \
+	m3e=!m3e $(OTHER_ENDIAN)/m3e=!$(OTHER_ENDIAN)/m3e \
+	m3=!m3 $(OTHER_ENDIAN)/m3=!$(OTHER_ENDIAN)/m3 \
+	m4-nofpu=!m4-nofpu $(OTHER_ENDIAN)/m4-nofpu=!$(OTHER_ENDIAN)/m4-nofpu \
+	m4-single-only=!m4-single-only $(OTHER_ENDIAN)/m4-single-only=!$(OTHER_ENDIAN)/m4-single-only \
+	m4-single=!m4-single $(OTHER_ENDIAN)/m4-single=!$(OTHER_ENDIAN)/m4-single \
+	m4=!m4 $(OTHER_ENDIAN)/m4=!$(OTHER_ENDIAN)/m4 \
+	m4a-nofpu=!m4a-nofpu $(OTHER_ENDIAN)/m4a-nofpu=!$(OTHER_ENDIAN)/m4a-nofpu \
+	m4a-single-only=!m4a-single-only $(OTHER_ENDIAN)/m4a-single-only=!$(OTHER_ENDIAN)/m4a-single-only \
+	m4a-single=!m4a-single $(OTHER_ENDIAN)/m4a-single=!$(OTHER_ENDIAN)/m4a-single \
+	m4a=!m4a $(OTHER_ENDIAN)/m4a=!$(OTHER_ENDIAN)/m4a \
+	m4al=!m4al $(OTHER_ENDIAN)/m4al=!$(OTHER_ENDIAN)/m4al \
+	m5-32media=!m5-32media $(OTHER_ENDIAN)/m5-32media=!$(OTHER_ENDIAN)/m5-32media \
+	m5-32media-nofpu=!m5-32media-nofpu $(OTHER_ENDIAN)/m5-32media-nofpu=!$(OTHER_ENDIAN)/m5-32media-nofpu \
+	m5-compact=!m5-compact $(OTHER_ENDIAN)/m5-compact=!$(OTHER_ENDIAN)/m5-compact \
+	m5-compact-nofpu=!m5-compact-nofpu $(OTHER_ENDIAN)/m5-compact-nofpu=!$(OTHER_ENDIAN)/m5-compact-nofpu \
+	m5-64media=!m5-64media $(OTHER_ENDIAN)/m5-64media=!$(OTHER_ENDIAN)/m5-64media \
+	m5-64media-nofpu=!m5-64media-nofpu $(OTHER_ENDIAN)/m5-64media-nofpu=!$(OTHER_ENDIAN)/m5-64media-nofpu
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
