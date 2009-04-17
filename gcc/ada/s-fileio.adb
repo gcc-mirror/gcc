@@ -809,7 +809,7 @@ package body System.File_IO is
          Form_Parameter (Formstr, "encoding", V1, V2);
 
          if V1 = 0 then
-            Encoding := System.CRTL.UTF8;
+            Encoding := System.CRTL.Unspecified;
 
          elsif Formstr (V1 .. V2) = "utf8" then
             Encoding := System.CRTL.UTF8;

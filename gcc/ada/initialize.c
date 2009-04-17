@@ -81,6 +81,22 @@ __gnat_initialize (void *eh)
       given that we have set Max_Digits etc with this in mind */
    __gnat_init_float ();
 
+#ifdef GNAT_UNICODE_SUPPORT
+   /* Set current code page for filenames handling. */
+   {
+     char *codepage = getenv ("GNAT_CODE_PAGE");
+
+     /* Default code page is UTF-8.  */
+     CurrentCodePage = CP_UTF8;
+
+     if (codepage != NULL)
+       if (strcmp (codepage, "CP_ACP") == 0)
+	 CurrentCodePage = CP_ACP;
+       else if (strcmp (codepage, "CP_UTF8") == 0)
+	 CurrentCodePage = CP_UTF8;
+   }
+#endif
+
    /* Adjust gnat_argv to support Unicode characters. */
    {
      char arg_utf8[MAX_PATH];
@@ -97,7 +113,7 @@ __gnat_initialize (void *eh)
 
 	 for (k=0; k<wargc; k++)
 	   {
-	     WS2SU (arg_utf8, wargv[k], MAX_PATH);
+	     WS2SC (arg_utf8, wargv[k], MAX_PATH);
 	     gnat_argv[k] = (char *) xmalloc (strlen (arg_utf8) + 1);
 	     strcpy (gnat_argv[k], arg_utf8);
 	   }

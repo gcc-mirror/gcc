@@ -1,3 +1,37 @@
+2009-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenation): Do not use calls at -Os.
+
+2009-04-17  Pascal Obry  <obry@adacore.com>
+
+	* mingw32.h: Add S2WSC and WS2SC macros to convert to/from
+	CurrentCodePage.
+
+	* adaint.h: Encoding_Unspecified is now defined. Corresponds to the
+	value when no encoding form paramter is set on Text_IO services.
+
+	* adaint.c: CurrentCodePage new variable on Windows.
+	Use new macros S2WSC and WS2SC instead of the UTF-8 oriented
+	ones.
+
+	* mkdir.c: Use new macros S2WSC and WS2SC instead of the UTF-8 oriented
+	ones.
+
+	* initialize.c: Initialize CurrentCodePage depending on GNAT_CODE_PAGE
+	environment variable value. Default is UTF-8.
+
+	* s-crtl.ads: Filename_Encoding add Unspecified in the enumeration type.
+	fopen and freopen encoding parameter is now set to Unspecified.
+	The default value is in this case UTF-8 (as it was before) but
+	use the new macros that convert to/from the code page set
+	at runtime (CurrentCodePage).
+
+	* s-fileio.adb: When no encoding specified use Unspecified value.
+
+2009-04-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* atree.adb, atree.ads: Remove dead code.
+
 2009-04-17  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.
