@@ -82,7 +82,7 @@ append_arg (int *index, LPWSTR value, char ***argv, int *last)
 {
   int size;
 
-  if (*last < *index)
+  if (*last <= *index)
     {
       *last += EXPAND_ARGV_RATE;
       *argv = (char **) xrealloc (*argv, (*last) * sizeof (char *));

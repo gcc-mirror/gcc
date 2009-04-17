@@ -890,6 +890,7 @@ package body GNAT.Command_Line is
       Parser.In_Expansion     := False;
       Parser.Switch_Character := Switch_Char;
       Parser.Stop_At_First    := Stop_At_First_Non_Switch;
+      Parser.Section          := (others => 1);
 
       --  If we are using sections, we have to preprocess the command line
       --  to delimit them. A section can be repeated, so we just give each
