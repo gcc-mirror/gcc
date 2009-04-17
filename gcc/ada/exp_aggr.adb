@@ -506,6 +506,8 @@ package body Exp_Aggr is
    --    9. There cannot be any discriminated record components, since the
    --       back end cannot handle this complex case.
 
+   --   10. No controlled actions need to be generated for components.
+
    function Backend_Processing_Possible (N : Node_Id) return Boolean is
       Typ : constant Entity_Id := Etype (N);
       --  Typ is the correct constrained array subtype of the aggregate
@@ -580,9 +582,9 @@ package body Exp_Aggr is
    --  Start of processing for Backend_Processing_Possible
 
    begin
-      --  Checks 2 (array must not be bit packed)
+      --  Checks 2 (array not bit packed) and 10 (no controlled actions)
 
-      if Is_Bit_Packed_Array (Typ) then
+      if Is_Bit_Packed_Array (Typ) or else Needs_Finalization (Typ) then
          return False;
       end if;
 

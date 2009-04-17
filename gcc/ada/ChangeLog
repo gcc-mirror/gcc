@@ -1,5 +1,44 @@
 2009-04-17  Thomas Quinot  <quinot@adacore.com>
 
+	* exp_ch7.adb (Expand_Ctrl_Function_Call): Remove incorrect special
+	case for the case of an aggregate component, the attach call for the
+	result is actually needed.
+
+	* exp_aggr.adb (Backend_Processing_Possible): Backend processing for
+	an array aggregate must be disabled if the component type requires
+	controlled actions.
+
+	* exp_ch3.adb: Minor reformatting
+
+2009-04-17  Bob Duff  <duff@adacore.com>
+
+	* output.ads (Indent,Outdent): New procedures for indenting the output.
+	(Write_Char): Correct comment -- LF _is_ allowed.
+
+	* output.adb (Indent,Outdent): New procedures for indenting the output.
+	Keep track of the indentation level, and make sure it doesn't get too
+	high.
+	(Flush_Buffer): Insert spaces at the beginning of each line, if
+	indentation level is nonzero.
+	(Save_Output_Buffer,Restore_Output_Buffer): Save and restore the current
+	indentation level.
+	(Set_Standard_Error,Set_Standard_Output): Remove superfluous
+	"Next_Col := 1;".  Flush_Buffer does that.
+
+	* sem_ch6.adb, sem_ch7.adb (Debug_Flag_C): Reorganize the output
+	controlled by the -gnatdc switch. It now occurs on entry/exit to the
+	relevant analysis routines, and calls Indent/Outdent to make the
+	indentation reflect the nesting level.  Add "helper" routines, since
+	otherwise lots of "return;" statements would skip the debugging output.
+
+2009-04-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taprop-tru64.adb, s-taprop-vms.adb, s-taprop-linux.adb,
+	s-taprop-solaris.adb, s-taprop-irix.adb, s-taprop-hpux-dce.adb,
+	s-taprop-posix.adb (Suspend_Until_True): Protect against early wakeup.
+
+2009-04-17  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_aggr.adb: Minor code reorganization, no behaviour change.
 
 2009-04-17  Ed Schonberg  <schonberg@adacore.com>
