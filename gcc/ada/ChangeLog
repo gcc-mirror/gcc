@@ -1,3 +1,18 @@
+2009-04-17  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Check_Anonymous_Return): Add missing checks to
+	avoid generating code that references the Current_Master
+	when compiling without tasks.
+
+2009-04-17  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New project level attribute Target
+	
+	* prj-nmsc.adb (Process_Project_Level_Simple_Attributes): Process
+	attribute Target
+	
+	* prj.ads (Project_Configuration): New component Target
+
 2009-04-17  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch7.adb (Expand_Ctrl_Function_Call): Remove incorrect special

@@ -1977,7 +1977,13 @@ package body Prj.Nmsc is
               In_Tree.Variable_Elements.Table (Attribute_Id);
 
             if not Attribute.Value.Default then
-               if Attribute.Name = Name_Library_Builder then
+               if Attribute.Name = Name_Target then
+
+                  --  Attribute Target: the target specified
+
+                  Data.Config.Target := Attribute.Value.Value;
+
+               elsif Attribute.Name = Name_Library_Builder then
 
                   --  Attribute Library_Builder: the application to invoke
                   --  to build libraries.
