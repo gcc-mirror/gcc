@@ -1,3 +1,18 @@
+2009-04-17  Nicolas Roche  <roche@adacore.com>
+
+	* initialize.c (__gnat_initialize): remove MAX_PATH limitation on each
+	argument length.
+
+2009-04-17  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_elim.adb (Eliminate_Error_Msg): Minor change to error message to
+	cover both calls and attribute references ("call" => "reference").
+
+2009-04-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration): A subtype of an access
+	type for which Storage_Size is set to 0 is legal in a pure unit.
+
 2009-04-17  Thomas Quinot  <quinot@adacore.com>
 
 	* exp_ch7.adb: Minor reformatting

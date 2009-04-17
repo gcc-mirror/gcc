@@ -99,10 +99,10 @@ __gnat_initialize (void *eh)
 
    /* Adjust gnat_argv to support Unicode characters. */
    {
-     char arg_utf8[MAX_PATH];
      LPWSTR *wargv;
      int wargc;
      int k;
+     int size;
 
      wargv = CommandLineToArgvW (GetCommandLineW(), &wargc);
 
@@ -113,9 +113,9 @@ __gnat_initialize (void *eh)
 
 	 for (k=0; k<wargc; k++)
 	   {
-	     WS2SC (arg_utf8, wargv[k], MAX_PATH);
-	     gnat_argv[k] = (char *) xmalloc (strlen (arg_utf8) + 1);
-	     strcpy (gnat_argv[k], arg_utf8);
+	     size = WS2SC (NULL, wargv[k], 0);
+	     gnat_argv[k] = (char *) xmalloc (size + 1);
+	     WS2SC (gnat_argv[k], wargv[k], size);
 	   }
 
 	 LocalFree (wargv);
