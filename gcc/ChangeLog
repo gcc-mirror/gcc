@@ -1,3 +1,9 @@
+2009-04-17  Mike Frysinger  <vapier@gentoo.org>
+
+	PR target/38627
+	* config/sh/lib1funcs.asm [__ELF__ && __linux__]: Add .note.GNU-stack.
+	* config/sh/linux-atomic.asm: Likewise.
+
 2009-04-17  Diego Novillo  <dnovillo@google.com>
 
 	* except.c (debug_eh_tree): New.
