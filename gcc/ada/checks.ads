@@ -135,9 +135,9 @@ package Checks is
       Typ        : Entity_Id;
       No_Sliding : Boolean := False);
    --  Top-level procedure, calls all the others depending on the class of Typ.
-   --  Checks that expression N verifies the constraint of type Typ. No_Sliding
-   --  is only relevant for constrained array types, if set to True, it
-   --  checks that indexes are in range.
+   --  Checks that expression N satisfies the constraint of type Typ.
+   --  No_Sliding is only relevant for constrained array types, if set to True,
+   --  it checks that indexes are in range.
 
    procedure Apply_Discriminant_Check
      (N   : Node_Id;

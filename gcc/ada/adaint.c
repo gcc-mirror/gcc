@@ -237,9 +237,11 @@ struct vstring
 #endif
 
 /* Check for cross-compilation */
-#ifdef CROSS_DIRECTORY_STRUCTURE
+#if defined (CROSS_COMPILE) || defined (CROSS_DIRECTORY_STRUCTURE)
+#define IS_CROSS 1
 int __gnat_is_cross_compiler = 1;
 #else
+#undef IS_CROSS
 int __gnat_is_cross_compiler = 0;
 #endif
 
@@ -664,7 +666,7 @@ __gnat_os_filename (char *filename, char *w_filename ATTRIBUTE_UNUSED,
 		    char *os_name, int *o_length,
 		    char *encoding ATTRIBUTE_UNUSED, int *e_length)
 {
-#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS)
   WS2SC (os_name, (TCHAR *)w_filename, o_length);
   *o_length = strlen (os_name);
   strcpy (encoding, "encoding=utf8");
@@ -681,7 +683,7 @@ __gnat_os_filename (char *filename, char *w_filename ATTRIBUTE_UNUSED,
 int
 __gnat_unlink (char *path)
 {
-#if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+#if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (IS_CROSS)
   {
     TCHAR wpath[GNAT_MAX_PATH_LEN];
 
@@ -698,7 +700,7 @@ __gnat_unlink (char *path)
 int
 __gnat_rename (char *from, char *to)
 {
-#if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+#if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (IS_CROSS)
   {
     TCHAR wfrom[GNAT_MAX_PATH_LEN], wto[GNAT_MAX_PATH_LEN];
 
@@ -716,7 +718,7 @@ __gnat_rename (char *from, char *to)
 int
 __gnat_chdir (char *path)
 {
-#if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+#if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (IS_CROSS)
   {
     TCHAR wpath[GNAT_MAX_PATH_LEN];
 
@@ -733,7 +735,7 @@ __gnat_chdir (char *path)
 int
 __gnat_rmdir (char *path)
 {
-#if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (CROSS_COMPILE)
+#if defined (__MINGW32__) && ! defined (__vxworks) && ! defined (IS_CROSS)
   {
     TCHAR wpath[GNAT_MAX_PATH_LEN];
 
@@ -748,7 +750,7 @@ __gnat_rmdir (char *path)
 FILE *
 __gnat_fopen (char *path, char *mode, int encoding ATTRIBUTE_UNUSED)
 {
-#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS)
   TCHAR wpath[GNAT_MAX_PATH_LEN];
   TCHAR wmode[10];
 
@@ -772,7 +774,7 @@ __gnat_fopen (char *path, char *mode, int encoding ATTRIBUTE_UNUSED)
 FILE *
 __gnat_freopen (char *path, char *mode, FILE *stream, int encoding ATTRIBUTE_UNUSED)
 {
-#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE)
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS)
   TCHAR wpath[GNAT_MAX_PATH_LEN];
   TCHAR wmode[10];
 
@@ -1578,7 +1580,8 @@ __gnat_get_libraries_from_registry (void)
 {
   char *result = (char *) "";
 
-#if defined (_WIN32) && ! defined (__vxworks) && ! defined (CROSS_DIRECTORY_STRUCTURE) && ! defined (RTX)
+#if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS) \
+  && ! defined (RTX)
 
   HKEY reg_key;
   DWORD name_size, value_size;
@@ -3178,7 +3181,7 @@ _flush_cache()
 }
 #endif
 
-#if defined (CROSS_DIRECTORY_STRUCTURE)  \
+#if defined (IS_CROSS)  \
   || (! ((defined (sparc) || defined (i386)) && defined (sun) \
       && defined (__SVR4)) \
       && ! (defined (linux) && (defined (i386) || defined (__x86_64__))) \
