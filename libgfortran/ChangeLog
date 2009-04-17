@@ -1,3 +1,8 @@
+2009-04-17  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/io.h (is_preconnected): Remove prototype.
+	* io/unix.c (is_preconnected): Remove function.
+
 2009-04-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* configure.ac: Test for -ffunction-sections -fdata-sections and

@@ -190,17 +190,6 @@ fix_fd (int fd)
   return fd;
 }
 
-int
-is_preconnected (stream * s)
-{
-  int fd;
-
-  fd = ((unix_stream *) s)->fd;
-  if (fd == STDIN_FILENO || fd == STDOUT_FILENO || fd == STDERR_FILENO)
-    return 1;
-  else
-    return 0;
-}
 
 /* If the stream corresponds to a preconnected unit, we flush the
    corresponding C stream.  This is bugware for mixed C-Fortran codes
