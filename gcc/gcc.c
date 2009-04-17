@@ -4741,6 +4741,49 @@ spec_path (char *path, void *data)
   return NULL;
 }
 
+/* Create a temporary FILE with the contents of ARGV. Add @FILE to the
+   argument list. */
+
+static void
+create_at_file (char **argv)
+{
+  char *temp_file = make_temp_file ("");
+  char *at_argument = concat ("@", temp_file, NULL);
+  FILE *f = fopen (temp_file, "w");
+  int status;
+
+  if (f == NULL)
+    fatal ("could not open temporary response file %s",
+	   temp_file);
+
+  status = writeargv (argv, f);
+
+  if (status)
+    fatal ("could not write to temporary response file %s",
+	   temp_file);
+
+  status = fclose (f);
+
+  if (EOF == status)
+    fatal ("could not close temporary response file %s",
+	   temp_file);
+
+  store_arg (at_argument, 0, 0);
+
+  record_temp_file (temp_file, !save_temps_flag, !save_temps_flag);
+}
+
+/* True if we should compile INFILE. */
+
+static bool
+compile_input_file_p (struct infile *infile)
+{
+  if ((!infile->language) || (infile->language[0] != '*'))
+    if (infile->incompiler == input_file_compiler)
+      return true;
+  return false;
+}
+
 /* Process the sub-spec SPEC as a portion of a larger spec.
    This is like processing a whole spec except that we do
    not initialize at the beginning and we do not supply a
@@ -5107,9 +5150,37 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	  case 'i':
 	    if (combine_inputs)
 	      {
-		for (i = 0; (int) i < n_infiles; i++)
-		  if ((!infiles[i].language) || (infiles[i].language[0] != '*'))
-		    if (infiles[i].incompiler == input_file_compiler)
+		if (at_file_supplied)
+		  {
+		    /* We are going to expand `%i' to `@FILE', where FILE
+		       is a newly-created temporary filename.  The filenames
+		       that would usually be expanded in place of %o will be
+		       written to the temporary file.  */
+		    char **argv;
+		    int n_files = 0;
+		    int j;
+
+		    for (i = 0; i < n_infiles; i++)
+		      if (compile_input_file_p (&infiles[i]))
+			n_files++;
+
+		    argv = (char **) alloca (sizeof (char *) * (n_files + 1));
+
+		    /* Copy the strings over.  */
+		    for (i = 0, j = 0; i < n_infiles; i++)
+		      if (compile_input_file_p (&infiles[i]))
+			{
+			  argv[j] = CONST_CAST (char *, infiles[i].name);
+			  infiles[i].compiled = true;
+			  j++;
+			}
+		    argv[j] = NULL;
+
+		    create_at_file (argv);
+		  }
+		else
+		  for (i = 0; (int) i < n_infiles; i++)
+		    if (compile_input_file_p (&infiles[i]))
 		      {
 			store_arg (infiles[i].name, 0, 0);
 			infiles[i].compiled = true;
@@ -5187,14 +5258,8 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
                      that would usually be expanded in place of %o will be
                      written to the temporary file.  */
 
-                  char *temp_file = make_temp_file ("");
-                  char *at_argument;
                   char **argv;
-                  int n_files, j, status;
-                  FILE *f;
-
-                  at_argument = concat ("@", temp_file, NULL);
-                  store_arg (at_argument, 0, 0);
+                  int n_files, j;
 
                   /* Convert OUTFILES into a form suitable for writeargv.  */
 
@@ -5213,25 +5278,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
                       }
                   argv[j] = NULL;
 
-                  f = fopen (temp_file, "w");
-
-                  if (f == NULL)
-                    fatal ("could not open temporary response file %s",
-                           temp_file);
-
-                  status = writeargv (argv, f);
-
-                  if (status)
-                    fatal ("could not write to temporary response file %s",
-                           temp_file);
-
-                  status = fclose (f);
-
-                  if (EOF == status)
-                    fatal ("could not close temporary response file %s",
-                           temp_file);
-
-                  record_temp_file (temp_file, !save_temps_flag, !save_temps_flag);
+		  create_at_file (argv);
                 }
               else
                 for (i = 0; i < max; i++)

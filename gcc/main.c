@@ -32,5 +32,5 @@ int main (int argc, char **argv);
 int
 main (int argc, char **argv)
 {
-  return toplev_main (argc, (const char **) argv);
+  return toplev_main (argc, argv);
 }

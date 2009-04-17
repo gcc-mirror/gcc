@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #define skip_leading_substring(whole,  part) \
    (strncmp (whole, part, strlen (part)) ? NULL : whole + strlen (part))
 
-extern int toplev_main (unsigned int, const char **);
+extern int toplev_main (int, char **);
 extern int read_integral_parameter (const char *, const char *, const int);
 extern void strip_off_ending (char *, int);
 extern const char *trim_filename (const char *);
