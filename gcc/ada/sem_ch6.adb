@@ -7703,10 +7703,22 @@ package body Sem_Ch6 is
                (Is_Class_Wide_Type (Formal_Type)
                   and then Is_Incomplete_Type (Root_Type (Formal_Type)))
             then
-               --  Ada 2005 (AI-326): Tagged incomplete types allowed
+               --  Ada 2005 (AI-326): Tagged incomplete types allowed in
+               --  primitive operations, as long as their completion is
+               --  in the same declarative part. If in the private part
+               --  this means that the type cannot be a Taft-amendment type.
+               --  Check is done on package exit.
 
                if Is_Tagged_Type (Formal_Type) then
-                  null;
+                  if Ekind (Scope (Current_Scope)) = E_Package
+                    and then In_Private_Part (Scope (Current_Scope))
+                    and then not From_With_Type (Formal_Type)
+                    and then not Is_Class_Wide_Type (Formal_Type)
+                  then
+                     Append_Elmt
+                       (Current_Scope,
+                          Private_Dependents (Base_Type (Formal_Type)));
+                  end if;
 
                --  Special handling of Value_Type for CIL case
 

@@ -7230,10 +7230,11 @@ package body Sem_Ch3 is
       Set_Etype         (Derived_Type,           Parent_Base);
       Set_Has_Task      (Derived_Type, Has_Task (Parent_Base));
 
-      Set_Size_Info     (Derived_Type,                Parent_Type);
-      Set_RM_Size       (Derived_Type, RM_Size       (Parent_Type));
-      Set_Convention    (Derived_Type, Convention    (Parent_Type));
-      Set_Is_Controlled (Derived_Type, Is_Controlled (Parent_Type));
+      Set_Size_Info      (Derived_Type,                 Parent_Type);
+      Set_RM_Size        (Derived_Type, RM_Size        (Parent_Type));
+      Set_Convention     (Derived_Type, Convention     (Parent_Type));
+      Set_Is_Controlled  (Derived_Type, Is_Controlled  (Parent_Type));
+      Set_Is_Tagged_Type (Derived_Type, Is_Tagged_Type (Parent_Type));
 
       --  The derived type inherits the representation clauses of the parent.
       --  However, for a private type that is completed by a derivation, there
@@ -13502,6 +13503,9 @@ package body Sem_Ch3 is
                   Error_Msg_NE (
                     "full declaration of } must be a record extension",
                     Prev, Id);
+
+                  --  Set some attributes to produce a usable full view.
+
                   Set_Is_Tagged_Type (Id);
                   Set_Primitive_Operations (Id, New_Elmt_List);
                end if;
@@ -16848,6 +16852,10 @@ package body Sem_Ch3 is
                  Class_Wide_Kind   |
                  E_Incomplete_Type =>
                Constrain_Discriminated_Type (Def_Id, S, Related_Nod);
+
+               if Ekind (Def_Id) = E_Incomplete_Type then
+                  Set_Private_Dependents (Def_Id, New_Elmt_List);
+               end if;
 
             when Private_Kind =>
                Constrain_Discriminated_Type (Def_Id, S, Related_Nod);

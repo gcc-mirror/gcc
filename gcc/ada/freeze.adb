@@ -2483,36 +2483,17 @@ package body Freeze is
                         Error_Msg_Qual_Level := 0;
                      end if;
 
-                     --  Ada 2005 (AI-326): Check wrong use of tag incomplete
-                     --  types with unknown discriminants. For example:
-
-                     --    type T (<>) is tagged;
-                     --    procedure P (X : access T); -- ERROR
-                     --    procedure P (X : T);        -- ERROR
-
                      if not From_With_Type (F_Type) then
                         if Is_Access_Type (F_Type) then
                            F_Type := Designated_Type (F_Type);
                         end if;
-
-                        if Ekind (F_Type) = E_Incomplete_Type
-                          and then Is_Tagged_Type (F_Type)
-                          and then not Is_Class_Wide_Type (F_Type)
-                          and then No (Full_View (F_Type))
-                          and then Unknown_Discriminants_Present
-                                     (Parent (F_Type))
-                          and then No (Stored_Constraint (F_Type))
-                        then
-                           Error_Msg_N
-                             ("(Ada 2005): invalid use of unconstrained tagged"
-                              & " incomplete type", E);
 
                         --  If the formal is an anonymous_access_to_subprogram
                         --  freeze the  subprogram type as well, to prevent
                         --  scope anomalies in gigi, because there is no other
                         --  clear point at which it could be frozen.
 
-                        elsif Is_Itype (Etype (Formal))
+                        if Is_Itype (Etype (Formal))
                           and then Ekind (F_Type) = E_Subprogram_Type
                         then
                            Freeze_And_Append (F_Type, Loc, Result);
@@ -2522,7 +2503,7 @@ package body Freeze is
                      Next_Formal (Formal);
                   end loop;
 
-                  --  Case of function
+                  --  Case of function: similar checks on return type.
 
                   if Ekind (E) = E_Function then
 
@@ -2594,34 +2575,17 @@ package body Freeze is
                         end if;
                      end if;
 
-                     if Is_Array_Type (Etype (E))
-                       and then not Is_Constrained (Etype (E))
+                     if Is_Array_Type (R_Type)
+                       and then not Is_Constrained (R_Type)
                        and then not Is_Imported (E)
                        and then Has_Foreign_Convention (E)
                        and then Warn_On_Export_Import
                        and then not Has_Warnings_Off (E)
-                       and then not Has_Warnings_Off (Etype (E))
+                       and then not Has_Warnings_Off (R_Type)
                      then
                         Error_Msg_N
                           ("?foreign convention function& should not " &
                            "return unconstrained array!", E);
-
-                     --  Ada 2005 (AI-326): Check wrong use of
-                     --  incomplete type
-
-                     --    type T;   --  tagged or just incomplete.
-                     --    function F (X : Boolean) return T; -- ERROR
-
-                     --  The type must be declared in the current scope for the
-                     --  use to be legal, and the full view must be available
-                     --  when the construct that mentions it is frozen.
-
-                     elsif Ekind (Etype (E)) = E_Incomplete_Type
-                       and then No (Full_View (Etype (E)))
-                       and then not Is_Value_Type (Etype (E))
-                     then
-                        Error_Msg_NE
-                          ("invalid use of incomplete type&", E, Etype (E));
                      end if;
                   end if;
                end;

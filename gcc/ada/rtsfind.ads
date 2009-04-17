@@ -1151,6 +1151,7 @@ package Rtsfind is
      RE_Request_Arguments,               -- System.Partition_Interface
      RE_Request_Set_Out,                 -- System.Partition_Interface
      RE_Request_Raise_Occurrence,        -- System.Partition_Interface
+     RE_Request_Destroy,                 -- System.Partition_Interface
      RE_Nil_Exc_List,                    -- System.Partition_Interface
      RE_Servant,                         -- System.Partition_Interface
      RE_Move_Any_Value,                  -- System.Partition_Interface
@@ -2294,6 +2295,7 @@ package Rtsfind is
      RE_Request_Arguments                => System_Partition_Interface,
      RE_Request_Set_Out                  => System_Partition_Interface,
      RE_Request_Raise_Occurrence         => System_Partition_Interface,
+     RE_Request_Destroy                  => System_Partition_Interface,
      RE_Nil_Exc_List                     => System_Partition_Interface,
      RE_Servant                          => System_Partition_Interface,
      RE_Move_Any_Value                   => System_Partition_Interface,

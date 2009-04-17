@@ -5796,6 +5796,10 @@ package body Prj.Nmsc is
                       Util.Value_Of
                         (Name_Source_Files, Data.Decl.Attributes, In_Tree);
 
+      Languages : constant Variable_Value :=
+                      Prj.Util.Value_Of
+                        (Name_Languages, Data.Decl.Attributes, In_Tree);
+
       Last_Source_Dir : String_List_Id  := Nil_String;
 
       procedure Find_Source_Dirs
@@ -6217,153 +6221,24 @@ package body Prj.Nmsc is
          Write_Line ("Starting to look for directories");
       end if;
 
-      --  We set the object directory to its default. It may be set to nil, if
-      --  there is no sources in the project.
+      --  Set the object directory to its default which may be nil, if there
+      --  is no sources in the project.
 
-      Data.Object_Directory := Data.Directory;
-
-      --  Look for the source directories
-
-      if Current_Verbosity = High then
-         Write_Line ("Starting to look for source directories");
-      end if;
-
-      pragma Assert (Source_Dirs.Kind = List, "Source_Dirs is not a list");
-
-      if (not Source_Files.Default) and then
-        Source_Files.Values = Nil_String
+      if (((not Source_Files.Default)
+           and then Source_Files.Values = Nil_String)
+          or else
+          ((not Source_Dirs.Default) and then Source_Dirs.Values = Nil_String)
+           or else
+          ((not Languages.Default) and then Languages.Values = Nil_String))
+        and then Data.Extends = No_Project
       then
-         Data.Source_Dirs := Nil_String;
-
-         if Data.Qualifier = Standard then
-            Error_Msg
-              (Project,
-               In_Tree,
-               "a standard project cannot have no sources",
-               Source_Files.Location);
-         end if;
-
-         if Data.Extends = No_Project
-           and then Data.Object_Directory = Data.Directory
-         then
-            Data.Object_Directory := No_Path_Information;
-         end if;
-
-      elsif Source_Dirs.Default then
-
-         --  No Source_Dirs specified: the single source directory is the one
-         --  containing the project file
-
-         String_Element_Table.Increment_Last
-           (In_Tree.String_Elements);
-         Data.Source_Dirs := String_Element_Table.Last
-           (In_Tree.String_Elements);
-         In_Tree.String_Elements.Table (Data.Source_Dirs) :=
-           (Value         => Name_Id (Data.Directory.Name),
-            Display_Value => Name_Id (Data.Directory.Display_Name),
-            Location      => No_Location,
-            Flag          => False,
-            Next          => Nil_String,
-            Index         => 0);
-
-         if Current_Verbosity = High then
-            Write_Line ("Single source directory:");
-            Write_Str ("    """);
-            Write_Str (Get_Name_String (Data.Directory.Display_Name));
-            Write_Line ("""");
-         end if;
-
-      elsif Source_Dirs.Values = Nil_String then
-         if Data.Qualifier = Standard then
-            Error_Msg
-              (Project,
-               In_Tree,
-               "a standard project cannot have no source directories",
-               Source_Dirs.Location);
-         end if;
-
-         --  If Source_Dirs is an empty string list, this means that this
-         --  project contains no source. For projects that don't extend other
-         --  projects, this also means that there is no need for an object
-         --  directory, if not specified.
-
-         if Data.Extends = No_Project
-           and then  Data.Object_Directory = Data.Directory
-         then
-            Data.Object_Directory := No_Path_Information;
-         end if;
-
-         Data.Source_Dirs := Nil_String;
+         Data.Object_Directory := No_Path_Information;
 
       else
-         declare
-            Source_Dir : String_List_Id;
-            Element    : String_Element;
-
-         begin
-            --  Process the source directories for each element of the list
-
-            Source_Dir := Source_Dirs.Values;
-            while Source_Dir /= Nil_String loop
-               Element := In_Tree.String_Elements.Table (Source_Dir);
-               Find_Source_Dirs
-                 (File_Name_Type (Element.Value), Element.Location);
-               Source_Dir := Element.Next;
-            end loop;
-         end;
+         Data.Object_Directory := Data.Directory;
       end if;
-
-      if not Excluded_Source_Dirs.Default
-        and then Excluded_Source_Dirs.Values /= Nil_String
-      then
-         declare
-            Source_Dir : String_List_Id;
-            Element    : String_Element;
-
-         begin
-            --  Process the source directories for each element of the list
-
-            Source_Dir := Excluded_Source_Dirs.Values;
-            while Source_Dir /= Nil_String loop
-               Element := In_Tree.String_Elements.Table (Source_Dir);
-               Find_Source_Dirs
-                 (File_Name_Type (Element.Value),
-                  Element.Location,
-                  Removed => True);
-               Source_Dir := Element.Next;
-            end loop;
-         end;
-      end if;
-
-      if Current_Verbosity = High then
-         Write_Line ("Putting source directories in canonical cases");
-      end if;
-
-      declare
-         Current : String_List_Id := Data.Source_Dirs;
-         Element : String_Element;
-
-      begin
-         while Current /= Nil_String loop
-            Element := In_Tree.String_Elements.Table (Current);
-            if Element.Value /= No_Name then
-               if not Osint.File_Names_Case_Sensitive then
-                  Get_Name_String (Element.Value);
-                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-                  Element.Value := Name_Find;
-               end if;
-
-               In_Tree.String_Elements.Table (Current) := Element;
-            end if;
-
-            Current := Element.Next;
-         end loop;
-      end;
 
       --  Check the object directory
-
-      pragma Assert (Object_Dir.Kind = Single,
-                     "Object_Dir is not a single string");
 
       if Object_Dir.Value /= Empty_String then
          Get_Name_String (Object_Dir.Value);
@@ -6452,9 +6327,6 @@ package body Prj.Nmsc is
 
       --  Check the exec directory
 
-      pragma Assert (Exec_Dir.Kind = Single,
-                     "Exec_Dir is not a single string");
-
       --  We set the object directory to its default
 
       Data.Exec_Directory   := Data.Object_Directory;
@@ -6502,6 +6374,127 @@ package body Prj.Nmsc is
             Write_Line ("""");
          end if;
       end if;
+
+      --  Look for the source directories
+
+      if Current_Verbosity = High then
+         Write_Line ("Starting to look for source directories");
+      end if;
+
+      pragma Assert (Source_Dirs.Kind = List, "Source_Dirs is not a list");
+
+      if (not Source_Files.Default) and then
+        Source_Files.Values = Nil_String
+      then
+         Data.Source_Dirs := Nil_String;
+
+         if Data.Qualifier = Standard then
+            Error_Msg
+              (Project,
+               In_Tree,
+               "a standard project cannot have no sources",
+               Source_Files.Location);
+         end if;
+
+      elsif Source_Dirs.Default then
+
+         --  No Source_Dirs specified: the single source directory is the one
+         --  containing the project file
+
+         String_Element_Table.Increment_Last
+           (In_Tree.String_Elements);
+         Data.Source_Dirs := String_Element_Table.Last
+           (In_Tree.String_Elements);
+         In_Tree.String_Elements.Table (Data.Source_Dirs) :=
+           (Value         => Name_Id (Data.Directory.Name),
+            Display_Value => Name_Id (Data.Directory.Display_Name),
+            Location      => No_Location,
+            Flag          => False,
+            Next          => Nil_String,
+            Index         => 0);
+
+         if Current_Verbosity = High then
+            Write_Line ("Single source directory:");
+            Write_Str ("    """);
+            Write_Str (Get_Name_String (Data.Directory.Display_Name));
+            Write_Line ("""");
+         end if;
+
+      elsif Source_Dirs.Values = Nil_String then
+         if Data.Qualifier = Standard then
+            Error_Msg
+              (Project,
+               In_Tree,
+               "a standard project cannot have no source directories",
+               Source_Dirs.Location);
+         end if;
+
+         Data.Source_Dirs := Nil_String;
+
+      else
+         declare
+            Source_Dir : String_List_Id;
+            Element    : String_Element;
+
+         begin
+            --  Process the source directories for each element of the list
+
+            Source_Dir := Source_Dirs.Values;
+            while Source_Dir /= Nil_String loop
+               Element := In_Tree.String_Elements.Table (Source_Dir);
+               Find_Source_Dirs
+                 (File_Name_Type (Element.Value), Element.Location);
+               Source_Dir := Element.Next;
+            end loop;
+         end;
+      end if;
+
+      if not Excluded_Source_Dirs.Default
+        and then Excluded_Source_Dirs.Values /= Nil_String
+      then
+         declare
+            Source_Dir : String_List_Id;
+            Element    : String_Element;
+
+         begin
+            --  Process the source directories for each element of the list
+
+            Source_Dir := Excluded_Source_Dirs.Values;
+            while Source_Dir /= Nil_String loop
+               Element := In_Tree.String_Elements.Table (Source_Dir);
+               Find_Source_Dirs
+                 (File_Name_Type (Element.Value),
+                  Element.Location,
+                  Removed => True);
+               Source_Dir := Element.Next;
+            end loop;
+         end;
+      end if;
+
+      if Current_Verbosity = High then
+         Write_Line ("Putting source directories in canonical cases");
+      end if;
+
+      declare
+         Current : String_List_Id := Data.Source_Dirs;
+         Element : String_Element;
+
+      begin
+         while Current /= Nil_String loop
+            Element := In_Tree.String_Elements.Table (Current);
+            if Element.Value /= No_Name then
+               if not Osint.File_Names_Case_Sensitive then
+                  Get_Name_String (Element.Value);
+                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+                  Element.Value := Name_Find;
+               end if;
+
+               In_Tree.String_Elements.Table (Current) := Element;
+            end if;
+
+            Current := Element.Next;
+         end loop;
+      end;
    end Get_Directories;
 
    ---------------

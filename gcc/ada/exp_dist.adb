@@ -7157,12 +7157,36 @@ package body Exp_Dist is
       is
          Loc : constant Source_Ptr := Sloc (Nod);
 
+         Request : constant Entity_Id :=
+                     Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+         --  The request object constructed by these stubs
+         --  Could we use Name_R instead??? (see GLADE client stubs)
+
+         function Make_Request_RTE_Call
+           (RE      : RE_Id;
+            Actuals : List_Id := New_List) return Node_Id;
+         --  Generate a procedure call statement calling RE with the given
+         --  actuals. Request is appended to the list.
+
+         ---------------------------
+         -- Make_Request_RTE_Call --
+         ---------------------------
+
+         function Make_Request_RTE_Call
+           (RE      : RE_Id;
+            Actuals : List_Id := New_List) return Node_Id
+         is
+         begin
+            Append_To (Actuals, New_Occurrence_Of (Request, Loc));
+            return Make_Procedure_Call_Statement (Loc,
+                     Name                   =>
+                       New_Occurrence_Of (RTE (RE), Loc),
+                     Parameter_Associations => Actuals);
+         end Make_Request_RTE_Call;
+
          Arguments : Node_Id;
          --  Name of the named values list used to transmit parameters
          --  to the remote package
-
-         Request : Node_Id;
-         --  The request object constructed by these stubs
 
          Result : Node_Id;
          --  Name of the result named value (in non-APC cases) which get the
@@ -7194,8 +7218,8 @@ package body Exp_Dist is
          --  after the regular statements for writing out parameters.
 
          After_Statements : constant List_Id := New_List;
-         --  Statements to be executed after call returns (to assign
-         --  in out or out parameter values).
+         --  Statements to be executed after call returns (to assign IN OUT or
+         --  OUT parameter values).
 
          Etyp : Entity_Id;
          --  The type of the formal parameter being processed
@@ -7209,7 +7233,6 @@ package body Exp_Dist is
 
       begin
          --  ??? document general form of stub subprograms for the PolyORB case
-         Request := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
 
          Append_To (Decls,
            Make_Object_Declaration (Loc,
@@ -7449,19 +7472,13 @@ package body Exp_Dist is
          Append_List_To (Statements, Extra_Formal_Statements);
 
          Append_To (Statements,
-           Make_Procedure_Call_Statement (Loc,
-             Name =>
-               New_Occurrence_Of (RTE (RE_Request_Create), Loc),
-
-             Parameter_Associations => New_List (
-               Target_Object,
-               Subprogram_Id,
-               New_Occurrence_Of (Arguments, Loc),
-               New_Occurrence_Of (Result, Loc),
-               New_Occurrence_Of (RTE (RE_Nil_Exc_List), Loc))));
-
-         Append_To (Parameter_Associations (Last (Statements)),
-               New_Occurrence_Of (Request, Loc));
+           Make_Request_RTE_Call (RE_Request_Create, New_List (
+                                    Target_Object,
+                                    Subprogram_Id,
+                                    New_Occurrence_Of (Arguments, Loc),
+                                    New_Occurrence_Of (Result, Loc),
+                                    New_Occurrence_Of
+                                      (RTE (RE_Nil_Exc_List), Loc))));
 
          pragma Assert
            (not (Is_Known_Non_Asynchronous and Is_Known_Asynchronous));
@@ -7487,22 +7504,22 @@ package body Exp_Dist is
                  RTE (RE_Asynchronous_P_To_Sync_Scope), Loc),
              Expressions => New_List (Asynchronous_P)));
 
-         Append_To (Statements,
-             Make_Procedure_Call_Statement (Loc,
-               Name                   =>
-                 New_Occurrence_Of (RTE (RE_Request_Invoke), Loc),
-               Parameter_Associations => New_List (
-                 New_Occurrence_Of (Request, Loc))));
+         Append_To (Statements, Make_Request_RTE_Call (RE_Request_Invoke));
 
-         Non_Asynchronous_Statements := New_List (Make_Null_Statement (Loc));
-         Asynchronous_Statements := New_List (Make_Null_Statement (Loc));
+         --  Asynchronous case
+
+         if not Is_Known_Non_Asynchronous then
+            Asynchronous_Statements :=
+              New_List (Make_Request_RTE_Call (RE_Request_Destroy));
+         end if;
+
+         --  Non-asynchronous case
 
          if not Is_Known_Asynchronous then
-
             --  Reraise an exception occurrence from the completed request.
             --  If the exception occurrence is empty, this is a no-op.
 
-            Append_To (Non_Asynchronous_Statements,
+            Non_Asynchronous_Statements := New_List (
               Make_Procedure_Call_Statement (Loc,
                 Name                   =>
                   New_Occurrence_Of (RTE (RE_Request_Raise_Occurrence), Loc),
@@ -7510,6 +7527,9 @@ package body Exp_Dist is
                   New_Occurrence_Of (Request, Loc))));
 
             if Is_Function then
+
+               Append_To (Non_Asynchronous_Statements,
+                 Make_Request_RTE_Call (RE_Request_Destroy));
 
                --  If this is a function call, read the value and return it
 
@@ -7522,10 +7542,17 @@ package body Exp_Dist is
                           Prefix        => Result,
                           Selector_Name => Name_Argument),
                         Decls))));
+
+            else
+
+               --  Case of a procedure: deal with IN OUT and OUT formals
+
+               Append_List_To (Non_Asynchronous_Statements, After_Statements);
+
+               Append_To (Non_Asynchronous_Statements,
+                 Make_Request_RTE_Call (RE_Request_Destroy));
             end if;
          end if;
-
-         Append_List_To (Non_Asynchronous_Statements, After_Statements);
 
          if Is_Known_Asynchronous then
             Append_List_To (Statements, Asynchronous_Statements);

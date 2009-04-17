@@ -1557,7 +1557,17 @@ package body Sem_Attr is
 
          --  Check restriction violations
 
-         Check_Restriction (No_Streams, P);
+         --  First check the No_Streams restriction, which prohibits the use
+         --  of explicit stream attributes in the source program. We do not
+         --  prevent the occurrence of stream attributes in generated code,
+         --  for instance those generated implicitly for dispatching purposes.
+
+         if Comes_From_Source (N) then
+            Check_Restriction (No_Streams, P);
+         end if;
+
+         --  Check special case of Exception_Id and Exception_Occurrence which
+         --  are not allowed for restriction No_Exception_Regstriation.
 
          if Is_RTE (P_Type, RE_Exception_Id)
               or else
@@ -2061,6 +2071,7 @@ package body Sem_Attr is
                         Rewrite (N,
                           Make_Raise_Program_Error (Loc,
                             Reason => PE_Address_Of_Intrinsic));
+
                      else
                         Error_Msg_N
                          ("cannot take Address of intrinsic subprogram", N);

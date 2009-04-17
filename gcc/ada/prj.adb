@@ -161,6 +161,9 @@ package body Prj is
    --  Table to store the path name of all the created temporary files, so that
    --  they can be deleted at the end, or when the program is interrupted.
 
+   procedure Free (Project : in out Project_Data);
+   --  Free memory allocated for Project
+
    -------------------
    -- Add_To_Buffer --
    -------------------
@@ -831,6 +834,19 @@ package body Prj is
    -- Free --
    ----------
 
+   procedure Free (Project : in out Project_Data) is
+   begin
+      Free (Project.Dir_Path);
+      Free (Project.Include_Path);
+      Free (Project.Ada_Include_Path);
+      Free (Project.Objects_Path);
+      Free (Project.Ada_Objects_Path);
+   end Free;
+
+   ----------
+   -- Free --
+   ----------
+
    procedure Free (Tree : in out Project_Tree_Ref) is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Project_Tree_Data, Project_Tree_Ref);
@@ -844,7 +860,6 @@ package body Prj is
          Array_Table.Free (Tree.Arrays);
          Package_Table.Free (Tree.Packages);
          Project_List_Table.Free (Tree.Project_Lists);
-         Project_Table.Free (Tree.Projects);
          Source_Data_Table.Free (Tree.Sources);
          Alternate_Language_Table.Free (Tree.Alt_Langs);
          Unit_Table.Free (Tree.Units);
@@ -852,6 +867,13 @@ package body Prj is
          Files_Htable.Reset (Tree.Files_HT);
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
          Unit_Sources_Htable.Reset (Tree.Unit_Sources_HT);
+
+         for P in Project_Table.First ..
+           Project_Table.Last (Tree.Projects)
+         loop
+            Free (Tree.Projects.Table (P));
+         end loop;
+         Project_Table.Free (Tree.Projects);
 
          --  Private part
 
@@ -885,7 +907,6 @@ package body Prj is
       Array_Table.Init              (Tree.Arrays);
       Package_Table.Init            (Tree.Packages);
       Project_List_Table.Init       (Tree.Project_Lists);
-      Project_Table.Init            (Tree.Projects);
       Source_Data_Table.Init        (Tree.Sources);
       Alternate_Language_Table.Init (Tree.Alt_Langs);
       Unit_Table.Init               (Tree.Units);
@@ -893,6 +914,15 @@ package body Prj is
       Files_Htable.Reset            (Tree.Files_HT);
       Source_Paths_Htable.Reset     (Tree.Source_Paths_HT);
       Unit_Sources_Htable.Reset     (Tree.Unit_Sources_HT);
+
+      if not Project_Table."=" (Tree.Projects.Table, null) then
+         for P in Project_Table.First ..
+           Project_Table.Last (Tree.Projects)
+         loop
+            Free (Tree.Projects.Table (P));
+         end loop;
+      end if;
+      Project_Table.Init            (Tree.Projects);
 
       --  Private part table
 
