@@ -1,3 +1,8 @@
+2009-04-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (field_byte_offset): Use the type size as the field size
+	if the latter is not constant.
+
 2009-04-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* dbxout.c (xcoff_debug_hooks): Add set_name_debug_nothing.
