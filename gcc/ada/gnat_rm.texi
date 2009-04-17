@@ -13097,9 +13097,19 @@ string, the filename must be a standard 8bits string.
 @end itemize
 
 In the absence of a @samp{encoding=@var{xxx}} form parameter, the
-value UTF-8 is used. This encoding form parameter is only supported on
-the Windows platform. On the other Operating Systems the runtime is
-supporting UTF-8 natively.
+encoding is controlled by the @samp{GNAT_CODE_PAGE} environment
+variable. And if not set @samp{utf8} is assumed.
+
+@table @samp
+@item CP_ACP
+The current system Windows ANSI code page.
+@item CP_UTF8
+UTF-8 encoding
+@end table
+
+This encoding form parameter is only supported on the Windows
+platform. On the other Operating Systems the run-time is supporting
+UTF-8 natively.
 
 @node Open Modes
 @section Open Modes
