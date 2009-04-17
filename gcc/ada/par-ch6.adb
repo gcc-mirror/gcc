@@ -221,13 +221,12 @@ package body Ch6 is
          --  and bodies can occur.
 
          if Pf_Flags /= Pf_Decl_Gins_Pbod_Rnam_Stub
-           and then Pf_Flags /= Pf_Decl_Pbod
+              and then
+            Pf_Flags /= Pf_Decl_Pbod
          then
             Error_Msg_SC ("overriding indicator not allowed here!");
 
-         elsif Token /= Tok_Function
-           and then Token /= Tok_Procedure
-         then
+         elsif Token /= Tok_Function and then Token /= Tok_Procedure then
             Error_Msg_SC ("FUNCTION or PROCEDURE expected!");
          end if;
       end if;

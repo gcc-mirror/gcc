@@ -108,13 +108,6 @@ package Nlists is
    function New_Copy_List_Original (List : List_Id) return List_Id;
    --  Same as New_Copy_List but copies only nodes coming from source
 
-   function New_Copy_List_Tree (List : List_Id) return List_Id;
-   --  Similar to New_Copy_List, except that the copies are done using the
-   --  Atree.New_Copy_Tree function, which means that a full recursive copy
-   --  of the subtrees in the list is performed, setting proper parents. As
-   --  for New_Copy_Tree, it is illegal to attempt to copy extended nodes
-   --  (entities) either directly or indirectly using this function.
-
    function First (List : List_Id) return Node_Id;
    pragma Inline (First);
    --  Obtains the first element of the given node list or, if the node list

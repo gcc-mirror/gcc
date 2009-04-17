@@ -715,8 +715,8 @@ package body Prj is
    is
    begin
       if Object_File_Suffix = No_Name then
-         return Extend_Name (Source_File_Name, Object_Suffix);
-
+         return Extend_Name
+           (Source_File_Name, Object_Suffix);
       else
          return Extend_Name
            (Source_File_Name, Get_Name_String (Object_File_Suffix));
@@ -880,6 +880,7 @@ package body Prj is
          loop
             Free (Tree.Projects.Table (P));
          end loop;
+
          Project_Table.Free (Tree.Projects);
 
          --  Private part
@@ -929,6 +930,7 @@ package body Prj is
             Free (Tree.Projects.Table (P));
          end loop;
       end if;
+
       Project_Table.Init            (Tree.Projects);
 
       --  Private part table

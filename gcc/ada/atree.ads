@@ -430,7 +430,7 @@ package Atree is
    --  Source to be Empty, in which case Relocate_Node simply returns
    --  Empty as the result.
 
-   function New_Copy_Tree
+   function New_Copy_Tree1
      (Source    : Node_Id;
       Map       : Elist_Id   := No_Elist;
       New_Sloc  : Source_Ptr := No_Location;
@@ -3113,6 +3113,95 @@ package Atree is
       pragma Pack (Node_Record);
       for Node_Record'Size use 8*32;
       for Node_Record'Alignment use 4;
+
+      function E_To_N is new Unchecked_Conversion (Entity_Kind, Node_Kind);
+      function N_To_E is new Unchecked_Conversion (Node_Kind, Entity_Kind);
+
+      --  Default value used to initialize default nodes. Note that some of the
+      --  fields get overwritten, and in particular, Nkind always gets reset.
+
+      Default_Node : Node_Record := (
+         Is_Extension      => False,
+         Pflag1            => False,
+         Pflag2            => False,
+         In_List           => False,
+         Unused_1          => False,
+         Rewrite_Ins       => False,
+         Analyzed          => False,
+         Comes_From_Source => False,
+         --  modified by Set_Comes_From_Source_Default
+         Error_Posted      => False,
+         Flag4             => False,
+
+         Flag5             => False,
+         Flag6             => False,
+         Flag7             => False,
+         Flag8             => False,
+         Flag9             => False,
+         Flag10            => False,
+         Flag11            => False,
+         Flag12            => False,
+
+         Flag13            => False,
+         Flag14            => False,
+         Flag15            => False,
+         Flag16            => False,
+         Flag17            => False,
+         Flag18            => False,
+
+         Nkind             => N_Unused_At_Start,
+
+         Sloc              => No_Location,
+         Link              => Empty_List_Or_Node,
+         Field1            => Empty_List_Or_Node,
+         Field2            => Empty_List_Or_Node,
+         Field3            => Empty_List_Or_Node,
+         Field4            => Empty_List_Or_Node,
+         Field5            => Empty_List_Or_Node);
+
+      --  Default value used to initialize node extensions (i.e. the second
+      --  and third and fourth components of an extended node). Note we are
+      --  cheating a bit here when it comes to Node12, which really holds
+      --  flags an (for the third component), the convention. But it works
+      --  because Empty, False, Convention_Ada, all happen to be all zero bits.
+
+      Default_Node_Extension : constant Node_Record := (
+         Is_Extension      => True,
+         Pflag1            => False,
+         Pflag2            => False,
+         In_List           => False,
+         Unused_1          => False,
+         Rewrite_Ins       => False,
+         Analyzed          => False,
+         Comes_From_Source => False,
+         Error_Posted      => False,
+         Flag4             => False,
+
+         Flag5             => False,
+         Flag6             => False,
+         Flag7             => False,
+         Flag8             => False,
+         Flag9             => False,
+         Flag10            => False,
+         Flag11            => False,
+         Flag12            => False,
+
+         Flag13            => False,
+         Flag14            => False,
+         Flag15            => False,
+         Flag16            => False,
+         Flag17            => False,
+         Flag18            => False,
+
+         Nkind             => E_To_N (E_Void),
+
+         Field6            => Empty_List_Or_Node,
+         Field7            => Empty_List_Or_Node,
+         Field8            => Empty_List_Or_Node,
+         Field9            => Empty_List_Or_Node,
+         Field10           => Empty_List_Or_Node,
+         Field11           => Empty_List_Or_Node,
+         Field12           => Empty_List_Or_Node);
 
       --  The following defines the extendable array used for the nodes table
       --  Nodes with extensions use five consecutive entries in the array
