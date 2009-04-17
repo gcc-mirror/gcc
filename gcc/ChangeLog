@@ -1,3 +1,18 @@
+2009-04-17  Rafael Avila de Espindola  <espindola@google.com>
+
+	* Makefile.in (REVISION_s): Always include quotes. Change ifdef to use
+	REVISION_c.
+	(OBJS-common): Add plugin-version.o.
+	(plugin-version.o): New.
+	* gcc-plugin.h (plugin_gcc_version): New.
+	(plugin_default_version_check): New.
+	(plugin_init_func, plugin_init): Add version argument.
+	* plugin-version.c: New.
+	* plugin.c (str_plugin_gcc_version_name): New.
+	(try_init_one_plugin): Read plugin_gcc_version from the plugin and
+	pass it to the init function.
+	(plugin_default_version_check): New.
+
 2009-04-17  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (refs_may_alias_p_1): Do not use TBAA
