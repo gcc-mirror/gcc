@@ -1,5 +1,15 @@
 2009-04-17  Thomas Quinot  <quinot@adacore.com>
 
+	* exp_aggr.adb: Minor code reorganization, no behaviour change.
+
+2009-04-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Use_One_Type): Handle properly a redundant use type
+	clause in a unit that is a package body or a subunit, when the previous
+	clause appears in a spec or a parent.
+
+2009-04-17  Thomas Quinot  <quinot@adacore.com>
+
 	* sinfo.ads, exp_aggr.adb, exp_aggr.ads: Minor reformatting
 
 	* exp_ch7.adb: Minor reformatting

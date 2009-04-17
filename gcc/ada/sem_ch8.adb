@@ -7249,13 +7249,32 @@ package body Sem_Ch8 is
                      Unit1 := Unit (Parent (Clause1));
                      Unit2 := Unit (Parent (Clause2));
 
-                     --  If both clauses are on same unit, report redundancy
+                     --  If both clauses are on same unit, or one is the body
+                     --  of the other, or one of them is in a subunit, report
+                     --  redundancy on the later one.
 
                      if Unit1 = Unit2 then
                         Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
                         Error_Msg_NE
                           ("& is already use-visible through previous "
                            & "use_type_clause #?", Clause1, T);
+                        return;
+
+                     elsif Nkind (Unit1) = N_Subunit then
+                        Error_Msg_Sloc := Sloc (Current_Use_Clause (T));
+                        Error_Msg_NE
+                          ("& is already use-visible through previous "
+                           & "use_type_clause #?", Clause1, T);
+                        return;
+
+                     elsif Nkind_In (Unit2, N_Package_Body, N_Subprogram_Body)
+                       and then Nkind (Unit1) /= Nkind (Unit2)
+                       and then Nkind (Unit1) /= N_Subunit
+                     then
+                        Error_Msg_Sloc := Sloc (Clause1);
+                        Error_Msg_NE
+                          ("& is already use-visible through previous "
+                           & "use_type_clause #?", Current_Use_Clause (T), T);
                         return;
                      end if;
 
