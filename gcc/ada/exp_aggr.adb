@@ -2550,6 +2550,9 @@ package body Exp_Aggr is
             --  in the limited case, the ancestor part must be either a
             --  function call (possibly qualified, or wrapped in an unchecked
             --  conversion) or aggregate (definitely qualified).
+            --  The ancestor part can also be a function call (that may be
+            --  transformed into an explicit dereference) or a qualification
+            --  of one such.
 
             elsif Is_Limited_Type (Etype (A))
               and then Nkind (Unqualify (A)) /= N_Function_Call --  aggregate?
@@ -2557,6 +2560,7 @@ package body Exp_Aggr is
                 (Nkind (Unqualify (A)) /= N_Unchecked_Type_Conversion
                    or else
                  Nkind (Expression (Unqualify (A))) /= N_Function_Call)
+              and then Nkind (Unqualify (A)) /= N_Explicit_Dereference
             then
                Ancestor_Is_Expression := True;
 
@@ -3420,6 +3424,7 @@ package body Exp_Aggr is
 
    procedure Convert_To_Assignments (N : Node_Id; Typ : Entity_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
+      T    : Entity_Id;
       Temp : Entity_Id;
 
       Instr       : Node_Id;
@@ -3524,18 +3529,29 @@ package body Exp_Aggr is
       else
          Temp := Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
 
+         --  If the type inherits unknown discriminants, use the view with
+         --  known discriminants if available.
+
+         if Has_Unknown_Discriminants (Typ)
+            and then Present (Underlying_Record_View (Typ))
+         then
+            T := Underlying_Record_View (Typ);
+         else
+            T := Typ;
+         end if;
+
          Instr :=
            Make_Object_Declaration (Loc,
              Defining_Identifier => Temp,
-             Object_Definition   => New_Occurrence_Of (Typ, Loc));
+             Object_Definition   => New_Occurrence_Of (T, Loc));
 
          Set_No_Initialization (Instr);
          Insert_Action (N, Instr);
-         Initialize_Discriminants (Instr, Typ);
+         Initialize_Discriminants (Instr, T);
          Target_Expr := New_Occurrence_Of (Temp, Loc);
-         Insert_Actions (N, Build_Record_Aggr_Code (N, Typ, Target_Expr));
+         Insert_Actions (N, Build_Record_Aggr_Code (N, T, Target_Expr));
          Rewrite (N, New_Occurrence_Of (Temp, Loc));
-         Analyze_And_Resolve (N, Typ);
+         Analyze_And_Resolve (N, T);
       end if;
    end Convert_To_Assignments;
 

@@ -1,3 +1,25 @@
+2009-04-17  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb: New attribute Underlying_Record_View, to handle
+	type extensions whose parent is a type with unknown discriminants.
+
+	* exp_aggr.adb (Expand_Record_Aggregate): If the type of an extension
+	aggregate has unknown discriminants, use the Underlying_Record_View to
+	obtain the discriminants of the ancestor part.
+
+	* exp_disp.adb (Build_Dispatch_Tables): Types that are
+	Underlying_Record_Views share the dispatching information of the
+	original record extension.
+
+	* exp_ch3.adb (Expand_Record_Extension): If the type inherits unknown
+	discriminants, propagate dispach table information to the
+	Underlying_Record_View.
+
+	* sem_ch3.adb (Build_Derived_Private_Type): If parent type has unknown
+	discriminants and declaration is not a completion, generate
+	Underlying_Record_View to provide proper discriminant information to
+	the front-end and to gigi.
+
 2009-04-17  Robert Dewar  <dewar@adacore.com>
 
 	* s-conca5.adb, g-sercom.adb, s-conca5.ads, s-conca7.adb, exp_imgv.adb,

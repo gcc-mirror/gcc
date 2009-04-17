@@ -170,8 +170,24 @@ package body Exp_Disp is
               and then Ekind (Defining_Entity (D)) /= E_Record_Subtype
               and then not Is_Private_Type (Defining_Entity (D))
             then
-               Insert_List_After_And_Analyze (Last (Target_List),
-                 Make_DT (Defining_Entity (D)));
+
+               --  We do not generate dispatch tables for the internal type
+               --  created for a type extension with unknown discriminants
+               --  The needed information is shared with the source type,
+               --  See Expand_N_Record_Extension.
+
+               if not Comes_From_Source (Defining_Entity (D))
+                 and then
+                   Has_Unknown_Discriminants (Etype (Defining_Entity (D)))
+                 and then
+                    not Comes_From_Source (First_Subtype (Defining_Entity (D)))
+               then
+                  null;
+
+               else
+                  Insert_List_After_And_Analyze (Last (Target_List),
+                    Make_DT (Defining_Entity (D)));
+               end if;
 
             --  Handle private types of library level tagged types. We must
             --  exchange the private and full-view to ensure the correct

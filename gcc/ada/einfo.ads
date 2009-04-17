@@ -3558,6 +3558,13 @@ package Einfo is
 --       private completion. If Td is already constrained, then its full view
 --       can serve directly as the full view of T.
 
+--    Underlying_Record_View (Node24)
+--       Present in record types. Set for record types that are extensions of
+--       types with unknown discriminants. Such types do not have a completion,
+--       but they cannot be used without having some discriminated view at
+--       hand. This view is a record type with the same structure, whose parent
+--       type is the full view of the parent in the original type extension.
+
 --    Underlying_Type (synthesized)
 --       Applies to all entities. This is the identity function except in the
 --       case where it is applied to an incomplete or private type, in which
@@ -5246,6 +5253,7 @@ package Einfo is
    --    Discriminant_Constraint             (Elist21)
    --    Corresponding_Remote_Type           (Node22)
    --    Stored_Constraint                   (Elist23)
+   --    Underlying_Record_View              (Node24)   (base type only)
    --    Interfaces                          (Elist25)
    --    Component_Alignment                 (special)  (base type only)
    --    C_Pass_By_Copy                      (Flag125)  (base type only)
@@ -5983,6 +5991,7 @@ package Einfo is
    function Task_Body_Procedure                 (Id : E) return N;
    function Treat_As_Volatile                   (Id : E) return B;
    function Underlying_Full_View                (Id : E) return E;
+   function Underlying_Record_View              (Id : E) return E;
    function Universal_Aliasing                  (Id : E) return B;
    function Unset_Reference                     (Id : E) return N;
    function Used_As_Generic_Actual              (Id : E) return B;
@@ -6534,6 +6543,7 @@ package Einfo is
    procedure Set_Task_Body_Procedure             (Id : E; V : N);
    procedure Set_Treat_As_Volatile               (Id : E; V : B := True);
    procedure Set_Underlying_Full_View            (Id : E; V : E);
+   procedure Set_Underlying_Record_View          (Id : E; V : E);
    procedure Set_Universal_Aliasing              (Id : E; V : B := True);
    procedure Set_Unset_Reference                 (Id : E; V : N);
    procedure Set_Used_As_Generic_Actual          (Id : E; V : B := True);
@@ -7226,6 +7236,7 @@ package Einfo is
    pragma Inline (Task_Body_Procedure);
    pragma Inline (Treat_As_Volatile);
    pragma Inline (Underlying_Full_View);
+   pragma Inline (Underlying_Record_View);
    pragma Inline (Universal_Aliasing);
    pragma Inline (Unset_Reference);
    pragma Inline (Used_As_Generic_Actual);
@@ -7610,6 +7621,7 @@ package Einfo is
    pragma Inline (Set_Task_Body_Procedure);
    pragma Inline (Set_Treat_As_Volatile);
    pragma Inline (Set_Underlying_Full_View);
+   pragma Inline (Set_Underlying_Record_View);
    pragma Inline (Set_Universal_Aliasing);
    pragma Inline (Set_Unset_Reference);
    pragma Inline (Set_Used_As_Generic_Actual);
