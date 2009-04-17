@@ -67,22 +67,42 @@ struct plugin_info
   const char *help;
 };
 
+/* Represents the gcc version. Used to avoid using an incompatible plugin. */
+
+struct plugin_gcc_version
+{
+  const char *basever;
+  const char *datestamp;
+  const char *devphase;
+  const char *revision;
+  const char *configuration_arguments;
+};
+
+extern struct plugin_gcc_version plugin_gcc_version;
+
+/* The default version check. Compares every field in VERSION. */
+
+extern bool plugin_default_version_check(struct plugin_gcc_version *version);
+
 /* Function type for the plugin initialization routine. Each plugin module
    should define this as an externally-visible function with name
    "plugin_init."
 
    PLUGIN_NAME - name of the plugin (useful for error reporting)
+   VERSION     - the plugin_gcc_version symbol of the plugin itself.
    ARGC        - the size of the ARGV array
    ARGV        - an array of key-value argument pair
 
    Returns 0 if initialization finishes successfully.  */
 
 typedef int (*plugin_init_func) (const char *plugin_name,
+                                 struct plugin_gcc_version *version,
                                  int argc, struct plugin_argument *argv);
 
 /* Declaration for "plugin_init" function so that it doesn't need to be
    duplicated in every plugin.  */
-extern int plugin_init (const char *, int, struct plugin_argument *);
+extern int plugin_init (const char *, struct plugin_gcc_version *version,
+			int, struct plugin_argument *);
 
 /* Function type for a plugin callback routine.
 

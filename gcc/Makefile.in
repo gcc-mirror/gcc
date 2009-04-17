@@ -780,7 +780,7 @@ BUGURL_TEXI := @REPORT_BUGS_TEXI@
 ifdef REVISION_c
 REVISION_s  := "\"$(if $(DEVPHASE_c), $(REVISION_c))\""
 else
-REVISION_s  :=
+REVISION_s  := "\"\""
 endif
 
 # Shorthand variables for dependency lists.
@@ -1154,6 +1154,7 @@ OBJS-common = \
 	params.o \
 	passes.o \
 	plugin.o \
+	plugin-version.o \
 	pointer-set.o \
 	postreload-gcse.o \
 	postreload.o \
@@ -2003,7 +2004,7 @@ gcc-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) opts.h intl
 
 dumpvers: dumpvers.c
 
-ifdef REVISION_s
+ifdef REVISION_c
 version.o: version.c version.h $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 else
 version.o: version.c version.h $(DATESTAMP) $(BASEVER) $(DEVPHASE)
@@ -2472,6 +2473,12 @@ passes.o : passes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 
 plugin.o : plugin.c $(PLUGIN_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    errors.h $(TOPLEV_H) $(TREE_H) $(TREE_PASS_H) intl.h
+
+plugin-version.o : plugin-version.c $(SYSTEM_H) gcc-plugin.h configargs.h
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	-DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
+	-DREVISION=$(REVISION_s) -DDEVPHASE=$(DEVPHASE_s) -c \
+	-DPLUGIN $(srcdir)/plugin-version.c $(OUTPUT_OPTION)
 
 main.o : main.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TOPLEV_H)
 

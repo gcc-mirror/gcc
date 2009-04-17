@@ -99,6 +99,7 @@ static struct pass_list_node *prev_added_pass_node;
 /* Each plugin should define an initialization function with exactly
    this name.  */
 static const char *str_plugin_init_func_name = "plugin_init";
+static const char *str_plugin_gcc_version_name = "plugin_gcc_version";
 #endif
 
 /* Helper function for the hash table that compares the base_name of the
@@ -566,8 +567,10 @@ try_init_one_plugin (struct plugin_name_args *plugin)
 {
   void *dl_handle;
   plugin_init_func plugin_init;
+  struct plugin_gcc_version *version;
   char *err;
   PTR_UNION_TYPE (plugin_init_func) plugin_init_union;
+  PTR_UNION_TYPE (struct plugin_gcc_version*) version_union;
 
   dl_handle = dlopen (plugin->full_name, RTLD_NOW);
   if (!dl_handle)
@@ -590,8 +593,12 @@ try_init_one_plugin (struct plugin_name_args *plugin)
       return false;
     }
 
+  PTR_UNION_AS_VOID_PTR (version_union) =
+      dlsym (dl_handle, str_plugin_gcc_version_name);
+  version = PTR_UNION_AS_CAST_PTR (version_union);
+
   /* Call the plugin-provided initialization routine with the arguments.  */
-  if ((*plugin_init) (plugin->base_name, plugin->argc, plugin->argv))
+  if ((*plugin_init) (plugin->base_name, version, plugin->argc, plugin->argv))
     {
       error ("Fail to initialize plugin %s", plugin->full_name);
       return false;
@@ -804,4 +811,27 @@ void
 debug_active_plugins (void)
 {
   dump_active_plugins (stderr);
+}
+
+/* The default version check. Compares every field in VERSION. */
+
+bool
+plugin_default_version_check(struct plugin_gcc_version *version)
+{
+  /* version is NULL if the plugin was not linked with plugin-version.o */
+  if (!version)
+    return false;
+
+  if (strcmp (version->basever, plugin_gcc_version.basever))
+    return false;
+  if (strcmp (version->datestamp, plugin_gcc_version.datestamp))
+    return false;
+  if (strcmp (version->devphase, plugin_gcc_version.devphase))
+    return false;
+  if (strcmp (version->revision, plugin_gcc_version.revision))
+    return false;
+  if (strcmp (version->configuration_arguments,
+	      plugin_gcc_version.configuration_arguments))
+    return false;
+  return true;
 }
