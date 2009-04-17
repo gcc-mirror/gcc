@@ -65,7 +65,7 @@ __gnat_mkdir (char *dir_name)
 #elif defined (__MINGW32__)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
-  S2WSU (wname, dir_name, GNAT_MAX_PATH_LEN + 2);
+  S2WSC (wname, dir_name, GNAT_MAX_PATH_LEN + 2);
   return _tmkdir (wname);
 #else
   return mkdir (dir_name, S_IRWXU | S_IRWXG | S_IRWXO);

@@ -62,6 +62,7 @@
 #endif
 
 #include <tchar.h>
+#include <windows.h>
 
 /* After including this file it is possible to use the character t as prefix
    to routines. If GNAT_UNICODE_SUPPORT is defined then the unicode enabled
@@ -71,10 +72,22 @@
    the proper translations using the UTF-8 encoding.  */
 
 #ifdef GNAT_UNICODE_SUPPORT
+
+extern UINT CurrentCodePage;
+
+/*  Macros to convert to/from the code page speficied in CurrentCodePage.  */
+#define S2WSC(wstr,str,len) \
+   MultiByteToWideChar (CurrentCodePage,0,str,-1,wstr,len)
+#define WS2SC(str,wstr,len) \
+   WideCharToMultiByte (CurrentCodePage,0,wstr,-1,str,len,NULL,NULL)
+
+/*  Macros to convert to/from UTF-8 code page.  */
 #define S2WSU(wstr,str,len) \
    MultiByteToWideChar (CP_UTF8,0,str,-1,wstr,len)
 #define WS2SU(str,wstr,len) \
    WideCharToMultiByte (CP_UTF8,0,wstr,-1,str,len,NULL,NULL)
+
+/*  Macros to convert to/from Windows default code page.  */
 #define S2WS(wstr,str,len) \
    MultiByteToWideChar (CP_ACP,0,str,-1,wstr,len)
 #define WS2S(str,wstr,len) \

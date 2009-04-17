@@ -2822,7 +2822,7 @@ package body Exp_Ch4 is
 
       --    There are nine or fewer retained (non-null) operands
 
-      --    The optimization level is -O0 or -Os
+      --    The optimization level is -O0
 
       --    The corresponding System.Concat_n.Str_Concat_n routine is
       --    available in the run time.
@@ -2835,9 +2835,7 @@ package body Exp_Ch4 is
 
       if Atyp = Standard_String
         and then NN in 2 .. 9
-        and then (Opt.Optimization_Level = 0
-                   or else Opt.Optimize_Size /= 0
-                   or else Debug_Flag_Dot_CC)
+        and then (Opt.Optimization_Level = 0 or else Debug_Flag_Dot_CC)
         and then not Debug_Flag_Dot_C
       then
          declare
