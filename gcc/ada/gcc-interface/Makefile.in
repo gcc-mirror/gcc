@@ -1887,7 +1887,8 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
 
   EH_MECHANISM=-gcc
   GNATLIB_SHARED = gnatlib-shared-darwin
-  SO_OPTS = -Wl,-flat_namespace -shared-libgcc
+  SO_OPTS = -Wl,-flat_namespace -shared-libgcc \
+    -Wl,-install_name,@rpath/libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
   RANLIB = ranlib -c
   GMEM_LIB = gmemlib
   PREFIX_OBJS=$(PREFIX_REAL_OBJS)
