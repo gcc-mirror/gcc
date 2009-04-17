@@ -5231,6 +5231,9 @@ package body Sem_Res is
         and then Present (Controlling_Argument (N))
       then
          Generate_Reference (Nam, Subp, 'R');
+
+      --  Normal case, not a dispatching call
+
       else
          Generate_Reference (Nam, Subp);
       end if;

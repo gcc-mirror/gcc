@@ -1,3 +1,26 @@
+2009-04-17  Robert Dewar  <dewar@adacore.com>
+
+	* exp_disp.adb: Minor reformatting
+	Minor code reorganization (use Nkind_In)
+
+	* prepcomp.adb: Minor reformatting
+
+	* sem_ch3.adb: Minor reformatting
+
+	* sem_res.adb: Minor comment addition
+
+	* exp_ch5.adb (Expand_Assign_Array): Use Has_Address_Clause to test
+	for address clause
+
+	* lib-xref.adb (Generate_Reference): Exclude recursive calls from
+	setting Is_Referenced
+
+	* types.ads: Minor reformatting
+
+2009-04-17  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Initial documentation on binding generator.
+
 2009-04-17  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.ads, einfo.adb: New attribute Underlying_Record_View, to handle

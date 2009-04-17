@@ -192,8 +192,8 @@ package Types is
    subtype Source_Buffer is Text_Buffer;
    --  Type used to store text of a source file . The buffer for the main
    --  source (the source specified on the command line) has a lower bound
-   --  starting at zero. Subsequent subsidiary sources have lower bounds which
-   --  are one greater than the previous upper bound.
+   --  starting at zero. Subsequent subsidiary sources have lower bounds
+   --  which are one greater than the previous upper bound.
 
    subtype Big_Source_Buffer is Text_Buffer (0 .. Text_Ptr'Last);
    --  This is a virtual type used as the designated type of the access

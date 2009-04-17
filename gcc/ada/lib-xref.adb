@@ -564,6 +564,15 @@ package body Lib.Xref is
                   Set_Referenced_As_LHS (E, False);
                end if;
 
+            --  Don't count a recursive reference within a subprogram as a
+            --  reference (that allows detection of a recursive subprogram
+            --  whose only references are recursive calls as unreferenced).
+
+            elsif Is_Subprogram (E)
+              and then E = Nearest_Dynamic_Scope (Current_Scope)
+            then
+               null;
+
             --  Any other occurrence counts as referencing the entity
 
             elsif OK_To_Set_Referenced then

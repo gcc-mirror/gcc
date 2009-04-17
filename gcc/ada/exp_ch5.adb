@@ -311,12 +311,7 @@ package body Exp_Ch5 is
       --  If either operand has an address clause clear Backwards_OK and
       --  Forwards_OK, since we cannot tell if the operands overlap.
 
-      if (Is_Entity_Name (Lhs)
-           and then Present (Address_Clause (Entity (Lhs))))
-        or else
-         (Is_Entity_Name (Lhs)
-          and then Present (Address_Clause (Entity (Lhs))))
-      then
+      if Has_Address_Clause (Lhs) or else Has_Address_Clause (Rhs) then
          Set_Forwards_OK  (N, False);
          Set_Backwards_OK (N, False);
       end if;

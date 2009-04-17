@@ -187,6 +187,7 @@ AdaCore@*
 * Stack Related Facilities::
 * Verifying Properties Using gnatcheck::
 * Creating Sample Bodies Using gnatstub::
+* Generating Ada Bindings for C and C++ headers::
 * Other Utility Programs::
 * Running and Debugging Ada Programs::
 @ifclear vms
@@ -844,6 +845,10 @@ a utility that checks Ada code against a set of rules.
 @item
 @ref{Creating Sample Bodies Using gnatstub}, discusses @code{gnatstub},
 a utility that generates empty but compilable bodies for library units.
+
+@item
+@ref{Generating Ada Bindings for C and C++ headers}, describes how to
+generate automatically Ada bindings from C and C++ headers.
 
 @item
 @ref{Other Utility Programs}, discusses several other GNAT utilities,
@@ -22245,6 +22250,148 @@ unless this option is set.
 @cindex @option{^-v^/VERBOSE^} (@command{gnatstub})
 Verbose mode: generate version information.
 
+@end table
+
+@c *********************************
+@node Generating Ada Bindings for C and C++ headers
+@chapter Generating Ada Bindings for C and C++ headers
+@findex binding
+
+@noindent
+GNAT now comes with a new experimental binding generator for C and C++
+headers which is intended to do 95% of the tedious work of generating
+Ada specs from C or C++ header files. Note that this still is a work in
+progress, not designed to generate 100% correct Ada specs.
+
+Note that the code generated is using the Ada 2005 syntax, which makes it
+easier to inteface with other languages than previous versions of Ada.
+
+@menu
+* Running the binding generator::
+* Generating bindings for C++ headers::
+* Switches::
+@end menu
+
+@node Running the binding generator
+@section Running the binding generator
+
+@noindent
+The binding generator is part of the @command{gcc} compiler and can be
+invoked via the @option{-fdump-ada-spec} switch, which will generate Ada
+spec files for the header files specified on the command line, and all
+header files needed by these files transitivitely. For example:
+
+@smallexample
+$ g++ -c -fdump-ada-spec -C /usr/include/time.h
+$ gcc -c -gnat05 *.ads
+@end smallexample
+
+will generate, under GNU/Linux, the following files: @file{bits_time_h.ads},
+@code{bits_types_h.ads}, @code{stddef_h.ads}, @code{time_h.ads} which
+correspond to the files @file{/usr/include/time.h},
+@file{/usr/include/bits/time.h}, etc@dots{}, and will then compile in Ada 2005
+mode these Ada specs.
+
+The @code{-C} switch tells @command{gcc} to extract comments from headers,
+and will attempt to generate corresponding Ada comments.
+
+If you want to generate a single Ada file and not the transitive closure, you
+can use instead the @option{-fdump-ada-spec-slim} switch.
+
+Note that we recommend when possible to use the @command{g++} driver to
+generate bindings, even for most C headers, since this will in general
+generate better Ada specs. For generating bindings for C++ headers, it is
+mandatory to use the @command{g++} command, or @command{gcc -x c++} which
+is equivalent in this case. If @command{g++} cannot work on your C headers
+because of incompatibilities between C and C++, then you can fallback to
+@command{gcc} instead.
+
+For an example of better bindings generated from the C++ front-end,
+the name of the parameters (when available) are actually ignored by the C
+front-end. Consider the following C header:
+
+@smallexample
+extern void foo (int variable);
+@end smallexample
+
+with the C front-end, @code{variable} is ignored, and the above is handled as:
+
+@smallexample
+extern void foo (int);
+@end smallexample
+
+generating a generic:
+
+@smallexample
+procedure foo (param1 : int);
+@end smallexample
+
+with the C++ front-end, the name is available, and we generate:
+
+@smallexample
+procedure foo (variable : int);
+@end smallexample
+
+In some cases, the generated bindings will be more complete or more meaningful
+when defining some macros, which you can do via the @option{-D} switch. this
+is for example the case with @file{Xlib.h} under GNU/Linux:
+
+@smallexample
+g++ -c -fdump-ada-spec -DXLIB_ILLEGAL_ACCESS -C /usr/include/X11/Xlib.h
+@end smallexample
+
+The above will generate more complete bindings than a straight call without
+the @option{-DXLIB_ILLEGAL_ACCESS} switch.
+
+In other cases, it is not possible to parse a header file in a stand alone
+manner, because other include files need to be included first. In this
+case, the solution is to create a small header file including the needed
+@code{#include} and possible @code{#define} directives. For example, to
+generate Ada bindings for @file{readline/readlin.h}, you need to first
+include @file{stdio.h}, so you can create a file with the following two
+lines in e.g. @file{readline1.h}:
+
+@smallexample
+#include <stdio.h>
+#include <readline/readline.h>
+@end smallexample
+
+and then generate Ada bindings from this file:
+
+@smallexample
+$ g++ -c -fdump-ada-spec readline1.h
+@end smallexample
+
+@node Generating bindings for C++ headers
+@section Generating bindings for C++ headers
+
+@noindent
+Generating bindings for C++ headers is done using the same options, always
+with the @command{g++} compiler.
+
+In this mode, C++ classes will be mapped to Ada tagged types, constructors
+will be mapped using the @code{CPP_Constructor} pragma, and when possible,
+multiple inheritance of abstract classes will be mapped to Ada interfaces
+(@xref{Interfacing to C++,,,gnat_rm, GNAT Reference Manual}, for additional
+information on interfacing to C++).
+
+@node Switches
+@section Switches
+
+@table @option
+@item -fdump-ada-spec
+@cindex @option{-fdump-ada-spec} (@command{gcc})
+Generate Ada spec files for the given header files transitively (including
+all header files that these headers depend upon).
+
+@item -fdump-ada-spec-slim
+@cindex @option{-fdump-ada-spec-slim} (@command{gcc})
+Generate Ada spec files for the header files specified on the command line
+only.
+
+@item -C
+@item @option{-C} (@command{gcc})
+Extract comments from headers and generate Ada comments in the Ada spec files.
 @end table
 
 @node Other Utility Programs
