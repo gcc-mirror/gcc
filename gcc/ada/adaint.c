@@ -331,6 +331,10 @@ const int __gnat_vmsp = 0;
 int __gnat_max_path_len = GNAT_MAX_PATH_LEN;
 int max_path_len = GNAT_MAX_PATH_LEN;
 
+/* Control whether we can use ACL on Windows.  */
+
+int __gnat_use_acl = 1;
+
 /* The following macro HAVE_READDIR_R should be defined if the
    system provides the routine readdir_r.  */
 #undef HAVE_READDIR_R
@@ -667,7 +671,7 @@ __gnat_os_filename (char *filename, char *w_filename ATTRIBUTE_UNUSED,
 		    char *encoding ATTRIBUTE_UNUSED, int *e_length)
 {
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS)
-  WS2SC (os_name, (TCHAR *)w_filename, o_length);
+  WS2SC (os_name, (TCHAR *)w_filename, (DWORD)o_length);
   *o_length = strlen (os_name);
   strcpy (encoding, "encoding=utf8");
   *e_length = strlen (encoding);
@@ -1609,7 +1613,7 @@ __gnat_get_libraries_from_registry (void)
   for (index = 0; res == ERROR_SUCCESS; index++)
     {
       value_size = name_size = 256;
-      res = RegEnumValueA (reg_key, index, (TCHAR*)name, &name_size, 0,
+      res = RegEnumValueA (reg_key, index, name, &name_size, 0,
                            &type, (LPBYTE)value, &value_size);
 
       if (res == ERROR_SUCCESS && type == REG_SZ)
@@ -1661,7 +1665,7 @@ __gnat_stat (char *name, struct stat *statbuf)
   if (name_len == 2 && wname[1] == _T(':'))
     _tcscat (wname, _T("\\"));
 
-  return _tstat (wname, statbuf);
+  return _tstat (wname, (struct _stat *)statbuf);
 
 #else
   return stat (name, statbuf);
@@ -1861,12 +1865,18 @@ __gnat_is_readable_file (char *name)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
   GENERIC_MAPPING GenericMapping;
 
-  S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+  if (__gnat_use_acl)
+    {
+      S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
-  GenericMapping.GenericRead = GENERIC_READ;
+      ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
+      GenericMapping.GenericRead = GENERIC_READ;
 
-  return __gnat_check_OWNER_ACL (wname, FILE_READ_DATA, GenericMapping);
+      return __gnat_check_OWNER_ACL (wname, FILE_READ_DATA, GenericMapping);
+    }
+  else
+    return 1;
+
 #else
   int ret;
   int mode;
@@ -1887,12 +1897,18 @@ __gnat_is_writable_file (char *name)
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
-  GenericMapping.GenericWrite = GENERIC_WRITE;
+  if (__gnat_use_acl)
+    {
+      ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
+      GenericMapping.GenericWrite = GENERIC_WRITE;
 
-  return __gnat_check_OWNER_ACL
-    (wname, FILE_WRITE_DATA | FILE_APPEND_DATA, GenericMapping)
-    && !(GetFileAttributes (wname) & FILE_ATTRIBUTE_READONLY);
+      return __gnat_check_OWNER_ACL
+	(wname, FILE_WRITE_DATA | FILE_APPEND_DATA, GenericMapping)
+	&& !(GetFileAttributes (wname) & FILE_ATTRIBUTE_READONLY);
+    }
+  else
+    return !(GetFileAttributes (wname) & FILE_ATTRIBUTE_READONLY);
+
 #else
   int ret;
   int mode;
@@ -1913,10 +1929,17 @@ __gnat_is_executable_file (char *name)
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
-  GenericMapping.GenericExecute = GENERIC_EXECUTE;
+  if (__gnat_use_acl)
+    {
+      ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
+      GenericMapping.GenericExecute = GENERIC_EXECUTE;
 
-  return __gnat_check_OWNER_ACL (wname, FILE_EXECUTE, GenericMapping);
+      return __gnat_check_OWNER_ACL (wname, FILE_EXECUTE, GenericMapping);
+    }
+  else
+    return GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES
+      && _tcsstr (wname, _T(".exe")) - wname == (_tcslen (wname) - 4);
+
 #else
   int ret;
   int mode;
@@ -1936,7 +1959,9 @@ __gnat_set_writable (char *name)
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_WRITE);
+  if (__gnat_use_acl)
+    __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_WRITE);
+
   SetFileAttributes
     (wname, GetFileAttributes (wname) & ~FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
@@ -1956,9 +1981,12 @@ __gnat_set_executable (char *name)
 #if defined (_WIN32) && !defined (RTX)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
-  S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+  if (__gnat_use_acl)
+    {
+      S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_EXECUTE);
+      __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_EXECUTE);
+    }
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
@@ -1978,10 +2006,12 @@ __gnat_set_non_writable (char *name)
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  __gnat_set_OWNER_ACL
-    (wname, DENY_ACCESS,
-     FILE_WRITE_DATA | FILE_APPEND_DATA |
-     FILE_WRITE_EA | FILE_WRITE_ATTRIBUTES);
+  if (__gnat_use_acl)
+    __gnat_set_OWNER_ACL
+      (wname, DENY_ACCESS,
+       FILE_WRITE_DATA | FILE_APPEND_DATA |
+       FILE_WRITE_EA | FILE_WRITE_ATTRIBUTES);
+
   SetFileAttributes
     (wname, GetFileAttributes (wname) | FILE_ATTRIBUTE_READONLY);
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
@@ -2001,9 +2031,12 @@ __gnat_set_readable (char *name)
 #if defined (_WIN32) && !defined (RTX)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
-  S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+  if (__gnat_use_acl)
+    {
+      S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_READ);
+      __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_READ);
+    }
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
@@ -2020,9 +2053,12 @@ __gnat_set_non_readable (char *name)
 #if defined (_WIN32) && !defined (RTX)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
-  S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+  if (__gnat_use_acl)
+    {
+      S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_READ);
+      __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_READ);
+    }
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
