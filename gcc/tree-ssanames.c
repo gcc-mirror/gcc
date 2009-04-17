@@ -1,6 +1,7 @@
 /* Generic routines for manipulating SSA_NAME expressions
-   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
-                                                                               
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009
+   Free Software Foundation, Inc.
+
 This file is part of GCC.
                                                                                
 GCC is free software; you can redistribute it and/or modify
@@ -349,7 +350,7 @@ struct gimple_opt_pass pass_release_ssa_names =
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */
-  0,					/* tv_id */
+  TV_NONE,				/* tv_id */
   PROP_ssa,				/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */

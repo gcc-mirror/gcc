@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_PASS_H
 #define GCC_TREE_PASS_H 1
 
-/* In tree-dump.c */
+#include "timevar.h"
 
 /* Different tree dump places.  When you add new tree dump places,
    extend the DUMP_FILES array in tree-dump.c.  */
@@ -75,6 +75,7 @@ enum tree_dump_index
 					   dumper to print stmts.  */
 #define TDF_RHS_ONLY	(1 << 17)	/* a flag to only print the RHS of
 					   a gimple stmt.  */
+/* In tree-dump.c */
 
 extern char *get_dump_file_name (enum tree_dump_index);
 extern int dump_enabled_p (enum tree_dump_index);
@@ -128,7 +129,7 @@ struct opt_pass
 
   /* The timevar id associated with this pass.  */
   /* ??? Ideally would be dynamically assigned.  */
-  unsigned int tv_id;
+  timevar_id_t tv_id;
 
   /* Sets of properties input and output from this pass.  */
   unsigned int properties_required;

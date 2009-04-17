@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "basic-block.h"
 #include "alloc-pool.h"
+#include "timevar.h"
 
 struct dataflow;
 struct df;
@@ -275,7 +276,7 @@ struct df_problem {
   struct df_problem *dependent_problem;
 
   /* The timevar id associated with this pass.  */
-  unsigned int tv_id;
+  timevar_id_t tv_id;
 
   /* True if the df_set_blocks should null out the basic block info if
      this block drops out of df->blocks_to_analyze.  */
