@@ -33,6 +33,10 @@ AM_CPPFLAGS = -iquote$(srcdir)/io -I$(srcdir)/$(MULTISRCTOP)../gcc \
 # Fortran rules for complex multiplication and division
 AM_CFLAGS += -fcx-fortran-rules
 
+# Use -ffunction-sections -fdata-sections if supported by the compiler
+SECTION_FLAGS = @SECTION_FLAGS@
+AM_CFLAGS += $(SECTION_FLAGS)
+
 gfor_io_src= \
 io/close.c \
 io/file_pos.c \

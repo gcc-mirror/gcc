@@ -815,7 +815,7 @@ AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
 
 # Fortran rules for complex multiplication and division
-AM_CFLAGS = @AM_CFLAGS@ -fcx-fortran-rules
+AM_CFLAGS = @AM_CFLAGS@ -fcx-fortran-rules $(SECTION_FLAGS)
 AM_FCFLAGS = @AM_FCFLAGS@
 AR = @AR@
 AS = @AS@
@@ -875,6 +875,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
+
+# Use -ffunction-sections -fdata-sections if supported by the compiler
+SECTION_FLAGS = @SECTION_FLAGS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@

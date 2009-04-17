@@ -1,3 +1,12 @@
+2009-04-17  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* configure.ac: Test for -ffunction-sections -fdata-sections and
+	set SECTION_FLAGS accordingly.
+	* configure: Regenerate.
+
+	* Makefile.am: Add SECTION_FLAGS to AM_CFLAGS.
+	* Makefile.in: Regenerate.
+
 2009-04-15  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/38668

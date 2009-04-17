@@ -149,6 +149,27 @@ LDFLAGS="$save_LDFLAGS"
 AC_MSG_RESULT($gfortran_use_symver)
 AM_CONDITIONAL(LIBGFOR_USE_SYMVER, [test "x$gfortran_use_symver" = xyes])
 
+# Figure out whether the compiler supports "-ffunction-sections -fdata-sections",
+# similarly to how libstdc++ does it
+ac_test_CFLAGS="${CFLAGS+set}"
+ac_save_CFLAGS="$CFLAGS"
+
+# Check for -ffunction-sections -fdata-sections
+AC_MSG_CHECKING([for gcc that supports -ffunction-sections -fdata-sections])
+CFLAGS='-Werror -ffunction-sections -fdata-sections'
+AC_TRY_COMPILE(, [int foo;], [ac_fdsections=yes], [ac_fdsections=no])
+if test "$ac_test_CFLAGS" = set; then
+  CFLAGS="$ac_save_CFLAGS"
+else
+  # this is the suspicious part
+  CFLAGS=""
+fi
+if test x"$ac_fdsections" = x"yes"; then
+  SECTION_FLAGS='-ffunction-sections -fdata-sections'
+fi
+AC_MSG_RESULT($ac_fdsections)
+AC_SUBST(SECTION_FLAGS)
+
 # Find other programs we need.
 AC_CHECK_TOOL(AS, as)
 AC_CHECK_TOOL(AR, ar)
