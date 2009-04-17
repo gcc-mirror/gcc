@@ -91,8 +91,6 @@ static const char *gnat_dwarf_name	(tree, int);
 static tree gnat_return_tree		(tree);
 static int gnat_eh_type_covers		(tree, tree);
 static void gnat_parse_file		(int);
-static rtx gnat_expand_expr		(tree, rtx, enum machine_mode, int,
-					 rtx *);
 static void internal_error_function	(const char *, va_list *);
 static tree gnat_type_max_size		(const_tree);
 
@@ -124,8 +122,6 @@ static tree gnat_type_max_size		(const_tree);
 #define LANG_HOOKS_FINISH_INCOMPLETE_DECL gnat_finish_incomplete_decl
 #undef  LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
-#undef  LANG_HOOKS_EXPAND_EXPR
-#define LANG_HOOKS_EXPAND_EXPR		gnat_expand_expr
 #undef  LANG_HOOKS_MARK_ADDRESSABLE
 #define LANG_HOOKS_MARK_ADDRESSABLE	gnat_mark_addressable
 #undef  LANG_HOOKS_PRINT_DECL
@@ -610,45 +606,6 @@ gnat_printable_name (tree decl, int verbosity)
     }
   else
     return ada_name;
-}
-
-/* Expands GNAT-specific GCC tree nodes.  The only ones we support
-   here are  and NULL_EXPR.  */
-
-static rtx
-gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode,
-		  int modifier, rtx *alt_rtl)
-{
-  tree type = TREE_TYPE (exp);
-  tree new;
-
-  /* Update EXP to be the new expression to expand.  */
-  switch (TREE_CODE (exp))
-    {
-#if 0
-    case ALLOCATE_EXPR:
-      return
-	allocate_dynamic_stack_space
-	  (expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, TYPE_MODE (sizetype),
-			EXPAND_NORMAL),
-	   NULL_RTX, tree_low_cst (TREE_OPERAND (exp, 1), 1));
-#endif
-
-    case UNCONSTRAINED_ARRAY_REF:
-      /* If we are evaluating just for side-effects, just evaluate our
-	 operand.  Otherwise, abort since this code should never appear
-	 in a tree to be evaluated (objects aren't unconstrained).  */
-      if (target == const0_rtx || TREE_CODE (type) == VOID_TYPE)
-	return expand_expr (TREE_OPERAND (exp, 0), const0_rtx,
-			    VOIDmode, modifier);
-
-      /* ... fall through ... */
-
-    default:
-      gcc_unreachable ();
-    }
-
-  return expand_expr_real (new, target, tmode, modifier, alt_rtl);
 }
 
 /* Do nothing (return the tree node passed).  */

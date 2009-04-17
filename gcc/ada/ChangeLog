@@ -1,3 +1,8 @@
+2009-04-17  Diego Novillo  <dnovillo@google.com>
+
+	* gcc-interface/misc.c (gnat_expand_expr): Remove.
+	(LANG_HOOKS_EXPAND_EXPR): Remove.
+
 2009-04-17  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting
