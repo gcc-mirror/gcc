@@ -997,6 +997,9 @@ package Prj is
    --  The format of the different response files
 
    type Project_Configuration is record
+      Target                        : Name_Id         := No_Name;
+      --  The target of the configuration, when specified
+
       Run_Path_Option               : Name_List_Index := No_Name_List;
       --  The option to use when linking to specify the path where to look for
       --  libraries.
@@ -1106,7 +1109,8 @@ package Prj is
    end record;
 
    Default_Project_Config : constant Project_Configuration :=
-                              (Run_Path_Option               => No_Name_List,
+                              (Target                        => No_Name,
+                               Run_Path_Option               => No_Name_List,
                                Executable_Suffix             => No_Name,
                                Linker                        => No_Path,
                                Map_File_Option               => No_Name,

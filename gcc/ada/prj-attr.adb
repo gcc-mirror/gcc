@@ -116,6 +116,7 @@ package body Prj.Attr is
    "Satoolchain_description#" &
    "Saobject_generated#" &
    "Saobjects_linked#" &
+   "SVtarget#" &
 
    --  Configuration - Libraries
 

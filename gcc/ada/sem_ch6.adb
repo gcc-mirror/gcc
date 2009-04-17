@@ -47,6 +47,8 @@ with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Output;   use Output;
+with Restrict; use Restrict;
+with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
@@ -1485,6 +1487,11 @@ package body Sem_Ch6 is
                           and then
                         Is_Limited_Record (Designated_Type (Etype (Scop)))))
            and then Expander_Active
+
+            --  Avoid cases with no tasking support
+
+           and then RTE_Available (RE_Current_Master)
+           and then not Restriction_Active (No_Task_Hierarchy)
          then
             Decl :=
               Make_Object_Declaration (Loc,
