@@ -3606,11 +3606,13 @@ package body Sem_Ch3 is
 
                --  A Pure library_item must not contain the declaration of a
                --  named access type, except within a subprogram, generic
-               --  subprogram, task unit, or protected unit (RM 10.2.1(16)).
+               --  subprogram, task unit, or protected unit, or if it has
+               --  a specified Storage_Size of zero (RM05-10.2.1(15.4-15.5)).
 
                if Comes_From_Source (Id)
                  and then In_Pure_Unit
                  and then not In_Subprogram_Task_Protected_Unit
+                 and then not No_Pool_Assigned (Id)
                then
                   Error_Msg_N
                     ("named access types not allowed in pure unit", N);

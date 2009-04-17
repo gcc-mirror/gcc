@@ -671,7 +671,7 @@ package body Sem_Elim is
       for J in Elim_Entities.First .. Elim_Entities.Last loop
          if E = Elim_Entities.Table (J).Subp then
             Error_Msg_Sloc := Sloc (Elim_Entities.Table (J).Prag);
-            Error_Msg_NE ("cannot call subprogram & eliminated #", N, E);
+            Error_Msg_NE ("cannot reference subprogram & eliminated #", N, E);
             return;
          end if;
       end loop;
