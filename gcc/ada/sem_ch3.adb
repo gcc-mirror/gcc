@@ -1135,7 +1135,27 @@ package body Sem_Ch3 is
                       (T           => Typ,
                        Related_Nod => T_Def,
                        Scope_Id    => Current_Scope));
+
                else
+                  if From_With_Type (Typ) then
+                     Error_Msg_NE
+                      ("illegal use of incomplete type&",
+                         Result_Definition (T_Def), Typ);
+
+                  elsif Ekind (Current_Scope) = E_Package
+                    and then In_Private_Part (Current_Scope)
+                  then
+                     if Ekind (Typ) = E_Incomplete_Type then
+                        Append_Elmt (Desig_Type, Private_Dependents (Typ));
+
+                     elsif Is_Class_Wide_Type (Typ)
+                       and then Ekind (Etype (Typ)) = E_Incomplete_Type
+                     then
+                        Append_Elmt
+                          (Desig_Type, Private_Dependents (Etype (Typ)));
+                     end if;
+                  end if;
+
                   Set_Etype (Desig_Type, Typ);
                end if;
             end;

@@ -7716,7 +7716,8 @@ package body Sem_Ch6 is
                --  primitive operations, as long as their completion is
                --  in the same declarative part. If in the private part
                --  this means that the type cannot be a Taft-amendment type.
-               --  Check is done on package exit.
+               --  Check is done on package exit. For access to subprograms,
+               --  the use is legal for Taft-amendment types.
 
                if Is_Tagged_Type (Formal_Type) then
                   if Ekind (Scope (Current_Scope)) = E_Package
@@ -7724,9 +7725,14 @@ package body Sem_Ch6 is
                     and then not From_With_Type (Formal_Type)
                     and then not Is_Class_Wide_Type (Formal_Type)
                   then
-                     Append_Elmt
-                       (Current_Scope,
-                          Private_Dependents (Base_Type (Formal_Type)));
+                     if not Nkind_In
+                       (Parent (T), N_Access_Function_Definition,
+                                    N_Access_Procedure_Definition)
+                     then
+                        Append_Elmt
+                          (Current_Scope,
+                             Private_Dependents (Base_Type (Formal_Type)));
+                     end if;
                   end if;
 
                --  Special handling of Value_Type for CIL case

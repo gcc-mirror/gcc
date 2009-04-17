@@ -3497,50 +3497,11 @@ package body Freeze is
 
             Freeze_Subprogram (E);
 
-            --  Ada 2005 (AI-326): Check wrong use of tag incomplete type
-
-            --    type T;  --   tagged or untagged, may be from limited view
-            --    type Acc is access function (X : T) return T; -- ERROR
-
-            if Ekind (Etype (E)) = E_Incomplete_Type
-              and then No (Full_View (Etype (E)))
-              and then not Is_Value_Type (Etype (E))
-            then
-               Error_Msg_NE
-                 ("invalid use of incomplete type&", E, Etype (E));
-            end if;
-
          --  For access to a protected subprogram, freeze the equivalent type
          --  (however this is not set if we are not generating code or if this
          --  is an anonymous type used just for resolution).
 
          elsif Is_Access_Protected_Subprogram_Type (E) then
-
-            --  AI-326: Check wrong use of tagged incomplete types
-
-            --    type T is tagged;
-            --    type As3D is access protected
-            --      function (X : Float) return T; -- ERROR
-
-            declare
-               Etyp : Entity_Id;
-
-            begin
-               Etyp := Etype (Directly_Designated_Type (E));
-
-               if Is_Class_Wide_Type (Etyp) then
-                  Etyp := Etype (Etyp);
-               end if;
-
-               if Ekind (Etyp) = E_Incomplete_Type
-                 and then No (Full_View (Etyp))
-                 and then not Is_Value_Type (Etype (E))
-               then
-                  Error_Msg_NE
-                    ("invalid use of incomplete type&", E, Etyp);
-               end if;
-            end;
-
             if Present (Equivalent_Type (E)) then
                Freeze_And_Append (Equivalent_Type (E), Loc, Result);
             end if;
