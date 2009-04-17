@@ -1887,8 +1887,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
 
   EH_MECHANISM=-gcc
   GNATLIB_SHARED = gnatlib-shared-darwin
-  SO_OPTS = -Wl,-flat_namespace -shared-libgcc \
-    -Wl,-install_name,@rpath/libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
+  SO_OPTS = -Wl,-flat_namespace -shared-libgcc
   RANLIB = ranlib -c
   GMEM_LIB = gmemlib
   PREFIX_OBJS=$(PREFIX_REAL_OBJS)
@@ -2286,11 +2285,13 @@ gnatlib-shared-darwin:
 		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS) \
+		-Wl,-install_name,@rpath/libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(MISCLIB) -lm
 	cd $(RTSDIR); ../../xgcc -B../../ -dynamiclib $(TARGET_LIBGCC2_CFLAGS) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS) \
+		-Wl,-install_name,@rpath/libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(THREADSLIB) -Wl,libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
 	cd $(RTSDIR); $(LN_S) libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		libgnat$(soext)
