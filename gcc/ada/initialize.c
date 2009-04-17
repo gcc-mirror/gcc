@@ -43,6 +43,8 @@
 #ifdef IN_RTS
 #include "tconfig.h"
 #include "tsystem.h"
+/* We don't have libiberty, so use malloc.  */
+#define xmalloc(S) malloc (S)
 #else
 #include "config.h"
 #include "system.h"
@@ -55,10 +57,14 @@
 /******************************************/
 
 #if defined (__MINGW32__)
+#include "mingw32.h"
 #include <windows.h>
 
 extern void __gnat_init_float (void);
 extern void __gnat_install_SEH_handler (void *);
+
+extern int gnat_argc;
+extern char **gnat_argv;
 
 #ifndef RTX
 /* Do not define for RTX since it is only used for creating child processes
@@ -74,6 +80,32 @@ __gnat_initialize (void *eh)
       precision, and we require the full precision for proper operation,
       given that we have set Max_Digits etc with this in mind */
    __gnat_init_float ();
+
+   /* Adjust gnat_argv to support Unicode characters. */
+   {
+     char arg_utf8[MAX_PATH];
+     LPWSTR *wargv;
+     int wargc;
+     int k;
+
+     wargv = CommandLineToArgvW (GetCommandLineW(), &wargc);
+
+     if (wargv != NULL)
+       {
+	 /* Set gnat_argv with arguments encoded in UTF-8. */
+	 gnat_argv = (char **) xmalloc ((wargc + 1) * sizeof (char *));
+
+	 for (k=0; k<wargc; k++)
+	   {
+	     WS2SU (arg_utf8, wargv[k], MAX_PATH);
+	     gnat_argv[k] = (char *) xmalloc (strlen (arg_utf8) + 1);
+	     strcpy (gnat_argv[k], arg_utf8);
+	   }
+
+	 LocalFree (wargv);
+	 gnat_argc = wargc;
+       }
+    }
 
    /* Note that we do not activate this for the compiler itself to avoid a
       bootstrap path problem.  Older version of gnatbind will generate a call
