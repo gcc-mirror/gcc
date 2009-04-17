@@ -1,3 +1,8 @@
+2009-04-17  Aurelien Jarno  <aurelien@aurel32.net>
+
+	* config.gcc: Add soft-fp/t-softfp and i386/t-linux to tmake_file
+	for i[34567]86-*-kfreebsd*-gnu*, x86_64-*-kfreebsd*-gnu*.
+
 2009-04-17  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39746
@@ -118,8 +123,7 @@
 	* tree-iterator.c (tsi_split_statement_list_after,
 	tsi_split_statement_list_before): Remove.
 	* tree-iterator.h: Remove the prototypes for
-	tsi_split_statement_list_after and
-	tsi_split_statement_list_before.
+	tsi_split_statement_list_after and tsi_split_statement_list_before.
 
 2009-04-16  Kazu Hirata  <kazu@codesourcery.com>
 
@@ -149,8 +153,7 @@
 
 2009-04-16  Ian Lance Taylor  <iant@google.com>
 
-	* rtlanal.c (alloc_reg_note): New function, broken out of
-	add_reg_note.
+	* rtlanal.c (alloc_reg_note): New function, broken out of add_reg_note.
 	(add_reg_note): Call alloc_reg_note.
 	* rtl.h (alloc_reg_note): Declare.
 	* combine.c (try_combine): Use alloc_reg_note.
@@ -165,8 +168,7 @@
 	PR rtl-optimization/39762
 	* ira-int.h (ira_register_move_cost, ira_may_move_in_cost,
 	ira_may_move_out_cost): Add comments about way of their usage.
-	(ira_get_register_move_cost, ira_get_may_move_cost): New
-	functions.
+	(ira_get_register_move_cost, ira_get_may_move_cost): New functions.
 	
 	* ira-conflicts.c (process_regs_for_copy): Use function
 	ira_get_register_move_cost instead of global
@@ -188,8 +190,7 @@
 	Use function ira_get_may_move_cost instead of global
 	ira_may_move_in_cost.
 	(process_bb_node_for_hard_reg_moves): Use function
-	ira_get_register_move_cost instead of global
-	ira_register_move_cost.
+	ira_get_register_move_cost instead of global ira_register_move_cost.
 	(ira_costs): Don't call ira_init_register_move_cost.
 	
 2009-04-16  Richard Guenther  <rguenther@suse.de>
@@ -279,7 +280,7 @@
 	* opts.c (common_handle_option): Handle OPT_fversion.
 
 2009-04-16  Richard Guenther  <rguenther@suse.de>
-	Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39698
 	* tree-vect-loop.c (get_initial_def_for_reduction): Use the
@@ -317,24 +318,25 @@
 
 2009-04-15  Catherine Moore  <clm@codesourcery.com>
 
-        * debug.h (set_name):  Declare.
-        * dwarf2out.c (dwarf2out_set_name): Declare.
-        (dwarf2_debug_hooks): Add set_name.
-        (find_AT_string): New.
-        (add_AT_string): Call find_AT_string.
-        (dwarf2out_set_name): New.
-        * cp/decl.c (grokdeclarator): Call set_name.
-        * vmsdbgout.c (vmsdbg_debug_hooks): Add set_name_debug_nothing.
-        * debug.c (do_nothing_debug_hooks):  Likewise.
-        * dbxout.c (dbx_debug_hooks): Likewise.
-        * sdbout.c (sdb_debug_hooks): Likewise.
+	* debug.h (set_name):  Declare.
+	* dwarf2out.c (dwarf2out_set_name): Declare.
+	(dwarf2_debug_hooks): Add set_name.
+	(find_AT_string): New.
+	(add_AT_string): Call find_AT_string.
+	(dwarf2out_set_name): New.
+	* cp/decl.c (grokdeclarator): Call set_name.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Add set_name_debug_nothing.
+	* debug.c (do_nothing_debug_hooks):  Likewise.
+	* dbxout.c (dbx_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
 
 2009-04-15  Michael Eager <eager@eagercon.com>
 
-	* config/rs6000/rs6000.c: rs6000_function_value: set function return
-	reg for single-precision FPU
-	* config/rs6000/rs6000.md: (movsi_internal1): only for !TARGET_SINGLE_FPU
-	(movsi_internal1_single): New: add pattern to move SI values to/from
+	* config/rs6000/rs6000.c (rs6000_function_value): Set function return
+	reg for single-precision FPU.
+	* config/rs6000/rs6000.md (movsi_internal1): Only for
+	!TARGET_SINGLE_FPU.
+	(movsi_internal1_single): New. Add pattern to move SI values to/from
 	single-precision FP regs.
 
 2009-04-15  Richard Guenther  <rguenther@suse.de>
@@ -342,8 +344,7 @@
 	* omp-low.c (lower_rec_input_clauses): Build correct address
 	expressions.
 	(expand_omp_for_generic): Fix multiplication type.
-	* tree-loop-distribution.c (build_size_arg): Build a
-	size_t argument.
+	* tree-loop-distribution.c (build_size_arg): Build a size_t argument.
 	(generate_memset_zero): Fix types.
 	* tree-profile.c (prepare_instrumented_value): Correctly
 	widen a pointer.
@@ -368,8 +369,7 @@
 	(c_parser_alignof_expression): Likewise.
 	(c_parser_postfix_expression): Likewise.  Pull setting of
 	original_code to top of function.
-	(c_parser_postfix_expression_after_paren_type): Set
-	original_type.
+	(c_parser_postfix_expression_after_paren_type): Set original_type.
 	(c_parser_postfix_expression_after_primary): Likewise.
 	(c_parser_expression): Likewise.
 	* c-typeck.c (build_external_ref): Add type parameter.  Change all
@@ -495,10 +495,9 @@
 2009-04-14  Rafael Avila de Espindola  <espindola@google.com>
 
 	Merge:
-
 	2008-12-19  Diego Novillo  <dnovillo@google.com>
 
-	       	* cgraph.c (dump_cgraph_node): Show memory address of NODE.
+	* cgraph.c (dump_cgraph_node): Show memory address of NODE.
 
 2000-04-14  Richard Guenther  <rguenther@suse.de>
 
@@ -2280,7 +2279,7 @@
 2009-04-02  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/26693
-	* c-decl.c: (clone_underlying_type): Move this ...
+	* c-decl.c (clone_underlying_type): Move this ...
 	* c-common.c (set_underlying_type): ... here.
 	Also, make sure the function properly sets TYPE_STUB_DECL() on
 	the newly created typedef variant type.
