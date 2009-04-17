@@ -3052,6 +3052,14 @@ get_constraint_for_component_ref (tree t, VEC(ce_s, heap) **results,
       else
 	result->offset = bitpos;
     }
+  else if (result->type == ADDRESSOF)
+    {
+      /* We can end up here for component references on a
+         VIEW_CONVERT_EXPR <>(&foobar).  */
+      result->type = SCALAR;
+      result->var = anything_id;
+      result->offset = 0;
+    }
   else
     gcc_unreachable ();
 }
