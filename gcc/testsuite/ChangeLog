@@ -1,11 +1,16 @@
+2009-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/39792
+	* g++.dg/ext/complit11.C: Add empty dg-options.
+
 2009-04-16  Andrew Pinski  <pinskia@gmail.com>
 
-	PR C++/17570
+	PR c++/17570
 	* g++.dg/template/defarg11.C: New test.
 
 2009-04-16  Andrew Pinski  <pinskia@gmail.com>
 
-	PR C++/28766
+	PR c++/28766
 	* g++.dg/ext/complit11.C: New testcase.
 
 2009-04-15  Le-Chun Wu  <lcwu@google.com>
@@ -2047,7 +2052,7 @@
 
 2009-02-03  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
-	PR C++/36607
+	PR c++/36607
 	* g++.dg/expr/cast10.C: New test.
 
 2009-02-03  Joseph Myers  <joseph@codesourcery.com>
@@ -2490,7 +2495,7 @@
 
 2009-01-15  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
-	PR C++/29388
+	PR c++/29388
 	* g++.dg/template/error37.C: New testcase.
 
 2009-01-15  Jason Merrill  <jason@redhat.com>
