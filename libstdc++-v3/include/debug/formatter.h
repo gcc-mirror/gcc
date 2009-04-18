@@ -29,6 +29,7 @@
 #ifndef _GLIBCXX_DEBUG_FORMATTER_H
 #define _GLIBCXX_DEBUG_FORMATTER_H 1
 
+#include <bits/c++config.h>
 #include <typeinfo>
 #include <debug/debug.h>
 
@@ -347,7 +348,7 @@ namespace __gnu_debug
     const _Error_formatter&
     _M_message(_Debug_msg_id __id) const;
 
-    void
+    _GLIBCXX_NORETURN void
     _M_error() const;
 
   private:

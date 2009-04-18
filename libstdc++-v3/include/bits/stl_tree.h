@@ -137,16 +137,16 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 #endif
     };
 
-  _Rb_tree_node_base*
+  _GLIBCXX_PURE _Rb_tree_node_base*
   _Rb_tree_increment(_Rb_tree_node_base* __x) throw ();
 
-  const _Rb_tree_node_base*
+  _GLIBCXX_PURE const _Rb_tree_node_base*
   _Rb_tree_increment(const _Rb_tree_node_base* __x) throw ();
 
-  _Rb_tree_node_base*
+  _GLIBCXX_PURE _Rb_tree_node_base*
   _Rb_tree_decrement(_Rb_tree_node_base* __x) throw ();
 
-  const _Rb_tree_node_base*
+  _GLIBCXX_PURE const _Rb_tree_node_base*
   _Rb_tree_decrement(const _Rb_tree_node_base* __x) throw ();
 
   template<typename _Tp>
@@ -1448,7 +1448,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       return __n;
     }
 
-  unsigned int
+  _GLIBCXX_PURE unsigned int
   _Rb_tree_black_count(const _Rb_tree_node_base* __node,
                        const _Rb_tree_node_base* __root) throw ();
 

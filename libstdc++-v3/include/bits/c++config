@@ -314,4 +314,16 @@ _GLIBCXX_END_NAMESPACE
 #undef min
 #undef max
 
+#ifndef _GLIBCXX_PURE
+# define _GLIBCXX_PURE __attribute__ ((__pure__))
+#endif
+
+#ifndef _GLIBCXX_CONST
+# define _GLIBCXX_CONST __attribute__ ((__const__))
+#endif
+
+#ifndef _GLIBCXX_NORETURN
+# define _GLIBCXX_NORETURN __attribute__ ((__noreturn__))
+#endif
+
 // End of prewritten config; the discovered settings follow.

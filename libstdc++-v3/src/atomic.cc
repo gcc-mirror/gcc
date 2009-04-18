@@ -78,7 +78,7 @@ namespace std
   {
     bool
     atomic_flag_test_and_set_explicit(volatile __atomic_flag_base* __a,
-				      memory_order __m)
+				      memory_order __m) throw ()
     {
       volatile atomic_flag d(__a->_M_i);
       return d.test_and_set(__m);
@@ -86,7 +86,7 @@ namespace std
 
     void
     atomic_flag_clear_explicit(volatile __atomic_flag_base* __a,
-			       memory_order __m)
+			       memory_order __m) throw ()
     {
       volatile atomic_flag d(__a->_M_i);
       return d.clear(__m);
@@ -94,14 +94,14 @@ namespace std
 
     void
     __atomic_flag_wait_explicit(volatile __atomic_flag_base* __a,
-				memory_order __x)
+				memory_order __x) throw ()
     {
       while (atomic_flag_test_and_set_explicit(__a, __x))
 	{ };
     }
 
     volatile __atomic_flag_base*
-    __atomic_flag_for_address(const volatile void* __z)
+    __atomic_flag_for_address(const volatile void* __z) throw ()
     {
       uintptr_t __u = reinterpret_cast<uintptr_t>(__z);
       __u += (__u >> 2) + (__u << 4);

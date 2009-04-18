@@ -1,3 +1,18 @@
+2009-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* include/debug/formater.h: Include bits/c++config.h.
+	(_M_error): Mark noreturn.
+	* include/bits/c++config (_GLIBCXX_PURE, _GLIBCXX_CONST,
+	_GLIBCXX_NORETURN): New.
+	* include/bits/stl_tree.h (_Rb_tree_increment, _Rb_tree_increment,
+	_Rb_tree_decrement, _Rb_tree_decrement, _Rb_tree_black_count): Mark pure.
+	* include/c_compatibility/stdatomic.h (atomic_flag_test_and_set_explicit,
+	atomic_flag_clear_explicit, __atomic_flag_wait_explicit,
+	__atomic_flag_for_address): Mark by throw ().
+	* src/atomic.cc (atomic_flag_test_and_set_explicit,
+	atomic_flag_clear_explicit, __atomic_flag_wait_explicit,
+	__atomic_flag_for_address): Mark by throw ().
+
 2009-04-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Regenerated.
