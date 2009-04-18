@@ -1,3 +1,12 @@
+2009-04-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/39804
+	* tree-ssa-ccp.c (fold_stmt_1): New function factored from ...
+	(fold_stmt): ... this and ...
+	(fold_stmt_inplace): ... this.
+	(fold_stmt_1): Fold references in calls and asms.
+	* tree-cfg.c (remove_useless_stmts_cond): Use fold_stmt.
+
 2009-04-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* tree-vrp.c (ssa_name_nonzero_p): Remove.

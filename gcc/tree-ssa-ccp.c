@@ -2836,43 +2836,81 @@ fold_gimple_call (gimple_stmt_iterator *gsi)
   return false;
 }
 
-/* Fold the statement pointed to by GSI.  In some cases, this function may
-   replace the whole statement with a new one.  Returns true iff folding
-   makes any changes.
-   The statement pointed to by GSI should be in valid gimple form but may
-   be in unfolded state as resulting from for example constant propagation
-   which can produce *&x = 0.  */
+/* Worker for both fold_stmt and fold_stmt_inplace.  The INPLACE argument
+   distinguishes both cases.  */
 
-bool
-fold_stmt (gimple_stmt_iterator *gsi)
+static bool
+fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace)
 {
   bool changed = false;
   gimple stmt = gsi_stmt (*gsi);
+  unsigned i;
 
   /* Fold the main computation performed by the statement.  */
   switch (gimple_code (stmt))
     {
     case GIMPLE_ASSIGN:
       {
+	unsigned old_num_ops = gimple_num_ops (stmt);
 	tree new_rhs = fold_gimple_assign (gsi);
-	if (new_rhs != NULL_TREE)
+	if (new_rhs != NULL_TREE
+	    && (!inplace
+		|| get_gimple_rhs_num_ops (TREE_CODE (new_rhs)) < old_num_ops))
 	  {
 	    gimple_assign_set_rhs_from_tree (gsi, new_rhs);
 	    changed = true;
 	  }
 	break;
       }
+
     case GIMPLE_COND:
       changed |= fold_gimple_cond (stmt);
       break;
+
     case GIMPLE_CALL:
+      /* Fold *& in call arguments.  */
+      for (i = 0; i < gimple_call_num_args (stmt); ++i)
+	if (REFERENCE_CLASS_P (gimple_call_arg (stmt, i)))
+	  {
+	    tree tmp = maybe_fold_reference (gimple_call_arg (stmt, i), false);
+	    if (tmp)
+	      {
+		gimple_call_set_arg (stmt, i, tmp);
+		changed = true;
+	      }
+	  }
       /* The entire statement may be replaced in this case.  */
-      changed |= fold_gimple_call (gsi);
+      if (!inplace)
+	changed |= fold_gimple_call (gsi);
       break;
 
-    default:
-      return changed;
+    case GIMPLE_ASM:
+      /* Fold *& in asm operands.  */
+      for (i = 0; i < gimple_asm_noutputs (stmt); ++i)
+	{
+	  tree link = gimple_asm_output_op (stmt, i);
+	  tree op = TREE_VALUE (link);
+	  if (REFERENCE_CLASS_P (op)
+	      && (op = maybe_fold_reference (op, true)) != NULL_TREE)
+	    {
+	      TREE_VALUE (link) = op;
+	      changed = true;
+	    }
+	}
+      for (i = 0; i < gimple_asm_ninputs (stmt); ++i)
+	{
+	  tree link = gimple_asm_input_op (stmt, i);
+	  tree op = TREE_VALUE (link);
+	  if (REFERENCE_CLASS_P (op)
+	      && (op = maybe_fold_reference (op, false)) != NULL_TREE)
+	    {
+	      TREE_VALUE (link) = op;
+	      changed = true;
+	    }
+	}
       break;
+
+    default:;
     }
 
   stmt = gsi_stmt (*gsi);
@@ -2895,6 +2933,19 @@ fold_stmt (gimple_stmt_iterator *gsi)
   return changed;
 }
 
+/* Fold the statement pointed to by GSI.  In some cases, this function may
+   replace the whole statement with a new one.  Returns true iff folding
+   makes any changes.
+   The statement pointed to by GSI should be in valid gimple form but may
+   be in unfolded state as resulting from for example constant propagation
+   which can produce *&x = 0.  */
+
+bool
+fold_stmt (gimple_stmt_iterator *gsi)
+{
+  return fold_stmt_1 (gsi, false);
+}
+
 /* Perform the minimal folding on statement STMT.  Only operations like
    *&x created by constant propagation are handled.  The statement cannot
    be replaced with a new one.  Return true if the statement was
@@ -2906,51 +2957,9 @@ fold_stmt (gimple_stmt_iterator *gsi)
 bool
 fold_stmt_inplace (gimple stmt)
 {
-  gimple_stmt_iterator si;
-  bool changed = false;
-
-  /* Fold the main computation performed by the statement.  */
-  switch (gimple_code (stmt))
-    {
-    case GIMPLE_ASSIGN:
-      {
-	unsigned old_num_ops;
-	tree new_rhs;
-	old_num_ops = gimple_num_ops (stmt);
-	si = gsi_for_stmt (stmt);
-	new_rhs = fold_gimple_assign (&si);
-	if (new_rhs != NULL_TREE
-	    && get_gimple_rhs_num_ops (TREE_CODE (new_rhs)) < old_num_ops)
-	  {
-	    gimple_assign_set_rhs_from_tree (&si, new_rhs);
-	    changed = true;
-	  }
-	gcc_assert (gsi_stmt (si) == stmt);
-	break;
-      }
-    case GIMPLE_COND:
-      changed |= fold_gimple_cond (stmt);
-      break;
-
-    default:
-      break;
-    }
-
-  /* Fold *& on the lhs.  */
-  if (gimple_has_lhs (stmt))
-    {
-      tree lhs = gimple_get_lhs (stmt);
-      if (lhs && REFERENCE_CLASS_P (lhs))
-	{
-	  tree new_lhs = maybe_fold_reference (lhs, true);
-	  if (new_lhs)
-	    {
-	      gimple_set_lhs (stmt, new_lhs);
-	      changed = true;
-	    }
-	}
-    }
-
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  bool changed = fold_stmt_1 (&gsi, true);
+  gcc_assert (gsi_stmt (gsi) == stmt);
   return changed;
 }
 

@@ -1574,7 +1574,8 @@ remove_useless_stmts_cond (gimple_stmt_iterator *gsi, struct rus_data *data)
   gimple stmt = gsi_stmt (*gsi);
 
   /* The folded result must still be a conditional statement.  */
-  fold_stmt_inplace (stmt);
+  fold_stmt (gsi);
+  gcc_assert (gsi_stmt (*gsi) == stmt);
 
   data->may_branch = true;
 
