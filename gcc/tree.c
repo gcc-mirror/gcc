@@ -9071,26 +9071,6 @@ prototype_p (tree fntype)
   return (t != NULL_TREE);
 }
 
-/* Return the number of arguments that a function has.  */
-
-int
-function_args_count (tree fntype)
-{
-  function_args_iterator args_iter;
-  tree t;
-  int num = 0;
-
-  if (fntype)
-    {
-      FOREACH_FUNCTION_ARGS(fntype, t, args_iter)
-	{
-	  num++;
-	}
-    }
-
-  return num;
-}
-
 /* If BLOCK is inlined from an __attribute__((__artificial__))
    routine, return pointer to location from where it has been
    called.  */
