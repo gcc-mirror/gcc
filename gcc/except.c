@@ -2846,6 +2846,10 @@ set_nothrow_function_flags (void)
 					     (current_function_decl))
           >= AVAIL_AVAILABLE))
     {
+      struct cgraph_node *node = cgraph_node (current_function_decl);
+      struct cgraph_edge *e;
+      for (e = node->callers; e; e = e->next_caller)
+        e->can_throw_external = false;
       TREE_NOTHROW (current_function_decl) = 1;
 
       if (dump_file)

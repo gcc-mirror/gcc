@@ -1,3 +1,20 @@
+2009-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_make_edge, dump_cgraph_node, cgraph_set_call_stmt):
+	Set nothrow flag.
+	* cgraph.h (struct function): Reduce loop_nest to 30 bits; add
+	can_throw_external flag.
+	* ipa-reference.c (ipa_utils_reduced_inorder): Update call.
+	* ipa-pure-const.c (ignore_edge): New function.
+	(propagate): Compute order for NOTHROW computation; set NOTHROWs
+	only over can_throw_external edges.
+	(local_pure_const): Add nothrow flag.
+	* ipa-utils.c (searchc): Add ignore_edge callback.
+	(ipa_utils_reduced_inorder): Add ignore_edge callback.
+	* ipa-utils.h (ipa_utils_reduced_inorder): Update prototype.
+	(set_nothrow_function_flags): Update cgraph.
+	* tree-cfg.c (verify_stmt): Relax nothrow checking when in IPA mode.
+
 2009-04-18  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/39804

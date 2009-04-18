@@ -995,7 +995,7 @@ propagate (void)
   struct cgraph_node *w;
   struct cgraph_node **order =
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
-  int order_pos = ipa_utils_reduced_inorder (order, false, true);
+  int order_pos = ipa_utils_reduced_inorder (order, false, true, NULL);
   int i;
 
   cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
@@ -1006,7 +1006,7 @@ propagate (void)
      the global information.  All the nodes within a cycle will have
      the same info so we collapse cycles first.  Then we can do the
      propagation in one pass from the leaves to the roots.  */
-  order_pos = ipa_utils_reduced_inorder (order, true, true);
+  order_pos = ipa_utils_reduced_inorder (order, true, true, NULL);
   if (dump_file)
     ipa_utils_print_order(dump_file, "reduced", order, order_pos);
 
