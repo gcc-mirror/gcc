@@ -93,7 +93,7 @@ namespace std
 
   /** The runtime will call this function if %exception handling must be
    *  abandoned for any reason.  It can also be called by the user.  */
-  void terminate() __attribute__ ((__noreturn__));
+  void terminate() throw() __attribute__ ((__noreturn__));
 
   /// Takes a new handler function as an argument, returns the old function.
   unexpected_handler set_unexpected(unexpected_handler) throw();
@@ -112,7 +112,7 @@ namespace std
    *  2:  "When @c uncaught_exception() is true, throwing an %exception can
    *  result in a call of @c terminate() (15.5.1)."
    */
-  bool uncaught_exception() throw();
+  bool uncaught_exception() throw() __attribute__ ((__pure__));
 
   // @} group exceptions
 } // namespace std

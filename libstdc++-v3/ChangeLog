@@ -1,5 +1,25 @@
 2009-04-18  Jan Hubicka  <jh@suse.cz>
 
+	* eh_type.cc (__cxa_current_exception_type) Mark throw().
+	* unwind-cxx.h (__cxa_get_globals, __cxa_get_globals_fast): Mark const.
+	(__cxa_get_exception_ptr): Mark pure.
+	(__cxa_bad_cast, __cxa_bad_typeid): Mark noreturn
+	(__terminate): Makr throw ().
+	* exception (terminate): Mark throw().
+	(uncaught_exception): Mark pure.
+	* eh_ptr.cc (_M_safe_bool_dummy): Mark throw().
+	* guard.cc (__cxa_guard_abort, __cxa_guard_release): Mark throw().
+	* eh_terminate.cc (__terminate, terminate): Mark throw().
+	* vec.cc (__cxa_vec_cleanup): Mark throw().
+	* cxxabi.h (__cxa_vec_cleanup, __cxa_guard_release, __cxa_guard_abort): Mark throw ().
+	(__cxa_pure_virtual): Mark noreturn.
+	(__cxa_current_exception_type): Mark throw and pure.
+	* exception_ptr.h (operator ==, !=, _M_get, !, ==,
+	__cxa_exception_type): Mark pure.
+	(_M_safe_bool_dummy): Mark pure and const.
+
+2009-04-18  Jan Hubicka  <jh@suse.cz>
+
 	* src/pool_allocator.cc (_M_get_free_list, _M_get_mutex): Mark throw ()
 	* src/mt_allocator.cc (_M_reclaim_block, _M_reclaim_block,
 	_M_destroy_thread_key): Mark throw ()

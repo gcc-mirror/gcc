@@ -77,10 +77,10 @@ namespace std
   namespace __exception_ptr
   {
     bool 
-    operator==(const exception_ptr&, const exception_ptr&) throw();
+    operator==(const exception_ptr&, const exception_ptr&) throw() __attribute__ ((__pure__));
 
     bool 
-    operator!=(const exception_ptr&, const exception_ptr&) throw();
+    operator!=(const exception_ptr&, const exception_ptr&) throw() __attribute__ ((__pure__));
 
     class exception_ptr
     {
@@ -91,9 +91,9 @@ namespace std
       void _M_addref() throw();
       void _M_release() throw();
 
-      void *_M_get() const throw();
+      void *_M_get() const throw() __attribute__ ((__pure__));
 
-      void _M_safe_bool_dummy();
+      void _M_safe_bool_dummy() throw() __attribute__ ((__const__));
 
       friend exception_ptr std::current_exception() throw();
       friend void std::rethrow_exception(exception_ptr);
@@ -141,14 +141,14 @@ namespace std
       }
 #endif
 
-      bool operator!() const throw();
+      bool operator!() const throw() __attribute__ ((__pure__));
       operator __safe_bool() const throw();
 
       friend bool 
-      operator==(const exception_ptr&, const exception_ptr&) throw();
+      operator==(const exception_ptr&, const exception_ptr&) throw() __attribute__ ((__pure__));
 
       const type_info*
-      __cxa_exception_type() const throw();
+      __cxa_exception_type() const throw() __attribute__ ((__pure__));
     };
 
   } // namespace __exception_ptr

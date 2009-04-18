@@ -100,7 +100,7 @@ namespace __cxxabiv1
   
   void 
   __cxa_vec_cleanup(void* __array_address, size_t __element_count,
-		    size_t __element_size, __cxa_cdtor_type destructor);
+		    size_t __element_size, __cxa_cdtor_type destructor) _GLIBCXX_NOTHROW;
   
   // Destruct and release array.
   void 
@@ -121,14 +121,14 @@ namespace __cxxabiv1
   __cxa_guard_acquire(__guard*);
 
   void 
-  __cxa_guard_release(__guard*);
+  __cxa_guard_release(__guard*) _GLIBCXX_NOTHROW;
 
   void 
-  __cxa_guard_abort(__guard*);
+  __cxa_guard_abort(__guard*) _GLIBCXX_NOTHROW;
 
   // Pure virtual functions.
   void
-  __cxa_pure_virtual(void);
+  __cxa_pure_virtual(void) __attribute__ ((__noreturn__));
 
   // Exception handling.
   void
@@ -567,13 +567,13 @@ namespace __cxxabiv1
   // Returns the type_info for the currently handled exception [15.3/8], or
   // null if there is none.
   extern "C" std::type_info*
-  __cxa_current_exception_type();
+  __cxa_current_exception_type() _GLIBCXX_NOTHROW __attribute__ ((__pure__));
 
   // A magic placeholder class that can be caught by reference
   // to recognize foreign exceptions.
   class __foreign_exception
   {
-    virtual ~__foreign_exception() throw();
+    virtual ~__foreign_exception() _GLIBCXX_NOTHROW;
     virtual void __pure_dummy() = 0; // prevent catch by value
   };
 
