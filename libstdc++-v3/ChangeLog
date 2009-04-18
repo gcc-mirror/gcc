@@ -1,3 +1,12 @@
+2009-04-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/39802
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_int
+	(_InIter, _InIter, ios_base&, ios_base::iostate&, _ValueT&)):
+	Always accept negative values, for unsigned types too.
+	* testsuite/22_locale/num_get/get/char/39802.cc: New.
+	* testsuite/22_locale/num_get/get/wchar_t/39802.cc: Likewise.
+
 2009-04-18  Jan Hubicka  <jh@suse.cz>
 
 	* include/debug/formater.h: Include bits/c++config.h.
@@ -5,10 +14,12 @@
 	* include/bits/c++config (_GLIBCXX_PURE, _GLIBCXX_CONST,
 	_GLIBCXX_NORETURN): New.
 	* include/bits/stl_tree.h (_Rb_tree_increment, _Rb_tree_increment,
-	_Rb_tree_decrement, _Rb_tree_decrement, _Rb_tree_black_count): Mark pure.
-	* include/c_compatibility/stdatomic.h (atomic_flag_test_and_set_explicit,
-	atomic_flag_clear_explicit, __atomic_flag_wait_explicit,
-	__atomic_flag_for_address): Mark by throw ().
+	_Rb_tree_decrement, _Rb_tree_decrement, _Rb_tree_black_count):
+	Mark pure.
+	* include/c_compatibility/stdatomic.h
+	(atomic_flag_test_and_set_explicit, atomic_flag_clear_explicit,
+	__atomic_flag_wait_explicit, __atomic_flag_for_address):
+	Mark by throw ().
 	* src/atomic.cc (atomic_flag_test_and_set_explicit,
 	atomic_flag_clear_explicit, __atomic_flag_wait_explicit,
 	__atomic_flag_for_address): Mark by throw ().
