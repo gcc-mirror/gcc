@@ -1,3 +1,8 @@
+2009-04-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* cp-tree.h: Remove the prototype for insert_block.
+	* decl.c (insert_block): Remove.
+
 2009-04-16  Ian Lance Taylor  <iant@google.com>
 
 	* cp-tree.h (enum tsubst_flags): Rename from enum tsubst_flags_t.
