@@ -1,5 +1,12 @@
 2009-04-18  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/27676
+	* c-typeck.c (readonly_warning): new.
+	(build_unary_op, build_modify_expr): Use readonly_warning for
+	storing into something readonly but not const-qualified.
+
+2009-04-18  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/22367
 	* c-typeck.c (build_unary_op): Check for taking address of
 	expression of type void.
