@@ -78,33 +78,33 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
   }
 
-  strstreambuf::strstreambuf(char* get, streamsize n, char* put)
+  strstreambuf::strstreambuf(char* get, streamsize n, char* put) throw ()
   : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
     _M_frozen(false), _M_constant(false)
   { _M_setup(get, put, n); }
 
-  strstreambuf::strstreambuf(signed char* get, streamsize n, signed char* put)
+  strstreambuf::strstreambuf(signed char* get, streamsize n, signed char* put) throw ()
   : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
   _M_frozen(false), _M_constant(false)
   { _M_setup(reinterpret_cast<char*>(get), reinterpret_cast<char*>(put), n); }
 
   strstreambuf::strstreambuf(unsigned char* get, streamsize n, 
-			     unsigned char* put)
+			     unsigned char* put) throw ()
   : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
     _M_frozen(false), _M_constant(false)
   { _M_setup(reinterpret_cast<char*>(get), reinterpret_cast<char*>(put), n); }
 
-  strstreambuf::strstreambuf(const char* get, streamsize n)
+  strstreambuf::strstreambuf(const char* get, streamsize n) throw ()
   : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
     _M_frozen(false), _M_constant(true)
   { _M_setup(const_cast<char*>(get), 0, n); }
 
-  strstreambuf::strstreambuf(const signed char* get, streamsize n)
+  strstreambuf::strstreambuf(const signed char* get, streamsize n) throw ()
   : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
     _M_frozen(false), _M_constant(true)
   { _M_setup(reinterpret_cast<char*>(const_cast<signed char*>(get)), 0, n); }
 
-  strstreambuf::strstreambuf(const unsigned char* get, streamsize n)
+  strstreambuf::strstreambuf(const unsigned char* get, streamsize n) throw ()
   : _Base(), _M_alloc_fun(0), _M_free_fun(0), _M_dynamic(false), 
     _M_frozen(false), _M_constant(true)
   { _M_setup(reinterpret_cast<char*>(const_cast<unsigned char*>(get)), 0, n); }
@@ -116,21 +116,21 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 
   void 
-  strstreambuf::freeze(bool frozenflag)
+  strstreambuf::freeze(bool frozenflag) throw ()
   {
     if (_M_dynamic)
       _M_frozen = frozenflag;
   }
 
   char* 
-  strstreambuf::str()
+  strstreambuf::str() throw ()
   {
     freeze(true);
     return eback();
   }
 
   int 
-  strstreambuf::pcount() const
+  strstreambuf::pcount() const throw ()
   { return pptr() ? pptr() - pbase() : 0; }
 
   strstreambuf::int_type 
@@ -315,7 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 
   void 
-  strstreambuf::_M_setup(char* get, char* put, streamsize n)
+  strstreambuf::_M_setup(char* get, char* put, streamsize n) throw ()
   {
     if (get) 
       {
@@ -350,11 +350,11 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   istrstream::~istrstream() { }
 
   strstreambuf* 
-  istrstream::rdbuf() const 
+  istrstream::rdbuf() const throw ()
   { return const_cast<strstreambuf*>(&_M_buf); }
 
   char* 
-  istrstream::str() 
+  istrstream::str() throw ()
   { return _M_buf.str(); }
 
   ostrstream::ostrstream()
@@ -369,19 +369,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   ostrstream::~ostrstream() {}
 
   strstreambuf* 
-  ostrstream::rdbuf() const
+  ostrstream::rdbuf() const throw ()
   { return const_cast<strstreambuf*>(&_M_buf); }
 
   void 
-  ostrstream::freeze(bool freezeflag)
+  ostrstream::freeze(bool freezeflag) throw ()
   { _M_buf.freeze(freezeflag); }
 
   char* 
-  ostrstream::str()
+  ostrstream::str() throw ()
   { return _M_buf.str(); }
 
   int 
-  ostrstream::pcount() const
+  ostrstream::pcount() const throw ()
   { return _M_buf.pcount(); }
 
   strstream::strstream()
@@ -396,19 +396,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   strstream::~strstream() { }
 
   strstreambuf* 
-  strstream::rdbuf() const
+  strstream::rdbuf() const throw ()
   { return const_cast<strstreambuf*>(&_M_buf); }
 
   void 
-  strstream::freeze(bool freezeflag)
+  strstream::freeze(bool freezeflag) throw ()
   { _M_buf.freeze(freezeflag); }
 
   int 
-  strstream::pcount() const
+  strstream::pcount() const throw ()
   { return _M_buf.pcount(); }
 
   char* 
-  strstream::str()
+  strstream::str() throw ()
   { return _M_buf.str(); }
 
 _GLIBCXX_END_NAMESPACE

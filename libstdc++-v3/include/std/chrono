@@ -614,7 +614,7 @@ namespace std
       static const bool is_monotonic = false;
 
       static time_point
-      now();   
+      now() throw ();
 
       // Map to C API
       static std::time_t

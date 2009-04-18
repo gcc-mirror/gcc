@@ -121,21 +121,21 @@ _GLIBCXX_BEGIN_EXTERN_C
 
   // Accessor functions for base atomic_flag type.
   bool 
-  atomic_flag_test_and_set_explicit(volatile __atomic_flag_base*, memory_order) throw ();
+  atomic_flag_test_and_set_explicit(volatile __atomic_flag_base*, memory_order) _GLIBCXX_NOTHROW;
 
   inline bool 
   atomic_flag_test_and_set(volatile __atomic_flag_base* __a)
   { return atomic_flag_test_and_set_explicit(__a, memory_order_seq_cst); }
   
   void 
-  atomic_flag_clear_explicit(volatile __atomic_flag_base*, memory_order) throw ();
+  atomic_flag_clear_explicit(volatile __atomic_flag_base*, memory_order) _GLIBCXX_NOTHROW;
 
   inline void 
   atomic_flag_clear(volatile __atomic_flag_base* __a)
   { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
 
   void 
-  __atomic_flag_wait_explicit(volatile __atomic_flag_base*, memory_order) throw ();
+  __atomic_flag_wait_explicit(volatile __atomic_flag_base*, memory_order) _GLIBCXX_NOTHROW;
   
   _GLIBCXX_CONST volatile __atomic_flag_base* 
   __atomic_flag_for_address(const volatile void* __z) throw ();

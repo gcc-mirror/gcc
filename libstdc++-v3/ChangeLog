@@ -1,3 +1,38 @@
+2009-04-18  Jan Hubicka  <jh@suse.cz>
+
+	* src/condition_variable.cc (condition_variable,
+	condition_variable_any constructors): Mark throw()
+	* src/hash.cc (operator() for long double, string, and wstring): Mark
+	throw ().
+	* src/strstream.cc (strstreambuf constructors, freeze, str, pcount,
+	_M_setup, rdbuf, str): Mark throw ().
+	* src/chrono.cc (new): Mark throw ().
+	* include/std/system_error (system_category, generic_category): Mark
+	throw () and const.
+	* include/std/chrono (now): Mark throw ().
+	* include/std/condition_variable (condition_variable,
+	~condition_variable, condition_variable_any,
+	~condition_variable_any): Mark throw ().
+	* include/std/mutex (mutex): Mark throw ().
+	* include/bits/stl_list.h (swap, transfer, reverse, hook, unhook): Mark
+	throw.
+	* include/bits/functional_hash.h (operator()  on size_t): Mark pure and throw ().
+	* include/bits/locale_facets.tcc (__verify_grouping): Mark pure.
+	* include/bits/locale_classes.h (_S_initialize_once,
+	_S_clone_c_locale): Mark throw ().
+	(_S_get_c_name): Mark const and throw ().
+	(_M_id, _M_compare, _M_transform, _M_compare, _M_transform): Mark throw ().
+	* include/bits/locale_facets.h (__convert_to_v explicit instances):
+	Mark throw ().
+	(_M_convert_to_wmask, _M_initialize_ctype, _S_format_float): Mark throw ().
+	* include/bits/ios_base.h (_M_dispose_callbacks, _M_init, imbue,
+	ios_base): Mark throw ()
+	* include/bits/locale_facets_nonio.h (_M_put): Mark throw.
+	* include/backward/strstream (strstreambuf constructors): Mark throw ().
+	(str, freeze, _M_setupf): Mark throw ().
+	(pcount): Mark pure and throw ().
+	(rdbuf): Mark const and throw ().
+
 2009-04-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/39802

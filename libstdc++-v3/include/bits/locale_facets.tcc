@@ -118,9 +118,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   // 1,222,444 == __grouping_tmp of "\1\3\3"
   // __grouping is parsed R to L
   // 1,222,444 == __grouping of "\3" == "\3\3\3"
-  bool
+  _GLIBCXX_PURE bool
   __verify_grouping(const char* __grouping, size_t __grouping_size,
-		    const string& __grouping_tmp);
+		    const string& __grouping_tmp) throw ();
 
 _GLIBCXX_BEGIN_LDBL_NAMESPACE
 

@@ -60,8 +60,8 @@ namespace std
   struct error_code;
 
   template<>
-    size_t
-    hash<error_code>::operator()(error_code) const;
+    _GLIBCXX_PURE size_t
+    hash<error_code>::operator()(error_code) const throw ();
 }
 
 #endif // _FUNCTIONAL_HASH_H

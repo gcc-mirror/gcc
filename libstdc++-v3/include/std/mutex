@@ -395,7 +395,7 @@ namespace std
   {
   public:
     virtual const char*
-    what() const throw();
+    _GLIBCXX_CONST what() const throw();
   };
 
   /// @brief  Scoped lock idiom.
