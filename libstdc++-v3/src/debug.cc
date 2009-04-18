@@ -185,7 +185,7 @@ namespace __gnu_debug
 
   __gnu_cxx::__mutex&
   _Safe_sequence_base::
-  _M_get_mutex()
+  _M_get_mutex() throw ()
   { return get_safe_base_mutex(); }
 
   void
@@ -198,7 +198,7 @@ namespace __gnu_debug
   
   void
   _Safe_iterator_base::
-  _M_attach_single(_Safe_sequence_base* __seq, bool __constant)
+  _M_attach_single(_Safe_sequence_base* __seq, bool __constant) throw ()
   {
     _M_detach_single();
     
@@ -235,7 +235,7 @@ namespace __gnu_debug
 
   void
   _Safe_iterator_base::
-  _M_detach_single()
+  _M_detach_single() throw ()
   {
     if (_M_sequence)
       {
@@ -259,12 +259,12 @@ namespace __gnu_debug
 
   bool
   _Safe_iterator_base::
-  _M_singular() const
+  _M_singular() const throw ()
   { return !_M_sequence || _M_version != _M_sequence->_M_version; }
     
   bool
   _Safe_iterator_base::
-  _M_can_compare(const _Safe_iterator_base& __x) const
+  _M_can_compare(const _Safe_iterator_base& __x) const throw ()
   {
     return (!_M_singular() 
 	    && !__x._M_singular() && _M_sequence == __x._M_sequence);
@@ -272,7 +272,7 @@ namespace __gnu_debug
 
   __gnu_cxx::__mutex&
   _Safe_iterator_base::
-  _M_get_mutex()
+  _M_get_mutex() throw ()
   { return get_safe_base_mutex(); }
 
   void
@@ -471,7 +471,7 @@ namespace __gnu_debug
   }
 
   const _Error_formatter&
-  _Error_formatter::_M_message(_Debug_msg_id __id) const
+  _Error_formatter::_M_message(_Debug_msg_id __id) const throw ()
   { return this->_M_message(_S_debug_messages[__id]); }
   
   void
@@ -531,7 +531,7 @@ namespace __gnu_debug
     void
     _Error_formatter::_M_format_word(char* __buf, 
 				     int __n __attribute__ ((__unused__)), 
-				     const char* __fmt, _Tp __s) const
+				     const char* __fmt, _Tp __s) const throw ()
     {
 #ifdef _GLIBCXX_USE_C99
       std::snprintf(__buf, __n, __fmt, __s);
@@ -674,7 +674,7 @@ namespace __gnu_debug
   }
 
   void
-  _Error_formatter::_M_get_max_length() const
+  _Error_formatter::_M_get_max_length() const throw ()
   {
     const char* __nptr = std::getenv("GLIBCXX_DEBUG_MESSAGE_LENGTH");
     if (__nptr)

@@ -105,7 +105,7 @@ namespace __gnu_debug
     ~_Safe_iterator_base() { this->_M_detach(); }
 
     /** For use in _Safe_iterator. */
-    __gnu_cxx::__mutex& _M_get_mutex();
+    __gnu_cxx::__mutex& _M_get_mutex() throw ();
 
   public:
     /** Attaches this iterator to the given sequence, detaching it
@@ -116,7 +116,7 @@ namespace __gnu_debug
     void _M_attach(_Safe_sequence_base* __seq, bool __constant);
 
     /** Likewise, but not thread-safe. */
-    void _M_attach_single(_Safe_sequence_base* __seq, bool __constant);
+    void _M_attach_single(_Safe_sequence_base* __seq, bool __constant) throw ();
 
     /** Detach the iterator for whatever sequence it is attached to,
      *	if any.
@@ -124,19 +124,19 @@ namespace __gnu_debug
     void _M_detach();
 
     /** Likewise, but not thread-safe. */
-    void _M_detach_single();
+    void _M_detach_single() throw ();
 
     /** Determines if we are attached to the given sequence. */
     bool _M_attached_to(const _Safe_sequence_base* __seq) const
     { return _M_sequence == __seq; }
 
     /** Is this iterator singular? */
-    bool _M_singular() const;
+    _GLIBCXX_PURE bool _M_singular() const throw ();
 
     /** Can we compare this iterator to the given iterator @p __x?
 	Returns true if both iterators are nonsingular and reference
 	the same sequence. */
-    bool _M_can_compare(const _Safe_iterator_base& __x) const;
+    _GLIBCXX_PURE bool _M_can_compare(const _Safe_iterator_base& __x) const throw ();
   };
 
   /**
@@ -207,7 +207,7 @@ namespace __gnu_debug
     _M_swap(_Safe_sequence_base& __x);
 
     /** For use in _Safe_sequence. */
-    __gnu_cxx::__mutex& _M_get_mutex();
+    __gnu_cxx::__mutex& _M_get_mutex() throw ();
 
   public:
     /** Invalidates all iterators. */
