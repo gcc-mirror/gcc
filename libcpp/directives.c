@@ -724,7 +724,7 @@ parse_include (cpp_reader *pfile, int *pangle_brackets,
       /* This pragma allows extra tokens after the file name.  */
     }
   else if (buf == NULL || CPP_OPTION (pfile, discard_comments))
-    check_eol (pfile, false);
+    check_eol (pfile, true);
   else
     {
       /* If we are not discarding comments, then gather them while

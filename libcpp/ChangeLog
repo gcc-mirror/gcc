@@ -1,5 +1,9 @@
 2009-04-18  Joseph Myers  <joseph@codesourcery.com>
 
+	* directives.c (parse_include): Pass true to check_eol.
+
+2009-04-18  Joseph Myers  <joseph@codesourcery.com>
+
 	PR preprocessor/39646
 	* include/line-map.h (enum lc_reason): Add LC_RENAME_VERBATIM.
 	* line-map.c (linemap_add): Handle LC_RENAME_VERBATIM.
