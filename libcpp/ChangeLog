@@ -1,5 +1,13 @@
 2009-04-18  Joseph Myers  <joseph@codesourcery.com>
 
+	PR preprocessor/39646
+	* include/line-map.h (enum lc_reason): Add LC_RENAME_VERBATIM.
+	* line-map.c (linemap_add): Handle LC_RENAME_VERBATIM.
+	* directives.c (do_line, do_linemarker): Use LC_RENAME_VERBATIM in
+	place of LC_RENAME.
+
+2009-04-18  Joseph Myers  <joseph@codesourcery.com>
+
 	PR preprocessor/39647
 	* directives.c (check_eol): Add parameter expand.
 	(do_undef, parse_include, do_line, do_linemarker, do_ident,

@@ -31,8 +31,9 @@ along with this program; see the file COPYING3.  If not see
    when including a new file, e.g. a #include directive in C.
    LC_LEAVE is when reaching a file's end.  LC_RENAME is when a file
    name or line number changes for neither of the above reasons
-   (e.g. a #line directive in C).  */
-enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME};
+   (e.g. a #line directive in C); LC_RENAME_VERBATIM is like LC_RENAME
+   but a filename of "" is not specially interpreted as standard input.  */
+enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME, LC_RENAME_VERBATIM};
 
 /* The type of line numbers.  */
 typedef unsigned int linenum_type;
