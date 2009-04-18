@@ -1,3 +1,8 @@
+2009-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/pr39496.c: Compile with -mtune=i686.
+	* g++.dg/other/pr39496.C: Likewise.
+
 2009-04-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR middle-end/36902
