@@ -1,5 +1,10 @@
 2009-04-18  Kazu Hirata  <kazu@codesourcery.com>
 
+	* tree-iterator.c (expr_only): Remove.
+	* tree.h: Remove the prototype for expr_only.
+
+2009-04-18  Kazu Hirata  <kazu@codesourcery.com>
+
 	* reginfo.c (cannot_change_mode_set_regs): Remove.
 	* rtl.h: Remove the prototype for cannot_change_mode_set_regs.
 
