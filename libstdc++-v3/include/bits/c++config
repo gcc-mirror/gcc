@@ -326,4 +326,12 @@ _GLIBCXX_END_NAMESPACE
 # define _GLIBCXX_NORETURN __attribute__ ((__noreturn__))
 #endif
 
+#ifndef _GLIBCXX_NOTHROW
+# ifdef __cplusplus
+#  define _GLIBCXX_NOTHROW throw() 
+# else
+#  define _GLIBCXX_NOTHROW __attribute__((nothrow))
+# endif
+#endif
+
 // End of prewritten config; the discovered settings follow.

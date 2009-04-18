@@ -60,8 +60,8 @@ namespace std
   public:
     typedef __native_type* 		native_handle_type;
 
-    condition_variable();
-    ~condition_variable();
+    condition_variable() throw ();
+    ~condition_variable() throw ();
 
     condition_variable(const condition_variable&) = delete;
     condition_variable& operator=(const condition_variable&) = delete;
@@ -168,8 +168,8 @@ namespace std
   public:
     typedef __native_type* 		native_handle_type;
 
-    condition_variable_any();
-    ~condition_variable_any();
+    condition_variable_any() throw ();
+    ~condition_variable_any() throw ();
 
     condition_variable_any(const condition_variable_any&) = delete;
     condition_variable_any& operator=(const condition_variable_any&) = delete;

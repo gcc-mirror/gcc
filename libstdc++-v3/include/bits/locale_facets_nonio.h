@@ -211,7 +211,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       // value of strftime/wcsftime.
       void
       _M_put(_CharT* __s, size_t __maxlen, const _CharT* __format,
-	     const tm* __tm) const;
+	     const tm* __tm) const throw ();
 
       void
       _M_date_formats(const _CharT** __date) const
@@ -325,7 +325,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   template<>
     void
-    __timepunct<char>::_M_put(char*, size_t, const char*, const tm*) const;
+    __timepunct<char>::_M_put(char*, size_t, const char*, const tm*) const throw ();
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
@@ -335,7 +335,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<>
     void
     __timepunct<wchar_t>::_M_put(wchar_t*, size_t, const wchar_t*,
-				 const tm*) const;
+				 const tm*) const throw ();
 #endif
 
 _GLIBCXX_END_NAMESPACE
@@ -844,8 +844,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
     // Construct and return valid pattern consisting of some combination of:
     // space none symbol sign value
-    static pattern
-    _S_construct_pattern(char __precedes, char __space, char __posn);
+    _GLIBCXX_CONST static pattern
+    _S_construct_pattern(char __precedes, char __space, char __posn) throw ();
   };
 
   template<typename _CharT, bool _Intl>

@@ -40,7 +40,7 @@ namespace std
     const bool system_clock::is_monotonic;
 
     system_clock::time_point
-    system_clock::now()
+    system_clock::now() throw ()
     {
 #ifdef _GLIBCXX_USE_CLOCK_REALTIME
       timespec tp;

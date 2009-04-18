@@ -497,7 +497,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _M_call_callbacks(event __ev) throw();
 
     void
-    _M_dispose_callbacks(void);
+    _M_dispose_callbacks(void) throw();
 
     // 27.4.2.5  Members for iword/pword storage
     struct _Words
@@ -526,7 +526,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     locale		_M_ios_locale;
 
     void
-    _M_init();
+    _M_init() throw ();
 
   public:
 
@@ -685,7 +685,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
      *  with imbue_event.
     */
     locale
-    imbue(const locale& __loc);
+    imbue(const locale& __loc) throw ();
 
     /**
      *  @brief  Locale access
@@ -782,7 +782,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     virtual ~ios_base();
 
   protected:
-    ios_base();
+    ios_base() throw ();
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 50.  Copy constructor and assignment operator of ios_base

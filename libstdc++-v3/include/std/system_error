@@ -105,8 +105,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   };
 
   // DR 890.
-  const error_category& system_category();
-  const error_category& generic_category();
+  _GLIBCXX_CONST const error_category& system_category() throw ();
+  _GLIBCXX_CONST const error_category& generic_category() throw ();
 
   /// error_code
   // Implementation-specific error identification

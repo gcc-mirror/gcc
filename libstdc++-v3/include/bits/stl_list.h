@@ -74,20 +74,20 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     _List_node_base* _M_prev;
 
     static void
-    swap(_List_node_base& __x, _List_node_base& __y);
+    swap(_List_node_base& __x, _List_node_base& __y) throw ();
 
     void
     transfer(_List_node_base * const __first,
-	     _List_node_base * const __last);
+	     _List_node_base * const __last) throw ();
 
     void
-    reverse();
+    reverse() throw ();
 
     void
-    hook(_List_node_base * const __position);
+    hook(_List_node_base * const __position) throw ();
 
     void
-    unhook();
+    unhook() throw ();
   };
 
   /// An actual node in the %list.

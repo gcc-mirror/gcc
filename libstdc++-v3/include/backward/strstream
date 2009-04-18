@@ -66,20 +66,20 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     explicit strstreambuf(streamsize __initial_capacity = 0);
     strstreambuf(void* (*__alloc)(size_t), void (*__free)(void*));
 
-    strstreambuf(char* __get, streamsize __n, char* __put = 0);
-    strstreambuf(signed char* __get, streamsize __n, signed char* __put = 0);
-    strstreambuf(unsigned char* __get, streamsize __n, unsigned char* __put=0);
+    strstreambuf(char* __get, streamsize __n, char* __put = 0) throw ();
+    strstreambuf(signed char* __get, streamsize __n, signed char* __put = 0) throw ();
+    strstreambuf(unsigned char* __get, streamsize __n, unsigned char* __put=0) throw ();
 
-    strstreambuf(const char* __get, streamsize __n);
-    strstreambuf(const signed char* __get, streamsize __n);
-    strstreambuf(const unsigned char* __get, streamsize __n);
+    strstreambuf(const char* __get, streamsize __n) throw ();
+    strstreambuf(const signed char* __get, streamsize __n) throw ();
+    strstreambuf(const unsigned char* __get, streamsize __n) throw ();
 
     virtual ~strstreambuf();
 
   public:
-    void freeze(bool = true);
-    char* str();
-    int pcount() const;
+    void freeze(bool = true) throw ();
+    char* str() throw ();
+    _GLIBCXX_PURE int pcount() const throw ();
 
   protected:
     virtual int_type overflow(int_type __c  = _Traits::eof());
@@ -103,7 +103,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     void  _M_free(char*);
 
     // Helper function used in constructors.
-    void _M_setup(char* __get, char* __put, streamsize __n);
+    void _M_setup(char* __get, char* __put, streamsize __n) throw ();
 
   private:
     // Data members.
@@ -125,8 +125,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     istrstream(const char*, streamsize);
     virtual ~istrstream();
 
-    strstreambuf* rdbuf() const;
-    char* str();
+    _GLIBCXX_CONST strstreambuf* rdbuf() const throw ();
+    char* str() throw ();
 
   private:
     strstreambuf _M_buf;
@@ -140,10 +140,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     ostrstream(char*, int, ios_base::openmode = ios_base::out);
     virtual ~ostrstream();
 
-    strstreambuf* rdbuf() const;
-    void freeze(bool = true);
-    char* str();
-    int pcount() const;
+    _GLIBCXX_CONST strstreambuf* rdbuf() const throw ();
+    void freeze(bool = true) throw();
+    char* str() throw ();
+    _GLIBCXX_PURE int pcount() const throw ();
 
   private:
     strstreambuf _M_buf;
@@ -162,10 +162,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     strstream(char*, int, ios_base::openmode = ios_base::in | ios_base::out);
     virtual ~strstream();
 
-    strstreambuf* rdbuf() const;
-    void freeze(bool = true);
-    int pcount() const;
-    char* str();
+    _GLIBCXX_CONST strstreambuf* rdbuf() const throw ();
+    void freeze(bool = true) throw ();
+    _GLIBCXX_PURE int pcount() const throw ();
+    char* str() throw ();
 
   private:
     strstreambuf _M_buf;
