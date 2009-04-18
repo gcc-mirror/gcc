@@ -81,7 +81,8 @@ struct searchc_env {
    searching from.  */
 
 static void
-searchc (struct searchc_env* env, struct cgraph_node *v) 
+searchc (struct searchc_env* env, struct cgraph_node *v,
+	 bool (*ignore_edge) (struct cgraph_edge *))
 {
   struct cgraph_edge *edge;
   struct ipa_dfs_info *v_info = (struct ipa_dfs_info *) v->aux;
@@ -101,12 +102,15 @@ searchc (struct searchc_env* env, struct cgraph_node *v)
       struct ipa_dfs_info * w_info;
       struct cgraph_node *w = edge->callee;
 
+      if (ignore_edge && ignore_edge (edge))
+        continue;
+
       if (w->aux && cgraph_function_body_availability (edge->callee) > AVAIL_OVERWRITABLE)
 	{
 	  w_info = (struct ipa_dfs_info *) w->aux;
 	  if (w_info->new_node) 
 	    {
-	      searchc (env, w);
+	      searchc (env, w, ignore_edge);
 	      v_info->low_link =
 		(v_info->low_link < w_info->low_link) ?
 		v_info->low_link : w_info->low_link;
@@ -152,7 +156,8 @@ searchc (struct searchc_env* env, struct cgraph_node *v)
 
 int
 ipa_utils_reduced_inorder (struct cgraph_node **order, 
-			   bool reduce, bool allow_overwritable)
+			   bool reduce, bool allow_overwritable,
+			   bool (*ignore_edge) (struct cgraph_edge *))
 {
   struct cgraph_node *node;
   struct searchc_env env;
@@ -193,7 +198,7 @@ ipa_utils_reduced_inorder (struct cgraph_node **order,
   while (result)
     {
       node = (struct cgraph_node *)result->value;
-      searchc (&env, node);
+      searchc (&env, node, ignore_edge);
       result = splay_tree_min (env.nodes_marked_new);
     }
   splay_tree_delete (env.nodes_marked_new);

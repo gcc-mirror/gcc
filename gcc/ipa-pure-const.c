@@ -637,6 +637,12 @@ generate_summary (void)
   visited_nodes = NULL;
 }
 
+static bool
+ignore_edge (struct cgraph_edge *e)
+{
+  return (!e->can_throw_external);
+}
+
 /* Produce the global information by preforming a transitive closure
    on the local information that was produced by generate_summary.
    Note that there is no function_transform pass since this only
@@ -656,7 +662,7 @@ propagate (void)
   cgraph_remove_function_insertion_hook (function_insertion_hook_holder);
   cgraph_remove_node_duplication_hook (node_duplication_hook_holder);
   cgraph_remove_node_removal_hook (node_removal_hook_holder);
-  order_pos = ipa_utils_reduced_inorder (order, true, false);
+  order_pos = ipa_utils_reduced_inorder (order, true, false, NULL);
   if (dump_file)
     {
       dump_cgraph (dump_file);
@@ -671,7 +677,6 @@ propagate (void)
     {
       enum pure_const_state_e pure_const_state = IPA_CONST;
       bool looping = false;
-      bool can_throw = false;
       int count = 0;
       node = order[i];
 
@@ -684,13 +689,10 @@ propagate (void)
 	  if (pure_const_state < w_l->pure_const_state)
 	    pure_const_state = w_l->pure_const_state;
 
-	  if (w_l->can_throw)
-	    can_throw = true;
 	  if (w_l->looping)
 	    looping = true;
 
-	  if (pure_const_state == IPA_NEITHER
-	      && can_throw)
+	  if (pure_const_state == IPA_NEITHER)
 	    break;
 
 	  count++;
@@ -707,16 +709,10 @@ propagate (void)
 		  funct_state y_l = get_function_state (y);
 		  if (pure_const_state < y_l->pure_const_state)
 		    pure_const_state = y_l->pure_const_state;
-		  if (pure_const_state == IPA_NEITHER
-		      && can_throw) 
+		  if (pure_const_state == IPA_NEITHER)
 		    break;
 		  if (y_l->looping)
 		    looping = true;
-		  if (y_l->can_throw && !TREE_NOTHROW (w->decl)
-		      /* FIXME: We should check that the throw can get external.
-		         We also should handle only loops formed by can throw external
-			 edges.  */)
-		    can_throw = true;
 		}
 	    }
 	  w_info = (struct ipa_dfs_info *) w->aux;
@@ -766,12 +762,80 @@ propagate (void)
 	    default:
 	      break;
 	    }
+	  w_info = (struct ipa_dfs_info *) w->aux;
+	  w = w_info->next_cycle;
+	}
+    }
+
+  /* Cleanup. */
+  for (node = cgraph_nodes; node; node = node->next)
+    {
+      /* Get rid of the aux information.  */
+      if (node->aux)
+	{
+	  w_info = (struct ipa_dfs_info *) node->aux;
+	  free (node->aux);
+	  node->aux = NULL;
+	}
+    }
+  order_pos = ipa_utils_reduced_inorder (order, true, false, ignore_edge);
+  if (dump_file)
+    {
+      dump_cgraph (dump_file);
+      ipa_utils_print_order(dump_file, "reduced for nothrow", order, order_pos);
+    }
+  /* Propagate the local information thru the call graph to produce
+     the global information.  All the nodes within a cycle will have
+     the same info so we collapse cycles first.  Then we can do the
+     propagation in one pass from the leaves to the roots.  */
+  for (i = 0; i < order_pos; i++ )
+    {
+      bool can_throw = false;
+      node = order[i];
+
+      /* Find the worst state for any node in the cycle.  */
+      w = node;
+      while (w)
+	{
+	  struct cgraph_edge *e;
+	  funct_state w_l = get_function_state (w);
+
+	  if (w_l->can_throw)
+	    can_throw = true;
+
+	  if (can_throw)
+	    break;
+		
+	  for (e = w->callees; e; e = e->next_callee) 
+	    {
+	      struct cgraph_node *y = e->callee;
+
+	      if (cgraph_function_body_availability (y) > AVAIL_OVERWRITABLE)
+		{
+		  funct_state y_l = get_function_state (y);
+
+		  if (can_throw) 
+		    break;
+		  if (y_l->can_throw && !TREE_NOTHROW (w->decl)
+		      && e->can_throw_external)
+		    can_throw = true;
+		}
+	    }
+	  w_info = (struct ipa_dfs_info *) w->aux;
+	  w = w_info->next_cycle;
+	}
+
+      /* Copy back the region's pure_const_state which is shared by
+	 all nodes in the region.  */
+      w = node;
+      while (w)
+	{
 	  if (!can_throw && !TREE_NOTHROW (w->decl))
 	    {
-	      /* FIXME: TREE_NOTHROW is not set because passmanager will execute
-	         verify_ssa and verify_cfg on every function.  Before fixup_cfg is done,
-	         those functions are going to have NOTHROW calls in EH regions reulting
-	         in ICE.  */
+	      struct cgraph_edge *e;
+	      TREE_NOTHROW (w->decl) = true;
+	      for (e = w->callers; e; e = e->next_caller)
+	        e->can_throw_external = false;
 	      if (dump_file)
 		fprintf (dump_file, "Function found to be nothrow: %s\n",  
 			 cgraph_node_name (w));
@@ -918,7 +982,12 @@ local_pure_const (void)
     }
   if (!l->can_throw && !TREE_NOTHROW (current_function_decl))
     {
-      TREE_NOTHROW (current_function_decl) = 1;
+      struct cgraph_edge *e;
+
+      TREE_NOTHROW (current_function_decl) = true;
+      for (e = cgraph_node (current_function_decl)->callers;
+           e; e = e->next_caller)
+	e->can_throw_external = false;
       changed = true;
       if (dump_file)
 	fprintf (dump_file, "Function found to be nothrow: %s\n",

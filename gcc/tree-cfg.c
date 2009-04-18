@@ -4156,7 +4156,10 @@ verify_stmt (gimple_stmt_iterator *gsi)
      to match.  */
   if (lookup_stmt_eh_region (stmt) >= 0)
     {
-      if (!stmt_could_throw_p (stmt))
+      /* During IPA passes, ipa-pure-const sets nothrow flags on calls
+         and they are updated on statements only after fixup_cfg
+	 is executed at beggining of expansion stage.  */
+      if (!stmt_could_throw_p (stmt) && cgraph_state != CGRAPH_STATE_IPA_SSA)
 	{
 	  error ("statement marked for throw, but doesn%'t");
 	  goto fail;
