@@ -1,3 +1,8 @@
+2009-04-08  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.md (*rotlsi3_8, *rotlsi3_16, *rotlsi3_24 ): Check
+	whether operands 0 and 1 overlaps.
+
 2009-04-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR middle-end/36902
