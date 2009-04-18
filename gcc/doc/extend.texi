@@ -6758,7 +6758,7 @@ This is an acceptable initializer even if @var{EXPRESSION} is not a
 constant expression, including the case where
 @code{__builtin_constant_p} returns 1 because @var{EXPRESSION} can be
 folded to a constant but @var{EXPRESSION} contains operands that would
-not otherwize be permitted in a static initializer (for example,
+not otherwise be permitted in a static initializer (for example,
 @code{0 && foo ()}).  GCC must be more conservative about evaluating the
 built-in in this case, because it has no opportunity to perform
 optimization.

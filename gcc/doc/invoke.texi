@@ -15568,14 +15568,14 @@ This option is available for Cygwin and MinGW targets.  It
 specifies that a console application is to be generated, by
 instructing the linker to set the PE header subsystem type
 required for console applications.
-This is the default behaviour for Cygwin and MinGW targets.
+This is the default behavior for Cygwin and MinGW targets.
 
 @item -mcygwin
 @opindex mcygwin
 This option is available for Cygwin targets.  It specifies that
 the Cygwin internal interface is to be used for predefined
 preprocessor macros, C runtime libraries and related linker
-paths and options.  For Cygwin targets this is the default behaviour.
+paths and options.  For Cygwin targets this is the default behavior.
 This option is deprecated and will be removed in a future release.
 
 @item -mno-cygwin

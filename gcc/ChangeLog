@@ -1,3 +1,7 @@
+2009-04-18  Kazu Hirata  <kazu@codesourcery.com>
+
+	* doc/extend.texi, doc/invoke.texi: Fix typos.
+
 2009-04-17  Cary Coutant  <ccoutant@google.com>
 
 	* tree-flow-inline.h (get_lineno): Fix inverted test.
