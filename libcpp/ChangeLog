@@ -1,3 +1,12 @@
+2009-04-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/39647
+	* directives.c (check_eol): Add parameter expand.
+	(do_undef, parse_include, do_line, do_linemarker, do_ident,
+	do_pragma_once, do_pragma_system_header, do_ifdef, do_ifndef,
+	do_else, do_endif, do_assert, do_unassert): All callers changed.
+	Pass true from do_line, false elsewhere.
+
 2009-04-12  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/31869
