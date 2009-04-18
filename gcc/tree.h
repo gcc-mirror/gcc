@@ -5199,7 +5199,6 @@ extern tree tree_mem_ref_addr (tree, tree);
 extern void copy_mem_ref_info (tree, tree);
 
 /* In tree-vrp.c */
-extern bool ssa_name_nonzero_p (const_tree);
 extern bool ssa_name_nonnegative_p (const_tree);
 
 /* In tree-object-size.c.  */
