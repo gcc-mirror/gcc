@@ -1,3 +1,9 @@
+2009-04-18  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/39782
+	* io/transfer.c (data_transfer_init): Don't flush before seek.
+	(finalize_transfer): Remove extra flush.
+
 2009-04-17  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* io/io.h (is_preconnected): Remove prototype.

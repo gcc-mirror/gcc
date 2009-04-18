@@ -2332,7 +2332,6 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
           if (dtp->pos != dtp->u.p.current_unit->strm_pos)
             {
               fbuf_flush (dtp->u.p.current_unit, dtp->u.p.mode);
-              sflush (dtp->u.p.current_unit->s);
               if (sseek (dtp->u.p.current_unit->s, dtp->pos - 1, SEEK_SET) < 0)
                 {
                   generate_error (&dtp->common, LIBERROR_OS, NULL);
@@ -3143,11 +3142,6 @@ finalize_transfer (st_parameter_dt *dtp)
 	  && dtp->u.p.advance_status != ADVANCE_NO)
 	next_record (dtp, 1);
 
-      if (dtp->u.p.current_unit->flags.form == FORM_UNFORMATTED
-	  && stell (dtp->u.p.current_unit->s) >= dtp->rec)
-	{
-	  sflush (dtp->u.p.current_unit->s);
-	}
       return;
     }
 
