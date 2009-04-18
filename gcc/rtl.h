@@ -2245,10 +2245,6 @@ extern void init_reg_sets (void);
 extern void regclass (rtx, int);
 extern void reg_scan (rtx, unsigned int);
 extern void fix_register (const char *, int, int);
-#ifdef HARD_CONST
-extern void cannot_change_mode_set_regs (HARD_REG_SET *,
-					 enum machine_mode, unsigned int);
-#endif
 extern bool invalid_mode_change_p (unsigned int, enum reg_class,
 				   enum machine_mode);
 
