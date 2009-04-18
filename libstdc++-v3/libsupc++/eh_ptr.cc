@@ -113,7 +113,7 @@ std::__exception_ptr::exception_ptr::_M_get() const throw()
 
 
 void
-std::__exception_ptr::exception_ptr::_M_safe_bool_dummy()
+std::__exception_ptr::exception_ptr::_M_safe_bool_dummy() throw ()
 {
 }
 

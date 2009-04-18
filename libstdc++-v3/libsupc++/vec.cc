@@ -248,7 +248,7 @@ namespace __cxxabiv1
   __cxa_vec_cleanup(void *array_address,
 		    std::size_t element_count,
 		    std::size_t element_size,
-		    __cxa_cdtor_type destructor)
+		    __cxa_cdtor_type destructor) throw()
   {
     if (destructor)
       {

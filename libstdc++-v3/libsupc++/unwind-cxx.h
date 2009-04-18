@@ -148,8 +148,8 @@ struct __cxa_eh_globals
 // either of the following functions.  The "fast" version assumes at least
 // one prior call of __cxa_get_globals has been made from the current
 // thread, so no initialization is necessary.
-extern "C" __cxa_eh_globals *__cxa_get_globals () throw();
-extern "C" __cxa_eh_globals *__cxa_get_globals_fast () throw();
+extern "C" __cxa_eh_globals *__cxa_get_globals () throw() __attribute__ ((__const__));
+extern "C" __cxa_eh_globals *__cxa_get_globals_fast () throw() __attribute__ ((__const__));
 
 // Allocate memory for the primary exception plus the thrown object.
 extern "C" void *__cxa_allocate_exception(std::size_t thrown_size) throw();
@@ -172,14 +172,14 @@ extern "C" void __cxa_throw (void *thrown_exception,
      __attribute__((noreturn));
 
 // Used to implement exception handlers.
-extern "C" void *__cxa_get_exception_ptr (void *) throw();
+extern "C" void *__cxa_get_exception_ptr (void *) throw() __attribute__ ((__pure__));
 extern "C" void *__cxa_begin_catch (void *) throw();
 extern "C" void __cxa_end_catch ();
 extern "C" void __cxa_rethrow () __attribute__((noreturn));
 
 // These facilitate code generation for recurring situations.
-extern "C" void __cxa_bad_cast ();
-extern "C" void __cxa_bad_typeid ();
+extern "C" void __cxa_bad_cast () __attribute__((__noreturn__));
+extern "C" void __cxa_bad_typeid () __attribute__((__noreturn__));
 
 // @@@ These are not directly specified by the IA-64 C++ ABI.
 
@@ -204,7 +204,7 @@ extern "C" void __cxa_end_cleanup (void);
 
 // Invokes given handler, dying appropriately if the user handler was
 // so inconsiderate as to return.
-extern void __terminate(std::terminate_handler) __attribute__((noreturn));
+extern void __terminate(std::terminate_handler) throw () __attribute__((__noreturn__));
 extern void __unexpected(std::unexpected_handler) __attribute__((noreturn));
 
 // The current installed user handlers.
