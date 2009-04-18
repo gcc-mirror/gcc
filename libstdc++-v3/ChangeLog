@@ -11,7 +11,8 @@
 	* guard.cc (__cxa_guard_abort, __cxa_guard_release): Mark throw().
 	* eh_terminate.cc (__terminate, terminate): Mark throw().
 	* vec.cc (__cxa_vec_cleanup): Mark throw().
-	* cxxabi.h (__cxa_vec_cleanup, __cxa_guard_release, __cxa_guard_abort): Mark throw ().
+	* cxxabi.h (__cxa_vec_cleanup, __cxa_guard_release,
+	__cxa_guard_abort): Mark throw ().
 	(__cxa_pure_virtual): Mark noreturn.
 	(__cxa_current_exception_type): Mark throw and pure.
 	* exception_ptr.h (operator ==, !=, _M_get, !, ==,
