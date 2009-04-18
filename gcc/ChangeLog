@@ -1,3 +1,17 @@
+2009-04-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR middle-end/36902
+	* tree-vrp.c (check_array_ref): Pass a location_t instead of a
+	pointer. Use warning_at instead of warning.
+	(search_for_addr_array): Likewise.
+	(check_array_bounds): Likewise.
+	(check_all_array_refs): Check that the incoming edge is not in the
+	list of edges to be removed.
+	(check_all_array_refs): Avoid the temporal pointer.
+	(vrp_visit_cond_stmt): Fix typo.
+	(simplify_switch_using_ranges): Handle the case where the switch
+	index is an integer constant.
+
 2009-04-18  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.c (mips_final_postscan_insn): Make it static.

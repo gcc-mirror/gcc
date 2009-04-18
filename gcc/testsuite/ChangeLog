@@ -1,3 +1,8 @@
+2009-04-18  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR middle-end/36902
+	* gcc.dg/pr36902.c: New.
+
 2009-04-17  Diego Novillo  <dnovillo@google.com>
 
 	* gcc.c-torture/execute/builtins/strlen-3.c: Fix ODR
