@@ -109,8 +109,11 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 
   map = &set->maps[set->used];
 
-  if (to_file && *to_file == '\0')
+  if (to_file && *to_file == '\0' && reason != LC_RENAME_VERBATIM)
     to_file = "<stdin>";
+
+  if (reason == LC_RENAME_VERBATIM)
+    reason = LC_RENAME;
 
   /* If we don't keep our line maps consistent, we can easily
      segfault.  Don't rely on the client to do it for us.  */

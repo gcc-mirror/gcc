@@ -924,7 +924,7 @@ do_line (cpp_reader *pfile)
     }
 
   skip_rest_of_line (pfile);
-  _cpp_do_file_change (pfile, LC_RENAME, new_file, new_lineno,
+  _cpp_do_file_change (pfile, LC_RENAME_VERBATIM, new_file, new_lineno,
 		       map_sysp);
 }
 
@@ -940,7 +940,7 @@ do_linemarker (cpp_reader *pfile)
   const char *new_file = map->to_file;
   linenum_type new_lineno;
   unsigned int new_sysp = map->sysp;
-  enum lc_reason reason = LC_RENAME;
+  enum lc_reason reason = LC_RENAME_VERBATIM;
   int flag;
   bool wrapped;
 
