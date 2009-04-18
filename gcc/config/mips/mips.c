@@ -14719,7 +14719,7 @@ mips_final_prescan_insn (rtx insn, rtx *opvec, int noperands)
 
 /* Implement TARGET_ASM_FINAL_POSTSCAN_INSN.  */
 
-void
+static void
 mips_final_postscan_insn (FILE *file, rtx insn, rtx *opvec, int noperands)
 {
   int i;

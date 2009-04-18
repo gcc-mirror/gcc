@@ -1,3 +1,7 @@
+2009-04-18  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.c (mips_final_postscan_insn): Make it static.
+
 2009-04-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* doc/extend.texi, doc/invoke.texi: Fix typos.
