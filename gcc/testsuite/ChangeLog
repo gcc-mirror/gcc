@@ -1,5 +1,10 @@
 2009-04-18  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/35210
+	* gcc.dg/call-diag-2.c: New test.
+
+2009-04-18  Joseph Myers  <joseph@codesourcery.com>
+
 	PR preprocessor/39646
 	* gcc.dg/cpp/line8.c: New test.
 

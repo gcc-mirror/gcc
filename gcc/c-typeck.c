@@ -2498,7 +2498,12 @@ build_function_call (tree function, tree params)
 	trap = build2 (COMPOUND_EXPR, void_type_node, argarray[i], trap);
 
       if (VOID_TYPE_P (return_type))
-	return trap;
+	{
+	  if (TYPE_QUALS (return_type) != TYPE_UNQUALIFIED)
+	    pedwarn (input_location, 0,
+		     "function with qualified void return type called");
+	  return trap;
+	}
       else
 	{
 	  tree rhs;
@@ -2510,7 +2515,8 @@ build_function_call (tree function, tree params)
 	  else
 	    rhs = fold_convert (return_type, integer_zero_node);
 
-	  return build2 (COMPOUND_EXPR, return_type, trap, rhs);
+	  return require_complete_type (build2 (COMPOUND_EXPR, return_type,
+						trap, rhs));
 	}
     }
 
@@ -2543,7 +2549,12 @@ build_function_call (tree function, tree params)
 			       function, nargs, argarray);
 
   if (VOID_TYPE_P (TREE_TYPE (result)))
-    return result;
+    {
+      if (TYPE_QUALS (TREE_TYPE (result)) != TYPE_UNQUALIFIED)
+	pedwarn (input_location, 0,
+		 "function with qualified void return type called");
+      return result;
+    }
   return require_complete_type (result);
 }
 
