@@ -1,3 +1,8 @@
+2009-04-18  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/39804
+	* gcc.target/i386/pr39804.c: New testcase.
+
 2009-04-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/i386/pr39496.c: Compile with -mtune=i686.
