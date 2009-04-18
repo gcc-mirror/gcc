@@ -1,5 +1,10 @@
 2009-04-18  Kazu Hirata  <kazu@codesourcery.com>
 
+	* tree.c (function_args_count): Remove.
+	* tree.h: Remove the prototype for function_args_count.
+
+2009-04-18  Kazu Hirata  <kazu@codesourcery.com>
+
 	* tree-iterator.c (expr_only): Remove.
 	* tree.h: Remove the prototype for expr_only.
 

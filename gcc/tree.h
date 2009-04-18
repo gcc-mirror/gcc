@@ -4655,7 +4655,6 @@ extern tree create_artificial_label (void);
 extern const char *get_name (tree);
 extern bool stdarg_p (tree);
 extern bool prototype_p (tree);
-extern int function_args_count (tree);
 extern bool auto_var_in_fn_p (const_tree, const_tree);
 
 /* In gimplify.c */
