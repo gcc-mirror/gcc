@@ -4996,7 +4996,7 @@ insert_range_assertions (void)
    IGNORE_OFF_BY_ONE is true if the ARRAY_REF is inside a ADDR_EXPR.  */
 
 static void
-check_array_ref (tree ref, const location_t *location, bool ignore_off_by_one)
+check_array_ref (tree ref, location_t location, bool ignore_off_by_one)
 {
   value_range_t* vr = NULL;
   tree low_sub, up_sub;
@@ -5035,8 +5035,8 @@ check_array_ref (tree ref, const location_t *location, bool ignore_off_by_one)
           && TREE_CODE (low_sub) == INTEGER_CST
           && tree_int_cst_lt (low_sub, low_bound))
         {
-          warning (OPT_Warray_bounds,
-                   "%Harray subscript is outside array bounds", location);
+          warning_at (location, OPT_Warray_bounds,
+		      "array subscript is outside array bounds");
           TREE_NO_WARNING (ref) = 1;
         }
     }
@@ -5050,15 +5050,15 @@ check_array_ref (tree ref, const location_t *location, bool ignore_off_by_one)
                                                         0),
                                        up_sub)))
     {
-      warning (OPT_Warray_bounds, "%Harray subscript is above array bounds",
-               location);
+      warning_at (location, OPT_Warray_bounds,
+		  "array subscript is above array bounds");
       TREE_NO_WARNING (ref) = 1;
     }
   else if (TREE_CODE (low_sub) == INTEGER_CST
            && tree_int_cst_lt (low_sub, low_bound))
     {
-      warning (OPT_Warray_bounds, "%Harray subscript is below array bounds",
-               location);
+      warning_at (location, OPT_Warray_bounds,
+		  "array subscript is below array bounds");
       TREE_NO_WARNING (ref) = 1;
     }
 }
@@ -5067,7 +5067,7 @@ check_array_ref (tree ref, const location_t *location, bool ignore_off_by_one)
    address of an ARRAY_REF, and call check_array_ref on it.  */
 
 static void
-search_for_addr_array (tree t, const location_t *location)
+search_for_addr_array (tree t, location_t location)
 {
   while (TREE_CODE (t) == SSA_NAME)
     {
@@ -5115,11 +5115,11 @@ check_array_bounds (tree *tp, int *walk_subtree, void *data)
   *walk_subtree = TRUE;
 
   if (TREE_CODE (t) == ARRAY_REF)
-    check_array_ref (t, location, false /*ignore_off_by_one*/);
+    check_array_ref (t, *location, false /*ignore_off_by_one*/);
 
   if (TREE_CODE (t) == INDIRECT_REF
       || (TREE_CODE (t) == RETURN_EXPR && TREE_OPERAND (t, 0)))
-    search_for_addr_array (TREE_OPERAND (t, 0), location);
+    search_for_addr_array (TREE_OPERAND (t, 0), *location);
 
   if (TREE_CODE (t) == ADDR_EXPR)
     *walk_subtree = FALSE;
@@ -5141,8 +5141,22 @@ check_all_array_refs (void)
       /* Skip bb's that are clearly unreachable.  */
       if (single_pred_p (bb))
       {
-	basic_block pred_bb = EDGE_PRED (bb, 0)->src;
+	int i;
+	bool reachable = true;
+	edge e2;
+	edge e = EDGE_PRED (bb, 0);
+	basic_block pred_bb = e->src;
 	gimple ls = NULL;
+
+	for (i = 0; VEC_iterate (edge, to_remove_edges, i, e2); ++i)
+	  if (e == e2)
+	    {
+	      reachable = false;
+	      break;
+	    }
+
+	if (!reachable)
+	  continue;
 
 	if (!gsi_end_p (gsi_last_bb (pred_bb)))
 	  ls = gsi_stmt (gsi_last_bb (pred_bb));
@@ -5157,7 +5171,6 @@ check_all_array_refs (void)
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
 	{
 	  gimple stmt = gsi_stmt (si);
-	  const location_t *location = gimple_location_ptr (stmt);
 	  struct walk_stmt_info wi;
 	  if (!gimple_has_location (stmt))
 	    continue;
@@ -5169,13 +5182,14 @@ check_all_array_refs (void)
 	      for (i = 0; i < n; i++)
 		{
 		  tree arg = gimple_call_arg (stmt, i);
-		  search_for_addr_array (arg, location);
+		  search_for_addr_array (arg, gimple_location (stmt));
 		}
 	    }
 	  else
 	    {
 	      memset (&wi, 0, sizeof (wi));
-	      wi.info = CONST_CAST (void *, (const void *) location);
+	      wi.info = CONST_CAST (void *, (const void *)
+				    gimple_location_ptr (stmt));
 
 	      walk_gimple_op (gsi_stmt (si),
 			      check_array_bounds,
@@ -5875,7 +5889,7 @@ vrp_visit_cond_stmt (gimple stmt, edge *taken_edge_p)
    If there is a CASE_LABEL for VAL, its index is placed in IDX and true is
    returned.
 
-   If there is no CASE_LABEL for VAL and the is one that is larger than VAL,
+   If there is no CASE_LABEL for VAL and there is one that is larger than VAL,
    it is placed in IDX and false is returned.
 
    If VAL is larger than any CASE_LABEL, n is placed on IDX and false is
@@ -6860,19 +6874,35 @@ simplify_switch_using_ranges (gimple stmt)
   tree vec2;
   switch_update su;
 
-  if (TREE_CODE (op) != SSA_NAME)
+  if (TREE_CODE (op) == SSA_NAME)
+    {
+      vr = get_value_range (op);
+
+      /* We can only handle integer ranges.  */
+      if (vr->type != VR_RANGE
+	  || symbolic_range_p (vr))
+	return false;
+
+      /* Find case label for min/max of the value range.  */
+      take_default = !find_case_label_range (stmt, vr->min, vr->max, &i, &j);
+    }
+  else if (TREE_CODE (op) == INTEGER_CST)
+    {
+      take_default = !find_case_label_index (stmt, 1, op, &i);
+      if (take_default)
+	{
+	  i = 1;
+	  j = 0;
+	}
+      else 
+	{
+	  j = i;
+	}
+    }
+  else
     return false;
 
-  vr = get_value_range (op);
-
-  /* We can only handle integer ranges.  */
-  if (vr->type != VR_RANGE
-      || symbolic_range_p (vr))
-    return false;
-
-  /* Find case label for min/max of the value range.  */
   n = gimple_switch_num_labels (stmt);
-  take_default = !find_case_label_range (stmt, vr->min, vr->max, &i, &j);
 
   /* Bail out if this is just all edges taken.  */
   if (i == 1
