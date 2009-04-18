@@ -1368,28 +1368,6 @@ ssa_name_nonnegative_p (const_tree t)
   return false;
 }
 
-/* Return true if T, an SSA_NAME, is known to be nonzero.  Return
-   false otherwise or if no value range information is available.  */
-
-bool
-ssa_name_nonzero_p (const_tree t)
-{
-  value_range_t *vr = get_value_range (t);
-
-  if (!vr)
-    return false;
-
-  /* A VR_RANGE which does not include zero is a nonzero value.  */
-  if (vr->type == VR_RANGE && !symbolic_range_p (vr))
-    return ! range_includes_zero_p (vr);
-
-  /* A VR_ANTI_RANGE which does include zero is a nonzero value.  */
-  if (vr->type == VR_ANTI_RANGE && !symbolic_range_p (vr))
-    return range_includes_zero_p (vr);
-
-  return false;
-}
-
 /* If OP has a value range with a single constant value return that,
    otherwise return NULL_TREE.  This returns OP itself if OP is a
    constant.  */
