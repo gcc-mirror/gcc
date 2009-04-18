@@ -1478,7 +1478,7 @@
 	(rotate:SI (match_operand:SI 1 "register_operand" "r")
 		   (const_int 16)))]
   ""
-  "{mov __tmp_reg__,%A0\;mov %A0,%D0\;mov %D0, __tmp_reg__\;mov __tmp_reg__,%B0\;mov %B0,%C0\;mov %C0, __tmp_reg__|movw __tmp_reg__,%A0\;movw %A0,%C0\;movw %C0, __tmp_reg__\;clr __zero_reg__}"
+  "{mov __tmp_reg__,%A1\;mov %A0,%C1\;mov %C0, __tmp_reg__\;mov __tmp_reg__,%B1\;mov %B0,%D1\;mov %D0, __tmp_reg__|movw __tmp_reg__,%A1\;movw %A0,%C1\;movw %C0, __tmp_reg__\;clr __zero_reg__}"
   "reload_completed
    && REGNO (operands[0]) != REGNO (operands[1])"
   [(set (match_dup 2) (match_dup 5))
@@ -1490,7 +1490,18 @@
    operands[3] = simplify_gen_subreg (HImode, operands[0], SImode, si_hi_off);
 
    operands[4] = simplify_gen_subreg (HImode, operands[1], SImode, si_lo_off);
-   operands[5] = simplify_gen_subreg (HImode, operands[1], SImode, si_hi_off);"
+   operands[5] = simplify_gen_subreg (HImode, operands[1], SImode, si_hi_off);
+
+   if (REGNO (operands[0]) == REGNO(operands[1]) + 2)
+     {
+       emit_move_insn (operands[3], operands[4]);
+       DONE;
+     }
+   else if (REGNO (operands[0]) == REGNO(operands[1]) - 2)
+     {
+       emit_move_insn (operands[2], operands[5]);
+       DONE;
+     }"
   [(set (attr "length") (if_then_else (eq_attr "mcu_have_movw" "yes")
 				      (const_int 4)
 				      (const_int 6)))
@@ -1503,17 +1514,14 @@
 	(rotate:SI (match_operand:SI 1 "register_operand" "r")
 		   (const_int 8)))]
   ""
-  "mov __tmp_reg__,%D0
-	mov %D0,%C0
-	mov %C0,%B0
-	mov %B0,%A0
+  "mov __tmp_reg__,%D1
+	mov %D0,%C1
+	mov %C0,%B1
+	mov %B0,%A1
 	mov %A0, __tmp_reg__"
   "reload_completed
    && REGNO (operands[0]) != REGNO (operands[1])"
-  [(set (match_dup 2) (match_dup 9))
-   (set (match_dup 3) (match_dup 6))
-   (set (match_dup 4) (match_dup 7))
-   (set (match_dup 5) (match_dup 8))]
+  [(const_int 0)]
   "unsigned int si_lo_off = subreg_lowpart_offset (HImode, SImode);
    unsigned int si_hi_off = subreg_highpart_offset (HImode, SImode);
    unsigned int hi_lo_off = subreg_lowpart_offset (QImode, HImode);
@@ -1531,7 +1539,23 @@
    operands[7] = simplify_gen_subreg (QImode, operands[6], HImode, hi_hi_off);
    operands[6] = simplify_gen_subreg (QImode, operands[6], HImode, hi_lo_off);
    operands[9] = simplify_gen_subreg (QImode, operands[8], HImode, hi_hi_off);
-   operands[8] = simplify_gen_subreg (QImode, operands[8], HImode, hi_lo_off);"
+   operands[8] = simplify_gen_subreg (QImode, operands[8], HImode, hi_lo_off);
+ 
+   if (REGNO (operands[0]) < REGNO(operands[1]))
+     {
+       emit_move_insn (operands[2], operands[9]);
+       emit_move_insn (operands[3], operands[6]);
+       emit_move_insn (operands[4], operands[7]);
+       emit_move_insn (operands[5], operands[8]);
+     }
+   else
+     {
+       emit_move_insn (operands[5], operands[8]);
+       emit_move_insn (operands[2], operands[9]);
+       emit_move_insn (operands[4], operands[7]);
+       emit_move_insn (operands[3], operands[6]);
+     }
+   DONE;"
    [(set_attr "length" "5")
    (set_attr "cc" "none")])
 
@@ -1540,17 +1564,14 @@
 	(rotate:SI (match_operand:SI 1 "register_operand" "r")
 		   (const_int 24)))]
   ""
-  "mov __tmp_reg__,%A0
-	mov %A0,%B0
-	mov %B0,%C0
-	mov %C0,%D0
+  "mov __tmp_reg__,%A1
+	mov %A0,%B1
+	mov %B0,%C1
+	mov %C0,%D1
 	mov %D0, __tmp_reg__"
   "reload_completed
    && REGNO (operands[0]) != REGNO (operands[1])"
-  [(set (match_dup 2) (match_dup 7))
-   (set (match_dup 3) (match_dup 8))
-   (set (match_dup 4) (match_dup 9))
-   (set (match_dup 5) (match_dup 6))]
+  [(const_int 0)]
   "unsigned int si_lo_off = subreg_lowpart_offset (HImode, SImode);
    unsigned int si_hi_off = subreg_highpart_offset (HImode, SImode);
    unsigned int hi_lo_off = subreg_lowpart_offset (QImode, HImode);
@@ -1568,7 +1589,23 @@
    operands[7] = simplify_gen_subreg (QImode, operands[6], HImode, hi_hi_off);
    operands[6] = simplify_gen_subreg (QImode, operands[6], HImode, hi_lo_off);
    operands[9] = simplify_gen_subreg (QImode, operands[8], HImode, hi_hi_off);
-   operands[8] = simplify_gen_subreg (QImode, operands[8], HImode, hi_lo_off);"
+   operands[8] = simplify_gen_subreg (QImode, operands[8], HImode, hi_lo_off);
+
+   if (REGNO (operands[0]) < REGNO(operands[1]))
+     {
+       emit_move_insn (operands[2], operands[7]);
+       emit_move_insn (operands[5], operands[6]);
+       emit_move_insn (operands[3], operands[8]);
+       emit_move_insn (operands[4], operands[9]);
+     }
+   else
+     {
+       emit_move_insn (operands[5], operands[6]);
+       emit_move_insn (operands[4], operands[9]);
+       emit_move_insn (operands[3], operands[8]);
+       emit_move_insn (operands[2], operands[7]);
+     }
+   DONE;"
    [(set_attr "length" "5")
    (set_attr "cc" "none")])
 
