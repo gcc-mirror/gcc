@@ -280,29 +280,4 @@ expr_last (tree expr)
   return expr;
 }
 
-/* If EXPR is a single statement return it.  If EXPR is a
-   STATEMENT_LIST containing exactly one statement S, return S.
-   Otherwise, return NULL.  */
-
-tree 
-expr_only (tree expr)
-{
-  if (expr == NULL_TREE)
-    return NULL_TREE;
-
-  if (TREE_CODE (expr) == STATEMENT_LIST)
-    {
-      struct tree_statement_list_node *n = STATEMENT_LIST_TAIL (expr);
-      if (n && STATEMENT_LIST_HEAD (expr) == n)
-	return n->stmt;
-      else
-	return NULL_TREE;
-    }
-
-  if (TREE_CODE (expr) == COMPOUND_EXPR)
-    return NULL_TREE;
-
-  return expr;
-}
-
 #include "gt-tree-iterator.h"
