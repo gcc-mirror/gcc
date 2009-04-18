@@ -1311,34 +1311,6 @@ init_subregs_of_mode (void)
   return 0;
 }
 
-/* Set bits in *USED which correspond to registers which can't change
-   their mode from FROM to any mode in which REGNO was
-   encountered.  */
-void
-cannot_change_mode_set_regs (HARD_REG_SET *used, enum machine_mode from,
-			     unsigned int regno)
-{
-  struct subregs_of_mode_node dummy, *node;
-  enum machine_mode to;
-  unsigned char mask;
-  unsigned int i;
-
-  gcc_assert (subregs_of_mode);
-  dummy.block = regno & -8;
-  node = (struct subregs_of_mode_node *)
-    htab_find_with_hash (subregs_of_mode, &dummy, dummy.block);
-  if (node == NULL)
-    return;
-
-  mask = 1 << (regno & 7);
-  for (to = VOIDmode; to < NUM_MACHINE_MODES; to++)
-    if (node->modes[to] & mask)
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (!TEST_HARD_REG_BIT (*used, i)
-	    && REG_CANNOT_CHANGE_MODE_P (i, from, to))
-	  SET_HARD_REG_BIT (*used, i);
-}
-
 /* Return 1 if REGNO has had an invalid mode change in CLASS from FROM
    mode.  */
 bool
