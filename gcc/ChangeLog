@@ -1,5 +1,11 @@
 2009-04-18  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/22367
+	* c-typeck.c (build_unary_op): Check for taking address of
+	expression of type void.
+
+2009-04-18  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/35210
 	* c-typeck.c (build_function_call): Check for calling a function
 	with qualified void return types.  Call require_complete_type when
