@@ -379,8 +379,7 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	if (!__testeof)
 	  {
 	    __c = *__beg;
-	    if (__gnu_cxx::__numeric_traits<_ValueT>::__is_signed)
-	      __negative = __c == __lit[__num_base::_S_iminus];
+	    __negative = __c == __lit[__num_base::_S_iminus];
 	    if ((__negative || __c == __lit[__num_base::_S_iplus])
 		&& !(__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 		&& !(__c == __lc->_M_decimal_point))
@@ -449,7 +448,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	  __found_grouping.reserve(32);
 	bool __testfail = false;
 	bool __testoverflow = false;
-	const __unsigned_type __max = __negative
+	const __unsigned_type __max =
+	  (__negative && __gnu_cxx::__numeric_traits<_ValueT>::__is_signed)
 	  ? -__gnu_cxx::__numeric_traits<_ValueT>::__min
 	  : __gnu_cxx::__numeric_traits<_ValueT>::__max;
 	const __unsigned_type __smax = __max / __base;
@@ -552,7 +552,8 @@ _GLIBCXX_BEGIN_LDBL_NAMESPACE
 	  }
 	else if (__testoverflow)
 	  {
-	    if (__negative)
+	    if (__negative
+		&& __gnu_cxx::__numeric_traits<_ValueT>::__is_signed)
 	      __v = __gnu_cxx::__numeric_traits<_ValueT>::__min;
 	    else
 	      __v = __gnu_cxx::__numeric_traits<_ValueT>::__max;
