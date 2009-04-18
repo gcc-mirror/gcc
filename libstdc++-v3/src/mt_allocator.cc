@@ -108,7 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   }
 
   void
-  __pool<false>::_M_reclaim_block(char* __p, size_t __bytes)
+  __pool<false>::_M_reclaim_block(char* __p, size_t __bytes) throw ()
   {
     // Round up to power of 2 and figure out which bin to use.
     const size_t __which = _M_binmap[__bytes];
@@ -256,7 +256,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   }
 
   void
-  __pool<true>::_M_reclaim_block(char* __p, size_t __bytes)
+  __pool<true>::_M_reclaim_block(char* __p, size_t __bytes) throw ()
   {
     // Round up to power of 2 and figure out which bin to use.
     const size_t __which = _M_binmap[__bytes];
@@ -649,7 +649,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   // XXX GLIBCXX_ABI Deprecated
   void 
-  __pool<true>::_M_destroy_thread_key(void*) { }
+  __pool<true>::_M_destroy_thread_key(void*) throw () { }
 
   // XXX GLIBCXX_ABI Deprecated
   void

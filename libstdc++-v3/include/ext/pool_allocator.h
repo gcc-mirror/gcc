@@ -96,11 +96,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _M_round_up(size_t __bytes)
       { return ((__bytes + (size_t)_S_align - 1) & ~((size_t)_S_align - 1)); }
       
-      _Obj* volatile*
-      _M_get_free_list(size_t __bytes);
+      _GLIBCXX_CONST _Obj* volatile*
+      _M_get_free_list(size_t __bytes) throw ();
     
       __mutex&
-      _M_get_mutex();
+      _M_get_mutex() throw ();
 
       // Returns an object of size __n, and optionally adds to size __n
       // free list.

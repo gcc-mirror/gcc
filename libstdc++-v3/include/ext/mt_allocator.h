@@ -221,7 +221,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _M_reserve_block(size_t __bytes, const size_t __thread_id);
     
       void
-      _M_reclaim_block(char* __p, size_t __bytes);
+      _M_reclaim_block(char* __p, size_t __bytes) throw ();
     
       size_t 
       _M_get_thread_id() { return 0; }
@@ -332,7 +332,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       _M_reserve_block(size_t __bytes, const size_t __thread_id);
     
       void
-      _M_reclaim_block(char* __p, size_t __bytes);
+      _M_reclaim_block(char* __p, size_t __bytes) throw ();
     
       const _Bin_record&
       _M_get_bin(size_t __which)
@@ -351,8 +351,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       }
 
       // XXX GLIBCXX_ABI Deprecated
-      void 
-      _M_destroy_thread_key(void*);
+      _GLIBCXX_CONST void 
+      _M_destroy_thread_key(void*) throw ();
 
       size_t 
       _M_get_thread_id();
