@@ -75,4 +75,9 @@ struct cpp_macro GTY(())
 
   /* Indicate which field of 'exp' is in use.  */
   unsigned int traditional : 1;
+
+  /* Indicate whether the tokens include extra CPP_PASTE tokens at the
+     end to track invalid redefinitions with consecutive CPP_PASTE
+     tokens.  */
+  unsigned int extra_tokens : 1;
 };

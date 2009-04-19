@@ -1,3 +1,23 @@
+2009-04-19  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/20078
+	* include/cpp-id-data.h (struct cpp_macro): Add extra_tokens
+	field.
+	* include/cpplib.h (SP_DIGRAPH, SP_PREV_WHITE): Define.
+	(struct cpp_token): Change flags to unsigned short.
+	* lex.c (_cpp_lex_direct): Initialize arg_no for CPP_PASTE tokens.
+	(_cpp_equiv_tokens): Check arg_no for CPP_PASTE tokens.
+	(cpp_token_val_index): Return CPP_TOKEN_FLD_ARG_NO for CPP_PASTE
+	tokens.
+	* macro.c (macro_real_token_count): New.
+	(enter_macro_context, replace_args): Use macro_real_token_count.
+	(create_iso_definition): Record whitespace surrounding and digraph
+	spelling of # and ## tokens using SP_PREV_WHITE and SP_DIGRAPH.
+	Set extra_tokens and save CPP_PASTE tokens with arg_no set for
+	multiple consecutive ## tokens.
+	(_cpp_create_definition): Initialize extra_tokens.
+	(cpp_macro_definition): Use macro_real_token_count.
+
 2009-04-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* directives.c (parse_include): Pass true to check_eol.
