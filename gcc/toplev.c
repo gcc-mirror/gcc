@@ -993,11 +993,6 @@ compile_file (void)
   varpool_assemble_pending_decls ();
   finish_aliases_2 ();
 
-  /* This must occur after the loop to output deferred functions.
-     Else the coverage initializer would not be emitted if all the
-     functions in this compilation unit were deferred.  */
-  coverage_finish ();
-
   /* Likewise for mudflap static object registrations.  */
   if (flag_mudflap)
     mudflap_finish_file ();

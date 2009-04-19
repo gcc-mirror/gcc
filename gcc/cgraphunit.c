@@ -134,6 +134,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "tree-pass.h"
 #include "output.h"
+#include "coverage.h"
 
 static void cgraph_expand_all_functions (void);
 static void cgraph_mark_functions_to_output (void);
@@ -978,6 +979,8 @@ cgraph_finalize_compilation_unit (void)
   cgraph_analyze_functions ();
   timevar_pop (TV_CGRAPH);
 }
+
+
 /* Figure out what functions we want to assemble.  */
 
 static void
@@ -1238,6 +1241,15 @@ ipa_passes (void)
   gimple_register_cfg_hooks ();
   bitmap_obstack_initialize (NULL);
   execute_ipa_pass_list (all_ipa_passes);
+
+  /* Generate coverage variables and constructors.  */
+  coverage_finish ();
+
+  /* Process new functions added.  */
+  set_cfun (NULL);
+  current_function_decl = NULL;
+  cgraph_process_new_functions ();
+
   bitmap_obstack_release (NULL);
 }
 
