@@ -222,7 +222,8 @@ get_base_var (tree t)
 	 && (!CONSTANT_CLASS_P (t))
 	 && TREE_CODE (t) != LABEL_DECL
 	 && TREE_CODE (t) != FUNCTION_DECL
-	 && TREE_CODE (t) != CONST_DECL)
+	 && TREE_CODE (t) != CONST_DECL
+	 && TREE_CODE (t) != CONSTRUCTOR)
     {
       t = TREE_OPERAND (t, 0);
     }

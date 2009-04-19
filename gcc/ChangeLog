@@ -1,3 +1,11 @@
+2009-04-19  Diego Novillo  <dnovillo@google.com>
+
+	* toplev.c (compile_file): Move call to coverage_finish ...
+	* cgraphunit.c (ipa_passes): ... here.
+	Call cgraph_process_new_functions.
+	* ipa-utils.c (get_base_var): Handle CONSTRUCTOR.
+	* Makefile.in (cgraphunit.o): Add dependency on COVERAGE_H.
+
 2009-04-19  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_create_edge, cgraph_set_call_stmt): Set proper cfun.
