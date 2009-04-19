@@ -2883,6 +2883,12 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 
 	  found_tag = true;
 
+	  if (declspecs->restrict_p)
+	    {
+	      error ("invalid use of %<restrict%>");
+	      warned = 1;
+	    }
+
 	  if (name == 0)
 	    {
 	      if (warned != 1 && code != ENUMERAL_TYPE)
