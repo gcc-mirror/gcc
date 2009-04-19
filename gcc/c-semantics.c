@@ -70,6 +70,8 @@ pop_stmt_list (tree t)
     {
       chain = TREE_CHAIN (u);
       TREE_CHAIN (u) = NULL_TREE;
+      if (chain)
+	STATEMENT_LIST_HAS_LABEL (chain) |= STATEMENT_LIST_HAS_LABEL (u);
       if (t == u)
 	break;
       u = chain;
