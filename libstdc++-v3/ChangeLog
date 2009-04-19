@@ -1,5 +1,10 @@
 2009-04-19  Jan Hubicka  <jh@suse.cz>
 
+	* include/c_compatibility/stdatomic.h (__atomic_flag_for_address): Use
+	_GLIBCXX_NOTHROW.
+
+2009-04-19  Jan Hubicka  <jh@suse.cz>
+
 	* include/c_compatibility/stdatomic.h
 	(atomic_flag_test_and_set_explicit, atomic_flag_clear_explicit,
 	__atomic_flag_wait_explicit): Use _GLIBCXX_NOTHROW.

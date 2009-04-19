@@ -138,7 +138,7 @@ _GLIBCXX_BEGIN_EXTERN_C
   __atomic_flag_wait_explicit(volatile __atomic_flag_base*, memory_order) _GLIBCXX_NOTHROW;
   
   _GLIBCXX_CONST volatile __atomic_flag_base* 
-  __atomic_flag_for_address(const volatile void* __z) throw ();
+  __atomic_flag_for_address(const volatile void* __z) _GLIBCXX_NOTHROW;
 
   // Implementation specific defines.
 #define _ATOMIC_LOAD_(__a, __x)						\
