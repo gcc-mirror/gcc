@@ -57,6 +57,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Integer types capable of holding object pointers */
 
-#define INTPTR_TYPE "long int"
-#define UINTPTR_TYPE "long unsigned int"
+#define INTPTR_TYPE "int"
+#define UINTPTR_TYPE "unsigned int"
 
