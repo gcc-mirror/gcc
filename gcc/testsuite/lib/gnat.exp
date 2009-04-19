@@ -255,7 +255,7 @@ proc prune_gnat_output { text } {
 
 proc local_find_gnatmake {} {
     global tool_root_dir
-    
+
     if ![is_remote host] {
         set file [lookfor_file $tool_root_dir gnatmake]
         if { $file == "" } {
@@ -263,7 +263,7 @@ proc local_find_gnatmake {} {
         }
         if { $file != "" } {
     	set root [file dirname $file]
-    	set CC "$file --GCC=$root/xgcc --GNATBIND=$root/gnatbind --GNATLINK=$root/gnatlink -cargs -B$root -largs -B$root -margs -B$root";
+    	set CC "$file --GCC=$root/xgcc --GNATBIND=$root/gnatbind --GNATLINK=$root/gnatlink -cargs -B$root -largs --LINK=$root/xgcc -B$root -margs";
         } else {
     	set CC [transform gnatmake]
         }
