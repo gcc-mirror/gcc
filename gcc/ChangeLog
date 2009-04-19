@@ -1,3 +1,8 @@
+2009-04-19  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.h (mips_tune_attr): New macro.
+	* config/mips/mips.md (cpu): Use it.
+
 2009-04-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/38243
