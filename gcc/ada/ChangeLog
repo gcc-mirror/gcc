@@ -1,3 +1,8 @@
+2009-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gigi): Make the special IA-64 descriptor type
+	a builtin type and give it a name.
+
 2009-04-17  Diego Novillo  <dnovillo@google.com>
 
 	* gcc-interface/misc.c (gnat_expand_expr): Remove.
