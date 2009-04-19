@@ -330,7 +330,7 @@ _GLIBCXX_END_NAMESPACE
 # ifdef __cplusplus
 #  define _GLIBCXX_NOTHROW throw() 
 # else
-#  define _GLIBCXX_NOTHROW __attribute__((nothrow))
+#  define _GLIBCXX_NOTHROW __attribute__((__nothrow__))
 # endif
 #endif
 

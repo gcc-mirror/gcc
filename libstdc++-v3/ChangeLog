@@ -1,3 +1,10 @@
+2009-04-19  Jan Hubicka  <jh@suse.cz>
+
+	* c_compatibility/stdatomic.h (atomic_flag_test_and_set_explicit,
+	atomic_flag_clear_explicit, __atomic_flag_wait_explicit): Use
+	_GLIBCXX_NOTHROW.
+	* bits/c++config (_GLIBCXX_NOTHROW): New.
+
 2009-04-18  Jan Hubicka  <jh@suse.cz>
 
 	* eh_type.cc (__cxa_current_exception_type) Mark throw().
