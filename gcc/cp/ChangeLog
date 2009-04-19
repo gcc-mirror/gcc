@@ -1,3 +1,10 @@
+2009-04-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/32061
+	PR c++/36954
+	* call.c (build_new_op): Save the original codes of operands
+	before folding.
+
 2009-04-18  Kazu Hirata  <kazu@codesourcery.com>
 
 	* cp-tree.h: Remove the prototype for insert_block.
