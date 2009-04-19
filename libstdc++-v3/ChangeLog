@@ -1,21 +1,23 @@
 2009-04-19  Jan Hubicka  <jh@suse.cz>
 
-	* c_compatibility/stdatomic.h (atomic_flag_test_and_set_explicit,
-	atomic_flag_clear_explicit, __atomic_flag_wait_explicit): Use
-	_GLIBCXX_NOTHROW.
-	* bits/c++config (_GLIBCXX_NOTHROW): New.
+	* include/c_compatibility/stdatomic.h
+	(atomic_flag_test_and_set_explicit, atomic_flag_clear_explicit,
+	__atomic_flag_wait_explicit): Use _GLIBCXX_NOTHROW.
+	* include/bits/c++config (_GLIBCXX_NOTHROW): New.
 
 2009-04-18  Jan Hubicka  <jh@suse.cz>
 
 	* libsupc++/eh_type.cc (__cxa_current_exception_type) Mark throw().
-	* libsupc++/unwind-cxx.h (__cxa_get_globals, __cxa_get_globals_fast): Mark const.
+	* libsupc++/unwind-cxx.h (__cxa_get_globals,
+	__cxa_get_globals_fast): Mark const.
 	(__cxa_get_exception_ptr): Mark pure.
 	(__cxa_bad_cast, __cxa_bad_typeid): Mark noreturn
 	(__terminate): Makr throw ().
 	* libsupc++/exception (terminate): Mark throw().
 	(uncaught_exception): Mark pure.
 	* libsupc++/eh_ptr.cc (_M_safe_bool_dummy): Mark throw().
-	* libsupc++/guard.cc (__cxa_guard_abort, __cxa_guard_release): Mark throw().
+	* libsupc++/guard.cc (__cxa_guard_abort, __cxa_guard_release):
+	Mark throw().
 	* libsupc++/eh_terminate.cc (__terminate, terminate): Mark throw().
 	* libsupc++/vec.cc (__cxa_vec_cleanup): Mark throw().
 	* libsupc++/cxxabi.h (__cxa_vec_cleanup, __cxa_guard_release,
