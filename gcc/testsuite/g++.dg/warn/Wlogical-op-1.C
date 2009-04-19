@@ -28,20 +28,39 @@ extern testenum testa();
 
 void foo()
 {
-    if ( f && b2 )            // { dg-warning "always evaluate as" }
+    if ( f && b2 )            // { dg-warning "logical" }
           do_something(1);
-    if ( c && b2 )            // { dg-warning "always evaluate as" }
+    if ( c && b2 )            // { dg-warning "logical" }
           do_something(2);
 
-    if ( b2 && c == a )       // { dg-bogus "always evaluate as" }
+    if ( b2 && c == a )       // { dg-bogus "logical" }
           do_something(101);
     if ( 1 && c )
-          do_something(102);  // { dg-bogus "always evaluate as" }
-    if ( t2 && b2 )           // { dg-bogus "always evaluate as" }
+          do_something(102);  // { dg-bogus "logical" }
+    if ( t2 && b2 )           // { dg-bogus "logical" }
           do_something(103);
-    if ( true && c == a )     // { dg-bogus "always evaluate as" }
+    if ( true && c == a )     // { dg-bogus "logical" }
           do_something(104);
-    if ( b2 && true )         // { dg-bogus "always evaluate as" }
+    if ( b2 && true )         // { dg-bogus "logical" }
           do_something(105);
 }
 
+
+void bar()
+{
+    if ( f || b2 )            // { dg-warning "logical" }
+          do_something(1);
+    if ( c || b2 )            // { dg-warning "logical" }
+          do_something(2);
+
+    if ( b2 || c == a )       // { dg-bogus "logical" }
+          do_something(101);
+    if ( 1 || c )
+          do_something(102);  // { dg-bogus "logical" }
+    if ( t2 || b2 )           // { dg-bogus "logical" }
+          do_something(103);
+    if ( true || c == a )     // { dg-bogus "logical" }
+          do_something(104);
+    if ( b2 || true )         // { dg-bogus "logical" }
+          do_something(105);
+}

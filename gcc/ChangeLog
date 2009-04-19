@@ -1,3 +1,17 @@
+2009-04-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/32061
+	PR c++/36954
+	* doc/invoke.texi: Add -Wlogical-op to -Wextra.
+	* common.opt (Wlogical-op): Move from here...
+	* c.opt (Wlogical-op): ... to here.
+	* c-typeck.c (parser_build_binary_op): Update call to
+	warn_logical_operator.
+	* c-opts.c (c_common_post_options): Enable warn_logical_op with
+	extra_warnings.
+	* c-common.c (warn_logical_op): Update.
+	* c-common.h (warn_logical_op): Update declaration.
+
 2009-04-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.c (protected_set_expr_location): Fix formatting.

@@ -14,34 +14,64 @@ extern int testa();
 
 void foo()
 {
-    if ( testa() && b )     /* { dg-warning "always evaluate as" } */
+    if ( testa() && b )     /* { dg-warning "logical" } */
          (void)testa();
 
-    if ( c && b )           /* { dg-warning "always evaluate as" } */
+    if ( c && b )           /* { dg-warning "logical" } */
 	(void)testa();
 
-    if ( c && 0x42 )        /* { dg-warning "always evaluate as" } */
+    if ( c && 0x42 )        /* { dg-warning "logical" } */
 	(void)testa();
 
-    if ( c && 0x42 )        /* { dg-warning "always evaluate as" } */
-	(void) testa();
-
-    if ( c && 0x80 >>6)     /* { dg-warning "always evaluate as" } */
+    if ( c && 0x80 >>6)     /* { dg-warning "logical" } */
 	(void)testa();
 
 
-    if ( b && c == a )      /* { dg-bogus "always evaluate as" } */
+    if ( b && c == a )      /* { dg-bogus "logical" } */
           (void)testa();
 
-    if ( 1 && c )           /* { dg-bogus "always evaluate as" } */
+    if ( 1 && c )           /* { dg-bogus "logical" } */
          (void)testa();
 
-    if ( t2 && b )          /* { dg-bogus "always evaluate as" } */
+    if ( t2 && b )          /* { dg-bogus "logical" } */
           (void)testa();
 
-    if ( 0 && c == a )      /* { dg-bogus "always evaluate as" } */
+    if ( 0 && c == a )      /* { dg-bogus "logical" } */
           (void)testa();
 
-    if ( b && 1 )           /* { dg-bogus "always evaluate as" } */
+    if ( b && 1 )           /* { dg-bogus "logical" } */
           (void)testa();
 }
+
+
+void bar()
+{
+    if ( testa() || b )     /* { dg-warning "logical" } */
+         (void)testa();
+
+    if ( c || b )           /* { dg-warning "logical" } */
+	(void)testa();
+
+    if ( c || 0x42 )        /* { dg-warning "logical" } */
+	(void) testa();
+
+    if ( c || 0x80 >>6)     /* { dg-warning "logical" } */
+	(void)testa();
+
+
+    if ( b || c == a )      /* { dg-bogus "logical" } */
+          (void)testa();
+
+    if ( 1 || c )           /* { dg-bogus "logical" } */
+         (void)testa();
+
+    if ( t2 || b )          /* { dg-bogus "logical" } */
+          (void)testa();
+
+    if ( 0 || c == a )      /* { dg-bogus "logical" } */
+          (void)testa();
+
+    if ( b || 1 )           /* { dg-bogus "logical" } */
+          (void)testa();
+}
+

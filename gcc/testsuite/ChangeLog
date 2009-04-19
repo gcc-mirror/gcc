@@ -1,3 +1,12 @@
+2009-04-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/32061
+	PR c++/36954
+	* gcc.dg/pr32061.c: New.
+	* gcc.dg/Wlogical-op-1.c: Update.
+	* g++.dg/warn/Wlogical-op-1.C: Update.
+	* g++.dg/warn/pr36954.C: New.
+
 2009-04-18  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/27676
