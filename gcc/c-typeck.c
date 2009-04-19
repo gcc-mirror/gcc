@@ -5254,6 +5254,10 @@ digest_init (tree type, tree init, bool null_pointer_constant,
 	  expr.original_type = NULL;
 	  maybe_warn_string_init (type, expr);
 
+	  if (TYPE_DOMAIN (type) && !TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+	    pedwarn_init (input_location, OPT_pedantic,
+			  "initialization of a flexible array member");
+
 	  if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
 			 TYPE_MAIN_VARIANT (type)))
 	    return inside_init;

@@ -1,5 +1,10 @@
 2009-04-19  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/37481
+	* gcc.dg/c99-flex-array-7.c: New test.
+
+2009-04-19  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/19771
 	* gcc.c-torture/execute/vla-dealloc-1.c: New test.
 
