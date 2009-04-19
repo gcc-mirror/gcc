@@ -1244,7 +1244,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	      result->flags |= DIGRAPH;
 	      result->type = CPP_HASH;
 	      if (*buffer->cur == '%' && buffer->cur[1] == ':')
-		buffer->cur += 2, result->type = CPP_PASTE;
+		buffer->cur += 2, result->type = CPP_PASTE, result->val.arg_no = 0;
 	    }
 	  else if (*buffer->cur == '>')
 	    {
@@ -1325,7 +1325,7 @@ _cpp_lex_direct (cpp_reader *pfile)
     case '=': IF_NEXT_IS ('=', CPP_EQ_EQ, CPP_EQ); break;
     case '!': IF_NEXT_IS ('=', CPP_NOT_EQ, CPP_NOT); break;
     case '^': IF_NEXT_IS ('=', CPP_XOR_EQ, CPP_XOR); break;
-    case '#': IF_NEXT_IS ('#', CPP_PASTE, CPP_HASH); break;
+    case '#': IF_NEXT_IS ('#', CPP_PASTE, CPP_HASH); result->val.arg_no = 0; break;
 
     case '?': result->type = CPP_QUERY; break;
     case '~': result->type = CPP_COMPL; break;
@@ -1572,7 +1572,9 @@ _cpp_equiv_tokens (const cpp_token *a, const cpp_token *b)
       {
       default:			/* Keep compiler happy.  */
       case SPELL_OPERATOR:
-	return 1;
+	/* arg_no is used to track where multiple consecutive ##
+	   tokens were originally located.  */
+	return (a->type != CPP_PASTE || a->val.arg_no == b->val.arg_no);
       case SPELL_NONE:
 	return (a->type != CPP_MACRO_ARG || a->val.arg_no == b->val.arg_no);
       case SPELL_IDENT:
@@ -1886,6 +1888,11 @@ cpp_token_val_index (cpp_token *tok)
       return CPP_TOKEN_FLD_NODE;
     case SPELL_LITERAL:
       return CPP_TOKEN_FLD_STR;
+    case SPELL_OPERATOR:
+      if (tok->type == CPP_PASTE)
+	return CPP_TOKEN_FLD_ARG_NO;
+      else
+	return CPP_TOKEN_FLD_NONE;
     case SPELL_NONE:
       if (tok->type == CPP_MACRO_ARG)
 	return CPP_TOKEN_FLD_ARG_NO;

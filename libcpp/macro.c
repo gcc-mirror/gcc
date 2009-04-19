@@ -802,6 +802,19 @@ funlike_invocation_p (cpp_reader *pfile, cpp_hashnode *node,
   return NULL;
 }
 
+/* Return the real number of tokens in the expansion of MACRO.  */
+static inline unsigned int
+macro_real_token_count (const cpp_macro *macro)
+{
+  unsigned int i;
+  if (__builtin_expect (!macro->extra_tokens, true))
+    return macro->count;
+  for (i = 0; i < macro->count; i++)
+    if (macro->exp.tokens[i].type == CPP_PASTE)
+      return i;
+  abort ();
+}
+
 /* Push the context of a macro with hash entry NODE onto the context
    stack.  If we can successfully expand the macro, we push a context
    containing its yet-to-be-rescanned replacement list and return one.
@@ -874,7 +887,8 @@ enter_macro_context (cpp_reader *pfile, cpp_hashnode *node,
       macro->used = 1;
 
       if (macro->paramc == 0)
-	_cpp_push_token_context (pfile, node, macro->exp.tokens, macro->count);
+	_cpp_push_token_context (pfile, node, macro->exp.tokens,
+				 macro_real_token_count (macro));
 
       if (pragma_buff)
 	{
@@ -914,13 +928,15 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro, macro_arg
   const cpp_token **dest, **first;
   macro_arg *arg;
   _cpp_buff *buff;
+  unsigned int count;
 
   /* First, fully macro-expand arguments, calculating the number of
      tokens in the final expansion as we go.  The ordering of the if
      statements below is subtle; we must handle stringification before
      pasting.  */
-  total = macro->count;
-  limit = macro->exp.tokens + macro->count;
+  count = macro_real_token_count (macro);
+  total = count;
+  limit = macro->exp.tokens + count;
 
   for (src = macro->exp.tokens; src < limit; src++)
     if (src->type == CPP_MACRO_ARG)
@@ -1630,6 +1646,7 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
   bool following_paste_op = false;
   const char *paste_op_error_msg =
     N_("'##' cannot appear at either end of a macro expansion");
+  unsigned int num_extra_tokens = 0;
 
   /* Get the first token of the expansion (or the '(' of a
      function-like macro).  */
@@ -1707,6 +1724,10 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 	{
 	  if (token->type == CPP_MACRO_ARG)
 	    {
+	      if (token->flags & PREV_WHITE)
+		token->flags |= SP_PREV_WHITE;
+	      if (token[-1].flags & DIGRAPH)
+		token->flags |= SP_DIGRAPH;
 	      token->flags &= ~PREV_WHITE;
 	      token->flags |= STRINGIFY_ARG;
 	      token->flags |= token[-1].flags & PREV_WHITE;
@@ -1746,8 +1767,21 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 	      return false;
 	    }
 
-	  --macro->count;
-	  token[-1].flags |= PASTE_LEFT;
+	  if (token[-1].flags & PASTE_LEFT)
+	    {
+	      macro->extra_tokens = 1;
+	      num_extra_tokens++;
+	      token->val.arg_no = macro->count - 1;
+	    }
+	  else
+	    {
+	      --macro->count;
+	      token[-1].flags |= PASTE_LEFT;
+	      if (token->flags & DIGRAPH)
+		token[-1].flags |= SP_DIGRAPH;
+	      if (token->flags & PREV_WHITE)
+		token[-1].flags |= SP_PREV_WHITE;
+	    }
 	}
 
       following_paste_op = (token->type == CPP_PASTE);
@@ -1770,7 +1804,27 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
       cpp_token *tokns =
         (cpp_token *) pfile->hash_table->alloc_subobject (sizeof (cpp_token)
                                                           * macro->count);
-      memcpy (tokns, macro->exp.tokens, sizeof (cpp_token) * macro->count);
+      if (num_extra_tokens)
+	{
+	  /* Place second and subsequent ## or %:%: tokens in
+	     sequences of consecutive such tokens at the end of the
+	     list to preserve information about where they appear, how
+	     they are spelt and whether they are preceded by
+	     whitespace without otherwise interfering with macro
+	     expansion.  */
+	  cpp_token *normal_dest = tokns;
+	  cpp_token *extra_dest = tokns + macro->count - num_extra_tokens;
+	  unsigned int i;
+	  for (i = 0; i < macro->count; i++)
+	    {
+	      if (macro->exp.tokens[i].type == CPP_PASTE)
+		*extra_dest++ = macro->exp.tokens[i];
+	      else
+		*normal_dest++ = macro->exp.tokens[i];
+	    }
+	}
+      else
+	memcpy (tokns, macro->exp.tokens, sizeof (cpp_token) * macro->count);
       macro->exp.tokens = tokns;
     }
   else
@@ -1799,6 +1853,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
   macro->used = !CPP_OPTION (pfile, warn_unused_macros);
   macro->count = 0;
   macro->fun_like = 0;
+  macro->extra_tokens = 0;
   /* To suppress some diagnostics.  */
   macro->syshdr = pfile->buffer && pfile->buffer->sysp != 0;
 
@@ -1946,7 +2001,8 @@ cpp_macro_definition (cpp_reader *pfile, const cpp_hashnode *node)
     len += _cpp_replacement_text_len (macro);
   else
     {
-      for (i = 0; i < macro->count; i++)
+      unsigned int count = macro_real_token_count (macro);
+      for (i = 0; i < count; i++)
 	{
 	  cpp_token *token = &macro->exp.tokens[i];
 
@@ -2010,7 +2066,8 @@ cpp_macro_definition (cpp_reader *pfile, const cpp_hashnode *node)
   else if (macro->count)
   /* Expansion tokens.  */
     {
-      for (i = 0; i < macro->count; i++)
+      unsigned int count = macro_real_token_count (macro);
+      for (i = 0; i < count; i++)
 	{
 	  cpp_token *token = &macro->exp.tokens[i];
 

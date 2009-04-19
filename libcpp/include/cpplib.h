@@ -178,6 +178,10 @@ struct cpp_string GTY(())
 #define BOL		(1 << 6) /* Token at beginning of line.  */
 #define PURE_ZERO	(1 << 7) /* Single 0 digit, used by the C++ frontend,
 				    set in c-lex.c.  */
+#define SP_DIGRAPH	(1 << 8) /* # or ## token was a digraph.  */
+#define SP_PREV_WHITE	(1 << 9) /* If whitespace before a ##
+				    operator, or before this token
+				    after a # operator.  */
 
 /* Specify which field, if any, of the cpp_token union is used.  */
 
@@ -196,7 +200,7 @@ struct cpp_token GTY(())
 {
   source_location src_loc;	/* Location of first char of token.  */
   ENUM_BITFIELD(cpp_ttype) type : CHAR_BIT;  /* token type */
-  unsigned char flags;		/* flags - see above */
+  unsigned short flags;		/* flags - see above */
 
   union cpp_token_u
   {
