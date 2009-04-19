@@ -640,7 +640,9 @@ cgraph_set_call_stmt (struct cgraph_edge *e, gimple new_stmt)
 				 htab_hash_pointer (e->call_stmt));
     }
   e->call_stmt = new_stmt;
+  push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
   e->can_throw_external = stmt_can_throw_external (new_stmt);
+  pop_cfun ();
   if (e->caller->call_site_hash)
     {
       void **slot;
@@ -705,7 +707,9 @@ cgraph_create_edge (struct cgraph_node *caller, struct cgraph_node *callee,
   edge->caller = caller;
   edge->callee = callee;
   edge->call_stmt = call_stmt;
+  push_cfun (DECL_STRUCT_FUNCTION (caller->decl));
   edge->can_throw_external = stmt_can_throw_external (call_stmt);
+  pop_cfun ();
   edge->prev_caller = NULL;
   edge->next_caller = callee->callers;
   if (callee->callers)
@@ -1238,6 +1242,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 		 edge->frequency / (double)CGRAPH_FREQ_BASE);
       if (edge->loop_nest)
 	fprintf (f, "(nested in %i loops) ", edge->loop_nest);
+      if (edge->can_throw_external)
+	fprintf(f, "(can throw external) ");
     }
   fprintf (f, "\n");
 }

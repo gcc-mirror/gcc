@@ -830,6 +830,7 @@ propagate (void)
       w = node;
       while (w)
 	{
+	  funct_state w_l = get_function_state (w);
 	  if (!can_throw && !TREE_NOTHROW (w->decl))
 	    {
 	      struct cgraph_edge *e;
@@ -840,6 +841,8 @@ propagate (void)
 		fprintf (dump_file, "Function found to be nothrow: %s\n",  
 			 cgraph_node_name (w));
 	    }
+	  else if (can_throw && !TREE_NOTHROW (w->decl))
+	    w_l->can_throw = true;
 	  w_info = (struct ipa_dfs_info *) w->aux;
 	  w = w_info->next_cycle;
 	}
