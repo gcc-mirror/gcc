@@ -774,7 +774,7 @@ package body Sem_Ch10 is
             Version_Update (N, Lib_Unit);
          end if;
 
-         --  Comment needed here ???
+         --  If this is a child unit, generate references to the parents.
 
          if Nkind (Defining_Unit_Name (Specification (Unit_Node))) =
                                              N_Defining_Program_Unit_Name
@@ -1278,9 +1278,16 @@ package body Sem_Ch10 is
          then
             --  Skip analyzing with clause if no unit, nothing to do (this
             --  happens for a with that references a non-existent unit)
+            --  Skip as well if this is a with_clause for the main unit, which
+            --  happens if a subunit has a useless with_clause on its parent.
 
             if Present (Library_Unit (Item)) then
-               Analyze (Item);
+               if Library_Unit (Item) /= Cunit (Current_Sem_Unit) then
+                  Analyze (Item);
+
+               else
+                  Set_Entity (Name (Item), Cunit_Entity (Current_Sem_Unit));
+               end if;
             end if;
 
             if not Implicit_With (Item) then
@@ -3111,7 +3118,7 @@ package body Sem_Ch10 is
 
       if Is_Child_Spec (Lib_Unit) then
 
-         --  The unit also has implicit withs on its own parents
+         --  The unit also has implicit with_clauses on its own parents
 
          if No (Context_Items (N)) then
             Set_Context_Items (N, New_List);

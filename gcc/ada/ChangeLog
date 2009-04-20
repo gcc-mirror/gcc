@@ -1,3 +1,12 @@
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for -fno-ivopts.
+
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Analyze_Context): Do not analyze a unit in a
+	with_clause if it is the main unit.
+
 2009-04-20  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_type.adb, ali.adb, erroutc.adb: Minor code reorganization
