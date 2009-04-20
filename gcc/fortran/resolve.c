@@ -83,6 +83,18 @@ gfc_is_formal_arg (void)
   return formal_arg_flag;
 }
 
+/* Is the symbol host associated?  */
+static bool
+is_sym_host_assoc (gfc_symbol *sym, gfc_namespace *ns)
+{
+  for (ns = ns->parent; ns; ns = ns->parent)
+    {      
+      if (sym->ns == ns)
+	return true;
+    }
+
+  return false;
+}
 
 /* Ensure a typespec used is valid; for instance, TYPE(t) is invalid if t is
    an ABSTRACT derived-type.  If where is not NULL, an error message with that
@@ -8895,13 +8907,15 @@ resolve_fl_derived (gfc_symbol *sym)
       if (c->ts.type == BT_DERIVED
 	  && sym->component_access != ACCESS_PRIVATE
 	  && gfc_check_access (sym->attr.access, sym->ns->default_access)
+	  && !is_sym_host_assoc (c->ts.derived, sym->ns)
 	  && !c->ts.derived->attr.use_assoc
 	  && !gfc_check_access (c->ts.derived->attr.access,
 				c->ts.derived->ns->default_access))
 	{
-	  gfc_error ("The component '%s' is a PRIVATE type and cannot be "
-		     "a component of '%s', which is PUBLIC at %L",
-		     c->name, sym->name, &sym->declared_at);
+	  gfc_notify_std (GFC_STD_F2003, "Fortran 2003: the component '%s' "
+			  "is a PRIVATE type and cannot be a component of "
+			  "'%s', which is PUBLIC at %L", c->name,
+			  sym->name, &sym->declared_at);
 	  return FAILURE;
 	}
 
@@ -8989,9 +9003,7 @@ resolve_fl_namelist (gfc_symbol *sym)
       for (nl = sym->namelist; nl; nl = nl->next)
 	{
 	  if (!nl->sym->attr.use_assoc
-	      && !(sym->ns->parent == nl->sym->ns)
-	      && !(sym->ns->parent
-		   && sym->ns->parent->parent == nl->sym->ns)
+	      && !is_sym_host_assoc (nl->sym, sym->ns)
 	      && !gfc_check_access(nl->sym->attr.access,
 				nl->sym->ns->default_access))
 	    {
@@ -9013,7 +9025,7 @@ resolve_fl_namelist (gfc_symbol *sym)
 
 	  /* Types with private components that are defined in the same module.  */
 	  if (nl->sym->ts.type == BT_DERIVED
-	      && !(sym->ns->parent == nl->sym->ts.derived->ns)
+	      && !is_sym_host_assoc (nl->sym->ts.derived, sym->ns)
 	      && !gfc_check_access (nl->sym->ts.derived->attr.private_comp
 					? ACCESS_PRIVATE : ACCESS_UNKNOWN,
 					nl->sym->ns->default_access))

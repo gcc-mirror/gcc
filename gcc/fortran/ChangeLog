@@ -1,3 +1,13 @@
+2009-04-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/39800
+	* resolve.c (is_sym_host_assoc): New function.
+	(resolve_fl_derived): Call it when checking PRIVATE components
+	of PUBLIC derived types.  Change gfc_error to a gfc_notify_std
+	with std=f2003.
+	(resolve_fl_namelist): Call it twice to check for host
+	association.
+
 2009-04-20  Ian Lance Taylor  <iant@google.com>
 
 	* module.c (import_iso_c_binding_module): Add casts to enum type.
