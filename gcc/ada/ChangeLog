@@ -1,3 +1,19 @@
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
+	* s-conca5.adb, s-conca5.ads, s-conca7.adb, s-conca7.ads, s-conca9.adb,
+	s-conca9.ads, rtsfind.ads, s-conca2.adb, s-conca2.ads, s-conca4.adb,
+	s-conca4.ads, s-conca6.adb, s-conca6.ads, s-conca8.adb, s-conca8.ads,
+	s-conca3.adb, s-conca3.ads (Str_Concat_Bounds_x): New functions.
+
+	* exp_ch4.adb (Expand_Concatenate): Minor code reorganization
+
+2009-04-20  Pascal Obry  <obry@adacore.com>
+
+	* initialize.c (__gnat_initialize): Add braces to kill warning.
+
+	* adaint.c: Minor reformatting, untabify, remove trailing spaces.
+
+
 2009-04-17  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.

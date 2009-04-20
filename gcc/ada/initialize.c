@@ -97,7 +97,7 @@ append_arg (int *index, LPWSTR value, char ***argv, int *last)
 #endif
 
 void
-__gnat_initialize (void *eh)
+__gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 {
    /* Initialize floating-point coprocessor. This call is needed because
       the MS libraries default to 64-bit precision instead of 80-bit
@@ -114,10 +114,12 @@ __gnat_initialize (void *eh)
      CurrentCodePage = CP_UTF8;
 
      if (codepage != NULL)
-       if (strcmp (codepage, "CP_ACP") == 0)
-         CurrentCodePage = CP_ACP;
-       else if (strcmp (codepage, "CP_UTF8") == 0)
-         CurrentCodePage = CP_UTF8;
+       {
+	 if (strcmp (codepage, "CP_ACP") == 0)
+	   CurrentCodePage = CP_ACP;
+	 else if (strcmp (codepage, "CP_UTF8") == 0)
+	   CurrentCodePage = CP_UTF8;
+       }
    }
 
    /* Adjust gnat_argv to support Unicode characters. */
