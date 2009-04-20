@@ -91,7 +91,7 @@ package body Debug is
    --  dY   Enable configurable run-time mode
    --  dZ   Generate listing showing the contents of the dispatch tables
 
-   --  d.a
+   --  d.a  Force Target_Strict_Alignment mode to True
    --  d.b
    --  d.c  Generate inline concatenation, do not call procedure
    --  d.d
@@ -497,6 +497,10 @@ package body Debug is
    --
    --         - In case of abstract subprograms the text "is abstract" is
    --           added at the end of the line.
+
+   --  d.a  Force Target_Strict_Alignment to True, even on targets where it
+   --       would normally be false. Can be used for testing strict alignment
+   --       circuitry in the compiler.
 
    --  d.c  Generate inline concatenation, instead of calling one of the
    --       System.Concat_n.Str_Concat_n routines in cases where the latter

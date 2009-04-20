@@ -4476,6 +4476,14 @@ package body Sem_Ch13 is
             if Serious_Errors_Detected = 0
               and then Known_Static_RM_Size (Source)
               and then Known_Static_RM_Size (Target)
+
+              --  Don't do the check if warnings off for either type, note the
+              --  deliberate use of OR here instead of OR ELSE to get the flag
+              --  Warnings_Off_Used set for both types if appropriate.
+
+              and then not (Has_Warnings_Off (Source)
+                              or
+                            Has_Warnings_Off (Target))
             then
                Source_Siz := RM_Size (Source);
                Target_Siz := RM_Size (Target);
@@ -4568,6 +4576,20 @@ package body Sem_Ch13 is
                      begin
                         if Source_Align < Target_Align
                           and then not Is_Tagged_Type (D_Source)
+
+                          --  Suppress warning if warnings suppressed on either
+                          --  type or either designated type. Note the use of
+                          --  OR here instead of OR ELSE. That is intentional,
+                          --  we would like to set flag Warnings_Off_Used in
+                          --  all types for which warnings are suppressed.
+
+                          and then not (Has_Warnings_Off (D_Source)
+                                          or
+                                        Has_Warnings_Off (D_Target)
+                                          or
+                                        Has_Warnings_Off (Source)
+                                          or
+                                        Has_Warnings_Off (Target))
                         then
                            Error_Msg_Uint_1 := Target_Align;
                            Error_Msg_Uint_2 := Source_Align;
@@ -4576,12 +4598,9 @@ package body Sem_Ch13 is
                            Error_Msg
                              ("?alignment of & (^) is stricter than " &
                               "alignment of & (^)!", Eloc);
-
-                           if All_Errors_Mode then
-                              Error_Msg
-                                ("\?resulting access value may have invalid " &
-                                 "alignment!", Eloc);
-                           end if;
+                           Error_Msg
+                             ("\?resulting access value may have invalid " &
+                              "alignment!", Eloc);
                         end if;
                      end;
                   end if;
