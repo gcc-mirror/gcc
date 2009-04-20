@@ -1,5 +1,12 @@
 2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Rewrite Esize calculation.
+	<E_Signed_Integer_Subtype>: Set the RM size on the integer type
+	before wrapping it up in the record type.  Do not overwrite the
+	Ada size of the record type with the Esize.
+
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (unchecked_conversion_lhs_nop): New predicate.
 	(gnat_to_gnu) <N_Unchecked_Type_Conversion>: Return the expression
 	if the conversion is on the LHS of an assignment and a no-op.
