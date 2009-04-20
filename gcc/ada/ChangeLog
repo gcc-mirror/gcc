@@ -1,3 +1,58 @@
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* rtsfind.adb (RTE, RTE_Record_Component): In
+	Configurable_Run_Time_Mode, do not enable front-end inlining.
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socthi-vms.adb: Remove now unnecessary WITH clause on
+	System.Address_To_Access_Conversions.
+
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb: Guard against ill-formed subunits.
+
+2009-04-20  Bob Duff  <duff@adacore.com>
+
+	* output.adb (Flush_Buffer): Do not indent blank lines.
+	(Ignore_Output): New procedure for output suppression.
+
+2009-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calfor.adb (Image): Subtract 0.5 from the sub second component only
+	when it is positive.  This avoids a potential constraint error raised
+	by the conversion to Natural.
+
+2009-04-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb (Expand_Assign_Array): For the case where the assignment
+	involves a target that has a specified address, don't set Forward_OK
+	and Backward_OK to False if the rhs is an aggregate, since overlap
+	can't occur.
+
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8,adb (Analyze_Object_Renaming): Reject ambiguous expressions
+	in an object renaming declaration when the expected type is an
+	anonymous access type.
+
+	* sem_type.adb (Disambiguate): Use anonymousness to resolve a potential
+	ambiguity when one interpretation is an anonymous access type and the
+	other is a named access type, and the context itself is anonymous
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* einfo.ads: Minor comment rewording
+
+	* sem_aggr.adb: Minor comment rewording
+
+	* sem_ch3.adb, sem_ch6.adb: Minor reformatting
+
+2009-04-20  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_is_readable_file): Check for file existence
+	when not using ACL (always the case on remote drives).
+
 2009-04-20  Robert Dewar  <dewar@adacore.com>
 
 	* sinfo.ads: Minor comment fixes

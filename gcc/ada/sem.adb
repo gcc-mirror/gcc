@@ -1401,13 +1401,15 @@ package body Sem is
          --  Comp_Unit_List, if appropriate. This is done after analysis, so if
          --  this unit depends on some others, they have already been
          --  appended. We ignore bodies, except for the main unit itself, and
-         --  everything those bodies depend upon.
+         --  everything those bodies depend upon. We have also to guard against
+         --  ill-formed subunits that have an improper context.
 
          if Ignore_Comp_Units then
             Do_Analyze;
             pragma Assert (Ignore_Comp_Units);  --  still
 
-         elsif Nkind (Unit (Comp_Unit)) in N_Proper_Body
+         elsif Present (Comp_Unit)
+           and then  Nkind (Unit (Comp_Unit)) in N_Proper_Body
            and then not In_Extended_Main_Source_Unit (Comp_Unit)
          then
             Ignore_Comp_Units := True;

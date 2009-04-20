@@ -2637,7 +2637,7 @@ package Einfo is
 --       Present in all entities. Set only in record types that represent the
 --       underlying record view. This view is built for derivations of types
 --       with unknown discriminants; it is a record with the same structure
---       than its corresponding record type, and whose parent is the full view
+--       as its corresponding record type, but whose parent is the full view
 --       of the parent in the original type extension.
 
 --    Is_Unsigned_Type (Flag144)
