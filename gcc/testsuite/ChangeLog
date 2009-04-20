@@ -1,3 +1,8 @@
+2009-04-20  Le-Chun Wu  <lcwu@google.com>
+
+	PR c++/39803
+	* g++.dg/warn/Wunused-14.C: New test.
+
 2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/small_alignment.ads: New test.
