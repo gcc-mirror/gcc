@@ -1085,11 +1085,11 @@ package body System.Task_Primitives.Operations is
             S.Waiting := True;
 
             loop
-               --  loop in case pthread_cond_wait returns earlier than
-               --  expected (e.g. in case of EINTR caused by a signal).
-               --  This should not happen on current implementation of pthread
-               --  under Linux, but POSIX does not guarantee it, so this may
-               --  change in the future.
+               --  Loop in case pthread_cond_wait returns earlier than expected
+               --  (e.g. in case of EINTR caused by a signal). This should not
+               --  happen with the current Linux implementation of pthread, but
+               --  POSIX does not guarantee it, so this may change in the
+               --  future.
 
                Result := pthread_cond_wait (S.CV'Access, S.L'Access);
                pragma Assert (Result = 0 or else Result = EINTR);

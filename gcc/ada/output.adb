@@ -45,6 +45,7 @@ package body Output is
 
    Indentation_Limit : constant Positive := 40;
    --  Indentation beyond this number of spaces wraps around
+
    pragma Assert (Indentation_Limit < Buffer_Max / 2);
    --  Make sure this is substantially shorter than the line length
 
@@ -163,7 +164,7 @@ package body Output is
    begin
       Cur_Indentation :=
         (Cur_Indentation + Indentation_Amount) mod Indentation_Limit;
-      --  The "mod" is to wrap around in case there's too much indentation.
+      --  The "mod" is to wrap around in case there's too much indentation
    end Indent;
 
    -------------
