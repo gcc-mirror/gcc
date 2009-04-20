@@ -583,8 +583,8 @@ package body Sem_Ch6 is
                Error_Msg_N ("must use anonymous access type", Subtype_Ind);
             end if;
 
-         --  Subtype_indication case; check that the types are the same, and
-         --  statically match if appropriate. Handle also record types with
+         --  Subtype indication case: check that the types are the same, and
+         --  statically match if appropriate. Also handle record types with
          --  unknown discriminants for which we have built the underlying
          --  record view.
 

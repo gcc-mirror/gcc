@@ -1956,7 +1956,7 @@ __gnat_is_readable_file (char *name)
       return __gnat_check_OWNER_ACL (wname, FILE_READ_DATA, GenericMapping);
     }
   else
-    return 1;
+    return GetFileAttributes (wname) != INVALID_FILE_ATTRIBUTES;
 
 #else
   int ret;
