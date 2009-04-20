@@ -1,3 +1,27 @@
+2009-04-20  Bob Duff  <duff@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Put call to Check_Library_Items inside
+	pragma Debug.
+
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Build_Protected_Sub_Specification): Mark generated
+	subprogram as Eliminated when source operation is.
+	(Expand_N_Protected_Type_Declaration): Generate protected and
+	unprotected specs for the internal operations, even if the source
+	operation is eliminated.
+
+2009-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Make_Predefined_Primitive_Specs,
+	Predefined_Primitive_Bodies): Do not create the declarations and bodies
+	of the primitive subprograms associated with dispatching select
+	statements when the runtime is in configurable mode.
+
+2009-04-20  Ed Falis  <falis@adacore.com>
+
+	* s-vxwext-kernel.ads (tickGet): Use tick64Get.
+
 2009-04-20  Thomas Quinot  <quinot@adacore.com>
 
 	* s-oscons-tmplt.c: Add support for generating a dummy version of
