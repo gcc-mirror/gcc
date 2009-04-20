@@ -782,6 +782,33 @@ get_dominated_by_region (enum cdi_direction dir, basic_block *region,
   return doms;
 }
 
+/* Returns the list of basic blocks including BB dominated by BB, in the
+   direction DIR.  The vector will be sorted in preorder.  */
+
+VEC (basic_block, heap) *
+get_all_dominated_blocks (enum cdi_direction dir, basic_block bb)
+{
+  VEC(basic_block, heap) *bbs = NULL;
+  unsigned i;
+
+  i = 0;
+  VEC_safe_push (basic_block, heap, bbs, bb);
+
+  do
+    {
+      basic_block son;
+
+      bb = VEC_index (basic_block, bbs, i++);
+      for (son = first_dom_son (dir, bb);
+	   son;
+	   son = next_dom_son (dir, son))
+	VEC_safe_push (basic_block, heap, bbs, son);
+    }
+  while (i < VEC_length (basic_block, bbs));
+
+  return bbs;
+}
+
 /* Redirect all edges pointing to BB to TO.  */
 void
 redirect_immediate_dominators (enum cdi_direction dir, basic_block bb,
