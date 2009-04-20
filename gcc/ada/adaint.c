@@ -1583,7 +1583,9 @@ __gnat_set_file_time_name (char *name, time_t time_stamp)
 char *
 __gnat_get_libraries_from_registry (void)
 {
-  char *result = (char *) "";
+  char *result = (char *) xmalloc (1);
+
+  result[0] = '\0';
 
 #if defined (_WIN32) && ! defined (__vxworks) && ! defined (IS_CROSS) \
   && ! defined (RTX)
@@ -1611,7 +1613,6 @@ __gnat_get_libraries_from_registry (void)
 
   /* If the key exists, read out all the values in it and concatenate them
      into a path.  */
-
   for (index = 0; res == ERROR_SUCCESS; index++)
     {
       value_size = name_size = 256;
@@ -1626,14 +1627,15 @@ __gnat_get_libraries_from_registry (void)
           strcpy (result, old_result);
           strcat (result, value);
           strcat (result, ";");
+          free (old_result);
         }
     }
 
   /* Remove the trailing ";".  */
   if (result[0] != 0)
     result[strlen (result) - 1] = 0;
-#endif
 
+#endif
   return result;
 }
 
@@ -1723,7 +1725,7 @@ __gnat_is_absolute_path (char *name, int length)
 #if defined (__EMX__) || defined (MSDOS) || defined (WINNT)
       || (length > 1 && ISALPHA (name[0]) && name[1] == ':')
 #endif
-          );
+	  );
 #endif
 }
 
@@ -1774,34 +1776,34 @@ GetDriveTypeFromPath (TCHAR *wfullpath)
 
       /* Is this a relative path, if so get current drive type. */
       if (wpath[0] != _T('\\') ||
-          (_tcslen (wpath) > 2 && wpath[0] == _T('\\') && wpath[1] != _T('\\')))
-        return GetDriveType (NULL);
+	  (_tcslen (wpath) > 2 && wpath[0] == _T('\\') && wpath[1] != _T('\\')))
+	return GetDriveType (NULL);
 
       UINT result = GetDriveType (wpath);
 
       /* Cannot guess the drive type, is this \\.\ ? */
 
       if (result == DRIVE_NO_ROOT_DIR &&
-         _tcslen (wpath) >= 4 && wpath[0] == _T('\\') && wpath[1] == _T('\\')
-          && wpath[2] == _T('.') && wpath[3] == _T('\\'))
-        {
-          if (_tcslen (wpath) == 4)
-            _tcscat (wpath, wfilename);
+	 _tcslen (wpath) >= 4 && wpath[0] == _T('\\') && wpath[1] == _T('\\')
+	  && wpath[2] == _T('.') && wpath[3] == _T('\\'))
+	{
+	  if (_tcslen (wpath) == 4)
+	    _tcscat (wpath, wfilename);
 
-          LPTSTR p = &wpath[4];
-          LPTSTR b = _tcschr (p, _T('\\'));
+	  LPTSTR p = &wpath[4];
+	  LPTSTR b = _tcschr (p, _T('\\'));
 
-          if (b != NULL)
-            { /* logical drive \\.\c\dir\file */
-              *b++ = _T(':');
-              *b++ = _T('\\');
-              *b = _T('\0');
-            }
-          else
-            _tcscat (p, _T(":\\"));
+	  if (b != NULL)
+	    { /* logical drive \\.\c\dir\file */
+	      *b++ = _T(':');
+	      *b++ = _T('\\');
+	      *b = _T('\0');
+	    }
+	  else
+	    _tcscat (p, _T(":\\"));
 
-          return GetDriveType (p);
-        }
+	  return GetDriveType (p);
+	}
 
       return result;
     }
@@ -1901,9 +1903,9 @@ __gnat_set_OWNER_ACL
   if (AccessMode == SET_ACCESS)
     {
       /*  SET_ACCESS, we want to set an explicte set of permissions, do not
-          merge with current DACL.  */
+	  merge with current DACL.  */
       if (SetEntriesInAcl (1, &ea, NULL, &pNewDACL) != ERROR_SUCCESS)
-        return;
+	return;
     }
   else
     if (SetEntriesInAcl (1, &ea, pOldDACL, &pNewDACL) != ERROR_SUCCESS)
@@ -1974,8 +1976,8 @@ __gnat_is_writable_file (char *name)
       GenericMapping.GenericWrite = GENERIC_WRITE;
 
       return __gnat_check_OWNER_ACL
-        (wname, FILE_WRITE_DATA | FILE_APPEND_DATA, GenericMapping)
-        && !(GetFileAttributes (wname) & FILE_ATTRIBUTE_READONLY);
+	(wname, FILE_WRITE_DATA | FILE_APPEND_DATA, GenericMapping)
+	&& !(GetFileAttributes (wname) & FILE_ATTRIBUTE_READONLY);
     }
   else
     return !(GetFileAttributes (wname) & FILE_ATTRIBUTE_READONLY);
@@ -2208,9 +2210,9 @@ __gnat_portable_spawn (char *args[])
       /* The child. */
       if (execv (args[0], MAYBE_TO_PTR32 (args)) != 0)
 #if defined (VMS)
-        return -1; /* execv is in parent context on VMS.  */
+	return -1; /* execv is in parent context on VMS.  */
 #else
-        _exit (1);
+	_exit (1);
 #endif
     }
 #endif
@@ -2328,9 +2330,9 @@ remove_handle (HANDLE h)
       if (pl->h == h)
         {
           if (pl == PLIST)
-            PLIST = pl->next;
+	    PLIST = pl->next;
           else
-            prev->next = pl->next;
+	    prev->next = pl->next;
           free (pl);
           break;
         }
@@ -2505,9 +2507,9 @@ __gnat_portable_no_block_spawn (char *args[])
       /* The child.  */
       if (execv (args[0], MAYBE_TO_PTR32 (args)) != 0)
 #if defined (VMS)
-        return -1; /* execv is in parent context on VMS. */
+	return -1; /* execv is in parent context on VMS. */
 #else
-        _exit (1);
+	_exit (1);
 #endif
     }
 
@@ -2617,17 +2619,17 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
       /* Skip the starting quote */
 
       if (*path_val == '"')
-        path_val++;
+	path_val++;
 
       for (ptr = file_path; *path_val && *path_val != PATH_SEPARATOR; )
-        *ptr++ = *path_val++;
+	*ptr++ = *path_val++;
 
       ptr--;
 
       /* Skip the ending quote */
 
       if (*ptr == '"')
-        ptr--;
+	ptr--;
 
       if (*ptr != '/' && *ptr != DIR_SEPARATOR)
         *++ptr = DIR_SEPARATOR;
@@ -2755,8 +2757,8 @@ wildcard_translate_unix (char *name)
     {
       new_canonical_filelist_allocated += NEW_CANONICAL_FILELIST_INCREMENT;
       new_canonical_filelist = (char **) xrealloc
-        (new_canonical_filelist,
-         new_canonical_filelist_allocated * sizeof (char *));
+	(new_canonical_filelist,
+	 new_canonical_filelist_allocated * sizeof (char *));
     }
 
   new_canonical_filelist[new_canonical_filelist_in_use++] = xstrdup (buff);
@@ -2792,11 +2794,11 @@ __gnat_to_canonical_file_list_init (char *filespec, int onlydirs)
       char *ext;
 
       for (i = 0; i < new_canonical_filelist_in_use; i++)
-        {
-          ext = strstr (new_canonical_filelist[i], ".dir");
-          if (ext)
-            *ext = 0;
-        }
+	{
+	  ext = strstr (new_canonical_filelist[i], ".dir");
+	  if (ext)
+	    *ext = 0;
+	}
     }
 
   return new_canonical_filelist_in_use;
@@ -2975,21 +2977,21 @@ __gnat_to_canonical_dir_spec (char *dirspec, int prefixflag)
       char *dirspec1;
 
       if (strchr (dirspec, ']') || strchr (dirspec, ':'))
-        {
-          strncpy (new_canonical_dirspec,
-                   __gnat_translate_vms (dirspec),
-                   MAXPATH);
-        }
+	{
+	  strncpy (new_canonical_dirspec,
+		   __gnat_translate_vms (dirspec),
+		   MAXPATH);
+	}
       else if (!strchr (dirspec, '/') && (dirspec1 = getenv (dirspec)) != 0)
-        {
-          strncpy (new_canonical_dirspec,
-                  __gnat_translate_vms (dirspec1),
-                  MAXPATH);
-        }
+	{
+	  strncpy (new_canonical_dirspec,
+		  __gnat_translate_vms (dirspec1),
+		  MAXPATH);
+	}
       else
-        {
-          strncpy (new_canonical_dirspec, dirspec, MAXPATH);
-        }
+	{
+	  strncpy (new_canonical_dirspec, dirspec, MAXPATH);
+	}
     }
 
   len = strlen (new_canonical_dirspec);
@@ -3020,16 +3022,16 @@ __gnat_to_canonical_file_spec (char *filespec)
       char *tspec = (char *) __gnat_translate_vms (filespec);
 
       if (tspec != (char *) -1)
-        strncpy (new_canonical_filespec, tspec, MAXPATH);
+	strncpy (new_canonical_filespec, tspec, MAXPATH);
     }
   else if ((strlen (filespec) == strspn (filespec,
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"))
-        && (filespec1 = getenv (filespec)))
+	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"))
+	&& (filespec1 = getenv (filespec)))
     {
       char *tspec = (char *) __gnat_translate_vms (filespec1);
 
       if (tspec != (char *) -1)
-        strncpy (new_canonical_filespec, tspec, MAXPATH);
+	strncpy (new_canonical_filespec, tspec, MAXPATH);
     }
   else
     {
@@ -3086,11 +3088,11 @@ __gnat_to_canonical_path_spec (char *pathspec)
                 strncat (new_canonical_pathspec, ":", MAXPATH);
             }
 
-          __gnat_to_canonical_file_list_free ();
+	  __gnat_to_canonical_file_list_free ();
         }
       else
-        strncat (new_canonical_pathspec,
-                __gnat_to_canonical_dir_spec (buff, 0), MAXPATH);
+	strncat (new_canonical_pathspec,
+		__gnat_to_canonical_dir_spec (buff, 0), MAXPATH);
 
       if (*next == 0)
         break;
