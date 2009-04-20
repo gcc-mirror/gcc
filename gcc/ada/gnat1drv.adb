@@ -92,6 +92,8 @@ procedure Gnat1drv is
 
    procedure Check_Library_Items;
    --  For debugging -- checks the behavior of Walk_Library_Items
+   pragma Warnings (Off, Check_Library_Items);
+   --  In case the call below is commented out
 
    --------------------
    -- Check_Bad_Body --
@@ -738,7 +740,9 @@ begin
       Namet.Lock;
       Stringt.Lock;
 
-      pragma Debug (Check_Library_Items);
+      --  ???pragma Debug (Check_Library_Items);
+      --  Commented out, because it currently does not work if the -gnatn
+      --  switch (back end inlining) is used.
 
       --  Here we call the back end to generate the output code
 

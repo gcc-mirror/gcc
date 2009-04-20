@@ -63,6 +63,9 @@ pragma Warnings (Off, Sem_Util);
 
 package body Sem is
 
+   Debug_Unit_Walk : constant Boolean := False;
+   --  Set to True to print out debugging information for Walk_Library_Items
+
    Outer_Generic_Scope : Entity_Id := Empty;
    --  Global reference to the outer scope that is generic. In a non
    --  generic context, it is empty. At the moment, it is only used
@@ -77,6 +80,12 @@ package body Sem is
    Ignore_Comp_Units : Boolean := False;
    --  If True, we suppress appending compilation units onto the
    --  Comp_Unit_List.
+
+   procedure Write_Unit_Info
+     (Unit_Num : Unit_Number_Type;
+      Item : Node_Id;
+      Prefix : String := "");
+   --  Print out debugging information about the unit
 
    -------------
    -- Analyze --
@@ -1345,9 +1354,18 @@ package body Sem is
          Restore_Scope_Stack;
       end Do_Analyze;
 
+      Already_Analyzed : constant Boolean := Analyzed (Comp_Unit);
+
    --  Start of processing for Semantics
 
    begin
+      if Debug_Unit_Walk and then Already_Analyzed then
+         Write_Str ("(done)");
+         Write_Unit_Info (Get_Cunit_Unit_Number (Comp_Unit), Unit (Comp_Unit),
+                          Prefix => "--> ");
+         Indent;
+      end if;
+
       Compiler_State   := Analyzing;
       Current_Sem_Unit := Get_Cunit_Unit_Number (Comp_Unit);
 
@@ -1400,35 +1418,34 @@ package body Sem is
          --  Do analysis, and then append the compilation unit onto the
          --  Comp_Unit_List, if appropriate. This is done after analysis, so if
          --  this unit depends on some others, they have already been
-         --  appended. We ignore bodies, except for the main unit itself, and
-         --  everything those bodies depend upon. We have also to guard against
-         --  ill-formed subunits that have an improper context.
+         --  appended. We ignore bodies, except for the main unit itself. We
+         --  have also to guard against ill-formed subunits that have an
+         --  improper context.
+
+         Do_Analyze;
 
          if Ignore_Comp_Units then
-            Do_Analyze;
-            pragma Assert (Ignore_Comp_Units);  --  still
+            null;
 
          elsif Present (Comp_Unit)
            and then  Nkind (Unit (Comp_Unit)) in N_Proper_Body
            and then not In_Extended_Main_Source_Unit (Comp_Unit)
          then
-            Ignore_Comp_Units := True;
-            Do_Analyze;
-            pragma Assert (Ignore_Comp_Units);
-            Ignore_Comp_Units := False;
+            null;
 
          else
-            Do_Analyze;
-            --  pragma Assert (not Ignore_Comp_Units);
-            --  The above assertion is *almost* true. It fails only when a
-            --  subunit with's its parent procedure body, which has no explicit
-            --  spec.
+            pragma Assert (not Ignore_Comp_Units);
 
             if No (Comp_Unit_List) then  --  Initialize if first time
                Comp_Unit_List := New_Elmt_List;
             end if;
-            if not Ignore_Comp_Units then  --  See above commented-out Assert
-               Append_Elmt (Comp_Unit, Comp_Unit_List);
+
+            Append_Elmt (Comp_Unit, Comp_Unit_List);
+
+            if Debug_Unit_Walk then
+               Write_Str ("Appending ");
+               Write_Unit_Info
+                 (Get_Cunit_Unit_Number (Comp_Unit), Unit (Comp_Unit));
             end if;
 
             --  Ignore all units after main unit
@@ -1456,6 +1473,13 @@ package body Sem is
 
       Restore_Opt_Config_Switches (Save_Config_Switches);
       Expander_Mode_Restore;
+
+      if Debug_Unit_Walk and then Already_Analyzed then
+         Outdent;
+         Write_Str ("(done)");
+         Write_Unit_Info (Get_Cunit_Unit_Number (Comp_Unit), Unit (Comp_Unit),
+                          Prefix => "<-- ");
+      end if;
    end Semantics;
 
    ------------------------
@@ -1463,8 +1487,8 @@ package body Sem is
    ------------------------
 
    procedure Walk_Library_Items is
-      Enable_Output : constant Boolean := False;
-      --  Set to True to print out the items as we go (for debugging)
+      type Unit_Number_Set is array (Main_Unit .. Last_Unit) of Boolean;
+      Seen : Unit_Number_Set := (others => False);
 
       procedure Do_Action (CU : Node_Id; Item : Node_Id);
       --  Calls Action, with some validity checks
@@ -1477,6 +1501,8 @@ package body Sem is
       begin
          --  This calls Action at the end. All the preceding code is just
          --  assertions and debugging output.
+
+         pragma Assert (No (CU) or else Nkind (CU) = N_Compilation_Unit);
 
          case Nkind (Item) is
             when N_Generic_Subprogram_Declaration     |
@@ -1515,28 +1541,24 @@ package body Sem is
 
          if Present (CU) then
             pragma Assert (Item /= Stand.Standard_Package_Node);
+            pragma Assert (Item = Unit (CU));
 
-            if Enable_Output then
-               Write_Unit_Name (Unit_Name (Get_Cunit_Unit_Number (CU)));
-               Write_Str (", Unit_Number = ");
-               Write_Int (Int (Get_Cunit_Unit_Number (CU)));
-               Write_Str (", ");
-               Write_Str (Node_Kind'Image (Nkind (Item)));
+            declare
+               Unit_Num : constant Unit_Number_Type :=
+                 Get_Cunit_Unit_Number (CU);
+            begin
+               Write_Unit_Info (Unit_Num, Item);
 
-               if Item /= Original_Node (Item) then
-                  Write_Str (", orig = ");
-                  Write_Str (Node_Kind'Image (Nkind (Original_Node (Item))));
-               end if;
-
-               Write_Eol;
-            end if;
+               pragma Assert (not Seen (Unit_Num));
+               Seen (Unit_Num) := True;
+            end;
 
          else
             --  Must be Standard
 
             pragma Assert (Item = Stand.Standard_Package_Node);
 
-            if Enable_Output then
+            if Debug_Unit_Walk then
                Write_Line ("Standard");
             end if;
          end if;
@@ -1551,7 +1573,7 @@ package body Sem is
    --  Start of processing for Walk_Library_Items
 
    begin
-      if Enable_Output then
+      if Debug_Unit_Walk then
          Write_Line ("Walk_Library_Items:");
          Indent;
       end if;
@@ -1572,7 +1594,8 @@ package body Sem is
 
                --  If it's a body, then ignore it, unless it's an instance (in
                --  which case we do the spec), or it's the main unit (in which
-               --  case we do it). Note that it could be both.
+               --  case we do it). Note that it could be both, in which case we
+               --  do the spec first.
 
                when N_Package_Body | N_Subprogram_Body =>
                   declare
@@ -1593,7 +1616,11 @@ package body Sem is
                      end if;
 
                      if Is_Generic_Instance (Entity) then
-                        Do_Action (CU, Unit (Library_Unit (CU)));
+                        declare
+                           Spec_Unit : constant Node_Id := Library_Unit (CU);
+                        begin
+                           Do_Action (Spec_Unit, Unit (Spec_Unit));
+                        end;
                      end if;
                   end;
 
@@ -1616,10 +1643,56 @@ package body Sem is
          Next_Elmt (Cur);
       end loop;
 
-      if Enable_Output then
+      if Debug_Unit_Walk then
+         if Seen /= (Seen'Range => True) then
+            Write_Eol;
+            Write_Line ("Ignored units:");
+
+            Indent;
+            for Unit_Num in Seen'Range loop
+               if not Seen (Unit_Num) then
+                  Write_Unit_Info (Unit_Num, Unit (Cunit (Unit_Num)));
+               end if;
+            end loop;
+            Outdent;
+         end if;
+      end if;
+
+      if Debug_Unit_Walk then
          Outdent;
          Write_Line ("end Walk_Library_Items.");
       end if;
    end Walk_Library_Items;
+
+   ---------------------
+   -- Write_Unit_Info --
+   ---------------------
+
+   procedure Write_Unit_Info
+     (Unit_Num : Unit_Number_Type;
+      Item : Node_Id;
+      Prefix : String := "")
+   is
+   begin
+      if Debug_Unit_Walk then
+         Write_Str (Prefix);
+         Write_Unit_Name (Unit_Name (Unit_Num));
+         Write_Str (", unit ");
+         Write_Int (Int (Unit_Num));
+         Write_Str (", ");
+         Write_Int (Int (Item));
+         Write_Str ("=");
+         Write_Str (Node_Kind'Image (Nkind (Item)));
+
+         if Item /= Original_Node (Item) then
+            Write_Str (", orig = ");
+            Write_Int (Int (Original_Node (Item)));
+            Write_Str ("=");
+            Write_Str (Node_Kind'Image (Nkind (Original_Node (Item))));
+         end if;
+
+         Write_Eol;
+      end if;
+   end Write_Unit_Info;
 
 end Sem;

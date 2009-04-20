@@ -1,3 +1,12 @@
+2009-04-20  Bob Duff  <duff@adacore.com>
+
+	* sem.adb (Semantics, Walk_Library_Items): Include dependents of bodies
+	that are not included. This is necessary if the main unit is a generic
+	instantiation.
+
+	* gnat1drv.adb (Gnat1drv): Comment out the call to Check_Library_Items,
+	because it doesn't work if -gnatn is used.
+
 2009-04-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* rtsfind.adb (RTE, RTE_Record_Component): In
