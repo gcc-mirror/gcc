@@ -774,6 +774,8 @@ package body Sem_Ch10 is
             Version_Update (N, Lib_Unit);
          end if;
 
+         --  Comment needed here ???
+
          if Nkind (Defining_Unit_Name (Specification (Unit_Node))) =
                                              N_Defining_Program_Unit_Name
          then

@@ -739,8 +739,8 @@ package body Sem_Disp is
          then
             pragma Assert
              ((Ekind (Subp) = E_Function
-                 and then Is_Dispatching_Operation (Old_Subp)
-                 and then Is_Null_Extension (Base_Type (Etype (Subp))))
+                and then Is_Dispatching_Operation (Old_Subp)
+                and then Is_Null_Extension (Base_Type (Etype (Subp))))
                or else Get_TSS_Name (Subp) = TSS_Stream_Read
                or else Get_TSS_Name (Subp) = TSS_Stream_Write);
 
@@ -769,12 +769,11 @@ package body Sem_Disp is
             null;
 
          --  If the type is already frozen, the overriding is not allowed
-         --  except when Old_Subp is not a dispatching operation (which
-         --  can occur when Old_Subp was inherited by an untagged type).
-         --  However, a body with no previous spec freezes the type "after"
-         --  its declaration, and therefore is a legal overriding (unless
-         --  the type has already been frozen). Only the first such body
-         --  is legal.
+         --  except when Old_Subp is not a dispatching operation (which can
+         --  occur when Old_Subp was inherited by an untagged type). However,
+         --  a body with no previous spec freezes the type "after" its
+         --  declaration, and therefore is a legal overriding (unless the type
+         --  has already been frozen). Only the first such body is legal.
 
          elsif Present (Old_Subp)
            and then Is_Dispatching_Operation (Old_Subp)

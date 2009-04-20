@@ -1690,6 +1690,7 @@ package body GNAT.Sockets is
       if EAGAIN /= EWOULDBLOCK and then Error_Value = EAGAIN then
          return Resource_Temporarily_Unavailable;
       end if;
+
       pragma Warnings (On);
 
       case Error_Value is

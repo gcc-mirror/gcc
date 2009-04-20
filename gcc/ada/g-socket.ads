@@ -1083,7 +1083,7 @@ package GNAT.Sockets is
       E_Socket_Set : in out Socket_Set_Type;
       Status       : out Selector_Status;
       Timeout      : Selector_Duration := Forever);
-   --  This refined version of Check_Selector allows to watch for exception
+   --  This refined version of Check_Selector allows watching for exception
    --  events (i.e. notifications of out-of-band transmission and reception).
    --  As above, all of R_Socket_Set, W_Socket_Set and E_Socket_Set must be
    --  different objects.

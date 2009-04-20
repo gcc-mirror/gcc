@@ -720,9 +720,9 @@ package body Rtsfind is
 
          --  If the RTS Unit *does* depend on the current unit, for instance,
          --  when you are compiling System, then you had better have finished
-         --  analyzing the part of System that is depended on before you try
-         --  to load the RTS Unit. This means having the System ordered in an
-         --  appropriate manner.
+         --  analyzing the part of System that is depended on before you try to
+         --  load the RTS Unit. This means having the code in System ordered in
+         --  an appropriate manner.
 
          Set_Analyzed (Cunit (Current_Sem_Unit), True);
 
