@@ -6199,27 +6199,6 @@ component_ref_field_offset (tree exp)
   else
     return SUBSTITUTE_PLACEHOLDER_IN_EXPR (DECL_FIELD_OFFSET (field), exp);
 }
-
-/* Return 1 if T is an expression that get_inner_reference handles.  */
-
-int
-handled_component_p (const_tree t)
-{
-  switch (TREE_CODE (t))
-    {
-    case BIT_FIELD_REF:
-    case COMPONENT_REF:
-    case ARRAY_REF:
-    case ARRAY_RANGE_REF:
-    case VIEW_CONVERT_EXPR:
-    case REALPART_EXPR:
-    case IMAGPART_EXPR:
-      return 1;
-
-    default:
-      return 0;
-    }
-}
 
 /* Given an rtx VALUE that may contain additions and multiplications, return
    an equivalent value that just refers to a register, memory, or constant.
