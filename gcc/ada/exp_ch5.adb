@@ -309,9 +309,13 @@ package body Exp_Ch5 is
       end if;
 
       --  If either operand has an address clause clear Backwards_OK and
-      --  Forwards_OK, since we cannot tell if the operands overlap.
+      --  Forwards_OK, since we cannot tell if the operands overlap. We
+      --  exclude this treatment when Rhs is an aggregate, since we know
+      --  that overlap can't occur.
 
-      if Has_Address_Clause (Lhs) or else Has_Address_Clause (Rhs) then
+      if (Has_Address_Clause (Lhs) and then Nkind (Rhs) /= N_Aggregate)
+        or else Has_Address_Clause (Rhs)
+      then
          Set_Forwards_OK  (N, False);
          Set_Backwards_OK (N, False);
       end if;
