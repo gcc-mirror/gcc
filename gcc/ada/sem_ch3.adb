@@ -5557,7 +5557,8 @@ package body Sem_Ch3 is
                  (N, Parent_Type, Derived_Type, Derive_Subps);
 
                --  Build anonymous completion, as a derivation from the full
-               --  view of the parent.
+               --  view of the parent. This is not a completion in the usual
+               --  sense, because the current type is not private.
 
                Decl :=
                  Make_Full_Type_Declaration (Loc,
@@ -5568,9 +5569,6 @@ package body Sem_Ch3 is
                          New_Copy_Tree
                            (Subtype_Indication (Type_Definition (N))),
                        Record_Extension_Part => New_Ext));
-
-               Set_Has_Private_Declaration (Full_Der);
-               Set_Has_Private_Declaration (Derived_Type);
 
                --  If the parent type has an underlying record view, use it
                --  here to build the new underlying record view.

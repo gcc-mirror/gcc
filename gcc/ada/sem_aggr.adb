@@ -3100,11 +3100,22 @@ package body Sem_Aggr is
                end if;
             end loop;
 
-            --  Now collect components from all other ancestors
+            --  Now collect components from all other ancestors, beginning
+            --  with the current type. If the type has unknown discriminants
+            --  use the component list of the underlying_record_view, which
+            --  needs to be used for the subsequent expansion of the aggregate
+            --  into assignments.
 
             Parent_Elmt := First_Elmt (Parent_Typ_List);
             while Present (Parent_Elmt) loop
                Parent_Typ := Node (Parent_Elmt);
+
+               if Has_Unknown_Discriminants (Parent_Typ)
+                 and then Present (Underlying_Record_View (Typ))
+               then
+                  Parent_Typ := Underlying_Record_View (Parent_Typ);
+               end if;
+
                Record_Def := Type_Definition (Parent (Base_Type (Parent_Typ)));
                Gather_Components (Empty,
                  Component_List (Record_Extension_Part (Record_Def)),
@@ -3120,8 +3131,17 @@ package body Sem_Aggr is
 
             if Null_Present (Record_Def) then
                null;
-            else
+
+            elsif not Has_Unknown_Discriminants (Typ) then
                Gather_Components (Base_Type (Typ),
+                 Component_List (Record_Def),
+                 Governed_By   => New_Assoc_List,
+                 Into          => Components,
+                 Report_Errors => Errors_Found);
+
+            else
+               Gather_Components
+                 (Base_Type (Underlying_Record_View (Typ)),
                  Component_List (Record_Def),
                  Governed_By   => New_Assoc_List,
                  Into          => Components,
