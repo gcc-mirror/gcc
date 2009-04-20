@@ -1,3 +1,39 @@
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
+	* sinfo.ads: Minor comment fixes
+
+	* exp_disp.adb: Minor reformatting
+
+	* gnat1drv.adb: Minor reformatting
+
+	* output.adb: Minor reformatting
+
+	* s-vxwext-kernel.ads: Minor reformatting
+
+	* sem.ads: Minor reformatting
+
+	* sem.adb: Minor reformatting
+
+	* sem_elim.adb: Minor reformatting
+
+	* uname.ads: Minor reformatting
+
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c (__gnat_adjust_context_for_raise): On x86{-64}/Linux, add
+	a small dope of 4 words to the adjustment to the stack pointer.
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* xoscons.adb: generate C header s-oscons.h in
+	addition to s-oscons.ads.
+
+	* socket.c: On VMS, use s-oscons.h.
+
+	* sem_ch3.adb: Minor reformatting
+
+	* exp_ch9.adb: Minor reformatting
+
 2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (check_for_eliminated_entity): Remove.

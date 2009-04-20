@@ -179,12 +179,12 @@ package body Exp_Disp is
                  or else
                   (not Comes_From_Source (Defining_Entity (D))
                      and then
-                   Has_Unknown_Discriminants (Etype (Defining_Entity (D)))
+                       Has_Unknown_Discriminants (Etype (Defining_Entity (D)))
                      and then
-                   not Comes_From_Source (First_Subtype (Defining_Entity (D))))
+                       not Comes_From_Source
+                             (First_Subtype (Defining_Entity (D))))
                then
                   null;
-
                else
                   Insert_List_After_And_Analyze (Last (Target_List),
                     Make_DT (Defining_Entity (D)));

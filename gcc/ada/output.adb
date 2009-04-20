@@ -162,9 +162,11 @@ package body Output is
 
    procedure Indent is
    begin
+      --  The "mod" in the following assignment is to cause a wrap around in
+      --  the case where there is too much indentation.
+
       Cur_Indentation :=
         (Cur_Indentation + Indentation_Amount) mod Indentation_Limit;
-      --  The "mod" is to wrap around in case there's too much indentation
    end Indent;
 
    -------------
@@ -173,6 +175,8 @@ package body Output is
 
    procedure Outdent is
    begin
+      --  The "mod" here undoes the wrap around from Indent above
+
       Cur_Indentation :=
         (Cur_Indentation - Indentation_Amount) mod Indentation_Limit;
    end Outdent;

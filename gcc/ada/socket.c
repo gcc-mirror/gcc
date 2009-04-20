@@ -32,6 +32,15 @@
 /*  This file provides a portable binding to the sockets API                */
 
 #include "gsocket.h"
+#ifdef VMS
+/*
+ * For VMS, gsocket.h can't include sockets-related DEC C header files
+ * when building the runtime (because these files are in DEC C archives,
+ * not accessable to GCC). So, we generate a separate header file along
+ * with s-oscons.ads and include it here.
+ */
+# include "s-oscons.h"
+#endif
 
 #if defined(HAVE_SOCKETS)
 

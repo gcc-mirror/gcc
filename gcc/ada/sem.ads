@@ -651,7 +651,7 @@ package Sem is
    --  is the N_Package_Declaration node for package Standard. Bodies are not
    --  included, except for the main unit itself, which always comes last.
    --
-   --  Item is never a subunit.
+   --  Item is never a subunit
    --
    --  Item is never an instantiation. Instead, the instance declaration is
    --  passed, and (if the instantiation is the main unit), the instance body.

@@ -592,20 +592,21 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
      by the time the EH return is executed.
 
      We therefore adjust the saved value of the stack pointer by the size
-     of one page, in order to make sure that it points to an accessible
-     address in case it's used as the target CFA.  The stack checking code
-     guarantees that this page is unused by the time this happens.  */
+     of one page + a small dope of 4 words, in order to make sure that it
+     points to an accessible address in case it's used as the target CFA.
+     The stack checking code guarantees that this address is unused by the
+     time this happens.  */
 
 #if defined (i386)
   unsigned long pattern = *(unsigned long *)mcontext->gregs[REG_EIP];
   /* The pattern is "orl $0x0,(%esp)" for a probe in 32-bit mode.  */
   if (signo == SIGSEGV && pattern == 0x00240c83)
-    mcontext->gregs[REG_ESP] += 4096;
+    mcontext->gregs[REG_ESP] += 4096 + 4 * sizeof (unsigned long);
 #elif defined (__x86_64__)
   unsigned long pattern = *(unsigned long *)mcontext->gregs[REG_RIP];
   /* The pattern is "orq $0x0,(%rsp)" for a probe in 64-bit mode.  */
   if (signo == SIGSEGV && (pattern & 0xffffffffff) == 0x00240c8348)
-    mcontext->gregs[REG_RSP] += 4096;
+    mcontext->gregs[REG_RSP] += 4096 + 4 * sizeof (unsigned long);
 #elif defined (__ia64__)
   /* ??? The IA-64 unwinder doesn't compensate for signals.  */
   mcontext->sc_ip++;
