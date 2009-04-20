@@ -35,9 +35,9 @@ with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
 with Opt;      use Opt;
-with Rtsfind;  use Rtsfind;
 with Restrict; use Restrict;
 with Rident;   use Rident;
+with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Res;  use Sem_Res;
@@ -1407,14 +1407,33 @@ package body Exp_Ch11 is
       --  and there is nothing else to do.
 
       if Present (Expression (N)) then
-         Rewrite (N,
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (RTE (RE_Raise_Exception), Loc),
-             Parameter_Associations => New_List (
-               Make_Attribute_Reference (Loc,
-                 Prefix         => Name (N),
-                 Attribute_Name => Name_Identity),
-               Expression (N))));
+
+         --  Avoid passing exception-name'identity in runtimes in which this
+         --  argument is not used. This avoids generating undefined references
+         --  to these exceptions when compiling with no optimization
+
+         if Configurable_Run_Time_On_Target
+           and then (Restriction_Active (No_Exception_Handlers)
+                       or else
+                     Restriction_Active (No_Exception_Propagation))
+         then
+            Rewrite (N,
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (RTE (RE_Raise_Exception), Loc),
+                Parameter_Associations => New_List (
+                  New_Occurrence_Of (RTE (RE_Null_Id), Loc),
+                  Expression (N))));
+         else
+            Rewrite (N,
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (RTE (RE_Raise_Exception), Loc),
+                Parameter_Associations => New_List (
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => Name (N),
+                    Attribute_Name => Name_Identity),
+                  Expression (N))));
+         end if;
+
          Analyze (N);
          return;
       end if;

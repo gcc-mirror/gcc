@@ -1,3 +1,26 @@
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_User_Defined_Binary_Op): If left operand is
+	overloaded and one interpretation matches the context, label the
+	operand with the type of first formal.
+
+2009-04-20  Bob Duff  <duff@adacore.com>
+
+	* debug.ads: Minor comment fix.
+
+	* debug.adb: Minor comment fixes.
+
+2009-04-20  Javier Miranda  <miranda@adacore.com>
+
+	* rtsfind.ads (RE_Null_Id): New entity of package Ada.Exceptions
+
+	* exp_ch6.adb (Expand_Inlined_Call): Undo previous patch.
+
+	* exp_ch11.adb (Expand_N_Raise_Statement): When the raise stmt
+	is expanded into a call to Raise_Exception, avoid passing the
+	exception-name'identity in runtimes in which this argument
+	is not used.
+
 2009-04-20  Jerome Lambourg  <lambourg@adacore.com>
 
 	* impunit.adb: Add i-cil and i-cilobj packages, now needed by the

@@ -40,14 +40,13 @@ package Debug is
    -- Dynamic Debug Flags --
    -------------------------
 
-   --  Sixty two flags that can be used to active various specialized
-   --  debugging output information. The flags are preset to False, which
-   --  corresponds to the given output being suppressed. The individual
-   --  flags can be turned on using the undocumented switch dxxx where
-   --  xxx is a string of letters for flags to be turned on. Documentation
-   --  on the current usage of these flags is contained in the body of Debug
-   --  rather than the spec, so that we don't have to recompile the world
-   --  when a new debug flag is added
+   --  Flags that can be used to active various specialized debugging output
+   --  information. The flags are preset to False, which corresponds to the
+   --  given output being suppressed. The individual flags can be turned on
+   --  using the undocumented switch dxxx where xxx is a string of letters for
+   --  flags to be turned on. Documentation on the current usage of these flags
+   --  is contained in the body of Debug rather than the spec, so that we don't
+   --  have to recompile the world when a new debug flag is added.
 
    Debug_Flag_A : Boolean := False;
    Debug_Flag_B : Boolean := False;

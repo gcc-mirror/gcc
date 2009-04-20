@@ -191,7 +191,7 @@ package body Debug is
    --  dc
    --  dd
    --  de
-   --  df
+   --  df  Only output file names, not path names, in log
    --  dg
    --  dh
    --  di
@@ -428,8 +428,6 @@ package body Debug is
    --       in preelaborable packages, but this restriction is a huge pain,
    --       especially in the predefined library units.
 
-   --  dQ   needs full documentation ???
-
    --  dR   Bypass the check for a proper version of s-rpc being present
    --       to use the -gnatz? switch. This allows debugging of the use
    --       of stubs generation without needing to have GLADE (or some
@@ -611,6 +609,10 @@ package body Debug is
    --      are irrelevant and confusing. This debug flag causes all links to
    --      be listed, and is useful when diagnosing circularities introduced
    --      by incorrect changes to the run-time library itself.
+
+   --  db  Output debug information from Better_Choice in Binde, which uses
+   --      various heuristics to determine elaboration order in cases where
+   --      multiple orders are valid.
 
    --  dc  List units as they are chosen. As units are selected for addition to
    --      the elaboration order, a line of output is generated showing which
