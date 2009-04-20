@@ -170,16 +170,18 @@ package body Exp_Disp is
               and then Ekind (Defining_Entity (D)) /= E_Record_Subtype
               and then not Is_Private_Type (Defining_Entity (D))
             then
-               --  We do not generate dispatch tables for the internal type
+               --  We do not generate dispatch tables for the internal types
                --  created for a type extension with unknown discriminants
                --  The needed information is shared with the source type,
                --  See Expand_N_Record_Extension.
 
-               if not Comes_From_Source (Defining_Entity (D))
-                 and then
+               if Is_Underlying_Record_View (Defining_Entity (D))
+                 or else
+                  (not Comes_From_Source (Defining_Entity (D))
+                     and then
                    Has_Unknown_Discriminants (Etype (Defining_Entity (D)))
-                 and then
-                   not Comes_From_Source (First_Subtype (Defining_Entity (D)))
+                     and then
+                   not Comes_From_Source (First_Subtype (Defining_Entity (D))))
                then
                   null;
 

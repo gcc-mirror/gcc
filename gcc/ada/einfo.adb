@@ -506,8 +506,8 @@ package body Einfo is
    --    Overlays_Constant               Flag243
    --    Is_RACW_Stub_Type               Flag244
    --    Is_Private_Primitive            Flag245
+   --    Is_Underlying_Record_View       Flag246
 
-   --    (unused)                        Flag246
    --    (unused)                        Flag247
 
    -----------------------
@@ -2066,6 +2066,11 @@ package body Einfo is
       return Flag117 (Implementation_Base_Type (Id));
    end Is_Unchecked_Union;
 
+   function Is_Underlying_Record_View (Id : E) return B is
+   begin
+      return Flag246 (Id);
+   end Is_Underlying_Record_View;
+
    function Is_Unsigned_Type (Id : E) return B is
    begin
       pragma Assert (Is_Type (Id));
@@ -2675,7 +2680,6 @@ package body Einfo is
 
    function Underlying_Record_View (Id : E) return E is
    begin
-      pragma Assert (Ekind (Id) = E_Record_Type);
       return Node24 (Id);
    end Underlying_Record_View;
 
@@ -4542,6 +4546,12 @@ package body Einfo is
       pragma Assert (Id = Base_Type (Id));
       Set_Flag117 (Id, V);
    end Set_Is_Unchecked_Union;
+
+   procedure Set_Is_Underlying_Record_View (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Record_Type);
+      Set_Flag246 (Id, V);
+   end Set_Is_Underlying_Record_View;
 
    procedure Set_Is_Unsigned_Type (Id : E; V : B := True) is
    begin
@@ -6973,6 +6983,7 @@ package body Einfo is
       W ("Is_Trivial_Subprogram",           Flag235 (Id));
       W ("Is_True_Constant",                Flag163 (Id));
       W ("Is_Unchecked_Union",              Flag117 (Id));
+      W ("Is_Underlying_Record_View",       Flag246 (Id));
       W ("Is_Unsigned_Type",                Flag144 (Id));
       W ("Is_VMS_Exception",                Flag133 (Id));
       W ("Is_Valued_Procedure",             Flag127 (Id));

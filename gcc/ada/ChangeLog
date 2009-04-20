@@ -1,3 +1,55 @@
+2009-04-20  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb (Is_Underlying_Record_View): New subprogram
+	(Set_Is_Underlying_Record_View): New subprogram
+
+	* sem_aggr.adb (Discr_Present, Resolve_Record_Aggregate): In case of
+	private types with unknown discriminants use the underlying record view
+	if available.
+
+	* sem_ch3.adb (Build_Derived_Private_Type): Enable construction of the
+	underlying record view in the full view of private types whose parent
+	has unknown discriminants.
+	(Build_Derived_Record_Type): Avoid generating the class-wide entity
+	associated with an underlying record view.
+	(Derived_Type_Declaration): Avoid deriving parent primitives in
+	underlying record views.
+
+	* sem_ch6.adb (Check_Return_Subtype_Indication): Add support for
+	records with unknown discriminants.
+
+	* sem_type.adb (Covers): Handle underlying record views.
+	(Is_Ancestor): Add support for underlying record views.
+
+	* exp_attr.adb (Expand_Attribute): Expand attribute 'size into a
+	dispatching call if the type of the target object is tagged and has
+	unknown discriminants.
+
+	* exp_aggr.adb (Resolve_Record_Aggregate): Add support for records with
+	unknown discriminants.
+
+	* exp_disp.adb (Build_Dispatch_Tables): Avoid generating dispatch
+	tables for internally built underlying record views.
+
+	* sprint.adb (sprint_node_actual): Improve output of aggregates with an
+	empty list of component associations.
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch10.adb: Minor reformatting
+
+	* socket.c, g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.ads,
+	g-socthi-mingw.ads, g-socthi.ads, g-socket.adb
+	(GNAT.Sockets.Inet_Addr): Do not use non-portable inet_aton, instead use
+	standard inet_pton API (and emulate it on platforms that do not
+	support it).
+	(GNAT.Sockets.Thin.Inet_Pton, VMS case): Implement in terms of
+	DECC$INET_ADDR, imported in Ada.
+	(GNAT.Sockets.Thin.Inet_Pton, VxWorks and Windows cases): Use C
+	implementation provided by GNAT runtime.
+	(__gnat_inet_pton): C implementation of inet_pton(3) for VxWorks and
+	Windows.
+
 2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat_ugn.texi: Add documentation for -fno-ivopts.

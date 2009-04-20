@@ -2633,6 +2633,13 @@ package Einfo is
 --       Present in all entities. Set only in record types to which the
 --       pragma Unchecked_Union has been validly applied.
 
+--    Is_Underlying_Record_View (Flag246) [base type only]
+--       Present in all entities. Set only in record types that represent the
+--       underlying record view. This view is built for derivations of types
+--       with unknown discriminants; it is a record with the same structure
+--       than its corresponding record type, and whose parent is the full view
+--       of the parent in the original type extension.
+
 --    Is_Unsigned_Type (Flag144)
 --       Present in all types, but can be set only for discrete and fixed-point
 --       type and subtype entities. This flag is only valid if the entity is
@@ -3560,10 +3567,13 @@ package Einfo is
 
 --    Underlying_Record_View (Node24)
 --       Present in record types. Set for record types that are extensions of
---       types with unknown discriminants. Such types do not have a completion,
---       but they cannot be used without having some discriminated view at
---       hand. This view is a record type with the same structure, whose parent
---       type is the full view of the parent in the original type extension.
+--       types with unknown discriminants, and also set for internally built
+--       underlying record views to reference its original record type. Record
+--       types that are extensions of types with unknown discriminants do not
+--       have a completion, but they cannot be used without having some
+--       discriminated view at hand. This view is a record type with the same
+--       structure, whose parent type is the full view of the parent in the
+--       original type extension.
 
 --    Underlying_Type (synthesized)
 --       Applies to all entities. This is the identity function except in the
@@ -5889,6 +5899,7 @@ package Einfo is
    function Is_Trivial_Subprogram               (Id : E) return B;
    function Is_True_Constant                    (Id : E) return B;
    function Is_Unchecked_Union                  (Id : E) return B;
+   function Is_Underlying_Record_View           (Id : E) return B;
    function Is_Unsigned_Type                    (Id : E) return B;
    function Is_VMS_Exception                    (Id : E) return B;
    function Is_Valued_Procedure                 (Id : E) return B;
@@ -6441,6 +6452,7 @@ package Einfo is
    procedure Set_Is_Trivial_Subprogram           (Id : E; V : B := True);
    procedure Set_Is_True_Constant                (Id : E; V : B := True);
    procedure Set_Is_Unchecked_Union              (Id : E; V : B := True);
+   procedure Set_Is_Underlying_Record_View       (Id : E; V : B := True);
    procedure Set_Is_Unsigned_Type                (Id : E; V : B := True);
    procedure Set_Is_VMS_Exception                (Id : E; V : B := True);
    procedure Set_Is_Valued_Procedure             (Id : E; V : B := True);
@@ -7132,6 +7144,7 @@ package Einfo is
    pragma Inline (Is_Trivial_Subprogram);
    pragma Inline (Is_Type);
    pragma Inline (Is_Unchecked_Union);
+   pragma Inline (Is_Underlying_Record_View);
    pragma Inline (Is_Unsigned_Type);
    pragma Inline (Is_VMS_Exception);
    pragma Inline (Is_Valued_Procedure);
@@ -7520,6 +7533,7 @@ package Einfo is
    pragma Inline (Set_Is_Trivial_Subprogram);
    pragma Inline (Set_Is_True_Constant);
    pragma Inline (Set_Is_Unchecked_Union);
+   pragma Inline (Set_Is_Underlying_Record_View);
    pragma Inline (Set_Is_Unsigned_Type);
    pragma Inline (Set_Is_VMS_Exception);
    pragma Inline (Set_Is_Valued_Procedure);

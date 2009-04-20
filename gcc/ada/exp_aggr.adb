@@ -1869,7 +1869,9 @@ package body Exp_Aggr is
 
          Parent_Typ := Etype (Current_Typ);
          while Current_Typ /= Parent_Typ loop
-            if Has_Discriminants (Parent_Typ) then
+            if Has_Discriminants (Parent_Typ)
+              and then not Has_Unknown_Discriminants (Parent_Typ)
+            then
                Parent_Disc := First_Discriminant (Parent_Typ);
 
                --  We either get the association from the subtype indication

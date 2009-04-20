@@ -3908,8 +3908,11 @@ package body Exp_Attr is
          --  For X'Size applied to an object of a class-wide type, transform
          --  X'Size into a call to the primitive operation _Size applied to X.
 
-         elsif Is_Class_Wide_Type (Ptyp) then
-
+         elsif Is_Class_Wide_Type (Ptyp)
+           or else (Id = Attribute_Size
+                      and then Is_Tagged_Type (Ptyp)
+                      and then Has_Unknown_Discriminants (Ptyp))
+         then
             --  No need to do anything else compiling under restriction
             --  No_Dispatching_Calls. During the semantic analysis we
             --  already notified such violation.
@@ -3936,7 +3939,7 @@ package body Exp_Attr is
 
             Rewrite (N, New_Node);
             Analyze_And_Resolve (N, Typ);
-               return;
+            return;
 
          --  Case of known RM_Size of a type
 

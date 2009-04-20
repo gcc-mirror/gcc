@@ -1278,6 +1278,7 @@ package body GNAT.Sockets is
       use Interfaces.C.Strings;
 
       Img    : aliased char_array := To_C (Image);
+      Cp     : constant chars_ptr := To_Chars_Ptr (Img'Unchecked_Access);
       Addr   : aliased C.int;
       Res    : C.int;
       Result : Inet_Addr_Type;
@@ -1290,9 +1291,12 @@ package body GNAT.Sockets is
          Raise_Socket_Error (SOSC.EINVAL);
       end if;
 
-      Res := Inet_Aton (To_Chars_Ptr (Img'Unchecked_Access), Addr'Address);
+      Res := Inet_Pton (SOSC.AF_INET, Cp, Addr'Address);
 
-      if Res = 0 then
+      if Res < 0 then
+         Raise_Socket_Error (Socket_Errno);
+
+      elsif Res = 0 then
          Raise_Socket_Error (SOSC.EINVAL);
       end if;
 

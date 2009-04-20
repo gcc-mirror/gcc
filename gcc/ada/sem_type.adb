@@ -745,6 +745,18 @@ package body Sem_Type is
       else
          BT1 := Base_Type (T1);
          BT2 := Base_Type (T2);
+
+         --  Handle underlying view of records with unknown discriminants
+         --  using the original entity that motivated the construction of
+         --  this underlying record view (see Build_Derived_Private_Type).
+
+         if Is_Underlying_Record_View (BT1) then
+            BT1 := Underlying_Record_View (BT1);
+         end if;
+
+         if Is_Underlying_Record_View (BT2) then
+            BT2 := Underlying_Record_View (BT2);
+         end if;
       end if;
 
       --  Simplest case: same types are compatible, and types that have the
@@ -2486,20 +2498,37 @@ package body Sem_Type is
    -----------------
 
    function Is_Ancestor (T1, T2 : Entity_Id) return Boolean is
+      BT1 : Entity_Id;
+      BT2 : Entity_Id;
       Par : Entity_Id;
 
    begin
-      if Base_Type (T1) = Base_Type (T2) then
+      BT1 := Base_Type (T1);
+      BT2 := Base_Type (T2);
+
+      --  Handle underlying view of records with unknown discriminants
+      --  using the original entity that motivated the construction of
+      --  this underlying record view (see Build_Derived_Private_Type).
+
+      if Is_Underlying_Record_View (BT1) then
+         BT1 := Underlying_Record_View (BT1);
+      end if;
+
+      if Is_Underlying_Record_View (BT2) then
+         BT2 := Underlying_Record_View (BT2);
+      end if;
+
+      if BT1 = BT2 then
          return True;
 
       elsif Is_Private_Type (T1)
         and then Present (Full_View (T1))
-        and then Base_Type (T2) = Base_Type (Full_View (T1))
+        and then BT2 = Base_Type (Full_View (T1))
       then
          return True;
 
       else
-         Par := Etype (T2);
+         Par := Etype (BT2);
 
          loop
             --  If there was a error on the type declaration, do not recurse
@@ -2507,7 +2536,7 @@ package body Sem_Type is
             if Error_Posted (Par) then
                return False;
 
-            elsif Base_Type (T1) = Base_Type (Par)
+            elsif BT1 = Base_Type (Par)
               or else (Is_Private_Type (T1)
                          and then Present (Full_View (T1))
                          and then Base_Type (Par) = Base_Type (Full_View (T1)))
@@ -2516,7 +2545,7 @@ package body Sem_Type is
 
             elsif Is_Private_Type (Par)
               and then Present (Full_View (Par))
-              and then Full_View (Par) = Base_Type (T1)
+              and then Full_View (Par) = BT1
             then
                return True;
 
