@@ -1082,9 +1082,9 @@ package GNAT.Sockets is
       Status       : out Selector_Status;
       Timeout      : Selector_Duration := Forever);
    --  This refined version of Check_Selector allows to watch for exception
-   --  events (that is notifications of out-of-band transmission and
-   --  reception). As above, all of R_Socket_Set, W_Socket_Set and
-   --  E_Socket_Set must be different objects.
+   --  events (i.e. notifications of out-of-band transmission and reception).
+   --  As above, all of R_Socket_Set, W_Socket_Set and E_Socket_Set must be
+   --  different objects.
 
    procedure Abort_Selector (Selector : Selector_Type);
    --  Send an abort signal to the selector

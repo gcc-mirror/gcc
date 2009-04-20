@@ -640,9 +640,10 @@ package Opt is
    Inspector_Mode : Boolean renames Debug.Debug_Flag_Dot_II;
    --  GNAT
    --  True if compiling in inspector mode (-gnatd.I switch).
-   --  Only relevant when VM_Target /= None. The compiler will attempt to
-   --  generate code even in case of unsupported construct, so that the byte
-   --  code can be used by static analysis tools.
+   --  Enable inspector mode, in particular SCIL generation.
+   --  When VM_Target /= None, the compiler will also attempt to
+   --  generate code even in case of unsupported construct instead of
+   --  displaying an error.
 
    Invalid_Value_Used : Boolean := False;
    --  GNAT

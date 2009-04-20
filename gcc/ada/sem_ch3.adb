@@ -5552,7 +5552,10 @@ package body Sem_Ch3 is
                  (N, Parent_Type, Derived_Type, Derive_Subps);
 
                --  Build anonymous completion, as a derivation from the full
-               --  view of the parent.
+               --  view of the parent. Because it is used as a placeholder
+               --  to convey information to the back-end, it must be declared
+               --  after the original type so the back-end knows that it needs
+               --  to disregard the declaration.
 
                Decl :=
                  Make_Full_Type_Declaration (Loc,
@@ -5574,11 +5577,9 @@ package body Sem_Ch3 is
 
                --  Freeze the underlying record view, to prevent generation
                --  of useless dispatching information, which is simply shared
-               --  with the real derived type. The underlying view must be
-               --  treated as an itype by the back-end.
+               --  with the real derived type.
 
                Set_Is_Frozen (Full_Der);
-               Set_Is_Itype (Full_Der);
                Set_Underlying_Record_View (Derived_Type, Full_Der);
             end;
 
@@ -13495,7 +13496,7 @@ package body Sem_Ch3 is
                   elsif No (Interface_List (N)) then
                      Error_Msg_N
                         ("completion of tagged private type must be tagged",
-                           N);
+                         N);
                   end if;
 
                elsif Nkind (N) = N_Full_Type_Declaration
@@ -13504,8 +13505,7 @@ package body Sem_Ch3 is
                  and then Interface_Present (Type_Definition (N))
                then
                   Error_Msg_N
-                    ("completion of private type canot be an interface",
-                       N);
+                    ("completion of private type cannot be an interface", N);
                end if;
 
             --  Ada 2005 (AI-251): Private extension declaration of a task

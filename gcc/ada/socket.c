@@ -351,36 +351,17 @@ __gnat_get_h_errno (void) {
     case 0:
       return 0;
 
-#ifdef S_resolvLib_HOST_NOT_FOUND
-    case S_resolvLib_HOST_NOT_FOUND:
-#endif
 #ifdef S_hostLib_HOST_NOT_FOUND
     case S_hostLib_HOST_NOT_FOUND:
 #endif
     case S_hostLib_UNKNOWN_HOST:
       return HOST_NOT_FOUND;
 
-#ifdef S_resolvLib_TRY_AGAIN
-    case S_resolvLib_TRY_AGAIN:
-      return TRY_AGAIN;
-#endif
 #ifdef S_hostLib_TRY_AGAIN
     case S_hostLib_TRY_AGAIN:
       return TRY_AGAIN;
 #endif
 
-#ifdef S_resolvLib_NO_RECOVERY
-    case S_resolvLib_NO_RECOVERY:
-#endif
-#ifdef S_resolvLib_BUFFER_2_SMALL
-    case S_resolvLib_BUFFER_2_SMALL:
-#endif
-#ifdef S_resolvLib_INVALID_PARAMETER
-    case S_resolvLib_INVALID_PARAMETER:
-#endif
-#ifdef S_resolvLib_INVALID_ADDRESS
-    case S_resolvLib_INVALID_ADDRESS:
-#endif
 #ifdef S_hostLib_NO_RECOVERY
     case S_hostLib_NO_RECOVERY:
 #endif
@@ -389,11 +370,6 @@ __gnat_get_h_errno (void) {
 #endif
     case S_hostLib_INVALID_PARAMETER:
       return NO_RECOVERY;
-
-#ifdef S_resolvLib_NO_DATA
-    case S_resolvLib_NO_DATA:
-      return NO_DATA;
-#endif
 
     default:
       return -1;
