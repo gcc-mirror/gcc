@@ -1,5 +1,12 @@
 2009-04-20  Thomas Quinot  <quinot@adacore.com>
 
+	* s-taprop-irix.adb, s-taprop-tru64.adb, s-taprop-vms.adb,
+	output.adb, output.ads, s-taprop-hpux-dce.adb,
+	s-taprop-linux.adb, s-taprop-solaris.adb, s-taprop-posix.adb: Minor
+	reformatting.
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
 	* g-socket.adb, g-socket.ads, g-socthi-mingw.ads, g-socthi-vms.adb,
 	g-socthi-vms.ads, g-socthi-vxworks.ads, g-socthi.ads
 	(GNAT.Sockets.Thin.C_Inet_Addr): Remove.

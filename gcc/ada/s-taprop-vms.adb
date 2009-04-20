@@ -1106,8 +1106,8 @@ package body System.Task_Primitives.Operations is
             S.Waiting := True;
 
             loop
-               --  loop in case pthread_cond_wait returns earlier than
-               --  expected (e.g. in case of EINTR caused by a signal).
+               --  Loop in case pthread_cond_wait returns earlier than expected
+               --  (e.g. in case of EINTR caused by a signal).
 
                Result := pthread_cond_wait (S.CV'Access, S.L'Access);
                pragma Assert (Result = 0 or else Result = EINTR);

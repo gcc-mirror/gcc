@@ -84,7 +84,7 @@ package Output is
    procedure Indent;
    --  Increases the current indentation level. Whenever a line is written
    --  (triggered by Eol), an appropriate amount of whitespace is added to the
-   --  beginning of the line, wrapping around if it gets to long.
+   --  beginning of the line, wrapping around if it gets too long.
 
    procedure Outdent;
    --  Decreases the current indentation level.
@@ -200,8 +200,8 @@ private
    --  Column about to be written
 
    type Saved_Output_Buffer is record
-      Buffer   : String (1 .. Buffer_Max + 1);
-      Next_Col : Positive;
+      Buffer          : String (1 .. Buffer_Max + 1);
+      Next_Col        : Positive;
       Cur_Indentation : Natural;
    end record;
 
