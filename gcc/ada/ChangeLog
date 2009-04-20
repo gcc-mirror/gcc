@@ -1,5 +1,21 @@
 2009-04-20  Arnaud Charlet  <charlet@adacore.com>
 
+	* opt.ads (Inspector_Mode): Update documentation of this flag.
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.ads: Minor reformatting
+
+	* socket.c, gsocket.h (__gnat_get_h_errno, VxWorks case): No need to
+	consider S_resolvLib error codes since we only use the hostLib wrappers.
+
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): Insert the declaration
+	of the Underlying_Record_View after that of the derived type.
+
+2009-04-20  Arnaud Charlet  <charlet@adacore.com>
+
 	* switch-c.adb (Scan_Front_End_Switches): Disable front-end inlining
 	in inspector mode.
 

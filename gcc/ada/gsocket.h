@@ -65,9 +65,6 @@
 #include <vxWorks.h>
 #include <ioLib.h>
 #include <hostLib.h>
-#if (_WRS_VXWORKS_MAJOR != 6) && ! defined (__RTP__)
-#include <resolvLib.h>
-#endif
 #define SHUT_RD		0
 #define SHUT_WR		1
 #define SHUT_RDWR	2
