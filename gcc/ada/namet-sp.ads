@@ -40,6 +40,7 @@ package Namet.Sp is
    function Is_Bad_Spelling_Of (Found, Expect : Name_Id) return Boolean;
    --  Compares two identifier names from the names table, and returns True if
    --  Found is a plausible misspelling of Expect. This function properly deals
-   --  with wide and wide wide character encodings in the input names.
+   --  with wide and wide wide character encodings in the input names. Note
+   --  that an exact match in the names results in False being returned.
 
 end Namet.Sp;

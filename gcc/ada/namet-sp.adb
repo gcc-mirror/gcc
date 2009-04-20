@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2009, Free Software Foundation, Inc.            --
+--            Copyright (C) 2008-2009, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -186,9 +186,18 @@ package body Namet.Sp is
    begin
       Get_Name_String_UTF_32 (Found, FB, FBL);
       Get_Name_String_UTF_32 (Expect, EB, EBL);
-      return
-        GNAT.UTF_32_Spelling_Checker.Is_Bad_Spelling_Of
-          (FB (1 .. FBL), EB (1 .. EBL));
+
+      --  For an exact match, return False, otherwise check bad spelling. We
+      --  need this special test because the library routine returns True for
+      --  an exact match.
+
+      if FB (1 .. FBL) = EB (1 .. EBL) then
+         return False;
+      else
+         return
+           GNAT.UTF_32_Spelling_Checker.Is_Bad_Spelling_Of
+             (FB (1 .. FBL), EB (1 .. EBL));
+      end if;
    end Is_Bad_Spelling_Of;
 
 end Namet.Sp;
