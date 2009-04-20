@@ -2323,7 +2323,7 @@ enable_warning_as_error (const char *arg, int value, unsigned int lang_mask)
     }
   else
     {
-      int kind = value ? DK_ERROR : DK_WARNING;
+      diagnostic_t kind = value ? DK_ERROR : DK_WARNING;
       diagnostic_classify_diagnostic (global_dc, option_index, kind);
       
       /* -Werror=foo implies -Wfoo.  */

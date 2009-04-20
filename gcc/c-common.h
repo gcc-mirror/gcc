@@ -415,7 +415,7 @@ extern tree add_stmt (tree);
 extern void push_cleanup (tree, tree, bool);
 extern tree pushdecl_top_level (tree);
 extern tree pushdecl (tree);
-extern tree build_modify_expr (location_t, tree, enum tree_code, tree);
+extern tree build_modify_expr (location_t, tree, enum tree_code, tree, tree);
 extern tree build_indirect_ref (location_t, tree, const char *);
 
 extern int c_expand_decl (tree);
@@ -922,7 +922,9 @@ extern void c_do_switch_warnings (splay_tree, location_t, tree, tree);
 
 extern tree build_function_call (tree, tree);
 
-extern tree resolve_overloaded_builtin (tree, tree);
+extern tree build_function_call_vec (tree, VEC(tree,gc) *, VEC(tree,gc) *);
+
+extern tree resolve_overloaded_builtin (tree, VEC(tree,gc) *);
 
 extern tree finish_label_address_expr (tree, location_t);
 

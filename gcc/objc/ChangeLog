@@ -1,3 +1,8 @@
+2009-04-20  Ian Lance Taylor  <iant@google.com>
+
+	* objc-act.c (objc_rewrite_function_call): Change parameter from
+	params to first_param.  Change all callers.
+
 2009-03-30  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR bootstrap/39583

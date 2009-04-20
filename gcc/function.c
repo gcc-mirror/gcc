@@ -3249,7 +3249,7 @@ assign_parms (tree fndecl)
     = (all.stack_args_size.var == 0 ? GEN_INT (-all.stack_args_size.constant)
        : expand_expr (size_diffop (all.stack_args_size.var,
 				   size_int (-all.stack_args_size.constant)),
-		      NULL_RTX, VOIDmode, 0));
+		      NULL_RTX, VOIDmode, EXPAND_NORMAL));
 #else
   crtl->args.arg_offset_rtx = ARGS_SIZE_RTX (all.stack_args_size);
 #endif

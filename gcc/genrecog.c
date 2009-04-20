@@ -1,6 +1,6 @@
 /* Generate code from machine description to recognize rtl as insns.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -378,7 +378,7 @@ process_define_predicate (rtx desc)
 
   for (i = 0; i < NUM_RTX_CODE; i++)
     if (codes[i] != N)
-      add_predicate_code (pred, i);
+      add_predicate_code (pred, (enum rtx_code) i);
 
   add_predicate (pred);
 }

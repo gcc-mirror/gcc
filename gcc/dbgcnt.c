@@ -1,5 +1,5 @@
 /* Debug counter for debugging support
-   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -88,7 +88,7 @@ dbg_cnt_set_limit_by_name (const char *name, int len, int value)
   if (i < 0)
     return false;
 
-  dbg_cnt_set_limit_by_index (i, value);
+  dbg_cnt_set_limit_by_index ((enum debug_counter) i, value);
   return true;
 }
 

@@ -4784,7 +4784,7 @@ thumb_legitimize_reload_address (rtx *x_p,
 
       x = copy_rtx (x);
       push_reload (orig_x, NULL_RTX, x_p, NULL, MODE_BASE_REG_CLASS (mode),
-		   Pmode, VOIDmode, 0, 0, opnum, type);
+		   Pmode, VOIDmode, 0, 0, opnum, (enum reload_type) type);
       return x;
     }
 
@@ -4801,7 +4801,7 @@ thumb_legitimize_reload_address (rtx *x_p,
 
       x = copy_rtx (x);
       push_reload (orig_x, NULL_RTX, x_p, NULL, MODE_BASE_REG_CLASS (mode),
-		   Pmode, VOIDmode, 0, 0, opnum, type);
+		   Pmode, VOIDmode, 0, 0, opnum, (enum reload_type) type);
       return x;
     }
 
@@ -5465,7 +5465,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
       return true;
 
     case ABS:
-      if (GET_MODE_CLASS (mode == MODE_FLOAT))
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT)
 	{
 	  if (TARGET_HARD_FLOAT && (mode == SFmode || mode == DFmode))
 	    {
@@ -5821,10 +5821,12 @@ arm_rtx_costs (rtx x, int code, int outer_code, int *total,
 	       bool speed)
 {
   if (!speed)
-    return arm_size_rtx_costs (x, code, outer_code, total);
+    return arm_size_rtx_costs (x, (enum rtx_code) code,
+			       (enum rtx_code) outer_code, total);
   else
-    return all_cores[(int)arm_tune].rtx_costs (x, code, outer_code, total,
-					       speed);
+    return all_cores[(int)arm_tune].rtx_costs (x, (enum rtx_code) code,
+					       (enum rtx_code) outer_code,
+					       total, speed);
 }
 
 /* RTX costs for cores with a slow MUL implementation.  Thumb-2 is not
@@ -7408,7 +7410,7 @@ adjacent_mem_locations (rtx a, rtx b)
       /* Don't accept any offset that will require multiple
 	 instructions to handle, since this would cause the
 	 arith_adjacentmem pattern to output an overlong sequence.  */
-      if (!const_ok_for_op (PLUS, val0) || !const_ok_for_op (PLUS, val1))
+      if (!const_ok_for_op (val0, PLUS) || !const_ok_for_op (val1, PLUS))
 	return 0;
 
       /* Don't allow an eliminable register: register elimination can make
@@ -10214,8 +10216,7 @@ vfp_emit_fstmd (int base_reg, int count)
     }
 
   par = emit_insn (par);
-  REG_NOTES (par) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
-				       REG_NOTES (par));
+  add_reg_note (par, REG_FRAME_RELATED_EXPR, dwarf);
   RTX_FRAME_RELATED_P (par) = 1;
 
   return count * 8;
@@ -12498,8 +12499,8 @@ emit_multi_reg_push (unsigned long mask)
   RTX_FRAME_RELATED_P (tmp) = 1;
   XVECEXP (dwarf, 0, 0) = tmp;
 
-  REG_NOTES (par) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
-				       REG_NOTES (par));
+  add_reg_note (par, REG_FRAME_RELATED_EXPR, dwarf);
+
   return par;
 }
 
@@ -12565,8 +12566,8 @@ emit_sfm (int base_reg, int count)
   XVECEXP (dwarf, 0, 0) = tmp;
 
   par = emit_insn (par);
-  REG_NOTES (par) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
-				       REG_NOTES (par));
+  add_reg_note (par, REG_FRAME_RELATED_EXPR, dwarf);
+
   return par;
 }
 
@@ -12985,8 +12986,7 @@ thumb_set_frame_pointer (arm_stack_offsets *offsets)
       dwarf = gen_rtx_SET (VOIDmode, hard_frame_pointer_rtx,
 			   plus_constant (stack_pointer_rtx, amount));
       RTX_FRAME_RELATED_P (dwarf) = 1;
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
-					    REG_NOTES (insn));
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
     }
 
   RTX_FRAME_RELATED_P (insn) = 1;
@@ -13049,8 +13049,7 @@ arm_expand_prologue (void)
       dwarf = gen_rtx_SET (VOIDmode, r0, dwarf);
       insn = gen_movsi (r0, stack_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-					    dwarf, REG_NOTES (insn));
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
       emit_insn (insn);
       emit_insn (gen_andsi3 (r1, r0, GEN_INT (~(HOST_WIDE_INT)7)));
       emit_insn (gen_movsi (stack_pointer_rtx, r1));
@@ -13117,8 +13116,7 @@ arm_expand_prologue (void)
 				   plus_constant (stack_pointer_rtx,
 						  -fp_offset));
 	      RTX_FRAME_RELATED_P (insn) = 1;
-	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-						    dwarf, REG_NOTES (insn));
+	      add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 	    }
 	  else
 	    {
@@ -14670,7 +14668,8 @@ arm_hard_regno_mode_ok (unsigned int regno, enum machine_mode mode)
 
 /* For efficiency and historical reasons LO_REGS, HI_REGS and CC_REGS are
    not used in arm mode.  */
-int
+
+enum reg_class
 arm_regno_class (int regno)
 {
   if (TARGET_THUMB1)
@@ -17631,9 +17630,7 @@ thumb1_expand_prologue (void)
 			       plus_constant (stack_pointer_rtx,
 					      -amount));
 	  RTX_FRAME_RELATED_P (dwarf) = 1;
-	  REG_NOTES (insn)
-	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, dwarf,
-				 REG_NOTES (insn));
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 	}
     }
 

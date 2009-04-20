@@ -1,5 +1,5 @@
 /* Support routines for the various generation passes.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -1404,7 +1404,7 @@ init_predicate_table (void)
       if (std_preds[i].allows_const_p)
 	for (j = 0; j < NUM_RTX_CODE; j++)
 	  if (GET_RTX_CLASS (j) == RTX_CONST_OBJ)
-	    add_predicate_code (pred, j);
+	    add_predicate_code (pred, (enum rtx_code) j);
       
       add_predicate (pred);
     }

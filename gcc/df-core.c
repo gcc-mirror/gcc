@@ -475,7 +475,7 @@ df_add_problem (struct df_problem *problem)
    returned.  If a flag is not allowed to be changed this will fail if
    checking is enabled.  */
 enum df_changeable_flags
-df_set_flags (enum df_changeable_flags changeable_flags)
+df_set_flags (int changeable_flags)
 {
   enum df_changeable_flags old_flags = df->changeable_flags;
   df->changeable_flags |= changeable_flags;
@@ -487,7 +487,7 @@ df_set_flags (enum df_changeable_flags changeable_flags)
    returned.  If a flag is not allowed to be changed this will fail if
    checking is enabled.  */
 enum df_changeable_flags
-df_clear_flags (enum df_changeable_flags changeable_flags)
+df_clear_flags (int changeable_flags)
 {
   enum df_changeable_flags old_flags = df->changeable_flags;
   df->changeable_flags &= ~changeable_flags;

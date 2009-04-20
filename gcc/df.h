@@ -879,8 +879,8 @@ extern struct df *df;
 /* Functions defined in df-core.c.  */
 
 extern void df_add_problem (struct df_problem *);
-extern enum df_changeable_flags df_set_flags (enum df_changeable_flags);
-extern enum df_changeable_flags df_clear_flags (enum df_changeable_flags);
+extern enum df_changeable_flags df_set_flags (int);
+extern enum df_changeable_flags df_clear_flags (int);
 extern void df_set_blocks (bitmap);
 extern void df_remove_problem (struct dataflow *);
 extern void df_finish_pass (bool);
@@ -945,7 +945,7 @@ extern void df_lr_verify_transfer_functions (void);
 extern void df_live_verify_transfer_functions (void);
 extern void df_live_add_problem (void);
 extern void df_live_set_all_dirty (void);
-extern void df_chain_add_problem (enum df_chain_flags);
+extern void df_chain_add_problem (unsigned int);
 extern void df_byte_lr_add_problem (void);
 extern int df_byte_lr_get_regno_start (unsigned int);
 extern int df_byte_lr_get_regno_len (unsigned int);
@@ -972,7 +972,7 @@ extern void df_grow_reg_info (void);
 extern void df_grow_insn_info (void);
 extern void df_scan_blocks (void);
 extern df_ref df_ref_create (rtx, rtx *, rtx,basic_block, 
-				     enum df_ref_type, enum df_ref_flags,
+				     enum df_ref_type, int ref_flags,
 				     int, int, enum machine_mode);
 extern void df_ref_remove (df_ref);
 extern struct df_insn_info * df_insn_create_insn_record (rtx);

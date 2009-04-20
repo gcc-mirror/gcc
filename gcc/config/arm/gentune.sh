@@ -9,4 +9,4 @@ allcores=`awk -F'[(, 	]+' '/^ARM_CORE/ { cores = cores$3"," } END { print cores 
 
 echo "(define_attr \"tune\""
 echo "	\"$allcores\"" | sed -e 's/,"$/"/'
-echo "	(const (symbol_ref \"arm_tune\")))"
+echo "	(const (symbol_ref \"((enum attr_tune) arm_tune)\")))"

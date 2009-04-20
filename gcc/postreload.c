@@ -1,6 +1,6 @@
 /* Perform simple optimizations to clean up the result of reload.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -519,7 +519,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	{
-	  int rclass = (int) NO_REGS;
+	  enum reg_class rclass = NO_REGS;
 
 	  if (! TEST_HARD_REG_BIT (equiv_regs[i], regno))
 	    continue;
@@ -580,7 +580,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 		      op_alt_regno[i][j] = regno;
 		    }
 		  j++;
-		  rclass = (int) NO_REGS;
+		  rclass = NO_REGS;
 		  break;
 		}
 	      p += CONSTRAINT_LEN (c, p);
@@ -1610,4 +1610,3 @@ struct rtl_opt_pass pass_postreload_cse =
   TODO_dump_func                        /* todo_flags_finish */
  }
 };
-

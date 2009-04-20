@@ -4561,7 +4561,8 @@ expand_omp_for (struct omp_region *region)
 	  next_ix += BUILT_IN_GOMP_LOOP_ULL_STATIC_NEXT
 		     - BUILT_IN_GOMP_LOOP_STATIC_NEXT;
 	}
-      expand_omp_for_generic (region, &fd, start_ix, next_ix);
+      expand_omp_for_generic (region, &fd, (enum built_in_function) start_ix,
+			      (enum built_in_function) next_ix);
     }
 
   update_ssa (TODO_update_ssa_only_virtuals);

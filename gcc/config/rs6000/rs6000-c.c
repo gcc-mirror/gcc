@@ -1,5 +1,5 @@
 /* Subroutines for the C front end on the POWER and PowerPC architectures.
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
    Contributed by Zack Weinberg <zack@codesourcery.com>
@@ -2993,13 +2993,15 @@ altivec_build_resolved_builtin (tree *args, int n,
    support Altivec's overloaded builtins.  */
 
 tree
-altivec_resolve_overloaded_builtin (tree fndecl, tree arglist)
+altivec_resolve_overloaded_builtin (tree fndecl, void *passed_arglist)
 {
+  VEC(tree,gc) *arglist = (VEC(tree,gc) *) passed_arglist;
+  unsigned int nargs = VEC_length (tree, arglist);
   unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
   tree fnargs = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
   tree types[3], args[3];
   const struct altivec_builtin_types *desc;
-  int n;
+  unsigned int n;
 
   if (fcode < ALTIVEC_BUILTIN_OVERLOADED_FIRST
       || fcode > ALTIVEC_BUILTIN_OVERLOADED_LAST)
@@ -3016,33 +3018,27 @@ altivec_resolve_overloaded_builtin (tree fndecl, tree arglist)
       VEC(constructor_elt,gc) *vec;
       const char *name = fcode == ALTIVEC_BUILTIN_VEC_SPLATS ? "vec_splats": "vec_promote";
 
-      if (!arglist)
+      if (nargs == 0)
 	{
 	  error ("%s only accepts %d arguments", name, (fcode == ALTIVEC_BUILTIN_VEC_PROMOTE)+1 );
 	  return error_mark_node;
 	}
-      if (fcode == ALTIVEC_BUILTIN_VEC_SPLATS && TREE_CHAIN (arglist))
+      if (fcode == ALTIVEC_BUILTIN_VEC_SPLATS && nargs != 1)
 	{
 	  error ("%s only accepts 1 argument", name);
 	  return error_mark_node;
 	}
-      if (fcode == ALTIVEC_BUILTIN_VEC_PROMOTE && !TREE_CHAIN (arglist))
+      if (fcode == ALTIVEC_BUILTIN_VEC_PROMOTE && nargs != 2)
 	{
 	  error ("%s only accepts 2 arguments", name);
 	  return error_mark_node;
 	}
       /* Ignore promote's element argument.  */
       if (fcode == ALTIVEC_BUILTIN_VEC_PROMOTE
-	  && TREE_CHAIN (TREE_CHAIN (arglist)))
-	{
-	  error ("%s only accepts 2 arguments", name);
-	  return error_mark_node;
-	}
-      if (fcode == ALTIVEC_BUILTIN_VEC_PROMOTE
-	  && !INTEGRAL_TYPE_P (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))))
+	  && !INTEGRAL_TYPE_P (TREE_TYPE (VEC_index (tree, arglist, 1))))
 	goto bad;
 
-      arg = TREE_VALUE (arglist);
+      arg = VEC_index (tree, arglist, 0);
       type = TREE_TYPE (arg);
       if (!SCALAR_FLOAT_TYPE_P (type)
 	  && !INTEGRAL_TYPE_P (type))
@@ -3093,15 +3089,14 @@ altivec_resolve_overloaded_builtin (tree fndecl, tree arglist)
       tree innerptrtype;
 
       /* No second argument. */
-      if (!arglist || !TREE_CHAIN (arglist)
-	  || TREE_CHAIN (TREE_CHAIN (arglist)))
+      if (nargs != 2)
 	{
 	  error ("vec_extract only accepts 2 arguments");
 	  return error_mark_node;
 	}
 
-      arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg1 = TREE_VALUE (arglist);
+      arg2 = VEC_index (tree, arglist, 1);
+      arg1 = VEC_index (tree, arglist, 0);
       arg1_type = TREE_TYPE (arg1);
 
       if (TREE_CODE (arg1_type) != VECTOR_TYPE)
@@ -3149,18 +3144,16 @@ altivec_resolve_overloaded_builtin (tree fndecl, tree arglist)
       tree innerptrtype;
       
       /* No second or third arguments. */
-      if (!arglist || !TREE_CHAIN (arglist)
-	  || !TREE_CHAIN (TREE_CHAIN (arglist))
-	  || TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))))
+      if (nargs != 3)
 	{
 	  error ("vec_insert only accepts 3 arguments");
 	  return error_mark_node;
 	}
 
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      arg0 = VEC_index (tree, arglist, 0);
+      arg1 = VEC_index (tree, arglist, 1);
       arg1_type = TREE_TYPE (arg1);
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      arg2 = VEC_index (tree, arglist, 2);
 
       if (TREE_CODE (arg1_type) != VECTOR_TYPE)
 	goto bad; 
@@ -3198,11 +3191,11 @@ altivec_resolve_overloaded_builtin (tree fndecl, tree arglist)
     }
 
   for (n = 0;
-       !VOID_TYPE_P (TREE_VALUE (fnargs)) && arglist;
-       fnargs = TREE_CHAIN (fnargs), arglist = TREE_CHAIN (arglist), n++)
+       !VOID_TYPE_P (TREE_VALUE (fnargs)) && n < nargs;
+       fnargs = TREE_CHAIN (fnargs), n++)
     {
       tree decl_type = TREE_VALUE (fnargs);
-      tree arg = TREE_VALUE (arglist);
+      tree arg = VEC_index (tree, arglist, n);
       tree type;
 
       if (arg == error_mark_node)
@@ -3248,7 +3241,7 @@ altivec_resolve_overloaded_builtin (tree fndecl, tree arglist)
 
   /* If the number of arguments did not match the prototype, return NULL
      and the generic code will issue the appropriate error message.  */
-  if (!VOID_TYPE_P (TREE_VALUE (fnargs)) || arglist)
+  if (!VOID_TYPE_P (TREE_VALUE (fnargs)) || nargs > 0)
     return NULL;
 
   if (n == 0)
@@ -3281,4 +3274,3 @@ altivec_resolve_overloaded_builtin (tree fndecl, tree arglist)
   error ("invalid parameter combination for AltiVec intrinsic");
   return error_mark_node;
 }
-

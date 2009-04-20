@@ -4233,7 +4233,8 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 		    - int_size_in_bytes (TREE_TYPE (pval))
 		    + partial);
 	  size_rtx = expand_expr (size_in_bytes (TREE_TYPE (pval)),
-				  NULL_RTX, TYPE_MODE (sizetype), 0);
+				  NULL_RTX, TYPE_MODE (sizetype),
+				  EXPAND_NORMAL);
 	}
 
       parm_align = arg->locate.boundary;

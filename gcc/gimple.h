@@ -69,7 +69,7 @@ extern void gimple_check_failed (const_gimple, const char *, int,          \
     const_gimple __gs = (GS);						\
     if (gimple_code (__gs) != (CODE))					\
       gimple_check_failed (__gs, __FILE__, __LINE__, __FUNCTION__,	\
-	  		   (CODE), 0);					\
+	  		   (CODE), ERROR_MARK);				\
   } while (0)
 #else  /* not ENABLE_GIMPLE_CHECKING  */
 #define GIMPLE_CHECK(GS, CODE)			(void)0
@@ -930,7 +930,7 @@ typedef bool (*gimple_predicate)(tree);
 
 
 /* FIXME we should deduce this from the predicate.  */
-typedef enum fallback_t {
+enum fallback {
   fb_none = 0,		/* Do not generate a temporary.  */
 
   fb_rvalue = 1,	/* Generate an rvalue to hold the result of a
@@ -942,7 +942,9 @@ typedef enum fallback_t {
   fb_mayfail = 4,	/* Gimplification may fail.  Error issued
 			   afterwards.  */
   fb_either= fb_rvalue | fb_lvalue
-} fallback_t;
+};
+
+typedef int fallback_t;
 
 enum gimplify_status {
   GS_ERROR	= -2,	/* Something Bad Seen.  */

@@ -58,13 +58,12 @@ struct match {
 };
 
 static int find_matches (rtx, struct match *);
-static int regclass_compatible_p (int, int);
 static int fixup_match_2 (rtx, rtx, rtx, rtx);
 
 /* Return nonzero if registers with CLASS1 and CLASS2 can be merged without
    causing too much register allocation problems.  */
 static int
-regclass_compatible_p (int class0, int class1)
+regclass_compatible_p (enum reg_class class0, enum reg_class class1)
 {
   return (class0 == class1
 	  || (reg_class_subset_p (class0, class1)
@@ -1353,4 +1352,3 @@ struct rtl_opt_pass pass_regmove =
   TODO_ggc_collect                      /* todo_flags_finish */
  }
 };
-

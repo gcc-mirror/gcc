@@ -1,5 +1,5 @@
 /* Branch prediction routines for the GNU compiler.
-   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -654,7 +654,7 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
   rtx *pnote;
   rtx note;
   int best_probability = PROB_EVEN;
-  int best_predictor = END_PREDICTORS;
+  enum br_predictor best_predictor = END_PREDICTORS;
   int combined_probability = REG_BR_PROB_BASE / 2;
   int d;
   bool first_match = false;
@@ -677,7 +677,7 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
     if (REG_NOTE_KIND (note) == REG_BR_PRED)
       {
-	int predictor = INTVAL (XEXP (XEXP (note, 0), 0));
+	enum br_predictor predictor = INTVAL (XEXP (XEXP (note, 0), 0));
 	int probability = INTVAL (XEXP (XEXP (note, 0), 1));
 
 	found = true;
@@ -723,7 +723,7 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
     {
       if (REG_NOTE_KIND (*pnote) == REG_BR_PRED)
 	{
-	  int predictor = INTVAL (XEXP (XEXP (*pnote, 0), 0));
+	  enum br_predictor predictor = INTVAL (XEXP (XEXP (*pnote, 0), 0));
 	  int probability = INTVAL (XEXP (XEXP (*pnote, 0), 1));
 
 	  dump_prediction (dump_file, predictor, probability, bb,
@@ -765,7 +765,7 @@ static void
 combine_predictions_for_bb (basic_block bb)
 {
   int best_probability = PROB_EVEN;
-  int best_predictor = END_PREDICTORS;
+  enum br_predictor best_predictor = END_PREDICTORS;
   int combined_probability = REG_BR_PROB_BASE / 2;
   int d;
   bool first_match = false;
@@ -813,7 +813,7 @@ combine_predictions_for_bb (basic_block bb)
 	 by predictor with smallest index.  */
       for (pred = (struct edge_prediction *) *preds; pred; pred = pred->ep_next)
 	{
-	  int predictor = pred->ep_predictor;
+	  enum br_predictor predictor = pred->ep_predictor;
 	  int probability = pred->ep_probability;
 
 	  if (pred->ep_edge != first)
@@ -888,7 +888,7 @@ combine_predictions_for_bb (basic_block bb)
     {
       for (pred = (struct edge_prediction *) *preds; pred; pred = pred->ep_next)
 	{
-	  int predictor = pred->ep_predictor;
+	  enum br_predictor predictor = pred->ep_predictor;
 	  int probability = pred->ep_probability;
 
 	  if (pred->ep_edge != EDGE_SUCC (bb, 0))
@@ -2185,7 +2185,7 @@ build_predict_expr (enum br_predictor predictor, enum prediction taken)
 {
   tree t = build1 (PREDICT_EXPR, void_type_node,
 		   build_int_cst (NULL, predictor));
-  PREDICT_EXPR_OUTCOME (t) = taken;
+  SET_PREDICT_EXPR_OUTCOME (t, taken);
   return t;
 }
 

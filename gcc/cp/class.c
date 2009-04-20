@@ -774,7 +774,7 @@ get_vtable_decl (tree type, int complete)
   if (complete)
     {
       DECL_EXTERNAL (decl) = 1;
-      finish_decl (decl, NULL_TREE, NULL_TREE);
+      finish_decl (decl, NULL_TREE, NULL_TREE, NULL_TREE);
     }
 
   return decl;

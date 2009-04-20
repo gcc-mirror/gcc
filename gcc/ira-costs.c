@@ -1,5 +1,5 @@
 /* IRA hard register and memory cost calculation for allocnos.
-   Copyright (C) 2006, 2007, 2008
+   Copyright (C) 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
@@ -205,7 +205,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
     {
       enum reg_class classes[MAX_RECOG_OPERANDS];
       int allows_mem[MAX_RECOG_OPERANDS];
-      int rclass;
+      enum reg_class rclass;
       int alt_fail = 0;
       int alt_cost = 0, op_cost_add;
 
@@ -672,7 +672,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	{
 	  unsigned int regno = REGNO (ops[!i]);
 	  enum machine_mode mode = GET_MODE (ops[!i]);
-	  int rclass;
+	  enum reg_class rclass;
 	  unsigned int nr;
 
 	  if (regno < FIRST_PSEUDO_REGISTER)
@@ -886,7 +886,8 @@ record_address_regs (enum machine_mode mode, rtx x, int context,
     case REG:
       {
 	struct costs *pp;
-	int i, k;
+	enum reg_class i;
+	int k;
 
 	if (REGNO (x) < FIRST_PSEUDO_REGISTER)
 	  break;

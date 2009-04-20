@@ -1,6 +1,6 @@
 /* Gimple IR support functions.
 
-   Copyright 2007, 2008 Free Software Foundation, Inc.
+   Copyright 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -271,7 +271,7 @@ gimple_build_with_ops_stat (enum gimple_code code, enum tree_code subcode,
 gimple
 gimple_build_return (tree retval)
 {
-  gimple s = gimple_build_with_ops (GIMPLE_RETURN, 0, 1);
+  gimple s = gimple_build_with_ops (GIMPLE_RETURN, ERROR_MARK, 1);
   if (retval)
     gimple_return_set_retval (s, retval);
   return s;
@@ -284,7 +284,7 @@ gimple_build_return (tree retval)
 static inline gimple
 gimple_build_call_1 (tree fn, unsigned nargs)
 {
-  gimple s = gimple_build_with_ops (GIMPLE_CALL, 0, nargs + 3);
+  gimple s = gimple_build_with_ops (GIMPLE_CALL, ERROR_MARK, nargs + 3);
   if (TREE_CODE (fn) == FUNCTION_DECL)
     fn = build_fold_addr_expr (fn);
   gimple_set_op (s, 1, fn);
@@ -544,7 +544,7 @@ gimple_cond_set_condition_from_tree (gimple stmt, tree cond)
 gimple
 gimple_build_label (tree label)
 {
-  gimple p = gimple_build_with_ops (GIMPLE_LABEL, 0, 1);
+  gimple p = gimple_build_with_ops (GIMPLE_LABEL, ERROR_MARK, 1);
   gimple_label_set_label (p, label);
   return p;
 }
@@ -554,7 +554,7 @@ gimple_build_label (tree label)
 gimple
 gimple_build_goto (tree dest)
 {
-  gimple p = gimple_build_with_ops (GIMPLE_GOTO, 0, 1);
+  gimple p = gimple_build_with_ops (GIMPLE_GOTO, ERROR_MARK, 1);
   gimple_goto_set_dest (p, dest);
   return p;
 }
@@ -600,7 +600,8 @@ gimple_build_asm_1 (const char *string, unsigned ninputs, unsigned noutputs,
   gimple p;
   int size = strlen (string);
 
-  p = gimple_build_with_ops (GIMPLE_ASM, 0, ninputs + noutputs + nclobbers);
+  p = gimple_build_with_ops (GIMPLE_ASM, ERROR_MARK,
+			     ninputs + noutputs + nclobbers);
 
   p->gimple_asm.ni = ninputs;
   p->gimple_asm.no = noutputs;
@@ -776,7 +777,8 @@ static inline gimple
 gimple_build_switch_1 (unsigned nlabels, tree index, tree default_label)
 {
   /* nlabels + 1 default label + 1 index.  */
-  gimple p = gimple_build_with_ops (GIMPLE_SWITCH, 0, nlabels + 1 + 1);
+  gimple p = gimple_build_with_ops (GIMPLE_SWITCH, ERROR_MARK,
+				    nlabels + 1 + 1);
   gimple_switch_set_index (p, index);
   gimple_switch_set_default_label (p, default_label);
   return p;
@@ -1046,7 +1048,7 @@ gimple_build_omp_single (gimple_seq body, tree clauses)
 gimple
 gimple_build_cdt (tree type, tree ptr)
 {
-  gimple p = gimple_build_with_ops (GIMPLE_CHANGE_DYNAMIC_TYPE, 0, 2);
+  gimple p = gimple_build_with_ops (GIMPLE_CHANGE_DYNAMIC_TYPE, ERROR_MARK, 2);
   gimple_cdt_set_new_type (p, type);
   gimple_cdt_set_location (p, ptr);
 

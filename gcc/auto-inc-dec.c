@@ -520,10 +520,10 @@ attempt_change (rtx new_addr, rtx inc_reg)
   PUT_MODE (mem_tmp, mode);
   XEXP (mem_tmp, 0) = new_addr;
 
-  old_cost = rtx_cost (mem, 0, speed) 
-    + rtx_cost (PATTERN (inc_insn.insn), 0, speed);
-  new_cost = rtx_cost (mem_tmp, 0, speed);
-  
+  old_cost = (rtx_cost (mem, SET, speed)
+	      + rtx_cost (PATTERN (inc_insn.insn), SET, speed));
+  new_cost = rtx_cost (mem_tmp, SET, speed);
+
   /* The first item of business is to see if this is profitable.  */
   if (old_cost < new_cost)
     {
@@ -1559,4 +1559,3 @@ struct rtl_opt_pass pass_inc_dec =
   TODO_df_finish,                       /* todo_flags_finish */
  }
 };
-

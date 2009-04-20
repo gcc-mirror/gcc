@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -90,7 +90,7 @@ extern void spu_expand_vector_init (rtx target, rtx vals);
 extern void spu_init_expanders (void);
 
 /* spu-c.c */
-extern tree spu_resolve_overloaded_builtin (tree fndecl, tree fnargs);
+extern tree spu_resolve_overloaded_builtin (tree fndecl, void *fnargs);
 extern rtx spu_expand_builtin (tree exp, rtx target, rtx subtarget,
 			       enum machine_mode mode, int ignore);
 extern rtx spu_expand_builtin (tree, rtx, rtx, enum machine_mode, int);

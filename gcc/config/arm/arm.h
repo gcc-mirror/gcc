@@ -1915,7 +1915,7 @@ typedef struct
 					      TARGET_32BIT ? 12 : 16)),	\
 		  FNADDR);						\
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),	\
-		     0, VOIDmode, 2, TRAMP, Pmode,			\
+		     LCT_NORMAL, VOIDmode, 2, TRAMP, Pmode,		\
 		     plus_constant (TRAMP, TRAMPOLINE_SIZE), Pmode);	\
 }
 #endif

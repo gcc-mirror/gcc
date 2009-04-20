@@ -1,4 +1,4 @@
-/* Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+/* Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -96,11 +96,13 @@ spu_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 /* target hook for resolve_overloaded_builtin(). Returns a function call
    RTX if we can resolve the overloaded builtin */
 tree
-spu_resolve_overloaded_builtin (tree fndecl, tree fnargs)
+spu_resolve_overloaded_builtin (tree fndecl, void *passed_args)
 {
 #define SCALAR_TYPE_P(t) (INTEGRAL_TYPE_P (t) \
 			  || SCALAR_FLOAT_TYPE_P (t) \
 			  || POINTER_TYPE_P (t))
+  VEC(tree,gc) *fnargs = (VEC(tree,gc) *) passed_args;
+  unsigned int nargs = VEC_length (tree, fnargs);
   spu_function_code new_fcode, fcode =
     DECL_FUNCTION_CODE (fndecl) - END_BUILTINS;
   struct spu_builtin_description *desc;
@@ -121,23 +123,23 @@ spu_resolve_overloaded_builtin (tree fndecl, tree fnargs)
     {
       tree decl = spu_builtins[new_fcode].fndecl;
       tree params = TYPE_ARG_TYPES (TREE_TYPE (decl));
-      tree arg, param;
-      int p;
+      tree param;
+      unsigned int p;
 
-      for (param = params, arg = fnargs, p = 0;
+      for (param = params, p = 0;
 	   param != void_list_node;
-	   param = TREE_CHAIN (param), arg = TREE_CHAIN (arg), p++)
+	   param = TREE_CHAIN (param), p++)
 	{
 	  tree var, arg_type, param_type = TREE_VALUE (param);
 
-	  if (!arg)
+	  if (p < nargs)
 	    {
 	      error ("insufficient arguments to overloaded function %s",
 		     desc->name);
 	      return error_mark_node;
 	    }
 
-	  var = TREE_VALUE (arg);
+	  var = VEC_index (tree, fnargs, p);
 
 	  if (TREE_CODE (var) == NON_LVALUE_EXPR)
 	    var = TREE_OPERAND (var, 0);
@@ -165,7 +167,7 @@ spu_resolve_overloaded_builtin (tree fndecl, tree fnargs)
 	}
       if (param == void_list_node)
 	{
-	  if (arg)
+	  if (p != nargs)
 	    {
 	      error ("too many arguments to overloaded function %s",
 		     desc->name);
@@ -184,7 +186,7 @@ spu_resolve_overloaded_builtin (tree fndecl, tree fnargs)
       return error_mark_node;
     }
 
-  return build_function_call (match, fnargs);
+  return build_function_call_vec (match, fnargs, NULL);
 #undef SCALAR_TYPE_P
 }
 

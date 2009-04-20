@@ -87,9 +87,10 @@ static int comp_target_types (tree, tree);
 static int function_types_compatible_p (const_tree, const_tree);
 static int type_lists_compatible_p (const_tree, const_tree);
 static tree lookup_field (tree, tree);
-static int convert_arguments (int, tree *, tree, tree, tree, tree);
+static int convert_arguments (tree, VEC(tree,gc) *, VEC(tree,gc) *, tree,
+			      tree);
 static tree pointer_diff (tree, tree);
-static tree convert_for_assignment (tree, tree, enum impl_conv, bool,
+static tree convert_for_assignment (tree, tree, tree, enum impl_conv, bool,
 				    tree, tree, int);
 static tree valid_compound_expr_initializer (tree, tree);
 static void push_string (const char *);
@@ -97,12 +98,12 @@ static void push_member_name (tree);
 static int spelling_length (void);
 static char *print_spelling (char *);
 static void warning_init (int, const char *);
-static tree digest_init (tree, tree, bool, bool, int);
-static void output_init_element (tree, bool, tree, tree, int, bool);
+static tree digest_init (tree, tree, tree, bool, bool, int);
+static void output_init_element (tree, tree, bool, tree, tree, int, bool);
 static void output_pending_init_elements (int);
 static int set_designator (int);
 static void push_range_stack (tree);
-static void add_pending_init (tree, tree, bool);
+static void add_pending_init (tree, tree, tree, bool);
 static void set_nonincremental_init (void);
 static void set_nonincremental_init_from_string (tree);
 static tree find_init_member (tree);
@@ -2410,6 +2411,29 @@ c_expr_sizeof_type (struct c_type_name *t)
 tree
 build_function_call (tree function, tree params)
 {
+  VEC(tree,gc) *vec;
+  tree ret;
+
+  vec = VEC_alloc (tree, gc, list_length (params));
+  for (; params; params = TREE_CHAIN (params))
+    VEC_quick_push (tree, vec, TREE_VALUE (params));
+  ret = build_function_call_vec (function, vec, NULL);
+  VEC_free (tree, gc, vec);
+  return ret;
+}
+
+/* Build a function call to function FUNCTION with parameters PARAMS.
+   ORIGTYPES, if not NULL, is a vector of types; each element is
+   either NULL or the original type of the corresponding element in
+   PARAMS.  The original type may differ from TREE_TYPE of the
+   parameter for enums.  FUNCTION's data type may be a function type
+   or pointer-to-function.  This function changes the elements of
+   PARAMS.  */
+
+tree
+build_function_call_vec (tree function, VEC(tree,gc) *params,
+			 VEC(tree,gc) *origtypes)
+{
   tree fntype, fundecl = 0;
   tree name = NULL_TREE, result;
   tree tem;
@@ -2439,7 +2463,9 @@ build_function_call (tree function, tree params)
 
   /* For Objective-C, convert any calls via a cast to OBJC_TYPE_REF
      expressions, like those used for ObjC messenger dispatches.  */
-  function = objc_rewrite_function_call (function, params);
+  if (!VEC_empty (tree, params))
+    function = objc_rewrite_function_call (function,
+					   VEC_index (tree, params, 0));
 
   function = c_fully_fold (function, false, NULL);
 
@@ -2464,10 +2490,8 @@ build_function_call (tree function, tree params)
   /* Convert the parameters to the types declared in the
      function prototype, or apply default promotions.  */
 
-  nargs = list_length (params);
-  argarray = (tree *) alloca (nargs * sizeof (tree));
-  nargs = convert_arguments (nargs, argarray, TYPE_ARG_TYPES (fntype), 
-			     params, function, fundecl);
+  nargs = convert_arguments (TYPE_ARG_TYPES (fntype), params, origtypes,
+			     function, fundecl);
   if (nargs < 0)
     return error_mark_node;
 
@@ -2496,7 +2520,8 @@ build_function_call (tree function, tree params)
       /* Before the abort, allow the function arguments to exit or
 	 call longjmp.  */
       for (i = 0; i < nargs; i++)
-	trap = build2 (COMPOUND_EXPR, void_type_node, argarray[i], trap);
+	trap = build2 (COMPOUND_EXPR, void_type_node,
+		       VEC_index (tree, params, i), trap);
 
       if (VOID_TYPE_P (return_type))
 	{
@@ -2520,6 +2545,8 @@ build_function_call (tree function, tree params)
 						trap, rhs));
 	}
     }
+
+  argarray = VEC_address (tree, params);
 
   /* Check that arguments to builtin functions match the expectations.  */
   if (fundecl
@@ -2559,34 +2586,31 @@ build_function_call (tree function, tree params)
   return require_complete_type (result);
 }
 
-/* Convert the argument expressions in the list VALUES
-   to the types in the list TYPELIST.  The resulting arguments are
-   stored in the array ARGARRAY which has size NARGS.
+/* Convert the argument expressions in the vector VALUES
+   to the types in the list TYPELIST.
 
    If TYPELIST is exhausted, or when an element has NULL as its type,
    perform the default conversions.
 
-   PARMLIST is the chain of parm decls for the function being called.
-   It may be 0, if that info is not available.
-   It is used only for generating error messages.
+   ORIGTYPES is the original types of the expressions in VALUES.  This
+   holds the type of enum values which have been converted to integral
+   types.  It may be NULL.
 
    FUNCTION is a tree for the called function.  It is used only for
    error messages, where it is formatted with %qE.
 
    This is also where warnings about wrong number of args are generated.
 
-   VALUES is a chain of TREE_LIST nodes with the elements of the list
-   in the TREE_VALUE slots of those nodes.
-
    Returns the actual number of arguments processed (which may be less
-   than NARGS in some error situations), or -1 on failure.  */
+   than the length of VALUES in some error situations), or -1 on
+   failure.  */
 
 static int
-convert_arguments (int nargs, tree *argarray,
-		   tree typelist, tree values, tree function, tree fundecl)
+convert_arguments (tree typelist, VEC(tree,gc) *values,
+		   VEC(tree,gc) *origtypes, tree function, tree fundecl)
 {
-  tree typetail, valtail;
-  int parmnum;
+  tree typetail, val;
+  unsigned int parmnum;
   const bool type_generic = fundecl
     && lookup_attribute ("type generic", TYPE_ATTRIBUTES(TREE_TYPE (fundecl)));
   bool type_generic_remove_excess_precision = false;
@@ -2626,20 +2650,20 @@ convert_arguments (int nargs, tree *argarray,
     }
 
   /* Scan the given expressions and types, producing individual
-     converted arguments and storing them in ARGARRAY.  */
+     converted arguments.  */
 
-  for (valtail = values, typetail = typelist, parmnum = 0;
-       valtail;
-       valtail = TREE_CHAIN (valtail), parmnum++)
+  for (typetail = typelist, parmnum = 0;
+       VEC_iterate (tree, values, parmnum, val);
+       ++parmnum)
     {
       tree type = typetail ? TREE_VALUE (typetail) : 0;
-      tree val = TREE_VALUE (valtail);
       tree valtype = TREE_TYPE (val);
       tree rname = function;
       int argnum = parmnum + 1;
       const char *invalid_func_diag;
       bool excess_precision = false;
       bool npc;
+      tree parmval;
 
       if (type == void_type_node)
 	{
@@ -2675,7 +2699,6 @@ convert_arguments (int nargs, tree *argarray,
       if (type != 0)
 	{
 	  /* Formal parm type is specified by a function prototype.  */
-	  tree parmval;
 
 	  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
 	    {
@@ -2684,6 +2707,8 @@ convert_arguments (int nargs, tree *argarray,
 	    }
 	  else
 	    {
+	      tree origtype;
+
 	      /* Optionally warn about conversions that
 		 differ from the default conversions.  */
 	      if (warn_traditional_conversion || warn_traditional)
@@ -2812,7 +2837,11 @@ convert_arguments (int nargs, tree *argarray,
 		 sake of better warnings from convert_and_check.  */
 	      if (excess_precision)
 		val = build1 (EXCESS_PRECISION_EXPR, valtype, val);
-	      parmval = convert_for_assignment (type, val, ic_argpass, npc,
+	      origtype = (origtypes == NULL
+			  ? NULL_TREE
+			  : VEC_index (tree, origtypes, parmnum));
+	      parmval = convert_for_assignment (type, val, origtype,
+						ic_argpass, npc,
 						fundecl, function,
 						parmnum + 1);
 
@@ -2821,7 +2850,6 @@ convert_arguments (int nargs, tree *argarray,
 		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 		parmval = default_conversion (parmval);
 	    }
-	  argarray[parmnum] = parmval;
 	}
       else if (TREE_CODE (valtype) == REAL_TYPE
 	       && (TYPE_PRECISION (valtype)
@@ -2829,15 +2857,15 @@ convert_arguments (int nargs, tree *argarray,
 	       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (valtype)))
         {
 	  if (type_generic)
-	    argarray[parmnum] = val;
+	    parmval = val;
 	  else
 	    /* Convert `float' to `double'.  */
-	    argarray[parmnum] = convert (double_type_node, val);
+	    parmval = convert (double_type_node, val);
 	}
       else if (excess_precision && !type_generic)
 	/* A "double" argument with excess precision being passed
 	   without a prototype or in variable arguments.  */
-	argarray[parmnum] = convert (valtype, val);
+	parmval = convert (valtype, val);
       else if ((invalid_func_diag =
 		targetm.calls.invalid_arg_for_unprototyped_fn (typelist, fundecl, val)))
 	{
@@ -2846,13 +2874,15 @@ convert_arguments (int nargs, tree *argarray,
 	}
       else
 	/* Convert `short' and `char' to full-size `int'.  */
-	argarray[parmnum] = default_conversion (val);
+	parmval = default_conversion (val);
+
+      VEC_replace (tree, values, parmnum, parmval);
 
       if (typetail)
 	typetail = TREE_CHAIN (typetail);
     }
 
-  gcc_assert (parmnum == nargs);
+  gcc_assert (parmnum == VEC_length (tree, values));
 
   if (typetail != 0 && TREE_VALUE (typetail) != void_type_node)
     {
@@ -4069,7 +4099,7 @@ build_c_cast (tree type, tree expr)
 		   "ISO C forbids casts to union type");
 	  t = digest_init (type,
 			   build_constructor_single (type, field, value),
-			   false, true, 0);
+			   NULL_TREE, false, true, 0);
 	  TREE_CONSTANT (t) = TREE_CONSTANT (value);
 	  return t;
 	}
@@ -4263,12 +4293,15 @@ c_cast_expr (struct c_type_name *type_name, tree expr)
    MODIFYCODE is the code for a binary operator that we use
    to combine the old value of LHS with RHS to get the new value.
    Or else MODIFYCODE is NOP_EXPR meaning do a simple assignment.
+   If RHS_ORIGTYPE is not NULL_TREE, it is the original type of RHS,
+   which may differ from TREE_TYPE (RHS) for an enum value.
 
    LOCATION is the location of the MODIFYCODE operator.  */
 
 tree
 build_modify_expr (location_t location,
-		   tree lhs, enum tree_code modifycode, tree rhs)
+		   tree lhs, enum tree_code modifycode, tree rhs,
+		   tree rhs_origtype)
 {
   tree result;
   tree newrhs;
@@ -4298,7 +4331,7 @@ build_modify_expr (location_t location,
   if (TREE_CODE (lhs) == C_MAYBE_CONST_EXPR)
     {
       tree inner = build_modify_expr (location, C_MAYBE_CONST_EXPR_EXPR (lhs),
-				      modifycode, rhs);
+				      modifycode, rhs, rhs_origtype);
       if (inner == error_mark_node)
 	return error_mark_node;
       result = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (inner),
@@ -4318,6 +4351,10 @@ build_modify_expr (location_t location,
       lhs = stabilize_reference (lhs);
       newrhs = build_binary_op (location,
 				modifycode, lhs, rhs, 1);
+
+      /* The original type of the right hand side is no longer
+	 meaningful.  */
+      rhs_origtype = NULL_TREE;
     }
 
   /* Give an error for storing in something that is 'const'.  */
@@ -4362,8 +4399,8 @@ build_modify_expr (location_t location,
   newrhs = c_fully_fold (newrhs, false, NULL);
   if (rhs_semantic_type)
     newrhs = build1 (EXCESS_PRECISION_EXPR, rhs_semantic_type, newrhs);
-  newrhs = convert_for_assignment (lhstype, newrhs, ic_assign, npc,
-				   NULL_TREE, NULL_TREE, 0);
+  newrhs = convert_for_assignment (lhstype, newrhs, rhs_origtype, ic_assign,
+				   npc, NULL_TREE, NULL_TREE, 0);
   if (TREE_CODE (newrhs) == ERROR_MARK)
     return error_mark_node;
 
@@ -4392,15 +4429,17 @@ build_modify_expr (location_t location,
   if (olhstype == TREE_TYPE (result))
     return result;
 
-  result = convert_for_assignment (olhstype, result, ic_assign, false,
-				   NULL_TREE, NULL_TREE, 0);
+  result = convert_for_assignment (olhstype, result, rhs_origtype, ic_assign,
+				   false, NULL_TREE, NULL_TREE, 0);
   protected_set_expr_location (result, location);
   return result;
 }
 
-/* Convert value RHS to type TYPE as preparation for an assignment
-   to an lvalue of type TYPE.  NULL_POINTER_CONSTANT says whether RHS
-   was a null pointer constant before any folding.
+/* Convert value RHS to type TYPE as preparation for an assignment to
+   an lvalue of type TYPE.  If ORIGTYPE is not NULL_TREE, it is the
+   original type of RHS; this differs from TREE_TYPE (RHS) for enum
+   types.  NULL_POINTER_CONSTANT says whether RHS was a null pointer
+   constant before any folding.
    The real work of conversion is done by `convert'.
    The purpose of this function is to generate error messages
    for assignments that are not allowed in C.
@@ -4411,8 +4450,8 @@ build_modify_expr (location_t location,
    PARMNUM is the number of the argument, for printing in error messages.  */
 
 static tree
-convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
-			bool null_pointer_constant,
+convert_for_assignment (tree type, tree rhs, tree origtype,
+			enum impl_conv errtype, bool null_pointer_constant,
 			tree fundecl, tree function, int parmnum)
 {
   enum tree_code codel = TREE_CODE (type);
@@ -4502,6 +4541,31 @@ convert_for_assignment (tree type, tree rhs, enum impl_conv errtype,
 	}
 
       objc_ok = objc_compare_types (type, rhstype, parmno, rname);
+    }
+
+  if (warn_cxx_compat)
+    {
+      tree checktype = origtype != NULL_TREE ? origtype : rhstype;
+      if (checktype != error_mark_node
+	  && TREE_CODE (type) == ENUMERAL_TYPE
+	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (type))
+	{
+	  /* FIXME: Until the gcc source code is converted, we only
+	     warn about parameter passing.  We will add the other
+	     cases when bootstrap succeeds with them.  */
+	  if (errtype == ic_argpass)
+	    {
+	      WARN_FOR_ASSIGNMENT (input_location, OPT_Wc___compat,
+				   G_("enum conversion when passing argument "
+				      "%d of %qE is invalid in C++"),
+				   G_("enum conversion in assignment is "
+				      "invalid in C++"),
+				   G_("enum conversion in initialization is "
+				      "invalid in C++"),
+				   G_("enum conversion in return is "
+				      "invalid in C++"));
+	    }
+	}
     }
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
@@ -4945,10 +5009,11 @@ valid_compound_expr_initializer (tree value, tree endtype)
 /* Perform appropriate conversions on the initial value of a variable,
    store it in the declaration DECL,
    and print any error messages that are appropriate.
+   If ORIGTYPE is not NULL_TREE, it is the original type of INIT.
    If the init is invalid, store an ERROR_MARK.  */
 
 void
-store_init_value (tree decl, tree init)
+store_init_value (tree decl, tree init, tree origtype)
 {
   tree value, type;
   bool npc = false;
@@ -4963,7 +5028,7 @@ store_init_value (tree decl, tree init)
 
   if (init)
     npc = null_pointer_constant_p (init);
-  value = digest_init (type, init, npc, true, TREE_STATIC (decl));
+  value = digest_init (type, init, origtype, npc, true, TREE_STATIC (decl));
 
   /* Store the expression if valid; else report error.  */
 
@@ -5194,6 +5259,8 @@ maybe_warn_string_init (tree type, struct c_expr expr)
 /* Digest the parser output INIT as an initializer for type TYPE.
    Return a C expression of type TYPE to represent the initial value.
 
+   If ORIGTYPE is not NULL_TREE, it is the original type of INIT.
+
    NULL_POINTER_CONSTANT is true if INIT is a null pointer constant.
 
    If INIT is a string constant, STRICT_STRING is true if it is
@@ -5204,7 +5271,7 @@ maybe_warn_string_init (tree type, struct c_expr expr)
    elements are seen.  */
 
 static tree
-digest_init (tree type, tree init, bool null_pointer_constant,
+digest_init (tree type, tree init, tree origtype, bool null_pointer_constant,
 	     bool strict_string, int require_constant)
 {
   enum tree_code code = TREE_CODE (type);
@@ -5431,8 +5498,8 @@ digest_init (tree type, tree init, bool null_pointer_constant,
 
       /* Added to enable additional -Wmissing-format-attribute warnings.  */
       if (TREE_CODE (TREE_TYPE (inside_init)) == POINTER_TYPE)
-	inside_init = convert_for_assignment (type, inside_init, ic_init,
-					      null_pointer_constant,
+	inside_init = convert_for_assignment (type, inside_init, origtype,
+					      ic_init, null_pointer_constant,
 					      NULL_TREE, NULL_TREE, 0);
       return inside_init;
     }
@@ -5451,7 +5518,7 @@ digest_init (tree type, tree init, bool null_pointer_constant,
 	inside_init = build1 (EXCESS_PRECISION_EXPR, semantic_type,
 			      inside_init);
       inside_init
-	= convert_for_assignment (type, inside_init, ic_init,
+	= convert_for_assignment (type, inside_init, origtype, ic_init,
 				  null_pointer_constant,
 				  NULL_TREE, NULL_TREE, 0);
 
@@ -5549,6 +5616,7 @@ struct init_node
   int balance;
   tree purpose;
   tree value;
+  tree origtype;
 };
 
 /* Tree of pending elements at this constructor level.
@@ -6418,7 +6486,8 @@ set_init_label (tree fieldname)
 
 /* Add a new initializer to the tree of pending initializers.  PURPOSE
    identifies the initializer, either array index or field in a structure.
-   VALUE is the value of that index or field.
+   VALUE is the value of that index or field.  If ORIGTYPE is not
+   NULL_TREE, it is the original type of VALUE.
 
    IMPLICIT is true if value comes from pop_init_level (1),
    the new initializer has been merged with the existing one
@@ -6426,7 +6495,7 @@ set_init_label (tree fieldname)
    existing initializer.  */
 
 static void
-add_pending_init (tree purpose, tree value, bool implicit)
+add_pending_init (tree purpose, tree value, tree origtype, bool implicit)
 {
   struct init_node *p, **q, *r;
 
@@ -6452,6 +6521,7 @@ add_pending_init (tree purpose, tree value, bool implicit)
 		    warning_init (OPT_Woverride_init, "initialized field overwritten");
 		}
 	      p->value = value;
+	      p->origtype = origtype;
 	      return;
 	    }
 	}
@@ -6478,6 +6548,7 @@ add_pending_init (tree purpose, tree value, bool implicit)
 		    warning_init (OPT_Woverride_init, "initialized field overwritten");
 		}
 	      p->value = value;
+	      p->origtype = origtype;
 	      return;
 	    }
 	}
@@ -6486,6 +6557,7 @@ add_pending_init (tree purpose, tree value, bool implicit)
   r = GGC_NEW (struct init_node);
   r->purpose = purpose;
   r->value = value;
+  r->origtype = origtype;
 
   *q = r;
   r->parent = p;
@@ -6661,7 +6733,7 @@ set_nonincremental_init (void)
     return;
 
   FOR_EACH_CONSTRUCTOR_ELT (constructor_elements, ix, index, value)
-    add_pending_init (index, value, false);
+    add_pending_init (index, value, NULL_TREE, false);
   constructor_elements = 0;
   if (TREE_CODE (constructor_type) == RECORD_TYPE)
     {
@@ -6751,7 +6823,7 @@ set_nonincremental_init_from_string (tree str)
 	}
 
       value = build_int_cst_wide (type, val[1], val[0]);
-      add_pending_init (purpose, value, false);
+      add_pending_init (purpose, value, NULL_TREE, false);
     }
 
   constructor_incremental = 0;
@@ -6816,6 +6888,7 @@ find_init_member (tree field)
 /* "Output" the next constructor element.
    At top level, really output it to assembler code now.
    Otherwise, collect it in a list from which we will make a CONSTRUCTOR.
+   If ORIGTYPE is not NULL_TREE, it is the original type of VALUE.
    TYPE is the data type that the containing data type wants here.
    FIELD is the field (a FIELD_DECL) or the index that this element fills.
    If VALUE is a string constant, STRICT_STRING is true if it is
@@ -6832,8 +6905,8 @@ find_init_member (tree field)
    existing initializer.  */
 
 static void
-output_init_element (tree value, bool strict_string, tree type, tree field,
-		     int pending, bool implicit)
+output_init_element (tree value, tree origtype, bool strict_string, tree type,
+		     tree field, int pending, bool implicit)
 {
   tree semantic_type = NULL_TREE;
   constructor_elt *celt;
@@ -6914,7 +6987,7 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
 
   if (semantic_type)
     value = build1 (EXCESS_PRECISION_EXPR, semantic_type, value);
-  value = digest_init (type, value, npc, strict_string,
+  value = digest_init (type, value, origtype, npc, strict_string,
 		       require_constant_value);
   if (value == error_mark_node)
     {
@@ -6934,7 +7007,7 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
 	  && tree_int_cst_lt (field, constructor_unfilled_index))
 	set_nonincremental_init ();
 
-      add_pending_init (field, value, implicit);
+      add_pending_init (field, value, origtype, implicit);
       return;
     }
   else if (TREE_CODE (constructor_type) == RECORD_TYPE
@@ -6960,7 +7033,7 @@ output_init_element (tree value, bool strict_string, tree type, tree field,
 	    }
 	}
 
-      add_pending_init (field, value, implicit);
+      add_pending_init (field, value, origtype, implicit);
       return;
     }
   else if (TREE_CODE (constructor_type) == UNION_TYPE
@@ -7043,7 +7116,7 @@ output_pending_init_elements (int all)
 	{
 	  if (tree_int_cst_equal (elt->purpose,
 				  constructor_unfilled_index))
-	    output_init_element (elt->value, true,
+	    output_init_element (elt->value, elt->origtype, true,
 				 TREE_TYPE (constructor_type),
 				 constructor_unfilled_index, 0, false);
 	  else if (tree_int_cst_lt (constructor_unfilled_index,
@@ -7097,7 +7170,8 @@ output_pending_init_elements (int all)
 	  if (tree_int_cst_equal (elt_bitpos, ctor_unfilled_bitpos))
 	    {
 	      constructor_unfilled_fields = elt->purpose;
-	      output_init_element (elt->value, true, TREE_TYPE (elt->purpose),
+	      output_init_element (elt->value, elt->origtype, true,
+				   TREE_TYPE (elt->purpose),
 				   elt->purpose, 0, false);
 	    }
 	  else if (tree_int_cst_lt (ctor_unfilled_bitpos, elt_bitpos))
@@ -7292,8 +7366,9 @@ process_init_element (struct c_expr value, bool implicit)
 	  if (value.value)
 	    {
 	      push_member_name (constructor_fields);
-	      output_init_element (value.value, strict_string,
-				   fieldtype, constructor_fields, 1, implicit);
+	      output_init_element (value.value, value.original_type,
+				   strict_string, fieldtype,
+				   constructor_fields, 1, implicit);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
 	  else
@@ -7382,8 +7457,9 @@ process_init_element (struct c_expr value, bool implicit)
 	  if (value.value)
 	    {
 	      push_member_name (constructor_fields);
-	      output_init_element (value.value, strict_string,
-				   fieldtype, constructor_fields, 1, implicit);
+	      output_init_element (value.value, value.original_type,
+				   strict_string, fieldtype,
+				   constructor_fields, 1, implicit);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
 	  else
@@ -7432,8 +7508,9 @@ process_init_element (struct c_expr value, bool implicit)
 	  if (value.value)
 	    {
 	      push_array_bounds (tree_low_cst (constructor_index, 1));
-	      output_init_element (value.value, strict_string,
-				   elttype, constructor_index, 1, implicit);
+	      output_init_element (value.value, value.original_type,
+				   strict_string, elttype,
+				   constructor_index, 1, implicit);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
 
@@ -7461,8 +7538,9 @@ process_init_element (struct c_expr value, bool implicit)
 
 	  /* Now output the actual element.  */
 	  if (value.value)
-	    output_init_element (value.value, strict_string,
-				 elttype, constructor_index, 1, implicit);
+	    output_init_element (value.value, value.original_type,
+				 strict_string, elttype,
+				 constructor_index, 1, implicit);
 
 	  constructor_index
 	    = size_binop (PLUS_EXPR, constructor_index, bitsize_one_node);
@@ -7486,8 +7564,9 @@ process_init_element (struct c_expr value, bool implicit)
       else
 	{
 	  if (value.value)
-	    output_init_element (value.value, strict_string,
-				 constructor_type, NULL_TREE, 1, implicit);
+	    output_init_element (value.value, value.original_type,
+				 strict_string, constructor_type,
+				 NULL_TREE, 1, implicit);
 	  constructor_fields = 0;
 	}
 
@@ -7718,10 +7797,11 @@ c_finish_goto_ptr (tree expr)
 }
 
 /* Generate a C `return' statement.  RETVAL is the expression for what
-   to return, or a null pointer for `return;' with no value.  */
+   to return, or a null pointer for `return;' with no value.  If
+   ORIGTYPE is not NULL_TREE, it is the original type of RETVAL.  */
 
 tree
-c_finish_return (tree retval)
+c_finish_return (tree retval, tree origtype)
 {
   tree valtype = TREE_TYPE (TREE_TYPE (current_function_decl)), ret_stmt;
   bool no_warning = false;
@@ -7768,8 +7848,8 @@ c_finish_return (tree retval)
     }
   else
     {
-      tree t = convert_for_assignment (valtype, retval, ic_return, npc,
-				       NULL_TREE, NULL_TREE, 0);
+      tree t = convert_for_assignment (valtype, retval, origtype, ic_return,
+				       npc, NULL_TREE, NULL_TREE, 0);
       tree res = DECL_RESULT (current_function_decl);
       tree inner;
 
