@@ -1259,6 +1259,7 @@ gfc_trans_code (gfc_code * code)
 void
 gfc_generate_code (gfc_namespace * ns)
 {
+  ompws_flags = 0;
   if (ns->is_block_data)
     {
       gfc_generate_block_data (ns);

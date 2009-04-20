@@ -1,3 +1,9 @@
+2009-04-20  Vasilis Liaskovitis  <vliaskov@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/35423
+	* testsuite/libgomp.fortran/workshare2.f90: New test.
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* iter.c: Change copyright header to refer to version 3 of the

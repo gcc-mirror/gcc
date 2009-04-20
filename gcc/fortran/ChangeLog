@@ -1,3 +1,20 @@
+2009-04-20  Vasilis Liaskovitis  <vliaskov@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/35423
+	* trans.h (OMPWS_WORKSHARE_FLAG, OMPWS_CURR_SINGLEUNIT,
+	OMPWS_SCALARIZER_WS, OMPWS_NOWAIT): Define.
+	(ompws_flags): New extern decl.
+	* trans-array.c (gfc_trans_scalarized_loop_end): Build OMP_FOR
+	for the outer dimension if ompws_flags allow it.
+	* trans.c (gfc_generate_code): Clear ompws_flags.
+	* trans-expr.c (gfc_trans_assignment_1): Allow worksharing
+	array assignments inside of !$omp workshare.
+	* trans-stmt.c (gfc_trans_where_3): Similarly for where statements
+	and constructs.
+	* trans-openmp.c (ompws_flags): New variable.
+	(gfc_trans_omp_workshare): Rewritten.
+
 2009-04-11  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37746
