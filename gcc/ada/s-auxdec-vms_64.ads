@@ -63,14 +63,22 @@ package System.Aux_DEC is
    type Integer_8  is range -2 **  (8 - 1) .. +2 **  (8 - 1) - 1;
    for Integer_8'Size  use  8;
 
+   type Integer_8_Array is array (Integer range <>) of Integer_8;
+
    type Integer_16 is range -2 ** (16 - 1) .. +2 ** (16 - 1) - 1;
    for Integer_16'Size use 16;
+
+   type Integer_16_Array is array (Integer range <>) of Integer_16;
 
    type Integer_32 is range -2 ** (32 - 1) .. +2 ** (32 - 1) - 1;
    for Integer_32'Size use 32;
 
+   type Integer_32_Array is array (Integer range <>) of Integer_32;
+
    type Integer_64 is range -2 ** (64 - 1) .. +2 ** (64 - 1) - 1;
    for Integer_64'Size use 64;
+
+   type Integer_64_Array is array (Integer range <>) of Integer_64;
 
    type Largest_Integer is range Min_Int .. Max_Int;
 

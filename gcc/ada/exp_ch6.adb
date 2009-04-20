@@ -2891,10 +2891,26 @@ package body Exp_Ch6 is
       if Ekind (Subp) = E_Function
         or else Ekind (Subp) = E_Procedure
       then
-         --  A simple optimization: always replace calls to null procedures
-         --  with a null statement.
+         --  We perform two simple optimization on calls:
 
-         if Is_Null_Procedure (Subp)  then
+         --  a) replace calls to null procedures unconditionally,
+
+         --  b) For To_Address, just do an unchecked conversion. Not only is
+         --  this efficient, but it also avoids order of elaboration problems
+         --  when address clauses are inlined (address expression elaborated
+         --  at the wrong point).
+
+         --  We perform these optimization regardless of whether we are in the
+         --  main unit or in a unit in the context of the main unit, to ensure
+         --  that tree generated is the same in both cases, for Inspector use.
+
+         if Is_RTE (Subp, RE_To_Address) then
+            Rewrite (N,
+              Unchecked_Convert_To
+                (RTE (RE_Address), Relocate_Node (First_Actual (N))));
+            return;
+
+         elsif Is_Null_Procedure (Subp)  then
             Rewrite (N, Make_Null_Statement (Loc));
             return;
          end if;
@@ -2908,9 +2924,9 @@ package body Exp_Ch6 is
                Scop        : constant Entity_Id := Scope (Subp);
 
                function In_Unfrozen_Instance return Boolean;
-               --  If the subprogram comes from an instance in the same
-               --  unit, and the instance is not yet frozen, inlining might
-               --  trigger order-of-elaboration problems in gigi.
+               --  If the subprogram comes from an instance in the same unit,
+               --  and the instance is not yet frozen, inlining might trigger
+               --  order-of-elaboration problems in gigi.
 
                --------------------------
                -- In_Unfrozen_Instance --
@@ -2953,9 +2969,9 @@ package body Exp_Ch6 is
                then
                   Must_Inline := False;
 
-               --  If this an inherited function that returns a private
-               --  type, do not inline if the full view is an unconstrained
-               --  array, because such calls cannot be inlined.
+               --  If this an inherited function that returns a private type,
+               --  do not inline if the full view is an unconstrained array,
+               --  because such calls cannot be inlined.
 
                elsif Present (Orig_Subp)
                  and then Is_Array_Type (Etype (Orig_Subp))
@@ -3013,22 +3029,20 @@ package body Exp_Ch6 is
                     and then In_Same_Extended_Unit (Sloc (Spec), Loc)
                   then
                      Cannot_Inline
-                      ("cannot inline& (body not seen yet)?",
-                       N, Subp);
+                      ("cannot inline& (body not seen yet)?", N, Subp);
                   end if;
                end if;
             end Inlined_Subprogram;
          end if;
       end if;
 
-      --  Check for a protected subprogram. This is either an intra-object
-      --  call, or a protected function call. Protected procedure calls are
-      --  rewritten as entry calls and handled accordingly.
+      --  Check for protected subprogram. This is either an intra-object call,
+      --  or a protected function call. Protected procedure calls are rewritten
+      --  as entry calls and handled accordingly.
 
-      --  In Ada 2005, this may be an indirect call to an access parameter
-      --  that is an access_to_subprogram. In that case the anonymous type
-      --  has a scope that is a protected operation, but the call is a
-      --  regular one.
+      --  In Ada 2005, this may be an indirect call to an access parameter that
+      --  is an access_to_subprogram. In that case the anonymous type has a
+      --  scope that is a protected operation, but the call is a regular one.
 
       Scop := Scope (Subp);
 
@@ -3036,14 +3050,14 @@ package body Exp_Ch6 is
         and then Is_Protected_Type (Scop)
         and then Ekind (Subp) /= E_Subprogram_Type
       then
-         --  If the call is an internal one, it is rewritten as a call to
-         --  to the corresponding unprotected subprogram.
+         --  If the call is an internal one, it is rewritten as a call to the
+         --  corresponding unprotected subprogram.
 
          Expand_Protected_Subprogram_Call (N, Subp, Scop);
       end if;
 
-      --  Functions returning controlled objects need special attention
-      --  If the return type is limited the context is an initialization
+      --  Functions returning controlled objects need special attention:
+      --  if the return type is limited, the context is an initialization
       --  and different processing applies.
 
       if Needs_Finalization (Etype (Subp))
@@ -3053,9 +3067,9 @@ package body Exp_Ch6 is
          Expand_Ctrl_Function_Call (N);
       end if;
 
-      --  Test for First_Optional_Parameter, and if so, truncate parameter
-      --  list if there are optional parameters at the trailing end.
-      --  Note we never delete procedures for call via a pointer.
+      --  Test for First_Optional_Parameter, and if so, truncate parameter list
+      --  if there are optional parameters at the trailing end.
+      --  Note: we never delete procedures for call via a pointer.
 
       if (Ekind (Subp) = E_Procedure or else Ekind (Subp) = E_Function)
         and then Present (First_Optional_Parameter (Subp))
@@ -3064,14 +3078,14 @@ package body Exp_Ch6 is
             Last_Keep_Arg : Node_Id;
 
          begin
-            --  Last_Keep_Arg will hold the last actual that should be
-            --  retained. If it remains empty at the end, it means that
-            --  all parameters are optional.
+            --  Last_Keep_Arg will hold the last actual that should be kept.
+            --  If it remains empty at the end, it means that all parameters
+            --  are optional.
 
             Last_Keep_Arg := Empty;
 
-            --  Find first optional parameter, must be present since we
-            --  checked the validity of the parameter before setting it.
+            --  Find first optional parameter, must be present since we checked
+            --  the validity of the parameter before setting it.
 
             Formal := First_Formal (Subp);
             Actual := First_Actual (N);
@@ -3225,23 +3239,25 @@ package body Exp_Ch6 is
       Is_Unc : constant Boolean :=
                     Is_Array_Type (Etype (Subp))
                       and then not Is_Constrained (Etype (Subp));
-      --  If the type returned by the function is unconstrained and the
-      --  call can be inlined, special processing is required.
+      --  If the type returned by the function is unconstrained and the call
+      --  can be inlined, special processing is required.
 
       procedure Make_Exit_Label;
-      --  Build declaration for exit label to be used in Return statements
+      --  Build declaration for exit label to be used in Return statements,
+      --  sets Exit_Lab (the label node) and Lab_Decl (corresponding implcit
+      --  declaration).
 
       function Process_Formals (N : Node_Id) return Traverse_Result;
-      --  Replace occurrence of a formal with the corresponding actual, or
-      --  the thunk generated for it.
+      --  Replace occurrence of a formal with the corresponding actual, or the
+      --  thunk generated for it.
 
       function Process_Sloc (Nod : Node_Id) return Traverse_Result;
-      --  If the call being expanded is that of an internal subprogram,
-      --  set the sloc of the generated block to that of the call itself,
-      --  so that the expansion is skipped by the -next- command in gdb.
+      --  If the call being expanded is that of an internal subprogram, set the
+      --  sloc of the generated block to that of the call itself, so that the
+      --  expansion is skipped by the "next" command in gdb.
       --  Same processing for a subprogram in a predefined file, e.g.
-      --  Ada.Tags. If Debug_Generated_Code is true, suppress this change
-      --  to simplify our own development.
+      --  Ada.Tags. If Debug_Generated_Code is true, suppress this change to
+      --  simplify our own development.
 
       procedure Rewrite_Function_Call (N : Node_Id; Blk : Node_Id);
       --  If the function body is a single expression, replace call with
@@ -3575,19 +3591,6 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Inlined_Call
 
    begin
-
-      --  For To_Address, just do an unchecked conversion . Not only is this
-      --  efficient, but it also avoids problem with order of elaboration
-      --  when address clauses are inlined (address expression elaborated
-      --  at the wrong point).
-
-      if Subp = RTE (RE_To_Address) then
-         Rewrite (N,
-           Unchecked_Convert_To
-            (RTE (RE_Address),
-             Relocate_Node (First_Actual (N))));
-         return;
-      end if;
 
       --  Check for an illegal attempt to inline a recursive procedure. If the
       --  subprogram has parameters this is detected when trying to supply a

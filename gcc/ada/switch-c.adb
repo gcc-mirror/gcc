@@ -256,6 +256,14 @@ package body Switch.C is
                      if Dot then
                         Set_Dotted_Debug_Flag (C);
                         Store_Compilation_Switch ("-gnatd." & C);
+
+                        --  Disable front-end inlining in inspector mode
+                        --  ??? Change this when we use a non debug flag to
+                        --  enable inspector mode.
+
+                        if C = 'I' then
+                           Front_End_Inlining := False;
+                        end if;
                      else
                         Set_Debug_Flag (C);
                         Store_Compilation_Switch ("-gnatd" & C);
@@ -632,7 +640,14 @@ package body Switch.C is
             when 'N' =>
                Ptr := Ptr + 1;
                Inline_Active := True;
-               Front_End_Inlining := True;
+
+               --  Do not enable front-end inlining in inspector mode, to
+               --  generate trees that can be converted to SCIL. We still
+               --  enable back-end inlining which is fine.
+
+               if not Inspector_Mode then
+                  Front_End_Inlining := True;
+               end if;
 
             --  Processing for o switch
 

@@ -42,6 +42,7 @@ with Restrict; use Restrict;
 with Rident;   use Rident;
 with Sem;      use Sem;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
@@ -711,12 +712,41 @@ package body Sem_Disp is
          return;
 
       --  The subprograms build internally after the freezing point (such as
-      --  the Init procedure) are not primitives
+      --  init procs, interface thunks, type support subprograms, and Offset
+      --  to top functions for accessing interface components in variable
+      --  size tagged types) are not primitives.
 
       elsif Is_Frozen (Tagged_Type)
         and then not Comes_From_Source (Subp)
         and then not Has_Dispatching_Parent
       then
+         --  Complete decoration if internally built subprograms that override
+         --  a dispatching primitive. These entities correspond with the
+         --  following cases:
+
+         --  1. Ada 2005 (AI-391): Wrapper functions built by the expander
+         --     to override functions of nonabstract null extensions. These
+         --     primitives were added to the list of primitives of the tagged
+         --     type by Make_Controlling_Function_Wrappers. However, attribute
+         --     Is_Dispatching_Operation must be set to true.
+
+         --  2. Subprograms associated with stream attributes (built by
+         --     New_Stream_Subprogram)
+
+         if Present (Old_Subp)
+           and then Is_Overriding_Operation (Subp)
+           and then Is_Dispatching_Operation (Old_Subp)
+         then
+            pragma Assert
+             ((Ekind (Subp) = E_Function
+                 and then Is_Dispatching_Operation (Old_Subp)
+                 and then Is_Null_Extension (Base_Type (Etype (Subp))))
+               or else Get_TSS_Name (Subp) = TSS_Stream_Read
+               or else Get_TSS_Name (Subp) = TSS_Stream_Write);
+
+            Set_Is_Dispatching_Operation (Subp);
+         end if;
+
          return;
 
       --  The operation may be a child unit, whose scope is the defining
