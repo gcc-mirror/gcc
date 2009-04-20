@@ -1,5 +1,5 @@
 /* Operations with long integers.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -211,8 +211,9 @@ double_int_divmod (double_int a, double_int b, bool uns, unsigned code,
 {
   double_int ret;
 
-  div_and_round_double (code, uns, a.low, a.high, b.low, b.high,
-			&ret.low, &ret.high, &mod->low, &mod->high);
+  div_and_round_double ((enum tree_code) code, uns, a.low, a.high,
+			b.low, b.high, &ret.low, &ret.high,
+			&mod->low, &mod->high);
   return ret;
 }
 

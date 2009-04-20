@@ -8649,18 +8649,18 @@ builtin_type_for_size (int size, bool unsignedp)
    Returns 0 if an error is encountered.  */
 
 static int
-sync_resolve_size (tree function, tree params)
+sync_resolve_size (tree function, VEC(tree,gc) *params)
 {
   tree type;
   int size;
 
-  if (params == NULL)
+  if (VEC_empty (tree, params))
     {
       error ("too few arguments to function %qE", function);
       return 0;
     }
 
-  type = TREE_TYPE (TREE_VALUE (params));
+  type = TREE_TYPE (VEC_index (tree, params, 0));
   if (TREE_CODE (type) != POINTER_TYPE)
     goto incompatible;
 
@@ -8683,27 +8683,29 @@ sync_resolve_size (tree function, tree params)
    was encountered; true on success.  */
 
 static bool
-sync_resolve_params (tree orig_function, tree function, tree params)
+sync_resolve_params (tree orig_function, tree function, VEC(tree, gc) *params)
 {
   tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (function));
   tree ptype;
   int number;
+  unsigned int parmnum;
 
   /* We've declared the implementation functions to use "volatile void *"
      as the pointer parameter, so we shouldn't get any complaints from the
      call to check_function_arguments what ever type the user used.  */
   arg_types = TREE_CHAIN (arg_types);
-  ptype = TREE_TYPE (TREE_TYPE (TREE_VALUE (params)));
+  ptype = TREE_TYPE (TREE_TYPE (VEC_index (tree, params, 0)));
   number = 2;
 
   /* For the rest of the values, we need to cast these to FTYPE, so that we
      don't get warnings for passing pointer types, etc.  */
+  parmnum = 0;
   while (arg_types != void_list_node)
     {
       tree val;
 
-      params = TREE_CHAIN (params);
-      if (params == NULL)
+      ++parmnum;
+      if (VEC_length (tree, params) <= parmnum)
 	{
 	  error ("too few arguments to function %qE", orig_function);
 	  return false;
@@ -8712,10 +8714,10 @@ sync_resolve_params (tree orig_function, tree function, tree params)
       /* ??? Ideally for the first conversion we'd use convert_for_assignment
 	 so that we get warnings for anything that doesn't match the pointer
 	 type.  This isn't portable across the C and C++ front ends atm.  */
-      val = TREE_VALUE (params);
+      val = VEC_index (tree, params, parmnum);
       val = convert (ptype, val);
       val = convert (TREE_VALUE (arg_types), val);
-      TREE_VALUE (params) = val;
+      VEC_replace (tree, params, parmnum, val);
 
       arg_types = TREE_CHAIN (arg_types);
       number++;
@@ -8725,7 +8727,7 @@ sync_resolve_params (tree orig_function, tree function, tree params)
      being "an optional list of variables protected by the memory barrier".
      No clue what that's supposed to mean, precisely, but we consider all
      call-clobbered variables to be protected so we're safe.  */
-  TREE_CHAIN (params) = NULL;
+  VEC_truncate (tree, params, parmnum + 1);
 
   return true;
 }
@@ -8735,9 +8737,9 @@ sync_resolve_params (tree orig_function, tree function, tree params)
    PARAMS.  */
 
 static tree
-sync_resolve_return (tree params, tree result)
+sync_resolve_return (tree first_param, tree result)
 {
-  tree ptype = TREE_TYPE (TREE_TYPE (TREE_VALUE (params)));
+  tree ptype = TREE_TYPE (TREE_TYPE (first_param));
   ptype = TYPE_MAIN_VARIANT (ptype);
   return convert (ptype, result);
 }
@@ -8752,7 +8754,7 @@ sync_resolve_return (tree params, tree result)
    continue.  */
 
 tree
-resolve_overloaded_builtin (tree function, tree params)
+resolve_overloaded_builtin (tree function, VEC(tree,gc) *params)
 {
   enum built_in_function orig_code = DECL_FUNCTION_CODE (function);
   switch (DECL_BUILT_IN_CLASS (function))
@@ -8789,7 +8791,7 @@ resolve_overloaded_builtin (tree function, tree params)
     case BUILT_IN_LOCK_RELEASE_N:
       {
 	int n = sync_resolve_size (function, params);
-	tree new_function, result;
+	tree new_function, first_param, result;
 
 	if (n == 0)
 	  return error_mark_node;
@@ -8798,10 +8800,11 @@ resolve_overloaded_builtin (tree function, tree params)
 	if (!sync_resolve_params (function, new_function, params))
 	  return error_mark_node;
 
-	result = build_function_call (new_function, params);
+	first_param = VEC_index (tree, params, 0);
+	result = build_function_call_vec (new_function, params, NULL);
 	if (orig_code != BUILT_IN_BOOL_COMPARE_AND_SWAP_N
 	    && orig_code != BUILT_IN_LOCK_RELEASE_N)
-	  result = sync_resolve_return (params, result);
+	  result = sync_resolve_return (first_param, result);
 
 	return result;
       }

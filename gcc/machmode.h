@@ -1,6 +1,6 @@
 /* Machine mode definitions for GCC; included by rtl.h and tree.h.
    Copyright (C) 1991, 1993, 1994, 1996, 1998, 1999, 2000, 2001, 2003,
-   2007, 2008  Free Software Foundation, Inc.
+   2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,7 +41,7 @@ enum mode_class { MODE_CLASSES, MAX_MODE_CLASS };
    (integer, floating, complex, etc.)  */
 
 extern const unsigned char mode_class[NUM_MACHINE_MODES];
-#define GET_MODE_CLASS(MODE)  mode_class[MODE]
+#define GET_MODE_CLASS(MODE)  ((enum mode_class) mode_class[MODE])
 
 /* Nonzero if MODE is an integral mode.  */
 #define INTEGRAL_MODE_P(MODE)			\
@@ -219,10 +219,10 @@ extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
 extern const unsigned char mode_wider[NUM_MACHINE_MODES];
-#define GET_MODE_WIDER_MODE(MODE) mode_wider[MODE]
+#define GET_MODE_WIDER_MODE(MODE) ((enum machine_mode) mode_wider[MODE])
 
 extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
-#define GET_MODE_2XWIDER_MODE(MODE) mode_2xwider[MODE]
+#define GET_MODE_2XWIDER_MODE(MODE) ((enum machine_mode) mode_2xwider[MODE])
 
 /* Return the mode for data of a given size SIZE and mode class CLASS.
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
@@ -257,7 +257,8 @@ extern unsigned get_mode_alignment (enum machine_mode);
 /* For each class, get the narrowest mode in that class.  */
 
 extern const unsigned char class_narrowest_mode[MAX_MODE_CLASS];
-#define GET_CLASS_NARROWEST_MODE(CLASS) class_narrowest_mode[CLASS]
+#define GET_CLASS_NARROWEST_MODE(CLASS) \
+  ((enum machine_mode) class_narrowest_mode[CLASS])
 
 /* Define the integer modes whose sizes are BITS_PER_UNIT and BITS_PER_WORD
    and the mode whose class is Pmode and whose size is POINTER_SIZE.  */

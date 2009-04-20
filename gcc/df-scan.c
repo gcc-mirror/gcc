@@ -100,24 +100,24 @@ static struct df_mw_hardreg * df_null_mw_rec[1];
 static void df_ref_record (enum df_ref_class, struct df_collection_rec *,
 			   rtx, rtx *, 
 			   basic_block, struct df_insn_info *,
-			   enum df_ref_type, enum df_ref_flags,
+			   enum df_ref_type, int ref_flags,
 			   int, int, enum machine_mode);
 static void df_def_record_1 (struct df_collection_rec *, rtx,
 			     basic_block, struct df_insn_info *,
-			     enum df_ref_flags);
+			     int ref_flags);
 static void df_defs_record (struct df_collection_rec *, rtx,
 			    basic_block, struct df_insn_info *,
-			    enum df_ref_flags);
+			    int ref_flags);
 static void df_uses_record (enum df_ref_class, struct df_collection_rec *,
 			    rtx *, enum df_ref_type,
 			    basic_block, struct df_insn_info *,
-			    enum df_ref_flags, 
+			    int ref_flags, 
 			    int, int, enum machine_mode);
 
 static df_ref df_ref_create_structure (enum df_ref_class, 
 				       struct df_collection_rec *, rtx, rtx *, 
 				       basic_block, struct df_insn_info *,
-				       enum df_ref_type, enum df_ref_flags,
+				       enum df_ref_type, int ref_flags,
 				       int, int, enum machine_mode);
 
 static void df_insn_refs_collect (struct df_collection_rec*, 
@@ -708,7 +708,7 @@ df_ref
 df_ref_create (rtx reg, rtx *loc, rtx insn, 
 	       basic_block bb,
 	       enum df_ref_type ref_type, 
-	       enum df_ref_flags ref_flags,
+	       int ref_flags,
 	       int width, int offset, enum machine_mode mode)
 {
   df_ref ref;
@@ -2146,7 +2146,7 @@ df_notes_rescan (rtx insn)
 	    case REG_EQUAL:
 	      df_uses_record (DF_REF_REGULAR, &collection_rec,
 			      &XEXP (note, 0), DF_REF_REG_USE,
-			      bb, insn_info, DF_REF_IN_NOTE, -1, -1, 0);
+			      bb, insn_info, DF_REF_IN_NOTE, -1, -1, VOIDmode);
 	    default:
 	      break;
 	    }
@@ -2691,7 +2691,7 @@ df_ref_create_structure (enum df_ref_class cl,
 			 rtx reg, rtx *loc, 
 			 basic_block bb, struct df_insn_info *info,
 			 enum df_ref_type ref_type, 
-			 enum df_ref_flags ref_flags,
+			 int ref_flags,
 			 int width, int offset, enum machine_mode mode)
 {
   df_ref this_ref = NULL;
@@ -2789,7 +2789,7 @@ df_ref_record (enum df_ref_class cl,
                rtx reg, rtx *loc, 
 	       basic_block bb, struct df_insn_info *insn_info,
 	       enum df_ref_type ref_type, 
-	       enum df_ref_flags ref_flags,
+	       int ref_flags,
 	       int width, int offset, enum machine_mode mode) 
 {
   unsigned int regno;
@@ -2878,7 +2878,7 @@ df_read_modify_subreg_p (rtx x)
 static void
 df_def_record_1 (struct df_collection_rec *collection_rec,
                  rtx x, basic_block bb, struct df_insn_info *insn_info,
-		 enum df_ref_flags flags)
+		 int flags)
 {
   rtx *loc;
   rtx dst;
@@ -2971,7 +2971,7 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
 static void
 df_defs_record (struct df_collection_rec *collection_rec, 
                 rtx x, basic_block bb, struct df_insn_info *insn_info,
-		enum df_ref_flags flags)
+		int flags)
 {
   RTX_CODE code = GET_CODE (x);
 
@@ -3009,7 +3009,7 @@ static void
 df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
                 rtx *loc, enum df_ref_type ref_type,
 		basic_block bb, struct df_insn_info *insn_info,
-		enum df_ref_flags flags,
+		int flags,
 		int width, int offset, enum machine_mode mode)
 {
   RTX_CODE code;
@@ -3322,7 +3322,7 @@ static void
 df_get_call_refs (struct df_collection_rec * collection_rec,
                   basic_block bb, 
                   struct df_insn_info *insn_info,
-                  enum df_ref_flags flags)
+                  int flags)
 {
   rtx note;
   bitmap_iterator bi;
@@ -3347,7 +3347,8 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
     {
       if (GET_CODE (XEXP (note, 0)) == USE)
         df_uses_record (DF_REF_REGULAR, collection_rec, &XEXP (XEXP (note, 0), 0),
-			DF_REF_REG_USE, bb, insn_info, flags, -1, -1, 0);
+			DF_REF_REG_USE, bb, insn_info, flags, -1, -1,
+			VOIDmode);
       else if (GET_CODE (XEXP (note, 0)) == CLOBBER)
 	{
 	  if (REG_P (XEXP (XEXP (note, 0), 0)))
@@ -3359,7 +3360,8 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
 	    }
 	  else
 	    df_uses_record (DF_REF_REGULAR, collection_rec, &XEXP (note, 0),
-		            DF_REF_REG_USE, bb, insn_info, flags, -1, -1, 0);
+		            DF_REF_REG_USE, bb, insn_info, flags, -1, -1,
+			    VOIDmode);
 	}
     }
 
@@ -3367,7 +3369,7 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
   df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[STACK_POINTER_REGNUM],
 		 NULL, bb, insn_info, DF_REF_REG_USE,
 		 DF_REF_CALL_STACK_USAGE | flags, 
-		 -1, -1, 0);
+		 -1, -1, VOIDmode);
 
   /* Calls may also reference any of the global registers,
      so they are recorded as used.  */
@@ -3375,9 +3377,11 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
     if (global_regs[i])
       {
 	df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-		       NULL, bb, insn_info, DF_REF_REG_USE, flags, -1, -1, 0);
+		       NULL, bb, insn_info, DF_REF_REG_USE, flags, -1, -1,
+		       VOIDmode);
 	df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
-		       NULL, bb, insn_info, DF_REF_REG_DEF, flags, -1, -1, 0);
+		       NULL, bb, insn_info, DF_REF_REG_DEF, flags, -1, -1,
+		       VOIDmode);
       }
 
   is_sibling_call = SIBLING_CALL_P (insn_info->insn);
@@ -3392,7 +3396,7 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
         df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[ui], 
 		       NULL, bb, insn_info, DF_REF_REG_DEF,
 		       DF_REF_MAY_CLOBBER | flags, 
-		       -1, -1, 0);
+		       -1, -1, VOIDmode);
     }
 
   BITMAP_FREE (defs_generated);
@@ -3430,19 +3434,19 @@ df_insn_refs_collect (struct df_collection_rec* collection_rec,
         case REG_EQUAL:
           df_uses_record (DF_REF_REGULAR, collection_rec,
                           &XEXP (note, 0), DF_REF_REG_USE,
-                          bb, insn_info, DF_REF_IN_NOTE, -1, -1, 0);
+                          bb, insn_info, DF_REF_IN_NOTE, -1, -1, VOIDmode);
           break;
         case REG_NON_LOCAL_GOTO:
           /* The frame ptr is used by a non-local goto.  */
           df_ref_record (DF_REF_BASE, collection_rec,
                          regno_reg_rtx[FRAME_POINTER_REGNUM],
                          NULL, bb, insn_info,
-                         DF_REF_REG_USE, 0, -1, -1, 0);
+                         DF_REF_REG_USE, 0, -1, -1, VOIDmode);
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
           df_ref_record (DF_REF_BASE, collection_rec,
                          regno_reg_rtx[HARD_FRAME_POINTER_REGNUM],
                          NULL, bb, insn_info,
-                         DF_REF_REG_USE, 0, -1, -1, 0);
+                         DF_REF_REG_USE, 0, -1, -1, VOIDmode);
 #endif
           break;
         default:
@@ -3457,7 +3461,7 @@ df_insn_refs_collect (struct df_collection_rec* collection_rec,
   /* Record the register uses.  */
   df_uses_record (DF_REF_REGULAR, collection_rec,
 		  &PATTERN (insn_info->insn), DF_REF_REG_USE, bb, insn_info, 0, 
-		  -1, -1, 0);
+		  -1, -1, VOIDmode);
 
   /* DF_REF_CONDITIONAL needs corresponding USES. */
   if (is_cond_exec)
@@ -3540,7 +3544,8 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
 	  if (regno == INVALID_REGNUM)
 	    break;
 	  df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[regno], NULL,
-			 bb, NULL, DF_REF_REG_DEF, DF_REF_AT_TOP, -1, -1, 0);
+			 bb, NULL, DF_REF_REG_DEF, DF_REF_AT_TOP, -1, -1,
+			 VOIDmode);
 	}
     }
 #endif
@@ -3549,7 +3554,7 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
      non-local goto.  */
   if (bb->flags & BB_NON_LOCAL_GOTO_TARGET)
     df_ref_record (DF_REF_ARTIFICIAL, collection_rec, hard_frame_pointer_rtx, NULL,
-		   bb, NULL, DF_REF_REG_DEF, DF_REF_AT_TOP, -1, -1, 0);
+		   bb, NULL, DF_REF_REG_DEF, DF_REF_AT_TOP, -1, -1, VOIDmode);
  
   /* Add the artificial uses.  */
   if (bb->index >= NUM_FIXED_BLOCKS)
@@ -3563,7 +3568,7 @@ df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
       EXECUTE_IF_SET_IN_BITMAP (au, 0, regno, bi)
 	{
 	  df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[regno], NULL,
-			 bb, NULL, DF_REF_REG_USE, 0, -1, -1, 0);
+			 bb, NULL, DF_REF_REG_USE, 0, -1, -1, VOIDmode);
 	}
     }
 
@@ -3864,7 +3869,8 @@ df_entry_block_defs_collect (struct df_collection_rec *collection_rec,
   EXECUTE_IF_SET_IN_BITMAP (entry_block_defs, 0, i, bi)
     {
       df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[i], NULL, 
-		     ENTRY_BLOCK_PTR, NULL, DF_REF_REG_DEF, 0, -1, -1, 0);
+		     ENTRY_BLOCK_PTR, NULL, DF_REF_REG_DEF, 0, -1, -1,
+		     VOIDmode);
     }
 
   df_canonize_collection_rec (collection_rec);
@@ -4025,7 +4031,7 @@ df_exit_block_uses_collect (struct df_collection_rec *collection_rec, bitmap exi
 
   EXECUTE_IF_SET_IN_BITMAP (exit_block_uses, 0, i, bi)
     df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[i], NULL,
-		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0, -1, -1, 0);
+		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0, -1, -1, VOIDmode);
 
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
   /* It is deliberate that this is not put in the exit block uses but
@@ -4035,7 +4041,7 @@ df_exit_block_uses_collect (struct df_collection_rec *collection_rec, bitmap exi
       && bb_has_eh_pred (EXIT_BLOCK_PTR)
       && fixed_regs[ARG_POINTER_REGNUM])
     df_ref_record (DF_REF_ARTIFICIAL, collection_rec, regno_reg_rtx[ARG_POINTER_REGNUM], NULL,
-		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0, -1, -1, 0);
+		   EXIT_BLOCK_PTR, NULL, DF_REF_REG_USE, 0, -1, -1, VOIDmode);
 #endif
 
   df_canonize_collection_rec (collection_rec);

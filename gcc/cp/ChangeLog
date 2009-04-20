@@ -1,5 +1,17 @@
 2009-04-20  Ian Lance Taylor  <iant@google.com>
 
+	* typeck.c (build_function_call_vec): New function.
+	(cp_build_function_call): Only pass first parameter to
+	objc_rewrite_function_call.
+	(build_modify_expr): Add rhs_origtype parameter.  Change all
+	callers.
+	* decl.c (finish_decl): Add origtype parameter.  Change all
+	callers.
+	* semantics.c (finish_call_expr): Pass VEC to
+	resolve_overloaded_builtin.
+
+2009-04-20  Ian Lance Taylor  <iant@google.com>
+
 	* cp-tree.h (base_access): Change typedef to int.
 	* parser.c (cp_parser_omp_flush): Change 0 to OMP_CLAUSE_ERROR.
 	(cp_parser_omp_threadprivate): Likewise.

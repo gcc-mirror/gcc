@@ -1,3 +1,249 @@
+2009-04-20  Ian Lance Taylor  <iant@google.com>
+
+	Fix enum conversions which are invalid in C++:
+	* auto-inc-dec.c (attempt_change): Change 0 to SET in function
+	call.
+	* calls.c (store_one_arg): Change 0 to EXPAND_NORMAL in function
+	call.
+	* cse.c (hash_rtx_cb): Change 0 to VOIDmode in function call.
+	* dbgcnt.c (dbg_cnt_set_limit_by_name): Add cast to enum type.
+	* dbxout.c (dbxout_symbol): Change 0 to VOIDmode in function
+	call.
+	(dbxout_parms): Likewise.
+	* df-core.c (df_set_flags): Change changeable_flags parameter to
+	int.
+	(df_clear_flags): Likewise.
+	* df-problems.c (df_rd_bb_local_compute_process_def): Change
+	top_flag parameter to int.
+	(df_chain_create_bb_process_use): Likewise.
+	(df_chain_add_problem): Change chain_flags parameter to unsigned
+	int.  Remove cast.
+	* df-scan.c (df_ref_create): Change ref_flags parameter to int.
+	(df_ref_create_structure, df_def_record_1): Likewise.
+	(df_defs_record, df_uses_record, df_get_call_refs): Likewise.
+	(df_notes_rescan): Change 0 to VOIDmode in function call.
+	(df_get_call_refs, df_insn_refs_collect): Likewise.
+	(df_bb_regs_collect): Likewise.
+	(df_entry_block_defs_collect): Likewise.
+	(df_exit_block_uses_collect): Likewise.
+	* df.h: Update declarations.
+	* double-int.c (double_int_divmod): Add cast to enum type.
+	* dse.c (replace_inc_dec): Reverse parameters to gen_int_mode.
+	* dwarf2out.c (new_reg_loc_descr): Add casts to enum type.
+	(based_loc_descr): Likewise.
+	(loc_descriptor_from_tree_1): Change first_op and second_op to
+	enum dwarf_location_atom.  Add cast to enum type.
+	* expmed.c (init_expmed): Change 0 to SET in function call.
+	* expr.c (init_expr_target): Change 0 to VOIDmode in function
+	call.
+	(expand_expr_real_1): Change 0 to EXPAND_NORMAL in function call.
+	(do_store_flag): Likewise.
+	* fixed-value.h (struct fixed_value): Change mode to enum
+	machine_mode.
+	* function.c (assign_parms): Change 0 to VOIDmode in function
+	call.
+	* genautomata.c (insert_automaton_decl): Change 1 to INSERT in
+	function call.
+	(insert_insn_decl, insert_decl, insert_state): Likewise.
+	(automata_list_finish): Likewise.
+	* genrecog.c (process_define_predicate): Add cast to enum type.
+	* gensupport.c (init_predicate_table): Add cast to enum type.
+	* gimple.c (gimple_build_return): Change 0 to ERROR_MARK in
+	function call.
+	(gimple_build_call_1, gimple_build_label): Likewise.
+	(gimple_build_goto, gimple_build_asm_1): Likewise.
+	(gimple_build_switch_1, gimple_build_cdt): Likewise.
+	* gimple.h (GIMPLE_CHECK): Change 0 to ERROR_MARK in function
+	call.
+	(enum fallback): Rename from enum fallback_t.
+	(fallback_t): Typedef as int.
+	* gimple-low.c (lower_builtin_setjmp): Change TSI_SAME_STMT to
+	GSI_SAME_STMT in function call.
+	* ira.c (setup_class_subset_and_memory_move_costs): Add casts to
+	enum type.
+	(setup_reg_class_relations): Likewise.
+	(setup_reg_class_nregs): Change cl to int.  Add casts to enum
+	type.
+	(setup_prohibited_class_mode_regs): Add cast to enum type.
+	(setup_prohibited_mode_move_regs): Likewise.
+	* ira-costs.c (record_reg_classes): Change rclass to enum
+	reg_class.
+	(record_address_regs): Change i to enum reg_class.
+	* lists.c (alloc_EXPR_LIST): Add cast to enum type.
+	* machmode.h (GET_MODE_CLASS): Cast value to enum mode_class.
+	(GET_MODE_WIDER_MODE): Cast value to enum machine_mode.
+	(GET_MODE_2XWIDER_MODE): Likewise.
+	(GET_CLASS_NARROWEST_MODE): Likewise.
+	* omp-low.c (expand_omp_for): Add cast to enum type.
+	* optabs.c (debug_optab_libfuncs): Add casts to enum type.
+	* opts.c (enable_warning_as_error): Change kind to diagostic_t.
+	* postreload.c (reload_cse_simplify_operands): Change rclass local
+	to enum reg_class.
+	* predict.c (combine_predictions_for_insn): Change best_predictor
+	and predictor to enum br_predictor.
+	(combine_predictions_for_bb): Likewise.
+	(build_predict_expr): Change assignment to PREDICT_EXPR_OUTCOME to
+	use SET_PREDICT_EXPR_OUTCOME.
+	* real.c (real_arithmetic): Change icode to code in function
+	call.
+	* reginfo.c (init_move_cost): Add casts to enum type.
+	(init_reg_sets_1, init_fake_stack_mems): Likewise.
+	* regmove.c (regclass_compatible_p): Change class0 and class1 to
+	enum reg_class.
+	* reload.c (find_valid_class): Add casts to enum type.
+	(push_reload): Change 0 to NO_REGS in function call.
+	(find_reloads): Change this_alternative to array of enum
+	reg_class.  Remove some now-unnecessary casts.
+	(make_memloc): Change 0 to VOIDmode in function call.
+	* reload1.c (reload): Change 0 to VOIDmode in function call.
+	(eliminate_regs_1, elimination_effects): Likewise.
+	(eliminate_regs_in_insn): Likewise.
+	(emit_input_reload_insns): Add cast to enum type.
+	(delete_output_reload): Change 0 to VOIDmode in function call.
+	* reorg.c (insn_sets_resource_p): Convert include_delayed_effects
+	to enum type in function call.
+	* tree.h (PREDICT_EXPR_OUTCOME): Add cast to enum type.
+	(SET_PREDICT_EXPR_OUTCOME): Define.
+	* tree-dump.c (get_dump_file_info): Change phase parameter to
+	int.
+	(get_dump_file_name, dump_begin, dump_enabled_p): Likewise.
+	(dump_initialized_p, dump_flag_name, dump_end): Likewise.
+	(dump_function): Likewise.
+	* tree-dump.h: Update declarations.
+	* tree-pass.h: Update declarations.
+	* varasm.c (assemble_integer): Change mclass to enum mode_class.
+	* config/arm/arm.c (thumb_legitimize_reload_address): Add cast to
+	enum type.
+	(arm_rtx_costs_1): Correct parenthesization.
+	(arm_rtx_costs): Add casts to enum type.
+	(adjacent_mem_locations): Reverse arguments to const_ok_for_op.
+	(vfp_emit_fstmd): Use add_rg_note.
+	(emit_multi_reg_push, emit_sfm): Likewise.
+	(thumb_set_frame_pointer): Likewise.
+	(arm_expand_prologue): Likewise.
+	(arm_regno_class): Change return type to enum reg_class.
+	(thumb1_expand_prologue): Use add_reg_note.
+	* config/arm/arm-protos.h (arm_regno_class): Update declaration.
+	* config/arm/arm.h (INITIALIZE_TRAMPOLINE): Change 0 to LCT_NORMAL
+	in function call.
+	* config/arm/gentune.sh: Add cast to enum type.
+	* config/arm/arm-tune.md: Rebuild.
+	* config/i386/i386.c (ix86_expand_prologue): Use add_reg_note.
+	(ix86_split_fp_branch, predict_jump): Likewise.
+	(ix86_expand_multi_arg_builtin): Change sub_code from enum
+	insn_code to enum rtx_code.
+	(ix86_builtin_vectorized_function): Add cast to enum type.
+	* config/i386/i386.md (truncdfsf2): Change slot to enum
+	ix86_stack_slot.
+	(truncxf<mode>2, isinf<mode>2): Likewise.
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Add cast to
+	enum type.
+	* config/ia64/ia64.c (ia64_split_tmode_move): Use add_reg_note.
+	(spill_restore_mem, do_spill, ia64_expand_prologue): Likewise.
+	(insert_bundle_state): Change 1 to INSERT in function call.
+	(ia64_add_bundle_selector_before): Likewise.
+	* config/ia64/ia64.md (cpu attr): Add cast to enum type.
+	(save_stack_nonlocal): Change 0 to LCT_NORMAL in function call.
+	(restore_stack_nonlocal): Likewise.
+	* config/mips/mips.h (MIPS_ICACHE_SYNC): Change 0 to LCT_NORMAL in
+	function call.
+	* config/mips/mips.c (mips_binary_cost): Change 0 to SET in
+	function call.
+	(mips_rtx_costs): Likewise.
+	(mips_override_options): Add casts to enum type.
+	* config/mips/sdemtk.h (MIPS_ICACHE_SYNC): Change 0 to LCT_NORMAL
+	in function call.
+	* config/pa/pa.c (legitimize_pic_address): Use add_reg_note.
+	(store_reg, set_reg_plus_d): Likewise.
+	(hppa_expand_prologue, hppa_profile_hook): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Add
+	cast to enum type.
+	(altivec_expand_vec_set_builtin): Change 0 to EXPAND_NORMAL in
+	function call.
+	(emit_unlikely_jump): Use add_reg_note.
+	(rs6000_emit_allocate_stack): Likewise.
+	(rs6000_frame_related, rs6000_emit_prologue): Likewise.
+	(output_toc): Change 1 to INSERT in function call.
+	(output_profile_hook): Change 0 to LCT_NORMAL in function call.
+	(rs6000_initialize_trampoline): Likewise.
+	(rs6000_init_dwarf_reg_sizes_extra): Change 0 to EXPAND_NORMAL in
+	function call.
+	* config/s390/s390.c (s390_rtx_costs): Add cast to enum type.
+	(s390_expand_movmem): Change 0 to OPTAB_DIRECT in function call.
+	(s390_expand_setmem, s390_expand_cmpmem): Likewise.
+	(save_gprs): Use add_reg_note.
+	(s390_emit_prologue): Likewise.
+	(s390_expand_builtin): Change 0 to EXPAND_NORMAL in function
+	call.
+	* config/sparc/sparc.c (sparc_expand_prologue): Use add_reg_note.
+	(sparc_fold_builtin): Add cast to enum type.
+	* config/spu/spu.c (spu_emit_branch_or_set): Change ior_code to
+	enum insn_code.
+	(spu_expand_prologue): Use add_reg_note.
+	(expand_builtin_args): Change 0 to EXPAND_NORMAL in function
+	call.
+
+2009-04-20  Ian Lance Taylor  <iant@google.com>
+
+	* c-parser.c (c_parser_attributes): Change VEC back to tree list.
+	(c_parser_postfix_expression_after_primary): Get VEC for list of
+	arguments.  Get original types of arguments.  Call
+	build_function_call_vec.
+	(cached_expr_list_1, cached_expr_list_2): New static variables.
+	(c_parser_expr_list): Change return type to VEC *.  Add
+	p_orig_types parameter.  Change all callers.
+	(c_parser_release_expr): New static function.
+	(c_parser_vec_to_tree_list): New static function.
+	* c-typeck.c (build_function_call): Rewrite to build a VEC and
+	call build_function_call_vec.
+	(build_function_call_vec): New function, based on old
+	build_function_call.
+	(convert_arguments): Remove nargs and argarray parameters.  Change
+	values to a VEC.  Add origtypes parameter.
+	(build_modify_expr): Add rhs_origtype parameter.  Change all
+	callers.
+	(convert_for_assignment): Add origtype parameter.  Change all
+	callers.  If warn_cxx_compat, check for conversion to an enum
+	type when calling a function.
+	(store_init_value): Add origtype parameter.  Change all callers.
+	(digest_init): Likewise.
+	(struct init_node): Add origtype field.
+	(add_pending_init): Add origtype parameter.  Change all callers.
+	(output_init_element): Likewise.
+	(output_pending_init_elements): Pass origtype from init_node to
+	output_init_element.
+	(process_init_elemnt): Pass origtype from c_expr to
+	output_init_element.
+	(c_finish_return): Add origtype parameter.  Change all callers.
+	* c-common.c (sync_resolve_size): Change params to VEC *.  Change
+	caller.
+	(sync_resolve_params): Likewise.
+	(sync_resolve_return): Change params to first_param.  Change
+	caller.
+	(resolve_overloaded_builtins): Change params to VEC *.  Change
+	callers.   Save first parameter around call to
+	build_function_call_vec.
+	* c-decl.c (finish_decl): Add origtype parameter.  Change all
+	callers.  Call build_function_call_vec rather than
+	build_function_call for cleanup.
+	* c-tree.h: Update declarations.
+	* c-common.h: Update declarations.
+	* stub-objc.c (objc_rewrite_function_call): Change parameter from
+	params to first_param.
+	* target.h (struct gcc_target): Change resolve_overloaded_builtin
+	params parameter from tree to void *.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Change arglist parameter to have type void *, and to be a pointer
+	to a VEC.
+	* config/rs6000/rs6000-protos.h
+	(altivec_resolve_overloaded_builtin): Update declaration.
+	* config/spu/spu-c.c (spu_resolved_overloaded_builtin): Change
+	fnargs parameter to have type void *, and to be a pointer to a
+	VEC.  Call build_function_call_vec instead of
+	build_function_call.
+	* config/spu/spu-protos.h (spu_expand_builtin): Update
+	declaration.
+
 2009-04-20  Joey Ye  <joey.ye@intel.com>
 	    Xuepeng Guo <xuepeng.guo@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>

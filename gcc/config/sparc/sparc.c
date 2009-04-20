@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
@@ -4082,10 +4082,8 @@ sparc_expand_prologue (void)
 	  rtx reg = gen_rtx_REG (Pmode, 1);
 	  emit_move_insn (reg, GEN_INT (-actual_fsize));
 	  insn = emit_insn (gen_stack_pointer_inc (reg));
-	  REG_NOTES (insn) =
-	    gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-			       gen_stack_pointer_inc (GEN_INT (-actual_fsize)),
-			       REG_NOTES (insn));
+	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			gen_stack_pointer_inc (GEN_INT (-actual_fsize)));
 	}
 
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -8255,13 +8253,14 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
 {
   tree arg0, arg1, arg2;
   tree rtype = TREE_TYPE (TREE_TYPE (fndecl));
+  enum insn_code icode = (enum insn_code) DECL_FUNCTION_CODE (fndecl);
 
   if (ignore
-      && DECL_FUNCTION_CODE (fndecl) != CODE_FOR_alignaddrsi_vis
-      && DECL_FUNCTION_CODE (fndecl) != CODE_FOR_alignaddrdi_vis)
+      && icode != CODE_FOR_alignaddrsi_vis
+      && icode != CODE_FOR_alignaddrdi_vis)
     return fold_convert (rtype, integer_zero_node);
 
-  switch (DECL_FUNCTION_CODE (fndecl))
+  switch (icode)
     {
     case CODE_FOR_fexpand_vis:
       arg0 = TREE_VALUE (arglist);
@@ -8297,8 +8296,8 @@ sparc_fold_builtin (tree fndecl, tree arglist, bool ignore)
 	  tree inner_type = TREE_TYPE (rtype);
 	  tree elts0 = TREE_VECTOR_CST_ELTS (arg0);
 	  tree elts1 = TREE_VECTOR_CST_ELTS (arg1);
-	  tree n_elts = sparc_handle_vis_mul8x16 (DECL_FUNCTION_CODE (fndecl),
-						  inner_type, elts0, elts1);
+	  tree n_elts = sparc_handle_vis_mul8x16 (icode, inner_type, elts0,
+						  elts1);
 
 	  return build_vector (rtype, n_elts);
 	}

@@ -2857,6 +2857,28 @@ build_function_call (tree function, tree params)
   return cp_build_function_call (function, params, tf_warning_or_error);
 }
 
+/* Used by the C-common bits.  */
+tree
+build_function_call_vec (tree function, VEC(tree,gc) *params,
+			 VEC(tree,gc) *origtypes ATTRIBUTE_UNUSED)
+{
+  tree p;
+  tree *pp;
+  unsigned int i;
+  tree t;
+
+  /* FIXME: Should just change cp_build_function_call to use a
+     VEC.  */
+  p = NULL_TREE;
+  pp = &p;
+  for (i = 0; VEC_iterate (tree, params, i, t); ++i)
+    {
+      *pp = build_tree_list (NULL, t);
+      pp = &TREE_CHAIN (*pp);
+    }
+  return cp_build_function_call (function, p, tf_warning_or_error);
+}
+
 tree
 cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
 {
@@ -2870,7 +2892,8 @@ cp_build_function_call (tree function, tree params, tsubst_flags_t complain)
 
   /* For Objective-C, convert any calls via a cast to OBJC_TYPE_REF
      expressions, like those used for ObjC messenger dispatches.  */
-  function = objc_rewrite_function_call (function, params);
+  if (params != NULL_TREE)
+    function = objc_rewrite_function_call (function, TREE_VALUE (params));
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Strip such NOP_EXPRs, since FUNCTION is used in non-lvalue context.  */
@@ -5840,7 +5863,8 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
 /* For use from the C common bits.  */
 tree
 build_modify_expr (location_t location ATTRIBUTE_UNUSED,
-		   tree lhs, enum tree_code modifycode, tree rhs)
+		   tree lhs, enum tree_code modifycode, tree rhs,
+		   tree rhs_origtype ATTRIBUTE_UNUSED)
 {
   return cp_build_modify_expr (lhs, modifycode, rhs, tf_warning_or_error);
 }

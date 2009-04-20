@@ -5868,7 +5868,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 /* This is here for a midend callback from c-common.c.  */
 
 void
-finish_decl (tree decl, tree init, tree asmspec_tree)
+finish_decl (tree decl, tree init, tree origtype ATTRIBUTE_UNUSED,
+	     tree asmspec_tree)
 {
   cp_finish_decl (decl, init, /*init_const_expr_p=*/false, asmspec_tree, 0);
 }
@@ -5895,7 +5896,7 @@ declare_global_var (tree name, tree type)
      library), then it is possible that our declaration will be merged
      with theirs by pushdecl.  */
   decl = pushdecl (decl);
-  finish_decl (decl, NULL_TREE, NULL_TREE);
+  finish_decl (decl, NULL_TREE, NULL_TREE, NULL_TREE);
   pop_from_top_level ();
 
   return decl;
@@ -12480,7 +12481,7 @@ start_method (cp_decl_specifier_seq *declspecs,
 	}
     }
 
-  finish_decl (fndecl, NULL_TREE, NULL_TREE);
+  finish_decl (fndecl, NULL_TREE, NULL_TREE, NULL_TREE);
 
   /* Make a place for the parms.  */
   begin_scope (sk_function_parms, fndecl);

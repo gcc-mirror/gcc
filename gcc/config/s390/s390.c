@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008 Free Software Foundation, Inc.
+   2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -2320,9 +2320,9 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total,
 	    *total = s390_cost->madbr;
 	  else
 	    *total = s390_cost->maebr;
-	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), MULT, speed) 
-	    + rtx_cost (XEXP (XEXP (x, 0), 1), MULT, speed) 
-	    + rtx_cost (XEXP (x, 1), code, speed);
+	  *total += (rtx_cost (XEXP (XEXP (x, 0), 0), MULT, speed)
+		     + rtx_cost (XEXP (XEXP (x, 0), 1), MULT, speed)
+		     + rtx_cost (XEXP (x, 1), (enum rtx_code) code, speed));
 	  return true;  /* Do not do an additional recursive descent.  */
 	}
       *total = COSTS_N_INSNS (1);
@@ -3909,11 +3909,13 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
       dst = change_address (dst, VOIDmode, dst_addr);
       src = change_address (src, VOIDmode, src_addr);
 
-      temp = expand_binop (mode, add_optab, count, constm1_rtx, count, 1, 0);
+      temp = expand_binop (mode, add_optab, count, constm1_rtx, count, 1,
+			   OPTAB_DIRECT);
       if (temp != count)
         emit_move_insn (count, temp);
 
-      temp = expand_binop (mode, lshr_optab, count, GEN_INT (8), blocks, 1, 0);
+      temp = expand_binop (mode, lshr_optab, count, GEN_INT (8), blocks, 1,
+			   OPTAB_DIRECT);
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
@@ -3928,7 +3930,8 @@ s390_expand_movmem (rtx dst, rtx src, rtx len)
       s390_load_address (src_addr,
 			 gen_rtx_PLUS (Pmode, src_addr, GEN_INT (256)));
 
-      temp = expand_binop (mode, add_optab, blocks, constm1_rtx, blocks, 1, 0);
+      temp = expand_binop (mode, add_optab, blocks, constm1_rtx, blocks, 1,
+			   OPTAB_DIRECT);
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
@@ -4011,7 +4014,8 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
       dst = change_address (dst, VOIDmode, dst_addr);
 
       if (val == const0_rtx)
-        temp = expand_binop (mode, add_optab, count, constm1_rtx, count, 1, 0);
+        temp = expand_binop (mode, add_optab, count, constm1_rtx, count, 1,
+			     OPTAB_DIRECT);
       else
 	{
 	  dstp1 = adjust_address (dst, VOIDmode, 1);
@@ -4024,12 +4028,14 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
 	  emit_cmp_and_jump_insns (count, const1_rtx,
 				   EQ, NULL_RTX, mode, 1, end_label);
 
-	  temp = expand_binop (mode, add_optab, count, GEN_INT (-2), count, 1, 0);
+	  temp = expand_binop (mode, add_optab, count, GEN_INT (-2), count, 1,
+			       OPTAB_DIRECT);
 	}
       if (temp != count)
         emit_move_insn (count, temp);
 
-      temp = expand_binop (mode, lshr_optab, count, GEN_INT (8), blocks, 1, 0);
+      temp = expand_binop (mode, lshr_optab, count, GEN_INT (8), blocks, 1,
+			   OPTAB_DIRECT);
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
@@ -4045,7 +4051,8 @@ s390_expand_setmem (rtx dst, rtx len, rtx val)
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
 
-      temp = expand_binop (mode, add_optab, blocks, constm1_rtx, blocks, 1, 0);
+      temp = expand_binop (mode, add_optab, blocks, constm1_rtx, blocks, 1,
+			   OPTAB_DIRECT);
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
@@ -4117,11 +4124,13 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
       op0 = change_address (op0, VOIDmode, addr0);
       op1 = change_address (op1, VOIDmode, addr1);
 
-      temp = expand_binop (mode, add_optab, count, constm1_rtx, count, 1, 0);
+      temp = expand_binop (mode, add_optab, count, constm1_rtx, count, 1,
+			   OPTAB_DIRECT);
       if (temp != count)
         emit_move_insn (count, temp);
 
-      temp = expand_binop (mode, lshr_optab, count, GEN_INT (8), blocks, 1, 0);
+      temp = expand_binop (mode, lshr_optab, count, GEN_INT (8), blocks, 1,
+			   OPTAB_DIRECT);
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
@@ -4142,7 +4151,8 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
       s390_load_address (addr1,
 			 gen_rtx_PLUS (Pmode, addr1, GEN_INT (256)));
 
-      temp = expand_binop (mode, add_optab, blocks, constm1_rtx, blocks, 1, 0);
+      temp = expand_binop (mode, add_optab, blocks, constm1_rtx, blocks, 1,
+			   OPTAB_DIRECT);
       if (temp != blocks)
         emit_move_insn (blocks, temp);
 
@@ -7490,9 +7500,7 @@ save_gprs (rtx base, int offset, int first, int last)
 				 GEN_INT (last - 6 + 1));
       note = PATTERN (note);
 
-      REG_NOTES (insn) =
-	gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-			   note, REG_NOTES (insn));
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
 
       for (i = 0; i < XVECLEN (note, 0); i++)
 	if (GET_CODE (XVECEXP (note, 0, i)) == SET)
@@ -7704,6 +7712,7 @@ s390_emit_prologue (void)
   if (cfun_frame_layout.frame_size > 0)
     {
       rtx frame_off = GEN_INT (-cfun_frame_layout.frame_size);
+      rtx real_frame_off;
 
       if (s390_stack_size)
   	{
@@ -7781,12 +7790,11 @@ s390_emit_prologue (void)
 	}
 
       RTX_FRAME_RELATED_P (insn) = 1;
-      REG_NOTES (insn) =
-	gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-			   gen_rtx_SET (VOIDmode, stack_pointer_rtx,
-			     gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-			       GEN_INT (-cfun_frame_layout.frame_size))),
-			   REG_NOTES (insn));
+      real_frame_off = GEN_INT (-cfun_frame_layout.frame_size);
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+		    gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				 gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+					       real_frame_off)));
 
       /* Set backchain.  */
 
@@ -7838,12 +7846,10 @@ s390_emit_prologue (void)
 	    insn = save_fpr (temp_reg, offset, i);
 	    offset += 8;
 	    RTX_FRAME_RELATED_P (insn) = 1;
-	    REG_NOTES (insn) =
-	      gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				 gen_rtx_SET (VOIDmode,
-					      gen_rtx_MEM (DFmode, addr),
-					      gen_rtx_REG (DFmode, i)),
-				 REG_NOTES (insn));
+	    add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			  gen_rtx_SET (VOIDmode,
+				       gen_rtx_MEM (DFmode, addr),
+				       gen_rtx_REG (DFmode, i)));
 	  }
     }
 
@@ -8725,7 +8731,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
       insn_op = &insn_data[icode].operand[arity + nonvoid];
 
-      op[arity] = expand_expr (arg, NULL_RTX, insn_op->mode, 0);
+      op[arity] = expand_expr (arg, NULL_RTX, insn_op->mode, EXPAND_NORMAL);
 
       if (!(*insn_op->predicate) (op[arity], insn_op->mode))
 	op[arity] = copy_to_mode_reg (insn_op->mode, op[arity]);

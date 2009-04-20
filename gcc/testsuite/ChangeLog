@@ -1,3 +1,7 @@
+2009-04-20  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-3.c: New testcase.
+
 2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/pack13.ad[sb]: New test.

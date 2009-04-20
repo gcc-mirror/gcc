@@ -1124,7 +1124,9 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
   (CASE_LABEL_EXPR_CHECK (NODE)->base.addressable_flag)
 
 #define PREDICT_EXPR_OUTCOME(NODE) \
-  (PREDICT_EXPR_CHECK(NODE)->base.addressable_flag)
+  ((enum prediction) (PREDICT_EXPR_CHECK(NODE)->base.addressable_flag))
+#define SET_PREDICT_EXPR_OUTCOME(NODE, OUTCOME) \
+  (PREDICT_EXPR_CHECK(NODE)->base.addressable_flag = (int) OUTCOME)
 #define PREDICT_EXPR_PREDICTOR(NODE) \
   ((enum br_predictor)tree_low_cst (TREE_OPERAND (PREDICT_EXPR_CHECK (NODE), 0), 0))
 

@@ -829,7 +829,7 @@ lower_builtin_setjmp (gimple_stmt_iterator *gsi)
 
   /* Build 'goto CONT_LABEL' and insert.  */
   g = gimple_build_goto (cont_label);
-  gsi_insert_before (gsi, g, TSI_SAME_STMT);
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
 
   /* Build 'NEXT_LABEL:' and insert.  */
   g = gimple_build_label (next_label);
