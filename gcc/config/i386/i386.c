@@ -13012,6 +13012,316 @@ ix86_expand_unary_operator (enum rtx_code code, enum machine_mode mode,
     emit_move_insn (operands[0], dst);
 }
 
+#define LEA_SEARCH_THRESHOLD 12
+
+/* Search backward for non-agu definition of register number REGNO1
+   or register number REGNO2 in INSN's basic block until 
+   1. Pass LEA_SEARCH_THRESHOLD instructions, or
+   2. Reach BB boundary, or
+   3. Reach agu definition.
+   Returns the distance between the non-agu definition point and INSN.
+   If no definition point, returns -1.  */
+
+static int
+distance_non_agu_define (unsigned int regno1, unsigned int regno2,
+			 rtx insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  int distance = 0;
+  df_ref *def_rec;
+  enum attr_type insn_type;
+
+  if (insn != BB_HEAD (bb))
+    {
+      rtx prev = PREV_INSN (insn);
+      while (prev && distance < LEA_SEARCH_THRESHOLD)
+	{
+	  if (INSN_P (prev))
+	    {
+	      distance++;
+              for (def_rec = DF_INSN_DEFS (prev); *def_rec; def_rec++)
+                if (DF_REF_TYPE (*def_rec) == DF_REF_REG_DEF
+                    && !DF_REF_IS_ARTIFICIAL (*def_rec)
+                    && (regno1 == DF_REF_REGNO (*def_rec)
+			|| regno2 == DF_REF_REGNO (*def_rec)))
+		  {
+		    insn_type = get_attr_type (prev);
+		    if (insn_type != TYPE_LEA)
+		      goto done;
+		  }
+	    }
+	  if (prev == BB_HEAD (bb))
+	    break;
+	  prev = PREV_INSN (prev);
+	}
+    }
+  
+  if (distance < LEA_SEARCH_THRESHOLD)
+    {
+      edge e;
+      edge_iterator ei;
+      bool simple_loop = false;
+  
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	if (e->src == bb)
+	  {
+	    simple_loop = true;
+	    break;
+	  }
+  
+      if (simple_loop)
+	{
+	  rtx prev = BB_END (bb);
+	  while (prev
+		 && prev != insn
+		 && distance < LEA_SEARCH_THRESHOLD)
+	    {
+	      if (INSN_P (prev))
+		{
+		  distance++;
+		  for (def_rec = DF_INSN_DEFS (prev); *def_rec; def_rec++)
+		    if (DF_REF_TYPE (*def_rec) == DF_REF_REG_DEF
+			&& !DF_REF_IS_ARTIFICIAL (*def_rec)
+			&& (regno1 == DF_REF_REGNO (*def_rec)
+			    || regno2 == DF_REF_REGNO (*def_rec)))
+		      {
+			insn_type = get_attr_type (prev);
+			if (insn_type != TYPE_LEA)
+			  goto done;
+		      }
+		}
+	      prev = PREV_INSN (prev);
+	    }
+	}
+    }
+
+  distance = -1;
+
+done:
+  /* get_attr_type may modify recog data.  We want to make sure
+     that recog data is valid for instruction INSN, on which
+     distance_non_agu_define is called.  INSN is unchanged here.  */
+  extract_insn_cached (insn);
+  return distance;
+}
+
+/* Return the distance between INSN and the next insn that uses 
+   register number REGNO0 in memory address.  Return -1 if no such
+   a use is found within LEA_SEARCH_THRESHOLD or REGNO0 is set.  */
+
+static int
+distance_agu_use (unsigned int regno0, rtx insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  int distance = 0;
+  df_ref *def_rec;
+  df_ref *use_rec;
+
+  if (insn != BB_END (bb))
+    {
+      rtx next = NEXT_INSN (insn);
+      while (next && distance < LEA_SEARCH_THRESHOLD)
+	{
+	  if (INSN_P (next))
+	    {
+	      distance++;
+
+	      for (use_rec = DF_INSN_USES (next); *use_rec; use_rec++)
+		if ((DF_REF_TYPE (*use_rec) == DF_REF_REG_MEM_LOAD
+		     || DF_REF_TYPE (*use_rec) == DF_REF_REG_MEM_STORE)
+		    && regno0 == DF_REF_REGNO (*use_rec))
+		  {
+		    /* Return DISTANCE if OP0 is used in memory
+		       address in NEXT.  */
+		    return distance;
+		  }
+
+	      for (def_rec = DF_INSN_DEFS (next); *def_rec; def_rec++)
+		if (DF_REF_TYPE (*def_rec) == DF_REF_REG_DEF
+		    && !DF_REF_IS_ARTIFICIAL (*def_rec)
+		    && regno0 == DF_REF_REGNO (*def_rec))
+		  {
+		    /* Return -1 if OP0 is set in NEXT.  */
+		    return -1;
+		  }
+	    }
+	  if (next == BB_END (bb))
+	    break;
+	  next = NEXT_INSN (next);
+	}
+    }
+
+  if (distance < LEA_SEARCH_THRESHOLD)
+    {
+      edge e;
+      edge_iterator ei;
+      bool simple_loop = false;
+  
+      FOR_EACH_EDGE (e, ei, bb->succs)
+        if (e->dest == bb)
+	  {
+	    simple_loop = true;
+	    break;
+	  }
+  
+      if (simple_loop)
+	{
+	  rtx next = BB_HEAD (bb);
+	  while (next
+		 && next != insn
+		 && distance < LEA_SEARCH_THRESHOLD)
+	    {
+	      if (INSN_P (next))
+		{
+		  distance++;
+
+		  for (use_rec = DF_INSN_USES (next); *use_rec; use_rec++)
+		    if ((DF_REF_TYPE (*use_rec) == DF_REF_REG_MEM_LOAD
+			 || DF_REF_TYPE (*use_rec) == DF_REF_REG_MEM_STORE)
+			&& regno0 == DF_REF_REGNO (*use_rec))
+		      {
+			/* Return DISTANCE if OP0 is used in memory
+			   address in NEXT.  */
+			return distance;
+		      }
+
+		  for (def_rec = DF_INSN_DEFS (next); *def_rec; def_rec++)
+		    if (DF_REF_TYPE (*def_rec) == DF_REF_REG_DEF
+			&& !DF_REF_IS_ARTIFICIAL (*def_rec)
+			&& regno0 == DF_REF_REGNO (*def_rec))
+		      {
+			/* Return -1 if OP0 is set in NEXT.  */
+			return -1;
+		      }
+
+		}
+	      next = NEXT_INSN (next);
+	    }
+	}
+    }  
+
+  return -1;
+}
+
+/* Define this macro to tune LEA priority vs ADD, it take effect when
+   there is a dilemma of choicing LEA or ADD
+   Negative value: ADD is more preferred than LEA
+   Zero: Netrual
+   Positive value: LEA is more preferred than ADD*/
+#define IX86_LEA_PRIORITY 2
+
+/* Return true if it is ok to optimize an ADD operation to LEA
+   operation to avoid flag register consumation.  For the processors
+   like ATOM, if the destination register of LEA holds an actual
+   address which will be used soon, LEA is better and otherwise ADD
+   is better.  */
+
+bool
+ix86_lea_for_add_ok (enum rtx_code code ATTRIBUTE_UNUSED,
+                     rtx insn, rtx operands[])
+{
+  unsigned int regno0 = true_regnum (operands[0]);
+  unsigned int regno1 = true_regnum (operands[1]);
+  unsigned int regno2;
+
+  if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
+    return regno0 != regno1;
+
+  regno2 = true_regnum (operands[2]);
+
+  /* If a = b + c, (a!=b && a!=c), must use lea form. */
+  if (regno0 != regno1 && regno0 != regno2)
+    return true;
+  else    
+    {
+      int dist_define, dist_use;
+      dist_define = distance_non_agu_define (regno1, regno2, insn);
+      if (dist_define <= 0)
+        return true;
+
+      /* If this insn has both backward non-agu dependence and forward
+         agu dependence, the one with short distance take effect. */
+      dist_use = distance_agu_use (regno0, insn);
+      if (dist_use <= 0
+	  || (dist_define + IX86_LEA_PRIORITY) < dist_use)
+        return false;
+
+      return true;
+    }
+}
+
+/* Return true if destination reg of SET_BODY is shift count of
+   USE_BODY.  */
+
+static bool
+ix86_dep_by_shift_count_body (const_rtx set_body, const_rtx use_body)
+{
+  rtx set_dest;
+  rtx shift_rtx;
+  int i;
+
+  /* Retrieve destination of SET_BODY.  */
+  switch (GET_CODE (set_body))
+    {
+    case SET:
+      set_dest = SET_DEST (set_body);
+      if (!set_dest || !REG_P (set_dest))
+	return false;
+      break;
+    case PARALLEL:
+      for (i = XVECLEN (set_body, 0) - 1; i >= 0; i--)
+	if (ix86_dep_by_shift_count_body (XVECEXP (set_body, 0, i),
+					  use_body))
+	  return true;
+    default:
+      return false;
+      break;
+    }
+
+  /* Retrieve shift count of USE_BODY.  */
+  switch (GET_CODE (use_body))
+    {
+    case SET:
+      shift_rtx = XEXP (use_body, 1);
+      break;
+    case PARALLEL:
+      for (i = XVECLEN (use_body, 0) - 1; i >= 0; i--)
+	if (ix86_dep_by_shift_count_body (set_body,
+					  XVECEXP (use_body, 0, i)))
+	  return true;
+    default:
+      return false;
+      break;
+    }
+
+  if (shift_rtx 
+      && (GET_CODE (shift_rtx) == ASHIFT
+	  || GET_CODE (shift_rtx) == LSHIFTRT
+	  || GET_CODE (shift_rtx) == ASHIFTRT
+	  || GET_CODE (shift_rtx) == ROTATE
+	  || GET_CODE (shift_rtx) == ROTATERT))
+    {
+      rtx shift_count = XEXP (shift_rtx, 1);
+
+      /* Return true if shift count is dest of SET_BODY.  */
+      if (REG_P (shift_count)
+	  && true_regnum (set_dest) == true_regnum (shift_count))
+	return true;
+    }
+
+  return false;
+}
+
+/* Return true if destination reg of SET_INSN is shift count of
+   USE_INSN.  */
+
+bool
+ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn)
+{
+  return ix86_dep_by_shift_count_body (PATTERN (set_insn),
+				       PATTERN (use_insn));
+}
+
 /* Return TRUE or FALSE depending on whether the unary operator meets the
    appropriate constraints.  */
 

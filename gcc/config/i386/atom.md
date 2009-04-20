@@ -768,3 +768,28 @@
                   atom_alu1, atom_negnot, atom_incdec, atom_ishift,
                   atom_ishift1, atom_rotate, atom_rotate1"
                  "atom_icmov, atom_alu_carry")
+
+;; lea to shift count stall is 2 cycles
+(define_bypass 3 "atom_lea"
+                 "atom_ishift, atom_ishift1, atom_rotate, atom_rotate1,
+                  atom_ishift_mem, atom_ishift1_mem, 
+                  atom_rotate_mem, atom_rotate1_mem"
+                 "ix86_dep_by_shift_count")
+
+;; lea to shift source stall is 1 cycle
+(define_bypass 2 "atom_lea"
+                 "atom_ishift, atom_ishift1, atom_rotate, atom_rotate1"
+                 "!ix86_dep_by_shift_count")
+
+;; non-lea to shift count stall is 1 cycle
+(define_bypass 2 "atom_alu_carry,
+                  atom_alu,atom_alu1,atom_negnot,atom_imov,atom_imovx,
+                  atom_incdec,atom_ishift,atom_ishift1,atom_rotate,
+                  atom_rotate1, atom_setcc, atom_icmov, atom_pop,
+                  atom_alu_mem, atom_alu_carry_mem, atom_alu1_mem,
+                  atom_imovx_mem, atom_imovx_2_mem,
+                  atom_imov_mem, atom_icmov_mem, atom_fmov_mem"
+                 "atom_ishift, atom_ishift1, atom_rotate, atom_rotate1,
+                  atom_ishift_mem, atom_ishift1_mem, 
+                  atom_rotate_mem, atom_rotate1_mem"
+                 "ix86_dep_by_shift_count")
