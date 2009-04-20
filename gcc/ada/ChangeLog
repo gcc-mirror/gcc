@@ -1,3 +1,14 @@
+2009-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Fix typos.
+
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
+	* debug.adb, gnat1drv.adb, sem_ch13.adb: Add circuitry to
+	Validate_Unchecked_Warnings to suppress warnings about size or
+	alignment or extra bits if either type involved has pragma Warnings
+	(Off) set for the type entity.
+
 2009-04-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gigi): Make the special IA-64 descriptor type

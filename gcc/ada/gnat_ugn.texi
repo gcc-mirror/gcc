@@ -22263,8 +22263,8 @@ headers which is intended to do 95% of the tedious work of generating
 Ada specs from C or C++ header files. Note that this still is a work in
 progress, not designed to generate 100% correct Ada specs.
 
-Note that the code generated is using the Ada 2005 syntax, which makes it
-easier to inteface with other languages than previous versions of Ada.
+The code generated is using the Ada 2005 syntax, which makes it
+easier to interface with other languages than previous versions of Ada.
 
 @menu
 * Running the binding generator::
@@ -22286,8 +22286,8 @@ $ g++ -c -fdump-ada-spec -C /usr/include/time.h
 $ gcc -c -gnat05 *.ads
 @end smallexample
 
-will generate, under GNU/Linux, the following files: @file{bits_time_h.ads},
-@code{bits_types_h.ads}, @code{stddef_h.ads}, @code{time_h.ads} which
+will generate, under GNU/Linux, the following files: @file{time_h.ads},
+@file{bits_time_h.ads}, @file{stddef_h.ads}, @file{bits_types_h.ads} which
 correspond to the files @file{/usr/include/time.h},
 @file{/usr/include/bits/time.h}, etc@dots{}, and will then compile in Ada 2005
 mode these Ada specs.
@@ -22333,7 +22333,7 @@ procedure foo (variable : int);
 @end smallexample
 
 In some cases, the generated bindings will be more complete or more meaningful
-when defining some macros, which you can do via the @option{-D} switch. this
+when defining some macros, which you can do via the @option{-D} switch. This
 is for example the case with @file{Xlib.h} under GNU/Linux:
 
 @smallexample
@@ -22347,7 +22347,7 @@ In other cases, it is not possible to parse a header file in a stand alone
 manner, because other include files need to be included first. In this
 case, the solution is to create a small header file including the needed
 @code{#include} and possible @code{#define} directives. For example, to
-generate Ada bindings for @file{readline/readlin.h}, you need to first
+generate Ada bindings for @file{readline/readline.h}, you need to first
 include @file{stdio.h}, so you can create a file with the following two
 lines in e.g. @file{readline1.h}:
 
@@ -22390,7 +22390,7 @@ Generate Ada spec files for the header files specified on the command line
 only.
 
 @item -C
-@item @option{-C} (@command{gcc})
+@cindex @option{-C} (@command{gcc})
 Extract comments from headers and generate Ada comments in the Ada spec files.
 @end table
 
