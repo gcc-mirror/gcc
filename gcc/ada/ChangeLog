@@ -1,3 +1,22 @@
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Proper checks on incorrect
+	null exclusion qualifiers for object renaming declarations.
+
+2009-04-20  Nicolas Roche  <roche@adacore.com>
+
+	* sysdep.c (__gnat_localtime_tzoff): on Windows, manipulated times are
+	unsigned long long. So compare local_time and utc_time before computing
+	the difference.
+
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): Insert the declaration
+	of the Underlying_Record_View before that of the derived type.
+
+	* exp_ch3.adb (Expand_Record_Extension): Do not special-case types
+	with unknown discriminants with regard to the parent subtype.
+
 2009-04-20  Bob Duff  <duff@adacore.com>
 
 	* sem.adb (Semantics, Walk_Library_Items): Include dependents of bodies

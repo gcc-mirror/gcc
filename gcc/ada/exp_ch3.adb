@@ -3892,16 +3892,6 @@ package body Exp_Ch3 is
          Par_Subtype := Process_Subtype (New_Copy_Tree (Indic), Def);
       end if;
 
-      --  If this is an extension of a type with unknown discriminants, use
-      --  full view to provide proper discriminants to gigi.
-
-      if Has_Unknown_Discriminants (Par_Subtype)
-        and then Is_Private_Type (Par_Subtype)
-        and then Present (Full_View (Par_Subtype))
-      then
-         Par_Subtype := Full_View (Par_Subtype);
-      end if;
-
       Set_Parent_Subtype (T, Par_Subtype);
 
       Comp_Decl :=
