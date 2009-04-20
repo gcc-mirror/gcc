@@ -1,3 +1,24 @@
+2009-04-20  Bob Duff  <duff@adacore.com>
+
+	* rtsfind.adb: Minor comment fix
+
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
+	* exp_aggr.adb: Minor reformatting
+	Minor code reorganization (use Nkind_In)
+
+	* g-socket.adb: Minor reformatting
+
+	* g-socket.ads: Minor comment fix
+
+	* s-auxdec.ads: Minor comment and organization update.
+
+	* s-auxdec-vms_64.ads: Minor comment and organization update.
+
+	* sem_ch10.adb: Minor addition of ??? comment
+
+	* sem_disp.adb: Minor reformatting
+
 2009-04-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* inline.adb (Add_Inlined_Subprogram): Do not place on the back-end
