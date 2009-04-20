@@ -66,6 +66,10 @@ package Output is
    --  It is never an error to call Cancel_Special_Output. It has the same
    --  effect as calling Set_Special_Output (null).
 
+   procedure Ignore_Output (S : String);
+   --  Does nothing. To disable output, pass Ignore_Output'Access to
+   --  Set_Special_Output.
+
    procedure Set_Standard_Error;
    --  Sets subsequent output to appear on the standard error file (whatever
    --  that might mean for the host operating system, if anything) when
