@@ -83,8 +83,8 @@ package body Sem is
 
    procedure Write_Unit_Info
      (Unit_Num : Unit_Number_Type;
-      Item : Node_Id;
-      Prefix : String := "");
+      Item     : Node_Id;
+      Prefix   : String := "");
    --  Print out debugging information about the unit
 
    -------------
@@ -1359,10 +1359,15 @@ package body Sem is
    --  Start of processing for Semantics
 
    begin
-      if Debug_Unit_Walk and then Already_Analyzed then
-         Write_Str ("(done)");
-         Write_Unit_Info (Get_Cunit_Unit_Number (Comp_Unit), Unit (Comp_Unit),
-                          Prefix => "--> ");
+      if Debug_Unit_Walk then
+         if Already_Analyzed then
+            Write_Str ("(done)");
+         end if;
+
+         Write_Unit_Info
+           (Get_Cunit_Unit_Number (Comp_Unit),
+            Unit (Comp_Unit),
+            Prefix => "--> ");
          Indent;
       end if;
 
@@ -1378,11 +1383,11 @@ package body Sem is
       --  Cleaner might be to do the kludge at the point of excluding the
       --  pragma (do not exclude for renamings ???)
 
-      GNAT_Mode :=
-        GNAT_Mode
-          or else Is_Predefined_File_Name
-                    (Unit_File_Name (Current_Sem_Unit),
-                     Renamings_Included => False);
+      if Is_Predefined_File_Name
+           (Unit_File_Name (Current_Sem_Unit), Renamings_Included => False)
+      then
+         GNAT_Mode := True;
+      end if;
 
       if Generic_Main then
          Expander_Mode_Save_And_Set (False);
@@ -1416,8 +1421,8 @@ package body Sem is
          end if;
 
          --  Do analysis, and then append the compilation unit onto the
-         --  Comp_Unit_List, if appropriate. This is done after analysis, so if
-         --  this unit depends on some others, they have already been
+         --  Comp_Unit_List, if appropriate. This is done after analysis, so
+         --  if this unit depends on some others, they have already been
          --  appended. We ignore bodies, except for the main unit itself. We
          --  have also to guard against ill-formed subunits that have an
          --  improper context.
@@ -1428,7 +1433,7 @@ package body Sem is
             null;
 
          elsif Present (Comp_Unit)
-           and then  Nkind (Unit (Comp_Unit)) in N_Proper_Body
+           and then Nkind (Unit (Comp_Unit)) in N_Proper_Body
            and then not In_Extended_Main_Source_Unit (Comp_Unit)
          then
             null;
@@ -1436,7 +1441,9 @@ package body Sem is
          else
             pragma Assert (not Ignore_Comp_Units);
 
-            if No (Comp_Unit_List) then  --  Initialize if first time
+            --  Initialize if first time
+
+            if No (Comp_Unit_List) then
                Comp_Unit_List := New_Elmt_List;
             end if;
 
@@ -1474,11 +1481,17 @@ package body Sem is
       Restore_Opt_Config_Switches (Save_Config_Switches);
       Expander_Mode_Restore;
 
-      if Debug_Unit_Walk and then Already_Analyzed then
+      if Debug_Unit_Walk then
          Outdent;
-         Write_Str ("(done)");
-         Write_Unit_Info (Get_Cunit_Unit_Number (Comp_Unit), Unit (Comp_Unit),
-                          Prefix => "<-- ");
+
+         if Already_Analyzed then
+            Write_Str ("(done)");
+         end if;
+
+         Write_Unit_Info
+           (Get_Cunit_Unit_Number (Comp_Unit),
+            Unit (Comp_Unit),
+            Prefix => "<-- ");
       end if;
    end Semantics;
 
@@ -1545,11 +1558,15 @@ package body Sem is
 
             declare
                Unit_Num : constant Unit_Number_Type :=
-                 Get_Cunit_Unit_Number (CU);
+                            Get_Cunit_Unit_Number (CU);
             begin
-               Write_Unit_Info (Unit_Num, Item);
+               if Debug_Unit_Walk then
+                  Write_Unit_Info (Unit_Num, Item);
+               end if;
 
-               pragma Assert (not Seen (Unit_Num));
+               --  ??? why is this commented out
+               --  ???pragma Assert (not Seen (Unit_Num));
+
                Seen (Unit_Num) := True;
             end;
 
@@ -1649,11 +1666,13 @@ package body Sem is
             Write_Line ("Ignored units:");
 
             Indent;
+
             for Unit_Num in Seen'Range loop
                if not Seen (Unit_Num) then
                   Write_Unit_Info (Unit_Num, Unit (Cunit (Unit_Num)));
                end if;
             end loop;
+
             Outdent;
          end if;
       end if;
@@ -1670,29 +1689,27 @@ package body Sem is
 
    procedure Write_Unit_Info
      (Unit_Num : Unit_Number_Type;
-      Item : Node_Id;
-      Prefix : String := "")
+      Item     : Node_Id;
+      Prefix   : String := "")
    is
    begin
-      if Debug_Unit_Walk then
-         Write_Str (Prefix);
-         Write_Unit_Name (Unit_Name (Unit_Num));
-         Write_Str (", unit ");
-         Write_Int (Int (Unit_Num));
-         Write_Str (", ");
-         Write_Int (Int (Item));
+      Write_Str (Prefix);
+      Write_Unit_Name (Unit_Name (Unit_Num));
+      Write_Str (", unit ");
+      Write_Int (Int (Unit_Num));
+      Write_Str (", ");
+      Write_Int (Int (Item));
+      Write_Str ("=");
+      Write_Str (Node_Kind'Image (Nkind (Item)));
+
+      if Item /= Original_Node (Item) then
+         Write_Str (", orig = ");
+         Write_Int (Int (Original_Node (Item)));
          Write_Str ("=");
-         Write_Str (Node_Kind'Image (Nkind (Item)));
-
-         if Item /= Original_Node (Item) then
-            Write_Str (", orig = ");
-            Write_Int (Int (Original_Node (Item)));
-            Write_Str ("=");
-            Write_Str (Node_Kind'Image (Nkind (Original_Node (Item))));
-         end if;
-
-         Write_Eol;
+         Write_Str (Node_Kind'Image (Nkind (Original_Node (Item))));
       end if;
+
+      Write_Eol;
    end Write_Unit_Info;
 
 end Sem;

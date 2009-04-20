@@ -5922,9 +5922,9 @@ package body Sem_Ch3 is
             --  This is the unusual case where a type completed by a private
             --  derivation occurs within a package nested in a child unit, and
             --  the parent is declared in an ancestor. In this case, the full
-            --  view of the parent type will become visible in the body of the
-            --  enclosing child, and only then will the current type be
-            --   possibly non-private. We build a underlying full view that
+            --  view of the parent type will become visible in the body of
+            --  the enclosing child, and only then will the current type be
+            --  possibly non-private. We build a underlying full view that
             --  will be installed when the enclosing child body is compiled.
 
             Full_Der :=

@@ -5874,7 +5874,6 @@ package body Sem_Ch4 is
             begin
                Actual := Next (First_Actual (Call));
                Index  := First_Index (Arr_Type);
-
                while Present (Actual) and then Present (Index) loop
                   if not Has_Compatible_Type (Actual, Etype (Index)) then
                      Arr_Type := Empty;
