@@ -1,3 +1,8 @@
+2009-04-20  Andrew Pinski <andrew_pinski@playstation.sony.com>
+
+	* gcc.dg/framework-2.c: Fix up for non existent includes
+	being fatal errors now.
+
 2009-04-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/39800
