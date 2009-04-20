@@ -1154,8 +1154,7 @@ package body Ada.Directories is
    end Simple_Name;
 
    function Simple_Name
-     (Directory_Entry : Directory_Entry_Type) return String
-   is
+     (Directory_Entry : Directory_Entry_Type) return String is
    begin
       --  First, the invalid case
 

@@ -5829,6 +5829,7 @@ package body Sem_Ch4 is
          Call    : Node_Id;
          Subp    : Entity_Id) return Entity_Id
       is
+         Arr_Type  : Entity_Id;
          Comp_Type : Entity_Id;
 
       begin
@@ -5844,6 +5845,7 @@ package body Sem_Ch4 is
          --  If the call may be an indexed call, retrieve component type of
          --  resulting expression, and add possible interpretation.
 
+         Arr_Type  := Empty;
          Comp_Type := Empty;
 
          if Nkind (Call) = N_Function_Call
@@ -5851,19 +5853,51 @@ package body Sem_Ch4 is
            and then Needs_One_Actual (Subp)
          then
             if Is_Array_Type (Etype (Subp)) then
-               Comp_Type := Component_Type (Etype (Subp));
+               Arr_Type := Etype (Subp);
 
             elsif Is_Access_Type (Etype (Subp))
               and then Is_Array_Type (Designated_Type (Etype (Subp)))
             then
-               Comp_Type := Component_Type (Designated_Type (Etype (Subp)));
+               Arr_Type := Designated_Type (Etype (Subp));
             end if;
          end if;
 
-         if Present (Comp_Type)
-           and then Etype (Subprog) /= Comp_Type
-         then
-            Add_One_Interp (Subprog, Subp, Comp_Type);
+         if Present (Arr_Type) then
+
+            --  Verify that the actuals (excluding the object)
+            --  match the types of the indices.
+
+            declare
+               Actual : Node_Id;
+               Index  : Node_Id;
+
+            begin
+               Actual := Next (First_Actual (Call));
+               Index  := First_Index (Arr_Type);
+
+               while Present (Actual) and then Present (Index) loop
+                  if not Has_Compatible_Type (Actual, Etype (Index)) then
+                     Arr_Type := Empty;
+                     exit;
+                  end if;
+
+                  Next_Actual (Actual);
+                  Next_Index  (Index);
+               end loop;
+
+               if No (Actual)
+                  and then No (Index)
+                  and then Present (Arr_Type)
+               then
+                  Comp_Type := Component_Type (Arr_Type);
+               end if;
+            end;
+
+            if Present (Comp_Type)
+              and then Etype (Subprog) /= Comp_Type
+            then
+               Add_One_Interp (Subprog, Subp, Comp_Type);
+            end if;
          end if;
 
          if Etype (Call) /= Any_Type then

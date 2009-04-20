@@ -77,7 +77,8 @@ package body GNAT.Traceback.Symbolic is
       --  This is the procedure version of the Ada aware addr2line.  It places
       --  in BUF a string representing the symbolic translation of the N_ADDRS
       --  raw addresses provided in ADDRS, looked up in debug information from
-      --  FILENAME.  LEN is filled with the result length.
+      --  FILENAME.  LEN points to an integer which contains the size of the
+      --  BUF buffer at input and the result length at output.
       --
       --  This procedure is provided by libaddr2line on targets that support
       --  it. A dummy version is in adaint.c for other targets so that build
@@ -125,6 +126,7 @@ package body GNAT.Traceback.Symbolic is
       end if;
 
       if Exename /= System.Null_Address then
+         Len := Res'Length;
          convert_addresses
            (Exename, Traceback'Address, Traceback'Length,
             Res (1)'Address, Len'Address);
