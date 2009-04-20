@@ -8459,20 +8459,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		  if (vect_print_dump_info (REPORT_DETAILS))
 		    fprintf (vect_dump, "=== scheduling SLP instances ===");
 
-		  is_store = vect_schedule_slp (loop_vinfo);
-
-		  /* IS_STORE is true if STMT is a store. Stores cannot be of
-		     hybrid SLP type. They are removed in
-		     vect_schedule_slp_instance and their vinfo is destroyed. */
-		  if (is_store)
-		    {
-		      gsi_next (&si);
-		      continue;
-		    }
+		  vect_schedule_slp (loop_vinfo);
 		}
 
 	      /* Hybrid SLP stmts must be vectorized in addition to SLP.  */
-	      if (PURE_SLP_STMT (stmt_info))
+	      if (!vinfo_for_stmt (stmt) || PURE_SLP_STMT (stmt_info))
 		{
 		  gsi_next (&si);
 		  continue;
