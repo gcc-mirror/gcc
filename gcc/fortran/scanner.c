@@ -1404,7 +1404,10 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
       if (c == '&')
 	{
 	  if (seen_ampersand)
-	    seen_ampersand = 0;
+	    {
+	      seen_ampersand = 0;
+	      seen_printable = 1;
+	    }
 	  else
 	    seen_ampersand = 1;
 	}
