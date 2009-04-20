@@ -6168,6 +6168,8 @@ package body Sem_Attr is
 
          Set_Bounds;
 
+         --  For two compile time values, we can compute length
+
          if Compile_Time_Known_Value (Lo_Bound)
            and then Compile_Time_Known_Value (Hi_Bound)
          then
@@ -6175,6 +6177,33 @@ package body Sem_Attr is
               UI_Max (0, 1 + (Expr_Value (Hi_Bound) - Expr_Value (Lo_Bound))),
               True);
          end if;
+
+         --  One more case is where Hi_Bound and Lo_Bound are compile-time
+         --  comparable, and we can figure out the difference between them.
+
+         declare
+            Diff : aliased Uint;
+
+         begin
+            case
+              Compile_Time_Compare
+                (Lo_Bound, Hi_Bound, Diff'Access, Assume_Valid => False)
+            is
+               when EQ =>
+                  Fold_Uint (N, Uint_1, False);
+
+               when GT =>
+                  Fold_Uint (N, Uint_0, False);
+
+               when LT =>
+                  if Diff /= No_Uint then
+                     Fold_Uint (N, Diff + 1, False);
+                  end if;
+
+               when others =>
+                  null;
+            end case;
+         end;
       end Length;
 
       -------------
@@ -6666,6 +6695,8 @@ package body Sem_Attr is
       when Attribute_Range_Length =>
          Set_Bounds;
 
+         --  Can fold if both bounds are compile time known
+
          if Compile_Time_Known_Value (Hi_Bound)
            and then Compile_Time_Known_Value (Lo_Bound)
          then
@@ -6674,6 +6705,33 @@ package body Sem_Attr is
                 (0, Expr_Value (Hi_Bound) - Expr_Value (Lo_Bound) + 1),
                  Static);
          end if;
+
+         --  One more case is where Hi_Bound and Lo_Bound are compile-time
+         --  comparable, and we can figure out the difference between them.
+
+         declare
+            Diff : aliased Uint;
+
+         begin
+            case
+              Compile_Time_Compare
+                (Lo_Bound, Hi_Bound, Diff'Access, Assume_Valid => False)
+            is
+               when EQ =>
+                  Fold_Uint (N, Uint_1, False);
+
+               when GT =>
+                  Fold_Uint (N, Uint_0, False);
+
+               when LT =>
+                  if Diff /= No_Uint then
+                     Fold_Uint (N, Diff + 1, False);
+                  end if;
+
+               when others =>
+                  null;
+            end case;
+         end;
 
       ---------------
       -- Remainder --

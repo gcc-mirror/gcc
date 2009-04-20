@@ -380,6 +380,16 @@ package body Sem_Eval is
 
    function Compile_Time_Compare
      (L, R         : Node_Id;
+      Assume_Valid : Boolean) return Compare_Result
+   is
+      Discard : aliased Uint;
+   begin
+      return Compile_Time_Compare (L, R, Discard'Access, Assume_Valid);
+   end Compile_Time_Compare;
+
+   function Compile_Time_Compare
+     (L, R         : Node_Id;
+      Diff         : access Uint;
       Assume_Valid : Boolean;
       Rec          : Boolean := False) return Compare_Result
    is
@@ -389,6 +399,8 @@ package body Sem_Eval is
       --  Is_Known_Valid is not set. This takes care of handling possible
       --  invalid representations using the value of the base type, in
       --  accordance with RM 13.9.1(10).
+
+      Discard : aliased Uint;
 
       procedure Compare_Decompose
         (N : Node_Id;
@@ -654,6 +666,8 @@ package body Sem_Eval is
    --  Start of processing for Compile_Time_Compare
 
    begin
+      Diff.all := No_Uint;
+
       --  If either operand could raise constraint error, then we cannot
       --  know the result at compile time (since CE may be raised!)
 
@@ -724,10 +738,14 @@ package body Sem_Eval is
 
             begin
                if Lo < Hi then
+                  Diff.all := Hi - Lo;
                   return LT;
+
                elsif Lo = Hi then
                   return EQ;
+
                else
+                  Diff.all := Lo - Hi;
                   return GT;
                end if;
             end;
@@ -813,7 +831,9 @@ package body Sem_Eval is
             --  a bound of the other operand (four possible tests here).
 
             case Compile_Time_Compare (L, Type_Low_Bound (Rtyp),
-                                       Assume_Valid, Rec => True) is
+                                       Discard'Access,
+                                       Assume_Valid, Rec => True)
+            is
                when LT => return LT;
                when LE => return LE;
                when EQ => return LE;
@@ -821,7 +841,9 @@ package body Sem_Eval is
             end case;
 
             case Compile_Time_Compare (L, Type_High_Bound (Rtyp),
-                                       Assume_Valid, Rec => True) is
+                                       Discard'Access,
+                                       Assume_Valid, Rec => True)
+            is
                when GT => return GT;
                when GE => return GE;
                when EQ => return GE;
@@ -829,7 +851,9 @@ package body Sem_Eval is
             end case;
 
             case Compile_Time_Compare (Type_Low_Bound (Ltyp), R,
-                                       Assume_Valid, Rec => True) is
+                                       Discard'Access,
+                                       Assume_Valid, Rec => True)
+            is
                when GT => return GT;
                when GE => return GE;
                when EQ => return GE;
@@ -837,7 +861,9 @@ package body Sem_Eval is
             end case;
 
             case Compile_Time_Compare (Type_High_Bound (Ltyp), R,
-                                       Assume_Valid, Rec => True) is
+                                       Discard'Access,
+                                       Assume_Valid, Rec => True)
+            is
                when LT => return LT;
                when LE => return LE;
                when EQ => return LE;
@@ -871,9 +897,11 @@ package body Sem_Eval is
                   return EQ;
 
                elsif Loffs < Roffs then
+                  Diff.all := Roffs - Loffs;
                   return LT;
 
                else
+                  Diff.all := Loffs - Roffs;
                   return GT;
                end if;
             end if;
@@ -943,6 +971,7 @@ package body Sem_Eval is
             if Op = N_Op_Le then
                Op := N_Op_Lt;
                Opv := Opv + 1;
+
             elsif Op = N_Op_Ge then
                Op := N_Op_Gt;
                Opv := Opv - 1;
