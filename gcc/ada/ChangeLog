@@ -1,3 +1,17 @@
+2009-04-20  Jerome Lambourg  <lambourg@adacore.com>
+
+	* impunit.adb: Add i-cil and i-cilobj packages, now needed by the
+	generated bindings for cil.
+
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): If the type has unknown
+	discriminants, collect components from the Underlying_Record_View,
+	which will be used in the expansion of the aggregate into assignments.
+
+	* sem_ch3.adb: Do not label derived type with unknown discriminants as
+	having a private declaration.
+
 2009-04-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_util.adb (Expand_Subtype_From_Expr): use the

@@ -300,6 +300,8 @@ package body Impunit is
    ------------------------------------------
 
      "i-cexten",    -- Interfaces.C.Extensions
+     "i-cil   ",    -- Interfaces.CIL
+     "i-cilobj",    -- Interfaces.CIL.Object
      "i-cpp   ",    -- Interfaces.CPP
      "i-cstrea",    -- Interfaces.C.Streams
      "i-java  ",    -- Interfaces.Java
