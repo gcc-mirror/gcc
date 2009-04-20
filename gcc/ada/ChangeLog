@@ -1,3 +1,10 @@
+2009-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies
+
+	* gcc-interface/Makefile.in: Link run-time against winsock2 lib under
+	Windows.
+
 2009-04-20  Robert Dewar  <dewar@adacore.com>
 
 	* checks.ads: Fix documentation of range check handling

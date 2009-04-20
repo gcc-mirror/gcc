@@ -1505,7 +1505,7 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
     EXTRA_GNATRTL_NONTASKING_OBJS = s-win32.o s-winext.o g-regist.o
     EXTRA_GNATRTL_TASKING_OBJS = a-exetim.o
 
-    MISCLIB = -lwsock32
+    MISCLIB = -lws2_32
 
     # ??? This will be replaced by gnatlib-shared-dual-win32 when GNAT
     # auto-import support for array/record will be done.
