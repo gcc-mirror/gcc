@@ -301,6 +301,11 @@ package GNAT.Sockets.Thin_Common is
    --  Indices into an Fd_Pair value providing access to each of the connected
    --  file descriptors.
 
+   function Inet_Pton
+     (Af  : C.int;
+      Cp  : C.Strings.chars_ptr;
+      Inp : System.Address) return C.int;
+
 private
    pragma Import (C, Get_Socket_From_Set, "__gnat_get_socket_from_set");
    pragma Import (C, Is_Socket_In_Set, "__gnat_is_socket_in_set");
@@ -308,4 +313,5 @@ private
    pragma Import (C, Insert_Socket_In_Set, "__gnat_insert_socket_in_set");
    pragma Import (C, Remove_Socket_From_Set, "__gnat_remove_socket_from_set");
    pragma Import (C, Reset_Socket_Set, "__gnat_reset_socket_set");
+   pragma Import (C, Inet_Pton, SOSC.Inet_Pton_Linkname);
 end GNAT.Sockets.Thin_Common;

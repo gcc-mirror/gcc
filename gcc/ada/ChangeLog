@@ -1,3 +1,14 @@
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* socket.c, g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.ads,
+	s-oscons-tmplt.c, gsocket.h, g-socthi-mingw.ads, g-socthi.ads,
+	g-sothco.ads (__gnat_inet_pton): Needs to be enabled for HP-UX as well,
+	since HP-UX supports neither inet_aton nor inet_pton (altough the
+	latter is part of the Single UNIX Specification!).
+	So reorganize code, and share C implementation based on inet_addr(3)
+	with VMS (instead of having a VMS specific Ada implementation in
+	g-socthi-vms.adb).
+
 2009-04-20  Gary Dismukes  <dismukes@adacore.com>
 
 	* osint-c.ads, osint-c.adb (Get_Object_Output_File_Name): New function

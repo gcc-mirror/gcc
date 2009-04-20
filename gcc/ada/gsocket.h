@@ -230,4 +230,8 @@
 # define Has_Sockaddr_Len 0
 #endif
 
+#if !(defined (__vxworks) || defined (_WIN32) || defined (__hpux__) || defined (VMS))
+# define HAVE_INET_PTON
+#endif
+
 #endif /* defined(__nucleus__) */

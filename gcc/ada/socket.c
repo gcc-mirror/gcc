@@ -400,7 +400,13 @@ __gnat_get_h_errno (void) {
 #endif
 }
 
-#if defined (__vxworks) || defined (_WIN32)
+#ifndef HAVE_INET_PTON
+
+#ifdef VMS
+# define in_addr_t int
+# define inet_addr decc$inet_addr
+#endif
+
 int
 __gnat_inet_pton (int af, const char *src, void *dst) {
   switch (af) {
@@ -414,9 +420,10 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
       return -1;
   }
 
-#ifdef __vxworks
+#if defined (__vxworks)
   return (inet_aton (src, dst) == OK);
-#else
+
+#elif defined (_WIN32)
   struct sockaddr_storage ss;
   int sslen = sizeof ss;
   int rc;
@@ -436,10 +443,30 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
     }
   }
   return (rc == 0);
+
+#elif defined (__hpux__) || defined (VMS)
+  in_addr_t addr;
+  int rc = -1;
+
+  if (src == NULL || dst == NULL) {
+    errno = EINVAL;
+
+  } else if (!strcmp (src, "255.255.255.255")) {
+    addr = 0xffffffff;
+    rc = 1;
+
+  } else {
+    addr = inet_addr (src);
+    rc = (addr != 0xffffffff);
+  }
+  if (rc == 1) {
+    *(in_addr_t *)dst = addr;
+  }
+  return rc;
 #endif
 }
 #endif
 
 #else
-#warning Sockets are not supported on this platform
+# warning Sockets are not supported on this platform
 #endif /* defined(HAVE_SOCKETS) */

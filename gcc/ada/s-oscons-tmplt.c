@@ -1197,7 +1197,15 @@ CND(Has_Sockaddr_Len,  "Sockaddr has sa_len field")
 TXT("   Thread_Blocking_IO  : constant Boolean := True;")
 /*
    --  Set False for contexts where socket i/o are process blocking
+
 */
+
+#ifdef HAVE_INET_PTON
+# define Inet_Pton_Linkname "inet_pton"
+#else
+# define Inet_Pton_Linkname "__gnat_inet_pton"
+#endif
+TXT("   Inet_Pton_Linkname  : constant String := \"" Inet_Pton_Linkname "\";")
 
 #endif /* HAVE_SOCKETS */
 
