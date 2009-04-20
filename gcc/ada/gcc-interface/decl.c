@@ -2765,8 +2765,46 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			     NULL_TREE),
 		     true);
 
-	    /* Then we build the parent subtype.  */
-	    gnu_parent = gnat_to_gnu_type (gnat_parent);
+	    /* Then we build the parent subtype.  If it has discriminants but
+	       the type itself has unknown discriminants, this means that it
+	       doesn't contain information about how the discriminants are
+	       derived from those of the ancestor type, so it cannot be used
+	       directly.  Instead it is built by cloning the parent subtype
+	       of the underlying record view of the type, for which the above
+	       derivation of discriminants has been made explicit.  */
+	    if (Has_Discriminants (gnat_parent)
+		&& Has_Unknown_Discriminants (gnat_entity))
+	      {
+		Entity_Id gnat_uview = Underlying_Record_View (gnat_entity);
+
+		/* If we are defining the type, the underlying record
+		   view must already have been elaborated at this point.
+		   Otherwise do it now as its parent subtype cannot be
+		   technically elaborated on its own.  */
+		if (definition)
+		  gcc_assert (present_gnu_tree (gnat_uview));
+		else
+		  gnat_to_gnu_entity (gnat_uview, NULL_TREE, 0);
+
+		gnu_parent = gnat_to_gnu_type (Parent_Subtype (gnat_uview));
+
+		/* Substitute the "get to the parent" of the type for that
+		   of its underlying record view in the cloned type.  */
+		for (gnat_field = First_Stored_Discriminant (gnat_uview);
+		     Present (gnat_field);
+		     gnat_field = Next_Stored_Discriminant (gnat_field))
+		  if (Present (Corresponding_Discriminant (gnat_field)))
+		    {
+		      tree gnu_field = gnat_to_gnu_field_decl (gnat_field);
+		      tree gnu_ref
+			= build3 (COMPONENT_REF, TREE_TYPE (gnu_field),
+				  gnu_get_parent, gnu_field, NULL_TREE);
+		      gnu_parent
+			= substitute_in_type (gnu_parent, gnu_field, gnu_ref);
+		    }
+	      }
+	    else
+	      gnu_parent = gnat_to_gnu_type (gnat_parent);
 
 	    /* Finally we fix up both kinds of twisted COMPONENT_REF we have
 	       initially built.  The discriminants must reference the fields
@@ -7526,16 +7564,20 @@ compatible_signatures_p (tree ftype1, tree ftype2)
   return 1;
 }
 
-/* Given a type T, a FIELD_DECL F, and a replacement value R, return a new
-   type with all size expressions that contain F updated by replacing F
-   with R.  If F is NULL_TREE, always make a new RECORD_TYPE, even if
-   nothing has changed.  */
+/* Given a type T, a FIELD_DECL F, and a replacement value R, return a
+   type with all size expressions that contain F in a PLACEHOLDER_EXPR
+   updated by replacing F with R.
+
+   The function doesn't update the layout of the type, i.e. it assumes
+   that the substitution is purely formal.  That's why the replacement
+   value R must itself contain a PLACEHOLDER_EXPR.  */
 
 tree
 substitute_in_type (tree t, tree f, tree r)
 {
-  tree new = t;
-  tree tem;
+  tree new;
+
+  gcc_assert (CONTAINS_PLACEHOLDER_P (r));
 
   switch (TREE_CODE (t))
     {
@@ -7564,34 +7606,32 @@ substitute_in_type (tree t, tree f, tree r)
       if (CONTAINS_PLACEHOLDER_P (TYPE_MIN_VALUE (t))
 	  || CONTAINS_PLACEHOLDER_P (TYPE_MAX_VALUE (t)))
 	{
-	  tree low = NULL_TREE, high = NULL_TREE;
-
-	  if (TYPE_MIN_VALUE (t))
-	    low = SUBSTITUTE_IN_EXPR (TYPE_MIN_VALUE (t), f, r);
-	  if (TYPE_MAX_VALUE (t))
-	    high = SUBSTITUTE_IN_EXPR (TYPE_MAX_VALUE (t), f, r);
+	  tree low = SUBSTITUTE_IN_EXPR (TYPE_MIN_VALUE (t), f, r);
+	  tree high = SUBSTITUTE_IN_EXPR (TYPE_MAX_VALUE (t), f, r);
 
 	  if (low == TYPE_MIN_VALUE (t) && high == TYPE_MAX_VALUE (t))
 	    return t;
 
-	  t = copy_type (t);
-	  TYPE_MIN_VALUE (t) = low;
-	  TYPE_MAX_VALUE (t) = high;
+	  new = copy_type (t);
+	  TYPE_MIN_VALUE (new) = low;
+	  TYPE_MAX_VALUE (new) = high;
+	  return new;
 	}
+
       return t;
 
     case COMPLEX_TYPE:
-      tem = substitute_in_type (TREE_TYPE (t), f, r);
-      if (tem == TREE_TYPE (t))
+      new = substitute_in_type (TREE_TYPE (t), f, r);
+      if (new == TREE_TYPE (t))
 	return t;
 
-      return build_complex_type (tem);
+      return build_complex_type (new);
 
     case OFFSET_TYPE:
     case METHOD_TYPE:
     case FUNCTION_TYPE:
     case LANG_TYPE:
-      /* Don't know how to do these yet.  */
+      /* These should never show up here.  */
       gcc_unreachable ();
 
     case ARRAY_TYPE:
@@ -7603,24 +7643,14 @@ substitute_in_type (tree t, tree f, tree r)
 	  return t;
 
 	new = build_array_type (component, domain);
-	TYPE_SIZE (new) = 0;
+	TYPE_ALIGN (new) = TYPE_ALIGN (t);
+	TYPE_USER_ALIGN (new) = TYPE_USER_ALIGN (t);
+	SET_TYPE_MODE (new, TYPE_MODE (t));
+	TYPE_SIZE (new) = SUBSTITUTE_IN_EXPR (TYPE_SIZE (t), f, r);
+	TYPE_SIZE_UNIT (new) = SUBSTITUTE_IN_EXPR (TYPE_SIZE_UNIT (t), f, r);
 	TYPE_NONALIASED_COMPONENT (new) = TYPE_NONALIASED_COMPONENT (t);
 	TYPE_MULTI_ARRAY_P (new) = TYPE_MULTI_ARRAY_P (t);
 	TYPE_CONVENTION_FORTRAN_P (new) = TYPE_CONVENTION_FORTRAN_P (t);
-	layout_type (new);
-	TYPE_ALIGN (new) = TYPE_ALIGN (t);
-	TYPE_USER_ALIGN (new) = TYPE_USER_ALIGN (t);
-
-	/* If we had bounded the sizes of T by a constant, bound the sizes of
-	   NEW by the same constant.  */
-	if (TREE_CODE (TYPE_SIZE (t)) == MIN_EXPR)
-	  TYPE_SIZE (new)
-	    = size_binop (MIN_EXPR, TREE_OPERAND (TYPE_SIZE (t), 1),
-			  TYPE_SIZE (new));
-	if (TREE_CODE (TYPE_SIZE_UNIT (t)) == MIN_EXPR)
-	  TYPE_SIZE_UNIT (new)
-	    = size_binop (MIN_EXPR, TREE_OPERAND (TYPE_SIZE_UNIT (t), 1),
-			  TYPE_SIZE_UNIT (new));
 	return new;
       }
 
@@ -7628,54 +7658,41 @@ substitute_in_type (tree t, tree f, tree r)
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
       {
+	bool changed_field = false;
 	tree field;
-	bool changed_field
-	  = (f == NULL_TREE && !TREE_CONSTANT (TYPE_SIZE (t)));
-	bool field_has_rep = false;
-	tree last_field = NULL_TREE;
-
-	tree new = copy_type (t);
 
 	/* Start out with no fields, make new fields, and chain them
 	   in.  If we haven't actually changed the type of any field,
 	   discard everything we've done and return the old type.  */
-
+	new = copy_type (t);
 	TYPE_FIELDS (new) = NULL_TREE;
-	TYPE_SIZE (new) = NULL_TREE;
 
 	for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
 	  {
-	    tree new_field = copy_node (field);
+	    tree new_field = copy_node (field), new_n;
 
-	    TREE_TYPE (new_field)
-	      = substitute_in_type (TREE_TYPE (new_field), f, r);
-
-	    if (DECL_HAS_REP_P (field) && !DECL_INTERNAL_P (field))
-	      field_has_rep = true;
-	    else if (TREE_TYPE (new_field) != TREE_TYPE (field))
-	      changed_field = true;
-
-	    /* If this is an internal field and the type of this field is
-	       a UNION_TYPE or RECORD_TYPE with no elements, ignore it.  If
-	       the type just has one element, treat that as the field.
-	       But don't do this if we are processing a QUAL_UNION_TYPE.  */
-	    if (TREE_CODE (t) != QUAL_UNION_TYPE
-		&& DECL_INTERNAL_P (new_field)
-		&& (TREE_CODE (TREE_TYPE (new_field)) == UNION_TYPE
-		    || TREE_CODE (TREE_TYPE (new_field)) == RECORD_TYPE))
+	    new_n = substitute_in_type (TREE_TYPE (field), f, r);
+	    if (new_n != TREE_TYPE (field))
 	      {
-		if (!TYPE_FIELDS (TREE_TYPE (new_field)))
-		  continue;
+		TREE_TYPE (new_field) = new_n;
+		changed_field = true;
+	      }
 
-		if (!TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (new_field))))
+	    new_n = SUBSTITUTE_IN_EXPR (DECL_FIELD_OFFSET (field), f, r);
+	    if (new_n != DECL_FIELD_OFFSET (field))
+	      {
+		DECL_FIELD_OFFSET (new_field) = new_n;
+		changed_field = true;
+	      }
+
+	    /* Do the substitution inside the qualifier, if any.  */
+	    if (TREE_CODE (t) == QUAL_UNION_TYPE)
+	      {
+		new_n = SUBSTITUTE_IN_EXPR (DECL_QUALIFIER (field), f, r);
+		if (new_n != DECL_QUALIFIER (field))
 		  {
-		    tree next_new_field
-		      = copy_node (TYPE_FIELDS (TREE_TYPE (new_field)));
-
-		    /* Make sure omitting the union doesn't change
-		       the layout.  */
-		    DECL_ALIGN (next_new_field) = DECL_ALIGN (new_field);
-		    new_field = next_new_field;
+		    DECL_QUALIFIER (new_field) = new_n;
+		    changed_field = true;
 		  }
 	      }
 
@@ -7684,68 +7701,17 @@ substitute_in_type (tree t, tree f, tree r)
 				     (DECL_ORIGINAL_FIELD (field)
 				      ? DECL_ORIGINAL_FIELD (field) : field));
 
-	    /* If the size of the old field was set at a constant,
-	       propagate the size in case the type's size was variable.
-	       (This occurs in the case of a variant or discriminated
-	       record with a default size used as a field of another
-	       record.)  */
-	    DECL_SIZE (new_field)
-	      = TREE_CODE (DECL_SIZE (field)) == INTEGER_CST
-		? DECL_SIZE (field) : NULL_TREE;
-	    DECL_SIZE_UNIT (new_field)
-	      = TREE_CODE (DECL_SIZE_UNIT (field)) == INTEGER_CST
-		? DECL_SIZE_UNIT (field) : NULL_TREE;
-
-	    if (TREE_CODE (t) == QUAL_UNION_TYPE)
-	      {
-		tree new_q = SUBSTITUTE_IN_EXPR (DECL_QUALIFIER (field), f, r);
-
-		if (new_q != DECL_QUALIFIER (new_field))
-		  changed_field = true;
-
-		/* Do the substitution inside the qualifier and if we find
-		   that this field will not be present, omit it.  */
-		DECL_QUALIFIER (new_field) = new_q;
-
-		if (integer_zerop (DECL_QUALIFIER (new_field)))
-		  continue;
-	      }
-
-	    if (!last_field)
-	      TYPE_FIELDS (new) = new_field;
-	    else
-	      TREE_CHAIN (last_field) = new_field;
-
-	    last_field = new_field;
-
-	    /* If this is a qualified type and this field will always be
-	       present, we are done.  */
-	    if (TREE_CODE (t) == QUAL_UNION_TYPE
-		&& integer_onep (DECL_QUALIFIER (new_field)))
-	      break;
+	    TREE_CHAIN (new_field) = TYPE_FIELDS (new);
+	    TYPE_FIELDS (new) = new_field;
 	  }
 
-	/* If this used to be a qualified union type, but we now know what
-	   field will be present, make this a normal union.  */
-	if (changed_field && TREE_CODE (new) == QUAL_UNION_TYPE
-	    && (!TYPE_FIELDS (new)
-		|| integer_onep (DECL_QUALIFIER (TYPE_FIELDS (new)))))
-	  TREE_SET_CODE (new, UNION_TYPE);
-	else if (!changed_field)
+	if (!changed_field)
 	  return t;
 
-	gcc_assert (!field_has_rep);
-	layout_type (new);
-
-	/* If the size was originally a constant use it.  */
-	if (TYPE_SIZE (t) && TREE_CODE (TYPE_SIZE (t)) == INTEGER_CST
-	    && TREE_CODE (TYPE_SIZE (new)) != INTEGER_CST)
-	  {
-	    TYPE_SIZE (new) = TYPE_SIZE (t);
-	    TYPE_SIZE_UNIT (new) = TYPE_SIZE_UNIT (t);
-	    SET_TYPE_ADA_SIZE (new, TYPE_ADA_SIZE (t));
-	  }
-
+	TYPE_FIELDS (new) = nreverse (TYPE_FIELDS (new));
+	TYPE_SIZE (new) = SUBSTITUTE_IN_EXPR (TYPE_SIZE (t), f, r);
+	TYPE_SIZE_UNIT (new) = SUBSTITUTE_IN_EXPR (TYPE_SIZE_UNIT (t), f, r);
+	SET_TYPE_ADA_SIZE (new, SUBSTITUTE_IN_EXPR (TYPE_ADA_SIZE (t), f, r));
 	return new;
       }
 

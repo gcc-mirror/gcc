@@ -1521,8 +1521,6 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
       pos_from_bit (&DECL_FIELD_OFFSET (field_decl),
 		    &DECL_FIELD_BIT_OFFSET (field_decl),
 		    DECL_OFFSET_ALIGN (field_decl), pos);
-
-      DECL_HAS_REP_P (field_decl) = 1;
     }
 
   /* In addition to what our caller says, claim the field is addressable if we
@@ -3606,10 +3604,7 @@ update_pointer_to (tree old_type, tree new_type)
 			bounds_field, NULL_TREE);
 
       /* Create the new array for the new PLACEHOLDER_EXPR and make pointers
-	 to the dummy array point to it.
-
-	 ??? This is now the only use of substitute_in_type, which is a very
-	 "heavy" routine to do this, it should be replaced at some point.  */
+	 to the dummy array point to it.  */
       update_pointer_to
 	(TREE_TYPE (TREE_TYPE (array_field)),
 	 substitute_in_type (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (new_ptr))),

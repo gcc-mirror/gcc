@@ -1,3 +1,8 @@
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr11.ad[sb]: New test.
+	* gnat.dg/discr11_pkg.ads: New helper.
+
 2009-04-20  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39675

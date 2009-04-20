@@ -249,9 +249,6 @@ struct lang_type GTY(()) {tree t; };
    is readonly.  Used mostly for fat pointers.  */
 #define DECL_POINTS_TO_READONLY_P(NODE) DECL_LANG_FLAG_4 (NODE)
 
-/* Nonzero in a FIELD_DECL if there was a record rep clause.  */
-#define DECL_HAS_REP_P(NODE) DECL_LANG_FLAG_5 (FIELD_DECL_CHECK (NODE))
-
 /* Nonzero in a PARM_DECL if we are to pass by descriptor.  */
 #define DECL_BY_DESCRIPTOR_P(NODE) DECL_LANG_FLAG_5 (PARM_DECL_CHECK (NODE))
 
