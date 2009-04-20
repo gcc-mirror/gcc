@@ -10478,7 +10478,7 @@ On a typical 32-bit architecture, the X component will be four bytes, and
 require four-byte alignment, and the Y component will be one byte. In this
 case @code{R'Value_Size} will be 40 (bits) since this is the minimum size
 required to store a value of this type, and for example, it is permissible
-to have a component of type R in an outer record whose component size is
+to have a component of type R in an outer array whose component size is
 specified to be 48 bits. However, @code{R'Object_Size} will be 64 (bits),
 since it must be rounded up so that this value is a multiple of the
 alignment (4 bytes = 32 bits).

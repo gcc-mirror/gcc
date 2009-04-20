@@ -1510,9 +1510,9 @@ package body Sem_Ch7 is
                         Next_Elmt (Op_Elmt_2);
                      end loop;
 
-                     --   Case 2: We have not found any explicit overriding and
-                     --   hence we need to declare the operation (i.e., make it
-                     --   visible).
+                     --  Case 2: We have not found any explicit overriding and
+                     --  hence we need to declare the operation (i.e., make it
+                     --  visible).
 
                      Derive_Subprogram (New_Op, Alias (Prim_Op), E, Etype (E));
 
@@ -1555,8 +1555,8 @@ package body Sem_Ch7 is
                end if;
 
             else
-               --   Non-tagged type, scan forward to locate inherited hidden
-               --   operations.
+               --  Non-tagged type, scan forward to locate inherited hidden
+               --  operations.
 
                Prim_Op := Next_Entity (E);
                while Present (Prim_Op) loop
@@ -2296,7 +2296,7 @@ package body Sem_Ch7 is
            and then No (Full_View (Id))
          then
             --  Mark Taft amendment types. Verify that there are no primitive
-            --  operations declared for the type (3.10.1 (9)).
+            --  operations declared for the type (3.10.1(9)).
 
             Set_Has_Completion_In_Body (Id);
 
