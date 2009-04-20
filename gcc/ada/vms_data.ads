@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -875,6 +875,12 @@ package VMS_Data is
    --   copies of the gnat1 commands spawned to obtain the chop control
    --   information.
 
+   S_Check_Out  : aliased constant S := "/OUTPUT=@"                &
+                                             "-o@";
+   --        /OUTPUT=filename
+   --
+   --   Specify the name of the output file.
+
    Check_Switches : aliased constant Switches :=
                       (S_Check_Add      'Access,
                        S_Check_All      'Access,
@@ -890,7 +896,8 @@ package VMS_Data is
                        S_Check_Sections 'Access,
                        S_Check_Short    'Access,
                        S_Check_Subdirs  'Access,
-                       S_Check_Verb     'Access);
+                       S_Check_Verb     'Access,
+                       S_Check_Out      'Access);
 
    ----------------------------
    -- Switches for GNAT CHOP --

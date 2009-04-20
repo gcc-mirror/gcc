@@ -1,3 +1,16 @@
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Use_One_Package): In an instance, if two
+	potentially_use_visible and non-overloadable homonyms are available
+	from  the actuals of distinct formal packages, retain the current one,
+	which was visible in the generic, to prevent spurious visibility
+	errors.
+	(End_Use_Package): Restore use_visibility when needed.
+
+2009-04-20  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi, vms_data.ads: Update doc.
+
 2009-04-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies

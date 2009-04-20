@@ -20346,9 +20346,11 @@ Either a @file{@var{filename}} or an @file{@var{arg_list_filename}} must be supp
 @noindent
 The @command{gnatcheck} tool outputs on @file{stdout} all messages concerning
 rule violations.
-It also creates, in the current
-directory, a text file named @file{^gnatcheck.out^GNATCHECK.OUT^} that
-contains the complete report of the last gnatcheck run. This report contains:
+It also creates a text file  that
+contains the complete report of the last gnatcheck run. By default this file is
+named named @file{^gnatcheck.out^GNATCHECK.OUT^} and it is located in the current
+directory, @option{^-o^/OUTPUT^} option can be used to change the name and/or
+location of the report file. This report contains:
 @itemize @bullet
 @item a list of the Ada source files being checked,
 @item a list of enabled and disabled rules,
@@ -20430,6 +20432,11 @@ in the report file
 @item ^-v^/VERBOSE^
 Verbose mode; @command{gnatcheck} generates version information and then
 a trace of sources being processed.
+
+
+@cindex @option{^-o ^/OUTPUT^} (@command{gnatcheck})
+@item ^-o ^/OUTPUT=^@var{report_file}
+Set name of report file file to @var{report_file} .
 
 @end table
 
