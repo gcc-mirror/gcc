@@ -63,8 +63,8 @@ pragma Warnings (Off, Sem_Util);
 
 package body Sem is
 
-   Debug_Unit_Walk : constant Boolean := False;
-   --  Set to True to print out debugging information for Walk_Library_Items
+   Debug_Unit_Walk : Boolean renames Debug_Flag_Dot_WW;
+   --  Controls debugging printouts for Walk_Library_Items
 
    Outer_Generic_Scope : Entity_Id := Empty;
    --  Global reference to the outer scope that is generic. In a non
@@ -1564,7 +1564,9 @@ package body Sem is
                   Write_Unit_Info (Unit_Num, Item);
                end if;
 
-               --  ??? why is this commented out
+               --  This assertion is commented out because it fails in some
+               --  circumstances related to library-level generic
+               --  instantiations. We need to investigate why.
                --  ???pragma Assert (not Seen (Unit_Num));
 
                Seen (Unit_Num) := True;

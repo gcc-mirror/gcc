@@ -1051,11 +1051,10 @@ procedure GNATCmd is
 
          else
             declare
-               Switch         : constant String :=
-                                  Last_Switches.Table (J).all;
-
-               ALI_File       : constant String (1 .. Switch'Length + 4) :=
-                                  Switch & ".ali";
+               Switch    : constant String :=
+                             Last_Switches.Table (J).all;
+               ALI_File  : constant String (1 .. Switch'Length + 4) :=
+                             Switch & ".ali";
 
                Test_Existence : Boolean := False;
 

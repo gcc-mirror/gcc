@@ -1,3 +1,14 @@
+2009-04-20  Bob Duff  <duff@adacore.com>
+
+	* sem.adb, gnat1drv.adb, debug.adb: Use the -gnatd.W switch to control
+	debugging output.
+
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb: Minor reformatting
+
+	* gnatcmd.adb: Minor reformatting
+
 2009-04-20  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch4.adb (Analyze_User_Defined_Binary_Op): If left operand is

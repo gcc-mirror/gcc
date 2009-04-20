@@ -140,7 +140,7 @@ package body Debug is
    --  d.T  Force Optimize_Alignment (Time)
    --  d.U
    --  d.V
-   --  d.W
+   --  d.W  Print out debugging information for Walk_Library_Items
    --  d.X
    --  d.Y
    --  d.Z
@@ -558,6 +558,10 @@ package body Debug is
    --  d.S  Force Optimize_Alignment (Space) mode as the default
 
    --  d.T  Force Optimize_Alignment (Time) mode as the default
+
+   --  d.W  Print out debugging information for Walk_Library_Items, including
+   --       the order in which units are walked. This is primarily for SofCheck
+   --       Inspector.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

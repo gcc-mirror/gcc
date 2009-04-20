@@ -6153,12 +6153,11 @@ package body Sem_Attr is
          Ind : Node_Id;
 
       begin
-         --  In the case of a generic index type, the bounds may
-         --  appear static but the computation is not meaningful,
-         --  and may generate a spurious warning.
+         --  In the case of a generic index type, the bounds may appear static
+         --  but the computation is not meaningful in this case, and may
+         --  generate a spurious warning.
 
          Ind := First_Index (P_Type);
-
          while Present (Ind) loop
             if Is_Generic_Type (Etype (Ind)) then
                return;

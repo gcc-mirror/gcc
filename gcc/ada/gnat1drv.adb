@@ -740,9 +740,13 @@ begin
       Namet.Lock;
       Stringt.Lock;
 
-      --  ???pragma Debug (Check_Library_Items);
-      --  Commented out, because it currently does not work if the -gnatn
-      --  switch (back end inlining) is used.
+      --  ???Check_Library_Items under control of a debug flag, because it
+      --  currently does not work if the -gnatn switch (back end inlining) is
+      --  used.
+
+      if Debug_Flag_Dot_WW then
+         Check_Library_Items;
+      end if;
 
       --  Here we call the back end to generate the output code
 
