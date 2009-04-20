@@ -1688,26 +1688,28 @@ package body Sem_Type is
         and then Present (Access_Definition (Parent (N)))
       then
          if Ekind (It1.Typ) = E_Anonymous_Access_Type
-           or else Ekind (It1.Typ) = E_Anonymous_Access_Subprogram_Type
+              or else
+            Ekind (It1.Typ) = E_Anonymous_Access_Subprogram_Type
          then
             if Ekind (It2.Typ) = Ekind (It1.Typ) then
 
                --  True ambiguity
 
                return No_Interp;
+
             else
                return It1;
             end if;
 
          elsif Ekind (It2.Typ) = E_Anonymous_Access_Type
-           or else Ekind (It2.Typ) = E_Anonymous_Access_Subprogram_Type
+                 or else
+               Ekind (It2.Typ) = E_Anonymous_Access_Subprogram_Type
          then
             return It2;
 
+         --  No legal interpretation
+
          else
-
-            --  No legal interpretation.
-
             return No_Interp;
          end if;
 

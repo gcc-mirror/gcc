@@ -788,7 +788,7 @@ package body Sem_Ch8 is
                I    : Interp_Index;
                It   : Interp;
                Typ  : Entity_Id := Empty;
-               Seen : Boolean := False;
+               Seen : Boolean   := False;
 
             begin
                Get_First_Interp (Nam, I, It);
@@ -799,8 +799,9 @@ package body Sem_Ch8 is
 
                   if Ekind (It.Typ) = Ekind (T) then
                      if Ekind (T) = E_Anonymous_Access_Subprogram_Type
-                       and then Type_Conformant
-                         (Designated_Type (T), Designated_Type (It.Typ))
+                       and then
+                         Type_Conformant
+                           (Designated_Type (T), Designated_Type (It.Typ))
                      then
                         if not Seen then
                            Seen := True;
@@ -810,8 +811,8 @@ package body Sem_Ch8 is
                         end if;
 
                      elsif Ekind (T) = E_Anonymous_Access_Type
-                       and then Covers
-                         (Designated_Type (T), Designated_Type (It.Typ))
+                       and then
+                         Covers (Designated_Type (T), Designated_Type (It.Typ))
                      then
                         if not Seen then
                            Seen := True;

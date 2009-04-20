@@ -1,3 +1,26 @@
+2009-04-20  Pascal Obry  <obry@adacore.com>
+
+	* a-direct.adb (To_Lower_If_Case_Insensitive): Removed.
+	Remove all calls to To_Lower_If_Case_Insensitive to preserve
+	the pathname original casing.
+
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
+	* g-trasym.adb: Minor reformatting
+
+	* s-os_lib.adb: Minor reformatting
+
+	* sem.adb: Minor reformatting
+	Minor code reorganization
+
+	* sem_ch3.adb: Minor reformatting
+
+	* sem_ch4.adb: Minor reformatting
+
+	* sem_ch8.adb: Minor reformatting
+
+	* sem_type.adb: Minor reformatting
+
 2009-04-20  Javier Miranda  <miranda@adacore.com>
 
 	* sem_disp.adb (Find_Dispatching_Type): For subprograms internally
