@@ -325,41 +325,34 @@ next:;
   return phi_inserted;
 }
 
-/* Helper walking the dominator tree starting from BB and processing
-   phi nodes with global data PHIVN and N.  */
-
-static bool
-tree_ssa_phiprop_1 (basic_block bb, struct phiprop_d *phivn, size_t n)
-{
-  bool did_something = false; 
-  basic_block son;
-  gimple_stmt_iterator gsi;
-
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    did_something |= propagate_with_phi (bb, gsi_stmt (gsi), phivn, n);
-
-  for (son = first_dom_son (CDI_DOMINATORS, bb);
-       son;
-       son = next_dom_son (CDI_DOMINATORS, son))
-    did_something |= tree_ssa_phiprop_1 (son, phivn, n);
-
-  return did_something;
-}
-
 /* Main entry for phiprop pass.  */
 
 static unsigned int
 tree_ssa_phiprop (void)
 {
+  VEC(basic_block, heap) *bbs;
   struct phiprop_d *phivn;
+  bool did_something = false; 
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+  unsigned i;
 
   calculate_dominance_info (CDI_DOMINATORS);
 
   phivn = XCNEWVEC (struct phiprop_d, num_ssa_names);
 
-  if (tree_ssa_phiprop_1 (ENTRY_BLOCK_PTR, phivn, num_ssa_names))
+  /* Walk the dominator tree in preorder.  */
+  bbs = get_all_dominated_blocks (CDI_DOMINATORS,
+				  single_succ (ENTRY_BLOCK_PTR));
+  for (i = 0; VEC_iterate (basic_block, bbs, i, bb); ++i)
+    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      did_something |= propagate_with_phi (bb, gsi_stmt (gsi),
+					   phivn, num_ssa_names);
+
+  if (did_something)
     gsi_commit_edge_inserts ();
 
+  VEC_free (basic_block, heap, bbs);
   free (phivn);
 
   return 0;

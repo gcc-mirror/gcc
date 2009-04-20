@@ -1,3 +1,13 @@
+2009-04-20  Richard Guenther  <rguenther@suse.de>
+
+	* basic-block.h (get_all_dominated_blocks): Declare.
+	* dominance.c (get_all_dominated_blocks): New function.
+	* tree-cfg.c (get_all_dominated_blocks): Remove.
+	(remove_edge_and_dominated_blocks): Adjust.
+	* tree-ssa-phiprop.c (tree_ssa_phiprop_1): Fold in ...
+	(tree_ssa_phiprop): ... here.  Use get_all_dominated_blocks
+	instead of recursing.
+
 2009-04-20  Doug Kwan  <dougkwan@google.com>
 
 	* cgraph.h (cgraph_node_ptr): New type for vector functions.

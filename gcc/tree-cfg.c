@@ -6681,20 +6681,6 @@ gimple_purge_dead_abnormal_call_edges (basic_block bb)
   return changed;
 }
 
-/* Stores all basic blocks dominated by BB to DOM_BBS.  */
-
-static void
-get_all_dominated_blocks (basic_block bb, VEC (basic_block, heap) **dom_bbs)
-{
-  basic_block son;
-
-  VEC_safe_push (basic_block, heap, *dom_bbs, bb);
-  for (son = first_dom_son (CDI_DOMINATORS, bb);
-       son;
-       son = next_dom_son (CDI_DOMINATORS, son))
-    get_all_dominated_blocks (son, dom_bbs);
-}
-
 /* Removes edge E and all the blocks dominated by it, and updates dominance
    information.  The IL in E->src needs to be updated separately.
    If dominance info is not available, only the edge E is removed.*/
@@ -6754,7 +6740,7 @@ remove_edge_and_dominated_blocks (edge e)
 		    get_immediate_dominator (CDI_DOMINATORS, e->dest)->index);
   else
     {
-      get_all_dominated_blocks (e->dest, &bbs_to_remove);
+      bbs_to_remove = get_all_dominated_blocks (CDI_DOMINATORS, e->dest);
       for (i = 0; VEC_iterate (basic_block, bbs_to_remove, i, bb); i++)
 	{
 	  FOR_EACH_EDGE (f, ei, bb->succs)
