@@ -116,11 +116,6 @@ package GNAT.Sockets.Thin is
       Optval  : System.Address;
       Optlen  : not null access C.int) return C.int;
 
-   function Inet_Pton
-     (Af  : C.int;
-      Cp  : C.Strings.chars_ptr;
-      Inp : System.Address) return C.int;
-
    function C_Ioctl
      (S    : C.int;
       Req  : C.int;
@@ -228,7 +223,6 @@ private
    pragma Import (C, C_Getpeername, "getpeername");
    pragma Import (C, C_Getsockname, "getsockname");
    pragma Import (C, C_Getsockopt, "getsockopt");
-   pragma Import (C, Inet_Pton, "__gnat_inet_pton");
    pragma Import (C, C_Listen, "listen");
    pragma Import (C, C_Readv, "readv");
    pragma Import (C, C_Select, "select");
