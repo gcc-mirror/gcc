@@ -1,3 +1,10 @@
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (call_to_gnu): When creating the copy for a
+	non-addressable parameter passed by reference, do not convert the
+	actual if its type is already the nominal type, unless it is of
+	self-referential size.
+
 2009-04-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat_ugn.texi: Fix typos.
