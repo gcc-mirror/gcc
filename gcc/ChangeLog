@@ -1,3 +1,7 @@
+2009-04-20  Michael Matz  <matz@suse.de>
+
+	* Makefile.in (generated_files): Take out $(simple_generated_c).
+
 2009-04-19  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config/i386/cygwin-stdint.h (INTPTR_TYPE):  Remove "long".
