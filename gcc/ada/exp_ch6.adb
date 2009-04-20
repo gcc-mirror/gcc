@@ -215,6 +215,10 @@ package body Exp_Ch6 is
    --  reference to the object itself, and the call becomes a call to the
    --  corresponding protected subprogram.
 
+   function Is_Null_Procedure (Subp : Entity_Id) return Boolean;
+   --  Predicate to recognize stubbed procedures and null procedures, which
+   --  can be inlined unconditionally in all cases.
+
    ----------------------------------------------
    -- Add_Access_Actual_To_Build_In_Place_Call --
    ----------------------------------------------
@@ -2887,6 +2891,14 @@ package body Exp_Ch6 is
       if Ekind (Subp) = E_Function
         or else Ekind (Subp) = E_Procedure
       then
+         --  A simple optimization: always replace calls to null procedures
+         --  with a null statement.
+
+         if Is_Null_Procedure (Subp)  then
+            Rewrite (N, Make_Null_Statement (Loc));
+            return;
+         end if;
+
          if Is_Inlined (Subp) then
 
             Inlined_Subprogram : declare
@@ -3216,10 +3228,6 @@ package body Exp_Ch6 is
       --  If the type returned by the function is unconstrained and the
       --  call can be inlined, special processing is required.
 
-      function Is_Null_Procedure return Boolean;
-      --  Predicate to recognize stubbed procedures and null procedures, for
-      --  which there is no need for the full inlining mechanism.
-
       procedure Make_Exit_Label;
       --  Build declaration for exit label to be used in Return statements
 
@@ -3245,50 +3253,6 @@ package body Exp_Ch6 is
 
       function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean;
       --  Determine whether a formal parameter is used only once in Orig_Bod
-
-      -----------------------
-      -- Is_Null_Procedure --
-      -----------------------
-
-      function Is_Null_Procedure return Boolean is
-         Decl : constant Node_Id := Unit_Declaration_Node (Subp);
-
-      begin
-         if Ekind (Subp) /= E_Procedure then
-            return False;
-
-         elsif Nkind (Orig_Bod) /= N_Subprogram_Body then
-            return False;
-
-         --  Check if this is an Ada 2005 null procedure
-
-         elsif Nkind (Decl) = N_Subprogram_Declaration
-           and then Null_Present (Specification (Decl))
-         then
-            return True;
-
-         --  Check if the body contains only a null statement, followed by the
-         --  return statement added during expansion.
-
-         else
-            declare
-               Stat : constant Node_Id :=
-                        First
-                          (Statements (Handled_Statement_Sequence (Orig_Bod)));
-
-               Stat2 : constant Node_Id := Next (Stat);
-
-            begin
-               return
-                 Nkind (Stat) = N_Null_Statement
-                   and then
-                     (No (Stat2)
-                       or else
-                         (Nkind (Stat2) = N_Simple_Return_Statement
-                           and then No (Next (Stat2))));
-            end;
-         end if;
-      end Is_Null_Procedure;
 
       ---------------------
       -- Make_Exit_Label --
@@ -3611,21 +3575,17 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Inlined_Call
 
    begin
-      --  Check for special case of To_Address call, and if so, just do an
-      --  unchecked conversion instead of expanding the call. Not only is this
-      --  more efficient, but it also avoids problem with order of elaboration
-      --  when address clauses are inlined (address expression elaborated at
-      --  wrong point).
+
+      --  For To_Address, just do an unchecked conversion . Not only is this
+      --  efficient, but it also avoids problem with order of elaboration
+      --  when address clauses are inlined (address expression elaborated
+      --  at the wrong point).
 
       if Subp = RTE (RE_To_Address) then
          Rewrite (N,
            Unchecked_Convert_To
             (RTE (RE_Address),
              Relocate_Node (First_Actual (N))));
-         return;
-
-      elsif Is_Null_Procedure  then
-         Rewrite (N, Make_Null_Statement (Loc));
          return;
       end if;
 
@@ -4929,6 +4889,61 @@ package body Exp_Ch6 is
          end if;
       end;
    end Freeze_Subprogram;
+
+   -----------------------
+   -- Is_Null_Procedure --
+   -----------------------
+
+   function Is_Null_Procedure (Subp : Entity_Id) return Boolean is
+      Decl : constant Node_Id := Unit_Declaration_Node (Subp);
+
+   begin
+      if Ekind (Subp) /= E_Procedure then
+         return False;
+
+      --  Check if this is a declared null procedure
+
+      elsif Nkind (Decl) = N_Subprogram_Declaration then
+         if Null_Present (Specification (Decl)) then
+            return True;
+
+         elsif No (Body_To_Inline (Decl)) then
+            return False;
+
+         --  Check if the body contains only a null statement, followed by
+         --  the return statement added during expansion.
+
+         else
+            declare
+               Orig_Bod : constant Node_Id := Body_To_Inline (Decl);
+
+               Stat  : Node_Id;
+               Stat2 : Node_Id;
+
+            begin
+               if Nkind (Orig_Bod) /= N_Subprogram_Body then
+                  return False;
+               else
+                  Stat :=
+                     First
+                       (Statements (Handled_Statement_Sequence (Orig_Bod)));
+                  Stat2 := Next (Stat);
+
+                  return
+                    Nkind (Stat) = N_Null_Statement
+                      and then
+                        (No (Stat2)
+                          or else
+                            (Nkind (Stat2) = N_Simple_Return_Statement
+                              and then No (Next (Stat2))));
+               end if;
+            end;
+         end if;
+
+      else
+         return False;
+      end if;
+   end Is_Null_Procedure;
 
    -------------------------------------------
    -- Make_Build_In_Place_Call_In_Allocator --

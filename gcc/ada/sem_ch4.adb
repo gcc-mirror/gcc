@@ -127,10 +127,10 @@ package body Sem_Ch4 is
    procedure Check_Misspelled_Selector
      (Prefix : Entity_Id;
       Sel    : Node_Id);
-   --  Give possible misspelling diagnostic if Sel is likely to be
-   --  a misspelling of one of the selectors of the Prefix.
-   --  This is called by Analyze_Selected_Component after producing
-   --  an invalid selector error message.
+   --  Give possible misspelling diagnostic if Sel is likely to be a mis-
+   --  spelling of one of the selectors of the Prefix. This is called by
+   --  Analyze_Selected_Component after producing an invalid selector error
+   --  message.
 
    function Defined_In_Scope (T : Entity_Id; S : Entity_Id) return Boolean;
    --  Verify that type T is declared in scope S. Used to find interpretations

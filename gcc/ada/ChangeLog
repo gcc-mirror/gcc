@@ -1,3 +1,21 @@
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb: Minor reformatting
+
+	* lib-load.adb: Minor reformatting
+
+	* sem_ch4.adb: Minor reformatting
+
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
+	* namet-sp.ads, namet-sp.adb (Is_Bad_Spelling_Of): Implement new spec
+	(equal values => False).
+
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Is_Null_Procedure): predicate is global, so that calls
+	to null procedures can be inlined unconditionally.
+
 2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (call_to_gnu): When creating the copy for a

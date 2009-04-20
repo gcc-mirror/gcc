@@ -993,9 +993,9 @@ package body Sem_Ch3 is
    is
 
       procedure Check_For_Premature_Usage (Def : Node_Id);
-      --  Check that type T_Name is not used, directly or recursively,
-      --  as a parameter or a return type in Def. Def is either a subtype,
-      --  an access_definition, or an access_to_subprogram_definition.
+      --  Check that type T_Name is not used, directly or recursively, as a
+      --  parameter or a return type in Def. Def is either a subtype, an
+      --  access_definition, or an access_to_subprogram_definition.
 
       -------------------------------
       -- Check_For_Premature_Usage --
