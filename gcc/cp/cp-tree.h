@@ -3592,7 +3592,7 @@ enum tsubst_flags {
 typedef int tsubst_flags_t;
 
 /* The kind of checking we can do looking in a class hierarchy.  */
-typedef enum base_access {
+enum base_access {
   ba_any = 0,  /* Do not check access, allow an ambiguous base,
 		      prefer a non-virtual base */
   ba_unique = 1 << 0,  /* Must be a unique base.  */
@@ -3600,7 +3600,11 @@ typedef enum base_access {
   ba_check = ba_unique | ba_check_bit,
   ba_ignore_scope = 1 << 2, /* Ignore access allowed by local scope.  */
   ba_quiet = 1 << 3     /* Do not issue error messages.  */
-} base_access;
+};
+
+/* This type is used for parameters and variables which hold
+   combinations of the flags in enum base_access.  */
+typedef int base_access;
 
 /* The various kinds of access check during parsing.  */
 typedef enum deferring_kind {

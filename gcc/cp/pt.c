@@ -13131,7 +13131,9 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
                        match.  */
 
                     if (resolve_overloaded_unification
-                        (tparms, targs, parm, arg, strict, sub_strict)
+                        (tparms, targs, parm, arg,
+			 (unification_kind_t) strict,
+			 sub_strict)
                         != 0)
                       return 1;
                     skip_arg_p = true;
@@ -13150,8 +13152,8 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 
             if (!subr)
               arg_strict |= 
-                maybe_adjust_types_for_deduction (strict, &parm, &arg, 
-						  arg_expr);
+                maybe_adjust_types_for_deduction ((unification_kind_t) strict,
+						  &parm, &arg, arg_expr);
           }
 
         if (!skip_arg_p)
