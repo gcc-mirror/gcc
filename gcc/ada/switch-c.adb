@@ -230,6 +230,7 @@ package body Switch.C is
 
                if Tree_Output then
                   ASIS_Mode := True;
+                  Inspector_Mode := False;
                end if;
 
             --  Processing for d switch
@@ -771,6 +772,7 @@ package body Switch.C is
 
                if Operating_Mode = Check_Semantics then
                   ASIS_Mode := True;
+                  Inspector_Mode := False;
                end if;
 
                Back_Annotate_Rep_Info := True;
