@@ -1038,13 +1038,15 @@ package GNAT.Sockets is
    --  that it does not watch for exception events. Note that on some
    --  platforms it is kept process blocking on purpose. The timeout parameter
    --  allows the user to have the behaviour he wants. Abort_Selector allows
-   --  to abort safely a Check_Selector that is blocked forever. A special
-   --  file descriptor is opened by Create_Selector and included in each call
-   --  to Check_Selector. Abort_Selector causes an event to occur on this
-   --  descriptor in order to unblock Check_Selector. The user must call
-   --  Close_Selector to discard this special file. A reason to abort a select
-   --  operation is typically to add a socket in one of the socket sets when
-   --  the timeout is set to forever.
+   --  to safely abort a blocked Check_Selector call. A special socket
+   --  is opened by Create_Selector and included in each call to
+   --  Check_Selector. Abort_Selector causes an event to occur on this
+   --  descriptor in order to unblock Check_Selector. Note that each call to
+   --  Abort_Selector will cause exactly one call to Check_Selector to return
+   --  with Aborted status. The special socket created by Create_Selector is
+   --  closed when Close_Selector is called.
+   --  A typical case where it is useful to abort a Check_Selector operation is
+   --  the situation where a change to the monitored sockets set must be made.
 
    procedure Create_Selector (Selector : out Selector_Type);
    --  Create a new selector
