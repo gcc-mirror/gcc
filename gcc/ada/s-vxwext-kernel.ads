@@ -78,7 +78,7 @@ package System.VxWorks.Ext is
    type UINT64 is mod 2 ** Long_Long_Integer'Size;
 
    function tickGet return UINT64;
-   --  "tickGet" not available for cert vThreads:
+   --  needed for ravenscar-cert
    pragma Import (C, tickGet, "tick64Get");
 
 end System.VxWorks.Ext;
