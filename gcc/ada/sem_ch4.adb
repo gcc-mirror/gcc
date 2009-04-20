@@ -3918,6 +3918,18 @@ package body Sem_Ch4 is
             then
                Add_One_Interp (N, Op_Id, Etype (Op_Id));
 
+               --  If the left operand is overloaded, indicate that the
+               --  current type is a viable candidate. This is redundant
+               --  in most cases, but for equality and comparison operators
+               --  where the context does not impose a type on the operands,
+               --  setting the proper type is necessary to avoid subsequent
+               --  ambiguities during resolution, when both user-defined and
+               --  predefined operators may be candidates.
+
+               if Is_Overloaded (Left_Opnd (N)) then
+                  Set_Etype (Left_Opnd (N), Etype (F1));
+               end if;
+
                if Debug_Flag_E then
                   Write_Str ("user defined operator ");
                   Write_Name (Chars (Op_Id));
