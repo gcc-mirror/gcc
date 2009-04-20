@@ -1,4 +1,4 @@
-/* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008
+/* Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2008, 2009
    Free Software Foundation
 
    This file is part of libgcj.
@@ -3025,13 +3025,15 @@ verify_instructions_0 (void)
 	case op_newarray:
 	  {
 	    int atype = get_byte ();
+	    vfy_jclass k;
 	    type t;
 	    /* We intentionally have chosen constants to make this
 	       valid.  */
 	    if (atype < boolean_type || atype > long_type)
 	      verify_fail_pc ("type not primitive", vfr->start_PC);
 	    pop_type (int_type);
-	    init_type_from_class (&t, construct_primitive_array_type (atype));
+	    k = construct_primitive_array_type ((type_val) atype);
+	    init_type_from_class (&t, k);
 	    push_type_t (t);
 	  }
 	  break;
