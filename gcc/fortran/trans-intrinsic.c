@@ -1489,7 +1489,7 @@ gfc_conv_intrinsic_ttynam (gfc_se * se, gfc_expr * expr)
 /* TODO: Mismatching types can occur when specific names are used.
    These should be handled during resolution.  */
 static void
-gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, int op)
+gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
 {
   tree tmp;
   tree mvar;
@@ -1725,7 +1725,7 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
     }
  */
 static void
-gfc_conv_intrinsic_anyall (gfc_se * se, gfc_expr * expr, int op)
+gfc_conv_intrinsic_anyall (gfc_se * se, gfc_expr * expr, enum tree_code op)
 {
   tree resvar;
   stmtblock_t block;
@@ -1880,7 +1880,7 @@ gfc_conv_intrinsic_count (gfc_se * se, gfc_expr * expr)
 
 /* Inline implementation of the sum and product intrinsics.  */
 static void
-gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, int op)
+gfc_conv_intrinsic_arith (gfc_se * se, gfc_expr * expr, enum tree_code op)
 {
   tree resvar;
   tree type;
@@ -2107,7 +2107,7 @@ gfc_conv_intrinsic_dot_product (gfc_se * se, gfc_expr * expr)
 
 
 static void
-gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
+gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, enum tree_code op)
 {
   stmtblock_t body;
   stmtblock_t block;
@@ -2312,7 +2312,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
 }
 
 static void
-gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
+gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, enum tree_code op)
 {
   tree limit;
   tree type;
@@ -2484,7 +2484,7 @@ gfc_conv_intrinsic_btest (gfc_se * se, gfc_expr * expr)
 
 /* Generate code to perform the specified operation.  */
 static void
-gfc_conv_intrinsic_bitop (gfc_se * se, gfc_expr * expr, int op)
+gfc_conv_intrinsic_bitop (gfc_se * se, gfc_expr * expr, enum tree_code op)
 {
   tree args[2];
 
@@ -2509,7 +2509,7 @@ gfc_conv_intrinsic_singlebitop (gfc_se * se, gfc_expr * expr, int set)
   tree args[2];
   tree type;
   tree tmp;
-  int op;
+  enum tree_code op;
 
   gfc_conv_intrinsic_function_args (se, expr, args, 2);
   type = TREE_TYPE (args[0]);
@@ -3584,7 +3584,7 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 /* Intrinsic string comparison functions.  */
 
 static void
-gfc_conv_intrinsic_strcmp (gfc_se * se, gfc_expr * expr, int op)
+gfc_conv_intrinsic_strcmp (gfc_se * se, gfc_expr * expr, enum tree_code op)
 {
   tree args[4];
 
