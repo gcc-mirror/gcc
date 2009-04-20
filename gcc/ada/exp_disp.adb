@@ -4749,6 +4749,7 @@ package body Exp_Disp is
            and then not Is_Abstract_Type (Typ)
            and then not Is_Controlled (Typ)
            and then not Restriction_Active (No_Dispatching_Calls)
+           and then not Restriction_Active (No_Select_Statements)
          then
             Append_To (Result,
               Make_Object_Declaration (Loc,
@@ -5545,13 +5546,16 @@ package body Exp_Disp is
          Append_List_To (Result, Elab_Code);
       end if;
 
-      --  Populate the two auxiliary tables used for dispatching
-      --  asynchronous, conditional and timed selects for synchronized
-      --  types that implement a limited interface.
+      --  Populate the two auxiliary tables used for dispatching asynchronous,
+      --  conditional and timed selects for synchronized types that implement
+      --  a limited interface. Skip this step in Ravenscar profile or when
+      --  general dispatching is forbidden.
 
       if Ada_Version >= Ada_05
         and then Is_Concurrent_Record_Type (Typ)
         and then Has_Interfaces (Typ)
+        and then not Restriction_Active (No_Dispatching_Calls)
+        and then not Restriction_Active (No_Select_Statements)
       then
          Append_List_To (Result,
            Make_Select_Specific_Data_Table (Typ));

@@ -482,8 +482,7 @@ package body ALI is
          end if;
 
          loop
-            Name_Len := Name_Len + 1;
-            Name_Buffer (Name_Len) := Getc;
+            Add_Char_To_Name_Buffer (Getc);
 
             exit when At_End_Of_Field and not Ignore_Spaces;
 
@@ -936,8 +935,7 @@ package body ALI is
 
             Name_Len := 0;
             while not At_Eol loop
-               Name_Len := Name_Len + 1;
-               Name_Buffer (Name_Len) := Getc;
+               Add_Char_To_Name_Buffer (Getc);
             end loop;
 
             --  If -fstack-check, record that it occurred
@@ -2000,8 +1998,7 @@ package body ALI is
                if Nextc not in '0' .. '9' then
                   Name_Len := 0;
                   while not At_End_Of_Field loop
-                     Name_Len := Name_Len + 1;
-                     Name_Buffer (Name_Len) := Getc;
+                     Add_Char_To_Name_Buffer (Getc);
                   end loop;
 
                   --  Set the subunit name. Note that we use Name_Find rather
@@ -2022,8 +2019,7 @@ package body ALI is
                   Name_Len := 0;
 
                   while not At_End_Of_Field loop
-                     Name_Len := Name_Len + 1;
-                     Name_Buffer (Name_Len) := Getc;
+                     Add_Char_To_Name_Buffer (Getc);
                   end loop;
 
                   Sdep.Table (Sdep.Last).Rfile := Name_Enter;

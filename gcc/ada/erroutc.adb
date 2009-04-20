@@ -926,8 +926,7 @@ package body Erroutc is
       Name_Len := 0;
 
       while J <= Text'Last and then Text (J) in 'A' .. 'Z' loop
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := Text (J);
+         Add_Char_To_Name_Buffer (Text (J));
          J := J + 1;
       end loop;
 

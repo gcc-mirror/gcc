@@ -358,7 +358,8 @@ package body GNAT.Sockets.Thin is
    ---------------
 
    --  VMS does not support inet_aton(3), so emulate it here in terms of
-   --  inet_addr(3).
+   --  inet_addr(3). Note: unlike other C functions, inet_aton reports
+   --  failure with a 0 return, and success with a non-zero return.
 
    function Inet_Aton
      (Cp  : C.Strings.chars_ptr;
@@ -373,7 +374,7 @@ package body GNAT.Sockets.Thin is
       pragma Import (C, C_Inet_Addr, "DECC$INET_ADDR");
    begin
       if Cp = Null_Ptr or else Inp = Null_Address then
-         Raise_Socket_Error (SOSC.EINVAL);
+         return 0;
       end if;
 
       --  Special case for the all-ones broadcast address: this address has the
@@ -382,16 +383,16 @@ package body GNAT.Sockets.Thin is
 
       if String'(Value (Cp)) = "255.255.255.255" then
          Conv.To_Pointer (Inp).all := -1;
-         return 0;
+         return 1;
       end if;
 
       Res := C_Inet_Addr (Cp);
       if Res = -1 then
-         return Res;
+         return 0;
       end if;
 
       Conv.To_Pointer (Inp).all := Res;
-      return 0;
+      return 1;
    end Inet_Aton;
 
    ----------------

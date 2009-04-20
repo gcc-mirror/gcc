@@ -312,8 +312,7 @@ package body Sem_Type is
          end loop;
 
          All_Interp.Table (All_Interp.Last) := (Name, Typ, Abstr_Op);
-         All_Interp.Increment_Last;
-         All_Interp.Table (All_Interp.Last) := No_Interp;
+         All_Interp.Append (No_Interp);
       end Add_Entry;
 
       ----------------------------
@@ -634,8 +633,7 @@ package body Sem_Type is
                      then
                         All_Interp.Table (All_Interp.Last) :=
                           (H, Etype (H), Empty);
-                        All_Interp.Increment_Last;
-                        All_Interp.Table (All_Interp.Last) := No_Interp;
+                        All_Interp.Append (No_Interp);
                         goto Next_Homograph;
 
                      elsif Scope (H) /= Standard_Standard then
@@ -2625,8 +2623,7 @@ package body Sem_Type is
       Map_Ptr : Int;
 
    begin
-      All_Interp.Increment_Last;
-      All_Interp.Table (All_Interp.Last) := No_Interp;
+      All_Interp.Append (No_Interp);
 
       Map_Ptr := Headers (Hash (N));
 

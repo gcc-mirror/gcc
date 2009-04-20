@@ -1,5 +1,47 @@
 2009-04-20  Thomas Quinot  <quinot@adacore.com>
 
+	* sem_type.adb, ali.adb, erroutc.adb: Minor code reorganization
+	(no behaviour change): Use Append instead of Increment_Last followed
+	by assignment.
+
+2009-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Make_Predefined_Primitive_Specs): Do not generate the
+	declarations of all primitives associated with dispatching asynchronous,
+	conditional and timed selects when dispaching calls are forbidden and
+	select statements are not allowed (such as in Ravenscar).
+	(Predefined_Primitive_Bodies): Ditto for bodies.
+
+	* exp_disp.ad (Make_DT): Do not create and populate the
+	Select_Specific_Data of the dispatch table when dispatching calls are
+	forbidden and select statements are not allowed (such as in Ravenscar).
+
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
+	* a-tifiio.adb: Minor reformatting
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socthi-vms.adb, g-socket.adb, g-socket.ads: inet_aton(3), unlike
+	other C library functions, report *failure* with a zero status, and
+	success with a non-zero status.
+
+2009-04-20  Bob Duff  <duff@adacore.com>
+
+	* sem.ads, sem.adb (Walk_Library_Items): New generic procedure.
+	(Semantics): After analyzing each unit, Append it to the
+	Comp_Unit_List, if appropriate.
+
+	* gnat1drv.adb (Check_Library_Items): New procedure for debugging
+	purposes.
+	(Gnat1drv): Correct comment regarding Back_End_Mode.
+
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat_ugn.texi: Add documentation for -fno-inline-small-functions.
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
 	* s-taprop-irix.adb, s-taprop-tru64.adb, s-taprop-vms.adb,
 	output.adb, output.ads, s-taprop-hpux-dce.adb,
 	s-taprop-linux.adb, s-taprop-solaris.adb, s-taprop-posix.adb: Minor
