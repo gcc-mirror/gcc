@@ -1,3 +1,14 @@
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Expand_Subtype_From_Expr): use the
+	underlying_record_view when available, to create the proper constrained
+	subtype for an object of a derived type with unknown discriminants.
+
+2009-04-20  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call): Avoid generation of temporaries for
+	formals that have pragma unreferenced.
+
 2009-04-20  Pascal Obry  <obry@adacore.com>
 
 	* a-direct.adb (To_Lower_If_Case_Insensitive): Removed.
