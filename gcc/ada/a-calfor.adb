@@ -170,7 +170,12 @@ package body Ada.Calendar.Formatting is
 
       --  Prevent rounding when converting to natural
 
-      Sub_Second := Sub_Second * 100.0 - 0.5;
+      Sub_Second := Sub_Second * 100.0;
+
+      if Sub_Second > 0.0 then
+         Sub_Second := Sub_Second - 0.5;
+      end if;
+
       SS_Nat := Natural (Sub_Second);
 
       declare
@@ -249,7 +254,12 @@ package body Ada.Calendar.Formatting is
 
       --  Prevent rounding when converting to natural
 
-      Sub_Second := Sub_Second * 100.0 - 0.5;
+      Sub_Second := Sub_Second * 100.0;
+
+      if Sub_Second > 0.0 then
+         Sub_Second := Sub_Second - 0.5;
+      end if;
+
       SS_Nat := Natural (Sub_Second);
 
       declare

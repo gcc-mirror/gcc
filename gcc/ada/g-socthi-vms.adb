@@ -31,31 +31,28 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Temporary version for Alpha/VMS
+--  This is the version for OpenVMS
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
 with GNAT.Task_Lock;
 
 with Interfaces.C; use Interfaces.C;
 
-with System.Address_To_Access_Conversions;
-
 package body GNAT.Sockets.Thin is
 
    Non_Blocking_Sockets : aliased Fd_Set;
-   --  When this package is initialized with Process_Blocking_IO set
-   --  to True, sockets are set in non-blocking mode to avoid blocking
-   --  the whole process when a thread wants to perform a blocking IO
-   --  operation. But the user can also set a socket in non-blocking
-   --  mode by purpose. In order to make a difference between these
-   --  two situations, we track the origin of non-blocking mode in
-   --  Non_Blocking_Sockets. If S is in Non_Blocking_Sockets, it has
-   --  been set in non-blocking mode by the user.
+   --  When this package is initialized with Process_Blocking_IO set to True,
+   --  sockets are set in non-blocking mode to avoid blocking the whole process
+   --  when a thread wants to perform a blocking IO operation. But the user can
+   --  also set a socket in non-blocking mode by purpose. In order to make a
+   --  difference between these two situations, we track the origin of
+   --  non-blocking mode in Non_Blocking_Sockets. If S is in
+   --  Non_Blocking_Sockets, it has been set in non-blocking mode by the user.
 
    Quantum : constant Duration := 0.2;
-   --  When SOSC.Thread_Blocking_IO is False, we set sockets in
-   --  non-blocking mode and we spend a period of time Quantum between
-   --  two attempts on a blocking operation.
+   --  When SOSC.Thread_Blocking_IO is False, we set sockets to non-blocking
+   --  mode and we spend a period of time Quantum between two attempts on a
+   --  blocking operation.
 
    Unknown_System_Error : constant C.Strings.chars_ptr :=
                             C.Strings.New_String ("Unknown system error");

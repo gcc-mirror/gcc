@@ -2427,8 +2427,8 @@ package body Sem_Aggr is
          Ancestor_Typ := Etype (Ancestor);
          Loc          := Sloc (Ancestor);
 
-         --  In case of private types with unknown discriminants use the
-         --  underlying record view if it is available
+         --  For a private type with unknown discriminants, use the underlying
+         --  record view if it is available.
 
          if Has_Unknown_Discriminants (Ancestor_Typ)
            and then Present (Full_View (Ancestor_Typ))

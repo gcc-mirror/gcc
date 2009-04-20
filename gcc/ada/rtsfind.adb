@@ -950,9 +950,6 @@ package body Rtsfind is
       --  and it prevents spurious visibility conflicts between use-visible
       --  user entities, and entities in run-time packages.
 
-      --  In configurable run-time mode, subprograms marked Inline_Always must
-      --  be inlined, so in the case we retain the Front_End_Inlining mode.
-
       Save_Front_End_Inlining : Boolean;
 
       procedure Check_RPC;
@@ -1068,7 +1065,7 @@ package body Rtsfind is
       end if;
 
       Save_Front_End_Inlining := Front_End_Inlining;
-      Front_End_Inlining := Configurable_Run_Time_Mode;
+      Front_End_Inlining := False;
 
       --  Load unit if unit not previously loaded
 
@@ -1187,9 +1184,6 @@ package body Rtsfind is
       --  is both efficient, and it prevents spurious visibility conflicts
       --  between use-visible user entities, and entities in run-time packages.
 
-      --  In configurable run-time mode, subprograms marked Inline_Always must
-      --  be inlined, so in the case we retain the Front_End_Inlining mode.
-
       Save_Front_End_Inlining : Boolean;
 
    begin
@@ -1198,7 +1192,7 @@ package body Rtsfind is
       --  declarations.
 
       Save_Front_End_Inlining := Front_End_Inlining;
-      Front_End_Inlining      := Configurable_Run_Time_Mode;
+      Front_End_Inlining      := False;
 
       --  Load unit if unit not previously loaded
 
