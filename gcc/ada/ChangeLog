@@ -1,5 +1,11 @@
 2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (check_for_eliminated_entity): Remove.
+	(Attribute_to_gnu): Do not call check_for_eliminated_entity.
+	(call_to_gnu): Likewise.
+
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gigi): Declare the name of the compilation
 	unit as the first global name at the very beginning.
 
