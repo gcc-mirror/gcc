@@ -132,10 +132,12 @@ package Sem_Eval is
    type Compare_Result is (LT, LE, EQ, GT, GE, NE, Unknown);
    subtype Compare_GE is Compare_Result range EQ .. GE;
    subtype Compare_LE is Compare_Result range LT .. EQ;
+   --  Result subtypes for Compile_Time_Compare subprograms
+
    function Compile_Time_Compare
      (L, R         : Node_Id;
-      Assume_Valid : Boolean;
-      Rec          : Boolean := False) return Compare_Result;
+      Assume_Valid : Boolean) return Compare_Result;
+   pragma Inline (Compile_Time_Compare);
    --  Given two expression nodes, finds out whether it can be determined at
    --  compile time how the runtime values will compare. An Unknown result
    --  means that the result of a comparison cannot be determined at compile
@@ -145,9 +147,19 @@ package Sem_Eval is
    --  the result of assuming that entities involved in the comparison have
    --  valid representations. If Assume_Valid is false, then the base type of
    --  any involved entity is used so that no assumption of validity is made.
-   --  Rec is a parameter that is set True for a recursive call from within
-   --  Compile_Time_Compare to avoid some infinite recursion cases. It should
-   --  never be set by a client.
+
+   function Compile_Time_Compare
+     (L, R         : Node_Id;
+      Diff         : access Uint;
+      Assume_Valid : Boolean;
+      Rec          : Boolean := False) return Compare_Result;
+   --  This version of Compile_Time_Compare returns extra information if the
+   --  result is GT or LT. In these cases, if the magnitude of the difference
+   --  can be determined at compile time, this (positive) magnitude is returned
+   --  in Diff.all. If the magnitude of the difference cannot be determined
+   --  then Diff.all contains No_Uint on return. Rec is a parameter that is set
+   --  True for a recursive call from within Compile_Time_Compare to avoid some
+   --  infinite recursion cases. It should never be set by a client.
 
    procedure Flag_Non_Static_Expr (Msg : String; Expr : Node_Id);
    --  This procedure is called after it has been determined that Expr is not
@@ -311,7 +323,7 @@ package Sem_Eval is
    --  literals list for the enumeration case. Is_Static_Expression is set True
    --  in the result node. The result is fully analyzed/resolved. Static
    --  indicates whether the result should be considered static or not (True =
-   --  consider static). The point here is that normally all string literals
+   --  consider static). The point here is that normally all integer literals
    --  are static, but if this was the result of some sequence of evaluation
    --  where values were known at compile time but not static, then the result
    --  is not static.
