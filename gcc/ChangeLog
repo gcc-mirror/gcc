@@ -1,3 +1,10 @@
+2009-04-21  Ben Elliston  <bje@au.ibm.com>
+
+	PR target/5267
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Add documentation
+	for -mcall-eabi, -mcall-aixdesc, -mcall-freebsd and -mcall-openbsd
+	options.  Remove -mcall-solaris documentation.
+
 2009-04-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/13358
