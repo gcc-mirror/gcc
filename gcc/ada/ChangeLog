@@ -1,3 +1,8 @@
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gigi): Declare the name of the compilation
+	unit as the first global name at the very beginning.
+
 2009-04-20  Thomas Quinot  <quinot@adacore.com>
 
 	* socket.c, g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.ads,
