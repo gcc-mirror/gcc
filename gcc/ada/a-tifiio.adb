@@ -296,8 +296,6 @@ package body Ada.Text_IO.Fixed_IO is
    --  True iff a numerator and denominator can be calculated such that
    --  their ratio exactly represents the small of Num
 
-   --  Local Subprograms
-
    procedure Put
      (To   : out String;
       Last : out Natural;
@@ -423,14 +421,6 @@ package body Ada.Text_IO.Fixed_IO is
       Neg : constant Boolean := (Item < 0.0);
       Pos : Integer := 0;  -- Next digit X has value X * 10.0**Pos;
 
-      Y, Z : Int64;
-      E : constant Integer := Boolean'Pos (not Exact)
-                                *  (Max_Digits - 1 + Scale);
-      D : constant Integer := Boolean'Pos (Exact)
-                                * Integer'Min (A, Max_Digits - (Num'Fore - 1))
-                            + Boolean'Pos (not Exact)
-                                * (Scale - 1);
-
       procedure Put_Character (C : Character);
       pragma Inline (Put_Character);
       --  Add C to the output string To, updating Last
@@ -442,7 +432,7 @@ package body Ada.Text_IO.Fixed_IO is
       --  digit, Pos must not be changed outside Put_Digit anymore
 
       procedure Put_Int64 (X : Int64; Scale : Integer);
-      --  Output the decimal number X * 10**Scale
+      --  Output the decimal number abs X * 10**Scale.
 
       procedure Put_Scaled
         (X, Y, Z : Int64;
@@ -548,7 +538,10 @@ package body Ada.Text_IO.Fixed_IO is
             Put_Digit (0);
          end loop;
 
-         --  If Pos is less than Scale now, reset to equal Scale
+         --  If and only if more than one digit is output before the decimal
+         --  point, pos will be unequal to scale when outputting the first
+         --  digit.
+         pragma Assert (Pos = Scale or else Last = To'First - 1);
 
          Pos := Scale;
 
@@ -564,60 +557,87 @@ package body Ada.Text_IO.Fixed_IO is
          A       : Field;
          E       : Integer)
       is
-         N  : constant Natural := (A + Max_Digits - 1) / Max_Digits + 1;
-         Q  : array (1 .. N) of Int64 := (others => 0);
+         pragma Assert (E >= -Max_Digits);
+         AA : constant Field := E + A;
+         N  : constant Natural := (AA + Max_Digits - 1) / Max_Digits + 1;
+         Q  : array (0 .. N - 1) of Int64 := (others => 0);
+         --  Each element of Q has Max_Digits decimal digits, except
+         --  the last, which has eAA rem Max_Digits. Only Q (Q'First)
+         --  may have an absolute value equal to or larger than 10**Max_Digits.
+         --  Only the absolute value of the elements is not significant, not
+         --  the sign.
 
-         XX : Int64 := X;
-         YY : Int64 := Y;
-         AA : Field := A;
+         XX    : Int64 := X;
+         YY    : Int64 := Y;
 
       begin
          for J in Q'Range loop
             exit when XX = 0;
 
-            Scaled_Divide (XX, YY, Z, Q (J), XX, Round => AA = 0);
-
-            --  As the last block of digits is rounded, a carry may have to
-            --  be propagated to the more significant digits. Since the last
-            --  block may have less than Max_Digits, the test for this block
-            --  is specialized.
-
-            --  The absolute value of the left-most digit block may equal
-            --  10*Max_Digits, as no carry can be propagated from there.
-            --  The final output routines need to be prepared to handle
-            --  this specific case.
-
-            if (Q (J) = YY or -Q (J) = YY) and then J > Q'First then
-               if Q (J) < 0 then
-                  Q (J - 1) := Q (J - 1) + 1;
-               else
-                  Q (J - 1) := Q (J - 1) - 1;
-               end if;
-
-               Q (J) := 0;
-
-               Propagate_Carry :
-               for J in reverse Q'First + 1 .. Q'Last loop
-                  if Q (J) >= 10**Max_Digits then
-                     Q (J - 1) := Q (J - 1) + 1;
-                     Q (J) := Q (J) - 10**Max_Digits;
-
-                  elsif Q (J) <= -10**Max_Digits then
-                     Q (J - 1) := Q (J - 1) - 1;
-                     Q (J) := Q (J) + 10**Max_Digits;
-                  end if;
-               end loop Propagate_Carry;
+            if J > 0 then
+               YY := 10**(Integer'Min (Max_Digits, AA - (J - 1) * Max_Digits));
             end if;
 
-            YY := -10**Integer'Min (Max_Digits, AA);
-            AA := AA - Integer'Min (Max_Digits, AA);
+            Scaled_Divide (XX, YY, Z, Q (J), R => XX, Round => False);
          end loop;
+
+         if -E > A then
+            pragma Assert (N = 1);
+
+            Discard_Extra_Digits :
+            declare
+               Factor : constant Int64 := 10**(-E - A);
+            begin
+               --  The scaling factors were such that the first division
+               --  produced more digits than requested. So divide away extra
+               --  digits and compute new remainder for later rounding.
+
+               if abs (Q (0) rem Factor) >= Factor / 2 then
+                  Q (0) := abs (Q (0) / Factor) + 1;
+               else
+                  Q (0) := Q (0) / Factor;
+               end if;
+
+               XX := 0;
+            end Discard_Extra_Digits;
+         end if;
+
+         --  At this point XX is a remainder and we need to determine if
+         --  the quotient in Q must be rounded away from zero.
+         --  As XX is less than the divisor, it is safe to take its absolute
+         --  without chance of overflow. The check to see if XX is at least
+         --  half the absolute value of the divisor must be done carefully to
+         --  avoid overflow or lose precision.
+
+         XX := abs XX;
+
+         if XX >= 2**62
+            or else (Z < 0 and then (-XX) * 2 <= Z)
+            or else (Z >= 0 and then XX * 2 >= Z)
+         then
+            --  OK, rounding is necessary. As the sign is not significant,
+            --  take advantage of the fact that an extra negative value will
+            --  always be available when propagating the carry.
+
+            Q (Q'Last) := -abs Q (Q'Last) - 1;
+
+            Propagate_Carry :
+            for J in reverse 1 .. Q'Last loop
+               if Q (J) = YY or else Q (J) = -YY then
+                  Q (J) := 0;
+                  Q (J - 1) := -abs Q (J - 1) - 1;
+
+               else
+                  exit Propagate_Carry;
+               end if;
+            end loop Propagate_Carry;
+         end if;
 
          for J in Q'First .. Q'Last - 1 loop
-            Put_Int64 (Q (J), E - (J - Q'First) * Max_Digits);
+            Put_Int64 (Q (J), E - J * Max_Digits);
          end loop;
 
-         Put_Int64 (Q (Q'Last), E - A);
+         Put_Int64 (Q (Q'Last), -A);
       end Put_Scaled;
 
    --  Start of processing for Put
@@ -652,20 +672,35 @@ package body Ada.Text_IO.Fixed_IO is
       end if;
 
       if Exact then
-         Y := Int64'Min (Int64 (-Num'Small), -1) * 10**Integer'Max (0, D);
-         Z := Int64'Min (Int64 (-(1.0 / Num'Small)), -1)
-                                                 * 10**Integer'Max (0, -D);
-      else
-         Y := Int64 (-(Num'Small * 10.0**E));
-         Z := -10**Max_Digits;
-      end if;
+         declare
+            D : constant Integer := Integer'Min (A, Max_Digits
+                                                            - (Num'Fore - 1));
+            Y : constant Int64   := Int64'Min (Int64 (-Num'Small), -1)
+                                     * 10**Integer'Max (0, D);
+            Z : constant Int64   := Int64'Min (Int64 (-(1.0 / Num'Small)), -1)
+                                     * 10**Integer'Max (0, -D);
+         begin
+            Put_Scaled (X, Y, Z, A, -D);
+         end;
 
-      Put_Scaled (X, Y, Z, A - D, -D);
+      else -- not Exact
+         declare
+            E : constant Integer := Max_Digits - 1 + Scale;
+            D : constant Integer := Scale - 1;
+            Y : constant Int64   := Int64 (-Num'Small * 10.0**E);
+            Z : constant Int64   := -10**Max_Digits;
+         begin
+            Put_Scaled (X, Y, Z, A, -D);
+         end;
+      end if;
 
       --  If only zero digits encountered, unit digit has not been output yet
 
       if Last < To'First then
          Pos := 0;
+
+      elsif Last > To'Last then
+         raise Layout_Error; -- Not enough room in the output variable
       end if;
 
       --  Always output digits up to the first one after the decimal point

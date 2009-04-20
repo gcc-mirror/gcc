@@ -257,12 +257,23 @@ package body Switch.C is
                         Set_Dotted_Debug_Flag (C);
                         Store_Compilation_Switch ("-gnatd." & C);
 
-                        --  Disable front-end inlining in inspector mode
                         --  ??? Change this when we use a non debug flag to
                         --  enable inspector mode.
 
                         if C = 'I' then
-                           Front_End_Inlining := False;
+                           if ASIS_Mode then
+                              --  Do not enable inspector mode in ASIS mode,
+                              --  since the two switches are incompatible.
+
+                              Inspector_Mode := False;
+
+                           else
+                              --  In inspector mode, we need back-end rep info
+                              --  annotations and disable front-end inlining.
+
+                              Back_Annotate_Rep_Info := True;
+                              Front_End_Inlining := False;
+                           end if;
                         end if;
                      else
                         Set_Debug_Flag (C);

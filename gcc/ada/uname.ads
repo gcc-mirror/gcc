@@ -48,9 +48,9 @@ package Uname is
    --    %b  for package/subprogram/generic bodies and subunits
 
    --  Unit names are stored in the names table, and referred to by the
-   --  corresponding Name_Id values. The subtype Unit_Name, which is a
-   --  synonym for Name_Id, is used to indicate that a Name_Id value that
-   --  holds a unit name (as defined above) is expected.
+   --  corresponding Name_Id values. The type Unit_Name_Type, derived from
+   --  Name_Id, is used to indicate that a Name_Id value that holds a unit name
+   --  (as defined above) is expected.
 
    --  Note: as far as possible the conventions for unit names are encapsulated
    --  in this package. The one exception is that package Fname, which provides
