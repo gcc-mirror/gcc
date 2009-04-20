@@ -236,6 +236,17 @@ package body Osint.C is
       end if;
    end Debug_File_Eol_Length;
 
+   ---------------------------------
+   -- Get_Output_Object_File_Name --
+   ---------------------------------
+
+   function Get_Output_Object_File_Name return String is
+   begin
+      pragma Assert (Output_Object_File_Name /= null);
+
+      return Output_Object_File_Name.all;
+   end Get_Output_Object_File_Name;
+
    -----------------------
    -- More_Source_Files --
    -----------------------

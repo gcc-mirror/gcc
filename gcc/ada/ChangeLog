@@ -1,3 +1,19 @@
+2009-04-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* osint-c.ads, osint-c.adb (Get_Object_Output_File_Name): New function
+	to return the object file name saved by Set_Object_Output_File_Name.
+
+2009-04-20  Emmanuel Briot  <briot@adacore.com>
+
+	* g-comlin.adb (Initialize_Option_Scan): Fix initialization of parsers
+	for the standard command line, when argc has been modified since the
+	start of the application.
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* socket.c (__gnat_inet_pton, Windows case): Adjust return value.
+	WSAStringToAddress returns 0 for success and SOCKET_ERROR for failure.
+
 2009-04-20  Bob Duff  <duff@adacore.com>
 
 	* gnat1drv.adb (Gnat1drv): Put call to Check_Library_Items inside
