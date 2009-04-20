@@ -1,3 +1,19 @@
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute, case Length): Catch more cases where
+	this attribute can be evaluated at compile time.
+	(Eval_Attribute, case Range_Length): Same improvement
+
+	* sem_eval.ads, sem_eval.adb (Compile_Time_Compare): New procedure
+
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analye_Subprogram_Declaration): Code reorganization,
+	for better handling of null procedures.
+	(Check_Overriding_Indicator): Do not emit a warning on a missing
+	overriding indicator on an operator when the type of which the operator
+	is a primitive is private.
+
 2009-04-20  Bob Duff  <duff@adacore.com>
 
 	* sem.adb, gnat1drv.adb, debug.adb: Use the -gnatd.W switch to control
