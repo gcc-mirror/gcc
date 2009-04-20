@@ -423,7 +423,7 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
 
   ss.ss_family = af;
   rc = WSAStringToAddressA (src, af, NULL, (struct sockaddr *)&ss, &sslen);
-  if (rc > 0) {
+  if (rc == 0) {
     switch (af) {
       case AF_INET:
         *(struct in_addr *)dst = ((struct sockaddr_in *)&ss)->sin_addr;
@@ -435,7 +435,7 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
 #endif
     }
   }
-  return rc;
+  return (rc == 0);
 #endif
 }
 #endif

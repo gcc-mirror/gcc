@@ -851,8 +851,9 @@ package body GNAT.Command_Line is
 
       if Command_Line = null then
          Parser := new Opt_Parser_Data (CL.Argument_Count);
-         Initialize_Option_Scan
-           (Switch_Char              => Switch_Char,
+         Internal_Initialize_Option_Scan
+           (Parser                   => Parser,
+            Switch_Char              => Switch_Char,
             Stop_At_First_Non_Switch => Stop_At_First_Non_Switch,
             Section_Delimiters       => Section_Delimiters);
       else

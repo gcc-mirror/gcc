@@ -32,6 +32,10 @@ package Osint.C is
    --  Called by the subprogram processing the command line when an
    --  output object file name is found.
 
+   function Get_Output_Object_File_Name return String;
+   --  Returns the name of the output object file as saved by a call to
+   --  Set_Output_Object_File_Name. Only valid to call if name has been set.
+
    function More_Source_Files return Boolean;
    --  Indicates whether more source file remain to be processed. Returns
    --  False right away if no source files, or if all source files have
