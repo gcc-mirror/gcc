@@ -31,6 +31,8 @@
 
 pragma Compiler_Unit;
 
+with System.Concat_6;
+
 package body System.Concat_7 is
 
    pragma Suppress (All_Checks);
@@ -74,5 +76,22 @@ package body System.Concat_7 is
       L := R'Last;
       R (F .. L) := S7;
    end Str_Concat_7;
+
+   -------------------------
+   -- Str_Concat_Bounds_7 --
+   -------------------------
+
+   procedure Str_Concat_Bounds_7
+     (Lo, Hi                     : out Natural;
+      S1, S2, S3, S4, S5, S6, S7 : String)
+   is
+   begin
+      System.Concat_6.Str_Concat_Bounds_6 (Lo, Hi, S2, S3, S4, S5, S6, S7);
+
+      if S1 /= "" then
+         Hi := S1'Last + Hi - Lo + 1;
+         Lo := S1'First;
+      end if;
+   end Str_Concat_Bounds_7;
 
 end System.Concat_7;
