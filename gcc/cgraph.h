@@ -189,6 +189,45 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   tree inline_decl;
 };
 
+typedef struct cgraph_node *cgraph_node_ptr;
+
+DEF_VEC_P(cgraph_node_ptr);
+DEF_VEC_ALLOC_P(cgraph_node_ptr,heap);
+DEF_VEC_ALLOC_P(cgraph_node_ptr,gc);
+
+/* A cgraph node set is a collection of cgraph nodes.  A cgraph node
+   can appear in multiple sets.  */
+struct cgraph_node_set_def GTY(())
+{
+  htab_t GTY((param_is (struct cgraph_node_set_element_def))) hashtab;
+  VEC(cgraph_node_ptr, gc) *nodes;
+  PTR GTY ((skip)) aux;
+};
+
+typedef struct cgraph_node_set_def *cgraph_node_set;
+
+DEF_VEC_P(cgraph_node_set);
+DEF_VEC_ALLOC_P(cgraph_node_set,gc);
+DEF_VEC_ALLOC_P(cgraph_node_set,heap);
+
+/* A cgraph node set element contains an index in the vector of nodes in
+   the set.  */
+struct cgraph_node_set_element_def GTY(())
+{
+  struct cgraph_node *node;
+  HOST_WIDE_INT index;
+};
+
+typedef struct cgraph_node_set_element_def *cgraph_node_set_element;
+typedef const struct cgraph_node_set_element_def *const_cgraph_node_set_element;
+
+/* Iterator structure for cgraph node sets.  */
+typedef struct
+{
+  cgraph_node_set set;
+  unsigned index;
+} cgraph_node_set_iterator;
+
 #define DEFCIFCODE(code, string)	CIF_ ## code,
 /* Reasons for inlining failures.  */
 typedef enum {
@@ -397,11 +436,19 @@ int compute_call_stmt_bb_frequency (basic_block bb);
 /* In ipa.c  */
 bool cgraph_remove_unreachable_nodes (bool, FILE *);
 int cgraph_postorder (struct cgraph_node **);
+cgraph_node_set cgraph_node_set_new (void);
+cgraph_node_set_iterator cgraph_node_set_find (cgraph_node_set,
+					       struct cgraph_node *);
+void cgraph_node_set_add (cgraph_node_set, struct cgraph_node *);
+void cgraph_node_set_remove (cgraph_node_set, struct cgraph_node *);
+void dump_cgraph_node_set (FILE *, cgraph_node_set);
+void debug_cgraph_node_set (cgraph_node_set);
 
+
+/* In predict.c  */
 bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);
 
 /* In varpool.c  */
-
 extern GTY(()) struct varpool_node *varpool_nodes_queue;
 extern GTY(()) struct varpool_node *varpool_nodes;
 
@@ -465,5 +512,55 @@ unsigned int compute_inline_parameters (struct cgraph_node *);
 
 /* Create a new static variable of type TYPE.  */
 tree add_new_static_var (tree type);
+
+
+/* Return true if iterator CSI points to nothing.  */
+static inline bool
+csi_end_p (cgraph_node_set_iterator csi)
+{
+  return csi.index >= VEC_length (cgraph_node_ptr, csi.set->nodes);
+}
+
+/* Advance iterator CSI.  */
+static inline void
+csi_next (cgraph_node_set_iterator *csi)
+{
+  csi->index++;
+}
+
+/* Return the node pointed to by CSI.  */
+static inline struct cgraph_node *
+csi_node (cgraph_node_set_iterator csi)
+{
+  return VEC_index (cgraph_node_ptr, csi.set->nodes, csi.index);
+}
+
+/* Return an iterator to the first node in SET.  */
+static inline cgraph_node_set_iterator
+csi_start (cgraph_node_set set)
+{
+  cgraph_node_set_iterator csi;
+
+  csi.set = set;
+  csi.index = 0;
+  return csi;
+}
+
+/* Return true if SET contains NODE.  */
+static inline bool
+cgraph_node_in_set_p (struct cgraph_node *node, cgraph_node_set set)
+{
+  cgraph_node_set_iterator csi;
+  csi = cgraph_node_set_find (set, node);
+  return !csi_end_p (csi);
+}
+
+/* Return number of nodes in SET.  */
+static inline size_t
+cgraph_node_set_size (cgraph_node_set set)
+{
+  return htab_elements (set->hashtab);
+}
+
 
 #endif  /* GCC_CGRAPH_H  */

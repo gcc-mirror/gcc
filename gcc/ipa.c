@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-pass.h"
 #include "timevar.h"
+#include "ggc.h"
 
 /* Fill array order with all nodes with output flag set in the reverse
    topological order.  */
@@ -285,3 +286,162 @@ struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility =
   TODO_remove_functions | TODO_dump_cgraph/* todo_flags_finish */
  }
 };
+
+
+/* Hash a cgraph node set element.  */
+
+static hashval_t
+hash_cgraph_node_set_element (const void *p)
+{
+  const_cgraph_node_set_element element = (const_cgraph_node_set_element) p;
+  return htab_hash_pointer (element->node);
+}
+
+/* Compare two cgraph node set elements.  */
+
+static int
+eq_cgraph_node_set_element (const void *p1, const void *p2)
+{
+  const_cgraph_node_set_element e1 = (const_cgraph_node_set_element) p1;
+  const_cgraph_node_set_element e2 = (const_cgraph_node_set_element) p2;
+
+  return e1->node == e2->node;
+}
+
+/* Create a new cgraph node set.  */
+
+cgraph_node_set
+cgraph_node_set_new (void)
+{
+  cgraph_node_set new_node_set;
+
+  new_node_set = GGC_NEW (struct cgraph_node_set_def);
+  new_node_set->hashtab = htab_create_ggc (10,
+					   hash_cgraph_node_set_element,
+					   eq_cgraph_node_set_element,
+					   NULL);
+  new_node_set->nodes = NULL;
+  return new_node_set;
+}
+
+/* Add cgraph_node NODE to cgraph_node_set SET.  */
+
+void
+cgraph_node_set_add (cgraph_node_set set, struct cgraph_node *node)
+{
+  void **slot;
+  cgraph_node_set_element element;
+  struct cgraph_node_set_element_def dummy;
+
+  dummy.node = node;
+  slot = htab_find_slot (set->hashtab, &dummy, INSERT);
+
+  if (*slot != HTAB_EMPTY_ENTRY)
+    {
+      element = (cgraph_node_set_element) *slot;
+      gcc_assert (node == element->node
+		  && (VEC_index (cgraph_node_ptr, set->nodes, element->index)
+		      == node));
+      return;
+    }
+
+  /* Insert node into hash table.  */
+  element =
+    (cgraph_node_set_element) GGC_NEW (struct cgraph_node_set_element_def);
+  element->node = node;
+  element->index = VEC_length (cgraph_node_ptr, set->nodes);
+  *slot = element;
+
+  /* Insert into node vector.  */
+  VEC_safe_push (cgraph_node_ptr, gc, set->nodes, node);
+}
+
+/* Remove cgraph_node NODE from cgraph_node_set SET.  */
+
+void
+cgraph_node_set_remove (cgraph_node_set set, struct cgraph_node *node)
+{
+  void **slot, **last_slot;
+  cgraph_node_set_element element, last_element;
+  struct cgraph_node *last_node;
+  struct cgraph_node_set_element_def dummy;
+
+  dummy.node = node;
+  slot = htab_find_slot (set->hashtab, &dummy, NO_INSERT);
+  if (slot == NULL)
+    return;
+
+  element = (cgraph_node_set_element) *slot;
+  gcc_assert (VEC_index (cgraph_node_ptr, set->nodes, element->index)
+	      == node);
+
+  /* Remove from vector. We do this by swapping node with the last element
+     of the vector.  */
+  last_node = VEC_pop (cgraph_node_ptr, set->nodes);
+  if (last_node != node)
+    {
+      dummy.node = last_node;
+      last_slot = htab_find_slot (set->hashtab, &dummy, NO_INSERT);
+      last_element = (cgraph_node_set_element) *last_slot;
+      gcc_assert (last_element);
+
+      /* Move the last element to the original spot of NODE.  */
+      last_element->index = element->index;
+      VEC_replace (cgraph_node_ptr, set->nodes, last_element->index,
+		   last_node);
+    }
+  
+  /* Remove element from hash table.  */
+  htab_clear_slot (set->hashtab, slot);
+  ggc_free (element);
+}
+
+/* Find NODE in SET and return an iterator to it if found.  A null iterator
+   is returned if NODE is not in SET.  */
+
+cgraph_node_set_iterator
+cgraph_node_set_find (cgraph_node_set set, struct cgraph_node *node)
+{
+  void **slot;
+  struct cgraph_node_set_element_def dummy;
+  cgraph_node_set_element element;
+  cgraph_node_set_iterator csi;
+
+  dummy.node = node;
+  slot = htab_find_slot (set->hashtab, &dummy, NO_INSERT);
+  if (slot == NULL)
+    csi.index = (unsigned) ~0;
+  else
+    {
+      element = (cgraph_node_set_element) *slot;
+      gcc_assert (VEC_index (cgraph_node_ptr, set->nodes, element->index)
+		  == node);
+      csi.index = element->index;
+    }
+  csi.set = set;
+
+  return csi;
+}
+
+/* Dump content of SET to file F.  */
+
+void
+dump_cgraph_node_set (FILE *f, cgraph_node_set set)
+{
+  cgraph_node_set_iterator iter;
+
+  for (iter = csi_start (set); !csi_end_p (iter); csi_next (&iter))
+    {
+      struct cgraph_node *node = csi_node (iter);
+      dump_cgraph_node (f, node);
+    }
+}
+
+/* Dump content of SET to stderr.  */
+
+void
+debug_cgraph_node_set (cgraph_node_set set)
+{
+  dump_cgraph_node_set (stderr, set);
+}
+

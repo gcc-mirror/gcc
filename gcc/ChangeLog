@@ -1,3 +1,28 @@
+2009-04-20  Doug Kwan  <dougkwan@google.com>
+
+	* cgraph.h (cgraph_node_ptr): New type for vector functions.
+	(struct cgraph_node_set_def): New type.
+	(cgraph_node_set) New type. Also declare vector functions.
+	(struct cgraph_node_set_element_def): New type.
+	(cgraph_node_set_element): Ditto.
+	(cgraph_node_set_iterator): New iterator type.
+	(cgraph_node_set_new, cgraph_node_set_find, cgraph_node_set_add,
+	cgraph_node_set_remove, dump_cgraph_node_set,
+	debug_cgraph_node_set): New prototypes.
+	(csi_end_p, csi_next, csi_node, csi_start, cgraph_node_in_set_p,
+	cgraph_node_set_size): New inlines.
+	* tree-pass.h (struct cgraph_node_set_def): New decl to avoid
+	including cgraph.h.
+	(struct ipa_opt_pass): Add struct cgraph_node_set_def
+	argument to function 'write_summary'.
+	* ipa.c: Include ggc.h.
+	(hash_cgraph_node_set_element,
+	eq_cgraph_node_set_element, cgraph_node_set_new,
+	cgraph_node_set_add, cgraph_node_set_remove,
+	cgraph_node_set_find, dump_cgraph_node_set,
+	debug_cgraph_node_set): New functions.
+	* Makefile.in (ipa.o): Add dependency on GGC_H.
+
 2009-04-20  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39675
