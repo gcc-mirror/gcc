@@ -1,3 +1,20 @@
+2009-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.adb: Remove types char_Pointer, int, tm and tm_Pointer.
+	(localtime_tzoff): This routine no longer accepts an actual of type
+	tm_Pointer.
+	(UTC_Time_Offset): Remove local variable Secs_TM.
+
+	* sysdep.c (__gnat_localtime_tzoff): This routine no longer accepts an
+	actual of type struct tm*. Add local variable of type struct tm for all
+	targets that provide localtime_r and need to invoke it.
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c, g-socket.adb, g-socket.ads
+	(GNAT.Sockets.Resolve_Error): Add case of EPIPE
+	Add case of EAGAIN for platforms where it is not equal to EWOULDBLOCK
+
 2009-04-20  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch3.adb: Minor reformatting

@@ -1474,39 +1474,15 @@ package body Ada.Calendar is
 
       Nanos_In_56_Years : constant := (14 * 366 + 42 * 365) * Nanos_In_Day;
 
-      --  Base C types. There is no point dragging in Interfaces.C just for
-      --  these four types.
-
-      type char_Pointer is access Character;
-      subtype int is Integer;
       subtype long is Long_Integer;
       type long_Pointer is access all long;
-
-      --  The Ada equivalent of struct tm and type time_t
-
-      type tm is record
-         tm_sec    : int;           --  seconds after the minute (0 .. 60)
-         tm_min    : int;           --  minutes after the hour (0 .. 59)
-         tm_hour   : int;           --  hours since midnight (0 .. 24)
-         tm_mday   : int;           --  day of the month (1 .. 31)
-         tm_mon    : int;           --  months since January (0 .. 11)
-         tm_year   : int;           --  years since 1900
-         tm_wday   : int;           --  days since Sunday (0 .. 6)
-         tm_yday   : int;           --  days since January 1 (0 .. 365)
-         tm_isdst  : int;           --  Daylight Savings Time flag (-1 .. 1)
-         tm_gmtoff : long;          --  offset from UTC in seconds
-         tm_zone   : char_Pointer;  --  timezone abbreviation
-      end record;
-
-      type tm_Pointer is access all tm;
 
       subtype time_t is long;
       type time_t_Pointer is access all time_t;
 
       procedure localtime_tzoff
-       (C   : time_t_Pointer;
-        res : tm_Pointer;
-        off : long_Pointer);
+       (timer : time_t_Pointer;
+        off   : long_Pointer);
       pragma Import (C, localtime_tzoff, "__gnat_localtime_tzoff");
       --  This is a lightweight wrapper around the system library function
       --  localtime_r. Parameter 'off' captures the UTC offset which is either
@@ -1522,7 +1498,6 @@ package body Ada.Calendar is
          Date_N   : Time_Rep;
          Offset   : aliased long;
          Secs_T   : aliased time_t;
-         Secs_TM  : aliased tm;
 
       begin
          Date_N := Time_Rep (Date);
@@ -1568,7 +1543,6 @@ package body Ada.Calendar is
 
          localtime_tzoff
            (Secs_T'Unchecked_Access,
-            Secs_TM'Unchecked_Access,
             Offset'Unchecked_Access);
 
          return Offset;

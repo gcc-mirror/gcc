@@ -451,6 +451,11 @@ CND(ENOTSOCK, "Operation on non socket")
 #endif
 CND(EOPNOTSUPP, "Operation not supported")
 
+#ifndef EPIPE
+# define EPIPE -1
+#endif
+CND(EPIPE, "Broken pipe")
+
 #ifndef EPFNOSUPPORT
 # define EPFNOSUPPORT -1
 #endif

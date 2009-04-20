@@ -603,6 +603,9 @@ package GNAT.Sockets is
    --  brackets and a string describing the error code.
 
    --  The name of the enumeration constant documents the error condition
+   --  Note that on some platforms, a single error value is used for both
+   --  EWOULDBLOCK and EAGAIN. Both errors are therefore always reported as
+   --  Resource_Temporarily_Unavailable.
 
    type Error_Type is
      (Success,
@@ -644,6 +647,7 @@ package GNAT.Sockets is
       Connection_Timed_Out,
       Too_Many_References,
       Resource_Temporarily_Unavailable,
+      Broken_Pipe,
       Unknown_Host,
       Host_Name_Lookup_Failure,
       Non_Recoverable_Error,
