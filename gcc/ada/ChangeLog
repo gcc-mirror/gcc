@@ -1,5 +1,14 @@
 2009-04-20  Robert Dewar  <dewar@adacore.com>
 
+	* checks.ads: Fix documentation of range check handling
+
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Use_One_Type): Use proper entity on warning message for
+	a redundant use_type clause.
+
+2009-04-20  Robert Dewar  <dewar@adacore.com>
+
 	* sem_attr.adb (Eval_Attribute, case Length): Catch more cases where
 	this attribute can be evaluated at compile time.
 	(Eval_Attribute, case Range_Length): Same improvement

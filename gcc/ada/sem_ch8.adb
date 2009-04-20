@@ -7396,7 +7396,7 @@ package body Sem_Ch8 is
                   else
                      Error_Msg_NE
                        ("& is already use-visible through previous "
-                        & "use type clause?", Id, Id);
+                        & "use type clause?", Id, T);
                   end if;
                end Use_Clause_Known;
 
@@ -7406,7 +7406,7 @@ package body Sem_Ch8 is
             else
                Error_Msg_NE
                  ("& is already use-visible through previous "
-                  & "use type clause?", Id, Id);
+                  & "use type clause?", Id, T);
             end if;
 
          --  The package where T is declared is already used
@@ -7415,14 +7415,14 @@ package body Sem_Ch8 is
             Error_Msg_Sloc := Sloc (Current_Use_Clause (Scope (T)));
             Error_Msg_NE
               ("& is already use-visible through package use clause #?",
-               Id, Id);
+               Id, T);
 
          --  The current scope is the package where T is declared
 
          else
             Error_Msg_Node_2 := Scope (T);
             Error_Msg_NE
-              ("& is already use-visible inside package &?", Id, Id);
+              ("& is already use-visible inside package &?", Id, T);
          end if;
       end if;
    end Use_One_Type;

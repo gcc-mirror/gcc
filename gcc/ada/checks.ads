@@ -214,9 +214,11 @@ package Checks is
    --  Range checks are controlled by the Do_Range_Check flag. The front end
    --  is responsible for setting this flag in relevant nodes. Originally
    --  the back end generated all corresponding range checks. But later on
-   --  we decided to generate all range checks in the front end. We are now
+   --  we decided to generate many range checks in the front end. We are now
    --  in the transitional phase where some of these checks are still done
-   --  by the back end, but many are done by the front end.
+   --  by the back end, but many are done by the front end. It is possible
+   --  that in the future we might move all the checks to the front end. The
+   --  main remaining back end checks are for subscript checking.
 
    --  Overflow checks are similarly controlled by the Do_Overflow_Check flag.
    --  The difference here is that if back end overflow checks are inactive
