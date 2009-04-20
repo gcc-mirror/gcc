@@ -961,12 +961,16 @@ package body Sprint is
                if Present (Expressions (Node)) then
                   Sprint_Comma_List (Expressions (Node));
 
-                  if Present (Component_Associations (Node)) then
+                  if Present (Component_Associations (Node))
+                    and then not Is_Empty_List (Component_Associations (Node))
+                  then
                      Write_Str (", ");
                   end if;
                end if;
 
-               if Present (Component_Associations (Node)) then
+               if Present (Component_Associations (Node))
+                 and then not Is_Empty_List (Component_Associations (Node))
+               then
                   Indent_Begin;
 
                   declare

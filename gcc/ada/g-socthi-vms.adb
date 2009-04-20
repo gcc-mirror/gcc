@@ -354,15 +354,15 @@ package body GNAT.Sockets.Thin is
    package body Host_Error_Messages is separate;
 
    ---------------
-   -- Inet_Aton --
+   -- Inet_Pton --
    ---------------
 
-   --  VMS does not support inet_aton(3), so emulate it here in terms of
-   --  inet_addr(3). Note: unlike other C functions, inet_aton reports
-   --  failure with a 0 return, and success with a non-zero return.
+   --  VMS does not support inet_pton(3), so emulate it here in terms of
+   --  inet_addr(3).
 
-   function Inet_Aton
-     (Cp  : C.Strings.chars_ptr;
+   function Inet_Pton
+     (Af  : C.int;
+      Cp  : C.Strings.chars_ptr;
       Inp : System.Address) return C.int
    is
       use C.Strings;
@@ -373,6 +373,11 @@ package body GNAT.Sockets.Thin is
       function C_Inet_Addr (Cp : C.Strings.chars_ptr) return C.int;
       pragma Import (C, C_Inet_Addr, "DECC$INET_ADDR");
    begin
+      if Af /= SOSC.AF_INET then
+         Set_Socket_Errno (SOSC.EAFNOSUPPORT);
+         return -1;
+      end if;
+
       if Cp = Null_Ptr or else Inp = Null_Address then
          return 0;
       end if;
@@ -387,13 +392,18 @@ package body GNAT.Sockets.Thin is
       end if;
 
       Res := C_Inet_Addr (Cp);
+
+      --  String is not a valid dotted quad
+
       if Res = -1 then
          return 0;
       end if;
 
+      --  Success
+
       Conv.To_Pointer (Inp).all := Res;
       return 1;
-   end Inet_Aton;
+   end Inet_Pton;
 
    ----------------
    -- Initialize --

@@ -62,8 +62,11 @@ extern void __gnat_insert_socket_in_set (fd_set *, int);
 extern int __gnat_is_socket_in_set (fd_set *, int);
 extern fd_set *__gnat_new_socket_set (fd_set *);
 extern void __gnat_remove_socket_from_set (fd_set *, int);
-extern void __gnat_reset_socket_set (fd_set *set);
+extern void __gnat_reset_socket_set (fd_set *);
 extern int  __gnat_get_h_errno (void);
+#if defined (__vxworks) || defined (_WIN32)
+extern int  __gnat_inet_pton (int, const char *, void *);
+#endif
 
 /* Disable the sending of SIGPIPE for writes on a broken stream */
 
@@ -396,6 +399,46 @@ __gnat_get_h_errno (void) {
   return h_errno;
 #endif
 }
+
+#if defined (__vxworks) || defined (_WIN32)
+int
+__gnat_inet_pton (int af, const char *src, void *dst) {
+  switch (af) {
+#if defined (_WIN32) && defined (AF_INET6)
+    case AF_INET6:
+#endif
+    case AF_INET:
+      break;
+    default:
+      errno = EAFNOSUPPORT;
+      return -1;
+  }
+
+#ifdef __vxworks
+  return (inet_aton (src, dst) == OK);
+#else
+  struct sockaddr_storage ss;
+  int sslen = sizeof ss;
+  int rc;
+
+  ss.ss_family = af;
+  rc = WSAStringToAddress (src, af, NULL, (struct sockaddr *)&ss, &sslen);
+  if (rc > 0) {
+    switch (af) {
+      case AF_INET:
+        *(struct in_addr *)dst = ((struct sockaddr_in *)&ss)->sin_addr;
+        break;
+#ifdef AF_INET6
+      case AF_INET6:
+        *(struct in6_addr *)dst = ((struct sockaddr_in6 *)&ss)->sin6_addr;
+        break;
+#endif
+    }
+  }
+  return rc;
+#endif
+}
+#endif
 
 #else
 #warning Sockets are not supported on this platform

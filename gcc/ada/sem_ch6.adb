@@ -584,11 +584,19 @@ package body Sem_Ch6 is
             end if;
 
          --  Subtype_indication case; check that the types are the same, and
-         --  statically match if appropriate. A null exclusion may be present
-         --  on the return type, on the function specification, on the object
-         --  declaration or on the subtype itself.
+         --  statically match if appropriate. Handle also record types with
+         --  unknown discriminants for which we have built the underlying
+         --  record view.
 
-         elsif Base_Type (R_Stm_Type) = Base_Type (R_Type) then
+         elsif Base_Type (R_Stm_Type) = Base_Type (R_Type)
+           or else (Is_Underlying_Record_View (Base_Type (R_Stm_Type))
+                      and then Underlying_Record_View (Base_Type (R_Stm_Type))
+                                 = Base_Type (R_Type))
+         then
+            --  A null exclusion may be present on the return type, on the
+            --  function specification, on the object declaration or on the
+            --  subtype itself.
+
             if Is_Access_Type (R_Type)
               and then
                (Can_Never_Be_Null (R_Type)

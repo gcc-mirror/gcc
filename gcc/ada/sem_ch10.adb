@@ -774,7 +774,7 @@ package body Sem_Ch10 is
             Version_Update (N, Lib_Unit);
          end if;
 
-         --  If this is a child unit, generate references to the parents.
+         --  If this is a child unit, generate references to the parents
 
          if Nkind (Defining_Unit_Name (Specification (Unit_Node))) =
                                              N_Defining_Program_Unit_Name
@@ -785,8 +785,8 @@ package body Sem_Ch10 is
          end if;
       end if;
 
-      --  If it is a child unit, the parent must be elaborated first
-      --  and we update version, since we are dependent on our parent.
+      --  If it is a child unit, the parent must be elaborated first and we
+      --  update version, since we are dependent on our parent.
 
       if Is_Child_Spec (Unit_Node) then
 

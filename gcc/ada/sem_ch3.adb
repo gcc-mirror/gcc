@@ -5523,29 +5523,38 @@ package body Sem_Ch3 is
 
    begin
       if Is_Tagged_Type (Parent_Type) then
+         Full_P := Full_View (Parent_Type);
 
          --  A type extension of a type with unknown discriminants is an
          --  indefinite type that the back-end cannot handle directly.
          --  We treat it as a private type, and build a completion that is
          --  derived from the full view of the parent, and hopefully has
-         --  known discriminants.  The implementation of more complex chains
-         --  of derivation with unknown discriminants is left to the more
-         --  enterprising reader.
+         --  known discriminants.
+
+         --  If the full view of the parent type has its underlying record view
+         --  available then use it to generate the underlying record view of
+         --  this Derived_Type (required to handle chains of derivations with
+         --  unknown discriminants).
+
+         --  Minor optimization: We avoid the generation of useless underlying
+         --  record view entities if the private type declaration has unknown
+         --  discriminants but its corresponding full view has no discriminants
 
          if Has_Unknown_Discriminants (Parent_Type)
-           and then Present (Full_View (Parent_Type))
+           and then Present (Full_P)
+           and then (Has_Discriminants (Full_P)
+                      or else Present (Underlying_Record_View (Full_P)))
            and then not In_Open_Scopes (Par_Scope)
-           and then not Is_Completion
            and then Expander_Active
          then
             declare
                Full_Der : constant Entity_Id :=
                             Make_Defining_Identifier (Loc,
                               Chars => New_Internal_Name ('T'));
-               Decl     : Node_Id;
                New_Ext  : constant Node_Id :=
                             Copy_Separate_Tree
                               (Record_Extension_Part (Type_Definition (N)));
+               Decl     : Node_Id;
 
             begin
                Build_Derived_Record_Type
@@ -5566,13 +5575,40 @@ package body Sem_Ch3 is
                          New_Copy_Tree
                            (Subtype_Indication (Type_Definition (N))),
                        Record_Extension_Part => New_Ext));
+
                Set_Has_Private_Declaration (Full_Der);
                Set_Has_Private_Declaration (Derived_Type);
+
+               --  If the parent type has its underlying record view then we
+               --  force here its use to derive the new underlying record view.
+
+               if Present (Underlying_Record_View (Full_P)) then
+                  pragma Assert
+                    (Nkind (Subtype_Indication (Type_Definition (Decl)))
+                       = N_Identifier);
+                  Set_Entity (Subtype_Indication (Type_Definition (Decl)),
+                    Underlying_Record_View (Full_P));
+               end if;
 
                Install_Private_Declarations (Par_Scope);
                Install_Visible_Declarations (Par_Scope);
                Insert_After (N, Decl);
+
+               --  Mark the entity as underlying record view before its
+               --  analysis. Done to avoid the generation of its list of
+               --  primitives (which is not really required for this entity)
+               --  and thus avoid supurious errors associated with missing
+               --  overriding of its abstract primitives (because they are
+               --  overriden in the list of primitives of Derived_Type).
+
+               Set_Ekind (Full_Der, E_Record_Type);
+               Set_Is_Underlying_Record_View (Full_Der);
+
                Analyze (Decl);
+
+               pragma Assert (Has_Discriminants (Full_Der)
+                 and then not Has_Unknown_Discriminants (Full_Der));
+
                Uninstall_Declarations (Par_Scope);
 
                --  Freeze the underlying record view, to prevent generation
@@ -5580,7 +5616,12 @@ package body Sem_Ch3 is
                --  with the real derived type.
 
                Set_Is_Frozen (Full_Der);
-               Set_Underlying_Record_View (Derived_Type, Full_Der);
+
+               --  Keep fully linked the real entity and its underlying record
+               --  view entity
+
+               Set_Underlying_Record_View (Derived_Type, Base_Type (Full_Der));
+               Set_Underlying_Record_View (Base_Type (Full_Der), Derived_Type);
             end;
 
          --  if discriminants are known, build derived record
@@ -7084,7 +7125,13 @@ package body Sem_Ch3 is
             Set_Is_Controlled (Derived_Type, Is_Controlled (Parent_Base));
          end if;
 
-         Make_Class_Wide_Type (Derived_Type);
+         --  Minor optimization: There is no need to generate the class wide
+         --  entity associated with an underlying record view
+
+         if not Is_Underlying_Record_View (Derived_Type) then
+            Make_Class_Wide_Type (Derived_Type);
+         end if;
+
          Set_Is_Abstract_Type (Derived_Type, Abstract_Present (Type_Def));
 
          if Has_Discriminants (Derived_Type)
@@ -7279,10 +7326,13 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      --  Update the class_wide type, which shares the now-completed
-      --  entity list with its specific type.
+      --  Update the class_wide type, which shares the now-completed entity
+      --  list with its specific type. In case of underlying record views
+      --  we do not generate the corresponding class wide entity.
 
-      if Is_Tagged then
+      if Is_Tagged
+        and then not Is_Underlying_Record_View (Derived_Type)
+      then
          Set_First_Entity
            (Class_Wide_Type (Derived_Type), First_Entity (Derived_Type));
          Set_Last_Entity
@@ -13143,7 +13193,10 @@ package body Sem_Ch3 is
          Error_Msg_N ("null exclusion can only apply to an access type", N);
       end if;
 
-      Build_Derived_Type (N, Parent_Type, T, Is_Completion);
+      --  Avoid deriving parent primitives in underlying record views
+
+      Build_Derived_Type (N, Parent_Type, T, Is_Completion,
+        Derive_Subps => not Is_Underlying_Record_View (T));
 
       --  AI-419: The parent type of an explicitly limited derived type must
       --  be a limited type or a limited interface.

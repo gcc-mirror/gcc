@@ -118,8 +118,9 @@ package GNAT.Sockets.Thin is
       Optval  : System.Address;
       Optlen  : not null access C.int) return C.int;
 
-   function Inet_Aton
-     (Cp  : C.Strings.chars_ptr;
+   function Inet_Pton
+     (Af  : C.int;
+      Cp  : C.Strings.chars_ptr;
       Inp : System.Address) return C.int;
 
    function C_Ioctl

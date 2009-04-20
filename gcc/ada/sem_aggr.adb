@@ -2427,6 +2427,16 @@ package body Sem_Aggr is
          Ancestor_Typ := Etype (Ancestor);
          Loc          := Sloc (Ancestor);
 
+         --  In case of private types with unknown discriminants use the
+         --  underlying record view if it is available
+
+         if Has_Unknown_Discriminants (Ancestor_Typ)
+           and then Present (Full_View (Ancestor_Typ))
+           and then Present (Underlying_Record_View (Full_View (Ancestor_Typ)))
+         then
+            Ancestor_Typ := Underlying_Record_View (Full_View (Ancestor_Typ));
+         end if;
+
          Ancestor_Is_Subtyp :=
            Is_Entity_Name (Ancestor) and then Is_Type (Entity (Ancestor));
 
@@ -2868,7 +2878,11 @@ package body Sem_Aggr is
             Positional_Expr := Empty;
          end if;
 
-         if Has_Discriminants (Typ) then
+         if Has_Unknown_Discriminants (Typ)
+           and then Present (Underlying_Record_View (Typ))
+         then
+            Discrim := First_Discriminant (Underlying_Record_View (Typ));
+         elsif Has_Discriminants (Typ) then
             Discrim := First_Discriminant (Typ);
          else
             Discrim := Empty;
@@ -2948,7 +2962,10 @@ package body Sem_Aggr is
       --  this may be a problem. What should be done in this case is
       --  to reuse itypes as much as possible.
 
-      if Has_Discriminants (Typ) then
+      if Has_Discriminants (Typ)
+        or else (Has_Unknown_Discriminants (Typ)
+                   and then Present (Underlying_Record_View (Typ)))
+      then
          Build_Constrained_Itype : declare
             Loc         : constant Source_Ptr := Sloc (N);
             Indic       : Node_Id;
@@ -2964,10 +2981,23 @@ package body Sem_Aggr is
                Next (New_Assoc);
             end loop;
 
-            Indic :=
-              Make_Subtype_Indication (Loc,
-                Subtype_Mark => New_Occurrence_Of (Base_Type (Typ), Loc),
-                Constraint  => Make_Index_Or_Discriminant_Constraint (Loc, C));
+            if Has_Unknown_Discriminants (Typ)
+              and then Present (Underlying_Record_View (Typ))
+            then
+               Indic :=
+                 Make_Subtype_Indication (Loc,
+                   Subtype_Mark =>
+                     New_Occurrence_Of (Underlying_Record_View (Typ), Loc),
+                   Constraint  =>
+                     Make_Index_Or_Discriminant_Constraint (Loc, C));
+            else
+               Indic :=
+                 Make_Subtype_Indication (Loc,
+                   Subtype_Mark =>
+                     New_Occurrence_Of (Base_Type (Typ), Loc),
+                   Constraint  =>
+                     Make_Index_Or_Discriminant_Constraint (Loc, C));
+            end if;
 
             Def_Id := Create_Itype (Ekind (Typ), N);
 
@@ -3044,7 +3074,7 @@ package body Sem_Aggr is
                end if;
             end if;
 
-            Parent_Typ  := Base_Type (Typ);
+            Parent_Typ := Base_Type (Typ);
             while Parent_Typ /= Root_Typ loop
                Prepend_Elmt (Parent_Typ, To => Parent_Typ_List);
                Parent_Typ := Etype (Parent_Typ);
