@@ -3815,6 +3815,15 @@ if @option{-O2} is used.
 Suppresses inlining of subprograms local to the unit and called once
 from within it, which is enabled if @option{-O1} is used.
 
+@item -fno-ivopts
+@cindex @option{-fno-ivopts} (@command{gcc})
+Suppresses high-level loop induction variable optimizations, which are
+enabled if @option{-O1} is used. These optimizations are generally
+profitable but, for some specific cases of loops with numerous uses
+of the iteration variable that follow a common pattern, they may end
+up destroying the regularity that could be exploited at a lower level
+and thus producing inferior code.
+
 @item -fno-strict-aliasing
 @cindex @option{-fno-strict-aliasing} (@command{gcc})
 Causes the compiler to avoid assumptions regarding non-aliasing
