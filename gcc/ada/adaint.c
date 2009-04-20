@@ -1820,8 +1820,8 @@ __gnat_check_OWNER_ACL
   PRIVILEGE_SET PrivilegeSet;
   DWORD dwPrivSetSize = sizeof (PRIVILEGE_SET);
   BOOL fAccessGranted = FALSE;
-  HANDLE hToken;
-  DWORD nLength;
+  HANDLE hToken = NULL;
+  DWORD nLength = 0;
   SECURITY_DESCRIPTOR* pSD = NULL;
 
   GetFileSecurity
@@ -1839,14 +1839,14 @@ __gnat_check_OWNER_ACL
       (wname, OWNER_SECURITY_INFORMATION |
        GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
        pSD, nLength, &nLength))
-    return 0;
+    goto error;
 
   if (!ImpersonateSelf (SecurityImpersonation))
-    return 0;
+    goto error;
 
   if (!OpenThreadToken
       (GetCurrentThread(), TOKEN_DUPLICATE | TOKEN_QUERY, FALSE, &hToken))
-    return 0;
+    goto error;
 
   /*  Undoes the effect of ImpersonateSelf. */
 
@@ -1867,9 +1867,17 @@ __gnat_check_OWNER_ACL
        &dwPrivSetSize,       /* size of PrivilegeSet buffer */
        &dwAccessAllowed,     /* receives mask of allowed access rights */
        &fAccessGranted))
-    return 0;
+    goto error;
 
+  CloseHandle (hToken);
+  HeapFree (GetProcessHeap (), 0, pSD);
   return fAccessGranted;
+
+ error:
+  if (hToken)
+    CloseHandle (hToken);
+  HeapFree (GetProcessHeap (), 0, pSD);
+  return 0;
 }
 
 static void

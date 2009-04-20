@@ -234,7 +234,7 @@ private
    pragma Import (Stdcall, C_Getpeername, "getpeername");
    pragma Import (Stdcall, C_Getsockname, "getsockname");
    pragma Import (Stdcall, C_Getsockopt, "getsockopt");
-   pragma Import (Stdcall, Inet_Pton, "__gnat_inet_pton");
+   pragma Import (C, Inet_Pton, "__gnat_inet_pton");
    pragma Import (Stdcall, C_Ioctl, "ioctlsocket");
    pragma Import (Stdcall, C_Listen, "listen");
    pragma Import (Stdcall, C_Recv, "recv");

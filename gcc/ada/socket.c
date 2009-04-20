@@ -422,7 +422,7 @@ __gnat_inet_pton (int af, const char *src, void *dst) {
   int rc;
 
   ss.ss_family = af;
-  rc = WSAStringToAddress (src, af, NULL, (struct sockaddr *)&ss, &sslen);
+  rc = WSAStringToAddressA (src, af, NULL, (struct sockaddr *)&ss, &sslen);
   if (rc > 0) {
     switch (af) {
       case AF_INET:

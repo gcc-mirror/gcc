@@ -79,10 +79,6 @@ pragma Style_Checks ("M32766");
  **
  **/
 
-#ifndef TARGET
-# error Please define TARGET
-#endif
-
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -94,6 +90,26 @@ pragma Style_Checks ("M32766");
 #endif
 
 #include "gsocket.h"
+
+#ifdef DUMMY
+
+# if defined (TARGET)
+#   error TARGET may not be defined when generating the dummy version
+# else
+#   define TARGET "batch runtime compilation (dummy values)"
+# endif
+
+# if !(defined (HAVE_SOCKETS) && defined (HAVE_TERMIOS))
+#   error Features missing on platform
+# endif
+
+# define NATIVE
+
+#endif
+
+#ifndef TARGET
+# error Please define TARGET
+#endif
 
 #ifndef HAVE_SOCKETS
 # include <errno.h>
@@ -109,8 +125,16 @@ pragma Style_Checks ("M32766");
 
 #ifdef NATIVE
 #include <stdio.h>
+
+#ifdef DUMMY
+int counter = 0;
+# define _VAL(x) counter++
+#else
+# define _VAL(x) x
+#endif
+
 #define CND(name,comment) \
-  printf ("\n->CND:$%d:" #name ":$%d:" comment, __LINE__, ((int) name));
+  printf ("\n->CND:$%d:" #name ":$%d:" comment, __LINE__, ((int) _VAL (name)));
 
 #define CNS(name,comment) \
   printf ("\n->CNS:$%d:" #name ":" name ":" comment, __LINE__);
@@ -1179,9 +1203,11 @@ TXT("   Thread_Blocking_IO  : constant Boolean := True;")
 
 /**
  **  System-specific constants follow
+ **  Each section should be activated if compiling for the corresponding
+ **  platform *or* generating the dummy version for runtime test compilation.
  **/
 
-#ifdef __vxworks
+#if defined (__vxworks) || defined (DUMMY)
 
 /*
 
@@ -1198,7 +1224,7 @@ CND(ERROR, "VxWorks generic error")
 
 #endif
 
-#ifdef __MINGW32__
+#if defined (__MINGW32__) || defined (DUMMY)
 /*
 
    ------------------------------
@@ -1220,7 +1246,7 @@ CND(WSAEDISCON,         "Disconnected")
    putchar ('\n');
 #endif
 
-#ifdef __APPLE__
+#if defined (__APPLE__) || defined (DUMMY)
 /*
 
    -------------------------------
