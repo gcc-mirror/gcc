@@ -787,7 +787,10 @@ __gnat_localtime_tzoff (const time_t *timer, long *off)
      /* An error occurs so return invalid_tzoff.  */
      *off = __gnat_invalid_tzoff;
   else
-     *off = (long) ((local_time.ull_time - utc_time.ull_time) / 10000000ULL);
+     if (local_time.ull_time > utc_time.ull_time)
+        *off = (long) ((local_time.ull_time - utc_time.ull_time) / 10000000ULL);
+     else
+        *off = - (long) ((utc_time.ull_time - local_time.ull_time) / 10000000ULL);
 
   (*Unlock_Task) ();
 }

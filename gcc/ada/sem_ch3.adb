@@ -5557,10 +5557,7 @@ package body Sem_Ch3 is
                  (N, Parent_Type, Derived_Type, Derive_Subps);
 
                --  Build anonymous completion, as a derivation from the full
-               --  view of the parent. Because it is used as a placeholder
-               --  to convey information to the back-end, it must be declared
-               --  after the original type so the back-end knows that it needs
-               --  to disregard the declaration.
+               --  view of the parent.
 
                Decl :=
                  Make_Full_Type_Declaration (Loc,
@@ -5588,7 +5585,7 @@ package body Sem_Ch3 is
 
                Install_Private_Declarations (Par_Scope);
                Install_Visible_Declarations (Par_Scope);
-               Insert_After (N, Decl);
+               Insert_Before (N, Decl);
 
                --  Mark entity as an underlying record view before analysis,
                --  to avoid generating the list of its primitive operations
