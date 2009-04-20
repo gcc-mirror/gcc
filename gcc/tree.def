@@ -383,6 +383,9 @@ DEFTREECODE (TRANSLATION_UNIT_DECL, "translation_unit_decl",\
 
 /* References to storage.  */
 
+/* The ordering of the following codes is optimized for the classification
+   in handled_component_p.  Keep them in a consecutive group.  */
+
 /* Value is structure or union component.
    Operand 0 is the structure or union (an expression).
    Operand 1 is the field (a node of type FIELD_DECL).
@@ -399,6 +402,23 @@ DEFTREECODE (COMPONENT_REF, "component_ref", tcc_reference, 3)
    If the result type is integral, its signedness specifies how it is extended
    to its mode width.  */
 DEFTREECODE (BIT_FIELD_REF, "bit_field_ref", tcc_reference, 3)
+
+/* Used only on an operand of complex type, these return
+   a value of the corresponding component type.  */
+DEFTREECODE (REALPART_EXPR, "realpart_expr", tcc_reference, 1)
+DEFTREECODE (IMAGPART_EXPR, "imagpart_expr", tcc_reference, 1)
+
+/* Array indexing.
+   Operand 0 is the array; operand 1 is a (single) array index.
+   Operand 2, if present, is a copy of TYPE_MIN_VALUE of the index.
+   Operand 3, if present, is the element size, measured in units of
+   the alignment of the element type.  */
+DEFTREECODE (ARRAY_REF, "array_ref", tcc_reference, 4)
+
+/* Likewise, except that the result is a range ("slice") of the array.  The
+   starting index of the resulting array is taken from operand 1 and the size
+   of the range is taken from the type of the expression.  */
+DEFTREECODE (ARRAY_RANGE_REF, "array_range_ref", tcc_reference, 4)
 
 /* The ordering of the following codes is optimized for the checking
    macros in tree.h.  Changing the order will degrade the speed of the
@@ -417,18 +437,6 @@ DEFTREECODE (ALIGN_INDIRECT_REF, "align_indirect_ref", tcc_reference, 1)
    Operand 1 is an INTEGER_CST which represents the alignment of the address,
    or 0 if the alignment is unknown.  */
 DEFTREECODE (MISALIGNED_INDIRECT_REF, "misaligned_indirect_ref", tcc_reference, 2)
-
-/* Array indexing.
-   Operand 0 is the array; operand 1 is a (single) array index.
-   Operand 2, if present, is a copy of TYPE_MIN_VALUE of the index.
-   Operand 3, if present, is the element size, measured in units of
-   the alignment of the element type.  */
-DEFTREECODE (ARRAY_REF, "array_ref", tcc_reference, 4)
-
-/* Likewise, except that the result is a range ("slice") of the array.  The
-   starting index of the resulting array is taken from operand 1 and the size
-   of the range is taken from the type of the expression.  */
-DEFTREECODE (ARRAY_RANGE_REF, "array_range_ref", tcc_reference, 4)
 
 /* Used to represent lookup of runtime type dependent data.  Often this is
    a reference to a vtable, but it needn't be.  Operands are:
@@ -805,11 +813,6 @@ DEFTREECODE (COMPLEX_EXPR, "complex_expr", tcc_binary, 2)
 
 /* Complex conjugate of operand.  Used only on complex types.  */
 DEFTREECODE (CONJ_EXPR, "conj_expr", tcc_unary, 1)
-
-/* Used only on an operand of complex type, these return
-   a value of the corresponding component type.  */
-DEFTREECODE (REALPART_EXPR, "realpart_expr", tcc_reference, 1)
-DEFTREECODE (IMAGPART_EXPR, "imagpart_expr", tcc_reference, 1)
 
 /* Nodes for ++ and -- in C.
    The second arg is how much to increment or decrement by.

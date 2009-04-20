@@ -4503,7 +4503,24 @@ extern tree get_narrower (tree, int *);
 
 /* Return true if T is an expression that get_inner_reference handles.  */
 
-extern int handled_component_p (const_tree);
+static inline bool
+handled_component_p (const_tree t)
+{
+  switch (TREE_CODE (t))
+    {
+    case BIT_FIELD_REF:
+    case COMPONENT_REF:
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+    case VIEW_CONVERT_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      return true;
+
+    default:
+      return false;
+    }
+}
 
 /* Given an expression EXP that is a handled_component_p,
    look for the ultimate containing object, which is returned and specify
