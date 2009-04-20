@@ -954,14 +954,21 @@ package body Sem_Ch8 is
                --  declaration occurs within the body of G or within the body
                --  of a generic unit declared within the declarative region
                --  of G, then the declaration of the formal object of G must
-               --  have a null exclusion.
+               --  have a null exclusion or a null-excluding subtype.
 
                if Is_Formal_Object (Nam_Ent)
                  and then In_Generic_Scope (Id)
                then
-                  Error_Msg_N
-                    ("renamed formal does not exclude `NULL` "
-                     & "(RM 8.5.1(4.6/2))", N);
+                  if not Can_Never_Be_Null (Etype (Nam_Ent)) then
+                     Error_Msg_N
+                       ("renamed formal does not exclude `NULL` "
+                        & "(RM 8.5.1(4.6/2))", N);
+
+                  elsif In_Package_Body (Scope (Id)) then
+                     Error_Msg_N
+                       ("formal object does not have a null exclusion"
+                        & "(RM 8.5.1(4.6/2))", N);
+                  end if;
 
                --  Ada 2005 (AI-423): Otherwise, the subtype of the object name
                --  shall exclude null.
@@ -971,12 +978,41 @@ package body Sem_Ch8 is
                     ("renamed object does not exclude `NULL` "
                      & "(RM 8.5.1(4.6/2))", N);
 
-               elsif Can_Never_Be_Null (Etype (Nam_Ent)) then
+               --  An instance is illegal if it contains a renaming that
+               --  excludes null, and the actual does not. The renaming
+               --  declaration has already indicated that the declaration
+               --  of the renamed actual in the instance will raise
+               --  constraint_error.
+
+               elsif Nkind (Parent (Nam_Ent)) = N_Object_Declaration
+                 and then In_Instance
+                 and then Present
+                   (Corresponding_Generic_Association (Parent (Nam_Ent)))
+                 and then Nkind (Expression (Parent (Nam_Ent)))
+                   = N_Raise_Constraint_Error
+               then
+                  Error_Msg_N
+                    ("renamed actual does not exclude `NULL` "
+                     & "(RM 8.5.1(4.6/2))", N);
+
+               --  Finally, if there is a null exclusion, the subtype mark
+               --  must not be null-excluding.
+
+               elsif No (Access_Definition (N))
+                 and then  Can_Never_Be_Null (T)
+               then
                   Error_Msg_NE
-                    ("`NOT NULL` not allowed (type of& already excludes null)",
-                      N, Nam_Ent);
+                    ("`NOT NULL` not allowed (& already excludes null)",
+                      N, T);
 
                end if;
+
+            elsif Can_Never_Be_Null (T)
+              and then not Can_Never_Be_Null (Etype (Nam_Ent))
+            then
+               Error_Msg_N
+                 ("renamed object does not exclude `NULL` "
+                  & "(RM 8.5.1(4.6/2))", N);
 
             elsif Has_Null_Exclusion (N)
               and then No (Access_Definition (N))
