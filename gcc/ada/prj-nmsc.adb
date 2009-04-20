@@ -1842,6 +1842,15 @@ package body Prj.Nmsc is
                      Data.Config.Linker :=
                        Path_Name_Type (Attribute.Value.Value);
 
+                     --  Linker'Driver is also used to link shared libraries
+                     --  if the obsolescent attribute Library_GCC has not been
+                     --  specified.
+
+                     if Data.Config.Shared_Lib_Driver = No_File then
+                        Data.Config.Shared_Lib_Driver :=
+                          File_Name_Type (Attribute.Value.Value);
+                     end if;
+
                   elsif Attribute.Name = Name_Required_Switches then
 
                      --  Attribute Required_Switches: the minimum
@@ -2067,6 +2076,12 @@ package body Prj.Nmsc is
                elsif Attribute.Name = Name_Library_GCC then
                   Data.Config.Shared_Lib_Driver :=
                     File_Name_Type (Attribute.Value.Value);
+                  Error_Msg
+                    (Project,
+                     In_Tree,
+                     "?Library_'G'C'C is an obsolescent attribute, " &
+                     "use Linker''Driver instead",
+                     Attribute.Value.Location);
 
                elsif Attribute.Name = Name_Archive_Suffix then
                   Data.Config.Archive_Suffix :=
@@ -3613,6 +3628,10 @@ package body Prj.Nmsc is
                        Prj.Util.Value_Of
                          (Snames.Name_Library_Ali_Dir, Attributes, In_Tree);
 
+      Lib_GCC      : constant Prj.Variable_Value :=
+                       Prj.Util.Value_Of
+                         (Snames.Name_Library_GCC, Attributes, In_Tree);
+
       The_Lib_Kind : constant Prj.Variable_Value :=
                        Prj.Util.Value_Of
                          (Snames.Name_Library_Kind, Attributes, In_Tree);
@@ -4205,15 +4224,55 @@ package body Prj.Nmsc is
                      Write_Line (Kind_Name);
                   end if;
 
-                  if Data.Library_Kind /= Static and then
-                    Support_For_Libraries = Prj.Static_Only
-                  then
-                     Error_Msg
-                       (Project, In_Tree,
-                        "only static libraries are supported " &
-                        "on this platform",
-                        The_Lib_Kind.Location);
-                     Data.Library := False;
+                  if Data.Library_Kind /= Static then
+                     if Support_For_Libraries = Prj.Static_Only then
+                        Error_Msg
+                          (Project, In_Tree,
+                           "only static libraries are supported " &
+                           "on this platform",
+                           The_Lib_Kind.Location);
+                        Data.Library := False;
+
+                     else
+                        --  Check if (obsolescent) attribute Library_GCC or
+                        --  Linker'Driver is declared.
+
+                        if Lib_GCC.Value /= Empty_String then
+                           Error_Msg
+                             (Project,
+                              In_Tree,
+                              "?Library_'G'C'C is an obsolescent attribute, " &
+                              "use Linker''Driver instead",
+                              Lib_GCC.Location);
+                           Data.Config.Shared_Lib_Driver :=
+                             File_Name_Type (Lib_GCC.Value);
+
+                        else
+                           declare
+                              Linker : constant Package_Id :=
+                                         Value_Of
+                                           (Name_Linker,
+                                            Data.Decl.Packages,
+                                            In_Tree);
+                              Driver : constant Variable_Value :=
+                                         Value_Of
+                                           (Name                    => No_Name,
+                                            Attribute_Or_Array_Name =>
+                                              Name_Driver,
+                                            In_Package              => Linker,
+                                            In_Tree                 =>
+                                              In_Tree);
+
+                           begin
+                              if Driver /= Nil_Variable_Value
+                                 and then Driver.Value /= Empty_String
+                              then
+                                 Data.Config.Shared_Lib_Driver :=
+                                   File_Name_Type (Driver.Value);
+                              end if;
+                           end;
+                        end if;
+                     end if;
                   end if;
                end;
             end if;

@@ -1,5 +1,66 @@
 2009-04-20  Thomas Quinot  <quinot@adacore.com>
 
+	* g-socket.ads: Add new constants:
+	  Loopback_Inet_Addr
+	  Unspecified_Group_Inet_Addr
+	  All_Hosts_Group_Inet_Addr
+	  All_Routers_Group_Inet_Addr
+
+	* s-oscons-tmplt.c, g-sttsne-vxworks.adb (System.OS_Constants): Add
+	ERANGE (Result too large).
+	(GNAT.Sockets.Thin.Task_Safe_NetDB, VxWorks version): Add missing
+	propagation of errno to caller.
+
+2009-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-calend.adb, a-calend-vms.adb: Increase the number of leap seconds
+	to 24. Increment Leap_Seconds_Count and add an entry to aggregate
+	Leap_Second_Times.
+
+2009-04-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_elim.ads (Check_For_Eliminated_Subprogram): New procedure for
+	checking for references to eliminated subprograms that should be
+	flagged.
+	(Eliminate_Error_Message): Update comment to say "references" rather
+	than "calls" (since attribute cases are handled here as well).
+
+	* sem_elim.adb (Check_For_Eliminated_Subprogram): New procedure for
+	checking for references to eliminated subprograms that should be
+	flagged.  Add with and use of Sem and Sem_Util.
+
+	* sem_res.adb (Resolve_Call): Reject calls to eliminated subprograms.
+	Add with and use of Sem_Elim.
+
+	* sem_attr.adb (Analyze_Access_Attribute): Reject access attributes
+	applied to eliminated subprograms.
+	(Analyze_Attribute): Reject 'Address and 'Code_Address applied to
+	eliminated subprograms.
+	Add with and use of Sem_Elim.
+
+	* sem_disp.adb (Check_Dispatching_Call): Remove error check for calls
+	to eliminated subprograms, now handled during Resolve_Call.
+	Remove with and use of Sem_Elim.
+
+	* exp_disp.adb (Make_DT): Get Ultimate_Alias of primitive before
+	testing Is_Eliminated, for proper handling of primitive derived from
+	eliminated subprograms.
+
+2009-04-20  Vincent Celier  <celier@adacore.com>
+
+	* mlib-prj.adb (Build_Library): Use the shared library linker, if one
+	has been declared (Library_GCC or Linker'Driver), for the driver name.
+
+	* prj-nmsc.adb (Process_Linker): If Library_GCC is not declared and
+	Linker'Driver is, use Linker'Driver as the shared library linker.
+	(Process_Project_Level_Simple_Attributes): Issue a warning if attribute
+	Library_GCC is declared.
+	(Check_Library_Attributes): Set up the shared linker driver: either
+	Library_GCC or Linker'Driver. Issue a warning if Library_GCC is
+	declared.
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
 	* g-socket.ads (Send_Socket): Fix misleading comment.
 
 2009-04-20  Arnaud Charlet  <charlet@adacore.com>

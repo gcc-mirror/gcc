@@ -491,6 +491,13 @@ package GNAT.Sockets is
    Any_Inet_Addr       : constant Inet_Addr_Type;
    No_Inet_Addr        : constant Inet_Addr_Type;
    Broadcast_Inet_Addr : constant Inet_Addr_Type;
+   Loopback_Inet_Addr  : constant Inet_Addr_Type;
+
+   --  Useful constants for IPv4 multicast addresses
+
+   Unspecified_Group_Inet_Addr : constant Inet_Addr_Type;
+   All_Hosts_Group_Inet_Addr   : constant Inet_Addr_Type;
+   All_Routers_Group_Inet_Addr : constant Inet_Addr_Type;
 
    type Sock_Addr_Type (Family : Family_Type := Family_Inet) is record
       Addr : Inet_Addr_Type (Family);
@@ -1155,6 +1162,15 @@ private
                            (Family_Inet, (others => 0));
    Broadcast_Inet_Addr : constant Inet_Addr_Type :=
                            (Family_Inet, (others => 255));
+   Loopback_Inet_Addr  : constant Inet_Addr_Type :=
+                           (Family_Inet, (127, 0, 0, 1));
+
+   Unspecified_Group_Inet_Addr : constant Inet_Addr_Type :=
+                                   (Family_Inet, (224, 0, 0, 0));
+   All_Hosts_Group_Inet_Addr   : constant Inet_Addr_Type :=
+                                   (Family_Inet, (224, 0, 0, 1));
+   All_Routers_Group_Inet_Addr : constant Inet_Addr_Type :=
+                                   (Family_Inet, (224, 0, 0, 2));
 
    No_Sock_Addr : constant Sock_Addr_Type := (Family_Inet, No_Inet_Addr, 0);
 

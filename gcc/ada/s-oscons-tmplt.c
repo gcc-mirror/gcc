@@ -471,6 +471,11 @@ CND(EPROTONOSUPPORT, "Unknown protocol")
 #endif
 CND(EPROTOTYPE, "Unknown protocol type")
 
+#ifndef ERANGE
+# define ERANGE -1
+#endif
+CND(ERANGE, "Result too large")
+
 #ifndef ESHUTDOWN
 # define ESHUTDOWN -1
 #endif

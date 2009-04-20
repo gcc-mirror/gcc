@@ -126,7 +126,7 @@ package body Ada.Calendar is
    --  The above flag controls the usage of leap seconds in all Ada.Calendar
    --  routines.
 
-   Leap_Seconds_Count : constant Natural := 23;
+   Leap_Seconds_Count : constant Natural := 24;
 
    ---------------------
    -- Local Constants --
@@ -176,7 +176,8 @@ package body Ada.Calendar is
       43271712190000000,
       43744320200000000,
       44218656210000000,
-      46427904220000000);
+      46427904220000000,
+      47374848230000000);
 
    ---------
    -- "+" --

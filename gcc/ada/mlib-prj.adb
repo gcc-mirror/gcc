@@ -340,7 +340,6 @@ package body MLib.Prj is
       Success : Boolean := False;
 
       Library_Options : Variable_Value := Nil_Variable_Value;
-      Library_GCC     : Variable_Value := Nil_Variable_Value;
 
       Driver_Name : Name_Id := No_Name;
 
@@ -1282,13 +1281,11 @@ package body MLib.Prj is
 
       if Link then
 
-         --  If attribute Library_GCC was specified, get the driver name
+         --  If attributes Library_GCC or Linker'Driver were specified, get the
+         --  driver name.
 
-         Library_GCC :=
-           Value_Of (Name_Library_GCC, Data.Decl.Attributes, In_Tree);
-
-         if not Library_GCC.Default then
-            Driver_Name := Library_GCC.Value;
+         if Data.Config.Shared_Lib_Driver /= No_File then
+            Driver_Name := Name_Id (Data.Config.Shared_Lib_Driver);
          end if;
 
          --  If attribute Library_Options was specified, add these additional
