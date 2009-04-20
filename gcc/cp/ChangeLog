@@ -1,3 +1,9 @@
+2009-04-20  Le-Chun Wu  <lcwu@google.com>
+
+	PR c++/39803
+	* init.c (build_vec_init): Set TREE_NO_WARNING on the
+	compiler-generated INDIRECT_REF expression.
+
 2009-04-20  Ian Lance Taylor  <iant@google.com>
 
 	* typeck.c (build_function_call_vec): New function.
@@ -34,7 +40,7 @@
 	* cp-tree.h (enum tsubst_flags): Rename from enum tsubst_flags_t.
 	(tsubst_flags_t): Change typedef from enum type to int.
 
-2009-04-16  Le-Chun Wu  <lcwu@google.com>
+2009-04-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* decl.c (check_initializer): Use TYPE_VECTOR_OPAQUE
 	instead of targetm.vector_opaque_p.

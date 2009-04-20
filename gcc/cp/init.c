@@ -2920,6 +2920,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       atype = build_pointer_type (atype);
       stmt_expr = build1 (NOP_EXPR, atype, stmt_expr);
       stmt_expr = cp_build_indirect_ref (stmt_expr, NULL, complain);
+      TREE_NO_WARNING (stmt_expr) = 1;
     }
 
   current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
