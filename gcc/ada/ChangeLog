@@ -32,7 +32,7 @@
 
 2009-04-20  Ed Schonberg  <schonberg@adacore.com>
 
-	* sem_ch8,adb (Analyze_Object_Renaming): Reject ambiguous expressions
+	* sem_ch8.adb (Analyze_Object_Renaming): Reject ambiguous expressions
 	in an object renaming declaration when the expected type is an
 	anonymous access type.
 

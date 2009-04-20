@@ -7500,14 +7500,15 @@ package body Exp_Ch3 is
      (Tag_Typ   : Entity_Id;
       Decl_List : out List_Id)
    is
-      Loc         : constant Source_Ptr := Sloc (Tag_Typ);
-      Formal      : Entity_Id;
-      Formal_List : List_Id;
-      Parent_Subp : Entity_Id;
-      Prim_Elmt   : Elmt_Id;
-      Proc_Spec   : Node_Id;
-      Proc_Decl   : Node_Id;
-      Subp        : Entity_Id;
+      Loc : constant Source_Ptr := Sloc (Tag_Typ);
+
+      Formal         : Entity_Id;
+      Formal_List    : List_Id;
+      New_Param_Spec : Node_Id;
+      Parent_Subp    : Entity_Id;
+      Prim_Elmt      : Elmt_Id;
+      Proc_Decl      : Node_Id;
+      Subp           : Entity_Id;
 
       function Is_Null_Interface_Primitive (E : Entity_Id) return Boolean;
       --  Returns True if E is a null procedure that is an interface primitive
@@ -7549,33 +7550,52 @@ package body Exp_Ch3 is
                Formal_List := New_List;
 
                while Present (Formal) loop
-                  Append
-                    (Make_Parameter_Specification (Loc,
-                       Defining_Identifier =>
-                         Make_Defining_Identifier (Sloc (Formal),
-                           Chars => Chars (Formal)),
-                       In_Present  => In_Present (Parent (Formal)),
-                       Out_Present => Out_Present (Parent (Formal)),
-                       Null_Exclusion_Present =>
-                         Null_Exclusion_Present (Parent (Formal)),
-                       Parameter_Type =>
-                         New_Occurrence_Of (Etype (Formal), Loc),
-                       Expression =>
-                         New_Copy_Tree (Expression (Parent (Formal)))),
-                     Formal_List);
+
+                  --  Copy the parameter spec including default expressions
+
+                  New_Param_Spec :=
+                    New_Copy_Tree (Parent (Formal), New_Sloc => Loc);
+
+                  --  Generate a new defining identifier for the new formal.
+                  --  required because New_Copy_Tree does not duplicate
+                  --  semantic fields (except itypes).
+
+                  Set_Defining_Identifier (New_Param_Spec,
+                    Make_Defining_Identifier (Sloc (Formal),
+                      Chars => Chars (Formal)));
+
+                  --  For controlling arguments we must change their
+                  --  parameter type to reference the tagged type (instead
+                  --  of the interface type)
+
+                  if Is_Controlling_Formal (Formal) then
+                     if Nkind (Parameter_Type (Parent (Formal)))
+                       = N_Identifier
+                     then
+                        Set_Parameter_Type (New_Param_Spec,
+                          New_Occurrence_Of (Tag_Typ, Loc));
+
+                     else pragma Assert
+                            (Nkind (Parameter_Type (Parent (Formal)))
+                               = N_Access_Definition);
+                        Set_Subtype_Mark (Parameter_Type (New_Param_Spec),
+                          New_Occurrence_Of (Tag_Typ, Loc));
+                     end if;
+                  end if;
+
+                  Append (New_Param_Spec, Formal_List);
 
                   Next_Formal (Formal);
                end loop;
             end if;
 
-            Proc_Spec :=
-              Make_Procedure_Specification (Loc,
-                Defining_Unit_Name =>
-                  Make_Defining_Identifier (Loc, Chars (Subp)),
-                Parameter_Specifications => Formal_List);
-            Set_Null_Present (Proc_Spec);
-
-            Proc_Decl := Make_Subprogram_Declaration (Loc, Proc_Spec);
+            Proc_Decl :=
+              Make_Subprogram_Declaration (Loc,
+                Make_Procedure_Specification (Loc,
+                  Defining_Unit_Name =>
+                    Make_Defining_Identifier (Loc, Chars (Subp)),
+                  Parameter_Specifications => Formal_List,
+                  Null_Present => True));
             Append_To (Decl_List, Proc_Decl);
             Analyze (Proc_Decl);
          end if;
