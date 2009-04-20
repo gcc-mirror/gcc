@@ -1,3 +1,23 @@
+2009-04-20  Joey Ye  <joey.ye@intel.com>
+	    Xuepeng Guo <xuepeng.guo@intel.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/atom.md: Add bypasses with ix86_dep_by_shift_count.
+
+	* config/i386/i386.c (LEA_SEARCH_THRESHOLD): New macro.
+	(IX86_LEA_PRIORITY): Likewise.
+	(distance_non_agu_define): New function.
+	(distance_agu_use): Likewise.
+	(ix86_lea_for_add_ok): Likewise.
+	(ix86_dep_by_shift_count): Likewise.
+
+	* config/i386/i386.md: Call ix86_lea_for_add_ok to decide we
+	should split for LEA.
+
+	* config/i386/i386-protos.h (ix86_lea_for_add_ok): Declare new
+	function.
+	(ix86_dep_by_shift_count): Likewise.
+
 2009-04-20  Richard Guenther  <rguenther@suse.de>
 
 	* expr.c (handled_component_p): Move ...
