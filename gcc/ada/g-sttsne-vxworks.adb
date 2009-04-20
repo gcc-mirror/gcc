@@ -77,9 +77,6 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
       pragma Import (Ada, Netdb_Data);
       for Netdb_Data'Address use Buf;
 
-      pragma Unreferenced (H_Errnop);
-      --  VxWorks does not provide h_errno
-
    begin
       pragma Assert (Addr_Type = SOSC.AF_INET);
       pragma Assert (Addr_Len = In_Addr'Size / 8);
@@ -88,6 +85,7 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
       --  data we want to return.
 
       if Netdb_Data'Size / 8 > Buflen then
+         H_Errnop.all := SOSC.ERANGE;
          return -1;
       end if;
 
@@ -95,6 +93,7 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
                                 Netdb_Data.Name'Address)
            /= SOSC.OK
       then
+         H_Errnop.all := C.int (Host_Errno);
          return -1;
       end if;
 
@@ -130,12 +129,10 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
 
       Addr : C.int;
 
-      pragma Unreferenced (H_Errnop);
-      --  VxWorks does not provide h_errno
-
    begin
       Addr := VxWorks_hostGetByName (Name);
       if Addr = SOSC.ERROR then
+         H_Errnop.all := C.int (Host_Errno);
          return -1;
       end if;
 
@@ -149,6 +146,7 @@ package body GNAT.Sockets.Thin.Task_Safe_NetDB is
          --  data we want to return.
 
          if Netdb_Data'Size / 8 > Buflen then
+            H_Errnop.all := SOSC.ERANGE;
             return -1;
          end if;
 
