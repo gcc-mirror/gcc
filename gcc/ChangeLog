@@ -227,7 +227,7 @@
 	(output_init_element): Likewise.
 	(output_pending_init_elements): Pass origtype from init_node to
 	output_init_element.
-	(process_init_elemnt): Pass origtype from c_expr to
+	(process_init_element): Pass origtype from c_expr to
 	output_init_element.
 	(c_finish_return): Add origtype parameter.  Change all callers.
 	* c-common.c (sync_resolve_size): Change params to VEC *.  Change
