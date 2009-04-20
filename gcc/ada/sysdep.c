@@ -743,26 +743,53 @@ extern void (*Unlock_Task) (void);
 
 /* Reentrant localtime for Windows and OS/2. */
 
-extern struct tm *
-__gnat_localtime_tzoff (const time_t *, struct tm *, long *);
+extern void
+__gnat_localtime_tzoff (const time_t *, long *);
 
-struct tm *
-__gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
+static const unsigned long long w32_epoch_offset = 11644473600ULL;
+void
+__gnat_localtime_tzoff (const time_t *timer, long *off)
 {
-  DWORD dwRet;
-  struct tm *tmp;
+  union
+  {
+    FILETIME ft_time;
+    unsigned long long ull_time;
+  } utc_time, local_time;
+
+  SYSTEMTIME utc_sys_time, local_sys_time;
   TIME_ZONE_INFORMATION tzi;
 
+  BOOL  status = 1;
+  DWORD tzi_status;
+
   (*Lock_Task) ();
-  tmp = localtime (timer);
-  memcpy (tp, tmp, sizeof (struct tm));
-  dwRet = GetTimeZoneInformation (&tzi);
-  *off = tzi.Bias;
-  if (tp->tm_isdst > 0)
-    *off = *off + tzi.DaylightBias;
-  *off = *off * -60;
+
+  /* First convert unix time_t structure to windows FILETIME format.  */
+  utc_time.ull_time = ((unsigned long long) *timer + w32_epoch_offset)
+                      * 10000000ULL;
+
+  tzi_status = GetTimeZoneInformation (&tzi);
+
+  /* If GetTimeZoneInformation does not return a value between 0 and 2 then
+     it means that we were not able to retrieve timezone informations.
+     Note that we cannot use here FileTimeToLocalFileTime as Windows will use
+     in always in this case the current timezone setting. As suggested on
+     MSDN we use the following three system calls to get the right information.
+     Note also that starting with Windows Vista new functions are provided to
+     get timezone settings that depend on the year. We cannot use them as we
+     still support Windows XP and Windows 2003.  */
+  status = (tzi_status >= 0 && tzi_status <= 2)
+     && FileTimeToSystemTime (&utc_time.ft_time, &utc_sys_time)
+     && SystemTimeToTzSpecificLocalTime (&tzi, &utc_sys_time, &local_sys_time)
+     && SystemTimeToFileTime (&local_sys_time, &local_time.ft_time);
+
+  if (!status)
+     /* An error occurs so return invalid_tzoff.  */
+     *off = __gnat_invalid_tzoff;
+  else
+     *off = (long) ((local_time.ull_time - utc_time.ull_time) / 10000000ULL);
+
   (*Unlock_Task) ();
-  return tp;
 }
 
 #else
@@ -774,16 +801,14 @@ __gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
    spec is required. Only use when ___THREADS_POSIX4ad4__ is defined,
    the Lynx convention when building against the legacy API. */
 
-extern struct tm *
-__gnat_localtime_tzoff (const time_t *, struct tm *, long *);
+extern void
+__gnat_localtime_tzoff (const time_t *, long *);
 
-struct tm *
-__gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
+void
+__gnat_localtime_tzoff (const time_t *timer, long *off)
 {
   /* Treat all time values in GMT */
-  localtime_r (tp, timer);
   *off = 0;
-  return NULL;
 }
 
 #else
@@ -795,28 +820,21 @@ __gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
 
 /* All other targets provide a standard localtime_r */
 
-extern struct tm *
-__gnat_localtime_tzoff (const time_t *, struct tm *, long *);
+extern void
+__gnat_localtime_tzoff (const time_t *, long *);
 
-struct tm *
-__gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
+void
+__gnat_localtime_tzoff (const time_t *timer, long *off)
 {
-   localtime_r (timer, tp);
+   struct tm tp;
+   localtime_r (timer, &tp);
 
 /* AIX, HPUX, SGI Irix, Sun Solaris */
 #if defined (_AIX) || defined (__hpux__) || defined (sgi) || defined (sun)
-  /* The contents of external variable "timezone" may not always be
-     initialized. Instead of returning an incorrect offset, treat the local
-     time zone as 0 (UTC). The value of 28 hours is the maximum valid offset
-     allowed by Ada.Calendar.Time_Zones. */
-  if ((timezone < -28 * 3600) || (timezone > 28 * 3600))
-    *off = 0;
-  else
-  {
-    *off = (long) -timezone;
-    if (tp->tm_isdst > 0)
-      *off = *off + 3600;
-   }
+   *off = (long) -timezone;
+   if (tp.tm_isdst > 0)
+     *off = *off + 3600;
+
 /* Lynx - Treat all time values in GMT */
 #elif defined (__Lynx__)
   *off = 0;
@@ -850,17 +868,16 @@ __gnat_localtime_tzoff (const time_t *timer, struct tm *tp, long *off)
   }
 }
 
-/* Darwin, Free BSD, Linux, Tru64, where there exists a component tm_gmtoff
-   in struct tm */
+/* Darwin, Free BSD, Linux, Tru64, where component tm_gmtoff is present in
+   struct tm */
 #elif defined (__APPLE__) || defined (__FreeBSD__) || defined (linux) ||\
      (defined (__alpha__) && defined (__osf__)) || defined (__GLIBC__)
-  *off = tp->tm_gmtoff;
+  *off = tp.tm_gmtoff;
 
 /* All other platforms: Treat all time values in GMT */
 #else
   *off = 0;
 #endif
-   return NULL;
 }
 
 #endif
