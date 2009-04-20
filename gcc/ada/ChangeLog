@@ -1,5 +1,20 @@
 2009-04-20  Thomas Quinot  <quinot@adacore.com>
 
+	* g-socket.adb, g-socket.ads, g-socthi-mingw.ads, g-socthi-vms.adb,
+	g-socthi-vms.ads, g-socthi-vxworks.ads, g-socthi.ads
+	(GNAT.Sockets.Thin.C_Inet_Addr): Remove.
+	(GNAT.Sockets.Thin.Inet_Aton): New function, imported from C library
+	except for VMS where it is reimplemented in Ada using DECC$INET_ADDR.
+	(GNAT.Sockets.Inet_Addr): Use inet_aton(3) instead of inet_addr(3).
+
+	* debug.adb: Fix typo
+
+	* gnat_rm.texi: Minor doc fix.
+
+	* sem_ch7.adb, freeze.adb: Minor reformatting
+
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
 	* g-socket.ads: Add new constants:
 	  Loopback_Inet_Addr
 	  Unspecified_Group_Inet_Addr

@@ -179,10 +179,6 @@ package body GNAT.Sockets is
    --  Reconstruct a Duration value from a Timeval record (seconds and
    --  microseconds).
 
-   procedure Raise_Socket_Error (Error : Integer);
-   --  Raise Socket_Error with an exception message describing the error code
-   --  from errno.
-
    procedure Raise_Host_Error (H_Error : Integer);
    --  Raise Host_Error exception with message describing error code (note
    --  hstrerror seems to be obsolete) from h_errno.
@@ -1274,36 +1270,29 @@ package body GNAT.Sockets is
    ---------------
 
    function Inet_Addr (Image : String) return Inet_Addr_Type is
+      use Interfaces.C;
       use Interfaces.C.Strings;
 
-      Img    : chars_ptr;
+      Img    : aliased char_array := To_C (Image);
+      Addr   : aliased C.int;
       Res    : C.int;
       Result : Inet_Addr_Type;
 
    begin
-      --  Special case for the all-ones broadcast address: this address has the
-      --  same in_addr_t value as Failure, and thus cannot be properly returned
-      --  by inet_addr(3).
-
-      if Image = "255.255.255.255" then
-         return Broadcast_Inet_Addr;
-
       --  Special case for an empty Image as on some platforms (e.g. Windows)
       --  calling Inet_Addr("") will not return an error.
 
-      elsif Image = "" then
+      if Image = "" then
          Raise_Socket_Error (SOSC.EINVAL);
       end if;
 
-      Img := New_String (Image);
-      Res := C_Inet_Addr (Img);
-      Free (Img);
+      Res := Inet_Aton (To_Chars_Ptr (Img'Unchecked_Access), Addr'Address);
 
       if Res = Failure then
          Raise_Socket_Error (SOSC.EINVAL);
       end if;
 
-      To_Inet_Addr (To_In_Addr (Res), Result);
+      To_Inet_Addr (To_In_Addr (Addr), Result);
       return Result;
    end Inet_Addr;
 

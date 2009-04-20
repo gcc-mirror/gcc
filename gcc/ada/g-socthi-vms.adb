@@ -38,6 +38,8 @@ with GNAT.Task_Lock;
 
 with Interfaces.C; use Interfaces.C;
 
+with System.Address_To_Access_Conversions;
+
 package body GNAT.Sockets.Thin is
 
    Non_Blocking_Sockets : aliased Fd_Set;
@@ -350,6 +352,47 @@ package body GNAT.Sockets.Thin is
    -------------------------
 
    package body Host_Error_Messages is separate;
+
+   ---------------
+   -- Inet_Aton --
+   ---------------
+
+   --  VMS does not support inet_aton(3), so emulate it here in terms of
+   --  inet_addr(3).
+
+   function Inet_Aton
+     (Cp  : C.Strings.chars_ptr;
+      Inp : System.Address) return C.int
+   is
+      use C.Strings;
+      use System;
+
+      Res : aliased C.int;
+      package Conv is new System.Address_To_Access_Conversions (C.int);
+      function C_Inet_Addr (Cp : C.Strings.chars_ptr) return C.int;
+      pragma Import (C, C_Inet_Addr, "DECC$INET_ADDR");
+   begin
+      if Cp = Null_Ptr or else Inp = Null_Address then
+         Raise_Socket_Error (SOSC.EINVAL);
+      end if;
+
+      --  Special case for the all-ones broadcast address: this address has the
+      --  same in_addr_t value as Failure, and thus cannot be properly returned
+      --  by inet_addr(3).
+
+      if String'(Value (Cp)) = "255.255.255.255" then
+         Conv.To_Pointer (Inp).all := -1;
+         return 0;
+      end if;
+
+      Res := C_Inet_Addr (Cp);
+      if Res = -1 then
+         return Res;
+      end if;
+
+      Conv.To_Pointer (Inp).all := Res;
+      return 0;
+   end Inet_Aton;
 
    ----------------
    -- Initialize --

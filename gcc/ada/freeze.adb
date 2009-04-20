@@ -2503,7 +2503,7 @@ package body Freeze is
                      Next_Formal (Formal);
                   end loop;
 
-                  --  Case of function: similar checks on return type.
+                  --  Case of function: similar checks on return type
 
                   if Ekind (E) = E_Function then
 

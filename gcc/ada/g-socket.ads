@@ -1108,6 +1108,10 @@ package GNAT.Sockets is
 
 private
 
+   procedure Raise_Socket_Error (Error : Integer);
+   --  Raise Socket_Error with an exception message describing the error code
+   --  from errno.
+
    type Socket_Type is new Integer;
    No_Socket : constant Socket_Type := -1;
 

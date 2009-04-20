@@ -283,7 +283,7 @@ package body Debug is
    --       list header is allocated, a line of output is generated. Certain
    --       other basic tree operations also cause a line of output to be
    --       generated. This option is useful in seeing where the parser is
-   --       blowing up.;
+   --       blowing up.
 
    --  do   Print the source recreated from the generated tree. In the case
    --       where the tree has been rewritten, this output includes only the
