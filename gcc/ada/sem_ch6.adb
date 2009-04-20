@@ -2609,13 +2609,56 @@ package body Sem_Ch6 is
    ------------------------------------
 
    procedure Analyze_Subprogram_Declaration (N : Node_Id) is
-      Designator : constant Entity_Id :=
-                     Analyze_Subprogram_Specification (Specification (N));
+      Loc        : constant Source_Ptr := Sloc (N);
+      Designator : Entity_Id;
+      Form       : Node_Id;
       Scop       : constant Entity_Id := Current_Scope;
+      Null_Body  : Node_Id := Empty;
 
    --  Start of processing for Analyze_Subprogram_Declaration
 
    begin
+      --  For a null procedure. capture the profile before analysis, for
+      --  expansion at the freeze point, and at each point of call.
+      --  The body will only be used if the procedure has preconditions.
+      --  In that case the body is analyzed at the freeze point.
+
+      if Nkind (Specification (N)) = N_Procedure_Specification
+        and then Null_Present (Specification (N))
+        and then Expander_Active
+      then
+         Null_Body :=
+           Make_Subprogram_Body (Loc,
+             Specification =>
+               New_Copy_Tree (Specification (N)),
+             Declarations => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc,
+                 Statements => New_List (Make_Null_Statement (Loc))));
+
+         --  Create new entities for body and formals.
+
+         Set_Defining_Unit_Name (Specification (Null_Body),
+           Make_Defining_Identifier (Loc, Chars (Defining_Entity (N))));
+         Set_Corresponding_Body (N, Defining_Entity (Null_Body));
+
+         Form := First (Parameter_Specifications (Specification (Null_Body)));
+         while Present (Form) loop
+            Set_Defining_Identifier (Form,
+              Make_Defining_Identifier (Loc,
+                Chars (Defining_Identifier (Form))));
+            Next (Form);
+         end loop;
+
+         if Is_Protected_Type (Current_Scope) then
+            Error_Msg_N
+              ("protected operation cannot be a null procedure", N);
+         end if;
+      end if;
+
+      Designator :=  Analyze_Subprogram_Specification (Specification (N));
+      Generate_Definition (Designator);
+
       if Debug_Flag_C then
          Write_Str ("==> subprogram spec ");
          Write_Name (Chars (Designator));
@@ -2625,19 +2668,19 @@ package body Sem_Ch6 is
          Indent;
       end if;
 
-      Generate_Definition (Designator);
+      if Nkind (Specification (N)) = N_Procedure_Specification
+        and then Null_Present (Specification (N))
+      then
+         Set_Has_Completion (Designator);
 
-      --  Check for RCI unit subprogram declarations for illegal inlined
-      --  subprograms and subprograms having access parameter or limited
-      --  parameter without Read and Write attributes (RM E.2.3(12-13)).
+         if Present (Null_Body) then
+            Set_Corresponding_Body (N, Defining_Entity (Null_Body));
+            Set_Body_To_Inline (N, Null_Body);
+            Set_Is_Inlined (Designator);
+         end if;
+      end if;
 
       Validate_RCI_Subprogram_Declaration (N);
-
-      Trace_Scope
-        (N,
-         Defining_Entity (N),
-         " Analyze subprogram spec: ");
-
       New_Overloaded_Entity (Designator);
       Check_Delayed_Subprogram (Designator);
 
@@ -2742,21 +2785,6 @@ package body Sem_Ch6 is
 
       Generate_Reference_To_Formals (Designator);
       Check_Eliminated (Designator);
-
-      --  Ada 2005: if procedure is declared with "is null" qualifier,
-      --  it requires no body.
-
-      if Nkind (Specification (N)) = N_Procedure_Specification
-        and then Null_Present (Specification (N))
-      then
-         Set_Has_Completion (Designator);
-         Set_Is_Inlined (Designator);
-
-         if Is_Protected_Type (Current_Scope) then
-            Error_Msg_N
-              ("protected operation cannot be a null procedure", N);
-         end if;
-      end if;
 
       if Debug_Flag_C then
          Outdent;
@@ -4395,7 +4423,19 @@ package body Sem_Ch6 is
                  (Unit_File_Name (Get_Source_Unit (Subp)))
          then
             Set_Is_Overriding_Operation (Subp);
-            Style.Missing_Overriding (Decl, Subp);
+
+            --  If style checks are enabled, indicate that the indicator
+            --  is missing. However, at the point of declaration, the type
+            --  of which this is a primitive operation may be private, in
+            --  which case the indicator would be premature.
+
+            if Has_Private_Declaration (Etype (Subp))
+              or else Has_Private_Declaration (Etype (First_Formal (Subp)))
+            then
+               null;
+            else
+               Style.Missing_Overriding (Decl, Subp);
+            end if;
          end if;
 
       elsif Must_Override (Spec) then
