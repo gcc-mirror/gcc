@@ -4994,7 +4994,9 @@ import_iso_c_binding_module (void)
 	      continue;
 	    }
 	  
-	  generate_isocbinding_symbol (iso_c_module_name, i, u->local_name);
+	  generate_isocbinding_symbol (iso_c_module_name,
+				       (iso_c_binding_symbol) i,
+				       u->local_name);
 	}
     }
   else
@@ -5011,7 +5013,9 @@ import_iso_c_binding_module (void)
 		  break;
 		}
 	    }
-	  generate_isocbinding_symbol (iso_c_module_name, i, local_name);
+	  generate_isocbinding_symbol (iso_c_module_name,
+				       (iso_c_binding_symbol) i,
+				       local_name);
 	}
 
       for (u = gfc_rename_list; u; u = u->next)

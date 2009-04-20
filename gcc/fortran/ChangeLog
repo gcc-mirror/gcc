@@ -1,3 +1,16 @@
+2009-04-20  Ian Lance Taylor  <iant@google.com>
+
+	* module.c (import_iso_c_binding_module): Add casts to enum type.
+	* trans-intrinsic.c (gfc_conv_intrinsic_minmax): Change op to enum
+	tree_code.
+	(gfc_conv_intrinsic_anyall): Likewise.
+	(gfc_conv_intrinsic_arith): Likewise.
+	(gfc_conv_intrinsic_minmaxloc): Likewise.
+	(gfc_conv_intrinsic_minmaxval): Likewise.
+	(gfc_conv_intrinsic_bitop): Likewise.
+	(gfc_conv_intrinsic_singlebitop): Likewise.
+	(gfc_conv_intrinsic_strcmp): Likewise.
+
 2009-04-20  Vasilis Liaskovitis  <vliaskov@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
