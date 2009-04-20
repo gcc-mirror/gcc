@@ -1,3 +1,7 @@
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.ads (Send_Socket): Fix misleading comment.
+
 2009-04-20  Arnaud Charlet  <charlet@adacore.com>
 
 	* switch-c.adb (Scan_Front_End_Switches): Disable inspector mode in

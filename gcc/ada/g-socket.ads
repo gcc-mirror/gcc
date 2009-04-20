@@ -935,10 +935,9 @@ package GNAT.Sockets is
       Item   : Ada.Streams.Stream_Element_Array;
       Last   : out Ada.Streams.Stream_Element_Offset;
       Flags  : Request_Flag_Type := No_Request_Flag);
-   --  Transmit a message over a socket. Note that Last is set to
-   --  Item'First-1 when socket has been closed by peer. This is not
-   --  considered an error and no exception is raised. Flags allows to control
-   --  the transmission. Raises Socket_Error on any other error condition.
+   --  Transmit a message over a socket. Upon return, Last is set to the index
+   --  within Item of the last element transmitted. Flags allows to control
+   --  the transmission. Raises Socket_Error on any detected error condition.
 
    procedure Send_Socket
      (Socket : Socket_Type;
@@ -975,14 +974,13 @@ package GNAT.Sockets is
    --  Same interface as Ada.Streams.Stream_IO
 
    function Stream (Socket : Socket_Type) return Stream_Access;
-   --  Create a stream associated with a stream-based socket that is
-   --  already connected.
+   --  Create a stream associated with an already connected stream-based socket
 
    function Stream
      (Socket  : Socket_Type;
       Send_To : Sock_Addr_Type) return Stream_Access;
-   --  Create a stream associated with a datagram-based socket that is already
-   --  bound. Send_To is the socket address to which messages are being sent.
+   --  Create a stream associated with an already bound datagram-based socket.
+   --  Send_To is the destination address to which messages are being sent.
 
    function Get_Address
      (Stream : not null Stream_Access) return Sock_Addr_Type;
@@ -996,9 +994,10 @@ package GNAT.Sockets is
 
    type Socket_Set_Type is limited private;
    --  This type allows to manipulate sets of sockets. It allows to wait for
-   --  events on multiple endpoints at one time. This type used to contain
-   --  a pointer to dynamically allocated storage, but this is not the case
-   --  anymore, and no special precautions are required to avoid memory leaks.
+   --  events on multiple endpoints at one time.
+   --  Note: This type used to contain a pointer to dynamically allocated
+   --  storage, but this is not the case anymore, and no special precautions
+   --  are required to avoid memory leaks.
 
    procedure Clear (Item : in out Socket_Set_Type; Socket : Socket_Type);
    --  Remove Socket from Item
