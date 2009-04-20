@@ -500,12 +500,21 @@ package body Inline is
 
       Inlined.Table (Index).Listed := True;
 
+      --  Now add to the list those callers of the current subprogram that
+      --  are themselves called. They may appear on the graph as callers
+      --  of the current one, even if they are themselves not called, and
+      --  there is no point in including them in the list for the backend.
+      --  Furthermore, they might not even be public, in which case the
+      --  back-end cannot handle them at all.
+
       Succ := Inlined.Table (Index).First_Succ;
       while Succ /= No_Succ loop
          Subp := Successors.Table (Succ).Subp;
          Inlined.Table (Subp).Count := Inlined.Table (Subp).Count - 1;
 
-         if Inlined.Table (Subp).Count = 0 then
+         if Inlined.Table (Subp).Count = 0
+           and then Is_Called (Inlined.Table (Subp).Name)
+         then
             Add_Inlined_Subprogram (Subp);
          end if;
 

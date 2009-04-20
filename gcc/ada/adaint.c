@@ -1746,6 +1746,65 @@ __gnat_is_directory (char *name)
 }
 
 #if defined (_WIN32) && !defined (RTX)
+
+/* Returns the same constant as GetDriveType but takes a pathname as
+   argument. */
+
+static UINT
+GetDriveTypeFromPath (TCHAR *wfullpath)
+{
+  TCHAR wdrv[MAX_PATH];
+  TCHAR wpath[MAX_PATH];
+  TCHAR wfilename[MAX_PATH];
+  TCHAR wext[MAX_PATH];
+
+  _tsplitpath (wfullpath, wdrv, wpath, wfilename, wext);
+
+  if (_tcslen (wdrv) != 0)
+    {
+      /* we have a drive specified. */
+      _tcscat (wdrv, _T("\\"));
+      return GetDriveType (wdrv);
+    }
+  else
+    {
+      /* No drive specified. */
+
+      /* Is this a relative path, if so get current drive type. */
+      if (wpath[0] != _T('\\') ||
+	  (_tcslen (wpath) > 2 && wpath[0] == _T('\\') && wpath[1] != _T('\\')))
+	return GetDriveType (NULL);
+
+      UINT result = GetDriveType (wpath);
+
+      /* Cannot guess the drive type, is this \\.\ ? */
+
+      if (result == DRIVE_NO_ROOT_DIR &&
+	 _tcslen (wpath) >= 4 && wpath[0] == _T('\\') && wpath[1] == _T('\\')
+	  && wpath[2] == _T('.') && wpath[3] == _T('\\'))
+	{
+	  if (_tcslen (wpath) == 4)
+	    _tcscat (wpath, wfilename);
+
+	  LPTSTR p = &wpath[4];
+	  LPTSTR b = _tcschr (p, _T('\\'));
+
+	  if (b != NULL)
+	    { /* logical drive \\.\c\dir\file */
+	      *b++ = _T(':');
+	      *b++ = _T('\\');
+	      *b = _T('\0');
+	    }
+	  else
+	    _tcscat (p, _T(":\\"));
+
+	  return GetDriveType (p);
+	}
+
+      return result;
+    }
+}
+
 /*  This MingW section contains code to work with ACL. */
 static int
 __gnat_check_OWNER_ACL
@@ -1856,6 +1915,16 @@ __gnat_set_OWNER_ACL
   LocalFree (pSD);
   LocalFree (pNewDACL);
 }
+
+/* Check if it is possible to use ACL for wname, the file must not be on a
+   network drive. */
+
+static int
+__gnat_can_use_acl (TCHAR *wname)
+{
+  return __gnat_use_acl && GetDriveTypeFromPath (wname) != DRIVE_REMOTE;
+}
+
 #endif /* defined (_WIN32) && !defined (RTX) */
 
 int
@@ -1865,10 +1934,10 @@ __gnat_is_readable_file (char *name)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
   GENERIC_MAPPING GenericMapping;
 
-  if (__gnat_use_acl)
-    {
-      S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+  S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
+  if (__gnat_can_use_acl (wname))
+    {
       ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
       GenericMapping.GenericRead = GENERIC_READ;
 
@@ -1897,7 +1966,7 @@ __gnat_is_writable_file (char *name)
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  if (__gnat_use_acl)
+  if (__gnat_can_use_acl (wname))
     {
       ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
       GenericMapping.GenericWrite = GENERIC_WRITE;
@@ -1929,7 +1998,7 @@ __gnat_is_executable_file (char *name)
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  if (__gnat_use_acl)
+  if (__gnat_can_use_acl (wname))
     {
       ZeroMemory (&GenericMapping, sizeof (GENERIC_MAPPING));
       GenericMapping.GenericExecute = GENERIC_EXECUTE;
@@ -1959,7 +2028,7 @@ __gnat_set_writable (char *name)
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  if (__gnat_use_acl)
+  if (__gnat_can_use_acl (wname))
     __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_WRITE);
 
   SetFileAttributes
@@ -1981,12 +2050,11 @@ __gnat_set_executable (char *name)
 #if defined (_WIN32) && !defined (RTX)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
-  if (__gnat_use_acl)
-    {
-      S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+  S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-      __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_EXECUTE);
-    }
+  if (__gnat_can_use_acl (wname))
+    __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_EXECUTE);
+
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
@@ -2006,7 +2074,7 @@ __gnat_set_non_writable (char *name)
 
   S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-  if (__gnat_use_acl)
+  if (__gnat_can_use_acl (wname))
     __gnat_set_OWNER_ACL
       (wname, DENY_ACCESS,
        FILE_WRITE_DATA | FILE_APPEND_DATA |
@@ -2031,12 +2099,11 @@ __gnat_set_readable (char *name)
 #if defined (_WIN32) && !defined (RTX)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
-  if (__gnat_use_acl)
-    {
-      S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+  S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-      __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_READ);
-    }
+  if (__gnat_can_use_acl (wname))
+    __gnat_set_OWNER_ACL (wname, GRANT_ACCESS, FILE_GENERIC_READ);
+
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 
@@ -2053,12 +2120,11 @@ __gnat_set_non_readable (char *name)
 #if defined (_WIN32) && !defined (RTX)
   TCHAR wname [GNAT_MAX_PATH_LEN + 2];
 
-  if (__gnat_use_acl)
-    {
-      S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
+  S2WSC (wname, name, GNAT_MAX_PATH_LEN + 2);
 
-      __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_READ);
-    }
+  if (__gnat_can_use_acl (wname))
+    __gnat_set_OWNER_ACL (wname, DENY_ACCESS, FILE_GENERIC_READ);
+
 #elif ! defined (__vxworks) && ! defined(__nucleus__)
   struct stat statbuf;
 

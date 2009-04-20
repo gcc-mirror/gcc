@@ -22375,6 +22375,98 @@ multiple inheritance of abstract classes will be mapped to Ada interfaces
 (@xref{Interfacing to C++,,,gnat_rm, GNAT Reference Manual}, for additional
 information on interfacing to C++).
 
+For example, given the following C++ header file:
+
+@smallexample
+@group
+@cartouche
+class Carnivore @{
+public:
+   virtual int Number_Of_Teeth () = 0;
+@};
+
+class Domestic @{
+public:
+   virtual void Set_Owner (char* Name) = 0;
+@};
+
+class Animal @{
+public:
+  int Age_Count;
+  virtual void Set_Age (int New_Age);
+@};
+
+class Dog : Animal, Carnivore, Domestic @{
+ public:
+  int  Tooth_Count;
+  char *Owner;
+
+  virtual int  Number_Of_Teeth ();
+  virtual void Set_Owner (char* Name);
+
+  Dog();
+@};
+@end cartouche
+@end group
+@end smallexample
+
+The corresponding Ada code is generated:
+
+@smallexample @c ada
+@group
+@cartouche
+  package Class_Carnivore is
+    type Carnivore is limited interface;
+    pragma Import (CPP, Carnivore);
+
+    function Number_Of_Teeth (this : access Carnivore) return int is abstract;
+  end;
+  use Class_Carnivore;
+
+  package Class_Domestic is
+    type Domestic is limited interface;
+    pragma Import (CPP, Domestic);
+
+    procedure Set_Owner
+      (this : access Domestic;
+       Name : Interfaces.C.Strings.chars_ptr) is abstract;
+  end;
+  use Class_Domestic;
+
+  package Class_Animal is
+    type Animal is tagged limited record
+      Age_Count : aliased int;
+    end record;
+    pragma Import (CPP, Animal);
+
+    procedure Set_Age (this : access Animal; New_Age : int);
+    pragma Import (CPP, Set_Age, "_ZN6Animal7Set_AgeEi");
+  end;
+  use Class_Animal;
+
+  package Class_Dog is
+    type Dog is new Animal and Carnivore and Domestic with record
+      Tooth_Count : aliased int;
+      Owner : Interfaces.C.Strings.chars_ptr;
+    end record;
+    pragma Import (CPP, Dog);
+
+    function Number_Of_Teeth (this : access Dog) return int;
+    pragma Import (CPP, Number_Of_Teeth, "_ZN3Dog15Number_Of_TeethEv");
+
+    procedure Set_Owner
+      (this : access Dog; Name : Interfaces.C.Strings.chars_ptr);
+    pragma Import (CPP, Set_Owner, "_ZN3Dog9Set_OwnerEPc");
+
+    function New_Dog return Dog'Class;
+    pragma CPP_Constructor (New_Dog);
+    pragma Import (CPP, New_Dog, "_ZN3DogC1Ev");
+  end;
+  use Class_Dog;
+@end cartouche
+@end group
+@end smallexample
+
 @node Switches
 @section Switches
 

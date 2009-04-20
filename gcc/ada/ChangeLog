@@ -1,3 +1,17 @@
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* inline.adb (Add_Inlined_Subprogram): Do not place on the back-end
+	list a caller of an inlined subprogram, if the caller itself is not
+	called.
+
+2009-04-20  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c: Disable use of ACL on network drives.
+
+2009-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Add examples.
+
 2009-04-20  Thomas Quinot  <quinot@adacore.com>
 
 	* g-socket.ads (Abort_Selector): Clarify documentation.
