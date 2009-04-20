@@ -1,3 +1,7 @@
+2009-04-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* objc/execute/exceptions/handler-1.m: For the NeXT runtime, just return 0.
+
 2009-04-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39811

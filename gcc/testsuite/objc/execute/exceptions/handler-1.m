@@ -1,6 +1,16 @@
 /* Test custom exception handlers  */
 /* Author: David Ayers */
 
+#ifdef __NEXT_RUNTIME__
+/* This test only runs for the GNU runtime. */
+
+int main(void)
+{
+  return 0;
+}
+
+#else
+
 #include <objc/objc-api.h>
 #include <objc/Object.h>
 #include <stdio.h>
@@ -36,3 +46,6 @@ main(int argc, char *argv[])
   abort();
   return 0;
 }
+
+
+#endif
