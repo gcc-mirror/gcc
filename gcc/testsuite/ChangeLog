@@ -1,3 +1,8 @@
+2009-04-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39811
+	* gfortran.dg/continuation_11.f90: New test.
+
 2009-04-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/13358
@@ -9,7 +14,7 @@
 	* g++.dg/warn/pr13358-3.C: New.
 	* g++.dg/warn/pr13358-4.C: New.
 
-2009-04-20  Andrew Pinski <andrew_pinski@playstation.sony.com>
+2009-04-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* gcc.dg/framework-2.c: Fix up for non existent includes
 	being fatal errors now.

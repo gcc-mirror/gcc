@@ -1,3 +1,8 @@
+2009-04-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39811
+	* scanner.c (load_line): Fix bogus "&" compile-time diagnostic.
+
 2009-04-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/39800
