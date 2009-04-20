@@ -1,3 +1,10 @@
+2009-04-20  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/39675
+	* tree-vect-loop.c (vect_transform_loop): Remove currently redundant 
+	check of the return code of vect_schedule_slp. Check that stmt_vec_info
+	still exists for the statement, before checking its vectorization type.
+
 2009-04-20  Michael Matz  <matz@suse.de>
 
 	* Makefile.in (generated_files): Take out $(simple_generated_c).
