@@ -3696,6 +3696,10 @@ gfc_trans_where_3 (gfc_code * cblock, gfc_code * eblock)
   gfc_ss *edss = 0;
   gfc_ss *esss = 0;
 
+  /* Allow the scalarizer to workshare simple where loops.  */
+  if (ompws_flags & OMPWS_WORKSHARE_FLAG)
+    ompws_flags |= OMPWS_SCALARIZER_WS;
+
   cond = cblock->expr;
   tdst = cblock->next->expr;
   tsrc = cblock->next->expr2;

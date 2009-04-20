@@ -4598,6 +4598,10 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
   rss = NULL;
   if (lss != gfc_ss_terminator)
     {
+      /* Allow the scalarizer to workshare array assignments.  */
+      if (ompws_flags & OMPWS_WORKSHARE_FLAG)
+	ompws_flags |= OMPWS_SCALARIZER_WS;
+
       /* The assignment needs scalarization.  */
       lss_section = lss;
 

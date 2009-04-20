@@ -2697,41 +2697,96 @@ gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
   tree tmp;
   tree loopbody;
   tree exit_label;
+  tree stmt;
+  tree init;
+  tree incr;
 
-  loopbody = gfc_finish_block (pbody);
+  if ((ompws_flags & (OMPWS_WORKSHARE_FLAG | OMPWS_SCALARIZER_WS))
+      == (OMPWS_WORKSHARE_FLAG | OMPWS_SCALARIZER_WS)
+      && n == loop->dimen - 1)
+    {
+      /* We create an OMP_FOR construct for the outermost scalarized loop.  */
+      init = make_tree_vec (1);
+      cond = make_tree_vec (1);
+      incr = make_tree_vec (1);
 
-  /* Initialize the loopvar.  */
-  gfc_add_modify (&loop->code[n], loop->loopvar[n], loop->from[n]);
+      /* Cycle statement is implemented with a goto.  Exit statement must not
+	 be present for this loop.  */
+      exit_label = gfc_build_label_decl (NULL_TREE);
+      TREE_USED (exit_label) = 1;
 
-  exit_label = gfc_build_label_decl (NULL_TREE);
+      /* Label for cycle statements (if needed).  */
+      tmp = build1_v (LABEL_EXPR, exit_label);
+      gfc_add_expr_to_block (pbody, tmp);
 
-  /* Generate the loop body.  */
-  gfc_init_block (&block);
+      stmt = make_node (OMP_FOR);
 
-  /* The exit condition.  */
-  cond = fold_build2 (GT_EXPR, boolean_type_node,
-		      loop->loopvar[n], loop->to[n]);
-  tmp = build1_v (GOTO_EXPR, exit_label);
-  TREE_USED (exit_label) = 1;
-  tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
-  gfc_add_expr_to_block (&block, tmp);
+      TREE_TYPE (stmt) = void_type_node;
+      OMP_FOR_BODY (stmt) = loopbody = gfc_finish_block (pbody);
 
-  /* The main body.  */
-  gfc_add_expr_to_block (&block, loopbody);
+      OMP_FOR_CLAUSES (stmt) = build_omp_clause (OMP_CLAUSE_SCHEDULE);
+      OMP_CLAUSE_SCHEDULE_KIND (OMP_FOR_CLAUSES (stmt))
+	= OMP_CLAUSE_SCHEDULE_STATIC;
+      if (ompws_flags & OMPWS_NOWAIT)
+	OMP_CLAUSE_CHAIN (OMP_FOR_CLAUSES (stmt))
+	  = build_omp_clause (OMP_CLAUSE_NOWAIT);
 
-  /* Increment the loopvar.  */
-  tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
-		     loop->loopvar[n], gfc_index_one_node);
-  gfc_add_modify (&block, loop->loopvar[n], tmp);
+      /* Initialize the loopvar.  */
+      TREE_VEC_ELT (init, 0) = build2_v (MODIFY_EXPR, loop->loopvar[n],
+					 loop->from[n]);
+      OMP_FOR_INIT (stmt) = init;
+      /* The exit condition.  */
+      TREE_VEC_ELT (cond, 0) = build2 (LE_EXPR, boolean_type_node,
+				       loop->loopvar[n], loop->to[n]);
+      OMP_FOR_COND (stmt) = cond;
+      /* Increment the loopvar.  */
+      tmp = build2 (PLUS_EXPR, gfc_array_index_type,
+	  loop->loopvar[n], gfc_index_one_node);
+      TREE_VEC_ELT (incr, 0) = fold_build2 (MODIFY_EXPR,
+	  void_type_node, loop->loopvar[n], tmp);
+      OMP_FOR_INCR (stmt) = incr;
 
-  /* Build the loop.  */
-  tmp = gfc_finish_block (&block);
-  tmp = build1_v (LOOP_EXPR, tmp);
-  gfc_add_expr_to_block (&loop->code[n], tmp);
+      ompws_flags &= ~OMPWS_CURR_SINGLEUNIT;
+      gfc_add_expr_to_block (&loop->code[n], stmt);
+    }
+  else
+    {
+      loopbody = gfc_finish_block (pbody);
 
-  /* Add the exit label.  */
-  tmp = build1_v (LABEL_EXPR, exit_label);
-  gfc_add_expr_to_block (&loop->code[n], tmp);
+      /* Initialize the loopvar.  */
+      gfc_add_modify (&loop->code[n], loop->loopvar[n], loop->from[n]);
+
+      exit_label = gfc_build_label_decl (NULL_TREE);
+
+      /* Generate the loop body.  */
+      gfc_init_block (&block);
+
+      /* The exit condition.  */
+      cond = fold_build2 (GT_EXPR, boolean_type_node,
+			 loop->loopvar[n], loop->to[n]);
+      tmp = build1_v (GOTO_EXPR, exit_label);
+      TREE_USED (exit_label) = 1;
+      tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
+      gfc_add_expr_to_block (&block, tmp);
+
+      /* The main body.  */
+      gfc_add_expr_to_block (&block, loopbody);
+
+      /* Increment the loopvar.  */
+      tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
+			 loop->loopvar[n], gfc_index_one_node);
+      gfc_add_modify (&block, loop->loopvar[n], tmp);
+
+      /* Build the loop.  */
+      tmp = gfc_finish_block (&block);
+      tmp = build1_v (LOOP_EXPR, tmp);
+      gfc_add_expr_to_block (&loop->code[n], tmp);
+
+      /* Add the exit label.  */
+      tmp = build1_v (LABEL_EXPR, exit_label);
+      gfc_add_expr_to_block (&loop->code[n], tmp);
+    }
+
 }
 
 
