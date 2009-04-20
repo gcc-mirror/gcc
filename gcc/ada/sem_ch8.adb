@@ -3362,8 +3362,23 @@ package body Sem_Ch8 is
       if Present (Hidden_By_Use_Clause (N)) then
          Elmt := First_Elmt (Hidden_By_Use_Clause (N));
          while Present (Elmt) loop
-            Set_Is_Immediately_Visible (Node (Elmt));
-            Next_Elmt (Elmt);
+            declare
+               E : constant Entity_Id := Node (Elmt);
+
+            begin
+               --  Reset either Use_Visibility or Direct_Visibility, depending
+               --  on how the entity was hidden by the use clause.
+
+               if In_Use (Scope (E))
+                 and then Used_As_Generic_Actual (Scope (E))
+               then
+                  Set_Is_Potentially_Use_Visible (Node (Elmt));
+               else
+                  Set_Is_Immediately_Visible (Node (Elmt));
+               end if;
+
+               Next_Elmt (Elmt);
+            end;
          end loop;
 
          Set_Hidden_By_Use_Clause (N, No_Elist);
@@ -7079,6 +7094,23 @@ package body Sem_Ch8 is
                          or else Chars (Prev) = Name_Op_Expon)
             then
                goto Next_Usable_Entity;
+
+            --  In an instance, two homonyms may become use_visible through the
+            --  actuals of distinct formal packages. In the generic, only the
+            --  current one would have been visible, so make the other one
+            --  not use_visible.
+
+            elsif Present (Current_Instance)
+              and then Is_Potentially_Use_Visible (Prev)
+              and then not Is_Overloadable (Prev)
+              and then Scope (Id) /= Scope (Prev)
+              and then Used_As_Generic_Actual (Scope (Prev))
+              and then Used_As_Generic_Actual (Scope (Id))
+              and then List_Containing (Current_Use_Clause (Scope (Prev))) /=
+                       List_Containing (Current_Use_Clause (Scope (Id)))
+            then
+               Set_Is_Potentially_Use_Visible (Prev, False);
+               Append_Elmt (Prev, Hidden_By_Use_Clause (N));
             end if;
 
             Prev := Homonym (Prev);
