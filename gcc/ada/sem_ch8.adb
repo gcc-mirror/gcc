@@ -782,25 +782,50 @@ package body Sem_Ch8 is
                Error_Msg_N
                  ("expect anonymous access type in object renaming", N);
             end if;
+
          else
             declare
-               I   : Interp_Index;
-               It  : Interp;
-               Typ : Entity_Id := Empty;
+               I    : Interp_Index;
+               It   : Interp;
+               Typ  : Entity_Id := Empty;
+               Seen : Boolean := False;
 
             begin
                Get_First_Interp (Nam, I, It);
                while Present (It.Typ) loop
-                  if No (Typ) then
-                     if Ekind (It.Typ) = Ekind (T)
-                       and then Covers (T, It.Typ)
+
+                  --  Renaming is ambiguous if more than one candidate
+                  --  interpretation is type-conformant with the context.
+
+                  if Ekind (It.Typ) = Ekind (T) then
+                     if Ekind (T) = E_Anonymous_Access_Subprogram_Type
+                       and then Type_Conformant
+                         (Designated_Type (T), Designated_Type (It.Typ))
                      then
+                        if not Seen then
+                           Seen := True;
+                        else
+                           Error_Msg_N
+                             ("ambiguous expression in renaming", Nam);
+                        end if;
+
+                     elsif Ekind (T) = E_Anonymous_Access_Type
+                       and then Covers
+                         (Designated_Type (T), Designated_Type (It.Typ))
+                     then
+                        if not Seen then
+                           Seen := True;
+                        else
+                           Error_Msg_N
+                             ("ambiguous expression in renaming", Nam);
+                        end if;
+                     end if;
+
+                     if Covers (T, It.Typ) then
                         Typ := It.Typ;
                         Set_Etype (Nam, Typ);
                         Set_Is_Overloaded (Nam, False);
                      end if;
-                  else
-                     Error_Msg_N ("ambiguous expression in renaming", N);
                   end if;
 
                   Get_Next_Interp (I, It);

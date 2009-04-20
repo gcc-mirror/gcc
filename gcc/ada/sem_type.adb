@@ -1680,6 +1680,37 @@ package body Sem_Type is
       elsif Nkind (N) = N_Range then
          return It1;
 
+      --  Implement AI05-105: A renaming declaration with an access
+      --  definition must resolve to an anonymous access type. This
+      --  is a resolution rule and can be used to disambiguate.
+
+      elsif Nkind (Parent (N)) = N_Object_Renaming_Declaration
+        and then Present (Access_Definition (Parent (N)))
+      then
+         if Ekind (It1.Typ) = E_Anonymous_Access_Type
+           or else Ekind (It1.Typ) = E_Anonymous_Access_Subprogram_Type
+         then
+            if Ekind (It2.Typ) = Ekind (It1.Typ) then
+
+               --  True ambiguity
+
+               return No_Interp;
+            else
+               return It1;
+            end if;
+
+         elsif Ekind (It2.Typ) = E_Anonymous_Access_Type
+           or else Ekind (It2.Typ) = E_Anonymous_Access_Subprogram_Type
+         then
+            return It2;
+
+         else
+
+            --  No legal interpretation.
+
+            return No_Interp;
+         end if;
+
       --  If two user defined-subprograms are visible, it is a true ambiguity,
       --  unless one of them is an entry and the context is a conditional or
       --  timed entry call, or unless we are within an instance and this is
