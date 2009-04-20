@@ -1,3 +1,7 @@
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/small_alignment.ads: New test.
+
 2009-04-20  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wcxx-compat-3.c: New testcase.

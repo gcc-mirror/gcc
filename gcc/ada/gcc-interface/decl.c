@@ -201,17 +201,26 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
   /* True if this entity is to be considered as imported.  */
   bool imported_p = (Is_Imported (gnat_entity)
 		     && No (Address_Clause (gnat_entity)));
-  unsigned int esize
-    = ((Known_Esize (gnat_entity)
-	&& UI_Is_In_Int_Range (Esize (gnat_entity)))
-       ? MIN (UI_To_Int (Esize (gnat_entity)),
-	      IN (kind, Float_Kind)
-	      ? fp_prec_to_size (LONG_DOUBLE_TYPE_SIZE)
-	      : IN (kind, Access_Kind) ? POINTER_SIZE * 2
-	      : LONG_LONG_TYPE_SIZE)
-       : LONG_LONG_TYPE_SIZE);
-  unsigned int align = 0;
+  unsigned int esize, align = 0;
   struct attrib *attr_list = NULL;
+
+  /* First compute a default value for the size of the entity.  */
+  if (Known_Esize (gnat_entity) && UI_Is_In_Int_Range (Esize (gnat_entity)))
+    {
+      unsigned int max_esize;
+      esize = UI_To_Int (Esize (gnat_entity));
+
+      if (IN (kind, Float_Kind))
+	max_esize = fp_prec_to_size (LONG_DOUBLE_TYPE_SIZE);
+      else if (IN (kind, Access_Kind))
+	max_esize = POINTER_SIZE * 2;
+      else
+	max_esize = LONG_LONG_TYPE_SIZE;
+
+      esize = MIN (esize, max_esize);
+    }
+  else
+    esize = LONG_LONG_TYPE_SIZE;
 
   /* Since a use of an Itype is a definition, process it as such if it
      is not in a with'ed unit.  */
@@ -1561,12 +1570,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 subtypes of Standard.Boolean.  */
       if (Is_Packed_Array_Type (gnat_entity)
 	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
-	{
-	  esize = UI_To_Int (RM_Size (gnat_entity));
-	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type) = 1;
-	}
+	esize = UI_To_Int (RM_Size (gnat_entity));
       else if (TREE_CODE (TREE_TYPE (gnu_type)) == BOOLEAN_TYPE)
-        esize = 1;
+	esize = 1;
 
       TYPE_PRECISION (gnu_type) = esize;
 
@@ -1612,26 +1618,29 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 within a subtype hierarchy.  */
       relate_alias_sets (gnu_type, TREE_TYPE (gnu_type), ALIAS_SET_COPY);
 
-      /* If the type we are dealing with is to represent a packed array,
+      /* If the type we are dealing with represents a bit-packed array,
 	 we need to have the bits left justified on big-endian targets
 	 and right justified on little-endian targets.  We also need to
 	 ensure that when the value is read (e.g. for comparison of two
 	 such values), we only get the good bits, since the unused bits
-	 are uninitialized.  Both goals are accomplished by wrapping the
-	 modular value in an enclosing struct.  */
+	 are uninitialized.  Both goals are accomplished by wrapping up
+	 the modular type in an enclosing record type.  */
       if (Is_Packed_Array_Type (gnat_entity)
 	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	{
-	  tree gnu_field_type = gnu_type;
-	  tree gnu_field;
+	  tree gnu_field_type, gnu_field;
 
-	  TYPE_RM_SIZE_NUM (gnu_field_type)
+	  /* Set the RM size before wrapping up the type.  */
+	  TYPE_RM_SIZE_NUM (gnu_type)
 	    = UI_To_gnu (RM_Size (gnat_entity), bitsizetype);
+	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type) = 1;
+	  gnu_field_type = gnu_type;
+
 	  gnu_type = make_node (RECORD_TYPE);
 	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "JM");
 
 	  /* Propagate the alignment of the modular type to the record.
-	     This means that bitpacked arrays have "ceil" alignment for
+	     This means that bit-packed arrays have "ceil" alignment for
 	     their size, which may seem counter-intuitive but makes it
 	     possible to easily overlay them on modular types.  */
 	  TYPE_ALIGN (gnu_type) = TYPE_ALIGN (gnu_field_type);
@@ -1650,7 +1659,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  finish_record_type (gnu_type, gnu_field, 0, false);
 	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
-	  SET_TYPE_ADA_SIZE (gnu_type, bitsize_int (esize));
 
 	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 	}
@@ -1663,8 +1671,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       && (align = UI_To_Int (Alignment (gnat_entity)) * BITS_PER_UNIT)
 	       && align < TYPE_ALIGN (gnu_type))
 	{
-	  tree gnu_field_type = gnu_type;
-	  tree gnu_field;
+	  tree gnu_field_type, gnu_field;
+
+	  /* Set the RM size before wrapping up the type.  */
+	  TYPE_RM_SIZE_NUM (gnu_type)
+	    = UI_To_gnu (RM_Size (gnat_entity), bitsizetype);
+	  gnu_field_type = gnu_type;
 
 	  gnu_type = make_node (RECORD_TYPE);
 	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "PAD");
@@ -1685,7 +1697,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  finish_record_type (gnu_type, gnu_field, 0, false);
 	  TYPE_IS_PADDING_P (gnu_type) = 1;
-	  SET_TYPE_ADA_SIZE (gnu_type, bitsize_int (esize));
 
 	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
 	}
