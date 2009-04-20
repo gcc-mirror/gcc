@@ -1,3 +1,19 @@
+2009-04-20  Thomas Quinot  <quinot@adacore.com>
+
+	* s-oscons-tmplt.c: Add support for generating a dummy version of
+	s-oscons.ads providing all possible constants.
+
+	* g-socthi-mingw.ads: Fix calling convention for __gnat_inet_pton.
+
+	* socket.c (__gnat_inet_pton): On Windows make sure we always use the
+	ANSI version (not the UNICODE version) of WSAStringToAddress.
+
+2009-04-20  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_set_OWNER_ACL): properly free memory
+	allocated for the security descriptor and make sure all
+	handles are closed before leaving this procedure.
+
 2009-04-20  Javier Miranda  <miranda@adacore.com>
 
 	* einfo.ads, einfo.adb (Is_Underlying_Record_View): New subprogram
