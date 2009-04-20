@@ -1,3 +1,11 @@
+2009-04-20  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c (__gnat_get_libraries_from_registry): Fix code to
+	avoid warning. At the same time fix a memory leak.
+
+	* osint.adb (Get_Libraries_From_Registry): Properly free memory
+	returned by the above routine.
+
 2009-04-20  Robert Dewar  <dewar@adacore.com>
 
 	* s-conca5.adb, s-conca5.ads, s-conca7.adb, s-conca7.ads, s-conca9.adb,
@@ -11,8 +19,7 @@
 
 	* initialize.c (__gnat_initialize): Add braces to kill warning.
 
-	* adaint.c: Minor reformatting, untabify, remove trailing spaces.
-
+	* adaint.c: Minor reformatting, remove trailing spaces.
 
 2009-04-17  Arnaud Charlet  <charlet@adacore.com>
 
