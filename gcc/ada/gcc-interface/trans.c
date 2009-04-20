@@ -267,6 +267,13 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
 
   type_annotate_only = (gigi_operating_mode == 1);
 
+  gcc_assert (Nkind (gnat_root) == N_Compilation_Unit);
+
+  /* Declare the name of the compilation unit as the first global
+     name in order to make the middle-end fully deterministic.  */
+  t = create_concat_name (Defining_Entity (Unit (gnat_root)), NULL);
+  first_global_object_name = ggc_strdup (IDENTIFIER_POINTER (t));
+
   for (i = 0; i < number_files; i++)
     {
       /* Use the identifier table to make a permanent copy of the filename as
@@ -618,13 +625,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   /* If we are using the GCC exception mechanism, let GCC know.  */
   if (Exception_Mechanism == Back_End_Exceptions)
     gnat_init_gcc_eh ();
-
-  gcc_assert (Nkind (gnat_root) == N_Compilation_Unit);
-
-  /* Declare the name of the compilation unit as the first global
-     name in order to make the middle-end fully deterministic.  */
-  t = create_concat_name (Defining_Entity (Unit (gnat_root)), NULL);
-  first_global_object_name = ggc_strdup (IDENTIFIER_POINTER (t));
 
   /* Now translate the compilation unit proper.  */
   start_stmt_group ();
