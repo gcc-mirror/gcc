@@ -1,3 +1,7 @@
+2009-04-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/rep_clause3.adb: New test.
+
 2009-04-19  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/37481

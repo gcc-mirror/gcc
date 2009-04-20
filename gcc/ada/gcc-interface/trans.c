@@ -2511,12 +2511,19 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 			     gnat_formal);
 	    }
 
-	  /* Remove any unpadding from the object and reset the copy.  */
-	  if (TREE_CODE (gnu_name) == COMPONENT_REF
-	      && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_name, 0)))
-		   == RECORD_TYPE)
-		  && (TYPE_IS_PADDING_P
-		      (TREE_TYPE (TREE_OPERAND (gnu_name, 0))))))
+	  /* If the actual type of the object is already the nominal type,
+	     we have nothing to do, except if the size is self-referential
+	     in which case we'll remove the unpadding below.  */
+	  if (TREE_TYPE (gnu_name) == gnu_name_type
+	      && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_name_type)))
+	    ;
+
+	  /* Otherwise remove unpadding from the object and reset the copy.  */
+	  else if (TREE_CODE (gnu_name) == COMPONENT_REF
+		   && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_name, 0)))
+			== RECORD_TYPE)
+			&& (TYPE_IS_PADDING_P
+			    (TREE_TYPE (TREE_OPERAND (gnu_name, 0))))))
 	    gnu_name = gnu_copy = TREE_OPERAND (gnu_name, 0);
 
 	  /* Otherwise convert to the nominal type of the object if it's
@@ -2529,7 +2536,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target)
 	  else if (TREE_CODE (gnu_name_type) == RECORD_TYPE
 		   && (TYPE_JUSTIFIED_MODULAR_P (gnu_name_type)
 		       || smaller_packable_type_p (TREE_TYPE (gnu_name),
-						 gnu_name_type)))
+						   gnu_name_type)))
 	    gnu_name = convert (gnu_name_type, gnu_name);
 
 	  /* Make a SAVE_EXPR to both properly account for potential side
