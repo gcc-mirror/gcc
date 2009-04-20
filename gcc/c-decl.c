@@ -7309,8 +7309,8 @@ declspecs_add_type (struct c_declspecs *specs, struct c_typespec spec)
 			     "declaration specifiers");
 		      break;
 		    }
-		  if (pedantic && !flag_isoc99 && !in_system_header)
-		    pedwarn (input_location, OPT_Wlong_long, "ISO C90 does not support %<long long%>");
+		  pedwarn_c90 (input_location, OPT_Wlong_long, 
+			       "ISO C90 does not support %<long long%>");
 		  specs->long_long_p = 1;
 		  break;
 		}

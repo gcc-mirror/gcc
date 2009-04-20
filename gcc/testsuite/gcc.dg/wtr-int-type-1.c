@@ -25,9 +25,17 @@ testfunc ()
 
   /* But this one should, since it doesn't fit in long (long), but
      does fit in unsigned long (long).  */
-  i = 18446744073709551615; /* { dg-warning "decimal constant|unsigned" "decimal constant" } */
-  
+  i = 18446744073709551615; /* { dg-warning "integer constant is so large that it is unsigned" "decimal constant" } */
+  /* { dg-warning "this decimal constant would be unsigned in ISO C90" "decimal constant" { target *-*-* } 28 } */
+
 # 29 "sys-header.h" 3
+}
+
+void
+testfunc2( ) 
+{ 
+  long long i;
+
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
   i = 0x80000000;
@@ -41,3 +49,4 @@ testfunc ()
   i = 9223372036854775807;
   i = 18446744073709551615;
 }
+

@@ -582,13 +582,18 @@ interpret_integer (const cpp_token *token, unsigned int flags)
 	    ? widest_unsigned_literal_type_node
 	    : widest_integer_literal_type_node);
   else
-    type = integer_types[itk];
-
-  if (itk > itk_unsigned_long
-      && (flags & CPP_N_WIDTH) != CPP_N_LARGE
-      && !in_system_header && !flag_isoc99)
-    pedwarn (input_location, 0, "integer constant is too large for %qs type",
-	     (flags & CPP_N_UNSIGNED) ? "unsigned long" : "long");
+    {
+      type = integer_types[itk];
+      if (itk > itk_unsigned_long
+	  && (flags & CPP_N_WIDTH) != CPP_N_LARGE)
+	emit_diagnostic 
+	  ((c_dialect_cxx () ? cxx_dialect == cxx98 : !flag_isoc99)
+	   ? DK_PEDWARN : DK_WARNING,
+	   input_location, OPT_Wlong_long,
+	   (flags & CPP_N_UNSIGNED) 
+	   ? "integer constant is too large for %<unsigned long%> type"
+	   : "integer constant is too large for %<long%> type");
+    }
 
   value = build_int_cst_wide (type, integer.low, integer.high);
 

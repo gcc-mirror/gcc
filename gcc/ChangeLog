@@ -1,3 +1,18 @@
+2009-04-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/13358
+	* doc/invoke.texi (-Wlong-long): Update description.
+	* c-lex (interpret_integer): Only warn if there was no previous
+	overflow and -Wlong-long is enabled.
+	* c-decl.c (declspecs_add_type): Drop redundant flags.
+	* c.opt (Wlong-long): Init to -1.
+	* c-opts.c (sanitize_cpp_opts): Synchronize cpp's warn_long_long
+	and front-end warn_long_long. Wlong-long only depends on other
+	flags if it is uninitialized.
+	* c-parser.c (disable_extension_diagnostics): warn_long_long is
+	the same for CPP and FE.
+	(restore_extension_diagnostics): Likewise.
+
 2009-04-20  Ian Lance Taylor  <iant@google.com>
 
 	Fix enum conversions which are invalid in C++:

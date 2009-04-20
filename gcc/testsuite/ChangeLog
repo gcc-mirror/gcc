@@ -1,3 +1,14 @@
+2009-04-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/13358
+	* gcc.dg/wtr-int-type-1.c: Use two dg-warning to match two
+	messages. Test for "long long" in system headers.
+	* gcc.dg/c99-longlong-2.c: New.
+	* g++.dg/warn/pr13358.C: New.
+	* g++.dg/warn/pr13358-2.C: New.
+	* g++.dg/warn/pr13358-3.C: New.
+	* g++.dg/warn/pr13358-4.C: New.
+
 2009-04-20  Andrew Pinski <andrew_pinski@playstation.sony.com>
 
 	* gcc.dg/framework-2.c: Fix up for non existent includes

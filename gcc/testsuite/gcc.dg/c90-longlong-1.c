@@ -3,5 +3,4 @@
 /* { dg-do compile } */
 /* { dg-options "-std=iso9899:1990 -pedantic-errors" } */
 
-long long foo; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "long long" "long long not in C90" { target *-*-* } 6 } */
+long long foo; /* { dg-error "long long" "long long not in C90" } */

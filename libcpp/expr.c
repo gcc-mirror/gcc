@@ -419,10 +419,12 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token)
 	}
 
       if ((result & CPP_N_WIDTH) == CPP_N_LARGE
-	  && ! CPP_OPTION (pfile, c99)
 	  && CPP_OPTION (pfile, warn_long_long))
-	cpp_error (pfile, CPP_DL_PEDWARN,
-		   "use of C99 long long integer constant");
+	cpp_error (pfile, 
+		   CPP_OPTION (pfile, c99) ? CPP_DL_WARNING : CPP_DL_PEDWARN,
+		   CPP_OPTION (pfile, cplusplus) 
+		   ? "use of C++0x long long integer constant"
+		   : "use of C99 long long integer constant");
 
       result |= CPP_N_INTEGER;
     }

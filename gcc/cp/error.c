@@ -2804,3 +2804,22 @@ maybe_warn_variadic_templates (void)
 {
   maybe_warn_cpp0x ("variadic templates");
 }
+
+
+/* Issue an ISO C++98 pedantic warning at LOCATION, conditional on
+   option OPT with text GMSGID.  Use this function to report
+   diagnostics for constructs that are invalid C++98, but valid
+   C++0x.  */
+bool
+pedwarn_cxx98 (location_t location, int opt, const char *gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+
+  va_start (ap, gmsgid);
+  diagnostic_set_info (&diagnostic, gmsgid, &ap, location,
+		       (cxx_dialect == cxx98) ? DK_PEDWARN : DK_WARNING);
+  diagnostic.option_index = opt;
+  va_end (ap);
+  return report_diagnostic (&diagnostic);
+}
