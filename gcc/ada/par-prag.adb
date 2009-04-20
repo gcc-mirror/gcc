@@ -264,7 +264,6 @@ begin
 
    if Present (Pragma_Argument_Associations (Pragma_Node)) then
       Arg_Node := Arg1;
-
       while Arg_Node /= Empty loop
          Arg_Count := Arg_Count + 1;
 
