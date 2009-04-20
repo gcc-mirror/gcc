@@ -99,6 +99,9 @@ begin
 
       Write_Switch_Char ("fno-inline   ", "");
       Write_Line ("Inhibit all inlining (makes executable smaller)");
+
+      Write_Switch_Char ("fpreserve-control-flow ", "");
+      Write_Line ("Preserve control flow for coverage analysis");
    end if;
 
    --  Common switches available to both GCC and JGNAT

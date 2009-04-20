@@ -1061,6 +1061,11 @@ package Opt is
    --  Set by -fno-inline. Suppresses all inlining, both front end and back end
    --  regardless of any other switches that are set.
 
+   Suppress_Control_Flow_Optimizations : Boolean := False;
+   --  GNAT
+   --  Set by -fpreserve-control-flow. Suppresses control flow optimizations
+   --  that interfere with coverage analysis based on the object code.
+
    System_Extend_Pragma_Arg : Node_Id := Empty;
    --  GNAT
    --  Set non-empty if and only if a correct Extend_System pragma was present
