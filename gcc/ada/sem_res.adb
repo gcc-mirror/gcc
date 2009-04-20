@@ -60,6 +60,7 @@ with Sem_Ch8;  use Sem_Ch8;
 with Sem_Ch13; use Sem_Ch13;
 with Sem_Disp; use Sem_Disp;
 with Sem_Dist; use Sem_Dist;
+with Sem_Elim; use Sem_Elim;
 with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
 with Sem_Intr; use Sem_Intr;
@@ -5254,6 +5255,10 @@ package body Sem_Res is
       elsif Is_RTE (Nam, RE_Abort_Task) then
          Check_Potentially_Blocking_Operation (N);
       end if;
+
+      --  Issue an error for a call to an eliminated subprogram
+
+      Check_For_Eliminated_Subprogram (Subp, Nam);
 
       --  All done, evaluate call and deal with elaboration issues
 

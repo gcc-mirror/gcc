@@ -28,7 +28,9 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
+with Sem;      use Sem;
 with Sem_Prag; use Sem_Prag;
+with Sem_Util; use Sem_Util;
 with Sinput;   use Sinput;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
@@ -661,6 +663,30 @@ package body Sem_Elim is
 
       return;
    end Check_Eliminated;
+
+   -------------------------------------
+   -- Check_For_Eliminated_Subprogram --
+   -------------------------------------
+
+   procedure Check_For_Eliminated_Subprogram (N : Node_Id; S : Entity_Id) is
+      Ultimate_Subp  : constant Entity_Id := Ultimate_Alias (S);
+      Enclosing_Subp : Entity_Id;
+
+   begin
+      if Is_Eliminated (Ultimate_Subp) and then not Inside_A_Generic then
+
+         Enclosing_Subp := Current_Subprogram;
+         while Present (Enclosing_Subp) loop
+            if Is_Eliminated (Enclosing_Subp) then
+               return;
+            end if;
+
+            Enclosing_Subp := Enclosing_Subprogram (Enclosing_Subp);
+         end loop;
+
+         Eliminate_Error_Msg (N, Ultimate_Subp);
+      end if;
+   end Check_For_Eliminated_Subprogram;
 
    -------------------------
    -- Eliminate_Error_Msg --
