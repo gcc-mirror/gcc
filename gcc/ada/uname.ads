@@ -38,11 +38,11 @@ package Uname is
    -- Unit Name Conventions --
    ---------------------------
 
-   --  Units are associated with a unique ASCII name as follows. First we
-   --  have the fully expanded name of the unit, with lower case letters
-   --  (except for the use of upper case letters for encoding upper half
-   --  and wide characters, as described in Namet), and periods. Following
-   --  this is one of the following suffixes:
+   --  Units are associated with a unique ASCII name as follows. First we have
+   --  the fully expanded name of the unit, with lower case letters (except
+   --  for the use of upper case letters for encoding upper half and wide
+   --  characters, as described in Namet), and periods. Following this is one
+   --  of the following suffixes:
 
    --    %s  for package/subprogram/generic declarations (specs)
    --    %b  for package/subprogram/generic bodies and subunits
@@ -144,11 +144,11 @@ package Uname is
    function New_Child
      (Old  : Unit_Name_Type;
       Newp : Unit_Name_Type) return Unit_Name_Type;
-   --   Old is a child unit name (for either a body or spec). Newp is the
-   --   unit name of the actual parent (this may be different from the
-   --   parent in old). The returned unit name is formed by taking the
-   --   parent name from Newp and the child unit name from Old, with the
-   --   result being a body or spec depending on Old. For example:
+   --   Old is a child unit name (for either a body or spec). Newp is the unit
+   --   name of the actual parent (this may be different from the parent in
+   --   old). The returned unit name is formed by taking the parent name from
+   --   Newp and the child unit name from Old, with the result being a body or
+   --   spec depending on Old. For example:
    --
    --     Old    = A.B.C (body)
    --     Newp   = A.R (spec)

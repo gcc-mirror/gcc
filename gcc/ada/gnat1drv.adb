@@ -258,12 +258,17 @@ procedure Gnat1drv is
    -- Check_Library_Items --
    -------------------------
 
+   --  Walk_Library_Items has plenty of assertions, so all we need to do is
+   --  call it, just for these assertions, not actually doing anything else.
+
    procedure Check_Library_Items is
-      --  Walk_Library_Items has plenty of assertions, so all we need to do is
-      --  call it.
 
       procedure Action (Item : Node_Id);
       --  Action passed to Walk_Library_Items to do nothing
+
+      ------------
+      -- Action --
+      ------------
 
       procedure Action (Item : Node_Id) is
       begin
@@ -272,7 +277,8 @@ procedure Gnat1drv is
 
       procedure Walk is new Sem.Walk_Library_Items (Action);
 
-      --  Start of processing for Check_Library_Items
+   --  Start of processing for Check_Library_Items
+
    begin
       Walk;
    end Check_Library_Items;

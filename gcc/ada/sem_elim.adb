@@ -674,7 +674,6 @@ package body Sem_Elim is
 
    begin
       if Is_Eliminated (Ultimate_Subp) and then not Inside_A_Generic then
-
          Enclosing_Subp := Current_Subprogram;
          while Present (Enclosing_Subp) loop
             if Is_Eliminated (Enclosing_Subp) then

@@ -7217,7 +7217,7 @@ package body Exp_Ch9 is
 
             when N_Subprogram_Body =>
 
-               --  Do not create bodies for eliminated operations.
+               --  Do not create bodies for eliminated operations
 
                if not Is_Eliminated (Defining_Entity (Op_Body))
                  and then not Is_Eliminated (Corresponding_Spec (Op_Body))
@@ -7225,13 +7225,13 @@ package body Exp_Ch9 is
                   New_Op_Body :=
                     Build_Unprotected_Subprogram_Body (Op_Body, Pid);
 
-                  --  Propagate the finalization chain to the new body.
-                  --  In the unlikely event that the subprogram contains a
-                  --  declaration or allocator for an object that requires
-                  --  finalization, the corresponding chain is created when
-                  --  analyzing the body, and attached to its entity. This
-                  --  entity is not further elaborated, and so the chain
-                  --  properly belongs to the newly created subprogram body.
+                  --  Propagate the finalization chain to the new body. In the
+                  --  unlikely event that the subprogram contains a declaration
+                  --  or allocator for an object that requires finalization,
+                  --  the corresponding chain is created when analyzing the
+                  --  body, and attached to its entity. This entity is not
+                  --  further elaborated, and so the chain properly belongs to
+                  --  the newly created subprogram body.
 
                   Chain :=
                     Finalization_Chain_Entity (Defining_Entity (Op_Body));
@@ -7252,11 +7252,11 @@ package body Exp_Ch9 is
                   --  appear that this is needed only if this is a visible
                   --  operation of the type, or if it is an interrupt handler,
                   --  and this was the strategy used previously in GNAT.
-                  --  However, the operation may be exported through a
-                  --  'Access to an external caller. This is the common idiom
-                  --  in code that uses the Ada 2005 Timing_Events package
-                  --  As a result we need to produce the protected body for
-                  --  both visible and private operations.
+                  --  However, the operation may be exported through a 'Access
+                  --  to an external caller. This is the common idiom in code
+                  --  that uses the Ada 2005 Timing_Events package. As a result
+                  --  we need to produce the protected body for both visible
+                  --  and private operations.
 
                   if Present (Corresponding_Spec (Op_Body)) then
                      Op_Decl :=

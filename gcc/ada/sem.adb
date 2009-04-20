@@ -1477,14 +1477,14 @@ package body Sem is
          --  assertions and debugging output.
 
          case Nkind (Item) is
-            when N_Generic_Subprogram_Declaration |
-              N_Generic_Package_Declaration |
-              N_Package_Declaration |
-              N_Subprogram_Declaration |
-              N_Subprogram_Renaming_Declaration |
-              N_Package_Renaming_Declaration |
+            when N_Generic_Subprogram_Declaration     |
+              N_Generic_Package_Declaration           |
+              N_Package_Declaration                   |
+              N_Subprogram_Declaration                |
+              N_Subprogram_Renaming_Declaration       |
+              N_Package_Renaming_Declaration          |
               N_Generic_Function_Renaming_Declaration |
-              N_Generic_Package_Renaming_Declaration |
+              N_Generic_Package_Renaming_Declaration  |
               N_Generic_Procedure_Renaming_Declaration =>
                null;  --  Specs are OK
 
@@ -1497,8 +1497,8 @@ package body Sem is
             --  All other cases cannot happen
 
             when N_Function_Instantiation |
-              N_Procedure_Instantiation |
-              N_Package_Instantiation =>
+              N_Procedure_Instantiation   |
+              N_Package_Instantiation     =>
                pragma Assert (False, "instantiation");
                null;
 
@@ -1520,15 +1520,20 @@ package body Sem is
                Write_Int (Int (Get_Cunit_Unit_Number (CU)));
                Write_Str (", ");
                Write_Str (Node_Kind'Image (Nkind (Item)));
+
                if Item /= Original_Node (Item) then
                   Write_Str (", orig = ");
                   Write_Str (Node_Kind'Image (Nkind (Original_Node (Item))));
                end if;
+
                Write_Eol;
             end if;
 
-         else  --  Must be Standard
+         else
+            --  Must be Standard
+
             pragma Assert (Item = Stand.Standard_Package_Node);
+
             if Enable_Output then
                Write_Line ("Standard");
             end if;
@@ -1537,9 +1542,11 @@ package body Sem is
          Action (Item);
       end Do_Action;
 
+      --  Local Declarations
+
       Cur : Elmt_Id := First_Elmt (Comp_Unit_List);
 
-      --  Start of processing for Walk_Library_Items
+   --  Start of processing for Walk_Library_Items
 
    begin
       if Enable_Output then
@@ -1555,10 +1562,12 @@ package body Sem is
          declare
             CU : constant Node_Id := Node (Cur);
             N  : constant Node_Id := Unit (CU);
+
          begin
             pragma Assert (Nkind (CU) = N_Compilation_Unit);
 
             case Nkind (N) is
+
                --  If it's a body, then ignore it, unless it's an instance (in
                --  which case we do the spec), or it's the main unit (in which
                --  case we do it). Note that it could be both.
@@ -1566,13 +1575,18 @@ package body Sem is
                when N_Package_Body | N_Subprogram_Body =>
                   declare
                      Entity : Node_Id := N;
+
                   begin
                      if Nkind (N) = N_Subprogram_Body then
                         Entity := Specification (Entity);
                      end if;
+
                      Entity := Defining_Unit_Name (Entity);
+
                      if Nkind (Entity) not in N_Entity then
+
                         --  Must be N_Defining_Program_Unit_Name
+
                         Entity := Defining_Identifier (Entity);
                      end if;
 
@@ -1582,6 +1596,7 @@ package body Sem is
                   end;
 
                   if CU = Cunit (Main_Unit) then
+
                      --  Must come last
 
                      pragma Assert (No (Next_Elmt (Cur)));

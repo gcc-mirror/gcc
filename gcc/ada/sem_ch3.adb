@@ -4037,29 +4037,25 @@ package body Sem_Ch3 is
          --  This does not apply if the base type is a generic type, whose
          --  declaration is independent of the current derived definition.
 
-         if B /= T
-           and then not Is_Generic_Type (B)
-         then
+         if B /= T and then not Is_Generic_Type (B) then
             Ensure_Freeze_Node (B);
             Set_First_Subtype_Link (Freeze_Node (B), T);
          end if;
 
          --  A type that is imported through a limited_with clause cannot
-         --  generate any code, and thus need not be frozen. However, an
-         --  access type with an imported designated type needs a finalization
-         --  list, which may be referenced in some other package that has
-         --  non-limited visibility on the designated type. Thus we must
-         --  create the finalization list at the point the access type is
-         --  frozen, to prevent unsatisfied references at link time.
+         --  generate any code, and thus need not be frozen. However, an access
+         --  type with an imported designated type needs a finalization list,
+         --  which may be referenced in some other package that has non-limited
+         --  visibility on the designated type. Thus we must create the
+         --  finalization list at the point the access type is frozen, to
+         --  prevent unsatisfied references at link time.
 
-         if not From_With_Type (T)
-           or else Is_Access_Type (T)
-         then
+         if not From_With_Type (T) or else Is_Access_Type (T) then
             Set_Has_Delayed_Freeze (T);
          end if;
       end;
 
-      --  Case of T is the full declaration of some private type which has
+      --  Case where T is the full declaration of some private type which has
       --  been swapped in Defining_Identifier (N).
 
       if T /= Def_Id and then Is_Private_Type (Def_Id) then
@@ -4101,7 +4097,7 @@ package body Sem_Ch3 is
          Generate_Definition (Def_Id);
       end if;
 
-      if Chars (Scope (Def_Id)) =  Name_System
+      if Chars (Scope (Def_Id)) = Name_System
         and then Chars (Def_Id) = Name_Address
         and then Is_Predefined_File_Name (Unit_File_Name (Get_Source_Unit (N)))
       then

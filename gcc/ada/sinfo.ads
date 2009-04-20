@@ -5319,7 +5319,7 @@ package Sinfo is
       --  There is no explicit node in the tree for a compilation, since in
       --  general the compiler is processing only a single compilation unit
       --  at a time. It is possible to parse multiple units in syntax check
-      --  only mode, but they the trees are discarded in any case.
+      --  only mode, but the trees are discarded in that case.
 
       ------------------------------
       -- 10.1.1  Compilation Unit --
@@ -5389,7 +5389,7 @@ package Sinfo is
 
       --  There is no explicit node in the tree for library item, instead
       --  the declaration or body, and the flag for private if present,
-      --  appear in the N_Compilation_Unit clause.
+      --  appear in the N_Compilation_Unit node.
 
       --------------------------------------
       -- 10.1.1  Library Unit Declaration --
