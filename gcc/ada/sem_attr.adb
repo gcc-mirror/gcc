@@ -51,6 +51,7 @@ with Sem_Cat;  use Sem_Cat;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Dist; use Sem_Dist;
+with Sem_Elim; use Sem_Elim;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Type; use Sem_Type;
@@ -572,6 +573,10 @@ package body Sem_Attr is
             if Aname = Name_Unchecked_Access then
                Error_Attr ("attribute% cannot be applied to a subprogram", P);
             end if;
+
+            --  Issue an error if the prefix denotes an eliminated subprogram
+
+            Check_For_Eliminated_Subprogram (P, Entity (P));
 
             --  Build the appropriate subprogram type
 
@@ -2076,6 +2081,11 @@ package body Sem_Attr is
                         Error_Msg_N
                          ("cannot take Address of intrinsic subprogram", N);
                      end if;
+
+                  --  Issue an error if prefix denotes an eliminated subprogram
+
+                  else
+                     Check_For_Eliminated_Subprogram (P, Ent);
                   end if;
 
                elsif Is_Object (Ent)
@@ -2516,6 +2526,11 @@ package body Sem_Attr is
          then
             Error_Attr ("invalid prefix for % attribute", P);
             Set_Address_Taken (Entity (P));
+
+         --  Issue an error if the prefix denotes an eliminated subprogram
+
+         else
+            Check_For_Eliminated_Subprogram (P, Entity (P));
          end if;
 
          Set_Etype (N, RTE (RE_Address));

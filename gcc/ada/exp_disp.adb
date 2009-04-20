@@ -5160,22 +5160,19 @@ package body Exp_Disp is
                while Present (Prim_Elmt) loop
                   Prim := Node (Prim_Elmt);
 
+                  --  Retrieve the ultimate alias of the primitive for proper
+                  --  handling of renamings and eliminated primitives.
+
+                  E := Ultimate_Alias (Prim);
+
                   if Is_Imported (Prim)
                     or else Present (Interface_Alias (Prim))
                     or else Is_Predefined_Dispatching_Operation (Prim)
-                    or else Is_Eliminated (Prim)
+                    or else Is_Eliminated (E)
                   then
                      null;
 
                   else
-                     --  Traverse the list of aliased entities to handle
-                     --  renamings of predefined primitives.
-
-                     E := Prim;
-                     while Present (Alias (E)) loop
-                        E := Alias (E);
-                     end loop;
-
                      if not Is_Predefined_Dispatching_Operation (E)
                        and then not Is_Abstract_Subprogram (E)
                        and then not Present (Interface_Alias (E))
