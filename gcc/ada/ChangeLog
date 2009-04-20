@@ -1,3 +1,36 @@
+2009-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Disable front-end inlining
+	in inspector mode.
+
+2009-04-20  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (New_Overloaded_Entity): Minor reformating.
+
+	* sem_ch6.ads (Subtype_Conformant, Type_Conformant): Add missing
+	documentation.
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Code cleanup.
+
+	* sem_disp.adb
+	(Check_Dispatching_Operation): Set attribute Is_Dispatching_Operation
+	in internally built overriding subprograms.
+
+2009-04-20  Doug Rupp  <rupp@adacore.com>
+
+	* s-auxdec-vms_64.ads (Integer_{8,16,32,64}_Array): New array types.
+
+	* s-auxdec.ads: Likewise
+
+2009-04-20  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Name): Reject the completion of a private
+	type by an interface.
+
+	* exp_ch6.adb (Expand_Call): Inline To_Address unconditionally, to
+	minimze difference in expanded tree when compiled as spec of the main
+	unit, or as a spec in the context of another unit.
+
 2009-04-20  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* a-calend.adb: Remove types char_Pointer, int, tm and tm_Pointer.

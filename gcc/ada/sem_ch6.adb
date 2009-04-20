@@ -7388,9 +7388,9 @@ package body Sem_Ch6 is
 
                   return;
 
-                  --  Within an instance, the renaming declarations for
-                  --  actual subprograms may become ambiguous, but they do
-                  --  not hide each other.
+               --  Within an instance, the renaming declarations for actual
+               --  subprograms may become ambiguous, but they do not hide each
+               --  other.
 
                elsif Ekind (E) /= E_Entry
                  and then not Comes_From_Source (E)
@@ -7402,8 +7402,8 @@ package body Sem_Ch6 is
                             or else Nkind (Unit_Declaration_Node (E)) /=
                                       N_Subprogram_Renaming_Declaration)
                then
-                  --  A subprogram child unit is not allowed to override
-                  --  an inherited subprogram (10.1.1(20)).
+                  --  A subprogram child unit is not allowed to override an
+                  --  inherited subprogram (10.1.1(20)).
 
                   if Is_Child_Unit (S) then
                      Error_Msg_N

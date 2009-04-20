@@ -57,8 +57,8 @@ package Sem_Ch6 is
 
    procedure Check_Conventions (Typ : Entity_Id);
    --  Ada 2005 (AI-430): Check that the conventions of all inherited and
-   --  overridden dispatching operations of type Typ are consistent with
-   --  their respective counterparts.
+   --  overridden dispatching operations of type Typ are consistent with their
+   --  respective counterparts.
 
    procedure Check_Delayed_Subprogram (Designator : Entity_Id);
    --  Designator can be a E_Subprogram_Type, E_Procedure or E_Function. If a
@@ -69,10 +69,10 @@ package Sem_Ch6 is
      (N        : Node_Id;
       Prev     : Entity_Id;
       Prev_Loc : Node_Id);
-   --  Check that the discriminants of a full type N fully conform to
-   --  the discriminants of the corresponding partial view Prev.
-   --  Prev_Loc indicates the source location of the partial view,
-   --  which may be different than Prev in the case of private types.
+   --  Check that the discriminants of a full type N fully conform to the
+   --  discriminants of the corresponding partial view Prev. Prev_Loc indicates
+   --  the source location of the partial view, which may be different than
+   --  Prev in the case of private types.
 
    procedure Check_Fully_Conformant
      (New_Id  : Entity_Id;
@@ -230,15 +230,21 @@ package Sem_Ch6 is
      (New_Id                   : Entity_Id;
       Old_Id                   : Entity_Id;
       Skip_Controlling_Formals : Boolean := False) return Boolean;
-   --  Determine whether two callable entities (subprograms, entries,
-   --  literals) are subtype conformant (RM6.3.1(16)).
+   --  Determine whether two callable entities (subprograms, entries, literals)
+   --  are subtype conformant (RM6.3.1(16)).  Skip_Controlling_Formals is True
+   --  when checking the conformance of a subprogram that implements an
+   --  interface operation. In that case, only the non-controlling formals
+   --  can (and must) be examined.
 
    function Type_Conformant
      (New_Id                   : Entity_Id;
       Old_Id                   : Entity_Id;
       Skip_Controlling_Formals : Boolean := False) return Boolean;
-   --  Determine whether two callable entities (subprograms, entries,
-   --  literals) are type conformant (RM6.3.1(14)).
+   --  Determine whether two callable entities (subprograms, entries, literals)
+   --  are type conformant (RM6.3.1(14)). Skip_Controlling_Formals is True when
+   --  checking the conformance of a subprogram that implements an interface
+   --  operation. In that case, only the non-controlling formals can (and must)
+   --  be examined.
 
    procedure Valid_Operator_Definition (Designator : Entity_Id);
    --  Verify that an operator definition has the proper number of formals

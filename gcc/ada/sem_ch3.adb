@@ -5568,15 +5568,17 @@ package body Sem_Ch3 is
 
                Install_Private_Declarations (Par_Scope);
                Install_Visible_Declarations (Par_Scope);
-               Insert_Before (N, Decl);
+               Insert_After (N, Decl);
                Analyze (Decl);
                Uninstall_Declarations (Par_Scope);
 
                --  Freeze the underlying record view, to prevent generation
                --  of useless dispatching information, which is simply shared
-               --  with the real derived type.
+               --  with the real derived type. The underlying view must be
+               --  treated as an itype by the back-end.
 
                Set_Is_Frozen (Full_Der);
+               Set_Is_Itype (Full_Der);
                Set_Underlying_Record_View (Derived_Type, Full_Der);
             end;
 
@@ -13495,6 +13497,15 @@ package body Sem_Ch3 is
                         ("completion of tagged private type must be tagged",
                            N);
                   end if;
+
+               elsif Nkind (N) = N_Full_Type_Declaration
+                 and then
+                   Nkind (Type_Definition (N)) = N_Record_Definition
+                 and then Interface_Present (Type_Definition (N))
+               then
+                  Error_Msg_N
+                    ("completion of private type canot be an interface",
+                       N);
                end if;
 
             --  Ada 2005 (AI-251): Private extension declaration of a task
