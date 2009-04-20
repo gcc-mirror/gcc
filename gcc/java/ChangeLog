@@ -1,3 +1,7 @@
+2009-04-18  Ian Lance Taylor  <iant@google.com>
+
+	* verify-impl.c (verify_instructions_0): Add cast to enum type.
+
 2009-04-09  Paolo Bonzini  <bonzini@gnu.org>
 
         * builtins.c (compareAndSwapLong_builtin,
