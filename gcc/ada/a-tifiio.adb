@@ -290,11 +290,11 @@ package body Ada.Text_IO.Fixed_IO is
                    and then Num'Small * 10.0**Scale < 10.0);
 
    Exact : constant Boolean :=
-                Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
-            or Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small)
-            or Num'Small >= 10.0**Max_Digits;
+            Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
+             or Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small)
+             or Num'Small >= 10.0**Max_Digits;
    --  True iff a numerator and denominator can be calculated such that
-   --  their ratio exactly represents the small of Num
+   --  their ratio exactly represents the small of Num.
 
    procedure Put
      (To   : out String;
@@ -315,10 +315,8 @@ package body Ada.Text_IO.Fixed_IO is
       Width : Field := 0)
    is
       pragma Unsuppress (Range_Check);
-
    begin
       Aux.Get (File, Long_Long_Float (Item), Width);
-
    exception
       when Constraint_Error => raise Data_Error;
    end Get;
@@ -328,10 +326,8 @@ package body Ada.Text_IO.Fixed_IO is
       Width : Field := 0)
    is
       pragma Unsuppress (Range_Check);
-
    begin
       Aux.Get (Current_In, Long_Long_Float (Item), Width);
-
    exception
       when Constraint_Error => raise Data_Error;
    end Get;
@@ -342,10 +338,8 @@ package body Ada.Text_IO.Fixed_IO is
       Last : out Positive)
    is
       pragma Unsuppress (Range_Check);
-
    begin
       Aux.Gets (From, Long_Long_Float (Item), Last);
-
    exception
       when Constraint_Error => raise Data_Error;
    end Get;
@@ -387,11 +381,13 @@ package body Ada.Text_IO.Fixed_IO is
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp)
    is
-      Fore : constant Integer := To'Length
-                                - 1                      -- Decimal point
-                                - Field'Max (1, Aft)     -- Decimal part
-                                - Boolean'Pos (Exp /= 0) -- Exponent indicator
-                                - Exp;                   -- Exponent
+      Fore : constant Integer :=
+               To'Length
+                 - 1                      -- Decimal point
+                 - Field'Max (1, Aft)     -- Decimal part
+                 - Boolean'Pos (Exp /= 0) -- Exponent indicator
+                 - Exp;                   -- Exponent
+
       Last : Natural;
 
    begin
@@ -426,13 +422,13 @@ package body Ada.Text_IO.Fixed_IO is
       --  Add C to the output string To, updating Last
 
       procedure Put_Digit (X : Digit);
-      --  Add digit X to the output string (going from left to right),
-      --  updating Last and Pos, and inserting the sign, leading zeros
-      --  or a decimal point when necessary. After outputting the first
-      --  digit, Pos must not be changed outside Put_Digit anymore
+      --  Add digit X to the output string (going from left to right), updating
+      --  Last and Pos, and inserting the sign, leading zeros or a decimal
+      --  point when necessary. After outputting the first digit, Pos must not
+      --  be changed outside Put_Digit anymore.
 
       procedure Put_Int64 (X : Int64; Scale : Integer);
-      --  Output the decimal number abs X * 10**Scale.
+      --  Output the decimal number abs X * 10**Scale
 
       procedure Put_Scaled
         (X, Y, Z : Int64;
@@ -469,6 +465,7 @@ package body Ada.Text_IO.Fixed_IO is
       begin
          if Last = To'First - 1 then
             if X /= 0 or Pos <= 0 then
+
                --  Before outputting first digit, include leading space,
                --  possible minus sign and, if the first digit is fractional,
                --  decimal seperator and leading zeros.
@@ -541,6 +538,7 @@ package body Ada.Text_IO.Fixed_IO is
          --  If and only if more than one digit is output before the decimal
          --  point, pos will be unequal to scale when outputting the first
          --  digit.
+
          pragma Assert (Pos = Scale or else Last = To'First - 1);
 
          Pos := Scale;
@@ -560,15 +558,15 @@ package body Ada.Text_IO.Fixed_IO is
          pragma Assert (E >= -Max_Digits);
          AA : constant Field := E + A;
          N  : constant Natural := (AA + Max_Digits - 1) / Max_Digits + 1;
-         Q  : array (0 .. N - 1) of Int64 := (others => 0);
-         --  Each element of Q has Max_Digits decimal digits, except
-         --  the last, which has eAA rem Max_Digits. Only Q (Q'First)
-         --  may have an absolute value equal to or larger than 10**Max_Digits.
-         --  Only the absolute value of the elements is not significant, not
-         --  the sign.
 
-         XX    : Int64 := X;
-         YY    : Int64 := Y;
+         Q  : array (0 .. N - 1) of Int64 := (others => 0);
+         --  Each element of Q has Max_Digits decimal digits, except the
+         --  last, which has eAA rem Max_Digits. Only Q (Q'First) may have an
+         --  absolute value equal to or larger than 10**Max_Digits. Only the
+         --  absolute value of the elements is not significant, not the sign.
+
+         XX : Int64 := X;
+         YY : Int64 := Y;
 
       begin
          for J in Q'Range loop
@@ -584,9 +582,9 @@ package body Ada.Text_IO.Fixed_IO is
          if -E > A then
             pragma Assert (N = 1);
 
-            Discard_Extra_Digits :
-            declare
+            Discard_Extra_Digits : declare
                Factor : constant Int64 := 10**(-E - A);
+
             begin
                --  The scaling factors were such that the first division
                --  produced more digits than requested. So divide away extra
@@ -602,8 +600,9 @@ package body Ada.Text_IO.Fixed_IO is
             end Discard_Extra_Digits;
          end if;
 
-         --  At this point XX is a remainder and we need to determine if
-         --  the quotient in Q must be rounded away from zero.
+         --  At this point XX is a remainder and we need to determine if the
+         --  quotient in Q must be rounded away from zero.
+
          --  As XX is less than the divisor, it is safe to take its absolute
          --  without chance of overflow. The check to see if XX is at least
          --  half the absolute value of the divisor must be done carefully to

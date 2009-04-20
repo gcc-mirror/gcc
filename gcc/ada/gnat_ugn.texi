@@ -3802,8 +3802,13 @@ effect if this switch is present.
 
 @item -fno-inline-functions
 @cindex @option{-fno-inline-functions} (@command{gcc})
-Suppresses automatic inlining of small subprograms, which is enabled
+Suppresses automatic inlining of simple subprograms, which is enabled
 if @option{-O3} is used.
+
+@item -fno-inline-small-functions
+@cindex @option{-fno-inline-small-functions} (@command{gcc})
+Suppresses automatic inlining of small subprograms, which is enabled
+if @option{-O2} is used.
 
 @item -fno-inline-functions-called-once
 @cindex @option{-fno-inline-functions-called-once} (@command{gcc})

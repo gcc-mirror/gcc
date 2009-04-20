@@ -179,6 +179,10 @@ package body GNAT.Sockets is
    --  Reconstruct a Duration value from a Timeval record (seconds and
    --  microseconds).
 
+   procedure Raise_Socket_Error (Error : Integer);
+   --  Raise Socket_Error with an exception message describing the error code
+   --  from errno.
+
    procedure Raise_Host_Error (H_Error : Integer);
    --  Raise Host_Error exception with message describing error code (note
    --  hstrerror seems to be obsolete) from h_errno.
@@ -1288,7 +1292,7 @@ package body GNAT.Sockets is
 
       Res := Inet_Aton (To_Chars_Ptr (Img'Unchecked_Access), Addr'Address);
 
-      if Res = Failure then
+      if Res = 0 then
          Raise_Socket_Error (SOSC.EINVAL);
       end if;
 

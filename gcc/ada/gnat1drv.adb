@@ -90,6 +90,9 @@ procedure Gnat1drv is
    --  Called when we are not generating code, to check if -gnatR was requested
    --  and if so, explain that we will not be honoring the request.
 
+   procedure Check_Library_Items;
+   --  For debugging -- checks the behavior of Walk_Library_Items
+
    --------------------
    -- Check_Bad_Body --
    --------------------
@@ -250,6 +253,29 @@ procedure Gnat1drv is
          Set_Standard_Output;
       end if;
    end Check_Rep_Info;
+
+   -------------------------
+   -- Check_Library_Items --
+   -------------------------
+
+   procedure Check_Library_Items is
+      --  Walk_Library_Items has plenty of assertions, so all we need to do is
+      --  call it.
+
+      procedure Action (Item : Node_Id);
+      --  Action passed to Walk_Library_Items to do nothing
+
+      procedure Action (Item : Node_Id) is
+      begin
+         null;
+      end Action;
+
+      procedure Walk is new Sem.Walk_Library_Items (Action);
+
+      --  Start of processing for Check_Library_Items
+   begin
+      Walk;
+   end Check_Library_Items;
 
 --  Start of processing for Gnat1drv
 
@@ -578,9 +604,9 @@ begin
          Back_End_Mode := Skip;
       end if;
 
-      --  At this stage Call_Back_End is set to indicate if the backend should
-      --  be called to generate code. If it is not set, then code generation
-      --  has been turned off, even though code was requested by the original
+      --  At this stage Back_End_Mode is set to indicate if the backend should
+      --  be called to generate code. If it is Skip, then code generation has
+      --  been turned off, even though code was requested by the original
       --  command. This is not an error from the user point of view, but it is
       --  an error from the point of view of the gcc driver, so we must exit
       --  with an error status.
@@ -705,6 +731,8 @@ begin
       Sinput.Lock;
       Namet.Lock;
       Stringt.Lock;
+
+      Check_Library_Items;  --  For debugging
 
       --  Here we call the back end to generate the output code
 

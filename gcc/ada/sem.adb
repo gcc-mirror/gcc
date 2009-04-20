@@ -27,6 +27,7 @@
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Debug_A;  use Debug_A;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Expander; use Expander;
 with Fname;    use Fname;
@@ -34,6 +35,7 @@ with HLO;      use HLO;
 with Lib;      use Lib;
 with Lib.Load; use Lib.Load;
 with Nlists;   use Nlists;
+with Output;   use Output;
 with Sem_Attr; use Sem_Attr;
 with Sem_Ch2;  use Sem_Ch2;
 with Sem_Ch3;  use Sem_Ch3;
@@ -52,6 +54,7 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Uintp;    use Uintp;
+with Uname;    use Uname;
 
 with Unchecked_Deallocation;
 
@@ -64,6 +67,16 @@ package body Sem is
    --  Global reference to the outer scope that is generic. In a non
    --  generic context, it is empty. At the moment, it is only used
    --  for avoiding freezing of external references in generics.
+
+   Comp_Unit_List : Elist_Id := No_Elist;
+   --  Used by Walk_Library_Items. This is a list of N_Compilation_Unit nodes
+   --  processed by Semantics, in an appropriate order. Initialized to
+   --  No_Elist, because it's too early to call New_Elmt_List; we will set it
+   --  to New_Elmt_List on first use.
+
+   Ignore_Comp_Units : Boolean := False;
+   --  If True, we suppress appending compilation units onto the
+   --  Comp_Unit_List.
 
    -------------
    -- Analyze --
@@ -1384,7 +1397,44 @@ package body Sem is
             New_Nodes_OK := 0;
          end if;
 
-         Do_Analyze;
+         --  Do analysis, and then append the compilation unit onto the
+         --  Comp_Unit_List, if appropriate. This is done after analysis, so if
+         --  this unit depends on some others, they have already been
+         --  appended. We ignore bodies, except for the main unit itself, and
+         --  everything those bodies depend upon.
+
+         if Ignore_Comp_Units then
+            Do_Analyze;
+            pragma Assert (Ignore_Comp_Units);  --  still
+
+         elsif Nkind (Unit (Comp_Unit)) in N_Proper_Body
+           and then not In_Extended_Main_Source_Unit (Comp_Unit)
+         then
+            Ignore_Comp_Units := True;
+            Do_Analyze;
+            pragma Assert (Ignore_Comp_Units);
+            Ignore_Comp_Units := False;
+
+         else
+            Do_Analyze;
+            --  pragma Assert (not Ignore_Comp_Units);
+            --  The above assertion is *almost* true. It fails only when a
+            --  subunit with's its parent procedure body, which has no explicit
+            --  spec.
+
+            if No (Comp_Unit_List) then  --  Initialize if first time
+               Comp_Unit_List := New_Elmt_List;
+            end if;
+            if not Ignore_Comp_Units then  --  See above commented-out Assert
+               Append_Elmt (Comp_Unit, Comp_Unit_List);
+            end if;
+
+            --  Ignore all units after main unit
+
+            if Comp_Unit = Cunit (Main_Unit) then
+               Ignore_Comp_Units := True;
+            end if;
+         end if;
       end if;
 
       --  Save indication of dynamic elaboration checks for ALI file
@@ -1405,4 +1455,154 @@ package body Sem is
       Restore_Opt_Config_Switches (Save_Config_Switches);
       Expander_Mode_Restore;
    end Semantics;
+
+   ------------------------
+   -- Walk_Library_Items --
+   ------------------------
+
+   procedure Walk_Library_Items is
+      Enable_Output : constant Boolean := False;
+      --  Set to True to print out the items as we go (for debugging)
+
+      procedure Do_Action (CU : Node_Id; Item : Node_Id);
+      --  Calls Action, with some validity checks
+
+      ---------------
+      -- Do_Action --
+      ---------------
+
+      procedure Do_Action (CU : Node_Id; Item : Node_Id) is
+      begin
+         --  This calls Action at the end. All the preceding code is just
+         --  assertions and debugging output.
+
+         case Nkind (Item) is
+            when N_Generic_Subprogram_Declaration |
+              N_Generic_Package_Declaration |
+              N_Package_Declaration |
+              N_Subprogram_Declaration |
+              N_Subprogram_Renaming_Declaration |
+              N_Package_Renaming_Declaration |
+              N_Generic_Function_Renaming_Declaration |
+              N_Generic_Package_Renaming_Declaration |
+              N_Generic_Procedure_Renaming_Declaration =>
+               null;  --  Specs are OK
+
+            when N_Package_Body | N_Subprogram_Body =>
+               --  A body must be the main unit
+
+               pragma Assert (CU = Cunit (Main_Unit));
+               null;
+
+            --  All other cases cannot happen
+
+            when N_Function_Instantiation |
+              N_Procedure_Instantiation |
+              N_Package_Instantiation =>
+               pragma Assert (False, "instantiation");
+               null;
+
+            when N_Subunit =>
+               pragma Assert (False, "subunit");
+               null;
+
+            when others =>
+               pragma Assert (False);
+               null;
+         end case;
+
+         if Present (CU) then
+            pragma Assert (Item /= Stand.Standard_Package_Node);
+
+            if Enable_Output then
+               Write_Unit_Name (Unit_Name (Get_Cunit_Unit_Number (CU)));
+               Write_Str (", Unit_Number = ");
+               Write_Int (Int (Get_Cunit_Unit_Number (CU)));
+               Write_Str (", ");
+               Write_Str (Node_Kind'Image (Nkind (Item)));
+               if Item /= Original_Node (Item) then
+                  Write_Str (", orig = ");
+                  Write_Str (Node_Kind'Image (Nkind (Original_Node (Item))));
+               end if;
+               Write_Eol;
+            end if;
+
+         else  --  Must be Standard
+            pragma Assert (Item = Stand.Standard_Package_Node);
+            if Enable_Output then
+               Write_Line ("Standard");
+            end if;
+         end if;
+
+         Action (Item);
+      end Do_Action;
+
+      Cur : Elmt_Id := First_Elmt (Comp_Unit_List);
+
+      --  Start of processing for Walk_Library_Items
+
+   begin
+      if Enable_Output then
+         Write_Line ("Walk_Library_Items:");
+         Indent;
+      end if;
+
+      --  Do Standard first, then walk the Comp_Unit_List
+
+      Do_Action (Empty, Standard_Package_Node);
+
+      while Present (Cur) loop
+         declare
+            CU : constant Node_Id := Node (Cur);
+            N  : constant Node_Id := Unit (CU);
+         begin
+            pragma Assert (Nkind (CU) = N_Compilation_Unit);
+
+            case Nkind (N) is
+               --  If it's a body, then ignore it, unless it's an instance (in
+               --  which case we do the spec), or it's the main unit (in which
+               --  case we do it). Note that it could be both.
+
+               when N_Package_Body | N_Subprogram_Body =>
+                  declare
+                     Entity : Node_Id := N;
+                  begin
+                     if Nkind (N) = N_Subprogram_Body then
+                        Entity := Specification (Entity);
+                     end if;
+                     Entity := Defining_Unit_Name (Entity);
+                     if Nkind (Entity) not in N_Entity then
+                        --  Must be N_Defining_Program_Unit_Name
+                        Entity := Defining_Identifier (Entity);
+                     end if;
+
+                     if Is_Generic_Instance (Entity) then
+                        Do_Action (CU, Unit (Library_Unit (CU)));
+                     end if;
+                  end;
+
+                  if CU = Cunit (Main_Unit) then
+                     --  Must come last
+
+                     pragma Assert (No (Next_Elmt (Cur)));
+
+                     Do_Action (CU, N);
+                  end if;
+
+               --  It's a spec, so just do it
+
+               when others =>
+                  Do_Action (CU, N);
+            end case;
+         end;
+
+         Next_Elmt (Cur);
+      end loop;
+
+      if Enable_Output then
+         Outdent;
+         Write_Line ("end Walk_Library_Items.");
+      end if;
+   end Walk_Library_Items;
+
 end Sem;
