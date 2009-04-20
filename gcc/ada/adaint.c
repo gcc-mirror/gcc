@@ -666,7 +666,8 @@ __gnat_get_debuggable_suffix_ptr (int *len, const char **value)
 /* Returns the OS filename and corresponding encoding.  */
 
 void
-__gnat_os_filename (char *filename, char *w_filename ATTRIBUTE_UNUSED,
+__gnat_os_filename (char *filename ATTRIBUTE_UNUSED,
+		    char *w_filename ATTRIBUTE_UNUSED,
 		    char *os_name, int *o_length,
 		    char *encoding ATTRIBUTE_UNUSED, int *e_length)
 {
@@ -3512,7 +3513,8 @@ __gnat_pthread_setaffinity_np (pthread_t th ATTRIBUTE_UNUSED,
    thread. We need to do a system call in order to retrieve this
    information. */
 #include <sys/syscall.h>
-void *__gnat_lwp_self (void) {
+void *__gnat_lwp_self (void)
+{
    return (void *) syscall (__NR_gettid);
 }
 #endif

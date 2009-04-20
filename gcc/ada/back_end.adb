@@ -219,6 +219,13 @@ package body Back_End is
 
             if Switch_Chars (First .. Last) = "fno-inline" then
                Opt.Suppress_All_Inlining := True;
+
+            --  Another special check, the switch -fpreserve-control-flow
+            --  which is also a back end switch sets the front end flag
+            --  that inhibits improper control flow transformations.
+
+            elsif Switch_Chars (First .. Last) = "fpreserve-control-flow" then
+               Opt.Suppress_Control_Flow_Optimizations := True;
             end if;
          end if;
       end Scan_Back_End_Switches;

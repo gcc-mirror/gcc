@@ -176,6 +176,9 @@ extern int    __gnat_dup2			   (int, int);
 
 extern void   __gnat_os_filename                   (char *, char *, char *,
 						    int *, char *, int *);
+#if defined (linux)
+extern void   *__gnat_lwp_self			   (void);
+#endif
 
 #if defined (__MINGW32__) && !defined (RTX)
 extern void   __gnat_plist_init                    (void);

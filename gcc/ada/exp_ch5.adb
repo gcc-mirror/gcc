@@ -3272,9 +3272,12 @@ package body Exp_Ch5 is
 
       --     return not (expression);
 
-      --  Only do these optimizations if we are at least at -O1 level
+      --  Only do these optimizations if we are at least at -O1 level and
+      --  do not do them if control flow optimizations are suppressed.
 
-      if Optimization_Level > 0 then
+      if Optimization_Level > 0
+        and then not Opt.Suppress_Control_Flow_Optimizations
+      then
          if Nkind (N) = N_If_Statement
            and then No (Elsif_Parts (N))
            and then Present (Else_Statements (N))
