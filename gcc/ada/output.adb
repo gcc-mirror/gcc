@@ -112,14 +112,17 @@ package body Output is
 
       Len : constant Natural := Next_Col - 1;
 
+   --  Start of processing for Flush_Buffer
+
    begin
       if Len /= 0 then
          begin
             --  If there's no indentation, or if the line is too long with
-            --  indentation, just write the buffer.
+            --  indentation, or if it's a blank line, just write the buffer.
 
             if Cur_Indentation = 0
               or else Cur_Indentation + Len > Buffer_Max
+              or else Buffer (1 .. Len) = (1 => ASCII.LF)
             then
                Write_Buffer (Buffer (1 .. Len));
 
@@ -155,6 +158,15 @@ package body Output is
          Next_Col := 1;
       end if;
    end Flush_Buffer;
+
+   -------------------
+   -- Ignore_Output --
+   -------------------
+
+   procedure Ignore_Output (S : String) is
+   begin
+      null;
+   end Ignore_Output;
 
    ------------
    -- Indent --
