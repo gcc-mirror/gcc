@@ -2791,6 +2791,11 @@ package body Exp_Ch9 is
 
       Set_Debug_Info_Needed (New_Id);
 
+      --  If a pragma Eliminate applies to the source entity, the internal
+      --  subprograms will be eliminated as well.
+
+      Set_Is_Eliminated (New_Id, Is_Eliminated (Def_Id));
+
       if Nkind (Specification (Decl)) = N_Procedure_Specification then
          New_Spec :=
            Make_Procedure_Specification (Loc,
@@ -7212,7 +7217,7 @@ package body Exp_Ch9 is
 
             when N_Subprogram_Body =>
 
-               --  Exclude functions created to analyze defaults
+               --  Do not create bodies for eliminated operations.
 
                if not Is_Eliminated (Defining_Entity (Op_Body))
                  and then not Is_Eliminated (Corresponding_Spec (Op_Body))
@@ -7803,9 +7808,7 @@ package body Exp_Ch9 is
       Comp := First (Visible_Declarations (Pdef));
 
       while Present (Comp) loop
-         if Nkind (Comp) = N_Subprogram_Declaration
-           and then not Is_Eliminated (Defining_Entity (Comp))
-         then
+         if Nkind (Comp) = N_Subprogram_Declaration then
             Sub :=
               Make_Subprogram_Declaration (Loc,
                 Specification =>

@@ -732,7 +732,7 @@ begin
       Namet.Lock;
       Stringt.Lock;
 
-      Check_Library_Items;  --  For debugging
+      pragma Debug (Check_Library_Items);
 
       --  Here we call the back end to generate the output code
 

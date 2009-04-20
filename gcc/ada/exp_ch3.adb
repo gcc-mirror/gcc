@@ -7819,12 +7819,13 @@ package body Exp_Ch3 is
 
       --  These operations cannot be implemented on VM targets, so we simply
       --  disable their generation in this case. Disable the generation of
-      --  these bodies if No_Dispatching_Calls or Ravenscar is active.
+      --  these bodies if No_Dispatching_Calls, Ravenscar or ZFP is active.
 
       if Ada_Version >= Ada_05
         and then VM_Target = No_VM
         and then not Restriction_Active (No_Dispatching_Calls)
         and then not Restriction_Active (No_Select_Statements)
+        and then RTE_Available (RE_Select_Specific_Data)
       then
          --  These primitives are defined abstract in interface types
 
@@ -8313,7 +8314,7 @@ package body Exp_Ch3 is
 
       --  These operations cannot be implemented on VM targets, so we simply
       --  disable their generation in this case. Disable the generation of
-      --  these bodies if No_Dispatching_Calls or Ravenscar is active.
+      --  these bodies if No_Dispatching_Calls, Ravenscar or ZFP is active.
 
       if Ada_Version >= Ada_05
         and then VM_Target = No_VM
@@ -8325,6 +8326,7 @@ package body Exp_Ch3 is
                       and then Has_Interfaces (Tag_Typ)))
         and then not Restriction_Active (No_Dispatching_Calls)
         and then not Restriction_Active (No_Select_Statements)
+        and then RTE_Available (RE_Select_Specific_Data)
       then
          Append_To (Res, Make_Disp_Asynchronous_Select_Body (Tag_Typ));
          Append_To (Res, Make_Disp_Conditional_Select_Body  (Tag_Typ));

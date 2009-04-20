@@ -75,4 +75,10 @@ package System.VxWorks.Ext is
    function Set_Time_Slice (ticks : int) return int;
    pragma Import (C, Set_Time_Slice, "kernelTimeSlice");
 
+   type UINT64 is mod 2 ** Long_Long_Integer'Size;
+
+   function tickGet return UINT64;
+   --  "tickGet" not available for cert vThreads:
+   pragma Import (C, tickGet, "tick64Get");
+
 end System.VxWorks.Ext;
