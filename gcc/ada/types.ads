@@ -450,8 +450,8 @@ package Types is
    ------------------------------
 
    --  Element list Id values are used to identify element lists stored in the
-   --  tree (see package Tree for further details). They are formed by adding a
-   --  bias (Element_List_Bias) to subscript values in the same array that is
+   --  tree (see package Atree for further details). They are formed by adding
+   --  a bias (Element_List_Bias) to subscript values in the same array that is
    --  used for node list headers.
 
    type Elist_Id is range Elist_Low_Bound .. Elist_High_Bound;

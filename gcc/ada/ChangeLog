@@ -1,3 +1,20 @@
+2009-04-20  Arnaud Charlet  <charlet@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Disable inspector mode in
+	ASIS mode.
+
+2009-04-20  Geert Bosch  <bosch@adacore.com>
+
+	* a-tifiio.adb (Put): Avoid generating too many digits for certain
+	fixed types with smalls that are neither integer or the reciprocal
+	of an integer.
+
+2009-04-20  Bob Duff  <duff@adacore.com>
+
+	* uname.ads: Minor comment fix.
+
+	* types.ads: Minor comment fix.
+
 2009-04-20  Pascal Obry  <obry@adacore.com>
 
 	* adaint.c (__gnat_get_libraries_from_registry): Fix code to
