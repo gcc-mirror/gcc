@@ -1,3 +1,10 @@
+2009-04-21  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39827
+	* tree-ssa-phiprop.c (propagate_with_phi): Check SSA_NAME
+	is in range.
+	(tree_ssa_phiprop): Pass the correct array size.
+
 2009-04-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (tune): Add cast to enum attr_tune.
