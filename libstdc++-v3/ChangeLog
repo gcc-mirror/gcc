@@ -1,3 +1,10 @@
+2009-04-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/39835
+	* include/bits/random.h: Avoid the badname __alpha (and, for
+	consistency, __beta too).
+	* include/bits/random.tcc: Likewise.
+
 2009-04-19  Jan Hubicka  <jh@suse.cz>
 
 	* include/c_compatibility/stdatomic.h (__atomic_flag_for_address): Use

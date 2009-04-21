@@ -1921,14 +1921,14 @@ namespace std
 	  __aurng(__urng);
 
 	bool __reject;
-	const _RealType __alpha = __param.alpha();
-	const _RealType __beta = __param.beta();
-	if (__alpha >= 1)
+	const _RealType __alpha_val = __param.alpha();
+	const _RealType __beta_val = __param.beta();
+	if (__alpha_val >= 1)
 	  {
 	    // alpha - log(4)
-	    const result_type __b = __alpha
+	    const result_type __b = __alpha_val
 	      - result_type(1.3862943611198906188344642429163531L);
-	    const result_type __c = __alpha + __param._M_l_d;
+	    const result_type __c = __alpha_val + __param._M_l_d;
 	    const result_type __1l = 1 / __param._M_l_d;
 
 	    // 1 + log(9 / 2)
@@ -1936,11 +1936,11 @@ namespace std
 
 	    do
 	      {
-		const result_type __u = __aurng() / __beta;
-		const result_type __v = __aurng() / __beta;
+		const result_type __u = __aurng() / __beta_val;
+		const result_type __v = __aurng() / __beta_val;
 
 		const result_type __y = __1l * std::log(__v / (1 - __v));
-		__x = __alpha * std::exp(__y);
+		__x = __alpha_val * std::exp(__y);
 
 		const result_type __z = __u * __v * __v;
 		const result_type __r = __b + __c * __y - __x;
@@ -1953,12 +1953,12 @@ namespace std
 	  }
 	else
 	  {
-	    const result_type __c = 1 / __alpha;
+	    const result_type __c = 1 / __alpha_val;
 
 	    do
 	      {
-		const result_type __z = -std::log(__aurng() / __beta);
-		const result_type __e = -std::log(__aurng() / __beta);
+		const result_type __z = -std::log(__aurng() / __beta_val);
+		const result_type __e = -std::log(__aurng() / __beta_val);
 
 		__x = std::pow(__z, __c);
 
@@ -1967,7 +1967,7 @@ namespace std
 	    while (__reject);
 	  }
 
-	return __beta * __x;
+	return __beta_val * __x;
       }
 
   template<typename _RealType, typename _CharT, typename _Traits>
@@ -2005,10 +2005,10 @@ namespace std
       const typename __ios_base::fmtflags __flags = __is.flags();
       __is.flags(__ios_base::dec | __ios_base::skipws);
 
-      _RealType __alpha, __beta;
-      __is >> __alpha >> __beta;
+      _RealType __alpha_val, __beta_val;
+      __is >> __alpha_val >> __beta_val;
       __x.param(typename gamma_distribution<_RealType>::
-		param_type(__alpha, __beta));
+		param_type(__alpha_val, __beta_val));
 
       __is.flags(__flags);
       return __is;

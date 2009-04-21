@@ -3627,9 +3627,9 @@ namespace std
 	friend class gamma_distribution<_RealType>;
 
 	explicit
-	param_type(_RealType __alpha = _RealType(1),
-		   _RealType __beta = _RealType(1))
-	: _M_alpha(__alpha), _M_beta(__beta)
+	param_type(_RealType __alpha_val = _RealType(1),
+		   _RealType __beta_val = _RealType(1))
+	: _M_alpha(__alpha_val), _M_beta(__beta_val)
 	{
 	  _GLIBCXX_DEBUG_ASSERT(_M_alpha > _RealType(0));
 	  _M_initialize();
@@ -3660,9 +3660,9 @@ namespace std
        * @f$ \alpha @f$ and @f$ \beta @f$.
        */
       explicit
-      gamma_distribution(_RealType __alpha = _RealType(1),
-			 _RealType __beta = _RealType(1))
-      : _M_param(__alpha, __beta)
+      gamma_distribution(_RealType __alpha_val = _RealType(1),
+			 _RealType __beta_val = _RealType(1))
+      : _M_param(__alpha_val, __beta_val)
       { }
 
       explicit
