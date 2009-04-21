@@ -1,3 +1,7 @@
+2009-04-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (tune): Add cast to enum attr_tune.
+
 2009-04-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 16202
@@ -36,23 +40,19 @@
 2009-04-20  Ian Lance Taylor  <iant@google.com>
 
 	Fix enum conversions which are invalid in C++:
-	* auto-inc-dec.c (attempt_change): Change 0 to SET in function
-	call.
-	* calls.c (store_one_arg): Change 0 to EXPAND_NORMAL in function
-	call.
+	* auto-inc-dec.c (attempt_change): Change 0 to SET in function call.
+	* calls.c (store_one_arg): Change 0 to EXPAND_NORMAL in function call.
 	* cse.c (hash_rtx_cb): Change 0 to VOIDmode in function call.
 	* dbgcnt.c (dbg_cnt_set_limit_by_name): Add cast to enum type.
-	* dbxout.c (dbxout_symbol): Change 0 to VOIDmode in function
-	call.
+	* dbxout.c (dbxout_symbol): Change 0 to VOIDmode in function call.
 	(dbxout_parms): Likewise.
-	* df-core.c (df_set_flags): Change changeable_flags parameter to
-	int.
+	* df-core.c (df_set_flags): Change changeable_flags parameter to int.
 	(df_clear_flags): Likewise.
 	* df-problems.c (df_rd_bb_local_compute_process_def): Change
 	top_flag parameter to int.
 	(df_chain_create_bb_process_use): Likewise.
-	(df_chain_add_problem): Change chain_flags parameter to unsigned
-	int.  Remove cast.
+	(df_chain_add_problem): Change chain_flags parameter to unsigned int.
+	Remove cast.
 	* df-scan.c (df_ref_create): Change ref_flags parameter to int.
 	(df_ref_create_structure, df_def_record_1): Likewise.
 	(df_defs_record, df_uses_record, df_get_call_refs): Likewise.
@@ -69,14 +69,12 @@
 	(loc_descriptor_from_tree_1): Change first_op and second_op to
 	enum dwarf_location_atom.  Add cast to enum type.
 	* expmed.c (init_expmed): Change 0 to SET in function call.
-	* expr.c (init_expr_target): Change 0 to VOIDmode in function
-	call.
+	* expr.c (init_expr_target): Change 0 to VOIDmode in function call.
 	(expand_expr_real_1): Change 0 to EXPAND_NORMAL in function call.
 	(do_store_flag): Likewise.
 	* fixed-value.h (struct fixed_value): Change mode to enum
 	machine_mode.
-	* function.c (assign_parms): Change 0 to VOIDmode in function
-	call.
+	* function.c (assign_parms): Change 0 to VOIDmode in function call.
 	* genautomata.c (insert_automaton_decl): Change 1 to INSERT in
 	function call.
 	(insert_insn_decl, insert_decl, insert_state): Likewise.
@@ -88,8 +86,7 @@
 	(gimple_build_call_1, gimple_build_label): Likewise.
 	(gimple_build_goto, gimple_build_asm_1): Likewise.
 	(gimple_build_switch_1, gimple_build_cdt): Likewise.
-	* gimple.h (GIMPLE_CHECK): Change 0 to ERROR_MARK in function
-	call.
+	* gimple.h (GIMPLE_CHECK): Change 0 to ERROR_MARK in function call.
 	(enum fallback): Rename from enum fallback_t.
 	(fallback_t): Typedef as int.
 	* gimple-low.c (lower_builtin_setjmp): Change TSI_SAME_STMT to
@@ -97,12 +94,10 @@
 	* ira.c (setup_class_subset_and_memory_move_costs): Add casts to
 	enum type.
 	(setup_reg_class_relations): Likewise.
-	(setup_reg_class_nregs): Change cl to int.  Add casts to enum
-	type.
+	(setup_reg_class_nregs): Change cl to int.  Add casts to enum type.
 	(setup_prohibited_class_mode_regs): Add cast to enum type.
 	(setup_prohibited_mode_move_regs): Likewise.
-	* ira-costs.c (record_reg_classes): Change rclass to enum
-	reg_class.
+	* ira-costs.c (record_reg_classes): Change rclass to enum reg_class.
 	(record_address_regs): Change i to enum reg_class.
 	* lists.c (alloc_EXPR_LIST): Add cast to enum type.
 	* machmode.h (GET_MODE_CLASS): Cast value to enum mode_class.
@@ -119,8 +114,7 @@
 	(combine_predictions_for_bb): Likewise.
 	(build_predict_expr): Change assignment to PREDICT_EXPR_OUTCOME to
 	use SET_PREDICT_EXPR_OUTCOME.
-	* real.c (real_arithmetic): Change icode to code in function
-	call.
+	* real.c (real_arithmetic): Change icode to code in function call.
 	* reginfo.c (init_move_cost): Add casts to enum type.
 	(init_reg_sets_1, init_fake_stack_mems): Likewise.
 	* regmove.c (regclass_compatible_p): Change class0 and class1 to
@@ -139,8 +133,7 @@
 	to enum type in function call.
 	* tree.h (PREDICT_EXPR_OUTCOME): Add cast to enum type.
 	(SET_PREDICT_EXPR_OUTCOME): Define.
-	* tree-dump.c (get_dump_file_info): Change phase parameter to
-	int.
+	* tree-dump.c (get_dump_file_info): Change phase parameter to int.
 	(get_dump_file_name, dump_begin, dump_enabled_p): Likewise.
 	(dump_initialized_p, dump_flag_name, dump_end): Likewise.
 	(dump_function): Likewise.
@@ -208,15 +201,13 @@
 	(s390_expand_setmem, s390_expand_cmpmem): Likewise.
 	(save_gprs): Use add_reg_note.
 	(s390_emit_prologue): Likewise.
-	(s390_expand_builtin): Change 0 to EXPAND_NORMAL in function
-	call.
+	(s390_expand_builtin): Change 0 to EXPAND_NORMAL in function call.
 	* config/sparc/sparc.c (sparc_expand_prologue): Use add_reg_note.
 	(sparc_fold_builtin): Add cast to enum type.
 	* config/spu/spu.c (spu_emit_branch_or_set): Change ior_code to
 	enum insn_code.
 	(spu_expand_prologue): Use add_reg_note.
-	(expand_builtin_args): Change 0 to EXPAND_NORMAL in function
-	call.
+	(expand_builtin_args): Change 0 to EXPAND_NORMAL in function call.
 
 2009-04-20  Ian Lance Taylor  <iant@google.com>
 
@@ -235,8 +226,7 @@
 	build_function_call.
 	(convert_arguments): Remove nargs and argarray parameters.  Change
 	values to a VEC.  Add origtypes parameter.
-	(build_modify_expr): Add rhs_origtype parameter.  Change all
-	callers.
+	(build_modify_expr): Add rhs_origtype parameter.  Change all callers.
 	(convert_for_assignment): Add origtype parameter.  Change all
 	callers.  If warn_cxx_compat, check for conversion to an enum
 	type when calling a function.
@@ -253,11 +243,9 @@
 	* c-common.c (sync_resolve_size): Change params to VEC *.  Change
 	caller.
 	(sync_resolve_params): Likewise.
-	(sync_resolve_return): Change params to first_param.  Change
-	caller.
+	(sync_resolve_return): Change params to first_param.  Change caller.
 	(resolve_overloaded_builtins): Change params to VEC *.  Change
-	callers.   Save first parameter around call to
-	build_function_call_vec.
+	callers.  Save first parameter around call to build_function_call_vec.
 	* c-decl.c (finish_decl): Add origtype parameter.  Change all
 	callers.  Call build_function_call_vec rather than
 	build_function_call for cleanup.
@@ -276,8 +264,7 @@
 	fnargs parameter to have type void *, and to be a pointer to a
 	VEC.  Call build_function_call_vec instead of
 	build_function_call.
-	* config/spu/spu-protos.h (spu_expand_builtin): Update
-	declaration.
+	* config/spu/spu-protos.h (spu_expand_builtin): Update declaration.
 
 2009-04-20  Joey Ye  <joey.ye@intel.com>
 	    Xuepeng Guo <xuepeng.guo@intel.com>
@@ -346,8 +333,9 @@
 
 	PR tree-optimization/39675
 	* tree-vect-loop.c (vect_transform_loop): Remove currently redundant 
-	check of the return code of vect_schedule_slp. Check that stmt_vec_info
-	still exists for the statement, before checking its vectorization type.
+	check of the return code of vect_schedule_slp. Check that
+	stmt_vec_info still exists for the statement, before checking its
+	vectorization type.
 
 2009-04-20  Michael Matz  <matz@suse.de>
 
@@ -391,7 +379,8 @@
 
 2009-04-19  Jan Hubicka  <jh@suse.cz>
 
-	* cgraph.c (cgraph_create_edge, cgraph_set_call_stmt): Set proper cfun.
+	* cgraph.c (cgraph_create_edge, cgraph_set_call_stmt): Set proper
+	cfun.
 	(dump_cgraph_node): Dump can throw external flag.
 	* ipa-pure-const.c (propagate): Fix propagation of nothrow flags.
 
@@ -533,8 +522,7 @@
 
 2009-04-17  Diego Novillo  <dnovillo@google.com>
 
-	* omp-low.c (create_omp_child_function): Set DECL_CONTEXT
-	for DECL.
+	* omp-low.c (create_omp_child_function): Set DECL_CONTEXT for DECL.
 	* cgraphunit.c (cgraph_build_static_cdtor): Likewise.
 	* tree-dfa.c (find_referenced_vars_in): Factor out of ...
 	(find_vars_r): ... here.
@@ -551,13 +539,11 @@
 
 2009-04-17  Diego Novillo  <dnovillo@google.com>
 
-	* tree-pretty-print.c (dump_generic_node): Add break
-	after TREE_BINFO handler.
-	Handle COMPLEX_TYPE, REAL_TYPE and FIXED_POINT_TYPE
-	Handle NULL TREE_TYPEs.
-	Handle METHOD_TYPE and FUNCTION_TYPE together.
-	Call print_struct_decl when printing structures and
-	TDF_SLIM is not given.
+	* tree-pretty-print.c (dump_generic_node): Add break after
+	TREE_BINFO handler.  Handle COMPLEX_TYPE, REAL_TYPE and
+	FIXED_POINT_TYPE.  Handle NULL TREE_TYPEs.  Handle METHOD_TYPE and
+	FUNCTION_TYPE together.  Call print_struct_decl when printing
+	structures and TDF_SLIM is not given.
 	(print_struct_decl): Fix logic for detecting recursion.
 
 2009-04-17  Rafael Avila de Espindola  <espindola@google.com>
@@ -599,8 +585,7 @@
 
 2009-04-17  Richard Guenther  <rguenther@suse.de>
 
-	* tree-ssa-forwprop.c (get_prop_dest_stmt): Clean up
-	tuplification.
+	* tree-ssa-forwprop.c (get_prop_dest_stmt): Clean up tuplification.
 	(get_prop_source_stmt): Likewise.
 	(can_propagate_from): Likewise.
 
