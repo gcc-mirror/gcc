@@ -1,3 +1,7 @@
+2009-04-21  Release Manager
+
+	* GCC 4.4.0 released.
+
 2009-03-17  Jason Merrill  <jason@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add
