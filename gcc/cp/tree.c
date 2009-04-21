@@ -44,7 +44,7 @@ static tree build_cplus_array_type_1 (tree, tree);
 static int list_hash_eq (const void *, const void *);
 static hashval_t list_hash_pieces (tree, tree, tree);
 static hashval_t list_hash (const void *);
-static cp_lvalue_kind lvalue_p_1 (tree, int);
+static cp_lvalue_kind lvalue_p_1 (const_tree, int);
 static tree build_target_expr (tree, tree);
 static tree count_trees_r (tree *, int *, void *);
 static tree verify_stmt_tree_r (tree *, int *, void *);
@@ -59,7 +59,7 @@ static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
    nonzero, rvalues of class type are considered lvalues.  */
 
 static cp_lvalue_kind
-lvalue_p_1 (tree ref,
+lvalue_p_1 (const_tree ref,
 	    int treat_class_rvalues_as_lvalues)
 {
   cp_lvalue_kind op1_lvalue_kind = clk_none;
@@ -207,7 +207,9 @@ lvalue_p_1 (tree ref,
     case BASELINK:
       /* We now represent a reference to a single static member function
 	 with a BASELINK.  */
-      return lvalue_p_1 (BASELINK_FUNCTIONS (ref),
+      /* This CONST_CAST is okay because BASELINK_FUNCTIONS returns
+	 its argument unmodified and we assign it to a const_tree.  */
+      return lvalue_p_1 (BASELINK_FUNCTIONS (CONST_CAST_TREE (ref)),
 			 treat_class_rvalues_as_lvalues);
 
     case NON_DEPENDENT_EXPR:
@@ -251,8 +253,8 @@ real_lvalue_p (tree ref)
 /* This differs from real_lvalue_p in that class rvalues are
    considered lvalues.  */
 
-int
-lvalue_p (tree ref)
+bool
+lvalue_p (const_tree ref)
 {
   return
     (lvalue_p_1 (ref, /*class rvalue ok*/ 1) != clk_none);

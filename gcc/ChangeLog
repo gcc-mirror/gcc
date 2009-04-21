@@ -1,3 +1,16 @@
+2009-04-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 16202
+	* c-typeck.c (lvalue_p): Move declaration ...
+	* c-common.h (lvalue_p): ... to here.
+	* c-common.c (candidate_equal_p): New.
+	(add_tlist): Use it.
+	(merge_tlist): Use it.
+	(warn_for_collisions_1): Likewise.
+	(warning_candidate_p): Accept more candidates.
+	(verify_tree): A warning candidate can be an expression. Use
+	candidate_equal_p.
+
 2009-04-21  Ben Elliston  <bje@au.ibm.com>
 
 	PR target/5267
