@@ -107,7 +107,7 @@
 ;; enumeration in alpha.h.
 
 (define_attr "tune" "ev4,ev5,ev6"
-  (const (symbol_ref "alpha_tune")))
+  (const (symbol_ref "((enum attr_tune) alpha_tune)")))
 
 ;; Define an insn type attribute.  This is used in function unit delay
 ;; computations, among other purposes.  For the most part, we use the names
