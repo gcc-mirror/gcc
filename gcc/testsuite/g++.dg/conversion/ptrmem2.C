@@ -31,8 +31,8 @@ const int B::*p9 = static_cast<const int B::*>(&D::x);
 const int D::*p10 = static_cast<const int D::*>(&B::x);
 
 // Invalid conversions which decrease cv-qualification.
-int B::*p11 = static_cast<int B::*>(p10); // { dg-error "casts away constness" }
-int D::*p12 = static_cast<int D::*>(p9);  // { dg-error "casts away constness" }
+int B::*p11 = static_cast<int B::*>(p10); // { dg-error "casts away qualifiers" }
+int D::*p12 = static_cast<int D::*>(p9);  // { dg-error "casts away qualifiers" }
 
 // Attempts to change member type.
 float B::*p13 = static_cast<float B::*>(&D::x); // { dg-error "" }

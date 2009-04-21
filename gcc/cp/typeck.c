@@ -5038,7 +5038,12 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
 }
 
 /* Issue a diagnostic message if casting from SRC_TYPE to DEST_TYPE
-   casts away constness.  CAST gives the type of cast.  */
+   casts away constness.  CAST gives the type of cast.  
+
+   ??? This function warns for casting away any qualifier not just
+   const.  We would like to specify exactly what qualifiers are casted
+   away.
+*/
 
 static void
 check_for_casting_away_constness (tree src_type, tree dest_type,
@@ -5049,27 +5054,29 @@ check_for_casting_away_constness (tree src_type, tree dest_type,
   if (cast == CAST_EXPR && !warn_cast_qual)
       return;
   
-  if (casts_away_constness (src_type, dest_type))
-    switch (cast)
-      {
-      case CAST_EXPR:
-	warning (OPT_Wcast_qual, 
-                 "cast from type %qT to type %qT casts away constness",
-		 src_type, dest_type);
-	return;
-	
-      case STATIC_CAST_EXPR:
-	error ("static_cast from type %qT to type %qT casts away constness",
+  if (!casts_away_constness (src_type, dest_type))
+    return;
+
+  switch (cast)
+    {
+    case CAST_EXPR:
+      warning (OPT_Wcast_qual, 
+	       "cast from type %qT to type %qT casts away qualifiers",
 	       src_type, dest_type);
-	return;
-	
-      case REINTERPRET_CAST_EXPR:
-	error ("reinterpret_cast from type %qT to type %qT casts away constness",
-	       src_type, dest_type);
-	return;
-      default:
-	gcc_unreachable();
-      }
+      return;
+      
+    case STATIC_CAST_EXPR:
+      error ("static_cast from type %qT to type %qT casts away qualifiers",
+	     src_type, dest_type);
+      return;
+      
+    case REINTERPRET_CAST_EXPR:
+      error ("reinterpret_cast from type %qT to type %qT casts away qualifiers",
+	     src_type, dest_type);
+      return;
+    default:
+      gcc_unreachable();
+    }
 }
 
 /* Convert EXPR (an expression with pointer-to-member type) to TYPE
@@ -7362,7 +7369,12 @@ casts_away_constness_r (tree *t1, tree *t2)
 }
 
 /* Returns nonzero if casting from TYPE1 to TYPE2 casts away
-   constness.  */
+   constness.  
+
+   ??? This function returns non-zero if casting away qualifiers not
+   just const.  We would like to return to the caller exactly which
+   qualifiers are casted away to give more accurate diagnostics.
+*/
 
 static bool
 casts_away_constness (tree t1, tree t2)

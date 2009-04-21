@@ -1,3 +1,9 @@
+2009-04-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/35711
+	* g++.dg/warn/pr35711.C: New.
+	* g++.dg/conversion/ptrmem2.C: Update.
+
 2009-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* ChangeLog, ChangeLog-1993-2007, ChangeLog-2008, ChangeLog.ptr,

@@ -1,3 +1,11 @@
+2009-04-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/35711
+	* typeck.c (check_for_casting_away_constness): We diagnose casting
+	away any qualifiers not just constness.
+	(casts_away_constness): Mention that it handles more than just
+	constness.
+	
 2009-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* ChangeLog, ChangeLog-1993, ChangeLog-1994, ChangeLog-1995,
