@@ -515,18 +515,17 @@ gnat_init_decl_processing (void)
   build_common_tree_nodes (true, true);
 
   /* In Ada, we use a signed type for SIZETYPE.  Use the signed type
-     corresponding to the size of Pmode.  In most cases when ptr_mode and
-     Pmode differ, C will use the width of ptr_mode as sizetype.  But we get
-     far better code using the width of Pmode.  Make this here since we need
-     this before we can expand the GNAT types.  */
-  size_type_node = gnat_type_for_size (GET_MODE_BITSIZE (Pmode), 0);
+     corresponding to the width of Pmode.  In most cases when ptr_mode
+     and Pmode differ, C will use the width of ptr_mode for SIZETYPE.
+     But we get far better code using the width of Pmode.  */
+  size_type_node = gnat_type_for_mode (Pmode, 0);
   set_sizetype (size_type_node);
 
   /* In Ada, we use an unsigned 8-bit type for the default boolean type.  */
   boolean_type_node = make_node (BOOLEAN_TYPE);
   TYPE_PRECISION (boolean_type_node) = 1;
   fixup_unsigned_type (boolean_type_node);
-  TYPE_RM_SIZE_NUM (boolean_type_node) = bitsize_int (1);
+  TYPE_RM_SIZE (boolean_type_node) = bitsize_int (1);
 
   build_common_tree_nodes_2 (0);
 
@@ -2230,7 +2229,7 @@ gnat_types_compatible_p (tree t1, tree t2)
       && TREE_TYPE (t1) == TREE_TYPE (t2)
       && (TYPE_DOMAIN (t1) == TYPE_DOMAIN (t2)
 	  || (TYPE_DOMAIN (t1)
-	      && TYPE_DOMAIN (t2)      
+	      && TYPE_DOMAIN (t2)
 	      && tree_int_cst_equal (TYPE_MIN_VALUE (TYPE_DOMAIN (t1)),
 				     TYPE_MIN_VALUE (TYPE_DOMAIN (t2)))
 	      && tree_int_cst_equal (TYPE_MAX_VALUE (TYPE_DOMAIN (t1)),
@@ -5176,10 +5175,10 @@ handle_type_generic_attribute (tree *node, tree ARG_UNUSED (name),
 			       bool * ARG_UNUSED (no_add_attrs))
 {
   tree params;
-  
+
   /* Ensure we have a function type.  */
   gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
-  
+
   params = TYPE_ARG_TYPES (*node);
   while (params && ! VOID_TYPE_P (TREE_VALUE (params)))
     params = TREE_CHAIN (params);

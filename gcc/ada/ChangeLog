@@ -1,5 +1,26 @@
 2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* ada-tree.h (TYPE_RM_SIZE_NUM): Delete.
+	(TYPE_RM_SIZE): Access TYPE_LANG_SLOT_1 directly for integral types.
+	* decl.c (gnat_to_gnu_entity) <E_Modular_Integer_Type>: Remove useless
+	support code for packed array types and assert its uselessness.
+	<E_Signed_Integer_Subtype>: Reuse entity identifier in more places and
+	adjust for TYPE_RM_SIZE change.
+	<all> Fix nits in comments.  Use Original_Array_Type accessor instead
+	of Associated_Node_For_Itype accessor for packed array types.
+	(make_packable_type): Likewise.
+	(maybe_pad_type): Likewise.
+	(set_rm_size): Likewise.  Rework conditional statement.  Adjust for
+	TYPE_RM_SIZE change.
+	(make_type_from_size): Adjust for TYPE_RM_SIZE change.
+	(rm_size): Fix nits in comments.  Rework conditional statements.
+	* misc.c (gnat_print_type): Adjust for TYPE_RM_SIZE change.
+	* trans.c (Attribute_to_gnu): Fix nits in comments.
+	* utils.c (gnat_init_decl_processing): Use more appropriate function
+	to initialize the size_type_node.  Adjust for TYPE_RM_SIZE change.
+
+2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not set force_global
 	for imported subprograms.
 

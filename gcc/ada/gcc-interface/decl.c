@@ -310,7 +310,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		      || kind == E_Anonymous_Access_Protected_Subprogram_Type
 		      || kind == E_Access_Subtype)));
 
-  /* RM_Size must be specified for all discrete and fixed-point types.  */
+  /* The RM size must be specified for all discrete and fixed-point types.  */
   gcc_assert (!IN (kind, Discrete_Or_Fixed_Point_Kind)
 	      || !Unknown_RM_Size (gnat_entity));
 
@@ -1465,28 +1465,23 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       break;
 
     case E_Modular_Integer_Type:
-      /* For modular types, make the unsigned type of the proper number of
-	 bits and then set up the modulus, if required.  */
       {
+	/* For modular types, make the unsigned type of the proper number
+	   of bits and then set up the modulus, if required.  */
+	tree gnu_modulus, gnu_high = NULL_TREE;
 	enum machine_mode mode;
-	tree gnu_modulus;
-	tree gnu_high = 0;
 
-	if (Is_Packed_Array_Type (gnat_entity))
-	  esize = UI_To_Int (RM_Size (gnat_entity));
+	/* Packed array types are supposed to be subtypes only.  */
+	gcc_assert (!Is_Packed_Array_Type (gnat_entity));
 
 	/* Find the smallest mode at least ESIZE bits wide and make a class
 	   using that mode.  */
-
 	for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
 	     GET_MODE_BITSIZE (mode) < esize;
 	     mode = GET_MODE_WIDER_MODE (mode))
 	  ;
 
 	gnu_type = make_unsigned_type (GET_MODE_BITSIZE (mode));
-	TYPE_PACKED_ARRAY_TYPE_P (gnu_type)
-	  = (Is_Packed_Array_Type (gnat_entity)
-	     && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
 
 	/* Get the modulus in this type.  If it overflows, assume it is because
 	   it is equal to 2**Esize.  Note that there is no overflow checking
@@ -1510,7 +1505,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		&& !tree_int_cst_equal (TYPE_MAX_VALUE (gnu_type), gnu_high)))
 	  {
 	    tree gnu_subtype = make_node (INTEGER_TYPE);
-
 	    TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "UMT");
 	    TREE_TYPE (gnu_subtype) = gnu_type;
 	    TYPE_MIN_VALUE (gnu_subtype) = TYPE_MIN_VALUE (gnu_type);
@@ -1520,11 +1514,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    TYPE_PRECISION (gnu_subtype) = esize;
 	    TYPE_UNSIGNED (gnu_subtype) = 1;
 	    TYPE_EXTRA_SUBTYPE_P (gnu_subtype) = 1;
-	    TYPE_PACKED_ARRAY_TYPE_P (gnu_subtype)
-	      = (Is_Packed_Array_Type (gnat_entity)
-		 && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)));
 	    layout_type (gnu_subtype);
-
 	    gnu_type = gnu_subtype;
 	  }
       }
@@ -1556,8 +1546,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  && !In_Extended_Main_Code_Unit (Ancestor_Subtype (gnat_entity))
 	  && (!Compile_Time_Known_Value (Type_Low_Bound (gnat_entity))
 	      || !Compile_Time_Known_Value (Type_High_Bound (gnat_entity))))
-	gnat_to_gnu_entity (Ancestor_Subtype (gnat_entity),
-			    gnu_expr, 0);
+	gnat_to_gnu_entity (Ancestor_Subtype (gnat_entity), gnu_expr, 0);
 
       gnu_type = make_node (INTEGER_TYPE);
       TREE_TYPE (gnu_type) = get_unpadded_type (Etype (gnat_entity));
@@ -1627,7 +1616,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  tree gnu_field_type, gnu_field;
 
 	  /* Set the RM size before wrapping up the type.  */
-	  TYPE_RM_SIZE_NUM (gnu_type)
+	  TYPE_RM_SIZE (gnu_type)
 	    = UI_To_gnu (RM_Size (gnat_entity), bitsizetype);
 	  TYPE_PACKED_ARRAY_TYPE_P (gnu_type) = 1;
 	  gnu_field_type = gnu_type;
@@ -1644,8 +1633,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  /* Create a stripped-down declaration of the original type, mainly
 	     for debugging.  */
-	  create_type_decl (get_entity_name (gnat_entity), gnu_field_type,
-			    NULL, true, debug_info_p, gnat_entity);
+	  create_type_decl (gnu_entity_id, gnu_field_type, NULL, true,
+			    debug_info_p, gnat_entity);
 
 	  /* Don't notify the field as "addressable", since we won't be taking
 	     it's address and it would prevent create_field_decl from making a
@@ -1670,7 +1659,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  tree gnu_field_type, gnu_field;
 
 	  /* Set the RM size before wrapping up the type.  */
-	  TYPE_RM_SIZE_NUM (gnu_type)
+	  TYPE_RM_SIZE (gnu_type)
 	    = UI_To_gnu (RM_Size (gnat_entity), bitsizetype);
 	  gnu_field_type = gnu_type;
 
@@ -1682,8 +1671,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	  /* Create a stripped-down declaration of the original type, mainly
 	     for debugging.  */
-	  create_type_decl (get_entity_name (gnat_entity), gnu_field_type,
-			    NULL, true, debug_info_p, gnat_entity);
+	  create_type_decl (gnu_entity_id, gnu_field_type, NULL, true,
+			    debug_info_p, gnat_entity);
 
 	  /* Don't notify the field as "addressable", since we won't be taking
 	     it's address and it would prevent create_field_decl from making a
@@ -4750,11 +4739,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
   if (this_global)
     force_global--;
 
+  /* If this is a packed array type whose original array type is itself
+     an Itype without freeze node, make sure the latter is processed.  */
   if (Is_Packed_Array_Type (gnat_entity)
-      && Is_Itype (Associated_Node_For_Itype (gnat_entity))
-      && No (Freeze_Node (Associated_Node_For_Itype (gnat_entity)))
-      && !present_gnu_tree (Associated_Node_For_Itype (gnat_entity)))
-    gnat_to_gnu_entity (Associated_Node_For_Itype (gnat_entity), NULL_TREE, 0);
+      && Is_Itype (Original_Array_Type (gnat_entity))
+      && No (Freeze_Node (Original_Array_Type (gnat_entity)))
+      && !present_gnu_tree (Original_Array_Type (gnat_entity)))
+    gnat_to_gnu_entity (Original_Array_Type (gnat_entity), NULL_TREE, 0);
 
   return gnu_decl;
 }
@@ -5818,7 +5809,7 @@ make_packable_type (tree type, bool in_record)
 	new_field_type = make_packable_type (new_field_type, true);
 
       /* However, for the last field in a not already packed record type
-	 that is of an aggregate type, we need to use the RM_Size in the
+	 that is of an aggregate type, we need to use the RM size in the
 	 packable version of the record type, see finish_record_type.  */
       if (!TREE_CHAIN (old_field)
 	  && !TYPE_PACKED (type)
@@ -5895,8 +5886,8 @@ make_packable_type (tree type, bool in_record)
 
    DEFINITION is true if this type is being defined.
 
-   SAME_RM_SIZE is true if the RM_Size of the resulting type is to be set
-   to SIZE too; otherwise, it's set to the RM_Size of the original type.  */
+   SAME_RM_SIZE is true if the RM size of the resulting type is to be set
+   to SIZE too; otherwise, it's set to the RM size of the original type.  */
 
 tree
 maybe_pad_type (tree type, tree size, unsigned int align,
@@ -6017,8 +6008,8 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   /* Do not finalize it until after the auxiliary record is built.  */
   finish_record_type (record, field, 1, true);
 
-  /* Set the same size for its RM_size if requested; otherwise reuse
-     the RM_size of the original type.  */
+  /* Set the same size for its RM size if requested; otherwise reuse
+     the RM size of the original type.  */
   SET_TYPE_ADA_SIZE (record, same_rm_size ? size : orig_rm_size);
 
   /* Unless debugging information isn't being written for the input type,
@@ -7256,7 +7247,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
   return size;
 }
 
-/* Similarly, but both validate and process a value of RM_Size.  This
+/* Similarly, but both validate and process a value of RM size.  This
    routine is only called for types.  */
 
 static void
@@ -7270,7 +7261,7 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
   tree size;
 
   /* Get the size as a tree.  Do nothing if none was specified, either
-     because RM_Size was not Present or if the specified size was zero.
+     because RM size was not Present or if the specified size was zero.
      Give an error if a size was specified, but cannot be represented as
      in sizetype.  */
   if (No (uint_size) || uint_size == No_Uint)
@@ -7315,13 +7306,14 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
       return;
     }
 
-  /* Otherwise, set the RM_Size.  */
-  if (TREE_CODE (gnu_type) == INTEGER_TYPE
-      && Is_Discrete_Or_Fixed_Point_Type (gnat_entity))
-    TYPE_RM_SIZE_NUM (gnu_type) = size;
-  else if (TREE_CODE (gnu_type) == ENUMERAL_TYPE
-	   || TREE_CODE (gnu_type) == BOOLEAN_TYPE)
-    TYPE_RM_SIZE_NUM (gnu_type) = size;
+  /* Otherwise, set the RM size proper for numerical types...  */
+  if ((TREE_CODE (gnu_type) == INTEGER_TYPE
+       && Is_Discrete_Or_Fixed_Point_Type (gnat_entity))
+      || (TREE_CODE (gnu_type) == ENUMERAL_TYPE
+	  || TREE_CODE (gnu_type) == BOOLEAN_TYPE))
+    TYPE_RM_SIZE (gnu_type) = size;
+
+  /* ...or the Ada size for record and union types.  */
   else if ((TREE_CODE (gnu_type) == RECORD_TYPE
 	    || TREE_CODE (gnu_type) == UNION_TYPE
 	    || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
@@ -7383,7 +7375,7 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	    TYPE_NAME (new_type) = TYPE_NAME (type);
 	}
       TYPE_BIASED_REPRESENTATION_P (new_type) = biased_p;
-      TYPE_RM_SIZE_NUM (new_type) = bitsize_int (size);
+      TYPE_RM_SIZE (new_type) = bitsize_int (size);
       return new_type;
 
     case RECORD_TYPE:
@@ -7727,32 +7719,34 @@ substitute_in_type (tree t, tree f, tree r)
     }
 }
 
-/* Return the "RM size" of GNU_TYPE.  This is the actual number of bits
+/* Return the RM size of GNU_TYPE.  This is the actual number of bits
    needed to represent the object.  */
 
 tree
 rm_size (tree gnu_type)
 {
-  /* For integer types, this is the precision.  For record types, we store
-     the size explicitly.  For other types, this is just the size.  */
-
+  /* For integer types, this is the precision.  */
   if (INTEGRAL_TYPE_P (gnu_type) && TYPE_RM_SIZE (gnu_type))
     return TYPE_RM_SIZE (gnu_type);
-  else if (TREE_CODE (gnu_type) == RECORD_TYPE
-	   && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
-    /* Return the rm_size of the actual data plus the size of the template.  */
+
+  /* Return the RM size of the actual data plus the size of the template.  */
+  if (TREE_CODE (gnu_type) == RECORD_TYPE
+      && TYPE_CONTAINS_TEMPLATE_P (gnu_type))
     return
       size_binop (PLUS_EXPR,
 		  rm_size (TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (gnu_type)))),
 		  DECL_SIZE (TYPE_FIELDS (gnu_type)));
-  else if ((TREE_CODE (gnu_type) == RECORD_TYPE
-	    || TREE_CODE (gnu_type) == UNION_TYPE
-	    || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
-	   && !TYPE_IS_FAT_POINTER_P (gnu_type)
-	   && TYPE_ADA_SIZE (gnu_type))
+
+  /* For record types, we store the size explicitly.  */
+  if ((TREE_CODE (gnu_type) == RECORD_TYPE
+       || TREE_CODE (gnu_type) == UNION_TYPE
+       || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
+      && !TYPE_IS_FAT_POINTER_P (gnu_type)
+      && TYPE_ADA_SIZE (gnu_type))
     return TYPE_ADA_SIZE (gnu_type);
-  else
-    return TYPE_SIZE (gnu_type);
+
+  /* For other types, this is just the size.  */
+  return TYPE_SIZE (gnu_type);
 }
 
 /* Return an identifier representing the external name to be used for
