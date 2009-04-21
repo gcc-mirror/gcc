@@ -1244,15 +1244,19 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
     TYPE_STUB_DECL (type) = type_decl;
 
   /* Pass the type declaration to the debug back-end unless this is an
-     UNCONSTRAINED_ARRAY_TYPE that the back-end does not support, an
-     ENUMERAL_TYPE or RECORD_TYPE which are handled separately, or a
-     type for which debugging information was not requested.  */
+     UNCONSTRAINED_ARRAY_TYPE that the back-end does not support, or a
+     type for which debugging information was not requested, or else an
+     ENUMERAL_TYPE or RECORD_TYPE (except for fat pointers) which are
+     handled separately.  And do not pass dummy types either.  */
   if (code == UNCONSTRAINED_ARRAY_TYPE || !debug_info_p)
     DECL_IGNORED_P (type_decl) = 1;
   else if (code != ENUMERAL_TYPE
 	   && (code != RECORD_TYPE || TYPE_IS_FAT_POINTER_P (type))
 	   && !((code == POINTER_TYPE || code == REFERENCE_TYPE)
-		&& TYPE_IS_DUMMY_P (TREE_TYPE (type))))
+		&& TYPE_IS_DUMMY_P (TREE_TYPE (type)))
+	   && !(code == RECORD_TYPE
+		&& TYPE_IS_DUMMY_P
+		   (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (type))))))
     rest_of_type_decl_compilation (type_decl);
 
   return type_decl;
