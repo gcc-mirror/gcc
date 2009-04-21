@@ -1,3 +1,9 @@
+2009-04-21  Ian Lance Taylor  <iant@google.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Correct test for number of arguments.
+	* config/spu/spu-c.c (spu_resolve_overloaded_builtin): Likewise.
+
 2009-04-21  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/m68k/linux.h (FINALIZE_TRAMPOLINE): Use enum for second

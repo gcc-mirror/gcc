@@ -132,7 +132,7 @@ spu_resolve_overloaded_builtin (tree fndecl, void *passed_args)
 	{
 	  tree var, arg_type, param_type = TREE_VALUE (param);
 
-	  if (p < nargs)
+	  if (p >= nargs)
 	    {
 	      error ("insufficient arguments to overloaded function %s",
 		     desc->name);
