@@ -1,3 +1,19 @@
+2009-04-21  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-switch-conversion.c (build_constructors): Split a long line.
+	(constructor_contains_same_values_p): New function.
+	(build_one_array): Create assigns of constants if possible, do not call
+	mark_sym_for_renaming, call update_stmt.
+	(build_arrays): Call make_ssa_name (create_tmp_var ()) instead of
+	make_rename_temp.  Do not call mark_symbols_for_renaming, call
+	update_stmt.
+	(gen_def_assigns): Do not call mark_symbols_for_renaming or
+	find_new_referenced_vars, call update_stmt.
+	(gen_inbound_check): Use create_tmp_var and create ssa names manually
+	instead of calling make_rename_temp.  Do not call
+	find_new_referenced_vars or mark_symbols_for_renaming, call
+	update_stmt.
+
 2009-04-21  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39827
