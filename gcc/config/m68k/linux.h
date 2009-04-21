@@ -1,7 +1,7 @@
 /* Definitions for Motorola 68k running Linux-based GNU systems with
    ELF format.
    Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2004, 2006,
-   2007 Free Software Foundation, Inc.
+   2007, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -209,7 +209,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef FINALIZE_TRAMPOLINE
 #define FINALIZE_TRAMPOLINE(TRAMP)					\
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),	\
-		     0, VOIDmode, 2, TRAMP, Pmode,			\
+		     LCT_NORMAL, VOIDmode, 2, TRAMP, Pmode,		\
 		     plus_constant (TRAMP, TRAMPOLINE_SIZE), Pmode);
 
 /* Clear the instruction cache from `beg' to `end'.  This makes an
