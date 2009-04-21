@@ -1,3 +1,7 @@
+2009-04-21  Release Manager
+
+	* GCC 4.4.0 released.
+
 2009-04-09  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* configure.host: Restore match for darwin9 or later.
