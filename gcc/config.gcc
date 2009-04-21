@@ -1251,17 +1251,35 @@ i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	use_gcc_stdint=wrap
 	;;
 i[34567]86-*-mingw* | x86_64-*-mingw*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/mingw32.h i386/mingw-stdint.h"
+	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/mingw32.h"
 	xm_file=i386/xm-mingw32.h
+	# This makes the logic if mingw's or the w64 feature set has to be used
+	case ${target} in
+		*-w64-*)
+			tm_file="${tm_file} i386/mingw-w64.h"
+			tmake_file="${tmake_file} i386/t-mingw-w64"
+			;;
+		*)
+			tmake_file="${tmake_file} i386/t-mingw32"
+			;;
+	esac
+	tm_file="${tm_file} i386/mingw-stdint.h"
 	# This has to match the logic for DWARF2_UNWIND_INFO in gcc/config/i386/cygming.h
 	if test x$sjlj = x0; then
 		tmake_eh_file="i386/t-dw2-eh"
 	else
 		tmake_eh_file="i386/t-sjlj-eh"
 	fi
-	tmake_file="${tmake_file} ${tmake_eh_file} i386/t-cygming i386/t-mingw32"
+	tmake_file="${tmake_file} ${tmake_eh_file} i386/t-cygming"
 	target_gtfiles="\$(srcdir)/config/i386/winnt.c"
 	extra_options="${extra_options} i386/cygming.opt i386/mingw.opt"
+	case ${target} in
+		*-w64-*)
+			extra_options="${extra_options} i386/mingw-w64.opt"
+			;;
+		*)
+			;;
+	esac
 	extra_objs="winnt.o winnt-stubs.o"
 	c_target_objs="${c_target_objs} msformat-c.o"
 	cxx_target_objs="${cxx_target_objs} winnt-cxx.o msformat-c.o"

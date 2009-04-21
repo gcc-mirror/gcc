@@ -828,7 +828,7 @@ See i386 and x86-64 Options.
 
 @emph{i386 and x86-64 Windows Options}
 @gccoptlist{-mconsole -mcygwin -mno-cygwin -mdll
--mnop-fun-dllimport -mthread -mwin32 -mwindows}
+-mnop-fun-dllimport -mthread -municode -mwin32 -mwindows}
 
 @emph{Xstormy16 Options}
 @gccoptlist{-msim}
@@ -15615,6 +15615,12 @@ specifies that the dllimport attribute should be ignored.
 @opindex mthread
 This option is available for MinGW targets. It specifies
 that MinGW-specific thread support is to be used.
+
+@item -municode
+@opindex municode
+This option is available for mingw-w64 targets.  It specifies
+that the UNICODE macro is getting pre-defined and that the
+unicode capable runtime startup code is choosen.
 
 @item -mwin32
 @opindex mwin32

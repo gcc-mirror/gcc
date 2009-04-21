@@ -1,3 +1,15 @@
+2009-04-21  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config.gcc: Add additional configuration for
+	i686-w64-mingw* and x86_64-w64-mingw* triplet.
+	* config/i386/mingw-w64.h: New mingw-w64 specific header.
+	(CPP_SPEC): Redefine for allowing -municode option.
+	(STARTFILE_SPEC): Likewise.
+	* config/i386/t-mingw-w64: New.
+	* config/i386/mingw-w64.opt: New.
+	(municode): Add new target option.
+	* doc/invoke.texi (municode): Add documentation for new option.
+
 2009-04-21  Ian Lance Taylor  <iant@google.com>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
