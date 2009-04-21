@@ -3241,7 +3241,7 @@ altivec_resolve_overloaded_builtin (tree fndecl, void *passed_arglist)
 
   /* If the number of arguments did not match the prototype, return NULL
      and the generic code will issue the appropriate error message.  */
-  if (!VOID_TYPE_P (TREE_VALUE (fnargs)) || nargs > 0)
+  if (!VOID_TYPE_P (TREE_VALUE (fnargs)) || n < nargs)
     return NULL;
 
   if (n == 0)
