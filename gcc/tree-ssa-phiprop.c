@@ -253,6 +253,7 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
 	   /* Avoid to have to decay *&a to a[0] later.  */
 	   || !is_gimple_reg_type (TREE_TYPE (TREE_OPERAND (arg, 0))))
 	  && !(TREE_CODE (arg) == SSA_NAME
+	       && SSA_NAME_VERSION (arg) < n
 	       && phivn[SSA_NAME_VERSION (arg)].value != NULL_TREE
 	       && phivn_valid_p (phivn, arg, bb)))
 	return false;
@@ -336,18 +337,19 @@ tree_ssa_phiprop (void)
   basic_block bb;
   gimple_stmt_iterator gsi;
   unsigned i;
+  size_t n;
 
   calculate_dominance_info (CDI_DOMINATORS);
 
-  phivn = XCNEWVEC (struct phiprop_d, num_ssa_names);
+  n = num_ssa_names;
+  phivn = XCNEWVEC (struct phiprop_d, n);
 
   /* Walk the dominator tree in preorder.  */
   bbs = get_all_dominated_blocks (CDI_DOMINATORS,
 				  single_succ (ENTRY_BLOCK_PTR));
   for (i = 0; VEC_iterate (basic_block, bbs, i, bb); ++i)
     for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-      did_something |= propagate_with_phi (bb, gsi_stmt (gsi),
-					   phivn, num_ssa_names);
+      did_something |= propagate_with_phi (bb, gsi_stmt (gsi), phivn, n);
 
   if (did_something)
     gsi_commit_edge_inserts ();
