@@ -967,15 +967,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* Make a volatile version of this object's type if we are to make
 	   the object volatile.  We also interpret 13.3(19) conservatively
-	   and disallow any optimizations for an object covered by it.  */
+	   and disallow any optimizations for such a non-constant object.  */
 	if ((Treat_As_Volatile (gnat_entity)
-	     || (Is_Exported (gnat_entity)
-		 /* Exclude exported constants created by the compiler,
-		    which should boil down to static dispatch tables and
-		    make it possible to put them in read-only memory.  */
-		 && (Comes_From_Source (gnat_entity) || !const_flag))
-	     || Is_Imported (gnat_entity)
-	     || Present (Address_Clause (gnat_entity)))
+	     || (!const_flag
+		 && (Is_Exported (gnat_entity)
+		     || Is_Imported (gnat_entity)
+		     || Present (Address_Clause (gnat_entity)))))
 	    && !TYPE_VOLATILE (gnu_type))
 	  gnu_type = build_qualified_type (gnu_type,
 					   (TYPE_QUALS (gnu_type)
