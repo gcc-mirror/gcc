@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -162,6 +162,10 @@ struct lang_type GTY(()) {tree t; };
    cico parameter passing mechanism refer to the routine gnat_to_gnu_entity. */
 #define TYPE_CI_CO_LIST(NODE)  TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
 
+/* For integral types, this is the RM Size of the type.  */
+#define TYPE_RM_SIZE(NODE)  \
+  TYPE_LANG_SLOT_1 (TREE_CHECK3 (NODE, ENUMERAL_TYPE, BOOLEAN_TYPE, INTEGER_TYPE))
+
 /* For an INTEGER_TYPE with TYPE_MODULAR_P, this is the value of the
    modulus. */
 #define TYPE_MODULUS(NODE) GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
@@ -181,13 +185,6 @@ struct lang_type GTY(()) {tree t; };
   GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
 #define SET_TYPE_DIGITS_VALUE(NODE, X)  \
   SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
-
-/* For numeric types, stores the RM_Size of the type.  */
-#define TYPE_RM_SIZE_NUM(NODE)	TYPE_LANG_SLOT_1 (NUMERICAL_TYPE_CHECK (NODE))
-
-#define TYPE_RM_SIZE(NODE)					\
-  (INTEGRAL_TYPE_P (NODE) || TREE_CODE (NODE) == REAL_TYPE	\
-   ? TYPE_RM_SIZE_NUM (NODE) : 0)
 
 /* For a RECORD_TYPE that is a fat pointer, point to the type for the
    unconstrained object.  Likewise for a RECORD_TYPE that is pointed
