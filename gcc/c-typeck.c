@@ -110,7 +110,6 @@ static tree find_init_member (tree);
 static void readonly_error (tree, enum lvalue_use);
 static void readonly_warning (tree, enum lvalue_use);
 static int lvalue_or_else (const_tree, enum lvalue_use);
-static int lvalue_p (const_tree);
 static void record_maybe_used_decl (tree);
 static int comptypes_internal (const_tree, const_tree);
 
@@ -3503,7 +3502,7 @@ build_unary_op (location_t location,
    Lvalues can be assigned, unless their type has TYPE_READONLY.
    Lvalues can have their address taken, unless they have C_DECL_REGISTER.  */
 
-static int
+bool
 lvalue_p (const_tree ref)
 {
   const enum tree_code code = TREE_CODE (ref);

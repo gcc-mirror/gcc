@@ -2381,6 +2381,7 @@ static void add_tlist (struct tlist **, struct tlist *, tree, int);
 static void merge_tlist (struct tlist **, struct tlist *, int);
 static void verify_tree (tree, struct tlist **, struct tlist **, tree);
 static int warning_candidate_p (tree);
+static bool candidate_equal_p (const_tree, const_tree);
 static void warn_for_collisions (struct tlist *);
 static void warn_for_collisions_1 (tree, tree, struct tlist *, int);
 static struct tlist *new_tlist (struct tlist *, tree, tree);
@@ -2408,7 +2409,7 @@ add_tlist (struct tlist **to, struct tlist *add, tree exclude_writer, int copy)
       struct tlist *next = add->next;
       if (!copy)
 	add->next = *to;
-      if (!exclude_writer || add->writer != exclude_writer)
+      if (!exclude_writer || !candidate_equal_p (add->writer, exclude_writer))
 	*to = copy ? new_tlist (*to, add->expr, add->writer) : add;
       add = next;
     }
@@ -2435,7 +2436,7 @@ merge_tlist (struct tlist **to, struct tlist *add, int copy)
       struct tlist *next = add->next;
 
       for (tmp2 = *to; tmp2; tmp2 = tmp2->next)
-	if (tmp2->expr == add->expr)
+	if (candidate_equal_p (tmp2->expr, add->expr))
 	  {
 	    found = 1;
 	    if (!tmp2->writer)
@@ -2463,15 +2464,14 @@ warn_for_collisions_1 (tree written, tree writer, struct tlist *list,
 
   /* Avoid duplicate warnings.  */
   for (tmp = warned_ids; tmp; tmp = tmp->next)
-    if (tmp->expr == written)
+    if (candidate_equal_p (tmp->expr, written))
       return;
 
   while (list)
     {
-      if (list->expr == written
-	  && list->writer != writer
-	  && (!only_writes || list->writer)
-	  && DECL_NAME (list->expr))
+      if (candidate_equal_p (list->expr, written)
+	  && !candidate_equal_p (list->writer, writer)
+	  && (!only_writes || list->writer))
 	{
 	  warned_ids = new_tlist (warned_ids, written, NULL_TREE);
 	  warning_at (EXPR_HAS_LOCATION (writer)
@@ -2503,7 +2503,17 @@ warn_for_collisions (struct tlist *list)
 static int
 warning_candidate_p (tree x)
 {
-  return TREE_CODE (x) == VAR_DECL || TREE_CODE (x) == PARM_DECL;
+  /* !VOID_TYPE_P (TREE_TYPE (x)) is workaround for cp/tree.c
+     (lvalue_p) crash on TRY/CATCH. */
+  return !(DECL_P (x) && DECL_ARTIFICIAL (x))
+    && TREE_TYPE (x) && !VOID_TYPE_P (TREE_TYPE (x)) && lvalue_p (x);
+}
+
+/* Return nonzero if X and Y appear to be the same candidate (or NULL) */
+static bool
+candidate_equal_p (const_tree x, const_tree y)
+{
+  return (x == y) || (x && y && operand_equal_p (x, y, 0));
 }
 
 /* Walk the tree X, and record accesses to variables.  If X is written by the
@@ -2549,10 +2559,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
   cl = TREE_CODE_CLASS (code);
 
   if (warning_candidate_p (x))
-    {
-      *pno_sp = new_tlist (*pno_sp, x, writer);
-      return;
-    }
+    *pno_sp = new_tlist (*pno_sp, x, writer);
 
   switch (code)
     {
@@ -2665,7 +2672,7 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
       {
 	struct tlist_cache *t;
 	for (t = save_expr_cache; t; t = t->next)
-	  if (t->expr == x)
+	  if (candidate_equal_p (t->expr, x))
 	    break;
 
 	if (!t)
