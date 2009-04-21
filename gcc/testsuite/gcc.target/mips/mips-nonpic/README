@@ -18,3 +18,10 @@ main-13.c	address and call	nothing			Neither
 main-14.c	address and call	call only		PLT entry
 main-15.c	address and call	address taken only	Neither (* But creating a PLT entry is valid)
 main-16.c	address and call	address and call	PLT entry
+
+
+Copyright (C) 2008 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

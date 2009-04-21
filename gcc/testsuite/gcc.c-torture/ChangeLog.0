@@ -626,3 +626,10 @@ Wed Jun  7 12:40:05 1995  Torbjorn Granlund  <tege@bozo.matematik.su.se>
 Wed Jun  1 01:57:45 1995  Torbjorn Granlund  <tege@bozo.matematik.su.se>
 
 	* execute/divconst-[12].c: New tests.
+
+
+Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

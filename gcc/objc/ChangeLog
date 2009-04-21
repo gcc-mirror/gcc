@@ -1,3 +1,7 @@
+2009-04-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* ChangeLog: Add copyright and license notices.
+
 2009-04-20  Ian Lance Taylor  <iant@google.com>
 
 	* objc-act.c (objc_rewrite_function_call): Change parameter from
@@ -1191,3 +1195,10 @@
 	LANG_HOOKS_INCOMPLETE_TYPE_ERROR, LANG_HOOKS_TYPE_PROMOTES_TO,
 	LANG_HOOKS_REGISTER_BUILTIN_TYPE, LANG_HOOKS_WRITE_GLOBALS):
 	Move to c-objc-common.h.
+
+
+Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

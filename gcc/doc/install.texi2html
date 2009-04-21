@@ -5,7 +5,7 @@
 # $SOURCEDIR and $DESTDIR, resp., refer to the directory containing
 # the texinfo source and the directory to put the HTML version in.
 #
-# (C) 2001, 2003, 2006, 2008, 2009 Free Software Foundation
+# Copyright (C) 2001, 2003, 2006, 2008, 2009 Free Software Foundation, Inc.
 # Originally by Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, June 2001.
 #
 # This file is part of GCC.

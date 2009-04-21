@@ -3254,3 +3254,10 @@
 	* parser.c (cp_parser_check_decl_spec): Don't warn about "long
 	long" in C++0x mode; change the warning to note that "long long"
 	is only unsupported in C++98 mode.
+
+
+Copyright (C) 2008 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

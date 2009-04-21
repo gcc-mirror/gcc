@@ -1,3 +1,14 @@
+2009-04-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* ChangeLog, ChangeLog-1993, ChangeLog-1994, ChangeLog-1995,
+	ChangeLog-1996, ChangeLog-1997, ChangeLog-1998, ChangeLog-1999,
+	ChangeLog-2000, ChangeLog-2001, ChangeLog-2002, ChangeLog-2003,
+	ChangeLog-2004, ChangeLog-2005, ChangeLog-2006, ChangeLog-2007,
+	ChangeLog-2008, ChangeLog.ptr, ChangeLog.tree-ssa, NEWS,
+	cfns.gperf: Add copyright and license notices.
+	* cfns.h: Regenerate.
+	* ChangeLog, ChangeLog-2004: Correct dates.
+
 2009-04-21  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 16202
@@ -107,7 +118,7 @@
 	* parser.c (cp_parser_skip_to_end_of_block_or_statement): Return
 	if we see a close brace without an open brace.
 
-2008-04-10  H.J. Lu  <hongjiu.lu@intel.com>
+2009-04-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* parser.c (cp_parser_class_specifier): Remove the unused
 	has_trailing_semicolon.
@@ -920,3 +931,10 @@
 	PR c++/38684
 	* typeck2.c (digest_init_r): Don't use process_init_constructor
 	for non-aggregate classes.
+
+
+Copyright (C) 2009 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

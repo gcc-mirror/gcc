@@ -399,3 +399,11 @@
   templates and explicit qualification of function templates.
 * Mike Stump <mrs@wrs.com>, the previous g++ maintainer, who did most of
   the exception handling work.
+
+
+Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003,
+2005 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

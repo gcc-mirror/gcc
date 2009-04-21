@@ -12518,13 +12518,13 @@
 	PR pch/13676
 	* doc/invoke.texi: Add .hp, .hxx, .hpp, .h, .HPP, .tcc as c++ header.
 
-2008-08-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+2007-08-05  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR middle-end/32988
 	* tree.c (build2_stat): Instead of checking for INTEGER_TYPE, check
 	for INTEGRAL_TYPE_P.
 
-2008-08-05  Paolo Bonzini  <bonzini@gnu.org>
+2007-08-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* configure.ac: Remove --enable-checking=df from default settings.
 	* tree-pass.h (TODO_df_verify): New.  Shift TODO_mark_first_instance.
@@ -29835,7 +29835,7 @@
 	(resolve_clobber): Call validate_change rather than directly
 	assigning to XEXP (pat, 0).
 
-2006-02-06  Paolo Bonzini  <bonzini@gnu.org>
+2007-02-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (tree-ssa-loop-ivopts.o): Add pointer-set.h dependency.
 	(tree-ssa-reassoc.o): Add pointer-set.h dependency.
@@ -29885,7 +29885,7 @@
 	(get_cases_for_edge): Adjust for pointer_map API, inline
 	record_switch_edge (rewritten for new API), remove goto.
 
-2006-02-06  Paolo Bonzini  <bonzini@gnu.org>
+2007-02-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (tree-nested.o): Add pointer-set.h dependency.
 	* tree-nested.c: Include pointer-set.h.
@@ -34169,3 +34169,10 @@
 
 	* cgraphunit.c (cgraph_optimize): Call cgraph_add_new_functions
 	before starting IPA passes.
+
+
+Copyright (C) 2007 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

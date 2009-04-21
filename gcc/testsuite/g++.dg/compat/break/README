@@ -9,3 +9,10 @@ determine whether a test failure is expected or not.
 Every test in this directory that covers behavior that is not
 ABI-compliant should also be covered by a test for -Wabi to ensure that
 there is a warning for the construct.
+
+
+Copyright (C) 2002 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

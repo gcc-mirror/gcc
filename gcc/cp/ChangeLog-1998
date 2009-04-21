@@ -6885,3 +6885,10 @@ Wed Jan  7 23:47:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	* typeck.c (build_modify_expr): Remove code that ignores trivial
 	methods.
 
+
+
+Copyright (C) 1998 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

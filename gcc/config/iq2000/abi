@@ -230,3 +230,10 @@ Structs/unions which will fit into two general-purpose registers are returned
 in r2, or in r2-r3 if necessary.  Larger structs/unions are handled by the
 caller passing as a "hidden" first argument a pointer to space allocated to
 receive the return value.
+
+
+Copyright (C) 2003 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

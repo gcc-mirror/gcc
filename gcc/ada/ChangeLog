@@ -1,3 +1,8 @@
+2009-04-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* ChangeLog, ChangeLog.ptr, ChangeLog.tree-ssa: Add copyright and
+	license notices.
+
 2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (gnat_to_gnu): Do not overwrite location info.
@@ -48463,3 +48468,11 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-02  Geert Bosch  <bosch@gnat.com>
 
 	* misc.c (insert_default_attributes): Add dummy version.
+
+
+Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+2009 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

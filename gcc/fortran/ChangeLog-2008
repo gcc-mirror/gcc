@@ -3864,7 +3864,7 @@
 	PR fortran/34896
 	* module.c (read_module): Set use_rename attribute.
 
-2007-01-21  Tobias Burnus  <burnus@net-b.de>
+2008-01-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34901
 	* interface.c (compare_parameter): Improved error message
@@ -4094,7 +4094,7 @@
 	the dummy variable expression, test for NULL, and pass the variable
 	address to the called function.
 
-2007-01-06  Tobias Burnus  <burnus@net-b.de>
+2008-01-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34658
 	* match.c (gfc_match_common): Remove blank common in
@@ -4133,3 +4133,10 @@
 	PR fortran/34557
 	* primary.c (match_varspec): Gobble whitespace before
 	checking for '('.
+
+
+Copyright (C) 2008 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

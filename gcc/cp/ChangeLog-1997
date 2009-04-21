@@ -2605,3 +2605,10 @@ Tue Jan  7 09:20:28 1997  Mike Stump  <mrs@cygnus.com>
 	(finish_base_struct): Likewise.
 	(finish_struct_1): Likewise.
 
+
+
+Copyright (C) 1997 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

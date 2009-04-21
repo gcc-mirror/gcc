@@ -199,3 +199,10 @@ Directory g77.f-torture/noncompile
 980616-0.f			Y
 check0.f			Y
 select_no_compile.f		Y
+
+
+Copyright (C) 2004, 2005 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

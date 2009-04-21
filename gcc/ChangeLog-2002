@@ -14634,7 +14634,7 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 
 	* config/xtensa/xtensa.h (RETURN_IN_MEMORY): Update comment.
 
-2001-06-08  Bernd Schmidt  <bernds@redhat.com>
+2002-06-08  Bernd Schmidt  <bernds@redhat.com>
 
 	* emit-rtl.c (gen_lowpart_common): Don't create paradoxical FLOAT_MODE
 	subregs.
@@ -23409,7 +23409,7 @@ Thu May  2 19:50:04 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	jumps post reload.
 	* toplev.c (rest_of_compilation): Revert Richard's patch.
 
-2001-05-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+2002-05-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa/x-ada (ADA_CFLAGS): Rename to X_ADA_CFLAGS.
 
@@ -30525,7 +30525,7 @@ Wed Feb 20 00:03:25 EST 2002 Alan Matsuoka <alanm@redhat.com>
 	* expmed.c (store_bit_field): Do not store bit fields using SUBREG
 	operations if the field does not start at a mode boundary.
 
-2001-02-20	Joel Sherrill <joel@OARcorp.com>
+2002-02-20	Joel Sherrill <joel@OARcorp.com>
 
 	* config/a29k/rtems.h, config/arm/rtems-elf.h, config/h8300/rtems.h,
 	config/mips/rtems.h: Use new style of -Asystem= rather than -Asystem().
@@ -31034,7 +31034,7 @@ Sat Feb 16 13:39:09 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* function.c (assign_parms): Demote promoted argument passed by
 	transparent reference.
 
-2001-02-14	Joel Sherrill <joel@OARcorp.com>
+2002-02-14	Joel Sherrill <joel@OARcorp.com>
 
 	* config/arm/rtems-elf.h, config/h8300/rtems.h: Removed redundant
 	-Acpu() and -Amachine() to eliminate warnings.
@@ -32688,7 +32688,7 @@ Mon Feb	 4 19:23:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/arm/arm.c (arm_hard_regno_mode_ok): Allow any value in
 	any geenral register.
 
-2001-02-04  Bernd Schmidt  <bernds@redhat.com>s
+2002-02-04  Bernd Schmidt  <bernds@redhat.com>s
 
 	* cfgrtl.c (force_nonfallthru_and_redirect): Don't try to redirect
 	the entry block.
@@ -35986,3 +35986,10 @@ Tue Jan  1 17:12:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(mmix_asm_output_labelref): Revert condition for global symbol.
 	(mmix_print_operand): <case '+'>: Emit P for a likely branch.
 	(mmix_print_operand_punct_valid_p): A '+' is valid.
+
+
+Copyright (C) 2002 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

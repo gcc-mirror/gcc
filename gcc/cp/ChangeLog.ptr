@@ -66,3 +66,10 @@
 	* call.c (build_special_member_call): Likewise.
 	* rtti.c (build_headof): Likewise.
 	(tinfo_base_init): Likewise.
+
+
+Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

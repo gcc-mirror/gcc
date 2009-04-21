@@ -27947,7 +27947,7 @@
 	* gcc.dg/Wattributes-2.c: New.
 	* gcc.dg/Wattributes-3.c: New.
 
-20005-05-24  Janis Johnson  <janis187@us.ibm.com>
+2005-05-24  Janis Johnson  <janis187@us.ibm.com>
 
 	PR tree-optimization/19833
 	* gcc.dg/uninit-4.c: Remove xfail.
@@ -60908,3 +60908,11 @@ rlsruhe.de>
 	correspond to c-torture	1.11.
 
 	* New file.
+
+
+Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

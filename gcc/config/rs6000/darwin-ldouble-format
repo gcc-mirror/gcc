@@ -82,3 +82,10 @@ will be within 2ulp of the correct result.
 
 Division is also performed using a library routine.  Its result will
 be within 3ulp of the correct result.
+
+
+Copyright (C) 2004 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

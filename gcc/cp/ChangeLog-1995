@@ -3789,3 +3789,9 @@ Mon Jan  2 14:42:58 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
 
 	* call.c (build_method_call): Lose another misleading shortcut.
 
+
+Copyright (C) 1995 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

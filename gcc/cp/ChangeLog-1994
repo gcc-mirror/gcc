@@ -5403,3 +5403,10 @@ Mon Jan  3 22:22:32 1994  Gerald Baumgartner  <gb@cygnus.com>
 	* invoke.texi: Added `-fhandle-signatures' in the list of
 	C++ language options.  Added explanation for this option.
 
+
+
+Copyright (C) 1994 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

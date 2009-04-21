@@ -2286,7 +2286,7 @@
 
 	* dump_parse_tree (gfc_show_code_node): Add EXEC_ASSIGN_CALL.
 
-2008-08-04  Steven G. Kargl  <kargl@gcc.gnu.org>
+2007-08-04  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/32969
 	* iresolve.c (gfc_resolve_rrspacing): Convert argument(s) to
@@ -3533,7 +3533,7 @@
 	* trans-array.c (gfc_trans_array_constructor): Treat the case
 	where the ss expression charlen is missing.
 
-22007-05-31  Paul Thomas  <pault@gcc.gnu.org>
+2007-05-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/32103
 	* module.c (mio_symtree_ref): If an equivalence group member
@@ -4485,7 +4485,7 @@
 	* trans-const.c (gfc_conv_mpz_to_tree): Allow integer constants
 	larger than twice the width of a HOST_WIDE_INT.
 
-2006-03-22  Paul Thomas  <pault@gcc.gnu.org>
+2007-03-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/31193
 	* trans-intrinsic.c (gfc_size_in_bytes): Remove function.
@@ -5767,3 +5767,10 @@
 
 	* ChangeLog: Copy to ...
 	* ChangeLog-2006: here.
+
+
+Copyright (C) 2007 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -17,3 +17,9 @@
 	NEGATIVE and then a POINTER_PLUS_EXPR instead
 	of a MINUS_EXPR.
 
+
+Copyright (C) 2007 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

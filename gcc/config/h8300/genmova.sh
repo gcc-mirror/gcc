@@ -2,8 +2,43 @@
 # Generate mova.md, a file containing patterns that can be implemented
 # using the h8sx mova instruction.
 
+# Copyright (C) 2004, 2009 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
 echo ";; -*- buffer-read-only: t -*-"
 echo ";; Generated automatically from genmova.sh"
+echo ";; Copyright (C) 2004, 2009 Free Software Foundation, Inc."
+echo ";;"
+echo ";; This file is part of GCC."
+echo ";;"
+echo ";; GCC is free software; you can redistribute it and/or modify"
+echo ";; it under the terms of the GNU General Public License as published by"
+echo ";; the Free Software Foundation; either version 3, or (at your option)"
+echo ";; any later version."
+echo ";;"
+echo ";; GCC is distributed in the hope that it will be useful,"
+echo ";; but WITHOUT ANY WARRANTY; without even the implied warranty of"
+echo ";; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the"
+echo ";; GNU General Public License for more details."
+echo ";;"
+echo ";; You should have received a copy of the GNU General Public License"
+echo ";; along with GCC; see the file COPYING3.  If not see"
+echo ";; <http://www.gnu.org/licenses/>."
 
 # Loop over modes for the source operand (the index).  Only 8-bit and
 # 16-bit indices are allowed.

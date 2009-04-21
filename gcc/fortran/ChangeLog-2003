@@ -2337,3 +2337,10 @@
 	(Many): Set se.want_pointer before calling g95_conv_array_parameter.
 	* trans-intrinsic.c: Sync with scalarizer changes.
 	* trans-io.c: Ditto.
+
+
+Copyright (C) 2003 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

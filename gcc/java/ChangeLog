@@ -1,3 +1,8 @@
+2009-04-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* ChangeLog, ChangeLog.ptr, ChangeLog.tree-ssa: Add copyright and
+	license notices.
+
 2009-04-18  Ian Lance Taylor  <iant@google.com>
 
 	* verify-impl.c (verify_instructions_0): Add cast to enum type.
@@ -21657,3 +21662,11 @@ Tue Mar  9 11:52:08 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 1996-10-24  Per Bothner  <bothner@deneb.cygnus.com>
 
 	New directory.
+
+
+Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
+2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -3893,3 +3893,9 @@
 	* decl.c (cp_missing_noreturn_ok_p): New.
 	(init_decl_processing): Set lang_missing_noreturn_ok_p.
 
+
+Copyright (C) 2001 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

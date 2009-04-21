@@ -1,3 +1,98 @@
+2009-04-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* ABOUT-GCC-NLS, ChangeLog, ChangeLog-1997, ChangeLog-1998,
+	ChangeLog-1999, ChangeLog-2000, ChangeLog-2001, ChangeLog-2002,
+	ChangeLog-2003, ChangeLog-2004, ChangeLog-2005, ChangeLog-2006,
+	ChangeLog-2007, ChangeLog-2008, ChangeLog.dataflow, ChangeLog.lib,
+	ChangeLog.ptr, ChangeLog.tree-ssa, ChangeLog.tuples, FSFChangeLog,
+	FSFChangeLog.10, FSFChangeLog.11, LANGUAGES, ONEWS, acinclude.m4,
+	config/alpha/gnu.h, config/alpha/libgcc-alpha-ldbl.ver,
+	config/alpha/t-osf4, config/alpha/t-vms, config/alpha/va_list.h,
+	config/alpha/x-vms, config/arc/t-arc,
+	config/arm/README-interworking, config/arm/arm-c.c,
+	config/arm/gentune.sh, config/arm/libgcc-bpabi.ver,
+	config/arm/t-arm, config/arm/t-arm-elf, config/arm/t-arm-softfp,
+	config/arm/t-bpabi, config/arm/t-linux, config/arm/t-linux-eabi,
+	config/arm/t-netbsd, config/arm/t-pe, config/arm/t-strongarm-elf,
+	config/arm/t-symbian, config/arm/t-vxworks, config/arm/t-wince-pe,
+	config/avr/t-avr, config/bfin/elf.h, config/bfin/libgcc-bfin.ver,
+	config/bfin/linux.h, config/bfin/t-bfin, config/bfin/t-bfin-elf,
+	config/bfin/t-bfin-linux, config/bfin/t-bfin-uclinux,
+	config/bfin/uclinux.h, config/cris/mulsi3.asm, config/cris/t-cris,
+	config/cris/t-elfmulti, config/crx/t-crx,
+	config/darwin-ppc-ldouble-patch.def, config/darwin-sections.def,
+	config/divmod.c, config/fr30/t-fr30, config/frv/libgcc-frv.ver,
+	config/frv/t-frv, config/frv/t-linux, config/h8300/genmova.sh,
+	config/h8300/t-h8300, config/i386/athlon.md,
+	config/i386/darwin-libgcc.10.4.ver,
+	config/i386/darwin-libgcc.10.5.ver, config/i386/libgcc-glibc.ver,
+	config/i386/mach.h, config/i386/netbsd.h, config/i386/t-crtpc,
+	config/i386/t-cygming, config/i386/t-cygwin, config/i386/t-i386,
+	config/i386/t-linux64, config/i386/t-nwld,
+	config/i386/t-rtems-i386, config/i386/t-sol2-10,
+	config/i386/x-mingw32, config/ia64/div.md, config/ia64/elf.h,
+	config/ia64/ia64.opt, config/ia64/libgcc-glibc.ver,
+	config/ia64/libgcc-ia64.ver, config/ia64/linux.h,
+	config/ia64/sysv4.h, config/ia64/t-hpux, config/ia64/t-ia64,
+	config/iq2000/abi, config/iq2000/lib2extra-funcs.c,
+	config/iq2000/t-iq2000, config/libgcc-glibc.ver,
+	config/m32r/libgcc-glibc.ver, config/m32r/t-linux,
+	config/m32r/t-m32r, config/m68hc11/t-m68hc11,
+	config/m68k/t-floatlib, config/m68k/t-linux, config/m68k/t-mlibs,
+	config/m68k/t-uclinux, config/mcore/t-mcore,
+	config/mcore/t-mcore-pe, config/mips/20kc.md, config/mips/4130.md,
+	config/mips/5400.md, config/mips/5500.md, config/mips/crti.asm,
+	config/mips/crtn.asm, config/mips/irix-crti.asm,
+	config/mips/irix-crtn.asm, config/mips/libgcc-mips16.ver,
+	config/mips/mips-dsp.md, config/mips/mips-dspr2.md,
+	config/mips/mips-fixed.md, config/mips/sb1.md,
+	config/mips/sr71k.md, config/mips/t-elf, config/mips/t-gofast,
+	config/mips/t-iris6, config/mips/t-isa3264,
+	config/mips/t-libgcc-mips16, config/mips/t-linux64,
+	config/mips/t-mips, config/mips/t-r3900, config/mips/t-rtems,
+	config/mips/t-sb1, config/mips/t-sde, config/mips/t-sdemtk,
+	config/mips/t-slibgcc-irix, config/mips/t-sr71k, config/mips/t-st,
+	config/mips/t-vr, config/mips/t-vxworks, config/mmix/t-mmix,
+	config/mn10300/t-linux, config/mn10300/t-mn10300,
+	config/pa/pa32-regs.h, config/pa/t-hpux-shlib, config/pa/t-linux,
+	config/pa/t-linux64, config/pa/t-pa64, config/pdp11/t-pdp11,
+	config/picochip/libgccExtras/clzsi2.asm,
+	config/picochip/t-picochip, config/rs6000/darwin-ldouble-format,
+	config/rs6000/darwin-libgcc.10.4.ver,
+	config/rs6000/darwin-libgcc.10.5.ver,
+	config/rs6000/libgcc-ppc-glibc.ver, config/rs6000/ppc-asm.h,
+	config/rs6000/t-aix43, config/rs6000/t-aix52,
+	config/rs6000/t-darwin, config/rs6000/t-fprules,
+	config/rs6000/t-fprules-fpbit, config/rs6000/t-linux64,
+	config/rs6000/t-lynx, config/rs6000/t-netbsd,
+	config/rs6000/t-ppccomm, config/rs6000/t-ppcendian,
+	config/rs6000/t-ppcgas, config/rs6000/t-rs6000,
+	config/rs6000/t-rtems, config/rs6000/t-spe,
+	config/rs6000/t-vxworks, config/s390/libgcc-glibc.ver,
+	config/score/t-score-elf, config/sh/divcost-analysis,
+	config/sh/libgcc-glibc.ver, config/sh/t-netbsd, config/sh/t-sh,
+	config/sh/t-sh64, config/sh/t-superh, config/sh/t-symbian,
+	config/sparc/libgcc-sparc-glibc.ver, config/sparc/sol2-bi.h,
+	config/sparc/sol2-gas.h, config/sparc/sol2-gld-bi.h,
+	config/sparc/t-elf, config/sparc/t-linux64, config/sparc/t-sol2,
+	config/stormy16/stormy-abi, config/stormy16/t-stormy16,
+	config/t-darwin, config/t-libunwind, config/t-libunwind-elf,
+	config/t-linux, config/t-lynx, config/t-slibgcc-elf-ver,
+	config/t-slibgcc-sld, config/t-sol2, config/t-vxworks,
+	config/udivmod.c, config/udivmodsi4.c, config/v850/t-v850,
+	config/v850/t-v850e, config/xtensa/t-xtensa, diagnostic.def,
+	gdbinit.in, glimits.h, gstab.h, gsyms.h, java/ChangeLog,
+	java/ChangeLog.ptr, java/ChangeLog.tree-ssa, libgcc-std.ver,
+	limitx.h, version.c, xcoff.h: Add copyright and license notices.
+	* config/h8300/genmova.sh: Include copyright and license notices
+	in generated output.
+	* config/h8300/mova.md: Regenerate.
+	* doc/install.texi2html: Include word "Copyright" in copyright
+	notice and use name "Free Software Foundation, Inc.".
+	* ChangeLog, ChangeLog-2000, ChangeLog-2001, ChangeLog-2002,
+	ChangeLog-2003, ChangeLog-2004, ChangeLog-2005, ChangeLog-2006,
+	ChangeLog-2007, ChangeLog-2008: Correct dates.
+
 2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-common.c (c_common_truthvalue_conversion): Use LOCATION to build
@@ -1265,7 +1360,7 @@
 
 	* cgraph.c (dump_cgraph_node): Show memory address of NODE.
 
-2000-04-14  Richard Guenther  <rguenther@suse.de>
+2009-04-14  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_gimple_assign_unary): Adjust vector code
 	verification.
@@ -3640,7 +3735,7 @@
 	c_builtin_function_ext_scope, store_parm_decls_newstyle): Adjust
 	bind callers.
 
-2008-03-30  H.J. Lu  <hongjiu.lu@intel.com>
+2009-03-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/38781
 	* config/i386/i386.c (classify_argument): Check total size of
@@ -5100,12 +5195,12 @@
 	from out of range shift counts.
 	(num_sign_bit_copies1) <case ASHIFTRT, case ASHIFT>: Similarly.
 
-2008-03-13  Catherine Moore  <clm@codesourcery.com>
+2009-03-13  Catherine Moore  <clm@codesourcery.com>
 
 	* gcc/config/i386/x-mingw32 (host-mingw32.o): Replace
 	diagnostic.h with $(DIAGNOSTIC_H).
 
-2008-03-12  Jakub Jelinek  <jakub@redhat.com>
+2009-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39431
 	* config/i386/predicates.md (cmpxchg8b_pic_memory_operand): New
@@ -8042,3 +8137,10 @@
 	* c-tree.h (process_init_element): Adjust prototype.
 	* c-parser.c (c_parser_initelt, c_parser_initval): Adjust
 	process_init_element callers.
+
+
+Copyright (C) 2009 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
