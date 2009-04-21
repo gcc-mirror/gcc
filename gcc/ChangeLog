@@ -1,3 +1,8 @@
+2009-04-21  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/m68k/linux.h (FINALIZE_TRAMPOLINE): Use enum for second
+	argument of emit_library_call.
+
 2009-04-21  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/39829
@@ -361,7 +366,7 @@
 2009-04-20  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39675
-	* tree-vect-loop.c (vect_transform_loop): Remove currently redundant 
+	* tree-vect-loop.c (vect_transform_loop): Remove currently redundant
 	check of the return code of vect_schedule_slp. Check that
 	stmt_vec_info still exists for the statement, before checking its
 	vectorization type.
@@ -888,7 +893,7 @@
 	* ira-int.h (ira_register_move_cost, ira_may_move_in_cost,
 	ira_may_move_out_cost): Add comments about way of their usage.
 	(ira_get_register_move_cost, ira_get_may_move_cost): New functions.
-	
+
 	* ira-conflicts.c (process_regs_for_copy): Use function
 	ira_get_register_move_cost instead of global
 	ira_register_move_cost.
@@ -911,7 +916,7 @@
 	(process_bb_node_for_hard_reg_moves): Use function
 	ira_get_register_move_cost instead of global ira_register_move_cost.
 	(ira_costs): Don't call ira_init_register_move_cost.
-	
+
 2009-04-16  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (verify_gimple_assign_binary):
@@ -1161,7 +1166,7 @@
 	Add/modify dependencies for plugin.o and files including plugin.h.
 	(plugin.o): New.
 	* config.in: Regenerate.
-	
+
 	* opts.c (common_handle_option): Handle OPT_fplugin_ and
 	OPT_fplugin_arg_.
 
@@ -1177,7 +1182,7 @@
 	* plugin.c: New source file.
 	* plugin.h: New internal header file.
 	* passes.c (register_one_dump_file): Make it external.
-	
+
 	* c-parser.c (c_parser_declspecs): Call invoke_plugin_callbacks.
 
 2009-04-14  Diego Novillo  <dnovillo@google.com>
@@ -1237,14 +1242,14 @@
 	* config/rs6000/rs6000-c.c: generate defines if rs6000_xilinx_fpu:
 	_XFPU, _XFPU_SP_LITE, _XFPU_SP_FULL, _XFPU_DP_LITE, _XFPU_DP_FULL
 	* config/rs6000/xilinx.h: New.  Spec for powerpc-xilinx-eabi
-	* config.gcc (powerpc-xilinx-eabi): add xilinx.h to tm_file, 
+	* config.gcc (powerpc-xilinx-eabi): add xilinx.h to tm_file,
 	remove duplicate config
 
 2009-04-13  Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 
 	* ipa-inline.c (cgraph_decide_inlining_of_small_function): Dump
 	file_name:line_number type locator of the call site.
-	
+
 2009-04-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c: Put blank after comma.
@@ -1256,7 +1261,7 @@
 	correctness correctly.
 	(main): Don't write automata if error is found.  Return correct
 	exit code.
-	
+
 	* config/m68k/cf.md (cfv4_ds): Remove.
 	(cfv4_pOEP1, cfv4_sOEP1, cfv4_pOEP2,cfv4_sOEP2, cfv4_pOEP3,
 	cfv4_sOEP3): Assign to cfv4_oep instead of cfv4_ds.
@@ -1272,7 +1277,7 @@
 	* config/rs6000/power5.md (iq_power5, fpq_power5, power5-store,
 	power5-store-update, power5-two, power5-three, power5-lmul,
 	power5-imul, power5-imul3, power5-sdiv, power5-sqrt): Ditto.
-	
+
 2009-04-13  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* except.c (pass_set_nothrow_function_flags): Set name and add
@@ -1870,7 +1875,7 @@
 	* config.gcc (aix tm_file):  Add aix-stdint.h.
 	(aix tm clause use_gcc_stdint):  Set to wrap.
 	* config/rs6000/aix-stdint.h:  New file.
-	
+
 2009-04-08  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/36291
@@ -1935,7 +1940,7 @@
 
 2009-04-08 Bingfeng Mei <bmei@broadcom.com>
 
-	* fold-const.c (const_binop): Combine two VECTOR_CST under operation 
+	* fold-const.c (const_binop): Combine two VECTOR_CST under operation
 	CODE to produce a new one. Add a prototype to use fold_convert_const
 
 2009-04-08  Danny Smith  <dannysmith@users.sourceforge.net>
@@ -2022,7 +2027,7 @@
 
 	* dfp.c: Replace type punning assignments with memcpy throughout.
 	* Makefile.in (dfp.o-warn): Remove.
-	
+
 2009-04-07  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/39634
@@ -2326,7 +2331,7 @@
 	PR rtl-optimization/39631
 
 	Revert:
-	
+
 	2009-03-30  Vladimir Makarov  <vmakarov@redhat.com>
 	* reload.c (push_reload, find_dummy_reload): Use df_get_live_out
 	instead of DF_LR_OUT.
@@ -2905,7 +2910,7 @@
 	(EPILOGUE_USES): Change to a function call.
 	* config/mips/sde.h (MIPS_EPILOGUE_TEMP_REGNUM): For interrupt
 	handlers, we use K0 as the temporary register.
-	
+
 	* doc/extend.texi (Function Attributes): Document interrupt,
 	use_shadow_register_set, keep_interrupts_masked,
 	use_debug_exception_return for MIPS attributes.
@@ -2934,7 +2939,7 @@
 	(set_input): Use lbasename instead of duplicate code.
 	(save_temps_prefix): New static for -save-temps=obj.
 	(save_temps_length): Ditto.
-	
+
 	* doc/invoke.texi (-save-temps=obj): Document new variant to
 	-save-temps switch.
 
@@ -2977,11 +2982,11 @@
 	* config/sh/sh.c (sh_dwarf_register_span): New function.
 	(TARGET_DWARF_REGISTER_SPAN): Define.
 	* config/sh/sh-protos.h (sh_dwarf_register_span): Declare.
-	
+
 2009-04-02  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39595
-	* tree-vect-slp.c (vect_build_slp_tree): Check that the size of 
+	* tree-vect-slp.c (vect_build_slp_tree): Check that the size of
 	interleaved loads group is not  greater than the SLP group size.
 
 2009-04-02  Rafael Avila de Espindola  <espindola@google.com>
@@ -3418,7 +3423,7 @@
 
 	* loop-iv.c (replace_single_def_regs, replace_in_expr): New static
 	functions.
-	(simplify_using_assignment, simplify_using_initial_values): Call 
+	(simplify_using_assignment, simplify_using_initial_values): Call
 	replace_in_expr to make replacements.  Call replace_single_def_regs
 	once on the initial version of the expression.
 
@@ -3426,7 +3431,7 @@
 
 	PR target/27237
 	* doc/invoke.texi (ARM Options): Update documentation for -mthumb.
-	
+
 2009-03-31  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/31029
@@ -3554,7 +3559,7 @@
 	* ira-build.c (ira_create_allocno): Use
 	ALLOCNO_LEFT_CONFLICTS_SIZE instead of
 	ALLOCNO_LEFT_CONFLICTS_NUM.
-		
+
 2009-03-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* reload.c (push_reload, find_dummy_reload): Use df_get_live_out
@@ -3675,13 +3680,13 @@
 	* tree-vectorizer.c: Update documentation and included files.
 	(vect_loop_location): Make extern.
 	(rename_use_op): Move to tree-vect-loop-manip.c
-	(rename_variables_in_bb, rename_variables_in_loop, 
-	slpeel_update_phis_for_duplicate_loop, 
+	(rename_variables_in_bb, rename_variables_in_loop,
+	slpeel_update_phis_for_duplicate_loop,
 	slpeel_update_phi_nodes_for_guard1,
 	slpeel_update_phi_nodes_for_guard2, slpeel_make_loop_iterate_ntimes,
 	slpeel_tree_duplicate_loop_to_edge_cfg, slpeel_add_loop_guard,
 	slpeel_can_duplicate_loop_p, slpeel_verify_cfg_after_peeling,
-	set_prologue_iterations, slpeel_tree_peel_loop_to_edge, 
+	set_prologue_iterations, slpeel_tree_peel_loop_to_edge,
 	find_loop_location): Likewise.
 	(new_stmt_vec_info): Move to tree-vect-stmts.c.
 	(init_stmt_vec_info_vec, free_stmt_vec_info_vec, free_stmt_vec_info,
@@ -3689,8 +3694,8 @@
 	supportable_widening_operation, supportable_narrowing_operation):
 	Likewise.
 	(bb_in_loop_p): Move to tree-vect-loop.c.
-	(new_loop_vec_info, destroy_loop_vec_info, 
-	reduction_code_for_scalar_code, report_vect_op, 
+	(new_loop_vec_info, destroy_loop_vec_info,
+	reduction_code_for_scalar_code, report_vect_op,
 	vect_is_simple_reduction, vect_is_simple_iv_evolution): Likewise.
 	(vect_can_force_dr_alignment_p): Move to tree-vect-data-refs.c.
 	(vect_supportable_dr_alignment): Likewise.
@@ -3698,20 +3703,20 @@
 	(vect_loop_location): Declare.
 	Reorganize function declarations according to the new file structure.
 	* tree-vect-loop.c: New file.
-	* tree-vect-analyze.c: Remove. Move functions to tree-vect-data-refs.c, 
+	* tree-vect-analyze.c: Remove. Move functions to tree-vect-data-refs.c,
 	tree-vect-stmts.c, tree-vect-slp.c, tree-vect-loop.c.
 	* tree-vect-data-refs.c: New file.
 	* tree-vect-patterns.c (timevar.h): Don't include.
 	* tree-vect-stmts.c: New file.
-	* tree-vect-transform.c: Remove. Move functions to tree-vect-stmts.c, 
+	* tree-vect-transform.c: Remove. Move functions to tree-vect-stmts.c,
 	tree-vect-slp.c, tree-vect-loop.c.
-	* Makefile.in (OBJS-common): Remove tree-vect-analyze.o and 
-	tree-vect-transform.o. Add tree-vect-data-refs.o, tree-vect-stmts.o, 
+	* Makefile.in (OBJS-common): Remove tree-vect-analyze.o and
+	tree-vect-transform.o. Add tree-vect-data-refs.o, tree-vect-stmts.o,
 	tree-vect-loop.o, tree-vect-loop-manip.o, tree-vect-slp.o.
 	(tree-vect-analyze.o): Remove.
 	(tree-vect-transform.o): Likewise.
 	(tree-vect-data-refs.o): Add rule.
-	(tree-vect-stmts.o, tree-vect-loop.o, tree-vect-loop-manip.o, 
+	(tree-vect-stmts.o, tree-vect-loop.o, tree-vect-loop-manip.o,
 	tree-vect-slp.o): Likewise.
 	(tree-vect-patterns.o): Remove redundant dependencies.
 	(tree-vectorizer.o): Likewise.
@@ -4111,7 +4116,7 @@
 	* c-typeck.c (build_conditional_expr): Emit ObjC warnings
 	by calling objc_compare_types and surpress warnings about
 	incompatible C pointers that are compatible ObjC pointers.
-	
+
 2009-03-29  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* cgraphbuild.c (build_cgraph_edges, rebuild_cgraph_edges): Don't
@@ -4151,7 +4156,7 @@
 
 2009-03-28  Xinliang David Li  <davidxl@google.com>
 
-	* tree-ssa-ccp.c (ccp_finalize): Add dbg_count support. 
+	* tree-ssa-ccp.c (ccp_finalize): Add dbg_count support.
 	(do_dbg_cnt): New function.
 
 2009-03-28  Jan Hubicka  <jh@suse.cz>
@@ -4634,7 +4639,7 @@
 2009-03-27  Xinliang David Li  <davidxl@google.com>
 
 	PR tree-optimization/39548
-	* tree-ssa-copy.c (copy_prop_visit_phi_node): Add copy 
+	* tree-ssa-copy.c (copy_prop_visit_phi_node): Add copy
 	candidate check.
 
 2009-03-27  H.J. Lu  <hongjiu.lu@intel.com>
@@ -4791,7 +4796,7 @@
 
 2009-03-23 Bingfeng Mei  <bmei@broadcom.com>
 
-	* config.gcc (need_64bit_hwint): Make clear that need_64bit_hwint 
+	* config.gcc (need_64bit_hwint): Make clear that need_64bit_hwint
 	should be set true if BITS_PER_WORD of target is bigger than 32
 
 2009-03-22  Hans-Peter Nilsson  <hp@axis.com>
@@ -5516,7 +5521,7 @@
 2009-02-27  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR middle-end/39308
-	* graphite.c (graphite_loop_normal_form): Do not call 
+	* graphite.c (graphite_loop_normal_form): Do not call
 	number_of_iterations_exit from a gcc_assert.
 
 2009-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
@@ -5615,7 +5620,7 @@
 	PR c++/38880
 	* varasm.c (initializer_constant_valid_p) [PLUS_EXPR]: Check
 	narrowing_initializer_constant_valid_p.
-	(narrowing_initializer_constant_valid_p): Don't return 
+	(narrowing_initializer_constant_valid_p): Don't return
 	null_pointer_node for adding a pointer to itself.
 
 2009-02-23  Jan Hubicka  <jh@suse.cz>
@@ -6307,7 +6312,7 @@
 	* c-common.c (handle_tls_model_attribute): Ignore attribute for
 	non-VAR_DECLs without checking DECL_THREAD_LOCAL_P.
 
-2009-02-04  Tobias Grosser  <grosser@fim.uni-passau.de>	
+2009-02-04  Tobias Grosser  <grosser@fim.uni-passau.de>
 
 	* graphite.c (bb_in_sese_p, sese_build_livein_liveouts_use,
 	sese_build_livein_liveouts_bb, sese_build_livein_liveouts,
@@ -6635,7 +6640,7 @@
 	count_spilled_pseudo, find_reg, alter_reg, delete_output_reload):
 	Remove flag_ira.
 	(finish_spills): Ditto.  Remove code for !flag_ira.
-	
+
 2009-01-29  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	PR middle-end/35854
@@ -6648,8 +6653,8 @@
 	"eh-ranges" to "eh_ranges".
 	* lower-subreg.c (pass_lower_subreg): Renamed pass from "subreg"
 	to "subreg1".
-		
-	
+
+
 2009-01-29  Andrey Belevantsev  <abel@ispras.ru>
 	    Alexander Monakov  <amonakov@ispras.ru>
 
@@ -7022,7 +7027,7 @@
 
 2009-01-20  Sebastian Pop  <sebastian.pop@amd.com>
 
-	* common.opt (fgraphite, fgraphite-identity): Add comment for 
+	* common.opt (fgraphite, fgraphite-identity): Add comment for
 	explaining why these options are not documented.
 
 2009-01-20  Sebastian Pop  <sebastian.pop@amd.com>
@@ -7144,7 +7149,7 @@
 2009-01-16  Sebastian Pop  <sebastian.pop@amd.com>
 	    Tobias Grosser  <tobi.grosser@amd.com>
 
-	* graphite.c (add_conditions_to_domain): Add the loops to 
+	* graphite.c (add_conditions_to_domain): Add the loops to
 	the dimension of the iteration domain.  Do copy the domain
 	only when it exists.
 	(build_scop_conditions_1): Do not call add_conditions_to_domain.
@@ -7165,7 +7170,7 @@
 
 	* dce.c (delete_unmarked_insns): Reversed the order that insns are
 	examined before deleting them.
-	
+
 2009-01-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* function.c (aggregate_value_p): Correctly extract the function
@@ -7205,7 +7210,7 @@
 2009-01-15  Kenneth Zadeck  <zadeck@naturalbridge.com>
 
 	* dce.c (find_call_stack_args, delete_unmarked_insns): Fixed comments.
-	
+
 2009-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/38245
@@ -7240,7 +7245,7 @@
 	* graphite.c (get_vdef_before_scop, scop_adjust_vphi): New.
 	(scop_adjust_phis_for_liveouts): Call scop_adjust_vphi.
 	(gloog): Do not call cleanup_tree_cfg.
-	(graphite_transform_loops): Call cleanup_tree_cfg after all 
+	(graphite_transform_loops): Call cleanup_tree_cfg after all
 	scops have been code generated.
 
 2009-01-14  Basile Starynkevitch  <basile@starynkevitch.net>
@@ -7381,7 +7386,7 @@
 2009-01-11  Laurent GUERBY  <laurent@guerby.net>
 
 	* doc/sourcebuild.texi (Source Tree): Move up intl and fixinc.
-	
+
 2009-01-11  Markus Schoepflin  <markus.schoepflin@comsoft.de>
 
 	PR debug/7055
@@ -7504,7 +7509,7 @@
 
 	PR tree-optimization/37194
 	* tree-vect-transform.c (vect_estimate_min_profitable_iters):
-	Don't add the cost of cost model guard in prologue to scalar 
+	Don't add the cost of cost model guard in prologue to scalar
 	outside cost in case of known number of iterations.
 
 2009-01-07  Nathan Froyd  <froydnj@codesourcery.com>
@@ -7703,9 +7708,9 @@
 	* params.def (ira-max-conflict-table-size): New.
 
 	* doc/invoke.texi (ira-max-conflict-table-size): Decribe.
-	
+
 	* ira.h (ira_conflicts_p): New external definition.
-	
+
 	* ira-conflicts.c (build_conflict_bit_table): Do not build too big
 	table.  Report this.  Return result of building.
 	(ira_build_conflicts): Use ira_conflicts_p.  Check result of
@@ -7713,13 +7718,13 @@
 
 	* ira-color.c (fast_allocation): Use num instead of ira_allocnos_num.
 	(ira_color): Use ira_conflicts_p.
-	
+
 	* global.c: Include ira.h.
 	(pseudo_for_reload_consideration_p, build_insn_chain): Use
 	ira_conflicts_p.
 
 	* Makefile.in (global.o): Add ira.h.
-	
+
 	* ira-build.c (mark_all_loops_for_removal,
 	propagate_some_info_from_allocno): New.
 	(remove_unnecessary_allocnos): Call
@@ -7737,7 +7742,7 @@
 	* reload1.c (compute_use_by_pseudos, reload, count_pseudo,
 	count_spilled_pseudo, find_reg, alter_reg, finish_spills,
 	emit_input_reload_insns, delete_output_reload): Use ira_conflicts_p.
-	
+
 2009-01-06  Ben Elliston  <bje@au.ibm.com>
 
 	* gengtype-lex.l (YY_NO_INPUT): Define.
@@ -7927,7 +7932,7 @@
 	* df-problems.c (df_lr_finalize): Add recursive call to resolve lr
 	problem if fast dce is able to remove any instructions.
 	* dce.c (dce_process_block): Fix dump message.
-	
+
 2009-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR 33649
