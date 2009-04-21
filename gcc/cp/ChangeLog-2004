@@ -876,7 +876,7 @@
 	* typeck2.c (store_init_value): Use split_nonconstant_init even
 	for types that require construction.
 
-1004-10-28  Matt Austern  <austern@apple.com>
+2004-10-28  Matt Austern  <austern@apple.com>
 
 	PR c++/17542
 	* cp-tree.h (class_key_or_enum_as_string): Declare.
@@ -902,7 +902,7 @@
 	* decl.c (grokdeclarator): Mark TYPE_DECLs as abstract when they
 	appear in a constructor/destructor that will be cloned.
 
-1004-10-28  Matt Austern  <austern@apple.com>
+2004-10-28  Matt Austern  <austern@apple.com>
 
 	PR c++/14124
 	* decl.c (finish_enum): Handle packed attribute.
@@ -6875,3 +6875,10 @@
 	(cp_parser_namespace_name): Likewise.
 	(cp_parser_class_name): Likewise.
 	(cp_parser_lookup_name_simple): Likewise.
+
+
+Copyright (C) 2004 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

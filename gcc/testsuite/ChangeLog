@@ -1,3 +1,23 @@
+2009-04-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* ChangeLog, ChangeLog-1993-2007, ChangeLog-2008, ChangeLog.ptr,
+	ChangeLog.tree-ssa, README, README.QMTEST, README.compat,
+	README.gcc, g++.dg/README, g++.dg/compat/break/README,
+	g++.dg/gomp/gomp.exp, g++.old-deja/g++.brendan/README,
+	g++.old-deja/g++.oliva/ChangeLog, g++.old-deja/g++.robertl/README,
+	gcc.c-torture/ChangeLog.0,
+	gcc.c-torture/execute/builtins/builtins.exp, gcc.dg/README,
+	gcc.dg/gomp/gomp.exp, gcc.target/frv/frv.exp,
+	gcc.target/i386/math-torture/math-torture.exp,
+	gcc.target/mips/inter/mips16-inter.exp,
+	gcc.target/mips/mips-nonpic/README,
+	gcc.target/x86_64/abi/README.gcc,
+	gcc.target/xstormy16/xstormy16.exp, gcc.test-framework/README,
+	gfortran.dg/g77/README, gfortran.dg/gomp/gomp.exp,
+	gfortran.fortran-torture/ChangeLog.g95: Add copyright and license
+	notices.
+	* ChangeLog-1993-2007, ChangeLog: Correct dates.
+
 2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/debug/dwarf2/short-circuit.c: New test.
@@ -1082,7 +1102,7 @@
 	* gfortran.dg/typebound_proc_11.f03: New test.
 	* gfortran.dg/abstract_type_5.f03: New test.
 
-2008-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
+2009-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
 
 	PR fortran/38507
 	* gfortran.dg/do_4.f: New.
@@ -1541,7 +1561,7 @@
 	PR libobjc/27466
 	* objc/execute/exceptions/handler-1.m. New test.
 
-2008-03-12  Jakub Jelinek  <jakub@redhat.com>
+2009-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39431
 	* gcc.target/i386/pr39431.c: New test.
@@ -3370,3 +3390,10 @@
 
 	PR c/36489
 	* gcc.dg/pr36489.c: New test.
+
+
+Copyright (C) 2009 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

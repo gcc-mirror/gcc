@@ -1,3 +1,7 @@
+2009-04-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* ChangeLog: Add copyright and license notices.
+
 2008-12-05  Sebastian Pop  <sebastian.pop@amd.com>
 
 	PR bootstrap/38262
@@ -181,3 +185,10 @@
 	* objcp-decl.c: Likewise.
 	* objcp-decl.h: Likewise.
 	* objcp-lang.c: Likewise.
+
+
+Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

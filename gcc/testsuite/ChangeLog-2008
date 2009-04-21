@@ -12918,3 +12918,10 @@
 
 	* gcc.target/i386/i386.exp (check_effective_target_sse5): Use __v8hi
 	rather than __v2di type.
+
+
+Copyright (C) 2008 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -97,3 +97,10 @@
 	New testcases.
 	* execute/function_module_1.f90: Fix syntax error.
 	* execute/retarray.f90: Fix another syntax error.
+
+
+Copyright (C) 2003 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

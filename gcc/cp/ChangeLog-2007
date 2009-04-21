@@ -3334,3 +3334,10 @@ o2007-02-06  Mark Mitchell  <mark@codesourcery.com>
 	canonicalized. When reducing a template type parameter, find the
 	canonical reduced type parameter.
 	(any_template_arguments_need_structural_equality_p): New.
+
+
+Copyright (C) 2007 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

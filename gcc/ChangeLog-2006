@@ -12092,7 +12092,7 @@
 	pass_linear_transform, pass_empty_loop, pass_complete_unroll,
 	pass_loop_prefetch and pass_stdarg.
 
-2005-05-29  Bernd Schmidt  <bernd.schmidt@analog.com>
+2006-05-29  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.opt (mfdpic): New option.
 	* config/bfin/t-bfin-elf (EXTRA_PARTS): Add crtbeginS.o and crtendS.o.
@@ -12771,7 +12771,7 @@
 	(perfect_nestify): Remove the test for can_convert_to_perfect_nest.
 	Fix formating.
 
-2005-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
+2006-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	PR bootstrap/22541
 	From Dan Kegel <dank@kegel.com>:
@@ -12796,7 +12796,7 @@
 	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Export.
 	* tree-flow.h (contains_abnormal_ssa_name_p): Declare.
 
-2005-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
+2006-05-17  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	PR middle-end/27620
 	* expr.c (safe_from_p): Handle CONSTRUCTOR again.
@@ -14307,7 +14307,7 @@
 	* config/sparc/sparc.c (emit_and_preserve): Allocate space for the
 	register save area.
 
-2005-04-13  Uros Bizjak  <uros@kss-loka.si>
+2006-04-13  Uros Bizjak  <uros@kss-loka.si>
 
 	PR middle-end/27134
 	* builtins.c (expand_builtin_int_roundingfn): Use expand_normal()
@@ -18918,7 +18918,7 @@
 	* loop-invariant.c: Include except.h.
 	(find_invariant_insn): Ignore insns satisfying can_throw_internal.
 
-2005-02-16  Paul Brook  <paul@codesourcery.com>
+2006-02-16  Paul Brook  <paul@codesourcery.com>
 
 	* reload1.c (emit_reload_insns): Invalidate dead input registers used
 	for reloads.
@@ -23808,3 +23808,10 @@
 	* config/rs6000/sync.md (sync_compare_and_swap{hi,qi}): New.
 	(sync_compare_and_swapqhi_internal): New.
 	* config/rs6000/rs6000-protos.h: Declare.
+
+
+Copyright (C) 2006 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

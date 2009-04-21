@@ -79,3 +79,10 @@ mova 0f,r0
 mov.l @(r0,r1),r0
 jmp @r0
 ; 2 cycles worse than SFUNC_STATIC
+
+
+Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

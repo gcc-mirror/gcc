@@ -14,3 +14,10 @@ Notes for testsuite/gcc.dg.
 3) Remember DOS file name restrictions (8.3).  Sigh.
 
 4) Send bugs, comments, etc. to dje@cygnus.com.
+
+
+Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

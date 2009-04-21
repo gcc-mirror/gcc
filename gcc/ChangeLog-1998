@@ -17614,3 +17614,10 @@ Thu Jan  1 10:49:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10200.md (tstxx, cmpxx): Use "nonimmediate_operand" as predicate
 	for first argument.
+
+
+Copyright (C) 1998 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

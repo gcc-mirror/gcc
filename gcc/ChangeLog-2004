@@ -190,7 +190,7 @@
 	* config/mmix/mmix-protos.h (mmix_asm_output_internal_label):
 	Prototype.
 
-2003-12-29  Richard Henderson  <rth@redhat.com>
+2004-12-29  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sparc.c (TARGET_RELAXED_ORDERING): True.
 
@@ -867,7 +867,7 @@
 	PR 18067
 	* stor-layout.c (variable_size): Force creation of a SAVE_EXPR.
 
-2003-12-19  Steven Bosscher  <stevenb@suse.de>
+2004-12-19  Steven Bosscher  <stevenb@suse.de>
 
 	* config/i386/i386.c (ix86_split_to_parts): Use an array with
 	four elements for decoding a CONST_DOUBLE on 64 bits targets.
@@ -15761,7 +15761,7 @@
 	get_class_reference().
 	(reswords): Add blank line before @@ifobjc section, for clarity.
 
-2002-09-01  Fariborz Jahanian <fjahanian@apple.com>
+2004-09-01  Fariborz Jahanian <fjahanian@apple.com>
 
 	* config/rs6000/darwin.h (ROUND_TYPE_ALIGN): Restrict alignment
 	to Altivec vetors.
@@ -16712,7 +16712,7 @@
 	on "(mem (symbol_ref ..))" rtl.  Look at LO_SUM base regs as well
 	as PLUS base regs.
 
-2005-08-28  Paul Brook  <paul@codesourcery.com>
+2004-08-28  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/symbian.h (SUBTARGET_ASM_FLOAT_SPEC): Default to
 	-mfpu=vfp -march=armv5t
@@ -32140,7 +32140,7 @@
 	in include_prefixes.
 	* system.h: Poison SPACE_AFTER_L_OPTION.
 
-2002-05-23  Roger Sayle  <roger@eyesopen.com>
+2004-05-23  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (non_lvalue): Explicitly list the tree codes that
 	need to be wrapped by NON_LVALUE_EXPR, instead of those that don't.
@@ -47878,3 +47878,10 @@
 	(ix86_expand_vector_init): New.
 	* emmintrin.h (__mm_set_pd, __mm_set_ps): Use vector extensions.
 	* md.texi (vec_set, vec_extract): Document
+
+
+Copyright (C) 2004 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

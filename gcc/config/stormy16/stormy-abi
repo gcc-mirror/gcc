@@ -165,3 +165,10 @@ the values are treated as signed quantities.  'unsigned' is the same,
 except that the values are treated as unsigned quantities.  'either'
 means that overflow is reported for either signed or unsigned
 overflow.
+
+
+Copyright (C) 2001, 2002, 2003, 2005 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

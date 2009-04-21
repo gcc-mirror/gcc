@@ -604,3 +604,10 @@ Mon Nov  8 13:50:49 1993  Jason Merrill  <jason@deneb.cygnus.com>
 Tue Sep  7 20:03:33 1993  Jason Merrill  <jason@deneb.cygnus.com>
 
 	* cp-decl.c: Allow references and template type parameters as well
+
+
+Copyright (C) 1993 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

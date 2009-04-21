@@ -3493,3 +3493,10 @@
 	* parser.c (cp_parser_using_declaration): Skip name-lookup on
 	invalid scope.
 
+
+
+Copyright (C) 2006 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

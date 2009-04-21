@@ -32981,7 +32981,7 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* config/alpha/linux.h (TARGET_C99_FUNCTIONS): New.
 
-2002-10-21  Jan Hubicka  <jh@suse.cz>
+2003-10-21  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (contains_128bit_aligned_vector_p): New function.
 	(ix86_function_arg_boundary): Properly align vector modes.
@@ -37860,3 +37860,10 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/sh/sh.h (REGISTER_TARGET_PRAGMAS): Update.
 	* config/v850/v850.h (REGISTER_TARGET_PRAGMAS): Update.
 	* doc/tm.texi (REGISTER_TARGET_PRAGMAS): Update
+
+
+Copyright (C) 2003 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -38,3 +38,9 @@ union		- handling unions
 visibility	- access control and visibility checking
 warnings	- warning messages
 
+
+Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

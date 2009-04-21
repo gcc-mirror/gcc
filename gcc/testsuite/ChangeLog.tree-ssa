@@ -1202,3 +1202,10 @@
 2002-08-21  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcc.c-torture/execute/20020819-1.c: Add exit(0).
+
+
+Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

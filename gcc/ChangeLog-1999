@@ -21784,3 +21784,10 @@ Sun Jan  3 03:20:38 1999  David Edelsohn  <edelsohn@gnu.org>
 Fri Jan  1 11:48:20 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* i386.md (doubleword shifts): Fix dumb mistakes in previous change.
+
+
+Copyright (C) 1999 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

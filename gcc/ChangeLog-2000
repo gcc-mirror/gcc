@@ -21742,7 +21742,7 @@ Mon Apr 17 14:59:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	the end of the loop.  Use memmove.  Don't read past the end of
 	the buffer.  Remove trailing newlines from error messages.
 
-2004-04-16  Neil Booth  <NeilB@earthling.net>
+2000-04-16  Neil Booth  <NeilB@earthling.net>
 
 	* cpphash.h (SYNTAX_INCLUDE, SYNTAX_ASSERT, directive_handler): new.
 	* cpplib.c: Add new syntax flags to directive table, and
@@ -32122,3 +32122,10 @@ Mon Jan  3 02:54:40 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* expmed.c (emit_store_flag): Prevent losing a pending stack
 	adjust the same way we prevent losing queued increments.
+
+
+Copyright (C) 2000 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

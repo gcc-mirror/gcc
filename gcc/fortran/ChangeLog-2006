@@ -2699,7 +2699,7 @@
 	* parse.c (next_free): Return instead of calling decode_statement
 	upon error.
 
-2005-05-10  Thomas Koenig  <Thomas.Koenig@online.de>
+2006-05-10  Thomas Koenig  <Thomas.Koenig@online.de>
 
 	PR fortran/27470
 	* trans-array.c(gfc_array_allocate):  If ref->next exists
@@ -3141,7 +3141,7 @@
 	* trans-decl.c (gfc_get_fake_result_decl): Re-add setting of
 	GFC_DECL_RESULT flag.
 
-2003-03-11  Roger Sayle  <roger@eyesopen.com>
+2006-03-11  Roger Sayle  <roger@eyesopen.com>
 
 	* dependency.c (gfc_dep_compare_expr) <EXPR_OP>: Allow unary and
 	binary operators to compare equal if their operands are equal.
@@ -4536,3 +4536,10 @@
 	* ChangeLog-2003: here.
 	* ChangeLog-2004: here.
 	* ChangeLog-2005: here.
+
+
+Copyright (C) 2006 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -14484,10 +14484,10 @@ Mon Apr  1 13:45:30 1996  Jeffrey A. Law  <law@cygnus.com>
 	the function vector have a length of two bytes.
 
 See ChangeLog.10 for earlier changes.
-
-Use a consistent time stamp format in ChangeLog entries.
-Not everyone has Emacs 20 yet, so stick with Emacs 19 format for now.
 
-Local Variables:
-add-log-time-format: current-time-string
-End:
+
+Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

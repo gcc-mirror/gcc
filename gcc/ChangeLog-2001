@@ -4556,7 +4556,7 @@ Mon Nov 19 16:57:44 2001  Douglas B. Rupp  <rupp@gnat.com>
 	* gcse.c (cprop_jump): Clear JUMP_LABEL field when we create
 	a nop-jump.
 
-2000-11-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+2001-11-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppmacro.c (_cpp_backup_tokens): Revert previous check-in.
 	Don't fall off the base token run.
@@ -14006,7 +14006,7 @@ Tue Aug 14 14:57:07 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* config.gcc: Use t-slibgcc-elf to build shared libgcc_s on
 	s390*linux.
 
-2000-08-13 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+2001-08-13 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* dwarf2out.c (output_cfa_loc): Fix typo in comment.
 	* gcc.c (init_spec): Fix typo in comment.
@@ -23900,7 +23900,7 @@ Fri May  4 13:10:03 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* tradcpp.c (do_define): Make sure we don't walk past limit.
 
-2000-05-01  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+2001-05-01  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimate_address): Allow any stack
 	offsets if not REG_OK_STRICT.
@@ -32039,7 +32039,7 @@ Fri Jan 12 00:04:00 MET 2001  Jan Hubicka  <jh@suse.cz>
 	the callback.
 	* tradcpp.c (main): Fix typo.
 
-2000-01-11  Mark Elbrecht  <snowball3@bigfoot.com>
+2001-01-11  Mark Elbrecht  <snowball3@bigfoot.com>
 
 	* cppfiles.c (cpp_included, find_include_file, _cpp_execute_include)
 	(read_name_map): Use IS_ABSOLUTE_PATH.
@@ -32524,7 +32524,7 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 	* config/v850/v850.h (ASM_OUTPUT_LABELREF): Undefine, not needed.
 	(USER_LABEL_PREFIX): Redefine.
 
-2000-01-08  Jim Wilson  <wilson@redhat.com>
+2001-01-08  Jim Wilson  <wilson@redhat.com>
 
 	* sched-rgn.c (BITSET_ADD, BITSET_REMOVE, bitset_member): Cast
 	1 to unsigned HOST_WIDE_INT before left shift.
@@ -32894,7 +32894,7 @@ Sat Jan  6 00:09:34 2001  J"orn Rennecke <amylaar@redhat.com>
 	(loop_bivs_check): Use print_simple_rtl.
 	* unroll.c (loop_iterations): Use print_simple_rtl.
 
-2000-01-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+2001-01-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.md (return, return_internal): Modify patterns to prevent regrename
 	mucking with the return pointer.
@@ -33163,7 +33163,7 @@ Fri Jan  5 16:29:49 MET 2001  Jan Hubicka  <jh@suse.cz>
 	(check_dbra_loop): Replace loop_info->has_call test with
 	loop_info->has_nonconst_call.
 
-2000-01-04  Matthew Hiller  <hiller@redhat.com>
+2001-01-04  Matthew Hiller  <hiller@redhat.com>
 
 	* config/sh/sh.h (EPILOGUE_USES): Recognize fpscr as epilogue-used
 	for TARGET_SH3E.
@@ -33289,7 +33289,7 @@ Thu Jan  4 15:54:05 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* mkdeps.h (struct deps): Move to mkdeps.c.
 	(deps_calc_target): Rename deps_add_default_target.
 
-2000-01-03  Richard Henderson  <rth@redhat.com>
+2001-01-03  Richard Henderson  <rth@redhat.com>
 
 	* c-decl.c (grokdeclarator): Give zero-length arrays size zero.
 	Remove dead code.
@@ -33400,7 +33400,7 @@ Wed Jan  3 08:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* combine.c (simplify_shift_const): Even if we're sign-extracting,
 	don't discard an ASHIFTRT if we're shifting in a wider mode.
 
-2000-01-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+2001-01-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* toplev.c (rest_of_compilation): Don't print basic block information
 	when CFG isn't up to date.
@@ -33643,3 +33643,10 @@ Mon Jan  1 07:38:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* loop.h (REG_IV_CLASS): New accessor macro.
 	* loop.c (REG_IV_CLASS): Use it instead of reg_iv_class array.
 	* unroll.c (REG_IV_CLASS): Likewise.
+
+
+Copyright (C) 2001 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

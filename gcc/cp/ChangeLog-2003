@@ -6903,3 +6903,10 @@
 	(CONSTRAINT): Define without conditions.
 	(init_cp_pragma): Use c_register_pragma.
 
+
+
+Copyright (C) 2003 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

@@ -20510,7 +20510,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* tree-ssa-loop-ivopts.c (rewrite_address_base): Don't call
 	update_stmt.
 
-2004-05-03  Andrew Pinski  <pinskia@physics.uc.edu>
+2005-05-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/15618
 	* fold-const.c (fold_widened_comparison): Treat BOOLEAN_TYPE
@@ -20518,7 +20518,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	(fold_binary): Fold "bool_var != 0" to bool_var.
 	Fold "bool_var == 1" to bool_var.
 
-2004-05-03  Richard Henderson  <rth@redhat.com>
+2005-05-03  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/21318
 	* function.c (instantiate_virtual_regs_in_insn): Use the mode
@@ -21692,7 +21692,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* tree-ssa-loop-ivopts.c (find_interesting_uses_address): Do not
 	record address uses if the reference is volatile.
 
-2004-04-27  Paolo Bonzini  <bonzini@gnu.org>
+2005-04-27  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-complex.c (expand_vector_operation): New, extracted from
 	expand_vector_operations_1.
@@ -21858,7 +21858,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* tree-cfg.c (lv_adjust_loop_header_phi): Speed up moving a
 	call to find_edge outside a loop to go through a PHI chain.
 
-2004-04-26  Richard Guenther  <rguenth@gcc.gnu.org>
+2005-04-26  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	PR tree-optimization/17598
 	* fold-const.c (fold_binary): Fold comparisons of addresses
@@ -23716,7 +23716,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* tree-vrp.c (compare_values): Work around a bug in the front
 	end that produces a comparison of mismatched types.
 
-2004-04-14  Richard Henderson  <rth@redhat.com>
+2005-04-14  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.h (enum fetchop_code): Remove.
 	(enum ia64_builtins): Move ...
@@ -23739,7 +23739,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* config/ia64/ia64intrin.h: Define nothing for C; limit #defines
 	to c++.  Remove __sync* declarations.  s/_si/_4/.  s/_di/_8/.
 
-2004-04-14  Richard Henderson  <rth@redhat.com>
+2005-04-14  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (x86_cmpxchg, x86_xadd): New.
 	(ix86_compare_emitted): New.
@@ -23754,7 +23754,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	(UNSPECV_XCHG, UNSPECV_LOCK): New.
 	* config/i386/sync.md: New file.
 
-2004-04-14  Richard Henderson  <rth@redhat.com>
+2005-04-14  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/14311
 	* builtin-types.def (BT_BOOL, BT_VOLATILE_PTR, BT_I1, BT_I2,
@@ -24227,7 +24227,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* config/s390/s390.md ("*set_tp"): Use SET in pattern.
 	("set_tp_64", "set_tp_31"): Adapt expanded pattern.
 
-2004-04-12  Richard Henderson  <rth@redhat.com>
+2005-04-12  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.md (UNSPEC_FIX, UNSPEC_MOVA, UNSPEC_SHUFFLE,
 	UNSPEC_PSHUFLW, UNSPEC_PSHUFHW, UNSPEC_ADDSUB, UNSPEC_HADD,
@@ -25235,7 +25235,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* cgraphunit.c (record_call_1, case FDESC_EXPR): Handle same as
 	ADDR_EXPR.
 
-2004-04-06  Richard Sandiford  <rsandifo@redhat.com>
+2005-04-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* coverage.h (GCOV_TYPE_NODE): Delete.
 	* coverage.c (coverage_counter_alloc, tree_coverage_counter_ref)
@@ -25244,7 +25244,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	(tree_gen_pow2_profiler, tree_gen_one_value_profiler): Likewise.
 	* value-prof.c (tree_divmod_fixed_value_transform): Delete.
 
-2004-04-06  Richard Sandiford  <rsandifo@redhat.com>
+2005-04-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR other/20792
 	* Makefile.in (gcc.pot): Remove options.c dependency.
@@ -25679,7 +25679,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* tree-cfg.c (remove_bb): Check that location isn't BUILTINS_LOCATION
 	before warning.
 
-2004-04-05  Devang Patel  <dpatel@apple.com>
+2005-04-05  Devang Patel  <dpatel@apple.com>
 
 	* config/rs600/altivec.md (altivec_vsr<VI_char>): Rename to ..
 	(lhsr<mode>3): ... new name.
@@ -25688,7 +25688,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* config/rs6000/rs6000.c (builtin_description): Rename shift
 	operations.
 
-2004-04-05  Paolo Bonzini  <bonzini@gnu.org>
+2005-04-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* combine.c (RTL_HOOKS_GEN_LOWPART_NO_EMIT): Use
 	gen_lowpart_for_combine.
@@ -25739,7 +25739,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	from the hard register number, adjust the note reg to refer to the
 	former.
 
-2004-04-05  Richard Sandiford  <rsandifo@redhat.com>
+2005-04-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mn10300/mn10300-protos.h (mn10300_override_options): Declare.
 	* config/mn10300/mn10300.h (target_flags, TARGET_MULT_BUG)
@@ -25915,7 +25915,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* config/frv/frv.md: Include predicates.md.
 	* config/frv/predicates.md: New.
 
-2004-04-04  Richard Sandiford  <rsandifo@redhat.com>
+2005-04-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/19537
 	* Makefile.in (tree-ssa-loop-ivopts.o): Depend on langhooks.h.
@@ -25924,7 +25924,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	from add_standard_iv_candidates and parameterizing it by type size.
 	(add_standard_iv_candidates): Use add_standard_iv_candidates_for_size.
 
-2004-04-04  Richard Sandiford  <rsandifo@redhat.com>
+2005-04-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* system.h (GCOV_SIZE_TYPE): Unposion.
 	* gcov-io.h (GCOV_TYPE_NODE): Delete, replacing with...
@@ -34534,11 +34534,11 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* pa64-hpux.h (MAX_OFILE_ALIGNMENT): Define to 32768.
 	* som.h (MAX_OFILE_ALIGNMENT): Likewise.
 
-2004-01-15  Roger Sayle  <roger@eyesopen.com>
+2005-01-15  Roger Sayle  <roger@eyesopen.com>
 
 	* tree-ssa-dom.c (extract_range_from_cond): Correct condition.
 
-2004-01-15  Roger Sayle  <roger@eyesopen.com>
+2005-01-15  Roger Sayle  <roger@eyesopen.com>
 
 	* harg-reg-set.h (reg_class_names): Prototype global array.
 	* regclass.c (reg_class_names): Declare here and initialize to
@@ -35623,18 +35623,18 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	(optimize_mode_switching): In MODE_ENTRY / MODE_EXIT case, set
 	ENTRY_EXIT_EXTRA to 3.  Use create_pre_exit.
 
-2004-01-05  Richard Earnshaw  <rearnsha@arm.com>
+2005-01-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (TARGET_OPTIONS): Correctly record -mhard-float and
 	-msoft-float in target_float_switch.
 	* arm.c (arm_override_options): Fix processing of target_float_switch.
 
-2004-01-05  Richard Earnshaw  <rearnsha@arm.com>
+2005-01-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/vfp.md (arm_movsi_vfp): Hide VFP register classes from register
 	preferencing.
 
-2004-01-05  Uros Bizjak  <uros@kss-loka.si>
+2005-01-05  Uros Bizjak  <uros@kss-loka.si>
 
 	* doc/invoke.texi (Intel 386 and AMD x86-64 Options):
 	Replace i387 with 'i386 compiler' in -mfpmath=sse option.
@@ -35766,7 +35766,7 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* config/rs6000/darwin-fallback.c: Use 'ucontext_t' rather than
 	'struct ucontext'.
 
-2004-01-03  Steven Bosscher  <stevenb@suse.de>
+2005-01-03  Steven Bosscher  <stevenb@suse.de>
 
 	* passes.c (rest_of_compilation): Don't run regmove if only
 	flag_expensive_optimizations, require flag_regmove instead.
@@ -35906,3 +35906,10 @@ Older entries for 2005 can be found in ChangeLog-2005.
 	* tree-cfg.c (remove_useless_stmts_warn_notreached): Only warn if
 	the source line is greater than 0.
 	(remove_bb): Likewise.
+
+
+Copyright (C) 2005 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
