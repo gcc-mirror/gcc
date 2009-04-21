@@ -1,3 +1,7 @@
+2009-04-21  Release Manager
+
+	* GCC 4.4.0 released.
+
 2009-04-07  Arnaud Patard <apatard@mandriva.com>
 
 	* configure.ac: Fix Linux/MIPS matching rule.
