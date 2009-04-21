@@ -3231,6 +3231,8 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	    ret |= visit_store (stmt, lhs, data);
 	}
       rhs = gimple_assign_rhs1 (stmt);
+      while (handled_component_p (rhs))
+	rhs = TREE_OPERAND (rhs, 0);
       if (visit_addr)
 	{
 	  if (TREE_CODE (rhs) == ADDR_EXPR)
