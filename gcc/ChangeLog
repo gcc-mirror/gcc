@@ -1,3 +1,9 @@
+2009-04-21  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/39829
+	* gimple.c (walk_stmt_load_store_addr_ops): Catch addresses
+	inside VIEW_CONVERT_EXPRs.
+
 2009-04-21  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-switch-conversion.c (build_constructors): Split a long line.
