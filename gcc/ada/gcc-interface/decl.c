@@ -332,13 +332,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
      another compilation unit) public entities, show we are at global level
      for the purpose of computing scopes.  Don't do this for components or
      discriminants since the relevant test is whether or not the record is
-     being defined.  But do this for Imported functions or procedures in
-     all cases.  */
-  if ((!definition && Is_Public (gnat_entity)
-       && !Is_Statically_Allocated (gnat_entity)
-       && kind != E_Discriminant && kind != E_Component)
-      || (Is_Imported (gnat_entity)
-	  && (kind == E_Function || kind == E_Procedure)))
+     being defined.  */
+  if (!definition
+      && Is_Public (gnat_entity)
+      && !Is_Statically_Allocated (gnat_entity)
+      && kind != E_Component
+      && kind != E_Discriminant)
     force_global++, this_global = true;
 
   /* Handle any attributes directly attached to the entity.  */

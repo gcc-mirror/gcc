@@ -1,6 +1,11 @@
+2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/import1.ad[sb]: New test.
+
 2009-04-20  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
-	* objc/execute/exceptions/handler-1.m: For the NeXT runtime, just return 0.
+	* objc/execute/exceptions/handler-1.m: For the NeXT runtime, just
+	return 0.
 
 2009-04-20  Tobias Burnus  <burnus@net-b.de>
 
