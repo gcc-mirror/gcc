@@ -1,5 +1,9 @@
 2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gnat_to_gnu): Do not overwrite location info.
+
+2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (TYPE_RM_SIZE_NUM): Delete.
 	(TYPE_RM_SIZE): Access TYPE_LANG_SLOT_1 directly for integral types.
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Modular_Integer_Type>:

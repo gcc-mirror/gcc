@@ -4114,12 +4114,10 @@ c_common_truthvalue_conversion (location_t location, tree expr)
       tree fixed_zero_node = build_fixed (TREE_TYPE (expr),
 					  FCONST0 (TYPE_MODE
 						   (TREE_TYPE (expr))));
-      return build_binary_op (EXPR_LOCATION (expr),
-			      NE_EXPR, expr, fixed_zero_node, 1);
+      return build_binary_op (location, NE_EXPR, expr, fixed_zero_node, 1);
     }
 
-  return build_binary_op (EXPR_LOCATION (expr),
-			  NE_EXPR, expr, integer_zero_node, 1);
+  return build_binary_op (location, NE_EXPR, expr, integer_zero_node, 1);
 }
 
 static void def_builtin_1  (enum built_in_function fncode,

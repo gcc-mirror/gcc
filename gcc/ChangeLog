@@ -1,3 +1,27 @@
+2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-common.c (c_common_truthvalue_conversion): Use LOCATION to build
+	NE_EXPR operations as well.
+	* c-parser.c (c_parser_condition): Do not set location information on
+	the condition.
+	(c_parser_conditional_expression): Likewise.
+	(c_parser_binary_expression): Set location information on operators.
+	* c-typeck.c (build_unary_op) <TRUTH_NOT_EXPR>: Reset the location if
+	TRUTH_NOT_EXPR has been folded.
+	* fold-const.c (fold_truth_not_expr): Copy location information from
+	the incoming expression to the outgoing one.
+	* gimplify.c (shortcut_cond_r): Add locus parameter.  Pass it to
+	recursive calls on the LHS of the operator but pass that of the
+	operator to recursive calls on the RHS of the operator.  Set it
+	on the COND_EXPR.
+	(shortcut_cond_expr): Set the locus of the operator on the second
+	COND_EXPR and that of the expression on the first in degenerate cases.
+	Pass the locus of the expression to calls to shortcut_cond_r.
+	Set the locus of the 'then' block on the associated jump, if any.
+	(gimplify_boolean_expr): Add locus parameter.  Set it on the COND_EXPR.
+	(gimplify_expr) <TRUTH_ANDIF_EXPR>: Pass the locus of the outer
+	expression to call to gimplify_boolean_expr.
+
 2009-04-21  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config.gcc: Add additional configuration for

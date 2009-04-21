@@ -3641,7 +3641,7 @@ omit_two_operands (tree type, tree result, tree omitted1, tree omitted2)
 tree
 fold_truth_not_expr (tree arg)
 {
-  tree type = TREE_TYPE (arg);
+  tree t, type = TREE_TYPE (arg);
   enum tree_code code = TREE_CODE (arg);
 
   /* If this is a comparison, we can simply invert it, except for
@@ -3656,16 +3656,15 @@ fold_truth_not_expr (tree arg)
 	  && code != ORDERED_EXPR && code != UNORDERED_EXPR
 	  && code != NE_EXPR && code != EQ_EXPR)
 	return NULL_TREE;
-      else
-	{
-	  code = invert_tree_comparison (code,
-					 HONOR_NANS (TYPE_MODE (op_type)));
-	  if (code == ERROR_MARK)
-	    return NULL_TREE;
-	  else
-	    return build2 (code, type,
-			   TREE_OPERAND (arg, 0), TREE_OPERAND (arg, 1));
-	}
+
+      code = invert_tree_comparison (code, HONOR_NANS (TYPE_MODE (op_type)));
+      if (code == ERROR_MARK)
+	return NULL_TREE;
+
+      t = build2 (code, type, TREE_OPERAND (arg, 0), TREE_OPERAND (arg, 1));
+      if (EXPR_HAS_LOCATION (arg))
+	SET_EXPR_LOCATION (t, EXPR_LOCATION (arg));
+      return t;
     }
 
   switch (code)
@@ -3674,14 +3673,16 @@ fold_truth_not_expr (tree arg)
       return constant_boolean_node (integer_zerop (arg), type);
 
     case TRUTH_AND_EXPR:
-      return build2 (TRUTH_OR_EXPR, type,
-		     invert_truthvalue (TREE_OPERAND (arg, 0)),
-		     invert_truthvalue (TREE_OPERAND (arg, 1)));
+      t = build2 (TRUTH_OR_EXPR, type,
+		  invert_truthvalue (TREE_OPERAND (arg, 0)),
+		  invert_truthvalue (TREE_OPERAND (arg, 1)));
+      break;
 
     case TRUTH_OR_EXPR:
-      return build2 (TRUTH_AND_EXPR, type,
-		     invert_truthvalue (TREE_OPERAND (arg, 0)),
-		     invert_truthvalue (TREE_OPERAND (arg, 1)));
+      t = build2 (TRUTH_AND_EXPR, type,
+		  invert_truthvalue (TREE_OPERAND (arg, 0)),
+		  invert_truthvalue (TREE_OPERAND (arg, 1)));
+      break;
 
     case TRUTH_XOR_EXPR:
       /* Here we can invert either operand.  We invert the first operand
@@ -3690,22 +3691,25 @@ fold_truth_not_expr (tree arg)
 	 negation of the second operand.  */
 
       if (TREE_CODE (TREE_OPERAND (arg, 1)) == TRUTH_NOT_EXPR)
-	return build2 (TRUTH_XOR_EXPR, type, TREE_OPERAND (arg, 0),
-		       TREE_OPERAND (TREE_OPERAND (arg, 1), 0));
+	t = build2 (TRUTH_XOR_EXPR, type, TREE_OPERAND (arg, 0),
+		    TREE_OPERAND (TREE_OPERAND (arg, 1), 0));
       else
-	return build2 (TRUTH_XOR_EXPR, type,
-		       invert_truthvalue (TREE_OPERAND (arg, 0)),
-		       TREE_OPERAND (arg, 1));
+	t = build2 (TRUTH_XOR_EXPR, type,
+		    invert_truthvalue (TREE_OPERAND (arg, 0)),
+		    TREE_OPERAND (arg, 1));
+      break;
 
     case TRUTH_ANDIF_EXPR:
-      return build2 (TRUTH_ORIF_EXPR, type,
-		     invert_truthvalue (TREE_OPERAND (arg, 0)),
-		     invert_truthvalue (TREE_OPERAND (arg, 1)));
+      t = build2 (TRUTH_ORIF_EXPR, type,
+		  invert_truthvalue (TREE_OPERAND (arg, 0)),
+		  invert_truthvalue (TREE_OPERAND (arg, 1)));
+      break;
 
     case TRUTH_ORIF_EXPR:
-      return build2 (TRUTH_ANDIF_EXPR, type,
-		     invert_truthvalue (TREE_OPERAND (arg, 0)),
-		     invert_truthvalue (TREE_OPERAND (arg, 1)));
+      t = build2 (TRUTH_ANDIF_EXPR, type,
+		  invert_truthvalue (TREE_OPERAND (arg, 0)),
+		  invert_truthvalue (TREE_OPERAND (arg, 1)));
+      break;
 
     case TRUTH_NOT_EXPR:
       return TREE_OPERAND (arg, 0);
@@ -3717,47 +3721,61 @@ fold_truth_not_expr (tree arg)
 	/* A COND_EXPR may have a throw as one operand, which
 	   then has void type.  Just leave void operands
 	   as they are.  */
-	return build3 (COND_EXPR, type, TREE_OPERAND (arg, 0),
-		       VOID_TYPE_P (TREE_TYPE (arg1))
-		       ? arg1 : invert_truthvalue (arg1),
-		       VOID_TYPE_P (TREE_TYPE (arg2))
-		       ? arg2 : invert_truthvalue (arg2));
+	t = build3 (COND_EXPR, type, TREE_OPERAND (arg, 0),
+		    VOID_TYPE_P (TREE_TYPE (arg1))
+		    ? arg1 : invert_truthvalue (arg1),
+		    VOID_TYPE_P (TREE_TYPE (arg2))
+		    ? arg2 : invert_truthvalue (arg2));
+	break;
       }
 
     case COMPOUND_EXPR:
-      return build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg, 0),
-		     invert_truthvalue (TREE_OPERAND (arg, 1)));
+      t = build2 (COMPOUND_EXPR, type, TREE_OPERAND (arg, 0),
+		  invert_truthvalue (TREE_OPERAND (arg, 1)));
+      break;
 
     case NON_LVALUE_EXPR:
       return invert_truthvalue (TREE_OPERAND (arg, 0));
 
     case NOP_EXPR:
       if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
-	return build1 (TRUTH_NOT_EXPR, type, arg);
+	{
+	  t = build1 (TRUTH_NOT_EXPR, type, arg);
+	  break;
+	}
+
+      /* ... fall through ...  */
 
     case CONVERT_EXPR:
     case FLOAT_EXPR:
-      return build1 (TREE_CODE (arg), type,
-		     invert_truthvalue (TREE_OPERAND (arg, 0)));
+      t = build1 (TREE_CODE (arg), type,
+		  invert_truthvalue (TREE_OPERAND (arg, 0)));
+      break;
 
     case BIT_AND_EXPR:
       if (!integer_onep (TREE_OPERAND (arg, 1)))
-	break;
-      return build2 (EQ_EXPR, type, arg,
-		     build_int_cst (type, 0));
+	return NULL_TREE;
+      t = build2 (EQ_EXPR, type, arg, build_int_cst (type, 0));
+      break;
 
     case SAVE_EXPR:
-      return build1 (TRUTH_NOT_EXPR, type, arg);
+      t = build1 (TRUTH_NOT_EXPR, type, arg);
+      break;
 
     case CLEANUP_POINT_EXPR:
-      return build1 (CLEANUP_POINT_EXPR, type,
-		     invert_truthvalue (TREE_OPERAND (arg, 0)));
+      t = build1 (CLEANUP_POINT_EXPR, type,
+		  invert_truthvalue (TREE_OPERAND (arg, 0)));
+      break;
 
     default:
+      t = NULL_TREE;
       break;
     }
 
-  return NULL_TREE;
+  if (t && EXPR_HAS_LOCATION (arg))
+    SET_EXPR_LOCATION (t, EXPR_LOCATION (arg));
+
+  return t;
 }
 
 /* Return a simplified tree node for the truth-negation of ARG.  This
