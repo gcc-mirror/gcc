@@ -1,5 +1,10 @@
 2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Do not make
+	constant objects covered by 13.3(19) volatile.
+
+2009-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (create_type_decl): Do not pass declarations
 	of dummy fat pointer types to the debug back-end.
 
