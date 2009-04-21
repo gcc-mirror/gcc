@@ -3209,6 +3209,9 @@ build_unary_op (location_t location,
 	}
       arg = c_objc_common_truthvalue_conversion (location, arg);
       ret = invert_truthvalue (arg);
+      /* If the TRUTH_NOT_EXPR has been folded, reset the location.  */
+      if (EXPR_P (ret) && EXPR_HAS_LOCATION (ret))
+	location = EXPR_LOCATION (ret);
       goto return_build_unary_op;
 
     case REALPART_EXPR:

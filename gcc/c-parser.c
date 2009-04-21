@@ -3835,7 +3835,6 @@ c_parser_condition (c_parser *parser)
   cond = c_parser_expression_conv (parser).value;
   cond = c_objc_common_truthvalue_conversion (loc, cond);
   cond = c_fully_fold (cond, false, NULL);
-  protected_set_expr_location (cond, loc);
   if (warn_sequence_point)
     verify_sequence_points (cond);
   return cond;
@@ -4479,7 +4478,6 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
 
   cond_loc = c_parser_peek_token (parser)->location;
   cond = c_parser_binary_expression (parser, after);
-  protected_set_expr_location (cond.value, cond_loc);
 
   if (c_parser_next_token_is_not (parser, CPP_QUERY))
     return cond;
@@ -4651,6 +4649,8 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
     enum prec prec;
     /* The operation on its left.  */
     enum tree_code op;
+    /* The source location of this operation.  */
+    location_t loc;
   } stack[NUM_PRECS];
   int sp;
   /* Location of the binary operator.  */
@@ -4672,13 +4672,14 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
       = default_function_array_conversion (stack[sp - 1].expr);		      \
     stack[sp].expr							      \
       = default_function_array_conversion (stack[sp].expr);		      \
-    stack[sp - 1].expr = parser_build_binary_op (binary_loc,		      \
+    stack[sp - 1].expr = parser_build_binary_op (stack[sp].loc,		      \
 						 stack[sp].op,		      \
 						 stack[sp - 1].expr,	      \
 						 stack[sp].expr);	      \
     sp--;								      \
   } while (0)
   gcc_assert (!after || c_dialect_objc ());
+  stack[0].loc = c_parser_peek_token (parser)->location;
   stack[0].expr = c_parser_cast_expression (parser, after);
   stack[0].prec = PREC_NONE;
   sp = 0;
@@ -4777,20 +4778,21 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
 	  stack[sp].expr
 	    = default_function_array_conversion (stack[sp].expr);
 	  stack[sp].expr.value = c_objc_common_truthvalue_conversion
-	    (binary_loc, default_conversion (stack[sp].expr.value));
+	    (stack[sp].loc, default_conversion (stack[sp].expr.value));
 	  skip_evaluation += stack[sp].expr.value == truthvalue_false_node;
 	  break;
 	case TRUTH_ORIF_EXPR:
 	  stack[sp].expr
 	    = default_function_array_conversion (stack[sp].expr);
 	  stack[sp].expr.value = c_objc_common_truthvalue_conversion
-	    (binary_loc, default_conversion (stack[sp].expr.value));
+	    (stack[sp].loc, default_conversion (stack[sp].expr.value));
 	  skip_evaluation += stack[sp].expr.value == truthvalue_true_node;
 	  break;
 	default:
 	  break;
 	}
       sp++;
+      stack[sp].loc = binary_loc;
       stack[sp].expr = c_parser_cast_expression (parser, NULL);
       stack[sp].prec = oprec;
       stack[sp].op = ocode;

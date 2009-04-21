@@ -5303,7 +5303,8 @@ gnat_to_gnu (Node_Id gnat_node)
   if (gnu_result
       && EXPR_P (gnu_result)
       && TREE_CODE (gnu_result) != NOP_EXPR
-      && !REFERENCE_CLASS_P (gnu_result))
+      && !REFERENCE_CLASS_P (gnu_result)
+      && !EXPR_HAS_LOCATION (gnu_result))
     set_expr_location_from_node (gnu_result, gnat_node);
 
   /* If we're supposed to return something of void_type, it means we have
