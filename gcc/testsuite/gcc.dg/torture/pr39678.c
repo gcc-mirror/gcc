@@ -3,7 +3,7 @@
 /* { dg-options "-Wno-psabi" } */
 
 struct X {
-  char c;
+  signed char c;
   __complex__ float val;
 };
 
