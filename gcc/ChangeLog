@@ -1,3 +1,22 @@
+2009-04-21  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (prepare_cbranch_operands): Use
+	LAST_AND_UNUSED_RTX_CODE instead of CODE_FOR_nothing.
+	(expand_cbranchdi4): Likewise.
+	(from_compare): Add cast to enum type.
+	(expand_cbranchsi4): Use add_reg_note.
+	(output_stack_adjust, push, pop, sh_expand_prologue): Likewise.
+	(sh_insn_length_adjustment): Use sh_cpu_attr instead of sh_cpu.
+	(sh_initialize_trampoline): Change 0 to LCT_NORMAL in function call.
+	(sh_expand_builtin): Change 0 to EXPAND_NORMAL in function call.
+	* config/sh/sh.md (cbranchsi4): Use LAST_AND_UNUSED_RTX_CODE
+	instead of CODE_FOR_nothing.
+	(cbranchdi4): Likewise.  Fix the order of arguments for
+	gen_rtx_fmt_ee.
+	(push_fpscr): Use add_reg_note.
+	(pop_fpscr, movdf_i4+1, reload_outdf__RnFRm+3, reload_outdf__RnFRm+4,
+	reload_outdf__RnFRm+5, fpu_switch+1, fpu_switch+2): Likewise.
+	
 2009-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* ABOUT-GCC-NLS, ChangeLog, ChangeLog-1997, ChangeLog-1998,
