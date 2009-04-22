@@ -1,3 +1,13 @@
+2009-04-22  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline:
+	PR target/39496
+	* config/i386/i386.c (ix86_function_regparm): Don't optimize
+	local functions using regparm calling conventions when not
+	optimizing.
+	(ix86_function_sseregparm): Similarly for sseregparm calling
+	conventions.
+
 2009-04-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
