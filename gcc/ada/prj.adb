@@ -91,7 +91,6 @@ package body Prj is
                       Externally_Built               => False,
                       Config                         => Default_Project_Config,
                       Languages                      => No_Name_List,
-                      First_Referred_By              => No_Project,
                       Name                           => No_Name,
                       Display_Name                   => No_Name,
                       Path                           => No_Path_Information,

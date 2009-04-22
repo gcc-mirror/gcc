@@ -2652,15 +2652,6 @@ package body Prj.Proc is
                      New_Data :=
                        In_Tree.Projects.Table (New_Project);
 
-                     --  If we were the first project to import it,
-                     --  set First_Referred_By to us.
-
-                     if New_Data.First_Referred_By = No_Project then
-                        New_Data.First_Referred_By := Project;
-                        In_Tree.Projects.Table (New_Project) :=
-                          New_Data;
-                     end if;
-
                      --  Add this project to our list of imported projects
 
                      Project_List_Table.Increment_Last
@@ -2862,15 +2853,6 @@ package body Prj.Proc is
 
                      New_Data :=
                        In_Tree.Projects.Table (New_Project);
-
-                     --  If we were the first project to import it, set
-                     --  First_Referred_By to us.
-
-                     if New_Data.First_Referred_By = No_Project then
-                        New_Data.First_Referred_By := Project;
-                        In_Tree.Projects.Table (New_Project) :=
-                          New_Data;
-                     end if;
 
                      --  Add this project to our list of imported projects
 
