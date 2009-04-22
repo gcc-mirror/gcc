@@ -1,3 +1,7 @@
+2009-04-22  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/tree-ssa/ehcleanup-1.C: New testcase.
+
 2009-04-22  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/39623
