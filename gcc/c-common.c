@@ -8167,21 +8167,24 @@ catenate_strings (const char *lhs, const char *rhs_start, int rhs_size)
    TOKEN, which had the associated VALUE.  */
 
 void
-c_parse_error (const char *gmsgid, enum cpp_ttype token, tree value)
+c_parse_error (const char *gmsgid, enum cpp_ttype token_type, 
+	       tree value, unsigned char token_flags)
 {
 #define catenate_messages(M1, M2) catenate_strings ((M1), (M2), sizeof (M2))
 
   char *message = NULL;
 
-  if (token == CPP_EOF)
+  if (token_type == CPP_EOF)
     message = catenate_messages (gmsgid, " at end of input");
-  else if (token == CPP_CHAR || token == CPP_WCHAR || token == CPP_CHAR16
-	   || token == CPP_CHAR32)
+  else if (token_type == CPP_CHAR 
+	   || token_type == CPP_WCHAR 
+	   || token_type == CPP_CHAR16
+	   || token_type == CPP_CHAR32)
     {
       unsigned int val = TREE_INT_CST_LOW (value);
       const char *prefix;
 
-      switch (token)
+      switch (token_type)
 	{
 	default:
 	  prefix = "";
@@ -8206,26 +8209,28 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token, tree value)
       free (message);
       message = NULL;
     }
-  else if (token == CPP_STRING || token == CPP_WSTRING || token == CPP_STRING16
-	   || token == CPP_STRING32)
+  else if (token_type == CPP_STRING 
+	   || token_type == CPP_WSTRING 
+	   || token_type == CPP_STRING16
+	   || token_type == CPP_STRING32)
     message = catenate_messages (gmsgid, " before string constant");
-  else if (token == CPP_NUMBER)
+  else if (token_type == CPP_NUMBER)
     message = catenate_messages (gmsgid, " before numeric constant");
-  else if (token == CPP_NAME)
+  else if (token_type == CPP_NAME)
     {
       message = catenate_messages (gmsgid, " before %qE");
       error (message, value);
       free (message);
       message = NULL;
     }
-  else if (token == CPP_PRAGMA)
+  else if (token_type == CPP_PRAGMA)
     message = catenate_messages (gmsgid, " before %<#pragma%>");
-  else if (token == CPP_PRAGMA_EOL)
+  else if (token_type == CPP_PRAGMA_EOL)
     message = catenate_messages (gmsgid, " before end of line");
-  else if (token < N_TTYPES)
+  else if (token_type < N_TTYPES)
     {
       message = catenate_messages (gmsgid, " before %qs token");
-      error (message, cpp_type2name (token));
+      error (message, cpp_type2name (token_type, token_flags));
       free (message);
       message = NULL;
     }

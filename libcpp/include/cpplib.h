@@ -841,7 +841,7 @@ extern void cpp_output_line (cpp_reader *, FILE *);
 extern unsigned char *cpp_output_line_to_string (cpp_reader *,
 						 const unsigned char *);
 extern void cpp_output_token (const cpp_token *, FILE *);
-extern const char *cpp_type2name (enum cpp_ttype);
+extern const char *cpp_type2name (enum cpp_ttype, unsigned char flags);
 /* Returns the value of an escape sequence, truncated to the correct
    target precision.  PSTR points to the input pointer, which is just
    after the backslash.  LIMIT is how much text we have.  WIDE is true
