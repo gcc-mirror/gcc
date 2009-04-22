@@ -75,8 +75,7 @@ const mstring ifsrc_types[] =
 {
     minit ("UNKNOWN", IFSRC_UNKNOWN),
     minit ("DECL", IFSRC_DECL),
-    minit ("BODY", IFSRC_IFBODY),
-    minit ("USAGE", IFSRC_USAGE)
+    minit ("BODY", IFSRC_IFBODY)
 };
 
 const mstring save_status[] =
@@ -3768,6 +3767,7 @@ gen_shape_param (gfc_formal_arglist **head,
   add_formal_arg (head, tail, formal_arg, param_sym);
 }
 
+
 /* Add a procedure interface to the given symbol (i.e., store a
    reference to the list of formal arguments).  */
 
@@ -3780,6 +3780,7 @@ add_proc_interface (gfc_symbol *sym, ifsrc source,
   sym->attr.if_source = source;
 }
 
+
 /* Copy the formal args from an existing symbol, src, into a new
    symbol, dest.  New formal args are created, and the description of
    each arg is set according to the existing ones.  This function is
@@ -3788,7 +3789,7 @@ add_proc_interface (gfc_symbol *sym, ifsrc source,
    args based on the args of a given named interface.  */
 
 void
-copy_formal_args (gfc_symbol *dest, gfc_symbol *src)
+gfc_copy_formal_args (gfc_symbol *dest, gfc_symbol *src)
 {
   gfc_formal_arglist *head = NULL;
   gfc_formal_arglist *tail = NULL;
@@ -3812,7 +3813,7 @@ copy_formal_args (gfc_symbol *dest, gfc_symbol *src)
       formal_arg->sym->attr = curr_arg->sym->attr;
       formal_arg->sym->ts = curr_arg->sym->ts;
       formal_arg->sym->as = gfc_copy_array_spec (curr_arg->sym->as);
-      copy_formal_args (formal_arg->sym, curr_arg->sym);
+      gfc_copy_formal_args (formal_arg->sym, curr_arg->sym);
 
       /* If this isn't the first arg, set up the next ptr.  For the
         last arg built, the formal_arg->next will never get set to
@@ -3839,8 +3840,9 @@ copy_formal_args (gfc_symbol *dest, gfc_symbol *src)
   gfc_current_ns = parent_ns;
 }
 
+
 void
-copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
+gfc_copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
 {
   gfc_formal_arglist *head = NULL;
   gfc_formal_arglist *tail = NULL;
@@ -3863,9 +3865,6 @@ copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
       /* May need to copy more info for the symbol.  */
       formal_arg->sym->ts = curr_arg->ts;
       formal_arg->sym->attr.optional = curr_arg->optional;
-      /*formal_arg->sym->attr = curr_arg->sym->attr;
-      formal_arg->sym->as = gfc_copy_array_spec (curr_arg->sym->as);
-      copy_formal_args (formal_arg->sym, curr_arg->sym);*/
 
       /* If this isn't the first arg, set up the next ptr.  For the
         last arg built, the formal_arg->next will never get set to
@@ -3891,6 +3890,7 @@ copy_formal_args_intr (gfc_symbol *dest, gfc_intrinsic_sym *src)
   /* Restore the current namespace to what it was on entry.  */
   gfc_current_ns = parent_ns;
 }
+
 
 /* Builds the parameter list for the iso_c_binding procedure
    c_f_pointer or c_f_procpointer.  The old_sym typically refers to a

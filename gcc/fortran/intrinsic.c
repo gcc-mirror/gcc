@@ -1362,7 +1362,7 @@ add_functions (void)
 
   add_sym_2 ("dim", GFC_ISYM_DIM, CLASS_ELEMENTAL, ACTUAL_YES, BT_REAL, dr, GFC_STD_F77,
 	     gfc_check_a_p, gfc_simplify_dim, gfc_resolve_dim,
-	     x, BT_REAL, dr, REQUIRED, y, BT_UNKNOWN, dr, REQUIRED);
+	     x, BT_REAL, dr, REQUIRED, y, BT_REAL, dr, REQUIRED);
 
   add_sym_2 ("idim", GFC_ISYM_DIM, CLASS_ELEMENTAL, ACTUAL_YES, BT_INTEGER, di, GFC_STD_F77,
 	     NULL, gfc_simplify_dim, gfc_resolve_dim,

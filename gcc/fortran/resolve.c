@@ -1141,6 +1141,34 @@ is_illegal_recursion (gfc_symbol* sym, gfc_namespace* context)
 }
 
 
+/* Resolve an intrinsic procedure: Set its function/subroutine attribute,
+   its typespec and formal argument list.  */
+
+static gfc_try
+resolve_intrinsic (gfc_symbol *sym, locus *loc)
+{
+  gfc_intrinsic_sym *isym = gfc_find_function (sym->name);
+  if (isym)
+    {
+      if (!sym->attr.function &&
+	  gfc_add_function (&sym->attr, sym->name, loc) == FAILURE)
+	return FAILURE;
+      sym->ts = isym->ts;
+    }
+  else
+    {
+      isym = gfc_find_subroutine (sym->name);
+      gcc_assert (isym);
+      if (!sym->attr.subroutine &&
+	  gfc_add_subroutine (&sym->attr, sym->name, loc) == FAILURE)
+	return FAILURE;
+    }
+  if (!sym->formal)
+    gfc_copy_formal_args_intr (sym, isym);
+  return SUCCESS;
+}
+
+
 /* Resolve a procedure expression, like passing it to a called procedure or as
    RHS for a procedure pointer assignment.  */
 
@@ -1154,6 +1182,10 @@ resolve_procedure_expression (gfc_expr* expr)
   gcc_assert (expr->symtree);
 
   sym = expr->symtree->n.sym;
+
+  if (sym->attr.intrinsic)
+    resolve_intrinsic (sym, &expr->where);
+
   if (sym->attr.flavor != FL_PROCEDURE
       || (sym->attr.function && sym->result == sym))
     return SUCCESS;
@@ -2318,14 +2350,8 @@ resolve_function (gfc_expr *expr)
     sym = expr->symtree->n.sym;
 
   if (sym && sym->attr.intrinsic
-      && !gfc_find_function (sym->name)
-      && gfc_find_subroutine (sym->name)
-      && sym->attr.function)
-    {
-      gfc_error ("Intrinsic subroutine '%s' used as "
-		  "a function at %L", sym->name, &expr->where);
-      return FAILURE;
-    }
+      && resolve_intrinsic (sym, &expr->where) == FAILURE)
+    return FAILURE;
 
   if (sym && (sym->attr.flavor == FL_VARIABLE || sym->attr.subroutine))
     {
@@ -9193,6 +9219,9 @@ resolve_symbol (gfc_symbol *sym)
 	}
     }
 
+  if (sym->attr.external && sym->ts.type != BT_UNKNOWN && !sym->attr.function)
+    gfc_add_function (&sym->attr, sym->name, &sym->declared_at);
+
   if (sym->attr.procedure && sym->ts.interface
       && sym->attr.if_source != IFSRC_DECL)
     {
@@ -9207,30 +9236,13 @@ resolve_symbol (gfc_symbol *sym)
 	  gfc_symbol *ifc = sym->ts.interface;
 
 	  if (ifc->attr.intrinsic)
-	    {
-	      gfc_intrinsic_sym *isym = gfc_find_function (sym->ts.interface->name);
-	      if (isym)
-		{
-		  sym->attr.function = 1;
-		  sym->ts = isym->ts;
-		  sym->ts.interface = ifc;
-		}
-	      else
-		{
-		  isym = gfc_find_subroutine (sym->ts.interface->name);
-		  gcc_assert (isym);
-		  sym->attr.subroutine = 1;
-		}
-	      copy_formal_args_intr (sym, isym);
-	    }
-	  else
-	    {
-	      sym->ts = ifc->ts;
-	      sym->ts.interface = ifc;
-	      sym->attr.function = ifc->attr.function;
-	      sym->attr.subroutine = ifc->attr.subroutine;
-	      copy_formal_args (sym, ifc);
-	    }
+	    resolve_intrinsic (ifc, &ifc->declared_at);
+
+	  sym->ts = ifc->ts;
+	  sym->ts.interface = ifc;
+	  sym->attr.function = ifc->attr.function;
+	  sym->attr.subroutine = ifc->attr.subroutine;
+	  gfc_copy_formal_args (sym, ifc);
 
 	  sym->attr.allocatable = ifc->attr.allocatable;
 	  sym->attr.pointer = ifc->attr.pointer;

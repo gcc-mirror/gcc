@@ -3146,9 +3146,9 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  gfc_error ("Abstract interface '%s' is invalid "
 		     "in procedure pointer assignment at %L",
 		     rvalue->symtree->name, &rvalue->where);
+	  return FAILURE;
 	}
       if (rvalue->expr_type == EXPR_VARIABLE
-	  && lvalue->symtree->n.sym->attr.if_source != IFSRC_UNKNOWN
 	  && !gfc_compare_interfaces (lvalue->symtree->n.sym,
 				      rvalue->symtree->n.sym, 0))
 	{

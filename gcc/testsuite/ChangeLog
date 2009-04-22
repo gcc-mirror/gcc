@@ -1,3 +1,14 @@
+2009-04-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39735
+	* gfortran.dg/assumed_charlen_function_5.f90: Modified.
+	* gfortran.dg/external_initializer.f90: Modified.
+	* gfortran.dg/interface_26.f90: Modified.
+	* gfortran.dg/intrinsic_subroutine.f90: Modified.
+	* gfortran.dg/proc_ptr_3.f90: Modified.
+	* gfortran.dg/proc_ptr_15.f90: New.
+	* gfortran.dg/proc_ptr_result_1.f90: Modified.
+
 2009-04-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/35711

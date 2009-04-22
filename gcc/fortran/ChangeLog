@@ -1,3 +1,28 @@
+2009-04-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39735
+	* decl.c (add_hidden_procptr_result): Bugfix for procptr results.
+	(match_procedure_decl): Set if_source.
+	* expr.c (gfc_check_pointer_assign): Bugfix: Return after error.
+	And: Check interface also for IFSRC_UNKNOWN (return type may be known).
+	* gfortran.h (typedef enum ifsrc): Remove IFSRC_USAGE,
+	add documentation. Rename copy_formal_args and copy_formal_args_intr.
+	* interface.c (gfc_compare_interfaces): Check for return types,
+	handle IFSRC_UNKNOWN.
+	(compare_intr_interfaces,compare_actual_formal_intr): Obsolete, removed.
+	(gfc_procedure_use): Modified handling of intrinsics.
+	* intrinsic.c (add_functions): Bugfix for "dim".
+	* resolve.c (resolve_intrinsic): New function to resolve intrinsics,
+	which copies the interface from isym to sym.
+	(resolve_procedure_expression,resolve_function): Use new function
+	'resolve_intrinsic'.
+	(resolve_symbol): Add function attribute for externals with return type
+	and use new function 'resolve_intrinsic'.
+	* symbol.c (ifsrc_types): Remove string for IFSRC_USAGE.
+	(copy_formal_args): Renamed to gfc_copy_formal_args.
+	(copy_formal_args_intr): Renamed to gfc_copy_formal_args_intr.
+	* trans-const.c (gfc_conv_const_charlen): Handle cl==NULL.
+
 2009-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* ChangeLog, ChangeLog-2002, ChangeLog-2003, ChangeLog-2004,

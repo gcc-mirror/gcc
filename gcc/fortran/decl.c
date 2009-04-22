@@ -4104,9 +4104,14 @@ add_hidden_procptr_result (gfc_symbol *sym)
     {
       gfc_symtree *stree;
       if (case1)
-        gfc_get_sym_tree ("ppr@", gfc_current_ns, &stree);
+	gfc_get_sym_tree ("ppr@", gfc_current_ns, &stree);
       else if (case2)
-        gfc_get_sym_tree ("ppr@", gfc_current_ns->parent, &stree);
+	{
+	  gfc_symtree *st2;
+	  gfc_get_sym_tree ("ppr@", gfc_current_ns->parent, &stree);
+	  st2 = gfc_new_symtree (&gfc_current_ns->sym_root, "ppr@");
+	  st2->n.sym = stree->n.sym;
+	}
       sym->result = stree->n.sym;
 
       sym->result->attr.proc_pointer = sym->attr.proc_pointer;
@@ -4291,6 +4296,7 @@ got_ts:
 	    }
 	  sym->ts.interface = proc_if;
 	  sym->attr.untyped = 1;
+	  sym->attr.if_source = IFSRC_IFBODY;
 	}
       else if (current_ts.type != BT_UNKNOWN)
 	{
@@ -4300,6 +4306,7 @@ got_ts:
 	  sym->ts.interface->ts = current_ts;
 	  sym->ts.interface->attr.function = 1;
 	  sym->attr.function = sym->ts.interface->attr.function;
+	  sym->attr.if_source = IFSRC_UNKNOWN;
 	}
 
       if (gfc_match (" =>") == MATCH_YES)

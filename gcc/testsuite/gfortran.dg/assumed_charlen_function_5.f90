@@ -12,7 +12,7 @@ end function charrext
 
   character(26), external :: charrext
   interface
-    integer(4) function test(charr, i)
+    integer(4) function test(charr, i)  ! { dg-warning "is obsolescent in fortran 95" }
      character(*), external :: charr
      integer :: i
     end function test
@@ -37,3 +37,4 @@ integer(4) function test(charr, i)  ! { dg-warning "is obsolescent in fortran 95
   print *, charr(i)
   test = 1
 end function test
+
