@@ -1,3 +1,8 @@
+2009-04-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39824
+	* gcc.c-torture/compile/pr39824.c: New testcase.
+
 2009-04-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/14875
