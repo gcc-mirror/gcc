@@ -57,9 +57,9 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  extern "C" void abort(void);
-  extern "C" int atexit(void (*)());
-  extern "C" void exit(int);
+  extern "C" void abort(void) throw () _GLIBC_NORETURN;
+  extern "C" int atexit(void (*)()) throw ();
+  extern "C" void exit(int) throw () _GLIBC_NORETURN;
 
 _GLIBCXX_END_NAMESPACE
 
@@ -160,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   using ::lldiv_t;
 #endif
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
-  extern "C" void (_Exit)(int);
+  extern "C" void (_Exit)(int) throw () _GLIBCXX_NORETURN;
 #endif
 #if !_GLIBCXX_USE_C99_DYNAMIC
   using ::_Exit;
@@ -180,11 +180,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #endif
 
 #if _GLIBCXX_USE_C99_LONG_LONG_CHECK || _GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
-  extern "C" long long int (atoll)(const char *);
+  extern "C" long long int (atoll)(const char *) throw ();
   extern "C" long long int
-    (strtoll)(const char * restrict, char ** restrict, int);
+    (strtoll)(const char * restrict, char ** restrict, int) throw ();
   extern "C" unsigned long long int
-    (strtoull)(const char * restrict, char ** restrict, int);
+    (strtoull)(const char * restrict, char ** restrict, int) throw ();
 #endif
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::atoll;
