@@ -1397,7 +1397,7 @@ aggregate_type_contains_array_p (tree type)
     }
 }
 
-/* Returns a FIELD_DECL node. FIELD_NAME the field name, FIELD_TYPE is its
+/* Return a FIELD_DECL node.  FIELD_NAME the field name, FIELD_TYPE is its
    type, and RECORD_TYPE is the type of the parent.  PACKED is nonzero if
    this field is in a record type with a "pragma pack".  If SIZE is nonzero
    it is the specified size for this field.  If POS is nonzero, it is the bit
@@ -1540,22 +1540,19 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
   return field_decl;
 }
 
-/* Returns a PARM_DECL node. PARAM_NAME is the name of the parameter,
-   PARAM_TYPE is its type.  READONLY is true if the parameter is
-   readonly (either an In parameter or an address of a pass-by-ref
-   parameter). */
+/* Return a PARM_DECL node.  PARAM_NAME is the name of the parameter and
+   PARAM_TYPE is its type.  READONLY is true if the parameter is readonly
+   (either an In parameter or an address of a pass-by-ref parameter).  */
 
 tree
 create_param_decl (tree param_name, tree param_type, bool readonly)
 {
   tree param_decl = build_decl (PARM_DECL, param_name, param_type);
 
-  /* Honor targetm.calls.promote_prototypes(), as not doing so can
-     lead to various ABI violations.  */
-  if (targetm.calls.promote_prototypes (param_type)
-      && (TREE_CODE (param_type) == INTEGER_TYPE
-	  || TREE_CODE (param_type) == ENUMERAL_TYPE
-	  || TREE_CODE (param_type) == BOOLEAN_TYPE)
+  /* Honor TARGET_PROMOTE_PROTOTYPES like the C compiler, as not doing so
+     can lead to various ABI violations.  */
+  if (targetm.calls.promote_prototypes (NULL_TREE)
+      && INTEGRAL_TYPE_P (param_type)
       && TYPE_PRECISION (param_type) < TYPE_PRECISION (integer_type_node))
     {
       /* We have to be careful about biased types here.  Make a subtype
