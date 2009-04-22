@@ -1,5 +1,10 @@
 2009-04-22  Kazu Hirata  <kazu@codesourcery.com>
 
+	* config/arm/arm.c (arm_rtx_costs_1): Use power_of_two_operand
+	where appropriate.
+
+2009-04-22  Kazu Hirata  <kazu@codesourcery.com>
+
 	* config/arm/arm.c (arm_size_rtx_costs): Treat a PLUS with a shift
 	the same as a PLUS without a shift.  Increase the cost of a
 	CONST_INT in MULT.
