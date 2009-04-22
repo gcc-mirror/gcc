@@ -1,3 +1,17 @@
+2009-04-22  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
+
+	* cfghooks.c (tidy_fallthru_edges): Remove find_basic_blocks
+	references from comments.
+	* cfgbuild.c: (count_basic_blocks): Delete.
+	(find_basic_blocks_1): Delete.
+	(find_basic_blocks): Delete.
+	* except.c (finish_eh_generation): Make static.  Move comment from
+	except.h here.  Remove find_basic_blocks references from
+	comments.
+	* except.h (finish_eh_generation): Delete.
+	* basic-block.h (find_basic_blocks): Delete.
+	* config/sh/sh.c (sh_output_mi_thunk): Delete a "#if 0" block.
+
 2009-04-22  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* sdbout.c (sdbout_symbol):  Pass VOIDmode to eliminate_regs.

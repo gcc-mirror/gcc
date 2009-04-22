@@ -2117,7 +2117,10 @@ sjlj_build_landing_pads (void)
   free (lp_info);
 }
 
-void
+/* After initial rtl generation, call back to finish generating
+   exception support code.  */
+
+static void
 finish_eh_generation (void)
 {
   basic_block bb;
@@ -2126,14 +2129,15 @@ finish_eh_generation (void)
   if (cfun->eh->region_tree == NULL)
     return;
 
-  /* The object here is to provide find_basic_blocks with detailed
-     information (via reachable_handlers) on how exception control
-     flows within the function.  In this first pass, we can include
-     type information garnered from ERT_THROW and ERT_ALLOWED_EXCEPTIONS
-     regions, and hope that it will be useful in deleting unreachable
-     handlers.  Subsequently, we will generate landing pads which will
-     connect many of the handlers, and then type information will not
-     be effective.  Still, this is a win over previous implementations.  */
+  /* The object here is to provide detailed information (via
+     reachable_handlers) on how exception control flows within the
+     function for the CFG construction.  In this first pass, we can
+     include type information garnered from ERT_THROW and
+     ERT_ALLOWED_EXCEPTIONS regions, and hope that it will be useful
+     in deleting unreachable handlers.  Subsequently, we will generate
+     landing pads which will connect many of the handlers, and then
+     type information will not be effective.  Still, this is a win
+     over previous implementations.  */
 
   /* These registers are used by the landing pads.  Make sure they
      have been generated.  */

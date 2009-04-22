@@ -19,16 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* find_basic_blocks divides the current function's rtl into basic
-   blocks and constructs the CFG.  The blocks are recorded in the
-   basic_block_info array; the CFG exists in the edge structures
-   referenced by the blocks.
-
-   find_basic_blocks also finds any unreachable loops and deletes them.
-
-   Available functionality:
-     - CFG construction
-	 find_basic_blocks  */
 
 #include "config.h"
 #include "system.h"
@@ -46,8 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "timevar.h"
 
-static int count_basic_blocks (const_rtx);
-static void find_basic_blocks_1 (rtx);
 static void make_edges (basic_block, basic_block, int);
 static void make_label_edge (sbitmap, basic_block, rtx, int);
 static void find_bb_boundaries (basic_block);
@@ -138,45 +126,6 @@ control_flow_insn_p (const_rtx insn)
     }
 }
 
-/* Count the basic blocks of the function.  */
-
-static int
-count_basic_blocks (const_rtx f)
-{
-  int count = NUM_FIXED_BLOCKS;
-  bool saw_insn = false;
-  const_rtx insn;
-
-  for (insn = f; insn; insn = NEXT_INSN (insn))
-    {
-      /* Code labels and barriers causes current basic block to be
-	 terminated at previous real insn.  */
-      if ((LABEL_P (insn) || BARRIER_P (insn))
-	  && saw_insn)
-	count++, saw_insn = false;
-
-      /* Start basic block if needed.  */
-      if (!saw_insn && inside_basic_block_p (insn))
-	saw_insn = true;
-
-      /* Control flow insn causes current basic block to be terminated.  */
-      if (saw_insn && control_flow_insn_p (insn))
-	count++, saw_insn = false;
-    }
-
-  if (saw_insn)
-    count++;
-
-  /* The rest of the compiler works a bit smoother when we don't have to
-     check for the edge case of do-nothing functions with no basic blocks.  */
-  if (count == NUM_FIXED_BLOCKS)
-    {
-      emit_use (const0_rtx);
-      count = NUM_FIXED_BLOCKS + 1;
-    }
-
-  return count;
-}
 
 /* Create an edge between two basic blocks.  FLAGS are auxiliary information
    about the edge that is accumulated between calls.  */
@@ -416,157 +365,6 @@ make_edges (basic_block min, basic_block max, int update_p)
 
   if (edge_cache)
     sbitmap_vector_free (edge_cache);
-}
-
-/* Find all basic blocks of the function whose first insn is F.
-
-   Collect and return a list of labels whose addresses are taken.  This
-   will be used in make_edges for use with computed gotos.  */
-
-static void
-find_basic_blocks_1 (rtx f)
-{
-  rtx insn, next;
-  rtx bb_note = NULL_RTX;
-  rtx head = NULL_RTX;
-  rtx end = NULL_RTX;
-  basic_block prev = ENTRY_BLOCK_PTR;
-
-  /* We process the instructions in a slightly different way than we did
-     previously.  This is so that we see a NOTE_BASIC_BLOCK after we have
-     closed out the previous block, so that it gets attached at the proper
-     place.  Since this form should be equivalent to the previous,
-     count_basic_blocks continues to use the old form as a check.  */
-
-  for (insn = f; insn; insn = next)
-    {
-      enum rtx_code code = GET_CODE (insn);
-
-      next = NEXT_INSN (insn);
-
-      if ((LABEL_P (insn) || BARRIER_P (insn))
-	  && head)
-	{
-	  prev = create_basic_block_structure (head, end, bb_note, prev);
-	  head = end = NULL_RTX;
-	  bb_note = NULL_RTX;
-	}
-
-      if (inside_basic_block_p (insn))
-	{
-	  if (head == NULL_RTX)
-	    head = insn;
-	  end = insn;
-	}
-
-      if (head && control_flow_insn_p (insn))
-	{
-	  prev = create_basic_block_structure (head, end, bb_note, prev);
-	  head = end = NULL_RTX;
-	  bb_note = NULL_RTX;
-	}
-
-      switch (code)
-	{
-	case NOTE:
-	  /* Look for basic block notes with which to keep the
-	     basic_block_info pointers stable.  Unthread the note now;
-	     we'll put it back at the right place in create_basic_block.
-	     Or not at all if we've already found a note in this block.  */
-	  if (NOTE_INSN_BASIC_BLOCK_P (insn))
-	    {
-	      if (bb_note == NULL_RTX)
-		bb_note = insn;
-	      else
-		next = delete_insn (insn);
-	    }
-	  break;
-
-	case CODE_LABEL:
-	case JUMP_INSN:
-	case CALL_INSN:
-	case INSN:
-	case BARRIER:
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-
-  if (head != NULL_RTX)
-    create_basic_block_structure (head, end, bb_note, prev);
-  else if (bb_note)
-    delete_insn (bb_note);
-
-  gcc_assert (last_basic_block == n_basic_blocks);
-
-  clear_aux_for_blocks ();
-}
-
-
-/* Find basic blocks of the current function.
-   F is the first insn of the function.  */
-
-void
-find_basic_blocks (rtx f)
-{
-  basic_block bb;
-
-  timevar_push (TV_CFG);
-
-  /* Flush out existing data.  */
-  if (basic_block_info != NULL)
-    {
-      clear_edges ();
-
-      /* Clear bb->aux on all extant basic blocks.  We'll use this as a
-	 tag for reuse during create_basic_block, just in case some pass
-	 copies around basic block notes improperly.  */
-      FOR_EACH_BB (bb)
-	bb->aux = NULL;
-
-      basic_block_info = NULL;
-    }
-
-  n_basic_blocks = count_basic_blocks (f);
-  last_basic_block = NUM_FIXED_BLOCKS;
-  ENTRY_BLOCK_PTR->next_bb = EXIT_BLOCK_PTR;
-  EXIT_BLOCK_PTR->prev_bb = ENTRY_BLOCK_PTR;
-
-
-  /* Size the basic block table.  The actual structures will be allocated
-     by find_basic_blocks_1, since we want to keep the structure pointers
-     stable across calls to find_basic_blocks.  */
-  /* ??? This whole issue would be much simpler if we called find_basic_blocks
-     exactly once, and thereafter we don't have a single long chain of
-     instructions at all until close to the end of compilation when we
-     actually lay them out.  */
-
-  basic_block_info = VEC_alloc (basic_block, gc, n_basic_blocks);
-  VEC_safe_grow_cleared (basic_block, gc, basic_block_info, n_basic_blocks);
-  SET_BASIC_BLOCK (ENTRY_BLOCK, ENTRY_BLOCK_PTR);
-  SET_BASIC_BLOCK (EXIT_BLOCK, EXIT_BLOCK_PTR);
-
-  find_basic_blocks_1 (f);
-
-  profile_status = PROFILE_ABSENT;
-
-  /* Tell make_edges to examine every block for out-going edges.  */
-  FOR_EACH_BB (bb)
-    SET_STATE (bb, BLOCK_NEW);
-
-  /* Discover the edges of our cfg.  */
-  make_edges (ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR->prev_bb, 0);
-
-  /* Do very simple cleanup now, for the benefit of code that runs between
-     here and cleanup_cfg, e.g. thread_prologue_and_epilogue_insns.  */
-  tidy_fallthru_edges ();
-
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
-  timevar_pop (TV_CFG);
 }
 
 static void

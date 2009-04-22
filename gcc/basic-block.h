@@ -896,7 +896,6 @@ extern bool purge_dead_edges (basic_block);
 /* In cfgbuild.c.  */
 extern void find_many_sub_basic_blocks (sbitmap);
 extern void rtl_make_eh_edge (sbitmap, basic_block, rtx);
-extern void find_basic_blocks (rtx);
 
 /* In cfgcleanup.c.  */
 extern bool cleanup_cfg (int);
