@@ -1,3 +1,9 @@
+2009-04-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C/31499
+	* gcc.dg/vector-init-1.c: New testcase.
+	* gcc.dg/vector-init-2.c: New testcase.
+
 2009-04-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/enum2.adb: New test.

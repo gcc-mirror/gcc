@@ -1,3 +1,11 @@
+2009-04-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR C/31499
+	* c-typeck.c (process_init_element): Treat VECTOR_TYPE like ARRAY_TYPE
+	and RECORD_TYPE/UNION_TYPE.  When outputing the actual element and the
+	value is a VECTOR_CST, the element type is the element type of the
+	vector.
+
 2009-04-22  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.h: Update GTY annotations to new syntax.
