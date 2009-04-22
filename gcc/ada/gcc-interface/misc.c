@@ -72,14 +72,7 @@
 #include "opts.h"
 #include "options.h"
 
-extern FILE *asm_out_file;
-
-/* The largest alignment, in bits, that is needed for using the widest
-   move instruction.  */
-unsigned int largest_move_alignment;
-
 static bool gnat_init			(void);
-static void gnat_finish_incomplete_decl	(tree);
 static unsigned int gnat_init_options	(unsigned int, const char **);
 static int gnat_handle_option		(size_t, const char *, int);
 static bool gnat_post_options		(const char **);
@@ -118,8 +111,6 @@ static tree gnat_type_max_size		(const_tree);
 #define LANG_HOOKS_PUSHDECL		gnat_return_tree
 #undef  LANG_HOOKS_WRITE_GLOBALS
 #define LANG_HOOKS_WRITE_GLOBALS	gnat_write_global_declarations
-#undef  LANG_HOOKS_FINISH_INCOMPLETE_DECL
-#define LANG_HOOKS_FINISH_INCOMPLETE_DECL gnat_finish_incomplete_decl
 #undef  LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET	gnat_get_alias_set
 #undef  LANG_HOOKS_MARK_ADDRESSABLE
@@ -153,18 +144,14 @@ const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
    are incompatible with regular GDB versions, so we must make sure to only
    produce them on explicit request.  This is eventually reflected into the
    use_gnu_debug_info_extensions common flag for later processing.  */
-
 static int gnat_dwarf_extensions = 0;
 
-/* Command-line argc and argv.
-   These variables are global, since they are imported and used in
-   back_end.adb  */
-
+/* Command-line argc and argv.  These variables are global
+   since they are imported in back_end.adb.  */
 unsigned int save_argc;
 const char **save_argv;
 
-/* gnat standard argc argv */
-
+/* GNAT argc and argv.  */
 extern int gnat_argc;
 extern char **gnat_argv;
 
@@ -202,8 +189,8 @@ gnat_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 
 /* Decode all the language specific options that cannot be decoded by GCC.
    The option decoding phase of GCC calls this routine on the flags that
-   it cannot decode.  This routine returns the number of consecutive arguments
-   from ARGV that it successfully decoded; 0 indicates failure.  */
+   it cannot decode.  Return the number of consecutive arguments from ARGV
+   that have been successfully decoded or 0 on failure.  */
 
 static int
 gnat_handle_option (size_t scode, const char *arg, int value)
@@ -427,34 +414,6 @@ gnat_init (void)
   return true;
 }
 
-/* This function is called indirectly from toplev.c to handle incomplete
-   declarations, i.e. VAR_DECL nodes whose DECL_SIZE is zero.  To be precise,
-   compile_file in toplev.c makes an indirect call through the function pointer
-   incomplete_decl_finalize_hook which is initialized to this routine in
-   init_decl_processing.  */
-
-static void
-gnat_finish_incomplete_decl (tree dont_care ATTRIBUTE_UNUSED)
-{
-  gcc_unreachable ();
-}
-
-/* Compute the alignment of the largest mode that can be used for copying
-   objects.  */
-
-void
-gnat_compute_largest_alignment (void)
-{
-  enum machine_mode mode;
-
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    if (optab_handler (mov_optab, mode)->insn_code != CODE_FOR_nothing)
-      largest_move_alignment = MIN (BIGGEST_ALIGNMENT,
-				    MAX (largest_move_alignment,
-					 GET_MODE_ALIGNMENT (mode)));
-}
-
 /* If we are using the GCC mechanism to process exception handling, we
    have to register the personality routine for Ada and to initialize
    various language dependent hooks.  */
@@ -506,7 +465,7 @@ gnat_init_gcc_eh (void)
 #endif
 }
 
-/* Language hooks, first one to print language-specific items in a DECL.  */
+/* Print language-specific items in declaration NODE.  */
 
 static void
 gnat_print_decl (FILE *file, tree node, int indent)
@@ -533,6 +492,8 @@ gnat_print_decl (FILE *file, tree node, int indent)
     }
 }
 
+/* Print language-specific items in type NODE.  */
+
 static void
 gnat_print_type (FILE *file, tree node, int indent)
 {
@@ -540,11 +501,6 @@ gnat_print_type (FILE *file, tree node, int indent)
     {
     case FUNCTION_TYPE:
       print_node (file, "ci_co_list", TYPE_CI_CO_LIST (node), indent + 4);
-      break;
-
-    case ENUMERAL_TYPE:
-    case BOOLEAN_TYPE:
-      print_node (file, "RM size", TYPE_RM_SIZE (node), indent + 4);
       break;
 
     case INTEGER_TYPE:
@@ -558,6 +514,10 @@ gnat_print_type (FILE *file, tree node, int indent)
       else
 	print_node (file, "index type", TYPE_INDEX_TYPE (node), indent + 4);
 
+      /* ... fall through ... */
+
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
       print_node (file, "RM size", TYPE_RM_SIZE (node), indent + 4);
       break;
 
@@ -583,13 +543,7 @@ gnat_print_type (FILE *file, tree node, int indent)
     }
 }
 
-static const char *
-gnat_dwarf_name (tree t, int verbosity ATTRIBUTE_UNUSED)
-{
-  gcc_assert (DECL_P (t));
-
-  return (const char *) IDENTIFIER_POINTER (DECL_NAME (t));
-}
+/* Return the name to be printed for DECL.  */
 
 static const char *
 gnat_printable_name (tree decl, int verbosity)
@@ -604,8 +558,17 @@ gnat_printable_name (tree decl, int verbosity)
       Set_Identifier_Casing (ada_name, (char *) DECL_SOURCE_FILE (decl));
       return ggc_strdup (Name_Buffer);
     }
-  else
-    return ada_name;
+
+  return ada_name;
+}
+
+/* Return the name to be used in DWARF debug info for DECL.  */
+
+static const char *
+gnat_dwarf_name (tree decl, int verbosity ATTRIBUTE_UNUSED)
+{
+  gcc_assert (DECL_P (decl));
+  return (const char *) IDENTIFIER_POINTER (DECL_NAME (decl));
 }
 
 /* Do nothing (return the tree node passed).  */
@@ -810,6 +773,8 @@ enumerate_modes (void (*f) (int, int, int, int, int, int, unsigned int))
     }
 }
 
+/* Return the size of the FP mode with precision PREC.  */
+
 int
 fp_prec_to_size (int prec)
 {
@@ -822,6 +787,8 @@ fp_prec_to_size (int prec)
 
   gcc_unreachable ();
 }
+
+/* Return the precision of the FP mode with size SIZE.  */
 
 int
 fp_size_to_prec (int size)

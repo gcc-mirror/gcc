@@ -1,5 +1,41 @@
 2009-04-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/ada-tree.def: Fix formatting nits.
+	(REGION_STMT): Delete.
+	(HANDLER_STMT): Likewise.
+	* gcc-interface/ada-tree.h: Fix formatting nits.
+	(IS_STMT): Delete.
+	(REGION_STMT_BODY): Likewise.
+	(REGION_STMT_HANDLE): Likewise.
+	(REGION_STMT_BLOCK): Likewise.
+	(HANDLER_STMT_ARG): Likewise.
+	(HANDLER_STMT_LIST): Likewise.
+	(HANDLER_STMT_BLOCK): Likewise.
+	* gcc-interface/gigi.h (fp_prec_to_size): Update comment.
+	(fp_size_to_prec): Likewise.
+	(largest_move_alignment): Delete.
+	(gnat_compute_largest_alignment): Likewise.
+	Fix minor nits.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>:
+	Remove redundant code.
+	<E_Array_Type>: Remove redundant assert.
+	<E_Array_Subtype>: Exit early from index computation in pathological
+	cases.
+	Rewrite conditional assignment.
+	(make_type_from_size): Likewise.
+	* gcc-interface/misc.c (largest_move_alignment): Delete.
+	(gnat_finish_incomplete_decl): Likewise.
+	(LANG_HOOKS_FINISH_INCOMPLETE_DECL): Likewise.
+	(asm_out_file): Likewise
+	(gnat_print_type) <INTEGER_TYPE>: Fall through to ENUMERAL_TYPE case.
+	(gnat_dwarf_name): Move around.
+	* gcc-interface/trans.c (Attribute_to_gnu): Fix minor nits.
+	(gigi): Remove call to gnat_compute_largest_alignment.
+	* utils.c (create_field_decl): Rewrite conditional assignment.
+	Fix minor nits.
+
+2009-04-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Compute is_type predicate
 	on entry.  Defer common processing for types.  Reorder and clean up.
 	Compute the equivalent GNAT node and the default size for types only.

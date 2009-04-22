@@ -363,7 +363,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  else
 	    max_esize = LONG_LONG_TYPE_SIZE;
 
-	  esize = MIN (esize, max_esize);
+	  if (esize > max_esize)
+	   esize = max_esize;
 	}
       else
 	esize = LONG_LONG_TYPE_SIZE;
@@ -1578,15 +1579,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       TYPE_BIASED_REPRESENTATION_P (gnu_type)
 	= Has_Biased_Representation (gnat_entity);
 
-     /* This should be an unsigned type if the lower bound is constant
-	 and non-negative or if the base type is unsigned; a signed type
-	 otherwise.    */
-      TYPE_UNSIGNED (gnu_type)
-	= (TYPE_UNSIGNED (TREE_TYPE (gnu_type))
-	   || (TREE_CODE (TYPE_MIN_VALUE (gnu_type)) == INTEGER_CST
-	       && TREE_INT_CST_HIGH (TYPE_MIN_VALUE (gnu_type)) >= 0)
-	   || TYPE_BIASED_REPRESENTATION_P (gnu_type)
-	   || Is_Unsigned_Type (gnat_entity));
+      /* This should be an unsigned type if the base type is unsigned or
+	 if the lower bound is constant and non-negative (as computed by
+	 layout_type) or if the type is biased.  */
+      TYPE_UNSIGNED (gnu_type) = (TYPE_UNSIGNED (TREE_TYPE (gnu_type))
+				  || TYPE_BIASED_REPRESENTATION_P (gnu_type)
+				  || Is_Unsigned_Type (gnat_entity));
 
       layout_type (gnu_type);
 
@@ -1979,14 +1977,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      TYPE_NONALIASED_COMPONENT (tem) = 1;
 	  }
 
-	/* If an alignment is specified, use it if valid.  But ignore it for
-	   types that represent the unpacked base type for packed arrays.  If
-	   the alignment was requested with an explicit user alignment clause,
-	   state so.  */
+	/* If an alignment is specified, use it if valid.  But ignore it
+	   for the original type of packed array types.  If the alignment
+	   was requested with an explicit alignment clause, state so.  */
 	if (No (Packed_Array_Type (gnat_entity))
 	    && Known_Alignment (gnat_entity))
 	  {
-	    gcc_assert (Present (Alignment (gnat_entity)));
 	    TYPE_ALIGN (tem)
 	      = validate_alignment (Alignment (gnat_entity), gnat_entity,
 				    TYPE_ALIGN (tem));
@@ -2124,62 +2120,85 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  && TREE_CODE (gnu_min) == INTEGER_CST
 		  && TREE_CODE (gnu_max) == INTEGER_CST
 		  && TREE_OVERFLOW (gnu_min) && TREE_OVERFLOW (gnu_max)
-		  && (!TREE_OVERFLOW
+		  && !TREE_OVERFLOW
 		      (fold_build2 (MINUS_EXPR, gnu_index_subtype,
 				    TYPE_MAX_VALUE (gnu_index_subtype),
-				    TYPE_MIN_VALUE (gnu_index_subtype)))))
+				    TYPE_MIN_VALUE (gnu_index_subtype))))
 		{
 		  TREE_OVERFLOW (gnu_min) = 0;
 		  TREE_OVERFLOW (gnu_max) = 0;
+		  if (tree_int_cst_lt (gnu_max, gnu_min))
+		    {
+		      gnu_min = size_one_node;
+		      gnu_max = size_zero_node;
+		    }
+		  gnu_high = gnu_max;
 		}
 
 	      /* Similarly, if the range is null, use bounds of 1..0 for
 		 the sizetype bounds.  */
 	      else if ((TYPE_PRECISION (gnu_index_subtype)
 			> TYPE_PRECISION (sizetype)
-		       || TYPE_UNSIGNED (gnu_index_subtype)
-			  != TYPE_UNSIGNED (sizetype))
+		        || TYPE_UNSIGNED (gnu_index_subtype)
+			   != TYPE_UNSIGNED (sizetype))
 		       && TREE_CODE (gnu_min) == INTEGER_CST
 		       && TREE_CODE (gnu_max) == INTEGER_CST
 		       && (TREE_OVERFLOW (gnu_min) || TREE_OVERFLOW (gnu_max))
 		       && tree_int_cst_lt (TYPE_MAX_VALUE (gnu_index_subtype),
 					   TYPE_MIN_VALUE (gnu_index_subtype)))
-		gnu_min = size_one_node, gnu_max = size_zero_node;
-
-	      /* Now compute the size of this bound.  We need to provide
-		 GCC with an upper bound to use but have to deal with the
-		 "superflat" case.  There are three ways to do this.  If we
-		 can prove that the array can never be superflat, we can
-		 just use the high bound of the index subtype.  If we can
-		 prove that the low bound minus one can't overflow, we
-		 can do this as MAX (hb, lb - 1).  Otherwise, we have to use
-		 the expression hb >= lb ? hb : lb - 1.  */
-	      gnu_high = size_binop (MINUS_EXPR, gnu_min, size_one_node);
+		{
+		  gnu_min = size_one_node;
+		  gnu_max = size_zero_node;
+		  gnu_high = gnu_max;
+		}
 
 	      /* See if the base array type is already flat.  If it is, we
-		 are probably compiling an ACVC test, but it will cause the
+		 are probably compiling an ACATS test, but it will cause the
 		 code below to malfunction if we don't handle it specially.  */
-	      if (TREE_CODE (gnu_base_min) == INTEGER_CST
-		  && TREE_CODE (gnu_base_max) == INTEGER_CST
-		  && !TREE_OVERFLOW (gnu_base_min)
-		  && !TREE_OVERFLOW (gnu_base_max)
-		  && tree_int_cst_lt (gnu_base_max, gnu_base_min))
-		gnu_high = size_zero_node, gnu_min = size_one_node;
+	      else if (TREE_CODE (gnu_base_min) == INTEGER_CST
+		       && TREE_CODE (gnu_base_max) == INTEGER_CST
+		       && !TREE_OVERFLOW (gnu_base_min)
+		       && !TREE_OVERFLOW (gnu_base_max)
+		       && tree_int_cst_lt (gnu_base_max, gnu_base_min))
+		{
+		  gnu_min = size_one_node;
+		  gnu_max = size_zero_node;
+		  gnu_high = gnu_max;
+		}
 
-	      /* If gnu_high is now an integer which overflowed, the array
-		 cannot be superflat.  */
-	      else if (TREE_CODE (gnu_high) == INTEGER_CST
-		       && TREE_OVERFLOW (gnu_high))
-		gnu_high = gnu_max;
-	      else if (TYPE_UNSIGNED (gnu_base_subtype)
-		       || TREE_CODE (gnu_high) == INTEGER_CST)
-		gnu_high = size_binop (MAX_EXPR, gnu_max, gnu_high);
 	      else
-		gnu_high
-		  = build_cond_expr
-		    (sizetype, build_binary_op (GE_EXPR, integer_type_node,
-						gnu_max, gnu_min),
-		     gnu_max, gnu_high);
+		{
+		  /* Now compute the size of this bound.  We need to provide
+		     GCC with an upper bound to use but have to deal with the
+		     "superflat" case.  There are three ways to do this.  If
+		     we can prove that the array can never be superflat, we
+		     can just use the high bound of the index subtype.  If we
+		     can prove that the low bound minus one can't overflow,
+		     we can do this as MAX (hb, lb - 1).  Otherwise, we have
+		     to use the expression hb >= lb ? hb : lb - 1.  */
+		  gnu_high = size_binop (MINUS_EXPR, gnu_min, size_one_node);
+
+		  /* If gnu_high is now an integer which overflowed, the array
+		     cannot be superflat.  */
+		  if (TREE_CODE (gnu_high) == INTEGER_CST
+		      && TREE_OVERFLOW (gnu_high))
+		    gnu_high = gnu_max;
+
+		  /* gnu_high cannot overflow if the subtype is unsigned since
+		     sizetype is signed, or if it is now a constant that hasn't
+		     overflowed.  */
+		  else if (TYPE_UNSIGNED (gnu_base_subtype)
+			   || TREE_CODE (gnu_high) == INTEGER_CST)
+		    gnu_high = size_binop (MAX_EXPR, gnu_max, gnu_high);
+
+		  else
+		    gnu_high
+		      = build_cond_expr (sizetype,
+					 build_binary_op (GE_EXPR,
+							  integer_type_node,
+							  gnu_max, gnu_min),
+					 gnu_max, gnu_high);
+		}
 
 	      gnu_index_type[index]
 		= create_index_type (gnu_min, gnu_high, gnu_index_subtype,
@@ -7338,7 +7357,8 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	break;
 
       biased_p |= for_biased;
-      size = MIN (size, LONG_LONG_TYPE_SIZE);
+      if (size > LONG_LONG_TYPE_SIZE)
+	size = LONG_LONG_TYPE_SIZE;
 
       if (TYPE_UNSIGNED (type) || biased_p)
 	new_type = make_unsigned_type (size);
