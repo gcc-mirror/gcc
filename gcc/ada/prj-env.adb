@@ -1221,7 +1221,7 @@ package body Prj.Env is
 
    procedure Create_Mapping_File
      (Project  : Project_Id;
-      Language : Language_Index;
+      Language : Name_Id;
       In_Tree  : Project_Tree_Ref;
       Name     : out Path_Name_Type)
    is
@@ -1330,14 +1330,14 @@ package body Prj.Env is
       for Proj in Present'Range loop
          if Present (Proj) then
             Source := In_Tree.Projects.Table (Proj).First_Source;
-
             while Source /= No_Source loop
                Src_Data := In_Tree.Sources.Table (Source);
 
-               if In_Tree.Sources.Table (Source).Language = Language
-                 and then not Src_Data.Locally_Removed
-                 and then Src_Data.Replaced_By = No_Source
-                 and then Src_Data.Path.Name /= No_Path
+               if In_Tree.Languages_Data.Table
+                 (In_Tree.Sources.Table (Source).Language).Name = Language
+                   and then not Src_Data.Locally_Removed
+                   and then Src_Data.Replaced_By = No_Source
+                   and then Src_Data.Path.Name /= No_Path
                then
                   if Src_Data.Unit /= No_Name then
                      Get_Name_String (Src_Data.Unit);

@@ -1,3 +1,14 @@
+2009-04-22  Vincent Celier  <celier@adacore.com>
+
+	* tempdir.adb (Create_Temp_File): Add a diagnostic in verbose mode when
+	the temporary file cannot be created, indicating the directory when the
+	creation was attempted.
+
+2009-04-22  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-env.adb, prj-env.ads (Create_Mapping_File): we need to compare
+	the language names, not their indices.
+
 2009-04-22  Emmanuel Briot  <briot@adacore.com>
 
 	* prj.ads, prj-nmsc.adb, prj-env.adb, prj-env.ads

@@ -50,12 +50,17 @@ package Prj.Env is
 
    procedure Create_Mapping_File
      (Project  : Project_Id;
-      Language : Language_Index;
+      Language : Name_Id;
       In_Tree  : Project_Tree_Ref;
       Name     : out Path_Name_Type);
    --  Create a temporary mapping file for project Project. For each source or
-   --  template of Language in the of Project, put the mapping of its file
+   --  template of Language in the Project, put the mapping of its file
    --  name and path name in this file.
+   --
+   --  Implementation note: we pass a language name, not a language_index here,
+   --  since the latter would have to match exactly the index of that language
+   --  for the specified project, and that is not information available in
+   --  buildgpr.adb
 
    procedure Set_Mapping_File_Initial_State_To_Empty;
    --  When creating a mapping file, create an empty map. This case occurs
