@@ -42,7 +42,7 @@
 (define_constraint "I"
   "An unsigned 8 bit constant"
   (and (match_code "const_int")
-       (match_test "ival >= 0 && ival <= 255")))
+       (match_test "IN_RANGE (ival, 0, 255)")))
 
 (define_constraint "J"
   "The constant zero"
@@ -52,7 +52,7 @@
 (define_constraint "K"
   "Signed 16-bit integer constant"
   (and (match_code "const_int")
-       (match_test "ival >= -32768 && ival < 32768 ")))
+       (match_test "IN_RANGE (ival, -32768, 32767)")))
 
 (define_constraint "L"
   "A shifted signed 16-bit constant appropriate for LDAH"
@@ -68,12 +68,12 @@
 (define_constraint "N"
   "A complemented unsigned 8-bit constant"
   (and (match_code "const_int")
-       (match_test "~ival >= 0 && ~ival <= 255")))
+       (match_test "IN_RANGE (~ival, 0, 255)")))
 
 (define_constraint "O"
   "A negated unsigned 8-bit constant"
   (and (match_code "const_int")
-       (match_test "-ival >= 0 && -ival <= 255")))
+       (match_test "IN_RANGE (-ival, 0, 255)")))
 
 (define_constraint "P"
   "The constant 1, 2 or 3"
@@ -104,7 +104,7 @@
 (define_constraint "S"
   "An unsigned 6-bit constant"
   (and (match_code "const_int")
-       (match_test "ival >= 0 && ival <= 63")))
+       (match_test "IN_RANGE (ival, 0, 63)")))
 
 (define_constraint "T"
   "@internal A high-part symbol"
