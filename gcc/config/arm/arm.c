@@ -5141,9 +5141,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 
       /* A shift as a part of RSB costs no more than RSB itself.  */
       if (GET_CODE (XEXP (x, 0)) == MULT
-	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-	  && ((INTVAL (XEXP (XEXP (x, 0), 1))
-	       & (INTVAL (XEXP (XEXP (x, 0), 1)) - 1)) == 0))
+	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
 	{
 	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), code, speed);
 	  *total += rtx_cost (XEXP (x, 1), code, speed);
@@ -5151,9 +5149,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	}
 
       if (subcode == MULT
-	  && GET_CODE (XEXP (XEXP (x, 1), 1)) == CONST_INT
-	  && ((INTVAL (XEXP (XEXP (x, 1), 1)) &
-	       (INTVAL (XEXP (XEXP (x, 1), 1)) - 1)) == 0))
+	  && power_of_two_operand (XEXP (XEXP (x, 1), 1), SImode))
 	{
 	  *total += rtx_cost (XEXP (x, 0), code, speed);
 	  *total += rtx_cost (XEXP (XEXP (x, 1), 0), subcode, speed);
@@ -5189,9 +5185,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	 multiplication by a power of two, so that we fall down into
 	 the code below.  */
       if (GET_CODE (XEXP (x, 0)) == MULT
-	  && ! (GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-		&& ((INTVAL (XEXP (XEXP (x, 0), 1)) &
-		     (INTVAL (XEXP (XEXP (x, 0), 1)) - 1)) == 0)))
+	  && !power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
 	{
 	  /* The cost comes from the cost of the multiply.  */
 	  return false;
@@ -5274,9 +5268,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	}
 
       if (subcode == MULT
-	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-	  && ((INTVAL (XEXP (XEXP (x, 0), 1)) &
-	       (INTVAL (XEXP (XEXP (x, 0), 1)) - 1)) == 0))
+	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
 	{
 	  *total += rtx_cost (XEXP (x, 1), code, speed);
 	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, speed);
@@ -5333,9 +5325,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	      || subcode == LSHIFTRT
 	      || subcode == ROTATE || subcode == ROTATERT
 	      || (subcode == MULT
-		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-		  && ((INTVAL (XEXP (XEXP (x, 0), 1)) & 
-		       (INTVAL (XEXP (XEXP (x, 0), 1)) - 1)) == 0)))
+		  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode)))
 	    {
 	      *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, speed);
 	      /* Register shifts cost an extra cycle.  */
@@ -5443,9 +5433,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	}
 
       if (subcode == MULT
-	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-	  && ((INTVAL (XEXP (XEXP (x, 0), 1)) &
-	       (INTVAL (XEXP (XEXP (x, 0), 1)) - 1)) == 0))
+	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
 	{
 	  *total += rtx_cost (XEXP (x, 1), code, speed);
 	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), subcode, speed);
