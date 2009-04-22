@@ -701,7 +701,8 @@ package Prj is
       --  Time stamp of the source file
 
       Object_Project      : Project_Id            := No_Project;
-      --  Project where the object file is
+      --  Project where the object file is. This might be different from
+      --  Project when using extending project files.
 
       Object_Exists       : Boolean               := True;
       --  True if an object file exists
@@ -1202,10 +1203,6 @@ package Prj is
       --------------
       -- Projects --
       --------------
-
-      First_Referred_By : Project_Id := No_Project;
-      --  The project, if any, that was the first to be known as importing or
-      --  extending this project
 
       Mains : String_List_Id := Nil_String;
       --  List of mains specified by attribute Main
