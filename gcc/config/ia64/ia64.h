@@ -1344,13 +1344,6 @@ do {									\
 
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
 
-/* A C statement or compound statement with a conditional `goto LABEL;'
-   executed if memory address X (an RTX) can have different meanings depending
-   on the machine mode of the memory reference it is used for or if the address
-   is valid for some modes but not others.  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)
-
 /* A C expression that is nonzero if X is a legitimate constant for an
    immediate operand on the target machine.  */
 

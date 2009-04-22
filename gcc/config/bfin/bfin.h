@@ -986,23 +986,6 @@ do {					       \
  || GET_CODE (X) == LABEL_REF						\
  || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
 
-/*
-     A C statement or compound statement with a conditional `goto
-     LABEL;' executed if memory address X (an RTX) can have different
-     meanings depending on the machine mode of the memory reference it
-     is used for or if the address is valid for some modes but not
-     others.
-
-     Autoincrement and autodecrement addresses typically have
-     mode-dependent effects because the amount of the increment or
-     decrement is the size of the operand being addressed.  Some
-     machines have other mode-dependent addresses.  Many RISC machines
-     have no mode-dependent addresses.
-
-     You may assume that ADDR is a valid address for the machine.
-*/
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
-
 #define NOTICE_UPDATE_CC(EXPR, INSN) 0
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits

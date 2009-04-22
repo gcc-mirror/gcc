@@ -595,8 +595,6 @@ typedef struct m32c_cumulative_args
 	if (m32c_legitimize_reload_address(&(X),MODE,OPNUM,TYPE,IND_LEVELS)) \
 	  goto WIN;
 
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
-
 #define LEGITIMATE_CONSTANT_P(X) m32c_legitimate_constant_p (X)
 
 /* Condition Code Status */

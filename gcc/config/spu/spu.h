@@ -438,8 +438,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
        }							\
   }
 
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
-
 #define LEGITIMATE_CONSTANT_P(X) spu_legitimate_constant_p(X)
 
 

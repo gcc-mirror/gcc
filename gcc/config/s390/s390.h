@@ -748,9 +748,6 @@ legitimate_address_p.  The constraint letter defined here must not be
 used in insn definitions or inline assemblies.  */
 #define TARGET_MEM_CONSTRAINT 'e'
 
-/* S/390 has no mode dependent addresses.  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)
-
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression that is a
    valid memory address for an instruction.
    The MODE argument is the machine mode for the MEM expression

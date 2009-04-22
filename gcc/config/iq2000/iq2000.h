@@ -612,8 +612,6 @@ typedef struct iq2000_args
     GO_PRINTF ("LEGITIMIZE_ADDRESS could not fix.\n");			\
 }
 
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL) {}
-
 #define LEGITIMATE_CONSTANT_P(X) (1)
 
 

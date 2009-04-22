@@ -418,8 +418,6 @@ struct cumulative_args
 }
 #endif /* REG_OK_STRICT */
 
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)
-
 #define LEGITIMATE_CONSTANT_P(X)  1
 
 /*****************************************************************************/

@@ -755,14 +755,6 @@ extern int may_call_alloca;
 }
 
 
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.
-   On the pdp this is for predec/postinc, and this is now treated
-   generically in recog.c.  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
-
-
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE HImode

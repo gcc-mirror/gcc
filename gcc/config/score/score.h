@@ -784,10 +784,6 @@ typedef struct score_args
       goto WIN;                                  \
   } while (0)
 
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)       {}
-
 #define LEGITIMATE_CONSTANT_P(X)        1
 
 /* Condition Code Status.  */
