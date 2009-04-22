@@ -1,3 +1,14 @@
+2009-04-22  Jan Hubicka  <jh@suse.cz>
+
+	* include/c_std/cstdlib (abort, exit, _Exit): Mark noreturn throw ().
+	(atexit, atoll, stroll, strtoull): Mark throw ()
+	* include/c_std/cstdio (snprintf, vsnprintf, vscanf): Mark throw ().
+	* include/c_std/cwchar (wcstold, wcstoll, wcstoull): Mark throw ().
+	* include/c_global/cstdlib (abort, exit, _Exit): Mark noreturn throw ().
+	(atexit, atoll, stroll, strtoull): Mark throw ()
+	* include/c_global/cstdio (snprintf, vsnprintf, vscanf): Mark throw ().
+	* include/c_wchar/cstdio (snprintf, vsnprintf, vscanf): Mark throw ().
+
 2009-04-21  Jan Hubicka  <jh@suse.cz>
 
 	* include/ext/atomicity.h

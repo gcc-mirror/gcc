@@ -239,16 +239,16 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
 #if _GLIBCXX_USE_C99_CHECK || _GLIBCXX_USE_C99_DYNAMIC
   extern "C" long double
-    (wcstold)(const wchar_t * restrict, wchar_t ** restrict);
+    (wcstold)(const wchar_t * restrict, wchar_t ** restrict) throw ();
 #endif
 #if !_GLIBCXX_USE_C99_DYNAMIC
   using ::wcstold;
 #endif
 #if _GLIBCXX_USE_C99_LONG_LONG_CHECK || _GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   extern "C" long long int
-    (wcstoll)(const wchar_t * restrict, wchar_t ** restrict, int);
+    (wcstoll)(const wchar_t * restrict, wchar_t ** restrict, int) throw ();
   extern "C" unsigned long long int
-    (wcstoull)(const wchar_t * restrict, wchar_t ** restrict, int);
+    (wcstoull)(const wchar_t * restrict, wchar_t ** restrict, int) throw ();
 #endif
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using ::wcstoll;
