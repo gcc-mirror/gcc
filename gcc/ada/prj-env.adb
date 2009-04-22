@@ -57,13 +57,8 @@ package body Prj.Env is
    --  platforms, except on VMS where the logical names are deassigned, thus
    --  avoiding the pollution of the environment of the caller.
 
-   Default_Naming : constant Naming_Id := Naming_Table.First;
-
+   Default_Naming    : constant Naming_Id := Naming_Table.First;
    Fill_Mapping_File : Boolean := True;
-
-   type Project_Flags is array (Project_Id range <>) of Boolean;
-   --  A Boolean array type used in Create_Mapping_File to select the projects
-   --  in the closure of a specific project.
 
    -----------------------
    -- Local Subprograms --
@@ -1041,22 +1036,24 @@ package body Prj.Env is
    -------------------------
 
    procedure Create_Mapping_File
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
-      Name    : out Path_Name_Type)
+     (Project  : Project_Id;
+      Language : Name_Id := No_Name;
+      In_Tree  : Project_Tree_Ref;
+      Name     : out Path_Name_Type)
    is
-      File          : File_Descriptor := Invalid_FD;
+      File   : File_Descriptor := Invalid_FD;
+      Status : Boolean;
+
+      Present : array (No_Project .. Project_Table.Last (In_Tree.Projects))
+                  of Boolean := (others => False);
+      --  For each project in the closure of Project, the corresponding flag
+      --  will be set to True.
+
+      Source        : Source_Id;
+      Src_Data      : Source_Data;
+      Suffix        : File_Name_Type;
       The_Unit_Data : Unit_Data;
       Data          : File_Name_Data;
-
-      Status : Boolean;
-      --  For call to Close
-
-      Present       : Project_Flags
-        (No_Project .. Project_Table.Last (In_Tree.Projects)) :=
-        (others => False);
-      --  For each project in the closure of Project, the corresponding flag
-      --  will be set to True;
 
       procedure Put_Name_Buffer;
       --  Put the line contained in the Name_Buffer in the mapping file
@@ -1082,7 +1079,7 @@ package body Prj.Env is
          Last := Write (File, Name_Buffer (1)'Address, Name_Len);
 
          if Last /= Name_Len then
-            Prj.Com.Fail ("Disk full");
+            Prj.Com.Fail ("Disk full, cannot write mapping file");
          end if;
       end Put_Name_Buffer;
 
@@ -1116,153 +1113,7 @@ package body Prj.Env is
 
          Get_Name_String (Data.Path.Name);
          Put_Name_Buffer;
-
       end Put_Data;
-
-      --------------------
-      -- Recursive_Flag --
-      --------------------
-
-      procedure Recursive_Flag (Prj : Project_Id) is
-         Imported : Project_List;
-         Proj     : Project_Id;
-
-      begin
-         --  Nothing to do for non existent project or project that has
-         --  already been flagged.
-
-         if Prj = No_Project or else Present (Prj) then
-            return;
-         end if;
-
-         --  Flag the current project
-
-         Present (Prj) := True;
-         Imported :=
-           In_Tree.Projects.Table (Prj).Imported_Projects;
-
-         --  Call itself for each project directly imported
-
-         while Imported /= Empty_Project_List loop
-            Proj :=
-              In_Tree.Project_Lists.Table (Imported).Project;
-            Imported :=
-              In_Tree.Project_Lists.Table (Imported).Next;
-            Recursive_Flag (Proj);
-         end loop;
-
-         --  Call itself for an eventual project being extended
-
-         Recursive_Flag (In_Tree.Projects.Table (Prj).Extends);
-      end Recursive_Flag;
-
-   --  Start of processing for Create_Mapping_File
-
-   begin
-      --  Flag the necessary projects
-
-      Recursive_Flag (Project);
-
-      --  Create the temporary file
-
-      Tempdir.Create_Temp_File (File, Name => Name);
-
-      if File = Invalid_FD then
-         Prj.Com.Fail ("unable to create temporary mapping file");
-
-      else
-         Record_Temp_File (Name);
-
-         if Opt.Verbose_Mode then
-            Write_Str ("Creating temp mapping file """);
-            Write_Str (Get_Name_String (Name));
-            Write_Line ("""");
-         end if;
-      end if;
-
-      if Fill_Mapping_File then
-
-         --  For all units in table Units
-
-         for Unit in 1 .. Unit_Table.Last (In_Tree.Units) loop
-            The_Unit_Data := In_Tree.Units.Table (Unit);
-
-            --  If the unit has a valid name
-
-            if The_Unit_Data.Name /= No_Name then
-               Data := The_Unit_Data.File_Names (Specification);
-
-               --  If there is a spec, put it mapping in the file if it is
-               --  from a project in the closure of Project.
-
-               if Data.Name /= No_File and then Present (Data.Project) then
-                  Put_Data (Spec => True);
-               end if;
-
-               Data := The_Unit_Data.File_Names (Body_Part);
-
-               --  If there is a body (or subunit) put its mapping in the file
-               --  if it is from a project in the closure of Project.
-
-               if Data.Name /= No_File and then Present (Data.Project) then
-                  Put_Data (Spec => False);
-               end if;
-
-            end if;
-         end loop;
-      end if;
-
-      GNAT.OS_Lib.Close (File, Status);
-
-      if not Status then
-         Prj.Com.Fail ("disk full");
-      end if;
-   end Create_Mapping_File;
-
-   procedure Create_Mapping_File
-     (Project  : Project_Id;
-      Language : Name_Id;
-      In_Tree  : Project_Tree_Ref;
-      Name     : out Path_Name_Type)
-   is
-      File : File_Descriptor := Invalid_FD;
-
-      Status : Boolean;
-      --  For call to Close
-
-      Present : Project_Flags
-                 (No_Project .. Project_Table.Last (In_Tree.Projects)) :=
-                   (others => False);
-      --  For each project in the closure of Project, the corresponding flag
-      --  will be set to True.
-
-      Source   : Source_Id;
-      Src_Data : Source_Data;
-      Suffix   : File_Name_Type;
-
-      procedure Put_Name_Buffer;
-      --  Put the line contained in the Name_Buffer in the mapping file
-
-      procedure Recursive_Flag (Prj : Project_Id);
-      --  Set the flags corresponding to Prj, the projects it imports
-      --  (directly or indirectly) or extends to True. Call itself recursively.
-
-      ---------
-      -- Put --
-      ---------
-
-      procedure Put_Name_Buffer is
-         Last : Natural;
-
-      begin
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := ASCII.LF;
-         Last := Write (File, Name_Buffer (1)'Address, Name_Len);
-
-         if Last /= Name_Len then
-            Prj.Com.Fail ("Disk full");
-         end if;
-      end Put_Name_Buffer;
 
       --------------------
       -- Recursive_Flag --
@@ -1276,29 +1127,18 @@ package body Prj.Env is
          --  Nothing to do for non existent project or project that has already
          --  been flagged.
 
-         if Prj = No_Project or else Present (Prj) then
-            return;
+         if Prj /= No_Project and then not Present (Prj) then
+            Present (Prj) := True;
+
+            Imported := In_Tree.Projects.Table (Prj).Imported_Projects;
+            while Imported /= Empty_Project_List loop
+               Proj     := In_Tree.Project_Lists.Table (Imported).Project;
+               Imported := In_Tree.Project_Lists.Table (Imported).Next;
+               Recursive_Flag (Proj);
+            end loop;
+
+            Recursive_Flag (In_Tree.Projects.Table (Prj).Extends);
          end if;
-
-         --  Flag the current project
-
-         Present (Prj) := True;
-         Imported :=
-           In_Tree.Projects.Table (Prj).Imported_Projects;
-
-         --  Call itself for each project directly imported
-
-         while Imported /= Empty_Project_List loop
-            Proj :=
-              In_Tree.Project_Lists.Table (Imported).Project;
-            Imported :=
-              In_Tree.Project_Lists.Table (Imported).Next;
-            Recursive_Flag (Proj);
-         end loop;
-
-         --  Call itself for an eventual project being extended
-
-         Recursive_Flag (In_Tree.Projects.Table (Prj).Extends);
       end Recursive_Flag;
 
    --  Start of processing for Create_Mapping_File
@@ -1325,56 +1165,90 @@ package body Prj.Env is
          end if;
       end if;
 
-      --  For all source of the Language of all projects in the closure
+      if Language = No_Name then
+         if Fill_Mapping_File then
+            for Unit in 1 .. Unit_Table.Last (In_Tree.Units) loop
+               The_Unit_Data := In_Tree.Units.Table (Unit);
 
-      for Proj in Present'Range loop
-         if Present (Proj) then
-            Source := In_Tree.Projects.Table (Proj).First_Source;
-            while Source /= No_Source loop
-               Src_Data := In_Tree.Sources.Table (Source);
+               --  Case of unit has a valid name
 
-               if In_Tree.Languages_Data.Table
-                 (In_Tree.Sources.Table (Source).Language).Name = Language
-                   and then not Src_Data.Locally_Removed
-                   and then Src_Data.Replaced_By = No_Source
-                   and then Src_Data.Path.Name /= No_Path
-               then
-                  if Src_Data.Unit /= No_Name then
-                     Get_Name_String (Src_Data.Unit);
+               if The_Unit_Data.Name /= No_Name then
+                  Data := The_Unit_Data.File_Names (Specification);
 
-                     if Src_Data.Kind = Spec then
-                        Suffix :=
-                          In_Tree.Languages_Data.Table
-                            (Src_Data.Language).Config.Mapping_Spec_Suffix;
-                     else
-                        Suffix :=
-                          In_Tree.Languages_Data.Table
-                            (Src_Data.Language).Config.Mapping_Body_Suffix;
+                  --  If there is a spec, put it mapping in the file if it is
+                  --  from a project in the closure of Project.
+
+                  if Data.Name /= No_File and then Present (Data.Project) then
+                     Put_Data (Spec => True);
+                  end if;
+
+                  Data := The_Unit_Data.File_Names (Body_Part);
+
+                  --  If there is a body (or subunit) put its mapping in the
+                  --  file if it is from a project in the closure of Project.
+
+                  if Data.Name /= No_File and then Present (Data.Project) then
+                     Put_Data (Spec => False);
+                  end if;
+               end if;
+            end loop;
+         end if;
+
+      --  If language is defined
+      else
+         --  For all source of the Language of all projects in the closure
+
+         for Proj in Present'Range loop
+            if Present (Proj) then
+               Source := In_Tree.Projects.Table (Proj).First_Source;
+               while Source /= No_Source loop
+                  Src_Data := In_Tree.Sources.Table (Source);
+
+                  if In_Tree.Languages_Data.Table
+                    (In_Tree.Sources.Table (Source).Language).Name = Language
+                      and then not Src_Data.Locally_Removed
+                      and then Src_Data.Replaced_By = No_Source
+                      and then Src_Data.Path.Name /= No_Path
+                  then
+                     if Src_Data.Unit /= No_Name then
+                        Get_Name_String (Src_Data.Unit);
+
+                        if Src_Data.Kind = Spec then
+                           Suffix :=
+                             In_Tree.Languages_Data.Table
+                               (Src_Data.Language).Config.Mapping_Spec_Suffix;
+                        else
+                           Suffix :=
+                             In_Tree.Languages_Data.Table
+                               (Src_Data.Language).Config.Mapping_Body_Suffix;
+                        end if;
+
+                        if Suffix /= No_File then
+                           Add_Str_To_Name_Buffer (Get_Name_String (Suffix));
+                        end if;
+
+                        Put_Name_Buffer;
                      end if;
 
-                     if Suffix /= No_File then
-                        Add_Str_To_Name_Buffer (Get_Name_String (Suffix));
-                     end if;
+                     Get_Name_String (Src_Data.File);
+                     Put_Name_Buffer;
 
+                     Get_Name_String (Src_Data.Path.Name);
                      Put_Name_Buffer;
                   end if;
 
-                  Get_Name_String (Src_Data.File);
-                  Put_Name_Buffer;
-
-                  Get_Name_String (Src_Data.Path.Name);
-                  Put_Name_Buffer;
-               end if;
-
-               Source := Src_Data.Next_In_Project;
-            end loop;
-         end if;
-      end loop;
+                  Source := Src_Data.Next_In_Project;
+               end loop;
+            end if;
+         end loop;
+      end if;
 
       GNAT.OS_Lib.Close (File, Status);
 
       if not Status then
-         Prj.Com.Fail ("disk full");
+         Prj.Com.Fail ("disk full, could not create mapping file");
+         --  Do we know this is disk full? Or could it be e.g. a protection
+         --  problem of some kind preventing creation of the file ???
       end if;
    end Create_Mapping_File;
 

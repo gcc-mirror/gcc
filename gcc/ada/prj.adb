@@ -116,7 +116,6 @@ package body Prj is
                       Imported_Directories_Switches  => null,
                       Include_Path                   => null,
                       Include_Data_Set               => False,
-                      Include_Language               => No_Language_Index,
                       Source_Dirs                    => Nil_String,
                       Known_Order_Of_Source_Dirs     => True,
                       Object_Directory               => No_Path_Information,

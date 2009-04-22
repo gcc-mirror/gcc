@@ -1,3 +1,10 @@
+2009-04-22  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, prj-env.adb, prj-env.ads, prj-nmsc.adb, prj.adb,
+	prj.ads (Create_Mapping_File): merge the two versions for Ada_Only and
+	Multi_Language modes, to avoid code duplication.
+	(Project_Data.Include_Language): Removed.
+
 2009-04-22  Vincent Celier  <celier@adacore.com>
 
 	* tempdir.adb (Create_Temp_File): Add a diagnostic in verbose mode when
