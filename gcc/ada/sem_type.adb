@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,12 +57,12 @@ package body Sem_Type is
    --  The following data structures establish a mapping between nodes and
    --  their interpretations. An overloaded node has an entry in Interp_Map,
    --  which in turn contains a pointer into the All_Interp array. The
-   --  interpretations of a given node are contiguous in All_Interp. Each
-   --  set of interpretations is terminated with the marker No_Interp.
-   --  In order to speed up the retrieval of the interpretations of an
-   --  overloaded node, the Interp_Map table is accessed by means of a simple
-   --  hashing scheme, and the entries in Interp_Map are chained. The heads
-   --  of clash lists are stored in array Headers.
+   --  interpretations of a given node are contiguous in All_Interp. Each set
+   --  of interpretations is terminated with the marker No_Interp. In order to
+   --  speed up the retrieval of the interpretations of an overloaded node, the
+   --  Interp_Map table is accessed by means of a simple hashing scheme, and
+   --  the entries in Interp_Map are chained. The heads of clash lists are
+   --  stored in array Headers.
 
    --              Headers        Interp_Map          All_Interp
 
@@ -132,16 +132,15 @@ package body Sem_Type is
    -- Operator Overloading --
    --------------------------
 
-   --  The visibility of operators is handled differently from that of
-   --  other entities. We do not introduce explicit versions of primitive
-   --  operators for each type definition. As a result, there is only one
-   --  entity corresponding to predefined addition on all numeric types, etc.
-   --  The back-end resolves predefined operators according to their type.
-   --  The visibility of primitive operations then reduces to the visibility
-   --  of the resulting type:  (a + b) is a legal interpretation of some
-   --  primitive operator + if the type of the result (which must also be
-   --  the type of a and b) is directly visible (i.e. either immediately
-   --  visible or use-visible.)
+   --  The visibility of operators is handled differently from that of other
+   --  entities. We do not introduce explicit versions of primitive operators
+   --  for each type definition. As a result, there is only one entity
+   --  corresponding to predefined addition on all numeric types, etc. The
+   --  back-end resolves predefined operators according to their type. The
+   --  visibility of primitive operations then reduces to the visibility of the
+   --  resulting type: (a + b) is a legal interpretation of some primitive
+   --  operator + if the type of the result (which must also be the type of a
+   --  and b) is directly visible (either immediately visible or use-visible).
 
    --  User-defined operators are treated like other functions, but the
    --  visibility of these user-defined operations must be special-cased

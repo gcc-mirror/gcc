@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1004,6 +1004,10 @@ package Prj is
       --  The option to use when linking to specify the path where to look for
       --  libraries.
 
+      Separate_Run_Path_Options     : Boolean := False;
+      --  True if each directory needs to be specified in a separate run path
+      --  option.
+
       Executable_Suffix             : Name_Id         := No_Name;
       --  The suffix of executables, when specified in the configuration or in
       --  package Builder of the main project. When this is not specified, the
@@ -1111,6 +1115,7 @@ package Prj is
    Default_Project_Config : constant Project_Configuration :=
                               (Target                        => No_Name,
                                Run_Path_Option               => No_Name_List,
+                               Separate_Run_Path_Options     => False,
                                Executable_Suffix             => No_Name,
                                Linker                        => No_Path,
                                Map_File_Option               => No_Name,

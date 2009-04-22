@@ -2155,6 +2155,24 @@ package body Prj.Nmsc is
                           In_Tree   => In_Tree);
                   end if;
 
+               elsif Attribute.Name = Name_Separate_Run_Path_Options then
+                  declare
+                     pragma Unsuppress (All_Checks);
+                  begin
+                     Data.Config.Separate_Run_Path_Options :=
+                       Boolean'Value (Get_Name_String
+                                        (Attribute.Value.Value));
+                  exception
+                     when Constraint_Error =>
+                        Error_Msg
+                          (Project,
+                           In_Tree,
+                           "invalid value """ &
+                           Get_Name_String (Attribute.Value.Value) &
+                           """ for Separate_Run_Path_Options",
+                           Attribute.Value.Location);
+                  end;
+
                elsif Attribute.Name = Name_Library_Support then
                   declare
                      pragma Unsuppress (All_Checks);

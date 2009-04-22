@@ -1,4 +1,19 @@
+2009-04-22  Vincent Celier  <celier@adacore.com>
+
+	* prj-attr.adb: New single project level attribute
+	Separate_Run_Path_Options.
+
+	* prj-nmsc.adb (Process_Project_Level_Simple_Attributes): Process
+	attribute Seperate_Run_Path_Options.
+
+	* prj.ads: (Project_Configuration): New Boolean component
+	Separate_Run_Path_Options, defaulted to False.
+
+	* snames.ads-tmpl: New standard name Seperate_Run_Path_Options
+
 2009-04-22  Robert Dewar  <dewar@adacore.com>
+
+	* sem_type.adb: Minor reformatting
 
 	* mlib.adb: Minor reformatting
 
