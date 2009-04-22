@@ -1,3 +1,9 @@
+2009-04-22  Kazu Hirata  <kazu@codesourcery.com>
+
+	* config/arm/arm.c (arm_size_rtx_costs): Treat a PLUS with a shift
+	the same as a PLUS without a shift.  Increase the cost of a
+	CONST_INT in MULT.
+
 2009-04-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* Makefile.in: Update dependencies.

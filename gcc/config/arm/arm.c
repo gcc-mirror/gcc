@@ -5681,6 +5681,16 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 	  return false;
 	}
 
+      /* A shift as a part of ADD costs nothing.  */
+      if (GET_CODE (XEXP (x, 0)) == MULT
+	  && power_of_two_operand (XEXP (XEXP (x, 0), 1), SImode))
+	{
+	  *total = COSTS_N_INSNS (TARGET_THUMB2 ? 2 : 1);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), code, false);
+	  *total += rtx_cost (XEXP (x, 1), code, false);
+	  return true;
+	}
+
       /* Fall through */
     case AND: case XOR: case IOR:
       if (mode == SImode)
@@ -5774,7 +5784,10 @@ arm_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer_code,
 
     case CONST_INT:
       if (const_ok_for_arm (INTVAL (x)))
-	*total = COSTS_N_INSNS (outer_code == SET ? 1 : 0);
+	/* A multiplication by a constant requires another instruction
+	   to load the constant to a register.  */
+	*total = COSTS_N_INSNS ((outer_code == SET || outer_code == MULT)
+				? 1 : 0);
       else if (const_ok_for_arm (~INTVAL (x)))
 	*total = COSTS_N_INSNS (outer_code == AND ? 0 : 1);
       else if (const_ok_for_arm (-INTVAL (x)))
