@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,6 +112,7 @@ package body Prj.Attr is
 
    "SVdefault_language#" &
    "LVrun_path_option#" &
+   "SVseparate_run_path_options#" &
    "Satoolchain_version#" &
    "Satoolchain_description#" &
    "Saobject_generated#" &
