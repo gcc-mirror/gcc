@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { xfail spu-*-* } }
 ! Test XFAILed on Darwin because the system's printf() lacks
 ! proper support for denormals.
 !

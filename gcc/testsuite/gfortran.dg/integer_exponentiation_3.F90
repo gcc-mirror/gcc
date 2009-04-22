@@ -1,4 +1,5 @@
-! { dg-do run }
+! { dg-do run { xfail spu-*-* } }
+! FAILs on SPU because of wrong compile-time rounding mode
 ! { dg-options "" }
 module mod_check
   implicit none

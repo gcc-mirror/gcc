@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
 ! PR fortran/37930
 program test
   implicit none

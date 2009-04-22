@@ -3,6 +3,7 @@
 ! { dg-do run }
 ! { dg-options "-fno-range-check" }
 ! { dg-options "-fno-range-check -pedantic-errors -mieee" { target alpha*-*-* sh*-*-* } }
+! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
 !
   implicit none
   character(len=1) :: s

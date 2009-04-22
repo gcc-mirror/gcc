@@ -1,4 +1,4 @@
-! { dg-do run { target { ! *-*-mingw* } } }
+! { dg-do run { target { ! { *-*-mingw* spu-*-* } } } }
 ! { dg-options "-std=gnu -fdefault-integer-8" }
   implicit none
   character(len=*), parameter :: n = "foobar_file"
