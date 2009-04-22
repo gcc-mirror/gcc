@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5243,15 +5243,16 @@ package body Exp_Ch6 is
      (Assign        : Node_Id;
       Function_Call : Node_Id)
    is
-      Lhs             : constant Node_Id := Name (Assign);
-      Loc             : Source_Ptr;
-      Func_Call       : Node_Id := Function_Call;
-      Function_Id     : Entity_Id;
-      Result_Subt     : Entity_Id;
-      Ref_Type        : Entity_Id;
-      Ptr_Typ_Decl    : Node_Id;
-      Def_Id          : Entity_Id;
-      New_Expr        : Node_Id;
+      Lhs          : constant Node_Id := Name (Assign);
+      Func_Call    : Node_Id := Function_Call;
+      Func_Id      : Entity_Id;
+      Loc          : Source_Ptr;
+      Obj_Decl     : Node_Id;
+      Obj_Id       : Entity_Id;
+      Ptr_Typ      : Entity_Id;
+      Ptr_Typ_Decl : Node_Id;
+      Result_Subt  : Entity_Id;
+      Target       : Node_Id;
 
    begin
       --  Step past qualification or unchecked conversion (the latter can occur
@@ -5278,16 +5279,16 @@ package body Exp_Ch6 is
       Loc := Sloc (Function_Call);
 
       if Is_Entity_Name (Name (Func_Call)) then
-         Function_Id := Entity (Name (Func_Call));
+         Func_Id := Entity (Name (Func_Call));
 
       elsif Nkind (Name (Func_Call)) = N_Explicit_Dereference then
-         Function_Id := Etype (Name (Func_Call));
+         Func_Id := Etype (Name (Func_Call));
 
       else
          raise Program_Error;
       end if;
 
-      Result_Subt := Etype (Function_Id);
+      Result_Subt := Etype (Func_Id);
 
       --  When the result subtype is unconstrained, an additional actual must
       --  be passed to indicate that the caller is providing the return object.
@@ -5296,67 +5297,136 @@ package body Exp_Ch6 is
       --  to be treated effectively the same as calls to class-wide functions.
 
       Add_Alloc_Form_Actual_To_Build_In_Place_Call
-        (Func_Call, Function_Id, Alloc_Form => Caller_Allocation);
+        (Func_Call, Func_Id, Alloc_Form => Caller_Allocation);
 
       --  If Lhs is a selected component, then pass it along so that its prefix
       --  object will be used as the source of the finalization list.
 
       if Nkind (Lhs) = N_Selected_Component then
          Add_Final_List_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Acc_Type => Empty, Sel_Comp => Lhs);
+           (Func_Call, Func_Id, Acc_Type => Empty, Sel_Comp => Lhs);
       else
          Add_Final_List_Actual_To_Build_In_Place_Call
-           (Func_Call, Function_Id, Acc_Type => Empty);
+           (Func_Call, Func_Id, Acc_Type => Empty);
       end if;
 
       Add_Task_Actuals_To_Build_In_Place_Call
-        (Func_Call, Function_Id, Make_Identifier (Loc, Name_uMaster));
+        (Func_Call, Func_Id, Make_Identifier (Loc, Name_uMaster));
 
       --  Add an implicit actual to the function call that provides access to
       --  the caller's return object.
 
       Add_Access_Actual_To_Build_In_Place_Call
         (Func_Call,
-         Function_Id,
+         Func_Id,
          Make_Unchecked_Type_Conversion (Loc,
            Subtype_Mark => New_Reference_To (Result_Subt, Loc),
            Expression   => Relocate_Node (Lhs)));
 
       --  Create an access type designating the function's result subtype
 
-      Ref_Type :=
+      Ptr_Typ :=
         Make_Defining_Identifier (Loc, New_Internal_Name ('A'));
 
       Ptr_Typ_Decl :=
         Make_Full_Type_Declaration (Loc,
-          Defining_Identifier => Ref_Type,
+          Defining_Identifier => Ptr_Typ,
           Type_Definition =>
             Make_Access_To_Object_Definition (Loc,
               All_Present => True,
               Subtype_Indication =>
                 New_Reference_To (Result_Subt, Loc)));
-
       Insert_After_And_Analyze (Assign, Ptr_Typ_Decl);
 
       --  Finally, create an access object initialized to a reference to the
       --  function call.
 
-      Def_Id :=
-        Make_Defining_Identifier (Loc,
-          Chars => New_Internal_Name ('R'));
-      Set_Etype (Def_Id, Ref_Type);
+      Obj_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
+      Set_Etype (Obj_Id, Ptr_Typ);
 
-      New_Expr :=
-        Make_Reference (Loc,
-          Prefix => Relocate_Node (Func_Call));
-
-      Insert_After_And_Analyze (Ptr_Typ_Decl,
+      Obj_Decl :=
         Make_Object_Declaration (Loc,
-          Defining_Identifier => Def_Id,
-          Object_Definition   => New_Reference_To (Ref_Type, Loc),
-          Expression          => New_Expr));
+          Defining_Identifier => Obj_Id,
+          Object_Definition =>
+            New_Reference_To (Ptr_Typ, Loc),
+          Expression =>
+            Make_Reference (Loc,
+              Prefix => Relocate_Node (Func_Call)));
+      Insert_After_And_Analyze (Ptr_Typ_Decl, Obj_Decl);
 
       Rewrite (Assign, Make_Null_Statement (Loc));
+
+      --  Retrieve the target of the assignment
+
+      if Nkind (Lhs) = N_Selected_Component then
+         Target := Selector_Name (Lhs);
+      elsif Nkind (Lhs) = N_Type_Conversion then
+         Target := Expression (Lhs);
+      else
+         Target := Lhs;
+      end if;
+
+      --  If we are assigning to a return object or this is an expression of
+      --  an extension aggregate, the target should either be an identifier
+      --  or a simple expression. All other cases imply a different scenario.
+
+      if Nkind (Target) in N_Has_Entity then
+         Target := Entity (Target);
+      else
+         return;
+      end if;
+
+      --  When the target of the assignment is a return object of an enclosing
+      --  build-in-place function and also requires finalization, the list
+      --  generated for the assignment must be moved to that of the enclosing
+      --  function.
+
+      --    function Enclosing_BIP_Function return Ctrl_Typ is
+      --    begin
+      --       return (Ctrl_Parent_Part => BIP_Function with ...);
+      --    end Enclosing_BIP_Function;
+
+      if Is_Return_Object (Target)
+        and then Needs_Finalization (Etype (Target))
+        and then Needs_Finalization (Result_Subt)
+      then
+         declare
+            Obj_List  : constant Node_Id := Find_Final_List (Obj_Id);
+            Encl_List : Node_Id;
+            Encl_Scop : Entity_Id;
+
+         begin
+            Encl_Scop := Scope (Target);
+
+            --  Locate the scope of the extended return statement
+
+            while Present (Encl_Scop)
+              and then Ekind (Encl_Scop) /= E_Return_Statement
+            loop
+               Encl_Scop := Scope (Encl_Scop);
+            end loop;
+
+            --  A return object should always be enclosed by a return statement
+            --  scope at some level.
+
+            pragma Assert (Present (Encl_Scop));
+
+            Encl_List :=
+              Make_Attribute_Reference (Loc,
+                Prefix =>
+                  New_Reference_To (
+                    Finalization_Chain_Entity (Encl_Scop), Loc),
+                Attribute_Name => Name_Unrestricted_Access);
+
+            --  Generate a call to move final list
+
+            Insert_After_And_Analyze (Obj_Decl,
+              Make_Procedure_Call_Statement (Loc,
+                Name =>
+                  New_Reference_To (RTE (RE_Move_Final_List), Loc),
+                Parameter_Associations => New_List (Obj_List, Encl_List)));
+         end;
+      end if;
    end Make_Build_In_Place_Call_In_Assignment;
 
    ----------------------------------------------------
