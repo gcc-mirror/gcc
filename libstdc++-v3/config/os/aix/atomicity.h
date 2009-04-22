@@ -42,12 +42,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   _Atomic_word
   __attribute__ ((__unused__))
-  __exchange_and_add (volatile _Atomic_word* __mem, int __val)
+  __exchange_and_add (volatile _Atomic_word* __mem, int __val) throw ()
   { return ::fetch_and_add(const_cast<atomic_p>(__mem), __val); }
 
   void
   __attribute__ ((__unused__))
-  __atomic_add (volatile _Atomic_word* __mem, int __val)
+  __atomic_add (volatile _Atomic_word* __mem, int __val) throw ()
   { (void) ::fetch_and_add(const_cast<atomic_p>(__mem), __val); }
 
 _GLIBCXX_END_NAMESPACE

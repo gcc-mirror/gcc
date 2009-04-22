@@ -51,11 +51,11 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 #else
   _Atomic_word
   __attribute__ ((__unused__))
-  __exchange_and_add(volatile _Atomic_word*, int);
+  __exchange_and_add(volatile _Atomic_word*, int) throw ();
 
   void
   __attribute__ ((__unused__))
-  __atomic_add(volatile _Atomic_word*, int);
+  __atomic_add(volatile _Atomic_word*, int) throw ();
 #endif
 
   static inline _Atomic_word
