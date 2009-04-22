@@ -101,6 +101,8 @@ package body Prj.Nmsc is
       Spec : File_Name_Type;
       Impl : File_Name_Type;
    end record;
+   --  Record special naming schemes for Ada units (name of spec file and name
+   --  of implementation file).
 
    No_Unit_Exception : constant Unit_Exception :=
                          (Name => No_Name,
@@ -212,6 +214,14 @@ package body Prj.Nmsc is
       Equal      => "=");
    --  A table to check if a unit with an exceptional name will hide a source
    --  with a file name following the naming convention.
+
+   procedure Load_Naming_Exceptions
+     (Project     : Project_Id;
+      In_Tree     : Project_Tree_Ref;
+      Data        : in out Project_Data);
+   --  All source files in Data.First_Source are considered as naming
+   --  exceptions, and copied into the Source_Names and Unit_Exceptions tables
+   --  as appropriate.
 
    procedure Add_Source
      (Id                  : out Source_Id;
@@ -499,7 +509,8 @@ package body Prj.Nmsc is
       Data        : in out Project_Data;
       Current_Dir : String);
    --  Find all the sources of project Project in project tree In_Tree and
-   --  update its Data accordingly.
+   --  update its Data accordingly. This assumes that Data.First_Source has
+   --  been initialized with the list of excluded sources.
    --
    --  Current_Dir should represent the current directory, and is passed for
    --  efficiency to avoid system calls to recompute it.
@@ -516,13 +527,6 @@ package body Prj.Nmsc is
       Kind    : Spec_Or_Body);
    --  Prepare the internal hash tables used for checking naming exceptions
    --  for Ada. Insert all elements of List in the tables.
-
-   function Project_Extends
-     (Extending : Project_Id;
-      Extended  : Project_Id;
-      In_Tree   : Project_Tree_Ref) return Boolean;
-   --  Returns True if Extending is extending Extended either directly or
-   --  indirectly.
 
    procedure Record_Ada_Source
      (File_Name       : File_Name_Type;
@@ -8602,6 +8606,75 @@ package body Prj.Nmsc is
       end if;
    end Search_Directories;
 
+   ----------------------------
+   -- Load_Naming_Exceptions --
+   ----------------------------
+
+   procedure Load_Naming_Exceptions
+     (Project     : Project_Id;
+      In_Tree     : Project_Tree_Ref;
+      Data        : in out Project_Data)
+   is
+      Source   : Source_Id := Data.First_Source;
+      File     : File_Name_Type;
+      Unit     : Name_Id;
+   begin
+      Unit_Exceptions.Reset;
+
+      while Source /= No_Source loop
+         File := In_Tree.Sources.Table (Source).File;
+         Unit := In_Tree.Sources.Table (Source).Unit;
+
+         --  An excluded file cannot also be an exception file name
+
+         if Excluded_Sources_Htable.Get (File) /= No_File_Found then
+            Error_Msg_File_1 := File;
+            Error_Msg
+              (Project, In_Tree,
+               "{ cannot be both excluded and an exception file name",
+               No_Location);
+         end if;
+
+         if Current_Verbosity = High then
+            Write_Str ("Naming exception: Putting source #");
+            Write_Str (Source'Img);
+            Write_Str (", file ");
+            Write_Str (Get_Name_String (File));
+            Write_Line (" in Source_Names");
+         end if;
+
+         Source_Names.Set
+           (K => File,
+            E => Name_Location'
+              (Name     => File,
+               Location => No_Location,
+               Source   => Source,
+               Except   => Unit /= No_Name,
+               Found    => False));
+
+         --  If this is an Ada exception, record in table Unit_Exceptions
+
+         if Unit /= No_Name then
+            declare
+               Unit_Except : Unit_Exception := Unit_Exceptions.Get (Unit);
+
+            begin
+               Unit_Except.Name := Unit;
+
+               if In_Tree.Sources.Table (Source).Kind = Spec then
+                  Unit_Except.Spec := File;
+               else
+                  Unit_Except.Impl := File;
+               end if;
+
+               Unit_Exceptions.Set (Unit, Unit_Except);
+            end;
+         end if;
+
+         Source := In_Tree.Sources.Table (Source).Next_In_Project;
+      end loop;
+   end Load_Naming_Exceptions;
+
    ----------------------
    -- Look_For_Sources --
    ----------------------
@@ -8612,61 +8685,102 @@ package body Prj.Nmsc is
       Data        : in out Project_Data;
       Current_Dir : String)
    is
-      procedure Remove_Locally_Removed_Files_From_Units;
-      --  Mark all locally removed sources as such in the Units table
-
       procedure Process_Sources_In_Multi_Language_Mode;
       --  Find all source files when in multi language mode
 
-      ---------------------------------------------
-      -- Remove_Locally_Removed_Files_From_Units --
-      ---------------------------------------------
+      procedure Mark_Excluded_Sources;
+      --  Mark as such the sources that are declared as excluded
 
-      procedure Remove_Locally_Removed_Files_From_Units is
-         Excluded : File_Found;
+      ---------------------------
+      -- Mark_Excluded_Sources --
+      ---------------------------
+
+      procedure Mark_Excluded_Sources is
+         Source   : Source_Id := No_Source;
          OK       : Boolean;
          Unit     : Unit_Data;
-         Extended : Project_Id;
+         Excluded : File_Found := Excluded_Sources_Htable.Get_First;
+
+         procedure Exclude
+           (Extended : Project_Id; Index : Unit_Index; Kind : Spec_Or_Body);
+         --  If the current file (Excluded) belongs to the current project or
+         --  one that the current project extends, then mark this file/unit as
+         --  excluded. It is an error to locally remove a file from another
+         --  project.
+
+         procedure Exclude
+           (Extended : Project_Id; Index : Unit_Index; Kind : Spec_Or_Body) is
+         begin
+            if Extended = Project
+              or else Is_Extending (Project, Extended, In_Tree)
+            then
+               OK := True;
+
+               if Index /= No_Unit_Index then
+                  Unit.File_Names (Kind).Path.Name    := Slash;
+                  Unit.File_Names (Kind).Needs_Pragma := False;
+                  In_Tree.Units.Table (Index) := Unit;
+               end if;
+
+               if Source /= No_Source then
+                  In_Tree.Sources.Table (Source).Locally_Removed := True;
+                  In_Tree.Sources.Table (Source).In_Interfaces := False;
+               end if;
+
+               if Current_Verbosity = High then
+                  Write_Str ("Removing file ");
+                  Write_Line (Get_Name_String (Excluded.File));
+               end if;
+
+               Add_Forbidden_File_Name (Excluded.File);
+
+            else
+               Error_Msg
+                 (Project, In_Tree,
+                  "cannot remove a source from another project",
+                  Excluded.Location);
+            end if;
+         end Exclude;
 
       begin
-         Excluded := Excluded_Sources_Htable.Get_First;
          while Excluded /= No_File_Found loop
-            OK := False;
+            OK     := False;
 
-            For_Each_Unit :
-            for Index in Unit_Table.First ..
-              Unit_Table.Last (In_Tree.Units)
-            loop
-               Unit := In_Tree.Units.Table (Index);
+            case Get_Mode is
+            when Ada_Only =>
+               --  ??? This loop could be the same as for Multi_Language if
+               --  we were setting In_Tree.First_Source when we search for
+               --  Ada sources (basically once we have removed the use of
+               --  Data.Ada_Sources).
+               For_Each_Unit :
+               for Index in Unit_Table.First ..
+                 Unit_Table.Last (In_Tree.Units)
+               loop
+                  Unit := In_Tree.Units.Table (Index);
 
-               for Kind in Spec_Or_Body'Range loop
-                  if Unit.File_Names (Kind).Name = Excluded.File then
-                     OK := True;
-
-                     --  Check that this is from the current project or
-                     --  that the current project extends.
-
-                     Extended := Unit.File_Names (Kind).Project;
-
-                     if Extended = Project
-                       or else Project_Extends (Project, Extended, In_Tree)
-                     then
-                        Unit.File_Names (Kind).Path.Name := Slash;
-                        Unit.File_Names (Kind).Needs_Pragma := False;
-                        In_Tree.Units.Table (Index) := Unit;
-                        Add_Forbidden_File_Name
-                          (Unit.File_Names (Kind).Name);
-                     else
-                        Error_Msg
-                          (Project, In_Tree,
-                           "cannot remove a source from " &
-                           "another project",
-                           Excluded.Location);
+                  for Kind in Spec_Or_Body'Range loop
+                     if Unit.File_Names (Kind).Name = Excluded.File then
+                        Exclude (Unit.File_Names (Kind).Project, Index, Kind);
+                        exit For_Each_Unit;
                      end if;
-                     exit For_Each_Unit;
+                  end loop;
+               end loop For_Each_Unit;
+
+            when Multi_Language =>
+               Source := In_Tree.First_Source;
+               while Source /= No_Source loop
+                  if In_Tree.Sources.Table (Source).File = Excluded.File then
+                     Exclude
+                       (In_Tree.Sources.Table (Source).Project,
+                        No_Unit_Index, Specification);
+                     exit;
                   end if;
+
+                  Source := In_Tree.Sources.Table (Source).Next_In_Sources;
                end loop;
-            end loop For_Each_Unit;
+
+               OK := OK or Excluded.Found;
+            end case;
 
             if not OK then
                Err_Vars.Error_Msg_File_1 := Excluded.File;
@@ -8676,124 +8790,14 @@ package body Prj.Nmsc is
 
             Excluded := Excluded_Sources_Htable.Get_Next;
          end loop;
-      end Remove_Locally_Removed_Files_From_Units;
+      end Mark_Excluded_Sources;
 
       --------------------------------------------
       -- Process_Sources_In_Multi_Language_Mode --
       --------------------------------------------
 
       procedure Process_Sources_In_Multi_Language_Mode is
-         Source   : Source_Id;
-         Name_Loc : Name_Location;
-         OK       : Boolean;
-         FF       : File_Found;
-
       begin
-         --  First, put all naming exceptions if any, in the Source_Names table
-
-         Unit_Exceptions.Reset;
-
-         Source := Data.First_Source;
-         while Source /= No_Source loop
-            declare
-               Src_Data : Source_Data renames In_Tree.Sources.Table (Source);
-
-            begin
-               --  An excluded file cannot also be an exception file name
-
-               if Excluded_Sources_Htable.Get (Src_Data.File) /=
-                 No_File_Found
-               then
-                  Error_Msg_File_1 := Src_Data.File;
-                  Error_Msg
-                    (Project, In_Tree,
-                     "{ cannot be both excluded and an exception file name",
-                     No_Location);
-               end if;
-
-               Name_Loc := (Name     => Src_Data.File,
-                            Location => No_Location,
-                            Source   => Source,
-                            Except   => Src_Data.Unit /= No_Name,
-                            Found    => False);
-
-               if Current_Verbosity = High then
-                  Write_Str ("Putting source #");
-                  Write_Str (Source'Img);
-                  Write_Str (", file ");
-                  Write_Str (Get_Name_String (Src_Data.File));
-                  Write_Line (" in Source_Names");
-               end if;
-
-               Source_Names.Set (K => Src_Data.File, E => Name_Loc);
-
-               --  If this is an Ada exception, record in table Unit_Exceptions
-
-               if Src_Data.Unit /= No_Name then
-                  declare
-                     Unit_Except : Unit_Exception :=
-                                     Unit_Exceptions.Get (Src_Data.Unit);
-
-                  begin
-                     Unit_Except.Name := Src_Data.Unit;
-
-                     if Src_Data.Kind = Spec then
-                        Unit_Except.Spec := Src_Data.File;
-                     else
-                        Unit_Except.Impl := Src_Data.File;
-                     end if;
-
-                     Unit_Exceptions.Set (Src_Data.Unit, Unit_Except);
-                  end;
-               end if;
-
-               Source := Src_Data.Next_In_Project;
-            end;
-         end loop;
-
-         Find_Explicit_Sources
-           (Current_Dir, Project, In_Tree, Data);
-
-         --  Mark as such the sources that are declared as excluded
-
-         FF := Excluded_Sources_Htable.Get_First;
-         while FF /= No_File_Found loop
-            OK     := False;
-            Source := In_Tree.First_Source;
-            while Source /= No_Source loop
-               declare
-                  Src_Data : Source_Data renames
-                               In_Tree.Sources.Table (Source);
-
-               begin
-                  if Src_Data.File = FF.File then
-
-                     --  Check that this is from this project or a project that
-                     --  the current project extends.
-
-                     if Src_Data.Project = Project or else
-                       Is_Extending (Project, Src_Data.Project, In_Tree)
-                     then
-                        Src_Data.Locally_Removed := True;
-                        Src_Data.In_Interfaces := False;
-                        Add_Forbidden_File_Name (FF.File);
-                        OK := True;
-                        exit;
-                     end if;
-                  end if;
-
-                  Source := Src_Data.Next_In_Sources;
-               end;
-            end loop;
-
-            if not FF.Found and not OK then
-               Err_Vars.Error_Msg_File_1 := FF.File;
-               Error_Msg (Project, In_Tree, "unknown file {", FF.Location);
-            end if;
-
-            FF := Excluded_Sources_Htable.Get_Next;
-         end loop;
-
          --  Check that two sources of this project do not have the same object
          --  file name.
 
@@ -8840,8 +8844,7 @@ package body Prj.Nmsc is
 
                begin
                   if Src_Data.Compiled and then Src_Data.Object_Exists
-                    and then Project_Extends
-                               (Project, Src_Data.Project, In_Tree)
+                    and then Is_Extending (Project, Src_Data.Project, In_Tree)
                   then
                      if Src_Data.Unit = No_Name then
                         if Src_Data.Kind = Impl then
@@ -8901,11 +8904,14 @@ package body Prj.Nmsc is
          when Ada_Only =>
             if Is_A_Language (In_Tree, Data, Name_Ada) then
                Find_Explicit_Sources (Current_Dir, Project, In_Tree, Data);
-               Remove_Locally_Removed_Files_From_Units;
+               Mark_Excluded_Sources;
             end if;
 
          when Multi_Language =>
             if Data.First_Language_Processing /= No_Language_Index then
+               Load_Naming_Exceptions (Project, In_Tree, Data);
+               Find_Explicit_Sources (Current_Dir, Project, In_Tree, Data);
+               Mark_Excluded_Sources;
                Process_Sources_In_Multi_Language_Mode;
             end if;
       end case;
@@ -8982,30 +8988,6 @@ package body Prj.Nmsc is
          Current := Element.Next;
       end loop;
    end Prepare_Ada_Naming_Exceptions;
-
-   ---------------------
-   -- Project_Extends --
-   ---------------------
-
-   function Project_Extends
-     (Extending : Project_Id;
-      Extended  : Project_Id;
-      In_Tree   : Project_Tree_Ref) return Boolean
-   is
-      Current : Project_Id := Extending;
-
-   begin
-      loop
-         if Current = No_Project then
-            return False;
-
-         elsif Current = Extended then
-            return True;
-         end if;
-
-         Current := In_Tree.Projects.Table (Current).Extends;
-      end loop;
-   end Project_Extends;
 
    -----------------------
    -- Record_Ada_Source --
@@ -9173,7 +9155,7 @@ package body Prj.Nmsc is
                         The_Unit_Data.File_Names
                           (Unit_Kind).Path.Name = Slash)
                     or else The_Unit_Data.File_Names (Unit_Kind).Name = No_File
-                    or else Project_Extends
+                    or else Is_Extending
                       (Data.Extends,
                        The_Unit_Data.File_Names (Unit_Kind).Project,
                        In_Tree)
