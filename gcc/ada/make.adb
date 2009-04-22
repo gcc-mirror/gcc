@@ -36,6 +36,7 @@ with Gnatvsn;  use Gnatvsn;
 with Hostparm; use Hostparm;
 with Makeusg;
 with Makeutl;  use Makeutl;
+with MLib;
 with MLib.Prj;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl;
@@ -6361,53 +6362,85 @@ package body Make is
                            Current : Natural;
 
                         begin
-                           for Index in
-                             Library_Paths.First .. Library_Paths.Last
-                           loop
-                              --  Add the length of the library dir plus one
-                              --  for the directory separator.
+                           if MLib.Separate_Run_Path_Options then
 
-                              Length :=
-                                Length +
-                                Library_Paths.Table (Index)'Length + 1;
-                           end loop;
+                              --  We are going to create one switch of the form
+                              --  "-Wl,-rpath,dir_N" for each directory to
+                              --  consider.
 
-                           --  Finally, add the length of the standard GNAT
-                           --  library dir.
+                              --  One switch for each library directory
 
-                           Length := Length + MLib.Utl.Lib_Directory'Length;
-                           Option := new String (1 .. Length);
-                           Option (1 .. Path_Option'Length) := Path_Option.all;
-                           Current := Path_Option'Length;
+                              for Index in
+                                Library_Paths.First .. Library_Paths.Last
+                              loop
+                                 Linker_Switches.Increment_Last;
+                                 Linker_Switches.Table
+                                   (Linker_Switches.Last) := new String'
+                                   (Path_Option.all &
+                                    Library_Paths.Table (Index).all);
+                              end loop;
 
-                           --  Put each library dir followed by a dir separator
+                              --  One switch for the standard GNAT library dir.
 
-                           for Index in
-                             Library_Paths.First .. Library_Paths.Last
-                           loop
+                              Linker_Switches.Increment_Last;
+                              Linker_Switches.Table
+                                (Linker_Switches.Last) := new String'
+                                (Path_Option.all & MLib.Utl.Lib_Directory);
+
+                           else
+                              --  We are going to create one switch of the form
+                              --  "-Wl,-rpath,dir_1:dir_2:dir_3"
+
+                              for Index in
+                                Library_Paths.First .. Library_Paths.Last
+                              loop
+                                 --  Add the length of the library dir plus one
+                                 --  for the directory separator.
+
+                                 Length :=
+                                   Length +
+                                     Library_Paths.Table (Index)'Length + 1;
+                              end loop;
+
+                              --  Finally, add the length of the standard GNAT
+                              --  library dir.
+
+                              Length := Length + MLib.Utl.Lib_Directory'Length;
+                              Option := new String (1 .. Length);
+                              Option (1 .. Path_Option'Length) :=
+                                Path_Option.all;
+                              Current := Path_Option'Length;
+
+                              --  Put each library dir followed by a dir
+                              --  separator.
+
+                              for Index in
+                                Library_Paths.First .. Library_Paths.Last
+                              loop
+                                 Option
+                                   (Current + 1 ..
+                                      Current +
+                                        Library_Paths.Table (Index)'Length) :=
+                                   Library_Paths.Table (Index).all;
+                                 Current :=
+                                   Current +
+                                     Library_Paths.Table (Index)'Length + 1;
+                                 Option (Current) := Path_Separator;
+                              end loop;
+
+                              --  Finally put the standard GNAT library dir
+
                               Option
                                 (Current + 1 ..
-                                   Current +
-                                   Library_Paths.Table (Index)'Length) :=
-                                Library_Paths.Table (Index).all;
-                              Current :=
-                                Current +
-                                Library_Paths.Table (Index)'Length + 1;
-                              Option (Current) := Path_Separator;
-                           end loop;
+                                   Current + MLib.Utl.Lib_Directory'Length) :=
+                                  MLib.Utl.Lib_Directory;
 
-                           --  Finally put the standard GNAT library dir
+                              --  And add the switch to the linker switches
 
-                           Option
-                             (Current + 1 ..
-                                Current + MLib.Utl.Lib_Directory'Length) :=
-                             MLib.Utl.Lib_Directory;
-
-                           --  And add the switch to the linker switches
-
-                           Linker_Switches.Increment_Last;
-                           Linker_Switches.Table (Linker_Switches.Last) :=
-                             Option;
+                              Linker_Switches.Increment_Last;
+                              Linker_Switches.Table (Linker_Switches.Last) :=
+                                Option;
+                           end if;
                         end;
                      end if;
 

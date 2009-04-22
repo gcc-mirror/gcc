@@ -1,3 +1,19 @@
+2009-04-22  Nicolas Setton  <setton@adacore.com>
+
+	* link.c: Add flag __gnat_separate_run_path_options.
+
+	* mlib.adb (Separate_Run_Path_Options): New subprogram.
+
+	* mlib.ads (Separate_Run_Path_Options): Declare.
+
+	* gnatcmd.adb (Process_Link): Add support for emitting one "rpath"
+	switch per directory, rather than one "rpath" switch listing all
+	directories.
+
+	* gnatlink.adb (Process_Binder_File): Likewise.
+
+	* make.adb (Gnatmake): Likewise.
+
 2009-04-22  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch6.adb (Make_Build_In_Place_Call_In_Assignment): Code cleanup.

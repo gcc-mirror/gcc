@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -976,54 +976,80 @@ procedure GNATCmd is
                Current : Natural;
 
             begin
-               --  First, compute the exact length for the switch
+               if MLib.Separate_Run_Path_Options then
 
-               for Index in
-                 Library_Paths.First .. Library_Paths.Last
-               loop
-                  --  Add the length of the library dir plus one for the
-                  --  directory separator.
+                  --  We are going to create one switch of the form
+                  --  "-Wl,-rpath,dir_N" for each directory to consider.
 
-                  Length :=
-                    Length +
-                      Library_Paths.Table (Index)'Length + 1;
-               end loop;
+                  --  One switch for each library directory
 
-               --  Finally, add the length of the standard GNAT library dir
+                  for Index in
+                    Library_Paths.First .. Library_Paths.Last
+                  loop
+                     Last_Switches.Increment_Last;
+                     Last_Switches.Table
+                       (Last_Switches.Last) := new String'
+                       (Path_Option.all &
+                        Last_Switches.Table (Index).all);
+                  end loop;
 
-               Length := Length + MLib.Utl.Lib_Directory'Length;
-               Option := new String (1 .. Length);
-               Option (1 .. Path_Option'Length) := Path_Option.all;
-               Current := Path_Option'Length;
+                  --  One switch for the standard GNAT library dir.
 
-               --  Put each library dir followed by a dir separator
+                  Last_Switches.Increment_Last;
+                  Last_Switches.Table
+                    (Last_Switches.Last) := new String'
+                    (Path_Option.all & MLib.Utl.Lib_Directory);
 
-               for Index in
-                 Library_Paths.First .. Library_Paths.Last
-               loop
+               else
+                  --  First, compute the exact length for the switch
+
+                  for Index in
+                    Library_Paths.First .. Library_Paths.Last
+                  loop
+                     --  Add the length of the library dir plus one for the
+                     --  directory separator.
+
+                     Length :=
+                       Length +
+                         Library_Paths.Table (Index)'Length + 1;
+                  end loop;
+
+                  --  Finally, add the length of the standard GNAT library dir
+
+                  Length := Length + MLib.Utl.Lib_Directory'Length;
+                  Option := new String (1 .. Length);
+                  Option (1 .. Path_Option'Length) := Path_Option.all;
+                  Current := Path_Option'Length;
+
+                  --  Put each library dir followed by a dir separator
+
+                  for Index in
+                    Library_Paths.First .. Library_Paths.Last
+                  loop
+                     Option
+                       (Current + 1 ..
+                          Current +
+                            Library_Paths.Table (Index)'Length) :=
+                       Library_Paths.Table (Index).all;
+                     Current :=
+                       Current +
+                         Library_Paths.Table (Index)'Length + 1;
+                     Option (Current) := Path_Separator;
+                  end loop;
+
+                  --  Finally put the standard GNAT library dir
+
                   Option
                     (Current + 1 ..
-                       Current +
-                         Library_Paths.Table (Index)'Length) :=
-                      Library_Paths.Table (Index).all;
-                  Current :=
-                    Current +
-                      Library_Paths.Table (Index)'Length + 1;
-                  Option (Current) := Path_Separator;
-               end loop;
+                       Current + MLib.Utl.Lib_Directory'Length) :=
+                      MLib.Utl.Lib_Directory;
 
-               --  Finally put the standard GNAT library dir
+                  --  And add the switch to the last switches
 
-               Option
-                 (Current + 1 ..
-                    Current + MLib.Utl.Lib_Directory'Length) :=
-                   MLib.Utl.Lib_Directory;
-
-               --  And add the switch to the last switches
-
-               Last_Switches.Increment_Last;
-               Last_Switches.Table (Last_Switches.Last) :=
-                 Option;
+                  Last_Switches.Increment_Last;
+                  Last_Switches.Table (Last_Switches.Last) :=
+                    Option;
+               end if;
             end;
          end if;
       end if;

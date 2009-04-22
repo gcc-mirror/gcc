@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2008, AdaCore                     --
+--                     Copyright (C) 1999-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,6 +83,10 @@ package MLib is
    --  Returns the major id library file name, if it exists.
    --  For example, if Lib_Filename is "libtoto.so" and Lib_Version is
    --  "libtoto.so.1.2", then "libtoto.so.1" is returned.
+
+   function Separate_Run_Path_Options return Boolean;
+   --  Return True if separate rpath arguments must be passed to the linker
+   --  for each directory in the rpath.
 
 private
 
