@@ -1,3 +1,8 @@
+2009-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* alias.c (find_base_term): Move around LO_SUM case, so that
+	CONST falls through into PLUS/MINUS handling.
+
 2009-04-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/39762
