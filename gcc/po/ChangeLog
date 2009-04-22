@@ -1,5 +1,9 @@
 2009-04-22  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.pot: Regenerate.
+
+2009-04-22  Joseph Myers  <joseph@codesourcery.com>
+
 	* exgettext: Also look for */*/config-lang.in to find language
 	subdirectories.
 
