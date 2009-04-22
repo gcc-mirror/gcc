@@ -135,10 +135,12 @@ extern void Setup_Asm_Outputs		(Node_Id);
 /* exp_dbug:  */
 
 #define Get_Encoded_Name exp_dbug__get_encoded_name
+#define Get_External_Name exp_dbug__get_external_name
 #define Get_External_Name_With_Suffix exp_dbug__get_external_name_with_suffix
 
-extern void Get_Encoded_Name	(Entity_Id);
-extern void Get_External_Name_With_Suffix (Entity_Id, Fat_Pointer);
+extern void Get_Encoded_Name			(Entity_Id);
+extern void Get_External_Name			(Entity_Id, Boolean);
+extern void Get_External_Name_With_Suffix	(Entity_Id, Fat_Pointer);
 
 /* lib: */
 

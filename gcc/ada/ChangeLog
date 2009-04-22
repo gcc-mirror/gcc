@@ -1,3 +1,25 @@
+2009-04-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Get_External_Name): Declare.
+	* gcc-interface/gigi.h (concat_id_with_name): Rename to...
+	(concat_name): ...this.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Rename gnu_entity_id to
+	gnu_entity_name and adjust for above renaming.
+	<E_Access_Type>: Use create_concat_name to get the name of the various
+	types associated with unconstrained array types.
+	(make_aligning_type): Adjust for above renaming.
+	(maybe_pad_type): Likewise.
+	(components_to_record): Likewise.  Use get_identifier_with_length for
+	the encoding of the variant.
+	(get_entity_name): Use get_identifier_with_length.
+	(create_concat_name): Likewise.  Use Get_External_Name if no suffix.
+	Do not fiddle with Name_Buffer.
+	(concat_id_with_name): Rename to...
+	(concat_name): ...this.  Use get_identifier_with_length.  Do not fiddle
+	with Name_Buffer.
+	* gcc-interface/utils.c (rest_of_record_type_compilation): Adjust for
+	above renaming.
+
 2009-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* ChangeLog, ChangeLog.ptr, ChangeLog.tree-ssa: Add copyright and

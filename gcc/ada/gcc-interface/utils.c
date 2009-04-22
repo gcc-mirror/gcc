@@ -802,22 +802,20 @@ rest_of_record_type_compilation (tree record_type)
       tree new_record_type
 	= make_node (TREE_CODE (record_type) == QUAL_UNION_TYPE
 		     ? UNION_TYPE : TREE_CODE (record_type));
-      tree orig_name = TYPE_NAME (record_type);
-      tree orig_id
-	= (TREE_CODE (orig_name) == TYPE_DECL ? DECL_NAME (orig_name)
-	   : orig_name);
-      tree new_id
-	= concat_id_with_name (orig_id,
-			       TREE_CODE (record_type) == QUAL_UNION_TYPE
-			       ? "XVU" : "XVE");
+      tree orig_name = TYPE_NAME (record_type), new_name;
       tree last_pos = bitsize_zero_node;
-      tree old_field;
-      tree prev_old_field = 0;
+      tree old_field, prev_old_field = NULL_TREE;
 
-      TYPE_NAME (new_record_type) = new_id;
+      if (TREE_CODE (orig_name) == TYPE_DECL)
+	orig_name = DECL_NAME (orig_name);
+
+      new_name
+	= concat_name (orig_name, TREE_CODE (record_type) == QUAL_UNION_TYPE
+				  ? "XVU" : "XVE");
+      TYPE_NAME (new_record_type) = new_name;
       TYPE_ALIGN (new_record_type) = BIGGEST_ALIGNMENT;
       TYPE_STUB_DECL (new_record_type)
-	= create_type_stub_decl (new_id, new_record_type);
+	= create_type_stub_decl (new_name, new_record_type);
       DECL_IGNORED_P (TYPE_STUB_DECL (new_record_type))
 	= DECL_IGNORED_P (TYPE_STUB_DECL (record_type));
       TYPE_SIZE (new_record_type) = size_int (TYPE_ALIGN (record_type));
@@ -937,7 +935,7 @@ rest_of_record_type_compilation (tree record_type)
 	      else
 		strcpy (suffix, "XVL");
 
-	      field_name = concat_id_with_name (field_name, suffix);
+	      field_name = concat_name (field_name, suffix);
 	    }
 
 	  new_field = create_field_decl (field_name, field_type,
