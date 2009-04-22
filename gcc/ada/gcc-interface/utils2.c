@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1010,11 +1010,15 @@ build_binary_op (enum tree_code op_code, tree result_type,
 
     case PLUS_EXPR:
     case MINUS_EXPR:
-      /* Avoid doing arithmetics in BOOLEAN_TYPE like the other compilers.
-	 Contrary to C, Ada doesn't allow arithmetics in Standard.Boolean
-	 but we can generate addition or subtraction for 'Succ and 'Pred.  */
-      if (operation_type && TREE_CODE (operation_type) == BOOLEAN_TYPE)
-	operation_type = left_base_type = right_base_type = integer_type_node;
+      /* Avoid doing arithmetics in ENUMERAL_TYPE or BOOLEAN_TYPE like the
+	 other compilers.  Contrary to C, Ada doesn't allow arithmetics in
+	 these types but can generate addition/subtraction for Succ/Pred.  */
+      if (operation_type
+	  && (TREE_CODE (operation_type) == ENUMERAL_TYPE
+	      || TREE_CODE (operation_type) == BOOLEAN_TYPE))
+	operation_type = left_base_type = right_base_type
+	  = gnat_type_for_mode (TYPE_MODE (operation_type),
+				TYPE_UNSIGNED (operation_type));
 
       /* ... fall through ... */
 
@@ -2199,7 +2203,7 @@ fill_vms_descriptor (tree expr, Entity_Id gnat_formal, Node_Id gnat_actual)
 	  add_stmt (build3 (COND_EXPR, void_type_node,
 			    build_binary_op (GE_EXPR, long_integer_type_node,
 					     convert (long_integer_type_node,
-						      addr64expr), 
+						      addr64expr),
 					     malloc64low),
 			    build_call_raise (CE_Range_Check_Failed, gnat_actual,
 					      N_Raise_Constraint_Error),
