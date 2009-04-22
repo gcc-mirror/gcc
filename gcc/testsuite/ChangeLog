@@ -1,3 +1,8 @@
+2009-04-22  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/39623
+	* gcc.dg/vect/no-vfa-vect-43.c Fix vect_no_align check.
+	
 2009-04-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39824
