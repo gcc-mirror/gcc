@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1221,7 +1221,7 @@ package body Prj.Env is
 
    procedure Create_Mapping_File
      (Project  : Project_Id;
-      Language : Name_Id;
+      Language : Language_Index;
       In_Tree  : Project_Tree_Ref;
       Name     : out Path_Name_Type)
    is
@@ -1334,7 +1334,7 @@ package body Prj.Env is
             while Source /= No_Source loop
                Src_Data := In_Tree.Sources.Table (Source);
 
-               if Src_Data.Language_Name = Language
+               if In_Tree.Sources.Table (Source).Language = Language
                  and then not Src_Data.Locally_Removed
                  and then Src_Data.Replaced_By = No_Source
                  and then Src_Data.Path.Name /= No_Path

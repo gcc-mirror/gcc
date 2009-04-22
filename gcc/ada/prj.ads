@@ -639,11 +639,9 @@ package Prj is
       Project             : Project_Id            := No_Project;
       --  Project of the source
 
-      Language_Name       : Name_Id               := No_Name;
-      --  Name of the language of the source
-
       Language            : Language_Index        := No_Language_Index;
-      --  Index of the language
+      --  Index of the language. This is an index into
+      --  project_tree.languages_data
 
       Lang_Kind           : Language_Kind         := File_Based;
       --  Kind of the language
@@ -760,7 +758,6 @@ package Prj is
 
    No_Source_Data : constant Source_Data :=
                       (Project                => No_Project,
-                       Language_Name          => No_Name,
                        Language               => No_Language_Index,
                        Lang_Kind              => File_Based,
                        Compiled               => True,
