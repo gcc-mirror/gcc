@@ -31,8 +31,7 @@ typedef struct binding_entry_s *binding_entry;
 /* The type of a routine repeatedly called by binding_table_foreach.  */
 typedef void (*bt_foreach_proc) (binding_entry, void *);
 
-struct binding_entry_s GTY(())
-{
+struct GTY(()) binding_entry_s {
   binding_entry chain;
   tree name;
   tree type;
@@ -63,8 +62,7 @@ typedef struct cp_binding_level cxx_scope;
    currently being defined.  */
 #define INHERITED_VALUE_BINDING_P(NODE) ((NODE)->value_is_inherited)
 
-struct cxx_binding GTY(())
-{
+struct GTY(()) cxx_binding {
   /* Link to chain together various bindings for this name.  */
   cxx_binding *previous;
   /* The non-type entity this name is bound to.  */
@@ -79,8 +77,7 @@ struct cxx_binding GTY(())
 
 /* Datatype used to temporarily save C++ bindings (for implicit
    instantiations purposes and like).  Implemented in decl.c.  */
-typedef struct cxx_saved_binding GTY(())
-{
+typedef struct GTY(()) cxx_saved_binding {
   /* The name of the current binding.  */
   tree identifier;
   /* The binding we're saving.  */
@@ -141,8 +138,7 @@ typedef enum tag_scope {
 					   and [class.friend]/9.  */
 } tag_scope;
 
-typedef struct cp_class_binding GTY(())
-{
+typedef struct GTY(()) cp_class_binding {
   cxx_binding base;
   /* The bound name.  */
   tree identifier;
@@ -175,8 +171,7 @@ DEF_VEC_ALLOC_O(cp_class_binding,gc);
 /* Note that the information in the `names' component of the global contour
    is duplicated in the IDENTIFIER_GLOBAL_VALUEs of all identifiers.  */
 
-struct cp_binding_level GTY(())
-  {
+struct GTY(()) cp_binding_level {
     /* A chain of _DECL nodes for all variables, constants, functions,
        and typedef types.  These are in the reverse of the order
        supplied.  There may be OVERLOADs on this list, too, but they

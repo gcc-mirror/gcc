@@ -1090,7 +1090,7 @@ mmcu=*:-mmcu=%*}"
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
-struct machine_function GTY(())
+struct GTY(()) machine_function
 {
   /* 'true' - if the current function is a leaf function.  */
   int is_leaf;

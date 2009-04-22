@@ -229,8 +229,7 @@ enum c_tree_index
 
 /* Identifier part common to the C front ends.  Inherits from
    tree_identifier, despite appearances.  */
-struct c_common_identifier GTY(())
-{
+struct GTY(()) c_common_identifier {
   struct tree_common common;
   struct cpp_hashnode node;
 };
@@ -334,8 +333,7 @@ extern GTY(()) tree c_global_trees[CTI_MAX];
 
 /* In a RECORD_TYPE, a sorted array of the fields of the type, not a
    tree for size reasons.  */
-struct sorted_fields_type GTY(())
-{
+struct GTY(()) sorted_fields_type {
   int len;
   tree GTY((length ("%h.len"))) elts[1];
 };
@@ -362,7 +360,7 @@ extern c_language_kind c_language;
 
 /* Information about a statement tree.  */
 
-struct stmt_tree_s GTY(()) {
+struct GTY(()) stmt_tree_s {
   /* The current statement list being collected.  */
   tree x_cur_stmt_list;
 
@@ -388,7 +386,7 @@ typedef struct stmt_tree_s *stmt_tree;
 /* Global state pertinent to the current function.  Some C dialects
    extend this structure with additional fields.  */
 
-struct c_language_function GTY(()) {
+struct GTY(()) c_language_function {
   /* While we are parsing the function, this contains information
      about the statement-tree that we are building.  */
   struct stmt_tree_s x_stmt_tree;

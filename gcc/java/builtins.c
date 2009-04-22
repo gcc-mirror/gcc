@@ -65,15 +65,13 @@ typedef tree builtin_creator_function (tree, tree);
 
 /* Hold a char*, before initialization, or a tree, after
    initialization.  */
-union string_or_tree GTY(())
-{
+union GTY(()) string_or_tree {
   const char * GTY ((tag ("0"))) s;
   tree GTY ((tag ("1"))) t;
 };
 
 /* Used to hold a single builtin record.  */
-struct builtin_record GTY(())
-{
+struct GTY(()) builtin_record {
   union string_or_tree GTY ((desc ("1"))) class_name;
   union string_or_tree GTY ((desc ("1"))) method_name;
   builtin_creator_function * GTY((skip)) creator;

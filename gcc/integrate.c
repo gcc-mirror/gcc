@@ -53,11 +53,11 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Private type used by {get/has}_hard_reg_initial_val.  */
-typedef struct initial_value_pair GTY(()) {
+typedef struct GTY(()) initial_value_pair {
   rtx hard_reg;
   rtx pseudo;
 } initial_value_pair;
-typedef struct initial_value_struct GTY(()) {
+typedef struct GTY(()) initial_value_struct {
   int num_entries;
   int max_entries;
   initial_value_pair * GTY ((length ("%h.num_entries"))) entries;

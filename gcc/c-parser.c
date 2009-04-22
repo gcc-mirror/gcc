@@ -137,8 +137,7 @@ typedef enum c_id_kind {
 
 /* A single C token after string literal concatenation and conversion
    of preprocessing tokens to tokens.  */
-typedef struct c_token GTY (())
-{
+typedef struct GTY (()) c_token {
   /* The kind of token.  */
   ENUM_BITFIELD (cpp_ttype) type : 8;
   /* If this token is a CPP_NAME, this value indicates whether also
@@ -159,8 +158,7 @@ typedef struct c_token GTY (())
 /* A parser structure recording information about the state and
    context of parsing.  Includes lexer information with up to two
    tokens of look-ahead; more are not needed for C.  */
-typedef struct c_parser GTY(())
-{
+typedef struct GTY(()) c_parser {
   /* The look-ahead tokens.  */
   c_token tokens[2];
   /* How many look-ahead tokens are available (0, 1 or 2).  */

@@ -2420,8 +2420,7 @@ enum ix86_stack_slot
 
 #define FASTCALL_PREFIX '@'
 
-struct machine_function GTY(())
-{
+struct GTY(()) machine_function {
   struct stack_local_entry *stack_locals;
   const char *some_ld_name;
   int varargs_gpr_size;

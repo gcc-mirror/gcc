@@ -1931,7 +1931,7 @@ extern int ia64_final_schedule;
 #define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 15 : INVALID_REGNUM)
 
 /* This function contains machine specific function data.  */
-struct machine_function GTY(())
+struct GTY(()) machine_function
 {
   /* The new stack pointer when unwinding from EH.  */
   rtx ia64_eh_epilogue_sp;

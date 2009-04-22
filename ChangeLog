@@ -1,3 +1,8 @@
+2009-04-21  Taras Glek <tglek@mozilla.com>
+
+	* include/hashtab.h: Update GTY annotations to new syntax
+	* include/splay-tree.h: Likewise
+
 2009-04-17  Ben Elliston  <bje@au.ibm.com>
 
 	* config.sub, config.guess: Update from upstream sources.

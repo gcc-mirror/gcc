@@ -48,7 +48,7 @@ enum escape_type
 
    The points-to solution is a union of pt_vars and the abstract
    sets specified by the flags.  */
-struct pt_solution GTY(())
+struct GTY(()) pt_solution
 {
   /* Nonzero if points-to analysis couldn't determine where this pointer
      is pointing to.  */

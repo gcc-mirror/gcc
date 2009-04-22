@@ -43,8 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_BAD2(gmsgid, arg) \
   do { warning (OPT_Wpragmas, gmsgid, arg); return; } while (0)
 
-typedef struct align_stack GTY(())
-{
+typedef struct GTY(()) align_stack {
   int		       alignment;
   tree		       id;
   struct align_stack * prev;
@@ -244,14 +243,12 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
 }
 #endif  /* HANDLE_PRAGMA_PACK */
 
-struct def_pragma_macro_value GTY(())
-{
+struct GTY(()) def_pragma_macro_value {
   struct def_pragma_macro_value *prev;
   cpp_macro *value;
 };
 
-struct def_pragma_macro GTY(())
-{
+struct GTY(()) def_pragma_macro {
   hashval_t hash;
   const char *name;
   struct def_pragma_macro_value value;
@@ -1009,8 +1006,7 @@ handle_pragma_optimize (cpp_reader *ARG_UNUSED(dummy))
 /* Stack of the #pragma GCC options created with #pragma GCC push_option.  Save
    both the binary representation of the options and the TREE_LIST of
    strings that will be added to the function's attribute list.  */
-typedef struct opt_stack GTY(())
-{
+typedef struct GTY(()) opt_stack {
   struct opt_stack *prev;
   tree target_binary;
   tree target_strings;

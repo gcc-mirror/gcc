@@ -112,8 +112,7 @@ readonly_error (tree arg, const char* string)
 /* Structure that holds information about declarations whose type was
    incomplete and we could not check whether it was abstract or not.  */
 
-struct pending_abstract_type GTY((chain_next ("%h.next")))
-{
+struct GTY((chain_next ("%h.next"))) pending_abstract_type {
   /* Declaration which we are checking for abstractness. It is either
      a DECL node, or an IDENTIFIER_NODE if we do not have a full
      declaration available.  */

@@ -119,8 +119,7 @@ extern regset regs_invalidated_by_call_regset;
 typedef HOST_WIDEST_INT gcov_type;
 
 /* Control flow edge information.  */
-struct edge_def GTY(())
-{
+struct GTY(()) edge_def {
   /* The two blocks at the ends of the edge.  */
   struct basic_block_def *src;
   struct basic_block_def *dest;
@@ -217,8 +216,7 @@ struct rtl_bb_info;
    basic blocks.  */
 
 /* Basic block information indexed by block number.  */
-struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")))
-{
+struct GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb"))) basic_block_def {
   /* The edges into and out of the block.  */
   VEC(edge,gc) *preds;
   VEC(edge,gc) *succs;
@@ -257,8 +255,7 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
   int flags;
 };
 
-struct rtl_bb_info GTY(())
-{
+struct GTY(()) rtl_bb_info {
   /* The first and last insns of the block.  */
   rtx head_;
   rtx end_;
@@ -272,8 +269,7 @@ struct rtl_bb_info GTY(())
   int visited;
 };
 
-struct gimple_bb_info GTY(())
-{
+struct GTY(()) gimple_bb_info {
   /* Sequence of statements in this block.  */
   gimple_seq seq;
 
@@ -369,8 +365,7 @@ enum dom_state
    The x_* prefixing is necessary because otherwise references to the
    fields of this struct are interpreted as the defines for backward
    source compatibility following the definition of this struct.  */
-struct control_flow_graph GTY(())
-{
+struct GTY(()) control_flow_graph {
   /* Block pointers for the exit and entry of a function.
      These are always the head and tail of the basic block list.  */
   basic_block x_entry_block_ptr;

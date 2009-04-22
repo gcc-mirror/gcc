@@ -19,8 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Describe a value.  */
-typedef struct cselib_val_struct GTY(())
-{
+typedef struct GTY(()) cselib_val_struct {
   /* The hash value.  */
   unsigned int value;
 
@@ -39,8 +38,7 @@ typedef struct cselib_val_struct GTY(())
 } cselib_val;
 
 /* A list of rtl expressions that hold the same value.  */
-struct elt_loc_list GTY(())
-{
+struct GTY(()) elt_loc_list {
   /* Next element in the list.  */
   struct elt_loc_list *next;
   /* An rtl expression that holds the value.  */
@@ -50,8 +48,7 @@ struct elt_loc_list GTY(())
 };
 
 /* A list of cselib_val structures.  */
-struct elt_list GTY(())
-{
+struct GTY(()) elt_list {
   struct elt_list *next;
   cselib_val *elt;
 };

@@ -62,7 +62,7 @@ enum varray_data_enum {
 };
 
 /* Union of various array types that are used.  */
-typedef union varray_data_tag GTY (()) {
+typedef union GTY (()) varray_data_tag {
   char			  GTY ((length ("%0.num_elements"),
 				tag ("VARRAY_DATA_C")))		vdt_c[1];
   unsigned char		  GTY ((length ("%0.num_elements"),
@@ -110,7 +110,7 @@ typedef union varray_data_tag GTY (()) {
 } varray_data;
 
 /* Virtual array of pointers header.  */
-struct varray_head_tag GTY(()) {
+struct GTY(()) varray_head_tag {
   size_t	num_elements;	/* Maximum element number allocated.  */
   size_t        elements_used;  /* The number of elements used, if
 				   using VARRAY_PUSH/VARRAY_POP.  */

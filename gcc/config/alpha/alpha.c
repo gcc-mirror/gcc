@@ -2852,7 +2852,7 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
 /* Look up the function X_floating library function name for the
    given operation.  */
 
-struct xfloating_op GTY(())
+struct GTY(()) xfloating_op
 {
   const enum rtx_code code;
   const char *const GTY((skip)) osf_func;
@@ -4746,7 +4746,7 @@ alpha_multipass_dfa_lookahead (void)
 
 /* Machine-specific function data.  */
 
-struct machine_function GTY(())
+struct GTY(()) machine_function
 {
   /* For unicosmk.  */
   /* List of call information words for calls from this function.  */
@@ -9487,7 +9487,7 @@ alpha_elf_section_type_flags (tree decl, const char *name, int reloc)
 enum links_kind {KIND_UNUSED, KIND_LOCAL, KIND_EXTERN};
 enum reloc_kind {KIND_LINKAGE, KIND_CODEADDR};
 
-struct alpha_links GTY(())
+struct GTY(()) alpha_links
 {
   int num;
   rtx linkage;
@@ -9495,7 +9495,7 @@ struct alpha_links GTY(())
   enum reloc_kind rkind;
 };
 
-struct alpha_funcs GTY(())
+struct GTY(()) alpha_funcs
 {
   int num;
   splay_tree GTY ((param1_is (char *), param2_is (struct alpha_links *)))

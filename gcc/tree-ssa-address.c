@@ -70,8 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 /* A "template" for memory address, used to determine whether the address is
    valid for mode.  */
 
-struct mem_addr_template GTY (())
-{
+struct GTY (()) mem_addr_template {
   rtx ref;			/* The template.  */
   rtx * GTY ((skip)) step_p;	/* The point in template where the step should be
 				   filled in.  */

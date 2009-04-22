@@ -42,8 +42,7 @@ typedef unsigned long BITMAP_WORD;
 #define BITMAP_ELEMENT_ALL_BITS (BITMAP_ELEMENT_WORDS * BITMAP_WORD_BITS)
 
 /* Obstack for allocating bitmaps and elements from.  */
-typedef struct bitmap_obstack GTY (())
-{
+typedef struct GTY (()) bitmap_obstack {
   struct bitmap_element_def *elements;
   struct bitmap_head_def *heads;
   struct obstack GTY ((skip)) obstack;
@@ -61,8 +60,7 @@ typedef struct bitmap_obstack GTY (())
    bitmap_elt_clear_from to be implemented in unit time rather than
    linear in the number of elements to be freed.  */
 
-typedef struct bitmap_element_def GTY(())
-{
+typedef struct GTY(()) bitmap_element_def {
   struct bitmap_element_def *next;		/* Next element.  */
   struct bitmap_element_def *prev;		/* Previous element.  */
   unsigned int indx;			/* regno/BITMAP_ELEMENT_ALL_BITS.  */
@@ -74,7 +72,7 @@ struct bitmap_descriptor;
    statistics we need to add a bitmap descriptor pointer.  As it is
    not collected, we can just GTY((skip)) it.   */
 
-typedef struct bitmap_head_def GTY(()) {
+typedef struct GTY(()) bitmap_head_def {
   bitmap_element *first;	/* First element in linked list.  */
   bitmap_element *current;	/* Last element looked at.  */
   unsigned int indx;		/* Index of last element looked at.  */

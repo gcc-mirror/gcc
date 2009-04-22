@@ -38,16 +38,14 @@ enum lpt_dec
   LPT_UNROLL_STUPID
 };
 
-struct lpt_decision GTY (())
-{
+struct GTY (()) lpt_decision {
   enum lpt_dec decision;
   unsigned times;
 };
 
 /* The structure describing a bound on number of iterations of a loop.  */
 
-struct nb_iter_bound GTY ((chain_next ("%h.next")))
-{
+struct GTY ((chain_next ("%h.next"))) nb_iter_bound {
   /* The statement STMT is executed at most ...  */
   gimple stmt;
 
@@ -71,8 +69,7 @@ struct nb_iter_bound GTY ((chain_next ("%h.next")))
 
 /* Description of the loop exit.  */
 
-struct loop_exit GTY (())
-{
+struct GTY (()) loop_exit {
   /* The exit edge.  */
   struct edge_def *e;
 
@@ -100,8 +97,7 @@ enum loop_estimation
 };
 
 /* Structure to hold information for each natural loop.  */
-struct loop GTY ((chain_next ("%h.next")))
-{
+struct GTY ((chain_next ("%h.next"))) loop {
   /* Index into loops array.  */
   int num;
 
@@ -181,8 +177,7 @@ enum
 #define AVOID_CFG_MODIFICATIONS (LOOPS_MAY_HAVE_MULTIPLE_LATCHES)
 
 /* Structure to hold CFG information about natural loops within a function.  */
-struct loops GTY (())
-{
+struct GTY (()) loops {
   /* State of loops.  */
   int state;
 

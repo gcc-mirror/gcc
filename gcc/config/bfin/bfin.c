@@ -58,7 +58,7 @@
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
-struct machine_function GTY(())
+struct GTY(()) machine_function
 {
   /* Set if we are notified by the doloop pass that a hardware loop
      was created.  */
@@ -3610,7 +3610,7 @@ DEF_VEC_ALLOC_P (loop_info,heap);
 
 /* Information about a loop we have found (or are in the process of
    finding).  */
-struct loop_info GTY (())
+struct GTY (()) loop_info
 {
   /* loop number, for dumps */
   int loop_no;

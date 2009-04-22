@@ -389,8 +389,7 @@ static int flag_typed_selectors;
 /* Store all constructed constant strings in a hash table so that
    they get uniqued properly.  */
 
-struct string_descriptor GTY(())
-{
+struct GTY(()) string_descriptor {
   /* The literal argument .  */
   tree literal;
 
@@ -401,8 +400,7 @@ struct string_descriptor GTY(())
 static GTY((param_is (struct string_descriptor))) htab_t string_htab;
 
 /* Store the EH-volatilized types in a hash table, for easy retrieval.  */
-struct volatilized_type GTY(())
-{
+struct GTY(()) volatilized_type {
   tree type;
 };
 
@@ -3297,8 +3295,7 @@ objc_generate_write_barrier (tree lhs, enum tree_code modifycode, tree rhs)
   return result;
 }
 
-struct interface_tuple GTY(())
-{
+struct GTY(()) interface_tuple {
   tree id;
   tree class_name;
 };

@@ -64,8 +64,7 @@ enum iofield_type
   IOPARM_type_num
 };
 
-typedef struct gfc_st_parameter_field GTY(())
-{
+typedef struct GTY(()) gfc_st_parameter_field {
   const char *name;
   unsigned int mask;
   enum ioparam_type param_type;
@@ -75,8 +74,7 @@ typedef struct gfc_st_parameter_field GTY(())
 }
 gfc_st_parameter_field;
 
-typedef struct gfc_st_parameter GTY(())
-{
+typedef struct GTY(()) gfc_st_parameter {
   const char *name;
   tree type;
 }

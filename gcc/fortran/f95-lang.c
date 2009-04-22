@@ -52,19 +52,17 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Language-dependent contents of an identifier.  */
 
-struct lang_identifier
-GTY(())
-{
+struct GTY(())
+lang_identifier {
   struct tree_identifier common;
 };
 
 /* The resulting tree type.  */
 
-union lang_tree_node
-GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
+union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
      chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
 
-{
+lang_tree_node {
   union tree_node GTY((tag ("0"),
 		       desc ("tree_node_structure (&%h)"))) generic;
   struct lang_identifier GTY((tag ("1"))) identifier;
@@ -74,9 +72,8 @@ GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
    that keep track of the progress of compilation of the current function.
    Used for nested functions.  */
 
-struct language_function
-GTY(())
-{
+struct GTY(())
+language_function {
   /* struct gfc_language_function base; */
   struct binding_level *binding_level;
 };
@@ -309,9 +306,8 @@ gfc_print_identifier (FILE * file ATTRIBUTE_UNUSED,
 
    Binding contours are used to create GCC tree BLOCK nodes.  */
 
-struct binding_level
-GTY(())
-{
+struct GTY(())
+binding_level {
   /* A chain of ..._DECL nodes for all variables, constants, functions,
      parameters and type declarations.  These ..._DECL nodes are chained
      through the TREE_CHAIN field. Note that these ..._DECL nodes are stored

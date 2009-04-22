@@ -45,8 +45,7 @@ struct static_var_ann_d;
 /* Gimple dataflow datastructure. All publicly available fields shall have
    gimple_ accessor defined in tree-flow-inline.h, all publicly modifiable
    fields should have gimple_set accessor.  */
-struct gimple_df GTY(())
-{
+struct GTY(()) gimple_df {
   /* Array of all variables referenced in the function.  */
   htab_t GTY((param_is (union tree_node))) referenced_vars;
 
@@ -124,7 +123,7 @@ typedef struct
 ---------------------------------------------------------------------------*/
 
 /* Aliasing information for SSA_NAMEs representing pointer variables.  */
-struct ptr_info_def GTY(())
+struct GTY(()) ptr_info_def
 {
   /* The points-to solution, TBAA-pruned if the pointer is dereferenced.  */
   struct pt_solution pt;
@@ -136,8 +135,7 @@ struct ptr_info_def GTY(())
 ---------------------------------------------------------------------------*/
 enum tree_ann_type { TREE_ANN_COMMON, VAR_ANN, FUNCTION_ANN };
 
-struct tree_ann_common_d GTY(())
-{
+struct GTY(()) tree_ann_common_d {
   /* Annotation type.  */
   enum tree_ann_type type;
 
@@ -205,8 +203,7 @@ enum noalias_state {
 };
 
 
-struct var_ann_d GTY(())
-{
+struct GTY(()) var_ann_d {
   struct tree_ann_common_d common;
 
   /* Used by the out of SSA pass to determine whether this variable has
@@ -248,14 +245,12 @@ struct var_ann_d GTY(())
 
 /* Container for variable annotation used by hashtable for annotations for
    static variables.  */
-struct static_var_ann_d GTY(())
-{
+struct GTY(()) static_var_ann_d {
   struct var_ann_d ann;
   unsigned int uid;
 };
 
-struct function_ann_d GTY(())
-{
+struct GTY(()) function_ann_d {
   struct tree_ann_common_d common;
 };
 
@@ -354,8 +349,7 @@ typedef struct immediate_use_iterator_d
 
 
 
-union tree_ann_d GTY((desc ("ann_type ((tree_ann_t)&%h)")))
-{
+union GTY((desc ("ann_type ((tree_ann_t)&%h)"))) tree_ann_d {
   struct tree_ann_common_d GTY((tag ("TREE_ANN_COMMON"))) common;
   struct var_ann_d GTY((tag ("VAR_ANN"))) vdecl;
   struct function_ann_d GTY((tag ("FUNCTION_ANN"))) fdecl;
@@ -379,8 +373,7 @@ static inline int get_lineno (const_gimple);
 /*---------------------------------------------------------------------------
                   Structure representing predictions in tree level.
 ---------------------------------------------------------------------------*/
-struct edge_prediction GTY((chain_next ("%h.ep_next")))
-{
+struct GTY((chain_next ("%h.ep_next"))) edge_prediction {
   struct edge_prediction *ep_next;
   edge ep_edge;
   enum br_predictor ep_predictor;
@@ -394,8 +387,7 @@ static inline void set_phi_nodes (basic_block, gimple_seq);
 /*---------------------------------------------------------------------------
 			      Global declarations
 ---------------------------------------------------------------------------*/
-struct int_tree_map GTY(())
-{
+struct GTY(()) int_tree_map {
   
   unsigned int uid;
   tree to;
@@ -645,8 +637,7 @@ extern bool gimple_stmt_may_fallthru (gimple);
 /* In tree-ssa.c  */
 
 /* Mapping for redirected edges.  */
-struct _edge_var_map GTY(())
-{
+struct GTY(()) _edge_var_map {
   tree result;			/* PHI result.  */
   tree def;			/* PHI arg definition.  */
 };

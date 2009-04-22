@@ -214,8 +214,7 @@ gt_pch_n_S (const void *x)
 /* SPD is saved in the PCH file and holds the information needed
    to restore the string pool.  */
 
-struct string_pool_data GTY(())
-{
+struct GTY(()) string_pool_data {
   struct ht_identifier * * 
     GTY((length ("%h.nslots"),
 	 nested_ptr (union tree_node, "%h ? GCC_IDENT_TO_HT_IDENT (%h) : NULL",

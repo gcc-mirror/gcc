@@ -677,7 +677,6 @@ static type_p
 type (options_p *optsp, bool nested)
 {
   const char *s;
-  bool is_union;
   *optsp = 0;
   switch (token ())
     {
@@ -694,14 +693,16 @@ type (options_p *optsp, bool nested)
     case UNION:
       {
 	options_p opts = 0;
-
-	is_union = (token() == UNION);
+    /* GTY annotations follow attribute syntax 
+       GTY_BEFORE_ID is for union/struct declarations
+       GTY_AFTER_ID is for variable declarations.  */
+    enum {
+        NO_GTY,
+        GTY_BEFORE_ID,
+        GTY_AFTER_ID
+    } is_gty = NO_GTY;
+    bool is_union = (token () == UNION);
 	advance ();
-
-	if (token () == ID)
-	  s = advance ();
-	else
-	  s = xasprintf ("anonymous:%s:%d", lexer_line.file, lexer_line.line);
 
 	/* Top-level structures that are not explicitly tagged GTY(())
 	   are treated as mere forward declarations.  This is because
@@ -710,18 +711,40 @@ type (options_p *optsp, bool nested)
 	   that we can't handle.  */
 	if (nested || token () == GTY_TOKEN)
 	  {
-	    opts = gtymarker_opt ();
-	    if (token () == '{')
-	      {
-		pair_p fields;
-		advance ();
-		fields = struct_field_seq ();
-		require ('}');
-		return new_structure (s, is_union, &lexer_line, fields, opts);
-	      }
+        is_gty = GTY_BEFORE_ID;
+        opts = gtymarker_opt ();
 	  }
-	else if (token () == '{')
-	  consume_balanced ('{', '}');
+
+	if (token () == ID)
+	  s = advance ();
+	else
+	  s = xasprintf ("anonymous:%s:%d", lexer_line.file, lexer_line.line);
+
+        /* Unfortunately above GTY_TOKEN check does not capture the
+           typedef struct_type GTY case.  */
+	if (token () == GTY_TOKEN)
+	  {
+        is_gty = GTY_AFTER_ID;
+        opts = gtymarker_opt ();
+	  }
+        
+    if (is_gty) 
+      {
+        if (token () == '{')
+          {
+            pair_p fields;
+
+            if (is_gty == GTY_AFTER_ID) 
+                parse_error ("GTY must be specified before identifier");
+              
+            advance ();
+            fields = struct_field_seq ();
+            require ('}');
+            return new_structure (s, is_union, &lexer_line, fields, opts);
+          }
+      } 
+    else if (token () == '{')
+      consume_balanced ('{', '}');
 	if (opts)
 	  *optsp = opts;
 	return find_structure (s, is_union);

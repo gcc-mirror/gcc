@@ -470,13 +470,13 @@ enum section_category
 };
 
 /* Information that is provided by all instances of the section type.  */
-struct section_common GTY(()) {
+struct GTY(()) section_common {
   /* The set of SECTION_* flags that apply to this section.  */
   unsigned int flags;
 };
 
 /* Information about a SECTION_NAMED section.  */
-struct named_section GTY(()) {
+struct GTY(()) named_section {
   struct section_common common;
 
   /* The name of the section.  */
@@ -492,7 +492,7 @@ struct named_section GTY(()) {
 typedef void (*unnamed_section_callback) (const void *);
 
 /* Information about a SECTION_UNNAMED section.  */
-struct unnamed_section GTY(()) {
+struct GTY(()) unnamed_section {
   struct section_common common;
 
   /* The callback used to switch to the section, and the data that
@@ -518,7 +518,7 @@ typedef bool (*noswitch_section_callback) (tree decl, const char *name,
 					   unsigned HOST_WIDE_INT rounded);
 
 /* Information about a SECTION_NOSWITCH section.  */
-struct noswitch_section GTY(()) {
+struct GTY(()) noswitch_section {
   struct section_common common;
 
   /* The callback used to assemble decls in this section.  */
@@ -526,8 +526,7 @@ struct noswitch_section GTY(()) {
 };
 
 /* Information about a section, which may be named or unnamed.  */
-union section GTY ((desc ("SECTION_STYLE (&(%h))")))
-{
+union GTY ((desc ("SECTION_STYLE (&(%h))"))) section {
   struct section_common GTY ((skip)) common;
   struct named_section GTY ((tag ("SECTION_NAMED"))) named;
   struct unnamed_section GTY ((tag ("SECTION_UNNAMED"))) unnamed;

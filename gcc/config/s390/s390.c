@@ -260,7 +260,7 @@ HOST_WIDE_INT s390_stack_guard = 0;
 /* The following structure is embedded in the machine 
    specific part of struct function.  */
 
-struct s390_frame_layout GTY (())
+struct GTY (()) s390_frame_layout
 {
   /* Offset within stack frame.  */
   HOST_WIDE_INT gprs_offset;
@@ -303,7 +303,7 @@ struct s390_frame_layout GTY (())
 
 /* Define the structure for the machine field in struct function.  */
 
-struct machine_function GTY(())
+struct GTY(()) machine_function
 {
   struct s390_frame_layout frame_layout;
 

@@ -90,8 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 	   && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))))))
 
 /* Things we only need one of.  This module is not reentrant.  */
-typedef struct globals GTY(())
-{
+typedef struct GTY(()) globals {
   /* An array of the current substitution candidates, in the order
      we've seen them.  */
   VEC(tree,gc) *substitutions;
