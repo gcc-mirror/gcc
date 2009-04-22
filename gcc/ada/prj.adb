@@ -113,8 +113,6 @@ package body Prj is
                       First_Source                   => No_Source,
                       Last_Source                    => No_Source,
                       Interfaces_Defined             => False,
-                      Unit_Based_Language_Name       => No_Name,
-                      Unit_Based_Language_Index      => No_Language_Index,
                       Imported_Directories_Switches  => null,
                       Include_Path                   => null,
                       Include_Data_Set               => False,
