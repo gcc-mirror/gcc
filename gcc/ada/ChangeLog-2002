@@ -1,0 +1,986 @@
+2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gnat_rm.texi, gnat_ug.texi: Use @copying.
+	* gnat_ug_unx.texi, gnat_ug_vms.texi, gnat_ug_vxw.texi,
+	gnat_ug_wnt.texi: Regenerate.
+
+2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gnat_rm.texi: Include gcc-common.texi.  Use GCC version number
+	only.
+	* Make-lang.in ($(srcdir)/ada/gnat_ug_unx.info,
+	$(srcdir)/ada/gnat_ug_vms.info, $(srcdir)/ada/gnat_ug_vxw.info,
+	$(srcdir)/ada/gnat_ug_wnt.info, $(srcdir)/ada/gnat_rm.info,
+	ada/gnat_ug_unx.dvi, ada/gnat_ug_vms.dvi, ada/gnat_ug_vxw.dvi,
+	ada/gnat_ug_wnt.dvi, ada/gnat_rm.dvi): Depend on
+	$(srcdir)/doc/include/gcc-common.texi.
+
+2002-12-15   Geert Bosch  <bosch@gnat.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body): Fix typo and formatting
+
+2002-12-14   Geert Bosch  <bosch@gnat.com>
+
+	PR ada/5690
+	* sem_ch6.adb (Analyze_Subprogram_Body): Recognize additional
+	case of a body created for a Renaming_As_Body, on which
+	conformance checks are not performed.
+
+2002-11-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* cuintp.c, decl.c, deftarg.c, misc.c, targtyps.c, trans.c,
+	utils.c, utils2.c: Include coretypes.h and tm.h, and system.h when
+	not already included.
+	* Make-lang.in: Update dependencies.
+
+2002-11-18  Nathanael Nerode  <neroden@gcc.gnu.org>
+	* adaint.c (__gnat_tmp_name): Better, but good enough for now,
+	solution to buffer overflow bug on GNU/Linux.
+
+2002-11-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR ada/5856
+	PR ada/6919
+	* bindgen.adb: Remove all references to Public_Version.
+	* comperr.adb: Remove all references to Public_Version and
+	GNATPRO_Version; correct bug reporting instructions.
+	* comperr.ads: Change to match bug box.
+	* gnatvsn.ads: Remove all references to Public version and
+	GNATPRO version.
+
+2002-11-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR ada/6919
+	* adaint.c (__gnat_tmp_name): Remove buffer overflow bug on
+	GNU/Linux.
+
+	PR ada/6558
+	* config-lang.in: Remove diff_excludes.
+
+2002-11-05  Graham Stott  <graham.stott@btinternet.com>
+
+	PR ada/8358
+	* trans.c (gnu_pending_elaboration_lists): New GC root.
+	(build_unit_elab): Use..
+
+2002-10-30   Geert Bosch  <bosch@gnat.com>
+
+	PR ada/6558
+	* misc.c : Include optabs.h
+
+	* Make-lang.in (misc.o): Add dependency on optabs.h
+
+2002-10-29   Geert Bosch  <bosch@gnat.com>
+
+	PR ada/6558
+	* Make-lang.in (gnatbind): Depend on CONFIG_H
+
+2002-10-29  Geert bosch  <bosch@gnat.com>
+
+	PR ada/6558
+	* misc.c: Unrevert misc.c (1.13)
+
+2002-10-28  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* a-chlat9.ads a-cwila9.ads a-dynpri.adb a-retide.adb: Update
+	maintainership comments.
+
+2002-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR ada/5904
+	* 5ataprop.adb 5atpopsp.adb 5bosinte.adb 5ftaprop.adb
+	5gtaprop.adb 5htaprop.adb 5rosinte.ads 5staprop.adb
+	5stpopse.adb 5vtaspri.ads 5zintman.adb 5ztaprop.adb
+	7staprop.adb: Correct statements in comments about
+	maintainership of GNAT.
+
+	PR ada/5904
+	* 1ssecsta.adb 1ssecsta.ads adadecode.c adadecode.h aux-io.c
+	gnatname.adb gnatname.ads mkdir.c osint-b.adb osint-b.ads
+	osint-c.adb osint-c.ads osint-l.adb osint-l.ads osint-m.adb
+	osint-m.ads prj-makr.adb prj-makr.ads prj-pp.adb prj-pp.ads
+	s-atacco.ads s-traceb.adb s-traceb.ads s-traces.adb
+	s-traces.ads s-tratas.adb s-tratas.ads sinput-d.adb
+	sinput-d.ads switch-b.adb switch-b.ads switch-c.adb
+	switch-c.ads switch-m.adb switch-m.ads: Correct statements in
+	comments about maintainership of GNAT.
+
+	PR ada/6919 (forward port of patch for PR ada/5904)
+	* 1aexcept.adb 1aexcept.ads 41intnam.ads 42intnam.ads
+	4aintnam.ads 4cintnam.ads 4dintnam.ads 4hexcpol.adb
+	4lintnam.ads 4mintnam.ads 4nintnam.ads 4onumaux.ads
+	4pintnam.ads 4rintnam.ads 4sintnam.ads 4uintnam.ads
+	4vcalend.adb 4vintnam.ads 4wcalend.adb 4wexcpol.adb
+	4wintnam.ads 4zintnam.ads 4znumaux.ads 4zsytaco.adb
+	4zsytaco.ads 51osinte.adb 51osinte.ads 52osinte.adb
+	52osinte.ads 52system.ads 53osinte.ads 5aosinte.ads
+	5asystem.ads 5atasinf.ads 5ataspri.ads 5avxwork.ads
+	5bosinte.ads 5bsystem.ads 5cosinte.ads 5dosinte.ads
+	5esystem.ads 5fosinte.ads 5fsystem.ads 5ftasinf.ads
+	5ginterr.adb 5gmastop.adb 5gosinte.ads 5gproinf.adb
+	5gproinf.ads 5gsystem.ads 5gtasinf.adb 5gtasinf.ads
+	5gtpgetc.adb 5hparame.ads 5hsystem.ads 5htaspri.ads
+	5iosinte.ads 5itaspri.ads 5ksystem.ads 5kvxwork.ads
+	5losinte.ads 5lsystem.ads 5mosinte.ads 5mvxwork.ads
+	5ninmaop.adb 5nintman.adb 5nosinte.ads 5ntaspri.ads
+	5oosprim.adb 5oparame.adb 5osystem.ads 5posinte.ads
+	5posprim.adb 5pvxwork.ads 5rosinte.ads 5rparame.adb
+	5sintman.adb 5sosinte.ads 5sparame.adb 5ssystem.ads
+	5stasinf.adb 5stasinf.ads 5staspri.ads 5svxwork.ads
+	5tosinte.ads 5uosinte.ads 5vasthan.adb 5vinterr.adb
+	5vintman.ads 5vosinte.ads 5vosprim.adb 5vosprim.ads
+	5vparame.ads 5vsystem.ads 5vtaspri.ads 5vtpopde.adb
+	5vtpopde.ads 5vvaflop.adb 5wintman.adb 5wmemory.adb
+	5wosinte.ads 5wosprim.adb 5wsystem.ads 5wtaprop.adb
+	5wtaspri.ads 5ysystem.ads 5zinterr.adb 5zosinte.adb
+	5zosinte.ads 5zosprim.adb 5zsystem.ads 6vcpp.adb 6vcstrea.adb
+	7sosprim.adb 86numaux.adb 86numaux.ads 9drpc.adb a-astaco.adb
+	a-caldel.ads a-calend.adb a-calend.ads a-chahan.adb
+	a-chahan.ads a-colien.adb a-colien.ads a-colire.adb
+	a-colire.ads a-comlin.adb a-comlin.ads a-cwila1.ads
+	a-decima.adb a-decima.ads a-diocst.adb a-diocst.ads
+	a-direio.adb a-direio.ads a-einuoc.adb a-einuoc.ads
+	a-except.adb a-except.ads a-excpol.adb a-exctra.adb
+	a-exctra.ads a-filico.adb a-filico.ads a-finali.adb
+	a-finali.ads a-interr.ads a-intsig.adb a-intsig.ads
+	a-ngcefu.adb a-ngcoty.adb a-ngcoty.ads a-ngelfu.adb
+	a-nudira.adb a-nudira.ads a-nuflra.adb a-nuflra.ads
+	a-numaux.ads a-reatim.ads a-retide.ads a-sequio.adb
+	a-sequio.ads a-siocst.adb a-siocst.ads a-ssicst.adb
+	a-ssicst.ads a-stmaco.ads a-storio.adb a-strbou.adb
+	a-strbou.ads a-stream.ads a-strfix.adb a-strfix.ads
+	a-strmap.adb a-strmap.ads a-strsea.adb a-strsea.ads
+	a-strunb.adb a-strunb.ads a-ststio.adb a-ststio.ads
+	a-stunau.adb a-stunau.ads a-stwibo.adb a-stwibo.ads
+	a-stwifi.adb a-stwima.adb a-stwima.ads a-stwise.adb
+	a-stwise.ads a-stwiun.adb a-stwiun.ads a-suteio.adb
+	a-suteio.ads a-swmwco.ads a-swuwti.adb a-swuwti.ads
+	a-sytaco.adb a-sytaco.ads a-tags.adb a-tags.ads a-tasatt.ads
+	a-taside.adb a-taside.ads a-teioed.adb a-teioed.ads
+	a-textio.adb a-textio.ads a-ticoau.adb a-ticoau.ads
+	a-ticoio.adb a-ticoio.ads a-tideau.adb a-tideau.ads
+	a-tideio.adb a-tideio.ads a-tienau.adb a-tienau.ads
+	a-tienio.adb a-tienio.ads a-tifiio.adb a-tifiio.ads
+	a-tiflau.adb a-tiflau.ads a-tiflio.adb a-tiflio.ads
+	a-tigeau.adb a-tigeau.ads a-tiinau.adb a-tiinau.ads
+	a-tiinio.adb a-tiinio.ads a-timoau.adb a-timoau.ads
+	a-timoio.adb a-timoio.ads a-tiocst.adb a-tiocst.ads
+	a-titest.adb a-witeio.adb a-witeio.ads a-wtcoau.adb
+	a-wtcoau.ads a-wtcoio.adb a-wtcstr.adb a-wtcstr.ads
+	a-wtdeau.adb a-wtdeau.ads a-wtdeio.adb a-wtdeio.ads
+	a-wtedit.adb a-wtedit.ads a-wtenau.adb a-wtenau.ads
+	a-wtenio.adb a-wtenio.ads a-wtfiio.adb a-wtfiio.ads
+	a-wtflau.adb a-wtflau.ads a-wtflio.adb a-wtflio.ads
+	a-wtgeau.adb a-wtgeau.ads a-wtinau.adb a-wtinau.ads
+	a-wtinio.adb a-wtmoau.adb a-wtmoau.ads a-wtmoio.adb
+	a-wtmoio.ads a-wttest.adb ada-tree.def ada-tree.h ada.h
+	adaint.c adaint.h ali-util.adb ali-util.ads ali.adb ali.ads
+	alloc.ads argv.c atree.adb atree.ads atree.h back_end.adb
+	back_end.ads bcheck.adb bcheck.ads binde.adb binde.ads
+	binderr.adb binderr.ads bindgen.adb bindgen.ads bindusg.adb
+	bindusg.ads butil.adb butil.ads cal.c casing.adb casing.ads
+	ceinfo.adb checks.adb checks.ads cio.c comperr.adb comperr.ads
+	csets.adb csets.ads csinfo.adb cstand.adb cstand.ads
+	cstreams.c cuintp.c debug.adb debug.ads debug_a.adb
+	debug_a.ads dec-io.adb dec-io.ads dec.ads decl.c deftarg.c
+	einfo.adb einfo.ads einfo.h elists.adb elists.ads elists.h
+	errno.c errout.adb errout.ads eval_fat.adb eval_fat.ads exit.c
+	exp_aggr.adb exp_aggr.ads exp_attr.adb exp_attr.ads
+	exp_ch10.ads exp_ch11.adb exp_ch11.ads exp_ch12.adb
+	exp_ch12.ads exp_ch13.adb exp_ch13.ads exp_ch2.adb exp_ch2.ads
+	exp_ch3.adb exp_ch3.ads exp_ch4.adb exp_ch4.ads exp_ch5.adb
+	exp_ch5.ads exp_ch6.adb exp_ch6.ads exp_ch7.adb exp_ch7.ads
+	exp_ch8.adb exp_ch8.ads exp_ch9.adb exp_ch9.ads exp_code.adb
+	exp_code.ads exp_dbug.adb exp_dbug.ads exp_disp.adb
+	exp_disp.ads exp_dist.adb exp_dist.ads exp_fixd.adb
+	exp_fixd.ads exp_imgv.adb exp_imgv.ads exp_intr.adb
+	exp_intr.ads exp_pakd.adb exp_pakd.ads exp_prag.adb
+	exp_prag.ads exp_smem.adb exp_smem.ads exp_strm.adb
+	exp_strm.ads exp_tss.adb exp_tss.ads exp_util.adb exp_util.ads
+	exp_vfpt.adb exp_vfpt.ads expander.adb expander.ads fe.h
+	final.c fmap.adb fmap.ads fname-sf.adb fname-sf.ads
+	fname-uf.adb fname-uf.ads fname.adb fname.ads freeze.adb
+	freeze.ads frontend.adb frontend.ads g-calend.ads g-comlin.adb
+	g-debpoo.adb g-debpoo.ads g-locfil.adb g-os_lib.ads
+	g-regist.adb g-regist.ads get_targ.adb get_targ.ads gigi.h
+	gmem.c gnat1drv.adb gnat1drv.ads gnat_ug.texi gnatbind.adb
+	gnatbind.ads gnatbl.c gnatcmd.adb gnatcmd.ads gnatdll.adb
+	gnatfind.adb gnatkr.adb gnatkr.ads gnatlbr.adb gnatlink.adb
+	gnatlink.ads gnatls.adb gnatls.ads gnatmake.adb gnatmake.ads
+	gnatmem.adb gnatprep.adb gnatprep.ads gnatpsta.adb gnatvsn.ads
+	gnatxref.adb hlo.adb hlo.ads hostparm.ads i-c.adb i-cexten.ads
+	i-cobol.adb i-cobol.ads i-cpoint.adb i-cpoint.ads i-cpp.adb
+	i-cpp.ads i-cstrea.adb i-cstrea.ads i-cstrin.adb i-cstrin.ads
+	i-fortra.adb i-os2err.ads i-os2lib.adb i-os2lib.ads
+	i-os2syn.ads i-os2thr.ads i-pacdec.adb i-pacdec.ads
+	impunit.adb impunit.ads init.c inline.adb inline.ads io-aux.c
+	itypes.adb itypes.ads krunch.adb krunch.ads lang-options.h
+	lang-specs.h layout.adb layout.ads lib-list.adb lib-load.adb
+	lib-load.ads lib-sort.adb lib-util.adb lib-util.ads
+	lib-writ.adb lib-writ.ads lib-xref.adb lib-xref.ads lib.adb
+	lib.ads link.c live.adb live.ads make.adb make.ads makeusg.adb
+	makeusg.ads math_lib.adb mdll.adb mdll.ads memtrack.adb misc.c
+	namet.adb namet.ads namet.h nlists.adb nlists.ads nlists.h
+	nmake.adb nmake.ads nmake.adt opt.adb opt.ads osint.adb
+	osint.ads output.adb output.ads par-ch10.adb par-ch11.adb
+	par-ch12.adb par-ch13.adb par-ch2.adb par-ch3.adb par-ch4.adb
+	par-ch5.adb par-ch6.adb par-ch7.adb par-ch8.adb par-ch9.adb
+	par-endh.adb par-labl.adb par-load.adb par-prag.adb
+	par-sync.adb par-tchk.adb par-util.adb par.adb par.ads
+	prj-attr.adb prj-attr.ads prj-com.adb prj-com.ads prj-dect.adb
+	prj-dect.ads prj-env.adb prj-env.ads prj-ext.adb prj-ext.ads
+	prj-nmsc.adb prj-nmsc.ads prj-pars.adb prj-pars.ads
+	prj-part.adb prj-part.ads prj-proc.adb prj-proc.ads
+	prj-strt.adb prj-strt.ads prj-tree.adb prj-tree.ads
+	prj-util.adb prj-util.ads prj.adb prj.ads raise.c raise.h
+	repinfo.adb repinfo.ads repinfo.h restrict.adb restrict.ads
+	rident.ads rtsfind.adb rtsfind.ads s-addima.adb s-addima.ads
+	s-arit64.adb s-arit64.ads s-assert.adb s-assert.ads
+	s-asthan.adb s-asthan.ads s-atacco.adb s-auxdec.adb
+	s-auxdec.ads s-bitops.adb s-bitops.ads s-chepoo.ads
+	s-direio.adb s-direio.ads s-except.ads s-exctab.adb
+	s-exctab.ads s-exnflt.ads s-exngen.adb s-exngen.ads
+	s-exnint.ads s-exnlfl.ads s-exnlin.ads s-exnllf.ads
+	s-exnlli.ads s-exnsfl.ads s-exnsin.ads s-exnssi.ads
+	s-expflt.ads s-expgen.adb s-expgen.ads s-expint.ads
+	s-explfl.ads s-explin.ads s-expllf.ads s-explli.ads
+	s-expllu.adb s-expllu.ads s-expmod.adb s-expmod.ads
+	s-expsfl.ads s-expsin.ads s-expssi.ads s-expuns.adb
+	s-expuns.ads s-fatflt.ads s-fatgen.adb s-fatgen.ads
+	s-fatlfl.ads s-fatllf.ads s-fatsfl.ads s-ficobl.ads
+	s-fileio.adb s-fileio.ads s-finimp.adb s-finimp.ads
+	s-finroo.adb s-finroo.ads s-fore.adb s-fore.ads s-imgbiu.adb
+	s-imgbiu.ads s-imgboo.adb s-imgboo.ads s-imgcha.adb
+	s-imgcha.ads s-imgdec.adb s-imgdec.ads s-imgenu.adb
+	s-imgenu.ads s-imgint.adb s-imgint.ads s-imgllb.adb
+	s-imgllb.ads s-imglld.adb s-imglld.ads s-imglli.adb
+	s-imglli.ads s-imgllu.adb s-imgllu.ads s-imgllw.adb
+	s-imgllw.ads s-imgrea.adb s-imgrea.ads s-imguns.adb
+	s-imguns.ads s-imgwch.adb s-imgwch.ads s-imgwiu.adb
+	s-imgwiu.ads s-inmaop.ads s-interr.adb s-interr.ads
+	s-intman.ads s-io.adb s-io.ads s-maccod.ads s-mantis.adb
+	s-mantis.ads s-memory.adb s-memory.ads s-osprim.ads
+	s-pack03.adb s-pack03.ads s-pack05.adb s-pack05.ads
+	s-pack06.adb s-pack06.ads s-pack07.adb s-pack07.ads
+	s-pack09.adb s-pack09.ads s-pack10.adb s-pack10.ads
+	s-pack11.adb s-pack11.ads s-pack12.adb s-pack12.ads
+	s-pack13.adb s-pack13.ads s-pack14.adb s-pack14.ads
+	s-pack15.adb s-pack15.ads s-pack17.adb s-pack17.ads
+	s-pack18.adb s-pack18.ads s-pack19.adb s-pack19.ads
+	s-pack20.adb s-pack20.ads s-pack21.adb s-pack21.ads
+	s-pack22.adb s-pack22.ads s-pack23.adb s-pack23.ads
+	s-pack24.adb s-pack24.ads s-pack25.adb s-pack25.ads
+	s-pack26.adb s-pack26.ads s-pack27.adb s-pack27.ads
+	s-pack28.adb s-pack28.ads s-pack29.adb s-pack29.ads
+	s-pack30.adb s-pack30.ads s-pack31.adb s-pack31.ads
+	s-pack33.adb s-pack33.ads s-pack34.adb s-pack34.ads
+	s-pack35.adb s-pack35.ads s-pack36.adb s-pack36.ads
+	s-pack37.adb s-pack37.ads s-pack38.adb s-pack38.ads
+	s-pack39.adb s-pack39.ads s-pack40.adb s-pack40.ads
+	s-pack41.adb s-pack41.ads s-pack42.adb s-pack42.ads
+	s-pack43.adb s-pack43.ads s-pack44.adb s-pack44.ads
+	s-pack45.adb s-pack45.ads s-pack46.adb s-pack46.ads
+	s-pack47.adb s-pack47.ads s-pack48.adb s-pack48.ads
+	s-pack49.adb s-pack49.ads s-pack50.adb s-pack50.ads
+	s-pack51.adb s-pack51.ads s-pack52.adb s-pack52.ads
+	s-pack53.adb s-pack53.ads s-pack54.adb s-pack54.ads
+	s-pack55.adb s-pack55.ads s-pack56.adb s-pack56.ads
+	s-pack57.adb s-pack57.ads s-pack58.adb s-pack58.ads
+	s-pack59.adb s-pack59.ads s-pack60.adb s-pack60.ads
+	s-pack61.adb s-pack61.ads s-pack62.adb s-pack62.ads
+	s-pack63.adb s-pack63.ads s-parame.adb s-parame.ads
+	s-parint.adb s-parint.ads s-pooglo.adb s-pooglo.ads
+	s-pooloc.adb s-pooloc.ads s-poosiz.adb s-poosiz.ads
+	s-powtab.ads s-proinf.adb s-proinf.ads s-rpc.adb s-rpc.ads
+	s-scaval.ads s-secsta.adb s-secsta.ads s-sequio.adb
+	s-sequio.ads s-shasto.adb s-shasto.ads s-soflin.adb
+	s-soflin.ads s-sopco3.adb s-sopco3.ads s-sopco4.adb
+	s-sopco4.ads s-sopco5.adb s-sopco5.ads s-stache.adb
+	s-stache.ads s-stalib.adb s-stalib.ads s-stoele.adb
+	s-stopoo.ads s-stratt.adb s-stratt.ads s-strops.adb
+	s-strops.ads s-taprob.ads s-taprop.ads s-tarest.ads
+	s-tasdeb.adb s-tasdeb.ads s-tasinf.adb s-tasinf.ads
+	s-tasini.ads s-taskin.ads s-tasren.ads s-tasres.ads
+	s-tassta.ads s-tpinop.adb s-tpinop.ads s-tpoben.ads
+	s-tpobop.ads s-unstyp.ads s-vaflop.adb s-vaflop.ads
+	s-valboo.adb s-valboo.ads s-valcha.adb s-valcha.ads
+	s-valdec.adb s-valdec.ads s-valenu.adb s-valenu.ads
+	s-valint.adb s-valint.ads s-vallld.adb s-vallld.ads
+	s-vallli.adb s-vallli.ads s-valllu.adb s-valllu.ads
+	s-valrea.adb s-valrea.ads s-valuns.adb s-valuns.ads
+	s-valuti.adb s-valuti.ads s-valwch.adb s-valwch.ads
+	s-vercon.adb s-vercon.ads s-vmexta.adb s-vmexta.ads
+	s-wchcnv.adb s-wchcnv.ads s-wchcon.ads s-wchjis.adb
+	s-wchjis.ads s-wchstw.adb s-wchstw.ads s-wchwts.adb
+	s-wchwts.ads s-widboo.adb s-widboo.ads s-widcha.adb
+	s-widcha.ads s-widenu.adb s-widenu.ads s-widlli.adb
+	s-widlli.ads s-widllu.adb s-widllu.ads s-widwch.adb
+	s-widwch.ads s-wwdcha.adb s-wwdcha.ads s-wwdenu.adb
+	s-wwdenu.ads s-wwdwch.adb s-wwdwch.ads scans.adb scans.ads
+	scn-nlit.adb scn-slit.adb scn.adb scn.ads sdefault.ads sem.adb
+	sem.ads sem_aggr.adb sem_aggr.ads sem_attr.adb sem_attr.ads
+	sem_case.adb sem_case.ads sem_cat.adb sem_cat.ads sem_ch10.adb
+	sem_ch10.ads sem_ch11.adb sem_ch11.ads sem_ch12.adb
+	sem_ch12.ads sem_ch13.adb sem_ch13.ads sem_ch2.adb sem_ch2.ads
+	sem_ch3.adb sem_ch3.ads sem_ch4.adb sem_ch4.ads sem_ch5.adb
+	sem_ch5.ads sem_ch6.adb sem_ch6.ads sem_ch7.adb sem_ch7.ads
+	sem_ch8.adb sem_ch8.ads sem_ch9.adb sem_ch9.ads sem_disp.adb
+	sem_disp.ads sem_dist.adb sem_dist.ads sem_elab.adb
+	sem_elab.ads sem_elim.adb sem_elim.ads sem_eval.adb
+	sem_eval.ads sem_intr.adb sem_intr.ads sem_maps.adb
+	sem_maps.ads sem_mech.adb sem_mech.ads sem_prag.adb
+	sem_prag.ads sem_res.adb sem_res.ads sem_smem.adb sem_smem.ads
+	sem_type.adb sem_type.ads sem_util.adb sem_util.ads
+	sem_vfpt.adb sem_vfpt.ads sem_warn.adb sem_warn.ads
+	sfn_scan.adb sfn_scan.ads sinfo-cn.adb sinfo-cn.ads sinfo.adb
+	sinfo.ads sinfo.h sinput-l.adb sinput-l.ads sinput-p.adb
+	sinput-p.ads sinput.adb sinput.ads snames.adb snames.ads
+	snames.h sprint.adb sprint.ads stand.adb stand.ads stringt.adb
+	stringt.ads stringt.h style.adb style.ads stylesw.adb
+	stylesw.ads switch.adb switch.ads sysdep.c system.ads
+	table.adb table.ads targparm.adb targparm.ads targtyps.c
+	tbuild.adb tbuild.ads trans.c tree_gen.adb tree_gen.ads
+	tree_in.adb tree_in.ads tree_io.adb tree_io.ads treepr.adb
+	treepr.ads treeprs.ads treeprs.adt ttypef.ads ttypes.ads
+	types.adb types.ads types.h uintp.adb uintp.ads uintp.h
+	uname.adb uname.ads urealp.adb urealp.ads urealp.h usage.adb
+	usage.ads utils.c utils2.c validsw.adb validsw.ads
+	widechar.adb widechar.ads xeinfo.adb xnmake.adb xr_tabls.adb
+	xr_tabls.ads xref_lib.adb xref_lib.ads xsinfo.adb xsnames.adb
+	xtreeprs.adb: Correct statements in comments about maintainership
+	of GNAT.
+
+2002-09-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (EXTRA_GNATBIND_OBJS): Add version.o.
+	* Makefile.in (TOOLS_LIBS): Add ../../version.o.
+	* gnatvsn.ads: Gnat_Version_String is now a function.
+	* gnatvsn.adb: New file.  When asked for Gnat_Version_String,
+	copy the C version_string into a String and return it.
+	* gnatcmd.adb, gnatkr.adb, gnatlbr.adb, gnatlink.adb,
+	gnatls.adb,gnatmake.adb, gnatprep.adb, gnatpsta.adb:
+	Remove pragma Ident (Gnat_Version_String).  If this was the
+	sole use of package Gnatvsn, remove the with statement too.
+	* gnat1drv.adb: Tweak -gnatv output.
+
+2002-09-17  Richard Henderson  <rth@redhat.com>
+
+	* trans.c (tree_transform): Use real_ldexp not REAL_VALUE_LDEXP.
+	* config/dsp16xx/dsp16xx.md (fixuns_trunchfhi2): Use real_2expN.
+	* config/mips/mips.md (fixuns_truncdfsi2): Likewise.
+	(fixuns_truncdfdi2, fixuns_truncsfsi2, fixuns_truncsfdi2): Likewise.
+	* config/m68k/m68k.c (floating_exact_log2): Use real_exponent
+	and real_2expN instead of a loop.
+	* doc/tm.texi (REAL_VALUE_LDEXP): Remove.
+	(REAL_VALUE_RNDZINT, REAL_VALUE_UNSIGNED_RNDZINT): Remove.
+
+2002-08-25  Andre Leis  <a.leis@gmx.net>
+	    David Billinghurst  <David.Billinghurst@riotinto.com>
+
+	* sysdep.c (__gnat_ttyname): include <termios.h> on cygwin
+
+2002-08-13  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in (gnatbind$(exeext)): Link with $(SYSLIBS).
+	Remove $(CONFIG_H) dependency.
+
+2002-08-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* ada/Make-lang.in (ada.mostlyclean): Remove coverage files.
+
+2002-07-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* adadecode.c (ada_demangle): Use xstrdup in lieu of
+	xmalloc/strcpy.
+	* misc.c (gnat_decode_option): Likewise.
+
+2002-07-15  Florian Weimer  <fw@deneb.enyo.de>
+
+	* make.adb (Add_Switch): Make Generic_Position a procedure.  The
+	function approach did not work well because of a side effect (the
+	function call could reallocate the table which was being indexed
+	using its result). Fixes ada/4851. [RESURRECTED]
+
+2002-07-01  Roger Sayle  <roger@eyesopen.com>
+
+	* ada/utils.c (builtin_function): Accept an additional parameter.
+
+2002-06-28  Andreas Jaeger  <aj@suse.de>
+
+	PR ada/7144
+	* Makefile.in: Fix typo in comment, patch by Adrian Knoth
+	<adi@thur.de>.
+
+2002-06-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (SHELL): Set to @SHELL@.
+
+2002-06-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* utils.c (init_gigi_decls): Use ARRAY_SIZE in lieu of explicit
+	array size calculation.
+
+2002-06-04  Andreas Jaeger  <aj@suse.de>
+
+	* Make-lang.in (gnatbind): Readd rule that has been lost in last
+	patch.
+
+2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	Merge from pch-branch:
+
+	* config-lang.in (gtfiles): Add ada-tree.h.
+	* ada-tree.h (SET_TYPE_CI_CO_LIST): New.
+	(SET_TYPE_MODULUS): New.
+	(SET_TYPE_INDEX): New.
+	(SET_TYPE_DIGITS_VALUE): New.
+	(SET_TYPE_RM_SIZE): New.
+	(SET_TYPE_UNCONSTRAINED_ARRAY): New.
+	(SET_TYPE_ADA_SIZE): New.
+	(SET_TYPE_ACTUAL_BOUNDS): New.
+	(SET_DECL_CONST_CORRESPONDING_VAR): New.
+	(SET_DECL_ORIGINAL_FIELD): New.
+	(TREE_LOOP_ID): Correct typo.
+	* decl.c: Use new macros.
+	* utils.c: Include debug.h, use new macros.
+	* utils2.c: Use new macros.
+
+	* ada-tree.h: Update all macros for new tree description.
+	(struct tree_loop_id): New.
+	(union lang_tree_node): New.
+	(struct lang_decl): New.
+	(struct lang_type): New.
+	* misc.c (gnat_mark_tree): Delete.
+	(LANG_HOOKS_MARK_TREE): Delete.
+	* trans.c (tree_transform): No longer any need to cast
+	for TREE_LOOP_ID.
+
+	* utils.c (struct language_function): New dummy structure.
+
+	* Makefile.in (decl.o): gt-ada-<filename.h> is in objdir, not srcdir.
+	(misc.o): Likewise.
+	(utils.o): Likewise; also gtype-ada.h.
+	* Make-lang.in (gnat1): Add dependency on s-gtype.
+	(gnatbind): Add dependency on $(CONFIG_H).
+	* utils.c: Correct last #include.
+	(stuct e_stack): Remove unnecessary 'static'.
+	(mark_e_stack): Remove unused prototype.
+
+	* scn-nlit.adb: Remove whitespace after version number to
+	keep lines under 80 chars.
+	* snames.adb: Likewise.
+	* treepr.ads: Likewise.
+
+	* Makefile.in (decl.o): Include gt-ada-<filename>.h.
+	(misc.o): Likewise.
+	(utils.o): Include gt-ada-<filename>.h and gtype-ada.h.
+	* config-lang.in (gtfiles): New.
+	* decl.c: Use gengtype for roots.
+	* gigi.h: Use gengtype for roots.
+	* trans.c: Use gengtype for roots.
+	* utils.c: Use gengtype for roots, marking.  Include gtype-ada.h.
+
+2002-06-02  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* misc.c (gnat_init): Adjust setting of internal_error_function.
+
+2002-06-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gnat_ug.texi: Use @ifnottex instead of @ifinfo.
+	* gnat_ug_unx.texi, gnat_ug_vms.texi, gnat_ug_vxw.texi,
+	gnat_ug_wnt.texi: Regenerate.
+
+2002-05-31  Florian Weimer  <fw@deneb.enyo.de>
+
+	* 5ntaprop.adb (with System.OS_Primitives): Remove.
+
+	* cstreams.c (max_path_len): Move from here ...
+	* adaint.c (__gnat_max_path_len): ... to here.
+	* adaint.c (__gnat_max_path_len): Declare.
+	* g-dirope.adb (Max_Path): Adjust.
+	* g-os_lib.adb (Normalize_Pathname.Max_Path): Adjust.
+	* i-cstrea.ads (max_path_len): Adjust.
+	* osint.adb (Get_RTS_Search_Dir.Max_Path): Adjust.
+	* xr_tabls.adb (Dir_Name.Max_Path: Adjust.
+
+	* Makefile.in, Make-lang.in: Documentation is now built in
+	Make-lang.in.  Store Info and generated Texinfo files in the
+	source directory.
+	* gnat_ug.texi: Remove CVS keywords, correct version number.
+	Set file name correctly.
+
+	* gnat_ug_*.texi: Add.
+	* .cvsignore: Ignore generated Texinfo files.
+
+2002-05-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* ada.h: Add MI guard macro.
+	(SUBTYPE): Define constants with an anonymous enum, not static
+	const variables.
+	(IN): Cast constants to appropriate type before use.
+
+2002-05-26  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gnatvsn.ads (Gnat_Version_String): Change to "3.2 20020526
+	(experimental)".
+
+2002-05-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in (CP, ECHO): Copy from Makefile.in.
+	(X_ADA_CFLAGS, T_ADA_CFLAGS, X_ADAFLAGS, T_ADAFLAGS): Likewise.
+	(ALL_ADAFLAGS, FORCE_DEBUG_ADAFLAGS, ADA_CFLAGS): Likewise.
+	(ALL_ADA_CFLAGS): Likewise.
+	(ADA_INCLUDES): Likewise.
+	Adapt for new working dir.
+	(GNATBIND): Use Makefile.in version.
+	(.SUFFIXES): Copy from Makefile.in.
+	(ada-warn): Define.
+	(.adb.o, .ads.o): Copy from Makefile.in.
+	Added $(OUTPUT_OPTION).
+	(GNAT1_C_OBJS): Moved from Makefile.in.
+	Prefix with ada subdir.
+	(GNAT_ADA_OBJS, GNAT1_ADA_OBJS, GNAT1_OBJS, GNATBIND_OBJS): Likewise.
+	(EXTRA_GNAT1_OBJS): Moved from Makefile.in.
+	Adapt for new working dir.
+	(EXTRA_GNATBIND_OBJS): Likewise.
+	(ADA_BACKEND): Moved from Makefile.in.
+	Renamed to avoid conflict with global BACKEND.
+	Use that one.
+	(TARGET_ADA_SRCS): Moved from Makefile.in.
+	(gnat1$(exeext)): Replaced recursive rule with Makefile.in version.
+	Use ADA_BACKEND.
+	(gnatbind$(exeext)): Replaced recursive rule with Makefile.in version.
+	(ada_extra_files): Moved from Makefile.in.
+	Prefix with ada subdir.
+	(ada/b_gnat1.c, ada/b_gnat1.o, ada/b_gnatb.c, ada/b_gnatb.o): Likewise.
+	(ada/treeprs.ads, ada/einfo.h, ada/sinfo.h, ada/nmake.adb): Likewise.
+	(ada/nmake.ads): Likewise.
+	(update-sources): Moved from Makefile.in.
+	Prefix with ada subdir.
+	(ada/sdefault.adb, ada/stamp-sdefault, ada/sdefault.o): Likewise.
+	(ADA_TREE_H): Likewise.
+	(ada/a-except.o, ada/s-assert.o, ada/s-memory.o): Likewise.
+	(ada/memtrack.o): Likewise.
+	(ada/adadecode.o): Likewise.
+	Update dependencies.
+	(ada/adaint.o): New.
+	(ada/argv.o): Moved from Makefile.in.
+	Prefix with ada subdir.
+	Update dependencies.
+	(ada/cstreams.o, ada/exit.o, ada/final.o, ada/link.o): Likewise.
+	(ada/cio.o, ada/init.o, ada/raise.o, ada/tracebak.o): Likewise.
+	(ada/cuintp.o, ada/decl.o, ada/misc.o): Moved from Makefile.in.
+	Prefix with ada subdir.
+	(ada/targtyps.o, ada/trans.o, ada/utils.o, ada/utils2.o): Likewise.
+	(GNAT DEPENDENCIES): Regenerate.
+	* Makefile.in (MACHMODE_H, RTL_H, TREE_H): Removed, provided by
+	toplevel Makefile.in.
+	(EXTRA_GNAT1_OBJS, EXTRA_GNATBIND_OBJS): Removed.
+	(TARGET_ADA_SRCS): Removed.
+	(GNAT1_C_OBJS, GNAT_ADA_OBJS, GNAT1_ADA_OBJS, GNAT1_OBJS): Likewise.
+	(GNATBIND_OBJS): Likewise.
+	(ADA_INCLUDE_DIR, ADA_RTL_OBJ_DIR): Moved here.
+	(BACKEND): Removed.
+	(../gnat1$(exeext), ../gnatbind$(exeext)): Likewise.
+	(TREE_H): Likewise.
+	(ada_extra_files): Likewise.
+	(b_gnat1.c, b_gnat1.o, b_gnatb.c, b_gnatb.o): Likewise.
+	(treeprs.ads, einfo.h, sinfo.h, nmake.adb, nmake.ads): Likewise.
+	(update-sources): Likewise.
+	(sdefault.adb, stamp-sdefault, sdefault.o): Likewise
+	(ADA_TREE_H): Likewise.
+	(adadecoce.o): Likewise.
+	(cuintp.o, decl.o, misc.o, trans.o, utils.o, utils2.o): Likewise.
+	(GNAT DEPENDENCIES): Likewise.
+
+2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.adalib: Allow for PWDCMD to override hardcoded pwd.
+	* Makefile.in: Likewise.
+
+2002-05-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in (gnat1$(exeext), gnatbind$(exeext), gnattools):
+	Restore $(CONFIG_H) and prefix.o dependencies.
+	(ada.stage[1-4]): Depend on stage?-start.
+
+	* Makefile.in (b_gnatb.c): Depend on interfac.o.
+
+2002-05-02  Jim Wilson  <wilson@redhat.com>
+
+	* utils.c (finish_record_type): Change record_size to record_type.
+
+2001-05-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* ada/Makefile.in (X_ADA_CFLAGS, T_ADA_CFLAGS): New fragment overrides.
+	(ALL_ADA_CFLAGS): Define.  Replace ADA_CFLAGS with ALL_ADA_CFLAGS in
+	ALL_ADAFLAGS, MOST_ADAFLAGS, and all compilations using CC.
+
+2002-04-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (gnat_parse_file): Update.
+
+2002-04-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (gnat_init): Don't set lang_attribute_common.
+
+2002-04-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gnat_rm.texi: Use @ifnottex instead of @ifinfo.
+
+2002-04-21  Florian Weimer  <fw@deneb.enyo.de>
+
+	* gnat_ug.texi: New file.
+
+	* gnat_rm.texi: Do not include texiplus.texi.  Include fdl.texi
+	instead of gfdl.texi
+
+	* xgnatug.adb, ug_words: New files.
+
+	* Makefile.in (doc, dvi): New targets.  Build gnat_ug_*,
+	gnat_rm and gnat-style manuals.
+
+2002-04-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gigi.h (incomplete_type_error): Remove.
+	* utils.c (incomplete_type_error): Remove.
+
+2002-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* trans.c (tree_transform): Add has_scope argument to
+	expand_start_stmt_expr.
+
+2002-04-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gigi.h (truthvalue_conversion): Rename.
+	* misc.c (LANG_HOOKS_TRUTHVALUE_CONVERSION): Redefine.
+	* trans.c (tree_transform): Update.
+	* utils2.c (truthvalue_conversion): Rename, update.
+	(build_binary_op, build_unary_op): Update.
+
+2002-04-04  Laurent Guerby  <guerby@acm.org>
+
+	* make.adb: Implement -margs, remove restriction about file name placement.
+	* makeusg.adb: Documentation update.
+	* Makefile.in (TOOLS_FLAGS_TO_PASS): Add VPATH=$(fsrcdir).
+	* Makefile.in (gnattools3): Comment out, gnatmem does not build without libaddr2line.
+
+2002-04-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* utils.c (create_subprog_decl): Use SET_DECL_ASSEMBLER_NAME.
+	(builtin_function): Similarly.
+
+2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* decl.c (gnat_to_gnu_entity): Update.
+	* gigi.h (mark_addressable): Rename.
+	* misc.c (LANG_HOOKS_MARK_ADDRESSABLE): Redefine.
+	* trans.c (tree_transform): Update.
+	* utils.c (create_var_decl): Update.
+	* util2.c (build_binary_op, build_unary_op,
+	fill_vms_descriptor): Update.
+	(mark_addressable): Rename, update.
+
+2002-04-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gigi.h (unsigned_type, signed_type, signed_or_unsigned_type):
+	Rename.
+	* misc.c (LANG_HOOKS_SIGNED_TYPE, LANG_HOOKS_UNSIGNED_TYPE,
+	LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE): New.
+	* trans.c (tree_transform, convert_with_check): Update.
+	* utils.c (unsigned_type, signed_type, signed_or_unsigned_type):
+	Rename.
+
+2002-03-31  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gigi.h (finish_incomplete_decl): Rename.
+	* misc.c (LANG_HOOKS_FINISH_INCOMPLETE_DECL): Redefine.
+	* utils.c (gnat_init_decl_processing): Don't set hook.
+	(finish_incomplete_decl): Rename.
+
+2002-03-29  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in: Pass VPATH=$(fsrcdir) when calling make in rts
+	directory.
+
+2001-03-28  Robert Dewar  <dewar@gnat.com>
+
+	* checks.ads:
+	(Remove_Checks): New procedure
+
+	* checks.adb:
+	(Remove_Checks): New procedure
+
+	* exp_util.adb:
+	Use new Duplicate_Subexpr functions
+	(Duplicate_Subexpr_No_Checks): New procedure
+	(Duplicate_Subexpr_No_Checks_Orig): New procedure
+	(Duplicate_Subexpr): Restore original form (checks duplicated)
+	(Duplicate_Subexpr): Call Remove_Checks
+
+	* exp_util.ads:
+	(Duplicate_Subexpr_No_Checks): New procedure
+	(Duplicate_Subexpr_No_Checks_Orig): New procedure
+	Add 2002 to copyright notice
+
+	* sem_util.adb: Use new Duplicate_Subexpr functions
+
+	* sem_eval.adb:
+	(Eval_Indexed_Component): This is the place to call
+	Constant_Array_Ref and to replace the value. We simply merge
+	the code of this function in here, since it is now no longer
+	used elsewhere. This fixes the problem of the back end not
+	realizing we were clever enough to see that this was
+	constant.
+	(Expr_Val): Remove call to Constant_Array_Ref
+	(Expr_Rep_Val): Remove call to Constant_Array_Ref
+	Minor reformatting
+	(Constant_Array_Ref): Deal with string literals (patch
+	suggested by Zack Weinberg on the gcc list)
+
+2001-03-28  Ed Schonberg  <schonber@gnat.com>
+
+	* exp_util.adb: Duplicate_Subexpr_No_Checks_Orig =>
+	Duplicate_Subexpr_Move_Checks.
+
+	* exp_util.ads: Duplicate_Subexpr_No_Checks_Orig =>
+	Duplicate_Subexpr_Move_Checks.
+
+	* sem_eval.adb: (Constant_Array_Ref): Verify that constant
+	value of array exists before retrieving it (it may a private
+	protected component in a function).
+
+2002-03-28   Geert Bosch  <bosch@gnat.com>
+
+	* prj-pp.adb : New file.
+
+	* prj-pp.ads : New file.
+
+2002-03-28  Andreas Jaeger  <aj@suse.de>
+
+	* Makefile.in (stamp-sdefault): Fix path for Makefile.
+
+2002-03-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (gnat_expand_expr): Move prototype.
+
+2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (insert_default_attributes): Remove.
+
+2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (LANG_HOOKS_EXPAND_EXPR): Redefine.
+	(gnat_init): Don't set hook.
+	(gnat_expand_expr): Fix prototype.
+
+2002-03-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (ggc_p): Remove.
+
+2002-03-27  Geert Bosch  <bosch@gnat.com>
+
+	* prj-makr.ads, prj-makr.adb : New files.
+
+2002-03-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (LANG_HOOKS_MARK_TREE): Redefine.
+	(lang_mark_tree): Make static, rename.
+
+2002-03-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (maybe_build_cleanup): Remove.
+
+2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gigi.h (yyparse): Remove.
+
+2002-03-23  Florian Weimer  <fw@deneb.enyo.de>
+
+	From Ben Brosgol  <brosgol@gnat.com>
+	* gnat_rm.texi: Sync with ACT version.
+
+2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (LANG_HOOKS_DECL_PRINTABLE_NAME): Redefine.
+	(gnat_init): Remove old hook.
+
+2002-03-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (LANG_HOOKS_PARSE_FILE): Redefine.
+	(yyparse): Rename gnat_parse_file.
+
+2002-03-14  Geoffrey Keating  <geoffk@redhat.com>
+
+	Delete all lines containing "$Revision:".
+	* xeinfo.adb: Don't look for revision numbers.
+	* xnmake.adb: Likewise.
+	* xsinfo.adb: Likewise.
+	* xsnames.adb: Likewise.
+	* xtreeprs.adb: Likewise.
+
+2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* misc.c (gnat_tree_code_type, gnat_tree_code_length,
+	gnat_tree_code_name): Delete.
+	(tree_code_type, tree_code_length, tree_code_name): Define.
+	(gnat_init): Don't try to copy into the various tree_code
+	arrays.
+
+2002-03-11  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (.NOTPARALLEL): Add fake tag.
+
+2002-03-07  Geert Bosch  <bosch@gnat.com>
+
+	* adadecode.c, adadecode.h, aux-io.c, s-traces.adb, s-traces.ads,
+	s-tratas.adb, s-tratas.ads, sinput-d.adb, sinput-d.ads,
+	switch-b.adb, switch-b.ads, switch-c.adb, switch-c.ads,
+	switch-m.adb, switch-m.ads : New files.
+
+2002-03-07  Geert Bosch  <bosch@gnat.com>
+
+	* 41intnam.ads, 42intnam.ads, 4aintnam.ads, 4cintnam.ads,
+	4dintnam.ads, 4gintnam.ads, 4hintnam.ads, 4lintnam.ads,
+	4mintnam.ads, 4pintnam.ads, 4rintnam.ads, 4sintnam.ads,
+	4uintnam.ads, 4vcalend.adb, 4zintnam.ads, 52system.ads,
+	5amastop.adb, 5asystem.ads, 5ataprop.adb, 5atpopsp.adb,
+	5avxwork.ads, 5bosinte.adb, 5bsystem.ads, 5esystem.ads,
+	5fsystem.ads, 5ftaprop.adb, 5ginterr.adb, 5gmastop.adb,
+	5gsystem.ads, 5gtaprop.adb, 5gtasinf.adb, 5gtasinf.ads,
+	5hparame.ads, 5hsystem.ads, 5htaprop.adb, 5htraceb.adb,
+	5itaprop.adb, 5ksystem.ads, 5kvxwork.ads, 5lintman.adb,
+	5lsystem.ads, 5mvxwork.ads, 5ninmaop.adb, 5nosinte.ads,
+	5ntaprop.adb, 5ointerr.adb, 5omastop.adb, 5oosinte.adb,
+	5osystem.ads, 5otaprop.adb, 5otaspri.ads, 5pvxwork.ads,
+	5qtaprop.adb, 5sintman.adb, 5ssystem.ads, 5staprop.adb,
+	5stpopse.adb, 5svxwork.ads, 5tosinte.ads, 5uintman.adb,
+	5vasthan.adb, 5vinmaop.adb, 5vinterr.adb, 5vintman.adb,
+	5vmastop.adb, 5vparame.ads, 5vsystem.ads, 5vtaprop.adb,
+	5vtpopde.adb, 5wmemory.adb, 5wsystem.ads, 5wtaprop.adb,
+	5ysystem.ads, 5zinterr.adb, 5zintman.adb, 5zosinte.adb,
+	5zosinte.ads, 5zsystem.ads, 5ztaprop.adb, 6vcpp.adb, 6vcstrea.adb,
+	7sintman.adb, 7staprop.adb, 7stpopsp.adb, 9drpc.adb,
+	Make-lang.in, Makefile.in, a-caldel.adb, a-comlin.ads,
+	a-dynpri.adb, a-except.adb, a-except.ads, a-finali.adb,
+	a-ncelfu.ads, a-reatim.adb, a-retide.adb, a-stream.ads,
+	a-ststio.adb, a-ststio.ads, a-stwifi.adb, a-tags.adb, a-tasatt.adb,
+	a-textio.adb, a-tideau.adb, a-tiflau.adb, a-tigeau.adb,
+	a-tigeau.ads, a-tiinau.adb, a-timoau.adb, a-witeio.adb,
+	a-wtdeau.adb, a-wtenau.adb, a-wtflau.adb, a-wtgeau.adb,
+	a-wtgeau.ads, a-wtinau.adb, a-wtmoau.adb, ada-tree.def, ada-tree.h,
+	adaint.c, adaint.h, ali-util.adb, ali.adb, ali.ads, atree.adb,
+	atree.ads, atree.h, back_end.adb, bcheck.adb, bindgen.adb,
+	bindusg.adb, checks.adb, comperr.adb, config-lang.in, csets.adb,
+	csets.ads, cstand.adb, cstreams.c, debug.adb, debug.ads, decl.c,
+	einfo.adb, einfo.ads, einfo.h, elists.h, errout.adb, errout.ads,
+	eval_fat.adb, exp_aggr.adb, exp_attr.adb, exp_ch11.adb,
+	exp_ch12.adb, exp_ch13.adb, exp_ch2.adb, exp_ch3.adb, exp_ch3.ads,
+	exp_ch4.adb, exp_ch5.adb, exp_ch6.adb, exp_ch7.adb, exp_ch7.ads,
+	exp_ch9.adb, exp_ch9.ads, exp_dbug.adb, exp_dbug.ads, exp_disp.ads,
+	exp_dist.adb, exp_fixd.adb, exp_intr.adb, exp_pakd.adb,
+	exp_prag.adb, exp_strm.adb, exp_util.adb, exp_util.ads,
+	expander.adb, expect.c, fe.h, fmap.adb, fmap.ads, fname-uf.adb,
+	freeze.adb, frontend.adb, g-awk.adb, g-cgideb.adb, g-comlin.adb,
+	g-comlin.ads, g-debpoo.adb, g-dirope.adb, g-dirope.ads,
+	g-dyntab.adb, g-expect.adb, g-expect.ads, g-io.ads, g-io_aux.adb,
+	g-io_aux.ads, g-locfil.adb, g-locfil.ads, g-os_lib.adb,
+	g-os_lib.ads, g-regexp.adb, g-regpat.adb, g-socket.adb,
+	g-socket.ads, g-spipat.adb, g-table.adb, g-trasym.adb,
+	g-trasym.ads, gigi.h, gmem.c, gnat1drv.adb, gnatbind.adb, gnatbl.c,
+	gnatchop.adb, gnatcmd.adb, gnatdll.adb, gnatfind.adb, gnatlbr.adb,
+	gnatlink.adb, gnatls.adb, gnatmem.adb, gnatprep.adb, gnatvsn.ads,
+	gnatxref.adb, hlo.adb, hostparm.ads, i-cobol.adb, i-cpp.adb,
+	i-cstrea.ads, i-cstrin.adb, i-pacdec.adb, i-vxwork.ads,
+	impunit.adb, init.c, inline.adb, io-aux.c, layout.adb, lib-load.adb,
+	lib-util.adb, lib-writ.adb, lib-writ.ads, lib-xref.adb,
+	lib-xref.ads, lib.adb, lib.ads, make.adb, makeusg.adb, mdll.adb,
+	memroot.adb, misc.c, mlib-tgt.adb, mlib-utl.adb, mlib-utl.ads,
+	mlib.adb, namet.adb, namet.ads, namet.h, nlists.h, nmake.adb,
+	nmake.ads, nmake.adt, opt.adb, opt.ads, osint.adb, osint.ads,
+	output.adb, output.ads, par-ch2.adb, par-ch3.adb, par-ch5.adb,
+	par-prag.adb, par-tchk.adb, par-util.adb, par.adb, prj-attr.adb,
+	prj-dect.adb, prj-env.adb, prj-env.ads, prj-nmsc.adb, prj-part.adb,
+	prj-proc.adb, prj-strt.adb, prj-tree.adb, prj-tree.ads, prj.adb,
+	prj.ads, raise.c, raise.h, repinfo.adb, restrict.adb, restrict.ads,
+	rident.ads, rtsfind.adb, rtsfind.ads, s-arit64.adb, s-asthan.adb,
+	s-atacco.adb, s-atacco.ads, s-auxdec.adb, s-crc32.adb, s-crc32.ads,
+	s-direio.adb, s-fatgen.adb, s-fileio.adb, s-finimp.adb,
+	s-gloloc.adb, s-gloloc.ads, s-interr.adb, s-mastop.adb,
+	s-mastop.ads, s-memory.adb, s-parame.ads, s-parint.adb,
+	s-pooglo.adb, s-pooloc.adb, s-rpc.adb, s-secsta.adb, s-sequio.adb,
+	s-shasto.adb, s-soflin.adb, s-soflin.ads, s-stache.adb,
+	s-taasde.adb, s-taasde.ads, s-tadeca.adb, s-tadeca.ads,
+	s-tadert.adb, s-tadert.ads, s-taenca.adb, s-taenca.ads,
+	s-taprob.adb, s-taprop.ads, s-tarest.adb, s-tasdeb.adb,
+	s-tasini.adb, s-tasini.ads, s-taskin.adb, s-taskin.ads,
+	s-tasque.adb, s-tasque.ads, s-tasren.adb, s-tasren.ads,
+	s-tassta.adb, s-tasuti.adb, s-tasuti.ads, s-tataat.adb,
+	s-tataat.ads, s-tpoben.adb, s-tpoben.ads, s-tpobop.adb,
+	s-tposen.adb, s-tposen.ads, s-traceb.adb, s-traceb.ads,
+	s-unstyp.ads, s-widenu.adb, scn-nlit.adb, scn.adb, sem.adb,
+	sem_aggr.adb, sem_attr.adb, sem_attr.ads, sem_case.adb,
+	sem_ch10.adb, sem_ch11.adb, sem_ch11.ads, sem_ch12.adb,
+	sem_ch13.adb, sem_ch13.ads, sem_ch2.adb, sem_ch3.adb, sem_ch3.ads,
+	sem_ch4.adb, sem_ch5.adb, sem_ch6.adb, sem_ch6.ads, sem_ch7.adb,
+	sem_ch8.adb, sem_ch8.ads, sem_ch9.adb, sem_disp.adb, sem_dist.adb,
+	sem_elab.adb, sem_elim.adb, sem_elim.ads, sem_eval.adb,
+	sem_intr.adb, sem_mech.adb, sem_prag.adb, sem_res.adb,
+	sem_type.adb, sem_util.adb, sem_util.ads, sem_vfpt.adb,
+	sem_warn.adb, sinfo.adb, sinfo.ads, sinfo.h, sinput-l.adb,
+	sinput-l.ads, sinput.adb, sinput.ads, snames.adb, snames.ads,
+	snames.h, sprint.adb, sprint.ads, stringt.adb, stringt.ads,
+	stringt.h, style.adb, switch.adb, switch.ads, sysdep.c, system.ads,
+	table.adb, targparm.adb, targparm.ads, targtyps.c, tbuild.adb,
+	tbuild.ads, tracebak.c, trans.c, tree_gen.adb, tree_io.adb,
+	treepr.adb, treepr.ads, treeprs.ads, treeprs.adt, ttypes.ads,
+	types.adb, types.ads, types.h, uintp.ads, urealp.ads, usage.adb,
+	utils.c, utils2.c, validsw.adb, xnmake.adb, xr_tabls.adb,
+	xr_tabls.ads, xref_lib.adb, xref_lib.ads : Merge in ACT changes.
+
+	* 1ssecsta.adb, 1ssecsta.ads, a-chlat9.ads, a-cwila9.ads,
+	g-enblsp.adb, g-md5.adb, g-md5.ads, gnatname.adb, gnatname.ads,
+	mkdir.c, osint-b.adb, osint-b.ads, osint-c.adb, osint-c.ads,
+	osint-l.adb, osint-l.ads, osint-m.adb, osint-m.ads : New files
+
+	* 3lsoccon.ads, 5qparame.ads, 5qvxwork.ads, 5smastop.adb,
+	5zparame.ads, gnatmain.adb, gnatmain.ads, gnatpsys.adb : Removed
+
+	* mdllfile.adb, mdllfile.ads, mdlltool.adb, mdlltool.ads : Renamed
+	to mdll-fil.ad[bs] and mdll-util.ad[bs]
+
+	* mdll-fil.adb, mdll-fil.ads, mdll-utl.adb, mdll-utl.ads : Renamed
+	from mdllfile.ad[bs] and mdlltool.ad[bs]
+
+2002-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* utils.c (init_gnat_to_gnu, init_gigi_decls): Use ARRAY_SIZE in
+	lieu of explicit sizeof/sizeof.
+
+2002-02-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (copy_lang_decl): Remove.
+
+2002-02-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* misc.c: Delete traditional-mode-related code copied from the
+	C front end but not used, or used only to permit the compiler
+	to link.
+
+2002-02-07  Richard Henderson  <rth@redhat.com>
+
+	* adaint.c (__gnat_to_gm_time): First arg is int, not time_t.
+	* adaint.h (__gnat_to_gm_time): Update prototype.
+
+2002-01-30  Richard Henderson  <rth@redhat.com>
+
+	* trans.c (tree_transform) [N_Loop_Statement]: Use
+	expand_exit_loop_top_cond.
+
+
+
+Copyright (C) 2002 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
