@@ -31,6 +31,8 @@
 
 --  Operations on packed bit strings
 
+pragma Compiler_Unit;
+
 with System;
 
 package System.Bit_Ops is

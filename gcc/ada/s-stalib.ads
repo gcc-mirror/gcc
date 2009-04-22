@@ -50,7 +50,6 @@ pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we get
 --  elaboration circularities with Ada.Exceptions if polling is on.
 
-with System;
 with Ada.Unchecked_Conversion;
 
 package System.Standard_Library is

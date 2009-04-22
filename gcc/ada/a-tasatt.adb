@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2008, AdaCore                     --
+--                     Copyright (C) 1995-2009, AdaCore                     --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,15 +42,15 @@
 --  include:
 
 --  - It is vulnerable to bad Task_Id values, to the extent of possibly
---     trashing memory and crashing the runtime system.
+--    trashing memory and crashing the runtime system.
 
 --  - It requires dynamic storage allocation for each new attribute value,
---     except for types that happen to be the same size as System.Address, or
---     shorter.
+--    except for types that happen to be the same size as System.Address, or
+--    shorter.
 
---  -  Instantiations at other than the library level rely on being able to
---     do down-level calls to a procedure declared in the generic package body.
---     This makes it potentially vulnerable to compiler changes.
+--  - Instantiations at other than the library level rely on being able to
+--    do down-level calls to a procedure declared in the generic package body.
+--    This makes it potentially vulnerable to compiler changes.
 
 --  The main implementation issue here is that the connection from task to
 --  attribute is a potential source of dangling references.
@@ -249,8 +249,8 @@ package body Ada.Task_Attributes is
    -- Unchecked Conversions --
    ---------------------------
 
-   --  The following type corresponds to Dummy_Wrapper,
-   --  declared in System.Tasking.Task_Attributes.
+   --  The following type corresponds to Dummy_Wrapper, declared in
+   --  System.Tasking.Task_Attributes.
 
    type Wrapper;
    type Access_Wrapper is access all Wrapper;
@@ -399,9 +399,9 @@ package body Ada.Task_Attributes is
                P := P.Next;
             end loop;
 
-            --  Unlock the RTS here to follow the lock ordering rule
-            --  that prevent us from using new (i.e the Global_Lock) while
-            --  holding any other lock.
+            --  Unlock the RTS here to follow the lock ordering rule that
+            --  prevent us from using new (i.e the Global_Lock) while holding
+            --  any other lock.
 
             POP.Unlock_RTS;
             W := new Wrapper'

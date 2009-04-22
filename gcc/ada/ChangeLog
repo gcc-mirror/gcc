@@ -1,6 +1,27 @@
+2009-04-22  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-bitops.adb, s-bitops.ads (Raise_Error): Do not use Ada 05 syntax,
+	since this unit is now part of bootstrap units, so must use Ada 95
+	syntax only.
+
+2009-04-22  Thomas Quinot  <quinot@adacore.com>
+
+	* a-tasatt.adb: Minor reformatting
+
+2009-04-22  Bob Duff  <duff@adacore.com>
+
+	* s-stalib.ads: Remove "with System;" since we're inside System, so
+	it's unnecessary.
+
+2009-04-22  Vincent Celier  <celier@adacore.com>
+
+	* prj-nmsc.adb (Add_Source): Always put the dependency file name in
+	the source record, as there may be a dependency file even if no object
+	file is created.
+
 2009-04-22  Robert Dewar  <dewar@adacore.com>
 
-	* lib-load.adb: MInor reformatting
+	* lib-load.adb: Minor reformatting
 
 	* lib-load.ads: Minor reformatting
 
