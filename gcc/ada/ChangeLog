@@ -1,3 +1,11 @@
+2009-04-22  Robert Dewar  <dewar@adacore.com>
+
+	* lib-load.adb: MInor reformatting
+
+	* lib-load.ads: Minor reformatting
+
+	* sinfo.ads: Minor reformatting
+
 2009-04-22  Bob Duff  <duff@adacore.com>
 
 	* exp_pakd.adb: Minor comment fixes.

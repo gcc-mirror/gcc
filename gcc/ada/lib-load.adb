@@ -768,6 +768,7 @@ package body Lib.Load is
 
    procedure Make_Instance_Unit (N : Node_Id; In_Main : Boolean) is
       Sind : constant Source_File_Index := Source_Index (Main_Unit);
+
    begin
       Units.Increment_Last;
 
@@ -782,9 +783,11 @@ package body Lib.Load is
          Units.Table (Main_Unit).Version        := Source_Checksum (Sind);
 
       else
-         --  Duplicate information from instance unit, for the body.
-         Units.Table (Units.Last) :=
-           Units.Table (Get_Cunit_Unit_Number (Library_Unit (N)));
+         --  Duplicate information from instance unit, for the body
+         --  The unit node N has been rewritten as a body, but it was placed
+         --  in the units table when first loaded as a declaration.
+
+         Units.Table (Units.Last) := Units.Table (Get_Cunit_Unit_Number (N));
          Units.Table (Units.Last).Cunit := N;
       end if;
    end Make_Instance_Unit;
