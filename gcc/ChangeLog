@@ -1,5 +1,11 @@
 2009-04-22  Paolo Bonzini  <bonzini@gnu.org>
 
+	* config/sh/sh.c (shift_insns_rtx, shiftcosts, gen_shifty_op,
+	sh_dynamicalize_shift_p, shl_and_scr_length): Truncate
+	shift counts to avoid out-of-bounds array accesses.
+
+2009-04-22  Paolo Bonzini  <bonzini@gnu.org>
+
 	* config/sparc/sparc.h (POINTER_SIZE): Fix comment.
 	(Pmode): Move above.
 
