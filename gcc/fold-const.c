@@ -11861,7 +11861,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      if (code == LROTATE_EXPR || code == RROTATE_EXPR)
 	        low = low % TYPE_PRECISION (type);
 	      else if (TYPE_UNSIGNED (type) || code == LSHIFT_EXPR)
-	        return build_int_cst (type, 0);
+		return omit_one_operand (type, build_int_cst (type, 0),
+					 TREE_OPERAND (arg0, 0));
 	      else
 		low = TYPE_PRECISION (type) - 1;
 	    }
