@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -510,14 +510,21 @@ begin
 
       Set_Generate_Code (Main_Unit);
 
-      --  If we have a corresponding spec, then we need object
-      --  code for the spec unit as well
+      --  If we have a corresponding spec, and it comes from source
+      --  or it is not a generated spec for a child subprogram body,
+      --  then we need object code for the spec unit as well
 
       if Nkind (Unit (Main_Unit_Node)) in N_Unit_Body
         and then not Acts_As_Spec (Main_Unit_Node)
       then
-         Set_Generate_Code
-           (Get_Cunit_Unit_Number (Library_Unit (Main_Unit_Node)));
+         if Nkind (Main_Unit_Node) = N_Subprogram_Body
+           and then not Comes_From_Source (Library_Unit (Main_Unit_Node))
+         then
+            null;
+         else
+            Set_Generate_Code
+              (Get_Cunit_Unit_Number (Library_Unit (Main_Unit_Node)));
+         end if;
       end if;
 
       --  Case of no code required to be generated, exit indicating no error

@@ -731,7 +731,10 @@ package body Sem_Ch10 is
                   --  it, and this must be indicated explicitly. We also mark
                   --  the body entity as a child unit now, to prevent a
                   --  cascaded error if the spec entity cannot be entered
-                  --  in its scope.
+                  --  in its scope. Finally we create a Units table entry for
+                  --  the subprogram declaration, to maintain a one-to-one
+                  --  correspondence with compilation unit nodes. This is
+                  --  critical for the tree traversals performed by Inspector.
 
                   declare
                      Loc : constant Source_Ptr := Sloc (N);
@@ -753,6 +756,7 @@ package body Sem_Ch10 is
 
                      Set_Library_Unit (N, Lib_Unit);
                      Set_Parent_Spec (Unit (Lib_Unit), Cunit (Unum));
+                     Make_Child_Decl_Unit (N);
                      Semantics (Lib_Unit);
 
                      --  Now that a separate declaration exists, the body

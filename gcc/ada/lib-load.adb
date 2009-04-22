@@ -753,6 +753,30 @@ package body Lib.Load is
       end if;
    end Load_Unit;
 
+   --------------------------
+   -- Make_Child_Decl_Unit --
+   --------------------------
+
+   procedure Make_Child_Decl_Unit (N : Node_Id) is
+      Unit_Decl : constant Node_Id := Library_Unit (N);
+
+   begin
+      Units.Increment_Last;
+      Units.Table (Units.Last) := Units.Table (Get_Cunit_Unit_Number (N));
+      Units.Table (Units.Last).Unit_Name :=
+        Get_Spec_Name (Unit_Name (Get_Cunit_Unit_Number (N)));
+      Units.Table (Units.Last).Cunit := Unit_Decl;
+      Units.Table (Units.Last).Cunit_Entity  :=
+        Defining_Identifier
+          (Defining_Unit_Name (Specification (Unit (Unit_Decl))));
+
+      --  The library unit created for of a child subprogram unit plays no
+      --  role in code generation and binding, so label it accordingly.
+
+      Units.Table (Units.Last).Generate_Code := False;
+      Set_Has_No_Elaboration_Code (Unit_Decl);
+   end Make_Child_Decl_Unit;
+
    ------------------------
    -- Make_Instance_Unit --
    ------------------------

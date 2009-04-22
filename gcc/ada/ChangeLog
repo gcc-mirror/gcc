@@ -1,3 +1,22 @@
+2009-04-22  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-load.ads, lib-load.adb (Make_Child_Decl_Unit): New subprogram, to
+	create a unit table entry for the subprogram declaration created for a
+	child suprogram body that has no separate specification.
+
+	* sem_ch10.adb (Analyze_Compilation_Unit): For a child unit that is a
+	subprogram body, call Make_Child_Decl_Unit.
+
+	* lib.adb (Get_Cunit_Unit_Number): Verify that an entry not yet in the
+	table can only be the created specification of a child subprogram body
+	that is the main unit, which has not been entered in the table yet.
+
+	* errout.adb  (Output_Messages): Ignore created specification of a
+	child subprogram body to prevent repeated listing of error messages.
+
+	* gnat1drv.adb (gnat1drv): The generated specification for a child
+	subprogram body does not generate code.
+
 2009-04-22  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-bitops.adb, s-bitops.ads (Raise_Error): Do not use Ada 05 syntax,
