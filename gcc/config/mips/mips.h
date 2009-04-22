@@ -2525,21 +2525,6 @@ typedef struct mips_args {
   } while (0)
 
 
-/* A C statement or compound statement with a conditional `goto
-   LABEL;' executed if memory address X (an RTX) can have different
-   meanings depending on the machine mode of the memory reference it
-   is used for.
-
-   Autoincrement and autodecrement addresses typically have
-   mode-dependent effects because the amount of the increment or
-   decrement is the size of the operand being addressed.  Some
-   machines have other mode-dependent addresses.  Many RISC machines
-   have no mode-dependent addresses.
-
-   You may assume that ADDR is a valid address for the machine.  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL) {}
-
 /* This handles the magic '..CURRENT_FUNCTION' symbol, which means
    'the start of the function that this code is output in'.  */
 

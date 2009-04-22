@@ -494,8 +494,6 @@ do {									    \
     }									    \
 } while(0)
 
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
-
 #define LEGITIMATE_CONSTANT_P(X) 1
 
 #define REGISTER_MOVE_COST(MODE, FROM, TO) ((FROM) == STACK_REG ? 6 \

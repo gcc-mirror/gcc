@@ -2592,18 +2592,6 @@ struct sh_args {
       goto WIN;								\
     }									\
 }
-
-/* Go to LABEL if ADDR (a legitimate address expression)
-   has an effect that depends on the machine mode it is used for.
-
-   ??? Strictly speaking, we should also include all indexed addressing,
-   because the index scale factor is the length of the operand.
-   However, the impact of GO_IF_MODE_DEPENDENT_ADDRESS would be to
-   high if we did that.  So we rely on reload to fix things up.
-
-   Auto-increment addressing is now treated in recog.c.  */
-
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */

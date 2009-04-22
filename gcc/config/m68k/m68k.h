@@ -816,11 +816,6 @@ __transfer_from_trampoline ()					\
 	      && GET_CODE (XEXP (X, 1)) == REG)				\
 	    X = force_operand (X, 0);					\
 	  goto WIN; }}}
-
-/* On the 68000, only predecrement and postincrement address depend thus
-   (the amount of decrement or increment being the length of the operand).
-   These are now treated generically in recog.c.  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
 
 #define CASE_VECTOR_MODE HImode
 #define CASE_VECTOR_PC_RELATIVE 1

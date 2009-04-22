@@ -1,3 +1,37 @@
+2009-04-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	* defaults.h (GO_IF_MODE_DEPENDENT_ADDRESS): Provide empty default.
+	* config/frv/frv.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/s390/s390.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/m32c/m32c.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/spu/spu.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/i386/i386.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/sh/sh.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/pdp11/pdp11.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/avr/avr.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/crx/crx.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/fr30/fr30.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/m68hc11/m68hc11.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/cris/cris.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/iq2000/iq2000.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/mn10300/mn10300.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/ia64/ia64.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/m68k/m68k.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/picochip/picochip.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/arc/arc.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/mcore/mcore.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/score/score.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/arm/arm.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/pa/pa.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/mips/mips.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/v850/v850.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/mmix/mmix.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+	* config/bfin/bfin.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
+
+2009-04-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/sparc/sparc.h (POINTER_SIZE): Clarify comment.
+
 2009-04-22  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
 	* cfghooks.c (tidy_fallthru_edges): Remove find_basic_blocks

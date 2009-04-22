@@ -909,19 +909,6 @@ do										\
    will reload one or both registers only if neither labeling works.  */
 #define REG_OK_FOR_INDEX_P(X) REG_OK_FOR_BASE_P (X)
 
-/* A C statement or compound statement with a conditional `goto LABEL;'
-   executed if memory address X (an RTX) can have different meanings depending
-   on the machine mode of the memory reference it is used for or if the address
-   is valid for some modes but not others.
-
-   Autoincrement and autodecrement addresses typically have mode-dependent
-   effects because the amount of the increment or decrement is the size of the
-   operand being addressed.  Some machines have other mode-dependent addresses.
-   Many RISC machines have no mode-dependent addresses.
-
-   You may assume that ADDR is a valid address for the machine.  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)
-
 /* A C expression that is nonzero if X is a legitimate constant for an
    immediate operand on the target machine.  You can assume that X satisfies
    `CONSTANT_P', so you need not check this.  In fact, `1' is a suitable

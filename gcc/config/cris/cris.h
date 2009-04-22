@@ -1208,11 +1208,6 @@ struct cum_args {int regs;};
     }									\
   while (0)
 
-/* In CRIS, only the postincrement address mode depends thus,
-   since the increment depends on the size of the operand.  This is now
-   treated generically within recog.c.  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)
-
 #define LEGITIMATE_CONSTANT_P(X) 1
 
 
