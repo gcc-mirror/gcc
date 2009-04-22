@@ -91,14 +91,13 @@ enum { SIGNAL_FRAMESIZE = 128 };
 static struct gcc_regs *
 get_regs (struct _Unwind_Context *context)
 {
-  const unsigned char *pc = context->ra;
+  const unsigned int *pc = context->ra;
 
   /* addi r1, r1, 128; li r0, 0x0077; sc  (sigreturn) */
   /* addi r1, r1, 128; li r0, 0x00AC; sc  (rt_sigreturn) */
-  if (*(unsigned int *) (pc + 0) != 0x38210000 + SIGNAL_FRAMESIZE
-      || *(unsigned int *) (pc + 8) != 0x44000002)
+  if (pc[0] != 0x38210000 + SIGNAL_FRAMESIZE || pc[2] != 0x44000002)
     return NULL;
-  if (*(unsigned int *) (pc + 4) == 0x38000077)
+  if (pc[1] == 0x38000077)
     {
       struct sigframe {
 	char gap[SIGNAL_FRAMESIZE];
@@ -107,17 +106,17 @@ get_regs (struct _Unwind_Context *context)
       } *frame = (struct sigframe *) context->cfa;
       return frame->regs;
     }
-  else if (*(unsigned int *) (pc + 4) == 0x380000AC)
+  else if (pc[1] == 0x380000AC)
     {
       /* This works for 2.4 kernels, but not for 2.6 kernels with vdso
 	 because pc isn't pointing into the stack.  Can be removed when
 	 no one is running 2.4.19 or 2.4.20, the first two ppc64
 	 kernels released.  */
-      struct rt_sigframe_24 {
+      const struct rt_sigframe_24 {
 	int tramp[6];
 	void *pinfo;
 	struct gcc_ucontext *puc;
-      } *frame24 = (struct rt_sigframe_24 *) pc;
+      } *frame24 = (const struct rt_sigframe_24 *) context->ra;
 
       /* Test for magic value in *puc of vdso.  */
       if ((long) frame24->puc != -21 * 8)
@@ -146,16 +145,15 @@ enum { SIGNAL_FRAMESIZE = 64 };
 static struct gcc_regs *
 get_regs (struct _Unwind_Context *context)
 {
-  const unsigned char *pc = context->ra;
+  const unsigned int *pc = context->ra;
 
   /* li r0, 0x7777; sc  (sigreturn old)  */
   /* li r0, 0x0077; sc  (sigreturn new)  */
   /* li r0, 0x6666; sc  (rt_sigreturn old)  */
   /* li r0, 0x00AC; sc  (rt_sigreturn new)  */
-  if (*(const unsigned int *) (pc + 4) != 0x44000002)
+  if (pc[1] != 0x44000002)
     return NULL;
-  if (*(const unsigned int *) (pc + 0) == 0x38007777
-      || *(const unsigned int *) (pc + 0) == 0x38000077)
+  if (pc[0] == 0x38007777 || pc[0] == 0x38000077)
     {
       struct sigframe {
 	char gap[SIGNAL_FRAMESIZE];
@@ -164,8 +162,7 @@ get_regs (struct _Unwind_Context *context)
       } *frame = (struct sigframe *) context->cfa;
       return frame->regs;
     }
-  else if (*(const unsigned int *) (pc + 0) == 0x38006666
-	   || *(const unsigned int *) (pc + 0) == 0x380000AC)
+  else if (pc[0] == 0x38006666 || pc[0] == 0x380000AC)
     {
       struct rt_sigframe {
 	char gap[SIGNAL_FRAMESIZE + 16];
