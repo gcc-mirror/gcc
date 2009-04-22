@@ -176,6 +176,7 @@ package Lib.Load is
    --  We create an additional entry for the body, so that the binder can
    --  generate the proper elaboration calls to both. The argument N is the
    --  compilation unit node created for the body.
+   --
    --  If the instance is not the main program, we still generate the instance
    --  body even though we do not generate code for it. In that case we still
    --  generate a compilation unit node for it, and we need to make an entry

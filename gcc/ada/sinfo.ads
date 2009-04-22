@@ -33,8 +33,8 @@
 --  package provides a basic tree structure. Sinfo describes how this structure
 --  is used to represent the syntax of an Ada program.
 
---  The grammar in the RM is followed very closely in the tree
---  design, and is repeated as part of this source file.
+--  The grammar in the RM is followed very closely in the tree design, and is
+--  repeated as part of this source file.
 
 --  The tree contains not only the full syntactic representation of the
 --  program, but also the results of semantic analysis. In particular, the
