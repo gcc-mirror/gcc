@@ -169,6 +169,12 @@ package Lib.Load is
    --  creates a dummy package unit so that compilation can continue without
    --  blowing up when the missing unit is referenced.
 
+   procedure Make_Child_Decl_Unit (N : Node_Id);
+   --  For a child subprogram body without a spec, we create a subprogram
+   --  declaration in order to attach the required parent link. We create
+   --  a Units_Table entry for this declaration, in order to maintain a
+   --  one-to-one correspondence between compilation units and table entries.
+
    procedure Make_Instance_Unit (N : Node_Id; In_Main : Boolean);
    --  When a compilation unit is an instantiation, it contains both the
    --  declaration and the body of the instance, each of which can have its

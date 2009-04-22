@@ -602,10 +602,14 @@ package body Lib is
          end if;
       end loop;
 
-      --  If not in the table, must be the main source unit, and we just
-      --  have not got it put into the table yet.
+      --  If not in the table, must be a spec created for a main unit that is a
+      --  child subprogram body which we have not inserted into the table yet.
 
-      return Main_Unit;
+      if N /= Library_Unit (Cunit (Main_Unit)) then
+         raise Program_Error;
+      else
+         return Main_Unit;
+      end if;
    end Get_Cunit_Unit_Number;
 
    ---------------------
