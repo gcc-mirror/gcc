@@ -1,3 +1,8 @@
+2009-04-22  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/39580
+	* sel-sched-ir.c (insert_in_history_vect): Remove incorrect gcc_assert. 
+	
 2009-04-22  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* function.c (expand_function_end): Do not emit a jump to the "naked"
