@@ -3593,7 +3593,7 @@ dbxout_block (tree block, int depth, tree args)
   while (block)
     {
       /* Ignore blocks never expanded or otherwise marked as real.  */
-      if (TREE_ASM_WRITTEN (block))
+      if (TREE_USED (block) && TREE_ASM_WRITTEN (block))
 	{
 	  int did_output;
 	  int blocknum = BLOCK_NUMBER (block);
