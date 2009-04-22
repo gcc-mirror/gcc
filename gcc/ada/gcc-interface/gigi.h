@@ -168,19 +168,20 @@ extern tree substitute_in_type (tree t, tree f, tree r);
    needed to represent the object.  */
 extern tree rm_size (tree gnu_type);
 
-/* Given GNU_ID, an IDENTIFIER_NODE containing a name, and SUFFIX, a
-   string, return a new IDENTIFIER_NODE that is the concatenation of
-   the name in GNU_ID and SUFFIX.  */
-extern tree concat_id_with_name (tree gnu_id, const char *suffix);
-
 /* Return the name to be used for GNAT_ENTITY.  If a type, create a
    fully-qualified name, possibly with type information encoding.
    Otherwise, return the name.  */
 extern tree get_entity_name (Entity_Id gnat_entity);
 
-/* Return a name for GNAT_ENTITY concatenated with two underscores and
-   SUFFIX.  */
+/* Return an identifier representing the external name to be used for
+   GNAT_ENTITY.  If SUFFIX is specified, the name is followed by "___"
+   and the specified suffix.  */
 extern tree create_concat_name (Entity_Id gnat_entity, const char *suffix);
+
+/* Given GNU_NAME, an IDENTIFIER_NODE containing a name and SUFFIX, a
+   string, return a new IDENTIFIER_NODE that is the concatenation of
+   the name followed by "___" and the specified suffix.  */
+extern tree concat_name (tree gnu_name, const char *suffix);
 
 /* If true, then gigi is being called on an analyzed but unexpanded tree, and
    the only purpose of the call is to properly annotate types with
