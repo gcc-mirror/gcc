@@ -539,7 +539,7 @@ i386_pe_declare_function_type (FILE *file, const char *name, int pub)
 
 /* Keep a list of external functions.  */
 
-struct extern_list GTY(())
+struct GTY(()) extern_list
 {
   struct extern_list *next;
   tree decl;
@@ -568,7 +568,7 @@ i386_pe_record_external_function (tree decl, const char *name)
 
 /* Keep a list of exported symbols.  */
 
-struct export_list GTY(())
+struct GTY(()) export_list
 {
   struct export_list *next;
   const char *name;

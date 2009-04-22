@@ -51,8 +51,7 @@ extern const char * const cgraph_availability_names[];
 /* Information about the function collected locally.
    Available after function is analyzed.  */
 
-struct cgraph_local_info GTY(())
-{
+struct GTY(()) cgraph_local_info {
   struct inline_summary {
     /* Estimated stack frame consumption by the function.  */
     HOST_WIDE_INT estimated_self_stack_size;
@@ -93,8 +92,7 @@ struct cgraph_local_info GTY(())
 /* Information about the function that needs to be computed globally
    once compilation is finished.  Available only with -funit-at-a-time.  */
 
-struct cgraph_global_info GTY(())
-{
+struct GTY(()) cgraph_global_info {
   /* Estimated stack frame consumption by the function.  */
   HOST_WIDE_INT estimated_stack_size;
   /* Expected offset of the stack frame of inlined function.  */
@@ -117,16 +115,14 @@ struct cgraph_global_info GTY(())
 /* Information about the function that is propagated by the RTL backend.
    Available only for functions that has been already assembled.  */
 
-struct cgraph_rtl_info GTY(())
-{
+struct GTY(()) cgraph_rtl_info {
    unsigned int preferred_incoming_stack_boundary;
 };
 
 /* The cgraph data structure.
    Each function decl has assigned cgraph_node listing callees and callers.  */
 
-struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
-{
+struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   tree decl;
   struct cgraph_edge *callees;
   struct cgraph_edge *callers;
@@ -197,7 +193,7 @@ DEF_VEC_ALLOC_P(cgraph_node_ptr,gc);
 
 /* A cgraph node set is a collection of cgraph nodes.  A cgraph node
    can appear in multiple sets.  */
-struct cgraph_node_set_def GTY(())
+struct GTY(()) cgraph_node_set_def
 {
   htab_t GTY((param_is (struct cgraph_node_set_element_def))) hashtab;
   VEC(cgraph_node_ptr, gc) *nodes;
@@ -212,7 +208,7 @@ DEF_VEC_ALLOC_P(cgraph_node_set,heap);
 
 /* A cgraph node set element contains an index in the vector of nodes in
    the set.  */
-struct cgraph_node_set_element_def GTY(())
+struct GTY(()) cgraph_node_set_element_def
 {
   struct cgraph_node *node;
   HOST_WIDE_INT index;
@@ -235,8 +231,7 @@ typedef enum {
   CIF_N_REASONS
 } cgraph_inline_failed_t;
 
-struct cgraph_edge GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller")))
-{
+struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgraph_edge {
   struct cgraph_node *caller;
   struct cgraph_node *callee;
   struct cgraph_edge *prev_caller;
@@ -275,8 +270,7 @@ DEF_VEC_ALLOC_P(cgraph_edge_p,heap);
 /* The varpool data structure.
    Each static variable decl has assigned varpool_node.  */
 
-struct varpool_node GTY((chain_next ("%h.next")))
-{
+struct GTY((chain_next ("%h.next"))) varpool_node {
   tree decl;
   /* Pointer to the next function in varpool_nodes.  */
   struct varpool_node *next;
@@ -306,8 +300,7 @@ struct varpool_node GTY((chain_next ("%h.next")))
 
 /* Every top level asm statement is put into a cgraph_asm_node.  */
 
-struct cgraph_asm_node GTY(())
-{
+struct GTY(()) cgraph_asm_node {
   /* Next asm node.  */
   struct cgraph_asm_node *next;
   /* String for this asm node.  */

@@ -4587,7 +4587,7 @@ dot_rdg (struct graph *rdg)
 /* This structure is used for recording the mapping statement index in
    the RDG.  */
 
-struct rdg_vertex_info GTY(())
+struct GTY(()) rdg_vertex_info
 {
   gimple stmt;
   int index;

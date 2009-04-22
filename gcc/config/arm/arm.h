@@ -1571,7 +1571,7 @@ do {									      \
    in the direction of stack growth.
    Only soft_frame is used in thumb mode.  */
 
-typedef struct arm_stack_offsets GTY(())
+typedef struct GTY(()) arm_stack_offsets
 {
   int saved_args;	/* ARG_POINTER_REGNUM.  */
   int frame;		/* ARM_HARD_FRAME_POINTER_REGNUM.  */
@@ -1585,7 +1585,7 @@ arm_stack_offsets;
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
-typedef struct machine_function GTY(())
+typedef struct GTY(()) machine_function
 {
   /* Additional stack adjustment in __builtin_eh_throw.  */
   rtx eh_epilogue_sp_ofs;

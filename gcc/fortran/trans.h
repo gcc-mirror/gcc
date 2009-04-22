@@ -429,8 +429,7 @@ void gfc_generate_block_data (gfc_namespace *);
 /* Output a decl for a module variable.  */
 void gfc_generate_module_vars (gfc_namespace *);
 
-struct module_htab_entry GTY(())
-{
+struct GTY(()) module_htab_entry {
   const char *name;
   tree namespace_decl;
   htab_t GTY ((param_is (union tree_node))) decls;
@@ -543,8 +542,7 @@ extern GTY(()) tree gfor_fndecl_associated;
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.c.  */
 
-typedef struct gfc_powdecl_list GTY(())
-{
+typedef struct GTY(()) gfc_powdecl_list {
   tree integer;
   tree real;
   tree cmplx;
@@ -615,8 +613,7 @@ enum gfc_array_kind
 };
 
 /* Array types only.  */
-struct lang_type		GTY(())
-{
+struct GTY(())	lang_type	 {
   int rank;
   enum gfc_array_kind akind;
   tree lbound[GFC_MAX_DIMENSIONS];
@@ -629,8 +626,7 @@ struct lang_type		GTY(())
   tree span;
 };
 
-struct lang_decl		GTY(())
-{
+struct GTY(()) lang_decl {
   /* Dummy variables.  */
   tree saved_descriptor;
   /* Assigned integer nodes.  Stringlength is the IO format string's length.

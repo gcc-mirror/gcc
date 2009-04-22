@@ -27,8 +27,7 @@ along with this program; see the file COPYING3.  If not see
 /* This is what each hash table entry points to.  It may be embedded
    deeply within another object.  */
 typedef struct ht_identifier ht_identifier;
-struct ht_identifier GTY(())
-{
+struct GTY(()) ht_identifier {
   const unsigned char *str;
   unsigned int len;
   unsigned int hash_value;

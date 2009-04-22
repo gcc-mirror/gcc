@@ -1,3 +1,68 @@
+2009-04-21  Taras Glek <tglek@mozilla.com>
+
+	* alias.c: Update GTY annotations to new syntax.
+	* basic-block.h: Likewise.
+	* bitmap.h: Likewise.
+	* c-common.h: Likewise.
+	* c-decl.c: Likewise.
+	* c-parser.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-tree.h: Likewise.
+	* cfgloop.h: Likewise.
+	* cgraph.h: Likewise.
+	* config/alpha/alpha.c: Likewise.
+	* config/arm/arm.h: Likewise.
+	* config/avr/avr.h: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* config/cris/cris.c: Likewise.
+	* config/darwin.c: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/i386/winnt.c: Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/iq2000/iq2000.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mmix/mmix.h: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pa/pa.h: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/xtensa/xtensa.c: Likewise.
+	* cselib.h: Likewise.
+	* dbxout.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* except.c: Likewise.
+	* except.h: Likewise.
+	* fixed-value.h: Likewise.
+	* function.c: Likewise.
+	* function.h: Likewise.
+	* gimple.h: Likewise.
+	* integrate.c: Likewise.
+	* optabs.c: Likewise.
+	* output.h: Likewise.
+	* real.h: Likewise.
+	* rtl.h: Likewise.
+	* stringpool.c: Likewise.
+	* tree-data-ref.c: Likewise.
+	* tree-flow.h: Likewise.
+	* tree-scalar-evolution.c: Likewise.
+	* tree-ssa-address.c: Likewise.
+	* tree-ssa-alias.h: Likewise.
+	* tree-ssa-operands.h: Likewise.
+	* tree.c: Likewise.
+	* tree.h: Likewise.
+	* varasm.c: Likewise.
+	* varray.h: Likewise.
+	* vec.h: Likewise.
+	* coretypes.h: Do not define GTY macro if it is already
+	defined.
+	* doc/gty.texi: Update GTY documentation to new syntax.
+	* gengtype-lex.l: Enforce attribute-like syntax for GTY
+	annotations on structs.
+	* gengtype-parse.c: Likewise.
+
 2009-04-22  Mark Heffernan  <meheff@google.com>
 
        * gcc.c (LINK_COMMAND_SPEC): Link with gcov with -fprofile-generate=.

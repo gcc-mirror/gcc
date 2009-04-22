@@ -196,7 +196,7 @@ static unsigned int last_address;
 
 /* Variables to handle plabels that we discover are necessary at assembly
    output time.  They are output after the current function.  */
-struct deferred_plabel GTY(())
+struct GTY(()) deferred_plabel
 {
   rtx internal_label;
   rtx symbol;
@@ -9602,7 +9602,7 @@ pa_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
    at the end of the file if and only if SYMBOL_REF_REFERENCED_P is true.
    This avoids putting out names that are never really used.  */
 
-typedef struct extern_symbol GTY(())
+typedef struct GTY(()) extern_symbol
 {
   tree decl;
   const char *name;

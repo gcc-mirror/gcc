@@ -96,8 +96,7 @@ tree (*lang_eh_runtime_type) (tree);
 
 /* A hash table of label to region number.  */
 
-struct ehl_map_entry GTY(())
-{
+struct GTY(()) ehl_map_entry {
   rtx label;
   struct eh_region *region;
 };
@@ -115,7 +114,7 @@ static int sjlj_fc_lsda_ofs;
 static int sjlj_fc_jbuf_ofs;
 
 
-struct call_site_record GTY(())
+struct GTY(()) call_site_record
 {
   rtx landing_pad;
   int action;
@@ -1207,8 +1206,7 @@ lookup_type_for_runtime (tree type)
 
 /* Represent an entry in @TTypes for either catch actions
    or exception filter actions.  */
-struct ttypes_filter GTY(())
-{
+struct GTY(()) ttypes_filter {
   tree t;
   int filter;
 };

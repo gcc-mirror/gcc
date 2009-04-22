@@ -43,8 +43,7 @@ enum real_value_class {
 #define SIGSZ			(SIGNIFICAND_BITS / HOST_BITS_PER_LONG)
 #define SIG_MSB			((unsigned long)1 << (HOST_BITS_PER_LONG - 1))
 
-struct real_value GTY(())
-{
+struct GTY(()) real_value {
   /* Use the same underlying type for all bit-fields, so as to make
      sure they're packed together, otherwise REAL_VALUE_TYPE_SIZE will
      be miscomputed.  */

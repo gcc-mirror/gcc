@@ -125,16 +125,14 @@ enum plf_mask {
 };
 
 /* A node in a gimple_seq_d.  */
-struct gimple_seq_node_d GTY((chain_next ("%h.next"), chain_prev ("%h.prev")))
-{
+struct GTY((chain_next ("%h.next"), chain_prev ("%h.prev"))) gimple_seq_node_d {
   gimple stmt;
   struct gimple_seq_node_d *prev;
   struct gimple_seq_node_d *next;
 };
 
 /* A double-linked sequence of gimple statements.  */
-struct gimple_seq_d GTY ((chain_next ("%h.next_free")))
-{
+struct GTY ((chain_next ("%h.next_free"))) gimple_seq_d {
   /* First and last statements in the sequence.  */
   gimple_seq_node first;
   gimple_seq_node last;
@@ -262,8 +260,7 @@ typedef struct
 /* Data structure definitions for GIMPLE tuples.  NOTE: word markers
    are for 64 bit hosts.  */
 
-struct gimple_statement_base GTY(())
-{
+struct GTY(()) gimple_statement_base {
   /* [ WORD 1 ]
      Main identifying code for a tuple.  */
   ENUM_BITFIELD(gimple_code) code : 8;
@@ -325,7 +322,7 @@ struct gimple_statement_base GTY(())
 
 /* Base structure for tuples with operands.  */
 
-struct gimple_statement_with_ops_base GTY(())
+struct GTY(()) gimple_statement_with_ops_base
 {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
@@ -342,7 +339,7 @@ struct gimple_statement_with_ops_base GTY(())
 
 /* Statements that take register operands.  */
 
-struct gimple_statement_with_ops GTY(())
+struct GTY(()) gimple_statement_with_ops
 {
   /* [ WORD 1-6 ]  */
   struct gimple_statement_with_ops_base opbase;
@@ -357,7 +354,7 @@ struct gimple_statement_with_ops GTY(())
 
 /* Base for statements that take both memory and register operands.  */
 
-struct gimple_statement_with_memory_ops_base GTY(())
+struct GTY(()) gimple_statement_with_memory_ops_base
 {
   /* [ WORD 1-6 ]  */
   struct gimple_statement_with_ops_base opbase;
@@ -372,7 +369,7 @@ struct gimple_statement_with_memory_ops_base GTY(())
 
 /* Statements that take both memory and register operands.  */
 
-struct gimple_statement_with_memory_ops GTY(())
+struct GTY(()) gimple_statement_with_memory_ops
 {
   /* [ WORD 1-8 ]  */
   struct gimple_statement_with_memory_ops_base membase;
@@ -387,8 +384,7 @@ struct gimple_statement_with_memory_ops GTY(())
 
 /* OpenMP statements (#pragma omp).  */
 
-struct gimple_statement_omp GTY(())
-{
+struct GTY(()) gimple_statement_omp {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -399,8 +395,7 @@ struct gimple_statement_omp GTY(())
 
 /* GIMPLE_BIND */
 
-struct gimple_statement_bind GTY(())
-{
+struct GTY(()) gimple_statement_bind {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -423,8 +418,7 @@ struct gimple_statement_bind GTY(())
 
 /* GIMPLE_CATCH */
 
-struct gimple_statement_catch GTY(())
-{
+struct GTY(()) gimple_statement_catch {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -438,8 +432,7 @@ struct gimple_statement_catch GTY(())
 
 /* GIMPLE_EH_FILTER */
 
-struct gimple_statement_eh_filter GTY(())
-{
+struct GTY(()) gimple_statement_eh_filter {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -458,8 +451,7 @@ struct gimple_statement_eh_filter GTY(())
 
 /* GIMPLE_PHI */
 
-struct gimple_statement_phi GTY(())
-{
+struct GTY(()) gimple_statement_phi {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -477,8 +469,7 @@ struct gimple_statement_phi GTY(())
 
 /* GIMPLE_RESX */
 
-struct gimple_statement_resx GTY(())
-{
+struct GTY(()) gimple_statement_resx {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -490,8 +481,7 @@ struct gimple_statement_resx GTY(())
 
 /* GIMPLE_TRY */
 
-struct gimple_statement_try GTY(())
-{
+struct GTY(()) gimple_statement_try {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -520,8 +510,7 @@ enum gimple_try_flags
 
 /* GIMPLE_WITH_CLEANUP_EXPR */
 
-struct gimple_statement_wce GTY(())
-{
+struct GTY(()) gimple_statement_wce {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -538,7 +527,7 @@ struct gimple_statement_wce GTY(())
 
 /* GIMPLE_ASM  */
 
-struct gimple_statement_asm GTY(())
+struct GTY(()) gimple_statement_asm
 {
   /* [ WORD 1-8 ]  */
   struct gimple_statement_with_memory_ops_base membase;
@@ -562,8 +551,7 @@ struct gimple_statement_asm GTY(())
 
 /* GIMPLE_OMP_CRITICAL */
 
-struct gimple_statement_omp_critical GTY(())
-{
+struct GTY(()) gimple_statement_omp_critical {
   /* [ WORD 1-5 ]  */
   struct gimple_statement_omp omp;
 
@@ -573,8 +561,7 @@ struct gimple_statement_omp_critical GTY(())
 };
 
 
-struct gimple_omp_for_iter GTY(())
-{
+struct GTY(()) gimple_omp_for_iter {
   /* Condition code.  */
   enum tree_code cond;
 
@@ -593,8 +580,7 @@ struct gimple_omp_for_iter GTY(())
 
 /* GIMPLE_OMP_FOR */
 
-struct gimple_statement_omp_for GTY(())
-{
+struct GTY(()) gimple_statement_omp_for {
   /* [ WORD 1-5 ]  */
   struct gimple_statement_omp omp;
 
@@ -616,8 +602,7 @@ struct gimple_statement_omp_for GTY(())
 
 /* GIMPLE_OMP_PARALLEL */
 
-struct gimple_statement_omp_parallel GTY(())
-{
+struct GTY(()) gimple_statement_omp_parallel {
   /* [ WORD 1-5 ]  */
   struct gimple_statement_omp omp;
 
@@ -637,8 +622,7 @@ struct gimple_statement_omp_parallel GTY(())
 
 /* GIMPLE_OMP_TASK */
 
-struct gimple_statement_omp_task GTY(())
-{
+struct GTY(()) gimple_statement_omp_task {
   /* [ WORD 1-8 ]  */
   struct gimple_statement_omp_parallel par;
 
@@ -659,8 +643,7 @@ struct gimple_statement_omp_task GTY(())
 
 /* GIMPLE_OMP_SECTIONS */
 
-struct gimple_statement_omp_sections GTY(())
-{
+struct GTY(()) gimple_statement_omp_sections {
   /* [ WORD 1-5 ]  */
   struct gimple_statement_omp omp;
 
@@ -678,8 +661,7 @@ struct gimple_statement_omp_sections GTY(())
    Note: This does not inherit from gimple_statement_omp, because we
          do not need the body field.  */
 
-struct gimple_statement_omp_continue GTY(())
-{
+struct GTY(()) gimple_statement_omp_continue {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -692,8 +674,7 @@ struct gimple_statement_omp_continue GTY(())
 
 /* GIMPLE_OMP_SINGLE */
 
-struct gimple_statement_omp_single GTY(())
-{
+struct GTY(()) gimple_statement_omp_single {
   /* [ WORD 1-5 ]  */
   struct gimple_statement_omp omp;
 
@@ -706,8 +687,7 @@ struct gimple_statement_omp_single GTY(())
    Note: This is based on gimple_statement_base, not g_s_omp, because g_s_omp
    contains a sequence, which we don't need here.  */
 
-struct gimple_statement_omp_atomic_load GTY(())
-{
+struct GTY(()) gimple_statement_omp_atomic_load {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -718,8 +698,7 @@ struct gimple_statement_omp_atomic_load GTY(())
 /* GIMPLE_OMP_ATOMIC_STORE.
    See note on GIMPLE_OMP_ATOMIC_LOAD.  */
 
-struct gimple_statement_omp_atomic_store GTY(())
-{
+struct GTY(()) gimple_statement_omp_atomic_store {
   /* [ WORD 1-4 ]  */
   struct gimple_statement_base gsbase;
 
@@ -738,8 +717,7 @@ enum gimple_statement_structure_enum {
 /* Define the overall contents of a gimple tuple.  It may be any of the
    structures declared above for various types of tuples.  */
 
-union gimple_statement_d GTY ((desc ("gimple_statement_structure (&%h)")))
-{
+union GTY ((desc ("gimple_statement_structure (&%h)"))) gimple_statement_d {
   struct gimple_statement_base GTY ((tag ("GSS_BASE"))) gsbase;
   struct gimple_statement_with_ops GTY ((tag ("GSS_WITH_OPS"))) gsops;
   struct gimple_statement_with_memory_ops GTY ((tag ("GSS_WITH_MEM_OPS"))) gsmem;

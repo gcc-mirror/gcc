@@ -24,14 +24,13 @@
  ****************************************************************************/
 
 /* Ada uses the lang_decl and lang_type fields to hold a tree.  */
-union lang_tree_node
-  GTY((desc ("0"),
-       chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.t)")))
+union GTY((desc ("0"),
+           chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.t)"))) lang_tree_node
 {
   union tree_node GTY((tag ("0"))) t;
 };
-struct lang_decl GTY(()) { tree t; };
-struct lang_type GTY(()) { tree t; };
+struct GTY(()) lang_decl {tree t; };
+struct GTY(()) lang_type {tree t; };
 
 /* Define macros to get and set the tree in TYPE_ and DECL_LANG_SPECIFIC.  */
 #define GET_TYPE_LANG_SPECIFIC(NODE) \

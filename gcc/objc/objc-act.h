@@ -126,13 +126,11 @@ enum gimplify_status objc_gimplify_expr (tree *, gimple_seq *, gimple_seq *);
 typedef struct hashed_entry	*hash;
 typedef struct hashed_attribute	*attr;
 
-struct hashed_attribute GTY(())
-{
+struct GTY(()) hashed_attribute {
   attr next;
   tree value;
 };
-struct hashed_entry GTY(())
-{
+struct GTY(()) hashed_entry {
   attr list;
   hash next;
   tree key;
@@ -145,8 +143,7 @@ extern GTY ((length ("SIZEHASHTABLE"))) hash *cls_method_hash_list;
 
 /* Objective-C/Objective-C++ @implementation list.  */
 
-struct imp_entry GTY(())
-{
+struct GTY(()) imp_entry {
   struct imp_entry *next;
   tree imp_context;
   tree imp_template;

@@ -635,8 +635,7 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
 /* The decl for "_Jv_ResolvePoolEntry".  */
 extern GTY(()) tree soft_resolvepoolentry_node;
 
-struct lang_identifier GTY(())
-{
+struct GTY(()) lang_identifier {
   struct tree_identifier ignore;
   tree global_value;
   tree local_value;
@@ -647,11 +646,10 @@ struct lang_identifier GTY(())
 };
 
 /* The resulting tree type.  */
-union lang_tree_node 
-  GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
+union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
        chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
-
-{
+ 
+  lang_tree_node {
   union tree_node GTY ((tag ("0"), 
 			desc ("tree_node_structure (&%h)"))) 
     generic;
@@ -772,8 +770,7 @@ union lang_tree_node
    || TREE_CODE (NODE) == REAL_CST)
 
 /* DECL_LANG_SPECIFIC for FUNCTION_DECLs. */
-struct lang_decl_func GTY(())
-{
+struct GTY(()) lang_decl_func {
   /*  tree chain; not yet used. */
   long code_offset;
   int code_length;
@@ -803,8 +800,7 @@ struct lang_decl_func GTY(())
   unsigned int varargs : 1;	/* Varargs method.  */
 };
 
-struct treetreehash_entry GTY(())
-{
+struct GTY(()) treetreehash_entry {
   tree key;
   tree value;
 };
@@ -840,8 +836,7 @@ typedef enum
   JV_ANNOTATION_DEFAULT_KIND
 } jv_attr_kind;
 
-typedef struct type_assertion GTY(())
-{
+typedef struct GTY(()) type_assertion {
   int assertion_code; /* 'opcode' for the type of this assertion. */
   tree op1;           /* First operand. */
   tree op2;           /* Second operand. */
@@ -853,8 +848,7 @@ extern htab_t java_treetreehash_create (size_t size, int ggc);
 
 /* DECL_LANG_SPECIFIC for VAR_DECL, PARM_DECL and sometimes FIELD_DECL
    (access methods on outer class fields) and final fields. */
-struct lang_decl_var GTY(())
-{
+struct GTY(()) lang_decl_var {
   int slot_number;
   int start_pc;
   int end_pc;
@@ -871,8 +865,7 @@ struct lang_decl_var GTY(())
 
 enum lang_decl_desc {LANG_DECL_FUNC, LANG_DECL_VAR};
 
-struct lang_decl GTY(())
-{
+struct GTY(()) lang_decl {
   enum lang_decl_desc desc;
   union lang_decl_u
     {
@@ -927,8 +920,7 @@ struct lang_decl GTY(())
 #define TYPE_REFLECTION_DATASIZE(T)					\
 				(TYPE_LANG_SPECIFIC (T)->reflection_datasize)
 
-struct lang_type GTY(())
-{
+struct GTY(()) lang_type {
   tree signature;
   struct JCF *jcf;
   struct CPool *cpool;

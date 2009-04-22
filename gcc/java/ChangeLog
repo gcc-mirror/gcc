@@ -1,3 +1,11 @@
+2009-04-21  Taras Glek <tglek@mozilla.com>
+
+	* builtins.c: Update GTY annotations to new syntax
+	* decl.c: Likewise
+	* java-tree.h: Likewise
+	* jcf.h: Likewise
+	* lang.c: Likewise
+
 2009-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* ChangeLog, ChangeLog.ptr, ChangeLog.tree-ssa: Add copyright and

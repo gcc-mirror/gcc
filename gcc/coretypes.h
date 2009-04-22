@@ -37,7 +37,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef GCC_CORETYPES_H
 #define GCC_CORETYPES_H
 
+#ifndef GTY
 #define GTY(x)  /* nothing - marker for gengtype */
+#endif
 
 #ifndef USED_FOR_TARGET
 

@@ -132,8 +132,7 @@ void debug_optab_libfuncs (void);
 
 /* Info about libfunc.  We use same hashtable for normal optabs and conversion
    optab.  In the first case mode2 is unused.  */
-struct libfunc_entry GTY(())
-{
+struct GTY(()) libfunc_entry {
   size_t optab;
   enum machine_mode mode1, mode2;
   rtx libfunc;

@@ -471,7 +471,7 @@ typedef struct VEC(T,B) 				 		  \
 } VEC(T,B)
 
 #define VEC_T_GTY(T,B)							  \
-typedef struct VEC(T,B) GTY(())				 		  \
+typedef struct GTY(()) VEC(T,B)				 		  \
 {									  \
   unsigned num;								  \
   unsigned alloc;							  \
@@ -480,7 +480,7 @@ typedef struct VEC(T,B) GTY(())				 		  \
 
 /* Derived vector type, user visible.  */
 #define VEC_TA_GTY(T,B,A,GTY)						  \
-typedef struct VEC(T,A) GTY						  \
+typedef struct GTY VEC(T,A)						  \
 {									  \
   VEC(T,B) base;							  \
 } VEC(T,A)

@@ -31,16 +31,14 @@ along with GCC; see the file COPYING3.  If not see
    The main insn-chain is saved in the last element of the chain,
    unless the chain is empty.  */
 
-struct sequence_stack GTY(())
-{
+struct GTY(()) sequence_stack {
   /* First and last insns in the chain of the saved sequence.  */
   rtx first;
   rtx last;
   struct sequence_stack *next;
 };
 
-struct emit_status GTY(())
-{
+struct GTY(()) emit_status {
   /* This is reset to LAST_VIRTUAL_REGISTER + 1 at the start of each function.
      After rtl generation, it is 1 plus the largest register number used.  */
   int x_reg_rtx_no;
@@ -96,8 +94,7 @@ extern GTY ((length ("crtl->emit.x_reg_rtx_no"))) rtx * regno_reg_rtx;
 
 #define REGNO_POINTER_ALIGN(REGNO) (crtl->emit.regno_pointer_align[REGNO])
 
-struct expr_status GTY(())
-{
+struct GTY(()) expr_status {
   /* Number of units that we should eventually pop off the stack.
      These are the arguments to function calls that have already returned.  */
   int x_pending_stack_adjust;
@@ -142,8 +139,7 @@ DEF_VEC_P(call_site_record);
 DEF_VEC_ALLOC_P(call_site_record, gc);
 
 /* RTL representation of exception handling.  */
-struct rtl_eh GTY(())
-{
+struct GTY(()) rtl_eh {
   rtx filter;
   rtx exc_ptr;
 
@@ -194,8 +190,7 @@ enum function_frequency {
   FUNCTION_FREQUENCY_HOT
 };
 
-struct varasm_status GTY(())
-{
+struct GTY(()) varasm_status {
   /* If we're using a per-function constant pool, this is it.  */
   struct rtx_constant_pool *pool;
 
@@ -205,8 +200,7 @@ struct varasm_status GTY(())
 };
 
 /* Information mainlined about RTL representation of incoming arguments.  */
-struct incoming_args GTY(())
-{
+struct GTY(()) incoming_args {
   /* Number of bytes of args popped by function being compiled on its return.
      Zero if no bytes are to be popped.
      May affect compilation of return insn or of function epilogue.  */
@@ -235,8 +229,7 @@ struct incoming_args GTY(())
 };
 
 /* Data for function partitioning.  */
-struct function_subsections GTY(())
-{
+struct GTY(()) function_subsections {
   /* Assembly labels for the hot and cold text sections, to
      be used by debugger functions for determining the size of text
      sections.  */
@@ -253,8 +246,7 @@ struct function_subsections GTY(())
 };
 
 /* Datastructures maintained for currently processed function in RTL form.  */
-struct rtl_data GTY(())
-{
+struct GTY(()) rtl_data {
   struct expr_status expr;
   struct emit_status emit;
   struct varasm_status varasm;
@@ -471,8 +463,7 @@ extern GTY(()) struct rtl_data x_rtl;
 /* This structure can save all the important global and static variables
    describing the status of the current function.  */
 
-struct function GTY(())
-{
+struct GTY(()) function {
   struct eh_status *eh;
 
   /* The control flow graph for this function.  */

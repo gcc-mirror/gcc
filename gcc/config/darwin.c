@@ -314,7 +314,7 @@ machopic_output_function_base_name (FILE *file)
 /* The suffix attached to stub symbols.  */
 #define STUB_SUFFIX "$stub"
 
-typedef struct machopic_indirection GTY (())
+typedef struct GTY (()) machopic_indirection
 {
   /* The SYMBOL_REF for the entity referenced.  */
   rtx symbol;

@@ -108,8 +108,7 @@ bool type_annotate_only;
 /* When not optimizing, we cache the 'First, 'Last and 'Length attributes
    of unconstrained array IN parameters to avoid emitting a great deal of
    redundant instructions to recompute them each time.  */
-struct parm_attr GTY (())
-{
+struct GTY (()) parm_attr {
   int id; /* GTY doesn't like Entity_Id.  */
   int dim;
   tree first;
@@ -122,8 +121,7 @@ typedef struct parm_attr *parm_attr;
 DEF_VEC_P(parm_attr);
 DEF_VEC_ALLOC_P(parm_attr,gc);
 
-struct language_function GTY(())
-{
+struct GTY(()) language_function {
   VEC(parm_attr,gc) *parm_attr_cache;
 };
 
@@ -135,7 +133,7 @@ struct language_function GTY(())
    of a IF.  In the case where it represents a lexical scope, we may also
    have a BLOCK node corresponding to it and/or cleanups.  */
 
-struct stmt_group GTY((chain_next ("%h.previous"))) {
+struct GTY((chain_next ("%h.previous"))) stmt_group {
   struct stmt_group *previous;	/* Previous code group.  */
   tree stmt_list;		/* List of statements for this code group.  */
   tree block;			/* BLOCK for this code group, if any.  */
@@ -152,7 +150,7 @@ static GTY((deletable)) struct stmt_group *stmt_group_free_list;
 
    ??? gnat_node should be Node_Id, but gengtype gets confused.  */
 
-struct elab_info GTY((chain_next ("%h.next"))) {
+struct GTY((chain_next ("%h.next"))) elab_info {
   struct elab_info *next;	/* Pointer to next in chain.  */
   tree elab_proc;		/* Elaboration procedure.  */
   int gnat_node;		/* The N_Compilation_Unit.  */

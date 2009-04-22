@@ -321,7 +321,7 @@ char sparc_leaf_regs[] =
   1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 1, 1, 1};
 
-struct machine_function GTY(())
+struct GTY(()) machine_function
 {
   /* Some local-dynamic TLS symbol name.  */
   const char *some_ld_name;

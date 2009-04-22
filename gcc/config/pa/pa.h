@@ -249,7 +249,7 @@ do {								\
 #define CAN_DEBUG_WITHOUT_FP
 
 /* target machine storage layout */
-typedef struct machine_function GTY(())
+typedef struct GTY(()) machine_function
 {
   /* Flag indicating that a .NSUBSPA directive has been output for
      this function.  */

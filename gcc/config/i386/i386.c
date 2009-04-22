@@ -1722,8 +1722,7 @@ static int const x86_64_int_return_registers[4] =
 
 /* Define the structure for the machine field in struct function.  */
 
-struct stack_local_entry GTY(())
-{
+struct GTY(()) stack_local_entry {
   unsigned short mode;
   unsigned short n;
   rtx rtl;
@@ -20864,8 +20863,7 @@ static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
 /* Table of all of the builtin functions that are possible with different ISA's
    but are waiting to be built until a function is declared to use that
    ISA.  */
-struct builtin_isa GTY(())
-{
+struct GTY(()) builtin_isa {
   tree type;			/* builtin type to use in the declaration */
   const char *name;		/* function name */
   int isa;			/* isa_flags this builtin is defined for */

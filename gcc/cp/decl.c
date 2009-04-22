@@ -169,8 +169,7 @@ tree integer_two_node, integer_three_node;
 /* Used only for jumps to as-yet undefined labels, since jumps to
    defined labels can have their validity checked immediately.  */
 
-struct named_label_use_entry GTY(())
-{
+struct GTY(()) named_label_use_entry {
   struct named_label_use_entry *next;
   /* The binding level to which this entry is *currently* attached.
      This is initially the binding level in which the goto appeared,
@@ -192,8 +191,7 @@ struct named_label_use_entry GTY(())
    we can clear out their names' definitions at the end of the
    function, and so we can check the validity of jumps to these labels.  */
 
-struct named_label_entry GTY(())
-{
+struct GTY(()) named_label_entry {
   /* The decl itself.  */
   tree label_decl;
 

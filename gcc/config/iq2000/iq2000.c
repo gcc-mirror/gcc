@@ -89,7 +89,7 @@ struct iq2000_frame_info
   int  num_gp;			/* Number of gp registers saved.  */
 } iq2000_frame_info;
 
-struct machine_function GTY(())
+struct GTY(()) machine_function
 {
   /* Current frame information, calculated by compute_frame_size.  */
   long total_size;		/* # bytes that the entire frame takes up.  */

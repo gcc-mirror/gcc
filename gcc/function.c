@@ -450,8 +450,7 @@ assign_stack_local (enum machine_mode mode, HOST_WIDE_INT size, int align)
    level where they are defined.  They are marked a "kept" so that
    free_temp_slots will not free them.  */
 
-struct temp_slot GTY(())
-{
+struct GTY(()) temp_slot {
   /* Points to next temporary slot.  */
   struct temp_slot *next;
   /* Points to previous temporary slot.  */
@@ -488,8 +487,7 @@ struct temp_slot GTY(())
 static GTY((param_is(struct temp_slot_address_entry))) htab_t temp_slot_address_table;
 
 /* Entry for the above hash table.  */
-struct temp_slot_address_entry GTY(())
-{
+struct GTY(()) temp_slot_address_entry {
   hashval_t hash;
   rtx address;
   struct temp_slot *temp_slot;

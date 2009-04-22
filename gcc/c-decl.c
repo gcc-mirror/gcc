@@ -198,8 +198,7 @@ bool c_override_global_bindings_to_false;
    in all such cases, the binding in the outer scope will have its
    invisible bit true.  */
 
-struct c_binding GTY((chain_next ("%h.prev")))
-{
+struct GTY((chain_next ("%h.prev"))) c_binding {
   tree decl;			/* the decl bound */
   tree type;			/* the type in this scope */
   tree id;			/* the identifier it's bound to */
@@ -236,8 +235,7 @@ struct c_binding GTY((chain_next ("%h.prev")))
    These describe the values of the identifier in the three different
    namespaces defined by the language.  */
 
-struct lang_identifier GTY(())
-{
+struct GTY(()) lang_identifier {
   struct c_common_identifier common_id;
   struct c_binding *symbol_binding; /* vars, funcs, constants, typedefs */
   struct c_binding *tag_binding;    /* struct/union/enum tags */
@@ -250,10 +248,9 @@ extern char C_SIZEOF_STRUCT_LANG_IDENTIFIER_isnt_accurate
 
 /* The resulting tree type.  */
 
-union lang_tree_node
-  GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
-       chain_next ("TREE_CODE (&%h.generic) == INTEGER_TYPE ? (union lang_tree_node *) TYPE_NEXT_VARIANT (&%h.generic) : ((union lang_tree_node *) TREE_CHAIN (&%h.generic))")))
-{
+union GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
+       chain_next ("TREE_CODE (&%h.generic) == INTEGER_TYPE ? (union lang_tree_node *) TYPE_NEXT_VARIANT (&%h.generic) : ((union lang_tree_node *) TREE_CHAIN (&%h.generic))")))  lang_tree_node
+ {
   union tree_node GTY ((tag ("0"),
 			desc ("tree_node_structure (&%h)")))
     generic;
@@ -305,8 +302,7 @@ union lang_tree_node
    pop_scope relies on this.  */
 
 
-struct c_scope GTY((chain_next ("%h.outer")))
-{
+struct GTY((chain_next ("%h.outer"))) c_scope {
   /* The scope containing this one.  */
   struct c_scope *outer;
 

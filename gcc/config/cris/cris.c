@@ -63,7 +63,7 @@ enum cris_retinsn_type
  { CRIS_RETINSN_UNKNOWN = 0, CRIS_RETINSN_RET, CRIS_RETINSN_JUMP };
 
 /* Per-function machine data.  */
-struct machine_function GTY(())
+struct GTY(()) machine_function
  {
    int needs_return_address_on_stack;
 

@@ -160,8 +160,7 @@ static GTY(()) tree float_types[NUM_MACHINE_MODES];
 /* For each binding contour we allocate a binding_level structure to indicate
    the binding depth.  */
 
-struct gnat_binding_level GTY((chain_next ("%h.chain")))
-{
+struct GTY((chain_next ("%h.chain"))) gnat_binding_level {
   /* The binding level containing this one (the enclosing binding level). */
   struct gnat_binding_level *chain;
   /* The BLOCK node for this level.  */

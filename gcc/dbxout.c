@@ -171,8 +171,7 @@ enum typestatus {TYPE_UNSEEN, TYPE_XREF, TYPE_DEFINED};
    The file_number and type_number elements are used if DBX_USE_BINCL
    is defined.  */
 
-struct typeinfo GTY(())
-{
+struct GTY(()) typeinfo {
   enum typestatus status;
   int file_number;
   int type_number;

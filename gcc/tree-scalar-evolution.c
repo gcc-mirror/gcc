@@ -282,8 +282,7 @@ static tree analyze_scalar_evolution_1 (struct loop *, tree, tree);
    basic block INSTANTIATED_BELOW, the value of VAR can be expressed
    as CHREC.  */
 
-struct scev_info_str GTY(())
-{
+struct GTY(()) scev_info_str {
   basic_block instantiated_below;
   tree var;
   tree chrec;

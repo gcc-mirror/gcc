@@ -89,7 +89,7 @@ unsigned xtensa_current_frame_size;
 #define LARGEST_MOVE_RATIO 15
 
 /* Define the structure for the machine field in struct function.  */
-struct machine_function GTY(())
+struct GTY(()) machine_function
 {
   int accesses_prev_frame;
   bool need_a7_copy;

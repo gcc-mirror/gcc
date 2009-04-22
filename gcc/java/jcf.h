@@ -66,7 +66,7 @@ jcf_open_exact_case (const char* filename, int oflag);
 struct JCF;
 typedef int (*jcf_filbuf_t) (struct JCF*, int needed);
 
-union cpool_entry GTY(()) {
+union GTY(()) cpool_entry {
   jword GTY ((tag ("0"))) w;
   tree GTY ((tag ("1"))) t;
 };
@@ -74,7 +74,7 @@ union cpool_entry GTY(()) {
 #define cpool_entry_is_tree(tag) \
   (tag & CONSTANT_ResolvedFlag) || tag == CONSTANT_Utf8
 
-typedef struct CPool GTY(()) {
+typedef struct GTY(()) CPool {
   /* Available number of elements in the constants array, before it
      must be re-allocated. */
   int capacity;
@@ -92,7 +92,7 @@ struct ZipDirectory;
 
 /* JCF encapsulates the state of reading a Java Class File. */
 
-typedef struct JCF GTY(()) {
+typedef struct GTY(()) JCF {
   unsigned char * GTY ((skip)) buffer;
   unsigned char * GTY ((skip)) buffer_end;
   unsigned char * GTY ((skip)) read_ptr;

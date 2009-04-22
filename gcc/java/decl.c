@@ -351,8 +351,8 @@ find_stack_slot (int index, tree type)
 			      type, -1);
 }
 
-struct binding_level GTY(())
-  {
+struct GTY(())
+  binding_level {
     /* A chain of _DECL nodes for all variables, constants, functions,
      * and typedef types.  These are in the reverse of the order supplied.
      */

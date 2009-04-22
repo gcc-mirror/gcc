@@ -46,12 +46,12 @@ In a structure field definition, before the name of the field.
 Here are some examples of marking simple data structures and globals.
 
 @smallexample
-struct @var{tag} GTY(())
+struct GTY(()) @var{tag}
 @{
   @var{fields}@dots{}
 @};
 
-typedef struct @var{tag} GTY(())
+typedef struct GTY(()) @var{tag}
 @{
   @var{fields}@dots{}
 @} *@var{typename};
@@ -136,7 +136,7 @@ There are two places the type machinery will need to be explicitly told
 the length of an array.  The first case is when a structure ends in a
 variable-length array, like this:
 @smallexample
-struct rtvec_def GTY(()) @{
+struct GTY(()) rtvec_def @{
   int num_elem;         /* @r{number of elements} */
   rtx GTY ((length ("%h.num_elem"))) elem[1];
 @};
@@ -194,7 +194,7 @@ constant.
 
 For example,
 @smallexample
-struct tree_binding GTY(())
+struct GTY(()) tree_binding
 @{
   struct tree_common common;
   union tree_binding_u @{

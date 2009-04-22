@@ -125,8 +125,7 @@ binding_entry_free (binding_entry entry)
 
 /* The datatype used to implement the mapping from names to types at
    a given scope.  */
-struct binding_table_s GTY(())
-{
+struct GTY(()) binding_table_s {
   /* Array of chains of "binding_entry"s  */
   binding_entry * GTY((length ("%h.chain_count"))) chain;
 

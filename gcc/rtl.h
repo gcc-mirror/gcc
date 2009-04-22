@@ -139,7 +139,7 @@ typedef struct
 /* ALIGN and SIZE are the alignment and size of the MEM itself,
    while EXPR can describe a larger underlying object, which might have a
    stricter alignment; OFFSET is the offset of the MEM within that object.  */
-typedef struct mem_attrs GTY(())
+typedef struct GTY(()) mem_attrs
 {
   tree expr;			/* expr corresponding to MEM.  */
   rtx offset;			/* Offset from start of DECL, as CONST_INT.  */
@@ -155,8 +155,7 @@ typedef struct mem_attrs GTY(())
    object in the low part of a 4-byte register, the OFFSET field
    will be -3 rather than 0.  */
 
-typedef struct reg_attrs GTY(())
-{
+typedef struct GTY(()) reg_attrs {
   tree decl;			/* decl corresponding to REG.  */
   HOST_WIDE_INT offset;		/* Offset from start of DECL.  */
 } reg_attrs;
@@ -185,7 +184,7 @@ typedef union rtunion_def rtunion;
 /* This structure remembers the position of a SYMBOL_REF within an
    object_block structure.  A SYMBOL_REF only provides this information
    if SYMBOL_REF_HAS_BLOCK_INFO_P is true.  */
-struct block_symbol GTY(()) {
+struct GTY(()) block_symbol {
   /* The usual SYMBOL_REF fields.  */
   rtunion GTY ((skip)) fld[3];
 
@@ -203,8 +202,7 @@ DEF_VEC_ALLOC_P(rtx,gc);
 
 /* Describes a group of objects that are to be placed together in such
    a way that their relative positions are known.  */
-struct object_block GTY(())
-{
+struct GTY(()) object_block {
   /* The section in which these objects should be placed.  */
   section *sect;
 
@@ -237,9 +235,8 @@ struct object_block GTY(())
 
 /* RTL expression ("rtx").  */
 
-struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
-		    chain_prev ("RTX_PREV (&%h)")))
-{
+struct GTY((chain_next ("RTX_NEXT (&%h)"),
+		    chain_prev ("RTX_PREV (&%h)"))) rtx_def {
   /* The kind of expression this is.  */
   ENUM_BITFIELD(rtx_code) code: 16;
 
@@ -357,7 +354,7 @@ struct rtx_def GTY((chain_next ("RTX_NEXT (&%h)"),
    for a variable number of things.  The principle use is inside
    PARALLEL expressions.  */
 
-struct rtvec_def GTY(()) {
+struct GTY(()) rtvec_def {
   int num_elem;		/* number of elements */
   rtx GTY ((length ("%h.num_elem"))) elem[1];
 };

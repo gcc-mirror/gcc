@@ -139,7 +139,7 @@ struct frv_io {
        REG++)
 
 /* This structure contains machine specific function data.  */
-struct machine_function GTY(())
+struct GTY(()) machine_function
 {
   /* True if we have created an rtx that relies on the stack frame.  */
   int frame_needed;
