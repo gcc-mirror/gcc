@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3169,6 +3169,18 @@ package body Sem_Res is
                 (Is_Controlled (Etype (F)) or else Has_Task (Etype (F)))
             then
                Establish_Transient_Scope (A, False);
+
+            --  A small optimization: if one of the actuals is a concatenation
+            --  create a block around a procedure call to recover stack space.
+            --  This alleviates stack usage when several procedure calls in
+            --  the same statement list use concatenation.
+
+            elsif Nkind (A) = N_Op_Concat
+              and then Nkind (N) = N_Procedure_Call_Statement
+              and then Expander_Active
+            then
+               Establish_Transient_Scope (A, False);
+               Resolve (A, Etype (F));
 
             else
                if Nkind (A) = N_Type_Conversion

@@ -1246,9 +1246,10 @@ package body Prj.Env is
       GNAT.OS_Lib.Close (File, Status);
 
       if not Status then
-         Prj.Com.Fail ("disk full, could not create mapping file");
-         --  Do we know this is disk full? Or could it be e.g. a protection
-         --  problem of some kind preventing creation of the file ???
+         Prj.Com.Fail ("disk full, could not write mapping file");
+         --  We were able to create the temporary file, so there is no problem
+         --  of protection. However, we are not able to close it, so there must
+         --  be a capacity problem that we express using "disk full".
       end if;
    end Create_Mapping_File;
 

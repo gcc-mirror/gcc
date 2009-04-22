@@ -94,10 +94,7 @@ package body Tempdir is
       end if;
 
       if FD = Invalid_FD then
-         if Verbose_Mode then
-            Write_Line ("could not create temporary file in " & Directory);
-         end if;
-
+         Write_Line ("could not create temporary file in " & Directory);
          Name := No_Path;
 
       else
