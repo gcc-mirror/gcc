@@ -93,6 +93,6 @@ spu-c.o: $(srcdir)/config/spu/spu-c.c \
     $(srcdir)/config/spu/spu-builtins.h \
     $(srcdir)/config/spu/spu-builtins.def \
     $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(CPPLIB_H) \
-    $(TM_P_H) c-pragma.h errors.h coretypes.h $(TM_H) insn-codes.h
+    $(TM_P_H) c-pragma.h coretypes.h $(TM_H) insn-codes.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/spu/spu-c.c
 
