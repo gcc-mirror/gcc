@@ -1,3 +1,8 @@
+2009-04-22  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* sdbout.c (sdbout_symbol):  Pass VOIDmode to eliminate_regs.
+	(sdbout_parms):  Likewise.
+
 2009-04-21  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (prepare_cbranch_operands): Use
