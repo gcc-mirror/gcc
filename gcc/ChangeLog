@@ -1,3 +1,9 @@
+2009-04-23  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/linux-unwind.h (get_regs): Remove type
+	puns. Change the type of `pc' to an array of unsigned ints and
+	update all users.  Constify frame24.
+
 2009-04-22  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_special_page_vector_p): Move
