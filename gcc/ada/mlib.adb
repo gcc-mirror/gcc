@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2008, AdaCore                     --
+--                     Copyright (C) 1999-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -441,6 +441,19 @@ package body MLib is
          return "";
       end if;
    end Major_Id_Name;
+
+   -------------------------------
+   -- Separate_Run_Path_Options --
+   -------------------------------
+
+   function Separate_Run_Path_Options return Boolean is
+      Separate_Paths : Boolean;
+      for Separate_Paths'Size use Character'Size;
+      pragma Import (C, Separate_Paths, "__gnat_separate_run_path_options");
+
+   begin
+      return Separate_Paths;
+   end Separate_Run_Path_Options;
 
 --  Package elaboration
 
