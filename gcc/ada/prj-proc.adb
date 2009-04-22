@@ -2527,6 +2527,10 @@ package body Prj.Proc is
       --  only projects imported through a standard "with" are processed.
       --  Imported is the id of the last imported project.
 
+      -------------------------------
+      -- Process_Imported_Projects --
+      -------------------------------
+
       procedure Process_Imported_Projects
         (Imported     : in out Project_List;
          Limited_With : Boolean)

@@ -1,5 +1,19 @@
 2009-04-22  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-proc.adb, prj-nmsc.adb (Check_Naming_Schemes): split into several
+	smaller subprograms.
+	Renamed to Check_File_Naming_Schemes to avoid confusion with the
+	other Check_Naming_Schemes functions that plays a totally different
+	role.
+	(Check_Unit_Based_Lang, Check_File_Based_Lang): new subprograms,
+	extracted from the above. These were partially rewritten to avoid
+	unnecessary code and temporary variables.
+	(Compute_Unit_Name): new subprogram, merge of Check_Unit_Based_Lang
+	and Get_Unit (which for now still exist since they contain mode-specific
+	code)
+
+2009-04-22  Emmanuel Briot  <briot@adacore.com>
+
 	* prj.ads, prj.adb, prj-nmsc.adb, prj-proc.adb (Recursive_Process):
 	Remove duplicated code.
 	(Canonical_Case_File_Name): new subprogram
