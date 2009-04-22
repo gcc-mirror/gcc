@@ -450,7 +450,6 @@ package body MLib is
       Separate_Paths : Boolean;
       for Separate_Paths'Size use Character'Size;
       pragma Import (C, Separate_Paths, "__gnat_separate_run_path_options");
-
    begin
       return Separate_Paths;
    end Separate_Run_Path_Options;

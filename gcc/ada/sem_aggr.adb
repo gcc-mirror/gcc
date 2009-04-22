@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -896,6 +896,15 @@ package body Sem_Aggr is
       --  which is the subtype of the context in which the aggregate was found.
 
    begin
+      --  Ignore junk empty aggregate resulting from parser error
+
+      if No (Expressions (N))
+        and then No (Component_Associations (N))
+        and then not Null_Record_Present (N)
+      then
+         return;
+      end if;
+
       --  Check for aggregates not allowed in configurable run-time mode.
       --  We allow all cases of aggregates that do not come from source,
       --  since these are all assumed to be small (e.g. bounds of a string
@@ -1504,6 +1513,15 @@ package body Sem_Aggr is
    --  Start of processing for Resolve_Array_Aggregate
 
    begin
+      --  Ignore junk empty aggregate resulting from parser error
+
+      if No (Expressions (N))
+        and then No (Component_Associations (N))
+        and then not Null_Record_Present (N)
+      then
+         return False;
+      end if;
+
       --  STEP 1: make sure the aggregate is correctly formatted
 
       if Present (Component_Associations (N)) then
@@ -2171,13 +2189,12 @@ package body Sem_Aggr is
             then
                A_Type := Etype (Imm_Type);
                return True;
-
             else
                Imm_Type := Etype (Base_Type (Imm_Type));
             end if;
          end loop;
 
-         --  If previous loop did not find a proper ancestor, report error.
+         --  If previous loop did not find a proper ancestor, report error
 
          Error_Msg_NE ("expect ancestor type of &", A, Typ);
          return False;
