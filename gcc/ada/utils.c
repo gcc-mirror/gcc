@@ -1455,6 +1455,15 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
   TREE_STATIC (var_decl)
     = public_flag || (global_bindings_p () ? !extern_flag : static_flag);
 
+  /* For an external constant whose initializer is not absolute, do not emit
+     debug info.  In DWARF this would mean a global relocation in a read-only
+     section which runs afoul of the PE-COFF runtime relocation mechanism.  */
+  if (extern_flag
+      && constant_p
+      && initializer_constant_valid_p (var_init, TREE_TYPE (var_init))
+	   != null_pointer_node)
+    DECL_IGNORED_P (var_decl) = 1;
+
   if (asm_name && VAR_OR_FUNCTION_DECL_P (var_decl))
     SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
 

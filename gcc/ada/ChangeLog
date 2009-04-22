@@ -1,3 +1,8 @@
+2009-04-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* utils.c (create_var_decl_1): Do not emit debug info for an external
+	constant whose initializer is not absolute.
+
 2009-03-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* system-linux-alpha.ads (Functions_Return_By_DSP): Remove.
