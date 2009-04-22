@@ -41,30 +41,27 @@ package Prj.Env is
    --  corresponding to a source.
 
    procedure Create_Mapping_File
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
-      Name    : out Path_Name_Type);
-   --  Create a temporary mapping file for project Project. For each unit
-   --  in the closure of immediate sources of Project, put the mapping of
-   --  its spec and or body to its file name and path name in this file.
-
-   procedure Create_Mapping_File
      (Project  : Project_Id;
-      Language : Name_Id;
+      Language : Name_Id := No_Name;
       In_Tree  : Project_Tree_Ref;
       Name     : out Path_Name_Type);
    --  Create a temporary mapping file for project Project. For each source or
    --  template of Language in the Project, put the mapping of its file
    --  name and path name in this file.
    --
+   --  This function either looks at all the source files for the specified
+   --  language in the project, or if Language is set to No_Name, at all
+   --  units in the project.
+   --
    --  Implementation note: we pass a language name, not a language_index here,
    --  since the latter would have to match exactly the index of that language
    --  for the specified project, and that is not information available in
-   --  buildgpr.adb
+   --  buildgpr.adb.
 
    procedure Set_Mapping_File_Initial_State_To_Empty;
-   --  When creating a mapping file, create an empty map. This case occurs
-   --  when run time source files are found in the project files.
+   --  When creating a mapping file, create an empty map. This case occurs when
+   --  run time source files are found in the project files. This only applies
+   --  to the Ada_Only mode.
 
    procedure Create_Config_Pragmas_File
      (For_Project          : Project_Id;
@@ -97,11 +94,11 @@ package Prj.Env is
      (Project   : Project_Id;
       In_Tree   : Project_Tree_Ref;
       Recursive : Boolean) return String;
-   --  Get the source search path of a Project file. If Recursive it True,
-   --  get all the source directories of the imported and modified project
-   --  files (recursively). If Recursive is False, just get the path for the
-   --  source directories of Project. Note: the resulting String may be empty
-   --  if there is no source directory in the project file.
+   --  Get the source search path of a Project file. If Recursive it True, get
+   --  all the source directories of the imported and modified project files
+   --  (recursively). If Recursive is False, just get the path for the source
+   --  directories of Project. Note: the resulting String may be empty if there
+   --  is no source directory in the project file.
 
    function Ada_Objects_Path
      (Project             : Project_Id;
@@ -115,18 +112,17 @@ package Prj.Env is
      (Project             : Project_Id;
       In_Tree             : Project_Tree_Ref;
       Including_Libraries : Boolean);
-   --  Set the env vars for additional project path files, after
+   --  Set the environment variables for additional project path files, after
    --  creating the path files if necessary.
 
    procedure Delete_All_Path_Files (In_Tree : Project_Tree_Ref);
-   --  Delete all temporary path files that have been created by
-   --  calls to Set_Ada_Paths.
+   --  Delete all temporary path files that have been created by Set_Ada_Paths
 
    function Path_Name_Of_Library_Unit_Body
      (Name    : String;
       Project : Project_Id;
       In_Tree : Project_Tree_Ref) return String;
-   --  Returns the Path of a library unit
+   --  Returns the path of a library unit
 
    function File_Name_Of_Library_Unit_Body
      (Name              : String;
@@ -169,8 +165,8 @@ package Prj.Env is
    procedure For_All_Source_Dirs
      (Project : Project_Id;
       In_Tree : Project_Tree_Ref);
-   --  Iterate through all the source directories of a project, including
-   --  those of imported or modified projects.
+   --  Iterate through all the source directories of a project, including those
+   --  of imported or modified projects.
 
    generic
       with procedure Action (Path : String);

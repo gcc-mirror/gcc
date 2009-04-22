@@ -72,9 +72,10 @@ package body Prj.Nmsc is
       Except   : Boolean := False;
       Found    : Boolean := False;
    end record;
-   --  Information about file names found in string list attribute
-   --  Source_Files or in a source list file, stored in hash table
+   --  Information about file names found in string list attribute:
+   --  Source_Files or in a source list file, stored in hash table.
    --  Source_Names, used by procedure Get_Path_Names_And_Record_Sources.
+   --  Except is set to True if source is a naming exception in the project.
 
    No_Name_Location : constant Name_Location :=
                         (Name     => No_File,
@@ -3264,7 +3265,7 @@ package body Prj.Nmsc is
 
          Write_Attr ("Body_Suffix", Get_Name_String (Body_Suffix));
 
-         --  We'll need the dot replacement below, so compute it now.
+         --  We'll need the dot replacement below, so compute it now
 
          Check_Common
            (Dot_Replacement => Data.Naming.Dot_Replacement,

@@ -1178,8 +1178,6 @@ package Prj is
       --  The list of languages of the sources of this project
       --  mode: Ada_Only
 
-      Include_Language : Language_Index := No_Language_Index;
-
       First_Language_Processing : Language_Index := No_Language_Index;
       --  First index of the language data in the project.
       --  This is an index into the project_tree_data.languages_data

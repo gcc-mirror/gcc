@@ -6380,7 +6380,7 @@ package body Make is
                                     Library_Paths.Table (Index).all);
                               end loop;
 
-                              --  One switch for the standard GNAT library dir.
+                              --  One switch for the standard GNAT library dir
 
                               Linker_Switches.Increment_Last;
                               Linker_Switches.Table
@@ -6809,9 +6809,11 @@ package body Make is
 
       if Project /= No_Project then
          Prj.Env.Create_Mapping_File
-           (Project, Project_Tree,
-            The_Mapping_File_Names
-              (Project, Last_Mapping_File_Names (Project)));
+           (Project,
+            In_Tree  => Project_Tree,
+            Language => No_Name,
+            Name     => The_Mapping_File_Names
+                          (Project, Last_Mapping_File_Names (Project)));
 
       --  Otherwise, just create an empty file
 
