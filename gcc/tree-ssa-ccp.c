@@ -1290,7 +1290,9 @@ fold_const_aggregate_ref (tree t)
 	if (TREE_CODE (base) == SSA_NAME
 	    && (value = get_value (base))
 	    && value->lattice_val == CONSTANT
-	    && TREE_CODE (value->value) == ADDR_EXPR)
+	    && TREE_CODE (value->value) == ADDR_EXPR
+	    && useless_type_conversion_p (TREE_TYPE (t),
+					  TREE_TYPE (TREE_TYPE (value->value))))
 	  return fold_const_aggregate_ref (TREE_OPERAND (value->value, 0));
 	break;
       }
