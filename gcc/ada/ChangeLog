@@ -1,5 +1,11 @@
 2009-04-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils2.c (build_binary_op) <PLUS_EXPR>: If operation's
+	type is an enumeral or a boolean type, change it to an integer type
+	with the same mode and signedness.
+
+2009-04-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (create_var_decl_1): Do not emit debug info
 	for an external constant whose initializer is not absolute.
 
