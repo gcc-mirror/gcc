@@ -1968,9 +1968,7 @@ sjlj_emit_function_exit_after (rtx after)
 static void
 sjlj_emit_function_exit (void)
 {
-  rtx seq;
-  edge e;
-  edge_iterator ei;
+  rtx seq, insn;
 
   start_sequence ();
 
@@ -1984,31 +1982,11 @@ sjlj_emit_function_exit (void)
      post-dominates all can_throw_internal instructions.  This is
      the last possible moment.  */
 
-  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
-    if (e->flags & EDGE_FALLTHRU)
-      break;
-  if (e)
-    {
-      rtx insn;
+  insn = crtl->eh.sjlj_exit_after;
+  if (LABEL_P (insn))
+    insn = NEXT_INSN (insn);
 
-      /* Figure out whether the place we are supposed to insert libcall
-         is inside the last basic block or after it.  In the other case
-         we need to emit to edge.  */
-      gcc_assert (e->src->next_bb == EXIT_BLOCK_PTR);
-      for (insn = BB_HEAD (e->src); ; insn = NEXT_INSN (insn))
-	{
-	  if (insn == crtl->eh.sjlj_exit_after)
-	    {
-	      if (LABEL_P (insn))
-		insn = NEXT_INSN (insn);
-	      emit_insn_after (seq, insn);
-	      return;
-	    }
-	  if (insn == BB_END (e->src))
-	    break;
-	}
-      insert_insn_on_edge (seq, e);
-    }
+  emit_insn_after (seq, insn);
 }
 
 static void

@@ -4804,7 +4804,6 @@ expand_function_end (void)
 
     start_sequence ();
     clobber_return_register ();
-    expand_naked_return ();
     seq = get_insns ();
     end_sequence ();
 
@@ -4812,7 +4811,8 @@ expand_function_end (void)
   }
 
   /* Output the label for the naked return from the function.  */
-  emit_label (naked_return_label);
+  if (naked_return_label)
+    emit_label (naked_return_label);
 
   /* @@@ This is a kludge.  We want to ensure that instructions that
      may trap are not moved into the epilogue by scheduling, because
