@@ -1,3 +1,24 @@
+2009-04-22  Robert Dewar  <dewar@adacore.com>
+
+	* prj.adb: Minor code reorganization
+	Code clean up.
+
+	* prj-proc.adb: Minor code reorganization, clean up.
+
+	* prj-nmsc.adb: Minor reformatting
+	Minor code reorganization
+
+	* gnat_ugn.texi: Add to doc on strict aliasing
+
+2009-04-22  Pascal Obry  <obry@adacore.com>
+
+	* s-osinte-mingw.ads: Rename Reserved field in CRITICAL_SECTION to
+	SpinCount.
+
+	* s-tasini.adb: Minor reformatting.
+
+	* s-tassta.adb: Minor reformatting.
+
 2009-04-22  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb, prj-nmsc.adb (Check_Naming_Schemes): split into several

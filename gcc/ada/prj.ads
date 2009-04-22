@@ -878,20 +878,13 @@ package Prj is
       --  source file name of a spec.
       --  Indexed by the programming language.
 
-      Ada_Spec_Suffix_Loc : Source_Ptr := No_Location;
-
       Body_Suffix : Array_Element_Id := No_Array_Element;
       --  The string to append to the unit name for the
       --  source file name of a body.
       --  Indexed by the programming language.
 
-      Ada_Body_Suffix_Loc : Source_Ptr := No_Location;
-
       Separate_Suffix : File_Name_Type := No_File;
       --  String to append to unit name for source file name of an Ada subunit
-
-      Sep_Suffix_Loc : Source_Ptr := No_Location;
-      --  Position in the project file source where Separate_Suffix is defined
 
       Specs : Array_Element_Id := No_Array_Element;
       --  An associative array mapping individual specs to source file names

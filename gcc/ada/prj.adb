@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,11 +75,8 @@ package body Prj is
                        (Dot_Replacement           => Standard_Dot_Replacement,
                         Casing                    => All_Lower_Case,
                         Spec_Suffix               => No_Array_Element,
-                        Ada_Spec_Suffix_Loc       => No_Location,
                         Body_Suffix               => No_Array_Element,
-                        Ada_Body_Suffix_Loc       => No_Location,
                         Separate_Suffix           => No_File,
-                        Sep_Suffix_Loc            => No_Location,
                         Specs                     => No_Array_Element,
                         Bodies                    => No_Array_Element,
                         Specification_Exceptions  => No_Array_Element,
@@ -654,9 +651,10 @@ package body Prj is
       Extended  : Project_Id;
       In_Tree   : Project_Tree_Ref) return Boolean
    is
-      Proj : Project_Id := Extending;
+      Proj : Project_Id;
 
    begin
+      Proj := Extending;
       while Proj /= No_Project loop
          if Proj = Extended then
             return True;
