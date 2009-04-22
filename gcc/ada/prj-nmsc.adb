@@ -737,7 +737,6 @@ package body Prj.Nmsc is
       end if;
 
       Src_Data.Project             := Project;
-      Src_Data.Language_Name       := Lang;
       Src_Data.Language            := Lang_Id;
       Src_Data.Lang_Kind           := Lang_Kind;
       Src_Data.Compiled            := In_Tree.Languages_Data.Table
@@ -2824,11 +2823,11 @@ package body Prj.Nmsc is
       --  Check attributes common to Ada_Only and Multi_Lang modes
 
       procedure Process_Exceptions_File_Based
-        (Lang_Id        : Language_Index;
-         Kind           : Source_Kind);
+        (Lang_Id : Language_Index;
+         Kind    : Source_Kind);
       procedure Process_Exceptions_Unit_Based
-        (Lang_Id        : Language_Index;
-         Kind           : Source_Kind);
+        (Lang_Id : Language_Index;
+         Kind    : Source_Kind);
       --  In Multi_Lang mode, process the naming exceptions for the two types
       --  of languages we can have.
 
@@ -2989,6 +2988,7 @@ package body Prj.Nmsc is
          Element        : String_Element;
          File_Name      : File_Name_Type;
          Source         : Source_Id;
+
       begin
          case Kind is
             when Impl | Sep =>
@@ -3087,6 +3087,7 @@ package body Prj.Nmsc is
          Source_To_Replace : Source_Id := No_Source;
          Other_Project     : Project_Id;
          Other_Part        : Source_Id := No_Source;
+
       begin
          case Kind is
             when Impl | Sep =>
@@ -3363,6 +3364,7 @@ package body Prj.Nmsc is
          Sep_Suffix_Loc  : Source_Ptr;
          Suffix          : Variable_Value;
          Lang            : Name_Id;
+
       begin
          Check_Common
            (Dot_Replacement => Dot_Replacement,
@@ -3382,13 +3384,13 @@ package body Prj.Nmsc is
          then
             Lang_Id := Data.First_Language_Processing;
             while Lang_Id /= No_Language_Index loop
-               if In_Tree.Languages_Data.Table
-                 (Lang_Id).Config.Kind = Unit_Based
+               if In_Tree.Languages_Data.
+                    Table (Lang_Id).Config.Kind = Unit_Based
                then
                   if Dot_Replacement /= No_File then
                      In_Tree.Languages_Data.Table
                        (Lang_Id).Config.Naming_Data.Dot_Replacement :=
-                       Dot_Replacement;
+                         Dot_Replacement;
                   end if;
 
                   if Casing_Defined then
@@ -3399,12 +3401,11 @@ package body Prj.Nmsc is
                   if Separate_Suffix /= No_File then
                      In_Tree.Languages_Data.Table
                        (Lang_Id).Config.Naming_Data.Separate_Suffix :=
-                       Separate_Suffix;
+                         Separate_Suffix;
                   end if;
                end if;
 
-               Lang_Id :=
-                 In_Tree.Languages_Data.Table (Lang_Id).Next;
+               Lang_Id := In_Tree.Languages_Data.Table (Lang_Id).Next;
             end loop;
          end if;
 
@@ -4542,15 +4543,16 @@ package body Prj.Nmsc is
 
                   if Def_Lang_Id = Name_Ada then
                      In_Tree.Languages_Data.Table
-                       (Data.First_Language_Processing).Config.Kind
-                       := Unit_Based;
+                       (Data.First_Language_Processing).Config.Kind :=
+                         Unit_Based;
                      In_Tree.Languages_Data.Table
-                       (Data.First_Language_Processing).Config.Dependency_Kind
-                       := ALI_File;
+                       (Data.First_Language_Processing).Config.
+                         Dependency_Kind := ALI_File;
+
                   else
                      In_Tree.Languages_Data.Table
-                       (Data.First_Language_Processing).Config.Kind
-                       := File_Based;
+                       (Data.First_Language_Processing).Config.Kind :=
+                         File_Based;
                   end if;
                end if;
             end if;
@@ -4646,7 +4648,6 @@ package body Prj.Nmsc is
                            if Lang_Name = Name_Ada then
                               Lang_Data.Config.Kind := Unit_Based;
                               Lang_Data.Config.Dependency_Kind := ALI_File;
-
                            else
                               Lang_Data.Config.Kind := File_Based;
                               Lang_Data.Config.Dependency_Kind := None;
@@ -4681,9 +4682,10 @@ package body Prj.Nmsc is
 
       elsif Extending then
          declare
-            Data : Project_Data := In_Tree.Projects.Table (Root_Project);
+            Data : Project_Data;
 
          begin
+            Data := In_Tree.Projects.Table (Root_Project);
             while Data.Extends /= No_Project loop
                if P = Data.Extends then
                   return True;
