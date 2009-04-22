@@ -782,10 +782,11 @@ process_single_reg_class_operands (bool in_p, int freq)
 		  [ira_class_hard_regs[cl][0]]) >= 0
 	      && reg_class_size[cl] <= (unsigned) CLASS_MAX_NREGS (cl, mode))
 	    {
-	      /* ??? FREQ */
-	      cost = freq * (in_p
-			     ? ira_register_move_cost[mode][cover_class][cl]
-			     : ira_register_move_cost[mode][cl][cover_class]);
+	      cost
+		= (freq
+		   * (in_p
+		      ? ira_get_register_move_cost (mode, cover_class, cl)
+		      : ira_get_register_move_cost (mode, cl, cover_class)));
 	      ira_allocate_and_set_costs
 		(&ALLOCNO_CONFLICT_HARD_REG_COSTS (operand_a), cover_class, 0);
 	      ALLOCNO_CONFLICT_HARD_REG_COSTS (operand_a)

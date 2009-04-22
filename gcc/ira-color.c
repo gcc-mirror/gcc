@@ -285,8 +285,8 @@ update_copy_costs (ira_allocno_t allocno, bool decr_p)
 	    continue;
 
 	  cost = (cp->second == allocno
-		  ? ira_register_move_cost[mode][rclass][cover_class]
-		  : ira_register_move_cost[mode][cover_class][rclass]);
+		  ? ira_get_register_move_cost (mode, rclass, cover_class)
+		  : ira_get_register_move_cost (mode, cover_class, rclass));
 	  if (decr_p)
 	    cost = -cost;
 
@@ -1069,7 +1069,7 @@ calculate_allocno_spill_cost (ira_allocno_t a)
 	      * ira_loop_edge_freq (loop_node, regno, true)
 	      + ira_memory_move_cost[mode][rclass][0]
 	      * ira_loop_edge_freq (loop_node, regno, false))
-	     - (ira_register_move_cost[mode][rclass][rclass]
+	     - (ira_get_register_move_cost (mode, rclass, rclass)
 		* (ira_loop_edge_freq (loop_node, regno, false)
 		   + ira_loop_edge_freq (loop_node, regno, true))));
   return cost;
@@ -2037,7 +2037,7 @@ color_pass (ira_loop_tree_node_t loop_tree_node)
 	  else
 	    {
 	      cover_class = ALLOCNO_COVER_CLASS (subloop_allocno);
-	      cost = (ira_register_move_cost[mode][rclass][rclass] 
+	      cost = (ira_get_register_move_cost (mode, rclass, rclass)
 		      * (exit_freq + enter_freq));
 	      ira_allocate_and_set_or_copy_costs
 		(&ALLOCNO_UPDATED_HARD_REG_COSTS (subloop_allocno), cover_class,
@@ -2162,7 +2162,7 @@ move_spill_restore (void)
 		    += (ira_memory_move_cost[mode][rclass][0] * exit_freq
 			+ ira_memory_move_cost[mode][rclass][1] * enter_freq);
 		  if (hard_regno2 != hard_regno)
-		    cost -= (ira_register_move_cost[mode][rclass][rclass]
+		    cost -= (ira_get_register_move_cost (mode, rclass, rclass)
 			     * (exit_freq + enter_freq));
 		}
 	    }
@@ -2181,7 +2181,7 @@ move_spill_restore (void)
 		    += (ira_memory_move_cost[mode][rclass][1] * exit_freq
 			+ ira_memory_move_cost[mode][rclass][0] * enter_freq);
 		  if (hard_regno2 != hard_regno)
-		    cost -= (ira_register_move_cost[mode][rclass][rclass]
+		    cost -= (ira_get_register_move_cost (mode, rclass, rclass)
 			     * (exit_freq + enter_freq));
 		}
 	    }
@@ -2247,8 +2247,8 @@ update_curr_costs (ira_allocno_t a)
       if (i < 0)
 	continue;
       cost = (cp->first == a
-	      ? ira_register_move_cost[mode][rclass][cover_class]
-	      : ira_register_move_cost[mode][cover_class][rclass]);
+	      ? ira_get_register_move_cost (mode, rclass, cover_class)
+	      : ira_get_register_move_cost (mode, cover_class, rclass));
       ira_allocate_and_set_or_copy_costs
 	(&ALLOCNO_UPDATED_HARD_REG_COSTS (a),
 	 cover_class, ALLOCNO_COVER_CLASS_COST (a),
