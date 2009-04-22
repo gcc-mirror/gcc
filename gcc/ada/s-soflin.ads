@@ -207,11 +207,11 @@ package System.Soft_Links is
    --    Locked_Processing : begin
    --       System.Soft_Links.Lock_Task.all;
    --       ...
-   --       System.Soft_Links..Unlock_Task.all;
+   --       System.Soft_Links.Unlock_Task.all;
    --
    --    exception
    --       when others =>
-   --          System.Soft_Links..Unlock_Task.all;
+   --          System.Soft_Links.Unlock_Task.all;
    --          raise;
    --    end Locked_Processing;
    --

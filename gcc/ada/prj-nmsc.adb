@@ -2909,8 +2909,10 @@ package body Prj.Nmsc is
             end;
          end if;
 
-         Write_Attr
-           ("Dot_Replacement", Get_Name_String (Dot_Replacement));
+         if Dot_Replacement /= No_File then
+            Write_Attr
+              ("Dot_Replacement", Get_Name_String (Dot_Replacement));
+         end if;
 
          Casing_Defined := False;
 
