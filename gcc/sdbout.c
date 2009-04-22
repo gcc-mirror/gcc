@@ -771,7 +771,7 @@ sdbout_symbol (tree decl, int local)
 	return;
 
       SET_DECL_RTL (decl,
-		    eliminate_regs (DECL_RTL (decl), 0, NULL_RTX));
+		    eliminate_regs (DECL_RTL (decl), VOIDmode, NULL_RTX));
 #ifdef LEAF_REG_REMAP
       if (current_function_uses_only_leaf_regs)
 	leaf_renumber_regs_insn (DECL_RTL (decl));
@@ -1271,9 +1271,9 @@ sdbout_parms (tree parms)
 	/* Perform any necessary register eliminations on the parameter's rtl,
 	   so that the debugging output will be accurate.  */
 	DECL_INCOMING_RTL (parms)
-	  = eliminate_regs (DECL_INCOMING_RTL (parms), 0, NULL_RTX);
+	  = eliminate_regs (DECL_INCOMING_RTL (parms), VOIDmode, NULL_RTX);
 	SET_DECL_RTL (parms,
-		      eliminate_regs (DECL_RTL (parms), 0, NULL_RTX));
+		      eliminate_regs (DECL_RTL (parms), VOIDmode, NULL_RTX));
 
 	if (PARM_PASSED_IN_MEMORY (parms))
 	  {
