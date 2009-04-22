@@ -2807,12 +2807,6 @@ package body Prj.Nmsc is
                     Util.Value_Of (Name_Naming, Data.Decl.Packages, In_Tree);
       Naming    : Package_Element;
 
-      procedure Get_Exceptions (Kind : Source_Kind);
-      --  Comment required ???
-
-      procedure Get_Unit_Exceptions (Kind : Source_Kind);
-      --  Comment required ???
-
       procedure Check_Naming_Ada_Only;
       --  Does Check_Naming_Schemes processing in Ada_Only mode.
       --  If there is a package Naming, puts in Data.Naming the contents of
@@ -2828,6 +2822,15 @@ package body Prj.Nmsc is
          Separate_Suffix : in out File_Name_Type;
          Sep_Suffix_Loc  : out Source_Ptr);
       --  Check attributes common to Ada_Only and Multi_Lang modes
+
+      procedure Process_Exceptions_File_Based
+        (Lang_Id        : Language_Index;
+         Kind           : Source_Kind);
+      procedure Process_Exceptions_Unit_Based
+        (Lang_Id        : Language_Index;
+         Kind           : Source_Kind);
+      --  In Multi_Lang mode, process the naming exceptions for the two types
+      --  of languages we can have.
 
       ------------------
       -- Check_Common --
@@ -2970,183 +2973,158 @@ package body Prj.Nmsc is
          end if;
       end Check_Common;
 
-      --------------------
-      -- Get_Exceptions --
-      --------------------
+      -----------------------------------
+      -- Process_Exceptions_File_Based --
+      -----------------------------------
 
-      procedure Get_Exceptions (Kind : Source_Kind) is
+      procedure Process_Exceptions_File_Based
+        (Lang_Id        : Language_Index;
+         Kind           : Source_Kind)
+      is
+         Lang           : constant Name_Id :=
+                            In_Tree.Languages_Data.Table (Lang_Id).Name;
          Exceptions     : Array_Element_Id;
          Exception_List : Variable_Value;
          Element_Id     : String_List_Id;
          Element        : String_Element;
          File_Name      : File_Name_Type;
-         Lang_Id        : Language_Index;
-         Lang           : Name_Id;
-         Lang_Kind      : Language_Kind;
          Source         : Source_Id;
-
       begin
-         if Kind = Impl then
-            Exceptions :=
-              Value_Of
-                (Name_Implementation_Exceptions,
-                 In_Arrays => Naming.Decl.Arrays,
-                 In_Tree   => In_Tree);
-
-         else
-            Exceptions :=
-              Value_Of
-                (Name_Specification_Exceptions,
-                 In_Arrays => Naming.Decl.Arrays,
-                 In_Tree   => In_Tree);
-         end if;
-
-         Lang_Id := Data.First_Language_Processing;
-         while Lang_Id /= No_Language_Index loop
-            if In_Tree.Languages_Data.Table (Lang_Id).Config.Kind =
-                                                               File_Based
-            then
-               Lang := In_Tree.Languages_Data.Table (Lang_Id).Name;
-               Lang_Kind :=
-                 In_Tree.Languages_Data.Table (Lang_Id).Config.Kind;
-
-               Exception_List := Value_Of
-                 (Index    => Lang,
-                  In_Array => Exceptions,
-                  In_Tree  => In_Tree);
-
-               if Exception_List /= Nil_Variable_Value then
-                  Element_Id := Exception_List.Values;
-                  while Element_Id /= Nil_String loop
-                     Element := In_Tree.String_Elements.Table (Element_Id);
-                     File_Name := Canonical_Case_File_Name (Element.Value);
-
-                     Source := Data.First_Source;
-                     while Source /= No_Source
-                       and then
-                       In_Tree.Sources.Table (Source).File /= File_Name
-                     loop
-                        Source :=
-                          In_Tree.Sources.Table (Source).Next_In_Project;
-                     end loop;
-
-                     if Source = No_Source then
-                        Add_Source
-                          (Id           => Source,
-                           Data         => Data,
-                           In_Tree      => In_Tree,
-                           Project      => Project,
-                           Lang         => Lang,
-                           Lang_Id      => Lang_Id,
-                           Kind         => Kind,
-                           File_Name    => File_Name,
-                           Display_File => File_Name_Type (Element.Value),
-                           Naming_Exception => True,
-                           Lang_Kind    => Lang_Kind);
-
-                     else
-                        --  Check if the file name is already recorded for
-                        --  another language or another kind.
-
-                        if
-                          In_Tree.Sources.Table (Source).Language /= Lang_Id
-                        then
-                           Error_Msg
-                             (Project,
-                              In_Tree,
-                              "the same file cannot be a source " &
-                              "of two languages",
-                              Element.Location);
-
-                        elsif In_Tree.Sources.Table (Source).Kind /= Kind then
-                           Error_Msg
-                             (Project,
-                              In_Tree,
-                              "the same file cannot be a source " &
-                              "and a template",
-                              Element.Location);
-                        end if;
-
-                        --  If the file is already recorded for the same
-                        --  language and the same kind, it means that the file
-                        --  name appears several times in the *_Exceptions
-                        --  attribute; so there is nothing to do.
-
-                     end if;
-
-                     Element_Id := Element.Next;
-                  end loop;
-               end if;
-            end if;
-
-            Lang_Id := In_Tree.Languages_Data.Table (Lang_Id).Next;
-         end loop;
-      end Get_Exceptions;
-
-      -------------------------
-      -- Get_Unit_Exceptions --
-      -------------------------
-
-      procedure Get_Unit_Exceptions (Kind : Source_Kind) is
-         Exceptions : Array_Element_Id;
-         Element    : Array_Element;
-         Unit       : Name_Id;
-         Index      : Int;
-         File_Name  : File_Name_Type;
-         Lang_Id    : constant Language_Index :=
-                        Data.Unit_Based_Language_Index;
-         Lang       : constant Name_Id :=
-                        Data.Unit_Based_Language_Name;
-
-         Source            : Source_Id;
-         Source_To_Replace : Source_Id := No_Source;
-
-         Other_Project : Project_Id;
-         Other_Part    : Source_Id := No_Source;
-
-      begin
-         if Lang_Id = No_Language_Index or else Lang = No_Name then
-            return;
-         end if;
-
-         if Kind = Impl then
-            Exceptions := Value_Of
-              (Name_Body,
-               In_Arrays => Naming.Decl.Arrays,
-               In_Tree   => In_Tree);
-
-            if Exceptions = No_Array_Element then
+         case Kind is
+            when Impl | Sep =>
                Exceptions :=
                  Value_Of
-                   (Name_Implementation,
+                   (Name_Implementation_Exceptions,
                     In_Arrays => Naming.Decl.Arrays,
                     In_Tree   => In_Tree);
-            end if;
 
-         else
-            Exceptions :=
-              Value_Of
-                (Name_Spec,
-                 In_Arrays => Naming.Decl.Arrays,
-                 In_Tree   => In_Tree);
+            when Spec =>
+               Exceptions :=
+                 Value_Of
+                   (Name_Specification_Exceptions,
+                    In_Arrays => Naming.Decl.Arrays,
+                    In_Tree   => In_Tree);
+         end case;
 
-            if Exceptions = No_Array_Element then
+         Exception_List := Value_Of
+           (Index    => Lang,
+            In_Array => Exceptions,
+            In_Tree  => In_Tree);
+
+         if Exception_List /= Nil_Variable_Value then
+            Element_Id := Exception_List.Values;
+            while Element_Id /= Nil_String loop
+               Element   := In_Tree.String_Elements.Table (Element_Id);
+               File_Name := Canonical_Case_File_Name (Element.Value);
+
+               Source := Data.First_Source;
+               while Source /= No_Source
+                 and then In_Tree.Sources.Table (Source).File /= File_Name
+               loop
+                  Source := In_Tree.Sources.Table (Source).Next_In_Project;
+               end loop;
+
+               if Source = No_Source then
+                  Add_Source
+                    (Id               => Source,
+                     Data             => Data,
+                     In_Tree          => In_Tree,
+                     Project          => Project,
+                     Lang             => Lang,
+                     Lang_Id          => Lang_Id,
+                     Kind             => Kind,
+                     File_Name        => File_Name,
+                     Display_File     => File_Name_Type (Element.Value),
+                     Naming_Exception => True,
+                     Lang_Kind        => File_Based);
+
+               else
+                  --  Check if the file name is already recorded for another
+                  --  language or another kind.
+
+                  if In_Tree.Sources.Table (Source).Language /= Lang_Id then
+                     Error_Msg
+                       (Project,
+                        In_Tree,
+                        "the same file cannot be a source of two languages",
+                        Element.Location);
+
+                  elsif In_Tree.Sources.Table (Source).Kind /= Kind then
+                     Error_Msg
+                       (Project,
+                        In_Tree,
+                        "the same file cannot be a source and a template",
+                        Element.Location);
+                  end if;
+
+                  --  If the file is already recorded for the same
+                  --  language and the same kind, it means that the file
+                  --  name appears several times in the *_Exceptions
+                  --  attribute; so there is nothing to do.
+               end if;
+
+               Element_Id := Element.Next;
+            end loop;
+         end if;
+      end Process_Exceptions_File_Based;
+
+      -----------------------------------
+      -- Process_Exceptions_Unit_Based --
+      -----------------------------------
+
+      procedure Process_Exceptions_Unit_Based
+        (Lang_Id        : Language_Index;
+         Kind           : Source_Kind)
+      is
+         Lang              : constant Name_Id :=
+                              In_Tree.Languages_Data.Table (Lang_Id).Name;
+         Exceptions        : Array_Element_Id;
+         Element           : Array_Element;
+         Unit              : Name_Id;
+         Index             : Int;
+         File_Name         : File_Name_Type;
+         Source            : Source_Id;
+         Source_To_Replace : Source_Id := No_Source;
+         Other_Project     : Project_Id;
+         Other_Part        : Source_Id := No_Source;
+      begin
+         case Kind is
+            when Impl | Sep =>
                Exceptions := Value_Of
-                 (Name_Specification,
+                 (Name_Body,
                   In_Arrays => Naming.Decl.Arrays,
                   In_Tree   => In_Tree);
-            end if;
 
-         end if;
+               if Exceptions = No_Array_Element then
+                  Exceptions :=
+                    Value_Of
+                      (Name_Implementation,
+                       In_Arrays => Naming.Decl.Arrays,
+                       In_Tree   => In_Tree);
+               end if;
+
+            when Spec =>
+               Exceptions :=
+                 Value_Of
+                   (Name_Spec,
+                    In_Arrays => Naming.Decl.Arrays,
+                    In_Tree   => In_Tree);
+
+               if Exceptions = No_Array_Element then
+                  Exceptions := Value_Of
+                    (Name_Specification,
+                     In_Arrays => Naming.Decl.Arrays,
+                     In_Tree   => In_Tree);
+               end if;
+         end case;
 
          while Exceptions /= No_Array_Element loop
-            Element := In_Tree.Array_Elements.Table (Exceptions);
+            Element   := In_Tree.Array_Elements.Table (Exceptions);
             File_Name := Canonical_Case_File_Name (Element.Value.Value);
 
             Get_Name_String (Element.Index);
             To_Lower (Name_Buffer (1 .. Name_Len));
-            Unit := Name_Find;
-
+            Unit  := Name_Find;
             Index := Element.Value.Index;
 
             --  For Ada, check if it is a valid unit name
@@ -3240,7 +3218,7 @@ package body Prj.Nmsc is
 
             Exceptions := Element.Next;
          end loop;
-      end Get_Unit_Exceptions;
+      end Process_Exceptions_Unit_Based;
 
       ---------------------------
       -- Check_Naming_Ada_Only --
@@ -3377,143 +3355,134 @@ package body Prj.Nmsc is
       -----------------------------
 
       procedure Check_Naming_Multi_Lang is
+         Dot_Replacement : File_Name_Type := No_File;
+         Separate_Suffix : File_Name_Type := No_File;
+         Casing          : Casing_Type    := All_Lower_Case;
+         Casing_Defined  : Boolean;
+         Lang_Id         : Language_Index;
+         Sep_Suffix_Loc  : Source_Ptr;
+         Suffix          : Variable_Value;
+         Lang            : Name_Id;
       begin
-         --  We are now checking if attribute Dot_Replacement, Casing, and/or
-         --  Separate_Suffix exist.
+         Check_Common
+           (Dot_Replacement => Dot_Replacement,
+            Casing          => Casing,
+            Casing_Defined  => Casing_Defined,
+            Separate_Suffix => Separate_Suffix,
+            Sep_Suffix_Loc  => Sep_Suffix_Loc);
 
-         --  For each attribute, if it does not exist, we do nothing, because
-         --  we already have the default. Otherwise, for all unit-based
-         --  languages, we put the declared value in the language config.
+         --  For all unit based languages, if any, set the specified
+         --  value of Dot_Replacement, Casing and/or Separate_Suffix. Do not
+         --  systematically overwrite, since the defaults come from the
+         --  configuration file
 
-         declare
-            Dot_Replacement : File_Name_Type := No_File;
-            Separate_Suffix : File_Name_Type := No_File;
-            Casing          : Casing_Type    := All_Lower_Case;
-            Casing_Defined  : Boolean;
-            Lang_Id         : Language_Index;
-            Sep_Suffix_Loc  : Source_Ptr;
-
-         begin
-            Check_Common
-              (Dot_Replacement => Dot_Replacement,
-               Casing          => Casing,
-               Casing_Defined  => Casing_Defined,
-               Separate_Suffix => Separate_Suffix,
-               Sep_Suffix_Loc  => Sep_Suffix_Loc);
-
-            --  For all unit based languages, if any, set the specified value
-            --  of Dot_Replacement, Casing and/or Separate_Suffix. Do not
-            --  systematically overwrite, since the defaults come from the
-            --  configuration file
-
-            if Dot_Replacement /= No_File
-              or else Casing_Defined
-              or else Separate_Suffix /= No_File
-            then
-               Lang_Id := Data.First_Language_Processing;
-               while Lang_Id /= No_Language_Index loop
-                  if In_Tree.Languages_Data.Table
-                    (Lang_Id).Config.Kind = Unit_Based
-                  then
-                     if Dot_Replacement /= No_File then
-                        In_Tree.Languages_Data.Table
-                          (Lang_Id).Config.Naming_Data.Dot_Replacement :=
-                          Dot_Replacement;
-                     end if;
-
-                     if Casing_Defined then
-                        In_Tree.Languages_Data.Table
-                          (Lang_Id).Config.Naming_Data.Casing := Casing;
-                     end if;
-
-                     if Separate_Suffix /= No_File then
-                        In_Tree.Languages_Data.Table
-                          (Lang_Id).Config.Naming_Data.Separate_Suffix :=
-                          Separate_Suffix;
-                     end if;
+         if Dot_Replacement /= No_File
+           or else Casing_Defined
+           or else Separate_Suffix /= No_File
+         then
+            Lang_Id := Data.First_Language_Processing;
+            while Lang_Id /= No_Language_Index loop
+               if In_Tree.Languages_Data.Table
+                 (Lang_Id).Config.Kind = Unit_Based
+               then
+                  if Dot_Replacement /= No_File then
+                     In_Tree.Languages_Data.Table
+                       (Lang_Id).Config.Naming_Data.Dot_Replacement :=
+                       Dot_Replacement;
                   end if;
 
-                  Lang_Id :=
-                    In_Tree.Languages_Data.Table (Lang_Id).Next;
-               end loop;
-            end if;
-         end;
+                  if Casing_Defined then
+                     In_Tree.Languages_Data.Table
+                       (Lang_Id).Config.Naming_Data.Casing := Casing;
+                  end if;
+
+                  if Separate_Suffix /= No_File then
+                     In_Tree.Languages_Data.Table
+                       (Lang_Id).Config.Naming_Data.Separate_Suffix :=
+                       Separate_Suffix;
+                  end if;
+               end if;
+
+               Lang_Id :=
+                 In_Tree.Languages_Data.Table (Lang_Id).Next;
+            end loop;
+         end if;
 
          --  Next, get the spec and body suffixes
 
-         declare
-            Suffix  : Variable_Value;
-            Lang_Id : Language_Index;
-            Lang    : Name_Id;
+         Lang_Id := Data.First_Language_Processing;
+         while Lang_Id /= No_Language_Index loop
+            Lang := In_Tree.Languages_Data.Table (Lang_Id).Name;
 
-         begin
+            --  Spec_Suffix
+
+            Suffix := Value_Of
+              (Name                    => Lang,
+               Attribute_Or_Array_Name => Name_Spec_Suffix,
+               In_Package              => Naming_Id,
+               In_Tree                 => In_Tree);
+
+            if Suffix = Nil_Variable_Value then
+               Suffix := Value_Of
+                 (Name                    => Lang,
+                  Attribute_Or_Array_Name => Name_Specification_Suffix,
+                  In_Package              => Naming_Id,
+                  In_Tree                 => In_Tree);
+            end if;
+
+            if Suffix /= Nil_Variable_Value then
+               In_Tree.Languages_Data.Table (Lang_Id).
+                 Config.Naming_Data.Spec_Suffix :=
+                   File_Name_Type (Suffix.Value);
+            end if;
+
+            --  Body_Suffix
+
+            Suffix := Value_Of
+              (Name                    => Lang,
+               Attribute_Or_Array_Name => Name_Body_Suffix,
+               In_Package              => Naming_Id,
+               In_Tree                 => In_Tree);
+
+            if Suffix = Nil_Variable_Value then
+               Suffix := Value_Of
+                 (Name                    => Lang,
+                  Attribute_Or_Array_Name => Name_Implementation_Suffix,
+                  In_Package              => Naming_Id,
+                  In_Tree                 => In_Tree);
+            end if;
+
+            if Suffix /= Nil_Variable_Value then
+               In_Tree.Languages_Data.Table (Lang_Id).
+                 Config.Naming_Data.Body_Suffix :=
+                   File_Name_Type (Suffix.Value);
+            end if;
+
+            --  ??? As opposed to what is done in Check_Naming_Ada_Only,
+            --  we do not check whether spec_suffix=body_suffix, which
+            --  should be illegal. Best would be to share this code into
+            --  Check_Common, but we access the attributes from the project
+            --  files slightly differently apparently.
+
+            Lang_Id := In_Tree.Languages_Data.Table (Lang_Id).Next;
+         end loop;
+
+         --  Get the naming exceptions for all languages
+
+         for Kind in Spec .. Impl loop
             Lang_Id := Data.First_Language_Processing;
             while Lang_Id /= No_Language_Index loop
-               Lang := In_Tree.Languages_Data.Table (Lang_Id).Name;
+               case In_Tree.Languages_Data.Table (Lang_Id).Config.Kind is
+               when File_Based =>
+                  Process_Exceptions_File_Based (Lang_Id, Kind);
 
-               --  Spec_Suffix
-
-               Suffix := Value_Of
-                 (Name                    => Lang,
-                  Attribute_Or_Array_Name => Name_Spec_Suffix,
-                  In_Package              => Naming_Id,
-                  In_Tree                 => In_Tree);
-
-               if Suffix = Nil_Variable_Value then
-                  Suffix := Value_Of
-                    (Name                    => Lang,
-                     Attribute_Or_Array_Name => Name_Specification_Suffix,
-                     In_Package              => Naming_Id,
-                     In_Tree                 => In_Tree);
-               end if;
-
-               if Suffix /= Nil_Variable_Value then
-                  In_Tree.Languages_Data.Table (Lang_Id).
-                    Config.Naming_Data.Spec_Suffix :=
-                      File_Name_Type (Suffix.Value);
-               end if;
-
-               --  Body_Suffix
-
-               Suffix := Value_Of
-                 (Name                    => Lang,
-                  Attribute_Or_Array_Name => Name_Body_Suffix,
-                  In_Package              => Naming_Id,
-                  In_Tree                 => In_Tree);
-
-               if Suffix = Nil_Variable_Value then
-                  Suffix := Value_Of
-                    (Name                    => Lang,
-                     Attribute_Or_Array_Name => Name_Implementation_Suffix,
-                     In_Package              => Naming_Id,
-                     In_Tree                 => In_Tree);
-               end if;
-
-               if Suffix /= Nil_Variable_Value then
-                  In_Tree.Languages_Data.Table (Lang_Id).
-                    Config.Naming_Data.Body_Suffix :=
-                      File_Name_Type (Suffix.Value);
-               end if;
-
-               --  ??? As opposed to what is done in Check_Naming_Ada_Only,
-               --  we do not check whether spec_suffix=body_suffix, which
-               --  should be illegal. Best would be to share this code into
-               --  Check_Common, but we access the attributes from the project
-               --  files slightly differently apparently.
+               when Unit_Based =>
+                  Process_Exceptions_Unit_Based (Lang_Id, Kind);
+               end case;
 
                Lang_Id := In_Tree.Languages_Data.Table (Lang_Id).Next;
             end loop;
-         end;
-
-         --  Get the exceptions for file based languages
-
-         Get_Exceptions (Spec);
-         Get_Exceptions (Impl);
-
-         --  Get the exceptions for unit based languages
-
-         Get_Unit_Exceptions (Spec);
-         Get_Unit_Exceptions (Impl);
+         end loop;
       end Check_Naming_Multi_Lang;
 
    --  Start of processing for Check_Naming_Schemes
@@ -4578,9 +4547,6 @@ package body Prj.Nmsc is
                      In_Tree.Languages_Data.Table
                        (Data.First_Language_Processing).Config.Dependency_Kind
                        := ALI_File;
-                     Data.Unit_Based_Language_Name := Name_Ada;
-                     Data.Unit_Based_Language_Index :=
-                       Data.First_Language_Processing;
                   else
                      In_Tree.Languages_Data.Table
                        (Data.First_Language_Processing).Config.Kind
@@ -4680,8 +4646,6 @@ package body Prj.Nmsc is
                            if Lang_Name = Name_Ada then
                               Lang_Data.Config.Kind := Unit_Based;
                               Lang_Data.Config.Dependency_Kind := ALI_File;
-                              Data.Unit_Based_Language_Name := Name_Ada;
-                              Data.Unit_Based_Language_Index := Index;
 
                            else
                               Lang_Data.Config.Kind := File_Based;

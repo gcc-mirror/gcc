@@ -888,11 +888,11 @@ package Prj is
 
       Specs : Array_Element_Id := No_Array_Element;
       --  An associative array mapping individual specs to source file names
-      --  This is specific to Ada.
+      --  This is specific to unit-based languages.
 
       Bodies : Array_Element_Id := No_Array_Element;
       --  An associative array mapping individual bodies to source file names
-      --  This is specific to Ada.
+      --  This is specific to unit-based languages.
 
       Specification_Exceptions : Array_Element_Id := No_Array_Element;
       --  An associative array listing spec file names that do not have the
@@ -1179,17 +1179,14 @@ package Prj is
 
       Languages : Name_List_Index := No_Name_List;
       --  The list of languages of the sources of this project
+      --  mode: Ada_Only
 
       Include_Language : Language_Index := No_Language_Index;
 
       First_Language_Processing : Language_Index := No_Language_Index;
-      --  First index of the language data in the project
-
-      Unit_Based_Language_Name  : Name_Id := No_Name;
-      Unit_Based_Language_Index : Language_Index := No_Language_Index;
-      --  The name and index, if any, of the unit-based language of some
-      --  sources of the project. There may be only one unit-based language
-      --  in one project.
+      --  First index of the language data in the project.
+      --  This is an index into the project_tree_data.languages_data
+      --  mode: Multi_Language
 
       --------------
       -- Projects --
