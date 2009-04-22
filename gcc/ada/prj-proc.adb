@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2632,6 +2632,7 @@ package body Prj.Proc is
                declare
                   New_Project : Project_Id;
                   New_Data    : Project_Data;
+                  pragma Unreferenced (New_Data);
                   Proj_Node   : Project_Node_Id;
 
                begin
@@ -2834,6 +2835,7 @@ package body Prj.Proc is
                declare
                   New_Project : Project_Id;
                   New_Data    : Project_Data;
+                  pragma Unreferenced (New_Data);
                   Proj_Node   : Project_Node_Id;
 
                begin
