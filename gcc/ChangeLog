@@ -3,6 +3,10 @@
 	* alias.c (find_base_term): Move around LO_SUM case, so that
 	CONST falls through into PLUS/MINUS handling.
 
+	PR c/39855
+	* fold-const.c (fold_binary) <case LSHIFT_EXPR>: When optimizing
+	into 0, use omit_one_operand.
+
 2009-04-23  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/linux-unwind.h (get_regs): Remove type

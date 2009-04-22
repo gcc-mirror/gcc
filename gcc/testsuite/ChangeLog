@@ -1,3 +1,8 @@
+2009-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/39855
+	* gcc.dg/torture/pr39855.c: New test.
+
 2009-04-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/39639
