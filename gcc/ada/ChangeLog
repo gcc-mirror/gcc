@@ -1,3 +1,18 @@
+2009-04-22  Bob Duff  <duff@adacore.com>
+
+	* exp_pakd.adb: Minor comment fixes.
+
+	* sinfo.ads, par-load.adb, sem_ch10.adb, lib-load.ads, lib-load.adb
+	sem_ch12.adb: Change the meaning of the Library_Unit attribute to
+	include units containing instantiations, as well as units that are
+	generic instantiations.
+
+	* sem.adb: Include dependents and corresponding specs/bodies in the
+	unit walk.
+
+	* gcc-interface/Make-lang.in:
+	sem now depends on s-bitops, because of the packed array of Booleans.
+
 2009-04-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.def: Fix formatting nits.

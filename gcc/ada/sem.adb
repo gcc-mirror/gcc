@@ -77,15 +77,28 @@ package body Sem is
    --  No_Elist, because it's too early to call New_Elmt_List; we will set it
    --  to New_Elmt_List on first use.
 
-   Ignore_Comp_Units : Boolean := False;
-   --  If True, we suppress appending compilation units onto the
-   --  Comp_Unit_List.
+   generic
+      with procedure Action (Withed_Unit : Node_Id);
+   procedure Walk_Withs_Immediate (CU : Node_Id; Include_Limited : Boolean);
+   --  Walk all the with clauses of CU, and call Action for the with'ed
+   --  unit. Ignore limited withs, unless Include_Limited is True.
+   --  CU must be an N_Compilation_Unit.
+
+   generic
+      with procedure Action (Withed_Unit : Node_Id);
+   procedure Walk_Withs (CU : Node_Id; Include_Limited : Boolean);
+   --  Same as Walk_Withs_Immediate, but also include with clauses on subunits
+   --  of this unit, since they count as dependences on their parent library
+   --  item. CU must be an N_Compilation_Unit whose Unit is not an N_Subunit.
 
    procedure Write_Unit_Info
      (Unit_Num : Unit_Number_Type;
       Item     : Node_Id;
-      Prefix   : String := "");
-   --  Print out debugging information about the unit
+      Prefix   : String := "";
+      Withs    : Boolean := False);
+   --  Print out debugging information about the unit. Prefix precedes the rest
+   --  of the printout. If Withs is True, we print out units with'ed by this
+   --  unit (not counting limited withs).
 
    -------------
    -- Analyze --
@@ -1429,18 +1442,13 @@ package body Sem is
 
          Do_Analyze;
 
-         if Ignore_Comp_Units then
-            null;
-
-         elsif Present (Comp_Unit)
+         if Present (Comp_Unit)
            and then Nkind (Unit (Comp_Unit)) in N_Proper_Body
            and then not In_Extended_Main_Source_Unit (Comp_Unit)
          then
             null;
 
          else
-            pragma Assert (not Ignore_Comp_Units);
-
             --  Initialize if first time
 
             if No (Comp_Unit_List) then
@@ -1453,12 +1461,6 @@ package body Sem is
                Write_Str ("Appending ");
                Write_Unit_Info
                  (Get_Cunit_Unit_Number (Comp_Unit), Unit (Comp_Unit));
-            end if;
-
-            --  Ignore all units after main unit
-
-            if Comp_Unit = Cunit (Main_Unit) then
-               Ignore_Comp_Units := True;
             end if;
          end if;
       end if;
@@ -1501,10 +1503,20 @@ package body Sem is
 
    procedure Walk_Library_Items is
       type Unit_Number_Set is array (Main_Unit .. Last_Unit) of Boolean;
-      Seen : Unit_Number_Set := (others => False);
+      pragma Pack (Unit_Number_Set);
+      Seen, Done : Unit_Number_Set := (others => False);
+      --  Seen (X) is True after we have seen unit X in the walk. This is used
+      --  to prevent processing the same unit more than once. Done (X) is True
+      --  after we have fully processed X, and is used only for debugging
+      --  printouts and assertions.
 
       procedure Do_Action (CU : Node_Id; Item : Node_Id);
       --  Calls Action, with some validity checks
+
+      procedure Do_Unit_And_Dependents (CU : Node_Id; Item : Node_Id);
+      --  Calls Do_Action, first on the units with'ed by this one, then on this
+      --  unit. If it's an instance body, do the spec first. If it's an
+      --  instance spec, do the body last.
 
       ---------------
       -- Do_Action --
@@ -1557,23 +1569,66 @@ package body Sem is
             pragma Assert (Item = Unit (CU));
 
             declare
-               Unit_Num : constant Unit_Number_Type :=
-                            Get_Cunit_Unit_Number (CU);
+               Unit_Num     : constant Unit_Number_Type :=
+                                Get_Cunit_Unit_Number (CU);
+
+               procedure Assert_Done (Withed_Unit : Node_Id);
+               --  Assert Withed_Unit is already Done
+
+               procedure Assert_Done (Withed_Unit : Node_Id) is
+               begin
+                  if not Done
+                       (Get_Cunit_Unit_Number
+                        (Withed_Unit))
+                  then
+                     Write_Unit_Name
+                       (Unit_Name
+                        (Get_Cunit_Unit_Number
+                         (Withed_Unit)));
+                     Write_Str (" not yet walked!");
+                     Write_Eol;
+                  end if;
+
+                  if False then
+                     --  This assertion is disabled because it fails in the
+                     --  presence of subunits.
+                     pragma Assert  --  ???
+                       (Done
+                          (Get_Cunit_Unit_Number (Withed_Unit)));
+                     null;
+                  end if;
+               end Assert_Done;
+
+               procedure Assert_Withed_Units_Done is
+                  new Walk_Withs (Assert_Done);
             begin
                if Debug_Unit_Walk then
                   Write_Unit_Info (Unit_Num, Item);
                end if;
 
-               --  This assertion is commented out because it fails in some
-               --  circumstances related to library-level generic
-               --  instantiations. We need to investigate why.
-               --  ???pragma Assert (not Seen (Unit_Num));
+               --  Main unit should come last
 
-               Seen (Unit_Num) := True;
+               if Done (Main_Unit) then
+                  Write_Line ("Main unit is done!");
+               end if;
+               if False then  --  ???
+                  --  This assertion is disabled because it fails in the
+                  --  presence of subunits.
+                  pragma Assert (not Done (Main_Unit));
+                  null;
+               end if;
+
+               --  We shouldn't do the same thing twice
+
+               pragma Assert (not Done (Unit_Num));
+
+               --  Everything we depend upon should already be done
+
+               Assert_Withed_Units_Done (CU, Include_Limited => False);
             end;
 
          else
-            --  Must be Standard
+            --  Must be Standard, which has no entry in the units table
 
             pragma Assert (Item = Stand.Standard_Package_Node);
 
@@ -1584,6 +1639,68 @@ package body Sem is
 
          Action (Item);
       end Do_Action;
+
+      ----------------------------
+      -- Do_Unit_And_Dependents --
+      ----------------------------
+
+      procedure Do_Unit_And_Dependents (CU : Node_Id; Item : Node_Id) is
+         Unit_Num     : constant Unit_Number_Type :=
+                          Get_Cunit_Unit_Number (CU);
+
+         procedure Do_Withed_Unit (Withed_Unit : Node_Id);
+         --  Pass the buck to Do_Unit_And_Dependents
+
+         procedure Do_Withed_Unit (Withed_Unit : Node_Id) is
+         begin
+            Do_Unit_And_Dependents (Withed_Unit, Unit (Withed_Unit));
+         end Do_Withed_Unit;
+
+         procedure Do_Withed_Units is new Walk_Withs (Do_Withed_Unit);
+      begin
+         if Seen (Unit_Num) then
+            return;
+         end if;
+
+         Seen (Unit_Num) := True;
+
+         --  Process corresponding spec of body first
+
+         if Nkind_In (Item, N_Package_Body, N_Subprogram_Body) then
+            declare
+               Spec_Unit : constant Node_Id := Library_Unit (CU);
+            begin
+               Do_Unit_And_Dependents (Spec_Unit, Unit (Spec_Unit));
+            end;
+         end if;
+
+         --  Process the with clauses
+
+         Do_Withed_Units (CU, Include_Limited => False);
+
+         --  Process the unit itself
+
+         if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body)
+           or else CU = Cunit (Main_Unit)
+         then
+
+            Do_Action (CU, Item);
+
+            Done (Unit_Num) := True;
+         end if;
+
+         --  Process the corresponding body last
+
+         if not Nkind_In (Item, N_Package_Body, N_Subprogram_Body) then
+            declare
+               Body_Unit : constant Node_Id := Library_Unit (CU);
+            begin
+               if Present (Body_Unit) then
+                  Do_Unit_And_Dependents (Body_Unit, Unit (Body_Unit));
+               end if;
+            end;
+         end if;
+      end Do_Unit_And_Dependents;
 
       --  Local Declarations
 
@@ -1638,24 +1755,20 @@ package body Sem is
                         declare
                            Spec_Unit : constant Node_Id := Library_Unit (CU);
                         begin
-                           Do_Action (Spec_Unit, Unit (Spec_Unit));
+                           Do_Unit_And_Dependents
+                             (Spec_Unit, Unit (Spec_Unit));
                         end;
                      end if;
                   end;
 
                   if CU = Cunit (Main_Unit) then
-
-                     --  Must come last
-
-                     pragma Assert (No (Next_Elmt (Cur)));
-
-                     Do_Action (CU, N);
+                     Do_Unit_And_Dependents (CU, N);
                   end if;
 
                --  It's a spec, so just do it
 
                when others =>
-                  Do_Action (CU, N);
+                  Do_Unit_And_Dependents (CU, N);
             end case;
          end;
 
@@ -1663,14 +1776,14 @@ package body Sem is
       end loop;
 
       if Debug_Unit_Walk then
-         if Seen /= (Seen'Range => True) then
+         if Done /= (Done'Range => True) then
             Write_Eol;
             Write_Line ("Ignored units:");
 
             Indent;
 
-            for Unit_Num in Seen'Range loop
-               if not Seen (Unit_Num) then
+            for Unit_Num in Done'Range loop
+               if not Done (Unit_Num) then
                   Write_Unit_Info (Unit_Num, Unit (Cunit (Unit_Num)));
                end if;
             end loop;
@@ -1679,11 +1792,92 @@ package body Sem is
          end if;
       end if;
 
+      pragma Assert (Done (Main_Unit));
+
       if Debug_Unit_Walk then
          Outdent;
          Write_Line ("end Walk_Library_Items.");
       end if;
    end Walk_Library_Items;
+
+   ----------------
+   -- Walk_Withs --
+   ----------------
+
+   procedure Walk_Withs (CU : Node_Id; Include_Limited : Boolean) is
+      pragma Assert (Nkind (CU) = N_Compilation_Unit);
+      pragma Assert (Nkind (Unit (CU)) /= N_Subunit);
+
+      procedure Walk_Immediate is new Walk_Withs_Immediate (Action);
+   begin
+      --  First walk the withs immediately on the library item
+
+      Walk_Immediate (CU, Include_Limited);
+
+      --  For a body, we must also check for any subunits which belong to
+      --  it and which have context clauses of their own, since these
+      --  with'ed units are part of its own dependencies.
+
+      if Nkind (Unit (CU)) in N_Unit_Body then
+         for S in Main_Unit .. Last_Unit loop
+
+            --  We are only interested in subunits.  For preproc. data and
+            --  def. files, Cunit is Empty, so we need to test that first.
+
+            if Cunit (S) /= Empty
+              and then Nkind (Unit (Cunit (S))) = N_Subunit
+            then
+               declare
+                  Pnode : Node_Id;
+               begin
+                  Pnode := Library_Unit (Cunit (S));
+
+                  --  In -gnatc mode, the errors in the subunits will not
+                  --  have been recorded, but the analysis of the subunit
+                  --  may have failed, so just quit.
+
+                  if No (Pnode) then
+                     exit;
+                  end if;
+
+                  --  Find ultimate parent of the subunit
+
+                  while Nkind (Unit (Pnode)) = N_Subunit loop
+                     Pnode := Library_Unit (Pnode);
+                  end loop;
+
+                  --  See if it belongs to current unit, and if so, include its
+                  --  with_clauses.
+
+                  if Pnode = CU then
+                     Walk_Immediate (Cunit (S), Include_Limited);
+                  end if;
+               end;
+            end if;
+         end loop;
+      end if;
+   end Walk_Withs;
+
+   --------------------------
+   -- Walk_Withs_Immediate --
+   --------------------------
+
+   procedure Walk_Withs_Immediate (CU : Node_Id; Include_Limited : Boolean) is
+      pragma Assert (Nkind (CU) = N_Compilation_Unit);
+
+      Context_Item : Node_Id := First (Context_Items (CU));
+   begin
+      while Present (Context_Item) loop
+         if Nkind (Context_Item) = N_With_Clause
+           and then (Include_Limited
+                     or else not Limited_Present (Context_Item))
+         then
+            Action (Library_Unit (Context_Item));
+         end if;
+
+         Context_Item := Next (Context_Item);
+      end loop;
+   end Walk_Withs_Immediate;
 
    ---------------------
    -- Write_Unit_Info --
@@ -1692,7 +1886,8 @@ package body Sem is
    procedure Write_Unit_Info
      (Unit_Num : Unit_Number_Type;
       Item     : Node_Id;
-      Prefix   : String := "")
+      Prefix   : String := "";
+      Withs    : Boolean := False)
    is
    begin
       Write_Str (Prefix);
@@ -1712,6 +1907,50 @@ package body Sem is
       end if;
 
       Write_Eol;
+
+      --  Skip the rest if we're not supposed to print the withs
+
+      if False and then not Withs then -- ???
+         return;
+      end if;
+
+      declare
+         Context_Item : Node_Id := First (Context_Items (Cunit (Unit_Num)));
+      begin
+         while Present (Context_Item)
+           and then (Nkind (Context_Item) /= N_With_Clause
+                     or else Limited_Present (Context_Item))
+         loop
+            Context_Item := Next (Context_Item);
+         end loop;
+
+         if Present (Context_Item) then
+            Indent;
+            Write_Line ("withs:");
+            Indent;
+
+            while Present (Context_Item) loop
+               if Nkind (Context_Item) = N_With_Clause
+                 and then not Limited_Present (Context_Item)
+               then
+                  pragma Assert (Present (Library_Unit (Context_Item)));
+                  Write_Unit_Name
+                    (Unit_Name
+                     (Get_Cunit_Unit_Number (Library_Unit (Context_Item))));
+                  if Implicit_With (Context_Item) then
+                     Write_Str (" -- implicit");
+                  end if;
+                  Write_Eol;
+               end if;
+
+               Context_Item := Next (Context_Item);
+            end loop;
+
+            Outdent;
+            Write_Line ("end withs");
+            Outdent;
+         end if;
+      end;
    end Write_Unit_Info;
 
 end Sem;
