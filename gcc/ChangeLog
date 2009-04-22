@@ -1,3 +1,10 @@
+2009-04-22  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* function.c (expand_function_end): Do not emit a jump to the "naked"
+	return label for fall-through returns.
+	* except.c (sjlj_emit_function_exit): Always place the call to the
+	unregister function at the location installed by expand_function_end.
+
 2009-04-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39845
