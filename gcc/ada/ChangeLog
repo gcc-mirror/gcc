@@ -1,3 +1,8 @@
+2009-04-22  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Check_Naming_Ada_Only): Properly initialize the
+	separate_suffix to the same value as the body_suffix.
+
 2009-04-22  Robert Dewar  <dewar@adacore.com>
 
 	* prj.adb: Minor code reorganization
