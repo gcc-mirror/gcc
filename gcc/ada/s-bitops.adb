@@ -209,7 +209,7 @@ package body System.Bit_Ops is
 
    procedure Raise_Error is
    begin
-      raise Constraint_Error with "unequal lengths in logical operation";
+      raise Constraint_Error;
    end Raise_Error;
 
 end System.Bit_Ops;

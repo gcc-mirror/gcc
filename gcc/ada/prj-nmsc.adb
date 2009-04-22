@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -643,13 +643,13 @@ package body Prj.Nmsc is
       Src_Data.Display_File        := Display_File;
       Src_Data.Dependency          := In_Tree.Languages_Data.Table
                                         (Lang_Id).Config.Dependency_Kind;
+      Src_Data.Dep_Name            := Dependency_Name
+                                        (File_Name, Src_Data.Dependency);
       Src_Data.Naming_Exception    := Naming_Exception;
 
       if Src_Data.Compiled and then Src_Data.Object_Exists then
          Src_Data.Object   :=
            Object_Name (File_Name, Config.Object_File_Suffix);
-         Src_Data.Dep_Name :=
-           Dependency_Name (File_Name, Src_Data.Dependency);
          Src_Data.Switches := Switches_Name (File_Name);
       end if;
 

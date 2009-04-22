@@ -783,9 +783,9 @@ package body Lib.Load is
          Units.Table (Main_Unit).Version        := Source_Checksum (Sind);
 
       else
-         --  Duplicate information from instance unit, for the body
-         --  The unit node N has been rewritten as a body, but it was placed
-         --  in the units table when first loaded as a declaration.
+         --  Duplicate information from instance unit, for the body. The unit
+         --  node N has been rewritten as a body, but it was placed in the
+         --  units table when first loaded as a declaration.
 
          Units.Table (Units.Last) := Units.Table (Get_Cunit_Unit_Number (N));
          Units.Table (Units.Last).Cunit := N;
@@ -804,11 +804,10 @@ package body Lib.Load is
       Bunit : constant Node_Id := Cunit (Body_Unit);
 
    begin
-      --  The spec is irrelevant if the body is a subprogram body, and the
-      --  spec is other than a subprogram spec or generic subprogram spec.
-      --  Note that the names must be the same, we don't need to check that,
-      --  because we already know that from the fact that the file names are
-      --  the same.
+      --  The spec is irrelevant if the body is a subprogram body, and the spec
+      --  is other than a subprogram spec or generic subprogram spec. Note that
+      --  the names must be the same, we don't need to check that, because we
+      --  already know that from the fact that the file names are the same.
 
       return
          Nkind (Unit (Bunit)) = N_Subprogram_Body
