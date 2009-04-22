@@ -28,7 +28,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   _Atomic_word 
   __attribute__ ((__unused__))
-  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     register _Atomic_word __result;
     __asm__ __volatile__ ("lock; xadd{l} {%0,%1|%1,%0}"
@@ -39,7 +39,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   
   void
   __attribute__ ((__unused__))
-  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     __asm__ __volatile__ ("lock; add{l} {%1,%0|%0,%1}"
 			  : "=m" (*__mem) : "ir" (__val), "m" (*__mem));

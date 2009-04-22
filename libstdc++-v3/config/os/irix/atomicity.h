@@ -28,11 +28,11 @@
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   _Atomic_word
-  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   { return (_Atomic_word) test_then_add((unsigned long*) const_cast<_Atomic_word*>(__mem), __val); }
 
   void
-  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()
   { __exchange_and_add(__mem, __val); }
 
 _GLIBCXX_END_NAMESPACE

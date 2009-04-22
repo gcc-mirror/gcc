@@ -32,7 +32,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // These variants support compare-and-swap.
   _Atomic_word 
   __attribute__ ((__unused__))
-  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     register _Atomic_word __result = *__mem;
     register _Atomic_word __temp;
@@ -50,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   // Disable interrupts, which we can do only from supervisor mode.
   _Atomic_word
   __attribute__ ((__unused__))
-  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     _Atomic_word __result;
     short __level, __tmpsr;
@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   
   _Atomic_word 
   __attribute__ ((__unused__))
-  __exchange_and_add(volatile _Atomic_word* __mem, int __val)
+  __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     _Atomic_word __result;
     
@@ -119,7 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   void
   __attribute__ ((__unused__))
-  __atomic_add(volatile _Atomic_word* __mem, int __val)
+  __atomic_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     // Careful: using add.l with a memory destination is not
     // architecturally guaranteed to be atomic.

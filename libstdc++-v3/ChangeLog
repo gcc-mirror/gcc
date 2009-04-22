@@ -1,3 +1,21 @@
+2009-04-21  Jan Hubicka  <jh@suse.cz>
+
+	* include/ext/atomicity.h
+	(__exchange_and_add, __atomic_add): Mark throw ().
+	* config/os/aix/atomicity.h
+	* config/os/aix/atomicity.h
+	* config/os/irix/atomicity.h
+	* config/cpu/cris/atomicity.h
+	* config/cpu/m68k/atomicity.h
+	* config/cpu/hppa/atomicity.h
+	* config/cpu/sparc/atomicity.h
+	* config/cpu/i386/atomicity.h
+	* config/cpu/i486/atomicity.h
+	* config/cpu/sh/atomicity.h
+	* config/cpu/generic/atomicity_mutex/atomicity.h
+	* config/cpu/generic/atomicity_builtins/atomicity.h
+	(__exchange_and_add, __atomic_add): Mark throw ().
+
 2009-04-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/39835
