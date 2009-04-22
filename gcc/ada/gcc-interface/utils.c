@@ -1472,10 +1472,13 @@ create_field_decl (tree field_name, tree field_type, tree record_type,
       DECL_BIT_FIELD (field_decl) = 1;
       DECL_SIZE (field_decl) = size;
       if (!packed && !pos)
-	DECL_ALIGN (field_decl)
-	  = (TYPE_ALIGN (record_type) != 0
-	     ? MIN (TYPE_ALIGN (record_type), TYPE_ALIGN (field_type))
-	     : TYPE_ALIGN (field_type));
+	{
+	  if (TYPE_ALIGN (record_type) != 0
+	      && TYPE_ALIGN (record_type) < TYPE_ALIGN (field_type))
+	    DECL_ALIGN (field_decl) = TYPE_ALIGN (record_type);
+	  else
+	    DECL_ALIGN (field_decl) = TYPE_ALIGN (field_type);
+	}
     }
 
   DECL_PACKED (field_decl) = pos ? DECL_BIT_FIELD (field_decl) : packed;
@@ -1636,7 +1639,7 @@ process_attributes (tree decl, struct attrib *attr_list)
       }
 }
 
-/* Record a global renaming pointer.  */
+/* Record DECL as a global renaming pointer.  */
 
 void
 record_global_renaming_pointer (tree decl)
@@ -4520,7 +4523,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   return expr;
 }
 
-/* Return the appropriate GCC tree code for the specified GNAT type,
+/* Return the appropriate GCC tree code for the specified GNAT_TYPE,
    the latter being a record type as predicated by Is_Record_Type.  */
 
 enum tree_code
