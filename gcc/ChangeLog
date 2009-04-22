@@ -1,3 +1,18 @@
+2009-04-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* Makefile.in: Update dependencies.
+	* errors.c (warning): Remove unused parameter 'opt'. Returns
+	'void'.
+	* errors.h: Remove bogus comment about compatibility.
+	(warning): Update declaration.
+	* genautomata.c: Update all calls to warning.
+	* gimple.c: Do not include errors.h. Include toplev.h.
+	* tree-ssa-structalias.c: Do not include errors.h.
+	* omega.c: Likewise.
+	* tree-ssa-reassoc.c: Likewise.
+	* config/spu/spu-c.c: Likewise.
+	* config/spu/t-spu-elf: Update dependencies.
+
 2009-04-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39824

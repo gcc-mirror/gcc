@@ -25,7 +25,6 @@
 #include "function.h"
 #include "rtl.h"
 #include "expr.h"
-#include "errors.h"
 #include "tm_p.h"
 #include "langhooks.h"
 #include "insn-config.h"

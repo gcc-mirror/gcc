@@ -29,11 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ERRORS_H
 #define GCC_ERRORS_H
 
-/* The first parameter is for compatibility with the non-generator
-   version of warning().  For those, you'd pass an OPT_W* value from
-   options.h, but in generator programs it has no effect, so it's OK
-   to just pass zero for calls from generator-only files.  */
-extern bool warning (int, const char *, ...) ATTRIBUTE_PRINTF_2 ATTRIBUTE_COLD;
+extern void warning (const char *, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD;
 extern void error (const char *, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD;
 extern void fatal (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD;
 extern void internal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD;
