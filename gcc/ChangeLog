@@ -1,3 +1,8 @@
+2009-04-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/sparc/sparc.h (POINTER_SIZE): Fix comment.
+	(Pmode): Move above.
+
 2009-04-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c: Use REG_P, MEM_P, CONST_INT_P, JUMP_P,
@@ -37,10 +42,6 @@
 	* config/v850/v850.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
 	* config/mmix/mmix.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
 	* config/bfin/bfin.h (GO_IF_MODE_DEPENDENT_ADDRESS): Delete.
-
-2009-04-22  Paolo Bonzini  <bonzini@gnu.org>
-
-	* config/sparc/sparc.h (POINTER_SIZE): Clarify comment.
 
 2009-04-22  Laurynas Biveinis  <laurynas.biveinis@gmail.com>
 
