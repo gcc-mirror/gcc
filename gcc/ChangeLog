@@ -1,3 +1,8 @@
+2009-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* alias.c (find_base_term): Move around LO_SUM case, so that
+	CONST falls through into PLUS/MINUS handling.
+
 2009-04-23  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/linux-unwind.h (get_regs): Remove type
