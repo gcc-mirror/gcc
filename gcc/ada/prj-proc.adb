@@ -2535,11 +2535,14 @@ package body Prj.Proc is
         (Imported     : in out Project_List;
          Limited_With : Boolean)
       is
-         With_Clause : Project_Node_Id := First_With_Clause_Of
-           (From_Project_Node, From_Project_Node_Tree);
+         With_Clause : Project_Node_Id;
          New_Project : Project_Id;
          Proj_Node   : Project_Node_Id;
+
       begin
+         With_Clause :=
+           First_With_Clause_Of
+             (From_Project_Node, From_Project_Node_Tree);
          while Present (With_Clause) loop
             Proj_Node :=
               Non_Limited_Project_Node_Of
@@ -2584,6 +2587,8 @@ package body Prj.Proc is
               Next_With_Clause_Of (With_Clause, From_Project_Node_Tree);
          end loop;
       end Process_Imported_Projects;
+
+   --  Start of processing for Recursive_Process
 
    begin
       if No (From_Project_Node) then

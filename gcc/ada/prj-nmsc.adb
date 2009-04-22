@@ -116,7 +116,9 @@ package body Prj.Nmsc is
       Key        => Name_Id,
       Hash       => Hash,
       Equal      => "=");
-   --  Hash table to store the unit exceptions
+   --  Hash table to store the unit exceptions.
+   --  ??? Seems to be used only by the multi_lang mode
+   --  ??? Should not be a global array, but stored in the project_data
 
    package Recursive_Dirs is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
@@ -139,10 +141,6 @@ package body Prj.Nmsc is
    end record;
    --  Comment needed???
 
-   --  Why is the following commented out ???
-   --  No_Unit : constant Unit_Info :=
-   --              (Specification, No_Name, No_Ada_Naming_Exception);
-
    package Ada_Naming_Exception_Table is new Table.Table
      (Table_Component_Type => Unit_Info,
       Table_Index_Type     => Ada_Naming_Exception_Id,
@@ -160,6 +158,8 @@ package body Prj.Nmsc is
       Equal      => "=");
    --  A hash table to store naming exceptions for Ada. For each file name
    --  there is one or several unit in table Ada_Naming_Exception_Table.
+   --  ??? This is for ada_only mode, we should be able to merge with
+   --  Unit_Exceptions table, used by multi_lang mode.
 
    package Object_File_Names is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
@@ -255,14 +255,17 @@ package body Prj.Nmsc is
    --  This alters Name_Buffer
 
    function Suffix_Matches
-     (Filename : String; Suffix : File_Name_Type) return Boolean;
+     (Filename : String;
+      Suffix   : File_Name_Type) return Boolean;
    --  True if the filename ends with the given suffix. It always returns False
    --  if Suffix is No_Name
 
    procedure Replace_Into_Name_Buffer
-     (Str : String; Pattern : String; Replacement : Character);
-   --  Copy Str into Name_Buffer, replacing Pattern with Replacement.
-   --  Str is converted to lower-case at the same time
+     (Str         : String;
+      Pattern     : String;
+      Replacement : Character);
+   --  Copy Str into Name_Buffer, replacing Pattern with Replacement. Str is
+   --  converted to lower-case at the same time.
 
    function ALI_File_Name (Source : String) return String;
    --  Return the ALI file name corresponding to a source
@@ -275,12 +278,6 @@ package body Prj.Nmsc is
       Project : Project_Id;
       In_Tree : Project_Tree_Ref);
    --  Check the naming scheme part of Data
-
-   procedure Check_Ada_Naming_Scheme_Validity
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
-      Naming  : Naming_Data);
-   --  Check that the package Naming is correct
 
    procedure Check_Configuration
      (Project : Project_Id;
@@ -434,7 +431,6 @@ package body Prj.Nmsc is
    procedure Check_File_Naming_Schemes
      (In_Tree               : Project_Tree_Ref;
       Data                  : in out Project_Data;
-      Filename              : String;
       File_Name             : File_Name_Type;
       Alternate_Languages   : out Alternate_Language_Id;
       Language              : out Language_Index;
@@ -493,7 +489,7 @@ package body Prj.Nmsc is
    --  (all languages are processed anyway when in Multi_Language mode).
 
    procedure Compute_Unit_Name
-     (Filename        : String;
+     (File_Name       : File_Name_Type;
       Dot_Replacement : File_Name_Type;
       Separate_Suffix : File_Name_Type;
       Body_Suffix     : File_Name_Type;
@@ -520,8 +516,8 @@ package body Prj.Nmsc is
    --  units that the source contains.
 
    function Is_Illegal_Suffix
-     (Suffix                          : String;
-      Dot_Replacement_Is_A_Single_Dot : Boolean) return Boolean;
+     (Suffix          : File_Name_Type;
+      Dot_Replacement : File_Name_Type) return Boolean;
    --  Returns True if the string Suffix cannot be used as a spec suffix, a
    --  body suffix or a separate suffix.
 
@@ -628,13 +624,17 @@ package body Prj.Nmsc is
    ------------------------------
 
    procedure Replace_Into_Name_Buffer
-     (Str : String; Pattern : String; Replacement : Character)
+     (Str         : String;
+      Pattern     : String;
+      Replacement : Character)
    is
       Max : constant Integer := Str'Last - Pattern'Length + 1;
-      J : Positive := Str'First;
+      J   : Positive;
+
    begin
       Name_Len := 0;
 
+      J := Str'First;
       while J <= Str'Last loop
          Name_Len := Name_Len + 1;
 
@@ -656,7 +656,9 @@ package body Prj.Nmsc is
    --------------------
 
    function Suffix_Matches
-     (Filename : String; Suffix : File_Name_Type) return Boolean is
+     (Filename : String;
+      Suffix   : File_Name_Type) return Boolean
+   is
    begin
       if Suffix = No_File then
          return False;
@@ -1193,101 +1195,6 @@ package body Prj.Nmsc is
          Unit := No_Name;
       end if;
    end Check_Ada_Name;
-
-   --------------------------------------
-   -- Check_Ada_Naming_Scheme_Validity --
-   --------------------------------------
-
-   procedure Check_Ada_Naming_Scheme_Validity
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
-      Naming  : Naming_Data)
-   is
-   begin
-      --  Only check if we are not using the Default naming scheme
-
-      if Naming /= In_Tree.Private_Part.Default_Naming then
-         declare
-            Dot_Replacement : constant String :=
-                                Get_Name_String
-                                  (Naming.Dot_Replacement);
-
-            Spec_Suffix : constant String :=
-                                  Spec_Suffix_Of (In_Tree, "ada", Naming);
-
-            Body_Suffix : constant String :=
-                                  Body_Suffix_Of (In_Tree, "ada", Naming);
-
-            Separate_Suffix : constant String :=
-                                Get_Name_String
-                                  (Naming.Separate_Suffix);
-
-         begin
-            --  Suffixes cannot
-            --   - be empty
-
-            if Is_Illegal_Suffix
-                 (Spec_Suffix, Dot_Replacement = ".")
-            then
-               Err_Vars.Error_Msg_File_1 :=
-                 Spec_Suffix_Id_Of (In_Tree, Name_Ada, Naming);
-               Error_Msg
-                 (Project, In_Tree,
-                  "{ is illegal for Spec_Suffix",
-                  Naming.Ada_Spec_Suffix_Loc);
-            end if;
-
-            if Is_Illegal_Suffix
-                 (Body_Suffix, Dot_Replacement = ".")
-            then
-               Err_Vars.Error_Msg_File_1 :=
-                 Body_Suffix_Id_Of (In_Tree, Name_Ada, Naming);
-               Error_Msg
-                 (Project, In_Tree,
-                  "{ is illegal for Body_Suffix",
-                  Naming.Ada_Body_Suffix_Loc);
-            end if;
-
-            if Body_Suffix /= Separate_Suffix then
-               if Is_Illegal_Suffix
-                    (Separate_Suffix, Dot_Replacement = ".")
-               then
-                  Err_Vars.Error_Msg_File_1 := Naming.Separate_Suffix;
-                  Error_Msg
-                    (Project, In_Tree,
-                     "{ is illegal for Separate_Suffix",
-                     Naming.Sep_Suffix_Loc);
-               end if;
-            end if;
-
-            --  Spec_Suffix cannot be equal to Body_Suffix Separate_Suffix,
-            --  since that would cause a clear ambiguity. Note that we do
-            --  allow a Spec_Suffix to have the same termination as one of
-            --  these, which causes a potential ambiguity, but we resolve
-            --  that my matching the longest possible suffix.
-
-            if Spec_Suffix = Body_Suffix then
-               Error_Msg
-                 (Project, In_Tree,
-                  "Body_Suffix (""" &
-                  Body_Suffix &
-                  """) cannot be the same as Spec_Suffix.",
-                  Naming.Ada_Body_Suffix_Loc);
-            end if;
-
-            if Body_Suffix /= Separate_Suffix
-              and then Spec_Suffix = Separate_Suffix
-            then
-               Error_Msg
-                 (Project, In_Tree,
-                  "Separate_Suffix (""" &
-                  Separate_Suffix &
-                  """) cannot be the same as Spec_Suffix.",
-                  Naming.Sep_Suffix_Loc);
-            end if;
-         end;
-      end if;
-   end Check_Ada_Naming_Scheme_Validity;
 
    -------------------------
    -- Check_Configuration --
@@ -2259,8 +2166,7 @@ package body Prj.Nmsc is
                      pragma Unsuppress (All_Checks);
                   begin
                      Data.Config.Separate_Run_Path_Options :=
-                       Boolean'Value (Get_Name_String
-                                        (Attribute.Value.Value));
+                       Boolean'Value (Get_Name_String (Attribute.Value.Value));
                   exception
                      when Constraint_Error =>
                         Error_Msg
@@ -2847,14 +2753,16 @@ package body Prj.Nmsc is
       List       : Array_Element_Id;
       Debug_Name : String)
    is
-      Current   : Array_Element_Id := List;
+      Current   : Array_Element_Id;
       Element   : Array_Element;
       Unit_Name : Name_Id;
+
    begin
       if Current_Verbosity = High then
          Write_Line ("  Checking unit names in " & Debug_Name);
       end if;
 
+      Current := List;
       while Current /= No_Array_Element loop
          Element := In_Tree.Array_Elements.Table (Current);
          Element.Value.Value :=
@@ -2918,7 +2826,7 @@ package body Prj.Nmsc is
          Casing          : in out Casing_Type;
          Casing_Defined  : out Boolean;
          Separate_Suffix : in out File_Name_Type;
-         Sep_Suffix_Loc  : in out Source_Ptr);
+         Sep_Suffix_Loc  : out Source_Ptr);
       --  Check attributes common to Ada_Only and Multi_Lang modes
 
       ------------------
@@ -2930,23 +2838,32 @@ package body Prj.Nmsc is
          Casing          : in out Casing_Type;
          Casing_Defined  : out Boolean;
          Separate_Suffix : in out File_Name_Type;
-         Sep_Suffix_Loc  : in out Source_Ptr)
+         Sep_Suffix_Loc  : out Source_Ptr)
       is
-         Dot_Repl        : constant Variable_Value :=
-           Util.Value_Of
-             (Name_Dot_Replacement, Naming.Decl.Attributes, In_Tree);
+         Dot_Repl      : constant Variable_Value :=
+                           Util.Value_Of
+                             (Name_Dot_Replacement,
+                              Naming.Decl.Attributes,
+                              In_Tree);
          Casing_String : constant Variable_Value :=
-           Util.Value_Of (Name_Casing, Naming.Decl.Attributes, In_Tree);
-         Sep_Suffix : constant Variable_Value :=
-           Util.Value_Of
-             (Name_Separate_Suffix, Naming.Decl.Attributes, In_Tree);
-
-         Dot_Repl_Loc    : Source_Ptr;
+                           Util.Value_Of
+                             (Name_Casing,
+                              Naming.Decl.Attributes,
+                              In_Tree);
+         Sep_Suffix    : constant Variable_Value :=
+                           Util.Value_Of
+                             (Name_Separate_Suffix,
+                              Naming.Decl.Attributes,
+                              In_Tree);
+         Dot_Repl_Loc  : Source_Ptr;
 
       begin
+         Sep_Suffix_Loc := No_Location;
+
          if not Dot_Repl.Default then
             pragma Assert
               (Dot_Repl.Kind = Single, "Dot_Replacement is not a string");
+
             if Length_Of_Name (Dot_Repl.Value) = 0 then
                Error_Msg
                  (Project, In_Tree,
@@ -2959,6 +2876,7 @@ package body Prj.Nmsc is
 
             declare
                Repl : constant String := Get_Name_String (Dot_Replacement);
+
             begin
                --  Dot_Replacement cannot
                --   - be empty
@@ -2971,11 +2889,13 @@ package body Prj.Nmsc is
                  or else Is_Alphanumeric (Repl (Repl'First))
                  or else Is_Alphanumeric (Repl (Repl'Last))
                  or else (Repl (Repl'First) = '_'
-                          and then
-                            (Repl'Length = 1
-                             or else Is_Alphanumeric (Repl (Repl'First + 1))))
+                           and then
+                             (Repl'Length = 1
+                               or else
+                                 Is_Alphanumeric (Repl (Repl'First + 1))))
                  or else (Repl'Length > 1
-                          and then Index (Source => Repl, Pattern => ".") /= 0)
+                           and then
+                             Index (Source => Repl, Pattern => ".") /= 0)
                then
                   Error_Msg
                     (Project, In_Tree,
@@ -2997,7 +2917,7 @@ package body Prj.Nmsc is
 
             declare
                Casing_Image : constant String :=
-                 Get_Name_String (Casing_String.Value);
+                                Get_Name_String (Casing_String.Value);
             begin
                if Casing_Image'Length = 0 then
                   Error_Msg
@@ -3033,6 +2953,14 @@ package body Prj.Nmsc is
             else
                Separate_Suffix := Canonical_Case_File_Name (Sep_Suffix.Value);
                Sep_Suffix_Loc  := Sep_Suffix.Location;
+
+               if Is_Illegal_Suffix (Separate_Suffix, Dot_Replacement) then
+                  Err_Vars.Error_Msg_File_1 := Separate_Suffix;
+                  Error_Msg
+                    (Project, In_Tree,
+                     "{ is illegal for Separate_Suffix",
+                     Sep_Suffix.Location);
+               end if;
             end if;
          end if;
 
@@ -3319,8 +3247,34 @@ package body Prj.Nmsc is
       ---------------------------
 
       procedure Check_Naming_Ada_Only is
-         Casing_Defined : Boolean;
+         Casing_Defined  : Boolean;
+         Spec_Suffix     : File_Name_Type;
+         Body_Suffix     : File_Name_Type;
+         Sep_Suffix_Loc  : Source_Ptr;
+
+         Ada_Spec_Suffix : constant Variable_Value :=
+           Prj.Util.Value_Of
+             (Index     => Name_Ada,
+              Src_Index => 0,
+              In_Array  => Data.Naming.Spec_Suffix,
+              In_Tree   => In_Tree);
+
+         Ada_Body_Suffix : constant Variable_Value :=
+           Prj.Util.Value_Of
+             (Index     => Name_Ada,
+              Src_Index => 0,
+              In_Array  => Data.Naming.Body_Suffix,
+              In_Tree   => In_Tree);
+
       begin
+         --  We'll need the dot replacement below, so compute it first
+         Check_Common
+           (Dot_Replacement => Data.Naming.Dot_Replacement,
+            Casing          => Data.Naming.Casing,
+            Casing_Defined  => Casing_Defined,
+            Separate_Suffix => Data.Naming.Separate_Suffix,
+            Sep_Suffix_Loc  => Sep_Suffix_Loc);
+
          Data.Naming.Bodies :=
            Util.Value_Of (Name_Body, Naming.Decl.Arrays, In_Tree);
 
@@ -3339,70 +3293,81 @@ package body Prj.Nmsc is
 
          --  Check Spec_Suffix
 
-         declare
-            Ada_Spec_Suffix : constant Variable_Value :=
-              Prj.Util.Value_Of
-                (Index     => Name_Ada,
-                 Src_Index => 0,
-                 In_Array  => Data.Naming.Spec_Suffix,
-                 In_Tree   => In_Tree);
+         if Ada_Spec_Suffix.Kind = Single
+           and then Length_Of_Name (Ada_Spec_Suffix.Value) /= 0
+         then
+            Spec_Suffix := Canonical_Case_File_Name (Ada_Spec_Suffix.Value);
+            Set_Spec_Suffix (In_Tree, "ada", Data.Naming, Spec_Suffix);
 
-         begin
-            if Ada_Spec_Suffix.Kind = Single
-              and then Get_Name_String (Ada_Spec_Suffix.Value) /= ""
+            if Is_Illegal_Suffix
+              (Spec_Suffix, Data.Naming.Dot_Replacement)
             then
-               Set_Spec_Suffix
-                 (In_Tree, "ada", Data.Naming,
-                  Canonical_Case_File_Name (Ada_Spec_Suffix.Value));
-               Data.Naming.Ada_Spec_Suffix_Loc := Ada_Spec_Suffix.Location;
-
-            else
-               Set_Spec_Suffix
-                 (In_Tree, "ada", Data.Naming, Default_Ada_Spec_Suffix);
+               Err_Vars.Error_Msg_File_1 := Spec_Suffix;
+               Error_Msg
+                 (Project, In_Tree,
+                  "{ is illegal for Spec_Suffix",
+                  Ada_Spec_Suffix.Location);
             end if;
 
-            Write_Attr
-              ("Spec_Suffix", Spec_Suffix_Of (In_Tree, "ada", Data.Naming));
-         end;
+         else
+            Spec_Suffix := Default_Ada_Spec_Suffix;
+            Set_Spec_Suffix (In_Tree, "ada", Data.Naming, Spec_Suffix);
+         end if;
+
+         Write_Attr ("Spec_Suffix", Get_Name_String (Spec_Suffix));
 
          --  Check Body_Suffix
 
-         declare
-            Ada_Body_Suffix : constant Variable_Value :=
-              Prj.Util.Value_Of
-                (Index     => Name_Ada,
-                 Src_Index => 0,
-                 In_Array  => Data.Naming.Body_Suffix,
-                 In_Tree   => In_Tree);
+         if Ada_Body_Suffix.Kind = Single
+           and then Get_Name_String (Ada_Body_Suffix.Value) /= ""
+         then
+            Body_Suffix := Canonical_Case_File_Name (Ada_Body_Suffix.Value);
+            Data.Naming.Separate_Suffix := Body_Suffix;
+            Set_Body_Suffix (In_Tree, "ada", Data.Naming, Body_Suffix);
 
-         begin
-            if Ada_Body_Suffix.Kind = Single
-              and then Get_Name_String (Ada_Body_Suffix.Value) /= ""
+            if Is_Illegal_Suffix
+              (Body_Suffix, Data.Naming.Dot_Replacement)
             then
-               Data.Naming.Separate_Suffix :=
-                 Canonical_Case_File_Name (Ada_Body_Suffix.Value);
-               Set_Body_Suffix
-                 (In_Tree, "ada", Data.Naming, Data.Naming.Separate_Suffix);
-               Data.Naming.Ada_Body_Suffix_Loc := Ada_Body_Suffix.Location;
-
-            else
-               Data.Naming.Separate_Suffix := Default_Ada_Body_Suffix;
-               Set_Body_Suffix
-                 (In_Tree, "ada", Data.Naming, Default_Ada_Body_Suffix);
+               Err_Vars.Error_Msg_File_1 := Body_Suffix;
+               Error_Msg
+                 (Project, In_Tree,
+                  "{ is illegal for Body_Suffix",
+                  Ada_Body_Suffix.Location);
             end if;
 
-            Write_Attr
-              ("Body_Suffix", Body_Suffix_Of (In_Tree, "ada", Data.Naming));
-         end;
+         else
+            Body_Suffix := Default_Ada_Body_Suffix;
+            Data.Naming.Separate_Suffix := Body_Suffix;
+            Set_Body_Suffix (In_Tree, "ada", Data.Naming, Body_Suffix);
+         end if;
 
-         Check_Common
-           (Dot_Replacement => Data.Naming.Dot_Replacement,
-            Casing          => Data.Naming.Casing,
-            Casing_Defined  => Casing_Defined,
-            Separate_Suffix => Data.Naming.Separate_Suffix,
-            Sep_Suffix_Loc  => Data.Naming.Sep_Suffix_Loc);
+         Write_Attr ("Body_Suffix", Get_Name_String (Body_Suffix));
 
-         Check_Ada_Naming_Scheme_Validity (Project, In_Tree, Data.Naming);
+         --  Spec_Suffix cannot be equal to Body_Suffix or Separate_Suffix,
+         --  since that would cause a clear ambiguity. Note that we do
+         --  allow a Spec_Suffix to have the same termination as one of
+         --  these, which causes a potential ambiguity, but we resolve
+         --  that my matching the longest possible suffix.
+
+         if Spec_Suffix = Body_Suffix then
+            Error_Msg
+              (Project, In_Tree,
+               "Body_Suffix (""" &
+               Get_Name_String (Body_Suffix) &
+               """) cannot be the same as Spec_Suffix.",
+               Ada_Body_Suffix.Location);
+         end if;
+
+         if Body_Suffix /= Data.Naming.Separate_Suffix
+           and then Spec_Suffix = Data.Naming.Separate_Suffix
+         then
+            Error_Msg
+              (Project, In_Tree,
+               "Separate_Suffix (""" &
+               Get_Name_String (Data.Naming.Separate_Suffix) &
+               """) cannot be the same as Spec_Suffix.",
+               Sep_Suffix_Loc);
+         end if;
       end Check_Naming_Ada_Only;
 
       -----------------------------
@@ -3422,10 +3387,10 @@ package body Prj.Nmsc is
          declare
             Dot_Replacement : File_Name_Type := No_File;
             Separate_Suffix : File_Name_Type := No_File;
-            Sep_Suffix_Loc  : Source_Ptr     := No_Location;
             Casing          : Casing_Type    := All_Lower_Case;
             Casing_Defined  : Boolean;
             Lang_Id         : Language_Index;
+            Sep_Suffix_Loc  : Source_Ptr;
 
          begin
             Check_Common
@@ -3529,6 +3494,12 @@ package body Prj.Nmsc is
                       File_Name_Type (Suffix.Value);
                end if;
 
+               --  ??? As opposed to what is done in Check_Naming_Ada_Only,
+               --  we do not check whether spec_suffix=body_suffix, which
+               --  should be illegal. Best would be to share this code into
+               --  Check_Common, but we access the attributes from the project
+               --  files slightly differently apparently.
+
                Lang_Id := In_Tree.Languages_Data.Table (Lang_Id).Next;
             end loop;
          end;
@@ -3547,7 +3518,8 @@ package body Prj.Nmsc is
    --  Start of processing for Check_Naming_Schemes
 
    begin
-      --  No Naming package or parsing a configuration file ? nothing to do
+      --  No Naming package or parsing a configuration file? nothing to do
+
       if Naming_Id /= No_Package and not In_Configuration then
          Naming := In_Tree.Packages.Table (Naming_Id);
 
@@ -6657,7 +6629,7 @@ package body Prj.Nmsc is
    -----------------------
 
    procedure Compute_Unit_Name
-     (Filename        : String;
+     (File_Name       : File_Name_Type;
       Dot_Replacement : File_Name_Type;
       Separate_Suffix : File_Name_Type;
       Body_Suffix     : File_Name_Type;
@@ -6666,12 +6638,22 @@ package body Prj.Nmsc is
       Kind            : out Source_Kind;
       Unit            : out Name_Id)
    is
-      Last : Integer := Filename'Last;
-      Sep_Len : constant Integer := Integer (Length_Of_Name (Separate_Suffix));
-      Body_Len : constant Integer := Integer (Length_Of_Name (Body_Suffix));
-      Spec_Len : constant Integer := Integer (Length_Of_Name (Spec_Suffix));
-      Standard_GNAT : constant Boolean := Spec_Suffix = Default_Ada_Spec_Suffix
-        and then Body_Suffix = Default_Ada_Body_Suffix;
+      Filename : constant String := Get_Name_String (File_Name);
+      Last     : Integer := Filename'Last;
+      Sep_Len  : constant Integer :=
+                   Integer (Length_Of_Name (Separate_Suffix));
+      Body_Len : constant Integer :=
+                   Integer (Length_Of_Name (Body_Suffix));
+      Spec_Len : constant Integer :=
+                   Integer (Length_Of_Name (Spec_Suffix));
+
+      Standard_GNAT : constant Boolean :=
+                        Spec_Suffix = Default_Ada_Spec_Suffix
+                          and then
+                        Body_Suffix = Default_Ada_Body_Suffix;
+
+      Unit_Except : Unit_Exception;
+      Masked      : Boolean  := False;
    begin
       Unit := No_Name;
       Kind := Spec;
@@ -6719,7 +6701,7 @@ package body Prj.Nmsc is
       if File_Names_Case_Sensitive then
          case Casing is
             when All_Lower_Case =>
-               for J in Filename'Range loop
+               for J in Filename'First .. Last loop
                   if Is_Letter (Filename (J))
                     and then not Is_Lower (Filename (J))
                   then
@@ -6731,7 +6713,7 @@ package body Prj.Nmsc is
                end loop;
 
             when All_Upper_Case =>
-               for J in Filename'Range loop
+               for J in Filename'First .. Last loop
                   if Is_Letter (Filename (J))
                     and then not Is_Upper (Filename (J))
                   then
@@ -6752,6 +6734,7 @@ package body Prj.Nmsc is
 
       declare
          Dot_Repl : constant String := Get_Name_String (Dot_Replacement);
+
       begin
          if Dot_Repl /= "." then
             for Index in Filename'First .. Last loop
@@ -6805,8 +6788,10 @@ package body Prj.Nmsc is
                   Name_Buffer (2) := '.';
 
                elsif S2 = '.' then
-                  --  If it is potentially a run time source, disable
-                  --  filling of the mapping file to avoid warnings.
+
+                  --  If it is potentially a run time source, disable filling
+                  --  of the mapping file to avoid warnings.
+
                   Set_Mapping_File_Initial_State_To_Empty;
                end if;
             end if;
@@ -6817,6 +6802,40 @@ package body Prj.Nmsc is
       --  that this is a valid unit name
 
       Check_Ada_Name (Name_Buffer (1 .. Name_Len), Unit);
+
+      --  If there is a naming exception for the same unit, the file is not
+      --  a source for the unit. Currently, this only applies in multi_lang
+      --  mode, since Unit_Exceptions is no set in ada_only mode.
+
+      if Unit /= No_Name then
+         Unit_Except := Unit_Exceptions.Get (Unit);
+
+         if Kind = Spec then
+            Masked := Unit_Except.Spec /= No_File
+              and then Unit_Except.Spec /= File_Name;
+         else
+            Masked := Unit_Except.Impl /= No_File
+              and then Unit_Except.Impl /= File_Name;
+         end if;
+
+         if Masked then
+            if Current_Verbosity = High then
+               Write_Str ("   """ & Filename & """ contains the ");
+
+               if Kind = Spec then
+                  Write_Str ("spec of a unit found in """);
+                  Write_Str (Get_Name_String (Unit_Except.Spec));
+               else
+                  Write_Str ("body of a unit found in """);
+                  Write_Str (Get_Name_String (Unit_Except.Impl));
+               end if;
+
+               Write_Line (""" (ignored)");
+            end if;
+
+            Unit := No_Name;
+         end if;
+      end if;
 
       if Unit /= No_Name
         and then Current_Verbosity = High
@@ -6850,19 +6869,18 @@ package body Prj.Nmsc is
       Kind     : Source_Kind;
 
    begin
-      if Info_Id = No_Ada_Naming_Exception then
-         if Hostparm.OpenVMS then
-            VMS_Name := Canonical_File_Name;
-            Get_Name_String (VMS_Name);
+      if Info_Id = No_Ada_Naming_Exception
+        and then Hostparm.OpenVMS
+      then
+         VMS_Name := Canonical_File_Name;
+         Get_Name_String (VMS_Name);
 
-            if Name_Buffer (Name_Len) = '.' then
-               Name_Len := Name_Len - 1;
-               VMS_Name := Name_Find;
-            end if;
-
-            Info_Id := Ada_Naming_Exceptions.Get (VMS_Name);
+         if Name_Buffer (Name_Len) = '.' then
+            Name_Len := Name_Len - 1;
+            VMS_Name := Name_Find;
          end if;
 
+         Info_Id := Ada_Naming_Exceptions.Get (VMS_Name);
       end if;
 
       if Info_Id /= No_Ada_Naming_Exception then
@@ -6874,7 +6892,7 @@ package body Prj.Nmsc is
          Needs_Pragma := False;
          Exception_Id := No_Ada_Naming_Exception;
          Compute_Unit_Name
-           (Filename       => Get_Name_String (Canonical_File_Name),
+           (File_Name       => Canonical_File_Name,
             Dot_Replacement => Naming.Dot_Replacement,
             Separate_Suffix => Naming.Separate_Suffix,
             Body_Suffix     => Body_Suffix_Id_Of (In_Tree, Name_Ada, Naming),
@@ -6904,34 +6922,33 @@ package body Prj.Nmsc is
    -----------------------
 
    function Is_Illegal_Suffix
-     (Suffix                          : String;
-      Dot_Replacement_Is_A_Single_Dot : Boolean) return Boolean
+     (Suffix          : File_Name_Type;
+      Dot_Replacement : File_Name_Type) return Boolean
    is
+      Suffix_Str : constant String := Get_Name_String (Suffix);
    begin
-      if Suffix'Length = 0 or else Index (Suffix, ".") = 0 then
+      if Suffix_Str'Length = 0 or else Index (Suffix_Str, ".") = 0 then
          return True;
       end if;
 
       --  If dot replacement is a single dot, and first character of suffix is
       --  also a dot
 
-      if Dot_Replacement_Is_A_Single_Dot
-        and then Suffix (Suffix'First) = '.'
+      if Get_Name_String (Dot_Replacement) = "."
+        and then Suffix_Str (Suffix_Str'First) = '.'
       then
-         for Index in Suffix'First + 1 .. Suffix'Last loop
+         for Index in Suffix_Str'First + 1 .. Suffix_Str'Last loop
 
             --  If there is another dot
 
-            if Suffix (Index) = '.' then
+            if Suffix_Str (Index) = '.' then
 
                --  It is illegal to have a letter following the initial dot
 
-               return Is_Letter (Suffix (Suffix'First + 1));
+               return Is_Letter (Suffix_Str (Suffix_Str'First + 1));
             end if;
          end loop;
       end if;
-
-      --  Everything is OK
 
       return False;
    end Is_Illegal_Suffix;
@@ -7097,19 +7114,26 @@ package body Prj.Nmsc is
       In_Tree : Project_Tree_Ref;
       Data    : Project_Data)
    is
-      Excluded_Source_List_File : constant Variable_Value := Util.Value_Of
-        (Name_Excluded_Source_List_File, Data.Decl.Attributes, In_Tree);
-      Excluded_Sources          : Variable_Value := Util.Value_Of
-        (Name_Excluded_Source_Files, Data.Decl.Attributes, In_Tree);
+      Excluded_Source_List_File : constant Variable_Value :=
+                                    Util.Value_Of
+                                      (Name_Excluded_Source_List_File,
+                                       Data.Decl.Attributes,
+                                       In_Tree);
 
-      Current                   : String_List_Id;
-      Element                   : String_Element;
-      Location                  : Source_Ptr;
-      Name                      : File_Name_Type;
-      File                      : Prj.Util.Text_File;
-      Line                      : String (1 .. 300);
-      Last                      : Natural;
-      Locally_Removed           : Boolean := False;
+      Excluded_Sources          : Variable_Value := Util.Value_Of
+                                    (Name_Excluded_Source_Files,
+                                     Data.Decl.Attributes,
+                                     In_Tree);
+
+      Current         : String_List_Id;
+      Element         : String_Element;
+      Location        : Source_Ptr;
+      Name            : File_Name_Type;
+      File            : Prj.Util.Text_File;
+      Line            : String (1 .. 300);
+      Last            : Natural;
+      Locally_Removed : Boolean := False;
+
    begin
       --  If Excluded_Source_Files is not declared, check
       --  Locally_Removed_Files.
@@ -7631,8 +7655,10 @@ package body Prj.Nmsc is
       Lang    : Name_List_Index) return Language_Index
    is
       Name     : constant Name_Id := In_Tree.Name_Lists.Table (Lang).Name;
-      Language : Language_Index := Data.First_Language_Processing;
+      Language : Language_Index;
+
    begin
+      Language := Data.First_Language_Processing;
       while Language /= No_Language_Index loop
          if In_Tree.Languages_Data.Table (Language).Name = Name then
             return Language;
@@ -7640,6 +7666,7 @@ package body Prj.Nmsc is
 
          Language := In_Tree.Languages_Data.Table (Language).Next;
       end loop;
+
       return No_Language_Index;
    end Get_Language_Processing_From_Lang;
 
@@ -7650,7 +7677,6 @@ package body Prj.Nmsc is
    procedure Check_File_Naming_Schemes
      (In_Tree               : Project_Tree_Ref;
       Data                  : in out Project_Data;
-      Filename              : String;
       File_Name             : File_Name_Type;
       Alternate_Languages   : out Alternate_Language_Id;
       Language              : out Language_Index;
@@ -7660,11 +7686,12 @@ package body Prj.Nmsc is
       Lang_Kind             : out Language_Kind;
       Kind                  : out Source_Kind)
    is
+      Filename       : constant String := Get_Name_String (File_Name);
       Config         : Language_Config;
       Lang           : Name_List_Index := Data.Languages;
       Tmp_Lang       : Language_Index;
 
-      Header_File    : Boolean := False;
+      Header_File : Boolean := False;
       --  True if we found at least one language for which the file is a header
       --  In such a case, we search for all possible languages where this is
       --  also a header (C and C++ for instance), since the file might be used
@@ -7679,9 +7706,6 @@ package body Prj.Nmsc is
       --  should stop searching for matching languages. Not that a given header
       --  file could belong to several languages (C and C++ for instance). Thus
       --  if we found a header we'll check whether it matches other languages
-
-      procedure Check_Unit_Based_Lang;
-      --  Does the naming scheme test for unit-based languages
 
       ---------------------------
       -- Check_File_Based_Lang --
@@ -7715,6 +7739,7 @@ package body Prj.Nmsc is
                   Next     => Alternate_Languages);
                Alternate_Languages :=
                  Alternate_Language_Table.Last (In_Tree.Alt_Langs);
+
             else
                Header_File := True;
                Kind        := Spec;
@@ -7723,71 +7748,6 @@ package body Prj.Nmsc is
             end if;
          end if;
       end Check_File_Based_Lang;
-
-      ---------------------------
-      -- Check_Unit_Based_Lang --
-      ---------------------------
-
-      procedure Check_Unit_Based_Lang is
-         Masked      : Boolean  := False;
-         Unit_Except : Unit_Exception;
-      begin
-         Compute_Unit_Name
-           (Filename        => Filename,
-            Dot_Replacement => Config.Naming_Data.Dot_Replacement,
-            Separate_Suffix => Config.Naming_Data.Separate_Suffix,
-            Body_Suffix     => Config.Naming_Data.Body_Suffix,
-            Spec_Suffix     => Config.Naming_Data.Spec_Suffix,
-            Casing          => Config.Naming_Data.Casing,
-            Kind            => Kind,
-            Unit            => Unit);
-
-         --  If there is a naming exception for the same unit, the file is not
-         --  a source for the unit
-
-         if Unit /= No_Name then
-            Unit_Except := Unit_Exceptions.Get (Unit);
-
-            if Kind = Spec then
-               Masked := Unit_Except.Spec /= No_File
-                 and then Unit_Except.Spec /= File_Name;
-            else
-               Masked := Unit_Except.Impl /= No_File
-                 and then Unit_Except.Impl /= File_Name;
-            end if;
-
-            if Masked then
-               if Current_Verbosity = High then
-                  Write_Str ("   """ & Filename & """ contains the ");
-
-                  if Kind = Spec then
-                     Write_Str ("spec of a unit found in """);
-                     Write_Str (Get_Name_String (Unit_Except.Spec));
-                  else
-                     Write_Str ("body of a unit found in """);
-                     Write_Str (Get_Name_String (Unit_Except.Impl));
-                  end if;
-
-                  Write_Line (""" (ignored)");
-               end if;
-
-            else
-               if Current_Verbosity = High then
-                  if Kind = Spec then
-                     Write_Str ("     spec of ");
-                  else
-                     Write_Str ("     body of ");
-                  end if;
-
-                  Write_Str (Get_Name_String (Unit));
-                  Write_Str (" language: ");
-                  Write_Line (Get_Name_String (Display_Language_Name));
-               end if;
-
-               Language    := Tmp_Lang;
-            end if;
-         end if;
-      end Check_Unit_Based_Lang;
 
    begin
       Language              := No_Language_Index;
@@ -7823,8 +7783,20 @@ package body Prj.Nmsc is
                   --  We know it belongs to a least a file_based language, no
                   --  need to check unit-based ones.
                   if not Header_File then
-                     Check_Unit_Based_Lang;
-                     exit when Language /= No_Language_Index;
+                     Compute_Unit_Name
+                       (File_Name       => File_Name,
+                        Dot_Replacement => Config.Naming_Data.Dot_Replacement,
+                        Separate_Suffix => Config.Naming_Data.Separate_Suffix,
+                        Body_Suffix     => Config.Naming_Data.Body_Suffix,
+                        Spec_Suffix     => Config.Naming_Data.Spec_Suffix,
+                        Casing          => Config.Naming_Data.Casing,
+                        Kind            => Kind,
+                        Unit            => Unit);
+
+                     if Unit /= No_Name then
+                        Language    := Tmp_Lang;
+                        exit;
+                     end if;
                   end if;
             end case;
          end if;
@@ -7872,6 +7844,7 @@ package body Prj.Nmsc is
       Src_Ind           : Source_File_Index;
       Unit              : Name_Id;
       Source_To_Replace : Source_Id := No_Source;
+
       Language_Name         : Name_Id;
       Display_Language_Name : Name_Id;
       Lang_Kind             : Language_Kind;
@@ -7946,7 +7919,6 @@ package body Prj.Nmsc is
          Check_File_Naming_Schemes
            (In_Tree               => In_Tree,
             Data                  => Data,
-            Filename              => Get_Name_String (File_Name),
             File_Name             => File_Name,
             Alternate_Languages   => Alternate_Languages,
             Language              => Language,
@@ -8227,12 +8199,14 @@ package body Prj.Nmsc is
       In_Tree : Project_Tree_Ref;
       Data    : in out Project_Data)
    is
-      Source : Source_Id := Data.First_Source;
+      Source : Source_Id;
       File   : File_Name_Type;
       Unit   : Name_Id;
+
    begin
       Unit_Exceptions.Reset;
 
+      Source := Data.First_Source;
       while Source /= No_Source loop
          File := In_Tree.Sources.Table (Source).File;
          Unit := In_Tree.Sources.Table (Source).Unit;
@@ -8314,14 +8288,23 @@ package body Prj.Nmsc is
          Excluded : File_Found := Excluded_Sources_Htable.Get_First;
 
          procedure Exclude
-           (Extended : Project_Id; Index : Unit_Index; Kind : Spec_Or_Body);
+           (Extended : Project_Id;
+            Index    : Unit_Index;
+            Kind     : Spec_Or_Body);
          --  If the current file (Excluded) belongs to the current project or
          --  one that the current project extends, then mark this file/unit as
          --  excluded. It is an error to locally remove a file from another
          --  project.
 
+         -------------
+         -- Exclude --
+         -------------
+
          procedure Exclude
-           (Extended : Project_Id; Index : Unit_Index; Kind : Spec_Or_Body) is
+           (Extended : Project_Id;
+            Index    : Unit_Index;
+            Kind     : Spec_Or_Body)
+         is
          begin
             if Extended = Project
               or else Is_Extending (Project, Extended, In_Tree)
@@ -8354,16 +8337,20 @@ package body Prj.Nmsc is
             end if;
          end Exclude;
 
+      --  Start of processing for Mark_Excluded_Sources
+
       begin
          while Excluded /= No_File_Found loop
             OK     := False;
 
             case Get_Mode is
             when Ada_Only =>
+
                --  ??? This loop could be the same as for Multi_Language if
                --  we were setting In_Tree.First_Source when we search for
                --  Ada sources (basically once we have removed the use of
                --  Data.Ada_Sources).
+
                For_Each_Unit :
                for Index in Unit_Table.First ..
                  Unit_Table.Last (In_Tree.Units)
@@ -8514,7 +8501,7 @@ package body Prj.Nmsc is
 
       if (Get_Mode = Ada_Only and then Is_A_Language (In_Tree, Data, Name_Ada))
         or else (Get_Mode = Multi_Language
-                 and then Data.First_Language_Processing /= No_Language_Index)
+                  and then Data.First_Language_Processing /= No_Language_Index)
       then
          if Get_Mode = Multi_Language then
             Load_Naming_Exceptions (Project, In_Tree, Data);
@@ -8560,9 +8547,9 @@ package body Prj.Nmsc is
       end if;
    end Path_Name_Of;
 
-   -------------------------------
+   -----------------------------------
    -- Prepare_Ada_Naming_Exceptions --
-   -------------------------------
+   -----------------------------------
 
    procedure Prepare_Ada_Naming_Exceptions
      (List    : Array_Element_Id;

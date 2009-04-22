@@ -527,8 +527,7 @@ package body System.Tasking.Initialization is
       while C /= Null_Task loop
          if C = T then
             if Previous = Null_Task then
-               All_Tasks_List :=
-                 All_Tasks_List.Common.All_Tasks_Link;
+               All_Tasks_List := All_Tasks_List.Common.All_Tasks_Link;
             else
                Previous.Common.All_Tasks_Link := C.Common.All_Tasks_Link;
             end if;

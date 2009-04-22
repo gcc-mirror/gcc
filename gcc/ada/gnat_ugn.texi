@@ -10128,7 +10128,7 @@ required to dereference it each time through the loop.
 
 This kind of optimization, called strict aliasing analysis, is
 triggered by specifying an optimization level of @option{-O2} or
-higher and allows @code{GNAT} to generate more efficient code
+higher or @option{-Os} and allows @code{GNAT} to generate more efficient code
 when access values are involved.
 
 However, although this optimization is always correct in terms of
@@ -10296,6 +10296,21 @@ use of address clauses for type overlaying, and to allow unchecked
 conversion only for primitive types. This is not really a significant
 restriction since any possible desired effect can be achieved by
 unchecked conversion of access values.
+
+The aliasing analysis done in strict aliasing mode can certainly
+have significant benefits. We have seen cases of large scale
+application code where the time is increased by up to 5% by turning
+this optimization off. If you have code that includes significant
+usage of unchecked conversion, you might want to just stick with
+@option{-O1} and avoid the entire issue. If you get adequate
+performance at this level of optimization level, that's probably
+the safest approach. If tests show that you really need higher
+levels of optimization, then you can experiment with @option{-O2}
+and @option{-O2 -fno-strict-aliasing} to see how much effect this
+has on size and speed of the code. If you really need to use
+@option{-O2} with strict aliasing in effect, then you should
+review any uses of unchecked conversion of access types,
+particularly if you are getting the warnings described above.
 
 @ifset vms
 @node Coverage Analysis

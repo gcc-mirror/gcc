@@ -515,8 +515,7 @@ package body System.Tasking.Stages is
          raise Program_Error with "potentially blocking operation";
       end if;
 
-      pragma Debug
-        (Debug.Trace (Self_ID, "Create_Task", 'C'));
+      pragma Debug (Debug.Trace (Self_ID, "Create_Task", 'C'));
 
       if Priority = Unspecified_Priority then
          Base_Priority := Self_ID.Common.Base_Priority;
