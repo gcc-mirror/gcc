@@ -2519,7 +2519,67 @@ package body Prj.Proc is
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Extended_By            : Project_Id)
    is
-      With_Clause : Project_Node_Id;
+      procedure Process_Imported_Projects
+        (Imported     : in out Project_List;
+         Limited_With : Boolean);
+      --  Process imported projects. If Limited_With is True, then only
+      --  projects processed through a "limited with" are processed, otherwise
+      --  only projects imported through a standard "with" are processed.
+      --  Imported is the id of the last imported project.
+
+      procedure Process_Imported_Projects
+        (Imported     : in out Project_List;
+         Limited_With : Boolean)
+      is
+         With_Clause : Project_Node_Id := First_With_Clause_Of
+           (From_Project_Node, From_Project_Node_Tree);
+         New_Project : Project_Id;
+         Proj_Node   : Project_Node_Id;
+      begin
+         while Present (With_Clause) loop
+            Proj_Node :=
+              Non_Limited_Project_Node_Of
+                (With_Clause, From_Project_Node_Tree);
+            New_Project := No_Project;
+
+            if (Limited_With and No (Proj_Node))
+              or (not Limited_With and Present (Proj_Node))
+            then
+               Recursive_Process
+                 (In_Tree                => In_Tree,
+                  Project                => New_Project,
+                  From_Project_Node      =>
+                    Project_Node_Of
+                      (With_Clause, From_Project_Node_Tree),
+                  From_Project_Node_Tree => From_Project_Node_Tree,
+                  Extended_By            => No_Project);
+
+               --  Add this project to our list of imported projects
+
+               Project_List_Table.Increment_Last (In_Tree.Project_Lists);
+
+               In_Tree.Project_Lists.Table
+                 (Project_List_Table.Last (In_Tree.Project_Lists)) :=
+                 (Project => New_Project, Next => Empty_Project_List);
+
+               --  Imported is the id of the last imported project. If
+               --  it is nil, then this imported project is our first.
+
+               if Imported = Empty_Project_List then
+                  In_Tree.Projects.Table (Project).Imported_Projects :=
+                    Project_List_Table.Last (In_Tree.Project_Lists);
+               else
+                  In_Tree.Project_Lists.Table (Imported).Next :=
+                    Project_List_Table.Last (In_Tree.Project_Lists);
+               end if;
+
+               Imported := Project_List_Table.Last (In_Tree.Project_Lists);
+            end if;
+
+            With_Clause :=
+              Next_With_Clause_Of (With_Clause, From_Project_Node_Tree);
+         end loop;
+      end Process_Imported_Projects;
 
    begin
       if No (From_Project_Node) then
@@ -2624,68 +2684,9 @@ package body Prj.Proc is
                Prj.Attr.Attribute_First,
                Project_Level => True);
 
-            --  Process non limited withed projects
+            In_Tree.Projects.Table (Project) := Processed_Data;
 
-            With_Clause :=
-              First_With_Clause_Of (From_Project_Node, From_Project_Node_Tree);
-            while Present (With_Clause) loop
-               declare
-                  New_Project : Project_Id;
-                  New_Data    : Project_Data;
-                  pragma Unreferenced (New_Data);
-                  Proj_Node   : Project_Node_Id;
-
-               begin
-                  Proj_Node :=
-                    Non_Limited_Project_Node_Of
-                      (With_Clause, From_Project_Node_Tree);
-
-                  if Present (Proj_Node) then
-                     Recursive_Process
-                       (In_Tree                => In_Tree,
-                        Project                => New_Project,
-                        From_Project_Node      =>
-                          Project_Node_Of
-                            (With_Clause, From_Project_Node_Tree),
-                        From_Project_Node_Tree => From_Project_Node_Tree,
-                        Extended_By            => No_Project);
-
-                     New_Data :=
-                       In_Tree.Projects.Table (New_Project);
-
-                     --  Add this project to our list of imported projects
-
-                     Project_List_Table.Increment_Last
-                       (In_Tree.Project_Lists);
-
-                     In_Tree.Project_Lists.Table
-                       (Project_List_Table.Last
-                          (In_Tree.Project_Lists)) :=
-                       (Project => New_Project, Next => Empty_Project_List);
-
-                     --  Imported is the id of the last imported project. If it
-                     --  is nil, then this imported project is our first.
-
-                     if Imported = Empty_Project_List then
-                        Processed_Data.Imported_Projects :=
-                          Project_List_Table.Last
-                            (In_Tree.Project_Lists);
-
-                     else
-                        In_Tree.Project_Lists.Table
-                          (Imported).Next := Project_List_Table.Last
-                          (In_Tree.Project_Lists);
-                     end if;
-
-                     Imported := Project_List_Table.Last
-                       (In_Tree.Project_Lists);
-                  end if;
-
-                  With_Clause :=
-                    Next_With_Clause_Of
-                      (With_Clause, From_Project_Node_Tree);
-               end;
-            end loop;
+            Process_Imported_Projects (Imported, Limited_With => False);
 
             Declaration_Node :=
               Project_Declaration_Of
@@ -2693,14 +2694,12 @@ package body Prj.Proc is
 
             Recursive_Process
               (In_Tree                => In_Tree,
-               Project                => Processed_Data.Extends,
+               Project            => In_Tree.Projects.Table (Project).Extends,
                From_Project_Node      => Extended_Project_Of
                                           (Declaration_Node,
                                            From_Project_Node_Tree),
                From_Project_Node_Tree => From_Project_Node_Tree,
                Extended_By            => Project);
-
-            In_Tree.Projects.Table (Project) := Processed_Data;
 
             Process_Declarative_Items
               (Project                => Project,
@@ -2826,68 +2825,7 @@ package body Prj.Proc is
                In_Tree.Projects.Table (Project) := Processed_Data;
             end if;
 
-            --  Process limited withed projects
-
-            With_Clause :=
-              First_With_Clause_Of
-                (From_Project_Node, From_Project_Node_Tree);
-            while Present (With_Clause) loop
-               declare
-                  New_Project : Project_Id;
-                  New_Data    : Project_Data;
-                  pragma Unreferenced (New_Data);
-                  Proj_Node   : Project_Node_Id;
-
-               begin
-                  Proj_Node :=
-                    Non_Limited_Project_Node_Of
-                      (With_Clause, From_Project_Node_Tree);
-
-                  if No (Proj_Node) then
-                     Recursive_Process
-                       (In_Tree                => In_Tree,
-                        Project                => New_Project,
-                        From_Project_Node      =>
-                          Project_Node_Of
-                            (With_Clause, From_Project_Node_Tree),
-                        From_Project_Node_Tree => From_Project_Node_Tree,
-                        Extended_By            => No_Project);
-
-                     New_Data :=
-                       In_Tree.Projects.Table (New_Project);
-
-                     --  Add this project to our list of imported projects
-
-                     Project_List_Table.Increment_Last
-                       (In_Tree.Project_Lists);
-
-                     In_Tree.Project_Lists.Table
-                       (Project_List_Table.Last
-                          (In_Tree.Project_Lists)) :=
-                       (Project => New_Project, Next => Empty_Project_List);
-
-                     --  Imported is the id of the last imported project. If
-                     --  it is nil, then this imported project is our first.
-
-                     if Imported = Empty_Project_List then
-                        In_Tree.Projects.Table (Project).Imported_Projects :=
-                          Project_List_Table.Last
-                            (In_Tree.Project_Lists);
-                     else
-                        In_Tree.Project_Lists.Table
-                          (Imported).Next := Project_List_Table.Last
-                          (In_Tree.Project_Lists);
-                     end if;
-
-                     Imported := Project_List_Table.Last
-                       (In_Tree.Project_Lists);
-                  end if;
-
-                  With_Clause :=
-                    Next_With_Clause_Of
-                      (With_Clause, From_Project_Node_Tree);
-               end;
-            end loop;
+            Process_Imported_Projects (Imported, Limited_With => True);
          end;
       end if;
    end Recursive_Process;

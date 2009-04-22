@@ -870,8 +870,6 @@ package Prj is
       Dot_Replacement : File_Name_Type := No_File;
       --  The string to replace '.' in the source file name (for Ada)
 
-      Dot_Repl_Loc : Source_Ptr := No_Location;
-
       Casing : Casing_Type := All_Lower_Case;
       --  The casing of the source file name (for Ada)
 

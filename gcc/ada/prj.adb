@@ -73,7 +73,6 @@ package body Prj is
 
    Std_Naming_Data : constant Naming_Data :=
                        (Dot_Replacement           => Standard_Dot_Replacement,
-                        Dot_Repl_Loc              => No_Location,
                         Casing                    => All_Lower_Case,
                         Spec_Suffix               => No_Array_Element,
                         Ada_Spec_Suffix_Loc       => No_Location,
@@ -655,10 +654,9 @@ package body Prj is
       Extended  : Project_Id;
       In_Tree   : Project_Tree_Ref) return Boolean
    is
-      Proj : Project_Id;
+      Proj : Project_Id := Extending;
 
    begin
-      Proj := Extending;
       while Proj /= No_Project loop
          if Proj = Extended then
             return True;
