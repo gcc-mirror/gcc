@@ -65,7 +65,15 @@ __gthread_once (__gthread_once_t *guard, void (*func)(void))
   __gthread_lock_library ();
 #else
   while (!vxTas ((void *)&guard->busy))
-    taskDelay (1);
+    {
+#ifdef __PPC__
+      /* This can happen on powerpc, which is using all 32 bits
+	 of the gthread_once_t structure.  */
+      if (guard->done)
+	return;
+#endif
+      taskDelay (1);
+    }
 #endif
 
   /* Only one thread at a time gets here.  Check ->done again, then
