@@ -7287,7 +7287,8 @@ process_init_element (struct c_expr value, bool implicit)
 	   || TREE_CODE (constructor_type) == UNION_TYPE)
 	  && constructor_fields == 0)
 	process_init_element (pop_init_level (1), true);
-      else if (TREE_CODE (constructor_type) == ARRAY_TYPE
+      else if ((TREE_CODE (constructor_type) == ARRAY_TYPE
+	        || TREE_CODE (constructor_type) == VECTOR_TYPE)
 	       && (constructor_max_index == 0
 		   || tree_int_cst_lt (constructor_max_index,
 				       constructor_index)))
@@ -7359,7 +7360,7 @@ process_init_element (struct c_expr value, bool implicit)
 		   && value.value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != fieldtype
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
-		       || fieldcode == UNION_TYPE))
+		       || fieldcode == UNION_TYPE || fieldcode == VECTOR_TYPE))
 	    {
 	      push_init_level (1);
 	      continue;
@@ -7450,7 +7451,7 @@ process_init_element (struct c_expr value, bool implicit)
 		   && value.value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != fieldtype
 		   && (fieldcode == RECORD_TYPE || fieldcode == ARRAY_TYPE
-		       || fieldcode == UNION_TYPE))
+		       || fieldcode == UNION_TYPE || fieldcode == VECTOR_TYPE))
 	    {
 	      push_init_level (1);
 	      continue;
@@ -7491,7 +7492,7 @@ process_init_element (struct c_expr value, bool implicit)
 		   && value.value != error_mark_node
 		   && TYPE_MAIN_VARIANT (TREE_TYPE (value.value)) != elttype
 		   && (eltcode == RECORD_TYPE || eltcode == ARRAY_TYPE
-		       || eltcode == UNION_TYPE))
+		       || eltcode == UNION_TYPE || eltcode == VECTOR_TYPE))
 	    {
 	      push_init_level (1);
 	      continue;
@@ -7540,9 +7541,13 @@ process_init_element (struct c_expr value, bool implicit)
 
 	  /* Now output the actual element.  */
 	  if (value.value)
-	    output_init_element (value.value, value.original_type,
-				 strict_string, elttype,
-				 constructor_index, 1, implicit);
+	    {
+	      if (TREE_CODE (value.value) == VECTOR_CST)
+		elttype = TYPE_MAIN_VARIANT (constructor_type);
+	      output_init_element (value.value, value.original_type,
+				   strict_string, elttype,
+				   constructor_index, 1, implicit);
+	    }
 
 	  constructor_index
 	    = size_binop (PLUS_EXPR, constructor_index, bitsize_one_node);
