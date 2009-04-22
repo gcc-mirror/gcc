@@ -1,3 +1,9 @@
+2009-04-23  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* gnu/classpath/jdwp/natVMVirtualMachine.cc (handle_single_step):  Use
+	casted pointer in debugging assert.
+	(jdwpBreakpointCB):  Likewise.
+
 2009-04-09  Jack Howarth  <howarth@bromo.med.uc.edu>
 
 	* configure.host: Restore match for darwin9 or later.
