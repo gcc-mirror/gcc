@@ -2771,10 +2771,12 @@ interrupt_handler (tree * node ATTRIBUTE_UNUSED,
 int
 m32c_special_page_vector_p (tree func)
 {
+  tree list;
+
   if (TREE_CODE (func) != FUNCTION_DECL)
     return 0;
 
-  tree list = M32C_ATTRIBUTES (func);
+  list = M32C_ATTRIBUTES (func);
   while (list)
     {
       if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
@@ -2837,12 +2839,13 @@ current_function_special_page_vector (rtx x)
   if ((GET_CODE(x) == SYMBOL_REF)
       && (SYMBOL_REF_FLAGS (x) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
     {
+      tree list;
       tree t = SYMBOL_REF_DECL (x);
 
       if (TREE_CODE (t) != FUNCTION_DECL)
         return 0;
 
-      tree list = M32C_ATTRIBUTES (t);
+      list = M32C_ATTRIBUTES (t);
       while (list)
         {
           if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
@@ -3870,6 +3873,7 @@ m32c_expand_insv (rtx *operands)
     case 5: p = gen_iorqi3_24 (op0, src0, GEN_INT (mask)); break;
     case 6: p = gen_iorhi3_16 (op0, src0, GEN_INT (mask)); break;
     case 7: p = gen_iorhi3_24 (op0, src0, GEN_INT (mask)); break;
+    default: p = NULL_RTX; break; /* Not reached, but silences a warning.  */
     }
 
   emit_insn (p);

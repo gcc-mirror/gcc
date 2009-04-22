@@ -1,3 +1,10 @@
+2009-04-22  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_special_page_vector_p): Move
+	declarations before code.
+	(current_function_special_page_vector): Likewise.
+	(m32c_expand_insv): Silence a warning.
+
 2009-04-21  Taras Glek <tglek@mozilla.com>
 
 	* alias.c: Update GTY annotations to new syntax.
