@@ -1,3 +1,7 @@
+2009-04-22  Mark Heffernan  <meheff@google.com>
+
+       * gcc.c (LINK_COMMAND_SPEC): Link with gcov with -fprofile-generate=.
+
 2009-04-22  Kazu Hirata  <kazu@codesourcery.com>
 
 	* config/arm/arm.c (arm_rtx_costs_1): Use power_of_two_operand
