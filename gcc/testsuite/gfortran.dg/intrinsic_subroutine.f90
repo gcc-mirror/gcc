@@ -3,5 +3,5 @@
 implicit none
 intrinsic cpu_time
 real :: time
-print *, CPU_TIME(TIME)  ! { dg-error "Intrinsic subroutine" }
+print *, CPU_TIME(TIME)  ! { dg-error "attribute conflicts with" }
 end

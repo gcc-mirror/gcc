@@ -8,6 +8,7 @@ module mo
 contains
 
   function j()
+    implicit none
     procedure(),pointer :: j
     intrinsic iabs
     j => iabs

@@ -27,7 +27,7 @@ interface
   end subroutine sp
 end interface
 
-external :: e1
+real, external :: e1
 
 interface
   subroutine e2(a,b)

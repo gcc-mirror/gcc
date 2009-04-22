@@ -274,9 +274,12 @@ typedef enum gfc_access
 gfc_access;
 
 /* Flags to keep track of where an interface came from.
-   4 elements = 2 bits.  */
+   3 elements = 2 bits.  */
 typedef enum ifsrc
-{ IFSRC_UNKNOWN = 0, IFSRC_DECL, IFSRC_IFBODY, IFSRC_USAGE
+{ IFSRC_UNKNOWN = 0,	/* Interface unknown, only return type may be known.  */
+  IFSRC_DECL,		/* FUNCTION or SUBROUTINE declaration.  */
+  IFSRC_IFBODY		/* INTERFACE statement or PROCEDURE statement
+			   with explicit interface.  */
 }
 ifsrc;
 
@@ -2370,8 +2373,8 @@ gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
 gfc_symbol* gfc_get_derived_super_type (gfc_symbol*);
 gfc_symtree* gfc_find_typebound_proc (gfc_symbol*, gfc_try*, const char*, bool);
 
-void copy_formal_args (gfc_symbol *, gfc_symbol *);
-void copy_formal_args_intr (gfc_symbol *, gfc_intrinsic_sym *);
+void gfc_copy_formal_args (gfc_symbol *, gfc_symbol *);
+void gfc_copy_formal_args_intr (gfc_symbol *, gfc_intrinsic_sym *);
 
 void gfc_free_finalizer (gfc_finalizer *el); /* Needed in resolve.c, too  */
 
