@@ -1,3 +1,7 @@
+2009-04-22  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.h: Update GTY annotations to new syntax.
+
 2009-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* alias.c (find_base_term): Move around LO_SUM case, so that

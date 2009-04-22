@@ -100,7 +100,7 @@ extern int target_memregs;
 
 /* Defining data structures for per-function information */
 
-typedef struct machine_function GTY (())
+typedef struct GTY (()) machine_function
 {
   /* How much we adjust the stack when returning from an exception
      handler.  */
