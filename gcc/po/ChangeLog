@@ -1,3 +1,8 @@
+2009-04-22  Joseph Myers  <joseph@codesourcery.com>
+
+	* exgettext: Also look for */*/config-lang.in to find language
+	subdirectories.
+
 2009-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* ChangeLog, EXCLUDES: Add copyright and license notices.

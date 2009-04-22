@@ -83,7 +83,7 @@ pottmp=$pwd/$T/tmp.pot
 echo "scanning for keywords and %e strings..." >&2
 
 ( cd $srcdir
-  lang_subdirs=`echo */config-lang.in | sed -e 's|config-lang\.in||g'`
+  lang_subdirs=`echo */config-lang.in */*/config-lang.in | sed -e 's|config-lang\.in||g'`
   { for dir in "" config/ config/*/ $lang_subdirs
     do  for glob in '*.c' '*.h' '*.def'
         do  eval echo $dir$glob
