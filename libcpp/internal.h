@@ -570,6 +570,7 @@ extern void _cpp_init_tokenrun (tokenrun *, unsigned int);
 
 /* In init.c.  */
 extern void _cpp_maybe_push_include_file (cpp_reader *);
+extern const char *cpp_named_operator2name (enum cpp_ttype type);
 
 /* In directives.c */
 extern int _cpp_test_assertion (cpp_reader *, unsigned int *);

@@ -1,3 +1,12 @@
+2009-04-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/14875
+	* c-common.c (c_parse_error): Take a token_flags parameter.
+	Use token_type for the token type instead.
+	Pass token_flags to cpp_type2name.
+	* c-common.h (c_parse_error): Update declaration.
+	* c-parser.c (c_parser_error): Pass 0 as token flags.
+
 2009-04-22  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/39580

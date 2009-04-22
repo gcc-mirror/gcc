@@ -381,6 +381,24 @@ mark_named_operators (cpp_reader *pfile)
     }
 }
 
+/* Helper function of cpp_type2name. Return the string associated with
+   named operator TYPE.  */
+const char *
+cpp_named_operator2name (enum cpp_ttype type)
+{
+  const struct builtin_operator *b;
+
+  for (b = operator_array;
+       b < (operator_array + ARRAY_SIZE (operator_array));
+       b++)
+    {
+      if (type == b->value)
+	return (const char *) b->name;
+    }
+
+  return NULL;
+}
+
 void
 cpp_init_special_builtins (cpp_reader *pfile)
 {

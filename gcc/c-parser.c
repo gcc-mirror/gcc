@@ -573,7 +573,11 @@ c_parser_error (c_parser *parser, const char *gmsgid)
 		    CPP_KEYWORD, keywords are treated like
 		    identifiers.  */
 		 (token->type == CPP_KEYWORD ? CPP_NAME : token->type),
-		 token->value);
+		 /* ??? The C parser does not save the cpp flags of a
+		    token, we need to pass 0 here and we will not get
+		    the source spelling of some tokens but rather the
+		    canonical spelling.  */
+		 token->value, /*flags=*/0);
 }
 
 /* If the next token is of the indicated TYPE, consume it.  Otherwise,

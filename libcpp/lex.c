@@ -1416,6 +1416,13 @@ utf8_to_ucn (unsigned char *buffer, const unsigned char *name)
   return ucn_len;
 }
 
+/* Given a token TYPE corresponding to a digraph, return a pointer to
+   the spelling of the digraph.  */
+static const unsigned char *
+cpp_digraph2name (enum cpp_ttype type)
+{
+  return digraph_spellings[(int) type - (int) CPP_FIRST_DIGRAPH];
+}
 
 /* Write the spelling of a token TOKEN to BUFFER.  The buffer must
    already contain the enough space to hold the token's spelling.
@@ -1435,8 +1442,7 @@ cpp_spell_token (cpp_reader *pfile, const cpp_token *token,
 	unsigned char c;
 
 	if (token->flags & DIGRAPH)
-	  spelling
-	    = digraph_spellings[(int) token->type - (int) CPP_FIRST_DIGRAPH];
+	  spelling = cpp_digraph2name (token->type);
 	else if (token->flags & NAMED_OP)
 	  goto spell_ident;
 	else
@@ -1499,11 +1505,17 @@ cpp_token_as_text (cpp_reader *pfile, const cpp_token *token)
   return start;
 }
 
-/* Used by C front ends, which really should move to using
-   cpp_token_as_text.  */
+/* Returns a pointer to a string which spells the token defined by
+   TYPE and FLAGS.  Used by C front ends, which really should move to
+   using cpp_token_as_text.  */
 const char *
-cpp_type2name (enum cpp_ttype type)
+cpp_type2name (enum cpp_ttype type, unsigned char flags)
 {
+  if (flags & DIGRAPH)
+    return (const char *) cpp_digraph2name (type);
+  else if (flags & NAMED_OP)
+    return cpp_named_operator2name (type);
+
   return (const char *) token_spellings[type].name;
 }
 
@@ -1521,8 +1533,7 @@ cpp_output_token (const cpp_token *token, FILE *fp)
 	int c;
 
 	if (token->flags & DIGRAPH)
-	  spelling
-	    = digraph_spellings[(int) token->type - (int) CPP_FIRST_DIGRAPH];
+	  spelling = cpp_digraph2name (token->type);
 	else if (token->flags & NAMED_OP)
 	  goto spell_ident;
 	else

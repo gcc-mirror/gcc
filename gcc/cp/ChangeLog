@@ -1,3 +1,8 @@
+2009-04-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/14875
+	* parser.c (cp_parser_error): Pass token->flags to c_parse_error.
+
 2009-04-21  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR c++/35711

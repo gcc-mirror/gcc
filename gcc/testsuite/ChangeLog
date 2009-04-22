@@ -1,3 +1,10 @@
+2009-04-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/14875
+	* g++.dg/parse/parser-pr14875.C: New.
+	* g++.dg/parse/parser-pr14875-2.C: New.
+	* g++.dg/parse/error6.C: Update match string.
+
 2009-04-22  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39845
