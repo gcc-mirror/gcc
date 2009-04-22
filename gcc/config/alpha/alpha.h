@@ -447,7 +447,7 @@ extern enum alpha_fp_trap_mode alpha_fptm;
    registers can hold 64-bit integers as well, but not smaller values.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) 				\
-  ((REGNO) >= 32 && (REGNO) <= 62 					\
+  (IN_RANGE ((REGNO), 32, 62)						\
    ? (MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode		\
      || (MODE) == SCmode || (MODE) == DCmode				\
    : 1)
@@ -576,7 +576,7 @@ enum reg_class {
   : (REGNO) == 24 ? R24_REG			\
   : (REGNO) == 25 ? R25_REG			\
   : (REGNO) == 27 ? R27_REG			\
-  : (REGNO) >= 32 && (REGNO) <= 62 ? FLOAT_REGS	\
+  : IN_RANGE ((REGNO), 32, 62) ? FLOAT_REGS	\
   : GENERAL_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -752,7 +752,7 @@ extern int alpha_memory_latency;
    On Alpha, these are $16-$21 and $f16-$f21.  */
 
 #define FUNCTION_ARG_REGNO_P(N) \
-  (((N) >= 16 && (N) <= 21) || ((N) >= 16 + 32 && (N) <= 21 + 32))
+  (IN_RANGE ((N), 16, 21) || ((N) >= 16 + 32 && (N) <= 21 + 32))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -949,7 +949,7 @@ do {						\
    symbolic addresses into registers.  */
 
 #define CONSTANT_ADDRESS_P(X)   \
-  (GET_CODE (X) == CONST_INT	\
+  (CONST_INT_P (X)		\
    && (unsigned HOST_WIDE_INT) (INTVAL (X) + 0x8000) < 0x10000)
 
 /* Include all constant integers and constant doubles, but not
@@ -1125,7 +1125,7 @@ do {									     \
 #define CANONICALIZE_COMPARISON(CODE,OP0,OP1) \
   do {									\
     if (((CODE) == GE || (CODE) == GT || (CODE) == GEU || (CODE) == GTU) \
-	&& (GET_CODE (OP1) == REG || (OP1) == const0_rtx))		\
+	&& (REG_P (OP1) || (OP1) == const0_rtx))		\
       {									\
 	rtx tem = (OP0);						\
 	(OP0) = (OP1);							\
@@ -1133,7 +1133,7 @@ do {									     \
 	(CODE) = swap_condition (CODE);					\
       }									\
     if (((CODE) == LT || (CODE) == LTU)					\
-	&& GET_CODE (OP1) == CONST_INT && INTVAL (OP1) == 256)		\
+	&& CONST_INT_P (OP1) && INTVAL (OP1) == 256)			\
       {									\
 	(CODE) = (CODE) == LT ? LE : LEU;				\
 	(OP1) = GEN_INT (255);						\

@@ -584,7 +584,7 @@ resolve_reload_operand (rtx op)
       rtx tmp = op;
       if (GET_CODE (tmp) == SUBREG)
 	tmp = SUBREG_REG (tmp);
-      if (GET_CODE (tmp) == REG
+      if (REG_P (tmp)
 	  && REGNO (tmp) >= FIRST_PSEUDO_REGISTER)
 	{
 	  op = reg_equiv_memory_loc[REGNO (tmp)];
@@ -661,7 +661,7 @@ alpha_tablejump_addr_vec (rtx insn)
   tmp = NEXT_INSN (tmp);
   if (!tmp)
     return NULL_RTX;
-  if (GET_CODE (tmp) == JUMP_INSN
+  if (JUMP_P (tmp)
       && GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC)
     return PATTERN (tmp);
   return NULL_RTX;
@@ -812,7 +812,7 @@ alpha_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
   /* If this is an ldq_u type address, discard the outer AND.  */
   if (mode == DImode
       && GET_CODE (x) == AND
-      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && CONST_INT_P (XEXP (x, 1))
       && INTVAL (XEXP (x, 1)) == -8)
     x = XEXP (x, 0);
 
@@ -854,7 +854,7 @@ alpha_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
 	{
 	  if (! strict
 	      && NONSTRICT_REG_OK_FP_BASE_P (x)
-	      && GET_CODE (ofs) == CONST_INT)
+	      && CONST_INT_P (ofs))
 	    return true;
 	  if ((strict
 	       ? STRICT_REG_OK_FOR_BASE_P (x)
@@ -926,8 +926,8 @@ alpha_legitimize_address (rtx x, rtx scratch, enum machine_mode mode)
      valid offset, compute the high part of the constant and add it to
      the register.  Then our address is (plus temp low-part-const).  */
   if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 0)) == REG
-      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && REG_P (XEXP (x, 0))
+      && CONST_INT_P (XEXP (x, 1))
       && ! CONSTANT_ADDRESS_P (XEXP (x, 1)))
     {
       addend = INTVAL (XEXP (x, 1));
@@ -942,7 +942,7 @@ alpha_legitimize_address (rtx x, rtx scratch, enum machine_mode mode)
   if (can_create_pseudo_p ()
       && GET_CODE (x) == CONST
       && GET_CODE (XEXP (x, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (XEXP (x, 0), 1)))
     {
       addend = INTVAL (XEXP (XEXP (x, 0), 1));
       x = force_reg (Pmode, XEXP (XEXP (x, 0), 0));
@@ -954,10 +954,10 @@ alpha_legitimize_address (rtx x, rtx scratch, enum machine_mode mode)
      our address.  */
   if (can_create_pseudo_p ()
       && GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 0)) == REG
+      && REG_P (XEXP (x, 0))
       && GET_CODE (XEXP (x, 1)) == CONST
       && GET_CODE (XEXP (XEXP (x, 1), 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (XEXP (x, 1), 0), 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (XEXP (XEXP (x, 1), 0), 1)))
     {
       addend = INTVAL (XEXP (XEXP (XEXP (x, 1), 0), 1));
       x = expand_simple_binop (Pmode, PLUS, XEXP (x, 0),
@@ -1217,9 +1217,9 @@ alpha_legitimize_reload_address (rtx x,
   /* We must recognize output that we have already generated ourselves.  */
   if (GET_CODE (x) == PLUS
       && GET_CODE (XEXP (x, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
-      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
-      && GET_CODE (XEXP (x, 1)) == CONST_INT)
+      && REG_P (XEXP (XEXP (x, 0), 0))
+      && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+      && CONST_INT_P (XEXP (x, 1)))
     {
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
 		   BASE_REG_CLASS, GET_MODE (x), VOIDmode, 0, 0,
@@ -1231,7 +1231,7 @@ alpha_legitimize_reload_address (rtx x,
      splitting the addend across an ldah and the mem insn.  This
      cuts number of extra insns needed from 3 to 1.  */
   if (GET_CODE (x) == PLUS
-      && GET_CODE (XEXP (x, 0)) == REG
+      && REG_P (XEXP (x, 0))
       && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
       && REGNO_OK_FOR_BASE_P (REGNO (XEXP (x, 0)))
       && GET_CODE (XEXP (x, 1)) == CONST_INT)
@@ -1349,7 +1349,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total,
       return false;
 
     case ASHIFT:
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+      if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) <= 3)
 	{
 	  *total = COSTS_N_INSNS (1);
@@ -1410,7 +1410,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total,
       return false;
 
     case FLOAT_EXTEND:
-      if (GET_CODE (XEXP (x, 0)) == MEM)
+      if (MEM_P (XEXP (x, 0)))
 	*total = 0;
       else
 	*total = cost_data->fp_add;
@@ -1432,7 +1432,7 @@ get_aligned_mem (rtx ref, rtx *paligned_mem, rtx *pbitnum)
   rtx base;
   HOST_WIDE_INT disp, offset;
 
-  gcc_assert (GET_CODE (ref) == MEM);
+  gcc_assert (MEM_P (ref));
 
   if (reload_in_progress
       && ! memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
@@ -1477,7 +1477,7 @@ get_unaligned_address (rtx ref)
   rtx base;
   HOST_WIDE_INT offset = 0;
 
-  gcc_assert (GET_CODE (ref) == MEM);
+  gcc_assert (MEM_P (ref));
 
   if (reload_in_progress
       && ! memory_address_p (GET_MODE (ref), XEXP (ref, 0)))
@@ -1524,7 +1524,7 @@ alpha_preferred_reload_class(rtx x, enum reg_class rclass)
     return rclass;
 
   /* These sorts of constants we can easily drop to memory.  */
-  if (GET_CODE (x) == CONST_INT
+  if (CONST_INT_P (x)
       || GET_CODE (x) == CONST_DOUBLE
       || GET_CODE (x) == CONST_VECTOR)
     {
@@ -1591,7 +1591,7 @@ alpha_set_memflags_1 (rtx *xp, void *data)
 {
   rtx x = *xp, orig = (rtx) data;
 
-  if (GET_CODE (x) != MEM)
+  if (!MEM_P (x))
     return 0;
 
   MEM_VOLATILE_P (x) = MEM_VOLATILE_P (orig);
@@ -1906,7 +1906,7 @@ alpha_emit_set_const (rtx target, enum machine_mode mode,
   /* If we can't make any pseudos, TARGET is an SImode hard register, we
      can't load this constant in one insn, do this in DImode.  */
   if (!can_create_pseudo_p () && mode == SImode
-      && GET_CODE (target) == REG && REGNO (target) < FIRST_PSEUDO_REGISTER)
+      && REG_P (target) && REGNO (target) < FIRST_PSEUDO_REGISTER)
     {
       result = alpha_emit_set_const_1 (target, mode, c, 1, no_output);
       if (result)
@@ -2019,7 +2019,7 @@ alpha_extract_integer (rtx x, HOST_WIDE_INT *p0, HOST_WIDE_INT *p1)
     x = simplify_subreg (DImode, x, GET_MODE (x), 0);
 
 
-  if (GET_CODE (x) == CONST_INT)
+  if (CONST_INT_P (x))
     {
       i0 = INTVAL (x);
       i1 = -(i0 < 0);
@@ -2127,7 +2127,7 @@ alpha_expand_mov (enum machine_mode mode, rtx *operands)
   rtx tmp;
 
   /* If the output is not a register, the input must be.  */
-  if (GET_CODE (operands[0]) == MEM
+  if (MEM_P (operands[0])
       && ! reg_or_0_operand (operands[1], mode))
     operands[1] = force_reg (mode, operands[1]);
 
@@ -2149,7 +2149,7 @@ alpha_expand_mov (enum machine_mode mode, rtx *operands)
     return false;
 
   /* Split large integers.  */
-  if (GET_CODE (operands[1]) == CONST_INT
+  if (CONST_INT_P (operands[1])
       || GET_CODE (operands[1]) == CONST_DOUBLE
       || GET_CODE (operands[1]) == CONST_VECTOR)
     {
@@ -2211,7 +2211,7 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 	      get_aligned_mem (operands[1], &aligned_mem, &bitnum);
 
 	      subtarget = operands[0];
-	      if (GET_CODE (subtarget) == REG)
+	      if (REG_P (subtarget))
 		subtarget = gen_lowpart (DImode, subtarget), copyout = false;
 	      else
 		subtarget = gen_reg_rtx (DImode), copyout = true;
@@ -2241,7 +2241,7 @@ alpha_expand_mov_nobwx (enum machine_mode mode, rtx *operands)
 	  temp2 = gen_reg_rtx (DImode);
 
 	  subtarget = operands[0];
-	  if (GET_CODE (subtarget) == REG)
+	  if (REG_P (subtarget))
 	    subtarget = gen_lowpart (DImode, subtarget), copyout = false;
 	  else
 	    subtarget = gen_reg_rtx (DImode), copyout = true;
@@ -2501,10 +2501,10 @@ alpha_emit_conditional_branch (enum rtx_code code)
 	  /* ??? Don't do this when comparing against symbols, otherwise
 	     we'll reduce (&x == 0x1234) to (&x-0x1234 == 0), which will
 	     be declared false out of hand (at least for non-weak).  */
-	  else if (GET_CODE (op1) == CONST_INT
+	  else if (CONST_INT_P (op1)
 		   && (code == EQ || code == NE)
 		   && !(symbolic_operand (op0, VOIDmode)
-			|| (GET_CODE (op0) == REG && REG_POINTER (op0))))
+			|| (REG_P (op0) && REG_POINTER (op0))))
 	    {
 	      rtx n_op1 = GEN_INT (-INTVAL (op1));
 
@@ -2989,7 +2989,7 @@ alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
 	  break;
 
 	case VOIDmode:
-	  gcc_assert (GET_CODE (operands[i]) == CONST_INT);
+	  gcc_assert (CONST_INT_P (operands[i]));
 	  /* FALLTHRU */
 	case DImode:
 	  reg = gen_rtx_REG (DImode, regno);
@@ -3815,11 +3815,11 @@ alpha_expand_block_move (rtx operands[])
   /* Look for additional alignment information from recorded register info.  */
 
   tmp = XEXP (orig_src, 0);
-  if (GET_CODE (tmp) == REG)
+  if (REG_P (tmp))
     src_align = MAX (src_align, REGNO_POINTER_ALIGN (REGNO (tmp)));
   else if (GET_CODE (tmp) == PLUS
-	   && GET_CODE (XEXP (tmp, 0)) == REG
-	   && GET_CODE (XEXP (tmp, 1)) == CONST_INT)
+	   && REG_P (XEXP (tmp, 0))
+	   && CONST_INT_P (XEXP (tmp, 1)))
     {
       unsigned HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
       unsigned int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
@@ -3836,11 +3836,11 @@ alpha_expand_block_move (rtx operands[])
     }
 
   tmp = XEXP (orig_dst, 0);
-  if (GET_CODE (tmp) == REG)
+  if (REG_P (tmp))
     dst_align = MAX (dst_align, REGNO_POINTER_ALIGN (REGNO (tmp)));
   else if (GET_CODE (tmp) == PLUS
-	   && GET_CODE (XEXP (tmp, 0)) == REG
-	   && GET_CODE (XEXP (tmp, 1)) == CONST_INT)
+	   && REG_P (XEXP (tmp, 0))
+	   && CONST_INT_P (XEXP (tmp, 1)))
     {
       unsigned HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
       unsigned int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
@@ -4059,11 +4059,11 @@ alpha_expand_block_clear (rtx operands[])
 
   /* Look for stricter alignment.  */
   tmp = XEXP (orig_dst, 0);
-  if (GET_CODE (tmp) == REG)
+  if (REG_P (tmp))
     align = MAX (align, REGNO_POINTER_ALIGN (REGNO (tmp)));
   else if (GET_CODE (tmp) == PLUS
-	   && GET_CODE (XEXP (tmp, 0)) == REG
-	   && GET_CODE (XEXP (tmp, 1)) == CONST_INT)
+	   && REG_P (XEXP (tmp, 0))
+	   && CONST_INT_P (XEXP (tmp, 1)))
     {
       HOST_WIDE_INT c = INTVAL (XEXP (tmp, 1));
       int a = REGNO_POINTER_ALIGN (REGNO (XEXP (tmp, 0)));
@@ -5053,7 +5053,7 @@ print_operand (FILE *file, rtx x, int code)
 	    x = XVECEXP (x, 0, 0);
 	    lituse = "lituse_tlsldm";
 	  }
-	else if (GET_CODE (x) == CONST_INT)
+	else if (CONST_INT_P (x))
 	  lituse = "lituse_jsr";
 	else
 	  {
@@ -5082,7 +5082,7 @@ print_operand (FILE *file, rtx x, int code)
       break;
     case 'r':
       /* If this operand is the constant zero, write it as "$31".  */
-      if (GET_CODE (x) == REG)
+      if (REG_P (x))
 	fprintf (file, "%s", reg_names[REGNO (x)]);
       else if (x == CONST0_RTX (GET_MODE (x)))
 	fprintf (file, "$31");
@@ -5092,7 +5092,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'R':
       /* Similar, but for floating-point.  */
-      if (GET_CODE (x) == REG)
+      if (REG_P (x))
 	fprintf (file, "%s", reg_names[REGNO (x)]);
       else if (x == CONST0_RTX (GET_MODE (x)))
 	fprintf (file, "$f31");
@@ -5102,7 +5102,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'N':
       /* Write the 1's complement of a constant.  */
-      if (GET_CODE (x) != CONST_INT)
+      if (!CONST_INT_P (x))
 	output_operand_lossage ("invalid %%N value");
 
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~ INTVAL (x));
@@ -5110,7 +5110,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'P':
       /* Write 1 << C, for a constant C.  */
-      if (GET_CODE (x) != CONST_INT)
+      if (!CONST_INT_P (x))
 	output_operand_lossage ("invalid %%P value");
 
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) 1 << INTVAL (x));
@@ -5118,7 +5118,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'h':
       /* Write the high-order 16 bits of a constant, sign-extended.  */
-      if (GET_CODE (x) != CONST_INT)
+      if (!CONST_INT_P (x))
 	output_operand_lossage ("invalid %%h value");
 
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) >> 16);
@@ -5126,7 +5126,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'L':
       /* Write the low-order 16 bits of a constant, sign-extended.  */
-      if (GET_CODE (x) != CONST_INT)
+      if (!CONST_INT_P (x))
 	output_operand_lossage ("invalid %%L value");
 
       fprintf (file, HOST_WIDE_INT_PRINT_DEC,
@@ -5155,7 +5155,7 @@ print_operand (FILE *file, rtx x, int code)
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, mask & 0xff);
 	}
 
-      else if (GET_CODE (x) == CONST_INT)
+      else if (CONST_INT_P (x))
 	{
 	  HOST_WIDE_INT mask = 0, value = INTVAL (x);
 
@@ -5171,7 +5171,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'M':
       /* 'b', 'w', 'l', or 'q' as the value of the constant.  */
-      if (GET_CODE (x) != CONST_INT
+      if (!CONST_INT_P (x)
 	  || (INTVAL (x) != 8 && INTVAL (x) != 16
 	      && INTVAL (x) != 32 && INTVAL (x) != 64))
 	output_operand_lossage ("invalid %%M value");
@@ -5185,7 +5185,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'U':
       /* Similar, except do it from the mask.  */
-      if (GET_CODE (x) == CONST_INT)
+      if (CONST_INT_P (x))
 	{
 	  HOST_WIDE_INT value = INTVAL (x);
 
@@ -5225,7 +5225,7 @@ print_operand (FILE *file, rtx x, int code)
       /* Write the constant value divided by 8 for little-endian mode or
 	 (56 - value) / 8 for big-endian mode.  */
 
-      if (GET_CODE (x) != CONST_INT
+      if (!CONST_INT_P (x)
 	  || (unsigned HOST_WIDE_INT) INTVAL (x) >= (WORDS_BIG_ENDIAN
 						     ? 56
 						     : 64)
@@ -5241,7 +5241,7 @@ print_operand (FILE *file, rtx x, int code)
     case 'S':
       /* Same, except compute (64 - c) / 8 */
 
-      if (GET_CODE (x) != CONST_INT
+      if (!CONST_INT_P (x)
 	  && (unsigned HOST_WIDE_INT) INTVAL (x) >= 64
 	  && (INTVAL (x) & 7) != 8)
 	output_operand_lossage ("invalid %%s value");
@@ -5311,14 +5311,14 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'A':
       /* Write "_u" for unaligned access.  */
-      if (GET_CODE (x) == MEM && GET_CODE (XEXP (x, 0)) == AND)
+      if (MEM_P (x) && GET_CODE (XEXP (x, 0)) == AND)
 	fprintf (file, "_u");
       break;
 
     case 0:
-      if (GET_CODE (x) == REG)
+      if (REG_P (x))
 	fprintf (file, "%s", reg_names[REGNO (x)]);
-      else if (GET_CODE (x) == MEM)
+      else if (MEM_P (x))
 	output_address (XEXP (x, 0));
       else if (GET_CODE (x) == CONST && GET_CODE (XEXP (x, 0)) == UNSPEC)
 	{
@@ -5352,7 +5352,7 @@ print_operand_address (FILE *file, rtx addr)
     addr = XEXP (addr, 0);
 
   if (GET_CODE (addr) == PLUS
-      && GET_CODE (XEXP (addr, 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (addr, 1)))
     {
       offset = INTVAL (XEXP (addr, 1));
       addr = XEXP (addr, 0);
@@ -8279,7 +8279,7 @@ alpha_end_function (FILE *file, const char *fnname, tree decl ATTRIBUTE_UNUSED)
   insn = get_last_insn ();
   if (!INSN_P (insn))
     insn = prev_active_insn (insn);
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     output_asm_insn (get_insn_template (CODE_FOR_nop, NULL), NULL);
 
 #if TARGET_ABI_OSF
@@ -8655,7 +8655,7 @@ alpha_handle_trap_shadows (void)
 
   for (i = get_insns (); i ; i = NEXT_INSN (i))
     {
-      if (GET_CODE (i) == NOTE)
+      if (NOTE_P (i))
 	{
 	  switch (NOTE_KIND (i))
 	    {
@@ -8681,7 +8681,7 @@ alpha_handle_trap_shadows (void)
 	{
 	  if (alpha_tp == ALPHA_TP_FUNC)
 	    {
-	      if (GET_CODE (i) == JUMP_INSN
+	      if (JUMP_P (i)
 		  && GET_CODE (PATTERN (i)) == RETURN)
 		goto close_shadow;
 	    }
@@ -8759,7 +8759,7 @@ alpha_handle_trap_shadows (void)
 	}
 
       if ((exception_nesting > 0 || alpha_tp >= ALPHA_TP_FUNC)
-	  && GET_CODE (i) == INSN
+	  && NONJUMP_INSN_P (i)
 	  && GET_CODE (PATTERN (i)) != USE
 	  && GET_CODE (PATTERN (i)) != CLOBBER
 	  && get_attr_trap (i) == TRAP_YES)
@@ -8973,7 +8973,7 @@ alphaev4_next_group (rtx insn, int *pin_use, int *plen)
       len += 4;
 
       /* Haifa doesn't do well scheduling branches.  */
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (JUMP_P (insn))
 	goto next_and_done;
 
     next:
@@ -9104,7 +9104,7 @@ alphaev5_next_group (rtx insn, int *pin_use, int *plen)
       /* Haifa doesn't do well scheduling branches.  */
       /* ??? If this is predicted not-taken, slotting continues, except
 	 that no more IBR, FBR, or JSR insns may be slotted.  */
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (JUMP_P (insn))
 	goto next_and_done;
 
     next:
@@ -9212,7 +9212,7 @@ alpha_align_insns (unsigned int max_align,
 
   ofs = prev_in_use = 0;
   i = get_insns ();
-  if (GET_CODE (i) == NOTE)
+  if (NOTE_P (i))
     i = next_nonnote_insn (i);
 
   ldgp = alpha_function_needs_gp ? 8 : 0;
@@ -9222,7 +9222,7 @@ alpha_align_insns (unsigned int max_align,
       next = (*next_group) (i, &in_use, &len);
 
       /* When we see a label, resync alignment etc.  */
-      if (GET_CODE (i) == CODE_LABEL)
+      if (LABEL_P (i))
 	{
 	  unsigned int new_align = 1 << label_to_alignment (i);
 
@@ -9259,12 +9259,12 @@ alpha_align_insns (unsigned int max_align,
 	  rtx prev, where;
 
 	  where = prev = prev_nonnote_insn (i);
-	  if (!where || GET_CODE (where) != CODE_LABEL)
+	  if (!where || !LABEL_P (where))
 	    where = i;
 
 	  /* Can't realign between a call and its gp reload.  */
 	  if (! (TARGET_EXPLICIT_RELOCS
-		 && prev && GET_CODE (prev) == CALL_INSN))
+		 && prev && CALL_P (prev)))
 	    {
 	      emit_insn_before (gen_realign (GEN_INT (new_log_align)), where);
 	      align = 1 << new_log_align;
@@ -9292,13 +9292,13 @@ alpha_align_insns (unsigned int max_align,
 	  where = prev_nonnote_insn (i);
 	  if (where)
 	    {
-	      if (GET_CODE (where) == CODE_LABEL)
+	      if (LABEL_P (where))
 		{
 		  rtx where2 = prev_nonnote_insn (where);
-		  if (where2 && GET_CODE (where2) == JUMP_INSN)
+		  if (where2 && JUMP_P (where2))
 		    where = where2;
 		}
-	      else if (GET_CODE (where) == INSN)
+	      else if (NONJUMP_INSN_P (where))
 		where = i;
 	    }
 	  else
@@ -10176,7 +10176,7 @@ unicosmk_ssib_name (void)
   int len;
 
   x = DECL_RTL (cfun->decl);
-  gcc_assert (GET_CODE (x) == MEM);
+  gcc_assert (MEM_P (x));
   x = XEXP (x, 0);
   gcc_assert (GET_CODE (x) == SYMBOL_REF);
   fnname = XSTR (x, 0);

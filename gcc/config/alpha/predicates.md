@@ -112,7 +112,7 @@
 (define_predicate "mode_mask_operand"
   (match_code "const_int,const_double")
 {
-  if (GET_CODE (op) == CONST_INT)
+  if (CONST_INT_P (op))
     {
       HOST_WIDE_INT value = INTVAL (op);
 
@@ -326,7 +326,7 @@
 {
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (XEXP (op, 0), 1)))
     op = XEXP (XEXP (op, 0), 0);
 
   if (GET_CODE (op) == LABEL_REF)
@@ -350,7 +350,7 @@
 
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (XEXP (op, 0), 1)))
     op = XEXP (XEXP (op, 0), 0);
 
   if (GET_CODE (op) != SYMBOL_REF)
@@ -374,7 +374,7 @@
 {
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+      && CONST_INT_P (XEXP (XEXP (op, 0), 1)))
     op = XEXP (XEXP (op, 0), 0);
 
   if (GET_CODE (op) != SYMBOL_REF)
@@ -392,7 +392,7 @@
 	    (match_test "GET_CODE (XEXP (op,0)) == PLUS
 			 && (GET_CODE (XEXP (XEXP (op,0), 0)) == SYMBOL_REF
 			     || GET_CODE (XEXP (XEXP (op,0), 0)) == LABEL_REF)
-			 && GET_CODE (XEXP (XEXP (op,0), 1)) == CONST_INT"))))
+			 && CONST_INT_P (XEXP (XEXP (op,0), 1))"))))
 
 ;; Return true if OP is valid for 16-bit DTP relative relocations.
 (define_predicate "dtp16_symbolic_operand"
@@ -457,7 +457,7 @@
       base = (GET_CODE (op) == PLUS ? XEXP (op, 0) : op);
     }
 
-  return (GET_CODE (base) == REG && REGNO_POINTER_ALIGN (REGNO (base)) >= 32);
+  return (REG_P (base) && REGNO_POINTER_ALIGN (REGNO (base)) >= 32);
 })
 
 ;; Similar, but return 1 if OP is a MEM which is not alignable.
@@ -485,7 +485,7 @@
       base = (GET_CODE (op) == PLUS ? XEXP (op, 0) : op);
     }
 
-  return (GET_CODE (base) == REG && REGNO_POINTER_ALIGN (REGNO (base)) < 32);
+  return (REG_P (base) && REGNO_POINTER_ALIGN (REGNO (base)) < 32);
 })
 
 ;; Return 1 if OP is any memory location.  During reload a pseudo matches.
