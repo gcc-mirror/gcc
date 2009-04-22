@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4393,6 +4393,7 @@ package body Sem_Ch12 is
       --  and elaboration entity are not relevant to the compilation.
 
       if Parent (N) /= Cunit (Main_Unit) then
+         Make_Instance_Unit (Body_Cunit, In_Main => False);
          return;
       end if;
 
@@ -4423,7 +4424,7 @@ package body Sem_Ch12 is
       --  Make entry in Units table, so that binder can generate call to
       --  elaboration procedure for body, if any.
 
-      Make_Instance_Unit (Body_Cunit);
+      Make_Instance_Unit (Body_Cunit, In_Main => True);
       Main_Unit_Entity := New_Main;
       Set_Cunit_Entity (Main_Unit, Main_Unit_Entity);
 

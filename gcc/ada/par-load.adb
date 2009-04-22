@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -266,12 +266,13 @@ begin
            Error_Node => Curunit,
            Corr_Body  => Cur_Unum);
 
-      --  If we successfully load the unit, then set the spec pointer. Once
-      --  again note that if the loaded unit has a fatal error, Load will
-      --  have set our Fatal_Error flag to propagate this condition.
+      --  If we successfully load the unit, then set the spec/body
+      --  pointers. Once again note that if the loaded unit has a fatal error,
+      --  Load will have set our Fatal_Error flag to propagate this condition.
 
       if Unum /= No_Unit then
          Set_Library_Unit (Curunit, Cunit (Unum));
+         Set_Library_Unit (Cunit (Unum), Curunit);
 
          --  If this is a separate spec for the main unit, then we reset
          --  Main_Unit_Entity to point to the entity for this separate spec

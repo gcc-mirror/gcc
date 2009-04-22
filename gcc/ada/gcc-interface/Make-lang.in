@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU Ada (GNAT).
 #   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-#   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+#   2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -118,7 +118,7 @@ GNAT1_C_OBJS = ada/b_gnat1.o ada/adadecode.o ada/adaint.o ada/cstreams.o \
 
 # Object files from Ada sources that are used by gnat1
 
-GNAT_ADA_OBJS = ada/ada.o ada/a-charac.o ada/a-chlat1.o ada/a-except.o \
+GNAT_ADA_OBJS = ada/s-bitops.o ada/ada.o ada/a-charac.o ada/a-chlat1.o ada/a-except.o \
  ada/a-elchha.o ada/a-ioexce.o \
  ada/s-memory.o ada/s-carun8.o ada/s-casuti.o ada/s-strcom.o ada/s-purexc.o \
  ada/s-htable.o ada/s-traceb.o ada/s-mastop.o ada/ali.o \
@@ -2406,15 +2406,15 @@ ada/gnat1drv.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/sem_type.ads ada/sem_util.ads ada/sinfo.ads ada/sinfo.adb \
    ada/sinput.ads ada/sinput.adb ada/sinput-l.ads ada/snames.ads \
    ada/sprint.ads ada/stand.ads ada/stringt.ads ada/system.ads \
-   ada/s-assert.ads ada/s-exctab.ads ada/s-htable.ads ada/s-imenne.ads \
-   ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads ada/s-rident.ads \
-   ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads \
-   ada/s-stoele.ads ada/s-stoele.adb ada/s-string.ads ada/s-traent.ads \
-   ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads ada/table.adb \
-   ada/targparm.ads ada/tree_gen.ads ada/tree_io.ads ada/treepr.ads \
-   ada/ttypes.ads ada/types.ads ada/uintp.ads ada/uintp.adb ada/uname.ads \
-   ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads ada/usage.ads \
-   ada/widechar.ads 
+   ada/s-assert.ads ada/s-bitops.ads ada/s-exctab.ads ada/s-htable.ads \
+   ada/s-imenne.ads ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads \
+   ada/s-rident.ads ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads \
+   ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb ada/s-string.ads \
+   ada/s-traent.ads ada/s-unstyp.ads ada/s-wchcon.ads ada/table.ads \
+   ada/table.adb ada/targparm.ads ada/tree_gen.ads ada/tree_io.ads \
+   ada/treepr.ads ada/ttypes.ads ada/types.ads ada/uintp.ads ada/uintp.adb \
+   ada/uname.ads ada/unchconv.ads ada/unchdeal.ads ada/urealp.ads \
+   ada/usage.ads ada/widechar.ads 
 
 ada/gnatbind.o : ada/ada.ads ada/a-comlin.ads ada/a-clrefi.ads \
    ada/a-except.ads ada/a-unccon.ads ada/a-uncdea.ads ada/ali.ads \
@@ -2870,6 +2870,10 @@ ada/s-assert.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
    ada/s-exctab.adb ada/s-except.ads ada/s-htable.ads ada/s-parame.ads \
    ada/s-soflin.ads ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads \
    ada/s-stoele.adb ada/s-traent.ads 
+
+ada/s-bitops.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
+   ada/system.ads ada/s-bitops.ads ada/s-bitops.adb ada/s-parame.ads \
+   ada/s-stalib.ads ada/s-traent.ads ada/s-unstyp.ads 
 
 ada/s-carun8.o : ada/ada.ads ada/a-unccon.ads ada/system.ads \
    ada/s-addope.ads ada/s-addope.adb ada/s-carun8.ads ada/s-carun8.adb 

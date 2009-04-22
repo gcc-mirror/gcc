@@ -1287,19 +1287,16 @@ package Sinfo is
    --
    --    In a compilation unit node, the usage depends on the unit type:
    --
-   --     For a subprogram body, Library_Unit points to the compilation unit
-   --     node of the corresponding spec, unless Acts_As_Spec is set, in which
-   --     case it points to itself.
+   --     For a library unit body, Library_Unit points to the compilation unit
+   --     node of the corresponding spec, unless it's a subprogram body with
+   --     Acts_As_Spec set, in which case it points to itself.
    --
-   --     For a package body, Library_Unit points to the compilation unit of
-   --     the corresponding package spec.
-   --
-   --     For a subprogram spec to which pragma Inline applies, Library_Unit
-   --     points to the compilation unit node of the corresponding body, if
-   --     inlining is active.
-   --
-   --     For a generic declaration, Library_Unit points to the compilation
-   --     unit node of the corresponding generic body.
+   --     For a spec, Library_Unit points to the compilation unit node of the
+   --     corresponding body, if present. The body will be present if the spec
+   --     is or contains generics that we needed to instantiate. Similarly, the
+   --     body will be present if we needed it for inlining purposes. Thus, if
+   --     we have a spec/body pair, both of which are present, they point to
+   --     each other via Library_Unit.
    --
    --     For a subunit, Library_Unit points to the compilation unit node of
    --     the parent body.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3283,7 +3283,7 @@ package body Sem_Ch10 is
                     and then Renamed_Entity (E) = WEnt
                   then
                      --  The unlimited view is visible through use clause and
-                     --  renamings. There is not need to generate the error
+                     --  renamings. There is no need to generate the error
                      --  message here because Is_Visible_Through_Renamings
                      --  takes care of generating the precise error message.
 
@@ -4322,7 +4322,7 @@ package body Sem_Ch10 is
                      then
                         --  Generate the error message only if the current unit
                         --  is a package declaration; in case of subprogram
-                        --  bodies and package bodies we just return true to
+                        --  bodies and package bodies we just return True to
                         --  indicate that the limited view must not be
                         --  installed.
 
@@ -4348,7 +4348,13 @@ package body Sem_Ch10 is
                Next (Item);
             end loop;
 
-            if Present (Library_Unit (Aux_Unit)) then
+            --  If it's a body not acting as spec, follow pointer to
+            --  corresponding spec, otherwise follow pointer to parent spec.
+
+            if Present (Library_Unit (Aux_Unit))
+              and then Nkind_In (Unit (Aux_Unit),
+                                 N_Package_Body, N_Subprogram_Body)
+            then
                if Aux_Unit = Library_Unit (Aux_Unit) then
 
                   --  Aux_Unit is a body that acts as a spec. Clause has
@@ -4359,6 +4365,7 @@ package body Sem_Ch10 is
                else
                   Aux_Unit := Library_Unit (Aux_Unit);
                end if;
+
             else
                Aux_Unit := Parent_Spec (Unit (Aux_Unit));
             end if;
