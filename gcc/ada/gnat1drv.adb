@@ -517,7 +517,7 @@ begin
       if Nkind (Unit (Main_Unit_Node)) in N_Unit_Body
         and then not Acts_As_Spec (Main_Unit_Node)
       then
-         if Nkind (Main_Unit_Node) = N_Subprogram_Body
+         if Nkind (Unit (Main_Unit_Node)) = N_Subprogram_Body
            and then not Comes_From_Source (Library_Unit (Main_Unit_Node))
          then
             null;

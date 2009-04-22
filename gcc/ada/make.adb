@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6213,7 +6213,7 @@ package body Make is
                   --  Put all the source directories in ADA_INCLUDE_PATH,
                   --  and all the object directories in ADA_OBJECTS_PATH.
 
-                  Prj.Env.Set_Ada_Paths (Main_Project, Project_Tree, False);
+                  Prj.Env.Set_Ada_Paths (Main_Project, Project_Tree, True);
 
                   --  If switch -C was specified, create a binder mapping file
 
