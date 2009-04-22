@@ -151,10 +151,6 @@ extern bool can_throw_external (const_rtx);
 /* Set TREE_NOTHROW and cfun->all_throwers_are_sibcalls.  */
 extern unsigned int set_nothrow_function_flags (void);
 
-/* After initial rtl generation, call back to finish generating
-   exception support code.  */
-extern void finish_eh_generation (void);
-
 extern void init_eh (void);
 extern void init_eh_for_function (void);
 

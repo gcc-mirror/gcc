@@ -10623,41 +10623,12 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   insn_locators_alloc ();
   insns = get_insns ();
 
-#if 0
-  if (optimize > 0)
-    {
-      /* Initialize the bitmap obstacks.  */
-      bitmap_obstack_initialize (NULL);
-      bitmap_obstack_initialize (&reg_obstack);
-      if (! cfun->cfg)
-	init_flow ();
-      rtl_register_cfg_hooks ();
-      init_rtl_bb_info (ENTRY_BLOCK_PTR);
-      init_rtl_bb_info (EXIT_BLOCK_PTR);
-      ENTRY_BLOCK_PTR->flags |= BB_RTL;
-      EXIT_BLOCK_PTR->flags |= BB_RTL;
-      find_basic_blocks (insns);
-
-      if (flag_schedule_insns_after_reload)
-	{
-	  life_analysis (PROP_FINAL);
-
-	  split_all_insns (1);
-
-	  schedule_insns ();
-	}
-      /* We must split jmp insn in PIC case.  */
-      else if (flag_pic)
-	split_all_insns_noflow ();
-    }
-#else
   if (optimize > 0)
     {
       if (! cfun->cfg)
 	init_flow (cfun);
       split_all_insns_noflow ();
     }
-#endif
 
   sh_reorg ();
 
