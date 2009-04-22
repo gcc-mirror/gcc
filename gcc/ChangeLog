@@ -1,3 +1,9 @@
+2009-04-22  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39845
+	* tree-switch-conversion.c (build_arrays): Add new referenced vars.
+	(gen_inbound_check): Likewise.
+
 2009-04-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gthr-vxworks.h (struct __gthread_once_t): Add alignment and

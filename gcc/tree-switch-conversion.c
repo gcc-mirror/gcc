@@ -547,7 +547,7 @@ static void
 build_arrays (gimple swtch)
 {
   tree arr_index_type;
-  tree tidx, sub;
+  tree tidx, sub, tmp;
   gimple stmt;
   gimple_stmt_iterator gsi;
   int i;
@@ -555,7 +555,9 @@ build_arrays (gimple swtch)
   gsi = gsi_for_stmt (swtch);
 
   arr_index_type = build_index_type (info.range_size);
-  tidx = make_ssa_name (create_tmp_var (arr_index_type, "csti"), NULL);
+  tmp = create_tmp_var (arr_index_type, "csti");
+  add_referenced_var (tmp);
+  tidx = make_ssa_name (tmp, NULL);
   sub = fold_build2 (MINUS_EXPR, TREE_TYPE (info.index_expr), info.index_expr,
 		     fold_convert (TREE_TYPE (info.index_expr),
 				   info.range_min));
@@ -694,6 +696,7 @@ gen_inbound_check (gimple swtch)
   /* (end of) block 0 */
   gsi = gsi_for_stmt (info.arr_ref_first);
   tmp_u_var = create_tmp_var (utype, "csui");
+  add_referenced_var (tmp_u_var);
   tmp_u_1 = make_ssa_name (tmp_u_var, NULL);
 
   cast = fold_convert (utype, info.index_expr);
