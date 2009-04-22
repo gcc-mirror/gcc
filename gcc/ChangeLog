@@ -1,3 +1,10 @@
+2009-04-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gthr-vxworks.h (struct __gthread_once_t): Add alignment and
+	padding for PPC.
+	(__GTHREAD_ONCE_INIT): Adjust ppc initializer.
+	* config/vxlib.c (__gthread_once): Add race guard for PPC.
+
 2009-04-22  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/sh/sh.c (shift_insns_rtx, shiftcosts, gen_shifty_op,

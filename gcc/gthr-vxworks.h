@@ -115,17 +115,32 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
 
 typedef struct
 {
-#ifndef __RTP__
+#if !defined(__RTP__)
+#if defined(__PPC__)
+  __attribute ((aligned (__alignof (unsigned))))
+#endif
   volatile unsigned char busy;
 #endif
   volatile unsigned char done;
+#if !defined(__RTP__) && defined(__PPC__)
+  /* PPC's test-and-set implementation requires a 4 byte aligned
+     object, of which it only sets the first byte.  We use padding
+     here, in order to maintain some amount of backwards
+     compatibility.  Without this padding, gthread_once objects worked
+     by accident because they happen to be static objects and the ppc
+     port automatically increased their alignment to 4 bytes.  */
+  unsigned char pad1;
+  unsigned char pad2;
+#endif
 }
 __gthread_once_t;
 
-#ifndef __RTP__
-# define __GTHREAD_ONCE_INIT { 0, 0 }
-#else
+#if defined (__RTP__)
 # define __GTHREAD_ONCE_INIT { 0 }
+#elif defined (__PPC__) 
+# define __GTHREAD_ONCE_INIT { 0, 0, 0, 0 }
+#else
+# define __GTHREAD_ONCE_INIT { 0, 0 }
 #endif
 
 extern int __gthread_once (__gthread_once_t *__once, void (*__func)(void));
