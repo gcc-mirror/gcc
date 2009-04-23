@@ -760,8 +760,15 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
     }
 
   if (flags & LOOKUP_COMPLAIN)
-    error ("conversion from %qT to non-scalar type %qT requested",
-	   TREE_TYPE (expr), type);
+    {
+      /* If the conversion failed and expr was an invalid use of pointer to
+	 member function, try to report a meaningful error.  */
+      if (invalid_nonstatic_memfn_p (expr, tf_warning_or_error))
+	/* We displayed the error message.  */;
+      else
+	error ("conversion from %qT to non-scalar type %qT requested",
+	       TREE_TYPE (expr), type);
+    }
   return error_mark_node;
 }
 
