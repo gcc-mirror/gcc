@@ -1,3 +1,8 @@
+2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/atomic1.adb: New test.
+	* gnat.dg/atomic1_pkg.ads: New helper.
+
 2009-04-23  Steve Ellcey  <sje@cup.hp.com>
 
 	PR testsuite/39623

@@ -2152,11 +2152,8 @@ package Sinfo is
       --  Note: the back end places some restrictions on the form of the
       --  Expression field. If the object being declared is Atomic, then
       --  the Expression may not have the form of an aggregate (since this
-      --  might cause the back end to generate separate assignments). It
-      --  also cannot be a reference to an object marked as a true constant
-      --  (Is_True_Constant flag set), where the object is itself initialized
-      --  with an aggregate. If necessary the front end must generate an
-      --  extra temporary (with Is_True_Constant set False), and initialize
+      --  might cause the back end to generate separate assignments). In this
+      --  case the front end must generate an extra temporary and initialize
       --  this temporary as required (the temporary itself is not atomic).
 
       --  Note: there is not node kind for object definition. Instead, the
@@ -3848,11 +3845,8 @@ package Sinfo is
       --  Note: the back end places some restrictions on the form of the
       --  Expression field. If the object being assigned to is Atomic, then
       --  the Expression may not have the form of an aggregate (since this
-      --  might cause the back end to generate separate assignments). It
-      --  also cannot be a reference to an object marked as a true constant
-      --  (Is_True_Constant flag set), where the object is itself initialized
-      --  with an aggregate. If necessary the front end must generate an
-      --  extra temporary (with Is_True_Constant set False), and initialize
+      --  might cause the back end to generate separate assignments). In this
+      --  case the front end must generate an extra temporary and initialize
       --  this temporary as required (the temporary itself is not atomic).
 
       -----------------------

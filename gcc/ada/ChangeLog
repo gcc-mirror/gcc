@@ -1,5 +1,18 @@
 2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* einfo.ads (Is_True_Constant): Lift restriction on atomic objects.
+	* sinfo.ads (Object Declaration): Likewise.
+	(Assignment Statement): Likewise.
+	* freeze.adb (Expand_Atomic_Aggregate): Remove useless test.
+	Do not force Is_True_Constant to false on the temporary.
+	(Freeze_Entity): Do not force Is_True_Constant to false on names on
+	the RHS of object declarations.
+	* gcc-interface/trans.c (lvalue_required_p) <N_Object_Declaration>:
+	New case.  Return 1 if the object is atomic.
+	<N_Assignment_Statement>: Likewise.
+
+2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Modular_Integer_Subtype>
 	For packed array types, make the original array type a parallel type
 	for the modular type and its JM wrapper if the type is bit-packed.

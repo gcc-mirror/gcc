@@ -2615,16 +2615,6 @@ package Einfo is
 --       that the constant was not modified by generated code (e.g. to set a
 --       discriminant in an init proc). Assignments by user or generated code
 --       will reset this flag.
---
---       Note: there is one situation in which the back end does not permit
---       this flag to be set, even if no assignments are generated. This is
---       the case of an object of a record or array type which is initialized
---       with an aggregate, and is itself used as the expression initializing
---       an atomic object, or the right hand side of an assignment to an atomic
---       object. In this case the object must not have Is_True_Constant set,
---       even though no assignments are generated (the reason for this is that
---       the back end must not optimize the object away, because that would
---       violate the restriction on aggregates in these positions).
 
 --    Is_Type (synthesized)
 --       Applies to all entities, true for a type entity
