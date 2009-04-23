@@ -1,5 +1,13 @@
 2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Modular_Integer_Subtype>
+	For packed array types, make the original array type a parallel type
+	for the modular type and its JM wrapper if the type is bit-packed.
+	<E_Array_Subtype>: Likewise.  Do not generate the special XA parallel
+	record type for packed array types.  Remove kludge.
+
+2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (create_index_type): Adjust head comment.
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>:
 	Use front-end predicates to compute signedness and precision.

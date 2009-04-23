@@ -1586,10 +1586,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       layout_type (gnu_type);
 
+      /* Attach the TYPE_STUB_DECL in case we have a parallel type.  */
+      TYPE_STUB_DECL (gnu_type)
+	= create_type_stub_decl (gnu_entity_name, gnu_type);
+
       /* Inherit our alias set from what we're a subtype of.  Subtypes
 	 are not different types and a pointer can designate any instance
 	 within a subtype hierarchy.  */
       relate_alias_sets (gnu_type, TREE_TYPE (gnu_type), ALIAS_SET_COPY);
+
+      /* For a packed array, make the original array type a parallel type.  */
+      if (debug_info_p
+	  && Is_Packed_Array_Type (gnat_entity)
+	  && present_gnu_tree (Original_Array_Type (gnat_entity)))
+	add_parallel_type (TYPE_STUB_DECL (gnu_type),
+			   gnat_to_gnu_type
+			   (Original_Array_Type (gnat_entity)));
 
       /* If the type we are dealing with represents a bit-packed array,
 	 we need to have the bits left justified on big-endian targets
@@ -1630,10 +1642,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_field = create_field_decl (get_identifier ("OBJECT"),
 					 gnu_field_type, gnu_type, 1, 0, 0, 0);
 
-	  finish_record_type (gnu_type, gnu_field, 0, false);
+	  /* Do not finalize it until after the parallel type is added.  */
+	  finish_record_type (gnu_type, gnu_field, 0, true);
 	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
 
 	  relate_alias_sets (gnu_type, gnu_field_type, ALIAS_SET_COPY);
+
+	  /* Make the original array type a parallel type.  */
+	  if (debug_info_p
+	      && present_gnu_tree (Original_Array_Type (gnat_entity)))
+	    add_parallel_type (TYPE_STUB_DECL (gnu_type),
+			       gnat_to_gnu_type
+			       (Original_Array_Type (gnat_entity)));
+
+	  rest_of_record_type_compilation (gnu_type);
 	}
 
       /* If the type we are dealing with has got a smaller alignment than the
@@ -2357,9 +2379,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 
 	  /* Attach the TYPE_STUB_DECL in case we have a parallel type.  */
-	  if (need_index_type_struct)
-	    TYPE_STUB_DECL (gnu_type)
-	      = create_type_stub_decl (gnu_entity_name, gnu_type);
+	  TYPE_STUB_DECL (gnu_type)
+	    = create_type_stub_decl (gnu_entity_name, gnu_type);
 
 	  /* If we are at file level and this is a multi-dimensional array, we
 	     need to make a variable corresponding to the stride of the
@@ -2402,11 +2423,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		}
 	    }
 
-	  /* If we need to write out a record type giving the names of
-	     the bounds, do it now.  Make sure to reference the index
-	     types themselves, not just their names, as the debugger
-	     may fall back on them in some cases.  */
-	  if (need_index_type_struct && debug_info_p)
+	  /* If we need to write out a record type giving the names of the
+	     bounds for debugging purposes, do it now and make the record
+	     type a parallel type.  This is not needed for a packed array
+	     since the bounds are conveyed by the original array type.  */
+	  if (need_index_type_struct
+	      && debug_info_p
+	      && !Is_Packed_Array_Type (gnat_entity))
 	    {
 	      tree gnu_bound_rec = make_node (RECORD_TYPE);
 	      tree gnu_field_list = NULL_TREE;
@@ -2423,6 +2446,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  if (TREE_CODE (gnu_index_name) == TYPE_DECL)
 		    gnu_index_name = DECL_NAME (gnu_index_name);
 
+		  /* Make sure to reference the types themselves, and not just
+		     their names, as the debugger may fall back on them.  */
 		  gnu_field = create_field_decl (gnu_index_name, gnu_index,
 						 gnu_bound_rec,
 						 0, NULL_TREE, NULL_TREE, 0);
@@ -2433,6 +2458,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      finish_record_type (gnu_bound_rec, gnu_field_list, 0, false);
 	      add_parallel_type (TYPE_STUB_DECL (gnu_type), gnu_bound_rec);
 	    }
+
+	  /* Otherwise, for a packed array, make the original array type a
+	     parallel type.  */
+	  else if (debug_info_p
+		   && Is_Packed_Array_Type (gnat_entity)
+		   && present_gnu_tree (Original_Array_Type (gnat_entity)))
+	    add_parallel_type (TYPE_STUB_DECL (gnu_type),
+			       gnat_to_gnu_type
+			       (Original_Array_Type (gnat_entity)));
 
 	  TYPE_CONVENTION_FORTRAN_P (gnu_type)
 	    = (Convention (gnat_entity) == Convention_Fortran);
@@ -2476,13 +2510,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				     | (TYPE_QUAL_VOLATILE
 					* Treat_As_Volatile (gnat_entity))));
 
-	  /* Make it artificial only if the base type was artificial as well.
-	     That's sort of "morally" true and will make it possible for the
-	     debugger to look it up by name in DWARF more easily.  */
 	  gnu_decl
 	    = create_type_decl (gnu_entity_name, gnu_type, attr_list,
-				!Comes_From_Source (gnat_entity)
-				&& !Comes_From_Source (Etype (gnat_entity)),
+				!Comes_From_Source (gnat_entity),
 				debug_info_p, gnat_entity);
 
 	  /* Save it as our equivalent in case the call below elaborates
@@ -5932,7 +5962,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
     }
 
   /* If the size is either not being changed or is being made smaller (which
-     is not done here (and is only valid for bitfields anyway), show the size
+     is not done here and is only valid for bitfields anyway), show the size
      isn't changing.  Likewise, clear the alignment if it isn't being
      changed.  Then return if we aren't doing anything.  */
   if (size
