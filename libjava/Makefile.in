@@ -12514,7 +12514,7 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/libgcj-tools-$(gcc_version).jar \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_LIB_DIR)/tools.jar; \
 @CREATE_JAVA_HOME_TRUE@	for headername in jawt jni; do \
-@CREATE_JAVA_HOME_TRUE@	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
+@CREATE_JAVA_HOME_TRUE@	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/`echo gcj | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 @CREATE_JAVA_HOME_TRUE@	    -print-file-name=include/$$headername.h)); \
 @CREATE_JAVA_HOME_TRUE@	  RELATIVE=$$(relative $$DIRECTORY \
 @CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)); \
@@ -12522,7 +12522,7 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)/$$headername.h; \
 @CREATE_JAVA_HOME_TRUE@	done; \
 @CREATE_JAVA_HOME_TRUE@	for headername in jawt_md jni_md; do \
-@CREATE_JAVA_HOME_TRUE@	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
+@CREATE_JAVA_HOME_TRUE@	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/`echo gcj | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 @CREATE_JAVA_HOME_TRUE@	    -print-file-name=include/$$headername.h)); \
 @CREATE_JAVA_HOME_TRUE@	  RELATIVE=$$(relative $$DIRECTORY \
 @CREATE_JAVA_HOME_TRUE@	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux); \
