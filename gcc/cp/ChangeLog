@@ -1,3 +1,15 @@
+2009-04-23  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/38228
+	* pt.c (unify): Do not allow the result of a template argument
+	deduction to be a METHOD_TYPE.
+	* cvt.c (cp_convert): Report a meaningful error for non-valid use
+	of pointer to member functions during conversions.
+	* call.c (build_new_op): Report a meaningful error for non-valid
+	use of pointer to member functions in binary expressions.
+	* typeck.c (invalid_nonstatic_memfn_p): Do not crash when EXPR is
+	NULL;
+
 2009-04-22  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/39639

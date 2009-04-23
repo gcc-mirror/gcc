@@ -13532,6 +13532,13 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	  && !template_parameter_pack_p (parm))
 	return 1;
 
+      /* If the argument deduction results is a METHOD_TYPE,
+         then there is a problem.
+         METHOD_TYPE doesn't map to any real C++ type the result of
+	 the deduction can not be of that type.  */
+      if (TREE_CODE (arg) == METHOD_TYPE)
+	return 1;
+
       TREE_VEC_ELT (INNERMOST_TEMPLATE_ARGS (targs), idx) = arg;
       return 0;
 
