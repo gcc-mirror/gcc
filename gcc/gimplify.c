@@ -3982,11 +3982,14 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p,
     switch (TREE_CODE (*from_p))
       {
       case VAR_DECL:
-	/* If we're assigning from a constant constructor, move the
-	   constructor expression to the RHS of the MODIFY_EXPR.  */
+	/* If we're assigning from a read-only variable initialized with
+	   a constructor, do the direct assignment from the constructor,
+	   but only if neither source nor target are volatile since this
+	   latter assignment might end up being done on a per-field basis.  */
 	if (DECL_INITIAL (*from_p)
 	    && TREE_READONLY (*from_p)
 	    && !TREE_THIS_VOLATILE (*from_p)
+	    && !TREE_THIS_VOLATILE (*to_p)
 	    && TREE_CODE (DECL_INITIAL (*from_p)) == CONSTRUCTOR)
 	  {
 	    tree old_from = *from_p;

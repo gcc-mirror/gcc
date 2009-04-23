@@ -1120,7 +1120,6 @@ package body Freeze is
       if (Nkind (Parent (E)) = N_Object_Declaration
             or else Nkind (Parent (E)) = N_Assignment_Statement)
         and then Comes_From_Source (Parent (E))
-        and then Nkind (E) = N_Aggregate
       then
          Temp :=
            Make_Defining_Identifier (Loc,
@@ -1136,13 +1135,6 @@ package body Freeze is
 
          Set_Expression (Parent (E), New_Occurrence_Of (Temp, Loc));
 
-         --  To prevent the temporary from being constant-folded (which would
-         --  lead to the same piecemeal assignment on the original target)
-         --  indicate to the back-end that the temporary is a variable with
-         --  real storage. See description of this flag in Einfo, and the notes
-         --  on N_Assignment_Statement and N_Object_Declaration in Sinfo.
-
-         Set_Is_True_Constant (Temp, False);
       end if;
    end Expand_Atomic_Aggregate;
 
@@ -2295,39 +2287,18 @@ package body Freeze is
             Set_Encoded_Interface_Name
               (E, Get_Default_External_Name (E));
 
-         --  Special processing for atomic objects appearing in object decls
+         --  If entity is an atomic object appearing in a declaration and
+         --  the expression is an aggregate, assign it to a temporary to
+         --  ensure that the actual assignment is done atomically rather
+         --  than component-wise (the assignment to the temp may be done
+         --  component-wise, but that is harmless).
 
          elsif Is_Atomic (E)
            and then Nkind (Parent (E)) = N_Object_Declaration
            and then Present (Expression (Parent (E)))
+           and then Nkind (Expression (Parent (E))) = N_Aggregate
          then
-            declare
-               Expr : constant Node_Id := Expression (Parent (E));
-
-            begin
-               --  If expression is an aggregate, assign to a temporary to
-               --  ensure that the actual assignment is done atomically rather
-               --  than component-wise (the assignment to the temp may be done
-               --  component-wise, but that is harmless).
-
-               if Nkind (Expr) = N_Aggregate then
-                  Expand_Atomic_Aggregate (Expr, Etype (E));
-
-               --  If the expression is a reference to a record or array object
-               --  entity, then reset Is_True_Constant to False so that the
-               --  compiler will not optimize away the intermediate object,
-               --  which we need in this case for the same reason (to ensure
-               --  that the actual assignment is atomic, rather than
-               --  component-wise).
-
-               elsif Is_Entity_Name (Expr)
-                 and then (Is_Record_Type (Etype (Expr))
-                             or else
-                           Is_Array_Type (Etype (Expr)))
-               then
-                  Set_Is_True_Constant (Entity (Expr), False);
-               end if;
-            end;
+            Expand_Atomic_Aggregate (Expression (Parent (E)), Etype (E));
          end if;
 
          --  For a subprogram, freeze all parameter types and also the return

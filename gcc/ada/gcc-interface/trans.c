@@ -723,6 +723,18 @@ lvalue_required_p (Node_Id gnat_node, tree gnu_type, int aliased)
 		 (Underlying_Type (Etype (Name (gnat_parent))))
 	      || Nkind (Name (gnat_parent)) == N_Identifier);
 
+    case N_Object_Declaration:
+      /* We cannot use a constructor if this is an atomic object because
+	 the actual assignment might end up being done component-wise.  */
+      return Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
+	     && Is_Atomic (Defining_Entity (gnat_parent));
+
+    case N_Assignment_Statement:
+      /* We cannot use a constructor if the LHS is an atomic object because
+	 the actual assignment might end up being done component-wise.  */
+      return Is_Composite_Type (Underlying_Type (Etype (gnat_node)))
+	     && Is_Atomic (Entity (Name (gnat_parent)));
+
     default:
       return 0;
     }

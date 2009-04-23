@@ -1,3 +1,8 @@
+2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_modify_expr_rhs) <VAR_DECL>: Do not do a direct
+	assignment from the constructor either if the target is volatile.
+
 2009-04-23  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/arm/arm.md (insv): Do not share operands[0].
