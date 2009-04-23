@@ -141,7 +141,7 @@ extern tree choices_to_gnu (tree operand, Node_Id choices);
    nothing has changed.  */
 extern tree substitute_in_type (tree t, tree f, tree r);
 
-/* Return the "RM size" of GNU_TYPE.  This is the actual number of bits
+/* Return the RM size of GNU_TYPE.  This is the actual number of bits
    needed to represent the object.  */
 extern tree rm_size (tree gnu_type);
 
@@ -542,9 +542,9 @@ extern tree create_subprog_type (tree return_type, tree param_decl_list,
 /* Return a copy of TYPE, but safe to modify in any way.  */
 extern tree copy_type (tree type);
 
-/* Return an INTEGER_TYPE of SIZETYPE with range MIN to MAX and whose
-   TYPE_INDEX_TYPE is INDEX.  GNAT_NODE is used for the position of
-   the decl.  */
+/* Return a subtype of sizetype with range MIN to MAX and whose
+   TYPE_INDEX_TYPE is INDEX.  GNAT_NODE is used for the position
+   of the associated TYPE_DECL.  */
 extern tree create_index_type (tree min, tree max, tree index,
 			       Node_Id gnat_node);
 

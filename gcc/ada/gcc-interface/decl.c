@@ -1521,7 +1521,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* For integral subtypes, we make a new INTEGER_TYPE.  Note that we do
 	 not want to call build_range_type since we would like each subtype
 	 node to be distinct.  ??? Historically this was in preparation for
-	 when memory aliasing is implemented.  But that's obsolete now given
+	 when memory aliasing is implemented, but that's obsolete now given
 	 the call to relate_alias_sets below.
 
 	 The TREE_TYPE field of the INTEGER_TYPE points to the base type;
@@ -1542,12 +1542,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       gnu_type = make_node (INTEGER_TYPE);
       TREE_TYPE (gnu_type) = get_unpadded_type (Etype (gnat_entity));
 
+      /* This should be an unsigned type if the base type is unsigned or
+	 if the lower bound is constant and non-negative or if the type
+	 is biased.  */
+      TYPE_UNSIGNED (gnu_type) = (Is_Unsigned_Type (Etype (gnat_entity))
+				  || Is_Unsigned_Type (gnat_entity)
+				  || Has_Biased_Representation (gnat_entity));
+
       /* Set the precision to the Esize except for bit-packed arrays and
 	 subtypes of Standard.Boolean.  */
       if (Is_Packed_Array_Type (gnat_entity)
 	  && Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	esize = UI_To_Int (RM_Size (gnat_entity));
-      else if (TREE_CODE (TREE_TYPE (gnu_type)) == BOOLEAN_TYPE)
+      else if (Is_Boolean_Type (gnat_entity))
 	esize = 1;
 
       TYPE_PRECISION (gnu_type) = esize;
@@ -1576,13 +1583,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       TYPE_BIASED_REPRESENTATION_P (gnu_type)
 	= Has_Biased_Representation (gnat_entity);
-
-      /* This should be an unsigned type if the base type is unsigned or
-	 if the lower bound is constant and non-negative (as computed by
-	 layout_type) or if the type is biased.  */
-      TYPE_UNSIGNED (gnu_type) = (TYPE_UNSIGNED (TREE_TYPE (gnu_type))
-				  || TYPE_BIASED_REPRESENTATION_P (gnu_type)
-				  || Is_Unsigned_Type (gnat_entity));
 
       layout_type (gnu_type);
 
@@ -2592,15 +2592,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  = build_binary_op (PLUS_EXPR, gnu_string_index_type,
 			     gnu_lower_bound,
 			     convert (gnu_string_index_type, gnu_length));
-	tree gnu_range_type
-	  = build_range_type (gnu_string_index_type,
-			      gnu_lower_bound, gnu_upper_bound);
 	tree gnu_index_type
-	  = create_index_type (convert (sizetype,
-					TYPE_MIN_VALUE (gnu_range_type)),
-			       convert (sizetype,
-					TYPE_MAX_VALUE (gnu_range_type)),
-			       gnu_range_type, gnat_entity);
+	  = create_index_type (convert (sizetype, gnu_lower_bound),
+			       convert (sizetype, gnu_upper_bound),
+			       build_range_type (gnu_string_index_type,
+						 gnu_lower_bound,
+						 gnu_upper_bound),
+			       gnat_entity);
 
 	gnu_type
 	  = build_array_type (gnat_to_gnu_type (Component_Type (gnat_entity)),
@@ -4653,10 +4651,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
   if (!saved)
     save_gnu_tree (gnat_entity, gnu_decl, false);
 
-  /* If this is an enumeral or floating-point type, we were not able to set
-     the bounds since they refer to the type.  These bounds are always static.
-     For enumeration types, also write debugging information and declare the
-     enumeration literal table, if needed.  */
+  /* If this is an enumeration or floating-point type, we were not able to set
+     the bounds since they refer to the type.  These are always static.  */
   if ((kind == E_Enumeration_Type && Present (First_Literal (gnat_entity)))
       || (kind == E_Floating_Point_Type && !Vax_Float (gnat_entity)))
     {
@@ -4670,14 +4666,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* If this is a floating point type and we haven't set a floating
 	 point type yet, use this in the evaluation of the bounds.  */
       if (!longest_float_type_node && kind == E_Floating_Point_Type)
-	longest_float_type_node = gnu_type;
+	longest_float_type_node = gnu_scalar_type;
 
       TYPE_MIN_VALUE (gnu_scalar_type)
 	= gnat_to_gnu (Type_Low_Bound (gnat_entity));
       TYPE_MAX_VALUE (gnu_scalar_type)
 	= gnat_to_gnu (Type_High_Bound (gnat_entity));
 
-      if (TREE_CODE (gnu_scalar_type) == ENUMERAL_TYPE)
+      /* For enumeration types, write full debugging information.  */
+      if (kind == E_Enumeration_Type)
 	{
 	  /* Since this has both a typedef and a tag, avoid outputting
 	     the name twice.  */
@@ -5171,10 +5168,9 @@ elaborate_entity (Entity_Id gnat_entity)
 	Node_Id gnat_lb = Type_Low_Bound (gnat_entity);
 	Node_Id gnat_hb = Type_High_Bound (gnat_entity);
 
-	/* ??? Tests for avoiding static constraint error expression
-	   is needed until the front stops generating bogus conversions
-	   on bounds of real types.  */
-
+	/* ??? Tests to avoid Constraint_Error in static expressions
+	   are needed until after the front stops generating bogus
+	   conversions on bounds of real types.  */
 	if (!Raises_Constraint_Error (gnat_lb))
 	  elaborate_expression (gnat_lb, gnat_entity, get_identifier ("L"),
 				1, 0, Needs_Debug_Info (gnat_entity));
@@ -7597,7 +7593,9 @@ substitute_in_type (tree t, tree f, tree r)
 	  if (low == TYPE_MIN_VALUE (t) && high == TYPE_MAX_VALUE (t))
 	    return t;
 
-	  new = build_range_type (TREE_TYPE (t), low, high);
+	  new = copy_type (t);
+	  TYPE_MIN_VALUE (new) = low;
+	  TYPE_MAX_VALUE (new) = high;
 	  if (TYPE_INDEX_TYPE (t))
 	    SET_TYPE_INDEX_TYPE
 	      (new, substitute_in_type (TYPE_INDEX_TYPE (t), f, r));

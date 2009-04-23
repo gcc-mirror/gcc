@@ -1825,9 +1825,8 @@ build_component_ref (tree record_variable, tree component,
   if (ref)
     return ref;
 
-  /* If FIELD was specified, assume this is an invalid user field so
-     raise constraint error.  Otherwise, we can't find the type to return, so
-     abort.  */
+  /* If FIELD was specified, assume this is an invalid user field so raise
+     Constraint_Error.  Otherwise, we have no type to return so abort.  */
   gcc_assert (field);
   return build1 (NULL_EXPR, TREE_TYPE (field),
 		 build_call_raise (CE_Discriminant_Check_Failed, Empty,
