@@ -1,3 +1,7 @@
+2009-04-23  Rafael Avila de Espindola  <espindola@google.com>
+
+	* c-format.c (gcc_tdiag_char_table): Add support for %E.
+
 2009-04-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_legitimize_reload_address): Add cast to
