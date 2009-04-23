@@ -5402,12 +5402,9 @@
       rtx label;
 
       label = XEXP (operands[1], 0);
-      REG_NOTES (insn1) = gen_rtx_EXPR_LIST (REG_LABEL_OPERAND, label,
-					     REG_NOTES (insn1));
-      REG_NOTES (insn2) = gen_rtx_EXPR_LIST (REG_LABEL_OPERAND, label,
-					     REG_NOTES (insn2));
-      REG_NOTES (insn3) = gen_rtx_EXPR_LIST (REG_LABEL_OPERAND, label,
-					     REG_NOTES (insn3));
+      add_reg_note (insn1, REG_LABEL_OPERAND, label);
+      add_reg_note (insn2, REG_LABEL_OPERAND, label);
+      add_reg_note (insn3, REG_LABEL_OPERAND, label);
       LABEL_NUSES (label) += 3;
     }
   DONE;
