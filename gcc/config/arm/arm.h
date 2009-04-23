@@ -2234,7 +2234,8 @@ do {							\
     goto WIN;						\
 } while (0)
 
-
+/* Define this for compatibility reasons. */
+#define HANDLE_PRAGMA_PACK_PUSH_POP
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
