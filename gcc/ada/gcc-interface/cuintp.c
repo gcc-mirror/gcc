@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2008, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2009, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -31,6 +31,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
+
 #include "ada.h"
 #include "types.h"
 #include "uintp.h"
@@ -39,8 +40,8 @@
 #include "nlists.h"
 #include "stringt.h"
 #include "fe.h"
-#include "gigi.h"
 #include "ada-tree.h"
+#include "gigi.h"
 
 /* Universal integers are represented by the Uint type which is an index into
    the Uints_Ptr table containing Uint_Entry values.  A Uint_Entry contains an

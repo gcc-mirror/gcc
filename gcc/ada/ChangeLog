@@ -1,5 +1,16 @@
 2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/cuintp.c: Clean up include directives.
+	* gcc-interface/targtyps.c: Likewise.
+	* gcc-interface/decl.c: Likewise.
+	* gcc-interface/misc.c: Likewise.
+	* gcc-interface/trans.c: Likewise.
+	* gcc-interface/utils.c: Likewise.
+	* gcc-interface/utils2.c: Likewise.
+	* gcc-interface/Make-lang.in: Adjust dependencies accordingly.
+
+2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/ada-tree.h (union lang_tree_node): Use standard idiom.
 	(SET_TYPE_LANG_SPECIFIC): Likewise.  Fix formatting.
 	(SET_DECL_LANG_SPECIFIC): Likewise.

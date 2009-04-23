@@ -30,8 +30,7 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "real.h"
-#include "rtl.h"
+
 #include "ada.h"
 #include "types.h"
 #include "atree.h"
