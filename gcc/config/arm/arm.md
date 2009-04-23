@@ -2280,7 +2280,7 @@
 	  }
       }
 
-    target = operands[0];
+    target = copy_rtx (operands[0]);
     /* Avoid using a subreg as a subtarget, and avoid writing a paradoxical 
        subreg as the final target.  */
     if (GET_CODE (target) == SUBREG)
