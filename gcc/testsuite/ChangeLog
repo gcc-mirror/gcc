@@ -1,3 +1,8 @@
+2009-04-23  Rafael Avila de Espindola  <espindola@google.com>
+
+	* gcc.dg/format/gcc_diag-1.c (foo): Don't check that %E produces a
+	warning.
+
 2009-04-22  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	PR C/31499

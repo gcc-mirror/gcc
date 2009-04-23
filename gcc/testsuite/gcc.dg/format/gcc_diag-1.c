@@ -137,7 +137,7 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   cxxdiag ("%+H", loc); /* { dg-warning "format" "bogus modifier" } */
   diag ("%D", t1); /* { dg-warning "format" "bogus tree" } */
   tdiag ("%A", t1); /* { dg-warning "format" "bogus tree" } */
-  tdiag ("%E", t1); /* { dg-warning "format" "bogus tree" } */
+  tdiag ("%E", t1);
   tdiag ("%#D", t1); /* { dg-warning "format" "bogus modifier" } */
   cdiag ("%A", t1); /* { dg-warning "format" "bogus tree" } */
   cdiag ("%#D", t1); /* { dg-warning "format" "bogus modifier" } */
