@@ -23,33 +23,39 @@
  *                                                                          *
  ****************************************************************************/
 
-/* Ada uses the lang_decl and lang_type fields to hold a tree.  */
+/* The resulting tree type.  */
 union GTY((desc ("0"),
-           chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.t)"))) lang_tree_node
+	   chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
+  lang_tree_node
 {
-  union tree_node GTY((tag ("0"))) t;
+  union tree_node GTY((tag ("0"),
+		       desc ("tree_node_structure (&%h)"))) generic;
 };
-struct GTY(()) lang_decl {tree t; };
-struct GTY(()) lang_type {tree t; };
 
-/* Define macros to get and set the tree in TYPE_ and DECL_LANG_SPECIFIC.  */
+/* Ada uses the lang_decl and lang_type fields to hold a tree.  */
+struct GTY(()) lang_type { tree t; };
+struct GTY(()) lang_decl { tree t; };
+
+/* Macros to get and set the tree in TYPE_LANG_SPECIFIC.  */
 #define GET_TYPE_LANG_SPECIFIC(NODE) \
   (TYPE_LANG_SPECIFIC (NODE) ? TYPE_LANG_SPECIFIC (NODE)->t : NULL_TREE)
-#define SET_TYPE_LANG_SPECIFIC(NODE, X)	\
- (TYPE_LANG_SPECIFIC (NODE)			\
-  = (TYPE_LANG_SPECIFIC (NODE)			\
-     ? TYPE_LANG_SPECIFIC (NODE) : GGC_NEW (struct lang_type))) \
- ->t = X;
 
+#define SET_TYPE_LANG_SPECIFIC(NODE, X)	\
+  (TYPE_LANG_SPECIFIC (NODE)		\
+   = (TYPE_LANG_SPECIFIC (NODE)		\
+      ? TYPE_LANG_SPECIFIC (NODE) : GGC_NEW (struct lang_type)))->t = (X)
+
+/* Macros to get and set the tree in DECL_LANG_SPECIFIC.  */
 #define GET_DECL_LANG_SPECIFIC(NODE) \
   (DECL_LANG_SPECIFIC (NODE) ? DECL_LANG_SPECIFIC (NODE)->t : NULL_TREE)
-#define SET_DECL_LANG_SPECIFIC(NODE, VALUE)	\
- (DECL_LANG_SPECIFIC (NODE)			\
-  = (DECL_LANG_SPECIFIC (NODE)			\
-     ? DECL_LANG_SPECIFIC (NODE) : GGC_NEW (struct lang_decl))) \
- ->t = VALUE;
 
-/* Flags added to GCC type nodes.  */
+#define SET_DECL_LANG_SPECIFIC(NODE, X)	\
+  (DECL_LANG_SPECIFIC (NODE)		\
+   = (DECL_LANG_SPECIFIC (NODE)		\
+      ? DECL_LANG_SPECIFIC (NODE) : GGC_NEW (struct lang_decl)))->t = (X)
+
+
+/* Flags added to type nodes.  */
 
 /* For RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE, nonzero if this is a
    record being used as a fat pointer (only true for RECORD_TYPE).  */
@@ -161,9 +167,18 @@ struct GTY(()) lang_type {tree t; };
    mechanism refer to the routine gnat_to_gnu_entity. */
 #define TYPE_CI_CO_LIST(NODE) TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
 
-/* For integral types, this is the RM Size of the type.  */
+/* For integral types, this is the RM size of the type.  */
 #define TYPE_RM_SIZE(NODE) \
   TYPE_LANG_SLOT_1 (TREE_CHECK3 (NODE, ENUMERAL_TYPE, BOOLEAN_TYPE, INTEGER_TYPE))
+
+/* In an UNCONSTRAINED_ARRAY_TYPE, points to the record containing both
+   the template and object.
+
+   ??? We also put this on an ENUMERAL_TYPE that's dummy.  Technically,
+   this is a conflict on the minval field, but there doesn't seem to be
+   simple fix, so we'll live with this kludge for now.  */
+#define TYPE_OBJECT_RECORD_TYPE(NODE) \
+  (TREE_CHECK2 ((NODE), UNCONSTRAINED_ARRAY_TYPE, ENUMERAL_TYPE)->type.minval)
 
 /* For an INTEGER_TYPE with TYPE_MODULAR_P, this is the value of the
    modulus. */
@@ -171,19 +186,27 @@ struct GTY(()) lang_type {tree t; };
 #define SET_TYPE_MODULUS(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
 
-/* For an INTEGER_TYPE that is the TYPE_DOMAIN of some ARRAY_TYPE, points to
+/* For an INTEGER_TYPE with TYPE_VAX_FLOATING_POINT_P, this is the
+   Digits_Value.  */
+#define TYPE_DIGITS_VALUE(NODE) \
+  GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
+#define SET_TYPE_DIGITS_VALUE(NODE, X) \
+  SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
+
+/* For an INTEGER_TYPE that is the TYPE_DOMAIN of some ARRAY_TYPE, this is
    the type corresponding to the Ada index type.  */
 #define TYPE_INDEX_TYPE(NODE) \
   GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
 #define SET_TYPE_INDEX_TYPE(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
 
-/* For an INTEGER_TYPE with TYPE_VAX_FLOATING_POINT_P, stores the
-   Digits_Value.  */
-#define TYPE_DIGITS_VALUE(NODE) \
-  GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
-#define SET_TYPE_DIGITS_VALUE(NODE, X) \
-  SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
+/* For an INTEGER_TYPE with TYPE_HAS_ACTUAL_BOUNDS_P or an ARRAY_TYPE, this is
+   the index type that should be used when the actual bounds are required for
+   a template.  This is used in the case of packed arrays.  */
+#define TYPE_ACTUAL_BOUNDS(NODE) \
+  GET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE))
+#define SET_TYPE_ACTUAL_BOUNDS(NODE, X) \
+  SET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE), X)
 
 /* For a RECORD_TYPE that is a fat pointer, point to the type for the
    unconstrained object.  Likewise for a RECORD_TYPE that is pointed
@@ -201,22 +224,8 @@ struct GTY(()) lang_type {tree t; };
 #define SET_TYPE_ADA_SIZE(NODE, X) \
   SET_TYPE_LANG_SPECIFIC (RECORD_OR_UNION_CHECK (NODE), X)
 
-/* For an INTEGER_TYPE with TYPE_HAS_ACTUAL_BOUNDS_P or an ARRAY_TYPE, this is
-   the index type that should be used when the actual bounds are required for
-   a template.  This is used in the case of packed arrays.  */
-#define TYPE_ACTUAL_BOUNDS(NODE) \
-  GET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE))
-#define SET_TYPE_ACTUAL_BOUNDS(NODE, X) \
-  SET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE), X)
 
-/* In an UNCONSTRAINED_ARRAY_TYPE, points to the record containing both
-   the template and object.
-
-   ??? We also put this on an ENUMERAL_TYPE that's dummy.  Technically,
-   this is a conflict on the minval field, but there doesn't seem to be
-   simple fix, so we'll live with this kludge for now.  */
-#define TYPE_OBJECT_RECORD_TYPE(NODE) \
-  (TREE_CHECK2 ((NODE), UNCONSTRAINED_ARRAY_TYPE, ENUMERAL_TYPE)->type.minval)
+/* Flags added to decl nodes.  */
 
 /* Nonzero in a FUNCTION_DECL that represents a stubbed function
    discriminant.  */
@@ -250,6 +259,10 @@ struct GTY(()) lang_type {tree t; };
 
 /* Nonzero in a VAR_DECL if it is a pointer renaming a global object.  */
 #define DECL_RENAMING_GLOBAL_P(NODE) DECL_LANG_FLAG_5 (VAR_DECL_CHECK (NODE))
+
+/* In a FIELD_DECL corresponding to a discriminant, contains the
+   discriminant number.  */
+#define DECL_DISCRIMINANT_NUMBER(NODE) DECL_INITIAL (FIELD_DECL_CHECK (NODE))
 
 /* In a CONST_DECL, points to a VAR_DECL that is allocatable to
    memory.  Used when a scalar constant is aliased or has its
@@ -293,11 +306,8 @@ struct GTY(()) lang_type {tree t; };
 #define SET_DECL_PARM_ALT_TYPE(NODE, X) \
   SET_DECL_LANG_SPECIFIC (PARM_DECL_CHECK (NODE), X)
 
-/* In a FIELD_DECL corresponding to a discriminant, contains the
-   discriminant number.  */
-#define DECL_DISCRIMINANT_NUMBER(NODE) DECL_INITIAL (FIELD_DECL_CHECK (NODE))
 
-/* Define fields and macros for statements.  */
+/* Fields and macros for statements.  */
 #define IS_ADA_STMT(NODE) \
   (STATEMENT_CLASS_P (NODE) && TREE_CODE (NODE) >= STMT_STMT)
 

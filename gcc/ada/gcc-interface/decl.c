@@ -1521,10 +1521,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_Ordinary_Fixed_Point_Subtype:
     case E_Decimal_Fixed_Point_Subtype:
 
-      /* For integral subtypes, we make a new INTEGER_TYPE.  Note hat we do
+      /* For integral subtypes, we make a new INTEGER_TYPE.  Note that we do
 	 not want to call build_range_type since we would like each subtype
-	 node to be distinct.  This will be important when memory aliasing
-	 is implemented.
+	 node to be distinct.  ??? Historically this was in preparation for
+	 when memory aliasing is implemented.  But that's obsolete now given
+	 the call to relate_alias_sets below.
 
 	 The TREE_TYPE field of the INTEGER_TYPE points to the base type;
 	 this fact is used by the arithmetic conversion functions.
@@ -1768,25 +1769,23 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
     case E_String_Type:
     case E_Array_Type:
       {
-	tree gnu_template_fields = NULL_TREE;
-	tree gnu_template_type = make_node (RECORD_TYPE);
-	tree gnu_ptr_template = build_pointer_type (gnu_template_type);
-	tree gnu_fat_type = make_node (RECORD_TYPE);
-	int ndim = Number_Dimensions (gnat_entity);
-	int firstdim
-	  = (Convention (gnat_entity) == Convention_Fortran) ? ndim - 1 : 0;
-	int nextdim
-	  = (Convention (gnat_entity) == Convention_Fortran) ? - 1 : 1;
-	int index;
-	tree *gnu_index_types = (tree *) alloca (ndim * sizeof (tree *));
-	tree *gnu_temp_fields = (tree *) alloca (ndim * sizeof (tree *));
-	tree gnu_comp_size = 0;
-	tree gnu_max_size = size_one_node;
-	tree gnu_max_size_unit;
 	Entity_Id gnat_ind_subtype;
 	Entity_Id gnat_ind_base_subtype;
+	int ndim = Number_Dimensions (gnat_entity);
+	int first_dim
+	  = (Convention (gnat_entity) == Convention_Fortran) ? ndim - 1 : 0;
+	int next_dim
+	  = (Convention (gnat_entity) == Convention_Fortran) ? - 1 : 1;
+	int index;
+	tree gnu_template_fields = NULL_TREE;
+	tree gnu_template_type = make_node (RECORD_TYPE);
 	tree gnu_template_reference;
-	tree tem;
+	tree gnu_ptr_template = build_pointer_type (gnu_template_type);
+	tree gnu_fat_type = make_node (RECORD_TYPE);
+	tree *gnu_index_types = (tree *) alloca (ndim * sizeof (tree));
+	tree *gnu_temp_fields = (tree *) alloca (ndim * sizeof (tree));
+	tree gnu_max_size = size_one_node, gnu_max_size_unit;
+	tree gnu_comp_size, tem;
 
 	TYPE_NAME (gnu_template_type)
 	  = create_concat_name (gnat_entity, "XUB");
@@ -1829,11 +1828,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* Now create the GCC type for each index and add the fields for
 	   that index to the template.  */
-	for (index = firstdim, gnat_ind_subtype = First_Index (gnat_entity),
+	for (index = first_dim, gnat_ind_subtype = First_Index (gnat_entity),
 	     gnat_ind_base_subtype
 	       = First_Index (Implementation_Base_Type (gnat_entity));
 	     index < ndim && index >= 0;
-	     index += nextdim,
+	     index += next_dim,
 	     gnat_ind_subtype = Next_Index (gnat_ind_subtype),
 	     gnat_ind_base_subtype = Next_Index (gnat_ind_base_subtype))
 	  {
@@ -1932,7 +1931,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* If the component type is a RECORD_TYPE that has a self-referential
 	   size, use the maximum size.  */
-	if (!gnu_comp_size && TREE_CODE (tem) == RECORD_TYPE
+	if (!gnu_comp_size
+	    && TREE_CODE (tem) == RECORD_TYPE
 	    && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (tem)))
 	  gnu_comp_size = max_size (TYPE_SIZE (tem), true);
 
@@ -2059,20 +2059,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	break;
       else
 	{
-	  int index;
-	  int array_dim = Number_Dimensions (gnat_entity);
-	  int first_dim
-	    = ((Convention (gnat_entity) == Convention_Fortran)
-	       ? array_dim - 1 : 0);
-	  int next_dim
-	    = (Convention (gnat_entity) == Convention_Fortran) ? -1 : 1;
 	  Entity_Id gnat_ind_subtype;
 	  Entity_Id gnat_ind_base_subtype;
+	  int dim = Number_Dimensions (gnat_entity);
+	  int first_dim
+	    = (Convention (gnat_entity) == Convention_Fortran) ? dim - 1 : 0;
+	  int next_dim
+	    = (Convention (gnat_entity) == Convention_Fortran) ? -1 : 1;
+	  int index;
 	  tree gnu_base_type = gnu_type;
-	  tree *gnu_index_type = (tree *) alloca (array_dim * sizeof (tree *));
-	  tree gnu_comp_size = NULL_TREE;
-	  tree gnu_max_size = size_one_node;
-	  tree gnu_max_size_unit;
+	  tree *gnu_index_type = (tree *) alloca (dim * sizeof (tree));
+	  tree gnu_max_size = size_one_node, gnu_max_size_unit;
 	  bool need_index_type_struct = false;
 	  bool max_overflow = false;
 
@@ -2084,7 +2081,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  for (index = first_dim, gnat_ind_subtype = First_Index (gnat_entity),
 	       gnat_ind_base_subtype
 		 = First_Index (Implementation_Base_Type (gnat_entity));
-	       index < array_dim && index >= 0;
+	       index < dim && index >= 0;
 	       index += next_dim,
 	       gnat_ind_subtype = Next_Index (gnat_ind_subtype),
 	       gnat_ind_base_subtype = Next_Index (gnat_ind_base_subtype))
@@ -2273,7 +2270,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      && !Is_Bit_Packed_Array (Original_Array_Type (gnat_entity)))
 	    {
 	      gnu_type = gnat_to_gnu_type (Original_Array_Type (gnat_entity));
-	      for (index = array_dim - 1; index >= 0; index--)
+	      for (index = dim - 1; index >= 0; index--)
 		gnu_type = TREE_TYPE (gnu_type);
 
 	      /* One of the above calls might have caused us to be elaborated,
@@ -2286,6 +2283,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    }
 	  else
 	    {
+	      tree gnu_comp_size;
+
 	      gnu_type = gnat_to_gnu_type (Component_Type (gnat_entity));
 
 	      /* One of the above calls might have caused us to be elaborated,
@@ -2352,7 +2351,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				     convert (bitsizetype, gnu_max_size),
 				     TYPE_SIZE (gnu_type));
 
-	  for (index = array_dim - 1; index >= 0; index --)
+	  for (index = dim - 1; index >= 0; index --)
 	    {
 	      gnu_type = build_array_type (gnu_type, gnu_index_type[index]);
 	      TYPE_MULTI_ARRAY_P (gnu_type) = (index > 0);
@@ -2368,7 +2367,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  /* If we are at file level and this is a multi-dimensional array, we
 	     need to make a variable corresponding to the stride of the
 	     inner dimensions.   */
-	  if (global_bindings_p () && array_dim > 1)
+	  if (global_bindings_p () && dim > 1)
 	    {
 	      tree gnu_str_name = get_identifier ("ST");
 	      tree gnu_arr_type;
@@ -2419,7 +2418,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      TYPE_NAME (gnu_bound_rec)
 		= create_concat_name (gnat_entity, "XA");
 
-	      for (index = array_dim - 1; index >= 0; index--)
+	      for (index = dim - 1; index >= 0; index--)
 		{
 		  tree gnu_index = TYPE_INDEX_TYPE (gnu_index_type[index]);
 		  tree gnu_index_name = TYPE_NAME (gnu_index);
@@ -2505,9 +2504,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     || TYPE_IS_PADDING_P (gnu_inner_type)))
 	    gnu_inner_type = TREE_TYPE (TYPE_FIELDS (gnu_inner_type));
 
-	  /* We need to point the type we just made to our index type so
-	     the actual bounds can be put into a template.  */
-
+	  /* We need to attach the index type to the type we just made so
+	     that the actual bounds can later be put into a template.  */
 	  if ((TREE_CODE (gnu_inner_type) == ARRAY_TYPE
 	       && !TYPE_ACTUAL_BOUNDS (gnu_inner_type))
 	      || (TREE_CODE (gnu_inner_type) == INTEGER_TYPE
@@ -2515,32 +2513,39 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    {
 	      if (TREE_CODE (gnu_inner_type) == INTEGER_TYPE)
 		{
-		  /* The TYPE_ACTUAL_BOUNDS field is also used for the modulus.
-		     If it is, we need to make another type.  */
+		  /* The TYPE_ACTUAL_BOUNDS field is overloaded with the
+		     TYPE_MODULUS for modular types so we make an extra
+		     subtype if necessary.  */
 		  if (TYPE_MODULAR_P (gnu_inner_type))
 		    {
-		      tree gnu_subtype;
-
-		      gnu_subtype = make_node (INTEGER_TYPE);
-
+		      tree gnu_subtype = make_node (INTEGER_TYPE);
 		      TREE_TYPE (gnu_subtype) = gnu_inner_type;
+		      TYPE_EXTRA_SUBTYPE_P (gnu_subtype) = 1;
+
+		      TYPE_UNSIGNED (gnu_subtype) = 1;
+		      TYPE_PRECISION (gnu_subtype)
+			= TYPE_PRECISION (gnu_inner_type);
 		      TYPE_MIN_VALUE (gnu_subtype)
 			= TYPE_MIN_VALUE (gnu_inner_type);
 		      TYPE_MAX_VALUE (gnu_subtype)
 			= TYPE_MAX_VALUE (gnu_inner_type);
-		      TYPE_PRECISION (gnu_subtype)
-			= TYPE_PRECISION (gnu_inner_type);
-		      TYPE_UNSIGNED (gnu_subtype)
-			= TYPE_UNSIGNED (gnu_inner_type);
-		      TYPE_EXTRA_SUBTYPE_P (gnu_subtype) = 1;
 		      layout_type (gnu_subtype);
 
 		      gnu_inner_type = gnu_subtype;
 		    }
 
 		  TYPE_HAS_ACTUAL_BOUNDS_P (gnu_inner_type) = 1;
+
+#ifdef ENABLE_CHECKING
+		  /* Check for other cases of overloading.  */
+		  gcc_assert (!TYPE_ACTUAL_BOUNDS (gnu_inner_type));
+#endif
 		}
 
+	      /* ??? This is necessary to make sure that the container is
+		 allocated with a null tree upfront; otherwise, it could
+		 be allocated with an uninitialized tree that is accessed
+		 before being set below.  See ada-tree.h for details.  */
 	      SET_TYPE_ACTUAL_BOUNDS (gnu_inner_type, NULL_TREE);
 
 	      for (gnat_index = First_Index (gnat_entity);
