@@ -1,3 +1,7 @@
+2009-04-23  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	* config/arm/arm.md (insv): Do not share operands[0].
+
 2009-04-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* config/vxlib-tls.c (active_tls_threads): Delete.
