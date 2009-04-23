@@ -12425,6 +12425,8 @@ install-data-local:
 @CREATE_JAVA_HOME_TRUE@	RELATIVE=$$(relative $(DESTDIR)$(bindir) $(DESTDIR)$(SDK_BIN_DIR)); \
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gij | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/java; \
+@CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gcj | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+@CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/javac; \
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gjar | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 @CREATE_JAVA_HOME_TRUE@	  $(DESTDIR)$(SDK_BIN_DIR)/jar; \
 @CREATE_JAVA_HOME_TRUE@	ln -sf $$RELATIVE/`echo gjdoc | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \

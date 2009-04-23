@@ -578,6 +578,8 @@ if CREATE_JAVA_HOME
 	RELATIVE=$$(relative $(DESTDIR)$(bindir) $(DESTDIR)$(SDK_BIN_DIR)); \
 	ln -sf $$RELATIVE/`echo gij | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 	  $(DESTDIR)$(SDK_BIN_DIR)/java; \
+	ln -sf $$RELATIVE/`echo gcj | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
+	  $(DESTDIR)$(SDK_BIN_DIR)/javac; \
 	ln -sf $$RELATIVE/`echo gjar | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 	  $(DESTDIR)$(SDK_BIN_DIR)/jar; \
 	ln -sf $$RELATIVE/`echo gjdoc | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
