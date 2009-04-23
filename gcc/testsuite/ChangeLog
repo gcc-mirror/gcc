@@ -1,3 +1,9 @@
+2009-04-23  Steve Ellcey  <sje@cup.hp.com>
+
+	PR testsuite/39623
+	* gcc.dg/vect/no-vfa-vect-57.c: XFAIL when vect_no_align.
+	* gcc.dg/vect/no-vfa-vect-61.c: Ditto.
+	
 2009-04-23  Rafael Avila de Espindola  <espindola@google.com>
 
 	* gcc.dg/format/gcc_diag-1.c (foo): Don't check that %E produces a
