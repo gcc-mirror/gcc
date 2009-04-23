@@ -1450,7 +1450,7 @@ cxx_sizeof_or_alignof_expr (tree e, enum tree_code op)
 bool
 invalid_nonstatic_memfn_p (const_tree expr)
 {
-  if (TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
+  if (expr && TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE)
     {
       error ("invalid use of non-static member function");
       return true;
