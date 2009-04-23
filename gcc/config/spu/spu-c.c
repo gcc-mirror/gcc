@@ -31,7 +31,6 @@
 #include "insn-codes.h"
 #include "recog.h"
 #include "optabs.h"
-#include "spu-builtins.h"
 
 
 /* Keep the vector keywords handy for fast comparisons.  */
@@ -102,8 +101,7 @@ spu_resolve_overloaded_builtin (tree fndecl, void *passed_args)
 			  || POINTER_TYPE_P (t))
   VEC(tree,gc) *fnargs = (VEC(tree,gc) *) passed_args;
   unsigned int nargs = VEC_length (tree, fnargs);
-  spu_function_code new_fcode, fcode =
-    DECL_FUNCTION_CODE (fndecl) - END_BUILTINS;
+  int new_fcode, fcode = DECL_FUNCTION_CODE (fndecl) - END_BUILTINS;
   struct spu_builtin_description *desc;
   tree match = NULL_TREE;
 
@@ -123,7 +121,14 @@ spu_resolve_overloaded_builtin (tree fndecl, void *passed_args)
       tree decl = spu_builtins[new_fcode].fndecl;
       tree params = TYPE_ARG_TYPES (TREE_TYPE (decl));
       tree param;
+      bool all_scalar;
       unsigned int p;
+
+      /* Check whether all parameters are scalar.  */
+      all_scalar = true;
+      for (param = params; param != void_list_node; param = TREE_CHAIN (param))
+      if (!SCALAR_TYPE_P (TREE_VALUE (param)))
+	all_scalar = false;
 
       for (param = params, p = 0;
 	   param != void_list_node;
@@ -156,10 +161,7 @@ spu_resolve_overloaded_builtin (tree fndecl, void *passed_args)
 	     parameter. */
 	  if ((!SCALAR_TYPE_P (param_type)
 	       || !SCALAR_TYPE_P (arg_type)
-	       || ((fcode == SPU_SPLATS || fcode == SPU_PROMOTE
-		    || fcode == SPU_HCMPEQ || fcode == SPU_HCMPGT
-		    || fcode == SPU_MASKB || fcode == SPU_MASKH
-		    || fcode == SPU_MASKW) && p == 0))
+	       || (all_scalar && p == 0))
 	      && !comptypes (TYPE_MAIN_VARIANT (param_type),
 			     TYPE_MAIN_VARIANT (arg_type)))
 	    break;
