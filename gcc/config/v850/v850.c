@@ -1931,7 +1931,7 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
       else if (actual_fsize)
 	emit_jump_insn (gen_return_internal ());
       else
-	emit_jump_insn (gen_return ());
+	emit_jump_insn (gen_return_simple ());
     }
 
   v850_interrupt_cache_p = FALSE;
