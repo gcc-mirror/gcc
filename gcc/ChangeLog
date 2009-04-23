@@ -1,3 +1,13 @@
+2009-04-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/vxlib-tls.c (active_tls_threads): Delete.
+	(delete_hook_installed): New.
+	(tls_delete_hook): Don't delete the delete hook.
+	(tls_destructor): Delete it here.
+	(__gthread_set_specific): Adjust installing the delete hook.
+	(tls_delete_hook): Use __gthread_enter_tsd_dtor_context and
+	__gthread_leave_tsd_dtor_context.
+
 2009-04-23  Rafael Avila de Espindola  <espindola@google.com>
 
 	* c-format.c (gcc_tdiag_char_table): Add support for %E.

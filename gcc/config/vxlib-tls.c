@@ -91,9 +91,9 @@ struct tls_data
    include a pointer to a local variable in the TLS data object.  */
 static int self_owner;
 
-/* The number of threads for this module which have active TLS data.
-   This is protected by tls_lock.  */
-static int active_tls_threads;
+/* Flag to check whether the delete hook is installed.  Once installed
+   it is only removed when unloading this module.  */
+static volatile int delete_hook_installed;
 
 /* kernel provided routines */
 extern void *__gthread_get_tls_data (void);
@@ -166,7 +166,11 @@ tls_delete_hook (void *tcb ATTRIBUTE_UNUSED)
   
   if (data && data->owner == &self_owner)
     {
+#ifdef __RTP__
       __gthread_enter_tls_dtor_context ();
+#else
+      __gthread_enter_tsd_dtor_context (tcb);
+#endif
       for (key = 0; key < MAX_KEYS; key++)
 	{
 	  if (data->generation[key] == tls_keys.generation[key])
@@ -178,22 +182,17 @@ tls_delete_hook (void *tcb ATTRIBUTE_UNUSED)
 	    }
 	}
       free (data);
+#ifdef __RTP__
+      __gthread_leave_tls_dtor_context ();
+#else
+      __gthread_leave_tsd_dtor_context ();
+#endif
 
-      /* We can't handle an error here, so just leave the thread
-	 marked as loaded if one occurs.  */
-      if (__gthread_mutex_lock (&tls_lock) != ERROR)
-	{
-	  active_tls_threads--;
-	  if (active_tls_threads == 0)
-	    taskDeleteHookDelete ((FUNCPTR)tls_delete_hook);
-	  __gthread_mutex_unlock (&tls_lock);
-	}
 #ifdef __RTP__
       __gthread_set_tls_data (0);
 #else
       __gthread_set_tsd_data (tcb, 0);
 #endif
-      __gthread_leave_tls_dtor_context ();
     }
 } 
 
@@ -211,13 +210,10 @@ tls_destructor (void)
 #ifdef __RTP__
   /* All threads but this one should have exited by now.  */
   tls_delete_hook (NULL);
-#else
-  /* Unregister the hook forcibly.  The counter of active threads may
-     be incorrect, because constructors (like the C++ library's) and
-     destructors (like this one) run in the context of the shell rather
-     than in a task spawned from this module.  */
-  taskDeleteHookDelete ((FUNCPTR)tls_delete_hook);
 #endif
+  /* Unregister the hook.  */
+  if (delete_hook_installed)
+    taskDeleteHookDelete ((FUNCPTR)tls_delete_hook);
 
   if (tls_init_guard.done && __gthread_mutex_lock (&tls_lock) != ERROR)
     semDelete (tls_lock);
@@ -331,12 +327,18 @@ __gthread_setspecific (__gthread_key_t key, void *value)
   data = __gthread_get_tls_data ();
   if (!data)
     {
-      if (__gthread_mutex_lock (&tls_lock) == ERROR)
-	return ENOMEM;
-      if (active_tls_threads == 0)
-	taskDeleteHookAdd ((FUNCPTR)tls_delete_hook);
-      active_tls_threads++;
-      __gthread_mutex_unlock (&tls_lock);
+      if (!delete_hook_installed)
+	{
+	  /* Install the delete hook.  */
+	  if (__gthread_mutex_lock (&tls_lock) == ERROR)
+	    return ENOMEM;
+	  if (!delete_hook_installed)
+	    {
+	      taskDeleteHookAdd ((FUNCPTR)tls_delete_hook);
+	      delete_hook_installed = 1;
+	    }
+	  __gthread_mutex_unlock (&tls_lock);
+	}
 
       data = malloc (sizeof (struct tls_data));
       if (!data)
