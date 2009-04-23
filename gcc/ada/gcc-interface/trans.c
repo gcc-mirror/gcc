@@ -405,7 +405,7 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   /* Make the types and functions used for exception processing.  */
   jmpbuf_type
     = build_array_type (gnat_type_for_mode (Pmode, 0),
-			build_index_type (build_int_cst (NULL_TREE, 5)));
+			build_index_type (size_int (5)));
   record_builtin_type ("JMPBUF_T", jmpbuf_type);
   jmpbuf_ptr_type = build_pointer_type (jmpbuf_type);
 

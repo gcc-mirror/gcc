@@ -1,3 +1,20 @@
+2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (union lang_tree_node): Use standard idiom.
+	(SET_TYPE_LANG_SPECIFIC): Likewise.  Fix formatting.
+	(SET_DECL_LANG_SPECIFIC): Likewise.
+	Reorder macros.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>:
+	Update comment about use of build_range_type.
+	<E_Array_Type, E_Array_Subtype>: Use consistent naming convention.
+	<E_Array_Subtype>: Rework comments about TYPE_ACTUAL_BOUNDS and add
+	check for other cases of overloading.
+	* gcc-interface/trans.c (gigi): Use size_int in lieu of build_int_cst.
+	* gcc-interface/utils2.c (build_call_raise): Fix off-by-one error.
+	Use size_int in lieu of build_int_cst.
+	(build_call_alloc_dealloc): Use build_index_2_type in lieu of
+	build_range_type.
+
 2009-04-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils2.c (build_binary_op) <PLUS_EXPR>: If operation's

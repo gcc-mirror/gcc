@@ -1591,15 +1591,14 @@ build_call_raise (int msg, Node_Id gnat_node, char kind)
 			    (Get_Source_File_Index (Sloc (gnat_node))))))
         : ref_filename;
 
-  len = strlen (str) + 1;
+  len = strlen (str);
   filename = build_string (len, str);
   line_number
     = (gnat_node != Empty && Sloc (gnat_node) != No_Location)
       ? Get_Logical_Line_Number (Sloc(gnat_node)) : input_line;
 
   TREE_TYPE (filename)
-    = build_array_type (char_type_node,
-			build_index_type (build_int_cst (NULL_TREE, len)));
+    = build_array_type (char_type_node, build_index_type (size_int (len)));
 
   return
     build_call_2_expr (fndecl,
@@ -1928,14 +1927,12 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
       /* If the size is a constant, we can put it in the fixed portion of
 	 the stack frame to avoid the need to adjust the stack pointer.  */
 	{
-	  tree gnu_range
-	    = build_range_type (NULL_TREE, size_one_node, gnu_size);
-	  tree gnu_array_type = build_array_type (char_type_node, gnu_range);
+	  tree gnu_index = build_index_2_type (size_one_node, gnu_size);
+	  tree gnu_array_type = build_array_type (char_type_node, gnu_index);
 	  tree gnu_decl
 	    = create_var_decl (get_identifier ("RETVAL"), NULL_TREE,
 			       gnu_array_type, NULL_TREE, false, false, false,
 			       false, NULL, gnat_node);
-
 	  return convert (ptr_void_type_node,
 			  build_unary_op (ADDR_EXPR, NULL_TREE, gnu_decl));
 	}
