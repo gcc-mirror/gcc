@@ -28,20 +28,15 @@
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "real.h"
 #include "flags.h"
-#include "toplev.h"
-#include "rtl.h"
 #include "expr.h"
 #include "ggc.h"
-#include "cgraph.h"
-#include "function.h"
-#include "except.h"
-#include "debug.h"
 #include "output.h"
 #include "tree-iterator.h"
 #include "gimple.h"
+
 #include "ada.h"
+#include "adadecode.h"
 #include "types.h"
 #include "atree.h"
 #include "elists.h"
@@ -56,9 +51,6 @@
 #include "einfo.h"
 #include "ada-tree.h"
 #include "gigi.h"
-#include "adadecode.h"
-#include "dwarf2.h"
-#include "dwarf2out.h"
 
 /* We should avoid allocating more than ALLOCA_THRESHOLD bytes via alloca,
    for fear of running out of stack space.  If we need more, we use xmalloc

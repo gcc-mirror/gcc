@@ -30,9 +30,7 @@
 #include "tree.h"
 #include "flags.h"
 #include "toplev.h"
-#include "convert.h"
 #include "ggc.h"
-#include "obstack.h"
 #include "target.h"
 #include "expr.h"
 
@@ -49,7 +47,6 @@
 #include "fe.h"
 #include "sinfo.h"
 #include "einfo.h"
-#include "hashtab.h"
 #include "ada-tree.h"
 #include "gigi.h"
 
