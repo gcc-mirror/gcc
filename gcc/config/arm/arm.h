@@ -2244,7 +2244,9 @@ do {							\
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR, LABEL)	\
   if (TARGET_32BIT)					\
     ARM_GO_IF_MODE_DEPENDENT_ADDRESS (ADDR, LABEL)
-
+
+/* Define this for compatibility reasons. */
+#define HANDLE_PRAGMA_PACK_PUSH_POP
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
