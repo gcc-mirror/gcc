@@ -497,7 +497,7 @@ gnat_print_type (FILE *file, tree node, int indent)
 
     case INTEGER_TYPE:
       if (TYPE_MODULAR_P (node))
-	print_node (file, "modulus", TYPE_MODULUS (node), indent + 4);
+	print_node_brief (file, "modulus", TYPE_MODULUS (node), indent + 4);
       else if (TYPE_HAS_ACTUAL_BOUNDS_P (node))
 	print_node (file, "actual bounds", TYPE_ACTUAL_BOUNDS (node),
 		    indent + 4);
@@ -510,7 +510,7 @@ gnat_print_type (FILE *file, tree node, int indent)
 
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
-      print_node (file, "RM size", TYPE_RM_SIZE (node), indent + 4);
+      print_node_brief (file, "RM size", TYPE_RM_SIZE (node), indent + 4);
       break;
 
     case ARRAY_TYPE:

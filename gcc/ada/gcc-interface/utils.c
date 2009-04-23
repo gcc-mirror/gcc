@@ -664,12 +664,13 @@ finish_record_type (tree record_type, tree fieldlist, int rep_level,
 	    DECL_BIT_FIELD (field) = 0;
 	}
 
-      /* If we still have DECL_BIT_FIELD set at this point, we know the field
-	 is technically not addressable.  Except that it can actually be
-	 addressed if the field is BLKmode and happens to be properly
-	 aligned.  */
-      DECL_NONADDRESSABLE_P (field)
-	|= DECL_BIT_FIELD (field) && DECL_MODE (field) != BLKmode;
+      /* If we still have DECL_BIT_FIELD set at this point, we know that the
+	 field is technically not addressable.  Except that it can actually
+	 be addressed if it is BLKmode and happens to be properly aligned.  */
+      if (DECL_BIT_FIELD (field)
+	  && !(DECL_MODE (field) == BLKmode
+	       && value_factor_p (pos, BITS_PER_UNIT)))
+	DECL_NONADDRESSABLE_P (field) = 1;
 
       /* A type must be as aligned as its most aligned field that is not
 	 a bit-field.  But this is already enforced by layout_type.  */
@@ -1160,9 +1161,9 @@ copy_type (tree type)
   return new;
 }
 
-/* Return an INTEGER_TYPE of SIZETYPE with range MIN to MAX and whose
-   TYPE_INDEX_TYPE is INDEX.  GNAT_NODE is used for the position of
-   the decl.  */
+/* Return a subtype of sizetype with range MIN to MAX and whose
+   TYPE_INDEX_TYPE is INDEX.  GNAT_NODE is used for the position
+   of the associated TYPE_DECL.  */
 
 tree
 create_index_type (tree min, tree max, tree index, Node_Id gnat_node)
@@ -1170,18 +1171,18 @@ create_index_type (tree min, tree max, tree index, Node_Id gnat_node)
   /* First build a type for the desired range.  */
   tree type = build_index_2_type (min, max);
 
-  /* If this type has the TYPE_INDEX_TYPE we want, return it.  Otherwise, if it
-     doesn't have TYPE_INDEX_TYPE set, set it to INDEX.  If TYPE_INDEX_TYPE
-     is set, but not to INDEX, make a copy of this type with the requested
-     index type.  Note that we have no way of sharing these types, but that's
-     only a small hole.  */
+  /* If this type has the TYPE_INDEX_TYPE we want, return it.  */
   if (TYPE_INDEX_TYPE (type) == index)
     return type;
-  else if (TYPE_INDEX_TYPE (type))
+
+  /* Otherwise, if TYPE_INDEX_TYPE is set, make a copy.  Note that we have
+     no way of sharing these types, but that's only a small hole.  */
+  if (TYPE_INDEX_TYPE (type))
     type = copy_type (type);
 
   SET_TYPE_INDEX_TYPE (type, index);
   create_type_decl (NULL_TREE, type, NULL, true, false, gnat_node);
+
   return type;
 }
 
@@ -1570,12 +1571,17 @@ create_param_decl (tree param_name, tree param_type, bool readonly)
       if (TREE_CODE (param_type) == INTEGER_TYPE
 	  && TYPE_BIASED_REPRESENTATION_P (param_type))
 	{
-	  param_type
-	    = copy_type (build_range_type (integer_type_node,
-					   TYPE_MIN_VALUE (param_type),
-					   TYPE_MAX_VALUE (param_type)));
+	  tree subtype = make_node (INTEGER_TYPE);
+	  TREE_TYPE (subtype) = integer_type_node;
+	  TYPE_BIASED_REPRESENTATION_P (subtype) = 1;
 
-	  TYPE_BIASED_REPRESENTATION_P (param_type) = 1;
+	  TYPE_UNSIGNED (subtype) = 1;
+	  TYPE_PRECISION (subtype) = TYPE_PRECISION (integer_type_node);
+	  TYPE_MIN_VALUE (subtype) = TYPE_MIN_VALUE (param_type);
+	  TYPE_MAX_VALUE (subtype) = TYPE_MAX_VALUE (param_type);
+	  layout_type (subtype);
+
+	  param_type = subtype;
 	}
       else
 	param_type = integer_type_node;
