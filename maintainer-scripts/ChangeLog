@@ -1,3 +1,7 @@
+2009-04-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_svn: Redirect output of texi2dvi to /dev/null.
+
 2009-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc_release: Change copyright header to refer to version
