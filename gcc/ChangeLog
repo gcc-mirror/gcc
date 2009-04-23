@@ -1,3 +1,29 @@
+2009-04-23  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/spu/spu-builtins.h: Delete file.
+
+	* config/spu/spu.h (enum spu_builtin_type): Move here from
+	spu-builtins.h.
+	(struct spu_builtin_description): Likewise.  Add GTY marker.
+	Do not use enum spu_function_code or enum insn_code.
+	(spu_builtins): Add extern declaration.
+
+	* config/spu/spu.c: Do not include "spu-builtins.h".
+	(enum spu_function_code, enum spu_builtin_type_index,
+	V16QI_type_node, V8HI_type_node, V4SI_type_node, V2DI_type_node,
+	V4SF_type_node, V2DF_type_node, unsigned_V16QI_type_node,
+	unsigned_V8HI_type_node, unsigned_V4SI_type_node,
+	unsigned_V2DI_type_node): Move here from spu-builtins.h.
+	(spu_builtin_types): Make static.  Add GTY marker.
+	(spu_builtins): Add extern declaration with GTY marker.
+	Include "gt-spu.h".
+
+	* config/spu/spu-c.c: Do not include "spu-builtins.h".
+	(spu_resolve_overloaded_builtin): Do not use spu_function_code.
+	Check programmatically whether all parameters are scalar.
+
+	* config/spu/t-spu-elf (spu.o, spu-c.o): Update dependencies.
+
 2009-04-22  Jing Yu  <jingyu@google.com>
 
 	PR testsuite/39781

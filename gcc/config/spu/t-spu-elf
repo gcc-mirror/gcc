@@ -85,13 +85,10 @@ spu.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   output.h $(BASIC_BLOCK_H) $(INTEGRATE_H) toplev.h $(GGC_H) $(HASHTAB_H) \
   $(TM_P_H) $(TARGET_H) $(TARGET_DEF_H) langhooks.h reload.h cfglayout.h \
   $(srcdir)/config/spu/spu-protos.h \
-  $(srcdir)/config/spu/spu-builtins.h \
   $(srcdir)/config/spu/spu-builtins.def 
 
 spu-c.o: $(srcdir)/config/spu/spu-c.c \
     $(srcdir)/config/spu/spu-protos.h \
-    $(srcdir)/config/spu/spu-builtins.h \
-    $(srcdir)/config/spu/spu-builtins.def \
     $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(CPPLIB_H) \
     $(TM_P_H) c-pragma.h errors.h coretypes.h $(TM_H) insn-codes.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/spu/spu-c.c

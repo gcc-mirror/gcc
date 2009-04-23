@@ -52,13 +52,79 @@
 #include "machmode.h"
 #include "gimple.h"
 #include "tm-constrs.h"
-#include "spu-builtins.h"
 #include "ddg.h"
 #include "sbitmap.h"
 #include "timevar.h"
 #include "df.h"
 
 /* Builtin types, data and prototypes. */
+
+enum spu_builtin_type_index
+{
+  SPU_BTI_END_OF_PARAMS,
+
+  /* We create new type nodes for these. */
+  SPU_BTI_V16QI,
+  SPU_BTI_V8HI,
+  SPU_BTI_V4SI,
+  SPU_BTI_V2DI,
+  SPU_BTI_V4SF,
+  SPU_BTI_V2DF,
+  SPU_BTI_UV16QI,
+  SPU_BTI_UV8HI,
+  SPU_BTI_UV4SI,
+  SPU_BTI_UV2DI,
+
+  /* A 16-byte type. (Implemented with V16QI_type_node) */
+  SPU_BTI_QUADWORD,
+
+  /* These all correspond to intSI_type_node */
+  SPU_BTI_7,
+  SPU_BTI_S7,
+  SPU_BTI_U7,
+  SPU_BTI_S10,
+  SPU_BTI_S10_4,
+  SPU_BTI_U14,
+  SPU_BTI_16,
+  SPU_BTI_S16,
+  SPU_BTI_S16_2,
+  SPU_BTI_U16,
+  SPU_BTI_U16_2,
+  SPU_BTI_U18,
+
+  /* These correspond to the standard types */
+  SPU_BTI_INTQI, 
+  SPU_BTI_INTHI, 
+  SPU_BTI_INTSI, 
+  SPU_BTI_INTDI, 
+
+  SPU_BTI_UINTQI,
+  SPU_BTI_UINTHI,
+  SPU_BTI_UINTSI,
+  SPU_BTI_UINTDI,
+
+  SPU_BTI_FLOAT, 
+  SPU_BTI_DOUBLE,
+
+  SPU_BTI_VOID,   
+  SPU_BTI_PTR,   
+
+  SPU_BTI_MAX
+};
+
+#define V16QI_type_node               (spu_builtin_types[SPU_BTI_V16QI])
+#define V8HI_type_node                (spu_builtin_types[SPU_BTI_V8HI])
+#define V4SI_type_node                (spu_builtin_types[SPU_BTI_V4SI])
+#define V2DI_type_node                (spu_builtin_types[SPU_BTI_V2DI])
+#define V4SF_type_node                (spu_builtin_types[SPU_BTI_V4SF])
+#define V2DF_type_node                (spu_builtin_types[SPU_BTI_V2DF])
+#define unsigned_V16QI_type_node      (spu_builtin_types[SPU_BTI_UV16QI])
+#define unsigned_V8HI_type_node       (spu_builtin_types[SPU_BTI_UV8HI])
+#define unsigned_V4SI_type_node       (spu_builtin_types[SPU_BTI_UV4SI])
+#define unsigned_V2DI_type_node       (spu_builtin_types[SPU_BTI_UV2DI])
+
+static GTY(()) tree spu_builtin_types[SPU_BTI_MAX];
+
 struct spu_builtin_range
 {
   int low, high;
@@ -202,8 +268,6 @@ spu_libgcc_cmp_return_mode (void);
 static enum machine_mode
 spu_libgcc_shift_count_mode (void);
 
-/* Built in types.  */
-tree spu_builtin_types[SPU_BTI_MAX];
 
 /*  TARGET overrides.  */
 
@@ -5067,6 +5131,16 @@ spu_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 /* Create the built-in types and functions */
 
+enum spu_function_code
+{
+#define DEF_BUILTIN(fcode, icode, name, type, params) fcode,
+#include "spu-builtins.def"
+#undef DEF_BUILTIN
+   NUM_SPU_BUILTINS
+};
+
+extern GTY(()) struct spu_builtin_description spu_builtins[NUM_SPU_BUILTINS];
+
 struct spu_builtin_description spu_builtins[] = {
 #define DEF_BUILTIN(fcode, icode, name, type, params) \
   {fcode, icode, name, type, params, NULL_TREE},
@@ -6297,4 +6371,6 @@ spu_section_type_flags (tree decl, const char *name, int reloc)
     return SECTION_BSS;
   return default_section_type_flags (decl, name, reloc);
 }
+
+#include "gt-spu.h"
 
