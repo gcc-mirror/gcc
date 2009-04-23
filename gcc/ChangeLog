@@ -1,3 +1,10 @@
+2009-04-23  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.md (epilogue): Remove suppressed code.
+	(return): Rename to return_simple and remove test of frame size.
+	* config/v850/v850.c (expand_epilogue): Rename call to gen_return
+	to gen_return_simple.
+
 2009-04-22  Jing Yu  <jingyu@google.com>
 
 	PR testsuite/39781
