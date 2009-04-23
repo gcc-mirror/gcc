@@ -1,3 +1,14 @@
+2009-04-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_legitimize_reload_address): Add cast to
+	enum type.
+	(alpha_rtx_costs): Ditto.
+	(emit_unlikely_jump): Use add_reg_note.
+	(emit_frame_store_1): Ditto.
+	(alpha_expand_prologue): Ditto.
+	(alpha_expand_builtin): Change 0 to EXPAND_NORMAL in function call.
+	* config/alpha/alpha.c (Unicos/Mk address splitter): Use add_reg_note.
+
 2009-04-23  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.md (epilogue): Remove suppressed code.
@@ -102,8 +113,7 @@
 	* varasm.c: Likewise.
 	* varray.h: Likewise.
 	* vec.h: Likewise.
-	* coretypes.h: Do not define GTY macro if it is already
-	defined.
+	* coretypes.h: Do not define GTY macro if it is already defined.
 	* doc/gty.texi: Update GTY documentation to new syntax.
 	* gengtype-lex.l: Enforce attribute-like syntax for GTY
 	annotations on structs.
@@ -111,7 +121,7 @@
 
 2009-04-22  Mark Heffernan  <meheff@google.com>
 
-       * gcc.c (LINK_COMMAND_SPEC): Link with gcov with -fprofile-generate=.
+	* gcc.c (LINK_COMMAND_SPEC): Link with gcov with -fprofile-generate=.
 
 2009-04-22  Kazu Hirata  <kazu@codesourcery.com>
 
@@ -127,8 +137,7 @@
 2009-04-22  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* Makefile.in: Update dependencies.
-	* errors.c (warning): Remove unused parameter 'opt'. Returns
-	'void'.
+	* errors.c (warning): Remove unused parameter 'opt'. Returns 'void'.
 	* errors.h: Remove bogus comment about compatibility.
 	(warning): Update declaration.
 	* genautomata.c: Update all calls to warning.
