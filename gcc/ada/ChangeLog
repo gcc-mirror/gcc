@@ -1,3 +1,20 @@
+2009-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* errout.ads: Minor reformatting
+
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
+	* gnat_ugn.texi (Library Projects): add documentation on gnatmake's
+	behavior when the project includes sources from multiple languages
+
+2009-04-24  Vincent Celier  <celier@adacore.com>
+
+	* prj.adb (Has_Foreign_Sources): Returns True in Ada_Only mode if there
+	is a language other than Ada declared.
+
+	* makeutl.adb (Linker_Options_Switches): Call For_All_Projects with
+	Imported_First set to True.
+
 2009-04-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb: additional optimization to inhibit creation of
