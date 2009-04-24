@@ -1,3 +1,12 @@
+2009-04-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+            Thomas Quinot  <quinot@adacore.com>
+
+	* fe.h (Set_Identifier_Casing): Add const to second parameter.
+	* gcc-interface/misc.c (internal_error_function): Make copy of retur
+	from pp_formatted_text before assigning BUFFER to it.
+	(gnat_init): Likewise for main_input_filename and gnat_argv.
+	(gnat_printable_name): Remove cast from call to Set_Identifier_Casing.
+
 2009-04-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ttypes.ads (Target_Double_Float_Alignment): New variable.
