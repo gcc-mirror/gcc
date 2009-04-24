@@ -281,8 +281,10 @@ package body Prj.Proc is
 
       procedure Check_All_Projects is new
         For_Every_Project_Imported (Recursive_Check_Data, Recursive_Check);
+
       Data : Recursive_Check_Data :=
         (In_Tree, Dir'Unchecked_Access, When_No_Sources);
+
    begin
       Check_All_Projects (Project, In_Tree, Data, Imported_First => True);
 
@@ -333,11 +335,11 @@ package body Prj.Proc is
       Naming_Restricted : Boolean;
       In_Tree           : Project_Tree_Ref)
    is
-      V1  : Variable_Id := From.Attributes;
-      V2  : Variable_Id := No_Variable;
+      V1  : Variable_Id;
+      V2  : Variable_Id      := No_Variable;
       Var : Variable;
-      A1  : Array_Id := From.Arrays;
-      A2  : Array_Id := No_Array;
+      A1  : Array_Id;
+      A2  : Array_Id         := No_Array;
       Arr : Array_Data;
       E1  : Array_Element_Id;
       E2  : Array_Element_Id := No_Array_Element;
@@ -351,6 +353,7 @@ package body Prj.Proc is
 
       --  First single attributes
 
+      V1 := From.Attributes;
       while V1 /= No_Variable loop
 
          --  Copy the attribute
@@ -384,16 +387,16 @@ package body Prj.Proc is
 
       --  Then the associated array attributes
 
+      A1 := From.Arrays;
       while A1 /= No_Array loop
-
          Arr := In_Tree.Arrays.Table (A1);
          A1  := Arr.Next;
 
          if not Naming_Restricted or else
            (Arr.Name /= Snames.Name_Body
-            and then Arr.Name /= Snames.Name_Spec
-            and then Arr.Name /= Snames.Name_Implementation
-            and then Arr.Name /= Snames.Name_Specification)
+             and then Arr.Name /= Snames.Name_Spec
+             and then Arr.Name /= Snames.Name_Implementation
+             and then Arr.Name /= Snames.Name_Specification)
          then
             --  Remove the Next component
 
@@ -530,22 +533,21 @@ package body Prj.Proc is
                      end if;
 
                      Last := String_Element_Table.Last
-                       (In_Tree.String_Elements);
+                               (In_Tree.String_Elements);
+
                      In_Tree.String_Elements.Table (Last) :=
-                       (Value    =>
-                          String_Value_Of
-                            (The_Current_Term,
-                             From_Project_Node_Tree),
-                        Index    =>
-                          Source_Index_Of
-                            (The_Current_Term, From_Project_Node_Tree),
+                       (Value         => String_Value_Of
+                                           (The_Current_Term,
+                                            From_Project_Node_Tree),
+                        Index         => Source_Index_Of
+                                           (The_Current_Term,
+                                            From_Project_Node_Tree),
                         Display_Value => No_Name,
-                        Location      =>
-                          Location_Of
-                            (The_Current_Term,
-                             From_Project_Node_Tree),
-                        Flag     => False,
-                        Next     => Nil_String);
+                        Location      => Location_Of
+                                           (The_Current_Term,
+                                            From_Project_Node_Tree),
+                        Flag          => False,
+                        Next          => Nil_String);
                end case;
 
             when N_Literal_String_List =>
@@ -561,8 +563,8 @@ package body Prj.Proc is
                begin
                   if Present (String_Node) then
 
-                     --  If String_Node is nil, it is an empty list,
-                     --  there is nothing to do
+                     --  If String_Node is nil, it is an empty list, there is
+                     --  nothing to do
 
                      Value := Expression
                        (Project                => Project,
@@ -579,8 +581,8 @@ package body Prj.Proc is
 
                      if Result.Values = Nil_String then
 
-                        --  This literal string list is the first term
-                        --  in a string list expression
+                        --  This literal string list is the first term in a
+                        --  string list expression
 
                         Result.Values :=
                           String_Element_Table.Last (In_Tree.String_Elements);

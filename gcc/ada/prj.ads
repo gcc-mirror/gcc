@@ -1527,9 +1527,9 @@ package Prj is
         (Project    : Project_Id;
          With_State : in out State);
    procedure For_Every_Project_Imported
-     (By         : Project_Id;
-      In_Tree    : Project_Tree_Ref;
-      With_State : in out State;
+     (By             : Project_Id;
+      In_Tree        : Project_Tree_Ref;
+      With_State     : in out State;
       Imported_First : Boolean := False);
    --  Call Action for each project imported directly or indirectly by project
    --  By, as well as extended projects.

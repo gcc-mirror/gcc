@@ -498,9 +498,9 @@ package body Prj is
    --------------------------------
 
    procedure For_Every_Project_Imported
-     (By         : Project_Id;
-      In_Tree    : Project_Tree_Ref;
-      With_State : in out State;
+     (By             : Project_Id;
+      In_Tree        : Project_Tree_Ref;
+      With_State     : in out State;
       Imported_First : Boolean := False)
    is
       use Project_Boolean_Htable;
@@ -517,6 +517,7 @@ package body Prj is
       procedure Recursive_Check (Project : Project_Id) is
          Data : Project_Data renames In_Tree.Projects.Table (Project);
          List : Project_List;
+
       begin
          if not Get (Seen, Project) then
             Set (Seen, Project, True);
@@ -1204,12 +1205,14 @@ package body Prj is
    ---------------------
 
    function Has_Ada_Sources (Data : Project_Data) return Boolean is
-      Lang : Language_Ptr := Data.Languages;
+      Lang : Language_Ptr;
+
    begin
       if Data.Ada_Sources /= Nil_String then
          return True;
       end if;
 
+      Lang := Data.Languages;
       while Lang /= No_Language_Index loop
          if Lang.Name = Name_Ada then
             return Lang.First_Source /= No_Source;
@@ -1225,14 +1228,17 @@ package body Prj is
    -------------------------
 
    function Has_Foreign_Sources (Data : Project_Data) return Boolean is
-      Lang : Language_Ptr := Data.Languages;
+      Lang : Language_Ptr;
+
    begin
+      Lang := Data.Languages;
       while Lang /= No_Language_Index loop
          if Lang.Name /= Name_Ada
            and then Lang.First_Source /= No_Source
          then
             return True;
          end if;
+
          Lang := Lang.Next;
       end loop;
 
@@ -1245,10 +1251,10 @@ package body Prj is
 
    function Contains_ALI_Files (Dir : Path_Name_Type) return Boolean is
       Dir_Name : constant String := Get_Name_String (Dir);
-      Direct : Dir_Type;
-      Name   : String (1 .. 1_000);
-      Last   : Natural;
-      Result : Boolean := False;
+      Direct   : Dir_Type;
+      Name     : String (1 .. 1_000);
+      Last     : Natural;
+      Result   : Boolean := False;
 
    begin
       Open (Direct, Dir_Name);
@@ -1267,8 +1273,8 @@ package body Prj is
       return Result;
 
    exception
-      --  If there is any problem, close the directory if open and return
-      --  True; the library directory will be added to the path.
+      --  If there is any problem, close the directory if open and return True.
+      --  The library directory will be added to the path.
 
       when others =>
          if Is_Open (Direct) then
@@ -1289,11 +1295,12 @@ package body Prj is
       Only_If_Ada         : Boolean := False) return Path_Name_Type
    is
       Data : Project_Data renames In_Tree.Projects.Table (Project);
+
    begin
       if (Data.Library and Including_Libraries)
         or else
           (Data.Object_Directory /= No_Path_Information
-           and then (not Including_Libraries or else not Data.Library))
+            and then (not Including_Libraries or else not Data.Library))
       then
          --  For a library project, add the library ALI directory if there is
          --  no object directory or if the library ALI directory contains ALI
@@ -1316,10 +1323,12 @@ package body Prj is
 
          elsif not Data.Virtual then
             declare
-               Add_Object_Dir : Boolean    := not Only_If_Ada;
-               Prj            : Project_Id := Project;
+               Add_Object_Dir : Boolean;
+               Prj            : Project_Id;
 
             begin
+               Add_Object_Dir := not Only_If_Ada;
+               Prj := Project;
                while not Add_Object_Dir and then Prj /= No_Project loop
                   if Has_Ada_Sources (In_Tree.Projects.Table (Prj)) then
                      Add_Object_Dir := True;
@@ -1334,6 +1343,7 @@ package body Prj is
             end;
          end if;
       end if;
+
       return No_Path;
    end Get_Object_Directory;
 
@@ -1342,10 +1352,13 @@ package body Prj is
    -----------------------------------
 
    function Ultimate_Extending_Project_Of
-     (Proj : Project_Id; In_Tree : Project_Tree_Ref) return Project_Id
+     (Proj    : Project_Id;
+      In_Tree : Project_Tree_Ref) return Project_Id
    is
-      Prj : Project_Id := Proj;
+      Prj : Project_Id;
+
    begin
+      Prj := Proj;
       while In_Tree.Projects.Table (Prj).Extended_By /= No_Project loop
          Prj := In_Tree.Projects.Table (Prj).Extended_By;
       end loop;
@@ -1373,8 +1386,10 @@ package body Prj is
 
       procedure Add_To_List (Prj : Project_Id) is
          Element : constant Project_Element :=
-           (Prj, In_Tree.Projects.Table (Project).All_Imported_Projects);
-         List : Project_List;
+                     (Prj,
+                      In_Tree.Projects.Table (Project).All_Imported_Projects);
+         List    : Project_List;
+
       begin
          --  Check that the project is not already in the list. We know the one
          --  passed to Recursive_Add have never been visited before, but the
@@ -1402,9 +1417,12 @@ package body Prj is
 
       procedure Recursive_Add (Prj : Project_Id; Dummy : in out Boolean) is
          pragma Unreferenced (Dummy);
+
          Prj2    : Project_Id;
+
       begin
          --  A project is not importing itself
+
          if Project /= Prj then
             Prj2 := Ultimate_Extending_Project_Of (Prj, In_Tree);
             Add_To_List (Prj2);

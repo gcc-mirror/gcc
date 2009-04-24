@@ -1,3 +1,9 @@
+2009-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* prj-env.adb, prj-proc.adb, prj.adb, prj.ads,
+	rtsfind.adb: Minor reformatting.
+	Minor code reorganization
+
 2009-04-24  Arnaud Charlet  <charlet@adacore.com>
 
 	* mlib-prj.adb: Use friendlier english identifier.
