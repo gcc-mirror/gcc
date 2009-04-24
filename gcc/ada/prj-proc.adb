@@ -141,15 +141,18 @@ package body Prj.Proc is
    --  recursively for all imported projects and a extended project, if any.
    --  Then process the declarative items of the project.
 
+   type Recursive_Check_Data is record
+      In_Tree         : Project_Tree_Ref;
+      Current_Dir     : String_Access;
+      When_No_Sources : Error_Warning;
+   end record;
+   --  Data passed to Recursive_Check
+   --  Current_Dir is for optimization purposes, avoiding extra system calls.
+
    procedure Recursive_Check
      (Project         : Project_Id;
-      In_Tree         : Project_Tree_Ref;
-      Current_Dir     : String;
-      When_No_Sources : Error_Warning);
-   --  If Project is not marked as checked, mark it as checked, call
-   --  Check_Naming_Scheme for the project, then call itself for a
-   --  possible extended project and all the imported projects of Project.
-   --  Current_Dir is for optimization purposes, avoiding extra system calls.
+      Data            : in out Recursive_Check_Data);
+   --  Check_Naming_Scheme for the project
 
    ---------
    -- Add --
@@ -274,16 +277,14 @@ package body Prj.Proc is
       Current_Dir     : String;
       When_No_Sources : Error_Warning)
    is
+      Dir : aliased String := Current_Dir;
+
+      procedure Check_All_Projects is new
+        For_Every_Project_Imported (Recursive_Check_Data, Recursive_Check);
+      Data : Recursive_Check_Data :=
+        (In_Tree, Dir'Unchecked_Access, When_No_Sources);
    begin
-      --  Make sure that all projects are marked as not checked
-
-      for Index in Project_Table.First ..
-                   Project_Table.Last (In_Tree.Projects)
-      loop
-         In_Tree.Projects.Table (Index).Checked := False;
-      end loop;
-
-      Recursive_Check (Project, In_Tree, Current_Dir, When_No_Sources);
+      Check_All_Projects (Project, In_Tree, Data, Imported_First => True);
 
       --  Set the Other_Part field for the units
 
@@ -2461,55 +2462,19 @@ package body Prj.Proc is
 
    procedure Recursive_Check
      (Project         : Project_Id;
-      In_Tree         : Project_Tree_Ref;
-      Current_Dir     : String;
-      When_No_Sources : Error_Warning)
+      Data            : in out Recursive_Check_Data)
    is
-      Data                  : Project_Data;
-      Imported_Project_List : Project_List := Empty_Project_List;
-
    begin
-      --  Do nothing if Project is No_Project, or Project has already
-      --  been marked as checked.
-
-      if Project /= No_Project
-        and then not In_Tree.Projects.Table (Project).Checked
-      then
-         --  Mark project as checked, to avoid infinite recursion in
-         --  ill-formed trees, where a project imports itself.
-
-         In_Tree.Projects.Table (Project).Checked := True;
-
-         Data := In_Tree.Projects.Table (Project);
-
-         --  Call itself for a possible extended project.
-         --  (if there is no extended project, then nothing happens).
-
-         Recursive_Check (Data.Extends, In_Tree, Current_Dir, When_No_Sources);
-
-         --  Call itself for all imported projects
-
-         Imported_Project_List := Data.Imported_Projects;
-         while Imported_Project_List /= Empty_Project_List loop
-            Recursive_Check
-              (In_Tree.Project_Lists.Table
-                 (Imported_Project_List).Project,
-               In_Tree, Current_Dir, When_No_Sources);
-            Imported_Project_List :=
-              In_Tree.Project_Lists.Table
-                (Imported_Project_List).Next;
-         end loop;
-
-         if Verbose_Mode then
-            Write_Str ("Checking project file """);
-            Write_Str (Get_Name_String (Data.Name));
-            Write_Line ("""");
-         end if;
-
-         Prj.Nmsc.Check
-           (Project, In_Tree, Error_Report, When_No_Sources,
-            Current_Dir);
+      if Verbose_Mode then
+         Write_Str ("Checking project file """);
+         Write_Str
+           (Get_Name_String (Data.In_Tree.Projects.Table (Project).Name));
+         Write_Line ("""");
       end if;
+
+      Prj.Nmsc.Check
+        (Project, Data.In_Tree, Error_Report, Data.When_No_Sources,
+         Data.Current_Dir.all);
    end Recursive_Check;
 
    -----------------------

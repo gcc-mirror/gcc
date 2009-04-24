@@ -364,74 +364,53 @@ package body Makeutl is
      (Project  : Project_Id;
       In_Tree  : Project_Tree_Ref) return String_List
    is
-      procedure Recursive_Add_Linker_Options (Proj : Project_Id);
+      procedure Recursive_Add (Proj : Project_Id; Dummy : in out Boolean);
       --  The recursive routine used to add linker options
 
-      ----------------------------------
-      -- Recursive_Add_Linker_Options --
-      ----------------------------------
+      -------------------
+      -- Recursive_Add --
+      -------------------
 
-      procedure Recursive_Add_Linker_Options (Proj : Project_Id) is
-         Data           : Project_Data;
+      procedure Recursive_Add (Proj : Project_Id; Dummy : in out Boolean) is
+         pragma Unreferenced (Dummy);
+         Data           : Project_Data renames In_Tree.Projects.Table (Proj);
          Linker_Package : Package_Id;
          Options        : Variable_Value;
-         Imported       : Project_List;
 
       begin
-         if Proj /= No_Project then
-            Data := In_Tree.Projects.Table (Proj);
+         Linker_Package :=
+           Prj.Util.Value_Of
+             (Name        => Name_Linker,
+              In_Packages => Data.Decl.Packages,
+              In_Tree     => In_Tree);
+         Options :=
+           Prj.Util.Value_Of
+             (Name                    => Name_Ada,
+              Index                   => 0,
+              Attribute_Or_Array_Name => Name_Linker_Options,
+              In_Package              => Linker_Package,
+              In_Tree                 => In_Tree);
 
-            if not Data.Seen then
-               In_Tree.Projects.Table (Proj).Seen := True;
-               Imported := Data.Imported_Projects;
+         --  If attribute is present, add the project with
+         --  the attribute to table Linker_Opts.
 
-               while Imported /= Empty_Project_List loop
-                  Recursive_Add_Linker_Options
-                    (In_Tree.Project_Lists.Table
-                       (Imported).Project);
-                  Imported := In_Tree.Project_Lists.Table
-                                (Imported).Next;
-               end loop;
-
-               if Proj /= Project then
-                  Linker_Package :=
-                    Prj.Util.Value_Of
-                      (Name        => Name_Linker,
-                       In_Packages => Data.Decl.Packages,
-                       In_Tree     => In_Tree);
-                  Options :=
-                    Prj.Util.Value_Of
-                      (Name                    => Name_Ada,
-                       Index                   => 0,
-                       Attribute_Or_Array_Name => Name_Linker_Options,
-                       In_Package              => Linker_Package,
-                       In_Tree                 => In_Tree);
-
-                  --  If attribute is present, add the project with
-                  --  the attribute to table Linker_Opts.
-
-                  if Options /= Nil_Variable_Value then
-                     Linker_Opts.Increment_Last;
-                     Linker_Opts.Table (Linker_Opts.Last) :=
-                       (Project => Proj, Options => Options.Values);
-                  end if;
-               end if;
-            end if;
+         if Options /= Nil_Variable_Value then
+            Linker_Opts.Increment_Last;
+            Linker_Opts.Table (Linker_Opts.Last) :=
+              (Project => Proj, Options => Options.Values);
          end if;
-      end Recursive_Add_Linker_Options;
+      end Recursive_Add;
+
+      procedure For_All_Projects is
+        new For_Every_Project_Imported (Boolean, Recursive_Add);
+      Dummy : Boolean := False;
 
    --  Start of processing for Linker_Options_Switches
 
    begin
       Linker_Opts.Init;
 
-      for Index in Project_Table.First ..
-                   Project_Table.Last (In_Tree.Projects)
-      loop
-         In_Tree.Projects.Table (Index).Seen := False;
-      end loop;
-
-      Recursive_Add_Linker_Options (Project);
+      For_All_Projects (Project, In_Tree, Dummy);
 
       Last_Linker_Option := 0;
 
@@ -449,8 +428,7 @@ package body Makeutl is
                In_Tree.Projects.Table (Proj).Dir_Path :=
                  new String'
                    (Get_Name_String
-                        (In_Tree.Projects.Table
-                             (Proj).Directory.Name));
+                        (In_Tree.Projects.Table (Proj).Directory.Name));
             end if;
 
             while Options /= Nil_String loop

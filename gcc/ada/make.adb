@@ -587,14 +587,8 @@ package body Make is
    procedure Debug_Msg (S : String; N : Unit_Name_Type);
    --  If Debug.Debug_Flag_W is set outputs string S followed by name N
 
-   procedure Recursive_Compute_Depth
-     (Project : Project_Id;
-      Depth   : Natural);
+   procedure Recursive_Compute_Depth (Project : Project_Id);
    --  Compute depth of Project and of the projects it depends on
-
-   procedure Compute_All_Imported_Projects (Project : Project_Id);
-   --  Compute, the list of the projects imported directly or indirectly by
-   --  project Project.
 
    -----------------------
    -- Gnatmake Routines --
@@ -3716,95 +3710,6 @@ package body Make is
          Delete_Temp_Config_Files;
       end if;
    end Compile_Sources;
-
-   -----------------------------------
-   -- Compute_All_Imported_Projects --
-   -----------------------------------
-
-   procedure Compute_All_Imported_Projects (Project : Project_Id) is
-      procedure Add_To_List (Prj : Project_Id);
-      --  Add a project to the list All_Imported_Projects of project Project
-
-      procedure Recursive_Add_Imported (Project : Project_Id);
-      --  Recursively add the projects imported by project Project, but not
-      --  those that are extended.
-
-      -----------------
-      -- Add_To_List --
-      -----------------
-
-      procedure Add_To_List (Prj : Project_Id) is
-         Element : constant Project_Element :=
-           (Prj, Project_Tree.Projects.Table (Project).All_Imported_Projects);
-         List : Project_List;
-      begin
-         Project_List_Table.Increment_Last (Project_Tree.Project_Lists);
-         List := Project_List_Table.Last (Project_Tree.Project_Lists);
-         Project_Tree.Project_Lists.Table (List) := Element;
-         Project_Tree.Projects.Table (Project).All_Imported_Projects := List;
-      end Add_To_List;
-
-      ----------------------------
-      -- Recursive_Add_Imported --
-      ----------------------------
-
-      procedure Recursive_Add_Imported (Project : Project_Id) is
-         List    : Project_List;
-         Element : Project_Element;
-         Prj     : Project_Id;
-
-      begin
-         if Project /= No_Project then
-
-            --  For all the imported projects
-
-            List := Project_Tree.Projects.Table (Project).Imported_Projects;
-            while List /= Empty_Project_List loop
-               Element := Project_Tree.Project_Lists.Table (List);
-               Prj := Element.Project;
-
-               --  Get the ultimate extending project
-
-               while
-                 Project_Tree.Projects.Table (Prj).Extended_By /= No_Project
-               loop
-                  Prj := Project_Tree.Projects.Table (Prj).Extended_By;
-               end loop;
-
-               --  If project has not yet been visited, add to list and recurse
-
-               if not Project_Tree.Projects.Table (Prj).Seen then
-                  Project_Tree.Projects.Table (Prj).Seen := True;
-                  Add_To_List (Prj);
-                  Recursive_Add_Imported (Prj);
-               end if;
-
-               List := Element.Next;
-            end loop;
-
-            --  Recurse on projects being imported, if any
-
-            Recursive_Add_Imported
-              (Project_Tree.Projects.Table (Project).Extends);
-         end if;
-      end Recursive_Add_Imported;
-
-   begin
-      --  Reset the Seen flag for all projects
-
-      for Index in 1 .. Project_Table.Last (Project_Tree.Projects) loop
-         Project_Tree.Projects.Table (Index).Seen := False;
-      end loop;
-
-      --  Make sure the list is empty
-
-      Project_Tree.Projects.Table (Project).All_Imported_Projects :=
-        Empty_Project_List;
-
-      --  Add to the list all projects imported directly or indirectly
-
-      Recursive_Add_Imported (Project);
-   end Compute_All_Imported_Projects;
 
    ----------------------------------
    -- Configuration_Pragmas_Switch --
@@ -7065,16 +6970,7 @@ package body Make is
          Add_Source_Directories (Main_Project, Project_Tree);
          Add_Object_Directories (Main_Project, Project_Tree);
 
-         --  Compute depth of each project
-
-         for Proj in Project_Table.First ..
-                     Project_Table.Last (Project_Tree.Projects)
-         loop
-            Project_Tree.Projects.Table (Proj).Seen := False;
-            Project_Tree.Projects.Table (Proj).Depth := 0;
-         end loop;
-
-         Recursive_Compute_Depth (Main_Project, Depth => 1);
+         Recursive_Compute_Depth (Main_Project);
 
          --  For each project compute the list of the projects it imports
          --  directly or indirectly.
@@ -7082,7 +6978,7 @@ package body Make is
          for Proj in Project_Table.First ..
                      Project_Table.Last (Project_Tree.Projects)
          loop
-            Compute_All_Imported_Projects (Proj);
+            Compute_All_Imported_Projects (Proj, Project_Tree);
          end loop;
 
       else
@@ -7632,51 +7528,56 @@ package body Make is
    -- Recursive_Compute_Depth --
    -----------------------------
 
-   procedure Recursive_Compute_Depth
-     (Project : Project_Id;
-      Depth   : Natural)
-   is
-      List : Project_List;
-      Proj : Project_Id;
+   procedure Recursive_Compute_Depth (Project : Project_Id) is
+      use Project_Boolean_Htable;
+      Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;
+
+      procedure Recurse (Prj : Project_Id; Depth : Natural);
+
+      procedure Recurse (Prj : Project_Id; Depth : Natural) is
+         Data : Project_Data renames Project_Tree.Projects.Table (Prj);
+         List : Project_List;
+         Proj : Project_Id;
+      begin
+         if Data.Depth >= Depth
+           or Get (Seen, Prj)
+         then
+            return;
+         end if;
+
+         --  We need a test to avoid infinite recursions with limited withs:
+         --  If we have A -> B -> A, then when set level of A to n, we try and
+         --  set level of B to n+1, and then level of A to n + 2,...
+
+         Set (Seen, Prj, True);
+
+         Data.Depth := Depth;
+
+         List := Data.Imported_Projects;
+
+         --  Visit each imported project
+
+         while List /= Empty_Project_List loop
+            Proj := Project_Tree.Project_Lists.Table (List).Project;
+            List := Project_Tree.Project_Lists.Table (List).Next;
+            Recurse (Prj => Proj, Depth => Depth + 1);
+         end loop;
+
+         --  We again allow changing the depth of this project later on if it
+         --  is in fact imported by a lower-level project.
+
+         Set (Seen, Prj, False);
+      end Recurse;
 
    begin
-      --  Nothing to do if there is no project or if the project has already
-      --  been seen or if the depth is large enough.
-
-      if Project = No_Project
-        or else Project_Tree.Projects.Table (Project).Seen
-        or else Project_Tree.Projects.Table (Project).Depth >= Depth
-      then
-         return;
-      end if;
-
-      Project_Tree.Projects.Table (Project).Depth := Depth;
-
-      --  Mark project as Seen to avoid endless loop caused by limited withs
-
-      Project_Tree.Projects.Table (Project).Seen := True;
-
-      List := Project_Tree.Projects.Table (Project).Imported_Projects;
-
-      --  Visit each imported project
-
-      while List /= Empty_Project_List loop
-         Proj := Project_Tree.Project_Lists.Table (List).Project;
-         List := Project_Tree.Project_Lists.Table (List).Next;
-         Recursive_Compute_Depth
-           (Project => Proj,
-            Depth => Depth + 1);
+      for Proj in Project_Table.First ..
+        Project_Table.Last (Project_Tree.Projects)
+      loop
+         Project_Tree.Projects.Table (Proj).Depth := 0;
       end loop;
 
-      --  Visit a project being extended, if any
-
-      Recursive_Compute_Depth
-        (Project => Project_Tree.Projects.Table (Project).Extends,
-         Depth   => Depth + 1);
-
-      --  Reset the Seen flag, as we leave this project
-
-      Project_Tree.Projects.Table (Project).Seen := False;
+      Recurse (Project, Depth => 1);
+      Reset (Seen);
    end Recursive_Compute_Depth;
 
    -------------------------------

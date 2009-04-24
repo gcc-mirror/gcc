@@ -172,11 +172,4 @@ package Prj.Env is
    --  Iterate through all the object directories of a project, including
    --  those of imported or modified projects.
 
-   generic
-      with procedure Action (Project : Project_Id);
-   procedure For_All_Imported_Projects
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref);
-   --  Execute Action for Project and all imported or extended projects
-
 end Prj.Env;

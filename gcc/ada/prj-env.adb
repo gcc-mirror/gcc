@@ -30,21 +30,9 @@ with Output;   use Output;
 with Prj.Com;  use Prj.Com;
 with Tempdir;
 
-with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-
 package body Prj.Env is
 
    Default_Naming    : constant Naming_Id := Naming_Table.First;
-
-   package Project_Boolean_Htable is new Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Boolean,
-      No_Element => False,
-      Key        => Project_Id,
-      Hash       => Hash,
-      Equal      => "=");
-   --  A table that associates a project to a boolean. This is used to detect
-   --  whether a project was already processed for instance.
 
    -----------------------
    -- Local Subprograms --
@@ -73,9 +61,6 @@ package body Prj.Env is
    --  Add Object_Dir to object path table. Make sure it is not duplicate
    --  and it is the last one in the current table.
 
-   function Contains_ALI_Files (Dir : Path_Name_Type) return Boolean;
-   --  Return True if there is at least one ALI file in the directory Dir
-
    procedure Set_Path_File_Var (Name : String; Value : String);
    --  Call Setenv, after calling To_Host_File_Spec
 
@@ -91,51 +76,24 @@ package body Prj.Env is
 
    function Ada_Include_Path
      (Project : Project_Id;
-      In_Tree : Project_Tree_Ref) return String_Access is
-
-      procedure Add (Project : Project_Id);
-      --  Add all the source directories of a project to the path only if
-      --  this project has not been visited. Calls itself recursively for
-      --  projects being extended, and imported projects. Adds the project
-      --  to the list Seen if this is the call to Add for this project.
+      In_Tree : Project_Tree_Ref) return String_Access
+   is
+      procedure Add (Project : Project_Id; Dummy : in out Boolean);
+      --  Add source dirs of Project to the path
 
       ---------
       -- Add --
       ---------
 
-      procedure Add (Project : Project_Id) is
+      procedure Add (Project : Project_Id; Dummy : in out Boolean) is
+         pragma Unreferenced (Dummy);
       begin
-         --  If Seen is empty, then the project cannot have been visited
-
-         if not In_Tree.Projects.Table (Project).Seen then
-            In_Tree.Projects.Table (Project).Seen := True;
-
-            declare
-               Data : constant Project_Data :=
-                        In_Tree.Projects.Table (Project);
-               List : Project_List := Data.Imported_Projects;
-
-            begin
-               --  Add to path all source directories of this project
-
-               Add_To_Path (Data.Source_Dirs, In_Tree);
-
-               --  Call Add to the project being extended, if any
-
-               if Data.Extends /= No_Project then
-                  Add (Data.Extends);
-               end if;
-
-               --  Call Add for each imported project, if any
-
-               while List /= Empty_Project_List loop
-                  Add
-                    (In_Tree.Project_Lists.Table (List).Project);
-                  List := In_Tree.Project_Lists.Table (List).Next;
-               end loop;
-            end;
-         end if;
+         Add_To_Path (In_Tree.Projects.Table (Project).Source_Dirs, In_Tree);
       end Add;
+
+      procedure For_All_Projects is
+        new For_Every_Project_Imported (Boolean, Add);
+      Dummy : Boolean := False;
 
    --  Start of processing for Ada_Include_Path
 
@@ -143,18 +101,10 @@ package body Prj.Env is
       --  If it is the first time we call this function for
       --  this project, compute the source path
 
-      if
-        In_Tree.Projects.Table (Project).Ada_Include_Path = null
-      then
+      if In_Tree.Projects.Table (Project).Ada_Include_Path = null then
          In_Tree.Private_Part.Ada_Path_Length := 0;
+         For_All_Projects (Project, In_Tree, Dummy);
 
-         for Index in Project_Table.First ..
-                      Project_Table.Last (In_Tree.Projects)
-         loop
-            In_Tree.Projects.Table (Index).Seen := False;
-         end loop;
-
-         Add (Project);
          In_Tree.Projects.Table (Project).Ada_Include_Path :=
            new String'
              (In_Tree.Private_Part.Ada_Path_Buffer
@@ -195,83 +145,29 @@ package body Prj.Env is
       In_Tree             : Project_Tree_Ref;
       Including_Libraries : Boolean := True) return String_Access
    is
-      procedure Add (Project : Project_Id);
-      --  Add all the object directories of a project to the path only if
-      --  this project has not been visited. Calls itself recursively for
-      --  projects being extended, and imported projects. Adds the project
-      --  to the list Seen if this is the first call to Add for this project.
+      procedure Add (Project : Project_Id; Dummy : in out Boolean);
+      --  Add all the object directories of a project to the path
 
       ---------
       -- Add --
       ---------
 
-      procedure Add (Project : Project_Id) is
+      procedure Add (Project : Project_Id; Dummy : in out Boolean) is
+         pragma Unreferenced (Dummy);
+         Path : constant Path_Name_Type :=
+           Get_Object_Directory
+             (In_Tree, Project,
+              Including_Libraries => Including_Libraries,
+              Only_If_Ada         => False);
       begin
-         --  If this project has not been seen yet
-
-         if not In_Tree.Projects.Table (Project).Seen then
-            In_Tree.Projects.Table (Project).Seen := True;
-
-            declare
-               Data : constant Project_Data :=
-                 In_Tree.Projects.Table (Project);
-               List : Project_List := Data.Imported_Projects;
-
-            begin
-               --  Add to path the object directory of this project
-               --  except if we don't include library project and
-               --  this is a library project.
-
-               if (Data.Library and then Including_Libraries)
-                 or else
-                 (Data.Object_Directory /= No_Path_Information
-                   and then
-                   (not Including_Libraries or else not Data.Library))
-               then
-                  --  For a library project, add the library directory,
-                  --  if there is no object directory or if it contains ALI
-                  --  files; otherwise add the object directory.
-
-                  if Data.Library then
-                     if Data.Object_Directory = No_Path_Information
-                       or else
-                         Contains_ALI_Files (Data.Library_ALI_Dir.Name)
-                     then
-                        Add_To_Path
-                          (Get_Name_String (Data.Library_ALI_Dir.Name),
-                           In_Tree);
-                     else
-                        Add_To_Path
-                          (Get_Name_String (Data.Object_Directory.Name),
-                           In_Tree);
-                     end if;
-
-                  else
-                     --  For a non library project, add the object directory
-
-                     Add_To_Path
-                       (Get_Name_String (Data.Object_Directory.Name),
-                        In_Tree);
-                  end if;
-               end if;
-
-               --  Call Add to the project being extended, if any
-
-               if Data.Extends /= No_Project then
-                  Add (Data.Extends);
-               end if;
-
-               --  Call Add for each imported project, if any
-
-               while List /= Empty_Project_List loop
-                  Add
-                    (In_Tree.Project_Lists.Table (List).Project);
-                  List := In_Tree.Project_Lists.Table (List).Next;
-               end loop;
-            end;
-
+         if Path /= No_Path then
+            Add_To_Path (Get_Name_String (Path), In_Tree);
          end if;
       end Add;
+
+      procedure For_All_Projects is
+        new For_Every_Project_Imported (Boolean, Add);
+      Dummy : Boolean := False;
 
    --  Start of processing for Ada_Objects_Path
 
@@ -279,18 +175,10 @@ package body Prj.Env is
       --  If it is the first time we call this function for
       --  this project, compute the objects path
 
-      if
-        In_Tree.Projects.Table (Project).Ada_Objects_Path = null
-      then
+      if In_Tree.Projects.Table (Project).Ada_Objects_Path = null then
          In_Tree.Private_Part.Ada_Path_Length := 0;
+         For_All_Projects (Project, In_Tree, Dummy);
 
-         for Index in Project_Table.First ..
-                      Project_Table.Last (In_Tree.Projects)
-         loop
-            In_Tree.Projects.Table (Index).Seen := False;
-         end loop;
-
-         Add (Project);
          In_Tree.Projects.Table (Project).Ada_Objects_Path :=
            new String'
              (In_Tree.Private_Part.Ada_Path_Buffer
@@ -494,45 +382,6 @@ package body Prj.Env is
          Current := Source_Dir.Next;
       end loop;
    end Add_To_Source_Path;
-
-   ------------------------
-   -- Contains_ALI_Files --
-   ------------------------
-
-   function Contains_ALI_Files (Dir : Path_Name_Type) return Boolean is
-      Dir_Name : constant String := Get_Name_String (Dir);
-      Direct : Dir_Type;
-      Name   : String (1 .. 1_000);
-      Last   : Natural;
-      Result : Boolean := False;
-
-   begin
-      Open (Direct, Dir_Name);
-
-      --  For each file in the directory, check if it is an ALI file
-
-      loop
-         Read (Direct, Name, Last);
-         exit when Last = 0;
-         Canonical_Case_File_Name (Name (1 .. Last));
-         Result := Last >= 5 and then Name (Last - 3 .. Last) = ".ali";
-         exit when Result;
-      end loop;
-
-      Close (Direct);
-      return Result;
-
-   exception
-      --  If there is any problem, close the directory if open and return
-      --  True; the library directory will be added to the path.
-
-      when others =>
-         if Is_Open (Direct) then
-            Close (Direct);
-         end if;
-
-         return True;
-   end Contains_ALI_Files;
 
    --------------------------------
    -- Create_Config_Pragmas_File --
@@ -1457,56 +1306,6 @@ package body Prj.Env is
       return "";
    end File_Name_Of_Library_Unit_Body;
 
-   -------------------------------
-   -- For_All_Imported_Projects --
-   -------------------------------
-
-   procedure For_All_Imported_Projects
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref)
-   is
-      use Project_Boolean_Htable;
-      Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;
-
-      procedure Recurse (Prj : Project_Id);
-      --  Process Prj recursively
-
-      -------------
-      -- Recurse --
-      -------------
-
-      procedure Recurse (Prj : Project_Id) is
-         Data : Project_Data renames In_Tree.Projects.Table (Prj);
-         List : Project_List := Data.Imported_Projects;
-
-      begin
-         if not Get (Seen, Prj) then
-            Set (Seen, Prj, True);
-
-            Action (Prj);
-
-            --  If we are extending a project, visit it
-
-            if Data.Extends /= No_Project then
-               Recurse (Data.Extends);
-            end if;
-
-            --  And visit all imported projects
-
-            while List /= Empty_Project_List loop
-               Recurse (In_Tree.Project_Lists.Table (List).Project);
-               List := In_Tree.Project_Lists.Table (List).Next;
-            end loop;
-         end if;
-      end Recurse;
-
-   --  Start of processing for For_All_Imported_Projects
-
-   begin
-      Recurse (Project);
-      Reset (Seen);
-   end For_All_Imported_Projects;
-
    -------------------------
    -- For_All_Object_Dirs --
    -------------------------
@@ -1515,28 +1314,34 @@ package body Prj.Env is
      (Project : Project_Id;
       In_Tree : Project_Tree_Ref)
    is
-      procedure For_Project (Prj : Project_Id);
+      procedure For_Project (Prj : Project_Id; Dummy : in out Integer);
       --  Get all object directories of Prj
 
       -----------------
       -- For_Project --
       -----------------
 
-      procedure For_Project (Prj : Project_Id) is
+      procedure For_Project (Prj : Project_Id; Dummy : in out Integer) is
+         pragma Unreferenced (Dummy);
          Data : Project_Data renames In_Tree.Projects.Table (Prj);
       begin
+         --  ??? Set_Ada_Paths has a different behavior for library project
+         --  files, should we have the same ?
+
          if Data.Object_Directory /= No_Path_Information then
             Get_Name_String (Data.Object_Directory.Display_Name);
             Action (Name_Buffer (1 .. Name_Len));
          end if;
       end For_Project;
 
-      procedure Get_Object_Dirs is new For_All_Imported_Projects (For_Project);
+      procedure Get_Object_Dirs is
+        new For_Every_Project_Imported (Integer, For_Project);
+      Dummy : Integer := 1;
 
    --  Start of processing for For_All_Object_Dirs
 
    begin
-      Get_Object_Dirs (Project, In_Tree);
+      Get_Object_Dirs (Project, In_Tree, Dummy);
    end For_All_Object_Dirs;
 
    -------------------------
@@ -1547,14 +1352,15 @@ package body Prj.Env is
      (Project : Project_Id;
       In_Tree : Project_Tree_Ref)
    is
-      procedure For_Project (Prj : Project_Id);
+      procedure For_Project (Prj : Project_Id; Dummy : in out Integer);
       --  Get all object directories of Prj
 
       -----------------
       -- For_Project --
       -----------------
 
-      procedure For_Project (Prj : Project_Id) is
+      procedure For_Project (Prj : Project_Id; Dummy : in out Integer) is
+         pragma Unreferenced (Dummy);
          Data       : Project_Data renames In_Tree.Projects.Table (Prj);
          Current    : String_List_Id := Data.Source_Dirs;
          The_String : String_Element;
@@ -1572,12 +1378,14 @@ package body Prj.Env is
          end if;
       end For_Project;
 
-      procedure Get_Source_Dirs is new For_All_Imported_Projects (For_Project);
+      procedure Get_Source_Dirs is
+        new For_Every_Project_Imported (Integer, For_Project);
+      Dummy : Integer := 1;
 
    --  Start of processing for For_All_Source_Dirs
 
    begin
-      Get_Source_Dirs (Project, In_Tree);
+      Get_Source_Dirs (Project, In_Tree, Dummy);
    end For_All_Source_Dirs;
 
    -------------------
@@ -1860,146 +1668,45 @@ package body Prj.Env is
 
       Len : Natural;
 
-      procedure Add (Proj : Project_Id);
-      --  Add all the source/object directories of a project to the path only
-      --  if this project has not been visited. Calls an internal procedure
-      --  recursively for projects being extended, and imported projects.
+      procedure Recursive_Add (Project : Project_Id; Dummy : in out Boolean);
+      --  Recursive procedure to add the source/object paths of extended/
+      --  imported projects.
 
-      ---------
-      -- Add --
-      ---------
+      -------------------
+      -- Recursive_Add --
+      -------------------
 
-      procedure Add (Proj : Project_Id) is
-
-         procedure Recursive_Add (Project : Project_Id);
-         --  Recursive procedure to add the source/object paths of extended/
-         --  imported projects.
-
-         -------------------
-         -- Recursive_Add --
-         -------------------
-
-         procedure Recursive_Add (Project : Project_Id) is
-         begin
-            --  If Seen is False, then the project has not yet been visited
-
-            if not In_Tree.Projects.Table (Project).Seen then
-               In_Tree.Projects.Table (Project).Seen := True;
-
-               declare
-                  Data : constant Project_Data :=
-                    In_Tree.Projects.Table (Project);
-                  List : Project_List := Data.Imported_Projects;
-
-               begin
-                  if Process_Source_Dirs then
-
-                     --  Add to path all source directories of this project if
-                     --  there are Ada sources.
-
-                     if In_Tree.Projects.Table (Project).Ada_Sources /=
-                        Nil_String
-                     then
-                        Add_To_Source_Path (Data.Source_Dirs, In_Tree);
-                     end if;
-                  end if;
-
-                  if Process_Object_Dirs then
-
-                     --  Add to path the object directory of this project
-                     --  except if we don't include library project and this
-                     --  is a library project.
-
-                     if (Data.Library and Including_Libraries)
-                       or else
-                         (Data.Object_Directory /= No_Path_Information
-                           and then
-                            (not Including_Libraries or else not Data.Library))
-                     then
-                        --  For a library project, add the library ALI
-                        --  directory if there is no object directory or
-                        --  if the library ALI directory contains ALI files;
-                        --  otherwise add the object directory.
-
-                        if Data.Library then
-                           if Data.Object_Directory = No_Path_Information
-                             or else Contains_ALI_Files
-                               (Data.Library_ALI_Dir.Name)
-                           then
-                              Add_To_Object_Path
-                                (Data.Library_ALI_Dir.Name, In_Tree);
-                           else
-                              Add_To_Object_Path
-                                (Data.Object_Directory.Name, In_Tree);
-                           end if;
-
-                        --  For a non-library project, add object directory if
-                        --  it is not a virtual project, and if there are Ada
-                        --  sources in the project or one of the projects it
-                        --  extends. If there are no Ada sources, adding the
-                        --  object directory could disrupt the order of the
-                        --  object dirs in the path.
-
-                        elsif not Data.Virtual then
-                           declare
-                              Add_Object_Dir : Boolean    := False;
-                              Prj            : Project_Id := Project;
-
-                           begin
-                              while not Add_Object_Dir
-                                and then Prj /= No_Project
-                              loop
-                                 if In_Tree.Projects.Table
-                                      (Prj).Ada_Sources /= Nil_String
-                                 then
-                                    Add_Object_Dir := True;
-
-                                 else
-                                    Prj :=
-                                      In_Tree.Projects.Table (Prj).Extends;
-                                 end if;
-                              end loop;
-
-                              if Add_Object_Dir then
-                                 Add_To_Object_Path
-                                   (Data.Object_Directory.Name, In_Tree);
-                              end if;
-                           end;
-                        end if;
-                     end if;
-                  end if;
-
-                  --  Call Add to the project being extended, if any
-
-                  if Data.Extends /= No_Project then
-                     Recursive_Add (Data.Extends);
-                  end if;
-
-                  --  Call Add for each imported project, if any
-
-                  while List /= Empty_Project_List loop
-                     Recursive_Add
-                       (In_Tree.Project_Lists.Table
-                          (List).Project);
-                     List :=
-                       In_Tree.Project_Lists.Table (List).Next;
-                  end loop;
-               end;
-            end if;
-         end Recursive_Add;
-
+      procedure Recursive_Add (Project : Project_Id; Dummy : in out Boolean) is
+         pragma Unreferenced (Dummy);
+         Data : constant Project_Data := In_Tree.Projects.Table (Project);
+         Path : Path_Name_Type;
       begin
-         Source_Path_Table.Set_Last (In_Tree.Private_Part.Source_Paths, 0);
-         Object_Path_Table.Set_Last (In_Tree.Private_Part.Object_Paths, 0);
+         --  ??? This is almost the equivalent of For_All_Source_Dirs
+         if Process_Source_Dirs then
 
-         for Index in Project_Table.First ..
-                      Project_Table.Last (In_Tree.Projects)
-         loop
-            In_Tree.Projects.Table (Index).Seen := False;
-         end loop;
+            --  Add to path all source directories of this project if
+            --  there are Ada sources.
 
-         Recursive_Add (Proj);
-      end Add;
+            if Has_Ada_Sources (In_Tree.Projects.Table (Project)) then
+               Add_To_Source_Path (Data.Source_Dirs, In_Tree);
+            end if;
+         end if;
+
+         if Process_Object_Dirs then
+            Path := Get_Object_Directory
+              (In_Tree, Project,
+               Including_Libraries => Including_Libraries,
+               Only_If_Ada         => True);
+
+            if Path /= No_Path then
+               Add_To_Object_Path (Path, In_Tree);
+            end if;
+         end if;
+      end Recursive_Add;
+
+      procedure For_All_Projects is
+        new For_Every_Project_Imported (Boolean, Recursive_Add);
+      Dummy : Boolean := False;
 
    --  Start of processing for Set_Ada_Paths
 
@@ -2042,7 +1749,9 @@ package body Prj.Env is
       --  then call the recursive procedure Add for Project.
 
       if Process_Source_Dirs or Process_Object_Dirs then
-         Add (Project);
+         Source_Path_Table.Set_Last (In_Tree.Private_Part.Source_Paths, 0);
+         Object_Path_Table.Set_Last (In_Tree.Private_Part.Object_Paths, 0);
+         For_All_Projects (Project, In_Tree, Dummy);
       end if;
 
       --  Write and close any file that has been created
