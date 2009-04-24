@@ -1,7 +1,7 @@
 2009-04-22  Taras Glek <tglek@mozilla.com>
 
-	* include/hashtab.h: Update GTY annotations to new syntax.
-	* include/splay-tree.h: Likewise.
+	* hashtab.h: Update GTY annotations to new syntax.
+	* splay-tree.h: Likewise.
 
 2009-03-17  Jason Merrill  <jason@redhat.com>
 
