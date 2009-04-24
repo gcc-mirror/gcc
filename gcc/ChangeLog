@@ -1,3 +1,11 @@
+2009-04-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/frv/frv.c (frv_frame_access): Do not use reg+reg
+	addressing for DImode accesses.
+	(frv_print_operand_address): Handle PLUS case.
+	* config/frv/frv.h (FIXED_REGISTERS): Mark link register as
+	fixed.
+
 2009-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/39794

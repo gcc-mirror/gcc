@@ -799,7 +799,7 @@
 	1, 1, 1, 1,			/* 164-167, accg8 - accg11 */	\
 	/* Other registers */						\
 	1,				/* 168, AP   - fake arg ptr */	\
-	0,				/* 169, LR   - Link register*/	\
+	1,				/* 169, LR   - Link register*/	\
 	0,				/* 170, LCR  - Loop count reg*/	\
 	1, 1				/* 171-172, iacc0 */		\
 }

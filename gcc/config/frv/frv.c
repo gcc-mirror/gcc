@@ -1687,7 +1687,21 @@ frv_frame_access (frv_frame_accessor_t *accessor, rtx reg, int stack_offset)
 	  emit_insn (gen_rtx_SET (VOIDmode, reg, temp));
 	}
       else
-	emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
+	{
+	  /* We cannot use reg+reg addressing for DImode access.  */
+	  if (mode == DImode
+	      && GET_CODE (XEXP (mem, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (mem, 0), 0)) == REG
+	      && GET_CODE (XEXP (XEXP (mem, 0), 1)) == REG)
+	    {
+	      rtx temp = gen_rtx_REG (SImode, TEMP_REGNO);
+	      rtx insn = emit_move_insn (temp,
+					 gen_rtx_PLUS (SImode, XEXP (XEXP (mem, 0), 0),
+						       XEXP (XEXP (mem, 0), 1)));
+	      mem = gen_rtx_MEM (DImode, temp);
+	    }
+	  emit_insn (gen_rtx_SET (VOIDmode, reg, mem));
+	}
       emit_use (reg);
     }
   else
@@ -1699,7 +1713,7 @@ frv_frame_access (frv_frame_accessor_t *accessor, rtx reg, int stack_offset)
 	  frv_frame_insn (gen_rtx_SET (Pmode, mem, temp),
 			  frv_dwarf_store (reg, stack_offset));
 	}
-      else if (GET_MODE (reg) == DImode)
+      else if (mode == DImode)
 	{
 	  /* For DImode saves, the dwarf2 version needs to be a SEQUENCE
 	     with a separate save for each register.  */
@@ -1707,6 +1721,19 @@ frv_frame_access (frv_frame_accessor_t *accessor, rtx reg, int stack_offset)
 	  rtx reg2 = gen_rtx_REG (SImode, REGNO (reg) + 1);
 	  rtx set1 = frv_dwarf_store (reg1, stack_offset);
 	  rtx set2 = frv_dwarf_store (reg2, stack_offset + 4);
+
+	  /* Also we cannot use reg+reg addressing.  */
+	  if (GET_CODE (XEXP (mem, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (mem, 0), 0)) == REG
+	      && GET_CODE (XEXP (XEXP (mem, 0), 1)) == REG)
+	    {
+	      rtx temp = gen_rtx_REG (SImode, TEMP_REGNO);
+	      rtx insn = emit_move_insn (temp,
+					 gen_rtx_PLUS (SImode, XEXP (XEXP (mem, 0), 0),
+						       XEXP (XEXP (mem, 0), 1)));
+	      mem = gen_rtx_MEM (DImode, temp);
+	    }
+
 	  frv_frame_insn (gen_rtx_SET (Pmode, mem, reg),
 			  gen_rtx_PARALLEL (VOIDmode,
 					    gen_rtvec (2, set1, set2)));
@@ -2545,6 +2572,12 @@ frv_print_operand_address (FILE * stream, rtx x)
       output_addr_const (stream, x);
       return;
 
+    case PLUS:
+      /* Poorly constructed asm statements can trigger this alternative.
+	 See gcc/testsuite/gcc.dg/asm-4.c for an example.  */
+      frv_print_operand_memory_reference (stream, x, 0);
+      return;
+      
     default:
       break;
     }
