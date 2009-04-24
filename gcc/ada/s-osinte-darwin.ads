@@ -236,10 +236,8 @@ package System.OS_Interface is
    ---------
 
    function lwp_self return System.Address;
-   pragma Import (C, lwp_self, "pthread_self");
-   --  lwp_self does not exist on this thread library, revert to pthread_self
-   --  which is the closest approximation (with getpid). This function is
-   --  needed to share 7staprop.adb across POSIX-like targets.
+   --  Return the mach thread bound to the current thread.  The value is not
+   --  used by the run-time library but made available to debuggers.
 
    -------------
    -- Threads --

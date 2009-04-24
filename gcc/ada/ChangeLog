@@ -1,3 +1,16 @@
+2009-04-24  Tristan Gingold  <gingold@adacore.com>
+
+	* s-osinte-darwin.adb, s-osinte-darwin.ads: lwp_self now returns the
+	mach thread id.
+
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-env.adb, prj-env.ads (Body_Path_Name_Of, Spec_Path_Name_Of,
+	Path_Name_Of_Library_Unit_Body): rEmove unused subprograms.
+	(For_All_Imported_Projects): new procedure
+	(For_All_Source_Dirs, For_All_Object_Dirs): Rewritten based on the
+	above rather than duplicating code.
+
 2009-04-24  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-env.adb

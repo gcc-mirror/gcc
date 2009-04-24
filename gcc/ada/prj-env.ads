@@ -118,12 +118,6 @@ package Prj.Env is
    procedure Delete_All_Path_Files (In_Tree : Project_Tree_Ref);
    --  Delete all temporary path files that have been created by Set_Ada_Paths
 
-   function Path_Name_Of_Library_Unit_Body
-     (Name    : String;
-      Project : Project_Id;
-      In_Tree : Project_Tree_Ref) return String;
-   --  Returns the path of a library unit
-
    function File_Name_Of_Library_Unit_Body
      (Name              : String;
       Project           : Project_Id;
@@ -167,6 +161,8 @@ package Prj.Env is
       In_Tree : Project_Tree_Ref);
    --  Iterate through all the source directories of a project, including those
    --  of imported or modified projects.
+   --  Only returns those directories that potentially contain Ada sources (ie
+   --  ignore projects that have no Ada sources
 
    generic
       with procedure Action (Path : String);
@@ -175,5 +171,12 @@ package Prj.Env is
       In_Tree : Project_Tree_Ref);
    --  Iterate through all the object directories of a project, including
    --  those of imported or modified projects.
+
+   generic
+      with procedure Action (Project : Project_Id);
+   procedure For_All_Imported_Projects
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref);
+   --  Execute Action for Project and all imported or extended projects
 
 end Prj.Env;
