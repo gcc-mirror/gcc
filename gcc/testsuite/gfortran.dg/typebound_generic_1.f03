@@ -28,8 +28,8 @@ MODULE m
     PROCEDURE, NOPASS :: gen1 => intf1 ! { dg-error "already a procedure" }
     GENERIC :: gen3 => ! { dg-error "specific binding" }
     GENERIC :: gen4 => p1 x ! { dg-error "Junk after" }
-    GENERIC :: gen4 => p_notthere ! { dg-error "Undefined specific binding" }
-    GENERIC :: gen5 => gen1 ! { dg-error "must target a specific binding" }
+    GENERIC :: gen5 => p_notthere ! { dg-error "Undefined specific binding" }
+    GENERIC :: gen6 => gen1 ! { dg-error "must target a specific binding" }
 
     GENERIC :: gensubr => p2 ! { dg-error "mixed FUNCTION/SUBROUTINE" }
     GENERIC :: gensubr => subr

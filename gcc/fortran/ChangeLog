@@ -1,3 +1,39 @@
+2009-04-24  Daniel Kraft  <d@domob.eu>
+
+	* gfortran.h (gfc_get_typebound_proc): Removed as macro, now a function.
+	(struct gfc_symtree): Moved `typebound' member inside union.
+	(struct gfc_namespace): Add `tb_sym_root' as new symtree to sort out
+	type-bound procedures there.
+	(gfc_get_tbp_symtree): New procedure.
+	* symbol.c (tentative_tbp_list): New global.
+	(gfc_get_namespace): NULL new `tb_sym_root' member.
+	(gfc_new_symtree): Removed initialization of `typebound' member.
+	(gfc_undo_symbols): Process list of tentative tbp's.
+	(gfc_commit_symbols): Ditto.
+	(free_tb_tree): New method.
+	(gfc_free_namespace): Call it.
+	(gfc_get_typebound_proc): New method.
+	(gfc_get_tbp_symtree): New method.
+	(gfc_find_typebound_proc): Adapt to structural changes of gfc_symtree
+	and gfc_namespace with regards to tbp's.
+	* dump-parse-tree.c (show_typebound): Ditto.
+	* primary.c (gfc_match_varspec): Ditto.  Don't reference tbp-symbol
+	as it isn't a symbol any longer.
+	* module.c (mio_typebound_symtree): Adapt to changes.
+	(mio_typebound_proc): Ditto, create symtrees using `gfc_get_tbp_symtree'
+	rather than `gfc_get_sym_tree'.
+	(mio_f2k_derived): Ditto.
+	* decl.c (match_procedure_in_type): Ditto.
+	(gfc_match_generic): Ditto.  Don't reference tbp-symbol.
+	* resolve.c (check_typebound_override): Adapt to changes.
+	(resolve_typebound_generic): Ditto.
+	(resolve_typebound_procedures): Ditto.
+	(ensure_not_abstract_walker): Ditto.
+	(ensure_not_abstract): Ditto.
+	(resolve_typebound_procedure): Ditto, ignore erraneous symbols (for
+	instance, through removed tentative ones).
+	* gfc-internals.texi (Type-bound procedures): Document changes.
+
 2009-04-24  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39861
