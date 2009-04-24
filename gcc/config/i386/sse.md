@@ -117,8 +117,6 @@
 (define_mode_attr avxmodesuffixp
  [(V2DF "pd") (V4SI "si") (V4SF "ps") (V8SF "ps") (V8SI "si")
   (V4DF "pd")])
-(define_mode_attr avxmodesuffixs
- [(V16QI "b") (V8HI "w") (V4SI "d")])
 (define_mode_attr avxmodesuffix
   [(V16QI "") (V32QI "256") (V4SI "") (V4SF "") (V2DF "")
    (V8SI "256") (V8SF "256") (V4DF "256")])
@@ -6592,7 +6590,7 @@
    (set_attr "prefix_data16" "1")
    (set_attr "mode" "TI")])
 
-(define_insn "*avx_pinsr<avxmodesuffixs>"
+(define_insn "*avx_pinsr<ssevecsize>"
   [(set (match_operand:SSEMODE124 0 "register_operand" "=x")
 	(vec_merge:SSEMODE124
 	  (vec_duplicate:SSEMODE124
@@ -6602,7 +6600,7 @@
   "TARGET_AVX"
 {
   operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
-  return "vpinsr<avxmodesuffixs>\t{%3, %k2, %1, %0|%0, %1, %k2, %3}";
+  return "vpinsr<ssevecsize>\t{%3, %k2, %1, %0|%0, %1, %k2, %3}";
 }
   [(set_attr "type" "sselog")
    (set_attr "prefix" "vex")

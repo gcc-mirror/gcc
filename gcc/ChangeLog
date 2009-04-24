@@ -1,3 +1,9 @@
+2009-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (avxmodesuffixs): Removed.
+	(*avx_pinsr<avxmodesuffixs>): Renamed to ...
+	(*avx_pinsr<ssevecsize>): This.
+
 2009-04-24  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* loop-iv.c (replace_single_def_regs): Look for REG_EQUAL notes;
