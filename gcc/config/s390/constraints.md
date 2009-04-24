@@ -129,13 +129,13 @@
 (define_constraint "I"
   "An 8-bit constant (0..255)"
   (and (match_code "const_int")
-       (match_test "(unsigned int) ival <= 255")))
+       (match_test "(unsigned HOST_WIDE_INT) ival <= 255")))
 
 
 (define_constraint "J"
   "A 12-bit constant (0..4095)"
   (and (match_code "const_int")
-       (match_test "(unsigned int) ival <= 4095")))
+       (match_test "(unsigned HOST_WIDE_INT) ival <= 4095")))
 
 
 (define_constraint "K"
