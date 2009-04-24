@@ -1410,44 +1410,40 @@ tree
 build_cond_expr (tree result_type, tree condition_operand,
                  tree true_operand, tree false_operand)
 {
-  tree result;
   bool addr_p = false;
+  tree result;
 
-  /* The front-end verifies that result, true and false operands have same base
-     type.  Convert everything to the result type.  */
-
-  true_operand  = convert (result_type, true_operand);
+  /* The front-end verified that result, true and false operands have
+     same base type.  Convert everything to the result type.  */
+  true_operand = convert (result_type, true_operand);
   false_operand = convert (result_type, false_operand);
 
-  /* If the result type is unconstrained, take the address of
-     the operands and then dereference our result.  */
+  /* If the result type is unconstrained, take the address of the operands
+     and then dereference our result.  */
   if (TREE_CODE (result_type) == UNCONSTRAINED_ARRAY_TYPE
       || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (result_type)))
     {
-      addr_p = true;
       result_type = build_pointer_type (result_type);
       true_operand = build_unary_op (ADDR_EXPR, result_type, true_operand);
       false_operand = build_unary_op (ADDR_EXPR, result_type, false_operand);
+      addr_p = true;
     }
 
   result = fold_build3 (COND_EXPR, result_type, condition_operand,
 			true_operand, false_operand);
 
-  /* If either operand is a SAVE_EXPR (possibly surrounded by
-     arithmetic, make sure it gets done.  */
-  true_operand  = skip_simple_arithmetic (true_operand);
+  /* If we have a common SAVE_EXPR (possibly surrounded by arithmetics)
+     in both arms, make sure it gets evaluated by moving it ahead of the
+     conditional expression.  This is necessary because it is evaluated
+     in only one place at run time and would otherwise be uninitialized
+     in one of the arms.  */
+  true_operand = skip_simple_arithmetic (true_operand);
   false_operand = skip_simple_arithmetic (false_operand);
 
-  if (TREE_CODE (true_operand) == SAVE_EXPR)
+  if (true_operand == false_operand && TREE_CODE (true_operand) == SAVE_EXPR)
     result = build2 (COMPOUND_EXPR, result_type, true_operand, result);
 
-  if (TREE_CODE (false_operand) == SAVE_EXPR)
-    result = build2 (COMPOUND_EXPR, result_type, false_operand, result);
-
-  /* ??? Seems the code above is wrong, as it may move ahead of the COND
-     SAVE_EXPRs with side effects and not shared by both arms.  */
-
- if (addr_p)
+  if (addr_p)
     result = build_unary_op (INDIRECT_REF, NULL_TREE, result);
 
   return result;
