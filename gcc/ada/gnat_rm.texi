@@ -4238,11 +4238,13 @@ Syntax:
 @smallexample @c ada
 pragma Source_File_Name (
   [Unit_Name   =>] unit_NAME,
-  Spec_File_Name =>  STRING_LITERAL);
+  Spec_File_Name =>  STRING_LITERAL,
+  [Index => INTEGER_LITERAL]);
 
 pragma Source_File_Name (
   [Unit_Name   =>] unit_NAME,
-  Body_File_Name =>  STRING_LITERAL);
+  Body_File_Name =>  STRING_LITERAL,
+  [Index => INTEGER_LITERAL]);
 @end smallexample
 
 @noindent
@@ -4253,6 +4255,36 @@ compilation, or to a single unit, depending on how it is used.
 @var{unit_name} is mapped to @var{file_name_literal}.  The identifier for
 the second argument is required, and indicates whether this is the file
 name for the spec or for the body.
+
+The optional Index argument should be used when a file contains multiple
+units, and when you do not want to use @code{gnatchop} to separate then
+into multiple files (which is the recommended procedure to limit the
+number of recompilation that are needed when some sources change).
+For instance, if the source file @file{source.ada} contains
+
+@smallexample @c ada
+package B is
+...
+end B;
+
+with B;
+procedure A is
+begin
+   ..
+end A;
+@end smallexample
+
+you could use the following configuration pragmas:
+
+@smallexample @c ada
+pragma Source_File_Name
+  (B, Spec_File_Name => "source.ada", Index => 1);
+pragma Source_File_Name
+  (A, Body_File_Name => "source.ada", Index => 2);
+@end smallexample
+
+Note that the @code{gnatname} utility can also be used to generate those
+configuration pragmas.
 
 Another form of the @code{Source_File_Name} pragma allows
 the specification of patterns defining alternative file naming schemes
