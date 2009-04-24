@@ -251,8 +251,8 @@ procedure GNATCmd is
    --  Process GNAT LINK, when there is a project file specified
 
    procedure Set_Library_For
-     (Project             : Project_Id;
-      There_Are_Libraries : in out Boolean);
+     (Project           : Project_Id;
+      Libraries_Present : in out Boolean);
    --  If Project is a library project, add the correct -L and -l switches to
    --  the linker invocation.
 
@@ -927,7 +927,7 @@ procedure GNATCmd is
 
    procedure Process_Link is
       Look_For_Executable : Boolean := True;
-      There_Are_Libraries : Boolean := False;
+      Libraries_Present   : Boolean := False;
       Path_Option         : constant String_Access :=
                               MLib.Linker_Library_Path_Option;
       Prj                 : Project_Id := Project;
@@ -946,12 +946,12 @@ procedure GNATCmd is
       --  Check if there are library project files
 
       if MLib.Tgt.Support_For_Libraries /= None then
-         Set_Libraries (Project, Project_Tree, There_Are_Libraries);
+         Set_Libraries (Project, Project_Tree, Libraries_Present);
       end if;
 
       --  If there are, add the necessary additional switches
 
-      if There_Are_Libraries then
+      if Libraries_Present then
 
          --  Add -L<lib_dir> -lgnarl -lgnat -Wl,-rpath,<lib_dir>
 
@@ -1231,8 +1231,8 @@ procedure GNATCmd is
    ---------------------
 
    procedure Set_Library_For
-     (Project             : Project_Id;
-      There_Are_Libraries : in out Boolean)
+     (Project           : Project_Id;
+      Libraries_Present : in out Boolean)
    is
       Path_Option : constant String_Access :=
                       MLib.Linker_Library_Path_Option;
@@ -1241,7 +1241,7 @@ procedure GNATCmd is
       --  Case of library project
 
       if Project_Tree.Projects.Table (Project).Library then
-         There_Are_Libraries := True;
+         Libraries_Present := True;
 
          --  Add the -L switch
 

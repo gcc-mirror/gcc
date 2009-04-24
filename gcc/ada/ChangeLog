@@ -1,3 +1,13 @@
+2009-04-24  Arnaud Charlet  <charlet@adacore.com>
+
+	* mlib-prj.adb: Use friendlier english identifier.
+
+	* gnatcmd.adb, make.adb: Use better english identifiers.
+
+2009-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* clean.adb: Minor reformatting
+
 2009-04-24  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.adb (OK_To_Rename): New flag

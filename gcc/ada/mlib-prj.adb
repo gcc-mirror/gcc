@@ -345,7 +345,7 @@ package body MLib.Prj is
 
       In_Main_Object_Directory : Boolean := True;
 
-      There_Are_Foreign_Sources : Boolean;
+      Foreign_Sources : Boolean;
 
       Rpath : String_Access := null;
       --  Allocated only if Path Option is supported
@@ -1351,7 +1351,7 @@ package body MLib.Prj is
 
          In_Main_Object_Directory := True;
 
-         There_Are_Foreign_Sources := Has_Foreign_Sources (Data);
+         Foreign_Sources := Has_Foreign_Sources (Data);
 
          loop
             if Data.Object_Directory /= No_Path_Information then
@@ -1412,7 +1412,7 @@ package body MLib.Prj is
                                     ALI_Path : constant String :=
                                                  Ext_To (C_Object_Path, "ali");
                                     Add_It   : Boolean :=
-                                                 There_Are_Foreign_Sources
+                                                 Foreign_Sources
                                                  or else
                                                    (Last > 5
                                                     and then
@@ -1514,7 +1514,7 @@ package body MLib.Prj is
                                           Check_Libs (ALI_Path, True);
                                        end if;
 
-                                    elsif There_Are_Foreign_Sources then
+                                    elsif Foreign_Sources then
                                        Objects.Append
                                          (new String'(Object_Path));
                                     end if;
