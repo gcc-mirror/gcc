@@ -308,7 +308,7 @@ package Prj is
    --  The table that contains all packages
 
    type Language_Data;
-   type Language_Ptr is access Language_Data;
+   type Language_Ptr is access all Language_Data;
    --  Index of language data
 
    No_Language_Index : constant Language_Ptr := null;
