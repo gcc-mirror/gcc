@@ -291,12 +291,16 @@ package body Prj.Proc is
          Source1 : Source_Id;
          Name    : Name_Id;
          Source2 : Source_Id;
+         Iter    : Source_Iterator;
 
       begin
          Unit_Htable.Reset;
 
-         Source1 := In_Tree.First_Source;
-         while Source1 /= No_Source loop
+         Iter := For_Each_Source (In_Tree);
+         loop
+            Source1 := Prj.Element (Iter);
+            exit when Source1 = No_Source;
+
             Name := In_Tree.Sources.Table (Source1).Unit;
 
             if Name /= No_Name then
@@ -312,7 +316,7 @@ package body Prj.Proc is
                end if;
             end if;
 
-            Source1 := In_Tree.Sources.Table (Source1).Next_In_Sources;
+            Next (Iter);
          end loop;
       end;
    end Check;

@@ -108,8 +108,6 @@ package body Prj is
                       Ada_Sources_Present            => True,
                       Other_Sources_Present          => True,
                       Ada_Sources                    => Nil_String,
-                      First_Source                   => No_Source,
-                      Last_Source                    => No_Source,
                       Interfaces_Defined             => False,
                       Imported_Directories_Switches  => null,
                       Include_Path                   => null,
@@ -156,6 +154,10 @@ package body Prj is
 
    procedure Free_List (Languages : in out Language_Ptr);
    --  Free memory allocated for the list of languages
+
+   procedure Language_Changed (Iter : in out Source_Iterator);
+   procedure Project_Changed (Iter : in out Source_Iterator);
+   --  Called when a new project or language was selected for this iterator.
 
    -------------------
    -- Add_To_Buffer --
@@ -387,6 +389,103 @@ package body Prj is
       return Name_Find;
 
    end Extend_Name;
+
+   ---------------------
+   -- Project_Changed --
+   ---------------------
+
+   procedure Project_Changed (Iter : in out Source_Iterator) is
+   begin
+      Iter.Language := Iter.In_Tree.Projects.Table (Iter.Project).Languages;
+      Language_Changed (Iter);
+   end Project_Changed;
+
+   ----------------------
+   -- Language_Changed --
+   ----------------------
+
+   procedure Language_Changed (Iter : in out Source_Iterator) is
+   begin
+      Iter.Current  := No_Source;
+      if Iter.Language_Name /= No_Name then
+         while Iter.Language /= null
+           and then Iter.Language.Name /= Iter.Language_Name
+         loop
+            Iter.Language := Iter.Language.Next;
+         end loop;
+      end if;
+
+      --  If there is no matching language in this project, move to next
+
+      if Iter.Language = No_Language_Index then
+         if Iter.All_Projects then
+            Iter.Project := Iter.Project + 1;
+            if Iter.Project > Project_Table.Last (Iter.In_Tree.Projects) then
+               Iter.Project := No_Project;
+            else
+               Project_Changed (Iter);
+            end if;
+         else
+            Iter.Project := No_Project;
+         end if;
+      else
+         Iter.Current := Iter.Language.First_Source;
+         if Iter.Current = No_Source then
+            Iter.Language := Iter.Language.Next;
+            Language_Changed (Iter);
+         end if;
+      end if;
+   end Language_Changed;
+
+   ---------------------
+   -- For_Each_Source --
+   ---------------------
+
+   function For_Each_Source
+     (In_Tree  : Project_Tree_Ref;
+      Project  : Project_Id := No_Project;
+      Language : Name_Id := No_Name) return Source_Iterator
+   is
+      Iter : Source_Iterator;
+   begin
+      Iter := Source_Iterator'
+        (In_Tree       => In_Tree,
+         Project       => Project,
+         All_Projects  => Project = No_Project,
+         Language_Name => Language,
+         Language      => No_Language_Index,
+         Current       => No_Source);
+
+      if Iter.Project = No_Project then
+         Iter.Project  := Project_Table.First;
+      end if;
+
+      Project_Changed (Iter);
+
+      return Iter;
+   end For_Each_Source;
+
+   -------------
+   -- Element --
+   -------------
+
+   function Element (Iter : Source_Iterator) return Source_Id is
+   begin
+      return Iter.Current;
+   end Element;
+
+   ----------
+   -- Next --
+   ----------
+
+   procedure Next (Iter : in out Source_Iterator) is
+   begin
+      Iter.Current := Iter.In_Tree.Sources.Table (Iter.Current).Next_In_Lang;
+      if Iter.Current = No_Source then
+         Iter.Language := Iter.Language.Next;
+         Language_Changed (Iter);
+      end if;
+   end Next;
 
    --------------------------------
    -- For_Every_Project_Imported --

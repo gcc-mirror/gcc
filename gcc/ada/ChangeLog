@@ -1,5 +1,13 @@
 2009-04-24  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-proc.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-env.adb
+	(Source_Iterator): new type.
+        This removes the need for having the sources on three different
+        lists at the project tree, project and language level. They are now
+        on a single list.
+
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
 	* gnatcmd.adb, prj.adb, prj.ads: Remove unused entities
 
 2009-04-24  Ed Schonberg  <schonberg@adacore.com>
