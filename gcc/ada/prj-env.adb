@@ -1050,7 +1050,6 @@ package body Prj.Env is
       --  will be set to True.
 
       Source        : Source_Id;
-      Src_Data      : Source_Data;
       Suffix        : File_Name_Type;
       The_Unit_Data : Unit_Data;
       Data          : File_Name_Data;
@@ -1207,22 +1206,20 @@ package body Prj.Env is
                   Source := Prj.Element (Iter);
                   exit when Source = No_Source;
 
-                  Src_Data := In_Tree.Sources.Table (Source);
-
-                  if In_Tree.Sources.Table (Source).Language.Name = Language
-                      and then not Src_Data.Locally_Removed
-                      and then Src_Data.Replaced_By = No_Source
-                      and then Src_Data.Path.Name /= No_Path
+                  if Source.Language.Name = Language
+                      and then not Source.Locally_Removed
+                      and then Source.Replaced_By = No_Source
+                      and then Source.Path.Name /= No_Path
                   then
-                     if Src_Data.Unit /= No_Name then
-                        Get_Name_String (Src_Data.Unit);
+                     if Source.Unit /= No_Name then
+                        Get_Name_String (Source.Unit);
 
-                        if Src_Data.Kind = Spec then
+                        if Source.Kind = Spec then
                            Suffix :=
-                             Src_Data.Language.Config.Mapping_Spec_Suffix;
+                             Source.Language.Config.Mapping_Spec_Suffix;
                         else
                            Suffix :=
-                             Src_Data.Language.Config.Mapping_Body_Suffix;
+                             Source.Language.Config.Mapping_Body_Suffix;
                         end if;
 
                         if Suffix /= No_File then
@@ -1232,10 +1229,10 @@ package body Prj.Env is
                         Put_Name_Buffer;
                      end if;
 
-                     Get_Name_String (Src_Data.File);
+                     Get_Name_String (Source.File);
                      Put_Name_Buffer;
 
-                     Get_Name_String (Src_Data.Path.Name);
+                     Get_Name_String (Source.Path.Name);
                      Put_Name_Buffer;
                   end if;
 

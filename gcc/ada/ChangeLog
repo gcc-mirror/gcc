@@ -1,6 +1,13 @@
 2009-04-24  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-env.adb
+	(Source_Id, Source_Data): use a real list to store sources rather than
+	using an external table to store the elements. This makes code more
+	efficient and more readable.
+
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-env.adb
 	(Source_Iterator): new type.
         This removes the need for having the sources on three different
         lists at the project tree, project and language level. They are now

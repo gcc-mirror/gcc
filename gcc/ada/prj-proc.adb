@@ -301,7 +301,7 @@ package body Prj.Proc is
             Source1 := Prj.Element (Iter);
             exit when Source1 = No_Source;
 
-            Name := In_Tree.Sources.Table (Source1).Unit;
+            Name := Source1.Unit;
 
             if Name /= No_Name then
                Source2 := Unit_Htable.Get (Name);
@@ -311,8 +311,8 @@ package body Prj.Proc is
 
                else
                   Unit_Htable.Remove (Name);
-                  In_Tree.Sources.Table (Source1).Other_Part := Source2;
-                  In_Tree.Sources.Table (Source2).Other_Part := Source1;
+                  Source1.Other_Part := Source2;
+                  Source2.Other_Part := Source1;
                end if;
             end if;
 
