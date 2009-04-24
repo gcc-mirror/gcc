@@ -212,10 +212,16 @@ package body Sem_Warn is
       end if;
 
       --  Check multiple code statements in a row
-      --  Note : the following code is now unreachable, because Asm statements
+
+      --  Note: the following code is now unreachable, because Asm statements
       --  are procedure calls whose actuals are concatenations, and as a result
       --  of a recent stack usage optimization each such call has its own
       --  block.
+
+      --  Are they always concatenations??? if so why not remove this code???
+
+      --  And indeed if we are really losing this warning, that's really bad
+      --  and we need to put it back ???
 
       if Is_List_Member (N)
         and then Present (Prev (N))
