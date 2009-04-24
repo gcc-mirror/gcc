@@ -356,7 +356,6 @@ package body Prj.Nmsc is
    procedure Find_Ada_Sources
      (Project               : Project_Id;
       In_Tree               : Project_Tree_Ref;
-      Data                  : in out Project_Data;
       Explicit_Sources_Only : Boolean);
    --  Find all Ada sources by traversing all source directories.
    --  If Explicit_Sources_Only is True, then the sources found must belong to
@@ -554,7 +553,7 @@ package body Prj.Nmsc is
       Path_Name       : Path_Name_Type;
       Project         : Project_Id;
       In_Tree         : Project_Tree_Ref;
-      Data            : in out Project_Data;
+      Units           : in out Files_Htable.Instance;
       Ada_Language    : Language_Ptr;
       Location        : Source_Ptr;
       Source_Recorded : in out Boolean);
@@ -3393,7 +3392,7 @@ package body Prj.Nmsc is
                        Prj.Util.Value_Of
                          (Snames.Name_Library_Kind, Attributes, In_Tree);
 
-      Imported_Project_List : Project_List := Empty_Project_List;
+      Imported_Project_List : Project_List;
 
       Continuation : String_Access := No_Continuation_String'Access;
 
@@ -4040,14 +4039,11 @@ package body Prj.Nmsc is
                   Check_Library (Data.Extends, Extends => True);
 
                   Imported_Project_List := Data.Imported_Projects;
-                  while Imported_Project_List /= Empty_Project_List loop
+                  while Imported_Project_List /= null loop
                      Check_Library
-                       (In_Tree.Project_Lists.Table
-                          (Imported_Project_List).Project,
+                       (Imported_Project_List.Project,
                         Extends => False);
-                     Imported_Project_List :=
-                       In_Tree.Project_Lists.Table
-                         (Imported_Project_List).Next;
+                     Imported_Project_List := Imported_Project_List.Next;
                   end loop;
                end if;
             end if;
@@ -7040,8 +7036,7 @@ package body Prj.Nmsc is
 
       if Get_Mode = Ada_Only then
          Find_Ada_Sources
-           (Project, In_Tree, Data,
-            Explicit_Sources_Only => Has_Explicit_Sources);
+           (Project, In_Tree, Explicit_Sources_Only => Has_Explicit_Sources);
 
       else
          Search_Directories
@@ -7137,17 +7132,20 @@ package body Prj.Nmsc is
    procedure Find_Ada_Sources
      (Project               : Project_Id;
       In_Tree               : Project_Tree_Ref;
-      Data                  : in out Project_Data;
       Explicit_Sources_Only : Boolean)
    is
+      Data : Project_Data renames In_Tree.Projects.Table (Project);
       Source_Dir     : String_List_Id;
       Element        : String_Element;
       Dir            : Dir_Type;
       Dir_Has_Source : Boolean := False;
       NL             : Name_Location;
       Ada_Language   : Language_Ptr;
+      Units          : Files_Htable.Instance;
 
    begin
+      Files_Htable.Reset (Units);
+
       if Current_Verbosity = High then
          Write_Line ("Looking for Ada sources:");
       end if;
@@ -7251,7 +7249,7 @@ package body Prj.Nmsc is
                         Path_Name       => Path_Name,
                         Project         => Project,
                         In_Tree         => In_Tree,
-                        Data            => Data,
+                        Units           => Units,
                         Ada_Language    => Ada_Language,
                         Location        => Location,
                         Source_Recorded => Dir_Has_Source);
@@ -7277,6 +7275,8 @@ package body Prj.Nmsc is
       if Current_Verbosity = High then
          Write_Line ("End looking for sources");
       end if;
+
+      Files_Htable.Reset (Units);
    end Find_Ada_Sources;
 
    -------------------------------
@@ -8184,11 +8184,12 @@ package body Prj.Nmsc is
       Path_Name       : Path_Name_Type;
       Project         : Project_Id;
       In_Tree         : Project_Tree_Ref;
-      Data            : in out Project_Data;
+      Units           : in out Files_Htable.Instance;
       Ada_Language    : Language_Ptr;
       Location        : Source_Ptr;
       Source_Recorded : in out Boolean)
    is
+      Data : Project_Data renames In_Tree.Projects.Table (Project);
       Canonical_File : File_Name_Type;
       Canonical_Path : Path_Name_Type;
 
@@ -8252,7 +8253,7 @@ package body Prj.Nmsc is
 
                --  Record the file name in the hash table Files_Htable
 
-               Files_Htable.Set (In_Tree.Files_HT, Canonical_File, Project);
+               Files_Htable.Set (Units, Canonical_File, Project);
 
                UData.File_Names (Unit_Kind) :=
                  (Name         => Canonical_File,
@@ -8312,7 +8313,7 @@ package body Prj.Nmsc is
             --  another project. If it is, report error but note we do that
             --  only for the first unit in the source file.
 
-            Unit_Prj := Files_Htable.Get (In_Tree.Files_HT, Canonical_File);
+            Unit_Prj := Files_Htable.Get (Units, Canonical_File);
 
             if not File_Recorded
               and then Unit_Prj /= No_Project
@@ -8329,7 +8330,7 @@ package body Prj.Nmsc is
                The_Unit := Unit_Table.Last (In_Tree.Units);
                Units_Htable.Set (In_Tree.Units_HT, Unit_Name, The_Unit);
 
-               Files_Htable.Set (In_Tree.Files_HT, Canonical_File, Project);
+               Files_Htable.Set (Units, Canonical_File, Project);
 
                UData.Name := Unit_Name;
                UData.File_Names (Unit_Kind) :=

@@ -2501,6 +2501,29 @@ package body Layout is
       --  Non-elementary (composite) types
 
       else
+         --  For packed arrays, take size and alignment values from the packed
+         --  array type if a packed array type has been created and the fields
+         --  are not currently set.
+
+         if Is_Array_Type (E) and then Present (Packed_Array_Type (E)) then
+            declare
+               PAT : constant Entity_Id := Packed_Array_Type (E);
+
+            begin
+               if Unknown_Esize (E) then
+                  Set_Esize     (E, Esize     (PAT));
+               end if;
+
+               if Unknown_RM_Size (E) then
+                  Set_RM_Size   (E, RM_Size   (PAT));
+               end if;
+
+               if Unknown_Alignment (E) then
+                  Set_Alignment (E, Alignment (PAT));
+               end if;
+            end;
+         end if;
+
          --  If RM_Size is known, set Esize if not known
 
          if Known_RM_Size (E) and then Unknown_Esize (E) then
@@ -2678,7 +2701,6 @@ package body Layout is
    procedure Rewrite_Integer (N : Node_Id; V : Uint) is
       Loc : constant Source_Ptr := Sloc (N);
       Typ : constant Entity_Id  := Etype (N);
-
    begin
       Rewrite (N, Make_Integer_Literal (Loc, Intval => V));
       Set_Etype (N, Typ);

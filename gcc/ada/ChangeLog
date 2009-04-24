@@ -1,5 +1,33 @@
 2009-04-24  Emmanuel Briot  <briot@adacore.com>
 
+	* prj-proc.adb, make.adb, mlib-prj.adb, prj.adb, prj.ads, clean.adb,
+	prj-nmsc.adb, prj-env.adb (Project_List_Table, Project_Element):
+	removed. Lists of projects are now implemented via standard malloc
+	rather than through the table.
+
+2009-04-24  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch12.adb: Minor reformatting
+
+	* g-trasym.adb: Minor reformatting
+
+	* exp_ch6.adb: Minor reformatting
+
+2009-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* layout.adb (Layout_Type): For packed array type, copy unset
+	size/alignment fields from the referenced Packed_Array_Type.
+
+2009-04-24  Bob Duff  <duff@adacore.com>
+
+	* lib-load.adb (Make_Instance_Unit): Revert previous change, no
+	longer needed after sem_ch12 changes.
+
+	* sem.adb (Walk_Library_Items): Include with's in some debugging
+	printouts.
+
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
 	* prj.ads, prj-nmsc.adb (Unit_Project): removed, since in fact we were
 	only ever using the Project field.
 

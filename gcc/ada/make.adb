@@ -5797,7 +5797,6 @@ package body Make is
                         then
                            declare
                               List    : Project_List;
-                              Element : Project_Element;
                               Proj2   : Project_Id;
                               Rebuild : Boolean := False;
 
@@ -5808,10 +5807,8 @@ package body Make is
                            begin
                               List := Project_Tree.Projects.Table (Proj1).
                                                       All_Imported_Projects;
-                              while List /= Empty_Project_List loop
-                                 Element :=
-                                   Project_Tree.Project_Lists.Table (List);
-                                 Proj2 := Element.Project;
+                              while List /= null loop
+                                 Proj2 := List.Project;
 
                                  if
                                    Project_Tree.Projects.Table (Proj2).Library
@@ -5828,7 +5825,7 @@ package body Make is
                                     end if;
                                  end if;
 
-                                 List := Element.Next;
+                                 List := List.Next;
                               end loop;
 
                               if Rebuild then
@@ -7555,9 +7552,9 @@ package body Make is
 
          --  Visit each imported project
 
-         while List /= Empty_Project_List loop
-            Proj := Project_Tree.Project_Lists.Table (List).Project;
-            List := Project_Tree.Project_Lists.Table (List).Next;
+         while List /= null loop
+            Proj := List.Project;
+            List := List.Next;
             Recurse (Prj => Proj, Depth => Depth + 1);
          end loop;
 

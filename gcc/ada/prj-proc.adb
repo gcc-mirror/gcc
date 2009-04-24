@@ -1150,8 +1150,8 @@ package body Prj.Proc is
 
       Temp_Result := No_Project;
       List := Data.Imported_Projects;
-      while List /= Empty_Project_List loop
-         Result := In_Tree.Project_Lists.Table (List).Project;
+      while List /= null loop
+         Result := List.Project;
 
          --  If the project is directly imported, then returns its ID
 
@@ -1177,7 +1177,7 @@ package body Prj.Proc is
             end loop;
          end;
 
-         List := In_Tree.Project_Lists.Table (List).Next;
+         List := List.Next;
       end loop;
 
       pragma Assert (Temp_Result /= No_Project, "project not found");
@@ -2531,26 +2531,22 @@ package body Prj.Proc is
                   From_Project_Node_Tree => From_Project_Node_Tree,
                   Extended_By            => No_Project);
 
-               --  Add this project to our list of imported projects
-
-               Project_List_Table.Increment_Last (In_Tree.Project_Lists);
-
-               In_Tree.Project_Lists.Table
-                 (Project_List_Table.Last (In_Tree.Project_Lists)) :=
-                 (Project => New_Project, Next => Empty_Project_List);
-
                --  Imported is the id of the last imported project. If
                --  it is nil, then this imported project is our first.
 
-               if Imported = Empty_Project_List then
+               if Imported = null then
                   In_Tree.Projects.Table (Project).Imported_Projects :=
-                    Project_List_Table.Last (In_Tree.Project_Lists);
+                    new Project_List_Element'
+                      (Project => New_Project,
+                       Next    => null);
+                  Imported :=
+                    In_Tree.Projects.Table (Project).Imported_Projects;
                else
-                  In_Tree.Project_Lists.Table (Imported).Next :=
-                    Project_List_Table.Last (In_Tree.Project_Lists);
+                  Imported.Next := new Project_List_Element'
+                    (Project => New_Project,
+                     Next    => null);
+                  Imported := Imported.Next;
                end if;
-
-               Imported := Project_List_Table.Last (In_Tree.Project_Lists);
             end if;
 
             With_Clause :=
@@ -2567,7 +2563,7 @@ package body Prj.Proc is
       else
          declare
             Processed_Data   : Project_Data     := Empty_Project (In_Tree);
-            Imported         : Project_List     := Empty_Project_List;
+            Imported         : Project_List;
             Declaration_Node : Project_Node_Id  := Empty_Node;
             Tref             : Source_Buffer_Ptr;
             Name             : constant Name_Id :=
