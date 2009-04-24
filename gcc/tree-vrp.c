@@ -2248,6 +2248,22 @@ extract_range_from_binary_expr (value_range_t *vr,
 	 the same end of each range.  */
       min = vrp_int_const_binop (code, vr0.min, vr1.min);
       max = vrp_int_const_binop (code, vr0.max, vr1.max);
+
+      /* If both additions overflowed the range kind is still correct.
+	 This happens regularly with subtracting something in unsigned
+	 arithmetic.
+         ???  See PR30318 for all the cases we do not handle.  */
+      if (code == PLUS_EXPR
+	  && (TREE_OVERFLOW (min) && !is_overflow_infinity (min))
+	  && (TREE_OVERFLOW (max) && !is_overflow_infinity (max)))
+	{
+	  min = build_int_cst_wide (TREE_TYPE (min),
+				    TREE_INT_CST_LOW (min),
+				    TREE_INT_CST_HIGH (min));
+	  max = build_int_cst_wide (TREE_TYPE (max),
+				    TREE_INT_CST_LOW (max),
+				    TREE_INT_CST_HIGH (max));
+	}
     }
   else if (code == MULT_EXPR
 	   || code == TRUNC_DIV_EXPR

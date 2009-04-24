@@ -1,3 +1,8 @@
+2009-04-24  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vrp.c (extract_range_from_binary_expr): Handle overflow
+	from unsigned additions.
+
 2009-04-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-typeck.c (set_init_index): Allow array designators that are
