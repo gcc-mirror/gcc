@@ -84,7 +84,7 @@ extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, char);
 
 extern void Error_Msg_N	          (Fat_Pointer, Node_Id);
 extern void Error_Msg_NE          (Fat_Pointer, Node_Id, Entity_Id);
-extern void Set_Identifier_Casing (Char *, Char *);
+extern void Set_Identifier_Casing (Char *, const Char *);
 
 /* err_vars: */
 
