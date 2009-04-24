@@ -1199,8 +1199,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  post_error ("?Storage_Error will be raised at run-time!",
 			      gnat_entity);
 
-		gnu_expr = build_allocator (gnu_alloc_type, gnu_expr, gnu_type,
-					    0, 0, gnat_entity, mutable_p);
+		gnu_expr
+		  = build_allocator (gnu_alloc_type, gnu_expr, gnu_type,
+				     Empty, Empty, gnat_entity, mutable_p);
 	      }
 	    else
 	      {

@@ -1837,11 +1837,11 @@ build_component_ref (tree record_variable, tree component,
    If GNU_OBJ is nonzero, it is an object to deallocate.  Otherwise,
    generate an allocator.
 
-   GNU_SIZE is the size of the object in bytes and ALIGN is the alignment in
-   bits.  GNAT_PROC, if present, is a procedure to call and GNAT_POOL is the
-   storage pool to use.  If not preset, malloc and free will be used except
-   if GNAT_PROC is the "fake" value of -1, in which case we allocate the
-   object dynamically on the stack frame.  */
+   GNU_SIZE is the size of the object in bytes and ALIGN is the alignment
+   in bits.  GNAT_PROC, if present, is a procedure to call and GNAT_POOL
+   is the storage pool to use.  If not present, malloc and free are used.
+   GNAT_NODE is used to provide an error location for restriction violation
+   messages.  */
 
 tree
 build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
@@ -1855,7 +1855,7 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
   if (Present (gnat_proc))
     {
       /* The storage pools are obviously always tagged types, but the
-	 secondary stack uses the same mechanism and is not tagged */
+	 secondary stack uses the same mechanism and is not tagged.  */
       if (Is_Tagged_Type (Etype (gnat_pool)))
 	{
 	  /* The size is the third parameter; the alignment is the
@@ -1890,7 +1890,7 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
       /* Secondary stack case.  */
       else
 	{
-	  /* The size is the second parameter */
+	  /* The size is the second parameter.  */
 	  Entity_Id gnat_size_type
 	    = Etype (Next_Formal (First_Formal (gnat_proc)));
 	  tree gnu_size_type = gnat_to_gnu_type (gnat_size_type);
@@ -1900,8 +1900,8 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
 
 	  gnu_size = convert (gnu_size_type, gnu_size);
 
-	  /* The first arg is the address of the object, for a
-	     deallocator, then the size */
+	  /* The first arg is the address of the object, for a deallocator,
+	     then the size.  */
 	  if (gnu_obj)
 	    gnu_call = build_call_nary (TREE_TYPE (TREE_TYPE (gnu_proc)),
 					gnu_proc_addr, 2, gnu_obj, gnu_size);
@@ -1913,57 +1913,35 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
 	}
     }
 
-  else if (gnu_obj)
+  if (gnu_obj)
     return build_call_1_expr (free_decl, gnu_obj);
 
-  /* ??? For now, disable variable-sized allocators in the stack since
-     we can't yet gimplify an ALLOCATE_EXPR.  */
-  else if (gnat_pool == -1
-	   && TREE_CODE (gnu_size) == INTEGER_CST
-	   && flag_stack_check != GENERIC_STACK_CHECK)
-    {
-      /* If the size is a constant, we can put it in the fixed portion of
-	 the stack frame to avoid the need to adjust the stack pointer.  */
-	{
-	  tree gnu_index = build_index_2_type (size_one_node, gnu_size);
-	  tree gnu_array_type = build_array_type (char_type_node, gnu_index);
-	  tree gnu_decl
-	    = create_var_decl (get_identifier ("RETVAL"), NULL_TREE,
-			       gnu_array_type, NULL_TREE, false, false, false,
-			       false, NULL, gnat_node);
-	  return convert (ptr_void_type_node,
-			  build_unary_op (ADDR_EXPR, NULL_TREE, gnu_decl));
-	}
-#if 0
-      else
-	return build2 (ALLOCATE_EXPR, ptr_void_type_node, gnu_size, gnu_align);
-#endif
-    }
-  else
-    {
-      if (Nkind (gnat_node) != N_Allocator || !Comes_From_Source (gnat_node))
-        Check_No_Implicit_Heap_Alloc (gnat_node);
+  /* Assert that we no longer can be called with this special pool.  */
+  gcc_assert (gnat_pool != -1);
 
-      /* If the allocator size is 32bits but the pointer size is 64bits then
-	 allocate 32bit memory (sometimes necessary on 64bit VMS). Otherwise
-	 default to standard malloc. */
-      if (TARGET_ABI_OPEN_VMS &&
-          (!TARGET_MALLOC64 ||
-           (POINTER_SIZE == 64
-	    && (UI_To_Int (Esize (Etype (gnat_node))) == 32
-	        || Convention (Etype (gnat_node)) == Convention_C))))
-        return build_call_1_expr (malloc32_decl, gnu_size);
-      else
-        return build_call_1_expr (malloc_decl, gnu_size);
-    }
+  /* Check that we aren't violating the associated restriction.  */
+  if (!(Nkind (gnat_node) == N_Allocator && Comes_From_Source (gnat_node)))
+    Check_No_Implicit_Heap_Alloc (gnat_node);
+
+  /* On VMS, if 64-bit memory is disabled or pointers are 64-bit and the
+     allocator size is 32-bit or Convention C, allocate 32-bit memory.  */
+  if (TARGET_ABI_OPEN_VMS
+      && (!TARGET_MALLOC64
+	  || (POINTER_SIZE == 64
+	      && (UI_To_Int (Esize (Etype (gnat_node))) == 32
+		  || Convention (Etype (gnat_node)) == Convention_C))))
+    return build_call_1_expr (malloc32_decl, gnu_size);
+
+  return build_call_1_expr (malloc_decl, gnu_size);
 }
 
 /* Build a GCC tree to correspond to allocating an object of TYPE whose
    initial value is INIT, if INIT is nonzero.  Convert the expression to
    RESULT_TYPE, which must be some type of pointer.  Return the tree.
+
    GNAT_PROC and GNAT_POOL optionally give the procedure to call and
    the storage pool to use.  GNAT_NODE is used to provide an error
-   location for restriction violations messages.  If IGNORE_INIT_TYPE is
+   location for restriction violation messages.  If IGNORE_INIT_TYPE is
    true, ignore the type of INIT for the purpose of determining the size;
    this will cause the maximum size to be allocated if TYPE is of
    self-referential size.  */
