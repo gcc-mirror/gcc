@@ -149,6 +149,7 @@ package body Prj is
    procedure Free_List (Languages : in out Language_Ptr);
    procedure Free_List (Source : in out Source_Id);
    procedure Free_List (List : in out Project_List);
+   procedure Free_List (Languages : in out Language_List);
    --  Free memory allocated for the list of languages or sources
 
    procedure Language_Changed (Iter : in out Source_Iterator);
@@ -841,6 +842,22 @@ package body Prj is
    -- Free_List --
    ---------------
 
+   procedure Free_List (Languages : in out Language_List) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Language_List_Element, Language_List);
+      Tmp : Language_List;
+   begin
+      while Languages /= null loop
+         Tmp := Languages.Next;
+         Unchecked_Free (Languages);
+         Languages := Tmp;
+      end loop;
+   end Free_List;
+
+   ---------------
+   -- Free_List --
+   ---------------
+
    procedure Free_List (Source : in out Source_Id) is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Source_Data, Source_Id);
@@ -848,6 +865,7 @@ package body Prj is
    begin
       while Source /= No_Source loop
          Tmp := Source.Next_In_Lang;
+         Free_List (Source.Alternate_Languages);
          Unchecked_Free (Source);
          Source := Tmp;
       end loop;
@@ -902,7 +920,6 @@ package body Prj is
          Array_Element_Table.Free (Tree.Array_Elements);
          Array_Table.Free (Tree.Arrays);
          Package_Table.Free (Tree.Packages);
-         Alternate_Language_Table.Free (Tree.Alt_Langs);
          Unit_Table.Free (Tree.Units);
          Units_Htable.Reset (Tree.Units_HT);
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
@@ -944,7 +961,6 @@ package body Prj is
       Array_Element_Table.Init      (Tree.Array_Elements);
       Array_Table.Init              (Tree.Arrays);
       Package_Table.Init            (Tree.Packages);
-      Alternate_Language_Table.Init (Tree.Alt_Langs);
       Unit_Table.Init               (Tree.Units);
       Units_Htable.Reset            (Tree.Units_HT);
       Source_Paths_Htable.Reset     (Tree.Source_Paths_HT);

@@ -1,3 +1,9 @@
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-nmsc.ads
+	(Alternate_Languages): now implemented as a malloc-ed list rather
+	than through a table.
+
 2009-04-24  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_res.adb (Static_Concatenation): Simplify predicate to make it

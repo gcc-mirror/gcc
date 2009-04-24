@@ -145,13 +145,14 @@ package body Prj.Proc is
       In_Tree         : Project_Tree_Ref;
       Current_Dir     : String_Access;
       When_No_Sources : Error_Warning;
+      Proc_Data       : Processing_Data;
    end record;
    --  Data passed to Recursive_Check
    --  Current_Dir is for optimization purposes, avoiding extra system calls.
 
    procedure Recursive_Check
-     (Project         : Project_Id;
-      Data            : in out Recursive_Check_Data);
+     (Project   : Project_Id;
+      Data      : in out Recursive_Check_Data);
    --  Check_Naming_Scheme for the project
 
    ---------
@@ -282,10 +283,14 @@ package body Prj.Proc is
       procedure Check_All_Projects is new
         For_Every_Project_Imported (Recursive_Check_Data, Recursive_Check);
 
-      Data : Recursive_Check_Data :=
-        (In_Tree, Dir'Unchecked_Access, When_No_Sources);
+      Data : Recursive_Check_Data;
 
    begin
+      Data.In_Tree         := In_Tree;
+      Data.Current_Dir     := Dir'Unchecked_Access;
+      Data.When_No_Sources := When_No_Sources;
+      Initialize (Data.Proc_Data);
+
       Check_All_Projects (Project, In_Tree, Data, Imported_First => True);
 
       --  Set the Other_Part field for the units
@@ -322,6 +327,8 @@ package body Prj.Proc is
             Next (Iter);
          end loop;
       end;
+
+      Free (Data.Proc_Data);
    end Check;
 
    -------------------------------
@@ -2462,8 +2469,8 @@ package body Prj.Proc is
    ---------------------
 
    procedure Recursive_Check
-     (Project         : Project_Id;
-      Data            : in out Recursive_Check_Data)
+     (Project   : Project_Id;
+      Data      : in out Recursive_Check_Data)
    is
    begin
       if Verbose_Mode then
@@ -2475,7 +2482,7 @@ package body Prj.Proc is
 
       Prj.Nmsc.Check
         (Project, Data.In_Tree, Error_Report, Data.When_No_Sources,
-         Data.Current_Dir.all);
+         Data.Current_Dir.all, Data.Proc_Data);
    end Recursive_Check;
 
    -----------------------
