@@ -149,6 +149,18 @@ package body System.OS_Interface is
       return 0;
    end sched_yield;
 
+   --------------
+   -- lwp_self --
+   --------------
+
+   function lwp_self return Address is
+      function pthread_mach_thread_np (thread : pthread_t) return Address;
+      pragma Import (C, pthread_mach_thread_np, "pthread_mach_thread_np");
+
+   begin
+      return pthread_mach_thread_np (pthread_self);
+   end lwp_self;
+
    ------------------
    -- pthread_init --
    ------------------
