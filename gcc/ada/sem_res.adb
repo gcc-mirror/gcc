@@ -3173,11 +3173,17 @@ package body Sem_Res is
             --  A small optimization: if one of the actuals is a concatenation
             --  create a block around a procedure call to recover stack space.
             --  This alleviates stack usage when several procedure calls in
-            --  the same statement list use concatenation.
+            --  the same statement list use concatenation. We do not perform
+            --  this wrapping for code statements, where the argument is a
+            --  static string, and we want to preserve warnings involving
+            --  sequences of such statements.
 
             elsif Nkind (A) = N_Op_Concat
               and then Nkind (N) = N_Procedure_Call_Statement
               and then Expander_Active
+              and then
+                not (Is_Intrinsic_Subprogram (Nam)
+                      and then Chars (Nam) = Name_Asm)
             then
                Establish_Transient_Scope (A, False);
                Resolve (A, Etype (F));

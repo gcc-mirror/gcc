@@ -1225,9 +1225,31 @@ package body System.Tasking.Rendezvous is
       --  we would not have gotten this far, so now we should
       --  (re)enqueue the call, if the mode permits that.
 
-      if Entry_Call.Mode /= Conditional_Call
-        or else not Entry_Call.With_Abort
+      --  If the call is timed, it may have timed out before the requeue,
+      --  in the unusual case where the current accept has taken longer than
+      --  the given delay. In that case the requeue is cancelled, and the
+      --  outer timed call will be aborted.
+
+      if Entry_Call.Mode = Conditional_Call
+        or else
+          (Entry_Call.Mode = Timed_Call
+            and then Entry_Call.With_Abort
+            and then Entry_Call.Cancellation_Attempted)
       then
+         STPO.Unlock (Acceptor);
+
+         if Parent_Locked then
+            STPO.Unlock (Parent);
+         end if;
+
+         STPO.Write_Lock (Entry_Call.Self);
+
+         pragma Assert (Entry_Call.State >= Was_Abortable);
+
+         Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Cancelled);
+         STPO.Unlock (Entry_Call.Self);
+
+      else
          --  Timed_Call, Simple_Call, or Asynchronous_Call
 
          Queuing.Enqueue (Acceptor.Entry_Queues (E), Entry_Call);
@@ -1266,22 +1288,6 @@ package body System.Tasking.Rendezvous is
 
             STPO.Unlock (Entry_Call.Self);
          end if;
-
-      else
-         --  Conditional_Call and With_Abort
-
-         STPO.Unlock (Acceptor);
-
-         if Parent_Locked then
-            STPO.Unlock (Parent);
-         end if;
-
-         STPO.Write_Lock (Entry_Call.Self);
-
-         pragma Assert (Entry_Call.State >= Was_Abortable);
-
-         Initialization.Wakeup_Entry_Caller (Self_ID, Entry_Call, Cancelled);
-         STPO.Unlock (Entry_Call.Self);
       end if;
 
       return True;

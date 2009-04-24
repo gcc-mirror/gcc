@@ -1,3 +1,25 @@
+2009-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Do not create blocks around code
+	statements, even though the actual of the call is a concatenation,
+	because the argument is static, and we want to preserve warning
+	messages  about sequences of code statements that are not marked
+	volatile.
+
+	* sem_warn.adb: remove obsolete comment about warning being obsolete
+
+	* s-tasren.adb (Task_Do_Or_Queue): If a timed entry call is being
+	requeued and the delay has expired while within the accept statement
+	that executes the requeue, do not perform the requeue and indicate that
+	the timed call has been aborted.
+
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
+	* mlib-prj.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-env.adb
+	(Has_Ada_Sources, Has_Foreign_Sources): new subprograms
+	(Project_Data.Ada_Sources_Present, Foreign_Sources_Present): removed,
+	since they can be computed from the above.
+
 2009-04-24  Vincent Celier  <celier@adacore.com>
 
 	* gnatcmd.adb: Call Prj.Env.Initialize with the Project_Tree

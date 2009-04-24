@@ -1351,7 +1351,7 @@ package body MLib.Prj is
 
          In_Main_Object_Directory := True;
 
-         There_Are_Foreign_Sources := Data.Other_Sources_Present;
+         There_Are_Foreign_Sources := Has_Foreign_Sources (Data);
 
          loop
             if Data.Object_Directory /= No_Path_Information then

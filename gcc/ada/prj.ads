@@ -1239,12 +1239,6 @@ package Prj is
       --  In multi-language mode, the sources for all languages including Ada
       --  are accessible through the Source_Iterator type
 
-      Ada_Sources_Present : Boolean := True;
-      --  True if there are Ada sources in the project
-
-      Other_Sources_Present : Boolean := True;
-      --  True if there are non-Ada sources in the project
-
       Ada_Sources : String_List_Id := Nil_String;
       --  The list of all the Ada source file names (gnatmake only).
 
@@ -1350,6 +1344,12 @@ package Prj is
    --  Return True when Language_Name (which must be lower case) is one of the
    --  languages used for the project.
 
+   function Has_Ada_Sources (Data : Project_Data) return Boolean;
+   --  Return True if the project has Ada sources
+
+   function Has_Foreign_Sources (Data : Project_Data) return Boolean;
+   --  Return True if the project has foreign sources
+
    Project_Error : exception;
    --  Raised by some subprograms in Prj.Attr
 
@@ -1417,8 +1417,9 @@ package Prj is
       Equal      => "=");
    --  Mapping of file names to indexes in the Units table
 
-   type Private_Project_Tree_Data is private;
-   --  Data for a project tree that is used only by the Project Manager
+   ---------------------
+   -- Source_Iterator --
+   ---------------------
 
    type Source_Iterator is private;
 
@@ -1434,6 +1435,13 @@ package Prj is
 
    procedure Next (Iter : in out Source_Iterator);
    --  Move on to the next source
+
+   -----------------------
+   -- Project_Tree_Data --
+   -----------------------
+
+   type Private_Project_Tree_Data is private;
+   --  Data for a project tree that is used only by the Project Manager
 
    type Project_Tree_Data is
       record
