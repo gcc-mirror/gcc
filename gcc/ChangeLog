@@ -1,3 +1,8 @@
+2009-04-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/sh/sh.c (sh_expand_prologue, sh_expand_epilogue):
+	Use memory_address_p instead of GO_IF_LEGITIMATE_ADDRESS.
+
 2009-04-23  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu-builtins.h: Delete file.
