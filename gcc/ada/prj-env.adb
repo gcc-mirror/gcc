@@ -1563,7 +1563,7 @@ package body Prj.Env is
          --  If there are Ada sources, call action with the name of every
          --  source directory.
 
-         if In_Tree.Projects.Table (Project).Ada_Sources_Present then
+         if Has_Ada_Sources (In_Tree.Projects.Table (Project)) then
             while Current /= Nil_String loop
                The_String := In_Tree.String_Elements.Table (Current);
                Action (Get_Name_String (The_String.Display_Value));

@@ -4348,9 +4348,6 @@ package body Prj.Nmsc is
       --  Shouldn't these be set to False by default, and only set to True when
       --  we actually find some source file???
 
-      Data.Ada_Sources_Present   := Data.Source_Dirs /= Nil_String;
-      Data.Other_Sources_Present := Data.Source_Dirs /= Nil_String;
-
       if Data.Source_Dirs /= Nil_String then
 
          --  Check if languages are specified in this project
@@ -4396,13 +4393,6 @@ package body Prj.Nmsc is
                   Data.Languages.Config.Kind := Unit_Based;
                   Data.Languages.Config.Dependency_Kind :=
                     ALI_File;
-
-                  --  Attribute Languages is not specified. So, it defaults to
-                  --  a project of language Ada only. No sources of languages
-                  --  other than Ada.
-
-                  Data.Other_Sources_Present := False;
-
                else
                   Data.Languages.Config.Kind := File_Based;
                end if;
@@ -4417,11 +4407,6 @@ package body Prj.Nmsc is
                NL_Id             : Language_Ptr;
 
             begin
-               --  Assume there are no languages declared
-
-               Data.Ada_Sources_Present := False;
-               Data.Other_Sources_Present := False;
-
                --  If there are no languages declared, there are no sources
 
                if Current = Nil_String then
@@ -4455,18 +4440,6 @@ package body Prj.Nmsc is
                      end loop;
 
                      if NL_Id = No_Language_Index then
-                        if Get_Mode = Ada_Only then
-
-                           --  Check for language Ada
-
-                           if Lang_Name = Name_Ada then
-                              Data.Ada_Sources_Present := True;
-
-                           else
-                              Data.Other_Sources_Present := True;
-                           end if;
-                        end if;
-
                         Index := new Language_Data'(No_Language_Data);
                         Index.Name := Lang_Name;
                         Index.Display_Name := Element.Value;
@@ -7096,10 +7069,6 @@ package body Prj.Nmsc is
             Name     : File_Name_Type;
 
          begin
-            if Get_Mode = Ada_Only then
-               Data.Ada_Sources_Present := Current /= Nil_String;
-            end if;
-
             if Get_Mode = Multi_Language then
                if Current = Nil_String then
                   Data.Languages := No_Language_Index;
@@ -7292,7 +7261,7 @@ package body Prj.Nmsc is
       then
          --  We should have found at least one source, if not report an error
 
-         if Data.Ada_Sources = Nil_String then
+         if not Has_Ada_Sources (Data) then
             Report_No_Sources
               (Project, "Ada", In_Tree, Source_List_File.Location);
          end if;

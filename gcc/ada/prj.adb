@@ -104,8 +104,6 @@ package body Prj is
                       Lib_Auto_Init                  => False,
                       Libgnarl_Needed                => Unknown,
                       Symbol_Data                    => No_Symbols,
-                      Ada_Sources_Present            => True,
-                      Other_Sources_Present          => True,
                       Ada_Sources                    => Nil_String,
                       Interfaces_Defined             => False,
                       Imported_Directories_Switches  => null,
@@ -1183,6 +1181,42 @@ package body Prj is
 
       raise Constraint_Error;
    end Value;
+
+   ---------------------
+   -- Has_Ada_Sources --
+   ---------------------
+
+   function Has_Ada_Sources (Data : Project_Data) return Boolean is
+      Lang : Language_Ptr := Data.Languages;
+   begin
+      while Lang /= No_Language_Index loop
+         if Lang.Name = Name_Ada then
+            return Lang.First_Source /= No_Source;
+         end if;
+         Lang := Lang.Next;
+      end loop;
+
+      return False;
+   end Has_Ada_Sources;
+
+   -------------------------
+   -- Has_Foreign_Sources --
+   -------------------------
+
+   function Has_Foreign_Sources (Data : Project_Data) return Boolean is
+      Lang : Language_Ptr := Data.Languages;
+   begin
+      while Lang /= No_Language_Index loop
+         if Lang.Name /= Name_Ada
+           and then Lang.First_Source /= No_Source
+         then
+            return True;
+         end if;
+         Lang := Lang.Next;
+      end loop;
+
+      return False;
+   end Has_Foreign_Sources;
 
 begin
    --  Make sure that the standard config and user project file extensions are
