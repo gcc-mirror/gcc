@@ -2411,7 +2411,7 @@ begin
 
                --  First make sure that the recorded file names are empty
 
-               Prj.Env.Initialize;
+               Prj.Env.Initialize (Project_Tree);
 
                Prj.Env.Set_Ada_Paths
                  (Project, Project_Tree, Including_Libraries => False);
