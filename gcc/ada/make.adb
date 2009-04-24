@@ -7136,8 +7136,7 @@ package body Make is
                Init_Q;
             end if;
 
-            --  And of course, we only insert in the Q if the source is not
-            --  marked.
+            --  And of course, only insert in the Q if the source is not marked
 
             if Sfile /= No_File and then not Is_Marked (Sfile, Index) then
                if Verbose_Mode then
@@ -7253,8 +7252,8 @@ package body Make is
       Full_Lib_File : File_Name_Type) return Boolean
    is
    begin
-      --  There is something to check only when using project files.
-      --  Otherwise, this function returns True (last line of the function).
+      --  There is something to check only when using project files. Otherwise,
+      --  this function returns True (last line of the function).
 
       if Main_Project /= No_Project then
          declare
@@ -7280,9 +7279,9 @@ package body Make is
                Path             => Path_Name);
             Current_Verbosity := Saved_Verbosity;
 
-            --  If this source is in a project, check that the ALI file is
-            --  in its object directory. If it is not, return False, so that
-            --  the ALI file will not be skipped.
+            --  If this source is in a project, check that the ALI file is in
+            --  its object directory. If it is not, return False, so that the
+            --  ALI file will not be skipped.
 
             if Project /= No_Project then
                Data := Project_Tree.Projects.Table (Project);
@@ -7548,10 +7547,9 @@ package body Make is
 
          Data.Depth := Depth;
 
-         List := Data.Imported_Projects;
-
          --  Visit each imported project
 
+         List := Data.Imported_Projects;
          while List /= null loop
             Proj := List.Project;
             List := List.Next;

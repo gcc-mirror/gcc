@@ -549,7 +549,6 @@ package body Prj.Env is
 
             declare
                Current : Project_List := Data.Imported_Projects;
-
             begin
                while Current /= null loop
                   Check (Current.Project);
