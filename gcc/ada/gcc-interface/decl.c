@@ -7393,7 +7393,7 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
       return;
     }
 
-  /* Otherwise, set the RM size proper for numerical types...  */
+  /* Otherwise, set the RM size proper for integral types...  */
   if ((TREE_CODE (gnu_type) == INTEGER_TYPE
        && Is_Discrete_Or_Fixed_Point_Type (gnat_entity))
       || (TREE_CODE (gnu_type) == ENUMERAL_TYPE
@@ -7853,7 +7853,7 @@ substitute_in_type (tree t, tree f, tree r)
 tree
 rm_size (tree gnu_type)
 {
-  /* For integer types, this is the precision.  */
+  /* For integral types, we store the RM size explicitly.  */
   if (INTEGRAL_TYPE_P (gnu_type) && TYPE_RM_SIZE (gnu_type))
     return TYPE_RM_SIZE (gnu_type);
 
