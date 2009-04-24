@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1381,7 +1381,7 @@ package body Rtsfind is
         Name_Modular_IO     => Ada_Wide_Wide_Text_IO_Modular_IO);
 
    begin
-      --  Nothing to do if name is not identifier or a selected component
+      --  Nothing to do if name is not an identifier or a selected component
       --  whose selector_name is not an identifier.
 
       if Nkind (Nam) = N_Identifier then

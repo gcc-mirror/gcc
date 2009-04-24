@@ -155,10 +155,10 @@ package body Prj.Env is
       procedure Add (Project : Project_Id; Dummy : in out Boolean) is
          pragma Unreferenced (Dummy);
          Path : constant Path_Name_Type :=
-           Get_Object_Directory
-             (In_Tree, Project,
-              Including_Libraries => Including_Libraries,
-              Only_If_Ada         => False);
+                  Get_Object_Directory
+                    (In_Tree, Project,
+                     Including_Libraries => Including_Libraries,
+                     Only_If_Ada         => False);
       begin
          if Path /= No_Path then
             Add_To_Path (Get_Name_String (Path), In_Tree);
@@ -1323,7 +1323,9 @@ package body Prj.Env is
 
       procedure For_Project (Prj : Project_Id; Dummy : in out Integer) is
          pragma Unreferenced (Dummy);
+
          Data : Project_Data renames In_Tree.Projects.Table (Prj);
+
       begin
          --  ??? Set_Ada_Paths has a different behavior for library project
          --  files, should we have the same ?
@@ -1361,6 +1363,7 @@ package body Prj.Env is
 
       procedure For_Project (Prj : Project_Id; Dummy : in out Integer) is
          pragma Unreferenced (Dummy);
+
          Data       : Project_Data renames In_Tree.Projects.Table (Prj);
          Current    : String_List_Id := Data.Source_Dirs;
          The_String : String_Element;
@@ -1656,6 +1659,7 @@ package body Prj.Env is
      (Project             : Project_Id;
       In_Tree             : Project_Tree_Ref;
       Including_Libraries : Boolean)
+
    is
       Source_FD : File_Descriptor := Invalid_FD;
       Object_FD : File_Descriptor := Invalid_FD;
@@ -1678,14 +1682,17 @@ package body Prj.Env is
 
       procedure Recursive_Add (Project : Project_Id; Dummy : in out Boolean) is
          pragma Unreferenced (Dummy);
+
          Data : constant Project_Data := In_Tree.Projects.Table (Project);
          Path : Path_Name_Type;
+
       begin
          --  ??? This is almost the equivalent of For_All_Source_Dirs
+
          if Process_Source_Dirs then
 
-            --  Add to path all source directories of this project if
-            --  there are Ada sources.
+            --  Add to path all source directories of this project if there are
+            --  Ada sources.
 
             if Has_Ada_Sources (In_Tree.Projects.Table (Project)) then
                Add_To_Source_Path (Data.Source_Dirs, In_Tree);
@@ -1711,8 +1718,8 @@ package body Prj.Env is
    --  Start of processing for Set_Ada_Paths
 
    begin
-      --  If it is the first time we call this procedure for
-      --  this project, compute the source path and/or the object path.
+      --  If it is the first time we call this procedure for this project,
+      --  compute the source path and/or the object path.
 
       if In_Tree.Projects.Table (Project).Include_Path_File = No_Path then
          Process_Source_Dirs := True;
