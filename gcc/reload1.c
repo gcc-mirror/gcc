@@ -7090,9 +7090,15 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 	      if (reload_adjust_reg_for_icode (&second_reload_reg,
 					       third_reload_reg,
 					       (enum insn_code) sri.icode))
-		icode = sri.icode, third_reload_reg = 0;
+		{
+		  icode = (enum insn_code) sri.icode;
+		  third_reload_reg = 0;
+		}
 	      else
-		oldequiv = old, real_oldequiv = real_old;
+		{
+		  oldequiv = old;
+		  real_oldequiv = real_old;
+		}
 	    }
 	  else if (sri.icode != CODE_FOR_nothing)
 	    /* We currently lack a way to express this in reloads.  */
@@ -7108,9 +7114,15 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 		  if (reload_adjust_reg_for_temp (&second_reload_reg,
 						  third_reload_reg,
 						  new_class, mode))
-		    third_reload_reg = 0, tertiary_icode = sri2.icode;
+		    {
+		      third_reload_reg = 0;
+		      tertiary_icode = (enum insn_code) sri2.icode;
+		    }
 		  else
-		    oldequiv = old, real_oldequiv = real_old;
+		    {
+		      oldequiv = old;
+		      real_oldequiv = real_old;
+		    }
 		}
 	      else if (new_t_class == NO_REGS && sri2.icode != CODE_FOR_nothing)
 		{
@@ -7123,10 +7135,13 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 						       sri2.icode)))
 		    {
 		      second_reload_reg = intermediate;
-		      tertiary_icode = sri2.icode;
+		      tertiary_icode = (enum insn_code) sri2.icode;
 		    }
 		  else
-		    oldequiv = old, real_oldequiv = real_old;
+		    {
+		      oldequiv = old;
+		      real_oldequiv = real_old;
+		    }
 		}
 	      else if (new_t_class != NO_REGS && sri2.icode == CODE_FOR_nothing)
 		{
@@ -7138,14 +7153,20 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 						      new_t_class, mode))
 		    {
 		      second_reload_reg = intermediate;
-		      tertiary_icode = sri2.icode;
+		      tertiary_icode = (enum insn_code) sri2.icode;
 		    }
 		  else
-		    oldequiv = old, real_oldequiv = real_old;
+		    {
+		      oldequiv = old;
+		      real_oldequiv = real_old;
+		    }
 		}
 	      else
-		/* This could be handled more intelligently too.  */
-		oldequiv = old, real_oldequiv = real_old;
+		{
+		  /* This could be handled more intelligently too.  */
+		  oldequiv = old;
+		  real_oldequiv = real_old;
+		}
 	    }
 	}
 

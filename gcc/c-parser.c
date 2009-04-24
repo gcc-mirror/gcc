@@ -4443,8 +4443,8 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after)
   c_parser_consume_token (parser);
   rhs = c_parser_expr_no_commas (parser, NULL);
   rhs = default_function_array_conversion (rhs);
-  ret.value = build_modify_expr (op_location, lhs.value, code, rhs.value,
-				 rhs.original_type);
+  ret.value = build_modify_expr (op_location, lhs.value, lhs.original_type,
+				 code, rhs.value, rhs.original_type);
   if (code == NOP_EXPR)
     ret.original_code = MODIFY_EXPR;
   else
@@ -7823,18 +7823,20 @@ c_parser_omp_for_loop (c_parser *parser, tree clauses, tree *par_clauses)
       else if (c_parser_next_token_is (parser, CPP_NAME)
 	       && c_parser_peek_2nd_token (parser)->type == CPP_EQ)
 	{
+	  struct c_expr decl_exp;
 	  struct c_expr init_exp;
 	  location_t init_loc;
 
-	  decl = c_parser_postfix_expression (parser).value;
+	  decl_exp = c_parser_postfix_expression (parser);
+	  decl = decl_exp.value;
 
 	  c_parser_require (parser, CPP_EQ, "expected %<=%>");
 	  init_loc = c_parser_peek_token (parser)->location;
 
 	  init_exp = c_parser_expr_no_commas (parser, NULL);
 	  init_exp = default_function_array_conversion (init_exp);
-	  init = build_modify_expr (init_loc,
-				    decl, NOP_EXPR, init_exp.value,
+	  init = build_modify_expr (init_loc, decl, decl_exp.original_type,
+				    NOP_EXPR, init_exp.value,
 				    init_exp.original_type);
 	  init = c_process_expr_stmt (init);
 

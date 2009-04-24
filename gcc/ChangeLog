@@ -1,3 +1,102 @@
+2009-04-24  Ian Lance Taylor  <iant@google.com>
+
+	* combine.c (record_value_for_reg): Change 0 to VOIDmode, twice.
+	(record_dead_and_set_regs): Likewise.
+	* df.h (struct df_mw_hardreg): Change flags field to int.
+	(struct df_base_ref): Likewise.
+	(struct df): Change changeable_flags field to int.
+	* df-scan.c (df_defs_record): Change clobber_flags to int.
+	* dwarf2.h (enum dwarf_tag): Make lo_user and hi_user values enum
+	constants rather than #define macros.
+	(enum dwarf_attribute, enum dwarf_location_atom): Likewise.
+	(enum dwarf_type, enum dwarf_endianity_encoding): Likewise.
+	(enum dwarf_calling_convention): Likewise.
+	(enum dwarf_line_number_x_ops): Likewise.
+	(enum dwarf_call_frame_info): Likewise.
+	(enum dwarf_source_language): Likewise.
+	* dwarf2out.c (int_loc_descriptor): Add cast to enum type.
+	(add_calling_convention_attribute): Likewise.
+	* fold-const.c (fold_undefer_overflow_warnings): Add cast to enum
+	type.
+	(combine_comparisons): Change compcode to int.  Add cast to enum
+	type.
+	* genrecog.c (maybe_both_true_2): Change c to int.
+	(write_switch): Likewise.  Add cast to enum type.
+	* gimplify.c (gimplify_omp_for): Handle return values from
+	gimplify_expr using MIN rather than bitwise or.
+	(gimplify_expr): Add cast to enum type.
+	* ipa-prop.c (update_jump_functions_after_inlining): Change
+	IPA_BOTTOM to IPA_JF_UNKNOWN.
+	* ira.c (setup_class_subset_and_memory_move_costs): Change mode to
+	int.  Add casts to enum type.
+	(setup_cover_and_important_classes): Change cl to int.  Add casts
+	to enum type.
+	(setup_class_translate): Change cl and mode to int.
+	(ira_init_once): Change mode to int.
+	(free_register_move_costs): Likewise.
+	(setup_prohibited_mode_move_regs): Add casts to enum type.
+	* langhooks.c (add_builtin_function_common): Rework assertion that
+	value fits bitfield.
+	* mcf.c (add_fixup_edge): Change type parameter to edge_type.
+	* omega.c (omega_do_elimination): Avoid math on enum types.
+	* optabs.c (expand_vec_shift_expr): Remove casts to int.
+	* opts.c (set_debug_level): Change 2 to enum constant.  Use new
+	int local to handle integral_argment value.
+	* regmove.c (try_auto_increment): Change PUT_MODE to
+	PUT_REG_NOTE_KIND.
+	* reload.c (push_secondary_reload): Add casts to enum type.
+	(secondary_reload_class, find_valid_class): Likewise.
+	* reload1.c (emit_input_reload_insns): Likewise.
+	* rtl.h (NOTE_VAR_LOCATION_STATUS): Likewise.
+	* sel-sched.c (init_hard_regs_data): Change cur_mode to int.
+	* sel-sched-ir.c (hash_with_unspec_callback): Change 0 to enum
+	constant.
+	* tree.c (build_common_builtin_nodes): Add casts to enum type.
+	* tree-complex.c (complex_lattice_t): Typedef to int rather than
+	enum type.
+	(expand_complex_libcall): Add casts to enum type.
+	* tree-into-ssa.c (get_ssa_name_ann): Change 0 to enum constant.
+	* tree-vect-loop.c (vect_model_reduction_cost): Compare reduc_code
+	with ERROR_MARK, not NUM_TREE_CODES.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vectorizable_reduction): Don't initialize epiloc_reduc_code.
+	When not using it, set it to ERROR_MARK rather than
+	NUM_TREE_CODES.
+	* tree-vect-patterns.c (vect_pattern_recog_1): Change vec_mode to
+	enum machine_mode.
+	* tree-vect-stmts.c (new_stmt_vec_info): Change 0 to
+	vect_unused_in_loop.  Change 0 to loop_vect.
+	* tree-vectorizer.c (vect_set_verbosity_level): Add casts to enum
+	type.
+	* var-tracking.c (get_init_value): Change return type to enum
+	var_init_status.
+	* vec.h (DEF_VEC_FUNC_P) [iterate]: Cast 0 to type T.
+	* config/arm/arm.c (fp_model_for_fpu): Change to array to enum
+	arm_fp_model.
+	(arm_override_options): Add casts to enum type.
+	(arm_emit_tls_decoration): Likewise.
+	* config/i386/i386.c (ix86_function_specific_restore): Add casts
+	to enum type.
+	* config/i386/i386-c.c (ix86_pragma_target_parse): Likewise.
+	* config/ia64/ia64.c (ia64_expand_compare): Change magic to int.
+	* config/rs6000/rs6000.c (rs6000_override_options): Add casts to
+	enum type.
+	* config/s390/s390.c (code_for_builtin_64): Change to array of
+	enum insn_code.
+	(code_for_builtin_31): Likewise.
+	(s390_expand_builtin): Change code_for_builtin to enum insn_code
+	const *.
+	* config/sparc/sparc.c (sparc_override_options): Change value
+	field in struct code_model to enum cmodel.  In initializer change
+	0 to NULL and add cast to enum type.
+
+	* c-typeck.c (build_modify_expr): Add lhs_origtype parameter.
+	Change all callers.  Issue a -Wc++-compat warning using
+	lhs_origtype if necessary.
+	(convert_for_assignment): Issue -Wc++-compat warnings about
+	invalid conversions to enum type on assignment.
+	* c-common.h (build_modify_expr): Update declaration.
+
 2009-04-24  Nick Clifton  <nickc@redhat.com>
 
 	* config/iq2000/iq2000.c (function_arg): Handle TImode values.

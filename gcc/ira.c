@@ -503,8 +503,7 @@ setup_alloc_regs (bool use_hard_frame_p)
 static void
 setup_class_subset_and_memory_move_costs (void)
 {
-  int cl, cl2;
-  enum machine_mode mode;
+  int cl, cl2, mode;
   HARD_REG_SET temp_hard_regset2;
 
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
@@ -516,9 +515,11 @@ setup_class_subset_and_memory_move_costs (void)
 	for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
 	  {
 	    ira_memory_move_cost[mode][cl][0] =
-	      MEMORY_MOVE_COST (mode, (enum reg_class) cl, 0);
+	      MEMORY_MOVE_COST ((enum machine_mode) mode,
+				(enum reg_class) cl, 0);
 	    ira_memory_move_cost[mode][cl][1] =
-	      MEMORY_MOVE_COST (mode, (enum reg_class) cl, 1);
+	      MEMORY_MOVE_COST ((enum machine_mode) mode,
+				(enum reg_class) cl, 1);
 	    /* Costs for NO_REGS are used in cost calculation on the
 	       1st pass when the preferred register classes are not
 	       known yet.  In this case we take the best scenario.  */
@@ -727,9 +728,8 @@ int ira_important_class_nums[N_REG_CLASSES];
 static void
 setup_cover_and_important_classes (void)
 {
-  int i, j, n;
+  int i, j, n, cl;
   bool set_p, eq_p;
-  enum reg_class cl;
   const enum reg_class *cover_classes;
   HARD_REG_SET temp_hard_regset2;
   static enum reg_class classes[LIM_REG_CLASSES + 1];
@@ -743,7 +743,7 @@ setup_cover_and_important_classes (void)
   else
     {
       for (i = 0; (cl = cover_classes[i]) != LIM_REG_CLASSES; i++)
-	classes[i] = cl;
+	classes[i] = (enum reg_class) cl;
       classes[i] = LIM_REG_CLASSES;
     }
 
@@ -756,7 +756,7 @@ setup_cover_and_important_classes (void)
 	    continue;
 #ifdef CONSTRAINT__LIMIT
 	  for (j = 0; j < CONSTRAINT__LIMIT; j++)
-	    if ((int) regclass_for_constraint (j) == i)
+	    if ((int) regclass_for_constraint ((enum constraint_num) j) == i)
 	      break;
 	  if (j < CONSTRAINT__LIMIT)
 	    {
@@ -778,7 +778,7 @@ setup_cover_and_important_classes (void)
 		    break;
 	    }
 	  if (j >= i)
-	    classes[n++] = i;
+	    classes[n++] = (enum reg_class) i;
 	}
       classes[n] = LIM_REG_CLASSES;
     }
@@ -788,12 +788,12 @@ setup_cover_and_important_classes (void)
     {
       for (j = 0; j < i; j++)
 	if (flag_ira_algorithm != IRA_ALGORITHM_PRIORITY
-	    && reg_classes_intersect_p (cl, classes[j]))
+	    && reg_classes_intersect_p ((enum reg_class) cl, classes[j]))
 	  gcc_unreachable ();
       COPY_HARD_REG_SET (temp_hard_regset, reg_class_contents[cl]);
       AND_COMPL_HARD_REG_SET (temp_hard_regset, no_unit_alloc_regs);
       if (! hard_reg_set_empty_p (temp_hard_regset))
-	ira_reg_class_cover[ira_reg_class_cover_size++] = cl;
+	ira_reg_class_cover[ira_reg_class_cover_size++] = (enum reg_class) cl;
     }
   ira_important_classes_num = 0;
   for (cl = 0; cl < N_REG_CLASSES; cl++)
@@ -810,7 +810,7 @@ setup_cover_and_important_classes (void)
 	      COPY_HARD_REG_SET (temp_hard_regset2,
 				 reg_class_contents[ira_reg_class_cover[j]]);
 	      AND_COMPL_HARD_REG_SET (temp_hard_regset2, no_unit_alloc_regs);
-	      if (cl == ira_reg_class_cover[j])
+	      if ((enum reg_class) cl == ira_reg_class_cover[j])
 		{
 		  eq_p = false;
 		  set_p = true;
@@ -826,7 +826,8 @@ setup_cover_and_important_classes (void)
 	  if (set_p && ! eq_p)
 	    {
 	      ira_important_class_nums[cl] = ira_important_classes_num;
-	      ira_important_classes[ira_important_classes_num++] = cl;
+	      ira_important_classes[ira_important_classes_num++] =
+		(enum reg_class) cl;
 	    }
 	}
     }
@@ -841,8 +842,8 @@ enum reg_class ira_class_translate[N_REG_CLASSES];
 static void
 setup_class_translate (void)
 {
-  enum reg_class cl, cover_class, best_class, *cl_ptr;
-  enum machine_mode mode;
+  int cl, mode;
+  enum reg_class cover_class, best_class, *cl_ptr;
   int i, cost, min_cost, best_cost;
 
   for (cl = 0; cl < N_REG_CLASSES; cl++)
@@ -1225,7 +1226,7 @@ ira_init_register_move_cost (enum machine_mode mode)
 void
 ira_init_once (void)
 {
-  enum machine_mode mode;
+  int mode;
 
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
     {
@@ -1241,7 +1242,7 @@ ira_init_once (void)
 static void
 free_register_move_costs (void)
 {
-  enum machine_mode mode;
+  int mode;
 
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
     {
@@ -1311,9 +1312,9 @@ setup_prohibited_mode_move_regs (void)
 	  if (! HARD_REGNO_MODE_OK (j, (enum machine_mode) i))
 	    continue;
 	  SET_REGNO (test_reg1, j);
-	  PUT_MODE (test_reg1, i);
+	  PUT_MODE (test_reg1, (enum machine_mode) i);
 	  SET_REGNO (test_reg2, j);
-	  PUT_MODE (test_reg2, i);
+	  PUT_MODE (test_reg2, (enum machine_mode) i);
 	  INSN_CODE (move_insn) = -1;
 	  recog_memoized (move_insn);
 	  if (INSN_CODE (move_insn) < 0)

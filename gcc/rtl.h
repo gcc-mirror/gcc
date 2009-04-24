@@ -880,8 +880,8 @@ extern const char * const reg_note_name[];
 /* Initialization status of the variable in the location.  Status
    can be unknown, uninitialized or initialized.  See enumeration
    type below.  */
-#define NOTE_VAR_LOCATION_STATUS(INSN)  (XCINT (XCEXP (INSN, 4, NOTE), \
-						2, VAR_LOCATION))
+#define NOTE_VAR_LOCATION_STATUS(INSN) \
+  ((enum var_init_status) (XCINT (XCEXP (INSN, 4, NOTE), 2, VAR_LOCATION)))
 
 /* Possible initialization status of a variable.   When requested
    by the user, this information is tracked and recorded in the DWARF

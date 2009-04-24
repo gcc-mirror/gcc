@@ -188,7 +188,7 @@ try_auto_increment (rtx insn, rtx inc_insn, rtx inc_insn_set, rtx reg,
 		     changed.  */
 		  rtx note = find_reg_note (insn, REG_DEAD, reg);
 		  if (note)
-		    PUT_MODE (note, REG_UNUSED);
+		    PUT_REG_NOTE_KIND (note, REG_UNUSED);
 
 		  add_reg_note (insn, REG_INC, reg);
 

@@ -1243,7 +1243,7 @@ maybe_both_true_2 (struct decision_test *d1, struct decision_test *d2)
 	  else if (d2->type == DT_pred && d2->u.pred.data)
 	    {
 	      bool common = false;
-	      enum rtx_code c;
+	      int c;
 
 	      for (c = 0; c < NUM_RTX_CODE; c++)
 		if (d1->u.pred.data->codes[c] && d2->u.pred.data->codes[c])
@@ -1921,7 +1921,8 @@ write_switch (struct decision *start, int depth)
       while (p && p->tests->type == DT_pred && p->tests->u.pred.data)
 	{
 	  const struct pred_data *data = p->tests->u.pred.data;
-	  RTX_CODE c;
+	  int c;
+
 	  for (c = 0; c < NUM_RTX_CODE; c++)
 	    if (codemap[c] && data->codes[c])
 	      goto pred_done;
@@ -1930,7 +1931,7 @@ write_switch (struct decision *start, int depth)
 	    if (data->codes[c])
 	      {
 		fputs ("    case ", stdout);
-		print_code (c);
+		print_code ((enum rtx_code) c);
 		fputs (":\n", stdout);
 		codemap[c] = 1;
 	      }

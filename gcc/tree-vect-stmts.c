@@ -4343,7 +4343,7 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo)
   STMT_VINFO_TYPE (res) = undef_vec_info_type;
   STMT_VINFO_STMT (res) = stmt;
   STMT_VINFO_LOOP_VINFO (res) = loop_vinfo;
-  STMT_VINFO_RELEVANT (res) = 0;
+  STMT_VINFO_RELEVANT (res) = vect_unused_in_loop;
   STMT_VINFO_LIVE_P (res) = false;
   STMT_VINFO_VECTYPE (res) = NULL;
   STMT_VINFO_VEC_STMT (res) = NULL;
@@ -4365,7 +4365,7 @@ new_stmt_vec_info (gimple stmt, loop_vec_info loop_vinfo)
   STMT_VINFO_SAME_ALIGN_REFS (res) = VEC_alloc (dr_p, heap, 5);
   STMT_VINFO_INSIDE_OF_LOOP_COST (res) = 0;
   STMT_VINFO_OUTSIDE_OF_LOOP_COST (res) = 0;
-  STMT_SLP_TYPE (res) = 0;
+  STMT_SLP_TYPE (res) = loop_vect;
   DR_GROUP_FIRST_DR (res) = NULL;
   DR_GROUP_NEXT_DR (res) = NULL;
   DR_GROUP_SIZE (res) = 0;
@@ -4910,5 +4910,3 @@ supportable_narrowing_operation (enum tree_code code,
   *code1 = c1;
   return true;
 }
-
-

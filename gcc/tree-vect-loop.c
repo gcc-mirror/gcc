@@ -1890,7 +1890,7 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 
   if (!nested_in_vect_loop_p (loop, orig_stmt))
     {
-      if (reduc_code < NUM_TREE_CODES) 
+      if (reduc_code != ERROR_MARK)
 	outer_cost += TARG_VEC_STMT_COST + TARG_VEC_TO_SCALAR_COST;
       else 
 	{
@@ -2563,7 +2563,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   /* 2.3 Create the reduction code, using one of the three schemes described
          above.  */
 
-  if (reduc_code < NUM_TREE_CODES)
+  if (reduc_code != ERROR_MARK)
     {
       tree tmp;
 
@@ -2852,7 +2852,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  enum tree_code code, orig_code, epilog_reduc_code = 0;
+  enum tree_code code, orig_code, epilog_reduc_code;
   enum machine_mode vec_mode;
   int op_type;
   optab optab, reduc_optab;
@@ -3088,13 +3088,13 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "no optab for reduction.");
-      epilog_reduc_code = NUM_TREE_CODES;
+      epilog_reduc_code = ERROR_MARK;
     }
   if (optab_handler (reduc_optab, vec_mode)->insn_code == CODE_FOR_nothing)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
         fprintf (vect_dump, "reduc op not supported by target.");
-      epilog_reduc_code = NUM_TREE_CODES;
+      epilog_reduc_code = ERROR_MARK;
     }
  
   if (!vec_stmt) /* transformation not required.  */
@@ -3582,6 +3582,3 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   if (loop->inner && vect_print_dump_info (REPORT_VECTORIZED_LOOPS))
     fprintf (vect_dump, "OUTER LOOP VECTORIZED.");
 }
-
-
-

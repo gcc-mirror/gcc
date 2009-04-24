@@ -2978,7 +2978,7 @@ df_defs_record (struct df_collection_rec *collection_rec,
   if (code == SET || code == CLOBBER)
     {
       /* Mark the single def within the pattern.  */
-      enum df_ref_flags clobber_flags = flags;
+      int clobber_flags = flags;
       clobber_flags |= (code == CLOBBER) ? DF_REF_MUST_CLOBBER : 0;
       df_def_record_1 (collection_rec, x, bb, insn_info, clobber_flags);
     }
