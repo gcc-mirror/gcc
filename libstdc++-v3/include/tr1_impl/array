@@ -149,7 +149,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       reference
       at(size_type __n)
       {
-	if (__builtin_expect(__n >= _Nm, false))
+	if (__n >= _Nm)
 	  std::__throw_out_of_range(__N("array::at"));
 	return _M_instance[__n];
       }
@@ -157,7 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
       const_reference
       at(size_type __n) const
       {
-	if (__builtin_expect(__n >= _Nm, false))
+	if (__n >= _Nm)
 	  std::__throw_out_of_range(__N("array::at"));
 	return _M_instance[__n];
       }

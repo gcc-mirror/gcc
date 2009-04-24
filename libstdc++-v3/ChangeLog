@@ -1,5 +1,17 @@
 2009-04-22  Jan Hubicka  <jh@suse.cz>
 
+	* include/tr1_impl/array (at): Do not use builtin_expect.
+	* include/ext/throw_allocator.h (allocate): Likewise.
+	* include/ext/pool_allocator.h (allocate): Likweise.
+	* include/ext/bitmap_allocator.h (allocate): Likewise.
+	* include/ext/rc_string_base.h (_S_construct): Likewise.
+	* include/ext/malloc_allocator.h (allocate): Likewise.
+	* include/ext/mt_allocator.h (allocate): Likewise.
+	* include/ext/sso_string_base.h (_M_construct): Likewise.
+	* include/bits/basic_string.tcc (_S_construct): Likewise.
+
+2009-04-22  Jan Hubicka  <jh@suse.cz>
+
 	* include/c_std/cstdlib (abort, exit, _Exit): Mark noreturn throw ().
 	(atexit, atoll, stroll, strtoull): Mark throw ()
 	* include/c_std/cstdio (snprintf, vsnprintf, vscanf): Mark throw ().

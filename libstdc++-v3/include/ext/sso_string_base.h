@@ -428,7 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 		   std::forward_iterator_tag)
       {
 	// NB: Not required, but considered best practice.
-	if (__builtin_expect(__is_null_pointer(__beg) && __beg != __end, 0))
+	if (__is_null_pointer(__beg) && __beg != __end)
 	  std::__throw_logic_error(__N("__sso_string_base::"
 				       "_M_construct NULL not valid"));
 

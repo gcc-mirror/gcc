@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       pointer
       allocate(size_type __n, const void* = 0)
       { 
-	if (__builtin_expect(__n > this->max_size(), false))
+	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
 
 	return static_cast<_Tp*>(::operator new(__n * sizeof(_Tp)));
