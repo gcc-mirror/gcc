@@ -1,3 +1,28 @@
+2009-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb: additional optimization to inhibit creation of
+	redundant transient scopes.
+
+2009-04-24  Bob Duff  <duff@adacore.com>
+
+	* rtsfind.ads: Minor comment fix
+
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, prj-nmsc.adb (Find_Ada_Sources,
+	Get_Path_Name_And_Record_Ada_Sources): merged, since these were
+	basically doing the same work (for explicit or implicit sources).
+	(Find_Explicit_Sources): renamed to Find_Sources to better reflect its
+	role. Rewritten to share some code (testing that all explicit sources
+	have been found) between ada_only and multi_language modes.
+
+2009-04-24  Jerome Lambourg  <lambourg@adacore.com>
+
+	* sem_prag.adb (Check_Form_Of_Interface_Name): Allow space in Ext_Name
+	for CLI imported types.
+	(Analyze_Pragma): Allow CIL or Java imported functions returning
+	access-to-subprogram types.
+
 2009-04-24  Emmanuel Briot  <briot@adacore.com>
 
 	* make.adb, prj.adb, prj.ads, makeutl.adb, makeutl.ads:

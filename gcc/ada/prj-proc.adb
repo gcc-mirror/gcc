@@ -2391,8 +2391,7 @@ package body Prj.Proc is
 
                Extending2 := Extending;
                while Extending2 /= No_Project loop
-                  if In_Tree.Projects.Table (Extending2).Ada_Sources /=
-                    Nil_String
+                  if Has_Ada_Sources (In_Tree.Projects.Table (Extending2))
                     and then
                       In_Tree.Projects.Table
                         (Extending2).Object_Directory.Name = Obj_Dir
