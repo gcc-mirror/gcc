@@ -27,7 +27,6 @@ with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Unchecked_Deallocation;
 
 with Debug;
-with Output;   use Output;
 with Osint;    use Osint;
 with Prj.Attr;
 with Prj.Env;
@@ -196,38 +195,12 @@ package body Prj is
    -----------------------
 
    function Body_Suffix_Id_Of
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : Naming_Data) return File_Name_Type
-   is
-      Language_Id : Name_Id;
-
-   begin
-      Name_Len := 0;
-      Add_Str_To_Name_Buffer (Language);
-      To_Lower (Name_Buffer (1 .. Name_Len));
-      Language_Id := Name_Find;
-
-      return
-        Body_Suffix_Id_Of
-          (In_Tree     => In_Tree,
-           Language_Id => Language_Id,
-           Naming      => Naming);
-   end Body_Suffix_Id_Of;
-
-   -----------------------
-   -- Body_Suffix_Id_Of --
-   -----------------------
-
-   function Body_Suffix_Id_Of
      (In_Tree     : Project_Tree_Ref;
       Language_Id : Name_Id;
       Naming      : Naming_Data) return File_Name_Type
    is
       Element_Id : Array_Element_Id;
       Element    : Array_Element;
-      Suffix     : File_Name_Type := No_File;
-      Lang       : Language_Ptr;
 
    begin
       --  ??? This seems to be only for Ada_Only mode...
@@ -242,19 +215,7 @@ package body Prj is
          Element_Id := Element.Next;
       end loop;
 
-      if Current_Mode = Multi_Language then
-         Lang := In_Tree.First_Language;
-         while Lang /= No_Language_Index loop
-            if Lang.Name = Language_Id then
-               Suffix := Lang.Config.Naming_Data.Body_Suffix;
-               exit;
-            end if;
-
-            Lang := Lang.Next;
-         end loop;
-      end if;
-
-      return Suffix;
+      return No_File;
    end Body_Suffix_Id_Of;
 
    --------------------
@@ -269,8 +230,6 @@ package body Prj is
       Language_Id : Name_Id;
       Element_Id  : Array_Element_Id;
       Element     : Array_Element;
-      Suffix      : File_Name_Type := No_File;
-      Lang        : Language_Ptr;
 
    begin
       Name_Len := 0;
@@ -288,22 +247,6 @@ package body Prj is
 
          Element_Id := Element.Next;
       end loop;
-
-      if Current_Mode = Multi_Language then
-         Lang := In_Tree.First_Language;
-         while Lang /= No_Language_Index loop
-            if Lang.Name = Language_Id then
-               Suffix := File_Name_Type (Lang.Config.Naming_Data.Body_Suffix);
-               exit;
-            end if;
-
-            Lang := Lang.Next;
-         end loop;
-
-         if Suffix /= No_File then
-            return Get_Name_String (Suffix);
-         end if;
-      end if;
 
       return "";
    end Body_Suffix_Of;
@@ -368,18 +311,6 @@ package body Prj is
                    (Source_File_Name, ALI_Dependency_Suffix));
       end case;
    end Dependency_Name;
-
-   ---------------------------
-   -- Display_Language_Name --
-   ---------------------------
-
-   procedure Display_Language_Name
-     (Language : Language_Ptr)
-   is
-   begin
-      Get_Name_String (Language.Display_Name);
-      Write_Str (Name_Buffer (1 .. Name_Len));
-   end Display_Language_Name;
 
    ----------------
    -- Empty_File --
@@ -635,37 +566,6 @@ package body Prj is
 
       return False;
    end Is_Extending;
-
-   -----------------------
-   -- Objects_Exist_For --
-   -----------------------
-
-   function Objects_Exist_For
-     (Language : String;
-      In_Tree  : Project_Tree_Ref) return Boolean
-   is
-      Language_Id : Name_Id;
-      Lang        : Language_Ptr;
-
-   begin
-      if Current_Mode = Multi_Language then
-         Name_Len := 0;
-         Add_Str_To_Name_Buffer (Language);
-         To_Lower (Name_Buffer (1 .. Name_Len));
-         Language_Id := Name_Find;
-
-         Lang := In_Tree.First_Language;
-         while Lang /= No_Language_Index loop
-            if Lang.Name = Language_Id then
-               return Lang.Config.Object_Generated;
-            end if;
-
-            Lang := Lang.Next;
-         end loop;
-      end if;
-
-      return True;
-   end Objects_Exist_For;
 
    -----------------
    -- Object_Name --
@@ -1062,38 +962,12 @@ package body Prj is
    -----------------------
 
    function Spec_Suffix_Id_Of
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : Naming_Data) return File_Name_Type
-   is
-      Language_Id : Name_Id;
-
-   begin
-      Name_Len := 0;
-      Add_Str_To_Name_Buffer (Language);
-      To_Lower (Name_Buffer (1 .. Name_Len));
-      Language_Id := Name_Find;
-
-      return
-        Spec_Suffix_Id_Of
-          (In_Tree     => In_Tree,
-           Language_Id => Language_Id,
-           Naming      => Naming);
-   end Spec_Suffix_Id_Of;
-
-   -----------------------
-   -- Spec_Suffix_Id_Of --
-   -----------------------
-
-   function Spec_Suffix_Id_Of
      (In_Tree     : Project_Tree_Ref;
       Language_Id : Name_Id;
       Naming      : Naming_Data) return File_Name_Type
    is
       Element_Id : Array_Element_Id;
       Element    : Array_Element;
-      Suffix     : File_Name_Type := No_File;
-      Lang       : Language_Ptr;
 
    begin
       Element_Id := Naming.Spec_Suffix;
@@ -1107,19 +981,7 @@ package body Prj is
          Element_Id := Element.Next;
       end loop;
 
-      if Current_Mode = Multi_Language then
-         Lang := In_Tree.First_Language;
-         while Lang /= No_Language_Index loop
-            if Lang.Name = Language_Id then
-               Suffix := Lang.Config.Naming_Data.Spec_Suffix;
-               exit;
-            end if;
-
-            Lang := Lang.Next;
-         end loop;
-      end if;
-
-      return Suffix;
+      return No_File;
    end Spec_Suffix_Id_Of;
 
    --------------------
@@ -1134,8 +996,6 @@ package body Prj is
       Language_Id : Name_Id;
       Element_Id  : Array_Element_Id;
       Element     : Array_Element;
-      Suffix      : File_Name_Type := No_File;
-      Lang        : Language_Ptr;
 
    begin
       Name_Len := 0;
@@ -1153,23 +1013,6 @@ package body Prj is
 
          Element_Id := Element.Next;
       end loop;
-
-      if Current_Mode = Multi_Language then
-         Lang := In_Tree.First_Language;
-         while Lang /= No_Language_Index loop
-            if Lang.Name = Language_Id then
-               Suffix :=
-                 File_Name_Type (Lang.Config.Naming_Data.Spec_Suffix);
-               exit;
-            end if;
-
-            Lang := Lang.Next;
-         end loop;
-
-         if Suffix /= No_File then
-            return Get_Name_String (Suffix);
-         end if;
-      end if;
 
       return "";
    end Spec_Suffix_Of;

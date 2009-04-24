@@ -314,10 +314,6 @@ package Prj is
    No_Language_Index : constant Language_Ptr := null;
    --  Constant indicating that there is no language data
 
-   procedure Display_Language_Name
-     (Language : Language_Ptr);
-   --  Output the name of a language
-
    Max_Header_Num : constant := 6150;
    type Header_Num is range 0 .. Max_Header_Num;
    --  Size for hash table below. The upper bound is an arbitrary value, the
@@ -899,11 +895,6 @@ package Prj is
       Naming   : Naming_Data) return String;
 
    function Spec_Suffix_Id_Of
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : Naming_Data) return File_Name_Type;
-
-   function Spec_Suffix_Id_Of
      (In_Tree     : Project_Tree_Ref;
       Language_Id : Name_Id;
       Naming      : Naming_Data) return File_Name_Type;
@@ -913,11 +904,6 @@ package Prj is
       Language : String;
       Naming   : in out Naming_Data;
       Suffix   : File_Name_Type);
-
-   function Body_Suffix_Id_Of
-     (In_Tree  : Project_Tree_Ref;
-      Language : String;
-      Naming   : Naming_Data) return File_Name_Type;
 
    function Body_Suffix_Id_Of
      (In_Tree     : Project_Tree_Ref;
@@ -934,10 +920,6 @@ package Prj is
       Language : String;
       Naming   : in out Naming_Data;
       Suffix   : File_Name_Type);
-
-   function Objects_Exist_For
-     (Language : String;
-      In_Tree  : Project_Tree_Ref) return Boolean;
 
    function Standard_Naming_Data
      (Tree : Project_Tree_Ref := No_Project_Tree) return Naming_Data;
@@ -1457,10 +1439,7 @@ package Prj is
 
    type Project_Tree_Data is
       record
-         --  Languages and sources of the project
-
-         First_Language : Language_Ptr  := No_Language_Index;
-         --
+         --  sources of the project
 
          First_Source : Source_Id := No_Source;
          --
