@@ -1,3 +1,31 @@
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.adb, prj.ads, prj-nmsc.adb (Check_File, Record_Ada_Source,
+	Add_Source): merge some code between those. In particular change where
+	file normalization is done to avoid a few extra calls to
+	Canonicalize_File_Name. This also removes the need for passing
+	Current_Dir in a number of subprograms.
+
+2009-04-24  Bob Duff  <duff@adacore.com>
+
+	* lib-load.adb (Make_Instance_Unit): In the case where In_Main is
+	False, assign the correct unit to the Cunit field of the new table
+	entry. We want the spec unit, not the body unit.
+
+	* rtsfind.adb (Make_Unit_Name, Maybe_Add_With): Simplify calling
+	interface for these.
+	(Maybe_Add_With): Check whether we're trying to a with on the current
+	unit, and avoid creating such directly self-referential with clauses.
+	(Text_IO_Kludge): Add implicit with's for the generic pseudo-children of
+	[[Wide_]Wide_]Text_IO. These are needed for Walk_Library_Items,
+	and matches existing comments in the spec.
+
+	* sem.adb (Walk_Library_Items): Add various special cases to make the
+	assertions pass.
+
+	* sem_ch12.adb (Build_Instance_Compilation_Unit_Nodes): Use Body_Cunit
+	instead of Parent (N), for uniformity.
+
 2009-04-24  Robert Dewar  <dewar@adacore.com>
 
 	* errout.ads: Minor reformatting

@@ -4392,7 +4392,7 @@ package body Sem_Ch12 is
       --  If the instance is not the main unit, its context, categorization,
       --  and elaboration entity are not relevant to the compilation.
 
-      if Parent (N) /= Cunit (Main_Unit) then
+      if Body_Cunit /= Cunit (Main_Unit) then
          Make_Instance_Unit (Body_Cunit, In_Main => False);
          return;
       end if;

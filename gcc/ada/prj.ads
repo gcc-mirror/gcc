@@ -1256,11 +1256,8 @@ package Prj is
       -------------
       -- Sources --
       -------------
-      --  In multi-language mode, the sources for all languages including Ada
-      --  are accessible through the Source_Iterator type
-
-      Ada_Sources : String_List_Id := Nil_String;
-      --  The list of all the Ada source file names (gnatmake only).
+      --  The sources for all languages including Ada are accessible through
+      --  the Source_Iterator type
 
       Interfaces_Defined      : Boolean := False;
       --  True if attribute Interfaces is declared for the project or any

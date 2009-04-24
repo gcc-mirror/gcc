@@ -105,7 +105,6 @@ package body Prj is
                       Lib_Auto_Init                  => False,
                       Libgnarl_Needed                => Unknown,
                       Symbol_Data                    => No_Symbols,
-                      Ada_Sources                    => Nil_String,
                       Interfaces_Defined             => False,
                       Include_Path                   => null,
                       Include_Data_Set               => False,
@@ -1205,10 +1204,6 @@ package body Prj is
       Lang : Language_Ptr;
 
    begin
-      if Data.Ada_Sources /= Nil_String then
-         return True;
-      end if;
-
       Lang := Data.Languages;
       while Lang /= No_Language_Index loop
          if Lang.Name = Name_Ada then
