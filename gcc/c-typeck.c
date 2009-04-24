@@ -6422,6 +6422,24 @@ set_init_index (tree first, tree last)
     }
 
   if (TREE_CODE (first) != INTEGER_CST)
+    {
+      first = c_fully_fold (first, false, NULL);
+      if (TREE_CODE (first) == INTEGER_CST)
+	pedwarn_init (input_location, OPT_pedantic,
+		      "array index in initializer is not "
+		      "an integer constant expression");
+    }
+
+  if (last && TREE_CODE (last) != INTEGER_CST)
+    {
+      last = c_fully_fold (last, false, NULL);
+      if (TREE_CODE (last) == INTEGER_CST)
+	pedwarn_init (input_location, OPT_pedantic,
+		      "array index in initializer is not "
+		      "an integer constant expression");
+    }
+
+  if (TREE_CODE (first) != INTEGER_CST)
     error_init ("nonconstant array index in initializer");
   else if (last != 0 && TREE_CODE (last) != INTEGER_CST)
     error_init ("nonconstant array index in initializer");
