@@ -1,3 +1,10 @@
+2009-04-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genpreds.c (write_enum_constraint_num): Output definition of
+	CONSTRAINT_NUM_DEFINED_P macro.
+	* ira.c (setup_cover_and_important_classes): Use
+	CONSTRAINT_NUM_DEFINED_P instead of CONSTRAINT__LIMIT in #ifdef.
+	
 2009-04-24  DJ Delorie  <dj@redhat.com>
 
 	* config/sh/sh.h (LIBGCC2_DOUBLE_TYPE_SIZE): Test

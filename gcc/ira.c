@@ -754,7 +754,7 @@ setup_cover_and_important_classes (void)
 	{
 	  if (i == NO_REGS)
 	    continue;
-#ifdef CONSTRAINT__LIMIT
+#ifdef CONSTRAINT_NUM_DEFINED_P
 	  for (j = 0; j < CONSTRAINT__LIMIT; j++)
 	    if ((int) regclass_for_constraint ((enum constraint_num) j) == i)
 	      break;
