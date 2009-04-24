@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,6 +212,10 @@ package body Sem_Warn is
       end if;
 
       --  Check multiple code statements in a row
+      --  Note : the following code is now unreachable, because Asm statements
+      --  are procedure calls whose actuals are concatenations, and as a result
+      --  of a recent stack usage optimization each such call has its own
+      --  block.
 
       if Is_List_Member (N)
         and then Present (Prev (N))

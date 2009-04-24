@@ -1,3 +1,7 @@
+2009-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb: Add comment on obsolete warning
+
 2009-04-24  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-tassta.adb (Create_Task): Fix violation of locking rule.
