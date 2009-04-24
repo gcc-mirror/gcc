@@ -1,3 +1,7 @@
+2009-04-24  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/vrp48.c: New testcase.
+
 2009-04-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/array-const-1.c, gcc.dg/array-const-2.c,
