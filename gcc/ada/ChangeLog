@@ -1,5 +1,22 @@
 2009-04-24  Emmanuel Briot  <briot@adacore.com>
 
+	* prj.ads, prj-nmsc.adb (Unit_Project): removed, since in fact we were
+	only ever using the Project field.
+
+2009-04-24  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Build_Instance_Compilation_Unit_Nodes): Do not set
+	Body_Required on the generated compilation node. The new node is linked
+	to its body, but both share the same file, so we do not set this flag
+	on the new unit so as not to create a spurious dependency on a
+	non-existent body in the ali file for the instance.
+
+2009-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* make.adb: Minor reformatting
+
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
 	* prj.adb, prj.ads, prj-nmsc.adb (Check_File, Record_Ada_Source,
 	Add_Source): merge some code between those. In particular change where
 	file normalization is done to avoid a few extra calls to

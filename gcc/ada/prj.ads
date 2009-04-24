@@ -1406,17 +1406,10 @@ package Prj is
       Equal      => "=");
    --  Mapping of unit names to indexes in the Units table
 
-   type Unit_Project is record
-      Unit    : Unit_Index := No_Unit_Index;
-      Project : Project_Id := No_Project;
-   end record;
-
-   No_Unit_Project : constant Unit_Project := (No_Unit_Index, No_Project);
-
    package Files_Htable is new Simple_HTable
      (Header_Num => Header_Num,
-      Element    => Unit_Project,
-      No_Element => No_Unit_Project,
+      Element    => Project_Id,
+      No_Element => No_Project,
       Key        => File_Name_Type,
       Hash       => Hash,
       Equal      => "=");
