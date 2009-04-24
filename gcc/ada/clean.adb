@@ -1079,30 +1079,29 @@ package body Clean is
       if All_Projects then
          declare
             Imported : Project_List := Data.Imported_Projects;
-            Element  : Project_Element;
             Process  : Boolean;
 
          begin
             --  For each imported project, call Clean_Project if the project
             --  has not been processed already.
 
-            while Imported /= Empty_Project_List loop
-               Element := Project_Tree.Project_Lists.Table (Imported);
-               Imported := Element.Next;
+            while Imported /= null loop
                Process := True;
 
                for
                  J in Processed_Projects.First .. Processed_Projects.Last
                loop
-                  if Element.Project = Processed_Projects.Table (J) then
+                  if Imported.Project = Processed_Projects.Table (J) then
                      Process := False;
                      exit;
                   end if;
                end loop;
 
                if Process then
-                  Clean_Project (Element.Project);
+                  Clean_Project (Imported.Project);
                end if;
+
+               Imported := Imported.Next;
             end loop;
 
             --  If this project extends another project, call Clean_Project for

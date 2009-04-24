@@ -941,24 +941,13 @@ package Prj is
    --  Returns True if Left and Right are the same naming scheme
    --  not considering Specs and Bodies.
 
-   type Project_List is new Nat;
-   Empty_Project_List : constant Project_List := 0;
-   --  A list of project files
-
-   type Project_Element is record
+   type Project_List_Element;
+   type Project_List is access Project_List_Element;
+   type Project_List_Element is record
       Project : Project_Id   := No_Project;
-      Next    : Project_List := Empty_Project_List;
+      Next    : Project_List := null;
    end record;
-   --  Element in a list of project files. Next is the id of the next
-   --  project file in the list.
-
-   package Project_List_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Project_Element,
-      Table_Index_Type     => Project_List,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 100,
-      Table_Increment      => 100);
-   --  The table that contains the lists of project files
+   --  A list of projects
 
    type Response_File_Format is
      (None,
@@ -1181,10 +1170,10 @@ package Prj is
       --  The declarations (variables, attributes and packages) of this project
       --  file.
 
-      Imported_Projects : Project_List := Empty_Project_List;
+      Imported_Projects : Project_List;
       --  The list of all directly imported projects, if any
 
-      All_Imported_Projects : Project_List := Empty_Project_List;
+      All_Imported_Projects : Project_List;
       --  The list of all projects imported directly or indirectly, if any
 
       -----------------
@@ -1449,12 +1438,10 @@ package Prj is
          Array_Elements    : Array_Element_Table.Instance;
          Arrays            : Array_Table.Instance;
          Packages          : Package_Table.Instance;
-         Project_Lists     : Project_List_Table.Instance;
          Projects          : Project_Table.Instance;
          Alt_Langs         : Alternate_Language_Table.Instance;
          Units             : Unit_Table.Instance;
          Units_HT          : Units_Htable.Instance;
-         Files_HT          : Files_Htable.Instance;
          Source_Paths_HT   : Source_Paths_Htable.Instance;
          Unit_Sources_HT   : Unit_Sources_Htable.Instance;
 

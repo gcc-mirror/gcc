@@ -1615,7 +1615,7 @@ package body Sem is
 
             begin
                if Debug_Unit_Walk then
-                  Write_Unit_Info (Unit_Num, Item);
+                  Write_Unit_Info (Unit_Num, Item, Withs => True);
                end if;
 
                --  Main unit should come last
@@ -1810,7 +1810,8 @@ package body Sem is
 
             for Unit_Num in Done'Range loop
                if not Done (Unit_Num) then
-                  Write_Unit_Info (Unit_Num, Unit (Cunit (Unit_Num)));
+                  Write_Unit_Info
+                    (Unit_Num, Unit (Cunit (Unit_Num)), Withs => True);
                end if;
             end loop;
 

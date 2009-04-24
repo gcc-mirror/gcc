@@ -401,7 +401,7 @@ package body Prj.Env is
 
       Current_Unit : Unit_Index := Unit_Table.First;
 
-      First_Project : Project_List := Empty_Project_List;
+      First_Project : Project_List;
 
       Current_Project : Project_List;
       Current_Naming  : Naming_Id;
@@ -449,24 +449,18 @@ package body Prj.Env is
          --  Is this project in the list of the visited project?
 
          Current_Project := First_Project;
-         while Current_Project /= Empty_Project_List
-           and then In_Tree.Project_Lists.Table
-                      (Current_Project).Project /= Project
+         while Current_Project /= null
+           and then Current_Project.Project /= Project
          loop
-            Current_Project :=
-              In_Tree.Project_Lists.Table (Current_Project).Next;
+            Current_Project := Current_Project.Next;
          end loop;
 
          --  If it is not, put it in the list, and visit it
 
-         if Current_Project = Empty_Project_List then
-            Project_List_Table.Increment_Last
-              (In_Tree.Project_Lists);
-            In_Tree.Project_Lists.Table
-              (Project_List_Table.Last (In_Tree.Project_Lists)) :=
-                 (Project => Project, Next => First_Project);
-               First_Project :=
-                 Project_List_Table.Last (In_Tree.Project_Lists);
+         if Current_Project = null then
+            First_Project := new Project_List_Element'
+              (Project => Project,
+               Next    => First_Project);
 
             --  Is the naming scheme of this project one that we know?
 
@@ -557,12 +551,9 @@ package body Prj.Env is
                Current : Project_List := Data.Imported_Projects;
 
             begin
-               while Current /= Empty_Project_List loop
-                  Check
-                    (In_Tree.Project_Lists.Table
-                       (Current).Project);
-                  Current := In_Tree.Project_Lists.Table
-                               (Current).Next;
+               while Current /= null loop
+                  Check (Current.Project);
+                  Current := Current.Next;
                end loop;
             end;
          end if;
@@ -898,7 +889,6 @@ package body Prj.Env is
 
       procedure Recursive_Flag (Prj : Project_Id) is
          Imported : Project_List;
-         Proj     : Project_Id;
 
       begin
          --  Nothing to do for non existent project or project that has already
@@ -908,10 +898,9 @@ package body Prj.Env is
             Present (Prj) := True;
 
             Imported := In_Tree.Projects.Table (Prj).Imported_Projects;
-            while Imported /= Empty_Project_List loop
-               Proj     := In_Tree.Project_Lists.Table (Imported).Project;
-               Imported := In_Tree.Project_Lists.Table (Imported).Next;
-               Recursive_Flag (Proj);
+            while Imported /= null loop
+               Recursive_Flag (Imported.Project);
+               Imported := Imported.Next;
             end loop;
 
             Recursive_Flag (In_Tree.Projects.Table (Prj).Extends);

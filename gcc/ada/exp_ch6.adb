@@ -2100,11 +2100,11 @@ package body Exp_Ch6 is
                      Act_Prev := Expression (Act_Prev);
                   end loop;
 
-                  --  If the expression is a conversion of a dereference,
-                  --  this is internally generated code that manipulates
-                  --  addresses, e.g. when building interface tables. No
-                  --  check should occur in this case, and the discriminated
-                  --  object is not directly a hand.
+                  --  If the expression is a conversion of a dereference, this
+                  --  is internally generated code that manipulates addresses,
+                  --  e.g. when building interface tables. No check should
+                  --  occur in this case, and the discriminated object is not
+                  --  directly a hand.
 
                   if not Comes_From_Source (Actual)
                     and then Nkind (Actual) = N_Unchecked_Type_Conversion
@@ -2893,9 +2893,9 @@ package body Exp_Ch6 is
       then
          --  We perform two simple optimization on calls:
 
-         --  a) replace calls to null procedures unconditionally,
+         --  a) replace calls to null procedures unconditionally;
 
-         --  b) For To_Address, just do an unchecked conversion. Not only is
+         --  b) for To_Address, just do an unchecked conversion. Not only is
          --  this efficient, but it also avoids order of elaboration problems
          --  when address clauses are inlined (address expression elaborated
          --  at the wrong point).

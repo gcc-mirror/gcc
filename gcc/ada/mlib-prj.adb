@@ -680,7 +680,6 @@ package body MLib.Prj is
          procedure Process_Project (Project : Project_Id) is
             Data     : Project_Data := In_Tree.Projects.Table (Project);
             Imported : Project_List := Data.Imported_Projects;
-            Element  : Project_Element;
 
          begin
             --  Nothing to do if process has already been processed
@@ -692,15 +691,12 @@ package body MLib.Prj is
                --  We first process the imported projects to guarantee that
                --  we have a proper reverse order for the libraries.
 
-               while Imported /= Empty_Project_List loop
-                  Element :=
-                    In_Tree.Project_Lists.Table (Imported);
-
-                  if Element.Project /= No_Project then
-                     Process_Project (Element.Project);
+               while Imported /= null loop
+                  if Imported.Project /= No_Project then
+                     Process_Project (Imported.Project);
                   end if;
 
-                  Imported := Element.Next;
+                  Imported := Imported.Next;
                end loop;
 
                --  If it is a library project, add it to Library_Projs
