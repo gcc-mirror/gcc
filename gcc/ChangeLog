@@ -1,3 +1,10 @@
+2009-04-24  Nick Clifton  <nickc@redhat.com>
+
+	* config/iq2000/iq2000.c (function_arg): Handle TImode values.
+	(function_arg_advance): Likewise.
+	* config/iq2000/iq2000.md (movsi_internal2): Fix the length of the
+	5th alternative.
+
 2009-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/constraints.md ('I', 'J'): Fix condition.
