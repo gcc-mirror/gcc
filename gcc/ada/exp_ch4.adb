@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2804,6 +2804,12 @@ package body Exp_Ch4 is
                       Low_Bound  => Low_Bound,
                       High_Bound => High_Bound))))),
         Suppress => All_Checks);
+
+      --  If the result of the concatenation appears as the initializing
+      --  expression of an object declaration, we can just rename the
+      --  result, rather than copying it.
+
+      Set_OK_To_Rename (Ent);
 
       --  Catch the static out of range case now
 

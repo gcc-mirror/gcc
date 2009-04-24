@@ -2137,13 +2137,38 @@ package body Sem_Ch7 is
                  ("missing full declaration for private extension", Id);
             end if;
 
+         --  Case of constant, check for deferred constant declaration with
+         --  no full view. Likely just a matter of a missing expression, or
+         --  accidental use of the keyword constant.
+
          elsif Ekind (Id) = E_Constant
+
+           --  OK if constant value present
+
            and then No (Constant_Value (Id))
+
+           --  OK if full view present
+
            and then No (Full_View (Id))
+
+           --  OK if imported, since that provides the completion
+
            and then not Is_Imported (Id)
-           and then (Nkind (Parent (Id)) /= N_Object_Declaration
-                      or else not No_Initialization (Parent (Id)))
+
+           --  OK if object declaration replaced by renaming declaration as
+           --  a result of OK_To_Rename processing (e.g. for concatenation)
+
+           and then Nkind (Parent (Id)) /= N_Object_Renaming_Declaration
+
+           --  OK if object declaration with the No_Initialization flag set
+
+           and then not (Nkind (Parent (Id)) = N_Object_Declaration
+                           and then No_Initialization (Parent (Id)))
          then
+            --  If no private declaration is present, we assume the user did
+            --  not intend a deferred constant declaration and the problem
+            --  is simply that the initializing expression is missing.
+
             if not Has_Private_Declaration (Etype (Id)) then
 
                --  We assume that the user did not intend a deferred constant
@@ -2158,6 +2183,9 @@ package body Sem_Ch7 is
                     ("\if variable intended, remove CONSTANT from declaration",
                     Parent (Id));
                end if;
+
+            --  Otherwise if a private declaration is present, then we are
+            --  missing the full declaration for the deferred constant.
 
             else
                Error_Msg_N
