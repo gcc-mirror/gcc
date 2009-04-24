@@ -604,23 +604,12 @@ package Prj is
                          Mapping_Files => Mapping_Files_Htable.Nil,
                          Next          => No_Language_Index);
 
-   type Alternate_Language_Id is new Nat;
-
-   No_Alternate_Language : constant Alternate_Language_Id := 0;
-
-   type Alternate_Language_Data is record
+   type Language_List_Element;
+   type Language_List is access Language_List_Element;
+   type Language_List_Element is record
       Language : Language_Ptr := No_Language_Index;
-      Next     : Alternate_Language_Id := No_Alternate_Language;
+      Next     : Language_List;
    end record;
-
-   package Alternate_Language_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Alternate_Language_Data,
-      Table_Index_Type     => Alternate_Language_Id,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 10,
-      Table_Increment      => 100);
-   --  The table for storing the alternate languages of a header file that
-   --  is used for several languages.
 
    type Source_Kind is (Spec, Impl, Sep);
 
@@ -645,7 +634,7 @@ package Prj is
       Declared_In_Interfaces : Boolean            := False;
       --  True when source is declared in attribute Interfaces
 
-      Alternate_Languages : Alternate_Language_Id := No_Alternate_Language;
+      Alternate_Languages : Language_List;
       --  List of languages a header file may also be, in addition of language
       --  Language_Name.
 
@@ -746,7 +735,7 @@ package Prj is
                        Compiled               => True,
                        In_Interfaces          => True,
                        Declared_In_Interfaces => False,
-                       Alternate_Languages    => No_Alternate_Language,
+                       Alternate_Languages    => null,
                        Kind                   => Spec,
                        Dependency             => None,
                        Other_Part             => No_Source,
@@ -1439,7 +1428,6 @@ package Prj is
          Arrays            : Array_Table.Instance;
          Packages          : Package_Table.Instance;
          Projects          : Project_Table.Instance;
-         Alt_Langs         : Alternate_Language_Table.Instance;
          Units             : Unit_Table.Instance;
          Units_HT          : Units_Htable.Instance;
          Source_Paths_HT   : Source_Paths_Htable.Instance;

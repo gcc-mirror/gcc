@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,39 +23,55 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Check the Naming Scheme of a project file, find the source files
+--  Perform various checks on a project and find all its source files
 
 private package Prj.Nmsc is
 
-   --  It would be nicer to have a higher level statement of what these
-   --  procedures do (related to their names), rather than just an English
-   --  language summary of the implementation ???
+   type Processing_Data is private;
+   --  Temporary data which is needed while parsing a project. It does not need
+   --  to be kept in memory once a project has been fully loaded, but is
+   --  necessary while performing consistency checks (duplicate sources,...)
+   --  This data must be initialized before processing any project, and the
+   --  same data is used for processing all projects in the tree.
+
+   procedure Initialize (Proc_Data : in out Processing_Data);
+   --  Initialize Proc_Data
+
+   procedure Free (Proc_Data : in out Processing_Data);
+   --  Free the memory occupied by Proc_Data
 
    procedure Check
      (Project         : Project_Id;
       In_Tree         : Project_Tree_Ref;
       Report_Error    : Put_Line_Access;
       When_No_Sources : Error_Warning;
-      Current_Dir     : String);
-   --  Check the object directory and the source directories
-   --
-   --  Check the library attributes, including the library directory if any
-   --
-   --  Get the set of specification and implementation suffixes, if any
-   --
-   --  Check the naming scheme for Ada
-   --
-   --  Find the Ada source files if any
-   --
-   --  Check the naming scheme for the supported languages (c, c++, ...) other
-   --  than Ada. Find the source files if any.
+      Current_Dir     : String;
+      Proc_Data       : in out Processing_Data);
+   --  Perform consistency and semantic checks on a project, starting from the
+   --  project tree parsed from the .gpr file. This procedure interprets the
+   --  various case statements in the project based on the current environment
+   --  variables (the "scenario").
+   --  After checking the validity of the naming scheme, it searches for all
+   --  the source files of the project.
+   --  The result of this procedure is a filled data structure for Project_Id
+   --  which contains all the information about the project. This information
+   --  is only valid while the scenario variables are preserved.
+   --  If the current mode is Ada_Only, this procedure will only search Ada
+   --  sources; but in multi_language mode it will look for sources for all the
+   --  supported languages.
    --
    --  If Report_Error is null , use the standard error reporting mechanism
    --  (Errout). Otherwise, report errors using Report_Error.
    --
-   --  Current_Dir is for optimization purposes only, avoiding system calls.
+   --  Current_Dir is for optimization purposes only, avoiding system calls to
+   --  query it.
    --
    --  When_No_Sources indicates what should be done when no sources of a
    --  language are found in a project where this language is declared.
 
+private
+   type Processing_Data is record
+      Units : Files_Htable.Instance;
+      --  Mapping from file base name to the project containing the file
+   end record;
 end Prj.Nmsc;
