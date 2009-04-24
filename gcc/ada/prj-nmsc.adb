@@ -492,8 +492,7 @@ package body Prj.Nmsc is
       Naming              : Naming_Data;
       Exception_Id        : out Ada_Naming_Exception_Id;
       Unit_Name           : out Name_Id;
-      Unit_Kind           : out Spec_Or_Body;
-      Needs_Pragma        : out Boolean);
+      Unit_Kind           : out Spec_Or_Body);
    --  Find out, from a file name, the unit name, the unit kind and if a
    --  specific SFN pragma is needed. If the file name corresponds to no unit,
    --  then Unit_Name will be No_Name. If the file is a multi-unit source or an
@@ -4555,7 +4554,7 @@ package body Prj.Nmsc is
             Interface_ALIs : String_List_Id := Nil_String;
             Unit           : Name_Id;
             The_Unit_Id    : Unit_Index;
-            The_Unit_Data  : Unit_Data;
+            UData          : Unit_Data;
 
             procedure Add_ALI_For (Source : File_Name_Type);
             --  Add an ALI file name to the list of Interface ALIs
@@ -4642,23 +4641,23 @@ package body Prj.Nmsc is
                      else
                         --  Check that the unit is part of the project
 
-                        The_Unit_Data :=
-                          In_Tree.Units.Table (The_Unit_Id);
+                        UData := In_Tree.Units.Table (The_Unit_Id);
 
-                        if The_Unit_Data.File_Names (Body_Part).Name /= No_File
-                          and then The_Unit_Data.File_Names
-                                     (Body_Part).Path.Name /= Slash
+                        if UData.File_Names (Body_Part).Name /= No_File
+                          and then
+                            UData.File_Names (Body_Part).Path.Name /=
+                             Slash
                         then
                            if Check_Project
-                             (The_Unit_Data.File_Names (Body_Part).Project,
+                             (UData.File_Names (Body_Part).Project,
                               Project, In_Tree, Extending)
                            then
                               --  There is a body for this unit.
                               --  If there is no spec, we need to check that it
                               --  is not a subunit.
 
-                              if The_Unit_Data.File_Names
-                                (Specification).Name = No_File
+                              if UData.File_Names (Specification).Name =
+                                No_File
                               then
                                  declare
                                     Src_Ind : Source_File_Index;
@@ -4666,7 +4665,7 @@ package body Prj.Nmsc is
                                  begin
                                     Src_Ind := Sinput.P.Load_Project_File
                                       (Get_Name_String
-                                         (The_Unit_Data.File_Names
+                                         (UData.File_Names
                                             (Body_Part).Path.Name));
 
                                     if Sinput.P.Source_File_Is_Subunit
@@ -4687,7 +4686,7 @@ package body Prj.Nmsc is
                               --  ALI file for its body to the Interface ALIs.
 
                               Add_ALI_For
-                                (The_Unit_Data.File_Names (Body_Part).Name);
+                                (UData.File_Names (Body_Part).Name);
 
                            else
                               Error_Msg
@@ -4697,12 +4696,12 @@ package body Prj.Nmsc is
                                    (Interfaces).Location);
                            end if;
 
-                        elsif The_Unit_Data.File_Names
-                                (Specification).Name /= No_File
-                          and then The_Unit_Data.File_Names
+                        elsif UData.File_Names (Specification).Name /=
+                             No_File
+                          and then UData.File_Names
                                      (Specification).Path.Name /= Slash
                           and then Check_Project
-                                     (The_Unit_Data.File_Names
+                                     (UData.File_Names
                                         (Specification).Project,
                                       Project, In_Tree, Extending)
 
@@ -4712,7 +4711,7 @@ package body Prj.Nmsc is
                            --  Interface ALIs.
 
                            Add_ALI_For
-                             (The_Unit_Data.File_Names (Specification).Name);
+                             (UData.File_Names (Specification).Name);
 
                         else
                            Error_Msg
@@ -6481,8 +6480,7 @@ package body Prj.Nmsc is
       Naming              : Naming_Data;
       Exception_Id        : out Ada_Naming_Exception_Id;
       Unit_Name           : out Name_Id;
-      Unit_Kind           : out Spec_Or_Body;
-      Needs_Pragma        : out Boolean)
+      Unit_Kind           : out Spec_Or_Body)
    is
       Info_Id  : Ada_Naming_Exception_Id :=
                    Ada_Naming_Exceptions.Get (Canonical_File_Name);
@@ -6508,9 +6506,8 @@ package body Prj.Nmsc is
          Exception_Id := Info_Id;
          Unit_Name := No_Name;
          Unit_Kind := Specification;
-         Needs_Pragma := True;
+
       else
-         Needs_Pragma := False;
          Exception_Id := No_Ada_Naming_Exception;
          Compute_Unit_Name
            (File_Name       => Canonical_File_Name,
@@ -6594,12 +6591,9 @@ package body Prj.Nmsc is
    is
       The_Parent      : constant String :=
                           Get_Name_String (Parent) & Directory_Separator;
-
       The_Parent_Last : constant Natural :=
                           Compute_Directory_Last (The_Parent);
-
       Full_Name       : File_Name_Type;
-
       The_Name        : File_Name_Type;
 
    begin
@@ -6657,6 +6651,7 @@ package body Prj.Nmsc is
            and then Create'Length > 0
          then
             if not Is_Directory (Full_Path_Name.all) then
+
                --  If project is externally built, do not create a subdir,
                --  use the specified directory, without the subdir.
 
@@ -6794,8 +6789,8 @@ package body Prj.Nmsc is
             Element := In_Tree.String_Elements.Table (Current);
             Name := Canonical_Case_File_Name (Element.Value);
 
-            --  If the element has no location, then use the location
-            --  of Excluded_Sources to report possible errors.
+            --  If the element has no location, then use the location of
+            --  Excluded_Sources to report possible errors.
 
             if Element.Location = No_Location then
                Location := Excluded_Sources.Location;
@@ -6840,8 +6835,7 @@ package body Prj.Nmsc is
                   while not Prj.Util.End_Of_File (File) loop
                      Prj.Util.Get_Line (File, Line, Last);
 
-                     --  A non empty, non comment line should contain a file
-                     --  name
+                     --  Non empty, non comment line should contain a file name
 
                      if Last /= 0
                        and then (Last = 1 or else Line (1 .. 2) /= "--")
@@ -6886,9 +6880,9 @@ package body Prj.Nmsc is
    ------------------
 
    procedure Find_Sources
-     (Project     : Project_Id;
-      In_Tree     : Project_Tree_Ref;
-      Data        : in out Project_Data)
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref;
+      Data    : in out Project_Data)
    is
       Sources          : constant Variable_Value :=
                            Util.Value_Of
@@ -6901,6 +6895,7 @@ package body Prj.Nmsc is
                               Data.Decl.Attributes,
                               In_Tree);
       Name_Loc         : Name_Location;
+
       Has_Explicit_Sources : Boolean;
 
    begin
@@ -6933,10 +6928,9 @@ package body Prj.Nmsc is
                if Current = Nil_String then
                   Data.Languages := No_Language_Index;
 
-                  --  This project contains no source. For projects that
-                  --  don't extend other projects, this also means that
-                  --  there is no need for an object directory, if not
-                  --  specified.
+                  --  This project contains no source. For projects that don't
+                  --  extend other projects, this also means that there is no
+                  --  need for an object directory, if not specified.
 
                   if Data.Extends = No_Project
                     and then Data.Object_Directory = Data.Directory
@@ -6951,8 +6945,8 @@ package body Prj.Nmsc is
                Name := Canonical_Case_File_Name (Element.Value);
                Get_Name_String (Element.Value);
 
-               --  If the element has no location, then use the
-               --  location of Sources to report possible errors.
+               --  If the element has no location, then use the location of
+               --  Sources to report possible errors.
 
                if Element.Location = No_Location then
                   Location := Sources.Location;
@@ -6977,10 +6971,10 @@ package body Prj.Nmsc is
                   end if;
                end loop;
 
-               --  In Multi_Language mode, check whether the file is
-               --  already there: the same file name may be in the list; if
-               --  the source is missing, the error will be on the first
-               --  mention of the source file name.
+               --  In Multi_Language mode, check whether the file is already
+               --  there: the same file name may be in the list. If the source
+               --  is missing, the error will be on the first mention of the
+               --  source file name.
 
                case Get_Mode is
                   when Ada_Only =>
@@ -7006,12 +7000,12 @@ package body Prj.Nmsc is
          end;
 
          --  If we have no Source_Files attribute, check the Source_List_File
-         --  attribute
+         --  attribute.
 
       elsif not Source_List_File.Default then
 
-         --  Source_List_File is the name of the file
-         --  that contains the source file names
+         --  Source_List_File is the name of the file that contains the source
+         --  file names.
 
          declare
             Source_File_Path_Name : constant String :=
@@ -7037,9 +7031,9 @@ package body Prj.Nmsc is
          end;
 
       else
-         --  Neither Source_Files nor Source_List_File has been
-         --  specified. Find all the files that satisfy the naming
-         --  scheme in all the source directories.
+         --  Neither Source_Files nor Source_List_File has been specified. Find
+         --  all the files that satisfy the naming scheme in all the source
+         --  directories.
 
          Has_Explicit_Sources := False;
       end if;
@@ -7056,9 +7050,9 @@ package body Prj.Nmsc is
               Sources.Default and then Source_List_File.Default);
       end if;
 
-      --  Check if all exceptions have been found.
-      --  For Ada, it is an error if an exception is not found.
-      --  For other language, the source is simply removed.
+      --  Check if all exceptions have been found. For Ada, it is an error if
+      --  an exception is not found. For other language, the source is simply
+      --  removed.
 
       declare
          Source : Source_Id;
@@ -7089,15 +7083,17 @@ package body Prj.Nmsc is
          end loop;
       end;
 
-      --  It is an error if a source file name in a source list or in a
-      --  source list file is not found.
+      --  It is an error if a source file name in a source list or in a source
+      --  list file is not found.
 
       if Has_Explicit_Sources then
          declare
             NL          : Name_Location;
-            First_Error : Boolean := True;
+            First_Error : Boolean;
+
          begin
             NL := Source_Names.Get_First;
+            First_Error := True;
             while NL /= No_Name_Location loop
                if not NL.Found then
                   Err_Vars.Error_Msg_File_1 := NL.Name;
@@ -7144,12 +7140,12 @@ package body Prj.Nmsc is
       Data                  : in out Project_Data;
       Explicit_Sources_Only : Boolean)
    is
-      Source_Dir      : String_List_Id;
-      Element         : String_Element;
-      Dir             : Dir_Type;
-      Dir_Has_Source  : Boolean := False;
-      NL              : Name_Location;
-      Ada_Language    : Language_Ptr;
+      Source_Dir     : String_List_Id;
+      Element        : String_Element;
+      Dir            : Dir_Type;
+      Dir_Has_Source : Boolean := False;
+      NL             : Name_Location;
+      Ada_Language   : Language_Ptr;
 
    begin
       if Current_Verbosity = High then
@@ -7173,8 +7169,10 @@ package body Prj.Nmsc is
 
          declare
             Dir_Path : constant String :=
-              Get_Name_String (Element.Display_Value) & Directory_Separator;
-            Dir_Last  : constant Natural := Compute_Directory_Last (Dir_Path);
+                         Get_Name_String (Element.Display_Value) &
+                           Directory_Separator;
+            Dir_Last : constant Natural := Compute_Directory_Last (Dir_Path);
+
          begin
             if Current_Verbosity = High then
                Write_Line ("checking directory """ & Dir_Path & """");
@@ -7196,13 +7194,13 @@ package body Prj.Nmsc is
                   Name : constant File_Name_Type := Name_Find;
                   Canonical_Name : File_Name_Type;
 
-                  --  ??? We could probably optimize the following call:
-                  --  we need to resolve links only once for the
-                  --  directory itself, and then do a single call to
-                  --  readlink() for each file. Unfortunately that would
-                  --  require a change in Normalize_Pathname so that it
-                  --  has the option of not resolving links for its
-                  --  Directory parameter, only for Name.
+                  --  ??? We could probably optimize the following call: we
+                  --  need to resolve links only once for the directory itself,
+                  --  and then do a single call to readlink() for each file.
+                  --  Unfortunately that would require a change in
+                  --  Normalize_Pathname so that it has the option of not
+                  --  resolving links for its Directory parameter, only for
+                  --  Name.
 
                   Path : constant String :=
                     Normalize_Pathname
@@ -7221,10 +7219,11 @@ package body Prj.Nmsc is
                   --  an explicit source was not found)
 
                   if Explicit_Sources_Only then
-                     Canonical_Name := Canonical_Case_File_Name
-                       (Name_Id (Name));
+                     Canonical_Name :=
+                       Canonical_Case_File_Name (Name_Id (Name));
                      NL := Source_Names.Get (Canonical_Name);
                      To_Record := NL /= No_Name_Location and then not NL.Found;
+
                      if To_Record then
                         NL.Found := True;
                         Location := NL.Location;
@@ -7436,18 +7435,19 @@ package body Prj.Nmsc is
       For_All_Sources   : Boolean)
    is
       Canonical_Path : constant Path_Name_Type :=
-        Path_Name_Type (Canonical_Case_File_Name (Name_Id (Path)));
-      Name_Loc          : Name_Location := Source_Names.Get (File_Name);
-      Check_Name        : Boolean := False;
-      Alternate_Languages : Alternate_Language_Id := No_Alternate_Language;
-      Language          : Language_Ptr;
-      Source            : Source_Id;
-      Other_Part        : Source_Id;
-      Add_Src           : Boolean;
-      Src_Ind           : Source_File_Index;
-      Unit              : Name_Id;
-      Source_To_Replace : Source_Id := No_Source;
+                         Path_Name_Type
+                           (Canonical_Case_File_Name (Name_Id (Path)));
 
+      Name_Loc              : Name_Location := Source_Names.Get (File_Name);
+      Check_Name            : Boolean := False;
+      Alternate_Languages   : Alternate_Language_Id := No_Alternate_Language;
+      Language              : Language_Ptr;
+      Source                : Source_Id;
+      Other_Part            : Source_Id;
+      Add_Src               : Boolean;
+      Src_Ind               : Source_File_Index;
+      Unit                  : Name_Id;
+      Source_To_Replace     : Source_Id := No_Source;
       Language_Name         : Name_Id;
       Display_Language_Name : Name_Id;
       Lang_Kind             : Language_Kind;
@@ -7545,8 +7545,8 @@ package body Prj.Nmsc is
                  and then Source.Unit = Unit
                  and then
                    ((Source.Kind = Spec and then Kind = Impl)
-                    or else
-                      (Source.Kind = Impl and then Kind = Spec))
+                       or else
+                    (Source.Kind = Impl and then Kind = Spec))
                then
                   Other_Part := Source;
 
@@ -7554,10 +7554,10 @@ package body Prj.Nmsc is
                       and then Source.Unit = Unit
                       and then
                         (Source.Kind = Kind
-                         or else
-                           (Source.Kind = Sep  and then Kind = Impl)
-                         or else
-                           (Source.Kind = Impl and then Kind = Sep)))
+                           or else
+                        (Source.Kind = Sep  and then Kind = Impl)
+                           or else
+                        (Source.Kind = Impl and then Kind = Sep)))
                  or else
                    (Unit = No_Name and then Source.File = File_Name)
                then
@@ -7583,17 +7583,14 @@ package body Prj.Nmsc is
                         Add_Src := False;
                      end if;
 
-                     --  Do not allow the same unit name in different
-                     --  projects, except if one is extending the other.
+                     --  Do not allow the same unit name in different projects,
+                     --  except if one is extending the other.
 
-                     --  For a file based language, the same file name
-                     --  replaces a file in a project being extended, but
-                     --  it is allowed to have the same file name in
-                     --  unrelated projects.
+                     --  For a file based language, the same file name replaces
+                     --  a file in a project being extended, but it is allowed
+                     --  to have the same file name in unrelated projects.
 
-                  elsif Is_Extending
-                    (Project, Source.Project, In_Tree)
-                  then
+                  elsif Is_Extending (Project, Source.Project, In_Tree) then
                      Source_To_Replace := Source;
 
                   elsif Unit /= No_Name
@@ -7731,10 +7728,10 @@ package body Prj.Nmsc is
                                     (Source_Directory'First .. Dir_Last),
                                   Resolve_Links  => Opt.Follow_Links_For_Files,
                                   Case_Sensitive => True); --  no folding
-                           Path : Path_Name_Type;
 
-                           FF : File_Found :=
-                                  Excluded_Sources_Htable.Get (File_Name);
+                           Path : Path_Name_Type;
+                           FF   : File_Found :=
+                                    Excluded_Sources_Htable.Get (File_Name);
 
                         begin
                            Name_Len := Path_Name'Length;
@@ -7744,8 +7741,7 @@ package body Prj.Nmsc is
                            if FF /= No_File_Found then
                               if not FF.Found then
                                  FF.Found := True;
-                                 Excluded_Sources_Htable.Set
-                                   (File_Name, FF);
+                                 Excluded_Sources_Htable.Set (File_Name, FF);
 
                                  if Current_Verbosity = High then
                                     Write_Str ("     excluded source """);
@@ -8196,7 +8192,7 @@ package body Prj.Nmsc is
       Canonical_File : File_Name_Type;
       Canonical_Path : Path_Name_Type;
 
-      File_Recorded  : Boolean := False;
+      File_Recorded : Boolean := False;
       --  True when at least one file has been recorded
 
       procedure Record_Unit
@@ -8219,13 +8215,13 @@ package body Prj.Nmsc is
          Needs_Pragma : Boolean)
       is
          The_Unit      : Unit_Index :=
-           Units_Htable.Get (In_Tree.Units_HT, Unit_Name);
+                           Units_Htable.Get (In_Tree.Units_HT, Unit_Name);
          UData         : Unit_Data;
          Kind          : Source_Kind;
          Source        : Source_Id;
-         Unit_Prj      : Unit_Project;
          To_Record     : Boolean := False;
          The_Location  : Source_Ptr := Location;
+         Unit_Prj      : Project_Id;
 
       begin
          if Current_Verbosity = High then
@@ -8242,7 +8238,7 @@ package body Prj.Nmsc is
             UData := In_Tree.Units.Table (The_Unit);
 
             if (UData.File_Names (Unit_Kind).Name = Canonical_File
-                and then UData.File_Names (Unit_Kind).Path.Name = Slash)
+                 and then UData.File_Names (Unit_Kind).Path.Name = Slash)
               or else UData.File_Names (Unit_Kind).Name = No_File
               or else Is_Extending
                 (Data.Extends,
@@ -8256,11 +8252,7 @@ package body Prj.Nmsc is
 
                --  Record the file name in the hash table Files_Htable
 
-               Unit_Prj := (Unit => The_Unit, Project => Project);
-               Files_Htable.Set
-                 (In_Tree.Files_HT,
-                  Canonical_File,
-                  Unit_Prj);
+               Files_Htable.Set (In_Tree.Files_HT, Canonical_File, Project);
 
                UData.File_Names (Unit_Kind) :=
                  (Name         => Canonical_File,
@@ -8278,8 +8270,8 @@ package body Prj.Nmsc is
             elsif UData.File_Names (Unit_Kind).Project = Project
               and then
                 (Data.Known_Order_Of_Source_Dirs
-                 or else
-                   UData.File_Names (Unit_Kind).Path.Name = Canonical_Path)
+                  or else
+                    UData.File_Names (Unit_Kind).Path.Name = Canonical_Path)
             then
                To_Record := False;
 
@@ -8323,11 +8315,10 @@ package body Prj.Nmsc is
             Unit_Prj := Files_Htable.Get (In_Tree.Files_HT, Canonical_File);
 
             if not File_Recorded
-              and then Unit_Prj /= No_Unit_Project
+              and then Unit_Prj /= No_Project
             then
                Error_Msg_File_1 := File_Name;
-               Error_Msg_Name_1 :=
-                 In_Tree.Projects.Table (Unit_Prj.Project).Name;
+               Error_Msg_Name_1 := In_Tree.Projects.Table (Unit_Prj).Name;
                Error_Msg
                  (Project, In_Tree,
                   "{ is already a source of project %%",
@@ -8338,8 +8329,7 @@ package body Prj.Nmsc is
                The_Unit := Unit_Table.Last (In_Tree.Units);
                Units_Htable.Set (In_Tree.Units_HT, Unit_Name, The_Unit);
 
-               Unit_Prj := (Unit => The_Unit, Project => Project);
-               Files_Htable.Set (In_Tree.Files_HT, Canonical_File, Unit_Prj);
+               Files_Htable.Set (In_Tree.Files_HT, Canonical_File, Project);
 
                UData.Name := Unit_Name;
                UData.File_Names (Unit_Kind) :=
@@ -8399,8 +8389,9 @@ package body Prj.Nmsc is
          Naming              => Data.Naming,
          Exception_Id        => Exception_Id,
          Unit_Name           => Unit_Name,
-         Unit_Kind           => Unit_Kind,
-         Needs_Pragma        => Needs_Pragma);
+         Unit_Kind           => Unit_Kind);
+
+      Needs_Pragma := Exception_Id /= No_Ada_Naming_Exception;
 
       if Exception_Id = No_Ada_Naming_Exception
         and then Unit_Name = No_Name
@@ -8430,8 +8421,8 @@ package body Prj.Nmsc is
                Write_Line (""" (ignored).");
             end if;
 
-            --  The file is not included in the source of the project since
-            --  it is hidden by the exception. So, nothing else to do.
+            --  The file is not included in the source of the project since it
+            --  is hidden by the exception. So, nothing else to do.
 
             return;
          end if;
@@ -8469,7 +8460,7 @@ package body Prj.Nmsc is
      (Id          : Source_Id;
       Replaced_By : Source_Id)
    is
-      Source   : Source_Id;
+      Source : Source_Id;
 
    begin
       if Current_Verbosity = High then
@@ -8523,12 +8514,9 @@ package body Prj.Nmsc is
                Error_Msg_Warn := When_No_Sources = Warning;
 
                if Continuation then
-                  Error_Msg
-                    (Project, In_Tree, "\" & Msg, Location);
-
+                  Error_Msg (Project, In_Tree, "\" & Msg, Location);
                else
-                  Error_Msg
-                    (Project, In_Tree, Msg, Location);
+                  Error_Msg (Project, In_Tree, Msg, Location);
                end if;
             end;
       end case;

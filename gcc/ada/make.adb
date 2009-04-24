@@ -6574,9 +6574,10 @@ package body Make is
 
                   declare
                      Dir_Path : constant String :=
-                       Get_Name_String
-                         (Project_Tree.Projects.Table
-                              (Main_Project).Directory.Name);
+                                  Get_Name_String
+                                    (Project_Tree.Projects.Table
+                                      (Main_Project).Directory.Name);
+
                   begin
                      for
                        J in Last_Binder_Switch + 1 .. Binder_Switches.Last

@@ -885,10 +885,13 @@ package body Sem_Ch12 is
       Formals : List_Id;
       F_Copy  : List_Id) return List_Id
    is
-      Actual_Types : constant Elist_Id  := New_Elmt_List;
-      Assoc        : constant List_Id   := New_List;
+
+      Actual_Types    : constant Elist_Id  := New_Elmt_List;
+      Assoc           : constant List_Id   := New_List;
       Default_Actuals : constant Elist_Id  := New_Elmt_List;
-      Gen_Unit     : constant Entity_Id := Defining_Entity (Parent (F_Copy));
+      Gen_Unit        : constant Entity_Id
+                          := Defining_Entity (Parent (F_Copy));
+
       Actuals         : List_Id;
       Actual          : Node_Id;
       Formal          : Node_Id;
@@ -905,16 +908,16 @@ package body Sem_Ch12 is
       --  individual defaults for each such formal. These defaults are
       --  appended to the list of associations and replace the Others_Choice.
 
-      Found_Assoc     : Node_Id;
+      Found_Assoc : Node_Id;
       --  Association for the current formal being match. Empty if there are
       --  no remaining actuals, or if there is no named association with the
       --  name of the formal.
 
-      Is_Named_Assoc  : Boolean;
-      Num_Matched     : Int := 0;
-      Num_Actuals     : Int := 0;
+      Is_Named_Assoc : Boolean;
+      Num_Matched    : Int := 0;
+      Num_Actuals    : Int := 0;
 
-      Others_Present  : Boolean := False;
+      Others_Present : Boolean := False;
       --  In Ada 2005, indicates partial parametrization of a formal
       --  package. As usual an other association must be last in the list.
 
@@ -1047,7 +1050,6 @@ package body Sem_Ch12 is
       procedure Process_Default (F : Entity_Id)  is
          Loc     : constant Source_Ptr := Sloc (I_Node);
          F_Id    : constant Entity_Id  := Defining_Entity (F);
-
          Decl    : Node_Id;
          Default : Node_Id;
          Id      : Entity_Id;
@@ -1132,7 +1134,7 @@ package body Sem_Ch12 is
 
       if Present (Actuals) then
 
-         --  check for an Others choice, indicating a partial parametrization
+         --  Check for an Others choice, indicating a partial parametrization
          --  for a formal package.
 
          Actual := First (Actuals);
@@ -1292,11 +1294,10 @@ package body Sem_Ch12 is
                       Defining_Unit_Name (Specification (Formal)),
                       Defining_Unit_Name (Specification (Analyzed_Formal)));
 
-                  --  If the formal subprogram has the same name as
-                  --  another formal subprogram of the generic, then
-                  --  a named association is illegal (12.3(9)). Exclude
-                  --  named associations that are generated for a nested
-                  --  instance.
+                  --  If the formal subprogram has the same name as another
+                  --  formal subprogram of the generic, then a named
+                  --  association is illegal (12.3(9)). Exclude named
+                  --  associations that are generated for a nested instance.
 
                   if Present (Match)
                     and then Is_Named_Assoc
@@ -1424,7 +1425,6 @@ package body Sem_Ch12 is
 
       declare
          Elmt : Elmt_Id := First_Elmt (Actual_Types);
-
       begin
          while Present (Elmt) loop
             Freeze_Before (I_Node, Node (Elmt));
@@ -1934,7 +1934,6 @@ package body Sem_Ch12 is
               ("initialization not allowed for `IN OUT` formals", N);
          end if;
       end if;
-
    end Analyze_Formal_Object_Declaration;
 
    ----------------------------------------------
@@ -1984,7 +1983,7 @@ package body Sem_Ch12 is
 
    procedure Analyze_Formal_Package (N : Node_Id) is
       Loc              : constant Source_Ptr := Sloc (N);
-      Pack_Id          : constant Entity_Id := Defining_Identifier (N);
+      Pack_Id          : constant Entity_Id  := Defining_Identifier (N);
       Formal           : Entity_Id;
       Gen_Id           : constant Node_Id    := Name (N);
       Gen_Decl         : Node_Id;
@@ -2039,6 +2038,7 @@ package body Sem_Ch12 is
          --  create corresponding declarations for all entities in the formal
          --  part, so that names with the proper types are available in the
          --  specification of the formal package.
+
          --  On the other hand, if there are no associations, then all the
          --  formals must have defaults, and this will be checked by the
          --  call to Analyze_Associations.
@@ -4372,7 +4372,11 @@ package body Sem_Ch12 is
             Make_Compilation_Unit_Aux (Sloc (N)));
 
       Set_Parent_Spec   (Act_Decl, Parent_Spec (N));
-      Set_Body_Required (Decl_Cunit, True);
+
+      --  The new compilation unit is linked to its body, but both share the
+      --  same file, so we do not set Body_Required on the new unit so as not
+      --  to create a spurious dependency on a non-existent body in the ali.
+      --  This simplifies codepeer unit traversal.
 
       --  We use the original instantiation compilation unit as the resulting
       --  compilation unit of the instance, since this is the main unit.
