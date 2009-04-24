@@ -1,3 +1,8 @@
+2009-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/39794
+	* gcc.dg/pr39794.c: New test.
+
 2009-04-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/atomic1.adb: New test.

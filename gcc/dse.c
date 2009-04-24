@@ -223,7 +223,7 @@ struct store_info
   /* This canonized mem.  */
   rtx mem;
 
-  /* The result of get_addr on mem.  */
+  /* Canonized MEM address for use by canon_true_dependence.  */
   rtx mem_addr;
 
   /* If this is non-zero, it is the alias set of a spill location.  */
@@ -476,8 +476,8 @@ struct group_info
      do read dependency.  */
   rtx base_mem;
   
-  /* Canonized version of base_mem, most likely the same thing.  */
-  rtx canon_base_mem;
+  /* Canonized version of base_mem's address.  */
+  rtx canon_base_addr;
 
   /* These two sets of two bitmaps are used to keep track of how many
      stores are actually referencing that position from this base.  We
@@ -705,7 +705,7 @@ get_group_info (rtx base)
       gi->rtx_base = base;
       gi->id = rtx_group_next_id++;
       gi->base_mem = gen_rtx_MEM (QImode, base);
-      gi->canon_base_mem = canon_rtx (gi->base_mem);
+      gi->canon_base_addr = canon_rtx (base);
       gi->store1_n = BITMAP_ALLOC (NULL);
       gi->store1_p = BITMAP_ALLOC (NULL);
       gi->store2_n = BITMAP_ALLOC (NULL);
@@ -1286,7 +1286,7 @@ static rtx get_stored_val (store_info_t, enum machine_mode, HOST_WIDE_INT,
 static int
 record_store (rtx body, bb_info_t bb_info)
 {
-  rtx mem, rhs, const_rhs;
+  rtx mem, rhs, const_rhs, mem_addr;
   HOST_WIDE_INT offset = 0;
   HOST_WIDE_INT width = 0;
   alias_set_type spill_alias_set;
@@ -1456,6 +1456,23 @@ record_store (rtx body, bb_info_t bb_info)
   ptr = active_local_stores;
   last = NULL;
   redundant_reason = NULL;
+  mem = canon_rtx (mem);
+  /* For alias_set != 0 canon_true_dependence should be never called.  */
+  if (spill_alias_set)
+    mem_addr = NULL_RTX;
+  else
+    {
+      if (group_id < 0)
+	mem_addr = base->val_rtx;
+      else
+	{
+	  group_info_t group
+	    = VEC_index (group_info_t, rtx_group_vec, group_id);
+	  mem_addr = group->canon_base_addr;
+	}
+      if (offset)
+	mem_addr = plus_constant (mem_addr, offset);
+    }
 
   while (ptr)
     {
@@ -1547,13 +1564,13 @@ record_store (rtx body, bb_info_t bb_info)
 	  if (canon_true_dependence (s_info->mem, 
 				     GET_MODE (s_info->mem),
 				     s_info->mem_addr,
-				     mem, rtx_varies_p))
+				     mem, mem_addr, rtx_varies_p))
 	    {
 	      s_info->rhs = NULL;
 	      s_info->const_rhs = NULL;
 	    }
 	}
-      
+
       /* An insn can be deleted if every position of every one of
 	 its s_infos is zero.  */
       if (any_positions_needed_p (s_info)
@@ -1580,9 +1597,9 @@ record_store (rtx body, bb_info_t bb_info)
   /* Finish filling in the store_info.  */
   store_info->next = insn_info->store_rec;
   insn_info->store_rec = store_info;
-  store_info->mem = canon_rtx (mem);
+  store_info->mem = mem;
   store_info->alias_set = spill_alias_set;
-  store_info->mem_addr = get_addr (XEXP (mem, 0));
+  store_info->mem_addr = mem_addr;
   store_info->cse_base = base;
   if (width > HOST_BITS_PER_WIDE_INT)
     {
@@ -2006,7 +2023,7 @@ replace_read (store_info_t store_info, insn_info_t store_insn,
 static int
 check_mem_read_rtx (rtx *loc, void *data)
 {
-  rtx mem = *loc;
+  rtx mem = *loc, mem_addr;
   bb_info_t bb_info;
   insn_info_t insn_info;
   HOST_WIDE_INT offset = 0;
@@ -2058,6 +2075,22 @@ check_mem_read_rtx (rtx *loc, void *data)
   read_info->end = offset + width;
   read_info->next = insn_info->read_rec;
   insn_info->read_rec = read_info;
+  /* For alias_set != 0 canon_true_dependence should be never called.  */
+  if (spill_alias_set)
+    mem_addr = NULL_RTX;
+  else
+    {
+      if (group_id < 0)
+	mem_addr = base->val_rtx;
+      else
+	{
+	  group_info_t group
+	    = VEC_index (group_info_t, rtx_group_vec, group_id);
+	  mem_addr = group->canon_base_addr;
+	}
+      if (offset)
+	mem_addr = plus_constant (mem_addr, offset);
+    }
 
   /* We ignore the clobbers in store_info.  The is mildly aggressive,
      but there really should not be a clobber followed by a read.  */
@@ -2128,7 +2161,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	      = canon_true_dependence (store_info->mem, 
 				       GET_MODE (store_info->mem),
 				       store_info->mem_addr,
-				       mem, rtx_varies_p);
+				       mem, mem_addr, rtx_varies_p);
 	  
 	  else if (group_id == store_info->group_id)
 	    {
@@ -2139,7 +2172,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 		  = canon_true_dependence (store_info->mem, 
 					   GET_MODE (store_info->mem),
 					   store_info->mem_addr,
-					   mem, rtx_varies_p);
+					   mem, mem_addr, rtx_varies_p);
 	      
 	      /* If this read is just reading back something that we just
 		 stored, rewrite the read.  */
@@ -2224,7 +2257,7 @@ check_mem_read_rtx (rtx *loc, void *data)
 	    remove = canon_true_dependence (store_info->mem, 
 					    GET_MODE (store_info->mem),
 					    store_info->mem_addr,
-					    mem, rtx_varies_p);
+					    mem, mem_addr, rtx_varies_p);
 	  
 	  if (remove)
 	    {
@@ -3066,8 +3099,9 @@ scan_reads_nospill (insn_info_t insn_info, bitmap gen, bitmap kill)
 		  if ((read_info->group_id < 0)
 		      && canon_true_dependence (group->base_mem, 
 						QImode,
-						group->canon_base_mem,
-						read_info->mem, rtx_varies_p))
+						group->canon_base_addr,
+						read_info->mem, NULL_RTX,
+						rtx_varies_p))
 		    {
 		      if (kill)
 			bitmap_ior_into (kill, group->group_kill);
