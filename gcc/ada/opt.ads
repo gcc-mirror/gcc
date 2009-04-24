@@ -1166,6 +1166,12 @@ package Opt is
    --  the other hand, most such blowups will be caught cleanly and simply
    --  say compilation abandoned. This flag is set to True by -gnatq or -gnatQ.
 
+   Unchecked_Shared_Lib_Imports : Boolean := False;
+   --  GPRBUILD
+   --  Set to True when shared library projects are allowed to import projects
+   --  that are not shared library projects. Set by switch
+   --  --unchecked-shared-lib-imports.
+
    Undefined_Symbols_Are_False : Boolean := False;
    --  GNAT, GNATPREP
    --  Set to True by switch -u of gnatprep or -u in the preprocessing data

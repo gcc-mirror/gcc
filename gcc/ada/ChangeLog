@@ -1,3 +1,14 @@
+2009-04-24  Vincent Celier  <celier@adacore.com>
+
+	* opt.ads (Unchecked_Shared_Lib_Imports): New Boolean flag.
+
+	* prj-nmsc.adb (Check_Library): No error for imports by shared library
+	projects, when --unchecked-shared-lib-imports is used.
+
+2009-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch7.adb: Minor reformatting
+
 2009-04-24  Tristan Gingold  <gingold@adacore.com>
 
 	* s-osinte-darwin.adb, s-osinte-darwin.ads: lwp_self now returns the
