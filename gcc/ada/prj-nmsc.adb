@@ -205,6 +205,9 @@ package body Prj.Nmsc is
    end record;
    No_Name_And_Index : constant Name_And_Index :=
                          (Name => No_Name, Index => 0);
+   --  Name of a unit, and its index inside the source file. The first unit has
+   --  index 1 (see doc for pragma Source_File_Name), but the index might be
+   --  set to 0 when the source file contains a single unit.
 
    package Reverse_Ada_Naming_Exceptions is new GNAT.HTable.Simple_HTable
      (Header_Num => Header_Num,
@@ -233,8 +236,7 @@ package body Prj.Nmsc is
       Display_File        : File_Name_Type;
       Lang_Kind           : Language_Kind;
       Naming_Exception    : Boolean := False;
-      Path                : Path_Name_Type := No_Path;
-      Display_Path        : Path_Name_Type := No_Path;
+      Path                : Path_Information := No_Path_Information;
       Alternate_Languages : Alternate_Language_Id := No_Alternate_Language;
       Other_Part          : Source_Id := No_Source;
       Unit                : Name_Id   := No_Name;
@@ -355,7 +357,6 @@ package body Prj.Nmsc is
      (Project               : Project_Id;
       In_Tree               : Project_Tree_Ref;
       Data                  : in out Project_Data;
-      Current_Dir           : String;
       Explicit_Sources_Only : Boolean);
    --  Find all Ada sources by traversing all source directories.
    --  If Explicit_Sources_Only is True, then the sources found must belong to
@@ -390,10 +391,9 @@ package body Prj.Nmsc is
      (Project           : Project_Id;
       In_Tree           : Project_Tree_Ref;
       Data              : in out Project_Data;
-      Name              : String;
+      Path              : Path_Name_Type;
       File_Name         : File_Name_Type;
       Display_File_Name : File_Name_Type;
-      Source_Directory  : String;
       For_All_Sources   : Boolean);
    --  Check if file File_Name is a valid source of the project. This is used
    --  in multi-language mode only.
@@ -464,8 +464,7 @@ package body Prj.Nmsc is
    --  Source_Names.
 
    procedure Find_Sources
-     (Current_Dir : String;
-      Project     : Project_Id;
+     (Project     : Project_Id;
       In_Tree     : Project_Tree_Ref;
       Data        : in out Project_Data);
    --  Process the Source_Files and Source_List_File attributes, and store
@@ -499,7 +498,7 @@ package body Prj.Nmsc is
    --  specific SFN pragma is needed. If the file name corresponds to no unit,
    --  then Unit_Name will be No_Name. If the file is a multi-unit source or an
    --  exception to the naming scheme, then Exception_Id is set to the unit or
-   --  units that the source contains.
+   --  units that the source contains, and the other information are not set.
 
    function Is_Illegal_Suffix
      (Suffix          : File_Name_Type;
@@ -532,15 +531,11 @@ package body Prj.Nmsc is
    procedure Look_For_Sources
      (Project     : Project_Id;
       In_Tree     : Project_Tree_Ref;
-      Data        : in out Project_Data;
-      Current_Dir : String);
+      Data        : in out Project_Data);
    --  Find all the sources of project Project in project tree In_Tree and
    --  update its Data accordingly. This assumes that Data.First_Source has
    --  been initialized with the list of excluded sources and special naming
    --  exceptions.
-   --
-   --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it.
 
    function Path_Name_Of
      (File_Name : File_Name_Type;
@@ -561,15 +556,12 @@ package body Prj.Nmsc is
       Project         : Project_Id;
       In_Tree         : Project_Tree_Ref;
       Data            : in out Project_Data;
+      Ada_Language    : Language_Ptr;
       Location        : Source_Ptr;
-      Current_Source  : in out String_List_Id;
-      Source_Recorded : in out Boolean;
-      Current_Dir     : String);
+      Source_Recorded : in out Boolean);
    --  Put a unit in the list of units of a project, if the file name
    --  corresponds to a valid unit name.
-   --
-   --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it.
+   --  Ada_Language is a pointer to the Language_Data for "Ada" in Project.
 
    procedure Remove_Source
      (Id          : Source_Id;
@@ -684,8 +676,7 @@ package body Prj.Nmsc is
       Display_File        : File_Name_Type;
       Lang_Kind           : Language_Kind;
       Naming_Exception    : Boolean := False;
-      Path                : Path_Name_Type := No_Path;
-      Display_Path        : Path_Name_Type := No_Path;
+      Path                : Path_Information := No_Path_Information;
       Alternate_Languages : Alternate_Language_Id := No_Alternate_Language;
       Other_Part          : Source_Id := No_Source;
       Unit                : Name_Id   := No_Name;
@@ -744,9 +735,9 @@ package body Prj.Nmsc is
          Id.Switches := Switches_Name (File_Name);
       end if;
 
-      if Path /= No_Path then
-         Id.Path := (Path, Display_Path);
-         Source_Paths_Htable.Set (In_Tree.Source_Paths_HT, Path, Id);
+      if Path /= No_Path_Information then
+         Id.Path := Path;
+         Source_Paths_Htable.Set (In_Tree.Source_Paths_HT, Path.Name, Id);
       end if;
 
       --  Add the source id to the Unit_Sources_HT hash table, if the unit name
@@ -870,7 +861,7 @@ package body Prj.Nmsc is
       --  Find the sources
 
       if Data.Source_Dirs /= Nil_String then
-         Look_For_Sources (Project, In_Tree, Data, Current_Dir);
+         Look_For_Sources (Project, In_Tree, Data);
 
          if Get_Mode = Ada_Only then
 
@@ -6895,8 +6886,7 @@ package body Prj.Nmsc is
    ------------------
 
    procedure Find_Sources
-     (Current_Dir : String;
-      Project     : Project_Id;
+     (Project     : Project_Id;
       In_Tree     : Project_Tree_Ref;
       Data        : in out Project_Data)
    is
@@ -7056,7 +7046,7 @@ package body Prj.Nmsc is
 
       if Get_Mode = Ada_Only then
          Find_Ada_Sources
-           (Project, In_Tree, Data, Current_Dir,
+           (Project, In_Tree, Data,
             Explicit_Sources_Only => Has_Explicit_Sources);
 
       else
@@ -7152,20 +7142,26 @@ package body Prj.Nmsc is
      (Project               : Project_Id;
       In_Tree               : Project_Tree_Ref;
       Data                  : in out Project_Data;
-      Current_Dir           : String;
       Explicit_Sources_Only : Boolean)
    is
       Source_Dir      : String_List_Id;
       Element         : String_Element;
       Dir             : Dir_Type;
-      Current_Source  : String_List_Id := Nil_String;
       Dir_Has_Source  : Boolean := False;
       NL              : Name_Location;
+      Ada_Language    : Language_Ptr;
 
    begin
       if Current_Verbosity = High then
          Write_Line ("Looking for Ada sources:");
       end if;
+
+      Ada_Language := Data.Languages;
+      while Ada_Language /= No_Language_Index
+        and then Ada_Language.Name /= Name_Ada
+      loop
+         Ada_Language := Ada_Language.Next;
+      end loop;
 
       --  We look in all source directories for the file names in the hash
       --  table Source_Names.
@@ -7213,7 +7209,7 @@ package body Prj.Nmsc is
                       (Name           => Name_Buffer (1 .. Name_Len),
                        Directory      => Dir_Path (Dir_Path'First .. Dir_Last),
                        Resolve_Links  => Opt.Follow_Links_For_Files,
-                       Case_Sensitive => True);
+                       Case_Sensitive => True);  -- no case folding
 
                   Path_Name : Path_Name_Type;
                   To_Record : Boolean := False;
@@ -7257,10 +7253,9 @@ package body Prj.Nmsc is
                         Project         => Project,
                         In_Tree         => In_Tree,
                         Data            => Data,
+                        Ada_Language    => Ada_Language,
                         Location        => Location,
-                        Current_Source  => Current_Source,
-                        Source_Recorded => Dir_Has_Source,
-                        Current_Dir     => Current_Dir);
+                        Source_Recorded => Dir_Has_Source);
                   end if;
                end;
             end loop;
@@ -7435,22 +7430,14 @@ package body Prj.Nmsc is
      (Project           : Project_Id;
       In_Tree           : Project_Tree_Ref;
       Data              : in out Project_Data;
-      Name              : String;
+      Path              : Path_Name_Type;
       File_Name         : File_Name_Type;
       Display_File_Name : File_Name_Type;
-      Source_Directory  : String;
       For_All_Sources   : Boolean)
    is
-      Display_Path    : constant String :=
-        Normalize_Pathname
-          (Name           => Name,
-           Directory      => Source_Directory,
-           Resolve_Links  => Opt.Follow_Links_For_Files,
-           Case_Sensitive => True);
-
+      Canonical_Path : constant Path_Name_Type :=
+        Path_Name_Type (Canonical_Case_File_Name (Name_Id (Path)));
       Name_Loc          : Name_Location := Source_Names.Get (File_Name);
-      Path_Id           : Path_Name_Type;
-      Display_Path_Id   : Path_Name_Type;
       Check_Name        : Boolean := False;
       Alternate_Languages : Alternate_Language_Id := No_Alternate_Language;
       Language          : Language_Ptr;
@@ -7468,17 +7455,6 @@ package body Prj.Nmsc is
       Iter                  : Source_Iterator;
 
    begin
-      Name_Len := Display_Path'Length;
-      Name_Buffer (1 .. Name_Len) := Display_Path;
-      Display_Path_Id := Name_Find;
-
-      if Osint.File_Names_Case_Sensitive then
-         Path_Id := Display_Path_Id;
-      else
-         Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-         Path_Id := Name_Find;
-      end if;
-
       if Name_Loc = No_Name_Location then
          Check_Name := For_All_Sources;
 
@@ -7505,11 +7481,11 @@ package body Prj.Nmsc is
                Check_Name := True;
 
             else
-               Name_Loc.Source.Path := (Path_Id, Display_Path_Id);
+               Name_Loc.Source.Path := (Canonical_Path, Path);
 
                Source_Paths_Htable.Set
                  (In_Tree.Source_Paths_HT,
-                  Path_Id,
+                  Canonical_Path,
                   Name_Loc.Source);
 
                --  Check if this is a subunit
@@ -7518,7 +7494,7 @@ package body Prj.Nmsc is
                  and then Name_Loc.Source.Kind = Impl
                then
                   Src_Ind := Sinput.P.Load_Project_File
-                    (Get_Name_String (Path_Id));
+                    (Get_Name_String (Canonical_Path));
 
                   if Sinput.P.Source_File_Is_Subunit (Src_Ind) then
                      Name_Loc.Source.Kind := Sep;
@@ -7631,7 +7607,7 @@ package body Prj.Nmsc is
 
                      Error_Msg_Name_1 :=
                        In_Tree.Projects.Table (Project).Name;
-                     Error_Msg_Name_2 := Name_Id (Display_Path_Id);
+                     Error_Msg_Name_2 := Name_Id (Path);
                      Error_Msg
                        (Project, In_Tree, "\  project %%, %%", No_Location);
 
@@ -7661,8 +7637,7 @@ package body Prj.Nmsc is
                   Display_File        => Display_File_Name,
                   Other_Part          => Other_Part,
                   Unit                => Unit,
-                  Path                => Path_Id,
-                  Display_Path        => Display_Path_Id,
+                  Path                => (Canonical_Path, Path),
                   Source_To_Replace   => Source_To_Replace);
             end if;
          end if;
@@ -7749,10 +7724,23 @@ package body Prj.Nmsc is
                         end if;
 
                         declare
+                           Path_Name : constant String :=
+                               Normalize_Pathname
+                                 (Name (1 .. Last),
+                                  Directory      => Source_Directory
+                                    (Source_Directory'First .. Dir_Last),
+                                  Resolve_Links  => Opt.Follow_Links_For_Files,
+                                  Case_Sensitive => True); --  no folding
+                           Path : Path_Name_Type;
+
                            FF : File_Found :=
                                   Excluded_Sources_Htable.Get (File_Name);
 
                         begin
+                           Name_Len := Path_Name'Length;
+                           Name_Buffer (1 .. Name_Len) := Path_Name;
+                           Path := Name_Find;
+
                            if FF /= No_File_Found then
                               if not FF.Found then
                                  FF.Found := True;
@@ -7771,11 +7759,9 @@ package body Prj.Nmsc is
                                 (Project           => Project,
                                  In_Tree           => In_Tree,
                                  Data              => Data,
-                                 Name              => Name (1 .. Last),
+                                 Path              => Path,
                                  File_Name         => File_Name,
                                  Display_File_Name => Display_File_Name,
-                                 Source_Directory  => Source_Directory
-                                   (Source_Directory'First .. Dir_Last),
                                  For_All_Sources   => For_All_Sources);
                            end if;
                         end;
@@ -7874,8 +7860,7 @@ package body Prj.Nmsc is
    procedure Look_For_Sources
      (Project     : Project_Id;
       In_Tree     : Project_Tree_Ref;
-      Data        : in out Project_Data;
-      Current_Dir : String)
+      Data        : in out Project_Data)
    is
       Iter : Source_Iterator;
 
@@ -8113,7 +8098,7 @@ package body Prj.Nmsc is
             Load_Naming_Exceptions (Project, In_Tree);
          end if;
 
-         Find_Sources (Current_Dir, Project, In_Tree, Data);
+         Find_Sources (Project, In_Tree, Data);
          Mark_Excluded_Sources;
 
          if Get_Mode = Multi_Language then
@@ -8204,13 +8189,193 @@ package body Prj.Nmsc is
       Project         : Project_Id;
       In_Tree         : Project_Tree_Ref;
       Data            : in out Project_Data;
+      Ada_Language    : Language_Ptr;
       Location        : Source_Ptr;
-      Current_Source  : in out String_List_Id;
-      Source_Recorded : in out Boolean;
-      Current_Dir     : String)
+      Source_Recorded : in out Boolean)
    is
-      Canonical_File_Name : File_Name_Type;
-      Canonical_Path_Name : Path_Name_Type;
+      Canonical_File : File_Name_Type;
+      Canonical_Path : Path_Name_Type;
+
+      File_Recorded  : Boolean := False;
+      --  True when at least one file has been recorded
+
+      procedure Record_Unit
+        (Unit_Name    : Name_Id;
+         Unit_Ind     : Int := 0;
+         Unit_Kind    : Spec_Or_Body;
+         Needs_Pragma : Boolean);
+      --  Register of the units contained in the source file (there is in
+      --  general a single such unit except when exceptions to the naming
+      --  scheme indicate there are several such units)
+
+      -----------------
+      -- Record_Unit --
+      -----------------
+
+      procedure Record_Unit
+        (Unit_Name    : Name_Id;
+         Unit_Ind     : Int := 0;
+         Unit_Kind    : Spec_Or_Body;
+         Needs_Pragma : Boolean)
+      is
+         The_Unit      : Unit_Index :=
+           Units_Htable.Get (In_Tree.Units_HT, Unit_Name);
+         UData         : Unit_Data;
+         Kind          : Source_Kind;
+         Source        : Source_Id;
+         Unit_Prj      : Unit_Project;
+         To_Record     : Boolean := False;
+         The_Location  : Source_Ptr := Location;
+
+      begin
+         if Current_Verbosity = High then
+            Write_Str  ("   Putting ");
+            Write_Str  (Get_Name_String (Unit_Name));
+            Write_Line (" in the unit list.");
+         end if;
+
+         --  The unit is already in the list, but may be it is only the other
+         --  unit kind (spec or body), or what is in the unit list is a unit of
+         --  a project we are extending.
+
+         if The_Unit /= No_Unit_Index then
+            UData := In_Tree.Units.Table (The_Unit);
+
+            if (UData.File_Names (Unit_Kind).Name = Canonical_File
+                and then UData.File_Names (Unit_Kind).Path.Name = Slash)
+              or else UData.File_Names (Unit_Kind).Name = No_File
+              or else Is_Extending
+                (Data.Extends,
+                 UData.File_Names (Unit_Kind).Project,
+                 In_Tree)
+            then
+               if UData.File_Names (Unit_Kind).Path.Name = Slash then
+                  Remove_Forbidden_File_Name
+                    (UData.File_Names (Unit_Kind).Name);
+               end if;
+
+               --  Record the file name in the hash table Files_Htable
+
+               Unit_Prj := (Unit => The_Unit, Project => Project);
+               Files_Htable.Set
+                 (In_Tree.Files_HT,
+                  Canonical_File,
+                  Unit_Prj);
+
+               UData.File_Names (Unit_Kind) :=
+                 (Name         => Canonical_File,
+                  Index        => Unit_Ind,
+                  Display_Name => File_Name,
+                  Path         => (Canonical_Path, Path_Name),
+                  Project      => Project,
+                  Needs_Pragma => Needs_Pragma);
+               In_Tree.Units.Table (The_Unit) := UData;
+               To_Record       := True;
+               Source_Recorded := True;
+
+            --  If the same file is already in the list, do not add it again
+
+            elsif UData.File_Names (Unit_Kind).Project = Project
+              and then
+                (Data.Known_Order_Of_Source_Dirs
+                 or else
+                   UData.File_Names (Unit_Kind).Path.Name = Canonical_Path)
+            then
+               To_Record := False;
+
+            --  Else, same unit but not same file => It is an error to have two
+            --  units with the same name and the same kind (spec or body).
+
+            else
+               if The_Location = No_Location then
+                  The_Location := In_Tree.Projects.Table (Project).Location;
+               end if;
+
+               Err_Vars.Error_Msg_Name_1 := Unit_Name;
+               Error_Msg
+                 (Project, In_Tree, "duplicate unit %%", The_Location);
+
+               Err_Vars.Error_Msg_Name_1 :=
+                 In_Tree.Projects.Table
+                   (UData.File_Names (Unit_Kind).Project).Name;
+               Err_Vars.Error_Msg_File_1 :=
+                 File_Name_Type (UData.File_Names (Unit_Kind).Path.Name);
+               Error_Msg
+                 (Project, In_Tree,
+                  "\   project file %%, {", The_Location);
+
+               Err_Vars.Error_Msg_Name_1 :=
+                 In_Tree.Projects.Table (Project).Name;
+               Err_Vars.Error_Msg_File_1 := File_Name_Type (Canonical_Path);
+               Error_Msg
+                 (Project, In_Tree, "\   project file %%, {", The_Location);
+
+               To_Record := False;
+            end if;
+
+         --  It is a new unit, create a new record
+
+         else
+            --  First, check if there is no other unit with this file name in
+            --  another project. If it is, report error but note we do that
+            --  only for the first unit in the source file.
+
+            Unit_Prj := Files_Htable.Get (In_Tree.Files_HT, Canonical_File);
+
+            if not File_Recorded
+              and then Unit_Prj /= No_Unit_Project
+            then
+               Error_Msg_File_1 := File_Name;
+               Error_Msg_Name_1 :=
+                 In_Tree.Projects.Table (Unit_Prj.Project).Name;
+               Error_Msg
+                 (Project, In_Tree,
+                  "{ is already a source of project %%",
+                  Location);
+
+            else
+               Unit_Table.Increment_Last (In_Tree.Units);
+               The_Unit := Unit_Table.Last (In_Tree.Units);
+               Units_Htable.Set (In_Tree.Units_HT, Unit_Name, The_Unit);
+
+               Unit_Prj := (Unit => The_Unit, Project => Project);
+               Files_Htable.Set (In_Tree.Files_HT, Canonical_File, Unit_Prj);
+
+               UData.Name := Unit_Name;
+               UData.File_Names (Unit_Kind) :=
+                 (Name         => Canonical_File,
+                  Index        => Unit_Ind,
+                  Display_Name => File_Name,
+                  Path         => (Canonical_Path, Path_Name),
+                  Project      => Project,
+                  Needs_Pragma => Needs_Pragma);
+               In_Tree.Units.Table (The_Unit) := UData;
+
+               Source_Recorded := True;
+               To_Record := True;
+            end if;
+         end if;
+
+         if To_Record then
+            case Unit_Kind is
+               when Body_Part      => Kind := Impl;
+               when Specification  => Kind := Spec;
+            end case;
+
+            Add_Source
+              (Id                  => Source,
+               In_Tree             => In_Tree,
+               Project             => Project,
+               Lang_Id             => Ada_Language,
+               Lang_Kind           => Unit_Based,
+               File_Name           => Canonical_File,
+               Display_File        => File_Name,
+               Unit                => Unit_Name,
+               Path                => (Canonical_Path, Path_Name),
+               Kind                => Kind,
+               Other_Part          => No_Source);  --  ??? Can we find file ?
+         end if;
+      end Record_Unit;
 
       Exception_Id : Ada_Naming_Exception_Id;
       Unit_Name    : Name_Id;
@@ -8218,42 +8383,19 @@ package body Prj.Nmsc is
       Unit_Ind     : Int := 0;
       Info         : Unit_Info;
       Name_Index   : Name_And_Index;
+      Except_Name  : Name_And_Index := No_Name_And_Index;
       Needs_Pragma : Boolean;
 
-      The_Location    : Source_Ptr              := Location;
-      Previous_Source : constant String_List_Id := Current_Source;
-      Except_Name     : Name_And_Index          := No_Name_And_Index;
-
-      Unit_Prj : Unit_Project;
-
-      File_Name_Recorded : Boolean := False;
-
    begin
-      Canonical_File_Name := Canonical_Case_File_Name (Name_Id (File_Name));
+      Canonical_File := Canonical_Case_File_Name (Name_Id (File_Name));
+      Canonical_Path :=
+        Path_Name_Type (Canonical_Case_File_Name (Name_Id (Path_Name)));
 
-      if Osint.File_Names_Case_Sensitive then
-         Canonical_Path_Name := Path_Name;
-      else
-         declare
-            Canonical_Path : constant String :=
-                               Normalize_Pathname
-                                 (Get_Name_String (Path_Name),
-                                  Directory      => Current_Dir,
-                                  Resolve_Links  => Opt.Follow_Links_For_Files,
-                                  Case_Sensitive => False);
-         begin
-            Name_Len := 0;
-            Add_Str_To_Name_Buffer (Canonical_Path);
-            Canonical_Path_Name := Name_Find;
-         end;
-      end if;
-
-      --  Find out the unit name, the unit kind and if it needs
-      --  a specific SFN pragma.
+      --  Check the naming scheme to get extra file properties
 
       Get_Unit
         (In_Tree             => In_Tree,
-         Canonical_File_Name => Canonical_File_Name,
+         Canonical_File_Name => Canonical_File,
          Naming              => Data.Naming,
          Exception_Id        => Exception_Id,
          Unit_Name           => Unit_Name,
@@ -8265,226 +8407,58 @@ package body Prj.Nmsc is
       then
          if Current_Verbosity = High then
             Write_Str  ("   """);
-            Write_Str  (Get_Name_String (Canonical_File_Name));
+            Write_Str  (Get_Name_String (Canonical_File));
             Write_Line (""" is not a valid source file name (ignored).");
          end if;
+         return;
+      end if;
 
-      else
-         --  Check to see if the source has been hidden by an exception,
-         --  but only if it is not an exception.
+      --  Check to see if the source has been hidden by an exception,
+      --  but only if it is not an exception.
 
-         if not Needs_Pragma then
-            Except_Name :=
-              Reverse_Ada_Naming_Exceptions.Get
-                ((Unit_Kind, Unit_Name, No_Ada_Naming_Exception));
+      if not Needs_Pragma then
+         Except_Name :=
+           Reverse_Ada_Naming_Exceptions.Get
+             ((Unit_Kind, Unit_Name, No_Ada_Naming_Exception));
 
-            if Except_Name /= No_Name_And_Index then
-               if Current_Verbosity = High then
-                  Write_Str  ("   """);
-                  Write_Str  (Get_Name_String (Canonical_File_Name));
-                  Write_Str  (""" contains a unit that is found in """);
-                  Write_Str  (Get_Name_String (Except_Name.Name));
-                  Write_Line (""" (ignored).");
-               end if;
-
-               --  The file is not included in the source of the project since
-               --  it is hidden by the exception. So, nothing else to do.
-
-               return;
+         if Except_Name /= No_Name_And_Index then
+            if Current_Verbosity = High then
+               Write_Str  ("   """);
+               Write_Str  (Get_Name_String (Canonical_File));
+               Write_Str  (""" contains a unit that is found in """);
+               Write_Str  (Get_Name_String (Except_Name.Name));
+               Write_Line (""" (ignored).");
             end if;
+
+            --  The file is not included in the source of the project since
+            --  it is hidden by the exception. So, nothing else to do.
+
+            return;
+         end if;
+      end if;
+
+      --  The following loop registers the unit in the appropriate table. It
+      --  will be executed multiple times when the file is a multi-unit file,
+      --  in which case Exception_Id initially points to the first file and
+      --  then to each other unit in the file.
+
+      loop
+         if Exception_Id /= No_Ada_Naming_Exception then
+            Info := Ada_Naming_Exception_Table.Table (Exception_Id);
+            Exception_Id := Info.Next;
+            Info.Next := No_Ada_Naming_Exception;
+            Name_Index := Reverse_Ada_Naming_Exceptions.Get (Info);
+
+            Unit_Name := Info.Unit;
+            Unit_Ind  := Name_Index.Index;
+            Unit_Kind := Info.Kind;
          end if;
 
-         loop
-            if Exception_Id /= No_Ada_Naming_Exception then
-               Info := Ada_Naming_Exception_Table.Table (Exception_Id);
-               Exception_Id := Info.Next;
-               Info.Next := No_Ada_Naming_Exception;
-               Name_Index := Reverse_Ada_Naming_Exceptions.Get (Info);
+         Record_Unit (Unit_Name, Unit_Ind, Unit_Kind, Needs_Pragma);
+         File_Recorded := True;
 
-               Unit_Name := Info.Unit;
-               Unit_Ind  := Name_Index.Index;
-               Unit_Kind := Info.Kind;
-            end if;
-
-            --  Put the file name in the list of sources of the project
-
-            String_Element_Table.Increment_Last (In_Tree.String_Elements);
-            In_Tree.String_Elements.Table
-              (String_Element_Table.Last (In_Tree.String_Elements)) :=
-                (Value         => Name_Id (Canonical_File_Name),
-                 Display_Value => Name_Id (File_Name),
-                 Location      => No_Location,
-                 Flag          => False,
-                 Next          => Nil_String,
-                 Index         => Unit_Ind);
-
-            if Current_Source = Nil_String then
-               Data.Ada_Sources :=
-                 String_Element_Table.Last (In_Tree.String_Elements);
-            else
-               In_Tree.String_Elements.Table (Current_Source).Next :=
-                 String_Element_Table.Last (In_Tree.String_Elements);
-            end if;
-
-            Current_Source :=
-              String_Element_Table.Last (In_Tree.String_Elements);
-
-            --  Put the unit in unit list
-
-            declare
-               The_Unit : Unit_Index :=
-                            Units_Htable.Get (In_Tree.Units_HT, Unit_Name);
-
-               The_Unit_Data : Unit_Data;
-
-            begin
-               if Current_Verbosity = High then
-                  Write_Str  ("   Putting ");
-                  Write_Str  (Get_Name_String (Unit_Name));
-                  Write_Line (" in the unit list.");
-               end if;
-
-               --  The unit is already in the list, but may be it is
-               --  only the other unit kind (spec or body), or what is
-               --  in the unit list is a unit of a project we are extending.
-
-               if The_Unit /= No_Unit_Index then
-                  The_Unit_Data := In_Tree.Units.Table (The_Unit);
-
-                  if (The_Unit_Data.File_Names (Unit_Kind).Name =
-                                                          Canonical_File_Name
-                        and then
-                        The_Unit_Data.File_Names
-                          (Unit_Kind).Path.Name = Slash)
-                    or else The_Unit_Data.File_Names (Unit_Kind).Name = No_File
-                    or else Is_Extending
-                      (Data.Extends,
-                       The_Unit_Data.File_Names (Unit_Kind).Project,
-                       In_Tree)
-                  then
-                     if
-                       The_Unit_Data.File_Names (Unit_Kind).Path.Name = Slash
-                     then
-                        Remove_Forbidden_File_Name
-                          (The_Unit_Data.File_Names (Unit_Kind).Name);
-                     end if;
-
-                     --  Record the file name in the hash table Files_Htable
-
-                     Unit_Prj := (Unit => The_Unit, Project => Project);
-                     Files_Htable.Set
-                       (In_Tree.Files_HT,
-                        Canonical_File_Name,
-                        Unit_Prj);
-
-                     The_Unit_Data.File_Names (Unit_Kind) :=
-                       (Name         => Canonical_File_Name,
-                        Index        => Unit_Ind,
-                        Display_Name => File_Name,
-                        Path         => (Canonical_Path_Name, Path_Name),
-                        Project      => Project,
-                        Needs_Pragma => Needs_Pragma);
-                     In_Tree.Units.Table (The_Unit) := The_Unit_Data;
-                     Source_Recorded := True;
-
-                  elsif The_Unit_Data.File_Names (Unit_Kind).Project = Project
-                    and then (Data.Known_Order_Of_Source_Dirs
-                                or else
-                                The_Unit_Data.File_Names
-                                  (Unit_Kind).Path.Name = Canonical_Path_Name)
-                  then
-                     if Previous_Source = Nil_String then
-                        Data.Ada_Sources := Nil_String;
-                     else
-                        In_Tree.String_Elements.Table (Previous_Source).Next :=
-                          Nil_String;
-                        String_Element_Table.Decrement_Last
-                          (In_Tree.String_Elements);
-                     end if;
-
-                     Current_Source := Previous_Source;
-
-                  else
-                     --  It is an error to have two units with the same name
-                     --  and the same kind (spec or body).
-
-                     if The_Location = No_Location then
-                        The_Location :=
-                          In_Tree.Projects.Table (Project).Location;
-                     end if;
-
-                     Err_Vars.Error_Msg_Name_1 := Unit_Name;
-                     Error_Msg
-                       (Project, In_Tree, "duplicate unit %%", The_Location);
-
-                     Err_Vars.Error_Msg_Name_1 :=
-                       In_Tree.Projects.Table
-                         (The_Unit_Data.File_Names (Unit_Kind).Project).Name;
-                     Err_Vars.Error_Msg_File_1 :=
-                       File_Name_Type
-                         (The_Unit_Data.File_Names (Unit_Kind).Path.Name);
-                     Error_Msg
-                       (Project, In_Tree,
-                        "\   project file %%, {", The_Location);
-
-                     Err_Vars.Error_Msg_Name_1 :=
-                       In_Tree.Projects.Table (Project).Name;
-                     Err_Vars.Error_Msg_File_1 :=
-                       File_Name_Type (Canonical_Path_Name);
-                     Error_Msg
-                       (Project, In_Tree,
-                        "\   project file %%, {", The_Location);
-                  end if;
-
-               --  It is a new unit, create a new record
-
-               else
-                  --  First, check if there is no other unit with this file
-                  --  name in another project. If it is, report error but note
-                  --  we do that only for the first unit in the source file.
-
-                  Unit_Prj :=
-                    Files_Htable.Get (In_Tree.Files_HT, Canonical_File_Name);
-
-                  if not File_Name_Recorded and then
-                    Unit_Prj /= No_Unit_Project
-                  then
-                     Error_Msg_File_1 := File_Name;
-                     Error_Msg_Name_1 :=
-                       In_Tree.Projects.Table (Unit_Prj.Project).Name;
-                     Error_Msg
-                       (Project, In_Tree,
-                        "{ is already a source of project %%",
-                        Location);
-
-                  else
-                     Unit_Table.Increment_Last (In_Tree.Units);
-                     The_Unit := Unit_Table.Last (In_Tree.Units);
-                     Units_Htable.Set
-                       (In_Tree.Units_HT, Unit_Name, The_Unit);
-                     Unit_Prj := (Unit => The_Unit, Project => Project);
-                     Files_Htable.Set
-                       (In_Tree.Files_HT,
-                        Canonical_File_Name,
-                        Unit_Prj);
-                     The_Unit_Data.Name := Unit_Name;
-                     The_Unit_Data.File_Names (Unit_Kind) :=
-                       (Name         => Canonical_File_Name,
-                        Index        => Unit_Ind,
-                        Display_Name => File_Name,
-                        Path         => (Canonical_Path_Name, Path_Name),
-                        Project      => Project,
-                        Needs_Pragma => Needs_Pragma);
-                     In_Tree.Units.Table (The_Unit) := The_Unit_Data;
-                     Source_Recorded := True;
-                  end if;
-               end if;
-            end;
-
-            exit when Exception_Id = No_Ada_Naming_Exception;
-            File_Name_Recorded := True;
-         end loop;
-      end if;
+         exit when Exception_Id = No_Ada_Naming_Exception;
+      end loop;
    end Record_Ada_Source;
 
    -------------------

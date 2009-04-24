@@ -812,7 +812,16 @@ package body Lib.Load is
          --  units table when first loaded as a declaration.
 
          Units.Table (Units.Last) := Units.Table (Get_Cunit_Unit_Number (N));
-         Units.Table (Units.Last).Cunit := N;
+
+         --  The correct Cunit is the spec -- Library_Unit (N). But that causes
+         --  gnatmake to fail in certain cases, so this is under control of
+         --  Inspector_Mode for now. ???
+
+         if Inspector_Mode then
+            Units.Table (Units.Last).Cunit := Library_Unit (N);
+         else
+            Units.Table (Units.Last).Cunit := N;
+         end if;
       end if;
    end Make_Instance_Unit;
 
