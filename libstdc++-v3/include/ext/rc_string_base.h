@@ -546,7 +546,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 	  return _S_empty_rep._M_refcopy();
 
 	// NB: Not required, but considered best practice.
-	if (__builtin_expect(__is_null_pointer(__beg) && __beg != __end, 0))
+	if (__is_null_pointer(__beg) && __beg != __end)
 	  std::__throw_logic_error(__N("__rc_string_base::"
 				       "_S_construct NULL not valid"));
 

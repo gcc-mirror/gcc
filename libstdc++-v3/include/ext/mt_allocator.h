@@ -674,7 +674,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     __mt_alloc<_Tp, _Poolp>::
     allocate(size_type __n, const void*)
     {
-      if (__builtin_expect(__n > this->max_size(), false))
+      if (__n > this->max_size())
 	std::__throw_bad_alloc();
 
       __policy_type::_S_initialize_once();

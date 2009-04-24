@@ -129,8 +129,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  return _S_empty_rep()._M_refdata();
 #endif
 	// NB: Not required, but considered best practice.
-	if (__builtin_expect(__gnu_cxx::__is_null_pointer(__beg)
-			     && __beg != __end, 0))
+	if (__gnu_cxx::__is_null_pointer(__beg) && __beg != __end)
 	  __throw_logic_error(__N("basic_string::_S_construct NULL not valid"));
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg,

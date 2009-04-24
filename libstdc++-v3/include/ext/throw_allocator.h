@@ -220,7 +220,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       pointer
       allocate(size_type __n, std::allocator<void>::const_pointer hint = 0)
       {
-	if (__builtin_expect(__n > this->max_size(), false))
+	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
 
 	throw_conditionally();

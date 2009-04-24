@@ -1049,7 +1049,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
       pointer 
       allocate(size_type __n)
       {
-	if (__builtin_expect(__n > this->max_size(), false))
+	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
 
 	if (__builtin_expect(__n == 1, true))
