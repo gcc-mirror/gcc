@@ -93,7 +93,6 @@ package body Prj is
                       Location                       => No_Location,
                       Mains                          => Nil_String,
                       Directory                      => No_Path_Information,
-                      Dir_Path                       => null,
                       Library                        => False,
                       Library_Dir                    => No_Path_Information,
                       Library_Src_Dir                => No_Path_Information,
@@ -108,7 +107,6 @@ package body Prj is
                       Symbol_Data                    => No_Symbols,
                       Ada_Sources                    => Nil_String,
                       Interfaces_Defined             => False,
-                      Imported_Directories_Switches  => null,
                       Include_Path                   => null,
                       Include_Data_Set               => False,
                       Source_Dirs                    => Nil_String,
@@ -826,7 +824,6 @@ package body Prj is
 
    procedure Free (Project : in out Project_Data) is
    begin
-      Free (Project.Dir_Path);
       Free (Project.Include_Path);
       Free (Project.Ada_Include_Path);
       Free (Project.Objects_Path);

@@ -1,3 +1,10 @@
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb, prj.adb, prj.ads, makeutl.adb, makeutl.ads:
+	(Project_Data.Dir_Path): field removed, since it can be computed
+	directly from .Directory, and is needed only once when processing the
+	project is buildgpr.adb or make.adb
+
 2009-04-24  Robert Dewar  <dewar@adacore.com>
 
 	* prj-env.adb, prj-proc.adb, prj.adb, prj.ads,

@@ -1194,9 +1194,6 @@ package Prj is
       Directory : Path_Information := No_Path_Information;
       --  Path name of the directory where the project file resides
 
-      Dir_Path : String_Access;
-      --  Same as Directory.Name, but as an access to String
-
       Object_Directory : Path_Information := No_Path_Information;
       --  The path name of the object directory of this project file
 
@@ -1268,10 +1265,6 @@ package Prj is
       Interfaces_Defined      : Boolean := False;
       --  True if attribute Interfaces is declared for the project or any
       --  project it extends.
-
-      Imported_Directories_Switches : Argument_List_Access := null;
-      --  List of the source search switches (-I<source dir>) to be used when
-      --  compiling.
 
       Include_Path : String_Access := null;
       --  The search source path for the project. Used as the value for an
