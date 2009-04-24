@@ -1,3 +1,6 @@
+/* { dg-do link } */
+/* { dg-options "-O2" } */
+
 extern void link_failure (void);
 
 static int __attribute__ ((noinline)) foo (int x)
