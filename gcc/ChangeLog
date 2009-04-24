@@ -1,3 +1,10 @@
+2009-04-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/39867
+	* fold-const.c (fold_cond_expr_with_comparison): When folding
+	> and >= to MAX, make sure the MAX uses the same type as the
+	comparison's operands.
+
 2009-04-24  Nick Clifton  <nickc@redhat.com>
 
 	* config/frv/frv.c (frv_frame_access): Do not use reg+reg

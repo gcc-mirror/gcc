@@ -1,3 +1,8 @@
+2009-04-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/39867
+	* gcc.dg/pr39867.c: New.
+
 2009-04-24  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39861
