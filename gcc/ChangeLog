@@ -1,3 +1,10 @@
+2009-04-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR middle-end/39867
+	* fold-const.c (fold_cond_expr_with_comparison): When folding
+	> and >= to MAX, make sure the MAX uses the same type as the
+	comparison's operands.
+
 2009-04-23  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/spu/spu-builtins.h: Delete file.
