@@ -1521,7 +1521,8 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
 	QCMP_EQ = 4,
 	QCMP_LT = 8,
 	QCMP_GT = 16
-      } magic;
+      };
+      int magic;
       enum rtx_code ncode;
       rtx ret, insns;
       

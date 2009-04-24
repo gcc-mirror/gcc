@@ -413,7 +413,8 @@ extern tree add_stmt (tree);
 extern void push_cleanup (tree, tree, bool);
 extern tree pushdecl_top_level (tree);
 extern tree pushdecl (tree);
-extern tree build_modify_expr (location_t, tree, enum tree_code, tree, tree);
+extern tree build_modify_expr (location_t, tree, tree, enum tree_code,
+			       tree, tree);
 extern tree build_indirect_ref (location_t, tree, const char *);
 
 extern int c_expand_decl (tree);

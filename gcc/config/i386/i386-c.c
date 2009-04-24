@@ -280,10 +280,10 @@ ix86_pragma_target_parse (tree args, tree pop_target)
   prev_isa  = prev_opt->ix86_isa_flags;
   cur_isa   = cur_opt->ix86_isa_flags;
   diff_isa  = (prev_isa ^ cur_isa);
-  prev_arch = prev_opt->arch;
-  prev_tune = prev_opt->tune;
-  cur_arch  = cur_opt->arch;
-  cur_tune  = cur_opt->tune;
+  prev_arch = (enum processor_type) prev_opt->arch;
+  prev_tune = (enum processor_type) prev_opt->tune;
+  cur_arch  = (enum processor_type) cur_opt->arch;
+  cur_tune  = (enum processor_type) cur_opt->tune;
 
   /* If the same processor is used for both previous and current options, don't
      change the macros.  */

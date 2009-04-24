@@ -8740,9 +8740,8 @@ get_super_receiver (void)
 
       /* Set receiver to self.  */
       super_expr = objc_build_component_ref (UOBJC_SUPER_decl, self_id);
-      super_expr = build_modify_expr (input_location, 
-				      super_expr, NOP_EXPR, self_decl,
-				      NULL_TREE);
+      super_expr = build_modify_expr (input_location, super_expr, NULL_TREE,
+				      NOP_EXPR, self_decl, NULL_TREE);
       super_expr_list = super_expr;
 
       /* Set class to begin searching.  */
@@ -8754,7 +8753,8 @@ get_super_receiver (void)
 	  /* [_cls, __cls]Super are "pre-built" in
 	     synth_forward_declarations.  */
 
-	  super_expr = build_modify_expr (input_location, super_expr, NOP_EXPR,
+	  super_expr = build_modify_expr (input_location, super_expr,
+					  NULL_TREE, NOP_EXPR,
 					  ((TREE_CODE (objc_method_context)
 					    == INSTANCE_METHOD_DECL)
 					   ? ucls_super_ref
@@ -8807,7 +8807,8 @@ get_super_receiver (void)
 	    }
 
 	  super_expr
-	    = build_modify_expr (input_location, super_expr, NOP_EXPR,
+	    = build_modify_expr (input_location, super_expr, NULL_TREE,
+				 NOP_EXPR,
 				 build_c_cast (TREE_TYPE (super_expr),
 					       super_class),
 				 NULL_TREE);

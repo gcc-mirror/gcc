@@ -3466,13 +3466,17 @@ enum tag_types {
 };
 
 /* The various kinds of lvalues we distinguish.  */
-typedef enum cp_lvalue_kind {
+enum cp_lvalue_kind {
   clk_none = 0,     /* Things that are not an lvalue.  */
   clk_ordinary = 1, /* An ordinary lvalue.  */
   clk_class = 2,    /* An rvalue of class-type.  */
   clk_bitfield = 4, /* An lvalue for a bit-field.  */
   clk_packed = 8    /* An lvalue for a packed field.  */
-} cp_lvalue_kind;
+};
+
+/* This type is used for parameters and variables which hold
+   combinations of the flags in enum cp_lvalue_kind.  */
+typedef int cp_lvalue_kind;
 
 /* Various kinds of template specialization, instantiation, etc.  */
 typedef enum tmpl_spec_kind {

@@ -1,3 +1,7 @@
+2009-04-24  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-4.c: New testcase.
+
 2009-04-24  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.dg/typebound_generic_1.f03: Change so that no error is

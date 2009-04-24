@@ -623,14 +623,14 @@ sparc_override_options (void)
 {
   static struct code_model {
     const char *const name;
-    const int value;
+    const enum cmodel value;
   } const cmodels[] = {
     { "32", CM_32 },
     { "medlow", CM_MEDLOW },
     { "medmid", CM_MEDMID },
     { "medany", CM_MEDANY },
     { "embmedany", CM_EMBMEDANY },
-    { 0, 0 }
+    { NULL, (enum cmodel) 0 }
   };
   const struct code_model *cmodel;
   /* Map TARGET_CPU_DEFAULT to value for -m{arch,tune}=.  */

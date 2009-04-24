@@ -9752,7 +9752,7 @@ int_loc_descriptor (HOST_WIDE_INT i)
   if (i >= 0)
     {
       if (i <= 31)
-	op = DW_OP_lit0 + i;
+	op = (enum dwarf_location_atom) (DW_OP_lit0 + i);
       else if (i <= 0xff)
 	op = DW_OP_const1u;
       else if (i <= 0xffff)
@@ -12736,7 +12736,8 @@ add_calling_convention_attribute (dw_die_ref subr_die, tree decl)
 {
   enum dwarf_calling_convention value = DW_CC_normal;
 
-  value = targetm.dwarf_calling_convention (TREE_TYPE (decl));
+  value = ((enum dwarf_calling_convention)
+	   targetm.dwarf_calling_convention (TREE_TYPE (decl)));
 
   /* DWARF doesn't provide a way to identify a program's source-level
      entry point.  DW_AT_calling_convention attributes are only meant

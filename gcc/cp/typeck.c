@@ -5870,7 +5870,8 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
 /* For use from the C common bits.  */
 tree
 build_modify_expr (location_t location ATTRIBUTE_UNUSED,
-		   tree lhs, enum tree_code modifycode, tree rhs,
+		   tree lhs, tree lhs_origtype ATTRIBUTE_UNUSED,
+		   enum tree_code modifycode, tree rhs,
 		   tree rhs_origtype ATTRIBUTE_UNUSED)
 {
   return cp_build_modify_expr (lhs, modifycode, rhs, tf_warning_or_error);

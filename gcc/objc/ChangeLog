@@ -1,3 +1,8 @@
+2009-04-24  Ian Lance Taylor  <iant@google.com>
+
+	* objc-act.c (get_super_receiver): Update calls to
+	build_modify_expr to pass new argument.
+
 2009-04-21  Taras Glek <tglek@mozilla.com>
 
 	* objc-act.c: Update GTY annotations to new syntax

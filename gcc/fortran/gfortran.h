@@ -1322,6 +1322,12 @@ extern gfc_namespace *gfc_global_ns_list;
    this to detect collisions already when parsing.
    TODO: Extend to verify procedure calls.  */
 
+enum gfc_symbol_type
+{
+  GSYM_UNKNOWN=1, GSYM_PROGRAM, GSYM_FUNCTION, GSYM_SUBROUTINE,
+  GSYM_MODULE, GSYM_COMMON, GSYM_BLOCK_DATA
+};
+
 typedef struct gfc_gsymbol
 {
   BBT_HEADER(gfc_gsymbol);
@@ -1330,8 +1336,7 @@ typedef struct gfc_gsymbol
   const char *sym_name;
   const char *mod_name;
   const char *binding_label;
-  enum { GSYM_UNKNOWN=1, GSYM_PROGRAM, GSYM_FUNCTION, GSYM_SUBROUTINE,
-        GSYM_MODULE, GSYM_COMMON, GSYM_BLOCK_DATA } type;
+  enum gfc_symbol_type type;
 
   int defined, used;
   locus where;
@@ -1356,6 +1361,12 @@ extern gfc_interface_info current_interface;
 
 
 /* Array reference.  */
+
+enum gfc_array_ref_dimen_type
+{
+  DIMEN_ELEMENT = 1, DIMEN_RANGE, DIMEN_VECTOR, DIMEN_UNKNOWN
+};
+
 typedef struct gfc_array_ref
 {
   ar_type type;
@@ -1367,9 +1378,7 @@ typedef struct gfc_array_ref
   struct gfc_expr *start[GFC_MAX_DIMENSIONS], *end[GFC_MAX_DIMENSIONS],
     *stride[GFC_MAX_DIMENSIONS];
 
-  enum
-  { DIMEN_ELEMENT = 1, DIMEN_RANGE, DIMEN_VECTOR, DIMEN_UNKNOWN }
-  dimen_type[GFC_MAX_DIMENSIONS];
+  enum gfc_array_ref_dimen_type dimen_type[GFC_MAX_DIMENSIONS];
 
   struct gfc_expr *offset;
 }
@@ -2270,7 +2279,7 @@ gfc_try gfc_add_optional (symbol_attribute *, locus *);
 gfc_try gfc_add_pointer (symbol_attribute *, locus *);
 gfc_try gfc_add_cray_pointer (symbol_attribute *, locus *);
 gfc_try gfc_add_cray_pointee (symbol_attribute *, locus *);
-gfc_try gfc_mod_pointee_as (gfc_array_spec *);
+match gfc_mod_pointee_as (gfc_array_spec *);
 gfc_try gfc_add_protected (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_result (symbol_attribute *, const char *, locus *);
 gfc_try gfc_add_save (symbol_attribute *, const char *, locus *);

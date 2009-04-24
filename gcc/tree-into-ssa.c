@@ -318,7 +318,7 @@ get_ssa_name_ann (tree name)
   info = VEC_index (ssa_name_info_p, info_for_ssa_name, ver);
   if (info->age < current_info_for_ssa_name_age)
     {
-      info->need_phi_state = 0;
+      info->need_phi_state = NEED_PHI_STATE_UNKNOWN;
       info->current_def = NULL_TREE;
       info->age = current_info_for_ssa_name_age;
     }

@@ -1,6 +1,6 @@
 /* Routines to implement minimum-cost maximal flow algorithm used to smooth
    basic block and edge frequency counts.
-   Copyright (C) 2008
+   Copyright (C) 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Paul Yuan (yingbo.com@gmail.com) and
                   Vinodha Ramasamy (vinodha@google.com).
@@ -388,8 +388,9 @@ add_edge (fixup_graph_type *fixup_graph, int src, int dest, gcov_type cost)
    MAX_CAPACITY to the edge_list in the fixup graph.  */
 
 static void
-add_fixup_edge (fixup_graph_type *fixup_graph, int src, int dest, int type,
-		gcov_type weight, gcov_type cost, gcov_type max_capacity)
+add_fixup_edge (fixup_graph_type *fixup_graph, int src, int dest,
+		edge_type type, gcov_type weight, gcov_type cost,
+		gcov_type max_capacity)
 {
   fixup_edge_p curr_edge = add_edge(fixup_graph, src, dest, cost);
   curr_edge->type = type;

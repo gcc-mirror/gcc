@@ -729,7 +729,7 @@ static const struct fpu_desc all_fpus[] =
 /* Floating point models used by the different hardware.
    See fputype in arm.h.  */
 
-static const enum fputype fp_model_for_fpu[] =
+static const enum arm_fp_model fp_model_for_fpu[] =
 {
   /* No FP hardware.  */
   ARM_FP_MODEL_UNKNOWN,		/* FPUTYPE_NONE  */
@@ -1199,13 +1199,13 @@ arm_override_options (void)
       const struct processors * sel;
       unsigned int        sought;
 
-      selected_cpu = TARGET_CPU_DEFAULT;
+      selected_cpu = (enum processor_type) TARGET_CPU_DEFAULT;
       if (selected_cpu == arm_none)
 	{
 #ifdef SUBTARGET_CPU_DEFAULT
 	  /* Use the subtarget default CPU if none was specified by
 	     configure.  */
-	  selected_cpu = SUBTARGET_CPU_DEFAULT;
+	  selected_cpu = (enum processor_type) SUBTARGET_CPU_DEFAULT;
 #endif
 	  /* Default to ARM6.  */
 	  if (selected_cpu == arm_none)
@@ -19398,7 +19398,7 @@ arm_emit_tls_decoration (FILE *fp, rtx x)
   rtx val;
 
   val = XVECEXP (x, 0, 0);
-  reloc = INTVAL (XVECEXP (x, 0, 1));
+  reloc = (enum tls_reloc) INTVAL (XVECEXP (x, 0, 1));
 
   output_addr_const (fp, val);
 

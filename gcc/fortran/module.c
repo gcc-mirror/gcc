@@ -2162,7 +2162,7 @@ mio_array_ref (gfc_array_ref *ar)
       for (i = 0; i < ar->dimen; i++)
 	{
 	  require_atom (ATOM_INTEGER);
-	  ar->dimen_type[i] = atom_int;
+	  ar->dimen_type[i] = (enum gfc_array_ref_dimen_type) atom_int;
 	}
     }
 
@@ -3462,7 +3462,7 @@ mio_symbol (gfc_symbol *sym)
   else
     {
       mio_integer (&intmod);
-      sym->from_intmod = intmod;
+      sym->from_intmod = (intmod_id) intmod;
     }
   
   mio_integer (&(sym->intmod_sym_id));

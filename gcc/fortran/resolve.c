@@ -1642,7 +1642,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 {
   gfc_gsymbol * gsym;
   gfc_namespace *ns;
-  unsigned int type;
+  enum gfc_symbol_type type;
 
   type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
 

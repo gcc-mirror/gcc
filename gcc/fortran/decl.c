@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2002, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
@@ -4610,7 +4610,7 @@ static bool
 add_global_entry (const char *name, int sub)
 {
   gfc_gsymbol *s;
-  unsigned int type;
+  enum gfc_symbol_type type;
 
   s = gfc_get_gsymbol(name);
   type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
@@ -6629,7 +6629,7 @@ gfc_match_derived_decl (void)
    is the case. Since there is no bounds-checking for Cray Pointees,
    this will be okay.  */
 
-gfc_try
+match
 gfc_mod_pointee_as (gfc_array_spec *as)
 {
   as->cray_pointee = true; /* This will be useful to know later.  */

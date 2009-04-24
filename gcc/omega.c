@@ -5,7 +5,7 @@
    This code has no license restrictions, and is considered public
    domain.
 
-   Changes copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation,
+   Changes copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation,
    Inc.
    Contributed by Sebastian Pop <sebastian.pop@inria.fr>
 
@@ -3048,7 +3048,8 @@ omega_do_elimination (omega_pb pb, int e, int i)
 	      eqn->coef[j] *= a;
 	    k = eqn->coef[i];
 	    eqn->coef[i] = 0;
-	    eqn->color |= sub->color;
+	    if (sub->color == omega_red)
+	      eqn->color = omega_red;
 	    for (j = n_vars; j >= 0; j--)
 	      eqn->coef[j] -= sub->coef[j] * k / c;
 	  }

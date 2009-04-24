@@ -363,7 +363,7 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
   sri.icode = CODE_FOR_nothing;
   sri.prev_sri = prev_sri;
   rclass = targetm.secondary_reload (in_p, x, reload_class, reload_mode, &sri);
-  icode = sri.icode;
+  icode = (enum insn_code) sri.icode;
 
   /* If we don't need any secondary registers, done.  */
   if (rclass == NO_REGS && icode == CODE_FOR_nothing)
@@ -525,7 +525,7 @@ secondary_reload_class (bool in_p, enum reg_class rclass,
   sri.icode = CODE_FOR_nothing;
   sri.prev_sri = NULL;
   rclass = targetm.secondary_reload (in_p, x, rclass, mode, &sri);
-  icode = sri.icode;
+  icode = (enum insn_code) sri.icode;
 
   /* If there are no secondary reloads at all, we return NO_REGS.
      If an intermediate register is needed, we return its class.  */
@@ -691,7 +691,7 @@ find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
 	   && (best_cost < 0 || best_cost >= cost))
 	  || best_cost > cost)
 	{
-	  best_class = rclass;
+	  best_class = (enum reg_class) rclass;
 	  best_size = reg_class_size[rclass];
 	  best_cost = REGISTER_MOVE_COST (outer, (enum reg_class) rclass,
 					  dest_class);

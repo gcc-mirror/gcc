@@ -1,3 +1,21 @@
+2009-04-24  Ian Lance Taylor  <iant@google.com>
+
+	* gfortran.h (enum gfc_symbol_type): New named enum type, broken
+	out of struct gfc_symbol.
+	(struct gfc_symbol): Use enum gfc_symbol_type.
+	(enum gfc_array_ref_dimen_type): New named enum type, broken out
+	of struct gfc_array_ref).
+	(struct gfc_array_ref): Use enum gfc_array_ref_dimen_type.
+	(mod_pointee_as): Update declaration.
+	* decl.c (add_global_entry): Change type to enum gfc_symbol_type.
+	(gfc_mod_pointee_as): Change return type to "match".
+	* module.c (mio_array_ref): Add cast to enum type.
+	(mio_symbol): Likewise.
+	* resolve.c (resolve_global_procedure): Change type to enum
+	gfc_symbol_type.
+	* trans-io.c (gfc_build_st_parameter): Change type to unsigned
+	int.
+
 2009-04-24  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.h (gfc_get_typebound_proc): Removed as macro, now a function.

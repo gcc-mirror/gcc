@@ -1,5 +1,5 @@
 /* IO Code translation/library interface
-   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Paul Brook
 
@@ -153,7 +153,7 @@ static stmtblock_t *dt_post_end_block;
 static void
 gfc_build_st_parameter (enum ioparam_type ptype, tree *types)
 {
-  enum iofield type;
+  unsigned int type;
   gfc_st_parameter_field *p;
   char name[64];
   size_t len;
@@ -2245,4 +2245,3 @@ gfc_trans_transfer (gfc_code * code)
 }
 
 #include "gt-fortran-trans-io.h"
-

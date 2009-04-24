@@ -1,6 +1,6 @@
 /* Parser for Java(TM) .class files.
    Copyright (C) 1996, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -507,7 +507,7 @@ handle_constant (JCF *jcf, int index, enum cpool_tag purpose)
   if (! CPOOL_INDEX_IN_RANGE (&jcf->cpool, index))
     error ("<constant pool index %d not in range>", index);
   
-  kind = JPOOL_TAG (jcf, index);
+  kind = (enum cpool_tag) JPOOL_TAG (jcf, index);
 
   if ((kind & ~CONSTANT_ResolvedFlag) != purpose)
     {

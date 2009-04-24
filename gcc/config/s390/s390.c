@@ -8660,12 +8660,12 @@ enum s390_builtin
   S390_BUILTIN_max
 };
 
-static unsigned int const code_for_builtin_64[S390_BUILTIN_max] = {
+static enum insn_code const code_for_builtin_64[S390_BUILTIN_max] = {
   CODE_FOR_get_tp_64,
   CODE_FOR_set_tp_64
 };
 
-static unsigned int const code_for_builtin_31[S390_BUILTIN_max] = {
+static enum insn_code const code_for_builtin_31[S390_BUILTIN_max] = {
   CODE_FOR_get_tp_31,
   CODE_FOR_set_tp_31
 };
@@ -8699,7 +8699,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 {
 #define MAX_ARGS 2
 
-  unsigned int const *code_for_builtin =
+  enum insn_code const *code_for_builtin =
     TARGET_64BIT ? code_for_builtin_64 : code_for_builtin_31;
 
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);

@@ -4292,6 +4292,8 @@ c_cast_expr (struct c_type_name *type_name, tree expr)
 }
 
 /* Build an assignment expression of lvalue LHS from value RHS.
+   If LHS_ORIGTYPE is not NULL, it is the original type of LHS, which
+   may differ from TREE_TYPE (LHS) for an enum bitfield.
    MODIFYCODE is the code for a binary operator that we use
    to combine the old value of LHS with RHS to get the new value.
    Or else MODIFYCODE is NOP_EXPR meaning do a simple assignment.
@@ -4301,9 +4303,8 @@ c_cast_expr (struct c_type_name *type_name, tree expr)
    LOCATION is the location of the MODIFYCODE operator.  */
 
 tree
-build_modify_expr (location_t location,
-		   tree lhs, enum tree_code modifycode, tree rhs,
-		   tree rhs_origtype)
+build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
+		   enum tree_code modifycode, tree rhs, tree rhs_origtype)
 {
   tree result;
   tree newrhs;
@@ -4333,7 +4334,8 @@ build_modify_expr (location_t location,
   if (TREE_CODE (lhs) == C_MAYBE_CONST_EXPR)
     {
       tree inner = build_modify_expr (location, C_MAYBE_CONST_EXPR_EXPR (lhs),
-				      modifycode, rhs, rhs_origtype);
+				      lhs_origtype, modifycode, rhs,
+				      rhs_origtype);
       if (inner == error_mark_node)
 	return error_mark_node;
       result = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (inner),
@@ -4391,6 +4393,23 @@ build_modify_expr (location_t location,
     {
       lhs = copy_node (lhs);
       TREE_TYPE (lhs) = lhstype;
+    }
+
+  /* Issue -Wc++-compat warnings about an assignment to an enum type
+     when LHS does not have its original type.  This happens for,
+     e.g., an enum bitfield in a struct.  */
+  if (warn_cxx_compat
+      && lhs_origtype != NULL_TREE
+      && lhs_origtype != lhstype
+      && TREE_CODE (lhs_origtype) == ENUMERAL_TYPE)
+    {
+      tree checktype = (rhs_origtype != NULL_TREE
+			? rhs_origtype
+			: TREE_TYPE (rhs));
+      if (checktype != error_mark_node
+	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (lhs_origtype))
+	warning_at (location, OPT_Wc___compat,
+		    "enum conversion in assignment is invalid in C++");
     }
 
   /* Convert new value to destination type.  Fold it first, then
@@ -4553,9 +4572,9 @@ convert_for_assignment (tree type, tree rhs, tree origtype,
 	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (type))
 	{
 	  /* FIXME: Until the gcc source code is converted, we only
-	     warn about parameter passing.  We will add the other
-	     cases when bootstrap succeeds with them.  */
-	  if (errtype == ic_argpass)
+	     warn about assignment and parameter passing.  We will add
+	     the other cases when bootstrap succeeds with them.  */
+	  if (errtype == ic_argpass || errtype == ic_assign)
 	    {
 	      WARN_FOR_ASSIGNMENT (input_location, OPT_Wc___compat,
 				   G_("enum conversion when passing argument "

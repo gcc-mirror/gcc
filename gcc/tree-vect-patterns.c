@@ -695,7 +695,7 @@ vect_pattern_recog_1 (
     }
   else
     {
-      enum tree_code vec_mode;
+      enum machine_mode vec_mode;
       enum insn_code icode;
       optab optab;
 

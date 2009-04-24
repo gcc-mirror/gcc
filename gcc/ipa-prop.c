@@ -1,5 +1,5 @@
 /* Interprocedural analyses.
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -891,7 +891,7 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
       /* We must check range due to calls with variable number of arguments:  */
       if (dst->value.formal_id >= (unsigned) ipa_get_cs_argument_count (top))
 	{
-	  dst->type = IPA_BOTTOM;
+	  dst->type = IPA_JF_UNKNOWN;
 	  continue;
 	}
 

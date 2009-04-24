@@ -1169,7 +1169,7 @@ static void
 init_hard_regs_data (void)
 {
   int cur_reg = 0;
-  enum machine_mode cur_mode = 0;
+  int cur_mode = 0;
 
   CLEAR_HARD_REG_SET (sel_hrd.regs_ever_used);
   for (cur_reg = 0; cur_reg < FIRST_PSEUDO_REGISTER; cur_reg++)
