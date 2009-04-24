@@ -1,5 +1,10 @@
 2009-04-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/alignment7.adb: New test.
+	* gnat.dg/alignment8.adb: Likewise.
+
+2009-04-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/pr34799.ads: Rename to rep_clause1.ads.
 	* gnat.dg/specs/rep_clause2.ads: New test.
 

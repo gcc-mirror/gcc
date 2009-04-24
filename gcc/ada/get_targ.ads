@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,7 +93,15 @@ package Get_Targ is
    pragma Import (C, Get_Bits_BE, "get_bits_be");
 
    function Get_Strict_Alignment return Nat;
-   pragma Import (C, Get_Strict_Alignment, "get_strict_alignment");
+   pragma Import (C, Get_Strict_Alignment, "get_target_strict_alignment");
+
+   function Get_Double_Float_Alignment return Nat;
+   pragma Import (C, Get_Double_Float_Alignment,
+                  "get_target_double_float_alignment");
+
+   function Get_Double_Scalar_Alignment return Nat;
+   pragma Import (C, Get_Double_Scalar_Alignment,
+                  "get_target_double_scalar_alignment");
 
    function Get_Max_Unaligned_Field return Pos;
    --  Returns the maximum supported size in bits for a field that is

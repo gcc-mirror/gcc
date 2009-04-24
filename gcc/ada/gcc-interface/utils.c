@@ -74,6 +74,16 @@
 /* If nonzero, pretend we are allocating at global level.  */
 int force_global;
 
+/* The default alignment of "double" floating-point types, i.e. floating
+   point types whose size is equal to 64 bits, or 0 if this alignment is
+   not specifically capped.  */
+int double_float_alignment;
+
+/* The default alignment of "double" or larger scalar types, i.e. scalar
+   types whose size is greater or equal to 64 bits, or 0 if this alignment
+   is not specifically capped.  */
+int double_scalar_alignment;
+
 /* Tree nodes for the various types and decls we create.  */
 tree gnat_std_decls[(int) ADT_LAST];
 
@@ -4562,6 +4572,62 @@ tree_code_for_record_type (Entity_Id gnat_type)
       return RECORD_TYPE;
 
   return UNION_TYPE;
+}
+
+/* Return true if GNAT_TYPE is a "double" floating-point type, i.e. whose
+   size is equal to 64 bits, or an array of such a type.  Set ALIGN_CLAUSE
+   according to the presence of an alignment clause on the type or, if it
+   is an array, on the component type.  */
+
+bool
+is_double_float_or_array (Entity_Id gnat_type, bool *align_clause)
+{
+  gnat_type = Underlying_Type (gnat_type);
+
+  *align_clause = Present (Alignment_Clause (gnat_type));
+
+  if (Is_Array_Type (gnat_type))
+    {
+      gnat_type = Underlying_Type (Component_Type (gnat_type));
+      if (Present (Alignment_Clause (gnat_type)))
+	*align_clause = true;
+    }
+
+  if (!Is_Floating_Point_Type (gnat_type))
+    return false;
+
+  if (UI_To_Int (Esize (gnat_type)) != 64)
+    return false;
+
+  return true;
+}
+
+/* Return true if GNAT_TYPE is a "double" or larger scalar type, i.e. whose
+   size is greater or equal to 64 bits, or an array of such a type.  Set
+   ALIGN_CLAUSE according to the presence of an alignment clause on the
+   type or, if it is an array, on the component type.  */
+
+bool
+is_double_scalar_or_array (Entity_Id gnat_type, bool *align_clause)
+{
+  gnat_type = Underlying_Type (gnat_type);
+
+  *align_clause = Present (Alignment_Clause (gnat_type));
+
+  if (Is_Array_Type (gnat_type))
+    {
+      gnat_type = Underlying_Type (Component_Type (gnat_type));
+      if (Present (Alignment_Clause (gnat_type)))
+	*align_clause = true;
+    }
+
+  if (!Is_Scalar_Type (gnat_type))
+    return false;
+
+  if (UI_To_Int (Esize (gnat_type)) < 64)
+    return false;
+
+  return true;
 }
 
 /* Return true if GNU_TYPE is suitable as the type of a non-aliased

@@ -268,6 +268,16 @@ extern int max_gnat_nodes;
 /* If nonzero, pretend we are allocating at global level.  */
 extern int force_global;
 
+/* The default alignment of "double" floating-point types, i.e. floating
+   point types whose size is equal to 64 bits, or 0 if this alignment is
+   not specifically capped.  */
+extern int double_float_alignment;
+
+/* The default alignment of "double" or larger scalar types, i.e. scalar
+   types whose size is greater or equal to 64 bits, or 0 if this alignment
+   is not specifically capped.  */
+extern int double_scalar_alignment;
+
 /* Standard data type sizes.  Most of these are not used.  */
 
 #ifndef CHAR_TYPE_SIZE
@@ -730,6 +740,20 @@ extern tree unchecked_convert (tree type, tree expr, bool notrunc_p);
    the latter being a record type as predicated by Is_Record_Type.  */
 extern enum tree_code tree_code_for_record_type (Entity_Id gnat_type);
 
+/* Return true if GNAT_TYPE is a "double" floating-point type, i.e. whose
+   size is equal to 64 bits, or an array of such a type.  Set ALIGN_CLAUSE
+   according to the presence of an alignment clause on the type or, if it
+   is an array, on the component type.  */
+extern bool is_double_float_or_array (Entity_Id gnat_type,
+				      bool *align_clause);
+
+/* Return true if GNAT_TYPE is a "double" or larger scalar type, i.e. whose
+   size is greater or equal to 64 bits, or an array of such a type.  Set
+   ALIGN_CLAUSE according to the presence of an alignment clause on the
+   type or, if it is an array, on the component type.  */
+extern bool is_double_scalar_or_array (Entity_Id gnat_type,
+				       bool *align_clause);
+
 /* Return true if GNU_TYPE is suitable as the type of a non-aliased
    component of an aggregate type.  */
 extern bool type_for_nonaliased_component_p (tree gnu_type);
@@ -899,15 +923,17 @@ extern Pos get_target_float_size (void);
 extern Pos get_target_double_size (void);
 extern Pos get_target_long_double_size (void);
 extern Pos get_target_pointer_size (void);
-extern Pos get_target_maximum_alignment (void);
-extern Pos get_target_default_allocator_alignment (void);
 extern Pos get_target_maximum_default_alignment (void);
+extern Pos get_target_default_allocator_alignment (void);
 extern Pos get_target_maximum_allowed_alignment (void);
+extern Pos get_target_maximum_alignment (void);
 extern Nat get_float_words_be (void);
 extern Nat get_words_be (void);
 extern Nat get_bytes_be (void);
 extern Nat get_bits_be (void);
-extern Nat get_strict_alignment (void);
+extern Nat get_target_strict_alignment (void);
+extern Nat get_target_double_float_alignment (void);
+extern Nat get_target_double_scalar_alignment (void);
 
 /* Let code know whether we are targetting VMS without need of
    intrusive preprocessor directives.  */
@@ -921,4 +947,3 @@ extern Nat get_strict_alignment (void);
 #ifndef TARGET_MALLOC64
 #define TARGET_MALLOC64 0
 #endif
-
