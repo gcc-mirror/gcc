@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,10 +81,10 @@ package Ttypes is
    --  for all targets.
 
    --  Note that during compilation there are two versions of package System
-   --  around. The version that is directly WITH'ed by compiler packages
+   --  around. The version that is directly with'ed by compiler packages
    --  contains host-dependent definitions, which is what is needed in that
    --  case (for example, System.Storage_Unit referenced in the source of the
-   --  compiler refers to the storage unit of the host, not the target. This
+   --  compiler refers to the storage unit of the host, not the target). This
    --  means that, like attribute references, any references to constants in
    --  package System in the compiler code are suspicious, since it is strange
    --  for the compiler to have such host dependencies. If the compiler needs
@@ -204,5 +204,15 @@ package Ttypes is
 
    Target_Strict_Alignment : Boolean := Get_Strict_Alignment /= 0;
    --  True if instructions will fail if data is misaligned
+
+   Target_Double_Float_Alignment : Nat := Get_Double_Float_Alignment;
+   --  The default alignment of "double" floating-point types, i.e. floating-
+   --  point types whose size is equal to 64 bits, or 0 if this alignment is
+   --  not specifically capped.
+
+   Target_Double_Scalar_Alignment : Nat := Get_Double_Scalar_Alignment;
+   --  The default alignment of "double" or larger scalar types, i.e. scalar
+   --  types whose size is greater or equal to 64 bits, or 0 if this alignment
+   --  is not specifically capped.
 
 end Ttypes;

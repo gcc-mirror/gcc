@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3033,15 +3033,36 @@ package body Layout is
       --  the type, or the maximum allowed alignment.
 
       declare
-         S : constant Int :=
-               UI_To_Int (Esize (E)) / SSU;
-         A : Nat;
+         S : constant Int := UI_To_Int (Esize (E)) / SSU;
+         Max_Alignment, A : Nat;
 
       begin
+         --  If the default alignment of "double" floating-point types is
+         --  specifically capped, enforce the cap.
+
+         if Ttypes.Target_Double_Float_Alignment > 0
+           and then S = 8
+           and then Is_Floating_Point_Type (E)
+         then
+            Max_Alignment := Ttypes.Target_Double_Float_Alignment;
+
+         --  If the default alignment of "double" or larger scalar types is
+         --  specifically capped, enforce the cap.
+
+         elsif Ttypes.Target_Double_Scalar_Alignment > 0
+           and then S >= 8
+           and then Is_Scalar_Type (E)
+         then
+            Max_Alignment := Ttypes.Target_Double_Scalar_Alignment;
+
+         --  Otherwise enforce the overall alignment cap
+
+         else
+            Max_Alignment := Ttypes.Maximum_Alignment;
+         end if;
+
          A := 1;
-         while 2 * A <= Ttypes.Maximum_Alignment
-            and then 2 * A <= S
-         loop
+         while 2 * A <= Max_Alignment and then 2 * A <= S loop
             A := 2 * A;
          end loop;
 

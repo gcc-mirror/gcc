@@ -1662,7 +1662,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* If the type we are dealing with has got a smaller alignment than the
 	 natural one, we need to wrap it up in a record type and under-align
 	 the latter.  We reuse the padding machinery for this purpose.  */
-      else if (Known_Alignment (gnat_entity)
+      else if (Present (Alignment_Clause (gnat_entity))
 	       && UI_Is_In_Int_Range (Alignment (gnat_entity))
 	       && (align = UI_To_Int (Alignment (gnat_entity)) * BITS_PER_UNIT)
 	       && align < TYPE_ALIGN (gnu_type))
@@ -4661,8 +4661,29 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       /* Back-annotate the Alignment of the type if not already in the
 	 tree.  Likewise for sizes.  */
       if (Unknown_Alignment (gnat_entity))
-	Set_Alignment (gnat_entity,
-		       UI_From_Int (TYPE_ALIGN (gnu_type) / BITS_PER_UNIT));
+	{
+	  unsigned int double_align, align;
+	  bool is_capped_double, align_clause;
+
+	  /* If the default alignment of "double" or larger scalar types is
+	     specifically capped and this is not an array with an alignment
+	     clause on the component type, return the cap.  */
+	  if ((double_align = double_float_alignment) > 0)
+	    is_capped_double
+	      = is_double_float_or_array (gnat_entity, &align_clause);
+	  else if ((double_align = double_scalar_alignment) > 0)
+	    is_capped_double
+	      = is_double_scalar_or_array (gnat_entity, &align_clause);
+	  else
+	    is_capped_double = align_clause = false;
+
+	  if (is_capped_double && !align_clause)
+	    align = double_align;
+	  else
+	    align = TYPE_ALIGN (gnu_type) / BITS_PER_UNIT;
+
+	  Set_Alignment (gnat_entity, UI_From_Int (align));
+	}
 
       if (Unknown_Esize (gnat_entity) && TYPE_SIZE (gnu_type))
 	{
@@ -7507,9 +7528,47 @@ validate_alignment (Uint alignment, Entity_Id gnat_entity, unsigned int align)
   else if (!(Present (Alignment_Clause (gnat_entity))
 	     && From_At_Mod (Alignment_Clause (gnat_entity)))
 	   && new_align * BITS_PER_UNIT < align)
-    post_error_ne_num ("alignment for& must be at least ^",
-		       gnat_error_node, gnat_entity,
-		       align / BITS_PER_UNIT);
+    {
+      unsigned int double_align;
+      bool is_capped_double, align_clause;
+
+      /* If the default alignment of "double" or larger scalar types is
+	 specifically capped and the new alignment is above the cap, do
+	 not post an error and change the alignment only if there is an
+	 alignment clause; this makes it possible to have the associated
+	 GCC type overaligned by default for performance reasons.  */
+      if ((double_align = double_float_alignment) > 0)
+	{
+	  Entity_Id gnat_type
+	    = Is_Type (gnat_entity) ? gnat_entity : Etype (gnat_entity);
+	  is_capped_double
+	    = is_double_float_or_array (gnat_type, &align_clause);
+	}
+      else if ((double_align = double_scalar_alignment) > 0)
+	{
+	  Entity_Id gnat_type
+	    = Is_Type (gnat_entity) ? gnat_entity : Etype (gnat_entity);
+	  is_capped_double
+	    = is_double_scalar_or_array (gnat_type, &align_clause);
+	}
+      else
+	is_capped_double = align_clause = false;
+
+      if (is_capped_double && new_align >= double_align)
+	{
+	  if (align_clause)
+	    align = new_align * BITS_PER_UNIT;
+	}
+      else
+	{
+	  if (is_capped_double)
+	    align = double_align * BITS_PER_UNIT;
+
+	  post_error_ne_num ("alignment for& must be at least ^",
+			     gnat_error_node, gnat_entity,
+			     align / BITS_PER_UNIT);
+	}
+    }
   else
     {
       new_align = (new_align > 0 ? new_align * BITS_PER_UNIT : 1);

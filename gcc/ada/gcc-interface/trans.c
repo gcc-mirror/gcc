@@ -317,6 +317,10 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   if (!Stack_Check_Probes_On_Target)
     set_stack_check_libfunc (gen_rtx_SYMBOL_REF (Pmode, "_gnat_stack_check"));
 
+  /* Retrieve alignment settings.  */
+  double_float_alignment = get_target_double_float_alignment ();
+  double_scalar_alignment = get_target_double_scalar_alignment ();
+
   /* Record the builtin types.  Define `integer' and `unsigned char' first so
      that dbx will output them first.  */
   record_builtin_type ("integer", integer_type_node);
@@ -1066,12 +1070,10 @@ Pragma_to_gnu (Node_Id gnat_node)
 static tree
 Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 {
-  tree gnu_result = error_mark_node;
-  tree gnu_result_type;
-  tree gnu_expr;
-  bool prefix_unused = false;
   tree gnu_prefix = gnat_to_gnu (Prefix (gnat_node));
   tree gnu_type = TREE_TYPE (gnu_prefix);
+  tree gnu_expr, gnu_result_type, gnu_result = error_mark_node;
+  bool prefix_unused = false;
 
   /* If the input is a NULL_EXPR, make a new one.  */
   if (TREE_CODE (gnu_prefix) == NULL_EXPR)
@@ -1375,19 +1377,53 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       break;
 
     case Attr_Alignment:
-      if (TREE_CODE (gnu_prefix) == COMPONENT_REF
-	  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_prefix, 0)))
-	      == RECORD_TYPE)
-	  && (TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_prefix, 0)))))
-	gnu_prefix = TREE_OPERAND (gnu_prefix, 0);
+      {
+	unsigned int align;
 
-      gnu_type = TREE_TYPE (gnu_prefix);
-      gnu_result_type = get_unpadded_type (Etype (gnat_node));
-      prefix_unused = true;
+	if (TREE_CODE (gnu_prefix) == COMPONENT_REF
+	    && (TREE_CODE (TREE_TYPE (TREE_OPERAND (gnu_prefix, 0)))
+		== RECORD_TYPE)
+	    && (TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_prefix, 0)))))
+	  gnu_prefix = TREE_OPERAND (gnu_prefix, 0);
 
-      gnu_result = size_int ((TREE_CODE (gnu_prefix) == COMPONENT_REF
-			      ? DECL_ALIGN (TREE_OPERAND (gnu_prefix, 1))
-			      : TYPE_ALIGN (gnu_type)) / BITS_PER_UNIT);
+	gnu_type = TREE_TYPE (gnu_prefix);
+	gnu_result_type = get_unpadded_type (Etype (gnat_node));
+	prefix_unused = true;
+
+	if (TREE_CODE (gnu_prefix) == COMPONENT_REF)
+	  align = DECL_ALIGN (TREE_OPERAND (gnu_prefix, 1)) / BITS_PER_UNIT;
+	else
+	  {
+	    Node_Id gnat_prefix = Prefix (gnat_node);
+	    Entity_Id gnat_type = Etype (gnat_prefix);
+	    unsigned int double_align;
+	    bool is_capped_double, align_clause;
+
+	    /* If the default alignment of "double" or larger scalar types is
+	       specifically capped and there is an alignment clause neither
+	       on the type nor on the prefix itself, return the cap.  */
+	    if ((double_align = double_float_alignment) > 0)
+	      is_capped_double
+		= is_double_float_or_array (gnat_type, &align_clause);
+	    else if ((double_align = double_scalar_alignment) > 0)
+	      is_capped_double
+		= is_double_scalar_or_array (gnat_type, &align_clause);
+	    else
+	      is_capped_double = align_clause = false;
+
+	    if (is_capped_double
+		&& Nkind (gnat_prefix) == N_Identifier
+		&& Present (Alignment_Clause (Entity (gnat_prefix))))
+	      align_clause = true;
+
+	    if (is_capped_double && !align_clause)
+	      align = double_align;
+	    else
+	      align = TYPE_ALIGN (gnu_type) / BITS_PER_UNIT;
+	  }
+
+	gnu_result = size_int (align);
+      }
       break;
 
     case Attr_First:

@@ -1,5 +1,40 @@
 2009-04-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* ttypes.ads (Target_Double_Float_Alignment): New variable.
+	(Target_Double_Scalar_Alignment): Likewise.
+	* get_targ.ads (Get_Strict_Alignment): Adjust external name.
+	(Get_Double_Float_Alignment): New imported function.
+	(Get_Double_Scalar_Alignment): Likewise.
+	* layout.adb (Set_Elem_Alignment): Take into account specific caps for
+	the alignment of "double" floating-point types and "double" or larger
+	scalar types, as parameterized by Target_Double_Float_Alignment and
+	Target_Double_Scalar_Alignment respectively.
+	* gcc-interface/gigi.h (double_float_alignment): Declare.
+	(double_scalar_alignment): Likewise.
+	(is_double_float_or_array): Likewise.
+	(is_double_scalar_or_array): Likewise.
+	(get_target_double_float_alignment): Likewise.
+	(get_target_double_scalar_alignment): Likewise.
+	* gcc-interface/targtyps.c (get_strict_alignment): Rename into...
+	(get_target_strict_alignment): ...this.
+	(get_target_double_float_alignment): New function.
+	(get_target_double_scalar_alignment): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Signed_Integer_Subtype>:
+	Test the presence of an alignment clause for under-aligned integer
+	types.  Take into account specific caps for the alignment of "double"
+	floating-point types and "double" or larger scalar types, as
+	parameterized by Target_Double_Float_Alignment and
+	Target_Double_Scalar_Alignment respectively.
+	(validate_alignment): Likewise.
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Alignment>: Likewise.
+	(gigi): Initialize double_float_alignment and double_scalar_alignment.
+	* gcc-interface/utils.c (double_float_alignment): New global variable.
+	(double_scalar_alignment): Likewise.
+	(is_double_float_or_array): New predicate.
+	(is_double_scalar_or_array): Likewise.
+
+2009-04-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (build_cond_expr): Move SAVE_EXPR ahead of
 	the conditional expression only if it is common to both arms.
 
