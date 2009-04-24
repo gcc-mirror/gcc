@@ -1,3 +1,8 @@
+2009-04-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-typeck.c (set_init_index): Allow array designators that are
+	not integer constant expressions with a pedwarn if pedantic.
+
 2009-04-24  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* simplify-rtx.c (simplify_binary_operation_1, case AND): Result is
