@@ -1175,6 +1175,11 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
       cum->arg_words += 2;
       break;
 
+    case TImode:
+      cum->gp_reg_found = 1;
+      cum->arg_words += 4;
+      break;
+
     case QImode:
     case HImode:
     case SImode:
@@ -1245,6 +1250,12 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, const_tree type,
     case DImode:
       cum->arg_words += (cum->arg_words & 1);
       regbase = GP_ARG_FIRST;
+      break;
+
+    case TImode:
+      cum->arg_words += (cum->arg_words & 3);
+      regbase = GP_ARG_FIRST;
+      break;
     }
 
   if (*arg_words >= (unsigned) MAX_ARGS_IN_REGISTERS)
