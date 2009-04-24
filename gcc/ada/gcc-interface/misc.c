@@ -147,7 +147,6 @@ const char **save_argv;
 extern int gnat_argc;
 extern char **gnat_argv;
 
-
 /* Declare functions we use as part of startup.  */
 extern void __gnat_initialize           (void *);
 extern void __gnat_install_SEH_handler  (void *);
