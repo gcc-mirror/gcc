@@ -3037,7 +3037,6 @@ package body Sem_Res is
          elsif Is_Entity_Name (Left_Opnd (N)) then
             declare
                Ent : constant Entity_Id := Entity (Left_Opnd (N));
-
             begin
                if Ekind (Ent) = E_Constant
                  and then Present (Constant_Value (Ent))
