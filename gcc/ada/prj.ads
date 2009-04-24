@@ -906,6 +906,29 @@ package Prj is
       Naming   : in out Naming_Data;
       Suffix   : File_Name_Type);
 
+   function Get_Object_Directory
+     (In_Tree             : Project_Tree_Ref;
+      Project             : Project_Id;
+      Including_Libraries : Boolean;
+      Only_If_Ada         : Boolean := False) return Path_Name_Type;
+   --  Return the object directory to use for the project. This depends on
+   --  whether we have a library project or a standard project. This function
+   --  might return No_Name when no directory applies.
+   --  If we have a a library project file and Including_Libraries is True then
+   --  the library dir is returned instead of the object dir.
+   --  If Only_If_Ada is True, then No_Name will be returned when the project
+   --  doesn't Ada sources.
+
+   procedure Compute_All_Imported_Projects
+     (Project : Project_Id; In_Tree : Project_Tree_Ref);
+   --  Compute, the list of the projects imported directly or indirectly by
+   --  project Project. The result is stored in Project.All_Imported_Projects
+
+   function Ultimate_Extending_Project_Of
+     (Proj : Project_Id; In_Tree : Project_Tree_Ref) return Project_Id;
+   --  Returns the ultimate extending project of project Proj. If project Proj
+   --  is not extended, returns Proj.
+
    function Standard_Naming_Data
      (Tree : Project_Tree_Ref := No_Project_Tree) return Naming_Data;
    pragma Inline (Standard_Naming_Data);
@@ -1310,14 +1333,6 @@ package Prj is
       Config_Checked : Boolean := False;
       --  A flag to avoid checking repetitively the configuration pragmas file
 
-      Checked : Boolean := False;
-      --  A flag to avoid checking repetitively the naming scheme of this
-      --  project file.
-
-      Seen : Boolean := False;
-      --  A flag to mark a project as "visited" to avoid processing the same
-      --  project several time.
-
       Depth : Natural := 0;
       --  The maximum depth of a project in the project graph. Depth of main
       --  project is 0.
@@ -1496,6 +1511,16 @@ package Prj is
    --  Otherwise, this information will be automatically added to Naming_Data
    --  when a project is processed, in the lists Spec_Suffix and Body_Suffix.
 
+   package Project_Boolean_Htable is new Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Project_Id,
+      Hash       => Hash,
+      Equal      => "=");
+   --  A table that associates a project to a boolean. This is used to detect
+   --  whether a project was already processed for instance.
+
    generic
       type State is limited private;
       with procedure Action
@@ -1504,15 +1529,19 @@ package Prj is
    procedure For_Every_Project_Imported
      (By         : Project_Id;
       In_Tree    : Project_Tree_Ref;
-      With_State : in out State);
+      With_State : in out State;
+      Imported_First : Boolean := False);
    --  Call Action for each project imported directly or indirectly by project
-   --  By. Action is called according to the order of importation: if A
+   --  By, as well as extended projects.
+   --  The order of processing depends on Imported_First:
+   --  If False, Action is called according to the order of importation: if A
    --  imports B, directly or indirectly, Action will be called for A before
    --  it is called for B. If two projects import each other directly or
    --  indirectly (using at least one "limited with"), it is not specified
-   --  for which of these two projects Action will be called first. Projects
-   --  that are extended by other projects are not considered. With_State may
-   --  be used by Action to choose a behavior or to report some global result.
+   --  for which of these two projects Action will be called first.
+   --  The order is reversed if Imported_First is True.
+   --  With_State may be used by Action to choose a behavior or to report some
+   --  global result.
 
    function Extend_Name
      (File        : File_Name_Type;

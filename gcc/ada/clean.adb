@@ -878,7 +878,7 @@ package body Clean is
                --  Source_Dirs or Source_Files is specified as an empty list,
                --  so always look for Ada units in extending projects.
 
-               if Data.Ada_Sources_Present
+               if Has_Ada_Sources (Data)
                  or else Data.Extends /= No_Project
                then
                   for Unit in Unit_Table.First ..
@@ -1028,8 +1028,8 @@ package body Clean is
                   for Proj in Project_Table.First ..
                     Project_Table.Last (Project_Tree.Projects)
                   loop
-                     if Project_Tree.Projects.Table
-                       (Proj).Other_Sources_Present
+                     if Has_Foreign_Sources
+                       (Project_Tree.Projects.Table (Proj))
                      then
                         Global_Archive := True;
                         exit;

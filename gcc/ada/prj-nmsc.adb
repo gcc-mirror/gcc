@@ -5445,7 +5445,7 @@ package body Prj.Nmsc is
                      Read (Dir, Name_Buffer, Name_Len);
 
                      if Current_Verbosity = High then
-                        Write_Str  ("   Checking ");
+                        Write_Str  (" Checking ");
                         Write_Line (Name_Buffer (1 .. Name_Len));
                      end if;
 
@@ -6450,7 +6450,7 @@ package body Prj.Nmsc is
 
       if Last = Filename'Last then
          if Current_Verbosity = High then
-            Write_Line ("  No matching suffix");
+            Write_Line ("   No matching suffix");
          end if;
          return;
       end if;
@@ -6602,9 +6602,9 @@ package body Prj.Nmsc is
         and then Current_Verbosity = High
       then
          case Kind is
-            when Spec => Write_Str ("     spec of ");
-            when Impl => Write_Str ("     body of ");
-            when Sep  => Write_Str ("     sep of ");
+            when Spec => Write_Str ("   spec of ");
+            when Impl => Write_Str ("   body of ");
+            when Sep  => Write_Str ("   sep of ");
          end case;
 
          Write_Line (Get_Name_String (Unit));
@@ -8456,7 +8456,7 @@ package body Prj.Nmsc is
 
             begin
                if Current_Verbosity = High then
-                  Write_Str  ("Putting ");
+                  Write_Str  ("   Putting ");
                   Write_Str  (Get_Name_String (Unit_Name));
                   Write_Line (" in the unit list.");
                end if;

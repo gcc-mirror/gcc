@@ -34,6 +34,8 @@ with Snames;   use Snames;
 with Table;
 with Uintp;    use Uintp;
 
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
+
 with System.Case_Util; use System.Case_Util;
 with System.HTable;
 
@@ -130,8 +132,6 @@ package body Prj is
                       Config_File_Name               => No_Path,
                       Config_File_Temp               => False,
                       Config_Checked                 => False,
-                      Checked                        => False,
-                      Seen                           => False,
                       Need_To_Build_Lib              => False,
                       Depth                          => 0,
                       Unkept_Comments                => False);
@@ -156,6 +156,9 @@ package body Prj is
    procedure Language_Changed (Iter : in out Source_Iterator);
    procedure Project_Changed (Iter : in out Source_Iterator);
    --  Called when a new project or language was selected for this iterator.
+
+   function Contains_ALI_Files (Dir : Path_Name_Type) return Boolean;
+   --  Return True if there is at least one ALI file in the directory Dir
 
    -------------------
    -- Add_To_Buffer --
@@ -497,8 +500,11 @@ package body Prj is
    procedure For_Every_Project_Imported
      (By         : Project_Id;
       In_Tree    : Project_Tree_Ref;
-      With_State : in out State)
+      With_State : in out State;
+      Imported_First : Boolean := False)
    is
+      use Project_Boolean_Htable;
+      Seen : Project_Boolean_Htable.Instance := Project_Boolean_Htable.Nil;
 
       procedure Recursive_Check (Project : Project_Id);
       --  Check if a project has already been seen. If not seen, mark it as
@@ -509,30 +515,41 @@ package body Prj is
       ---------------------
 
       procedure Recursive_Check (Project : Project_Id) is
+         Data : Project_Data renames In_Tree.Projects.Table (Project);
          List : Project_List;
       begin
-         if not In_Tree.Projects.Table (Project).Seen then
-            In_Tree.Projects.Table (Project).Seen := True;
-            Action (Project, With_State);
+         if not Get (Seen, Project) then
+            Set (Seen, Project, True);
 
-            List := In_Tree.Projects.Table (Project).Imported_Projects;
+            if not Imported_First then
+               Action (Project, With_State);
+            end if;
+
+            --  Visited all extended projects
+
+            if Data.Extends /= No_Project then
+               Recursive_Check (Data.Extends);
+            end if;
+
+            --  Visited all imported projects
+
+            List := Data.Imported_Projects;
             while List /= Empty_Project_List loop
                Recursive_Check (In_Tree.Project_Lists.Table (List).Project);
                List := In_Tree.Project_Lists.Table (List).Next;
             end loop;
+
+            if Imported_First then
+               Action (Project, With_State);
+            end if;
          end if;
       end Recursive_Check;
 
    --  Start of processing for For_Every_Project_Imported
 
    begin
-      for Project in Project_Table.First ..
-                     Project_Table.Last (In_Tree.Projects)
-      loop
-         In_Tree.Projects.Table (Project).Seen := False;
-      end loop;
-
       Recursive_Check (Project => By);
+      Reset (Seen);
    end For_Every_Project_Imported;
 
    --------------
@@ -1189,6 +1206,10 @@ package body Prj is
    function Has_Ada_Sources (Data : Project_Data) return Boolean is
       Lang : Language_Ptr := Data.Languages;
    begin
+      if Data.Ada_Sources /= Nil_String then
+         return True;
+      end if;
+
       while Lang /= No_Language_Index loop
          if Lang.Name = Name_Ada then
             return Lang.First_Source /= No_Source;
@@ -1217,6 +1238,188 @@ package body Prj is
 
       return False;
    end Has_Foreign_Sources;
+
+   ------------------------
+   -- Contains_ALI_Files --
+   ------------------------
+
+   function Contains_ALI_Files (Dir : Path_Name_Type) return Boolean is
+      Dir_Name : constant String := Get_Name_String (Dir);
+      Direct : Dir_Type;
+      Name   : String (1 .. 1_000);
+      Last   : Natural;
+      Result : Boolean := False;
+
+   begin
+      Open (Direct, Dir_Name);
+
+      --  For each file in the directory, check if it is an ALI file
+
+      loop
+         Read (Direct, Name, Last);
+         exit when Last = 0;
+         Canonical_Case_File_Name (Name (1 .. Last));
+         Result := Last >= 5 and then Name (Last - 3 .. Last) = ".ali";
+         exit when Result;
+      end loop;
+
+      Close (Direct);
+      return Result;
+
+   exception
+      --  If there is any problem, close the directory if open and return
+      --  True; the library directory will be added to the path.
+
+      when others =>
+         if Is_Open (Direct) then
+            Close (Direct);
+         end if;
+
+         return True;
+   end Contains_ALI_Files;
+
+   --------------------------
+   -- Get_Object_Directory --
+   --------------------------
+
+   function Get_Object_Directory
+     (In_Tree             : Project_Tree_Ref;
+      Project             : Project_Id;
+      Including_Libraries : Boolean;
+      Only_If_Ada         : Boolean := False) return Path_Name_Type
+   is
+      Data : Project_Data renames In_Tree.Projects.Table (Project);
+   begin
+      if (Data.Library and Including_Libraries)
+        or else
+          (Data.Object_Directory /= No_Path_Information
+           and then (not Including_Libraries or else not Data.Library))
+      then
+         --  For a library project, add the library ALI directory if there is
+         --  no object directory or if the library ALI directory contains ALI
+         --  files; otherwise add the object directory.
+
+         if Data.Library then
+            if Data.Object_Directory = No_Path_Information
+              or else Contains_ALI_Files (Data.Library_ALI_Dir.Name)
+            then
+               return Data.Library_ALI_Dir.Name;
+            else
+               return Data.Object_Directory.Name;
+            end if;
+
+            --  For a non-library project, add object directory if it is not a
+            --  virtual project, and if there are Ada sources in the project or
+            --  one of the projects it extends. If there are no Ada sources,
+            --  adding the object directory could disrupt the order of the
+            --  object dirs in the path.
+
+         elsif not Data.Virtual then
+            declare
+               Add_Object_Dir : Boolean    := not Only_If_Ada;
+               Prj            : Project_Id := Project;
+
+            begin
+               while not Add_Object_Dir and then Prj /= No_Project loop
+                  if Has_Ada_Sources (In_Tree.Projects.Table (Prj)) then
+                     Add_Object_Dir := True;
+                  else
+                     Prj := In_Tree.Projects.Table (Prj).Extends;
+                  end if;
+               end loop;
+
+               if Add_Object_Dir then
+                  return Data.Object_Directory.Name;
+               end if;
+            end;
+         end if;
+      end if;
+      return No_Path;
+   end Get_Object_Directory;
+
+   -----------------------------------
+   -- Ultimate_Extending_Project_Of --
+   -----------------------------------
+
+   function Ultimate_Extending_Project_Of
+     (Proj : Project_Id; In_Tree : Project_Tree_Ref) return Project_Id
+   is
+      Prj : Project_Id := Proj;
+   begin
+      while In_Tree.Projects.Table (Prj).Extended_By /= No_Project loop
+         Prj := In_Tree.Projects.Table (Prj).Extended_By;
+      end loop;
+
+      return Prj;
+   end Ultimate_Extending_Project_Of;
+
+   -----------------------------------
+   -- Compute_All_Imported_Projects --
+   -----------------------------------
+
+   procedure Compute_All_Imported_Projects
+     (Project : Project_Id; In_Tree : Project_Tree_Ref)
+   is
+      procedure Add_To_List (Prj : Project_Id);
+      --  Add a project to the list All_Imported_Projects of project Project
+
+      procedure Recursive_Add (Prj : Project_Id; Dummy : in out Boolean);
+      --  Recursively add the projects imported by project Project, but not
+      --  those that are extended.
+
+      -----------------
+      -- Add_To_List --
+      -----------------
+
+      procedure Add_To_List (Prj : Project_Id) is
+         Element : constant Project_Element :=
+           (Prj, In_Tree.Projects.Table (Project).All_Imported_Projects);
+         List : Project_List;
+      begin
+         --  Check that the project is not already in the list. We know the one
+         --  passed to Recursive_Add have never been visited before, but the
+         --  one passed it are the extended projects.
+
+         List := In_Tree.Projects.Table (Project).All_Imported_Projects;
+         while List /= Empty_Project_List loop
+            if In_Tree.Project_Lists.Table (List).Project = Prj then
+               return;
+            end if;
+            List := In_Tree.Project_Lists.Table (List).Next;
+         end loop;
+
+         --  Add it to the list
+
+         Project_List_Table.Increment_Last (In_Tree.Project_Lists);
+         List := Project_List_Table.Last (In_Tree.Project_Lists);
+         In_Tree.Project_Lists.Table (List) := Element;
+         In_Tree.Projects.Table (Project).All_Imported_Projects := List;
+      end Add_To_List;
+
+      -------------------
+      -- Recursive_Add --
+      -------------------
+
+      procedure Recursive_Add (Prj : Project_Id; Dummy : in out Boolean) is
+         pragma Unreferenced (Dummy);
+         Prj2    : Project_Id;
+      begin
+         --  A project is not importing itself
+         if Project /= Prj then
+            Prj2 := Ultimate_Extending_Project_Of (Prj, In_Tree);
+            Add_To_List (Prj2);
+         end if;
+      end Recursive_Add;
+
+      procedure For_All_Projects is
+        new For_Every_Project_Imported (Boolean, Recursive_Add);
+      Dummy : Boolean := False;
+
+   begin
+      In_Tree.Projects.Table (Project).All_Imported_Projects :=
+        Empty_Project_List;
+      For_All_Projects (Project, In_Tree, Dummy);
+   end Compute_All_Imported_Projects;
 
 begin
    --  Make sure that the standard config and user project file extensions are

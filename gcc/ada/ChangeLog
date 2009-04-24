@@ -1,3 +1,19 @@
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-proc.adb, make.adb, mlib-prj.adb, prj.adb, prj.ads, makeutl.adb,
+	clean.adb, prj-nmsc.adb, prj-env.adb, prj-env.ads (Project_Data.Seen):
+	field removed. This is not a property of the
+	project, just a boolean used to traverse the project tree, and storing
+	it in the structure prevents doing multiple traversal in parallel.
+	(Project_Data.Checked): also removed, since it was playing the same role
+	as Seen when we had two nested loops, and this is no longer necessary
+	(For_All_Imported_Projects): removed, since in fact there was already
+	the equivalent in For_Every_Project_Imported. The latter was rewritten
+	to use a local hash table instead of Project_Data.Seen
+	Various loops were rewritten to use For_Every_Project_Imported, thus
+	removing the need for Project_Data.Seen. This avoids a lot of code
+	duplication
+
 2009-04-24  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Actuals): Do not create blocks around code
