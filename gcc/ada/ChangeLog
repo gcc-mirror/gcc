@@ -302,7 +302,7 @@
             Thomas Quinot  <quinot@adacore.com>
 
 	* fe.h (Set_Identifier_Casing): Add const to second parameter.
-	* gcc-interface/misc.c (internal_error_function): Make copy of retur
+	* gcc-interface/misc.c (internal_error_function): Make copy of return
 	from pp_formatted_text before assigning BUFFER to it.
 	(gnat_init): Likewise for main_input_filename and gnat_argv.
 	(gnat_printable_name): Remove cast from call to Set_Identifier_Casing.
