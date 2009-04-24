@@ -1341,10 +1341,10 @@ simple_rhs_p (rtx rhs)
       op1 = XEXP (rhs, 1);
       /* Allow reg OP const and reg OP reg.  */
       if (!(REG_P (op0) && !HARD_REGISTER_P (op0))
-	  && !CONSTANT_P (op0))
+	  && !function_invariant_p (op0))
 	return false;
       if (!(REG_P (op1) && !HARD_REGISTER_P (op1))
-	  && !CONSTANT_P (op1))
+	  && !function_invariant_p (op1))
 	return false;
 
       return true;
@@ -1358,7 +1358,7 @@ simple_rhs_p (rtx rhs)
       /* Allow reg OP const.  */
       if (!(REG_P (op0) && !HARD_REGISTER_P (op0)))
 	return false;
-      if (!CONSTANT_P (op1))
+      if (!function_invariant_p (op1))
 	return false;
 
       return true;
