@@ -1563,19 +1563,19 @@ private
    --  Initialize.
 
    type Source_Iterator is record
-      In_Tree       : Project_Tree_Ref;
+      In_Tree : Project_Tree_Ref;
 
-      Project       : Project_Id;
-      All_Projects  : Boolean;
+      Project      : Project_Id;
+      All_Projects : Boolean;
       --  Current project and whether we should move on to the next
 
-      Language      : Language_Ptr;
+      Language : Language_Ptr;
       --  Current language processed
 
       Language_Name : Name_Id;
       --  Only sources of this language will be returned (or all if No_Name)
 
-      Current       : Source_Id;
+      Current : Source_Id;
    end record;
 
    procedure Add_To_Buffer
@@ -1625,6 +1625,33 @@ private
       Source_Paths   : Source_Path_Table.Instance;
       Object_Paths   : Object_Path_Table.Instance;
       Default_Naming : Naming_Data;
+
+      Current_Source_Path_File : Path_Name_Type := No_Path;
+      --  Current value of project source path file env var. Used to avoid
+      --  setting the env var to the same value.
+
+      Current_Object_Path_File : Path_Name_Type := No_Path;
+      --  Current value of project object path file env var. Used to avoid
+      --  setting the env var to the same value.
+
+      Ada_Path_Buffer : String_Access := new String (1 .. 1024);
+      --  A buffer where values for ADA_INCLUDE_PATH and ADA_OBJECTS_PATH are
+      --  stored.
+
+      Ada_Path_Length : Natural := 0;
+      --  Index of the last valid character in Ada_Path_Buffer
+
+      Ada_Prj_Include_File_Set : Boolean := False;
+      Ada_Prj_Objects_File_Set : Boolean := False;
+      --  These flags are set to True when the corresponding environment
+      --  variables are set and are used to give these environment variables an
+      --  empty string value at the end of the program. This has no practical
+      --  effect on most platforms, except on VMS where the logical names are
+      --  deassigned, thus avoiding the pollution of the environment of the
+      --  caller.
+
+      Fill_Mapping_File : Boolean := True;
+
    end record;
    --  Type to represent the part of a project tree which is private to the
    --  Project Manager.

@@ -34,31 +34,7 @@ with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 package body Prj.Env is
 
-   Current_Source_Path_File : Path_Name_Type := No_Path;
-   --  Current value of project source path file env var.
-   --  Used to avoid setting the env var to the same value.
-
-   Current_Object_Path_File : Path_Name_Type := No_Path;
-   --  Current value of project object path file env var.
-   --  Used to avoid setting the env var to the same value.
-
-   Ada_Path_Buffer : String_Access := new String (1 .. 1024);
-   --  A buffer where values for ADA_INCLUDE_PATH
-   --  and ADA_OBJECTS_PATH are stored.
-
-   Ada_Path_Length : Natural := 0;
-   --  Index of the last valid character in Ada_Path_Buffer
-
-   Ada_Prj_Include_File_Set : Boolean := False;
-   Ada_Prj_Objects_File_Set : Boolean := False;
-   --  These flags are set to True when the corresponding environment variables
-   --  are set and are used to give these environment variables an empty string
-   --  value at the end of the program. This has no practical effect on most
-   --  platforms, except on VMS where the logical names are deassigned, thus
-   --  avoiding the pollution of the environment of the caller.
-
    Default_Naming    : constant Naming_Id := Naming_Table.First;
-   Fill_Mapping_File : Boolean := True;
 
    package Project_Boolean_Htable is new Simple_HTable
      (Header_Num => Header_Num,
@@ -80,7 +56,7 @@ package body Prj.Env is
    --  Add to Ada_Path_Buffer all the source directories in string list
    --  Source_Dirs, if any. Increment Ada_Path_Length.
 
-   procedure Add_To_Path (Dir : String);
+   procedure Add_To_Path (Dir : String; In_Tree : Project_Tree_Ref);
    --  If Dir is not already in the global variable Ada_Path_Buffer, add it.
    --  Increment Ada_Path_Length.
    --  If Ada_Path_Length /= 0, prepend a Path_Separator character to
@@ -170,7 +146,7 @@ package body Prj.Env is
       if
         In_Tree.Projects.Table (Project).Ada_Include_Path = null
       then
-         Ada_Path_Length := 0;
+         In_Tree.Private_Part.Ada_Path_Length := 0;
 
          for Index in Project_Table.First ..
                       Project_Table.Last (In_Tree.Projects)
@@ -180,7 +156,9 @@ package body Prj.Env is
 
          Add (Project);
          In_Tree.Projects.Table (Project).Ada_Include_Path :=
-           new String'(Ada_Path_Buffer (1 .. Ada_Path_Length));
+           new String'
+             (In_Tree.Private_Part.Ada_Path_Buffer
+                  (1 .. In_Tree.Private_Part.Ada_Path_Length));
       end if;
 
       return In_Tree.Projects.Table (Project).Ada_Include_Path;
@@ -199,10 +177,12 @@ package body Prj.Env is
       if Recursive then
          return Ada_Include_Path (Project, In_Tree).all;
       else
-         Ada_Path_Length := 0;
+         In_Tree.Private_Part.Ada_Path_Length := 0;
          Add_To_Path
            (In_Tree.Projects.Table (Project).Source_Dirs, In_Tree);
-         return Ada_Path_Buffer (1 .. Ada_Path_Length);
+         return
+           In_Tree.Private_Part.Ada_Path_Buffer
+             (1 .. In_Tree.Private_Part.Ada_Path_Length);
       end if;
    end Ada_Include_Path;
 
@@ -258,17 +238,20 @@ package body Prj.Env is
                          Contains_ALI_Files (Data.Library_ALI_Dir.Name)
                      then
                         Add_To_Path
-                          (Get_Name_String (Data.Library_ALI_Dir.Name));
+                          (Get_Name_String (Data.Library_ALI_Dir.Name),
+                           In_Tree);
                      else
                         Add_To_Path
-                          (Get_Name_String (Data.Object_Directory.Name));
+                          (Get_Name_String (Data.Object_Directory.Name),
+                           In_Tree);
                      end if;
 
                   else
                      --  For a non library project, add the object directory
 
                      Add_To_Path
-                       (Get_Name_String (Data.Object_Directory.Name));
+                       (Get_Name_String (Data.Object_Directory.Name),
+                        In_Tree);
                   end if;
                end if;
 
@@ -299,7 +282,7 @@ package body Prj.Env is
       if
         In_Tree.Projects.Table (Project).Ada_Objects_Path = null
       then
-         Ada_Path_Length := 0;
+         In_Tree.Private_Part.Ada_Path_Length := 0;
 
          for Index in Project_Table.First ..
                       Project_Table.Last (In_Tree.Projects)
@@ -309,7 +292,9 @@ package body Prj.Env is
 
          Add (Project);
          In_Tree.Projects.Table (Project).Ada_Objects_Path :=
-           new String'(Ada_Path_Buffer (1 .. Ada_Path_Length));
+           new String'
+             (In_Tree.Private_Part.Ada_Path_Buffer
+                  (1 .. In_Tree.Private_Part.Ada_Path_Length));
       end if;
 
       return In_Tree.Projects.Table (Project).Ada_Objects_Path;
@@ -368,12 +353,12 @@ package body Prj.Env is
    begin
       while Current /= Nil_String loop
          Source_Dir := In_Tree.String_Elements.Table (Current);
-         Add_To_Path (Get_Name_String (Source_Dir.Display_Value));
+         Add_To_Path (Get_Name_String (Source_Dir.Display_Value), In_Tree);
          Current := Source_Dir.Next;
       end loop;
    end Add_To_Path;
 
-   procedure Add_To_Path (Dir : String) is
+   procedure Add_To_Path (Dir : String; In_Tree : Project_Tree_Ref) is
       Len        : Natural;
       New_Buffer : String_Access;
       Min_Len    : Natural;
@@ -411,16 +396,19 @@ package body Prj.Env is
    --  Start of processing for Add_To_Path
 
    begin
-      if Is_Present (Ada_Path_Buffer (1 .. Ada_Path_Length), Dir) then
+      if Is_Present (In_Tree.Private_Part.Ada_Path_Buffer
+                       (1 .. In_Tree.Private_Part.Ada_Path_Length),
+                     Dir)
+      then
 
          --  Dir is already in the path, nothing to do
 
          return;
       end if;
 
-      Min_Len := Ada_Path_Length + Dir'Length;
+      Min_Len := In_Tree.Private_Part.Ada_Path_Length + Dir'Length;
 
-      if Ada_Path_Length > 0 then
+      if In_Tree.Private_Part.Ada_Path_Length > 0 then
 
          --  Add 1 for the Path_Separator character
 
@@ -429,7 +417,7 @@ package body Prj.Env is
 
       --  If Ada_Path_Buffer is too small, increase it
 
-      Len := Ada_Path_Buffer'Last;
+      Len := In_Tree.Private_Part.Ada_Path_Buffer'Last;
 
       if Len < Min_Len then
          loop
@@ -438,20 +426,25 @@ package body Prj.Env is
          end loop;
 
          New_Buffer := new String (1 .. Len);
-         New_Buffer (1 .. Ada_Path_Length) :=
-           Ada_Path_Buffer (1 .. Ada_Path_Length);
-         Free (Ada_Path_Buffer);
-         Ada_Path_Buffer := New_Buffer;
+         New_Buffer (1 .. In_Tree.Private_Part.Ada_Path_Length) :=
+           In_Tree.Private_Part.Ada_Path_Buffer
+             (1 .. In_Tree.Private_Part.Ada_Path_Length);
+         Free (In_Tree.Private_Part.Ada_Path_Buffer);
+         In_Tree.Private_Part.Ada_Path_Buffer := New_Buffer;
       end if;
 
-      if Ada_Path_Length > 0 then
-         Ada_Path_Length := Ada_Path_Length + 1;
-         Ada_Path_Buffer (Ada_Path_Length) := Path_Separator;
+      if In_Tree.Private_Part.Ada_Path_Length > 0 then
+         In_Tree.Private_Part.Ada_Path_Length :=
+           In_Tree.Private_Part.Ada_Path_Length + 1;
+         In_Tree.Private_Part.Ada_Path_Buffer
+           (In_Tree.Private_Part.Ada_Path_Length) := Path_Separator;
       end if;
 
-      Ada_Path_Buffer
-        (Ada_Path_Length + 1 .. Ada_Path_Length + Dir'Length) := Dir;
-      Ada_Path_Length := Ada_Path_Length + Dir'Length;
+      In_Tree.Private_Part.Ada_Path_Buffer
+        (In_Tree.Private_Part.Ada_Path_Length + 1 ..
+           In_Tree.Private_Part.Ada_Path_Length + Dir'Length) := Dir;
+      In_Tree.Private_Part.Ada_Path_Length :=
+        In_Tree.Private_Part.Ada_Path_Length + Dir'Length;
    end Add_To_Path;
 
    ------------------------
@@ -1101,7 +1094,7 @@ package body Prj.Env is
       end if;
 
       if Language = No_Name then
-         if Fill_Mapping_File then
+         if In_Tree.Private_Part.Fill_Mapping_File then
             for Unit in 1 .. Unit_Table.Last (In_Tree.Units) loop
                The_Unit_Data := In_Tree.Units.Table (Unit);
 
@@ -1142,9 +1135,9 @@ package body Prj.Env is
                   exit when Source = No_Source;
 
                   if Source.Language.Name = Language
-                      and then not Source.Locally_Removed
-                      and then Source.Replaced_By = No_Source
-                      and then Source.Path.Name /= No_Path
+                    and then not Source.Locally_Removed
+                    and then Source.Replaced_By = No_Source
+                    and then Source.Path.Name /= No_Path
                   then
                      if Source.Unit /= No_Name then
                         Get_Name_String (Source.Unit);
@@ -1180,10 +1173,12 @@ package body Prj.Env is
       GNAT.OS_Lib.Close (File, Status);
 
       if not Status then
-         Prj.Com.Fail ("disk full, could not write mapping file");
+
          --  We were able to create the temporary file, so there is no problem
          --  of protection. However, we are not able to close it, so there must
          --  be a capacity problem that we express using "disk full".
+
+         Prj.Com.Fail ("disk full, could not write mapping file");
       end if;
    end Create_Mapping_File;
 
@@ -1237,14 +1232,14 @@ package body Prj.Env is
       --  the empty string. On VMS, this has the effect of deassigning
       --  the logical names.
 
-      if Ada_Prj_Include_File_Set then
+      if In_Tree.Private_Part.Ada_Prj_Include_File_Set then
          Setenv (Project_Include_Path_File, "");
-         Ada_Prj_Include_File_Set := False;
+         In_Tree.Private_Part.Ada_Prj_Include_File_Set := False;
       end if;
 
-      if Ada_Prj_Objects_File_Set then
+      if In_Tree.Private_Part.Ada_Prj_Objects_File_Set then
          Setenv (Project_Objects_Path_File, "");
-         Ada_Prj_Objects_File_Set := False;
+         In_Tree.Private_Part.Ada_Prj_Objects_File_Set := False;
       end if;
    end Delete_All_Path_Files;
 
@@ -1483,6 +1478,7 @@ package body Prj.Env is
       procedure Recurse (Prj : Project_Id) is
          Data : Project_Data renames In_Tree.Projects.Table (Prj);
          List : Project_List := Data.Imported_Projects;
+
       begin
          if not Get (Seen, Prj) then
             Set (Seen, Prj, True);
@@ -1503,6 +1499,8 @@ package body Prj.Env is
             end loop;
          end if;
       end Recurse;
+
+   --  Start of processing for For_All_Imported_Projects
 
    begin
       Recurse (Project);
@@ -1534,6 +1532,9 @@ package body Prj.Env is
       end For_Project;
 
       procedure Get_Object_Dirs is new For_All_Imported_Projects (For_Project);
+
+   --  Start of processing for For_All_Object_Dirs
+
    begin
       Get_Object_Dirs (Project, In_Tree);
    end For_All_Object_Dirs;
@@ -1557,6 +1558,7 @@ package body Prj.Env is
          Data       : Project_Data renames In_Tree.Projects.Table (Prj);
          Current    : String_List_Id := Data.Source_Dirs;
          The_String : String_Element;
+
       begin
          --  If there are Ada sources, call action with the name of every
          --  source directory.
@@ -1571,6 +1573,9 @@ package body Prj.Env is
       end For_Project;
 
       procedure Get_Source_Dirs is new For_All_Imported_Projects (For_Project);
+
+   --  Start of processing for For_All_Source_Dirs
+
    begin
       Get_Source_Dirs (Project, In_Tree);
    end For_All_Source_Dirs;
@@ -1666,11 +1671,11 @@ package body Prj.Env is
    -- Initialize --
    ----------------
 
-   procedure Initialize is
+   procedure Initialize (In_Tree : Project_Tree_Ref) is
    begin
-      Fill_Mapping_File := True;
-      Current_Source_Path_File := No_Path;
-      Current_Object_Path_File := No_Path;
+      In_Tree.Private_Part.Fill_Mapping_File := True;
+      In_Tree.Private_Part.Current_Source_Path_File := No_Path;
+      In_Tree.Private_Part.Current_Object_Path_File := No_Path;
    end Initialize;
 
    -------------------
@@ -2089,43 +2094,43 @@ package body Prj.Env is
       --  Set the env vars, if they need to be changed, and set the
       --  corresponding flags.
 
-      if Current_Source_Path_File /=
+      if In_Tree.Private_Part.Current_Source_Path_File /=
            In_Tree.Projects.Table (Project).Include_Path_File
       then
-         Current_Source_Path_File :=
+         In_Tree.Private_Part.Current_Source_Path_File :=
            In_Tree.Projects.Table (Project).Include_Path_File;
          Set_Path_File_Var
            (Project_Include_Path_File,
-            Get_Name_String (Current_Source_Path_File));
-         Ada_Prj_Include_File_Set := True;
+            Get_Name_String (In_Tree.Private_Part.Current_Source_Path_File));
+         In_Tree.Private_Part.Ada_Prj_Include_File_Set := True;
       end if;
 
       if Including_Libraries then
-         if Current_Object_Path_File
-           /= In_Tree.Projects.Table
-                (Project).Objects_Path_File_With_Libs
+         if In_Tree.Private_Part.Current_Object_Path_File /=
+            In_Tree.Projects.Table (Project).Objects_Path_File_With_Libs
          then
-            Current_Object_Path_File :=
+            In_Tree.Private_Part.Current_Object_Path_File :=
               In_Tree.Projects.Table
                 (Project).Objects_Path_File_With_Libs;
             Set_Path_File_Var
               (Project_Objects_Path_File,
-               Get_Name_String (Current_Object_Path_File));
-            Ada_Prj_Objects_File_Set := True;
+               Get_Name_String
+                 (In_Tree.Private_Part.Current_Object_Path_File));
+            In_Tree.Private_Part.Ada_Prj_Objects_File_Set := True;
          end if;
 
       else
-         if Current_Object_Path_File /=
-           In_Tree.Projects.Table
-             (Project).Objects_Path_File_Without_Libs
+         if In_Tree.Private_Part.Current_Object_Path_File /=
+            In_Tree.Projects.Table (Project).Objects_Path_File_Without_Libs
          then
-            Current_Object_Path_File :=
+            In_Tree.Private_Part.Current_Object_Path_File :=
               In_Tree.Projects.Table
                 (Project).Objects_Path_File_Without_Libs;
             Set_Path_File_Var
               (Project_Objects_Path_File,
-               Get_Name_String (Current_Object_Path_File));
-            Ada_Prj_Objects_File_Set := True;
+               Get_Name_String
+                 (In_Tree.Private_Part.Current_Object_Path_File));
+            In_Tree.Private_Part.Ada_Prj_Objects_File_Set := True;
          end if;
       end if;
    end Set_Ada_Paths;
@@ -2134,9 +2139,11 @@ package body Prj.Env is
    -- Set_Mapping_File_Initial_State_To_Empty --
    ---------------------------------------------
 
-   procedure Set_Mapping_File_Initial_State_To_Empty is
+   procedure Set_Mapping_File_Initial_State_To_Empty
+     (In_Tree : Project_Tree_Ref)
+   is
    begin
-      Fill_Mapping_File := False;
+      In_Tree.Private_Part.Fill_Mapping_File := False;
    end Set_Mapping_File_Initial_State_To_Empty;
 
    -----------------------
@@ -2145,7 +2152,6 @@ package body Prj.Env is
 
    procedure Set_Path_File_Var (Name : String; Value : String) is
       Host_Spec : String_Access := To_Host_File_Spec (Value);
-
    begin
       if Host_Spec = null then
          Prj.Com.Fail
@@ -2167,9 +2173,7 @@ package body Prj.Env is
       Result : Project_Id := Project;
 
    begin
-      while In_Tree.Projects.Table (Result).Extended_By /=
-        No_Project
-      loop
+      while In_Tree.Projects.Table (Result).Extended_By /= No_Project loop
          Result := In_Tree.Projects.Table (Result).Extended_By;
       end loop;
 

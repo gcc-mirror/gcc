@@ -1,5 +1,32 @@
 2009-04-24  Vincent Celier  <celier@adacore.com>
 
+	* gnatcmd.adb: Call Prj.Env.Initialize with the Project_Tree
+
+	* prj-env.adb: Move all global variables to the private part of the
+	project tree data.
+	Access these new components instead of the global variables no longer
+	in existence.
+	(Add_To_Path): New Project_Tree_Ref parameter, to access the new
+	components that were previously global variables.
+
+	* prj-env.ads (Initialize): New Project_Tree_Ref parameter
+	(Set_Mapping_File_Initial_State_To_Empty): New Project_Tree_Ref
+	parameter.
+
+	* prj-nmsc.adb (Compute_Unit_Name): New Project_Tree_Ref parameter to
+	be able to call Set_Mapping_File_Initial_State_To_Empty with it.
+
+	* prj.adb (Initialize): Do not call Prj.Env.Initialize
+	(Reset): Do not call Prj.Env.Initialize. Instead, initialize the new
+	components in the private part of the project tree data.
+
+	* prj.ads (Private_Project_Tree_Data): new components moved from
+	Prj.Env: Current_Source_Path_File, Current_Object_Path_File,
+	Ada_Path_Buffer, Ada_Path_Length, Ada_Prj_Include_File_Set,
+	Ada_Prj_Objects_File_Set, Fill_Mapping_File.
+
+2009-04-24  Vincent Celier  <celier@adacore.com>
+
 	* opt.ads (Unchecked_Shared_Lib_Imports): New Boolean flag.
 
 	* prj-nmsc.adb (Check_Library): No error for imports by shared library

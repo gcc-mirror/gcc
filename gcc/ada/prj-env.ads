@@ -28,9 +28,8 @@
 
 package Prj.Env is
 
-   procedure Initialize;
-   --  Called by Prj.Initialize to perform required initialization steps for
-   --  this package.
+   procedure Initialize (In_Tree : Project_Tree_Ref);
+   --  Initialize global components relative to environment variables
 
    procedure Print_Sources (In_Tree : Project_Tree_Ref);
    --  Output the list of sources, after Project files have been scanned
@@ -58,7 +57,8 @@ package Prj.Env is
    --  for the specified project, and that is not information available in
    --  buildgpr.adb.
 
-   procedure Set_Mapping_File_Initial_State_To_Empty;
+   procedure Set_Mapping_File_Initial_State_To_Empty
+     (In_Tree : Project_Tree_Ref);
    --  When creating a mapping file, create an empty map. This case occurs when
    --  run time source files are found in the project files. This only applies
    --  to the Ada_Only mode.

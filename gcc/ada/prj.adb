@@ -29,7 +29,6 @@ with Ada.Unchecked_Deallocation;
 with Debug;
 with Osint;    use Osint;
 with Prj.Attr;
-with Prj.Env;
 with Prj.Err;  use Prj.Err;
 with Snames;   use Snames;
 with Table;
@@ -408,6 +407,7 @@ package body Prj is
    procedure Language_Changed (Iter : in out Source_Iterator) is
    begin
       Iter.Current  := No_Source;
+
       if Iter.Language_Name /= No_Name then
          while Iter.Language /= null
            and then Iter.Language.Name /= Iter.Language_Name
@@ -421,16 +421,20 @@ package body Prj is
       if Iter.Language = No_Language_Index then
          if Iter.All_Projects then
             Iter.Project := Iter.Project + 1;
+
             if Iter.Project > Project_Table.Last (Iter.In_Tree.Projects) then
                Iter.Project := No_Project;
             else
                Project_Changed (Iter);
             end if;
+
          else
             Iter.Project := No_Project;
          end if;
+
       else
          Iter.Current := Iter.Language.First_Source;
+
          if Iter.Current = No_Source then
             Iter.Language := Iter.Language.Next;
             Language_Changed (Iter);
@@ -610,7 +614,6 @@ package body Prj is
          Name_Buffer (1) := '/';
          Slash_Id := Name_Find;
 
-         Prj.Env.Initialize;
          Prj.Attr.Initialize;
          Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
          Set_Name_Table_Byte (Name_Extends,  Token_Type'Pos (Tok_Extends));
@@ -630,8 +633,10 @@ package body Prj is
      (Data          : Project_Data;
       Language_Name : Name_Id) return Boolean
    is
-      Lang_Ind  : Language_Ptr := Data.Languages;
+      Lang_Ind : Language_Ptr;
+
    begin
+      Lang_Ind := Data.Languages;
       while Lang_Ind /= No_Language_Index loop
          if Lang_Ind.Name = Language_Name then
             return True;
@@ -673,8 +678,7 @@ package body Prj is
 
    function Object_Name
      (Source_File_Name   : File_Name_Type;
-      Object_File_Suffix : Name_Id := No_Name)
-      return File_Name_Type
+      Object_File_Suffix : Name_Id := No_Name) return File_Name_Type
    is
    begin
       if Object_File_Suffix = No_Name then
@@ -706,9 +710,9 @@ package body Prj is
       Default_Body_Suffix : File_Name_Type;
       In_Tree             : Project_Tree_Ref)
    is
-      Lang : Name_Id;
-      Suffix : Array_Element_Id;
-      Found : Boolean := False;
+      Lang    : Name_Id;
+      Suffix  : Array_Element_Id;
+      Found   : Boolean := False;
       Element : Array_Element;
 
    begin
@@ -853,6 +857,7 @@ package body Prj is
    procedure Free (Tree : in out Project_Tree_Ref) is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Project_Tree_Data, Project_Tree_Ref);
+
    begin
       if Tree /= null then
          Name_List_Table.Free (Tree.Name_Lists);
@@ -898,8 +903,6 @@ package body Prj is
 
    procedure Reset (Tree : Project_Tree_Ref) is
    begin
-      Prj.Env.Initialize;
-
       --  Visible tables
 
       Name_List_Table.Init          (Tree.Name_Lists);
@@ -945,6 +948,13 @@ package body Prj is
             In_Tree             => Tree);
          Tree.Private_Part.Default_Naming.Separate_Suffix :=
            Default_Ada_Body_Suffix;
+
+         Tree.Private_Part.Current_Source_Path_File := No_Path;
+         Tree.Private_Part.Current_Object_Path_File := No_Path;
+         Tree.Private_Part.Ada_Path_Length := 0;
+         Tree.Private_Part.Ada_Prj_Include_File_Set := False;
+         Tree.Private_Part.Ada_Prj_Objects_File_Set := False;
+         Tree.Private_Part.Fill_Mapping_File := True;
       end if;
    end Reset;
 

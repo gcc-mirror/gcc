@@ -487,7 +487,8 @@ package body Prj.Nmsc is
       Spec_Suffix     : File_Name_Type;
       Casing          : Casing_Type;
       Kind            : out Source_Kind;
-      Unit            : out Name_Id);
+      Unit            : out Name_Id;
+      In_Tree         : Project_Tree_Ref);
    --  Check whether the file matches the naming scheme. If it does,
    --  compute its unit name. If Unit is set to No_Name on exit, none of the
    --  other out parameters are relevant.
@@ -723,14 +724,14 @@ package body Prj.Nmsc is
       Id.Project             := Project;
       Id.Language            := Lang_Id;
       Id.Lang_Kind           := Lang_Kind;
-      Id.Compiled            :=
-        Lang_Id.Config.Compiler_Driver /= Empty_File_Name;
+      Id.Compiled            := Lang_Id.Config.Compiler_Driver /=
+                                                             Empty_File_Name;
       Id.Kind                := Kind;
       Id.Alternate_Languages := Alternate_Languages;
       Id.Other_Part          := Other_Part;
 
-      Id.Object_Exists := Config.Object_Generated;
-      Id.Object_Linked := Config.Objects_Linked;
+      Id.Object_Exists       := Config.Object_Generated;
+      Id.Object_Linked       := Config.Objects_Linked;
 
       if Other_Part /= No_Source then
          Other_Part.Other_Part := Id;
@@ -906,9 +907,10 @@ package body Prj.Nmsc is
             begin
                Language := Data.Languages;
                while Language /= No_Language_Index loop
+
                   --  If there are no sources for this language, check whether
                   --  there are sources for which this is an alternate
-                  --  language
+                  --  language.
 
                   if Language.First_Source = No_Source then
                      Iter := For_Each_Source (In_Tree => In_Tree,
@@ -2515,11 +2517,11 @@ package body Prj.Nmsc is
                         Data.Decl.Attributes,
                         In_Tree);
 
-      List    : String_List_Id;
-      Element : String_Element;
-      Name    : File_Name_Type;
-      Iter    : Source_Iterator;
-      Source   : Source_Id;
+      List      : String_List_Id;
+      Element   : String_Element;
+      Name      : File_Name_Type;
+      Iter      : Source_Iterator;
+      Source    : Source_Id;
       Project_2 : Project_Id;
 
    begin
@@ -2855,8 +2857,8 @@ package body Prj.Nmsc is
       -----------------------------------
 
       procedure Process_Exceptions_File_Based
-        (Lang_Id        : Language_Ptr;
-         Kind           : Source_Kind)
+        (Lang_Id : Language_Ptr;
+         Kind    : Source_Kind)
       is
          Lang           : constant Name_Id := Lang_Id.Name;
          Exceptions     : Array_Element_Id;
@@ -2949,8 +2951,8 @@ package body Prj.Nmsc is
       -----------------------------------
 
       procedure Process_Exceptions_Unit_Based
-        (Lang_Id        : Language_Ptr;
-         Kind           : Source_Kind)
+        (Lang_Id : Language_Ptr;
+         Kind    : Source_Kind)
       is
          Lang              : constant Name_Id := Lang_Id.Name;
          Exceptions        : Array_Element_Id;
@@ -6419,7 +6421,8 @@ package body Prj.Nmsc is
       Spec_Suffix     : File_Name_Type;
       Casing          : Casing_Type;
       Kind            : out Source_Kind;
-      Unit            : out Name_Id)
+      Unit            : out Name_Id;
+      In_Tree         : Project_Tree_Ref)
    is
       Filename : constant String := Get_Name_String (File_Name);
       Last     : Integer := Filename'Last;
@@ -6575,7 +6578,7 @@ package body Prj.Nmsc is
                   --  If it is potentially a run time source, disable filling
                   --  of the mapping file to avoid warnings.
 
-                  Set_Mapping_File_Initial_State_To_Empty;
+                  Set_Mapping_File_Initial_State_To_Empty (In_Tree);
                end if;
             end if;
          end;
@@ -6684,7 +6687,8 @@ package body Prj.Nmsc is
             Spec_Suffix     => Spec_Suffix_Id_Of (In_Tree, Name_Ada, Naming),
             Casing          => Naming.Casing,
             Kind            => Kind,
-            Unit            => Unit_Name);
+            Unit            => Unit_Name,
+            In_Tree         => In_Tree);
 
          case Kind is
             when Spec       => Unit_Kind := Specification;
@@ -7551,7 +7555,8 @@ package body Prj.Nmsc is
                      Spec_Suffix     => Config.Naming_Data.Spec_Suffix,
                      Casing          => Config.Naming_Data.Casing,
                      Kind            => Kind,
-                     Unit            => Unit);
+                     Unit            => Unit,
+                     In_Tree         => In_Tree);
 
                   if Unit /= No_Name then
                      Language    := Tmp_Lang;
