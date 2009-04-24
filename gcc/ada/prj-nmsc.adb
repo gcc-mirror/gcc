@@ -907,7 +907,6 @@ package body Prj.Nmsc is
                           or else Source.Language = Language;
 
                         Alt_Lang := Source.Alternate_Languages;
-
                         while Alt_Lang /= null loop
                            exit Source_Loop when Alt_Lang.Language = Language;
                            Alt_Lang := Alt_Lang.Next;
@@ -5890,7 +5889,7 @@ package body Prj.Nmsc is
                     File_Name_Type (Object_Dir.Value);
                   Error_Msg
                     (Project, In_Tree,
-                     "the object directory { cannot be found",
+                     "object directory { not found",
                      Data.Location);
                end if;
 
@@ -5968,7 +5967,7 @@ package body Prj.Nmsc is
                Err_Vars.Error_Msg_File_1 := File_Name_Type (Exec_Dir.Value);
                Error_Msg
                  (Project, In_Tree,
-                  "the exec directory { cannot be found",
+                  "exec directory { not found",
                   Data.Location);
             end if;
          end if;
@@ -8607,7 +8606,7 @@ package body Prj.Nmsc is
                   Error_Msg
                     (Project, In_Tree,
                      "?source of spec of unit %% (%%)" &
-                     " cannot be found in this project",
+                     " not found in this project",
                      Location);
                end if;
 
@@ -8619,7 +8618,7 @@ package body Prj.Nmsc is
                   Error_Msg
                     (Project, In_Tree,
                      "?source of body of unit %% (%%)" &
-                     " cannot be found in this project",
+                     " not found in this project",
                      Location);
                end if;
             end if;

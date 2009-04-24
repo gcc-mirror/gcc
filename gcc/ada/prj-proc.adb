@@ -63,6 +63,10 @@ package body Prj.Proc is
    --  Concatenate two strings and returns another string if both
    --  arguments are not null string.
 
+   --  In the following procedures, we are expected to guess the meaning of
+   --  the parameters from their names, this is never a good idea, comments
+   --  should be added precisely defining every formal ???
+
    procedure Add_Attributes
      (Project       : Project_Id;
       Project_Name  : Name_Id;
@@ -71,8 +75,8 @@ package body Prj.Proc is
       Decl          : in out Declarations;
       First         : Attribute_Node_Id;
       Project_Level : Boolean);
-   --  Add all attributes, starting with First, with their default
-   --  values to the package or project with declarations Decl.
+   --  Add all attributes, starting with First, with their default values to
+   --  the package or project with declarations Decl.
 
    procedure Check
      (In_Tree         : Project_Tree_Ref;
@@ -134,12 +138,12 @@ package body Prj.Proc is
       From_Project_Node      : Project_Node_Id;
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Extended_By            : Project_Id);
-   --  Process project with node From_Project_Node in the tree.
-   --  Do nothing if From_Project_Node is Empty_Node.
-   --  If project has already been processed, simply return its project id.
-   --  Otherwise create a new project id, mark it as processed, call itself
-   --  recursively for all imported projects and a extended project, if any.
-   --  Then process the declarative items of the project.
+   --  Process project with node From_Project_Node in the tree. Do nothing if
+   --  From_Project_Node is Empty_Node. If project has already been processed,
+   --  simply return its project id. Otherwise create a new project id, mark it
+   --  as processed, call itself recursively for all imported projects and a
+   --  extended project, if any. Then process the declarative items of the
+   --  project.
 
    type Recursive_Check_Data is record
       In_Tree         : Project_Tree_Ref;
@@ -151,8 +155,8 @@ package body Prj.Proc is
    --  Current_Dir is for optimization purposes, avoiding extra system calls.
 
    procedure Recursive_Check
-     (Project   : Project_Id;
-      Data      : in out Recursive_Check_Data);
+     (Project : Project_Id;
+      Data    : in out Recursive_Check_Data);
    --  Check_Naming_Scheme for the project
 
    ---------
@@ -1608,12 +1612,12 @@ package body Prj.Proc is
                      if Orig_Array = No_Array then
                         if Error_Report = null then
                            Error_Msg
-                             ("associative array value cannot be found",
+                             ("associative array value not found",
                               Location_Of
                                 (Current_Item, From_Project_Node_Tree));
                         else
                            Error_Report
-                             ("associative array value cannot be found",
+                             ("associative array value not found",
                               Project, In_Tree);
                         end if;
 
@@ -2469,8 +2473,8 @@ package body Prj.Proc is
    ---------------------
 
    procedure Recursive_Check
-     (Project   : Project_Id;
-      Data      : in out Recursive_Check_Data)
+     (Project : Project_Id;
+      Data    : in out Recursive_Check_Data)
    is
    begin
       if Verbose_Mode then
