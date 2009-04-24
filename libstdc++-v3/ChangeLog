@@ -1,3 +1,14 @@
+2009-04-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* xml/authors.xml: Add space.
+	* xml/faq.xml: Update links.
+	* xml/manual/intro.xml: Same.
+	* xml/manual/abi.xml: Update.
+	* xml/manual/appendix_contributing.xml: Fix typo.
+	* xml/manual/status_cxxtr1.xml: Update links.
+	* xml/manual/status_cxx1998.xml: Same.
+	* xml/manual/status_cxx200x.xml: Same.
+
 2009-04-22  Jan Hubicka  <jh@suse.cz>
 
 	* include/tr1_impl/array (at): Do not use builtin_expect.
@@ -6878,9 +6889,6 @@
 	of debug.
 	* include/Makefile.in: Regenerate.
 	* include/precompiled/stdc++.h: Add.
-
-	* doc/xml/api.xml: Add gcc-4.4 link.
-	* doc/html/api.html: Regenerate.
 
 2009-04-06  Benjamin Kosnik  <bkoz@redhat.com>
 
