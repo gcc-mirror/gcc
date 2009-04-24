@@ -2269,7 +2269,7 @@ begin
                --  indicate to gnatstub the name of the body file with
                --  a -o switch.
 
-               if Body_Suffix_Id_Of (Project_Tree, "ada", Data.Naming) /=
+               if Body_Suffix_Id_Of (Project_Tree, Name_Ada, Data.Naming) /=
                     Prj.Default_Ada_Spec_Suffix
                then
                   if File_Index /= 0 then
@@ -2281,7 +2281,7 @@ begin
                      begin
                         Get_Name_String
                           (Spec_Suffix_Id_Of
-                             (Project_Tree, "ada", Data.Naming));
+                             (Project_Tree, Name_Ada, Data.Naming));
 
                         if Spec'Length > Name_Len
                           and then Spec (Last - Name_Len + 1 .. Last) =
@@ -2290,7 +2290,7 @@ begin
                            Last := Last - Name_Len;
                            Get_Name_String
                              (Body_Suffix_Id_Of
-                                (Project_Tree, "ada", Data.Naming));
+                                (Project_Tree, Name_Ada, Data.Naming));
                            Last_Switches.Increment_Last;
                            Last_Switches.Table (Last_Switches.Last) :=
                              new String'("-o");
