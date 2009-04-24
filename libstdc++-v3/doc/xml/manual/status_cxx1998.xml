@@ -1,4 +1,4 @@
-<sect2 id="manual.intro.status.standard.1998" xreflabel="ISO C++ 1998">
+<sect2 id="status.iso.1998" xreflabel="ISO C++ 1998">
 <?dbhtml filename="status_iso_cxx1998.html"?>
  
 <sect2info>
@@ -14,7 +14,7 @@
 
 <title>C++ 1998/2003</title>
 
-<sect3 id="standard.1998.status" xreflabel="Implementation Status">
+<sect3 id="iso.1998.status" xreflabel="Implementation Status">
   <title>Implementation Status</title>
 
 <para>
@@ -1032,7 +1032,7 @@ particular release.
 </table>
 </sect3>
 
-<sect3 id="standard.1998.specific" xreflabel="Implementation Specific">
+<sect3 id="iso.1998.specific" xreflabel="Implementation Specific">
   <title>Implementation Specific Behavior</title>
 
    <para>

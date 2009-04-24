@@ -21,6 +21,16 @@
 -->
 
   <author>
+    <firstname></firstname>
+    <surname></surname>
+
+    <authorblurb>
+      <para>
+      </para>
+    </authorblurb>
+  </author>
+
+  <author>
     <firstname>Paolo</firstname>
     <surname>Carlini</surname>
 

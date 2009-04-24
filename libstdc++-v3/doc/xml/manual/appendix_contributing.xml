@@ -1102,7 +1102,7 @@ indicate a place that may require attention for multi-thread safety.
 	For validating the XML document, you'll need
 	something like <command>xmllint</command> and access to the
 	DocBook DTD. These are provided
-	by a vendor package like <filename>lixml2</filename>.
+	by a vendor package like <filename>libxml2</filename>.
       </para>
 
       <para>
