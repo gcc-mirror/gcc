@@ -577,15 +577,14 @@ substring reference as described in the subsection above.
 @node Type-bound Procedures
 @section Type-bound Procedures
 
-Type-bound procedures are stored in the @code{sym_root} of the namespace
+Type-bound procedures are stored in the @code{tb_sym_root} of the namespace
 @code{f2k_derived} associated with the derived-type symbol as @code{gfc_symtree}
 nodes.  The name and symbol of these symtrees corresponds to the binding-name
 of the procedure, i.e. the name that is used to call it from the context of an
 object of the derived-type.
 
-In addition, those and only those symtrees representing a type-bound procedure
-have their @code{typebound} member set; @code{typebound} points to a struct of
-type @code{gfc_typebound_proc} containing the additional data needed:  The
+In addition, this type of symtrees stores in @code{n.tb} a struct of type
+@code{gfc_typebound_proc} containing the additional data needed:  The
 binding attributes (like @code{PASS} and @code{NOPASS}, @code{NON_OVERRIDABLE} 
 or the access-specifier), the binding's target(s) and, if the current binding
 overrides or extends an inherited binding of the same name, @code{overridden}

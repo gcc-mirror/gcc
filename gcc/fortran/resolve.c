@@ -8283,22 +8283,22 @@ check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
   gfc_formal_arglist* old_formal;
 
   /* This procedure should only be called for non-GENERIC proc.  */
-  gcc_assert (!proc->typebound->is_generic);
+  gcc_assert (!proc->n.tb->is_generic);
 
   /* If the overwritten procedure is GENERIC, this is an error.  */
-  if (old->typebound->is_generic)
+  if (old->n.tb->is_generic)
     {
       gfc_error ("Can't overwrite GENERIC '%s' at %L",
-		 old->name, &proc->typebound->where);
+		 old->name, &proc->n.tb->where);
       return FAILURE;
     }
 
-  where = proc->typebound->where;
-  proc_target = proc->typebound->u.specific->n.sym;
-  old_target = old->typebound->u.specific->n.sym;
+  where = proc->n.tb->where;
+  proc_target = proc->n.tb->u.specific->n.sym;
+  old_target = old->n.tb->u.specific->n.sym;
 
   /* Check that overridden binding is not NON_OVERRIDABLE.  */
-  if (old->typebound->non_overridable)
+  if (old->n.tb->non_overridable)
     {
       gfc_error ("'%s' at %L overrides a procedure binding declared"
 		 " NON_OVERRIDABLE", proc->name, &where);
@@ -8306,7 +8306,7 @@ check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
     }
 
   /* It's an error to override a non-DEFERRED procedure with a DEFERRED one.  */
-  if (!old->typebound->deferred && proc->typebound->deferred)
+  if (!old->n.tb->deferred && proc->n.tb->deferred)
     {
       gfc_error ("'%s' at %L must not be DEFERRED as it overrides a"
 		 " non-DEFERRED binding", proc->name, &where);
@@ -8370,8 +8370,8 @@ check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 
   /* If the overridden binding is PUBLIC, the overriding one must not be
      PRIVATE.  */
-  if (old->typebound->access == ACCESS_PUBLIC
-      && proc->typebound->access == ACCESS_PRIVATE)
+  if (old->n.tb->access == ACCESS_PUBLIC
+      && proc->n.tb->access == ACCESS_PRIVATE)
     {
       gfc_error ("'%s' at %L overrides a PUBLIC procedure and must not be"
 		 " PRIVATE", proc->name, &where);
@@ -8383,20 +8383,20 @@ check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
      bindings as at least the overridden one might not yet be resolved and we
      need those positions in the check below.  */
   proc_pass_arg = old_pass_arg = 0;
-  if (!proc->typebound->nopass && !proc->typebound->pass_arg)
+  if (!proc->n.tb->nopass && !proc->n.tb->pass_arg)
     proc_pass_arg = 1;
-  if (!old->typebound->nopass && !old->typebound->pass_arg)
+  if (!old->n.tb->nopass && !old->n.tb->pass_arg)
     old_pass_arg = 1;
   argpos = 1;
   for (proc_formal = proc_target->formal, old_formal = old_target->formal;
        proc_formal && old_formal;
        proc_formal = proc_formal->next, old_formal = old_formal->next)
     {
-      if (proc->typebound->pass_arg
-	  && !strcmp (proc->typebound->pass_arg, proc_formal->sym->name))
+      if (proc->n.tb->pass_arg
+	  && !strcmp (proc->n.tb->pass_arg, proc_formal->sym->name))
 	proc_pass_arg = argpos;
-      if (old->typebound->pass_arg
-	  && !strcmp (old->typebound->pass_arg, old_formal->sym->name))
+      if (old->n.tb->pass_arg
+	  && !strcmp (old->n.tb->pass_arg, old_formal->sym->name))
 	old_pass_arg = argpos;
 
       /* Check that the names correspond.  */
@@ -8432,7 +8432,7 @@ check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 
   /* If the overridden binding is NOPASS, the overriding one must also be
      NOPASS.  */
-  if (old->typebound->nopass && !proc->typebound->nopass)
+  if (old->n.tb->nopass && !proc->n.tb->nopass)
     {
       gfc_error ("'%s' at %L overrides a NOPASS binding and must also be"
 		 " NOPASS", proc->name, &where);
@@ -8441,9 +8441,9 @@ check_typebound_override (gfc_symtree* proc, gfc_symtree* old)
 
   /* If the overridden binding is PASS(x), the overriding one must also be
      PASS and the passed-object dummy arguments must correspond.  */
-  if (!old->typebound->nopass)
+  if (!old->n.tb->nopass)
     {
-      if (proc->typebound->nopass)
+      if (proc->n.tb->nopass)
 	{
 	  gfc_error ("'%s' at %L overrides a binding with PASS and must also be"
 		     " PASS", proc->name, &where);
@@ -8512,26 +8512,26 @@ resolve_typebound_generic (gfc_symbol* derived, gfc_symtree* st)
   gfc_symtree* inherited;
   locus where;
 
-  gcc_assert (st->typebound);
-  gcc_assert (st->typebound->is_generic);
+  gcc_assert (st->n.tb);
+  gcc_assert (st->n.tb->is_generic);
 
-  where = st->typebound->where;
+  where = st->n.tb->where;
   super_type = gfc_get_derived_super_type (derived);
 
   /* Find the overridden binding if any.  */
-  st->typebound->overridden = NULL;
+  st->n.tb->overridden = NULL;
   if (super_type)
     {
       gfc_symtree* overridden;
       overridden = gfc_find_typebound_proc (super_type, NULL, st->name, true);
 
-      if (overridden && overridden->typebound)
-	st->typebound->overridden = overridden->typebound;
+      if (overridden && overridden->n.tb)
+	st->n.tb->overridden = overridden->n.tb;
     }
 
   /* Try to find the specific bindings for the symtrees in our target-list.  */
-  gcc_assert (st->typebound->u.generic);
-  for (target = st->typebound->u.generic; target; target = target->next)
+  gcc_assert (st->n.tb->u.generic);
+  for (target = st->n.tb->u.generic; target; target = target->next)
     if (!target->specific)
       {
 	gfc_typebound_proc* overridden_tbp;
@@ -8541,9 +8541,9 @@ resolve_typebound_generic (gfc_symbol* derived, gfc_symtree* st)
 	target_name = target->specific_st->name;
 
 	/* Defined for this type directly.  */
-	if (target->specific_st->typebound)
+	if (target->specific_st->n.tb)
 	  {
-	    target->specific = target->specific_st->typebound;
+	    target->specific = target->specific_st->n.tb;
 	    goto specific_found;
 	  }
 
@@ -8555,8 +8555,8 @@ resolve_typebound_generic (gfc_symbol* derived, gfc_symtree* st)
 
 	    if (inherited)
 	      {
-		gcc_assert (inherited->typebound);
-		target->specific = inherited->typebound;
+		gcc_assert (inherited->n.tb);
+		target->specific = inherited->n.tb;
 		goto specific_found;
 	      }
 	  }
@@ -8579,14 +8579,14 @@ specific_found:
 	  }
 
 	/* Check those already resolved on this type directly.  */
-	for (g = st->typebound->u.generic; g; g = g->next)
+	for (g = st->n.tb->u.generic; g; g = g->next)
 	  if (g != target && g->specific
 	      && check_generic_tbp_ambiguity (target, g, st->name, where)
 		  == FAILURE)
 	    return FAILURE;
 
 	/* Check for ambiguity with inherited specific targets.  */
-	for (overridden_tbp = st->typebound->overridden; overridden_tbp;
+	for (overridden_tbp = st->n.tb->overridden; overridden_tbp;
 	     overridden_tbp = overridden_tbp->overridden)
 	  if (overridden_tbp->is_generic)
 	    {
@@ -8601,7 +8601,7 @@ specific_found:
       }
 
   /* If we attempt to "overwrite" a specific binding, this is an error.  */
-  if (st->typebound->overridden && !st->typebound->overridden->is_generic)
+  if (st->n.tb->overridden && !st->n.tb->overridden->is_generic)
     {
       gfc_error ("GENERIC '%s' at %L can't overwrite specific binding with"
 		 " the same name", st->name, &where);
@@ -8610,9 +8610,10 @@ specific_found:
 
   /* Take the SUBROUTINE/FUNCTION attributes of the first specific target, as
      all must have the same attributes here.  */
-  first_target = st->typebound->u.generic->specific->u.specific;
-  st->typebound->subroutine = first_target->n.sym->attr.subroutine;
-  st->typebound->function = first_target->n.sym->attr.function;
+  first_target = st->n.tb->u.generic->specific->u.specific;
+  gcc_assert (first_target);
+  st->n.tb->subroutine = first_target->n.sym->attr.subroutine;
+  st->n.tb->function = first_target->n.sym->attr.function;
 
   return SUCCESS;
 }
@@ -8632,12 +8633,17 @@ resolve_typebound_procedure (gfc_symtree* stree)
   gfc_symbol* super_type;
   gfc_component* comp;
 
-  /* If this is no type-bound procedure, just return.  */
-  if (!stree->typebound)
+  gcc_assert (stree);
+
+  /* Undefined specific symbol from GENERIC target definition.  */
+  if (!stree->n.tb)
+    return;
+
+  if (stree->n.tb->error)
     return;
 
   /* If this is a GENERIC binding, use that routine.  */
-  if (stree->typebound->is_generic)
+  if (stree->n.tb->is_generic)
     {
       if (resolve_typebound_generic (resolve_bindings_derived, stree)
 	    == FAILURE)
@@ -8646,27 +8652,27 @@ resolve_typebound_procedure (gfc_symtree* stree)
     }
 
   /* Get the target-procedure to check it.  */
-  gcc_assert (!stree->typebound->is_generic);
-  gcc_assert (stree->typebound->u.specific);
-  proc = stree->typebound->u.specific->n.sym;
-  where = stree->typebound->where;
+  gcc_assert (!stree->n.tb->is_generic);
+  gcc_assert (stree->n.tb->u.specific);
+  proc = stree->n.tb->u.specific->n.sym;
+  where = stree->n.tb->where;
 
   /* Default access should already be resolved from the parser.  */
-  gcc_assert (stree->typebound->access != ACCESS_UNKNOWN);
+  gcc_assert (stree->n.tb->access != ACCESS_UNKNOWN);
 
   /* It should be a module procedure or an external procedure with explicit
      interface.  For DEFERRED bindings, abstract interfaces are ok as well.  */
   if ((!proc->attr.subroutine && !proc->attr.function)
       || (proc->attr.proc != PROC_MODULE
 	  && proc->attr.if_source != IFSRC_IFBODY)
-      || (proc->attr.abstract && !stree->typebound->deferred))
+      || (proc->attr.abstract && !stree->n.tb->deferred))
     {
       gfc_error ("'%s' must be a module procedure or an external procedure with"
 		 " an explicit interface at %L", proc->name, &where);
       goto error;
     }
-  stree->typebound->subroutine = proc->attr.subroutine;
-  stree->typebound->function = proc->attr.function;
+  stree->n.tb->subroutine = proc->attr.subroutine;
+  stree->n.tb->function = proc->attr.function;
 
   /* Find the super-type of the current derived type.  We could do this once and
      store in a global if speed is needed, but as long as not I believe this is
@@ -8675,9 +8681,9 @@ resolve_typebound_procedure (gfc_symtree* stree)
 
   /* If PASS, resolve and check arguments if not already resolved / loaded
      from a .mod file.  */
-  if (!stree->typebound->nopass && stree->typebound->pass_arg_num == 0)
+  if (!stree->n.tb->nopass && stree->n.tb->pass_arg_num == 0)
     {
-      if (stree->typebound->pass_arg)
+      if (stree->n.tb->pass_arg)
 	{
 	  gfc_formal_arglist* i;
 
@@ -8685,23 +8691,23 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	     and look for it.  */
 
 	  me_arg = NULL;
-	  stree->typebound->pass_arg_num = 1;
+	  stree->n.tb->pass_arg_num = 1;
 	  for (i = proc->formal; i; i = i->next)
 	    {
-	      if (!strcmp (i->sym->name, stree->typebound->pass_arg))
+	      if (!strcmp (i->sym->name, stree->n.tb->pass_arg))
 		{
 		  me_arg = i->sym;
 		  break;
 		}
-	      ++stree->typebound->pass_arg_num;
+	      ++stree->n.tb->pass_arg_num;
 	    }
 
 	  if (!me_arg)
 	    {
 	      gfc_error ("Procedure '%s' with PASS(%s) at %L has no"
 			 " argument '%s'",
-			 proc->name, stree->typebound->pass_arg, &where,
-			 stree->typebound->pass_arg);
+			 proc->name, stree->n.tb->pass_arg, &where,
+			 stree->n.tb->pass_arg);
 	      goto error;
 	    }
 	}
@@ -8709,7 +8715,7 @@ resolve_typebound_procedure (gfc_symtree* stree)
 	{
 	  /* Otherwise, take the first one; there should in fact be at least
 	     one.  */
-	  stree->typebound->pass_arg_num = 1;
+	  stree->n.tb->pass_arg_num = 1;
 	  if (!proc->formal)
 	    {
 	      gfc_error ("Procedure '%s' with PASS at %L must have at"
@@ -8737,15 +8743,15 @@ resolve_typebound_procedure (gfc_symtree* stree)
 
   /* If we are extending some type, check that we don't override a procedure
      flagged NON_OVERRIDABLE.  */
-  stree->typebound->overridden = NULL;
+  stree->n.tb->overridden = NULL;
   if (super_type)
     {
       gfc_symtree* overridden;
       overridden = gfc_find_typebound_proc (super_type, NULL,
 					    stree->name, true);
 
-      if (overridden && overridden->typebound)
-	stree->typebound->overridden = overridden->typebound;
+      if (overridden && overridden->n.tb)
+	stree->n.tb->overridden = overridden->n.tb;
 
       if (overridden && check_typebound_override (stree, overridden) == FAILURE)
 	goto error;
@@ -8770,23 +8776,23 @@ resolve_typebound_procedure (gfc_symtree* stree)
       goto error;
     }
 
-  stree->typebound->error = 0;
+  stree->n.tb->error = 0;
   return;
 
 error:
   resolve_bindings_result = FAILURE;
-  stree->typebound->error = 1;
+  stree->n.tb->error = 1;
 }
 
 static gfc_try
 resolve_typebound_procedures (gfc_symbol* derived)
 {
-  if (!derived->f2k_derived || !derived->f2k_derived->sym_root)
+  if (!derived->f2k_derived || !derived->f2k_derived->tb_sym_root)
     return SUCCESS;
 
   resolve_bindings_derived = derived;
   resolve_bindings_result = SUCCESS;
-  gfc_traverse_symtree (derived->f2k_derived->sym_root,
+  gfc_traverse_symtree (derived->f2k_derived->tb_sym_root,
 			&resolve_typebound_procedure);
 
   return resolve_bindings_result;
@@ -8828,12 +8834,12 @@ ensure_not_abstract_walker (gfc_symbol* sub, gfc_symtree* st)
   if (ensure_not_abstract_walker (sub, st->right) == FAILURE)
     return FAILURE;
 
-  if (st->typebound && st->typebound->deferred)
+  if (st->n.tb && st->n.tb->deferred)
     {
       gfc_symtree* overriding;
       overriding = gfc_find_typebound_proc (sub, NULL, st->name, true);
-      gcc_assert (overriding && overriding->typebound);
-      if (overriding->typebound->deferred)
+      gcc_assert (overriding && overriding->n.tb);
+      if (overriding->n.tb->deferred)
 	{
 	  gfc_error ("Derived-type '%s' declared at %L must be ABSTRACT because"
 		     " '%s' is DEFERRED and not overridden",
@@ -8861,7 +8867,7 @@ ensure_not_abstract (gfc_symbol* sub, gfc_symbol* ancestor)
   if (ancestor->f2k_derived)
     {
       gfc_try t;
-      t = ensure_not_abstract_walker (sub, ancestor->f2k_derived->sym_root);
+      t = ensure_not_abstract_walker (sub, ancestor->f2k_derived->tb_sym_root);
       if (t == FAILURE)
 	return FAILURE;
     }

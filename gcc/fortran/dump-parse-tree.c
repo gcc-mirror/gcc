@@ -671,40 +671,40 @@ show_components (gfc_symbol *sym)
 static void
 show_typebound (gfc_symtree* st)
 {
-  if (!st->typebound)
+  if (!st->n.tb)
     return;
 
   show_indent ();
 
-  if (st->typebound->is_generic)
+  if (st->n.tb->is_generic)
     fputs ("GENERIC", dumpfile);
   else
     {
       fputs ("PROCEDURE, ", dumpfile);
-      if (st->typebound->nopass)
+      if (st->n.tb->nopass)
 	fputs ("NOPASS", dumpfile);
       else
 	{
-	  if (st->typebound->pass_arg)
-	    fprintf (dumpfile, "PASS(%s)", st->typebound->pass_arg);
+	  if (st->n.tb->pass_arg)
+	    fprintf (dumpfile, "PASS(%s)", st->n.tb->pass_arg);
 	  else
 	    fputs ("PASS", dumpfile);
 	}
-      if (st->typebound->non_overridable)
+      if (st->n.tb->non_overridable)
 	fputs (", NON_OVERRIDABLE", dumpfile);
     }
 
-  if (st->typebound->access == ACCESS_PUBLIC)
+  if (st->n.tb->access == ACCESS_PUBLIC)
     fputs (", PUBLIC", dumpfile);
   else
     fputs (", PRIVATE", dumpfile);
 
   fprintf (dumpfile, " :: %s => ", st->n.sym->name);
 
-  if (st->typebound->is_generic)
+  if (st->n.tb->is_generic)
     {
       gfc_tbp_generic* g;
-      for (g = st->typebound->u.generic; g; g = g->next)
+      for (g = st->n.tb->u.generic; g; g = g->next)
 	{
 	  fputs (g->specific_st->name, dumpfile);
 	  if (g->next)
@@ -712,7 +712,7 @@ show_typebound (gfc_symtree* st)
 	}
     }
   else
-    fputs (st->typebound->u.specific->n.sym->name, dumpfile);
+    fputs (st->n.tb->u.specific->n.sym->name, dumpfile);
 }
 
 static void

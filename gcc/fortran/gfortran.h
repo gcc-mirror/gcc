@@ -1049,8 +1049,6 @@ typedef struct gfc_typebound_proc
 }
 gfc_typebound_proc;
 
-#define gfc_get_typebound_proc() XCNEW (gfc_typebound_proc)
-
 
 /* Symbol nodes.  These are important things.  They are what the
    standard refers to as "entities".  The possibly multiple names that
@@ -1215,11 +1213,9 @@ typedef struct gfc_symtree
     gfc_symbol *sym;		/* Symbol associated with this node */
     gfc_user_op *uop;
     gfc_common_head *common;
+    gfc_typebound_proc *tb;
   }
   n;
-
-  /* Data for type-bound procedures; NULL if no type-bound procedure.  */
-  gfc_typebound_proc* typebound;
 }
 gfc_symtree;
 
@@ -1248,6 +1244,9 @@ typedef struct gfc_namespace
   gfc_symtree *uop_root;
   /* Tree containing all the common blocks.  */
   gfc_symtree *common_root;
+
+  /* Tree containing type-bound procedures.  */
+  gfc_symtree *tb_sym_root;
   /* Linked list of finalizer procedures.  */
   struct gfc_finalizer *finalizers;
 
@@ -2370,8 +2369,10 @@ void gfc_free_dt_list (void);
 gfc_gsymbol *gfc_get_gsymbol (const char *);
 gfc_gsymbol *gfc_find_gsymbol (gfc_gsymbol *, const char *);
 
+gfc_typebound_proc* gfc_get_typebound_proc (void);
 gfc_symbol* gfc_get_derived_super_type (gfc_symbol*);
 gfc_symtree* gfc_find_typebound_proc (gfc_symbol*, gfc_try*, const char*, bool);
+gfc_symtree* gfc_get_tbp_symtree (gfc_symtree**, const char*);
 
 void gfc_copy_formal_args (gfc_symbol *, gfc_symbol *);
 void gfc_copy_formal_args_intr (gfc_symbol *, gfc_intrinsic_sym *);

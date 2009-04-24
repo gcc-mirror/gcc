@@ -1784,19 +1784,19 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag)
 	  gcc_assert (!tail || !tail->next);
 	  gcc_assert (primary->expr_type == EXPR_VARIABLE);
 
-	  if (tbp->typebound->is_generic)
+	  if (tbp->n.tb->is_generic)
 	    tbp_sym = NULL;
 	  else
-	    tbp_sym = tbp->typebound->u.specific->n.sym;
+	    tbp_sym = tbp->n.tb->u.specific->n.sym;
 
 	  primary->expr_type = EXPR_COMPCALL;
-	  primary->value.compcall.tbp = tbp->typebound;
+	  primary->value.compcall.tbp = tbp->n.tb;
 	  primary->value.compcall.name = tbp->name;
 	  gcc_assert (primary->symtree->n.sym->attr.referenced);
 	  if (tbp_sym)
 	    primary->ts = tbp_sym->ts;
 
-	  m = gfc_match_actual_arglist (tbp->typebound->subroutine,
+	  m = gfc_match_actual_arglist (tbp->n.tb->subroutine,
 					&primary->value.compcall.actual);
 	  if (m == MATCH_ERROR)
 	    return MATCH_ERROR;
@@ -1810,8 +1810,6 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag)
 		  return MATCH_ERROR;
 		}
 	    }
-
-	  gfc_set_sym_referenced (tbp->n.sym);
 
 	  break;
 	}
