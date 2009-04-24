@@ -351,13 +351,17 @@ package body Prj.Nmsc is
    --  Debug_Name is the name representing the list, and is used for debug
    --  output only.
 
-   procedure Get_Path_Names_And_Record_Ada_Sources
-     (Project     : Project_Id;
-      In_Tree     : Project_Tree_Ref;
-      Data        : in out Project_Data;
-      Current_Dir : String);
-   --  Find the path names of the source files in the Source_Names table
-   --  in the source directories and record those that are Ada sources.
+   procedure Find_Ada_Sources
+     (Project               : Project_Id;
+      In_Tree               : Project_Tree_Ref;
+      Data                  : in out Project_Data;
+      Current_Dir           : String;
+      Explicit_Sources_Only : Boolean);
+   --  Find all Ada sources by traversing all source directories.
+   --  If Explicit_Sources_Only is True, then the sources found must belong to
+   --  the list of sources specified explicitly in the project file.
+   --  If Explicit_Sources_Only is False, then all sources matching the naming
+   --  scheme are recorded.
 
    function Compute_Directory_Last (Dir : String) return Natural;
    --  Return the index of the last significant character in Dir. This is used
@@ -371,15 +375,6 @@ package body Prj.Nmsc is
    --  Output an error message. If Error_Report is null, simply call
    --  Prj.Err.Error_Msg. Otherwise, disregard Flag_Location and use
    --  Error_Report.
-
-   procedure Find_Ada_Sources
-     (Project      : Project_Id;
-      In_Tree      : Project_Tree_Ref;
-      Data         : in out Project_Data;
-      Current_Dir  : String);
-   --  Find all the Ada sources in all of the source directories of a project
-   --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it.
 
    procedure Search_Directories
      (Project         : Project_Id;
@@ -468,16 +463,15 @@ package body Prj.Nmsc is
    --  Get the list of sources from a text file and put them in hash table
    --  Source_Names.
 
-   procedure Find_Explicit_Sources
+   procedure Find_Sources
      (Current_Dir : String;
       Project     : Project_Id;
       In_Tree     : Project_Tree_Ref;
       Data        : in out Project_Data);
    --  Process the Source_Files and Source_List_File attributes, and store
    --  the list of source files into the Source_Names htable.
-   --
-   --  Lang indicates which language is being processed when in Ada_Only mode
-   --  (all languages are processed anyway when in Multi_Language mode).
+   --  When these attributes are not defined, find all files matching the
+   --  naming schemes in the source directories.
 
    procedure Compute_Unit_Name
      (File_Name       : File_Name_Type;
@@ -5395,131 +5389,6 @@ package body Prj.Nmsc is
       Error_Report (Error_Buffer (1 .. Error_Last), Project, In_Tree);
    end Error_Msg;
 
-   ----------------------
-   -- Find_Ada_Sources --
-   ----------------------
-
-   procedure Find_Ada_Sources
-     (Project      : Project_Id;
-      In_Tree      : Project_Tree_Ref;
-      Data         : in out Project_Data;
-      Current_Dir  : String)
-   is
-      Source_Dir      : String_List_Id := Data.Source_Dirs;
-      Element         : String_Element;
-      Dir             : Dir_Type;
-      Current_Source  : String_List_Id := Nil_String;
-      Source_Recorded : Boolean := False;
-
-   begin
-      if Current_Verbosity = High then
-         Write_Line ("Looking for sources:");
-      end if;
-
-      --  For each subdirectory
-
-      while Source_Dir /= Nil_String loop
-         begin
-            Source_Recorded := False;
-            Element := In_Tree.String_Elements.Table (Source_Dir);
-            if Element.Value /= No_Name then
-               Get_Name_String (Element.Display_Value);
-
-               declare
-                  Source_Directory : constant String :=
-                    Name_Buffer (1 .. Name_Len) & Directory_Separator;
-                  Dir_Last  : constant Natural :=
-                     Compute_Directory_Last (Source_Directory);
-
-               begin
-                  if Current_Verbosity = High then
-                     Write_Attr ("Source_Dir", Source_Directory);
-                  end if;
-
-                  --  We look at every entry in the source directory
-
-                  Open (Dir,
-                        Source_Directory (Source_Directory'First .. Dir_Last));
-
-                  loop
-                     Read (Dir, Name_Buffer, Name_Len);
-
-                     if Current_Verbosity = High then
-                        Write_Str  (" Checking ");
-                        Write_Line (Name_Buffer (1 .. Name_Len));
-                     end if;
-
-                     exit when Name_Len = 0;
-
-                     declare
-                        File_Name : constant File_Name_Type := Name_Find;
-
-                        --  ??? We could probably optimize the following call:
-                        --  we need to resolve links only once for the
-                        --  directory itself, and then do a single call to
-                        --  readlink() for each file. Unfortunately that would
-                        --  require a change in Normalize_Pathname so that it
-                        --  has the option of not resolving links for its
-                        --  Directory parameter, only for Name.
-
-                        Path : constant String :=
-                                 Normalize_Pathname
-                                   (Name      => Name_Buffer (1 .. Name_Len),
-                                    Directory =>
-                                      Source_Directory
-                                        (Source_Directory'First .. Dir_Last),
-                                    Resolve_Links =>
-                                      Opt.Follow_Links_For_Files,
-                                    Case_Sensitive => True);
-
-                        Path_Name : Path_Name_Type;
-
-                     begin
-                        Name_Len := Path'Length;
-                        Name_Buffer (1 .. Name_Len) := Path;
-                        Path_Name := Name_Find;
-
-                        --  We attempt to register it as a source. However,
-                        --  there is no error if the file does not contain a
-                        --  valid source. But there is an error if we have a
-                        --  duplicate unit name.
-
-                        Record_Ada_Source
-                          (File_Name       => File_Name,
-                           Path_Name       => Path_Name,
-                           Project         => Project,
-                           In_Tree         => In_Tree,
-                           Data            => Data,
-                           Location        => No_Location,
-                           Current_Source  => Current_Source,
-                           Source_Recorded => Source_Recorded,
-                           Current_Dir     => Current_Dir);
-                     end;
-                  end loop;
-
-                  Close (Dir);
-               end;
-            end if;
-
-         exception
-            when Directory_Error =>
-               null;
-         end;
-
-         if Source_Recorded then
-            In_Tree.String_Elements.Table (Source_Dir).Flag :=
-              True;
-         end if;
-
-         Source_Dir := Element.Next;
-      end loop;
-
-      if Current_Verbosity = High then
-         Write_Line ("end Looking for sources.");
-      end if;
-
-   end Find_Ada_Sources;
-
    --------------------------------
    -- Free_Ada_Naming_Exceptions --
    --------------------------------
@@ -7021,11 +6890,11 @@ package body Prj.Nmsc is
       end if;
    end Find_Excluded_Sources;
 
-   ---------------------------
-   -- Find_Explicit_Sources --
-   ---------------------------
+   ------------------
+   -- Find_Sources --
+   ------------------
 
-   procedure Find_Explicit_Sources
+   procedure Find_Sources
      (Current_Dir : String;
       Project     : Project_Id;
       In_Tree     : Project_Tree_Ref;
@@ -7042,6 +6911,7 @@ package body Prj.Nmsc is
                               Data.Decl.Attributes,
                               In_Tree);
       Name_Loc         : Name_Location;
+      Has_Explicit_Sources : Boolean;
 
    begin
       pragma Assert (Sources.Kind = List, "Source_Files is not a list");
@@ -7142,10 +7012,7 @@ package body Prj.Nmsc is
                Current := Element.Next;
             end loop;
 
-            if Get_Mode = Ada_Only then
-               Get_Path_Names_And_Record_Ada_Sources
-                 (Project, In_Tree, Data, Current_Dir);
-            end if;
+            Has_Explicit_Sources := True;
          end;
 
          --  If we have no Source_Files attribute, check the Source_List_File
@@ -7162,6 +7029,8 @@ package body Prj.Nmsc is
                 (File_Name_Type (Source_List_File.Value), Data.Directory.Name);
 
          begin
+            Has_Explicit_Sources := True;
+
             if Source_File_Path_Name'Length = 0 then
                Err_Vars.Error_Msg_File_1 :=
                  File_Name_Type (Source_List_File.Value);
@@ -7174,13 +7043,6 @@ package body Prj.Nmsc is
                Get_Sources_From_File
                  (Source_File_Path_Name, Source_List_File.Location,
                   Project, In_Tree);
-
-               if Get_Mode = Ada_Only then
-                  --  Look in the source directories to find those sources
-
-                  Get_Path_Names_And_Record_Ada_Sources
-                    (Project, In_Tree, Data, Current_Dir);
-               end if;
             end if;
          end;
 
@@ -7189,69 +7051,83 @@ package body Prj.Nmsc is
          --  specified. Find all the files that satisfy the naming
          --  scheme in all the source directories.
 
-         if Get_Mode = Ada_Only then
-            Find_Ada_Sources (Project, In_Tree, Data, Current_Dir);
-         end if;
+         Has_Explicit_Sources := False;
       end if;
 
-      if Get_Mode = Multi_Language then
+      if Get_Mode = Ada_Only then
+         Find_Ada_Sources
+           (Project, In_Tree, Data, Current_Dir,
+            Explicit_Sources_Only => Has_Explicit_Sources);
+
+      else
          Search_Directories
            (Project, In_Tree, Data,
             For_All_Sources =>
               Sources.Default and then Source_List_File.Default);
+      end if;
 
-         --  Check if all exceptions have been found.
-         --  For Ada, it is an error if an exception is not found.
-         --  For other language, the source is simply removed.
+      --  Check if all exceptions have been found.
+      --  For Ada, it is an error if an exception is not found.
+      --  For other language, the source is simply removed.
 
+      declare
+         Source : Source_Id;
+         Iter   : Source_Iterator;
+
+      begin
+         Iter := For_Each_Source (In_Tree, Project);
+         loop
+            Source := Prj.Element (Iter);
+            exit when Source = No_Source;
+
+            if Source.Naming_Exception
+              and then Source.Path = No_Path_Information
+            then
+               if Source.Unit /= No_Name then
+                  Error_Msg_Name_1 := Name_Id (Source.Display_File);
+                  Error_Msg_Name_2 := Name_Id (Source.Unit);
+                  Error_Msg
+                    (Project, In_Tree,
+                     "source file %% for unit %% not found",
+                     No_Location);
+               end if;
+
+               Remove_Source (Source, No_Source);
+            end if;
+
+            Next (Iter);
+         end loop;
+      end;
+
+      --  It is an error if a source file name in a source list or in a
+      --  source list file is not found.
+
+      if Has_Explicit_Sources then
          declare
-            Source : Source_Id;
-            Iter   : Source_Iterator;
-
+            NL          : Name_Location;
+            First_Error : Boolean := True;
          begin
-            Iter := For_Each_Source (In_Tree, Project);
-            loop
-               Source := Prj.Element (Iter);
-               exit when Source = No_Source;
+            NL := Source_Names.Get_First;
+            while NL /= No_Name_Location loop
+               if not NL.Found then
+                  Err_Vars.Error_Msg_File_1 := NL.Name;
 
-               if Source.Naming_Exception
-                 and then Source.Path = No_Path_Information
-               then
-                  if Source.Unit /= No_Name then
-                     Error_Msg_Name_1 := Name_Id (Source.Display_File);
-                     Error_Msg_Name_2 := Name_Id (Source.Unit);
+                  if First_Error then
                      Error_Msg
                        (Project, In_Tree,
-                        "source file %% for unit %% not found",
-                        No_Location);
+                        "source file { cannot be found",
+                        NL.Location);
+                     First_Error := False;
+
+                  else
+                     Error_Msg
+                       (Project, In_Tree,
+                        "\source file { cannot be found",
+                        NL.Location);
                   end if;
-
-                  Remove_Source (Source, No_Source);
                end if;
 
-               Next (Iter);
-            end loop;
-         end;
-
-         --  Check that all sources in Source_Files or the file
-         --  Source_List_File has been found.
-
-         declare
-            Name_Loc : Name_Location;
-
-         begin
-            Name_Loc := Source_Names.Get_First;
-            while Name_Loc /= No_Name_Location loop
-               if (not Name_Loc.Except) and then (not Name_Loc.Found) then
-                  Error_Msg_Name_1 := Name_Id (Name_Loc.Name);
-                  Error_Msg
-                    (Project,
-                     In_Tree,
-                     "file %% not found",
-                     Name_Loc.Location);
-               end if;
-
-               Name_Loc := Source_Names.Get_Next;
+               NL := Source_Names.Get_Next;
             end loop;
          end;
       end if;
@@ -7266,141 +7142,148 @@ package body Prj.Nmsc is
               (Project, "Ada", In_Tree, Source_List_File.Location);
          end if;
       end if;
+   end Find_Sources;
 
-   end Find_Explicit_Sources;
+   ----------------------
+   -- Find_Ada_Sources --
+   ----------------------
 
-   -------------------------------------------
-   -- Get_Path_Names_And_Record_Ada_Sources --
-   -------------------------------------------
-
-   procedure Get_Path_Names_And_Record_Ada_Sources
-     (Project     : Project_Id;
-      In_Tree     : Project_Tree_Ref;
-      Data        : in out Project_Data;
-      Current_Dir : String)
+   procedure Find_Ada_Sources
+     (Project               : Project_Id;
+      In_Tree               : Project_Tree_Ref;
+      Data                  : in out Project_Data;
+      Current_Dir           : String;
+      Explicit_Sources_Only : Boolean)
    is
       Source_Dir      : String_List_Id;
       Element         : String_Element;
-      Path            : Path_Name_Type;
       Dir             : Dir_Type;
-      Name            : File_Name_Type;
-      Canonical_Name  : File_Name_Type;
-      Name_Str        : String (1 .. 1_024);
-      Last            : Natural := 0;
-      NL              : Name_Location;
       Current_Source  : String_List_Id := Nil_String;
-      First_Error     : Boolean := True;
-      Source_Recorded : Boolean := False;
+      Dir_Has_Source  : Boolean := False;
+      NL              : Name_Location;
 
    begin
+      if Current_Verbosity = High then
+         Write_Line ("Looking for Ada sources:");
+      end if;
+
       --  We look in all source directories for the file names in the hash
       --  table Source_Names.
 
       Source_Dir := Data.Source_Dirs;
       while Source_Dir /= Nil_String loop
-         Source_Recorded := False;
+         Dir_Has_Source := False;
          Element := In_Tree.String_Elements.Table (Source_Dir);
 
          declare
             Dir_Path : constant String :=
-              Get_Name_String (Element.Display_Value);
+              Get_Name_String (Element.Display_Value) & Directory_Separator;
+            Dir_Last  : constant Natural := Compute_Directory_Last (Dir_Path);
          begin
             if Current_Verbosity = High then
-               Write_Str ("checking directory """);
-               Write_Str (Dir_Path);
-               Write_Line ("""");
+               Write_Line ("checking directory """ & Dir_Path & """");
             end if;
 
-            Open (Dir, Dir_Path);
+            --  Look for all files in the current source directory
+
+            Open (Dir, Dir_Path (Dir_Path'First .. Dir_Last));
 
             loop
-               Read (Dir, Name_Str, Last);
-               exit when Last = 0;
+               Read (Dir, Name_Buffer, Name_Len);
+               exit when Name_Len = 0;
 
-               Name_Len := Last;
-               Name_Buffer (1 .. Name_Len) := Name_Str (1 .. Last);
-               Name := Name_Find;
-
-               if Osint.File_Names_Case_Sensitive then
-                  Canonical_Name := Name;
-               else
-                  Canonical_Case_File_Name (Name_Str (1 .. Last));
-                  Name_Buffer (1 .. Name_Len) := Name_Str (1 .. Last);
-                  Canonical_Name := Name_Find;
+               if Current_Verbosity = High then
+                  Write_Line (" Checking " & Name_Buffer (1 .. Name_Len));
                end if;
 
-               NL := Source_Names.Get (Canonical_Name);
+               declare
+                  Name : constant File_Name_Type := Name_Find;
+                  Canonical_Name : File_Name_Type;
 
-               if NL /= No_Name_Location and then not NL.Found then
-                  NL.Found := True;
-                  Source_Names.Set (Canonical_Name, NL);
-                  Name_Len := Dir_Path'Length;
-                  Name_Buffer (1 .. Name_Len) := Dir_Path;
+                  --  ??? We could probably optimize the following call:
+                  --  we need to resolve links only once for the
+                  --  directory itself, and then do a single call to
+                  --  readlink() for each file. Unfortunately that would
+                  --  require a change in Normalize_Pathname so that it
+                  --  has the option of not resolving links for its
+                  --  Directory parameter, only for Name.
 
-                  if Name_Buffer (Name_Len) /= Directory_Separator then
-                     Add_Char_To_Name_Buffer (Directory_Separator);
+                  Path : constant String :=
+                    Normalize_Pathname
+                      (Name           => Name_Buffer (1 .. Name_Len),
+                       Directory      => Dir_Path (Dir_Path'First .. Dir_Last),
+                       Resolve_Links  => Opt.Follow_Links_For_Files,
+                       Case_Sensitive => True);
+
+                  Path_Name : Path_Name_Type;
+                  To_Record : Boolean := False;
+                  Location  : Source_Ptr;
+
+               begin
+                  --  If the file was listed in the explicit list of sources,
+                  --  mark it as such (since we'll need to report an error when
+                  --  an explicit source was not found)
+
+                  if Explicit_Sources_Only then
+                     Canonical_Name := Canonical_Case_File_Name
+                       (Name_Id (Name));
+                     NL := Source_Names.Get (Canonical_Name);
+                     To_Record := NL /= No_Name_Location and then not NL.Found;
+                     if To_Record then
+                        NL.Found := True;
+                        Location := NL.Location;
+                        Source_Names.Set (Canonical_Name, NL);
+                     end if;
+
+                  else
+                     To_Record := True;
+                     Location  := No_Location;
                   end if;
 
-                  Add_Str_To_Name_Buffer (Name_Str (1 .. Last));
-                  Path := Name_Find;
+                  if To_Record then
+                     Name_Len := Path'Length;
+                     Name_Buffer (1 .. Name_Len) := Path;
+                     Path_Name := Name_Find;
 
-                  if Current_Verbosity = High then
-                     Write_Str  ("  found ");
-                     Write_Line (Get_Name_String (Name));
+                     if Current_Verbosity = High then
+                        Write_Line ("  recording " & Get_Name_String (Name));
+                     end if;
+
+                     --  Register the source if it is an Ada compilation unit
+
+                     Record_Ada_Source
+                       (File_Name       => Name,
+                        Path_Name       => Path_Name,
+                        Project         => Project,
+                        In_Tree         => In_Tree,
+                        Data            => Data,
+                        Location        => Location,
+                        Current_Source  => Current_Source,
+                        Source_Recorded => Dir_Has_Source,
+                        Current_Dir     => Current_Dir);
                   end if;
-
-                  --  Register the source if it is an Ada compilation unit
-
-                  Record_Ada_Source
-                    (File_Name       => Name,
-                     Path_Name       => Path,
-                     Project         => Project,
-                     In_Tree         => In_Tree,
-                     Data            => Data,
-                     Location        => NL.Location,
-                     Current_Source  => Current_Source,
-                     Source_Recorded => Source_Recorded,
-                     Current_Dir     => Current_Dir);
-               end if;
+               end;
             end loop;
 
             Close (Dir);
+
+         exception
+            when others =>
+               Close (Dir);
+               raise;
          end;
 
-         if Source_Recorded then
-            In_Tree.String_Elements.Table (Source_Dir).Flag :=
-              True;
+         if Dir_Has_Source then
+            In_Tree.String_Elements.Table (Source_Dir).Flag := True;
          end if;
 
          Source_Dir := Element.Next;
       end loop;
 
-      --  It is an error if a source file name in a source list or
-      --  in a source list file is not found.
-
-      NL := Source_Names.Get_First;
-      while NL /= No_Name_Location loop
-         if not NL.Found then
-            Err_Vars.Error_Msg_File_1 := NL.Name;
-
-            if First_Error then
-               Error_Msg
-                 (Project, In_Tree,
-                  "source file { cannot be found",
-                  NL.Location);
-               First_Error := False;
-
-            else
-               Error_Msg
-                 (Project, In_Tree,
-                  "\source file { cannot be found",
-                  NL.Location);
-            end if;
-         end if;
-
-         NL := Source_Names.Get_Next;
-      end loop;
-   end Get_Path_Names_And_Record_Ada_Sources;
+      if Current_Verbosity = High then
+         Write_Line ("End looking for sources");
+      end if;
+   end Find_Ada_Sources;
 
    -------------------------------
    -- Check_File_Naming_Schemes --
@@ -8230,7 +8113,7 @@ package body Prj.Nmsc is
             Load_Naming_Exceptions (Project, In_Tree);
          end if;
 
-         Find_Explicit_Sources (Current_Dir, Project, In_Tree, Data);
+         Find_Sources (Current_Dir, Project, In_Tree, Data);
          Mark_Excluded_Sources;
 
          if Get_Mode = Multi_Language then

@@ -2668,6 +2668,12 @@ package body Sem_Res is
       --  common type. Used to enforce the restrictions on array conversions
       --  of AI95-00246.
 
+      function Static_Concatenation (N : Node_Id) return Boolean;
+      --  Predicate to determine whether an actual that is a concatenation
+      --  will be evaluated statically and does not need a transient scope.
+      --  This must be determined before the actual is resolved and expanded
+      --  because if needed the transient scope must be introduced earlier.
+
       --------------------------
       -- Check_Argument_Order --
       --------------------------
@@ -3014,6 +3020,43 @@ package body Sem_Res is
          return Root_Type (Base_Type (FT1)) = Root_Type (Base_Type (FT2));
       end Same_Ancestor;
 
+      --------------------------
+      -- Static_Concatenation --
+      --------------------------
+
+      function Static_Concatenation (N : Node_Id) return Boolean is
+      begin
+         if Nkind (N) /= N_Op_Concat
+           or else Etype (N) /= Standard_String
+         then
+            return False;
+
+         elsif Nkind (Left_Opnd (N)) = N_String_Literal then
+            return Static_Concatenation (Right_Opnd (N));
+
+         elsif Is_Entity_Name (Left_Opnd (N)) then
+            declare
+               Ent : constant Entity_Id := Entity (Left_Opnd (N));
+
+            begin
+               if Ekind (Ent) = E_Constant
+                 and then Present (Constant_Value (Ent))
+                 and then Is_Static_Expression (Constant_Value (Ent))
+               then
+                  return Static_Concatenation (Right_Opnd (N));
+               else
+                  return False;
+               end if;
+            end;
+
+         elsif Static_Concatenation (Left_Opnd (N)) then
+            return Static_Concatenation (Right_Opnd (N));
+
+         else
+            return False;
+         end if;
+      end Static_Concatenation;
+
    --  Start of processing for Resolve_Actuals
 
    begin
@@ -3184,6 +3227,7 @@ package body Sem_Res is
               and then
                 not (Is_Intrinsic_Subprogram (Nam)
                       and then Chars (Nam) = Name_Asm)
+              and then not Static_Concatenation (A)
             then
                Establish_Transient_Scope (A, False);
                Resolve (A, Etype (F));
