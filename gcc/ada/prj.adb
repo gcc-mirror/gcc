@@ -1231,7 +1231,8 @@ package body Prj is
       Lang := Data.Languages;
       while Lang /= No_Language_Index loop
          if Lang.Name /= Name_Ada
-           and then Lang.First_Source /= No_Source
+           and then
+             (Current_Mode = Ada_Only or else Lang.First_Source /= No_Source)
          then
             return True;
          end if;

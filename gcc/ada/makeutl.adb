@@ -412,7 +412,7 @@ package body Makeutl is
    begin
       Linker_Opts.Init;
 
-      For_All_Projects (Project, In_Tree, Dummy);
+      For_All_Projects (Project, In_Tree, Dummy, Imported_First => True);
 
       Last_Linker_Option := 0;
 

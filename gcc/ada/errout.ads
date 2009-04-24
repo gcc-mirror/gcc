@@ -651,8 +651,8 @@ package Errout is
    --  suppressed.
 
    procedure Error_Msg_F (Msg : String; N : Node_Id);
-   --  Similar to Error_Msg_N except that the message is placed on the
-   --  first node of the construct N (First_Node (N)).
+   --  Similar to Error_Msg_N except that the message is placed on the first
+   --  node of the construct N (First_Node (N)).
 
    procedure Error_Msg_NE
      (Msg : String;

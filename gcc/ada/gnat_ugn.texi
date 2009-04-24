@@ -13675,6 +13675,15 @@ operating system).
    for Spec ("MyPack.MyChild") use "mypack.mychild.spec";
 @end smallexample
 
+When the source file contains several units, you can indicate at what
+position the unit occurs in the file, with the following. The first unit
+in the file has index 1
+
+@smallexample @c projectfile
+  for Body ("top") use "foo.a" at 1;
+  for Body ("foo") use "foo.a" at 2;
+@end smallexample
+
 @item @code{Body}
 
 You can use the associative array attribute @code{Body} to
@@ -13698,7 +13707,20 @@ sensitive or insensitive depending on the operating system).
 
 @noindent
 @emph{Library projects} are projects whose object code is placed in a library.
-(Note that this facility is not yet supported on all platforms)
+(Note that this facility is not yet supported on all platforms).
+
+@code{gnatmake} or @code{gprbuild} will collect all object files into a
+single archive, which might either be a shared or a static library. This
+library can later on be linked with multiple executables, potentially
+reducing their sizes.
+
+If your project file specifies languages other than Ada, but you are still
+using @code{gnatmake} to compile and link, the latter will not try to
+compile your sources other than Ada (you should use @code{gprbuild} if that
+is your intent). However, @code{gnatmake} will automatically link all object
+files found in the object directory, whether or not they were compiled from
+an Ada source file. This specific behavior only applies when multiple
+languages are specified.
 
 To create a library project, you need to define in its project file
 two project-level attributes: @code{Library_Name} and @code{Library_Dir}.
