@@ -621,13 +621,17 @@ package body System.Tasking.Stages is
          T.Common.Task_Image_Len := Len;
       end if;
 
+      Unlock (Self_ID);
+      Unlock_RTS;
+
+      --  Note: we should not call 'new' while holding locks since new
+      --  may use locks (e.g. RTS_Lock under Windows) itself and cause a
+      --  deadlock.
+
       if Build_Entry_Names then
          T.Entry_Names :=
            new Entry_Names_Array (1 .. Entry_Index (Num_Entries));
       end if;
-
-      Unlock (Self_ID);
-      Unlock_RTS;
 
       --  Create TSD as early as possible in the creation of a task, since it
       --  may be used by the operation of Ada code within the task.
