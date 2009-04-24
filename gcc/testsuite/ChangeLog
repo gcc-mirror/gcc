@@ -1,3 +1,8 @@
+2008-04-24  Doug Kwan  <dougkwan@google.com>
+
+	* g++.dg/init/copy7.C: Only abort in memcpy if source and
+	destination are the same.
+
 2009-04-24  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/vrp48.c: New testcase.

@@ -6,7 +6,14 @@ extern "C" void abort();
 extern "C" void *
 memcpy(void *dest, void *src, __SIZE_TYPE__ n)
 {
-  abort();
+  if (dest == src)
+    abort();
+  else
+    {
+      __SIZE_TYPE__ i;
+      for (i = 0; i < n; i++)
+        ((char *)dest)[i] = ((const char*)src)[i];
+    }
 }
 
 struct A
