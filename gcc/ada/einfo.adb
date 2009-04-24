@@ -507,8 +507,7 @@ package body Einfo is
    --    Is_RACW_Stub_Type               Flag244
    --    Is_Private_Primitive            Flag245
    --    Is_Underlying_Record_View       Flag246
-
-   --    (unused)                        Flag247
+   --    OK_To_Rename                    Flag247
 
    -----------------------
    -- Local subprograms --
@@ -2291,6 +2290,12 @@ package body Einfo is
         (Ekind (Id) = E_Component or else Ekind (Id) = E_Discriminant);
       return Uint10 (Id);
    end Normalized_Position_Max;
+
+   function OK_To_Rename (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      return Flag247 (Id);
+   end OK_To_Rename;
 
    function OK_To_Reorder_Components (Id : E) return B is
    begin
@@ -4777,6 +4782,12 @@ package body Einfo is
       Set_Uint10 (Id, V);
    end Set_Normalized_Position_Max;
 
+   procedure Set_OK_To_Rename (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Variable);
+      Set_Flag247 (Id, V);
+   end Set_OK_To_Rename;
+
    procedure Set_OK_To_Reorder_Components (Id : E; V : B := True) is
    begin
       pragma Assert
@@ -7008,6 +7019,7 @@ package body Einfo is
       W ("No_Strict_Aliasing",              Flag136 (Id));
       W ("Non_Binary_Modulus",              Flag58  (Id));
       W ("Nonzero_Is_True",                 Flag162 (Id));
+      W ("OK_To_Rename",                    Flag247 (Id));
       W ("OK_To_Reorder_Components",        Flag239 (Id));
       W ("Optimize_Alignment_Space",        Flag241 (Id));
       W ("Optimize_Alignment_Time",         Flag242 (Id));

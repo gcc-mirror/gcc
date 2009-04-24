@@ -1,3 +1,17 @@
+2009-04-24  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb (OK_To_Rename): New flag
+
+	* einfo.ads (OK_To_Rename): New flag
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Rewrite as renames if
+	OK_To_Rename set.
+
+	* exp_ch4.adb (Expand_Concatenate): Mark temp variable OK_To_Rename
+
+	* sem_ch7.adb (Uninstall_Declarations): Allow for renames from
+	OK_To_Rename.
+
 2009-04-24  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb, make.adb, mlib-prj.adb, prj.adb, prj.ads, makeutl.adb,
