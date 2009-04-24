@@ -1,3 +1,9 @@
+2009-04-24  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb (Static_Concatenation): Simplify predicate to make it
+	accurately handle cases such as "lit" & "lit" and
+	"lit" & static_string_constant
+
 2009-04-24  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-proc.adb, make.adb, mlib-prj.adb, prj.adb, prj.ads, clean.adb,

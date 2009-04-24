@@ -3026,34 +3026,30 @@ package body Sem_Res is
 
       function Static_Concatenation (N : Node_Id) return Boolean is
       begin
-         if Nkind (N) /= N_Op_Concat
-           or else Etype (N) /= Standard_String
-         then
-            return False;
+         case Nkind (N) is
+            when N_String_Literal =>
+               return True;
 
-         elsif Nkind (Left_Opnd (N)) = N_String_Literal then
-            return Static_Concatenation (Right_Opnd (N));
+            when N_Op_Concat      =>
+               return Static_Concatenation (Left_Opnd (N))
+                        and then
+                      Static_Concatenation (Right_Opnd (N));
 
-         elsif Is_Entity_Name (Left_Opnd (N)) then
-            declare
-               Ent : constant Entity_Id := Entity (Left_Opnd (N));
-            begin
-               if Ekind (Ent) = E_Constant
-                 and then Present (Constant_Value (Ent))
-                 and then Is_Static_Expression (Constant_Value (Ent))
-               then
-                  return Static_Concatenation (Right_Opnd (N));
+            when others =>
+               if Is_Entity_Name (N) then
+                  declare
+                     Ent : constant Entity_Id := Entity (N);
+                  begin
+                     return Ekind (Ent) = E_Constant
+                              and then Present (Constant_Value (Ent))
+                              and then Is_Static_Expression
+                                         (Constant_Value (Ent));
+                  end;
+
                else
                   return False;
                end if;
-            end;
-
-         elsif Static_Concatenation (Left_Opnd (N)) then
-            return Static_Concatenation (Right_Opnd (N));
-
-         else
-            return False;
-         end if;
+         end case;
       end Static_Concatenation;
 
    --  Start of processing for Resolve_Actuals
@@ -8315,7 +8311,7 @@ package body Sem_Res is
 
                if From_With_Type (Opnd) then
                   Error_Msg_Qual_Level := 99;
-                  Error_Msg_NE ("missing with-clause on package &", N,
+                  Error_Msg_NE ("missing WITH clause on package &", N,
                     Cunit_Entity (Get_Source_Unit (Base_Type (Opnd))));
                   Error_Msg_N
                     ("type conversions require visibility of the full view",
@@ -8327,7 +8323,7 @@ package body Sem_Res is
                       and then Present (Non_Limited_View (Etype (Target))))
                then
                   Error_Msg_Qual_Level := 99;
-                  Error_Msg_NE ("missing with-clause on package &", N,
+                  Error_Msg_NE ("missing WITH clause on package &", N,
                     Cunit_Entity (Get_Source_Unit (Base_Type (Target))));
                   Error_Msg_N
                     ("type conversions require visibility of the full view",
