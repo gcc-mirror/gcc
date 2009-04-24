@@ -764,7 +764,8 @@ ia64_legitimate_constant_p (rtx x)
       return true;
 
     case CONST_DOUBLE:
-      if (GET_MODE (x) == VOIDmode)
+      if (GET_MODE (x) == VOIDmode || GET_MODE (x) == SFmode
+	  || GET_MODE (x) == DFmode)
 	return true;
       return satisfies_constraint_G (x);
 
@@ -4541,6 +4542,7 @@ ia64_print_operand_address (FILE * stream ATTRIBUTE_UNUSED,
    e    Print 64 - constant, for DImode rotates.
    F	A floating point constant 0.0 emitted as f0, or 1.0 emitted as f1, or
         a floating point register emitted normally.
+   G	A floating point constant.
    I	Invert a predicate register by adding 1.
    J    Select the proper predicate register for a condition.
    j    Select the inverse predicate register for a condition.
@@ -4626,6 +4628,24 @@ ia64_print_operand (FILE * file, rtx x, int code)
 	  str = reg_names [REGNO (x)];
 	}
       fputs (str, file);
+      return;
+
+    case 'G':
+      {
+	long val[4];
+	REAL_VALUE_TYPE rv;
+	REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+	real_to_target (val, &rv, GET_MODE (x));
+	if (GET_MODE (x) == SFmode)
+	  fprintf (file, "0x%08lx", val[0] & 0xffffffff);
+	else if (GET_MODE (x) == DFmode)
+	  fprintf (file, "0x%08lx%08lx", (WORDS_BIG_ENDIAN ? val[0] : val[1])
+					  & 0xffffffff,
+					 (WORDS_BIG_ENDIAN ? val[1] : val[0])
+					  & 0xffffffff);
+	else
+	  output_operand_lossage ("invalid %%G mode");
+      }
       return;
 
     case 'I':
