@@ -141,6 +141,8 @@ parse_error (const char *msg, ...)
   vfprintf (stderr, msg, ap);
   va_end (ap);
 
+  fputc ('\n', stderr);
+
   hit_error = true;
 }
 
