@@ -218,18 +218,15 @@ package body Prj.Nmsc is
 
    procedure Load_Naming_Exceptions
      (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
-      Data    : in out Project_Data);
+      In_Tree : Project_Tree_Ref);
    --  All source files in Data.First_Source are considered as naming
    --  exceptions, and copied into the Source_Names and Unit_Exceptions tables
    --  as appropriate.
 
    procedure Add_Source
      (Id                  : out Source_Id;
-      Data                : in out Project_Data;
       In_Tree             : Project_Tree_Ref;
       Project             : Project_Id;
-      Lang                : Name_Id;
       Lang_Id             : Language_Ptr;
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
@@ -582,8 +579,6 @@ package body Prj.Nmsc is
    procedure Remove_Source
      (Id          : Source_Id;
       Replaced_By : Source_Id;
-      Project     : Project_Id;
-      Data        : in out Project_Data;
       In_Tree     : Project_Tree_Ref);
    --  ??? needs comment
 
@@ -687,10 +682,8 @@ package body Prj.Nmsc is
 
    procedure Add_Source
      (Id                  : out Source_Id;
-      Data                : in out Project_Data;
       In_Tree             : Project_Tree_Ref;
       Project             : Project_Id;
-      Lang                : Name_Id;
       Lang_Id             : Language_Ptr;
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
@@ -705,7 +698,6 @@ package body Prj.Nmsc is
       Index               : Int       := 0;
       Source_To_Replace   : Source_Id := No_Source)
    is
-      Source   : constant Source_Id := Data.Last_Source;
       Src_Data : Source_Data := No_Source_Data;
       Config   : constant Language_Config := Lang_Id.Config;
 
@@ -722,8 +714,14 @@ package body Prj.Nmsc is
          Write_Str (Get_Name_String (File_Name));
 
          if Lang_Kind = Unit_Based then
-            Write_Str (", Unit : ");
-            Write_Str (Get_Name_String (Unit));
+            Write_Str (" Unit: ");
+            --  ??? in gprclean, it seems we sometimes pass an empty Unit name
+            --  (see test extended_projects)
+            if Unit /= No_Name then
+               Write_Str (Get_Name_String (Unit));
+            end if;
+            Write_Str (" Kind: ");
+            Write_Str (Source_Kind'Image (Kind));
          end if;
 
          Write_Eol;
@@ -772,21 +770,6 @@ package body Prj.Nmsc is
          Unit_Sources_Htable.Set (In_Tree.Unit_Sources_HT, Unit, Id);
       end if;
 
-      --  Add the source to the global list
-
-      Src_Data.Next_In_Sources := In_Tree.First_Source;
-      In_Tree.First_Source := Id;
-
-      --  Add the source to the project list
-
-      if Source = No_Source then
-         Data.First_Source := Id;
-      else
-         In_Tree.Sources.Table (Source).Next_In_Project := Id;
-      end if;
-
-      Data.Last_Source := Id;
-
       --  Add the source to the language list
 
       Src_Data.Next_In_Lang := Lang_Id.First_Source;
@@ -795,7 +778,7 @@ package body Prj.Nmsc is
       In_Tree.Sources.Table (Id) := Src_Data;
 
       if Source_To_Replace /= No_Source then
-         Remove_Source (Source_To_Replace, Id, Project, Data, In_Tree);
+         Remove_Source (Source_To_Replace, Id, In_Tree);
       end if;
    end Add_Source;
 
@@ -846,7 +829,7 @@ package body Prj.Nmsc is
       When_No_Sources : Error_Warning;
       Current_Dir     : String)
    is
-      Data      : Project_Data := In_Tree.Projects.Table (Project);
+      Data      : Project_Data renames In_Tree.Projects.Table (Project);
       Extending : Boolean := False;
 
    begin
@@ -929,42 +912,53 @@ package body Prj.Nmsc is
                Alt_Lang      : Alternate_Language_Id;
                Alt_Lang_Data : Alternate_Language_Data;
                Continuation  : Boolean := False;
+               Iter          : Source_Iterator;
 
             begin
                Language := Data.Languages;
                while Language /= No_Language_Index loop
-                  Source := Data.First_Source;
-                  Source_Loop : while Source /= No_Source loop
-                     declare
-                        Src_Data : Source_Data renames
-                                     In_Tree.Sources.Table (Source);
+                  --  If there are no sources for this language, check whether
+                  --  there are sources for which this is an alternate
+                  --  language
 
-                     begin
-                        exit Source_Loop when Src_Data.Language = Language;
+                  if Language.First_Source = No_Source then
+                     Iter := For_Each_Source (In_Tree => In_Tree,
+                                              Project => Project);
+                     Source_Loop : loop
+                        Source := Element (Iter);
+                        exit Source_Loop when Source = No_Source;
 
-                        Alt_Lang := Src_Data.Alternate_Languages;
+                        declare
+                           Src_Data : Source_Data renames
+                             In_Tree.Sources.Table (Source);
 
-                        Alternate_Loop :
-                        while Alt_Lang /= No_Alternate_Language loop
-                           Alt_Lang_Data :=
-                             In_Tree.Alt_Langs.Table (Alt_Lang);
-                           exit Source_Loop
-                           when Alt_Lang_Data.Language = Language;
-                           Alt_Lang := Alt_Lang_Data.Next;
-                        end loop Alternate_Loop;
+                        begin
+                           exit Source_Loop when Src_Data.Language = Language;
 
-                        Source := Src_Data.Next_In_Project;
-                     end;
-                  end loop Source_Loop;
+                           Alt_Lang := Src_Data.Alternate_Languages;
 
-                  if Source = No_Source then
-                     Report_No_Sources
-                       (Project,
-                        Get_Name_String (Language.Display_Name),
-                        In_Tree,
-                        Data.Location,
-                        Continuation);
-                     Continuation := True;
+                           Alternate_Loop :
+                           while Alt_Lang /= No_Alternate_Language loop
+                              Alt_Lang_Data :=
+                                In_Tree.Alt_Langs.Table (Alt_Lang);
+                              exit Source_Loop
+                                 when Alt_Lang_Data.Language = Language;
+                              Alt_Lang := Alt_Lang_Data.Next;
+                           end loop Alternate_Loop;
+                        end;
+
+                        Next (Iter);
+                     end loop Source_Loop;
+
+                     if Source = No_Source then
+                        Report_No_Sources
+                          (Project,
+                           Get_Name_String (Language.Display_Name),
+                           In_Tree,
+                           Data.Location,
+                           Continuation);
+                        Continuation := True;
+                     end if;
                   end if;
 
                   Language := Language.Next;
@@ -2543,11 +2537,9 @@ package body Prj.Nmsc is
       List    : String_List_Id;
       Element : String_Element;
       Name    : File_Name_Type;
-
+      Iter    : Source_Iterator;
       Source   : Source_Id;
-
       Project_2 : Project_Id;
-      Data_2     : Project_Data;
 
    begin
       if not Interfaces.Default then
@@ -2556,24 +2548,17 @@ package body Prj.Nmsc is
          --  later for the sources in the Interfaces list.
 
          Project_2 := Project;
-         Data_2    := Data;
-         loop
-            Source := Data_2.First_Source;
-            while Source /= No_Source loop
-               declare
-                  Src_Data : Source_Data renames
-                               In_Tree.Sources.Table (Source);
-               begin
-                  Src_Data.In_Interfaces := False;
-                  Source := Src_Data.Next_In_Project;
-               end;
+         while Project_2 /= No_Project loop
+            Iter := For_Each_Source (In_Tree, Project_2);
+
+            loop
+               Source := Prj.Element (Iter);
+               exit when Source = No_Source;
+               In_Tree.Sources.Table (Source).In_Interfaces := False;
+               Next (Iter);
             end loop;
 
-            Project_2 := Data_2.Extends;
-
-            exit when Project_2 = No_Project;
-
-            Data_2 := In_Tree.Projects.Table (Project_2);
+            Project_2 := In_Tree.Projects.Table (Project_2).Extends;
          end loop;
 
          List := Interfaces.Values;
@@ -2582,11 +2567,14 @@ package body Prj.Nmsc is
             Name := Canonical_Case_File_Name (Element.Value);
 
             Project_2 := Project;
-            Data_2 := Data;
             Big_Loop :
-            loop
-               Source := Data_2.First_Source;
-               while Source /= No_Source loop
+            while Project_2 /= No_Project loop
+               Iter := For_Each_Source (In_Tree, Project_2);
+
+               loop
+                  Source := Prj.Element (Iter);
+                  exit when Source = No_Source;
+
                   declare
                      Src_Data : Source_Data renames
                                   In_Tree.Sources.Table (Source);
@@ -2615,15 +2603,11 @@ package body Prj.Nmsc is
                         exit Big_Loop;
                      end if;
 
-                     Source := Src_Data.Next_In_Project;
+                     Next (Iter);
                   end;
                end loop;
 
-               Project_2 := Data_2.Extends;
-
-               exit Big_Loop when Project_2 = No_Project;
-
-               Data_2 := In_Tree.Projects.Table (Project_2);
+               Project_2 := In_Tree.Projects.Table (Project_2).Extends;
             end loop Big_Loop;
 
             if Source = No_Source then
@@ -2648,8 +2632,11 @@ package body Prj.Nmsc is
            In_Tree.Projects.Table (Data.Extends).Interfaces_Defined;
 
          if Data.Interfaces_Defined then
-            Source := Data.First_Source;
-            while Source /= No_Source loop
+            Iter := For_Each_Source (In_Tree, Project);
+            loop
+               Source := Prj.Element (Iter);
+               exit when Source = No_Source;
+
                declare
                   Src_Data : Source_Data renames
                                In_Tree.Sources.Table (Source);
@@ -2658,9 +2645,9 @@ package body Prj.Nmsc is
                   if not Src_Data.Declared_In_Interfaces then
                      Src_Data.In_Interfaces := False;
                   end if;
-
-                  Source := Src_Data.Next_In_Project;
                end;
+
+               Next (Iter);
             end loop;
          end if;
       end if;
@@ -2913,6 +2900,7 @@ package body Prj.Nmsc is
          Element        : String_Element;
          File_Name      : File_Name_Type;
          Source         : Source_Id;
+         Iter           : Source_Iterator;
 
       begin
          case Kind is
@@ -2942,20 +2930,19 @@ package body Prj.Nmsc is
                Element   := In_Tree.String_Elements.Table (Element_Id);
                File_Name := Canonical_Case_File_Name (Element.Value);
 
-               Source := Data.First_Source;
-               while Source /= No_Source
-                 and then In_Tree.Sources.Table (Source).File /= File_Name
+               Iter := For_Each_Source (In_Tree, Project);
                loop
-                  Source := In_Tree.Sources.Table (Source).Next_In_Project;
+                  Source := Prj.Element (Iter);
+                  exit when Source = No_Source
+                    or else In_Tree.Sources.Table (Source).File = File_Name;
+                  Next (Iter);
                end loop;
 
                if Source = No_Source then
                   Add_Source
                     (Id               => Source,
-                     Data             => Data,
                      In_Tree          => In_Tree,
                      Project          => Project,
-                     Lang             => Lang,
                      Lang_Id          => Lang_Id,
                      Kind             => Kind,
                      File_Name        => File_Name,
@@ -3011,6 +2998,7 @@ package body Prj.Nmsc is
          Source_To_Replace : Source_Id := No_Source;
          Other_Project     : Project_Id;
          Other_Part        : Source_Id := No_Source;
+         Iter              : Source_Iterator;
 
       begin
          case Kind is
@@ -3071,14 +3059,16 @@ package body Prj.Nmsc is
 
                --  Check if the source already exists
 
-               Source := In_Tree.First_Source;
                Source_To_Replace := No_Source;
+               Iter := For_Each_Source (In_Tree);
 
-               while Source /= No_Source and then
-                 (In_Tree.Sources.Table (Source).Unit /= Unit or else
-                  In_Tree.Sources.Table (Source).Index /= Index)
                loop
-                  Source := In_Tree.Sources.Table (Source).Next_In_Sources;
+                  Source := Prj.Element (Iter);
+                  exit when Source = No_Source
+                    or else
+                      (In_Tree.Sources.Table (Source).Unit = Unit and then
+                       In_Tree.Sources.Table (Source).Index = Index);
+                  Next (Iter);
                end loop;
 
                if Source /= No_Source then
@@ -3086,8 +3076,8 @@ package body Prj.Nmsc is
                      Other_Part := Source;
 
                      loop
-                        Source :=
-                          In_Tree.Sources.Table (Source).Next_In_Sources;
+                        Next (Iter);
+                        Source := Prj.Element (Iter);
 
                         exit when Source = No_Source or else
                           (In_Tree.Sources.Table (Source).Unit = Unit
@@ -3124,10 +3114,8 @@ package body Prj.Nmsc is
                if Source = No_Source then
                   Add_Source
                     (Id           => Source,
-                     Data         => Data,
                      In_Tree      => In_Tree,
                      Project      => Project,
-                     Lang         => Lang,
                      Lang_Id      => Lang_Id,
                      Kind         => Kind,
                      File_Name    => File_Name,
@@ -3478,6 +3466,7 @@ package body Prj.Nmsc is
       procedure Check_Library (Proj : Project_Id; Extends : Boolean) is
          Proj_Data : Project_Data;
          Src_Id    : Source_Id;
+         Iter      : Source_Iterator;
 
       begin
          if Proj /= No_Project then
@@ -3489,15 +3478,18 @@ package body Prj.Nmsc is
                --  have no sources. However, header files from non-Ada
                --  languages are OK, as there is nothing to compile.
 
-               Src_Id := Proj_Data.First_Source;
-               while Src_Id /= No_Source loop
+               Iter := For_Each_Source (In_Tree, Proj);
+               loop
+                  Src_Id := Prj.Element (Iter);
+                  exit when Src_Id = No_Source;
+
                   declare
                      Src : Source_Data renames In_Tree.Sources.Table (Src_Id);
                   begin
                      exit when Src.Lang_Kind /= File_Based
                        or else Src.Kind /= Spec;
-                     Src_Id := Src.Next_In_Project;
                   end;
+                  Next (Iter);
                end loop;
 
                if Src_Id /= No_Source then
@@ -4622,6 +4614,7 @@ package body Prj.Nmsc is
       OK                  : Boolean := True;
       Source              : Source_Id;
       Next_Proj           : Project_Id;
+      Iter                : Source_Iterator;
 
    begin
       if Get_Mode = Multi_Language then
@@ -4815,21 +4808,22 @@ package body Prj.Nmsc is
                      --  Multi_Language mode
 
                      Next_Proj := Data.Extends;
-                     Source := Data.First_Source;
+
+                     Iter := For_Each_Source (In_Tree, Project);
 
                      loop
-                        while Source /= No_Source and then
-                              In_Tree.Sources.Table (Source).Unit /= Unit
+                        while Prj.Element (Iter) /= No_Source and then
+                           In_Tree.Sources.Table (Prj.Element (Iter)).Unit /=
+                              Unit
                         loop
-                           Source :=
-                             In_Tree.Sources.Table (Source).Next_In_Project;
+                           Next (Iter);
                         end loop;
 
+                        Source := Prj.Element (Iter);
                         exit when Source /= No_Source or else
                                   Next_Proj = No_Project;
 
-                        Source :=
-                          In_Tree.Projects.Table (Next_Proj).First_Source;
+                        Iter := For_Each_Source (In_Tree, Next_Proj);
                         Next_Proj :=
                           In_Tree.Projects.Table (Next_Proj).Extends;
                      end loop;
@@ -7289,10 +7283,14 @@ package body Prj.Nmsc is
 
          declare
             Source : Source_Id;
+            Iter   : Source_Iterator;
 
          begin
-            Source := Data.First_Source;
-            while Source /= No_Source loop
+            Iter := For_Each_Source (In_Tree, Project);
+            loop
+               Source := Prj.Element (Iter);
+               exit when Source = No_Source;
+
                declare
                   Src_Data : Source_Data renames
                                In_Tree.Sources.Table (Source);
@@ -7310,11 +7308,11 @@ package body Prj.Nmsc is
                            No_Location);
                      end if;
 
-                     Remove_Source (Source, No_Source, Project, Data, In_Tree);
+                     Remove_Source (Source, No_Source, In_Tree);
                   end if;
-
-                  Source := Src_Data.Next_In_Project;
                end;
+
+               Next (Iter);
             end loop;
          end;
 
@@ -7666,6 +7664,7 @@ package body Prj.Nmsc is
       Display_Language_Name : Name_Id;
       Lang_Kind             : Language_Kind;
       Kind                  : Source_Kind := Spec;
+      Iter                  : Source_Iterator;
 
    begin
       Name_Len := Display_Path'Length;
@@ -7761,9 +7760,12 @@ package body Prj.Nmsc is
          else
             --  Check if the same file name or unit is used in the prj tree
 
-            Source := In_Tree.First_Source;
+            Iter := For_Each_Source (In_Tree);
             Add_Src := True;
-            while Source /= No_Source loop
+            loop
+               Source := Prj.Element (Iter);
+               exit when Source = No_Source;
+
                declare
                   Src_Data : Source_Data renames
                                In_Tree.Sources.Table (Source);
@@ -7850,17 +7852,15 @@ package body Prj.Nmsc is
                      end if;
                   end if;
 
-                  Source := Src_Data.Next_In_Sources;
                end;
+               Next (Iter);
             end loop;
 
             if Add_Src then
                Add_Source
                  (Id                  => Source,
-                  Data                => Data,
                   In_Tree             => In_Tree,
                   Project             => Project,
-                  Lang                => Language_Name,
                   Lang_Id             => Language,
                   Lang_Kind           => Lang_Kind,
                   Kind                => Kind,
@@ -8013,18 +8013,21 @@ package body Prj.Nmsc is
 
    procedure Load_Naming_Exceptions
      (Project : Project_Id;
-      In_Tree : Project_Tree_Ref;
-      Data    : in out Project_Data)
+      In_Tree : Project_Tree_Ref)
    is
       Source : Source_Id;
       File   : File_Name_Type;
       Unit   : Name_Id;
+      Iter   : Source_Iterator;
 
    begin
       Unit_Exceptions.Reset;
 
-      Source := Data.First_Source;
-      while Source /= No_Source loop
+      Iter := For_Each_Source (In_Tree, Project);
+      loop
+         Source := Prj.Element (Iter);
+         exit when Source = No_Source;
+
          File := In_Tree.Sources.Table (Source).File;
          Unit := In_Tree.Sources.Table (Source).Unit;
 
@@ -8074,7 +8077,7 @@ package body Prj.Nmsc is
             end;
          end if;
 
-         Source := In_Tree.Sources.Table (Source).Next_In_Project;
+         Next (Iter);
       end loop;
    end Load_Naming_Exceptions;
 
@@ -8088,6 +8091,8 @@ package body Prj.Nmsc is
       Data        : in out Project_Data;
       Current_Dir : String)
    is
+      Iter : Source_Iterator;
+
       procedure Process_Sources_In_Multi_Language_Mode;
       --  Find all source files when in multi language mode
 
@@ -8183,8 +8188,11 @@ package body Prj.Nmsc is
                end loop For_Each_Unit;
 
             when Multi_Language =>
-               Source := In_Tree.First_Source;
-               while Source /= No_Source loop
+               Iter := For_Each_Source (In_Tree);
+               loop
+                  Source := Prj.Element (Iter);
+                  exit when Source = No_Source;
+
                   if In_Tree.Sources.Table (Source).File = Excluded.File then
                      Exclude
                        (In_Tree.Sources.Table (Source).Project,
@@ -8192,7 +8200,7 @@ package body Prj.Nmsc is
                      exit;
                   end if;
 
-                  Source := In_Tree.Sources.Table (Source).Next_In_Sources;
+                  Next (Iter);
                end loop;
 
                OK := OK or Excluded.Found;
@@ -8213,6 +8221,7 @@ package body Prj.Nmsc is
       --------------------------------------------
 
       procedure Process_Sources_In_Multi_Language_Mode is
+         Iter : Source_Iterator;
       begin
          --  Check that two sources of this project do not have the same object
          --  file name.
@@ -8252,8 +8261,11 @@ package body Prj.Nmsc is
 
          begin
             Object_File_Names.Reset;
-            Src_Id := In_Tree.First_Source;
-            while Src_Id /= No_Source loop
+            Iter := For_Each_Source (In_Tree);
+            loop
+               Src_Id := Prj.Element (Iter);
+               exit when Src_Id = No_Source;
+
                declare
                   Src_Data : Source_Data renames
                                In_Tree.Sources.Table (Src_Id);
@@ -8303,9 +8315,9 @@ package body Prj.Nmsc is
                         end case;
                      end if;
                   end if;
-
-                  Src_Id := Src_Data.Next_In_Sources;
                end;
+
+               Next (Iter);
             end loop;
          end Check_Object_File_Names;
       end Process_Sources_In_Multi_Language_Mode;
@@ -8321,7 +8333,7 @@ package body Prj.Nmsc is
                   and then Data.Languages /= No_Language_Index)
       then
          if Get_Mode = Multi_Language then
-            Load_Naming_Exceptions (Project, In_Tree, Data);
+            Load_Naming_Exceptions (Project, In_Tree);
          end if;
 
          Find_Explicit_Sources (Current_Dir, Project, In_Tree, Data);
@@ -8705,8 +8717,6 @@ package body Prj.Nmsc is
    procedure Remove_Source
      (Id          : Source_Id;
       Replaced_By : Source_Id;
-      Project     : Project_Id;
-      Data        : in out Project_Data;
       In_Tree     : Project_Tree_Ref)
    is
       Src_Data : constant Source_Data := In_Tree.Sources.Table (Id);
@@ -8723,75 +8733,6 @@ package body Prj.Nmsc is
          In_Tree.Sources.Table (Replaced_By).Declared_In_Interfaces :=
            In_Tree.Sources.Table (Id).Declared_In_Interfaces;
       end if;
-
-      --  Remove the source from the global source list
-
-      Source := In_Tree.First_Source;
-
-      if Source = Id then
-         In_Tree.First_Source := Src_Data.Next_In_Sources;
-
-      else
-         while In_Tree.Sources.Table (Source).Next_In_Sources /= Id loop
-            Source := In_Tree.Sources.Table (Source).Next_In_Sources;
-         end loop;
-
-         In_Tree.Sources.Table (Source).Next_In_Sources :=
-           Src_Data.Next_In_Sources;
-      end if;
-
-      --  Remove the source from the project list
-
-      if Src_Data.Project = Project then
-         Source := Data.First_Source;
-
-         if Source = Id then
-            Data.First_Source := Src_Data.Next_In_Project;
-
-            if Src_Data.Next_In_Project = No_Source then
-               Data.Last_Source := No_Source;
-            end if;
-
-         else
-            while In_Tree.Sources.Table (Source).Next_In_Project /= Id loop
-               Source := In_Tree.Sources.Table (Source).Next_In_Project;
-            end loop;
-
-            In_Tree.Sources.Table (Source).Next_In_Project :=
-              Src_Data.Next_In_Project;
-
-            if Src_Data.Next_In_Project = No_Source then
-               In_Tree.Projects.Table (Src_Data.Project).Last_Source := Source;
-            end if;
-         end if;
-
-      else
-         Source := In_Tree.Projects.Table (Src_Data.Project).First_Source;
-
-         if Source = Id then
-            In_Tree.Projects.Table (Src_Data.Project).First_Source :=
-              Src_Data.Next_In_Project;
-
-            if Src_Data.Next_In_Project = No_Source then
-               In_Tree.Projects.Table (Src_Data.Project).Last_Source :=
-                 No_Source;
-            end if;
-
-         else
-            while In_Tree.Sources.Table (Source).Next_In_Project /= Id loop
-               Source := In_Tree.Sources.Table (Source).Next_In_Project;
-            end loop;
-
-            In_Tree.Sources.Table (Source).Next_In_Project :=
-              Src_Data.Next_In_Project;
-
-            if Src_Data.Next_In_Project = No_Source then
-               In_Tree.Projects.Table (Src_Data.Project).Last_Source := Source;
-            end if;
-         end if;
-      end if;
-
-      --  Remove source from the language list
 
       Source := Src_Data.Language.First_Source;
 

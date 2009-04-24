@@ -1054,6 +1054,7 @@ package body Prj.Env is
       Suffix        : File_Name_Type;
       The_Unit_Data : Unit_Data;
       Data          : File_Name_Data;
+      Iter          : Source_Iterator;
 
       procedure Put_Name_Buffer;
       --  Put the line contained in the Name_Buffer in the mapping file
@@ -1200,8 +1201,12 @@ package body Prj.Env is
 
          for Proj in Present'Range loop
             if Present (Proj) then
-               Source := In_Tree.Projects.Table (Proj).First_Source;
-               while Source /= No_Source loop
+
+               Iter := For_Each_Source (In_Tree, Proj);
+               loop
+                  Source := Prj.Element (Iter);
+                  exit when Source = No_Source;
+
                   Src_Data := In_Tree.Sources.Table (Source);
 
                   if In_Tree.Sources.Table (Source).Language.Name = Language
@@ -1234,7 +1239,7 @@ package body Prj.Env is
                      Put_Name_Buffer;
                   end if;
 
-                  Source := Src_Data.Next_In_Project;
+                  Next (Iter);
                end loop;
             end if;
          end loop;

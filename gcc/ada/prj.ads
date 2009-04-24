@@ -734,14 +734,8 @@ package Prj is
       Naming_Exception    : Boolean               := False;
       --  True if the source has an exceptional name
 
-      Next_In_Sources     : Source_Id             := No_Source;
-      --  Link to another source in the project tree
-
-      Next_In_Project     : Source_Id             := No_Source;
-      --  Link to another source in the project
-
       Next_In_Lang        : Source_Id             := No_Source;
-      --  Link to another source of the same language
+      --  Link to another source of the same language in the same project
    end record;
 
    No_Source_Data : constant Source_Data :=
@@ -779,8 +773,6 @@ package Prj is
                        Switches_Path          => No_Path,
                        Switches_TS            => Empty_Time_Stamp,
                        Naming_Exception       => False,
-                       Next_In_Sources        => No_Source,
-                       Next_In_Project        => No_Source,
                        Next_In_Lang           => No_Source);
 
    package Source_Data_Table is new GNAT.Dynamic_Tables
@@ -1251,6 +1243,8 @@ package Prj is
       -------------
       -- Sources --
       -------------
+      --  In multi-language mode, the sources for all languages including Ada
+      --  are accessible through the Source_Iterator type
 
       Ada_Sources_Present : Boolean := True;
       --  True if there are Ada sources in the project
@@ -1259,11 +1253,7 @@ package Prj is
       --  True if there are non-Ada sources in the project
 
       Ada_Sources : String_List_Id := Nil_String;
-      --  The list of all the Ada source file names (gnatmake only)
-
-      First_Source : Source_Id := No_Source;
-      Last_Source  : Source_Id := No_Source;
-      --  Head and tail of the list of sources
+      --  The list of all the Ada source file names (gnatmake only).
 
       Interfaces_Defined      : Boolean := False;
       --  True if attribute Interfaces is declared for the project or any
@@ -1437,15 +1427,23 @@ package Prj is
    type Private_Project_Tree_Data is private;
    --  Data for a project tree that is used only by the Project Manager
 
+   type Source_Iterator is private;
+
+   function For_Each_Source
+     (In_Tree  : Project_Tree_Ref;
+      Project  : Project_Id := No_Project;
+      Language : Name_Id := No_Name) return Source_Iterator;
+   --  Returns an iterator for all the sources of a project tree, or a specific
+   --  project, or a specific language.
+
+   function Element (Iter : Source_Iterator) return Source_Id;
+   --  Return the current source (or No_Source if there are no more sources)
+
+   procedure Next (Iter : in out Source_Iterator);
+   --  Move on to the next source
+
    type Project_Tree_Data is
       record
-         --  sources of the project
-
-         First_Source : Source_Id := No_Source;
-         --
-
-         --  Tables
-
          Name_Lists        : Name_List_Table.Instance;
          String_Elements   : String_Element_Table.Instance;
          Variable_Elements : Variable_Element_Table.Instance;
@@ -1571,6 +1569,22 @@ private
    Empty_File_Name : File_Name_Type;
    --  Empty File_Name_Type (no characters). Initialized in procedure
    --  Initialize.
+
+   type Source_Iterator is record
+      In_Tree       : Project_Tree_Ref;
+
+      Project       : Project_Id;
+      All_Projects  : Boolean;
+      --  Current project and whether we should move on to the next
+
+      Language      : Language_Ptr;
+      --  Current language processed
+
+      Language_Name : Name_Id;
+      --  Only sources of this language will be returned (or all if No_Name)
+
+      Current       : Source_Id;
+   end record;
 
    procedure Add_To_Buffer
      (S    : String;
