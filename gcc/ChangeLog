@@ -1,3 +1,12 @@
+2009-04-24  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64.md (movfs_internal): Allow flt constants.
+	(movdf_internal): Ditto.
+	* config/ia64/ia64.c (ia64_legitimate_constant_p): Allow
+	SFmode and DFmode constants.
+	(ia64_print_operand): Add 'G' format for printing
+	floating point constants.
+
 2009-04-24  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vrp.c (extract_range_from_binary_expr): Handle overflow
