@@ -1,3 +1,8 @@
+2009-04-24  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* simplify-rtx.c (simplify_binary_operation_1, case AND): Result is
+	zero if no overlap in nonzero bits between the operands.
+
 2009-04-24  Ian Lance Taylor  <iant@google.com>
 
 	* combine.c (record_value_for_reg): Change 0 to VOIDmode, twice.
