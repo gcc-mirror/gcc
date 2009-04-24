@@ -153,7 +153,8 @@ package body Prj is
    --  Free memory allocated for Project
 
    procedure Free_List (Languages : in out Language_Ptr);
-   --  Free memory allocated for the list of languages
+   procedure Free_List (Source : in out Source_Id);
+   --  Free memory allocated for the list of languages or sources
 
    procedure Language_Changed (Iter : in out Source_Iterator);
    procedure Project_Changed (Iter : in out Source_Iterator);
@@ -480,7 +481,7 @@ package body Prj is
 
    procedure Next (Iter : in out Source_Iterator) is
    begin
-      Iter.Current := Iter.In_Tree.Sources.Table (Iter.Current).Next_In_Lang;
+      Iter.Current := Iter.Current.Next_In_Lang;
       if Iter.Current = No_Source then
          Iter.Language := Iter.Language.Next;
          Language_Changed (Iter);
@@ -816,6 +817,22 @@ package body Prj is
    -- Free_List --
    ---------------
 
+   procedure Free_List (Source : in out Source_Id) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Source_Data, Source_Id);
+      Tmp : Source_Id;
+   begin
+      while Source /= No_Source loop
+         Tmp := Source.Next_In_Lang;
+         Unchecked_Free (Source);
+         Source := Tmp;
+      end loop;
+   end Free_List;
+
+   ---------------
+   -- Free_List --
+   ---------------
+
    procedure Free_List (Languages : in out Language_Ptr) is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Language_Data, Language_Ptr);
@@ -823,6 +840,7 @@ package body Prj is
    begin
       while Languages /= null loop
          Tmp := Languages.Next;
+         Free_List (Languages.First_Source);
          Unchecked_Free (Languages);
          Languages := Tmp;
       end loop;
@@ -844,7 +862,6 @@ package body Prj is
          Array_Table.Free (Tree.Arrays);
          Package_Table.Free (Tree.Packages);
          Project_List_Table.Free (Tree.Project_Lists);
-         Source_Data_Table.Free (Tree.Sources);
          Alternate_Language_Table.Free (Tree.Alt_Langs);
          Unit_Table.Free (Tree.Units);
          Units_Htable.Reset (Tree.Units_HT);
@@ -892,7 +909,6 @@ package body Prj is
       Array_Table.Init              (Tree.Arrays);
       Package_Table.Init            (Tree.Packages);
       Project_List_Table.Init       (Tree.Project_Lists);
-      Source_Data_Table.Init        (Tree.Sources);
       Alternate_Language_Table.Init (Tree.Alt_Langs);
       Unit_Table.Init               (Tree.Units);
       Units_Htable.Reset            (Tree.Units_HT);

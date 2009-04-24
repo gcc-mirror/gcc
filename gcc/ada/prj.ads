@@ -398,9 +398,10 @@ package Prj is
                             Spec_Suffix     => No_File,
                             Body_Suffix     => No_File);
 
-   type Source_Id is new Nat;
+   type Source_Data;
+   type Source_Id is access Source_Data;
 
-   No_Source : constant Source_Id := 0;
+   No_Source : constant Source_Id := null;
 
    type Path_Syntax_Kind is
      (Canonical,
@@ -629,7 +630,7 @@ package Prj is
 
       Language            : Language_Ptr        := No_Language_Index;
       --  Index of the language. This is an index into
-      --  project_tree.languages_data
+      --  Project_Tree.Languages_Data.
 
       Lang_Kind           : Language_Kind         := File_Based;
       --  Kind of the language
@@ -645,8 +646,8 @@ package Prj is
       --  True when source is declared in attribute Interfaces
 
       Alternate_Languages : Alternate_Language_Id := No_Alternate_Language;
-      --  List of languages a header file may also be, in addition of
-      --  language Language_Name.
+      --  List of languages a header file may also be, in addition of language
+      --  Language_Name.
 
       Kind                : Source_Kind           := Spec;
       --  Kind of the source: spec, body or subunit
@@ -774,14 +775,6 @@ package Prj is
                        Switches_TS            => Empty_Time_Stamp,
                        Naming_Exception       => False,
                        Next_In_Lang           => No_Source);
-
-   package Source_Data_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Source_Data,
-      Table_Index_Type     => Source_Id,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 1000,
-      Table_Increment      => 100);
-   --  The table for the sources
 
    package Source_Paths_Htable is new Simple_HTable
      (Header_Num => Header_Num,
@@ -1452,7 +1445,6 @@ package Prj is
          Packages          : Package_Table.Instance;
          Project_Lists     : Project_List_Table.Instance;
          Projects          : Project_Table.Instance;
-         Sources           : Source_Data_Table.Instance;
          Alt_Langs         : Alternate_Language_Table.Instance;
          Units             : Unit_Table.Instance;
          Units_HT          : Units_Htable.Instance;
