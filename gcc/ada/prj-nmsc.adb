@@ -3461,7 +3461,9 @@ package body Prj.Nmsc is
                         Continuation := Continuation_String'Access;
                      end if;
 
-                  elsif Data.Library_Kind /= Static then
+                  elsif (not Unchecked_Shared_Lib_Imports)
+                        and then Data.Library_Kind /= Static
+                  then
                      Error_Msg
                        (Project, In_Tree,
                         Continuation.all &
@@ -3485,17 +3487,18 @@ package body Prj.Nmsc is
                      "shared library project %% cannot extend static " &
                      "library project %%",
                      Data.Location);
+                  Continuation := Continuation_String'Access;
 
-               else
+               elsif not Unchecked_Shared_Lib_Imports then
                   Error_Msg
                     (Project, In_Tree,
                      Continuation.all &
                      "shared library project %% cannot import static " &
                      "library project %%",
                      Data.Location);
+                  Continuation := Continuation_String'Access;
                end if;
 
-               Continuation := Continuation_String'Access;
             end if;
          end if;
       end Check_Library;
