@@ -1,3 +1,7 @@
+2009-04-24  Diego Novillo  <dnovillo@google.com>
+
+	* gengtype-parse.c (parse_error): Add newline after message.
+
 2009-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/sse.md (avxmodesuffixs): Removed.
