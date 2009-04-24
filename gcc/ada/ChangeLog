@@ -1,3 +1,17 @@
+2009-04-24  Emmanuel Briot  <briot@adacore.com>
+
+	* prj.adb, prj.ads, prj-nmsc.adb, prj-env.adb (Language_Index): renamed
+	to Language_Ptr to better reflect its new implementation.
+	(Project_Data.First_Languages_Processing): renamed to Languages now
+	that the field with that name is no longer used
+	(Project_Data.Languages): removed, no longer used, and duplicates
+	information already available through First_Language_Processing.
+	(Prj.Language_Index): now an actual pointer, instead of an index into
+	a table. This makes the list somewhat more obvious, but more importantly
+	removes the need to pass a pointer to the project_tree_data in a few
+	places, and makes accessing the attributes of a languages more
+	efficient.
+
 2009-04-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
             Thomas Quinot  <quinot@adacore.com>
 

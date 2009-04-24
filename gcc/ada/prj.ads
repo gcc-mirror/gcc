@@ -307,15 +307,15 @@ package Prj is
       Table_Increment      => 100);
    --  The table that contains all packages
 
-   type Language_Index is new Nat;
+   type Language_Data;
+   type Language_Ptr is access Language_Data;
    --  Index of language data
 
-   No_Language_Index : constant Language_Index := 0;
+   No_Language_Index : constant Language_Ptr := null;
    --  Constant indicating that there is no language data
 
    procedure Display_Language_Name
-     (In_Tree  : Project_Tree_Ref;
-      Language : Language_Index);
+     (Language : Language_Ptr);
    --  Output the name of a language
 
    Max_Header_Num : constant := 6150;
@@ -596,7 +596,7 @@ package Prj is
       First_Source  : Source_Id       := No_Source;
       Mapping_Files : Mapping_Files_Htable.Instance :=
                         Mapping_Files_Htable.Nil;
-      Next          : Language_Index  := No_Language_Index;
+      Next          : Language_Ptr  := No_Language_Index;
    end record;
 
    No_Language_Data : constant Language_Data :=
@@ -607,20 +607,12 @@ package Prj is
                          Mapping_Files => Mapping_Files_Htable.Nil,
                          Next          => No_Language_Index);
 
-   package Language_Data_Table is new GNAT.Dynamic_Tables
-     (Table_Component_Type => Language_Data,
-      Table_Index_Type     => Language_Index,
-      Table_Low_Bound      => 1,
-      Table_Initial        => 10,
-      Table_Increment      => 100);
-   --  The table for lists of names used in package Language_Processing
-
    type Alternate_Language_Id is new Nat;
 
    No_Alternate_Language : constant Alternate_Language_Id := 0;
 
    type Alternate_Language_Data is record
-      Language : Language_Index := No_Language_Index;
+      Language : Language_Ptr := No_Language_Index;
       Next     : Alternate_Language_Id := No_Alternate_Language;
    end record;
 
@@ -639,7 +631,7 @@ package Prj is
       Project             : Project_Id            := No_Project;
       --  Project of the source
 
-      Language            : Language_Index        := No_Language_Index;
+      Language            : Language_Ptr        := No_Language_Index;
       --  Index of the language. This is an index into
       --  project_tree.languages_data
 
@@ -1174,14 +1166,11 @@ package Prj is
       -- Languages --
       ---------------
 
-      Languages : Name_List_Index := No_Name_List;
-      --  The list of languages of the sources of this project
-      --  mode: Ada_Only
-
-      First_Language_Processing : Language_Index := No_Language_Index;
+      Languages : Language_Ptr := No_Language_Index;
       --  First index of the language data in the project.
-      --  This is an index into the project_tree_data.languages_data
-      --  mode: Multi_Language
+      --  This is an index into the project_tree_data.languages_data.
+      --  Traversing the list gives access to all the languages supported by
+      --  the project.
 
       --------------
       -- Projects --
@@ -1391,8 +1380,7 @@ package Prj is
    --  ??? needs comment
 
    function Is_A_Language
-     (Tree          : Project_Tree_Ref;
-      Data          : Project_Data;
+     (Data          : Project_Data;
       Language_Name : Name_Id) return Boolean;
    --  Return True when Language_Name (which must be lower case) is one of the
    --  languages used for the project.
@@ -1471,7 +1459,7 @@ package Prj is
       record
          --  Languages and sources of the project
 
-         First_Language : Language_Index  := No_Language_Index;
+         First_Language : Language_Ptr  := No_Language_Index;
          --
 
          First_Source : Source_Id := No_Source;
@@ -1479,7 +1467,6 @@ package Prj is
 
          --  Tables
 
-         Languages_Data    : Language_Data_Table.Instance;
          Name_Lists        : Name_List_Table.Instance;
          String_Elements   : String_Element_Table.Instance;
          Variable_Elements : Variable_Element_Table.Instance;

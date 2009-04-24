@@ -86,7 +86,6 @@ package body Prj is
                      (Qualifier                      => Unspecified,
                       Externally_Built               => False,
                       Config                         => Default_Project_Config,
-                      Languages                      => No_Name_List,
                       Name                           => No_Name,
                       Display_Name                   => No_Name,
                       Path                           => No_Path_Information,
@@ -124,7 +123,7 @@ package body Prj is
                       Extends                        => No_Project,
                       Extended_By                    => No_Project,
                       Naming                         => Std_Naming_Data,
-                      First_Language_Processing      => No_Language_Index,
+                      Languages      => No_Language_Index,
                       Decl                           => No_Declarations,
                       Imported_Projects              => Empty_Project_List,
                       All_Imported_Projects          => Empty_Project_List,
@@ -155,6 +154,9 @@ package body Prj is
 
    procedure Free (Project : in out Project_Data);
    --  Free memory allocated for Project
+
+   procedure Free_List (Languages : in out Language_Ptr);
+   --  Free memory allocated for the list of languages
 
    -------------------
    -- Add_To_Buffer --
@@ -225,7 +227,7 @@ package body Prj is
       Element_Id : Array_Element_Id;
       Element    : Array_Element;
       Suffix     : File_Name_Type := No_File;
-      Lang       : Language_Index;
+      Lang       : Language_Ptr;
 
    begin
       --  ??? This seems to be only for Ada_Only mode...
@@ -243,14 +245,12 @@ package body Prj is
       if Current_Mode = Multi_Language then
          Lang := In_Tree.First_Language;
          while Lang /= No_Language_Index loop
-            if In_Tree.Languages_Data.Table (Lang).Name = Language_Id then
-               Suffix :=
-                 In_Tree.Languages_Data.Table
-                   (Lang).Config.Naming_Data.Body_Suffix;
+            if Lang.Name = Language_Id then
+               Suffix := Lang.Config.Naming_Data.Body_Suffix;
                exit;
             end if;
 
-            Lang := In_Tree.Languages_Data.Table (Lang).Next;
+            Lang := Lang.Next;
          end loop;
       end if;
 
@@ -270,7 +270,7 @@ package body Prj is
       Element_Id  : Array_Element_Id;
       Element     : Array_Element;
       Suffix      : File_Name_Type := No_File;
-      Lang        : Language_Index;
+      Lang        : Language_Ptr;
 
    begin
       Name_Len := 0;
@@ -292,15 +292,12 @@ package body Prj is
       if Current_Mode = Multi_Language then
          Lang := In_Tree.First_Language;
          while Lang /= No_Language_Index loop
-            if In_Tree.Languages_Data.Table (Lang).Name = Language_Id then
-               Suffix :=
-                 File_Name_Type
-                   (In_Tree.Languages_Data.Table
-                        (Lang).Config.Naming_Data.Body_Suffix);
+            if Lang.Name = Language_Id then
+               Suffix := File_Name_Type (Lang.Config.Naming_Data.Body_Suffix);
                exit;
             end if;
 
-            Lang := In_Tree.Languages_Data.Table (Lang).Next;
+            Lang := Lang.Next;
          end loop;
 
          if Suffix /= No_File then
@@ -377,11 +374,10 @@ package body Prj is
    ---------------------------
 
    procedure Display_Language_Name
-     (In_Tree  : Project_Tree_Ref;
-      Language : Language_Index)
+     (Language : Language_Ptr)
    is
    begin
-      Get_Name_String (In_Tree.Languages_Data.Table (Language).Display_Name);
+      Get_Name_String (Language.Display_Name);
       Write_Str (Name_Buffer (1 .. Name_Len));
    end Display_Language_Name;
 
@@ -600,41 +596,18 @@ package body Prj is
    -------------------
 
    function Is_A_Language
-     (Tree          : Project_Tree_Ref;
-      Data          : Project_Data;
+     (Data          : Project_Data;
       Language_Name : Name_Id) return Boolean
    is
+      Lang_Ind  : Language_Ptr := Data.Languages;
    begin
-      if Get_Mode = Ada_Only then
-         declare
-            List : Name_List_Index := Data.Languages;
-         begin
-            while List /= No_Name_List loop
-               if Tree.Name_Lists.Table (List).Name = Language_Name then
-                  return True;
-               else
-                  List := Tree.Name_Lists.Table (List).Next;
-               end if;
-            end loop;
-         end;
+      while Lang_Ind /= No_Language_Index loop
+         if Lang_Ind.Name = Language_Name then
+            return True;
+         end if;
 
-      else
-         declare
-            Lang_Ind  : Language_Index := Data.First_Language_Processing;
-            Lang_Data : Language_Data;
-
-         begin
-            while Lang_Ind /= No_Language_Index loop
-               Lang_Data := Tree.Languages_Data.Table (Lang_Ind);
-
-               if Lang_Data.Name = Language_Name then
-                  return True;
-               end if;
-
-               Lang_Ind := Lang_Data.Next;
-            end loop;
-         end;
-      end if;
+         Lang_Ind := Lang_Ind.Next;
+      end loop;
 
       return False;
    end Is_A_Language;
@@ -672,7 +645,7 @@ package body Prj is
       In_Tree  : Project_Tree_Ref) return Boolean
    is
       Language_Id : Name_Id;
-      Lang        : Language_Index;
+      Lang        : Language_Ptr;
 
    begin
       if Current_Mode = Multi_Language then
@@ -683,13 +656,11 @@ package body Prj is
 
          Lang := In_Tree.First_Language;
          while Lang /= No_Language_Index loop
-            if In_Tree.Languages_Data.Table (Lang).Name = Language_Id then
-               return
-                 In_Tree.Languages_Data.Table
-                   (Lang).Config.Object_Generated;
+            if Lang.Name = Language_Id then
+               return Lang.Config.Object_Generated;
             end if;
 
-            Lang := In_Tree.Languages_Data.Table (Lang).Next;
+            Lang := Lang.Next;
          end loop;
       end if;
 
@@ -842,6 +813,22 @@ package body Prj is
       Free (Project.Ada_Objects_Path);
    end Free;
 
+   ---------------
+   -- Free_List --
+   ---------------
+
+   procedure Free_List (Languages : in out Language_Ptr) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Language_Data, Language_Ptr);
+      Tmp : Language_Ptr;
+   begin
+      while Languages /= null loop
+         Tmp := Languages.Next;
+         Unchecked_Free (Languages);
+         Languages := Tmp;
+      end loop;
+   end Free_List;
+
    ----------
    -- Free --
    ----------
@@ -851,7 +838,6 @@ package body Prj is
         (Project_Tree_Data, Project_Tree_Ref);
    begin
       if Tree /= null then
-         Language_Data_Table.Free (Tree.Languages_Data);
          Name_List_Table.Free (Tree.Name_Lists);
          String_Element_Table.Free (Tree.String_Elements);
          Variable_Element_Table.Free (Tree.Variable_Elements);
@@ -870,6 +856,7 @@ package body Prj is
          for P in Project_Table.First ..
            Project_Table.Last (Tree.Projects)
          loop
+            Free_List (Tree.Projects.Table (P).Languages);
             Free (Tree.Projects.Table (P));
          end loop;
 
@@ -899,7 +886,6 @@ package body Prj is
 
       --  Visible tables
 
-      Language_Data_Table.Init      (Tree.Languages_Data);
       Name_List_Table.Init          (Tree.Name_Lists);
       String_Element_Table.Init     (Tree.String_Elements);
       Variable_Element_Table.Init   (Tree.Variable_Elements);
@@ -1107,7 +1093,7 @@ package body Prj is
       Element_Id : Array_Element_Id;
       Element    : Array_Element;
       Suffix     : File_Name_Type := No_File;
-      Lang       : Language_Index;
+      Lang       : Language_Ptr;
 
    begin
       Element_Id := Naming.Spec_Suffix;
@@ -1124,14 +1110,12 @@ package body Prj is
       if Current_Mode = Multi_Language then
          Lang := In_Tree.First_Language;
          while Lang /= No_Language_Index loop
-            if In_Tree.Languages_Data.Table (Lang).Name = Language_Id then
-               Suffix :=
-                 In_Tree.Languages_Data.Table
-                   (Lang).Config.Naming_Data.Spec_Suffix;
+            if Lang.Name = Language_Id then
+               Suffix := Lang.Config.Naming_Data.Spec_Suffix;
                exit;
             end if;
 
-            Lang := In_Tree.Languages_Data.Table (Lang).Next;
+            Lang := Lang.Next;
          end loop;
       end if;
 
@@ -1151,7 +1135,7 @@ package body Prj is
       Element_Id  : Array_Element_Id;
       Element     : Array_Element;
       Suffix      : File_Name_Type := No_File;
-      Lang        : Language_Index;
+      Lang        : Language_Ptr;
 
    begin
       Name_Len := 0;
@@ -1173,15 +1157,13 @@ package body Prj is
       if Current_Mode = Multi_Language then
          Lang := In_Tree.First_Language;
          while Lang /= No_Language_Index loop
-            if In_Tree.Languages_Data.Table (Lang).Name = Language_Id then
+            if Lang.Name = Language_Id then
                Suffix :=
-                 File_Name_Type
-                   (In_Tree.Languages_Data.Table
-                      (Lang).Config.Naming_Data.Spec_Suffix);
+                 File_Name_Type (Lang.Config.Naming_Data.Spec_Suffix);
                exit;
             end if;
 
-            Lang := In_Tree.Languages_Data.Table (Lang).Next;
+            Lang := Lang.Next;
          end loop;
 
          if Suffix /= No_File then

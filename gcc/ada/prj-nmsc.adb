@@ -230,7 +230,7 @@ package body Prj.Nmsc is
       In_Tree             : Project_Tree_Ref;
       Project             : Project_Id;
       Lang                : Name_Id;
-      Lang_Id             : Language_Index;
+      Lang_Id             : Language_Ptr;
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
       Display_File        : File_Name_Type;
@@ -362,13 +362,6 @@ package body Prj.Nmsc is
    --  Find the path names of the source files in the Source_Names table
    --  in the source directories and record those that are Ada sources.
 
-   function Get_Language_Processing_From_Lang
-     (In_Tree : Project_Tree_Ref;
-      Data    : Project_Data;
-      Lang    : Name_List_Index) return Language_Index;
-   --  Return the language_processing description associated for the given
-   --  language.
-
    function Compute_Directory_Last (Dir : String) return Natural;
    --  Return the index of the last significant character in Dir. This is used
    --  to avoid duplicate '/' (slash) characters at the end of directory names.
@@ -434,7 +427,7 @@ package body Prj.Nmsc is
       Data                  : in out Project_Data;
       File_Name             : File_Name_Type;
       Alternate_Languages   : out Alternate_Language_Id;
-      Language              : out Language_Index;
+      Language              : out Language_Ptr;
       Language_Name         : out Name_Id;
       Display_Language_Name : out Name_Id;
       Unit                  : out Name_Id;
@@ -698,7 +691,7 @@ package body Prj.Nmsc is
       In_Tree             : Project_Tree_Ref;
       Project             : Project_Id;
       Lang                : Name_Id;
-      Lang_Id             : Language_Index;
+      Lang_Id             : Language_Ptr;
       Kind                : Source_Kind;
       File_Name           : File_Name_Type;
       Display_File        : File_Name_Type;
@@ -714,8 +707,7 @@ package body Prj.Nmsc is
    is
       Source   : constant Source_Id := Data.Last_Source;
       Src_Data : Source_Data := No_Source_Data;
-      Config   : constant Language_Config :=
-                   In_Tree.Languages_Data.Table (Lang_Id).Config;
+      Config   : constant Language_Config := Lang_Id.Config;
 
    begin
       --  This is a new source so create an entry for it in the Sources table
@@ -740,9 +732,8 @@ package body Prj.Nmsc is
       Src_Data.Project             := Project;
       Src_Data.Language            := Lang_Id;
       Src_Data.Lang_Kind           := Lang_Kind;
-      Src_Data.Compiled            := In_Tree.Languages_Data.Table
-                                        (Lang_Id).Config.Compiler_Driver /=
-                                                              Empty_File_Name;
+      Src_Data.Compiled            :=
+        Lang_Id.Config.Compiler_Driver /= Empty_File_Name;
       Src_Data.Kind                := Kind;
       Src_Data.Alternate_Languages := Alternate_Languages;
       Src_Data.Other_Part          := Other_Part;
@@ -758,8 +749,7 @@ package body Prj.Nmsc is
       Src_Data.Index               := Index;
       Src_Data.File                := File_Name;
       Src_Data.Display_File        := Display_File;
-      Src_Data.Dependency          := In_Tree.Languages_Data.Table
-                                        (Lang_Id).Config.Dependency_Kind;
+      Src_Data.Dependency          := Lang_Id.Config.Dependency_Kind;
       Src_Data.Dep_Name            := Dependency_Name
                                         (File_Name, Src_Data.Dependency);
       Src_Data.Naming_Exception    := Naming_Exception;
@@ -799,9 +789,8 @@ package body Prj.Nmsc is
 
       --  Add the source to the language list
 
-      Src_Data.Next_In_Lang :=
-        In_Tree.Languages_Data.Table (Lang_Id).First_Source;
-      In_Tree.Languages_Data.Table (Lang_Id).First_Source := Id;
+      Src_Data.Next_In_Lang := Lang_Id.First_Source;
+      Lang_Id.First_Source := Id;
 
       In_Tree.Sources.Table (Id) := Src_Data;
 
@@ -935,14 +924,14 @@ package body Prj.Nmsc is
                (not Extending)
          then
             declare
-               Language      : Language_Index;
+               Language      : Language_Ptr;
                Source        : Source_Id;
                Alt_Lang      : Alternate_Language_Id;
                Alt_Lang_Data : Alternate_Language_Data;
                Continuation  : Boolean := False;
 
             begin
-               Language := Data.First_Language_Processing;
+               Language := Data.Languages;
                while Language /= No_Language_Index loop
                   Source := Data.First_Source;
                   Source_Loop : while Source /= No_Source loop
@@ -971,16 +960,14 @@ package body Prj.Nmsc is
                   if Source = No_Source then
                      Report_No_Sources
                        (Project,
-                        Get_Name_String
-                          (In_Tree.Languages_Data.Table
-                             (Language).Display_Name),
+                        Get_Name_String (Language.Display_Name),
                         In_Tree,
                         Data.Location,
                         Continuation);
                      Continuation := True;
                   end if;
 
-                  Language := In_Tree.Languages_Data.Table (Language).Next;
+                  Language := Language.Next;
                end loop;
             end;
          end if;
@@ -1209,17 +1196,14 @@ package body Prj.Nmsc is
       Casing          : Casing_Type    := All_Lower_Case;
       Separate_Suffix : File_Name_Type := No_File;
 
-      Lang_Index : Language_Index := No_Language_Index;
+      Lang_Index : Language_Ptr := No_Language_Index;
       --  The index of the language data being checked
 
-      Prev_Index : Language_Index := No_Language_Index;
+      Prev_Index : Language_Ptr := No_Language_Index;
       --  The index of the previous language
 
       Current_Language : Name_Id := No_Name;
       --  The name of the language
-
-      Lang_Data : Language_Data;
-      --  The data of the language being checked
 
       procedure Get_Language_Index_Of (Language : Name_Id);
       --  Get the language index of Language, if Language is one of the
@@ -1249,12 +1233,10 @@ package body Prj.Nmsc is
          --  Nothing to do if the language is the same as the current language
 
          if Current_Language /= Real_Language then
-            Lang_Index := Data.First_Language_Processing;
+            Lang_Index := Data.Languages;
             while Lang_Index /= No_Language_Index loop
-               exit when In_Tree.Languages_Data.Table (Lang_Index).Name =
-                 Real_Language;
-               Lang_Index :=
-                 In_Tree.Languages_Data.Table (Lang_Index).Next;
+               exit when Lang_Index.Name = Real_Language;
+               Lang_Index := Lang_Index.Next;
             end loop;
 
             if Lang_Index = No_Language_Index then
@@ -1325,14 +1307,12 @@ package body Prj.Nmsc is
 
                            --  Attribute Driver (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Binder_Driver :=
+                           Lang_Index.Config.Binder_Driver :=
                              File_Name_Type (Element.Value.Value);
 
                         when Name_Required_Switches =>
                            Put (Into_List =>
-                                In_Tree.Languages_Data.Table
-                                  (Lang_Index).Config.Binder_Required_Switches,
+                                   Lang_Index.Config.Binder_Required_Switches,
                                 From_List => Element.Value.Values,
                                 In_Tree   => In_Tree);
 
@@ -1340,24 +1320,21 @@ package body Prj.Nmsc is
 
                            --  Attribute Prefix (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Binder_Prefix :=
+                           Lang_Index.Config.Binder_Prefix :=
                              Element.Value.Value;
 
                         when Name_Objects_Path =>
 
                            --  Attribute Objects_Path (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Objects_Path :=
+                           Lang_Index.Config.Objects_Path :=
                              Element.Value.Value;
 
                         when Name_Objects_Path_File =>
 
                            --  Attribute Objects_Path (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Objects_Path_File :=
+                           Lang_Index.Config.Objects_Path_File :=
                              Element.Value.Value;
 
                         when others =>
@@ -1438,20 +1415,15 @@ package body Prj.Nmsc is
 
                            --  Attribute Dependency_Switches (<language>)
 
-                           if In_Tree.Languages_Data.Table
-                               (Lang_Index).Config.Dependency_Kind = None
-                           then
-                              In_Tree.Languages_Data.Table
-                                (Lang_Index).Config.Dependency_Kind :=
-                                  Makefile;
+                           if Lang_Index.Config.Dependency_Kind = None then
+                              Lang_Index.Config.Dependency_Kind := Makefile;
                            end if;
 
                            List := Element.Value.Values;
 
                            if List /= Nil_String then
                               Put (Into_List =>
-                                     In_Tree.Languages_Data.Table
-                                       (Lang_Index).Config.Dependency_Option,
+                                     Lang_Index.Config.Dependency_Option,
                                    From_List => List,
                                    In_Tree   => In_Tree);
                            end if;
@@ -1460,20 +1432,15 @@ package body Prj.Nmsc is
 
                            --  Attribute Dependency_Driver (<language>)
 
-                           if In_Tree.Languages_Data.Table
-                               (Lang_Index).Config.Dependency_Kind = None
-                           then
-                              In_Tree.Languages_Data.Table
-                                (Lang_Index).Config.Dependency_Kind :=
-                                  Makefile;
+                           if Lang_Index.Config.Dependency_Kind = None then
+                              Lang_Index.Config.Dependency_Kind := Makefile;
                            end if;
 
                            List := Element.Value.Values;
 
                            if List /= Nil_String then
                               Put (Into_List =>
-                                     In_Tree.Languages_Data.Table
-                                       (Lang_Index).Config.Compute_Dependency,
+                                     Lang_Index.Config.Compute_Dependency,
                                    From_List => List,
                                    In_Tree   => In_Tree);
                            end if;
@@ -1493,8 +1460,7 @@ package body Prj.Nmsc is
                            end if;
 
                            Put (Into_List =>
-                                In_Tree.Languages_Data.Table
-                                  (Lang_Index).Config.Include_Option,
+                                  Lang_Index.Config.Include_Option,
                                 From_List => List,
                                 In_Tree   => In_Tree);
 
@@ -1502,16 +1468,14 @@ package body Prj.Nmsc is
 
                            --  Attribute Include_Path (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Include_Path :=
+                           Lang_Index.Config.Include_Path :=
                              Element.Value.Value;
 
                         when Name_Include_Path_File =>
 
                            --  Attribute Include_Path_File (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Include_Path_File :=
+                           Lang_Index.Config.Include_Path_File :=
                                Element.Value.Value;
 
                         when Name_Driver =>
@@ -1520,22 +1484,18 @@ package body Prj.Nmsc is
 
                            Get_Name_String (Element.Value.Value);
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Compiler_Driver :=
+                           Lang_Index.Config.Compiler_Driver :=
                                File_Name_Type (Element.Value.Value);
 
                         when Name_Required_Switches =>
                            Put (Into_List =>
-                                In_Tree.Languages_Data.Table
-                                  (Lang_Index).Config.
-                                    Compiler_Required_Switches,
+                                  Lang_Index.Config.Compiler_Required_Switches,
                                 From_List => Element.Value.Values,
                                 In_Tree   => In_Tree);
 
                         when Name_Path_Syntax =>
                            begin
-                              In_Tree.Languages_Data.Table
-                                (Lang_Index).Config.Path_Syntax :=
+                              Lang_Index.Config.Path_Syntax :=
                                   Path_Syntax_Kind'Value
                                     (Get_Name_String (Element.Value.Value));
 
@@ -1556,8 +1516,7 @@ package body Prj.Nmsc is
                                  Element.Value.Location);
 
                            else
-                              In_Tree.Languages_Data.Table
-                                (Lang_Index).Config.Object_File_Suffix :=
+                              Lang_Index.Config.Object_File_Suffix :=
                                 Element.Value.Value;
                            end if;
 
@@ -1576,8 +1535,7 @@ package body Prj.Nmsc is
                            end if;
 
                            Put (Into_List =>
-                                In_Tree.Languages_Data.Table
-                                  (Lang_Index).Config.Compilation_PIC_Option,
+                                  Lang_Index.Config.Compilation_PIC_Option,
                                 From_List => List,
                                 In_Tree   => In_Tree);
 
@@ -1596,8 +1554,7 @@ package body Prj.Nmsc is
                            end if;
 
                            Put (Into_List =>
-                                In_Tree.Languages_Data.Table
-                                  (Lang_Index).Config.Mapping_File_Switches,
+                                  Lang_Index.Config.Mapping_File_Switches,
                                 From_List => List,
                                 In_Tree   => In_Tree);
 
@@ -1605,17 +1562,15 @@ package body Prj.Nmsc is
 
                            --  Attribute Mapping_Spec_Suffix (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Mapping_Spec_Suffix :=
-                               File_Name_Type (Element.Value.Value);
+                           Lang_Index.Config.Mapping_Spec_Suffix :=
+                             File_Name_Type (Element.Value.Value);
 
                         when Name_Mapping_Body_Suffix =>
 
                            --  Attribute Mapping_Body_Suffix (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Mapping_Body_Suffix :=
-                               File_Name_Type (Element.Value.Value);
+                           Lang_Index.Config.Mapping_Body_Suffix :=
+                             File_Name_Type (Element.Value.Value);
 
                         when Name_Config_File_Switches =>
 
@@ -1632,8 +1587,7 @@ package body Prj.Nmsc is
                            end if;
 
                            Put (Into_List =>
-                                  In_Tree.Languages_Data.Table
-                                    (Lang_Index).Config.Config_File_Switches,
+                                  Lang_Index.Config.Config_File_Switches,
                                 From_List => List,
                                 In_Tree   => In_Tree);
 
@@ -1641,50 +1595,44 @@ package body Prj.Nmsc is
 
                            --  Attribute Objects_Path (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Objects_Path :=
-                               Element.Value.Value;
+                           Lang_Index.Config.Objects_Path :=
+                             Element.Value.Value;
 
                         when Name_Objects_Path_File =>
 
                            --  Attribute Objects_Path_File (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Objects_Path_File :=
-                               Element.Value.Value;
+                           Lang_Index.Config.Objects_Path_File :=
+                             Element.Value.Value;
 
                         when Name_Config_Body_File_Name =>
 
                            --  Attribute Config_Body_File_Name (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Config_Body :=
-                               Element.Value.Value;
+                           Lang_Index.Config.Config_Body :=
+                             Element.Value.Value;
 
                         when Name_Config_Body_File_Name_Pattern =>
 
                            --  Attribute Config_Body_File_Name_Pattern
                            --  (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Config_Body_Pattern :=
-                               Element.Value.Value;
+                           Lang_Index.Config.Config_Body_Pattern :=
+                             Element.Value.Value;
 
                         when Name_Config_Spec_File_Name =>
 
                            --  Attribute Config_Spec_File_Name (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Config_Spec :=
-                               Element.Value.Value;
+                           Lang_Index.Config.Config_Spec :=
+                             Element.Value.Value;
 
                         when Name_Config_Spec_File_Name_Pattern =>
 
                            --  Attribute Config_Spec_File_Name_Pattern
                            --  (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Config_Spec_Pattern :=
+                           Lang_Index.Config.Config_Spec_Pattern :=
                              Element.Value.Value;
 
                         when Name_Config_File_Unique =>
@@ -1692,10 +1640,9 @@ package body Prj.Nmsc is
                            --  Attribute Config_File_Unique (<language>)
 
                            begin
-                              In_Tree.Languages_Data.Table
-                                (Lang_Index).Config.Config_File_Unique :=
-                                  Boolean'Value
-                                    (Get_Name_String (Element.Value.Value));
+                              Lang_Index.Config.Config_File_Unique :=
+                                Boolean'Value
+                                  (Get_Name_String (Element.Value.Value));
                            exception
                               when Constraint_Error =>
                                  Error_Msg
@@ -1796,21 +1743,18 @@ package body Prj.Nmsc is
 
                            --  Attribute Spec_Suffix (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Naming_Data.Spec_Suffix :=
-                               File_Name_Type (Element.Value.Value);
+                           Lang_Index.Config.Naming_Data.Spec_Suffix :=
+                             File_Name_Type (Element.Value.Value);
 
                         when Name_Implementation_Suffix | Name_Body_Suffix =>
 
                            --  Attribute Body_Suffix (<language>)
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Naming_Data.Body_Suffix :=
-                               File_Name_Type (Element.Value.Value);
+                           Lang_Index.Config.Naming_Data.Body_Suffix :=
+                             File_Name_Type (Element.Value.Value);
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Naming_Data.Separate_Suffix :=
-                               File_Name_Type (Element.Value.Value);
+                           Lang_Index.Config.Naming_Data.Separate_Suffix :=
+                             File_Name_Type (Element.Value.Value);
 
                         when others =>
                            null;
@@ -2317,8 +2261,7 @@ package body Prj.Nmsc is
                         if List /= Nil_String then
                            Put
                              (Into_List  =>
-                                In_Tree.Languages_Data.Table (Lang_Index).
-                                  Config.Include_Compatible_Languages,
+                                Lang_Index.Config.Include_Compatible_Languages,
                               From_List  => List,
                               In_Tree    => In_Tree,
                               Lower_Case => True);
@@ -2328,32 +2271,28 @@ package body Prj.Nmsc is
 
                         --  Attribute Toolchain_Description (<language>)
 
-                        In_Tree.Languages_Data.Table
-                          (Lang_Index).Config.Toolchain_Description :=
+                        Lang_Index.Config.Toolchain_Description :=
                           Element.Value.Value;
 
                      when Name_Toolchain_Version =>
 
                         --  Attribute Toolchain_Version (<language>)
 
-                        In_Tree.Languages_Data.Table
-                          (Lang_Index).Config.Toolchain_Version :=
+                        Lang_Index.Config.Toolchain_Version :=
                           Element.Value.Value;
 
                      when Name_Runtime_Library_Dir =>
 
                         --  Attribute Runtime_Library_Dir (<language>)
 
-                        In_Tree.Languages_Data.Table
-                          (Lang_Index).Config.Runtime_Library_Dir :=
+                        Lang_Index.Config.Runtime_Library_Dir :=
                           Element.Value.Value;
 
                      when Name_Runtime_Source_Dir =>
 
                         --  Attribute Runtime_Library_Dir (<language>)
 
-                        In_Tree.Languages_Data.Table
-                          (Lang_Index).Config.Runtime_Source_Dir :=
+                        Lang_Index.Config.Runtime_Source_Dir :=
                           Element.Value.Value;
 
                      when Name_Object_Generated =>
@@ -2366,15 +2305,13 @@ package body Prj.Nmsc is
                              Boolean'Value
                                (Get_Name_String (Element.Value.Value));
 
-                           In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Object_Generated := Value;
+                           Lang_Index.Config.Object_Generated := Value;
 
                            --  If no object is generated, no object may be
                            --  linked.
 
                            if not Value then
-                              In_Tree.Languages_Data.Table
-                                (Lang_Index).Config.Objects_Linked := False;
+                              Lang_Index.Config.Objects_Linked := False;
                            end if;
 
                         exception
@@ -2401,12 +2338,8 @@ package body Prj.Nmsc is
                            --  No change if Object_Generated is False, as this
                            --  forces Objects_Linked to be False too.
 
-                           if In_Tree.Languages_Data.Table
-                             (Lang_Index).Config.Object_Generated
-                           then
-                              In_Tree.Languages_Data.Table
-                                (Lang_Index).Config.Objects_Linked :=
-                                Value;
+                           if Lang_Index.Config.Object_Generated then
+                              Lang_Index.Config.Objects_Linked := Value;
                            end if;
 
                         exception
@@ -2439,27 +2372,21 @@ package body Prj.Nmsc is
       --  For unit based languages, set Casing, Dot_Replacement and
       --  Separate_Suffix in Naming_Data.
 
-      Lang_Index := Data.First_Language_Processing;
+      Lang_Index := Data.Languages;
       while Lang_Index /= No_Language_Index loop
-         if In_Tree.Languages_Data.Table
-           (Lang_Index).Name = Name_Ada
-         then
-            In_Tree.Languages_Data.Table
-              (Lang_Index).Config.Naming_Data.Casing := Casing;
-            In_Tree.Languages_Data.Table
-              (Lang_Index).Config.Naming_Data.Dot_Replacement :=
-              Dot_Replacement;
+         if Lang_Index.Name = Name_Ada then
+            Lang_Index.Config.Naming_Data.Casing := Casing;
+            Lang_Index.Config.Naming_Data.Dot_Replacement := Dot_Replacement;
 
             if Separate_Suffix /= No_File then
-               In_Tree.Languages_Data.Table
-                 (Lang_Index).Config.Naming_Data.Separate_Suffix :=
+               Lang_Index.Config.Naming_Data.Separate_Suffix :=
                  Separate_Suffix;
             end if;
 
             exit;
          end if;
 
-         Lang_Index := In_Tree.Languages_Data.Table (Lang_Index).Next;
+         Lang_Index := Lang_Index.Next;
       end loop;
 
       --  Give empty names to various prefixes/suffixes, if they have not
@@ -2477,15 +2404,13 @@ package body Prj.Nmsc is
          Data.Config.Shared_Lib_Suffix := Empty_File;
       end if;
 
-      Lang_Index := Data.First_Language_Processing;
+      Lang_Index := Data.Languages;
       while Lang_Index /= No_Language_Index loop
-         Lang_Data := In_Tree.Languages_Data.Table (Lang_Index);
-
-         Current_Language := Lang_Data.Display_Name;
+         Current_Language := Lang_Index.Display_Name;
 
          --  For all languages, Compiler_Driver needs to be specified
 
-         if Lang_Data.Config.Compiler_Driver = No_File then
+         if Lang_Index.Config.Compiler_Driver = No_File then
             Error_Msg_Name_1 := Current_Language;
             Error_Msg
               (Project,
@@ -2494,21 +2419,19 @@ package body Prj.Nmsc is
                ", ignoring all its sources",
                No_Location);
 
-            if Lang_Index = Data.First_Language_Processing then
-               Data.First_Language_Processing :=
-                 Lang_Data.Next;
+            if Lang_Index = Data.Languages then
+               Data.Languages := Lang_Index.Next;
             else
-               In_Tree.Languages_Data.Table (Prev_Index).Next :=
-                 Lang_Data.Next;
+               Prev_Index.Next := Lang_Index.Next;
             end if;
 
-         elsif Lang_Data.Name = Name_Ada then
+         elsif Lang_Index.Name = Name_Ada then
             Prev_Index := Lang_Index;
 
             --  For unit based languages, Dot_Replacement, Spec_Suffix and
             --  Body_Suffix need to be specified.
 
-            if Lang_Data.Config.Naming_Data.Dot_Replacement = No_File then
+            if Lang_Index.Config.Naming_Data.Dot_Replacement = No_File then
                Error_Msg
                  (Project,
                   In_Tree,
@@ -2516,7 +2439,7 @@ package body Prj.Nmsc is
                   No_Location);
             end if;
 
-            if Lang_Data.Config.Naming_Data.Spec_Suffix = No_File then
+            if Lang_Index.Config.Naming_Data.Spec_Suffix = No_File then
                Error_Msg
                  (Project,
                   In_Tree,
@@ -2524,7 +2447,7 @@ package body Prj.Nmsc is
                   No_Location);
             end if;
 
-            if Lang_Data.Config.Naming_Data.Body_Suffix = No_File then
+            if Lang_Index.Config.Naming_Data.Body_Suffix = No_File then
                Error_Msg
                  (Project,
                   In_Tree,
@@ -2538,8 +2461,8 @@ package body Prj.Nmsc is
             --  For file based languages, either Spec_Suffix or Body_Suffix
             --  need to be specified.
 
-            if Lang_Data.Config.Naming_Data.Spec_Suffix = No_File and then
-              Lang_Data.Config.Naming_Data.Body_Suffix = No_File
+            if Lang_Index.Config.Naming_Data.Spec_Suffix = No_File and then
+              Lang_Index.Config.Naming_Data.Body_Suffix = No_File
             then
                Error_Msg_Name_1 := Current_Language;
                Error_Msg
@@ -2550,7 +2473,7 @@ package body Prj.Nmsc is
             end if;
          end if;
 
-         Lang_Index := Lang_Data.Next;
+         Lang_Index := Lang_Index.Next;
       end loop;
    end Check_Configuration;
 
@@ -2824,10 +2747,10 @@ package body Prj.Nmsc is
       --  Check attributes common to Ada_Only and Multi_Lang modes
 
       procedure Process_Exceptions_File_Based
-        (Lang_Id : Language_Index;
+        (Lang_Id : Language_Ptr;
          Kind    : Source_Kind);
       procedure Process_Exceptions_Unit_Based
-        (Lang_Id : Language_Index;
+        (Lang_Id : Language_Ptr;
          Kind    : Source_Kind);
       --  In Multi_Lang mode, process the naming exceptions for the two types
       --  of languages we can have.
@@ -2980,11 +2903,10 @@ package body Prj.Nmsc is
       -----------------------------------
 
       procedure Process_Exceptions_File_Based
-        (Lang_Id        : Language_Index;
+        (Lang_Id        : Language_Ptr;
          Kind           : Source_Kind)
       is
-         Lang           : constant Name_Id :=
-                            In_Tree.Languages_Data.Table (Lang_Id).Name;
+         Lang           : constant Name_Id := Lang_Id.Name;
          Exceptions     : Array_Element_Id;
          Exception_List : Variable_Value;
          Element_Id     : String_List_Id;
@@ -3076,11 +2998,10 @@ package body Prj.Nmsc is
       -----------------------------------
 
       procedure Process_Exceptions_Unit_Based
-        (Lang_Id        : Language_Index;
+        (Lang_Id        : Language_Ptr;
          Kind           : Source_Kind)
       is
-         Lang              : constant Name_Id :=
-                              In_Tree.Languages_Data.Table (Lang_Id).Name;
+         Lang              : constant Name_Id := Lang_Id.Name;
          Exceptions        : Array_Element_Id;
          Element           : Array_Element;
          Unit              : Name_Id;
@@ -3363,7 +3284,7 @@ package body Prj.Nmsc is
          Separate_Suffix : File_Name_Type := No_File;
          Casing          : Casing_Type    := All_Lower_Case;
          Casing_Defined  : Boolean;
-         Lang_Id         : Language_Index;
+         Lang_Id         : Language_Ptr;
          Sep_Suffix_Loc  : Source_Ptr;
          Suffix          : Variable_Value;
          Lang            : Name_Id;
@@ -3385,38 +3306,33 @@ package body Prj.Nmsc is
            or else Casing_Defined
            or else Separate_Suffix /= No_File
          then
-            Lang_Id := Data.First_Language_Processing;
+            Lang_Id := Data.Languages;
             while Lang_Id /= No_Language_Index loop
-               if In_Tree.Languages_Data.
-                    Table (Lang_Id).Config.Kind = Unit_Based
-               then
+               if Lang_Id.Config.Kind = Unit_Based then
                   if Dot_Replacement /= No_File then
-                     In_Tree.Languages_Data.Table
-                       (Lang_Id).Config.Naming_Data.Dot_Replacement :=
+                     Lang_Id.Config.Naming_Data.Dot_Replacement :=
                          Dot_Replacement;
                   end if;
 
                   if Casing_Defined then
-                     In_Tree.Languages_Data.Table
-                       (Lang_Id).Config.Naming_Data.Casing := Casing;
+                     Lang_Id.Config.Naming_Data.Casing := Casing;
                   end if;
 
                   if Separate_Suffix /= No_File then
-                     In_Tree.Languages_Data.Table
-                       (Lang_Id).Config.Naming_Data.Separate_Suffix :=
+                     Lang_Id.Config.Naming_Data.Separate_Suffix :=
                          Separate_Suffix;
                   end if;
                end if;
 
-               Lang_Id := In_Tree.Languages_Data.Table (Lang_Id).Next;
+               Lang_Id := Lang_Id.Next;
             end loop;
          end if;
 
          --  Next, get the spec and body suffixes
 
-         Lang_Id := Data.First_Language_Processing;
+         Lang_Id := Data.Languages;
          while Lang_Id /= No_Language_Index loop
-            Lang := In_Tree.Languages_Data.Table (Lang_Id).Name;
+            Lang := Lang_Id.Name;
 
             --  Spec_Suffix
 
@@ -3435,8 +3351,7 @@ package body Prj.Nmsc is
             end if;
 
             if Suffix /= Nil_Variable_Value then
-               In_Tree.Languages_Data.Table (Lang_Id).
-                 Config.Naming_Data.Spec_Suffix :=
+               Lang_Id.Config.Naming_Data.Spec_Suffix :=
                    File_Name_Type (Suffix.Value);
             end if;
 
@@ -3457,8 +3372,7 @@ package body Prj.Nmsc is
             end if;
 
             if Suffix /= Nil_Variable_Value then
-               In_Tree.Languages_Data.Table (Lang_Id).
-                 Config.Naming_Data.Body_Suffix :=
+               Lang_Id.Config.Naming_Data.Body_Suffix :=
                    File_Name_Type (Suffix.Value);
             end if;
 
@@ -3468,15 +3382,15 @@ package body Prj.Nmsc is
             --  Check_Common, but we access the attributes from the project
             --  files slightly differently apparently.
 
-            Lang_Id := In_Tree.Languages_Data.Table (Lang_Id).Next;
+            Lang_Id := Lang_Id.Next;
          end loop;
 
          --  Get the naming exceptions for all languages
 
          for Kind in Spec .. Impl loop
-            Lang_Id := Data.First_Language_Processing;
+            Lang_Id := Data.Languages;
             while Lang_Id /= No_Language_Index loop
-               case In_Tree.Languages_Data.Table (Lang_Id).Config.Kind is
+               case Lang_Id.Config.Kind is
                when File_Based =>
                   Process_Exceptions_File_Based (Lang_Id, Kind);
 
@@ -3484,7 +3398,7 @@ package body Prj.Nmsc is
                   Process_Exceptions_Unit_Based (Lang_Id, Kind);
                end case;
 
-               Lang_Id := In_Tree.Languages_Data.Table (Lang_Id).Next;
+               Lang_Id := Lang_Id.Next;
             end loop;
          end loop;
       end Check_Naming_Multi_Lang;
@@ -4473,12 +4387,16 @@ package body Prj.Nmsc is
       Def_Lang_Id : Name_Id;
 
    begin
-      Data.First_Language_Processing := No_Language_Index;
+      Data.Languages := No_Language_Index;
       Languages :=
         Prj.Util.Value_Of (Name_Languages, Data.Decl.Attributes, In_Tree);
       Def_Lang :=
         Prj.Util.Value_Of
           (Name_Default_Language, Data.Decl.Attributes, In_Tree);
+
+      --  ??? Shouldn't these be set to False by default, and only set to True
+      --  when we actually find some source file ?
+
       Data.Ada_Sources_Present   := Data.Source_Dirs /= Nil_String;
       Data.Other_Sources_Present := Data.Source_Dirs /= Nil_String;
 
@@ -4488,23 +4406,10 @@ package body Prj.Nmsc is
 
          if Languages.Default then
 
-            --  Attribute Languages is not specified. So, it defaults to
-            --  a project of the default language only.
-
-            Name_List_Table.Increment_Last (In_Tree.Name_Lists);
-            Data.Languages := Name_List_Table.Last (In_Tree.Name_Lists);
-
             --  In Ada_Only mode, the default language is Ada
 
             if Get_Mode = Ada_Only then
-               In_Tree.Name_Lists.Table (Data.Languages) :=
-                 (Name => Name_Ada, Next => No_Name_List);
-
-               --  Attribute Languages is not specified. So, it defaults to
-               --  a project of language Ada only. No sources of languages
-               --  other than Ada
-
-               Data.Other_Sources_Present := False;
+               Def_Lang_Id := Name_Ada;
 
             else
                --  Fail if there is no default language defined
@@ -4526,37 +4431,29 @@ package body Prj.Nmsc is
                   To_Lower (Name_Buffer (1 .. Name_Len));
                   Def_Lang_Id := Name_Find;
                end if;
+            end if;
 
-               if Def_Lang_Id /=  No_Name then
-                  In_Tree.Name_Lists.Table (Data.Languages) :=
-                    (Name => Def_Lang_Id, Next => No_Name_List);
+            if Def_Lang_Id /= No_Name then
+               Data.Languages :=
+                 new Language_Data'(No_Language_Data);
+               Data.Languages.Name := Def_Lang_Id;
+               Get_Name_String (Def_Lang_Id);
+               Name_Buffer (1) := GNAT.Case_Util.To_Upper (Name_Buffer (1));
+               Data.Languages.Display_Name := Name_Find;
 
-                  Language_Data_Table.Increment_Last (In_Tree.Languages_Data);
+               if Def_Lang_Id = Name_Ada then
+                  Data.Languages.Config.Kind := Unit_Based;
+                  Data.Languages.Config.Dependency_Kind :=
+                    ALI_File;
 
-                  Data.First_Language_Processing :=
-                    Language_Data_Table.Last (In_Tree.Languages_Data);
-                  In_Tree.Languages_Data.Table
-                    (Data.First_Language_Processing) := No_Language_Data;
-                  In_Tree.Languages_Data.Table
-                    (Data.First_Language_Processing).Name := Def_Lang_Id;
-                  Get_Name_String (Def_Lang_Id);
-                  Name_Buffer (1) := GNAT.Case_Util.To_Upper (Name_Buffer (1));
-                  In_Tree.Languages_Data.Table
-                    (Data.First_Language_Processing).Display_Name := Name_Find;
+                  --  Attribute Languages is not specified. So, it defaults to
+                  --  a project of language Ada only. No sources of languages
+                  --  other than Ada
 
-                  if Def_Lang_Id = Name_Ada then
-                     In_Tree.Languages_Data.Table
-                       (Data.First_Language_Processing).Config.Kind :=
-                         Unit_Based;
-                     In_Tree.Languages_Data.Table
-                       (Data.First_Language_Processing).Config.
-                         Dependency_Kind := ALI_File;
+                  Data.Other_Sources_Present := False;
 
-                  else
-                     In_Tree.Languages_Data.Table
-                       (Data.First_Language_Processing).Config.Kind :=
-                         File_Based;
-                  end if;
+               else
+                  Data.Languages.Config.Kind := File_Based;
                end if;
             end if;
 
@@ -4565,9 +4462,8 @@ package body Prj.Nmsc is
                Current           : String_List_Id := Languages.Values;
                Element           : String_Element;
                Lang_Name         : Name_Id;
-               Index             : Language_Index;
-               Lang_Data         : Language_Data;
-               NL_Id             : Name_List_Index := No_Name_List;
+               Index             : Language_Ptr;
+               NL_Id             : Language_Ptr;
 
             begin
                --  Assume there are no language declared
@@ -4593,42 +4489,20 @@ package body Prj.Nmsc is
                   --  Languages.
 
                   while Current /= Nil_String loop
-                     Element :=
-                       In_Tree.String_Elements.Table (Current);
+                     Element := In_Tree.String_Elements.Table (Current);
                      Get_Name_String (Element.Value);
                      To_Lower (Name_Buffer (1 .. Name_Len));
                      Lang_Name := Name_Find;
 
+                     --  If the language was not already specified (duplicates
+                     --  are simply ignored)
                      NL_Id := Data.Languages;
-                     while NL_Id /= No_Name_List loop
-                        exit when
-                          Lang_Name = In_Tree.Name_Lists.Table (NL_Id).Name;
-                        NL_Id := In_Tree.Name_Lists.Table (NL_Id).Next;
+                     while NL_Id /= No_Language_Index loop
+                        exit when Lang_Name = NL_Id.Name;
+                        NL_Id := NL_Id.Next;
                      end loop;
 
-                     if NL_Id = No_Name_List then
-                        Name_List_Table.Increment_Last (In_Tree.Name_Lists);
-
-                        if Data.Languages = No_Name_List then
-                           Data.Languages :=
-                             Name_List_Table.Last (In_Tree.Name_Lists);
-
-                        else
-                           NL_Id := Data.Languages;
-                           while In_Tree.Name_Lists.Table (NL_Id).Next /=
-                                   No_Name_List
-                           loop
-                              NL_Id := In_Tree.Name_Lists.Table (NL_Id).Next;
-                           end loop;
-
-                           In_Tree.Name_Lists.Table (NL_Id).Next :=
-                             Name_List_Table.Last (In_Tree.Name_Lists);
-                        end if;
-
-                        NL_Id := Name_List_Table.Last (In_Tree.Name_Lists);
-                        In_Tree.Name_Lists.Table (NL_Id) :=
-                          (Lang_Name, No_Name_List);
-
+                     if NL_Id = No_Language_Index then
                         if Get_Mode = Ada_Only then
                            --  Check for language Ada
 
@@ -4638,27 +4512,22 @@ package body Prj.Nmsc is
                            else
                               Data.Other_Sources_Present := True;
                            end if;
-
-                        else
-                           Language_Data_Table.Increment_Last
-                                                 (In_Tree.Languages_Data);
-                           Index :=
-                             Language_Data_Table.Last (In_Tree.Languages_Data);
-                           Lang_Data.Name := Lang_Name;
-                           Lang_Data.Display_Name := Element.Value;
-                           Lang_Data.Next := Data.First_Language_Processing;
-
-                           if Lang_Name = Name_Ada then
-                              Lang_Data.Config.Kind := Unit_Based;
-                              Lang_Data.Config.Dependency_Kind := ALI_File;
-                           else
-                              Lang_Data.Config.Kind := File_Based;
-                              Lang_Data.Config.Dependency_Kind := None;
-                           end if;
-
-                           In_Tree.Languages_Data.Table (Index) := Lang_Data;
-                           Data.First_Language_Processing := Index;
                         end if;
+
+                        Index := new Language_Data'(No_Language_Data);
+                        Index.Name := Lang_Name;
+                        Index.Display_Name := Element.Value;
+                        Index.Next := Data.Languages;
+
+                        if Lang_Name = Name_Ada then
+                           Index.Config.Kind := Unit_Based;
+                           Index.Config.Dependency_Kind := ALI_File;
+                        else
+                           Index.Config.Kind := File_Based;
+                           Index.Config.Dependency_Kind := None;
+                        end if;
+
+                        Data.Languages := Index;
                      end if;
 
                      Current := Element.Next;
@@ -7285,7 +7154,7 @@ package body Prj.Nmsc is
 
             if Get_Mode = Multi_Language then
                if Current = Nil_String then
-                  Data.First_Language_Processing := No_Language_Index;
+                  Data.Languages := No_Language_Index;
 
                   --  This project contains no source. For projects that
                   --  don't extend other projects, this also means that
@@ -7618,31 +7487,6 @@ package body Prj.Nmsc is
       end loop;
    end Get_Path_Names_And_Record_Ada_Sources;
 
-   ---------------------------------------
-   -- Get_Language_Processing_From_Lang --
-   ---------------------------------------
-
-   function Get_Language_Processing_From_Lang
-     (In_Tree : Project_Tree_Ref;
-      Data    : Project_Data;
-      Lang    : Name_List_Index) return Language_Index
-   is
-      Name     : constant Name_Id := In_Tree.Name_Lists.Table (Lang).Name;
-      Language : Language_Index;
-
-   begin
-      Language := Data.First_Language_Processing;
-      while Language /= No_Language_Index loop
-         if In_Tree.Languages_Data.Table (Language).Name = Name then
-            return Language;
-         end if;
-
-         Language := In_Tree.Languages_Data.Table (Language).Next;
-      end loop;
-
-      return No_Language_Index;
-   end Get_Language_Processing_From_Lang;
-
    -------------------------------
    -- Check_File_Naming_Schemes --
    -------------------------------
@@ -7652,7 +7496,7 @@ package body Prj.Nmsc is
       Data                  : in out Project_Data;
       File_Name             : File_Name_Type;
       Alternate_Languages   : out Alternate_Language_Id;
-      Language              : out Language_Index;
+      Language              : out Language_Ptr;
       Language_Name         : out Name_Id;
       Display_Language_Name : out Name_Id;
       Unit                  : out Name_Id;
@@ -7661,8 +7505,7 @@ package body Prj.Nmsc is
    is
       Filename : constant String := Get_Name_String (File_Name);
       Config   : Language_Config;
-      Lang     : Name_List_Index;
-      Tmp_Lang : Language_Index;
+      Tmp_Lang : Language_Ptr;
 
       Header_File : Boolean := False;
       --  True if we found at least one language for which the file is a header
@@ -7732,10 +7575,9 @@ package body Prj.Nmsc is
       Lang_Kind             := File_Based;
       Kind                  := Spec;
 
-      Lang := Data.Languages;
-      while Lang /= No_Name_List loop
-         Language_Name := In_Tree.Name_Lists.Table (Lang).Name;
-         Tmp_Lang := Get_Language_Processing_From_Lang (In_Tree, Data, Lang);
+      Tmp_Lang := Data.Languages;
+      while Tmp_Lang /= No_Language_Index loop
+         Language_Name := Tmp_Lang.Name;
 
          if Current_Verbosity = High then
             Write_Line
@@ -7744,42 +7586,39 @@ package body Prj.Nmsc is
                & " Header_File=" & Header_File'Img);
          end if;
 
-         if Tmp_Lang /= No_Language_Index then
-            Display_Language_Name :=
-              In_Tree.Languages_Data.Table (Tmp_Lang).Display_Name;
-            Config := In_Tree.Languages_Data.Table (Tmp_Lang).Config;
-            Lang_Kind := Config.Kind;
+         Display_Language_Name := Tmp_Lang.Display_Name;
+         Config := Tmp_Lang.Config;
+         Lang_Kind := Config.Kind;
 
-            case Config.Kind is
-               when File_Based =>
-                  Check_File_Based_Lang;
-                  exit when Kind = Impl;
+         case Config.Kind is
+            when File_Based =>
+               Check_File_Based_Lang;
+               exit when Kind = Impl;
 
-               when Unit_Based =>
+            when Unit_Based =>
 
-                  --  We know it belongs to a least a file_based language, no
-                  --  need to check unit-based ones.
+               --  We know it belongs to a least a file_based language, no
+               --  need to check unit-based ones.
 
-                  if not Header_File then
-                     Compute_Unit_Name
-                       (File_Name       => File_Name,
-                        Dot_Replacement => Config.Naming_Data.Dot_Replacement,
-                        Separate_Suffix => Config.Naming_Data.Separate_Suffix,
-                        Body_Suffix     => Config.Naming_Data.Body_Suffix,
-                        Spec_Suffix     => Config.Naming_Data.Spec_Suffix,
-                        Casing          => Config.Naming_Data.Casing,
-                        Kind            => Kind,
-                        Unit            => Unit);
+               if not Header_File then
+                  Compute_Unit_Name
+                    (File_Name       => File_Name,
+                     Dot_Replacement => Config.Naming_Data.Dot_Replacement,
+                     Separate_Suffix => Config.Naming_Data.Separate_Suffix,
+                     Body_Suffix     => Config.Naming_Data.Body_Suffix,
+                     Spec_Suffix     => Config.Naming_Data.Spec_Suffix,
+                     Casing          => Config.Naming_Data.Casing,
+                     Kind            => Kind,
+                     Unit            => Unit);
 
-                     if Unit /= No_Name then
-                        Language    := Tmp_Lang;
-                        exit;
-                     end if;
+                  if Unit /= No_Name then
+                     Language    := Tmp_Lang;
+                     exit;
                   end if;
-            end case;
-         end if;
+               end if;
+         end case;
 
-         Lang := In_Tree.Name_Lists.Table (Lang).Next;
+         Tmp_Lang := Tmp_Lang.Next;
       end loop;
 
       if Language = No_Language_Index
@@ -7815,7 +7654,7 @@ package body Prj.Nmsc is
       Display_Path_Id   : Path_Name_Type;
       Check_Name        : Boolean := False;
       Alternate_Languages : Alternate_Language_Id := No_Alternate_Language;
-      Language          : Language_Index;
+      Language          : Language_Ptr;
       Source            : Source_Id;
       Other_Part        : Source_Id;
       Add_Src           : Boolean;
@@ -8477,9 +8316,9 @@ package body Prj.Nmsc is
       Source_Names.Reset;
       Find_Excluded_Sources (Project, In_Tree, Data);
 
-      if (Get_Mode = Ada_Only and then Is_A_Language (In_Tree, Data, Name_Ada))
+      if (Get_Mode = Ada_Only and then Is_A_Language (Data, Name_Ada))
         or else (Get_Mode = Multi_Language
-                  and then Data.First_Language_Processing /= No_Language_Index)
+                  and then Data.Languages /= No_Language_Index)
       then
          if Get_Mode = Multi_Language then
             Load_Naming_Exceptions (Project, In_Tree, Data);
@@ -8954,11 +8793,10 @@ package body Prj.Nmsc is
 
       --  Remove source from the language list
 
-      Source := In_Tree.Languages_Data.Table (Src_Data.Language).First_Source;
+      Source := Src_Data.Language.First_Source;
 
       if Source = Id then
-         In_Tree.Languages_Data.Table (Src_Data.Language).First_Source :=
-           Src_Data.Next_In_Lang;
+         Src_Data.Language.First_Source := Src_Data.Next_In_Lang;
 
       else
          while In_Tree.Sources.Table (Source).Next_In_Lang /= Id loop
