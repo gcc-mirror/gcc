@@ -1,7 +1,7 @@
 -- { dg-do compile }
 -- { dg-options "-gnatwa" }
 
-package PR34799 is
+package Rep_Clause1 is
    generic
       type Custom_T is private;
    package Handler is
@@ -16,4 +16,4 @@ package PR34799 is
          B at 1 range 0..0;
       end record;
    end Handler;
-end PR34799;
+end Rep_Clause1;

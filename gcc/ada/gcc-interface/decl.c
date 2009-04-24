@@ -1957,11 +1957,28 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	if (gnu_comp_size && !Is_Bit_Packed_Array (gnat_entity))
 	  {
-	    tree orig_tem;
+	    tree orig_tem = tem;
+	    unsigned int max_align;
+
+	    /* If an alignment is specified, use it as a cap on the component
+	       type so that it can be honored for the whole type.  But ignore
+	       it for the original type of packed array types.  */
+	    if (No (Packed_Array_Type (gnat_entity))
+		&& Known_Alignment (gnat_entity))
+	      max_align = validate_alignment (Alignment (gnat_entity),
+					      gnat_entity, 0);
+	    else
+	      max_align = 0;
+
 	    tem = make_type_from_size (tem, gnu_comp_size, false);
-	    orig_tem = tem;
+	    if (max_align > 0 && TYPE_ALIGN (tem) > max_align)
+	      tem = orig_tem;
+	    else
+	      orig_tem = tem;
+
 	    tem = maybe_pad_type (tem, gnu_comp_size, 0, gnat_entity,
 				  "C_PAD", false, definition, true);
+
 	    /* If a padding record was made, declare it now since it will
 	       never be declared otherwise.  This is necessary to ensure
 	       that its subtrees are properly marked.  */
@@ -2343,13 +2360,31 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      if (gnu_comp_size && !Is_Bit_Packed_Array (gnat_entity))
 		{
-		  tree orig_gnu_type;
+		  tree orig_gnu_type = gnu_type;
+		  unsigned int max_align;
+
+		  /* If an alignment is specified, use it as a cap on the
+		     component type so that it can be honored for the whole
+		     type.  But ignore it for the original type of packed
+		     array types.  */
+		  if (No (Packed_Array_Type (gnat_entity))
+		      && Known_Alignment (gnat_entity))
+		    max_align = validate_alignment (Alignment (gnat_entity),
+						    gnat_entity, 0);
+		  else
+		    max_align = 0;
+
 		  gnu_type
 		    = make_type_from_size (gnu_type, gnu_comp_size, false);
-		  orig_gnu_type = gnu_type;
+		  if (max_align > 0 && TYPE_ALIGN (gnu_type) > max_align)
+		    gnu_type = orig_gnu_type;
+		  else
+		    orig_gnu_type = gnu_type;
+
 		  gnu_type = maybe_pad_type (gnu_type, gnu_comp_size, 0,
 					     gnat_entity, "C_PAD", false,
 					     definition, true);
+
 		  /* If a padding record was made, declare it now since it
 		     will never be declared otherwise.  This is necessary
 		     to ensure that its subtrees are properly marked.  */
