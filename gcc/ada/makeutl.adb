@@ -422,17 +422,10 @@ package body Makeutl is
             Proj    : constant Project_Id :=
                         Linker_Opts.Table (Index).Project;
             Option  : Name_Id;
+            Dir_Path : constant String :=
+              Get_Name_String (In_Tree.Projects.Table (Proj).Directory.Name);
 
          begin
-            --  If Dir_Path has not been computed for this project, do it now
-
-            if In_Tree.Projects.Table (Proj).Dir_Path = null then
-               In_Tree.Projects.Table (Proj).Dir_Path :=
-                 new String'
-                   (Get_Name_String
-                        (In_Tree.Projects.Table (Proj).Directory.Name));
-            end if;
-
             while Options /= Nil_String loop
                Option := In_Tree.String_Elements.Table (Options).Value;
                Get_Name_String (Option);
@@ -447,7 +440,7 @@ package body Makeutl is
 
                   Test_If_Relative_Path
                     (Switch => Linker_Options_Buffer (Last_Linker_Option),
-                     Parent => In_Tree.Projects.Table (Proj).Dir_Path,
+                     Parent => Dir_Path,
                      Including_L_Switch => True);
                end if;
 
@@ -604,7 +597,7 @@ package body Makeutl is
 
    procedure Test_If_Relative_Path
      (Switch               : in out String_Access;
-      Parent               : String_Access;
+      Parent               : String;
       Including_L_Switch   : Boolean := True;
       Including_Non_Switch : Boolean := True)
    is
@@ -645,7 +638,7 @@ package body Makeutl is
                --  arguments are not converted.
 
                if not Is_Absolute_Path (Sw (Start .. Sw'Last)) then
-                  if Parent = null or else Parent'Length = 0 then
+                  if Parent'Length = 0 then
                      Do_Fail
                        ("relative search path switches ("""
                         & Sw
@@ -655,7 +648,7 @@ package body Makeutl is
                      Switch :=
                        new String'
                          (Sw (1 .. Start - 1) &
-                          Parent.all &
+                          Parent &
                           Directory_Separator &
                           Sw (Start .. Sw'Last));
                   end if;
@@ -663,12 +656,11 @@ package body Makeutl is
 
             elsif Including_Non_Switch then
                if not Is_Absolute_Path (Sw) then
-                  if Parent = null or else Parent'Length = 0 then
+                  if Parent'Length = 0 then
                      Do_Fail
                        ("relative paths (""" & Sw & """) are not allowed");
                   else
-                     Switch :=
-                       new String'(Parent.all & Directory_Separator & Sw);
+                     Switch := new String'(Parent & Directory_Separator & Sw);
                   end if;
                end if;
             end if;

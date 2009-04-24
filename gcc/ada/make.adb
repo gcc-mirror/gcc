@@ -2351,15 +2351,9 @@ package body Make is
                --  We get the project directory for the relative path
                --  switches and arguments.
 
+               Arguments_Project := Ultimate_Extending_Project_Of
+                 (Arguments_Project, Project_Tree);
                Data := Project_Tree.Projects.Table (Arguments_Project);
-
-               --  If the source is in an extended project, we go to
-               --  the ultimate extending project.
-
-               while Data.Extended_By /= No_Project loop
-                  Arguments_Project := Data.Extended_By;
-                  Data := Project_Tree.Projects.Table (Arguments_Project);
-               end loop;
 
                --  If building a dynamic or relocatable library, compile with
                --  PIC option, if it exists.
@@ -2373,13 +2367,6 @@ package body Make is
                         Add_Arguments ((1 => new String'(PIC)));
                      end if;
                   end;
-               end if;
-
-               if Data.Dir_Path = null then
-                  Data.Dir_Path :=
-                    new String'(Get_Name_String (Data.Directory.Display_Name));
-                  Project_Tree.Projects.Table (Arguments_Project) :=
-                    Data;
                end if;
 
                --  We now look for package Compiler and get the switches from
@@ -2431,6 +2418,8 @@ package body Make is
                         declare
                            New_Args : Argument_List (1 .. Number);
                            Last_New : Natural := 0;
+                           Dir_Path : constant String :=
+                             Get_Name_String (Data.Directory.Name);
 
                         begin
                            Current := Switches.Values;
@@ -2446,7 +2435,7 @@ package body Make is
                                    new String'(Name_Buffer (1 .. Name_Len));
                                  Test_If_Relative_Path
                                    (New_Args (Last_New),
-                                    Parent => Data.Dir_Path,
+                                    Parent => Dir_Path,
                                     Including_Non_Switch => False);
                               end if;
 
@@ -2471,11 +2460,13 @@ package body Make is
                         New_Args : Argument_List :=
                                      (1 => new String'
                                             (Name_Buffer (1 .. Name_Len)));
+                        Dir_Path : constant String :=
+                          Get_Name_String (Data.Directory.Name);
 
                      begin
                         Test_If_Relative_Path
                           (New_Args (1),
-                           Parent               => Data.Dir_Path,
+                           Parent               => Dir_Path,
                            Including_Non_Switch => False);
                         Add_Arguments
                           (Configuration_Pragmas_Switch (Arguments_Project) &
@@ -5411,10 +5402,10 @@ package body Make is
          --  project file.
 
          declare
-            Dir_Path : constant String_Access :=
-                         new String'(Get_Name_String
+            Dir_Path : constant String :=
+                         Get_Name_String
                            (Project_Tree.Projects.Table
-                              (Main_Project).Directory.Name));
+                              (Main_Project).Directory.Name);
          begin
             for J in 1 .. Binder_Switches.Last loop
                Test_If_Relative_Path
@@ -5425,7 +5416,7 @@ package body Make is
             for J in 1 .. Saved_Binder_Switches.Last loop
                Test_If_Relative_Path
                  (Saved_Binder_Switches.Table (J),
-                  Parent => Current_Work_Dir, Including_L_Switch => False);
+                  Parent => Current_Work_Dir.all, Including_L_Switch => False);
             end loop;
 
             for J in 1 .. Linker_Switches.Last loop
@@ -5435,7 +5426,8 @@ package body Make is
 
             for J in 1 .. Saved_Linker_Switches.Last loop
                Test_If_Relative_Path
-                 (Saved_Linker_Switches.Table (J), Parent => Current_Work_Dir);
+                 (Saved_Linker_Switches.Table (J),
+                  Parent => Current_Work_Dir.all);
             end loop;
 
             for J in 1 .. Gcc_Switches.Last loop
@@ -5448,7 +5440,7 @@ package body Make is
             for J in 1 .. Saved_Gcc_Switches.Last loop
                Test_If_Relative_Path
                  (Saved_Gcc_Switches.Table (J),
-                  Parent => Current_Work_Dir,
+                  Parent => Current_Work_Dir.all,
                   Including_Non_Switch => False);
             end loop;
          end;
@@ -6581,10 +6573,10 @@ package body Make is
                   --  relative path in the project file.
 
                   declare
-                     Dir_Path : constant String_Access :=
-                       new String'(Get_Name_String
-                                     (Project_Tree.Projects.Table
-                                        (Main_Project).Directory.Name));
+                     Dir_Path : constant String :=
+                       Get_Name_String
+                         (Project_Tree.Projects.Table
+                              (Main_Project).Directory.Name);
                   begin
                      for
                        J in Last_Binder_Switch + 1 .. Binder_Switches.Last
