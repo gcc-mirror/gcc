@@ -1204,8 +1204,7 @@ package body Prj.Env is
                while Source /= No_Source loop
                   Src_Data := In_Tree.Sources.Table (Source);
 
-                  if In_Tree.Languages_Data.Table
-                    (In_Tree.Sources.Table (Source).Language).Name = Language
+                  if In_Tree.Sources.Table (Source).Language.Name = Language
                       and then not Src_Data.Locally_Removed
                       and then Src_Data.Replaced_By = No_Source
                       and then Src_Data.Path.Name /= No_Path
@@ -1215,12 +1214,10 @@ package body Prj.Env is
 
                         if Src_Data.Kind = Spec then
                            Suffix :=
-                             In_Tree.Languages_Data.Table
-                               (Src_Data.Language).Config.Mapping_Spec_Suffix;
+                             Src_Data.Language.Config.Mapping_Spec_Suffix;
                         else
                            Suffix :=
-                             In_Tree.Languages_Data.Table
-                               (Src_Data.Language).Config.Mapping_Body_Suffix;
+                             Src_Data.Language.Config.Mapping_Body_Suffix;
                         end if;
 
                         if Suffix /= No_File then
