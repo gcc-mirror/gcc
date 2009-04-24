@@ -2304,17 +2304,22 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
     case AND:
       if (trueop1 == CONST0_RTX (mode) && ! side_effects_p (op0))
 	return trueop1;
-      if (GET_CODE (trueop1) == CONST_INT
-	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
 	{
 	  HOST_WIDE_INT nzop0 = nonzero_bits (trueop0, mode);
-	  HOST_WIDE_INT val1 = INTVAL (trueop1);
-	  /* If we are turning off bits already known off in OP0, we need
-	     not do an AND.  */
-	  if ((nzop0 & ~val1) == 0)
-	    return op0;
+	  HOST_WIDE_INT nzop1;
+	  if (GET_CODE (trueop1) == CONST_INT)
+	    {
+	      HOST_WIDE_INT val1 = INTVAL (trueop1);
+	      /* If we are turning off bits already known off in OP0, we need
+		 not do an AND.  */
+	      if ((nzop0 & ~val1) == 0)
+		return op0;
+	    }
+	  nzop1 = nonzero_bits (trueop1, mode);
 	  /* If we are clearing all the nonzero bits, the result is zero.  */
-	  if ((val1 & nzop0) == 0 && !side_effects_p (op0))
+	  if ((nzop1 & nzop0) == 0
+	      && !side_effects_p (op0) && !side_effects_p (op1))
 	    return CONST0_RTX (mode);
 	}
       if (rtx_equal_p (trueop0, trueop1) && ! side_effects_p (op0)
