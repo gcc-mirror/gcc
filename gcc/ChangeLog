@@ -1,3 +1,9 @@
+2009-04-24  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* loop-iv.c (replace_single_def_regs): Look for REG_EQUAL notes;
+	follow chains of regs with a single definition, and allow expressions
+	that are function_invariant_p.
+
 2009-04-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR middle-end/39867
