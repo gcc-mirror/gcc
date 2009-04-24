@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1029,7 +1029,7 @@ package body Clean is
                     Project_Table.Last (Project_Tree.Projects)
                   loop
                      if Has_Foreign_Sources
-                       (Project_Tree.Projects.Table (Proj))
+                          (Project_Tree.Projects.Table (Proj))
                      then
                         Global_Archive := True;
                         exit;

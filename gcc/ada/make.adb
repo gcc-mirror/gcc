@@ -4227,7 +4227,7 @@ package body Make is
       Current_Main_Index : Int := 0;
       --  If not zero, the index of the current main unit in its source file
 
-      There_Are_Stand_Alone_Libraries : Boolean := False;
+      Stand_Alone_Libraries : Boolean := False;
       --  Set to True when there are Stand-Alone Libraries, so that gnatbind
       --  is invoked with the -F switch to force checking of elaboration flags.
 
@@ -5773,7 +5773,7 @@ package body Make is
                         if Project_Tree.Projects.Table
                           (Proj1).Standalone_Library
                         then
-                           There_Are_Stand_Alone_Libraries := True;
+                           Stand_Alone_Libraries := True;
                         end if;
 
                         if Project_Tree.Projects.Table (Proj1).Library then
@@ -6109,7 +6109,7 @@ package body Make is
                   Args (J) := Binder_Switches.Table (J);
                end loop;
 
-               if There_Are_Stand_Alone_Libraries then
+               if Stand_Alone_Libraries then
                   Last_Arg := Last_Arg + 1;
                   Args (Last_Arg) := Force_Elab_Flags_String'Access;
                end if;
@@ -6164,7 +6164,7 @@ package body Make is
                Linker_Switches_Last : constant Integer := Linker_Switches.Last;
                Path_Option          : constant String_Access :=
                                         MLib.Linker_Library_Path_Option;
-               There_Are_Libraries  : Boolean := False;
+               Libraries_Present    : Boolean := False;
                Current              : Natural;
                Proj2                : Project_Id;
                Depth                : Natural;
@@ -6193,7 +6193,7 @@ package body Make is
                         then
                            --  Add this project to table Library_Projs
 
-                           There_Are_Libraries := True;
+                           Libraries_Present := True;
                            Depth := Project_Tree.Projects.Table (Proj1).Depth;
                            Library_Projs.Increment_Last;
                            Current := Library_Projs.Last;
@@ -6252,7 +6252,7 @@ package body Make is
                      end loop;
                   end if;
 
-                  if There_Are_Libraries then
+                  if Libraries_Present then
 
                      --  If Path_Option is not null, create the switch
                      --  ("-Wl,-rpath," or equivalent) with all the non static
@@ -7534,10 +7534,15 @@ package body Make is
 
       procedure Recurse (Prj : Project_Id; Depth : Natural);
 
+      -------------
+      -- Recurse --
+      -------------
+
       procedure Recurse (Prj : Project_Id; Depth : Natural) is
          Data : Project_Data renames Project_Tree.Projects.Table (Prj);
          List : Project_List;
          Proj : Project_Id;
+
       begin
          if Data.Depth >= Depth
            or Get (Seen, Prj)
@@ -7569,6 +7574,8 @@ package body Make is
          Set (Seen, Prj, False);
       end Recurse;
 
+   --  Start of processing for Recursive_Compute_Depth
+
    begin
       for Proj in Project_Table.First ..
         Project_Table.Last (Project_Tree.Projects)
@@ -7596,6 +7603,7 @@ package body Make is
 
    procedure Sigint_Intercepted is
       SIGINT  : constant := 2;
+
    begin
       Set_Standard_Error;
       Write_Line ("*** Interrupted ***");
