@@ -954,6 +954,7 @@ write_enum_constraint_num (void)
 {
   struct constraint_data *c;
 
+  fputs ("#define CONSTRAINT_NUM_DEFINED_P 1\n", stdout);
   fputs ("enum constraint_num\n"
 	 "{\n"
 	 "  CONSTRAINT__UNKNOWN = 0", stdout);
