@@ -1,3 +1,7 @@
+2009-04-24  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/constraints.md ('I', 'J'): Fix condition.
+
 2009-04-24  Diego Novillo  <dnovillo@google.com>
 
 	* gengtype-parse.c (parse_error): Add newline after message.
