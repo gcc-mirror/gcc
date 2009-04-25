@@ -34,7 +34,7 @@ int main()
     }
 
   // 2
-  std::error_code e2(std::errc::operation_not_supported);
+  std::error_code e2(std::make_error_code(std::errc::operation_not_supported));
   if (e2)
     {
       VERIFY( true );
