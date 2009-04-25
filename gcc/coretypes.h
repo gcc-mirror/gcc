@@ -97,6 +97,12 @@ enum tls_model {
   TLS_MODEL_LOCAL_EXEC
 };
 
+struct edge_def;
+typedef struct edge_def *edge;
+typedef const struct edge_def *const_edge;
+struct basic_block_def;
+typedef struct basic_block_def *basic_block;
+typedef const struct basic_block_def *const_basic_block;
 #else
 
 struct _dont_use_rtx_here_;

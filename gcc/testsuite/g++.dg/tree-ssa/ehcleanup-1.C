@@ -1,4 +1,4 @@
-// { dg-options "-O2 -fdump-tree-ehcleanup1" }
+// { dg-options "-O2 -fdump-tree-ehcleanup1-details" }
 extern void can_throw ();
 class a
 {

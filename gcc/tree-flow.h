@@ -32,13 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-reference.h"
 #include "tree-ssa-alias.h"
 
-/* Forward declare structures for the garbage collector GTY markers.  */
-#ifndef GCC_BASIC_BLOCK_H
-struct edge_def;
-typedef struct edge_def *edge;
-struct basic_block_def;
-typedef struct basic_block_def *basic_block;
-#endif
 struct static_var_ann_d;
 
 
@@ -974,5 +967,6 @@ unsigned int execute_fixup_cfg (void);
 void swap_tree_operands (gimple, tree *, tree *);
 
 int least_common_multiple (int, int);
+edge redirect_eh_edge (edge e, basic_block new_bb);
 
 #endif /* _TREE_FLOW_H  */
