@@ -732,8 +732,6 @@ fprintf (STREAM, "\t.skip %lu,0\n", (unsigned long)(N))
 
 #define CASE_VECTOR_MODE HImode
 
-#define CASE_VALUES_THRESHOLD avr_case_values_threshold ()
-
 #undef WORD_REGISTER_OPERATIONS
 
 #define MOVE_MAX 4

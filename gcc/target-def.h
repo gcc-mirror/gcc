@@ -1,5 +1,5 @@
 /* Default initializers for a generic GCC target.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -654,6 +654,10 @@
 #define TARGET_HARD_REGNO_SCRATCH_OK default_hard_regno_scratch_ok
 #endif
 
+#ifndef TARGET_CASE_VALUES_THRESHOLD
+#define TARGET_CASE_VALUES_THRESHOLD default_case_values_threshold
+#endif
+
 /* C specific.  */
 #ifndef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX default_mode_for_suffix
@@ -918,6 +922,7 @@
   TARGET_EXPAND_TO_RTL_HOOK,			\
   TARGET_INSTANTIATE_DECLS,			\
   TARGET_HARD_REGNO_SCRATCH_OK,			\
+  TARGET_CASE_VALUES_THRESHOLD,			\
   TARGET_C,					\
   TARGET_CXX,					\
   TARGET_EMUTLS,				\

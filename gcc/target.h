@@ -921,6 +921,10 @@ struct gcc_target
      in peephole2.  */
   bool (* hard_regno_scratch_ok) (unsigned int regno);
 
+  /* Return the smallest number of different values for which it is best to
+     use a jump-table instead of a tree of conditional branches.  */
+  unsigned int (* case_values_threshold) (void);
+
   /* Functions specific to the C family of frontends.  */
   struct c {
     /* Return machine mode for non-standard suffix

@@ -1,3 +1,24 @@
+2009-04-25  Anatoly Sokolov  <aesok@post.ru>
+
+	* target.h (struct gcc_target): Add case_values_threshold field.
+	* target-def.h (TARGET_CASE_VALUES_THRESHOLD): New.
+	(TARGET_INITIALIZER): Use TARGET_CASE_VALUES_THRESHOLD.
+	* targhooks.c (default_case_values_threshold): New function.
+	* targhooks.h (default_case_values_threshold): Declare function.
+	* stmt.c (expand_case): Use case_values_threshold target hook.
+	* expr.h (case_values_threshold): Remove declartation.
+	* expr.c (case_values_threshold): Remove function.
+	* doc/tm.texi (CASE_VALUES_THRESHOLD): Revise documentation.
+
+	* config/avr/avr.h (CASE_VALUES_THRESHOLD): Remove macro.
+	* config/avr/avr.c (TARGET_CASE_VALUES_THRESHOLD): Define macro.
+	(avr_case_values_threshold): Declare as static.
+	* config/avr/avr-protos.h (avr_case_values_threshold): Remove.
+
+	* config/avr/mn10300.h (CASE_VALUES_THRESHOLD): Remove macro.
+	* config/avr/mn10300.c (TARGET_CASE_VALUES_THRESHOLD): Define macro.
+	(mn10300_case_values_threshold): New function.
+
 2009-04-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* ira.c (setup_cover_and_important_classes): Add enum cast.
