@@ -5740,7 +5740,7 @@ sparc_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       size = int_size_in_bytes (type);
       rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
       align = 0;
-    
+
       if (TARGET_ARCH64)
 	{
 	  /* For SPARC64, objects requiring 16-byte alignment get it.  */
@@ -5782,28 +5782,25 @@ sparc_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       addr = fold_convert (build_pointer_type (ptrtype), addr);
       addr = build_va_arg_indirect_ref (addr);
     }
-  /* If the address isn't aligned properly for the type,
-     we may need to copy to a temporary.  
-     FIXME: This is inefficient.  Usually we can do this
-     in registers.  */
-  else if (align == 0
-	   && TYPE_ALIGN (type) > BITS_PER_WORD)
+
+  /* If the address isn't aligned properly for the type, we need a temporary.
+     FIXME: This is inefficient, usually we can do this in registers.  */
+  else if (align == 0 && TYPE_ALIGN (type) > BITS_PER_WORD)
     {
       tree tmp = create_tmp_var (type, "va_arg_tmp");
       tree dest_addr = build_fold_addr_expr (tmp);
-
-      tree copy = build_call_expr (implicit_built_in_decls[BUILT_IN_MEMCPY], 3,
-				   dest_addr,
-				   addr,
-				   size_int (rsize));
-
+      tree copy = build_call_expr (implicit_built_in_decls[BUILT_IN_MEMCPY],
+				   3, dest_addr, addr, size_int (rsize));
+      TREE_ADDRESSABLE (tmp) = 1;
       gimplify_and_add (copy, pre_p);
       addr = dest_addr;
     }
+
   else
     addr = fold_convert (ptrtype, addr);
 
-  incr = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, incr, size_int (rsize));
+  incr
+    = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node, incr, size_int (rsize));
   gimplify_assign (valist, incr, post_p);
 
   return build_va_arg_indirect_ref (addr);
