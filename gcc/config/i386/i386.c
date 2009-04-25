@@ -10996,7 +10996,17 @@ print_operand (FILE *file, rtx x, int code)
 	      return;
 
 	    case 2:
-	      putc ('w', file);
+	      /* ??? This fails for HImode integer
+		 operator with memory operand.  */
+	      if (MEM_P (x))
+		{
+#ifdef HAVE_AS_IX86_FISTS
+		  putc ('s', file);
+#endif
+		  return;
+		}
+	      else
+		putc ('w', file);
 	      return;
 
 	    case 4:
