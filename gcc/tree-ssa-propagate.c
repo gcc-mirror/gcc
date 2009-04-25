@@ -449,9 +449,13 @@ simulate_block (basic_block block)
 	  simulate_stmt (stmt);
 	}
 
-      /* We can not predict when abnormal edges will be executed, so
+      /* We can not predict when abnormal and EH edges will be executed, so
 	 once a block is considered executable, we consider any
 	 outgoing abnormal edges as executable.
+
+	 TODO: This is not exactly true.  Simplifying statement might
+	 prove it non-throwing and also computed goto can be handled
+	 when destination is known.
 
 	 At the same time, if this block has only one successor that is
 	 reached by non-abnormal edges, then add that successor to the
@@ -460,7 +464,7 @@ simulate_block (basic_block block)
       normal_edge = NULL;
       FOR_EACH_EDGE (e, ei, block->succs)
 	{
-	  if (e->flags & EDGE_ABNORMAL)
+	  if (e->flags & (EDGE_ABNORMAL | EDGE_EH))
 	    add_control_edge (e);
 	  else
 	    {

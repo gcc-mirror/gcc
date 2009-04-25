@@ -1,3 +1,43 @@
+2009-04-25  Jan Hubicka  <jh@suse.cz>
+
+	* tree-eh.c (tree_remove_unreachable_handlers): Handle shared labels.
+	(tree_empty_eh_handler_p): Allow non-EH predecestors; allow region
+	to be reached by different label than left.
+	(update_eh_edges): Update comment; remove edge_to_remove if possible
+	and return true if suceeded.
+	(cleanup_empty_eh): Accept sharing map; handle shared regions.
+	(cleanup_eh): Compute sharing map.
+	* except.c (remove_eh_handler_and_replace): Add argument if we should
+	update regions.
+	(remove_unreachable_regions): Update for label sharing.
+	(label_to_region_map): Likewise.
+	(get_next_region_sharing_label): New function.
+	(remove_eh_handler_and_replace): Add update_catch_try parameter; update
+	prev_try pointers.
+	(remove_eh_handler): Update.
+	(remove_eh_region_and_replace_by_outer_of): New function.
+	* except.h (struct eh_region): Add next_region_sharing_label.
+	(remove_eh_region_and_replace_by_outer_of,
+	get_next_region_sharing_label): Declare.
+	* tree-cfgcleanup.c (tree_forwarder_block_p): Simplify.
+
+2009-04-25  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.c (split_critical_edges): Split also edges where we can't
+	insert code even if they are not critical.
+
+2009-04-25  Jan Hubicka  <jh@suse.cz>
+
+	* tree-cfg.c (gimple_can_merge_blocks_p): EH edges are unmergable.
+	(gimple_can_remove_branch_p): EH edges won't remove branch by
+	redirection.
+	* tree-inline.c (update_ssa_across_abnormal_edges): Do handle
+	updating of non-abnormal EH edges.
+	* tree-cfg.c (gimple_can_merge_blocks_p): EH edges are unmergable.
+	(gimple_can_remove_branch_p): EH edges are unremovable by redirection.
+	(split_critical_edges): Split also edges where emitting code on them
+	will lead to splitting later.
+
 2009-04-25  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
