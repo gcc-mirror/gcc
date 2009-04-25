@@ -147,8 +147,6 @@ struct GTY(()) edge_def {
 				   in profile.c  */
 };
 
-typedef struct edge_def *edge;
-typedef const struct edge_def *const_edge;
 DEF_VEC_P(edge);
 DEF_VEC_ALLOC_P(edge,gc);
 DEF_VEC_ALLOC_P(edge,heap);
@@ -276,9 +274,6 @@ struct GTY(()) gimple_bb_info {
   /* PHI nodes for this block.  */
   gimple_seq phi_nodes;
 };
-
-typedef struct basic_block_def *basic_block;
-typedef const struct basic_block_def *const_basic_block;
 
 DEF_VEC_P(basic_block);
 DEF_VEC_ALLOC_P(basic_block,gc);

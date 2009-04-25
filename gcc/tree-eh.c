@@ -1962,7 +1962,7 @@ make_eh_edge (struct eh_region *region, void *data)
   src = gimple_bb (stmt);
   dst = label_to_block (lab);
 
-  make_edge (src, dst, EDGE_ABNORMAL | EDGE_EH);
+  make_edge (src, dst, EDGE_EH);
 }
 
 /* See if STMT is call that might be inlined.  */
@@ -2017,6 +2017,50 @@ make_eh_edges (gimple stmt)
   bb = gimple_bb (stmt);
   if (is_resx && EDGE_COUNT (bb->succs))
     EDGE_SUCC (bb, 0)->probability = REG_BR_PROB_BASE;
+}
+
+/* Redirect EH edge E to NEW_BB.  */
+
+edge
+redirect_eh_edge (edge e, basic_block new_bb)
+{
+  gimple stmt = gsi_stmt (gsi_last_bb (e->src));
+  int region_nr, new_region_nr;
+  bool is_resx;
+  bool inlinable = false;
+  tree label = gimple_block_label (new_bb);
+  struct eh_region *r;
+
+  if (gimple_code (stmt) == GIMPLE_RESX)
+    {
+      region_nr = gimple_resx_region (stmt);
+      is_resx = true;
+    }
+  else
+    {
+      region_nr = lookup_stmt_eh_region (stmt);
+      gcc_assert (region_nr >= 0);
+      is_resx = false;
+      inlinable = inlinable_call_p (stmt);
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Redirecting EH edge %i->%i to %i, region %i, resx %i\n",
+	     e->src->index, e->dest->index, new_bb->index, region_nr, is_resx);
+  r = redirect_eh_edge_to_label (e, label, is_resx, inlinable, region_nr);
+  new_region_nr = get_eh_region_number (r);
+  if (new_region_nr != region_nr)
+    {
+      if (is_resx)
+        gimple_resx_set_region (stmt, new_region_nr);
+      else
+        {
+	  remove_stmt_from_eh_region (stmt);
+	  add_stmt_to_eh_region (stmt, new_region_nr);
+        }
+    }
+  e = ssa_redirect_edge (e, new_bb);
+  return e;
 }
 
 static bool mark_eh_edge_found_error;
@@ -2702,7 +2746,9 @@ tree_remove_unreachable_handlers (void)
 	      SET_BIT (reachable, region);
 	  }
 	if (gimple_code (stmt) == GIMPLE_RESX)
-	  SET_BIT (reachable, gimple_resx_region (stmt));
+	  SET_BIT (reachable,
+	  	   VEC_index (eh_region, cfun->eh->region_array,
+		   	      gimple_resx_region (stmt))->region_number);
 	if ((region = lookup_stmt_eh_region (stmt)) >= 0)
 	  SET_BIT (contains_stmt, region);
       }
@@ -2937,7 +2983,7 @@ make_eh_edge_and_update_phi (struct eh_region *region, void *data)
     }
   dominance_info_invalidated = true;
   e2 = find_edge (info->bb_to_remove, dst);
-  e = make_edge (src, dst, EDGE_ABNORMAL | EDGE_EH);
+  e = make_edge (src, dst, EDGE_EH);
   e->aux = e;
   gcc_assert (e2);
   for (si = gsi_start_phis (dst); !gsi_end_p (si); gsi_next (&si))
@@ -3091,7 +3137,11 @@ cleanup_empty_eh (basic_block bb, VEC(int,heap) * label_to_region)
 	 is really dead.  */
 
       if (found && !has_non_eh_preds)
-        remove_eh_region (region);
+        {
+	   if (dump_file && (dump_flags & TDF_DETAILS))
+	     fprintf (dump_file, "Empty EH handler %i removed.\n", region);
+          remove_eh_region (region);
+	}
       else if (!removed_some)
         return false;
 

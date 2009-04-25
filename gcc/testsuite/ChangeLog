@@ -1,3 +1,7 @@
+2009-04-25  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/tree-ssa/ehcleanup-1.C: Update.
+
 2009-04-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39688

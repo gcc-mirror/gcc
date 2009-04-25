@@ -1,3 +1,36 @@
+2009-04-25  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (list_equal_p): New function.
+	* tree.h (list_equal_p): Declare.
+	* coretypes.h (edge_def, edge, const_edge, basic_block_def
+	basic_block_def, basic_block, const_basic_block): New.
+	* tree-eh.c (make_eh_edge): EH edges are not abnormal.
+	(redirect_eh_edge): New function.
+	(make_eh_edge_update_phi): EH edges are not abnormal.
+	* except.c: Include tree-flow.h.
+	(list_match): New function.
+	(eh_region_replaceable_by_p): New function.
+	(replace_region): New function.
+	(hash_type_list): New function.
+	(hash_eh_region): New function.
+	(eh_regions_equal_p): New function.
+	(merge_peers): New function.
+	(remove_unreachable_regions): Verify EH tree when checking;
+	merge peers.
+	(copy_eh_region_1): New function.
+	(copy_eh_region): New function.
+	(push_reachable_handler): New function.
+	(build_post_landing_pads, dw2_build_landing_pads): Be ready for
+	regions without label but with live RESX.
+	* except.h (redirect_eh_edge_to_label): New.
+	* tree-flow.h (redirect_eh_edge): New.
+	* coretypes.h (edge_def, edge, const_edge, basic_block_def
+	basic_block_def, basic_block, const_basic_block): Remove.
+	* Makefile.in (except.o): Add dependency on tree-flow.h
+	* tree-cfg.c (gimple_redirect_edge_and_branch): Handle EH edges.
+	* basic-block.h (edge, const_edge, basic_block, const_basic_block):
+	Remove.
+
 2009-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/39645
