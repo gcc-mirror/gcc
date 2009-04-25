@@ -17068,7 +17068,7 @@ configure-mpfr:
 	libsrcdir="$$s/mpfr"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
-	  --target=none-${host_vendor}-${host_os} $${srcdiroption} --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp \
+	  --target=none-${host_vendor}-${host_os} $${srcdiroption} --disable-shared @extra_mpfr_configure_flags@ \
 	  || exit 1
 @endif mpfr
 
@@ -17101,7 +17101,7 @@ configure-stage1-mpfr:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
 	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	   \
-	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+	  --disable-intermodule $(STAGE1_CHECKING) 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stage2-mpfr maybe-configure-stage2-mpfr
@@ -17132,7 +17132,7 @@ configure-stage2-mpfr:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
 	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+	  @stage2_werror_flag@ --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stageb2g0-mpfr maybe-configure-stageb2g0-mpfr
@@ -17163,7 +17163,7 @@ configure-stageb2g0-mpfr:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
 	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+	  @stage2_werror_flag@ --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stage3-mpfr maybe-configure-stage3-mpfr
@@ -17194,7 +17194,7 @@ configure-stage3-mpfr:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
 	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+	  @stage2_werror_flag@ --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stageb3g2-mpfr maybe-configure-stageb3g2-mpfr
@@ -17225,7 +17225,7 @@ configure-stageb3g2-mpfr:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
 	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+	  @stage2_werror_flag@ --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stage4-mpfr maybe-configure-stage4-mpfr
@@ -17256,7 +17256,7 @@ configure-stage4-mpfr:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
 	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+	  @stage2_werror_flag@ --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stageprofile-mpfr maybe-configure-stageprofile-mpfr
@@ -17287,7 +17287,7 @@ configure-stageprofile-mpfr:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
 	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+	  @stage2_werror_flag@ --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
 
 .PHONY: configure-stagefeedback-mpfr maybe-configure-stagefeedback-mpfr
@@ -17318,7 +17318,7 @@ configure-stagefeedback-mpfr:
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=none-${host_vendor}-${host_os} \
 	  --target=none-${host_vendor}-${host_os} $${srcdiroption} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  @stage2_werror_flag@ --disable-shared --with-gmp-build=$$r/$(HOST_SUBDIR)/gmp
+	  @stage2_werror_flag@ --disable-shared @extra_mpfr_configure_flags@
 @endif mpfr-bootstrap
 
 
