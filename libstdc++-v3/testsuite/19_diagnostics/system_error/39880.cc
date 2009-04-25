@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++0x" }
+// { dg-do compile }
 
-// Copyright (C) 2007, 2008, 2009
-// Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,28 +18,12 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 19.1 Exception classes
-
-#include <cstring>
-#include <string>
 #include <system_error>
-#include <testsuite_hooks.h>
 
-// Make sure each invocation of what() doesn't grow the message.
+// libstdc++/39880
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  std::string s("after nine thirty, this request cannot be met");
-
-  std::system_error obj =
-    std::system_error(std::make_error_code(std::errc::invalid_argument), s);
-  std::string s1(obj.what());
-  std::string s2(obj.what());
-  VERIFY( s1 == s2 );
-}
-
-int main(void)
-{
-  test01();
-  return 0;
+  std::error_code ec;
+  if (ec == std::errc::not_supported)
+    { }
 }
