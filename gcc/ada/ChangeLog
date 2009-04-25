@@ -1,3 +1,8 @@
+2009-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Put
+	back kludge.
+
 2009-04-24  Robert Dewar  <dewar@adacore.com>
 
 	* mlib-prj.adb, prj-env.adb, prj-nmsc.adb, prj-proc.adb, make.adb,
