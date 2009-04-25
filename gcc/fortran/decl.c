@@ -2741,7 +2741,7 @@ gfc_match_import (void)
 	      goto next_item;
 	    }
 
-	  st = gfc_new_symtree (&gfc_current_ns->sym_root, name);
+	  st = gfc_new_symtree (&gfc_current_ns->sym_root, sym->name);
 	  st->n.sym = sym;
 	  sym->refs++;
 	  sym->attr.imported = 1;
