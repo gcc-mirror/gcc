@@ -539,7 +539,7 @@ cpp_interpret_integer (cpp_reader *pfile, const cpp_token *token,
 	       && !num_positive (result, precision))
 	{
 	  /* This is for constants within the range of uintmax_t but
-	     not that or intmax_t.  For such decimal constants, a
+	     not that of intmax_t.  For such decimal constants, a
 	     diagnostic is required for C99 as the selected type must
 	     be signed and not having a type is a constraint violation
 	     (DR#298, TC3), so this must be a pedwarn.  For C90,
