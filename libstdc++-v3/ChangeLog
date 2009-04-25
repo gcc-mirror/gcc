@@ -1,13 +1,43 @@
+2009-04-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/39880
+	PR libstdc++/39881
+	PR libstdc++/39882
+	* include/std/system_error (is_error_code_enum<errc>): Remove.
+	(error_condition<>::error_condition(_ErrorCodeEnum,)
+	error_condition<>::operator=(_ErrorCodeEnum)): Use make_error_condition.
+	(error_code<>::error_code(_ErrorCodeEnum,),
+	error_code<>::operator=(_ErrorCodeEnum)): Use make_error_code.
+	* testsuite/19_diagnostics/system_error/39880.cc: New.
+	* testsuite/19_diagnostics/error_condition/modifiers/39881.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_condition/cons/39881.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/modifiers/39882.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/cons/39882.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/error_code.cc:
+	Adjust.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/error_code.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_code/cons/1.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/bool.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/equal.cc: Likewise.
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_category/cons/copy_neg.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/cons-1.cc: Likewise.
+	* testsuite/19_diagnostics/system_error/what-4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/2.cc: Likewise.
+
 2009-04-24  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* xml/authors.xml: Add space.
-	* xml/faq.xml: Update links.
-	* xml/manual/intro.xml: Same.
-	* xml/manual/abi.xml: Update.
-	* xml/manual/appendix_contributing.xml: Fix typo.
-	* xml/manual/status_cxxtr1.xml: Update links.
-	* xml/manual/status_cxx1998.xml: Same.
-	* xml/manual/status_cxx200x.xml: Same.
+	* doc/xml/authors.xml: Add space.
+	* doc/xml/faq.xml: Update links.
+	* doc/xml/manual/intro.xml: Same.
+	* doc/xml/manual/abi.xml: Update.
+	* doc/xml/manual/appendix_contributing.xml: Fix typo.
+	* doc/xml/manual/status_cxxtr1.xml: Update links.
+	* doc/xml/manual/status_cxx1998.xml: Same.
+	* doc/xml/manual/status_cxx200x.xml: Same.
 
 2009-04-22  Jan Hubicka  <jh@suse.cz>
 
