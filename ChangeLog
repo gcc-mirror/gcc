@@ -1,3 +1,9 @@
+2009-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Add GNATBIND.
+	(POSTSTAGE1_FLAGS_TO_PASS): Pick up exported value for GNATBIND.
+	* Makefile.in: Regenerate.
+
 2009-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	PR bootstrap/39739
@@ -6,7 +12,7 @@
 
 	* configure, Makefile.in: Regenerate.
 
-2009-04-21  Taras Glek <tglek@mozilla.com>
+2009-04-21  Taras Glek  <tglek@mozilla.com>
 
 	* include/hashtab.h: Update GTY annotations to new syntax
 	* include/splay-tree.h: Likewise

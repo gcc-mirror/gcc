@@ -218,6 +218,7 @@ POSTSTAGE1_HOST_EXPORTS = \
 	  $$r/$(HOST_SUBDIR)/prev-gcc/xgcc$(exeext) \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ \
 	  -B$(build_tooldir)/bin/"; export CC_FOR_BUILD; \
+	GNATBIND="$$r/$(HOST_SUBDIR)/prev-gcc/gnatbind"; export GNATBIND \
 	LDFLAGS="$(BOOT_LDFLAGS)"; export LDFLAGS;
 
 # Target libraries are put under this directory:
@@ -513,8 +514,7 @@ X11_FLAGS_TO_PASS = \
 # Flags to pass to stage2 and later makes.
 
 POSTSTAGE1_FLAGS_TO_PASS = \
-	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
-	GNATBIND="$$r/$(HOST_SUBDIR)/prev-gcc/gnatbind" \
+	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" GNATBIND="$${GNATBIND}" \
 	LDFLAGS="$(BOOT_LDFLAGS)" \
 	"`echo 'ADAFLAGS=$(BOOT_ADAFLAGS)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
