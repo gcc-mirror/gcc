@@ -1,3 +1,8 @@
+2009-04-25  Ben Elliston  <bje@au.ibm.com>
+ 
+	* genrecog.c (validate_pattern): Do not warn for VOIDmode CALLs as
+	the source of a set operation.
+
 2009-04-25  Anatoly Sokolov  <aesok@post.ru>
 
 	* target.h (struct gcc_target): Add case_values_threshold field.
