@@ -1,3 +1,9 @@
+2009-04-25  Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/tm.texi (REGNO_OK_FOR_BASE_P, REGNO_MODE_OK_FOR_BASE_P,
+	REGNO_MODE_OK_FOR_REG_BASE_P, REGNO_MODE_CODE_OK_FOR_BASE_P,
+	REGNO_OK_FOR_INDEX_P): Mention strict/nonstrict difference.
+
 2009-04-25  Jan Hubicka  <jh@suse.cz>
 
 	* tree-eh.c (tree_remove_unreachable_handlers): Handle shared labels.
