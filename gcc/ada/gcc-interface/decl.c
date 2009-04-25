@@ -2546,9 +2546,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 				     | (TYPE_QUAL_VOLATILE
 					* Treat_As_Volatile (gnat_entity))));
 
+	  /* Make it artificial only if the base type was artificial as well.
+	     That's sort of "morally" true and will make it possible for the
+	     debugger to look it up by name in DWARF, which is necessary in
+	     order to decode the packed array type.  */
 	  gnu_decl
 	    = create_type_decl (gnu_entity_name, gnu_type, attr_list,
-				!Comes_From_Source (gnat_entity),
+				!Comes_From_Source (gnat_entity)
+				&& !Comes_From_Source (Etype (gnat_entity)),
 				debug_info_p, gnat_entity);
 
 	  /* Save it as our equivalent in case the call below elaborates
