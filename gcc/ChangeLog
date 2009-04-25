@@ -1,3 +1,12 @@
+2009-04-25  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/39564
+	* c-decl.c (grokdeclarator): Diagnose declarations of functions
+	with variably modified return type and no storage class
+	specifiers, except for the case of nested functions.  Distinguish
+	extern declarations of functions with variably modified return
+	types from those of objects with variably modified types.
+
 2009-04-25  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (list_equal_p): New function.
