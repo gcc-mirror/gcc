@@ -1,5 +1,6 @@
 /* Default target hook functions.
-   Copyright (C) 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2008, 2009
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -763,6 +764,19 @@ default_target_option_can_inline_p (tree caller, tree callee)
     ret = (callee_opts == caller_opts);
 
   return ret;
+}
+
+#ifndef HAVE_casesi
+# define HAVE_casesi 0
+#endif
+
+/* If the machine does not have a case insn that compares the bounds,
+   this means extra overhead for dispatch tables, which raises the
+   threshold for using them.  */
+
+unsigned int default_case_values_threshold (void)
+{
+  return (HAVE_casesi ? 4 : 5);
 }
 
 #include "gt-targhooks.h"

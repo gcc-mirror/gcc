@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GCC.
@@ -80,6 +80,7 @@ static bool mn10300_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
 static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				      tree, bool);
+static unsigned int mn10300_case_values_threshold (void);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -118,6 +119,9 @@ static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_EXPAND_BUILTIN_SAVEREGS mn10300_builtin_saveregs
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START mn10300_va_start
+
+#undef TARGET_CASE_VALUES_THRESHOLD
+#define TARGET_CASE_VALUES_THRESHOLD mn10300_case_values_threshold
 
 static void mn10300_encode_section_info (tree, rtx, int);
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -2125,4 +2129,16 @@ mn10300_encode_section_info (tree decl, rtx rtl, int first ATTRIBUTE_UNUSED)
 
   if (flag_pic)
     SYMBOL_REF_FLAG (symbol) = (*targetm.binds_local_p) (decl);
+}
+
+/* Dispatch tables on the mn10300 are extremely expensive in terms of code
+   and readonly data size.  So we crank up the case threshold value to
+   encourage a series of if/else comparisons to implement many small switch
+   statements.  In theory, this value could be increased much more if we
+   were solely optimizing for space, but we keep it "reasonable" to avoid
+   serious code efficiency lossage.  */
+
+unsigned int mn10300_case_values_threshold (void)
+{
+  return 6;
 }

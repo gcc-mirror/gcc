@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    Matsushita MN10300 series
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2007, 2008 Free Software Foundation, Inc.
+   2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GCC.
@@ -809,14 +809,6 @@ while (0)
 /* Nonzero if access to memory by bytes or half words is no faster
    than accessing full words.  */
 #define SLOW_BYTE_ACCESS 1
-
-/* Dispatch tables on the mn10300 are extremely expensive in terms of code
-   and readonly data size.  So we crank up the case threshold value to
-   encourage a series of if/else comparisons to implement many small switch
-   statements.  In theory, this value could be increased much more if we
-   were solely optimizing for space, but we keep it "reasonable" to avoid
-   serious code efficiency lossage.  */
-#define CASE_VALUES_THRESHOLD 6
 
 #define NO_FUNCTION_CSE
 

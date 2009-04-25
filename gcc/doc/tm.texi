@@ -9712,12 +9712,12 @@ contain relative addresses only when @option{-fPIC} or @option{-fPIC}
 is in effect.
 @end defmac
 
-@defmac CASE_VALUES_THRESHOLD
-Define this to be the smallest number of different values for which it
+@deftypefn {Target Hook} unsigned int TARGET_CASE_VALUES_THRESHOLD (void)
+This function return the smallest number of different values for which it
 is best to use a jump-table instead of a tree of conditional branches.
 The default is four for machines with a @code{casesi} instruction and
 five otherwise.  This is best for most machines.
-@end defmac
+@end deftypefn
 
 @defmac CASE_USE_BIT_TESTS
 Define this macro to be a C expression to indicate whether C switch
