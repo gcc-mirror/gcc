@@ -5012,11 +5012,17 @@ grokdeclarator (const struct c_declarator *declarator,
 	  DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
       }
 
-    if (storage_class == csc_extern
+    if ((storage_class == csc_extern
+	 || (storage_class == csc_none
+	     && TREE_CODE (type) == FUNCTION_TYPE
+	     && !funcdef_flag))
 	&& variably_modified_type_p (type, NULL_TREE))
       {
 	/* C99 6.7.5.2p2 */
-	error ("object with variably modified type must have no linkage");
+	if (TREE_CODE (type) == FUNCTION_TYPE)
+	  error ("non-nested function with variably modified type");
+	else
+	  error ("object with variably modified type must have no linkage");
       }
 
     /* Record `register' declaration for warnings on &

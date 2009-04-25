@@ -1,5 +1,10 @@
 2009-04-25  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/39564
+	* gcc.dg/vla-19.c: New test.
+
+2009-04-25  Joseph Myers  <joseph@codesourcery.com>
+
 	PR preprocessor/39559
 	* gcc.dg/c99-intconst-2.c: New test.
 
