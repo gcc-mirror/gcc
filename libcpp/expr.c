@@ -538,8 +538,27 @@ cpp_interpret_integer (cpp_reader *pfile, const cpp_token *token,
 		    && pfile->state.in_directive)
 	       && !num_positive (result, precision))
 	{
+	  /* This is for constants within the range of uintmax_t but
+	     not that or intmax_t.  For such decimal constants, a
+	     diagnostic is required for C99 as the selected type must
+	     be signed and not having a type is a constraint violation
+	     (DR#298, TC3), so this must be a pedwarn.  For C90,
+	     unsigned long is specified to be used for a constant that
+	     does not fit in signed long; if uintmax_t has the same
+	     range as unsigned long this means only a warning is
+	     appropriate here.  C90 permits the preprocessor to use a
+	     wider range than unsigned long in the compiler, so if
+	     uintmax_t is wider than unsigned long no diagnostic is
+	     required for such constants in preprocessor #if
+	     expressions and the compiler will pedwarn for such
+	     constants outside the range of unsigned long that reach
+	     the compiler so a diagnostic is not required there
+	     either; thus, pedwarn for C99 but use a plain warning for
+	     C90.  */
 	  if (base == 10)
-	    cpp_error (pfile, CPP_DL_WARNING,
+	    cpp_error (pfile, (CPP_OPTION (pfile, c99)
+			       ? CPP_DL_PEDWARN
+			       : CPP_DL_WARNING),
 		       "integer constant is so large that it is unsigned");
 	  result.unsignedp = true;
 	}
