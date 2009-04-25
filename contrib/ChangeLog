@@ -1,3 +1,8 @@
+2009-04-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* test_summary: Only include LAST_UPDATED if it exists.
+	Complete copyright years.
+
 2009-04-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* compare-all-tests: New.
