@@ -2391,8 +2391,18 @@ c_expr_sizeof_type (struct c_type_name *t)
   ret.value = c_sizeof (type);
   ret.original_code = ERROR_MARK;
   ret.original_type = NULL;
-  if (type_expr && c_vla_type_p (type))
+  if ((type_expr || TREE_CODE (ret.value) == INTEGER_CST)
+      && c_vla_type_p (type))
     {
+      /* If the type is a [*] array, it is a VLA but is represented as
+	 having a size of zero.  In such a case we must ensure that
+	 the result of sizeof does not get folded to a constant by
+	 c_fully_fold, because if the size is evaluated the result is
+	 not constant and so constraints on zero or negative size
+	 arrays must not be applied when this sizeof call is inside
+	 another array declarator.  */
+      if (!type_expr)
+	type_expr = integer_zero_node;
       ret.value = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (ret.value),
 			  type_expr, ret.value);
       C_MAYBE_CONST_EXPR_NON_CONST (ret.value) = !type_expr_const;
