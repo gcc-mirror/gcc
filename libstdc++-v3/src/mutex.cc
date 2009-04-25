@@ -25,18 +25,6 @@
 #include <mutex>
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
-#ifndef _GLIBCXX_HAVE_TLS
-namespace
-{
-  std::mutex&
-  get_once_mutex()
-  {
-    static std::mutex once_mutex;
-    return once_mutex;
-  }
-}
-#endif
-
 namespace std
 {
   const defer_lock_t defer_lock = defer_lock_t();
@@ -55,11 +43,13 @@ namespace std
   template class function<void()>;
   function<void()> __once_functor;
 
-  unique_lock<mutex>&
-  __get_once_functor_lock()
+  unique_lock<mutex>* __once_functor_lock;
+
+  mutex&
+  __get_once_mutex()
   {
-    static unique_lock<mutex> once_functor_lock(get_once_mutex(), defer_lock);
-    return once_functor_lock;
+    static mutex once_mutex;
+    return once_mutex;
   }
 #endif
 
@@ -69,7 +59,7 @@ namespace std
     {
 #ifndef _GLIBCXX_HAVE_TLS
       function<void()> __once_call = std::move(__once_functor);
-      __get_once_functor_lock().unlock();
+      __once_functor_lock->unlock();
 #endif
       __once_call();
     }
