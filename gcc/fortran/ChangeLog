@@ -1,3 +1,9 @@
+2009-04-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39688
+	* decl.c (gfc_match_import): Use 'sym->name' instead of 'name'.
+	They differ if the symbol has been use-renamed.
+
 2009-04-24  Ian Lance Taylor  <iant@google.com>
 
 	* gfortran.h (enum gfc_symbol_type): New named enum type, broken
