@@ -1,5 +1,11 @@
 2009-04-25  Joseph Myers  <joseph@codesourcery.com>
 
+	* c-decl.c (build_enumerator): Allow values folding to integer
+	constants but not integer constant expressions with a pedwarn if
+	pedantic.
+
+2009-04-25  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/39582
 	* c-typeck.c (c_expr_sizeof_type): Create a C_MAYBE_CONST_EXPR
 	with non-null C_MAYBE_CONST_EXPR_PRE if size of a variable-length

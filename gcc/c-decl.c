@@ -6077,16 +6077,32 @@ build_enumerator (struct c_enum_contents *the_enum, tree name, tree value,
 	 undeclared identifier) - just ignore the value expression.  */
       if (value == error_mark_node)
 	value = 0;
-      else if (!INTEGRAL_TYPE_P (TREE_TYPE (value))
-	       || TREE_CODE (value) != INTEGER_CST)
+      else if (!INTEGRAL_TYPE_P (TREE_TYPE (value)))
 	{
 	  error ("enumerator value for %qE is not an integer constant", name);
 	  value = 0;
 	}
       else
 	{
-	  value = default_conversion (value);
-	  constant_expression_warning (value);
+	  if (TREE_CODE (value) != INTEGER_CST)
+	    {
+	      value = c_fully_fold (value, false, NULL);
+	      if (TREE_CODE (value) == INTEGER_CST)
+		pedwarn (value_loc, OPT_pedantic,
+			 "enumerator value for %qE is not an integer "
+			 "constant expression", name);
+	    }
+	  if (TREE_CODE (value) != INTEGER_CST)
+	    {
+	      error ("enumerator value for %qE is not an integer constant",
+		     name);
+	      value = 0;
+	    }
+	  else
+	    {
+	      value = default_conversion (value);
+	      constant_expression_warning (value);
+	    }
 	}
     }
 
