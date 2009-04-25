@@ -1,3 +1,9 @@
+2009-04-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39897
+	* config/i386/i386.c (print_operand) ['z']: Revert handling of
+	HImode operands.
+
 2009-04-25  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/39564
