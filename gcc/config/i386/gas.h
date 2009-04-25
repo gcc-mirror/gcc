@@ -117,9 +117,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef SHIFT_DOUBLE_OMITS_COUNT
 #define SHIFT_DOUBLE_OMITS_COUNT 0
 
-/* Print opcodes the way that GAS expects them.  */
-#define GAS_MNEMONICS 1
-
 /* The comment-starter string as GAS expects it. */
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "#"

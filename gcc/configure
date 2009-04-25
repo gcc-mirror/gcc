@@ -22638,15 +22638,11 @@ fi
 
     echo "$as_me:$LINENO: checking assembler for filds and fists mnemonics" >&5
 echo $ECHO_N "checking assembler for filds and fists mnemonics... $ECHO_C" >&6
-if test "${gcc_cv_as_ix86_filds_fists+set}" = set; then
+if test "${gcc_cv_as_ix86_filds+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  gcc_cv_as_ix86_filds_fists=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 9 \) \* 1000 + 0`
-  then gcc_cv_as_ix86_filds_fists=yes
-fi
-  elif test x$gcc_cv_as != x; then
+  gcc_cv_as_ix86_filds=no
+  if test x$gcc_cv_as != x; then
     echo 'filds mem; fists mem' > conftest.s
     if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
   { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
@@ -22655,7 +22651,7 @@ fi
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }
     then
-	gcc_cv_as_ix86_filds_fists=yes
+	gcc_cv_as_ix86_filds=yes
     else
       echo "configure: failed program was" >&5
       cat conftest.s >&5
@@ -22663,12 +22659,45 @@ fi
     rm -f conftest.o conftest.s
   fi
 fi
-echo "$as_me:$LINENO: result: $gcc_cv_as_ix86_filds_fists" >&5
-echo "${ECHO_T}$gcc_cv_as_ix86_filds_fists" >&6
-if test $gcc_cv_as_ix86_filds_fists = yes; then
+echo "$as_me:$LINENO: result: $gcc_cv_as_ix86_filds" >&5
+echo "${ECHO_T}$gcc_cv_as_ix86_filds" >&6
+if test $gcc_cv_as_ix86_filds = yes; then
 
 cat >>confdefs.h <<\_ACEOF
-#define HAVE_GAS_FILDS_FISTS 1
+#define HAVE_AS_IX86_FILDS 1
+_ACEOF
+
+fi
+
+    echo "$as_me:$LINENO: checking assembler for fildq and fistpq mnemonics" >&5
+echo $ECHO_N "checking assembler for fildq and fistpq mnemonics... $ECHO_C" >&6
+if test "${gcc_cv_as_ix86_fildq+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_ix86_fildq=no
+  if test x$gcc_cv_as != x; then
+    echo 'fildq mem; fistpq mem' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_ix86_fildq=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_ix86_fildq" >&5
+echo "${ECHO_T}$gcc_cv_as_ix86_fildq" >&6
+if test $gcc_cv_as_ix86_fildq = yes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_AS_IX86_FILDQ 1
 _ACEOF
 
 fi

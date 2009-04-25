@@ -10848,6 +10848,7 @@ get_some_local_dynamic_name (void)
         otherwise nothing
    R -- print the prefix for register names.
    z -- print the opcode suffix for the size of the current operand.
+   Z -- likewise, with special suffixes for fild/fist instructions.
    * -- print a star (in certain assembler syntax)
    A -- print an absolute memory reference.
    w -- print the operand as if it's a "word" (HImode) even if it isn't.
@@ -10946,6 +10947,37 @@ print_operand (FILE *file, rtx x, int code)
 	    putc ('t', file);
 	  return;
 
+	case 'Z':
+	  gcc_assert (MEM_P (x));
+
+	  /* fild/fist don't get size suffixes if using Intel opcodes.  */
+	  if (ASSEMBLER_DIALECT == ASM_INTEL)
+	    return;
+
+	  switch (GET_MODE_SIZE (GET_MODE (x)))
+	    {
+	    case 2:
+#ifdef HAVE_AS_IX86_FILDS
+	      putc ('s', file);
+#endif
+	      return;
+
+	    case 4:
+	      putc ('l', file);
+	      return;
+
+	    case 8:
+#ifdef HAVE_AS_IX86_FILDQ
+	      putc ('q', file);
+#else
+	      fputs ("ll", file);
+#endif
+	      return;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+	    
 	case 'z':
 	  /* 387 opcodes don't get size suffixes if the operands are
 	     registers.  */
@@ -10964,49 +10996,26 @@ print_operand (FILE *file, rtx x, int code)
 	      return;
 
 	    case 2:
-	      if (MEM_P (x))
-		{
-#ifdef HAVE_GAS_FILDS_FISTS
-		  putc ('s', file);
-#endif
-		  return;
-		}
-	      else
-		putc ('w', file);
+	      putc ('w', file);
 	      return;
 
 	    case 4:
-	      if (GET_MODE (x) == SFmode)
-		{
-		  putc ('s', file);
-		  return;
-		}
-	      else
+	      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
 		putc ('l', file);
+	      else
+		putc ('s', file);
+	      return;
+
+	    case 8:
+	      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
+		putc ('q', file);
+	      else
+	        putc ('l', file);
 	      return;
 
 	    case 12:
 	    case 16:
 	      putc ('t', file);
-	      return;
-
-	    case 8:
-	      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT)
-		{
-		  if (MEM_P (x))
-		    {
-#ifdef GAS_MNEMONICS
-		      putc ('q', file);
-#else
-		      putc ('l', file);
-		      putc ('l', file);
-#endif
-		    }
-		  else
-		    putc ('q', file);
-		}
-	      else
-	        putc ('l', file);
 	      return;
 
 	    default:
@@ -12089,15 +12098,15 @@ output_fix_trunc (rtx insn, rtx *operands, int fisttp)
   gcc_assert (GET_MODE (operands[1]) != TFmode);
 
   if (fisttp)
-      output_asm_insn ("fisttp%z0\t%0", operands);
+      output_asm_insn ("fisttp%Z0\t%0", operands);
   else
     {
       if (round_mode != I387_CW_ANY)
 	output_asm_insn ("fldcw\t%3", operands);
       if (stack_top_dies || dimode_p)
-	output_asm_insn ("fistp%z0\t%0", operands);
+	output_asm_insn ("fistp%Z0\t%0", operands);
       else
-	output_asm_insn ("fist%z0\t%0", operands);
+	output_asm_insn ("fist%Z0\t%0", operands);
       if (round_mode != I387_CW_ANY)
 	output_asm_insn ("fldcw\t%2", operands);
     }

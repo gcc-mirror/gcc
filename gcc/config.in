@@ -273,6 +273,18 @@
 #endif
 
 
+/* Define if your assembler uses fildq and fistq mnemonics. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_FILDQ
+#endif
+
+
+/* Define if your assembler uses filds and fists mnemonics. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_IX86_FILDS
+#endif
+
+
 /* Define if your assembler supports the sahf mnemonic. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_IX86_SAHF
@@ -841,12 +853,6 @@
 /* Define 0/1 if your assembler supports .cfi_personality. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_CFI_PERSONALITY_DIRECTIVE
-#endif
-
-
-/* Define if your assembler uses the new HImode fild and fist notation. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_GAS_FILDS_FISTS
 #endif
 
 
