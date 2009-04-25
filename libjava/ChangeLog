@@ -1,3 +1,8 @@
+2009-04-24  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Create missing directory gnu/java/security/jce/prng.
+	* configure: Regenerate.
+
 2009-04-23  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.am (install-data-local): Fix symlinks to header files.
