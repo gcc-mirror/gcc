@@ -1,3 +1,25 @@
+2009-04-25  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39590
+	* configure.ac (HAVE_AS_IX86_FILDQ): On x86 targets check whether
+	the configured assembler supports fildq and fistpq mnemonics.
+	(HAVE_AS_IX86_FILDS): Rename from HAVE_GAS_FILDS_FISTS.
+	* configure: Regenerated.
+	* config.in: Ditto.
+
+	* config/i386/i386.c (print_operand): Handle 'Z'.
+	['z']: Remove handling of special fild/fist suffixes.
+	(output_fix_trunc): Use '%Z' to output suffix of fist{,p,tp} insn.
+	* config/i386/i386.md (*floathi<mode>2_i387): Use '%Z' to output
+	suffix of fild insn.
+	(*floatsi<mode>2_vector_mixed): Ditto.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_mixed_interunit): Ditto.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_mixed_nointerunit): Ditto.
+	(*float<SSEMODEI24:mode><X87MODEF:mode>2_i387_with_temp): Ditto.
+	(*float<SSEMODEI24:mode><X87MODEF:mode>2_i387): Ditto.
+	* config/i386/gas.h (GAS_MNEMONICS): Remove.
+
 2009-04-25  Ben Elliston  <bje@au.ibm.com>
  
 	* genrecog.c (validate_pattern): Do not warn for VOIDmode CALLs as
@@ -82,10 +104,8 @@
 	(enum dwarf_source_language): Likewise.
 	* dwarf2out.c (int_loc_descriptor): Add cast to enum type.
 	(add_calling_convention_attribute): Likewise.
-	* fold-const.c (fold_undefer_overflow_warnings): Add cast to enum
-	type.
-	(combine_comparisons): Change compcode to int.  Add cast to enum
-	type.
+	* fold-const.c (fold_undefer_overflow_warnings): Add cast to enum type.
+	(combine_comparisons): Change compcode to int.  Add cast to enum type.
 	* genrecog.c (maybe_both_true_2): Change c to int.
 	(write_switch): Likewise.  Add cast to enum type.
 	* gimplify.c (gimplify_omp_for): Handle return values from
@@ -93,8 +113,8 @@
 	(gimplify_expr): Add cast to enum type.
 	* ipa-prop.c (update_jump_functions_after_inlining): Change
 	IPA_BOTTOM to IPA_JF_UNKNOWN.
-	* ira.c (setup_class_subset_and_memory_move_costs): Change mode to
-	int.  Add casts to enum type.
+	* ira.c (setup_class_subset_and_memory_move_costs): Change mode to int.
+	Add casts to enum type.
 	(setup_cover_and_important_classes): Change cl to int.  Add casts
 	to enum type.
 	(setup_class_translate): Change cl and mode to int.
@@ -126,14 +146,12 @@
 	with ERROR_MARK, not NUM_TREE_CODES.
 	(vect_create_epilog_for_reduction): Likewise.
 	(vectorizable_reduction): Don't initialize epiloc_reduc_code.
-	When not using it, set it to ERROR_MARK rather than
-	NUM_TREE_CODES.
+	When not using it, set it to ERROR_MARK rather than NUM_TREE_CODES.
 	* tree-vect-patterns.c (vect_pattern_recog_1): Change vec_mode to
 	enum machine_mode.
 	* tree-vect-stmts.c (new_stmt_vec_info): Change 0 to
 	vect_unused_in_loop.  Change 0 to loop_vect.
-	* tree-vectorizer.c (vect_set_verbosity_level): Add casts to enum
-	type.
+	* tree-vectorizer.c (vect_set_verbosity_level): Add casts to enum type.
 	* var-tracking.c (get_init_value): Change return type to enum
 	var_init_status.
 	* vec.h (DEF_VEC_FUNC_P) [iterate]: Cast 0 to type T.
@@ -203,8 +221,7 @@
 	* config/frv/frv.c (frv_frame_access): Do not use reg+reg
 	addressing for DImode accesses.
 	(frv_print_operand_address): Handle PLUS case.
-	* config/frv/frv.h (FIXED_REGISTERS): Mark link register as
-	fixed.
+	* config/frv/frv.h (FIXED_REGISTERS): Mark link register as fixed.
 
 2009-04-24  Jakub Jelinek  <jakub@redhat.com>
 
