@@ -145,7 +145,7 @@ static void sjlj_build_landing_pads (void);
 
 static void remove_eh_handler (struct eh_region *);
 static void remove_eh_handler_and_replace (struct eh_region *,
-					   struct eh_region *);
+					   struct eh_region *, bool);
 
 /* The return value of reachable_next_level.  */
 enum reachable_code
@@ -742,7 +742,7 @@ remove_unreachable_regions (sbitmap reachable, sbitmap contains_stmt)
 	    fprintf (dump_file, "Replacing MUST_NOT_THROW region %i by %i\n",
 		     r->region_number,
 		     first_must_not_throw->region_number);
-	  remove_eh_handler_and_replace (r, first_must_not_throw);
+	  remove_eh_handler_and_replace (r, first_must_not_throw, false);
 	  first_must_not_throw->may_contain_throw |= r->may_contain_throw;
 	}
       else
@@ -757,11 +757,12 @@ remove_unreachable_regions (sbitmap reachable, sbitmap contains_stmt)
 /* Return array mapping LABEL_DECL_UID to region such that region's tree_label
    is identical to label.  */
 
-VEC(int,heap) *
+VEC (int, heap) *
 label_to_region_map (void)
 {
-  VEC(int,heap) * label_to_region = NULL;
+  VEC (int, heap) * label_to_region = NULL;
   int i;
+  int idx;
 
   VEC_safe_grow_cleared (int, heap, label_to_region,
 			 cfun->cfg->last_label_uid + 1);
@@ -769,8 +770,14 @@ label_to_region_map (void)
     {
       struct eh_region *r = VEC_index (eh_region, cfun->eh->region_array, i);
       if (r && r->region_number == i
-      	  && r->tree_label && LABEL_DECL_UID (r->tree_label) >= 0)
+	  && r->tree_label && LABEL_DECL_UID (r->tree_label) >= 0)
 	{
+	  if ((idx = VEC_index (int, label_to_region,
+				LABEL_DECL_UID (r->tree_label))) != 0)
+	      r->next_region_sharing_label =
+	      VEC_index (eh_region, cfun->eh->region_array, idx);
+	  else
+	    r->next_region_sharing_label = NULL;
 	  VEC_replace (int, label_to_region, LABEL_DECL_UID (r->tree_label),
 		       i);
 	}
@@ -783,6 +790,20 @@ int
 num_eh_regions (void)
 {
   return cfun->eh->last_region_number + 1;
+}
+
+/* Return next region sharing same label as REGION.  */
+
+int
+get_next_region_sharing_label (int region)
+{
+  struct eh_region *r;
+  if (!region)
+    return 0;
+  r = VEC_index (eh_region, cfun->eh->region_array, region);
+  if (!r || !r->next_region_sharing_label)
+    return 0;
+  return r->next_region_sharing_label->region_number;
 }
 
 /* Set up EH labels for RTL.  */
@@ -2161,16 +2182,46 @@ finish_eh_generation (void)
 
 /* This section handles removing dead code for flow.  */
 
-/* Splice REGION from the region tree and replace it by REPLACE etc.  */
+/* Splice REGION from the region tree and replace it by REPLACE etc.
+   When UPDATE_CATCH_TRY is true mind updating links from catch to try
+   region.*/
 
 static void
 remove_eh_handler_and_replace (struct eh_region *region,
-			       struct eh_region *replace)
+			       struct eh_region *replace,
+			       bool update_catch_try)
 {
   struct eh_region **pp, **pp_start, *p, *outer, *inner;
   rtx lab;
 
   outer = region->outer;
+
+  /* When we are moving the region in EH tree, update prev_try pointers.  */
+  if (outer != replace && region->inner)
+    {
+      struct eh_region *prev_try = find_prev_try (replace);
+      p = region->inner;
+      while (p != region)
+	{
+	  if (p->type == ERT_CLEANUP)
+	    p->u.cleanup.prev_try = prev_try;
+          if (p->type != ERT_TRY
+	      && p->type != ERT_MUST_NOT_THROW
+	      && (p->type != ERT_ALLOWED_EXCEPTIONS
+	          || p->u.allowed.type_list)
+	      && p->inner)
+	    p = p->inner;
+	  else if (p->next_peer)
+	    p = p->next_peer;
+	  else
+	    {
+	      while (p != region && !p->next_peer)
+	        p = p->outer;
+	      if (p != region)
+		p = p->next_peer;
+	    }
+	}
+    }
   /* For the benefit of efficiently handling REG_EH_REGION notes,
      replace this region in the region array with its containing
      region.  Note that previous region deletions may result in
@@ -2226,7 +2277,8 @@ remove_eh_handler_and_replace (struct eh_region *region,
       *pp_start = inner;
     }
 
-  if (region->type == ERT_CATCH)
+  if (region->type == ERT_CATCH
+      && update_catch_try)
     {
       struct eh_region *eh_try, *next, *prev;
 
@@ -2260,7 +2312,7 @@ remove_eh_handler_and_replace (struct eh_region *region,
 static void
 remove_eh_handler (struct eh_region *region)
 {
-  remove_eh_handler_and_replace (region, region->outer);
+  remove_eh_handler_and_replace (region, region->outer, true);
 }
 
 /* Remove Eh region R that has turned out to have no code in its handler.  */
@@ -2272,6 +2324,19 @@ remove_eh_region (int r)
 
   region = VEC_index (eh_region, cfun->eh->region_array, r);
   remove_eh_handler (region);
+}
+
+/* Remove Eh region R that has turned out to have no code in its handler
+   and replace in by R2.  */
+
+void
+remove_eh_region_and_replace_by_outer_of (int r, int r2)
+{
+  struct eh_region *region, *region2;
+
+  region = VEC_index (eh_region, cfun->eh->region_array, r);
+  region2 = VEC_index (eh_region, cfun->eh->region_array, r2);
+  remove_eh_handler_and_replace (region, region2->outer, true);
 }
 
 /* Invokes CALLBACK for every exception handler label.  Only used by old

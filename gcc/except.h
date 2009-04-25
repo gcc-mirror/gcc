@@ -34,6 +34,9 @@ struct GTY(()) eh_region
   struct eh_region *inner;
   struct eh_region *next_peer;
 
+  /* List of regions sharing label.  */
+  struct eh_region *next_region_sharing_label;
+
   /* An identifier for this region.  */
   int region_number;
 
@@ -155,7 +158,8 @@ extern void init_eh (void);
 extern void init_eh_for_function (void);
 
 extern rtx reachable_handlers (rtx);
-void remove_eh_region (int);
+extern void remove_eh_region (int);
+extern void remove_eh_region_and_replace_by_outer_of (int, int);
 
 extern void convert_from_eh_region_ranges (void);
 extern unsigned int convert_to_eh_region_ranges (void);
@@ -274,3 +278,4 @@ extern void set_eh_throw_stmt_table (struct function *, struct htab *);
 extern void remove_unreachable_regions (sbitmap, sbitmap);
 extern VEC(int,heap) * label_to_region_map (void);
 extern int num_eh_regions (void);
+extern int get_next_region_sharing_label (int);
