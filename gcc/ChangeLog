@@ -1,3 +1,7 @@
+2009-04-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* ira.c (setup_cover_and_important_classes): Add enum cast.
+
 2009-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genpreds.c (write_enum_constraint_num): Output definition of

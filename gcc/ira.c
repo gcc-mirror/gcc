@@ -760,7 +760,7 @@ setup_cover_and_important_classes (void)
 	      break;
 	  if (j < CONSTRAINT__LIMIT)
 	    {
-	      classes[n++] = i;
+	      classes[n++] = (enum reg_class) i;
 	      continue;
 	    }
 #endif
