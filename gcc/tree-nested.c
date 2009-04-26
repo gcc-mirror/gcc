@@ -770,6 +770,7 @@ get_frame_field (struct nesting_info *info, tree target_context,
   return x;
 }
 
+static void note_nonlocal_vla_type (struct nesting_info *info, tree type);
 
 /* A subroutine of convert_nonlocal_reference_op.  Create a local variable
    in the nested function with DECL_VALUE_EXPR set to reference the true
@@ -839,6 +840,11 @@ get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
   *slot = new_decl;
   TREE_CHAIN (new_decl) = info->debug_var_chain;
   info->debug_var_chain = new_decl;
+
+  if (!optimize
+      && info->context != target_context
+      && variably_modified_type_p (TREE_TYPE (decl), NULL))
+    note_nonlocal_vla_type (info, TREE_TYPE (decl));
 
   return new_decl;
 }
@@ -1111,6 +1117,60 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
   return need_chain;
 }
 
+/* Create nonlocal debug decls for nonlocal VLA array bounds.  */
+
+static void
+note_nonlocal_vla_type (struct nesting_info *info, tree type)
+{
+  while (POINTER_TYPE_P (type) && !TYPE_NAME (type))
+    type = TREE_TYPE (type);
+
+  if (TYPE_NAME (type)
+      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+      && DECL_ORIGINAL_TYPE (TYPE_NAME (type)))
+    type = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
+
+  while (POINTER_TYPE_P (type)
+	 || TREE_CODE (type) == VECTOR_TYPE
+	 || TREE_CODE (type) == FUNCTION_TYPE
+	 || TREE_CODE (type) == METHOD_TYPE)
+    type = TREE_TYPE (type);
+
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree domain, t;
+
+      note_nonlocal_vla_type (info, TREE_TYPE (type));
+      domain = TYPE_DOMAIN (type);
+      if (domain)
+	{
+	  t = TYPE_MIN_VALUE (domain);
+	  if (t && (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL)
+	      && decl_function_context (t) != info->context)
+	    get_nonlocal_debug_decl (info, t);
+	  t = TYPE_MAX_VALUE (domain);
+	  if (t && (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL)
+	      && decl_function_context (t) != info->context)
+	    get_nonlocal_debug_decl (info, t);
+	}
+    }
+}
+
+/* Create nonlocal debug decls for nonlocal VLA array bounds for VLAs
+   in BLOCK.  */
+
+static void
+note_nonlocal_block_vlas (struct nesting_info *info, tree block)
+{
+  tree var;
+
+  for (var = BLOCK_VARS (block); var; var = TREE_CHAIN (var))
+    if (TREE_CODE (var) == VAR_DECL
+	&& variably_modified_type_p (TREE_TYPE (var), NULL)
+	&& DECL_HAS_VALUE_EXPR_P (var)
+	&& decl_function_context (var) != info->context)
+      note_nonlocal_vla_type (info, TREE_TYPE (var));
+}
 
 /* Callback for walk_gimple_stmt.  Rewrite all references to VAR and
    PARM_DECLs that belong to outer functions.  This handles statements
@@ -1201,6 +1261,13 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       walk_body (convert_nonlocal_reference_stmt, convert_nonlocal_reference_op,
 	         info, gimple_omp_body (stmt));
       break;
+
+    case GIMPLE_BIND:
+      if (!optimize && gimple_bind_block (stmt))
+	note_nonlocal_block_vlas (info, gimple_bind_block (stmt));
+
+      *handled_ops_p = false;
+      return NULL_TREE;
 
     default:
       /* For every other statement that we are not interested in
@@ -1979,7 +2046,115 @@ nesting_copy_decl (tree decl, copy_body_data *id)
       return new_decl;
     }
 
+  if (TREE_CODE (decl) == VAR_DECL
+      || TREE_CODE (decl) == PARM_DECL
+      || TREE_CODE (decl) == RESULT_DECL)
+    return decl;
+
   return copy_decl_no_change (decl, id);
+}
+
+/* A helper function for remap_vla_decls.  See if *TP contains
+   some remapped variables.  */
+
+static tree
+contains_remapped_vars (tree *tp, int *walk_subtrees, void *data)
+{
+  struct nesting_info *root = (struct nesting_info *) data;
+  tree t = *tp;
+  void **slot;
+
+  if (DECL_P (t))
+    {
+      *walk_subtrees = 0;
+      slot = pointer_map_contains (root->var_map, t);
+
+      if (slot)
+	return (tree) *slot;
+    }
+  return NULL;
+}
+
+/* Remap VLA decls in BLOCK and subblocks if remapped variables are
+   involved.  */
+
+static void
+remap_vla_decls (tree block, struct nesting_info *root)
+{
+  tree var, subblock, val, type;
+  struct nesting_copy_body_data id;
+
+  for (subblock = BLOCK_SUBBLOCKS (block);
+       subblock;
+       subblock = BLOCK_CHAIN (subblock))
+    remap_vla_decls (subblock, root);
+
+  for (var = BLOCK_VARS (block); var; var = TREE_CHAIN (var))
+    {
+      if (TREE_CODE (var) == VAR_DECL
+	  && variably_modified_type_p (TREE_TYPE (var), NULL)
+	  && DECL_HAS_VALUE_EXPR_P (var))
+	{
+	  type = TREE_TYPE (var);
+	  val = DECL_VALUE_EXPR (var);
+	  if (walk_tree (&type, contains_remapped_vars, root, NULL) != NULL
+	      ||  walk_tree (&val, contains_remapped_vars, root, NULL) != NULL)
+	    break;
+	}
+    }
+  if (var == NULL_TREE)
+    return;
+
+  memset (&id, 0, sizeof (id));
+  id.cb.copy_decl = nesting_copy_decl;
+  id.cb.decl_map = pointer_map_create ();
+  id.root = root;
+
+  for (; var; var = TREE_CHAIN (var))
+    if (TREE_CODE (var) == VAR_DECL
+	&& variably_modified_type_p (TREE_TYPE (var), NULL)
+	&& DECL_HAS_VALUE_EXPR_P (var))
+      {
+	struct nesting_info *i;
+	tree newt, t, context;
+
+	t = type = TREE_TYPE (var);
+	val = DECL_VALUE_EXPR (var);
+	if (walk_tree (&type, contains_remapped_vars, root, NULL) == NULL
+	    && walk_tree (&val, contains_remapped_vars, root, NULL) == NULL)
+	  continue;
+
+	context = decl_function_context (var);
+	for (i = root; i; i = i->outer)
+	  if (i->context == context)
+	    break;
+
+	if (i == NULL)
+	  continue;
+
+	id.cb.src_fn = i->context;
+	id.cb.dst_fn = i->context;
+	id.cb.src_cfun = DECL_STRUCT_FUNCTION (root->context);
+
+	TREE_TYPE (var) = newt = remap_type (type, &id.cb);
+	while (POINTER_TYPE_P (newt) && !TYPE_NAME (newt))
+	  {
+	    newt = TREE_TYPE (newt);
+	    t = TREE_TYPE (t);
+	  }
+	if (TYPE_NAME (newt)
+	    && TREE_CODE (TYPE_NAME (newt)) == TYPE_DECL
+	    && DECL_ORIGINAL_TYPE (TYPE_NAME (newt))
+	    && newt != t
+	    && TYPE_NAME (newt) == TYPE_NAME (t))
+	  TYPE_NAME (newt) = remap_decl (TYPE_NAME (newt), &id.cb);
+
+	walk_tree (&val, copy_tree_body_r, &id.cb, NULL);
+	if (val != DECL_VALUE_EXPR (var))
+	  SET_DECL_VALUE_EXPR (var, val);
+      }
+
+  pointer_map_destroy (id.cb.decl_map);
 }
 
 /* Do "everything else" to clean up or complete state collected by the
@@ -2118,6 +2293,9 @@ finalize_nesting_tree_1 (struct nesting_info *root)
   if (root->debug_var_chain)
     {
       tree debug_var;
+      gimple scope;
+
+      remap_vla_decls (DECL_INITIAL (root->context), root);
 
       for (debug_var = root->debug_var_chain; debug_var;
 	   debug_var = TREE_CHAIN (debug_var))
@@ -2170,9 +2348,13 @@ finalize_nesting_tree_1 (struct nesting_info *root)
 	  pointer_map_destroy (id.cb.decl_map);
 	}
 
-      declare_vars (root->debug_var_chain,
-		    gimple_seq_first_stmt (gimple_body (root->context)),
-		    true);
+      scope = gimple_seq_first_stmt (gimple_body (root->context));
+      if (gimple_bind_block (scope))
+	declare_vars (root->debug_var_chain, scope, true);
+      else
+	BLOCK_VARS (DECL_INITIAL (root->context))
+	  = chainon (BLOCK_VARS (DECL_INITIAL (root->context)),
+		     root->debug_var_chain);
     }
 
   /* Dump the translated tree function.  */
