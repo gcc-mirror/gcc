@@ -879,8 +879,7 @@ GLIBCXX_3.4.11 {
     _ZSt11__once_call;
     _ZSt15__once_callable;
     _ZSt14__once_functor;
-    _ZSt19__once_functor_lock;
-    _ZSt16__get_once_mutexv;
+    _ZSt23__get_once_functor_lockv;
     __once_proxy;
 
     # condition_variable
