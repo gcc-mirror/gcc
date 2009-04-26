@@ -1,3 +1,8 @@
+2009-04-26  Michael Matz  <matz@suse.de>
+
+	* tree-sra.c (sra_build_assignment): Don't use into_ssa mode,
+	mark new temporaries for renaming.
+
 2009-04-26  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/39581
