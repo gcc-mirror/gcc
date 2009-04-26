@@ -1,3 +1,36 @@
+2009-04-26  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* df-scan.c (df_insn_rescan): Salvage insn's LUID if the insn is
+	not new but only being rescanned.
+	* gcse.c (uid_cuid, max_uid, INSN_CUID, max_cuid, struct reg_set,
+	reg_set_table, REG_SET_TABLE_SLOP, reg_set_in_block,
+	alloc_reg_set_mem, free_reg_set_mem, record_one_set,
+	record_set_info, compute_set, grealloc): Remove.
+	(recompute_all_luids): New function.
+	(gcse_main): Don't compute sets, and don't do related memory
+	allocations/free-ing.  If something changed before the end of the
+	pass, update LUIDs using recompute_all_luids.
+	(alloc_gcse_mem): Don't compute LUIDs.  Don't allocate reg_set memory.
+	(free_gcse_mem): Don't free it either.
+	(oprs_unchanged_p, load_killed_in_block, record_last_reg_set_info):
+	Use the df insn LUIDs.
+	(load_killed_in_block): Likewise.
+	(compute_hash_table_work): Don't compute reg_set_in_block.
+	(compute_transp): Use DF_REG_DEF_CHAINs.
+	(local_cprop_pass): Don't use compute_sets and related functions.
+	(one_cprop_pass, pre_gcse, one_pre_gcse_pass, one_code_hoisting_pass):
+	Use get_max_uid() instead of max_cuid.
+	(insert_insn_end_basic_block, pre_insert_copy_insn,
+	update_ld_motion_stores): Don't try to
+	keep reg_set tables up to date.
+	(pre_insert_copies): Use df insn LUIDs.
+	(sbitmap pre_redundant_insns): Replace with uses of INSN_DELETED_P.
+	(reg_set_info): Don't use extra bitmap argument.
+	(compute_store_table): Don't compute reg_set_in_block.  Use DF scan
+	information to compute regs_set_in_block.
+	(free_store_memory, store_motion): Don't nullify reg_set_in_block.
+	(bypass_jumps): Don't use compute_sets and friends.
+
 2009-04-26  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	PR testsuite/39710
