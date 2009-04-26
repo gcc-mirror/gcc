@@ -1,5 +1,10 @@
 2009-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/39543
+	* fwprop.c (forward_propagate_asm): New function.
+	(forward_propagate_and_simplify): Propagate also into __asm, if it
+	doesn't increase the number of referenced registers.
+
 	PR c/39889
 	* stmt.c (warn_if_unused_value): Look through NON_LVALUE_EXPR.
 
