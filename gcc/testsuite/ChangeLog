@@ -1,5 +1,10 @@
 2009-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR inline-asm/39543
+	* gcc.target/i386/pr39543-1.c: New test.
+	* gcc.target/i386/pr39543-2.c: New test.
+	* gcc.target/i386/pr39543-3.c: New test.
+
 	PR c/39889
 	* gcc.dg/Wunused-value-3.c: New test.
 

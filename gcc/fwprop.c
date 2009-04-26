@@ -1,5 +1,5 @@
 /* RTL-based forward propagation pass for GNU compiler.
-   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Paolo Bonzini and Steven Bosscher.
 
 This file is part of GCC.
@@ -852,6 +852,80 @@ forward_propagate_subreg (df_ref use, rtx def_insn, rtx def_set)
     return false;
 }
 
+/* Try to replace USE with SRC (defined in DEF_INSN) in __asm.  */
+
+static bool
+forward_propagate_asm (df_ref use, rtx def_insn, rtx def_set, rtx reg)
+{
+  rtx use_insn = DF_REF_INSN (use), src, use_pat, asm_operands, new_rtx, *loc;
+  int speed_p, i;
+  df_ref *use_vec;
+
+  gcc_assert ((DF_REF_FLAGS (use) & DF_REF_IN_NOTE) == 0);
+
+  src = SET_SRC (def_set);
+  use_pat = PATTERN (use_insn);
+
+  /* In __asm don't replace if src might need more registers than
+     reg, as that could increase register pressure on the __asm.  */
+  use_vec = DF_INSN_USES (def_insn);
+  if (use_vec[0] && use_vec[1])
+    return false;
+
+  speed_p = optimize_bb_for_speed_p (BLOCK_FOR_INSN (use_insn));
+  asm_operands = NULL_RTX;
+  switch (GET_CODE (use_pat))
+    {
+    case ASM_OPERANDS:
+      asm_operands = use_pat;
+      break;
+    case SET:
+      if (MEM_P (SET_DEST (use_pat)))
+	{
+	  loc = &SET_DEST (use_pat);
+	  new_rtx = propagate_rtx (*loc, GET_MODE (*loc), reg, src, speed_p);
+	  if (new_rtx)
+	    validate_unshare_change (use_insn, loc, new_rtx, true);
+	}
+      asm_operands = SET_SRC (use_pat);
+      break;
+    case PARALLEL:
+      for (i = 0; i < XVECLEN (use_pat, 0); i++)
+	if (GET_CODE (XVECEXP (use_pat, 0, i)) == SET)
+	  {
+	    if (MEM_P (SET_DEST (XVECEXP (use_pat, 0, i))))
+	      {
+		loc = &SET_DEST (XVECEXP (use_pat, 0, i));
+		new_rtx = propagate_rtx (*loc, GET_MODE (*loc), reg,
+					 src, speed_p);
+		if (new_rtx)
+		  validate_unshare_change (use_insn, loc, new_rtx, true);
+	      }
+	    asm_operands = SET_SRC (XVECEXP (use_pat, 0, i));
+	  }
+	else if (GET_CODE (XVECEXP (use_pat, 0, i)) == ASM_OPERANDS)
+	  asm_operands = XVECEXP (use_pat, 0, i);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  gcc_assert (asm_operands && GET_CODE (asm_operands) == ASM_OPERANDS);
+  for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (asm_operands); i++)
+    {
+      loc = &ASM_OPERANDS_INPUT (asm_operands, i);
+      new_rtx = propagate_rtx (*loc, GET_MODE (*loc), reg, src, speed_p);
+      if (new_rtx)
+	validate_unshare_change (use_insn, loc, new_rtx, true);
+    }
+
+  if (num_changes_pending () == 0 || !apply_change_group ())
+    return false;
+
+  num_changes++;
+  return true;
+}
+
 /* Try to replace USE with SRC (defined in DEF_INSN) and simplify the
    result.  */
 
@@ -863,12 +937,16 @@ forward_propagate_and_simplify (df_ref use, rtx def_insn, rtx def_set)
   rtx src, reg, new_rtx, *loc;
   bool set_reg_equal;
   enum machine_mode mode;
+  int asm_use = -1;
 
-  if (!use_set)
+  if (INSN_CODE (use_insn) < 0)
+    asm_use = asm_noperands (PATTERN (use_insn));
+
+  if (!use_set && asm_use < 0)
     return false;
 
   /* Do not propagate into PC, CC0, etc.  */
-  if (GET_MODE (SET_DEST (use_set)) == VOIDmode)
+  if (use_set && GET_MODE (SET_DEST (use_set)) == VOIDmode)
     return false;
 
   /* If def and use are subreg, check if they match.  */
@@ -900,7 +978,7 @@ forward_propagate_and_simplify (df_ref use, rtx def_insn, rtx def_set)
   if (MEM_P (src) && MEM_READONLY_P (src))
     {
       rtx x = avoid_constant_pool_reference (src);
-      if (x != src)
+      if (x != src && use_set)
 	{
           rtx note = find_reg_note (use_insn, REG_EQUAL, NULL_RTX);
 	  rtx old_rtx = note ? XEXP (note, 0) : SET_SRC (use_set);
@@ -910,6 +988,9 @@ forward_propagate_and_simplify (df_ref use, rtx def_insn, rtx def_set)
 	}
       return false;
     }
+
+  if (asm_use >= 0)
+    return forward_propagate_asm (use, def_insn, def_set, reg);
 
   /* Else try simplifying.  */
 
