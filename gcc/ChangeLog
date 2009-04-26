@@ -1,4 +1,21 @@
-2009-04-26  Jakub Jelinek  <jakub@redhat.com>
+2009-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-nested.c (get_nonlocal_vla_type): If not optimizing, call
+	note_nonlocal_vla_type for nonlocal VLAs.
+	(note_nonlocal_vla_type, note_nonlocal_block_vlas,
+	contains_remapped_vars, remap_vla_decls): New functions.
+	(convert_nonlocal_reference_stmt): If not optimizing, call
+	note_nonlocal_block_vlas on GIMPLE_BIND block vars.
+	(nesting_copy_decl): Return {VAR,PARM,RESULT}_DECL unmodified
+	if it wasn't found in var_map.
+	(finalize_nesting_tree_1): Call remap_vla_decls.  If outermost
+	GIMPLE_BIND doesn't have gimple_bind_block, chain debug_var_chain
+	to BLOCK_VARS (DECL_INITIAL (root->context)) instead of calling
+	declare_vars.
+	* gimplify.c (nonlocal_vlas): New variable.
+	(gimplify_var_or_parm_decl): Add debug VAR_DECLs for non-local
+	referenced VLAs.
+	(gimplify_body): Create and destroy nonlocal_vlas.
 
 	* dwarf2out.c (loc_descr_plus_const): New function.
 	(build_cfa_aligned_loc, tls_mem_loc_descriptor,

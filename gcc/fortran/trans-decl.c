@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "debug.h"
 #include "gfortran.h"
+#include "pointer-set.h"
 #include "trans.h"
 #include "trans-types.h"
 #include "trans-array.h"
@@ -60,6 +61,8 @@ static GTY(()) tree current_function_return_label;
 static GTY(()) tree saved_function_decls;
 static GTY(()) tree saved_parent_function_decls;
 
+static struct pointer_set_t *nonlocal_dummy_decl_pset;
+static GTY(()) tree nonlocal_dummy_decls;
 
 /* The namespace of the module we're currently generating.  Only used while
    outputting decls for module variables.  Do not rely on this being set.  */
@@ -870,6 +873,38 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
   return decl;
 }
 
+/* For symbol SYM with GFC_DECL_SAVED_DESCRIPTOR used in contained
+   function add a VAR_DECL to the current function with DECL_VALUE_EXPR
+   pointing to the artificial variable for debug info purposes.  */
+
+static void
+gfc_nonlocal_dummy_array_decl (gfc_symbol *sym)
+{
+  tree decl, dummy;
+
+  if (! nonlocal_dummy_decl_pset)
+    nonlocal_dummy_decl_pset = pointer_set_create ();
+
+  if (pointer_set_insert (nonlocal_dummy_decl_pset, sym->backend_decl))
+    return;
+
+  dummy = GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl);
+  decl = build_decl (VAR_DECL, DECL_NAME (dummy),
+		     TREE_TYPE (sym->backend_decl));
+  DECL_ARTIFICIAL (decl) = 0;
+  TREE_USED (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
+  TREE_STATIC (decl) = 0;
+  DECL_EXTERNAL (decl) = 0;
+  if (DECL_BY_REFERENCE (dummy))
+    DECL_BY_REFERENCE (decl) = 1;
+  DECL_LANG_SPECIFIC (decl) = DECL_LANG_SPECIFIC (sym->backend_decl);
+  SET_DECL_VALUE_EXPR (decl, sym->backend_decl);
+  DECL_HAS_VALUE_EXPR_P (decl) = 1;
+  DECL_CONTEXT (decl) = DECL_CONTEXT (sym->backend_decl);
+  TREE_CHAIN (decl) = nonlocal_dummy_decls;
+  nonlocal_dummy_decls = decl;
+}
 
 /* Return a constant or a variable to use as a string length.  Does not
    add the decl to the current scope.  */
@@ -1010,6 +1045,13 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	{
 	  gfc_add_assign_aux_vars (sym);
 	}
+
+      if (sym->attr.dimension
+	  && DECL_LANG_SPECIFIC (sym->backend_decl)
+	  && GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl)
+	  && DECL_CONTEXT (sym->backend_decl) != current_function_decl)
+	gfc_nonlocal_dummy_array_decl (sym);
+
       return sym->backend_decl;
     }
 
@@ -1128,6 +1170,13 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  TREE_TYPE (decl), sym->attr.dimension,
 	  sym->attr.pointer || sym->attr.allocatable);
     }
+
+  if (!TREE_STATIC (decl)
+      && POINTER_TYPE_P (TREE_TYPE (decl))
+      && !sym->attr.pointer
+      && !sym->attr.allocatable
+      && !sym->attr.proc_pointer)
+    DECL_BY_REFERENCE (decl) = 1;
 
   return decl;
 }
@@ -3852,6 +3901,9 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   gfc_generate_contained_functions (ns);
 
+  nonlocal_dummy_decls = NULL;
+  nonlocal_dummy_decl_pset = NULL;
+
   generate_local_vars (ns);
 
   /* Keep the parent fake result declaration in module functions
@@ -4110,6 +4162,15 @@ gfc_generate_function_code (gfc_namespace * ns)
   DECL_SAVED_TREE (fndecl)
     = build3_v (BIND_EXPR, decl, DECL_SAVED_TREE (fndecl),
 		DECL_INITIAL (fndecl));
+
+  if (nonlocal_dummy_decls)
+    {
+      BLOCK_VARS (DECL_INITIAL (fndecl))
+	= chainon (BLOCK_VARS (DECL_INITIAL (fndecl)), nonlocal_dummy_decls);
+      pointer_set_destroy (nonlocal_dummy_decl_pset);
+      nonlocal_dummy_decls = NULL;
+      nonlocal_dummy_decl_pset = NULL;
+    }
 
   /* Output the GENERIC tree.  */
   dump_function (TDI_original, fndecl);
