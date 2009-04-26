@@ -2206,14 +2206,16 @@ sra_build_assignment (tree dst, tree src)
 	var = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (dst), var);
 
       push_gimplify_context (&gctx);
-      gctx.into_ssa = true;
       gctx.allow_rhs_cond_expr = true;
 
       gimplify_assign (dst, var, &seq);
 
       if (gimple_referenced_vars (cfun))
 	for (var = gctx.temps; var; var = TREE_CHAIN (var))
-	  add_referenced_var (var);
+	  {
+	    add_referenced_var (var);
+	    mark_sym_for_renaming (var);
+	  }
       pop_gimplify_context (NULL);
 
       return seq;
