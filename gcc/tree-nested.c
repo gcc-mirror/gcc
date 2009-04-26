@@ -827,6 +827,11 @@ get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
   TREE_READONLY (new_decl) = TREE_READONLY (decl);
   TREE_ADDRESSABLE (new_decl) = TREE_ADDRESSABLE (decl);
   DECL_SEEN_IN_BIND_EXPR_P (new_decl) = 1;
+  if ((TREE_CODE (decl) == PARM_DECL
+       || TREE_CODE (decl) == RESULT_DECL
+       || TREE_CODE (decl) == VAR_DECL)
+      && DECL_BY_REFERENCE (decl))
+    DECL_BY_REFERENCE (new_decl) = 1;
 
   SET_DECL_VALUE_EXPR (new_decl, x);
   DECL_HAS_VALUE_EXPR_P (new_decl) = 1;
@@ -1240,6 +1245,11 @@ get_local_debug_decl (struct nesting_info *info, tree decl, tree field)
   TREE_READONLY (new_decl) = TREE_READONLY (decl);
   TREE_ADDRESSABLE (new_decl) = TREE_ADDRESSABLE (decl);
   DECL_SEEN_IN_BIND_EXPR_P (new_decl) = 1;
+  if ((TREE_CODE (decl) == PARM_DECL
+       || TREE_CODE (decl) == RESULT_DECL
+       || TREE_CODE (decl) == VAR_DECL)
+      && DECL_BY_REFERENCE (decl))
+    DECL_BY_REFERENCE (new_decl) = 1;
 
   SET_DECL_VALUE_EXPR (new_decl, x);
   DECL_HAS_VALUE_EXPR_P (new_decl) = 1;
@@ -1944,6 +1954,34 @@ convert_all_function_calls (struct nesting_info *root)
   while (root);
 }
 
+struct nesting_copy_body_data
+{
+  copy_body_data cb;
+  struct nesting_info *root;
+};
+
+/* A helper subroutine for debug_var_chain type remapping.  */
+
+static tree
+nesting_copy_decl (tree decl, copy_body_data *id)
+{
+  struct nesting_copy_body_data *nid = (struct nesting_copy_body_data *) id;
+  void **slot = pointer_map_contains (nid->root->var_map, decl);
+
+  if (slot)
+    return (tree) *slot;
+
+  if (TREE_CODE (decl) == TYPE_DECL && DECL_ORIGINAL_TYPE (decl))
+    {
+      tree new_decl = copy_decl_no_change (decl, id);
+      DECL_ORIGINAL_TYPE (new_decl)
+	= remap_type (DECL_ORIGINAL_TYPE (decl), id);
+      return new_decl;
+    }
+
+  return copy_decl_no_change (decl, id);
+}
+
 /* Do "everything else" to clean up or complete state collected by the
    various walking passes -- lay out the types and decls, generate code
    to initialize the frame decl, store critical expressions in the
@@ -2076,10 +2114,66 @@ finalize_nesting_tree_1 (struct nesting_info *root)
     declare_vars (root->new_local_var_chain,
 		  gimple_seq_first_stmt (gimple_body (root->context)),
 		  false);
+
   if (root->debug_var_chain)
-    declare_vars (root->debug_var_chain,
-		  gimple_seq_first_stmt (gimple_body (root->context)),
-		  true);
+    {
+      tree debug_var;
+
+      for (debug_var = root->debug_var_chain; debug_var;
+	   debug_var = TREE_CHAIN (debug_var))
+	if (variably_modified_type_p (TREE_TYPE (debug_var), NULL))
+	  break;
+
+      /* If there are any debug decls with variable length types,
+	 remap those types using other debug_var_chain variables.  */
+      if (debug_var)
+	{
+	  struct nesting_copy_body_data id;
+
+	  memset (&id, 0, sizeof (id));
+	  id.cb.copy_decl = nesting_copy_decl;
+	  id.cb.decl_map = pointer_map_create ();
+	  id.root = root;
+
+	  for (; debug_var; debug_var = TREE_CHAIN (debug_var))
+	    if (variably_modified_type_p (TREE_TYPE (debug_var), NULL))
+	      {
+		tree type = TREE_TYPE (debug_var);
+		tree newt, t = type;
+		struct nesting_info *i;
+
+		for (i = root; i; i = i->outer)
+		  if (variably_modified_type_p (type, i->context))
+		    break;
+
+		if (i == NULL)
+		  continue;
+
+		id.cb.src_fn = i->context;
+		id.cb.dst_fn = i->context;
+		id.cb.src_cfun = DECL_STRUCT_FUNCTION (root->context);
+
+		TREE_TYPE (debug_var) = newt = remap_type (type, &id.cb);
+		while (POINTER_TYPE_P (newt) && !TYPE_NAME (newt))
+		  {
+		    newt = TREE_TYPE (newt);
+		    t = TREE_TYPE (t);
+		  }
+		if (TYPE_NAME (newt)
+		    && TREE_CODE (TYPE_NAME (newt)) == TYPE_DECL
+		    && DECL_ORIGINAL_TYPE (TYPE_NAME (newt))
+		    && newt != t
+		    && TYPE_NAME (newt) == TYPE_NAME (t))
+		  TYPE_NAME (newt) = remap_decl (TYPE_NAME (newt), &id.cb);
+	      }
+
+	  pointer_map_destroy (id.cb.decl_map);
+	}
+
+      declare_vars (root->debug_var_chain,
+		    gimple_seq_first_stmt (gimple_body (root->context)),
+		    true);
+    }
 
   /* Dump the translated tree function.  */
   dump_function (TDI_nested, root->context);
