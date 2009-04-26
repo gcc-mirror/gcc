@@ -1,3 +1,8 @@
+2009-04-26  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* tree-outof-ssa.c (rewrite_trees): Add ATTRIBUTE_UNUSED.
+	* tree-ssa-live.h (register_ssa_partition): Likewise.
+
 2009-04-26  Michael Matz  <matz@suse.de>
 
 	Expand from SSA.
