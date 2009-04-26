@@ -11000,7 +11000,7 @@ print_operand (FILE *file, rtx x, int code)
 		 operator with memory operand.  */
 	      if (MEM_P (x))
 		{
-#ifdef HAVE_AS_IX86_FISTS
+#ifdef HAVE_AS_IX86_FILDS
 		  putc ('s', file);
 #endif
 		  return;
