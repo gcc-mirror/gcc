@@ -393,6 +393,32 @@ static GTY((deletable)) struct c_binding *binding_freelist;
   t_->to##_last = f_->from##_last;				\
 } while (0)
 
+/* A c_inline_static structure stores details of a static identifier
+   referenced in a definition of a function that may be an inline
+   definition if no subsequent declaration of that function uses
+   "extern" or does not use "inline".  */
+
+struct GTY((chain_next ("%h.next"))) c_inline_static {
+  /* The location for a diagnostic.  */
+  location_t location;
+
+  /* The function that may be an inline definition.  */
+  tree function;
+
+  /* The object or function referenced.  */
+  tree static_decl;
+
+  /* What sort of reference this is.  */
+  enum c_inline_static_type type;
+
+  /* The next such structure or NULL.  */
+  struct c_inline_static *next;
+};
+
+/* List of static identifiers used or referenced in functions that may
+   be inline definitions.  */
+static GTY(()) struct c_inline_static *c_inline_statics;
+
 /* True means unconditionally make a BLOCK for the next scope pushed.  */
 
 static bool keep_next_level_flag;
@@ -553,6 +579,53 @@ c_finish_incomplete_decl (tree decl)
 	  layout_decl (decl, 0);
 	}
     }
+}
+
+/* Record that inline function FUNC contains a reference (location
+   LOC) to static DECL (file-scope or function-local according to
+   TYPE).  */
+
+void
+record_inline_static (location_t loc, tree func, tree decl,
+		      enum c_inline_static_type type)
+{
+  struct c_inline_static *csi = GGC_NEW (struct c_inline_static);
+  csi->location = loc;
+  csi->function = func;
+  csi->static_decl = decl;
+  csi->type = type;
+  csi->next = c_inline_statics;
+  c_inline_statics = csi;
+}
+
+/* Check for references to static declarations in inline functions at
+   the end of the translation unit and diagnose them if the functions
+   are still inline definitions.  */
+
+static void
+check_inline_statics (void)
+{
+  struct c_inline_static *csi;
+  for (csi = c_inline_statics; csi; csi = csi->next)
+    {
+      if (DECL_EXTERNAL (csi->function))
+	switch (csi->type)
+	  {
+	  case csi_internal:
+	    pedwarn (csi->location, 0,
+		     "%qD is static but used in inline function %qD "
+		     "which is not static", csi->static_decl, csi->function);
+	    break;
+	  case csi_modifiable:
+	    pedwarn (csi->location, 0,
+		     "%q+D is static but declared in inline function %qD "
+		     "which is not static", csi->static_decl, csi->function);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+    }
+  c_inline_statics = NULL;
 }
 
 /* The Objective-C front-end often needs to determine the current scope.  */
@@ -943,6 +1016,8 @@ pop_file_scope (void)
      call may not be necessary as my tests indicate it
      still works without it.  */
   finish_fname_decls ();
+
+  check_inline_statics ();
 
   /* This is the point to write out a PCH if we're doing that.
      In that case we do not want to do anything else.  */
@@ -3324,9 +3399,8 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
       && !TREE_READONLY (decl)
       && DECL_DECLARED_INLINE_P (current_function_decl)
       && DECL_EXTERNAL (current_function_decl))
-    pedwarn (input_location, 0,
-	     "%q+D is static but declared in inline function %qD "
-	     "which is not static", decl, current_function_decl);
+    record_inline_static (input_location, current_function_decl,
+			  decl, csi_modifiable);
 
   /* Add this decl to the current scope.
      TEM may equal DECL or it may be a previous decl of the same name.  */

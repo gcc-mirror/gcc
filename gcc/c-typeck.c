@@ -2285,8 +2285,8 @@ build_external_ref (tree id, int fun, location_t loc, tree *type)
 	   && (TREE_CODE (ref) != VAR_DECL || TREE_STATIC (ref))
 	   && ! TREE_PUBLIC (ref)
 	   && DECL_CONTEXT (ref) != current_function_decl)
-    pedwarn (loc, 0, "%qD is static but used in inline function %qD "
-	     "which is not static", ref, current_function_decl);
+    record_inline_static (loc, current_function_decl, ref,
+			  csi_internal);
 
   return ref;
 }

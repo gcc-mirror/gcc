@@ -1,3 +1,17 @@
+2009-04-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/39556
+	* c-tree.h (enum c_inline_static_type): New.
+	(record_inline_static): Declare.
+	* c-decl.c (struct c_inline_static, c_inline_statics,
+	record_inline_static, check_inline_statics): New.
+	(pop_file_scope): Call check_inline_statics.
+	(start_decl): Call record_inline_static instead of pedwarning
+	directly for static in inline function.
+	* c-typeck.c (build_external_ref): Call record_inline_static
+	instead of pedwarning directly for static referenced in inline
+	function.
+
 2009-04-26  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* df-scan.c (df_insn_rescan): Salvage insn's LUID if the insn is
