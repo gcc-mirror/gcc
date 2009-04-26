@@ -1923,6 +1923,7 @@ testsuite/Makefile
 contrib/aotcompile.py
 contrib/aot-compile
 contrib/aot-compile-rpm
+contrib/generate-cacerts.pl
 contrib/rebuild-gcj-db
 ])
 
