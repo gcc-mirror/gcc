@@ -1,3 +1,20 @@
+2009-04-26  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/mingw-w64.h (STANDARD_INCLUDE_DIR):
+	Redefine it to just use mingw/include.
+	(ASM_SPEC): Rules for -m32 and -m64.
+	(LINK_SPEC): Use Likewise.
+	(SPEC_32): New define.
+	(SPEC_64): Likewise.
+	(SUB_LINK_SPEC): Likewise.
+	(MULTILIB_DEFAULTS): New define.
+	* config/i386/t-mingw-w64 (MULTILIB_OPTIONS):
+	Add multilib options.
+	(MULTILIB_DIRNAMES): Likewise.
+	(MULTILIB_OSDIRNAMES): Likewise.
+	(LIBGCC): Likewise.
+	(INSTALL_LIBGCC): Likewise.
+
 2009-04-26  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/39556

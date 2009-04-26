@@ -32,3 +32,38 @@ along with GCC; see the file COPYING3.  If not see
   %{!shared:%{!mdll:%{municode:crt2u%O%s}}} \
   %{pg:gcrt2%O%s} \
   crtbegin.o%s"
+
+/* Use mingw/include for include.  */
+#undef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/mingw/include"
+
+/* Enable multilib.  */
+
+#undef ASM_SPEC
+#define ASM_SPEC "%{v:-V} %{n} %{T} %{Ym,*} %{Yd,*} \
+ %{Wa,*:%*} %{m32:--32} %{m64:--64}"
+
+#if TARGET_64BIT_DEFAULT
+#define SPEC_32 "m32"
+#define SPEC_64 "!m32"
+#else
+#define SPEC_32 "!m64"
+#define SPEC_64 "m64"
+#endif
+
+#define SUB_LINK_SPEC "%{" SPEC_64 ":-m i386pep} %{" SPEC_32 ":-m i386pe}"
+
+#if TARGET_64BIT_DEFAULT
+#define MULTILIB_DEFAULTS { "m64" }
+#else
+#define MULTILIB_DEFAULTS { "m32" }
+#endif
+
+#undef LINK_SPEC
+#define LINK_SPEC SUB_LINK_SPEC "%{mwindows:--subsystem windows} \
+  %{mconsole:--subsystem console} \
+  %{shared: %{mdll: %eshared and mdll are not compatible}} \
+  %{shared: --shared} %{mdll:--dll} \
+  %{static:-Bstatic} %{!static:-Bdynamic} \
+  %{shared|mdll: -e _DllMainCRTStartup@12 --enable-auto-image-base} \
+  %(shared_libgcc_undefs)"
