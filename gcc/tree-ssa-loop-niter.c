@@ -1953,6 +1953,51 @@ find_loop_niter (struct loop *loop, edge *exit)
   return niter ? niter : chrec_dont_know;
 }
 
+/* Return true if loop is known to have bounded number of iterations.  */
+
+bool
+finite_loop_p (struct loop *loop)
+{
+  unsigned i;
+  VEC (edge, heap) *exits = get_loop_exit_edges (loop);
+  edge ex;
+  struct tree_niter_desc desc;
+  bool finite = false;
+
+  if (flag_unsafe_loop_optimizations)
+    return true;
+  if ((TREE_READONLY (current_function_decl)
+       || DECL_PURE_P (current_function_decl))
+      && !DECL_LOOPING_CONST_OR_PURE_P (current_function_decl))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Found loop %i to be finite: it is within pure or const function.\n",
+		 loop->num);
+      return true;
+    }
+   
+  exits = get_loop_exit_edges (loop);
+  for (i = 0; VEC_iterate (edge, exits, i, ex); i++)
+    {
+      if (!just_once_each_iteration_p (loop, ex->src))
+	continue;
+
+      if (number_of_iterations_exit (loop, ex, &desc, false))
+        {
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Found loop %i to be finite: iterating ", loop->num);
+	      print_generic_expr (dump_file, desc.niter, TDF_SLIM);
+	      fprintf (dump_file, " times\n");
+	    }
+	  finite = true;
+	  break;
+	}
+    }
+  VEC_free (edge, heap, exits);
+  return finite;
+}
+
 /*
 
    Analysis of a number of iterations of a loop by a brute-force evaluation.

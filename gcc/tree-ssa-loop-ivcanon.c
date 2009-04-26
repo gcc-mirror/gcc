@@ -395,7 +395,6 @@ static bool
 empty_loop_p (struct loop *loop)
 {
   edge exit;
-  struct tree_niter_desc niter;
   basic_block *body;
   gimple_stmt_iterator gsi;
   unsigned i;
@@ -408,7 +407,7 @@ empty_loop_p (struct loop *loop)
     return false;
 
   /* The loop must be finite.  */
-  if (!number_of_iterations_exit (loop, exit, &niter, false))
+  if (!finite_loop_p (loop))
     return false;
 
   /* Values of all loop exit phi nodes must be invariants.  */

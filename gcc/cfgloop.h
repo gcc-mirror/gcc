@@ -640,5 +640,6 @@ enum
 extern void unroll_and_peel_loops (int);
 extern void doloop_optimize_loops (void);
 extern void move_loop_invariants (void);
+extern bool finite_loop_p (struct loop *);
 
 #endif /* GCC_CFGLOOP_H */

@@ -1,3 +1,16 @@
+2009-04-27  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-pure-const.c (struct funct_state_d): New fields
+	state_previously_known, looping_previously_known; remove
+	state_set_in_source.
+	(analyze_function): Use new fields.
+	(propagate): Avoid assumption that state_set_in_source imply
+	nonlooping.
+
+	* tree-ssa-loop-niter.c (finite_loop_p): New function.
+	* tree-ssa-loop-ivcanon.c (empty_loop_p): Use it.
+	* cfgloop.h (finite_loop_p): Declare.
+
 2009-04-26  Michael Matz  <matz@suse.de>
 
 	* tree-flow.h (tree_ann_common_d): Remove aux and value_handle
