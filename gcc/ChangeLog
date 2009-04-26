@@ -1,3 +1,11 @@
+2009-04-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/39581
+	* c-decl.c (global_bindings_p): Return negative value.
+	(c_variable_size): New.  Based on variable_size from
+	stor-layout.c.
+	(grokdeclarator): Call c_variable_size not variable_size.
+
 2009-04-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (print_operand) ['z']: Fix typo.

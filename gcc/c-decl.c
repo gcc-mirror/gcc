@@ -663,7 +663,9 @@ objc_mark_locals_volatile (void *enclosing_blk)
 int
 global_bindings_p (void)
 {
-  return current_scope == file_scope && !c_override_global_bindings_to_false;
+  return (current_scope == file_scope && !c_override_global_bindings_to_false
+	  ? -1
+	  : 0);
 }
 
 void
@@ -4015,6 +4017,34 @@ warn_variable_length_array (const char *name, tree size)
     }
 }
 
+/* Given a size SIZE that may not be a constant, return a SAVE_EXPR to
+   serve as the actual size-expression for a type or decl.  This is
+   like variable_size in stor-layout.c, but we make global_bindings_p
+   return negative to avoid calls to that function from outside the
+   front end resulting in errors at file scope, then call this version
+   instead from front-end code.  */
+
+static tree
+c_variable_size (tree size)
+{
+  tree save;
+
+  if (TREE_CONSTANT (size))
+    return size;
+
+  size = save_expr (size);
+
+  save = skip_simple_arithmetic (size);
+
+  if (cfun && cfun->dont_save_pending_sizes_p)
+    return size;
+
+  if (!global_bindings_p ())
+    put_pending_size (save);
+
+  return size;
+}
+
 /* Given declspecs and a declarator,
    determine the name and type of the object declared
    and construct a ..._DECL node for it.
@@ -4479,7 +4509,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		       MINUS_EXPR, which allows the -1 to get folded
 		       with the +1 that happens when building TYPE_SIZE.  */
 		    if (size_varies)
-		      size = variable_size (size);
+		      size = c_variable_size (size);
 		    if (this_size_varies && TREE_CODE (size) == INTEGER_CST)
 		      size = build2 (COMPOUND_EXPR, TREE_TYPE (size),
 				     integer_zero_node, size);
