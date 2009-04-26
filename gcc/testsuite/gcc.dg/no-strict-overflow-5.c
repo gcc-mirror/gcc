@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fno-strict-overflow -O2 -fdump-tree-final_cleanup" } */
+/* { dg-options "-fno-strict-overflow -O2 -fdump-tree-optimized" } */
 
 /* Dual of strict-overflow-5.c.  */
 
@@ -16,5 +16,5 @@ int foo (int i)
   return r;
 }
 
-/* { dg-final { scan-tree-dump-times "r = 3" 0 "final_cleanup" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump-times "r = 3" 0 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

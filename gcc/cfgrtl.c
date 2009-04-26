@@ -64,7 +64,6 @@ along with GCC; see the file COPYING3.  If not see
 
 static int can_delete_note_p (const_rtx);
 static int can_delete_label_p (const_rtx);
-static void commit_one_edge_insertion (edge);
 static basic_block rtl_split_edge (edge);
 static bool rtl_move_block_after (basic_block, basic_block);
 static int rtl_verify_flow_info (void);
@@ -856,31 +855,25 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
   return e;
 }
 
-/* Redirect edge representing branch of (un)conditional jump or tablejump,
-   NULL on failure  */
-static edge
-redirect_branch_edge (edge e, basic_block target)
+/* Subroutine of redirect_branch_edge that tries to patch the jump
+   instruction INSN so that it reaches block NEW.  Do this
+   only when it originally reached block OLD.  Return true if this
+   worked or the original target wasn't OLD, return false if redirection
+   doesn't work.  */
+
+static bool
+patch_jump_insn (rtx insn, rtx old_label, basic_block new_bb)
 {
   rtx tmp;
-  rtx old_label = BB_HEAD (e->dest);
-  basic_block src = e->src;
-  rtx insn = BB_END (src);
-
-  /* We can only redirect non-fallthru edges of jump insn.  */
-  if (e->flags & EDGE_FALLTHRU)
-    return NULL;
-  else if (!JUMP_P (insn))
-    return NULL;
-
   /* Recognize a tablejump and adjust all matching cases.  */
   if (tablejump_p (insn, NULL, &tmp))
     {
       rtvec vec;
       int j;
-      rtx new_label = block_label (target);
+      rtx new_label = block_label (new_bb);
 
-      if (target == EXIT_BLOCK_PTR)
-	return NULL;
+      if (new_bb == EXIT_BLOCK_PTR)
+	return false;
       if (GET_CODE (PATTERN (tmp)) == ADDR_VEC)
 	vec = XVEC (PATTERN (tmp), 0);
       else
@@ -915,20 +908,55 @@ redirect_branch_edge (edge e, basic_block target)
       if (computed_jump_p (insn)
 	  /* A return instruction can't be redirected.  */
 	  || returnjump_p (insn))
-	return NULL;
+	return false;
 
-      /* If the insn doesn't go where we think, we're confused.  */
-      gcc_assert (JUMP_LABEL (insn) == old_label);
-
-      /* If the substitution doesn't succeed, die.  This can happen
-	 if the back end emitted unrecognizable instructions or if
-	 target is exit block on some arches.  */
-      if (!redirect_jump (insn, block_label (target), 0))
+      if (!currently_expanding_to_rtl || JUMP_LABEL (insn) == old_label)
 	{
-	  gcc_assert (target == EXIT_BLOCK_PTR);
-	  return NULL;
+	  /* If the insn doesn't go where we think, we're confused.  */
+	  gcc_assert (JUMP_LABEL (insn) == old_label);
+
+	  /* If the substitution doesn't succeed, die.  This can happen
+	     if the back end emitted unrecognizable instructions or if
+	     target is exit block on some arches.  */
+	  if (!redirect_jump (insn, block_label (new_bb), 0))
+	    {
+	      gcc_assert (new_bb == EXIT_BLOCK_PTR);
+	      return false;
+	    }
 	}
     }
+  return true;
+}
+
+
+/* Redirect edge representing branch of (un)conditional jump or tablejump,
+   NULL on failure  */
+static edge
+redirect_branch_edge (edge e, basic_block target)
+{
+  rtx old_label = BB_HEAD (e->dest);
+  basic_block src = e->src;
+  rtx insn = BB_END (src);
+
+  /* We can only redirect non-fallthru edges of jump insn.  */
+  if (e->flags & EDGE_FALLTHRU)
+    return NULL;
+  else if (!JUMP_P (insn) && !currently_expanding_to_rtl)
+    return NULL;
+
+  if (!currently_expanding_to_rtl)
+    {
+      if (!patch_jump_insn (insn, old_label, target))
+	return NULL;
+    }
+  else
+    /* When expanding this BB might actually contain multiple
+       jumps (i.e. not yet split by find_many_sub_basic_blocks).
+       Redirect all of those that match our label.  */
+    for (insn = BB_HEAD (src); insn != NEXT_INSN (BB_END (src));
+	 insn = NEXT_INSN (insn))
+      if (JUMP_P (insn) && !patch_jump_insn (insn, old_label, target))
+	return NULL;
 
   if (dump_file)
     fprintf (dump_file, "Edge %i->%i redirected to %i\n",
@@ -1313,7 +1341,7 @@ insert_insn_on_edge (rtx pattern, edge e)
 
 /* Update the CFG for the instructions queued on edge E.  */
 
-static void
+void
 commit_one_edge_insertion (edge e)
 {
   rtx before = NULL_RTX, after = NULL_RTX, insns, tmp, last;

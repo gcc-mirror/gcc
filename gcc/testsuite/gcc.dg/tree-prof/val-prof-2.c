@@ -26,7 +26,7 @@ main ()
 /* { dg-final-use { scan-tree-dump "Mod power of 2 transformation on insn" "tree_profile"} } */
 /* This is part of code checking that n is power of 2, so we are sure that the transformation
    didn't get optimized out.  */
-/* { dg-final-use { scan-tree-dump "n \\+ 0xffff" "optimized"} } */
+/* { dg-final-use { scan-tree-dump "n_\[0-9\]* \\+ 0xffff" "optimized"} } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */
 /* { dg-final-use { cleanup-tree-dump "optimized" } } */
 /* { dg-final-use { cleanup-tree-dump "tree_profile" } } */

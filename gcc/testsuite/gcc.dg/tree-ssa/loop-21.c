@@ -1,7 +1,7 @@
 /* PR tree-optimization/30322 */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-final_cleanup" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 extern void op( int, int);
 void foo(int f0, int f1, int e0, int e1)
@@ -13,5 +13,5 @@ void foo(int f0, int f1, int e0, int e1)
       op(i0, i1);
 }
 
-/* { dg-final { scan-tree-dump-times "~" 0 "final_cleanup" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump-times "~" 0 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

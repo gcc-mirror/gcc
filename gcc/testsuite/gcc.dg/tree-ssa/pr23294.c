@@ -31,7 +31,7 @@ int f6(int a, int b)
   return 6*a - 2*b;
 }
 
-/* { dg-final { scan-tree-dump-times "a \\\* 5" 3 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "\\\) \\\* 2" 3 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "a_..D. \\\* 5" 3 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \\\* 2" 3 "optimized" } } */
 /* { dg-final { scan-tree-dump-not "\\\* 6" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

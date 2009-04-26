@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-empty -fdump-tree-final_cleanup" } */
+/* { dg-options "-O2 -fdump-tree-empty -fdump-tree-optimized" } */
 
 int foo (int n)
 {
@@ -48,8 +48,8 @@ int baz (int n)
 
 /* There should be no division/modulo in the final dump (division and modulo
    by 64 are done using bit operations).  */
-/* { dg-final { scan-tree-dump-times "/" 0 "final_cleanup" } } */
-/* { dg-final { scan-tree-dump-times "%" 0 "final_cleanup" } } */
+/* { dg-final { scan-tree-dump-times "/" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "%" 0 "optimized" } } */
 
 /* { dg-final { cleanup-tree-dump "empty" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

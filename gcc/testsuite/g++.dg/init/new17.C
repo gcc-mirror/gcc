@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fstrict-aliasing -fdump-tree-final_cleanup" }
+// { dg-options "-O2 -fstrict-aliasing -fdump-tree-optimized" }
 
 // Test that placement new does not introduce an unnecessary memory
 // barrier.
@@ -33,5 +33,5 @@ void foo(Vector<float, 3> *m)
   *m = v;
 }
 
-// { dg-final { scan-tree-dump-times "= 0\.0" 1 "final_cleanup" } }
-// { dg-final { cleanup-tree-dump "final_cleanup" } }
+// { dg-final { scan-tree-dump-times "= 0\.0" 1 "optimized" } }
+// { dg-final { cleanup-tree-dump "optimized" } }

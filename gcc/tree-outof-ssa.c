@@ -30,9 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "timevar.h"
 #include "tree-dump.h"
-#include "tree-ssa-live.h"
 #include "tree-pass.h"
 #include "toplev.h"
+#include "expr.h"
+#include "ssaexpand.h"
 
 
 /* Used to hold all the components required to do SSA PHI elimination.
@@ -61,7 +62,7 @@ typedef struct _elim_graph {
   int size;
 
   /* List of nodes in the elimination graph.  */
-  VEC(tree,heap) *nodes;
+  VEC(int,heap) *nodes;
 
   /*  The predecessor and successor edge list.  */
   VEC(int,heap) *edge_list;
@@ -79,85 +80,176 @@ typedef struct _elim_graph {
   edge e;
 
   /* List of constant copies to emit.  These are pushed on in pairs.  */
+  VEC(int,heap) *const_dests;
   VEC(tree,heap) *const_copies;
 } *elim_graph;
 
 
-/* Create a temporary variable based on the type of variable T.  Use T's name
-   as the prefix.  */
-
-static tree
-create_temp (tree t)
-{
-  tree tmp;
-  const char *name = NULL;
-  tree type;
-
-  if (TREE_CODE (t) == SSA_NAME)
-    t = SSA_NAME_VAR (t);
-
-  gcc_assert (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL);
-
-  type = TREE_TYPE (t);
-  tmp = DECL_NAME (t);
-  if (tmp)
-    name = IDENTIFIER_POINTER (tmp);
-
-  if (name == NULL)
-    name = "temp";
-  tmp = create_tmp_var (type, name);
-
-  if (DECL_DEBUG_EXPR_IS_FROM (t) && DECL_DEBUG_EXPR (t))
-    {
-      SET_DECL_DEBUG_EXPR (tmp, DECL_DEBUG_EXPR (t));  
-      DECL_DEBUG_EXPR_IS_FROM (tmp) = 1;
-    }
-  else if (!DECL_IGNORED_P (t))
-    {
-      SET_DECL_DEBUG_EXPR (tmp, t);
-      DECL_DEBUG_EXPR_IS_FROM (tmp) = 1;
-    }
-  DECL_ARTIFICIAL (tmp) = DECL_ARTIFICIAL (t);
-  DECL_IGNORED_P (tmp) = DECL_IGNORED_P (t);
-  DECL_GIMPLE_REG_P (tmp) = DECL_GIMPLE_REG_P (t);
-  add_referenced_var (tmp);
-
-  /* We should never have copied variables in non-automatic storage
-     or variables that have their address taken.  So it is pointless
-     to try to copy call-clobber state here.  */
-  gcc_assert (!may_be_aliased (t) && !is_global_var (t));
-
-  return tmp;
-}
-
-
-/* This helper function fill insert a copy from a constant or variable SRC to 
-   variable DEST on edge E.  */
+/* For an edge E find out a good source location to associate with
+   instructions inserted on edge E.  If E has an implicit goto set,
+   use its location.  Otherwise search instructions in predecessors
+   of E for a location, and use that one.  That makes sense because
+   we insert on edges for PHI nodes, and effects of PHIs happen on
+   the end of the predecessor conceptually.  */
 
 static void
-insert_copy_on_edge (edge e, tree dest, tree src)
+set_location_for_edge (edge e)
 {
-  gimple copy;
+  if (e->goto_locus)
+    {
+      set_curr_insn_source_location (e->goto_locus);
+      set_curr_insn_block (e->goto_block);
+    }
+  else
+    {
+      basic_block bb = e->src;
+      gimple_stmt_iterator gsi;
 
-  copy = gimple_build_assign (dest, src);
-  set_is_used (dest);
+      do
+	{
+	  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	    {
+	      gimple stmt = gsi_stmt (gsi);
+	      if (gimple_has_location (stmt) || gimple_block (stmt))
+		{
+		  set_curr_insn_source_location (gimple_location (stmt));
+		  set_curr_insn_block (gimple_block (stmt));
+		  return;
+		}
+	    }
+	  /* Nothing found in this basic block.  Make a half-assed attempt
+	     to continue with another block.  */
+	  if (single_pred_p (bb))
+	    bb = single_pred (bb);
+	  else
+	    bb = e->src;
+	}
+      while (bb != e->src);
+    }
+}
 
-  if (TREE_CODE (src) == ADDR_EXPR)
-    src = TREE_OPERAND (src, 0);
-  if (TREE_CODE (src) == VAR_DECL || TREE_CODE (src) == PARM_DECL)
-    set_is_used (src);
+/* Insert a copy instruction from partition SRC to DEST onto edge E.  */
 
+static void
+insert_partition_copy_on_edge (edge e, int dest, int src)
+{
+  rtx seq;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file,
-	       "Inserting a copy on edge BB%d->BB%d :",
+	       "Inserting a partition copy on edge BB%d->BB%d :"
+	       "PART.%d = PART.%d",
 	       e->src->index,
-	       e->dest->index);
-      print_gimple_stmt (dump_file, copy, 0, dump_flags);
+	       e->dest->index, dest, src);
       fprintf (dump_file, "\n");
     }
 
-  gsi_insert_on_edge (e, copy);
+  gcc_assert (SA.partition_to_pseudo[dest]);
+  gcc_assert (SA.partition_to_pseudo[src]);
+
+  set_location_for_edge (e);
+
+  /* Partition copy between same base variables only, so it's the same mode,
+     hence we can use emit_move_insn.  */
+  start_sequence ();
+  emit_move_insn (SA.partition_to_pseudo[dest], SA.partition_to_pseudo[src]);
+  seq = get_insns ();
+  end_sequence ();
+
+  insert_insn_on_edge (seq, e);
+}
+
+/* Insert a copy instruction from expression SRC to partition DEST
+   onto edge E.  */
+
+static void
+insert_value_copy_on_edge (edge e, int dest, tree src)
+{
+  rtx seq, x;
+  enum machine_mode mode;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file,
+	       "Inserting a value copy on edge BB%d->BB%d : PART.%d = ",
+	       e->src->index,
+	       e->dest->index, dest);
+      print_generic_expr (dump_file, src, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+
+  gcc_assert (SA.partition_to_pseudo[dest]);
+
+  set_location_for_edge (e);
+
+  start_sequence ();
+  mode = GET_MODE (SA.partition_to_pseudo[dest]);
+  x = expand_expr (src, SA.partition_to_pseudo[dest], mode, EXPAND_NORMAL);
+  if (GET_MODE (x) != mode)
+    x = convert_to_mode (mode, x, TYPE_UNSIGNED (TREE_TYPE (src)));
+  if (x != SA.partition_to_pseudo[dest])
+    emit_move_insn (SA.partition_to_pseudo[dest], x);
+  seq = get_insns ();
+  end_sequence ();
+
+  insert_insn_on_edge (seq, e);
+}
+
+/* Insert a copy instruction from RTL expression SRC to partition DEST
+   onto edge E.  */
+
+static void
+insert_rtx_to_part_on_edge (edge e, int dest, rtx src)
+{
+  rtx seq;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file,
+	       "Inserting a temp copy on edge BB%d->BB%d : PART.%d = ",
+	       e->src->index,
+	       e->dest->index, dest);
+      print_simple_rtl (dump_file, src);
+      fprintf (dump_file, "\n");
+    }
+
+  gcc_assert (SA.partition_to_pseudo[dest]);
+  set_location_for_edge (e);
+
+  start_sequence ();
+  gcc_assert (GET_MODE (src) == GET_MODE (SA.partition_to_pseudo[dest]));
+  emit_move_insn (SA.partition_to_pseudo[dest], src);
+  seq = get_insns ();
+  end_sequence ();
+
+  insert_insn_on_edge (seq, e);
+}
+
+/* Insert a copy instruction from partition SRC to RTL lvalue DEST
+   onto edge E.  */
+
+static void
+insert_part_to_rtx_on_edge (edge e, rtx dest, int src)
+{
+  rtx seq;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file,
+	       "Inserting a temp copy on edge BB%d->BB%d : ",
+	       e->src->index,
+	       e->dest->index);
+      print_simple_rtl (dump_file, dest);
+      fprintf (dump_file, "= PART.%d\n", src);
+    }
+
+  gcc_assert (SA.partition_to_pseudo[src]);
+  set_location_for_edge (e);
+
+  start_sequence ();
+  gcc_assert (GET_MODE (dest) == GET_MODE (SA.partition_to_pseudo[src]));
+  emit_move_insn (dest, SA.partition_to_pseudo[src]);
+  seq = get_insns ();
+  end_sequence ();
+
+  insert_insn_on_edge (seq, e);
 }
 
 
@@ -169,7 +261,8 @@ new_elim_graph (int size)
 {
   elim_graph g = (elim_graph) xmalloc (sizeof (struct _elim_graph));
 
-  g->nodes = VEC_alloc (tree, heap, 30);
+  g->nodes = VEC_alloc (int, heap, 30);
+  g->const_dests = VEC_alloc (int, heap, 20);
   g->const_copies = VEC_alloc (tree, heap, 20);
   g->edge_list = VEC_alloc (int, heap, 20);
   g->stack = VEC_alloc (int, heap, 30);
@@ -185,7 +278,7 @@ new_elim_graph (int size)
 static inline void
 clear_elim_graph (elim_graph g)
 {
-  VEC_truncate (tree, g->nodes, 0);
+  VEC_truncate (int, g->nodes, 0);
   VEC_truncate (int, g->edge_list, 0);
 }
 
@@ -199,7 +292,8 @@ delete_elim_graph (elim_graph g)
   VEC_free (int, heap, g->stack);
   VEC_free (int, heap, g->edge_list);
   VEC_free (tree, heap, g->const_copies);
-  VEC_free (tree, heap, g->nodes);
+  VEC_free (int, heap, g->const_dests);
+  VEC_free (int, heap, g->nodes);
   free (g);
 }
 
@@ -209,22 +303,22 @@ delete_elim_graph (elim_graph g)
 static inline int
 elim_graph_size (elim_graph g)
 {
-  return VEC_length (tree, g->nodes);
+  return VEC_length (int, g->nodes);
 }
 
 
 /* Add NODE to graph G, if it doesn't exist already.  */
 
 static inline void 
-elim_graph_add_node (elim_graph g, tree node)
+elim_graph_add_node (elim_graph g, int node)
 {
   int x;
-  tree t;
+  int t;
 
-  for (x = 0; VEC_iterate (tree, g->nodes, x, t); x++)
+  for (x = 0; VEC_iterate (int, g->nodes, x, t); x++)
     if (t == node)
       return;
-  VEC_safe_push (tree, heap, g->nodes, node);
+  VEC_safe_push (int, heap, g->nodes, node);
 }
 
 
@@ -299,7 +393,7 @@ do {									\
 /* Add T to elimination graph G.  */
 
 static inline void
-eliminate_name (elim_graph g, tree T)
+eliminate_name (elim_graph g, int T)
 {
   elim_graph_add_node (g, T);
 }
@@ -309,22 +403,21 @@ eliminate_name (elim_graph g, tree T)
    G->e.  */
 
 static void
-eliminate_build (elim_graph g, basic_block B)
+eliminate_build (elim_graph g)
 {
-  tree T0, Ti;
+  tree Ti;
   int p0, pi;
   gimple_stmt_iterator gsi;
 
   clear_elim_graph (g);
   
-  for (gsi = gsi_start_phis (B); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi = gsi_start_phis (g->e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple phi = gsi_stmt (gsi);
 
-      T0 = var_to_partition_to_var (g->map, gimple_phi_result (phi));
-      
+      p0 = var_to_partition (g->map, gimple_phi_result (phi));
       /* Ignore results which are not in partitions.  */
-      if (T0 == NULL_TREE)
+      if (p0 == NO_PARTITION)
 	continue;
 
       Ti = PHI_ARG_DEF (phi, g->e->dest_idx);
@@ -338,18 +431,16 @@ eliminate_build (elim_graph g, basic_block B)
         {
 	  /* Save constant copies until all other copies have been emitted
 	     on this edge.  */
-	  VEC_safe_push (tree, heap, g->const_copies, T0);
+	  VEC_safe_push (int, heap, g->const_dests, p0);
 	  VEC_safe_push (tree, heap, g->const_copies, Ti);
 	}
       else
         {
-	  Ti = var_to_partition_to_var (g->map, Ti);
-	  if (T0 != Ti)
+	  pi = var_to_partition (g->map, Ti);
+	  if (p0 != pi)
 	    {
-	      eliminate_name (g, T0);
-	      eliminate_name (g, Ti);
-	      p0 = var_to_partition (g->map, T0);
-	      pi = var_to_partition (g->map, Ti);
+	      eliminate_name (g, p0);
+	      eliminate_name (g, pi);
 	      elim_graph_add_edge (g, p0, pi);
 	    }
 	}
@@ -399,11 +490,26 @@ elim_backward (elim_graph g, int T)
       if (!TEST_BIT (g->visited, P))
         {
 	  elim_backward (g, P);
-	  insert_copy_on_edge (g->e, 
-			       partition_to_var (g->map, P), 
-			       partition_to_var (g->map, T));
+	  insert_partition_copy_on_edge (g->e, P, T);
 	}
     });
+}
+
+/* Allocate a new pseudo register usable for storing values sitting
+   in NAME (a decl or SSA name), i.e. with matching mode and attributes.  */
+
+static rtx
+get_temp_reg (tree name)
+{
+  tree var = TREE_CODE (name) == SSA_NAME ? SSA_NAME_VAR (name) : name;
+  tree type = TREE_TYPE (var);
+  int unsignedp = TYPE_UNSIGNED (type);
+  enum machine_mode reg_mode
+    = promote_mode (type, DECL_MODE (var), &unsignedp, 0);
+  rtx x = gen_reg_rtx (reg_mode);
+  if (POINTER_TYPE_P (type))
+    mark_reg_pointer (x, TYPE_ALIGN (TREE_TYPE (TREE_TYPE (var))));
+  return x;
 }
 
 /* Insert required copies for T in graph G.  Check for a strongly connected 
@@ -412,19 +518,18 @@ elim_backward (elim_graph g, int T)
 static void 
 elim_create (elim_graph g, int T)
 {
-  tree U;
   int P, S;
 
   if (elim_unvisited_predecessor (g, T))
     {
-      U = create_temp (partition_to_var (g->map, T));
-      insert_copy_on_edge (g->e, U, partition_to_var (g->map, T));
+      rtx U = get_temp_reg (partition_to_var (g->map, T));
+      insert_part_to_rtx_on_edge (g->e, U, T);
       FOR_EACH_ELIM_GRAPH_PRED (g, T, P, 
 	{
 	  if (!TEST_BIT (g->visited, P))
 	    {
 	      elim_backward (g, P);
-	      insert_copy_on_edge (g->e, partition_to_var (g->map, P), U);
+	      insert_rtx_to_part_on_edge (g->e, P, U);
 	    }
 	});
     }
@@ -434,12 +539,9 @@ elim_create (elim_graph g, int T)
       if (S != -1)
 	{
 	  SET_BIT (g->visited, T);
-	  insert_copy_on_edge (g->e, 
-			       partition_to_var (g->map, T), 
-			       partition_to_var (g->map, S));
+	  insert_partition_copy_on_edge (g->e, T, S);
 	}
     }
-  
 }
 
 
@@ -449,7 +551,6 @@ static void
 eliminate_phi (edge e, elim_graph g)
 {
   int x;
-  basic_block B = e->dest;
 
   gcc_assert (VEC_length (tree, g->const_copies) == 0);
 
@@ -459,20 +560,19 @@ eliminate_phi (edge e, elim_graph g)
 
   g->e = e;
 
-  eliminate_build (g, B);
+  eliminate_build (g);
 
   if (elim_graph_size (g) != 0)
     {
-      tree var;
+      int part;
 
       sbitmap_zero (g->visited);
       VEC_truncate (int, g->stack, 0);
 
-      for (x = 0; VEC_iterate (tree, g->nodes, x, var); x++)
+      for (x = 0; VEC_iterate (int, g->nodes, x, part); x++)
         {
-	  int p = var_to_partition (g->map, var);
-	  if (!TEST_BIT (g->visited, p))
-	    elim_forward (g, p);
+	  if (!TEST_BIT (g->visited, part))
+	    elim_forward (g, part);
 	}
        
       sbitmap_zero (g->visited);
@@ -487,118 +587,12 @@ eliminate_phi (edge e, elim_graph g)
   /* If there are any pending constant copies, issue them now.  */
   while (VEC_length (tree, g->const_copies) > 0)
     {
-      tree src, dest;
+      int dest;
+      tree src;
       src = VEC_pop (tree, g->const_copies);
-      dest = VEC_pop (tree, g->const_copies);
-      insert_copy_on_edge (e, dest, src);
+      dest = VEC_pop (int, g->const_dests);
+      insert_value_copy_on_edge (e, dest, src);
     }
-}
-
-
-/* Take the ssa-name var_map MAP, and assign real variables to each 
-   partition.  */
-
-static void
-assign_vars (var_map map)
-{
-  int x, num;
-  tree var, root;
-  var_ann_t ann;
-
-  num = num_var_partitions (map);
-  for (x = 0; x < num; x++)
-    {
-      var = partition_to_var (map, x);
-      if (TREE_CODE (var) != SSA_NAME)
-	{
-	  ann = var_ann (var);
-	  /* It must already be coalesced.  */
-	  gcc_assert (ann->out_of_ssa_tag == 1);
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "partition %d already has variable ", x);
-	      print_generic_expr (dump_file, var, TDF_SLIM);
-	      fprintf (dump_file, " assigned to it.\n");
-	    }
-	}
-      else
-        {
-	  root = SSA_NAME_VAR (var);
-	  ann = var_ann (root);
-	  /* If ROOT is already associated, create a new one.  */
-	  if (ann->out_of_ssa_tag)
-	    {
-	      root = create_temp (root);
-	      ann = var_ann (root);
-	    }
-	  /* ROOT has not been coalesced yet, so use it.  */
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Partition %d is assigned to var ", x);
-	      print_generic_stmt (dump_file, root, TDF_SLIM);
-	    }
-	  change_partition_var (map, root, x);
-	}
-    }
-}
-
-
-/* Replace use operand P with whatever variable it has been rewritten to based 
-   on the partitions in MAP.  EXPR is an optional expression vector over SSA 
-   versions which is used to replace P with an expression instead of a variable.
-   If the stmt is changed, return true.  */ 
-
-static inline bool
-replace_use_variable (var_map map, use_operand_p p, gimple *expr)
-{
-  tree new_var;
-  tree var = USE_FROM_PTR (p);
-
-  /* Check if we are replacing this variable with an expression.  */
-  if (expr)
-    {
-      int version = SSA_NAME_VERSION (var);
-      if (expr[version])
-        {
-	  SET_USE (p, gimple_assign_rhs_to_tree (expr[version]));
-	  return true;
-	}
-    }
-
-  new_var = var_to_partition_to_var (map, var);
-  if (new_var)
-    {
-      SET_USE (p, new_var);
-      set_is_used (new_var);
-      return true;
-    }
-  return false;
-}
-
-
-/* Replace def operand DEF_P with whatever variable it has been rewritten to 
-   based on the partitions in MAP.  EXPR is an optional expression vector over
-   SSA versions which is used to replace DEF_P with an expression instead of a 
-   variable.  If the stmt is changed, return true.  */ 
-
-static inline bool
-replace_def_variable (var_map map, def_operand_p def_p, tree *expr)
-{
-  tree new_var;
-  tree var = DEF_FROM_PTR (def_p);
-
-  /* Do nothing if we are replacing this variable with an expression.  */
-  if (expr && expr[SSA_NAME_VERSION (var)])
-    return true;
-
-  new_var = var_to_partition_to_var (map, var);
-  if (new_var)
-    {
-      SET_DEF (def_p, new_var);
-      set_is_used (new_var);
-      return true;
-    }
-  return false;
 }
 
 
@@ -704,21 +698,16 @@ eliminate_useless_phis (void)
    variable.  */
 
 static void
-rewrite_trees (var_map map, gimple *values)
+rewrite_trees (var_map map)
 {
-  elim_graph g;
-  basic_block bb;
-  gimple_stmt_iterator gsi;
-  edge e;
-  gimple_seq phi;
-  bool changed;
- 
 #ifdef ENABLE_CHECKING
+  basic_block bb;
   /* Search for PHIs where the destination has no partition, but one
      or more arguments has a partition.  This should not happen and can
      create incorrect code.  */
   FOR_EACH_BB (bb)
     {
+      gimple_stmt_iterator gsi;
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple phi = gsi_stmt (gsi);
@@ -744,593 +733,54 @@ rewrite_trees (var_map map, gimple *values)
 	}
     }
 #endif
-
-  /* Replace PHI nodes with any required copies.  */
-  g = new_elim_graph (map->num_partitions);
-  g->map = map;
-  FOR_EACH_BB (bb)
-    {
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
-	{
-	  gimple stmt = gsi_stmt (gsi);
-	  use_operand_p use_p, copy_use_p;
-	  def_operand_p def_p;
-	  bool remove = false, is_copy = false;
-	  int num_uses = 0;
-	  ssa_op_iter iter;
-
-	  changed = false;
-
-	  if (gimple_assign_copy_p (stmt))
-	    is_copy = true;
-
-	  copy_use_p = NULL_USE_OPERAND_P;
-	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
-	    {
-	      if (replace_use_variable (map, use_p, values))
-		changed = true;
-	      copy_use_p = use_p;
-	      num_uses++;
-	    }
-
-	  if (num_uses != 1)
-	    is_copy = false;
-
-	  def_p = SINGLE_SSA_DEF_OPERAND (stmt, SSA_OP_DEF);
-
-	  if (def_p != NULL)
-	    {
-	      /* Mark this stmt for removal if it is the list of replaceable 
-		 expressions.  */
-	      if (values && values[SSA_NAME_VERSION (DEF_FROM_PTR (def_p))])
-		remove = true;
-	      else
-		{
-		  if (replace_def_variable (map, def_p, NULL))
-		    changed = true;
-		  /* If both SSA_NAMEs coalesce to the same variable,
-		     mark the now redundant copy for removal.  */
-		  if (is_copy)
-		    {
-		      gcc_assert (copy_use_p != NULL_USE_OPERAND_P);
-		      if (DEF_FROM_PTR (def_p) == USE_FROM_PTR (copy_use_p))
-			remove = true;
-		    }
-		}
-	    }
-	  else
-	    FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, iter, SSA_OP_DEF)
-	      if (replace_def_variable (map, def_p, NULL))
-		changed = true;
-
-	  /* Remove any stmts marked for removal.  */
-	  if (remove)
-	    gsi_remove (&gsi, true);
-	  else
-	    {
-	      if (changed)
-		if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
-		  gimple_purge_dead_eh_edges (bb);
-	      gsi_next (&gsi);
-	    }
-	}
-
-      phi = phi_nodes (bb);
-      if (phi)
-        {
-	  edge_iterator ei;
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    eliminate_phi (e, g);
-	}
-    }
-
-  delete_elim_graph (g);
 }
 
-/* These are the local work structures used to determine the best place to 
-   insert the copies that were placed on edges by the SSA->normal pass..  */
-static VEC(edge,heap) *edge_leader;
-static VEC(gimple_seq,heap) *stmt_list;
-static bitmap leader_has_match = NULL;
-static edge leader_match = NULL;
-
-
-/* Pass this function to make_forwarder_block so that all the edges with
-   matching PENDING_STMT lists to 'curr_stmt_list' get redirected.  E is the
-   edge to test for a match.  */
-
-static inline bool 
-same_stmt_list_p (edge e)
-{
-  return (e->aux == (PTR) leader_match) ? true : false;
-}
-
-
-/* Return TRUE if S1 and S2 are equivalent copies.  */
-
-static inline bool
-identical_copies_p (const_gimple s1, const_gimple s2)
-{
-#ifdef ENABLE_CHECKING
-  gcc_assert (is_gimple_assign (s1));
-  gcc_assert (is_gimple_assign (s2));
-  gcc_assert (DECL_P (gimple_assign_lhs (s1)));
-  gcc_assert (DECL_P (gimple_assign_lhs (s2)));
-#endif
-
-  if (gimple_assign_lhs (s1) != gimple_assign_lhs (s2))
-    return false;
-
-  if (gimple_assign_rhs1 (s1) != gimple_assign_rhs1 (s2))
-    return false;
-
-  return true;
-}
-
-
-/* Compare the PENDING_STMT list for edges E1 and E2. Return true if the lists
-   contain the same sequence of copies.  */
-
-static inline bool 
-identical_stmt_lists_p (const_edge e1, const_edge e2)
-{
-  gimple_seq t1 = PENDING_STMT (e1);
-  gimple_seq t2 = PENDING_STMT (e2);
-  gimple_stmt_iterator gsi1, gsi2;
-
-  for (gsi1 = gsi_start (t1), gsi2 = gsi_start (t2);
-       !gsi_end_p (gsi1) && !gsi_end_p (gsi2); 
-       gsi_next (&gsi1), gsi_next (&gsi2))
-    {
-      if (!identical_copies_p (gsi_stmt (gsi1), gsi_stmt (gsi2)))
-        break;
-    }
-
-  if (!gsi_end_p (gsi1) || !gsi_end_p (gsi2))
-    return false;
-
-  return true;
-}
-
-
-/* Allocate data structures used in analyze_edges_for_bb.   */
-
-static void
-init_analyze_edges_for_bb (void)
-{
-  edge_leader = VEC_alloc (edge, heap, 25);
-  stmt_list = VEC_alloc (gimple_seq, heap, 25);
-  leader_has_match = BITMAP_ALLOC (NULL);
-}
-
-
-/* Free data structures used in analyze_edges_for_bb.   */
-
-static void
-fini_analyze_edges_for_bb (void)
-{
-  VEC_free (edge, heap, edge_leader);
-  VEC_free (gimple_seq, heap, stmt_list);
-  BITMAP_FREE (leader_has_match);
-}
-
-/* A helper function to be called via walk_tree.  Return DATA if it is
-  contained in subtree TP.  */
- 
-static tree
-contains_tree_r (tree * tp, int *walk_subtrees, void *data)
-{
-  if (*tp == data)
-    {
-      *walk_subtrees = 0;
-      return (tree) data;
-    }
-  else
-    return NULL_TREE;
-}
-
-/* A threshold for the number of insns contained in the latch block.
-   It is used to prevent blowing the loop with too many copies from
-   the latch.  */
-#define MAX_STMTS_IN_LATCH 2
-
-/* Return TRUE if the stmts on SINGLE-EDGE can be moved to the
-   body of the loop.  This should be permitted only if SINGLE-EDGE is a
-   single-basic-block latch edge and thus cleaning the latch will help
-   to create a single-basic-block loop.  Otherwise return FALSE.  */
-
-static bool
-process_single_block_loop_latch (edge single_edge)
-{
-  gimple_seq stmts;
-  basic_block b_exit, b_pheader, b_loop = single_edge->src;
-  edge_iterator ei;
-  edge e;
-  gimple_stmt_iterator gsi, gsi_exit;
-  gimple_stmt_iterator tsi;
-  tree expr;
-  gimple stmt;
-  unsigned int count = 0;
-
-  if (single_edge == NULL || (single_edge->dest != single_edge->src)
-      || (EDGE_COUNT (b_loop->succs) != 2)
-      || (EDGE_COUNT (b_loop->preds) != 2))
-    return false;
-
-  /* Get the stmts on the latch edge.  */
-  stmts = PENDING_STMT (single_edge);
-
-  /* Find the successor edge which is not the latch edge.  */
-  FOR_EACH_EDGE (e, ei, b_loop->succs) 
-   if (e->dest != b_loop)
-    break;
-
-  b_exit = e->dest;
-
-  /* Check that the exit block has only the loop as a predecessor,
-     and that there are no pending stmts on that edge as well.   */
-  if (EDGE_COUNT (b_exit->preds) != 1 || PENDING_STMT (e))
-    return false;
-
-  /* Find the predecessor edge which is not the latch edge.  */
-  FOR_EACH_EDGE (e, ei, b_loop->preds) 
-   if (e->src != b_loop)
-    break;
-
-  b_pheader = e->src;
-
-  if (b_exit == b_pheader || b_exit == b_loop || b_pheader == b_loop)
-    return false;
-
-  gsi_exit = gsi_after_labels (b_exit);
-
-  /* Get the last stmt in the loop body.  */
-  gsi = gsi_last_bb (single_edge->src);
-  stmt = gsi_stmt (gsi);
-
-  if (gimple_code (stmt) != GIMPLE_COND)
-    return false;
-
-
-  expr = build2 (gimple_cond_code (stmt), boolean_type_node,
-                 gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
-  /* Iterate over the insns on the latch and count them.  */
-  for (tsi = gsi_start (stmts); !gsi_end_p (tsi); gsi_next (&tsi))
-    {
-      gimple stmt1 = gsi_stmt (tsi);
-      tree var;
-
-      count++;
-      /* Check that the condition does not contain any new definition
-         created in the latch as the stmts from the latch intended
-         to precede it.  */
-      if (gimple_code (stmt1) != GIMPLE_ASSIGN)
-        return false;
-      var = gimple_assign_lhs (stmt1);
-      if (TREE_THIS_VOLATILE (var)
-	  || TYPE_VOLATILE (TREE_TYPE (var))
-	  || walk_tree (&expr, contains_tree_r, var, NULL))
-	return false;
-    }
-  /* Check that the latch does not contain more than MAX_STMTS_IN_LATCH
-     insns.  The purpose of this restriction is to prevent blowing the
-     loop with too many copies from the latch.  */
-  if (count > MAX_STMTS_IN_LATCH)
-    return false;
-
-  /* Apply the transformation - clean up the latch block:  
-
-     var = something; 
-     L1:
-     x1 = expr;
-     if (cond) goto L2 else goto L3;
-     L2:
-     var = x1;
-     goto L1
-     L3:
-     ...
-
-     ==>
-
-     var = something;
-     L1:
-     x1 = expr;
-     tmp_var = var;
-     var = x1;
-     if (cond) goto L1 else goto L2;
-     L2:
-     var = tmp_var;
-     ... 
-   */
-  for (tsi = gsi_start (stmts); !gsi_end_p (tsi); gsi_next (&tsi))
-    {
-      gimple stmt1 = gsi_stmt (tsi);
-      tree var, tmp_var;
-      gimple copy;
-
-      /* Create a new variable to load back the value of var in case
-         we exit the loop.  */
-      var = gimple_assign_lhs (stmt1);
-      tmp_var = create_temp (var);
-      copy = gimple_build_assign (tmp_var, var);
-      set_is_used (tmp_var);
-      gsi_insert_before (&gsi, copy, GSI_SAME_STMT);
-      copy = gimple_build_assign (var, tmp_var);
-      gsi_insert_before (&gsi_exit, copy, GSI_SAME_STMT);
-    }
-
-  PENDING_STMT (single_edge) = 0;
-  /* Insert the new stmts to the loop body.  */
-  gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
-
-  if (dump_file)
-    fprintf (dump_file,
-	     "\nCleaned-up latch block of loop with single BB: %d\n\n",
-	     single_edge->dest->index);
-
-  return true;
-}
-
-/* Look at all the incoming edges to block BB, and decide where the best place
-   to insert the stmts on each edge are, and perform those insertions.  */
-
-static void
-analyze_edges_for_bb (basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-  int count;
-  unsigned int x;
-  bool have_opportunity;
-  gimple_stmt_iterator gsi;
-  gimple stmt;
-  edge single_edge = NULL;
-  bool is_label;
-  edge leader;
-
-  count = 0;
-
-  /* Blocks which contain at least one abnormal edge cannot use 
-     make_forwarder_block.  Look for these blocks, and commit any PENDING_STMTs
-     found on edges in these block.  */
-  have_opportunity = true;
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (e->flags & EDGE_ABNORMAL)
-      {
-        have_opportunity = false;
-	break;
-      }
-
-  if (!have_opportunity)
-    {
-      FOR_EACH_EDGE (e, ei, bb->preds)
-	if (PENDING_STMT (e))
-	  gsi_commit_one_edge_insert (e, NULL);
-      return;
-    }
-
-  /* Find out how many edges there are with interesting pending stmts on them.  
-     Commit the stmts on edges we are not interested in.  */
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      if (PENDING_STMT (e))
-        {
-	  gcc_assert (!(e->flags & EDGE_ABNORMAL));
-	  if (e->flags & EDGE_FALLTHRU)
-	    {
-	      gsi = gsi_start_bb (e->src);
-	      if (!gsi_end_p (gsi))
-	        {
-		  stmt = gsi_stmt (gsi);
-		  gsi_next (&gsi);
-		  gcc_assert (stmt != NULL);
-		  is_label = (gimple_code (stmt) == GIMPLE_LABEL);
-		  /* Punt if it has non-label stmts, or isn't local.  */
-		  if (!is_label
-		      || DECL_NONLOCAL (gimple_label_label (stmt)) 
-		      || !gsi_end_p (gsi))
-		    {
-		      gsi_commit_one_edge_insert (e, NULL);
-		      continue;
-		    }
-		}
-	    }
-	  single_edge = e;
-	  count++;
-	}
-    }
-
-  /* If there aren't at least 2 edges, no sharing will happen.  */
-  if (count < 2)
-    {
-      if (single_edge)
-      {
-       /* Add stmts to the edge unless processed specially as a
-          single-block loop latch edge. */
-       if (!process_single_block_loop_latch (single_edge))
-         gsi_commit_one_edge_insert (single_edge, NULL);
-      }
-      return;
-    }
-
-  /* Ensure that we have empty worklists.  */
-#ifdef ENABLE_CHECKING
-  gcc_assert (VEC_length (edge, edge_leader) == 0);
-  gcc_assert (VEC_length (gimple_seq, stmt_list) == 0);
-  gcc_assert (bitmap_empty_p (leader_has_match));
-#endif
-
-  /* Find the "leader" block for each set of unique stmt lists.  Preference is
-     given to FALLTHRU blocks since they would need a GOTO to arrive at another
-     block.  The leader edge destination is the block which all the other edges
-     with the same stmt list will be redirected to.  */
-  have_opportunity = false;
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    {
-      if (PENDING_STMT (e))
-	{
-	  bool found = false;
-
-	  /* Look for the same stmt list in edge leaders list.  */
-	  for (x = 0; VEC_iterate (edge, edge_leader, x, leader); x++)
-	    {
-	      if (identical_stmt_lists_p (leader, e))
-		{
-		  /* Give this edge the same stmt list pointer.  */
-		  PENDING_STMT (e) = NULL;
-		  e->aux = leader;
-		  bitmap_set_bit (leader_has_match, x);
-		  have_opportunity = found = true;
-		  break;
-		}
-	    }
-
-	  /* If no similar stmt list, add this edge to the leader list.  */
-	  if (!found)
-	    {
-	      VEC_safe_push (edge, heap, edge_leader, e);
-	      VEC_safe_push (gimple_seq, heap, stmt_list, PENDING_STMT (e));
-	    }
-	}
-     }
-
-  /* If there are no similar lists, just issue the stmts.  */
-  if (!have_opportunity)
-    {
-      for (x = 0; VEC_iterate (edge, edge_leader, x, leader); x++)
-	gsi_commit_one_edge_insert (leader, NULL);
-      VEC_truncate (edge, edge_leader, 0);
-      VEC_truncate (gimple_seq, stmt_list, 0);
-      bitmap_clear (leader_has_match);
-      return;
-    }
-
-  if (dump_file)
-    fprintf (dump_file, "\nOpportunities in BB %d for stmt/block reduction:\n",
-	     bb->index);
-  
-  /* For each common list, create a forwarding block and issue the stmt's
-     in that block.  */
-  for (x = 0; VEC_iterate (edge, edge_leader, x, leader); x++)
-    if (bitmap_bit_p (leader_has_match, x))
-      {
-	edge new_edge;
-	gimple_stmt_iterator gsi;
-	gimple_seq curr_stmt_list;
-
-	leader_match = leader;
-
-	/* The tree_* cfg manipulation routines use the PENDING_EDGE field
-	   for various PHI manipulations, so it gets cleared when calls are 
-	   made to make_forwarder_block(). So make sure the edge is clear, 
-	   and use the saved stmt list.  */
-	PENDING_STMT (leader) = NULL;
-	leader->aux = leader;
-	curr_stmt_list = VEC_index (gimple_seq, stmt_list, x);
-
-        new_edge = make_forwarder_block (leader->dest, same_stmt_list_p, 
-					 NULL);
-	bb = new_edge->dest;
-	if (dump_file)
-	  {
-	    fprintf (dump_file, "Splitting BB %d for Common stmt list.  ", 
-		     leader->dest->index);
-	    fprintf (dump_file, "Original block is now BB%d.\n", bb->index);
-	    print_gimple_seq (dump_file, curr_stmt_list, 0, TDF_VOPS);
-	  }
-
-	FOR_EACH_EDGE (e, ei, new_edge->src->preds)
-	  {
-	    e->aux = NULL;
-	    if (dump_file)
-	      fprintf (dump_file, "  Edge (%d->%d) lands here.\n", 
-		       e->src->index, e->dest->index);
-	  }
-
-	gsi = gsi_last_bb (leader->dest);
-	gsi_insert_seq_after (&gsi, curr_stmt_list, GSI_NEW_STMT);
-
-	leader_match = NULL;
-	/* We should never get a new block now.  */
-      }
-    else
-      {
-	PENDING_STMT (leader) = VEC_index (gimple_seq, stmt_list, x);
-	gsi_commit_one_edge_insert (leader, NULL);
-      }
-
-   
-  /* Clear the working data structures.  */
-  VEC_truncate (edge, edge_leader, 0);
-  VEC_truncate (gimple_seq, stmt_list, 0);
-  bitmap_clear (leader_has_match);
-}
-
-
-/* This function will analyze the insertions which were performed on edges,
-   and decide whether they should be left on that edge, or whether it is more
-   efficient to emit some subset of them in a single block.  All stmts are
-   inserted somewhere.  */
-
-static void
-perform_edge_inserts (void)
+/* Given the out-of-ssa info object SA (with prepared partitions)
+   eliminate all phi nodes in all basic blocks.  Afterwards no
+   basic block will have phi nodes anymore and there are possibly
+   some RTL instructions inserted on edges.  */
+
+void
+expand_phi_nodes (struct ssaexpand *sa)
 {
   basic_block bb;
+  elim_graph g = new_elim_graph (sa->map->num_partitions);
+  g->map = sa->map;
 
-  if (dump_file)
-    fprintf(dump_file, "Analyzing Edge Insertions.\n");
-
-  /* analyze_edges_for_bb calls make_forwarder_block, which tries to
-     incrementally update the dominator information.  Since we don't
-     need dominator information after this pass, go ahead and free the
-     dominator information.  */
-  free_dominance_info (CDI_DOMINATORS);
-  free_dominance_info (CDI_POST_DOMINATORS);
-
-  /* Allocate data structures used in analyze_edges_for_bb.   */
-  init_analyze_edges_for_bb ();
-
-  FOR_EACH_BB (bb)
-    analyze_edges_for_bb (bb);
-
-  analyze_edges_for_bb (EXIT_BLOCK_PTR);
-
-  /* Free data structures used in analyze_edges_for_bb.   */
-  fini_analyze_edges_for_bb ();
-
-#ifdef ENABLE_CHECKING
-  {
-    edge_iterator ei;
-    edge e;
-    FOR_EACH_BB (bb)
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb, EXIT_BLOCK_PTR, next_bb)
+    if (!gimple_seq_empty_p (phi_nodes (bb)))
       {
+	edge e;
+	edge_iterator ei;
 	FOR_EACH_EDGE (e, ei, bb->preds)
+	  eliminate_phi (e, g);
+	set_phi_nodes (bb, NULL);
+	/* We can't redirect EH edges in RTL land, so we need to do this
+	   here.  Redirection happens only when splitting is necessary,
+	   which it is only for critical edges, normally.  For EH edges
+	   it might also be necessary when the successor has more than
+	   one predecessor.  In that case the edge is either required to
+	   be fallthru (which EH edges aren't), or the predecessor needs
+	   to end with a jump (which again, isn't the case with EH edges).
+	   Hence, split all EH edges on which we inserted instructions
+	   and whose successor has multiple predecessors.  */
+	for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
 	  {
-	    if (PENDING_STMT (e))
-	      error (" Pending stmts not issued on PRED edge (%d, %d)\n", 
-		     e->src->index, e->dest->index);
+	    if (e->insns.r && (e->flags & EDGE_EH)
+		&& !single_pred_p (e->dest))
+	      {
+		rtx insns = e->insns.r;
+		basic_block bb;
+		e->insns.r = NULL_RTX;
+		bb = split_edge (e);
+		single_pred_edge (bb)->insns.r = insns;
+	      }
+	    else
+	      ei_next (&ei);
 	  }
-	FOR_EACH_EDGE (e, ei, bb->succs)
-	  {
-	    if (PENDING_STMT (e))
-	      error (" Pending stmts not issued on SUCC edge (%d, %d)\n", 
-		     e->src->index, e->dest->index);
-	  }
       }
-    FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
-      {
-	if (PENDING_STMT (e))
-	  error (" Pending stmts not issued on ENTRY edge (%d, %d)\n", 
-		 e->src->index, e->dest->index);
-      }
-    FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
-      {
-	if (PENDING_STMT (e))
-	  error (" Pending stmts not issued on EXIT edge (%d, %d)\n", 
-		 e->src->index, e->dest->index);
-      }
-  }
-#endif
+
+  delete_elim_graph (g);
 }
 
 
@@ -1339,12 +789,11 @@ perform_edge_inserts (void)
    should also be used.  */
 
 static void
-remove_ssa_form (bool perform_ter)
+remove_ssa_form (bool perform_ter, struct ssaexpand *sa)
 {
-  basic_block bb;
   gimple *values = NULL;
   var_map map;
-  gimple_stmt_iterator gsi;
+  unsigned i;
 
   map = coalesce_ssa_name ();
 
@@ -1365,29 +814,21 @@ remove_ssa_form (bool perform_ter)
 	dump_replaceable_exprs (dump_file, values);
     }
 
-  /* Assign real variables to the partitions now.  */
-  assign_vars (map);
+  rewrite_trees (map);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  sa->map = map;
+  sa->values = values;
+  sa->partition_has_default_def = BITMAP_ALLOC (NULL);
+  for (i = 1; i < num_ssa_names; i++)
     {
-      fprintf (dump_file, "After Base variable replacement:\n");
-      dump_var_map (dump_file, map);
+      tree t = ssa_name (i);
+      if (t && SSA_NAME_IS_DEFAULT_DEF (t))
+	{
+	  int p = var_to_partition (map, t);
+	  if (p != NO_PARTITION)
+	    bitmap_set_bit (sa->partition_has_default_def, p);
+	}
     }
-
-  rewrite_trees (map, values);
-
-  if (values)
-    free (values);
-
-  /* Remove PHI nodes which have been translated back to real variables.  */
-  FOR_EACH_BB (bb)
-    for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);)
-      remove_phi_node (&gsi, true);
-
-  /* If any copies were inserted on edges, analyze and insert them now.  */
-  perform_edge_inserts ();
-
-  delete_var_map (map);
 }
 
 
@@ -1477,12 +918,26 @@ insert_backedge_copies (void)
     }
 }
 
+/* Free all memory associated with going out of SSA form.  SA is
+   the outof-SSA info object.  */
+
+void
+finish_out_of_ssa (struct ssaexpand *sa)
+{
+  free (sa->partition_to_pseudo);
+  if (sa->values)
+    free (sa->values);
+  delete_var_map (sa->map);
+  BITMAP_FREE (sa->partition_has_default_def);
+  memset (sa, 0, sizeof *sa);
+}
+
 /* Take the current function out of SSA form, translating PHIs as described in
    R. Morgan, ``Building an Optimizing Compiler'',
    Butterworth-Heinemann, Boston, MA, 1998. pp 176-186.  */
 
-static unsigned int
-rewrite_out_of_ssa (void)
+unsigned int
+rewrite_out_of_ssa (struct ssaexpand *sa)
 {
   /* If elimination of a PHI requires inserting a copy on a backedge,
      then we will have to split the backedge which has numerous
@@ -1499,37 +954,10 @@ rewrite_out_of_ssa (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
 
-  remove_ssa_form (flag_tree_ter && !flag_mudflap);
+  remove_ssa_form (flag_tree_ter, sa);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     gimple_dump_cfg (dump_file, dump_flags & ~TDF_DETAILS);
 
-  cfun->gimple_df->in_ssa_p = false;
   return 0;
 }
-
-
-/* Define the parameters of the out of SSA pass.  */
-
-struct gimple_opt_pass pass_del_ssa = 
-{
- {
-  GIMPLE_PASS,
-  "optimized",				/* name */
-  NULL,					/* gate */
-  rewrite_out_of_ssa,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_SSA_TO_NORMAL,		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  /* ??? If TER is enabled, we also kill gimple.  */
-  PROP_ssa,				/* properties_destroyed */
-  TODO_verify_ssa | TODO_verify_flow
-    | TODO_verify_stmts,		/* todo_flags_start */
-  TODO_dump_func
-  | TODO_ggc_collect
-  | TODO_remove_unused_locals		/* todo_flags_finish */
- }
-};

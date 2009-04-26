@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-final_cleanup" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 
 typedef struct {
@@ -20,6 +20,6 @@ interval foo (interval a, interval b, interval c)
 }
 
 
-/* { dg-final { scan-tree-dump-times "\\(struct interval\\)" 0 "final_cleanup"} } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump-times "\\(struct interval\\)" 0 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
 

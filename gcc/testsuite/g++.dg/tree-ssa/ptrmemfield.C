@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-// { dg-options "-O2 -fdump-tree-final_cleanup" }
+// { dg-options "-O2 -fdump-tree-optimized" }
 
 
 struct f
@@ -20,8 +20,8 @@ int h(void)
 }
 
 /* We should have no cast to offset_type. */
-/* { dg-final { scan-tree-dump-times "offset_type" 0 "final_cleanup"} } */
+/* { dg-final { scan-tree-dump-times "offset_type" 0 "optimized"} } */
 // And we should optimized this code to just return 0
-/* { dg-final { scan-tree-dump-times "return 0" 1 "final_cleanup"} } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump-times "return 0" 1 "optimized"} } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
 

@@ -14,6 +14,7 @@ function test(a)
 end
 
 ! { dg-final { scan-tree-dump "b = 5" "original" } }
-! { dg-final { scan-tree-dump "return .a" "optimized" } }
+! { dg-final { scan-tree-dump "c_. = .a" "optimized" } }
+! { dg-final { scan-tree-dump "return c_.;" "optimized" } }
 ! { dg-final { cleanup-tree-dump "original" } }
 ! { dg-final { cleanup-tree-dump "optimized" } }

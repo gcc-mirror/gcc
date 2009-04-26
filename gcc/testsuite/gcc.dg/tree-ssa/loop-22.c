@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-final_cleanup" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 int a[100];
 
@@ -13,5 +13,5 @@ void test (int n)
 /* We used to replace the exit test "i < n" by "i != ((n-1)/3) * 3 + 1".  Although
    correct, this transformation is obviously harmful.  */
 
-/* { dg-final { scan-tree-dump-times "/" 0 "final_cleanup" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump-times "/" 0 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

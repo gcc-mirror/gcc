@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-final_cleanup" } */
+/* { dg-options "-O2 -fdump-rtl-expand-details" } */
     
 
 union tree_node;
@@ -42,6 +42,6 @@ objects_must_conflict_p (t1, t2)
 }
 
 /* There should be two assignments of variables to the value zero.  */
-/* { dg-final { scan-tree-dump-times " = 0" 2 "final_cleanup"} } */
+/* { dg-final { scan-rtl-dump-times "PART.. = 0" 2 "expand"} } */
  
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { cleanup-rtl-dump "expand" } } */

@@ -136,9 +136,6 @@ init_var_map (int size)
 
   map = (var_map) xmalloc (sizeof (struct _var_map));
   map->var_partition = partition_new (size);
-  map->partition_to_var 
-	      = (tree *)xmalloc (size * sizeof (tree));
-  memset (map->partition_to_var, 0, size * sizeof (tree));
 
   map->partition_to_view = NULL;
   map->view_to_partition = NULL;
@@ -157,7 +154,6 @@ void
 delete_var_map (var_map map)
 {
   var_map_base_fini (map);
-  free (map->partition_to_var);
   partition_delete (map->var_partition);
   if (map->partition_to_view)
     free (map->partition_to_view);
@@ -175,41 +171,16 @@ int
 var_union (var_map map, tree var1, tree var2)
 {
   int p1, p2, p3;
-  tree root_var = NULL_TREE;
-  tree other_var = NULL_TREE;
+
+  gcc_assert (TREE_CODE (var1) == SSA_NAME);
+  gcc_assert (TREE_CODE (var2) == SSA_NAME);
 
   /* This is independent of partition_to_view. If partition_to_view is 
      on, then whichever one of these partitions is absorbed will never have a
      dereference into the partition_to_view array any more.  */
 
-  if (TREE_CODE (var1) == SSA_NAME)
-    p1 = partition_find (map->var_partition, SSA_NAME_VERSION (var1));
-  else
-    {
-      p1 = var_to_partition (map, var1);
-      if (map->view_to_partition)
-        p1 = map->view_to_partition[p1];
-      root_var = var1;
-    }
-  
-  if (TREE_CODE (var2) == SSA_NAME)
-    p2 = partition_find (map->var_partition, SSA_NAME_VERSION (var2));
-  else
-    {
-      p2 = var_to_partition (map, var2);
-      if (map->view_to_partition)
-        p2 = map->view_to_partition[p2];
-
-      /* If there is no root_var set, or it's not a user variable, set the
-	 root_var to this one.  */
-      if (!root_var || (DECL_P (root_var) && DECL_IGNORED_P (root_var)))
-        {
-	  other_var = root_var;
-	  root_var = var2;
-	}
-      else 
-	other_var = var2;
-    }
+  p1 = partition_find (map->var_partition, SSA_NAME_VERSION (var1));
+  p2 = partition_find (map->var_partition, SSA_NAME_VERSION (var2));
 
   gcc_assert (p1 != NO_PARTITION);
   gcc_assert (p2 != NO_PARTITION);
@@ -221,11 +192,6 @@ var_union (var_map map, tree var1, tree var2)
 
   if (map->partition_to_view)
     p3 = map->partition_to_view[p3];
-
-  if (root_var)
-    change_partition_var (map, root_var, p3);
-  if (other_var)
-    change_partition_var (map, other_var, p3);
 
   return p3;
 }
@@ -278,7 +244,9 @@ partition_view_init (var_map map)
   for (x = 0; x < map->partition_size; x++)
     {
       tmp = partition_find (map->var_partition, x);
-      if (map->partition_to_var[tmp] != NULL_TREE && !bitmap_bit_p (used, tmp))
+      if (ssa_name (tmp) != NULL_TREE && is_gimple_reg (ssa_name (tmp))
+	  && (!has_zero_uses (ssa_name (tmp))
+	      || !SSA_NAME_IS_DEFAULT_DEF (ssa_name (tmp))))
 	bitmap_set_bit (used, tmp);
     }
 
@@ -297,7 +265,6 @@ partition_view_fini (var_map map, bitmap selected)
 {
   bitmap_iterator bi;
   unsigned count, i, x, limit;
-  tree var;
 
   gcc_assert (selected);
 
@@ -317,11 +284,6 @@ partition_view_fini (var_map map, bitmap selected)
 	{
 	  map->partition_to_view[x] = i;
 	  map->view_to_partition[i] = x;
-	  var = map->partition_to_var[x];
-	  /* If any one of the members of a partition is not an SSA_NAME, make
-	     sure it is the representative.  */
-	  if (TREE_CODE (var) != SSA_NAME)
-	    change_partition_var (map, var, i);
 	  i++;
 	}
       gcc_assert (i == count);
@@ -376,25 +338,6 @@ partition_view_bitmap (var_map map, bitmap only, bool want_bases)
     var_map_base_init (map);
   else
     var_map_base_fini (map);
-}
-
-
-/* This function is used to change the representative variable in MAP for VAR's 
-   partition to a regular non-ssa variable.  This allows partitions to be 
-   mapped back to real variables.  */
-  
-void 
-change_partition_var (var_map map, tree var, int part)
-{
-  var_ann_t ann;
-
-  gcc_assert (TREE_CODE (var) != SSA_NAME);
-
-  ann = var_ann (var);
-  ann->out_of_ssa_tag = 1;
-  VAR_ANN_PARTITION (ann) = part;
-  if (map->view_to_partition)
-    map->partition_to_var[map->view_to_partition[part]] = var;
 }
 
 
@@ -1105,7 +1048,7 @@ dump_var_map (FILE *f, var_map map)
       else
 	p = x;
 
-      if (map->partition_to_var[p] == NULL_TREE)
+      if (ssa_name (p) == NULL_TREE)
         continue;
 
       t = 0;

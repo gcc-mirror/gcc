@@ -199,10 +199,6 @@ enum noalias_state {
 struct GTY(()) var_ann_d {
   struct tree_ann_common_d common;
 
-  /* Used by the out of SSA pass to determine whether this variable has
-     been seen yet or not.  */
-  unsigned out_of_ssa_tag : 1;
-
   /* Used when building base variable structures in a var_map.  */
   unsigned base_var_processed : 1;
 
@@ -223,10 +219,6 @@ struct GTY(()) var_ann_d {
      symbols are known to have.  See the enum's definition for more
      information on each attribute.  */
   ENUM_BITFIELD (noalias_state) noalias_state : 2;
-
-  /* Used when going out of SSA form to indicate which partition this
-     variable represents storage for.  */
-  unsigned partition;
 
   /* Used by var_map for the base index of ssa base variables.  */
   unsigned base_index;
@@ -960,6 +952,7 @@ rtx addr_for_mem_ref (struct mem_address *, bool);
 void get_address_description (tree, struct mem_address *);
 tree maybe_fold_tmr (tree);
 
+unsigned int execute_free_datastructures (void);
 unsigned int execute_fixup_cfg (void);
 
 #include "tree-flow-inline.h"

@@ -1,6 +1,6 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -msse2 -mfpmath=sse --param simultaneous-prefetches=100 --param max-unrolled-insns=1 -fdump-tree-aprefetch-details -fdump-tree-final_cleanup" } */
+/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -msse2 -mfpmath=sse --param simultaneous-prefetches=100 --param max-unrolled-insns=1 -fdump-tree-aprefetch-details -fdump-tree-optimized" } */
 
 #define K 1000000
 int a[K], b[K];
@@ -45,9 +45,9 @@ void test(int *p)
 /* { dg-final { scan-tree-dump-times "Issued nontemporal prefetch" 3 "aprefetch" } } */
 /* { dg-final { scan-tree-dump-times "nontemporal store" 2 "aprefetch" } } */
 
-/* { dg-final { scan-tree-dump-times "builtin_prefetch" 8 "final_cleanup" } } */
-/* { dg-final { scan-tree-dump-times "=\\{nt\\}" 2 "final_cleanup" } } */
-/* { dg-final { scan-tree-dump-times "__builtin_ia32_mfence" 2 "final_cleanup" } } */
+/* { dg-final { scan-tree-dump-times "builtin_prefetch" 8 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "=\\{nt\\}" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "__builtin_ia32_mfence" 2 "optimized" } } */
 
 /* { dg-final { scan-assembler-times "prefetchw" 5 } } */
 /* { dg-final { scan-assembler-times "prefetcht" 1 } } */
@@ -56,4 +56,4 @@ void test(int *p)
 /* { dg-final { scan-assembler-times "mfence" 2 } } */
 
 /* { dg-final { cleanup-tree-dump "aprefetch" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

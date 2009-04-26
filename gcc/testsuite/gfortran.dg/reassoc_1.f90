@@ -7,5 +7,7 @@ function test(b)
   test = a
 end
 
-! { dg-final { scan-tree-dump "\\\+ 5.*\\\)\\\) - 5" "optimized" } }
+! We need an explicit +5 and -5, and an intermediate ((bla)) expression
+! (the reassoc barrier).  Make use of "." matching lineends.
+! { dg-final { scan-tree-dump "\\\+ 5.*\\\)\\\).* - 5" "optimized" } }
 ! { dg-final { cleanup-tree-dump "optimized" } }

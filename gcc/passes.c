@@ -707,17 +707,17 @@ init_optimization_passes (void)
       NEXT_PASS (pass_local_pure_const);
     }
   NEXT_PASS (pass_cleanup_eh);
-  NEXT_PASS (pass_del_ssa);
   NEXT_PASS (pass_nrv);
+  NEXT_PASS (pass_mudflap_2);
   NEXT_PASS (pass_mark_used_blocks);
   NEXT_PASS (pass_cleanup_cfg_post_optimizing);
-
   NEXT_PASS (pass_warn_function_noreturn);
-  NEXT_PASS (pass_free_datastructures);
-  NEXT_PASS (pass_mudflap_2);
 
-  NEXT_PASS (pass_free_cfg_annotations);
+/*  NEXT_PASS (pass_del_ssa);
+  NEXT_PASS (pass_free_datastructures);
+  NEXT_PASS (pass_free_cfg_annotations);*/
   NEXT_PASS (pass_expand);
+
   NEXT_PASS (pass_rest_of_compilation);
     {
       struct opt_pass **p = &pass_rest_of_compilation.pass.sub;

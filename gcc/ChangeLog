@@ -1,5 +1,128 @@
 2009-04-26  Michael Matz  <matz@suse.de>
 
+	Expand from SSA.
+	* builtins.c (fold_builtin_next_arg): Handle SSA names.
+	* tree-ssa-copyrename.c (rename_ssa_copies): Use ssa_name() directly.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Mark only useful
+	SSA names. 
+	(compare_pairs): Swap cost comparison.
+	(coalesce_ssa_name): Don't use change_partition_var.
+	* tree-nrv.c (struct nrv_data): Add modified member.
+	(finalize_nrv_r): Set it.
+	(tree_nrv): Use it to update statements.
+	(pass_nrv): Require PROP_ssa.
+	* tree-mudflap.c (mf_decl_cache_locals,
+	mf_build_check_statement_for): Use make_rename_temp.
+	(pass_mudflap_2): Require PROP_ssa, run ssa update at finish.
+	* alias.c (find_base_decl): Handle SSA names.
+	* emit-rtl (set_reg_attrs_for_parm): Make non-static.
+	(component_ref_for_mem_expr): Don't leak SSA names into RTL.
+	* rtl.h (set_reg_attrs_for_parm): Declare.
+	* tree-optimize.c (pass_cleanup_cfg_post_optimizing): Rename
+	to "optimized", remove unused locals at finish.
+	(execute_free_datastructures): Make global, call
+	delete_tree_cfg_annotations.
+	(execute_free_cfg_annotations): Don't call
+	delete_tree_cfg_annotations.
+
+	* ssaexpand.h: New file.
+	* expr.c (toplevel): Include ssaexpand.h.
+	(expand_assignment): Handle SSA names the same as register
+	variables.
+	(expand_expr_real_1): Expand SSA names.
+	* cfgexpand.c (toplevel): Include ssaexpand.h.
+	(SA): New global variable.
+	(gimple_cond_pred_to_tree): Fold TERed comparisons into predicates.
+	(SSAVAR): New macro.
+	(set_rtl): New helper function.
+	(add_stack_var): Deal with SSA names, use set_rtl.
+	(expand_one_stack_var_at): Likewise.
+	(expand_one_stack_var): Deal with SSA names.
+	(stack_var_size_cmp): Use code (SSA_NAME / DECL) as tie breaker
+	before unique numbers.
+	(expand_stack_vars): Use set_rtl.
+	(expand_one_var): Accept SSA names, add asserts for them, feed them
+	to above subroutines.
+	(expand_used_vars): Expand all partitions (without default defs),
+	then only the local decls (ignoring those expanded already).
+	(expand_gimple_cond): Remove edges when jumpif() expands an
+	unconditional jump.
+	(expand_gimple_basic_block): Don't clear EDGE_EXECUTABLE here,
+	or remove abnormal edges.  Ignore insns setting the LHS of a TERed
+	SSA name.
+	(gimple_expand_cfg): Call into rewrite_out_of_ssa, initialize
+	members of SA; deal with PARM_DECL partitions here; expand
+	all PHI nodes, free tree datastructures and SA.  Commit instructions
+	on edges, clear EDGE_EXECUTABLE and remove abnormal edges here.
+	(pass_expand): Require and destroy PROP_ssa, verify SSA form, flow
+	info and statements at start, collect garbage at finish.
+	* tree-ssa-live.h (struct _var_map): Remove partition_to_var member.
+	(VAR_ANN_PARTITION) Remove.
+	(change_partition_var): Don't declare.
+	(partition_to_var): Always return SSA names.
+	(var_to_partition): Only accept SSA names.
+	(register_ssa_partition): Only check argument.
+	* tree-ssa-live.c (init_var_map): Don't allocate partition_to_var
+	member.
+	(delete_var_map): Don't free it.
+	(var_union): Only accept SSA names, simplify.
+	(partition_view_init): Mark only useful SSA names as used.
+	(partition_view_fini): Only deal with SSA names.
+	(change_partition_var): Remove.
+	(dump_var_map): Use ssa_name instead of partition_to_var member.
+	* tree-ssa.c (delete_tree_ssa): Don't remove PHI nodes on RTL
+	basic blocks.
+	* tree-outof-ssa.c (toplevel): Include ssaexpand.h and expr.h.
+	(struct _elim_graph): New member const_dests; nodes member vector of
+	ints.
+	(set_location_for_edge): New static helper.
+	(create_temp): Remove.
+	(insert_partition_copy_on_edge, insert_part_to_rtx_on_edge,
+	insert_value_copy_on_edge, insert_rtx_to_part_on_edge): New
+	functions.
+	(new_elim_graph): Allocate const_dests member.
+	(clean_elim_graph): Truncate const_dests member.
+	(delete_elim_graph): Free const_dests member.
+	(elim_graph_size): Adapt to new type of nodes member.
+	(elim_graph_add_node): Likewise.
+	(eliminate_name): Likewise.
+	(eliminate_build): Don't take basic block argument, deal only with
+	partition numbers, not variables.
+	(get_temp_reg): New static helper.
+	(elim_create): Use it, deal with RTL temporaries instead of trees.
+	(eliminate_phi): Adjust all calls to new signature.
+	(assign_vars, replace_use_variable, replace_def_variable): Remove.
+	(rewrite_trees): Only do checking.
+	(edge_leader, stmt_list, leader_has_match, leader_match): Remove.
+	(same_stmt_list_p, identical_copies_p, identical_stmt_lists_p,
+	init_analyze_edges_for_bb, fini_analyze_edges_for_bb,
+	contains_tree_r, MAX_STMTS_IN_LATCH,
+	process_single_block_loop_latch, analyze_edges_for_bb,
+	perform_edge_inserts): Remove.
+	(expand_phi_nodes): New global function.
+	(remove_ssa_form): Take ssaexpand parameter.  Don't call removed
+	functions, initialize new parameter, remember partitions having a
+	default def.
+	(finish_out_of_ssa): New global function.
+	(rewrite_out_of_ssa): Make global.  Adjust call to remove_ssa_form,
+	don't reset in_ssa_p here, don't disable TER when mudflap.
+	(pass_del_ssa): Remove.
+	* tree-flow.h (struct var_ann_d): Remove out_of_ssa_tag and
+	partition members.
+	(execute_free_datastructures): Declare.
+	* Makefile.in (SSAEXPAND_H): New variable.
+	(tree-outof-ssa.o, expr.o, cfgexpand.o): Depend on SSAEXPAND_H.
+	* basic-block.h (commit_one_edge_insertion): Declare.
+	* passes.c (init_optimization_passes): Move pass_nrv and
+	pass_mudflap2 before pass_cleanup_cfg_post_optimizing, remove
+	pass_del_ssa, pass_free_datastructures, pass_free_cfg_annotations.
+	* cfgrtl.c (commit_one_edge_insertion): Make global, don't declare.
+	(redirect_branch_edge): Deal with super block when expanding, split
+	out jump patching itself into ...
+	(patch_jump_insn): ... here, new static helper.
+
+2009-04-26  Michael Matz  <matz@suse.de>
+
 	* tree-ssa-copyrename.c (rename_ssa_copies): Don't iterate
 	beyond num_ssa_names.
 	* tree-ssa-ter.c (free_temp_expr_table): Likewise.

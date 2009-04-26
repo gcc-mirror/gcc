@@ -20,6 +20,6 @@ foo()
 /* The cast to an int type must remain after all optimizations are complete
    so that we do not try to canonicalize a function pointer for the
    comparison when no such canonicalization is wanted.  */
-/* { dg-final { scan-tree-dump-times "if \\(\\(int\\).*q" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "r_. = \\(int\\) q" 1 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 
