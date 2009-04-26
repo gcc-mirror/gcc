@@ -698,7 +698,7 @@ eliminate_useless_phis (void)
    variable.  */
 
 static void
-rewrite_trees (var_map map)
+rewrite_trees (var_map map ATTRIBUTE_UNUSED)
 {
 #ifdef ENABLE_CHECKING
   basic_block bb;
