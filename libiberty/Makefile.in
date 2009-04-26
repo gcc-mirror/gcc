@@ -100,7 +100,7 @@ FLAGS_TO_PASS = \
 SUBDIRS = testsuite
 
 # FIXME: add @BUILD_INFO@ once we're sure it works for everyone.
-all: stamp-picdir $(TARGETLIB) needed-list required-list all-subdir
+all: stamp-picdir $(TARGETLIB) required-list all-subdir
 	@: $(MAKE) ; exec $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
 
 .PHONY: check installcheck
@@ -377,22 +377,6 @@ install_to_tooldir: all
 	mv -f $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)/$(TARGETLIB)n $(DESTDIR)$(tooldir)/lib/$(MULTIOSDIR)/$(TARGETLIB)
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
-# needed-list is used by libstdc++.  NEEDED is the list of functions
-# to include there.  Do not add anything LGPL to this list; libstdc++
-# can't use anything encumbering.
-NEEDED = atexit calloc memchr memcmp memcpy memmove memset rename strchr \
-	 strerror strncmp strrchr strstr strtol strtoul tmpnam vfprintf vprintf \
-	 vfork waitpid bcmp bcopy bzero
-needed-list: Makefile
-	rm -f needed-list; touch needed-list; \
-	for f in $(NEEDED); do \
-	  for g in $(LIBOBJS) $(EXTRA_OFILES); do \
-	    case "$$g" in \
-	      *$$f*) echo $$g >> needed-list ;; \
-	    esac; \
-	  done; \
-	done
-
 # required-list was used when building a shared bfd/opcodes/libiberty
 # library.  I don't know if it used by anything currently.
 required-list: Makefile
@@ -440,8 +424,8 @@ maint-deps :
 # multiple times, hence our explicit recursion with an empty SUBDIRS.
 mostlyclean: mostlyclean-subdir
 	-rm -rf *.o pic core errs \#* *.E a.out
-	-rm -f needed.awk needed2.awk errors dummy needed-list config.h stamp-*
-	-rm -f $(CONFIG_H) $(NEEDED_LIST) stamp-picdir
+	-rm -f errors dummy config.h stamp-*
+	-rm -f $(CONFIG_H) stamp-picdir
 	-rm -f libiberty.aux libiberty.cp libiberty.cps libiberty.fn libiberty.ky
 	-rm -f libiberty.log libiberty.tmp libiberty.tps libiberty.pg
 	-rm -f libiberty.pgs libiberty.toc libiberty.tp libiberty.tpl libiberty.vr
