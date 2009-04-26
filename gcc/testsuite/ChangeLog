@@ -1,3 +1,8 @@
+2009-04-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/39556
+	* gcc.dg/inline-34.c: New test.
+
 2009-04-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/enum-const-1.c, gcc.dg/enum-const-2.c,

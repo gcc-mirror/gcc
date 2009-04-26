@@ -467,6 +467,18 @@ struct c_enum_contents
   int enum_overflow;
 };
 
+/* A type of reference to a static identifier in an inline
+   function.  */
+enum c_inline_static_type {
+  /* Identifier with internal linkage used in function that may be an
+     inline definition (i.e., file-scope static).  */
+  csi_internal,
+  /* Modifiable object with static storage duration defined in
+     function that may be an inline definition (i.e., local
+     static).  */
+  csi_modifiable
+};
+
 
 /* in c-parser.c */
 extern void c_parse_init (void);
@@ -483,6 +495,8 @@ extern int global_bindings_p (void);
 extern void push_scope (void);
 extern tree pop_scope (void);
 
+extern void record_inline_static (location_t, tree, tree,
+				  enum c_inline_static_type);
 extern void c_init_decl_processing (void);
 extern void c_dup_lang_specific_decl (tree);
 extern void c_print_identifier (FILE *, tree, int);
