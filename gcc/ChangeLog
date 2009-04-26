@@ -1,5 +1,10 @@
 2009-04-26  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (loc_descr_plus_const): New function.
+	(build_cfa_aligned_loc, tls_mem_loc_descriptor,
+	mem_loc_descriptor, loc_descriptor_from_tree_1,
+	descr_info_loc, gen_variable_die): Use it.
+
 	* tree.h (DECL_BY_REFERENCE): Note that it is also valid for
 	!TREE_STATIC VAR_DECLs.
 	* dwarf2out.c (loc_by_reference, gen_decl_die): Handle
