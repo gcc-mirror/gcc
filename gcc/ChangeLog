@@ -1,3 +1,9 @@
+2009-04-26  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	PR testsuite/39710
+	* opts.c (undocumented_msg): Do not leave blank even with
+	ENABLE_CHECKING.
+
 2009-04-25  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (build_enumerator): Allow values folding to integer

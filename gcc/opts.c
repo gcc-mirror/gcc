@@ -339,11 +339,7 @@ enum symbol_visibility default_visibility = VISIBILITY_DEFAULT;
 struct visibility_flags visibility_options;
 
 /* What to print when a switch has no documentation.  */
-#ifdef ENABLE_CHECKING
 static const char undocumented_msg[] = N_("This switch lacks documentation");
-#else
-static const char undocumented_msg[] = "";
-#endif
 
 /* Used for bookkeeping on whether user set these flags so
    -fprofile-use/-fprofile-generate does not use them.  */
