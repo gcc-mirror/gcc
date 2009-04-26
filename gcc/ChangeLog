@@ -1,3 +1,10 @@
+2009-04-26  Michael Matz  <matz@suse.de>
+
+	* tree-ssa-copyrename.c (rename_ssa_copies): Don't iterate
+	beyond num_ssa_names.
+	* tree-ssa-ter.c (free_temp_expr_table): Likewise.
+	* tree-ssa-coalesce.c (create_outofssa_var_map): Likewise.
+
 2009-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/39543

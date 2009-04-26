@@ -974,7 +974,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
   used_in_virtual_ops = BITMAP_ALLOC (NULL);
 #endif
 
-  map = init_var_map (num_ssa_names + 1);
+  map = init_var_map (num_ssa_names);
 
   FOR_EACH_BB (bb)
     {

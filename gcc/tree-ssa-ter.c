@@ -225,7 +225,7 @@ free_temp_expr_table (temp_expr_table_p t)
   unsigned x;
   for (x = 0; x <= num_var_partitions (t->map); x++)
     gcc_assert (!t->kill_list[x]);
-  for (x = 0; x < num_ssa_names + 1; x++)
+  for (x = 0; x < num_ssa_names; x++)
     {
       gcc_assert (t->expr_decl_uids[x] == NULL);
       gcc_assert (t->partition_dependencies[x] == NULL);
