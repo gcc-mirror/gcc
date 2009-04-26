@@ -28312,7 +28312,7 @@ echo "${ECHO_T}arch directory: ${host_cpu}" >&6
 
 fi
 
-                                                                                                              ac_config_files="$ac_config_files Makefile libgcj.pc libgcj.spec libgcj-test.spec gcj/Makefile include/Makefile testsuite/Makefile contrib/aotcompile.py contrib/aot-compile contrib/aot-compile-rpm contrib/rebuild-gcj-db"
+                                                                                                                        ac_config_files="$ac_config_files Makefile libgcj.pc libgcj.spec libgcj-test.spec gcj/Makefile include/Makefile testsuite/Makefile contrib/aotcompile.py contrib/aot-compile contrib/aot-compile-rpm contrib/generate-cacerts.pl contrib/rebuild-gcj-db"
 
 
 if test ${multilib} = yes; then
@@ -29562,6 +29562,7 @@ do
   "contrib/aotcompile.py" ) CONFIG_FILES="$CONFIG_FILES contrib/aotcompile.py" ;;
   "contrib/aot-compile" ) CONFIG_FILES="$CONFIG_FILES contrib/aot-compile" ;;
   "contrib/aot-compile-rpm" ) CONFIG_FILES="$CONFIG_FILES contrib/aot-compile-rpm" ;;
+  "contrib/generate-cacerts.pl" ) CONFIG_FILES="$CONFIG_FILES contrib/generate-cacerts.pl" ;;
   "contrib/rebuild-gcj-db" ) CONFIG_FILES="$CONFIG_FILES contrib/rebuild-gcj-db" ;;
   "scripts/jar" ) CONFIG_FILES="$CONFIG_FILES scripts/jar" ;;
   "include/platform.h" ) CONFIG_LINKS="$CONFIG_LINKS include/platform.h:include/$PLATFORMH" ;;

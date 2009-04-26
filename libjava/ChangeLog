@@ -1,3 +1,10 @@
+2009-04-26  Matthias Klose <doko@ubuntu.com>
+
+	* contrib/aot-compile.in: Print diagnostics for malformed or invalid
+	class files.
+	* contrib/generate-cacerts.pl.in: New.
+	* configure.ac (AC_CONFIG_FILES): Add generate-cacerts.pl.
+
 2009-04-24  Matthias Klose  <doko@ubuntu.com>
 
 	* configure.ac: Create missing directory gnu/java/security/jce/prng.

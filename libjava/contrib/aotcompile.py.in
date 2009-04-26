@@ -177,11 +177,14 @@ class Job:
     
     def __init__(self, path):
         self.path, self.classes, self.blocks = path, {}, None
+        self.classnames = {}
 
-    def addClass(self, bytes):
+    def addClass(self, bytes, name):
         """Subclasses call this from their __init__ method for
         every class they find."""
-        self.classes[md5.new(bytes).digest()] = bytes
+        digest = md5.new(bytes).digest()
+        self.classes[digest] = bytes
+        self.classnames[digest] = name
 
     def __makeBlocks(self):
         """Split self.classes into chunks that can be compiled to
@@ -200,7 +203,12 @@ class Job:
         if the job is subsetted."""
         names = {}
         for hash, bytes in self.classes.items():
-            name = classname(bytes)
+            try:
+                name = classname(bytes)
+            except:
+                warn("job %s: class %s malformed or not a valid class file" \
+                     % (self.path, self.classnames[hash]))
+                raise
             if not names.has_key(name):
                 names[name] = []
             names[name].append(hash)
@@ -302,7 +310,7 @@ class JarJob(Job):
             if bytes.startswith(ZIPMAGIC):
                 self._walk(zipfile.ZipFile(StringIO.StringIO(bytes)))
             elif bytes.startswith(CLASSMAGIC):
-                self.addClass(bytes)
+                self.addClass(bytes, name)
 
 class DirJob(Job):
     """A Job whose origin was a directory of classfiles."""
@@ -319,7 +327,7 @@ class DirJob(Job):
             fp = open(path, "r")
             magic = fp.read(4)
             if magic == CLASSMAGIC:
-                self.addClass(magic + fp.read())
+                self.addClass(magic + fp.read(), name)
     
 def weed_jobs(jobs):
     """Remove any jarfiles that are completely contained within
