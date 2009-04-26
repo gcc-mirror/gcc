@@ -27,9 +27,6 @@ along with GCC; see the file COPYING3.  If not see
    - a store to the same address as a load does not kill the load if the
      source of the store is also the destination of the load.  Handling this
      allows more load motion, particularly out of loops.
-   - ability to realloc sbitmap vectors would allow one initial computation
-     of reg_set_in_block with only subsequent additions, rather than
-     recomputing it for each pass
 
 */
 
@@ -373,69 +370,10 @@ static struct hash_table expr_hash_table;
 /* Copy propagation hash table.  */
 static struct hash_table set_hash_table;
 
-/* Mapping of uids to cuids.
-   Only real insns get cuids.  */
-static int *uid_cuid;
-
-/* Highest UID in UID_CUID.  */
-static int max_uid;
-
-/* Get the cuid of an insn.  */
-#ifdef ENABLE_CHECKING
-#define INSN_CUID(INSN) \
-  (gcc_assert (INSN_UID (INSN) <= max_uid), uid_cuid[INSN_UID (INSN)])
-#else
-#define INSN_CUID(INSN) (uid_cuid[INSN_UID (INSN)])
-#endif
-
-/* Number of cuids.  */
-static int max_cuid;
-
 /* Maximum register number in function prior to doing gcse + 1.
    Registers created during this pass have regno >= max_gcse_regno.
    This is named with "gcse" to not collide with global of same name.  */
 static unsigned int max_gcse_regno;
-
-/* Table of registers that are modified.
-
-   For each register, each element is a list of places where the pseudo-reg
-   is set.
-
-   For simplicity, GCSE is done on sets of pseudo-regs only.  PRE GCSE only
-   requires knowledge of which blocks kill which regs [and thus could use
-   a bitmap instead of the lists `reg_set_table' uses].
-
-   `reg_set_table' and could be turned into an array of bitmaps (num-bbs x
-   num-regs) [however perhaps it may be useful to keep the data as is].  One
-   advantage of recording things this way is that `reg_set_table' is fairly
-   sparse with respect to pseudo regs but for hard regs could be fairly dense
-   [relatively speaking].  And recording sets of pseudo-regs in lists speeds
-   up functions like compute_transp since in the case of pseudo-regs we only
-   need to iterate over the number of times a pseudo-reg is set, not over the
-   number of basic blocks [clearly there is a bit of a slow down in the cases
-   where a pseudo is set more than once in a block, however it is believed
-   that the net effect is to speed things up].  This isn't done for hard-regs
-   because recording call-clobbered hard-regs in `reg_set_table' at each
-   function call can consume a fair bit of memory, and iterating over
-   hard-regs stored this way in compute_transp will be more expensive.  */
-
-typedef struct reg_set
-{
-  /* The next setting of this register.  */
-  struct reg_set *next;
-  /* The index of the block where it was set.  */
-  int bb_index;
-} reg_set;
-
-static reg_set **reg_set_table;
-
-/* Size of `reg_set_table'.
-   The table starts out at max_gcse_regno + slop, and is enlarged as
-   necessary.  */
-static int reg_set_table_size;
-
-/* Amount to grow `reg_set_table' by when it's full.  */
-#define REG_SET_TABLE_SLOP 100
 
 /* This is a list of expressions which are MEMs and will be used by load
    or store motion.
@@ -476,13 +414,6 @@ static htab_t pre_ldst_table = NULL;
    the start of the basic block.  */
 static regset reg_set_bitmap;
 
-/* For each block, a bitmap of registers set in the block.
-   This is used by compute_transp.
-   It is computed during hash table computation and not by compute_sets
-   as it includes registers added since the last pass (or between cprop and
-   gcse) and it's currently not easy to realloc sbitmap vectors.  */
-static sbitmap *reg_set_in_block;
-
 /* Array, indexed by basic block number for a list of insns which modify
    memory within that block.  */
 static rtx * modify_mem_list;
@@ -519,17 +450,12 @@ static int global_copy_prop_count;
 static sbitmap *ae_kill, *ae_gen;
 
 static void compute_can_copy (void);
+static void recompute_all_luids (void);
 static void *gmalloc (size_t) ATTRIBUTE_MALLOC;
 static void *gcalloc (size_t, size_t) ATTRIBUTE_MALLOC;
-static void *grealloc (void *, size_t);
 static void *gcse_alloc (unsigned long);
 static void alloc_gcse_mem (void);
 static void free_gcse_mem (void);
-static void alloc_reg_set_mem (int);
-static void free_reg_set_mem (void);
-static void record_one_set (int, rtx);
-static void record_set_info (rtx, const_rtx, void *);
-static void compute_sets (void);
 static void hash_scan_insn (rtx, struct hash_table *);
 static void hash_scan_set (rtx, rtx, struct hash_table *);
 static void hash_scan_clobber (rtx, rtx, struct hash_table *);
@@ -655,11 +581,9 @@ static bool is_too_expensive (const char *);
 
 #define GNEWVEC(T, N)		((T *) gmalloc (sizeof (T) * (N)))
 #define GCNEWVEC(T, N)		((T *) gcalloc ((N), sizeof (T)))
-#define GRESIZEVEC(T, P, N)	((T *) grealloc ((void *) (P), sizeof (T) * (N)))
 
 #define GNEWVAR(T, S)		((T *) gmalloc ((S)))
 #define GCNEWVAR(T, S)		((T *) gcalloc (1, (S)))
-#define GRESIZEVAR(T, P, S)	((T *) grealloc ((P), (S)))
 
 #define GOBNEW(T)		((T *) gcse_alloc (sizeof (T)))
 #define GOBNEWVAR(T, S)		((T *) gcse_alloc ((S)))
@@ -705,21 +629,6 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
   /* We need alias.  */
   init_alias_analysis ();
 
-  /* Record where pseudo-registers are set.  This data is kept accurate
-     during each pass.  ??? We could also record hard-reg information here
-     [since it's unchanging], however it is currently done during hash table
-     computation.
-
-     It may be tempting to compute MEM set information here too, but MEM sets
-     will be subject to code motion one day and thus we need to compute
-     information about memory sets when we build the hash tables.
-     
-     ??? Actually, we already know the information that compute_sets computes
-     because it is available from DF.  FIXME.  */
-
-  alloc_reg_set_mem (max_gcse_regno);
-  compute_sets ();
-
   gcse_obstack_bottom = GOBNEWVAR (char, 1);
   changed = 0;
  
@@ -736,6 +645,8 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
     {
       timevar_push (TV_CPROP1);
       changed = one_cprop_pass (1, false, false);
+      if (changed)
+        recompute_all_luids ();
       timevar_pop (TV_CPROP1);
     }
 
@@ -757,12 +668,7 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
 	  canon_modify_mem_list = GCNEWVEC (rtx, last_basic_block);
 	}
 
-      /* ??? When we allocate this at the start of the function,
-	 the comment says that "this data is kept accurate during
-	 each pass".  Apparently this is not so?  FIXME.  */
-      free_reg_set_mem ();
-      alloc_reg_set_mem (max_reg_num ());
-      compute_sets ();
+      df_analyze ();
       run_jump_opt_after_gcse = 1;
       timevar_pop (TV_PRE);
     }
@@ -799,7 +705,9 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
 
       /* This time, go ahead and allow cprop to alter jumps.  */
       timevar_push (TV_CPROP2);
-      one_cprop_pass (2, true, true);
+      changed = one_cprop_pass (2, true, true);
+      if (changed)
+        recompute_all_luids ();
       timevar_pop (TV_CPROP2);
       free_gcse_mem ();
     }
@@ -812,7 +720,6 @@ gcse_main (rtx f ATTRIBUTE_UNUSED)
     }
 
   obstack_free (&gcse_obstack, NULL);
-  free_reg_set_mem ();
 
   /* We are finished with alias.
      ??? Actually we recompute alias in store_motion.  */
@@ -882,6 +789,20 @@ can_copy_p (enum machine_mode mode)
 
   return can_copy[mode] != 0;
 }
+
+/* Recompute the DF LUIDs for all basic blocks.  If a sub-pass in this
+   file changes something, we have to recompute them for the next pass.
+   FIXME: If we would track which basic blocks we touch, we could
+	  update LUIDs in only those basic blocks.  */
+
+static void
+recompute_all_luids (void)
+{
+  basic_block bb;
+  FOR_EACH_BB (bb)
+    df_recompute_luids (bb);
+}
+
 
 /* Cover function to xmalloc to record bytes allocated.  */
 
@@ -901,16 +822,6 @@ gcalloc (size_t nelem, size_t elsize)
   return xcalloc (nelem, elsize);
 }
 
-/* Cover function to xrealloc.
-   We don't record the additional size since we don't know it.
-   It won't affect memory usage stats much anyway.  */
-
-static void *
-grealloc (void *ptr, size_t size)
-{
-  return xrealloc (ptr, size);
-}
-
 /* Cover function to obstack_alloc.  */
 
 static void *
@@ -920,43 +831,15 @@ gcse_alloc (unsigned long size)
   return obstack_alloc (&gcse_obstack, size);
 }
 
-/* Allocate memory for the cuid mapping array,
-   and reg/memory set tracking tables.
-
+/* Allocate memory for the reg/memory set tracking tables.
    This is called at the start of each pass.  */
 
 static void
 alloc_gcse_mem (void)
 {
-  int i;
-  basic_block bb;
-  rtx insn;
-
-  /* Find the largest UID and create a mapping from UIDs to CUIDs.
-     CUIDs are like UIDs except they increase monotonically, have no gaps,
-     and only apply to real insns.
-     (Actually, there are gaps, for insn that are not inside a basic block.
-     but we should never see those anyway, so this is OK.)  */
-
-  max_uid = get_max_uid ();
-  uid_cuid = GCNEWVEC (int, max_uid + 1);
-  i = 0;
-  FOR_EACH_BB (bb)
-    FOR_BB_INSNS (bb, insn)
-      {
-	if (INSN_P (insn))
-	  uid_cuid[INSN_UID (insn)] = i++;
-	else
-	  uid_cuid[INSN_UID (insn)] = i;
-      }
-
-  max_cuid = i;
-
   /* Allocate vars to track sets of regs.  */
   reg_set_bitmap = BITMAP_ALLOC (NULL);
 
-  /* Allocate vars to track sets of regs, memory per block.  */
-  reg_set_in_block = sbitmap_vector_alloc (last_basic_block, max_gcse_regno);
   /* Allocate array to keep a list of insns which modify memory in each
      basic block.  */
   modify_mem_list = GCNEWVEC (rtx, last_basic_block);
@@ -970,11 +853,6 @@ alloc_gcse_mem (void)
 static void
 free_gcse_mem (void)
 {
-  free (uid_cuid);
-
-  BITMAP_FREE (reg_set_bitmap);
-
-  sbitmap_vector_free (reg_set_in_block);
   free_modify_mem_tables ();
   BITMAP_FREE (modify_mem_list_set);
   BITMAP_FREE (blocks_with_calls);
@@ -1071,85 +949,6 @@ compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
 	  expr->reaching_reg = 0;
 	}
     }
-}
-
-/* Register set information.
-
-   `reg_set_table' records where each register is set or otherwise
-   modified.  */
-
-static struct obstack reg_set_obstack;
-
-static void
-alloc_reg_set_mem (int n_regs)
-{
-  reg_set_table_size = n_regs + REG_SET_TABLE_SLOP;
-  reg_set_table = GCNEWVEC (struct reg_set *, reg_set_table_size);
-
-  gcc_obstack_init (&reg_set_obstack);
-}
-
-static void
-free_reg_set_mem (void)
-{
-  free (reg_set_table);
-  obstack_free (&reg_set_obstack, NULL);
-}
-
-/* Record REGNO in the reg_set table.  */
-
-static void
-record_one_set (int regno, rtx insn)
-{
-  /* Allocate a new reg_set element and link it onto the list.  */
-  struct reg_set *new_reg_info;
-
-  /* If the table isn't big enough, enlarge it.  */
-  if (regno >= reg_set_table_size)
-    {
-      int new_size = regno + REG_SET_TABLE_SLOP;
-
-      reg_set_table = GRESIZEVEC (struct reg_set *, reg_set_table, new_size);
-      memset (reg_set_table + reg_set_table_size, 0,
-	      (new_size - reg_set_table_size) * sizeof (struct reg_set *));
-      reg_set_table_size = new_size;
-    }
-
-  new_reg_info = XOBNEW (&reg_set_obstack, struct reg_set);
-  bytes_used += sizeof (struct reg_set);
-  new_reg_info->bb_index = BLOCK_NUM (insn);
-  new_reg_info->next = reg_set_table[regno];
-  reg_set_table[regno] = new_reg_info;
-}
-
-/* Called from compute_sets via note_stores to handle one SET or CLOBBER in
-   an insn.  The DATA is really the instruction in which the SET is
-   occurring.  */
-
-static void
-record_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED, void *data)
-{
-  rtx record_set_insn = (rtx) data;
-
-  if (REG_P (dest) && REGNO (dest) >= FIRST_PSEUDO_REGISTER)
-    record_one_set (REGNO (dest), record_set_insn);
-}
-
-/* Scan the function and record each set of each pseudo-register.
-
-   This is called once, at the start of the gcse pass.  See the comments for
-   `reg_set_table' for further documentation.  */
-
-static void
-compute_sets (void)
-{
-  basic_block bb;
-  rtx insn;
-
-  FOR_EACH_BB (bb)
-    FOR_BB_INSNS (bb, insn)
-      if (INSN_P (insn))
-	note_stores (PATTERN (insn), record_set_info, insn);
 }
 
 /* Hash table support.  */
@@ -1257,13 +1056,13 @@ oprs_unchanged_p (const_rtx x, const_rtx insn, int avail_p)
 	if (info->last_bb != current_bb)
 	  return 1;
 	if (avail_p)
-	  return info->last_set < INSN_CUID (insn);
+	  return info->last_set < DF_INSN_LUID (insn);
 	else
-	  return info->first_set >= INSN_CUID (insn);
+	  return info->first_set >= DF_INSN_LUID (insn);
       }
 
     case MEM:
-      if (load_killed_in_block_p (current_bb, INSN_CUID (insn),
+      if (load_killed_in_block_p (current_bb, DF_INSN_LUID (insn),
 				  x, avail_p))
 	return 0;
       else
@@ -1362,7 +1161,7 @@ mems_conflict_for_gcse_p (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
 }
 
 /* Return nonzero if the expression in X (a memory reference) is killed
-   in block BB before or after the insn with the CUID in UID_LIMIT.
+   in block BB before or after the insn with the LUID in UID_LIMIT.
    AVAIL_P is nonzero for kills after UID_LIMIT, and zero for kills
    before UID_LIMIT.
 
@@ -1383,9 +1182,9 @@ load_killed_in_block_p (const_basic_block bb, int uid_limit, const_rtx x, int av
       rtx setter;
       /* Ignore entries in the list that do not apply.  */
       if ((avail_p
-	   && INSN_CUID (XEXP (list_entry, 0)) < uid_limit)
+	   && DF_INSN_LUID (XEXP (list_entry, 0)) < uid_limit)
 	  || (! avail_p
-	      && INSN_CUID (XEXP (list_entry, 0)) > uid_limit))
+	      && DF_INSN_LUID (XEXP (list_entry, 0)) > uid_limit))
 	{
 	  list_entry = XEXP (list_entry, 1);
 	  continue;
@@ -1923,23 +1722,19 @@ dump_hash_table (FILE *file, const char *name, struct hash_table *table)
    is set and is used to compute "availability".
 
    last_bb records the block for which first_set and last_set are
-   valid, as a quick test to invalidate them.
-
-   reg_set_in_block records whether the register is set in the block
-   and is used to compute "transparency".  */
+   valid, as a quick test to invalidate them.  */
 
 static void
 record_last_reg_set_info (rtx insn, int regno)
 {
   struct reg_avail_info *info = &reg_avail_info[regno];
-  int cuid = INSN_CUID (insn);
+  int luid = DF_INSN_LUID (insn);
 
-  info->last_set = cuid;
+  info->last_set = luid;
   if (info->last_bb != current_bb)
     {
       info->last_bb = current_bb;
-      info->first_set = cuid;
-      SET_BIT (reg_set_in_block[current_bb->index], regno);
+      info->first_set = luid;
     }
 }
 
@@ -2046,12 +1841,6 @@ compute_hash_table_work (struct hash_table *table)
 {
   unsigned int i;
 
-  /* While we compute the hash table we also compute a bit array of which
-     registers are set in which blocks.
-     ??? This isn't needed during const/copy propagation, but it's cheap to
-     compute.  Later.  */
-  sbitmap_vector_zero (reg_set_in_block, last_basic_block);
-
   /* re-Cache any INSN_LIST nodes we have allocated.  */
   clear_modify_mem_tables ();
   /* Some working arrays used to track first and last set in each block.  */
@@ -2066,10 +1855,7 @@ compute_hash_table_work (struct hash_table *table)
       unsigned int regno;
 
       /* First pass over the instructions records information used to
-	 determine when registers and memory are first and last set.
-	 ??? hard-reg reg_set_in_block computation
-	 could be moved to compute_sets since they currently don't change.  */
-
+	 determine when registers and memory are first and last set.  */
       FOR_BB_INSNS (current_bb, insn)
 	{
 	  if (! INSN_P (insn))
@@ -2274,7 +2060,7 @@ oprs_not_set_p (const_rtx x, const_rtx insn)
 
     case MEM:
       if (load_killed_in_block_p (BLOCK_FOR_INSN (insn),
-				  INSN_CUID (insn), x, 0))
+				  DF_INSN_LUID (insn), x, 0))
 	return 0;
       else
 	return oprs_not_set_p (XEXP (x, 0), insn);
@@ -2429,9 +2215,7 @@ static void
 compute_transp (const_rtx x, int indx, sbitmap *bmap, int set_p)
 {
   int i, j;
-  basic_block bb;
   enum rtx_code code;
-  reg_set *r;
   const char *fmt;
 
   /* repeat is used to turn tail-recursion into iteration since GCC
@@ -2447,31 +2231,19 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap, int set_p)
     case REG:
       if (set_p)
 	{
-	  if (REGNO (x) < FIRST_PSEUDO_REGISTER)
-	    {
-	      FOR_EACH_BB (bb)
-		if (TEST_BIT (reg_set_in_block[bb->index], REGNO (x)))
-		  SET_BIT (bmap[bb->index], indx);
-	    }
-	  else
-	    {
-	      for (r = reg_set_table[REGNO (x)]; r != NULL; r = r->next)
-		SET_BIT (bmap[r->bb_index], indx);
-	    }
+	  df_ref def;
+	  for (def = DF_REG_DEF_CHAIN (REGNO (x));
+	       def;
+	       def = DF_REF_NEXT_REG (def))
+	    SET_BIT (bmap[DF_REF_BB (def)->index], indx);
 	}
       else
 	{
-	  if (REGNO (x) < FIRST_PSEUDO_REGISTER)
-	    {
-	      FOR_EACH_BB (bb)
-		if (TEST_BIT (reg_set_in_block[bb->index], REGNO (x)))
-		  RESET_BIT (bmap[bb->index], indx);
-	    }
-	  else
-	    {
-	      for (r = reg_set_table[REGNO (x)]; r != NULL; r = r->next)
-		RESET_BIT (bmap[r->bb_index], indx);
-	    }
+	  df_ref def;
+	  for (def = DF_REG_DEF_CHAIN (REGNO (x));
+	       def;
+	       def = DF_REF_NEXT_REG (def))
+	    RESET_BIT (bmap[DF_REF_BB (def)->index], indx);
 	}
 
       return;
@@ -3188,12 +2960,7 @@ local_cprop_pass (bool alter_jumps)
 
   /* Global analysis may get into infinite loops for unreachable blocks.  */
   if (changed && alter_jumps)
-    {
-      delete_unreachable_blocks ();
-      free_reg_set_mem ();
-      alloc_reg_set_mem (max_reg_num ());
-      compute_sets ();
-    }
+    delete_unreachable_blocks ();
 }
 
 /* Forward propagate copies.  This includes copies and constants.  Return
@@ -3359,7 +3126,7 @@ one_cprop_pass (int pass, bool cprop_jumps, bool bypass_jumps)
   implicit_sets = XCNEWVEC (rtx, last_basic_block);
   find_implicit_sets ();
 
-  alloc_hash_table (max_cuid, &set_hash_table, 1);
+  alloc_hash_table (get_max_uid (), &set_hash_table, 1);
   compute_hash_table (&set_hash_table);
 
   /* Free implicit_sets before peak usage.  */
@@ -3720,9 +3487,6 @@ static sbitmap *pre_delete_map;
 /* Contains the edge_list returned by pre_edge_lcm.  */
 static struct edge_list *edge_list;
 
-/* Redundant insns.  */
-static sbitmap pre_redundant_insns;
-
 /* Allocate vars used for PRE analysis.  */
 
 static void
@@ -4045,10 +3809,7 @@ insert_insn_end_basic_block (struct expr *expr, basic_block bb, int pre)
   while (1)
     {
       if (INSN_P (pat))
-	{
-	  add_label_notes (PATTERN (pat), new_insn);
-	  note_stores (PATTERN (pat), record_set_info, pat);
-	}
+	add_label_notes (PATTERN (pat), new_insn);
       if (pat == pat_end)
 	break;
       pat = NEXT_INSN (pat);
@@ -4221,17 +3982,11 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
         {
           new_insn = gen_move_insn (old_reg, reg);
           new_insn = emit_insn_after (new_insn, insn);
-
-          /* Keep register set table up to date.  */
-          record_one_set (regno, insn);
         }
       else
         {
           new_insn = gen_move_insn (reg, old_reg);
           new_insn = emit_insn_after (new_insn, insn);
-
-          /* Keep register set table up to date.  */
-          record_one_set (regno, new_insn);
         }
     }
   else /* This is possible only in case of a store to memory.  */
@@ -4244,9 +3999,6 @@ pre_insert_copy_insn (struct expr *expr, rtx insn)
         new_insn = emit_insn_before (new_insn, insn);
       else
         new_insn = emit_insn_after (new_insn, insn);
-
-      /* Keep register set table up to date.  */
-      record_one_set (regno, new_insn);
     }
 
   gcse_create_count++;
@@ -4303,7 +4055,7 @@ pre_insert_copies (void)
 		  continue;
 
 		/* Don't handle this one if it's a redundant one.  */
-		if (TEST_BIT (pre_redundant_insns, INSN_CUID (insn)))
+		if (INSN_DELETED_P (insn))
 		  continue;
 
 		/* Or if the expression doesn't reach the deleted one.  */
@@ -4400,7 +4152,6 @@ pre_delete (void)
 		gcse_emit_move_after (expr->reaching_reg, SET_DEST (set), insn);
 		delete_insn (insn);
 		occr->deleted_p = 1;
-		SET_BIT (pre_redundant_insns, INSN_CUID (insn));
 		changed = 1;
 		gcse_subst_count++;
 
@@ -4455,10 +4206,6 @@ pre_gcse (void)
     for (expr = expr_hash_table.table[i]; expr != NULL; expr = expr->next_same_hash)
       index_map[expr->bitmap_index] = expr;
 
-  /* Reset bitmap used to track which insns are redundant.  */
-  pre_redundant_insns = sbitmap_alloc (max_cuid);
-  sbitmap_zero (pre_redundant_insns);
-
   /* Delete the redundant insns first so that
      - we know what register to use for the new insns and for the other
        ones with reaching expressions
@@ -4477,7 +4224,6 @@ pre_gcse (void)
     }
 
   free (index_map);
-  sbitmap_free (pre_redundant_insns);
   return changed;
 }
 
@@ -4493,7 +4239,7 @@ one_pre_gcse_pass (int pass)
   gcse_subst_count = 0;
   gcse_create_count = 0;
 
-  alloc_hash_table (max_cuid, &expr_hash_table, 0);
+  alloc_hash_table (get_max_uid (), &expr_hash_table, 0);
   add_noreturn_fake_exit_edges ();
   if (flag_gcse_lm)
     compute_ld_motion_mems ();
@@ -4947,7 +4693,7 @@ one_code_hoisting_pass (void)
 {
   int changed = 0;
 
-  alloc_hash_table (max_cuid, &expr_hash_table, 0);
+  alloc_hash_table (get_max_uid (), &expr_hash_table, 0);
   compute_hash_table (&expr_hash_table);
   if (dump_file)
     dump_hash_table (dump_file, "Code Hosting Expressions", &expr_hash_table);
@@ -5393,9 +5139,8 @@ update_ld_motion_stores (struct expr * expr)
 	      fprintf (dump_file, "\n");
 	    }
 
-	  copy = gen_move_insn ( reg, copy_rtx (SET_SRC (pat)));
+	  copy = gen_move_insn (reg, copy_rtx (SET_SRC (pat)));
 	  new_rtx = emit_insn_before (copy, insn);
-	  record_one_set (REGNO (reg), new_rtx);
 	  SET_SRC (pat) = reg;
 	  df_insn_rescan (insn);
 
@@ -5430,19 +5175,13 @@ static int num_stores;
 
 static void
 reg_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
-	      void *data)
+	      void *data ATTRIBUTE_UNUSED)
 {
-  sbitmap bb_reg = (sbitmap) data;
-
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
 
   if (REG_P (dest))
-    {
-      regvec[REGNO (dest)] = INSN_UID (compute_store_table_current_insn);
-      if (bb_reg)
-	SET_BIT (bb_reg, REGNO (dest));
-    }
+    regvec[REGNO (dest)] = INSN_UID (compute_store_table_current_insn);
 }
 
 /* Clear any mark that says that this insn sets dest.  Called from
@@ -5705,9 +5444,6 @@ compute_store_table (void)
 
   max_gcse_regno = max_reg_num ();
 
-  reg_set_in_block = sbitmap_vector_alloc (last_basic_block,
-						       max_gcse_regno);
-  sbitmap_vector_zero (reg_set_in_block, last_basic_block);
   pre_ldst_mems = 0;
   pre_ldst_table = htab_create (13, pre_ldst_expr_hash,
 				pre_ldst_expr_eq, NULL);
@@ -5729,15 +5465,12 @@ compute_store_table (void)
 	    {
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
-		  {
-		    last_set_in[regno] = INSN_UID (insn);
-		    SET_BIT (reg_set_in_block[bb->index], regno);
-		  }
+		  last_set_in[regno] = INSN_UID (insn);
 	    }
 
 	  pat = PATTERN (insn);
 	  compute_store_table_current_insn = insn;
-	  note_stores (pat, reg_set_info, reg_set_in_block[bb->index]);
+	  note_stores (pat, reg_set_info, NULL);
 	}
 
       /* Now find the stores.  */
@@ -6029,7 +5762,6 @@ build_store_vectors (void)
   int *regs_set_in_block;
   rtx insn, st;
   struct ls_expr * ptr;
-  unsigned regno;
 
   /* Build the gen_vector. This is any store in the table which is not killed
      by aliasing later in its block.  */
@@ -6078,8 +5810,17 @@ build_store_vectors (void)
 
   FOR_EACH_BB (bb)
     {
-      for (regno = 0; regno < max_gcse_regno; regno++)
-	regs_set_in_block[regno] = TEST_BIT (reg_set_in_block[bb->index], regno);
+      FOR_BB_INSNS (bb, insn)
+	if (INSN_P (insn))
+	  {
+	    df_ref *def_rec;
+	    for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	      {
+		unsigned int ref_regno = DF_REF_REGNO (*def_rec);
+		if (ref_regno < max_gcse_regno)
+		  regs_set_in_block[DF_REF_REGNO (*def_rec)] = 1;
+	      }
+	  }
 
       for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
 	{
@@ -6395,11 +6136,9 @@ free_store_memory (void)
     sbitmap_vector_free (pre_insert_map);
   if (pre_delete_map)
     sbitmap_vector_free (pre_delete_map);
-  if (reg_set_in_block)
-    sbitmap_vector_free (reg_set_in_block);
 
   ae_gen = ae_kill = transp = st_antloc = NULL;
-  pre_insert_map = pre_delete_map = reg_set_in_block = NULL;
+  pre_insert_map = pre_delete_map = NULL;
 }
 
 /* Perform store motion. Much like gcse, except we move expressions the
@@ -6427,7 +6166,6 @@ store_motion (void)
     {
       htab_delete (pre_ldst_table);
       pre_ldst_table = NULL;
-      sbitmap_vector_free (reg_set_in_block);
       end_alias_analysis ();
       return;
     }
@@ -6512,18 +6250,6 @@ bypass_jumps (void)
   /* We need alias.  */
   init_alias_analysis ();
 
-  /* Record where pseudo-registers are set.  This data is kept accurate
-     during each pass.  ??? We could also record hard-reg information here
-     [since it's unchanging], however it is currently done during hash table
-     computation.
-
-     It may be tempting to compute MEM set information here too, but MEM sets
-     will be subject to code motion one day and thus we need to compute
-     information about memory sets when we build the hash tables.  */
-
-  alloc_reg_set_mem (max_gcse_regno);
-  compute_sets ();
-
   max_gcse_regno = max_reg_num ();
   alloc_gcse_mem ();
   changed = one_cprop_pass (3, true, true);
@@ -6537,7 +6263,6 @@ bypass_jumps (void)
     }
 
   obstack_free (&gcse_obstack, NULL);
-  free_reg_set_mem ();
 
   /* We are finished with alias.  */
   end_alias_analysis ();

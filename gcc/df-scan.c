@@ -1258,6 +1258,7 @@ df_insn_rescan (rtx insn)
   bitmap_clear_bit (df->insns_to_notes_rescan, uid);
   if (insn_info)
     {
+      int luid;
       bool the_same = df_insn_refs_verify (&collection_rec, bb, insn, false);
       /* If there's no change, return false. */
       if (the_same)
@@ -1270,9 +1271,12 @@ df_insn_rescan (rtx insn)
       if (dump_file)
 	fprintf (dump_file, "rescanning insn with uid = %d.\n", uid);
 
-      /* There's change - we need to delete the existing info. */
+      /* There's change - we need to delete the existing info.
+	 Since the insn isn't moved, we can salvage its LUID.  */
+      luid = DF_INSN_LUID (insn);
       df_insn_delete (NULL, uid);
       df_insn_create_insn_record (insn);
+      DF_INSN_LUID (insn) = luid;
     }
   else
     {
