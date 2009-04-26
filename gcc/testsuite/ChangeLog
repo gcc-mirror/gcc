@@ -1,3 +1,8 @@
+2009-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/39889
+	* gcc.dg/Wunused-value-3.c: New test.
+
 2009-04-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR middle-end/39867

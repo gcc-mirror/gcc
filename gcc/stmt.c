@@ -1418,6 +1418,7 @@ warn_if_unused_value (const_tree exp, location_t locus)
       goto restart;
 
     case SAVE_EXPR:
+    case NON_LVALUE_EXPR:
       exp = TREE_OPERAND (exp, 0);
       goto restart;
 
