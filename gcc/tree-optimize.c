@@ -236,51 +236,6 @@ execute_free_datastructures (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_free_datastructures =
-{
- {
-  GIMPLE_PASS,
-  NULL,					/* name */
-  NULL,					/* gate */
-  execute_free_datastructures,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
-};
-/* Pass: free cfg annotations.  */
-
-static unsigned int
-execute_free_cfg_annotations (void)
-{
-  return 0;
-}
-
-struct gimple_opt_pass pass_free_cfg_annotations =
-{
- {
-  GIMPLE_PASS,
-  NULL,					/* name */
-  NULL,					/* gate */
-  execute_free_cfg_annotations,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
-};
-
 /* Pass: fixup_cfg.  IPA passes, compilation of earlier functions or inlining
    might have changed some properties, such as marked functions nothrow.
    Remove redundant edges and basic blocks, and create new ones if necessary.

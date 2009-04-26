@@ -344,7 +344,6 @@ extern struct gimple_opt_pass pass_ch;
 extern struct gimple_opt_pass pass_ccp;
 extern struct gimple_opt_pass pass_phi_only_cprop;
 extern struct gimple_opt_pass pass_build_ssa;
-extern struct gimple_opt_pass pass_del_ssa;
 extern struct gimple_opt_pass pass_build_alias;
 extern struct gimple_opt_pass pass_dominator;
 extern struct gimple_opt_pass pass_dce;
@@ -380,7 +379,6 @@ extern struct gimple_opt_pass pass_phiprop;
 extern struct gimple_opt_pass pass_tree_ifcombine;
 extern struct gimple_opt_pass pass_dse;
 extern struct gimple_opt_pass pass_nrv;
-extern struct gimple_opt_pass pass_mark_used_blocks;
 extern struct gimple_opt_pass pass_rename_ssa_copies;
 extern struct gimple_opt_pass pass_rest_of_compilation;
 extern struct gimple_opt_pass pass_sink_code;
@@ -414,8 +412,6 @@ extern struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility;
 
 extern struct gimple_opt_pass pass_all_optimizations;
 extern struct gimple_opt_pass pass_cleanup_cfg_post_optimizing;
-extern struct gimple_opt_pass pass_free_cfg_annotations;
-extern struct gimple_opt_pass pass_free_datastructures;
 extern struct gimple_opt_pass pass_init_datastructures;
 extern struct gimple_opt_pass pass_fixup_cfg;
 
