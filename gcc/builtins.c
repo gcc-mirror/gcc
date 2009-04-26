@@ -11801,6 +11801,9 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
       arg = CALL_EXPR_ARG (exp, 0);
     }
 
+  if (TREE_CODE (arg) == SSA_NAME)
+    arg = SSA_NAME_VAR (arg);
+
   /* We destructively modify the call to be __builtin_va_start (ap, 0)
      or __builtin_next_arg (0) the first time we see it, after checking 
      the arguments and if needed issuing a warning.  */

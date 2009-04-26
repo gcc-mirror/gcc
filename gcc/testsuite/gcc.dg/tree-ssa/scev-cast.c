@@ -20,7 +20,7 @@ void tst(void)
     blau ((unsigned char) i); /* This one is necessary.  */
 }
 
-/* { dg-final { scan-tree-dump-times "\\(int\\) \\(unsigned char\\)" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "\\(int\\) \\(char\\)" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "= \\(unsigned char\\)" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "= \\(char\\)" 1 "optimized" } } */
 
 /* { dg-final { cleanup-tree-dump "optimized" } } */

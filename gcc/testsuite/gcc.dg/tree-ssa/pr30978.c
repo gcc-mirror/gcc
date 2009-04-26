@@ -10,5 +10,5 @@ int foo(int a)
   return e;
 }
 
-/* { dg-final { scan-tree-dump "return a > 0;" "optimized" } } */
+/* { dg-final { scan-tree-dump "e_. = a_..D. > 0;" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

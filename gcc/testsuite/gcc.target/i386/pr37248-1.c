@@ -15,5 +15,6 @@ foo (struct S x)
   return x.a && x.b && x.c;
 }
 
-/* { dg-final { scan-tree-dump "& 7\[^\n\t\]*== 7" "optimized" } } */
+/* { dg-final { scan-tree-dump "& 7;" "optimized" } } */
+/* { dg-final { scan-tree-dump "== 7;" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

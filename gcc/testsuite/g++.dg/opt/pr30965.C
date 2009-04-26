@@ -16,5 +16,5 @@ extern void assign( long& variable, long v )
 }
 
 /* { dg-final { scan-tree-dump-times ";; Function" 2 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "variable = v" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "variable_..D. = v_..D." 2 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

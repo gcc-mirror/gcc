@@ -17,7 +17,7 @@ foo()
 /* The cast to a function pointer type must remain after all optimizations
    are complete so that function pointer canonicalization works on those
    targets which require it.  */
-/* { dg-final { scan-tree-dump-times "if \\(\\(void \\(\\*<.*>\\) \\(void\\)\\) p" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "= \\(void \\(\\*<.*>\\) \\(void\\)\\) p_" 1 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 
 

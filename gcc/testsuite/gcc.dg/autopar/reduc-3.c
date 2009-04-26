@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops-details -fdump-tree-final_cleanup" } */
+/* { dg-options "-O2 -ftree-parallelize-loops=4 -fdump-tree-parloops-details -fdump-tree-optimized" } */
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -39,5 +39,5 @@ int main (void)
 /* { dg-final { scan-tree-dump-times "Detected reduction" 1 "parloops" } } */
 /* { dg-final { scan-tree-dump-times "SUCCESS: may be parallelized" 1 "parloops" } } */
 /* { dg-final { cleanup-tree-dump "parloops" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
 

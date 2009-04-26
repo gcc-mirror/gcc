@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O2 -gnatp -fdump-tree-final_cleanup" }
+-- { dg-options "-O2 -gnatp -fdump-tree-optimized" }
 
 -- The raise statement must be optimized away by
 -- virtue of DECL_NONADDRESSABLE_P set on R.I.
@@ -18,5 +18,5 @@ package body Aliasing1 is
 
 end Aliasing1;
 
--- { dg-final { scan-tree-dump-not "__gnat_rcheck" "final_cleanup" } }
--- { dg-final { cleanup-tree-dump "final_cleanup" } }
+-- { dg-final { scan-tree-dump-not "__gnat_rcheck" "optimized" } }
+-- { dg-final { cleanup-tree-dump "optimized" } }

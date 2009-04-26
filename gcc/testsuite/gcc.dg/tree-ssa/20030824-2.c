@@ -19,5 +19,5 @@ int foo (int x, int y)
 }
 
 /* This function should be optimized into 'return y+x'.  */
-/* { dg-final { scan-tree-dump-times "return \[xy\] \\+ \[xy\]" 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "\[xy\]_..D. \\+ \[xy]_..D." 1 "optimized"} } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

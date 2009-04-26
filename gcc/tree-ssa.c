@@ -844,7 +844,8 @@ delete_tree_ssa (void)
 
 	  gimple_set_modified (stmt, true);
 	}
-      set_phi_nodes (bb, NULL);
+      if (!(bb->flags & BB_RTL))
+	set_phi_nodes (bb, NULL);
     }
 
   /* Remove annotations from every referenced local variable.  */

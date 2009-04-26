@@ -459,11 +459,11 @@ mf_decl_cache_locals (void)
 
   /* Build the cache vars.  */
   mf_cache_shift_decl_l
-    = mf_mark (create_tmp_var (TREE_TYPE (mf_cache_shift_decl),
+    = mf_mark (make_rename_temp (TREE_TYPE (mf_cache_shift_decl),
                                "__mf_lookup_shift_l"));
 
   mf_cache_mask_decl_l
-    = mf_mark (create_tmp_var (TREE_TYPE (mf_cache_mask_decl),
+    = mf_mark (make_rename_temp (TREE_TYPE (mf_cache_mask_decl),
                                "__mf_lookup_mask_l"));
 
   /* Build initialization nodes for the cache vars.  We just load the
@@ -546,9 +546,9 @@ mf_build_check_statement_for (tree base, tree limit,
     }
 
   /* Build our local variables.  */
-  mf_elem = create_tmp_var (mf_cache_structptr_type, "__mf_elem");
-  mf_base = create_tmp_var (mf_uintptr_type, "__mf_base");
-  mf_limit = create_tmp_var (mf_uintptr_type, "__mf_limit");
+  mf_elem = make_rename_temp (mf_cache_structptr_type, "__mf_elem");
+  mf_base = make_rename_temp (mf_uintptr_type, "__mf_base");
+  mf_limit = make_rename_temp (mf_uintptr_type, "__mf_limit");
 
   /* Build: __mf_base = (uintptr_t) <base address expression>.  */
   seq = gimple_seq_alloc ();
@@ -627,7 +627,7 @@ mf_build_check_statement_for (tree base, tree limit,
   t = build2 (TRUTH_OR_EXPR, boolean_type_node, t, u);
   t = force_gimple_operand (t, &stmts, false, NULL_TREE);
   gimple_seq_add_seq (&seq, stmts);
-  cond = create_tmp_var (boolean_type_node, "__mf_unlikely_cond");
+  cond = make_rename_temp (boolean_type_node, "__mf_unlikely_cond");
   g = gimple_build_assign  (cond, t);
   gimple_set_location (g, location);
   gimple_seq_add_stmt (&seq, g);
@@ -1366,12 +1366,12 @@ struct gimple_opt_pass pass_mudflap_2 =
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
   TV_NONE,                              /* tv_id */
-  PROP_gimple_leh,                      /* properties_required */
+  PROP_ssa | PROP_cfg | PROP_gimple_leh,/* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
   0,                                    /* todo_flags_start */
   TODO_verify_flow | TODO_verify_stmts
-  | TODO_dump_func                      /* todo_flags_finish */
+  | TODO_dump_func | TODO_update_ssa    /* todo_flags_finish */
  }
 };
 

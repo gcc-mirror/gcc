@@ -16,6 +16,7 @@ main()
 /* { dg-final-use { scan-tree-dump "Single value 4 stringop" "tree_profile"} } */
 /* Really this ought to simplify into assignment, but we are not there yet.  */
 /* a[0] = b[0] is what we fold the resulting memcpy into.  */
-/* { dg-final-use { scan-tree-dump "a.0. = b.0." "optimized"} } */
+/* { dg-final-use { scan-tree-dump "a.0. = " "optimized"} } */
+/* { dg-final-use { scan-tree-dump "= b.0." "optimized"} } */
 /* { dg-final-use { cleanup-tree-dump "optimized" } } */
 /* { dg-final-use { cleanup-tree-dump "tree_profile" } } */

@@ -60,9 +60,6 @@ typedef struct _var_map
   int *partition_to_view;
   int *view_to_partition;
 
-  /* Mapping of partition numbers to variables.  */
-  tree *partition_to_var;
-
   /* Current number of partitions in var_map based on the current view.  */
   unsigned int num_partitions;
 
@@ -80,8 +77,6 @@ typedef struct _var_map
 } *var_map;
 
 
-/* Partition number of a  non ssa-name variable.  */
-#define VAR_ANN_PARTITION(ann) (ann->partition)
 /* Index to the basevar table of a non ssa-name variable.  */
 #define VAR_ANN_BASE_INDEX(ann) (ann->base_index)
 
@@ -93,7 +88,6 @@ extern var_map init_var_map (int);
 extern void delete_var_map (var_map);
 extern void dump_var_map (FILE *, var_map);
 extern int var_union (var_map, tree, tree);
-extern void change_partition_var (var_map, tree, int);
 extern void partition_view_normal (var_map, bool);
 extern void partition_view_bitmap (var_map, bitmap, bool);
 #ifdef ENABLE_CHECKING
@@ -116,10 +110,12 @@ num_var_partitions (var_map map)
 static inline tree
 partition_to_var (var_map map, int i)
 {
+  tree name;
   if (map->view_to_partition)
     i = map->view_to_partition[i];
   i = partition_find (map->var_partition, i);
-  return map->partition_to_var[i];
+  name = ssa_name (i);
+  return name;
 }
 
 
@@ -146,23 +142,12 @@ version_to_var (var_map map, int version)
 static inline int
 var_to_partition (var_map map, tree var)
 {
-  var_ann_t ann;
   int part;
 
-  if (TREE_CODE (var) == SSA_NAME)
-    {
-      part = partition_find (map->var_partition, SSA_NAME_VERSION (var));
-      if (map->partition_to_view)
-	part = map->partition_to_view[part];
-    }
-  else
-    {
-      ann = var_ann (var);
-      if (ann && ann->out_of_ssa_tag)
-	part = VAR_ANN_PARTITION (ann);
-      else
-        part = NO_PARTITION;
-    }
+  gcc_assert (TREE_CODE (var) == SSA_NAME);
+  part = partition_find (map->var_partition, SSA_NAME_VERSION (var));
+  if (map->partition_to_view)
+    part = map->partition_to_view[part];
   return part;
 }
 
@@ -207,17 +192,11 @@ num_basevars (var_map map)
    partitions may be filtered out by a view later.  */ 
 
 static inline void
-register_ssa_partition (var_map map, tree ssa_var)
+register_ssa_partition (var_map map ATTRIBUTE_UNUSED, tree ssa_var)
 {
-  int version;
-
 #if defined ENABLE_CHECKING
   register_ssa_partition_check (ssa_var);
 #endif
-
-  version = SSA_NAME_VERSION (ssa_var);
-  if (map->partition_to_var[version] == NULL_TREE)
-    map->partition_to_var[version] = ssa_var;
 }
 
 

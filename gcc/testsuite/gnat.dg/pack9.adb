@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O2 -gnatp -cargs --param sra-max-structure-size=24 --param sra-max-structure-count=6 -fdump-tree-final_cleanup" }
+-- { dg-options "-O2 -gnatp -cargs --param sra-max-structure-size=24 --param sra-max-structure-count=6 -fdump-tree-optimized" }
 
 package body Pack9 is
 
@@ -14,5 +14,5 @@ package body Pack9 is
 
 end Pack9;
 
--- { dg-final { scan-tree-dump-not "__gnat_rcheck" "final_cleanup" } }
--- { dg-final { cleanup-tree-dump "final_cleanup" } }
+-- { dg-final { scan-tree-dump-not "__gnat_rcheck" "optimized" } }
+-- { dg-final { cleanup-tree-dump "optimized" } }

@@ -16,7 +16,7 @@ main ()
   return 0;
 }
 /* { dg-final-use { scan-tree-dump "Div.mod by constant n=257 transformation on insn" "tree_profile"} } */
-/* { dg-final-use { scan-tree-dump "if \\(n != 257\\)" "optimized"} } */
+/* { dg-final-use { scan-tree-dump "if \\(n_\[0-9\]* != 257\\)" "optimized"} } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */
 /* { dg-final-use { cleanup-tree-dump "optimized" } } */
 /* { dg-final-use { cleanup-tree-dump "tree_profile" } } */

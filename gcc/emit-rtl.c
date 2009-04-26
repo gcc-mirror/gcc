@@ -1028,7 +1028,7 @@ set_reg_attrs_for_parm (rtx parm_rtx, rtx mem)
 /* Set the REG_ATTRS for registers in value X, given that X represents
    decl T.  */
 
-static void
+void
 set_reg_attrs_for_decl_rtl (tree t, rtx x)
 {
   if (GET_CODE (x) == SUBREG)
@@ -1449,7 +1449,10 @@ component_ref_for_mem_expr (tree ref)
 	inner = NULL_TREE;
     }
 
-  if (inner == TREE_OPERAND (ref, 0))
+  if (inner == TREE_OPERAND (ref, 0)
+      /* Don't leak SSA-names in the third operand.  */
+      && (!TREE_OPERAND (ref, 2)
+	  || TREE_CODE (TREE_OPERAND (ref, 2)) != SSA_NAME))
     return ref;
   else
     return build3 (COMPONENT_REF, TREE_TYPE (ref), inner,

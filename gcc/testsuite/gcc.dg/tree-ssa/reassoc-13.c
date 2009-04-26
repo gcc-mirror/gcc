@@ -10,6 +10,6 @@ double foo(double a)
 }
 
 /* { dg-final { scan-tree-dump-not "\\\+ 0.0" "reassoc1" } } */
-/* { dg-final { scan-tree-dump "return a;" "optimized" } } */
+/* { dg-final { scan-tree-dump "return a_..D.;" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "reassoc1" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

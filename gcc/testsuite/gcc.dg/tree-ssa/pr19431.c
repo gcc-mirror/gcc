@@ -24,6 +24,6 @@ int f(int k, int i1, int j1)
   return *f1;
 }
 
-/* { dg-final { scan-tree-dump "i1 = j1" "optimized" } } */
-/* { dg-final { scan-tree-dump "return i1;" "optimized" } } */
+/* { dg-final { scan-tree-dump "i1_. = PHI <i1_\[^,\]*, j1_\[^>\]*>" "optimized" } } */
+/* { dg-final { scan-tree-dump "return i1_.;" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

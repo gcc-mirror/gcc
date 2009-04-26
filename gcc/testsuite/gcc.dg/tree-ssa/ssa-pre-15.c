@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-rtl-expand-details" } */
 
 /* Verify we PRE the strlen call, as strlen("") folds to zero.  */
 
@@ -12,5 +12,5 @@ __SIZE_TYPE__ mystrlen (const char *s)
   return strlen(s);
 }
 
-/* { dg-final { scan-tree-dump "= 0;" "optimized" } } */
-/* { dg-final { cleanup-tree-dump "optimized" } } */
+/* { dg-final { scan-rtl-dump "PART.. = 0" "expand" } } */
+/* { dg-final { cleanup-rtl-dump "expand" } } */

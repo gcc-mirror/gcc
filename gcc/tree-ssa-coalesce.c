@@ -314,7 +314,7 @@ compare_pairs (const void *p1, const void *p2)
   const_coalesce_pair_p const *const pp2 = (const_coalesce_pair_p const *) p2;
   int result;
 
-  result = (* pp2)->cost - (* pp1)->cost;
+  result = (* pp1)->cost - (* pp2)->cost;
   /* Since qsort does not guarantee stability we use the elements
      as a secondary key.  This provides us with independence from
      the host's implementation of the sorting algorithm.  */
@@ -1126,8 +1126,8 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
   first = NULL_TREE;
   for (i = 1; i < num_ssa_names; i++)
     {
-      var = map->partition_to_var[i];
-      if (var != NULL_TREE)
+      var = ssa_name (i);
+      if (var != NULL_TREE && is_gimple_reg (var))
         {
 	  /* Add coalesces between all the result decls.  */
 	  if (TREE_CODE (SSA_NAME_VAR (var)) == RESULT_DECL)
@@ -1148,7 +1148,8 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 	  /* Mark any default_def variables as being in the coalesce list
 	     since they will have to be coalesced with the base variable.  If
 	     not marked as present, they won't be in the coalesce view. */
-	  if (gimple_default_def (cfun, SSA_NAME_VAR (var)) == var)
+	  if (gimple_default_def (cfun, SSA_NAME_VAR (var)) == var
+	      && !has_zero_uses (var))
 	    bitmap_set_bit (used_in_copy, SSA_NAME_VERSION (var));
 	}
     }
@@ -1329,7 +1330,6 @@ eq_ssa_name_by_var (const void *p1, const void *p2)
 extern var_map
 coalesce_ssa_name (void)
 {
-  unsigned num, x;
   tree_live_info_p liveinfo;
   ssa_conflicts_p graph;
   coalesce_list_p cl;
@@ -1405,31 +1405,6 @@ coalesce_ssa_name (void)
 
   /* First, coalesce all live on entry variables to their base variable. 
      This will ensure the first use is coming from the correct location.  */
-
-  num = num_var_partitions (map);
-  for (x = 0 ; x < num; x++)
-    {
-      tree var = partition_to_var (map, x);
-      tree root;
-
-      if (TREE_CODE (var) != SSA_NAME)
-	continue;
-
-      root = SSA_NAME_VAR (var);
-      if (gimple_default_def (cfun, root) == var)
-        {
-	  /* This root variable should have not already been assigned
-	     to another partition which is not coalesced with this one.  */
-	  gcc_assert (!var_ann (root)->out_of_ssa_tag);
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      print_exprs (dump_file, "Must coalesce ", var,
-			   " with the root variable ", root, ".\n");
-	    }
-	  change_partition_var (map, root, x);
-	}
-    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_var_map (dump_file, map);

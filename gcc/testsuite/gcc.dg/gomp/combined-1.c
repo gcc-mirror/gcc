@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fopenmp -fdump-tree-final_cleanup" } */
+/* { dg-options "-O1 -fopenmp -fdump-tree-optimized" } */
 
 int a[10];
 int foo (void)
@@ -20,5 +20,5 @@ int foo (void)
       }
 }
 
-/* { dg-final { scan-tree-dump-times "__builtin_GOMP_parallel_loop_runtime_start" 3 "final_cleanup" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump-times "__builtin_GOMP_parallel_loop_runtime_start" 3 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

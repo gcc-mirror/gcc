@@ -435,6 +435,9 @@ find_base_decl (tree t)
   if (t == 0 || t == error_mark_node || ! POINTER_TYPE_P (TREE_TYPE (t)))
     return 0;
 
+  if (TREE_CODE (t) == SSA_NAME)
+    t = SSA_NAME_VAR (t);
+
   /* If this is a declaration, return it.  If T is based on a restrict
      qualified decl, return that decl.  */
   if (DECL_P (t))

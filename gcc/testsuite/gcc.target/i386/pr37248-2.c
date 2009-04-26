@@ -19,5 +19,6 @@ foo (struct S x)
   return x.a && x.g && x.b && x.f && x.c && x.e;
 }
 
-/* { dg-final { scan-tree-dump "& (3758096391|0x0e0000007)\[^\n\t\]*== (3758096391|0x0e0000007)" "optimized" } } */
+/* { dg-final { scan-tree-dump "& (3758096391|0x0e0000007);" "optimized" } } */
+/* { dg-final { scan-tree-dump "== (3758096391|0x0e0000007);" "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

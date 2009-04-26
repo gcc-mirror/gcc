@@ -2,7 +2,7 @@
 
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -fdump-tree-final_cleanup" } */
+/* { dg-options "-O2 -fprefetch-loop-arrays -march=athlon -fdump-tree-optimized" } */
 
 int xxx[20];
 
@@ -14,5 +14,5 @@ void foo (int n)
     xxx[i] = i;
 }
 
-/* { dg-final { scan-tree-dump-times "prefetch" 0 "final_cleanup" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump-times "prefetch" 0 "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

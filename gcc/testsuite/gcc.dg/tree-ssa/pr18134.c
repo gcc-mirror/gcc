@@ -17,7 +17,7 @@ return 0;
 
 /* Everything should have been cleaned up leaving a simple
    return statement.  */
-/* { dg-final { scan-tree-dump-times "return.*a != 0" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "= a_..D. != 0" 1 "optimized" } } */
 
 /* There should not be any abnormal edges as DOM removed the
    computed gotos.  */

@@ -54,6 +54,6 @@ int look( struct s *p, struct s **pp )
     return( 1 );
 }
 
-/* { dg-final { scan-tree-dump "Cleaned-up latch block of loop with single BB" "optimized" } } */
+/* { dg-final { scan-tree-dump "Cleaned-up latch block of loop with single BB" "optimized" { xfail { *-*-* } } } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
 

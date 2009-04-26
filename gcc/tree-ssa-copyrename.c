@@ -344,7 +344,7 @@ rename_ssa_copies (void)
       part_var = partition_to_var (map, x);
       if (!part_var)
         continue;
-      var = map->partition_to_var[x];
+      var = ssa_name (x);
       if (debug)
         {
 	  if (SSA_NAME_VAR (var) != SSA_NAME_VAR (part_var))
