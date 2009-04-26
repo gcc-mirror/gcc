@@ -1,4 +1,9 @@
-2009-04-22  Jakub Jelinek  <jakub@redhat.com>
+2009-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/39889
+	* stmt.c (warn_if_unused_value): Look through NON_LVALUE_EXPR.
+
+2009-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-nested.c (get_nonlocal_vla_type): If not optimizing, call
 	note_nonlocal_vla_type for nonlocal VLAs.

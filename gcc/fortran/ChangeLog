@@ -1,3 +1,15 @@
+2009-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c: Include pointer-set.h.
+	(nonlocal_dummy_decl_pset, tree nonlocal_dummy_decls): New variables.
+	(gfc_nonlocal_dummy_array_decl): New function.
+	(gfc_get_symbol_decl): Call it for non-local dummy args with saved
+	descriptor.
+	(gfc_get_symbol_decl): Set DECL_BY_REFERENCE when needed.
+	(gfc_generate_function_code): Initialize nonlocal_dummy_decl{s,_pset},
+	chain it to outermost block's vars, destroy it afterwards.
+	* Make-lang.in (trans-decl.o): Depend on pointer-set.h.
+
 2009-04-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39688
