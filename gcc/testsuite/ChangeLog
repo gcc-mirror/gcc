@@ -1,5 +1,11 @@
 2009-04-26  Joseph Myers  <joseph@codesourcery.com>
 
+	PR c/39581
+	* gcc.dg/c99-const-expr-14.c, gcc.dg/gnu99-const-expr-4.c,
+	gcc.dg/vla-21.c: New tests.
+
+2009-04-26  Joseph Myers  <joseph@codesourcery.com>
+
 	PR c/39556
 	* gcc.dg/inline-34.c: New test.
 
