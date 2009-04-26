@@ -136,13 +136,6 @@ struct GTY(()) tree_ann_common_d {
      expansion (see gimple_to_tree).  */
   int rn;
 
-  /* Auxiliary info specific to a pass.  At all times, this
-     should either point to valid data or be NULL.  */ 
-  PTR GTY ((skip (""))) aux; 
-
-  /* The value handle for this expression.  Used by GVN-PRE.  */
-  tree GTY((skip)) value_handle;
-
   /* Pointer to original GIMPLE statement.  Used during RTL expansion
      (see gimple_to_tree).  */
   gimple stmt;

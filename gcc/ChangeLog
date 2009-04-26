@@ -1,5 +1,10 @@
 2009-04-26  Michael Matz  <matz@suse.de>
 
+	* tree-flow.h (tree_ann_common_d): Remove aux and value_handle
+	members.
+
+2009-04-26  Michael Matz  <matz@suse.de>
+
 	* tree-pass.h (pass_del_ssa, pass_mark_used_blocks,
 	pass_free_cfg_annotations, pass_free_datastructures): Remove decls.
 	* gimple-low.c (mark_blocks_with_used_vars, mark_used_blocks,
