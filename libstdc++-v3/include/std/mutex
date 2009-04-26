@@ -728,10 +728,9 @@ namespace std
     }
 #else
   extern function<void()> __once_functor;
-  extern unique_lock<mutex>* __once_functor_lock;
 
-  extern mutex&
-  __get_once_mutex();
+  extern unique_lock<mutex>&
+  __get_once_functor_lock();
 #endif
 
   extern "C" void __once_proxy();
@@ -746,12 +745,17 @@ namespace std
       __once_callable = &__bound_functor;
       __once_call = &__once_call_impl<decltype(__bound_functor)>;
 #else
-      unique_lock<mutex> __functor_lock(__get_once_mutex());
+      unique_lock<mutex>& __functor_lock = __get_once_functor_lock();
+      __functor_lock.lock();
       __once_functor = bind(__f, __args...);
-      __once_functor_lock = &__functor_lock;
 #endif
 
       int __e = __gthread_once(&(__once._M_once), &__once_proxy);
+
+#ifndef _GLIBCXX_HAVE_TLS
+      if (__functor_lock)
+	__functor_lock.unlock();
+#endif
 
       if (__e)
 	__throw_system_error(__e);
