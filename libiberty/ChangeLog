@@ -1,3 +1,9 @@
+2009-04-25  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.in (needed-list): Target removed (not used in GCC
+	3.0 and later).  All references deleted.
+	(mostlyclean): Remove references to needed.awk and needed2.awk.
+
 2009-04-14  Eli Zaretskii  <eliz@gnu.org>
 
 	* configure.ac  (setobjs, msdosdjgpp): Move a-priori setting of
