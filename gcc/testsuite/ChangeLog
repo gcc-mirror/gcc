@@ -1,3 +1,8 @@
+2009-04-26  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/39893
+	* gfortran.dg/assumed_charlen_dummy.f90: New Test.
+
 2009-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/39543
