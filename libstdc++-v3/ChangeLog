@@ -1,3 +1,7 @@
+2009-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert the last commit.
+
 2009-04-25  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/mutex (__get_once_functor_lock, __get_once_mutex):
