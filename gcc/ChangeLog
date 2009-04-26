@@ -1,3 +1,7 @@
+2009-04-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (print_operand) ['z']: Fix typo.
+
 2009-04-26  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/mingw-w64.h (STANDARD_INCLUDE_DIR):
