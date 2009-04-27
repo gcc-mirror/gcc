@@ -2584,7 +2584,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
     }
   else
     {
-      enum tree_code shift_code = 0;
+      enum tree_code shift_code = ERROR_MARK;
       bool have_whole_vector_shift = true;
       int bit_offset;
       int element_bitsize = tree_low_cst (bitsize, 1);

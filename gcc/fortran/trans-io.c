@@ -105,7 +105,7 @@ static GTY(()) gfc_st_parameter_field st_parameter_field[] =
   { #name, mask, IOPARM_ptype_##param_type, IOPARM_type_##type, NULL, NULL },
 #include "ioparm.def"
 #undef IOPARM
-  { NULL, 0, 0, 0, NULL, NULL }
+  { NULL, 0, (enum ioparam_type) 0, (enum iofield_type) 0, NULL, NULL }
 };
 
 /* Library I/O subroutines */

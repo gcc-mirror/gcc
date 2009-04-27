@@ -1,3 +1,108 @@
+2009-04-27  Ian Lance Taylor  <iant@google.com>
+
+	* collect2.c (is_ctor_dtor): Change type of ret field in struct
+	names to symkind.
+	* dce.c (run_fast_df_dce): Change type of old_flags to int.
+	* df-core.c (df_set_flags): Change return type to int.  Change
+	type of old_flags to int.
+	(df_clear_flags): Likewise.
+	* df-scan.c (df_def_record_1): Change 0 to VOIDmode.
+	(df_get_conditional_uses): Likewise.
+	* df.h (df_set_flags, df_clear_flags): Update declarations.
+	* dwarf2out.c (struct indirect_string_node): Change type of form
+	field to enum dwarf_form.
+	(AT_string_form): Change return type to enum dwarf_form.
+	* fixed-value.c (fixed_compare): Add cast to enum type.
+	* fwprop.c (update_df): Change 0 to VOIDmode.
+	* gensupport.c: Change 0 to UNKNOWN.
+	* gimple.h (gimple_cond_code): Add cast to enum type.
+	* haifa-sched.c (reemit_notes): Add cast to enum type.
+	* hooks.c (hook_int_void_no_regs): Remove function.
+	* hooks.h (hook_int_void_no_regs): Remove declaration.
+	* optabs.c (expand_widen_pattern_expr): Change 0 to VOIDmode.
+	* predict.c (combine_predictions_for_insn): Add casts to enum
+	type.
+	* real.c (real_arithmetic): Add cast to enum type.
+	(real_compare): Likewise.
+	* target.h (struct gcc_target): Change return type of
+	branch_target_register_class to enum reg_class.
+	* target-def.h (TARGET_BRANCH_TARGET_REGISTER_CLASS): Define as
+	default_branch_target_register_class.
+	* targhooks.c (default_branch_target_register_class): New
+	function.
+	* targhooks.h (default_branch_target_register_class): Declare.
+	* tree-data-ref.c (print_direction_vector): Add cast to enum
+	type.
+	* tree-vect-data-refs.c (vect_supportable_dr_alignment): Remove
+	cast to int.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Change 0 to
+	ERROR_MARK.
+	* tree-vect-slp.c (vect_build_slp_tree): Change 0 to
+	vect_uninitialized_def.  Change 0 to ERROR_MARK.
+	* tree-vect-stmts.c (supportable_widening_operation): Don't
+	initialize icode1 and icode2.
+	* tree-vectorizer.h (enum vect_def_type): Add
+	vect_uninitialized_def.
+	* config/sol2-c.c (cmn_err_length_specs): Change 0 to FMT_LEN_none
+	and to STD_C89.
+	(cmn_err_flag_specs): Change 0 to STD_C89.
+	(cmn_err_char_table): Likewise.
+	* config/arm/arm.c (get_arm_condition_code): Change type of code
+	to enum arm_cond_code.
+	(IWMMXT_BUILTIN): Change 0 to UNKNOWN.
+	(IWMMXT_BUILTIN2): Likewise.
+	(neon_builtin_type_bits): Don't define typedef.
+	(neon_builtin_datum): Change type of bits field to int.
+	(arm_expand_neon_args): Add cast to enum type.
+	* config/ia64/ia64.c (tls_symbolic_operand_type): Change 0 to
+	TLS_MODEL_NONE.
+	* config/i386/i386.c (bdesc_multi_arg): Change 0 to UNKNOWN.  Add
+	casts to enum type.
+	* config/mips/mips.c (LOONGSON_BUILTIN_ALIAS): Change 0 to
+	MIPS_FP_COND_f.
+	* config/mips/mips.md (jal_macro): Return enum constant.
+	(single_insn): Likewise.
+	* config/rs6000/rs6000.c (bdesc_altivec_preds): Change 0 to
+	CODE_FOR_nothing.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	casts to enum type.
+	* config/s390/s390.c (s390_tune_flags): Change type to int.
+	(s390_arch_flags): Likewise.
+	(s390_handle_arch_option): Change flags field of struct pta to
+	int.
+	* config/s390/s390.h (s390_tune_flags): Update declaration.
+	(s390_arch_flags): Likewise.
+	* config/sh/sh.c (prepare_move_operands): Compare
+	tls_symbolic_operand result with enum constant.
+	(sh_reorg): Change PUT_MODE to PUT_REG_NOTE_KIND.
+	(sh_expand_prologue): Add cast to enum type.
+	(sh_expand_epilogue): Likewise.
+	(tls_symbolic_operand): Change return type to enum tls_model.
+	(fpscr_set_from_mem): Add cast to enum type.
+	(legitimize_pic_address): Compare tls_symbolic_operand result with
+	enum constant.
+	(sh_target_reg_class): Change return type to enum reg_class.
+	* config/sh/sh.h (OVERRIDE_OPTIONS): Change CPU_xxx to
+	PROCESSOR_xxx.
+	* config/sh/sh-protos.h (tls_symbolic_operand): Update
+	declaration.
+	* config/sparc/sparc.c (sparc_override_options): Add cast to enum
+	type.
+	* config/sparc/sparc.md (empty_delay_slot): Return enum constant.
+	(pic, calls_alloca, calls_eh_return, leaf_function): Likewise.
+	(delayed_branch, tls_call_delay): Likewise.
+	(eligible_for_sibcall_delay): Likewise.
+	(eligible_for_return_delay): Likewise. 
+	* config/spu/spu.c (expand_builtin_args): Add cast to enum type.
+	(spu_expand_builtin_1): Likewise.
+
+	* c-typeck.c (convert_for_assignment): Issue -Wc++-compat warnings
+	for all types of conversions.
+	(output_init_element): Issue -Wc++-compat warning if needed when
+	initializing a bitfield with enum type.
+	* c-parser.c (c_parser_expression): Set original_type to
+	original_type of right hand operand of comman operator.
+
 2009-04-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* doc/c-tree.texi (Types, Functions, Expression trees): Fix

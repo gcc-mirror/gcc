@@ -1,3 +1,8 @@
+2009-04-27  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-5.c: New testcase.
+	* gcc.dg/Wcxx-compat-6.c: New testcase.
+
 2009-04-27  Trevor Smigiel <trevor_smigiel@playstation.sony.com>
 
 	Allow non-constant arguments to conversion intrinsics.

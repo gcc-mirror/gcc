@@ -689,7 +689,7 @@ sparc_override_options (void)
     /* UltraSPARC T1 */
     { "niagara", PROCESSOR_NIAGARA, MASK_ISA, MASK_V9|MASK_DEPRECATED_V8_INSNS},
     { "niagara2", PROCESSOR_NIAGARA, MASK_ISA, MASK_V9},
-    { 0, 0, 0, 0 }
+    { 0, (enum processor_type) 0, 0, 0 }
   };
   const struct cpu_table *cpu;
   const struct sparc_cpu_select *sel;

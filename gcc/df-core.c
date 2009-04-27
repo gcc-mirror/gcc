@@ -474,10 +474,10 @@ df_add_problem (struct df_problem *problem)
 /* Set the MASK flags in the DFLOW problem.  The old flags are
    returned.  If a flag is not allowed to be changed this will fail if
    checking is enabled.  */
-enum df_changeable_flags
+int
 df_set_flags (int changeable_flags)
 {
-  enum df_changeable_flags old_flags = df->changeable_flags;
+  int old_flags = df->changeable_flags;
   df->changeable_flags |= changeable_flags;
   return old_flags;
 }
@@ -486,10 +486,10 @@ df_set_flags (int changeable_flags)
 /* Clear the MASK flags in the DFLOW problem.  The old flags are
    returned.  If a flag is not allowed to be changed this will fail if
    checking is enabled.  */
-enum df_changeable_flags
+int
 df_clear_flags (int changeable_flags)
 {
-  enum df_changeable_flags old_flags = df->changeable_flags;
+  int old_flags = df->changeable_flags;
   df->changeable_flags &= ~changeable_flags;
   return old_flags;
 }

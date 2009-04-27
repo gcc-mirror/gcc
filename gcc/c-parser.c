@@ -5784,7 +5784,7 @@ c_parser_expression (c_parser *parser)
       next = default_function_array_conversion (next);
       expr.value = build_compound_expr (expr.value, next.value);
       expr.original_code = COMPOUND_EXPR;
-      expr.original_type = NULL;
+      expr.original_type = next.original_type;
     }
   return expr;
 }

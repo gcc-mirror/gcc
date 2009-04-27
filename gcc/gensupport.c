@@ -1358,7 +1358,7 @@ static const struct std_pred_table std_preds[] = {
   {"register_operand", false, false, {SUBREG, REG}},
   {"pmode_register_operand", true, false, {SUBREG, REG}},
   {"scratch_operand", false, false, {SCRATCH, REG}},
-  {"immediate_operand", false, true, {0}},
+  {"immediate_operand", false, true, {UNKNOWN}},
   {"const_int_operand", false, false, {CONST_INT}},
   {"const_double_operand", false, false, {CONST_INT, CONST_DOUBLE}},
   {"nonimmediate_operand", false, false, {SUBREG, REG, MEM}},

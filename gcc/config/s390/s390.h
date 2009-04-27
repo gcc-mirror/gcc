@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006,
-   2007, 2008 Free Software Foundation, Inc.
+   2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
@@ -58,14 +58,14 @@ enum processor_flags
 };
 
 extern enum processor_type s390_tune;
-extern enum processor_flags s390_tune_flags;
+extern int s390_tune_flags;
 
 /* This is necessary to avoid a warning about comparing different enum
    types.  */
 #define s390_tune_attr ((enum attr_cpu)s390_tune)
 
 extern enum processor_type s390_arch;
-extern enum processor_flags s390_arch_flags;
+extern int s390_arch_flags;
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility regardless of the

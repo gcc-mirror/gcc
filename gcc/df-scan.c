@@ -2888,7 +2888,7 @@ df_def_record_1 (struct df_collection_rec *collection_rec,
   rtx dst;
   int offset = -1;
   int width = -1;
-  enum machine_mode mode = 0;
+  enum machine_mode mode = VOIDmode;
   enum df_ref_class cl = DF_REF_REGULAR;
 
  /* We may recursively call ourselves on EXPR_LIST when dealing with PARALLEL
@@ -3299,7 +3299,7 @@ df_get_conditional_uses (struct df_collection_rec *collection_rec)
         {
 	  int width = -1;
 	  int offset = -1;
-	  enum machine_mode mode = 0;
+	  enum machine_mode mode = VOIDmode;
           df_ref use;
 
 	  if (DF_REF_FLAGS_IS_SET (ref, DF_REF_SIGN_EXTRACT | DF_REF_ZERO_EXTRACT))

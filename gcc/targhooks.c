@@ -576,6 +576,12 @@ default_internal_arg_pointer (void)
     return virtual_incoming_args_rtx;
 }
 
+enum reg_class
+default_branch_target_register_class (void)
+{
+  return NO_REGS;
+}
+
 #ifdef IRA_COVER_CLASSES
 const enum reg_class *
 default_ira_cover_classes (void)
