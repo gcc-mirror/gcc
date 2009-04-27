@@ -1586,6 +1586,13 @@ print_operand (FILE * file, rtx x, int code)
       output_addr_const (file, GEN_INT (val));
       return;
 
+    case 'v':
+    case 'w':
+      constant_to_array (mode, x, arr);
+      val = (((arr[0] << 1) + (arr[1] >> 7)) & 0xff) - 127;
+      output_addr_const (file, GEN_INT (code == 'w' ? -val : val));
+      return;
+
     case 0:
       if (xcode == REG)
 	fprintf (file, "%s", reg_names[REGNO (x)]);
@@ -1598,7 +1605,7 @@ print_operand (FILE * file, rtx x, int code)
       return;
 
       /* unused letters
-	              o qr  uvw yz
+	              o qr  u   yz
 	AB            OPQR  UVWXYZ */
     default:
       output_operand_lossage ("invalid %%xn code");
@@ -3493,6 +3500,58 @@ arith_immediate_p (rtx op, enum machine_mode mode,
   val = trunc_int_for_mode (val, mode);
 
   return val >= low && val <= high;
+}
+
+/* TRUE when op is an immediate and an exact power of 2, and given that
+   OP is 2^scale, scale >= LOW && scale <= HIGH.  When OP is a vector,
+   all entries must be the same. */
+bool
+exp2_immediate_p (rtx op, enum machine_mode mode, int low, int high)
+{
+  enum machine_mode int_mode;
+  HOST_WIDE_INT val;
+  unsigned char arr[16];
+  int bytes, i, j;
+
+  gcc_assert (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE
+	      || GET_CODE (op) == CONST_VECTOR);
+
+  if (GET_CODE (op) == CONST_VECTOR
+      && !const_vector_immediate_p (op))
+    return 0;
+
+  if (GET_MODE (op) != VOIDmode)
+    mode = GET_MODE (op);
+
+  constant_to_array (mode, op, arr);
+
+  if (VECTOR_MODE_P (mode))
+    mode = GET_MODE_INNER (mode);
+
+  bytes = GET_MODE_SIZE (mode);
+  int_mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
+
+  /* Check that bytes are repeated. */
+  for (i = bytes; i < 16; i += bytes)
+    for (j = 0; j < bytes; j++)
+      if (arr[j] != arr[i + j])
+	return 0;
+
+  val = arr[0];
+  for (j = 1; j < bytes; j++)
+    val = (val << 8) | arr[j];
+
+  val = trunc_int_for_mode (val, int_mode);
+
+  /* Currently, we only handle SFmode */
+  gcc_assert (mode == SFmode);
+  if (mode == SFmode)
+    {
+      int exp = (val >> 23) - 127;
+      return val > 0 && (val & 0x007fffff) == 0
+	     &&  exp >= low && exp <= high;
+    }
+  return FALSE;
 }
 
 /* We accept:
@@ -6362,6 +6421,38 @@ spu_section_type_flags (tree decl, const char *name, int reloc)
   if (strcmp (name, ".toe") == 0)
     return SECTION_BSS;
   return default_section_type_flags (decl, name, reloc);
+}
+
+/* Generate a constant or register which contains 2^SCALE.  We assume
+   the result is valid for MODE.  Currently, MODE must be V4SFmode and
+   SCALE must be SImode. */
+rtx
+spu_gen_exp2 (enum machine_mode mode, rtx scale)
+{
+  gcc_assert (mode == V4SFmode);
+  gcc_assert (GET_MODE (scale) == SImode || GET_CODE (scale) == CONST_INT);
+  if (GET_CODE (scale) != CONST_INT)
+    {
+      /* unsigned int exp = (127 + scale) << 23;
+	__vector float m = (__vector float) spu_splats (exp); */
+      rtx reg = force_reg (SImode, scale);
+      rtx exp = gen_reg_rtx (SImode);
+      rtx mul = gen_reg_rtx (mode);
+      emit_insn (gen_addsi3 (exp, reg, GEN_INT (127)));
+      emit_insn (gen_ashlsi3 (exp, exp, GEN_INT (23)));
+      emit_insn (gen_spu_splats (mul, gen_rtx_SUBREG (GET_MODE_INNER (mode), exp, 0)));
+      return mul;
+    }
+  else 
+    {
+      HOST_WIDE_INT exp = 127 + INTVAL (scale);
+      unsigned char arr[16];
+      arr[0] = arr[4] = arr[8] = arr[12] = exp >> 1;
+      arr[1] = arr[5] = arr[9] = arr[13] = exp << 7;
+      arr[2] = arr[6] = arr[10] = arr[14] = 0;
+      arr[3] = arr[7] = arr[11] = arr[15] = 0;
+      return array_to_constant (mode, arr);
+    }
 }
 
 #include "gt-spu.h"

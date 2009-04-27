@@ -16,8 +16,14 @@
 ;; <http://www.gnu.org/licenses/>.
 
 
-;; GCC standard constraints:  g, i, m, n, o, p, r, s, E-H, I-P, V, X
-;; unused for SPU:  E-H, L, Q, d, e, h, q, t-z
+;;       ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+;; GCC:      ffffiiiiiiii     x x        x x   xxxx xx
+;; SPU:  xxxx    xxx xxxx xxxx x xxx xx x   xxx         xx
+;; FREE:     ffff   i    a          a  a  a        a  aa  aaa
+;; x - used
+;; a - available
+;; i - available for integer immediates
+;; f - available for floating point immediates
 
 ;; For most immediate constraints we have 3 variations to deal with the
 ;; fact const_int has no mode.  One variation treats const_int as 32 bit,
@@ -159,4 +165,15 @@
 		    && INTVAL (XEXP (op, 0)) >= 0
 		    && INTVAL (XEXP (op, 0)) <= 0x3ffff")))
 
+
+;; Floating-point constant constraints.
 
+(define_constraint "v"
+  "Floating point power of 2 with exponent in [0..127]"
+  (and (match_code "const_double,const_vector")
+       (match_test "exp2_immediate_p (op, VOIDmode, 0, 127)")))
+
+(define_constraint "w"
+  "Floating point power of 2 with exponent in [-126..0]"
+  (and (match_code "const_double,const_vector")
+       (match_test "exp2_immediate_p (op, VOIDmode, -126, 0)")))
