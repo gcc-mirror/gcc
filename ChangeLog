@@ -1,3 +1,7 @@
+2009-04-27  Nick Clifton  <nickc@redhat.com>
+
+	* MAINTAINERS: Replace Aldy Hernandez as a maintainer for the FRV.
+
 2009-04-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.tpl (POSTSTAGE1_HOST_EXPORTS): Add GNATBIND.
