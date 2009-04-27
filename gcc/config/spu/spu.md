@@ -136,10 +136,6 @@
  (UNSPEC_HEQ            31)
  (UNSPEC_HGT            32)
  (UNSPEC_HLGT           33)
- (UNSPEC_CSFLT          34)
- (UNSPEC_CFLTS          35)
- (UNSPEC_CUFLT          36)
- (UNSPEC_CFLTU          37)
  (UNSPEC_STOP           38)
  (UNSPEC_STOPD          39)
  (UNSPEC_SET_INTR       40)
@@ -231,6 +227,10 @@
                        (DF "di") (V2DF "v2di")])
 (define_mode_attr F2I [(SF "SI") (V4SF "V4SI")
                        (DF "DI") (V2DF "V2DI")])
+(define_mode_attr i2f [(SI "sf") (V4SI "v4sf")
+                       (DI "df") (V2DI "v2df")])
+(define_mode_attr I2F [(SI "SF") (V4SI "V4SF")
+                       (DI "DF") (V2DI "V2DF")])
 
 (define_mode_attr DF2I [(DF "SI") (V2DF "V2DI")])
 
@@ -594,60 +594,81 @@
 
 ;; float conversions
 
-(define_insn "floatsisf2"
-  [(set (match_operand:SF 0 "spu_reg_operand" "=r")
-	(float:SF (match_operand:SI 1 "spu_reg_operand" "r")))]
+(define_insn "float<mode><i2f>2"
+  [(set (match_operand:<I2F> 0 "spu_reg_operand" "=r")
+	(float:<I2F> (match_operand:VSI 1 "spu_reg_operand" "r")))]
   ""
   "csflt\t%0,%1,0"
   [(set_attr "type" "fp7")])
 
-(define_insn "floatv4siv4sf2"
-  [(set (match_operand:V4SF 0 "spu_reg_operand" "=r")
-	(float:V4SF (match_operand:V4SI 1 "spu_reg_operand" "r")))]
-  ""
-  "csflt\t%0,%1,0"
-  [(set_attr "type" "fp7")])
-
-(define_insn "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "spu_reg_operand" "=r")
-	(fix:SI (match_operand:SF 1 "spu_reg_operand" "r")))]
+(define_insn "fix_trunc<mode><f2i>2"
+  [(set (match_operand:<F2I> 0 "spu_reg_operand" "=r")
+	(fix:<F2I> (match_operand:VSF 1 "spu_reg_operand" "r")))]
   ""
   "cflts\t%0,%1,0"
   [(set_attr "type" "fp7")])
 
-(define_insn "fix_truncv4sfv4si2"
-  [(set (match_operand:V4SI 0 "spu_reg_operand" "=r")
-	(fix:V4SI (match_operand:V4SF 1 "spu_reg_operand" "r")))]
-  ""
-  "cflts\t%0,%1,0"
-  [(set_attr "type" "fp7")])
-
-(define_insn "floatunssisf2"
-  [(set (match_operand:SF 0 "spu_reg_operand" "=r")
-	(unsigned_float:SF (match_operand:SI 1 "spu_reg_operand" "r")))]
+(define_insn "floatuns<mode><i2f>2"
+  [(set (match_operand:<I2F> 0 "spu_reg_operand" "=r")
+	(unsigned_float:<I2F> (match_operand:VSI 1 "spu_reg_operand" "r")))]
   ""
   "cuflt\t%0,%1,0"
   [(set_attr "type" "fp7")])
 
-(define_insn "floatunsv4siv4sf2"
-  [(set (match_operand:V4SF 0 "spu_reg_operand" "=r")
-	(unsigned_float:V4SF (match_operand:V4SI 1 "spu_reg_operand" "r")))]
-  ""
-  "cuflt\t%0,%1,0"
-  [(set_attr "type" "fp7")])
-
-(define_insn "fixuns_truncsfsi2"
-  [(set (match_operand:SI 0 "spu_reg_operand" "=r")
-	(unsigned_fix:SI (match_operand:SF 1 "spu_reg_operand" "r")))]
+(define_insn "fixuns_trunc<mode><f2i>2"
+  [(set (match_operand:<F2I> 0 "spu_reg_operand" "=r")
+	(unsigned_fix:<F2I> (match_operand:VSF 1 "spu_reg_operand" "r")))]
   ""
   "cfltu\t%0,%1,0"
   [(set_attr "type" "fp7")])
 
-(define_insn "fixuns_truncv4sfv4si2"
-  [(set (match_operand:V4SI 0 "spu_reg_operand" "=r")
-	(unsigned_fix:V4SI (match_operand:V4SF 1 "spu_reg_operand" "r")))]
+(define_insn "float<mode><i2f>2_mul"
+  [(set (match_operand:<I2F> 0 "spu_reg_operand" "=r")
+	(mult:<I2F> (float:<I2F> (match_operand:VSI 1 "spu_reg_operand" "r"))
+		    (match_operand:<I2F> 2 "spu_inv_exp2_operand" "w")))]
   ""
-  "cfltu\t%0,%1,0"
+  "csflt\t%0,%1,%w2"
+  [(set_attr "type" "fp7")])
+
+(define_insn "float<mode><i2f>2_div"
+  [(set (match_operand:<I2F> 0 "spu_reg_operand" "=r")
+	(div:<I2F> (float:<I2F> (match_operand:VSI 1 "spu_reg_operand" "r"))
+		   (match_operand:<I2F> 2 "spu_exp2_operand" "v")))]
+  ""
+  "csflt\t%0,%1,%v2"
+  [(set_attr "type" "fp7")])
+
+
+(define_insn "fix_trunc<mode><f2i>2_mul"
+  [(set (match_operand:<F2I> 0 "spu_reg_operand" "=r")
+	(fix:<F2I> (mult:VSF (match_operand:VSF 1 "spu_reg_operand" "r")
+			     (match_operand:VSF 2 "spu_exp2_operand" "v"))))]
+  ""
+  "cflts\t%0,%1,%v2"
+  [(set_attr "type" "fp7")])
+
+(define_insn "floatuns<mode><i2f>2_mul"
+  [(set (match_operand:<I2F> 0 "spu_reg_operand" "=r")
+	(mult:<I2F> (unsigned_float:<I2F> (match_operand:VSI 1 "spu_reg_operand" "r"))
+		    (match_operand:<I2F> 2 "spu_inv_exp2_operand" "w")))]
+  ""
+  "cuflt\t%0,%1,%w2"
+  [(set_attr "type" "fp7")])
+
+(define_insn "floatuns<mode><i2f>2_div"
+  [(set (match_operand:<I2F> 0 "spu_reg_operand" "=r")
+	(div:<I2F> (unsigned_float:<I2F> (match_operand:VSI 1 "spu_reg_operand" "r"))
+		   (match_operand:<I2F> 2 "spu_exp2_operand" "v")))]
+  ""
+  "cuflt\t%0,%1,%v2"
+  [(set_attr "type" "fp7")])
+
+(define_insn "fixuns_trunc<mode><f2i>2_mul"
+  [(set (match_operand:<F2I> 0 "spu_reg_operand" "=r")
+	(unsigned_fix:<F2I> (mult:VSF (match_operand:VSF 1 "spu_reg_operand" "r")
+				      (match_operand:VSF 2 "spu_exp2_operand" "v"))))]
+  ""
+  "cfltu\t%0,%1,%v2"
   [(set_attr "type" "fp7")])
 
 (define_insn "extendsfdf2"

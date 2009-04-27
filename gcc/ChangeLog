@@ -1,3 +1,26 @@
+2009-04-27  Trevor Smigiel <trevor_smigiel@playstation.sony.com>
+
+	Allow non-constant arguments to conversion intrinsics.
+	* spu-protos.h (exp2_immediate_p, spu_gen_exp2): Declare.
+	* predicates.md (spu_inv_exp2_operand, spu_exp2_operand): New.
+	* spu.c (print_operand): Handle 'v' and 'w'.
+	(exp2_immediate_p, spu_gen_exp2): Define.
+	* spu-builtins.def (spu_convts, spu_convtu, spu_convtf_0,
+	spu_convtf_1): Update parameter descriptions.
+	* spu-builtins.md (spu_csflt, spu_cuflt, spu_cflts, spu_cfltu):
+	Update.
+	* constraints.md ('v', 'w'): New.
+	* spu.md (UNSPEC_CSFLT, UNSPEC_CFLTS, UNSPEC_CUFLT, UNSPEC_CFLTU):
+	Remove.
+	(i2f, I2F): New define_mode_attr.
+	(floatsisf2, floatv4siv4sf2, fix_truncsfsi2, fix_truncv4sfv4si2,
+	floatunssisf2, floatunsv4siv4sf2, fixuns_truncsfsi2,
+	fixuns_truncv4sfv4si2):  Update to use mode attribute.
+	(float<mode><i2f>2_mul, float<mode><i2f>2_div,
+	fix_trunc<mode><f2i>2_mul, floatuns<mode><i2f>2_mul,
+	floatuns<mode><i2f>2_div, fixuns_trunc<mode><f2i>2_mul): New
+	patterns for combine.
+
 2009-04-27  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* dbgcnt.def (cprop1, cprop2, gcse, jump_bypass): Remove
