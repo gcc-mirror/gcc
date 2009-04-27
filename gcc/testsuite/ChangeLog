@@ -1,3 +1,18 @@
+2009-04-23  DJ Delorie  <dj@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_double64): New.
+	(check_effective_target_double64plus): New.
+	(check_effective_target_large_double): New.
+	* gcc.dg/Wconversion-real-integer.c: Require double64plus.
+	* gcc.dg/div-double-1.c: Likewise.
+	* gcc.dg/Wconversion-real.c: Require large_double.
+	* gcc.dg/cdce1.c: Require large_double instead of checking targets.
+
+	* gcc.c-torture/execute/ieee/unsafe-fp-assoc-1.c: Skip if doubles are too small.
+
+	* gcc.c-torture/execute/ieee/20010226-1.c: Mark all floating point
+	constants as long.
+
 2009-04-27  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wcxx-compat-5.c: New testcase.
