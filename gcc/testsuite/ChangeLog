@@ -1,3 +1,17 @@
+2009-04-27  Revital Eres  <eres@il.ibm.com>
+
+	* gcc.dg/sms-1.c: Add noinline attribute, create sms dump file
+	and check it.
+	* gcc.dg/sms-2.c: Add dump check.
+	* gcc.dg/sms-3.c: Add noinline attribute, create sms dump file
+	and check it.
+	* gcc.dg/sms-4.c: Likewise.
+	* gcc.dg/sms-5.c: Likewise.
+	* gcc.dg/sms-6.c: Likewise.
+	* gcc.dg/sms-7.c: Likewise.
+	* gcc.dg/sms-antideps.c: Rename to...
+	* gcc.dg/sms-8.c: This and add sms dump file and check it.
+
 2009-04-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt2.adb: New test.

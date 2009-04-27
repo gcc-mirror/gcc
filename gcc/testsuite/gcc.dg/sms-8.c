@@ -3,10 +3,11 @@
     that was not fixed by reg-moves.  */
 
  /* { dg-do run } */
- /* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves" } */
+ /* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves -fdump-rtl-sms" } */
 
-#include <stdlib.h>
+extern void abort (void);
 
+__attribute__ ((noinline))
 unsigned long long
 foo (long long ixi, unsigned ctr)
 {
@@ -34,5 +35,7 @@ main ()
   return 0;
 }
 
+/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms" { target powerpc*-*-* } } } */
+/* { dg-final { cleanup-rtl-dump "sms" } } */
 
 
