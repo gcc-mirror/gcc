@@ -1,3 +1,8 @@
+2009-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/39794
+	* gcc.dg/pr39794.c: New test.
+
 2009-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/39543

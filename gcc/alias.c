@@ -2251,14 +2251,13 @@ true_dependence (const_rtx mem, enum machine_mode mem_mode, const_rtx x,
    Variant of true_dependence which assumes MEM has already been
    canonicalized (hence we no longer do that here).
    The mem_addr argument has been added, since true_dependence computed
-   this value prior to canonicalizing.  */
+   this value prior to canonicalizing.
+   If x_addr is non-NULL, it is used in preference of XEXP (x, 0).  */
 
 int
 canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
-		       const_rtx x, bool (*varies) (const_rtx, bool))
+		       const_rtx x, rtx x_addr, bool (*varies) (const_rtx, bool))
 {
-  rtx x_addr;
-
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
 
@@ -2284,7 +2283,8 @@ canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
   if (nonoverlapping_memrefs_p (x, mem))
     return 0;
 
-  x_addr = get_addr (XEXP (x, 0));
+  if (! x_addr)
+    x_addr = get_addr (XEXP (x, 0));
 
   if (! base_alias_check (x_addr, mem_addr, GET_MODE (x), mem_mode))
     return 0;

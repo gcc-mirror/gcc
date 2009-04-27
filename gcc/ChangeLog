@@ -1,3 +1,20 @@
+2009-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/39794
+	* alias.c (canon_true_dependence): Add x_addr argument.
+	* rtl.h (canon_true_dependence): Adjust prototype.
+	* cse.c (check_dependence): Adjust canon_true_dependence callers.
+	* cselib.c (cselib_invalidate_mem): Likewise.
+	* gcse.c (compute_transp): Likewise.
+	* dse.c (scan_reads_nospill): Likewise.
+	(record_store, check_mem_read_rtx): Likewise.  For non-const-or-frame
+	addresses pass base->val_rtx as mem_addr, for const-or-frame addresses
+	canon_base_addr of the group, plus optional offset.
+	(struct group_info): Rename canon_base_mem to
+	canon_base_addr.
+	(get_group_info): Set canon_base_addr to canon_rtx of base, not
+	canon_rtx of base_mem.
+
 2009-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR inline-asm/39543

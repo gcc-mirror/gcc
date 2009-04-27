@@ -1,7 +1,7 @@
 /* Global common subexpression elimination/Partial redundancy elimination
    and global constant/copy propagation for GNU compiler.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-   2006, 2007, 2008 Free Software Foundation, Inc.
+   2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2516,7 +2516,7 @@ compute_transp (const_rtx x, int indx, sbitmap *bmap, int set_p)
 		    dest_addr = XEXP (list_entry, 0);
 
 		    if (canon_true_dependence (dest, GET_MODE (dest), dest_addr,
-					       x, rtx_addr_varies_p))
+					       x, NULL_RTX, rtx_addr_varies_p))
 		      {
 			if (set_p)
 			  SET_BIT (bmap[bb_index], indx);

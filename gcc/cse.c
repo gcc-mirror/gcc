@@ -1,6 +1,6 @@
 /* Common subexpression elimination for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1658,7 +1658,7 @@ check_dependence (rtx *x, void *data)
 {
   struct check_dependence_data *d = (struct check_dependence_data *) data;
   if (*x && MEM_P (*x))
-    return canon_true_dependence (d->exp, d->mode, d->addr, *x,
+    return canon_true_dependence (d->exp, d->mode, d->addr, *x, NULL_RTX,
 		    		  cse_rtx_varies_p);
   else
     return 0;
