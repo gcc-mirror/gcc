@@ -1,3 +1,9 @@
+2009-04-27  Michael Matz  <matz@suse.de>
+
+	* tree-into-ssa.c (regs_to_rename, mem_syms_to_rename): Remove.
+	(init_update_ssa, delete_update_ssa, update_ssa): Remove references
+	to above.
+
 2009-04-27  Richard Sandiford  <rdsandiford@googlemail.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 
