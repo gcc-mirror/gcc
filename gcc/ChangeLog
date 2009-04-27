@@ -1,3 +1,9 @@
+2009-04-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/39928
+	* gimplify.c (gimplify_expr): If we are required to create
+	a temporary make sure it ends up as register.
+
 2009-04-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39903
