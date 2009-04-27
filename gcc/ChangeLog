@@ -1,3 +1,10 @@
+2009-04-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39903
+	* config/i386/i386.c (construct_container): Don't call
+	gen_reg_or_parallel with BLKmode on X86_64_SSE_CLASS,
+	X86_64_SSESF_CLASS and X86_64_SSEDF_CLASS.
+
 2009-04-27  Michael Matz  <matz@suse.de>
 
 	* ssaexpand.h (struct ssaexpand): Member 'values' is a bitmap.
