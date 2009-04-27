@@ -1,3 +1,11 @@
+2009-04-27  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2009-04-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/pr39496.c: Compile with -mtune=i686.
+	* g++.dg/other/pr39496.C: Likewise.
+
 2009-04-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/38228
