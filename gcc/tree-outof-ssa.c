@@ -791,7 +791,7 @@ expand_phi_nodes (struct ssaexpand *sa)
 static void
 remove_ssa_form (bool perform_ter, struct ssaexpand *sa)
 {
-  gimple *values = NULL;
+  bitmap values = NULL;
   var_map map;
   unsigned i;
 
@@ -926,7 +926,7 @@ finish_out_of_ssa (struct ssaexpand *sa)
 {
   free (sa->partition_to_pseudo);
   if (sa->values)
-    free (sa->values);
+    BITMAP_FREE (sa->values);
   delete_var_map (sa->map);
   BITMAP_FREE (sa->partition_has_default_def);
   memset (sa, 0, sizeof *sa);

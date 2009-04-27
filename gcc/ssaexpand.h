@@ -31,10 +31,9 @@ struct ssaexpand
   /* The computed partitions of SSA names are stored here.  */
   var_map map;
 
-  /* For a SSA name version V values[V] contains the gimple statement
-     defining it iff TER decided that it should be forwarded, NULL
-     otherwise.  */
-  gimple *values;
+  /* For an SSA name version V bit V is set iff TER decided that
+     its definition should be forwarded.  */
+  bitmap values;
 
   /* For a partition number I partition_to_pseudo[I] contains the
      RTL expression of the allocated space of it (either a MEM or
@@ -67,8 +66,8 @@ static inline gimple
 get_gimple_for_ssa_name (tree exp)
 {
   int v = SSA_NAME_VERSION (exp);
-  if (SA.values)
-    return SA.values[v];
+  if (SA.values && bitmap_bit_p (SA.values, v))
+    return SSA_NAME_DEF_STMT (exp);
   return NULL;
 }
 

@@ -94,8 +94,8 @@ gimple_cond_pred_to_tree (gimple stmt)
   tree lhs = gimple_cond_lhs (stmt);
   if (SA.values
       && TREE_CODE (lhs) == SSA_NAME
-      && SA.values[SSA_NAME_VERSION (lhs)])
-    lhs = gimple_assign_rhs_to_tree (SA.values[SSA_NAME_VERSION (lhs)]);
+      && bitmap_bit_p (SA.values, SSA_NAME_VERSION (lhs)))
+    lhs = gimple_assign_rhs_to_tree (SSA_NAME_DEF_STMT (lhs));
 
   return build2 (gimple_cond_code (stmt), boolean_type_node,
 		 lhs, gimple_cond_rhs (stmt));
@@ -2078,7 +2078,8 @@ expand_gimple_basic_block (basic_block bb)
 		  /* Ignore this stmt if it is in the list of
 		     replaceable expressions.  */
 		  if (SA.values
-		      && SA.values[SSA_NAME_VERSION (DEF_FROM_PTR (def_p))])
+		      && bitmap_bit_p (SA.values, 
+				       SSA_NAME_VERSION (DEF_FROM_PTR (def_p))))
 		    continue;
 		}
 	      stmt_tree = gimple_to_tree (stmt);

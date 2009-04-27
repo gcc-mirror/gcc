@@ -1,3 +1,19 @@
+2009-04-27  Michael Matz  <matz@suse.de>
+
+	* ssaexpand.h (struct ssaexpand): Member 'values' is a bitmap.
+	(get_gimple_for_ssa_name): Adjust, lookup using SSA_NAME_DEF_STMT.
+	* tree-ssa-live.h: (find_replaceable_exprs): Return a bitmap.
+	(dump_replaceable_exprs): Take a bitmap.
+	* cfgexpand.c (gimple_cond_pred_to_tree): Handle bitmap instead of
+	array.
+	(expand_gimple_basic_block): Likewise.
+	* tree-ssa-ter.c (struct temp_expr_table_d): Make
+	replaceable_expressions member a bitmap.
+	(free_temp_expr_table): Pass back and deal with bitmap, not gimple*.
+	(mark_replaceable): Likewise.
+	(find_replaceable_in_bb, dump_replaceable_exprs): Likewise.
+	* tree-outof-ssa.c (remove_ssa_form): 'values' is a bitmap.
+
 2009-04-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-cfg.c (remove_useless_stmts): Verify stmts afterwards.
