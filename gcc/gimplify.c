@@ -7184,7 +7184,12 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	/* The postqueue might change the value of the expression between
 	   the initialization and use of the temporary, so we can't use a
 	   formal temp.  FIXME do we care?  */
-	*expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
+	{
+	  *expr_p = get_initialized_tmp_var (*expr_p, pre_p, post_p);
+	  if (TREE_CODE (TREE_TYPE (*expr_p)) == COMPLEX_TYPE
+	      || TREE_CODE (TREE_TYPE (*expr_p)) == VECTOR_TYPE)
+	    DECL_GIMPLE_REG_P (*expr_p) = 1;
+	}
       else
 	*expr_p = get_formal_tmp_var (*expr_p, pre_p);
     }

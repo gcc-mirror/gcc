@@ -1,3 +1,9 @@
+2009-04-27  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/39928
+	* gcc.c-torture/compile/pr39928-1.c: New testcase.
+	* gcc.c-torture/compile/pr39928-2.c: Likewise.
+
 2009-04-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39903
