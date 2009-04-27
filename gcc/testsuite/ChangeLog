@@ -1,3 +1,7 @@
+2009-04-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt2.adb: New test.
+
 2009-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/39875
