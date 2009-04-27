@@ -1,5 +1,11 @@
 2009-04-27  Trevor Smigiel <trevor_smigiel@playstation.sony.com>
 
+	* spu.c (spu_machine_dependent_reorg): Make sure branch label on hint
+	instruction is correct.
+
+
+2009-04-27  Trevor Smigiel <trevor_smigiel@playstation.sony.com>
+
 	Allow non-constant arguments to conversion intrinsics.
 	* spu-protos.h (exp2_immediate_p, spu_gen_exp2): Declare.
 	* predicates.md (spu_inv_exp2_operand, spu_exp2_operand): New.
