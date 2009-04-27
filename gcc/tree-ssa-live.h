@@ -341,8 +341,8 @@ extern var_map coalesce_ssa_name (void);
 
 
 /* From tree-ssa-ter.c  */
-extern gimple *find_replaceable_exprs (var_map);
-extern void dump_replaceable_exprs (FILE *, gimple *);
+extern bitmap find_replaceable_exprs (var_map);
+extern void dump_replaceable_exprs (FILE *, bitmap);
 
 
 #endif /* _TREE_SSA_LIVE_H  */
