@@ -389,7 +389,7 @@ types, the associated handler code is executed.  If the handler
 code falls off the bottom, execution continues after the original
 @code{GIMPLE_TRY_CATCH}.
 
-@item An @code{GIMPLE_EH_FILTER} statement.  This has a list of
+@item A @code{GIMPLE_EH_FILTER} statement.  This has a list of
 permitted exception types, and code to handle a match failure.  If the
 thrown exception does not match one of the allowed types, the
 associated match failure code is executed.  If the thrown exception
@@ -1087,7 +1087,7 @@ statement @code{G}.
 @end deftypefn
  
 @deftypefn {GIMPLE function} bool gimple_assign_cast_p (gimple s)
-Return true if @code{S} is an type-cast assignment.
+Return true if @code{S} is a type-cast assignment.
 @end deftypefn
 
 

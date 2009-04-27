@@ -464,7 +464,7 @@ the GCC-specific entry point.  You can download a suitable jar from
 @itemx antlr binary
 
 If you wish to build the @command{gjdoc} binary in libjava, you will
-need to have a @file{antlr.jar} library available. The library is
+need to have an @file{antlr.jar} library available. The library is
 searched in system locations but can be configured with
 @option{--with-antlr-jar=} instead.  When configuring with
 @option{--enable-java-maintainer-mode}, you will need to have one of
@@ -1605,7 +1605,7 @@ that will be used while building GCC itself.  This option can be useful
 if the directory layouts are different between the system you are building
 GCC on, and the system where you will deploy it.
 
-For example, on a @option{ia64-hp-hpux} system, you may have the GNU
+For example, on an @samp{ia64-hp-hpux} system, you may have the GNU
 assembler and linker in @file{/usr/bin}, and the native tools in a
 different path, and build a toolchain that expects to find the
 native tools in @file{/usr/bin}.
@@ -3389,7 +3389,7 @@ The native AIX tools do interoperate with GCC@.
 Building @file{libstdc++.a} requires a fix for an AIX Assembler bug
 APAR IY26685 (AIX 4.3) or APAR IY25528 (AIX 5.1).  It also requires a
 fix for another AIX Assembler bug and a co-dependent AIX Archiver fix
-referenced as APAR IY53606 (AIX 5.2) or a APAR IY54774 (AIX 5.1)
+referenced as APAR IY53606 (AIX 5.2) or as APAR IY54774 (AIX 5.1)
 
 @samp{libstdc++} in GCC 3.4 increments the major version number of the
 shared object and GCC installation places the @file{libstdc++.a}
@@ -3944,7 +3944,7 @@ compiler.  This is Sun bug 4974440.  This is fixed with patch 112760-07.
 GCC 3.4 changed the default debugging format from STABS to DWARF-2 for
 32-bit code on Solaris 7 and later.  If you use the Sun assembler, this
 change apparently runs afoul of Sun bug 4910101 (which is referenced as
-a x86-only problem by Sun, probably because they do not use DWARF-2).
+an x86-only problem by Sun, probably because they do not use DWARF-2).
 A symptom of the problem is that you cannot compile C++ programs like
 @command{groff} 1.19.1 without getting messages similar to the following:
 

@@ -605,7 +605,7 @@ improve cache behavior or remove inner loop dependencies to allow
 parallelization and vectorization to take place.
 
 To perform these transformations, Lambda requires that the loopnest be
-converted into a internal form that can be matrix transformed easily.
+converted into an internal form that can be matrix transformed easily.
 To do this conversion, the function
 @code{gcc_loopnest_to_lambda_loopnest} is provided.  If the loop cannot
 be transformed using lambda, this function will return NULL.

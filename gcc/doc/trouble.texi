@@ -342,7 +342,7 @@ Declarations of external variables and functions within a block apply
 only to the block containing the declaration.  In other words, they
 have the same scope as any other declaration in the same place.
 
-In some other C compilers, a @code{extern} declaration affects all the
+In some other C compilers, an @code{extern} declaration affects all the
 rest of the file even if it happens within a block.
 
 @item

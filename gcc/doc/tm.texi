@@ -2657,7 +2657,7 @@ allow copying all registers to and from memory, but require a scratch
 register for stores to some memory locations (e.g., those with symbolic
 address on the RT, and those with certain symbolic address on the SPARC
 when compiling PIC)@.  Scratch registers need not have the same mode
-as the value being copied, and usually hold a different value that
+as the value being copied, and usually hold a different value than
 that being copied.  Special patterns in the md file are needed to
 describe how the copy is performed with the help of the scratch register;
 these patterns also describe the number, register class(es) and mode(s)
@@ -3046,7 +3046,7 @@ If the letter @samp{Q} is marked as @code{EXTRA_MEMORY_CONSTRAINT},
 a @samp{Q} constraint can handle any memory operand, because the
 reload pass knows it can be reloaded by copying the memory address
 into a base register if required.  This is analogous to the way
-a @samp{o} constraint can handle any memory operand.
+an @samp{o} constraint can handle any memory operand.
 @end defmac
 
 @defmac EXTRA_ADDRESS_CONSTRAINT (@var{c}, @var{str})
@@ -4317,7 +4317,7 @@ values---values that can fit in registers.
 
 Define this to return an RTX representing the place where a function
 returns or receives a value of data type @var{ret_type}, a tree node
-node representing a data type.  @var{fn_decl_or_type} is a tree node
+representing a data type.  @var{fn_decl_or_type} is a tree node
 representing @code{FUNCTION_DECL} or @code{FUNCTION_TYPE} of a
 function being called.  If @var{outgoing} is false, the hook should
 compute the register in which the caller will see the return value.
@@ -8978,7 +8978,7 @@ of compilation, which is correct for most machines.
 @defmac DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
 Define this macro @emph{instead of} defining
 @code{DBX_OUTPUT_MAIN_SOURCE_FILE_END}, if what needs to be output at
-the end of compilation is a @code{N_SO} stab with an empty string,
+the end of compilation is an @code{N_SO} stab with an empty string,
 whose value is the highest absolute text address in the file.
 @end defmac
 

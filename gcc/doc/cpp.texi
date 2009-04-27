@@ -1936,7 +1936,7 @@ in the near future.
 @item __OBJC__
 This macro is defined, with value 1, when the Objective-C compiler is in
 use.  You can use @code{__OBJC__} to test whether a header is compiled
-by a C compiler or a Objective-C compiler.
+by a C compiler or an Objective-C compiler.
 
 @item __ASSEMBLER__
 This macro is defined with value 1 when preprocessing assembly
@@ -4042,7 +4042,7 @@ The preprocessor and compiler interpret character constants in the
 same way; i.e.@: escape sequences such as @samp{\a} are given the
 values they would have on the target machine.
 
-The compiler values a multi-character character constant a character
+The compiler evaluates a multi-character character constant a character
 at a time, shifting the previous value left by the number of bits per
 target character, and then or-ing in the bit-pattern of the new
 character truncated to the width of a target character.  The final
