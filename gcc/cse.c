@@ -6997,3 +6997,65 @@ struct rtl_opt_pass pass_cse2 =
   TODO_verify_flow                      /* todo_flags_finish */
  }
 };
+
+static bool
+gate_handle_cse_after_global_opts (void)
+{
+  return optimize > 0 && flag_rerun_cse_after_global_opts;
+}
+
+/* Run second CSE pass after loop optimizations.  */
+static unsigned int
+rest_of_handle_cse_after_global_opts (void)
+{
+  int save_cfj;
+  int tem;
+
+  /* We only want to do local CSE, so don't follow jumps.  */
+  save_cfj = flag_cse_follow_jumps;
+  flag_cse_follow_jumps = 0;
+
+  rebuild_jump_labels (get_insns ());
+  tem = cse_main (get_insns (), max_reg_num ());
+  purge_all_dead_edges ();
+  delete_trivially_dead_insns (get_insns (), max_reg_num ());
+
+  cse_not_expected = !flag_rerun_cse_after_loop;
+
+  /* If cse altered any jumps, rerun jump opts to clean things up.  */
+  if (tem == 2)
+    {
+      timevar_push (TV_JUMP);
+      rebuild_jump_labels (get_insns ());
+      cleanup_cfg (0);
+      timevar_pop (TV_JUMP);
+    }
+  else if (tem == 1)
+    cleanup_cfg (0);
+
+  flag_cse_follow_jumps = save_cfj;
+  return 0;
+}
+
+struct rtl_opt_pass pass_cse_after_global_opts =
+{
+ {
+  RTL_PASS,
+  "cse_local",                          /* name */
+  gate_handle_cse_after_global_opts,    /* gate */   
+  rest_of_handle_cse_after_global_opts, /* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_CSE,                               /* tv_id */
+  0,                                    /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_df_finish | TODO_verify_rtl_sharing |
+  TODO_dump_func |
+  TODO_ggc_collect |
+  TODO_verify_flow                      /* todo_flags_finish */
+ }
+};
+

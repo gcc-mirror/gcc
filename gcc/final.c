@@ -4298,6 +4298,7 @@ rest_of_clean_state (void)
     sdbout_types (NULL_TREE);
 #endif
 
+  flag_rerun_cse_after_global_opts = 0;
   reload_completed = 0;
   epilogue_completed = 0;
 #ifdef STACK_REGS

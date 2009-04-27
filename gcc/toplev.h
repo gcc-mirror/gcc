@@ -132,6 +132,7 @@ extern int flag_if_conversion;
 extern int flag_if_conversion2;
 extern int flag_keep_static_consts;
 extern int flag_peel_loops;
+extern int flag_rerun_cse_after_global_opts;
 extern int flag_rerun_cse_after_loop;
 extern int flag_thread_jumps;
 extern int flag_tracer;

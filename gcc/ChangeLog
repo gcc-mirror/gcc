@@ -1,3 +1,72 @@
+2009-04-27  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* dbgcnt.def (cprop1, cprop2, gcse, jump_bypass): Remove
+	(cprop, hoist, pre, store_motion): New debug counters.
+	* tree-pass.h (pass_tracer): Move to list of gimple passes, it
+	is not an RTL pass anymore.
+	(pass_profiling): Remove extern decl for pass removed in 2005.
+	(pass_gcse, pass_jump_bypass): Remove.
+	* final.c (rest_of_clean_state): Set flag_rerun_cse_after_global_opts
+	to 0 for clean state.
+	* toplev.h (flag_rerun_cse_after_global_opts): Add extern declaration.
+	* cse.c (gate_handle_cse_after_global_opts,
+	rest_of_handle_cse_after_global_opts): New functions.
+	(pass_cse_after_global_opts): New pass, does local CSE.
+	* timevar.def (TV_GCSE, TV_CPROP1, TV_CPROP2, TV_BYPASS): Remove.
+	(TV_CPROP): New timevar.
+	* gcse.c (flag_rerun_cse_after_global_opts): New global variable.
+	(run_jump_opt_after_gcse, max_gcse_regno): Remove global vars.
+	(gcse_main, recompute_all_luids): Remove.
+	(compute_hash_table_work): Call max_reg_num instead of reading
+	max_gcse_regno.
+	(cprop_jump): Don't set run_jump_opt_after_gcse.
+	(constprop_register): Always allow to alter jumps.
+	(cprop_insn): Likewise.
+	(do_local_cprop): Likewise.
+	(local_cprop_pass): Likewise.  Return non-zero if something changed.
+	(cprop): Remove function, fold interesting bits into one_cprop_pass.
+	(find_implicit_sets): Add note about missed optimization opportunity.
+	(one_cprop_pass): Rewrite to be "the" CPROP pass, called from the
+	pass_rtl_cprop execute function.
+	Don't bother tracking the pass number, each pass gets its own dumpfile
+	now anyway.
+	Always allow to alter jumpsand bypass jumps.
+	(bypass_block): Don't ignore regno >= max_gcse_regno, find_bypass_set
+	will just find no suitable set.
+	(pre_edge_insert): Fix dumping, this function is for PRE only.
+	(one_pre_gcse_pass): Rewrite to be "the" PRE pass, called from the
+	pass_rtl_pre execute function.
+	(hoist_code): Return non-zero if something changed.  Keep track of
+	substitutions and insertions for statistics gathering similar to PRE.
+	(one_code_hoisting_pass): Rewrite to be "the" code hoisting pass,
+	called from the pass_rtl_hoist execute function.  Show pass statistics.
+	(compute_store_table): Use max_reg_num directly instead of using the
+	formerly global max_gcse_regno.
+	(build_store_vectors): Likewise.
+	(replace_store_insn): Fix dumping.
+	(store_motion): Rename to ...
+	(one_store_motion_pass): ... this.  Rewrite to be "the" STORE_MOTION
+	pass, called from the pass_rtl_store_motion execute function.  Keep
+	track of substitutions and insertions for statistics gathering similar
+	to PRE.
+	(bypass_jumps): Remove, fold interesting bits into ...
+	(one_cprop_pass): ... this.  Rewrite to be "the" CPROP pass, called
+	from the pass_rtl_cprop execute function.
+	(gate_handle_jump_bypass, rest_of_handle_jump_bypass,
+	pass_jump_bypass): Remove.
+	(gate_handle_gcse, rest_of_handle_gcse): Remove.
+	(gate_rtl_cprop, execute_rtl_cprop, pass_rtl_cprop): New.
+	(gate_rtl_pre, execute_rtl_pre, pass_rtl_pre): New.
+	(gate_rtl_hoist, execute_rtl_hoist, pass_rtl_hoist): New.
+	(gate_rtl_store_motion, execute_rtl_store_motion,
+	pass_rtl_store_motion): New.
+	* common.opt: Remove flag_cse_skip_blocks, adjust documentation to
+	make it clear that -fcse-skip-blocks is a no-op for backward compat.
+	* passes.c (init_optimization_passes): Remove pass_gcse and
+	pass_jump_bypass.  Schedule cprop, pre, hoist, cprop, store_motion,
+	and cse_after_global_opts in place of pass_gcse.  Schedule cprop
+	instead of pass_jump_bypass.
+
 2009-04-27  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/39928
