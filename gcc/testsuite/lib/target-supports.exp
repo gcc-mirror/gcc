@@ -1194,6 +1194,33 @@ proc check_effective_target_large_long_double { } {
     }]
 }
 
+# Return 1 if the target supports double larger than float,
+# 0 otherwise.
+
+proc check_effective_target_large_double { } {
+    return [check_no_compiler_messages large_double object {
+	int dummy[sizeof(double) > sizeof(float) ? 1 : -1];
+    }]
+}
+
+# Return 1 if the target supports double of 64 bits,
+# 0 otherwise.
+
+proc check_effective_target_double64 { } {
+    return [check_no_compiler_messages double64 object {
+	int dummy[sizeof(double) == 8 ? 1 : -1];
+    }]
+}
+
+# Return 1 if the target supports double of at least 64 bits,
+# 0 otherwise.
+
+proc check_effective_target_double64plus { } {
+    return [check_no_compiler_messages double64plus object {
+	int dummy[sizeof(double) >= 8 ? 1 : -1];
+    }]
+}
+
 # Return 1 if the target supports compiling fixed-point,
 # 0 otherwise.
 

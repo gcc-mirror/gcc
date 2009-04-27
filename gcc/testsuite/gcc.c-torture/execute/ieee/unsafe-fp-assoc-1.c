@@ -32,6 +32,8 @@ void func ( double x )
 
 int main()
 {
+	if (sizeof (double) == 4)
+		return 0;
 	func((double)1.00);
 	return 0;
 }

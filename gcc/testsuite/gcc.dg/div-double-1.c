@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ffinite-math-only" } */
+/* { dg-require-effective-target double64plus } */
 
 extern void abort (void);
 
