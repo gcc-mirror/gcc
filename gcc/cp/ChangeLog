@@ -1,3 +1,8 @@
+2009-04-27  Ian Lance Taylor  <iant@google.com>
+
+	* semantics.c (finish_omp_clauses): Change type of c_kind to enum
+	omp_clause_code.
+
 2009-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/39875

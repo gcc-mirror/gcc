@@ -694,7 +694,7 @@ update_df (rtx insn, rtx *loc, df_ref *use_rec, enum df_ref_type type,
       df_ref orig_use = use, new_use;
       int width = -1;
       int offset = -1;
-      enum machine_mode mode = 0;
+      enum machine_mode mode = VOIDmode;
       rtx *new_loc = find_occurrence (loc, DF_REF_REG (orig_use));
       use_rec++;
 

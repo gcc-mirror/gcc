@@ -1,3 +1,7 @@
+2009-04-27  Ian Lance Taylor  <iant@google.com>
+
+	* objc-act.c (objc_gimplify_expr): Add casts to enum type.
+
 2009-04-24  Ian Lance Taylor  <iant@google.com>
 
 	* objc-act.c (get_super_receiver): Update calls to

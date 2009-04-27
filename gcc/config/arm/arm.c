@@ -14027,7 +14027,7 @@ static enum arm_cond_code
 get_arm_condition_code (rtx comparison)
 {
   enum machine_mode mode = GET_MODE (XEXP (comparison, 0));
-  int code;
+  enum arm_cond_code code;
   enum rtx_code comp_code = GET_CODE (comparison);
 
   if (GET_MODE_CLASS (mode) != MODE_CC)
@@ -14824,7 +14824,7 @@ static const struct builtin_description bdesc_2arg[] =
 {
 #define IWMMXT_BUILTIN(code, string, builtin) \
   { FL_IWMMXT, CODE_FOR_##code, "__builtin_arm_" string, \
-    ARM_BUILTIN_##builtin, 0, 0 },
+    ARM_BUILTIN_##builtin, UNKNOWN, 0 },
 
   IWMMXT_BUILTIN (addv8qi3, "waddb", WADDB)
   IWMMXT_BUILTIN (addv4hi3, "waddh", WADDH)
@@ -14886,7 +14886,7 @@ static const struct builtin_description bdesc_2arg[] =
   IWMMXT_BUILTIN (iwmmxt_wmaddu, "wmaddu", WMADDU)
 
 #define IWMMXT_BUILTIN2(code, builtin) \
-  { FL_IWMMXT, CODE_FOR_##code, NULL, ARM_BUILTIN_##builtin, 0, 0 },
+  { FL_IWMMXT, CODE_FOR_##code, NULL, ARM_BUILTIN_##builtin, UNKNOWN, 0 },
 
   IWMMXT_BUILTIN2 (iwmmxt_wpackhss, WPACKHSS)
   IWMMXT_BUILTIN2 (iwmmxt_wpackwss, WPACKWSS)
@@ -15283,7 +15283,7 @@ arm_init_tls_builtins (void)
   TREE_READONLY (decl) = 1;
 }
 
-typedef enum {
+enum neon_builtin_type_bits {
   T_V8QI  = 0x0001,
   T_V4HI  = 0x0002,
   T_V2SI  = 0x0004,
@@ -15297,7 +15297,7 @@ typedef enum {
   T_TI	  = 0x0400,
   T_EI	  = 0x0800,
   T_OI	  = 0x1000
-} neon_builtin_type_bits;
+};
 
 #define v8qi_UP  T_V8QI
 #define v4hi_UP  T_V4HI
@@ -15360,7 +15360,7 @@ typedef enum {
 typedef struct {
   const char *name;
   const neon_itype itype;
-  const neon_builtin_type_bits bits;
+  const int bits;
   const enum insn_code codes[T_MAX];
   const unsigned int num_vars;
   unsigned int base_fcode;
@@ -16277,7 +16277,7 @@ arm_expand_neon_args (rtx target, int icode, int have_retval,
 
   for (;;)
     {
-      builtin_arg thisarg = va_arg (ap, int);
+      builtin_arg thisarg = (builtin_arg) va_arg (ap, int);
 
       if (thisarg == NEON_ARG_STOP)
         break;

@@ -878,8 +878,8 @@ extern struct df *df;
 /* Functions defined in df-core.c.  */
 
 extern void df_add_problem (struct df_problem *);
-extern enum df_changeable_flags df_set_flags (int);
-extern enum df_changeable_flags df_clear_flags (int);
+extern int df_set_flags (int);
+extern int df_clear_flags (int);
 extern void df_set_blocks (bitmap);
 extern void df_remove_problem (struct dataflow *);
 extern void df_finish_pass (bool);

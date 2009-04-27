@@ -737,7 +737,7 @@ ia64_depz_field_mask (rtx rop, rtx rshift)
 static enum tls_model
 tls_symbolic_operand_type (rtx addr)
 {
-  enum tls_model tls_kind = 0;
+  enum tls_model tls_kind = TLS_MODEL_NONE;
 
   if (GET_CODE (addr) == CONST)
     {

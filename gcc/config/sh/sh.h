@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Renesas / SuperH SH.
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -545,35 +545,35 @@ do {									\
       = !flag_signaling_nans && TARGET_SH2E && ! TARGET_IEEE;		\
   if (TARGET_SH2E && !flag_finite_math_only)				\
     target_flags |= MASK_IEEE;						\
-  sh_cpu = CPU_SH1;							\
+  sh_cpu = PROCESSOR_SH1;						\
   assembler_dialect = 0;						\
   if (TARGET_SH2)							\
-    sh_cpu = CPU_SH2;							\
+    sh_cpu = PROCESSOR_SH2;						\
   if (TARGET_SH2E)							\
-    sh_cpu = CPU_SH2E;							\
+    sh_cpu = PROCESSOR_SH2E;						\
   if (TARGET_SH2A)							\
     {									\
-      sh_cpu = CPU_SH2A;						\
+      sh_cpu = PROCESSOR_SH2A;						\
       if (TARGET_SH2A_DOUBLE)						\
         target_flags |= MASK_FMOVD;					\
     }									\
   if (TARGET_SH3)							\
-    sh_cpu = CPU_SH3;							\
+    sh_cpu = PROCESSOR_SH3;						\
   if (TARGET_SH3E)							\
-    sh_cpu = CPU_SH3E;							\
+    sh_cpu = PROCESSOR_SH3E;						\
   if (TARGET_SH4)							\
     {									\
       assembler_dialect = 1;						\
-      sh_cpu = CPU_SH4;							\
+      sh_cpu = PROCESSOR_SH4;						\
     }									\
   if (TARGET_SH4A_ARCH)							\
     {									\
       assembler_dialect = 1;						\
-      sh_cpu = CPU_SH4A;						\
+      sh_cpu = PROCESSOR_SH4A;						\
     }									\
   if (TARGET_SH5)							\
     {									\
-      sh_cpu = CPU_SH5;							\
+      sh_cpu = PROCESSOR_SH5;						\
       target_flags |= MASK_ALIGN_DOUBLE;				\
       if (TARGET_SHMEDIA_FPU)						\
 	target_flags |= MASK_FMOVD;					\

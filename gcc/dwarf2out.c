@@ -375,7 +375,7 @@ static unsigned current_funcdef_fde;
 struct GTY(()) indirect_string_node {
   const char *str;
   unsigned int refcount;
-  unsigned int form;
+  enum dwarf_form form;
   char *label;
 };
 
@@ -4995,7 +4995,7 @@ static hashval_t debug_str_do_hash (const void *);
 static int debug_str_eq (const void *, const void *);
 static void add_AT_string (dw_die_ref, enum dwarf_attribute, const char *);
 static inline const char *AT_string (dw_attr_ref);
-static int AT_string_form (dw_attr_ref);
+static enum dwarf_form AT_string_form (dw_attr_ref);
 static void add_AT_die_ref (dw_die_ref, enum dwarf_attribute, dw_die_ref);
 static void add_AT_specification (dw_die_ref, dw_die_ref);
 static inline dw_die_ref AT_ref (dw_attr_ref);
@@ -6001,7 +6001,7 @@ AT_string (dw_attr_ref a)
 /* Find out whether a string should be output inline in DIE
    or out-of-line in .debug_str section.  */
 
-static int
+static enum dwarf_form
 AT_string_form (dw_attr_ref a)
 {
   struct indirect_string_node *node;

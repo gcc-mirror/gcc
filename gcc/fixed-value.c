@@ -1,5 +1,5 @@
 /* Fixed-point arithmetic support.
-   Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -784,7 +784,7 @@ bool
 fixed_compare (int icode, const FIXED_VALUE_TYPE *op0,
 	       const FIXED_VALUE_TYPE *op1)
 {
-  enum tree_code code = icode;
+  enum tree_code code = (enum tree_code) icode;
   gcc_assert (op0->mode == op1->mode);
 
   switch (code)

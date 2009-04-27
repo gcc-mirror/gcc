@@ -555,10 +555,10 @@ expand_widen_pattern_expr (tree exp, rtx op0, rtx op1, rtx wide_op, rtx target,
                            int unsignedp)
 {   
   tree oprnd0, oprnd1, oprnd2;
-  enum machine_mode wmode = 0, tmode0, tmode1 = 0;
+  enum machine_mode wmode = VOIDmode, tmode0, tmode1 = VOIDmode;
   optab widen_pattern_optab;
   int icode; 
-  enum machine_mode xmode0, xmode1 = 0, wxmode = 0;
+  enum machine_mode xmode0, xmode1 = VOIDmode, wxmode = VOIDmode;
   rtx temp;
   rtx pat;
   rtx xop0, xop1, wxop;

@@ -93,7 +93,7 @@ extern void fixup_addr_diff_vecs (rtx);
 extern int get_dest_uid (rtx, int);
 extern void final_prescan_insn (rtx, rtx *, int);
 extern int symbol_ref_operand (rtx, enum machine_mode);
-extern int tls_symbolic_operand (rtx, enum machine_mode);
+extern enum tls_model tls_symbolic_operand (rtx, enum machine_mode);
 extern int system_reg_operand (rtx, enum machine_mode);
 extern int general_movsrc_operand (rtx, enum machine_mode);
 extern int general_movdst_operand (rtx, enum machine_mode);

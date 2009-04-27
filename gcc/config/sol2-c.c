@@ -1,5 +1,5 @@
 /* Solaris support needed only by C/C++ frontends.
-   Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -37,14 +37,14 @@ along with GCC; see the file COPYING3.  If not see
 static const format_length_info cmn_err_length_specs[] =
 {
   { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C89 },
-  { NULL, 0, 0, NULL, 0, 0 }
+  { NULL, FMT_LEN_none, STD_C89, NULL, FMT_LEN_none, STD_C89 }
 };
 
 static const format_flag_spec cmn_err_flag_specs[] =
 {
   { 'w',  0, 0, N_("field width"),     N_("field width in printf format"),     STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
-  { 0, 0, 0, NULL, NULL, 0 }
+  { 0, 0, 0, NULL, NULL, STD_C89 }
 };
 
 
@@ -66,7 +66,7 @@ static const format_char_info cmn_err_char_table[] =
   { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "w", "c",  NULL },
   { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "w",  "cR", NULL },
   { "b",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "w",   "",   &bitfield_string_type },
-  { NULL,  0, 0, NOLENGTHS, NULL, NULL, NULL }
+  { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
 const format_kind_info solaris_format_types[] = {

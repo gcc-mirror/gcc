@@ -4618,7 +4618,7 @@ supportable_widening_operation (enum tree_code code, gimple stmt, tree vectype,
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   bool ordered_p;
   enum machine_mode vec_mode;
-  enum insn_code icode1 = 0, icode2 = 0;
+  enum insn_code icode1, icode2;
   optab optab1, optab2;
   tree type = gimple_expr_type (stmt);
   tree wide_vectype = get_vectype_for_scalar_type (type);

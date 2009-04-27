@@ -3648,7 +3648,7 @@ finish_omp_clauses (tree clauses)
 
   for (pc = &clauses, c = clauses; c ; c = *pc)
     {
-      enum tree_code c_kind = OMP_CLAUSE_CODE (c);
+      enum omp_clause_code c_kind = OMP_CLAUSE_CODE (c);
       bool remove = false;
       bool need_complete_non_reference = false;
       bool need_default_ctor = false;

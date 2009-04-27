@@ -2202,7 +2202,7 @@ static inline enum tree_code
 gimple_cond_code (const_gimple gs)
 {
   GIMPLE_CHECK (gs, GIMPLE_COND);
-  return gs->gsbase.subcode;
+  return (enum tree_code) gs->gsbase.subcode;
 }
 
 

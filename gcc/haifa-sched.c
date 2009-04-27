@@ -1897,7 +1897,7 @@ reemit_notes (rtx insn)
     {
       if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
 	{
-	  enum insn_note note_type = INTVAL (XEXP (note, 0));
+	  enum insn_note note_type = (enum insn_note) INTVAL (XEXP (note, 0));
 
 	  last = emit_note_before (note_type, last);
 	  remove_note (insn, note);

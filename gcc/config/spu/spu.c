@@ -6029,7 +6029,7 @@ static int
 expand_builtin_args (struct spu_builtin_description *d, tree exp,
 		     rtx target, rtx ops[])
 {
-  enum insn_code icode = d->icode;
+  enum insn_code icode = (enum insn_code) d->icode;
   int i = 0, a;
 
   /* Expand the arguments into rtl. */
@@ -6057,7 +6057,7 @@ spu_expand_builtin_1 (struct spu_builtin_description *d,
 {
   rtx pat;
   rtx ops[8];
-  enum insn_code icode = d->icode;
+  enum insn_code icode = (enum insn_code) d->icode;
   enum machine_mode mode, tmode;
   int i, p;
   int n_operands;

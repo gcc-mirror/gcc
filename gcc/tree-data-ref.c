@@ -284,7 +284,8 @@ print_direction_vector (FILE *outf,
 
   for (eq = 0; eq < length; eq++)
     {
-      enum data_dependence_direction dir = dirv[eq];
+      enum data_dependence_direction dir = ((enum data_dependence_direction)
+					    dirv[eq]);
 
       switch (dir)
 	{

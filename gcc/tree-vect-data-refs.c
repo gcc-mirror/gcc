@@ -3231,7 +3231,7 @@ vect_supportable_dr_alignment (struct data_reference *dr)
   gimple stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  enum machine_mode mode = (int) TYPE_MODE (vectype);
+  enum machine_mode mode = TYPE_MODE (vectype);
   struct loop *vect_loop = LOOP_VINFO_LOOP (STMT_VINFO_LOOP_VINFO (stmt_info));
   bool nested_in_vect_loop = nested_in_vect_loop_p (vect_loop, stmt);
   bool invariant_in_outerloop = false;
