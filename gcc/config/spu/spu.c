@@ -2764,6 +2764,25 @@ spu_machine_dependent_reorg (void)
 
   pad_bb ();
 
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (NONJUMP_INSN_P (insn) && INSN_CODE (insn) == CODE_FOR_hbr)
+      {
+	/* Adjust the LABEL_REF in a hint when we have inserted a nop
+	   between its branch label and the branch .  We don't move the
+	   label because GCC expects it at the beginning of the block. */
+	rtx unspec = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
+	rtx label_ref = XVECEXP (unspec, 0, 0);
+	rtx label = XEXP (label_ref, 0);
+	rtx branch;
+	int offset = 0;
+	for (branch = NEXT_INSN (label);
+	     !JUMP_P (branch) && !CALL_P (branch);
+	     branch = NEXT_INSN (branch))
+	  if (NONJUMP_INSN_P (branch))
+	    offset += get_attr_length (branch);
+	if (offset > 0)
+	  XVECEXP (unspec, 0, 0) = plus_constant (label_ref, offset);
+      }
 
   if (spu_flag_var_tracking)
     {
