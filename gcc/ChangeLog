@@ -1,3 +1,15 @@
+2009-04-27  Richard Sandiford  <rdsandiford@googlemail.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
+
+	* resource.c (find_basic_block): Use BLOCK_FOR_INSN to look up
+	a label's basic block.
+	(mark_target_live_regs): Tidy and rework obsolete comments.
+	Change back DF problem to LIVE.  If a label starts a basic block,
+	assume that all registers that used to be live then still are.
+	(init_resource_info): If a label starts a basic block, set its
+	BLOCK_FOR_INSN accordingly.
+	(fini_resource_info): Undo the setting of BLOCK_FOR_INSN.
+
 2009-04-27  Richard Guenther  <rguenther@suse.de>
 
 	* tree-flow-inline.h (function_ann): Remove.
