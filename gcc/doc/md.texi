@@ -552,7 +552,7 @@ As a special case, a template consisting of the single character @code{#}
 instructs the compiler to first split the insn, and then output the
 resulting instructions separately.  This helps eliminate redundancy in the
 output templates.   If you have a @code{define_insn} that needs to emit
-multiple assembler instructions, and there is an matching @code{define_split}
+multiple assembler instructions, and there is a matching @code{define_split}
 already defined, then you can simply use @code{#} as the output template
 instead of writing an output template that emits the multiple assembler
 instructions.
@@ -3323,7 +3323,7 @@ memory address of this type.  If @samp{Q} is defined with
 @code{define_memory_constraint}, a @samp{Q} constraint can handle any
 memory operand, because @code{reload} knows it can simply copy the
 memory address into a base register if required.  This is analogous to
-the way a @samp{o} constraint can handle any memory operand.
+the way an @samp{o} constraint can handle any memory operand.
 
 The syntax and semantics are otherwise identical to
 @code{define_constraint}.
@@ -4729,7 +4729,7 @@ A label that precedes the table itself.
 A label to jump to if the index has a value outside the bounds.
 @end enumerate
 
-The table is a @code{addr_vec} or @code{addr_diff_vec} inside of a
+The table is an @code{addr_vec} or @code{addr_diff_vec} inside of a
 @code{jump_insn}.  The number of elements in the table is one plus the
 difference between the upper bound and the lower bound.
 
@@ -4949,7 +4949,7 @@ the first three are normally used by the generic mechanism.
 
 @cindex @code{builtin_setjmp_receiver} instruction pattern
 @item @samp{builtin_setjmp_receiver}
-This pattern, if defined, contains code needed at the site of an
+This pattern, if defined, contains code needed at the site of a
 built-in setjmp that isn't needed at the site of a nonlocal goto.  You
 will not normally need to define this pattern.  A typical reason why you
 might need this pattern is if some value, such as a pointer to a global
@@ -6116,7 +6116,7 @@ more assistance is needed.  Splitter is required to create only unconditional
 jumps, or simple conditional jump instructions.  Additionally it must attach a
 @code{REG_BR_PROB} note to each conditional jump.  A global variable
 @code{split_branch_probability} holds the probability of the original branch in case
-it was an simple conditional jump, @minus{}1 otherwise.  To simplify
+it was a simple conditional jump, @minus{}1 otherwise.  To simplify
 recomputing of edge frequencies, the new sequence is required to have only
 forward jumps to the newly created labels.
 

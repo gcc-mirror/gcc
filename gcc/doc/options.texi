@@ -106,7 +106,7 @@ The option does not have a ``no-'' form.  All options beginning with
 property is used.
 
 @item Negative(@var{othername})
-The option will turn off another option @var{othername}, which is the
+The option will turn off another option @var{othername}, which is
 the option name with the leading ``-'' removed.  This chain action will
 propagate through the @code{Negative} property of the option to be
 turned off.

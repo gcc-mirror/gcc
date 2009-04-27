@@ -608,7 +608,7 @@ includes the creation of new basic blocks where needed.  In the
 iterator on an edge, and @code{bsi_commit_edge_inserts} which flushes
 the instruction to actual instruction stream.
 
-While debugging the optimization pass, an @code{verify_flow_info}
+While debugging the optimization pass, a @code{verify_flow_info}
 function may be useful to find bugs in the control flow graph updating
 code.
 
@@ -638,7 +638,7 @@ used on some path from @code{P} to the end of the function.  With
 beginning of the function to @code{P} that defines the variable.  
 @code{LIVE} is the intersection of the @code{LR} and @code{UR} and a
 variable is live at @code{P} if there is both an assignment that reaches
-it from the beginning of the function and a uses that can be reached on
+it from the beginning of the function and a use that can be reached on
 some path from @code{P} to the end of the function.
 
 In general @code{LIVE} is the most useful of the three.  The macros

@@ -3152,7 +3152,7 @@ Warn whenever a function is defined with a return-type that defaults
 to @code{int}.  Also warn about any @code{return} statement with no
 return-value in a function whose return-type is not @code{void}
 (falling off the end of the function body is considered returning
-without a value), and about a @code{return} statement with a
+without a value), and about a @code{return} statement with an
 expression in a function whose return-type is @code{void}.
 
 For C++, a function without return type always produces a diagnostic
@@ -6211,8 +6211,8 @@ This flag is enabled by default at @option{-O3}.
 @item -fipa-matrix-reorg
 @opindex fipa-matrix-reorg
 Perform matrix flattening and transposing.
-Matrix flattening tries to replace a m-dimensional matrix 
-with its equivalent n-dimensional matrix, where n < m.
+Matrix flattening tries to replace an @math{m}-dimensional matrix
+with its equivalent @math{n}-dimensional matrix, where @math{n < m}.
 This reduces the level of indirection needed for accessing the elements
 of the matrix. The second optimization is matrix transposing that
 attempts to change the order of the matrix's dimensions in order to
@@ -6776,13 +6776,13 @@ Enabled by default with @option{-funroll-loops}.
 
 @item -fwhole-program
 @opindex fwhole-program
-Assume that the current compilation unit represents whole program being
+Assume that the current compilation unit represents the whole program being
 compiled.  All public functions and variables with the exception of @code{main}
 and those merged by attribute @code{externally_visible} become static functions
-and in a affect gets more aggressively optimized by interprocedural optimizers.
-While this option is equivalent to proper use of @code{static} keyword for
-programs consisting of single file, in combination with option
-@option{--combine} this flag can be used to compile most of smaller scale C
+and in effect are optimized more aggressively by interprocedural optimizers.
+While this option is equivalent to proper use of the @code{static} keyword for
+programs consisting of a single file, in combination with option
+@option{--combine} this flag can be used to compile many smaller scale C
 programs since the functions and variables become local for the whole combined
 compilation unit, not for the single source file itself.
 
@@ -9366,7 +9366,7 @@ Change only the low 8 bits of the stack pointer.
 @item -mint8
 @opindex mint8
 Assume int to be 8 bit integer.  This affects the sizes of all types: A
-char will be 1 byte, an int will be 1 byte, an long will be 2 bytes
+char will be 1 byte, an int will be 1 byte, a long will be 2 bytes
 and long long will be 4 bytes.  Please note that this option does not
 comply to the C standards, but it will provide you with smaller code
 size.
@@ -9737,7 +9737,7 @@ that GCC is targetting, like @option{-mcpu} or @option{-march}.  The
 The Darwin tools vary in their behavior when presented with an ISA
 mismatch.  The assembler, @file{as}, will only permit instructions to
 be used that are valid for the subtype of the file it is generating,
-so you cannot put 64-bit instructions in an @samp{ppc750} object file.
+so you cannot put 64-bit instructions in a @samp{ppc750} object file.
 The linker for shared libraries, @file{/usr/bin/libtool}, will fail
 and print an error if asked to create a shared library with a less
 restrictive subtype than its input files (for instance, trying to put

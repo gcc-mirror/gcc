@@ -297,7 +297,7 @@ times throughout the optimization process.  It is located in
 
 This pass performs trivial dominator-based copy and constant propagation,
 expression simplification, and jump threading.  It is run multiple times
-throughout the optimization process.  It it located in @file{tree-ssa-dom.c}
+throughout the optimization process.  It is located in @file{tree-ssa-dom.c}
 and is described by @code{pass_dominator}.
 
 @item Forward propagation of single-use variables

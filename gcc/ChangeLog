@@ -1,3 +1,30 @@
+2009-04-27  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* doc/c-tree.texi (Types, Functions, Expression trees): Fix
+	grammar nits.
+	* doc/cfg.texi (Maintaining the CFG, Liveness information):
+	Likewise.
+	* doc/cpp.texi (Standard Predefined Macros)
+	(Implementation-defined behavior): Likewise.
+	* doc/extend.texi (Function Attributes, Type Attributes):
+	Likewise.
+	* doc/gimple.texi (GIMPLE Exception Handling)
+	(@code{GIMPLE_ASSIGN}): Likewise.
+	* doc/install.texi (Prerequisites, Configuration, Specific):
+	Likewise.
+	* doc/invoke.texi (Warning Options, Optimize Options)
+	(AVR Options, Darwin Options): Likewise.
+	(Optimize Options): Reformulate -fwhole-program description.
+	* doc/loop.texi (Lambda): Likewise.
+	* doc/md.texi (Output Template, Define Constraints)
+	(Standard Names, Insn Splitting): Likewise.
+	* doc/options.texi (Option properties): Likewise.
+	* doc/passes.texi (Tree-SSA passes): Likewise.
+	* doc/rtl.texi (Side Effects, Assembler, Insns): Likewise.
+	* doc/tm.texi (Register Classes, Old Constraints, Scalar Return)
+	(File Names and DBX): Likewise.
+	* doc/trouble.texi (Incompatibilities): Likewise.
+
 2009-04-27  Trevor Smigiel <trevor_smigiel@playstation.sony.com>
 
 	* spu.c (spu_machine_dependent_reorg): Make sure branch label on hint

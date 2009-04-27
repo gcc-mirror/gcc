@@ -2153,7 +2153,7 @@ On the SH Symbian OS target the @code{dllimport} attribute also has
 another affect---it can cause the vtable and run-time type information
 for a class to be exported.  This happens when the class has a
 dllimport'ed constructor or a non-inline, non-pure virtual function
-and, for either of those two conditions, the class also has a inline
+and, for either of those two conditions, the class also has an inline
 constructor or destructor and has a key function that is defined in
 the current translation unit.
 
@@ -4422,7 +4422,7 @@ struct __attribute__ ((__packed__)) my_packed_struct
   @};
 @end smallexample
 
-You may only specify this attribute on the definition of a @code{enum},
+You may only specify this attribute on the definition of an @code{enum},
 @code{struct} or @code{union}, not on a @code{typedef} which does not
 also define the enumerated type, structure or union.
 
