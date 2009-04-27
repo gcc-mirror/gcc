@@ -1,3 +1,10 @@
+2009-04-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (remove_useless_stmts): Verify stmts afterwards.
+	(verify_stmts): Dispatch to gimple/type verification code.
+	* tree-inline.c (remap_gimple_op_r): Work around C++ FE
+	issue with call argument types.
+
 2009-04-27  Michael Matz  <matz@suse.de>
 
 	* tree-into-ssa.c (regs_to_rename, mem_syms_to_rename): Remove.
