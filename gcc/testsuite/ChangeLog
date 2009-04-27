@@ -1,3 +1,9 @@
+2009-04-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39903
+	* gcc.dg/torture/pr39903-1.c: New.
+	* gcc.dg/torture/pr39903-2.c: Likewise.
+
 2009-04-27  Revital Eres  <eres@il.ibm.com>
 
 	* gcc.dg/sms-1.c: Add noinline attribute, create sms dump file
