@@ -280,13 +280,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* GCSE global vars.  */
 
-/* Note whether or not we should run jump optimization after gcse.  We
-   want to do this for two cases.
-
-    * If we changed any jumps via cprop.
-
-    * If we added any labels via edge splitting.  */
-static int run_jump_opt_after_gcse;
+/* Set to non-zero if CSE should run after all GCSE optimizations are done.  */
+int flag_rerun_cse_after_global_opts;
 
 /* An obstack for our working variables.  */
 static struct obstack gcse_obstack;
@@ -370,11 +365,6 @@ static struct hash_table expr_hash_table;
 /* Copy propagation hash table.  */
 static struct hash_table set_hash_table;
 
-/* Maximum register number in function prior to doing gcse + 1.
-   Registers created during this pass have regno >= max_gcse_regno.
-   This is named with "gcse" to not collide with global of same name.  */
-static unsigned int max_gcse_regno;
-
 /* This is a list of expressions which are MEMs and will be used by load
    or store motion.
    Load motion tracks MEMs which aren't killed by
@@ -450,7 +440,6 @@ static int global_copy_prop_count;
 static sbitmap *ae_kill, *ae_gen;
 
 static void compute_can_copy (void);
-static void recompute_all_luids (void);
 static void *gmalloc (size_t) ATTRIBUTE_MALLOC;
 static void *gcalloc (size_t, size_t) ATTRIBUTE_MALLOC;
 static void *gcse_alloc (unsigned long);
@@ -502,11 +491,10 @@ static int cprop_jump (basic_block, rtx, rtx, rtx, rtx);
 static void mems_conflict_for_gcse_p (rtx, const_rtx, void *);
 static int load_killed_in_block_p (const_basic_block, int, const_rtx, int);
 static void canon_list_insert (rtx, const_rtx, void *);
-static int cprop_insn (rtx, int);
-static int cprop (int);
+static int cprop_insn (rtx);
 static void find_implicit_sets (void);
-static int one_cprop_pass (int, bool, bool);
-static bool constprop_register (rtx, rtx, rtx, bool);
+static int one_cprop_pass (void);
+static bool constprop_register (rtx, rtx, rtx);
 static struct expr *find_bypass_set (int, int);
 static bool reg_killed_on_edge (const_rtx, const_edge);
 static int bypass_block (basic_block, rtx, rtx);
@@ -521,14 +509,14 @@ static void pre_insert_copy_insn (struct expr *, rtx);
 static void pre_insert_copies (void);
 static int pre_delete (void);
 static int pre_gcse (void);
-static int one_pre_gcse_pass (int);
+static int one_pre_gcse_pass (void);
 static void add_label_notes (rtx, rtx);
 static void alloc_code_hoist_mem (int, int);
 static void free_code_hoist_mem (void);
 static void compute_code_hoist_vbeinout (void);
 static void compute_code_hoist_data (void);
 static int hoist_expr_reaches_here_p (basic_block, int, basic_block, char *);
-static void hoist_code (void);
+static int hoist_code (void);
 static int one_code_hoisting_pass (void);
 static rtx process_insert_insn (struct expr *);
 static int pre_edge_insert (struct edge_list *, struct expr **);
@@ -566,14 +554,14 @@ static void remove_reachable_equiv_notes (basic_block, struct ls_expr *);
 static void replace_store_insn (rtx, rtx, basic_block, struct ls_expr *);
 static void delete_store (struct ls_expr *, basic_block);
 static void free_store_memory (void);
-static void store_motion (void);
+static int one_store_motion_pass (void);
 static void free_insn_expr_list_list (rtx *);
 static void clear_modify_mem_tables (void);
 static void free_modify_mem_tables (void);
 static rtx gcse_emit_move_after (rtx, rtx, rtx);
 static void local_cprop_find_used_regs (rtx *, void *);
-static bool do_local_cprop (rtx, rtx, bool);
-static void local_cprop_pass (bool);
+static bool do_local_cprop (rtx, rtx);
+static int local_cprop_pass (void);
 static bool is_too_expensive (const char *);
 
 #define GNEW(T)			((T *) gmalloc (sizeof (T)))
@@ -587,155 +575,6 @@ static bool is_too_expensive (const char *);
 
 #define GOBNEW(T)		((T *) gcse_alloc (sizeof (T)))
 #define GOBNEWVAR(T, S)		((T *) gcse_alloc ((S)))
-
-
-/* Entry point for global common subexpression elimination.
-   F is the first instruction in the function.  Return nonzero if a
-   change is mode.  */
-
-static int
-gcse_main (rtx f ATTRIBUTE_UNUSED)
-{
-  int changed;
-  /* Point to release obstack data from for each pass.  */
-  char *gcse_obstack_bottom;
-
-  /* We do not construct an accurate cfg in functions which call
-     setjmp, so just punt to be safe.  */
-  if (cfun->calls_setjmp)
-    return 0;
-
-  /* Assume that we do not need to run jump optimizations after gcse.  */
-  run_jump_opt_after_gcse = 0;
-
-  /* Identify the basic block information for this function, including
-     successors and predecessors.  */
-  max_gcse_regno = max_reg_num ();
-
-  df_note_add_problem ();
-  df_analyze ();
-
-  if (dump_file)
-    dump_flow_info (dump_file, dump_flags);
-
-  /* Return if there's nothing to do, or it is too expensive.  */
-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
-      || is_too_expensive (_("GCSE disabled")))
-    return 0;
-
-  gcc_obstack_init (&gcse_obstack);
-  bytes_used = 0;
-
-  /* We need alias.  */
-  init_alias_analysis ();
-
-  gcse_obstack_bottom = GOBNEWVAR (char, 1);
-  changed = 0;
- 
-  if (dump_file)
-    fprintf (dump_file, "GCSE pass\n\n");
-
-  max_gcse_regno = max_reg_num ();
-
-  alloc_gcse_mem ();
-
-  /* Don't allow constant propagation to modify jumps
-     during this pass.  */
-  if (dbg_cnt (cprop1))
-    {
-      timevar_push (TV_CPROP1);
-      changed = one_cprop_pass (1, false, false);
-      if (changed)
-        recompute_all_luids ();
-      timevar_pop (TV_CPROP1);
-    }
-
-  if (optimize_function_for_speed_p (cfun))
-    {
-      timevar_push (TV_PRE);
-      changed |= one_pre_gcse_pass (1);
-      /* We may have just created new basic blocks.  Release and
-	 recompute various things which are sized on the number of
-	 basic blocks.
-	 ??? There would be no need for this if we used a block
-	 based Lazy Code Motion variant, with all (or selected)
-	 edges split before running the pass.  That would also
-	 help find_implicit_sets for cprop.  FIXME.  */
-      if (changed)
-	{
-	  free_modify_mem_tables ();
-	  modify_mem_list = GCNEWVEC (rtx, last_basic_block);
-	  canon_modify_mem_list = GCNEWVEC (rtx, last_basic_block);
-	}
-
-      df_analyze ();
-      run_jump_opt_after_gcse = 1;
-      timevar_pop (TV_PRE);
-    }
-  else
-    {
-      /* This function is being optimized for code size.
-	 It does not make sense to run code hoisting unless we are optimizing
-	 for code size -- it rarely makes programs faster, and can make
-	 them bigger if we did partial redundancy elimination (when optimizing
-	 for space, we don't run the partial redundancy algorithms).  */
-      timevar_push (TV_HOIST);
-      max_gcse_regno = max_reg_num ();
-      alloc_gcse_mem ();
-      one_code_hoisting_pass ();
-      timevar_pop (TV_HOIST);
-    }
-
-  free_gcse_mem ();
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "\n");
-      fflush (dump_file);
-    }
-
-  obstack_free (&gcse_obstack, gcse_obstack_bottom);
-
-  /* Do the second const/copy propagation pass, including cprop into
-     conditional jumps.  */
-  if (dbg_cnt (cprop2))
-    {
-      max_gcse_regno = max_reg_num ();
-      alloc_gcse_mem ();
-
-      /* This time, go ahead and allow cprop to alter jumps.  */
-      timevar_push (TV_CPROP2);
-      changed = one_cprop_pass (2, true, true);
-      if (changed)
-        recompute_all_luids ();
-      timevar_pop (TV_CPROP2);
-      free_gcse_mem ();
-    }
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "GCSE of %s: %d basic blocks, ",
-	       current_function_name (), n_basic_blocks);
-      fprintf (dump_file, "pass 1, %d bytes\n\n", bytes_used);
-    }
-
-  obstack_free (&gcse_obstack, NULL);
-
-  /* We are finished with alias.
-     ??? Actually we recompute alias in store_motion.  */
-  end_alias_analysis ();
-
-  /* Run store motion.  */
-  if (optimize_function_for_speed_p (cfun) && flag_gcse_sm)
-    {
-      timevar_push (TV_LSM);
-      store_motion ();
-      timevar_pop (TV_LSM);
-    }
-
-  /* Record where pseudo-registers are set.  */
-  return run_jump_opt_after_gcse;
-}
 
 /* Misc. utilities.  */
 
@@ -788,19 +627,6 @@ can_copy_p (enum machine_mode mode)
     }
 
   return can_copy[mode] != 0;
-}
-
-/* Recompute the DF LUIDs for all basic blocks.  If a sub-pass in this
-   file changes something, we have to recompute them for the next pass.
-   FIXME: If we would track which basic blocks we touch, we could
-	  update LUIDs in only those basic blocks.  */
-
-static void
-recompute_all_luids (void)
-{
-  basic_block bb;
-  FOR_EACH_BB (bb)
-    df_recompute_luids (bb);
 }
 
 
@@ -1447,11 +1273,10 @@ insert_set_in_table (rtx x, rtx insn, struct hash_table *table)
       /* First occurrence of this expression in this basic block.  */
       cur_occr = GOBNEW (struct occr);
       bytes_used += sizeof (struct occr);
-
-	  cur_occr->insn = insn;
-	  cur_occr->next = cur_expr->avail_occr;
-	  cur_occr->deleted_p = 0;
-	  cur_expr->avail_occr = cur_occr;
+      cur_occr->insn = insn;
+      cur_occr->next = cur_expr->avail_occr;
+      cur_occr->deleted_p = 0;
+      cur_expr->avail_occr = cur_occr;
     }
 }
 
@@ -1839,14 +1664,14 @@ record_last_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED, void *data)
 static void
 compute_hash_table_work (struct hash_table *table)
 {
-  unsigned int i;
+  int i;
 
   /* re-Cache any INSN_LIST nodes we have allocated.  */
   clear_modify_mem_tables ();
   /* Some working arrays used to track first and last set in each block.  */
-  reg_avail_info = GNEWVEC (struct reg_avail_info, max_gcse_regno);
+  reg_avail_info = GNEWVEC (struct reg_avail_info, max_reg_num ());
 
-  for (i = 0; i < max_gcse_regno; ++i)
+  for (i = 0; i < max_reg_num (); ++i)
     reg_avail_info[i].last_bb = NULL;
 
   FOR_EACH_BB (current_bb)
@@ -2631,8 +2456,6 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
     delete_insn (setcc);
 #endif
 
-  run_jump_opt_after_gcse = 1;
-
   global_const_prop_count++;
   if (dump_file != NULL)
     {
@@ -2666,14 +2489,13 @@ cprop_jump (basic_block bb, rtx setcc, rtx jump, rtx from, rtx src)
 }
 
 static bool
-constprop_register (rtx insn, rtx from, rtx to, bool alter_jumps)
+constprop_register (rtx insn, rtx from, rtx to)
 {
   rtx sset;
 
   /* Check for reg or cc0 setting instructions followed by
      conditional branch instructions first.  */
-  if (alter_jumps
-      && (sset = single_set (insn)) != NULL
+  if ((sset = single_set (insn)) != NULL
       && NEXT_INSN (insn)
       && any_condjump_p (NEXT_INSN (insn)) && onlyjump_p (NEXT_INSN (insn)))
     {
@@ -2694,7 +2516,7 @@ constprop_register (rtx insn, rtx from, rtx to, bool alter_jumps)
 
      Right now the insn in question must look like
      (set (pc) (if_then_else ...))  */
-  else if (alter_jumps && any_condjump_p (insn) && onlyjump_p (insn))
+  else if (any_condjump_p (insn) && onlyjump_p (insn))
     return cprop_jump (BLOCK_FOR_INSN (insn), NULL, insn, from, to);
   return 0;
 }
@@ -2703,7 +2525,7 @@ constprop_register (rtx insn, rtx from, rtx to, bool alter_jumps)
    The result is nonzero if a change was made.  */
 
 static int
-cprop_insn (rtx insn, int alter_jumps)
+cprop_insn (rtx insn)
 {
   struct reg_use *reg_used;
   int changed = 0;
@@ -2728,11 +2550,6 @@ cprop_insn (rtx insn, int alter_jumps)
       rtx pat, src;
       struct expr *set;
 
-      /* Ignore registers created by GCSE.
-	 We do this because ...  */
-      if (regno >= max_gcse_regno)
-	continue;
-
       /* If the register has already been set in this block, there's
 	 nothing we can do.  */
       if (! oprs_not_set_p (reg_used->reg_rtx, insn))
@@ -2753,7 +2570,7 @@ cprop_insn (rtx insn, int alter_jumps)
       /* Constant propagation.  */
       if (gcse_constant_p (src))
 	{
-          if (constprop_register (insn, reg_used->reg_rtx, src, alter_jumps))
+          if (constprop_register (insn, reg_used->reg_rtx, src))
 	    {
 	      changed = 1;
 	      global_const_prop_count++;
@@ -2840,11 +2657,10 @@ local_cprop_find_used_regs (rtx *xptr, void *data)
   find_used_regs (xptr, data);
 }
 
-/* Try to perform local const/copy propagation on X in INSN.
-   If ALTER_JUMPS is false, changing jump insns is not allowed.  */
+/* Try to perform local const/copy propagation on X in INSN.  */
 
 static bool
-do_local_cprop (rtx x, rtx insn, bool alter_jumps)
+do_local_cprop (rtx x, rtx insn)
 {
   rtx newreg = NULL, newcnst = NULL;
 
@@ -2877,7 +2693,7 @@ do_local_cprop (rtx x, rtx insn, bool alter_jumps)
 		  || ! MEM_P (XEXP (note, 0))))
 	    newreg = this_rtx;
 	}
-      if (newcnst && constprop_register (insn, x, newcnst, alter_jumps))
+      if (newcnst && constprop_register (insn, x, newcnst))
 	{
 	  if (dump_file != NULL)
 	    {
@@ -2907,12 +2723,10 @@ do_local_cprop (rtx x, rtx insn, bool alter_jumps)
   return false;
 }
 
-/* Do local const/copy propagation (i.e. within each basic block).
-   If ALTER_JUMPS is true, allow propagating into jump insns, which
-   could modify the CFG.  */
+/* Do local const/copy propagation (i.e. within each basic block).  */
 
-static void
-local_cprop_pass (bool alter_jumps)
+static int
+local_cprop_pass (void)
 {
   basic_block bb;
   rtx insn;
@@ -2938,7 +2752,7 @@ local_cprop_pass (bool alter_jumps)
 		  for (reg_used = &reg_use_table[0]; reg_use_count > 0;
 		       reg_used++, reg_use_count--)
 		    {
-		      if (do_local_cprop (reg_used->reg_rtx, insn, alter_jumps))
+		      if (do_local_cprop (reg_used->reg_rtx, insn))
 			{
 			  changed = true;
 			  break;
@@ -2957,52 +2771,6 @@ local_cprop_pass (bool alter_jumps)
     }
 
   cselib_finish ();
-
-  /* Global analysis may get into infinite loops for unreachable blocks.  */
-  if (changed && alter_jumps)
-    delete_unreachable_blocks ();
-}
-
-/* Forward propagate copies.  This includes copies and constants.  Return
-   nonzero if a change was made.  */
-
-static int
-cprop (int alter_jumps)
-{
-  int changed;
-  basic_block bb;
-  rtx insn;
-
-  /* Note we start at block 1.  */
-  if (ENTRY_BLOCK_PTR->next_bb == EXIT_BLOCK_PTR)
-    {
-      if (dump_file != NULL)
-	fprintf (dump_file, "\n");
-      return 0;
-    }
-
-  changed = 0;
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb, EXIT_BLOCK_PTR, next_bb)
-    {
-      /* Reset tables used to keep track of what's still valid [since the
-	 start of the block].  */
-      reset_opr_set_tables ();
-
-      FOR_BB_INSNS (bb, insn)
-	if (INSN_P (insn))
-	  {
-	    changed |= cprop_insn (insn, alter_jumps);
-
-	    /* Keep track of everything modified by this insn.  */
-	    /* ??? Need to be careful w.r.t. mods done to INSN.  Don't
-	       call mark_oprs_set if we turned the insn into a NOTE.  */
-	    if (! NOTE_P (insn))
-	      mark_oprs_set (insn);
-	  }
-    }
-
-  if (dump_file != NULL)
-    fprintf (dump_file, "\n");
 
   return changed;
 }
@@ -3060,7 +2828,12 @@ implicit_set_cond_p (const_rtx cond)
    following "if (x == 2)", the then branch may be optimized as though the
    conditional performed an "explicit set", in this example, "x = 2".  This
    function records the set patterns that are implicit at the start of each
-   basic block.  */
+   basic block.
+
+   FIXME: This would be more effective if critical edges are pre-split.  As
+	  it is now, we can't record implicit sets for blocks that have
+	  critical successor edges.  This results in missed optimizations
+	  and in more (unnecessary) work in cfgcleanup.c:thread_jump().  */
 
 static void
 find_implicit_sets (void)
@@ -3085,7 +2858,9 @@ find_implicit_sets (void)
 	    dest = GET_CODE (cond) == EQ ? BRANCH_EDGE (bb)->dest
 					 : FALLTHRU_EDGE (bb)->dest;
 
-	    if (dest && single_pred_p (dest)
+	    if (dest
+		/* Record nothing for a critical edge.  */
+		&& single_pred_p (dest)
 		&& dest != EXIT_BLOCK_PTR)
 	      {
 		new_rtx = gen_rtx_SET (VOIDmode, XEXP (cond, 0),
@@ -3106,63 +2881,6 @@ find_implicit_sets (void)
     fprintf (dump_file, "Found %d implicit sets\n", count);
 }
 
-/* Perform one copy/constant propagation pass.
-   PASS is the pass count.  If CPROP_JUMPS is true, perform constant
-   propagation into conditional jumps.  If BYPASS_JUMPS is true,
-   perform conditional jump bypassing optimizations.  */
-
-static int
-one_cprop_pass (int pass, bool cprop_jumps, bool bypass_jumps)
-{
-  int changed = 0;
-
-  global_const_prop_count = local_const_prop_count = 0;
-  global_copy_prop_count = local_copy_prop_count = 0;
-
-  if (cprop_jumps)
-    local_cprop_pass (cprop_jumps);
-
-  /* Determine implicit sets.  */
-  implicit_sets = XCNEWVEC (rtx, last_basic_block);
-  find_implicit_sets ();
-
-  alloc_hash_table (get_max_uid (), &set_hash_table, 1);
-  compute_hash_table (&set_hash_table);
-
-  /* Free implicit_sets before peak usage.  */
-  free (implicit_sets);
-  implicit_sets = NULL;
-
-  if (dump_file)
-    dump_hash_table (dump_file, "SET", &set_hash_table);
-  if (set_hash_table.n_elems > 0)
-    {
-      alloc_cprop_mem (last_basic_block, set_hash_table.n_elems);
-      compute_cprop_data ();
-      changed = cprop (cprop_jumps);
-      if (bypass_jumps)
-	changed |= bypass_conditional_jumps ();
-      free_cprop_mem ();
-    }
-
-  free_hash_table (&set_hash_table);
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "CPROP of %s, pass %d: %d bytes needed, ",
-	       current_function_name (), pass, bytes_used);
-      fprintf (dump_file, "%d local const props, %d local copy props, ",
-	       local_const_prop_count, local_copy_prop_count);
-      fprintf (dump_file, "%d global const props, %d global copy props\n\n",
-	       global_const_prop_count, global_copy_prop_count);
-    }
-  /* Global analysis may get into infinite loops for unreachable blocks.  */
-  if (changed && cprop_jumps)
-    delete_unreachable_blocks ();
-
-  return changed;
-}
-
 /* Bypass conditional jumps.  */
 
 /* The value of last_basic_block at the beginning of the jump_bypass
@@ -3301,9 +3019,6 @@ bypass_block (basic_block bb, rtx setcc, rtx jump)
 	  basic_block dest, old_dest;
 	  struct expr *set;
 	  rtx src, new_rtx;
-
-	  if (regno >= max_gcse_regno)
-	    continue;
 
 	  set = find_bypass_set (regno, e->src->index);
 
@@ -3888,7 +3603,7 @@ pre_edge_insert (struct edge_list *edge_list, struct expr **index_map)
 
 			if (dump_file)
 			  {
-			    fprintf (dump_file, "PRE/HOIST: edge (%d,%d), ",
+			    fprintf (dump_file, "PRE: edge (%d,%d), ",
 				     bb->index,
 				     INDEX_EDGE_SUCC_BB (edge_list, e)->index);
 			    fprintf (dump_file, "copy expression %d\n",
@@ -4232,12 +3947,24 @@ pre_gcse (void)
    Return nonzero if a change was made.  */
 
 static int
-one_pre_gcse_pass (int pass)
+one_pre_gcse_pass (void)
 {
   int changed = 0;
 
   gcse_subst_count = 0;
   gcse_create_count = 0;
+
+  /* Return if there's nothing to do, or it is too expensive.  */
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
+      || is_too_expensive (_("PRE disabled")))
+    return 0;
+
+  /* We need alias.  */
+  init_alias_analysis ();
+
+  bytes_used = 0;
+  gcc_obstack_init (&gcse_obstack);
+  alloc_gcse_mem ();
 
   alloc_hash_table (get_max_uid (), &expr_hash_table, 0);
   add_noreturn_fake_exit_edges ();
@@ -4262,10 +3989,16 @@ one_pre_gcse_pass (int pass)
   remove_fake_exit_edges ();
   free_hash_table (&expr_hash_table);
 
+  free_gcse_mem ();
+  obstack_free (&gcse_obstack, NULL);
+
+  /* We are finished with alias.  */
+  end_alias_analysis ();
+
   if (dump_file)
     {
-      fprintf (dump_file, "\nPRE GCSE of %s, pass %d: %d bytes needed, ",
-	       current_function_name (), pass, bytes_used);
+      fprintf (dump_file, "PRE GCSE of %s, %d basic blocks, %d bytes needed, ",
+	       current_function_name (), n_basic_blocks, bytes_used);
       fprintf (dump_file, "%d substs, %d insns created\n",
 	       gcse_subst_count, gcse_create_count);
     }
@@ -4530,7 +4263,7 @@ hoist_expr_reaches_here_p (basic_block expr_bb, int expr_index, basic_block bb, 
 
 /* Actually perform code hoisting.  */
 
-static void
+static int
 hoist_code (void)
 {
   basic_block bb, dominated;
@@ -4538,6 +4271,7 @@ hoist_code (void)
   unsigned int i,j;
   struct expr **index_map;
   struct expr *expr;
+  int changed = 0;
 
   sbitmap_vector_zero (hoist_exprs, last_basic_block);
 
@@ -4669,6 +4403,9 @@ hoist_code (void)
 		      gcse_emit_move_after (expr->reaching_reg, SET_DEST (set), insn);
 		      delete_insn (insn);
 		      occr->deleted_p = 1;
+		      changed = 1;
+		      gcse_subst_count++;
+
 		      if (!insn_inserted_p)
 			{
 			  insert_insn_end_basic_block (index_map[i], bb, 0);
@@ -4682,6 +4419,8 @@ hoist_code (void)
     }
 
   free (index_map);
+
+  return changed;
 }
 
 /* Top level routine to perform one code hoisting (aka unification) pass
@@ -4693,6 +4432,21 @@ one_code_hoisting_pass (void)
 {
   int changed = 0;
 
+  gcse_subst_count = 0;
+  gcse_create_count = 0;
+
+  /* Return if there's nothing to do, or it is too expensive.  */
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
+      || is_too_expensive (_("GCSE disabled")))
+    return 0;
+
+  /* We need alias.  */
+  init_alias_analysis ();
+
+  bytes_used = 0;
+  gcc_obstack_init (&gcse_obstack);
+  alloc_gcse_mem ();
+
   alloc_hash_table (get_max_uid (), &expr_hash_table, 0);
   compute_hash_table (&expr_hash_table);
   if (dump_file)
@@ -4702,11 +4456,24 @@ one_code_hoisting_pass (void)
     {
       alloc_code_hoist_mem (last_basic_block, expr_hash_table.n_elems);
       compute_code_hoist_data ();
-      hoist_code ();
+      changed = hoist_code ();
       free_code_hoist_mem ();
     }
 
   free_hash_table (&expr_hash_table);
+  free_gcse_mem ();
+  obstack_free (&gcse_obstack, NULL);
+
+  /* We are finished with alias.  */
+  end_alias_analysis ();
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "HOIST of %s, %d basic blocks, %d bytes needed, ",
+	       current_function_name (), n_basic_blocks, bytes_used);
+      fprintf (dump_file, "%d substs, %d insns created\n",
+	       gcse_subst_count, gcse_create_count);
+    }
 
   return changed;
 }
@@ -5441,8 +5208,7 @@ compute_store_table (void)
   rtx insn, pat, tmp;
   int *last_set_in, *already_set;
   struct ls_expr * ptr, **prev_next_ptr_ptr;
-
-  max_gcse_regno = max_reg_num ();
+  unsigned int max_gcse_regno = max_reg_num ();
 
   pre_ldst_mems = 0;
   pre_ldst_table = htab_create (13, pre_ldst_expr_hash,
@@ -5762,6 +5528,7 @@ build_store_vectors (void)
   int *regs_set_in_block;
   rtx insn, st;
   struct ls_expr * ptr;
+  unsigned int max_gcse_regno = max_reg_num ();
 
   /* Build the gen_vector. This is any store in the table which is not killed
      by aliasing later in its block.  */
@@ -6060,7 +5827,7 @@ replace_store_insn (rtx reg, rtx del, basic_block bb, struct ls_expr *smexpr)
       fprintf (dump_file,
 	       "STORE_MOTION  delete insn in BB %d:\n      ", bb->index);
       print_inline_rtx (dump_file, del, 6);
-      fprintf (dump_file, "\nSTORE MOTION  replaced with insn:\n      ");
+      fprintf (dump_file, "\nSTORE_MOTION  replaced with insn:\n      ");
       print_inline_rtx (dump_file, insn, 6);
       fprintf (dump_file, "\n");
     }
@@ -6142,21 +5909,19 @@ free_store_memory (void)
 }
 
 /* Perform store motion. Much like gcse, except we move expressions the
-   other way by looking at the flowgraph in reverse.  */
+   other way by looking at the flowgraph in reverse.
+   Return non-zero if transformations are performed by the pass.  */
 
-static void
-store_motion (void)
+static int
+one_store_motion_pass (void)
 {
   basic_block bb;
   int x;
   struct ls_expr * ptr;
   int update_flow = 0;
 
-  if (dump_file)
-    {
-      fprintf (dump_file, "before store motion\n");
-      print_rtl (dump_file, get_insns ());
-    }
+  gcse_subst_count = 0;
+  gcse_create_count = 0;
 
   init_alias_analysis ();
 
@@ -6167,7 +5932,7 @@ store_motion (void)
       htab_delete (pre_ldst_table);
       pre_ldst_table = NULL;
       end_alias_analysis ();
-      return;
+      return 0;
     }
 
   /* Now compute kill & transp vectors.  */
@@ -6203,11 +5968,17 @@ store_motion (void)
 
       FOR_EACH_BB (bb)
 	if (TEST_BIT (pre_delete_map[bb->index], ptr->index))
-	  delete_store (ptr, bb);
+	  {
+	    delete_store (ptr, bb);
+	    gcse_subst_count++;
+	  }
 
       for (x = 0; x < NUM_EDGES (edge_list); x++)
 	if (TEST_BIT (pre_insert_map[x], ptr->index))
-	  update_flow |= insert_store (ptr, INDEX_EDGE (edge_list, x));
+	  {
+	    update_flow |= insert_store (ptr, INDEX_EDGE (edge_list, x));
+	    gcse_create_count++;
+	  }
     }
 
   if (update_flow)
@@ -6217,59 +5988,19 @@ store_motion (void)
   free_edge_list (edge_list);
   remove_fake_exit_edges ();
   end_alias_analysis ();
-}
-
-
-/* Entry point for jump bypassing optimization pass.  */
-
-static int
-bypass_jumps (void)
-{
-  int changed;
-
-  /* We do not construct an accurate cfg in functions which call
-     setjmp, so just punt to be safe.  */
-  if (cfun->calls_setjmp)
-    return 0;
-
-  /* Identify the basic block information for this function, including
-     successors and predecessors.  */
-  max_gcse_regno = max_reg_num ();
-
-  if (dump_file)
-    dump_flow_info (dump_file, dump_flags);
-
-  /* Return if there's nothing to do, or it is too expensive.  */
-  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
-      || is_too_expensive (_ ("jump bypassing disabled")))
-    return 0;
-
-  gcc_obstack_init (&gcse_obstack);
-  bytes_used = 0;
-
-  /* We need alias.  */
-  init_alias_analysis ();
-
-  max_gcse_regno = max_reg_num ();
-  alloc_gcse_mem ();
-  changed = one_cprop_pass (3, true, true);
-  free_gcse_mem ();
 
   if (dump_file)
     {
-      fprintf (dump_file, "BYPASS of %s: %d basic blocks, ",
+      fprintf (dump_file, "STORE_MOTION of %s, %d basic blocks, ",
 	       current_function_name (), n_basic_blocks);
-      fprintf (dump_file, "%d bytes\n\n", bytes_used);
+      fprintf (dump_file, "%d substs, %d insns created\n",
+	       gcse_subst_count, gcse_create_count);
     }
 
-  obstack_free (&gcse_obstack, NULL);
-
-  /* We are finished with alias.  */
-  end_alias_analysis ();
-
-  return changed;
+  return (gcse_subst_count > 0 || gcse_create_count > 0);
 }
 
+
 /* Return true if the graph is too expensive to optimize. PASS is the
    optimization about to be performed.  */
 
@@ -6309,110 +6040,208 @@ is_too_expensive (const char *pass)
 
   return false;
 }
+
 
-static bool
-gate_handle_jump_bypass (void)
+/* Main function for the CPROP pass.  */
+
+static int
+one_cprop_pass (void)
 {
-  return optimize > 0 && flag_gcse
-    && dbg_cnt (jump_bypass);
+  int changed = 0;
+
+  /* Return if there's nothing to do, or it is too expensive.  */
+  if (n_basic_blocks <= NUM_FIXED_BLOCKS + 1
+      || is_too_expensive (_ ("const/copy propagation disabled")))
+    return 0;
+
+  global_const_prop_count = local_const_prop_count = 0;
+  global_copy_prop_count = local_copy_prop_count = 0;
+
+  bytes_used = 0;
+  gcc_obstack_init (&gcse_obstack);
+  alloc_gcse_mem ();
+
+  /* Do a local const/copy propagation pass first.  The global pass
+     only handles global opportunities.
+     If the local pass changes something, remove any unreachable blocks
+     because the CPROP global dataflow analysis may get into infinite
+     loops for CFGs with unreachable blocks.
+
+     FIXME: This local pass should not be necessary after CSE (but for
+	    some reason it still is).  It is also (proven) not necessary
+	    to run the local pass right after FWPWOP.
+	    
+     FIXME: The global analysis would not get into infinite loops if it
+	    would use the DF solver (via df_simple_dataflow) instead of
+	    the solver implemented in this file.  */
+  if (local_cprop_pass ())
+    {
+      delete_unreachable_blocks ();
+      df_analyze ();
+    }
+
+  /* Determine implicit sets.  */
+  implicit_sets = XCNEWVEC (rtx, last_basic_block);
+  find_implicit_sets ();
+
+  alloc_hash_table (get_max_uid (), &set_hash_table, 1);
+  compute_hash_table (&set_hash_table);
+
+  /* Free implicit_sets before peak usage.  */
+  free (implicit_sets);
+  implicit_sets = NULL;
+
+  if (dump_file)
+    dump_hash_table (dump_file, "SET", &set_hash_table);
+  if (set_hash_table.n_elems > 0)
+    {
+      basic_block bb;
+      rtx insn;
+
+      alloc_cprop_mem (last_basic_block, set_hash_table.n_elems);
+      compute_cprop_data ();
+
+      FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb, EXIT_BLOCK_PTR, next_bb)
+	{
+	  /* Reset tables used to keep track of what's still valid [since
+	     the start of the block].  */
+	  reset_opr_set_tables ();
+
+	  FOR_BB_INSNS (bb, insn)
+	    if (INSN_P (insn))
+	      {
+		changed |= cprop_insn (insn);
+
+		/* Keep track of everything modified by this insn.  */
+		/* ??? Need to be careful w.r.t. mods done to INSN.
+		       Don't call mark_oprs_set if we turned the
+		       insn into a NOTE.  */
+		if (! NOTE_P (insn))
+		  mark_oprs_set (insn);
+	      }
+	}
+
+      changed |= bypass_conditional_jumps ();
+      free_cprop_mem ();
+    }
+
+  free_hash_table (&set_hash_table);
+  free_gcse_mem ();
+  obstack_free (&gcse_obstack, NULL);
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "CPROP of %s, %d basic blocks, %d bytes needed, ",
+	       current_function_name (), n_basic_blocks, bytes_used);
+      fprintf (dump_file, "%d local const props, %d local copy props, ",
+	       local_const_prop_count, local_copy_prop_count);
+      fprintf (dump_file, "%d global const props, %d global copy props\n\n",
+	       global_const_prop_count, global_copy_prop_count);
+    }
+
+  return changed;
 }
 
-/* Perform jump bypassing and control flow optimizations.  */
+
+/* All the passes implemented in this file.  Each pass has its
+   own gate and execute function, and at the end of the file a
+   pass definition for passes.c.
+
+   We do not construct an accurate cfg in functions which call
+   setjmp, so none of these passes runs if the function calls
+   setjmp.
+   FIXME: Should just handle setjmp via REG_SETJMP notes.  */
+
+static bool
+gate_rtl_cprop (void)
+{
+  return optimize > 0 && flag_gcse
+    && !cfun->calls_setjmp
+    && dbg_cnt (cprop);
+}
+
 static unsigned int
-rest_of_handle_jump_bypass (void)
+execute_rtl_cprop (void)
 {
   delete_unreachable_blocks ();
-  if (bypass_jumps ())
-    {
-      delete_trivially_dead_insns (get_insns (), max_reg_num ());
-      rebuild_jump_labels (get_insns ());
-      cleanup_cfg (0);
-    }
+  df_note_add_problem ();
+  df_set_flags (DF_LR_RUN_DCE);
+  df_analyze ();
+  flag_rerun_cse_after_global_opts |= one_cprop_pass ();
   return 0;
 }
-
-struct rtl_opt_pass pass_jump_bypass =
-{
- {
-  RTL_PASS,
-  "bypass",                             /* name */
-  gate_handle_jump_bypass,              /* gate */   
-  rest_of_handle_jump_bypass,           /* execute */       
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_BYPASS,                            /* tv_id */
-  PROP_cfglayout,                       /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_dump_func |
-  TODO_ggc_collect | TODO_verify_flow   /* todo_flags_finish */
- }
-};
-
 
 static bool
-gate_handle_gcse (void)
+gate_rtl_pre (void)
 {
   return optimize > 0 && flag_gcse
-    && dbg_cnt (gcse);
+    && !cfun->calls_setjmp
+    && optimize_function_for_speed_p (cfun)
+    && dbg_cnt (pre);
 }
 
-
 static unsigned int
-rest_of_handle_gcse (void)
+execute_rtl_pre (void)
 {
-  int save_csb, save_cfj;
-  int tem2 = 0, tem;
-  tem = gcse_main (get_insns ());
-  delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  rebuild_jump_labels (get_insns ());
-  save_csb = flag_cse_skip_blocks;
-  save_cfj = flag_cse_follow_jumps;
-  flag_cse_skip_blocks = flag_cse_follow_jumps = 0;
-
-  /* If -fexpensive-optimizations, re-run CSE to clean up things done
-     by gcse.  */
-  if (flag_expensive_optimizations)
-    {
-      timevar_push (TV_CSE);
-      tem2 = cse_main (get_insns (), max_reg_num ());
-      df_finish_pass (false);
-      purge_all_dead_edges ();
-      delete_trivially_dead_insns (get_insns (), max_reg_num ());
-      timevar_pop (TV_CSE);
-      cse_not_expected = !flag_rerun_cse_after_loop;
-    }
-
-  /* If gcse or cse altered any jumps, rerun jump optimizations to clean
-     things up.  */
-  if (tem || tem2 == 2)
-    {
-      timevar_push (TV_JUMP);
-      rebuild_jump_labels (get_insns ());
-      cleanup_cfg (0);
-      timevar_pop (TV_JUMP);
-    }
-  else if (tem2 == 1)
-    cleanup_cfg (0);
-
-  flag_cse_skip_blocks = save_csb;
-  flag_cse_follow_jumps = save_cfj;
+  delete_unreachable_blocks ();
+  df_note_add_problem ();
+  df_analyze ();
+  flag_rerun_cse_after_global_opts |= one_pre_gcse_pass ();
   return 0;
 }
 
-struct rtl_opt_pass pass_gcse =
+static bool
+gate_rtl_hoist (void)
+{
+  return optimize > 0 && flag_gcse
+    && !cfun->calls_setjmp
+    /* It does not make sense to run code hoisting unless we are optimizing
+       for code size -- it rarely makes programs faster, and can make then
+       bigger if we did PRE (when optimizing for space, we don't run PRE).  */
+    && optimize_function_for_size_p (cfun)
+    && dbg_cnt (hoist);
+}
+
+static unsigned int
+execute_rtl_hoist (void)
+{
+  delete_unreachable_blocks ();
+  df_note_add_problem ();
+  df_analyze ();
+  flag_rerun_cse_after_global_opts |= one_code_hoisting_pass ();
+  return 0;
+}
+
+static bool
+gate_rtl_store_motion (void)
+{
+  return optimize > 0 && flag_gcse_sm
+    && !cfun->calls_setjmp
+    && optimize_function_for_speed_p (cfun)
+    && dbg_cnt (store_motion);
+}
+
+static unsigned int
+execute_rtl_store_motion (void)
+{
+  delete_unreachable_blocks ();
+  df_note_add_problem ();
+  df_analyze ();
+  flag_rerun_cse_after_global_opts |= one_store_motion_pass ();
+  return 0;
+}
+
+struct rtl_opt_pass pass_rtl_cprop =
 {
  {
   RTL_PASS,
-  "gcse1",                              /* name */
-  gate_handle_gcse,                     /* gate */   
-  rest_of_handle_gcse,			/* execute */       
+  "cprop",                              /* name */
+  gate_rtl_cprop,                       /* gate */   
+  execute_rtl_cprop,  			/* execute */       
   NULL,                                 /* sub */
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
-  TV_GCSE,                              /* tv_id */
+  TV_CPROP,                             /* tv_id */
   PROP_cfglayout,                       /* properties_required */
   0,                                    /* properties_provided */
   0,                                    /* properties_destroyed */
@@ -6423,5 +6252,67 @@ struct rtl_opt_pass pass_gcse =
  }
 };
 
+struct rtl_opt_pass pass_rtl_pre =
+{
+ {
+  RTL_PASS,
+  "pre",                                /* name */
+  gate_rtl_pre,                         /* gate */   
+  execute_rtl_pre,    			/* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_PRE,                               /* tv_id */
+  PROP_cfglayout,                       /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_df_finish | TODO_verify_rtl_sharing |
+  TODO_dump_func |
+  TODO_verify_flow | TODO_ggc_collect   /* todo_flags_finish */
+ }
+};
+
+struct rtl_opt_pass pass_rtl_hoist =
+{
+ {
+  RTL_PASS,
+  "hoist",                              /* name */
+  gate_rtl_hoist,                       /* gate */   
+  execute_rtl_hoist,  			/* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_HOIST,                             /* tv_id */
+  PROP_cfglayout,                       /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_df_finish | TODO_verify_rtl_sharing |
+  TODO_dump_func |
+  TODO_verify_flow | TODO_ggc_collect   /* todo_flags_finish */
+ }
+};
+
+struct rtl_opt_pass pass_rtl_store_motion =
+{
+ {
+  RTL_PASS,
+  "store_motion",                       /* name */
+  gate_rtl_store_motion,                /* gate */   
+  execute_rtl_store_motion,		/* execute */       
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_LSM,                               /* tv_id */
+  PROP_cfglayout,                       /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_df_finish | TODO_verify_rtl_sharing |
+  TODO_dump_func |
+  TODO_verify_flow | TODO_ggc_collect   /* todo_flags_finish */
+ }
+};
 
 #include "gt-gcse.h"

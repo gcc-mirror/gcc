@@ -397,8 +397,8 @@ Common Report Var(flag_cse_follow_jumps) Optimization
 When running CSE, follow jumps to their targets
 
 fcse-skip-blocks
-Common Report Var(flag_cse_skip_blocks) Optimization
-When running CSE, follow conditional jumps
+Common
+Does nothing.  Preserved for backward compatibility.
 
 fcx-limited-range
 Common Report Var(flag_cx_limited_range) Optimization
