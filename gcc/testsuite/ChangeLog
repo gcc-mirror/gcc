@@ -1,4 +1,4 @@
-2009-04-23  DJ Delorie  <dj@redhat.com>
+2009-04-27  DJ Delorie  <dj@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_double64): New.
 	(check_effective_target_double64plus): New.
