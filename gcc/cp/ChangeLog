@@ -1,3 +1,9 @@
+2009-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/39875
+	* cvt.c (convert_to_void) <case INDIRECT_REF>: Only warn about
+	-Wunused-value if implicit.
+
 2009-04-24  Ian Lance Taylor  <iant@google.com>
 
 	* call.c (build_temp): Change 0 to enum constant.

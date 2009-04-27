@@ -787,7 +787,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
    make it impossible to ignore the reference return value from functions. We
    issue warnings in the confusing cases.
 
-   IMPLICIT is tells us the context of an implicit void conversion.  */
+   IMPLICIT is non-NULL iff an expression is being implicitly converted; it
+   is NULL when the user is explicitly converting an expression to void via
+   a cast.  When non-NULL, IMPLICIT is a string indicating the context of
+   the implicit conversion.  */
 
 tree
 convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
@@ -885,6 +888,7 @@ convert_to_void (tree expr, const char *implicit, tsubst_flags_t complain)
                - automatic dereferencing of references, since the user cannot
                  control it. (See also warn_if_unused_value() in stmt.c.)  */
             if (warn_unused_value
+		&& implicit
                 && (complain & tf_warning)
                 && !TREE_NO_WARNING (expr)
                 && !is_reference)
