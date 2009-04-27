@@ -1,3 +1,15 @@
+2009-04-27  Richard Guenther  <rguenther@suse.de>
+
+	* tree-flow-inline.h (function_ann): Remove.
+	(get_function_ann): Likewise.
+	* tree-dfa.c (create_function_ann): Remove.
+	* tree-flow.h (struct static_var_ann_d): Remove.
+	(struct function_ann_d): Likewise.
+	(union tree_ann_d): Remove fdecl member.
+	(function_ann_t): Remove.
+	(function_ann, get_function_ann, create_function_ann): Remove
+	declarations.
+
 2009-04-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (code_for_builtin): Declare as enum insn_code.

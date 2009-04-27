@@ -32,8 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-reference.h"
 #include "tree-ssa-alias.h"
 
-struct static_var_ann_d;
-
 
 /* Gimple dataflow datastructure. All publicly available fields shall have
    gimple_ accessor defined in tree-flow-inline.h, all publicly modifiable
@@ -221,17 +219,6 @@ struct GTY(()) var_ann_d {
   tree current_def;
 };
 
-/* Container for variable annotation used by hashtable for annotations for
-   static variables.  */
-struct GTY(()) static_var_ann_d {
-  struct var_ann_d ann;
-  unsigned int uid;
-};
-
-struct GTY(()) function_ann_d {
-  struct tree_ann_common_d common;
-};
-
 
 /* Immediate use lists are used to directly access all uses for an SSA
    name and get pointers to the statement for each use. 
@@ -330,20 +317,16 @@ typedef struct immediate_use_iterator_d
 union GTY((desc ("ann_type ((tree_ann_t)&%h)"))) tree_ann_d {
   struct tree_ann_common_d GTY((tag ("TREE_ANN_COMMON"))) common;
   struct var_ann_d GTY((tag ("VAR_ANN"))) vdecl;
-  struct function_ann_d GTY((tag ("FUNCTION_ANN"))) fdecl;
 };
 
 typedef union tree_ann_d *tree_ann_t;
 typedef struct var_ann_d *var_ann_t;
-typedef struct function_ann_d *function_ann_t;
 typedef struct tree_ann_common_d *tree_ann_common_t;
 
 static inline tree_ann_common_t tree_common_ann (const_tree);
 static inline tree_ann_common_t get_tree_common_ann (tree);
 static inline var_ann_t var_ann (const_tree);
 static inline var_ann_t get_var_ann (tree);
-static inline function_ann_t function_ann (const_tree);
-static inline function_ann_t get_function_ann (tree);
 static inline enum tree_ann_type ann_type (tree_ann_t);
 static inline void update_stmt (gimple);
 static inline int get_lineno (const_gimple);
@@ -566,7 +549,6 @@ extern const char *op_symbol_code (enum tree_code);
 
 /* In tree-dfa.c  */
 extern var_ann_t create_var_ann (tree);
-extern function_ann_t create_function_ann (tree);
 extern void renumber_gimple_stmt_uids (void);
 extern tree_ann_common_t create_tree_common_ann (tree);
 extern void dump_dfa_stats (FILE *);

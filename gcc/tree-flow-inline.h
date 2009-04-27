@@ -172,29 +172,6 @@ get_var_ann (tree var)
   return (ann) ? ann : create_var_ann (var);
 }
 
-/* Return the function annotation for T, which must be a FUNCTION_DECL node.
-   Return NULL if the function annotation doesn't already exist.  */
-static inline function_ann_t
-function_ann (const_tree t)
-{
-  gcc_assert (t);
-  gcc_assert (TREE_CODE (t) == FUNCTION_DECL);
-  gcc_assert (!t->base.ann
-	      || t->base.ann->common.type == FUNCTION_ANN);
-
-  return (function_ann_t) t->base.ann;
-}
-
-/* Return the function annotation for T, which must be a FUNCTION_DECL node.
-   Create the function annotation if it doesn't exist.  */
-static inline function_ann_t
-get_function_ann (tree var)
-{
-  function_ann_t ann = function_ann (var);
-  gcc_assert (!var->base.ann || var->base.ann->common.type == FUNCTION_ANN);
-  return (ann) ? ann : create_function_ann (var);
-}
-
 /* Get the number of the next statement uid to be allocated.  */
 static inline unsigned int
 gimple_stmt_max_uid (struct function *fn)
