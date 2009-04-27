@@ -1,3 +1,10 @@
+2009-04-27  Richard Guenther  <rguenther@suse.de>
+
+	PR java/38374
+	* constants.c (build_constants_constructor): Retain the old
+	pointer type as valid TYPE_POINTER_TO after patching the
+	type of the constant pool decl.
+
 2009-04-24  Ian Lance Taylor  <iant@google.com>
 
 	* jcf-parse.c (handle_constant): Add cast to enum type.

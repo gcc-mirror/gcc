@@ -705,6 +705,13 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
       gcc_assert (new_decl);
       /* Replace this variable with the copy.  */
       STRIP_TYPE_NOPS (new_decl);
+      /* ???  The C++ frontend uses void * pointer zero to initialize
+         any other type.  This confuses the middle-end type verification.
+	 As cloned bodies do not go through gimplification again the fixup
+	 there doesn't trigger.  */
+      if (TREE_CODE (new_decl) == INTEGER_CST
+	  && !useless_type_conversion_p (TREE_TYPE (*tp), TREE_TYPE (new_decl)))
+	new_decl = fold_convert (TREE_TYPE (*tp), new_decl);
       *tp = new_decl;
       *walk_subtrees = 0;
     }
