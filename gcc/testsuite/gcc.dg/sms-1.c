@@ -1,13 +1,16 @@
 /* The same test as loop-3c.c.  It failed on ia64
    due to not handling of subreg in the lhs that is fixed.  */
 /* { dg-do run } */
-/* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves -w" } */
+/* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves -fdump-rtl-sms" } */
 
 
 #include <limits.h>
+extern void abort (void);
 
 void * a[255];
 
+__attribute__ ((noinline))
+void
 f (m)
 {
   int i;
@@ -21,6 +24,7 @@ f (m)
   while (i < INT_MAX/2 + 1 + 4 * 4);
 }
 
+int
 main ()
 {
   a[0x10] = 0;
@@ -33,6 +37,9 @@ main ()
   f (INT_MAX/2 + 1);
   if (! a[0x10] || a[0x08])
     abort ();
-  exit (0);
+  return 0;
 }
+
+/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms"  { target powerpc*-*-* spu-*-* } } } */
+/* { dg-final { cleanup-rtl-dump "sms" } } */
 

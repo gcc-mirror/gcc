@@ -1,10 +1,11 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves -funroll-loops" } */
+/* { dg-options "-O2 -fmodulo-sched -fmodulo-sched-allow-regmoves -funroll-loops -fdump-rtl-sms" } */
 /* This is the same test as loop-2e.c test.  It is related to a fix in
    the generation of the prolog and epilog.  */
 
 extern void abort (void);
 
+__attribute__ ((noinline))
 void f (int *p, int **q)
 {
   int i;
@@ -44,4 +45,8 @@ int main ()
 
   return 0;
 }
+
+/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms"  { target powerpc*-*-* spu-*-* } } } */
+
+/* { dg-final { cleanup-rtl-dump "sms" } } */
 

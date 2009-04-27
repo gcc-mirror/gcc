@@ -1,8 +1,9 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fmodulo-sched " } */
+/* { dg-options "-O2 -fmodulo-sched -fdump-rtl-sms" } */
 
 extern void abort (void);
 
+__attribute__ ((noinline))
 void foo (int * __restrict__ a, int * __restrict__ b, int * __restrict__ c)
 {
    int i;
@@ -37,4 +38,7 @@ int main()
   return 0;        
 }
 
+/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms"  { target spu-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "SMS succeeded" 3  "sms" { target powerpc*-*-* } } } */
+/* { dg-final { cleanup-rtl-dump "sms" } } */
 

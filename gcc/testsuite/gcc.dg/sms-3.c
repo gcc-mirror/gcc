@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -fmodulo-sched -funroll-loops" } */
+/* { dg-options "-O2 -fmodulo-sched -funroll-loops -fdump-rtl-sms" } */
 
 extern void abort (void);
 
@@ -8,6 +8,7 @@ int Y[1000]={0};
 
 extern void abort (void);
 
+__attribute__ ((noinline))
 int
 foo (int len, long a)
 {
@@ -36,4 +37,7 @@ main ()
   foo (6, 3);
   return 0;
 }
+
+/* { dg-final { scan-rtl-dump-times "SMS succeeded" 1 "sms" { target spu-*-* powerpc*-*-* } } } */
+/* { dg-final { cleanup-rtl-dump "sms" } } */
 
