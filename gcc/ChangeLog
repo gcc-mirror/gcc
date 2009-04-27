@@ -1,3 +1,7 @@
+2009-04-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (code_for_builtin): Declare as enum insn_code.
+
 2009-04-27  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-pure-const.c (struct funct_state_d): New fields
@@ -13,8 +17,7 @@
 
 2009-04-26  Michael Matz  <matz@suse.de>
 
-	* tree-flow.h (tree_ann_common_d): Remove aux and value_handle
-	members.
+	* tree-flow.h (tree_ann_common_d): Remove aux and value_handle members.
 
 2009-04-26  Michael Matz  <matz@suse.de>
 
@@ -61,8 +64,7 @@
 
 	* ssaexpand.h: New file.
 	* expr.c (toplevel): Include ssaexpand.h.
-	(expand_assignment): Handle SSA names the same as register
-	variables.
+	(expand_assignment): Handle SSA names the same as register variables.
 	(expand_expr_real_1): Expand SSA names.
 	* cfgexpand.c (toplevel): Include ssaexpand.h.
 	(SA): New global variable.
@@ -112,8 +114,7 @@
 	(set_location_for_edge): New static helper.
 	(create_temp): Remove.
 	(insert_partition_copy_on_edge, insert_part_to_rtx_on_edge,
-	insert_value_copy_on_edge, insert_rtx_to_part_on_edge): New
-	functions.
+	insert_value_copy_on_edge, insert_rtx_to_part_on_edge): New functions.
 	(new_elim_graph): Allocate const_dests member.
 	(clean_elim_graph): Truncate const_dests member.
 	(delete_elim_graph): Free const_dests member.

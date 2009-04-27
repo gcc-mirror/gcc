@@ -6357,7 +6357,7 @@ enum alpha_builtin
   ALPHA_BUILTIN_max
 };
 
-static unsigned int const code_for_builtin[ALPHA_BUILTIN_max] = {
+static enum insn_code const code_for_builtin[ALPHA_BUILTIN_max] = {
   CODE_FOR_builtin_cmpbge,
   CODE_FOR_builtin_extbl,
   CODE_FOR_builtin_extwl,
