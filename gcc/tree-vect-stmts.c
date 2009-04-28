@@ -890,6 +890,9 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
     /* Case 1: operand is a constant.  */
     case vect_constant_def:
       {
+	vector_type = get_vectype_for_scalar_type (TREE_TYPE (op));
+	gcc_assert (vector_type);
+
 	if (scalar_def) 
 	  *scalar_def = op;
 
@@ -901,8 +904,8 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
           {
             t = tree_cons (NULL_TREE, op, t);
           }
-        vec_cst = build_vector (vectype, t);
-        return vect_init_vector (stmt, vec_cst, vectype, NULL);
+        vec_cst = build_vector (vector_type, t);
+        return vect_init_vector (stmt, vec_cst, vector_type, NULL);
       }
 
     /* Case 2: operand is defined outside the loop - loop invariant.  */
