@@ -1,5 +1,11 @@
 2009-04-28  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/39946
+	* resolve.c (resolve_symbol): Correctly copy the interface of a
+	PROCEDURE statement if the interface involves a RESULT variable.
+
+2009-04-28  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/39930
 	PR fortran/39931
 	* expr.c (gfc_check_pointer_assign): Correctly detect if the left hand
