@@ -3310,7 +3310,7 @@ gfc_fixup_sibling_symbols (gfc_symbol *sym, gfc_namespace *siblings)
   sym->attr.referenced = 1;
   for (ns = siblings; ns; ns = ns->sibling)
     {
-      gfc_find_sym_tree (sym->name, ns, 0, &st);
+      st = gfc_find_symtree (ns->sym_root, sym->name);
 
       if (!st || (st->n.sym->attr.dummy && ns == st->n.sym->ns))
 	goto fixup_contained;
