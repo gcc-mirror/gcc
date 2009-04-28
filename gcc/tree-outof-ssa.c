@@ -184,7 +184,7 @@ insert_value_copy_on_edge (edge e, int dest, tree src)
   start_sequence ();
   mode = GET_MODE (SA.partition_to_pseudo[dest]);
   x = expand_expr (src, SA.partition_to_pseudo[dest], mode, EXPAND_NORMAL);
-  if (GET_MODE (x) != mode)
+  if (GET_MODE (x) != VOIDmode && GET_MODE (x) != mode)
     x = convert_to_mode (mode, x, TYPE_UNSIGNED (TREE_TYPE (src)));
   if (x != SA.partition_to_pseudo[dest])
     emit_move_insn (SA.partition_to_pseudo[dest], x);
