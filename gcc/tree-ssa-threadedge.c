@@ -49,6 +49,35 @@ along with GCC; see the file COPYING3.  If not see
    to copy as part of the jump threading process.  */
 static int stmt_count;
 
+/* Array to record value-handles per SSA_NAME.  */
+VEC(tree,heap) *ssa_name_values;
+
+/* Set the value for the SSA name NAME to VALUE.  */
+
+void
+set_ssa_name_value (tree name, tree value)
+{
+  if (SSA_NAME_VERSION (name) >= VEC_length (tree, ssa_name_values))
+    VEC_safe_grow_cleared (tree, heap, ssa_name_values,
+			   SSA_NAME_VERSION (name) + 1);
+  VEC_replace (tree, ssa_name_values, SSA_NAME_VERSION (name), value);
+}
+
+/* Initialize the per SSA_NAME value-handles array.  Returns it.  */
+void
+threadedge_initialize_values (void)
+{
+  gcc_assert (ssa_name_values == NULL);
+  ssa_name_values = VEC_alloc(tree, heap, num_ssa_names);
+}
+
+/* Free the per SSA_NAME value-handle array.  */
+void
+threadedge_finalize_values (void)
+{
+  VEC_free(tree, heap, ssa_name_values);
+}
+
 /* Return TRUE if we may be able to thread an incoming edge into
    BB to an outgoing edge from BB.  Return FALSE otherwise.  */
 
@@ -126,7 +155,7 @@ remove_temporary_equivalences (VEC(tree, heap) **stack)
 	break;
 
       prev_value = VEC_pop (tree, *stack);
-      SSA_NAME_VALUE (dest) = prev_value;
+      set_ssa_name_value (dest, prev_value);
     }
 }
 
@@ -145,7 +174,7 @@ record_temporary_equivalence (tree x, tree y, VEC(tree, heap) **stack)
       y = tmp ? tmp : y;
     }
 
-  SSA_NAME_VALUE (x) = y;
+  set_ssa_name_value (x, y);
   VEC_reserve (tree, heap, *stack, 2);
   VEC_quick_push (tree, *stack, prev_x);
   VEC_quick_push (tree, *stack, x);

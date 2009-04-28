@@ -487,7 +487,6 @@ ssa_prop_init (void)
   edge e;
   edge_iterator ei;
   basic_block bb;
-  size_t i;
 
   /* Worklists of SSA edges.  */
   interesting_ssa_edges = VEC_alloc (gimple, gc, 20);
@@ -504,11 +503,6 @@ ssa_prop_init (void)
 
   cfg_blocks = VEC_alloc (basic_block, heap, 20);
   VEC_safe_grow (basic_block, heap, cfg_blocks, 20);
-
-  /* Initialize the values for every SSA_NAME.  */
-  for (i = 1; i < num_ssa_names; i++)
-    if (ssa_name (i))
-      SSA_NAME_VALUE (ssa_name (i)) = NULL_TREE;
 
   /* Initially assume that every edge in the CFG is not executable.
      (including the edges coming out of ENTRY_BLOCK_PTR).  */

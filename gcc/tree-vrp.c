@@ -7277,6 +7277,7 @@ execute_vrp (void)
 
   to_remove_edges = VEC_alloc (edge, heap, 10);
   to_update_switch_stmts = VEC_alloc (switch_update, heap, 5);
+  threadedge_initialize_values ();
 
   vrp_initialize ();
   ssa_propagate (vrp_visit_stmt, vrp_visit_phi_node);
@@ -7322,6 +7323,7 @@ execute_vrp (void)
 
   VEC_free (edge, heap, to_remove_edges);
   VEC_free (switch_update, heap, to_update_switch_stmts);
+  threadedge_finalize_values ();
 
   scev_finalize ();
   loop_optimizer_finalize ();

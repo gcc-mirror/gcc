@@ -619,7 +619,6 @@ static unsigned int
 tree_ssa_dominator_optimize (void)
 {
   struct dom_walk_data walk_data;
-  unsigned int i;
 
   memset (&opt_stats, 0, sizeof (opt_stats));
 
@@ -658,6 +657,9 @@ tree_ssa_dominator_optimize (void)
      headers to an exit edge, or through loop header to the loop body, assuming
      that we update the loop info.  */
   loop_optimizer_init (LOOPS_HAVE_SIMPLE_LATCHES);
+
+  /* Initialize the value-handle array.  */
+  threadedge_initialize_values ();
 
   /* We need accurate information regarding back edges in the CFG
      for jump threading; this may include back edges that are not part of
@@ -716,23 +718,6 @@ tree_ssa_dominator_optimize (void)
       bitmap_zero (need_eh_cleanup);
     }
 
-  /* Finally, remove everything except invariants in SSA_NAME_VALUE.
-
-     Long term we will be able to let everything in SSA_NAME_VALUE
-     persist.  However, for now, we know this is the safe thing to do.  */
-  for (i = 0; i < num_ssa_names; i++)
-   {
-      tree name = ssa_name (i);
-      tree value;
-
-      if (!name)
-        continue;
-
-      value = SSA_NAME_VALUE (name);
-      if (value && !is_gimple_min_invariant (value))
-	SSA_NAME_VALUE (name) = NULL;
-    }
-
   statistics_counter_event (cfun, "Redundant expressions eliminated",
 			    opt_stats.num_re);
   statistics_counter_event (cfun, "Constants propagated",
@@ -759,6 +744,10 @@ tree_ssa_dominator_optimize (void)
   VEC_free (tree, heap, const_and_copies_stack);
   VEC_free (gimple_p, heap, stmts_to_rescan);
   
+  /* Free the value-handle array.  */
+  threadedge_finalize_values ();
+  ssa_name_values = NULL;
+
   return 0;
 }
 
@@ -912,7 +901,7 @@ restore_vars_to_original_value (void)
 	}
 
       prev_value = VEC_pop (tree, const_and_copies_stack);
-      SSA_NAME_VALUE (dest) =  prev_value;
+      set_ssa_name_value (dest, prev_value);
     }
 }
 
@@ -1124,7 +1113,7 @@ record_equivalences_from_phis (basic_block bb)
 	 inferred from a comparison.  All uses of this ssa name are dominated
 	 by this assignment, so unwinding just costs time and space.  */
       if (i == gimple_phi_num_args (phi) && may_propagate_copy (lhs, rhs))
-	SSA_NAME_VALUE (lhs) = rhs;
+	set_ssa_name_value (lhs, rhs);
     }
 }
 
@@ -1437,7 +1426,7 @@ record_conditions (struct edge_info *edge_info, tree cond, tree inverted)
 static void
 record_const_or_copy_1 (tree x, tree y, tree prev_x)
 {
-  SSA_NAME_VALUE (x) = y;
+  set_ssa_name_value (x, y);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1956,7 +1945,7 @@ record_equivalences_from_stmt (gimple stmt, int may_optimize_p)
 	    fprintf (dump_file, "\n");
 	  }
 
-	SSA_NAME_VALUE (lhs) = rhs;
+	set_ssa_name_value (lhs, rhs);
       }
     }
 
