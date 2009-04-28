@@ -1,3 +1,8 @@
+2009-04-28  Steve Ellcey  <sje@cup.hp.com>
+
+	* testsuite/gcc.target/ia64/sync-1.c: Check for cmpxchg8 only if
+	lp64 is true.
+
 2009-04-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/39937
