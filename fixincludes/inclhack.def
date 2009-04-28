@@ -1265,6 +1265,20 @@ fix = {
 };
 
 
+/* glibc versions before 2.5 have a version of stdint.h that defines
+   UINT8_C and UINT16_C to produce unsigned constants, as do uClibc
+   versions with stdint.h based on those glibc versions.  */
+fix = {
+    hackname  = glibc_stdint;
+    files     = stdint.h;
+    select    = "GNU C Library";
+    c_fix     = format;
+    c_fix_arg = "# define UINT8_C(c)\tc\n# define UINT16_C(c)\tc";
+    c_fix_arg = "# define UINT8_C\\(c\\)\tc ## U\n# define UINT16_C\\(c\\)\tc ## U";
+    test_text = "/* This file is part of the GNU C Library.  */\n# define UINT8_C(c)\tc ## U\n# define UINT16_C(c)\tc ## U";
+};
+
+
 /* glibc's tgmath.h relies on an expression that is not an integer
    constant expression being treated as it was by GCC 4.4 and
    earlier.  */

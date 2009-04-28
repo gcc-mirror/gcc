@@ -1,3 +1,9 @@
+2009-04-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* inclhack.def (glibc_stdint): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/stdint.h: Update.
+
 2009-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in: Change copyright header to refer to version
