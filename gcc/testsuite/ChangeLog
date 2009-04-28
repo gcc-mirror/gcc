@@ -1,3 +1,14 @@
+2009-04-28  Jing Yu  <jingyu@google.com>
+
+	PR testsuite/39790
+	* lib/target-supports.exp (check_effective_target_tls): Remove
+	comment of caching.
+	(check_effective_target_tls_native): Likewise.
+	(check_effective_target_tls_runtime): Likewise.
+	* gcc.dg/tls/alias-1.c (dg-require-effective-target): Change target
+	tls to tls_runtime.
+	* gcc.dg/tls/opt-2.c: Add dg-require-effective-target tls_runtime.
+
 2009-04-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39946
