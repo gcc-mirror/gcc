@@ -2,7 +2,7 @@
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler "xchg4 .*, r0" } } */
 /* { dg-final { scan-assembler "cmpxchg4.*, r0, .*" } } */
-/* { dg-final { scan-assembler "cmpxchg8.*, r0, .*" } } */
+/* { dg-final { scan-assembler "cmpxchg8.*, r0, .*" { target lp64 } } } */
 
 int
 foo1 (int *p)
