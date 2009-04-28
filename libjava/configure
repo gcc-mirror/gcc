@@ -5268,7 +5268,7 @@ if test "${enable_libgcj_debug+set}" = set; then
   if test "$enable_libgcj_debug" = yes; then
 
 cat >>confdefs.h <<\_ACEOF
-#define DEBUG 1
+#define __GCJ_DEBUG 1
 _ACEOF
 
     LIBGCJDEBUG="enable"

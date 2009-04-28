@@ -3,9 +3,6 @@
 /* Name of default AWT toolkit */
 #undef AWT_TOOLKIT
 
-/* Define this if you want runtime debugging enabled. */
-#undef DEBUG
-
 /* Define if system properties shouldn't be read from
    getenv("GCJ_PROPERTIES"). */
 #undef DISABLE_GETENV_PROPERTIES
@@ -456,6 +453,9 @@
 
 /* Required define if using POSIX threads */
 #undef _REENTRANT
+
+/* Define this if you want runtime debugging enabled. */
+#undef __GCJ_DEBUG
 
 /* Define to `int' if <sys/types.h> does not define. */
 #undef ssize_t

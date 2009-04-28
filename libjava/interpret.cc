@@ -983,7 +983,7 @@ void
 _Jv_InterpMethod::run (void *retp, INTERP_FFI_RAW_TYPE *args,
 		       _Jv_InterpMethod *meth)
 {
-#undef DEBUG
+#undef __GCJ_DEBUG
 #undef DEBUG_LOCALS_INSN
 #define DEBUG_LOCALS_INSN(s, t) do {} while (0)
 
@@ -994,7 +994,7 @@ void
 _Jv_InterpMethod::run_debug (void *retp, INTERP_FFI_RAW_TYPE *args,
 			     _Jv_InterpMethod *meth)
 {
-#define DEBUG
+#define __GCJ_DEBUG
 #undef DEBUG_LOCALS_INSN
 #define DEBUG_LOCALS_INSN(s, t)  \
   do    \
@@ -1719,7 +1719,7 @@ throw_class_format_error (const char *msg)
    CATCH_LOCATION with the method and location where the catch will
    occur. If the exception is not caught, these are set to 0.
 
-   This function should only be used with the DEBUG interpreter. */
+   This function should only be used with the __GCJ_DEBUG interpreter. */
 static void
 find_catch_location (::java::lang::Throwable *exc, jthread thread,
 		     jmethodID *catch_method, jlong *catch_loc)
@@ -1751,7 +1751,7 @@ find_catch_location (::java::lang::Throwable *exc, jthread thread,
    caught (if it is caught).
    
    Like find_catch_location, this should only be called with the
-   DEBUG interpreter. Since a few exceptions occur outside the
+   __GCJ_DEBUG interpreter. Since a few exceptions occur outside the
    interpreter proper, it is important to not call this function
    without checking JVMTI_REQUESTED_EVENT(Exception) first. */
 void
