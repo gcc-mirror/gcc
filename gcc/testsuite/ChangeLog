@@ -1,3 +1,12 @@
+2009-04-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-04-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39903
+	* gcc.dg/torture/pr39903-1.c: New.
+	* gcc.dg/torture/pr39903-2.c: Likewise.
+
 2009-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/39794
