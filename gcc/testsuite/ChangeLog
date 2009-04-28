@@ -1,3 +1,9 @@
+2009-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c/39323
+	* gcc.dg/pr39323-2.c: Also scan for alignment in log2 format.
+	* gcc.dg/pr39323-3.c: Ditto.
+
 2009-04-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39930

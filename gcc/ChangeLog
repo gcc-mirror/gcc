@@ -1,3 +1,8 @@
+2009-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c/39323
+	* config/alpha/elf.h (MAX_OFILE_ALIGNMENT): Sync with elfos.h
+
 2009-04-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree.h (SSA_NAME_VALUE): Remove.
@@ -34,7 +39,7 @@
 	* tree-vectorizer.h (enum vect_def_type): Rename vect_invariant_def and
 	vect_loop_def to vect_external_def and vect_internal_def.
 	(enum verbosity_levels): Rename REPORT_VECTORIZED_LOOPS
-        and REPORT_UNVECTORIZED_LOOPS to REPORT_VECTORIZED_LOCATIONS and 
+	and REPORT_UNVECTORIZED_LOOPS to REPORT_VECTORIZED_LOCATIONS and 
 	REPORT_UNVECTORIZED_LOCATIONS.
 	(enum vect_relevant): Update comment. Rename vect_unused_in_loop
 	and vect_used_in_loop and to vect_unused_in_scope and 
@@ -123,19 +128,16 @@
 	* hooks.c (hook_int_void_no_regs): Remove function.
 	* hooks.h (hook_int_void_no_regs): Remove declaration.
 	* optabs.c (expand_widen_pattern_expr): Change 0 to VOIDmode.
-	* predict.c (combine_predictions_for_insn): Add casts to enum
-	type.
+	* predict.c (combine_predictions_for_insn): Add casts to enum type.
 	* real.c (real_arithmetic): Add cast to enum type.
 	(real_compare): Likewise.
 	* target.h (struct gcc_target): Change return type of
 	branch_target_register_class to enum reg_class.
 	* target-def.h (TARGET_BRANCH_TARGET_REGISTER_CLASS): Define as
 	default_branch_target_register_class.
-	* targhooks.c (default_branch_target_register_class): New
-	function.
+	* targhooks.c (default_branch_target_register_class): New function.
 	* targhooks.h (default_branch_target_register_class): Declare.
-	* tree-data-ref.c (print_direction_vector): Add cast to enum
-	type.
+	* tree-data-ref.c (print_direction_vector): Add cast to enum type.
 	* tree-vect-data-refs.c (vect_supportable_dr_alignment): Remove
 	cast to int.
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Change 0 to
@@ -144,8 +146,7 @@
 	vect_uninitialized_def.  Change 0 to ERROR_MARK.
 	* tree-vect-stmts.c (supportable_widening_operation): Don't
 	initialize icode1 and icode2.
-	* tree-vectorizer.h (enum vect_def_type): Add
-	vect_uninitialized_def.
+	* tree-vectorizer.h (enum vect_def_type): Add vect_uninitialized_def.
 	* config/sol2-c.c (cmn_err_length_specs): Change 0 to FMT_LEN_none
 	and to STD_C89.
 	(cmn_err_flag_specs): Change 0 to STD_C89.
@@ -171,8 +172,7 @@
 	casts to enum type.
 	* config/s390/s390.c (s390_tune_flags): Change type to int.
 	(s390_arch_flags): Likewise.
-	(s390_handle_arch_option): Change flags field of struct pta to
-	int.
+	(s390_handle_arch_option): Change flags field of struct pta to int.
 	* config/s390/s390.h (s390_tune_flags): Update declaration.
 	(s390_arch_flags): Likewise.
 	* config/sh/sh.c (prepare_move_operands): Compare
@@ -187,10 +187,8 @@
 	(sh_target_reg_class): Change return type to enum reg_class.
 	* config/sh/sh.h (OVERRIDE_OPTIONS): Change CPU_xxx to
 	PROCESSOR_xxx.
-	* config/sh/sh-protos.h (tls_symbolic_operand): Update
-	declaration.
-	* config/sparc/sparc.c (sparc_override_options): Add cast to enum
-	type.
+	* config/sh/sh-protos.h (tls_symbolic_operand): Update declaration.
+	* config/sparc/sparc.c (sparc_override_options): Add cast to enum type.
 	* config/sparc/sparc.md (empty_delay_slot): Return enum constant.
 	(pic, calls_alloca, calls_eh_return, leaf_function): Likewise.
 	(delayed_branch, tls_call_delay): Likewise.
@@ -210,16 +208,13 @@
 
 	* doc/c-tree.texi (Types, Functions, Expression trees): Fix
 	grammar nits.
-	* doc/cfg.texi (Maintaining the CFG, Liveness information):
-	Likewise.
+	* doc/cfg.texi (Maintaining the CFG, Liveness information): Likewise.
 	* doc/cpp.texi (Standard Predefined Macros)
 	(Implementation-defined behavior): Likewise.
-	* doc/extend.texi (Function Attributes, Type Attributes):
-	Likewise.
+	* doc/extend.texi (Function Attributes, Type Attributes): Likewise.
 	* doc/gimple.texi (GIMPLE Exception Handling)
 	(@code{GIMPLE_ASSIGN}): Likewise.
-	* doc/install.texi (Prerequisites, Configuration, Specific):
-	Likewise.
+	* doc/install.texi (Prerequisites, Configuration, Specific): Likewise.
 	* doc/invoke.texi (Warning Options, Optimize Options)
 	(AVR Options, Darwin Options): Likewise.
 	(Optimize Options): Reformulate -fwhole-program description.
@@ -247,8 +242,7 @@
 	(exp2_immediate_p, spu_gen_exp2): Define.
 	* spu-builtins.def (spu_convts, spu_convtu, spu_convtf_0,
 	spu_convtf_1): Update parameter descriptions.
-	* spu-builtins.md (spu_csflt, spu_cuflt, spu_cflts, spu_cfltu):
-	Update.
+	* spu-builtins.md (spu_csflt, spu_cuflt, spu_cflts, spu_cfltu): Update.
 	* constraints.md ('v', 'w'): New.
 	* spu.md (UNSPEC_CSFLT, UNSPEC_CFLTS, UNSPEC_CUFLT, UNSPEC_CFLTU):
 	Remove.
