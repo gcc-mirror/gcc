@@ -14,9 +14,13 @@ f(vector float a, vector float b, vector float c)
 
 static void test()
 {
-  check(vec_all_eq(f(((vector float){2,3,5,7}),
+  check(vec_all_gt(f(((vector float){2,3,5,7}),
 		     ((vector float){11,13,17,19}),
 		     ((vector float){23,29,31,37})),
-		   ((vector float){16.9092026, 18.7693329, -2.8233242, -92.9472198})),
-		   "f");
+		   ((vector float){16.90, 18.76, -2.83, -92.95}))
+	&& vec_all_lt(f(((vector float){2,3,5,7}),
+		     ((vector float){11,13,17,19}),
+		     ((vector float){23,29,31,37})),
+		   ((vector float){16.91, 18.77, -2.82, -92.94})),
+	"f");
 }
