@@ -1,3 +1,8 @@
+2009-04-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Fix
+	type error.
+
 2009-04-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm-cores.def: Add support for arm1156t2f-s.
