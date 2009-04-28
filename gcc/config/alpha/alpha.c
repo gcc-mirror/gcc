@@ -275,10 +275,10 @@ override_options (void)
     { "ev6",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX },
     { "21264",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX },
     { "ev67",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX },
-    { "21264a",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX },
-    { 0, 0, 0 }
+    { "21264a",	PROCESSOR_EV6, MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX }
   };
 
+  int const ct_size = ARRAY_SIZE (cpu_table);
   int i;
 
   /* Unicos/Mk doesn't have shared libraries.  */
@@ -370,7 +370,7 @@ override_options (void)
 
   if (alpha_cpu_string)
     {
-      for (i = 0; cpu_table [i].name; i++)
+      for (i = 0; i < ct_size; i++)
 	if (! strcmp (alpha_cpu_string, cpu_table [i].name))
 	  {
 	    alpha_tune = alpha_cpu = cpu_table [i].processor;
@@ -378,19 +378,19 @@ override_options (void)
 	    target_flags |= cpu_table [i].flags;
 	    break;
 	  }
-      if (! cpu_table [i].name)
+      if (i == ct_size)
 	error ("bad value %qs for -mcpu switch", alpha_cpu_string);
     }
 
   if (alpha_tune_string)
     {
-      for (i = 0; cpu_table [i].name; i++)
+      for (i = 0; i < ct_size; i++)
 	if (! strcmp (alpha_tune_string, cpu_table [i].name))
 	  {
 	    alpha_tune = cpu_table [i].processor;
 	    break;
 	  }
-      if (! cpu_table [i].name)
+      if (i == ct_size)
 	error ("bad value %qs for -mcpu switch", alpha_tune_string);
     }
 
@@ -709,7 +709,7 @@ tls_symbolic_operand_type (rtx symbol)
   enum tls_model model;
 
   if (GET_CODE (symbol) != SYMBOL_REF)
-    return 0;
+    return TLS_MODEL_NONE;
   model = SYMBOL_REF_TLS_MODEL (symbol);
 
   /* Local-exec with a 64-bit size is the same code as initial-exec.  */

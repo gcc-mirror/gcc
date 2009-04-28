@@ -1,3 +1,12 @@
+2009-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.md (usegp): Cast the result of
+	alpha_find_lo_sum_using_gp to enum attr_usegp.
+	* config/alpha/alpha.c (override_options): Remove end-of-structure
+	marker element from cpu_table.  Use array size of cpu_table to handle
+	-mcpu and -mtune options.
+	(tls_symbolic_operand_type): Change 0 to TLS_MODEL_NONE.
+
 2009-04-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (powerpc*-*-* | rs6000-*-*): Add
@@ -57,9 +66,9 @@
 
 2009-04-28  Paolo Bonzini  <bonzini@gnu.org>
 
-        * config/m32c/m32c.c (TARGET_PROMOTE_FUNCTION_RETURN,
-        m32c_promote_function_return, TARGET_PROMOTE_PROTOTYPES,
-        m32c_promote_prototypes): Delete.
+	* config/m32c/m32c.c (TARGET_PROMOTE_FUNCTION_RETURN,
+	m32c_promote_function_return, TARGET_PROMOTE_PROTOTYPES,
+	m32c_promote_prototypes): Delete.
 
 2009-04-28  Michael Matz  <matz@suse.de>
 
@@ -456,7 +465,7 @@
 	to above.
 
 2009-04-27  Richard Sandiford  <rdsandiford@googlemail.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* resource.c (find_basic_block): Use BLOCK_FOR_INSN to look up
 	a label's basic block.

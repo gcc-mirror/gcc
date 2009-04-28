@@ -15,8 +15,8 @@
 
 2009-04-28  H.J. Lu  <hongjiu.lu@intel.com>
 
-	g++.dg/warn/pr35652.C: Removed.
-	gcc.dg/pr35652.c: Likewise.
+	* g++.dg/warn/pr35652.C: Removed.
+	* gcc.dg/pr35652.c: Likewise.
 
 2009-04-28  Alexander Monakov  <amonakov@ispras.ru>
 
