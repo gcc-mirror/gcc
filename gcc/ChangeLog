@@ -1,3 +1,10 @@
+2009-04-28  Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/39929
+	* config/darwin.c (machopic_gen_offset): Check
+	currently_expanding_to_rtl if current_ir_type returns IR_GIMPLE.
+	* config/arm/arm.c (require_pic_register): Likewise.
+
 2009-04-28  Paolo Bonzini  <bonzini@gnu.org>
 
         * config/m32c/m32c.c (TARGET_PROMOTE_FUNCTION_RETURN,
