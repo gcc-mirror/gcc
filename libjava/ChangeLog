@@ -1,3 +1,10 @@
+2009-04-28  Andrew Haley  <aph@redhat.com>
+
+	PR libgcj/39899
+	* Makefile.am (libgcj_tools_la_LDFLAGS): Add
+	-fno-bootstrap-classes to libgcj_tools_la_GCJFLAGS.
+	* Makefile.in: Regenerate.
+
 2009-04-26  Matthias Klose <doko@ubuntu.com>
 
 	* contrib/aot-compile.in: Print diagnostics for malformed or invalid

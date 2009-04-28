@@ -72,6 +72,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	$(top_srcdir)/contrib/aot-compile-rpm.in \
 	$(top_srcdir)/contrib/aot-compile.in \
 	$(top_srcdir)/contrib/aotcompile.py.in \
+	$(top_srcdir)/contrib/generate-cacerts.pl.in \
 	$(top_srcdir)/contrib/rebuild-gcj-db.in \
 	$(top_srcdir)/scripts/jar.in COPYING ChangeLog NEWS THANKS
 @MAINTAINER_MODE_TRUE@@NATIVE_TRUE@am__append_19 = gen-from-JIS
@@ -111,9 +112,10 @@ CONFIG_HEADER = $(top_builddir)/include/config.h \
 	$(top_builddir)/gcj/libgcj-config.h
 CONFIG_CLEAN_FILES = libgcj.pc libgcj.spec libgcj-test.spec \
 	contrib/aotcompile.py contrib/aot-compile \
-	contrib/aot-compile-rpm contrib/rebuild-gcj-db scripts/jar \
-	java/io/natFile.cc java/lang/natConcreteProcess.cc \
-	java/net/natVMInetAddress.cc java/net/natVMNetworkInterface.cc \
+	contrib/aot-compile-rpm contrib/generate-cacerts.pl \
+	contrib/rebuild-gcj-db scripts/jar java/io/natFile.cc \
+	java/lang/natConcreteProcess.cc java/net/natVMInetAddress.cc \
+	java/net/natVMNetworkInterface.cc \
 	gnu/java/net/natPlainSocketImpl.cc \
 	gnu/java/net/natPlainDatagramSocketImpl.cc \
 	gnu/java/nio/natVMPipe.cc gnu/java/nio/natVMSelector.cc \
@@ -1028,8 +1030,17 @@ libgcj_la_DEPENDENCIES = libgcj-$(gcc_version).jar java/lang/Object.lo \
 	$(libgcj_la_LIBADD) $(am__append_18)
 libgcj_la_LINK = $(LIBLINK)
 EXTRA_libgcj_la_SOURCES = java/lang/Object.java
+
+# We compile libgcj_tools with -findirect-dispatch so that they can
+# depend on external classes: in particular, gjdoc uses antlr.  In
+# addition, -fno-bootstrap-classes ensures that the tools are loaded
+# by the system class loader rather than the bootstrap class loader:
+# only core library classes should be loaded by the bootstrap loader.
 libgcj_tools_la_SOURCES = classpath/tools/tools.zip
-libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch -fno-indirect-classes  -fsource-filename=$(here)/classpath/tools/all-classes.lst
+libgcj_tools_la_GCJFLAGS = $(AM_GCJFLAGS) -findirect-dispatch \
+ -fno-bootstrap-classes -fno-indirect-classes \
+ -fsource-filename=$(here)/classpath/tools/all-classes.lst
+
 libgcj_tools_la_LDFLAGS = -rpath $(toolexeclibdir) \
  -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
  $(LIBGCJ_LD_SYMBOLIC_FUNCTIONS)
@@ -8685,6 +8696,8 @@ contrib/aotcompile.py: $(top_builddir)/config.status $(top_srcdir)/contrib/aotco
 contrib/aot-compile: $(top_builddir)/config.status $(top_srcdir)/contrib/aot-compile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 contrib/aot-compile-rpm: $(top_builddir)/config.status $(top_srcdir)/contrib/aot-compile-rpm.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+contrib/generate-cacerts.pl: $(top_builddir)/config.status $(top_srcdir)/contrib/generate-cacerts.pl.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 contrib/rebuild-gcj-db: $(top_builddir)/config.status $(top_srcdir)/contrib/rebuild-gcj-db.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
