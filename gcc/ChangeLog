@@ -23,11 +23,11 @@
 	(hppa[12]*-*-hpux11*): Ditto.
 	(ia64*-*-hpux*): Ditto.
 	* config/hpux-stdint.h: New.
-	* gcc/config/ia64/hpux.h (TARGET_OS_CPP_BUILTINS): Set
+	* config/ia64/hpux.h (TARGET_OS_CPP_BUILTINS): Set
 	__STDC_EXT__ for all compiles.
-	* gcc/config/pa/pa-hpux.h: Ditto.
-	* gcc/config/pa/pa-hpux10.h: Ditto.
-	* gcc/config/pa/pa-hpux11.h: Ditto.
+	* config/pa/pa-hpux.h: Ditto.
+	* config/pa/pa-hpux10.h: Ditto.
+	* config/pa/pa-hpux11.h: Ditto.
 
 2009-04-28  Catherine Moore  <clm@codesourcery.com>
 
@@ -63,6 +63,7 @@
 	* config/arm/arm-tune.md: Regenerate.
 
 2009-04-28  Alexander Monakov  <amonakov@ispras.ru>
+
 	* sel-sched-ir.c (maybe_tidy_empty_bb): Do not attempt to delete a
 	block if there are complex incoming edges.
 	(sel_merge_blocks): Remove useless assert.
@@ -1230,7 +1231,7 @@
 	(current_function_special_page_vector): Likewise.
 	(m32c_expand_insv): Silence a warning.
 
-2009-04-21  Taras Glek <tglek@mozilla.com>
+2009-04-21  Taras Glek  <tglek@mozilla.com>
 
 	* alias.c: Update GTY annotations to new syntax.
 	* basic-block.h: Likewise.
@@ -1890,7 +1891,7 @@
 	* config/spu/spu-protos.h (spu_expand_builtin): Update declaration.
 
 2009-04-20  Joey Ye  <joey.ye@intel.com>
-	    Xuepeng Guo <xuepeng.guo@intel.com>
+	    Xuepeng Guo  <xuepeng.guo@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/atom.md: Add bypasses with ix86_dep_by_shift_count.
@@ -2643,7 +2644,7 @@
 	* dbxout.c (dbx_debug_hooks): Likewise.
 	* sdbout.c (sdb_debug_hooks): Likewise.
 
-2009-04-15  Michael Eager <eager@eagercon.com>
+2009-04-15  Michael Eager  <eager@eagercon.com>
 
 	* config/rs6000/rs6000.c (rs6000_function_value): Set function return
 	reg for single-precision FPU.
@@ -2826,7 +2827,7 @@
 	comment suggests.
 	* omp-low.c (expand_omp_atomic_pipeline): Use the correct types.
 
-2009-04-13  Michael Eager <eager@eagercon.com>
+2009-04-13  Michael Eager  <eager@eagercon.com>
 
 	* config/rs6000/rs6000-c.c: generate defines if rs6000_xilinx_fpu:
 	_XFPU, _XFPU_SP_LITE, _XFPU_SP_FULL, _XFPU_DP_LITE, _XFPU_DP_FULL
@@ -3527,7 +3528,7 @@
 	remove_c_maybe_const_expr on any input C_MAYBE_CONST_EXPR with
 	integer operands.
 
-2009-04-08 Bingfeng Mei <bmei@broadcom.com>
+2009-04-08  Bingfeng Mei  <bmei@broadcom.com>
 
 	* fold-const.c (const_binop): Combine two VECTOR_CST under operation
 	CODE to produce a new one. Add a prototype to use fold_convert_const
@@ -3633,7 +3634,7 @@
 	* config/i386/i386.md: Revert 2 accidental checkins.
 
 2009-04-06  Joey Ye  <joey.ye@intel.com>
-	    Xuepeng Guo <xuepeng.guo@intel.com>
+	    Xuepeng Guo  <xuepeng.guo@intel.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 
 	Atom pipeline model, tuning and insn selection.
@@ -3762,7 +3763,7 @@
 	delay slot.
 	(ic_invalidate_array): Likewise.
 
-2009-04-06  Hariharan Sandanagobalane <hariharan@picochip.com>
+2009-04-06  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* calls.c (emit_library_call_value_1): Fix a problem with parameter
 	alignment for library calls.
@@ -4453,7 +4454,7 @@
 	* config.gcc (powerpc-*-linux*): Merge variants.
 
 2009-04-02  Chao-ying Fu  <fu@mips.com>
-	    James Grosbach <james.grosbach@microchip.com>
+	    James Grosbach  <james.grosbach@microchip.com>
 
 	* config/mips/mips.c (mips_frame_info): Add acc_mask, num_acc,
 	num_cop0_regs, acc_save_offset, cop0_save_offset, acc_sp_offset,
@@ -4631,81 +4632,81 @@
 	* config/i386/i386.c (legitimate_constant_p): Recognize
 	all one vector constant.
 
-2009-04-01  Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+2009-04-01  Jan-Benedict Glaw  <jbglaw@jbglaw-dev.homezone.telefonica.de>
 
-	* gcc/config/vax/vax.c: Add #includes to silence warnings.
+	* config/vax/vax.c: Add #includes to silence warnings.
 	Change #include order to silence two warnings.
 
-2009-04-01  Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+2009-04-01  Jan-Benedict Glaw  <jbglaw@jbglaw-dev.homezone.telefonica.de>
 
-	* gcc/config/vax/linux.h (TARGET_DEFAULT): Add the MASK_QMATH flag bit.
+	* config/vax/linux.h (TARGET_DEFAULT): Add the MASK_QMATH flag bit.
 	(ASM_SPEC): Pass -k to the assembler for PIC code.
 
-2009-04-01  Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+2009-04-01  Jan-Benedict Glaw  <jbglaw@jbglaw-dev.homezone.telefonica.de>
 
-	* gcc/config.gcc: Add vax-*-linux* to the switch.
-	* gcc/config/vax/linux.h: New file. (TARGET_VERSION,
+	* config.gcc: Add vax-*-linux* to the switch.
+	* config/vax/linux.h: New file. (TARGET_VERSION,
 	TARGET_OS_CPP_BUILTINS, TARGET_DEFAULT, CPP_SPEC, LINK_SPEC): Define.
 
-2009-04-01  Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+2009-04-01  Jan-Benedict Glaw  <jbglaw@jbglaw-dev.homezone.telefonica.de>
 
-	* gcc/config/vax/vax.c (vax_output_int_move, adjacent_operands_p):
+	* config/vax/vax.c (vax_output_int_move, adjacent_operands_p):
 	Use predicate macros instead of GET_CODE() == foo.
-	* gcc/config/vax/vax.md (movsi_2, movstrictqi, and<mode>3, ashrsi3,
+	* config/vax/vax.md (movsi_2, movstrictqi, and<mode>3, ashrsi3,
 	ashlsi3, rotrsi3, <unnamed>): Likewise.
 
-2009-04-01  Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+2009-04-01  Jan-Benedict Glaw  <jbglaw@jbglaw-dev.homezone.telefonica.de>
 
-	* gcc/config/vax/builtins.md (jbbssiqi, jbbssihi, jbbssisi, jbbcciqi,
+	* config/vax/builtins.md (jbbssiqi, jbbssihi, jbbssisi, jbbcciqi,
 	jbbccihi, jbbccisi): Remova trailing whitespace.
-	* gcc/config/vax/constraints.md: Likewise.
-	* gcc/config/vax/elf.h: (ASM_PREFERRED_EH_DATA_FORMAT): Likewise.
-	* gcc/config/vax/openbsd1.h (OBSD_OLD_GAS): Likewise.
-	* gcc/config/vax/predicates.md: Likewise.
-	* gcc/config/vax/vax.c (print_operand_address, vax_output_int_move,
+	* config/vax/constraints.md: Likewise.
+	* config/vax/elf.h: (ASM_PREFERRED_EH_DATA_FORMAT): Likewise.
+	* config/vax/openbsd1.h (OBSD_OLD_GAS): Likewise.
+	* config/vax/predicates.md: Likewise.
+	* config/vax/vax.c (print_operand_address, vax_output_int_move,
 	vax_expand_addsub_di_operands, adjacent_operands_p): Likewise.
-	* gcc/config/vax/vax.h: Likewise.
-	* gcc/config/vax/vax.md (nonlocal_goto): Likewise.
+	* config/vax/vax.h: Likewise.
+	* config/vax/vax.md (nonlocal_goto): Likewise.
 
-2009-04-01  Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+2009-04-01  Jan-Benedict Glaw  <jbglaw@jbglaw-dev.homezone.telefonica.de>
 
-	* gcc/config/vax/vax.c (vax_float_literal, vax_output_int_move)
+	* config/vax/vax.c (vax_float_literal, vax_output_int_move)
 	(indirectable_address_p, adjacent_operands_p): Add spaces around
 	braces.
-	* gcc/config/vax/vax-protos.h (adjacent_operands_p): Likewise.
+	* config/vax/vax-protos.h (adjacent_operands_p): Likewise.
 
-2009-04-01  Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+2009-04-01  Jan-Benedict Glaw  <jbglaw@jbglaw-dev.homezone.telefonica.de>
 
-	* gcc/config/vax/vax.c (legitimate_constant_address_p,
+	* config/vax/vax.c (legitimate_constant_address_p,
 	legitimate_constant_p, indirectable_address_p, nonindexed_address_p,
 	index_term_p, reg_plus_index_p, legitimate_address_p,
 	vax_mode_dependent_address_p): Update comments to match functions
 	modified by the recent int->bool conversion.
 
-2009-04-01  Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+2009-04-01  Jan-Benedict Glaw  <jbglaw@jbglaw-dev.homezone.telefonica.de>
 
-	* gcc/config/vax/builtins.md: Update copyright message.
-	* gcc/config/vax/constraints.md: Likewise.
-	* gcc/config/vax/netbsd-elf.h: Likewise.
-	* gcc/config/vax/predicates.md: Likewise.
-	* gcc/config/vax/vax-protos.h: Likewise.
-	* gcc/config/vax/vax.c: Likewise.
-	* gcc/config/vax/vax.h: Likewise.
-	* gcc/config/vax/vax.md: Likewise.
-	* gcc/config/vax/vax.opt: Likewise.
+	* config/vax/builtins.md: Update copyright message.
+	* config/vax/constraints.md: Likewise.
+	* config/vax/netbsd-elf.h: Likewise.
+	* config/vax/predicates.md: Likewise.
+	* config/vax/vax-protos.h: Likewise.
+	* config/vax/vax.c: Likewise.
+	* config/vax/vax.h: Likewise.
+	* config/vax/vax.md: Likewise.
+	* config/vax/vax.opt: Likewise.
 
-2009-04-01  Jan-Benedict Glaw <jbglaw@jbglaw-dev.homezone.telefonica.de>
+2009-04-01  Jan-Benedict Glaw  <jbglaw@jbglaw-dev.homezone.telefonica.de>
 
-	* gcc/config/vax/builtins.md (ffssi2, ffssi2_internal,
+	* config/vax/builtins.md (ffssi2, ffssi2_internal,
 	sync_lock_test_and_set<mode>, sync_lock_release<mode>): Fix indention.
-	* gcc/config/vax/constraints.md (B, R): Likewise.
-	* gcc/config/vax/predicates.md (external_memory_operand,
+	* config/vax/constraints.md (B, R): Likewise.
+	* config/vax/predicates.md (external_memory_operand,
 	nonimmediate_addsub_di_operand): Likewise.
-	* gcc/config/vax/vax.c (vax_output_int_add): Likewise.
-	* gcc/config/vax/vax.md (movsi, movsi_2, mov<mode>, call_value,
+	* config/vax/vax.c (vax_output_int_add): Likewise.
+	* config/vax/vax.md (movsi, movsi_2, mov<mode>, call_value,
 	untyped_call): Likewise.
 
-2009-04-01  Matt Thomas <matt@3am-software.com>
+2009-04-01  Matt Thomas  <matt@3am-software.com>
 
 	* config/vax/predicates.md: New file.
 	(symbolic_operand, local_symbolic_operand, external_symbolic_operand,
@@ -4736,13 +4737,13 @@
 	(mov<mode>): Extend accepted operand types.
 	(subdi3_old): Rename from subdi3, change update constraints and use
 	a new implementation.
-	* gcc/config/vax/vax.h (PCC_BITFIELD_TYPE_MATTERS): Add space.
+	* config/vax/vax.h (PCC_BITFIELD_TYPE_MATTERS): Add space.
 	(FRAME_POINTER_CFA_OFFSET, IRA_COVER_CLASSES, CLASS_MAX_NREGS,
 	MOVE_RATIO, CLEAR_RATIO): Define.
 	(REG_CLASS_FROM_LETTER, CONST_OK_FOR_LETTER_P,
 	CONST_DOUBLE_OK_FOR_LETTER_P, EXTRA_CONSTRAINT): Delete.
 	(PRINT_OPERAND): Redefine using a function instead of inlined code.
-	* gcc/config/vax/vax.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Define.
+	* config/vax/vax.c (TARGET_BUILTIN_SETJMP_FRAME_VALUE): Define.
 	(split_quadword_operands): Make static and really allow variable
 	splitting.
 	(print_operand_address): Update for PIC generation.
@@ -4824,7 +4825,7 @@
 	const char*.
 
 2009-04-01  Kai Tietz  <kai.tietz@onevision.com>
-	    Andrey Galkin <agalkin@hypercom.com>
+	    Andrey Galkin  <agalkin@hypercom.com>
 
 	PR/39492
 	* config/i386/host-mingw32.c (mingw32_gt_pch_use_address):
@@ -5893,7 +5894,7 @@
 	char pointer to cgraph_inline_failed_t.
 	(cgraph_inline_p): Adjust prototype to use cgraph_inline_failed_t.
 	(cgraph_default_inline_p): Ditto.
-	* gcc/cgraphunit.c (cgraph_inline_p): Change type of parameter REASON
+	* cgraphunit.c (cgraph_inline_p): Change type of parameter REASON
 	to cgraph_inline_failed_t pointer.
 	* cif-code.def: New file.
 	* ipa-inline.c (cgraph_mark_inline_edge): Use an enum instead of a
@@ -6303,7 +6304,7 @@
 	(-mwindows): New.
 	(sub section "i386 and x86-64 Windows Options"): New.
 
-2009-03-25  Ralf Corsépius <ralf.corsepius@rtems.org>
+2009-03-25  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config/arm/rtems-elf.h: Remove LINK_GCC_C_SEQUENCE_SPEC.
 	* config/rs6000/t-rtems: Remove MULTILIB_EXTRA_OPTS.
@@ -6351,7 +6352,7 @@
 	* doc/invoke.texi (DEC Alpha Options): Document 'native' value for
 	-march and -mtune options.
 
-2009-03-24  Ralf Corsépius <ralf.corsepius@rtems.org>
+2009-03-24  Ralf Corsépius  <ralf.corsepius@rtems.org>
 
 	* config/m68k/t-rtems: Add m5329 multilib.
 
@@ -6383,7 +6384,7 @@
 	PR tree-optimization/39516
 	* lambda-code.c (perfect_nestify): Fix type of the uboundvar variable.
 
-2009-03-23 Bingfeng Mei  <bmei@broadcom.com>
+2009-03-23  Bingfeng Mei  <bmei@broadcom.com>
 
 	* config.gcc (need_64bit_hwint): Make clear that need_64bit_hwint
 	should be set true if BITS_PER_WORD of target is bigger than 32
@@ -6418,7 +6419,7 @@
 
 	* reginfo.c (globalize_reg): Recompute derived reg sets.
 
-2009-03-19  Ozkan Sezer <sezeroz@gmail.com>
+2009-03-19  Ozkan Sezer  <sezeroz@gmail.com>
 
 	PR target/39063
 	* libgcc2.c (mprotect): Do not use signed arguments for
@@ -6616,7 +6617,7 @@
 	mismatches for POINTER_TYPE_P (type).
 	(number_of_iterations_le): Likewise.
 
-2009-03-16  Hariharan Sandanagobalane <hariharan@picochip.com>
+2009-03-16  Hariharan Sandanagobalane  <hariharan@picochip.com>
 
 	* config/picochip/picochip.c: Removed profiling support.
 	* config/picochip/picochip.md: Removed profiling instruction.
@@ -6649,7 +6650,7 @@
 
 2009-03-13  Catherine Moore  <clm@codesourcery.com>
 
-	* gcc/config/i386/x-mingw32 (host-mingw32.o): Replace
+	* config/i386/x-mingw32 (host-mingw32.o): Replace
 	diagnostic.h with $(DIAGNOSTIC_H).
 
 2009-03-12  Jakub Jelinek  <jakub@redhat.com>
@@ -7115,11 +7116,11 @@
 
 2009-02-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* gcc/config/s390/s390.c (s390_swap_cmp): Look for conditional
+	* config/s390/s390.c (s390_swap_cmp): Look for conditional
 	jumps if COND is NULL.
 	(find_cond_jump): New function.
 	(s390_z10_optimize_cmp): Handling for reg-reg compares added.
-	* gcc/config/s390/s390.md: Remove z10_cobra attribute value.
+	* config/s390/s390.md: Remove z10_cobra attribute value.
 
 2009-02-26  Uros Bizjak  <ubizjak@gmail.com>
 
@@ -8122,10 +8123,10 @@
 
 2009-01-29  Robert Millan  <rmh@aybabtu.com>
 
-	* gcc/config.gcc: Recognize GNU/kOpenSolaris (*-*-kopensolaris*-gnu).
-	* gcc/config/i386/kopensolaris-gnu.h: New file.  Undefine
+	* config.gcc: Recognize GNU/kOpenSolaris (*-*-kopensolaris*-gnu).
+	* config/i386/kopensolaris-gnu.h: New file.  Undefine
 	`MD_UNWIND_SUPPORT'.
-	* gcc/config/kopensolaris-gnu.h: New file (based on kfreebsd-gnu.h).
+	* config/kopensolaris-gnu.h: New file (based on kfreebsd-gnu.h).
 
 2009-01-29  Kazu Hirata  <kazu@codesourcery.com>
 
@@ -8979,7 +8980,7 @@
 2009-01-11  Markus Schoepflin  <markus.schoepflin@comsoft.de>
 
 	PR debug/7055
-	* gcc/mips-tfile.c (parse_def): Fix parsing of def strings
+	* mips-tfile.c (parse_def): Fix parsing of def strings
 	starting with digits.
 
 2009-01-10  Jakub Jelinek  <jakub@redhat.com>
