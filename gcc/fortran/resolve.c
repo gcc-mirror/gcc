@@ -9244,7 +9244,10 @@ resolve_symbol (gfc_symbol *sym)
 	  if (ifc->attr.intrinsic)
 	    resolve_intrinsic (ifc, &ifc->declared_at);
 
-	  sym->ts = ifc->ts;
+	  if (ifc->result)
+	    sym->ts = ifc->result->ts;
+	  else   
+	    sym->ts = ifc->ts;
 	  sym->ts.interface = ifc;
 	  sym->attr.function = ifc->attr.function;
 	  sym->attr.subroutine = ifc->attr.subroutine;
