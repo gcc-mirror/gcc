@@ -169,7 +169,7 @@
   (cond [(eq_attr "type" "ldsym,jsr")
 	   (const_string "yes")
 	 (eq_attr "type" "ild,fld,ist,fst")
-	   (symbol_ref "alpha_find_lo_sum_using_gp(insn)")
+	   (symbol_ref "((enum attr_usegp) alpha_find_lo_sum_using_gp (insn))")
 	]
 	(const_string "no")))
 
