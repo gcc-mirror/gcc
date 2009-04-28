@@ -1,3 +1,12 @@
+2009-04-28  Ben Elliston  <bje@au.ibm.com>
+
+	PR c++/35652
+	Revert:
+
+	2009-03-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* typeck.c (cp_pointer_sum): Adjust call to pointer_int_sum.
+
 2009-04-27  Ian Lance Taylor  <iant@google.com>
 
 	* semantics.c (finish_omp_clauses): Change type of c_kind to enum

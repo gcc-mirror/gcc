@@ -15,9 +15,6 @@ foo (int i)
   printf (3 + "%d\n");		/* { dg-warning "zero-length" "zero-length string" } */
   printf ("%d\n" + i, i);	/* { dg-warning "not a string" "non-constant addend" } */
   printf ("%d\n" + 10);		/* { dg-warning "not a string" "too large addend" } */
-                                /* { dg-warning "offset '10' outside bounds of constant string" "offset" { target *-*-* } 17 } */
   printf ("%d\n" - 1, i);	/* { dg-warning "not a string" "minus constant" } */
-                                /* { dg-warning "offset '-1' outside bounds of constant string" "offset" { target *-*-* } 19 } */
   printf ("%d\n" + -1, i);	/* { dg-warning "not a string" "negative addend" } */
-                                /* { dg-warning "offset '-1' outside bounds of constant string" "offset" { target *-*-* } 21 } */
 }
