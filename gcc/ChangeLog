@@ -1,3 +1,7 @@
+2009-04-28  Catherine Moore  <clm@codesourcery.com>
+
+	* debug.h (set_name): Add comment.
+
 2009-04-28  Andrew Pinski  <pinskia@gmail.com>
 
 	PR target/39929
