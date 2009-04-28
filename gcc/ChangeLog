@@ -1,3 +1,10 @@
+2009-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/39914
+	* ira-conflicts.c (ira_build_conflicts): Prohibit call used
+	registers for allocnos created from user-defined variables only
+	when not optimizing.
+
 2009-04-28  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/39937
@@ -42,8 +49,7 @@
 
 2009-04-28  Richard Guenther  <rguenther@suse.de>
 
-	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Fix
-	type error.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand): Fix type error.
 
 2009-04-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
@@ -83,8 +89,7 @@
 	(threadedge_finalize_values): Likewise.
 	* tree-ssa-dom.c (ssa_name_values): New global variable.
 	(SSA_NAME_VALUE): Define.
-	(tree_ssa_dominator_optimize): Initialize/free the value-handle
-	array.
+	(tree_ssa_dominator_optimize): Initialize/free the value-handle array.
 
 2009-04-28  Ira Rosen  <irar@il.ibm.com>
 

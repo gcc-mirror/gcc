@@ -806,7 +806,7 @@ ira_build_conflicts (void)
       if ((! flag_caller_saves && ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
 	  /* For debugging purposes don't put user defined variables in
 	     callee-clobbered registers.  */
-	  || (optimize <= 1
+	  || (optimize == 0
 	      && (attrs = REG_ATTRS (regno_reg_rtx [ALLOCNO_REGNO (a)])) != NULL
 	      && (decl = attrs->decl) != NULL
 	      && VAR_OR_FUNCTION_DECL_P (decl)
