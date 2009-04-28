@@ -1,6 +1,8 @@
 /* Check that long calls to different sections are not optimized to "bl".  */
 /* { dg-do compile { target { arm32 && nonpic } } } */
 /* { dg-options "-O2" } */
+/* This test expects that short calls are the default.  */
+/* { dg-skip-if "-mlong-calls in use" { "*-*-*" } { "-mlong-calls" } { "" } } */
 
 #define section(S) __attribute__((section(S)))
 #define weak __attribute__((weak))

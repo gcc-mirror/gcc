@@ -9,7 +9,7 @@
 #if defined(__i386__)
 #define clobber \
   asm volatile("#asm" : : : "si", "di")
-#elif defined(__powerpc__) || defined(__PPC__) || defined(__ppc__) || defined(__POWERPC__) || defined(PPC) || defined (_IBMR2)
+#elif defined(__powerpc__) || defined(__PPC__) || defined(__ppc__) || defined(__POWERPC__) || defined(PPC) || defined (_IBMR2) || defined (__ppc)
 #define clobber \
   asm volatile("#asm" : : : "14", "15", "16", "17", "18", "19", "20", \
 	       "21", "22", "23", "24", "25", "26", "27", "28", "29")

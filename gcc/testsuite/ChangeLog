@@ -1,3 +1,21 @@
+2009-04-28  Nathan Froyd  <froydnj@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.target/powerpc/20020118-1.c: Skip on vxworks targets.
+	* gcc.dg/20020103-1.c: Check for __ppc.
+	* gcc.dg/asm-b.c: Check for __ppc.
+	* gcc.dg/20020919-1.c: Check for __ppc.
+	* gcc.dg/20020312-2.c: Likewise.
+	* gcc.dg/trampoline-1.c: Add appropriate NO_TRAMPOLINES #ifndefs.
+	* gcc.dg/torture/asm-subreg-1.c: Skip on sparc vxworks targets.
+	* gcc.dg/attr-weakref-1.c: Skip on selected vxworks targets.
+	* g++.dg/warn/weak1.C: Likewise.
+	* gcc.dg/tree-ssa/20030714-1.c (find_base_value): Declare as
+	static so appropriate optimizations kick in.
+	(find_base_value_wrapper): New function.
+	* g++.dg/eh/simd-5.C: Fix target triplet.
+	* gcc.target/arm/long-calls-1.c: Skip for -mlong-calls.
+
 2009-04-28  Uros Bizjak  <ubizjak@gmail.com>
 	    H.J. Lu  <hongjiu.lu@intel.com>
 

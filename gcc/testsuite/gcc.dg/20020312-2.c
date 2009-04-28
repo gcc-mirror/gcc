@@ -48,7 +48,7 @@ extern void abort (void);
 /* PIC register is %r27 or %r19, but is used even without -fpic.  */
 #elif defined(__pdp11__)
 /* No pic register.  */
-#elif defined(__powerpc__) || defined(__PPC__) || defined(__POWERPC__)
+#elif defined(__powerpc__) || defined(__PPC__) || defined(__POWERPC__) || defined (__ppc)
 # ifdef __MACH__
 #  define PIC_REG  "31"
 # else

@@ -5,6 +5,10 @@
 // is not available on hppa*-*-hpux*.  The test is skipped rather than
 // xfailed to suppress the warning that would otherwise arise.
 // { dg-skip-if "" { "*-*-darwin*" "hppa*-*-hpux*" } "*" { "" } }
+// For kernel modules and static RTPs, the loader treats undefined weak
+// symbols in the same way as undefined strong symbols.  The test
+// therefore fails to load, so skip it.
+// { dg-skip-if "" { "*-*-vxworks*" && nonpic } "*" { "-non-static" } }
 // { dg-options "-O2" }
 // { dg-additional-sources "attr-weakref-1a.c" }
 
