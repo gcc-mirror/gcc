@@ -3,4 +3,4 @@
 
 int bar __attribute__ ((aligned(1 << 28))) =  20;
 
-/* { dg-final { scan-assembler "\.align\[\\t \]*268435456" } } */
+/* { dg-final { scan-assembler ".align\[ \t\]+(268435456|28)\[ \t\]*\n" } } */
