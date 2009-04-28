@@ -10102,7 +10102,7 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		}
 	    }
 
-          if (flag_unsafe_math_optimizations
+	  if (flag_unsafe_math_optimizations
 	      && (TREE_CODE (arg0) == RDIV_EXPR || TREE_CODE (arg0) == MULT_EXPR)
 	      && (TREE_CODE (arg1) == RDIV_EXPR || TREE_CODE (arg1) == MULT_EXPR)
 	      && (tem = distribute_real_division (code, type, arg0, arg1)))
@@ -10542,7 +10542,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	    }
 	}
 
-      if (flag_unsafe_math_optimizations
+      if (FLOAT_TYPE_P (type)
+	  && flag_unsafe_math_optimizations
 	  && (TREE_CODE (arg0) == RDIV_EXPR || TREE_CODE (arg0) == MULT_EXPR)
 	  && (TREE_CODE (arg1) == RDIV_EXPR || TREE_CODE (arg1) == MULT_EXPR)
 	  && (tem = distribute_real_division (code, type, arg0, arg1)))
