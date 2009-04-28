@@ -1,3 +1,16 @@
+2009-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39911
+	* config/i386/i386.c (print_operand) ['Z']: Handle floating point
+	and integer modes for x87 operands.  Do not ICE for unsupported size,
+	generate error instead.  Generate error for unsupported operand types.
+	['z']: Do not handle HImode memory operands specially.  Warning
+	for floating-point operands.  Fallthru to 'Z' for unsupported operand
+	types.  Do not ICE for unsupported size, generate error instead.
+	(output_387_binary_op): Use %Z to output operands.
+	(output_fp_compare): Ditto.
+	(output_387_reg_move): Ditto.
+
 2009-04-28  Ben Elliston  <bje@au.ibm.com>
 
 	PR c++/35652
