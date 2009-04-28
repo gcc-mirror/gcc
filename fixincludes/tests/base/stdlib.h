@@ -20,6 +20,12 @@ extern long double strtold(const char *, char **);
 #endif  /* HPUX_LONG_DOUBLE_CHECK */
 
 
+#if defined( HPUX_LONG_DOUBLE_2_CHECK )
+#  if !defined(__ia64) || !defined(_PROTOTYPES) || defined(_LONG_DOUBLE_STRUCT)
+
+#endif  /* HPUX_LONG_DOUBLE_2_CHECK */
+
+
 #if defined( INT_ABORT_FREE_AND_EXIT_CHECK )
 extern void	abort(int);
 extern void	free(void*);

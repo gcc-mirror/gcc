@@ -9,7 +9,10 @@
 
 
 
-#if defined( HPUX11_UINT32_C_CHECK )
-#define CONCAT_U__(__c)	__CONCAT__(__c,u)
-#define UINT32_C(__c) __CONCAT__(__c,ul)
-#endif  /* HPUX11_UINT32_C_CHECK */
+#if defined( HPUX_C99_INTTYPES_CHECK )
+#define UINT8_C(__c) (__c)
+#define UINT16_C(__c) (__c)
+#define INT32_C(__c) (__c)
+#define UINT32_C(__c) __CONCAT__(__c,u)
+
+#endif  /* HPUX_C99_INTTYPES_CHECK */
