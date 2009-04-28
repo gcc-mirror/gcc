@@ -1358,10 +1358,6 @@ _eligible_successor_edge_p (edge e1, succ_iterator *ip)
 
       e2 = EDGE_SUCC (bb, 0);
       bb = e2->dest;
-      
-      /* This couldn't happen inside a region.  */
-      gcc_assert (! in_current_region_p (bb)
-                  || (flags & SUCCS_OUT));
     }
   
   /* Save the second edge for later checks.  */
@@ -1584,7 +1580,6 @@ extern void sel_redirect_edge_and_branch_force (edge, basic_block);
 extern void sel_init_pipelining (void);
 extern void sel_finish_pipelining (void);
 extern void sel_sched_region (int);
-extern void sel_find_rgns (void);
 extern loop_p get_loop_nest_for_rgn (unsigned int);
 extern bool considered_for_pipelining_p (struct loop *);
 extern void make_region_from_loop_preheader (VEC(basic_block, heap) **);
