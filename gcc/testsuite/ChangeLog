@@ -1,3 +1,14 @@
+2009-04-28  Ben Elliston  <bje@au.ibm.com>
+
+	PR c++/35652
+	Revert:
+
+	2009-03-27  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* gcc.dg/pr35652.C: New.
+	* g++.dg/warn/pr35652.C: New.
+	* gcc.dg/format/plus-1.c: Adjust message.
+
 2009-04-27  DJ Delorie  <dj@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_double64): New.
