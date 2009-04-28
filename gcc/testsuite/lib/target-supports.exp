@@ -544,8 +544,6 @@ proc check_effective_target_pcc_bitfield_type_matters { } {
 }
 
 # Return 1 if thread local storage (TLS) is supported, 0 otherwise.
-#
-# This won't change for different subtargets so cache the result.
 
 proc check_effective_target_tls {} {
     return [check_no_compiler_messages tls assembly {
@@ -556,8 +554,6 @@ proc check_effective_target_tls {} {
 }
 
 # Return 1 if *native* thread local storage (TLS) is supported, 0 otherwise.
-#
-# This won't change for different subtargets so cache the result.
 
 proc check_effective_target_tls_native {} {
     # VxWorks uses emulated TLS machinery, but with non-standard helper
@@ -575,8 +571,6 @@ proc check_effective_target_tls_native {} {
 }
 
 # Return 1 if TLS executables can run correctly, 0 otherwise.
-#
-# This won't change for different subtargets so cache the result.
 
 proc check_effective_target_tls_runtime {} {
     return [check_runtime tls_runtime {
