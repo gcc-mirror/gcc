@@ -1,3 +1,10 @@
+2009-04-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/39879
+	* trans_expr.c (gfc_conv_procedure_call): Deep copy a derived
+	type parentheses argument if it is a variable with allocatable
+	components.
+
 2009-04-27  Ian Lance Taylor  <iant@google.com>
 
 	* trans-intrinsic.c (DEFINE_MATH_BUILTIN): Add casts to enum

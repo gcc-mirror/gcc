@@ -1119,7 +1119,8 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
       gfc_add_modify (&se->pre, var, tmp);
 
       /* Free the temporary afterwards.  */
-      tmp = gfc_call_free (convert (pvoid_type_node, var));
+      tmp = gfc_call_free (var, true, &gfc_current_locus,
+			   ALLOCTYPE_TEMPORARY);
       gfc_add_expr_to_block (&se->post, tmp);
     }
 
@@ -2782,7 +2783,18 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	      break;
 	    }
 
+	  if (e->expr_type == EXPR_OP
+		&& e->value.op.op == INTRINSIC_PARENTHESES
+		&& e->value.op.op1->expr_type == EXPR_VARIABLE)
+	    {
+	      tree local_tmp;
+	      local_tmp = gfc_evaluate_now (tmp, &se->pre);
+	      local_tmp = gfc_copy_alloc_comp (e->ts.derived, local_tmp, tmp, parm_rank);
+	      gfc_add_expr_to_block (&se->post, local_tmp);
+	    }
+
 	  tmp = gfc_deallocate_alloc_comp (e->ts.derived, tmp, parm_rank);
+
 	  gfc_add_expr_to_block (&se->post, tmp);
         }
 
