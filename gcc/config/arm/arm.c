@@ -1504,6 +1504,10 @@ arm_override_options (void)
   if (arm_float_abi == ARM_FLOAT_ABI_HARD && TARGET_VFP)
     sorry ("-mfloat-abi=hard and VFP");
 
+  if (TARGET_AAPCS_BASED
+      && (arm_fp_model == ARM_FP_MODEL_FPA))
+    error ("FPA is unsupported in the AAPCS");
+
   /* FPA and iWMMXt are incompatible because the insn encodings overlap.
      VFP and iWMMXt can theoretically coexist, but it's unlikely such silicon
      will ever exist.  GCC makes no attempt to support this combination.  */

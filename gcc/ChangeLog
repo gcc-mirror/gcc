@@ -1,3 +1,8 @@
+2009-04-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (arm_override_options): Emit error on using
+	fpa with AAPCS.
+
 2009-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR rtl-optimization/39914
