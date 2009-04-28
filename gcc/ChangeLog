@@ -1,3 +1,18 @@
+2009-04-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config.gcc (powerpc*-*-* | rs6000-*-*): Add
+	rs6000/option-defaults.h to tm_file.  Support cpu_32, cpu_64,
+	tune_32 and tune_64.
+	* doc/install.texi (--with-cpu-32, --with-cpu-64): Document
+	support on PowerPC.
+	* config/rs6000/rs6000.h (OPTION_DEFAULT_SPECS): Move to ...
+	* config/rs6000/option-defaults.h: ... here.  New file.
+	(OPT_64, OPT_32): Define.
+	(MASK_64BIT): Define to 0 if not already defined.
+	(OPT_ARCH64, OPT_ARCH32): Define.
+	(OPTION_DEFAULT_SPECS): Add entries for cpu_32, cpu_64, tune_32
+	and tune_64.
+
 2009-04-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (arm_override_options): Emit error on using
