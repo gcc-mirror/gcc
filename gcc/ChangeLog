@@ -1,3 +1,9 @@
+2009-04-28  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm-cores.def: Add support for arm1156t2f-s.
+	* doc/invoke.texi (ARM Options): Document support for arm1156t2f-s.
+	* config/arm/arm-tune.md: Regenerate.
+
 2009-04-28  Alexander Monakov  <amonakov@ispras.ru>
 	* sel-sched-ir.c (maybe_tidy_empty_bb): Do not attempt to delete a
 	block if there are complex incoming edges.
