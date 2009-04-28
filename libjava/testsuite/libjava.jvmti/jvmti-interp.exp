@@ -25,6 +25,9 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
   } elseif { [istarget "hppa*-hp-hpux*"] } {
       set so_extension "sl"
       set so_flag "-shared"
+  } elseif { [istarget "*-*-cygwin*"] || [istarget "*-*-mingw*"] } {
+      set so_extension "dll"
+      set so_flag "-shared"
   } else {
       set so_extension "so"
       set so_flag "-shared"
