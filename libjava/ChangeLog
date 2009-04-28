@@ -1,5 +1,19 @@
 2009-04-28  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	* interpret.cc (DEBUG):  Rename this ...
+	(__GCJ_DEBUG):  ... to this throughout.
+	* configure.ac:  Likewise.
+	* interpret-run.cc:  Likewise.
+	* prims.cc:  Likewise.
+	* gnu/classpath/natConfiguration.cc:  Likewise.
+	* include/java-assert.h:  Likewise.
+	* java/io/natVMObjectInputStream.cc:  Likewise.
+
+	* configure:  Regenerate.
+	* include/config.h.in:  Regenerate.
+
+2009-04-28  Dave Korn  <dave.korn.cygwin@gmail.com>
+
 	* java/lang/natVMClassLoader.cc
 	(java::lang::VMClassLoader::defineClass):  Fix assert.
 

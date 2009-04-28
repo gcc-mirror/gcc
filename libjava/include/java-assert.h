@@ -16,7 +16,7 @@ details.  */
 void _Jv_Abort (const char *, const char *, int, const char *)
   __attribute__ ((__noreturn__));
 
-#ifdef DEBUG
+#ifdef __GCJ_DEBUG
 #define _Jv_AssertDoCall(Message) _Jv_Abort (__FUNCTION__, __FILE__, __LINE__, Message)
 
 #define JvAssertMessage(Expr, Message) \
@@ -26,13 +26,13 @@ void _Jv_Abort (const char *, const char *, int, const char *)
 
 #define JvFail(Message) _Jv_AssertDoCall (Message)
 
-#else /* DEBUG */
+#else /* __GCJ_DEBUG */
 
 #define _Jv_AssertDoCall(Message)
 #define JvAssertMessage(Expr, Message)
 #define JvAssert(Expr)
 #define JvFail(Message) _Jv_Abort (0, 0, 0, Message)
 
-#endif /* not DEBUG */
+#endif /* not __GCJ_DEBUG */
 
 #endif /* __JAVA_ASSERT_H__ */

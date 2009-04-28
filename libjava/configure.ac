@@ -244,7 +244,7 @@ AC_ARG_ENABLE(libgcj-debug,
   AS_HELP_STRING([--enable-libgcj-debug],
                  [enable runtime debugging code]),
   [if test "$enable_libgcj_debug" = yes; then
-    AC_DEFINE(DEBUG, 1, [Define this if you want runtime debugging enabled.])
+    AC_DEFINE(__GCJ_DEBUG, 1, [Define this if you want runtime debugging enabled.])
     LIBGCJDEBUG="enable"
   fi])
 

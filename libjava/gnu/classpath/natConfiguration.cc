@@ -25,7 +25,7 @@ gnu::classpath::Configuration::classpath_home()
 jboolean
 gnu::classpath::Configuration::debug()
 {
-#ifdef DEBUG
+#ifdef __GCJ_DEBUG
   return true;
 #else
   return false;

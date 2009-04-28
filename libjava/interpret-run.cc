@@ -23,7 +23,7 @@ details.  */
   // returns.
   java::lang::Thread *thread = java::lang::Thread::currentThread();
   
-#ifdef DEBUG
+#ifdef __GCJ_DEBUG
   _Jv_InterpFrame frame_desc (meth, thread, NULL, &pc);
 #else
   _Jv_InterpFrame frame_desc (meth, thread);
@@ -38,7 +38,7 @@ details.  */
 
   _Jv_word locals[meth->max_locals];
 
-#ifdef DEBUG
+#ifdef __GCJ_DEBUG
   // This is the information needed to get and set local variables with
   // proper type checking.
   frame_desc.locals = locals;
@@ -126,7 +126,7 @@ details.  */
           continue;
         }
     }
-#endif /* DEBUG */
+#endif /* __GCJ_DEBUG */
 
 #define INSN_LABEL(op) &&insn_##op
 
@@ -347,7 +347,7 @@ details.  */
 
 #ifdef DIRECT_THREADED
 
-#ifdef DEBUG
+#ifdef __GCJ_DEBUG
 #undef NEXT_INSN
 #define NEXT_INSN							\
   do									\
@@ -392,7 +392,7 @@ details.  */
 
 #undef INTERP_REPORT_EXCEPTION
 #define INTERP_REPORT_EXCEPTION(Jthrowable) REPORT_EXCEPTION (Jthrowable)
-#else // !DEBUG
+#else // !__GCJ_DEBUG
 #undef NEXT_INSN
 #define NEXT_INSN goto *((pc++)->insn)
 
@@ -416,7 +416,7 @@ details.  */
 
 #undef INTERP_REPORT_EXCEPTION
 #define INTERP_REPORT_EXCEPTION(Jthrowable) /* not needed when not debugging */
-#endif // !DEBUG
+#endif // !__GCJ_DEBUG
 
 #define INTVAL() ((pc++)->int_val)
 #define AVAL() ((pc++)->datum)
@@ -450,7 +450,7 @@ details.  */
 
 #else
 
-#ifdef DEBUG
+#ifdef __GCJ_DEBUG
 #define NEXT_INSN							\
   do									\
     {									\
@@ -2677,7 +2677,7 @@ details.  */
         {
           sp = stack;
           sp++->o = ex; // Push exception.
-#ifdef DEBUG
+#ifdef __GCJ_DEBUG
           if (JVMTI_REQUESTED_EVENT (ExceptionCatch))
             {
               using namespace gnu::gcj::jvmti;

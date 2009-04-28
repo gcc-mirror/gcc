@@ -26,7 +26,7 @@ details.  */
 #include <java/lang/reflect/Method.h>
 #include <java-stack.h>
 
-#ifdef DEBUG
+#ifdef __GCJ_DEBUG
 #include <java/lang/System.h>
 #include <java/io/PrintStream.h>
 #endif
