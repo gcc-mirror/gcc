@@ -81,8 +81,8 @@ widened_name_p (tree name, gimple use_stmt, tree *half_type, gimple *def_stmt)
   if (!vect_is_simple_use (name, loop_vinfo, def_stmt, &def, &dt))
     return false;
 
-  if (dt != vect_loop_def
-      && dt != vect_invariant_def && dt != vect_constant_def)
+  if (dt != vect_internal_def
+      && dt != vect_external_def && dt != vect_constant_def)
     return false;
 
   if (! *def_stmt)
@@ -259,7 +259,7 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
     return NULL; 
   stmt_vinfo = vinfo_for_stmt (stmt);
   gcc_assert (stmt_vinfo);
-  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_loop_def)
+  if (STMT_VINFO_DEF_TYPE (stmt_vinfo) != vect_internal_def)
     return NULL;
   if (gimple_assign_rhs_code (stmt) != MULT_EXPR)
     return NULL;
@@ -272,7 +272,7 @@ vect_recog_dot_prod_pattern (gimple last_stmt, tree *type_in, tree *type_out)
         return NULL;
       stmt_vinfo = vinfo_for_stmt (stmt);
       gcc_assert (stmt_vinfo);
-      gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_loop_def);
+      gcc_assert (STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_internal_def);
       oprnd00 = gimple_assign_rhs1 (stmt);
       oprnd01 = gimple_assign_rhs2 (stmt);
     }

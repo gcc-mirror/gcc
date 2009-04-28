@@ -56,9 +56,9 @@ enum dr_alignment_support {
 /* Define type of def-use cross-iteration cycle.  */
 enum vect_def_type {
   vect_uninitialized_def = 0,
-  vect_constant_def,
-  vect_invariant_def,
-  vect_loop_def,
+  vect_constant_def = 1,
+  vect_external_def,
+  vect_internal_def,
   vect_induction_def,
   vect_reduction_def,
   vect_unknown_def_type
@@ -67,8 +67,8 @@ enum vect_def_type {
 /* Define verbosity levels.  */
 enum verbosity_levels {
   REPORT_NONE,
-  REPORT_VECTORIZED_LOOPS,
-  REPORT_UNVECTORIZED_LOOPS,
+  REPORT_VECTORIZED_LOCATIONS,
+  REPORT_UNVECTORIZED_LOCATIONS,
   REPORT_COST,
   REPORT_ALIGNMENT,
   REPORT_DR_DETAILS,
@@ -300,9 +300,10 @@ enum stmt_vec_info_type {
   loop_exit_ctrl_vec_info_type
 };
 
-/* Indicates whether/how a variable is used in the loop.  */
+/* Indicates whether/how a variable is used in the scope of loop/basic 
+   block.  */
 enum vect_relevant {
-  vect_unused_in_loop = 0,
+  vect_unused_in_scope = 0,
   vect_used_in_outer_by_reduction,
   vect_used_in_outer,
 
@@ -314,7 +315,7 @@ enum vect_relevant {
      computed.  */
   vect_used_by_reduction,
 
-  vect_used_in_loop  
+  vect_used_in_scope 
 };
 
 /* The type of vectorization that can be applied to the stmt: regular loop-based
@@ -475,7 +476,7 @@ typedef struct _stmt_vec_info {
 #define DR_GROUP_SAME_DR_STMT(S)           (S)->same_dr_stmt
 #define DR_GROUP_READ_WRITE_DEPENDENCE(S)  (S)->read_write_dep
 
-#define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_loop)
+#define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_scope)
 #define STMT_VINFO_OUTSIDE_OF_LOOP_COST(S) (S)->cost.outside_of_loop
 #define STMT_VINFO_INSIDE_OF_LOOP_COST(S)  (S)->cost.inside_of_loop
 
@@ -693,11 +694,8 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
 extern FILE *vect_dump;
 extern LOC vect_loop_location;
 
-extern enum verbosity_levels vect_verbosity_level;
-
 /* Bitmap of virtual variables to be renamed.  */
 extern bitmap vect_memsyms_to_rename;
-
 
 /*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */
@@ -744,7 +742,7 @@ extern tree vect_get_vec_def_for_stmt_copy (enum vect_def_type, tree);
 extern bool vect_transform_stmt (gimple, gimple_stmt_iterator *,
                                  bool *, slp_tree, slp_instance);
 extern void vect_remove_stores (gimple);
-extern bool vect_analyze_operations (loop_vec_info);
+extern bool vect_analyze_stmt (gimple, bool *);
 
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);

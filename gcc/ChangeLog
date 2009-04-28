@@ -1,3 +1,60 @@
+2009-04-28  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-loop-manip.c (vect_create_cond_for_alias_checks):
+	Use REPORT_VECTORIZED_LOCATIONS instead 
+	REPORT_VECTORIZED_LOOPS.
+	* tree-vectorizer.c (vect_verbosity_level): Make static.
+	(vect_loop_location): Rename to vect_location.
+	(vect_set_verbosity_level): Update comment.
+	(vect_set_dump_settings): Use REPORT_VECTORIZED_LOCATIONS
+	and vect_location.
+	(vectorize_loops): Fix comment. Use REPORT_VECTORIZED_LOCATIONS
+	and vect_location. Use REPORT_UNVECTORIZED_LOCATIONS
+	instead REPORT_UNVECTORIZED_LOOPS.
+	* tree-vectorizer.h (enum vect_def_type): Rename vect_invariant_def and
+	vect_loop_def to vect_external_def and vect_internal_def.
+	(enum verbosity_levels): Rename REPORT_VECTORIZED_LOOPS
+        and REPORT_UNVECTORIZED_LOOPS to REPORT_VECTORIZED_LOCATIONS and 
+	REPORT_UNVECTORIZED_LOCATIONS.
+	(enum vect_relevant): Update comment. Rename vect_unused_in_loop
+	and vect_used_in_loop and to vect_unused_in_scope and 
+	vect_used_in_scope.
+	(STMT_VINFO_RELEVANT_P): Use vect_unused_in_scope.
+	(vect_verbosity_level): Remove declaration.
+	(vect_analyze_operations): Likewise.
+	(vect_analyze_stmt): Declare.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Use
+	REPORT_UNVECTORIZED_LOCATIONS.
+	(vect_get_loop_niters): Fix indentation.
+	(vect_analyze_loop_form): Use REPORT_UNVECTORIZED_LOCATIONS.
+	(vect_analyze_loop_operations): New function.
+	(vect_analyze_loop): Call vect_analyze_loop_operations instead of
+	vect_analyze_operations.
+	(vect_is_simple_reduction): Use new names.
+	(vectorizable_live_operation, vect_transform_loop): Likewise.
+	* tree-vect-data-refs.c (vect_check_interleaving): Add a return value to
+	specify whether the data references can be a part of interleaving chain.
+	(vect_analyze_data_ref_dependence): Use new names.
+	(vect_analyze_data_refs_alignment, vect_analyze_data_refs): Likewise.
+	(vect_create_addr_base_for_vector_ref): Remove redundant code.
+	* tree-vect-patterns.c (widened_name_p): Use new names.
+	(vect_recog_dot_prod_pattern): Likewise.
+	* tree-vect-stmts.c (vect_stmt_relevant_p): Use new names.
+	(process_use, vect_mark_stmts_to_be_vectorized, 
+	vect_model_simple_cost, vect_model_store_cost,
+	vect_get_vec_def_for_operand, vect_get_vec_def_for_stmt_copy,
+	vectorizable_call, vectorizable_conversion, vectorizable_assignment,
+	vectorizable_operation, vectorizable_type_demotion,
+	vectorizable_type_promotion, vectorizable_store, vectorizable_load,
+	vectorizable_condition): Likewise.
+	(vect_analyze_operations): Split into vect_analyze_loop_operations
+	and ...
+	(vect_analyze_stmt): ... new function.
+	(new_stmt_vec_info): Use new names.
+	(vect_is_simple_use): Use new names and fix comment.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Use new names.
+	(vect_build_slp_tree, vect_analyze_slp, vect_schedule_slp): Likewise.
+
 2009-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/39911

@@ -212,7 +212,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      vectype = get_vectype_for_scalar_type (scalar_type);
 	      if (!vectype)
 		{
-		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 		    {
 		      fprintf (vect_dump,
 		               "not vectorized: unsupported data-type ");
@@ -262,7 +262,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
 	  if (gimple_get_lhs (stmt) == NULL_TREE)
 	    {
-	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 		{
 	          fprintf (vect_dump, "not vectorized: irregular stmt.");
 		  print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
@@ -272,7 +272,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 
 	  if (VECTOR_MODE_P (TYPE_MODE (gimple_expr_type (stmt))))
 	    {
-	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+	      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	        {
 	          fprintf (vect_dump, "not vectorized: vector stmt in loop:");
 	          print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
@@ -306,7 +306,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	      vectype = get_vectype_for_scalar_type (scalar_type);
 	      if (!vectype)
 		{
-		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+		  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 		    {
 		      fprintf (vect_dump, 
 			       "not vectorized: unsupported data-type ");
@@ -339,7 +339,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
     fprintf (vect_dump, "vectorization factor = %d", vectorization_factor);
   if (vectorization_factor <= 1)
     {
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
         fprintf (vect_dump, "not vectorized: unsupported data-type");
       return false;
     }
@@ -533,7 +533,6 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
     vect_analyze_scalar_cycles_1 (loop_vinfo, loop->inner);
 }
 
-
 /* Function vect_get_loop_niters.
 
    Determine how many iterations the loop is executed.
@@ -557,10 +556,10 @@ vect_get_loop_niters (struct loop *loop, tree *number_of_iterations)
       *number_of_iterations = niters;
 
       if (vect_print_dump_info (REPORT_DETAILS))
-	{
-	  fprintf (vect_dump, "==> get_loop_niters:" );
-	  print_generic_expr (vect_dump, *number_of_iterations, TDF_SLIM);
-	}
+        {
+          fprintf (vect_dump, "==> get_loop_niters:" );
+          print_generic_expr (vect_dump, *number_of_iterations, TDF_SLIM);
+        }
     }
 
   return get_loop_exit_condition (loop);
@@ -1025,7 +1024,7 @@ vect_analyze_loop_form (struct loop *loop)
     }
   else if (TREE_INT_CST_LOW (number_of_iterations) == 0)
     {
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
         fprintf (vect_dump, "not vectorized: number of iterations = 0.");
       if (inner_loop_vinfo)
         destroy_loop_vec_info (inner_loop_vinfo, false);
@@ -1046,6 +1045,237 @@ vect_analyze_loop_form (struct loop *loop)
   loop->aux = loop_vinfo;
   return loop_vinfo;
 }
+
+
+/* Function vect_analyze_loop_operations.
+
+   Scan the loop stmts and make sure they are all vectorizable.  */
+
+static bool
+vect_analyze_loop_operations (loop_vec_info loop_vinfo)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
+  int nbbs = loop->num_nodes;
+  gimple_stmt_iterator si;
+  unsigned int vectorization_factor = 0;
+  int i;
+  gimple phi;
+  stmt_vec_info stmt_info;
+  bool need_to_vectorize = false;
+  int min_profitable_iters;
+  int min_scalar_loop_bound;
+  unsigned int th;
+  bool only_slp_in_loop = true, ok;
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "=== vect_analyze_loop_operations ===");
+
+  gcc_assert (LOOP_VINFO_VECT_FACTOR (loop_vinfo));
+  vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+
+  for (i = 0; i < nbbs; i++)
+    {
+      basic_block bb = bbs[i];
+
+      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+        {
+          phi = gsi_stmt (si);
+          ok = true;
+
+          stmt_info = vinfo_for_stmt (phi);
+          if (vect_print_dump_info (REPORT_DETAILS))
+            {
+              fprintf (vect_dump, "examining phi: ");
+              print_gimple_stmt (vect_dump, phi, 0, TDF_SLIM);
+            }
+
+          if (! is_loop_header_bb_p (bb))
+            {
+              /* inner-loop loop-closed exit phi in outer-loop vectorization
+                 (i.e. a phi in the tail of the outer-loop).
+                 FORNOW: we currently don't support the case that these phis
+                 are not used in the outerloop, cause this case requires
+                 to actually do something here.  */
+              if (!STMT_VINFO_RELEVANT_P (stmt_info)
+                  || STMT_VINFO_LIVE_P (stmt_info))
+                {
+                  if (vect_print_dump_info (REPORT_DETAILS))
+                    fprintf (vect_dump,
+                             "Unsupported loop-closed phi in outer-loop.");
+                  return false;
+                }
+              continue;
+            }
+
+          gcc_assert (stmt_info);
+
+          if (STMT_VINFO_LIVE_P (stmt_info))
+            {
+              /* FORNOW: not yet supported.  */
+              if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+                fprintf (vect_dump, "not vectorized: value used after loop.");
+              return false;
+            }
+
+          if (STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_scope
+              && STMT_VINFO_DEF_TYPE (stmt_info) != vect_induction_def)
+            {
+              /* A scalar-dependence cycle that we don't support.  */
+              if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+                fprintf (vect_dump, "not vectorized: scalar dependence cycle.");
+              return false;
+            }
+
+          if (STMT_VINFO_RELEVANT_P (stmt_info))
+            {
+              need_to_vectorize = true;
+              if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
+                ok = vectorizable_induction (phi, NULL, NULL);
+            }
+
+          if (!ok)
+            {
+              if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+                {
+                  fprintf (vect_dump,
+                           "not vectorized: relevant phi not supported: ");
+                  print_gimple_stmt (vect_dump, phi, 0, TDF_SLIM);
+                }
+              return false;
+            }
+        }
+
+      for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+        {
+          gimple stmt = gsi_stmt (si);
+          stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+          gcc_assert (stmt_info);
+
+	  if (!vect_analyze_stmt (stmt, &need_to_vectorize))
+	    return false;
+
+          if (STMT_VINFO_RELEVANT_P (stmt_info) && !PURE_SLP_STMT (stmt_info))
+            /* STMT needs both SLP and loop-based vectorization.  */
+            only_slp_in_loop = false;
+        } 
+    } /* bbs */
+
+  /* All operations in the loop are either irrelevant (deal with loop
+     control, or dead), or only used outside the loop and can be moved
+     out of the loop (e.g. invariants, inductions).  The loop can be
+     optimized away by scalar optimizations.  We're better off not
+     touching this loop.  */
+  if (!need_to_vectorize)
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump,
+                 "All the computation can be taken out of the loop.");
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump,
+                 "not vectorized: redundant loop. no profit to vectorize.");
+      return false;
+    }
+
+  /* If all the stmts in the loop can be SLPed, we perform only SLP, and
+     vectorization factor of the loop is the unrolling factor required by the
+     SLP instances.  If that unrolling factor is 1, we say, that we perform
+     pure SLP on loop - cross iteration parallelism is not exploited.  */
+  if (only_slp_in_loop)
+    vectorization_factor = LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo);
+  else
+    vectorization_factor = least_common_multiple (vectorization_factor,
+                                LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo));
+
+  LOOP_VINFO_VECT_FACTOR (loop_vinfo) = vectorization_factor;
+
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      && vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump,
+        "vectorization_factor = %d, niters = " HOST_WIDE_INT_PRINT_DEC,
+        vectorization_factor, LOOP_VINFO_INT_NITERS (loop_vinfo));
+
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      && (LOOP_VINFO_INT_NITERS (loop_vinfo) < vectorization_factor))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: iteration count too small.");
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump,"not vectorized: iteration count smaller than "
+                 "vectorization factor.");
+      return false;
+    }
+
+  /* Analyze cost. Decide if worth while to vectorize.  */
+
+  /* Once VF is set, SLP costs should be updated since the number of created
+     vector stmts depends on VF.  */
+  vect_update_slp_costs_according_to_vf (loop_vinfo);
+
+  min_profitable_iters = vect_estimate_min_profitable_iters (loop_vinfo);
+  LOOP_VINFO_COST_MODEL_MIN_ITERS (loop_vinfo) = min_profitable_iters;
+
+  if (min_profitable_iters < 0)
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: vectorization not profitable.");
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "not vectorized: vector version will never be "
+                 "profitable.");
+      return false;
+    }
+
+  min_scalar_loop_bound = ((PARAM_VALUE (PARAM_MIN_VECT_LOOP_BOUND)
+                            * vectorization_factor) - 1);
+
+  /* Use the cost model only if it is more conservative than user specified
+     threshold.  */
+
+  th = (unsigned) min_scalar_loop_bound;
+  if (min_profitable_iters
+      && (!min_scalar_loop_bound
+          || min_profitable_iters > min_scalar_loop_bound))
+    th = (unsigned) min_profitable_iters;
+
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      && LOOP_VINFO_INT_NITERS (loop_vinfo) <= th)
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: vectorization not "
+                 "profitable.");
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "not vectorized: iteration count smaller than "
+                 "user specified loop bound parameter or minimum "
+                 "profitable iterations (whichever is more conservative).");
+      return false;
+    }
+
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      || LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0
+      || LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo))
+    {
+      if (vect_print_dump_info (REPORT_DETAILS))
+        fprintf (vect_dump, "epilog loop required.");
+      if (!vect_can_advance_ivs_p (loop_vinfo))
+        {
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+            fprintf (vect_dump,
+                     "not vectorized: can't create epilog loop 1.");
+          return false;
+        }
+      if (!slpeel_can_duplicate_loop_p (loop, single_exit (loop)))
+        {
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+            fprintf (vect_dump,
+                     "not vectorized: can't create epilog loop 2.");
+          return false;
+        }
+    }
+
+  return true;
+}
+
 
 /* Function vect_analyze_loop.
 
@@ -1197,7 +1427,7 @@ vect_analyze_loop (struct loop *loop)
   /* Scan all the operations in the loop and make sure they are
      vectorizable.  */
 
-  ok = vect_analyze_operations (loop_vinfo);
+  ok = vect_analyze_loop_operations (loop_vinfo);
   if (!ok)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1445,7 +1675,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi)
 
 
   /* Check that one def is the reduction def, defined by PHI,
-     the other def is either defined in the loop ("vect_loop_def"),
+     the other def is either defined in the loop ("vect_internal_def"),
      or it's an induction (defined by a loop-header phi-node).  */
 
   if (def2 == phi
@@ -1453,7 +1683,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi)
       && (is_gimple_assign (def1)
 	  || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) == vect_induction_def
 	  || (gimple_code (def1) == GIMPLE_PHI
-	      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) == vect_loop_def
+	      && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def1)) == vect_internal_def
 	      && !is_loop_header_bb_p (gimple_bb (def1)))))
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1465,7 +1695,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple phi)
 	   && (is_gimple_assign (def2)
 	       || STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2)) == vect_induction_def
 	       || (gimple_code (def2) == GIMPLE_PHI
-		   && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2)) == vect_loop_def
+		   && STMT_VINFO_DEF_TYPE (vinfo_for_stmt (def2)) == vect_internal_def
 		   && !is_loop_header_bb_p (gimple_bb (def2)))))
     {
       /* Swap operands (just for simplicity - so that the rest of the code
@@ -2895,7 +3125,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 
   /* Reductions that are not used even in an enclosing outer-loop,
      are expected to be "live" (used out of the loop).  */
-  if (STMT_VINFO_RELEVANT (stmt_info) == vect_unused_in_loop
+  if (STMT_VINFO_RELEVANT (stmt_info) == vect_unused_in_scope
       && !STMT_VINFO_LIVE_P (stmt_info))
     return false;
 
@@ -2970,14 +3200,15 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
       is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, &def_stmt,
 					  &def, &dt);
       gcc_assert (is_simple_use);
-      if (dt != vect_loop_def
-	  && dt != vect_invariant_def
+      if (dt != vect_internal_def
+	  && dt != vect_external_def
 	  && dt != vect_constant_def
 	  && dt != vect_induction_def)
 	return false;
     }
 
-  is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, &def_stmt, &def, &dt);
+  is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, &def_stmt, &def, 
+                                      &dt);
   gcc_assert (is_simple_use);
   gcc_assert (dt == vect_reduction_def);
   gcc_assert (gimple_code (def_stmt) == GIMPLE_PHI);
@@ -3140,7 +3371,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
    from the vectorized reduction operation generated in the previous iteration.
   */
 
-  if (STMT_VINFO_RELEVANT (stmt_info) == vect_unused_in_loop)
+  if (STMT_VINFO_RELEVANT (stmt_info) == vect_unused_in_scope)
     {
       single_defuse_cycle = true;
       epilog_copies = 1;
@@ -3361,7 +3592,7 @@ vectorizable_live_operation (gimple stmt,
           return false;
         }
 
-      if (dt != vect_invariant_def && dt != vect_constant_def)
+      if (dt != vect_external_def && dt != vect_constant_def)
         return false;
     }
 
@@ -3577,8 +3808,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
      until all the loops have been transformed?  */
   update_ssa (TODO_update_ssa);
 
-  if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS))
+  if (vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS))
     fprintf (vect_dump, "LOOP VECTORIZED.");
-  if (loop->inner && vect_print_dump_info (REPORT_VECTORIZED_LOOPS))
+  if (loop->inner && vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS))
     fprintf (vect_dump, "OUTER LOOP VECTORIZED.");
 }

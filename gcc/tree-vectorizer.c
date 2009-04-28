@@ -74,10 +74,10 @@ FILE *vect_dump;
 
 /* vect_verbosity_level set to an invalid value 
    to mark that it's uninitialized.  */
-enum verbosity_levels vect_verbosity_level = MAX_VERBOSITY_LEVEL;
+static enum verbosity_levels vect_verbosity_level = MAX_VERBOSITY_LEVEL;
 
 /* Loop location.  */
-LOC vect_loop_location;
+LOC vect_location;
 
 /* Bitmap of virtual variables to be renamed.  */
 bitmap vect_memsyms_to_rename;
@@ -89,7 +89,7 @@ VEC(vec_void_p,heap) *stmt_vec_info_vec;
 
 /* Function vect_set_verbosity_level.
 
-   Called from toplev.c upon detection of the
+   Called from opts.c upon detection of the
    -ftree-vectorizer-verbose=N option.  */
 
 void
@@ -132,7 +132,7 @@ vect_set_dump_settings (void)
   if (dump_file && (dump_flags & TDF_DETAILS))
     vect_verbosity_level = REPORT_DETAILS;
   else if (dump_file && (dump_flags & TDF_STATS))
-    vect_verbosity_level = REPORT_UNVECTORIZED_LOOPS;
+    vect_verbosity_level = REPORT_UNVECTORIZED_LOCATIONS;
   else
     vect_verbosity_level = REPORT_NONE;
 
@@ -153,13 +153,13 @@ vect_print_dump_info (enum verbosity_levels vl)
   if (!current_function_decl || !vect_dump)
     return false;
 
-  if (vect_loop_location == UNKNOWN_LOC)
+  if (vect_location == UNKNOWN_LOC)
     fprintf (vect_dump, "\n%s:%d: note: ",
 	     DECL_SOURCE_FILE (current_function_decl),
 	     DECL_SOURCE_LINE (current_function_decl));
   else
     fprintf (vect_dump, "\n%s:%d: note: ", 
-	     LOC_FILE (vect_loop_location), LOC_LINE (vect_loop_location));
+	     LOC_FILE (vect_location), LOC_LINE (vect_location));
 
   return true;
 }
@@ -167,7 +167,7 @@ vect_print_dump_info (enum verbosity_levels vl)
 
 /* Function vectorize_loops.
    
-   Entry Point to loop vectorization phase.  */
+   Entry point to loop vectorization phase.  */
 
 unsigned
 vectorize_loops (void)
@@ -187,7 +187,7 @@ vectorize_loops (void)
   /* Fix the verbosity level if not defined explicitly by the user.  */
   vect_set_dump_settings ();
 
-  /* Allocate the bitmap that records which virtual variables that 
+  /* Allocate the bitmap that records which virtual variables  
      need to be renamed.  */
   vect_memsyms_to_rename = BITMAP_ALLOC (NULL);
 
@@ -203,7 +203,7 @@ vectorize_loops (void)
       {
 	loop_vec_info loop_vinfo;
 
-	vect_loop_location = find_loop_location (loop);
+	vect_location = find_loop_location (loop);
 	loop_vinfo = vect_analyze_loop (loop);
 	loop->aux = loop_vinfo;
 
@@ -213,11 +213,12 @@ vectorize_loops (void)
 	vect_transform_loop (loop_vinfo);
 	num_vectorized_loops++;
       }
-  vect_loop_location = UNKNOWN_LOC;
+
+  vect_location = UNKNOWN_LOC;
 
   statistics_counter_event (cfun, "Vectorized loops", num_vectorized_loops);
-  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS)
-      || (vect_print_dump_info (REPORT_VECTORIZED_LOOPS)
+  if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS)
+      || (vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS)
 	  && num_vectorized_loops > 0))
     fprintf (vect_dump, "vectorized %u loops in function.\n",
 	     num_vectorized_loops);
