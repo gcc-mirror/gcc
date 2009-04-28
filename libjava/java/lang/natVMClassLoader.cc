@@ -96,7 +96,7 @@ java::lang::VMClassLoader::defineClass (java::lang::ClassLoader *loader,
 	}
 
       // if everything proceeded sucessfully, we're loaded.
-      JvAssert (klass->state == JV_STATE_LOADED);
+      JvAssert (klass->state == JV_STATE_READ);
     }
 #endif // INTERPRETER
 
