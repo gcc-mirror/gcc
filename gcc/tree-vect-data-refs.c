@@ -321,7 +321,7 @@ vect_equal_offsets (tree offset1, tree offset2)
    Check if DRA and DRB are a part of interleaving. In case they are, insert
    DRA and DRB in an interleaving chain.  */
 
-static void
+static bool 
 vect_check_interleaving (struct data_reference *dra,
 			 struct data_reference *drb)
 {
@@ -337,12 +337,13 @@ vect_check_interleaving (struct data_reference *dra,
       || !vect_equal_offsets (DR_OFFSET (dra), DR_OFFSET (drb))
       || !tree_int_cst_compare (DR_INIT (dra), DR_INIT (drb)) 
       || DR_IS_READ (dra) != DR_IS_READ (drb))
-    return;
+    return false;
 
   /* Check:
      1. data-refs are of the same type
      2. their steps are equal
-     3. the step is greater than the difference between data-refs' inits  */
+     3. the step (if greater than zero) is greater than the difference between 
+        data-refs' inits.  */
   type_size_a = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))));
   type_size_b = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
 
@@ -350,7 +351,7 @@ vect_check_interleaving (struct data_reference *dra,
       || tree_int_cst_compare (DR_STEP (dra), DR_STEP (drb))
       || !types_compatible_p (TREE_TYPE (DR_REF (dra)), 
                               TREE_TYPE (DR_REF (drb))))
-    return;
+    return false;
 
   init_a = TREE_INT_CST_LOW (DR_INIT (dra));
   init_b = TREE_INT_CST_LOW (DR_INIT (drb));
@@ -363,7 +364,7 @@ vect_check_interleaving (struct data_reference *dra,
       diff_mod_size = (init_a - init_b) % type_size_a;
 
       if ((init_a - init_b) > step)
-         return; 
+         return false; 
 
       if (diff_mod_size == 0)
 	{
@@ -375,7 +376,7 @@ vect_check_interleaving (struct data_reference *dra,
 	      fprintf (vect_dump, " and ");
 	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
 	    }
-	  return;
+	  return true;
 	} 
     }
   else 
@@ -385,7 +386,7 @@ vect_check_interleaving (struct data_reference *dra,
       diff_mod_size = (init_b - init_a) % type_size_a;
 
       if ((init_b - init_a) > step)
-         return;
+         return false;
 
       if (diff_mod_size == 0)
 	{
@@ -397,9 +398,11 @@ vect_check_interleaving (struct data_reference *dra,
 	      fprintf (vect_dump, " and ");
 	      print_generic_expr (vect_dump, DR_REF (drb), TDF_SLIM);
 	    }
-	  return;
+	  return true;
 	} 
     }
+    
+  return false;
 }
 
 /* Check if data references pointed by DR_I and DR_J are same or
@@ -584,7 +587,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  continue;
 	}
 
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	{
 	  fprintf (vect_dump,
 		   "not vectorized, possible dependence "
@@ -868,7 +871,7 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo)
       supportable_dr_alignment = vect_supportable_dr_alignment (dr);
       if (!supportable_dr_alignment)
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
             {
               if (DR_IS_READ (dr))
                 fprintf (vect_dump, 
@@ -1347,14 +1350,14 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
    Return FALSE if a data reference is found that cannot be vectorized.  */
 
 bool
-vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo)
+vect_analyze_data_refs_alignment (loop_vec_info loop_vinfo) 
 {
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "=== vect_analyze_data_refs_alignment ===");
 
   if (!vect_compute_data_refs_alignment (loop_vinfo))
     {
-      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	fprintf (vect_dump, 
 		 "not vectorized: can't calculate alignment for data ref.");
       return false;
@@ -1663,7 +1666,7 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo)
   for (i = 0; VEC_iterate (data_reference_p, datarefs, i, dr); i++)
     if (!vect_analyze_data_ref_access (dr))
       {
-	if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+	if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	  fprintf (vect_dump, "not vectorized: complicated access pattern.");
 	return false;
       }
@@ -1787,7 +1790,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
    
       if (!dr || !DR_REF (dr))
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	    fprintf (vect_dump, "not vectorized: unhandled data-ref ");
           return false;
         }
@@ -1799,7 +1802,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
       if (!DR_BASE_ADDRESS (dr) || !DR_OFFSET (dr) || !DR_INIT (dr)
           || !DR_STEP (dr))
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
             {
               fprintf (vect_dump, "not vectorized: data ref analysis failed ");
               print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
@@ -1809,7 +1812,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 
       if (TREE_CODE (DR_BASE_ADDRESS (dr)) == INTEGER_CST)
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
             fprintf (vect_dump, "not vectorized: base addr of dr is a "
                      "constant");
           return false;
@@ -1930,7 +1933,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 
       if (STMT_VINFO_DATA_REF (stmt_info))
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
             {
               fprintf (vect_dump,
                        "not vectorized: more than one data ref in stmt: ");
@@ -1938,6 +1941,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
             }
           return false;
         }
+
       STMT_VINFO_DATA_REF (stmt_info) = dr;
      
       /* Set vectype for STMT.  */
@@ -1946,7 +1950,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
                 get_vectype_for_scalar_type (scalar_type);
       if (!STMT_VINFO_VECTYPE (stmt_info)) 
         {
-          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS))
+          if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
             {
               fprintf (vect_dump,
                        "not vectorized: no vectype for stmt: ");
@@ -2056,7 +2060,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
   gimple_seq seq = NULL;
   tree base_offset = unshare_expr (DR_OFFSET (dr));
   tree init = unshare_expr (DR_INIT (dr));
-  tree vect_ptr_type, addr_expr2;
+  tree vect_ptr_type;
   tree step = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr)));
 
   gcc_assert (loop);
@@ -2108,15 +2112,12 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
 
   vect_ptr_type = build_pointer_type (STMT_VINFO_VECTYPE (stmt_info));
 
-  /* addr_expr = addr_base */
+  vec_stmt = fold_convert (vect_ptr_type, addr_base);
   addr_expr = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
                                      get_name (base_name));
+
   add_referenced_var (addr_expr);
-  vec_stmt = fold_convert (vect_ptr_type, addr_base);
-  addr_expr2 = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var,
-                                     get_name (base_name));
-  add_referenced_var (addr_expr2);
-  vec_stmt = force_gimple_operand (vec_stmt, &seq, false, addr_expr2);
+  vec_stmt = force_gimple_operand (vec_stmt, &seq, false, addr_expr);
   gimple_seq_add_seq (new_stmt_list, seq);
 
   if (vect_print_dump_info (REPORT_DETAILS))
@@ -2124,6 +2125,7 @@ vect_create_addr_base_for_vector_ref (gimple stmt,
       fprintf (vect_dump, "created ");
       print_generic_expr (vect_dump, vec_stmt, TDF_SLIM);
     }
+
   return vec_stmt;
 }
 

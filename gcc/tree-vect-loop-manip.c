@@ -2290,7 +2290,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
       else
 	*cond_expr = part_cond_expr;
     }
-    if (vect_print_dump_info (REPORT_VECTORIZED_LOOPS))
+    if (vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS))
       fprintf (vect_dump, "created %u versioning for alias checks.\n",
                VEC_length (ddr_p, may_alias_ddrs));
 
