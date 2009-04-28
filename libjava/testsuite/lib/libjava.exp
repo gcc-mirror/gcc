@@ -202,6 +202,8 @@ proc libjava_init { args } {
 
     if { [istarget "*-*-darwin*"] } {
 	set so_extension "dylib"
+    } elseif { [istarget "*-*-cygwin*"] || [istarget "*-*-mingw*"] } {
+	set so_extension "dll"
     } else {
 	set so_extension "so"
     }

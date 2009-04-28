@@ -1,3 +1,12 @@
+2009-04-28  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* testsuite/libjava.jvmti/jvmti-interp.exp
+	(gcj_jni_compile_c_to_so):  Fix so extension to '.dll' on win32.
+	* testsuite/lib/libjava.exp (libjava_init):  Likewise.
+	* testsuite/libjava.jni/jni.exp
+	(gcj_jni_compile_c_to_so):  Likewise.
+	(gcj_jni_test_one):  Likewise.
+
 2009-04-28  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/39899
