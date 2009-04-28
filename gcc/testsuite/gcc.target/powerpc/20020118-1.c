@@ -1,4 +1,6 @@
 /* { dg-do run { target powerpc*-*-* } }*/
+/* VxWorks only guarantees 64 bits of alignment (STACK_BOUNDARY == 64).  */
+/* { dg-skip-if "" { "powerpc*-*-vxworks*" } { "*" } { "" } } */
 
 /* Test local alignment.  Test new target macro STARTING_FRAME_PHASE.  */
 /* Origin: Aldy Hernandez <aldyh@redhat.com>.  */

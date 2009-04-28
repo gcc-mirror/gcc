@@ -38,7 +38,8 @@
 # define REG1 "$8"
 # define REG2 "$9"
 #elif defined (__powerpc__) || defined (__PPC__) || defined (__ppc__) \
-	|| defined (__POWERPC__) || defined (PPC) || defined (_IBMR2)
+	|| defined (__POWERPC__) || defined (PPC) || defined (_IBMR2) \
+	|| defined (__ppc)
 # define REG1 "6"
 # define REG2 "7"
 # if !defined(__powerpc64__) && !defined(__LP64__)

@@ -15,7 +15,7 @@ struct rtx_def
   unsigned frame_related:1;
 };
 
-rtx
+static rtx
 find_base_value (src)
      rtx src;
 {
@@ -33,6 +33,12 @@ find_base_value (src)
     find_base_value (src_1);
 }
 
+rtx
+find_base_value_wrapper (src)
+     rtx src;
+{
+  return find_base_value (src);
+}
 
 /* There should be no casts to short unsigned int.  */
 /* { dg-final { scan-tree-dump-times "\\(short unsigned int\\)" 0 "dom2"} } */

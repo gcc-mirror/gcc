@@ -1,7 +1,7 @@
 // Test EH with V2SI SIMD registers actually restores correct values.
 // Origin: Joseph Myers <joseph@codesourcery.com>
 // { dg-options "-O" }
-// { dg-do run { target powerpc_spe } }
+// { dg-do run { target { powerpc_spe && { ! *-*-vxworks* } } } }
 
 extern "C" void abort (void);
 extern "C" int memcmp (const void *, const void *, __SIZE_TYPE__);
