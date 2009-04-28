@@ -1609,35 +1609,6 @@ fix = {
                 "extern int snprintf(char *, _hpux_size_t, char *, ...);";
 };
 
-
-/*
- * In inttypes.h on HPUX 11, the use of __CONCAT__ in the definition
- * of UINT32_C has undefined behavior according to ISO/ANSI:
- * the arguments to __CONCAT__ are not macro expanded before the
- * concatination happens so the trailing ')' in the first argument
- * is concatinated with the 'l' in the second argument creating an
- * invalid pp token.  The behavior of invalid pp tokens is undefined.
- * GCC does not handle these invalid tokens the way the HP compiler does.
- * This problem will potentially occur anytime macros are used in the
- * arguments to __CONCAT__.  A general solution to this problem would be to
- * insert another layer of macro between __CONCAT__ and its use
- * in UINT32_C.  An example of this solution can be found in the C standard.
- * A more specific solution, the one used here, is to change the UINT32_C
- * macro to not used macros in the arguments to __CONCAT__.
- */
-fix = {
-    hackname = hpux11_uint32_c;
-    files    = inttypes.h;
-    select   = "^#define UINT32_C\\(__c\\)[ \t]*"
-                         "__CONCAT__\\(__CONCAT_U__\\(__c\\),l\\)";
-    c_fix    = format;
-    c_fix_arg = '#define UINT32_C(__c) __CONCAT__(__c,ul)';
-    test_text =
-    "#define CONCAT_U__(__c)\t__CONCAT__(__c,u)\n"
-    "#define UINT32_C(__c)\t__CONCAT__(__CONCAT_U__(__c),l)";
-};
-
-
 /*
  *  Fix hpux 11.00 broken vsnprintf declaration
  */
@@ -1721,6 +1692,8 @@ fix = {
  */
 fix = {
     hackname  = hpux_long_double;
+    mach      = "*-*-hpux10*";
+    mach      = "*-*-hpux11.[012]*";
     files     = stdlib.h;
     select    = "extern[ \t]long_double[ \t]strtold";
     bypass    = "long_double_t";
@@ -1736,6 +1709,20 @@ fix = {
 		"extern long_double strtold(const char *, char **);\n";
 };
 
+ /*
+  * We cannot use the above rule on 11.31 because it removes the strtold
+  * definition.  ia64 is OK with no hack, PA needs some help.
+  */
+fix = {
+    hackname  = hpux_long_double_2;
+    mach      = "hppa*-*-hpux11.3*";
+    files     = stdlib.h;
+    select    = "#[ \t]*if[ \t]*!defined\\(__ia64\\) \\|\\| defined\\(_PROTOTYPES\\) \\|\\| defined\\(_LONG_DOUBLE_STRUCT\\)";
+    c_fix     = format;
+    c_fix_arg = "#  if !defined(_PROTOTYPES) || defined(_LONG_DOUBLE_STRUCT)";
+
+    test_text = "#  if !defined(__ia64) || !defined(_PROTOTYPES) || defined(_LONG_DOUBLE_STRUCT)\n";
+};
 
 /*
  *  Fix hpux10.20 <sys/time.h> to avoid invalid forward decl
@@ -1847,6 +1834,97 @@ fix = {
 		"\t0, __LWP_MTX_VALID, 0, 1, 1, 1, 1,\t\t\t\t\\\\\n"
 		"\t0, 0\t\t\t\t\t\t\t\t\\\\\n"
 		"}\n";
+};
+
+fix = {
+    hackname  = hpux_c99_intptr;
+    mach      = "*-hp-hpux11.3*";
+    files     = stdint.h;
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*PTRDIFF_MAX[ \t]*INT32_MAX[ \t]*$@#define PTRDIFF_MAX (2147483647l)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*PTRDIFF_MIN[ \t]*INT32_MIN[ \t]*$@#define PTRDIFF_MIN (-PTRDIFF_MAX - 1)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INTPTR_MAX[ \t]*INT32_MAX[ \t]*$@#define INTPTR_MAX (2147483647l)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INTPTR_MIN[ \t]*INT32_MIN[ \t]*$@#define INTPTR_MIN (-INTPTR_MAX - 1)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINTPTR_MAX[ \t]*UINT32_MAX[ \t]*$@#define UINTPTR_MAX (4294967295ul)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*SIZE_MAX[ \t]*UINT32_MAX[ \t]*$@#define SIZE_MAX (4294967295ul)@";
+    test_text = "#define PTRDIFF_MAX	INT32_MAX\n"
+		"#define PTRDIFF_MIN	INT32_MIN\n"
+		"#define INTPTR_MAX	INT32_MAX\n"
+		"#define INTPTR_MIN	INT32_MIN\n"
+		"#define UINTPTR_MAX	UINT32_MAX\n"
+		"#define SIZE_MAX	UINT32_MAX\n";
+};
+
+/*
+ * These hacks are need in inttypes.h on 11.23 and in stdint.h on 11.31.
+ */
+
+fix = {
+    hackname  = hpux_c99_inttypes;
+    mach      = "*-hp-hpux11.[23]*";
+    files     = inttypes.h;
+    files     = stdint.h;
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT8_C(__c)[ \t]*__CONCAT_U__(__c)[ \t]*$@#define UINT8_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT16_C(__c)[ \t]*__CONCAT_U__(__c)[ \t]*$@#define UINT16_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT32_C(__c)[ \t]*__CONCAT__(__c,l)[ \t]*$@#define INT32_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT32_C(__c)[ \t].*$@#define UINT32_C(__c) __CONCAT__(__c,u)@";
+    test_text = "#define UINT8_C(__c)     __CONCAT_U__(__c)\n"
+                "#define UINT16_C(__c)    __CONCAT_U__(__c)\n"
+		"#define INT32_C(__c)     __CONCAT__(__c,l)\n"
+		"#define UINT32_C(__c)     __CONCAT__(__c,ul)\n";
+};
+
+fix = {
+    hackname  = hpux_c99_inttypes2;
+    mach      = "*-hp-hpux11.2*";
+    files     = stdint.h;
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT8_C(__c)[ \t]*((signed char)(__c))[ \t]*$@#define INT8_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT8_C(__c)[ \t]*((unsigned char)(__c))[ \t]*$@#define UINT8_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*INT16_C(__c)[ \t]*((short)(__c))[ \t]*$@#define INT16_C(__c) (__c)@";
+    sed       = "s@^[ \t]*#[ \t]*define[ \t]*UINT16_C(__c)[ \t]*((unsigned short)(__c))[ \t]*$@#define UINT16_C(__c) (__c)@";
+    test_text = "#  define	INT8_C(__c)	((signed char)(__c))\n"
+                "#  define      UINT8_C(__c)    ((unsigned char)(__c))\n"
+		"#  define      INT16_C(__c)    ((short)(__c))\n"
+		"#  define	UINT16_C(__c)	((unsigned short)(__c))\n";
+};
+
+fix = {
+    hackname  = hpux_stdint_least;
+    mach      = "*-hp-hpux11.2*";
+    files     = stdint.h;
+    select    = "^[ \t]*#[ \t]*define[ \t]*UINT_LEAST64_MAX[ \t]*ULLONG_MAX";
+    c_fix     = format;
+    c_fix_arg = "#ifdef __LP64__\n#  define	UINT_LEAST64_MAX	ULONG_MAX\n#else\n%0\n#endif\n";
+    test_text ="#  define       UINT_LEAST64_MAX        ULLONG_MAX\n";
+};
+
+fix = {
+    hackname  = hpux_stdint_fast;
+    mach      = "*-hp-hpux11.2*";
+    files     = stdint.h;
+    select    = "^[ \t]*#[ \t]*define[ \t]*UINT_FAST64_MAX[ \t]*ULLONG_MAX";
+    c_fix     = format;
+    c_fix_arg = "#ifdef __LP64__\n#  define	UINT_FAST64_MAX		ULONG_MAX\n#else\n%0\n#endif\n";
+    test_text ="#  define       UINT_FAST64_MAX        ULLONG_MAX\n";
+};
+
+fix = {
+    hackname  = hpux_inttype_int_least8_t;
+    mach      = "*-hp-hpux11.*";
+    files     = sys/_inttypes.h;
+    select    = "^[ \t]*typedef[ \t]*char[ \t]*int_least8_t.*";
+    c_fix     = format;
+    c_fix_arg = "typedef signed char int_least8_t;";
+    test_text ="typedef char int_least8_t;\n";
+};
+
+fix = {
+    hackname  = hpux_inttype_int8_t;
+    mach      = "*-hp-hpux11.*";
+    files     = sys/_inttypes.h;
+    select    = "^[ \t]*typedef[ \t]*char[ \t]*int8_t.*";
+    c_fix     = format;
+    c_fix_arg = "typedef signed char int8_t;";
+    test_text ="typedef char int8_t;\n";
 };
 
 /*

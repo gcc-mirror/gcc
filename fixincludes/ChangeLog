@@ -1,3 +1,21 @@
+2009-04-28  Steve Ellcey  <sje@cup.hp.com>
+
+	* inclhack.def (hpux11_uint32_c): Remove.
+	(hpux_long_double): Disable on hpux11.3*.
+	(hpux_long_double_2): New.
+	(hpux_c99_intptr): New.
+	(hpux_c99_inttypes): New.
+	(hpux_c99_inttypes2): New.
+	(hpux_stdint_least): New.
+	(hpux_stdint_fast): New.
+	(hpux_inttype_int_least8_t): New.
+	(hpux_inttype_int8_t): New.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/_inttypes.h: New.
+	* tests/base/inttypes.h: Update.
+	* tests/base/stdlib.h: Update.
+	* tests/base/stdint.h: Update.
+
 2009-04-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (glibc_stdint): New fix.
