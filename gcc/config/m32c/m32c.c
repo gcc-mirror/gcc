@@ -442,14 +442,6 @@ m32c_init_expanders (void)
 
 /* Storage Layout */
 
-#undef TARGET_PROMOTE_FUNCTION_RETURN
-#define TARGET_PROMOTE_FUNCTION_RETURN m32c_promote_function_return
-bool
-m32c_promote_function_return (const_tree fntype ATTRIBUTE_UNUSED)
-{
-  return false;
-}
-
 /* Register Basics */
 
 /* Basic Characteristics of Registers */
@@ -1439,14 +1431,6 @@ m32c_initial_elimination_offset (int from, int to)
 }
 
 /* Passing Function Arguments on the Stack */
-
-#undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES m32c_promote_prototypes
-static bool
-m32c_promote_prototypes (const_tree fntype ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
 
 /* Implements PUSH_ROUNDING.  The R8C and M16C have byte stacks, the
    M32C has word stacks.  */

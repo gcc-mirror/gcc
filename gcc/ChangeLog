@@ -1,3 +1,9 @@
+2009-04-28  Paolo Bonzini  <bonzini@gnu.org>
+
+        * config/m32c/m32c.c (TARGET_PROMOTE_FUNCTION_RETURN,
+        m32c_promote_function_return, TARGET_PROMOTE_PROTOTYPES,
+        m32c_promote_prototypes): Delete.
+
 2009-04-28  Michael Matz  <matz@suse.de>
 
 	PR middle-end/39922
