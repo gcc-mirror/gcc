@@ -2468,6 +2468,8 @@ i[34567]86-*-linux* | x86_64-*-linux*)
 i[34567]86-*-* | x86_64-*-*)
 	tmake_file="${tmake_file} i386/t-gmm_malloc i386/t-i386"
 	;;
+powerpc*-*-* | rs6000-*-*)
+	tm_file="${tm_file} rs6000/option-defaults.h"
 esac
 
 # Support for --with-cpu and related options (and a few unrelated options,
@@ -2930,12 +2932,20 @@ case "${target}" in
 		;;
 
 	powerpc*-*-* | rs6000-*-*)
-		supported_defaults="cpu float tune"
+		supported_defaults="cpu cpu_32 cpu_64 float tune tune_32 tune_64"
 
-		for which in cpu tune; do
+		for which in cpu cpu_32 cpu_64 tune tune_32 tune_64; do
 			eval "val=\$with_$which"
 			case ${val} in
 			default32 | default64)
+				case $which in
+				cpu | tune)
+					;;
+				*)
+					echo "$val only valid for --with-cpu and --with-tune." 1>&2
+					exit 1
+					;;
+				esac
 				with_which="with_$which"
 				eval $with_which=
 				;;
