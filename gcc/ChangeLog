@@ -1,3 +1,8 @@
+2009-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/39938
+	* resource.c (init_resource_info): Add call to df_analyze.
+
 2009-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.md (usegp): Cast the result of
