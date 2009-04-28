@@ -38,11 +38,11 @@ along with GCC; see the file COPYING3.  If not see
 	builtin_define ("__hpux__");					\
 	builtin_define ("__unix");					\
 	builtin_define ("__unix__");					\
+	builtin_define ("__STDC_EXT__");				\
 	if (c_dialect_cxx ())						\
 	  {								\
 	    builtin_define ("_HPUX_SOURCE");				\
 	    builtin_define ("_INCLUDE_LONGLONG");			\
-	    builtin_define ("__STDC_EXT__");				\
 	    builtin_define ("__STDCPP__");				\
 	  }								\
 	else if (!flag_iso)						\
@@ -58,8 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 		builtin_define ("_PWB");				\
 		builtin_define ("PWB");					\
 	      }								\
-	    else							\
-	      builtin_define ("__STDC_EXT__");				\
 	  }								\
 	if (flag_pa_unix >= 1995)					\
 	  {								\

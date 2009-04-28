@@ -1,3 +1,16 @@
+2009-04-28  Steve Ellcey  <sje@cup.hp.com>
+
+	* config.gcc (hppa*64*-*-hpux11*): Set use_gcc_stdint and
+	add hpux-stdint.h to tm_file.
+	(hppa[12]*-*-hpux11*): Ditto.
+	(ia64*-*-hpux*): Ditto.
+	* config/hpux-stdint.h: New.
+	* gcc/config/ia64/hpux.h (TARGET_OS_CPP_BUILTINS): Set
+	__STDC_EXT__ for all compiles.
+	* gcc/config/pa/pa-hpux.h: Ditto.
+	* gcc/config/pa/pa-hpux10.h: Ditto.
+	* gcc/config/pa/pa-hpux11.h: Ditto.
+
 2009-04-28  Catherine Moore  <clm@codesourcery.com>
 
 	* debug.h (set_name): Add comment.
