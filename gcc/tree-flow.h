@@ -803,6 +803,14 @@ bool stmt_dominates_stmt_p (gimple, gimple);
 void mark_virtual_ops_for_renaming (gimple);
 
 /* In tree-ssa-threadedge.c */
+extern void threadedge_initialize_values (void);
+extern void threadedge_finalize_values (void);
+extern VEC(tree,heap) *ssa_name_values;
+#define SSA_NAME_VALUE(x) \
+    (SSA_NAME_VERSION(x) < VEC_length(tree, ssa_name_values) \
+     ? VEC_index(tree, ssa_name_values, SSA_NAME_VERSION(x)) \
+     : NULL_TREE)
+extern void set_ssa_name_value (tree, tree);
 extern bool potentially_threadable_block (basic_block);
 extern void thread_across_edge (gimple, edge, bool,
 				VEC(tree, heap) **, tree (*) (gimple, gimple));
