@@ -1,7 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007, 2008, 2009
-// Free Software Foundation, Inc.
+// Copyright (C) 2009 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,27 +17,43 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 19.1 Exception classes
-
-#include <cstring>
-#include <string>
 #include <system_error>
 #include <testsuite_hooks.h>
 
-// Make sure each invocation of what() doesn't grow the message.
+enum my_errc { my_err = 0 };
+
+class my_error_category_impl
+: public std::error_category
+{
+public:
+  const char* name() const { return ""; }
+  std::string message(int) const { return ""; }
+} my_error_category_instance;
+
+std::error_code
+make_error_code(my_errc e)
+{
+  return std::error_code(static_cast<int>(e),
+			 my_error_category_instance);
+}
+
+namespace std
+{
+  template<>
+    struct is_error_code_enum<my_errc>
+    : public true_type {};
+}
+
+// libstdc++/39882
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  std::string s("after nine thirty, this request cannot be met");
 
-  std::system_error obj =
-    std::system_error(std::make_error_code(std::errc::invalid_argument), s);
-  std::string s1(obj.what());
-  std::string s2(obj.what());
-  VERIFY( s1 == s2 );
+  std::error_code ec1(my_err);
+  VERIFY( ec1 == make_error_code(my_err) );
 }
 
-int main(void)
+int main()
 {
   test01();
   return 0;

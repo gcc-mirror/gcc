@@ -51,10 +51,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp>
     struct is_error_code_enum : public false_type { };
 
-  template<> 
-    struct is_error_code_enum<errc>
-    : public true_type { };
-
   /// is_error_condition_enum
   template<typename _Tp>
     struct is_error_condition_enum : public false_type { };
@@ -108,12 +104,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   const error_category& system_category();
   const error_category& generic_category();
 
+  error_code make_error_code(errc);
+
   /// error_code
   // Implementation-specific error identification
   struct error_code
   {
     error_code()
-      : _M_value(0), _M_cat(&system_category()) { }
+    : _M_value(0), _M_cat(&system_category()) { }
 
     error_code(int __v, const error_category& __cat)
     : _M_value(__v), _M_cat(&__cat) { }
@@ -121,8 +119,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     template<typename _ErrorCodeEnum>
       error_code(_ErrorCodeEnum __e,
       typename enable_if<is_error_code_enum<_ErrorCodeEnum>::value>::type* = 0)
-      : _M_value(static_cast<int>(__e)), _M_cat(&generic_category())
-      { }
+      { *this = make_error_code(__e); }
 
     void 
     assign(int __v, const error_category& __cat)
@@ -140,10 +137,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename enable_if<is_error_code_enum<_ErrorCodeEnum>::value,
 			 error_code&>::type
       operator=(_ErrorCodeEnum __e)
-      {
-	assign(static_cast<int>(__e), generic_category());
-	return *this;
-      }
+      { return *this = make_error_code(__e); }
 
     int
     value() const { return _M_value; }
@@ -192,12 +186,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     operator<<(basic_ostream<_CharT, _Traits>& __os, const error_code& __e)
     { return (__os << __e.category().name() << ':' << __e.value()); }
 
+  error_condition make_error_condition(errc);
 
   /// error_condition
   // Portable error identification
   struct error_condition 
   {
-    error_condition() : _M_value(0), _M_cat(&generic_category()) { }
+    error_condition()
+    : _M_value(0), _M_cat(&generic_category()) { }
 
     error_condition(int __v, const error_category& __cat)     
     : _M_value(__v), _M_cat(&__cat) { }
@@ -206,7 +202,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       error_condition(_ErrorConditionEnum __e,
 		      typename enable_if<is_error_condition_enum
 		                      <_ErrorConditionEnum>::value>::type* = 0)
-	: _M_value(static_cast<int>(__e)), _M_cat(&generic_category()) { }
+      { *this = make_error_condition(__e); }
 
     void
     assign(int __v, const error_category& __cat)
@@ -220,10 +216,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       typename enable_if<is_error_condition_enum
 			 <_ErrorConditionEnum>::value, error_condition&>::type
       operator=(_ErrorConditionEnum __e)
-      {
-	assign(static_cast<int>(__e), generic_category());
-	return *this;
-      }
+      { return *this = make_error_condition(__e); }
 
     void 
     clear()

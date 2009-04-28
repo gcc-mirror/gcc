@@ -1,6 +1,6 @@
 // { dg-options "-std=gnu++0x" }
 
-// Copyright (C) 2007, 2009 Free Software Foundation
+// Copyright (C) 2007, 2008, 2009 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,7 @@ void test()
 
   wchar_t buf[64];
   error_code e1;
-  error_code e2(errc::bad_address);
+  error_code e2(make_error_code(errc::bad_address));
   wstring s, s1, s2;
 
   {

@@ -32,7 +32,7 @@ void test()
 
   char buf[64];
   error_code e1;
-  error_code e2(errc::bad_address);
+  error_code e2(make_error_code(errc::bad_address));
   string s, s1, s2;
 
   {

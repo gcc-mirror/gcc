@@ -37,7 +37,7 @@ int main()
   VERIFY( e2.category() == cat );
 
   // 3
-  std::error_code e3(std::errc::operation_not_supported);
+  std::error_code e3(std::make_error_code(std::errc::operation_not_supported));
   VERIFY( e3.value() == int(std::errc::operation_not_supported) );
   VERIFY( e3.category() == std::generic_category() );
 

@@ -32,7 +32,7 @@ int main()
   return 0;
 }
 
-// { dg-error "deleted function" "" { target *-*-* } 76 }
+// { dg-error "deleted function" "" { target *-*-* } 72 }
 // { dg-error "used here" "" { target *-*-* } 31 }
 // { dg-error "first required here" "" { target *-*-* } 30 }
 // { dg-excess-errors "copy constructor" }

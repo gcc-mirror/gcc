@@ -44,7 +44,8 @@ void test01()
         }
       catch (const std::system_error& ex)
         {
-	  VERIFY( ex.code() == std::error_code(std::errc::operation_not_permitted) );
+	  VERIFY( ex.code() == std::make_error_code
+		  (std::errc::operation_not_permitted) );
         }
       catch (...)
         {
@@ -80,8 +81,8 @@ void test02()
 	}
       catch (const std::system_error& ex)
 	{
-	  VERIFY( ex.code() == std::error_code(
-		    std::errc::resource_deadlock_would_occur) );
+	  VERIFY( ex.code() == std::make_error_code
+		  (std::errc::resource_deadlock_would_occur) );
 	}
       catch (...)
 	{
