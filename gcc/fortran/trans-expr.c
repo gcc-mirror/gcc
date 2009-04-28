@@ -1119,8 +1119,7 @@ gfc_conv_string_tmp (gfc_se * se, tree type, tree len)
       gfc_add_modify (&se->pre, var, tmp);
 
       /* Free the temporary afterwards.  */
-      tmp = gfc_call_free (var, true, &gfc_current_locus,
-			   ALLOCTYPE_TEMPORARY);
+      tmp = gfc_call_free (convert (pvoid_type_node, var));
       gfc_add_expr_to_block (&se->post, tmp);
     }
 
