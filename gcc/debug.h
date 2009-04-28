@@ -126,6 +126,8 @@ struct gcc_debug_hooks
      text sections.  */
   void (* switch_text_section) (void);
 
+  /* Called from grokdeclarator.  Replaces the anonymous name with the
+     type name.  */
   void (* set_name) (tree, tree);
 
   /* This is 1 if the debug writer wants to see start and end commands for the
