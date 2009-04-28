@@ -3070,8 +3070,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       if (pointer)
 	check_intent_in = 0;
 
-      if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
-	pointer = 1;
+      if (ref->type == REF_COMPONENT)
+	pointer = ref->u.c.component->attr.pointer;
 
       if (ref->type == REF_ARRAY && ref->next == NULL)
 	{
