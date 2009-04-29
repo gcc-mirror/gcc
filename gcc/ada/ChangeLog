@@ -1,3 +1,12 @@
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sinfo.ads, sinfo.adb: New attribute Next_Implicit_With, to chain
+	with_clauses generated for the same unit through rtsfind, and that
+	appear in the context of different units.
+
+	* rtsfind.adb: New attribute First_Implicit_With, component of the
+	Unit_Record that stores information about a unit loaded through rtsfind.
+
 2009-04-29  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch3.adb (Stream_Operation_OK): Return True for limited interfaces
