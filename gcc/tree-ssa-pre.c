@@ -4131,6 +4131,11 @@ eliminate (void)
 		  update_stmt (stmt);
 		  if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
 		    gimple_purge_dead_eh_edges (b);
+
+		  /* Changing an indirect call to a direct call may
+		     have exposed different semantics.  This may
+		     require an SSA update.  */
+		  todo |= TODO_update_ssa;
 		}
 	    }
 	}

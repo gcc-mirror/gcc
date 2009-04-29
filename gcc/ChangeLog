@@ -1,5 +1,11 @@
 2009-04-29  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/39941
+	* tree-ssa-pre.c (eliminate): Schedule update-ssa after
+	eliminating an indirect call.
+
+2009-04-29  Richard Guenther  <rguenther@suse.de>
+
 	* tree-cfg.c (verify_types_in_gimple_reference): Add require_lvalue
 	parameter.  Allow invariants as base if !require_lvalue.
 	(verify_gimple_assign_single): Adjust.

@@ -1,3 +1,8 @@
+2009-04-29  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39941
+	* gcc.c-torture/compile/pr39941.c: New testcase.
+
 2009-04-29  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* gcc.target/bfin/20090411-1.c: New test.
