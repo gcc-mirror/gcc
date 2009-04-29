@@ -7259,23 +7259,58 @@ package body Sem_Util is
             return N = Prefix (P)
               and then Name_Implies_Lvalue_Prefix (Attribute_Name (P));
 
-         when N_Expanded_Name        |
-              N_Indexed_Component    |
-              N_Selected_Component   |
-              N_Slice                =>
-            if Is_Access_Type (Etype (N)) then
-               return False;  --  P is an implicit dereference
+         --  For an expanded name, the name is an lvalue if the expanded name
+         --  is an lvalue, but the prefix is never an lvalue, since it is just
+         --  the scope where the name is found.
+
+         when N_Expanded_Name        =>
+            if N = Prefix (P) then
+               return May_Be_Lvalue (P);
             else
-               return N = Prefix (P);
+               return False;
             end if;
 
+         --  For a selected component A.B, A is certainly an Lvalue if A.B is
+         --  an Lvalue. B is a little interesting, if we have A.B:=3, there is
+         --  some discussion as to whether B is an Lvalue or not, we choose to
+         --  say it is. Note however that A is not an Lvalue if it is of an
+         --  access type since this is an implicit dereference.
+
+         when N_Selected_Component   =>
+            if N = Prefix (P)
+              and then Present (Etype (N))
+              and then Is_Access_Type (Etype (N))
+            then
+               return False;
+            else
+               return May_Be_Lvalue (P);
+            end if;
+
+         --  For an indexed component or slice, the index or slice bounds is
+         --  never an Lvalue. The prefix is an lvalue if the indexed component
+         --  or slice is an Lvalue, except if it is an access type, where we
+         --  have an implicit dereference.
+
+         when N_Indexed_Component    =>
+            if N /= Prefix (P)
+              or else (Present (Etype (N)) and then Is_Access_Type (Etype (N)))
+            then
+               return False;
+            else
+               return May_Be_Lvalue (P);
+            end if;
+
+         --  Prefix of a reference is an Lvalue if the reference is an Lvalue
+
          when N_Reference            =>
-            return N = Prefix (P);
+            return May_Be_Lvalue (P);
+
+         --  Prefix of explicit dereference is never an Lvalue
 
          when N_Explicit_Dereference =>
             return False;
 
-         --  Function call arguments are never lvalues
+         --  Function call arguments are never Lvalues
 
          when N_Function_Call =>
             return False;

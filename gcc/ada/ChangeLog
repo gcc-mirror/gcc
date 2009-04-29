@@ -1,3 +1,8 @@
+2009-04-29  Robert Dewar  <dewar@adacore.com>
+
+	* sem_util.adb (May_Be_Lvalue): Fix cases involving indexed/selected
+	components
+
 2009-04-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch9.ads, exp_ch9.adb (Build_Wrapper_Spec): Use source line of
