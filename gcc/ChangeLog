@@ -1,3 +1,13 @@
+2009-04-29  Eric Botcazou  <ebotcazou@adacore.com>
+            Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR rtl-optimization/39938
+	* Makefile.in (cfgrtl.o): Add $(INSN_ATTR_H).
+	* cfgrtl.c: Include insn-attr.h.
+	(rest_of_pass_free_cfg): New function.
+	(pass_free_cfg): Use rest_of_pass_free_cfg as execute function.
+	* resource.c (init_resource_info): Remove call to df_analyze.
+
 2009-04-29  Richard Guenther  <rguenther@suse.de>
 
 	PR target/39943

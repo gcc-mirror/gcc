@@ -1200,8 +1200,6 @@ init_resource_info (rtx epilogue_insn)
   FOR_EACH_BB (bb)
     if (LABEL_P (BB_HEAD (bb)))
       BLOCK_FOR_INSN (BB_HEAD (bb)) = bb;
-
-  df_analyze ();
 }
 
 /* Free up the resources allocated to mark_target_live_regs ().  This
