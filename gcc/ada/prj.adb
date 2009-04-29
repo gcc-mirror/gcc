@@ -828,6 +828,7 @@ package body Prj is
    procedure Free (Project : in out Project_Id; Reset_Only : Boolean) is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Project_Data, Project_Id);
+
    begin
       if Project /= null then
          Free (Project.Include_Path);
@@ -891,9 +892,11 @@ package body Prj is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Project_List_Element, Project_List);
       Tmp : Project_List;
+
    begin
       while List /= null loop
          Tmp := List.Next;
+
          if Free_Project then
             Free (List.Project, Reset_Only => Reset_Only);
          end if;
@@ -949,6 +952,8 @@ package body Prj is
          Path_File_Table.Free (Tree.Private_Part.Path_Files);
          Source_Path_Table.Free (Tree.Private_Part.Source_Paths);
          Object_Path_Table.Free (Tree.Private_Part.Object_Paths);
+
+         Free (Tree.Private_Part.Ada_Path_Buffer);
 
          --  Naming data (nothing to free ?)
          null;
@@ -1385,7 +1390,7 @@ package body Prj is
 
    begin
       Prj := Proj;
-      while Prj.Extended_By /= No_Project loop
+      while Prj /= null and then Prj.Extended_By /= No_Project loop
          Prj := Prj.Extended_By;
       end loop;
 

@@ -954,11 +954,13 @@ package body Prj.Env is
          end if;
 
       --  If language is defined
+
       else
          --  For all source of the Language of all projects in the closure
 
          declare
             P : Project_List;
+
          begin
             P := In_Tree.Projects;
             while P /= null loop
@@ -1054,7 +1056,7 @@ package body Prj.Env is
 
    procedure Delete_All_Path_Files (In_Tree : Project_Tree_Ref) is
       Disregard : Boolean := True;
-      pragma Warnings (Off, Disregard);
+      pragma Unreferenced (Disregard);
 
    begin
       for Index in Path_File_Table.First ..
@@ -1846,9 +1848,10 @@ package body Prj.Env is
    function Ultimate_Extension_Of
      (Project : Project_Id) return Project_Id
    is
-      Result : Project_Id := Project;
+      Result : Project_Id;
 
    begin
+      Result := Project;
       while Result.Extended_By /= No_Project loop
          Result := Result.Extended_By;
       end loop;

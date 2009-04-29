@@ -7469,7 +7469,7 @@ package body Make is
 
       begin
          if Prj.Depth >= Depth
-           or Get (Seen, Prj)    -- or needed instead of or else ???
+           or else Get (Seen, Prj)
          then
             return;
          end if;
