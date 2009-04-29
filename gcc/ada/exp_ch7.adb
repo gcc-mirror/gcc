@@ -453,7 +453,7 @@ package body Exp_Ch7 is
          --  worst-case assumption for runtime files, for efficiency reasons
          --  (see exp_ch3.adb). The reference to RE_List_Controller may have
          --  added a with_clause to the current body. Formally the spec needs
-         --  the with_clause as well, so we add it now, for use by codepeer.
+         --  the with_clause as well, so we add it now, for use by Codepeer.
 
          declare
             Loc         : constant Source_Ptr := Sloc (Typ);
