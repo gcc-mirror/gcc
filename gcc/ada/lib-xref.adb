@@ -1696,8 +1696,20 @@ package body Lib.Xref is
                   if No (Old_E) then
                      return;
 
+                  --  Follow alias chain if one is present
+
                   elsif Present (Alias (Old_E)) then
+
+                     --  The subprogram may have been implicitly inherited
+                     --  through several levels of derivation, so find the
+                     --  ultimate (source) ancestor.
+
                      Op := Alias (Old_E);
+                     while Present (Alias (Op)) loop
+                        Op := Alias (Op);
+                     end loop;
+
+                  --  Normal case of no alias present
 
                   else
                      Op := Old_E;

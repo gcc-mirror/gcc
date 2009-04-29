@@ -1,3 +1,9 @@
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* lib-xref.adb (Output_Overridden_Op): Follow several levels of
+	derivation when necessary, to find the user-subprogram that is actally
+	being overridden.
+
 2009-04-29  Robert Dewar  <dewar@adacore.com>
 
 	* sem_util.adb (May_Be_Lvalue): Fix cases involving indexed/selected
