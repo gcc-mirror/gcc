@@ -80,17 +80,22 @@ extern unsigned int bfin_workarounds;
 #define ENABLE_WA_INDIRECT_CALLS \
   ((bfin_workarounds & WA_INDIRECT_CALLS) && !TARGET_ICPLB)
 
-#define WA_05000257 0x00000040
+#define WA_05000257 0x00000010
 #define ENABLE_WA_05000257 \
   (bfin_workarounds & WA_05000257)
 
-#define WA_05000283 0x00000010
+#define WA_05000283 0x00000020
 #define ENABLE_WA_05000283 \
   (bfin_workarounds & WA_05000283)
 
-#define WA_05000315 0x00000020
+#define WA_05000315 0x00000040
 #define ENABLE_WA_05000315 \
   (bfin_workarounds & WA_05000315)
+
+/* For the anomaly 05-00-0312 */
+#define WA_LOAD_LCREGS 0x00000080
+#define ENABLE_WA_LOAD_LCREGS \
+  (bfin_workarounds & WA_LOAD_LCREGS)
 
 #define Mmode enum machine_mode
 
