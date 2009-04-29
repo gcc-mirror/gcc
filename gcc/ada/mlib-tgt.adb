@@ -317,7 +317,8 @@ package body MLib.Tgt is
    ------------------------
 
    function Library_Exists_For
-     (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return Boolean
    is
    begin
       return Library_Exists_For_Ptr (Project, In_Tree);
@@ -328,9 +329,11 @@ package body MLib.Tgt is
    --------------------------------
 
    function Library_Exists_For_Default
-     (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean
+     (Project : Project_Id;
+      In_Tree : Project_Tree_Ref) return Boolean
    is
       pragma Unreferenced (In_Tree);
+
    begin
       if not Project.Library then
          Prj.Com.Fail ("INTERNAL ERROR: Library_Exists_For called " &

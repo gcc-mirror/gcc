@@ -3147,7 +3147,7 @@ package body Prj.Nmsc is
          --  Check Body_Suffix
 
          if Is_Illegal_Suffix
-           (Body_Suffix, Project.Naming.Dot_Replacement)
+              (Body_Suffix, Project.Naming.Dot_Replacement)
          then
             Err_Vars.Error_Msg_File_1 := Body_Suffix;
             Error_Msg
@@ -3468,6 +3468,7 @@ package body Prj.Nmsc is
       --  Special case of extending project
 
       if Project.Extends /= No_Project then
+
          --  If the project extended is a library project, we inherit the
          --  library name, if it is not redefined; we check that the library
          --  directory is specified.
@@ -3686,7 +3687,7 @@ package body Prj.Nmsc is
 
       Project.Library :=
         Project.Library_Dir /= No_Path_Information
-        and then Project.Library_Name /= No_Name;
+          and then Project.Library_Name /= No_Name;
 
       if Project.Extends = No_Project then
          case Project.Qualifier is
@@ -3741,6 +3742,7 @@ package body Prj.Nmsc is
                if Current_Verbosity = High then
                   Write_Line ("No library ALI directory specified");
                end if;
+
                Project.Library_ALI_Dir := Project.Library_Dir;
 
             else
@@ -5763,11 +5765,11 @@ package body Prj.Nmsc is
                      else
                         --  Remove source dir, if present
 
-                        List := Project.Source_Dirs;
                         Prev := Nil_String;
 
                         --  Look for source dir in current list
 
+                        List := Project.Source_Dirs;
                         while List /= Nil_String loop
                            Element := In_Tree.String_Elements.Table (List);
                            exit when Element.Value = Path_Id;
@@ -5807,13 +5809,12 @@ package body Prj.Nmsc is
       if (((not Source_Files.Default)
            and then Source_Files.Values = Nil_String)
           or else
-          ((not Source_Dirs.Default) and then Source_Dirs.Values = Nil_String)
-           or else
-          ((not Languages.Default) and then Languages.Values = Nil_String))
+           ((not Source_Dirs.Default) and then Source_Dirs.Values = Nil_String)
+              or else
+           ((not Languages.Default) and then Languages.Values = Nil_String))
         and then Project.Extends = No_Project
       then
          Project.Object_Directory := No_Path_Information;
-
       else
          Project.Object_Directory := Project.Directory;
       end if;
@@ -8208,7 +8209,7 @@ package body Prj.Nmsc is
                  and then UData.File_Names (Unit_Kind).Path.Name = Slash)
               or else UData.File_Names (Unit_Kind).Name = No_File
               or else Is_Extending
-                (Project.Extends, UData.File_Names (Unit_Kind).Project)
+                        (Project.Extends, UData.File_Names (Unit_Kind).Project)
             then
                if UData.File_Names (Unit_Kind).Path.Name = Slash then
                   Remove_Forbidden_File_Name

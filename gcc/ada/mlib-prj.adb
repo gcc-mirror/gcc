@@ -480,8 +480,10 @@ package body MLib.Prj is
 
          elsif P /= No_Project then
             declare
-               Proj : Project_Id := For_Project;
+               Proj : Project_Id;
+
             begin
+               Proj := For_Project;
                while Proj.Extends /= No_Project loop
                   if P = Proj.Extends then
                      return True;
@@ -518,12 +520,12 @@ package body MLib.Prj is
             Lib_File := Name_Find;
             Text := Read_Library_Info (Lib_File, True);
 
-            Id  := ALI.Scan_ALI
-                         (F          => Lib_File,
-                          T          => Text,
-                          Ignore_ED  => False,
-                          Err        => True,
-                          Read_Lines => "D");
+            Id := ALI.Scan_ALI
+                    (F          => Lib_File,
+                     T          => Text,
+                     Ignore_ED  => False,
+                     Err        => True,
+                     Read_Lines => "D");
             Free (Text);
 
             --  Look for s-osinte.ads in the dependencies
@@ -2069,7 +2071,7 @@ package body MLib.Prj is
       if For_Project.Library then
          declare
             Lib_Name : constant File_Name_Type :=
-              Library_File_Name_For (For_Project, In_Tree);
+                         Library_File_Name_For (For_Project, In_Tree);
          begin
             Change_Dir (Get_Name_String (For_Project.Library_Dir.Name));
             Lib_TS := File_Stamp (Lib_Name);

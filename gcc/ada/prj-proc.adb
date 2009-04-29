@@ -1164,9 +1164,10 @@ package body Prj.Proc is
          --  if the project is not imported directly.
 
          declare
-            Proj : Project_Id := Result.Extends;
+            Proj : Project_Id;
 
          begin
+            Proj := Result.Extends;
             while Proj /= No_Project loop
                if Proj.Name = With_Name then
                   Temp_Result := Result;
@@ -1571,8 +1572,7 @@ package body Prj.Proc is
                         end loop;
 
                         Orig_Array :=
-                          In_Tree.Packages.Table
-                            (Orig_Package).Decl.Arrays;
+                          In_Tree.Packages.Table (Orig_Package).Decl.Arrays;
                      end if;
 
                      --  Now look for the array

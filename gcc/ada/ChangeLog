@@ -1,3 +1,9 @@
+2009-04-29  Robert Dewar  <dewar@adacore.com>
+
+	* mlib-prj.adb, mlib-tgt.adb, mlib-tgt.ads, prj-nmsc.adb,
+	prj-proc.adb: Minor reformatting
+	Minor code reorganization
+
 2009-04-29  Bob Duff  <duff@adacore.com>
 
 	* exp_ch7.adb (Build_Final_List): For an access type that designates a
