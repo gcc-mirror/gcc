@@ -932,7 +932,7 @@ package Prj is
    procedure Free_List
      (List         : in out Project_List;
       Free_Project : Boolean);
-   --  Free the list of projects. If Free_Project, each project is also freed.
+   --  Free the list of projects, if Free_Project, each project is also freed
 
    type Response_File_Format is
      (None,
@@ -1116,7 +1116,7 @@ package Prj is
 
       Path : Path_Information := No_Path_Information;
       --  The path name of the project file. This include base name of the
-      --  project file
+      --  project file.
 
       Virtual : Boolean := False;
       --  True for virtual extending projects
@@ -1315,7 +1315,7 @@ package Prj is
    function Is_Extending
      (Extending : Project_Id;
       Extended  : Project_Id) return Boolean;
-   --  Return True if Extending is extending the Extended project.
+   --  Return True if Extending is extending the Extended project
 
    function Is_A_Language
      (Project       : Project_Id;

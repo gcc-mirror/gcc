@@ -1,3 +1,7 @@
+2009-04-29  Robert Dewar  <dewar@adacore.com>
+
+	* prj-proc.adb, prj.ads: Minor reformatting
+
 2009-04-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Conditional_Expression): Set the SLOC of an

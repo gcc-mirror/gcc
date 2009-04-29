@@ -87,7 +87,7 @@ package body Prj.Proc is
    --  Set all projects to not checked, then call Recursive_Check for the
    --  main project Project. Project is set to No_Project if errors occurred.
    --  Current_Dir is for optimization purposes, avoiding extra system calls.
-   --  Is_Config_File should be True if Project is a config file (.cgpr)
+   --  Is_Config_File should be True if Project is a config file (.cgpr).
 
    procedure Copy_Package_Declarations
      (From              : Declarations;
@@ -1235,8 +1235,8 @@ package body Prj.Proc is
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
       When_No_Sources        : Error_Warning := Error;
-      Reset_Tree             : Boolean := True;
-      Current_Dir            : String := "";
+      Reset_Tree             : Boolean       := True;
+      Current_Dir            : String        := "";
       Is_Config_File         : Boolean)
    is
    begin
