@@ -1,3 +1,9 @@
+2009-04-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_assign_binary): Allow vector
+	shifts of floating point vectors if the shift amount is
+	a constant multiple of the element size.
+
 2009-04-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 	    Michael Matz  <matz@suse.de>
 
