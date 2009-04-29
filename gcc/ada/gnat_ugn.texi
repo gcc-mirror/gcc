@@ -2976,6 +2976,7 @@ with a new C++ compiler.
 * Interfacing to C++::
 * Linking a Mixed C++ & Ada Program::
 * A Simple Example::
+* Interfacing with C++ constructors::
 * Interfacing with C++ at the Class Level::
 @end menu
 
@@ -3227,6 +3228,176 @@ package Simple_Cpp_Interface is
 
 end Simple_Cpp_Interface;
 @end smallexample
+
+@node Interfacing with C++ constructors
+@subsection Interfacing with C++ constructors
+@noindent
+
+In order to interface with C++ constructors GNAT provides the
+@code{pragma CPP_Constructor} (@xref{Interfacing to C++,,,
+gnat_rm, GNAT Reference Manual}, for additional information).
+In this section we present some common uses of C++ constructors
+in mixed-languages programs in GNAT.
+
+Let us assume that we need to interface with the following
+C++ class:
+
+@smallexample
+@b{class} Root @{
+@b{public}:
+  int  a_value;
+  int  b_value;
+  @b{virtual} int Get_Value ();
+  Root();              // Default constructor
+  Root(int v);         // 1st non-default constructor
+  Root(int v, int w);  // 2nd non-default constructor
+@};
+@end smallexample
+
+For this purpose we can write the following package spec (further
+information on how to build this spec is available in
+@ref{Interfacing with C++ at the Class Level} and
+@ref{Generating Ada Bindings for C and C++ headers}).
+
+@smallexample @c ada
+with Interfaces.C; use Interfaces.C;
+package Pkg_Root is
+  type Root is tagged limited record
+     A_Value : int;
+     B_Value : int;
+  end record;
+  pragma Import (CPP, Root);
+
+  function Get_Value (Obj : Root) return int;
+  pragma Import (CPP, Get_Value);
+
+  function Constructor return Root'Class;
+  pragma Cpp_Constructor (Constructor, "_ZN4RootC1Ev");
+
+  function Constructor (v : Integer) return Root'Class;
+  pragma Cpp_Constructor (Constructor, "_ZN4RootC1Ei");
+
+  function Constructor (v, w : Integer) return Root'Class;
+  pragma Cpp_Constructor (Constructor, "_ZN4RootC1Eii");
+end Pkg_Root;
+@end smallexample
+
+On the Ada side the constructor is represented by a function (whose
+name is arbitrary) that returns the classwide type corresponding to
+the imported C++ class.
+
+In a declaration of an object whose type is a class imported from C++,
+either the default C++ constructor is implicitly called by GNAT, or
+else the required C++ constructor must be explicitly called in the
+expression that initializes the object. For example:
+
+@smallexample @c ada
+  Obj1 : Root;
+  Obj2 : Root := Constructor;
+  Obj3 : Root := Constructor (v => 10);
+  Obj4 : Root := Constructor (30, 40);
+@end smallexample
+
+The first two declarations are equivalent: in both cases the default C++
+constructor is invoked (in the former case the call to the constructor is
+implicit, and in the latter case the call is explicit in the object
+declaration). @code{Obj3} is initialized by the C++ non-default constructor
+that takes an integer argument, and @code{Obj4} is initialized by the
+non-default C++ constructor that takes two integers.
+
+Let us derive the imported C++ class in the Ada side. For example:
+
+@smallexample @c ada
+  type DT is new Root with record
+     C_Value : Natural := 2009;
+  end record;
+@end smallexample
+
+In this case the components DT inherited from the C++ side must be
+initialized by a C++ constructor, and the additional Ada components
+of type DT are initialized by GNAT. The initialization of such an
+object is done either by default, or by means of a function returning
+an aggregate of type DT, or by means of an extended aggregate.
+
+@smallexample @c ada
+  Obj5 : DT;
+  Obj6 : DT := Function_Returning_DT (50);
+  Obj7 : DT := (Constructor (30,40) with (C_Value => 50));
+@end smallexample
+
+The declaration of @code{Obj5} invokes the default constructors: the
+C++ default constructor of the parent type takes care of the initialization
+of the components inherited from Root, and GNAT takes care of the default
+initialization of the additional Ada components of type DT (that is,
+@code{C_Value} is initialized to value 2009). The order of invocation of
+the constructors is consistent with the order of elaboration required by
+Ada and C++. That is, the constructor of the parent type is always called
+before the constructor of the derived type.
+
+Let us now consider a record that has components whose type is imported
+from C++. For example:
+
+@smallexample @c ada
+  type Rec1 is limited record
+     Data1 : Root := Constructor (10);
+     Value : Natural := 1000;
+  end record;
+
+  type Rec2 (D : Integer := 20) is limited record
+     Rec   : Rec1;
+     Data2 : Root := Constructor (D, 30);
+  end record;
+@end smallexample
+
+The initialization of an object of type @code{Rec2} will call the
+non-default C++ constructors specified for the imported components.
+For example:
+
+@smallexample @c ada
+  Obj8 : Rec2 (40);
+@end smallexample
+
+Using Ada 2005 we can use limited aggregates to initialize an object
+invoking C++ constructors that differ from those specified in the type
+declarations. For example:
+
+@smallexample @c ada
+  Obj9 : Rec2 := (Rec => (Data1 => Constructor (15, 16),
+                          others => <>),
+                  others => <>);
+@end smallexample
+
+The above declaration uses an Ada 2005 limited aggregate to
+initialize @code{Obj9}, and the C++ constructor that has two integer
+arguments is invoked to initialize the @code{Data1} component instead
+of the constructor specified in the declaration of type @code{Rec1}. In
+Ada 2005 the box in the aggregate indicates that unspecified components
+are initialized using the expression (if any) available in the component
+declaration. That is, in this case discriminant @code{D} is initialized
+to value @code{20}, @code{Value} is initialized to value 1000, and the
+non-default C++ constructor that handles two integers takes care of
+initializing component @code{Data2} with values @code{20,30}.
+
+In Ada 2005 we can use the extended return statement to build the Ada
+equivalent to C++ non-default constructors. For example:
+
+@smallexample @c ada
+  function Constructor (V : Integer) return Rec2 is
+  begin
+     return Obj : Rec2 := (Rec => (Data1  => Constructor (V, 20),
+                                   others => <>),
+                           others => <>) do
+        --  Further actions required for construction of
+        --  objects of type Rec2
+        ...
+     end record;
+  end Constructor;
+@end smallexample
+
+In this example the extended return statement construct is used to
+build in place the returned object whose components are initialized
+by means of a limited aggregate. Any further action associated with
+the constructor can be placed inside the construct.
 
 @node Interfacing with C++ at the Class Level
 @subsection Interfacing with C++ at the Class Level

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,22 +32,26 @@ with Uintp; use Uintp;
 
 package Err_Vars is
 
+   --  Some variables are initialized so that some tools (such as gprbuild)
+   --  can be built with -gnatVa and pragma Initialized_Scalars without
+   --  problems.
+
    ------------------
    -- Error Counts --
    ------------------
 
-   Serious_Errors_Detected : Nat;
+   Serious_Errors_Detected : Nat := 0;
    --  This is a count of errors that are serious enough to stop expansion,
    --  and hence to prevent generation of an object file even if the
    --  switch -gnatQ is set. Initialized to zero at the start of compilation.
 
-   Total_Errors_Detected : Nat;
+   Total_Errors_Detected : Nat := 0;
    --  Number of errors detected so far. Includes count of serious errors and
    --  non-serious errors, so this value is always greater than or equal to the
    --  Serious_Errors_Detected value. Initialized to zero at the start of
    --  compilation.
 
-   Warnings_Detected : Nat;
+   Warnings_Detected : Nat := 0;
    --  Number of warnings detected. Initialized to zero at the start of
    --  compilation.
 
@@ -75,7 +79,7 @@ package Err_Vars is
    --  generated on the instantiation (referring to the template) rather
    --  than on the template itself.
 
-   Raise_Exception_On_Error : Nat;
+   Raise_Exception_On_Error : Nat := 0;
    --  If this value is non-zero, then any attempt to generate an error
    --  message raises the exception Error_Msg_Exception, and the error
    --  message is not output. This is used for defending against junk

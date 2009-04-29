@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -453,6 +453,11 @@ package body Sinput.L is
          --  Preprocess the source if it needs to be preprocessed
 
          if Preprocessing_Needed then
+            --  Set temporarily the Source_File_Index_Table entries for the
+            --  source, to avoid crash when reporting an error.
+
+            Set_Source_File_Index_Table (X);
+
             if Opt.List_Preprocessing_Symbols then
                Get_Name_String (N);
 
