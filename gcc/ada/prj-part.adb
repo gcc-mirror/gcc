@@ -1096,14 +1096,14 @@ package body Prj.Part is
                                 (A_Project_Name_And_Node.Node, In_Tree);
 
                      Prj  : Project_Node_Id :=
-                              Extending_Project_Of (Decl, In_Tree);
+                              A_Project_Name_And_Node.Node;
 
                   begin
+                     while
+                       Extending_Project_Of (Decl, In_Tree) /= Empty_Node
                      loop
-                        Decl := Project_Declaration_Of (Prj, In_Tree);
-                        exit when Extending_Project_Of (Decl, In_Tree) =
-                          Empty_Node;
                         Prj := Extending_Project_Of (Decl, In_Tree);
+                        Decl := Project_Declaration_Of (Prj, In_Tree);
                      end loop;
 
                      A_Project_Name_And_Node.Node := Prj;

@@ -446,7 +446,7 @@ package Targparm is
    -- Control of Stack Checking --
    -------------------------------
 
-   --  GNAT provides two methods of implementing exceptions:
+   --  GNAT provides three methods of implementing exceptions:
 
    --    GCC Probing Mechanism
 
