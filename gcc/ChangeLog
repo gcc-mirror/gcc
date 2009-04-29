@@ -1,3 +1,8 @@
+2009-04-29  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.c (bfin_optimize_loop): If we need a scratch reg,
+	scan backwards to try to find a constant to initialize it.
+
 2009-04-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/39937

@@ -3784,7 +3784,7 @@ bfin_optimize_loop (loop_info loop)
   rtx insn, last_insn;
   rtx loop_init, start_label, end_label;
   rtx reg_lc0, reg_lc1, reg_lt0, reg_lt1, reg_lb0, reg_lb1;
-  rtx iter_reg, scratchreg;
+  rtx iter_reg, scratchreg, scratch_init, scratch_init_insn;
   rtx lc_reg, lt_reg, lb_reg;
   rtx seq, seq_end;
   int length;
@@ -3838,18 +3838,40 @@ bfin_optimize_loop (loop_info loop)
       goto bad_loop;
     }
   scratchreg = NULL_RTX;
+  scratch_init = iter_reg;
+  scratch_init_insn = NULL_RTX;
   if (!PREG_P (iter_reg) && loop->incoming_src)
     {
+      basic_block bb_in = loop->incoming_src;
       int i;
       for (i = REG_P0; i <= REG_P5; i++)
 	if ((df_regs_ever_live_p (i)
 	     || (funkind (TREE_TYPE (current_function_decl)) == SUBROUTINE
 		 && call_used_regs[i]))
-	    && !REGNO_REG_SET_P (df_get_live_out (loop->incoming_src), i))
+	    && !REGNO_REG_SET_P (df_get_live_out (bb_in), i))
 	  {
 	    scratchreg = gen_rtx_REG (SImode, i);
 	    break;
 	  }
+      for (insn = BB_END (bb_in); insn != BB_HEAD (bb_in);
+	   insn = PREV_INSN (insn))
+	{
+	  rtx set;
+	  if (NOTE_P (insn) || BARRIER_P (insn))
+	    continue;
+	  set = single_set (insn);
+	  if (set && rtx_equal_p (SET_DEST (set), iter_reg))
+	    {
+	      if (CONSTANT_P (SET_SRC (set)))
+		{
+		  scratch_init = SET_SRC (set);
+		  scratch_init_insn = insn;
+		}
+	      break;
+	    }
+	  else if (reg_mentioned_p (iter_reg, PATTERN (insn)))
+	    break;
+	}
     }
 
   if (loop->incoming_src)
@@ -4092,11 +4114,13 @@ bfin_optimize_loop (loop_info loop)
     }
   else if (scratchreg != NULL_RTX)
     {
-      emit_insn (gen_movsi (scratchreg, iter_reg));
+      emit_insn (gen_movsi (scratchreg, scratch_init));
       loop_init = gen_lsetup_with_autoinit (lt_reg, start_label,
 					    lb_reg, end_label,
 					    lc_reg, scratchreg);
       seq_end = emit_insn (loop_init);
+      if (scratch_init_insn != NULL_RTX)
+	delete_insn (scratch_init_insn);
     }
   else
     {
@@ -4106,12 +4130,14 @@ bfin_optimize_loop (loop_info loop)
       rtx pop = gen_frame_mem (SImode,
 			       gen_rtx_POST_INC (SImode, stack_pointer_rtx));
       emit_insn (gen_movsi (push, p0reg));
-      emit_insn (gen_movsi (p0reg, iter_reg));
+      emit_insn (gen_movsi (p0reg, scratch_init));
       loop_init = gen_lsetup_with_autoinit (lt_reg, start_label,
 					    lb_reg, end_label,
 					    lc_reg, p0reg);
       emit_insn (loop_init);
       seq_end = emit_insn (gen_movsi (p0reg, pop));
+      if (scratch_init_insn != NULL_RTX)
+	delete_insn (scratch_init_insn);
     }
 
   if (dump_file)
