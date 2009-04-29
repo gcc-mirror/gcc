@@ -1,3 +1,12 @@
+2009-04-29  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb (Parse_Single_Project): Do not attempt to find a
+	project extending an abstract project.
+
+2009-04-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* targparm.ads: Fix oversight.
+
 2009-04-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* lib-xref.adb (Output_Overridden_Op): Follow several levels of
