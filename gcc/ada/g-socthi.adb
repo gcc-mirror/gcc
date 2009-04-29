@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2008, AdaCore                     --
+--                     Copyright (C) 2001-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,6 +97,18 @@ package body GNAT.Sockets.Thin is
       From    : Sockaddr_In_Access;
       Fromlen : not null access C.int) return C.int;
    pragma Import (C, Syscall_Recvfrom, "recvfrom");
+
+   function Syscall_Recvmsg
+     (S     : C.int;
+      Msg   : System.Address;
+      Flags : C.int) return ssize_t;
+   pragma Import (C, Syscall_Recvmsg, "recvmsg");
+
+   function Syscall_Sendmsg
+     (S     : C.int;
+      Msg   : System.Address;
+      Flags : C.int) return ssize_t;
+   pragma Import (C, Syscall_Sendmsg, "sendmsg");
 
    function Syscall_Sendto
      (S     : C.int;
@@ -295,6 +307,54 @@ package body GNAT.Sockets.Thin is
 
       return Res;
    end C_Recvfrom;
+
+   ---------------
+   -- C_Recvmsg --
+   ---------------
+
+   function C_Recvmsg
+     (S     : C.int;
+      Msg   : System.Address;
+      Flags : C.int) return ssize_t
+   is
+      Res : ssize_t;
+
+   begin
+      loop
+         Res := Syscall_Recvmsg (S, Msg, Flags);
+         exit when SOSC.Thread_Blocking_IO
+           or else Res /= ssize_t (Failure)
+           or else Non_Blocking_Socket (S)
+           or else Errno /= SOSC.EWOULDBLOCK;
+         delay Quantum;
+      end loop;
+
+      return Res;
+   end C_Recvmsg;
+
+   ---------------
+   -- C_Sendmsg --
+   ---------------
+
+   function C_Sendmsg
+     (S     : C.int;
+      Msg   : System.Address;
+      Flags : C.int) return ssize_t
+   is
+      Res : ssize_t;
+
+   begin
+      loop
+         Res := Syscall_Sendmsg (S, Msg, Flags);
+         exit when SOSC.Thread_Blocking_IO
+           or else Res /= ssize_t (Failure)
+           or else Non_Blocking_Socket (S)
+           or else Errno /= SOSC.EWOULDBLOCK;
+         delay Quantum;
+      end loop;
+
+      return Res;
+   end C_Sendmsg;
 
    --------------
    -- C_Sendto --

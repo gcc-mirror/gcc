@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,6 +92,16 @@ package body Lib.Xref is
      Table_Initial        => Alloc.Xrefs_Initial,
      Table_Increment      => Alloc.Xrefs_Increment,
      Table_Name           => "Xrefs");
+
+   ------------------------
+   --  Local Subprograms --
+   ------------------------
+
+   procedure Generate_Prim_Op_References (Typ : Entity_Id);
+   --  For a tagged type, generate implicit references to its primitive
+   --  operations, for source navigation. This is done right before emitting
+   --  cross-reference information rather than at the freeze point of the type
+   --  in order to handle late bodies that are primitive operations.
 
    -------------------------
    -- Generate_Definition --
@@ -195,6 +205,72 @@ package body Lib.Xref is
          Set_Referenced (First_Subtype (T));
       end if;
    end Generate_Operator_Reference;
+
+   ---------------------------------
+   -- Generate_Prim_Op_References --
+   ---------------------------------
+
+   procedure Generate_Prim_Op_References (Typ : Entity_Id) is
+      Base_T    : Entity_Id;
+      Prim      : Elmt_Id;
+      Prim_List : Elist_Id;
+      Ent       : Entity_Id;
+
+   begin
+      --  Handle subtypes of synchronized types
+
+      if Ekind (Typ) = E_Protected_Subtype
+        or else Ekind (Typ) = E_Task_Subtype
+      then
+         Base_T := Etype (Typ);
+      else
+         Base_T := Typ;
+      end if;
+
+      --  References to primitive operations are only relevant for tagged types
+
+      if not Is_Tagged_Type (Base_T)
+        or else Is_Class_Wide_Type (Base_T)
+      then
+         return;
+      end if;
+
+      --  Ada 2005 (AI-345): For synchronized types generate reference
+      --  to the wrapper that allow us to dispatch calls through their
+      --  implemented abstract interface types.
+
+      --  The check for Present here is to protect against previously
+      --  reported critical errors.
+
+      if Is_Concurrent_Type (Base_T)
+        and then Present (Corresponding_Record_Type (Base_T))
+      then
+         Prim_List := Primitive_Operations
+                       (Corresponding_Record_Type (Base_T));
+      else
+         Prim_List := Primitive_Operations (Base_T);
+      end if;
+
+      if No (Prim_List) then
+         return;
+      end if;
+
+      Prim := First_Elmt (Prim_List);
+      while Present (Prim) loop
+
+         --  If the operation is derived, get the original for cross-reference
+         --  reference purposes (it is the original for which we want the xref
+         --  and for which the comes_from_source test must be performed).
+
+         Ent := Node (Prim);
+         while Present (Alias (Ent)) loop
+            Ent := Alias (Ent);
+         end loop;
+
+         Generate_Reference (Typ, Ent, 'p', Set_Ref => False);
+         Next_Elmt (Prim);
+      end loop;
+   end Generate_Prim_Op_References;
 
    ------------------------
    -- Generate_Reference --
@@ -1083,6 +1159,26 @@ package body Lib.Xref is
          return;
       end if;
 
+      --  First we add references to the primitive operations of tagged
+      --  types declared in the main unit.
+
+      Handle_Prim_Ops : declare
+         Ent  : Entity_Id;
+
+      begin
+         for J in 1 .. Xrefs.Last loop
+            Ent := Xrefs.Table (J).Ent;
+
+            if Is_Type (Ent)
+              and then Is_Tagged_Type (Ent)
+              and then Ent = Base_Type (Ent)
+              and then In_Extended_Main_Source_Unit (Ent)
+            then
+               Generate_Prim_Op_References (Ent);
+            end if;
+         end loop;
+      end Handle_Prim_Ops;
+
       --  Before we go ahead and output the references we have a problem
       --  that needs dealing with. So far we have captured things that are
       --  definitely referenced by the main unit, or defined in the main
@@ -1198,9 +1294,11 @@ package body Lib.Xref is
 
                   function Parent_Op (E : Entity_Id) return Entity_Id is
                      Orig_Op : constant Entity_Id := Alias (E);
+
                   begin
                      if No (Orig_Op) then
                         return Empty;
+
                      elsif not Comes_From_Source (E)
                        and then not Has_Xref_Entry (Orig_Op)
                        and then Comes_From_Source (Orig_Op)

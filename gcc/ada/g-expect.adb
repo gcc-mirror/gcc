@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2000-2008, AdaCore                     --
+--                     Copyright (C) 2000-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -660,7 +660,7 @@ package body GNAT.Expect is
                            else
                               --  Add what we read to the buffer
 
-                              if Descriptors (J).Buffer_Index + N - 1 >
+                              if Descriptors (J).Buffer_Index + N >
                                 Descriptors (J).Buffer_Size
                               then
                                  --  If the user wants to know when we have
