@@ -1,3 +1,22 @@
+2009-04-29  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.h (splitting_loops): Declare.
+	* config/bfin/bfin-protos.h (WA_05000257, WA_05000283, WA_05000315):
+	Reorder bit definitions to be ascending.
+	(WA_LOAD_LCREGS, ENABLE_WA_LOAD_LCREGS): New macros.
+	* config/bfin/bfin.c (splitting_loops): New variable.
+	(bfin_cpus): Add WA_LOAD_LCREGS as needed.
+	(struct loop_info): Remove members INIT and LOOP_INIT.
+	(bfin_optimize_loop): Don't set them.  Reorder the code that generates
+	the LSETUP sequence.  Allow LC to be loaded from any register, but also
+	add a case to push/pop a PREG scratch if ENABLE_WA_LOAD_LCREGS.
+	(bfin_reorg_loops): When done, split all BB_ENDs with splitting_loops
+	set to 1.
+	* config/bfin/bfin.md (loop_end splitter): Use splitting_loops instead
+	of reload_completed.
+	From Jie Zhang:
+	* config/bfin/bfin.md (movsi_insn): Refine constraints.
+
 2009-04-29  Rafael Avila de Espindola  <espindola@google.com>
 
 	* Makefile.in (PLUGIN_VERSION_H): New.
