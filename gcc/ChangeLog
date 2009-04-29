@@ -3,6 +3,9 @@
 	* config/bfin/bfin.c (bfin_optimize_loop): If we need a scratch reg,
 	scan backwards to try to find a constant to initialize it.
 
+	* config/bfin/bfin.c (bfin_optimize_loop): When looking for the last
+	insn before the loop_end instruction, don't look past labels.
+
 2009-04-29  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/39937
