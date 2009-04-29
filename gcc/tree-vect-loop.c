@@ -2223,6 +2223,7 @@ get_initial_def_for_induction (gimple iv_phi)
   tree loop_arg;
   gimple_stmt_iterator si;
   basic_block bb = gimple_bb (iv_phi);
+  tree stepvectype;
 
   vectype = get_vectype_for_scalar_type (scalar_type);
   gcc_assert (vectype);
@@ -2235,8 +2236,10 @@ get_initial_def_for_induction (gimple iv_phi)
   /* Find the first insertion point in the BB.  */
   si = gsi_after_labels (bb);
 
-  if (INTEGRAL_TYPE_P (scalar_type) || POINTER_TYPE_P (scalar_type))
+  if (INTEGRAL_TYPE_P (scalar_type))
     step_expr = build_int_cst (scalar_type, 0);
+  else if (POINTER_TYPE_P (scalar_type))
+    step_expr = build_int_cst (sizetype, 0);
   else
     step_expr = build_real (scalar_type, dconst0);
 
@@ -2320,16 +2323,19 @@ get_initial_def_for_induction (gimple iv_phi)
     {
       /* iv_loop is the loop to be vectorized. Generate:
 	  vec_step = [VF*S, VF*S, VF*S, VF*S]  */
-      expr = build_int_cst (scalar_type, vf);
-      new_name = fold_build2 (MULT_EXPR, scalar_type, expr, step_expr);
+      expr = build_int_cst (TREE_TYPE (step_expr), vf);
+      new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
+			      expr, step_expr);
     }
 
   t = NULL_TREE;
   for (i = 0; i < nunits; i++)
     t = tree_cons (NULL_TREE, unshare_expr (new_name), t);
   gcc_assert (CONSTANT_CLASS_P (new_name));
-  vec = build_vector (vectype, t);
-  vec_step = vect_init_vector (iv_phi, vec, vectype, NULL);
+  stepvectype = get_vectype_for_scalar_type (TREE_TYPE (new_name));
+  gcc_assert (stepvectype);
+  vec = build_vector (stepvectype, t);
+  vec_step = vect_init_vector (iv_phi, vec, stepvectype, NULL);
 
 
   /* Create the following def-use cycle:
@@ -2377,14 +2383,15 @@ get_initial_def_for_induction (gimple iv_phi)
       gcc_assert (!nested_in_vect_loop);
 
       /* Create the vector that holds the step of the induction.  */
-      expr = build_int_cst (scalar_type, nunits);
-      new_name = fold_build2 (MULT_EXPR, scalar_type, expr, step_expr);
+      expr = build_int_cst (TREE_TYPE (step_expr), nunits);
+      new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
+			      expr, step_expr);
       t = NULL_TREE;
       for (i = 0; i < nunits; i++)
 	t = tree_cons (NULL_TREE, unshare_expr (new_name), t);
       gcc_assert (CONSTANT_CLASS_P (new_name));
-      vec = build_vector (vectype, t);
-      vec_step = vect_init_vector (iv_phi, vec, vectype, NULL);
+      vec = build_vector (stepvectype, t);
+      vec_step = vect_init_vector (iv_phi, vec, stepvectype, NULL);
 
       vec_def = induc_def;
       prev_stmt_vinfo = vinfo_for_stmt (induction_phi);
