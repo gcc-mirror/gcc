@@ -634,8 +634,8 @@ package body Sem_Ch12 is
    --  loaded. In that case a missing body is acceptable.
 
    procedure Inherit_Context (Gen_Decl : Node_Id; Inst : Node_Id);
-   --  Add the context clause of the unit containing a generic unit to an
-   --  instantiation that is a compilation unit.
+   --  Add the context clause of the unit containing a generic unit to a
+   --  compilation unit that is, or contains, an instantiation.
 
    function Get_Associated_Node (N : Node_Id) return Node_Id;
    --  In order to propagate semantic information back from the analyzed copy
@@ -6935,9 +6935,19 @@ package body Sem_Ch12 is
          Item := First (Context_Items (Parent (Gen_Decl)));
          while Present (Item) loop
             if Nkind (Item) = N_With_Clause then
-               New_I := New_Copy (Item);
-               Set_Implicit_With (New_I, True);
-               Append (New_I, Current_Context);
+
+               --  Take care to prevent direct cyclic with's, which can happen
+               --  if the generic body with's the current unit. Such a case
+               --  would result in binder errors (or run-time errors if the
+               --  -gnatE switch is in effect), but we want to prevent it here,
+               --  because Sem.Walk_Library_Items doesn't like cycles. Note
+               --  that we don't bother to detect indirect cycles.
+
+               if Library_Unit (Item) /= Current_Unit then
+                  New_I := New_Copy (Item);
+                  Set_Implicit_With (New_I, True);
+                  Append (New_I, Current_Context);
+               end if;
             end if;
 
             Next (Item);
