@@ -1,3 +1,14 @@
+2009-04-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_elim.adb: Minor reformatting
+
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Positional): if the current unit is a
+	predefined unit, allow arbitrary number of components in static
+	aggregate, to ensure that the same level of constant folding applies
+	for Ada 95 and Ada 05 versions of the file.
+
 2009-04-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_elim.adb (Check_Eliminated): Handle new improved eliminate

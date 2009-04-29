@@ -286,7 +286,7 @@ package body Sem_Elim is
                goto Continue;
             end if;
 
-            --  Find enclosing unit.
+            --  Find enclosing unit
 
             Scop := Cunit_Entity (Current_Sem_Unit);
 
@@ -386,8 +386,8 @@ package body Sem_Elim is
                      function Skip_Spaces return Natural;
                      --  If Sloc_Trace (Idx) is not space character, returns
                      --  Idx. Otherwise returns the index of the nearest
-                     --  non-space character in Sloc_Trace to the right of
-                     --  Idx. Returns 0 if there is no such character.
+                     --  non-space character in Sloc_Trace to the right of Idx.
+                     --  Returns 0 if there is no such character.
 
                      -----------------------------
                      -- Different_Trace_Lengths --
@@ -441,17 +441,19 @@ package body Sem_Elim is
                            end if;
                         end loop;
 
-                        --  Find last non-space before this colon. If there
-                        --  is no space character before this colon, then
-                        --  return False. Otherwise, End_Idx set to point to
-                        --  this non-space character.
+                        --  Find last non-space before this colon. If there is
+                        --  no space character before this colon, then return
+                        --  False. Otherwise, End_Idx is set to point to this
+                        --  non-space character.
 
                         End_Idx := Tmp_Idx;
                         loop
                            if End_Idx < Idx then
                               return False;
+
                            elsif Sloc_Trace (End_Idx) /= ' ' then
                               exit;
+
                            else
                               End_Idx := End_Idx - 1;
                            end if;
@@ -559,8 +561,8 @@ package body Sem_Elim is
                   end;
                end if;
 
-               --  If we have a Result_Type, then we must have a function
-               --  with the proper result type
+               --  If we have a Result_Type, then we must have a function with
+               --  the proper result type.
 
                if Elmt.Result_Type /= No_Name then
                   if Ekind (E) /= E_Function
@@ -658,7 +660,7 @@ package body Sem_Elim is
          end if;
       end loop;
 
-      --  If this is an internal operation generated for a protected operation.
+      --  If this is an internal operation generated for a protected operation,
       --  its name does not match the source name, so just report the error.
 
       if not Comes_From_Source (E)
