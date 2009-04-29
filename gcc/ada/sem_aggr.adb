@@ -3116,7 +3116,7 @@ package body Sem_Aggr is
 
             --  Now collect components from all other ancestors, beginning
             --  with the current type. If the type has unknown discriminants
-            --  use the component list of the underlying_record_view, which
+            --  use the component list of the Underlying_Record_View, which
             --  needs to be used for the subsequent expansion of the aggregate
             --  into assignments.
 

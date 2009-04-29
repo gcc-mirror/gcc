@@ -512,7 +512,7 @@ begin
 
       --  If we have a corresponding spec, and it comes from source
       --  or it is not a generated spec for a child subprogram body,
-      --  then we need object code for the spec unit as well
+      --  then we need object code for the spec unit as well.
 
       if Nkind (Unit (Main_Unit_Node)) in N_Unit_Body
         and then not Acts_As_Spec (Main_Unit_Node)

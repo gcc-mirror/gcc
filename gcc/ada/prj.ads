@@ -398,7 +398,7 @@ package Prj is
                             Body_Suffix     => No_File);
 
    type Source_Data;
-   type Source_Id is access Source_Data;
+   type Source_Id is access all Source_Data;
 
    No_Source : constant Source_Id := null;
 
