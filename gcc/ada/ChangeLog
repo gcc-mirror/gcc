@@ -1,5 +1,11 @@
 2009-04-29  Thomas Quinot  <quinot@adacore.com>
 
+	* exp_ch7.adb, rtsfind.adb: Minor reformatting
+
+	* sem_res.adb: Minor reformatting
+
+2009-04-29  Thomas Quinot  <quinot@adacore.com>
+
 	* sem_res.adb (Static_Concatenation): An N_Op_Concat with static
 	operands is static only if it is a predefined concatenation operator.
 

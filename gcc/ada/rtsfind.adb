@@ -1445,9 +1445,7 @@ package body Rtsfind is
                   goto Continue;
                end if;
 
-               Load_RTU
-                 (To_Load,
-                  Use_Setting => In_Use (Cunit_Entity (U)));
+               Load_RTU (To_Load, Use_Setting => In_Use (Cunit_Entity (U)));
                Set_Is_Visible_Child_Unit (RT_Unit_Table (To_Load).Entity);
 
                --  Prevent creation of an implicit 'with' from (for example)
