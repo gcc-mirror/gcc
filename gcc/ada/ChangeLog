@@ -1,3 +1,10 @@
+2009-04-29  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-ext.adb, prj.adb, prj.ads: Fix memory leaks.
+
+	* clean.adb (Ultimate_Extension_Of): removed, since duplicate of
+	 Prj.Ultimate_Extending_Project_Of
+
 2009-04-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch7.adb (Build_Final_List): If the designated type is a Taft
