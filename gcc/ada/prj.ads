@@ -161,7 +161,7 @@ package Prj is
    No_Path_Information : constant Path_Information := (No_Path, No_Path);
 
    type Project_Data;
-   type Project_Id is access Project_Data;
+   type Project_Id is access all Project_Data;
    No_Project : constant Project_Id := null;
    --  Id of a Project File
 
@@ -604,7 +604,7 @@ package Prj is
                          Next          => No_Language_Index);
 
    type Language_List_Element;
-   type Language_List is access Language_List_Element;
+   type Language_List is access all Language_List_Element;
    type Language_List_Element is record
       Language : Language_Ptr := No_Language_Index;
       Next     : Language_List;
@@ -928,7 +928,7 @@ package Prj is
    --  not considering Specs and Bodies.
 
    type Project_List_Element;
-   type Project_List is access Project_List_Element;
+   type Project_List is access all Project_List_Element;
    type Project_List_Element is record
       Project : Project_Id   := No_Project;
       Next    : Project_List := null;
@@ -937,11 +937,8 @@ package Prj is
 
    procedure Free_List
      (List         : in out Project_List;
-      Free_Project : Boolean;
-      Reset_Only   : Boolean := True);
+      Free_Project : Boolean);
    --  Free the list of projects. If Free_Project, each project is also freed.
-   --  When Free_Project is True, Reset_Only indicates whether the specific
-   --  languages should also be freed.
 
    type Response_File_Format is
      (None,

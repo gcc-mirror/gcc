@@ -143,7 +143,7 @@ package body Prj is
    --  Table to store the path name of all the created temporary files, so that
    --  they can be deleted at the end, or when the program is interrupted.
 
-   procedure Free (Project : in out Project_Id; Reset_Only : Boolean);
+   procedure Free (Project : in out Project_Id);
    --  Free memory allocated for Project
 
    procedure Free_List (Languages : in out Language_Ptr);
@@ -825,7 +825,7 @@ package body Prj is
    -- Free --
    ----------
 
-   procedure Free (Project : in out Project_Id; Reset_Only : Boolean) is
+   procedure Free (Project : in out Project_Id) is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Project_Data, Project_Id);
 
@@ -835,13 +835,9 @@ package body Prj is
          Free (Project.Ada_Include_Path);
          Free (Project.Objects_Path);
          Free (Project.Ada_Objects_Path);
-
          Free_List (Project.Imported_Projects, Free_Project => False);
          Free_List (Project.All_Imported_Projects, Free_Project => False);
-
-         if not Reset_Only then
-            Free_List (Project.Languages);
-         end if;
+         Free_List (Project.Languages);
 
          Unchecked_Free (Project);
       end if;
@@ -886,8 +882,7 @@ package body Prj is
 
    procedure Free_List
      (List         : in out Project_List;
-      Free_Project : Boolean;
-      Reset_Only   : Boolean := True)
+      Free_Project : Boolean)
    is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Project_List_Element, Project_List);
@@ -898,7 +893,7 @@ package body Prj is
          Tmp := List.Next;
 
          if Free_Project then
-            Free (List.Project, Reset_Only => Reset_Only);
+            Free (List.Project);
          end if;
 
          Unchecked_Free (List);
@@ -944,18 +939,19 @@ package body Prj is
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
          Unit_Sources_Htable.Reset (Tree.Unit_Sources_HT);
 
-         Free_List (Tree.Projects, Free_Project => True, Reset_Only => False);
+         Free_List (Tree.Projects, Free_Project => True);
 
          --  Private part
 
-         Naming_Table.Free (Tree.Private_Part.Namings);
-         Path_File_Table.Free (Tree.Private_Part.Path_Files);
+         Naming_Table.Free      (Tree.Private_Part.Namings);
+         Path_File_Table.Free   (Tree.Private_Part.Path_Files);
          Source_Path_Table.Free (Tree.Private_Part.Source_Paths);
          Object_Path_Table.Free (Tree.Private_Part.Object_Paths);
 
          Free (Tree.Private_Part.Ada_Path_Buffer);
 
-         --  Naming data (nothing to free ?)
+         --  Naming data (nothing to free ???)
+
          null;
 
          Unchecked_Free (Tree);
@@ -981,7 +977,7 @@ package body Prj is
       Source_Paths_Htable.Reset     (Tree.Source_Paths_HT);
       Unit_Sources_Htable.Reset     (Tree.Unit_Sources_HT);
 
-      Free_List (Tree.Projects, Free_Project => True, Reset_Only => True);
+      Free_List (Tree.Projects, Free_Project => True);
 
       --  Private part table
 

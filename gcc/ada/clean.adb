@@ -242,11 +242,6 @@ package body Clean is
    --  Returns True iff Prj is an extension of Of_Project or if Of_Project is
    --  an extension of Prj.
 
-   function Ultimate_Extension_Of (Project : Project_Id) return Project_Id;
-   --  Returns either Project, if it is not extended by another project, or
-   --  the project that extends Project, directly or indirectly, and that is
-   --  not itself extended. Returns No_Project if Project is No_Project.
-
    procedure Usage;
    --  Display the usage. If called several times, the usage is displayed only
    --  the first time.
@@ -582,7 +577,7 @@ package body Clean is
                      loop
                         Unit := Project_Tree.Units.Table (Index);
 
-                        if Ultimate_Extension_Of
+                        if Ultimate_Extending_Project_Of
                           (Unit.File_Names (Body_Part).Project) = Project
                           and then
                             Get_Name_String
@@ -593,7 +588,7 @@ package body Clean is
                            exit;
                         end if;
 
-                        if Ultimate_Extension_Of
+                        if Ultimate_Extending_Project_Of
                           (Unit.File_Names (Specification).Project) = Project
                           and then
                             Get_Name_String
@@ -749,7 +744,7 @@ package body Clean is
                               if Unit.File_Names (Body_Part).Project /=
                                 No_Project
                               then
-                                 if Ultimate_Extension_Of
+                                 if Ultimate_Extending_Project_Of
                                    (Unit.File_Names (Body_Part).Project) =
                                    Project
                                  then
@@ -766,7 +761,7 @@ package body Clean is
                                     end if;
                                  end if;
 
-                              elsif Ultimate_Extension_Of
+                              elsif Ultimate_Extending_Project_Of
                                 (Unit.File_Names (Specification).Project) =
                                 Project
                               then
@@ -1904,24 +1899,6 @@ package body Clean is
 
       return Src & Tree_Suffix;
    end Tree_File_Name;
-
-   ---------------------------
-   -- Ultimate_Extension_Of --
-   ---------------------------
-
-   function Ultimate_Extension_Of (Project : Project_Id) return Project_Id is
-      Result : Project_Id := Project;
-
-   begin
-      if Project /= No_Project then
-         loop
-            exit when Result.Extended_By = No_Project;
-            Result := Result.Extended_By;
-         end loop;
-      end if;
-
-      return Result;
-   end Ultimate_Extension_Of;
 
    -----------
    -- Usage --
