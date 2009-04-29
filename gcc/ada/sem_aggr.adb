@@ -2147,6 +2147,14 @@ package body Sem_Aggr is
          elsif Nkind_In (Anc, N_Aggregate, N_Function_Call) then
             return True;
 
+         --  Check for a function name, to cover the case of a parameterless
+         --  function call which hasn't been resolved yet.
+
+         elsif Is_Entity_Name (Anc)
+           and then Ekind (Entity (Anc)) = E_Function
+         then
+            return True;
+
          elsif Nkind (Anc) = N_Attribute_Reference
            and then Attribute_Name (Anc) = Name_Input
          then

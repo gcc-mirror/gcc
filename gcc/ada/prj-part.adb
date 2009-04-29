@@ -1099,6 +1099,13 @@ package body Prj.Part is
                               A_Project_Name_And_Node.Node;
 
                   begin
+                     --  Loop through extending projects to find the ultimate
+                     --  extending project, that is the one that is not
+                     --  extended. But don't attempt to find an extending
+                     --  project if the initial project is an abstract project,
+                     --  as it may have been extended several time, so it
+                     --  cannot have a single extending project.
+
                      while
                        Extending_Project_Of (Decl, In_Tree) /= Empty_Node
                      loop

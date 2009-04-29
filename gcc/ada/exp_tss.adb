@@ -216,9 +216,10 @@ package body Exp_Tss is
                --  default constructor and hence we must skip non-default
                --  constructors (if any)
 
-               elsif No (Next
-                         (First
-                          (Parameter_Specifications (Parent (Node (Elmt))))))
+               elsif
+                 No (Next
+                      (First
+                        (Parameter_Specifications (Parent (Node (Elmt))))))
                then
                   return Node (Elmt);
                end if;
@@ -240,7 +241,6 @@ package body Exp_Tss is
             if Is_Init_Proc (Node (Elmt)) then
                E1 := Next_Formal (First_Formal (Node (Elmt)));
                E2 := First_Formal (Ref);
-
                while Present (E1) and then Present (E2) loop
                   if Chars (E1) /= Chars (E2)
                     or else Ekind (E1) /= Ekind (E2)

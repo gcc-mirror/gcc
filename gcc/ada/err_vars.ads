@@ -32,9 +32,11 @@ with Uintp; use Uintp;
 
 package Err_Vars is
 
-   --  Some variables are initialized so that some tools (such as gprbuild)
-   --  can be built with -gnatVa and pragma Initialized_Scalars without
-   --  problems.
+   --  All of these variables are set when needed, so they do not need to be
+   --  initialized. However, there is code that saves and restores existing
+   --  values, which may malfunction in -gnatVa mode if the variable has never
+   --  been iniitalized, so we initialize some variables to avoid exceptions
+   --  from invalid values in such cases.
 
    ------------------
    -- Error Counts --
@@ -44,16 +46,17 @@ package Err_Vars is
    --  This is a count of errors that are serious enough to stop expansion,
    --  and hence to prevent generation of an object file even if the
    --  switch -gnatQ is set. Initialized to zero at the start of compilation.
+   --  Initialized for -gnatVa use, see comment above.
 
    Total_Errors_Detected : Nat := 0;
    --  Number of errors detected so far. Includes count of serious errors and
    --  non-serious errors, so this value is always greater than or equal to the
    --  Serious_Errors_Detected value. Initialized to zero at the start of
-   --  compilation.
+   --  compilation. Initialized for -gnatVa use, see comment above.
 
    Warnings_Detected : Nat := 0;
    --  Number of warnings detected. Initialized to zero at the start of
-   --  compilation.
+   --  compilation. Initialized for -gnatVa use, see comment above.
 
    ----------------------------------
    -- Error Message Mode Variables --
@@ -71,7 +74,7 @@ package Err_Vars is
    --  note get reset by any Error_Msg call, so the caller is responsible
    --  for resetting it.
 
-   Warn_On_Instance : Boolean;
+   Warn_On_Instance : Boolean := False;
    --  Normally if a warning is generated in a generic template from the
    --  analysis of the template, then the warning really belongs in the
    --  template, and the default value of False for this Boolean achieves
@@ -86,6 +89,7 @@ package Err_Vars is
    --  resulting from illegalities, and also for substitution of more
    --  appropriate error messages from higher semantic levels. It is
    --  a counter so that the increment/decrement protocol nests neatly.
+   --  Initialized for -gnatVa use, see comment above.
 
    Error_Msg_Exception : exception;
    --  Exception raised if Raise_Exception_On_Error is true
