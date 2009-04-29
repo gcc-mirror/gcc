@@ -59,14 +59,15 @@ package GNAT.Sockets.Thin is
 
    type Msghdr is record
       Msg_Name       : System.Address;
-      Msg_Namelen    : C.int;
+      Msg_Namelen    : C.unsigned;
       Msg_Iov        : System.Address;
-      Msg_Iovlen     : C.int;
+      Msg_Iovlen     : C.size_t;
       Msg_Control    : System.Address;
-      Msg_Controllen : C.int;
+      Msg_Controllen : C.size_t;
       Msg_Flags      : C.int;
    end record;
    pragma Convention (C, Msghdr);
+   --  This type needs comments???
 
    function Socket_Errno return Integer renames GNAT.OS_Lib.Errno;
    --  Returns last socket error number
