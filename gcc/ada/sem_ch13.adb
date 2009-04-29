@@ -692,8 +692,40 @@ package body Sem_Ch13 is
 
    begin
       if Ignore_Rep_Clauses then
-         Rewrite (N, Make_Null_Statement (Sloc (N)));
-         return;
+         case Id is
+
+            --  The following should be ignored
+
+            when Attribute_Address        |
+                 Attribute_Alignment      |
+                 Attribute_Bit_Order      |
+                 Attribute_Component_Size |
+                 Attribute_Machine_Radix  |
+                 Attribute_Object_Size    |
+                 Attribute_Size           |
+                 Attribute_Small          |
+                 Attribute_Stream_Size    |
+                 Attribute_Value_Size     =>
+
+               Rewrite (N, Make_Null_Statement (Sloc (N)));
+               return;
+
+            --  The following should not be ignored
+
+            when Attribute_External_Tag   |
+                 Attribute_Input          |
+                 Attribute_Output         |
+                 Attribute_Read           |
+                 Attribute_Storage_Pool   |
+                 Attribute_Storage_Size   |
+                 Attribute_Write          =>
+               null;
+
+            --  Other cases are errors, which will be caught below
+
+            when others =>
+               null;
+         end case;
       end if;
 
       Analyze (Nam);
