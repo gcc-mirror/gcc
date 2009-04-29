@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1599,7 +1599,7 @@ package body Exp_Ch9 is
          Body_Spec : Node_Id;
 
       begin
-         Body_Spec := Build_Wrapper_Spec (Loc, Subp_Id, Obj_Typ, Formals);
+         Body_Spec := Build_Wrapper_Spec (Subp_Id, Obj_Typ, Formals);
 
          --  The subprogram is not overriding or is not a primitive declared
          --  between two views.
@@ -1776,11 +1776,11 @@ package body Exp_Ch9 is
    ------------------------
 
    function Build_Wrapper_Spec
-     (Loc     : Source_Ptr;
-      Subp_Id : Entity_Id;
+     (Subp_Id : Entity_Id;
       Obj_Typ : Entity_Id;
       Formals : List_Id) return Node_Id
    is
+      Loc           : constant Source_Ptr := Sloc (Subp_Id);
       First_Param   : Node_Id;
       Iface         : Entity_Id;
       Iface_Elmt    : Elmt_Id;
@@ -2147,18 +2147,18 @@ package body Exp_Ch9 is
                  and then Ekind (Defining_Identifier (Decl)) = E_Entry
                then
                   Wrap_Spec :=
-                    Build_Wrapper_Spec (Loc,
-                      Subp_Id => Defining_Identifier (Decl),
-                      Obj_Typ => Rec_Typ,
-                      Formals => Parameter_Specifications (Decl));
+                    Build_Wrapper_Spec
+                      (Subp_Id => Defining_Identifier (Decl),
+                       Obj_Typ => Rec_Typ,
+                       Formals => Parameter_Specifications (Decl));
 
                elsif Nkind (Decl) = N_Subprogram_Declaration then
                   Wrap_Spec :=
-                    Build_Wrapper_Spec (Loc,
-                      Subp_Id => Defining_Unit_Name (Specification (Decl)),
-                      Obj_Typ => Rec_Typ,
-                      Formals =>
-                        Parameter_Specifications (Specification (Decl)));
+                    Build_Wrapper_Spec
+                      (Subp_Id => Defining_Unit_Name (Specification (Decl)),
+                       Obj_Typ => Rec_Typ,
+                       Formals =>
+                         Parameter_Specifications (Specification (Decl)));
                end if;
 
                if Present (Wrap_Spec) then

@@ -16262,7 +16262,6 @@ package body Sem_Ch3 is
                   declare
                      Conc_Typ  : constant Entity_Id :=
                                    Corresponding_Record_Type (Full_T);
-                     Loc       : constant Source_Ptr := Sloc (Conc_Typ);
                      Curr_Nod  : Node_Id := Parent (Conc_Typ);
                      Wrap_Spec : Node_Id;
 
@@ -16274,14 +16273,14 @@ package body Sem_Ch3 is
                           and then not Is_Abstract_Subprogram (Prim)
                         then
                            Wrap_Spec :=
-                             Make_Subprogram_Declaration (Loc,
+                             Make_Subprogram_Declaration (Sloc (Prim),
                                Specification =>
-                                 Build_Wrapper_Spec (Loc,
-                                   Subp_Id => Prim,
-                                   Obj_Typ => Conc_Typ,
-                                   Formals =>
-                                     Parameter_Specifications (
-                                       Parent (Prim))));
+                                 Build_Wrapper_Spec
+                                   (Subp_Id => Prim,
+                                    Obj_Typ => Conc_Typ,
+                                    Formals =>
+                                      Parameter_Specifications (
+                                        Parent (Prim))));
 
                            Insert_After (Curr_Nod, Wrap_Spec);
                            Curr_Nod := Wrap_Spec;

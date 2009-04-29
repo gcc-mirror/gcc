@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,8 +154,7 @@ package Exp_Ch9 is
    --  Build_Task_Allocate_Block.
 
    function Build_Wrapper_Spec
-     (Loc     : Source_Ptr;
-      Subp_Id : Entity_Id;
+     (Subp_Id : Entity_Id;
       Obj_Typ : Entity_Id;
       Formals : List_Id) return Node_Id;
    --  Ada 2005 (AI-345): Build the specification of a primitive operation
@@ -203,7 +202,9 @@ package Exp_Ch9 is
    --  routine to make sure Complete_Master is called on exit).
 
    procedure Expand_Access_Protected_Subprogram_Type (N : Node_Id);
-   --  Build Equivalent_Type for an Access_to_protected_Subprogram
+   --  Build Equivalent_Type for an Access_To_Protected_Subprogram.
+   --  Equivalent_Type is a record type with two components: a pointer
+   --  to the protected object, and a pointer to the operation itself.
 
    procedure Expand_Accept_Declarations (N : Node_Id; Ent : Entity_Id);
    --  Expand declarations required for accept statement. See bodies of

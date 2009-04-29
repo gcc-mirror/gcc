@@ -1,3 +1,14 @@
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.ads, exp_ch9.adb (Build_Wrapper_Spec): Use source line of
+	primitive operation, rather than source line of synchronized type, when
+	building the wrapper for a primitive operation that overrides an
+	operation inherited from a progenitor, to improve the error message on
+	duplicate declarations.
+
+	* sem_ch3.adb (Process_Full_View): Use new signature of
+	Build_Wrapper_Spec.
+
 2009-04-29  Robert Dewar  <dewar@adacore.com>
 
 	* prj-nmsc.ads: Minor reformatting
