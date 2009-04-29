@@ -1,3 +1,9 @@
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Check_Abstract_Overriding): Improve error message when
+	an abstract operation of a progenitor is not properly overridden by an
+	operation of a derived synchronized type.
+
 2009-04-29  Robert Dewar  <dewar@adacore.com>
 
 	* mlib-prj.adb, mlib-tgt.adb, mlib-tgt.ads, prj-nmsc.adb,

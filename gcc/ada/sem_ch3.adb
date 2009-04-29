@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -8321,7 +8321,9 @@ package body Sem_Ch3 is
                   --  Error message below needs rewording (remember comma
                   --  in -gnatj mode) ???
 
-                  if Ekind (First_Formal (Subp)) = E_In_Parameter then
+                  if Ekind (First_Formal (Subp)) = E_In_Parameter
+                    and then Ekind (Subp) /= E_Function
+                  then
                      if not Is_Predefined_Dispatching_Operation (Subp) then
                         Error_Msg_NE
                           ("first formal of & must be of mode `OUT`, " &
@@ -8337,6 +8339,27 @@ package body Sem_Ch3 is
                      Error_Msg_NE
                        ("interface subprogram & must be overridden",
                         T, Subp);
+
+                     --  Examine primitive operations of synchronized type,
+                     --  to find homonyms that have the wrong profile.
+
+                     declare
+                        Prim : Entity_Id;
+
+                     begin
+                        Prim :=
+                          First_Entity (Corresponding_Concurrent_Type (T));
+                        while Present (Prim) loop
+                           if Chars (Prim) = Chars (Subp) then
+                              Error_Msg_NE
+                                ("profile is not type conformant with "
+                                   & "prefixed view profile of "
+                                   & "inherited operation&", Prim, Subp);
+                           end if;
+
+                           Next_Entity (Prim);
+                        end loop;
+                     end;
                   end if;
                end if;
 
