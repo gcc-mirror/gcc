@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -328,10 +328,13 @@ package Exp_Disp is
    --  Class case check that no pragma CPP_Virtual is missing and that the
    --  DT_Position are coherent
 
-   procedure Set_Default_Constructor (Typ : Entity_Id);
-   --  Typ is a CPP_Class type. Create the Init procedure of that type to
-   --  be the default constructor (i.e. the function returning this type,
-   --  having a pragma CPP_Constructor and no parameter)
+   procedure Set_CPP_Constructors (Typ : Entity_Id);
+   --  Typ is a CPP_Class type. Create the Init procedures of that type
+   --  required to handle its default and non-default constructors. The
+   --  functions to which pragma CPP_Constructor is applied in the sources
+   --  are functions returning this type, and having an implicit access to the
+   --  target object in its first argument; such implicit argument is explicit
+   --  in the IP procedures built here.
 
    procedure Set_DTC_Entity_Value
      (Tagged_Type : Entity_Id;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -187,8 +187,9 @@ package Exp_Tss is
    --  used to initially install a TSS in the case where the subprogram for the
    --  TSS has already been created and its declaration processed.
 
-   function Init_Proc (Typ : Entity_Id) return Entity_Id;
-   pragma Inline (Init_Proc);
+   function Init_Proc
+     (Typ : Entity_Id;
+      Ref : Entity_Id := Empty) return Entity_Id;
    --  Obtains the _init TSS entry for the given type. This function call is
    --  equivalent to TSS (Typ, Name_uInit). The _init TSS is the procedure
    --  used to initialize otherwise uninitialized instances of a type. If
@@ -198,14 +199,21 @@ package Exp_Tss is
    --  the corresponding base type (see Base_Init_Proc function). A special
    --  case arises for concurrent types. Such types do not themselves have an
    --  init proc TSS, but initialization is required. The init proc used is
-   --  the one for the corresponding record type (see Base_Init_Proc).
+   --  the one for the corresponding record type (see Base_Init_Proc). If
+   --  Ref is present it is call to a subprogram whose profile matches the
+   --  profile of the required constructor (this argument is used to handle
+   --  non-default CPP constructors).
 
-   function Base_Init_Proc (Typ : Entity_Id) return Entity_Id;
+   function Base_Init_Proc
+     (Typ : Entity_Id;
+      Ref : Entity_Id := Empty) return Entity_Id;
    --  Obtains the _Init TSS entry from the base type of the entity, and also
    --  deals with going indirect through the Corresponding_Record_Type field
    --  for concurrent objects (which are initialized with the initialization
-   --  routine for the corresponding record type). Returns Empty if there is
-   --  no _Init TSS entry for the base type.
+   --  routine for the corresponding record type). Returns Empty if there is no
+   --  _Init TSS entry for the base type. If Ref is present it is a call to a
+   --  subprogram whose profile matches the profile of the required constructor
+   --  (this argument is used to handle non-default CPP constructors).
 
    procedure Set_Init_Proc (Typ : Entity_Id; Init : Entity_Id);
    pragma Inline (Set_Init_Proc);

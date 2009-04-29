@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@ with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Exp_Util; use Exp_Util;
+with Nlists;   use Nlists;
 with Lib;      use Lib;
 with Restrict; use Restrict;
 with Rident;   use Rident;
@@ -40,7 +41,10 @@ package body Exp_Tss is
    -- Base_Init_Proc --
    --------------------
 
-   function Base_Init_Proc (Typ : Entity_Id) return Entity_Id is
+   function Base_Init_Proc
+     (Typ : Entity_Id;
+      Ref : Entity_Id := Empty) return Entity_Id
+   is
       Full_Type : E;
       Proc      : Entity_Id;
 
@@ -55,6 +59,7 @@ package body Exp_Tss is
 
       if No (Full_Type) then
          return Empty;
+
       elsif Is_Concurrent_Type (Full_Type)
         and then Present (Corresponding_Record_Type (Base_Type (Full_Type)))
       then
@@ -63,16 +68,17 @@ package body Exp_Tss is
          --  and possibly an itype.
 
          return Init_Proc
-            (Base_Type (Corresponding_Record_Type (Base_Type (Full_Type))));
+           (Base_Type (Corresponding_Record_Type (Base_Type (Full_Type))),
+            Ref);
 
       else
-         Proc := Init_Proc (Base_Type (Full_Type));
+         Proc := Init_Proc (Base_Type (Full_Type), Ref);
 
          if No (Proc)
            and then Is_Composite_Type (Full_Type)
            and then Is_Derived_Type (Full_Type)
          then
-            return Init_Proc (Root_Type (Full_Type));
+            return Init_Proc (Root_Type (Full_Type), Ref);
          else
             return Proc;
          end if;
@@ -183,9 +189,14 @@ package body Exp_Tss is
    -- Init_Proc --
    ---------------
 
-   function Init_Proc (Typ : Entity_Id) return Entity_Id is
+   function Init_Proc
+     (Typ  : Entity_Id;
+      Ref  : Entity_Id := Empty) return Entity_Id
+   is
       FN   : constant Node_Id := Freeze_Node (Typ);
       Elmt : Elmt_Id;
+      E1   : Entity_Id;
+      E2   : Entity_Id;
 
    begin
       if No (FN) then
@@ -194,11 +205,57 @@ package body Exp_Tss is
       elsif No (TSS_Elist (FN)) then
          return Empty;
 
-      else
+      elsif No (Ref) then
          Elmt := First_Elmt (TSS_Elist (FN));
          while Present (Elmt) loop
             if Is_Init_Proc (Node (Elmt)) then
-               return Node (Elmt);
+               if not Is_CPP_Class (Typ) then
+                  return Node (Elmt);
+
+               --  In case of CPP classes we are searching here for the
+               --  default constructor and hence we must skip non-default
+               --  constructors (if any)
+
+               elsif No (Next
+                         (First
+                          (Parameter_Specifications (Parent (Node (Elmt))))))
+               then
+                  return Node (Elmt);
+               end if;
+            end if;
+
+            Next_Elmt (Elmt);
+         end loop;
+
+      --  Non-default constructors are currently supported only in the
+      --  context of interfacing with C++
+
+      else pragma Assert (Is_CPP_Class (Typ));
+
+         --  Use the referenced function to locate the IP procedure that
+         --  corresponds with the C++ constructor
+
+         Elmt := First_Elmt (TSS_Elist (FN));
+         while Present (Elmt) loop
+            if Is_Init_Proc (Node (Elmt)) then
+               E1 := Next_Formal (First_Formal (Node (Elmt)));
+               E2 := First_Formal (Ref);
+
+               while Present (E1) and then Present (E2) loop
+                  if Chars (E1) /= Chars (E2)
+                    or else Ekind (E1) /= Ekind (E2)
+                    or else Etype (E1) /= Etype (E2)
+                  then
+                     exit;
+                  end if;
+
+                  E1 := Next_Formal (E1);
+                  E2 := Next_Formal (E2);
+               end loop;
+
+               if No (E1) and then No (E2) then
+                  return Node (Elmt);
+               end if;
             end if;
 
             Next_Elmt (Elmt);

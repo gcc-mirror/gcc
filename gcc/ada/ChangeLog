@@ -1,3 +1,51 @@
+2009-04-29  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Disable error message
+	associated with dyamically tagged expressions if the expression
+	initializing a tagged type corresponds with a non default CPP
+	constructor.
+	(OK_For_Limited_Init): CPP constructor calls are OK for initialization
+	of limited type objects.
+
+	* sem_ch5.adb (Analyze_Assignment): Improve the error message reported
+	when a CPP constructor is called in an assignment. Disable also the
+	error message associated with dyamically tagged expressions if the
+	exporession initializing a tagged type corresponds with a non default
+	CPP constructor.
+
+	* sem_prag.adb (Analyze_Pragma): Remove code disabling the use of
+	non-default C++ constructors.
+
+	* sem_util.ads, sem_util.adb (Is_CPP_Constructor_Call): New subprogram.
+
+	* exp_tss.ads, exp_tss.adb (Base_Init_Proc): Add support for
+	non-default constructors.
+	(Init_Proc): Add support for non-default constructors.
+
+	* exp_disp.adb (Set_Default_Constructor): Removed.
+	(Set_CPP_Constructors): Code based in removed Set_Default_Constructor
+	but extending its functionality to handle non-default constructors.
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Add support for non-default
+	constructors. Minor code cleanup removing unrequired label and goto
+	statement.
+
+	* exp_ch3.adb (Build_Initialization_Call): Add support for non-default
+	constructors.
+	(Build_Init_Statements): Add support for non-default constructors.
+	(Expand_N_Object_Declaration): Add support for non-default constructors.
+	(Freeze_Record_Type): Replace call to Set_Default_Constructor by call
+	to Set_CPP_Constructors.
+
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Add support for
+	non-default constructors.
+	Required to handle its use in build-in-place statements.
+
+	* gnat_rm.texi (CPP_Constructor): Document new extended use of this
+	pragma for non-default C++ constructors and the new compiler support
+	that allows the use of these constructors in record components, limited
+	aggregates, and extended return statements.
+
 2009-04-29  Vincent Celier  <celier@adacore.com>
 
 	* prj-part.adb (Parse_Single_Project): Do not attempt to find a

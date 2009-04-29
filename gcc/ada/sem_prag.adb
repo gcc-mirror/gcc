@@ -6201,13 +6201,8 @@ package body Sem_Prag is
                   Process_Interface_Name (Def_Id, Arg2, Arg3);
                end if;
 
-               if No (Parameter_Specifications (Parent (Def_Id))) then
-                  Set_Has_Completion (Def_Id);
-                  Set_Is_Constructor (Def_Id);
-               else
-                  Error_Pragma_Arg
-                    ("non-default constructors not implemented", Arg1);
-               end if;
+               Set_Has_Completion (Def_Id);
+               Set_Is_Constructor (Def_Id);
 
             else
                Error_Pragma_Arg

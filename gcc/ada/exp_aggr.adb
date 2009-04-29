@@ -2775,10 +2775,24 @@ package body Exp_Aggr is
       while Present (Comp) loop
          Selector := Entity (First (Choices (Comp)));
 
+         --  C++ constructors
+
+         if Is_CPP_Constructor_Call (Expression (Comp)) then
+            Append_List_To (L,
+              Build_Initialization_Call (Loc,
+                Id_Ref => Make_Selected_Component (Loc,
+                            Prefix => New_Copy_Tree (Target),
+                            Selector_Name => New_Occurrence_Of (Selector,
+                                                                   Loc)),
+                Typ    => Etype (Selector),
+                Enclos_Type => Typ,
+                With_Default_Init => True,
+                Constructor_Ref => Expression (Comp)));
+
          --  Ada 2005 (AI-287): For each default-initialized component generate
          --  a call to the corresponding IP subprogram if available.
 
-         if Box_Present (Comp)
+         elsif Box_Present (Comp)
            and then Has_Non_Null_Base_Init_Proc (Etype (Selector))
          then
             if Ekind (Selector) /= E_Discriminant then
@@ -2822,12 +2836,9 @@ package body Exp_Aggr is
                 Enclos_Type => Typ,
                 With_Default_Init => True));
 
-            goto Next_Comp;
-         end if;
-
          --  Prepare for component assignment
 
-         if Ekind (Selector) /= E_Discriminant
+         elsif Ekind (Selector) /= E_Discriminant
            or else Nkind (N) = N_Extension_Aggregate
          then
             --  All the discriminants have now been assigned
@@ -3106,8 +3117,6 @@ package body Exp_Aggr is
                end if;
             end;
          end if;
-
-         <<Next_Comp>>
 
          Next (Comp);
       end loop;

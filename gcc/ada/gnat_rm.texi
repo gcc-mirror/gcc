@@ -1542,19 +1542,30 @@ must be of one of the following forms:
 @end itemize
 
 @noindent
-where @var{T} is a tagged type to which the pragma @code{CPP_Class} applies.
+where @var{T} is a tagged limited type imported from C++ with pragma
+@code{Import} and @code{Convention} = @code{CPP}.
 
 The first form is the default constructor, used when an object of type
-@var{T} is created on the Ada side with no explicit constructor.  Other
-constructors (including the copy constructor, which is simply a special
+@var{T} is created on the Ada side with no explicit constructor.  The
+second form covers all the non-default constructors of the type.
+Constructors (including the copy constructor, which is simply a special
 case of the second form in which the one and only argument is of type
-@var{T}), can only appear in two contexts:
+@var{T}), can only appear in the following contexts:
 
 @itemize @bullet
 @item
 On the right side of an initialization of an object of type @var{T}.
 @item
+On the right side of an initialization of a record component of type @var{T}.
+@item
 In an extension aggregate for an object of a type derived from @var{T}.
+@item
+In an Ada 2005 limited aggregate.
+@item
+In an Ada 2005 nested limited aggregate.
+@item
+In an Ada 2005 limited aggregate that initializes an object built in
+place by an extended return statement.
 @end itemize
 
 @noindent
@@ -1564,8 +1575,10 @@ argument (the object being initialized) at the implementation
 level.  GNAT issues the appropriate call, whatever it is, to get the
 object properly initialized.
 
-In the case of derived objects, you may use one of two possible forms
-for declaring and creating an object:
+In the case of objects of derived types, in addition to the use of Ada
+2005 limited aggregates and extended return statements, you may also
+use one of the following two possible forms for declaring and creating
+an object:
 
 @itemize @bullet
 @item @code{New_Object : Derived_T}
@@ -1580,9 +1593,7 @@ constructor is called and the extension aggregate indicates the explicit
 values of the extension fields.
 
 If no constructors are imported, it is impossible to create any objects
-on the Ada side.  If no default constructor is imported, only the
-initialization forms using an explicit call to a constructor are
-permitted.
+on the Ada side and the type is implicitly declared abstract.
 
 Pragma @code{CPP_Constructor} is intended primarily for automatic generation
 using an automatic binding generator tool.
