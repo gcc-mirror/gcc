@@ -128,6 +128,25 @@ set_location_for_edge (edge e)
     }
 }
 
+/* Emit insns to copy SRC into DEST converting SRC if necessary.  */
+
+static inline rtx
+emit_partition_copy (rtx dest, rtx src, int unsignedsrcp)
+{
+  rtx seq;
+
+  start_sequence ();
+
+  if (GET_MODE (src) != VOIDmode && GET_MODE (src) != GET_MODE (dest))
+    src = convert_to_mode (GET_MODE (dest), src, unsignedsrcp);
+  emit_move_insn (dest, src);
+
+  seq = get_insns ();
+  end_sequence ();
+
+  return seq;
+}
+
 /* Insert a copy instruction from partition SRC to DEST onto edge E.  */
 
 static void
@@ -149,12 +168,10 @@ insert_partition_copy_on_edge (edge e, int dest, int src)
 
   set_location_for_edge (e);
 
-  /* Partition copy between same base variables only, so it's the same mode,
-     hence we can use emit_move_insn.  */
-  start_sequence ();
-  emit_move_insn (SA.partition_to_pseudo[dest], SA.partition_to_pseudo[src]);
-  seq = get_insns ();
-  end_sequence ();
+  seq = emit_partition_copy (SA.partition_to_pseudo[dest],
+			     SA.partition_to_pseudo[src],
+			     TYPE_UNSIGNED (TREE_TYPE (
+			       partition_to_var (SA.map, src))));
 
   insert_insn_on_edge (seq, e);
 }
@@ -186,6 +203,10 @@ insert_value_copy_on_edge (edge e, int dest, tree src)
   x = expand_expr (src, SA.partition_to_pseudo[dest], mode, EXPAND_NORMAL);
   if (GET_MODE (x) != VOIDmode && GET_MODE (x) != mode)
     x = convert_to_mode (mode, x, TYPE_UNSIGNED (TREE_TYPE (src)));
+  if (CONSTANT_P (x) && GET_MODE (x) == VOIDmode
+      && mode != TYPE_MODE (TREE_TYPE (src)))
+    x = convert_modes (mode, TYPE_MODE (TREE_TYPE (src)),
+			  x, TYPE_UNSIGNED (TREE_TYPE (src)));
   if (x != SA.partition_to_pseudo[dest])
     emit_move_insn (SA.partition_to_pseudo[dest], x);
   seq = get_insns ();
@@ -198,7 +219,7 @@ insert_value_copy_on_edge (edge e, int dest, tree src)
    onto edge E.  */
 
 static void
-insert_rtx_to_part_on_edge (edge e, int dest, rtx src)
+insert_rtx_to_part_on_edge (edge e, int dest, rtx src, int unsignedsrcp)
 {
   rtx seq;
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -214,11 +235,9 @@ insert_rtx_to_part_on_edge (edge e, int dest, rtx src)
   gcc_assert (SA.partition_to_pseudo[dest]);
   set_location_for_edge (e);
 
-  start_sequence ();
-  gcc_assert (GET_MODE (src) == GET_MODE (SA.partition_to_pseudo[dest]));
-  emit_move_insn (SA.partition_to_pseudo[dest], src);
-  seq = get_insns ();
-  end_sequence ();
+  seq = emit_partition_copy (SA.partition_to_pseudo[dest],
+			     src,
+			     unsignedsrcp);
 
   insert_insn_on_edge (seq, e);
 }
@@ -243,11 +262,10 @@ insert_part_to_rtx_on_edge (edge e, rtx dest, int src)
   gcc_assert (SA.partition_to_pseudo[src]);
   set_location_for_edge (e);
 
-  start_sequence ();
-  gcc_assert (GET_MODE (dest) == GET_MODE (SA.partition_to_pseudo[src]));
-  emit_move_insn (dest, SA.partition_to_pseudo[src]);
-  seq = get_insns ();
-  end_sequence ();
+  seq = emit_partition_copy (dest,
+			     SA.partition_to_pseudo[src],
+			     TYPE_UNSIGNED (TREE_TYPE (
+			       partition_to_var (SA.map, src))));
 
   insert_insn_on_edge (seq, e);
 }
@@ -522,14 +540,17 @@ elim_create (elim_graph g, int T)
 
   if (elim_unvisited_predecessor (g, T))
     {
-      rtx U = get_temp_reg (partition_to_var (g->map, T));
+      tree var = partition_to_var (g->map, T);
+      rtx U = get_temp_reg (var);
+      int unsignedsrcp = TYPE_UNSIGNED (TREE_TYPE (var));
+
       insert_part_to_rtx_on_edge (g->e, U, T);
       FOR_EACH_ELIM_GRAPH_PRED (g, T, P, 
 	{
 	  if (!TEST_BIT (g->visited, P))
 	    {
 	      elim_backward (g, P);
-	      insert_rtx_to_part_on_edge (g->e, P, U);
+	      insert_rtx_to_part_on_edge (g->e, P, U, unsignedsrcp);
 	    }
 	});
     }
