@@ -1,3 +1,10 @@
+2009-04-29  Julian Brown  <julian@codesourcery.com>
+
+	* pex-win32.c (pex_win32_pipe): Add _O_NOINHERIT.    
+	(pex_win32_exec_child): Ensure each process has only one handle open
+	on pipe endpoints. Close standard input after creating child for
+	symmetry with standard output/standard error.
+
 2009-04-25  Eli Zaretskii  <eliz@gnu.org>
 
 	* Makefile.in (needed-list): Target removed (not used in GCC

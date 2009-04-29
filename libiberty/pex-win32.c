@@ -746,6 +746,25 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
   OSVERSIONINFO version_info;
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
+  int orig_out, orig_in, orig_err;
+  BOOL separate_stderr = !(flags & PEX_STDERR_TO_STDOUT);
+
+  /* Ensure we have inheritable descriptors to pass to the child, and close the
+     original descriptors.  */
+  orig_in = in;
+  in = _dup (orig_in);
+  _close (orig_in);
+  
+  orig_out = out;
+  out = _dup (orig_out);
+  _close (orig_out);
+  
+  if (separate_stderr)
+    {
+      orig_err = errdes;
+      errdes = _dup (orig_err);
+      _close (orig_err);
+    }
 
   stdin_handle = INVALID_HANDLE_VALUE;
   stdout_handle = INVALID_HANDLE_VALUE;
@@ -753,7 +772,7 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
 
   stdin_handle = (HANDLE) _get_osfhandle (in);
   stdout_handle = (HANDLE) _get_osfhandle (out);
-  if (!(flags & PEX_STDERR_TO_STDOUT))
+  if (separate_stderr)
     stderr_handle = (HANDLE) _get_osfhandle (errdes);
   else
     stderr_handle = stdout_handle;
@@ -822,12 +841,15 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
       *errmsg = "CreateProcess";
     }
 
-  /* Close the standard output and standard error handles in the
-     parent.  */ 
+  /* Close the standard input, standard output and standard error handles
+     in the parent.  */ 
+
+  if (in != STDIN_FILENO)
+    _close (in);
   if (out != STDOUT_FILENO)
-    obj->funcs->close (obj, out);
+    _close (out);
   if (errdes != STDERR_FILENO)
-    obj->funcs->close (obj, errdes);
+    _close (errdes);
 
   return pid;
 }
@@ -883,7 +905,7 @@ static int
 pex_win32_pipe (struct pex_obj *obj ATTRIBUTE_UNUSED, int *p,
 		int binary)
 {
-  return _pipe (p, 256, binary ? _O_BINARY : _O_TEXT);
+  return _pipe (p, 256, (binary ? _O_BINARY : _O_TEXT) | _O_NOINHERIT);
 }
 
 /* Get a FILE pointer to read from a file descriptor.  */
