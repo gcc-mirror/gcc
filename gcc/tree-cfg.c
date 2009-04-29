@@ -3135,11 +3135,12 @@ verify_types_in_gimple_min_lval (tree expr)
   return false;
 }
 
-/* Verify if EXPR is a valid GIMPLE reference expression.  Returns true
+/* Verify if EXPR is a valid GIMPLE reference expression.  If
+   REQUIRE_LVALUE is true verifies it is an lvalue.  Returns true
    if there is an error, otherwise false.  */
 
 static bool
-verify_types_in_gimple_reference (tree expr)
+verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 {
   while (handled_component_p (expr))
     {
@@ -3211,7 +3212,8 @@ verify_types_in_gimple_reference (tree expr)
       expr = op;
     }
 
-  return verify_types_in_gimple_min_lval (expr);
+  return ((require_lvalue || !is_gimple_min_invariant (expr))
+	  && verify_types_in_gimple_min_lval (expr));
 }
 
 /* Returns true if there is one pointer type in TYPE_POINTER_TO (SRC_OBJ)
@@ -3747,7 +3749,7 @@ verify_gimple_assign_single (gimple stmt)
     }
 
   if (handled_component_p (lhs))
-    res |= verify_types_in_gimple_reference (lhs);
+    res |= verify_types_in_gimple_reference (lhs, true);
 
   /* Special codes we cannot handle via their class.  */
   switch (rhs_code)
@@ -3770,7 +3772,7 @@ verify_gimple_assign_single (gimple stmt)
 	    return true;
 	  }
 
-	return verify_types_in_gimple_reference (op);
+	return verify_types_in_gimple_reference (op, true);
       }
 
     /* tcc_reference  */
@@ -3793,7 +3795,7 @@ verify_gimple_assign_single (gimple stmt)
 	  debug_generic_stmt (rhs1);
 	  return true;
 	}
-      return res || verify_types_in_gimple_reference (rhs1);
+      return res || verify_types_in_gimple_reference (rhs1, false);
 
     /* tcc_constant  */
     case SSA_NAME:
