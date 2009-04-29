@@ -1,5 +1,17 @@
 2009-04-29  Richard Guenther  <rguenther@suse.de>
 
+	PR target/39943
+	* lib/target-supports.exp (check_effective_target_vect_uintfloat_cvt):
+	New.
+	(check_effective_target_vect_floatuint_cvt): Likewise.
+	* gcc.dg/vect/slp-10.c: Adjust.
+	* gcc.dg/vect/slp-11.c: Adjust.
+	* gcc.dg/vect/slp-12b.c: Adjust.
+	* gcc.dg/vect/slp-33.c: Adjust.
+	* gcc.c-torture/compile/pr39943.c: New testcase.
+
+2009-04-29  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/39937
 	* gcc.c-torture/compile/pr39937.c: New testcase.
 
