@@ -8634,7 +8634,14 @@ package body Exp_Ch3 is
       --  If the type is not limited, or else is limited but the attribute is
       --  explicitly specified or is predefined for the type, then return True,
       --  unless other conditions prevail, such as restrictions prohibiting
-      --  streams or dispatching operations.
+      --  streams or dispatching operations. We also return True for limited
+      --  interfaces, because they may be extended by nonlimited types and
+      --  permit inheritance in this case (addresses cases where an abstract
+      --  extension doesn't get 'Input declared, as per comments below, but
+      --  'Class'Input must still be allowed). Note that attempts to apply
+      --  stream attributes to a limited interface or its class-wide type
+      --  (or limited extensions thereof) will still get properly rejected
+      --  by Check_Stream_Attribute.
 
       --  We exclude the Input operation from being a predefined subprogram in
       --  the case where the associated type is an abstract extension, because
@@ -8648,6 +8655,7 @@ package body Exp_Ch3 is
       --  exception.
 
       return (not Is_Limited_Type (Typ)
+               or else Is_Interface (Typ)
                or else Has_Predefined_Or_Specified_Stream_Attribute)
         and then (Operation /= TSS_Stream_Input
                    or else not Is_Abstract_Type (Typ)

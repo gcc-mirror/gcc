@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2008, AdaCore                     --
+--                     Copyright (C) 2001-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,6 +90,18 @@ package body GNAT.Sockets.Thin is
       From    : Sockaddr_In_Access;
       Fromlen : not null access C.int) return C.int;
    pragma Import (C, Syscall_Recvfrom, "recvfrom");
+
+   function Syscall_Recvmsg
+     (S     : C.int;
+      Msg   : System.Address;
+      Flags : C.int) return C.int;
+   pragma Import (C, Syscall_Recvmsg, "recvmsg");
+
+   function Syscall_Sendmsg
+     (S     : C.int;
+      Msg   : System.Address;
+      Flags : C.int) return C.int;
+   pragma Import (C, Syscall_Sendmsg, "sendmsg");
 
    function Syscall_Sendto
      (S     : C.int;
@@ -277,6 +289,54 @@ package body GNAT.Sockets.Thin is
       return Res;
    end C_Recvfrom;
 
+   ---------------
+   -- C_Recvmsg --
+   ---------------
+
+   function C_Recvmsg
+     (S     : C.int;
+      Msg   : System.Address;
+      Flags : C.int) return ssize_t
+   is
+      Res : C.int;
+
+   begin
+      loop
+         Res := Syscall_Recvmsg (S, Msg, Flags);
+         exit when SOSC.Thread_Blocking_IO
+           or else Res /= Failure
+           or else Non_Blocking_Socket (S)
+           or else Errno /= SOSC.EWOULDBLOCK;
+         delay Quantum;
+      end loop;
+
+      return ssize_t (Res);
+   end C_Recvmsg;
+
+   ---------------
+   -- C_Sendmsg --
+   ---------------
+
+   function C_Sendmsg
+     (S     : C.int;
+      Msg   : System.Address;
+      Flags : C.int) return ssize_t
+   is
+      Res : C.int;
+
+   begin
+      loop
+         Res := Syscall_Sendmsg (S, Msg, Flags);
+         exit when SOSC.Thread_Blocking_IO
+           or else Res /= Failure
+           or else Non_Blocking_Socket (S)
+           or else Errno /= SOSC.EWOULDBLOCK;
+         delay Quantum;
+      end loop;
+
+      return ssize_t (Res);
+   end C_Sendmsg;
+
    --------------
    -- C_Sendto --
    --------------
@@ -415,73 +475,5 @@ package body GNAT.Sockets.Thin is
          return C_Msg;
       end if;
    end Socket_Error_Message;
-
-   -------------
-   -- C_Readv --
-   -------------
-
-   function C_Readv
-     (Fd     : C.int;
-      Iov    : System.Address;
-      Iovcnt : C.int) return C.int
-   is
-      Res : C.int;
-      Count : C.int := 0;
-
-      Iovec : array (0 .. Iovcnt - 1) of Vector_Element;
-      for Iovec'Address use Iov;
-      pragma Import (Ada, Iovec);
-
-   begin
-      for J in Iovec'Range loop
-         Res := C_Recv
-           (Fd,
-            Iovec (J).Base.all'Address,
-            Interfaces.C.int (Iovec (J).Length),
-            0);
-
-         if Res < 0 then
-            return Res;
-         else
-            Count := Count + Res;
-         end if;
-      end loop;
-      return Count;
-   end C_Readv;
-
-   --------------
-   -- C_Writev --
-   --------------
-
-   function C_Writev
-     (Fd     : C.int;
-      Iov    : System.Address;
-      Iovcnt : C.int) return C.int
-   is
-      Res : C.int;
-      Count : C.int := 0;
-
-      Iovec : array (0 .. Iovcnt - 1) of Vector_Element;
-      for Iovec'Address use Iov;
-      pragma Import (Ada, Iovec);
-
-   begin
-      for J in Iovec'Range loop
-         Res := C_Sendto
-           (Fd,
-            Iovec (J).Base.all'Address,
-            Interfaces.C.int (Iovec (J).Length),
-            SOSC.MSG_Forced_Flags,
-            To    => null,
-            Tolen => 0);
-
-         if Res < 0 then
-            return Res;
-         else
-            Count := Count + Res;
-         end if;
-      end loop;
-      return Count;
-   end C_Writev;
 
 end GNAT.Sockets.Thin;

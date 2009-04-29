@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2008, AdaCore                     --
+--                     Copyright (C) 2001-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -913,9 +913,11 @@ package GNAT.Sockets is
    procedure Receive_Vector
      (Socket : Socket_Type;
       Vector : Vector_Type;
-      Count  : out Ada.Streams.Stream_Element_Count);
+      Count  : out Ada.Streams.Stream_Element_Count;
+      Flags  : Request_Flag_Type := No_Request_Flag);
    --  Receive data from a socket and scatter it into the set of vector
    --  elements Vector. Count is set to the count of received stream elements.
+   --  Flags allow control over reception.
 
    function Resolve_Exception
      (Occurrence : Ada.Exceptions.Exception_Occurrence) return Error_Type;
@@ -959,9 +961,11 @@ package GNAT.Sockets is
    procedure Send_Vector
      (Socket : Socket_Type;
       Vector : Vector_Type;
-      Count  : out Ada.Streams.Stream_Element_Count);
+      Count  : out Ada.Streams.Stream_Element_Count;
+      Flags  : Request_Flag_Type := No_Request_Flag);
    --  Transmit data gathered from the set of vector elements Vector to a
    --  socket. Count is set to the count of transmitted stream elements.
+   --  Flags allow control over transmission.
 
    procedure Set_Socket_Option
      (Socket : Socket_Type;

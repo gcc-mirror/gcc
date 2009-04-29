@@ -1,3 +1,35 @@
+2009-04-29  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch3.adb (Stream_Operation_OK): Return True for limited interfaces
+	(other conditions permitting), so that abstract stream subprograms will
+	be declared for them.
+
+2009-04-29  Bob Duff  <duff@adacore.com>
+
+	* g-expect.adb (Expect_Internal): Fix check for overfull buffer.
+
+	* g-expect.ads: Minor comment fixes.
+
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb, lib-xref.adb (Check_Dispatching_Operation): if the
+	dispatching operation is a body without previous spec, update the list
+	of primitive operations to ensure that cross-reference information is
+	up-to-date.
+
+2009-04-29  Albert Lee  <lee@adacore.com>
+
+	* g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.adb,
+	g-socthi-vxworks.ads, g-socthi-mingw.adb, g-socthi-mingw.ads,
+	g-socthi.adb, g-socthi.ads, g-socket.adb, g-socket.ads
+	(GNAT.Sockets.Thin.C_Readv,
+	GNAT.Sockets.Thin.C_Writev): Remove unused subprograms.
+	(GNAT.Sockets.Thin.C_Recvmsg,
+	GNAT.Sockets.Thin.C_Sendmsg): New bindings to call recvmsg(2) and
+	sendmsg(2).  
+	(GNAT.Sockets.Receive_Vector, GNAT.Sockets.Send_Vector): Use
+	C_Recvmsg/C_Sendmsg rather than Readv/C_Writev.
+
 2009-04-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_disp.adb (Check_Dispatching_Operation): if the dispatching

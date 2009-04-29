@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2008, AdaCore                     --
+--                     Copyright (C) 2001-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1657,6 +1657,41 @@ package body GNAT.Sockets is
       From.Port := Port_Type (Network_To_Short (Sin.Sin_Port));
    end Receive_Socket;
 
+   --------------------
+   -- Receive_Vector --
+   --------------------
+
+   procedure Receive_Vector
+     (Socket : Socket_Type;
+      Vector : Vector_Type;
+      Count  : out Ada.Streams.Stream_Element_Count;
+      Flags  : Request_Flag_Type := No_Request_Flag)
+   is
+      Res : ssize_t;
+
+      Msg : Msghdr :=
+              (Msg_Name       => System.Null_Address,
+               Msg_Namelen    => 0,
+               Msg_Iov        => Vector'Address,
+               Msg_Iovlen     => Vector'Length,
+               Msg_Control    => System.Null_Address,
+               Msg_Controllen => 0,
+               Msg_Flags      => 0);
+
+   begin
+      Res :=
+        C_Recvmsg
+          (C.int (Socket),
+           Msg'Address,
+           To_Int (Flags));
+
+      if Res = ssize_t (Failure) then
+         Raise_Socket_Error (Socket_Errno);
+      end if;
+
+      Count := Ada.Streams.Stream_Element_Count (Res);
+   end Receive_Vector;
+
    -------------------
    -- Resolve_Error --
    -------------------
@@ -1782,31 +1817,6 @@ package body GNAT.Sockets is
       end if;
    end Resolve_Exception;
 
-   --------------------
-   -- Receive_Vector --
-   --------------------
-
-   procedure Receive_Vector
-     (Socket : Socket_Type;
-      Vector : Vector_Type;
-      Count  : out Ada.Streams.Stream_Element_Count)
-   is
-      Res : C.int;
-
-   begin
-      Res :=
-        C_Readv
-          (C.int (Socket),
-           Vector'Address,
-           Vector'Length);
-
-      if Res = Failure then
-         Raise_Socket_Error (Socket_Errno);
-      end if;
-
-      Count := Ada.Streams.Stream_Element_Count (Res);
-   end Receive_Vector;
-
    -----------------
    -- Send_Socket --
    -----------------
@@ -1891,11 +1901,15 @@ package body GNAT.Sockets is
    procedure Send_Vector
      (Socket : Socket_Type;
       Vector : Vector_Type;
-      Count  : out Ada.Streams.Stream_Element_Count)
+      Count  : out Ada.Streams.Stream_Element_Count;
+      Flags  : Request_Flag_Type := No_Request_Flag)
    is
-      Res            : C.int;
-      Iov_Count      : C.int;
-      This_Iov_Count : C.int;
+      use type C.size_t;
+
+      Res            : ssize_t;
+      Iov_Count      : C.size_t;
+      This_Iov_Count : C.size_t;
+      Msg            : Msghdr;
 
    begin
       Count := 0;
@@ -1913,13 +1927,23 @@ package body GNAT.Sockets is
 
          pragma Warnings (On);
 
-         Res :=
-           C_Writev
-             (C.int (Socket),
-              Vector (Vector'First + Integer (Iov_Count))'Address,
-              This_Iov_Count);
+         Msg :=
+           (Msg_Name       => System.Null_Address,
+            Msg_Namelen    => 0,
+            Msg_Iov        => Vector
+                                (Vector'First + Integer (Iov_Count))'Address,
+            Msg_Iovlen     => This_Iov_Count,
+            Msg_Control    => System.Null_Address,
+            Msg_Controllen => 0,
+            Msg_Flags      => 0);
 
-         if Res = Failure then
+         Res :=
+           C_Sendmsg
+             (C.int (Socket),
+              Msg'Address,
+              Set_Forced_Flags (To_Int (Flags)));
+
+         if Res = ssize_t (Failure) then
             Raise_Socket_Error (Socket_Errno);
          end if;
 
