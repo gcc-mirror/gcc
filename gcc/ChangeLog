@@ -1,3 +1,7 @@
+2009-04-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* toplev.c (print_version): Update GMP version string calculation.
+
 2009-04-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/39938
