@@ -3792,7 +3792,7 @@ bfin_optimize_loop (loop_info loop)
 {
   basic_block bb;
   loop_info inner;
-  rtx insn, init_insn, last_insn, nop_insn;
+  rtx insn, init_insn, last_insn;
   rtx loop_init, start_label, end_label;
   rtx reg_lc0, reg_lc1, reg_lt0, reg_lt1, reg_lb0, reg_lb1;
   rtx iter_reg;
@@ -4003,42 +4003,34 @@ bfin_optimize_loop (loop_info loop)
       goto bad_loop;
     }
 
-  if (JUMP_P (last_insn))
-    {
-      loop_info inner = (loop_info) bb->aux;
-      if (inner
-	  && inner->outer == loop
-	  && inner->loop_end == last_insn
-	  && inner->depth == 1)
-	/* This jump_insn is the exact loop_end of an inner loop
-	   and to be optimized away. So use the inner's last_insn.  */
-	last_insn = inner->last_insn;
-      else
-	{
-	  if (dump_file)
-	    fprintf (dump_file, ";; loop %d has bad last instruction\n",
-		     loop->loop_no);
-	  goto bad_loop;
-	}
-    }
-  else if (CALL_P (last_insn)
-	   || (GET_CODE (PATTERN (last_insn)) != SEQUENCE
-	       && get_attr_type (last_insn) == TYPE_SYNC)
-	   || recog_memoized (last_insn) == CODE_FOR_return_internal)
+  if (JUMP_P (last_insn) && !any_condjump_p (last_insn))
     {
       if (dump_file)
 	fprintf (dump_file, ";; loop %d has bad last instruction\n",
 		 loop->loop_no);
       goto bad_loop;
     }
-
-  if (GET_CODE (PATTERN (last_insn)) == ASM_INPUT
-      || asm_noperands (PATTERN (last_insn)) >= 0
-      || (GET_CODE (PATTERN (last_insn)) != SEQUENCE
-	  && get_attr_seq_insns (last_insn) == SEQ_INSNS_MULTI))
+  /* In all other cases, try to replace a bad last insn with a nop.  */
+  else if (JUMP_P (last_insn)
+	   || CALL_P (last_insn)
+	   || get_attr_type (last_insn) == TYPE_SYNC
+	   || get_attr_type (last_insn) == TYPE_CALL
+	   || get_attr_seq_insns (last_insn) == SEQ_INSNS_MULTI
+	   || recog_memoized (last_insn) == CODE_FOR_return_internal
+	   || GET_CODE (PATTERN (last_insn)) == ASM_INPUT
+	   || asm_noperands (PATTERN (last_insn)) >= 0)
     {
-      nop_insn = emit_insn_after (gen_nop (), last_insn);
-      last_insn = nop_insn;
+      if (loop->length + 2 > MAX_LOOP_LENGTH)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d too long\n", loop->loop_no);
+	  goto bad_loop;
+	}
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d has bad last insn; replace with nop\n",
+		 loop->loop_no);
+
+      last_insn = emit_insn_after (gen_forced_nop (), last_insn);
     }
 
   loop->last_insn = last_insn;
@@ -4169,7 +4161,7 @@ bfin_optimize_loop (loop_info loop)
 	    redirect_edge_succ (e, new_bb);
 	}
     }
-  
+
   delete_insn (loop->loop_end);
   /* Insert the loop end label before the last instruction of the loop.  */
   emit_label_before (loop->end_label, loop->last_insn);
