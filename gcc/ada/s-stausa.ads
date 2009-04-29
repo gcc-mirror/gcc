@@ -54,9 +54,8 @@ package System.Stack_Usage is
       Task_Name : String (1 .. Task_Name_Length);
 
       Value : Natural;
-      --  Amount of the stack used; the value is calculated on the basis of
-      --  the mechanism used by GNAT to allocate it, and it is NOT a precise
-      --  value.
+      --  Amount of stack used. The value is calculated on the basis of the
+      --  mechanism used by GNAT to allocate it, and it is NOT a precise value.
 
       Variation : Natural;
       --  Possible variation in the amount of used stack. The real stack usage
