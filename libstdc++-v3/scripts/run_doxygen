@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Runs doxygen and massages the output files.
-# Copyright (C) 2001, 2002, 2003, 2004, 2008 Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002, 2003, 2004, 2008, 2009 
+# Free Software Foundation, Inc.
 #
 # Synopsis:  run_doxygen --mode=[html|man|xml] --host_alias=<alias> \
 #                        v3srcdir  v3builddir
@@ -217,19 +218,11 @@ rm -rf ext
 # File names with embedded spaces (EVIL!) need to be....?  renamed or removed?
 find . -name "* *" -print0 | xargs -0r rm        # requires GNU tools
 
-# Cleanups before tr1* files get killed.
-mv tr1_random_distributions.3 random_distributions.3
-mv tr1_random_distributions_continuous.3 random_distributions_continuous.3
-mv tr1_random_distributions_discrete.3 random_distributions_discrete.3
-mv tr1_random_generators.3 random_generators.3
-
 # man pages are for functions/types/other entities, not source files
 # directly.  who the heck would type "man foo.h" anyhow?
-#find . -name "[a-z]*" -a ! -name "std_*" -print | xargs rm
+find . -name "[a-z]*" -a ! -name "std_*" -print | xargs rm
 rm -f *.h.3 *.hpp.3 *config* *.cc.3 *.tcc.3 *_t.3
-rm ext_*.3
-rm tr1_*.3
-rm debug_*.3
+#rm ext_*.3 tr1_*.3 debug_*.3
 
 # this is used to examine what we would have deleted, for debugging
 #mkdir trash
@@ -254,18 +247,18 @@ rm stdheader
 # Some of the pages for generated modules have text that confuses certain
 # implementations of man(1), e.g., Linux's.  We need to have another top-level
 # *roff tag to /stop/ the .SH NAME entry.
-#problematic=`egrep --files-without-match '^\.SH SYNOPSIS' [A-Z]*.3`
-
+problematic=`egrep --files-without-match '^\.SH SYNOPSIS' [A-Z]*.3`
 #problematic='Containers.3 Sequences.3 Assoc_containers.3 Iterator_types.3'
-#for f in $problematic; do
-#    sed '/^\.SH NAME/{
-#n
-#a\
-#\
-#.SH SYNOPSIS
-#    }' $f > TEMP
-#    mv TEMP $f
-#done
+
+for f in $problematic; do
+    sed '/^\.SH NAME/{
+n
+a\
+\
+.SH SYNOPSIS
+    }' $f > TEMP
+    mv TEMP $f
+done
 
 # Also, break this (generated) line up.  It's ugly as sin.
 problematic=`grep -l '[^^]Definition at line' *.3`
@@ -320,7 +313,10 @@ for f in __atomic2_*; do
     newname=`echo $f | sed 's/^__atomic2_/std::__atomic2::/'`
     mv $f $newname
 done
-
+for f in __cxxabiv1_*; do
+    newname=`echo $f | sed 's/^__cxxabiv1_/abi::/'`
+    mv $f $newname
+done
 
 # Generic removal bits, where there are things in the generated man
 # pages that need to be killed.

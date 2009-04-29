@@ -1,3 +1,9 @@
+2009-04-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/39868
+	* scripts/run_doxygen: Uncomment removal of includes.
+	(problematic): Rewrite __cxxabiv1 namespace to abi.
+
 2009-04-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert the last commit.
