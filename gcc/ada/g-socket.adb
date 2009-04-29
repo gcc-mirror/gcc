@@ -1904,7 +1904,8 @@ package body GNAT.Sockets is
       Count  : out Ada.Streams.Stream_Element_Count;
       Flags  : Request_Flag_Type := No_Request_Flag)
    is
-      use type SOSC.Msg_Iovlen_T;
+      use SOSC;
+      use Interfaces.C;
 
       Res            : ssize_t;
       Iov_Count      : SOSC.Msg_Iovlen_T;

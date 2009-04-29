@@ -1,3 +1,18 @@
+2009-04-29  Vincent Celier  <celier@adacore.com>
+
+	* prj-part.adb: Minor comment update
+
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): handle properly
+	box-initialized records with discriminated subcomponents that are
+	constrained by discriminants of enclosing components. New subsidiary
+	procedures Add_Discriminant_Values, Propagate_Discriminants.
+
+2009-04-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* g-socket.adb: Code clean up.
+
 2009-04-29  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_aggr.adb (Valid_Limited_Ancestor): Add test for the name of a

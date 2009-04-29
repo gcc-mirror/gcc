@@ -1101,10 +1101,10 @@ package body Prj.Part is
                   begin
                      --  Loop through extending projects to find the ultimate
                      --  extending project, that is the one that is not
-                     --  extended. But don't attempt to find an extending
-                     --  project if the initial project is an abstract project,
-                     --  as it may have been extended several time, so it
-                     --  cannot have a single extending project.
+                     --  extended. For an abstract project, as it can be
+                     --  extended several times, there is no extending project
+                     --  registered, so the loop does not execute and the
+                     --  resulting project is the abstract project.
 
                      while
                        Extending_Project_Of (Decl, In_Tree) /= Empty_Node
