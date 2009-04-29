@@ -46,7 +46,8 @@ private package Prj.Nmsc is
       Report_Error    : Put_Line_Access;
       When_No_Sources : Error_Warning;
       Current_Dir     : String;
-      Proc_Data       : in out Processing_Data);
+      Proc_Data       : in out Processing_Data;
+      Is_Config_File  : Boolean);
    --  Perform consistency and semantic checks on a project, starting from the
    --  project tree parsed from the .gpr file. This procedure interprets the
    --  various case statements in the project based on the current environment
@@ -68,6 +69,8 @@ private package Prj.Nmsc is
    --
    --  When_No_Sources indicates what should be done when no sources of a
    --  language are found in a project where this language is declared.
+   --
+   --  Is_Config_File should be True if Project is config file (.cgpr)
 
 private
    type Processing_Data is record

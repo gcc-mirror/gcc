@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -164,21 +164,28 @@ package body Prj.Part is
       In_Limited        : Boolean;
       Packages_To_Check : String_List_Access;
       Depth             : Natural;
-      Current_Dir       : String);
+      Current_Dir       : String;
+      Is_Config_File    : Boolean);
    --  Parse a project file. This is a recursive procedure: it calls itself for
    --  imported and extended projects. When From_Extended is not None, if the
    --  project has already been parsed and is an extended project A, return the
    --  ultimate (not extended) project that extends A. When In_Limited is True,
    --  the importing path includes at least one "limited with". When parsing
    --  configuration projects, do not allow a depth > 1.
+   --
+   --  Is_Config_File should be set to True if the project represents a config
+   --  file (.cgpr) since some specific checks apply.
 
    procedure Pre_Parse_Context_Clause
      (In_Tree        : Project_Node_Tree_Ref;
-      Context_Clause : out With_Id);
+      Context_Clause : out With_Id;
+      Is_Config_File : Boolean);
    --  Parse the context clause of a project. Store the paths and locations of
    --  the imported projects in table Withs. Does nothing if there is no
    --  context clause (if the current token is not "with" or "limited" followed
    --  by "with").
+   --  Is_Config_File should be set to True if the project represents a config
+   --  file (.cgpr) since some specific checks apply.
 
    procedure Post_Parse_Context_Clause
      (Context_Clause    : With_Id;
@@ -190,13 +197,16 @@ package body Prj.Part is
       In_Limited        : Boolean;
       Packages_To_Check : String_List_Access;
       Depth             : Natural;
-      Current_Dir       : String);
+      Current_Dir       : String;
+      Is_Config_File    : Boolean);
    --  Parse the imported projects that have been stored in table Withs, if
    --  any. From_Extended is used for the call to Parse_Single_Project below.
    --  When In_Limited is True, the importing path includes at least one
    --  "limited with". When Limited_Withs is False, only non limited withed
    --  projects are parsed. When Limited_Withs is True, only limited withed
    --  projects are parsed.
+   --  Is_Config_File should be set to True if the project represents a config
+   --  file (.cgpr) since some specific checks apply.
 
    function Project_Path_Name_Of
      (Project_File_Name : String;
@@ -210,7 +220,9 @@ package body Prj.Part is
    --  This includes the directory separator as the last character.
    --  Returns "./" if Path_Name contains no directory separator.
 
-   function Project_Name_From (Path_Name : String) return Name_Id;
+   function Project_Name_From
+     (Path_Name      : String;
+      Is_Config_File : Boolean) return Name_Id;
    --  Returns the name of the project that corresponds to its path name.
    --  Returns No_Name if the path name is invalid, because the corresponding
    --  project name does not have the syntax of an ada identifier.
@@ -475,7 +487,8 @@ package body Prj.Part is
       Always_Errout_Finalize : Boolean;
       Packages_To_Check      : String_List_Access := All_Packages;
       Store_Comments         : Boolean := False;
-      Current_Directory      : String := "")
+      Current_Directory      : String := "";
+      Is_Config_File         : Boolean)
    is
       Dummy : Boolean;
       pragma Warnings (Off, Dummy);
@@ -533,7 +546,8 @@ package body Prj.Part is
             In_Limited        => False,
             Packages_To_Check => Packages_To_Check,
             Depth             => 0,
-            Current_Dir       => Current_Directory);
+            Current_Dir       => Current_Directory,
+            Is_Config_File    => Is_Config_File);
 
          --  If Project is an extending-all project, create the eventual
          --  virtual extending projects and check that there are no illegally
@@ -642,7 +656,8 @@ package body Prj.Part is
 
    procedure Pre_Parse_Context_Clause
      (In_Tree        : Project_Node_Tree_Ref;
-      Context_Clause : out With_Id)
+      Context_Clause : out With_Id;
+      Is_Config_File : Boolean)
    is
       Current_With_Clause : With_Id := No_With;
       Limited_With        : Boolean := False;
@@ -663,7 +678,7 @@ package body Prj.Part is
            Default_Project_Node (Of_Kind => N_With_Clause, In_Tree => In_Tree);
          Limited_With := Token = Tok_Limited;
 
-         if In_Configuration then
+         if Is_Config_File then
             Error_Msg
               ("configuration project cannot import " &
                "other configuration projects",
@@ -747,7 +762,8 @@ package body Prj.Part is
       In_Limited        : Boolean;
       Packages_To_Check : String_List_Access;
       Depth             : Natural;
-      Current_Dir       : String)
+      Current_Dir       : String;
+      Is_Config_File    : Boolean)
    is
       Current_With_Clause : With_Id := Context_Clause;
 
@@ -886,7 +902,8 @@ package body Prj.Part is
                         In_Limited        => Limited_Withs,
                         Packages_To_Check => Packages_To_Check,
                         Depth             => Depth,
-                        Current_Dir       => Current_Dir);
+                        Current_Dir       => Current_Dir,
+                        Is_Config_File    => Is_Config_File);
 
                   else
                      Extends_All := Is_Extending_All (Withed_Project, In_Tree);
@@ -947,7 +964,8 @@ package body Prj.Part is
       In_Limited        : Boolean;
       Packages_To_Check : String_List_Access;
       Depth             : Natural;
-      Current_Dir       : String)
+      Current_Dir       : String;
+      Is_Config_File    : Boolean)
    is
       Normed_Path_Name    : Path_Name_Type;
       Canonical_Path_Name : Path_Name_Type;
@@ -963,7 +981,8 @@ package body Prj.Part is
                                   Tree_Private_Part.Projects_Htable.Get_First
                                     (In_Tree.Projects_HT);
 
-      Name_From_Path  : constant Name_Id := Project_Name_From (Path_Name);
+      Name_From_Path  : constant Name_Id :=
+        Project_Name_From (Path_Name, Is_Config_File => Is_Config_File);
       Name_Of_Project : Name_Id := No_Name;
 
       Duplicated : Boolean := False;
@@ -1124,7 +1143,7 @@ package body Prj.Part is
       Tree.Reset_State;
       Scan (In_Tree);
 
-      if not In_Configuration and then Name_From_Path = No_Name then
+      if not Is_Config_File and then Name_From_Path = No_Name then
 
          --  The project file name is not correct (no or bad extension, or not
          --  following Ada identifier's syntax).
@@ -1147,6 +1166,7 @@ package body Prj.Part is
 
       Pre_Parse_Context_Clause
         (In_Tree        => In_Tree,
+         Is_Config_File => Is_Config_File,
          Context_Clause => First_With);
 
       Project := Default_Project_Node
@@ -1185,7 +1205,7 @@ package body Prj.Part is
                Scan (In_Tree);
 
             when Snames.Name_Configuration =>
-               if not In_Configuration then
+               if not Is_Config_File then
                   Error_Msg ("configuration projects cannot belong to a user" &
                              " project tree",
                              Token_Ptr);
@@ -1199,7 +1219,7 @@ package body Prj.Part is
       end if;
 
       if Proj_Qualifier /= Unspecified then
-         if In_Configuration then
+         if Is_Config_File then
             Error_Msg ("a configuration project cannot be qualified except " &
                        "as configuration project",
                        Qualifier_Location);
@@ -1257,7 +1277,7 @@ package body Prj.Part is
 
       if Token = Tok_Extends then
 
-         if In_Configuration then
+         if Is_Config_File then
             Error_Msg
               ("extending configuration project not allowed", Token_Ptr);
          end if;
@@ -1310,13 +1330,13 @@ package body Prj.Part is
          begin
             --  Output a warning if the actual name is not the expected name
 
-            if not In_Configuration
+            if not Is_Config_File
               and then (Name_From_Path /= No_Name)
               and then Expected_Name /= Name_From_Path
             then
                Error_Msg_Name_1 := Expected_Name;
 
-               if In_Configuration then
+               if Is_Config_File then
                   Extension := new String'(Config_Project_File_Extension);
 
                else
@@ -1355,11 +1375,12 @@ package body Prj.Part is
                In_Limited        => In_Limited,
                Packages_To_Check => Packages_To_Check,
                Depth             => Depth + 1,
-               Current_Dir       => Current_Dir);
+               Current_Dir       => Current_Dir,
+               Is_Config_File    => Is_Config_File);
             Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
          end;
 
-         if not In_Configuration then
+         if not Is_Config_File then
             declare
                Name_And_Node : Tree_Private_Part.Project_Name_And_Node :=
                                  Tree_Private_Part.Projects_Htable.Get_First
@@ -1460,7 +1481,8 @@ package body Prj.Part is
                         In_Limited        => In_Limited,
                         Packages_To_Check => Packages_To_Check,
                         Depth             => Depth + 1,
-                        Current_Dir       => Current_Dir);
+                        Current_Dir       => Current_Dir,
+                        Is_Config_File    => Is_Config_File);
                   end;
 
                   if Present (Extended_Project) then
@@ -1596,7 +1618,8 @@ package body Prj.Part is
             Declarations      => Project_Declaration,
             Current_Project   => Project,
             Extends           => Extended_Project,
-            Packages_To_Check => Packages_To_Check);
+            Packages_To_Check => Packages_To_Check,
+            Is_Config_File    => Is_Config_File);
          Set_Project_Declaration_Of (Project, In_Tree, Project_Declaration);
 
          if Present (Extended_Project)
@@ -1717,7 +1740,8 @@ package body Prj.Part is
             In_Limited        => In_Limited,
             Packages_To_Check => Packages_To_Check,
             Depth             => Depth + 1,
-            Current_Dir       => Current_Dir);
+            Current_Dir       => Current_Dir,
+            Is_Config_File    => Is_Config_File);
          Set_First_With_Clause_Of (Project, In_Tree, Imported_Projects);
       end;
 
@@ -1745,7 +1769,10 @@ package body Prj.Part is
    -- Project_Name_From --
    -----------------------
 
-   function Project_Name_From (Path_Name : String) return Name_Id is
+   function Project_Name_From
+     (Path_Name      : String;
+      Is_Config_File : Boolean) return Name_Id
+   is
       Canonical : String (1 .. Path_Name'Length) := Path_Name;
       First     : Natural := Canonical'Last;
       Last      : Natural := First;
@@ -1778,11 +1805,11 @@ package body Prj.Part is
       --  If we have a dot, check that it is followed by the correct extension
 
       if First > 0 and then Canonical (First) = '.' then
-         if (not In_Configuration
+         if (not Is_Config_File
               and then Canonical (First .. Last) = Project_File_Extension
               and then First /= 1)
            or else
-             (In_Configuration
+             (Is_Config_File
                and then
                  Canonical (First .. Last) = Config_Project_File_Extension
                and then First /= 1)

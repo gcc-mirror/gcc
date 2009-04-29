@@ -49,8 +49,6 @@ package body Prj is
 
    Current_Mode : Mode := Ada_Only;
 
-   Configuration_Mode : Boolean := False;
-
    The_Empty_String : Name_Id;
 
    Default_Ada_Spec_Suffix_Id : File_Name_Type;
@@ -600,15 +598,6 @@ package body Prj is
       return The_Casing_Images (Casing).all;
    end Image;
 
-   ----------------------
-   -- In_Configuration --
-   ----------------------
-
-   function In_Configuration return Boolean is
-   begin
-      return Configuration_Mode;
-   end In_Configuration;
-
    ----------------
    -- Initialize --
    ----------------
@@ -1058,15 +1047,6 @@ package body Prj is
          Array_Element_Table.Last (In_Tree.Array_Elements);
       In_Tree.Array_Elements.Table (Naming.Body_Suffix) := Element;
    end Set_Body_Suffix;
-
-   --------------------------
-   -- Set_In_Configuration --
-   --------------------------
-
-   procedure Set_In_Configuration (Value : Boolean) is
-   begin
-      Configuration_Mode := Value;
-   end Set_In_Configuration;
 
    --------------
    -- Set_Mode --

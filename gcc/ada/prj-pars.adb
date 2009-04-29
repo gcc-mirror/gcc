@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,8 @@ package body Prj.Pars is
       Project_File_Name : String;
       Packages_To_Check : String_List_Access := All_Packages;
       When_No_Sources   : Error_Warning := Error;
-      Reset_Tree        : Boolean := True)
+      Reset_Tree        : Boolean := True;
+      Is_Config_File    : Boolean)
    is
       Project_Node_Tree : constant Project_Node_Tree_Ref :=
                             new Project_Node_Tree_Data;
@@ -66,7 +67,8 @@ package body Prj.Pars is
          Project_File_Name      => Project_File_Name,
          Always_Errout_Finalize => False,
          Packages_To_Check      => Packages_To_Check,
-         Current_Directory      => Current_Dir);
+         Current_Directory      => Current_Dir,
+         Is_Config_File         => Is_Config_File);
 
       --  If there were no error, process the tree
 
@@ -80,7 +82,8 @@ package body Prj.Pars is
             Report_Error           => null,
             When_No_Sources        => When_No_Sources,
             Reset_Tree             => Reset_Tree,
-            Current_Dir            => Current_Dir);
+            Current_Dir            => Current_Dir,
+            Is_Config_File         => Is_Config_File);
          Prj.Err.Finalize;
 
          if not Success then

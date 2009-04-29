@@ -1,3 +1,12 @@
+2009-04-29  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, prj-proc.adb, prj-proc.ads, make.adb, prj-part.adb,
+	prj-part.ads, prj.adb, prj.ads, clean.adb, prj-dect.adb, prj-dect.ads,
+	prj-nmsc.adb, prj-nmsc.ads, prj-pars.adb, prj-pars.ads, prj-makr.adb
+	(Set_In_Configuration, In_Configuration): Removed.
+	Replaced by an extra parameter Is_Config_File in several parameter to
+	avoid global variables to store the state of the parser.
+
 2009-04-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sinfo.ads, sinfo.adb: New attribute Next_Implicit_With, to chain

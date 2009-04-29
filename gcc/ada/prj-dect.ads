@@ -34,7 +34,8 @@ private package Prj.Dect is
       Declarations      : out Prj.Tree.Project_Node_Id;
       Current_Project   : Prj.Tree.Project_Node_Id;
       Extends           : Prj.Tree.Project_Node_Id;
-      Packages_To_Check : String_List_Access);
+      Packages_To_Check : String_List_Access;
+      Is_Config_File    : Boolean);
    --  Parse project declarative items
    --
    --  In_Tree is the project node tree
@@ -52,5 +53,8 @@ private package Prj.Dect is
    --  For legal packages declared in project Current_Project that are not in
    --  Packages_To_Check, only the syntax of the declarations are checked, not
    --  the attribute names and kinds.
+   --
+   --  Is_Config_File should be set to True if the project represents a config
+   --  file (.cgpr) since some specific checks apply.
 
 end Prj.Dect;
