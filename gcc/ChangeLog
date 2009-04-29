@@ -5,6 +5,10 @@
 	Remove special case testing for last insn of inner loops. Don't fail if
 	the loop ends with a jump, emit an extra nop instead.
 
+	* config/bfin/bfin.c (bfin_register_move_cost): Test for subsets of
+	DREGS rather than comparing directly.  Remove code that tries to
+	account for latencies.
+
 2009-04-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39941
