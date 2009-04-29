@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "plugin.h"
 #include "timevar.h"
+#include "plugin-version.h"
 
 /* Event names as strings.  Keep in sync with enum plugin_event.  */
 const char *plugin_event_name[] =
@@ -99,7 +100,6 @@ static struct pass_list_node *prev_added_pass_node;
 /* Each plugin should define an initialization function with exactly
    this name.  */
 static const char *str_plugin_init_func_name = "plugin_init";
-static const char *str_plugin_gcc_version_name = "plugin_gcc_version";
 #endif
 
 /* Helper function for the hash table that compares the base_name of the
@@ -567,10 +567,8 @@ try_init_one_plugin (struct plugin_name_args *plugin)
 {
   void *dl_handle;
   plugin_init_func plugin_init;
-  struct plugin_gcc_version *version;
   char *err;
   PTR_UNION_TYPE (plugin_init_func) plugin_init_union;
-  PTR_UNION_TYPE (struct plugin_gcc_version*) version_union;
 
   dl_handle = dlopen (plugin->full_name, RTLD_NOW);
   if (!dl_handle)
@@ -593,12 +591,9 @@ try_init_one_plugin (struct plugin_name_args *plugin)
       return false;
     }
 
-  PTR_UNION_AS_VOID_PTR (version_union) =
-      dlsym (dl_handle, str_plugin_gcc_version_name);
-  version = PTR_UNION_AS_CAST_PTR (version_union);
-
   /* Call the plugin-provided initialization routine with the arguments.  */
-  if ((*plugin_init) (plugin->base_name, version, plugin->argc, plugin->argv))
+  if ((*plugin_init) (plugin->base_name, &gcc_version, plugin->argc,
+		      plugin->argv))
     {
       error ("Fail to initialize plugin %s", plugin->full_name);
       return false;
@@ -816,22 +811,23 @@ debug_active_plugins (void)
 /* The default version check. Compares every field in VERSION. */
 
 bool
-plugin_default_version_check(struct plugin_gcc_version *version)
+plugin_default_version_check (struct plugin_gcc_version *gcc_version,
+			      struct plugin_gcc_version *plugin_version)
 {
   /* version is NULL if the plugin was not linked with plugin-version.o */
-  if (!version)
+  if (!gcc_version || !plugin_version)
     return false;
 
-  if (strcmp (version->basever, plugin_gcc_version.basever))
+  if (strcmp (gcc_version->basever, plugin_version->basever))
     return false;
-  if (strcmp (version->datestamp, plugin_gcc_version.datestamp))
+  if (strcmp (gcc_version->datestamp, plugin_version->datestamp))
     return false;
-  if (strcmp (version->devphase, plugin_gcc_version.devphase))
+  if (strcmp (gcc_version->devphase, plugin_version->devphase))
     return false;
-  if (strcmp (version->revision, plugin_gcc_version.revision))
+  if (strcmp (gcc_version->revision, plugin_version->revision))
     return false;
-  if (strcmp (version->configuration_arguments,
-	      plugin_gcc_version.configuration_arguments))
+  if (strcmp (gcc_version->configuration_arguments,
+	      plugin_version->configuration_arguments))
     return false;
   return true;
 }

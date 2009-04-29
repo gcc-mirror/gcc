@@ -78,11 +78,10 @@ struct plugin_gcc_version
   const char *configuration_arguments;
 };
 
-extern struct plugin_gcc_version plugin_gcc_version;
-
 /* The default version check. Compares every field in VERSION. */
 
-extern bool plugin_default_version_check(struct plugin_gcc_version *version);
+extern bool plugin_default_version_check (struct plugin_gcc_version *,
+					  struct plugin_gcc_version *);
 
 /* Function type for the plugin initialization routine. Each plugin module
    should define this as an externally-visible function with name
