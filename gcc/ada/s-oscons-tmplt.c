@@ -1181,6 +1181,19 @@ TXT("   subtype H_Length_T   is Interfaces.C." h_length_t ";")
 
 /*
 
+   --  Fields of struct msghdr
+*/
+
+#if defined (__VMS) || defined (__sun__) || defined (__hpux__)
+# define msg_iovlen_t "int"
+#else
+# define msg_iovlen_t "size_t"
+#endif
+
+TXT("   subtype Msg_Iovlen_T is Interfaces.C." msg_iovlen_t ";")
+
+/*
+
    ----------------------------------------
    -- Properties of supported interfaces --
    ----------------------------------------

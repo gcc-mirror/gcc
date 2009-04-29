@@ -1673,7 +1673,7 @@ package body GNAT.Sockets is
               (Msg_Name       => System.Null_Address,
                Msg_Namelen    => 0,
                Msg_Iov        => Vector'Address,
-               Msg_Iovlen     => Vector'Length,
+               Msg_Iovlen     => SOSC.Msg_Iovlen_T (Vector'Length),
                Msg_Control    => System.Null_Address,
                Msg_Controllen => 0,
                Msg_Flags      => 0);
@@ -1904,11 +1904,11 @@ package body GNAT.Sockets is
       Count  : out Ada.Streams.Stream_Element_Count;
       Flags  : Request_Flag_Type := No_Request_Flag)
    is
-      use type C.size_t;
+      use type SOSC.Msg_Iovlen_T;
 
       Res            : ssize_t;
-      Iov_Count      : C.size_t;
-      This_Iov_Count : C.size_t;
+      Iov_Count      : SOSC.Msg_Iovlen_T;
+      This_Iov_Count : SOSC.Msg_Iovlen_T;
       Msg            : Msghdr;
 
    begin

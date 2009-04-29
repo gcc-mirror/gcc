@@ -54,17 +54,6 @@ package GNAT.Sockets.Thin is
      .. +(2 ** (C.size_t'Size - 1) - 1);
    --  Signed type of the same size as size_t
 
-   type Msghdr is record
-      Msg_Name       : System.Address;
-      Msg_Namelen    : C.unsigned;
-      Msg_Iov        : System.Address;
-      Msg_Iovlen     : C.size_t;
-      Msg_Control    : System.Address;
-      Msg_Controllen : C.size_t;
-      Msg_Flags      : C.int;
-   end record;
-   pragma Convention (C, Msghdr);
-
    function Socket_Errno return Integer;
    --  Returns last socket error number
 

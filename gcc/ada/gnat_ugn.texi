@@ -2992,17 +2992,18 @@ Interface ---see http://www.codesourcery.com/archives/cxx-abi).
 Interfacing can be done at 3 levels: simple data, subprograms, and
 classes. In the first two cases, GNAT offers a specific @code{Convention
 C_Plus_Plus} (or @code{CPP}) that behaves exactly like @code{Convention C}.
-Usually, C++ mangles the names of subprograms, and currently, GNAT does
-not provide any help to solve the demangling problem. This problem can be
-addressed in two ways:
+Usually, C++ mangles the names of subprograms. To generate proper mangled
+names automatically, see @ref{Generating Ada Bindings for C and C++ headers}).
+This problem can also be addressed manually in two ways:
+
 @itemize @bullet
 @item
 by modifying the C++ code in order to force a C convention using
 the @code{extern "C"} syntax.
 
 @item
-by figuring out the mangled name and use it as the Link_Name argument of
-the pragma import.
+by figuring out the mangled name (using e.g. @command{nm}) and using it as the
+Link_Name argument of the pragma import.
 @end itemize
 
 @noindent
@@ -3025,15 +3026,17 @@ considered:
 @item
 Using GNAT and G++ (GNU C++ compiler) from the same GCC installation:
 The C++ linker can simply be called by using the C++ specific driver
-called @code{c++}. Note that this setup is not very common because it
-may involve recompiling the whole GCC tree from sources, which makes it
-harder to upgrade the compilation system for one language without
-destabilizing the other.
+called @code{g++}.
+
+Note that if the C++ code uses inline functions, you will need to
+compile your C++ code with the @code{-fkeep-inline-functions} switch in
+order to provide an existing function implementation that the Ada code can
+link with.
 
 @smallexample
-$ c++ -c file1.C
-$ c++ -c file2.C
-$ gnatmake ada_unit -largs file1.o file2.o --LINK=c++
+$ g++ -c -fkeep-inline-functions file1.C
+$ g++ -c -fkeep-inline-functions file2.C
+$ gnatmake ada_unit -largs file1.o file2.o --LINK=g++
 @end smallexample
 
 @item
@@ -3105,6 +3108,10 @@ a pre-linking phase using GNAT will be necessary.
 
 @end enumerate
 
+Another alternative is to use the @command{gprbuild} multi-language builder
+which has a large knowledge base and knows how to link Ada and C++ code
+together automatically in most cases.
+
 @node A Simple Example
 @subsection  A Simple Example
 @noindent
@@ -3122,10 +3129,10 @@ languages.
 Here are the compilation commands:
 @smallexample
 $ gnatmake -c simple_cpp_interface
-$ c++ -c cpp_main.C
-$ c++ -c ex7.C
+$ g++ -c cpp_main.C
+$ g++ -c ex7.C
 $ gnatbind -n simple_cpp_interface
-$ gnatlink simple_cpp_interface -o cpp_main --LINK=$(CPLUSPLUS)
+$ gnatlink simple_cpp_interface -o cpp_main --LINK=g++
       -lstdc++ ex7.o cpp_main.o
 @end smallexample
 

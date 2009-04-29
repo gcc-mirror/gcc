@@ -1,3 +1,26 @@
+2009-04-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_ugn.texi: Update some documentation about interfacing with C++
+	Mention -fkeep-inline-functions.
+
+	* gnat_ugn.texi: Minor edits
+
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): When building an aggregate
+	for a defaulted component of an enclosing aggregate, inherit the type
+	from the component declaration of the enclosing type. 
+
+2009-04-29  Albert Lee  <lee@adacore.com>
+
+	* g-socthi-vms.ads, g-socthi-vxworks.ads, s-oscons-tmplt.c,
+	g-socthi-mingw.ads, g-socthi.ads, g-socket.adb, g-sothco.ads
+	(System.OS_Constants): New type Msg_Iovlen_T which follows whether the
+	msg_iovlen field in struct msghdr is 32 or 64 bits wide.
+	Relocate the Msghdr record type from GNAT.Sockets.Thin to
+	GNAT.Sockets.Common, and use System.OS_Constants.Msg_Iovlen_T as the
+	type for the Msg_Iovlen field.
+
 2009-04-29  Vincent Celier  <celier@adacore.com>
 
 	* sinput-l.adb (Load_File): When preprocessing, set temporarily the
