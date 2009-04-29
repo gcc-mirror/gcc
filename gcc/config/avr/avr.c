@@ -545,10 +545,21 @@ avr_regs_to_save (HARD_REG_SET *set)
   return count;
 }
 
+/* Return true if register FROM can be eliminated via register TO.  */
+
+bool
+avr_can_eliminate (int from, int to)
+{
+  return ((from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+	  || ((from == FRAME_POINTER_REGNUM 
+	       || from == FRAME_POINTER_REGNUM + 1)
+	      && !frame_pointer_needed));
+}
+
 /* Compute offset between arg_pointer and frame_pointer.  */
 
 int
-initial_elimination_offset (int from, int to)
+avr_initial_elimination_offset (int from, int to)
 {
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return 0;
@@ -2843,8 +2854,8 @@ out_movhi_mr_r (rtx insn, rtx op[], int *l)
 
 /* Return 1 if frame pointer for current function required.  */
 
-int
-frame_pointer_required_p (void)
+bool
+avr_frame_pointer_required_p (void)
 {
   return (cfun->calls_alloca
 	  || crtl->args.info.nregs == 0

@@ -1,3 +1,18 @@
+2009-04-29  Anatoly Sokolov  <aesok@post.ru>
+
+	* config/avr/avr.c (initial_elimination_offset): Rename to
+	avr_initial_elimination_offset.
+	(frame_pointer_required_p): Rename to avr_frame_pointer_required_p,
+	change return type to bool.
+	(avr_can_eliminate): New function.
+	* config/avr/avr.h (CAN_ELIMINATE): Use avr_can_eliminate.
+	(FRAME_POINTER_REQUIRED): Use avr_frame_pointer_required_p.
+	(INITIAL_ELIMINATION_OFFSET): Use avr_initial_elimination_offset.
+	* config/avr/avr-protos.h (initial_elimination_offset) : Rename to
+	avr_initial_elimination_offset.
+	(frame_pointer_required_p): Rename to avr_frame_pointer_required_p.
+	(avr_initial_elimination_offset): Define.
+
 2009-04-29  Eric Botcazou  <ebotcazou@adacore.com>
             Steven Bosscher  <steven@gcc.gnu.org>
 
