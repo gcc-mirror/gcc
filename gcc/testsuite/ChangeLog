@@ -1,3 +1,8 @@
+2009-04-29  Anmol P. Paralkar  <anmol@freescale.com>
+
+	PR target/39565
+	* gcc.dg/pr39565.c: New testcase.
+
 2009-04-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.target/i386/sse4_1-roundps-1.c: Skip for vxworks kernel.
