@@ -6169,15 +6169,14 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
       emit_insn (gen_flag_mulv2hi (tmp1, op0, op0, GEN_INT (MACFLAG_NONE)));
 
-      emit_insn (gen_flag_mulhi_parts (tmp2, op0, op0, const0_rtx,
+      emit_insn (gen_flag_mulhi_parts (gen_lowpart (HImode, tmp2), op0, op0,
 				       const0_rtx, const1_rtx,
 				       GEN_INT (MACFLAG_NONE)));
 
-      emit_insn (gen_ssaddhi3_parts (target, tmp2, tmp2, const1_rtx,
-					  const0_rtx, const0_rtx));
-
-      emit_insn (gen_sssubhi3_parts (target, tmp1, tmp1, const0_rtx,
-					  const0_rtx, const1_rtx));
+      emit_insn (gen_ssaddhi3_high_parts (target, tmp2, tmp2, tmp2, const0_rtx,
+					  const0_rtx));
+      emit_insn (gen_sssubhi3_low_parts (target, target, tmp1, tmp1,
+					 const0_rtx, const1_rtx));
 
       return target;
 
