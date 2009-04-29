@@ -1,5 +1,11 @@
 2009-04-29  Richard Guenther  <rguenther@suse.de>
 
+	PR target/39943
+	* config/i386/i386.c (ix86_vectorize_builtin_conversion): Only
+	allow conversion to signed integers.
+
+2009-04-29  Richard Guenther  <rguenther@suse.de>
+
 	* tree-cfg.c (verify_gimple_assign_binary): Allow vector
 	shifts of floating point vectors if the shift amount is
 	a constant multiple of the element size.
