@@ -1,6 +1,7 @@
 // PR c++/22204
 // { dg-options "-frepo" }
 // { dg-require-host-local "" }
+// { dg-skip-if "dkms are not final links" { vxworks_kernel } }
 
 #include <typeinfo>
 template<int>

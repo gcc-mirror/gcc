@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O3 -msse2 -fdump-rtl-csa" } */
+/* { dg-skip-if "no stdint" { vxworks_kernel } } */
 
 #include <emmintrin.h>
 #include <stdint.h>

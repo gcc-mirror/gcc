@@ -1,6 +1,7 @@
 // PR c++/17163
 // { dg-options "-frepo" }
 // { dg-require-host-local "" }
+// { dg-skip-if "dkms are not final links" { vxworks_kernel } }
 
 template <int __inst>
 struct __Atomicity_lock

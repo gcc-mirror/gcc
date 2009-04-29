@@ -1,6 +1,8 @@
 // { dg-do link }
 // { dg-options "-frepo" }
 // { dg-require-host-local "" }
+// { dg-skip-if "dkms are not final links" { vxworks_kernel } }
+
 // Test that we properly generate the vtable and such for C.
 // Contributed by scott snyder <snyder@fnal.gov>
 

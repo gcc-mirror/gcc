@@ -1,3 +1,46 @@
+2009-04-28  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcc.target/i386/sse4_1-roundps-1.c: Skip for vxworks kernel.
+	* gcc.target/i386/sse4_1-roundpd-1.c: Likewise.
+	* gcc.target/i386/sse4_1-roundps-3.c: Likewise.
+	* gcc.target/i386/sse4_1-roundpd-3.c: Likewise.
+	* gcc.target/i386/sse4_1-roundss-1.c: Likewise.
+	* gcc.target/i386/sse4_1-roundsd-1.c: Likewise.
+	* gcc.target/i386/sse4_1-roundss-3.c: Likewise.
+	* gcc.target/i386/sse4_1-roundsd-3.c: Likewise.
+	* gcc.target/i386/sse4_1-roundps-2.c: Likewise.
+	* gcc.target/i386/sse4_1-roundpd-2.c: Likewise.
+	* gcc.target/i386/sse4_1-roundss-2.c: Likewise.
+	* gcc.target/i386/sse4_1-roundsd-2.c: Likewise.
+	* gcc.target/i386/sse4_1-roundss-4.c: Likewise.
+	* gcc.target/i386/sse4_1-roundsd-4.c: Likewise.
+	* gcc.target/i386/pr37191.c: Likewise.
+	* gcc.target/i386/reload-1.c: Likewise.
+	* g++.old-deja/g++.pt/repo1.C: Skip for vxworks kernel.
+	* g++.old-deja/g++.pt/repo2.C: Likewise.
+	* g++.old-deja/g++.pt/repo3.C: Likewise.
+	* g++.old-deja/g++.pt/repo4.C: Likewise.
+	* g++.old-deja/g++.pt/instantiate4.C: Likewise.
+	* g++.old-deja/g++.pt/instantiate6.C: Likewise.
+	* g++.dg/template/repo1.C: Likewise.
+	* g++.dg/template/repo2.C: Likewise.
+	* g++.dg/template/repo3.C: Likewise.
+	* g++.dg/template/repo4.C: Likewise.
+	* g++.dg/template/repo5.C: Likewise.
+	* g++.dg/template/repo6.C: Likewise.
+	* g++.dg/template/repo7.C: Likewise.
+	* g++.dg/template/repo8.C: Likewise.
+	* g++.dg/template/repo9.C: Likewise.
+	* g++.dg/rtti/repo1.C: Likewise.	
+	* gcc.dg/cpp/_Pragma6.c: Skip for vxworks.
+	* g++.dg/cpp/_Pragma1.C: Skip for vxworks.
+	* gcc.dg/pthread-init-1.c: Xfail for vxworks rtp.
+	* g++.dg/other/PR23205.C: Skip for vxworks.
+	* g++.dg/ext/visibility/class1.C: Requires PIC.
+	* g++.dg/eh/async-unwind2.C: Requires PIC.
+	* lib/target-supports.exp (check_cxa_atexit_available): Vxworks
+	does not have cxa_exit.
+
 2009-04-28  Jing Yu  <jingyu@google.com>
 
 	PR testsuite/39790

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -mmmx" } */
+/* { dg-skip-if "no stdint" { vxworks_kernel } } */
 
 #include <mmintrin.h>
 #include <stddef.h>

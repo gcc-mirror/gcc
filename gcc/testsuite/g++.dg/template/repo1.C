@@ -1,5 +1,6 @@
 // { dg-options "-frepo" }
 // { dg-require-host-local "" }
+// { dg-skip-if "dkms are not final links" { vxworks_kernel } }
 
 struct A {
   A();

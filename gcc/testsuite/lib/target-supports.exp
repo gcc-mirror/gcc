@@ -1072,6 +1072,9 @@ proc check_cxa_atexit_available { } {
 	if { [istarget "hppa*-*-hpux10*"] } {
 	    # HP-UX 10 doesn't have __cxa_atexit but subsequent test passes.
 	    expr 0
+	} elseif { [istarget "*-*-vxworks"] } {
+	    # vxworks doesn't have __cxa_atexit but subsequent test passes.
+	    expr 0
 	} else {
 	    check_runtime_nocache cxa_atexit_available {
 		// C++
