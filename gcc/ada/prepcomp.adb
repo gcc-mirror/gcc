@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -659,7 +659,7 @@ package body Prepcomp is
             if Deffile = No_Source_File then
                Fail ("definition file """
                      & Get_Name_String (N)
-                     & """ cannot be found");
+                     & """ not found");
             end if;
 
             --  Initialize the preprocessor and set the characteristics of the
