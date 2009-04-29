@@ -6977,7 +6977,7 @@ package body Sem_Res is
    begin
       --  The parser folds an enormous sequence of concatenations of string
       --  literals into "" & "...", where the Is_Folded_In_Parser flag is set
-      --  in the right. If the expression resolves to a predefined "&"
+      --  in the right operand. If the expression resolves to a predefined "&"
       --  operator, all is well. Otherwise, the parser's folding is wrong, so
       --  we give an error. See P_Simple_Expression in Par.Ch4.
 

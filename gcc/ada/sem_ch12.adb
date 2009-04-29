@@ -4360,16 +4360,19 @@ package body Sem_Ch12 is
       Old_Main   : constant Entity_Id := Cunit_Entity (Main_Unit);
 
    begin
-      --  A new compilation unit node is built for the instance declaration
+      --  A new compilation unit node is built for the instance declaration.
+      --  Place the context of the compilation this declaration, so that it
+      --  it is processed before the instance in CodePeer.
 
       Decl_Cunit :=
         Make_Compilation_Unit (Sloc (N),
-          Context_Items  => Empty_List,
+          Context_Items  => Context_Items (Parent (N)),
           Unit           => Act_Decl,
           Aux_Decls_Node =>
             Make_Compilation_Unit_Aux (Sloc (N)));
 
       Set_Parent_Spec   (Act_Decl, Parent_Spec (N));
+      Set_Context_Items (Parent (N), Empty_List);
 
       --  The new compilation unit is linked to its body, but both share the
       --  same file, so we do not set Body_Required on the new unit so as not

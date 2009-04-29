@@ -1,3 +1,19 @@
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): if the dispatching
+	operation is a body without previous spec, update the list of
+	primitive operations to ensure that cross-reference information is
+	up-to-date.
+
+	* sem_ch12.adb (Build_Instance_Compilation_Unit_Nodes): When creating a
+	new compilation unit node for the instance declaration, keep the
+	context items of the original unit on it, so that the context of the
+	instance body only holds the context inherited from the generic body.
+
+2009-04-29  Bob Duff  <duff@adacore.com>
+
+	* sem_res.adb: Minor comment fix.
+
 2009-04-29  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_elim.adb: Minor reformatting
