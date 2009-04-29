@@ -345,43 +345,36 @@ package Scans is
    --  Note: these variables can only be referenced during the parsing of a
    --  file. Reference to any of them from Sem or the expander is wrong.
 
-   --  These variables are initialized as required by Scn.Initialize_Scanner,
-   --  and should not be referenced before such a call. However, there are
-   --  situations in which these variables are saved and restored, and this
-   --  may happen before the first Initialize_Scanner call, resulting in the
-   --  assignment of invalid values. To avoid this, and allow building with
-   --  the -gnatVa switch, we initialize some variables to known valid values.
-
-   Scan_Ptr : Source_Ptr := No_Location; -- init for -gnatVa
+   Scan_Ptr : Source_Ptr;
    --  Current scan pointer location. After a call to Scan, this points
    --  just past the end of the token just scanned.
 
-   Token : Token_Type := No_Token; -- init for -gnatVa
+   Token : Token_Type;
    --  Type of current token
 
-   Token_Ptr : Source_Ptr := No_Location; -- init for -gnatVa
+   Token_Ptr : Source_Ptr;
    --  Pointer to first character of current token
 
-   Current_Line_Start : Source_Ptr := No_Location; -- init for -gnatVa
-   --  Pointer to first character of line containing current token.
+   Current_Line_Start : Source_Ptr;
+   --  Pointer to first character of line containing current token
 
-   Start_Column : Column_Number := No_Column_Number; -- init for -gnatVa
+   Start_Column : Column_Number;
    --  Starting column number (zero origin) of the first non-blank character
    --  on the line containing the current token. This is used for error
    --  recovery circuits which depend on looking at the column line up.
 
-   Type_Token_Location : Source_Ptr := No_Location; -- init for -gnatVa
+   Type_Token_Location : Source_Ptr;
    --  Within a type declaration, gives the location of the TYPE keyword that
    --  opened the type declaration. Used in checking the end column of a record
    --  declaration, which can line up either with the TYPE keyword, or with the
    --  start of the line containing the RECORD keyword.
 
-   Checksum : Word := 0; -- init for -gnatVa
+   Checksum : Word;
    --  Used to accumulate a CRC representing the tokens in the source
    --  file being compiled. This CRC includes only program tokens, and
    --  excludes comments.
 
-   First_Non_Blank_Location : Source_Ptr := No_Location; -- init for -gnatVa
+   First_Non_Blank_Location : Source_Ptr;
    --  Location of first non-blank character on the line containing the
    --  current token (i.e. the location of the character whose column number
    --  is stored in Start_Column).

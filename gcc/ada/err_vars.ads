@@ -32,31 +32,24 @@ with Uintp; use Uintp;
 
 package Err_Vars is
 
-   --  All of these variables are set when needed, so they do not need to be
-   --  initialized. However, there is code that saves and restores existing
-   --  values, which may malfunction in -gnatVa mode if the variable has never
-   --  been iniitalized, so we initialize some variables to avoid exceptions
-   --  from invalid values in such cases.
-
    ------------------
    -- Error Counts --
    ------------------
 
-   Serious_Errors_Detected : Nat := 0;
+   Serious_Errors_Detected : Nat;
    --  This is a count of errors that are serious enough to stop expansion,
    --  and hence to prevent generation of an object file even if the
    --  switch -gnatQ is set. Initialized to zero at the start of compilation.
-   --  Initialized for -gnatVa use, see comment above.
 
-   Total_Errors_Detected : Nat := 0;
+   Total_Errors_Detected : Nat;
    --  Number of errors detected so far. Includes count of serious errors and
    --  non-serious errors, so this value is always greater than or equal to the
    --  Serious_Errors_Detected value. Initialized to zero at the start of
-   --  compilation. Initialized for -gnatVa use, see comment above.
+   --  compilation.
 
-   Warnings_Detected : Nat := 0;
+   Warnings_Detected : Nat;
    --  Number of warnings detected. Initialized to zero at the start of
-   --  compilation. Initialized for -gnatVa use, see comment above.
+   --  compilation.
 
    ----------------------------------
    -- Error Message Mode Variables --
@@ -82,7 +75,7 @@ package Err_Vars is
    --  generated on the instantiation (referring to the template) rather
    --  than on the template itself.
 
-   Raise_Exception_On_Error : Nat := 0;
+   Raise_Exception_On_Error : Nat;
    --  If this value is non-zero, then any attempt to generate an error
    --  message raises the exception Error_Msg_Exception, and the error
    --  message is not output. This is used for defending against junk

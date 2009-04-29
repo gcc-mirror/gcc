@@ -1,3 +1,24 @@
+2009-04-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Revert
+	2009-04-29  Vincent Celier  <celier@adacore.com>
+
+	* sinput-l.adb (Load_File): When preprocessing, set temporarily the
+	Source_File_Index_Table entries for the source, to avoid crash when
+	reporting an error.
+
+	* gnatcmd.adb (Test_If_Relative_Path): Use
+	Makeutl.Test_If_Relative_Path.
+	
+	* makeutl.adb:(Test_If_Relative_Path): Process switches --RTS= only if
+	Including_RTS is True.
+
+	* makeutl.ads (Test_If_Relative_Path): New Boolean parameter
+	Including_RTS defaulted to False.
+
+	* sinput.ads, scans.ads, err_vars.ads: Initialize some variables with
+	a default value.
+
 2009-04-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Analyze_Subprogram_Renaming): Improve error message on
