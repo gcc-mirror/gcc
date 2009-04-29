@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target sse4 } */
 /* { dg-options "-O2 -msse4.1" } */
+/* { dg-skip-if "no M_PI" { vxworks_kernel } } */
 
 #ifndef CHECK_H
 #define CHECK_H "sse4_1-check.h"
