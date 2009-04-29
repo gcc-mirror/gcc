@@ -1459,8 +1459,10 @@ package body Rtsfind is
 
                if Chrs = Chars (Cunit_Entity (Current_Sem_Unit)) then
                   declare
-                     Parent_Name : constant Unit_Name_Type
-                       := Get_Parent_Spec_Name (Unit_Name (Current_Sem_Unit));
+                     Parent_Name : constant Unit_Name_Type :=
+                                     Get_Parent_Spec_Name
+                                       (Unit_Name (Current_Sem_Unit));
+
                   begin
                      if Parent_Name /= No_Unit_Name then
                         Get_Name_String (Parent_Name);
@@ -1468,9 +1470,9 @@ package body Rtsfind is
                         declare
                            P : String renames Name_Buffer (1 .. Name_Len);
                         begin
-                           if P = "ada.text_io%s"
-                             or else P = "ada.wide_text_io%s"
-                             or else P = "ada.wide_wide_text_io%s"
+                           if P = "ada.text_io%s"      or else
+                              P = "ada.wide_text_io%s" or else
+                              P = "ada.wide_wide_text_io%s"
                            then
                               goto Continue;
                            end if;

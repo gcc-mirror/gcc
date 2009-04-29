@@ -1,3 +1,15 @@
+2009-04-29  Robert Dewar  <dewar@adacore.com>
+
+	* rtsfind.adb, prj-env.adb: Minor reformatting
+	Minor code reorganization
+
+2009-04-29  Emmanuel Briot  <briot@adacore.com>
+
+	* make.adb: Fix comment
+
+	* prj.adb (Ultimate_Extending_Project_Of): Fix handling when no project
+	is given as argument, as might happen in gnatmake.
+
 2009-04-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Check_Abstract_Overriding): Improve error message when
