@@ -2331,19 +2331,13 @@ bfin_register_move_cost (enum machine_mode mode,
 			 enum reg_class class1, enum reg_class class2)
 {
   /* These need secondary reloads, so they're more expensive.  */
-  if ((class1 == CCREGS && class2 != DREGS)
-      || (class1 != DREGS && class2 == CCREGS))
+  if ((class1 == CCREGS && !reg_class_subset_p (class2, DREGS))
+      || (class2 == CCREGS && !reg_class_subset_p (class1, DREGS)))
     return 4;
 
   /* If optimizing for size, always prefer reg-reg over reg-memory moves.  */
   if (optimize_size)
     return 2;
-
-  /* There are some stalls involved when moving from a DREG to a different
-     class reg, and using the value in one of the following instructions.
-     Attempt to model this by slightly discouraging such moves.  */
-  if (class1 == DREGS && class2 != DREGS)
-    return 2 * 2;
 
   if (GET_MODE_CLASS (mode) == MODE_INT)
     {
