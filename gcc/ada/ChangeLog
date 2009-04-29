@@ -1,3 +1,9 @@
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Build_Final_List): If the designated type is a Taft
+	Amendment type, add the with_clause for Finalization.List_Controller
+	only if the current context is a package body.
+
 2009-04-29  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch12.adb: Minor reformatting

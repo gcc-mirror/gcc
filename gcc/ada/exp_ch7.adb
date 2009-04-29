@@ -444,6 +444,7 @@ package body Exp_Ch7 is
 
       if Has_Completion_In_Body (Directly_Designated_Type (Typ))
         and then In_Package_Body (Current_Scope)
+        and then Nkind (Unit (Cunit (Current_Sem_Unit))) = N_Package_Body
         and then
           Nkind (Parent (Declaration_Node (Typ))) = N_Package_Specification
       then
@@ -454,6 +455,8 @@ package body Exp_Ch7 is
          --  (see exp_ch3.adb). The reference to RE_List_Controller may have
          --  added a with_clause to the current body. Formally the spec needs
          --  the with_clause as well, so we add it now, for use by Codepeer.
+         --  We verify that we are within a package body, because this code
+         --  can also be invoked within a package instantiation.
 
          declare
             Loc         : constant Source_Ptr := Sloc (Typ);
