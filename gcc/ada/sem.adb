@@ -1618,9 +1618,12 @@ package body Sem is
                   Write_Unit_Info (Unit_Num, Item, Withs => True);
                end if;
 
-               --  Main unit should come last
+               --  Main unit should come last (except in the case where we
+               --  skipped System_Aux_Id, in which case we missed the things it
+               --  depends on).
 
-               pragma Assert (not Done (Main_Unit));
+               pragma Assert
+                 (not Done (Main_Unit) or else Present (System_Aux_Id));
 
                --  We shouldn't do the same thing twice
 

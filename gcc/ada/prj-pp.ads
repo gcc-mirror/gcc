@@ -53,8 +53,7 @@ package Prj.PP is
       W_Eol                              : Write_Eol_Ap  := null;
       W_Str                              : Write_Str_Ap  := null;
       Backward_Compatibility             : Boolean;
-      Id                                 : Prj.Project_Id := Prj.No_Project;
-      Id_Tree                            : Prj.Project_Tree_Ref := null);
+      Id                                 : Prj.Project_Id := Prj.No_Project);
    --  Output a project file, using either the default output routines, or the
    --  ones specified by W_Char, W_Eol and W_Str.
    --

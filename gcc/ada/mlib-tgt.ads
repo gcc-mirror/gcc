@@ -238,8 +238,7 @@ private
                               Library_Exists_For_Default'Access;
 
    function Library_File_Name_For_Default
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref) return File_Name_Type;
+     (Project : Project_Id; In_Tree : Project_Tree_Ref) return File_Name_Type;
    Library_File_Name_For_Ptr : Library_File_Name_For_Function :=
                                  Library_File_Name_For_Default'Access;
 

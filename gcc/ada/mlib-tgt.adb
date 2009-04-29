@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2008, AdaCore                     --
+--                     Copyright (C) 2001-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -330,8 +330,9 @@ package body MLib.Tgt is
    function Library_Exists_For_Default
      (Project : Project_Id; In_Tree : Project_Tree_Ref) return Boolean
    is
+      pragma Unreferenced (In_Tree);
    begin
-      if not In_Tree.Projects.Table (Project).Library then
+      if not Project.Library then
          Prj.Com.Fail ("INTERNAL ERROR: Library_Exists_For called " &
                        "for non library project");
          return False;
@@ -339,14 +340,12 @@ package body MLib.Tgt is
       else
          declare
             Lib_Dir  : constant String :=
-                         Get_Name_String
-                           (In_Tree.Projects.Table (Project).Library_Dir.Name);
+                         Get_Name_String (Project.Library_Dir.Name);
             Lib_Name : constant String :=
-                         Get_Name_String
-                           (In_Tree.Projects.Table (Project).Library_Name);
+                         Get_Name_String (Project.Library_Name);
 
          begin
-            if In_Tree.Projects.Table (Project).Library_Kind = Static then
+            if Project.Library_Kind = Static then
                return Is_Regular_File
                  (Lib_Dir & Directory_Separator & "lib" &
                   Fil.Append_To (Lib_Name, Archive_Ext));
@@ -380,8 +379,9 @@ package body MLib.Tgt is
      (Project : Project_Id;
       In_Tree : Project_Tree_Ref) return File_Name_Type
    is
+      pragma Unreferenced (In_Tree);
    begin
-      if not In_Tree.Projects.Table (Project).Library then
+      if not Project.Library then
          Prj.Com.Fail ("INTERNAL ERROR: Library_File_Name_For called " &
                        "for non library project");
          return No_File;
@@ -389,11 +389,10 @@ package body MLib.Tgt is
       else
          declare
             Lib_Name : constant String :=
-                         Get_Name_String
-                           (In_Tree.Projects.Table (Project).Library_Name);
+                         Get_Name_String (Project.Library_Name);
 
          begin
-            if In_Tree.Projects.Table (Project).Library_Kind =
+            if Project.Library_Kind =
                  Static
             then
                Name_Len := 3;

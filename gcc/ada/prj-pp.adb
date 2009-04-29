@@ -74,8 +74,7 @@ package body Prj.PP is
       W_Eol                              : Write_Eol_Ap  := null;
       W_Str                              : Write_Str_Ap  := null;
       Backward_Compatibility             : Boolean;
-      Id                                 : Prj.Project_Id := Prj.No_Project;
-      Id_Tree                            : Prj.Project_Tree_Ref := null)
+      Id                                 : Prj.Project_Id := Prj.No_Project)
    is
       procedure Print (Node : Project_Node_Id; Indent : Natural);
       --  A recursive procedure that traverses a project file tree and outputs
@@ -339,7 +338,7 @@ package body Prj.PP is
                   Write_String ("project ");
 
                   if Id /= Prj.No_Project then
-                     Output_Name (Id_Tree.Projects.Table (Id).Display_Name);
+                     Output_Name (Id.Display_Name);
                   else
                      Output_Name (Name_Of (Node, In_Tree));
                   end if;
@@ -372,7 +371,7 @@ package body Prj.PP is
                   Write_String ("end ");
 
                   if Id /= Prj.No_Project then
-                     Output_Name (Id_Tree.Projects.Table (Id).Display_Name);
+                     Output_Name (Id.Display_Name);
                   else
                      Output_Name (Name_Of (Node, In_Tree));
                   end if;

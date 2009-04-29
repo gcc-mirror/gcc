@@ -143,12 +143,11 @@ package body Prj is
    --  Table to store the path name of all the created temporary files, so that
    --  they can be deleted at the end, or when the program is interrupted.
 
-   procedure Free (Project : in out Project_Data; Reset_Only : Boolean);
+   procedure Free (Project : in out Project_Id; Reset_Only : Boolean);
    --  Free memory allocated for Project
 
    procedure Free_List (Languages : in out Language_Ptr);
    procedure Free_List (Source : in out Source_Id);
-   procedure Free_List (List : in out Project_List);
    procedure Free_List (Languages : in out Language_List);
    --  Free memory allocated for the list of languages or sources
 
@@ -396,7 +395,7 @@ package body Prj is
 
    procedure Project_Changed (Iter : in out Source_Iterator) is
    begin
-      Iter.Language := Iter.In_Tree.Projects.Table (Iter.Project).Languages;
+      Iter.Language := Iter.Project.Project.Languages;
       Language_Changed (Iter);
    end Project_Changed;
 
@@ -420,16 +419,14 @@ package body Prj is
 
       if Iter.Language = No_Language_Index then
          if Iter.All_Projects then
-            Iter.Project := Iter.Project + 1;
+            Iter.Project := Iter.Project.Next;
 
-            if Iter.Project > Project_Table.Last (Iter.In_Tree.Projects) then
-               Iter.Project := No_Project;
-            else
+            if Iter.Project /= null then
                Project_Changed (Iter);
             end if;
 
          else
-            Iter.Project := No_Project;
+            Iter.Project := null;
          end if;
 
       else
@@ -455,14 +452,18 @@ package body Prj is
    begin
       Iter := Source_Iterator'
         (In_Tree       => In_Tree,
-         Project       => Project,
+         Project       => In_Tree.Projects,
          All_Projects  => Project = No_Project,
          Language_Name => Language,
          Language      => No_Language_Index,
          Current       => No_Source);
 
-      if Iter.Project = No_Project then
-         Iter.Project  := Project_Table.First;
+      if Project /= null then
+         while Iter.Project /= null
+           and then Iter.Project.Project /= Project
+         loop
+            Iter.Project := Iter.Project.Next;
+         end loop;
       end if;
 
       Project_Changed (Iter);
@@ -498,7 +499,6 @@ package body Prj is
 
    procedure For_Every_Project_Imported
      (By             : Project_Id;
-      In_Tree        : Project_Tree_Ref;
       With_State     : in out State;
       Imported_First : Boolean := False)
    is
@@ -514,7 +514,6 @@ package body Prj is
       ---------------------
 
       procedure Recursive_Check (Project : Project_Id) is
-         Data : Project_Data renames In_Tree.Projects.Table (Project);
          List : Project_List;
 
       begin
@@ -527,13 +526,13 @@ package body Prj is
 
             --  Visited all extended projects
 
-            if Data.Extends /= No_Project then
-               Recursive_Check (Data.Extends);
+            if Project.Extends /= No_Project then
+               Recursive_Check (Project.Extends);
             end if;
 
             --  Visited all imported projects
 
-            List := Data.Imported_Projects;
+            List := Project.Imported_Projects;
             while List /= null loop
                Recursive_Check (List.Project);
                List := List.Next;
@@ -585,7 +584,11 @@ package body Prj is
 
    function Hash (Project : Project_Id) return Header_Num is
    begin
-      return Header_Num (Project mod Max_Header_Num);
+      if Project = No_Project then
+         return Header_Num'First;
+      else
+         return Hash (Get_Name_String (Project.Name));
+      end if;
    end Hash;
 
    -----------
@@ -645,13 +648,13 @@ package body Prj is
    -------------------
 
    function Is_A_Language
-     (Data          : Project_Data;
+     (Project       : Project_Id;
       Language_Name : Name_Id) return Boolean
    is
       Lang_Ind : Language_Ptr;
 
    begin
-      Lang_Ind := Data.Languages;
+      Lang_Ind := Project.Languages;
       while Lang_Ind /= No_Language_Index loop
          if Lang_Ind.Name = Language_Name then
             return True;
@@ -669,8 +672,7 @@ package body Prj is
 
    function Is_Extending
      (Extending : Project_Id;
-      Extended  : Project_Id;
-      In_Tree   : Project_Tree_Ref) return Boolean
+      Extended  : Project_Id) return Boolean
    is
       Proj : Project_Id;
 
@@ -681,7 +683,7 @@ package body Prj is
             return True;
          end if;
 
-         Proj := In_Tree.Projects.Table (Proj).Extends;
+         Proj := Proj.Extends;
       end loop;
 
       return False;
@@ -823,18 +825,24 @@ package body Prj is
    -- Free --
    ----------
 
-   procedure Free (Project : in out Project_Data; Reset_Only : Boolean) is
+   procedure Free (Project : in out Project_Id; Reset_Only : Boolean) is
+      procedure Unchecked_Free is new Ada.Unchecked_Deallocation
+        (Project_Data, Project_Id);
    begin
-      Free (Project.Include_Path);
-      Free (Project.Ada_Include_Path);
-      Free (Project.Objects_Path);
-      Free (Project.Ada_Objects_Path);
+      if Project /= null then
+         Free (Project.Include_Path);
+         Free (Project.Ada_Include_Path);
+         Free (Project.Objects_Path);
+         Free (Project.Ada_Objects_Path);
 
-      Free_List (Project.Imported_Projects);
-      Free_List (Project.All_Imported_Projects);
+         Free_List (Project.Imported_Projects, Free_Project => False);
+         Free_List (Project.All_Imported_Projects, Free_Project => False);
 
-      if not Reset_Only then
-         Free_List (Project.Languages);
+         if not Reset_Only then
+            Free_List (Project.Languages);
+         end if;
+
+         Unchecked_Free (Project);
       end if;
    end Free;
 
@@ -875,13 +883,21 @@ package body Prj is
    -- Free_List --
    ---------------
 
-   procedure Free_List (List : in out Project_List) is
+   procedure Free_List
+     (List         : in out Project_List;
+      Free_Project : Boolean;
+      Reset_Only   : Boolean := True)
+   is
       procedure Unchecked_Free is new Ada.Unchecked_Deallocation
         (Project_List_Element, Project_List);
       Tmp : Project_List;
    begin
       while List /= null loop
          Tmp := List.Next;
+         if Free_Project then
+            Free (List.Project, Reset_Only => Reset_Only);
+         end if;
+
          Unchecked_Free (List);
          List := Tmp;
       end loop;
@@ -925,13 +941,7 @@ package body Prj is
          Source_Paths_Htable.Reset (Tree.Source_Paths_HT);
          Unit_Sources_Htable.Reset (Tree.Unit_Sources_HT);
 
-         for P in Project_Table.First ..
-           Project_Table.Last (Tree.Projects)
-         loop
-            Free (Tree.Projects.Table (P), Reset_Only => False);
-         end loop;
-
-         Project_Table.Free (Tree.Projects);
+         Free_List (Tree.Projects, Free_Project => True, Reset_Only => False);
 
          --  Private part
 
@@ -966,15 +976,7 @@ package body Prj is
       Source_Paths_Htable.Reset     (Tree.Source_Paths_HT);
       Unit_Sources_Htable.Reset     (Tree.Unit_Sources_HT);
 
-      if not Project_Table."=" (Tree.Projects.Table, null) then
-         for P in Project_Table.First ..
-           Project_Table.Last (Tree.Projects)
-         loop
-            Free (Tree.Projects.Table (P), Reset_Only => True);
-         end loop;
-      end if;
-
-      Project_Table.Init            (Tree.Projects);
+      Free_List (Tree.Projects, Free_Project => True, Reset_Only => True);
 
       --  Private part table
 
@@ -1235,7 +1237,7 @@ package body Prj is
    -- Has_Ada_Sources --
    ---------------------
 
-   function Has_Ada_Sources (Data : Project_Data) return Boolean is
+   function Has_Ada_Sources (Data : Project_Id) return Boolean is
       Lang : Language_Ptr;
 
    begin
@@ -1254,7 +1256,7 @@ package body Prj is
    -- Has_Foreign_Sources --
    -------------------------
 
-   function Has_Foreign_Sources (Data : Project_Data) return Boolean is
+   function Has_Foreign_Sources (Data : Project_Id) return Boolean is
       Lang : Language_Ptr;
 
    begin
@@ -1317,30 +1319,27 @@ package body Prj is
    --------------------------
 
    function Get_Object_Directory
-     (In_Tree             : Project_Tree_Ref;
-      Project             : Project_Id;
+     (Project             : Project_Id;
       Including_Libraries : Boolean;
       Only_If_Ada         : Boolean := False) return Path_Name_Type
    is
-      Data : Project_Data renames In_Tree.Projects.Table (Project);
-
    begin
-      if (Data.Library and Including_Libraries)
+      if (Project.Library and Including_Libraries)
         or else
-          (Data.Object_Directory /= No_Path_Information
-            and then (not Including_Libraries or else not Data.Library))
+          (Project.Object_Directory /= No_Path_Information
+            and then (not Including_Libraries or else not Project.Library))
       then
          --  For a library project, add the library ALI directory if there is
          --  no object directory or if the library ALI directory contains ALI
          --  files; otherwise add the object directory.
 
-         if Data.Library then
-            if Data.Object_Directory = No_Path_Information
-              or else Contains_ALI_Files (Data.Library_ALI_Dir.Name)
+         if Project.Library then
+            if Project.Object_Directory = No_Path_Information
+              or else Contains_ALI_Files (Project.Library_ALI_Dir.Name)
             then
-               return Data.Library_ALI_Dir.Name;
+               return Project.Library_ALI_Dir.Name;
             else
-               return Data.Object_Directory.Name;
+               return Project.Object_Directory.Name;
             end if;
 
             --  For a non-library project, add object directory if it is not a
@@ -1349,7 +1348,7 @@ package body Prj is
             --  adding the object directory could disrupt the order of the
             --  object dirs in the path.
 
-         elsif not Data.Virtual then
+         elsif not Project.Virtual then
             declare
                Add_Object_Dir : Boolean;
                Prj            : Project_Id;
@@ -1358,15 +1357,15 @@ package body Prj is
                Add_Object_Dir := not Only_If_Ada;
                Prj := Project;
                while not Add_Object_Dir and then Prj /= No_Project loop
-                  if Has_Ada_Sources (In_Tree.Projects.Table (Prj)) then
+                  if Has_Ada_Sources (Prj) then
                      Add_Object_Dir := True;
                   else
-                     Prj := In_Tree.Projects.Table (Prj).Extends;
+                     Prj := Prj.Extends;
                   end if;
                end loop;
 
                if Add_Object_Dir then
-                  return Data.Object_Directory.Name;
+                  return Project.Object_Directory.Name;
                end if;
             end;
          end if;
@@ -1380,15 +1379,14 @@ package body Prj is
    -----------------------------------
 
    function Ultimate_Extending_Project_Of
-     (Proj    : Project_Id;
-      In_Tree : Project_Tree_Ref) return Project_Id
+     (Proj : Project_Id) return Project_Id
    is
       Prj : Project_Id;
 
    begin
       Prj := Proj;
-      while In_Tree.Projects.Table (Prj).Extended_By /= No_Project loop
-         Prj := In_Tree.Projects.Table (Prj).Extended_By;
+      while Prj.Extended_By /= No_Project loop
+         Prj := Prj.Extended_By;
       end loop;
 
       return Prj;
@@ -1398,11 +1396,7 @@ package body Prj is
    -- Compute_All_Imported_Projects --
    -----------------------------------
 
-   procedure Compute_All_Imported_Projects
-     (Project : Project_Id; In_Tree : Project_Tree_Ref)
-   is
-      Data : Project_Data renames In_Tree.Projects.Table (Project);
-
+   procedure Compute_All_Imported_Projects (Project : Project_Id) is
       procedure Recursive_Add (Prj : Project_Id; Dummy : in out Boolean);
       --  Recursively add the projects imported by project Project, but not
       --  those that are extended.
@@ -1420,13 +1414,13 @@ package body Prj is
          --  A project is not importing itself
 
          if Project /= Prj then
-            Prj2 := Ultimate_Extending_Project_Of (Prj, In_Tree);
+            Prj2 := Ultimate_Extending_Project_Of (Prj);
 
             --  Check that the project is not already in the list. We know the
             --  one passed to Recursive_Add have never been visited before, but
             --  the one passed it are the extended projects.
 
-            List := Data.All_Imported_Projects;
+            List := Project.All_Imported_Projects;
             while List /= null loop
                if List.Project = Prj2 then
                   return;
@@ -1436,10 +1430,10 @@ package body Prj is
 
             --  Add it to the list
 
-            Data.All_Imported_Projects :=
+            Project.All_Imported_Projects :=
               new Project_List_Element'
                 (Project => Prj2,
-                 Next    => Data.All_Imported_Projects);
+                 Next    => Project.All_Imported_Projects);
          end if;
       end Recursive_Add;
 
@@ -1448,8 +1442,8 @@ package body Prj is
       Dummy : Boolean := False;
 
    begin
-      Free_List (Data.All_Imported_Projects);
-      For_All_Projects (Project, In_Tree, Dummy);
+      Free_List (Project.All_Imported_Projects, Free_Project => False);
+      For_All_Projects (Project, Dummy);
    end Compute_All_Imported_Projects;
 
 begin

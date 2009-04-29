@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -441,6 +441,37 @@ package body Exp_Ch7 is
           Object_Definition   =>
             New_Reference_To
               (RTE (RE_List_Controller), Loc));
+
+      if Has_Completion_In_Body (Directly_Designated_Type (Typ))
+        and then In_Package_Body (Current_Scope)
+        and then
+          Nkind (Parent (Declaration_Node (Typ))) = N_Package_Specification
+      then
+         --  The type is declared in a package declaration and designates a
+         --  Taft amendment type that requires finalization. In general we
+         --  assume that TA types are controlled, but we inhibit this
+         --  worst-case assumption for runtime files, for efficiency reasons
+         --  (see exp_ch3.adb). The reference to RE_List_Controller may have
+         --  added a with_clause to the current body. Formally the spec needs
+         --  the with_clause as well, so we add it now, for use by codepeer.
+
+         declare
+            Loc         : constant Source_Ptr := Sloc (Typ);
+            Spec_Unit   : constant Node_Id :=
+                            Library_Unit (Cunit (Current_Sem_Unit));
+            List_Scope  : constant Entity_Id :=
+                            Scope (RTE (RE_List_Controller));
+            With_Clause : constant Node_Id :=
+                            Make_With_Clause (Loc,
+                              Name => New_Occurrence_Of (List_Scope, Loc));
+         begin
+            Set_Library_Unit
+              (With_Clause, Parent (Unit_Declaration_Node (List_Scope)));
+            Set_Corresponding_Spec (With_Clause, List_Scope);
+            Set_Implicit_With (With_Clause);
+            Append (With_Clause, Context_Items (Spec_Unit));
+         end;
+      end if;
 
       --  The type may have been frozen already, and this is a late freezing
       --  action, in which case the declaration must be elaborated at once.

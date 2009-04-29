@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,8 +114,7 @@ package body Prj.Util is
    is
       pragma Assert (Project /= No_Project);
 
-      The_Packages : constant Package_Id :=
-                       In_Tree.Projects.Table (Project).Decl.Packages;
+      The_Packages : constant Package_Id := Project.Decl.Packages;
 
       Builder_Package : constant Prj.Package_Id :=
                           Prj.Util.Value_Of
@@ -135,7 +134,7 @@ package body Prj.Util is
 
       Executable_Suffix_Name : Name_Id := No_Name;
 
-      Naming : constant Naming_Data := In_Tree.Projects.Table (Project).Naming;
+      Naming : constant Naming_Data := Project.Naming;
 
       Spec_Suffix : Name_Id := No_Name;
       Body_Suffix : Name_Id := No_Name;
@@ -188,8 +187,7 @@ package body Prj.Util is
 
       if Builder_Package /= No_Package then
          if Get_Mode = Multi_Language then
-            Executable_Suffix_Name :=
-              In_Tree.Projects.Table (Project).Config.Executable_Suffix;
+            Executable_Suffix_Name := Project.Config.Executable_Suffix;
 
          else
             Executable_Suffix := Prj.Util.Value_Of
@@ -330,11 +328,9 @@ package body Prj.Util is
             Result     : File_Name_Type;
 
          begin
-            if In_Tree.Projects.Table (Project).Config.Executable_Suffix /=
-              No_Name
-            then
+            if Project.Config.Executable_Suffix /= No_Name then
                Executable_Extension_On_Target :=
-                 In_Tree.Projects.Table (Project).Config.Executable_Suffix;
+                 Project.Config.Executable_Suffix;
             end if;
 
             Result := Executable_Name (Name_Find);

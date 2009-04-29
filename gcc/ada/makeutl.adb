@@ -373,7 +373,6 @@ package body Makeutl is
       procedure Recursive_Add (Proj : Project_Id; Dummy : in out Boolean) is
          pragma Unreferenced (Dummy);
 
-         Data           : Project_Data renames In_Tree.Projects.Table (Proj);
          Linker_Package : Package_Id;
          Options        : Variable_Value;
 
@@ -381,7 +380,7 @@ package body Makeutl is
          Linker_Package :=
            Prj.Util.Value_Of
              (Name        => Name_Linker,
-              In_Packages => Data.Decl.Packages,
+              In_Packages => Proj.Decl.Packages,
               In_Tree     => In_Tree);
 
          Options :=
@@ -412,20 +411,21 @@ package body Makeutl is
    begin
       Linker_Opts.Init;
 
-      For_All_Projects (Project, In_Tree, Dummy, Imported_First => True);
+      For_All_Projects (Project, Dummy, Imported_First => True);
 
       Last_Linker_Option := 0;
 
       for Index in reverse 1 .. Linker_Opts.Last loop
          declare
-            Options : String_List_Id := Linker_Opts.Table (Index).Options;
+            Options : String_List_Id;
             Proj    : constant Project_Id :=
                         Linker_Opts.Table (Index).Project;
             Option  : Name_Id;
             Dir_Path : constant String :=
-              Get_Name_String (In_Tree.Projects.Table (Proj).Directory.Name);
+                         Get_Name_String (Proj.Directory.Name);
 
          begin
+            Options := Linker_Opts.Table (Index).Options;
             while Options /= Nil_String loop
                Option := In_Tree.String_Elements.Table (Options).Value;
                Get_Name_String (Option);
@@ -444,8 +444,7 @@ package body Makeutl is
                      Including_L_Switch => True);
                end if;
 
-               Options :=
-                 In_Tree.String_Elements.Table (Options).Next;
+               Options := In_Tree.String_Elements.Table (Options).Next;
             end loop;
          end;
       end loop;

@@ -336,8 +336,6 @@ package body Clean is
    procedure Clean_Archive (Project : Project_Id; Global : Boolean) is
       Current_Dir : constant Dir_Name_Str := Get_Current_Dir;
 
-      Data : constant Project_Data := Project_Tree.Projects.Table (Project);
-
       Lib_Prefix : String_Access;
       Archive_Name : String_Access;
       --  The name of the archive file for this project
@@ -346,7 +344,7 @@ package body Clean is
       --  The name of the archive dependency file for this project
 
       Obj_Dir : constant String :=
-                  Get_Name_String (Data.Object_Directory.Display_Name);
+                  Get_Name_String (Project.Object_Directory.Display_Name);
 
    begin
       Change_Dir (Obj_Dir);
@@ -356,10 +354,10 @@ package body Clean is
 
       if Global then
          Lib_Prefix :=
-           new String'("lib" & Get_Name_String (Data.Display_Name));
+           new String'("lib" & Get_Name_String (Project.Display_Name));
       else
          Lib_Prefix :=
-           new String'("lib" & Get_Name_String (Data.Library_Name));
+           new String'("lib" & Get_Name_String (Project.Library_Name));
       end if;
 
       Archive_Name := new String'(Lib_Prefix.all & '.' & Archive_Ext);
@@ -540,7 +538,6 @@ package body Clean is
 
    procedure Clean_Interface_Copy_Directory (Project : Project_Id) is
       Current : constant String := Get_Current_Dir;
-      Data    : constant Project_Data := Project_Tree.Projects.Table (Project);
 
       Direc : Dir_Type;
 
@@ -551,10 +548,12 @@ package body Clean is
       Unit        : Unit_Data;
 
    begin
-      if Data.Library and then Data.Library_Src_Dir /= No_Path_Information then
+      if Project.Library
+        and then Project.Library_Src_Dir /= No_Path_Information
+      then
          declare
             Directory : constant String :=
-                          Get_Name_String (Data.Library_Src_Dir.Display_Name);
+                        Get_Name_String (Project.Library_Src_Dir.Display_Name);
 
          begin
             Change_Dir (Directory);
@@ -634,9 +633,8 @@ package body Clean is
 
    procedure Clean_Library_Directory (Project : Project_Id) is
       Current : constant String := Get_Current_Dir;
-      Data    : constant Project_Data := Project_Tree.Projects.Table (Project);
 
-      Lib_Filename : constant String := Get_Name_String (Data.Library_Name);
+      Lib_Filename : constant String := Get_Name_String (Project.Library_Name);
       DLL_Name     : String :=
                        DLL_Prefix & Lib_Filename & "." & DLL_Ext;
       Archive_Name : String :=
@@ -652,22 +650,22 @@ package body Clean is
       Major : String_Access := Empty_String'Access;
 
    begin
-      if Data.Library then
-         if Data.Library_Kind /= Static
+      if Project.Library then
+         if Project.Library_Kind /= Static
            and then MLib.Tgt.Library_Major_Minor_Id_Supported
-           and then Data.Lib_Internal_Name /= No_Name
+           and then Project.Lib_Internal_Name /= No_Name
          then
-            Minor := new String'(Get_Name_String (Data.Lib_Internal_Name));
+            Minor := new String'(Get_Name_String (Project.Lib_Internal_Name));
             Major := new String'(MLib.Major_Id_Name (DLL_Name, Minor.all));
          end if;
 
          declare
             Lib_Directory     : constant String :=
                                   Get_Name_String
-                                    (Data.Library_Dir.Display_Name);
+                                    (Project.Library_Dir.Display_Name);
             Lib_ALI_Directory : constant String :=
                                   Get_Name_String
-                                    (Data.Library_ALI_Dir.Display_Name);
+                                    (Project.Library_ALI_Dir.Display_Name);
 
          begin
             Canonical_Case_File_Name (Archive_Name);
@@ -686,6 +684,7 @@ package body Clean is
 
                declare
                   Filename : constant String := Name (1 .. Last);
+
                begin
                   if Is_Regular_File (Filename)
                     or else Is_Symbolic_Link (Filename)
@@ -693,15 +692,18 @@ package body Clean is
                      Canonical_Case_File_Name (Name (1 .. Last));
                      Delete_File := False;
 
-                     if (Data.Library_Kind = Static
-                         and then Name (1 .. Last) =  Archive_Name)
+                     if (Project.Library_Kind = Static
+                          and then Name (1 .. Last) =  Archive_Name)
                        or else
-                         ((Data.Library_Kind = Dynamic or else
-                             Data.Library_Kind = Relocatable)
+                         ((Project.Library_Kind = Dynamic
+                             or else
+                           Project.Library_Kind = Relocatable)
                           and then
                             (Name (1 .. Last) = DLL_Name
-                             or else Name (1 .. Last) = Minor.all
-                             or else Name (1 .. Last) = Major.all))
+                               or else
+                             Name (1 .. Last) = Minor.all
+                               or else
+                             Name (1 .. Last) = Major.all))
                      then
                         if not Do_Nothing then
                            Set_Writable (Filename);
@@ -747,7 +749,7 @@ package body Clean is
                               if Unit.File_Names (Body_Part).Project /=
                                 No_Project
                               then
-                                 if  Ultimate_Extension_Of
+                                 if Ultimate_Extension_Of
                                    (Unit.File_Names (Body_Part).Project) =
                                    Project
                                  then
@@ -817,8 +819,6 @@ package body Clean is
       --  Name of the executable file
 
       Current_Dir : constant Dir_Name_Str := Get_Current_Dir;
-      Data        : constant Project_Data :=
-                      Project_Tree.Projects.Table (Project);
       U_Data      : Unit_Data;
       File_Name1  : File_Name_Type;
       Index1      : Int;
@@ -834,7 +834,7 @@ package body Clean is
 
       if Project = Main_Project
         and then Osint.Number_Of_Files /= 0
-        and then Data.Library
+        and then Project.Library
       then
          Osint.Fail
            ("Cannot specify executable(s) for a Library Project File");
@@ -842,17 +842,17 @@ package body Clean is
 
       --  Nothing to clean in an externally built project
 
-      if Data.Externally_Built then
+      if Project.Externally_Built then
          if Verbose_Mode then
             Put ("Nothing to do to clean externally built project """);
-            Put (Get_Name_String (Data.Name));
+            Put (Get_Name_String (Project.Name));
             Put_Line ("""");
          end if;
 
       else
          if Verbose_Mode then
             Put ("Cleaning project """);
-            Put (Get_Name_String (Data.Name));
+            Put (Get_Name_String (Project.Name));
             Put_Line ("""");
          end if;
 
@@ -861,11 +861,11 @@ package body Clean is
          Processed_Projects.Increment_Last;
          Processed_Projects.Table (Processed_Projects.Last) := Project;
 
-         if Data.Object_Directory /= No_Path_Information then
+         if Project.Object_Directory /= No_Path_Information then
             declare
                Obj_Dir : constant String :=
                            Get_Name_String
-                             (Data.Object_Directory.Display_Name);
+                             (Project.Object_Directory.Display_Name);
 
             begin
                Change_Dir (Obj_Dir);
@@ -878,8 +878,8 @@ package body Clean is
                --  Source_Dirs or Source_Files is specified as an empty list,
                --  so always look for Ada units in extending projects.
 
-               if Has_Ada_Sources (Data)
-                 or else Data.Extends /= No_Project
+               if Has_Ada_Sources (Project)
+                 or else Project.Extends /= No_Project
                then
                   for Unit in Unit_Table.First ..
                     Unit_Table.Last (Project_Tree.Units)
@@ -1022,19 +1022,23 @@ package body Clean is
                --  Check if a global archive and it dependency file could have
                --  been created and, if they exist, delete them.
 
-               if Project = Main_Project and then not Data.Library then
+               if Project = Main_Project and then not Project.Library then
                   Global_Archive := False;
 
-                  for Proj in Project_Table.First ..
-                    Project_Table.Last (Project_Tree.Projects)
-                  loop
-                     if Has_Foreign_Sources
-                          (Project_Tree.Projects.Table (Proj))
-                     then
-                        Global_Archive := True;
-                        exit;
-                     end if;
-                  end loop;
+                  declare
+                     Proj : Project_List;
+
+                  begin
+                     Proj := Project_Tree.Projects;
+                     while Proj /= null loop
+                        if Has_Foreign_Sources (Proj.Project) then
+                           Global_Archive := True;
+                           exit;
+                        end if;
+
+                        Proj := Proj.Next;
+                     end loop;
+                  end;
 
                   if Global_Archive then
                      Clean_Archive (Project, Global => True);
@@ -1050,21 +1054,21 @@ package body Clean is
 
          --  The directories are cleaned only if switch -c is not specified
 
-         if Data.Library then
+         if Project.Library then
             if not Compile_Only then
                Clean_Library_Directory (Project);
 
-               if Data.Library_Src_Dir /= No_Path_Information then
+               if Project.Library_Src_Dir /= No_Path_Information then
                   Clean_Interface_Copy_Directory (Project);
                end if;
             end if;
 
-            if Data.Standalone_Library and then
-              Data.Object_Directory /= No_Path_Information
+            if Project.Standalone_Library and then
+              Project.Object_Directory /= No_Path_Information
             then
                Delete_Binder_Generated_Files
-                 (Get_Name_String (Data.Object_Directory.Display_Name),
-                  File_Name_Type (Data.Library_Name));
+                 (Get_Name_String (Project.Object_Directory.Display_Name),
+                  File_Name_Type (Project.Library_Name));
             end if;
          end if;
 
@@ -1085,7 +1089,7 @@ package body Clean is
             --  For each imported project, call Clean_Project if the project
             --  has not been processed already.
 
-            Imported := Data.Imported_Projects;
+            Imported := Project.Imported_Projects;
             while Imported /= null loop
                Process := True;
 
@@ -1110,8 +1114,8 @@ package body Clean is
             --  called before, because no other project may import or extend
             --  this project.
 
-            if Data.Extends /= No_Project then
-               Clean_Project (Data.Extends);
+            if Project.Extends /= No_Project then
+               Clean_Project (Project.Extends);
             end if;
          end;
       end if;
@@ -1122,11 +1126,11 @@ package body Clean is
          --  The executables are deleted only if switch -c is not specified
 
       if Project = Main_Project
-        and then Data.Exec_Directory /= No_Path_Information
+        and then Project.Exec_Directory /= No_Path_Information
       then
          declare
             Exec_Dir : constant String :=
-                         Get_Name_String (Data.Exec_Directory.Display_Name);
+                         Get_Name_String (Project.Exec_Directory.Display_Name);
 
          begin
             Change_Dir (Exec_Dir);
@@ -1160,9 +1164,9 @@ package body Clean is
                   end;
                end if;
 
-               if Data.Object_Directory /= No_Path_Information then
+               if Project.Object_Directory /= No_Path_Information then
                   Delete_Binder_Generated_Files
-                    (Get_Name_String (Data.Object_Directory.Display_Name),
+                    (Get_Name_String (Project.Object_Directory.Display_Name),
                      Strip_Suffix (Main_Source_File));
                end if;
             end loop;
@@ -1391,7 +1395,7 @@ package body Clean is
          --  Add source directories and object directories to the search paths
 
          Add_Source_Directories (Main_Project, Project_Tree);
-         Add_Object_Directories (Main_Project, Project_Tree);
+         Add_Object_Directories (Main_Project);
       end if;
 
       Osint.Add_Default_Search_Dirs;
@@ -1402,9 +1406,8 @@ package body Clean is
 
       if Main_Project /= No_Project and then Osint.Number_Of_Files = 0 then
          declare
-            Value : String_List_Id :=
-                      Project_Tree.Projects.Table (Main_Project).Mains;
             Main  : String_Element;
+            Value : String_List_Id := Main_Project.Mains;
          begin
             while Value /= Prj.Nil_String loop
                Main := Project_Tree.String_Elements.Table (Value);
@@ -1466,7 +1469,7 @@ package body Clean is
      (Of_Project : Project_Id;
       Prj        : Project_Id) return Boolean
    is
-      Data : Project_Data;
+      Proj : Project_Id;
 
    begin
       if Prj = No_Project or else Of_Project = No_Project then
@@ -1477,24 +1480,22 @@ package body Clean is
          return True;
       end if;
 
-      Data := Project_Tree.Projects.Table (Of_Project);
-
-      while Data.Extends /= No_Project loop
-         if Data.Extends = Prj then
+      Proj := Of_Project;
+      while Proj.Extends /= No_Project loop
+         if Proj.Extends = Prj then
             return True;
          end if;
 
-         Data := Project_Tree.Projects.Table (Data.Extends);
+         Proj := Proj.Extends;
       end loop;
 
-      Data := Project_Tree.Projects.Table (Prj);
-
-      while Data.Extends /= No_Project loop
-         if Data.Extends = Of_Project then
+      Proj := Prj;
+      while Proj.Extends /= No_Project loop
+         if Proj.Extends = Of_Project then
             return True;
          end if;
 
-         Data := Project_Tree.Projects.Table (Data.Extends);
+         Proj := Proj.Extends;
       end loop;
 
       return False;
@@ -1910,14 +1911,12 @@ package body Clean is
 
    function Ultimate_Extension_Of (Project : Project_Id) return Project_Id is
       Result : Project_Id := Project;
-      Data   : Project_Data;
 
    begin
       if Project /= No_Project then
          loop
-            Data := Project_Tree.Projects.Table (Result);
-            exit when Data.Extended_By = No_Project;
-            Result := Data.Extended_By;
+            exit when Result.Extended_By = No_Project;
+            Result := Result.Extended_By;
          end loop;
       end if;
 

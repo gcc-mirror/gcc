@@ -1,3 +1,31 @@
+2009-04-29  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb (Build_Final_List): For an access type that designates a
+	Taft Amendment type, if the access type needs finalization, make sure
+	the implicit with clause for List_Controller occurs on the package spec.
+
+	* rtsfind.adb (Text_IO_Kludge): Fine tune the creation of implicit
+	with's created for the pseudo-children of Text_IO and friends. In
+	particular, avoid cycles, such as Ada.Wide_Text_IO.Integer_IO and
+	Ada.Text_IO.Integer_IO both with-ing each other.
+
+	* sem.adb (Walk_Library_Items): Suppress assertion failure in certain
+	oddball cases when pragma Extend_System is used.
+
+	* sem_ch12.adb (Get_Associated_Node): Prevent direct 'with' cycles in
+	the case where a package spec instantiates a generic whose body with's
+	this package, so Walk_Library_Items won't complain about cyclic with's.
+
+2009-04-29  Emmanuel Briot  <briot@adacore.com>
+
+	* gnatcmd.adb, prj-proc.adb, make.adb, mlib-prj.adb, prj.adb, prj.ads,
+	prj-pp.adb, prj-pp.ads, makeutl.adb, clean.adb, prj-nmsc.adb,
+	mlib-tgt.adb, mlib-tgt.ads, prj-util.adb, prj-env.adb, prj-env.ads
+	(Project_Id): now a real pointer to Project_Data, instead of an index
+	into the Projects_Table. This simplifies the API significantly, avoiding
+	extra lookups in this table and the need to pass the Project_Tree_Ref
+	parameter in several cases
+
 2009-04-29  Nicolas Setton  <setton@adacore.com>
 
 	* gcc-interface/Makefile.in: Produce .dSYM files for shared libs on

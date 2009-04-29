@@ -1396,7 +1396,7 @@ package body Rtsfind is
 
    begin
       --  Nothing to do if name is not an identifier or a selected component
-      --  whose selector_name is not an identifier.
+      --  whose selector_name is an identifier.
 
       if Nkind (Nam) = N_Identifier then
          Chrs := Chars (Nam);
@@ -1448,8 +1448,40 @@ package body Rtsfind is
                Load_RTU
                  (To_Load,
                   Use_Setting => In_Use (Cunit_Entity (U)));
-               Set_Is_Visible_Child_Unit
-                 (RT_Unit_Table (To_Load).Entity);
+               Set_Is_Visible_Child_Unit (RT_Unit_Table (To_Load).Entity);
+
+               --  Prevent creation of an implicit 'with' from (for example)
+               --  Ada.Wide_Text_IO.Integer_IO to Ada.Text_IO.Integer_IO,
+               --  because these could create cycles. First check whether the
+               --  simple names match ("integer_io" = "integer_io"), and then
+               --  check whether the parent is indeed one of the
+               --  [[Wide_]Wide_]Text_IO packages.
+
+               if Chrs = Chars (Cunit_Entity (Current_Sem_Unit)) then
+                  declare
+                     Parent_Name : constant Unit_Name_Type
+                       := Get_Parent_Spec_Name (Unit_Name (Current_Sem_Unit));
+                  begin
+                     if Parent_Name /= No_Unit_Name then
+                        Get_Name_String (Parent_Name);
+
+                        declare
+                           P : String renames Name_Buffer (1 .. Name_Len);
+                        begin
+                           if P = "ada.text_io%s"
+                             or else P = "ada.wide_text_io%s"
+                             or else P = "ada.wide_wide_text_io%s"
+                           then
+                              goto Continue;
+                           end if;
+                        end;
+                     end if;
+                  end;
+               end if;
+
+               --  Add an implicit with clause from the current unit to the
+               --  [[Wide_]Wide_]Text_IO child (if necessary).
+
                Maybe_Add_With (RT_Unit_Table (To_Load));
             end if;
 
