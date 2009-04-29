@@ -1,3 +1,20 @@
+2009-04-29  Rafael Avila de Espindola  <espindola@google.com>
+
+	* Makefile.in (PLUGIN_VERSION_H): New.
+	(OBJS-common): Remove plugin-version.o.
+	(plugin.o): Depend on (PLUGIN_VERSION_H).
+	(plugin-version.o): Remove.
+	* configure: Regenerate
+	* configure.ac: Create plugin-version.h.
+	* gcc-plugin.h (plugin_gcc_version): Remove.
+	(plugin_default_version_check): Change signature.
+	* plugin-version.c: Remove.
+	* plugin.c: Include plugin-version.h.
+	(str_plugin_gcc_version_name): Remove.
+	(try_init_one_plugin): Pass gcc version to plugin_init.
+	(plugin_default_version_check): Both gcc and plugin versions are now
+	arguments.
+
 2009-04-29  Bernd Schmidt  <bernd.schmidt@analog.com>
 	
 	* config/bfin/bfin.c (bfin_optimize_loop): Unify handling of
