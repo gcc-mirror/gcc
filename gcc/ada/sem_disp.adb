@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -865,7 +865,14 @@ package body Sem_Disp is
                                 Prim    => Subp));
                            end if;
 
-                           Generate_Reference (Tagged_Type, Subp, 'p', False);
+                           --  Indicate that this is an overriding operation,
+                           --  and replace the overriden entry in the list of
+                           --  primitive operations, which is used for xref
+                           --  generation subsequently.
+
+                           Generate_Reference (Tagged_Type, Subp, 'P', False);
+                           Override_Dispatching_Operation
+                             (Tagged_Type, Old_Subp, Subp);
                         end if;
                      end if;
                   end if;
