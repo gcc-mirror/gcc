@@ -20270,7 +20270,7 @@ output this info at program termination. Results are displayed in four
 columns:
 
 @noindent
-Index | Task Name | Stack Size | Actual Use [min - max]
+Index | Task Name | Stack Size | Stack Usage [Value +/- Variation]
 
 @noindent
 where:
@@ -20285,11 +20285,11 @@ is the name of the task analyzed.
 @item Stack Size
 is the maximum size for the stack.
 
-@item Actual Use
-is the measure done by the stack analyzer. In order to prevent overflow,
-the stack is not entirely analyzed, and it's not possible to know exactly how
-much has actually been used. The real amount of stack used is between the min
-and max values.
+@item Stack Usage
+is the measure done by the stack analyzer. In order to prevent overflow, the stack
+is not entirely analyzed, and it's not possible to know exactly how
+much has actually been used. The report thus contains the theoretical stack usage
+(Value) and the possible variation (Variation) around this value.
 
 @end table
 

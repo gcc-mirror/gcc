@@ -1,3 +1,30 @@
+2009-04-29  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-taskin.adb (Initialize): Remove pragma Warnings Off and remove
+	unused assignment.
+
+2009-04-29  Thomas Quinot  <quinot@adacore.com>
+
+	* make.adb: Minor reformatting.
+	Minor code reorganization throughout.
+
+2009-04-29  Matteo Bordin  <bordin@adacore.com>
+
+	* s-stausa.ads: Changed visibility of type Task_Result: moved to
+	public part to give application visibility over it.
+	This is for future improvement and to build a public API on top of it.
+	Changed record components name of type Task_Result to reflect the new
+	way of reporting. 
+
+	* s-stausa.adb: Actual_Size_Str changed to reflect the new way of
+	reporting Stack usage.
+
+	* gnat_ugn.texi: Update doc of stack usage report.
+
+	* g-tastus.ads, s-stusta.ads, s-stusta.adb: New files.
+
+	* Makefile.rtl: Add new run-time files.
+
 2009-04-29  Pascal Obry  <obry@adacore.com>
 
 	* initialize.c: Do not expand quoted arguments.
