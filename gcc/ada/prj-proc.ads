@@ -40,7 +40,8 @@ package Prj.Proc is
       Report_Error           : Put_Line_Access;
       When_No_Sources        : Error_Warning := Error;
       Reset_Tree             : Boolean := True;
-      Current_Dir            : String := "");
+      Current_Dir            : String := "";
+      Is_Config_File         : Boolean);
    --  Process a project file tree into project file data structures. If
    --  Report_Error is null, use the error reporting mechanism. Otherwise,
    --  report errors using Report_Error.
@@ -54,10 +55,12 @@ package Prj.Proc is
    --  project table before processing.
    --
    --  Process is a bit of a junk name, how about Process_Project_Tree???
-
+   --
    --  The two procedures that follow are implementing procedure Process in
    --  two successive phases. They are used by gprbuild/gprclean to add the
    --  configuration attributes between the two phases.
+   --
+   --  Is_Config_File should be true if Project is a config file (.cgpr)
 
    procedure Process_Project_Tree_Phase_1
      (In_Tree                : Project_Tree_Ref;
@@ -77,7 +80,8 @@ package Prj.Proc is
       From_Project_Node_Tree : Project_Node_Tree_Ref;
       Report_Error           : Put_Line_Access;
       When_No_Sources        : Error_Warning := Error;
-      Current_Dir            : String);
+      Current_Dir            : String;
+      Is_Config_File         : Boolean);
    --  See documentation of parameters in procedure Process above
 
 end Prj.Proc;

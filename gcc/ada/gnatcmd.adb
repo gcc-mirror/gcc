@@ -1884,7 +1884,8 @@ begin
            (Project           => Project,
             In_Tree           => Project_Tree,
             Project_File_Name => Project_File.all,
-            Packages_To_Check => Packages_To_Check);
+            Packages_To_Check => Packages_To_Check,
+            Is_Config_File    => False);
 
          if Project = Prj.No_Project then
             Fail ("""" & Project_File.all & """ processing failed");

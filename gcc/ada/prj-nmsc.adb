@@ -273,9 +273,11 @@ package body Prj.Nmsc is
    --  Check that a name is a valid Ada unit name
 
    procedure Check_Naming_Schemes
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref);
-   --  Check the naming scheme part of Data
+     (Project        : Project_Id;
+      In_Tree        : Project_Tree_Ref;
+      Is_Config_File : Boolean);
+   --  Check the naming scheme part of Data.
+   --  Is_Config_File should be True if Project is a config file (.cgpr)
 
    procedure Check_Configuration
      (Project : Project_Id;
@@ -788,7 +790,8 @@ package body Prj.Nmsc is
       Report_Error    : Put_Line_Access;
       When_No_Sources : Error_Warning;
       Current_Dir     : String;
-      Proc_Data       : in out Processing_Data)
+      Proc_Data       : in out Processing_Data;
+      Is_Config_File  : Boolean)
    is
       Extending : Boolean := False;
 
@@ -836,7 +839,7 @@ package body Prj.Nmsc is
 
       Extending := Project.Extends /= No_Project;
 
-      Check_Naming_Schemes (Project, In_Tree);
+      Check_Naming_Schemes (Project, In_Tree, Is_Config_File);
 
       if Get_Mode = Ada_Only then
          Prepare_Ada_Naming_Exceptions
@@ -2635,8 +2638,9 @@ package body Prj.Nmsc is
    --------------------------
 
    procedure Check_Naming_Schemes
-     (Project : Project_Id;
-      In_Tree : Project_Tree_Ref)
+     (Project        : Project_Id;
+      In_Tree        : Project_Tree_Ref;
+      Is_Config_File : Boolean)
    is
       Naming_Id : constant Package_Id :=
                    Util.Value_Of (Name_Naming, Project.Decl.Packages, In_Tree);
@@ -3316,7 +3320,7 @@ package body Prj.Nmsc is
    begin
       --  No Naming package or parsing a configuration file? nothing to do
 
-      if Naming_Id /= No_Package and not In_Configuration then
+      if Naming_Id /= No_Package and not Is_Config_File then
          Naming := In_Tree.Packages.Table (Naming_Id);
 
          if Current_Verbosity = High then
@@ -4366,7 +4370,7 @@ package body Prj.Nmsc is
                      Error_Msg
                        (Project,
                         In_Tree,
-                        "a standard project cannot have no language declared",
+                        "a standard project must have at least one language",
                         Languages.Location);
                   end if;
 

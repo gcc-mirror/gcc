@@ -99,12 +99,6 @@ package Prj is
    --  can ignore such errors when they don't need to build directly. Calling
    --  Set_Mode will reset this variable, default is for Ada_Only.
 
-   function In_Configuration return Boolean;
-   pragma Inline (In_Configuration);
-
-   procedure Set_In_Configuration (Value : Boolean);
-   pragma Inline (Set_In_Configuration);
-
    All_Packages : constant String_List_Access;
    --  Default value of parameter Packages of procedures Parse, in Prj.Pars and
    --  Prj.Part, indicating that all packages should be checked.
@@ -1121,7 +1115,8 @@ package Prj is
       Config : Project_Configuration;
 
       Path : Path_Information := No_Path_Information;
-      --  The path name of the project file
+      --  The path name of the project file. This include base name of the
+      --  project file
 
       Virtual : Boolean := False;
       --  True for virtual extending projects

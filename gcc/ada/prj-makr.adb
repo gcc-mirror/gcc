@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -845,6 +845,7 @@ package body Prj.Makr is
                Project_File_Name      => Output_Name.all,
                Always_Errout_Finalize => False,
                Store_Comments         => True,
+               Is_Config_File         => False,
                Current_Directory      => Get_Current_Dir,
                Packages_To_Check      => Packages_To_Check_By_Gnatname);
 

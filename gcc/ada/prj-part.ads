@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,8 @@ package Prj.Part is
       Always_Errout_Finalize : Boolean;
       Packages_To_Check      : String_List_Access := All_Packages;
       Store_Comments         : Boolean := False;
-      Current_Directory      : String := "");
+      Current_Directory      : String := "";
+      Is_Config_File         : Boolean);
    --  Parse project file and all its imported project files and create a tree.
    --  Return the node for the project (or Empty_Node if parsing failed). If
    --  Always_Errout_Finalize is True, Errout.Finalize is called in all cases,
@@ -48,5 +49,8 @@ package Prj.Part is
    --
    --  Current_Directory is used for optimization purposes only, avoiding extra
    --  system calls.
+   --
+   --  Is_Config_File should be set to True if the project represents a config
+   --  file (.cgpr) since some specific checks apply.
 
 end Prj.Part;
