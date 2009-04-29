@@ -3298,6 +3298,8 @@ package body Sem_Aggr is
                      --  We build a partially initialized aggregate with the
                      --  values of the discriminants and box initialization
                      --  for the rest, if other components are present.
+                     --  The type of the aggregate is the known subtype of
+                     --  the component.
 
                      declare
                         Loc        : constant Source_Ptr := Sloc (N);
@@ -3309,6 +3311,7 @@ package body Sem_Aggr is
 
                      begin
                         Expr := Make_Aggregate (Loc, New_List, New_List);
+                        Set_Etype (Expr, Ctyp);
 
                         Discr_Elmt :=
                           First_Elmt (Discriminant_Constraint (Ctyp));

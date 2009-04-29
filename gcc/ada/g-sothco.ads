@@ -243,6 +243,21 @@ package GNAT.Sockets.Thin_Common is
    pragma Convention (C, Hostent_Access);
    --  Access to host entry
 
+   ------------------------------------
+   -- Scatter/gather vector handling --
+   ------------------------------------
+
+   type Msghdr is record
+      Msg_Name       : System.Address;
+      Msg_Namelen    : C.unsigned;
+      Msg_Iov        : System.Address;
+      Msg_Iovlen     : SOSC.Msg_Iovlen_T;
+      Msg_Control    : System.Address;
+      Msg_Controllen : C.size_t;
+      Msg_Flags      : C.int;
+   end record;
+   pragma Convention (C, Msghdr);
+
    ----------------------------
    -- Socket sets management --
    ----------------------------
