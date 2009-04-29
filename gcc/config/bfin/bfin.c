@@ -4012,6 +4012,7 @@ bfin_optimize_loop (loop_info loop)
 	break;
 
       if (single_pred_p (bb)
+	  && single_pred_edge (bb)->flags & EDGE_FALLTHRU
 	  && single_pred (bb) != ENTRY_BLOCK_PTR)
 	{
 	  bb = single_pred (bb);
