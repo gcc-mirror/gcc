@@ -1,3 +1,11 @@
+2009-04-29  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/39937
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Do not
+	loose type conversions.
+	(forward_propagate_addr_expr): Fix tuplification bug.  Remove
+	stmts only if there are no uses of its definition.
+
 2009-04-29  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* config/bfin/bfin.h (splitting_loops): Declare.

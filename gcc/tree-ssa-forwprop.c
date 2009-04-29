@@ -862,12 +862,21 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
      of the elements in X into &x[C1 + C2/element size].  */
   if (TREE_CODE (rhs2) == INTEGER_CST)
     {
-      tree new_rhs = maybe_fold_stmt_addition (gimple_expr_type (use_stmt),
+      tree new_rhs = maybe_fold_stmt_addition (TREE_TYPE (def_rhs),
 					       def_rhs, rhs2);
       if (new_rhs)
 	{
-	  gimple_assign_set_rhs_from_tree (use_stmt_gsi,
-					   unshare_expr (new_rhs));
+	  tree type = TREE_TYPE (gimple_assign_lhs (use_stmt));
+	  new_rhs = unshare_expr (new_rhs);
+	  if (!useless_type_conversion_p (type, TREE_TYPE (new_rhs)))
+	    {
+	      if (!is_gimple_min_invariant (new_rhs))
+		new_rhs = force_gimple_operand_gsi (use_stmt_gsi, new_rhs,
+						    true, NULL_TREE,
+						    true, GSI_SAME_STMT);
+	      new_rhs = fold_convert (type, new_rhs);
+	    }
+	  gimple_assign_set_rhs_from_tree (use_stmt_gsi, new_rhs);
 	  use_stmt = gsi_stmt (*use_stmt_gsi);
 	  update_stmt (use_stmt);
 	  tidy_after_forward_propagate_addr (use_stmt);
@@ -950,9 +959,8 @@ forward_propagate_addr_expr (tree name, tree rhs)
       use_rhs = gimple_assign_rhs1 (use_stmt);
       if (result
 	  && TREE_CODE (gimple_assign_lhs (use_stmt)) == SSA_NAME
-	  && (TREE_CODE (use_rhs) == SSA_NAME
-	      || (CONVERT_EXPR_P (use_rhs)
-		  && TREE_CODE (TREE_OPERAND (use_rhs, 0)) == SSA_NAME)))
+	  && TREE_CODE (use_rhs) == SSA_NAME
+	  && has_zero_uses (gimple_assign_lhs (use_stmt)))
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
 	  release_defs (use_stmt);
