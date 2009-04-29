@@ -1,3 +1,19 @@
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elim.adb (Check_Eliminated): Handle new improved eliminate
+	information: no need for full scope check.
+	(Eliminate_Error): Do not emit error in a generic context.
+
+2009-04-29  Ed Falis  <falis@adacore.com>
+
+	* adaint.c (__gnat_rmdir): return error code if VTHREADS is defined.
+	VxWorks 653 POS does not support rmdir.
+
+2009-04-29  Matteo Bordin  <bordin@adacore.com>
+
+	* s-stausa.adb, s-stausa.ads: Get_Usage_Range: changing the way
+	results are printed.
+
 2009-04-29  Arnaud Charlet  <charlet@adacore.com>
 
 	* s-taskin.adb (Initialize): Remove pragma Warnings Off and remove

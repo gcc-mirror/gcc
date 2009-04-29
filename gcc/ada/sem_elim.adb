@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Sem;      use Sem;
@@ -234,29 +235,6 @@ package body Sem_Elim is
       Scop : Entity_Id;
       Form : Entity_Id;
 
-      function Original_Chars (S : Entity_Id) return Name_Id;
-      --  If the candidate subprogram is a protected operation of a single
-      --  protected object, the scope of the operation is the created
-      --  protected type, and we have to retrieve the original name of
-      --  the object.
-
-      --------------------
-      -- Original_Chars --
-      --------------------
-
-      function Original_Chars (S : Entity_Id) return Name_Id is
-      begin
-         if Ekind (S) /= E_Protected_Type
-           or else Comes_From_Source (S)
-         then
-            return Chars (S);
-         else
-            return Chars (Defining_Identifier (Original_Node (Parent (S))));
-         end if;
-      end Original_Chars;
-
-   --  Start of processing for Check_Eliminated
-
    begin
       if No_Elimination then
          return;
@@ -308,33 +286,9 @@ package body Sem_Elim is
                goto Continue;
             end if;
 
-            --  Then we need to see if the static scope matches within the
-            --  compilation unit.
+            --  Find enclosing unit.
 
-            --  At the moment, gnatelim does not consider block statements as
-            --  scopes (even if a block is named)
-
-            Scop := Scope (E);
-            while Ekind (Scop) = E_Block loop
-               Scop := Scope (Scop);
-            end loop;
-
-            if Elmt.Entity_Scope /= null then
-               for J in reverse Elmt.Entity_Scope'Range loop
-                  if Elmt.Entity_Scope (J) /= Original_Chars (Scop) then
-                     goto Continue;
-                  end if;
-
-                  Scop := Scope (Scop);
-                  while Ekind (Scop) = E_Block loop
-                     Scop := Scope (Scop);
-                  end loop;
-
-                  if not Is_Compilation_Unit (Scop) and then J = 1 then
-                     goto Continue;
-                  end if;
-               end loop;
-            end if;
+            Scop := Cunit_Entity (Current_Sem_Unit);
 
             --  Now see if compilation unit matches
 
@@ -673,7 +627,10 @@ package body Sem_Elim is
       Enclosing_Subp : Entity_Id;
 
    begin
-      if Is_Eliminated (Ultimate_Subp) and then not Inside_A_Generic then
+      if Is_Eliminated (Ultimate_Subp)
+        and then not Inside_A_Generic
+        and then not Is_Generic_Unit (Cunit_Entity (Current_Sem_Unit))
+      then
          Enclosing_Subp := Current_Subprogram;
          while Present (Enclosing_Subp) loop
             if Is_Eliminated (Enclosing_Subp) then
@@ -701,9 +658,21 @@ package body Sem_Elim is
          end if;
       end loop;
 
-      --  Should never fall through, since entry should be in table
+      --  If this is an internal operation generated for a protected operation.
+      --  its name does not match the source name, so just report the error.
 
-      raise Program_Error;
+      if not Comes_From_Source (E)
+        and then Present (First_Entity (E))
+        and then Is_Concurrent_Record_Type (Etype (First_Entity (E)))
+      then
+         Error_Msg_NE
+           ("cannot reference eliminated protected subprogram", N, E);
+
+      --  Otherwise should not fall through, entry should be in table
+
+      else
+         raise Program_Error;
+      end if;
    end Eliminate_Error_Msg;
 
    ----------------
