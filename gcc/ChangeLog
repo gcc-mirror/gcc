@@ -1,3 +1,10 @@
+2009-04-29  Bernd Schmidt  <bernd.schmidt@analog.com>
+	
+	* config/bfin/bfin.c (bfin_optimize_loop): Unify handling of
+	problematic last insns.  Test for TYPE_CALL rather than CALL_P.
+	Remove special case testing for last insn of inner loops. Don't fail if
+	the loop ends with a jump, emit an extra nop instead.
+
 2009-04-29  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39941
