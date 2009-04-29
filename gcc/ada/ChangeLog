@@ -1,3 +1,7 @@
+2009-04-29  Pascal Obry  <obry@adacore.com>
+
+	* initialize.c: Do not expand quoted arguments.
+
 2009-04-29  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-ext.adb, prj.adb, prj.ads: Fix memory leaks.
