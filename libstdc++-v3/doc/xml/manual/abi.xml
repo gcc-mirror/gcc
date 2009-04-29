@@ -207,6 +207,7 @@ compatible.
     <listitem><para>gcc-4.1.0: GCC_4.1.0</para></listitem>
     <listitem><para>gcc-4.2.0: GCC_4.2.0</para></listitem>
     <listitem><para>gcc-4.3.0: GCC_4.3.0</para></listitem>
+    <listitem><para>gcc-4.4.0: GCC_4.4.0</para></listitem>
     </itemizedlist>
     </listitem>
 
@@ -264,6 +265,8 @@ compatible.
     <listitem><para>gcc-4.3.0: libstdc++.so.6.0.10</para></listitem>
     <listitem><para>gcc-4.3.1: libstdc++.so.6.0.10</para></listitem>
     <listitem><para>gcc-4.3.2: libstdc++.so.6.0.10</para></listitem>
+    <listitem><para>gcc-4.3.3: libstdc++.so.6.0.10</para></listitem>
+    <listitem><para>gcc-4.4.0: libstdc++.so.6.0.11</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
@@ -320,6 +323,7 @@ compatible.
     <listitem><para>gcc-4.1.1: GLIBCXX_3.4.8</para></listitem>
     <listitem><para>gcc-4.2.0: GLIBCXX_3.4.9</para></listitem>
     <listitem><para>gcc-4.3.0: GLIBCXX_3.4.10, CXXABI_1.3.2</para></listitem>
+    <listitem><para>gcc-4.4.0: GLIBCXX_3.4.11, CXXABI_1.3.3</para></listitem>
     </itemizedlist>
     </listitem>
   
@@ -426,6 +430,8 @@ compatible.
     <listitem><para>gcc-4.3.0: 20080306</para></listitem>
     <listitem><para>gcc-4.3.1: 20080606</para></listitem>
     <listitem><para>gcc-4.3.2: 20080827</para></listitem>
+    <listitem><para>gcc-4.3.3: 20090124</para></listitem>
+    <listitem><para>gcc-4.4.0: 20090421</para></listitem>
     </itemizedlist>
     <para></para>
     </listitem>
@@ -524,7 +530,8 @@ compatible.
     <listitem><para>gcc-4.2.4: include/c++/4.2.4</para></listitem>
     <listitem><para>gcc-4.3.0: include/c++/4.3.0</para></listitem>
     <listitem><para>gcc-4.3.1: include/c++/4.3.1</para></listitem>
-    <listitem><para>gcc-4.3.2: include/c++/4.3.2</para></listitem>
+    <listitem><para>gcc-4.3.3: include/c++/4.3.3</para></listitem>
+    <listitem><para>gcc-4.4.0: include/c++/4.4.0</para></listitem>
     </itemizedlist>
     <para></para>
     </listitem>

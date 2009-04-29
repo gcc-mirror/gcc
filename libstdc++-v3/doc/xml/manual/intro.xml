@@ -27,7 +27,7 @@
   <title>Status</title>
 
   <!-- Section 01 : Implementation Status -->
-  <sect1 id="manual.intro.status.standard" xreflabel="Status">
+  <sect1 id="manual.intro.status.iso" xreflabel="Status">
     <title>Implementation Status</title>
 
     <!-- Section 01.1 : Status C++ 1998 -->
