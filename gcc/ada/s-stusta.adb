@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                  GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                --
+--                 GNAT RUN-TIME LIBRARY (GNARL) COMPONENTS                 --
 --                                                                          --
---             S Y S T E M . S T A C K _ U S A G E . T AS K I N G           --
+--            S Y S T E M . S T A C K _ U S A G E . T A S K I N G           --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
@@ -252,9 +252,9 @@ package body System.Stack_Usage.Tasking is
            (Obj.Task_Name'First .. Pos);
       begin
          Put_Line
-           ("| " & T_Name & " | " & Natural'Image (Obj.Max_Size) & " [" &
+           ("| " & T_Name & " | " & Natural'Image (Obj.Max_Size) &
             Natural'Image (Obj.Value) & " +/- " &
-            Natural'Image (Obj.Variation) & "]");
+            Natural'Image (Obj.Variation));
       end;
    end Print;
 
