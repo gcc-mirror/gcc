@@ -26,6 +26,7 @@
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 
 with Csets;
+with Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl;
 with MLib.Fil;
@@ -1265,61 +1266,8 @@ procedure GNATCmd is
       Parent : String)
    is
    begin
-      if Switch /= null then
-
-         declare
-            Sw : String (1 .. Switch'Length);
-            Start : Positive := 1;
-
-         begin
-            Sw := Switch.all;
-
-            if Sw (1) = '-' then
-               if Sw'Length >= 3
-                 and then (Sw (2) = 'A' or else
-                           Sw (2) = 'I' or else
-                           Sw (2) = 'L')
-               then
-                  Start := 3;
-
-                  if Sw = "-I-" then
-                     return;
-                  end if;
-
-               elsif Sw'Length >= 4
-                 and then (Sw (2 .. 3) = "aL" or else
-                           Sw (2 .. 3) = "aO" or else
-                           Sw (2 .. 3) = "aI")
-               then
-                  Start := 4;
-
-               elsif Sw'Length >= 7
-                 and then Sw (2 .. 6) = "-RTS="
-               then
-                  Start := 7;
-               else
-                  return;
-               end if;
-            end if;
-
-            --  If the path is relative, test if it includes directory
-            --  information. If it does, prepend Parent to the path.
-
-            if not Is_Absolute_Path (Sw (Start .. Sw'Last)) then
-               for J in Start .. Sw'Last loop
-                  if Sw (J) = Directory_Separator then
-                     Switch :=
-                        new String'
-                              (Sw (1 .. Start - 1) &
-                               Parent &
-                               Directory_Separator &
-                               Sw (Start .. Sw'Last));
-                     return;
-                  end if;
-               end loop;
-            end if;
-         end;
-      end if;
+      Makeutl.Test_If_Relative_Path
+        (Switch, Parent, Including_Non_Switch => False, Including_RTS => True);
    end Test_If_Relative_Path;
 
    -------------------
