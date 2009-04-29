@@ -176,9 +176,7 @@ package body System.Tasking is
    procedure Initialize is
       T             : Task_Id;
       Base_Priority : Any_Priority;
-
-      Success : Boolean;
-      pragma Warnings (Off, Success);
+      Success       : Boolean;
 
    begin
       if Initialized then
@@ -195,7 +193,6 @@ package body System.Tasking is
          Base_Priority := Priority (Main_Priority);
       end if;
 
-      Success := True;
       T := STPO.New_ATCB (0);
       Initialize_ATCB
         (null, null, Null_Address, Null_Task, null, Base_Priority,

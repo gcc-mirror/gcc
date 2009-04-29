@@ -1267,8 +1267,8 @@ package body Make is
         Unknown_Switches_To_The_Compiler;
 
       if File_Name'Length > 0 then
-         Name_Len := File_Name'Length;
-         Name_Buffer (1 .. Name_Len) := File_Name;
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer (File_Name);
          Switches :=
            Switches_Of
              (Source_File      => Name_Find,
@@ -2458,7 +2458,8 @@ package body Make is
                                      (1 => new String'
                                             (Name_Buffer (1 .. Name_Len)));
                         Dir_Path : constant String :=
-                          Get_Name_String (Arguments_Project.Directory.Name);
+                                     Get_Name_String
+                                       (Arguments_Project.Directory.Name);
 
                      begin
                         Test_If_Relative_Path
@@ -2792,9 +2793,8 @@ package body Make is
                Add_It : Boolean := True;
 
             begin
-               Name_Len := Standard_Library_Package_Body_Name'Length;
-               Name_Buffer (1 .. Name_Len) :=
-                 Standard_Library_Package_Body_Name;
+               Name_Len := 0;
+               Add_Str_To_Name_Buffer (Standard_Library_Package_Body_Name);
                Sfile := Name_Enter;
 
                --  If we have a special runtime, we add the standard
@@ -2852,7 +2852,10 @@ package body Make is
 
          if Arguments_Project /= No_Project then
             if not Arguments_Project.Externally_Built then
-               Prj.Env.Set_Ada_Paths (Arguments_Project, Project_Tree, True);
+               Prj.Env.Set_Ada_Paths
+                 (Arguments_Project,
+                  Project_Tree,
+                  Including_Libraries => True);
 
                if not Unique_Compile
                  and then MLib.Tgt.Support_For_Libraries /= Prj.None
@@ -2866,8 +2869,8 @@ package body Make is
                        and then not Prj.Externally_Built
                        and then not Prj.Need_To_Build_Lib
                      then
-                        --  Add to the Q all sources of the project that
-                        --  have not been marked.
+                        --  Add to the Q all sources of the project that have
+                        --  not been marked.
 
                         Insert_Project_Sources
                           (The_Project  => Prj,
@@ -2881,8 +2884,7 @@ package body Make is
                   end;
                end if;
 
-               --  Change to the object directory of the project file,
-               --  if necessary.
+               --  Change to object directory of the project file, if necessary
 
                Change_To_Object_Directory (Arguments_Project);
 
@@ -4403,43 +4405,38 @@ package body Make is
                                                             No_Project
                      then
                         Get_Name_String (Unit.Name);
-                        Name_Buffer (Name_Len + 1 .. Name_Len + 2) := "%b";
-                        Name_Len := Name_Len + 2;
+                        Add_Str_To_Name_Buffer ("%b");
                         ALI_Unit := Name_Find;
                         ALI_Name :=
                           Lib_File_Name
                             (Unit.File_Names (Body_Part).Display_Name);
-                        ALI_Project :=
-                          Unit.File_Names (Body_Part).Project;
+                        ALI_Project := Unit.File_Names (Body_Part).Project;
 
-                        --  Otherwise, if there is a spec, put it
-                        --  in the mapping.
+                        --  Otherwise, if there is a spec, put it in the
+                        --  mapping.
 
                      elsif Unit.File_Names (Specification).Name /= No_File
                        and then Unit.File_Names (Specification).Project /=
                                                                 No_Project
                      then
                         Get_Name_String (Unit.Name);
-                        Name_Buffer (Name_Len + 1 .. Name_Len + 2) := "%s";
-                        Name_Len := Name_Len + 2;
+                        Add_Str_To_Name_Buffer ("%s");
                         ALI_Unit := Name_Find;
                         ALI_Name :=
                           Lib_File_Name
                             (Unit.File_Names (Specification).Display_Name);
-                        ALI_Project :=
-                          Unit.File_Names (Specification).Project;
+                        ALI_Project := Unit.File_Names (Specification).Project;
 
                      else
                         ALI_Name := No_File;
                      end if;
 
-                     --  If we have something to put in the mapping
-                     --  then we do it now. However, if the project
-                     --  is extended, we don't put anything in the
-                     --  mapping file, because we do not know where
-                     --  the ALI file is: it might be in the ext-
-                     --  ended project obj dir as well as in the
-                     --  extending project obj dir.
+                     --  If we have something to put in the mapping then do it
+                     --  now. However, if the project is extended, we don't put
+                     --  anything in the mapping file, because we do not know
+                     --  where the ALI file is: it might be in the extended
+                     --  project obj dir as well as in the extending project
+                     --  obj dir.
 
                      if ALI_Name /= No_File
                        and then ALI_Project.Extended_By = No_Project
@@ -4449,8 +4446,7 @@ package body Make is
                         --  do not put the unit in the mapping file.
 
                         declare
-                           ALI : constant String :=
-                                   Get_Name_String (ALI_Name);
+                           ALI : constant String := Get_Name_String (ALI_Name);
 
                         begin
                            --  For library projects, use the library directory,
@@ -4464,19 +4460,13 @@ package body Make is
                            end if;
 
                            if Name_Buffer (Name_Len) /=
-                             Directory_Separator
+                                Directory_Separator
                            then
-                              Name_Len := Name_Len + 1;
-                              Name_Buffer (Name_Len) :=
-                                Directory_Separator;
+                              Add_Char_To_Name_Buffer (Directory_Separator);
                            end if;
 
-                           Name_Buffer
-                             (Name_Len + 1 ..
-                                Name_Len + ALI'Length) := ALI;
-                           Name_Len :=
-                             Name_Len + ALI'Length + 1;
-                           Name_Buffer (Name_Len) := ASCII.LF;
+                           Add_Str_To_Name_Buffer (ALI);
+                           Add_Char_To_Name_Buffer (ASCII.LF);
 
                            declare
                               ALI_Path_Name : constant String :=
@@ -4490,8 +4480,7 @@ package body Make is
                                  --  First line is the unit name
 
                                  Get_Name_String (ALI_Unit);
-                                 Name_Len := Name_Len + 1;
-                                 Name_Buffer (Name_Len) := ASCII.LF;
+                                 Add_Char_To_Name_Buffer (ASCII.LF);
                                  Bytes :=
                                    Write
                                      (Mapping_FD,
@@ -4504,8 +4493,7 @@ package body Make is
                                  --  Second line it the ALI file name
 
                                  Get_Name_String (ALI_Name);
-                                 Name_Len := Name_Len + 1;
-                                 Name_Buffer (Name_Len) := ASCII.LF;
+                                 Add_Char_To_Name_Buffer (ASCII.LF);
                                  Bytes :=
                                    Write
                                      (Mapping_FD,
@@ -4745,8 +4733,7 @@ package body Make is
 
                      while Value /= Prj.Nil_String loop
                         Get_Name_String
-                          (Project_Tree.String_Elements.Table
-                             (Value).Value);
+                          (Project_Tree.String_Elements.Table (Value).Value);
 
                         --  To know if a main is an Ada main, get its project.
                         --  It should be the project specified on the command
@@ -5335,14 +5322,10 @@ package body Make is
                      Get_Name_String (Main_Project.Exec_Directory.Name);
 
                      if Name_Buffer (Name_Len) /= Directory_Separator then
-                        Name_Len := Name_Len + 1;
-                        Name_Buffer (Name_Len) := Directory_Separator;
+                        Add_Char_To_Name_Buffer (Directory_Separator);
                      end if;
 
-                     Name_Buffer (Name_Len + 1 ..
-                                    Name_Len + Exec_File_Name'Length) :=
-                       Exec_File_Name;
-                     Name_Len := Name_Len + Exec_File_Name'Length;
+                     Add_Str_To_Name_Buffer (Exec_File_Name);
                      Saved_Linker_Switches.Table (J + 1) :=
                        new String'(Name_Buffer (1 .. Name_Len));
                   end if;
@@ -5387,14 +5370,14 @@ package body Make is
             for J in 1 .. Gcc_Switches.Last loop
                Test_If_Relative_Path
                  (Gcc_Switches.Table (J),
-                  Parent => Dir_Path,
+                  Parent               => Dir_Path,
                   Including_Non_Switch => False);
             end loop;
 
             for J in 1 .. Saved_Gcc_Switches.Last loop
                Test_If_Relative_Path
                  (Saved_Gcc_Switches.Table (J),
-                  Parent => Current_Work_Dir.all,
+                  Parent               => Current_Work_Dir.all,
                   Including_Non_Switch => False);
             end loop;
          end;
@@ -5425,9 +5408,7 @@ package body Make is
       if Main_Project = No_Project then
          for J in 1 .. Saved_Gcc_Switches.Last loop
             Add_Switch
-              (Saved_Gcc_Switches.Table (J),
-               Compiler,
-              And_Save => False);
+              (Saved_Gcc_Switches.Table (J), Compiler, And_Save => False);
          end loop;
 
       else
@@ -5444,8 +5425,7 @@ package body Make is
 
          --  We never use gnat.adc when a project file is used
 
-         The_Saved_Gcc_Switches (The_Saved_Gcc_Switches'Last) :=
-           No_gnat_adc;
+         The_Saved_Gcc_Switches (The_Saved_Gcc_Switches'Last) := No_gnat_adc;
       end if;
 
       --  If there was a --GCC, --GNATBIND or --GNATLINK switch on
@@ -5476,8 +5456,8 @@ package body Make is
          Saved_Maximum_Processes := Maximum_Processes;
       end if;
 
-      --  Allocate as many temporary mapping file names as the maximum
-      --  number of compilation processed, for each possible project.
+      --  Allocate as many temporary mapping file names as the maximum number
+      --  of compilations processed, for each possible project.
 
       declare
          Data : Project_Compilation_Access;
@@ -5486,11 +5466,12 @@ package body Make is
          while Proj /= null loop
             Data := new Project_Compilation_Data'
               (Mapping_File_Names        => new Temp_Path_Names
-                 (1 .. Saved_Maximum_Processes),
+                                              (1 .. Saved_Maximum_Processes),
                Last_Mapping_File_Names   => 0,
                Free_Mapping_File_Indices => new Free_File_Indices
-                 (1 .. Saved_Maximum_Processes),
+                                              (1 .. Saved_Maximum_Processes),
                Last_Free_Indices         => 0);
+
             Project_Compilation_Htable.Set
               (Project_Compilation, Proj.Project, Data);
             Proj := Proj.Next;
@@ -5498,11 +5479,12 @@ package body Make is
 
          Data := new Project_Compilation_Data'
            (Mapping_File_Names        => new Temp_Path_Names
-              (1 .. Saved_Maximum_Processes),
+                                           (1 .. Saved_Maximum_Processes),
             Last_Mapping_File_Names   => 0,
             Free_Mapping_File_Indices => new Free_File_Indices
-              (1 .. Saved_Maximum_Processes),
+                                           (1 .. Saved_Maximum_Processes),
             Last_Free_Indices         => 0);
+
          Project_Compilation_Htable.Set
            (Project_Compilation, No_Project, Data);
       end;
@@ -5536,37 +5518,32 @@ package body Make is
          --  Look inside the linker switches to see if the name of the final
          --  executable program was specified.
 
-         for
-           J in reverse Linker_Switches.First .. Linker_Switches.Last
-         loop
+         for J in reverse Linker_Switches.First .. Linker_Switches.Last loop
             if Linker_Switches.Table (J).all = Output_Flag.all then
                pragma Assert (J < Linker_Switches.Last);
 
-               --  We cannot specify a single executable for several
-               --  main subprograms!
+               --  We cannot specify a single executable for several main
+               --  subprograms
 
                if Osint.Number_Of_Files > 1 then
                   Fail
-                    ("cannot specify a single executable " &
-                     "for several mains");
+                    ("cannot specify a single executable for several mains");
                end if;
 
-               Name_Len := Linker_Switches.Table (J + 1)'Length;
-               Name_Buffer (1 .. Name_Len) :=
-                 Linker_Switches.Table (J + 1).all;
+               Name_Len := 0;
+               Add_Str_To_Name_Buffer (Linker_Switches.Table (J + 1).all);
                Executable := Name_Enter;
 
                Verbose_Msg (Executable, "final executable");
             end if;
          end loop;
 
-         --  If the name of the final executable program was not specified
-         --  then construct it from the main input file.
+         --  If the name of the final executable program was not specified then
+         --  construct it from the main input file.
 
          if Executable = No_File then
             if Main_Project = No_Project then
-               Executable :=
-                 Executable_Name (Strip_Suffix (Main_Source_File));
+               Executable := Executable_Name (Strip_Suffix (Main_Source_File));
 
             else
                --  If we are using a project file, we attempt to remove the
@@ -5593,15 +5570,10 @@ package body Make is
                   Get_Name_String (Main_Project.Exec_Directory.Display_Name);
 
                   if Name_Buffer (Name_Len) /= Directory_Separator then
-                     Name_Len := Name_Len + 1;
-                     Name_Buffer (Name_Len) := Directory_Separator;
+                     Add_Char_To_Name_Buffer (Directory_Separator);
                   end if;
 
-                  Name_Buffer (Name_Len + 1 ..
-                                       Name_Len + Exec_File_Name'Length) :=
-                    Exec_File_Name;
-
-                  Name_Len := Name_Len + Exec_File_Name'Length;
+                  Add_Str_To_Name_Buffer (Exec_File_Name);
                   Executable := Name_Find;
                end if;
 
@@ -5619,6 +5591,7 @@ package body Make is
 
                Executable_Stamp : Time_Stamp_Type;
                --  Executable is the final executable program
+               --  ??? comment seems unrelated to declaration
 
                Library_Rebuilt : Boolean := False;
 
@@ -5661,6 +5634,7 @@ package body Make is
                if Total_Compilation_Failures /= 0 then
                   if Keep_Going then
                      goto Next_Main;
+
                   else
                      List_Bad_Compilations;
                      Report_Compilation_Failed;
@@ -5717,8 +5691,8 @@ package body Make is
                   --  or probably better, break this out as a nested proc).
 
                   begin
-                     --  Put in Library_Projs table all library project
-                     --  file ids when the library need to be rebuilt.
+                     --  Put in Library_Projs table all library project file
+                     --  ids when the library need to be rebuilt.
 
                      Proj1 := Project_Tree.Projects;
                      while Proj1 /= null loop
@@ -5867,8 +5841,8 @@ package body Make is
 
                --  If the objects were up-to-date check if the executable file
                --  is also up-to-date. For now always bind and link on the JVM
-               --  since there is currently no simple way to check the
-               --  up-to-date status of objects
+               --  since there is currently no simple way to check whether
+               --  objects are up-to-date.
 
                if Targparm.VM_Target /= JVM_Target
                  and then First_Compiled_File = No_File
@@ -5907,8 +5881,8 @@ package body Make is
                      Executable_Obsolete := Youngest_Obj_File /= No_File;
                   end if;
 
-                  --  Return if the executable is up to date
-                  --  and otherwise motivate the relink/rebind.
+                  --  Return if the executable is up to date and otherwise
+                  --  motivate the relink/rebind.
 
                   if not Executable_Obsolete then
                      if not Quiet_Output then
@@ -5955,9 +5929,9 @@ package body Make is
             Change_To_Object_Directory (Main_Project);
          end if;
 
-         --  If we are here, it means that we need to rebuilt the current
-         --  main. So we set Executable_Obsolete to True to make sure that
-         --  the subsequent mains will be rebuilt.
+         --  If we are here, it means that we need to rebuilt the current main,
+         --  so we set Executable_Obsolete to True to make sure that subsequent
+         --  mains will be rebuilt.
 
          Main_ALI_In_Place_Mode_Step : declare
             ALI_File : File_Name_Type;
@@ -7401,45 +7375,42 @@ package body Make is
       N : Name_Id;
       B : Byte;
 
+      function Base_Directory return String;
+      --  If Dir comes from the command line, empty string (relative paths
+      --  are resolved with respect to the current directory), else return
+      --  the main project's directory.
+
+      --------------------
+      -- Base_Directory --
+      --------------------
+
+      function Base_Directory return String is
+      begin
+         if On_Command_Line then
+            return "";
+         else
+            return Get_Name_String (Main_Project.Directory.Display_Name);
+         end if;
+      end Base_Directory;
+
+      Real_Path : constant String := Normalize_Pathname (Dir, Base_Directory);
+
+   --  Start of processing for Mark_Directory
+
    begin
-      if On_Command_Line then
-         declare
-            Real_Path : constant String := Normalize_Pathname (Dir);
+      Name_Len := 0;
 
-         begin
-            if Real_Path'Length = 0 then
-               Name_Len := Dir'Length;
-               Name_Buffer (1 .. Name_Len) := Dir;
-
-            else
-               Name_Len := Real_Path'Length;
-               Name_Buffer (1 .. Name_Len) := Real_Path;
-            end if;
-         end;
+      if Real_Path'Length = 0 then
+         Add_Str_To_Name_Buffer (Dir);
 
       else
-         declare
-            Real_Path : constant String :=
-              Normalize_Pathname
-                (Dir, Get_Name_String (Main_Project.Directory.Display_Name));
-
-         begin
-            if Real_Path'Length = 0 then
-               Name_Len := Dir'Length;
-               Name_Buffer (1 .. Name_Len) := Dir;
-
-            else
-               Name_Len := Real_Path'Length;
-               Name_Buffer (1 .. Name_Len) := Real_Path;
-            end if;
-         end;
+         Add_Str_To_Name_Buffer (Real_Path);
       end if;
 
       --  Last character is supposed to be a directory separator
 
       if not Is_Directory_Separator (Name_Buffer (Name_Len)) then
-         Name_Len := Name_Len + 1;
-         Name_Buffer (Name_Len) := Directory_Separator;
+         Add_Char_To_Name_Buffer (Directory_Separator);
       end if;
 
       --  Add flags to the already existing flags
@@ -7468,15 +7439,13 @@ package body Make is
          Proj : Project_Id;
 
       begin
-         if Prj.Depth >= Depth
-           or else Get (Seen, Prj)
-         then
+         if Prj.Depth >= Depth or else Get (Seen, Prj) then
             return;
          end if;
 
          --  We need a test to avoid infinite recursions with limited withs:
          --  If we have A -> B -> A, then when set level of A to n, we try and
-         --  set level of B to n+1, and then level of A to n + 2,...
+         --  set level of B to n+1, and then level of A to n + 2, ...
 
          Set (Seen, Prj, True);
 
@@ -7497,9 +7466,10 @@ package body Make is
          Set (Seen, Prj, False);
       end Recurse;
 
+      Proj : Project_List;
+
    --  Start of processing for Recursive_Compute_Depth
 
-      Proj : Project_List;
    begin
       Proj := Project_Tree.Projects;
       while Proj /= null loop
@@ -8188,8 +8158,8 @@ package body Make is
             end if;
 
             if Truncated then
-               Name_Len := Last;
-               Name_Buffer (1 .. Name_Len) := Name (1 .. Last);
+               Name_Len := 0;
+               Add_Str_To_Name_Buffer (Name (1 .. Last));
                Switches :=
                  Prj.Util.Value_Of
                    (Index     => Name_Find,
@@ -8197,18 +8167,17 @@ package body Make is
                     In_Array  => Switches_Array,
                     In_Tree   => Project_Tree);
 
-               if Switches = Nil_Variable_Value
-                 and then Allow_ALI
-               then
+               if Switches = Nil_Variable_Value and then Allow_ALI then
                   Last := Source_File_Name'Length;
 
                   while Name (Last) /= '.' loop
                      Last := Last - 1;
                   end loop;
 
-                  Name (Last + 1 .. Last + 3) := "ali";
-                  Name_Len := Last + 3;
-                  Name_Buffer (1 .. Name_Len) := Name (1 .. Name_Len);
+                  Name_Len := 0;
+                  Add_Str_To_Name_Buffer (Name (1 .. Last));
+                  Add_Str_To_Name_Buffer ("ali");
+
                   Switches :=
                     Prj.Util.Value_Of
                       (Index     => Name_Find,

@@ -41,6 +41,7 @@ GNATRTL_TASKING_OBJS= \
   g-boumai$(objext) \
   g-semaph$(objext) \
   g-signal$(objext) \
+  g-tastus$(objext) \
   g-thread$(objext) \
   s-asthan$(objext) \
   s-inmaop$(objext) \
@@ -50,6 +51,7 @@ GNATRTL_TASKING_OBJS= \
   s-osinte$(objext) \
   s-proinf$(objext) \
   s-solita$(objext) \
+  s-stusta$(objext) \
   s-taenca$(objext) \
   s-taprob$(objext) \
   s-taprop$(objext) \
