@@ -173,7 +173,7 @@ package body System.Stack_Usage is
    Index_Str       : constant String  := "Index";
    Task_Name_Str   : constant String  := "Task Name";
    Stack_Size_Str  : constant String  := "Stack Size";
-   Actual_Size_Str : constant String  := "Stack usage [Value +/- Variation]";
+   Actual_Size_Str : constant String  := "Stack usage";
 
    function Get_Usage_Range (Result : Task_Result) return String;
    --  Return string representing the range of possible result of stack usage
@@ -203,10 +203,10 @@ package body System.Stack_Usage is
       Result_Array := new Result_Array_Type (1 .. Buffer_Size);
       Result_Array.all :=
         (others =>
-           (Task_Name   => (others => ASCII.NUL),
+           (Task_Name => (others => ASCII.NUL),
             Variation => 0,
-            Value => 0,
-            Max_Size    => 0));
+            Value     => 0,
+            Max_Size  => 0));
 
       --  Set the Is_Enabled flag to true, so that the task wrapper knows that
       --  it has to handle dynamic stack analysis
@@ -327,12 +327,11 @@ package body System.Stack_Usage is
       --  Initialize the analyzer fields
 
       Analyzer.Bottom_Of_Stack := Bottom;
-      Analyzer.Stack_Size := My_Stack_Size;
-      Analyzer.Pattern_Size := Max_Pattern_Size;
-      Analyzer.Pattern := Pattern;
-      Analyzer.Result_Id := Next_Id;
-
-      Analyzer.Task_Name := (others => ' ');
+      Analyzer.Stack_Size      := My_Stack_Size;
+      Analyzer.Pattern_Size    := Max_Pattern_Size;
+      Analyzer.Pattern         := Pattern;
+      Analyzer.Result_Id       := Next_Id;
+      Analyzer.Task_Name       := (others => ' ');
 
       --  Compute the task name, and truncate if bigger than Task_Name_Length
 
@@ -415,10 +414,11 @@ package body System.Stack_Usage is
 
    function Get_Usage_Range (Result : Task_Result) return String is
       Variation_Used_Str : constant String :=
-        Natural'Image (Result.Variation);
-      Value_Used_Str : constant String := Natural'Image (Result.Value);
+                             Natural'Image (Result.Variation);
+      Value_Used_Str     : constant String :=
+                             Natural'Image (Result.Value);
    begin
-      return "[" & Value_Used_Str & " +/- " & Variation_Used_Str & "]";
+      return Value_Used_Str & " +/- " & Variation_Used_Str;
    end Get_Usage_Range;
 
    ---------------------
@@ -488,8 +488,8 @@ package body System.Stack_Usage is
          for J in Result_Array'Range loop
             exit when J >= Next_Id;
 
-            if Result_Array (J).Value
-              > Result_Array (Max_Actual_Use_Result_Id).Value
+            if Result_Array (J).Value >
+               Result_Array (Max_Actual_Use_Result_Id).Value
             then
                Max_Actual_Use_Result_Id := J;
             end if;
@@ -569,15 +569,18 @@ package body System.Stack_Usage is
 
    begin
       if Analyzer.Pattern_Size = 0 then
+
          --  If we have that result, it means that we didn't do any computation
          --  at all. In other words, we used at least everything (and possibly
          --  more).
 
          Min := Analyzer.Stack_Size - Overflow_Guard;
          Max := Analyzer.Stack_Size;
+
       else
-         Min := Stack_Size
-           (Analyzer.Topmost_Touched_Mark, Analyzer.Bottom_Of_Stack);
+         Min :=
+           Stack_Size
+             (Analyzer.Topmost_Touched_Mark, Analyzer.Bottom_Of_Stack);
          Max := Min + Overflow_Guard;
       end if;
 

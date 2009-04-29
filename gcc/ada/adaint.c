@@ -747,6 +747,9 @@ __gnat_rmdir (char *path)
     S2WSC (wpath, path, GNAT_MAX_PATH_LEN);
     return _trmdir (wpath);
   }
+#elif defined (VTHREADS)
+  /* rmdir not available */
+  return -1;
 #else
   return rmdir (path);
 #endif
