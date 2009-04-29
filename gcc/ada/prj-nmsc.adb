@@ -256,8 +256,8 @@ package body Prj.Nmsc is
    function Suffix_Matches
      (Filename : String;
       Suffix   : File_Name_Type) return Boolean;
-   --  True if the filename ends with the given suffix. It always returns False
-   --  if Suffix is No_Name
+   --  True if the file name ends with the given suffix. Always returns False
+   --  if Suffix is No_Name.
 
    procedure Replace_Into_Name_Buffer
      (Str         : String;
@@ -7290,7 +7290,7 @@ package body Prj.Nmsc is
       --  Returns True if the file belongs to the current language and we
       --  should stop searching for matching languages. Not that a given header
       --  file could belong to several languages (C and C++ for instance). Thus
-      --  if we found a header we'll check whether it matches other languages
+      --  if we found a header we'll check whether it matches other languages.
 
       ---------------------------
       -- Check_File_Based_Lang --

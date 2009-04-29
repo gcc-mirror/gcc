@@ -1,5 +1,19 @@
 2009-04-29  Thomas Quinot  <quinot@adacore.com>
 
+	* sem_ch12.adb: Minor reformatting
+
+	* sem_aggr.adb: Minor reformatting
+
+	* sem_ch6.adb, sem_cat.ads: Minor reformatting
+
+	* sem_ch10.adb, gnat1drv.adb, prj-nmsc.adb: Minor reformatting
+
+2009-04-29  Quentin Ochem  <ochem@adacore.com>
+
+	* prj.ads (Source_Id): Now general pointer type.
+
+2009-04-29  Thomas Quinot  <quinot@adacore.com>
+
 	* exp_ch7.adb, rtsfind.adb: Minor reformatting
 
 	* sem_res.adb: Minor reformatting

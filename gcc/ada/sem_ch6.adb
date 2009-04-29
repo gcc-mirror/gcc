@@ -2618,8 +2618,8 @@ package body Sem_Ch6 is
    --  Start of processing for Analyze_Subprogram_Declaration
 
    begin
-      --  For a null procedure. capture the profile before analysis, for
-      --  expansion at the freeze point, and at each point of call.
+      --  For a null procedure, capture the profile before analysis, for
+      --  expansion at the freeze point and at each point of call.
       --  The body will only be used if the procedure has preconditions.
       --  In that case the body is analyzed at the freeze point.
 
@@ -2631,7 +2631,8 @@ package body Sem_Ch6 is
            Make_Subprogram_Body (Loc,
              Specification =>
                New_Copy_Tree (Specification (N)),
-             Declarations => New_List,
+             Declarations =>
+               New_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => New_List (Make_Null_Statement (Loc))));
@@ -4424,10 +4425,10 @@ package body Sem_Ch6 is
          then
             Set_Is_Overriding_Operation (Subp);
 
-            --  If style checks are enabled, indicate that the indicator
-            --  is missing. However, at the point of declaration, the type
-            --  of which this is a primitive operation may be private, in
-            --  which case the indicator would be premature.
+            --  If style checks are enabled, indicate that the indicator is
+            --  missing. However, at the point of declaration, the type of
+            --  which this is a primitive operation may be private, in which
+            --  case the indicator would be premature.
 
             if Has_Private_Declaration (Etype (Subp))
               or else Has_Private_Declaration (Etype (First_Formal (Subp)))

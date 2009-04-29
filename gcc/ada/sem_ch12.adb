@@ -11878,6 +11878,7 @@ package body Sem_Ch12 is
 
       procedure Save_References (N : Node_Id) is
          Loc : constant Source_Ptr := Sloc (N);
+
       begin
          if N = Empty then
             null;
