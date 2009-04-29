@@ -51,17 +51,15 @@ private package Prj.Nmsc is
    --  Perform consistency and semantic checks on a project, starting from the
    --  project tree parsed from the .gpr file. This procedure interprets the
    --  various case statements in the project based on the current environment
-   --  variables (the "scenario").
-   --  After checking the validity of the naming scheme, it searches for all
-   --  the source files of the project.
-   --  The result of this procedure is a filled data structure for Project_Id
-   --  which contains all the information about the project. This information
-   --  is only valid while the scenario variables are preserved.
-   --  If the current mode is Ada_Only, this procedure will only search Ada
-   --  sources; but in multi_language mode it will look for sources for all the
-   --  supported languages.
+   --  variables (the "scenario"). After checking the validity of the naming
+   --  scheme, it searches for all the source files of the project. The result
+   --  of this procedure is a filled-in data structure for Project_Id which
+   --  contains all the information about the project. This information is only
+   --  valid while the scenario variables are preserved. If the current mode
+   --  is Ada_Only, this procedure will only search Ada sources, but in multi-
+   --  language mode it will look for sources for all supported languages.
    --
-   --  If Report_Error is null , use the standard error reporting mechanism
+   --  If Report_Error is null, use the standard error reporting mechanism
    --  (Errout). Otherwise, report errors using Report_Error.
    --
    --  Current_Dir is for optimization purposes only, avoiding system calls to
