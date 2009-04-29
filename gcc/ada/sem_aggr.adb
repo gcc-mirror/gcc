@@ -2147,14 +2147,6 @@ package body Sem_Aggr is
          elsif Nkind_In (Anc, N_Aggregate, N_Function_Call) then
             return True;
 
-         --  Check for a function name, to cover the case of a parameterless
-         --  function call which hasn't been resolved yet.
-
-         elsif Is_Entity_Name (Anc)
-           and then Ekind (Entity (Anc)) = E_Function
-         then
-            return True;
-
          elsif Nkind (Anc) = N_Attribute_Reference
            and then Attribute_Name (Anc) = Name_Input
          then
@@ -2208,7 +2200,11 @@ package body Sem_Aggr is
    --  Start of processing for Resolve_Extension_Aggregate
 
    begin
+      --  Analyze the ancestor part and account for the case where it's
+      --  a parameterless function call.
+
       Analyze (A);
+      Check_Parameterless_Call (A);
 
       if not Is_Tagged_Type (Typ) then
          Error_Msg_N ("type of extension aggregate must be tagged", N);
@@ -2255,8 +2251,11 @@ package body Sem_Aggr is
 
             Get_First_Interp (A, I, It);
             while Present (It.Typ) loop
+               --  Only consider limited interpretations in the Ada 2005 case
+
                if Is_Tagged_Type (It.Typ)
-                  and then not Is_Limited_Type (It.Typ)
+                 and then (Ada_Version >= Ada_05
+                            or else not Is_Limited_Type (It.Typ))
                then
                   if A_Type /= Any_Type then
                      Error_Msg_N ("cannot resolve expression", A);
@@ -2270,8 +2269,13 @@ package body Sem_Aggr is
             end loop;
 
             if A_Type = Any_Type then
-               Error_Msg_N
-                 ("ancestor part must be non-limited tagged type", A);
+               if Ada_Version >= Ada_05 then
+                  Error_Msg_N ("ancestor part must be of a tagged type", A);
+               else
+                  Error_Msg_N
+                    ("ancestor part must be of a nonlimited tagged type", A);
+               end if;
+
                return;
             end if;
 

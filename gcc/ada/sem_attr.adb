@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -420,7 +420,8 @@ package body Sem_Attr is
             --  an access, we set a flag to kill all tracked values on any call
             --  because this access value may be passed around, and any called
             --  code might use it to access a local procedure which clobbers a
-            --  tracked value.
+            --  tracked value. If the scope is a loop or block, indicate that
+            --  value tracking is disabled for the enclosing subprogram.
 
             function Get_Kind (E : Entity_Id) return Entity_Kind;
             --  Distinguish between access to regular/protected subprograms
@@ -433,6 +434,8 @@ package body Sem_Attr is
             begin
                if not Is_Library_Level_Entity (E) then
                   Set_Suppress_Value_Tracking_On_Call (Current_Scope);
+                  Set_Suppress_Value_Tracking_On_Call
+                    (Nearest_Dynamic_Scope (Current_Scope));
                end if;
             end Check_Local_Access;
 

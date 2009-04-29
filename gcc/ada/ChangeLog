@@ -1,3 +1,38 @@
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Improve error message on
+	box-defaulted operator in an instantiation, when the type of the
+	operands is not directly visible.
+
+2009-04-29  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Valid_Limited_Ancestor): Undo previous change.
+	(Resolve_Extension_Aggregate): Call Check_Parameterless_Call after the
+	analysis of the ancestor part. Remove prohibition against limited
+	interpretations of the ancestor expression in the case of Ada 2005.
+	Revise error message in overloaded case, adding a message to cover
+	the Ada 2005 case.
+
+2009-04-29  Thomas Quinot  <quinot@adacore.com>
+
+	* xoscons.adb: Minor reformatting
+
+2009-04-29  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Do not ignore
+	attribute_definition_clauses for the following attributes when the
+	-gnatI switch is used: External_Tag, Input, Output, Read, Storage_Pool,
+	Storage_Size, Write. Otherwise, we get spurious errors (for example,
+	missing Read attribute on remote types).
+
+	* gnat_ugn.texi: Document the change, and add a stern warning.
+
+2009-04-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Check_Local_Access): Indicate that value tracing is
+	disabled not just for the current scope, but for the innermost dynamic
+	scope as well.
+
 2009-04-29  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies

@@ -2370,10 +2370,12 @@ package body Sem_Ch8 is
             declare
                F1 : Entity_Id;
                F2 : Entity_Id;
+               T1 : Entity_Id;
 
             begin
                F1 := First_Formal (Candidate_Renaming);
                F2 := First_Formal (New_S);
+               T1 := First_Subtype (Etype (F1));
 
                while Present (F1) and then Present (F2) loop
                   Next_Formal (F1);
@@ -2389,6 +2391,15 @@ package body Sem_Ch8 is
                      Error_Msg_NE
                     ("\missing specification for &", Spec, F1);
                   end if;
+               end if;
+
+               if Nkind (Nam) = N_Operator_Symbol
+                 and then From_Default (N)
+               then
+                  Error_Msg_Node_2 := T1;
+                  Error_Msg_NE
+                    ("default & on & is not directly visible",
+                      Nam, Nam);
                end if;
             end;
          end if;
@@ -5040,10 +5051,12 @@ package body Sem_Ch8 is
       Candidate_Renaming := Empty;
 
       if not Is_Overloaded (Nam) then
-         if Entity_Matches_Spec (Entity (Nam), New_S)
-           and then Is_Visible_Operation (Entity (Nam))
-         then
-            Old_S := Entity (Nam);
+         if Entity_Matches_Spec (Entity (Nam), New_S) then
+            Candidate_Renaming := New_S;
+
+            if Is_Visible_Operation (Entity (Nam)) then
+               Old_S := Entity (Nam);
+            end if;
 
          elsif
            Present (First_Formal (Entity (Nam)))

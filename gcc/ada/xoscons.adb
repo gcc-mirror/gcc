@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2008, Free Software Foundation, Inc.            --
+--          Copyright (C) 2008-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 --    - the preprocessed C file: s-oscons-tmplt.i
 --    - the generated assembly file: s-oscons-tmplt.s
 
---  The contents of s-oscons.ads is written on standard output
+--  The contents of s-oscons.ads is written on standard output.
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Exceptions;          use Ada.Exceptions;
@@ -59,12 +59,12 @@ procedure XOSCons is
    -- Information retrieved from assembly listing --
    -------------------------------------------------
 
-   --  We need to deal with integer values that can be signed or unsigned,
-   --  so we need to cater for the maximum range of both cases.
-
    type String_Access is access all String;
    --  Note: we can't use GNAT.Strings for this definition, since that unit
    --  is not available in older base compilers.
+
+   --  We need to deal with integer values that can be signed or unsigned, so
+   --  we need to accomodate the maximum range of both cases.
 
    type Int_Value_Type is record
       Positive  : Boolean;
@@ -75,8 +75,8 @@ procedure XOSCons is
      (CND,     --  Constant (decimal)
       CNS,     --  Constant (freeform string)
       TXT);    --  Literal text
-   --  Recognized markers found in assembly file. These markers are produced
-   --  by the same-named macros from the C template.
+   --  Recognized markers found in assembly file. These markers are produced by
+   --  the same-named macros from the C template.
 
    type Asm_Info (Kind : Asm_Info_Kind := TXT) is record
       Line_Number   : Integer;
@@ -98,16 +98,16 @@ procedure XOSCons is
       --  Additional descriptive comment for constant, or free-form text (TXT)
    end record;
 
-   package Asm_Infos is new GNAT.Table (
-      Table_Component_Type => Asm_Info,
+   package Asm_Infos is new GNAT.Table
+     (Table_Component_Type => Asm_Info,
       Table_Index_Type     => Integer,
       Table_Low_Bound      => 1,
       Table_Initial        => 100,
       Table_Increment      => 10);
 
-   Max_Const_Name_Len  : Natural := 0;
+   Max_Const_Name_Len     : Natural := 0;
    Max_Constant_Value_Len : Natural := 0;
-   --  Longest name and longest value lengths
+   --  Lengths of longest name and longest value
 
    type Language is (Lang_Ada, Lang_C);
 
@@ -152,6 +152,7 @@ procedure XOSCons is
       Info : Asm_Info renames Asm_Infos.Table (Info_Index);
 
       procedure Put (S : String);
+      --  Write S to OFile
 
       ---------
       -- Put --
@@ -253,9 +254,7 @@ procedure XOSCons is
          --  On some platforms, immediate integer values are prefixed with
          --  a $ or # character in assembly output.
 
-         if S (First) = '$'
-           or else S (First) = '#'
-         then
+         if S (First) = '$' or else S (First) = '#' then
             First := First + 1;
          end if;
 
@@ -306,6 +305,7 @@ procedure XOSCons is
                if Info.Kind = CND then
                   Info.Int_Value := Parse_Int (Line (Index1 .. Index2 - 1));
                   Info.Value_Len := Index2 - Index1 - 1;
+
                else
                   Info.Text_Value := Field_Alloc;
                   Info.Value_Len  := Info.Text_Value'Length;
@@ -322,8 +322,8 @@ procedure XOSCons is
          if Info.Kind = TXT then
             Info.Text_Value := Info.Comment;
 
-         --  Update Max_Constant_Value_Len, but only if this constant has
-         --  a comment (else the value is allowed to be longer).
+         --  Update Max_Constant_Value_Len, but only if this constant has a
+         --  comment (else the value is allowed to be longer).
 
          elsif Info.Comment'Length > 0 then
             if Info.Value_Len > Max_Constant_Value_Len then
@@ -398,7 +398,7 @@ begin
 
    --  Load C template and output definitions
 
-   Open (Tmpl_File, In_File, Tmpl_File_Name);
+   Open   (Tmpl_File, In_File,  Tmpl_File_Name);
    Create (Ada_OFile, Out_File, Ada_File_Name);
    Create (C_OFile,   Out_File, C_File_Name);
 
@@ -446,6 +446,7 @@ begin
             Output_Info (Lang_C,   C_OFile,   Current_Info);
             Current_Info := Current_Info + 1;
          end if;
+
          Current_Line := Current_Line + 1;
       end if;
    end loop;
