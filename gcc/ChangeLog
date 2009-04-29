@@ -1,3 +1,14 @@
+2009-04-29  Bernd Schmidt  <bernd.schmidt@analog.com>
+
+	* config/bfin/bfin.md (sp_or_sm, spm_string, spm_name): New macro.
+	(ss<spm_name>hi3, ss<spm_name>hi3_parts, ss<spm_name>hi3_low_parts,
+	ss<spm_name_hi3_high_parts): New patterns, replacing ssaddhi3, ssubhi3,
+	ssaddhi3_parts and sssubhi3_parts.
+	(flag_mulhi3_parts): Produce a HImode output rather than trying to set
+	a VEC_SELECT.
+	* config/bfin/bfin.c (bfin_expand_builtin, case BFIN_BUILTIN_CPLX_SQU):
+	Adjust accordingly.
+
 2009-04-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree-vect-loop.c (get_initial_def_for_induction): Use
