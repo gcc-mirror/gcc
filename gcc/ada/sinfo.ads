@@ -1364,6 +1364,16 @@ package Sinfo is
    --    scope are chained, and this field is used as the forward pointer for
    --    this list. See Einfo for further details.
 
+   --  Next_Implicit_With (Node3-Sem)
+   --    Present in N_With_Clause. Part of a chain of with_clauses generated
+   --    in rtsfind to indicate implicit dependencies on predefined units. Used
+   --    to prevent multiple with_clauses for the same unit in a given context.
+   --    A postorder traversal of the tree whose nodes are units and whose
+   --    links are with_clauses defines the order in which Inspector must
+   --    examine a compiled unit and its full context. This ordering ensures
+   --    that any subprogram call is examined after the subprogram declartion
+   --    has been seen.
+
    --  Next_Named_Actual (Node4-Sem)
    --    Present in parameter association node. Set during semantic analysis to
    --    point to the next named parameter, where parameters are ordered by
@@ -5450,6 +5460,7 @@ package Sinfo is
       --  N_With_Clause
       --  Sloc points to first token of library unit name
       --  Name (Node2)
+      --  Next_Implicit_With (Node3-Sem)
       --  Library_Unit (Node4-Sem)
       --  Corresponding_Spec (Node5-Sem)
       --  First_Name (Flag5) (set to True if first name or only one name)
@@ -8062,6 +8073,9 @@ package Sinfo is
    function Next_Entity
      (N : Node_Id) return Node_Id;    -- Node2
 
+   function Next_Implicit_With
+     (N : Node_Id) return Node_Id;    -- Node3
+
    function Next_Named_Actual
      (N : Node_Id) return Node_Id;    -- Node4
 
@@ -8946,6 +8960,9 @@ package Sinfo is
 
    procedure Set_Next_Entity
      (N : Node_Id; Val : Node_Id);            -- Node2
+
+   procedure Set_Next_Implicit_With
+     (N : Node_Id; Val : Node_Id);            -- Node3
 
    procedure Set_Next_Named_Actual
      (N : Node_Id; Val : Node_Id);            -- Node4
@@ -11064,6 +11081,7 @@ package Sinfo is
    pragma Inline (Name);
    pragma Inline (Names);
    pragma Inline (Next_Entity);
+   pragma Inline (Next_Implicit_With);
    pragma Inline (Next_Named_Actual);
    pragma Inline (Next_Pragma);
    pragma Inline (Next_Rep_Item);
@@ -11356,6 +11374,7 @@ package Sinfo is
    pragma Inline (Set_Name);
    pragma Inline (Set_Names);
    pragma Inline (Set_Next_Entity);
+   pragma Inline (Set_Next_Implicit_With);
    pragma Inline (Set_Next_Named_Actual);
    pragma Inline (Set_Next_Pragma);
    pragma Inline (Set_Next_Rep_Item);
