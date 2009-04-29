@@ -3031,7 +3031,12 @@ package body Sem_Res is
                return True;
 
             when N_Op_Concat      =>
-               return Static_Concatenation (Left_Opnd (N))
+               --  Concatenation is static when both operands are static
+               --  and the concatenation operator is a predefined one.
+
+               return Scope (Entity (N)) = Standard_Standard
+                        and then
+                      Static_Concatenation (Left_Opnd (N))
                         and then
                       Static_Concatenation (Right_Opnd (N));
 
