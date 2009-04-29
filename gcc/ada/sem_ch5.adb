@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -436,9 +436,15 @@ package body Sem_Ch5 is
         and then not Assignment_OK (Original_Node (Lhs))
         and then not Is_Value_Type (T1)
       then
-         Error_Msg_N
-           ("left hand of assignment must not be limited type", Lhs);
-         Explain_Limited_Type (T1, Lhs);
+         --  CPP constructors can only be called in declarations
+
+         if Is_CPP_Constructor_Call (Rhs) then
+            Error_Msg_N ("invalid use of 'C'P'P constructor", Rhs);
+         else
+            Error_Msg_N
+              ("left hand of assignment must not be limited type", Lhs);
+            Explain_Limited_Type (T1, Lhs);
+         end if;
          return;
 
       --  Enforce RM 3.9.3 (8): left-hand side cannot be abstract
@@ -543,6 +549,7 @@ package body Sem_Ch5 is
            or else (Is_Dynamically_Tagged (Rhs)
                      and then not Is_Access_Type (T1)))
         and then not Is_Class_Wide_Type (T1)
+        and then not Is_CPP_Constructor_Call (Rhs)
       then
          Error_Msg_N ("dynamically tagged expression not allowed!", Rhs);
 

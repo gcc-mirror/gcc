@@ -1368,22 +1368,35 @@ package body Exp_Ch3 is
       In_Init_Proc      : Boolean := False;
       Enclos_Type       : Entity_Id := Empty;
       Discr_Map         : Elist_Id := New_Elmt_List;
-      With_Default_Init : Boolean := False) return List_Id
+      With_Default_Init : Boolean := False;
+      Constructor_Ref   : Node_Id := Empty) return List_Id
    is
-      First_Arg      : Node_Id;
-      Args           : List_Id;
-      Decls          : List_Id;
-      Decl           : Node_Id;
-      Discr          : Entity_Id;
+      Res            : constant List_Id := New_List;
       Arg            : Node_Id;
-      Proc           : constant Entity_Id := Base_Init_Proc (Typ);
-      Init_Type      : constant Entity_Id := Etype (First_Formal (Proc));
-      Full_Init_Type : constant Entity_Id := Underlying_Type (Init_Type);
-      Res            : constant List_Id   := New_List;
-      Full_Type      : Entity_Id := Typ;
+      Args           : List_Id;
       Controller_Typ : Entity_Id;
+      Decl           : Node_Id;
+      Decls          : List_Id;
+      Discr          : Entity_Id;
+      First_Arg      : Node_Id;
+      Full_Init_Type : Entity_Id;
+      Full_Type      : Entity_Id := Typ;
+      Init_Type      : Entity_Id;
+      Proc           : Entity_Id;
 
    begin
+      pragma Assert (Constructor_Ref = Empty
+        or else Is_CPP_Constructor_Call (Constructor_Ref));
+
+      if No (Constructor_Ref) then
+         Proc := Base_Init_Proc (Typ);
+      else
+         Proc := Base_Init_Proc (Typ, Entity (Name (Constructor_Ref)));
+      end if;
+
+      Init_Type      := Etype (First_Formal (Proc));
+      Full_Init_Type := Underlying_Type (Init_Type);
+
       --  Nothing to do if the Init_Proc is null, unless Initialize_Scalars
       --  is active (in which case we make the call anyway, since in the
       --  actual compiled client it may be non null).
@@ -1579,6 +1592,10 @@ package body Exp_Ch3 is
         and then Chars (Selector_Name (Id_Ref)) = Name_uParent
       then
          Append_To (Args, New_Occurrence_Of (Standard_False, Loc));
+
+      elsif Present (Constructor_Ref) then
+         Append_List_To (Args,
+           New_Copy_List (Parameter_Associations (Constructor_Ref)));
       end if;
 
       Append_To (Res,
@@ -2589,7 +2606,21 @@ package body Exp_Ch3 is
                --  Case of explicit initialization
 
                if Present (Expression (Decl)) then
-                  Stmts := Build_Assignment (Id, Expression (Decl));
+                  if Is_CPP_Constructor_Call (Expression (Decl)) then
+                     Stmts :=
+                       Build_Initialization_Call
+                         (Loc,
+                          Make_Selected_Component (Loc,
+                            Prefix => Make_Identifier (Loc, Name_uInit),
+                            Selector_Name => New_Occurrence_Of (Id, Loc)),
+                          Typ,
+                          In_Init_Proc => True,
+                          Enclos_Type => Rec_Type,
+                          Discr_Map => Discr_Map,
+                          Constructor_Ref => Expression (Decl));
+                  else
+                     Stmts := Build_Assignment (Id, Expression (Decl));
+                  end if;
 
                --  Case of composite component with its own Init_Proc
 
@@ -4622,6 +4653,26 @@ package body Exp_Ch3 is
                              (Access_Disp_Table (Base_Type (Typ)))),
                           Loc))));
 
+            elsif Is_Tagged_Type (Typ)
+              and then Is_CPP_Constructor_Call (Expr)
+            then
+               --  The call to the initialization procedure does NOT freeze the
+               --  object being initialized.
+
+               Id_Ref := New_Reference_To (Def_Id, Loc);
+               Set_Must_Not_Freeze (Id_Ref);
+               Set_Assignment_OK (Id_Ref);
+
+               Insert_Actions_After (Init_After,
+                 Build_Initialization_Call (Loc, Id_Ref, Typ,
+                   Constructor_Ref => Expr));
+
+               --  We remove here the original call to the constructor
+               --  to avoid its management in the backend
+
+               Set_Expression (N, Empty);
+               return;
+
             --  For discrete types, set the Is_Known_Valid flag if the
             --  initializing value is known to be valid.
 
@@ -5629,7 +5680,7 @@ package body Exp_Ch3 is
 
          if Is_CPP_Class (Def_Id) then
             Set_All_DT_Position (Def_Id);
-            Set_Default_Constructor (Def_Id);
+            Set_CPP_Constructors (Def_Id);
 
             --  Create the tag entities with a minimum decoration
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -643,6 +643,9 @@ package Sem_Util is
      (Proc_Nam : Entity_Id) return Boolean;
    --  Ada 2005 (AI-345): Determine whether Proc_Nam is a primitive procedure
    --  of a limited interface with a controlling first parameter.
+
+   function Is_CPP_Constructor_Call (N : Node_Id) return Boolean;
+   --  Returns True if N is a call to a CPP constructor
 
    function Is_Dependent_Component_Of_Mutable_Object
      (Object : Node_Id) return Boolean;
