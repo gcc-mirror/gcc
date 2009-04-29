@@ -59,9 +59,9 @@ package GNAT.Sockets.Thin is
       Msg_Name       : System.Address;
       Msg_Namelen    : C.unsigned;
       Msg_Iov        : System.Address;
-      Msg_Iovlen     : C.int;
+      Msg_Iovlen     : C.size_t;
       Msg_Control    : System.Address;
-      Msg_Controllen : C.unsigned;
+      Msg_Controllen : C.size_t;
       Msg_Flags      : C.int;
    end record;
    pragma Convention (C, Msghdr);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2835,12 +2835,15 @@ package body Sem_Ch6 is
          --  inherited interface operation, and the controlling type is
          --  a synchronized type, replace the type with its corresponding
          --  record, to match the proper signature of an overriding operation.
+         --  Same processing for an access parameter whose designated type is
+         --  derived from a synchronized interface.
 
          if Ada_Version >= Ada_05 then
             declare
                Formal     : Entity_Id;
                Formal_Typ : Entity_Id;
                Rec_Typ    : Entity_Id;
+               Desig_Typ  : Entity_Id;
 
             begin
                Formal := First_Formal (Designator);
@@ -2854,6 +2857,19 @@ package body Sem_Ch6 is
 
                      if Present (Interfaces (Rec_Typ)) then
                         Set_Etype (Formal, Rec_Typ);
+                     end if;
+
+                  elsif Ekind (Formal_Typ) = E_Anonymous_Access_Type then
+                     Desig_Typ := Designated_Type (Formal_Typ);
+
+                     if Is_Concurrent_Type (Desig_Typ)
+                       and then Present (Corresponding_Record_Type (Desig_Typ))
+                     then
+                        Rec_Typ := Corresponding_Record_Type (Desig_Typ);
+
+                        if Present (Interfaces (Rec_Typ)) then
+                           Set_Directly_Designated_Type (Formal_Typ, Rec_Typ);
+                        end if;
                      end if;
                   end if;
 
