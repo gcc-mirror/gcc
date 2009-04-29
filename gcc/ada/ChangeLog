@@ -1,3 +1,8 @@
+2009-04-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Conditional_Expression): Set the SLOC of an
+	existing parent If statement on the newly created one.
+
 2009-04-29  Emmanuel Briot  <briot@adacore.com>
 
 	* gnatcmd.adb, prj-proc.adb, prj-proc.ads, make.adb, prj-part.adb,
