@@ -1,3 +1,19 @@
+2009-04-29  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_res.adb (Static_Concatenation): An N_Op_Concat with static
+	operands is static only if it is a predefined concatenation operator.
+
+	* sem_util.adb: Minor reformatting
+
+	* sem_ch12.adb (Save_References): When propagating semantic information
+	from generic copy back to generic template, for the case of an
+	identifier that has been rewritten to an explicit dereference whose
+	prefix is either an object name or a parameterless funcion call
+	denoting a global object or function, properly capture the denoted
+	global entity: perform the corresponding rewriting in the template,
+	and point the rewritten identifier to the correct global entity (not
+	to the associated identifier in the generic copy).
+
 2009-04-29  Robert Dewar  <dewar@adacore.com>
 
 	* rtsfind.adb, prj-env.adb: Minor reformatting
