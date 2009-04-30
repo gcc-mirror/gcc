@@ -1,7 +1,23 @@
+2009-04-30  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.h (FRAME_GROWS_DOWNWARD,
+	MIPS_GP_SAVE_AREA_SIZE): Define new macros.
+	(STARTING_FRAME_OFFSET): Return 0 if FRAME_GROWS_DOWNWARD.  Use
+	MIPS_GP_SAVE_AREA_SIZE.
+	* config/mips/mips.c (struct mips_frame_info): Update comment
+	before arg_pointer_offset and hard_frame_pointer_offset.
+	(mips_compute_frame_info): Update diagram before function: to
+	correctly use stack_pointer_rtx for fp_sp_offset and gp_sp_offset, to
+	indicate the position of frame_pointer_rtx with -fstack-protector and
+	to show args_size.  Don't allocate cprestore area for leaf functions
+	if FRAME_GROWS_DOWNWARD.  Use MIPS_GP_SAVE_AREA_SIZE to set
+	cprestore_size.
+	(mips_initial_elimination_offset): Update for FRAME_GROWS_DOWNWARD.
+
 2009-04-30  Michael Matz  <matz@suse.de>
 
-        PR tree-optimization/39955
-        * config/rs6000/rs6000.c (rs6000_check_sdmode): Also check SSA_NAMEs.
+	PR tree-optimization/39955
+	* config/rs6000/rs6000.c (rs6000_check_sdmode): Also check SSA_NAMEs.
 
 2009-04-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
