@@ -756,7 +756,7 @@ setup_cover_and_important_classes (void)
 	    continue;
 #ifdef CONSTRAINT_NUM_DEFINED_P
 	  for (j = 0; j < CONSTRAINT__LIMIT; j++)
-	    if ((int) regclass_for_constraint ((enum constraint_num) j) == i)
+	    if ((int) REG_CLASS_FOR_CONSTRAINT ((enum constraint_num) j) == i)
 	      break;
 	  if (j < CONSTRAINT__LIMIT)
 	    {
