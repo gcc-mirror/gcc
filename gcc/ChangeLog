@@ -1,3 +1,8 @@
+2009-04-30  Michael Matz  <matz@suse.de>
+
+        PR tree-optimization/39955
+        * config/rs6000/rs6000.c (rs6000_check_sdmode): Also check SSA_NAMEs.
+
 2009-04-30  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* ira.c (setup_cover_and_important_classes):  Use safe macro
