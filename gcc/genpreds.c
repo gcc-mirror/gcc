@@ -1280,9 +1280,13 @@ write_tm_preds_h (void)
 	puts ("extern enum reg_class regclass_for_constraint "
 	      "(enum constraint_num);\n"
 	      "#define REG_CLASS_FROM_CONSTRAINT(c_,s_) \\\n"
-	      "    regclass_for_constraint (lookup_constraint (s_))\n");
+	      "    regclass_for_constraint (lookup_constraint (s_))\n"
+	      "#define REG_CLASS_FOR_CONSTRAINT(x_) \\\n"
+	      "    regclass_for_constraint (x_)\n");
       else
-	puts ("#define REG_CLASS_FROM_CONSTRAINT(c_,s_) NO_REGS");
+	puts ("#define REG_CLASS_FROM_CONSTRAINT(c_,s_) NO_REGS\n"
+	      "#define REG_CLASS_FOR_CONSTRAINT(x_) \\\n"
+	      "    NO_REGS\n");
       if (have_const_int_constraints)
 	puts ("extern bool insn_const_int_ok_for_constraint "
 	      "(HOST_WIDE_INT, enum constraint_num);\n"
