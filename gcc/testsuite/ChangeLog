@@ -1,3 +1,7 @@
+2009-04-30  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.dg/ssp-1.c (__stack_chk_fail): Remove static.
+
 2009-04-30  Steve Ellcey  <sje@cup.hp.com>
 
 	PR middle-end/39579
