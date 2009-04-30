@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! { dg-options "-O0" }
 ! Test patch for PR24416.f90 - a used to come back from the read with var
 ! prepended.

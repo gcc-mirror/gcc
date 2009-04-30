@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! pr 17090 Runtime I/O error
 ! bdavis9659@comcast.net 
 ! 9/12/2004

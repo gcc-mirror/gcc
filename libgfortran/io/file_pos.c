@@ -341,26 +341,8 @@ st_rewind (st_parameter_filepos *fpp)
 
 	  u->previous_nonadvancing_write = 0;
 
-	  /* Flush the buffers.  If we have been writing to the file, the last
-	       written record is the last record in the file, so truncate the
-	       file now.  Reset to read mode so two consecutive rewind
-	       statements do not delete the file contents.  */
-	  if (u->mode == WRITING)
-	    {
-	      /* unit_truncate takes care of flushing.  */
-	      unit_truncate (u, stell (u->s), &fpp->common);
-	      /* .. but we still need to reset since we're going to seek.  */
-	      fbuf_reset (u);
-	    }
-          else
-            {
-              /* Make sure buffers are reset.  */
-              if (u->flags.form == FORM_FORMATTED)
-                fbuf_reset (u);
-              sflush (u->s);
-            }              
+	  fbuf_reset (u);
 
-	  u->mode = READING;
 	  u->last_record = 0;
 
 	  if (sseek (u->s, 0, SEEK_SET) < 0)

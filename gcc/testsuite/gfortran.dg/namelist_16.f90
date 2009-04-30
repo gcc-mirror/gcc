@@ -1,4 +1,4 @@
-!{ dg-do run { target fd_truncate } }
+!{ dg-do run }
 ! Tests namelist on complex variables
 ! provided by Paul Thomas - pault@gcc.gnu.org
 program namelist_16

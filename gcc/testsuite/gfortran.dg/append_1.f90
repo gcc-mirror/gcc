@@ -1,7 +1,7 @@
 ! PR libfortran/21471
 ! Testing POSITION="APPEND"
 !
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
       subroutine failed
         close (10,status='delete')
         call abort

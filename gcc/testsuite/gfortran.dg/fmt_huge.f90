@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR32446 printing big numbers in F0.1 format.
 ! This segfaulted before the patch.
       open (10, status="scratch")

@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR27304 Test running out of data descriptors with data remaining.
 ! Derived from case in PR.  Submitted by Jerry DeLisle <jvdelisle@gcc.gnu.org>.
       program test

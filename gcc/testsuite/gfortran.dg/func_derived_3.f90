@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! This tests the "virtual fix" for PR19561, where pointers to derived
 ! types were not generating correct code.  This testcase is based on
 ! the original PR example.  This example not only tests the

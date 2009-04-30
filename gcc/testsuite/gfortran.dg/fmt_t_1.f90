@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
       integer nrow, vec(15)
       open (10, status="scratch")
       write (10, fmt='(a)') '001    1 2 3 4 5 6'

@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! pr37083 formatted read of line without trailing new-line fails
 real :: a, b, c
 open(unit=10,file="atest",access='stream',form='unformatted',&

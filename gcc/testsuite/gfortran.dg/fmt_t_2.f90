@@ -1,5 +1,5 @@
 ! { dg-options "" }
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! pr24699, handle end-of-record on READ with T format
 ! test contributed by Jerry DeLisle <jvdelisle@gcc.gnu.org>
       character*132 :: foost1, foost2, foost3

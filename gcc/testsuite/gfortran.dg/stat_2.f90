@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! { dg-skip-if "" { *-*-mingw* spu-*-* } { "*" } { "" } }
 ! { dg-options "-std=gnu" }
   character(len=*), parameter :: f = "testfile"

@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR 20092, 20131:  Handle end-of-record condition with pad=yes (default)
 ! for standard input.  This test case only really tests  anything if,
 ! by changing unit 5, you get to manipulate the standard input.

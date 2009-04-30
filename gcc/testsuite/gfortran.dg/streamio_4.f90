@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR25828 Stream IO test 4, Tests string read and writes, single byte.
 ! Verifies buffering is working correctly and position="append"
 ! Contributed by Jerry DeLisle <jvdelisle@verizon.net>.

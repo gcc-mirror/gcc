@@ -46,6 +46,13 @@ PREFIX(fgetc) (const int * unit, char * c, gfc_charlen_type c_len)
   if (u == NULL)
     return -1;
 
+  fbuf_reset (u);
+  if (u->mode == WRITING)
+    {
+      sflush (u->s);
+      u->mode = READING;
+    }
+
   memset (c, ' ', c_len);
   ret = sread (u->s, c, 1);
   unlock_unit (u);
@@ -117,6 +124,13 @@ PREFIX(fputc) (const int * unit, char * c,
 
   if (u == NULL)
     return -1;
+
+  fbuf_reset (u);
+  if (u->mode == READING)
+    {
+      sflush (u->s);
+      u->mode = WRITING;
+    }
 
   s = swrite (u->s, c, 1);
   unlock_unit (u);

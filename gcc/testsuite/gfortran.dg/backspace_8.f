@@ -1,4 +1,4 @@
-C { dg-do run { target fd_truncate } }
+C { dg-do run }
 C PR libfortran/31618 - backspace after an error didn't work.
       program main
       character*78 msg

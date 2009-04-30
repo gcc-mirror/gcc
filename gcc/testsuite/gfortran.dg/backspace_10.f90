@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR33307 I/O read/positioning problem - in BACKSPACE
 ! Test case devloped from test in PR by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 program gfcbug69b

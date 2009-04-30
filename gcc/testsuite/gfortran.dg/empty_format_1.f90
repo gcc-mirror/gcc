@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR 17709
 ! We weren't resetting the internal EOR flag correctly, so the second read
 ! wasn't advancing to the next line.

@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! { dg-options "-std=gnu" }
 character(25) :: sround, ssign, sasynchronous, sdecimal, sencoding
 integer :: vsize, vid

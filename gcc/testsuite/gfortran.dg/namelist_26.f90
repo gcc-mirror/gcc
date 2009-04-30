@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR30918 Failure to skip commented out NAMELIST
 ! Before the patch, this read the commented out namelist and iuse would
 ! equal 2 when done.  Test case from PR.

@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! { dg-options "-mieee" { target alpha*-*-* sh*-*-* } }
 ! { dg-skip-if "NaN not supported" { spu-*-* } { "*" } { "" } }
 !

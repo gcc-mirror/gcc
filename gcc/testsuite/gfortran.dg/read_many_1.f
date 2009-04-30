@@ -1,4 +1,4 @@
-!{ dg-do run { target fd_truncate } }
+!{ dg-do run }
 ! PR26423 Large file I/O error related to buffering
 ! Test case derived from case by Dale Ranta.
 ! Submitted  by Jerry DeLisle  <jvdelisle@gcc.gnu.org> 

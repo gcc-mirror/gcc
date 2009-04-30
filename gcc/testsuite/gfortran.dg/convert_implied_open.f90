@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! { dg-options "-fconvert=swap" }
 ! PR 26735 - implied open didn't use to honor -fconvert
 program main

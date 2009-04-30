@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR17286
 ! Namelist read failed when spaces exist between the '=' and the numbers
 ! This is a libgfortran bug

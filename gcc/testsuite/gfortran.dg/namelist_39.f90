@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR33421 and PR33253 Weird quotation of namelist output of character arrays
 ! Test case from Toon Moone, adapted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 

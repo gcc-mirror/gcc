@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR 20774: Handle size parameter for non-advancing I/O correctly
 program main
   open(77,status='scratch')

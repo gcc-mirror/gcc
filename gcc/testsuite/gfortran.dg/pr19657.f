@@ -1,4 +1,4 @@
-c { dg-do run { target fd_truncate } }
+c { dg-do run }
 c pr 19657
 c test namelist not skipped if ending with logical.
 c Based on example provided by fuyuki@ccsr.u-tokyo.ac.jp

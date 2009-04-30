@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR34676 IO error delayed
 ! Test case from PR modified by <jvdelisle@gcc.gnu.org>
 implicit none

@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! Test case prepared by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 ! Test of sign=, decimal=, and blank= .
 program iotests

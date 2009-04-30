@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR25550 file data corrupted after reading end of file.
 ! Derived from example given in PR from Dale Ranta.
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org> 

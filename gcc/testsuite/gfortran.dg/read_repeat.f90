@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR39528 repeated entries not read when using list-directed input.
 ! Test case derived from reporters example.
 program rread

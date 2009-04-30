@@ -1,4 +1,4 @@
-!{ dg-do run { target fd_truncate } }
+!{ dg-do run }
 ! Tests arrays of derived types containing derived type arrays whose
 ! components are character arrays - exercises object name parser in
 ! list_read.c. Checks that namelist output can be reread. 

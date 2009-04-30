@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! Program to test terminators in list-directed input
 program list_read_1
   character(len=5) :: s

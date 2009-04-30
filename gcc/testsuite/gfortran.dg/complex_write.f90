@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! pr 19071
 ! test case provided by
 !   Thomas.Koenig@online.de

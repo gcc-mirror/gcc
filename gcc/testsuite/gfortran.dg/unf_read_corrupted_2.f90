@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR31880 silent data corruption in gfortran read statement
 ! Test from PR.
       program r3

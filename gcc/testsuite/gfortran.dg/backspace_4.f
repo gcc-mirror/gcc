@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR25598 Error on repeated backspaces.
 ! Derived from example given in PR by Dale Ranta
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org> 
