@@ -4,7 +4,7 @@
 
 #include <stdlib.h>
 
-static void
+void
 __stack_chk_fail (void)
 {
   exit (0); /* pass */
