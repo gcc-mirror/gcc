@@ -11,5 +11,5 @@ extern int foo();
 void baz()
 {
     [foo test];	/* { dg-warning "invalid receiver type" } */ 
-		/* { dg-warning "cannot convert to a pointer type" "" { target *-*-* } 13 } */
+		/* { dg-error "cannot convert to a pointer type" "" { target *-*-* } 13 } */
 }

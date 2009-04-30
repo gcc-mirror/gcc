@@ -1,3 +1,19 @@
+2009-04-30  David Ayers  <ayers@fsfe.org>
+
+	* lib/objc.exp (objc_init): Add	and set gcc_warning_prefix
+	and gcc_error_prefix variables.
+	* objc.dg/bad-receiver-type.m: Update to match correct
+	diagnostics marker.
+	* objc.dg/encode-5.m: Likewise.
+	* objc.dg/id-1.m: Likewise.
+	* objc.dg/method-1.m: Likewise.
+	* objc.dg/method-6.m: Likewise.
+	* objc.dg/method-7.m: Likewise.
+	* objc.dg/method-9.m: Likewise.
+	* objc.dg/method-11.m: Likewise.
+	* objc.dg/method-20.m: Likewise.
+	* objc.dg/private-1.m: Likewise.
+
 2009-04-30  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/39667
