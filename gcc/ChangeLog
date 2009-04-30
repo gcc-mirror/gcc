@@ -1,3 +1,7 @@
+2009-04-30  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* gcse.c (gcse_constant_p): Make sure the constant is sharable.
+
 2009-04-29  James E. Wilson  <wilson@codesourcery.com>
 
 	* config/mips/mips.c (mips_add_offset): Use gen_int_mode for
