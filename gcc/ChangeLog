@@ -1,3 +1,7 @@
+2009-04-30  Rafael Avila de Espindola  <espindola@google.com>
+
+	* plugin.c: Include plugin-version.h only if ENABLE_PLUGIN is defined.
+
 2009-04-30  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcse.c (gcse_constant_p): Make sure the constant is sharable.

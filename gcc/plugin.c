@@ -38,7 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "plugin.h"
 #include "timevar.h"
+#ifdef ENABLE_PLUGIN
 #include "plugin-version.h"
+#endif
 
 /* Event names as strings.  Keep in sync with enum plugin_event.  */
 const char *plugin_event_name[] =
