@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "flags.h"
+#include "except.h"
 #include "df.h"
 #include "cselib.h"
 #include "dce.h"
@@ -34,9 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "tm_p.h"
-
-DEF_VEC_I(int);
-DEF_VEC_ALLOC_I(int,heap);
 
 
 /* -------------------------------------------------------------------------
@@ -116,6 +114,10 @@ deletable_insn_p (rtx insn, bool fast, bitmap arg_stores)
     return find_call_stack_args (insn, false, fast, arg_stores);
 
   if (!NONJUMP_INSN_P (insn))
+    return false;
+
+  /* Similarly, we cannot delete other insns that can throw either.  */
+  if (df_in_progress && flag_non_call_exceptions && can_throw_internal (insn))
     return false;
 
   body = PATTERN (insn);
