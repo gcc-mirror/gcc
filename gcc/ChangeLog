@@ -1,3 +1,8 @@
+2009-04-29  James E. Wilson  <wilson@codesourcery.com>
+
+	* config/mips/mips.c (mips_add_offset): Use gen_int_mode for
+	CONST_HIGH_PART result.
+
 2009-04-29  Anatoly Sokolov  <aesok@post.ru>
 
 	* config/avr/avr.c (initial_elimination_offset): Rename to
