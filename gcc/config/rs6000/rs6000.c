@@ -11545,6 +11545,7 @@ rs6000_check_sdmode (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
     case PARM_DECL:
     case FIELD_DECL:
     case RESULT_DECL:
+    case SSA_NAME:
     case REAL_CST:
     case INDIRECT_REF:
     case ALIGN_INDIRECT_REF:
