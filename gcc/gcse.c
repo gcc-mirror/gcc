@@ -1303,7 +1303,7 @@ gcse_constant_p (const_rtx x)
 
   /* Since X might be inserted more than once we have to take care that it
      is sharable.  */
-  return CONSTANT_P (x) && (GET_CODE (X) != CONST || shared_const_p (x));
+  return CONSTANT_P (x) && (GET_CODE (x) != CONST || shared_const_p (x));
 }
 
 /* Scan pattern PAT of INSN and add an entry to the hash TABLE (set or
