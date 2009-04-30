@@ -1,3 +1,9 @@
+2009-04-30  Janis Johnson  <janis187@us.ibm.com>
+
+	PR testsuite/39776
+	* g++.dg/ext/altivec-15.C: Remove dg-error for messages that are
+	no longer issued.
+
 2009-04-30  David Ayers  <ayers@fsfe.org>
 
 	* lib/objc.exp (objc_init): Add	and set gcc_warning_prefix
