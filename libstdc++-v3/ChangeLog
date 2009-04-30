@@ -1,3 +1,7 @@
+2009-04-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* scripts/create_testsuite_files: Remove thread directory.
+
 2009-04-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/39868
