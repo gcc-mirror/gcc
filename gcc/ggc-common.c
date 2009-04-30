@@ -845,7 +845,7 @@ loc_descriptor (const char *name, int line, const char *function)
   if (!loc_hash)
     loc_hash = htab_create (10, hash_descriptor, eq_descriptor, NULL);
 
-  slot = (struct loc_descriptor **) htab_find_slot (loc_hash, &loc, 1);
+  slot = (struct loc_descriptor **) htab_find_slot (loc_hash, &loc, INSERT);
   if (*slot)
     return *slot;
   *slot = XCNEW (struct loc_descriptor);

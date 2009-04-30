@@ -113,7 +113,8 @@ vec_descriptor (const char *name, int line, const char *function)
   if (!vec_desc_hash)
     vec_desc_hash = htab_create (10, hash_descriptor, eq_descriptor, NULL);
 
-  slot = (struct vec_descriptor **) htab_find_slot (vec_desc_hash, &loc, 1);
+  slot = (struct vec_descriptor **) htab_find_slot (vec_desc_hash, &loc,
+						    INSERT);
   if (*slot)
     return *slot;
   *slot = XCNEW (struct vec_descriptor);

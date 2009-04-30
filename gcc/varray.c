@@ -71,7 +71,7 @@ varray_descriptor (const char *name)
   slot = (struct varray_descriptor **)
     htab_find_slot_with_hash (varray_hash, name,
 		    	      htab_hash_pointer (name),
-			      1);
+			      INSERT);
   if (*slot)
     return *slot;
   *slot = XCNEW (struct varray_descriptor);

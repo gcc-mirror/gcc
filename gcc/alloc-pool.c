@@ -116,7 +116,7 @@ alloc_pool_descriptor (const char *name)
   slot = (struct alloc_pool_descriptor **)
     htab_find_slot_with_hash (alloc_pool_hash, name,
 			      htab_hash_pointer (name),
-			      1);
+			      INSERT);
   if (*slot)
     return *slot;
   *slot = XCNEW (struct alloc_pool_descriptor);
