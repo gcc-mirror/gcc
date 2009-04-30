@@ -22,8 +22,8 @@ id foo(void) {
   /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } 20 } */
   /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } 20 } */
   [obj2 setWindow:nil]; /* { dg-warning "multiple methods named .\\-setWindow:. found" } */
-  /* { dg-warning "using .\\-\\(void\\)setWindow:\\(Object \\*\\)wdw." "" { target *-*-* } 10 } */
-  /* { dg-warning "also found .\\-\\(void\\)setWindow:\\(Class1 \\*\\)window." "" { target *-*-* } 14 } */
+  /* { dg-message "using .\\-\\(void\\)setWindow:\\(Object \\*\\)wdw." "" { target *-*-* } 10 } */
+  /* { dg-message "also found .\\-\\(void\\)setWindow:\\(Class1 \\*\\)window." "" { target *-*-* } 14 } */
 
   return obj;
 }

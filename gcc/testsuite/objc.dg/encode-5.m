@@ -28,7 +28,7 @@
 @interface Test : Object
 { float j; }
 -(void) test2: (int [5])a with: (int [])b;
--(id) test3: (Test **)b; /* { dg-warning "previous declaration of .\\-\\(id\\)test3:\\(Test \\*\\*\\)b." } */
+-(id) test3: (Test **)b; /* { dg-message "previous declaration of .\\-\\(id\\)test3:\\(Test \\*\\*\\)b." } */
 @end
 
 @implementation Test

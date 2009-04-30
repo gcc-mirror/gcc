@@ -20,8 +20,8 @@ void foo(void) {
   Class receiver;
 
   [receiver port];  /* { dg-warning "multiple methods named .\\+port. found" } */
-       /* { dg-warning "using .\\-\\(unsigned( int)?\\)port." "" { target *-*-* } 10 } */
-       /* { dg-warning "also found .\\+\\(Protocol \\*\\)port." "" { target *-*-* } 15 } */
+       /* { dg-message "using .\\-\\(unsigned( int)?\\)port." "" { target *-*-* } 10 } */
+       /* { dg-message "also found .\\+\\(Protocol \\*\\)port." "" { target *-*-* } 15 } */
 
   [receiver starboard];  /* { dg-warning "no .\\+starboard. method found" } */
        /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } 26 } */

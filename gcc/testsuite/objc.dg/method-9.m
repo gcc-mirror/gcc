@@ -34,9 +34,9 @@
 {
     NTGridDataObject *result = [[NTGridDataObject alloc] initWithData:data];
     /* { dg-warning "multiple methods named .\\-initWithData:. found" "" { target *-*-* } 35 } */
-    /* { dg-warning "using .\\-\\(id\\)initWithData:\\(Object \\*\\)data." "" { target *-*-* } 11 } */
-    /* { dg-warning "also found .\\-\\(id\\)initWithData:\\(id <MyObject, MyCoding>\\)data." "" { target *-*-* } 19 } */
-    /* { dg-warning "also found .\\-\\(id\\)initWithData:\\(int\\)data." "" { target *-*-* } 15 } */
+    /* { dg-message "using .\\-\\(id\\)initWithData:\\(Object \\*\\)data." "" { target *-*-* } 11 } */
+    /* { dg-message "also found .\\-\\(id\\)initWithData:\\(id <MyObject, MyCoding>\\)data." "" { target *-*-* } 19 } */
+    /* { dg-message "also found .\\-\\(id\\)initWithData:\\(int\\)data." "" { target *-*-* } 15 } */
 
     /* The following warning is a consequence of picking the "wrong" method signature.  */
     /* { dg-warning "passing argument 1 of .initWithData:. from distinct Objective\\-C type" "" { target *-*-* } 35 } */

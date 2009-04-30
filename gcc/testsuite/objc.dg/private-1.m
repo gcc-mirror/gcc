@@ -50,8 +50,8 @@ int main (void)
     {
       int access;
 
-      access = m->private;   /* { dg-error "is @private" }  */
-      access = m->protected; /* { dg-error "is @protected" }  */
+      access = m->private;   /* { dg-warning "is @private" }  */
+      access = m->protected; /* { dg-warning "is @protected" }  */
       access = m->public;    /* Ok  */
     }
 

@@ -24,9 +24,9 @@ void foo(void) {
   id obj1, obj2 = 0;
   obj2 = [obj1 initWithData: obj2];
      /* { dg-warning "multiple methods named .\\-initWithData:. found" "" { target *-*-* } 25 } */
-     /* { dg-warning "using .\\-\\(void\\)initWithData:\\(Object1 \\*\\)data." "" { target *-*-* } 12 } */
-     /* { dg-warning "also found .\\-\\(id\\)initWithData:\\(Object1 \\*\\)data." "" { target *-*-* } 16 } */
-     /* { dg-warning "also found .\\-\\(id\\)initWithData:\\(Object2 \\*\\)data." "" { target *-*-* } 20 } */
+     /* { dg-message "using .\\-\\(void\\)initWithData:\\(Object1 \\*\\)data." "" { target *-*-* } 12 } */
+     /* { dg-message "also found .\\-\\(id\\)initWithData:\\(Object1 \\*\\)data." "" { target *-*-* } 16 } */
+     /* { dg-message "also found .\\-\\(id\\)initWithData:\\(Object2 \\*\\)data." "" { target *-*-* } 20 } */
 
      /* The following error is a consequence of picking the "wrong" method signature.  */
      /* { dg-error "void value not ignored as it ought to be" "" { target *-*-* } 25 } */

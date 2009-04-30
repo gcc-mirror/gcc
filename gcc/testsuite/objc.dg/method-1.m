@@ -16,7 +16,7 @@
 @end
 
 @implementation class3
-- (int) meth1 { return 0; } /* { dg-error "previous definition" } */
+- (int) meth1 { return 0; } /* { dg-message "previous definition" } */
 - (int) meth1 { return 0; } /* { dg-error "redefinition of" } */
 @end
 
@@ -25,6 +25,6 @@
 @end
 
 @implementation class4
-+ (void) meth1 {} /* { dg-error "previous definition" } */
++ (void) meth1 {} /* { dg-message "previous definition" } */
 + (void) meth1 {} /* { dg-error "redefinition of" } */
 @end
