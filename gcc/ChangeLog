@@ -1,3 +1,7 @@
+2009-04-30  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcse.c (gcse_constant_p): Fix typo in last change.
+
 2009-04-30  Rafael Avila de Espindola  <espindola@google.com>
 
 	* plugin.c: Include plugin-version.h only if ENABLE_PLUGIN is defined.
