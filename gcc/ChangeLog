@@ -1,3 +1,12 @@
+2009-04-30  Rafael Avila de Espindola  <espindola@google.com>
+
+	* alloc-pool.c (alloc_pool_descriptor): Use an insert_opion value
+	instead of an int.
+	* bitmap.c (bitmap_descriptor): Likewise.
+	* ggc-common.c (loc_descriptor): Likewise.
+	* varray.c (varray_descriptor): Likewise.
+	* vec.c (vec_descriptor): Likewise.
+
 2009-04-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.in (dce.o): Add $(EXCEPT_H).

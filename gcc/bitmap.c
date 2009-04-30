@@ -87,7 +87,7 @@ bitmap_descriptor (const char *file, const char *function, int line)
   slot = (struct bitmap_descriptor **)
     htab_find_slot_with_hash (bitmap_desc_hash, &loc,
 			      htab_hash_pointer (file) + line,
-			      1);
+			      INSERT);
   if (*slot)
     return *slot;
   *slot = XCNEW (struct bitmap_descriptor);
