@@ -1,3 +1,22 @@
+2009-04-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* gcse.c (ae_gen): Remove.
+	(can_assign_to_reg_p): Rename to can_assign_to_reg_without_clobbers_p
+	and make non-static function to make it available in store-motion.c.
+	Update call sites with search-and-replace.
+	(enumerate_ldsts, reg_set_info, reg_clear_last_set, store_ops_ok,
+	extract_mentioned_regs, extract_mentioned_regs_helper,
+	find_moveable_store, compute_store_table, load_kills_store, find_loads,
+	store_killed_in_insn, store_killed_after, store_killed_before,
+	build_store_vectors, insert_insn_start_basic_block, insert-store,
+	remove_reachable_equiv_notes, replace_store_insn, delete_store,
+	free_store_memory, one_store_motion_pass, gate_rtl_store_motion,
+	execute_rtl_store_motion, pass_rtl_store_motion): Move to...
+	* store-motion.c: ...new file.  Also copy data structures from gcse.c
+	and clean up to remove parts not used by store motion.
+	* rtl.h (can_assign_to_reg_without_clobbers_p): Add prototype.
+	* Makefile.in (store-motion.o): New rule. Add to OBJS-common.
+
 2009-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/38571
