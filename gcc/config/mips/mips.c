@@ -2703,8 +2703,10 @@ mips_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
 	}
       else
 	{
-	  /* Leave OFFSET as a 16-bit offset and put the excess in HIGH.  */
-	  high = GEN_INT (CONST_HIGH_PART (offset));
+	  /* Leave OFFSET as a 16-bit offset and put the excess in HIGH.
+	     The addition inside the macro CONST_HIGH_PART may cause an
+	     overflow, so we need to force a sign-extension check.  */
+	  high = gen_int_mode (CONST_HIGH_PART (offset), Pmode);
 	  offset = CONST_LOW_PART (offset);
 	}
       high = mips_force_temporary (temp, high);
