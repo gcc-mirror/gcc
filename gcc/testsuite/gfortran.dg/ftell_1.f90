@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
   integer(kind=8) o, o2
 
   open (10, status="scratch")

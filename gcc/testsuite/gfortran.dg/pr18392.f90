@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! pr 18392
 ! test namelist with derived types
 ! Based on example provided by thomas.koenig@online.de

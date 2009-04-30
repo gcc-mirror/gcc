@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR25463 Check that advance='no' works correctly.
 ! Derived from example given in PR by Thomas Koenig
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org> 

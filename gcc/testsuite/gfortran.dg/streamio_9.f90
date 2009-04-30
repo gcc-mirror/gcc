@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR29053 Stream IO test 9.
 ! Contributed by Jerry DeLisle <jvdelisle@gcc.gnu.org>.
 ! Test case derived from that given in PR by Steve Kargl.

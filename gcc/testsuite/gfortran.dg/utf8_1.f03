@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! { dg-options "-fbackslash" }
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 program test1

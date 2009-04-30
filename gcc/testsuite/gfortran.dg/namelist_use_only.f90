@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! This tests the fix for PR22010, where namelists were not being written to
 ! and read back from modules.  It checks that namelists from modules that are
 ! selected by an ONLY declaration work correctly, even when the variables in

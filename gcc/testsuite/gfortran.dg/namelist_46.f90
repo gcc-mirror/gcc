@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR35627 Namelist read problem with short logical followed by read real
 program test
   implicit none

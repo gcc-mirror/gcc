@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! { dg-options "-fbackslash" }
 ! PR36538 namelist failure with tabs preceding object name
       program check1

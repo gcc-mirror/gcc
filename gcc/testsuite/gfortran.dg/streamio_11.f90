@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR29277 Stream IO test 11, tests formatted form.
 ! Contributed by Tobias Burnas.
 program stream_test

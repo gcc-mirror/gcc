@@ -1,4 +1,4 @@
-!{ dg-do run { target fd_truncate } }
+!{ dg-do run }
 ! Tests simple derived types.
 ! Provided by Paul Thomas - pault@gcc.gnu.org
 

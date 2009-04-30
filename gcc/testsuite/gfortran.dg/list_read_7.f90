@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR33400 Formatted read fails if line ends without line break
 ! Test case modified from that in PR by <jvdelisle@gcc.gnu.org>
 integer, parameter :: fgsl_strmax = 128

@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! Names in upper case and object names starting column 2
 ! Based on example provided by thomas.koenig@online.de
 

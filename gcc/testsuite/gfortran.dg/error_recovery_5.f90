@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR34411 hang-up during read of non-expected input
 ! Test case derived from that given in PR
 ! Prior to patch, the do loop was infinite, limits set in this one

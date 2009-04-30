@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! test namelist with scalars and arrays.
 ! Based on example provided by thomas.koenig@online.de
 

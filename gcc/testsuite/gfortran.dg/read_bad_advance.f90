@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR27138 Failure to advance line on bad list directed read.
 ! Submitted by Jerry DeLisle  <jvdelisle@gcc.gnu.org>
       program test

@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! pr18398, missing data on sequential formatted reads
 ! test contributed by Thomas.Koenig@online.de
       open(7,status='scratch')

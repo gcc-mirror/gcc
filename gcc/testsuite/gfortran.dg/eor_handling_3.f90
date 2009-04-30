@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR 19595:  Handle end-of-record condition with pad=yes (default)
 program main
   integer i1, i2

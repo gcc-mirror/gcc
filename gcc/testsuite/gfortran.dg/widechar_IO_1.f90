@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! Wide chracter I/O test 1, formatted and mixed kind
 ! Test case developed by Jerry DeLisle <jvdelisle@gcc.gnu.org>
 program test1

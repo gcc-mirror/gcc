@@ -1,4 +1,4 @@
-c { dg-do run { target fd_truncate } }
+c { dg-do run }
 c pr 12884
 c test namelist with input file containg / before namelist. Also checks
 c non-standard use of $ instead of &

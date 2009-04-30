@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR25835 Check that reading from a file that is at end-of-file does not
 ! segfault or give error.  Test case derived from example in PR from Dale Ranta.
 ! Contributed by Jerry DeLisle  <jvdelisle@gcc.gnu.org>

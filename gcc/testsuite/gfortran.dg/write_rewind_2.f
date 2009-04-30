@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR 26499  Test write with rewind sequences to make sure buffering and
 ! end-of-file conditions are handled correctly.  Derived from test case by Dale
 ! Ranta.  Submitted by Jerry DeLisle <jvdelisle@gcc.gnu.org>.

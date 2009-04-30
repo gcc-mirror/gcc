@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! { dg-options "-pedantic" }
 !  This test verifies the most basic sequential unformatted I/O
 !  with convert="swap".

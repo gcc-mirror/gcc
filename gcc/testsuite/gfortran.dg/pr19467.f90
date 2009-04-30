@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! pr 19467
 ! test namelist with character arrays
 ! Based on example provided by paulthomas2@wanadoo.fr

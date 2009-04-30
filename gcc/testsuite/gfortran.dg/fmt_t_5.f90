@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR32678 GFortan works incorrectly when writing with FORMAT Tx
 ! Before patch, NULLs were inserted in output.
 ! Test case from reporter enhanced to detect this problem.

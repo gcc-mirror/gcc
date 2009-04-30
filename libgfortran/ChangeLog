@@ -1,3 +1,10 @@
+2009-04-30  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/39667
+	* io/file_pos.c (st_rewind): Don't truncate or flush.
+	* io/intrinsics.c (fgetc): Flush if switching mode.
+	(fputc): Likewise.
+
 2009-04-18  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/39782

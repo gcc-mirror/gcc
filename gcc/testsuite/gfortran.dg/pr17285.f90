@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! pr 17285
 ! Test that namelist can read its own output.
 ! At the same time, check arrays and different terminations

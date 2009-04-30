@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! Program to test for proper EOF errors when reading past the end of a file.
 ! We used to get this wrong when a formatted read followed a list formatted
 ! read.

@@ -1,4 +1,4 @@
-!{ dg-do run { target fd_truncate } }
+!{ dg-do run }
 !{ dg-options -std=gnu }
 ! Tests namelist read when more data is provided then specified by 
 ! array qualifier in list.

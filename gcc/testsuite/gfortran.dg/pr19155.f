@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 !
 ! PR libfortran/19155
 ! We accept 'E+00' as a valid real number. The standard says it is not,

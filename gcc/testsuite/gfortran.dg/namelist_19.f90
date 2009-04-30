@@ -1,4 +1,4 @@
-!{ dg-do run { target fd_truncate } }
+!{ dg-do run }
 ! Test namelist error trapping.
 ! provided by Paul Thomas - pault@gcc.gnu.org
 

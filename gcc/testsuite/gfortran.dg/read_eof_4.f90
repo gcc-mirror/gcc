@@ -1,4 +1,4 @@
-! { dg-do run { target fd_truncate } }
+! { dg-do run }
 ! PR 27575 and PR 30009: This test checks the error checking for end
 ! of file condition.
 ! Derived from test case in PR.
