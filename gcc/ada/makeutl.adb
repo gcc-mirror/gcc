@@ -598,7 +598,8 @@ package body Makeutl is
      (Switch               : in out String_Access;
       Parent               : String;
       Including_L_Switch   : Boolean := True;
-      Including_Non_Switch : Boolean := True)
+      Including_Non_Switch : Boolean := True;
+      Including_RTS        : Boolean := False)
    is
    begin
       if Switch /= null then
@@ -628,13 +629,20 @@ package body Makeutl is
                then
                   Start := 4;
 
+               elsif Including_RTS
+                 and then Sw'Length >= 7
+                 and then Sw (2 .. 6) = "-RTS="
+               then
+                  Start := 7;
+
                else
                   return;
                end if;
 
                --  Because relative path arguments to --RTS= may be relative
                --  to the search directory prefix, those relative path
-               --  arguments are not converted.
+               --  arguments are converted only when they include directory
+               --  information.
 
                if not Is_Absolute_Path (Sw (Start .. Sw'Last)) then
                   if Parent'Length = 0 then
@@ -642,6 +650,19 @@ package body Makeutl is
                        ("relative search path switches ("""
                         & Sw
                         & """) are not allowed");
+
+                  elsif Including_RTS then
+                     for J in Start .. Sw'Last loop
+                        if Sw (J) = Directory_Separator then
+                           Switch :=
+                             new String'
+                               (Sw (1 .. Start - 1) &
+                                Parent &
+                                Directory_Separator &
+                                Sw (Start .. Sw'Last));
+                           return;
+                        end if;
+                     end loop;
 
                   else
                      Switch :=

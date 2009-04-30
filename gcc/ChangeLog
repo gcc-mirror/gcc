@@ -1,3 +1,10 @@
+2009-04-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.in (dce.o): Add $(EXCEPT_H).
+	* dce.c: Include except.h and delete redundant vector definitions.
+	(deletable_insn_p): Return false for non-call insns that can throw
+	if DF is running.
+
 2009-04-30  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* gcse.c (ae_gen): Remove.
