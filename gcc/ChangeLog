@@ -1,3 +1,9 @@
+2009-04-30  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/38571
+	* config/arm/arm.h (FUNCTION_BOUNDARY): Set to 16 for thumb
+	when optimizing for size.
+
 2009-04-30  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcse.c (gcse_constant_p): Fix typo in last change.
