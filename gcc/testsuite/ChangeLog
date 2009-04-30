@@ -1,3 +1,9 @@
+2009-04-30  Steve Ellcey  <sje@cup.hp.com>
+
+	PR middle-end/39579
+	* gcc.dg/vect/vect-35.c: XFAIL for IA64 and Sparc.
+	* gfortran.dg/vect/fast-math-pr38968.f90: Ditto.
+
 2009-04-30  Janis Johnson  <janis187@us.ibm.com>
 
 	PR testsuite/39776
