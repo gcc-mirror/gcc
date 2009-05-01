@@ -1,3 +1,49 @@
+2009-05-01  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* store-motion.c: Many cleanups to make this pass a first-class
+	citizen instead of an appendix to gcse load motion.  Add TODO list
+	to make this pass faster/cleaner/better.
+
+	(struct ls_expr): Post gcse.c-split cleanups.
+	Rename to st_expr.  Rename "loads" field to "antic_stores".  Rename
+	"stores" field to "avail_stores".
+	(pre_ldst_mems): Rename to store_motion_mems.
+	(pre_ldst_table): Rename to store_motion_mems_table.
+	(pre_ldst_expr_hash): Rename to pre_st_expr_hash, update users.
+	(pre_ldst_expr_eq): Rename to pre_st_expr_eq, update users.
+	(ldst_entry): Rename to st_expr_entry, update users.
+	(free_ldst_entry): Rename to free_st_expr_entry, update users.
+	(free_ldst_mems): Rename to free_store_motion_mems, update users.
+	(enumerate_ldsts): Rename to enumerate_store_motion_mems, update caller.
+	(first_ls_expr): Rename to first_st_expr, update users.
+	(next_ls_expr): Rename to next_st_expr, update users.
+	(print_ldst_list): Rename to print_store_motion_mems.  Print names of
+	fields properly for store motion instead of names inherited from load
+	motion in gcse.c.
+	(ANTIC_STORE_LIST, AVAIL_STORE_LIST): Remove.
+	(LAST_AVAIL_CHECK_FAILURE): Explain what this is.  Undefine when we
+	are done with it.
+
+	(ae_kill): Rename to st_kill, update users.
+	(ae_gen): Rename to st_avloc, update users.
+	(transp): Rename to st_transp, update users.
+	(pre_insert_map): Rename to st_insert_map, update users.
+	(pre_delete_map): Rename to st_delete_map, update users.
+	(insert_store, build_store_vectors, free_store_memory,
+	one_store_motion_pass): Update for abovementioned changes.
+
+	(gcse_subst_count, gcse_create_count): Remove.
+	(one_store_motion_pass): New statistics counters "n_stores_deleted"
+	and "n_stores_created", local variables.
+
+	(extract_mentioned_regs, extract_mentioned_regs_1): Rewrite to
+	use for_each_rtx.
+
+	(regvec, compute_store_table_current_insn): Remove.
+	(reg_set_info, reg_clear_last_set): Remove.
+	(compute_store_table): Use DF caches instead of local dataflow
+	solvers.
+
 2009-05-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-objc-common.c (c_tree_printer): Print identifiers with

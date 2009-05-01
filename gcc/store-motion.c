@@ -47,177 +47,161 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "dbgcnt.h"
 
-
-/* This is a list of expressions which are MEMs and will be used by load
-   or store motion.
-   Load motion tracks MEMs which aren't killed by
-   anything except itself. (i.e., loads and stores to a single location).
-   We can then allow movement of these MEM refs with a little special
-   allowance. (all stores copy the same value to the reaching reg used
-   for the loads).  This means all values used to store into memory must have
-   no side effects so we can re-issue the setter value.
-   Store Motion uses this structure as an expression table to track stores
-   which look interesting, and might be moveable towards the exit block.  */
+/* This pass implements downward store motion.
+   As of May 1, 2009, the pass is not enabled by default on any target,
+   but bootstrap completes on ia64 and x86_64 with the pass enabled.  */
 
-struct ls_expr
+/* TODO:
+   - remove_reachable_equiv_notes is an incomprehensible pile of goo and
+     a compile time hog that needs a rewrite (maybe cache st_exprs to
+     invalidate REG_EQUAL/REG_EQUIV notes for?).
+   - pattern_regs in st_expr should be a regset (on its own obstack).
+   - antic_stores and avail_stores should be VECs instead of lists.
+   - store_motion_mems should be a VEC instead of a list.
+   - there should be an alloc pool for struct st_expr objects.
+   - investigate whether it is helpful to make the address of an st_expr
+     a cselib VALUE.
+   - when GIMPLE alias information is exported, the effectiveness of this
+     pass should be re-evaluated.
+*/
+
+/* This is a list of store expressions (MEMs).  The structure is used
+   as an expression table to track stores which look interesting, and
+   might be moveable towards the exit block.  */
+
+struct st_expr
 {
-  rtx pattern;			/* Pattern of this mem.  */
-  rtx pattern_regs;		/* List of registers mentioned by the mem.  */
-  rtx loads;			/* INSN list of loads seen.  */
-  rtx stores;			/* INSN list of stores seen.  */
-  struct ls_expr * next;	/* Next in the list.  */
-  int invalid;			/* Invalid for some reason.  */
-  int index;			/* If it maps to a bitmap index.  */
-  unsigned int hash_index;	/* Index when in a hash table.  */
-  rtx reaching_reg;		/* Register to use when re-writing.  */
+  /* Pattern of this mem.  */
+  rtx pattern;
+  /* List of registers mentioned by the mem.  */
+  rtx pattern_regs;
+  /* INSN list of stores that are locally anticipatable.  */
+  rtx antic_stores;
+  /* INSN list of stores that are locally available.  */
+  rtx avail_stores;
+  /* Next in the list.  */
+  struct st_expr * next;
+  /* Store ID in the dataflow bitmaps.  */
+  int index;
+  /* Hash value for the hash table.  */
+  unsigned int hash_index;
+  /* Register holding the stored expression when a store is moved.
+     This field is also used as a cache in find_moveable_store, see
+     LAST_AVAIL_CHECK_FAILURE below.  */
+  rtx reaching_reg;
 };
 
 /* Head of the list of load/store memory refs.  */
-static struct ls_expr * pre_ldst_mems = NULL;
+static struct st_expr * store_motion_mems = NULL;
 
 /* Hashtable for the load/store memory refs.  */
-static htab_t pre_ldst_table = NULL;
+static htab_t store_motion_mems_table = NULL;
 
-/* Various variables for statistics gathering.  */
-
-/* GCSE substitutions made.  */
-static int gcse_subst_count;
-/* Number of copy instructions created.  */
-static int gcse_create_count;
-/* For available exprs */
-static sbitmap *ae_kill, *ae_gen;
-
-/* Nonzero for expressions that are transparent in the block.  */
-static sbitmap *transp;
+/* These bitmaps will hold the local dataflow properties per basic block.  */
+static sbitmap *st_kill, *st_avloc, *st_antloc, *st_transp;
 
 /* Nonzero for expressions which should be inserted on a specific edge.  */
-static sbitmap *pre_insert_map;
+static sbitmap *st_insert_map;
 
 /* Nonzero for expressions which should be deleted in a specific block.  */
-static sbitmap *pre_delete_map;
+static sbitmap *st_delete_map;
+
+/* Global holding the number of store expressions we are dealing with.  */
+static int num_stores;
 
 /* Contains the edge_list returned by pre_edge_lcm.  */
 static struct edge_list *edge_list;
 
-/*  Here we provide the things required to do store motion towards
-    the exit. In order for this to be effective, PRE load motion also needed
-    to be taught how to move a load when it is kill only by a store to itself.
-
-	    int i;
-	    float a[10];
-
-	    void foo(float scale)
-	    {
-	      for (i=0; i<10; i++)
-		a[i] *= scale;
-	    }
-
-    'i' is both loaded and stored to in the loop. Normally, gcse cannot move
-    the load out since its live around the loop, and stored at the bottom
-    of the loop.
-
-      The 'Load Motion' referred to and implemented in this file is
-    an enhancement to gcse which when using edge based lcm, recognizes
-    this situation and allows gcse to move the load out of the loop.
-
-      Once gcse has hoisted the load, store motion can then push this
-    load towards the exit, and we end up with no loads or stores of 'i'
-    in the loop.  */
-
 static hashval_t
-pre_ldst_expr_hash (const void *p)
+pre_st_expr_hash (const void *p)
 {
   int do_not_record_p = 0;
-  const struct ls_expr *const x = (const struct ls_expr *) p;
+  const struct st_expr *const x = (const struct st_expr *) p;
   return hash_rtx (x->pattern, GET_MODE (x->pattern), &do_not_record_p, NULL, false);
 }
 
 static int
-pre_ldst_expr_eq (const void *p1, const void *p2)
+pre_st_expr_eq (const void *p1, const void *p2)
 {
-  const struct ls_expr *const ptr1 = (const struct ls_expr *) p1,
-    *const ptr2 = (const struct ls_expr *) p2;
+  const struct st_expr *const ptr1 = (const struct st_expr *) p1,
+    *const ptr2 = (const struct st_expr *) p2;
   return exp_equiv_p (ptr1->pattern, ptr2->pattern, 0, true);
 }
 
-/* This will search the ldst list for a matching expression. If it
+/* This will search the st_expr list for a matching expression. If it
    doesn't find one, we create one and initialize it.  */
 
-static struct ls_expr *
-ldst_entry (rtx x)
+static struct st_expr *
+st_expr_entry (rtx x)
 {
   int do_not_record_p = 0;
-  struct ls_expr * ptr;
+  struct st_expr * ptr;
   unsigned int hash;
   void **slot;
-  struct ls_expr e;
+  struct st_expr e;
 
   hash = hash_rtx (x, GET_MODE (x), &do_not_record_p,
 		   NULL,  /*have_reg_qty=*/false);
 
   e.pattern = x;
-  slot = htab_find_slot_with_hash (pre_ldst_table, &e, hash, INSERT);
+  slot = htab_find_slot_with_hash (store_motion_mems_table, &e, hash, INSERT);
   if (*slot)
-    return (struct ls_expr *)*slot;
+    return (struct st_expr *)*slot;
 
-  ptr = XNEW (struct ls_expr);
+  ptr = XNEW (struct st_expr);
 
-  ptr->next         = pre_ldst_mems;
+  ptr->next         = store_motion_mems;
   ptr->pattern      = x;
   ptr->pattern_regs = NULL_RTX;
-  ptr->loads        = NULL_RTX;
-  ptr->stores       = NULL_RTX;
+  ptr->antic_stores = NULL_RTX;
+  ptr->avail_stores = NULL_RTX;
   ptr->reaching_reg = NULL_RTX;
-  ptr->invalid      = 0;
   ptr->index        = 0;
   ptr->hash_index   = hash;
-  pre_ldst_mems     = ptr;
+  store_motion_mems = ptr;
   *slot = ptr;
 
   return ptr;
 }
 
-/* Free up an individual ldst entry.  */
+/* Free up an individual st_expr entry.  */
 
 static void
-free_ldst_entry (struct ls_expr * ptr)
+free_st_expr_entry (struct st_expr * ptr)
 {
-  free_INSN_LIST_list (& ptr->loads);
-  free_INSN_LIST_list (& ptr->stores);
+  free_INSN_LIST_list (& ptr->antic_stores);
+  free_INSN_LIST_list (& ptr->avail_stores);
 
   free (ptr);
 }
 
-/* Free up all memory associated with the ldst list.  */
+/* Free up all memory associated with the st_expr list.  */
 
 static void
-free_ldst_mems (void)
+free_store_motion_mems (void)
 {
-  if (pre_ldst_table)
-    htab_delete (pre_ldst_table);
-  pre_ldst_table = NULL;
+  if (store_motion_mems_table)
+    htab_delete (store_motion_mems_table);
+  store_motion_mems_table = NULL;
 
-  while (pre_ldst_mems)
+  while (store_motion_mems)
     {
-      struct ls_expr * tmp = pre_ldst_mems;
-
-      pre_ldst_mems = pre_ldst_mems->next;
-
-      free_ldst_entry (tmp);
+      struct st_expr * tmp = store_motion_mems;
+      store_motion_mems = store_motion_mems->next;
+      free_st_expr_entry (tmp);
     }
-
-  pre_ldst_mems = NULL;
+  store_motion_mems = NULL;
 }
 
 /* Assign each element of the list of mems a monotonically increasing value.  */
 
 static int
-enumerate_ldsts (void)
+enumerate_store_motion_mems (void)
 {
-  struct ls_expr * ptr;
+  struct st_expr * ptr;
   int n = 0;
 
-  for (ptr = pre_ldst_mems; ptr != NULL; ptr = ptr->next)
+  for (ptr = store_motion_mems; ptr != NULL; ptr = ptr->next)
     ptr->index = n++;
 
   return n;
@@ -225,46 +209,46 @@ enumerate_ldsts (void)
 
 /* Return first item in the list.  */
 
-static inline struct ls_expr *
-first_ls_expr (void)
+static inline struct st_expr *
+first_st_expr (void)
 {
-  return pre_ldst_mems;
+  return store_motion_mems;
 }
 
 /* Return the next item in the list after the specified one.  */
 
-static inline struct ls_expr *
-next_ls_expr (struct ls_expr * ptr)
+static inline struct st_expr *
+next_st_expr (struct st_expr * ptr)
 {
   return ptr->next;
 }
 
-/* Dump debugging info about the ldst list.  */
+/* Dump debugging info about the store_motion_mems list.  */
 
 static void
-print_ldst_list (FILE * file)
+print_store_motion_mems (FILE * file)
 {
-  struct ls_expr * ptr;
+  struct st_expr * ptr;
 
-  fprintf (file, "LDST list: \n");
+  fprintf (dump_file, "STORE_MOTION list of MEM exprs considered:\n");
 
-  for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
+  for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))
     {
       fprintf (file, "  Pattern (%3d): ", ptr->index);
 
       print_rtl (file, ptr->pattern);
 
-      fprintf (file, "\n	 Loads : ");
+      fprintf (file, "\n	 ANTIC stores : ");
 
-      if (ptr->loads)
-	print_rtl (file, ptr->loads);
+      if (ptr->antic_stores)
+	print_rtl (file, ptr->antic_stores);
       else
 	fprintf (file, "(nil)");
 
-      fprintf (file, "\n	Stores : ");
+      fprintf (file, "\n	 AVAIL stores : ");
 
-      if (ptr->stores)
-	print_rtl (file, ptr->stores);
+      if (ptr->avail_stores)
+	print_rtl (file, ptr->avail_stores);
       else
 	fprintf (file, "(nil)");
 
@@ -274,56 +258,6 @@ print_ldst_list (FILE * file)
   fprintf (file, "\n");
 }
 
-/* Store motion code.  */
-
-#define ANTIC_STORE_LIST(x)		((x)->loads)
-#define AVAIL_STORE_LIST(x)		((x)->stores)
-#define LAST_AVAIL_CHECK_FAILURE(x)	((x)->reaching_reg)
-
-/* This is used to communicate the target bitvector we want to use in the
-   reg_set_info routine when called via the note_stores mechanism.  */
-static int * regvec;
-
-/* And current insn, for the same routine.  */
-static rtx compute_store_table_current_insn;
-
-/* Used in computing the reverse edge graph bit vectors.  */
-static sbitmap * st_antloc;
-
-/* Global holding the number of store expressions we are dealing with.  */
-static int num_stores;
-
-/* Checks to set if we need to mark a register set.  Called from
-   note_stores.  */
-
-static void
-reg_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
-	      void *data ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (dest) == SUBREG)
-    dest = SUBREG_REG (dest);
-
-  if (REG_P (dest))
-    regvec[REGNO (dest)] = INSN_UID (compute_store_table_current_insn);
-}
-
-/* Clear any mark that says that this insn sets dest.  Called from
-   note_stores.  */
-
-static void
-reg_clear_last_set (rtx dest, const_rtx setter ATTRIBUTE_UNUSED,
-	      void *data)
-{
-  int *dead_vec = (int *) data;
-
-  if (GET_CODE (dest) == SUBREG)
-    dest = SUBREG_REG (dest);
-
-  if (REG_P (dest) &&
-      dead_vec[REGNO (dest)] == INSN_UID (compute_store_table_current_insn))
-    dead_vec[REGNO (dest)] = 0;
-}
-
 /* Return zero if some of the registers in list X are killed
    due to set of registers in bitmap REGS_SET.  */
 
@@ -342,94 +276,28 @@ store_ops_ok (const_rtx x, int *regs_set)
   return true;
 }
 
-/* Helper for extract_mentioned_regs; ACCUM is used to accumulate used
-   registers.  */
-static rtx
-extract_mentioned_regs_helper (rtx x, rtx accum)
+/* Helper for extract_mentioned_regs.  */
+ 
+static int
+extract_mentioned_regs_1 (rtx *loc, void *data)
 {
-  int i;
-  enum rtx_code code;
-  const char * fmt;
+  rtx *mentioned_regs_p = (rtx *) data;
 
-  /* Repeat is used to turn tail-recursion into iteration.  */
- repeat:
+  if (REG_P (*loc))
+    *mentioned_regs_p = alloc_EXPR_LIST (0, *loc, *mentioned_regs_p);
 
-  if (x == 0)
-    return accum;
-
-  code = GET_CODE (x);
-  switch (code)
-    {
-    case REG:
-      return alloc_EXPR_LIST (0, x, accum);
-
-    case MEM:
-      x = XEXP (x, 0);
-      goto repeat;
-
-    case PRE_DEC:
-    case PRE_INC:
-    case PRE_MODIFY:
-    case POST_DEC:
-    case POST_INC:
-    case POST_MODIFY:
-      /* We do not run this function with arguments having side effects.  */
-      gcc_unreachable ();
-
-    case PC:
-    case CC0: /*FIXME*/
-    case CONST:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case CONST_FIXED:
-    case CONST_VECTOR:
-    case SYMBOL_REF:
-    case LABEL_REF:
-    case ADDR_VEC:
-    case ADDR_DIFF_VEC:
-      return accum;
-
-    default:
-      break;
-    }
-
-  i = GET_RTX_LENGTH (code) - 1;
-  fmt = GET_RTX_FORMAT (code);
-
-  for (; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  rtx tem = XEXP (x, i);
-
-	  /* If we are about to do the last recursive call
-	     needed at this level, change it into iteration.  */
-	  if (i == 0)
-	    {
-	      x = tem;
-	      goto repeat;
-	    }
-
-	  accum = extract_mentioned_regs_helper (tem, accum);
-	}
-      else if (fmt[i] == 'E')
-	{
-	  int j;
-
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    accum = extract_mentioned_regs_helper (XVECEXP (x, i, j), accum);
-	}
-    }
-
-  return accum;
+  return 0;
 }
 
-/* Returns a list of registers mentioned in X.  */
-/* ??? Reimplement with for_each_rtx?  */
+/* Returns a list of registers mentioned in X.
+   FIXME: A regset would be prettier and less expensive.  */
+
 static rtx
 extract_mentioned_regs (rtx x)
 {
-  return extract_mentioned_regs_helper (x, NULL_RTX);
+  rtx mentioned_regs = NULL;
+  for_each_rtx (&x, extract_mentioned_regs_1, &mentioned_regs);
+  return mentioned_regs;
 }
 
 /* Check to see if the load X is aliased with STORE_PATTERN.
@@ -446,7 +314,7 @@ load_kills_store (const_rtx x, const_rtx store_pattern, int after)
 			    rtx_addr_varies_p);
 }
 
-/* Go through the entire insn X, looking for any loads which might alias
+/* Go through the entire rtx X, looking for any loads which might alias
    STORE_PATTERN.  Return true if found.
    AFTER is true if we are checking the case when STORE_PATTERN occurs
    after the insn X.  */
@@ -639,6 +507,17 @@ store_killed_before (const_rtx x, const_rtx x_regs, const_rtx insn, const_basic_
   return false;
 }
 
+/* The last insn in the basic block that compute_store_table is processing,
+   where store_killed_after is true for X.
+   Since we go through the basic block from BB_END to BB_HEAD, this is
+   also the available store at the end of the basic block.  Therefore
+   this is in effect a cache, to avoid calling store_killed_after for
+   equivalent aliasing store expressions.
+   This value is only meaningful during the computation of the store
+   table.  We hi-jack the REACHING_REG field of struct st_expr to save
+   a bit of memory.  */
+#define LAST_AVAIL_CHECK_FAILURE(x)	((x)->reaching_reg)
+
 /* Determine whether INSN is MEM store pattern that we will consider moving.
    REGS_SET_BEFORE is bitmap of registers set before (and including) the
    current insn, REGS_SET_AFTER is bitmap of registers set after (and
@@ -647,14 +526,14 @@ store_killed_before (const_rtx x, const_rtx x_regs, const_rtx insn, const_basic_
 
    The results are stored this way:
 
-   -- the first anticipatable expression is added into ANTIC_STORE_LIST
+   -- the first anticipatable expression is added into ANTIC_STORES
    -- if the processed expression is not anticipatable, NULL_RTX is added
       there instead, so that we can use it as indicator that no further
       expression of this type may be anticipatable
-   -- if the expression is available, it is added as head of AVAIL_STORE_LIST;
+   -- if the expression is available, it is added as head of AVAIL_STORES;
       consequently, all of them but this head are dead and may be deleted.
    -- if the expression is not available, the insn due to that it fails to be
-      available is stored in reaching_reg.
+      available is stored in REACHING_REG (via LAST_AVAIL_CHECK_FAILURE).
 
    The things are complicated a bit by fact that there already may be stores
    to the same MEM from other blocks; also caller must take care of the
@@ -664,7 +543,7 @@ store_killed_before (const_rtx x, const_rtx x_regs, const_rtx insn, const_basic_
 static void
 find_moveable_store (rtx insn, int *regs_set_before, int *regs_set_after)
 {
-  struct ls_expr * ptr;
+  struct st_expr * ptr;
   rtx dest, set, tmp;
   int check_anticipatable, check_available;
   basic_block bb = BLOCK_FOR_INSN (insn);
@@ -701,18 +580,18 @@ find_moveable_store (rtx insn, int *regs_set_before, int *regs_set_after)
   if (!can_assign_to_reg_without_clobbers_p (SET_SRC (set)))
     return;
 
-  ptr = ldst_entry (dest);
+  ptr = st_expr_entry (dest);
   if (!ptr->pattern_regs)
     ptr->pattern_regs = extract_mentioned_regs (dest);
 
   /* Do not check for anticipatability if we either found one anticipatable
      store already, or tested for one and found out that it was killed.  */
   check_anticipatable = 0;
-  if (!ANTIC_STORE_LIST (ptr))
+  if (!ptr->antic_stores)
     check_anticipatable = 1;
   else
     {
-      tmp = XEXP (ANTIC_STORE_LIST (ptr), 0);
+      tmp = XEXP (ptr->antic_stores, 0);
       if (tmp != NULL_RTX
 	  && BLOCK_FOR_INSN (tmp) != bb)
 	check_anticipatable = 1;
@@ -723,19 +602,18 @@ find_moveable_store (rtx insn, int *regs_set_before, int *regs_set_after)
 	tmp = NULL_RTX;
       else
 	tmp = insn;
-      ANTIC_STORE_LIST (ptr) = alloc_INSN_LIST (tmp,
-						ANTIC_STORE_LIST (ptr));
+      ptr->antic_stores = alloc_INSN_LIST (tmp, ptr->antic_stores);
     }
 
   /* It is not necessary to check whether store is available if we did
      it successfully before; if we failed before, do not bother to check
      until we reach the insn that caused us to fail.  */
   check_available = 0;
-  if (!AVAIL_STORE_LIST (ptr))
+  if (!ptr->avail_stores)
     check_available = 1;
   else
     {
-      tmp = XEXP (AVAIL_STORE_LIST (ptr), 0);
+      tmp = XEXP (ptr->avail_stores, 0);
       if (BLOCK_FOR_INSN (tmp) != bb)
 	check_available = 1;
     }
@@ -758,7 +636,7 @@ find_moveable_store (rtx insn, int *regs_set_before, int *regs_set_after)
 					      &LAST_AVAIL_CHECK_FAILURE (ptr));
     }
   if (!check_available)
-    AVAIL_STORE_LIST (ptr) = alloc_INSN_LIST (insn, AVAIL_STORE_LIST (ptr));
+    ptr->avail_stores = alloc_INSN_LIST (insn, ptr->avail_stores);
 }
 
 /* Find available and anticipatable stores.  */
@@ -769,14 +647,15 @@ compute_store_table (void)
   int ret;
   basic_block bb;
   unsigned regno;
-  rtx insn, pat, tmp;
+  rtx insn, tmp;
+  df_ref *def_rec;
   int *last_set_in, *already_set;
-  struct ls_expr * ptr, **prev_next_ptr_ptr;
+  struct st_expr * ptr, **prev_next_ptr_ptr;
   unsigned int max_gcse_regno = max_reg_num ();
 
-  pre_ldst_mems = 0;
-  pre_ldst_table = htab_create (13, pre_ldst_expr_hash,
-				pre_ldst_expr_eq, NULL);
+  store_motion_mems = NULL;
+  store_motion_mems_table = htab_create (13, pre_st_expr_hash,
+					 pre_st_expr_eq, NULL);
   last_set_in = XCNEWVEC (int, max_gcse_regno);
   already_set = XNEWVEC (int, max_gcse_regno);
 
@@ -784,56 +663,33 @@ compute_store_table (void)
   FOR_EACH_BB (bb)
     {
       /* First compute the registers set in this block.  */
-      regvec = last_set_in;
-
       FOR_BB_INSNS (bb, insn)
 	{
+
 	  if (! INSN_P (insn))
 	    continue;
 
-	  if (CALL_P (insn))
-	    {
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
-		  last_set_in[regno] = INSN_UID (insn);
-	    }
-
-	  pat = PATTERN (insn);
-	  compute_store_table_current_insn = insn;
-	  note_stores (pat, reg_set_info, NULL);
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    last_set_in[DF_REF_REGNO (*def_rec)] = INSN_UID (insn);
 	}
 
       /* Now find the stores.  */
       memset (already_set, 0, sizeof (int) * max_gcse_regno);
-      regvec = already_set;
       FOR_BB_INSNS (bb, insn)
 	{
 	  if (! INSN_P (insn))
 	    continue;
 
-	  if (CALL_P (insn))
-	    {
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
-		  already_set[regno] = 1;
-	    }
-
-	  pat = PATTERN (insn);
-	  note_stores (pat, reg_set_info, NULL);
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    already_set[DF_REF_REGNO (*def_rec)] = INSN_UID (insn);
 
 	  /* Now that we've marked regs, look for stores.  */
 	  find_moveable_store (insn, already_set, last_set_in);
 
 	  /* Unmark regs that are no longer set.  */
-	  compute_store_table_current_insn = insn;
-	  note_stores (pat, reg_clear_last_set, last_set_in);
-	  if (CALL_P (insn))
-	    {
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno)
-		    && last_set_in[regno] == INSN_UID (insn))
-		  last_set_in[regno] = 0;
-	    }
+	  for (def_rec = DF_INSN_DEFS (insn); *def_rec; def_rec++)
+	    if (last_set_in[DF_REF_REGNO (*def_rec)] == INSN_UID (insn))
+	      last_set_in[DF_REF_REGNO (*def_rec)] = 0;
 	}
 
 #ifdef ENABLE_CHECKING
@@ -843,43 +699,46 @@ compute_store_table (void)
 #endif
 
       /* Clear temporary marks.  */
-      for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
+      for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))
 	{
-	  LAST_AVAIL_CHECK_FAILURE(ptr) = NULL_RTX;
-	  if (ANTIC_STORE_LIST (ptr)
-	      && (tmp = XEXP (ANTIC_STORE_LIST (ptr), 0)) == NULL_RTX)
-	    ANTIC_STORE_LIST (ptr) = XEXP (ANTIC_STORE_LIST (ptr), 1);
+	  LAST_AVAIL_CHECK_FAILURE (ptr) = NULL_RTX;
+	  if (ptr->antic_stores
+	      && (tmp = XEXP (ptr->antic_stores, 0)) == NULL_RTX)
+	    ptr->antic_stores = XEXP (ptr->antic_stores, 1);
 	}
     }
 
   /* Remove the stores that are not available anywhere, as there will
      be no opportunity to optimize them.  */
-  for (ptr = pre_ldst_mems, prev_next_ptr_ptr = &pre_ldst_mems;
+  for (ptr = store_motion_mems, prev_next_ptr_ptr = &store_motion_mems;
        ptr != NULL;
        ptr = *prev_next_ptr_ptr)
     {
-      if (!AVAIL_STORE_LIST (ptr))
+      if (! ptr->avail_stores)
 	{
 	  *prev_next_ptr_ptr = ptr->next;
-	  htab_remove_elt_with_hash (pre_ldst_table, ptr, ptr->hash_index);
-	  free_ldst_entry (ptr);
+	  htab_remove_elt_with_hash (store_motion_mems_table,
+				     ptr, ptr->hash_index);
+	  free_st_expr_entry (ptr);
 	}
       else
 	prev_next_ptr_ptr = &ptr->next;
     }
 
-  ret = enumerate_ldsts ();
+  ret = enumerate_store_motion_mems ();
 
   if (dump_file)
-    {
-      fprintf (dump_file, "ST_avail and ST_antic (shown under loads..)\n");
-      print_ldst_list (dump_file);
-    }
+    print_store_motion_mems (dump_file);
 
   free (last_set_in);
   free (already_set);
   return ret;
 }
+
+/* In all code following after this, REACHING_REG has its original
+   meaning again.  Avoid confusion, and undef the accessor macro for
+   the temporary marks usage in compute_store_table.  */
+#undef LAST_AVAIL_CHECK_FAILURE
 
 /* Insert an instruction at the beginning of a basic block, and update
    the BB_HEAD if needed.  */
@@ -912,12 +771,12 @@ insert_insn_start_basic_block (rtx insn, basic_block bb)
     }
 }
 
-/* This routine will insert a store on an edge. EXPR is the ldst entry for
+/* This routine will insert a store on an edge. EXPR is the st_expr entry for
    the memory reference, and E is the edge to insert it on.  Returns nonzero
    if an edge insertion was performed.  */
 
 static int
-insert_store (struct ls_expr * expr, edge e)
+insert_store (struct st_expr * expr, edge e)
 {
   rtx reg, insn;
   basic_block bb;
@@ -945,7 +804,7 @@ insert_store (struct ls_expr * expr, edge e)
 	int index = EDGE_INDEX (edge_list, tmp->src, tmp->dest);
 	
 	gcc_assert (index != EDGE_INDEX_NO_EDGE);
-	if (! TEST_BIT (pre_insert_map[index], expr->index))
+	if (! TEST_BIT (st_insert_map[index], expr->index))
 	  break;
       }
 
@@ -956,7 +815,7 @@ insert_store (struct ls_expr * expr, edge e)
       FOR_EACH_EDGE (tmp, ei, e->dest->preds)
 	{
 	  int index = EDGE_INDEX (edge_list, tmp->src, tmp->dest);
-	  RESET_BIT (pre_insert_map[index], expr->index);
+	  RESET_BIT (st_insert_map[index], expr->index);
 	}
       insert_insn_start_basic_block (insn, bb);
       return 0;
@@ -985,7 +844,7 @@ insert_store (struct ls_expr * expr, edge e)
    This could be rather expensive.  */
 
 static void
-remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
+remove_reachable_equiv_notes (basic_block bb, struct st_expr *smexpr)
 {
   edge_iterator *stack, ei;
   int sp;
@@ -1027,7 +886,7 @@ remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
 
       if (TEST_BIT (st_antloc[bb->index], smexpr->index))
 	{
-	  for (last = ANTIC_STORE_LIST (smexpr);
+	  for (last = smexpr->antic_stores;
 	       BLOCK_FOR_INSN (XEXP (last, 0)) != bb;
 	       last = XEXP (last, 1))
 	    continue;
@@ -1066,14 +925,14 @@ remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
 /* This routine will replace a store with a SET to a specified register.  */
 
 static void
-replace_store_insn (rtx reg, rtx del, basic_block bb, struct ls_expr *smexpr)
+replace_store_insn (rtx reg, rtx del, basic_block bb, struct st_expr *smexpr)
 {
   rtx insn, mem, note, set, ptr;
 
   mem = smexpr->pattern;
   insn = gen_move_insn (reg, SET_SRC (single_set (del)));
 
-  for (ptr = ANTIC_STORE_LIST (smexpr); ptr; ptr = XEXP (ptr, 1))
+  for (ptr = smexpr->antic_stores; ptr; ptr = XEXP (ptr, 1))
     if (XEXP (ptr, 0) == del)
       {
 	XEXP (ptr, 0) = insn;
@@ -1127,7 +986,7 @@ replace_store_insn (rtx reg, rtx del, basic_block bb, struct ls_expr *smexpr)
    the reaching_reg for later storing.  */
 
 static void
-delete_store (struct ls_expr * expr, basic_block bb)
+delete_store (struct st_expr * expr, basic_block bb)
 {
   rtx reg, i, del;
 
@@ -1136,7 +995,7 @@ delete_store (struct ls_expr * expr, basic_block bb)
 
   reg = expr->reaching_reg;
 
-  for (i = AVAIL_STORE_LIST (expr); i; i = XEXP (i, 1))
+  for (i = expr->avail_stores; i; i = XEXP (i, 1))
     {
       del = XEXP (i, 0);
       if (BLOCK_FOR_INSN (del) == bb)
@@ -1157,20 +1016,20 @@ build_store_vectors (void)
   basic_block bb;
   int *regs_set_in_block;
   rtx insn, st;
-  struct ls_expr * ptr;
+  struct st_expr * ptr;
   unsigned int max_gcse_regno = max_reg_num ();
 
   /* Build the gen_vector. This is any store in the table which is not killed
      by aliasing later in its block.  */
-  ae_gen = sbitmap_vector_alloc (last_basic_block, num_stores);
-  sbitmap_vector_zero (ae_gen, last_basic_block);
+  st_avloc = sbitmap_vector_alloc (last_basic_block, num_stores);
+  sbitmap_vector_zero (st_avloc, last_basic_block);
 
   st_antloc = sbitmap_vector_alloc (last_basic_block, num_stores);
   sbitmap_vector_zero (st_antloc, last_basic_block);
 
-  for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
+  for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))
     {
-      for (st = AVAIL_STORE_LIST (ptr); st != NULL; st = XEXP (st, 1))
+      for (st = ptr->avail_stores; st != NULL; st = XEXP (st, 1))
 	{
 	  insn = XEXP (st, 0);
 	  bb = BLOCK_FOR_INSN (insn);
@@ -1179,7 +1038,7 @@ build_store_vectors (void)
 	     we can delete this one (It occurs earlier in the block). We'll
 	     copy the SRC expression to an unused register in case there
 	     are any side effects.  */
-	  if (TEST_BIT (ae_gen[bb->index], ptr->index))
+	  if (TEST_BIT (st_avloc[bb->index], ptr->index))
 	    {
 	      rtx r = gen_reg_rtx_and_attrs (ptr->pattern);
 	      if (dump_file)
@@ -1187,10 +1046,10 @@ build_store_vectors (void)
 	      replace_store_insn (r, XEXP (st, 0), bb, ptr);
 	      continue;
 	    }
-	  SET_BIT (ae_gen[bb->index], ptr->index);
+	  SET_BIT (st_avloc[bb->index], ptr->index);
 	}
 
-      for (st = ANTIC_STORE_LIST (ptr); st != NULL; st = XEXP (st, 1))
+      for (st = ptr->antic_stores; st != NULL; st = XEXP (st, 1))
 	{
 	  insn = XEXP (st, 0);
 	  bb = BLOCK_FOR_INSN (insn);
@@ -1198,11 +1057,11 @@ build_store_vectors (void)
 	}
     }
 
-  ae_kill = sbitmap_vector_alloc (last_basic_block, num_stores);
-  sbitmap_vector_zero (ae_kill, last_basic_block);
+  st_kill = sbitmap_vector_alloc (last_basic_block, num_stores);
+  sbitmap_vector_zero (st_kill, last_basic_block);
 
-  transp = sbitmap_vector_alloc (last_basic_block, num_stores);
-  sbitmap_vector_zero (transp, last_basic_block);
+  st_transp = sbitmap_vector_alloc (last_basic_block, num_stores);
+  sbitmap_vector_zero (st_transp, last_basic_block);
   regs_set_in_block = XNEWVEC (int, max_gcse_regno);
 
   FOR_EACH_BB (bb)
@@ -1219,7 +1078,7 @@ build_store_vectors (void)
 	      }
 	  }
 
-      for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
+      for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))
 	{
 	  if (store_killed_after (ptr->pattern, ptr->pattern_regs, BB_HEAD (bb),
 				  bb, regs_set_in_block, NULL))
@@ -1227,11 +1086,11 @@ build_store_vectors (void)
 	      /* It should not be necessary to consider the expression
 		 killed if it is both anticipatable and available.  */
 	      if (!TEST_BIT (st_antloc[bb->index], ptr->index)
-		  || !TEST_BIT (ae_gen[bb->index], ptr->index))
-		SET_BIT (ae_kill[bb->index], ptr->index);
+		  || !TEST_BIT (st_avloc[bb->index], ptr->index))
+		SET_BIT (st_kill[bb->index], ptr->index);
 	    }
 	  else
-	    SET_BIT (transp[bb->index], ptr->index);
+	    SET_BIT (st_transp[bb->index], ptr->index);
 	}
     }
 
@@ -1240,9 +1099,9 @@ build_store_vectors (void)
   if (dump_file)
     {
       dump_sbitmap_vector (dump_file, "st_antloc", "", st_antloc, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_kill", "", ae_kill, last_basic_block);
-      dump_sbitmap_vector (dump_file, "Transpt", "", transp, last_basic_block);
-      dump_sbitmap_vector (dump_file, "st_avloc", "", ae_gen, last_basic_block);
+      dump_sbitmap_vector (dump_file, "st_kill", "", st_kill, last_basic_block);
+      dump_sbitmap_vector (dump_file, "st_transp", "", st_transp, last_basic_block);
+      dump_sbitmap_vector (dump_file, "st_avloc", "", st_avloc, last_basic_block);
     }
 }
 
@@ -1251,23 +1110,23 @@ build_store_vectors (void)
 static void
 free_store_memory (void)
 {
-  free_ldst_mems ();
+  free_store_motion_mems ();
 
-  if (ae_gen)
-    sbitmap_vector_free (ae_gen);
-  if (ae_kill)
-    sbitmap_vector_free (ae_kill);
-  if (transp)
-    sbitmap_vector_free (transp);
+  if (st_avloc)
+    sbitmap_vector_free (st_avloc);
+  if (st_kill)
+    sbitmap_vector_free (st_kill);
+  if (st_transp)
+    sbitmap_vector_free (st_transp);
   if (st_antloc)
     sbitmap_vector_free (st_antloc);
-  if (pre_insert_map)
-    sbitmap_vector_free (pre_insert_map);
-  if (pre_delete_map)
-    sbitmap_vector_free (pre_delete_map);
+  if (st_insert_map)
+    sbitmap_vector_free (st_insert_map);
+  if (st_delete_map)
+    sbitmap_vector_free (st_delete_map);
 
-  ae_gen = ae_kill = transp = st_antloc = NULL;
-  pre_insert_map = pre_delete_map = NULL;
+  st_avloc = st_kill = st_transp = st_antloc = NULL;
+  st_insert_map = st_delete_map = NULL;
 }
 
 /* Perform store motion. Much like gcse, except we move expressions the
@@ -1279,11 +1138,10 @@ one_store_motion_pass (void)
 {
   basic_block bb;
   int x;
-  struct ls_expr * ptr;
-  int update_flow = 0;
-
-  gcse_subst_count = 0;
-  gcse_create_count = 0;
+  struct st_expr * ptr;
+  int did_edge_inserts = 0;
+  int n_stores_deleted = 0;
+  int n_stores_created = 0;
 
   init_alias_analysis ();
 
@@ -1291,8 +1149,8 @@ one_store_motion_pass (void)
   num_stores = compute_store_table ();
   if (num_stores == 0)
     {
-      htab_delete (pre_ldst_table);
-      pre_ldst_table = NULL;
+      htab_delete (store_motion_mems_table);
+      store_motion_mems_table = NULL;
       end_alias_analysis ();
       return 0;
     }
@@ -1302,17 +1160,17 @@ one_store_motion_pass (void)
   add_noreturn_fake_exit_edges ();
   connect_infinite_loops_to_exit ();
 
-  edge_list = pre_edge_rev_lcm (num_stores, transp, ae_gen,
-				st_antloc, ae_kill, &pre_insert_map,
-				&pre_delete_map);
+  edge_list = pre_edge_rev_lcm (num_stores, st_transp, st_avloc,
+				st_antloc, st_kill, &st_insert_map,
+				&st_delete_map);
 
   /* Now we want to insert the new stores which are going to be needed.  */
-  for (ptr = first_ls_expr (); ptr != NULL; ptr = next_ls_expr (ptr))
+  for (ptr = first_st_expr (); ptr != NULL; ptr = next_st_expr (ptr))
     {
       /* If any of the edges we have above are abnormal, we can't move this
 	 store.  */
       for (x = NUM_EDGES (edge_list) - 1; x >= 0; x--)
-	if (TEST_BIT (pre_insert_map[x], ptr->index)
+	if (TEST_BIT (st_insert_map[x], ptr->index)
 	    && (INDEX_EDGE (edge_list, x)->flags & EDGE_ABNORMAL))
 	  break;
 
@@ -1329,21 +1187,21 @@ one_store_motion_pass (void)
       /* Now we want to insert the new stores which are going to be needed.  */
 
       FOR_EACH_BB (bb)
-	if (TEST_BIT (pre_delete_map[bb->index], ptr->index))
+	if (TEST_BIT (st_delete_map[bb->index], ptr->index))
 	  {
 	    delete_store (ptr, bb);
-	    gcse_subst_count++;
+	    n_stores_deleted++;
 	  }
 
       for (x = 0; x < NUM_EDGES (edge_list); x++)
-	if (TEST_BIT (pre_insert_map[x], ptr->index))
+	if (TEST_BIT (st_insert_map[x], ptr->index))
 	  {
-	    update_flow |= insert_store (ptr, INDEX_EDGE (edge_list, x));
-	    gcse_create_count++;
+	    did_edge_inserts |= insert_store (ptr, INDEX_EDGE (edge_list, x));
+	    n_stores_created++;
 	  }
     }
 
-  if (update_flow)
+  if (did_edge_inserts)
     commit_edge_insertions ();
 
   free_store_memory ();
@@ -1355,11 +1213,11 @@ one_store_motion_pass (void)
     {
       fprintf (dump_file, "STORE_MOTION of %s, %d basic blocks, ",
 	       current_function_name (), n_basic_blocks);
-      fprintf (dump_file, "%d substs, %d insns created\n",
-	       gcse_subst_count, gcse_create_count);
+      fprintf (dump_file, "%d insns deleted, %d insns created\n",
+	       n_stores_deleted, n_stores_created);
     }
 
-  return (gcse_subst_count > 0 || gcse_create_count > 0);
+  return (n_stores_deleted > 0 || n_stores_created > 0);
 }
 
 
