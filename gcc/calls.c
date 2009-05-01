@@ -1054,6 +1054,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	      || (callee_copies
 		  && !TREE_ADDRESSABLE (type)
 		  && (base = get_base_address (args[i].tree_value))
+		  && TREE_CODE (base) != SSA_NAME
 		  && (!DECL_P (base) || MEM_P (DECL_RTL (base)))))
 	    {
 	      /* We can't use sibcalls if a callee-copied argument is
