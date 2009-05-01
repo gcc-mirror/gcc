@@ -3510,6 +3510,41 @@ EOF
     ;;
 esac
 
+AC_CACHE_CHECK(linker --build-id support,
+  gcc_cv_ld_buildid,
+  [gcc_cv_ld_buildid=no
+  if test $in_tree_ld = yes ; then
+    if test "$gcc_cv_gld_major_version" -eq 2 -a \
+       "$gcc_cv_gld_minor_version" -ge 18 -o \
+       "$gcc_cv_gld_major_version" -gt 2 \
+       && test $in_tree_ld_is_elf = yes; then
+      gcc_cv_ld_buildid=yes
+    fi
+  elif test x$gcc_cv_ld != x; then
+    if $gcc_cv_ld --help 2>/dev/null | grep build-id > /dev/null; then
+      gcc_cv_ld_buildid=yes
+    fi
+  fi])
+if test x"$gcc_cv_ld_buildid" = xyes; then
+  AC_DEFINE(HAVE_LD_BUILDID, 1,
+  [Define if your linker supports --build-id.])
+fi
+
+AC_ARG_ENABLE(linker-build-id,
+[  --enable-linker-build-id
+                          compiler will always pass --build-id to linker],
+[],
+enable_linker_build_id=no)
+
+if test x"$enable_linker_build_id" = xyes; then
+  if test x"$gcc_cv_ld_buildid" = xyes; then
+    AC_DEFINE(ENABLE_LD_BUILDID, 1,
+    [Define if gcc should always pass --build-id to linker.])
+  else
+    AC_MSG_WARN(--build-id is not supported by your linker; --enable-linker-build-id ignored)
+  fi
+fi
+
 AC_CACHE_CHECK(linker --sysroot support,
   gcc_cv_ld_sysroot,
   [gcc_cv_ld_sysroot=no

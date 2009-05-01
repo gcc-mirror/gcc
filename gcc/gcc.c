@@ -730,6 +730,13 @@ proper position among the other output files.  */
 #endif
 #endif
 
+#ifndef LINK_BUILDID_SPEC
+# if defined(HAVE_LD_BUILDID) && defined(ENABLE_LD_BUILDID)
+#  define LINK_BUILDID_SPEC "%{!r:--build-id} "
+# endif
+#endif
+
+
 /* -u* was put back because both BSD and SysV seem to support it.  */
 /* %{static:} simply prevents an error message if the target machine
    doesn't handle -static.  */
@@ -1844,9 +1851,16 @@ init_spec (void)
     asm_spec = XOBFINISH (&obstack, const char *);
   }
 #endif
-#ifdef LINK_EH_SPEC
+
+#if defined LINK_EH_SPEC || defined LINK_BUILDID_SPEC
+# ifdef LINK_BUILDID_SPEC
+  /* Prepend LINK_BUILDID_SPEC to whatever link_spec we had before.  */
+  obstack_grow (&obstack, LINK_BUILDID_SPEC, sizeof(LINK_BUILDID_SPEC) - 1);
+# endif
+# ifdef LINK_EH_SPEC
   /* Prepend LINK_EH_SPEC to whatever link_spec we had before.  */
   obstack_grow (&obstack, LINK_EH_SPEC, sizeof(LINK_EH_SPEC) - 1);
+# endif
   obstack_grow0 (&obstack, link_spec, strlen (link_spec));
   link_spec = XOBFINISH (&obstack, const char *);
 #endif
