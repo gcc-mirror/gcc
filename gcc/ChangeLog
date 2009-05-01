@@ -1,5 +1,18 @@
 2009-05-01  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* ipa-reference.c: Do not include c-common.h, include splay-tree.h.
+	* ipa-utils.c: Likewise.
+	* ipa-type-escape.c: Likewise.
+	* cgraphunit.c Do not include c-common.h.
+	* ipa-pure-const.c: Likewise.
+	* tree-if-conv.c: Likewise.
+	* matrix-reorg.c: Do not include c-common.h and c-tree.h.
+	* ipa-struct-reorg.c: Likewise.
+	* tree-nomudflap.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+
+2009-05-01  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* store-motion.c: Many cleanups to make this pass a first-class
 	citizen instead of an appendix to gcse load motion.  Add TODO list
 	to make this pass faster/cleaner/better.

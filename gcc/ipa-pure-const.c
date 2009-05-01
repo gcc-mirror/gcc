@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "ggc.h"
 #include "ipa-utils.h"
-#include "c-common.h"
 #include "gimple.h"
 #include "cgraph.h"
 #include "output.h"

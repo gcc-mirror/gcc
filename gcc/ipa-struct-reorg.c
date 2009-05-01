@@ -34,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "pointer-set.h"
 #include "hashtab.h"
-#include "c-tree.h"
 #include "toplev.h"
 #include "flags.h"
 #include "debug.h"
@@ -53,7 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "ipa-type-escape.h"
 #include "tree-dump.h"
-#include "c-common.h"
 #include "gimple.h"
 
 /* This optimization implements structure peeling.

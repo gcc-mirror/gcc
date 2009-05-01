@@ -126,7 +126,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "params.h"
 #include "fibheap.h"
-#include "c-common.h"
 #include "intl.h"
 #include "function.h"
 #include "ipa-prop.h"
