@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "real.h"
 #include "fixed-value.h"
+#include "intl.h"
 #include "c-pretty-print.h"
 #include "c-tree.h"
 #include "tree-iterator.h"
@@ -177,7 +178,7 @@ pp_c_cv_qualifier (c_pretty_printer *pp, const char *cv)
      logic in the C++ pretty-printer.  */
   if (p != NULL && (*p == '*' || *p == '&'))
     pp_c_whitespace (pp);
-  pp_c_identifier (pp, cv);
+  pp_c_ws_string (pp, cv);
 }
 
 /* Pretty-print T using the type-cast notation '( type-name )'.  */
@@ -306,7 +307,7 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
   switch (code)
     {
     case ERROR_MARK:
-      pp_c_identifier (pp, "<type-error>");
+      pp_c_ws_string (pp, _("<type-error>"));
       break;
 
     case IDENTIFIER_NODE:
@@ -345,14 +346,14 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
 		{
 		case INTEGER_TYPE:
 		  pp_string (pp, (TYPE_UNSIGNED (t)
-				  ? "<unnamed-unsigned:"
-				  : "<unnamed-signed:"));
+				  ? _("<unnamed-unsigned:")
+				  : _("<unnamed-signed:")));
 		  break;
 		case REAL_TYPE:
-		  pp_string (pp, "<unnamed-float:");
+		  pp_string (pp, _("<unnamed-float:"));
 		  break;
 		case FIXED_POINT_TYPE:
-		  pp_string (pp, "<unnamed-fixed:");
+		  pp_string (pp, _("<unnamed-fixed:"));
 		  break;
 		default:
 		  gcc_unreachable ();
@@ -367,25 +368,25 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
       if (DECL_NAME (t))
 	pp_id_expression (pp, t);
       else
-	pp_c_identifier (pp, "<typedef-error>");
+	pp_c_ws_string (pp, _("<typedef-error>"));
       break;
 
     case UNION_TYPE:
     case RECORD_TYPE:
     case ENUMERAL_TYPE:
       if (code == UNION_TYPE)
-	pp_c_identifier (pp, "union");
+	pp_c_ws_string (pp, "union");
       else if (code == RECORD_TYPE)
-	pp_c_identifier (pp, "struct");
+	pp_c_ws_string (pp, "struct");
       else if (code == ENUMERAL_TYPE)
-	pp_c_identifier (pp, "enum");
+	pp_c_ws_string (pp, "enum");
       else
-	pp_c_identifier (pp, "<tag-error>");
+	pp_c_ws_string (pp, _("<tag-error>"));
 
       if (TYPE_NAME (t))
 	pp_id_expression (pp, TYPE_NAME (t));
       else
-	pp_c_identifier (pp, "<anonymous>");
+	pp_c_ws_string (pp, _("<anonymous>"));
       break;
 
     default:
@@ -441,9 +442,9 @@ pp_c_specifier_qualifier_list (c_pretty_printer *pp, tree t)
     case COMPLEX_TYPE:
       pp_c_specifier_qualifier_list (pp, TREE_TYPE (t));
       if (code == COMPLEX_TYPE)
-	pp_c_identifier (pp, flag_isoc99 ? "_Complex" : "__complex__");
+	pp_c_ws_string (pp, flag_isoc99 ? "_Complex" : "__complex__");
       else if (code == VECTOR_TYPE)
-	pp_c_identifier (pp, "__vector__");
+	pp_c_ws_string (pp, "__vector__");
       break;
 
     default:
@@ -471,7 +472,7 @@ pp_c_parameter_type_list (c_pretty_printer *pp, tree t)
   tree parms = want_parm_decl ? DECL_ARGUMENTS (t) :  TYPE_ARG_TYPES (t);
   pp_c_left_paren (pp);
   if (parms == void_list_node)
-    pp_c_identifier (pp, "void");
+    pp_c_ws_string (pp, "void");
   else
     {
       bool first = true;
@@ -587,13 +588,13 @@ void
 pp_c_storage_class_specifier (c_pretty_printer *pp, tree t)
 {
   if (TREE_CODE (t) == TYPE_DECL)
-    pp_c_identifier (pp, "typedef");
+    pp_c_ws_string (pp, "typedef");
   else if (DECL_P (t))
     {
       if (DECL_REGISTER (t))
-	pp_c_identifier (pp, "register");
+	pp_c_ws_string (pp, "register");
       else if (TREE_STATIC (t) && TREE_CODE (t) == VAR_DECL)
-	pp_c_identifier (pp, "static");
+	pp_c_ws_string (pp, "static");
     }
 }
 
@@ -604,7 +605,7 @@ void
 pp_c_function_specifier (c_pretty_printer *pp, tree t)
 {
   if (TREE_CODE (t) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (t))
-    pp_c_identifier (pp, "inline");
+    pp_c_ws_string (pp, "inline");
 }
 
 /* declaration-specifiers:
@@ -733,7 +734,7 @@ pp_c_attributes (c_pretty_printer *pp, tree attributes)
   if (attributes == NULL_TREE)
     return;
 
-  pp_c_identifier (pp, "__attribute__");
+  pp_c_ws_string (pp, "__attribute__");
   pp_c_left_paren (pp);
   pp_c_left_paren (pp);
   for (; attributes != NULL_TREE; attributes = TREE_CHAIN (attributes))
@@ -869,18 +870,18 @@ pp_c_bool_constant (c_pretty_printer *pp, tree b)
   if (b == boolean_false_node)
     {
       if (c_dialect_cxx ())
-	pp_c_identifier (pp, "false");
+	pp_c_ws_string (pp, "false");
       else if (flag_isoc99)
-	pp_c_identifier (pp, "_False");
+	pp_c_ws_string (pp, "_False");
       else
 	pp_unsupported_tree (pp, b);
     }
   else if (b == boolean_true_node)
     {
       if (c_dialect_cxx ())
-	pp_c_identifier (pp, "true");
+	pp_c_ws_string (pp, "true");
       else if (flag_isoc99)
-	pp_c_identifier (pp, "_True");
+	pp_c_ws_string (pp, "_True");
       else
 	pp_unsupported_tree (pp, b);
     }
@@ -1069,7 +1070,20 @@ pp_c_constant (c_pretty_printer *pp, tree e)
     }
 }
 
-/* Pretty-print an IDENTIFIER_NODE, preceded by whitespace is necessary.  */
+/* Pretty-print a string such as an identifier, without changing its
+   encoding, preceded by whitespace is necessary.  */
+
+void
+pp_c_ws_string (c_pretty_printer *pp, const char *str)
+{
+  pp_c_maybe_whitespace (pp);
+  pp_string (pp, str);
+  pp_base (pp)->padding = pp_before;
+}
+
+/* Pretty-print an IDENTIFIER_NODE, which may contain UTF-8 sequences
+   that need converting to the locale encoding, preceded by whitespace
+   is necessary.  */
 
 void
 pp_c_identifier (c_pretty_printer *pp, const char *id)
@@ -1105,11 +1119,11 @@ pp_c_primary_expression (c_pretty_printer *pp, tree e)
       break;
 
     case ERROR_MARK:
-      pp_c_identifier (pp, "<erroneous-expression>");
+      pp_c_ws_string (pp, _("<erroneous-expression>"));
       break;
 
     case RESULT_DECL:
-      pp_c_identifier (pp, "<return-value>");
+      pp_c_ws_string (pp, _("<return-value>"));
       break;
 
     case INTEGER_CST:
@@ -1120,7 +1134,7 @@ pp_c_primary_expression (c_pretty_printer *pp, tree e)
       break;
 
     case TARGET_EXPR:
-      pp_c_identifier (pp, "__builtin_memcpy");
+      pp_c_ws_string (pp, "__builtin_memcpy");
       pp_c_left_paren (pp);
       pp_ampersand (pp);
       pp_primary_expression (pp, TREE_OPERAND (e, 0));
@@ -1338,7 +1352,7 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
       pp_postfix_expression (pp, TREE_OPERAND (e, 0));
-      pp_identifier (pp, code == POSTINCREMENT_EXPR ? "++" : "--");
+      pp_string (pp, code == POSTINCREMENT_EXPR ? "++" : "--");
       break;
 
     case ARRAY_REF:
@@ -1365,49 +1379,49 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
       }
 
     case UNORDERED_EXPR:
-      pp_c_identifier (pp, flag_isoc99
+      pp_c_ws_string (pp, flag_isoc99
 			   ? "isunordered"
 			   : "__builtin_isunordered");
       goto two_args_fun;
 
     case ORDERED_EXPR:
-      pp_c_identifier (pp, flag_isoc99
+      pp_c_ws_string (pp, flag_isoc99
 			   ? "!isunordered"
 			   : "!__builtin_isunordered");
       goto two_args_fun;
 
     case UNLT_EXPR:
-      pp_c_identifier (pp, flag_isoc99
+      pp_c_ws_string (pp, flag_isoc99
 			   ? "!isgreaterequal"
 			   : "!__builtin_isgreaterequal");
       goto two_args_fun;
 
     case UNLE_EXPR:
-      pp_c_identifier (pp, flag_isoc99
+      pp_c_ws_string (pp, flag_isoc99
 			   ? "!isgreater"
 			   : "!__builtin_isgreater");
       goto two_args_fun;
 
     case UNGT_EXPR:
-      pp_c_identifier (pp, flag_isoc99
+      pp_c_ws_string (pp, flag_isoc99
 			   ? "!islessequal"
 			   : "!__builtin_islessequal");
       goto two_args_fun;
 
     case UNGE_EXPR:
-      pp_c_identifier (pp, flag_isoc99
+      pp_c_ws_string (pp, flag_isoc99
 			   ? "!isless"
 			   : "!__builtin_isless");
       goto two_args_fun;
 
     case UNEQ_EXPR:
-      pp_c_identifier (pp, flag_isoc99
+      pp_c_ws_string (pp, flag_isoc99
 			   ? "!islessgreater"
 			   : "!__builtin_islessgreater");
       goto two_args_fun;
 
     case LTGT_EXPR:
-      pp_c_identifier (pp, flag_isoc99
+      pp_c_ws_string (pp, flag_isoc99
 			   ? "islessgreater"
 			   : "__builtin_islessgreater");
       goto two_args_fun;
@@ -1421,7 +1435,7 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
       break;
 
     case ABS_EXPR:
-      pp_c_identifier (pp, "__builtin_abs");
+      pp_c_ws_string (pp, "__builtin_abs");
       pp_c_left_paren (pp);
       pp_expression (pp, TREE_OPERAND (e, 0));
       pp_c_right_paren (pp);
@@ -1491,7 +1505,7 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
       break;
 
     case VA_ARG_EXPR:
-      pp_c_identifier (pp, "__builtin_va_arg");
+      pp_c_ws_string (pp, "__builtin_va_arg");
       pp_c_left_paren (pp);
       pp_assignment_expression (pp, TREE_OPERAND (e, 0));
       pp_separate_with (pp, ',');
@@ -1580,7 +1594,7 @@ pp_c_unary_expression (c_pretty_printer *pp, tree e)
     {
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
-      pp_identifier (pp, code == PREINCREMENT_EXPR ? "++" : "--");
+      pp_string (pp, code == PREINCREMENT_EXPR ? "++" : "--");
       pp_c_unary_expression (pp, TREE_OPERAND (e, 0));
       break;
 
@@ -1606,7 +1620,7 @@ pp_c_unary_expression (c_pretty_printer *pp, tree e)
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      pp_c_identifier (pp, code == REALPART_EXPR ? "__real__" : "__imag__");
+      pp_c_ws_string (pp, code == REALPART_EXPR ? "__real__" : "__imag__");
       pp_c_whitespace (pp);
       pp_unary_expression (pp, TREE_OPERAND (e, 0));
       break;
@@ -1717,7 +1731,7 @@ pp_c_shift_expression (c_pretty_printer *pp, tree e)
     case RSHIFT_EXPR:
       pp_c_shift_expression (pp, TREE_OPERAND (e, 0));
       pp_c_whitespace (pp);
-      pp_identifier (pp, code == LSHIFT_EXPR ? "<<" : ">>");
+      pp_string (pp, code == LSHIFT_EXPR ? "<<" : ">>");
       pp_c_whitespace (pp);
       pp_c_additive_expression (pp, TREE_OPERAND (e, 1));
       break;
@@ -1751,9 +1765,9 @@ pp_c_relational_expression (c_pretty_printer *pp, tree e)
       else if (code == GT_EXPR)
 	pp_greater (pp);
       else if (code == LE_EXPR)
-	pp_identifier (pp, "<=");
+	pp_string (pp, "<=");
       else if (code == GE_EXPR)
-	pp_identifier (pp, ">=");
+	pp_string (pp, ">=");
       pp_c_whitespace (pp);
       pp_c_shift_expression (pp, TREE_OPERAND (e, 1));
       break;
@@ -1779,7 +1793,7 @@ pp_c_equality_expression (c_pretty_printer *pp, tree e)
     case NE_EXPR:
       pp_c_equality_expression (pp, TREE_OPERAND (e, 0));
       pp_c_whitespace (pp);
-      pp_identifier (pp, code == EQ_EXPR ? "==" : "!=");
+      pp_string (pp, code == EQ_EXPR ? "==" : "!=");
       pp_c_whitespace (pp);
       pp_c_relational_expression (pp, TREE_OPERAND (e, 1));
       break;
@@ -1863,7 +1877,7 @@ pp_c_logical_and_expression (c_pretty_printer *pp, tree e)
     {
       pp_c_logical_and_expression (pp, TREE_OPERAND (e, 0));
       pp_c_whitespace (pp);
-      pp_identifier (pp, "&&");
+      pp_string (pp, "&&");
       pp_c_whitespace (pp);
       pp_c_inclusive_or_expression (pp, TREE_OPERAND (e, 1));
     }
@@ -1883,7 +1897,7 @@ pp_c_logical_or_expression (c_pretty_printer *pp, tree e)
     {
       pp_c_logical_or_expression (pp, TREE_OPERAND (e, 0));
       pp_c_whitespace (pp);
-      pp_identifier (pp, "||");
+      pp_string (pp, "||");
       pp_c_whitespace (pp);
       pp_c_logical_and_expression (pp, TREE_OPERAND (e, 1));
     }
