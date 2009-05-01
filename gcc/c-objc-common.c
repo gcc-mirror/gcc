@@ -1,5 +1,6 @@
 /* Some code common to C and ObjC front ends.
-   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2007,
+   2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-config.h"
 #include "integrate.h"
 #include "c-tree.h"
+#include "intl.h"
 #include "c-pretty-print.h"
 #include "function.h"
 #include "flags.h"
@@ -98,7 +100,6 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 {
   tree t = va_arg (*text->args_ptr, tree);
   tree name;
-  const char *n = "({anonymous})";
   c_pretty_printer *cpp = (c_pretty_printer *) pp;
   pp->padding = pp_none;
 
@@ -124,7 +125,10 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 
     case 'F':
       if (DECL_NAME (t))
-	n = lang_hooks.decl_printable_name (t, 2);
+	{
+	  pp_identifier (cpp, lang_hooks.decl_printable_name (t, 2));
+	  return true;
+	}
       break;
 
     case 'T':
@@ -134,7 +138,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       if (name && TREE_CODE (name) == TYPE_DECL)
 	{
 	  if (DECL_NAME (name))
-	    pp_string (cpp, lang_hooks.decl_printable_name (name, 2));
+	    pp_identifier (cpp, lang_hooks.decl_printable_name (name, 2));
 	  else
 	    pp_type_id (cpp, t);
 	  return true;
@@ -148,19 +152,16 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 
     case 'E':
       if (TREE_CODE (t) == IDENTIFIER_NODE)
-	n = IDENTIFIER_POINTER (t);
+	pp_identifier (cpp, IDENTIFIER_POINTER (t));
       else
-	{
-	  pp_expression (cpp, t);
-	  return true;
-	}
-      break;
+	pp_expression (cpp, t);
+      return true;
 
     default:
       return false;
     }
 
-  pp_string (cpp, n);
+  pp_string (cpp, _("({anonymous})"));
   return true;
 }
 

@@ -1,3 +1,22 @@
+2009-05-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-objc-common.c (c_tree_printer): Print identifiers with
+	pp_identifier, not pp_string.  Mark "({anonymous})" for
+	translation.
+	* c-pretty-print.c (pp_c_ws_string): New.
+	(pp_c_cv_qualifier, pp_c_type_specifier,
+	pp_c_specifier_qualifier_list, pp_c_parameter_type_list,
+	pp_c_storage_class_specifier, pp_c_function_specifier,
+	pp_c_attributes, pp_c_bool_constant, pp_c_constant,
+	pp_c_primary_expression, pp_c_postfix_expression,
+	pp_c_unary_expression, pp_c_shift_expression,
+	pp_c_relational_expression, pp_c_equality_expression,
+	pp_c_logical_and_expression, pp_c_logical_or_expression): Mostly
+	use pp_string and pp_c_ws_string in place of pp_identifier and
+	pp_c_identifier for non-identifiers.  Mark English strings for
+	translation.
+	* c-pretty-print.h (pp_c_ws_string): Declare.
+
 2009-04-30  Paul Pluzhnikov  <ppluzhnikov@google.com>
 	    Roland McGrath <roland@redhat.com>
 

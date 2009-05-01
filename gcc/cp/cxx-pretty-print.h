@@ -1,5 +1,5 @@
 /* Interface for the GNU C++ pretty-printer.
-   Copyright (C) 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -57,6 +57,7 @@ typedef struct
 #define pp_cxx_semicolon(PP)		pp_c_semicolon (pp_c_base (PP))
 #define pp_cxx_complement(PP)		pp_c_complement (pp_c_base (PP))
 
+#define pp_cxx_ws_string(PP, I)		pp_c_ws_string (pp_c_base (PP), I)
 #define pp_cxx_identifier(PP, I)	pp_c_identifier (pp_c_base (PP), I)
 #define pp_cxx_tree_identifier(PP, T) \
   pp_c_tree_identifier (pp_c_base (PP), T)

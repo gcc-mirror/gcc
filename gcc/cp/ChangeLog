@@ -1,3 +1,38 @@
+2009-05-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* cxx-pretty-print.c (is_destructor_name, pp_cxx_unqualified_id,
+	pp_cxx_template_keyword_if_needed, pp_cxx_postfix_expression,
+	pp_cxx_new_expression, pp_cxx_delete_expression,
+	pp_cxx_unary_expression, pp_cxx_assignment_operator,
+	pp_cxx_assignment_expression, pp_cxx_expression,
+	pp_cxx_function_specifier, pp_cxx_decl_specifier_seq,
+	pp_cxx_simple_type_specifier, pp_cxx_type_specifier_seq,
+	pp_cxx_exception_specification, pp_cxx_direct_declarator,
+	pp_cxx_ctor_initializer, pp_cxx_type_id, pp_cxx_statement,
+	pp_cxx_namespace_alias_definition, pp_cxx_template_parameter,
+	pp_cxx_canonical_template_parameter, pp_cxx_template_declaration,
+	pp_cxx_declaration, pp_cxx_typeid_expression,
+	pp_cxx_va_arg_expression, pp_cxx_offsetof_expression,
+	pp_cxx_trait_expression): Mostly use pp_string and
+	pp_cxx_ws_string in place of pp_identifier and pp_cxx_identifier
+	for non-identifiers.  Mark English strings for translation.
+	* cxx-pretty-print.h (pp_cxx_ws_string): Define.
+	* error.c (dump_template_parameter, dump_template_bindings,
+	dump_type, dump_aggr_type, dump_type_prefix, dump_simple_decl,
+	dump_decl, dump_template_decl, dump_function_decl,
+	dump_parameters, dump_exception_spec, dump_template_parms,
+	dump_expr, dump_binary_op, dump_unary_op, op_to_string,
+	assop_to_string, args_to_string, cp_print_error_function,
+	print_instantiation_full_context,
+	print_instantiation_partial_context): Mostly use pp_string and
+	pp_cxx_ws_string in place of pp_identifier and pp_cxx_identifier
+	for non-identifiers.  Mark English strings for translation.
+	(dump_global_iord): Mark strings for translation; use longer
+	strings instead of substituting single words.
+	(function_category): Return a format string marked for
+	translation, not a single word or phrase to substitute in a longer
+	phrase.
+
 2009-04-28  Ben Elliston  <bje@au.ibm.com>
 
 	PR c++/35652
