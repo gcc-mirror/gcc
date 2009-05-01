@@ -1078,6 +1078,8 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-linker-build-id
+                          compiler will always pass --build-id to linker
   --enable-maintainer-mode
                           enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer
@@ -14383,13 +14385,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:14386: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:14388: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:14389: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:14391: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:14392: output\"" >&5)
+  (eval echo "\"\$as_me:14394: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -15546,7 +15548,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 15549 "configure"' > conftest.$ac_ext
+  echo '#line 15551 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -16845,11 +16847,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:16848: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:16850: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:16852: \$? = $ac_status" >&5
+   echo "$as_me:16854: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -17184,11 +17186,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17187: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17189: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:17191: \$? = $ac_status" >&5
+   echo "$as_me:17193: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -17289,11 +17291,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17292: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17294: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:17296: \$? = $ac_status" >&5
+   echo "$as_me:17298: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -17344,11 +17346,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:17347: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:17349: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:17351: \$? = $ac_status" >&5
+   echo "$as_me:17353: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -20156,7 +20158,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 20159 "configure"
+#line 20161 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -20252,7 +20254,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 20255 "configure"
+#line 20257 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24116,6 +24118,56 @@ _ACEOF
     fi
     ;;
 esac
+
+echo "$as_me:$LINENO: checking linker --build-id support" >&5
+echo $ECHO_N "checking linker --build-id support... $ECHO_C" >&6
+if test "${gcc_cv_ld_buildid+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_ld_buildid=no
+  if test $in_tree_ld = yes ; then
+    if test "$gcc_cv_gld_major_version" -eq 2 -a \
+       "$gcc_cv_gld_minor_version" -ge 18 -o \
+       "$gcc_cv_gld_major_version" -gt 2 \
+       && test $in_tree_ld_is_elf = yes; then
+      gcc_cv_ld_buildid=yes
+    fi
+  elif test x$gcc_cv_ld != x; then
+    if $gcc_cv_ld --help 2>/dev/null | grep build-id > /dev/null; then
+      gcc_cv_ld_buildid=yes
+    fi
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_ld_buildid" >&5
+echo "${ECHO_T}$gcc_cv_ld_buildid" >&6
+if test x"$gcc_cv_ld_buildid" = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_LD_BUILDID 1
+_ACEOF
+
+fi
+
+# Check whether --enable-linker-build-id or --disable-linker-build-id was given.
+if test "${enable_linker_build_id+set}" = set; then
+  enableval="$enable_linker_build_id"
+
+else
+  enable_linker_build_id=no
+fi;
+
+if test x"$enable_linker_build_id" = xyes; then
+  if test x"$gcc_cv_ld_buildid" = xyes; then
+
+cat >>confdefs.h <<\_ACEOF
+#define ENABLE_LD_BUILDID 1
+_ACEOF
+
+  else
+    { echo "$as_me:$LINENO: WARNING: --build-id is not supported by your linker; --enable-linker-build-id ignored" >&5
+echo "$as_me: WARNING: --build-id is not supported by your linker; --enable-linker-build-id ignored" >&2;}
+  fi
+fi
 
 echo "$as_me:$LINENO: checking linker --sysroot support" >&5
 echo $ECHO_N "checking linker --sysroot support... $ECHO_C" >&6
