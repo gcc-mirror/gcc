@@ -1536,6 +1536,14 @@ Convert source directory names using @option{-fdebug-prefix-map} when
 building runtime libraries.  @samp{@var{map}} is a space-separated
 list of maps of the form @samp{@var{old}=@var{new}}.
 
+@item --enable-linker-build-id
+Tells GCC to pass @option{--build-id} option to the linker for all final
+links (links performed without the @option{-r} or @option{--relocatable}
+option), if the linker supports it.  If you specify
+@option{--enable-linker-build-id}, but your linker does not
+support @option{--build-id} option, a warning is issued and the
+@option{--enable-linker-build-id} option is ignored.  The default is off.
+
 @end table
 
 @subheading Cross-Compiler-Specific Options
