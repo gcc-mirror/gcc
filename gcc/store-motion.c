@@ -646,7 +646,9 @@ compute_store_table (void)
 {
   int ret;
   basic_block bb;
+#ifdef ENABLE_CHECKING
   unsigned regno;
+#endif
   rtx insn, tmp;
   df_ref *def_rec;
   int *last_set_in, *already_set;
