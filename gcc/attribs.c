@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "langhooks.h"
 #include "hashtab.h"
-#include "c-common.h"
 
 static void init_attributes (void);
 

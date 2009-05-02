@@ -1,3 +1,8 @@
+2009-05-02  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* varasm.c: Do not include c-pragma.h.
+	* attribs.c: Do not incude c-common.h.
+
 2009-05-01  Michael Matz  <matz@suse.de>
 
 	* calls.c (initialize_argument_information): Handle SSA names like
