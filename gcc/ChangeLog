@@ -1,3 +1,7 @@
+2009-05-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* store-motion.c (compute_store_table): Add ENABLE_CHECKING guard.
+
 2009-05-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* varasm.c: Do not include c-pragma.h.
