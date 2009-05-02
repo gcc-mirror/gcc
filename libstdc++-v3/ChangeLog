@@ -1,3 +1,8 @@
+2009-05-02  Jan Hubicka  <jh@suse.cz>
+
+	* include/tr1_impl/functional_hash.h (explicit specializations of ()
+	operator): Mark pure.
+
 2009-04-30  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* scripts/create_testsuite_files: Remove thread directory.

@@ -157,25 +157,25 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 
   /// Explicit specializations for long double.
   template<>
-    size_t
+    _GLIBCXX_PURE size_t
     hash<long double>::operator()(long double __val) const;
 
   /// Explicit specialization of member operator for non-builtin types.
   template<>
-    size_t
+    _GLIBCXX_PURE size_t
     hash<string>::operator()(string) const;
 
   template<>
-    size_t
+    _GLIBCXX_PURE size_t
     hash<const string&>::operator()(const string&) const;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<>
-    size_t
+    _GLIBCXX_PURE size_t
     hash<wstring>::operator()(wstring) const;
 
   template<>
-    size_t
+    _GLIBCXX_PURE size_t
     hash<const wstring&>::operator()(const wstring&) const;
 #endif
 
