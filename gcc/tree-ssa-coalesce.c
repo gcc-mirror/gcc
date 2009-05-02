@@ -71,11 +71,10 @@ typedef struct coalesce_list_d
 #define MUST_COALESCE_COST	INT_MAX
 
 
-/* Return cost of execution of copy instruction with FREQUENCY
-   possibly on CRITICAL edge and in HOT basic block.  */
+/* Return cost of execution of copy instruction with FREQUENCY.  */
 
 static inline int
-coalesce_cost (int frequency, bool optimize_for_size, bool critical)
+coalesce_cost (int frequency, bool optimize_for_size)
 {
   /* Base costs on BB frequencies bounded by 1.  */
   int cost = frequency;
@@ -86,9 +85,6 @@ coalesce_cost (int frequency, bool optimize_for_size, bool critical)
   if (optimize_for_size)
     cost = 1;
 
-  /* Inserting copy on critical edge costs more than inserting it elsewhere.  */
-  if (critical)
-    cost *= 2;
   return cost;
 }
 
@@ -98,7 +94,7 @@ coalesce_cost (int frequency, bool optimize_for_size, bool critical)
 static inline int 
 coalesce_cost_bb (basic_block bb)
 {
-  return coalesce_cost (bb->frequency, optimize_bb_for_size_p (bb), false);
+  return coalesce_cost (bb->frequency, optimize_bb_for_size_p (bb));
 }
 
 
@@ -107,12 +103,38 @@ coalesce_cost_bb (basic_block bb)
 static inline int 
 coalesce_cost_edge (edge e)
 {
+  int mult = 1;
+
+  /* Inserting copy on critical edge costs more than inserting it elsewhere.  */
+  if (EDGE_CRITICAL_P (e))
+    mult = 2;
   if (e->flags & EDGE_ABNORMAL)
     return MUST_COALESCE_COST;
+  if (e->flags & EDGE_EH)
+    {
+      edge e2;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e2, ei, e->dest->preds)
+	if (e2 != e)
+	  {
+	    /* Putting code on EH edge that leads to BB
+	       with multiple predecestors imply splitting of
+	       edge too.  */
+	    if (mult < 2)
+	      mult = 2;
+	    /* If there are multiple EH predecestors, we
+	       also copy EH regions and produce separate
+	       landing pad.  This is expensive.  */
+	    if (e2->flags & EDGE_EH)
+	      {
+	        mult = 5;
+	        break;
+	      }
+	  }
+    }
 
   return coalesce_cost (EDGE_FREQUENCY (e), 
-			optimize_edge_for_size_p (e), 
-			EDGE_CRITICAL_P (e));
+			optimize_edge_for_size_p (e)) * mult;
 }
 
 
@@ -1094,8 +1116,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 		    if (SSA_NAME_VAR (outputs[match]) == SSA_NAME_VAR (input))
 		      {
 			cost = coalesce_cost (REG_BR_PROB_BASE, 
-					      optimize_bb_for_size_p (bb),
-					      false);
+					      optimize_bb_for_size_p (bb));
 			add_coalesce (cl, v1, v2, cost);
 			bitmap_set_bit (used_in_copy, v1);
 			bitmap_set_bit (used_in_copy, v2);

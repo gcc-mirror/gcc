@@ -1,5 +1,13 @@
 2009-05-02  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-coalesce.c (coalesce_cost): Do not take ciritical
+	parameter; update callers.
+	(coalesce_cost_edge): EH edges are costier because they needs splitting
+	even if not critical and even more costier when there are multiple
+	EH predecestors.
+
+2009-05-02  Jan Hubicka  <jh@suse.cz>
+
 	* except.c (remove_eh_handler_and_replace): Handle updating after
 	removing TRY blocks.
 
