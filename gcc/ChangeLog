@@ -1,3 +1,8 @@
+2009-05-02  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (remove_eh_handler_and_replace): Handle updating after
+	removing TRY blocks.
+
 2009-05-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* store-motion.c (compute_store_table): Add ENABLE_CHECKING guard.
