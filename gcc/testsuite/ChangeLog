@@ -1,3 +1,7 @@
+2009-05-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/ucnid-6.c: Fix typo in dg-do directive.
+
 2009-05-02  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40001
