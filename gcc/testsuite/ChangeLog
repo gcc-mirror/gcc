@@ -1,3 +1,8 @@
+2009-05-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40001
+	* gcc.target/spu/pr40001.c: New testcase.
+
 2009-04-30  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.dg/ssp-1.c (__stack_chk_fail): Remove static.

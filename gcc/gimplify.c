@@ -1218,9 +1218,14 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 
       /* Preliminarily mark non-addressed complex variables as eligible
 	 for promotion to gimple registers.  We'll transform their uses
-	 as we find them.  */
-      if ((TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
-	   || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
+	 as we find them.
+	 We exclude complex types if not optimizing because they can be
+	 subject to partial stores in GNU C by means of the __real__ and
+	 __imag__ operators and we cannot promote them to total stores
+	 (see gimplify_modify_expr_complex_part).  */
+      if (optimize
+	  && (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
+	      || TREE_CODE (TREE_TYPE (t)) == VECTOR_TYPE)
 	  && !TREE_THIS_VOLATILE (t)
 	  && (TREE_CODE (t) == VAR_DECL && !DECL_HARD_REGISTER (t))
 	  && !needs_to_live_in_memory (t))

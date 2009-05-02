@@ -1,3 +1,14 @@
+2009-05-02  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40001
+	* tree-ssa.c (execute_update_addresses_taken): Properly check
+	if we can mark a variable DECL_GIMPLE_REG_P.
+	* gimple.c (is_gimple_reg): Re-order check for DECL_GIMPLE_REG_P
+	back to the end of the function.
+	(is_gimple_reg_type): Remove complex type special casing.
+	* gimplify.c (gimplify_bind_expr): Do not set DECL_GIMPLE_REG_P
+	if not optimizing.
+
 2009-05-02  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/collect2.texi (Collect2): Document search path behaviour
