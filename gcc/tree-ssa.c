@@ -1573,7 +1573,9 @@ execute_update_addresses_taken (bool do_optimize)
 	if (!DECL_GIMPLE_REG_P (var)
 	    && !bitmap_bit_p (not_reg_needs, DECL_UID (var))
 	    && (TREE_CODE (TREE_TYPE (var)) == COMPLEX_TYPE
-		|| TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE))
+		|| TREE_CODE (TREE_TYPE (var)) == VECTOR_TYPE)
+	    && !TREE_THIS_VOLATILE (var)
+	    && (TREE_CODE (var) != VAR_DECL || !DECL_HARD_REGISTER (var)))
 	  {
 	    DECL_GIMPLE_REG_P (var) = 1;
 	    mark_sym_for_renaming (var);
