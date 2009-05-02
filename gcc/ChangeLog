@@ -1,5 +1,11 @@
 2009-05-02  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/39940
+	* tree-ssa-pre.c (eliminate): Make sure we may propagate before
+	doing so.
+
+2009-05-02  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/40001
 	* tree-ssa.c (execute_update_addresses_taken): Properly check
 	if we can mark a variable DECL_GIMPLE_REG_P.
