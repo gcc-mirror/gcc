@@ -32,6 +32,10 @@ names:
 
 @itemize @bullet
 @item
+a hard coded linker file name, if GCC was configured with the
+@option{--with-ld} option.
+
+@item
 @file{real-ld} in the directories listed in the compiler's search
 directories.
 

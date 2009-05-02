@@ -1,3 +1,8 @@
+2009-05-02  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/collect2.texi (Collect2): Document search path behaviour
+	when configured with --with-ld.
+
 2009-05-02  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-coalesce.c (coalesce_cost): Do not take ciritical
