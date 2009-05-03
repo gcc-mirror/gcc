@@ -1,3 +1,13 @@
+2009-05-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2009-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/39914
+	* ira-conflicts.c (ira_build_conflicts): Prohibit call used
+	registers for allocnos created from user-defined variables only
+	when not optimizing.
+
 2009-04-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* toplev.c (print_version): Update GMP version string calculation.
