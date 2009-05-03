@@ -2197,8 +2197,8 @@ extern enum machine_mode vector_type_mode (const_tree);
 #define SET_TYPE_VECTOR_SUBPARTS(VECTOR_TYPE, X) \
   (VECTOR_TYPE_CHECK (VECTOR_TYPE)->type.precision = exact_log2 (X))
 
-/* Nonzero in an IDENTIFIER_NODE if the name is a local alias, whose
-   uses are to be substituted for uses of the TREE_CHAINed identifier.  */
+/* Nonzero in a VECTOR_TYPE if the frontends should not emit warnings
+   about missing conversions to other vector types of the same size.  */
 #define TYPE_VECTOR_OPAQUE(NODE) \
   (VECTOR_TYPE_CHECK (NODE)->base.deprecated_flag)
 
