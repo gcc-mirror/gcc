@@ -187,7 +187,7 @@ extern "C" void __cxa_bad_typeid () __attribute__((__noreturn__));
 // throws, and if bad_exception needs to be thrown.  Called from the
 // compiler.
 extern "C" void __cxa_call_unexpected (void *) __attribute__((noreturn));
-extern "C" void __cxa_call_terminate (_Unwind_Exception*) __attribute__((noreturn));
+extern "C" void __cxa_call_terminate (_Unwind_Exception*) throw () __attribute__((noreturn));
 
 #ifdef __ARM_EABI_UNWINDER__
 // Arm EABI specified routines.

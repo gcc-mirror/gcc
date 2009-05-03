@@ -58,7 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       bool 		_M_cfile_created;
 
     public:
-      __basic_file(__c_lock* __lock = 0);
+      __basic_file(__c_lock* __lock = 0) throw ();
 
       __basic_file* 
       open(const char* __name, ios_base::openmode __mode, int __prot = 0664);
@@ -67,19 +67,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       sys_open(__c_file* __file, ios_base::openmode);
 
       __basic_file*
-      sys_open(int __fd, ios_base::openmode __mode);
+      sys_open(int __fd, ios_base::openmode __mode) throw ();
 
       __basic_file* 
       close(); 
 
-      bool 
-      is_open() const;
+      _GLIBCXX_PURE bool 
+      is_open() const throw ();
 
-      int 
-      fd();
+      _GLIBCXX_PURE int 
+      fd() throw ();
 
-      __c_file*
-      file();
+      _GLIBCXX_PURE __c_file*
+      file() throw ();
 
       ~__basic_file();
 
@@ -94,7 +94,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       xsgetn(char* __s, streamsize __n);
 
       streamoff
-      seekoff(streamoff __off, ios_base::seekdir __way);
+      seekoff(streamoff __off, ios_base::seekdir __way) throw ();
 
       int 
       sync();

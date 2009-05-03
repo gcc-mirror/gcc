@@ -265,7 +265,7 @@ namespace __gnu_parallel
     sequence_index_t 		qsb_steals;
 
     /// Get the global settings.
-    static const _Settings&
+    _GLIBCXX_CONST static const _Settings&
     get() throw();
 
     /// Set the global settings.
