@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=ultrasparc -mvis -O1 -fdump-tree-final_cleanup" } */
+/* { dg-options "-mcpu=ultrasparc -mvis -O1 -fdump-tree-optimized" } */
 
 typedef int vec32 __attribute__((vector_size(8)));
 typedef short vec16 __attribute__((vector_size(8)));
@@ -26,9 +26,9 @@ vec16 foo1_2 () {
   return __builtin_vis_fmul8x16 (a, b);
 }
 /* { dg-final { scan-assembler-not "fmul8x16\t%" } } */
-/* { dg-final { scan-tree-dump "{ 0, 0, 0, 0 }" "final_cleanup" } } */
-/* { dg-final { scan-tree-dump "{ 1, 2, 4, 8 }" "final_cleanup" } } */
-/* { dg-final { scan-tree-dump "{ 255, 510, 1020, 32639 }" "final_cleanup" } } */
+/* { dg-final { scan-tree-dump "{ 0, 0, 0, 0 }" "optimized" } } */
+/* { dg-final { scan-tree-dump "{ 1, 2, 4, 8 }" "optimized" } } */
+/* { dg-final { scan-tree-dump "{ 255, 510, 1020, 32639 }" "optimized" } } */
 
 vec16 foo2 () {
   pixel a = { 1, 2, 3, 4 };
@@ -36,7 +36,7 @@ vec16 foo2 () {
   return __builtin_vis_fmul8x16au (a, b);
 }
 /* { dg-final { scan-assembler-not "fmul8x16au\t%" } } */
-/* { dg-final { scan-tree-dump "{ 1, 2, 3, 4 }" "final_cleanup" } } */
+/* { dg-final { scan-tree-dump "{ 1, 2, 3, 4 }" "optimized" } } */
 
 vec16 foo3 () {
   pixel a = { 1, 2, 3, 4 };
@@ -44,5 +44,5 @@ vec16 foo3 () {
   return __builtin_vis_fmul8x16al (a, b);
 }
 /* { dg-final { scan-assembler-not "fmul8x16al\t%" } } */
-/* { dg-final { scan-tree-dump "{ 2, 4, 6, 8 }" "final_cleanup" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump "{ 2, 4, 6, 8 }" "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-final_cleanup -mcpu=ultrasparc -mvis" } */
+/* { dg-options "-O1 -mcpu=ultrasparc -mvis -fdump-tree-optimized" } */
 typedef short vec16 __attribute__((vector_size(8)));
 typedef unsigned char vec8 __attribute__((vector_size(4)));
 
@@ -8,5 +8,5 @@ vec16 foo () {
   return __builtin_vis_fexpand (a);
 }
 
-/* { dg-final { scan-tree-dump "{ 16, 32, 64, 128 }" "final_cleanup" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump "{ 16, 32, 64, 128 }" "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */

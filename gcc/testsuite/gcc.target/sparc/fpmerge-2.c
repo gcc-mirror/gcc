@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=ultrasparc -mvis -O1 -fdump-tree-final_cleanup" } */
+/* { dg-options "-mcpu=ultrasparc -mvis -O1 -fdump-tree-optimized" } */
 typedef unsigned char pixel __attribute__((vector_size(8)));
 typedef unsigned char vec8 __attribute__((vector_size(4)));
 
@@ -12,5 +12,5 @@ pixel foo () {
 }
 
 /* { dg-final { scan-assembler-not "fpmerge\t%" } } */
-/* { dg-final { scan-tree-dump "{ 1, 2, 3, 4, 5, 6, 7, 8 }" "final_cleanup" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump "{ 1, 2, 3, 4, 5, 6, 7, 8 }" "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
