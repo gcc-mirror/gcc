@@ -1,3 +1,8 @@
+2009-05-03  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree.h (TYPE_VECTOR_OPAQUE): Fix documentation.
+	Patch by Richard Guenther.
+
 2009-05-03  Anatoly Sokolov  <aesok@post.ru>
 
 	* defaults.h (FRAME_POINTER_REQUIRED): Provide default.
