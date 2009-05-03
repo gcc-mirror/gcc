@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=ultrasparc -mvis -O1 -fdump-tree-final_cleanup" } */
+/* { dg-options "-mcpu=ultrasparc -mvis -O1 -fdump-tree-optimized" } */
 
 typedef long long int64_t;
 typedef unsigned char vec8 __attribute__((vector_size(8)));
@@ -15,5 +15,5 @@ int64_t foo () {
 }
 
 /* { dg-final { scan-assembler-not "pdist\t%" } } */
-/* { dg-final { scan-tree-dump "return 475" "final_cleanup" } } */
-/* { dg-final { cleanup-tree-dump "final_cleanup" } } */
+/* { dg-final { scan-tree-dump "return 475" "optimized" } } */
+/* { dg-final { cleanup-tree-dump "optimized" } } */
