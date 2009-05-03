@@ -367,8 +367,6 @@ enum reg_class
 
 /* Eliminating the Frame Pointer and the Arg Pointer */
 
-#define FRAME_POINTER_REQUIRED 0
-
 #define ELIMINABLE_REGS					\
 {							\
   {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},		\

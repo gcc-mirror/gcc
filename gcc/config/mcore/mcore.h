@@ -303,11 +303,6 @@ extern int mcore_stack_increment;
 #define MODES_TIEABLE_P(MODE1, MODE2) \
   ((MODE1) == (MODE2) || GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
 
-/* Value should be nonzero if functions must have frame pointers.
-   Zero means the frame pointer need not be set up (and parms may be accessed
-   via the stack pointer) in functions that seem suitable.  */
-#define FRAME_POINTER_REQUIRED	0
-
 /* Definitions for register eliminations.
 
    We have two registers that can be eliminated on the MCore.  First, the

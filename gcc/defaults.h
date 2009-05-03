@@ -969,4 +969,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GO_IF_MODE_DEPENDENT_ADDRESS(X, WIN)
 #endif
 
+#ifndef FRAME_POINTER_REQUIRED
+#define FRAME_POINTER_REQUIRED false
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

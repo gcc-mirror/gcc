@@ -246,14 +246,6 @@ extern const struct real_format pdp11_d_format;
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM 5
 
-/* Value should be nonzero if functions must have frame pointers.
-   Zero means the frame pointer need not be set up (and parms
-   may be accessed via the stack pointer) in functions that seem suitable.
-   This is computed in `reload', in reload1.c.
-  */
-
-#define FRAME_POINTER_REQUIRED 0
-
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 5
 

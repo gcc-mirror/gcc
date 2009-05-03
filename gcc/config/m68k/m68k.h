@@ -453,8 +453,6 @@ along with GCC; see the file COPYING3.  If not see
    pointer is shifted to %a5 on this target.  */
 #define FRAME_POINTER_REGNUM A6_REG
 
-#define FRAME_POINTER_REQUIRED 0
-
 /* Base register for access to arguments of the function.
  * This isn't a hardware register. It will be eliminated to the
  * stack pointer or frame pointer.

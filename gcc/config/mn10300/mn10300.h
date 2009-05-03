@@ -491,7 +491,6 @@ enum reg_class {
 
 /* We can debug without frame pointers on the mn10300, so eliminate
    them whenever possible.  */
-#define FRAME_POINTER_REQUIRED 0
 #define CAN_DEBUG_WITHOUT_FP
 
 /* Value is the number of bytes of arguments automatically

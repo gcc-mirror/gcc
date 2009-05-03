@@ -409,9 +409,6 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
    pointers are eliminated wherever possible, by replacing them with
    offsets from the stack pointer. */
 
-/* We want to get rid of the frame pointer.  */
-#define FRAME_POINTER_REQUIRED 0
-
 #define ELIMINABLE_REGS 						\
   {{ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
    {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
