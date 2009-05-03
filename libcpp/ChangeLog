@@ -1,3 +1,8 @@
+2009-05-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* charset.c (one_utf8_to_cppchar): Correct mask used for 5-byte
+	UTF-8 sequences.
+
 2009-04-25  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/39559
