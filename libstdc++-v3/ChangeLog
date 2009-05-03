@@ -1,3 +1,14 @@
+2009-05-03  Jan Hubicka  <jh@suse.cz>
+
+	* include/parallel/settings.h (get): Mark const.
+	* libsupc++/unwind-cxx.h (__cxa_call_terminate): Mark throw ().
+	* libsupc++/eh_call.cc (__cxa_call_terminate): Mark throw ().
+	* config/io/basic_file_stdio.cc (sys_open, is_open, fd, seekoff): Mark
+	throw ().
+	* config/io/basic_file_stdio.h (__basic_file, sys_open): Mark throw ().
+	(is_open, fd): Mark pure and throw ().
+	(seekoff): Mark throw ().
+
 2009-05-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* acinclude.m4 ([GLIBCXX_ENABLE_ATOMIC_BUILTINS]): Do link tests when

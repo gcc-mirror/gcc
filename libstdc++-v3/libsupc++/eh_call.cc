@@ -37,7 +37,7 @@ using namespace __cxxabiv1;
 // terminate.
 
 extern "C" void
-__cxa_call_terminate(_Unwind_Exception* ue_header)
+__cxa_call_terminate(_Unwind_Exception* ue_header) throw ()
 {
 
   if (ue_header)

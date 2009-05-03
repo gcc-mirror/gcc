@@ -210,7 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
   
   __basic_file<char>*
-  __basic_file<char>::sys_open(int __fd, ios_base::openmode __mode)
+  __basic_file<char>::sys_open(int __fd, ios_base::openmode __mode) throw ()
   {
     __basic_file* __ret = NULL;
     const char* __c_mode = fopen_mode(__mode);
@@ -247,15 +247,15 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
   
   bool 
-  __basic_file<char>::is_open() const 
+  __basic_file<char>::is_open() const throw ()
   { return _M_cfile != 0; }
   
   int 
-  __basic_file<char>::fd() 
+  __basic_file<char>::fd() throw ()
   { return fileno(_M_cfile); }
   
   __c_file*
-  __basic_file<char>::file() 
+  __basic_file<char>::file() throw ()
   { return _M_cfile; }
   
   __basic_file<char>* 
@@ -315,7 +315,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   }
 
   streamoff
-  __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way)
+  __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way) throw ()
   {
 #ifdef _GLIBCXX_USE_LFS
     return lseek64(this->fd(), __off, __way);
