@@ -63,6 +63,10 @@ enum rid
   /* ObjC */
   RID_IN, RID_OUT, RID_INOUT, RID_BYCOPY, RID_BYREF, RID_ONEWAY,
 
+  /* C (reserved and imaginary types not implemented, so any use is a
+     syntax error) */
+  RID_IMAGINARY,
+
   /* C */
   RID_INT,     RID_CHAR,   RID_FLOAT,    RID_DOUBLE, RID_VOID,
   RID_ENUM,    RID_STRUCT, RID_UNION,    RID_IF,     RID_ELSE,

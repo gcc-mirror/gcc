@@ -1,3 +1,8 @@
+2009-05-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (reswords): Add _Imaginary.
+	* c-common.c (enum rid): Add RID_IMAGINARY.
+
 2009-05-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree.h (TYPE_VECTOR_OPAQUE): Fix documentation.

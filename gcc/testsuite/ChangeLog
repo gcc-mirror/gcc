@@ -1,5 +1,9 @@
 2009-05-03  Joseph Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/c99-complex-3.c: New test.
+
+2009-05-03  Joseph Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/cpp/utf8-5byte-1.c: New test.
 
 2009-05-02  Joseph Myers  <joseph@codesourcery.com>
