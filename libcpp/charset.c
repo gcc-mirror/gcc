@@ -169,7 +169,7 @@ static inline int
 one_utf8_to_cppchar (const uchar **inbufp, size_t *inbytesleftp,
 		     cppchar_t *cp)
 {
-  static const uchar masks[6] = { 0x7F, 0x1F, 0x0F, 0x07, 0x02, 0x01 };
+  static const uchar masks[6] = { 0x7F, 0x1F, 0x0F, 0x07, 0x03, 0x01 };
   static const uchar patns[6] = { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
 
   cppchar_t c;
