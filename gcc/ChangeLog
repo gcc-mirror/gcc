@@ -1,3 +1,12 @@
+2009-05-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/23329
+	* tree-ssa.c (useless_type_conversion_p_1): Use get_deref_alias_set.
+	Do not lose casts from array types with unknown extent to array
+	types with known extent.
+	* tree-ssa-copy.c (may_propagate_copy): Remove hack checking for
+	alias set compatibility.
+
 2009-05-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	* flags.h (extra_warnings): Delete.
