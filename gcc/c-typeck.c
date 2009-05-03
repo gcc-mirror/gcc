@@ -1634,21 +1634,6 @@ array_to_pointer_conversion (tree exp)
   if (TREE_CODE (exp) == INDIRECT_REF)
     return convert (ptrtype, TREE_OPERAND (exp, 0));
 
-  if (TREE_CODE (exp) == VAR_DECL)
-    {
-      /* We are making an ADDR_EXPR of ptrtype.  This is a valid
-	 ADDR_EXPR because it's the best way of representing what
-	 happens in C when we take the address of an array and place
-	 it in a pointer to the element type.  */
-      adr = build1 (ADDR_EXPR, ptrtype, exp);
-      if (!c_mark_addressable (exp))
-	return error_mark_node;
-      TREE_SIDE_EFFECTS (adr) = 0;   /* Default would be, same as EXP.  */
-      return adr;
-    }
-
-  /* This way is better for a COMPONENT_REF since it can
-     simplify the offset for a component.  */
   adr = build_unary_op (EXPR_LOCATION (exp), ADDR_EXPR, exp, 1);
   return convert (ptrtype, adr);
 }

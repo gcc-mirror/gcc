@@ -1,5 +1,18 @@
 2009-05-03  Richard Guenther  <rguenther@suse.de>
 
+	PR c/39983
+	* c-typeck.c (array_to_pointer_conversion): Do not built
+	ADDR_EXPRs of arrays of pointer-to-element type.
+	* c-gimplify.c (c_gimplify_expr): Revert change fixing
+	up wrong ADDR_EXPRs after-the-fact.
+	* c-common.c (strict_aliasing_warning): Strip pointer
+	conversions for obtaining the original type.
+	* builtins.c (fold_builtin_memset): Handle array types.
+	(fold_builtin_memory_op): Handle folded POINTER_PLUS_EXPRs
+	and array types
+
+2009-05-03  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/23329
 	* tree-ssa.c (useless_type_conversion_p_1): Use get_deref_alias_set.
 	Do not lose casts from array types with unknown extent to array
