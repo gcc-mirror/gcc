@@ -730,6 +730,7 @@ const struct c_common_resword c_common_reswords[] =
 {
   { "_Bool",		RID_BOOL,      D_CONLY },
   { "_Complex",		RID_COMPLEX,	0 },
+  { "_Imaginary",	RID_IMAGINARY, D_CONLY },
   { "_Decimal32",       RID_DFLOAT32,  D_CONLY | D_EXT },
   { "_Decimal64",       RID_DFLOAT64,  D_CONLY | D_EXT },
   { "_Decimal128",      RID_DFLOAT128, D_CONLY | D_EXT },
