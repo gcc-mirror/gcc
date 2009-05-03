@@ -644,8 +644,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 
 /* Frame pointer and argument pointer elimination.  */
 
-#define FRAME_POINTER_REQUIRED 0
-
 #define ELIMINABLE_REGS						\
 {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM },		\
  { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM },		\

@@ -3738,15 +3738,16 @@ return @code{@var{regno}}.
 This is about eliminating the frame pointer and arg pointer.
 
 @defmac FRAME_POINTER_REQUIRED
-A C expression which is nonzero if a function must have and use a frame
+A C expression which is @code{true} if a function must have and use a frame
 pointer.  This expression is evaluated  in the reload pass.  If its value is
-nonzero the function will have a frame pointer.
+@code{true} the function will have a frame pointer.
 
 The expression can in principle examine the current function and decide
-according to the facts, but on most machines the constant 0 or the
-constant 1 suffices.  Use 0 when the machine allows code to be generated
-with no frame pointer, and doing so saves some time or space.  Use 1
-when there is no possible advantage to avoiding a frame pointer.
+according to the facts, but on most machines the constant @code{false} or the
+constant @code{true} suffices.  Use @code{false} when the machine allows code
+to be generated with no frame pointer, and doing so saves some time or space.
+Use @code{true} when there is no possible advantage to avoiding a frame
+pointer.
 
 In certain cases, the compiler does not know how to produce valid code
 without a frame pointer.  The compiler recognizes those cases and
@@ -3757,6 +3758,8 @@ them.
 In a function that does not require a frame pointer, the frame pointer
 register can be allocated for ordinary usage, unless you mark it as a
 fixed register.  See @code{FIXED_REGISTERS} for more information.
+
+Default value is @code{false}.
 @end defmac
 
 @findex get_frame_size

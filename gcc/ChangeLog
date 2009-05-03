@@ -1,3 +1,24 @@
+2009-05-03  Anatoly Sokolov  <aesok@post.ru>
+
+	* defaults.h (FRAME_POINTER_REQUIRED): Provide default.
+	* doc/tm.texi (FRAME_POINTER_REQUIRED): Revise documentation.
+	* config/alpha/alpha.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/s390/s390.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/spu/spu.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/sh/sh.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/pdp11/pdp11.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/stormy16/stormy16.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/m68hc11/m68hc11.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/iq2000/iq2000.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/mn10300/mn10300.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/ia64/ia64.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/m68k/m68k.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/rs6000/rs6000.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/picochip/picochip.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/mcore/mcore.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/h8300/h8300.h (FRAME_POINTER_REQUIRED): Delete.
+	* config/v850/v850.h (FRAME_POINTER_REQUIRED): Delete.
+
 2009-05-02  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39940
