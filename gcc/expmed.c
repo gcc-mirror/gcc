@@ -103,7 +103,8 @@ static int add_cost[2][NUM_MACHINE_MODES];
 static int neg_cost[2][NUM_MACHINE_MODES];
 static int shift_cost[2][NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
 static int shiftadd_cost[2][NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
-static int shiftsub_cost[2][NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
+static int shiftsub0_cost[2][NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
+static int shiftsub1_cost[2][NUM_MACHINE_MODES][MAX_BITS_PER_WORD];
 static int mul_cost[2][NUM_MACHINE_MODES];
 static int sdiv_cost[2][NUM_MACHINE_MODES];
 static int udiv_cost[2][NUM_MACHINE_MODES];
@@ -130,7 +131,8 @@ init_expmed (void)
     struct rtx_def shift;	rtunion shift_fld1;
     struct rtx_def shift_mult;	rtunion shift_mult_fld1;
     struct rtx_def shift_add;	rtunion shift_add_fld1;
-    struct rtx_def shift_sub;	rtunion shift_sub_fld1;
+    struct rtx_def shift_sub0;	rtunion shift_sub0_fld1;
+    struct rtx_def shift_sub1;	rtunion shift_sub1_fld1;
   } all;
 
   rtx pow2[MAX_BITS_PER_WORD];
@@ -201,9 +203,13 @@ init_expmed (void)
   XEXP (&all.shift_add, 0) = &all.shift_mult;
   XEXP (&all.shift_add, 1) = &all.reg;
 
-  PUT_CODE (&all.shift_sub, MINUS);
-  XEXP (&all.shift_sub, 0) = &all.shift_mult;
-  XEXP (&all.shift_sub, 1) = &all.reg;
+  PUT_CODE (&all.shift_sub0, MINUS);
+  XEXP (&all.shift_sub0, 0) = &all.shift_mult;
+  XEXP (&all.shift_sub0, 1) = &all.reg;
+
+  PUT_CODE (&all.shift_sub1, MINUS);
+  XEXP (&all.shift_sub1, 0) = &all.reg;
+  XEXP (&all.shift_sub1, 1) = &all.shift_mult;
 
   for (speed = 0; speed < 2; speed++)
     {
@@ -226,7 +232,8 @@ init_expmed (void)
 	  PUT_MODE (&all.shift, mode);
 	  PUT_MODE (&all.shift_mult, mode);
 	  PUT_MODE (&all.shift_add, mode);
-	  PUT_MODE (&all.shift_sub, mode);
+	  PUT_MODE (&all.shift_sub0, mode);
+	  PUT_MODE (&all.shift_sub1, mode);
 
 	  add_cost[speed][mode] = rtx_cost (&all.plus, SET, speed);
 	  neg_cost[speed][mode] = rtx_cost (&all.neg, SET, speed);
@@ -254,8 +261,8 @@ init_expmed (void)
 	    }
 
 	  shift_cost[speed][mode][0] = 0;
-	  shiftadd_cost[speed][mode][0] = shiftsub_cost[speed][mode][0]
-	    = add_cost[speed][mode];
+	  shiftadd_cost[speed][mode][0] = shiftsub0_cost[speed][mode][0]
+	    = shiftsub1_cost[speed][mode][0] = add_cost[speed][mode];
 
 	  n = MIN (MAX_BITS_PER_WORD, GET_MODE_BITSIZE (mode));
 	  for (m = 1; m < n; m++)
@@ -265,7 +272,8 @@ init_expmed (void)
 
 	      shift_cost[speed][mode][m] = rtx_cost (&all.shift, SET, speed);
 	      shiftadd_cost[speed][mode][m] = rtx_cost (&all.shift_add, SET, speed);
-	      shiftsub_cost[speed][mode][m] = rtx_cost (&all.shift_sub, SET, speed);
+	      shiftsub0_cost[speed][mode][m] = rtx_cost (&all.shift_sub0, SET, speed);
+	      shiftsub1_cost[speed][mode][m] = rtx_cost (&all.shift_sub1, SET, speed);
 	    }
 	}
     }
@@ -2397,6 +2405,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   struct mult_cost best_cost;
   struct mult_cost new_limit;
   int op_cost, op_latency;
+  unsigned HOST_WIDE_INT orig_t = t;
   unsigned HOST_WIDE_INT q;
   int maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (mode));
   int hash_index;
@@ -2604,6 +2613,29 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	      best_alg->op[best_alg->ops] = alg_add_t_m2;
 	    }
 	}
+
+      /* We may be able to calculate a * -7, a * -15, a * -31, etc
+	 quickly with a - a * n for some appropriate constant n.  */
+      m = exact_log2 (-orig_t + 1);
+      if (m >= 0 && m < maxm)
+	{
+	  op_cost = shiftsub1_cost[speed][mode][m];
+	  new_limit.cost = best_cost.cost - op_cost;
+	  new_limit.latency = best_cost.latency - op_cost;
+	  synth_mult (alg_in, (unsigned HOST_WIDE_INT) (-orig_t + 1) >> m, &new_limit, mode);
+
+	  alg_in->cost.cost += op_cost;
+	  alg_in->cost.latency += op_cost;
+	  if (CHEAPER_MULT_COST (&alg_in->cost, &best_cost))
+	    {
+	      struct algorithm *x;
+	      best_cost = alg_in->cost;
+	      x = alg_in, alg_in = best_alg, best_alg = x;
+	      best_alg->log[best_alg->ops] = m;
+	      best_alg->op[best_alg->ops] = alg_sub_t_m2;
+	    }
+	}
+
       if (cache_hit)
 	goto done;
     }
@@ -2673,9 +2705,9 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
 	     hardware the shift may be executed concurrently with the
 	     earlier steps in the algorithm.  */
 	  op_cost = add_cost[speed][mode] + shift_cost[speed][mode][m];
-	  if (shiftsub_cost[speed][mode][m] < op_cost)
+	  if (shiftsub0_cost[speed][mode][m] < op_cost)
 	    {
-	      op_cost = shiftsub_cost[speed][mode][m];
+	      op_cost = shiftsub0_cost[speed][mode][m];
 	      op_latency = op_cost;
 	    }
 	  else
@@ -2738,7 +2770,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
       m = exact_log2 (q);
       if (m >= 0 && m < maxm)
 	{
-	  op_cost = shiftsub_cost[speed][mode][m];
+	  op_cost = shiftsub0_cost[speed][mode][m];
 	  new_limit.cost = best_cost.cost - op_cost;
 	  new_limit.latency = best_cost.latency - op_cost;
 	  synth_mult (alg_in, (t + 1) >> m, &new_limit, mode);

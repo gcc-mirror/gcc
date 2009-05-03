@@ -1,3 +1,11 @@
+2009-05-04  Kazu Hirata  <kazu@codesourcery.com>
+
+	* expmed.c (shiftsub_cost): Rename to shiftsub0_cost.
+	(shiftsub1_cost): New.
+	(init_expmed): Compute shiftsub1_cost.
+	(synth_mult): Optimize multiplications by constants of the form
+	-(2^^m-1) for some constant positive integer m.
+
 2009-05-03  Richard Guenther  <rguenther@suse.de>
 
 	PR c/39983
