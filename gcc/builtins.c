@@ -8737,7 +8737,7 @@ var_decl_component_p (tree var)
 static tree
 fold_builtin_memset (tree dest, tree c, tree len, tree type, bool ignore)
 {
-  tree var, ret;
+  tree var, ret, etype;
   unsigned HOST_WIDE_INT length, cval;
 
   if (! validate_arg (dest, POINTER_TYPE)
@@ -8764,15 +8764,19 @@ fold_builtin_memset (tree dest, tree c, tree len, tree type, bool ignore)
   if (TREE_THIS_VOLATILE (var))
     return NULL_TREE;
 
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (var))
-      && !POINTER_TYPE_P (TREE_TYPE (var)))
+  etype = TREE_TYPE (var);
+  if (TREE_CODE (etype) == ARRAY_TYPE)
+    etype = TREE_TYPE (etype);
+
+  if (!INTEGRAL_TYPE_P (etype)
+      && !POINTER_TYPE_P (etype))
     return NULL_TREE;
 
   if (! var_decl_component_p (var))
     return NULL_TREE;
 
   length = tree_low_cst (len, 1);
-  if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (var))) != length
+  if (GET_MODE_SIZE (TYPE_MODE (etype)) != length
       || get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT
 	 < (int) length)
     return NULL_TREE;
@@ -8794,8 +8798,10 @@ fold_builtin_memset (tree dest, tree c, tree len, tree type, bool ignore)
       cval |= (cval << 31) << 1;
     }
 
-  ret = build_int_cst_type (TREE_TYPE (var), cval);
-  ret = build2 (MODIFY_EXPR, TREE_TYPE (var), var, ret);
+  ret = build_int_cst_type (etype, cval);
+  var = build_fold_indirect_ref (fold_convert (build_pointer_type (etype),
+					       dest));
+  ret = build2 (MODIFY_EXPR, etype, var, ret);
   if (ignore)
     return ret;
 
@@ -8947,8 +8953,37 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 	 Perhaps we ought to inherit type from non-VOID argument here?  */
       STRIP_NOPS (src);
       STRIP_NOPS (dest);
+      /* As we fold (void *)(p + CST) to (void *)p + CST undo this here.  */
+      if (TREE_CODE (src) == POINTER_PLUS_EXPR)
+	{
+	  tree tem = TREE_OPERAND (src, 0);
+	  STRIP_NOPS (tem);
+	  if (tem != TREE_OPERAND (src, 0))
+	    src = build1 (NOP_EXPR, TREE_TYPE (tem), src);
+	}
+      if (TREE_CODE (dest) == POINTER_PLUS_EXPR)
+	{
+	  tree tem = TREE_OPERAND (dest, 0);
+	  STRIP_NOPS (tem);
+	  if (tem != TREE_OPERAND (dest, 0))
+	    dest = build1 (NOP_EXPR, TREE_TYPE (tem), dest);
+	}
       srctype = TREE_TYPE (TREE_TYPE (src));
+      if (srctype
+	  && TREE_CODE (srctype) == ARRAY_TYPE)
+	{
+	  srctype = TREE_TYPE (srctype);
+	  STRIP_NOPS (src);
+	  src = build1 (NOP_EXPR, build_pointer_type (srctype), src);
+	}
       desttype = TREE_TYPE (TREE_TYPE (dest));
+      if (desttype
+	  && TREE_CODE (desttype) == ARRAY_TYPE)
+	{
+	  desttype = TREE_TYPE (desttype);
+	  STRIP_NOPS (dest);
+	  dest = build1 (NOP_EXPR, build_pointer_type (desttype), dest);
+	}
       if (!srctype || !desttype
 	  || !TYPE_SIZE_UNIT (srctype)
 	  || !TYPE_SIZE_UNIT (desttype)
