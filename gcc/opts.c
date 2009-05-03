@@ -54,9 +54,6 @@ bool sel_sched_switch_set;
 /* True if we should exit after parsing options.  */
 bool exit_after_options;
 
-/* Print various extra warnings.  -W/-Wextra.  */
-bool extra_warnings;
-
 /* True to warn about any objects definitions whose size is larger
    than N bytes.  Also want about function definitions whose returned
    values are larger than N bytes, where N is `larger_than_size'.  */
@@ -372,7 +369,6 @@ unsigned num_in_fnames;
 static int common_handle_option (size_t scode, const char *arg, int value,
 				 unsigned int lang_mask);
 static void handle_param (const char *);
-static void set_Wextra (int);
 static unsigned int handle_option (const char **argv, unsigned int lang_mask);
 static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const char *, const struct cl_option *,
@@ -1572,17 +1568,8 @@ common_handle_option (size_t scode, const char *arg, int value,
       /* Currently handled in a prescan.  */
       break;
 
-    case OPT_W:
-      /* For backward compatibility, -W is the same as -Wextra.  */
-      set_Wextra (value);
-      break;
-
     case OPT_Werror_:
       enable_warning_as_error (arg, value, lang_mask);
-      break;
-
-    case OPT_Wextra:
-      set_Wextra (value);
       break;
 
     case OPT_Wlarger_than_:
@@ -2099,21 +2086,6 @@ handle_param (const char *carg)
     }
 
   free (arg);
-}
-
-/* Handle -W and -Wextra.  */
-static void
-set_Wextra (int setting)
-{
-  extra_warnings = setting;
-
-  /* We save the value of warn_uninitialized, since if they put
-     -Wuninitialized on the command line, we need to generate a
-     warning about not using it without also specifying -O.  */
-  if (setting == 0)
-    warn_uninitialized = 0;
-  else if (warn_uninitialized != 1)
-    warn_uninitialized = 2;
 }
 
 /* Used to set the level of strict aliasing warnings, 
