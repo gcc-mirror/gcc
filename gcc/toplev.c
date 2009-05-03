@@ -1688,6 +1688,10 @@ process_options (void)
   if (warn_unused_value == -1)
     warn_unused_value = warn_unused;
 
+  /* This replaces set_Wextra.  */
+  if (warn_uninitialized == -1)
+    warn_uninitialized = extra_warnings;
+
   /* Allow the front end to perform consistency checks and do further
      initialization based on the command line options.  This hook also
      sets the original filename if appropriate (e.g. foo.i -> foo.c)

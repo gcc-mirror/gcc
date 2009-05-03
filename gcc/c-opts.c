@@ -400,11 +400,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 	 headers.  */
       warn_unknown_pragmas = value;
 
-      /* We save the value of warn_uninitialized, since if they put
-	 -Wuninitialized on the command line, we need to generate a
-	 warning about not using it without also specifying -O.  */
-      if (warn_uninitialized != 1)
-	warn_uninitialized = (value ? 2 : 0);
+      warn_uninitialized = value;
 
       if (!c_dialect_cxx ())
 	{
@@ -1057,11 +1053,8 @@ c_common_post_options (const char **pfilename)
   if (flag_objc_exceptions && !flag_objc_sjlj_exceptions)
     flag_exceptions = 1;
 
-  /* -Wextra implies -Wtype-limits, -Wclobbered, 
-     -Wempty-body, -Wsign-compare, 
-     -Wmissing-field-initializers, -Wmissing-parameter-type
-     -Wold-style-declaration, -Woverride-init and -Wignored-qualifiers
-     but not if explicitly overridden.  */
+  /* -Wextra implies the following flags
+     unless explicitly overridden.  */
   if (warn_type_limits == -1)
     warn_type_limits = extra_warnings;
   if (warn_clobbered == -1)

@@ -1,3 +1,16 @@
+2009-05-03  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* flags.h (extra_warnings): Delete.
+	* toplev.c (process_options): Handle Wuninitialized here.
+	* opts.c (extra_warnings): Delete.
+	(set_Wextra): Delete.
+	(common_handle_option): -Wextra can be handled automatically.
+	* c-opts.c (c_common_handle_option): Delete obsolete code.
+	(c_common_post_options): Simplify comment.
+	* common.opt (W): Add Var.
+	(Wextra): Add Var.
+	(Wuninitialized): Initialize to -1.
+
 2009-05-03  Adam Nemet  <anemet@caviumnetworks.com>
 	    Richard Guenther  <rguenther@suse.de>
 
