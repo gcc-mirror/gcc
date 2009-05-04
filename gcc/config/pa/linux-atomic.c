@@ -24,14 +24,9 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-/* FIXME: work around build failure for hppa64-linux-gnu target. */
-#ifndef _LP64
-#include <errno.h>
-#else 
 #define EFAULT  14 
 #define EBUSY   16
 #define ENOSYS 251 
-#endif 
 
 /* All PA-RISC implementations supported by linux have strongly
    ordered loads and stores.  Only cache flushes and purges can be

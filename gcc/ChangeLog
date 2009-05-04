@@ -1,3 +1,8 @@
+2009-05-05  Ben Elliston  <bje@au.ibm.com>
+
+	* config/pa/linux-atomic.c: Eliminate conditional include of
+	errno.h on non-LP64 systems to simplify build requirements.
+
 2009-05-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (handle_mode_attribute): Use %qE for identifiers in
