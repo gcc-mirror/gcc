@@ -1,3 +1,11 @@
+2009-05-04  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/28152
+	* parser.c (cp_lexer_get_preprocessor_token):  Do not store the
+	canonical spelling for keywords.
+	(cp_parser_attribute_list): Use the canonical spelling for
+	keywords in attributes.
+
 2009-05-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* cxx-pretty-print.c (is_destructor_name, pp_cxx_unqualified_id,
