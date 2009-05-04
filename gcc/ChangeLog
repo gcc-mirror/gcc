@@ -1,3 +1,8 @@
+2009-05-04  Michael Eager <eager@eagercon.com>
+
+	* gcc/config.gcc: (powerpc-xilinx-eabi*): Add tm t-xilinx
+	* config/rs6000/t-xilinx: New
+
 2009-05-04  Paolo Bonzini  <bonzini@gnu.org>
 
  	* doc/tm.texi (LEGITIMIZE_ADDRESS): Revise documentation.
