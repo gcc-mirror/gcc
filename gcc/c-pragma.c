@@ -112,8 +112,8 @@ pop_alignment (tree id)
 	  }
       if (entry == NULL)
 	warning (OPT_Wpragmas, "\
-#pragma pack(pop, %s) encountered without matching #pragma pack(push, %s)"
-		 , IDENTIFIER_POINTER (id), IDENTIFIER_POINTER (id));
+#pragma pack(pop, %E) encountered without matching #pragma pack(push, %E)"
+		 , id, id);
     }
 
   entry = alignment_stack->prev;
@@ -179,7 +179,7 @@ handle_pragma_pack (cpp_reader * ARG_UNUSED (dummy))
       else if (!strcmp (op, "pop"))
 	action = pop;
       else
-	GCC_BAD2 ("unknown action %qs for %<#pragma pack%> - ignored", op);
+	GCC_BAD2 ("unknown action %qE for %<#pragma pack%> - ignored", x);
 
       while ((token = pragma_lex (&x)) == CPP_COMMA)
 	{

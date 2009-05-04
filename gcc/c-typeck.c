@@ -5146,7 +5146,9 @@ static void
 push_member_name (tree decl)
 {
   const char *const string
-    = DECL_NAME (decl) ? IDENTIFIER_POINTER (DECL_NAME (decl)) : "<anonymous>";
+    = (DECL_NAME (decl)
+       ? identifier_to_locale (IDENTIFIER_POINTER (DECL_NAME (decl)))
+       : _("<anonymous>"));
   PUSH_SPELLING (SPELLING_MEMBER, string, u.s);
 }
 
@@ -5765,13 +5767,13 @@ start_init (tree decl, tree asmspec_tree ATTRIBUTE_UNUSED, int top_level)
 	       || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
 	       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
 	       || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE));
-      locus = IDENTIFIER_POINTER (DECL_NAME (decl));
+      locus = identifier_to_locale (IDENTIFIER_POINTER (DECL_NAME (decl)));
     }
   else
     {
       require_constant_value = 0;
       require_constant_elements = 0;
-      locus = "(anonymous)";
+      locus = _("(anonymous)");
     }
 
   constructor_stack = 0;
