@@ -1,3 +1,20 @@
+2009-05-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* intl.c (locale_encoding, locale_utf8): New.
+	(gcc_init_libintl): Initialize locale_encoding and locale_utf8.
+	* intl.h (locale_encoding, locale_utf8): Declare.
+	* pretty-print.c: Include ggc.h.  Include iconv.h if HAVE_ICONV.
+	(pp_base_tree_identifier, decode_utf8_char, identifier_to_locale):
+	New.
+	* pretty-print.h (pp_identifier): Call identifier_to_locale on ID
+	argument.
+	(pp_tree_identifier): Define to call pp_base_tree_identifier.
+	(pp_base_tree_identifier): Declare as function.
+	(identifier_to_locale): Declare.
+	* Makefile.in (pretty-print.o): Update dependencies.
+	* varasm.c (finish_aliases_1): Use %qE for identifiers in
+	diagnostics.
+
 2009-05-04  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40015

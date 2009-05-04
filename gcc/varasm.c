@@ -5344,13 +5344,13 @@ finish_aliases_1 (void)
       if (target_decl == NULL)
 	{
 	  if (! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
-	    error ("%q+D aliased to undefined symbol %qs",
-		   p->decl, IDENTIFIER_POINTER (p->target));
+	    error ("%q+D aliased to undefined symbol %qE",
+		   p->decl, p->target);
 	}
       else if (DECL_EXTERNAL (target_decl)
 	       && ! lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)))
-	error ("%q+D aliased to external symbol %qs",
-	       p->decl, IDENTIFIER_POINTER (p->target));
+	error ("%q+D aliased to external symbol %qE",
+	       p->decl, p->target);
     }
 }
 
