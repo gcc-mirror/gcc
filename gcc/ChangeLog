@@ -1,3 +1,19 @@
+2009-05-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (handle_mode_attribute): Use %qE for identifiers in
+	diagnostics.
+	* c-decl.c (check_bitfield_type_and_width): Make orig_name a tree
+	and pass value to identifier_to_locale.
+	(warn_variable_length_array): Make name a tree.
+	(grokdeclarator): Separate diagnostic texts for named and unnamed
+	declarators.  Use %qE for named declarators.
+	* c-parser.c (c_lex_one_token): Use %qE for identifiers in
+	diagnostics.
+	* c-pragma.c (pop_alignment, handle_pragma_pack): Use %qE for
+	identifiers in diagnostics.
+	* c-typeck.c (push_member_name, start_init): Pass identifiers to
+	identifier_to_locale.  Mark "anonymous" strings for translation.
+
 2009-05-04  Michael Eager <eager@eagercon.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimate_address): Allow

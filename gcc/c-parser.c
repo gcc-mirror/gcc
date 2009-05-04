@@ -222,8 +222,8 @@ c_lex_one_token (c_parser *parser, c_token *token)
 	      {
 		warning_at (token->location,
 			    OPT_Wc___compat,
-			    "identifier %qs conflicts with C++ keyword",
-			    IDENTIFIER_POINTER (token->value));
+			    "identifier %qE conflicts with C++ keyword",
+			    token->value);
 	      }
 	    else if (c_dialect_objc ())
 	      {
