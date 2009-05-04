@@ -417,6 +417,9 @@ m32c_override_options (void)
     }
   else
     target_memregs = 16;
+
+  if (TARGET_A24)
+    flag_ivopts = 0;
 }
 
 /* Defining data structures for per-function information */
@@ -2038,6 +2041,31 @@ m32c_legitimize_reload_address (rtx * x,
       if (type == RELOAD_OTHER)
 	type = RELOAD_FOR_OTHER_ADDRESS;
       push_reload (XEXP (*x, 0), NULL_RTX, &XEXP (*x, 0), NULL,
+		   A_REGS, Pmode, VOIDmode, 0, 0, opnum,
+		   type);
+      return 1;
+    }
+
+  /* If we see an RTX like (subreg:PSI (reg:SI ...)) we need to reload
+     the subreg.  We need to check for PLUS and non-PLUS cases.  */
+
+  if (GET_CODE (*x) == SUBREG
+      && GET_MODE (XEXP (*x, 0)) == SImode)
+    {
+      if (type == RELOAD_OTHER)
+	type = RELOAD_FOR_OTHER_ADDRESS;
+      push_reload (*x, NULL_RTX, x, NULL,
+		   A_REGS, Pmode, VOIDmode, 0, 0, opnum,
+		   type);
+      return 1;
+    }
+  if (GET_CODE (*x) == PLUS
+      && GET_CODE (XEXP (*x, 0)) == SUBREG
+      && GET_MODE (XEXP (XEXP (*x, 0), 0)) == SImode)
+    {
+      if (type == RELOAD_OTHER)
+	type = RELOAD_FOR_OTHER_ADDRESS;
+      push_reload (XEXP (*x, 0), NULL_RTX, &(XEXP (*x, 0)), NULL,
 		   A_REGS, Pmode, VOIDmode, 0, 0, opnum,
 		   type);
       return 1;

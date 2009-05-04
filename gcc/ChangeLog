@@ -1,3 +1,10 @@
+2009-05-04  DJ Delorie  <dj@redhat.com>
+
+	* config/m32c/m32c.c (m32c_override_options): Disable -fivopts for
+	-mcpu=m32c until ivopts supports sizeof(ptr) != sizeof(size_t).
+	(m32c_legitimize_reload_address): Work around reload bug until
+	reload supports sizeof(ptr) != sizeof(size_t).
+
 2009-05-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline:
