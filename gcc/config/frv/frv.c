@@ -303,6 +303,7 @@ static int frv_check_constant_argument		(enum insn_code, int, rtx);
 static rtx frv_legitimize_target		(enum insn_code, rtx);
 static rtx frv_legitimize_argument		(enum insn_code, int, rtx);
 static rtx frv_legitimize_tls_address		(rtx, enum tls_model);
+static rtx frv_legitimize_address		(rtx, rtx, enum machine_mode);
 static rtx frv_expand_set_builtin		(enum insn_code, tree, rtx);
 static rtx frv_expand_unop_builtin		(enum insn_code, tree, rtx);
 static rtx frv_expand_binop_builtin		(enum insn_code, tree, rtx);
@@ -432,6 +433,9 @@ static bool frv_secondary_reload                (bool, rtx, enum reg_class,
 
 #undef  TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE frv_issue_rate
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS frv_legitimize_address
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL frv_function_ok_for_sibcall
@@ -3661,7 +3665,7 @@ frv_legitimize_address (rtx x,
         return frv_legitimize_tls_address (x, model);
     }
 
-  return NULL_RTX;
+  return x;
 }
 
 /* Test whether a local function descriptor is canonical, i.e.,

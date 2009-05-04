@@ -504,10 +504,6 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #endif /* !REG_OK_STRICT */
 
-/* extern struct rtx_def *picochip_legitimize_address */
-/* 	PARAMS ((struct rtx_def *, struct rtx_def *, int)); */
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN);
-
 /* Legitimize reload address tries machine dependent means of
    reloading addresses.  There seems to be a strange error in gcc,
    which necessitates this macro.  Consider:

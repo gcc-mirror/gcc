@@ -413,31 +413,28 @@ score7_split_symbol (rtx temp, rtx addr)
   return gen_rtx_LO_SUM (Pmode, high, addr);
 }
 
-/* This function is used to implement LEGITIMIZE_ADDRESS.  If *XLOC can
+/* This function is used to implement LEGITIMIZE_ADDRESS.  If X can
    be legitimized in a way that the generic machinery might not expect,
-   put the new address in *XLOC and return true.  */
-int
-score7_legitimize_address (rtx *xloc)
+   return the new address.  */
+rtx
+score7_legitimize_address (rtx x)
 {
   enum score_symbol_type symbol_type;
 
-  if (score7_symbolic_constant_p (*xloc, &symbol_type)
+  if (score7_symbolic_constant_p (x, &symbol_type)
       && symbol_type == SYMBOL_GENERAL)
-    {
-      *xloc = score7_split_symbol (0, *xloc);
-      return 1;
-    }
+    return score7_split_symbol (0, x);
 
-  if (GET_CODE (*xloc) == PLUS
-      && GET_CODE (XEXP (*xloc, 1)) == CONST_INT)
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 1)) == CONST_INT)
     {
-      rtx reg = XEXP (*xloc, 0);
+      rtx reg = XEXP (x, 0);
       if (!score7_valid_base_register_p (reg, 0))
         reg = copy_to_mode_reg (Pmode, reg);
-      *xloc = score7_add_offset (reg, INTVAL (XEXP (*xloc, 1)));
-      return 1;
+      return score7_add_offset (reg, INTVAL (XEXP (x, 1)));
     }
-  return 0;
+
+  return x;
 }
 
 /* Fill INFO with information about a single argument.  CUM is the

@@ -201,6 +201,7 @@ static void spu_init_libfuncs (void);
 static bool spu_return_in_memory (const_tree type, const_tree fntype);
 static void fix_range (const char *);
 static void spu_encode_section_info (tree, rtx, int);
+static rtx spu_legitimize_address (rtx, rtx, enum machine_mode);
 static tree spu_builtin_mul_widen_even (tree);
 static tree spu_builtin_mul_widen_odd (tree);
 static tree spu_builtin_mask_for_load (void);
@@ -279,6 +280,9 @@ spu_libgcc_shift_count_mode (void);
 
 #undef TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE spu_unwind_word_mode
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS spu_legitimize_address
 
 /* The .8byte directive doesn't seem to work well for a 32 bit
    architecture. */
@@ -3683,7 +3687,7 @@ spu_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED,
    register.  */
 rtx
 spu_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-			enum machine_mode mode)
+			enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx op0, op1;
   /* Make sure both operands are registers.  */
@@ -3706,10 +3710,8 @@ spu_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
       else if (GET_CODE (op1) != REG)
 	op1 = force_reg (Pmode, op1);
       x = gen_rtx_PLUS (Pmode, op0, op1);
-      if (spu_legitimate_address (mode, x, 0))
-	return x;
     }
-  return NULL_RTX;
+  return x;
 }
 
 /* Handle an attribute requiring a FUNCTION_DECL; arguments as in

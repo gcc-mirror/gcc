@@ -765,56 +765,9 @@ __transfer_from_trampoline ()					\
     }									\
   while (0)
 
+
 /* This address is OK as it stands.  */
 #define PIC_CASE_VECTOR_ADDRESS(index) index
-
-/* For the 68000, we handle X+REG by loading X into a register R and
-   using R+REG.  R will go in an address reg and indexing will be used.
-   However, if REG is a broken-out memory address or multiplication,
-   nothing needs to be done because REG can certainly go in an address reg.  */
-#define COPY_ONCE(Y) if (!copied) { Y = copy_rtx (Y); copied = ch = 1; }
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)   \
-{ register int ch = (X) != (OLDX);					\
-  if (GET_CODE (X) == PLUS)						\
-    { int copied = 0;							\
-      if (GET_CODE (XEXP (X, 0)) == MULT)				\
-	{ COPY_ONCE (X); XEXP (X, 0) = force_operand (XEXP (X, 0), 0);}	\
-      if (GET_CODE (XEXP (X, 1)) == MULT)				\
-	{ COPY_ONCE (X); XEXP (X, 1) = force_operand (XEXP (X, 1), 0);}	\
-      if (ch && GET_CODE (XEXP (X, 1)) == REG				\
-	  && GET_CODE (XEXP (X, 0)) == REG)				\
-	{ if (TARGET_COLDFIRE_FPU					\
-	      && GET_MODE_CLASS (MODE) == MODE_FLOAT)			\
-	    { COPY_ONCE (X); X = force_operand (X, 0);}			\
-	  goto WIN; }							\
-      if (ch) { GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN); }		\
-      if (GET_CODE (XEXP (X, 0)) == REG					\
-	       || (GET_CODE (XEXP (X, 0)) == SIGN_EXTEND		\
-		   && GET_CODE (XEXP (XEXP (X, 0), 0)) == REG		\
-		   && GET_MODE (XEXP (XEXP (X, 0), 0)) == HImode))	\
-	{ register rtx temp = gen_reg_rtx (Pmode);			\
-	  register rtx val = force_operand (XEXP (X, 1), 0);		\
-	  emit_move_insn (temp, val);					\
-	  COPY_ONCE (X);						\
-	  XEXP (X, 1) = temp;						\
-	  if (TARGET_COLDFIRE_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT \
-	      && GET_CODE (XEXP (X, 0)) == REG)				\
-	    X = force_operand (X, 0);					\
-	  goto WIN; }							\
-      else if (GET_CODE (XEXP (X, 1)) == REG				\
-	       || (GET_CODE (XEXP (X, 1)) == SIGN_EXTEND		\
-		   && GET_CODE (XEXP (XEXP (X, 1), 0)) == REG		\
-		   && GET_MODE (XEXP (XEXP (X, 1), 0)) == HImode))	\
-	{ register rtx temp = gen_reg_rtx (Pmode);			\
-	  register rtx val = force_operand (XEXP (X, 0), 0);		\
-	  emit_move_insn (temp, val);					\
-	  COPY_ONCE (X);						\
-	  XEXP (X, 0) = temp;						\
-	  if (TARGET_COLDFIRE_FPU && GET_MODE_CLASS (MODE) == MODE_FLOAT \
-	      && GET_CODE (XEXP (X, 1)) == REG)				\
-	    X = force_operand (X, 0);					\
-	  goto WIN; }}}
-
 #define CASE_VECTOR_MODE HImode
 #define CASE_VECTOR_PC_RELATIVE 1
 

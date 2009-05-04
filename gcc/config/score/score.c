@@ -68,6 +68,9 @@
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION            score_handle_option
 
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS	score_legitimize_address
+
 #undef  TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE         score_issue_rate
 
@@ -540,16 +543,17 @@ score_address_p (enum machine_mode mode, rtx x, int strict)
   gcc_unreachable ();
 }
 
-/* This function is used to implement LEGITIMIZE_ADDRESS.  If *XLOC can
+/* This function is used to implement LEGITIMIZE_ADDRESS.  If X can
    be legitimized in a way that the generic machinery might not expect,
-   put the new address in *XLOC and return true.  */
-int
-score_legitimize_address (rtx *xloc)
+   return the new address, else return X.  */
+static rtx
+score_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+			  enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_legitimize_address (xloc);
+    return score7_legitimize_address (x);
   else if (TARGET_SCORE3)
-    return score3_legitimize_address (xloc);
+    return score3_legitimize_address (x);
 
   gcc_unreachable ();
 }

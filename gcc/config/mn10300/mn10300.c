@@ -76,6 +76,7 @@ static void mn10300_file_start (void);
 static bool mn10300_return_in_memory (const_tree, const_tree);
 static rtx mn10300_builtin_saveregs (void);
 static void mn10300_va_start (tree, rtx);
+static rtx mn10300_legitimize_address (rtx, rtx, enum machine_mode);
 static bool mn10300_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				       const_tree, bool);
 static int mn10300_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
@@ -85,6 +86,9 @@ static unsigned int mn10300_case_values_threshold (void);
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS mn10300_legitimize_address
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mn10300_rtx_costs
@@ -1795,8 +1799,8 @@ symbolic_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
    But on a few ports with segmented architectures and indexed addressing
    (mn10300, hppa) it is used to rewrite certain problematical addresses.  */
 rtx
-legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-		    enum machine_mode mode ATTRIBUTE_UNUSED)
+mn10300_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+			    enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   if (flag_pic && ! legitimate_pic_operand_p (x))
     x = legitimize_pic_address (oldx, NULL_RTX);

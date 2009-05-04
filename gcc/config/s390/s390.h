@@ -764,16 +764,6 @@ used in insn definitions or inline assemblies.  */
 }
 #endif
 
-/* Try machine-dependent ways of modifying an illegitimate address
-   to be legitimate.  If we find one, return the new, valid address.
-   This macro is used in only one place: `memory_address' in explow.c.  */
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)                          \
-{                                                                       \
-  (X) = legitimize_address (X, OLDX, MODE);                             \
-  if (memory_address_p (MODE, X))                                       \
-    goto WIN;                                                           \
-}
-
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
    macro is used in only one place: `find_reloads_address' in reload.c.  */

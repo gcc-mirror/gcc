@@ -2848,41 +2848,36 @@ mips_force_address (rtx x, enum machine_mode mode)
   return x;
 }
 
-/* This function is used to implement LEGITIMIZE_ADDRESS.  If *XLOC can
+/* This function is used to implement LEGITIMIZE_ADDRESS.  If X can
    be legitimized in a way that the generic machinery might not expect,
-   put the new address in *XLOC and return true.  MODE is the mode of
+   return a new address, otherwise return NULL.  MODE is the mode of
    the memory being accessed.  */
 
-bool
-mips_legitimize_address (rtx *xloc, enum machine_mode mode)
+static rtx
+mips_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+			 enum machine_mode mode)
 {
   rtx base, addr;
   HOST_WIDE_INT offset;
 
-  if (mips_tls_symbol_p (*xloc))
-    {
-      *xloc = mips_legitimize_tls_address (*xloc);
-      return true;
-    }
+  if (mips_tls_symbol_p (x))
+    return mips_legitimize_tls_address (x);
 
   /* See if the address can split into a high part and a LO_SUM.  */
-  if (mips_split_symbol (NULL, *xloc, mode, &addr))
-    {
-      *xloc = mips_force_address (addr, mode);
-      return true;
-    }
+  if (mips_split_symbol (NULL, x, mode, &addr))
+    return mips_force_address (addr, mode);
 
   /* Handle BASE + OFFSET using mips_add_offset.  */
-  mips_split_plus (*xloc, &base, &offset);
+  mips_split_plus (x, &base, &offset);
   if (offset != 0)
     {
       if (!mips_valid_base_register_p (base, mode, false))
 	base = copy_to_mode_reg (Pmode, base);
       addr = mips_add_offset (NULL, base, offset);
-      *xloc = mips_force_address (addr, mode);
-      return true;
+      return mips_force_address (addr, mode);
     }
-  return false;
+
+  return x;
 }
 
 /* Load VALUE into DEST.  TEMP is as for mips_force_temporary.  */
@@ -14748,6 +14743,9 @@ mips_final_postscan_insn (FILE *file, rtx insn, rtx *opvec, int noperands)
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
 #undef TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.dword\t"
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS mips_legitimize_address
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE mips_output_function_prologue

@@ -107,7 +107,6 @@ extern rtx create_TOC_reference (rtx);
 extern void rs6000_split_multireg_move (rtx, rtx);
 extern void rs6000_emit_move (rtx, rtx, enum machine_mode);
 extern rtx rs6000_secondary_memory_needed_rtx (enum machine_mode);
-extern rtx rs6000_legitimize_address (rtx, rtx, enum machine_mode);
 extern rtx rs6000_legitimize_reload_address (rtx, enum machine_mode,
 					     int, int, int, int *);
 extern int rs6000_legitimate_address (enum machine_mode, rtx, int);

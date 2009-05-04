@@ -50,8 +50,6 @@ extern enum reg_class preferred_reload_class (rtx, enum reg_class);
 
 extern int m68hc11_go_if_legitimate_address (rtx, enum machine_mode, int);
 
-extern int m68hc11_legitimize_address (rtx*, rtx, enum machine_mode);
-
 extern void m68hc11_notice_update_cc (rtx, rtx);
 extern void m68hc11_notice_keep_cc (rtx);
 

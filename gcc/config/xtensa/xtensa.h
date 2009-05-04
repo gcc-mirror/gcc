@@ -810,17 +810,6 @@ typedef struct xtensa_args
    && GET_CODE (X) != LABEL_REF						\
    && GET_CODE (X) != CONST)
 
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)				\
-  do {									\
-    rtx new_x = xtensa_legitimize_address (X, OLDX, MODE);		\
-    if (new_x)								\
-      {									\
-	X = new_x;							\
-	goto WIN;							\
-      }									\
-  } while (0)
-
-
 /* Treat constant-pool references as "mode dependent" since they can
    only be accessed with SImode loads.  This works around a bug in the
    combiner where a constant pool reference is temporarily converted

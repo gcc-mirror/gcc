@@ -412,6 +412,7 @@ static bool sparc_strict_argument_naming (CUMULATIVE_ARGS *);
 static void sparc_va_start (tree, rtx);
 static tree sparc_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
 static bool sparc_vector_mode_supported_p (enum machine_mode);
+static rtx sparc_legitimize_address (rtx, rtx, enum machine_mode);
 static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
 				     enum machine_mode, const_tree, bool);
 static int sparc_arg_partial_bytes (CUMULATIVE_ARGS *,
@@ -491,6 +492,9 @@ static bool fpu_option_set = false;
 #define TARGET_INIT_LIBFUNCS sparc_init_libfuncs
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS sparc_init_builtins
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS sparc_legitimize_address
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN sparc_expand_builtin
@@ -3370,10 +3374,13 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
    OLDX is the address as it was before break_out_memory_refs was called.
    In some cases it is useful to look at this to decide what needs to be done.
 
-   MODE is the mode of the operand pointed to by X.  */
+   MODE is the mode of the operand pointed to by X.
+
+   On SPARC, change REG+N into REG+REG, and REG+(X*Y) into REG+REG.  */
 
 rtx
-legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
+sparc_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+			  enum machine_mode mode)
 {
   rtx orig_x = x;
 

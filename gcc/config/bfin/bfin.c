@@ -1418,22 +1418,6 @@ bfin_return_addr_rtx (int count)
   return get_hard_reg_initial_val (Pmode, REG_RETS);
 }
 
-/* Try machine-dependent ways of modifying an illegitimate address X
-   to be legitimate.  If we find one, return the new, valid address,
-   otherwise return NULL_RTX.
-
-   OLDX is the address as it was before break_out_memory_refs was called.
-   In some cases it is useful to look at this to decide what needs to be done.
-
-   MODE is the mode of the memory reference.  */
-
-rtx
-legitimize_address (rtx x ATTRIBUTE_UNUSED, rtx oldx ATTRIBUTE_UNUSED,
-		    enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return NULL_RTX;
-}
-
 static rtx
 bfin_delegitimize_address (rtx orig_x)
 {

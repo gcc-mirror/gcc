@@ -49,7 +49,6 @@ extern int frv_initial_elimination_offset	(int, int);
 #ifdef RTX_CODE
 extern int frv_legitimate_address_p		(enum machine_mode, rtx,
 						 int, int, int);
-extern rtx frv_legitimize_address		(rtx, rtx, enum machine_mode);
 extern rtx frv_find_base_term			(rtx);
 
 #ifdef TREE_CODE

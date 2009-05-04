@@ -1189,16 +1189,6 @@ struct cum_args {int regs;};
 # define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
 #endif
 
-/* For now, don't do anything.  GCC does a good job most often.
-
-    Maybe we could do something about gcc:s misbehavior when it
-   recalculates frame offsets for local variables, from fp+offs to
-   sp+offs.  The resulting address expression gets screwed up
-   sometimes, but I'm not sure that it may be fixed here, since it is
-   already split up in several instructions (Is this still true?).
-   FIXME: Check and adjust for gcc-2.9x.  */
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN) {}
-
 /* Fix reloads known to cause suboptimal spilling.  */
 #define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, INDL, WIN)	\
   do									\
