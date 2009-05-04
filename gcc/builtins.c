@@ -8970,7 +8970,8 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 	}
       srctype = TREE_TYPE (TREE_TYPE (src));
       if (srctype
-	  && TREE_CODE (srctype) == ARRAY_TYPE)
+	  && TREE_CODE (srctype) == ARRAY_TYPE
+	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (srctype), len))
 	{
 	  srctype = TREE_TYPE (srctype);
 	  STRIP_NOPS (src);
@@ -8978,7 +8979,8 @@ fold_builtin_memory_op (tree dest, tree src, tree len, tree type, bool ignore, i
 	}
       desttype = TREE_TYPE (TREE_TYPE (dest));
       if (desttype
-	  && TREE_CODE (desttype) == ARRAY_TYPE)
+	  && TREE_CODE (desttype) == ARRAY_TYPE
+	  && !tree_int_cst_equal (TYPE_SIZE_UNIT (desttype), len))
 	{
 	  desttype = TREE_TYPE (desttype);
 	  STRIP_NOPS (dest);
