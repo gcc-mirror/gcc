@@ -1,3 +1,41 @@
+2009-05-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* attribs.c (decl_attributes): Use %qE for identifiers in
+	diagnostics.
+	* cgraphunit.c (verify_cgraph_node): Translate function names to
+	locale character set in diagnostics.
+	* coverage.c (get_coverage_counts): Use %qE for identifiers in
+	diagnostics.
+	* doc/invoke.texi (-finstrument-functions-exclude-function-list):
+	Document that functions are named in UTF-8.
+	* expr.c (expand_expr_real_1): Translate function names to locale
+	character set in diagnostics.
+	* gimplify.c (omp_notice_variable, omp_is_private,
+	gimplify_scan_omp_clauses): Use %qE for identifiers in
+	diagnostics.
+	* langhooks.c (lhd_print_error_function): Translate function names
+	to locale character set.
+	* langhooks.h (decl_printable_name): Document that return value is
+	in internal character set.
+	* stmt.c: Include pretty-print.h
+	(tree_conflicts_with_clobbers_p): Use %qE for identifiers in
+	diagnostics.
+	(resolve_operand_name_1): Translate named operand name to locale
+	character set.
+	* stor-layout.c (finalize_record_size): Use %qE for identifiers in
+	diagnostics.
+	* toplev.c (announce_function): Translate function names to locale
+	character set.
+	(warn_deprecated_use): Use %qE for identifiers in diagnostics.
+	(default_tree_printer): Use pp_identifier or translate identifiers
+	to locale character set.  Mark "<anonymous>" for translation.
+	* tree-mudflap.c (mx_register_decls, mudflap_finish_file): Use %qE
+	for identifiers in diagnostics.
+	* tree.c (handle_dll_attribute): Use %qE for identifiers in
+	diagnostics.
+	* varasm.c (output_constructor): Use %qE for identifiers in
+	diagnostics.
+
 2009-05-04  Rafael Avila de Espindola  <espindola@google.com>
 
 	* configure.ac: use ` ` instead of $()

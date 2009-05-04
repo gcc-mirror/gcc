@@ -280,16 +280,16 @@ decl_attributes (tree *node, tree attributes, int flags)
 
       if (spec == NULL)
 	{
-	  warning (OPT_Wattributes, "%qs attribute directive ignored",
-		   IDENTIFIER_POINTER (name));
+	  warning (OPT_Wattributes, "%qE attribute directive ignored",
+		   name);
 	  continue;
 	}
       else if (list_length (args) < spec->min_length
 	       || (spec->max_length >= 0
 		   && list_length (args) > spec->max_length))
 	{
-	  error ("wrong number of arguments specified for %qs attribute",
-		 IDENTIFIER_POINTER (name));
+	  error ("wrong number of arguments specified for %qE attribute",
+		 name);
 	  continue;
 	}
       gcc_assert (is_attribute_p (spec->name, name));
@@ -306,8 +306,8 @@ decl_attributes (tree *node, tree attributes, int flags)
 	    }
 	  else
 	    {
-	      warning (OPT_Wattributes, "%qs attribute does not apply to types",
-		       IDENTIFIER_POINTER (name));
+	      warning (OPT_Wattributes, "%qE attribute does not apply to types",
+		       name);
 	      continue;
 	    }
 	}
@@ -357,8 +357,8 @@ decl_attributes (tree *node, tree attributes, int flags)
 	      && TREE_CODE (*anode) != METHOD_TYPE)
 	    {
 	      warning (OPT_Wattributes,
-		       "%qs attribute only applies to function types",
-		       IDENTIFIER_POINTER (name));
+		       "%qE attribute only applies to function types",
+		       name);
 	      continue;
 	    }
 	}

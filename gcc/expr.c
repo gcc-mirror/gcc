@@ -8055,14 +8055,14 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    && (attr = lookup_attribute ("error",
 					 DECL_ATTRIBUTES (fndecl))) != NULL)
 	  error ("%Kcall to %qs declared with attribute error: %s",
-		 exp, lang_hooks.decl_printable_name (fndecl, 1),
+		 exp, identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 1)),
 		 TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
 	if (fndecl
 	    && (attr = lookup_attribute ("warning",
 					 DECL_ATTRIBUTES (fndecl))) != NULL)
 	  warning_at (tree_nonartificial_location (exp),
 		      0, "%Kcall to %qs declared with attribute warning: %s",
-		      exp, lang_hooks.decl_printable_name (fndecl, 1),
+		      exp, identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 1)),
 		      TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));
 
 	/* Check for a built-in function.  */

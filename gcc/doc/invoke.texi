@@ -16124,7 +16124,9 @@ instrumentation.  The function name to be matched is its user-visible
 name, such as @code{vector<int> blah(const vector<int> &)}, not the
 internal mangled name (e.g., @code{_Z4blahRSt6vectorIiSaIiEE}).  The
 match is done on substrings: if the @var{sym} parameter is a substring
-of the function name, it is considered to be a match.
+of the function name, it is considered to be a match.  For C99 and C++
+extended identifiers, the function name must be given in UTF-8, not
+using universal character names.
 
 @item -fstack-check
 @opindex fstack-check
