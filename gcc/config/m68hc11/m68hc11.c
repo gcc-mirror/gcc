@@ -789,14 +789,6 @@ m68hc11_go_if_legitimate_address (rtx operand, enum machine_mode mode,
   return result;
 }
 
-int
-m68hc11_legitimize_address (rtx *operand ATTRIBUTE_UNUSED,
-                            rtx old_operand ATTRIBUTE_UNUSED,
-                            enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
 
 int
 m68hc11_reload_operands (rtx operands[])

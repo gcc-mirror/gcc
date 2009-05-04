@@ -427,15 +427,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 	goto ADDR;						\
     }
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN) \
-  {  rtx result = spu_legitimize_address (X, OLDX, MODE);	\
-     if (result != NULL_RTX)					\
-       {							\
-	 (X) = result;						\
-	 goto WIN;						\
-       }							\
-  }
-
 #define LEGITIMATE_CONSTANT_P(X) spu_legitimate_constant_p(X)
 
 

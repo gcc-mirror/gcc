@@ -78,7 +78,7 @@ extern void score3_output_mi_thunk (FILE *file,
                                     HOST_WIDE_INT delta,
                                     HOST_WIDE_INT vcall_offset,
                                     tree function);
-extern int score3_legitimize_address (rtx *xloc);
+extern rtx score3_legitimize_address (rtx x);
 extern void
 score3_function_prologue (FILE *file,
                           HOST_WIDE_INT size ATTRIBUTE_UNUSED);

@@ -1938,33 +1938,33 @@ m32c_reg_ok_for_base_p (rtx x, int strict)
    displacement range.  We deal with this by attempting to reload $fb
    itself into an address register; that seems to result in the best
    code.  */
-int
-m32c_legitimize_address (rtx * x ATTRIBUTE_UNUSED,
-			 rtx oldx ATTRIBUTE_UNUSED,
-			 enum machine_mode mode ATTRIBUTE_UNUSED)
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS m32c_legitimize_address
+static rtx
+m32c_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+			 enum machine_mode mode)
 {
 #if DEBUG0
   fprintf (stderr, "m32c_legitimize_address for mode %s\n", mode_name[mode]);
-  debug_rtx (*x);
+  debug_rtx (x);
   fprintf (stderr, "\n");
 #endif
 
-  if (GET_CODE (*x) == PLUS
-      && GET_CODE (XEXP (*x, 0)) == REG
-      && REGNO (XEXP (*x, 0)) == FB_REGNO
-      && GET_CODE (XEXP (*x, 1)) == CONST_INT
-      && (INTVAL (XEXP (*x, 1)) < -128
-	  || INTVAL (XEXP (*x, 1)) > (128 - GET_MODE_SIZE (mode))))
+  if (GET_CODE (x) == PLUS
+      && GET_CODE (XEXP (x, 0)) == REG
+      && REGNO (XEXP (x, 0)) == FB_REGNO
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && (INTVAL (XEXP (x, 1)) < -128
+	  || INTVAL (XEXP (x, 1)) > (128 - GET_MODE_SIZE (mode))))
     {
       /* reload FB to A_REGS */
       rtx temp = gen_reg_rtx (Pmode);
-      *x = copy_rtx (*x);
-      emit_insn (gen_rtx_SET (VOIDmode, temp, XEXP (*x, 0)));
-      XEXP (*x, 0) = temp;
-      return 1;
+      x = copy_rtx (x);
+      emit_insn (gen_rtx_SET (VOIDmode, temp, XEXP (x, 0)));
+      XEXP (x, 0) = temp;
     }
 
-  return 0;
+  return x;
 }
 
 /* Implements LEGITIMIZE_RELOAD_ADDRESS.  See comment above.  */

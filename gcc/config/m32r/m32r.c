@@ -70,6 +70,7 @@ static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
 static int   m32r_is_insn (rtx);
 const struct attribute_spec m32r_attribute_table[];
+static rtx   m32r_legitimize_address (rtx, rtx, enum machine_mode);
 static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void  m32r_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void  m32r_output_function_epilogue (FILE *, HOST_WIDE_INT);
@@ -94,6 +95,9 @@ static int m32r_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE m32r_attribute_table
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS m32r_legitimize_address
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
@@ -1727,6 +1731,16 @@ m32r_legitimize_pic_address (rtx orig, rtx reg)
     }
 
   return orig;
+}
+
+static rtx
+m32r_legitimize_address (rtx x, rtx orig_x ATTRIBUTE_UNUSED,
+			 enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  if (flag_pic)
+    return m32r_legitimize_pic_address (x, NULL_RTX);
+  else
+    return x;
 }
 
 /* Nested function support.  */

@@ -9767,7 +9767,7 @@ get_thread_pointer (int to_reg)
   return reg;
 }
 
-/* A subroutine of legitimize_address and ix86_expand_move.  FOR_MOV is
+/* A subroutine of ix86_legitimize_address and ix86_expand_move.  FOR_MOV is
    false if we expect this to be used for a memory address and true if
    we expect to load the address into a register.  */
 
@@ -10025,8 +10025,9 @@ legitimize_dllimport_symbol (rtx symbol, bool want_reg)
    When -fpic is used, special handling is needed for symbolic references.
    See comments by legitimize_pic_address in i386.c for details.  */
 
-rtx
-legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED, enum machine_mode mode)
+static rtx
+ix86_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+			 enum machine_mode mode)
 {
   int changed = 0;
   unsigned log;
@@ -30043,6 +30044,9 @@ ix86_enum_va_list (int idx, const char **pname, tree *ptree)
 /* Initialize the GCC target structure.  */
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY ix86_return_in_memory
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS ix86_legitimize_address
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ix86_attribute_table

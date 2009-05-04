@@ -98,7 +98,6 @@ extern const char *avr_out_sbxx_branch (rtx insn, rtx operands[]);
 
 extern enum reg_class preferred_reload_class (rtx x, enum reg_class rclass);
 extern int extra_constraint_Q (rtx x);
-extern rtx legitimize_address (rtx x, rtx oldx, enum machine_mode mode);
 extern int adjust_insn_length (rtx insn, int len);
 extern rtx avr_libcall_value (enum machine_mode mode);
 extern const char *output_reload_inhi (rtx insn, rtx *operands, int *len);

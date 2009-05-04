@@ -948,25 +948,6 @@ typedef struct {
   } while (0);
 #endif
 
-/* Try machine-dependent ways of modifying an illegitimate address
-   to be legitimate.  If we find one, return the new, valid address.
-   This macro is used in only one place: `memory_address' in explow.c.
-
-   OLDX is the address as it was before break_out_memory_refs was called.
-   In some cases it is useful to look at this to decide what needs to be done.
-
-   MODE and WIN are passed so that this macro can use
-   GO_IF_LEGITIMATE_ADDRESS.
-
-   It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.
- */
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)    \
-do {					       \
-   rtx _q = legitimize_address(X, OLDX, MODE); \
-   if (_q) { X = _q; goto WIN; }	       \
-} while (0)
-
 #define HAVE_POST_INCREMENT 1
 #define HAVE_POST_DECREMENT 1
 #define HAVE_PRE_DECREMENT  1

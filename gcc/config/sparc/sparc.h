@@ -1923,27 +1923,6 @@ do {									\
     }							\
 }
 
-/* Try machine-dependent ways of modifying an illegitimate address
-   to be legitimate.  If we find one, return the new, valid address.
-   This macro is used in only one place: `memory_address' in explow.c.
-
-   OLDX is the address as it was before break_out_memory_refs was called.
-   In some cases it is useful to look at this to decide what needs to be done.
-
-   MODE and WIN are passed so that this macro can use
-   GO_IF_LEGITIMATE_ADDRESS.
-
-   It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.  */
-
-/* On SPARC, change REG+N into REG+REG, and REG+(X*Y) into REG+REG.  */
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
-{						\
-  (X) = legitimize_address (X, OLDX, MODE);	\
-  if (memory_address_p (MODE, X))		\
-    goto WIN;					\
-}
-
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
    macro is used in only one place: `find_reloads_address' in reload.c.

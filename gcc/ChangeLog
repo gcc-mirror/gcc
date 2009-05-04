@@ -1,3 +1,94 @@
+2009-05-04  Paolo Bonzini  <bonzini@gnu.org>
+
+ 	* doc/tm.texi (LEGITIMIZE_ADDRESS): Revise documentation.
+	* gcc/defaults.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/explow.c (memory_address): Use target hook.
+	* gcc/targhooks.c (default_legitimize_address): New.
+	* gcc/targhooks.h (default_legitimize_address): New.
+	* gcc/target.h (legitimize_address): New.
+	* gcc/target-def.h (TARGET_LEGITIMIZE_ADDRESS): New.
+	(TARGET_INITIALIZER): Include it.
+	* gcc/system.h (LEGITIMIZE_ADDRESS): Poison.
+
+	* config/bfin/bfin-protos.h (legitimize_address): Remove.
+	* config/bfin/bfin.c (legitimize_address): Remove.
+	* config/bfin/bfin.h (LEGITIMIZE_ADDRESS): Remove.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_legitimize_address): Remove.
+	* config/m68hc11/m68hc11.c (m68hc11_legitimize_address): Remove.
+	* config/m68hc11/m68hc11.h (LEGITIMIZE_ADDRESS): Remove.
+
+	* gcc/config/arm/arm.h (LEGITIMIZE_ADDRESS, ARM_LEGITIMIZE_ADDRESS,
+	THUMB_LEGITIMIZE_ADDRESS, THUMB2_LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/s390/s390.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/m32c/m32c.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/sparc/sparc.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/m32r/m32r.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/i386/i386.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/sh/sh.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/avr/avr.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/m68hc11/m68hc11.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/iq2000/iq2000.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/mn10300/mn10300.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/m68k/m68k.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/score/score.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/pa/pa.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/mips/mips.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/alpha/alpha.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/frv/frv.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/spu/spu.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/xtensa/xtensa.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/cris/cris.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/rs6000/rs6000.h (LEGITIMIZE_ADDRESS): Delete.
+	* gcc/config/picochip/picochip.h (LEGITIMIZE_ADDRESS): Delete.
+
+	* gcc/config/s390/s390-protos.h (legitimize_address): Delete.
+	* gcc/config/m32c/m32c-protos.h (m32c_legitimize_address): Delete.
+	* gcc/config/sparc/sparc-protos.h (legitimize_address): Delete.
+	* gcc/config/i386/i386-protos.h (legitimize_address): Delete.
+	* gcc/config/avr/avr-protos.h (legitimize_address): Delete.
+	* gcc/config/mn10300/mn10300-protos.h (legitimize_address): Delete.
+	* gcc/config/score/score-protos.h (score_legitimize_address): Delete.
+	* gcc/config/arm/arm-protos.h (arm_legitimize_address,
+	(thumb_legitimize_address): Delete.
+	* gcc/config/pa/pa-protos.h (hppa_legitimize_address): Delete.
+	* gcc/config/mips/mips-protos.h (mips_legitimize_address): Delete.
+	* gcc/config/alpha/alpha-protos.h (alpha_legitimize_address): Delete.
+	* gcc/config/frv/frv-protos.h (frv_legitimize_address): Delete.
+	* gcc/config/spu/spu-protos.h (spu_legitimize_address): Delete.
+	* gcc/config/xtensa/xtensa-protos.h (xtensa_legitimize_address): Delete.
+	* gcc/config/rs6000/rs6000-protos.h (rs6000_legitimize_address): Delete.
+
+	* config/arm/arm.c (arm_legitimize_address): Maybe call Thumb version.
+	* config/m32c/m32c.c (m32c_legitimize_address): Standardize.
+	* config/m32r/m32r.c (m32r_legitimize_address): New.
+	* config/m68k/m68k.c (m68k_legitimize_address): New.
+	* config/score/score.c (score_legitimize_address): Standardize.
+	* config/score/score3.c (score3_legitimize_address): Standardize.
+	* config/score/score3.h (score3_legitimize_address): Adjust.
+	* config/score/score7.c (score7_legitimize_address): Standardize.
+	* config/score/score7.h (score7_legitimize_address): Adjust.
+	* config/sh/sh.c (sh_legitimize_address): New.
+	* config/iq2000/iq2000.c (iq2000_legitimize_address): New.
+
+	* gcc/config/s390/s390.c (legitimize_address): Rename to...
+ 	(s390_legitimize_address): ... this.
+	* gcc/config/sparc/sparc.c (legitimize_address): Rename to...
+	(sparc_legitimize_address): ... this.
+	* gcc/config/i386/i386.c (legitimize_address): Rename to...
+	(ix86_legitimize_address): ... this.
+	* gcc/config/avr/avr.c (legitimize_address): Rename to...
+	(avr_legitimize_address): ... this.
+	* gcc/config/mn10300/mn10300.c (legitimize_address): Rename to...
+	(mn10300_legitimize_address): ... this.
+	* config/alpha/alpha.c (alpha_legitimize_address): Wrap...
+	(alpha_legitimize_address_1): ... the old alpha_legitimize_address.
+	(alpha_expand_mov): Adjust call.
+
+	* config/frv/frv.c (frv_legitimize_address): Return x on failure.
+	* config/spu/spu.c (spu_legitimize_address): Likewise.
+	* config/xtensa/xtensa.c (xtensa_legitimize_address): Likewise.
+	* config/rs6000/rs6000.c (rs6000_legitimize_address): Likewise.
+
 2009-05-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* intl.c (locale_encoding, locale_utf8): New.

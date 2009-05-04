@@ -435,13 +435,6 @@ extern int avr_reg_order[];
 
 #define REG_OK_FOR_INDEX_P(X) 0
 
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)				\
-{									\
-  (X) = legitimize_address (X, OLDX, MODE);				\
-  if (memory_address_p (MODE, X))					\
-    goto WIN;								\
-}
-
 #define XEXP_(X,Y) (X)
 
 /* LEGITIMIZE_RELOAD_ADDRESS will allow register R26/27 to be used, where it

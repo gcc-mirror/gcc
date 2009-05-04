@@ -2526,13 +2526,6 @@ typedef struct mips_args {
 
 #define LEGITIMATE_CONSTANT_P(X) (mips_const_insns (X) > 0)
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
-  do {								\
-    if (mips_legitimize_address (&(X), MODE))			\
-      goto WIN;							\
-  } while (0)
-
-
 /* This handles the magic '..CURRENT_FUNCTION' symbol, which means
    'the start of the function that this code is output in'.  */
 

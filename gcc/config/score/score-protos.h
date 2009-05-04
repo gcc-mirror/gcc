@@ -72,7 +72,6 @@ extern enum reg_class score_preferred_reload_class (rtx x,
 extern HOST_WIDE_INT score_initial_elimination_offset (int from, int to);
 extern void score_print_operand (FILE *file, rtx op, int letter);
 extern void score_print_operand_address (FILE *file, rtx addr);
-extern int score_legitimize_address (rtx *xloc);
 extern int score_arg_partial_bytes (CUMULATIVE_ARGS *cum,
                                     enum machine_mode mode,
                                     tree type, bool named);

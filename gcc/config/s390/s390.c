@@ -3734,9 +3734,9 @@ emit_symbolic_move (rtx *operands)
    When -fpic is used, special handling is needed for symbolic references.
    See comments by legitimize_pic_address for details.  */
 
-rtx
-legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
-		    enum machine_mode mode ATTRIBUTE_UNUSED)
+static rtx
+s390_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+			 enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx constant_term = const0_rtx;
 
@@ -9908,6 +9908,9 @@ s390_reorg (void)
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS s390_delegitimize_address
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS s390_legitimize_address
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY s390_return_in_memory

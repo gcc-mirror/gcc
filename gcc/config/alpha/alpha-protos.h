@@ -39,7 +39,6 @@ extern rtx alpha_tablejump_best_label (rtx);
 
 extern bool alpha_legitimate_constant_p (rtx);
 extern bool alpha_legitimate_address_p (enum machine_mode, rtx, int);
-extern rtx alpha_legitimize_address (rtx, rtx, enum machine_mode);
 extern rtx alpha_legitimize_reload_address (rtx, enum machine_mode,
 					    int, int, int);
 

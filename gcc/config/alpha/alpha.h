@@ -1009,20 +1009,6 @@ do {						\
 } while (0)
 #endif
 
-/* Try machine-dependent ways of modifying an illegitimate address
-   to be legitimate.  If we find one, return the new, valid address.
-   This macro is used in only one place: `memory_address' in explow.c.  */
-
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)			\
-do {								\
-  rtx new_x = alpha_legitimize_address (X, NULL_RTX, MODE);	\
-  if (new_x)							\
-    {								\
-      X = new_x;						\
-      goto WIN;							\
-    }								\
-} while (0)
-
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
    macro is used in only one place: `find_reloads_address' in reload.c.  */

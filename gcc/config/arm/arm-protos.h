@@ -58,8 +58,6 @@ extern int arm_legitimate_address_p  (enum machine_mode, rtx, RTX_CODE, int);
 extern int thumb1_legitimate_address_p (enum machine_mode, rtx, int);
 extern int thumb2_legitimate_address_p  (enum machine_mode, rtx, int);
 extern int thumb_legitimate_offset_p (enum machine_mode, HOST_WIDE_INT);
-extern rtx arm_legitimize_address (rtx, rtx, enum machine_mode);
-extern rtx thumb_legitimize_address (rtx, rtx, enum machine_mode);
 extern rtx thumb_legitimize_reload_address (rtx *, enum machine_mode, int, int,
 					    int);
 extern int arm_const_double_rtx (rtx);

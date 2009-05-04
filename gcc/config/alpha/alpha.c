@@ -917,8 +917,8 @@ get_tls_get_addr (void)
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.  */
 
-rtx
-alpha_legitimize_address (rtx x, rtx scratch, enum machine_mode mode)
+static rtx
+alpha_legitimize_address_1 (rtx x, rtx scratch, enum machine_mode mode)
 {
   HOST_WIDE_INT addend;
 
@@ -1110,6 +1110,18 @@ alpha_legitimize_address (rtx x, rtx scratch, enum machine_mode mode)
 
     return plus_constant (x, low);
   }
+}
+
+
+/* Try machine-dependent ways of modifying an illegitimate address
+   to be legitimate.  Return X or the new, valid address.  */
+
+static rtx
+alpha_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
+			  enum machine_mode mode)
+{
+  rtx new_x = alpha_legitimize_address_1 (x, NULL_RTX, mode);
+  return new_x ? new_x : x;
 }
 
 /* Primarily this is required for TLS symbols, but given that our move
@@ -2137,7 +2149,7 @@ alpha_expand_mov (enum machine_mode mode, rtx *operands)
   /* Allow legitimize_address to perform some simplifications.  */
   if (mode == Pmode && symbolic_operand (operands[1], mode))
     {
-      tmp = alpha_legitimize_address (operands[1], operands[0], mode);
+      tmp = alpha_legitimize_address_1 (operands[1], operands[0], mode);
       if (tmp)
 	{
 	  if (tmp == operands[0])
@@ -10724,6 +10736,9 @@ alpha_init_libfuncs (void)
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS alpha_init_libfuncs
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS alpha_legitimize_address
 
 #if TARGET_ABI_UNICOSMK
 #undef TARGET_ASM_FILE_START

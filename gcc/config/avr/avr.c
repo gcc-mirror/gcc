@@ -62,6 +62,7 @@ static const char *cond_string (enum rtx_code);
 static int avr_num_arg_regs (enum machine_mode, tree);
 
 static RTX_CODE compare_condition (rtx insn);
+static rtx avr_legitimize_address (rtx, rtx, enum machine_mode);
 static int compare_sign_p (rtx insn);
 static tree avr_handle_progmem_attribute (tree *, tree, tree, int, bool *);
 static tree avr_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
@@ -348,6 +349,9 @@ static const struct mcu_type_s avr_mcu_types[] = {
 #define TARGET_ADDRESS_COST avr_address_cost
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG avr_reorg
+
+#undef TARGET_LEGITIMIZE_ADDRESS
+#define TARGET_LEGITIMIZE_ADDRESS avr_legitimize_address
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY avr_return_in_memory
@@ -1164,7 +1168,7 @@ legitimate_address_p (enum machine_mode mode, rtx x, int strict)
    memory address for an operand of mode MODE  */
 
 rtx
-legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
+avr_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 {
   x = oldx;
   if (TARGET_ALL_DEBUG)

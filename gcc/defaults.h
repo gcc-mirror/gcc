@@ -878,10 +878,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define SHIFT_COUNT_TRUNCATED 0
 #endif
 
-#ifndef LEGITIMIZE_ADDRESS
-#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)
-#endif
-
 #ifndef LEGITIMATE_PIC_OPERAND_P
 #define LEGITIMATE_PIC_OPERAND_P(X) 1
 #endif

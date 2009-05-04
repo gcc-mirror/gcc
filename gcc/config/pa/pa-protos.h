@@ -29,8 +29,6 @@ extern int following_call (rtx);
 extern int function_label_operand (rtx, enum machine_mode);
 extern int lhs_lshift_cint_operand (rtx, enum machine_mode);
 
-extern rtx hppa_legitimize_address (rtx, rtx, enum machine_mode);
-
 /* Define functions in pa.c and used in insn-output.c.  */
 
 extern const char *output_and (rtx *);
