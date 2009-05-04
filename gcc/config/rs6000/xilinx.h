@@ -20,6 +20,15 @@
 
 /* Set defaults for Xilinx embedded target boards. */
 
+#undef  CPP_SPEC
+#define CPP_SPEC "\
+-mxilinx-fpu                                    \
+%{mfpu=sp_lite: -DHAVE_XFPU_SP_LITE}            \
+%{mfpu=sp_full: -DHAVE_XFPU_SP_FULL}            \
+%{mfpu=dp_lite: -DHAVE_XFPU_DP_LITE}            \
+%{mfpu=dp_full: -DHAVE_XFPU_DP_FULL}            \
+%{mfpu=*:   -DHAVE_XFPU}"
+
 #undef	LIB_DEFAULT_SPEC
 #define LIB_DEFAULT_SPEC "\
 %{!nostdlib: --start-group -lxil -lc -lm --end-group   \

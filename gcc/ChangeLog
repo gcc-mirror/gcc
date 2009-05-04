@@ -1,5 +1,9 @@
 2009-05-04  Michael Eager <eager@eagercon.com>
 
+	* config/rs6000/xilinx.h: Add CPP_SPEC for -mxilinx-fpu options.
+
+2009-05-04  Michael Eager <eager@eagercon.com>
+
 	* gcc/config.gcc: (powerpc-xilinx-eabi*): Add tm t-xilinx
 	* config/rs6000/t-xilinx: New
 
