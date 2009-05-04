@@ -1,3 +1,7 @@
+2009-05-04  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/attr-alias-5.c, gcc.dg/ucnid-7.c: New tests.
+
 2009-05-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/fpmul-2.c: Replace final_cleanup with optimized.
