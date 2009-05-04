@@ -1,3 +1,8 @@
+2009-05-04   Laurent GUERBY  <laurent@guerby.net>
+
+	PR ada/38874
+	* make.adb (Scan_Make_Arg): Pass --param= to compiler and linker.
+	
 2009-04-29  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Analyze_Subprogram_Renaming): Improve error message on

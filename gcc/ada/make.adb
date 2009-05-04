@@ -7778,6 +7778,12 @@ package body Make is
                end;
             end if;
 
+         elsif Argv'Length >= 8 and then
+           Argv (1 .. 8) = "--param="
+         then
+            Add_Switch (Argv, Compiler, And_Save => And_Save);
+            Add_Switch (Argv, Linker, And_Save => And_Save);
+
          else
             Scan_Make_Switches (Argv, Success);
          end if;
@@ -7792,6 +7798,7 @@ package body Make is
 
          elsif     (Argv'Length > 5  and then Argv (1 .. 5) = "-RTS=")
            or else (Argv'Length > 5  and then Argv (1 .. 5) = "-GCC=")
+           or else (Argv'Length > 8  and then Argv (1 .. 7) = "-param=")
            or else (Argv'Length > 10 and then Argv (1 .. 10) = "-GNATLINK=")
            or else (Argv'Length > 10 and then Argv (1 .. 10) = "-GNATBIND=")
          then
