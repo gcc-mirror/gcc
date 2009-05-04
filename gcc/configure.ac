@@ -1496,11 +1496,11 @@ EOF
 changequote([,])dnl
 
 changequote(,)dnl
-gcc_BASEVER=$(cat $srcdir/BASE-VER)
-gcc_DEVPHASE=$(cat $srcdir/DEV-PHASE)
-gcc_DATESTAMP=$(cat $srcdir/DATESTAMP)
+gcc_BASEVER=`cat $srcdir/BASE-VER`
+gcc_DEVPHASE=`cat $srcdir/DEV-PHASE`
+gcc_DATESTAMP=`cat $srcdir/DATESTAMP`
 if test -f $srcdir/REVISION ; then
-	gcc_REVISION=$(cat $srcdir/REVISION)
+	gcc_REVISION=`cat $srcdir/REVISION`
 else
         gcc_REVISION=""
 fi

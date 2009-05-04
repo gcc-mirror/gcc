@@ -1,3 +1,8 @@
+2009-05-04  Rafael Avila de Espindola  <espindola@google.com>
+
+	* configure.ac: use ` ` instead of $()
+	* configure: Regenerate.
+
 2009-05-05  Ben Elliston  <bje@au.ibm.com>
 
 	* config/pa/linux-atomic.c: Eliminate conditional include of
