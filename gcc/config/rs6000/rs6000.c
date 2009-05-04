@@ -22630,7 +22630,8 @@ rs6000_libcall_value (enum machine_mode mode)
     /* _Decimal128 must use an even/odd register pair.  */
     regno = (mode == TDmode) ? FP_ARG_RETURN + 1 : FP_ARG_RETURN;
   else if (SCALAR_FLOAT_MODE_P (mode)
-	   && TARGET_HARD_FLOAT && TARGET_FPRS)
+	   && TARGET_HARD_FLOAT && TARGET_FPRS
+           && ((TARGET_SINGLE_FLOAT && mode == SFmode) || TARGET_DOUBLE_FLOAT))
     regno = FP_ARG_RETURN;
   else if (ALTIVEC_VECTOR_MODE (mode)
 	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI)

@@ -1,5 +1,10 @@
 2009-05-04  Michael Eager <eager@eagercon.com>
 
+	* config/rs6000/rs6000.c (rs6000_libcall_value): Add
+	TARGET_SINGLE_FLOAT check.
+
+2009-05-04  Michael Eager <eager@eagercon.com>
+
 	* config/rs6000/xilinx.h: Add CPP_SPEC for -mxilinx-fpu options.
 
 2009-05-04  Michael Eager <eager@eagercon.com>
