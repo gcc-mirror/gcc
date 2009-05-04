@@ -1,5 +1,10 @@
 2009-05-04  Michael Eager <eager@eagercon.com>
 
+	* config/rs6000/rs6000.c (rs6000_legitimate_address): Allow
+        address for DImode/DFmode only if double-precision FP regs.
+
+2009-05-04  Michael Eager <eager@eagercon.com>
+
 	* config/rs6000/rs6000.c (rs6000_libcall_value): Add
 	TARGET_SINGLE_FLOAT check.
 

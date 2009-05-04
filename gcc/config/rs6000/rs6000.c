@@ -4458,7 +4458,7 @@ rs6000_legitimate_address (enum machine_mode mode, rtx x, int reg_ok_strict)
   if (mode != TImode
       && mode != TFmode
       && mode != TDmode
-      && ((TARGET_HARD_FLOAT && TARGET_FPRS)
+      && ((TARGET_HARD_FLOAT && TARGET_FPRS && TARGET_DOUBLE_FLOAT)
 	  || TARGET_POWERPC64
 	  || (mode != DFmode && mode != DDmode)
 	  || (TARGET_E500_DOUBLE && mode != DDmode))
