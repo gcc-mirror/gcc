@@ -347,8 +347,8 @@ get_coverage_counts (unsigned counter, unsigned expected,
   entry = (counts_entry_t *) htab_find (counts_hash, &elt);
   if (!entry)
     {
-      warning (0, "no coverage for function %qs found", IDENTIFIER_POINTER
-	       (DECL_ASSEMBLER_NAME (current_function_decl)));
+      warning (0, "no coverage for function %qE found",
+	       DECL_ASSEMBLER_NAME (current_function_decl));
       return NULL;
     }
 
@@ -357,14 +357,13 @@ get_coverage_counts (unsigned counter, unsigned expected,
       || entry->summary.num != expected)
     {
       static int warned = 0;
-      const char *id = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME
-			 (current_function_decl));
+      tree id = DECL_ASSEMBLER_NAME (current_function_decl);
 
       if (warn_coverage_mismatch)
 	warning (OPT_Wcoverage_mismatch, "coverage mismatch for function "
-		 "%qs while reading counter %qs", id, ctr_names[counter]);
+		 "%qE while reading counter %qs", id, ctr_names[counter]);
       else
-	error ("coverage mismatch for function %qs while reading counter %qs",
+	error ("coverage mismatch for function %qE while reading counter %qs",
 	       id, ctr_names[counter]);
 
       if (!inhibit_warnings)

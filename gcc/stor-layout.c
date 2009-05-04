@@ -1292,19 +1292,19 @@ finalize_record_size (record_layout_info rli)
 
 	  if (TYPE_NAME (rli->t))
 	    {
-	      const char *name;
+	      tree name;
 
 	      if (TREE_CODE (TYPE_NAME (rli->t)) == IDENTIFIER_NODE)
-		name = IDENTIFIER_POINTER (TYPE_NAME (rli->t));
+		name = TYPE_NAME (rli->t);
 	      else
-		name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (rli->t)));
+		name = DECL_NAME (TYPE_NAME (rli->t));
 
 	      if (STRICT_ALIGNMENT)
 		warning (OPT_Wpacked, "packed attribute causes inefficient "
-			 "alignment for %qs", name);
+			 "alignment for %qE", name);
 	      else
 		warning (OPT_Wpacked,
-			 "packed attribute is unnecessary for %qs", name);
+			 "packed attribute is unnecessary for %qE", name);
 	    }
 	  else
 	    {

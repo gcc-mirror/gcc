@@ -1061,8 +1061,8 @@ mx_register_decls (tree decl, gimple_seq seq, location_t location)
 	    {
 	      if (!DECL_ARTIFICIAL (decl))
 		warning (OPT_Wmudflap,
-			 "mudflap cannot track %qs in stub function",
-			 IDENTIFIER_POINTER (DECL_NAME (decl)));
+			 "mudflap cannot track %qE in stub function",
+			 DECL_NAME (decl));
 	    }
 	  else
 	    {
@@ -1305,8 +1305,8 @@ mudflap_finish_file (void)
           if (! COMPLETE_TYPE_P (TREE_TYPE (obj)))
             {
               warning (OPT_Wmudflap,
-		       "mudflap cannot track unknown size extern %qs",
-                       IDENTIFIER_POINTER (DECL_NAME (obj)));
+		       "mudflap cannot track unknown size extern %qE",
+                       DECL_NAME (obj));
               continue;
             }
           

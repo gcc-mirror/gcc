@@ -4761,8 +4761,8 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
 	  total_bytes += fieldsize;
 	}
       else if (val != 0 && TREE_CODE (val) != INTEGER_CST)
-	error ("invalid initial value for member %qs",
-	       IDENTIFIER_POINTER (DECL_NAME (field)));
+	error ("invalid initial value for member %qE",
+	       DECL_NAME (field));
       else
 	{
 	  /* Element that is a bit-field.  */

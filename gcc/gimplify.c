@@ -5395,8 +5395,8 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
       switch (default_kind)
 	{
 	case OMP_CLAUSE_DEFAULT_NONE:
-	  error ("%qs not specified in enclosing parallel",
-		 IDENTIFIER_POINTER (DECL_NAME (decl)));
+	  error ("%qE not specified in enclosing parallel",
+		 DECL_NAME (decl));
 	  error ("%Henclosing parallel", &ctx->location);
 	  /* FALLTHRU */
 	case OMP_CLAUSE_DEFAULT_SHARED:
@@ -5502,8 +5502,8 @@ omp_is_private (struct gimplify_omp_ctx *ctx, tree decl)
 	{
 	  if (ctx == gimplify_omp_ctxp)
 	    {
-	      error ("iteration variable %qs should be private",
-		     IDENTIFIER_POINTER (DECL_NAME (decl)));
+	      error ("iteration variable %qE should be private",
+		     DECL_NAME (decl));
 	      n->value = GOVD_PRIVATE;
 	      return true;
 	    }
@@ -5516,11 +5516,11 @@ omp_is_private (struct gimplify_omp_ctx *ctx, tree decl)
 		       && gimplify_omp_ctxp->outer_context == ctx)))
 	{
 	  if ((n->value & GOVD_FIRSTPRIVATE) != 0)
-	    error ("iteration variable %qs should not be firstprivate",
-		   IDENTIFIER_POINTER (DECL_NAME (decl)));
+	    error ("iteration variable %qE should not be firstprivate",
+		   DECL_NAME (decl));
 	  else if ((n->value & GOVD_REDUCTION) != 0)
-	    error ("iteration variable %qs should not be reduction",
-		   IDENTIFIER_POINTER (DECL_NAME (decl)));
+	    error ("iteration variable %qE should not be reduction",
+		   DECL_NAME (decl));
 	}
       return (ctx == gimplify_omp_ctxp
 	      || (ctx->region_type == ORT_COMBINED_PARALLEL
@@ -5682,8 +5682,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      && region_type == ORT_WORKSHARE
 	      && omp_check_private (ctx, decl))
 	    {
-	      error ("%s variable %qs is private in outer context",
-		     check_non_private, IDENTIFIER_POINTER (DECL_NAME (decl)));
+	      error ("%s variable %qE is private in outer context",
+		     check_non_private, DECL_NAME (decl));
 	      remove = true;
 	    }
 	  break;

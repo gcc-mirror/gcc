@@ -380,11 +380,11 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 	  if (TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE)
 	    pp_printf
 	      (context->printer, _("In member function %qs"),
-	       lang_hooks.decl_printable_name (fndecl, 2));
+	       identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)));
 	  else
 	    pp_printf
 	      (context->printer, _("In function %qs"),
-	       lang_hooks.decl_printable_name (fndecl, 2));
+	       identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)));
 
 	  while (abstract_origin)
 	    {
@@ -435,18 +435,18 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 		      if (flag_show_column && s.column != 0)
 			pp_printf (context->printer,
 				   _("    inlined from %qs at %s:%d:%d"),
-				   lang_hooks.decl_printable_name (fndecl, 2),
+				   identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)),
 				   s.file, s.line, s.column);
 		      else
 			pp_printf (context->printer,
 				   _("    inlined from %qs at %s:%d"),
-				   lang_hooks.decl_printable_name (fndecl, 2),
+				   identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)),
 				   s.file, s.line);
 
 		    }
 		  else
 		    pp_printf (context->printer, _("    inlined from %qs"),
-			       lang_hooks.decl_printable_name (fndecl, 2));
+			       identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)));
 		}
 	    }
 	  pp_character (context->printer, ':');
