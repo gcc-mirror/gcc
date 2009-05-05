@@ -1,3 +1,16 @@
+2009-05-05  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* tree.h (strip_float_extensions): Remove duplicate declaration.
+      	(build_low_bits_mask, debug_fold_checksum, expand_function_end,
+      	expand_function_start, stack_protect_prologue, stack_protect_epilogue,
+      	block_ultimate_origin): Rearrange the declarations line to match the
+      	comment that indicates the .c file which the functions are defined.
+      	(dwarf2out_*, set_decl_rtl): Add comment.
+      	(get_base_address): Adjust comment.
+      	(change_decl_assembler_name, maybe_fold_*, build_addr): Rearrange the
+      	declarations line and add comment.
+      	(is_builtin_name): Add blank after function name, for clarity.
+
 2009-05-04  Joseph Myers  <joseph@codesourcery.com>
 
 	* attribs.c (decl_attributes): Use %qE for identifiers in
