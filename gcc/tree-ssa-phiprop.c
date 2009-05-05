@@ -90,12 +90,12 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Structure to keep track of the value of a dereferenced PHI result
-   and the set of virtual operands used for that dereference.  */
+   and the virtual operand used for that dereference.  */
 
 struct phiprop_d
 {
   tree value;
-  gimple vop_stmt;
+  tree vuse;
 };
 
 /* Verify if the value recorded for NAME in PHIVN is still valid at
@@ -104,34 +104,27 @@ struct phiprop_d
 static bool
 phivn_valid_p (struct phiprop_d *phivn, tree name, basic_block bb)
 {
-  gimple vop_stmt = phivn[SSA_NAME_VERSION (name)].vop_stmt;
-  tree vuse;
+  tree vuse = phivn[SSA_NAME_VERSION (name)].vuse;
+  gimple use_stmt;
+  imm_use_iterator ui2;
+  bool ok = true;
 
-  /* The def stmts of all virtual uses need to be post-dominated
-     by bb.  */
-  if ((vuse = gimple_vuse (vop_stmt)))
+  /* The def stmts of the virtual uses need to be dominated by bb.  */
+  gcc_assert (vuse != NULL_TREE);
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, ui2, vuse)
     {
-      gimple use_stmt;
-      imm_use_iterator ui2;
-      bool ok = true;
-
-      FOR_EACH_IMM_USE_STMT (use_stmt, ui2, vuse)
+      /* If BB does not dominate a VDEF, the value is invalid.  */
+      if ((gimple_vdef (use_stmt) != NULL_TREE
+	   || gimple_code (use_stmt) == GIMPLE_PHI)
+	  && !dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt), bb))
 	{
-	  /* If BB does not dominate a VDEF, the value is invalid.  */
-	  if (((is_gimple_assign (use_stmt)
-	        && gimple_vdef (use_stmt))
-	       || gimple_code (use_stmt) == GIMPLE_PHI)
-	      && !dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt), bb))
-	    {
-	      ok = false;
-	      BREAK_FROM_IMM_USE_STMT (ui2);
-	    }
+	  ok = false;
+	  BREAK_FROM_IMM_USE_STMT (ui2);
 	}
-      if (!ok)
-	return false;
     }
 
-  return true;
+  return ok;
 }
 
 /* Insert a new phi node for the dereference of PHI at basic_block
@@ -154,6 +147,12 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
   res = gimple_assign_lhs (use_stmt);
   SSA_NAME_DEF_STMT (res) = new_phi = create_phi_node (res, bb);
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Inserting PHI for result of load ");
+      print_gimple_stmt (dump_file, use_stmt, 0, 0);
+    }
+
   /* Add PHI arguments for each edge inserting loads of the
      addressable operands.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -171,8 +170,19 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
 	}
 
       if (TREE_CODE (old_arg) == SSA_NAME)
-	/* Reuse a formerly created dereference.  */
-	new_var = phivn[SSA_NAME_VERSION (old_arg)].value;
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "  for edge defining ");
+	      print_generic_expr (dump_file, PHI_ARG_DEF_FROM_EDGE (phi, e), 0);
+	      fprintf (dump_file, " reusing PHI result ");
+	      print_generic_expr (dump_file,
+				  phivn[SSA_NAME_VERSION (old_arg)].value, 0);
+	      fprintf (dump_file, "\n");
+	    }
+	  /* Reuse a formerly created dereference.  */
+	  new_var = phivn[SSA_NAME_VERSION (old_arg)].value;
+	}
       else
 	{
 	  gcc_assert (TREE_CODE (old_arg) == ADDR_EXPR);
@@ -188,15 +198,24 @@ phiprop_insert_phi (basic_block bb, gimple phi, gimple use_stmt,
 	  gimple_assign_set_lhs (tmp, new_var);
 
 	  gsi_insert_on_edge (e, tmp);
-
 	  update_stmt (tmp);
-	  mark_symbols_for_renaming (tmp);
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "  for edge defining ");
+	      print_generic_expr (dump_file, PHI_ARG_DEF_FROM_EDGE (phi, e), 0);
+	      fprintf (dump_file, " inserting load ");
+	      print_gimple_stmt (dump_file, tmp, 0, 0);
+	    }
 	}
 
       add_phi_arg (new_phi, new_var, e);
     }
 
   update_stmt (new_phi);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    print_gimple_stmt (dump_file, new_phi, 0, 0);
 
   return res;
 }
@@ -270,6 +289,7 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
   phi_inserted = false;
   FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
     {
+      gimple def_stmt;
       tree vuse;
 
       /* Check whether this is a load of *ptr.  */
@@ -281,17 +301,15 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
 	    && !stmt_can_throw_internal (use_stmt)))
 	continue;
 
-      /* Check if we can move the loads.  The def stmts of all virtual uses
-	 need to be post-dominated by bb.  */
-      if ((vuse = gimple_vuse (use_stmt)) != NULL_TREE)
-	{
-	  gimple def_stmt = SSA_NAME_DEF_STMT (vuse);
-	  if (!SSA_NAME_IS_DEFAULT_DEF (vuse)
-	      && (gimple_bb (def_stmt) == bb
-		  || !dominated_by_p (CDI_DOMINATORS,
-				      bb, gimple_bb (def_stmt))))
-	    goto next;
-	}
+      /* Check if we can move the loads.  The def stmt of the virtual use
+	 needs to be in a different basic block dominating bb.  */
+      vuse = gimple_vuse (use_stmt);
+      def_stmt = SSA_NAME_DEF_STMT (vuse);
+      if (!SSA_NAME_IS_DEFAULT_DEF (vuse)
+	  && (gimple_bb (def_stmt) == bb
+	      || !dominated_by_p (CDI_DOMINATORS,
+				  bb, gimple_bb (def_stmt))))
+	goto next;
 
       /* Found a proper dereference.  Insert a phi node if this
 	 is the first load transformation.  */
@@ -301,7 +319,7 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
 
 	  /* Remember the value we created for *ptr.  */
 	  phivn[SSA_NAME_VERSION (ptr)].value = res;
-	  phivn[SSA_NAME_VERSION (ptr)].vop_stmt = use_stmt;
+	  phivn[SSA_NAME_VERSION (ptr)].vuse = vuse;
 
 	  /* Remove old stmt.  The phi is taken care of by DCE, if we
 	     want to delete it here we also have to delete all intermediate

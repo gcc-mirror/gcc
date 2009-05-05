@@ -1,5 +1,14 @@
 2009-05-05  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/40022
+	* tree-ssa-phiprop.c (struct phiprop_d): Exchange vop_stmt for
+	the only vuse.
+	(phivn_valid_p): Fix tuplification error, simplify.
+	(phiprop_insert_phi): Add dumps.
+	(propagate_with_phi): Simplify.
+
+2009-05-05  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/40023
 	* builtins.c (gimplify_va_arg_expr): Properly build the
 	address.
