@@ -1,3 +1,8 @@
+2009-05-05  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40023
+	* gcc.c-torture/compile/pr40023.c: New testcase.
+
 2009-05-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/overload11.C: Adjust expected errors.
