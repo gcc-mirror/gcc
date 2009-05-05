@@ -1,3 +1,9 @@
+2009-05-05  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39998
+	* expr.c (gfc_check_pointer_assign): Check for statement functions and
+	internal procedures in procedure pointer assignments.
+
 2009-04-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39946
