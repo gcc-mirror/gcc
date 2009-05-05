@@ -12,6 +12,11 @@
 	(gen_variable_die): Likewise.  Check TREE_PRIVATE/TREE_PROTECTED
 	unconditionally.
 
+	PR middle-end/39666
+	* gimplify.c (gimplify_switch_expr): If case labels cover the whole
+	range of the type, but default label is missing, add it with one
+	of the existing labels instead of adding a new label for it.
+
 2009-05-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* dwarf.h: Remove.
