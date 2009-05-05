@@ -1,3 +1,7 @@
+2009-05-05  Joseph Myers  <joseph@codesourcery.com>
+
+	* dwarf.h: Remove.
+
 2009-05-05  Rafael Avila de Espindola  <espindola@google.com>
 
 	* Makefile.in (enable_plugin, plugin_includedir): New.
