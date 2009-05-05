@@ -1,3 +1,9 @@
+2009-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/40013
+	* pt.c (tsubst): If magic NOP_EXPR with side-effects has no type,
+	set it from its operand's type after tsubst_expr.
+
 2009-04-23  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/38228

@@ -9144,6 +9144,14 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	max = tsubst_expr (omax, args, complain, in_decl,
 			   /*integral_constant_expression_p=*/false);
+
+	/* Fix up type of the magic NOP_EXPR with TREE_SIDE_EFFECTS if
+	   needed.  */
+	if (TREE_CODE (max) == NOP_EXPR
+	    && TREE_SIDE_EFFECTS (omax)
+	    && !TREE_TYPE (max))
+	  TREE_TYPE (max) = TREE_TYPE (TREE_OPERAND (max, 0));
+
 	max = fold_decl_constant_value (max);
 
 	/* If we're in a partial instantiation, preserve the magic NOP_EXPR
