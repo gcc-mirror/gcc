@@ -362,8 +362,8 @@ struct GTY(()) tree_base {
   unsigned protected_flag : 1;
   unsigned deprecated_flag : 1;
   unsigned saturating_flag : 1;
-  unsigned default_def_flag : 1;
 
+  unsigned default_def_flag : 1;
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
   unsigned lang_flag_2 : 1;
@@ -371,6 +371,7 @@ struct GTY(()) tree_base {
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
+
   unsigned visited : 1;
 
   unsigned spare : 23;
@@ -474,9 +475,6 @@ struct GTY(()) tree_common {
 
        CALL_EXPR_RETURN_SLOT_OPT in
            CALL_EXPR
-
-       DECL_BY_REFERENCE in
-           PARM_DECL, RESULT_DECL, VAR_DECL (only !TREE_STATIC)
 
        OMP_SECTION_LAST in
            OMP_SECTION
@@ -1294,10 +1292,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define CALL_EXPR_RETURN_SLOT_OPT(NODE) \
   (CALL_EXPR_CHECK (NODE)->base.private_flag)
 
-/* In a RESULT_DECL, PARM_DECL or VAR_DECL without TREE_STATIC, means that it is
+/* In a RESULT_DECL, PARM_DECL and VAR_DECL, means that it is
    passed by invisible reference (and the TREE_TYPE is a pointer to the true
    type).  */
-#define DECL_BY_REFERENCE(NODE) (DECL_COMMON_CHECK (NODE)->base.private_flag)
+#define DECL_BY_REFERENCE(NODE) \
+  (TREE_CHECK3 (NODE, VAR_DECL, PARM_DECL, \
+		RESULT_DECL)->decl_common.decl_by_reference_flag)
 
 /* In a CALL_EXPR, means that the call is the jump from a thunk to the
    thunked-to function.  */
@@ -2651,8 +2651,10 @@ struct GTY(()) tree_decl_common {
   unsigned gimple_reg_flag : 1;
   /* In a DECL with pointer type, set if no TBAA should be done.  */
   unsigned no_tbaa_flag : 1;
+  /* In VAR_DECL, PARM_DECL and RESULT_DECL, this is DECL_BY_REFERENCE.  */
+  unsigned decl_by_reference_flag : 1;
   /* Padding so that 'off_align' can be on a 32-bit boundary.  */
-  unsigned decl_common_unused : 2;
+  unsigned decl_common_unused : 1;
 
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */
   unsigned int off_align : 8;
