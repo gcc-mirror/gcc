@@ -1,3 +1,18 @@
+2009-05-05  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/39909
+	* include/std/mutex (__get_once_functor_lock, __get_once_mutex,
+	__set_once_functor_lock_ptr): Replace global lock object with local
+	locks on global mutex.
+	* src/mutex.cc (__get_once_functor_lock, __get_once_mutex,
+	__set_once_functor_lock_ptr): Likewise, keeping old function to
+	preserve ABI.
+	(__once_proxy): Use pointer to local lock if set, global lock
+	otherwise.
+	* config/abi/pre/gnu.ver: Add new symbols to new ABI version.
+	* testsuite/util/testsuite_abi.cc: Add GLIBCX_3.4.12 version.
+	* testsuite/30_threads/call_once/39909.cc: New.
+
 2009-05-03  Jan Hubicka  <jh@suse.cz>
 
 	* include/parallel/settings.h (get): Mark const.
