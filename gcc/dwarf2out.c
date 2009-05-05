@@ -11715,7 +11715,7 @@ loc_by_reference (dw_loc_descr_ref loc, tree decl)
 
   if ((TREE_CODE (decl) != PARM_DECL
        && TREE_CODE (decl) != RESULT_DECL
-       && (TREE_CODE (decl) != VAR_DECL || TREE_STATIC (decl)))
+       && TREE_CODE (decl) != VAR_DECL)
       || !DECL_BY_REFERENCE (decl))
     return loc;
 
@@ -14048,19 +14048,13 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
   else
     {
       tree type = TREE_TYPE (decl);
-      bool private_flag_valid = true;
 
       add_name_and_src_coords_attributes (var_die, decl);
       if ((TREE_CODE (decl) == PARM_DECL
 	   || TREE_CODE (decl) == RESULT_DECL
-	   || (TREE_CODE (decl) == VAR_DECL && !TREE_STATIC (decl)))
+	   || TREE_CODE (decl) == VAR_DECL)
 	  && DECL_BY_REFERENCE (decl))
-	{
-	  add_type_attribute (var_die, TREE_TYPE (type), 0, 0, context_die);
-	  /* DECL_BY_REFERENCE uses the same bit as TREE_PRIVATE,
-	     for PARM_DECL, RESULT_DECL or non-static VAR_DECL.  */
-	  private_flag_valid = false;
-	}
+	add_type_attribute (var_die, TREE_TYPE (type), 0, 0, context_die);
       else
 	add_type_attribute (var_die, type, TREE_READONLY (decl),
 			    TREE_THIS_VOLATILE (decl), context_die);
@@ -14073,7 +14067,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
 
       if (TREE_PROTECTED (decl))
 	add_AT_unsigned (var_die, DW_AT_accessibility, DW_ACCESS_protected);
-      else if (private_flag_valid && TREE_PRIVATE (decl))
+      else if (TREE_PRIVATE (decl))
 	add_AT_unsigned (var_die, DW_AT_accessibility, DW_ACCESS_private);
     }
 
@@ -15307,8 +15301,7 @@ gen_decl_die (tree decl, tree origin, dw_die_ref context_die)
       /* Output any DIEs that are needed to specify the type of this data
 	 object.  */
       if ((TREE_CODE (decl_or_origin) == RESULT_DECL
-	   || (TREE_CODE (decl_or_origin) == VAR_DECL
-	       && !TREE_STATIC (decl_or_origin)))
+	   || TREE_CODE (decl_or_origin) == VAR_DECL)
           && DECL_BY_REFERENCE (decl_or_origin))
 	gen_type_die (TREE_TYPE (TREE_TYPE (decl_or_origin)), context_die);
       else

@@ -1,3 +1,17 @@
+2009-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h: Remove DECL_BY_REFERENCE from private_flag comment.
+	(struct tree_base): Adjust spacing for 8 bit boundaries.
+	(struct tree_decl_common): Add decl_by_reference_flag bit.
+	(DECL_BY_REFERENCE): Adjust.
+	* print-tree.c (print_node): For VAR_DECL, PARM_DECL or RESULT_DECL,
+	print DECL_BY_REFERENCE bit.
+	* dbxout.c (DECL_ACCESSIBILITY_CHAR): Revert last change.
+	* dwarf2out.c (loc_by_reference, gen_decl_die): Check
+	DECL_BY_REFERENCE for all VAR_DECLs, not just non-static ones.
+	(gen_variable_die): Likewise.  Check TREE_PRIVATE/TREE_PROTECTED
+	unconditionally.
+
 2009-05-05  Joseph Myers  <joseph@codesourcery.com>
 
 	* dwarf.h: Remove.
