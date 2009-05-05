@@ -5034,6 +5034,12 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
       return rhs;
     }
 
+  if (type_unknown_p (rhs))
+    {
+      error ("no context to resolve type of %qE", rhs);
+      return error_mark_node;
+    }
+  
   return build2 (COMPOUND_EXPR, TREE_TYPE (rhs), lhs, rhs);
 }
 

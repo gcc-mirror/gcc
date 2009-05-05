@@ -1,3 +1,9 @@
+2009-05-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/overload11.C: Adjust expected errors.
+	* g++.dg/template/overload9.C: Likewise.
+	* g++.dg/ext/ms-1.C: New.
+
 2009-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/40013

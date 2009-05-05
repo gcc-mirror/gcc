@@ -1,3 +1,12 @@
+2009-05-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* typeck.c (cp_build_compound_expr): Require RHS to have a known
+	type.
+	* class.c (resolve_address_of_overloaded_function): Use
+	OVL_CURRENT for error message.
+	(instantiate_type): Forbid COMPOUND_EXPRs and remove code dealing
+	with them.  Do not copy the node.
+
 2009-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/40013
