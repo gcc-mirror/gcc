@@ -1,3 +1,9 @@
+2009-05-05  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/mips.exp: Add -mtune= to mips_option_groups.
+	* gcc.target/mips/dspr2-MULT.c: Pass -mtune=74kc
+	* gcc.target/mips/dspr2-MULTU.c: Likewise.
+
 2009-05-05  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39998
