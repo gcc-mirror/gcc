@@ -286,6 +286,8 @@ CLOOGINC = @CLOOGINC@
 # Libs and linker option needed for plugin support
 PLUGINLIBS = @pluginlibs@
 
+enable_plugin = @enable_plugin@
+
 CPPLIB = ../libcpp/libcpp.a
 CPPINC = -I$(srcdir)/../libcpp/include
 
@@ -481,6 +483,8 @@ libexecdir = @libexecdir@
 libsubdir = $(libdir)/gcc/$(target_noncanonical)/$(version)
 # Directory in which the compiler finds executables
 libexecsubdir = $(libexecdir)/gcc/$(target_noncanonical)/$(version)
+# Directory in which plugin headers are installed
+plugin_includedir = $(libsubdir)/plugin/include
 # Used to produce a relative $(gcc_tooldir) in gcc.o
 unlibsubdir = ../../..
 # $(prefix), expressed as a path relative to $(libsubdir).
@@ -3973,6 +3977,10 @@ install: install-common $(INSTALL_HEADERS) \
     install-cpp install-man install-info install-@POSUB@ \
     install-driver
 
+ifeq ($(enable_plugin),yes)
+install: install-plugin
+endif
+
 # Handle cpp installation.
 install-cpp: installdirs cpp$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(CPP_INSTALL_NAME)$(exeext)
@@ -3993,6 +4001,35 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(slibdir)
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
+
+PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(TOPLEV_H) $(BASIC_BLOCK_H) $(GIMPLE_H) $(TREE_PASS_H) gcc-plugin.h intl.h \
+  $(PLUGIN_VERSION_H)
+
+# Install the headers needed to build a plugin.
+install-plugin: installdirs
+# We keep the directory structure for files in config and .def files. All
+# other files are flattened to a single directory.
+	$(mkinstalldirs) $(DESTDIR)$(plugin_includedir)
+	headers=`echo $(PLUGIN_HEADERS) | tr ' ' '\n' | sort -u`; \
+	for file in $$headers; do \
+	  if [ -f $$file ] ; then \
+	    path=$$file; \
+	  elif [ -f $(srcdir)/$$file ]; then \
+	    path=$(srcdir)/$$file; \
+	  else continue; \
+	  fi; \
+	  case $$path in \
+	  "$(srcdir)"*/config/* | "$(srcdir)"*.def ) \
+	    base=`echo $$path | sed "s|$(srcdir)||"`;; \
+	  *) base=`basename $$path` ;; \
+	  esac; \
+	  dest=$(plugin_includedir)/$$base; \
+	  echo $(INSTALL_DATA) $$path $(DESTDIR)/$$dest; \
+	  dir=`dirname $$dest`; \
+	  $(mkinstalldirs) $$dir; \
+	  $(INSTALL_DATA) $$path $(DESTDIR)/$$dest; \
+	done
 
 # Install the compiler executables built during cross compilation.
 install-common: native lang.install-common installdirs
