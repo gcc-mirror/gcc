@@ -54,11 +54,10 @@ int main (int argc, char **argv)
   
   ptr = (ovl);              // ok
   ptr = (&ovl);             // ok
-  // 13.4 indicates these are ok.
-  ptr = (0, ovl);           // ok { dg-bogus "" "" { xfail *-*-* } }
-  ptr = (0, &ovl);          // ok { dg-bogus "" "" { xfail *-*-* } }
-  ptr = (argc ? ovl : ovl); // ok { dg-bogus "" "" { xfail *-*-* } }
-  ptr = (argc ? &ovl : &ovl);// ok { dg-bogus "" "" { xfail *-*-* } }
+  ptr = (0, ovl);           // ok { dg-error "no context" }
+  ptr = (0, &ovl);          // ok { dg-error "no context" }
+  ptr = (argc ? ovl : ovl); // ok { dg-error "no context" }
+  ptr = (argc ? &ovl : &ovl);// ok { dg-error "no context" }
   
   vptr = (ovl);              // { dg-error "" } no matching candidates
   vptr = (&ovl);             // { dg-error "" } no matching candidates
