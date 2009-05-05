@@ -1,6 +1,7 @@
-/* Test MIPS32 DSP REV 2 MULT instruction */
+/* Test MIPS32 DSP REV 2 MULT instruction.  Tune for a CPU that has
+   pipelined mult.  */
 /* { dg-do compile } */
-/* { dg-options "-mgp32 -mdspr2 -O2 -ffixed-hi -ffixed-lo" } */
+/* { dg-options "-mgp32 -mdspr2 -O2 -ffixed-hi -ffixed-lo -mtune=74kc" } */
 
 /* { dg-final { scan-assembler "\tmult\t" } } */
 /* { dg-final { scan-assembler "ac1" } } */
