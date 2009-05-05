@@ -1,3 +1,11 @@
+2009-05-05  Rafael Avila de Espindola  <espindola@google.com>
+
+	* Makefile.in (enable_plugin, plugin_includedir): New.
+	(install): Depend on install-plugin.
+	(PLUGIN_HEADERS): New.
+	(install-plugin): New.
+	* config.gcc: Add vxworks-dummy.h to tm_file for x86 and x86-64.
+
 2009-05-05  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40022
