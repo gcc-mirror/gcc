@@ -1,3 +1,13 @@
+2009-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/39666
+	* gcc.dg/pr39666-1.c: New test.
+	* gcc.dg/pr39666-2.c: Likewise.
+	* g++.dg/warn/Wuninitialized-4.C: Likewise.
+	* g++.dg/warn/Wuninitialized-5.C: Likewise.
+	* gfortran.dg/pr39666-1.f90: Likewise.
+	* gfortran.dg/pr39666-2.f90: Likewise.
+
 2009-05-05  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/mips.exp: Add -mtune= to mips_option_groups.
