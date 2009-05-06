@@ -1,3 +1,9 @@
+2009-05-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40041
+	* gfortran.dg/intrinsic_2.f90: New test.
+	* gfortran.dg/intrinsic.f90: Add old and this PR as comment.
+
 2009-05-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/40032

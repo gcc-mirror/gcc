@@ -9320,13 +9320,14 @@ resolve_symbol (gfc_symbol *sym)
 
       if ((isym = gfc_find_function (sym->name)))
 	{
-	  if (sym->ts.type != BT_UNKNOWN && gfc_option.warn_surprising)
+	  if (sym->ts.type != BT_UNKNOWN && gfc_option.warn_surprising
+	      && !sym->attr.implicit_type)
 	    gfc_warning ("Type specified for intrinsic function '%s' at %L is"
 			 " ignored", sym->name, &sym->declared_at);
 	}
       else if ((isym = gfc_find_subroutine (sym->name)))
 	{
-	  if (sym->ts.type != BT_UNKNOWN)
+	  if (sym->ts.type != BT_UNKNOWN && !sym->attr.implicit_type)
 	    {
 	      gfc_error ("Intrinsic subroutine '%s' at %L shall not have a type"
 			 " specifier", sym->name, &sym->declared_at);
