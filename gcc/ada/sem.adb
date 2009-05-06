@@ -1760,7 +1760,7 @@ package body Sem is
                --  If it's a body, then ignore it, unless it's an instance (in
                --  which case we do the spec), or it's the main unit (in which
                --  case we do it). Note that it could be both, in which case we
-               --  do the spec first.
+               --  do the with_clauses of spec and body first,
 
                when N_Package_Body | N_Subprogram_Body =>
                   declare
@@ -1783,7 +1783,15 @@ package body Sem is
                      if Is_Generic_Instance (Entity) then
                         declare
                            Spec_Unit : constant Node_Id := Library_Unit (CU);
+
                         begin
+                           --  Move context of body to that of spec, so it
+                           --  appears before the spec itself, in case it
+                           --  contains nested instances that generate late
+                           --  with_clauses that got attached to the body.
+
+                           Append_List
+                            (Context_Items (CU), Context_Items (Spec_Unit));
                            Do_Unit_And_Dependents
                              (Spec_Unit, Unit (Spec_Unit));
                         end;
