@@ -68,7 +68,6 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
@@ -2574,7 +2573,7 @@ package body Exp_Ch6 is
       if Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement)
         and then Present (Controlling_Argument (N))
       then
-         if VM_Target = No_VM then
+         if Tagged_Type_Expansion then
             Expand_Dispatching_Call (N);
 
             --  The following return is worrisome. Is it really OK to
@@ -4820,7 +4819,7 @@ package body Exp_Ch6 is
         and then not Is_Abstract_Subprogram (Subp)
         and then Present (DTC_Entity (Subp))
         and then Present (Scope (DTC_Entity (Subp)))
-        and then VM_Target = No_VM
+        and then Tagged_Type_Expansion
         and then not Restriction_Active (No_Dispatching_Calls)
         and then RTE_Available (RE_Tag)
       then

@@ -72,7 +72,6 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Style;    use Style;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -7844,13 +7843,13 @@ package body Sem_Res is
             --  undesired dependence on such run-time unit.
 
            and then
-             (VM_Target /= No_VM
-              or else not
-                (RTU_Loaded (Ada_Tags)
-                  and then Nkind (Prefix (N)) = N_Selected_Component
-                  and then Present (Entity (Selector_Name (Prefix (N))))
-                  and then Entity (Selector_Name (Prefix (N))) =
-                                        RTE_Record_Component (RE_Prims_Ptr)))
+             (not Tagged_Type_Expansion
+               or else not
+                 (RTU_Loaded (Ada_Tags)
+                   and then Nkind (Prefix (N)) = N_Selected_Component
+                   and then Present (Entity (Selector_Name (Prefix (N))))
+                   and then Entity (Selector_Name (Prefix (N))) =
+                                         RTE_Record_Component (RE_Prims_Ptr)))
          then
             Apply_Range_Check (Drange, Etype (Index));
          end if;

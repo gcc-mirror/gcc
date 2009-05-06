@@ -2552,7 +2552,7 @@ package body Sem_Attr is
       when Attribute_Compiler_Version =>
          Check_E0;
          Check_Standard_Prefix;
-         Rewrite (N, Make_String_Literal (Loc, Gnat_Static_Version_String));
+         Rewrite (N, Make_String_Literal (Loc, "GNAT " & Gnat_Version_String));
          Analyze_And_Resolve (N, Standard_String);
 
       --------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -560,6 +560,7 @@ package body Targparm is
                      when CLI =>
                         if Result then
                            VM_Target := CLI_Target;
+                           Tagged_Type_Expansion := False;
                         end if;
 
                      when CRT => Configurable_Run_Time_On_Target     := Result;
@@ -571,6 +572,7 @@ package body Targparm is
                      when JVM =>
                         if Result then
                            VM_Target := JVM_Target;
+                           Tagged_Type_Expansion := False;
                         end if;
 
                      when MOV => Machine_Overflows_On_Target         := Result;

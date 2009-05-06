@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,7 @@ with Freeze;   use Freeze;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
+with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
@@ -52,7 +53,6 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
@@ -219,7 +219,7 @@ package body Exp_Intr is
       --  checks are suppressed for the result type or VM_Target /= No_VM
 
       if Tag_Checks_Suppressed (Etype (Result_Typ))
-        or else VM_Target /= No_VM
+        or else not Tagged_Type_Expansion
       then
          null;
 
@@ -1034,7 +1034,7 @@ package body Exp_Intr is
       --    free (Base_Address (Obj_Ptr))
 
       if Is_Interface (Directly_Designated_Type (Typ))
-        and then VM_Target = No_VM
+        and then Tagged_Type_Expansion
       then
          Set_Expression (Free_Node,
            Unchecked_Convert_To (Typ,

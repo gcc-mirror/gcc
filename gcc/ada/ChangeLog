@@ -1,4 +1,16 @@
+2009-05-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch5.adb, exp_util.adb, exp_attr.adb, sem_util.adb, sem_res.adb,
+	targparm.adb, targparm.ads, exp_ch4.adb, exp_ch6.adb, exp_disp.adb,
+	opt.ads, exp_aggr.adb, exp_intr.adb, sem_disp.adb, exp_ch3.adb
+	(Tagged_Type_Expansion): New flag.
+	Replace use of VM_Target related to tagged types expansion by
+	Tagged_Type_Expansion, since tagged type expansion is not necessarily
+	linked to VM targets.
+
 2009-05-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_attr.adb: Add processing for Standard'Compiler_Version
 
 	* sinput.adb (Expr_Last_Char): Fix some copy-paste errors for paren
 	skipping.

@@ -5920,7 +5920,7 @@ package body Sem_Util is
                   --  uninitialized case. Note that this applies both to the
                   --  uTag entry and the main vtable pointer (CPP_Class case).
 
-                 and then (VM_Target = No_VM or else not Is_Tag (Ent))
+                 and then (Tagged_Type_Expansion or else not Is_Tag (Ent))
                then
                   return False;
                end if;
