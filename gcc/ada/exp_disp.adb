@@ -59,7 +59,6 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -249,7 +248,7 @@ package body Exp_Disp is
 
    begin
       if not Expander_Active
-        or else VM_Target /= No_VM
+        or else not Tagged_Type_Expansion
       then
          return;
       end if;
@@ -806,7 +805,7 @@ package body Exp_Disp is
         or else (not Is_Class_Wide_Type (Iface_Typ)
                   and then Is_Interface (Iface_Typ)));
 
-      if VM_Target /= No_VM then
+      if not Tagged_Type_Expansion then
 
          --  For VM, just do a conversion ???
 

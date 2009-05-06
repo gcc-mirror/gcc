@@ -1110,6 +1110,13 @@ package Opt is
    --  multiplied by the factor given here. The default value is used if no
    --  -gnatT switch appears.
 
+   Tagged_Type_Expansion : Boolean := True;
+   --  GNAT
+   --  Set True if tagged types and interfaces should be expanded by the
+   --  front-end. If False, the original tree is left unexpanded for
+   --  tagged types and dispatching calls, assuming the underlying target
+   --  supports it (e.g. case of JVM).
+
    Task_Dispatching_Policy : Character := ' ';
    --  GNAT, GNATBIND
    --  Set to ' ' for the default case (no task dispatching policy specified).

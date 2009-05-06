@@ -50,7 +50,6 @@ with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -1742,7 +1741,7 @@ package body Sem_Disp is
       --  the VM back-ends directly handle the generation of dispatching
       --  calls and would have to undo any expansion to an indirect call.
 
-      if VM_Target = No_VM then
+      if Tagged_Type_Expansion then
          Expand_Dispatching_Call (Call_Node);
 
       --  Expansion of a dispatching call results in an indirect call, which in

@@ -1031,7 +1031,7 @@ package body Exp_Attr is
 
          elsif Is_Class_Wide_Type (Ptyp)
            and then Is_Interface (Ptyp)
-           and then VM_Target = No_VM
+           and then Tagged_Type_Expansion
            and then not (Nkind (Pref) in N_Has_Entity
                           and then Is_Subprogram (Entity (Pref)))
          then
@@ -3118,7 +3118,7 @@ package body Exp_Attr is
                   --  accessibility check on virtual machines, so we omit it.
 
                   if Ada_Version >= Ada_05
-                    and then VM_Target = No_VM
+                    and then Tagged_Type_Expansion
                   then
                      Insert_Action (N,
                        Make_Implicit_If_Statement (N,
@@ -4355,7 +4355,7 @@ package body Exp_Attr is
             --  For VMs we leave the type attribute unexpanded because
             --  there's not a dispatching table to reference.
 
-            if VM_Target = No_VM then
+            if Tagged_Type_Expansion then
                Rewrite (N,
                  Unchecked_Convert_To (RTE (RE_Tag),
                    New_Reference_To
@@ -4380,7 +4380,7 @@ package body Exp_Attr is
 
             --  Not needed for VM targets, since all handled by the VM
 
-            if VM_Target = No_VM then
+            if Tagged_Type_Expansion then
                Rewrite (N,
                  Make_Explicit_Dereference (Loc,
                    Unchecked_Convert_To (RTE (RE_Tag_Ptr),

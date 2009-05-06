@@ -378,7 +378,7 @@ package body Exp_Ch4 is
       --  Do nothing in case of VM targets: the virtual machine will handle
       --  interfaces directly.
 
-      if VM_Target /= No_VM then
+      if not Tagged_Type_Expansion then
          return;
       end if;
 
@@ -511,7 +511,7 @@ package body Exp_Ch4 is
          --  there does not seem to be any practical way of implementing it.
 
          if Ada_Version >= Ada_05
-           and then VM_Target = No_VM
+           and then Tagged_Type_Expansion
            and then Is_Class_Wide_Type (DesigT)
            and then not Scope_Suppress (Accessibility_Check)
            and then
@@ -626,7 +626,7 @@ package body Exp_Ch4 is
 
             if Is_Class_Wide_Type (Etype (Exp))
               and then Is_Interface (Etype (Exp))
-              and then VM_Target = No_VM
+              and then Tagged_Type_Expansion
             then
                Set_Expression
                  (Expression (N),
@@ -795,7 +795,7 @@ package body Exp_Ch4 is
          --  Suppress the tag assignment when VM_Target because VM tags are
          --  represented implicitly in objects.
 
-         if VM_Target /= No_VM then
+         if not Tagged_Type_Expansion then
             null;
 
          --  Ada 2005 (AI-251): Suppress the tag assignment with class-wide
@@ -4302,7 +4302,7 @@ package body Exp_Ch4 is
                --  are not explicitly represented in Java objects, so the
                --  normal tagged membership expansion is not what we want).
 
-               if VM_Target = No_VM then
+               if Tagged_Type_Expansion then
                   Rewrite (N, Tagged_Membership (N));
                   Analyze_And_Resolve (N, Rtyp);
                end if;
@@ -7392,7 +7392,7 @@ package body Exp_Ch4 is
          --  on such run-time unit.
 
         and then
-          (VM_Target /= No_VM
+          (not Tagged_Type_Expansion
             or else not
              (RTU_Loaded (Ada_Tags)
                and then Nkind (Prefix (N)) = N_Selected_Component

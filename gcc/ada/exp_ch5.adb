@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4075,7 +4075,7 @@ package body Exp_Ch5 is
       --  does not seem to be any practical way to implement this check.
 
       elsif Ada_Version >= Ada_05
-        and then VM_Target = No_VM
+        and then Tagged_Type_Expansion
         and then Is_Class_Wide_Type (R_Type)
         and then not Scope_Suppress (Accessibility_Check)
         and then
@@ -4285,7 +4285,7 @@ package body Exp_Ch5 is
 
       Save_Tag : constant Boolean := Is_Tagged_Type (T)
                                        and then not No_Ctrl_Actions (N)
-                                       and then VM_Target = No_VM;
+                                       and then Tagged_Type_Expansion;
       --  Tags are not saved and restored when VM_Target because VM tags are
       --  represented implicitly in objects.
 
