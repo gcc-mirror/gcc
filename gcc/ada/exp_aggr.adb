@@ -2765,6 +2765,18 @@ package body Exp_Aggr is
          end if;
       end if;
 
+      --  For CPP types we generate an implicit call to the C++ default
+      --  constructor to ensure the proper initialization of the _Tag
+      --  component.
+
+      if Is_CPP_Class (Typ) then
+         pragma Assert (Present (Base_Init_Proc (Typ)));
+         Append_List_To (L,
+           Build_Initialization_Call (Loc,
+             Id_Ref => Lhs,
+             Typ    => Typ));
+      end if;
+
       --  Generate the assignments, component by component
 
       --    tmp.comp1 := Expr1_From_Aggr;
@@ -3127,6 +3139,13 @@ package body Exp_Aggr is
       --  the init proc of an ancestor which will not leave out the right tag
 
       if Ancestor_Is_Expression then
+         null;
+
+      --  For CPP types we generated a call to the C++ default constructor
+      --  before the components have been initialized to ensure the proper
+      --  initialization of the _Tag component (see above).
+
+      elsif Is_CPP_Class (Typ) then
          null;
 
       elsif Is_Tagged_Type (Typ) and then VM_Target = No_VM then
