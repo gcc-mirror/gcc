@@ -1,3 +1,8 @@
+2009-05-06  Bob Duff  <duff@adacore.com>
+
+	* gnat_ugn.texi, gnat_rm.texi: Add missing documentation for warnings
+	flags.
+
 2009-05-06  Javier Miranda  <miranda@adacore.com>
 
 	* sem_aggr.adb (Valid_Ancestor_Type): Add support for C++ constructors.

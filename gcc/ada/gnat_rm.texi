@@ -5147,6 +5147,8 @@ A    turn off all optional warnings
 .A   turn off warnings for failing assertions
 b    turn on warnings for bad fixed value (not multiple of small)
 B*   turn off warnings for bad fixed value (not multiple of small)
+.b*  turn on warnings for biased representation
+.B   turn off warnings for biased representation
 c    turn on warnings for constant conditional
 C*   turn off warnings for constant conditional
 .c   turn on warnings for unrepped components
@@ -5154,6 +5156,7 @@ C*   turn off warnings for constant conditional
 d    turn on warnings for implicit dereference
 D*   turn off warnings for implicit dereference
 e    treat all warnings as errors
+.e   turn on every optional warning
 f    turn on warnings for unreferenced formal
 F*   turn off warnings for unreferenced formal
 g*   turn on warnings for unrecognized pragma
@@ -5177,6 +5180,8 @@ O    turn off warnings for address clause overlay
 .O*  turn off warnings for out parameters assigned but not read
 p    turn on warnings for ineffective pragma Inline in frontend
 P*   turn off warnings for ineffective pragma Inline in frontend
+.p   turn on warnings for parameter ordering
+.P*  turn off warnings for parameter ordering
 q*   turn on warnings for questionable missing parentheses
 Q    turn off warnings for questionable missing parentheses
 r    turn on warnings for redundant construct
@@ -5192,6 +5197,8 @@ v*   turn on warnings for unassigned variable
 V    turn off warnings for unassigned variable
 w*   turn on warnings for wrong low bound assumption
 W    turn off warnings for wrong low bound assumption
+.w   turn on warnings for unnecessary Warnings Off pragmas
+.W*  turn off warnings for unnecessary Warnings Off pragmas
 x*   turn on warnings for export/import
 X    turn off warnings for export/import
 .x   turn on warnings for non-local exceptions
