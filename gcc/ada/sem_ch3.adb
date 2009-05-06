@@ -1276,10 +1276,6 @@ package body Sem_Ch3 is
    procedure Access_Type_Declaration (T : Entity_Id; Def : Node_Id) is
       S : constant Node_Id := Subtype_Indication (Def);
       P : constant Node_Id := Parent (Def);
-
-      Desig : Entity_Id;
-      --  Designated type
-
    begin
       --  Check for permissible use of incomplete type
 
@@ -1329,22 +1325,6 @@ package body Sem_Ch3 is
 
       if not From_With_Type (T) then
          Init_Size_Align (T);
-      end if;
-
-      Desig := Designated_Type (T);
-
-      --  If designated type is an imported tagged type, indicate that the
-      --  access type is also imported, and therefore restricted in its use.
-      --  The access type may already be imported, so keep setting otherwise.
-
-      --  Ada 2005 (AI-50217): If the non-limited view of the designated type
-      --  is available, use it as the designated type of the access type, so
-      --  that the back-end gets a usable entity.
-
-      if From_With_Type (Desig)
-        and then Ekind (Desig) /= E_Access_Type
-      then
-         Set_From_With_Type (T);
       end if;
 
       --  Note that Has_Task is always false, since the access type itself

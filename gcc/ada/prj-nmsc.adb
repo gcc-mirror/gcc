@@ -410,7 +410,6 @@ package body Prj.Nmsc is
       File_Name             : File_Name_Type;
       Alternate_Languages   : out Language_List;
       Language              : out Language_Ptr;
-      Language_Name         : out Name_Id;
       Display_Language_Name : out Name_Id;
       Unit                  : out Name_Id;
       Lang_Kind             : out Language_Kind;
@@ -7270,7 +7269,6 @@ package body Prj.Nmsc is
       File_Name             : File_Name_Type;
       Alternate_Languages   : out Language_List;
       Language              : out Language_Ptr;
-      Language_Name         : out Name_Id;
       Display_Language_Name : out Name_Id;
       Unit                  : out Name_Id;
       Lang_Kind             : out Language_Kind;
@@ -7346,12 +7344,10 @@ package body Prj.Nmsc is
 
       Tmp_Lang := Project.Languages;
       while Tmp_Lang /= No_Language_Index loop
-         Language_Name := Tmp_Lang.Name;
-
          if Current_Verbosity = High then
             Write_Line
               ("     Testing language "
-               & Get_Name_String (Language_Name)
+               & Get_Name_String (Tmp_Lang.Name)
                & " Header_File=" & Header_File'Img);
          end if;
 
@@ -7424,7 +7420,6 @@ package body Prj.Nmsc is
       Src_Ind               : Source_File_Index;
       Unit                  : Name_Id;
       Source_To_Replace     : Source_Id := No_Source;
-      Language_Name         : Name_Id;
       Display_Language_Name : Name_Id;
       Lang_Kind             : Language_Kind;
       Kind                  : Source_Kind := Spec;
@@ -7489,7 +7484,6 @@ package body Prj.Nmsc is
             File_Name             => File_Name,
             Alternate_Languages   => Alternate_Languages,
             Language              => Language,
-            Language_Name         => Language_Name,
             Display_Language_Name => Display_Language_Name,
             Unit                  => Unit,
             Lang_Kind             => Lang_Kind,
