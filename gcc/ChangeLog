@@ -1,3 +1,10 @@
+2009-05-06  Richard Guenther  <rguenther@suse.de>
+	    Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gimple.def (GIMPLE_ASSIGN): Fix incorrect information in the
+	comment.  Add that if LHS is not a gimple register, then RHS1 has
+	to be a single object (GIMPLE_SINGLE_RHS).
+
 2009-05-06  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* expr.c (get_def_for_expr): Move it up in the file.

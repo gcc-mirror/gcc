@@ -102,16 +102,17 @@ DEFGSCODE(GIMPLE_CHANGE_DYNAMIC_TYPE, "gimple_change_dynamic_type",
 
    SUBCODE is the tree code for the expression computed by the RHS of the
    assignment.  It must be one of the tree codes accepted by
-   get_gimple_rhs_class.
+   get_gimple_rhs_class.  If LHS is not a gimple register according to
+   is_gimple_reg, SUBCODE must be of class GIMPLE_SINGLE_RHS.
 
    LHS is the operand on the LHS of the assignment.  It must be a tree node
-   accepted by is_gimple_operand.
+   accepted by is_gimple_lvalue.
 
-   RHS1 is the first operand on the RHS of the assignment. It must be a tree
-   node accepted by is_gimple_operand.
+   RHS1 is the first operand on the RHS of the assignment.  It must always be
+   present.  It must be a tree node accepted by is_gimple_val.
 
-   RHS2 is the second operand on the RHS of the assignemnt. It must be a tree
-   node accepted by is_gimple_operand.  This argument exists only if SUBCODE is
+   RHS2 is the second operand on the RHS of the assignment.  It must be a tree
+   node accepted by is_gimple_val.  This argument exists only if SUBCODE is
    of class GIMPLE_BINARY_RHS.  */
 DEFGSCODE(GIMPLE_ASSIGN, "gimple_assign",
 	  struct gimple_statement_with_memory_ops)
