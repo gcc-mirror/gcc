@@ -1,3 +1,9 @@
+2009-05-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/40032
+	* c-decl.c (grokdeclarator): Handle incomplete type of unnamed
+	field.
+
 2009-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h: Remove DECL_BY_REFERENCE from private_flag comment.

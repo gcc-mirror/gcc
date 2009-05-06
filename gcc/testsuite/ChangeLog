@@ -1,3 +1,8 @@
+2009-05-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/40032
+	* gcc.dg/noncompile/incomplete-5.c: New test.
+
 2009-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/39666
