@@ -1,3 +1,9 @@
+2009-05-06  Michael Matz  <matz@suse.de>
+
+	PR middle-end/40021
+	* cfgexpand.c (maybe_cleanup_end_of_block): New static function.
+	(expand_gimple_cond): Use it to cleanup CFG and superfluous jumps.
+
 2009-05-06  Rafael Avila de Espindola  <espindola@google.com>
 
 	* Makefile.in (install-plugin): Fix srcdir handling.
