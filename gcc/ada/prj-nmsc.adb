@@ -298,8 +298,7 @@ package body Prj.Nmsc is
 
    procedure Check_Library_Attributes
      (Project     : Project_Id;
-      In_Tree     : Project_Tree_Ref;
-      Current_Dir : String);
+      In_Tree     : Project_Tree_Ref);
    --  Check the library attributes of project Project in project tree In_Tree
    --  and modify its data Data accordingly.
    --  Current_Dir should represent the current directory, and is passed for
@@ -496,23 +495,25 @@ package body Prj.Nmsc is
      (Project          : Project_Id;
       In_Tree          : Project_Tree_Ref;
       Name             : File_Name_Type;
-      Parent           : Path_Name_Type;
-      Dir              : out Path_Name_Type;
-      Display          : out Path_Name_Type;
+      Path             : out Path_Information;
+      Dir_Exists       : out Boolean;
       Create           : String := "";
-      Current_Dir      : String;
       Location         : Source_Ptr := No_Location;
+      Must_Exist       : Boolean := True;
       Externally_Built : Boolean := False);
-   --  Locate a directory. Name is the directory name. Parent is the root
-   --  directory, if Name a relative path name. Dir is set to the canonical
-   --  case path name of the directory, and Display is the directory path name
-   --  for display purposes. If the directory does not exist and Setup_Projects
+   --  Locate a directory. Name is the directory name.
+   --  Relative paths are resolved relative to the project's directory.
+   --  If the directory does not exist and Setup_Projects
    --  is True and Create is a non null string, an attempt is made to create
-   --  the directory. If the directory does not exist and Setup_Projects is
-   --  false, then Dir and Display are set to No_Name.
+   --  the directory.
+   --  If the directory does not exist, it is either created if Setup_Projects
+   --  is False (and then returned), or simply returned without checking for
+   --  its existence (if Must_Exist is False) or No_Path_Information is
+   --  returned. In all cases, Dir_Exists indicates whether the directory now
+   --  exists.
    --
-   --  Current_Dir should represent the current directory, and is passed for
-   --  efficiency to avoid system calls to recompute it.
+   --  Create is also used for debugging traces to show which path we are
+   --  computing
 
    procedure Look_For_Sources
      (Project     : Project_Id;
@@ -828,7 +829,7 @@ package body Prj.Nmsc is
 
       --  Library attributes
 
-      Check_Library_Attributes (Project, In_Tree, Current_Dir);
+      Check_Library_Attributes (Project, In_Tree);
 
       if Current_Verbosity = High then
          Show_Source_Dirs (Project, In_Tree);
@@ -1423,10 +1424,8 @@ package body Prj.Nmsc is
 
                            --  Attribute Driver (<language>)
 
-                           Get_Name_String (Element.Value.Value);
-
                            Lang_Index.Config.Compiler_Driver :=
-                               File_Name_Type (Element.Value.Value);
+                             File_Name_Type (Element.Value.Value);
 
                         when Name_Required_Switches =>
                            Put (Into_List =>
@@ -3341,8 +3340,7 @@ package body Prj.Nmsc is
 
    procedure Check_Library_Attributes
      (Project     : Project_Id;
-      In_Tree     : Project_Tree_Ref;
-      Current_Dir : String)
+      In_Tree     : Project_Tree_Ref)
    is
       Attributes   : constant Prj.Variable_Id := Project.Decl.Attributes;
 
@@ -3463,6 +3461,8 @@ package body Prj.Nmsc is
          end if;
       end Check_Library;
 
+      Dir_Exists : Boolean;
+
    --  Start of processing for Check_Library_Attributes
 
    begin
@@ -3544,51 +3544,30 @@ package body Prj.Nmsc is
                  (Project,
                   In_Tree,
                   File_Name_Type (Lib_Dir.Value),
-                  Project.Directory.Display_Name,
-                  Project.Library_Dir.Name,
-                  Project.Library_Dir.Display_Name,
+                  Path             => Project.Library_Dir,
+                  Dir_Exists       => Dir_Exists,
                   Create           => "library",
-                  Current_Dir      => Current_Dir,
+                  Must_Exist       => False,
                   Location         => Lib_Dir.Location,
                   Externally_Built => Project.Externally_Built);
+
+            else
+               Dir_Exists :=
+                 Is_Directory
+                   (Get_Name_String
+                        (Project.Library_Dir.Display_Name));
             end if;
 
-            if Project.Library_Dir = No_Path_Information then
-
+            if not Dir_Exists then
                --  Get the absolute name of the library directory that
                --  does not exist, to report an error.
 
-               declare
-                  Dir_Name : constant String :=
-                               Get_Name_String (Lib_Dir.Value);
-
-               begin
-                  if Is_Absolute_Path (Dir_Name) then
-                     Err_Vars.Error_Msg_File_1 :=
-                       File_Name_Type (Lib_Dir.Value);
-
-                  else
-                     Get_Name_String (Project.Directory.Display_Name);
-
-                     if Name_Buffer (Name_Len) /= Directory_Separator then
-                        Name_Len := Name_Len + 1;
-                        Name_Buffer (Name_Len) := Directory_Separator;
-                     end if;
-
-                     Name_Buffer
-                       (Name_Len + 1 .. Name_Len + Dir_Name'Length) :=
-                       Dir_Name;
-                     Name_Len := Name_Len + Dir_Name'Length;
-                     Err_Vars.Error_Msg_File_1 := Name_Find;
-                  end if;
-
-                  --  Report the error
-
-                  Error_Msg
-                    (Project, In_Tree,
-                     "library directory { does not exist",
-                     Lib_Dir.Location);
-               end;
+               Err_Vars.Error_Msg_File_1 :=
+                 File_Name_Type (Project.Library_Dir.Display_Name);
+               Error_Msg
+                 (Project, In_Tree,
+                  "library directory { does not exist",
+                  Lib_Dir.Location);
 
                --  The library directory cannot be the same as the Object
                --  directory.
@@ -3755,50 +3734,23 @@ package body Prj.Nmsc is
                  (Project,
                   In_Tree,
                   File_Name_Type (Lib_ALI_Dir.Value),
-                  Project.Directory.Display_Name,
-                  Project.Library_ALI_Dir.Name,
-                  Project.Library_ALI_Dir.Display_Name,
+                  Path             => Project.Library_ALI_Dir,
                   Create           => "library ALI",
-                  Current_Dir      => Current_Dir,
+                  Dir_Exists       => Dir_Exists,
+                  Must_Exist       => False,
                   Location         => Lib_ALI_Dir.Location,
                   Externally_Built => Project.Externally_Built);
 
-               if Project.Library_ALI_Dir = No_Path_Information then
-
+               if not Dir_Exists then
                   --  Get the absolute name of the library ALI directory that
                   --  does not exist, to report an error.
 
-                  declare
-                     Dir_Name : constant String :=
-                                  Get_Name_String (Lib_ALI_Dir.Value);
-
-                  begin
-                     if Is_Absolute_Path (Dir_Name) then
-                        Err_Vars.Error_Msg_File_1 :=
-                          File_Name_Type (Lib_Dir.Value);
-
-                     else
-                        Get_Name_String (Project.Directory.Display_Name);
-
-                        if Name_Buffer (Name_Len) /= Directory_Separator then
-                           Name_Len := Name_Len + 1;
-                           Name_Buffer (Name_Len) := Directory_Separator;
-                        end if;
-
-                        Name_Buffer
-                          (Name_Len + 1 .. Name_Len + Dir_Name'Length) :=
-                          Dir_Name;
-                        Name_Len := Name_Len + Dir_Name'Length;
-                        Err_Vars.Error_Msg_File_1 := Name_Find;
-                     end if;
-
-                     --  Report the error
-
-                     Error_Msg
-                       (Project, In_Tree,
-                        "library 'A'L'I directory { does not exist",
-                        Lib_ALI_Dir.Location);
-                  end;
+                  Err_Vars.Error_Msg_File_1 :=
+                    File_Name_Type (Project.Library_ALI_Dir.Display_Name);
+                  Error_Msg
+                    (Project, In_Tree,
+                     "library 'A'L'I directory { does not exist",
+                     Lib_ALI_Dir.Location);
                end if;
 
                if Project.Library_ALI_Dir /= Project.Library_Dir then
@@ -4821,62 +4773,32 @@ package body Prj.Nmsc is
             declare
                Dir_Id : constant File_Name_Type :=
                           File_Name_Type (Lib_Src_Dir.Value);
+               Dir_Exists : Boolean;
 
             begin
                Locate_Directory
                  (Project,
                   In_Tree,
                   Dir_Id,
-                  Project.Directory.Display_Name,
-                  Project.Library_Src_Dir.Name,
-                  Project.Library_Src_Dir.Display_Name,
+                  Path             => Project.Library_Src_Dir,
+                  Dir_Exists       => Dir_Exists,
+                  Must_Exist       => False,
                   Create           => "library source copy",
-                  Current_Dir      => Current_Dir,
                   Location         => Lib_Src_Dir.Location,
                   Externally_Built => Project.Externally_Built);
 
                --  If directory does not exist, report an error
 
-               if Project.Library_Src_Dir = No_Path_Information then
-
+               if not Dir_Exists then
                   --  Get the absolute name of the library directory that does
                   --  not exist, to report an error.
 
-                  declare
-                     Dir_Name : constant String :=
-                                  Get_Name_String (Dir_Id);
-
-                  begin
-                     if Is_Absolute_Path (Dir_Name) then
-                        Err_Vars.Error_Msg_File_1 := Dir_Id;
-
-                     else
-                        Get_Name_String (Project.Directory.Name);
-
-                        if Name_Buffer (Name_Len) /=
-                          Directory_Separator
-                        then
-                           Name_Len := Name_Len + 1;
-                           Name_Buffer (Name_Len) :=
-                             Directory_Separator;
-                        end if;
-
-                        Name_Buffer
-                          (Name_Len + 1 ..
-                             Name_Len + Dir_Name'Length) :=
-                            Dir_Name;
-                        Name_Len := Name_Len + Dir_Name'Length;
-                        Err_Vars.Error_Msg_Name_1 := Name_Find;
-                     end if;
-
-                     --  Report the error
-
-                     Error_Msg_File_1 := Dir_Id;
-                     Error_Msg
-                       (Project, In_Tree,
-                        "Directory { does not exist",
-                        Lib_Src_Dir.Location);
-                  end;
+                  Err_Vars.Error_Msg_File_1 :=
+                    File_Name_Type (Project.Library_Src_Dir.Display_Name);
+                  Error_Msg
+                    (Project, In_Tree,
+                     "Directory { does not exist",
+                     Lib_Src_Dir.Location);
 
                   --  Report error if it is the same as the object directory
 
@@ -5669,22 +5591,21 @@ package body Prj.Nmsc is
 
          else
             declare
-               Path_Name         : Path_Name_Type;
-               Display_Path_Name : Path_Name_Type;
+               Path_Name         : Path_Information;
                List              : String_List_Id;
                Prev              : String_List_Id;
+               Dir_Exists        : Boolean;
 
             begin
                Locate_Directory
                  (Project     => Project,
                   In_Tree     => In_Tree,
                   Name        => From,
-                  Parent      => Project.Directory.Display_Name,
-                  Dir         => Path_Name,
-                  Display     => Display_Path_Name,
-                  Current_Dir => Current_Dir);
+                  Path        => Path_Name,
+                  Dir_Exists  => Dir_Exists,
+                  Must_Exist  => False);
 
-               if Path_Name = No_Path then
+               if not Dir_Exists then
                   Err_Vars.Error_Msg_File_1 := From;
 
                   if Location = No_Location then
@@ -5702,14 +5623,14 @@ package body Prj.Nmsc is
                else
                   declare
                      Path              : constant String :=
-                                           Get_Name_String (Path_Name) &
+                                           Get_Name_String (Path_Name.Name) &
                                            Directory_Separator;
                      Last_Path         : constant Natural :=
                                            Compute_Directory_Last (Path);
                      Path_Id           : Name_Id;
                      Display_Path      : constant String :=
                                            Get_Name_String
-                                             (Display_Path_Name) &
+                                             (Path_Name.Display_Name) &
                                            Directory_Separator;
                      Last_Display_Path : constant Natural :=
                                            Compute_Directory_Last
@@ -5801,6 +5722,8 @@ package body Prj.Nmsc is
 
    --  Start of processing for Get_Directories
 
+      Dir_Exists : Boolean;
+
    begin
       if Current_Verbosity = High then
          Write_Line ("Starting to look for directories");
@@ -5834,48 +5757,41 @@ package body Prj.Nmsc is
                Object_Dir.Location);
 
          else
-            --  We check that the specified object directory does exist
+            --  We check that the specified object directory does exist.
+            --  However, even when it doesn't exist, we set it to a default
+            --  value. This is for the benefit of tools that recover from
+            --  errors; for example, these tools could create the non existent
+            --  directory.
+            --  We always return an absolute directory name though
 
             Locate_Directory
               (Project,
                In_Tree,
                File_Name_Type (Object_Dir.Value),
-               Project.Directory.Display_Name,
-               Project.Object_Directory.Name,
-               Project.Object_Directory.Display_Name,
+               Path             => Project.Object_Directory,
                Create           => "object",
+               Dir_Exists       => Dir_Exists,
                Location         => Object_Dir.Location,
-               Current_Dir      => Current_Dir,
+               Must_Exist       => False,
                Externally_Built => Project.Externally_Built);
 
-            if Project.Object_Directory = No_Path_Information then
+            if not Dir_Exists
+              and then not Project.Externally_Built
+            then
+               --  The object directory does not exist, report an error if
+               --  the project is not externally built.
 
-               --  The object directory does not exist, report an error if the
-               --  project is not externally built.
-
-               if not Project.Externally_Built then
-                  Err_Vars.Error_Msg_File_1 :=
-                    File_Name_Type (Object_Dir.Value);
-                  Error_Msg
-                    (Project, In_Tree,
-                     "object directory { not found",
-                     Project.Location);
-               end if;
-
-               --  Do not keep a nil Object_Directory. Set it to the specified
-               --  (relative or absolute) path. This is for the benefit of
-               --  tools that recover from errors; for example, these tools
-               --  could create the non existent directory.
-
-               Project.Object_Directory.Display_Name :=
-                 Path_Name_Type (Object_Dir.Value);
-               Project.Object_Directory.Name :=
-                 Path_Name_Type (Canonical_Case_File_Name (Object_Dir.Value));
+               Err_Vars.Error_Msg_File_1 :=
+                 File_Name_Type (Object_Dir.Value);
+               Error_Msg
+                 (Project, In_Tree,
+                  "object directory { not found",
+                  Project.Location);
             end if;
          end if;
 
-      elsif Project.Object_Directory /= No_Path_Information and then
-        Subdirs /= null
+      elsif Project.Object_Directory /= No_Path_Information
+        and then Subdirs /= null
       then
          Name_Len := 1;
          Name_Buffer (1) := '.';
@@ -5883,12 +5799,10 @@ package body Prj.Nmsc is
            (Project,
             In_Tree,
             Name_Find,
-            Project.Directory.Display_Name,
-            Project.Object_Directory.Name,
-            Project.Object_Directory.Display_Name,
+            Path             => Project.Object_Directory,
             Create           => "object",
+            Dir_Exists       => Dir_Exists,
             Location         => Object_Dir.Location,
-            Current_Dir      => Current_Dir,
             Externally_Built => Project.Externally_Built);
       end if;
 
@@ -5924,15 +5838,13 @@ package body Prj.Nmsc is
               (Project,
                In_Tree,
                File_Name_Type (Exec_Dir.Value),
-               Project.Directory.Display_Name,
-               Project.Exec_Directory.Name,
-               Project.Exec_Directory.Display_Name,
+               Path             => Project.Exec_Directory,
+               Dir_Exists       => Dir_Exists,
                Create           => "exec",
                Location         => Exec_Dir.Location,
-               Current_Dir      => Current_Dir,
                Externally_Built => Project.Externally_Built);
 
-            if Project.Exec_Directory = No_Path_Information then
+            if not Dir_Exists then
                Err_Vars.Error_Msg_File_1 := File_Name_Type (Exec_Dir.Value);
                Error_Msg
                  (Project, In_Tree,
@@ -6543,14 +6455,15 @@ package body Prj.Nmsc is
      (Project          : Project_Id;
       In_Tree          : Project_Tree_Ref;
       Name             : File_Name_Type;
-      Parent           : Path_Name_Type;
-      Dir              : out Path_Name_Type;
-      Display          : out Path_Name_Type;
+      Path             : out Path_Information;
+      Dir_Exists       : out Boolean;
       Create           : String := "";
-      Current_Dir      : String;
       Location         : Source_Ptr := No_Location;
+      Must_Exist       : Boolean := True;
       Externally_Built : Boolean := False)
    is
+      Parent          : constant Path_Name_Type :=
+                          Project.Directory.Display_Name;
       The_Parent      : constant String :=
                           Get_Name_String (Parent) & Directory_Separator;
       The_Parent_Last : constant Natural :=
@@ -6590,8 +6503,8 @@ package body Prj.Nmsc is
          Write_Line (""")");
       end if;
 
-      Dir     := No_Path;
-      Display := No_Path;
+      Path := No_Path_Information;
+      Dir_Exists := False;
 
       if Is_Absolute_Path (Get_Name_String (The_Name)) then
          Full_Name := The_Name;
@@ -6653,19 +6566,24 @@ package body Prj.Nmsc is
             end if;
          end if;
 
-         if Is_Directory (Full_Path_Name.all) then
+         Dir_Exists := Is_Directory (Full_Path_Name.all);
+
+         if not Must_Exist or else Dir_Exists then
             declare
                Normed : constant String :=
                           Normalize_Pathname
                             (Full_Path_Name.all,
-                             Directory      => Current_Dir,
+                             Directory      =>
+                              The_Parent (The_Parent'First .. The_Parent_Last),
                              Resolve_Links  => False,
                              Case_Sensitive => True);
 
                Canonical_Path : constant String :=
                                   Normalize_Pathname
                                     (Normed,
-                                     Directory      => Current_Dir,
+                                     Directory      =>
+                                       The_Parent
+                                         (The_Parent'First .. The_Parent_Last),
                                      Resolve_Links  =>
                                         Opt.Follow_Links_For_Dirs,
                                      Case_Sensitive => False);
@@ -6673,11 +6591,11 @@ package body Prj.Nmsc is
             begin
                Name_Len := Normed'Length;
                Name_Buffer (1 .. Name_Len) := Normed;
-               Display := Name_Find;
+               Path.Display_Name := Name_Find;
 
                Name_Len := Canonical_Path'Length;
                Name_Buffer (1 .. Name_Len) := Canonical_Path;
-               Dir := Name_Find;
+               Path.Name := Name_Find;
             end;
          end if;
 
