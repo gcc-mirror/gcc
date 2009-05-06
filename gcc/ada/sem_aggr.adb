@@ -2785,6 +2785,14 @@ package body Sem_Aggr is
          Check_Non_Static_Context (Expr);
          Check_Unset_Reference (Expr);
 
+         --  Check wrong use of class-wide types
+
+         if Is_Class_Wide_Type (Etype (Expr))
+           and then not Is_CPP_Constructor_Call (Expr)
+         then
+            Error_Msg_N ("dynamically tagged expression not allowed", Expr);
+         end if;
+
          if not Has_Expansion_Delayed (Expr) then
             Aggregate_Constraint_Checks (Expr, Expr_Type);
          end if;

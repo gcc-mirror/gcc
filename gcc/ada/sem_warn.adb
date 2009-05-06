@@ -954,8 +954,8 @@ package body Sem_Warn is
                   --  here (note that the dereference may not be explicit in
                   --  the source, for example in the case of a dispatching call
                   --  with an anonymous access controlling formal, or of an
-                  --  assignment of a pointer involving discriminant check
-                  --  on the designated object).
+                  --  assignment of a pointer involving discriminant check on
+                  --  the designated object).
 
                   if not Warnings_Off_E1 then
                      Error_Msg_NE ("?& may be null!", UR, E1);

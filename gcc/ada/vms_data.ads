@@ -5116,7 +5116,11 @@ package VMS_Data is
                                               "AVERAGE_COMPLEXITY_ON "     &
                                               "--complexity-average "      &
                                               "AVERAGE_COMPLEXITY_OFF "    &
-                                              "--no-complexity-average";
+                                              "--no-complexity-average "   &
+                                              "EXTRA_EXIT_POINTS_ON "      &
+                                              "--extra-exit-points "       &
+                                              "EXTRA_EXIT_POINTS_OFF "     &
+                                              "--no-extra-exit-points";
    --      /COMPLEXITY_METRICS=(option, option ...)
 
    --   Specifies the complexity metrics to be computed (if at least one
@@ -5139,6 +5143,8 @@ package VMS_Data is
    --                              executable bodies
    --     AVERAGE_COMPLEXITY_OFF   Do not compute the average complexity for
    --                              executable bodies
+   --     EXTRA_EXIT_POINTS_ON     Compute extra exit points metric
+   --     EXTRA_EXIT_POINTS_OFF    Do not compute extra exit points metric
    --
    --   All combinations of line metrics options are allowed.
 

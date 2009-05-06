@@ -14,7 +14,7 @@
 @setfilename gnat_ugn.info
 
 @copying
-Copyright @copyright{} 1995-2005, 2006, 2007, 2008 Free Software Foundation,
+Copyright @copyright{} 1995-2009 Free Software Foundation,
 Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -17636,6 +17636,11 @@ bodies, task bodies, entry bodies and statement sequences in package bodies
 Do not consider @code{exit} statements as @code{goto}s when
 computing Essential Complexity
 
+@item ^--extra-exit-points^/EXTRA_EXIT_POINTS_ON^
+Report the extra exit points for subprogram bodies
+
+@item ^--no-extra-exit-points^/EXTRA_EXIT_POINTS_OFF^
+Do not report the extra exit points for subprogram bodies
 @end table
 
 

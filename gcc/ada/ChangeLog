@@ -1,5 +1,26 @@
 2009-05-06  Robert Dewar  <dewar@adacore.com>
 
+	* sem_warn.adb: Minor reformatting
+
+2009-05-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_prag.adb (Process_Import_Or_Interface): Imported CPP types must
+	not have discriminants or components with default expressions.
+	(Analyze_Pragma): For pragma CPP_Class check that imported types
+	have no discriminants and components have no default expression.
+
+	* sem_aggr.adb (Resolve_Aggr_Expr): Add missing check on wrong use of
+	class-wide types in the expression of a record component association.
+
+2009-05-06  Sergey Rybin  <rybin@adacore.com>
+
+	* vms_data.ads: Add qualifier for gnatmetric extra exit points metric
+
+	* gnat_ugn.texi: Add description for the new extra exit points metric
+	(gnatmetric section).
+
+2009-05-06  Robert Dewar  <dewar@adacore.com>
+
 	* s-fileio.adb: Minor comment update
 
 	* sem_ch8.adb: Minor reformatting
