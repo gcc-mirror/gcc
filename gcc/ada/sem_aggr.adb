@@ -3077,16 +3077,14 @@ package body Sem_Aggr is
 
             if Nkind (N) = N_Extension_Aggregate then
 
-               --  If the ancestor part is a C++ constructor we must handle
-               --  here that it is a function returning a class-wide type
+               --  If the ancestor part is a C++ constructor, then it must be a
+               --  function returning a class-wide type, so check that here.
 
-               if Is_CPP_Constructor_Call (Ancestor_Part (N)) then
-                  pragma Assert
-                    (Is_Class_Wide_Type (Etype (Ancestor_Part (N))));
-                  Root_Typ := Root_Type (Etype (Ancestor_Part (N)));
-               else
-                  Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
-               end if;
+               pragma Assert
+                 (not Is_CPP_Constructor_Call (Ancestor_Part (N))
+                    or else Is_Class_Wide_Type (Etype (Ancestor_Part (N))));
+
+               Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
 
             else
                Root_Typ := Root_Type (Typ);

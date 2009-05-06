@@ -1,3 +1,17 @@
+2009-05-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Build_Instance_Compilation_Unit_Nodes): Revert previous
+	change. The context clause of a generic instance declaration must be
+	preserved until the end of the compilation, because it may have to be
+	installed/removed repeatedly.
+	The latest change to sem.adb ensures that the context of both spec and
+	body of an instance is traversed before the instance itself, making
+	this patch redundant.
+
+2009-05-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb: Minor code clean-up
+
 2009-05-06  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_aggr.adb: Fix typo.
