@@ -53,9 +53,9 @@ with Uname;    use Uname;
 package body Errout is
 
    Errors_Must_Be_Ignored : Boolean := False;
-   --  Set to True by procedure Set_Ignore_Errors (True), when calls to
-   --  error message procedures should be ignored (when parsing irrelevant
-   --  text in sources being preprocessed).
+   --  Set to True by procedure Set_Ignore_Errors (True), when calls to error
+   --  message procedures should be ignored (when parsing irrelevant text in
+   --  sources being preprocessed).
 
    Finalize_Called : Boolean := False;
    --  Set True if the Finalize routine has been called

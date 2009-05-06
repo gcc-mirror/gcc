@@ -1996,7 +1996,7 @@ package body Sem_Res is
                              ("ambiguous expression "
                                & "(cannot resolve indirect call)!", N);
                         else
-                           Error_Msg_NE
+                           Error_Msg_NE -- CODEFIX
                              ("ambiguous expression (cannot resolve&)!",
                               N, It.Nam);
                         end if;
@@ -8288,7 +8288,7 @@ package body Sem_Res is
                      and then Covers (Orig_T, Etype (Entity (Orig_N)))))
          then
             Error_Msg_Node_2 := Orig_T;
-            Error_Msg_NE
+            Error_Msg_NE -- CODEFIX
               ("?redundant conversion, & is of type &!", N, Entity (Orig_N));
          end if;
       end if;

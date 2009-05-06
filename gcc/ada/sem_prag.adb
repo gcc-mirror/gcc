@@ -3106,7 +3106,7 @@ package body Sem_Prag is
             Prag_Id = Pragma_Import_Valued_Procedure
          then
             if not Is_Imported (Ent) then
-               Error_Pragma
+               Error_Pragma -- CODEFIX???
                  ("pragma Import or Interface must precede pragma%");
             end if;
 

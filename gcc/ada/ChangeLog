@@ -1,3 +1,12 @@
+2009-05-06  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb: Minor reformatting
+
+	* scng.adb, sem_prag.adb, par-ch4.adb, sem_res.adb, par-ch6.adb,
+	sem_ch6.adb, par-prag.adb, sem_ch8.adb, sem_warn.adb, par-util.adb,
+	styleg.adb: Add stylized comments to error messages that are included
+	in the codefix circuitry of IDE's such as GPS.
+
 2009-05-06  Sergey Rybin  <rybin@adacore.com>
 
 	* gnat_ugn.texi: For Misnamed_Identifiers rule all description of the

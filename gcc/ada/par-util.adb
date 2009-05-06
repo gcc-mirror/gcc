@@ -163,7 +163,8 @@ package body Util is
       if RM_Column_Check and then Token_Is_At_Start_Of_Line
         and then Start_Column <= Scope.Table (Scope.Last).Ecol
       then
-         Error_Msg_BC ("(style) incorrect layout");
+         Error_Msg_BC -- CODEFIX
+           ("(style) incorrect layout");
       end if;
    end Check_Bad_Layout;
 
