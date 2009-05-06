@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2008, AdaCore                     --
+--                     Copyright (C) 1999-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -96,13 +96,13 @@
 --     Goto_Section ("bargs");
 --     loop
 --        --  Same loop as above to get switches and arguments
---        --  The supported switches in Get_Opt might be different
+--        --  The supported switches in Getopt might be different
 --     end loop;
 
 --     Goto_Section ("cargs");
 --     loop
 --        --  Same loop as above to get switches and arguments
---        --  The supported switches in Get_Opt might be different
+--        --  The supported switches in Getopt might be different
 --     end loop;
 --  end;
 
@@ -125,7 +125,7 @@
 --        GNAT.OS_Lib.Argument_String_To_List ("-g -O1 -Ipath");
 --  begin
 --     Initialize_Option_Scan (Parser, Args);
---     while Get_Opt ("* g O! I=", Parser) /= ASCII.NUL loop
+--     while Getopt ("* g O! I=", Parser) /= ASCII.NUL loop
 --        Put_Line ("Switch " & Full_Switch (Parser)
 --                  & " param=" & Parameter (Parser));
 --     end loop;

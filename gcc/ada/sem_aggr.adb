@@ -3156,7 +3156,11 @@ package body Sem_Aggr is
             end loop;
 
          else
-            Record_Def := Type_Definition (Parent (Base_Type (Typ)));
+            --  We take the underlying type to account for private types when
+            --  the original association had a box default.
+
+            Record_Def :=
+              Type_Definition (Parent (Underlying_Type (Base_Type (Typ))));
 
             if Null_Present (Record_Def) then
                null;

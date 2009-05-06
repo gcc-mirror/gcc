@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -409,6 +409,12 @@ package Osint is
    --  change during program execution. When this procedure is called with
    --  Cache => True access to source file data does not incur a penalty if
    --  this data was previously retrieved.
+
+   procedure Dump_Source_File_Names;
+   --  Prints out the names of all source files that have been read by
+   --  Read_Source_File, except those that come from the run-time library
+   --  (i.e. Include_Dir_Default_Prefix). The text is sent to whatever Output
+   --  is currently using (e.g. standard output or standard error).
 
    -------------------------------------------
    -- Representation of Library Information --

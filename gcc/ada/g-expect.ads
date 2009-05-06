@@ -51,7 +51,7 @@
 --      Non_Blocking_Spawn
 --         (Fd, "ftp",
 --           (1 => new String' ("machine@domain")));
---      Timeout := 10000;  --  10 seconds
+--      Timeout := 10_000;  --  10 seconds
 --      Expect (Fd, Result, Regexp_Array'(+"\(user\)", +"\(passwd\)"),
 --              Timeout);
 --      case Result is
@@ -328,7 +328,7 @@ package GNAT.Expect is
      (Descriptor  : in out Process_Descriptor;
       Result      : out Expect_Match;
       Regexp      : String;
-      Timeout     : Integer := 10000;
+      Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
    --  Wait till a string matching Fd can be read from Fd, and return 1
    --  if a match was found.
@@ -359,7 +359,7 @@ package GNAT.Expect is
      (Descriptor  : in out Process_Descriptor;
       Result      : out Expect_Match;
       Regexp      : GNAT.Regpat.Pattern_Matcher;
-      Timeout     : Integer := 10000;
+      Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
    --  Same as the previous one, but with a precompiled regular expression.
    --  This is more efficient however, especially if you are using this
@@ -371,7 +371,7 @@ package GNAT.Expect is
       Result      : out Expect_Match;
       Regexp      : String;
       Matched     : out GNAT.Regpat.Match_Array;
-      Timeout     : Integer := 10000;
+      Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
    --  Same as above, but it is now possible to get the indexes of the
    --  substrings for the parentheses in the regexp (see the example at the
@@ -391,7 +391,7 @@ package GNAT.Expect is
       Result      : out Expect_Match;
       Regexp      : GNAT.Regpat.Pattern_Matcher;
       Matched     : out GNAT.Regpat.Match_Array;
-      Timeout     : Integer := 10000;
+      Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
    --  Same as above, but with a precompiled regular expression
 
@@ -416,7 +416,7 @@ package GNAT.Expect is
      (Descriptor  : in out Process_Descriptor;
       Result      : out Expect_Match;
       Regexps     : Regexp_Array;
-      Timeout     : Integer := 10000;
+      Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
    --  Wait till a string matching one of the regular expressions in Regexps
    --  is found. This function returns the index of the regexp that matched.
@@ -427,7 +427,7 @@ package GNAT.Expect is
      (Descriptor  : in out Process_Descriptor;
       Result      : out Expect_Match;
       Regexps     : Compiled_Regexp_Array;
-      Timeout     : Integer := 10000;
+      Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
    --  Same as the previous one, but with precompiled regular expressions.
    --  This can be much faster if you are using them multiple times.
@@ -437,7 +437,7 @@ package GNAT.Expect is
       Result      : out Expect_Match;
       Regexps     : Regexp_Array;
       Matched     : out GNAT.Regpat.Match_Array;
-      Timeout     : Integer := 10000;
+      Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
    --  Same as above, except that you can also access the parenthesis
    --  groups inside the matching regular expression.
@@ -451,7 +451,7 @@ package GNAT.Expect is
       Result      : out Expect_Match;
       Regexps     : Compiled_Regexp_Array;
       Matched     : out GNAT.Regpat.Match_Array;
-      Timeout     : Integer := 10000;
+      Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
    --  Same as above, but with precompiled regular expressions.
    --  The first index in Matched must be 0, or Constraint_Error will be
@@ -472,14 +472,14 @@ package GNAT.Expect is
      (Result      : out Expect_Match;
       Regexps     : Multiprocess_Regexp_Array;
       Matched     : out GNAT.Regpat.Match_Array;
-      Timeout     : Integer := 10000;
+      Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
    --  Same as above, but for multi processes
 
    procedure Expect
      (Result      : out Expect_Match;
       Regexps     : Multiprocess_Regexp_Array;
-      Timeout     : Integer := 10000;
+      Timeout     : Integer := 10_000;
       Full_Buffer : Boolean := False);
    --  Same as the previous one, but for multiple processes.
    --  This procedure finds the first regexp that match the associated process.

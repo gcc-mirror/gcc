@@ -1,3 +1,70 @@
+2009-05-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): In step 5, get the
+	Underlying_Type before retrieving the type definition for gathering
+	components, to account for the case where the type is private.
+
+2009-05-06  Tristan Gingold  <gingold@adacore.com>
+
+	* g-comlin.ads: Fix minor typos (Getopt instead of Get_Opt).
+
+2009-05-06  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socthi-vms.adb, g-socthi-vms.ads, g-socthi-vxworks.adb,
+	g-socthi-vxworks.ads, g-socthi-mingw.adb g-socthi-mingw.ads,
+	g-socthi.adb, g-stsifd-sockets.adb, g-socthi.ads, g-socket.adb
+	(GNAT.Sockets.Thin.C_Sendmsg, GNAT.Sockets.Thin.C_Recvmsg,
+	Windows versions): Fix incorrect base
+	address of Iovec (it's Msg_Iov, not Msg_Iov'Address).
+	(GNAT.Sockets.Thin.C_Sendto, GNAT.Sockets.Thin.C_Recvfrom): Use a
+	System.Address for the To parameter instead of a Sockaddr_In_Access, to
+	achieve independance from AF_INET family, and also to allow this
+	parameter to be retrieved from a Msghdr for the Windows case where
+	these routines are used to implement C_Sendmsg and C_Recvmsg.
+
+2009-05-06  Bob Duff  <duff@adacore.com>
+
+	* g-expect.adb, g-expect.ads: Minor reformatting
+
+	* sdefault.ads: Minor comment fix
+
+	* g-expect-vms.adb: Minor reformatting
+
+	* table.ads, table.adb (Append_All): New convenience procedure for
+	appending a whole array.
+
+	* comperr.adb (Compiler_Abort): Mention the -gnatd.n switch in the bug
+	box message. Call Osint.Dump_Source_File_Names to print out the file
+	list, instead of rummaging around in various data structures.
+
+	* debug.adb: New switch -gnatd.n, to print source file names as they
+	are read.
+
+	* alloc.ads: Add parameters for Osint.File_Name_Chars.
+
+	* osint.ads, osint.adb (Dump_Source_File_Names): New procedure to print
+	out source file names during a "bug box".
+	(Include_Dir_Default_Prefix): Use memo-izing to avoid repeated new/free.
+	(Read_Source_File): Print out the file name, if requested via -gnatd.n.
+	If it's not part of the runtimes, store it for later printing by
+	Dump_Source_File_Names.
+
+2009-05-06  Javier Miranda  <miranda@adacore.com>
+
+	* gnat_rm.texi (CPP_Constructor): Avoid duplication of the
+	documentation and add reference to the GNAT user guide for further
+	details.
+
+2009-05-06  Javier Miranda  <miranda@adacore.com>
+
+	* gnat_ugn.texi: Complete documentation for CPP_Constructor and remove
+	also wrong examples that use extension aggregates.
+
+2009-05-06  Albert Lee  <lee@adacore.com>
+
+	* s-oscons-tmplt.c (System.OS_Constants): Do not use special definition
+	of Msg_Iovlen_T for VMS.
+
 2009-05-04   Laurent GUERBY  <laurent@guerby.net>
 
 	PR ada/38874

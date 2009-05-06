@@ -94,7 +94,7 @@ package body GNAT.Sockets.Thin is
       Msg     : System.Address;
       Len     : C.int;
       Flags   : C.int;
-      From    : Sockaddr_In_Access;
+      From    : System.Address;
       Fromlen : not null access C.int) return C.int;
    pragma Import (C, Syscall_Recvfrom, "recvfrom");
 
@@ -115,7 +115,7 @@ package body GNAT.Sockets.Thin is
       Msg   : System.Address;
       Len   : C.int;
       Flags : C.int;
-      To    : Sockaddr_In_Access;
+      To    : System.Address;
       Tolen : C.int) return C.int;
    pragma Import (C, Syscall_Sendto, "sendto");
 
@@ -290,7 +290,7 @@ package body GNAT.Sockets.Thin is
       Msg     : System.Address;
       Len     : C.int;
       Flags   : C.int;
-      From    : Sockaddr_In_Access;
+      From    : System.Address;
       Fromlen : not null access C.int) return C.int
    is
       Res : C.int;
@@ -365,7 +365,7 @@ package body GNAT.Sockets.Thin is
       Msg   : System.Address;
       Len   : C.int;
       Flags : C.int;
-      To    : Sockaddr_In_Access;
+      To    : System.Address;
       Tolen : C.int) return C.int
    is
       Res : C.int;

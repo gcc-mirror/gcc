@@ -3291,8 +3291,29 @@ end Pkg_Root;
 
 On the Ada side the constructor is represented by a function (whose
 name is arbitrary) that returns the classwide type corresponding to
-the imported C++ class.
+the imported C++ class. Although the constructor is described as a
+function, it is typically a procedure with an extra implicit argument
+(the object being initialized) at the implementation level. GNAT
+issues the appropriate call, whatever it is, to get the object
+properly initialized.
 
+Constructors can only appear in the following contexts:
+
+@itemize @bullet
+@item
+On the right side of an initialization of an object of type @var{T}.
+@item
+On the right side of an initialization of a record component of type @var{T}.
+@item
+In an Ada 2005 limited aggregate.
+@item
+In an Ada 2005 nested limited aggregate.
+@item
+In an Ada 2005 limited aggregate that initializes an object built in
+place by an extended return statement.
+@end itemize
+
+@noindent
 In a declaration of an object whose type is a class imported from C++,
 either the default C++ constructor is implicitly called by GNAT, or
 else the required C++ constructor must be explicitly called in the
@@ -3324,12 +3345,11 @@ In this case the components DT inherited from the C++ side must be
 initialized by a C++ constructor, and the additional Ada components
 of type DT are initialized by GNAT. The initialization of such an
 object is done either by default, or by means of a function returning
-an aggregate of type DT, or by means of an extended aggregate.
+an aggregate of type DT.
 
 @smallexample @c ada
   Obj5 : DT;
   Obj6 : DT := Function_Returning_DT (50);
-  Obj7 : DT := (Constructor (30,40) with (C_Value => 50));
 @end smallexample
 
 The declaration of @code{Obj5} invokes the default constructors: the
@@ -3361,7 +3381,7 @@ non-default C++ constructors specified for the imported components.
 For example:
 
 @smallexample @c ada
-  Obj8 : Rec2 (40);
+  Obj7 : Rec2 (40);
 @end smallexample
 
 Using Ada 2005 we can use limited aggregates to initialize an object
@@ -3369,13 +3389,13 @@ invoking C++ constructors that differ from those specified in the type
 declarations. For example:
 
 @smallexample @c ada
-  Obj9 : Rec2 := (Rec => (Data1 => Constructor (15, 16),
+  Obj8 : Rec2 := (Rec => (Data1 => Constructor (15, 16),
                           others => <>),
                   others => <>);
 @end smallexample
 
 The above declaration uses an Ada 2005 limited aggregate to
-initialize @code{Obj9}, and the C++ constructor that has two integer
+initialize @code{Obj8}, and the C++ constructor that has two integer
 arguments is invoked to initialize the @code{Data1} component instead
 of the constructor specified in the declaration of type @code{Rec1}. In
 Ada 2005 the box in the aggregate indicates that unspecified components
