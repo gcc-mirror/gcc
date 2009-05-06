@@ -1,3 +1,13 @@
+2009-05-06  Sergey Rybin  <rybin@adacore.com>
+
+	* gnat_ugn.texi: Add subsection for Exits_From_Conditional_Loops rule
+	Add formal definition for extra exit point metric
+
+2009-05-06  Pascal Obry  <obry@adacore.com>
+
+	* adaint.c: Support for setting attributes on unicode filename on
+	Windows.
+
 2009-05-06  Robert Dewar  <dewar@adacore.com>
 
 	* sem_warn.adb: Minor reformatting

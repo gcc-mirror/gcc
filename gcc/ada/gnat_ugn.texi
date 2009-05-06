@@ -17637,7 +17637,11 @@ Do not consider @code{exit} statements as @code{goto}s when
 computing Essential Complexity
 
 @item ^--extra-exit-points^/EXTRA_EXIT_POINTS_ON^
-Report the extra exit points for subprogram bodies
+Report the extra exit points for subprogram bodies. As an exit point, this
+metric counts @code{return} statements and raise statements in case when the
+raised exception is not handled in the same body. In case of a function this
+metric subtracts 1 from the number of exit points, because a function body
+must contain at least one @code{return} statement.
 
 @item ^--no-extra-exit-points^/EXTRA_EXIT_POINTS_OFF^
 Do not report the extra exit points for subprogram bodies
@@ -20889,6 +20893,7 @@ used as a parameter of the @option{+R} or @option{-R} options.
 * Discriminated_Records::
 * Enumeration_Ranges_In_CASE_Statements::
 * Exceptions_As_Control_Flow::
+* Exits_From_Conditional_Loops::
 * EXIT_Statements_With_No_Loop_Name::
 * Expanded_Loop_Exit_Names::
 * Explicit_Full_Discrete_Ranges::
@@ -20939,6 +20944,7 @@ used as a parameter of the @option{+R} or @option{-R} options.
 * Slices::
 * Unassigned_OUT_Parameters::
 * Uncommented_BEGIN_In_Package_Bodies::
+* Unconditional_Exits::
 * Unconstrained_Array_Returns::
 * Universal_Ranges::
 * Unnamed_Blocks_And_Loops::
@@ -21154,6 +21160,20 @@ same subprogram body. A @code{raise} statement in an exception handler,
 package body, task body or entry body is not flagged.
 
 The rule has no parameters.
+
+@node Exits_From_Conditional_Loops
+@subsection @code{Exits_From_Conditional_Loops}
+@cindex @code{Exits_From_Conditional_Loops} (for @command{gnatcheck})
+
+@noindent
+Flag any exit statement if it transfers the control out of a @code{for} loop
+or a @code{while} loop. This includes cases when the @code{exit} statement
+applies to a @code{FOR} or @code{while} loop, and cases when it is enclosed
+in some @code{for} or @code{while} loop, but transfers the control from some
+outer (inconditional) @code{loop} statement.
+
+The rule has no parameters.
+
 
 @node EXIT_Statements_With_No_Loop_Name
 @subsection @code{EXIT_Statements_With_No_Loop_Name}
@@ -22253,6 +22273,14 @@ diagnostic message is attached to the line containing the first statement.
 
 This rule has no parameters.
 
+@node Unconditional_Exits
+@subsection @code{Unconditional_Exits}
+@cindex @code{Unconditional_Exits} rule (for @command{gnatcheck})
+
+@noindent
+Flag unconditional @code{exit} statements.
+
+This rule has no parameters.
 
 @node Unconstrained_Array_Returns
 @subsection @code{Unconstrained_Array_Returns}

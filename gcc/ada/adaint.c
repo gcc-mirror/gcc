@@ -3369,6 +3369,63 @@ __gnat_copy_attribs (char *from, char *to, int mode)
 {
 #if defined (VMS) || defined (__vxworks) || defined (__nucleus__)
   return -1;
+
+#elif defined (_WIN32) && !defined (RTX)
+  TCHAR wfrom [GNAT_MAX_PATH_LEN + 2];
+  TCHAR wto [GNAT_MAX_PATH_LEN + 2];
+  BOOL res;
+  FILETIME fct, flat, flwt;
+  HANDLE hfrom, hto;
+
+  S2WSC (wfrom, from, GNAT_MAX_PATH_LEN + 2);
+  S2WSC (wto, to, GNAT_MAX_PATH_LEN + 2);
+
+  /* retrieve from times */
+
+  hfrom = CreateFile
+    (wfrom, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+  if (hfrom == INVALID_HANDLE_VALUE)
+    return -1;
+
+  res = GetFileTime (hfrom, &fct, &flat, &flwt);
+
+  CloseHandle (hfrom);
+
+  if (res == 0)
+    return -1;
+
+  /* retrieve from times */
+
+  hto = CreateFile
+    (wto, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+  if (hto == INVALID_HANDLE_VALUE)
+    return -1;
+
+  res = SetFileTime (hto, NULL, &flat, &flwt);
+
+  CloseHandle (hto);
+
+  if (res == 0)
+    return -1;
+
+  /* Set file attributes in full mode. */
+
+  if (mode == 1)
+    {
+      DWORD attribs = GetFileAttributes (wfrom);
+
+      if (attribs == INVALID_FILE_ATTRIBUTES)
+	return -1;
+
+      res = SetFileAttributes (wto, attribs);
+      if (res == 0)
+	return -1;
+    }
+
+  return 0;
+
 #else
   struct stat fbuf;
   struct utimbuf tbuf;
