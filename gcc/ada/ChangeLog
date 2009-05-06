@@ -1,3 +1,14 @@
+2009-05-06  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb (Valid_Ancestor_Type): Add support for C++ constructors.
+	(Resolve_Extension_Aggregate): Do not reject C++ constructors in
+	extension aggregates.
+	(Resolve_Record_Aggregate): Add support for C++ constructors in
+	extension aggregates.
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Add support for C++
+	constructors in extension aggregates.
+
 2009-05-06  Robert Dewar  <dewar@adacore.com>
 
 	* freeze.adb (Freeze_Record_Type): Improve error msg for bad size
