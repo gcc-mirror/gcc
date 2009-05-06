@@ -1,3 +1,8 @@
+2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* gfortran.dg/pr40021.f: Moved to ...
+	* gfortran.fortran-torture/execute/pr40021.f: Here.
+
 2009-05-06  Janis Johnson  <janis187@us.ibm.com>
 
 	PR middle-end/39986
@@ -5,6 +10,7 @@
 
 2009-05-06  Michael Matz  <matz@suse.de>
 
+	PR middle-end/40021
 	* gfortran.dg/pr40021.f: New test.
 
 2009-05-06  Le-Chun Wu  <lcwu@google.com>
