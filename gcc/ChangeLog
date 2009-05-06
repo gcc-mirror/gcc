@@ -1,3 +1,11 @@
+2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*avx_<code><mode>3_finite): Replace
+	ssemodesuffixf2c with avxmodesuffixf2c.
+
 2009-05-06  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40022
