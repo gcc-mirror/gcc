@@ -1,5 +1,11 @@
 2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c (ix86_build_signbit_mask): Make it static.
+
+	* config/i386/i386-protos.h (ix86_build_signbit_mask): Removed.
+
+2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.md (*avx_<code><mode>3_finite): Replace
 	ssemodesuffixf2c with avxmodesuffixf2c.
 
