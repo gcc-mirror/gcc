@@ -5722,14 +5722,25 @@ package body Sem_Ch8 is
                if Ekind (Base_Type (T_Name)) = E_Task_Type then
 
                   --  In Ada 2005, a task name can be used in an access
-                  --  definition within its own body.
+                  --  definition within its own body. It cannot be used
+                  --  in the discriminant part of the task declaration,
+                  --  nor anywhere else in the declaration because entries
+                  --  cannot have access parameters.
 
                   if Ada_Version >= Ada_05
                     and then Nkind (Parent (N)) = N_Access_Definition
                   then
                      Set_Entity (N, T_Name);
                      Set_Etype  (N, T_Name);
-                     return;
+
+                     if Has_Completion (T_Name) then
+                        return;
+
+                     else
+                        Error_Msg_N
+                          ("task type cannot be used as type mark " &
+                           "within its own declaration", N);
+                     end if;
 
                   else
                      Error_Msg_N

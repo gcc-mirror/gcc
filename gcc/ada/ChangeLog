@@ -1,5 +1,26 @@
 2009-05-06  Gary Dismukes  <dismukes@adacore.com>
 
+	* sem_aggr.adb: Fix typo.
+
+2009-05-06  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): For a controlled object
+	declaration, do not adjust if the declaration is to be rewritten into
+	a renaming.
+
+2009-05-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Type): Reject the use of a task type in its own
+	discriminant part.
+
+2009-05-06  Bob Duff  <duff@adacore.com>
+
+	* s-fileio.adb (File_IO_Clean_Up_Type): Make this type limited, since
+	otherwise the compiler would be allowed to optimize away the cleanup
+	code.
+
+2009-05-06  Gary Dismukes  <dismukes@adacore.com>
+
 	* gnat_ugn.texi: Fix typo.
 
 2009-05-06  Thomas Quinot  <quinot@adacore.com>

@@ -3076,10 +3076,14 @@ package body Sem_Aggr is
             --  of all ancestors, starting with the root.
 
             if Nkind (N) = N_Extension_Aggregate then
+
+               --  If the ancestor part is a C++ constructor we must handle
+               --  here that it is a function returning a class-wide type
+
                if Is_CPP_Constructor_Call (Ancestor_Part (N)) then
                   pragma Assert
                     (Is_Class_Wide_Type (Etype (Ancestor_Part (N))));
-                  Root_Typ := Base_Type (Etype (Etype (Ancestor_Part (N))));
+                  Root_Typ := Root_Type (Etype (Ancestor_Part (N)));
                else
                   Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
                end if;
@@ -3462,7 +3466,7 @@ package body Sem_Aggr is
                                    (Inner_Comp, New_Aggr,
                                      Component_Associations (Aggr));
 
-                                 --  Collect disciminant values and recurse
+                                 --  Collect discriminant values and recurse
 
                                  Add_Discriminant_Values
                                    (New_Aggr, Assoc_List);

@@ -1888,8 +1888,8 @@ package body Exp_Ch3 is
          end if;
 
          if Needs_Finalization (Typ)
-         and then not (Kind = N_Aggregate or else Kind = N_Extension_Aggregate)
-         and then not Is_Inherently_Limited_Type (Typ)
+           and then not (Nkind_In (Kind, N_Aggregate, N_Extension_Aggregate))
+           and then not Is_Inherently_Limited_Type (Typ)
          then
             Append_List_To (Res,
               Make_Adjust_Call (
@@ -4185,9 +4185,28 @@ package body Exp_Ch3 is
       --  which case the init proc call must be inserted only after the bodies
       --  of the shared variable procedures have been seen.
 
+      function Rewrite_As_Renaming return Boolean;
+      --  Indicate whether to rewrite a declaration with initialization into an
+      --  object renaming declaration (see below).
+
+      -------------------------
+      -- Rewrite_As_Renaming --
+      -------------------------
+
+      function Rewrite_As_Renaming return Boolean is
+      begin
+         return not Aliased_Present (N)
+           and then Is_Entity_Name (Expr_Q)
+           and then Ekind (Entity (Expr_Q)) = E_Variable
+           and then OK_To_Rename (Entity (Expr_Q))
+           and then Is_Entity_Name (Object_Definition (N));
+      end Rewrite_As_Renaming;
+
+   --  Start of processing for Expand_N_Object_Declaration
+
    begin
-      --  Don't do anything for deferred constants. All proper actions will
-      --  be expanded during the full declaration.
+      --  Don't do anything for deferred constants. All proper actions will be
+      --  expanded during the full declaration.
 
       if No (Expr) and Constant_Present (N) then
          return;
@@ -4603,10 +4622,13 @@ package body Exp_Ch3 is
             --  where the object was initialized by a call to a function whose
             --  result is built in place, since no copy occurred. (Eventually
             --  we plan to support in-place function results for some cases
-            --  of nonlimited types. ???)
+            --  of nonlimited types. ???) Similarly, no adjustment is required
+            --  if we are going to rewrite the object declaration into a
+            --  renaming declaration.
 
             if Needs_Finalization (Typ)
               and then not Is_Inherently_Limited_Type (Typ)
+              and then not Rewrite_As_Renaming
             then
                Insert_Actions_After (Init_After,
                  Make_Adjust_Call (
@@ -4750,14 +4772,11 @@ package body Exp_Ch3 is
          --     X : typ renames expr
 
          --  provided that X is not aliased. The aliased case has to be
-         --  excluded in general because expr will not be aliased in general.
+         --  excluded in general because Expr will not be aliased in general.
+         --  We also exclude controlled types because X and Expr may need to
+         --  be attached to distinct finalization lists.
 
-         if not Aliased_Present (N)
-           and then Is_Entity_Name (Expr_Q)
-           and then Ekind (Entity (Expr_Q)) = E_Variable
-           and then OK_To_Rename (Entity (Expr_Q))
-           and then Is_Entity_Name (Object_Definition (N))
-         then
+         if Rewrite_As_Renaming then
             Rewrite (N,
               Make_Object_Renaming_Declaration (Loc,
                 Defining_Identifier => Defining_Identifier (N),
