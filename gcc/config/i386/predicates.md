@@ -702,7 +702,7 @@
 {
   /* On Pentium4, the inc and dec operations causes extra dependency on flag
      registers, since carry flag is not set.  */
-  if (!TARGET_USE_INCDEC && !optimize_size)
+  if (!TARGET_USE_INCDEC && !optimize_insn_for_size_p ())
     return 0;
   return op == const1_rtx || op == constm1_rtx;
 })
@@ -816,7 +816,7 @@
 
   /* All patterns using aligned_operand on memory operands ends up
      in promoting memory operand to 64bit and thus causing memory mismatch.  */
-  if (TARGET_MEMORY_MISMATCH_STALL && !optimize_size)
+  if (TARGET_MEMORY_MISMATCH_STALL && !optimize_insn_for_size_p ())
     return 0;
 
   /* Don't even try to do any aligned optimizations with volatiles.  */
