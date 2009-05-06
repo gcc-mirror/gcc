@@ -40,6 +40,11 @@ with Interfaces.C; use Interfaces.C;
 
 package body GNAT.Sockets.Thin is
 
+   type VMS_Msghdr is new Msghdr;
+   pragma Pack (VMS_Msghdr);
+   --  On VMS (unlike other platforms), struct msghdr is packed, so a specific
+   --  derived type is required.
+
    Non_Blocking_Sockets : aliased Fd_Set;
    --  When this package is initialized with Process_Blocking_IO set to True,
    --  sockets are set in non-blocking mode to avoid blocking the whole process
@@ -300,15 +305,21 @@ package body GNAT.Sockets.Thin is
    is
       Res : C.int;
 
+      GNAT_Msg : Msghdr;
+      for GNAT_Msg'Address use Msg;
+      pragma Import (Ada, GNAT_Msg);
+
+      VMS_Msg : aliased VMS_Msghdr := VMS_Msghdr (GNAT_Msg);
    begin
       loop
-         Res := Syscall_Recvmsg (S, Msg, Flags);
+         Res := Syscall_Recvmsg (S, VMS_Msg'Address, Flags);
          exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
            or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
+      GNAT_Msg := Msghdr (VMS_Msg);
 
       return ssize_t (Res);
    end C_Recvmsg;
@@ -324,15 +335,22 @@ package body GNAT.Sockets.Thin is
    is
       Res : C.int;
 
+      GNAT_Msg : Msghdr;
+      for GNAT_Msg'Address use Msg;
+      pragma Import (Ada, GNAT_Msg);
+
+      VMS_Msg : aliased VMS_Msghdr := VMS_Msghdr (GNAT_Msg);
+
    begin
       loop
-         Res := Syscall_Sendmsg (S, Msg, Flags);
+         Res := Syscall_Sendmsg (S, VMS_Msg'Address, Flags);
          exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
            or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
+      GNAT_Msg := Msghdr (VMS_Msg);
 
       return ssize_t (Res);
    end C_Sendmsg;
