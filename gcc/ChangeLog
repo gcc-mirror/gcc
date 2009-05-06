@@ -1,3 +1,8 @@
+2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.md (*avx_<code><mode>3_finite): Replace
+	ssemodesuffixf2c with avxmodesuffixf2c.
+
 2009-05-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/40032
