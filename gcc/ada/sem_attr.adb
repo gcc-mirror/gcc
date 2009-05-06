@@ -1067,8 +1067,13 @@ package body Sem_Attr is
             --  If there is an implicit dereference, then we must freeze
             --  the designated type of the access type, since the type of
             --  the referenced array is this type (see AI95-00106).
+            --  As done elsewhere, freezing must not happen when pre-analyzing
+            --  a pre- or postcondition or a default value for an object or
+            --  for a formal parameter.
 
-            Freeze_Before (N, Designated_Type (P_Type));
+            if not In_Spec_Expression then
+               Freeze_Before (N, Designated_Type (P_Type));
+            end if;
 
             Rewrite (P,
               Make_Explicit_Dereference (Sloc (P),

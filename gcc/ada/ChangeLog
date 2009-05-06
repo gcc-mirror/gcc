@@ -1,3 +1,19 @@
+2009-05-06  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb (Locate_Directory): Remove unused parameters, and add
+	support for returning the directory even if it doesn't exist. This is
+	used for the object directory, since we are always setting it to a
+	non-null value, and we should set it to an absolute name rather than a
+	relative name for the sake of external tools that might depend on it.
+	(Check_Library_Attributes): When Project.Library_Dir is known, check
+	that the directory exists.
+
+2009-05-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Check_Dereference): If the prefix of an attribute
+	reference is an implicit dereference, do not freeze the designated type
+	if within a default expression or when preanalyzing a pre/postcondtion.
+
 2009-05-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Analyze_Object_Renaming): If the object is a function
