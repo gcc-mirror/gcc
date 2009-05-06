@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2008, AdaCore                     --
+--                     Copyright (C) 1998-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,6 +183,9 @@ package GNAT.Table is
    --    x.Table (x.Last) := New_Val;
    --  i.e. the table size is increased by one, and the given new item
    --  stored in the newly created table element.
+
+   procedure Append_All (New_Vals : Table_Type);
+   --  Appends all components of New_Vals
 
    procedure Set_Item
      (Index : Table_Index_Type;

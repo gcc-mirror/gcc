@@ -1218,7 +1218,7 @@ package body Exp_Attr is
       --  A reference to P'Body_Version or P'Version is expanded to
 
       --     Vnn : Unsigned;
-      --     pragma Import (C, Vnn, "uuuuT";
+      --     pragma Import (C, Vnn, "uuuuT");
       --     ...
       --     Get_Version_String (Vnn)
 

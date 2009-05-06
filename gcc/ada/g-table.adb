@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2008, AdaCore                     --
+--                     Copyright (C) 1998-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,6 +95,17 @@ package body GNAT.Table is
    begin
       Set_Item (Table_Index_Type (Last_Val + 1), New_Val);
    end Append;
+
+   ----------------
+   -- Append_All --
+   ----------------
+
+   procedure Append_All (New_Vals : Table_Type) is
+   begin
+      for J in New_Vals'Range loop
+         Append (New_Vals (J));
+      end loop;
+   end Append_All;
 
    --------------------
    -- Decrement_Last --

@@ -3083,6 +3083,7 @@ package body Sem_Aggr is
                else
                   Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
                end if;
+
             else
                Root_Typ := Root_Type (Typ);
 
@@ -3461,7 +3462,7 @@ package body Sem_Aggr is
                                    (Inner_Comp, New_Aggr,
                                      Component_Associations (Aggr));
 
-                                 --  Collect disciminant values, and recurse.
+                                 --  Collect disciminant values and recurse
 
                                  Add_Discriminant_Values
                                    (New_Aggr, Assoc_List);

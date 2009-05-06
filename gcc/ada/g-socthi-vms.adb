@@ -51,7 +51,7 @@ package body GNAT.Sockets.Thin is
    --  when a thread wants to perform a blocking IO operation. But the user can
    --  also set a socket in non-blocking mode by purpose. In order to make a
    --  difference between these two situations, we track the origin of
-   --  non-blocking mode in Non_Blocking_Sockets. If S is in
+   --  non-blocking mode in Non_Blocking_Sockets. Note that if S is in
    --  Non_Blocking_Sockets, it has been set in non-blocking mode by the user.
 
    Quantum : constant Duration := 0.2;
@@ -215,7 +215,6 @@ package body GNAT.Sockets.Thin is
 
       if Res = Failure and then Errno = SOSC.EISCONN then
          return Thin_Common.Success;
-
       else
          return Res;
       end if;
@@ -310,6 +309,7 @@ package body GNAT.Sockets.Thin is
       pragma Import (Ada, GNAT_Msg);
 
       VMS_Msg : aliased VMS_Msghdr := VMS_Msghdr (GNAT_Msg);
+
    begin
       loop
          Res := Syscall_Recvmsg (S, VMS_Msg'Address, Flags);
@@ -319,6 +319,7 @@ package body GNAT.Sockets.Thin is
            or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
+
       GNAT_Msg := Msghdr (VMS_Msg);
 
       return ssize_t (Res);
@@ -350,6 +351,7 @@ package body GNAT.Sockets.Thin is
            or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
+
       GNAT_Msg := Msghdr (VMS_Msg);
 
       return ssize_t (Res);

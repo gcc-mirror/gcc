@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1997-2005, AdaCore                     --
+--                     Copyright (C) 1997-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,8 +36,8 @@ with System.Storage_Elements; use System.Storage_Elements;
 
 package body GNAT.Debug_Utilities is
 
-      H : constant array (0 .. 15) of Character := "0123456789ABCDEF";
-      --  Table of hex digits
+   H : constant array (0 .. 15) of Character := "0123456789ABCDEF";
+   --  Table of hex digits
 
    -----------
    -- Image --
