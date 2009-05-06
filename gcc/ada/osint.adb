@@ -2299,7 +2299,8 @@ package body Osint is
 
       declare
          Name : String renames Name_Buffer (1 .. Name_Len);
-         Inc : String renames Include_Dir_Default_Prefix.all;
+         Inc  : String renames Include_Dir_Default_Prefix.all;
+
       begin
          if Debug.Debug_Flag_Dot_N then
             Write_Line (Name);
@@ -2309,7 +2310,9 @@ package body Osint is
            and then Inc'Length < Name_Len
            and then Name_Buffer (1 .. Inc'Length) = Inc
          then
-            null; -- Part of runtimes, so ignore it
+            --  Part of runtimes, so ignore it
+
+            null;
 
          else
             File_Name_Chars.Append_All (File_Name_Chars.Table_Type (Name));
@@ -2341,9 +2344,9 @@ package body Osint is
       begin
          --  Allocate source buffer, allowing extra character at end for EOF
 
-         --  Some systems (e.g. VMS) have file types that require one
-         --  read per line, so read until we get the Len bytes or until
-         --  there are no more characters.
+         --  Some systems (e.g. VMS) have file types that require one read per
+         --  line, so read until we get the Len bytes or until there are no
+         --  more characters.
 
          Hi := Lo;
          loop
@@ -2355,8 +2358,8 @@ package body Osint is
          Actual_Ptr (Hi) := EOF;
 
          --  Now we need to work out the proper virtual origin pointer to
-         --  return. This is exactly Actual_Ptr (0)'Address, but we have
-         --  to be careful to suppress checks to compute this address.
+         --  return. This is exactly Actual_Ptr (0)'Address, but we have to
+         --  be careful to suppress checks to compute this address.
 
          declare
             pragma Suppress (All_Checks);
