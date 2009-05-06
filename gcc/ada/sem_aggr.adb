@@ -3156,11 +3156,7 @@ package body Sem_Aggr is
             end loop;
 
          else
-            --  We take the underlying type to account for private types when
-            --  the original association had a box default.
-
-            Record_Def :=
-              Type_Definition (Parent (Underlying_Type (Base_Type (Typ))));
+            Record_Def := Type_Definition (Parent (Base_Type (Typ)));
 
             if Null_Present (Record_Def) then
                null;
@@ -3317,6 +3313,7 @@ package body Sem_Aggr is
                then
                   if Is_Record_Type (Ctyp)
                     and then Has_Discriminants (Ctyp)
+                    and then not Is_Private_Type (Ctyp)
                   then
                      --  We build a partially initialized aggregate with the
                      --  values of the discriminants and box initialization
@@ -3325,6 +3322,9 @@ package body Sem_Aggr is
                      --  the component. The capture of discriminants must
                      --  be recursive because subcomponents may be contrained
                      --  (transitively) by discriminants of enclosing types.
+                     --  For a private type with discriminants, a call to the
+                     --  initialization procedure will be generated, and no
+                     --  subaggregate is needed.
 
                      Capture_Discriminants : declare
                         Loc        : constant Source_Ptr := Sloc (N);

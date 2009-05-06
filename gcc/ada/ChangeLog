@@ -1,3 +1,25 @@
+2009-05-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate): If a defaulted component of
+	an aggregate with box default is of a discriminated private type, do
+	not build a subaggregate for it.
+	A proper call to the initialization procedure is generated for it.
+
+2009-05-06  Thomas Quinot  <quinot@adacore.com>
+
+	* rtsfind.adb, rtsfind.ads, exp_dist.adb, exp_dist.ads
+	(Exp_Dist.Build_TC_Call, Build_From_Any_Call, Build_To_Any_Call):
+	Use PolyORB strings to represent Ada.Strings.Unbounded_String value;
+	use standard array code for Standard.String.
+	(Exp_Dist): Bump PolyORB s-parint API version to 3.
+	(Rtsfind): New entities TA_Std_String, Unbounded_String.
+
+2009-05-06  Robert Dewar  <dewar@adacore.com>
+
+	* g-comlin.ads: Minor reformatting
+
+	* xoscons.adb: Minor reformatting
+
 2009-05-06  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_aggr.adb (Resolve_Record_Aggregate): In step 5, get the

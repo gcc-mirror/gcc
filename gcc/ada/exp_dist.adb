@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6630,13 +6630,13 @@ package body Exp_Dist is
                                  Make_Function_Call (Loc,
                                    Name =>
                                      New_Occurrence_Of
-                                       (RTE (RE_TA_String), Loc),
+                                       (RTE (RE_TA_Std_String), Loc),
                                    Parameter_Associations => New_List (
                                      Make_String_Literal (Loc, Name_String))),
                                  Make_Function_Call (Loc,
                                    Name =>
                                      New_Occurrence_Of
-                                       (RTE (RE_TA_String), Loc),
+                                       (RTE (RE_TA_Std_String), Loc),
                                    Parameter_Associations => New_List (
                                      Make_String_Literal (Loc,
                                        Strval => Repo_Id_String))))))))))));
@@ -8465,7 +8465,7 @@ package body Exp_Dist is
             elsif U_Type = RTE (RE_Long_Long_Unsigned) then
                Lib_RE := RE_FA_LLU;
 
-            elsif U_Type = Standard_String then
+            elsif Is_RTE (U_Type, RE_Unbounded_String) then
                Lib_RE := RE_FA_String;
 
             --  Special DSA types
@@ -8970,7 +8970,11 @@ package body Exp_Dist is
                         for J in 1 .. Ndim loop
                            Lnam := New_External_Name ('L', J);
                            Hnam := New_External_Name ('H', J);
-                           Indt := Etype (Indx);
+
+                           --  Note, for empty arrays bounds may be out of
+                           --  the range of Etype (Indx).
+
+                           Indt := Base_Type (Etype (Indx));
 
                            Append_To (Decls,
                              Make_Object_Declaration (Loc,
@@ -9288,6 +9292,7 @@ package body Exp_Dist is
 
             Typ     : Entity_Id := Etype (N);
             U_Type  : Entity_Id;
+            C_Type  : Entity_Id;
             Fnam    : Entity_Id := Empty;
             Lib_RE  : RE_Id := RE_Null;
 
@@ -9383,7 +9388,7 @@ package body Exp_Dist is
             elsif U_Type = RTE (RE_Long_Long_Unsigned) then
                Lib_RE := RE_TA_LLU;
 
-            elsif U_Type = Standard_String then
+            elsif Is_RTE (U_Type, RE_Unbounded_String) then
                Lib_RE := RE_TA_String;
 
             --  Special DSA types
@@ -9416,11 +9421,23 @@ package body Exp_Dist is
                Fnam := RTE (Lib_RE);
             end if;
 
+            --  If Fnam is already analyzed, find the proper expected type,
+            --  else we have a newly constructed To_Any function and we know
+            --  that the expected type of its parameter is U_Type.
+
+            if Ekind (Fnam) = E_Function
+                 and then Present (First_Formal (Fnam))
+            then
+               C_Type := Etype (First_Formal (Fnam));
+            else
+               C_Type := U_Type;
+            end if;
+
             return
                 Make_Function_Call (Loc,
                   Name                   => New_Occurrence_Of (Fnam, Loc),
                   Parameter_Associations =>
-                    New_List (Unchecked_Convert_To (U_Type, N)));
+                    New_List (OK_Convert_To (C_Type, N)));
          end Build_To_Any_Call;
 
          ---------------------------
@@ -10153,7 +10170,7 @@ package body Exp_Dist is
                elsif U_Type = RTE (RE_Long_Long_Unsigned) then
                   Lib_RE := RE_TC_LLU;
 
-               elsif U_Type = Standard_String then
+               elsif Is_RTE (U_Type, RE_Unbounded_String) then
                   Lib_RE := RE_TC_String;
 
                --  Special DSA types
@@ -10253,7 +10270,7 @@ package body Exp_Dist is
             begin
                Append_To (Parameter_List,
                  Make_Function_Call (Loc,
-                   Name => New_Occurrence_Of (RTE (RE_TA_String), Loc),
+                   Name => New_Occurrence_Of (RTE (RE_TA_Std_String), Loc),
                    Parameter_Associations => New_List (
                      Make_String_Literal (Loc, S))));
             end Add_String_Parameter;
