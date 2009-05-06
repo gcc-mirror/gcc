@@ -1518,14 +1518,20 @@ execute_update_addresses_taken (bool do_optimize)
 	     a local decl that requires not to be a gimple register.  */
 	  if (code == GIMPLE_ASSIGN || code == GIMPLE_CALL)
 	    {
-	      tree lhs = gimple_get_lhs (stmt);
-	      /* A plain decl does not need it set.  */
-	      if (lhs && handled_component_p (lhs))
-	        {
-		  var = get_base_address (lhs);
-		  if (DECL_P (var))
-		    bitmap_set_bit (not_reg_needs, DECL_UID (var));
-		}
+              tree lhs = gimple_get_lhs (stmt);
+              
+              /* We may not rewrite TMR_SYMBOL to SSA.  */
+              if (lhs && TREE_CODE (lhs) == TARGET_MEM_REF
+                  && TMR_SYMBOL (lhs))
+                bitmap_set_bit (not_reg_needs, DECL_UID (TMR_SYMBOL (lhs)));
+
+              /* A plain decl does not need it set.  */
+              else if (lhs && handled_component_p (lhs))
+                {
+                  var = get_base_address (lhs);
+                  if (DECL_P (var))
+                    bitmap_set_bit (not_reg_needs, DECL_UID (var));
+                }
 	    }
 	}
 

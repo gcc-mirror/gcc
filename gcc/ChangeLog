@@ -1,3 +1,11 @@
+2009-05-06  Andrey Belevantsev  <abel@ispras.ru>
+
+	* tree-ssa.c (execute_update_address_taken): Handle TARGET_MEM_REF
+	when processing for not_regs_needed bitmap.
+	* gimple.c (walk_stmt_load_store_addr_ops): When visiting address,
+	handle TARGET_MEM_REF in lhs.  Check TMR_BASE for NULL while 
+	handling it for rhs. 
+
 2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md ((unnamed inc/dec peephole): Use

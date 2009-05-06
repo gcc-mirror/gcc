@@ -3232,12 +3232,18 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	  if (TREE_CODE (rhs) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (rhs, 0), data);
 	  else if (TREE_CODE (rhs) == TARGET_MEM_REF
+                   && TMR_BASE (rhs) != NULL_TREE
 		   && TREE_CODE (TMR_BASE (rhs)) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (rhs), 0), data);
 	  else if (TREE_CODE (rhs) == OBJ_TYPE_REF
 		   && TREE_CODE (OBJ_TYPE_REF_OBJECT (rhs)) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (OBJ_TYPE_REF_OBJECT (rhs),
 						   0), data);
+          lhs = gimple_assign_lhs (stmt);
+	  if (TREE_CODE (lhs) == TARGET_MEM_REF
+              && TMR_BASE (lhs) != NULL_TREE
+              && TREE_CODE (TMR_BASE (lhs)) == ADDR_EXPR)
+            ret |= visit_addr (stmt, TREE_OPERAND (TMR_BASE (lhs), 0), data);
 	}
       if (visit_load)
 	{
