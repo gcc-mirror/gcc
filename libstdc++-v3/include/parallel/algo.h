@@ -149,8 +149,8 @@ namespace __parallel
 
       if (_GLIBCXX_PARALLEL_CONDITION(true))
         {
-          binder2nd<__gnu_parallel::equal_to<value_type, T> >
-            comp(__gnu_parallel::equal_to<value_type, T>(), val);
+          binder2nd<__gnu_parallel::equal_to<value_type, const T&> >
+            comp(__gnu_parallel::equal_to<value_type, const T&>(), val);
           return __gnu_parallel::find_template(begin, end, begin, comp,
                                                __gnu_parallel::
                                                find_if_selector()).first;
