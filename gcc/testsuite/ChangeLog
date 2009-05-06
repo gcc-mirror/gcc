@@ -1,3 +1,8 @@
+2009-05-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40022
+	* gcc.c-torture/execute/pr40022.c: New testcase.
+
 2009-05-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/40013

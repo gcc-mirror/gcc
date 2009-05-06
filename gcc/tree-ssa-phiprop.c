@@ -119,8 +119,7 @@ phivn_valid_p (struct phiprop_d *phivn, tree name, basic_block bb)
       FOR_EACH_IMM_USE_STMT (use_stmt, ui2, vuse)
 	{
 	  /* If BB does not dominate a VDEF, the value is invalid.  */
-	  if (((is_gimple_assign (use_stmt)
-	        && !ZERO_SSA_OPERANDS (use_stmt, SSA_OP_VDEF))
+	  if ((!ZERO_SSA_OPERANDS (use_stmt, SSA_OP_VDEF)
 	       || gimple_code (use_stmt) == GIMPLE_PHI)
 	      && !dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt), bb))
 	    {

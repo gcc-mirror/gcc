@@ -1,3 +1,8 @@
+2009-05-06  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40022
+	* tree-ssa-phiprop.c (phivn_valid_p): Fix tuplification error.
+
 2009-05-04  DJ Delorie  <dj@redhat.com>
 
 	* config/m32c/m32c.c (m32c_override_options): Disable -fivopts for
