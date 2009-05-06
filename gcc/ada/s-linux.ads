@@ -94,8 +94,9 @@ package System.Linux is
 
    --  struct_sigaction offsets
 
-   sa_mask_pos  : constant := Standard'Address_Size / 8;
-   sa_flags_pos : constant := 128 + sa_mask_pos;
+   sa_handler_pos : constant := 0;
+   sa_mask_pos    : constant := Standard'Address_Size / 8;
+   sa_flags_pos   : constant := 128 + sa_mask_pos;
 
    SA_SIGINFO  : constant := 16#04#;
    SA_ONSTACK  : constant := 16#08000000#;
