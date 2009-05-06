@@ -2849,7 +2849,7 @@ package body Freeze is
                              and then Rsiz mod System_Storage_Unit /= 0
                            then
                               --  For implicit packing mode, just set the
-                              --  component size silently
+                              --  component size silently.
 
                               if Implicit_Packing then
                                  Set_Component_Size       (Btyp, Rsiz);
@@ -3245,7 +3245,7 @@ package body Freeze is
          --  later when the full type is frozen).
 
          elsif Ekind (E) = E_Record_Type
-           or else  Ekind (E) = E_Record_Subtype
+           or else Ekind (E) = E_Record_Subtype
          then
             Freeze_Record_Type (E);
 
@@ -3263,7 +3263,6 @@ package body Freeze is
             end if;
 
             Comp := First_Entity (E);
-
             while Present (Comp) loop
                if Is_Type (Comp) then
                   Freeze_And_Append (Comp, Loc, Result);

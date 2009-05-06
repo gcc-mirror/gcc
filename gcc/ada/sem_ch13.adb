@@ -2986,11 +2986,10 @@ package body Sem_Ch13 is
                Error_Msg_NE
                  ("invalid address clause for initialized object &!",
                   Nod, U_Ent);
-               Error_Msg_Name_1 := Chars (Entity (Nod));
-               Error_Msg_Name_2 := Chars (U_Ent);
-               Error_Msg_N
-                 ("\% must be defined before % (RM 13.1(22))!",
-                  Nod);
+               Error_Msg_Node_2 := U_Ent;
+               Error_Msg_NE
+                 ("\& must be defined before & (RM 13.1(22))!",
+                  Nod, Entity (Nod));
             end if;
 
          elsif Nkind (Nod) = N_Selected_Component then
@@ -3120,11 +3119,10 @@ package body Sem_Ch13 is
                      Error_Msg_NE
                        ("invalid address clause for initialized object &!",
                         Nod, U_Ent);
-                     Error_Msg_Name_1 := Chars (Ent);
-                     Error_Msg_Name_2 := Chars (U_Ent);
-                     Error_Msg_N
-                       ("\% must be defined before % (RM 13.1(22))!",
-                        Nod);
+                     Error_Msg_Node_2 := U_Ent;
+                     Error_Msg_NE
+                       ("\& must be defined before & (RM 13.1(22))!",
+                        Nod, Ent);
                   end if;
 
                elsif Nkind (Original_Node (Nod)) = N_Function_Call then
@@ -3136,10 +3134,9 @@ package body Sem_Ch13 is
                      Nod, U_Ent);
 
                   if Comes_From_Source (Ent) then
-                     Error_Msg_Name_1 := Chars (Ent);
-                     Error_Msg_N
-                       ("\reference to variable% not allowed"
-                          & " (RM 13.1(22))!", Nod);
+                     Error_Msg_NE
+                       ("\reference to variable& not allowed"
+                          & " (RM 13.1(22))!", Nod, Ent);
                   else
                      Error_Msg_N
                        ("non-static expression not allowed"

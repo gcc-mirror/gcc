@@ -1,3 +1,17 @@
+2009-05-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): If the object is a function
+	call returning an unconstrained composite value, create the proper
+	subtype for it, as is done for object dclarations with unconstrained
+	nominal subtypes
+
+2009-05-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Check_Constant_Address_Clause): Minor error message
+	improvements
+
+	* freeze.adb: Minor reformatting
+
 2009-05-06  Thomas Quinot  <quinot@adacore.com>
 
 	* sem_ch3.adb (Access_Type_Declaration): An access type whose

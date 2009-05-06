@@ -897,6 +897,33 @@ package body Sem_Ch8 is
                     ("\?suggest using an initialized constant object instead",
                      Nam);
                end if;
+
+               --  If the function call returns an unconstrained type, we
+               --  must build a constrained subtype for the new entity, in
+               --  a way similar to what is done for an object declaration
+               --  with an unconstrained nominal type.
+
+               if Is_Composite_Type (Etype (Nam))
+                 and then not Is_Constrained (Etype (Nam))
+                 and then not Has_Unknown_Discriminants (Etype (Nam))
+                 and then Expander_Active
+               then
+                  declare
+                     Loc  : constant Source_Ptr := Sloc (N);
+                     Subt : constant Entity_Id :=
+                              Make_Defining_Identifier (Loc,
+                                Chars => New_Internal_Name ('T'));
+                  begin
+                     Remove_Side_Effects (Nam);
+                     Insert_Action (N,
+                       Make_Subtype_Declaration (Loc,
+                         Defining_Identifier => Subt,
+                         Subtype_Indication  =>
+                           Make_Subtype_From_Expr (Nam, Etype (Nam))));
+                     Rewrite (Subtype_Mark (N), New_Occurrence_Of (Subt, Loc));
+                     Set_Etype (Nam, Subt);
+                  end;
+               end if;
          end case;
       end if;
 
