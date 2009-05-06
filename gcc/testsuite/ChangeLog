@@ -1,3 +1,22 @@
+2009-05-06  Le-Chun Wu  <lcwu@google.com>
+
+	* lib/plugin-support.exp: New file containing support procs for
+	plugin testcases.
+	* lib/target-supports.exp (check_plugin_available): New proc.
+	* gcc.dg/plugin/plugin.exp: New driver script for gcc testcases.
+	* gcc.dg/plugin/selfassign.c: New plugin source file.
+	* gcc.dg/plugin/self-assign-test-1.c: New test.
+	* gcc.dg/plugin/self-assign-test-2.c: Likewise.
+	* g++.dg/README: Add description for plugin test.
+	* g++.dg/dg.exp: Exclude plugin tests from the general test list.
+	* g++.dg/plugin/plugin.exp: New driver script for g++ testcases.
+	* g++.dg/plugin/selfassign.c: New plugin source file.
+	* g++.dg/plugin/self-assign-test-1.C: New test.
+	* g++.dg/plugin/self-assign-test-2.C: Likewise.
+	* g++.dg/plugin/self-assign-test-3.C: Likewise.
+	* g++.dg/plugin/dumb_plugin.c: New plugin source file.
+	* g++.dg/plugin/dumb-plugin-test-1.C: New test.
+
 2009-05-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40041

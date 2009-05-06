@@ -1,0 +1,102 @@
+#   Copyright (C) 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+
+# This file contains the support procedures for testing the plugin mechanism.
+
+load_lib dg.exp
+load_lib gcc.exp
+
+#
+# plugin-get-options -- process test directives
+#
+# SRC is the full pathname of the plugin source file.
+#
+proc plugin-get-options { src } {
+    # dg-options sets a variable called dg-extra-tool-flags.
+    set dg-extra-tool-flags ""
+
+    # dg-require-* sets dg-do-what.
+    upvar dg-do-what dg-do-what 
+
+    set tmp [dg-get-options $src]
+    foreach op $tmp {
+	set cmd [lindex $op 0]
+	if { ![string compare "dg-options" $cmd] } {
+	    set status [catch "$op" errmsg]
+	    if { $status != 0 } {
+		perror "src: $errmsg for \"$op\"\n"
+		unresolved "$src: $errmsg for \"$op\""
+		return
+	    }
+	} else {
+	    # Ignore unrecognized dg- commands, but warn about them.
+	    warning "plugin.exp does not support $cmd"
+	}
+   }
+
+    # Return flags to use for compiling the plugin source file
+    return ${dg-extra-tool-flags}
+}
+
+#
+# plugin-test-execute -- build the plugin first and then compile the
+# test files with the plugin.
+#
+# PLUGIN_SRC is the full pathname of the plugin source file.
+# PLUGIN_TESTS is a list of input test source files.
+#
+proc plugin-test-execute { plugin_src plugin_tests } {
+    global srcdir objdir
+    global verbose
+    global GMPINC
+
+    set basename [file tail $plugin_src]
+    set base [file rootname $basename]
+    set plugin_lib $base.so
+
+    verbose "Test the plugin $basename" 1
+
+    # Build the plugin itself
+    set extra_flags [plugin-get-options $plugin_src]
+
+    # Note that the plugin test support currently only works when the GCC
+    # build tree is available. (We make sure that is the case in plugin.exp.)
+    # Once we have figured out how/where to package/install GCC header files
+    # for general plugin support, we should modify the following include paths
+    # accordingly.
+    set gcc_srcdir "$srcdir/../.."
+    set gcc_objdir "$objdir/../../.."
+    set includes "-I. -I${srcdir} -I${gcc_srcdir}/gcc -I${gcc_objdir}/gcc \
+                  -I${gcc_srcdir}/include -I${gcc_srcdir}/libcpp/include \
+                  -I$GMPINC"
+
+    set optstr "$includes $extra_flags -DIN_GCC -fPIC -shared"
+
+    set status [target_compile "$optstr $plugin_src" "$plugin_lib" executable ""]
+    if { "$status" != "" } {
+ 	unresolved "$basename compilation, $optstr"
+ 	return
+    }
+
+    # Compile the input source files with the plugin
+    global default_flags
+    set plugin_enabling_flags "-fplugin=./$plugin_lib"
+    dg-runtest $plugin_tests $plugin_enabling_flags $default_flags
+
+    # Clean up
+    remote_file build delete $plugin_lib
+}
