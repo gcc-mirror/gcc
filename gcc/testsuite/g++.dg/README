@@ -18,6 +18,7 @@ opt	 Tests for fixes of bugs with particular optimizations.
 overload Tests for overload resolution and conversions.
 parse	 Tests for parsing.
 pch	 Tests for precompiled headers.
+plugin   Tests for plugin support.
 rtti	 Tests for run-time type identification (typeid, dynamic_cast, etc.)
 template Tests for templates.
 tc1	 Tests for Technical Corrigendum 1 conformance.

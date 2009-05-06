@@ -816,7 +816,6 @@ bool
 plugin_default_version_check (struct plugin_gcc_version *gcc_version,
 			      struct plugin_gcc_version *plugin_version)
 {
-  /* version is NULL if the plugin was not linked with plugin-version.o */
   if (!gcc_version || !plugin_version)
     return false;
 
