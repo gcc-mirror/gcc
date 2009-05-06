@@ -71,7 +71,7 @@ typedef struct gfc_se
      are NULL.  Used by intrinsic size.  */
   unsigned data_not_needed:1;
 
-  /* If set, gfc_conv_function_call does not put byref calls into se->pre.  */
+  /* If set, gfc_conv_procedure_call does not put byref calls into se->pre.  */
   unsigned no_function_call:1;
 
   /* Scalarization parameters.  */
@@ -313,9 +313,10 @@ int gfc_is_intrinsic_libcall (gfc_expr *);
 /* Used to call the elemental subroutines used in operator assignments.  */
 tree gfc_conv_operator_assign (gfc_se *, gfc_se *, gfc_symbol *);
 
-/* Also used to CALL subroutines.  */
-int gfc_conv_function_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *,
-			    tree);
+/* Used to call ordinary functions/subroutines
+   and procedure pointer components.  */
+int gfc_conv_procedure_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *,
+			    gfc_expr *, tree);
 
 void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent);
 

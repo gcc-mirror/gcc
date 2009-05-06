@@ -89,4 +89,6 @@ int gfc_is_nodesc_array (gfc_symbol *);
 /* Return the DTYPE for an array.  */
 tree gfc_get_dtype (tree);
 
+tree gfc_get_ppc_type (gfc_component *);
+
 #endif

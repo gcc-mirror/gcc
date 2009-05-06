@@ -182,6 +182,7 @@ free_expr0 (gfc_expr *e)
       break;
 
     case EXPR_COMPCALL:
+    case EXPR_PPC:
       gfc_free_actual_arglist (e->value.compcall.actual);
       break;
 
@@ -507,6 +508,7 @@ gfc_copy_expr (gfc_expr *p)
       break;
 
     case EXPR_COMPCALL:
+    case EXPR_PPC:
       q->value.compcall.actual =
 	gfc_copy_actual_arglist (p->value.compcall.actual);
       q->value.compcall.tbp = p->value.compcall.tbp;
@@ -1728,6 +1730,7 @@ gfc_simplify_expr (gfc_expr *p, int type)
       break;
 
     case EXPR_COMPCALL:
+    case EXPR_PPC:
       gcc_unreachable ();
       break;
     }
@@ -3038,7 +3041,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
   symbol_attribute attr;
   gfc_ref *ref;
   int is_pure;
-  int pointer, check_intent_in;
+  int pointer, check_intent_in, proc_pointer;
 
   if (lvalue->symtree->n.sym->ts.type == BT_UNKNOWN
       && !lvalue->symtree->n.sym->attr.proc_pointer)
@@ -3062,8 +3065,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
   /* Check INTENT(IN), unless the object itself is the component or
      sub-component of a pointer.  */
   check_intent_in = 1;
-  pointer = lvalue->symtree->n.sym->attr.pointer
-	      | lvalue->symtree->n.sym->attr.proc_pointer;
+  pointer = lvalue->symtree->n.sym->attr.pointer;
+  proc_pointer = lvalue->symtree->n.sym->attr.proc_pointer;
 
   for (ref = lvalue->ref; ref; ref = ref->next)
     {
@@ -3071,7 +3074,10 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	check_intent_in = 0;
 
       if (ref->type == REF_COMPONENT)
-	pointer = ref->u.c.component->attr.pointer;
+	{
+	  pointer = ref->u.c.component->attr.pointer;
+	  proc_pointer = ref->u.c.component->attr.proc_pointer;
+	}
 
       if (ref->type == REF_ARRAY && ref->next == NULL)
 	{
@@ -3107,7 +3113,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
       return FAILURE;
     }
 
-  if (!pointer)
+  if (!pointer && !proc_pointer)
     {
       gfc_error ("Pointer assignment to non-POINTER at %L", &lvalue->where);
       return FAILURE;
@@ -3129,11 +3135,12 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
     return SUCCESS;
 
   /* Checks on rvalue for procedure pointer assignments.  */
-  if (lvalue->symtree->n.sym->attr.proc_pointer)
+  if (proc_pointer)
     {
       attr = gfc_expr_attr (rvalue);
       if (!((rvalue->expr_type == EXPR_NULL)
 	    || (rvalue->expr_type == EXPR_FUNCTION && attr.proc_pointer)
+	    || (rvalue->expr_type == EXPR_VARIABLE && attr.proc_pointer)
 	    || (rvalue->expr_type == EXPR_VARIABLE
 		&& attr.flavor == FL_PROCEDURE)))
 	{
@@ -3164,6 +3171,9 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 			      rvalue->symtree->name, &rvalue->where) == FAILURE)
 	    return FAILURE;
 	}
+      /* TODO: Enable interface check for PPCs.  */
+      if (is_proc_ptr_comp (rvalue, NULL))
+	return SUCCESS;
       if (rvalue->expr_type == EXPR_VARIABLE
 	  && !gfc_compare_interfaces (lvalue->symtree->n.sym,
 				      rvalue->symtree->n.sym, 0))
@@ -3494,6 +3504,34 @@ void
 gfc_expr_set_symbols_referenced (gfc_expr *expr)
 {
   gfc_traverse_expr (expr, NULL, expr_set_symbols_referenced, 0);
+}
+
+
+/* Determine if an expression is a procedure pointer component. If yes, the
+   argument 'comp' will point to the component (provided that 'comp' was
+   provided).  */
+
+bool
+is_proc_ptr_comp (gfc_expr *expr, gfc_component **comp)
+{
+  gfc_ref *ref;
+  bool ppc = false;
+
+  if (!expr || !expr->ref)
+    return false;
+
+  ref = expr->ref;
+  while (ref->next)
+    ref = ref->next;
+
+  if (ref->type == REF_COMPONENT)
+    {
+      ppc = ref->u.c.component->attr.proc_pointer;
+      if (ppc && comp)
+	*comp = ref->u.c.component;
+    }
+
+  return ppc;
 }
 
 

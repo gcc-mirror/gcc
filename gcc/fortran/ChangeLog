@@ -1,3 +1,82 @@
+2009-05-06  Janus Weil  <janus@gcc.gnu.org>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/39630
+	* decl.c (match_procedure_interface): New function to match the
+	interface for a PROCEDURE statement.
+	(match_procedure_decl): Call match_procedure_interface.
+	(match_ppc_decl): New function to match the declaration of a
+	procedure pointer component.
+	(gfc_match_procedure):  Call match_ppc_decl.
+	(match_binding_attributes): Add new argument 'ppc' and handle the
+	POINTER attribute for procedure pointer components.
+	(match_procedure_in_type,gfc_match_generic): Added new argument to
+	match_binding_attributes.
+	* dump-parse-tree.c (show_expr,show_components,show_code_node): Handle
+	procedure pointer components.
+	* expr.c (free_expr0,gfc_copy_expr,gfc_simplify_expr): Handle EXPR_PPC.
+	(gfc_check_pointer_assign): Handle procedure pointer components, but no
+	full checking yet.
+	(is_proc_ptr_comp): New function to determine if an expression is a
+	procedure pointer component.
+	* gfortran.h (expr_t): Add EXPR_PPC.
+	(symbol_attribute): Add new member 'proc_pointer_comp'.
+	(gfc_component): Add new member 'formal'.
+	(gfc_exec_op): Add EXEC_CALL_PPC.
+	(gfc_get_default_type): Changed first argument.
+	(is_proc_ptr_comp): Add prototype.
+	(gfc_match_varspec): Add new argument.
+	* interface.c (compare_actual_formal): Handle procedure pointer
+	components.
+	* match.c (gfc_match_pointer_assignment,match_typebound_call): Handle
+	procedure pointer components.
+	* module.c (mio_expr): Handle EXPR_PPC.
+	* parse.c (parse_derived): Handle procedure pointer components.
+	* primary.c (gfc_match_varspec): Add new argument 'ppc_arg' and handle
+	procedure pointer components.
+	(gfc_variable_attr): Handle procedure pointer components.
+	(gfc_match_rvalue): Added new argument to gfc_match_varspec and changed
+	first argument of gfc_get_default_type.
+	(match_variable): Added new argument to gfc_match_varspec.
+	* resolve.c (resolve_entries,set_type,resolve_fl_parameter): Changed
+	first argument of gfc_get_default_type.
+	(resolve_structure_cons,resolve_actual_arglist): Handle procedure
+	pointer components.
+	(resolve_ppc_call): New function to resolve a call to a procedure
+	pointer component (subroutine).
+	(resolve_expr_ppc): New function to resolve a call to a procedure
+	pointer component (function).
+	(gfc_resolve_expr): Handle EXPR_PPC.
+	(resolve_code): Handle EXEC_CALL_PPC.
+	(resolve_fl_derived): Copy the interface for a procedure pointer
+	component.
+	(resolve_symbol): Fix overlong line.
+	* st.c (gfc_free_statement): Handle EXEC_CALL_PPC.
+	* symbol.c (gfc_get_default_type): Changed first argument.
+	(gfc_set_default_type): Changed first argument of gfc_get_default_type.
+	(gfc_add_component): Initialize ts.type to BT_UNKNOWN.
+	* trans.h (gfc_conv_function_call): Renamed.
+	* trans.c (gfc_trans_code): Handle EXEC_CALL_PPC.
+	* trans-expr.c (gfc_conv_component_ref): Ditto.
+	(gfc_conv_function_val): Rename to 'conv_function_val', add new
+	argument 'expr' and handle procedure pointer components.
+	(gfc_conv_operator_assign): Renamed gfc_conv_function_val.
+	(gfc_apply_interface_mapping_to_expr): Handle EXPR_PPC.
+	(gfc_conv_function_call): Rename to 'gfc_conv_procedure_call', add new
+	argument 'expr' and handle procedure pointer components.
+	(gfc_get_proc_ptr_comp): New function to get the backend decl for a
+	procedure pointer component.
+	(gfc_conv_function_expr): Renamed gfc_conv_function_call.
+	(gfc_conv_structure): Handle procedure pointer components.
+	* trans-intrinsic.c (gfc_conv_intrinsic_funcall,
+	conv_generic_with_optional_char_arg): Renamed gfc_conv_function_call.
+	* trans-stmt.h (gfc_get_proc_ptr_comp): Add prototype.
+	* trans-stmt.c (gfc_trans_call): Renamed gfc_conv_function_call.
+	* trans-types.h (gfc_get_ppc_type): Add prototype.
+	* trans-types.c (gfc_get_ppc_type): New function to build a tree node
+	for a procedure pointer component.
+	(gfc_get_derived_type): Handle procedure pointer components.
+
 2009-05-06  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40041

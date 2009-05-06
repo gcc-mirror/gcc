@@ -1777,6 +1777,21 @@ copy_dt_decls_ifequal (gfc_symbol *from, gfc_symbol *to)
 }
 
 
+/* Build a tree node for a procedure pointer component.  */
+
+tree
+gfc_get_ppc_type (gfc_component* c)
+{
+  tree t;
+  if (c->attr.function)
+    t = gfc_typenode_for_spec (&c->ts);
+  else
+    t = void_type_node;
+  /* TODO: Build argument list.  */
+  return build_pointer_type (build_function_type (t, NULL_TREE));
+}
+
+
 /* Build a tree node for a derived type.  If there are equal
    derived types, with different local names, these are built
    at the same time.  If an equal derived type has been built
@@ -1823,16 +1838,9 @@ gfc_get_derived_type (gfc_symbol * derived)
   /* derived->backend_decl != 0 means we saw it before, but its
      components' backend_decl may have not been built.  */
   if (derived->backend_decl)
-    {
-      /* Its components' backend_decl have been built.  */
-      if (TYPE_FIELDS (derived->backend_decl))
-        return derived->backend_decl;
-      else
-        typenode = derived->backend_decl;
-    }
+    return derived->backend_decl;
   else
     {
-
       /* We see this derived type first time, so build the type node.  */
       typenode = make_node (RECORD_TYPE);
       TYPE_NAME (typenode) = get_identifier (derived->name);
@@ -1881,6 +1889,8 @@ gfc_get_derived_type (gfc_symbol * derived)
     {
       if (c->ts.type == BT_DERIVED)
         field_type = c->ts.derived->backend_decl;
+      else if (c->attr.proc_pointer)
+	field_type = gfc_get_ppc_type (c);
       else
 	{
 	  if (c->ts.type == BT_CHARACTER)
