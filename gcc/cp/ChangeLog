@@ -1,3 +1,9 @@
+2009-05-06  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/17395
+	* pt.c (tsubst_copy) <case PARM_DECL>: We don't want to tsubst the
+	whole list of PARM_DECLs, just the current one.
+
 2009-05-05  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* cp-tree.h:

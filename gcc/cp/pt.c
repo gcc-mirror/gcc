@@ -10020,11 +10020,15 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       if (r == NULL)
 	{
+	  tree c;
 	  /* This can happen for a parameter name used later in a function
 	     declaration (such as in a late-specified return type).  Just
 	     make a dummy decl, since it's only used for its type.  */
 	  gcc_assert (skip_evaluation);	  
-	  r = tsubst_decl (t, args, complain);
+	  /* We copy T because want to tsubst the PARM_DECL only,
+	     not the following PARM_DECLs that are chained to T.  */
+	  c = copy_node (t);
+	  r = tsubst_decl (c, args, complain);
 	  /* Give it the template pattern as its context; its true context
 	     hasn't been instantiated yet and this is good enough for
 	     mangling.  */
