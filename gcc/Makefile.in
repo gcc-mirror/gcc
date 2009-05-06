@@ -4020,8 +4020,9 @@ install-plugin: installdirs
 	  else continue; \
 	  fi; \
 	  case $$path in \
-	  "$(srcdir)"*/config/* | "$(srcdir)"*.def ) \
-	    base=`echo $$path | sed "s|$(srcdir)||"`;; \
+	  "$(srcdir)"*/config/* | "$(srcdir)"/*.def ) \
+	    srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`; \
+	    base=`echo "$$path" | sed -e "s|$$srcdirstrip/||"`;; \
 	  *) base=`basename $$path` ;; \
 	  esac; \
 	  dest=$(plugin_includedir)/$$base; \

@@ -1,3 +1,7 @@
+2009-05-06  Rafael Avila de Espindola  <espindola@google.com>
+
+	* Makefile.in (install-plugin): Fix srcdir handling.
+
 2009-05-06  Andrey Belevantsev  <abel@ispras.ru>
 
 	* tree-ssa.c (execute_update_address_taken): Handle TARGET_MEM_REF
