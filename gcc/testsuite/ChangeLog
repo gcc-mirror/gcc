@@ -1,3 +1,7 @@
+2009-05-06  Diego Novillo  <dnovillo@google.com>
+
+	* lib/plugin-support.exp: Do not prefix $GMPINC with -I.
+
 2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gfortran.dg/pr40021.f: Moved to ...
