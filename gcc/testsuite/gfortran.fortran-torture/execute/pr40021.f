@@ -1,6 +1,4 @@
-! { dg-do run { target i?86-*-* x86_64-*-* } }
-! { dg-require-effective-target ilp32 }
-! { dg-options "-O2 -ftree-vectorize -msse2 -mfpmath=sse -ffast-math" }
+C Derived from lapack
         PROGRAM test
         DOUBLE PRECISION DA
         INTEGER I, N
