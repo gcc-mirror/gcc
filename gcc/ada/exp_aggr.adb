@@ -2519,28 +2519,35 @@ package body Exp_Aggr is
                Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
                Set_Assignment_OK (Ref);
 
-               if Has_Default_Init_Comps (N)
-                 or else Has_Task (Base_Type (Init_Typ))
-               then
-                  Append_List_To (L,
-                    Build_Initialization_Call (Loc,
-                      Id_Ref       => Ref,
-                      Typ          => Init_Typ,
-                      In_Init_Proc => Within_Init_Proc,
-                      With_Default_Init => True));
-               else
-                  Append_List_To (L,
-                    Build_Initialization_Call (Loc,
-                      Id_Ref       => Ref,
-                      Typ          => Init_Typ,
-                      In_Init_Proc => Within_Init_Proc));
-               end if;
+               Append_List_To (L,
+                 Build_Initialization_Call (Loc,
+                   Id_Ref            => Ref,
+                   Typ               => Init_Typ,
+                   In_Init_Proc      => Within_Init_Proc,
+                   With_Default_Init => Has_Default_Init_Comps (N)
+                                          or else
+                                        Has_Task (Base_Type (Init_Typ))));
 
                if Is_Constrained (Entity (A))
                  and then Has_Discriminants (Entity (A))
                then
                   Check_Ancestor_Discriminants (Entity (A));
                end if;
+
+            --  Handle calls to C++ constructors
+
+            elsif Is_CPP_Constructor_Call (A) then
+               Init_Typ := Etype (Etype (A));
+               Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
+               Set_Assignment_OK (Ref);
+
+               Append_List_To (L,
+                 Build_Initialization_Call (Loc,
+                   Id_Ref            => Ref,
+                   Typ               => Init_Typ,
+                   In_Init_Proc      => Within_Init_Proc,
+                   With_Default_Init => Has_Default_Init_Comps (N),
+                   Constructor_Ref   => A));
 
             --  Ada 2005 (AI-287): If the ancestor part is an aggregate of
             --  limited type, a recursive call expands the ancestor. Note that
