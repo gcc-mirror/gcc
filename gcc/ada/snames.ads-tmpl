@@ -688,6 +688,7 @@ package Snames is
    Name_Callable                       : constant Name_Id := N + $;
    Name_Caller                         : constant Name_Id := N + $;
    Name_Code_Address                   : constant Name_Id := N + $; -- GNAT
+   Name_Compiler_Version               : constant Name_Id := N + $; -- GNAT
    Name_Component_Size                 : constant Name_Id := N + $;
    Name_Compose                        : constant Name_Id := N + $;
    Name_Constrained                    : constant Name_Id := N + $;
@@ -1188,6 +1189,7 @@ package Snames is
       Attribute_Callable,
       Attribute_Caller,
       Attribute_Code_Address,
+      Attribute_Compiler_Version,
       Attribute_Component_Size,
       Attribute_Compose,
       Attribute_Constrained,

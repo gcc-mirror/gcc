@@ -5238,6 +5238,7 @@ package body Exp_Attr is
            Attribute_Address_Size                 |
            Attribute_Base                         |
            Attribute_Class                        |
+           Attribute_Compiler_Version             |
            Attribute_Default_Bit_Order            |
            Attribute_Delta                        |
            Attribute_Denorm                       |

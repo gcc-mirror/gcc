@@ -35,6 +35,7 @@ with Exp_Dist; use Exp_Dist;
 with Exp_Util; use Exp_Util;
 with Expander; use Expander;
 with Freeze;   use Freeze;
+with Gnatvsn;  use Gnatvsn;
 with Itypes;   use Itypes;
 with Lib;      use Lib;
 with Lib.Xref; use Lib.Xref;
@@ -2543,6 +2544,16 @@ package body Sem_Attr is
          end if;
 
          Set_Etype (N, RTE (RE_Address));
+
+      ----------------------
+      -- Compiler_Version --
+      ----------------------
+
+      when Attribute_Compiler_Version =>
+         Check_E0;
+         Check_Standard_Prefix;
+         Rewrite (N, Make_String_Literal (Loc, Gnat_Static_Version_String));
+         Analyze_And_Resolve (N, Standard_String);
 
       --------------------
       -- Component_Size --
@@ -7482,6 +7493,7 @@ package body Sem_Attr is
            Attribute_Caller                   |
            Attribute_Class                    |
            Attribute_Code_Address             |
+           Attribute_Compiler_Version         |
            Attribute_Count                    |
            Attribute_Default_Bit_Order        |
            Attribute_Elaborated               |

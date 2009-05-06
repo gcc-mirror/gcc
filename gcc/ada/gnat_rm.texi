@@ -222,6 +222,7 @@ Implementation Defined Attributes
 * AST_Entry::
 * Bit::
 * Bit_Position::
+* Compiler_Version::
 * Code_Address::
 * Default_Bit_Order::
 * Elaborated::
@@ -5352,6 +5353,7 @@ consideration, you should minimize the use of these attributes.
 * AST_Entry::
 * Bit::
 * Bit_Position::
+* Compiler_Version::
 * Code_Address::
 * Default_Bit_Order::
 * Elaborated::
@@ -5503,6 +5505,15 @@ storage allocated for the object.  The value of this attribute is of the
 type @code{Universal_Integer}.  The value depends only on the field
 @var{C} and is independent of the alignment of
 the containing record @var{R}.
+
+@node Compiler_Version
+@unnumberedsec Compiler_Version
+@findex Compiler_Version
+@noindent
+@code{Standard'Compiler_Version} (@code{Standard} is the only allowed
+prefix) yields a static string identifying the version of the compiler
+being used to compile the unit containing the attribute reference. A
+typical result would be something like "GNAT Pro 6.3.0w (20090221)".
 
 @node Code_Address
 @unnumberedsec Code_Address

@@ -317,6 +317,11 @@ package body Sinput is
 
                Loc := Sloc (N);
 
+               --  Skip past parens
+
+               --  This is not right, it does not deal with skipping comments
+               --  and probably also has wide character problems ???
+
                if Count > 0 then
                   declare
                      SFI : constant Source_File_Index :=
@@ -408,7 +413,7 @@ package body Sinput is
                  N_Conditional_Expression    =>
                raise Program_Error;
 
-            --  Cases where the Sloc points to the start of the tokem, but we
+            --  Cases where the Sloc points to the start of the token, but we
             --  still need to handle the sequence of left parentheses.
 
             when N_Identifier          |
@@ -425,25 +430,44 @@ package body Sinput is
 
                Loc := Sloc (N);
 
-               if Count > 0 then
-                  declare
-                     SFI : constant Source_File_Index :=
-                             Get_Source_File_Index (Loc);
-                     Src : constant Source_Buffer_Ptr := Source_Text (SFI);
-                     Fst : constant Source_Ptr        := Source_Last (SFI);
+               --  Now we have two tasks, first we are pointing to the start
+               --  of the token below, second, we need to skip parentheses.
 
-                  begin
+               --  Skipping to the end of a token is not easy, we can't just
+               --  skip to a space, since we may have e.g. X*YAR+Z, and if we
+               --  are finding the end of the subexpression X*YAR, we don't
+               --  want to skip past the +Z. Also we have to worry about
+               --  skipping comments, and about wide characters ???
+
+               declare
+                  SFI : constant Source_File_Index :=
+                          Get_Source_File_Index (Loc);
+                  Src : constant Source_Buffer_Ptr := Source_Text (SFI);
+                  Lst : constant Source_Ptr        := Source_Last (SFI);
+
+               begin
+                  --  Scan through first blank character, to get to the end
+                  --  of this token. As noted above that's not really right???
+
+                  loop
+                     exit when Loc = Lst or else Src (Loc + 1) <= ' ';
+                     Loc := Loc + 1;
+                  end loop;
+
+                  --  Skip past parens, but this also ignores comments ???
+
+                  if Count > 0 then
                      for J in 1 .. Count loop
                         loop
-                           exit when Loc = Fst;
-                           Loc := Loc - 1;
+                           exit when Loc = Lst;
+                           Loc := Loc + 1;
                            exit when Src (Loc) >= ' ';
                         end loop;
 
-                        exit when Src (Loc) /= '(';
+                        exit when Src (Loc) /= ')';
                      end loop;
-                  end;
-               end if;
+                  end if;
+               end;
 
                return Loc;
          end case;
