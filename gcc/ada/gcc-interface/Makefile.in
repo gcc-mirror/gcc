@@ -497,6 +497,8 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(targ))),)
       s-vxwext.ads<s-vxwext-kernel.ads \
       s-vxwext.adb<s-vxwext-kernel.adb \
       system.ads<system-vxworks-ppc-kernel.ads
+
+      EXTRA_GNATRTL_NONTASKING_OBJS=s-vxwexc.o
     else
       LIBGNAT_TARGET_PAIRS += \
       system.ads<system-vxworks-ppc.ads
@@ -727,6 +729,8 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
       s-vxwext.ads<s-vxwext-kernel.ads \
       s-vxwext.adb<s-vxwext-kernel.adb \
       system.ads<system-vxworks-x86-kernel.ads
+
+      EXTRA_GNATRTL_NONTASKING_OBJS=s-vxwexc.o
     else
       LIBGNAT_TARGET_PAIRS += \
       system.ads<system-vxworks-x86.ads
@@ -937,7 +941,6 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   g-bytswa.adb<g-bytswa-x86.adb \
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
-  s-taspri.ads<s-taspri-posix.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb \
   g-sercom.adb<g-sercom-linux.adb
 
@@ -953,6 +956,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
     s-osinte.ads<s-osinte-linux-marte.ads \
     s-osprim.adb<s-osprim-posix.adb \
     s-taprop.adb<s-taprop-linux-marte.adb \
+    s-taspri.ads<s-taspri-posix.ads \
     system.ads<system-linux-x86.ads
 
     EXTRA_GNATRTL_TASKING_OBJS=a-exetim.o a-extiti.o
@@ -969,6 +973,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
       s-osinte.ads<s-osinte-linux-xenomai.ads \
       s-osprim.adb<s-osprim-linux-xenomai.adb \
       s-taprop.adb<s-taprop-linux-xenomai.adb \
+      s-taspri.ads<s-taspri-linux-xenomai.ads \
       system.ads<system-linux-x86-xenomai.ads
 
       EH_MECHANISM=-gcc
@@ -977,6 +982,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
       s-osinte.ads<s-osinte-linux.ads \
       s-osprim.adb<s-osprim-posix.adb \
       s-taprop.adb<s-taprop-linux.adb \
+      s-taspri.ads<s-taspri-posix.ads \
       s-tasinf.ads<s-tasinf-linux.ads \
       s-tasinf.adb<s-tasinf-linux.adb \
       system.ads<system-linux-x86.ads
