@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -227,7 +227,8 @@ package body Ch6 is
             Error_Msg_SC ("overriding indicator not allowed here!");
 
          elsif Token /= Tok_Function and then Token /= Tok_Procedure then
-            Error_Msg_SC ("FUNCTION or PROCEDURE expected!");
+            Error_Msg_SC -- CODEFIX
+              ("FUNCTION or PROCEDURE expected!");
          end if;
       end if;
 
@@ -1430,7 +1431,8 @@ package body Ch6 is
          Set_Constant_Present (Decl_Node);
 
          if Token = Tok_Aliased then
-            Error_Msg_SC ("ALIASED should be before CONSTANT");
+            Error_Msg_SC -- CODEFIX
+              ("ALIASED should be before CONSTANT");
             Scan; -- past ALIASED
             Set_Aliased_Present (Decl_Node);
          end if;

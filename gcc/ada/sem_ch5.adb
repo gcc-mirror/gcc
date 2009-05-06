@@ -1208,6 +1208,13 @@ package body Sem_Ch5 is
          Analyze_And_Resolve (Cond, Any_Boolean);
          Check_Unset_Reference (Cond);
       end if;
+
+      --  Since the exit may take us out of a loop, any previous assignment
+      --  statement is not useless, so clear last assignment indications. It
+      --  is OK to keep other current values, since if the exit statement
+      --  does not exit, then the current values are still valid.
+
+      Kill_Current_Values (Last_Assignment_Only => True);
    end Analyze_Exit_Statement;
 
    ----------------------------

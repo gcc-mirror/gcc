@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -100,7 +100,8 @@ package body Ch12 is
       Scan; -- past GENERIC
 
       if Token = Tok_Private then
-         Error_Msg_SC ("PRIVATE goes before GENERIC, not after");
+         Error_Msg_SC -- CODEFIX
+           ("PRIVATE goes before GENERIC, not after");
          Scan; -- past junk PRIVATE token
       end if;
 
@@ -179,7 +180,7 @@ package body Ch12 is
                   Append (P_Formal_Subprogram_Declaration, Decls);
 
                else
-                  Error_Msg_BC
+                  Error_Msg_BC -- CODEFIX
                     ("FUNCTION, PROCEDURE or PACKAGE expected here");
                   Resync_Past_Semicolon;
                end if;
@@ -657,7 +658,8 @@ package body Ch12 is
 
             else
                if Token = Tok_Abstract then
-                  Error_Msg_SC ("ABSTRACT must come before LIMITED");
+                  Error_Msg_SC -- CODEFIX
+                    ("ABSTRACT must come before LIMITED");
                   Scan;  --  past improper ABSTRACT
 
                   if Token = Tok_New then
@@ -805,15 +807,18 @@ package body Ch12 is
 
       if Token = Tok_Abstract then
          if Prev_Token = Tok_Tagged then
-            Error_Msg_SC ("ABSTRACT must come before TAGGED");
+            Error_Msg_SC -- CODEFIX
+              ("ABSTRACT must come before TAGGED");
          elsif Prev_Token = Tok_Limited then
-            Error_Msg_SC ("ABSTRACT must come before LIMITED");
+            Error_Msg_SC -- CODEFIX
+              ("ABSTRACT must come before LIMITED");
          end if;
 
          Resync_Past_Semicolon;
 
       elsif Token = Tok_Tagged then
-         Error_Msg_SC ("TAGGED must come before LIMITED");
+         Error_Msg_SC -- CODEFIX
+           ("TAGGED must come before LIMITED");
          Resync_Past_Semicolon;
       end if;
 

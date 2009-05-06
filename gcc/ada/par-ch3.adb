@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -541,7 +541,8 @@ package body Ch3 is
                end if;
 
                if Token = Tok_Abstract then
-                  Error_Msg_SC ("ABSTRACT must come before TAGGED");
+                  Error_Msg_SC -- CODEFIX
+                    ("ABSTRACT must come before TAGGED");
                   Abstract_Present := True;
                   Abstract_Loc := Token_Ptr;
                   Scan; -- past ABSTRACT
@@ -606,11 +607,13 @@ package body Ch3 is
 
                loop
                   if Token = Tok_Tagged then
-                     Error_Msg_SC ("TAGGED must come before LIMITED");
+                     Error_Msg_SC -- CODEFIX
+                       ("TAGGED must come before LIMITED");
                      Scan; -- past TAGGED
 
                   elsif Token = Tok_Abstract then
-                     Error_Msg_SC ("ABSTRACT must come before LIMITED");
+                     Error_Msg_SC -- CODEFIX
+                       ("ABSTRACT must come before LIMITED");
                      Scan; -- past ABSTRACT
 
                   else
@@ -1526,7 +1529,8 @@ package body Ch3 is
                end if;
 
                if Token = Tok_Aliased then
-                  Error_Msg_SC ("ALIASED should be before CONSTANT");
+                  Error_Msg_SC -- CODEFIX
+                    ("ALIASED should be before CONSTANT");
                   Scan; -- past ALIASED
                   Set_Aliased_Present (Decl_Node, True);
                end if;
@@ -1888,7 +1892,8 @@ package body Ch3 is
       end if;
 
       if Token = Tok_Abstract then
-         Error_Msg_SC ("ABSTRACT must come before NEW, not after");
+         Error_Msg_SC -- CODEFIX
+           ("ABSTRACT must come before NEW, not after");
          Scan;
       end if;
 
@@ -2306,7 +2311,8 @@ package body Ch3 is
       --  Handle decimal fixed-point defn with DIGITS/DELTA in wrong order
 
       if Token = Tok_Delta then
-         Error_Msg_SC ("|DELTA must come before DIGITS");
+         Error_Msg_SC -- CODEFIX
+           ("|DELTA must come before DIGITS");
          Def_Node := New_Node (N_Decimal_Fixed_Point_Definition, Digits_Loc);
          Scan; -- past DELTA
          Set_Delta_Expression (Def_Node, P_Expression_No_Right_Paren);
@@ -3791,7 +3797,8 @@ package body Ch3 is
          Scan; -- past PROTECTED
 
          if Token /= Tok_Procedure and then Token /= Tok_Function then
-            Error_Msg_SC ("FUNCTION or PROCEDURE expected");
+            Error_Msg_SC -- CODEFIX
+              ("FUNCTION or PROCEDURE expected");
          end if;
       end if;
 

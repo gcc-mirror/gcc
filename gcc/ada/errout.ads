@@ -581,6 +581,33 @@ package Errout is
    --  Triggering switch. If non-zero, then ignore errors mode is activated.
    --  This is a counter to allow convenient nesting of enable/disable.
 
+   -----------------------
+   --  CODEFIX Facility --
+   -----------------------
+
+   --  The GPS and GNATBench IDE's have a codefix facility that allows for
+   --  automatic correction of a subset of the errors and warnings issued
+   --  by the compiler. This is done by recognizing the text of specific
+   --  messages using appropriate matching patterns.
+
+   --  The text of such messages should not be altered without coordinating
+   --  with the codefix code. All such messages are marked by a specific
+   --  style of comments, as shown by the following example:
+
+   --     Error_Msg_N -- CODEFIX
+   --       (parameters ....)
+
+   --  Any message marked with this -- CODEFIX comment should not be modified
+   --  without appropriate coordination. If new messages are added which may
+   --  be susceptible to automatic codefix action, they are marked using:
+
+   --     Error_Msg -- CODEFIX???
+   --       (parameters)
+
+   --  And subsequently either the appropriate code is added to codefix and the
+   --  ??? are removed, or it is determined that this is not an appropriate
+   --  case for codefix action, and the comment is removed.
+
    ------------------------------
    -- Error Output Subprograms --
    ------------------------------

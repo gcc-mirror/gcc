@@ -453,7 +453,8 @@ package body Sinput.L is
          --  Preprocess the source if it needs to be preprocessed
 
          if Preprocessing_Needed then
-            --  Set temporarily the Source_File_Index_Table entries for the
+
+            --  Temporarily set the Source_File_Index_Table entries for the
             --  source, to avoid crash when reporting an error.
 
             Set_Source_File_Index_Table (X);

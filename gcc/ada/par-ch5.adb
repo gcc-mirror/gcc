@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -178,7 +178,8 @@ package body Ch5 is
       procedure Junk_Declaration is
       begin
          if (not Declaration_Found) or All_Errors_Mode then
-            Error_Msg_SC ("declarations must come before BEGIN");
+            Error_Msg_SC -- CODEFIX
+              ("declarations must come before BEGIN");
             Declaration_Found := True;
          end if;
 
@@ -450,7 +451,8 @@ package body Ch5 is
                     and then Block_Label = Name_Go
                     and then Token_Name = Name_To
                   then
-                     Error_Msg_SP ("goto is one word");
+                     Error_Msg_SP -- CODEFIX
+                       ("goto is one word");
                      Append_To (Statement_List, P_Goto_Statement);
                      Statement_Required := False;
 

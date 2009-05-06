@@ -471,6 +471,14 @@ package Sinput is
    --  ASCII.NUL, with Name_Length indicating the length not including the
    --  terminating Nul.
 
+   function Expr_First_Char (Expr : Node_Id) return Source_Ptr;
+   --  Given a node for a subexpression, returns the source location of the
+   --  first character of the expression.
+
+   function Expr_Last_Char (Expr : Node_Id) return Source_Ptr;
+   --  Given a node for a subexpression, returns the source location of the
+   --  last character of the expression.
+
    function Get_Column_Number (P : Source_Ptr) return Column_Number;
    --  The ones-origin column number of the specified Source_Ptr value is
    --  determined and returned. Tab characters if present are assumed to

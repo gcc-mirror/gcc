@@ -3903,8 +3903,8 @@ package body Sem_Warn is
       X    : Node_Id;
 
       function Check_Ref (N : Node_Id) return Traverse_Result;
-      --  Used to instantiate Traverse_Func. Returns Abandon if
-      --  a reference to the entity in question is found.
+      --  Used to instantiate Traverse_Func. Returns Abandon if a reference to
+      --  the entity in question is found.
 
       function Test_No_Refs is new Traverse_Func (Check_Ref);
 
@@ -3935,7 +3935,7 @@ package body Sem_Warn is
       --  variable with the last assignment field set, with warnings enabled,
       --  and which is not imported or exported. We also check that it is OK
       --  to capture the value. We are not going to capture any value, but
-      --  the warning messages depends on the same kind of conditions.
+      --  the warning message depends on the same kind of conditions.
 
       if Is_Assignable (Ent)
         and then not Is_Return_Object (Ent)
@@ -4027,18 +4027,27 @@ package body Sem_Warn is
 
                      --  Otherwise we are at the outer level. An exception
                      --  handler is significant only if it references the
-                     --  variable in question.
+                     --  variable in question, or if the entity in question
+                     --  is an OUT or IN OUT parameter, which which case
+                     --  the caller can reference it after the exception
+                     --  hanlder completes
 
                   else
-                     X := First (Exception_Handlers (P));
-                     while Present (X) loop
-                        if Test_No_Refs (X) = Abandon then
-                           Set_Last_Assignment (Ent, Empty);
-                           return;
-                        end if;
+                     if Is_Formal (Ent) then
+                        Set_Last_Assignment (Ent, Empty);
+                        return;
 
-                        X := Next (X);
-                     end loop;
+                     else
+                        X := First (Exception_Handlers (P));
+                        while Present (X) loop
+                           if Test_No_Refs (X) = Abandon then
+                              Set_Last_Assignment (Ent, Empty);
+                              return;
+                           end if;
+
+                           X := Next (X);
+                        end loop;
+                     end if;
                   end if;
                end if;
             end if;
