@@ -1,5 +1,23 @@
 2009-05-06  Robert Dewar  <dewar@adacore.com>
 
+	* freeze.adb (Freeze_Record_Type): Improve error msg for bad size
+	clause.
+
+2009-05-06  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socthi-vms.adb (C_Recvmsg, C_Sendmsg): Convert Msg to appropriate
+	packed type, since on OpenVMS, struct msghdr is packed.
+
+2009-05-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Analyze_Object_Renaming): If the object is a function
+	call returning an unconstrained composite value, create the proper
+	subtype for it, as is done for object dclarations with unconstrained
+	nominal subtypes. Perform this transformation regarless of whether
+	call comes from source.
+
+2009-05-06  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb (Freeze_Record_Type): Implement Implicit_Packing for
 	records
 

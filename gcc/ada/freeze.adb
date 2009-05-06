@@ -1864,17 +1864,15 @@ package body Freeze is
                end;
             end if;
 
-            --  Processing for possible Implicit_Packing later
+            --  Gather data for possible Implicit_Packing later
 
-            if Implicit_Packing then
-               if not Is_Scalar_Type (Etype (Comp)) then
-                  All_Scalar_Components := False;
-               else
-                  Scalar_Component_Total_RM_Size :=
-                    Scalar_Component_Total_RM_Size + RM_Size (Etype (Comp));
-                  Scalar_Component_Total_Esize :=
-                    Scalar_Component_Total_Esize + Esize (Etype (Comp));
-               end if;
+            if not Is_Scalar_Type (Etype (Comp)) then
+               All_Scalar_Components := False;
+            else
+               Scalar_Component_Total_RM_Size :=
+                 Scalar_Component_Total_RM_Size + RM_Size (Etype (Comp));
+               Scalar_Component_Total_Esize :=
+                 Scalar_Component_Total_Esize + Esize (Etype (Comp));
             end if;
 
             --  If the component is an Itype with Delayed_Freeze and is either
@@ -2186,16 +2184,34 @@ package body Freeze is
             end;
          end if;
 
-         --  Apply implicit packing if all conditions are met
+         --  See if Implicit_Packing would work
 
-         if Implicit_Packing
+         if not Is_Packed (Rec)
+           and then not Placed_Component
            and then Has_Size_Clause (Rec)
            and then All_Scalar_Components
            and then not Has_Discriminants (Rec)
            and then Esize (Rec) < Scalar_Component_Total_Esize
            and then Esize (Rec) >= Scalar_Component_Total_RM_Size
          then
-            Set_Is_Packed (Rec);
+            --  If implicit packing enabled, do it
+
+            if Implicit_Packing then
+               Set_Is_Packed (Rec);
+
+               --  Otherwise flag the size clause
+
+            else
+               declare
+                  Sz : constant Node_Id := Size_Clause (Rec);
+               begin
+                  Error_Msg_NE
+                    ("size given for& too small", Sz, Rec);
+                  Error_Msg_N
+                    ("\use explicit pragma Pack "
+                     & "or use pragma Implicit_Packing", Sz);
+               end;
+            end if;
          end if;
       end Freeze_Record_Type;
 
