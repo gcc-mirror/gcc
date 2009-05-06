@@ -83,6 +83,17 @@ package body Table is
          Set_Item (Table_Index_Type (Last_Val + 1), New_Val);
       end Append;
 
+      ----------------
+      -- Append_All --
+      ----------------
+
+      procedure Append_All (New_Vals : Table_Type) is
+      begin
+         for J in New_Vals'Range loop
+            Append (New_Vals (J));
+         end loop;
+      end Append_All;
+
       --------------------
       -- Decrement_Last --
       --------------------

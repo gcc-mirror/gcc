@@ -229,8 +229,8 @@ package body Signalling_Fds is
       return C_Sendto
         (Wsig, Buf'Address, 1,
          Flags => SOSC.MSG_Forced_Flags,
-         To    => null,
-         Tolen =>  0);
+         To    => System.Null_Address,
+         Tolen => 0);
    end Write;
 
 end Signalling_Fds;

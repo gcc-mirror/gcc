@@ -263,24 +263,20 @@ package body GNAT.Sockets.Thin is
       for MH'Address use Msg;
 
       Iovec : array (0 .. MH.Msg_Iovlen - 1) of Vector_Element;
-      for Iovec'Address use MH.Msg_Iov'Address;
+      for Iovec'Address use MH.Msg_Iov;
       pragma Import (Ada, Iovec);
 
-      pragma Unreferenced (Flags);
-
    begin
-      --  Windows does not provide an implementation of recvmsg().  The
-      --  spec for WSARecvMsg() is incompatible with the data types we
-      --  define, and is not available in all versions of Windows.  So,
-      --  we'll use C_Recv instead.  Note that this means the Flags
-      --  argument is ignored.
+      --  Windows does not provide an implementation of recvmsg(). The spec for
+      --  WSARecvMsg() is incompatible with the data types we define, and is
+      --  not available in all versions of Windows. So, we use C_Recv instead.
 
       for J in Iovec'Range loop
          Res := C_Recv
            (S,
             Iovec (J).Base.all'Address,
             C.int (Iovec (J).Length),
-            0);
+            Flags);
 
          if Res < 0 then
             return ssize_t (Res);
@@ -359,7 +355,10 @@ package body GNAT.Sockets.Thin is
                --  Check out-of-band data
 
                Length := C_Recvfrom
-                 (S, Buffer'Address, 1, Flag, null, Fromlen'Unchecked_Access);
+                 (S, Buffer'Address, 1, Flag,
+                  From    => System.Null_Address,
+                  Fromlen => Fromlen'Unchecked_Access);
+               --  Is Fromlen necessary if From is Null_Address???
 
                --  If the signal is not an out-of-band data, then it
                --  is a connection failure notification.
@@ -399,26 +398,23 @@ package body GNAT.Sockets.Thin is
       for MH'Address use Msg;
 
       Iovec : array (0 .. MH.Msg_Iovlen - 1) of Vector_Element;
-      for Iovec'Address use MH.Msg_Iov'Address;
+      for Iovec'Address use MH.Msg_Iov;
       pragma Import (Ada, Iovec);
 
-      pragma Unreferenced (Flags);
-
    begin
-      --  Windows does not provide an implementation of sendmsg().  The
-      --  spec for WSASendMsg() is incompatible with the data types we
-      --  define, and is not available in all versions of Windows.  So,
-      --  we'll use C_Sendto instead.  Note that this means the Flags
-      --  argument is ignored.
+      --  Windows does not provide an implementation of sendmsg(). The spec for
+      --  WSASendMsg() is incompatible with the data types we define, and is
+      --  not available in all versions of Windows. So, we'll use C_Sendto
+      --  instead.
 
       for J in Iovec'Range loop
          Res := C_Sendto
            (S,
             Iovec (J).Base.all'Address,
             C.int (Iovec (J).Length),
-            Flags => 0,
-            To    => null,
-            Tolen => 0);
+            Flags => Flags,
+            To    => MH.Msg_Name,
+            Tolen => C.int (MH.Msg_Namelen));
 
          if Res < 0 then
             return ssize_t (Res);

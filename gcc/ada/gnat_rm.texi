@@ -1502,7 +1502,7 @@ equality operators defined (such operations can be imported or declared
 as subprograms as required). Initialization is allowed only by constructor
 functions (see pragma @code{CPP_Constructor}). Such types are implicitly
 limited if not explicitly declared as limited or derived from a limited
-type, and a warning is issued in that case.
+type, and an error is issued in that case.
 
 Pragma @code{CPP_Class} is intended primarily for automatic generation
 using an automatic binding generator tool.
@@ -1547,50 +1547,8 @@ where @var{T} is a tagged limited type imported from C++ with pragma
 
 The first form is the default constructor, used when an object of type
 @var{T} is created on the Ada side with no explicit constructor.  The
-second form covers all the non-default constructors of the type.
-Constructors (including the copy constructor, which is simply a special
-case of the second form in which the one and only argument is of type
-@var{T}), can only appear in the following contexts:
-
-@itemize @bullet
-@item
-On the right side of an initialization of an object of type @var{T}.
-@item
-On the right side of an initialization of a record component of type @var{T}.
-@item
-In an extension aggregate for an object of a type derived from @var{T}.
-@item
-In an Ada 2005 limited aggregate.
-@item
-In an Ada 2005 nested limited aggregate.
-@item
-In an Ada 2005 limited aggregate that initializes an object built in
-place by an extended return statement.
-@end itemize
-
-@noindent
-Although the constructor is described as a function that returns a value
-on the Ada side, it is typically a procedure with an extra implicit
-argument (the object being initialized) at the implementation
-level.  GNAT issues the appropriate call, whatever it is, to get the
-object properly initialized.
-
-In the case of objects of derived types, in addition to the use of Ada
-2005 limited aggregates and extended return statements, you may also
-use one of the following two possible forms for declaring and creating
-an object:
-
-@itemize @bullet
-@item @code{New_Object : Derived_T}
-@item @code{New_Object : Derived_T := (@var{constructor-call with} @dots{})}
-@end itemize
-
-@noindent
-In the first case the default constructor is called and extension fields
-if any are initialized according to the default initialization
-expressions in the Ada declaration.  In the second case, the given
-constructor is called and the extension aggregate indicates the explicit
-values of the extension fields.
+second form covers all the non-default constructors of the type. See
+the GNAT users guide for details.
 
 If no constructors are imported, it is impossible to create any objects
 on the Ada side and the type is implicitly declared abstract.

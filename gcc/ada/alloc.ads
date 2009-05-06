@@ -61,6 +61,9 @@ package Alloc is
    Elmts_Initial                    : constant := 1_200;   -- Elists
    Elmts_Increment                  : constant := 100;
 
+   File_Name_Chars_Initial          : constant := 10_000;  -- Osint
+   File_Name_Chars_Increment        : constant := 100;
+
    Inlined_Bodies_Initial           : constant := 50;      -- Inline
    Inlined_Bodies_Increment         : constant := 200;
 

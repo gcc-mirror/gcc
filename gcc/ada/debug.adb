@@ -104,7 +104,7 @@ package body Debug is
    --  d.k
    --  d.l  Use Ada 95 semantics for limited function returns
    --  d.m  For -gnatl, print full source only for main unit
-   --  d.n
+   --  d.n  Print source file names
    --  d.o
    --  d.p
    --  d.q
@@ -522,6 +522,10 @@ package body Debug is
    --       debug switch is used, then the full listing is given only for the
    --       main source (this corresponds to a previous behavior of -gnatl and
    --       is used for running the ACATS tests).
+
+   --  d.n  Print source file names as they are loaded. This is useful if the
+   --       compiler has a bug -- these are the files that need to be included
+   --       in a bug report.
 
    --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
    --       base types that have no discriminants.

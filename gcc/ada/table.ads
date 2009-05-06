@@ -187,6 +187,9 @@ package Table is
       --  i.e. the table size is increased by one, and the given new item
       --  stored in the newly created table element.
 
+      procedure Append_All (New_Vals : Table_Type);
+      --  Appends all components of New_Vals
+
       procedure Set_Item
         (Index : Table_Index_Type;
          Item  : Table_Component_Type);

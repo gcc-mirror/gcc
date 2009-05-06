@@ -1644,7 +1644,7 @@ package body GNAT.Sockets is
            Item'Address,
            Item'Length,
            To_Int (Flags),
-           Sin'Unchecked_Access,
+           Sin'Address,
            Len'Access);
 
       if Res = Failure then
@@ -1861,7 +1861,7 @@ package body GNAT.Sockets is
       Res  : C.int;
 
       Sin  : aliased Sockaddr_In;
-      C_To : Sockaddr_In_Access;
+      C_To : System.Address;
       Len  : C.int;
 
    begin
@@ -1871,11 +1871,11 @@ package body GNAT.Sockets is
          Set_Port
            (Sin'Unchecked_Access,
             Short_To_Network (C.unsigned_short (To.Port)));
-         C_To := Sin'Unchecked_Access;
+         C_To := Sin'Address;
          Len := Sin'Size / 8;
 
       else
-         C_To := null;
+         C_To := System.Null_Address;
          Len := 0;
       end if;
 

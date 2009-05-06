@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,9 +30,7 @@
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Errout;   use Errout;
-with Fname;    use Fname;
 with Gnatvsn;  use Gnatvsn;
-with Lib;      use Lib;
 with Namet;    use Namet;
 with Osint;    use Osint;
 with Output;   use Output;
@@ -395,26 +393,19 @@ package body Comperr is
          Write_Line ("Note that list may not be accurate in some cases, ");
          Write_Line ("so please double check that the problem can still ");
          Write_Line ("be reproduced with the set of files listed.");
+         Write_Line ("Consider also -gnatd.n switch (see debug.adb).");
          Write_Eol;
 
-         for U in Main_Unit .. Last_Unit loop
-            begin
-               if not Is_Internal_File_Name
-                        (File_Name (Source_Index (U)))
-               then
-                  Write_Name (Full_File_Name (Source_Index (U)));
-                  Write_Eol;
-               end if;
+         begin
+            Dump_Source_File_Names;
 
-            --  No point in double bug box if we blow up trying to print
-            --  the list of file names! Output informative msg and quit.
+         --  If we blow up trying to print the list of file names, just output
+         --  informative msg and continue.
 
-            exception
-               when others =>
-                  Write_Str ("list may be incomplete");
-                  exit;
-            end;
-         end loop;
+         exception
+            when others =>
+               Write_Str ("list may be incomplete");
+         end;
 
          Write_Eol;
          Set_Standard_Output;
