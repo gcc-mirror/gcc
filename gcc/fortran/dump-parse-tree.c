@@ -541,13 +541,20 @@ show_expr (gfc_expr *p)
     case EXPR_FUNCTION:
       if (p->value.function.name == NULL)
 	{
-	  fprintf (dumpfile, "%s[", p->symtree->n.sym->name);
+	  fprintf (dumpfile, "%s", p->symtree->n.sym->name);
+	  if (is_proc_ptr_comp (p, NULL))
+	    show_ref (p->ref);
+	  fputc ('[', dumpfile);
 	  show_actual_arglist (p->value.function.actual);
 	  fputc (']', dumpfile);
 	}
       else
 	{
-	  fprintf (dumpfile, "%s[[", p->value.function.name);
+	  fprintf (dumpfile, "%s", p->value.function.name);
+	  if (is_proc_ptr_comp (p, NULL))
+	    show_ref (p->ref);
+	  fputc ('[', dumpfile);
+	  fputc ('[', dumpfile);
 	  show_actual_arglist (p->value.function.actual);
 	  fputc (']', dumpfile);
 	  fputc (']', dumpfile);
@@ -653,6 +660,8 @@ show_components (gfc_symbol *sym)
       show_typespec (&c->ts);
       if (c->attr.pointer)
 	fputs (" POINTER", dumpfile);
+      if (c->attr.proc_pointer)
+	fputs (" PPC", dumpfile);
       if (c->attr.dimension)
 	fputs (" DIMENSION", dumpfile);
       fputc (' ', dumpfile);
@@ -1210,6 +1219,12 @@ show_code_node (int level, gfc_code *c)
     case EXEC_COMPCALL:
       fputs ("CALL ", dumpfile);
       show_compcall (c->expr);
+      break;
+
+    case EXEC_CALL_PPC:
+      fputs ("CALL ", dumpfile);
+      show_expr (c->expr);
+      show_actual_arglist (c->ext.actual);
       break;
 
     case EXEC_RETURN:

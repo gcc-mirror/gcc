@@ -219,11 +219,11 @@ gfc_merge_new_implicit (gfc_typespec *ts)
 /* Given a symbol, return a pointer to the typespec for its default type.  */
 
 gfc_typespec *
-gfc_get_default_type (gfc_symbol *sym, gfc_namespace *ns)
+gfc_get_default_type (const char *name, gfc_namespace *ns)
 {
   char letter;
 
-  letter = sym->name[0];
+  letter = name[0];
 
   if (gfc_option.flag_allow_leading_underscore && letter == '_')
     gfc_internal_error ("Option -fallow-leading-underscore is for use only by "
@@ -231,7 +231,7 @@ gfc_get_default_type (gfc_symbol *sym, gfc_namespace *ns)
 			"implicitly typed variables");
 
   if (letter < 'a' || letter > 'z')
-    gfc_internal_error ("gfc_get_default_type(): Bad symbol '%s'",sym->name);
+    gfc_internal_error ("gfc_get_default_type(): Bad symbol '%s'", name);
 
   if (ns == NULL)
     ns = gfc_current_ns;
@@ -252,7 +252,7 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
   if (sym->ts.type != BT_UNKNOWN)
     gfc_internal_error ("gfc_set_default_type(): symbol already has a type");
 
-  ts = gfc_get_default_type (sym, ns);
+  ts = gfc_get_default_type (sym->name, ns);
 
   if (ts->type == BT_UNKNOWN)
     {
@@ -1779,6 +1779,7 @@ gfc_add_component (gfc_symbol *sym, const char *name,
 
   p->name = gfc_get_string (name);
   p->loc = gfc_current_locus;
+  p->ts.type = BT_UNKNOWN;
 
   *component = p;
   return SUCCESS;
@@ -4494,3 +4495,4 @@ gfc_get_tbp_symtree (gfc_symtree **root, const char *name)
 
   return result;
 }
+

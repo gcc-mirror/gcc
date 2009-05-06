@@ -476,7 +476,8 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
       se->string_length = tmp;
     }
 
-  if (c->attr.pointer && c->attr.dimension == 0 && c->ts.type != BT_CHARACTER)
+  if ((c->attr.pointer || c->attr.proc_pointer) && c->attr.dimension == 0
+      && c->ts.type != BT_CHARACTER)
     se->expr = build_fold_indirect_ref (se->expr);
 }
 
@@ -1487,11 +1488,13 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2, int kind)
 }
 
 static void
-gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
+conv_function_val (gfc_se * se, gfc_symbol * sym, gfc_expr * expr)
 {
   tree tmp;
 
-  if (sym->attr.dummy)
+  if (is_proc_ptr_comp (expr, NULL))
+    tmp = gfc_get_proc_ptr_comp (se, expr);
+  else if (sym->attr.dummy)
     {
       tmp = gfc_get_symbol_decl (sym);
       if (sym->attr.proc_pointer)
@@ -1527,7 +1530,7 @@ gfc_conv_function_val (gfc_se * se, gfc_symbol * sym)
 
 
 /* Translate the call for an elemental subroutine call used in an operator
-   assignment.  This is a simplified version of gfc_conv_function_call.  */
+   assignment.  This is a simplified version of gfc_conv_procedure_call.  */
 
 tree
 gfc_conv_operator_assign (gfc_se *lse, gfc_se *rse, gfc_symbol *sym)
@@ -1556,7 +1559,7 @@ gfc_conv_operator_assign (gfc_se *lse, gfc_se *rse, gfc_symbol *sym)
 
   /* Build the function call.  */
   gfc_init_se (&se, NULL);
-  gfc_conv_function_val (&se, sym);
+  conv_function_val (&se, sym, NULL);
   tmp = TREE_TYPE (TREE_TYPE (TREE_TYPE (se.expr)));
   tmp = build_call_list (tmp, se.expr, args);
   gfc_add_expr_to_block (&block, tmp);
@@ -2133,6 +2136,7 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
       break;
 
     case EXPR_COMPCALL:
+    case EXPR_PPC:
       gcc_unreachable ();
       break;
     }
@@ -2402,11 +2406,13 @@ conv_arglist_function (gfc_se *se, gfc_expr *expr, const char *name)
 
 /* Generate code for a procedure call.  Note can return se->post != NULL.
    If se->direct_byref is set then se->expr contains the return parameter.
-   Return nonzero, if the call has alternate specifiers.  */
+   Return nonzero, if the call has alternate specifiers.
+   'expr' is only needed for procedure pointer components.  */
 
 int
-gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
-			gfc_actual_arglist * arg, tree append_args)
+gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
+			 gfc_actual_arglist * arg, gfc_expr * expr,
+			 tree append_args)
 {
   gfc_interface_mapping mapping;
   tree arglist;
@@ -2496,16 +2502,20 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_add_block_to_block (&se->post, &cptrse.post);
 
 	  gfc_init_se (&fptrse, NULL);
-	  if (sym->intmod_sym_id == ISOCBINDING_F_POINTER)
-	      fptrse.want_pointer = 1;
+	  if (sym->intmod_sym_id == ISOCBINDING_F_POINTER
+	      || is_proc_ptr_comp (arg->next->expr, NULL))
+	    fptrse.want_pointer = 1;
 
 	  gfc_conv_expr (&fptrse, arg->next->expr);
 	  gfc_add_block_to_block (&se->pre, &fptrse.pre);
 	  gfc_add_block_to_block (&se->post, &fptrse.post);
 
-	  tmp = arg->next->expr->symtree->n.sym->backend_decl;
-	  se->expr = fold_build2 (MODIFY_EXPR, TREE_TYPE (tmp), fptrse.expr,
-				  fold_convert (TREE_TYPE (tmp), cptrse.expr));
+	  if (is_proc_ptr_comp (arg->next->expr, NULL))
+	    tmp = gfc_get_ppc_type (arg->next->expr->ref->u.c.component);
+	  else
+	    tmp = TREE_TYPE (arg->next->expr->symtree->n.sym->backend_decl);
+	  se->expr = fold_build2 (MODIFY_EXPR, tmp, fptrse.expr,
+				  fold_convert (tmp, cptrse.expr));
 
 	  return 0;
 	}
@@ -2942,7 +2952,7 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
     arglist = chainon (arglist, append_args);
 
   /* Generate the actual call.  */
-  gfc_conv_function_val (se, sym);
+  conv_function_val (se, sym, expr);
 
   /* If there are alternate return labels, function type should be
      integer.  Can't modify the type in place though, since it can be shared
@@ -2969,7 +2979,8 @@ gfc_conv_function_call (gfc_se * se, gfc_symbol * sym,
      something like
         x = f()
      where f is pointer valued, we have to dereference the result.  */
-  if (!se->want_pointer && !byref && sym->attr.pointer)
+  if (!se->want_pointer && !byref && sym->attr.pointer
+      && !is_proc_ptr_comp (expr, NULL))
     se->expr = build_fold_indirect_ref (se->expr);
 
   /* f2c calling conventions require a scalar default real function to
@@ -3346,6 +3357,20 @@ gfc_conv_statement_function (gfc_se * se, gfc_expr * expr)
 }
 
 
+/* Return the backend_decl for a procedure pointer component.  */
+
+tree
+gfc_get_proc_ptr_comp (gfc_se *se, gfc_expr *e)
+{
+  gfc_se comp_se;
+  gfc_init_se (&comp_se, NULL);
+  e->expr_type = EXPR_VARIABLE;
+  gfc_conv_expr (&comp_se, e);
+  comp_se.expr = build_fold_addr_expr (comp_se.expr);
+  return gfc_evaluate_now (comp_se.expr, &se->pre);  
+}
+
+
 /* Translate a function expression.  */
 
 static void
@@ -3372,7 +3397,9 @@ gfc_conv_function_expr (gfc_se * se, gfc_expr * expr)
   sym = expr->value.function.esym;
   if (!sym)
     sym = expr->symtree->n.sym;
-  gfc_conv_function_call (se, sym, expr->value.function.actual, NULL_TREE);
+
+  gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
+			  NULL_TREE);
 }
 
 
@@ -3794,7 +3821,8 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
         continue;
 
       val = gfc_conv_initializer (c->expr, &cm->ts,
-	  TREE_TYPE (cm->backend_decl), cm->attr.dimension, cm->attr.pointer);
+	  TREE_TYPE (cm->backend_decl), cm->attr.dimension,
+	  cm->attr.pointer || cm->attr.proc_pointer);
 
       /* Append it to the constructor list.  */
       CONSTRUCTOR_APPEND_ELT (v, cm->backend_decl, val);

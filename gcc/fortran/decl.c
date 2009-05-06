@@ -4145,17 +4145,14 @@ add_hidden_procptr_result (gfc_symbol *sym)
 }
 
 
-/* Match a PROCEDURE declaration (R1211).  */
+/* Match the interface for a PROCEDURE declaration,
+   including brackets (R1212).  */
 
 static match
-match_procedure_decl (void)
+match_procedure_interface (gfc_symbol **proc_if)
 {
   match m;
   locus old_loc, entry_loc;
-  gfc_symbol *sym, *proc_if = NULL;
-  int num;
-  gfc_expr *initializer = NULL;
-
   old_loc = entry_loc = gfc_current_locus;
 
   gfc_clear_ts (&current_ts);
@@ -4180,45 +4177,43 @@ match_procedure_decl (void)
 
   /* Get the name of the procedure or abstract interface
   to inherit the interface from.  */
-  m = gfc_match_symbol (&proc_if, 1);
-
-  if (m == MATCH_NO)
-    goto syntax;
-  else if (m == MATCH_ERROR)
+  m = gfc_match_symbol (proc_if, 1);
+  if (m != MATCH_YES)
     return m;
 
   /* Various interface checks.  */
-  if (proc_if)
+  if (*proc_if)
     {
-      proc_if->refs++;
+      (*proc_if)->refs++;
       /* Resolve interface if possible. That way, attr.procedure is only set
 	 if it is declared by a later procedure-declaration-stmt, which is
 	 invalid per C1212.  */
-      while (proc_if->ts.interface)
-	proc_if = proc_if->ts.interface;
+      while ((*proc_if)->ts.interface)
+	*proc_if = (*proc_if)->ts.interface;
 
-      if (proc_if->generic)
+      if ((*proc_if)->generic)
 	{
-	  gfc_error ("Interface '%s' at %C may not be generic", proc_if->name);
+	  gfc_error ("Interface '%s' at %C may not be generic",
+		     (*proc_if)->name);
 	  return MATCH_ERROR;
 	}
-      if (proc_if->attr.proc == PROC_ST_FUNCTION)
+      if ((*proc_if)->attr.proc == PROC_ST_FUNCTION)
 	{
 	  gfc_error ("Interface '%s' at %C may not be a statement function",
-		    proc_if->name);
+		     (*proc_if)->name);
 	  return MATCH_ERROR;
 	}
       /* Handle intrinsic procedures.  */
-      if (!(proc_if->attr.external || proc_if->attr.use_assoc
-	    || proc_if->attr.if_source == IFSRC_IFBODY)
-	  && (gfc_is_intrinsic (proc_if, 0, gfc_current_locus)
-	      || gfc_is_intrinsic (proc_if, 1, gfc_current_locus)))
-	proc_if->attr.intrinsic = 1;
-      if (proc_if->attr.intrinsic
-	  && !gfc_intrinsic_actual_ok (proc_if->name, 0))
+      if (!((*proc_if)->attr.external || (*proc_if)->attr.use_assoc
+	    || (*proc_if)->attr.if_source == IFSRC_IFBODY)
+	  && (gfc_is_intrinsic ((*proc_if), 0, gfc_current_locus)
+	      || gfc_is_intrinsic ((*proc_if), 1, gfc_current_locus)))
+	(*proc_if)->attr.intrinsic = 1;
+      if ((*proc_if)->attr.intrinsic
+	  && !gfc_intrinsic_actual_ok ((*proc_if)->name, 0))
 	{
 	  gfc_error ("Intrinsic procedure '%s' not allowed "
-		    "in PROCEDURE statement at %C", proc_if->name);
+		    "in PROCEDURE statement at %C", (*proc_if)->name);
 	  return MATCH_ERROR;
 	}
     }
@@ -4230,7 +4225,26 @@ got_ts:
       return MATCH_NO;
     }
 
-  /* Parse attributes.  */
+  return MATCH_YES;
+}
+
+
+/* Match a PROCEDURE declaration (R1211).  */
+
+static match
+match_procedure_decl (void)
+{
+  match m;
+  gfc_symbol *sym, *proc_if = NULL;
+  int num;
+  gfc_expr *initializer = NULL;
+
+  /* Parse interface (with brackets). */
+  m = match_procedure_interface (&proc_if);
+  if (m != MATCH_YES)
+    return m;
+
+  /* Parse attributes (with colons).  */
   m = match_attr_spec();
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
@@ -4360,6 +4374,138 @@ cleanup:
 }
 
 
+static match
+match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc);
+
+
+/* Match a procedure pointer component declaration (R445).  */
+
+static match
+match_ppc_decl (void)
+{
+  match m;
+  gfc_symbol *proc_if = NULL;
+  gfc_typespec ts;
+  int num;
+  gfc_component *c;
+  gfc_expr *initializer = NULL;
+  gfc_typebound_proc* tb;
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+
+  /* Parse interface (with brackets).  */
+  m = match_procedure_interface (&proc_if);
+  if (m != MATCH_YES)
+    goto syntax;
+
+  /* Parse attributes.  */
+  tb = XCNEW (gfc_typebound_proc);
+  tb->where = gfc_current_locus;
+  m = match_binding_attributes (tb, false, true);
+  if (m == MATCH_ERROR)
+    return m;
+
+  /* TODO: Implement PASS.  */
+  if (!tb->nopass)
+    {
+      gfc_error ("Procedure Pointer Component with PASS at %C "
+		 "not yet implemented");
+      return MATCH_ERROR;
+    }
+
+  gfc_clear_attr (&current_attr);
+  current_attr.procedure = 1;
+  current_attr.proc_pointer = 1;
+  current_attr.access = tb->access;
+  current_attr.flavor = FL_PROCEDURE;
+
+  /* Match the colons (required).  */
+  if (gfc_match (" ::") != MATCH_YES)
+    {
+      gfc_error ("Expected '::' after binding-attributes at %C");
+      return MATCH_ERROR;
+    }
+
+  /* Check for C450.  */
+  if (!tb->nopass && proc_if == NULL)
+    {
+      gfc_error("NOPASS or explicit interface required at %C");
+      return MATCH_ERROR;
+    }
+
+  /* Match PPC names.  */
+  ts = current_ts;
+  for(num=1;;num++)
+    {
+      m = gfc_match_name (name);
+      if (m == MATCH_NO)
+	goto syntax;
+      else if (m == MATCH_ERROR)
+	return m;
+
+      if (gfc_add_component (gfc_current_block (), name, &c) == FAILURE)
+	return MATCH_ERROR;
+
+      /* Add current_attr to the symbol attributes.  */
+      if (gfc_copy_attr (&c->attr, &current_attr, NULL) == FAILURE)
+	return MATCH_ERROR;
+
+      if (gfc_add_external (&c->attr, NULL) == FAILURE)
+	return MATCH_ERROR;
+
+      if (gfc_add_proc (&c->attr, name, NULL) == FAILURE)
+	return MATCH_ERROR;
+
+      /* Set interface.  */
+      if (proc_if != NULL)
+	{
+	  c->ts.interface = proc_if;
+	  c->attr.untyped = 1;
+	  c->attr.if_source = IFSRC_IFBODY;
+	}
+      else if (ts.type != BT_UNKNOWN)
+	{
+	  c->ts = ts;
+	  c->ts.interface = gfc_new_symbol ("", gfc_current_ns);
+	  c->ts.interface->ts = ts;
+	  c->ts.interface->attr.function = 1;
+	  c->attr.function = c->ts.interface->attr.function;
+	  c->attr.if_source = IFSRC_UNKNOWN;
+	}
+
+      if (gfc_match (" =>") == MATCH_YES)
+	{
+	  m = gfc_match_null (&initializer);
+	  if (m == MATCH_NO)
+	    {
+	      gfc_error ("Pointer initialization requires a NULL() at %C");
+	      m = MATCH_ERROR;
+	    }
+	  if (gfc_pure (NULL))
+	    {
+	      gfc_error ("Initialization of pointer at %C is not allowed in "
+			 "a PURE procedure");
+	      m = MATCH_ERROR;
+	    }
+	  if (m != MATCH_YES)
+	    {
+	      gfc_free_expr (initializer);
+	      return m;
+	    }
+	  c->initializer = initializer;
+	}
+
+      if (gfc_match_eos () == MATCH_YES)
+	return MATCH_YES;
+      if (gfc_match_char (',') != MATCH_YES)
+	goto syntax;
+    }
+
+syntax:
+  gfc_error ("Syntax error in procedure pointer component at %C");
+  return MATCH_ERROR;
+}
+
+
 /* Match a PROCEDURE declaration inside an interface (R1206).  */
 
 static match
@@ -4425,9 +4571,8 @@ gfc_match_procedure (void)
       m = match_procedure_in_interface ();
       break;
     case COMP_DERIVED:
-      gfc_error ("Fortran 2003: Procedure components at %C are not yet"
-		 " implemented in gfortran");
-      return MATCH_ERROR;
+      m = match_ppc_decl ();
+      break;
     case COMP_DERIVED_CONTAINS:
       m = match_procedure_in_type ();
       break;
@@ -6830,9 +6975,10 @@ cleanup:
 /* Match binding attributes.  */
 
 static match
-match_binding_attributes (gfc_typebound_proc* ba, bool generic)
+match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
 {
   bool found_passing = false;
+  bool seen_ptr = false;
   match m;
 
   /* Intialize to defaults.  Do so even before the MATCH_NO check so that in
@@ -6907,38 +7053,6 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic)
 	      continue;
 	    }
 
-	  /* NON_OVERRIDABLE flag.  */
-	  m = gfc_match (" non_overridable");
-	  if (m == MATCH_ERROR)
-	    goto error;
-	  if (m == MATCH_YES)
-	    {
-	      if (ba->non_overridable)
-		{
-		  gfc_error ("Duplicate NON_OVERRIDABLE at %C");
-		  goto error;
-		}
-
-	      ba->non_overridable = 1;
-	      continue;
-	    }
-
-	  /* DEFERRED flag.  */
-	  m = gfc_match (" deferred");
-	  if (m == MATCH_ERROR)
-	    goto error;
-	  if (m == MATCH_YES)
-	    {
-	      if (ba->deferred)
-		{
-		  gfc_error ("Duplicate DEFERRED at %C");
-		  goto error;
-		}
-
-	      ba->deferred = 1;
-	      continue;
-	    }
-
 	  /* PASS possibly including argument.  */
 	  m = gfc_match (" pass");
 	  if (m == MATCH_ERROR)
@@ -6966,6 +7080,60 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic)
 	      continue;
 	    }
 
+	  if (ppc)
+	    {
+	      /* POINTER flag.  */
+	      m = gfc_match (" pointer");
+	      if (m == MATCH_ERROR)
+		goto error;
+	      if (m == MATCH_YES)
+		{
+		  if (seen_ptr)
+		    {
+		      gfc_error ("Duplicate POINTER attribute at %C");
+		      goto error;
+		    }
+
+		  seen_ptr = true;
+		  /*ba->ppc = 1;*/
+        	  continue;
+		}
+	    }
+	  else
+	    {
+	      /* NON_OVERRIDABLE flag.  */
+	      m = gfc_match (" non_overridable");
+	      if (m == MATCH_ERROR)
+		goto error;
+	      if (m == MATCH_YES)
+		{
+		  if (ba->non_overridable)
+		    {
+		      gfc_error ("Duplicate NON_OVERRIDABLE at %C");
+		      goto error;
+		    }
+
+		  ba->non_overridable = 1;
+		  continue;
+		}
+
+	      /* DEFERRED flag.  */
+	      m = gfc_match (" deferred");
+	      if (m == MATCH_ERROR)
+		goto error;
+	      if (m == MATCH_YES)
+		{
+		  if (ba->deferred)
+		    {
+		      gfc_error ("Duplicate DEFERRED at %C");
+		      goto error;
+		    }
+
+		  ba->deferred = 1;
+		  continue;
+		}
+	    }
+
 	}
 
       /* Nothing matching found.  */
@@ -6986,6 +7154,13 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic)
 
   if (ba->access == ACCESS_UNKNOWN)
     ba->access = gfc_typebound_default_access;
+
+  if (ppc && !seen_ptr)
+    {
+      gfc_error ("POINTER attribute is required for procedure pointer component"
+                 " at %C");
+      goto error;
+    }
 
   return MATCH_YES;
 
@@ -7043,7 +7218,7 @@ match_procedure_in_type (void)
   tb->is_generic = 0;
 
   /* Match binding attributes.  */
-  m = match_binding_attributes (tb, false);
+  m = match_binding_attributes (tb, false, false);
   if (m == MATCH_ERROR)
     return m;
   seen_attrs = (m == MATCH_YES);
@@ -7192,7 +7367,7 @@ gfc_match_generic (void)
   gcc_assert (block && ns);
 
   /* See if we get an access-specifier.  */
-  m = match_binding_attributes (&tbattr, true);
+  m = match_binding_attributes (&tbattr, true, false);
   if (m == MATCH_ERROR)
     goto error;
 

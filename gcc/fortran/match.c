@@ -1336,7 +1336,8 @@ gfc_match_pointer_assignment (void)
       goto cleanup;
     }
 
-  if (lvalue->symtree->n.sym->attr.proc_pointer)
+  if (lvalue->symtree->n.sym->attr.proc_pointer
+      || is_proc_ptr_comp (lvalue, NULL))
     gfc_matching_procptr_assignment = 1;
 
   m = gfc_match (" %e%t", &rvalue);
@@ -2629,7 +2630,7 @@ match_typebound_call (gfc_symtree* varst)
   base->where = gfc_current_locus;
   gfc_set_sym_referenced (varst->n.sym);
   
-  m = gfc_match_varspec (base, 0, true);
+  m = gfc_match_varspec (base, 0, true, true);
   if (m == MATCH_NO)
     gfc_error ("Expected component reference at %C");
   if (m != MATCH_YES)
@@ -2641,13 +2642,16 @@ match_typebound_call (gfc_symtree* varst)
       return MATCH_ERROR;
     }
 
-  if (base->expr_type != EXPR_COMPCALL)
+  if (base->expr_type == EXPR_COMPCALL)
+    new_st.op = EXEC_COMPCALL;
+  else if (base->expr_type == EXPR_PPC)
+    new_st.op = EXEC_CALL_PPC;
+  else
     {
-      gfc_error ("Expected type-bound procedure reference at %C");
+      gfc_error ("Expected type-bound procedure or procedure pointer component "
+		 "at %C");
       return MATCH_ERROR;
     }
-
-  new_st.op = EXEC_COMPCALL;
   new_st.expr = base;
 
   return MATCH_YES;

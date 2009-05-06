@@ -3043,6 +3043,7 @@ mio_expr (gfc_expr **ep)
       break;
 
     case EXPR_COMPCALL:
+    case EXPR_PPC:
       gcc_unreachable ();
       break;
     }

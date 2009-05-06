@@ -528,14 +528,14 @@ resolve_entries (gfc_namespace *ns)
       fas = fas ? fas : ns->entries->sym->result->as;
       fts = &ns->entries->sym->result->ts;
       if (fts->type == BT_UNKNOWN)
-	fts = gfc_get_default_type (ns->entries->sym->result, NULL);
+	fts = gfc_get_default_type (ns->entries->sym->result->name, NULL);
       for (el = ns->entries->next; el; el = el->next)
 	{
 	  ts = &el->sym->result->ts;
 	  as = el->sym->as;
 	  as = as ? as : el->sym->result->as;
 	  if (ts->type == BT_UNKNOWN)
-	    ts = gfc_get_default_type (el->sym->result, NULL);
+	    ts = gfc_get_default_type (el->sym->result->name, NULL);
 
 	  if (! gfc_compare_types (ts, fts)
 	      || (el->sym->result->attr.dimension
@@ -612,7 +612,7 @@ resolve_entries (gfc_namespace *ns)
 		{
 		  ts = &sym->ts;
 		  if (ts->type == BT_UNKNOWN)
-		    ts = gfc_get_default_type (sym, NULL);
+		    ts = gfc_get_default_type (sym->name, NULL);
 		  switch (ts->type)
 		    {
 		    case BT_INTEGER:
@@ -878,7 +878,8 @@ resolve_structure_cons (gfc_expr *expr)
 	}
 
       if (cons->expr->expr_type == EXPR_NULL
-	    && !(comp->attr.pointer || comp->attr.allocatable))
+	  && !(comp->attr.pointer || comp->attr.allocatable
+	       || comp->attr.proc_pointer))
 	{
 	  t = FAILURE;
 	  gfc_error ("The NULL in the derived type constructor at %L is "
@@ -1215,6 +1216,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
   gfc_symtree *parent_st;
   gfc_expr *e;
   int save_need_full_assumed_size;
+  gfc_component *comp;
 	
   for (; arg; arg = arg->next)
     {
@@ -1232,6 +1234,13 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 		}
 	    }
 	  continue;
+	}
+
+      if (is_proc_ptr_comp (e, &comp))
+	{
+	  e->ts = comp->ts;
+	  e->expr_type = EXPR_VARIABLE;
+	  goto argument_list;
 	}
 
       if (e->expr_type == EXPR_VARIABLE
@@ -1906,7 +1915,7 @@ set_type:
     expr->ts = sym->ts;
   else
     {
-      ts = gfc_get_default_type (sym, sym->ns);
+      ts = gfc_get_default_type (sym->name, sym->ns);
 
       if (ts->type == BT_UNKNOWN)
 	{
@@ -4804,6 +4813,61 @@ resolve_compcall (gfc_expr* e)
 }
 
 
+/* Resolve a CALL to a Procedure Pointer Component (Subroutine).  */
+
+static gfc_try
+resolve_ppc_call (gfc_code* c)
+{
+  gfc_component *comp;
+  gcc_assert (is_proc_ptr_comp (c->expr, &comp));
+
+  c->resolved_sym = c->expr->symtree->n.sym;
+  c->expr->expr_type = EXPR_VARIABLE;
+  c->ext.actual = c->expr->value.compcall.actual;
+
+  if (!comp->attr.subroutine)
+    gfc_add_subroutine (&comp->attr, comp->name, &c->expr->where);
+
+  if (resolve_actual_arglist (c->ext.actual, comp->attr.proc,
+			      comp->formal == NULL) == FAILURE)
+    return FAILURE;
+
+  /* TODO: Check actual arguments.
+     gfc_procedure_use (stree->n.sym, &c->expr->value.compcall.actual,
+			&c->expr->where);*/
+
+  return SUCCESS;
+}
+
+
+/* Resolve a Function Call to a Procedure Pointer Component (Function).  */
+
+static gfc_try
+resolve_expr_ppc (gfc_expr* e)
+{
+  gfc_component *comp;
+  gcc_assert (is_proc_ptr_comp (e, &comp));
+
+  /* Convert to EXPR_FUNCTION.  */
+  e->expr_type = EXPR_FUNCTION;
+  e->value.function.isym = NULL;
+  e->value.function.actual = e->value.compcall.actual;
+  e->ts = comp->ts;
+
+  if (!comp->attr.function)
+    gfc_add_function (&comp->attr, comp->name, &e->where);
+
+  if (resolve_actual_arglist (e->value.function.actual, comp->attr.proc,
+			      comp->formal == NULL) == FAILURE)
+    return FAILURE;
+
+  /* TODO: Check actual arguments.
+     gfc_procedure_use (stree->n.sym, &e->value.compcall.actual, &e->where);  */
+
+  return SUCCESS;
+}
+
+
 /* Resolve an expression.  That is, make sure that types of operands agree
    with their operators, intrinsic operators are converted to function calls
    for overloaded types and unresolved function references are resolved.  */
@@ -4851,6 +4915,10 @@ gfc_resolve_expr (gfc_expr *e)
     case EXPR_CONSTANT:
     case EXPR_NULL:
       t = SUCCESS;
+      break;
+
+    case EXPR_PPC:
+      t = resolve_expr_ppc (e);
       break;
 
     case EXPR_ARRAY:
@@ -6819,7 +6887,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	}
 
       t = SUCCESS;
-      if (code->op != EXEC_COMPCALL)
+      if (code->op != EXEC_COMPCALL && code->op != EXEC_CALL_PPC)
 	t = gfc_resolve_expr (code->expr);
       forall_flag = forall_save;
 
@@ -6929,6 +6997,10 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 
 	case EXEC_COMPCALL:
 	  resolve_typebound_call (code);
+	  break;
+
+	case EXEC_CALL_PPC:
+          resolve_ppc_call (code);
 	  break;
 
 	case EXEC_SELECT:
@@ -8906,6 +8978,78 @@ resolve_fl_derived (gfc_symbol *sym)
 
   for (c = sym->components; c != NULL; c = c->next)
     {
+      if (c->attr.proc_pointer && c->ts.interface)
+	{
+	  if (c->ts.interface->attr.procedure)
+	    gfc_error ("Interface '%s', used by procedure pointer component "
+		       "'%s' at %L, is declared in a later PROCEDURE statement",
+		       c->ts.interface->name, c->name, &c->loc);
+
+	  /* Get the attributes from the interface (now resolved).  */
+	  if (c->ts.interface->attr.if_source
+	      || c->ts.interface->attr.intrinsic)
+	    {
+	      gfc_symbol *ifc = c->ts.interface;
+
+	      if (ifc->attr.intrinsic)
+		resolve_intrinsic (ifc, &ifc->declared_at);
+
+	      if (ifc->result)
+		c->ts = ifc->result->ts;
+	      else   
+		c->ts = ifc->ts;
+	      c->ts.interface = ifc;
+	      c->attr.function = ifc->attr.function;
+	      c->attr.subroutine = ifc->attr.subroutine;
+	      /* TODO: gfc_copy_formal_args (c, ifc);  */
+
+	      c->attr.allocatable = ifc->attr.allocatable;
+	      c->attr.pointer = ifc->attr.pointer;
+	      c->attr.pure = ifc->attr.pure;
+	      c->attr.elemental = ifc->attr.elemental;
+	      c->attr.dimension = ifc->attr.dimension;
+	      c->attr.recursive = ifc->attr.recursive;
+	      c->attr.always_explicit = ifc->attr.always_explicit;
+	      /* Copy array spec.  */
+	      c->as = gfc_copy_array_spec (ifc->as);
+	      /*if (c->as)
+		{
+		  int i;
+		  for (i = 0; i < c->as->rank; i++)
+		    {
+		      gfc_expr_replace_symbols (c->as->lower[i], c);
+		      gfc_expr_replace_symbols (c->as->upper[i], c);
+		    }
+	        }*/
+	      /* Copy char length.  */
+	      if (ifc->ts.cl)
+		{
+		  c->ts.cl = gfc_get_charlen();
+	          c->ts.cl->resolved = ifc->ts.cl->resolved;
+		  c->ts.cl->length = gfc_copy_expr (ifc->ts.cl->length);
+		  /*gfc_expr_replace_symbols (c->ts.cl->length, c);*/
+		  /* Add charlen to namespace.  */
+		  /*if (c->formal_ns)
+		    {
+		      c->ts.cl->next = c->formal_ns->cl_list;
+		      c->formal_ns->cl_list = c->ts.cl;
+		    }*/
+		}
+	    }
+	  else if (c->ts.interface->name[0] != '\0')
+	    {
+	      gfc_error ("Interface '%s' of procedure pointer component "
+			 "'%s' at %L must be explicit", c->ts.interface->name,
+			 c->name, &c->loc);
+	      return FAILURE;
+ 	    }
+	}
+      else if (c->attr.proc_pointer && c->ts.type == BT_UNKNOWN)
+	{
+	  c->ts = *gfc_get_default_type (c->name, NULL);
+	  c->attr.implicit_type = 1;
+	}
+
       /* Check type-spec if this is not the parent-type component.  */
       if ((!sym->attr.extension || c != sym->components)
 	  && resolve_typespec_used (&c->ts, &c->loc, c->name) == FAILURE)
@@ -9157,7 +9301,8 @@ resolve_fl_parameter (gfc_symbol *sym)
      matches the implicit type, since PARAMETER statements can precede
      IMPLICIT statements.  */
   if (sym->attr.implicit_type
-      && !gfc_compare_types (&sym->ts, gfc_get_default_type (sym, sym->ns)))
+      && !gfc_compare_types (&sym->ts, gfc_get_default_type (sym->name,
+							     sym->ns)))
     {
       gfc_error ("Implicitly typed PARAMETER '%s' at %L doesn't match a "
 		 "later IMPLICIT type", sym->name, &sym->declared_at);
@@ -9237,7 +9382,8 @@ resolve_symbol (gfc_symbol *sym)
 		   sym->name,&sym->declared_at);
 
       /* Get the attributes from the interface (now resolved).  */
-      if (sym->ts.interface->attr.if_source || sym->ts.interface->attr.intrinsic)
+      if (sym->ts.interface->attr.if_source
+	  || sym->ts.interface->attr.intrinsic)
 	{
 	  gfc_symbol *ifc = sym->ts.interface;
 

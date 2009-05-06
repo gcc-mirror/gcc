@@ -47,10 +47,6 @@ program prog
   procedure(dcos) :: my1
   procedure(amax0) :: my2  ! { dg-error "not allowed in PROCEDURE statement" }
 
-  type t
-    procedure(),pointer:: p  ! { dg-error "not yet implemented" }
-  end type
-
   real f, x
   f(x) = sin(x**2)
   external oo

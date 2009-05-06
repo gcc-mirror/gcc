@@ -110,6 +110,7 @@ gfc_free_statement (gfc_code *p)
       break;
 
     case EXEC_COMPCALL:
+    case EXEC_CALL_PPC:
     case EXEC_CALL:
     case EXEC_ASSIGN_CALL:
       gfc_free_actual_arglist (p->ext.actual);
