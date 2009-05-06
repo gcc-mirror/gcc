@@ -3345,7 +3345,7 @@ In this case the components DT inherited from the C++ side must be
 initialized by a C++ constructor, and the additional Ada components
 of type DT are initialized by GNAT. The initialization of such an
 object is done either by default, or by means of a function returning
-an aggregate of type DT, or by means of an extended aggregate.
+an aggregate of type DT, or by means of an extension aggregate.
 
 @smallexample @c ada
   Obj5 : DT;

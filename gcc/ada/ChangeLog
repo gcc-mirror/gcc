@@ -1,3 +1,24 @@
+2009-05-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_ugn.texi: Fix typo.
+
+2009-05-06  Thomas Quinot  <quinot@adacore.com>
+
+	* g-debuti.adb: Minor reformatting
+
+	* exp_attr.adb: Minor reformatting
+
+2009-05-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_aggr.adb: Minor reformatting.
+
+	* g-socthi-vms.adb: Minor reformatting
+
+2009-05-06  Bob Duff  <duff@adacore.com>
+
+	* g-table.ads, g-table.adb, g-dyntab.ads, g-dyntab.adb:
+	(Append_All): Add Append_All to g-table and g-dyntab, similar to table.
+
 2009-05-06  Bob Duff  <duff@adacore.com>
 
 	* gnat_ugn.texi, gnat_rm.texi: Add missing documentation for warnings
