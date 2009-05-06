@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1052,9 +1052,9 @@ package body Prj.Dect is
                   end if;
 
                   if Index /= 0 then
-                     Error_Msg ("\?possible misspelling of """ &
-                                List (Index).all & """",
-                                Token_Ptr);
+                     Error_Msg -- CODEFIX
+                       ("\?possible misspelling of """ &
+                        List (Index).all & """", Token_Ptr);
                   end if;
                end;
             end if;

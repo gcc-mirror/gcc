@@ -32,10 +32,12 @@
 pragma Style_Checks (All_Checks);
 --  Subprograms not all in alpha order
 
+with Atree;    use Atree;
 with Debug;    use Debug;
 with Opt;      use Opt;
 with Output;   use Output;
 with Tree_IO;  use Tree_IO;
+with Sinfo;    use Sinfo;
 with System;   use System;
 with Widechar; use Widechar;
 
@@ -237,6 +239,222 @@ package body Sinput is
       Name_Buffer (Name_Len + 1) := NUL;
       return;
    end Build_Location_String;
+
+   ---------------------
+   -- Expr_First_Char --
+   ---------------------
+
+   function Expr_First_Char (Expr : Node_Id) return Source_Ptr is
+
+      function First_Char (Expr : Node_Id; PC : Nat) return Source_Ptr;
+      --  Internal recursive function used to traverse the expression tree.
+      --  Returns the source pointer corresponding to the first location of
+      --  the subexpression N, followed by backing up the given (PC) number of
+      --  preceding left parentheses.
+
+      ----------------
+      -- First_Char --
+      ----------------
+
+      function First_Char (Expr : Node_Id; PC : Nat) return Source_Ptr is
+         N     : constant Node_Id   := Original_Node (Expr);
+         Count : constant Nat       := PC + Paren_Count (N);
+         Kind  : constant N_Subexpr := Nkind (N);
+         Loc   : Source_Ptr;
+
+      begin
+         case Kind is
+            when N_And_Then  |
+                 N_In        |
+                 N_Not_In    |
+                 N_Or_Else   |
+                 N_Binary_Op  =>
+               return First_Char (Left_Opnd (N), Count);
+
+            when N_Attribute_Reference  |
+                 N_Expanded_Name        |
+                 N_Explicit_Dereference |
+                 N_Indexed_Component    |
+                 N_Reference            |
+                 N_Selected_Component   |
+                 N_Slice                =>
+               return First_Char (Prefix (N), Count);
+
+            when N_Function_Call =>
+               return First_Char (Sinfo.Name (N), Count);
+
+            when N_Qualified_Expression |
+                 N_Type_Conversion      =>
+               return First_Char (Subtype_Mark (N), Count);
+
+            when N_Range =>
+               return First_Char (Low_Bound (N), Count);
+
+            --  Nodes that should not appear in original expression trees
+
+            when N_Procedure_Call_Statement  |
+                 N_Raise_xxx_Error           |
+                 N_Subprogram_Info           |
+                 N_Unchecked_Expression      |
+                 N_Unchecked_Type_Conversion |
+                 N_Conditional_Expression    =>
+               raise Program_Error;
+
+            --  Cases where the Sloc points to the start of the tokem, but we
+            --  still need to handle the sequence of left parentheses.
+
+            when N_Identifier          |
+                 N_Operator_Symbol     |
+                 N_Character_Literal   |
+                 N_Integer_Literal     |
+                 N_Null                |
+                 N_Unary_Op            |
+                 N_Aggregate           |
+                 N_Allocator           |
+                 N_Extension_Aggregate |
+                 N_Real_Literal        |
+                 N_String_Literal      =>
+
+               Loc := Sloc (N);
+
+               if Count > 0 then
+                  declare
+                     SFI : constant Source_File_Index :=
+                             Get_Source_File_Index (Loc);
+                     Src : constant Source_Buffer_Ptr := Source_Text (SFI);
+                     Fst : constant Source_Ptr        := Source_First (SFI);
+
+                  begin
+                     for J in 1 .. Count loop
+                        loop
+                           exit when Loc = Fst;
+                           Loc := Loc - 1;
+                           exit when Src (Loc) >= ' ';
+                        end loop;
+
+                        exit when Src (Loc) /= '(';
+                     end loop;
+                  end;
+               end if;
+
+               return Loc;
+         end case;
+      end First_Char;
+
+   --  Start of processing for Expr_First_Char
+
+   begin
+      pragma Assert (Nkind (Expr) in N_Subexpr);
+      return First_Char (Expr, 0);
+   end Expr_First_Char;
+
+   --------------------
+   -- Expr_Last_Char --
+   --------------------
+
+   function Expr_Last_Char (Expr : Node_Id) return Source_Ptr is
+
+      function Last_Char (Expr : Node_Id; PC : Nat) return Source_Ptr;
+      --  Internal recursive function used to traverse the expression tree.
+      --  Returns the source pointer corresponding to the last location of
+      --  the subexpression N, followed by ztepping to the last of the given
+      --  number of right parentheses.
+
+      ---------------
+      -- Last_Char --
+      ---------------
+
+      function Last_Char (Expr : Node_Id; PC : Nat) return Source_Ptr is
+         N     : constant Node_Id   := Original_Node (Expr);
+         Count : constant Nat       := PC + Paren_Count (N);
+         Kind  : constant N_Subexpr := Nkind (N);
+         Loc   : Source_Ptr;
+
+      begin
+         case Kind is
+            when N_And_Then  |
+                 N_In        |
+                 N_Not_In    |
+                 N_Or_Else   |
+                 N_Binary_Op  =>
+               return Last_Char (Right_Opnd (N), Count);
+
+            when N_Attribute_Reference  |
+                 N_Expanded_Name        |
+                 N_Explicit_Dereference |
+                 N_Indexed_Component    |
+                 N_Reference            |
+                 N_Selected_Component   |
+                 N_Slice                =>
+               return Last_Char (Prefix (N), Count);
+
+            when N_Function_Call =>
+               return Last_Char (Sinfo.Name (N), Count);
+
+            when N_Qualified_Expression |
+                 N_Type_Conversion      =>
+               return Last_Char (Subtype_Mark (N), Count);
+
+            when N_Range =>
+               return Last_Char (Low_Bound (N), Count);
+
+            --  Nodes that should not appear in original expression trees
+
+            when N_Procedure_Call_Statement  |
+                 N_Raise_xxx_Error           |
+                 N_Subprogram_Info           |
+                 N_Unchecked_Expression      |
+                 N_Unchecked_Type_Conversion |
+                 N_Conditional_Expression    =>
+               raise Program_Error;
+
+            --  Cases where the Sloc points to the start of the tokem, but we
+            --  still need to handle the sequence of left parentheses.
+
+            when N_Identifier          |
+                 N_Operator_Symbol     |
+                 N_Character_Literal   |
+                 N_Integer_Literal     |
+                 N_Null                |
+                 N_Unary_Op            |
+                 N_Aggregate           |
+                 N_Allocator           |
+                 N_Extension_Aggregate |
+                 N_Real_Literal        |
+                 N_String_Literal      =>
+
+               Loc := Sloc (N);
+
+               if Count > 0 then
+                  declare
+                     SFI : constant Source_File_Index :=
+                             Get_Source_File_Index (Loc);
+                     Src : constant Source_Buffer_Ptr := Source_Text (SFI);
+                     Fst : constant Source_Ptr        := Source_Last (SFI);
+
+                  begin
+                     for J in 1 .. Count loop
+                        loop
+                           exit when Loc = Fst;
+                           Loc := Loc - 1;
+                           exit when Src (Loc) >= ' ';
+                        end loop;
+
+                        exit when Src (Loc) /= '(';
+                     end loop;
+                  end;
+               end if;
+
+               return Loc;
+         end case;
+      end Last_Char;
+
+   --  Start of processing for Expr_Last_Char
+
+   begin
+      pragma Assert (Nkind (Expr) in N_Subexpr);
+      return Last_Char (Expr, 0);
+   end Expr_Last_Char;
 
    -----------------------
    -- Get_Column_Number --

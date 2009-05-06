@@ -1,5 +1,29 @@
 2009-05-06  Sergey Rybin  <rybin@adacore.com>
 
+	* gnat_ugn.texi: For Misnamed_Identifiers rule all description of the
+	new form of the rule parameter that allows to specify the suffix for
+	access-to-access type names.
+
+2009-05-06  Robert Dewar  <dewar@adacore.com>
+
+	* sem_warn.adb (Warn_On_Useless_Assignment): Avoid false negative for
+	out parameter assigned when exception handlers are present.
+
+	* sem_ch5.adb (Analyze_Exit_Statement): Kill current value last
+	assignments on exit.
+
+	* par-ch9.adb, sem_aggr.adb, par-endh.adb, sem_res.adb, par-ch6.adb,
+	sinput-l.adb, par-load.adb, errout.ads, sem_ch4.adb, lib-load.adb,
+	prj-dect.adb, par-ch12.adb, sem_ch8.adb, par-util.adb, par-ch3.adb,
+	par-tchk.adb, par-ch5.adb: This patch adds stylized comments to error
+	messages that are included in the codefix circuitry of IDE's such as
+	GPS.
+
+	* sinput.ads, sinput.adb (Expr_First_Char): New function
+        (Expr_Last_Char): New function
+
+2009-05-06  Sergey Rybin  <rybin@adacore.com>
+
 	* gnat_ugn.texi: Add subsection for Exits_From_Conditional_Loops rule
 	Add formal definition for extra exit point metric
 

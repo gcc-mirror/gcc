@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -446,7 +446,7 @@ package body Sem_Ch4 is
                      if Nkind (Constraint (E)) =
                        N_Index_Or_Discriminant_Constraint
                      then
-                        Error_Msg_N
+                        Error_Msg_N -- CODEFIX
                           ("\if qualified expression was meant, " &
                               "use apostrophe", Constraint (E));
                      end if;
@@ -483,7 +483,7 @@ package body Sem_Ch4 is
                     and then Nkind (Constraint (E)) =
                                N_Index_Or_Discriminant_Constraint
                   then
-                     Error_Msg_N
+                     Error_Msg_N -- CODEFIX
                        ("if qualified expression was meant, " &
                            "use apostrophe!", Constraint (E));
                   end if;
@@ -2466,7 +2466,7 @@ package body Sem_Ch4 is
                         Formal := First_Formal (Nam);
                         while Present (Formal) loop
                            if Chars (Left_Opnd (Actual)) = Chars (Formal) then
-                              Error_Msg_N
+                              Error_Msg_N -- CODEFIX
                                 ("possible misspelling of `='>`!", Actual);
                               exit;
                            end if;
@@ -4245,12 +4245,12 @@ package body Sem_Ch4 is
       --  Report at most two suggestions
 
       if Nr_Of_Suggestions = 1 then
-         Error_Msg_NE
+         Error_Msg_NE -- CODEFIX
            ("\possible misspelling of&", Sel, Suggestion_1);
 
       elsif Nr_Of_Suggestions = 2 then
          Error_Msg_Node_2 := Suggestion_2;
-         Error_Msg_NE
+         Error_Msg_NE -- CODEFIX
            ("\possible misspelling of& or&", Sel, Suggestion_1);
       end if;
    end Check_Misspelled_Selector;
@@ -4359,8 +4359,8 @@ package body Sem_Ch4 is
          if Nkind (Parent (N)) = N_Selected_Component
            and then N = Prefix (Parent (N))
          then
-            Error_Msg_N (
-              "\period should probably be semicolon", Parent (N));
+            Error_Msg_N -- CODEFIX
+              ("\period should probably be semicolon", Parent (N));
          end if;
 
       elsif Nkind (N) = N_Procedure_Call_Statement
@@ -5238,7 +5238,8 @@ package body Sem_Ch4 is
               and then Valid_Boolean_Arg (Etype (R))
             then
                Error_Msg_N ("invalid operands for concatenation", N);
-               Error_Msg_N ("\maybe AND was meant", N);
+               Error_Msg_N -- CODEFIX
+                 ("\maybe AND was meant", N);
                return;
 
             --  A special case for comparison of access parameter with null
@@ -6073,7 +6074,8 @@ package body Sem_Ch4 is
             if Nkind (Parent (Op)) = N_Full_Type_Declaration then
                Error_Msg_N ("\possible interpretation (inherited)#", N);
             else
-               Error_Msg_N ("\possible interpretation#", N);
+               Error_Msg_N -- CODEFIX
+                 ("\possible interpretation#", N);
             end if;
          end if;
       end Report_Ambiguity;

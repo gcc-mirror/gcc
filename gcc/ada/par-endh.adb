@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -717,7 +717,8 @@ package body Endh is
                if Error_Msg_Name_1 > Error_Name then
                   if Is_Bad_Spelling_Of (Chars (Nam), Chars (End_Labl)) then
                      Error_Msg_Name_1 := Chars (Nam);
-                     Error_Msg_N ("misspelling of %", End_Labl);
+                     Error_Msg_N -- CODEFIX
+                       ("misspelling of %", End_Labl);
                      Syntax_OK := True;
                      return;
                   end if;
@@ -839,29 +840,32 @@ package body Endh is
       end if;
 
       if End_Type = E_Case then
-         Error_Msg_SC ("`END CASE;` expected@ for CASE#!");
+         Error_Msg_SC -- CODEFIX
+           ("`END CASE;` expected@ for CASE#!");
 
       elsif End_Type = E_If then
-         Error_Msg_SC ("`END IF;` expected@ for IF#!");
+         Error_Msg_SC -- CODEFIX
+           ("`END IF;` expected@ for IF#!");
 
       elsif End_Type = E_Loop then
          if Error_Msg_Node_1 = Empty then
-            Error_Msg_SC
+            Error_Msg_SC -- CODEFIX
               ("`END LOOP;` expected@ for LOOP#!");
          else
-            Error_Msg_SC ("`END LOOP &;` expected@!");
+            Error_Msg_SC -- CODEFIX
+              ("`END LOOP &;` expected@!");
          end if;
 
       elsif End_Type = E_Record then
-         Error_Msg_SC
+         Error_Msg_SC -- CODEFIX
            ("`END RECORD;` expected@ for RECORD#!");
 
       elsif End_Type = E_Return then
-         Error_Msg_SC
+         Error_Msg_SC -- CODEFIX
            ("`END RETURN;` expected@ for RETURN#!");
 
       elsif End_Type = E_Select then
-         Error_Msg_SC
+         Error_Msg_SC -- CODEFIX
            ("`END SELECT;` expected@ for SELECT#!");
 
       --  All remaining cases are cases with a name (we do not treat
@@ -870,9 +874,11 @@ package body Endh is
 
       elsif End_Type = E_Name or else (not Ins) then
          if Error_Msg_Node_1 = Empty then
-            Error_Msg_SC ("`END;` expected@ for BEGIN#!");
+            Error_Msg_SC -- CODEFIX
+              ("`END;` expected@ for BEGIN#!");
          else
-            Error_Msg_SC ("`END &;` expected@!");
+            Error_Msg_SC -- CODEFIX
+              ("`END &;` expected@!");
          end if;
 
       --  The other possibility is a missing END for a subprogram with a

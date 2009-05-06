@@ -724,7 +724,7 @@ package body Lib.Load is
                   Check_Restricted_Unit (Load_Name, Error_Node);
 
                   Error_Msg_Unit_1 := Uname_Actual;
-                  Error_Msg
+                  Error_Msg -- CODEFIX
                     ("$$ is not a predefined library unit", Load_Msg_Sloc);
 
                else

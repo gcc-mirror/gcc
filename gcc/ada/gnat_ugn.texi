@@ -21556,6 +21556,11 @@ Specifies the suffix for a type name.
 Specifies the suffix for an access type name. If
 this parameter is set, it overrides for access
 types the suffix set by the @code{Type_Suffix} parameter.
+For access types, @emph{string} may have the following format:
+@emph{suffix1(suffix2)}. That means that an access type name
+should have the @emph{suffix1} suffix except for the case when
+the designated type is also an access type, in this case the
+type name should have the @emph{suffix1 & suffix2} suffix.
 
 @item Constant_Suffix=@emph{string}
 Specifies the suffix for a constant name.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -651,7 +651,8 @@ package body Ch9 is
                Set_Must_Not_Override (Specification (Decl), Not_Overriding);
 
             else
-               Error_Msg_SC ("ENTRY, FUNCTION or PROCEDURE expected!");
+               Error_Msg_SC -- CODEFIX
+                 ("ENTRY, FUNCTION or PROCEDURE expected!");
             end if;
          end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -443,7 +443,8 @@ package body Tchk is
       --  the possibility of a "C" confusion.
 
       elsif Token = Tok_Vertical_Bar then
-         Error_Msg_SC ("unexpected occurrence of ""'|"", did you mean OR'?");
+         Error_Msg_SC -- CODEFIX
+           ("unexpected occurrence of ""'|"", did you mean OR'?");
          Resync_Past_Semicolon;
          return;
 

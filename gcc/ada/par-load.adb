@@ -205,7 +205,8 @@ begin
 
          begin
             Error_Msg_Unit_1 := Expect_Name;
-            Error_Msg ("$$ is not a predefined library unit!", Loc);
+            Error_Msg -- CODEFIX
+              ("$$ is not a predefined library unit!", Loc);
 
             --  In the predefined file case, we know the user did not
             --  construct their own package, but we got the wrong one.
@@ -229,7 +230,8 @@ begin
               (Name_Id (Expect_Name), Name_Id (Actual_Name))
             then
                Error_Msg_Unit_1 := Actual_Name;
-               Error_Msg ("possible misspelling of $$!", Loc);
+               Error_Msg -- CODEFIX
+                 ("possible misspelling of $$!", Loc);
             end if;
          end;
 

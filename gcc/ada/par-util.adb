@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,7 +86,8 @@ package body Util is
             M2 (P2 + J - 1) := Fold_Upper (S (J));
          end loop;
 
-         Error_Msg_SC (M2 (1 .. P2 - 1 + S'Last));
+         Error_Msg_SC -- CODEFIX???
+           (M2 (1 .. P2 - 1 + S'Last));
          Token := T;
          return True;
       end if;
@@ -119,7 +120,8 @@ package body Util is
             M1 (P1 + J - 1) := Fold_Upper (S (J));
          end loop;
 
-         Error_Msg_SC (M1 (1 .. P1 - 1 + S'Last));
+         Error_Msg_SC -- CODFIX
+           (M1 (1 .. P1 - 1 + S'Last));
          Token := T;
          return True;
 
@@ -678,7 +680,8 @@ package body Util is
       Error_Msg_Name_1 := First_Attribute_Name;
       while Error_Msg_Name_1 <= Last_Attribute_Name loop
          if Is_Bad_Spelling_Of (Token_Name, Error_Msg_Name_1) then
-            Error_Msg_N ("\possible misspelling of %", Token_Node);
+            Error_Msg_N -- CODEFIX
+              ("\possible misspelling of %", Token_Node);
             exit;
          end if;
 

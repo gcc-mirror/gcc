@@ -3747,7 +3747,8 @@ package body Sem_Ch8 is
                   end if;
 
                   Error_Msg_Sloc := Sloc (Ent);
-                  Error_Msg_N ("hidden declaration#!", N);
+                  Error_Msg_N -- CODEFIX
+                    ("hidden declaration#!", N);
                end if;
 
                Ent := Homonym (Ent);

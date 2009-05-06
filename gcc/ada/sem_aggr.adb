@@ -756,12 +756,12 @@ package body Sem_Aggr is
       --  Report at most two suggestions
 
       if Nr_Of_Suggestions = 1 then
-         Error_Msg_NE
+         Error_Msg_NE -- CODEFIX
            ("\possible misspelling of&", Component, Suggestion_1);
 
       elsif Nr_Of_Suggestions = 2 then
          Error_Msg_Node_2 := Suggestion_2;
-         Error_Msg_NE
+         Error_Msg_NE -- CODEFIX
            ("\possible misspelling of& or&", Component, Suggestion_1);
       end if;
    end Check_Misspelled_Component;
