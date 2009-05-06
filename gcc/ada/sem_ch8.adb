@@ -3741,7 +3741,8 @@ package body Sem_Ch8 is
             while Present (Ent) loop
                if Is_Potentially_Use_Visible (Ent) then
                   if not Hidden then
-                     Error_Msg_N ("multiple use clauses cause hiding!", N);
+                     Error_Msg_N -- CODEFIX
+                       ("multiple use clauses cause hiding!", N);
                      Hidden := True;
                   end if;
 
@@ -3961,7 +3962,8 @@ package body Sem_Ch8 is
                end loop;
 
                if Present (Ematch) then
-                  Error_Msg_NE ("\possible misspelling of&", N, Ematch);
+                  Error_Msg_NE -- CODEFIX
+                    ("\possible misspelling of&", N, Ematch);
                end if;
             end;
          end if;
@@ -4747,7 +4749,7 @@ package body Sem_Ch8 is
                      if Is_Bad_Spelling_Of (Chars (Id), Chars (Selector))
                        and then not Is_Internal_Name (Chars (Id))
                      then
-                        Error_Msg_NE
+                        Error_Msg_NE -- CODEFIX
                           ("possible misspelling of&", Selector, Id);
                         exit;
                      end if;

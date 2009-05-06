@@ -4773,8 +4773,6 @@ package body Exp_Ch3 is
 
          --  provided that X is not aliased. The aliased case has to be
          --  excluded in general because Expr will not be aliased in general.
-         --  We also exclude controlled types because X and Expr may need to
-         --  be attached to distinct finalization lists.
 
          if Rewrite_As_Renaming then
             Rewrite (N,

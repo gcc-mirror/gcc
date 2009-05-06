@@ -2102,7 +2102,7 @@ __gnat_install_handler(void)
 #include <mach/vm_statistics.h>
 
 /* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
-char __gnat_alternate_stack[64 * 1024]; /* 2 * MINSIGSTKSZ */
+char __gnat_alternate_stack[32 * 1024]; /* 1 * MINSIGSTKSZ */
 
 static void __gnat_error_handler (int sig, siginfo_t * si, void * uc);
 

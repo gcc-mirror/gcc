@@ -77,8 +77,9 @@ package body System.File_IO is
    --  The closing of all open files and deletion of temporary files is an
    --  action that takes place at the end of execution of the main program.
    --  This action is implemented using a library level object which gets
-   --  finalized at the end of program execution. Note that the type should be
-   --  limited, in order to avoid unwanted optimizations.
+   --  finalized at the end of program execution. Note that the type is
+   --  limited, in order to stop the compiler optimizing away the declaration
+   --  which would be allowed in the non-limited case.
 
    procedure Finalize (V : in out File_IO_Clean_Up_Type);
    --  This is the finalize operation that is used to do the cleanup

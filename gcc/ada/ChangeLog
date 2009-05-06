@@ -1,3 +1,15 @@
+2009-05-06  Robert Dewar  <dewar@adacore.com>
+
+	* s-fileio.adb: Minor comment update
+
+	* sem_ch8.adb: Minor reformatting
+
+	* exp_ch3.adb: Update comments.
+
+2009-05-06  Tristan Gingold  <gingold@adacore.com>
+
+	* init.c, s-osinte-darwin.ads: Reduce alternate stack size
+
 2009-05-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Makefile.in: Update LIBGNAT_TARGET_PAIRS for Xenomai.
@@ -14,10 +26,6 @@
 	The latest change to sem.adb ensures that the context of both spec and
 	body of an instance is traversed before the instance itself, making
 	this patch redundant.
-
-2009-05-06  Robert Dewar  <dewar@adacore.com>
-
-	* sem_aggr.adb: Minor code clean-up
 
 2009-05-06  Gary Dismukes  <dismukes@adacore.com>
 
