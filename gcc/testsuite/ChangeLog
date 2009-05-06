@@ -1,3 +1,8 @@
+2009-05-06  Janis Johnson  <janis187@us.ibm.com>
+
+	PR middle-end/39986
+	* gcc.dg/dfp/pr39986.c: New test.
+
 2009-05-06  Michael Matz  <matz@suse.de>
 
 	* gfortran.dg/pr40021.f: New test.
