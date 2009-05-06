@@ -1,4 +1,4 @@
------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
@@ -1545,7 +1545,16 @@ package body Freeze is
 
          Placed_Component : Boolean := False;
          --  Set True if we find at least one component with a component
-         --  clause (used to warn about useless Bit_Order pragmas).
+         --  clause (used to warn about useless Bit_Order pragmas, and also
+         --  to detect cases where Implicit_Packing may have an effect).
+
+         All_Scalar_Components : Boolean := True;
+         --  Set False if we encounter a component of a non-scalar type
+
+         Scalar_Component_Total_RM_Size : Uint := Uint_0;
+         Scalar_Component_Total_Esize   : Uint := Uint_0;
+         --  Accumulates total RM_Size values and total Esize values of all
+         --  scalar components. Used for processing of Implicit_Packing.
 
          function Check_Allocator (N : Node_Id) return Node_Id;
          --  If N is an allocator, possibly wrapped in one or more level of
@@ -1855,6 +1864,19 @@ package body Freeze is
                end;
             end if;
 
+            --  Processing for possible Implicit_Packing later
+
+            if Implicit_Packing then
+               if not Is_Scalar_Type (Etype (Comp)) then
+                  All_Scalar_Components := False;
+               else
+                  Scalar_Component_Total_RM_Size :=
+                    Scalar_Component_Total_RM_Size + RM_Size (Etype (Comp));
+                  Scalar_Component_Total_Esize :=
+                    Scalar_Component_Total_Esize + Esize (Etype (Comp));
+               end if;
+            end if;
+
             --  If the component is an Itype with Delayed_Freeze and is either
             --  a record or array subtype and its base type has not yet been
             --  frozen, we must remove this from the entity list of this
@@ -2061,7 +2083,7 @@ package body Freeze is
          --  Finally, enforce the restriction that access attributes with a
          --  current instance prefix can only apply to limited types.
 
-         if  Ekind (Rec) = E_Record_Type then
+         if Ekind (Rec) = E_Record_Type then
             if Present (Corresponding_Remote_Type (Rec)) then
                Freeze_And_Append
                  (Corresponding_Remote_Type (Rec), Loc, Result);
@@ -2162,6 +2184,18 @@ package body Freeze is
                     ("\?use of convention for type& is dubious", A2, E);
                end if;
             end;
+         end if;
+
+         --  Apply implicit packing if all conditions are met
+
+         if Implicit_Packing
+           and then Has_Size_Clause (Rec)
+           and then All_Scalar_Components
+           and then not Has_Discriminants (Rec)
+           and then Esize (Rec) < Scalar_Component_Total_Esize
+           and then Esize (Rec) >= Scalar_Component_Total_RM_Size
+         then
+            Set_Is_Packed (Rec);
          end if;
       end Freeze_Record_Type;
 

@@ -2409,7 +2409,8 @@ pragma Implicit_Packing;
 @noindent
 This is a configuration pragma that requests implicit packing for packed
 arrays for which a size clause is given but no explicit pragma Pack or
-specification of Component_Size is present. Consider this example:
+specification of Component_Size is present. It also applies to records
+where no record representation clause is present. Consider this example:
 
 @smallexample @c ada
 type R is array (0 .. 7) of Boolean;
@@ -2431,6 +2432,21 @@ specify the exact size that corresponds to the length of the array multiplied
 by the size in bits of the component type.
 @cindex Array packing
 
+Similarly, the following example shows the use in the record case
+
+@smallexample @c ada
+type r is record
+   a, b, c, d, e, f, g, h : boolean;
+   chr                    : character;
+end record;
+for r'size use 16;
+@end smallexample
+
+@noindent
+Without a pragma Pack, each Boolean field requires 8 bits, so the
+minimum size is 72 bits, but with a pragma Pack, 16 bits would be
+sufficient. The use of pragma Implciit_Packing allows this record
+declaration to compile without an explicit pragma Pack.
 @node Pragma Import_Exception
 @unnumberedsec Pragma Import_Exception
 @cindex OpenVMS

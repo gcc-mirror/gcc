@@ -1,3 +1,19 @@
+2009-05-06  Robert Dewar  <dewar@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type): Implement Implicit_Packing for
+	records
+
+	* gnat_rm.texi:
+	Add documentation for pragma Implicit_Packing applied to record
+	types.
+
+2009-05-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem.adb (Walk_Library_Items): Place all with_clauses of an
+	instantiation on the spec, because late instance bodies may generate
+	with_clauses for the instance body but are inserted in the instance
+	spec.
+
 2009-05-06  Emmanuel Briot  <briot@adacore.com>
 
 	* prj-nmsc.adb (Locate_Directory): Remove unused parameters, and add
