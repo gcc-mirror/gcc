@@ -45,17 +45,18 @@ package body Prj.Pars is
       Project_File_Name : String;
       Packages_To_Check : String_List_Access := All_Packages;
       When_No_Sources   : Error_Warning := Error;
+      Report_Error      : Put_Line_Access := null;
       Reset_Tree        : Boolean := True;
-      Is_Config_File    : Boolean)
+      Is_Config_File    : Boolean := False)
    is
-      Project_Node_Tree : constant Project_Node_Tree_Ref :=
-                            new Project_Node_Tree_Data;
       Project_Node      : Project_Node_Id := Empty_Node;
       The_Project       : Project_Id      := No_Project;
       Success           : Boolean         := True;
       Current_Dir       : constant String := Get_Current_Dir;
+      Project_Node_Tree : Prj.Tree.Project_Node_Tree_Ref;
 
    begin
+      Project_Node_Tree := new Project_Node_Tree_Data;
       Prj.Tree.Initialize (Project_Node_Tree);
 
       --  Parse the main project file into a tree
@@ -72,18 +73,19 @@ package body Prj.Pars is
 
       --  If there were no error, process the tree
 
-      if Present (Project_Node) then
+      if Project_Node /= Empty_Node then
          Prj.Proc.Process
            (In_Tree                => In_Tree,
             Project                => The_Project,
             Success                => Success,
             From_Project_Node      => Project_Node,
             From_Project_Node_Tree => Project_Node_Tree,
-            Report_Error           => null,
-            When_No_Sources        => When_No_Sources,
+            Report_Error           => Report_Error,
             Reset_Tree             => Reset_Tree,
+            When_No_Sources        => When_No_Sources,
             Current_Dir            => Current_Dir,
             Is_Config_File         => Is_Config_File);
+
          Prj.Err.Finalize;
 
          if not Success then
@@ -92,6 +94,8 @@ package body Prj.Pars is
       end if;
 
       Project := The_Project;
+
+      --  ??? Should free the project_node_tree, no longer useful
 
    exception
       when X : others =>

@@ -25,7 +25,7 @@
 
 with ALI;      use ALI;
 with Csets;
-with Makeutl;
+with Makeutl;  use Makeutl;
 with MLib.Tgt; use MLib.Tgt;
 with Namet;    use Namet;
 with Opt;      use Opt;

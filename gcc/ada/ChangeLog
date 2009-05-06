@@ -1,3 +1,17 @@
+2009-05-06  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch3.adb (Access_Type_Declaration): An access type whose
+	designated type is a limited view from a limited with clause (flagged
+	From_With_Type) is not itself such a limited view.
+
+2009-05-06  Emmanuel Briot  <briot@adacore.com>
+
+	* prj-nmsc.adb: Remove unused variable.
+
+	* clean.adb, gnatcmd.adb, makeutl.ads, prj-pars.adb, prj-pars.ads,
+	prj-proc.ads, prj.ads, switch-m.adb (Subdirs_Option): Moved to
+	makeutl.ads, since not all users of prj.ads need this.
+
 2009-05-06  Javier Miranda  <miranda@adacore.com>
 
 	* exp_aggr.adb (Build_Record_Aggr_Code): Add implicit call to the C++

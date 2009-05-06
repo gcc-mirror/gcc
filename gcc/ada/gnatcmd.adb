@@ -987,7 +987,7 @@ procedure GNATCmd is
                         Last_Switches.Table (Index).all);
                   end loop;
 
-                  --  One switch for the standard GNAT library dir.
+                  --  One switch for the standard GNAT library dir
 
                   Last_Switches.Increment_Last;
                   Last_Switches.Table
@@ -1660,15 +1660,17 @@ begin
 
                   --  --subdirs=... Specify Subdirs
 
-                  if Argv'Length > Subdirs_Option'Length and then
+                  if Argv'Length > Makeutl.Subdirs_Option'Length and then
                     Argv
-                      (Argv'First .. Argv'First + Subdirs_Option'Length - 1) =
-                      Subdirs_Option
+                     (Argv'First ..
+                      Argv'First + Makeutl.Subdirs_Option'Length - 1) =
+                        Makeutl.Subdirs_Option
                   then
                      Subdirs :=
                        new String'
                          (Argv
-                            (Argv'First + Subdirs_Option'Length .. Argv'Last));
+                           (Argv'First + Makeutl.Subdirs_Option'Length ..
+                            Argv'Last));
 
                      Remove_Switch (Arg_Num);
 

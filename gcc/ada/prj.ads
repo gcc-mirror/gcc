@@ -44,10 +44,6 @@ package Prj is
    --  Name used to replace others as an index of an associative array
    --  attribute in situations where this is allowed.
 
-   Subdirs_Option : constant String := "--subdirs=";
-   --  Switch used to indicate that the real directories (object, exec,
-   --  library, ...) are subdirectories of those in the project file.
-
    Subdirs : String_Ptr := null;
    --  The value after the equal sign in switch --subdirs=...
    --  Contains the relative subdirectory.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,6 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Debug;    use Debug;
+with Makeutl;  use Makeutl;
 with Osint;    use Osint;
 with Opt;      use Opt;
 with Prj;      use Prj;

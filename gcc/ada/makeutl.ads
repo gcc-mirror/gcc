@@ -40,6 +40,10 @@ package Makeutl is
    Project_Tree : constant Project_Tree_Ref := new Project_Tree_Data;
    --  The project tree
 
+   Subdirs_Option : constant String := "--subdirs=";
+   --  Switch used to indicate that the real directories (object, exec,
+   --  library, ...) are subdirectories of those in the project file.
+
    procedure Add
      (Option : String_Access;
       To     : in out String_List_Access;
