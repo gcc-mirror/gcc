@@ -649,7 +649,7 @@
 {
   ix86_fixup_binary_operands_no_copy (DIV, V8SFmode, operands);
 
-  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
+  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_insn_for_size_p ()
       && flag_finite_math_only && !flag_trapping_math
       && flag_unsafe_math_optimizations)
     {
@@ -800,7 +800,7 @@
 	(sqrt:V8SF (match_operand:V8SF 1 "nonimmediate_operand" "")))]
   "TARGET_AVX"
 {
-  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_size
+  if (TARGET_SSE_MATH && TARGET_RECIP && !optimize_insn_for_size_p ()
       && flag_finite_math_only && !flag_trapping_math
       && flag_unsafe_math_optimizations)
     {

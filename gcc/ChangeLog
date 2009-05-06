@@ -1,5 +1,15 @@
 2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.md ((unnamed inc/dec peephole): Use
+	optimize_insn_for_size_p instead
+	of optimize_size.
+	* config/i386/predicates.md (incdec_operand): Likewise.
+	(aligned_operand): Likewise.
+	* config/i386/sse.md (divv8sf3): Likewise.
+	(sqrtv8sf2): Likewise.
+
+2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* config/i386/i386.c (ix86_build_signbit_mask): Make it static.
 
 	* config/i386/i386-protos.h (ix86_build_signbit_mask): Removed.
