@@ -1,5 +1,8 @@
 ! { dg-do compile }
 ! { dg-options "-c -Wall" }
+!
+! PR fortran/20373
+! cf. also PR fortran/40041
 
 subroutine valid
   intrinsic :: abs                 ! ok, intrinsic function
