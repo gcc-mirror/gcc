@@ -30,7 +30,7 @@
 --    - the preprocessed C file: s-oscons-tmplt.i
 --    - the generated assembly file: s-oscons-tmplt.s
 
---  The contents of s-oscons.ads is written on standard output.
+--  The contents of s-oscons.ads is written on standard output
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Exceptions;          use Ada.Exceptions;
