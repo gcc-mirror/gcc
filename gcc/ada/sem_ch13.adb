@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -691,10 +691,16 @@ package body Sem_Ch13 is
    --  Start of processing for Analyze_Attribute_Definition_Clause
 
    begin
+      --  Process Ignore_Rep_Clauses option
+
       if Ignore_Rep_Clauses then
          case Id is
 
-            --  The following should be ignored
+            --  The following should be ignored. They do not affect legality
+            --  and may be target dependent. The basic idea of -gnatI is to
+            --  ignore any rep clauses that may be target dependent but do not
+            --  affect legality (except possibly to be rejected because they
+            --  are incompatible with the compilation target).
 
             when Attribute_Address        |
                  Attribute_Alignment      |
@@ -710,7 +716,11 @@ package body Sem_Ch13 is
                Rewrite (N, Make_Null_Statement (Sloc (N)));
                return;
 
-            --  The following should not be ignored
+            --  The following should not be ignored, because in the first place
+            --  they are reasonably portable, and should not cause problems in
+            --  compiling code from another target, and also they do affect
+            --  legality, e.g. failing to provide a stream attribute for a
+            --  type may make a program illegal.
 
             when Attribute_External_Tag   |
                  Attribute_Input          |

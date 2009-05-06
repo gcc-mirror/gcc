@@ -78,9 +78,38 @@ extern void __gnat_plist_init (void);
 #define EXPAND_ARGV_RATE 128
 
 static void
-append_arg (int *index, LPWSTR value, char ***argv, int *last)
+append_arg (int *index, LPWSTR dir, LPWSTR value,
+	    char ***argv, int *last, int quoted)
 {
   int size;
+  LPWSTR fullvalue;
+  int vallen = _tcslen (value);
+  int dirlen;
+
+  if (dir == NULL)
+    {
+      /* no dir prefix */
+      dirlen = 0;
+      fullvalue = xmalloc ((vallen + 1) * sizeof(TCHAR));
+    }
+  else
+    {
+      /* Add dir first */
+      dirlen = _tcslen (dir);
+
+      fullvalue = xmalloc ((dirlen + vallen + 1) * sizeof(TCHAR));
+      _tcscpy (fullvalue, dir);
+    }
+
+  /* Append value */
+
+  if (quoted)
+    {
+      _tcsncpy (fullvalue + dirlen, value + 1, vallen - 1);
+      fullvalue [dirlen + vallen - sizeof(TCHAR)] = _T('\0');
+    }
+  else
+    _tcscpy (fullvalue + dirlen, value);
 
   if (*last <= *index)
     {
@@ -88,9 +117,11 @@ append_arg (int *index, LPWSTR value, char ***argv, int *last)
       *argv = (char **) xrealloc (*argv, (*last) * sizeof (char *));
     }
 
-  size = WS2SC (NULL, value, 0);
-  (*argv)[*index] = (char *) xmalloc (size + 1);
-  WS2SC ((*argv)[*index], value, size);
+  size = WS2SC (NULL, fullvalue, 0);
+  (*argv)[*index] = (char *) xmalloc (size + sizeof(TCHAR));
+  WS2SC ((*argv)[*index], fullvalue, size);
+
+  free (fullvalue);
 
   (*index)++;
 }
@@ -143,7 +174,7 @@ __gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 	 /* argv[0] is the executable full path-name. */
 
 	 SearchPath (NULL, wargv[0], _T(".exe"), MAX_PATH, result, NULL);
-	 append_arg (&argc_expanded, result, &gnat_argv, &last);
+	 append_arg (&argc_expanded, NULL, result, &gnat_argv, &last, 0);
 
 	 for (k=1; k<wargc; k++)
 	   {
@@ -157,39 +188,51 @@ __gnat_initialize (void *eh ATTRIBUTE_UNUSED)
 		 /* Wilcards are present, append all corresponding matches. */
 		 WIN32_FIND_DATA FileData;
 		 HANDLE hDir = FindFirstFile (wargv[k], &FileData);
+		 LPWSTR dir = NULL;
+		 LPWSTR ldir = _tcsrchr (wargv[k], _T('\\'));
+
+		 if (ldir == NULL)
+		   ldir = _tcsrchr (wargv[k], _T('/'));
 
 		 if (hDir == INVALID_HANDLE_VALUE)
 		   {
 		     /* No match, append arg as-is. */
-		     append_arg (&argc_expanded, wargv[k], &gnat_argv, &last);
+		     append_arg (&argc_expanded, NULL, wargv[k],
+				 &gnat_argv, &last, quoted);
 		   }
 		 else
 		   {
+		     if (ldir != NULL)
+		       {
+			 int n = ldir - wargv[k] + 1;
+			 dir = xmalloc ((n + 1) * sizeof (TCHAR));
+			 _tcsncpy (dir, wargv[k], n);
+			 dir[n] = _T('\0');
+		       }
+
 		     /* Append first match and all remaining ones.  */
 
 		     do {
-		       append_arg (&argc_expanded,
-				   FileData.cFileName, &gnat_argv, &last);
+		       /* Do not add . and .. special entries */
+
+		       if (_tcscmp (FileData.cFileName, _T(".")) != 0
+			   && _tcscmp (FileData.cFileName, _T("..")) != 0)
+			 append_arg (&argc_expanded, dir, FileData.cFileName,
+				     &gnat_argv, &last, 0);
 		     } while (FindNextFile (hDir, &FileData));
 
 		     FindClose (hDir);
+
+		     if (dir != NULL)
+		       free (dir);
 		   }
 	       }
 	     else
 	       {
 		 /*  No wildcard. Store parameter as-is. Remove quote if
 		     needed. */
-		 if (quoted)
-		   {
-		     int len = _tcslen (wargv[k]);
-
-		     /* Remove ending quote */
-		     wargv[k][len-1] = _T('\0');
-		     append_arg
-		       (&argc_expanded, &wargv[k][1], &gnat_argv, &last);
-		   }
-		 else
-		   append_arg (&argc_expanded, wargv[k], &gnat_argv, &last);
+		 append_arg (&argc_expanded, NULL, wargv[k],
+			     &gnat_argv, &last, quoted);
 	       }
 	   }
 
