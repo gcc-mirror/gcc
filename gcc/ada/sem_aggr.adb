@@ -3071,20 +3071,26 @@ package body Sem_Aggr is
             Parent_Typ_List := New_Elmt_List;
 
             --  If this is an extension aggregate, the component list must
-            --  include all components that are not in the given ancestor
-            --  type. Otherwise, the component list must include components
-            --  of all ancestors, starting with the root.
+            --  include all components that are not in the given ancestor type.
+            --  Otherwise, the component list must include components of all
+            --  ancestors, starting with the root.
 
             if Nkind (N) = N_Extension_Aggregate then
 
+               --  Handle case where ancestor part is a C++ constructor. In
+               --  this case it must be a function returning a class-wide type.
                --  If the ancestor part is a C++ constructor, then it must be a
-               --  function returning a class-wide type, so check that here.
+               --  function returning a class-wide type, so handle that here.
 
-               pragma Assert
-                 (not Is_CPP_Constructor_Call (Ancestor_Part (N))
-                    or else Is_Class_Wide_Type (Etype (Ancestor_Part (N))));
+               if Is_CPP_Constructor_Call (Ancestor_Part (N)) then
+                  pragma Assert
+                    (Is_Class_Wide_Type (Etype (Ancestor_Part (N))));
+                  Root_Typ := Root_Type (Etype (Ancestor_Part (N)));
 
-               Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
+               --  Normal case, not a C++ constructor
+               else
+                  Root_Typ := Base_Type (Etype (Ancestor_Part (N)));
+               end if;
 
             else
                Root_Typ := Root_Type (Typ);
