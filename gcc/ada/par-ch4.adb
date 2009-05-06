@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -607,7 +607,8 @@ package body Ch4 is
 
          elsif Token = Tok_Range then
             if Expr_Form /= EF_Simple_Name then
-               Error_Msg_SC ("subtype mark must precede RANGE");
+               Error_Msg_SC -- CODEFIX???
+                 ("subtype mark must precede RANGE");
                raise Error_Resync;
             end if;
 

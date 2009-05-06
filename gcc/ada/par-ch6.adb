@@ -1302,7 +1302,8 @@ package body Ch6 is
       end if;
 
       if Token = Tok_In then
-         Error_Msg_SC ("IN must precede OUT in parameter mode");
+         Error_Msg_SC -- CODEFIX ???
+           ("IN must precede OUT in parameter mode");
          Scan; -- past IN
          Set_In_Present (Node, True);
       end if;

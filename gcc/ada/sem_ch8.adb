@@ -2581,11 +2581,12 @@ package body Sem_Ch8 is
               and then Etype (Pack) /= Any_Type
             then
                if Ekind (Pack) = E_Generic_Package then
-                  Error_Msg_N
+                  Error_Msg_N  -- CODEFIX
                    ("a generic package is not allowed in a use clause",
                       Pack_Name);
                else
-                  Error_Msg_N ("& is not a usable package", Pack_Name);
+                  Error_Msg_N -- CODEFIX???
+                    ("& is not a usable package", Pack_Name);
                end if;
 
             else
@@ -3781,7 +3782,8 @@ package body Sem_Ch8 is
                   if Is_Hidden (Ent) then
                      Error_Msg_N ("non-visible (private) declaration#!", N);
                   else
-                     Error_Msg_N ("non-visible declaration#!", N);
+                     Error_Msg_N -- CODEFIX
+                       ("non-visible declaration#!", N);
 
                      if Is_Compilation_Unit (Ent)
                        and then

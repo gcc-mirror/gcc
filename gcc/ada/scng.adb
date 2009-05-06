@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -377,19 +377,19 @@ package body Scng is
 
          if Source (Scan_Ptr) = '_' then
             if Source (Scan_Ptr - 1) = '_' then
-               Error_Msg_S
+               Error_Msg_S -- CODEFIX
                  ("two consecutive underlines not permitted");
             else
-               Error_Msg_S
+               Error_Msg_S -- CODEFIX???
                  ("underline cannot follow punctuation character");
             end if;
 
          else
             if Source (Scan_Ptr - 1) = '_' then
-               Error_Msg_S
+               Error_Msg_S -- CODEFIX???
                  ("punctuation character cannot follow underline");
             else
-               Error_Msg_S
+               Error_Msg_S -- CODEFIX???
                  ("two consecutive punctuation characters not permitted");
             end if;
          end if;

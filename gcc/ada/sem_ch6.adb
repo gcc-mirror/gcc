@@ -3480,36 +3480,36 @@ package body Sem_Ch6 is
 
             case Ctype is
                when Type_Conformant =>
-                  Error_Msg_N
+                  Error_Msg_N -- CODEFIX
                     ("not type conformant with declaration#!", Enode);
 
                when Mode_Conformant =>
                   if Nkind (Parent (Old_Id)) = N_Full_Type_Declaration then
-                     Error_Msg_N
+                     Error_Msg_N -- CODEFIX???
                        ("not mode conformant with operation inherited#!",
                          Enode);
                   else
-                     Error_Msg_N
+                     Error_Msg_N -- CODEFIX???
                        ("not mode conformant with declaration#!", Enode);
                   end if;
 
                when Subtype_Conformant =>
                   if Nkind (Parent (Old_Id)) = N_Full_Type_Declaration then
-                     Error_Msg_N
+                     Error_Msg_N -- CODEFIX???
                        ("not subtype conformant with operation inherited#!",
                          Enode);
                   else
-                     Error_Msg_N
+                     Error_Msg_N -- CODEFIX???
                        ("not subtype conformant with declaration#!", Enode);
                   end if;
 
                when Fully_Conformant =>
                   if Nkind (Parent (Old_Id)) = N_Full_Type_Declaration then
-                     Error_Msg_N
+                     Error_Msg_N -- CODEFIX
                        ("not fully conformant with operation inherited#!",
                          Enode);
                   else
-                     Error_Msg_N
+                     Error_Msg_N -- CODEFIX
                        ("not fully conformant with declaration#!", Enode);
                   end if;
             end case;
@@ -4157,7 +4157,8 @@ package body Sem_Ch6 is
       procedure Conformance_Error (Msg : String; N : Node_Id) is
       begin
          Error_Msg_Sloc := Sloc (Prev_Loc);
-         Error_Msg_N ("not fully conformant with declaration#!", N);
+         Error_Msg_N -- CODEFIX
+           ("not fully conformant with declaration#!", N);
          Error_Msg_NE (Msg, N, N);
       end Conformance_Error;
 
