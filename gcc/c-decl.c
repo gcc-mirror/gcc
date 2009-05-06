@@ -5021,7 +5021,10 @@ grokdeclarator (const struct c_declarator *declarator,
 	else if (TREE_CODE (type) != ERROR_MARK
 		 && !COMPLETE_OR_UNBOUND_ARRAY_TYPE_P (type))
 	  {
-	    error ("field %qE has incomplete type", name);
+	    if (name)
+	      error ("field %qE has incomplete type", name);
+	    else
+	      error ("unnamed field has incomplete type");
 	    type = error_mark_node;
 	  }
 	type = c_build_qualified_type (type, type_quals);
