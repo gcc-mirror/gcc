@@ -533,6 +533,7 @@ error_print (const char *type, const char *format0, va_list argp)
 
 	  case 'u':
 	    arg[pos].type = TYPE_UINTEGER;
+	    break;
 
 	  case 'l':
 	    c = *format++;

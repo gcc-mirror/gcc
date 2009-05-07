@@ -1,5 +1,10 @@
 2009-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/39576
+	* error.c (error_print): Add missing break statement.
+
+2009-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/36382
 	* invoke.texi: Document that -fdollar-ok does not allow $ to be
 	used in IMPLICIT statement.
