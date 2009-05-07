@@ -33,8 +33,6 @@ _picoMark_FUNCTION_BEGIN=
 	
 // picoChip Function Prologue : &__divmod15 = 0 bytes
 
-__divmod15:	
-
 	// The picoChip instruction set has a divstep instruction which
 	// is used to perform one iteration of a binary division algorithm.
 	// The instruction allows 16-bit signed division to be implemented.

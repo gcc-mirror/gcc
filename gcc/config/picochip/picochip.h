@@ -729,6 +729,7 @@ enum picochip_builtins
   PICOCHIP_BUILTIN_HALT
 };
 
+#define NO_DOLLAR_IN_LABEL 1
 #define NO_DOT_IN_LABEL 1
 
 /* The assembler does support LEB128, despite the auto-configure test
