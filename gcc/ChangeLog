@@ -1,3 +1,8 @@
+2009-05-07  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.h (NO_DOLLAR_IN_LABEL): Added.
+	* config/picochip/libgccExtras/divmod15.asm : Removed redefiniton.
+
 2009-05-07  Rafael Avila de Espindola  <espindola@google.com>
 
 	* Makefile.in (install-plugin): Simplify a bit.
