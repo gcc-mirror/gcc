@@ -1,6 +1,6 @@
 2009-05-06  James E. Wilson  <wilson@codesourcery.com>
 
-	* gcc.target/mips/const-high-part.c: New test.
+	* gcc.c-torture/compile/const-high-part.c: New test.
 
 2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
