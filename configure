@@ -4843,6 +4843,8 @@ pplinc=
 if test "${with_ppl+set}" = set; then
   withval="$with_ppl"
 
+else
+  with_ppl=no
 fi;
 
 # Check whether --with-ppl_include or --without-ppl_include was given.
@@ -4961,6 +4963,8 @@ clooginc=" -DCLOOG_PPL_BACKEND "
 if test "${with_cloog+set}" = set; then
   withval="$with_cloog"
 
+else
+  with_cloog=no
 fi;
 
 # Check whether --with-cloog_include or --without-cloog_include was given.
