@@ -259,6 +259,7 @@ the default width of @code{DOUBLE PRECISION} to 16 bytes if possible, unless
 Allow @samp{$} as a valid non-first character in a symbol name. Symbols 
 that start with @samp{$} are rejected since it is unclear which rules to
 apply to implicit typing as different vendors implement different rules.
+Using @samp{$} in @code{IMPLICIT} statements is also rejected.
 
 @item -fbackslash
 @opindex @code{backslash}
