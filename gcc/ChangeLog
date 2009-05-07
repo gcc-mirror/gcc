@@ -1,3 +1,8 @@
+2009-05-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/md.texi (Standard Pattern Names For Generation) [sync_nand]:
+	Remove wrong description of "nand" functionality.
+
 2009-05-06  Richard Guenther  <rguenther@suse.de>
 	    Adam Nemet  <anemet@caviumnetworks.com>
 
@@ -652,7 +657,7 @@
 	* config/avr/avr.h (CAN_ELIMINATE): Use avr_can_eliminate.
 	(FRAME_POINTER_REQUIRED): Use avr_frame_pointer_required_p.
 	(INITIAL_ELIMINATION_OFFSET): Use avr_initial_elimination_offset.
-	* config/avr/avr-protos.h (initial_elimination_offset) : Rename to
+	* config/avr/avr-protos.h (initial_elimination_offset): Rename to
 	avr_initial_elimination_offset.
 	(frame_pointer_required_p): Rename to avr_frame_pointer_required_p.
 	(avr_initial_elimination_offset): Define.
@@ -8317,7 +8322,7 @@
 
 	* config/picochip/picochip.md (lea_add): Allow any nonimmediate
 	in the lea_add. Reload eventually constraints it properly.
-	* config/picochip/constraints.md : Remove the target constraint
+	* config/picochip/constraints.md: Remove the target constraint
 	"b", since it is not needed anymore.
 
 2009-02-16  Jakub Jelinek  <jakub@redhat.com>
