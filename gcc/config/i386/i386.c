@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-codes.h"
 #include "insn-attr.h"
 #include "flags.h"
-#include "c-common.h"
 #include "except.h"
 #include "function.h"
 #include "recog.h"
