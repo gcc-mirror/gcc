@@ -1,3 +1,23 @@
+2009-05-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.in (OBJS-common): Add regcprop.o.
+	(regcprop.o): New.
+	* timevar.def (TV_CPROP_REGISTERS): New.
+	* regrename.c (regrename_optimize): Return 0.
+	(rest_of_handle_regrename): Delete.
+	(pass_rename_registers): Point to regrename_optimize.
+	(struct value_data_entry, struct value_data, 
+	kill_value_one_regno, kill_value_regno, kill_value,
+	set_value_regno, init_value_data, kill_clobbered_value,
+	kill_set_value, kill_autoinc_value, copy_value,
+	mode_change_ok, maybe_mode_change, find_oldest_value_reg,
+	replace_oldest_value_reg, replace_oldest_value_addr,
+	replace_oldest_value_mem, copyprop_hardreg_forward_1,
+	debug_value_data, validate_value_data): Move...
+	* regcprop.c: ... here.
+	(rest_of_handle_cprop): Delete.
+	(pass_cprop_hardreg): Point to copyprop_hardreg_forward.
+
 2009-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40057
