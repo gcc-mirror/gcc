@@ -1,3 +1,8 @@
+2009-05-07  Matthias Klose  <doko@ubuntu.com>
+
+	PR libstdc++/40038
+	* src/math_stubs_long_double.cc: Add ceill.
+
 2009-05-06  Johannes Singler  <singler@ira.uka.de>
 
         PR libstdc++/39546
