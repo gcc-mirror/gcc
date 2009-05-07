@@ -47,8 +47,7 @@
 2009-05-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.md (unnamed inc/dec peephole): Use
-	optimize_insn_for_size_p instead
-	of optimize_size.
+	optimize_insn_for_size_p instead of optimize_size.
 	* config/i386/predicates.md (incdec_operand): Likewise.
 	(aligned_operand): Likewise.
 	* config/i386/sse.md (divv8sf3): Likewise.
@@ -68,8 +67,7 @@
 2009-05-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/40032
-	* c-decl.c (grokdeclarator): Handle incomplete type of unnamed
-	field.
+	* c-decl.c (grokdeclarator): Handle incomplete type of unnamed field.
 
 2009-05-05  Jakub Jelinek  <jakub@redhat.com>
 
@@ -114,21 +112,20 @@
 2009-05-05  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40023
-	* builtins.c (gimplify_va_arg_expr): Properly build the
-	address.
+	* builtins.c (gimplify_va_arg_expr): Properly build the address.
 
 2009-05-05  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* tree.h (strip_float_extensions): Remove duplicate declaration.
-      	(build_low_bits_mask, debug_fold_checksum, expand_function_end,
-      	expand_function_start, stack_protect_prologue, stack_protect_epilogue,
-      	block_ultimate_origin): Rearrange the declarations line to match the
-      	comment that indicates the .c file which the functions are defined.
-      	(dwarf2out_*, set_decl_rtl): Add comment.
-      	(get_base_address): Adjust comment.
-      	(change_decl_assembler_name, maybe_fold_*, build_addr): Rearrange the
-      	declarations line and add comment.
-      	(is_builtin_name): Add blank after function name, for clarity.
+	(build_low_bits_mask, debug_fold_checksum, expand_function_end,
+	expand_function_start, stack_protect_prologue, stack_protect_epilogue,
+	block_ultimate_origin): Rearrange the declarations line to match the
+	comment that indicates the .c file which the functions are defined.
+	(dwarf2out_*, set_decl_rtl): Add comment.
+	(get_base_address): Adjust comment.
+	(change_decl_assembler_name, maybe_fold_*, build_addr): Rearrange the
+	declarations line and add comment.
+	(is_builtin_name): Add blank after function name, for clarity.
 
 2009-05-04  Joseph Myers  <joseph@codesourcery.com>
 
@@ -197,7 +194,7 @@
 2009-05-04  Michael Eager <eager@eagercon.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimate_address): Allow
-        address for DImode/DFmode only if double-precision FP regs.
+	address for DImode/DFmode only if double-precision FP regs.
 
 2009-05-04  Michael Eager <eager@eagercon.com>
 
@@ -228,7 +225,8 @@
 	* config/bfin/bfin-protos.h (legitimize_address): Remove.
 	* config/bfin/bfin.c (legitimize_address): Remove.
 	* config/bfin/bfin.h (LEGITIMIZE_ADDRESS): Remove.
-	* config/m68hc11/m68hc11-protos.h (m68hc11_legitimize_address): Remove.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_legitimize_address):
+	Remove.
 	* config/m68hc11/m68hc11.c (m68hc11_legitimize_address): Remove.
 	* config/m68hc11/m68hc11.h (LEGITIMIZE_ADDRESS): Remove.
 
@@ -270,8 +268,10 @@
 	* gcc/config/alpha/alpha-protos.h (alpha_legitimize_address): Delete.
 	* gcc/config/frv/frv-protos.h (frv_legitimize_address): Delete.
 	* gcc/config/spu/spu-protos.h (spu_legitimize_address): Delete.
-	* gcc/config/xtensa/xtensa-protos.h (xtensa_legitimize_address): Delete.
-	* gcc/config/rs6000/rs6000-protos.h (rs6000_legitimize_address): Delete.
+	* gcc/config/xtensa/xtensa-protos.h (xtensa_legitimize_address):
+	Delete.
+	* gcc/config/rs6000/rs6000-protos.h (rs6000_legitimize_address):
+	Delete.
 
 	* config/arm/arm.c (arm_legitimize_address): Maybe call Thumb version.
 	* config/m32c/m32c.c (m32c_legitimize_address): Standardize.
@@ -318,8 +318,7 @@
 	(pp_base_tree_identifier): Declare as function.
 	(identifier_to_locale): Declare.
 	* Makefile.in (pretty-print.o): Update dependencies.
-	* varasm.c (finish_aliases_1): Use %qE for identifiers in
-	diagnostics.
+	* varasm.c (finish_aliases_1): Use %qE for identifiers in diagnostics.
 
 2009-05-04  Richard Guenther  <rguenther@suse.de>
 
@@ -441,9 +440,9 @@
 
 	* tree-ssa-coalesce.c (coalesce_cost): Do not take ciritical
 	parameter; update callers.
-	(coalesce_cost_edge): EH edges are costier because they needs splitting
-	even if not critical and even more costier when there are multiple
-	EH predecestors.
+	(coalesce_cost_edge): EH edges are costier because they needs
+	splitting even if not critical and even more costier when there are
+	multiple EH predecestors.
 
 2009-05-02  Jan Hubicka  <jh@suse.cz>
 
@@ -493,7 +492,8 @@
 	(ldst_entry): Rename to st_expr_entry, update users.
 	(free_ldst_entry): Rename to free_st_expr_entry, update users.
 	(free_ldst_mems): Rename to free_store_motion_mems, update users.
-	(enumerate_ldsts): Rename to enumerate_store_motion_mems, update caller.
+	(enumerate_ldsts): Rename to enumerate_store_motion_mems,
+	update caller.
 	(first_ls_expr): Rename to first_st_expr, update users.
 	(next_ls_expr): Rename to next_st_expr, update users.
 	(print_ldst_list): Rename to print_store_motion_mems.  Print names of
@@ -545,8 +545,7 @@
 2009-04-30  Paul Pluzhnikov  <ppluzhnikov@google.com>
 	    Roland McGrath <roland@redhat.com>
 
-	* configure.ac (HAVE_LD_BUILDID): New check for ld --build-id
-	support.
+	* configure.ac (HAVE_LD_BUILDID): New check for ld --build-id support.
 	(ENABLE_LD_BUILDID): New configuration option.
 	* gcc.c [HAVE_LD_BUILDID and ENABLE_LD_BUILDID]
 	(LINK_BUILDID_SPEC): New macro.
@@ -659,7 +658,7 @@
 	(avr_initial_elimination_offset): Define.
 
 2009-04-29  Eric Botcazou  <ebotcazou@adacore.com>
-            Steven Bosscher  <steven@gcc.gnu.org>
+	    Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR rtl-optimization/39938
 	* Makefile.in (cfgrtl.o): Add $(INSN_ATTR_H).
@@ -719,12 +718,13 @@
 	(bfin_cpus): Add WA_LOAD_LCREGS as needed.
 	(struct loop_info): Remove members INIT and LOOP_INIT.
 	(bfin_optimize_loop): Don't set them.  Reorder the code that generates
-	the LSETUP sequence.  Allow LC to be loaded from any register, but also
-	add a case to push/pop a PREG scratch if ENABLE_WA_LOAD_LCREGS.
+	the LSETUP sequence.  Allow LC to be loaded from any register, but
+	also add a case to push/pop a PREG scratch if ENABLE_WA_LOAD_LCREGS.
 	(bfin_reorg_loops): When done, split all BB_ENDs with splitting_loops
 	set to 1.
 	* config/bfin/bfin.md (loop_end splitter): Use splitting_loops instead
 	of reload_completed.
+
 	From Jie Zhang:
 	* config/bfin/bfin.md (movsi_insn): Refine constraints.
 
@@ -749,8 +749,8 @@
 	
 	* config/bfin/bfin.c (bfin_optimize_loop): Unify handling of
 	problematic last insns.  Test for TYPE_CALL rather than CALL_P.
-	Remove special case testing for last insn of inner loops. Don't fail if
-	the loop ends with a jump, emit an extra nop instead.
+	Remove special case testing for last insn of inner loops. Don't fail
+	if the loop ends with a jump, emit an extra nop instead.
 
 	* config/bfin/bfin.c (bfin_register_move_cost): Test for subsets of
 	DREGS rather than comparing directly.  Remove code that tries to
@@ -772,12 +772,12 @@
 
 	* config/bfin/bfin.md (sp_or_sm, spm_string, spm_name): New macro.
 	(ss<spm_name>hi3, ss<spm_name>hi3_parts, ss<spm_name>hi3_low_parts,
-	ss<spm_name_hi3_high_parts): New patterns, replacing ssaddhi3, ssubhi3,
-	ssaddhi3_parts and sssubhi3_parts.
+	ss<spm_name_hi3_high_parts): New patterns, replacing ssaddhi3,
+	ssubhi3, ssaddhi3_parts and sssubhi3_parts.
 	(flag_mulhi3_parts): Produce a HImode output rather than trying to set
 	a VEC_SELECT.
-	* config/bfin/bfin.c (bfin_expand_builtin, case BFIN_BUILTIN_CPLX_SQU):
-	Adjust accordingly.
+	* config/bfin/bfin.c (bfin_expand_builtin,
+	case BFIN_BUILTIN_CPLX_SQU): Adjust accordingly.
 
 2009-04-28  Richard Guenther  <rguenther@suse.de>
 
