@@ -1,3 +1,11 @@
+2009-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/40057
+	* dojump.c (prefer_and_bit_test): Use immed_double_const instead of
+	GEN_INT for 1 << bitnum.
+	(do_jump) <case BIT_AND_EXPR>: Use build_int_cst_wide_type instead of
+	build_int_cst_type.
+
 2009-05-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/md.texi (Standard Pattern Names For Generation) [sync_nand]:
