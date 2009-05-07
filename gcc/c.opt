@@ -476,6 +476,10 @@ Wunknown-pragmas
 C ObjC C++ ObjC++ Warning
 Warn about unrecognized pragmas
 
+Wunsuffixed-float-constants
+C ObjC Var(warn_unsuffixed_float_constants) Warning
+Warn about unsuffixed float constants
+
 Wunused-macros
 C ObjC C++ ObjC++ Warning
 Warn about macros defined in the main file that are not used

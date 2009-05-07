@@ -259,8 +259,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wswitch  -Wswitch-default  -Wswitch-enum -Wsync-nand @gol
 -Wsystem-headers  -Wtrigraphs  -Wtype-limits  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wno-pragmas -Wunreachable-code @gol
--Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter @gol
--Wunused-value  -Wunused-variable @gol
+-Wunsuffixed-float-constants  -Wunused  -Wunused-function @gol
+-Wunused-label  -Wunused-parameter  -Wunused-value  -Wunused-variable @gol
 -Wvariadic-macros -Wvla @gol
 -Wvolatile-register-var  -Wwrite-strings}
 
@@ -4218,6 +4218,15 @@ minimum maximum, so we do not diagnose overlength strings in C++@.
 
 This option is implied by @option{-pedantic}, and can be disabled with
 @option{-Wno-overlength-strings}.
+
+@item -Wunsuffixed-float-constants
+@opindex Wunsuffixed-float-constants
+
+GCC will issue a warning for any floating constant that does not have
+a suffix.  When used together with @option{-Wsystem-headers} it will
+warn about such constants in system header files.  This can be useful
+when preparing code to use with the @code{FLOAT_CONST_DECIMAL64} pragma
+from the decimal floating-point extension to C99.
 @end table
 
 @node Debugging Options

@@ -1162,6 +1162,116 @@ handle_pragma_message (cpp_reader *ARG_UNUSED(dummy))
     inform (input_location, "#pragma message: %s", TREE_STRING_POINTER (message));
 }
 
+/* Mark whether the current location is valid for a STDC pragma.  */
+
+static bool valid_location_for_stdc_pragma;
+
+void
+mark_valid_location_for_stdc_pragma (bool flag)
+{
+  valid_location_for_stdc_pragma = flag;
+}
+
+/* Return true if the current location is valid for a STDC pragma.  */
+
+bool
+valid_location_for_stdc_pragma_p (void)
+{
+  return valid_location_for_stdc_pragma;
+}
+
+enum pragma_switch_t { ON, OFF, DEFAULT, BAD };
+
+/* A STDC pragma must appear outside of external declarations or
+   preceding all explicit declarations and statements inside a compound
+   statement; its behavior is undefined if used in any other context.
+   It takes a switch of ON, OFF, or DEFAULT.  */
+
+static enum pragma_switch_t
+handle_stdc_pragma (const char *pname)
+{
+  const char *arg;
+  tree t;
+  enum pragma_switch_t ret;
+
+  if (!valid_location_for_stdc_pragma_p ())
+    {
+      warning (OPT_Wpragmas, "invalid location for %<pragma %s%>, ignored",
+	       pname);
+      return BAD;
+    }
+
+  if (pragma_lex (&t) != CPP_NAME)
+    {
+      warning (OPT_Wpragmas, "malformed %<#pragma %s%>, ignored", pname);
+      return BAD;
+    }
+
+  arg = IDENTIFIER_POINTER (t);
+
+  if (!strcmp (arg, "ON"))
+    ret = ON;
+  else if (!strcmp (arg, "OFF"))
+    ret = OFF;
+  else if (!strcmp (arg, "DEFAULT"))
+    ret = DEFAULT;
+  else
+    {
+      warning (OPT_Wpragmas, "malformed %<#pragma %s%>, ignored", pname);
+      return BAD;
+    }
+
+  if (pragma_lex (&t) != CPP_EOF)
+    {
+      warning (OPT_Wpragmas, "junk at end of %<#pragma %s%>", pname);
+      return BAD;
+    }
+
+  return ret;
+}
+
+/* #pragma STDC FLOAT_CONST_DECIMAL64 ON
+   #pragma STDC FLOAT_CONST_DECIMAL64 OFF
+   #pragma STDC FLOAT_CONST_DECIMAL64 DEFAULT */
+
+static void
+handle_pragma_float_const_decimal64 (cpp_reader *ARG_UNUSED (dummy))
+{
+  if (c_dialect_cxx ())
+    {
+      if (warn_unknown_pragmas > in_system_header)
+	warning (OPT_Wunknown_pragmas,
+		 "%<#pragma STDC FLOAT_CONST_DECIMAL64%> is not supported"
+		 " for C++");
+      return;
+    }
+
+  if (!targetm.decimal_float_supported_p ())
+    {
+      if (warn_unknown_pragmas > in_system_header)
+	warning (OPT_Wunknown_pragmas,
+		 "%<#pragma STDC FLOAT_CONST_DECIMAL64%> is not supported"
+		 " on this target");
+      return;
+    }
+
+  pedwarn (input_location, OPT_pedantic,
+	   "ISO C does not support %<#pragma STDC FLOAT_CONST_DECIMAL64%>");
+
+  switch (handle_stdc_pragma ("STDC FLOAT_CONST_DECIMAL64"))
+    {
+    case ON:
+      set_float_const_decimal64 ();
+      break;
+    case OFF:
+    case DEFAULT:
+      clear_float_const_decimal64 ();
+      break;
+    case BAD:
+      break;
+    }
+}
+
 /* A vector of registered pragma callbacks.  */
 
 DEF_VEC_O (pragma_handler);
@@ -1329,6 +1439,9 @@ init_pragma (void)
   c_register_pragma ("GCC", "push_options", handle_pragma_push_options);
   c_register_pragma ("GCC", "pop_options", handle_pragma_pop_options);
   c_register_pragma ("GCC", "reset_options", handle_pragma_reset_options);
+
+  c_register_pragma ("STDC", "FLOAT_CONST_DECIMAL64",
+		     handle_pragma_float_const_decimal64);
 
   c_register_pragma_with_expansion (0, "redefine_extname", handle_pragma_redefine_extname);
   c_register_pragma (0, "extern_prefix", handle_pragma_extern_prefix);

@@ -617,11 +617,21 @@ interpret_float (const cpp_token *token, unsigned int flags)
   char *copy;
   size_t copylen;
 
-  /* Default (no suffix) is double.  */
+  /* Default (no suffix) depends on whether the FLOAT_CONST_DECIMAL64
+     pragma has been used and is either double or _Decimal64.  Types
+     that are not allowed with decimal float default to double.  */
   if (flags & CPP_N_DEFAULT)
     {
       flags ^= CPP_N_DEFAULT;
       flags |= CPP_N_MEDIUM;
+
+      if (((flags & CPP_N_HEX) == 0) && ((flags & CPP_N_IMAGINARY) == 0))
+	{
+	  warning (OPT_Wunsuffixed_float_constants,
+		   "unsuffixed float constant");
+	  if (float_const_decimal64_p ())
+	    flags |= CPP_N_DFLOAT;
+	}
     }
 
   /* Decode _Fract and _Accum.  */

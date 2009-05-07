@@ -958,10 +958,6 @@ is incomplete:
 
 @itemize @bullet
 @item
-Pragma @code{FLOAT_CONST_DECIMAL64} is not supported, nor is the @samp{d}
-suffix for literal constants of type @code{double}.
-
-@item
 When the value of a decimal floating type cannot be represented in the
 integer type to which it is being converted, the result is undefined
 rather than the result value specified by the draft technical report.

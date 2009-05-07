@@ -976,6 +976,7 @@ c_parser_translation_unit (c_parser *parser)
   else
     {
       void *obstack_position = obstack_alloc (&parser_obstack, 0);
+      mark_valid_location_for_stdc_pragma (false);
       do
 	{
 	  ggc_collect ();
@@ -1060,7 +1061,9 @@ c_parser_external_declaration (c_parser *parser)
       c_parser_consume_token (parser);
       break;
     case CPP_PRAGMA:
+      mark_valid_location_for_stdc_pragma (true);
       c_parser_pragma (parser, pragma_external);
+      mark_valid_location_for_stdc_pragma (false);
       break;
     case CPP_PLUS:
     case CPP_MINUS:
@@ -3350,17 +3353,20 @@ c_parser_compound_statement_nostart (c_parser *parser)
 {
   bool last_stmt = false;
   bool last_label = false;
+  bool save_valid_for_pragma = valid_location_for_stdc_pragma_p ();
   location_t label_loc = UNKNOWN_LOCATION;  /* Quiet warning.  */
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
     {
       c_parser_consume_token (parser);
       return;
     }
+  mark_valid_location_for_stdc_pragma (true);
   if (c_parser_next_token_is_keyword (parser, RID_LABEL))
     {
       location_t err_loc = c_parser_peek_token (parser)->location;
       /* Read zero or more forward-declarations for labels that nested
 	 functions can jump to.  */
+      mark_valid_location_for_stdc_pragma (false);
       while (c_parser_next_token_is_keyword (parser, RID_LABEL))
 	{
 	  c_parser_consume_token (parser);
@@ -3391,6 +3397,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
   /* We must now have at least one statement, label or declaration.  */
   if (c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
     {
+      mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
       c_parser_error (parser, "expected declaration or statement");
       c_parser_consume_token (parser);
       return;
@@ -3409,12 +3416,14 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	    label_loc = c_parser_peek_token (parser)->location;
 	  last_label = true;
 	  last_stmt = false;
+	  mark_valid_location_for_stdc_pragma (false);
 	  c_parser_label (parser);
 	}
       else if (!last_label
 	       && c_parser_next_token_starts_declspecs (parser))
 	{
 	  last_label = false;
+	  mark_valid_location_for_stdc_pragma (false);
 	  c_parser_declaration_or_fndef (parser, true, true, true, true);
 	  if (last_stmt)
 	    pedwarn_c90 (loc, 
@@ -3441,6 +3450,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	      ext = disable_extension_diagnostics ();
 	      c_parser_consume_token (parser);
 	      last_label = false;
+	      mark_valid_location_for_stdc_pragma (false);
 	      c_parser_declaration_or_fndef (parser, true, true, true, true);
 	      /* Following the old parser, __extension__ does not
 		 disable this diagnostic.  */
@@ -3467,6 +3477,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	}
       else if (c_parser_next_token_is (parser, CPP_EOF))
 	{
+	  mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
 	  c_parser_error (parser, "expected declaration or statement");
 	  return;
 	}
@@ -3474,6 +3485,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
         {
           if (parser->in_if_block) 
             {
+	      mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
               error_at (loc, """expected %<}%> before %<else%>");
               return;
             }
@@ -3489,6 +3501,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 	statement:
 	  last_label = false;
 	  last_stmt = true;
+	  mark_valid_location_for_stdc_pragma (false);
 	  c_parser_statement_after_labels (parser);
 	}
 
@@ -3497,6 +3510,8 @@ c_parser_compound_statement_nostart (c_parser *parser)
   if (last_label)
     error_at (label_loc, "label at end of compound statement");
   c_parser_consume_token (parser);
+  /* Restore the value we started with.  */
+  mark_valid_location_for_stdc_pragma (save_valid_for_pragma);
 }
 
 /* Parse a label (C90 6.6.1, C99 6.8.1).
