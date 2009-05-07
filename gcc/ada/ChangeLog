@@ -1,3 +1,7 @@
+2009-05-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* gcc-interface/Make-lang.in: Update dependencies
+
 2009-05-06  Laurent GUERBY <laurent@guerby.net>
 
         * s-linux.ads, s-linux-alpha.ads, s-linux-hppa.ads, 
