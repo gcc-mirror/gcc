@@ -1,3 +1,10 @@
+2009-05-07  Mark Heffernan  <meheff@google.com>
+
+	* doc/invoke.texi (Debugging Options): Document change of debugging
+	dump location.
+        * opts.c (decode_options): Make dump_base_name relative to
+	aux_base_name directory.
+
 2009-05-07  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.h (NO_DOLLAR_IN_LABEL): Added.

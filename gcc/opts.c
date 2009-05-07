@@ -961,6 +961,27 @@ decode_options (unsigned int argc, const char **argv)
 
   handle_options (argc, argv, lang_mask);
 
+  /* Make DUMP_BASE_NAME relative to the AUX_BASE_NAME directory,
+     typically the directory to contain the object file.  */
+  if (aux_base_name && ! IS_ABSOLUTE_PATH (dump_base_name))
+    {
+      const char *aux_base;
+
+      base_of_path (aux_base_name, &aux_base);
+      if (aux_base_name != aux_base)
+	{
+	  int dir_len = aux_base - aux_base_name;
+	  char *new_dump_base_name =
+	    XNEWVEC (char, strlen(dump_base_name) + dir_len + 1);
+
+	  /* Copy directory component from AUX_BASE_NAME.  */
+	  memcpy (new_dump_base_name, aux_base_name, dir_len);
+	  /* Append existing DUMP_BASE_NAME.  */
+	  strcpy (new_dump_base_name + dir_len, dump_base_name);
+	  dump_base_name = new_dump_base_name;
+	}
+    }
+
   /* Handle related options for unit-at-a-time, toplevel-reorder, and
      section-anchors.  */
   if (!flag_unit_at_a_time)
