@@ -1,3 +1,9 @@
+2009-05-07  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* configure.ac ($with_ppl):  Default to no if not supplied.
+	($with_cloog):  Likewise.
+	configure:  Regenerate.
+
 2009-04-27  James E. Wilson  <wilson@codesourcery.com>
 
 	* MAINTAINERS: Update my e-mail address.
