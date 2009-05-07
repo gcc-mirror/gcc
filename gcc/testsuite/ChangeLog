@@ -1,3 +1,19 @@
+2009-05-07  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/39037
+	* gcc.dg/Wunsuffixed-float-constants-1.c: New test.
+	* gcc.dg/cpp/pragma-float-const-decimal64-1.c: New test.
+	* gcc.dg/dfp/float-constant-double.c: New test.
+	* gcc.dg/dfp/pragma-float-const-decimal64-1.c: New test.
+	* gcc.dg/dfp/pragma-float-const-decimal64-2.c: New test.
+	* gcc.dg/dfp/pragma-float-const-decimal64-3.c: New test.
+	* gcc.dg/dfp/pragma-float-const-decimal64-4.c: New test.
+	* gcc.dg/dfp/pragma-float-const-decimal64-5.c: New test.
+	* gcc.dg/dfp/pragma-float-const-decimal64-6.c: New test.
+	* gcc.dg/dfp/pragma-float-const-decimal64-7.c: New test.
+	* gcc.dg/dfp/pragma-float-const-decimal64-8.c: New test.
+	* g++.dg/cpp/pragma-float-const-decimal64-1.C: New test.
+
 2009-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40057

@@ -342,6 +342,9 @@ struct GTY((chain_next ("%h.outer"))) c_scope {
 
   /* True means make a BLOCK for this scope no matter what.  */
   BOOL_BITFIELD keep : 1;
+
+  /* True means that an unsuffixed float constant is _Decimal64.  */
+  BOOL_BITFIELD float_const_decimal64 : 1;
 };
 
 /* The scope currently in effect.  */
@@ -674,6 +677,30 @@ keep_next_level (void)
   keep_next_level_flag = true;
 }
 
+/* Set the flag for the FLOAT_CONST_DECIMAL64 pragma being ON.  */
+
+void
+set_float_const_decimal64 (void)
+{
+  current_scope->float_const_decimal64 = true;
+}
+
+/* Clear the flag for the FLOAT_CONST_DECIMAL64 pragma.  */
+
+void
+clear_float_const_decimal64 (void)
+{
+  current_scope->float_const_decimal64 = false;
+}
+
+/* Return nonzero if an unsuffixed float constant is _Decimal64.  */
+
+bool
+float_const_decimal64_p (void)
+{
+  return current_scope->float_const_decimal64;
+}
+
 /* Identify this scope as currently being filled with parameters.  */
 
 void
@@ -705,6 +732,13 @@ push_scope (void)
 
       keep_next_level_flag = false;
       next_is_function_body = false;
+
+      /* The FLOAT_CONST_DECIMAL64 pragma applies to nested scopes.  */
+      if (current_scope->outer)
+	current_scope->float_const_decimal64
+	  = current_scope->outer->float_const_decimal64;
+      else
+	current_scope->float_const_decimal64 = false;
     }
   else
     {
@@ -716,6 +750,12 @@ push_scope (void)
 	}
       else
 	scope = GGC_CNEW (struct c_scope);
+
+      /* The FLOAT_CONST_DECIMAL64 pragma applies to nested scopes.  */
+      if (current_scope)
+	scope->float_const_decimal64 = current_scope->float_const_decimal64;
+      else
+	scope->float_const_decimal64 = false;
 
       scope->keep          = keep_next_level_flag;
       scope->outer         = current_scope;

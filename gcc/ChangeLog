@@ -1,3 +1,34 @@
+2009-05-07  Janis Johnson  <janis187@us.ibm.com>
+
+	PR c/39037
+	* c-common.h (mark_valid_location_for_stdc_pragma,
+	valid_location_for_stdc_pragma_p, set_float_const_decimal64,
+	clear_float_const_decimal64, float_const_decimal64_p): New.
+	* c.opt (Wunsuffixed-float-constants): New.
+	* c-lex.c (interpret_float): Use pragma FLOAT_CONST_DECIMAL64 for
+	unsuffixed float constant, handle new warning.
+	* c-cppbuiltin.c (c_cpp_builtins): Use cast for double constants.
+	* c-decl.c (c_scope): New flag float_const_decimal64.
+	(set_float_const_decimal64, clear_float_const_decimal64,
+	float_const_decimal64_p): New.
+	(push_scope): Set new flag.
+	* c-parser.c (c_parser_translation_unit): Mark when it's valid
+	to use STDC pragmas.
+	(c_parser_external_declaration): Ditto.
+	(c_parser_compound_statement_nostart): Ditto.
+	* c-pragma.c (valid_location_for_stdc_pragma,
+	mark_valid_location_for_stdc_pragma,
+	valid_location_for_stdc_pragma_p, handle_stdc_pragma,
+	handle_pragma_float_const_decimal64): New.
+	(init_pragma): Register new pragma FLOAT_CONST_DECIMAL64.
+	* cp/semantics.c (valid_location_for_stdc_pragma_p,
+	set_float_const_decimal64, clear_float_const_decimal64,
+	float_const_decimal64_p): New dummy functions.
+	* doc/extend.texi (Decimal Float): Remove statement that the
+	pragma, and suffix for double constants, are not supported.
+	* doc/invoke.texi (Warning Options): List new option.
+	(-Wunsuffixed-float-constants): New.
+
 2009-05-08  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* config/i386/i386.c: Do not include c-common.h.

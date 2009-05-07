@@ -619,14 +619,11 @@ c_cpp_builtins (cpp_reader *pfile)
                                  TARGET_DEC_EVAL_METHOD);
 
   builtin_define_float_constants ("FLT", "F", "%s", float_type_node);
-  /* Cast the double precision constants when single precision constants are
-     specified. The correct result is computed by the compiler when using 
-     macros that include a cast. This has the side-effect of making the value 
-     unusable in const expressions. */
-  if (flag_single_precision_constant)
-    builtin_define_float_constants ("DBL", "L", "((double)%s)", double_type_node);
-  else
-    builtin_define_float_constants ("DBL", "", "%s", double_type_node);
+  /* Cast the double precision constants.  This is needed when single
+     precision constants are specified or when pragma FLOAT_CONST_DECIMAL64
+     is used.  The correct result is computed by the compiler when using
+     macros that include a cast.  */
+  builtin_define_float_constants ("DBL", "L", "((double)%s)", double_type_node);
   builtin_define_float_constants ("LDBL", "L", "%s", long_double_type_node);
 
   /* For decfloat.h.  */
