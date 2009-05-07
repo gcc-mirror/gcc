@@ -1,3 +1,8 @@
+2009-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* configure.ac: Bump libtool_VERSION to 6:12:0.
+	* configure: Regenerate.
+
 2009-05-07  Matthias Klose  <doko@ubuntu.com>
 
 	PR libstdc++/40038
