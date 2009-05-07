@@ -1,3 +1,7 @@
+2009-05-07  Rafael Avila de Espindola  <espindola@google.com>
+
+	* Makefile.in (install-plugin): Simplify a bit.
+
 2009-05-07  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (OBJS-common): Add regcprop.o.
