@@ -465,7 +465,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
   /* Check whether we exceed the total record length.  */
 
   if (dtp->u.p.current_unit->flags.has_recl
-      && (nbytes > dtp->u.p.current_unit->bytes_left))
+      && ((gfc_offset) nbytes > dtp->u.p.current_unit->bytes_left))
     {
       to_read_record = dtp->u.p.current_unit->bytes_left;
       short_record = 1;

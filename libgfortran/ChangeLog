@@ -1,3 +1,9 @@
+2009-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/22423
+	* io/transfer.c (read_block_direct): Avoid warning.
+	* runtime/string.c (compare0): Avoid warning.
+
 2009-04-30  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/39667
@@ -32,25 +38,25 @@
 
 2009-04-15 Danny Smith  <dannysmith@clear.net.nz>
 
-       * io/write.c (itoa) : Rename back to gfc_itoa.
-       (write_i): Adjust call to write_decimal.
-       (write_integer):  Use gfc_itoa.
+	* io/write.c (itoa) : Rename back to gfc_itoa.
+	(write_i): Adjust call to write_decimal.
+	(write_integer):  Use gfc_itoa.
 
 2009-04-10  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * io/io.h (move_pos_offset): Remove prototype.
-        * io/transfer.c (formatted_transfer_scalar_read): Use sseek
-        instead of move_pos_offset.
-        * io/unix.c (move_pos_offset): Remove.
+	* io/io.h (move_pos_offset): Remove prototype.
+	* io/transfer.c (formatted_transfer_scalar_read): Use sseek
+	instead of move_pos_offset.
+	* io/unix.c (move_pos_offset): Remove.
 
 2009-04-10  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/39665 libfortran/39702 libfortran/39709
 	* io/io.h (st_parameter_dt): Revert aligned attribute from u.p.value.
-        * io/list_read.c (read_complex): Read directly into user pointer.
-        (read_real): Likewise.
-        (list_formatted_read_scalar): Update read_complex and read_real calls.
-        (nml_read_obj): Read directly into user pointer.
+	* io/list_read.c (read_complex): Read directly into user pointer.
+	(read_real): Likewise.
+	(list_formatted_read_scalar): Update read_complex and read_real calls.
+	(nml_read_obj): Read directly into user pointer.
 
 2009-04-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
@@ -686,43 +692,43 @@
 
 2009-04-08  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * io/open.c (already_open): Test for POSIX close return value.
-        * io/unit.c (close_unit_1): Likewise.
-        * io/unix.c (raw_close): Return 0 for success for preconnected units.
+	* io/open.c (already_open): Test for POSIX close return value.
+	* io/unit.c (close_unit_1): Likewise.
+	* io/unix.c (raw_close): Return 0 for success for preconnected units.
 
 2009-04-08  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * runtime/string.c (compare0): Use gfc_charlen_type.
-        * runtime/error.c (gfc_itoa): Move to io/write.c
-        (xtoa): Rename to gfc_xtoa.
-        * runtime/backtrace.c (show_backtrace): Call gfc_xtoa.
-        * intrinsics/cshift0.c (cshift0): Use index_type for shift arg.
-        * intrinsics/date_and_time.c (date_and_time): Use index_type.
-        (itime_i4): Likewise.
-        (itime_i8): Likewise.
-        (idate_i4): Likewise.
-        (idate_i8): Likewise.
-        (gmtime_i4): Likewise.
-        (gmtime_i8): Likewise.
-        (ltime_i4): Likewise.
-        (ltime_i8): Likewise.
-        * libgfortran.h (gfc_itoa): Remove prototype.
-        (xtoa): Rename prototype to gfc_xtoa.
-        * io/list_read.c (nml_read_obj): Use size_t for string length.
-        * io/transfer.c (read_block_direct): Change nbytes arg from
-        pointer to value.
-        (unformatted_read): Minor cleanup, call read_block_directly properly.
-        (skip_record): Use ssize_t.
-        (next_record_w_unf): Avoid stell() call by calling sseek with SEEK_CUR.
-        (iolength_transfer): Make sure to multiply before cast.
-        * io/intrinsics.c (fgetc): Remove unnecessary variable.
-        * io/format.c (format_hash): Use gfc_charlen_type.
-        * io/write.c (itoa): Move from runtime/error.c:gfc_itoa, rename,
-        make static.
-        (write_i): Call with pointer to itoa.
-        (write_z): Call with pointer to gfc_xtoa.
-        (write_integer): Pointer to itoa.
-        (nml_write_obj): Type cleanup, don't call strlen in loop.
+	* runtime/string.c (compare0): Use gfc_charlen_type.
+	* runtime/error.c (gfc_itoa): Move to io/write.c
+	(xtoa): Rename to gfc_xtoa.
+	* runtime/backtrace.c (show_backtrace): Call gfc_xtoa.
+	* intrinsics/cshift0.c (cshift0): Use index_type for shift arg.
+	* intrinsics/date_and_time.c (date_and_time): Use index_type.
+	(itime_i4): Likewise.
+	(itime_i8): Likewise.
+	(idate_i4): Likewise.
+	(idate_i8): Likewise.
+	(gmtime_i4): Likewise.
+	(gmtime_i8): Likewise.
+	(ltime_i4): Likewise.
+	(ltime_i8): Likewise.
+	* libgfortran.h (gfc_itoa): Remove prototype.
+	(xtoa): Rename prototype to gfc_xtoa.
+	* io/list_read.c (nml_read_obj): Use size_t for string length.
+	* io/transfer.c (read_block_direct): Change nbytes arg from
+	pointer to value.
+	(unformatted_read): Minor cleanup, call read_block_directly properly.
+	(skip_record): Use ssize_t.
+	(next_record_w_unf): Avoid stell() call by calling sseek with SEEK_CUR.
+	(iolength_transfer): Make sure to multiply before cast.
+	* io/intrinsics.c (fgetc): Remove unnecessary variable.
+	* io/format.c (format_hash): Use gfc_charlen_type.
+	* io/write.c (itoa): Move from runtime/error.c:gfc_itoa, rename,
+	make static.
+	(write_i): Call with pointer to itoa.
+	(write_z): Call with pointer to gfc_xtoa.
+	(write_integer): Pointer to itoa.
+	(nml_write_obj): Type cleanup, don't call strlen in loop.
 	
 2009-04-06  H.J. Lu  <hongjiu.lu@intel.com>
 
