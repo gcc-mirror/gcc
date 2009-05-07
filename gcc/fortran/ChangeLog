@@ -1,5 +1,11 @@
 2009-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/38830
+	* gfortran.texi: Document that we don't support variable FORMAT
+	expressions.
+
+2009-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/39576
 	* error.c (error_print): Add missing break statement.
 

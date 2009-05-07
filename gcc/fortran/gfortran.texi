@@ -1641,7 +1641,7 @@ code that uses them running with the GNU Fortran compiler.
 * STRUCTURE and RECORD::
 @c * UNION and MAP::
 * ENCODE and DECODE statements::
-@c * Expressions in FORMAT statements::
+* Variable FORMAT expressions::
 @c * Q edit descriptor::
 @c * AUTOMATIC statement::
 @c * TYPE and ACCEPT I/O Statements::
@@ -1777,6 +1777,51 @@ c     ... Code that sets A, B and C
       WRITE (UNIT=LINE, FMT=9000) A, B, C
  9000 FORMAT (1X, 'OUTPUT IS ', 3(F10.5))
 @end smallexample
+
+
+@node Variable FORMAT expressions
+@subsection Variable @code{FORMAT} expressions
+@cindex @code{FORMAT}
+
+A variable @code{FORMAT} expression is format statement which includes
+angle brackets enclosing a Fortran expression: @code{FORMAT(I<N>)}. GNU
+Fortran does not support this legacy extension. The effect of variable
+format expressions can be reproduced by using the more powerful (and
+standard) combination of internal output and string formats. For example,
+replace a code fragment like this:
+
+@smallexample
+      WRITE(6,20) INT1
+ 20   FORMAT(I<N+1>)
+@end smallexample
+
+@noindent
+with the following:
+
+@smallexample
+c     Variable declaration
+      CHARACTER(LEN=20) F
+c     
+c     Other code here...
+c
+      WRITE(FMT,'("(I", I0, ")")') N+1
+      WRITE(6,FM) INT1
+@end smallexample
+
+@noindent
+or with:
+
+@smallexample
+c     Variable declaration
+      CHARACTER(LEN=20) FMT
+c     
+c     Other code here...
+c
+      WRITE(FMT,*) N+1
+      WRITE(6,"(I" // ADJUSTL(FMT) // ")") INT1
+@end smallexample
+
+
 
 
 @c ---------------------------------------------------------------------
