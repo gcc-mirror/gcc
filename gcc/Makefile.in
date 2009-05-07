@@ -4017,6 +4017,7 @@ install-plugin: installdirs
 # other files are flattened to a single directory.
 	$(mkinstalldirs) $(DESTDIR)$(plugin_includedir)
 	headers=`echo $(PLUGIN_HEADERS) | tr ' ' '\n' | sort -u`; \
+	srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`; \
 	for file in $$headers; do \
 	  if [ -f $$file ] ; then \
 	    path=$$file; \
@@ -4025,8 +4026,7 @@ install-plugin: installdirs
 	  else continue; \
 	  fi; \
 	  case $$path in \
-	  "$(srcdir)"*/config/* | "$(srcdir)"/*.def ) \
-	    srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`; \
+	  "$(srcdir)"/config/* | "$(srcdir)"/*.def ) \
 	    base=`echo "$$path" | sed -e "s|$$srcdirstrip/||"`;; \
 	  *) base=`basename $$path` ;; \
 	  esac; \
