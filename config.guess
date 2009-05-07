@@ -1116,7 +1116,10 @@ EOF
 	# Left here for compatibility:
         # uname -m prints for DJGPP always 'pc', but it prints nothing about
         # the processor, so we play safe by assuming i386.
-	echo i386-pc-msdosdjgpp
+	# Note: whatever this is, it MUST be the same as what config.sub
+	# prints for the "djgpp" host, or else GDB configury will decide that
+	# this is a cross-build.
+	echo i586-pc-msdosdjgpp
         exit ;;
     Intel:Mach:3*:*)
 	echo i386-pc-mach3

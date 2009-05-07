@@ -1,3 +1,14 @@
+2009-05-07  Paolo Bonzini
+
+	Sync from src:
+	2009-02-02  Doug Evans  <dje@google.com>
+
+	* tcl.m4 (SC_PATH_TCLCONFIG): Don't exit 0 if tclconfig fails.
+	(SC_PATH_TKCONFIG): Don't exit 0 if tkconfig fails.
+	(SC_LOAD_TCLCONFIG): Quote all uses of TCL_BIN_DIR, it may contain
+	"# no Tcl configs found".
+	(SC_LOAD_TKCONFIG): Similarily for TK_BIN_DIR.
+
 2009-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* lead-dot.m4: Change copyright header to refer to version

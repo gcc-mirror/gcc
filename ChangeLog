@@ -1,3 +1,7 @@
+2009-05-07  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config.guess: Sync with src.
+
 2009-05-07  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* configure.ac ($with_ppl):  Default to no if not supplied.
