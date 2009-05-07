@@ -70,6 +70,14 @@ extern "C"
   }
 #endif
 
+#ifndef _GLIBCXX_HAVE_CEILL
+  long double
+  ceill(long double x)
+  {
+    return ceil((double) x);
+  }
+#endif
+
 #ifndef _GLIBCXX_HAVE_COSL
   long double
   cosl(long double x)
