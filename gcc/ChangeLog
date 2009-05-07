@@ -1,3 +1,7 @@
+2009-05-08  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* config/i386/i386.c: Do not include c-common.h.
+
 2009-05-07  Mark Heffernan  <meheff@google.com>
 
 	* doc/invoke.texi (Debugging Options): Document change of debugging
