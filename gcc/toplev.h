@@ -83,7 +83,7 @@ extern void announce_function (tree);
 
 extern void error_for_asm (const_rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void warning_for_asm (const_rtx, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
-extern void warn_deprecated_use (tree);
+extern void warn_deprecated_use (tree, tree);
 extern bool parse_optimize_options (tree, bool);
 
 #ifdef BUFSIZ

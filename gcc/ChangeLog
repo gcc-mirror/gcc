@@ -1,3 +1,25 @@
+2009-05-08  H.J. Lu  <hongjiu.lu@intel.com>
+	    Andrew Morrow  <acm@google.com>
+
+	PR c/36892
+	* c-common.c (c_common_attribute_table): Permit deprecated
+	attribute to take an optional argument.
+	(handle_deprecated_attribute): If the optional argument to
+	__attribute__((deprecated)) is not a string ignore the attribute
+	and emit a warning.
+
+	* c-decl.c (grokdeclarator): Updated warn_deprecated_use call.
+	* c-typeck.c (build_component_ref): Likewise.
+	(build_external_ref): Likewise.
+
+	* toplev.c (warn_deprecated_use): Add an attribute argument.
+	Emit the message associated with __attribute__((deprecated)).
+
+	* toplev.h (warn_deprecated_use): Updated.
+
+	* doc/extend.texi: Document new optional parameter to
+	__attribute__((deprecated))
+
 2009-05-08  Michael Eager <eager@eagercon.com>
 
 	* config/rs6000/rs6000.md (*movdf_softfloat32): replace

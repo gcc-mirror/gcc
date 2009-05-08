@@ -1,3 +1,14 @@
+2009-05-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/36892
+	* call.c (build_call_a): Updated warn_deprecated_use call.
+	(build_over_call): Likewise.
+	* decl.c (grokdeclarator): Likewise.
+	(grokparms): Likewise.
+	* semantics.c (finish_id_expression): Likewise.
+	* typeck.c (build_class_member_access_expr): Likewise.
+	(finish_class_member_access_expr): Likewise.
+
 2009-05-06  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/17395
@@ -7,23 +18,23 @@
 2009-05-05  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* cp-tree.h:
-       	(opname_tab, assignop_tab, update_member_visibility, yyerror, yyhook,
-       	mangle_compound_literal): Remove unused declarations.
-       	(build_vfield_ref, cxx_print_statistics, clone_function_decl,
-       	adjust_clone_args, maybe_push_cleanup_level, pushtag, make_anon_name,
-       	pushdecl_top_level_maybe_friend, pushdecl_top_level_and_finish,
-       	check_for_out_of_scope_variable, print_other_binding_stack,
-       	maybe_push_decl, cxx_mark_addressable, force_target_expr,
-       	build_target_expr_with_type, finish_case_label,
-       	cxx_maybe_build_cleanup, begin_eh_spec_block, finish_eh_spec_block,
-       	check_template_keyword, cxx_omp_predetermined_sharing,
-       	cxx_omp_clause_default_ctor, cxx_omp_clause_copy_ctor,
-       	cxx_omp_clause_assign_op, cxx_omp_clause_dtor, cxx_omp_finish_clause,
-       	cxx_omp_privatize_by_reference): Rearrange the declarations line to
-       	match the comment that indicates the .c file which the functions are
-       	defined.
-       	(cxx_print_xnode, cxx_print_decl, cxx_print_type,
-       	cxx_print_identifier, cxx_print_error_function, pushdecl): Add comment.
+	(opname_tab, assignop_tab, update_member_visibility, yyerror, yyhook,
+	mangle_compound_literal): Remove unused declarations.
+	(build_vfield_ref, cxx_print_statistics, clone_function_decl,
+	adjust_clone_args, maybe_push_cleanup_level, pushtag, make_anon_name,
+	pushdecl_top_level_maybe_friend, pushdecl_top_level_and_finish,
+	check_for_out_of_scope_variable, print_other_binding_stack,
+	maybe_push_decl, cxx_mark_addressable, force_target_expr,
+	build_target_expr_with_type, finish_case_label,
+	cxx_maybe_build_cleanup, begin_eh_spec_block, finish_eh_spec_block,
+	check_template_keyword, cxx_omp_predetermined_sharing,
+	cxx_omp_clause_default_ctor, cxx_omp_clause_copy_ctor,
+	cxx_omp_clause_assign_op, cxx_omp_clause_dtor, cxx_omp_finish_clause,
+	cxx_omp_privatize_by_reference): Rearrange the declarations line to
+	match the comment that indicates the .c file which the functions are
+	defined.
+	(cxx_print_xnode, cxx_print_decl, cxx_print_type,
+	cxx_print_identifier, cxx_print_error_function, pushdecl): Add comment.
 
 2009-05-05  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -821,9 +832,9 @@
 
 2009-02-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
-        PR c++/39053
-        * parser.c (cp_parser_pure_specifier): If there are no tokens left
-        do not call cp_lexer_consume_token.
+	PR c++/39053
+	* parser.c (cp_parser_pure_specifier): If there are no tokens left
+	do not call cp_lexer_consume_token.
 
 2009-01-30  Jakub Jelinek  <jakub@redhat.com>
 

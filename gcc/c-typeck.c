@@ -1964,7 +1964,7 @@ build_component_ref (tree datum, tree component)
 	    TREE_THIS_VOLATILE (ref) = 1;
 
 	  if (TREE_DEPRECATED (subdatum))
-	    warn_deprecated_use (subdatum);
+	    warn_deprecated_use (subdatum, NULL_TREE);
 
 	  datum = ref;
 
@@ -2225,7 +2225,7 @@ build_external_ref (tree id, int fun, location_t loc, tree *type)
     return error_mark_node;
 
   if (TREE_DEPRECATED (ref))
-    warn_deprecated_use (ref);
+    warn_deprecated_use (ref, NULL_TREE);
 
   /* Recursive call does not count as usage.  */
   if (ref != current_function_decl) 

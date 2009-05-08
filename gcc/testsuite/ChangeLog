@@ -1,5 +1,13 @@
 2009-05-08  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR c/36892
+	* g++.dg/warn/deprecated-6.C: New.
+	* gcc.dg/deprecated-4.c: Likewise.
+	* gcc.dg/deprecated-5.c: Likewise.
+	* gcc.dg/deprecated-6.c: Likewise.
+
+2009-05-08  H.J. Lu  <hongjiu.lu@intel.com>
+
 	* gcc.dg/vect/no-vfa-vect-37.c: Replace __aligned__(16) with
 	__aligned__(__BIGGEST_ALIGNMENT__).
 	* gcc.dg/vect/no-vfa-vect-43.c: Likewise.

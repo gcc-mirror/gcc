@@ -908,17 +908,45 @@ emit_debug_global_declarations (tree *vec, int len)
 
 /* Warn about a use of an identifier which was marked deprecated.  */
 void
-warn_deprecated_use (tree node)
+warn_deprecated_use (tree node, tree attr)
 {
+  const char *msg;
+
   if (node == 0 || !warn_deprecated_decl)
     return;
+
+  if (!attr)
+    {
+      if (DECL_P (node))
+	attr = DECL_ATTRIBUTES (node);
+      else if (TYPE_P (node))
+	{
+	  tree decl = TYPE_STUB_DECL (node);
+	  if (decl)
+	    attr = lookup_attribute ("deprecated",
+				     TYPE_ATTRIBUTES (TREE_TYPE (decl)));
+	}
+    }
+
+  if (attr)
+    attr = lookup_attribute ("deprecated", attr);
+
+  if (attr)
+    msg = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
+  else
+    msg = NULL;
 
   if (DECL_P (node))
     {
       expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (node));
-      warning (OPT_Wdeprecated_declarations,
-	       "%qD is deprecated (declared at %s:%d)",
-	       node, xloc.file, xloc.line);
+      if (msg)
+	warning (OPT_Wdeprecated_declarations,
+		 "%qD is deprecated (declared at %s:%d): %s",
+		 node, xloc.file, xloc.line, msg);
+      else
+	warning (OPT_Wdeprecated_declarations,
+		 "%qD is deprecated (declared at %s:%d)",
+		 node, xloc.file, xloc.line);
     }
   else if (TYPE_P (node))
     {
@@ -939,20 +967,46 @@ warn_deprecated_use (tree node)
 	  expanded_location xloc
 	    = expand_location (DECL_SOURCE_LOCATION (decl));
 	  if (what)
-	    warning (OPT_Wdeprecated_declarations,
-		     "%qE is deprecated (declared at %s:%d)", what,
-		     xloc.file, xloc.line);
+	    {
+	      if (msg)
+		warning (OPT_Wdeprecated_declarations,
+			 "%qE is deprecated (declared at %s:%d): %s",
+			 what, xloc.file, xloc.line, msg);
+	      else
+		warning (OPT_Wdeprecated_declarations,
+			 "%qE is deprecated (declared at %s:%d)", what,
+			 xloc.file, xloc.line);
+	    }
 	  else
-	    warning (OPT_Wdeprecated_declarations,
-		     "type is deprecated (declared at %s:%d)",
-		     xloc.file, xloc.line);
+	    {
+	      if (msg)
+		warning (OPT_Wdeprecated_declarations,
+			 "type is deprecated (declared at %s:%d): %s",
+			 xloc.file, xloc.line, msg);
+	      else
+		warning (OPT_Wdeprecated_declarations,
+			 "type is deprecated (declared at %s:%d)",
+			 xloc.file, xloc.line);
+	    }
 	}
       else
 	{
 	  if (what)
-	    warning (OPT_Wdeprecated_declarations, "%qE is deprecated", what);
+	    {
+	      if (msg)
+		warning (OPT_Wdeprecated_declarations, "%qE is deprecated: %s",
+			 what, msg);
+	      else
+		warning (OPT_Wdeprecated_declarations, "%qE is deprecated", what);
+	    }
 	  else
-	    warning (OPT_Wdeprecated_declarations, "type is deprecated");
+	    {
+	      if (msg)
+		warning (OPT_Wdeprecated_declarations, "type is deprecated: %s",
+			 msg);
+	      else
+		warning (OPT_Wdeprecated_declarations, "type is deprecated");
+	    }
 	}
     }
 }
