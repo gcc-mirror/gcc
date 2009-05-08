@@ -1272,10 +1272,6 @@ follow_ssa_edge_in_condition_phi (struct loop *loop,
 
   *evolution_of_loop = evolution_of_branch;
 
-  /* If the phi node is just a copy, do not increase the limit.  */
-  if (PHI_NUM_ARGS (condition_phi) > 1)
-    limit++;
-
   for (i = 1; i < PHI_NUM_ARGS (condition_phi); i++)
     {
       /* Quickly give up when the evolution of one of the branches is
@@ -1283,10 +1279,12 @@ follow_ssa_edge_in_condition_phi (struct loop *loop,
       if (*evolution_of_loop == chrec_dont_know)
 	return t_true;
 
+      /* Increase the limit by the PHI argument number to avoid exponential
+	 time and memory complexity.  */
       res = follow_ssa_edge_in_condition_phi_branch (i, loop, condition_phi,
 						     halting_phi,
 						     &evolution_of_branch,
-						     init, limit);
+						     init, limit + i);
       if (res == t_false || res == t_dont_know)
 	return res;
 
