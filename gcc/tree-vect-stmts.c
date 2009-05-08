@@ -1974,11 +1974,20 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 	  else
 	    {
 	      optab = optab_for_tree_code (code, vectype, optab_vector);
-	      if (vect_print_dump_info (REPORT_DETAILS)
-		  && optab
+	      if (optab
 		  && (optab_handler (optab, TYPE_MODE (vectype))->insn_code
 		      != CODE_FOR_nothing))
-		fprintf (vect_dump, "vector/vector shift/rotate found.");
+		{
+		  if (vect_print_dump_info (REPORT_DETAILS))
+		    fprintf (vect_dump, "vector/vector shift/rotate found.");
+
+		  /* Unlike the other binary operators, shifts/rotates have
+		     the rhs being int, instead of the same type as the lhs,
+		     so make sure the scalar is the right type if we are
+		     dealing with vectors of short/char.  */
+		  if (dt[1] == vect_constant_def)
+		    op1 = fold_convert (TREE_TYPE (vectype), op1);
+		}
 	    }
 	}
 
