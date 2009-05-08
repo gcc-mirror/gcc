@@ -1,3 +1,7 @@
+2009-05-08  Tobias Burnus  <burnus@net-b.de>
+
+	* invoke.texi: Add do/recursion to the -fcheck= summary.
+
 2009-05-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/38830
