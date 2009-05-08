@@ -1,6 +1,11 @@
 2009-05-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/33928
+        * loop-invariant.c (record_use): Fix && vs. || mishap.
+
+2009-05-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/33928
         * loop-invariant.c (struct use): Add addr_use_p.
         (struct def): Add n_addr_uses.
         (struct invariant): Add cheap_address.
