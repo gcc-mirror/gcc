@@ -9246,13 +9246,98 @@ build_binary_op (location_t location, enum tree_code code,
       (code1 == INTEGER_TYPE || code1 == REAL_TYPE || code1 == COMPLEX_TYPE
        || code1 == FIXED_POINT_TYPE || code1 == VECTOR_TYPE))
     {
-      int none_complex = (code0 != COMPLEX_TYPE && code1 != COMPLEX_TYPE);
+      bool first_complex = (code0 == COMPLEX_TYPE);
+      bool second_complex = (code1 == COMPLEX_TYPE);
+      int none_complex = (!first_complex && !second_complex);
 
       if (shorten || common || short_compare)
 	{
 	  result_type = c_common_type (type0, type1);
 	  if (result_type == error_mark_node)
 	    return error_mark_node;
+	}
+
+      if (first_complex != second_complex
+	  && (code == PLUS_EXPR
+	      || code == MINUS_EXPR
+	      || code == MULT_EXPR
+	      || (code == TRUNC_DIV_EXPR && first_complex))
+	  && TREE_CODE (TREE_TYPE (result_type)) == REAL_TYPE
+	  && flag_signed_zeros)
+	{
+	  /* An operation on mixed real/complex operands must be
+	     handled specially, but the language-independent code can
+	     more easily optimize the plain complex arithmetic if
+	     -fno-signed-zeros.  */
+	  tree real_type = TREE_TYPE (result_type);
+	  tree real, imag;
+	  if (type0 != orig_type0 || type1 != orig_type1)
+	    {
+	      gcc_assert (may_need_excess_precision && common);
+	      real_result_type = c_common_type (orig_type0, orig_type1);
+	    }
+	  if (first_complex)
+	    {
+	      if (TREE_TYPE (op0) != result_type)
+		op0 = convert_and_check (result_type, op0);
+	      if (TREE_TYPE (op1) != real_type)
+		op1 = convert_and_check (real_type, op1);
+	    }
+	  else
+	    {
+	      if (TREE_TYPE (op0) != real_type)
+		op0 = convert_and_check (real_type, op0);
+	      if (TREE_TYPE (op1) != result_type)
+		op1 = convert_and_check (result_type, op1);
+	    }
+	  if (TREE_CODE (op0) == ERROR_MARK || TREE_CODE (op1) == ERROR_MARK)
+	    return error_mark_node;
+	  if (first_complex)
+	    {
+	      op0 = c_save_expr (op0);
+	      real = build_unary_op (EXPR_LOCATION (orig_op0), REALPART_EXPR,
+				     op0, 1);
+	      imag = build_unary_op (EXPR_LOCATION (orig_op0), IMAGPART_EXPR,
+				     op0, 1);
+	      switch (code)
+		{
+		case MULT_EXPR:
+		case TRUNC_DIV_EXPR:
+		  imag = build2 (resultcode, real_type, imag, op1);
+		  /* Fall through.  */
+		case PLUS_EXPR:
+		case MINUS_EXPR:
+		  real = build2 (resultcode, real_type, real, op1);
+		  break;
+		default:
+		  gcc_unreachable();
+		}
+	    }
+	  else
+	    {
+	      op1 = c_save_expr (op1);
+	      real = build_unary_op (EXPR_LOCATION (orig_op1), REALPART_EXPR,
+				     op1, 1);
+	      imag = build_unary_op (EXPR_LOCATION (orig_op1), IMAGPART_EXPR,
+				     op1, 1);
+	      switch (code)
+		{
+		case MULT_EXPR:
+		  imag = build2 (resultcode, real_type, op0, imag);
+		  /* Fall through.  */
+		case PLUS_EXPR:
+		  real = build2 (resultcode, real_type, op0, real);
+		  break;
+		case MINUS_EXPR:
+		  real = build2 (resultcode, real_type, op0, real);
+		  imag = build1 (NEGATE_EXPR, real_type, imag);
+		  break;
+		default:
+		  gcc_unreachable();
+		}
+	    }
+	  ret = build2 (COMPLEX_EXPR, result_type, real, imag);
+	  goto return_build_binary_op;
 	}
 
       /* For certain operations (which identify themselves by shorten != 0)
