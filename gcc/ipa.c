@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-pass.h"
 #include "timevar.h"
+#include "gimple.h"
 #include "ggc.h"
 
 /* Fill array order with all nodes with output flag set in the reverse
@@ -143,6 +144,12 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    e->callee->aux = first;
 	    first = e->callee;
 	  }
+      while (node->clone_of && !node->clone_of->aux && !gimple_has_body_p (node->decl))
+        {
+	  node = node->clone_of;
+	  node->aux = first;
+	  first = node;
+	}
     }
 
   /* Remove unreachable nodes.  Extern inline functions need special care;
@@ -168,25 +175,29 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	    {
 	      struct cgraph_edge *e;
 
+	      /* See if there is reachable caller.  */
 	      for (e = node->callers; e; e = e->next_caller)
 		if (e->caller->aux)
 		  break;
+
+	      /* If so, we need to keep node in the callgraph.  */
 	      if (e || node->needed)
 		{
 		  struct cgraph_node *clone;
 
-		  for (clone = node->next_clone; clone;
-		       clone = clone->next_clone)
+		  /* If there are still clones, we must keep body around.
+		     Otherwise we can just remove the body but keep the clone.  */
+		  for (clone = node->clones; clone;
+		       clone = clone->next_sibling_clone)
 		    if (clone->aux)
 		      break;
 		  if (!clone)
 		    {
 		      cgraph_release_function_body (node);
+		      cgraph_node_remove_callees (node);
 		      node->analyzed = false;
+		      node->local.inlinable = false;
 		    }
-		  cgraph_node_remove_callees (node);
-		  node->analyzed = false;
-		  node->local.inlinable = false;
 		}
 	      else
 		cgraph_remove_node (node);
@@ -195,7 +206,18 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	}
     }
   for (node = cgraph_nodes; node; node = node->next)
-    node->aux = NULL;
+    {
+      /* Inline clones might be kept around so their materializing allows further
+         cloning.  If the function the clone is inlined into is removed, we need
+         to turn it into normal cone.  */
+      if (node->global.inlined_to
+	  && !node->callers)
+	{
+	  gcc_assert (node->clones);
+	  node->global.inlined_to = false;
+	}
+      node->aux = NULL;
+    }
 #ifdef ENABLE_CHECKING
   verify_cgraph ();
 #endif

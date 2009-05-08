@@ -653,7 +653,7 @@ ipa_note_param_call (struct ipa_node_params *info, int formal_id,
   note->formal_id = formal_id;
   note->stmt = stmt;
   note->count = bb->count;
-  note->frequency = compute_call_stmt_bb_frequency (bb);
+  note->frequency = compute_call_stmt_bb_frequency (current_function_decl, bb);
 
   note->next = info->param_calls;
   info->param_calls = note;

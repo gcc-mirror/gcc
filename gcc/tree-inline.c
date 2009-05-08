@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "input.h"
 #include "insn-config.h"
-#include "varray.h"
 #include "hashtab.h"
 #include "langhooks.h"
 #include "basic-block.h"
@@ -1393,6 +1392,8 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	 need to process all of them.  */
       do
 	{
+	  tree fn;
+
 	  stmt = gsi_stmt (copy_gsi);
 	  if (is_gimple_call (stmt)
 	      && gimple_call_va_arg_pack_p (stmt)
@@ -1481,40 +1482,60 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	     callgraph edges and update or duplicate them.  */
 	  if (is_gimple_call (stmt))
 	    {
-	      struct cgraph_node *node;
-	      struct cgraph_edge *edge;
+	      struct cgraph_edge *edge = cgraph_edge (id->src_node, orig_stmt);
 	      int flags;
 
 	      switch (id->transform_call_graph_edges)
 		{
 	      case CB_CGE_DUPLICATE:
-		edge = cgraph_edge (id->src_node, orig_stmt);
-		if (edge)
+	        if (edge)
 		  cgraph_clone_edge (edge, id->dst_node, stmt,
 					   REG_BR_PROB_BASE, 1,
 					   edge->frequency, true);
 		break;
 
 	      case CB_CGE_MOVE_CLONES:
-		for (node = id->dst_node->next_clone;
-		    node;
-		    node = node->next_clone)
-		  {
-		    edge = cgraph_edge (node, orig_stmt);
-			  if (edge)
-			    cgraph_set_call_stmt (edge, stmt);
-		  }
-		/* FALLTHRU */
+		cgraph_set_call_stmt_including_clones (id->dst_node, orig_stmt, stmt);
+		break;
 
 	      case CB_CGE_MOVE:
-		edge = cgraph_edge (id->dst_node, orig_stmt);
-		if (edge)
+	        if (edge)
 		  cgraph_set_call_stmt (edge, stmt);
 		break;
 
 	      default:
 		gcc_unreachable ();
 		}
+
+	    /* Constant propagation on argument done during inlining
+	       may create new direct call.  Produce an edge for it.  */
+	    if (!edge && is_gimple_call (stmt)
+		&& (fn = gimple_call_fndecl (stmt)) != NULL
+		&& !cgraph_edge (id->dst_node, stmt))
+	      {
+		struct cgraph_node *dest = cgraph_node (fn);
+
+		/* We have missing edge in the callgraph.  This can happen in one case
+		   where previous inlining turned indirect call into direct call by
+		   constant propagating arguments.  In all other cases we hit a bug
+		   (incorrect node sharing is most common reason for missing edges.  */
+		gcc_assert (dest->needed || !dest->analyzed);
+		if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES)
+		  cgraph_create_edge_including_clones (id->dst_node, dest, stmt,
+						       bb->count, CGRAPH_FREQ_BASE,
+						       bb->loop_depth,
+						       CIF_ORIGINALLY_INDIRECT_CALL);
+		else
+		  cgraph_create_edge (id->dst_node, dest, stmt,
+				      bb->count, CGRAPH_FREQ_BASE,
+				      bb->loop_depth)->inline_failed
+		    = CIF_ORIGINALLY_INDIRECT_CALL;
+		if (dump_file)
+		  {
+		     fprintf (dump_file, "Created new direct edge to %s",
+			      cgraph_node_name (dest));
+		  }
+	      }
 
 	      flags = gimple_call_flags (stmt);
 
@@ -3221,29 +3242,6 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 
   cg_edge = cgraph_edge (id->dst_node, stmt);
 
-  /* Constant propagation on argument done during previous inlining
-     may create new direct call.  Produce an edge for it.  */
-  if (!cg_edge)
-    {
-      struct cgraph_node *dest = cgraph_node (fn);
-
-      /* We have missing edge in the callgraph.  This can happen in one case
-         where previous inlining turned indirect call into direct call by
-         constant propagating arguments.  In all other cases we hit a bug
-         (incorrect node sharing is most common reason for missing edges.  */
-      gcc_assert (dest->needed);
-      cgraph_create_edge (id->dst_node, dest, stmt,
-			  bb->count, CGRAPH_FREQ_BASE,
-			  bb->loop_depth)->inline_failed
-	= CIF_ORIGINALLY_INDIRECT_CALL;
-      if (dump_file)
-	{
-	   fprintf (dump_file, "Created new direct edge to %s",
-		    cgraph_node_name (dest));
-	}
-      goto egress;
-    }
-
   /* Don't try to inline functions that are not well-suited to
      inlining.  */
   if (!cgraph_inline_p (cg_edge, &reason))
@@ -4281,27 +4279,98 @@ tree_versionable_function_p (tree fndecl)
   return true;
 }
 
-/* Create a new name for omp child function.  Returns an identifier.  */
+/* Delete all unreachable basic blocks and update callgraph.
+   Doing so is somewhat nontrivial because we need to update all clones and
+   remove inline function that become unreachable.  */
 
-static GTY(()) unsigned int clone_fn_id_num;
-
-static tree
-clone_function_name (tree decl)
+static bool
+delete_unreachable_blocks_update_callgraph (copy_body_data *id)
 {
-  tree name = DECL_ASSEMBLER_NAME (decl);
-  size_t len = IDENTIFIER_LENGTH (name);
-  char *tmp_name, *prefix;
+  bool changed = false;
+  basic_block b, next_bb;
 
-  prefix = XALLOCAVEC (char, len + strlen ("_clone") + 1);
-  memcpy (prefix, IDENTIFIER_POINTER (name), len);
-  strcpy (prefix + len, "_clone");
-#ifndef NO_DOT_IN_LABEL
-  prefix[len] = '.';
-#elif !defined NO_DOLLAR_IN_LABEL
-  prefix[len] = '$';
+  find_unreachable_blocks ();
+
+  /* Delete all unreachable basic blocks.  */
+
+  for (b = ENTRY_BLOCK_PTR->next_bb; b != EXIT_BLOCK_PTR; b = next_bb)
+    {
+      next_bb = b->next_bb;
+
+      if (!(b->flags & BB_REACHABLE))
+	{
+          gimple_stmt_iterator bsi;
+
+          for (bsi = gsi_start_bb (b); !gsi_end_p (bsi); gsi_next (&bsi))
+	    if (gimple_code (gsi_stmt (bsi)) == GIMPLE_CALL)
+	      {
+	        struct cgraph_edge *e;
+		struct cgraph_node *node;
+
+	        if ((e = cgraph_edge (id->dst_node, gsi_stmt (bsi))) != NULL)
+		  {
+		    if (!e->inline_failed)
+		      cgraph_remove_node_and_inline_clones (e->callee);
+		    else
+	              cgraph_remove_edge (e);
+		  }
+		if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES
+		    && id->dst_node->clones)
+     		  for (node = id->dst_node->clones; node != id->dst_node;)
+		    {
+	              if ((e = cgraph_edge (node, gsi_stmt (bsi))) != NULL)
+			{
+		          if (!e->inline_failed)
+		            cgraph_remove_node_and_inline_clones (e->callee);
+			  else
+	                    cgraph_remove_edge (e);
+			}
+		       
+		      if (node->clones)
+			node = node->clones;
+		      else if (node->next_sibling_clone)
+			node = node->next_sibling_clone;
+		      else
+			{
+			  while (node != id->dst_node && !node->next_sibling_clone)
+			    node = node->clone_of;
+			  if (node != id->dst_node)
+			    node = node->next_sibling_clone;
+			}
+		    }
+	      }
+	  delete_basic_block (b);
+	  changed = true;
+	}
+    }
+
+  if (changed)
+    tidy_fallthru_edges ();
+#ifdef ENABLE_CHECKING0
+  verify_cgraph_node (id->dst_node);
+  if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES
+      && id->dst_node->clones)
+    {
+      struct cgraph_node *node;
+      for (node = id->dst_node->clones; node != id->dst_node;)
+	{
+	  verify_cgraph_node (node);
+	   
+	  if (node->clones)
+	    node = node->clones;
+	  else if (node->next_sibling_clone)
+	    node = node->next_sibling_clone;
+	  else
+	    {
+	      while (node != id->dst_node && !node->next_sibling_clone)
+		node = node->clone_of;
+	      if (node != id->dst_node)
+		node = node->next_sibling_clone;
+	    }
+	}
+     }
 #endif
-  ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix, clone_fn_id_num++);
-  return get_identifier (tmp_name);
+  return changed;
 }
 
 /* Create a copy of a function's tree.
@@ -4313,7 +4382,7 @@ clone_function_name (tree decl)
    trees. If UPDATE_CLONES is set, the call_stmt fields
    of edges of clones of the function will be updated.  */
 void
-tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
+tree_function_versioning (tree old_decl, tree new_decl, VEC(ipa_replace_map_p,gc)* tree_map,
 			  bool update_clones, bitmap args_to_skip)
 {
   struct cgraph_node *old_version_node;
@@ -4349,13 +4418,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   memset (&id, 0, sizeof (id));
 
   /* Generate a new name for the new version. */
-  if (!update_clones)
-    {
-      DECL_NAME (new_decl) = clone_function_name (old_decl);
-      SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
-      SET_DECL_RTL (new_decl, NULL_RTX);
-      id.statements_to_fold = pointer_set_create ();
-    }
+  id.statements_to_fold = pointer_set_create ();
   
   id.decl_map = pointer_map_create ();
   id.src_fn = old_decl;
@@ -4388,11 +4451,10 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   
   /* If there's a tree_map, prepare for substitution.  */
   if (tree_map)
-    for (i = 0; i < VARRAY_ACTIVE_SIZE (tree_map); i++)
+    for (i = 0; i < VEC_length (ipa_replace_map_p, tree_map); i++)
       {
 	gimple init;
-	replace_info
-	  = (struct ipa_replace_map *) VARRAY_GENERIC_PTR (tree_map, i);
+	replace_info = VEC_index (ipa_replace_map_p, tree_map, i);
 	if (replace_info->replace_p)
 	  {
 	    tree op = replace_info->new_tree;
@@ -4431,6 +4493,7 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   number_blocks (id.dst_fn);
   
   declare_inline_vars (DECL_INITIAL (new_decl), vars);
+
   if (DECL_STRUCT_FUNCTION (old_decl)->local_decls != NULL_TREE)
     /* Add local vars.  */
     for (t_step = DECL_STRUCT_FUNCTION (old_decl)->local_decls;
@@ -4469,14 +4532,15 @@ tree_function_versioning (tree old_decl, tree new_decl, varray_type tree_map,
   pointer_map_destroy (id.decl_map);
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
-  if (!update_clones)
-    {
-      fold_marked_statements (0, id.statements_to_fold);
-      pointer_set_destroy (id.statements_to_fold);
-      fold_cond_expr_cond ();
-      delete_unreachable_blocks ();
-      update_ssa (TODO_update_ssa);
-    }
+
+  fold_marked_statements (0, id.statements_to_fold);
+  pointer_set_destroy (id.statements_to_fold);
+  fold_cond_expr_cond ();
+  delete_unreachable_blocks_update_callgraph (&id);
+  update_ssa (TODO_update_ssa);
+  free_dominance_info (CDI_DOMINATORS);
+  free_dominance_info (CDI_POST_DOMINATORS);
+
   VEC_free (gimple, heap, init_stmts);
   pop_cfun ();
   current_function_decl = old_current_function_decl;
@@ -4544,5 +4608,3 @@ tree_can_inline_p (tree caller, tree callee)
   /* Allow the backend to decide if inlining is ok.  */
   return targetm.target_option.can_inline_p (caller, callee);
 }
-
-#include "gt-tree-inline.h"
