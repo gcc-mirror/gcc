@@ -12,7 +12,7 @@
 #include "tree-vect.h"
 
 #ifndef ALIGN
-#define ALIGN __attribute__((__aligned__(32)))
+#define ALIGN __attribute__((__aligned__(__BIGGEST_ALIGNMENT__)))
 #endif
 
 #ifndef NOINLINE
