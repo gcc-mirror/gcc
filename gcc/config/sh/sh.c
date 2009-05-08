@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "toplev.h"
 #include "recog.h"
-#include "c-pragma.h"
 #include "integrate.h"
 #include "dwarf2.h"
 #include "tm_p.h"
