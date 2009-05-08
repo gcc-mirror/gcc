@@ -1,5 +1,9 @@
 2009-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/ext/throw_allocator.h: Remove redundante include.
+
+2009-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/ext/throw_allocator.h (throw_allocator_base): Avoid
 	out of line member functions definitions.
 	(throw_allocator_base::_S_g, _S_map, _S_throw_prob, _S_label):
