@@ -5,9 +5,9 @@
 
 #define N 64
 
-unsigned char uX[N] __attribute__ ((__aligned__(16)));
+unsigned char uX[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 unsigned int uresult[N];
-signed char X[N] __attribute__ ((__aligned__(16)));
+signed char X[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 int result[N];
 
 /* Unsigned type promotion (qi->si) */

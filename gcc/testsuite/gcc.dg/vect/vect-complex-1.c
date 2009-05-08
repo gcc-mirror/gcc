@@ -6,19 +6,19 @@
 
 #define N 16
 
-_Complex float a[N]  __attribute__ ((__aligned__(16))) =
+_Complex float a[N]  __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) =
     { 10.0F + 20.0iF, 11.0F + 21.0iF, 12.0F + 22.0iF, 13.0F + 23.0iF,
       14.0F + 24.0iF, 15.0F + 25.0iF, 16.0F + 26.0iF, 17.0F + 27.0iF,
       18.0F + 28.0iF, 19.0F + 29.0iF, 20.0F + 30.0iF, 21.0F + 31.0iF,
       22.0F + 32.0iF, 23.0F + 33.0iF, 24.0F + 34.0iF, 25.0F + 35.0iF };
-_Complex float b[N]  __attribute__ ((__aligned__(16))) =
+_Complex float b[N]  __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) =
     { 30.0F + 40.0iF, 31.0F + 41.0iF, 32.0F + 42.0iF, 33.0F + 43.0iF,
       34.0F + 44.0iF, 35.0F + 45.0iF, 36.0F + 46.0iF, 37.0F + 47.0iF,
       38.0F + 48.0iF, 39.0F + 49.0iF, 40.0F + 50.0iF, 41.0F + 51.0iF,
       42.0F + 52.0iF, 43.0F + 53.0iF, 44.0F + 54.0iF, 45.0F + 55.0iF };
 
-_Complex float c[N] __attribute__ ((__aligned__(16)));
-_Complex float res[N] __attribute__ ((__aligned__(16))) =
+_Complex float c[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+_Complex float res[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) =
     { 40.0F + 60.0iF, 42.0F + 62.0iF, 44.0F + 64.0iF, 46.0F + 66.0iF,
       48.0F + 68.0iF, 50.0F + 70.0iF, 52.0F + 72.0iF, 54.0F + 74.0iF,
       56.0F + 76.0iF, 58.0F + 78.0iF, 60.0F + 80.0iF, 62.0F + 82.0iF,

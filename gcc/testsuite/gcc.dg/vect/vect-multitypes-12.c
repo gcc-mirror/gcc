@@ -5,7 +5,7 @@
 
 #define N 64
 
-char x[N] __attribute__ ((__aligned__(16)));
+char x[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
 __attribute__ ((noinline)) int
 foo (int len, int *z) {

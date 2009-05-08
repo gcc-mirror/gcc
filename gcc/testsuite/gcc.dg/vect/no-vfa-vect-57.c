@@ -43,8 +43,8 @@ __attribute__ ((noinline)) int
 main1 (float *pa)
 {
   int i;
-  float b[N] __attribute__ ((__aligned__(16)));
-  float c[N] __attribute__ ((__aligned__(16)));
+  float b[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+  float c[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
   float *pb = b;
   float *pc = c;
 
@@ -63,7 +63,7 @@ main1 (float *pa)
 int main (void)
 {
   int i;
-  float a[N] __attribute__ ((__aligned__(16)));
+  float a[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
   check_vect ();
   main1 (a);

@@ -11,7 +11,7 @@ struct foostr {
   _Complex short f2;
 };
 
-struct foostr a[16] __attribute__ ((__aligned__(16))) =
+struct foostr a[16] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) =
   {
     11 + 23i, 24 + 22i,
     11 + 26i, 24 + 35i,
@@ -31,7 +31,7 @@ struct foostr a[16] __attribute__ ((__aligned__(16))) =
     35 + 36i, 34 + 28i,
   };
 
-struct foostr b[16] __attribute__ ((__aligned__(16))) =
+struct foostr b[16] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) =
   {
     37 + 12i, 23 + 15i,
     14 + 11i, 13 + 25i,
@@ -50,7 +50,7 @@ struct foostr b[16] __attribute__ ((__aligned__(16))) =
     25 + 27i, 15 + 30i,
     10 + 31i, 37 + 37i,
   };
-struct foostr c[16] __attribute__ ((__aligned__(16)));
+struct foostr c[16] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 struct foostr res[N] =
   {
     48 + 35i, 47 + 37i,

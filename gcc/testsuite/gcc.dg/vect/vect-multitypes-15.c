@@ -9,9 +9,9 @@
 #define DOT1 43680
 #define DOT2 -20832
 
-signed char X[N] __attribute__ ((__aligned__(16)));
-signed char Y[N] __attribute__ ((__aligned__(16)));
-unsigned char CX[N] __attribute__ ((__aligned__(16)));
+signed char X[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+signed char Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+unsigned char CX[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
 __attribute__ ((noinline)) void
 foo1(int len) {

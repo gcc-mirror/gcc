@@ -5,9 +5,9 @@
 
 #define N 16
 
-float fa[N] __attribute__ ((__aligned__(16)));
-float fb[N+4] __attribute__ ((__aligned__(16))) = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0};
-float fc[N] __attribute__ ((__aligned__(16))) = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 7.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5};
+float fa[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+float fb[N+4] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0};
+float fc[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 7.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5};
 
 /* Check handling of accesses for which the "initial condition" -
    the expression that represents the first location accessed - is

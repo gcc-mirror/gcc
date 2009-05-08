@@ -5,8 +5,8 @@
 
 #define N 64
 
-unsigned char X[N] __attribute__ ((__aligned__(16)));
-unsigned char Y[N] __attribute__ ((__aligned__(16)));
+unsigned char X[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+unsigned char Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 unsigned short result[N];
 
 /* char->short widening-mult */

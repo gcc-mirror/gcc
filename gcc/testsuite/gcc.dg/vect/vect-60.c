@@ -30,14 +30,14 @@ void bar (float *pa, float *pb, float *pc)
    vect-61.c is similar to this one with two differences:
         aliasing is not a problem, and the write access has unknown alignment.  */
 
-float b[N] __attribute__ ((__aligned__(16))) = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57};
-float c[N] __attribute__ ((__aligned__(16))) = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+float b[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57};
+float c[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
 
 __attribute__ ((noinline)) int
 main1 (int n)
 {
   int i;
-  float a[N] __attribute__ ((__aligned__(16)));
+  float a[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
   float *pa = a;
   float *pb = b;
   float *pc = c;

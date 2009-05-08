@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-short Kernshort[24] __attribute__ ((__aligned__(16)));
+short Kernshort[24] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 static void VecBug(short Kernel[8][24]) __attribute__((noinline));
 static void VecBug2(short Kernel[8][24]) __attribute__((noinline));
 
@@ -21,7 +21,7 @@ static void VecBug(short Kernel[8][24])
 static void VecBug2(short Kernel[8][24])
 {
   int k,i;
-  short Kernshort2[24] __attribute__ ((__aligned__(16)));
+  short Kernshort2[24] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
     for (k = 0; k<8; k++)
         for (i = 0; i<24; i++)
             Kernshort2[i] = Kernel[k][i];
@@ -36,7 +36,7 @@ int main (int argc, char **argv)
 {
     check_vect ();
 
-    short Kernel[8][24] __attribute__ ((__aligned__(16)));
+    short Kernel[8][24] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
     int k,i;
 
     for (k = 0; k<8; k++)

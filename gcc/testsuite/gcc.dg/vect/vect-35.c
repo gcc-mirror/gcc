@@ -9,8 +9,8 @@ __attribute__ ((noinline))
 int main1 ()
 {  
   union {
-    unsigned char a[N] __attribute__ ((__aligned__(16)));
-    unsigned char b[N] __attribute__ ((__aligned__(16)));
+    unsigned char a[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+    unsigned char b[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
   } s;
   int i;
 

@@ -11,11 +11,11 @@ struct foostr {
   _Complex short f2;
 };
 
-_Complex short a1[64] __attribute__ ((__aligned__(16)));
-_Complex short a2[64] __attribute__ ((__aligned__(16)));
-_Complex short b1[64] __attribute__ ((__aligned__(16)));
-_Complex short b2[64] __attribute__ ((__aligned__(16)));
-struct foostr c[64] __attribute__ ((__aligned__(16)));
+_Complex short a1[64] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+_Complex short a2[64] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+_Complex short b1[64] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+_Complex short b2[64] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+struct foostr c[64] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
 __attribute__ ((noinline)) void
 foo (void)

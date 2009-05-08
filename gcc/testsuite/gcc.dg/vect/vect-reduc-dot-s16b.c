@@ -7,8 +7,8 @@
 
 #define DOT 43680
 
-signed short X[N] __attribute__ ((__aligned__(16)));
-signed short Y[N] __attribute__ ((__aligned__(16)));
+signed short X[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+signed short Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
 /* short->short->int dot product.  Should be vectorized on architectures
    supporting vectorized multiplication of two short args with short result,
