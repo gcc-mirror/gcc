@@ -836,13 +836,17 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
   /* See if this intrinsic is allowed in the current standard.  */
   if (gfc_check_intrinsic_standard (isym, &symstd, false, loc) == FAILURE)
     {
-      if (gfc_option.warn_intrinsics_std)
-	gfc_warning_now ("The intrinsic '%s' at %L is not included in the"
-			 " selected standard but %s and '%s' will be treated as"
-			 " if declared EXTERNAL.  Use an appropriate -std=*"
-			 " option or define -fall-intrinsics to allow this"
-			 " intrinsic.", sym->name, &loc, symstd, sym->name);
-      sym->attr.external = 1;
+      if (sym->attr.proc == PROC_UNKNOWN)
+	{
+	  if (gfc_option.warn_intrinsics_std)
+	    gfc_warning_now ("The intrinsic '%s' at %L is not included in the"
+			     " selected standard but %s and '%s' will be"
+			     " treated as if declared EXTERNAL.  Use an"
+			     " appropriate -std=* option or define"
+			     " -fall-intrinsics to allow this intrinsic.",
+			     sym->name, &loc, symstd, sym->name);
+	  gfc_add_external (&sym->attr, &loc);
+	}
 
       return false;
     }
