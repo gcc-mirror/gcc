@@ -726,7 +726,7 @@ record_use (struct def *def, df_ref use)
   u->pos = DF_REF_REAL_LOC (use);
   u->insn = DF_REF_INSN (use);
   u->addr_use_p = (DF_REF_TYPE (use) == DF_REF_REG_MEM_LOAD
-		   && DF_REF_TYPE (use) == DF_REF_REG_MEM_STORE);
+		   || DF_REF_TYPE (use) == DF_REF_REG_MEM_STORE);
   u->next = def->uses;
   def->uses = u;
   def->n_uses++;
