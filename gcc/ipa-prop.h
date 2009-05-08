@@ -99,20 +99,6 @@ struct ipcp_lattice
   tree constant;
 };
 
-/* Represent which DECL tree (or reference to such tree)
-   will be replaced by another tree while versioning.  */
-struct ipa_replace_map
-{
-  /* The tree that will be replaced.  */
-  tree old_tree;
-  /* The new (replacing) tree.  */
-  tree new_tree;
-  /* True when a substitution should be done, false otherwise.  */
-  bool replace_p;
-  /* True when we replace a reference to old_tree.  */
-  bool ref_p;
-};
-
 /* Each instance of the following  structure describes a statement that calls a
    function parameter.  Those referring  to statements within the same function
    are linked in a list.  */

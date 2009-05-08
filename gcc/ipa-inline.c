@@ -433,7 +433,7 @@ cgraph_default_inline_p (struct cgraph_node *n, cgraph_inline_failed_t *reason)
       return false;
     }
 
-  if (!DECL_STRUCT_FUNCTION (decl)->cfg)
+  if (!n->analyzed)
     {
       if (reason)
 	*reason = CIF_BODY_NOT_AVAILABLE;

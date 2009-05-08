@@ -81,10 +81,13 @@ record_reference (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 /* Computes the frequency of the call statement so that it can be stored in
    cgraph_edge.  BB is the basic block of the call statement.  */
 int
-compute_call_stmt_bb_frequency (basic_block bb)
+compute_call_stmt_bb_frequency (tree decl, basic_block bb)
 {
   int entry_freq = ENTRY_BLOCK_PTR->frequency;
   int freq = bb->frequency;
+
+  if (profile_status_for_function (DECL_STRUCT_FUNCTION (decl)) == PROFILE_ABSENT)
+    return CGRAPH_FREQ_BASE;
 
   if (!entry_freq)
     entry_freq = 1, freq++;
@@ -121,7 +124,7 @@ build_cgraph_edges (void)
 	    size_t i;
 	    size_t n = gimple_call_num_args (stmt);
 	    cgraph_create_edge (node, cgraph_node (decl), stmt,
-				bb->count, compute_call_stmt_bb_frequency (bb),
+				bb->count, compute_call_stmt_bb_frequency (current_function_decl, bb),
 				bb->loop_depth);
 	    for (i = 0; i < n; i++)
 	      walk_tree (gimple_call_arg_ptr (stmt, i), record_reference,
@@ -224,7 +227,9 @@ rebuild_cgraph_edges (void)
 
 	if (is_gimple_call (stmt) && (decl = gimple_call_fndecl (stmt)))
 	  cgraph_create_edge (node, cgraph_node (decl), stmt,
-			      bb->count, compute_call_stmt_bb_frequency (bb),
+			      bb->count,
+			      compute_call_stmt_bb_frequency
+			        (current_function_decl, bb),
 			      bb->loop_depth);
 
       }

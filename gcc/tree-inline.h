@@ -21,7 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_INLINE_H
 #define GCC_TREE_INLINE_H
 
-#include "varray.h"
 #include "pointer-set.h"
 
 
@@ -156,7 +155,6 @@ int estimate_num_insns (gimple, eni_weights *);
 int estimate_num_insns_fn (tree, eni_weights *);
 int count_insns_seq (gimple_seq, eni_weights *);
 bool tree_versionable_function_p (tree);
-void tree_function_versioning (tree, tree, varray_type, bool, bitmap);
 bool tree_can_inline_p (tree, tree);
 
 extern gimple_seq remap_gimple_seq (gimple_seq, copy_body_data *);

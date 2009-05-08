@@ -186,34 +186,6 @@ ipcp_analyze_node (struct cgraph_node *node)
   ipa_detect_param_modifications (node);
 }
 
-/* Recompute all local information since node might've got new
-   direct calls after cloning.  */
-static void
-ipcp_update_cloned_node (struct cgraph_node *new_node)
-{
-  /* We might've introduced new direct calls.  */
-  push_cfun (DECL_STRUCT_FUNCTION (new_node->decl));
-  current_function_decl = new_node->decl;
-  rebuild_cgraph_edges ();
-
-  /* Indirect inlinng rely on fact that we've already analyzed
-     the body..  */
-  if (flag_indirect_inlining)
-    {
-      struct cgraph_edge *cs;
-
-      ipcp_analyze_node (new_node);
-
-      for (cs = new_node->callees; cs; cs = cs->next_callee)
-	{
-	  ipa_count_arguments (cs);
-	  ipa_compute_jump_functions (cs);
-	}
-    }
-  pop_cfun ();
-  current_function_decl = NULL;
-}
-
 /* Return scale for NODE.  */
 static inline gcov_type
 ipcp_get_node_scale (struct cgraph_node *node)
@@ -756,98 +728,6 @@ ipcp_print_call_profile_counts (FILE * f)
     }
 }
 
-/* Print all counts and probabilities of cfg edges of all functions.  */
-static void
-ipcp_print_edge_profiles (FILE * f)
-{
-  struct cgraph_node *node;
-  basic_block bb;
-  edge_iterator ei;
-  edge e;
-
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      fprintf (f, "function %s: \n", cgraph_node_name (node));
-      if (node->analyzed)
-	{
-	  bb =
-	    ENTRY_BLOCK_PTR_FOR_FUNCTION (DECL_STRUCT_FUNCTION (node->decl));
-	  fprintf (f, "ENTRY: ");
-	  fprintf (f, " " HOST_WIDE_INT_PRINT_DEC
-		   " %d\n", (HOST_WIDE_INT) bb->count, bb->frequency);
-
-	  if (bb->succs)
-	    FOR_EACH_EDGE (e, ei, bb->succs)
-	    {
-	      if (e->dest ==
-		  EXIT_BLOCK_PTR_FOR_FUNCTION (DECL_STRUCT_FUNCTION
-					       (node->decl)))
-		fprintf (f, "edge ENTRY -> EXIT,  Count");
-	      else
-		fprintf (f, "edge ENTRY -> %d,  Count", e->dest->index);
-	      fprintf (f, " " HOST_WIDE_INT_PRINT_DEC
-		       " Prob %d\n", (HOST_WIDE_INT) e->count,
-		       e->probability);
-	    }
-	  FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (node->decl))
-	  {
-	    fprintf (f, "bb[%d]: ", bb->index);
-	    fprintf (f, " " HOST_WIDE_INT_PRINT_DEC
-		     " %d\n", (HOST_WIDE_INT) bb->count, bb->frequency);
-	    FOR_EACH_EDGE (e, ei, bb->succs)
-	    {
-	      if (e->dest ==
-		  EXIT_BLOCK_PTR_FOR_FUNCTION (DECL_STRUCT_FUNCTION
-					       (node->decl)))
-		fprintf (f, "edge %d -> EXIT,  Count", e->src->index);
-	      else
-		fprintf (f, "edge %d -> %d,  Count", e->src->index,
-			 e->dest->index);
-	      fprintf (f, " " HOST_WIDE_INT_PRINT_DEC " Prob %d\n",
-		       (HOST_WIDE_INT) e->count, e->probability);
-	    }
-	  }
-	}
-    }
-}
-
-/* Print counts and frequencies for all basic blocks of all functions.  */
-static void
-ipcp_print_bb_profiles (FILE * f)
-{
-  basic_block bb;
-  struct cgraph_node *node;
-
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      fprintf (f, "function %s: \n", cgraph_node_name (node));
-      if (node->analyzed)
-	{
-	  bb =
-	    ENTRY_BLOCK_PTR_FOR_FUNCTION (DECL_STRUCT_FUNCTION (node->decl));
-	  fprintf (f, "ENTRY: Count");
-	  fprintf (f, " " HOST_WIDE_INT_PRINT_DEC
-		   " Frequency  %d\n", (HOST_WIDE_INT) bb->count,
-		   bb->frequency);
-
-	  FOR_EACH_BB_FN (bb, DECL_STRUCT_FUNCTION (node->decl))
-	  {
-	    fprintf (f, "bb[%d]: Count", bb->index);
-	    fprintf (f, " " HOST_WIDE_INT_PRINT_DEC
-		     " Frequency %d\n", (HOST_WIDE_INT) bb->count,
-		     bb->frequency);
-	  }
-	  bb =
-	    EXIT_BLOCK_PTR_FOR_FUNCTION (DECL_STRUCT_FUNCTION (node->decl));
-	  fprintf (f, "EXIT: Count");
-	  fprintf (f, " " HOST_WIDE_INT_PRINT_DEC
-		   " Frequency %d\n", (HOST_WIDE_INT) bb->count,
-		   bb->frequency);
-
-	}
-    }
-}
-
 /* Print profile info for all functions.  */
 static void
 ipcp_print_profile_data (FILE * f)
@@ -856,10 +736,6 @@ ipcp_print_profile_data (FILE * f)
   ipcp_print_func_profile_counts (f);
   fprintf (f, "\nCS COUNTS stage:\n");
   ipcp_print_call_profile_counts (f);
-  fprintf (f, "\nBB COUNTS and FREQUENCIES :\n");
-  ipcp_print_bb_profiles (f);
-  fprintf (f, "\nCFG EDGES COUNTS and PROBABILITIES :\n");
-  ipcp_print_edge_profiles (f);
 }
 
 /* Build and initialize ipa_replace_map struct according to LAT. This struct is
@@ -872,7 +748,7 @@ ipcp_create_replace_map (tree parm_tree, struct ipcp_lattice *lat)
   struct ipa_replace_map *replace_map;
   tree const_val;
 
-  replace_map = XCNEW (struct ipa_replace_map);
+  replace_map = GGC_NEW (struct ipa_replace_map);
   const_val = build_const_val (lat, TREE_TYPE (parm_tree));
   if (dump_file)
     {
@@ -959,54 +835,13 @@ ipcp_update_callgraph (void)
 	for (cs = node->callers; cs; cs = next)
 	  {
 	    next = cs->next_caller;
-	    if (ipcp_node_is_clone (cs->caller) || !ipcp_need_redirect_p (cs))
-	      {
-		gimple new_stmt;
-		gimple_stmt_iterator gsi;
-
-		current_function_decl = cs->caller->decl;
-	        push_cfun (DECL_STRUCT_FUNCTION (cs->caller->decl));
-		
-		new_stmt = gimple_call_copy_skip_args (cs->call_stmt,
-						       args_to_skip);
-		if (gimple_vdef (new_stmt))
-		  SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
-		gsi = gsi_for_stmt (cs->call_stmt);
-		gsi_replace (&gsi, new_stmt, true);
-		cgraph_set_call_stmt (cs, new_stmt);
-	        pop_cfun ();
-		current_function_decl = NULL;
-	      }
-	    else
+	    if (!ipcp_node_is_clone (cs->caller) && ipcp_need_redirect_p (cs))
 	      {
 		cgraph_redirect_edge_callee (cs, orig_node);
 		gimple_call_set_fndecl (cs->call_stmt, orig_node->decl);
 	      }
 	  }
       }
-}
-
-/* Update all cfg basic blocks in NODE according to SCALE.  */
-static void
-ipcp_update_bb_counts (struct cgraph_node *node, gcov_type scale)
-{
-  basic_block bb;
-
-  FOR_ALL_BB_FN (bb, DECL_STRUCT_FUNCTION (node->decl))
-    bb->count = bb->count * scale / REG_BR_PROB_BASE;
-}
-
-/* Update all cfg edges in NODE according to SCALE.  */
-static void
-ipcp_update_edges_counts (struct cgraph_node *node, gcov_type scale)
-{
-  basic_block bb;
-  edge_iterator ei;
-  edge e;
-
-  FOR_ALL_BB_FN (bb, DECL_STRUCT_FUNCTION (node->decl))
-    FOR_EACH_EDGE (e, ei, bb->succs)
-    e->count = e->count * scale / REG_BR_PROB_BASE;
 }
 
 /* Update profiling info for versioned functions and the functions they were
@@ -1032,10 +867,6 @@ ipcp_update_profiling (void)
 	    cs->count = cs->count * scale / REG_BR_PROB_BASE;
 	  for (cs = orig_node->callees; cs; cs = cs->next_callee)
 	    cs->count = cs->count * scale_complement / REG_BR_PROB_BASE;
-	  ipcp_update_bb_counts (node, scale);
-	  ipcp_update_bb_counts (orig_node, scale_complement);
-	  ipcp_update_edges_counts (node, scale);
-	  ipcp_update_edges_counts (orig_node, scale_complement);
 	}
     }
 }
@@ -1160,13 +991,13 @@ ipcp_insert_stage (void)
   struct cgraph_node *node, *node1 = NULL;
   int i;
   VEC (cgraph_edge_p, heap) * redirect_callers;
-  varray_type replace_trees;
+  VEC (ipa_replace_map_p,gc)* replace_trees;
   int node_callers, count;
   tree parm_tree;
   struct ipa_replace_map *replace_param;
   fibheap_t heap;
-  long overall_insns = 0, new_insns = 0;
-  long max_new_insns;
+  long overall_size = 0, new_size = 0;
+  long max_new_size;
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
@@ -1180,13 +1011,13 @@ ipcp_insert_stage (void)
       {
 	if (node->count > max_count)
 	  max_count = node->count;
-	overall_insns += node->local.inline_summary.self_insns;
+	overall_size += node->local.inline_summary.self_insns;
       }
 
-  max_new_insns = overall_insns;
-  if (max_new_insns < PARAM_VALUE (PARAM_LARGE_UNIT_INSNS))
-    max_new_insns = PARAM_VALUE (PARAM_LARGE_UNIT_INSNS);
-  max_new_insns = max_new_insns * PARAM_VALUE (PARAM_IPCP_UNIT_GROWTH) / 100 + 1;
+  max_new_size = overall_size;
+  if (max_new_size < PARAM_VALUE (PARAM_LARGE_UNIT_INSNS))
+    max_new_size = PARAM_VALUE (PARAM_LARGE_UNIT_INSNS);
+  max_new_size = max_new_size * PARAM_VALUE (PARAM_IPCP_UNIT_GROWTH) / 100 + 1;
 
   /* First collect all functions we proved to have constant arguments to heap.  */
   heap = fibheap_new ();
@@ -1220,7 +1051,7 @@ ipcp_insert_stage (void)
 
       growth = ipcp_estimate_growth (node);
 
-      if (new_insns + growth > max_new_insns)
+      if (new_size + growth > max_new_size)
 	break;
       if (growth
 	  && optimize_function_for_size_p (DECL_STRUCT_FUNCTION (node->decl)))
@@ -1230,7 +1061,7 @@ ipcp_insert_stage (void)
 	  continue;
 	}
 
-      new_insns += growth;
+      new_size += growth;
 
       /* Look if original function becomes dead after clonning.  */
       for (cs = node->callers; cs != NULL; cs = cs->next_caller)
@@ -1242,9 +1073,8 @@ ipcp_insert_stage (void)
       info = IPA_NODE_REF (node);
       count = ipa_get_param_count (info);
 
-      VARRAY_GENERIC_PTR_INIT (replace_trees, ipcp_const_param_count (node),
-				"replace_trees");
-      args_to_skip = BITMAP_ALLOC (NULL);
+      replace_trees = VEC_alloc (ipa_replace_map_p, gc, 1);
+      args_to_skip = BITMAP_GGC_ALLOC ();
       for (i = 0; i < count; i++)
 	{
 	  struct ipcp_lattice *lat = ipcp_get_lattice (info, i);
@@ -1263,7 +1093,7 @@ ipcp_insert_stage (void)
 	    {
 	      replace_param =
 		ipcp_create_replace_map (parm_tree, lat);
-	      VARRAY_PUSH_GENERIC_PTR (replace_trees, replace_param);
+	      VEC_safe_push (ipa_replace_map_p, gc, replace_trees, replace_param);
 	      bitmap_set_bit (args_to_skip, i);
 	    }
 	}
@@ -1279,20 +1109,20 @@ ipcp_insert_stage (void)
       /* Redirecting all the callers of the node to the
          new versioned node.  */
       node1 =
-	cgraph_function_versioning (node, redirect_callers, replace_trees,
-				    args_to_skip);
-      BITMAP_FREE (args_to_skip);
+	cgraph_create_virtual_clone (node, redirect_callers, replace_trees,
+				     args_to_skip);
+      args_to_skip = NULL;
       VEC_free (cgraph_edge_p, heap, redirect_callers);
-      VARRAY_CLEAR (replace_trees);
+      replace_trees = NULL;
+
       if (node1 == NULL)
 	continue;
       if (dump_file)
 	fprintf (dump_file, "versioned function %s with growth %i, overall %i\n",
-		 cgraph_node_name (node), (int)growth, (int)new_insns);
+		 cgraph_node_name (node), (int)growth, (int)new_size);
       ipcp_init_cloned_node (node, node1);
 
-      /* We've possibly introduced direct calls.  */
-      ipcp_update_cloned_node (node1);
+      /* TODO: We can use indirect inlning info to produce new calls.  */
 
       if (dump_file)
 	dump_function_to_file (node1->decl, dump_file, dump_flags);

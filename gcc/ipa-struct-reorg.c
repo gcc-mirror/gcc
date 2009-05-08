@@ -3641,7 +3641,7 @@ do_reorg_1 (void)
   bitmap_obstack_initialize (NULL);
 
   for (node = cgraph_nodes; node; node = node->next)
-    if (node->analyzed && node->decl && !node->next_clone)
+    if (node->analyzed && node->decl)
       {
 	push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 	current_function_decl = node->decl;
@@ -3809,8 +3809,7 @@ collect_data_accesses (void)
 	{
 	  struct function *func = DECL_STRUCT_FUNCTION (c_node->decl);
 
-	  if (!c_node->next_clone)
-	    collect_accesses_in_func (func);
+	  collect_accesses_in_func (func);
 	  exclude_alloc_and_field_accs (c_node);
 	}
     }

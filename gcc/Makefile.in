@@ -3342,7 +3342,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssa-propagate.c \
   $(srcdir)/tree-phinodes.c \
   $(srcdir)/ipa-reference.c \
-  $(srcdir)/tree-ssa-structalias.c $(srcdir)/tree-inline.c \
+  $(srcdir)/tree-ssa-structalias.c \
   $(srcdir)/tree-ssa-alias.h \
   @all_gtfiles@
 
