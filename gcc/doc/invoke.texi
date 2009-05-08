@@ -5554,8 +5554,8 @@ instructions and checks if the result can be simplified.  If loop unrolling
 is active, two passes are performed and the second is scheduled after
 loop unrolling.
 
-This option is enabled by default at optimization levels @option{-O2},
-@option{-O3}, @option{-Os}.
+This option is enabled by default at optimization levels @option{-O},
+@option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fomit-frame-pointer
 @opindex fomit-frame-pointer
