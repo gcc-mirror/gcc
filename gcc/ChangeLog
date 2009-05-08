@@ -1,3 +1,7 @@
+2009-05-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/spu/spu.c: Remove include of c-common.h.
+
 2009-05-07  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/39037
