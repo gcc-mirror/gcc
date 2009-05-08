@@ -342,7 +342,7 @@ build_call_a (tree function, int n, tree *argarray)
     current_function_returns_abnormally = 1;
 
   if (decl && TREE_DEPRECATED (decl))
-    warn_deprecated_use (decl);
+    warn_deprecated_use (decl, NULL_TREE);
   require_complete_eh_spec_types (fntype, decl);
 
   if (decl && DECL_CONSTRUCTOR_P (decl))
@@ -5457,7 +5457,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       /* Warn about deprecated virtual functions now, since we're about
 	 to throw away the decl.  */
       if (TREE_DEPRECATED (fn))
-	warn_deprecated_use (fn);
+	warn_deprecated_use (fn, NULL_TREE);
 
       argarray[0] = build_base_path (PLUS_EXPR, argarray[0], binfo, 1);
       if (TREE_SIDE_EFFECTS (argarray[0]))

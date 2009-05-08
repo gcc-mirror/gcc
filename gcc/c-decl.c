@@ -4220,7 +4220,7 @@ grokdeclarator (const struct c_declarator *declarator,
     decl_context = PARM;
 
   if (declspecs->deprecated_p && deprecated_state != DEPRECATED_SUPPRESS)
-    warn_deprecated_use (declspecs->type);
+    warn_deprecated_use (declspecs->type, declspecs->decl_attr);
 
   if ((decl_context == NORMAL || decl_context == FIELD)
       && current_scope == file_scope

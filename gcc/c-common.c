@@ -954,7 +954,7 @@ const struct attribute_spec c_common_attribute_table[] =
      to prevent its usage in source code.  */
   { "no vops",                0, 0, true,  false, false,
 			      handle_novops_attribute },
-  { "deprecated",             0, 0, false, false, false,
+  { "deprecated",             0, 1, false, false, false,
 			      handle_deprecated_attribute },
   { "vector_size",	      1, 1, false, true, false,
 			      handle_vector_size_attribute },
@@ -7179,12 +7179,20 @@ handle_novops_attribute (tree *node, tree ARG_UNUSED (name),
 
 static tree
 handle_deprecated_attribute (tree *node, tree name,
-			     tree ARG_UNUSED (args), int flags,
+			     tree args, int flags,
 			     bool *no_add_attrs)
 {
   tree type = NULL_TREE;
   int warn = 0;
   tree what = NULL_TREE;
+
+  if (!args)
+    *no_add_attrs = true;
+  else if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+    {
+      error ("deprecated message is not a string");
+      *no_add_attrs = true;
+    }
 
   if (DECL_P (*node))
     {

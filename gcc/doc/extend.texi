@@ -2065,6 +2065,7 @@ objects (@pxref{C++ Attributes}).
 These attributes are not currently implemented for Objective-C@.
 
 @item deprecated
+@itemx deprecated (@var{msg})
 @cindex @code{deprecated} attribute.
 The @code{deprecated} attribute results in a warning if the function
 is used anywhere in the source file.  This is useful when identifying
@@ -2080,7 +2081,9 @@ int old_fn ();
 int (*fn_ptr)() = old_fn;
 @end smallexample
 
-results in a warning on line 3 but not line 2.
+results in a warning on line 3 but not line 2.  The optional msg
+argument, which must be a string, will be printed in the warning if
+present.
 
 The @code{deprecated} attribute can also be used for variables and
 types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
@@ -3845,6 +3848,7 @@ These attributes override the default chosen by the
 @option{-fno-common} and @option{-fcommon} flags respectively.
 
 @item deprecated
+@itemx deprecated (@var{msg})
 @cindex @code{deprecated} attribute
 The @code{deprecated} attribute results in a warning if the variable
 is used anywhere in the source file.  This is useful when identifying
@@ -3860,7 +3864,9 @@ extern int old_var;
 int new_fn () @{ return old_var; @}
 @end smallexample
 
-results in a warning on line 3 but not line 2.
+results in a warning on line 3 but not line 2.  The optional msg
+argument, which must be a string, will be printed in the warning if
+present.
 
 The @code{deprecated} attribute can also be used for functions and
 types (@pxref{Function Attributes}, @pxref{Type Attributes}.)
@@ -4490,6 +4496,7 @@ not referenced, but contain constructors and destructors that have
 nontrivial bookkeeping functions.
 
 @item deprecated
+@itemx deprecated (@var{msg})
 The @code{deprecated} attribute results in a warning if the type
 is used anywhere in the source file.  This is useful when identifying
 types that are expected to be removed in a future version of a program.
@@ -4512,7 +4519,9 @@ T3 z __attribute__ ((deprecated));
 results in a warning on line 2 and 3 but not lines 4, 5, or 6.  No
 warning is issued for line 4 because T2 is not explicitly
 deprecated.  Line 5 has no warning because T3 is explicitly
-deprecated.  Similarly for line 6.
+deprecated.  Similarly for line 6.  The optional msg
+argument, which must be a string, will be printed in the warning if
+present.
 
 The @code{deprecated} attribute can also be used for functions and
 variables (@pxref{Function Attributes}, @pxref{Variable Attributes}.)
