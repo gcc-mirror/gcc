@@ -1,3 +1,8 @@
+2009-05-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39876
+	* gfortran.dg/intrinsic_3.f90: New.
+
 2009-05-07  Janis Johnson  <janis187@us.ibm.com>
 
 	PR c/39037

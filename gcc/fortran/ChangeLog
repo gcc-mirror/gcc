@@ -1,3 +1,9 @@
+2009-05-08  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39876
+	* intrinsic.c (gfc_is_intrinsic): Do not add the EXTERNAL attribute if
+	the symbol is a module procedure.
+
 2009-05-08  Tobias Burnus  <burnus@net-b.de>
 
 	* invoke.texi: Add do/recursion to the -fcheck= summary.
