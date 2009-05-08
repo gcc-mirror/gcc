@@ -1,3 +1,7 @@
+2009-05-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c: Do not include c-pragma.h.
+
 2009-05-07  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/spu/spu.c: Remove include of c-common.h.
