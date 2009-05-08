@@ -48,7 +48,6 @@
 #include "sched-int.h"
 #include "params.h"
 #include "assert.h"
-#include "c-common.h"
 #include "machmode.h"
 #include "gimple.h"
 #include "tm-constrs.h"
