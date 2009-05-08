@@ -964,6 +964,10 @@ GLIBCXX_3.4.12 {
     _ZSt27__set_once_functor_lock_ptrPSt11unique_lockISt5mutexE;
     _ZSt16__get_once_mutexv;
 
+    # throw_allocator
+    _ZN9__gnu_cxx20throw_allocator_base18do_check_allocated*;
+    _ZN9__gnu_cxx20throw_allocator_base15print_to_string*;
+
 } GLIBCXX_3.4.11;
 
 # Symbols in the support library (libsupc++) have their own tag.

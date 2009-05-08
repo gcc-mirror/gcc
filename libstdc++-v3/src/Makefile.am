@@ -182,6 +182,7 @@ sources = \
 	streambuf-inst.cc \
 	streambuf.cc \
 	string-inst.cc \
+	throw_allocator.cc \
 	valarray-inst.cc \
 	wlocale-inst.cc \
 	wstring-inst.cc \

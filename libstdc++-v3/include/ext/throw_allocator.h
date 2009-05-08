@@ -64,13 +64,24 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     std::tr1::mt19937 _M_generator;
 
   public:
-    twister_rand_gen(unsigned int s = static_cast<unsigned int>(std::time(0)));
-    
+    twister_rand_gen(unsigned int seed =
+		     static_cast<unsigned int>(std::time(0)))
+    : _M_generator(seed) { }
+
     void
-    init(unsigned int);
-    
+    init(unsigned int seed)
+    { _M_generator.seed(seed); }
+
     double
-    get_prob();
+    get_prob()
+    {
+      const double min = _M_generator.min();
+      const double res = static_cast<const double>(_M_generator() - min);
+      const double range = static_cast<const double>(_M_generator.max() - min);
+      const double ret = res / range;
+      _GLIBCXX_DEBUG_ASSERT(ret >= 0 && ret <= 1);
+      return ret;
+    }
   };
 
   /** 
@@ -96,30 +107,40 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   {
   public:
     void
-    init(unsigned long seed);
+    init(unsigned long seed)
+    { rand_gen().init(seed); }
 
     static void
-    set_throw_prob(double throw_prob);
+    set_throw_prob(double t_p)
+    { throw_prob() = t_p; }
 
     static double
-    get_throw_prob();
+    get_throw_prob()
+    { return throw_prob(); }
 
     static void
-    set_label(size_t l);
+    set_label(size_t l)
+    { label() = l; }
+
+    static size_t
+    get_label()
+    { return label(); }
 
     static bool
-    empty();
+    empty()
+    { return map().empty(); }
 
     struct group_throw_prob_adjustor
     {
-      group_throw_prob_adjustor(size_t size) : _M_throw_prob_orig(_S_throw_prob)
+      group_throw_prob_adjustor(size_t size)
+      : _M_throw_prob_orig(get_throw_prob())
       {
-	_S_throw_prob =
-	  1 - std::pow(double(1 - _S_throw_prob), double(0.5 / (size + 1)));
+	set_throw_prob(1 - std::pow(double(1 - get_throw_prob()),
+				    double(0.5 / (size + 1))));
       }
 
       ~group_throw_prob_adjustor()
-      { _S_throw_prob = _M_throw_prob_orig; }
+      { set_throw_prob(_M_throw_prob_orig); }
 
     private:
       const double _M_throw_prob_orig;
@@ -127,11 +148,12 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
     struct zero_throw_prob_adjustor
     {
-      zero_throw_prob_adjustor() : _M_throw_prob_orig(_S_throw_prob)
-      { _S_throw_prob = 0; }
+      zero_throw_prob_adjustor()
+      : _M_throw_prob_orig(get_throw_prob())
+      { set_throw_prob(0); }
 
       ~zero_throw_prob_adjustor()
-      { _S_throw_prob = _M_throw_prob_orig; }
+      { set_throw_prob(_M_throw_prob_orig); }
 
     private:
       const double _M_throw_prob_orig;
@@ -139,22 +161,43 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 
   protected:
     static void
-    insert(void*, size_t);
+    insert(void* p, size_t size)
+    {
+      const_iterator found_it = map().find(p);
+      if (found_it != map().end())
+	{
+	  std::string error("throw_allocator_base::insert double insert!\n");
+	  print_to_string(error, make_entry(p, size));
+	  print_to_string(error, *found_it);
+	  std::__throw_logic_error(error.c_str());
+	}
+      map().insert(make_entry(p, size));
+    }
 
     static void
-    erase(void*, size_t);
+    erase(void* p, size_t size)
+    {
+      check_allocated(p, size);
+      map().erase(p);
+    } 
 
     static void
-    throw_conditionally();
+    throw_conditionally()
+    {
+      if (rand_gen().get_prob() < get_throw_prob())
+	__throw_forced_exception_error();
+    }  
 
     // See if a particular address and size has been allocated by this
     // allocator.
     static void
-    check_allocated(void*, size_t);
+    check_allocated(void* p, size_t size)
+    { do_check_allocated(map().find(p), map().end(), p, size); }
 
     // See if a given label has been allocated by this allocator.
     static void
-    check_allocated(size_t);
+    check_allocated(size_t label)
+    { do_check_allocated(map().begin(), map().end(), label); }
 
   private:
     typedef std::pair<size_t, size_t> 		alloc_data_type;
@@ -167,19 +210,58 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     operator<<(std::ostream&, const throw_allocator_base&);
 
     static entry_type
-    make_entry(void*, size_t);
+    make_entry(void* p, size_t size)
+    { return std::make_pair(p, alloc_data_type(get_label(), size)); }
 
     static void
-    print_to_string(std::string&);
+    do_check_allocated(const_iterator, const_iterator, void*, size_t);
+
+    static void
+    do_check_allocated(const_iterator, const_iterator, size_t);
 
     static void
     print_to_string(std::string&, const_reference);
 
-    static twister_rand_gen 	_S_g;
-    static map_type 		_S_map;
-    static double 		_S_throw_prob;
-    static size_t 		_S_label;
+    static map_type&
+    map()
+    {
+      static map_type mp;
+      return mp;
+    }
+
+    static twister_rand_gen&
+    rand_gen()
+    {
+      static twister_rand_gen rg;
+      return rg;
+    }
+
+    static double&
+    throw_prob()
+    {
+      static double tp;
+      return tp;
+    }
+
+    static size_t&
+    label()
+    {
+      static size_t ll;
+      return ll;
+    }
   };
+
+  inline std::ostream& 
+  operator<<(std::ostream& os, const throw_allocator_base&)
+  {
+    std::string error;
+    typedef throw_allocator_base alloc_type;
+    alloc_type::const_iterator beg = alloc_type::map().begin();
+    alloc_type::const_iterator end = alloc_type::map().end();
+    for (; beg != end; ++beg)
+      alloc_type::print_to_string(error, *beg);
+    return os << error;
+  }
 
   /** 
    *  @brief Allocator class with logging and exception control.
@@ -272,176 +354,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     inline bool
     operator!=(const throw_allocator<T>&, const throw_allocator<T>&)
     { return false; }
-
-  std::ostream& 
-  operator<<(std::ostream& os, const throw_allocator_base& alloc)
-  {
-    std::string error;
-    throw_allocator_base::print_to_string(error);
-    os << error;
-    return os;
-  }
-
-  // XXX Should be in .cc.
-  twister_rand_gen::
-  twister_rand_gen(unsigned int seed) : _M_generator(seed)  { }
-
-  void
-  twister_rand_gen::
-  init(unsigned int seed)
-  { _M_generator.seed(seed); }
-
-  double
-  twister_rand_gen::
-  get_prob()
-  {
-    const double min = _M_generator.min();
-    const double res = static_cast<const double>(_M_generator() - min);
-    const double range = static_cast<const double>(_M_generator.max() - min);
-    const double ret = res / range;
-    _GLIBCXX_DEBUG_ASSERT(ret >= 0 && ret <= 1);
-    return ret;
-  }
-
-  twister_rand_gen throw_allocator_base::_S_g;
-
-  throw_allocator_base::map_type 
-  throw_allocator_base::_S_map;
-
-  double throw_allocator_base::_S_throw_prob;
-
-  size_t throw_allocator_base::_S_label = 0;
-
-  throw_allocator_base::entry_type
-  throw_allocator_base::make_entry(void* p, size_t size)
-  { return std::make_pair(p, alloc_data_type(_S_label, size)); }
-
-  void
-  throw_allocator_base::init(unsigned long seed)
-  { _S_g.init(seed); }
-
-  void
-  throw_allocator_base::set_throw_prob(double throw_prob)
-  { _S_throw_prob = throw_prob; }
-
-  double
-  throw_allocator_base::get_throw_prob()
-  { return _S_throw_prob; }
-
-  void
-  throw_allocator_base::set_label(size_t l)
-  { _S_label = l; }
-
-  void
-  throw_allocator_base::insert(void* p, size_t size)
-  {
-    const_iterator found_it = _S_map.find(p);
-    if (found_it != _S_map.end())
-      {
-	std::string error("throw_allocator_base::insert");
-	error += "double insert!";
-	error += '\n';
-	print_to_string(error, make_entry(p, size));
-	print_to_string(error, *found_it);
-	std::__throw_logic_error(error.c_str());
-      }
-    _S_map.insert(make_entry(p, size));
-  }
-
-  bool
-  throw_allocator_base::empty()
-  { return _S_map.empty(); }
-
-  void
-  throw_allocator_base::erase(void* p, size_t size)
-  {
-    check_allocated(p, size);
-    _S_map.erase(p);
-  }
-
-  void
-  throw_allocator_base::check_allocated(void* p, size_t size)
-  {
-    const_iterator found_it = _S_map.find(p);
-    if (found_it == _S_map.end())
-      {
-	std::string error("throw_allocator_base::check_allocated by value ");
-	error += "null erase!";
-	error += '\n';
-	print_to_string(error, make_entry(p, size));
-	std::__throw_logic_error(error.c_str());
-      }
-
-    if (found_it->second.second != size)
-      {
-	std::string error("throw_allocator_base::check_allocated by value ");
-	error += "wrong-size erase!";
-	error += '\n';
-	print_to_string(error, make_entry(p, size));
-	print_to_string(error, *found_it);
-	std::__throw_logic_error(error.c_str());
-      }
-  }
-
-  void
-  throw_allocator_base::check_allocated(size_t label)
-  {
-    std::string found;
-    const_iterator it = _S_map.begin();
-    while (it != _S_map.end())
-      {
-	if (it->second.first == label)
-	  {
-	    print_to_string(found, *it);
-	  }
-	++it;
-      }
-
-    if (!found.empty())
-      {
-	std::string error("throw_allocator_base::check_allocated by label ");
-	error += '\n';
-	error += found;
-	std::__throw_logic_error(error.c_str());
-      }	
-  }
-
-  void
-  throw_allocator_base::throw_conditionally()
-  {
-    if (_S_g.get_prob() < _S_throw_prob)
-      __throw_forced_exception_error();
-  }
-
-  void
-  throw_allocator_base::print_to_string(std::string& s)
-  {
-    const_iterator begin = throw_allocator_base::_S_map.begin();
-    const_iterator end = throw_allocator_base::_S_map.end();
-    for (; begin != end; ++begin)
-      print_to_string(s, *begin);
-  }
-
-  void
-  throw_allocator_base::print_to_string(std::string& s, const_reference ref)
-  {
-    char buf[40];
-    const char tab('\t');
-    s += "address: ";
-    __builtin_sprintf(buf, "%p", ref.first);
-    s += buf;
-    s += tab;
-    s += "label: ";
-    unsigned long l = static_cast<unsigned long>(ref.second.first);
-    __builtin_sprintf(buf, "%lu", l);
-    s += buf;
-    s += tab;
-    s += "size: ";
-    l = static_cast<unsigned long>(ref.second.second);
-    __builtin_sprintf(buf, "%lu", l);
-    s += buf;
-    s += '\n';
-  }
 
 _GLIBCXX_END_NAMESPACE
 
