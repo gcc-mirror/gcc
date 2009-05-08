@@ -10647,13 +10647,18 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      && !HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0)))
 	      && real_zerop (arg1))
 	    return omit_one_operand (type, arg1, arg0);
-	  /* In IEEE floating point, x*1 is not equivalent to x for snans.  */
+	  /* In IEEE floating point, x*1 is not equivalent to x for snans.
+	     Likewise for complex arithmetic with signed zeros.  */
 	  if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
+	      && (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0)))
+		  || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg0)))
 	      && real_onep (arg1))
 	    return non_lvalue (fold_convert (type, arg0));
 
 	  /* Transform x * -1.0 into -x.  */
 	  if (!HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0)))
+	      && (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg0)))
+		  || !COMPLEX_FLOAT_TYPE_P (TREE_TYPE (arg0)))
 	      && real_minus_onep (arg1))
 	    return fold_convert (type, negate_expr (arg0));
 
