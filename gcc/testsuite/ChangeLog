@@ -1,3 +1,8 @@
+2009-05-08  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/torture/complex-sign-mul-minus-one.c,
+	gcc.dg/torture/complex-sign-mul-one.c: New tests.
+
 2009-05-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/36892
