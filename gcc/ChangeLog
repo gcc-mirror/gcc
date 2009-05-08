@@ -1,3 +1,8 @@
+2009-05-08  Michael Eager <eager@eagercon.com>
+
+	* config/rs6000/rs6000.md (*movdf_softfloat32): replace
+	!TARGET_DOUBLE_FLOAT with TARGET_SINGLE_FLOAT.
+
 2009-05-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40062
