@@ -1,3 +1,9 @@
+2009-05-08  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40062
+	* tree-scalar-evolution.c (follow_ssa_edge_in_condition_phi):
+	Avoid exponential behavior.
+
 2009-05-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/33928
