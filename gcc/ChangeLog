@@ -1,3 +1,25 @@
+2009-05-08  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR rtl-optimization/33928
+	PR 26854
+	* fwprop.c (use_def_ref, get_def_for_use, bitmap_only_bit_bitween,
+	process_uses, build_single_def_use_links): New.
+	(update_df): Update use_def_ref.
+	(forward_propagate_into): Use get_def_for_use instead of use-def
+	chains.
+	(fwprop_init): Call build_single_def_use_links and let it initialize
+	dataflow.
+	(fwprop_done): Free use_def_ref.
+	(fwprop_addr): Eliminate duplicate call to df_set_flags.
+	* df-problems.c (df_rd_simulate_artificial_defs_at_top, 
+	df_rd_simulate_one_insn): New.
+	(df_rd_bb_local_compute_process_def): Update head comment.
+	(df_chain_create_bb): Use the new RD simulation functions.
+	* df.h (df_rd_simulate_artificial_defs_at_top, 
+	df_rd_simulate_one_insn): New.
+	* opts.c (decode_options): Enable fwprop at -O1.
+	* doc/invoke.texi (-fforward-propagate): Document this.
+
 2009-05-08  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/24581

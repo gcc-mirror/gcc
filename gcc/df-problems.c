@@ -316,7 +316,61 @@ df_rd_alloc (bitmap all_blocks)
 }
 
 
-/* Process a list of DEFs for df_rd_bb_local_compute.  */
+/* Add the effect of the top artificial defs of BB to the reaching definitions
+   bitmap LOCAL_RD.  */
+
+void
+df_rd_simulate_artificial_defs_at_top (basic_block bb, bitmap local_rd)
+{
+  int bb_index = bb->index;
+  df_ref *def_rec;
+  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
+    {
+      df_ref def = *def_rec;
+      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
+	{
+	  unsigned int dregno = DF_REF_REGNO (def);
+	  if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
+	    bitmap_clear_range (local_rd, 
+				DF_DEFS_BEGIN (dregno), 
+				DF_DEFS_COUNT (dregno));
+	  bitmap_set_bit (local_rd, DF_REF_ID (def));
+	}
+    }
+}
+
+/* Add the effect of the defs of INSN to the reaching definitions bitmap
+   LOCAL_RD.  */
+
+void
+df_rd_simulate_one_insn (basic_block bb ATTRIBUTE_UNUSED, rtx insn,
+			 bitmap local_rd)
+{
+  unsigned uid = INSN_UID (insn);
+  df_ref *def_rec;
+
+  for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
+    {
+      df_ref def = *def_rec;
+      unsigned int dregno = DF_REF_REGNO (def);
+      if ((!(df->changeable_flags & DF_NO_HARD_REGS))
+          || (dregno >= FIRST_PSEUDO_REGISTER))
+        {
+          if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
+	    bitmap_clear_range (local_rd, 
+				DF_DEFS_BEGIN (dregno), 
+				DF_DEFS_COUNT (dregno));
+	  if (!(DF_REF_FLAGS (def) 
+		& (DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER)))
+	    bitmap_set_bit (local_rd, DF_REF_ID (def));
+	}
+    }
+}
+
+/* Process a list of DEFs for df_rd_bb_local_compute.  This is a bit
+   more complicated than just simulating, because we must produce the
+   gen and kill sets and hence deal with the two possible representations
+   of kill sets.   */
 
 static void
 df_rd_bb_local_compute_process_def (struct df_rd_bb_info *bb_info, 
@@ -2076,7 +2130,6 @@ df_chain_create_bb (unsigned int bb_index)
   struct df_rd_bb_info *bb_info = df_rd_get_bb_info (bb_index);
   rtx insn;
   bitmap cpy = BITMAP_ALLOC (NULL);
-  df_ref *def_rec;
 
   bitmap_copy (cpy, bb_info->in);
   bitmap_set_bit (df_chain->out_of_date_transfer_functions, bb_index);
@@ -2095,57 +2148,23 @@ df_chain_create_bb (unsigned int bb_index)
 				    DF_REF_AT_TOP);
 #endif
 
-  for (def_rec = df_get_artificial_defs (bb_index); *def_rec; def_rec++)
-    {
-      df_ref def = *def_rec;
-      if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
-	{
-	  unsigned int dregno = DF_REF_REGNO (def);
-	  if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-	    bitmap_clear_range (cpy, 
-				DF_DEFS_BEGIN (dregno), 
-				DF_DEFS_COUNT (dregno));
-	  bitmap_set_bit (cpy, DF_REF_ID (def));
-	}
-    }
+  df_rd_simulate_artificial_defs_at_top (bb, cpy);
   
   /* Process the regular instructions next.  */
   FOR_BB_INSNS (bb, insn)
-    {
-      df_ref *def_rec;
-      unsigned int uid = INSN_UID (insn);
+    if (INSN_P (insn))
+      {
+        unsigned int uid = INSN_UID (insn);
 
-      if (!INSN_P (insn))
-	continue;
+        /* First scan the uses and link them up with the defs that remain
+	   in the cpy vector.  */
+        df_chain_create_bb_process_use (cpy, DF_INSN_UID_USES (uid), 0);
+        if (df->changeable_flags & DF_EQ_NOTES)
+	  df_chain_create_bb_process_use (cpy, DF_INSN_UID_EQ_USES (uid), 0);
 
-      /* Now scan the uses and link them up with the defs that remain
-	 in the cpy vector.  */
-      
-      df_chain_create_bb_process_use (cpy, DF_INSN_UID_USES (uid), 0);
-
-      if (df->changeable_flags & DF_EQ_NOTES)
-	df_chain_create_bb_process_use (cpy, DF_INSN_UID_EQ_USES (uid), 0);
-
-
-      /* Since we are going forwards, process the defs second.  This
-         pass only changes the bits in cpy.  */
-      for (def_rec = DF_INSN_UID_DEFS (uid); *def_rec; def_rec++)
-	{
-	  df_ref def = *def_rec;
-	  unsigned int dregno = DF_REF_REGNO (def);
-	  if ((!(df->changeable_flags & DF_NO_HARD_REGS))
-	      || (dregno >= FIRST_PSEUDO_REGISTER))
-	    {
-	      if (!(DF_REF_FLAGS (def) & (DF_REF_PARTIAL | DF_REF_CONDITIONAL)))
-		bitmap_clear_range (cpy, 
-				    DF_DEFS_BEGIN (dregno), 
-				    DF_DEFS_COUNT (dregno));
-	      if (!(DF_REF_FLAGS (def) 
-		    & (DF_REF_MUST_CLOBBER | DF_REF_MAY_CLOBBER)))
-		bitmap_set_bit (cpy, DF_REF_ID (def));
-	    }
-	}
-    }
+        /* Since we are going forwards, process the defs second.  */
+        df_rd_simulate_one_insn (bb, insn, cpy);
+      }
 
   /* Create the chains for the artificial uses of the hard registers
      at the end of the block.  */

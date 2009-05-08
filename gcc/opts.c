@@ -848,6 +848,7 @@ decode_options (unsigned int argc, const char **argv)
 #endif
   flag_guess_branch_prob = opt1;
   flag_cprop_registers = opt1;
+  flag_forward_propagate = opt1;
   flag_if_conversion = opt1;
   flag_if_conversion2 = opt1;
   flag_ipa_pure_const = opt1;
@@ -873,7 +874,6 @@ decode_options (unsigned int argc, const char **argv)
   flag_thread_jumps = opt2;
   flag_crossjumping = opt2;
   flag_optimize_sibling_calls = opt2;
-  flag_forward_propagate = opt2;
   flag_cse_follow_jumps = opt2;
   flag_gcse = opt2;
   flag_expensive_optimizations = opt2;
