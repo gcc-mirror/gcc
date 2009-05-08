@@ -7,8 +7,8 @@
 
 #define DOT2 43680
 
-unsigned short X[N] __attribute__ ((__aligned__(16)));
-unsigned short Y[N] __attribute__ ((__aligned__(16)));
+unsigned short X[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+unsigned short Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
 /* short->int->int dot product. 
    Currently not detected as a dot-product pattern: the multiplication 

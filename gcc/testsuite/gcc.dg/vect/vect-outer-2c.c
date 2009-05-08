@@ -4,7 +4,7 @@
 #include "tree-vect.h"
 
 #define N 40
-float image[2*N][2*N][N] __attribute__ ((__aligned__(16)));
+float image[2*N][2*N][N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
 __attribute__ ((noinline)) void
 foo (){

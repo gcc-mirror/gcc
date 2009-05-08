@@ -5,8 +5,8 @@
 
 #define N 64
 
-short X[N] __attribute__ ((__aligned__(16)));
-short Y[N] __attribute__ ((__aligned__(16)));
+short X[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+short Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 int result[N];
 
 /* short->int widening-mult */

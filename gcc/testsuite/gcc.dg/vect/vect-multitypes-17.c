@@ -5,9 +5,9 @@
 
 #define N 64
 
-unsigned char uX[N] __attribute__ ((__aligned__(16))) = {16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1};
+unsigned char uX[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1};
 unsigned char uresultX[N];
-unsigned long long uY[N] __attribute__ ((__aligned__(16))) = {16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1};
+unsigned long long uY[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1};
 unsigned char uresultY[N];
 
 /* Unsigned type demotion (si->qi) */

@@ -6,7 +6,7 @@ int
 main (void)
 {
   int i;
-  long x[12] __attribute__((aligned(16)));
+  long x[12] __attribute__((aligned(__BIGGEST_ALIGNMENT__)));
 
   x[0] = 1;
   for (i = 0; i < 12; i++)

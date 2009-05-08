@@ -7,10 +7,10 @@
 #define N 64
 #define MAX 42
 
-float A[N] __attribute__ ((__aligned__(16)));
-float B[N] __attribute__ ((__aligned__(16)));
-float C[N] __attribute__ ((__aligned__(16)));
-float D[N] __attribute__ ((__aligned__(16)));
+float A[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+float B[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+float C[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+float D[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 extern void abort(void); 
 
 __attribute__ ((noinline))

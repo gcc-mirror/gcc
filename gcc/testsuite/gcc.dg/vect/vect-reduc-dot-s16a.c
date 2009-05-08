@@ -6,8 +6,8 @@
 #define N 64
 #define DOT 43680
 
-signed short X[N] __attribute__ ((__aligned__(16)));
-signed short Y[N] __attribute__ ((__aligned__(16)));
+signed short X[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+signed short Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
 /* short->int->int dot product.
    Detected as a dot-product pattern.

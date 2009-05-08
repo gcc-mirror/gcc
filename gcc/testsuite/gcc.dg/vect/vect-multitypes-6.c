@@ -5,17 +5,17 @@
 
 #define N 32
 
-unsigned int ic[N] __attribute__ ((__aligned__(16))) = 
+unsigned int ic[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = 
 	{0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-unsigned int ib[N] __attribute__ ((__aligned__(16))) = 
+unsigned int ib[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = 
 	{0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-unsigned short sc[N] __attribute__ ((__aligned__(16))) = 
+unsigned short sc[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = 
 	{0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-unsigned short sb[N] __attribute__ ((__aligned__(16))) = 
+unsigned short sb[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = 
 	{0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-unsigned char cc[N] __attribute__ ((__aligned__(16))) = 
+unsigned char cc[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = 
 	{0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-unsigned char cb[N] __attribute__ ((__aligned__(16))) = 
+unsigned char cb[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = 
 	{0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 
 __attribute__ ((noinline))

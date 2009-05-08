@@ -10,7 +10,7 @@
    the expression that represents the first location accessed - is
    more involved than just an ssa_name.  */
 
-int ib[N+OFF] __attribute__ ((__aligned__(16))) = {0, 1, 3, 5, 7, 11, 13, 17, 0, 2, 6, 10, 14, 22, 26, 34};
+int ib[N+OFF] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {0, 1, 3, 5, 7, 11, 13, 17, 0, 2, 6, 10, 14, 22, 26, 34};
 int off = 8;
 
 __attribute__ ((noinline))

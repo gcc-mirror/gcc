@@ -3,7 +3,7 @@
 #include "tree-vect.h"
 
 #define N 40
-float image[N][N] __attribute__ ((__aligned__(16)));
+float image[N][N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 float out[N];
 
 /* Outer-loop vectoriation.  */

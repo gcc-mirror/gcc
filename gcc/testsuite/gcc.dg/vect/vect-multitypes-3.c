@@ -5,11 +5,11 @@
 
 #define N 32
 
-int ib[N] __attribute__ ((__aligned__(16))) = 
+int ib[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = 
 	{0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-short sb[N] __attribute__ ((__aligned__(16))) = 
+short sb[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = 
 	{0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
-char cb[N] __attribute__ ((__aligned__(16))) = 
+char cb[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = 
 	{0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45};
 
 __attribute__ ((noinline)) 

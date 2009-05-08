@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 
 #define N 64
-signed short image[N][N] __attribute__ ((__aligned__(16)));
-signed short block[N][N] __attribute__ ((__aligned__(16)));
-signed short out[N] __attribute__ ((__aligned__(16)));
+signed short image[N][N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+signed short block[N][N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
+signed short out[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
 /* Can't do outer-loop vectorization because of non-consecutive access. */
 

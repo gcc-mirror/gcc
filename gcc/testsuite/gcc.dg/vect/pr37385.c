@@ -4,7 +4,7 @@
 
 typedef int int_t;
 typedef void (*fun_t) (int);
-fun_t fun_tab[400] __attribute__ ((__aligned__(16)));
+fun_t fun_tab[400] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 
 void foo (int_t a);
 
