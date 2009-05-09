@@ -85,12 +85,6 @@ struct GTY(()) eh_region
     struct eh_region_u_throw {
       tree type;
     } GTY ((tag ("ERT_THROW"))) eh_throw;
-
-    /* Retain the cleanup expression even after expansion so that
-       we can match up fixup regions.  */
-    struct eh_region_u_cleanup {
-      struct eh_region *prev_try;
-    } GTY ((tag ("ERT_CLEANUP"))) cleanup;
   } GTY ((desc ("%0.type"))) u;
 
   /* Entry point for this region's handler before landing pads are built.  */
@@ -185,8 +179,7 @@ extern int duplicate_eh_regions (struct function *, duplicate_eh_regions_map,
 extern void sjlj_emit_function_exit_after (rtx);
 extern void default_init_unwind_resume_libfunc (void);
 
-extern struct eh_region *gen_eh_region_cleanup (struct eh_region *,
-						struct eh_region *);
+extern struct eh_region *gen_eh_region_cleanup (struct eh_region *);
 extern struct eh_region *gen_eh_region_try (struct eh_region *);
 extern struct eh_region *gen_eh_region_catch (struct eh_region *, tree);
 extern struct eh_region *gen_eh_region_allowed (struct eh_region *, tree);
