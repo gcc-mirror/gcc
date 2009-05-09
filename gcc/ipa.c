@@ -92,6 +92,21 @@ cgraph_postorder (struct cgraph_node **order)
   return order_pos;
 }
 
+/* Look for all functions inlined to NODE and update their inlined_to pointers
+   to INLINED_TO.  */
+
+static void
+update_inlined_to_pointer (struct cgraph_node *node, struct cgraph_node *inlined_to)
+{
+  struct cgraph_edge *e;
+  for (e = node->callees; e; e = e->next_callee)
+    if (e->callee->global.inlined_to)
+      {
+        e->callee->global.inlined_to = inlined_to;
+	update_inlined_to_pointer (e->callee, inlined_to);
+      }
+}
+
 /* Perform reachability analysis and reclaim all unreachable nodes.
    If BEFORE_INLINING_P is true this function is called before inlining
    decisions has been made.  If BEFORE_INLINING_P is false this function also 
@@ -214,7 +229,8 @@ cgraph_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  && !node->callers)
 	{
 	  gcc_assert (node->clones);
-	  node->global.inlined_to = false;
+	  node->global.inlined_to = NULL;
+	  update_inlined_to_pointer (node, node);
 	}
       node->aux = NULL;
     }
