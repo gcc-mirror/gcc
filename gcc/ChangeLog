@@ -1,5 +1,11 @@
 2009-05-09  Jan Hubicka  <jh@suse.cz>
 
+	PR bootstrap/40082
+	* ipa.c (update_inlined_to_pointer): New function.
+	(cgraph_remove_unreachable_nodes): Use it.
+
+2009-05-09  Jan Hubicka  <jh@suse.cz>
+
 	* tree-eh.c (struct leh_state): Remove prev_try.
 	(lower_try_finally, lower_catch, lower_eh_filter, lower_cleanup): Do
 	not track prev_try.
