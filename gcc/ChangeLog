@@ -1,5 +1,11 @@
 2009-05-09  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/40080
+	* cgraphunit.c (cgraph_materialize_all_clones): Do not redirect
+	indirect calls; verify cgraph afterwards.
+
+2009-05-09  Jan Hubicka  <jh@suse.cz>
+
 	PR bootstrap/40082
 	* ipa.c (update_inlined_to_pointer): New function.
 	(cgraph_remove_unreachable_nodes): Use it.

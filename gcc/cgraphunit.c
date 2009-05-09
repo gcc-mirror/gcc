@@ -1762,7 +1762,12 @@ cgraph_materialize_all_clones (void)
 	for (e = node->callees; e; e = e->next_callee)
 	  {
 	    tree decl = gimple_call_fndecl (e->call_stmt);
-	    if (decl != e->callee->decl)
+	    /* When function gets inlined, indirect inlining might've invented
+	       new edge for orginally indirect stmt.  Since we are not
+	       preserving clones in the original form, we must not update here
+	       since other inline clones don't need to contain call to the same
+	       call.  Inliner will do the substitution for us later.  */
+	    if (decl && decl != e->callee->decl)
 	      {
 		gimple new_stmt;
 		gimple_stmt_iterator gsi;
@@ -1808,6 +1813,9 @@ cgraph_materialize_all_clones (void)
         verify_cgraph_node (node);
 #endif
       }
+#ifdef ENABLE_CHECKING
+  verify_cgraph ();
+#endif
   cgraph_remove_unreachable_nodes (false, cgraph_dump_file);
 }
 
