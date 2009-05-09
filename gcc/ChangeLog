@@ -144,14 +144,14 @@
 2009-05-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/33928
-        * loop-invariant.c (struct use): Add addr_use_p.
-        (struct def): Add n_addr_uses.
-        (struct invariant): Add cheap_address.
-        (create_new_invariant): Set cheap_address.
-        (record_use): Accept df_ref.  Set addr_use_p and update n_addr_uses.
-        (record_uses): Pass df_ref to record_use.
-        (get_inv_cost): Do not add inv->cost to comp_cost for cheap addresses used
-	only as such.
+	* loop-invariant.c (struct use): Add addr_use_p.
+	(struct def): Add n_addr_uses.
+	(struct invariant): Add cheap_address.
+	(create_new_invariant): Set cheap_address.
+	(record_use): Accept df_ref.  Set addr_use_p and update n_addr_uses.
+	(record_uses): Pass df_ref to record_use.
+	(get_inv_cost): Do not add inv->cost to comp_cost for cheap addresses
+	used only as such.
 
 2009-05-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
@@ -200,7 +200,7 @@
 
 	* doc/invoke.texi (Debugging Options): Document change of debugging
 	dump location.
-        * opts.c (decode_options): Make dump_base_name relative to
+	* opts.c (decode_options): Make dump_base_name relative to
 	aux_base_name directory.
 
 2009-05-07  Hariharan Sandanagobalane <hariharan@picochip.com>
@@ -459,7 +459,7 @@
 
 2009-05-04  Paolo Bonzini  <bonzini@gnu.org>
 
- 	* doc/tm.texi (LEGITIMIZE_ADDRESS): Revise documentation.
+	* doc/tm.texi (LEGITIMIZE_ADDRESS): Revise documentation.
 	* gcc/defaults.h (LEGITIMIZE_ADDRESS): Delete.
 	* gcc/explow.c (memory_address): Use target hook.
 	* gcc/targhooks.c (default_legitimize_address): New.
