@@ -139,7 +139,7 @@
 2009-05-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR rtl-optimization/33928
-        * loop-invariant.c (record_use): Fix && vs. || mishap.
+	* loop-invariant.c (record_use): Fix && vs. || mishap.
 
 2009-05-08  Paolo Bonzini  <bonzini@gnu.org>
 
@@ -243,7 +243,7 @@
 2009-05-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* doc/md.texi (Standard Pattern Names For Generation) [sync_nand]:
-	Remove wrong description of "nand" functionality.
+	Remove wrong description of "nand" operation.
 
 2009-05-06  Richard Guenther  <rguenther@suse.de>
 	    Adam Nemet  <anemet@caviumnetworks.com>
