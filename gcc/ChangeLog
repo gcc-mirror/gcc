@@ -13,26 +13,28 @@
 
 2009-05-08  Jan Hubicka  <jh@suse.cz>
 
-	* cgraphbuild.c (compute_call_stmt_bb_frequency): Accept function argument;
-	handle correctly when profile is absent.
+	* cgraphbuild.c (compute_call_stmt_bb_frequency): Accept function
+	argument; handle correctly when profile is absent.
 	(build_cgraph_edges): Update.
 	(rebuild_cgraph_edges): Update.
-	* cgraph.c: Do not include varrau.h 
-	(cgraph_set_call_stmt_including_clones, cgraph_create_edge_including_clones):
-	New function
-	(cgraph_update_edges_for_call_stmt_node): New stati cfunction.
+	* cgraph.c: Do not include varray.h.
+	(cgraph_set_call_stmt_including_clones): New function.
+	(cgraph_create_edge_including_clones): Likewise
+	(cgraph_update_edges_for_call_stmt_node): New static cfunction.
 	(cgraph_update_edges_for_call_stmt): Handle clones.
 	(cgraph_remove_node): Handle clone tree.
 	(cgraph_remove_node_and_inline_clones): New function.
 	(dump_cgraph_node): Dump clone tree.
 	(cgraph_clone_node): Handle clone tree.
-	(clone_function_name): Bring here from tree-inline.c
+	(clone_function_name): Bring here from tree-inline.c.
 	(cgraph_create_virtual_clone): New function.
-	* cgraph.h (ipa_replace_map): Move ehre from ipa.h
-	(cgraph_clone_info): New function
+	* cgraph.h (ipa_replace_map): Move here from ipa.h.
+	(cgraph_clone_info): New function.
 	(strut cgraph_node): Add clone_info and new clone tree pointers.
-	(cgraph_remove_node_and_inline_clones, cgraph_set_call_stmt_including_clones,
-	cgraph_create_edge_including_clones, cgraph_create_virtual_clone): Declare.
+	(cgraph_remove_node_and_inline_clones,
+	cgraph_set_call_stmt_including_clones,
+	cgraph_create_edge_including_clones,
+	cgraph_create_virtual_clone): Declare.
 	(cgraph_function_versioning): Use VEC argument.
 	(compute_call_stmt_bb_frequency): Update prototype.
 	(cgraph_materialize_all_clones): New function.
@@ -48,25 +50,28 @@
 	(cgraph_optimize): Materialize clones.
 	(cgraph_function_versioning): Update for VECtors.
 	(save_inline_function_body): Use clone tree.
-	(cgraph_materialize_clone, cgraph_materialize_all_clones): New functions.
+	(cgraph_materialize_clone): New function.
+	(cgraph_materialize_all_clones): Likewise.
 	* ipa-inline.c (cgraph_default_inline_p): Use analyzed flags.
 	* ipa.c: Include gimple.h.
 	(cgraph_remove_unreachable_nodes): Use clone tree.
-	* ipa-prop.c (ipa_note_param_call): Update call of compute_call_stmt_bb_frequency.
+	* ipa-prop.c (ipa_note_param_call): Update call to
+	compute_call_stmt_bb_frequencycall.
 	* ipa-prop.h (ipa_replace_map): Move to cgraph.h.
-	* tree-inline.c: Do not include varray.h; do not include gt-tree-inline.h
+	* tree-inline.c: Do not include varray.h or gt-tree-inline.h.
 	(copy_bb): Handle updating of clone tree; add new edge when new call
 	appears.
 	(expand_call_inline): Be strict about every call having edge.
 	(clone_fn_id_num, clone_function_name): Move to cgraph.c.
 	(delete_unreachable_blocks_update_callgraph): New function.
-	(tree_function_versioning): Use VECtors; always remove unreachable blocks
-	and fold conditionals.
-	* tree-inline.h: Do not include varray.h
+	(tree_function_versioning): Use VECtors; always remove unreachable
+	blocks and fold conditionals.
+	* tree-inline.h: Do not include varray.h.
 	(tree_function_versioning): Remove.
 	* Makefile.in (GTFILES): Remove tree-inline.c
 	* passes.c (do_per_function): Do only functions having body.
-	* ipa-struct-reorg.c (do_reorg_1, collect_data_accesses): Handle cone tree.
+	* ipa-struct-reorg.c (do_reorg_1, collect_data_accesses): Handle clone
+	tree.
 
 2009-05-08  H.J. Lu  <hongjiu.lu@intel.com>
 	    Andrew Morrow  <acm@google.com>
