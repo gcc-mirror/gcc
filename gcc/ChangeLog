@@ -1,5 +1,17 @@
 2009-05-09  Jan Hubicka  <jh@suse.cz>
 
+	* tree-eh.c (struct leh_state): Remove prev_try.
+	(lower_try_finally, lower_catch, lower_eh_filter, lower_cleanup): Do
+	not track prev_try.
+	* except.c (gen_eh_region_cleanup, duplicate_eh_regions, 
+	copy_eh_region_1, copy_eh_region, redirect_eh_edge_to_label,
+	remove_eh_handler_and_replace, foreach_reachable_handler,
+	verify_eh_region, verify_eh_tree): Remove tracking of prev_try pointer.
+	* except.h (struct eh_region): Remove eh_region_u_cleanup.
+	(gen_eh_region_cleanup): Update prototype.
+
+2009-05-09  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/40043
 	* except.c (copy_eh_region): Always set prev_try.
 	(redirect_eh_edge_to_label): Find outer try.

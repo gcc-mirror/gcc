@@ -352,7 +352,6 @@ struct leh_state
      correspond to variables of the same name in cfun->eh, which we
      don't have easy access to.  */
   struct eh_region *cur_region;
-  struct eh_region *prev_try;
 
   /* Processing of TRY_FINALLY requires a bit more state.  This is
      split out into a separate structure so that we don't have to
@@ -1566,12 +1565,11 @@ lower_try_finally (struct leh_state *state, gimple tp)
   this_tf.outer = state;
   if (using_eh_for_cleanups_p)
     this_tf.region
-      = gen_eh_region_cleanup (state->cur_region, state->prev_try);
+      = gen_eh_region_cleanup (state->cur_region);
   else
     this_tf.region = NULL;
 
   this_state.cur_region = this_tf.region;
-  this_state.prev_try = state->prev_try;
   this_state.tf = &this_tf;
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval(tp));
@@ -1650,7 +1648,6 @@ lower_catch (struct leh_state *state, gimple tp)
 
   try_region = gen_eh_region_try (state->cur_region);
   this_state.cur_region = try_region;
-  this_state.prev_try = try_region;
   this_state.tf = state->tf;
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval (tp));
@@ -1672,7 +1669,6 @@ lower_catch (struct leh_state *state, gimple tp)
                                           gimple_catch_types (gcatch));
 
       this_state.cur_region = catch_region;
-      this_state.prev_try = state->prev_try;
       lower_eh_constructs_1 (&this_state, gimple_catch_handler (gcatch));
 
       eh_label = create_artificial_label ();
@@ -1719,10 +1715,6 @@ lower_eh_filter (struct leh_state *state, gimple tp)
 					 gimple_eh_filter_types (inner));
   this_state = *state;
   this_state.cur_region = this_region;
-  /* For must not throw regions any cleanup regions inside it
-     can't reach outer catch regions.  */
-  if (gimple_eh_filter_must_not_throw (inner))
-    this_state.prev_try = NULL;
 
   lower_eh_constructs_1 (&this_state, gimple_try_eval (tp));
 
@@ -1759,7 +1751,7 @@ lower_cleanup (struct leh_state *state, gimple tp)
       return result;
     }
 
-  this_region = gen_eh_region_cleanup (state->cur_region, state->prev_try);
+  this_region = gen_eh_region_cleanup (state->cur_region);
   this_state = *state;
   this_state.cur_region = this_region;
 

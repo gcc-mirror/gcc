@@ -338,10 +338,9 @@ gen_eh_region (enum eh_region_type type, struct eh_region *outer)
 }
 
 struct eh_region *
-gen_eh_region_cleanup (struct eh_region *outer, struct eh_region *prev_try)
+gen_eh_region_cleanup (struct eh_region *outer)
 {
   struct eh_region *cleanup = gen_eh_region (ERT_CLEANUP, outer);
-  cleanup->u.cleanup.prev_try = prev_try;
   return cleanup;
 }
 
@@ -1183,8 +1182,8 @@ duplicate_eh_regions_1 (eh_region old, eh_region outer, int eh_offset)
   return ret;
 }
 
-/* Return prev_try pointers catch subregions of R should
-   point to.  */
+/* Look for first outer region of R (or R itself) that is
+   TRY region. Return NULL if none.  */
 
 static struct eh_region *
 find_prev_try (struct eh_region * r)
@@ -1208,7 +1207,7 @@ int
 duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
 		      void *data, int copy_region, int outer_region)
 {
-  eh_region cur, prev_try, old_prev_try, outer, *splice;
+  eh_region cur, outer, *splice;
   int i, min_region, max_region, eh_offset, cfun_last_region_number;
   int num_regions;
 
@@ -1228,14 +1227,12 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
       max_region = 0;
 
       cur = VEC_index (eh_region, ifun->eh->region_array, copy_region);
-      old_prev_try = find_prev_try (cur);
       duplicate_eh_regions_0 (cur, &min_region, &max_region);
     }
   else
     {
       min_region = 1;
       max_region = ifun->eh->last_region_number;
-      old_prev_try = NULL;
     }
   num_regions = max_region - min_region + 1;
   cfun_last_region_number = cfun->eh->last_region_number;
@@ -1302,12 +1299,6 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
     if (cur && cur->tree_label)
       cur->tree_label = map (cur->tree_label, data);
 
-  /* Search for the containing ERT_TRY region to fix up
-     the prev_try short-cuts for ERT_CLEANUP regions.  */
-  prev_try = NULL;
-  if (outer_region > 0)
-    prev_try = find_prev_try (VEC_index (eh_region, cfun->eh->region_array, outer_region));
-
   /* Remap all of the internal catch and cleanup linkages.  Since we 
      duplicate entire subtrees, all of the referenced regions will have
      been copied too.  And since we renumbered them as a block, a simple
@@ -1354,13 +1345,6 @@ duplicate_eh_regions (struct function *ifun, duplicate_eh_regions_map map,
 	    REMAP (cur->u.eh_catch.prev_catch);
 	  break;
 
-	case ERT_CLEANUP:
-	  if (cur->u.cleanup.prev_try != old_prev_try)
-	    REMAP (cur->u.cleanup.prev_try);
-	  else
-	    cur->u.cleanup.prev_try = prev_try;
-	  break;
-
 	default:
 	  break;
 	}
@@ -1394,14 +1378,10 @@ copy_eh_region_1 (struct eh_region *old, struct eh_region *new_outer)
 
 /* Return new copy of eh region OLD inside region NEW_OUTER.  
   
-   Copy whole catch-try chain if neccesary and update cleanup region prev_try
-   pointers.
-
-   PREV_TRY_MAP points to outer TRY region if it was copied in trace already.  */
+   Copy whole catch-try chain if neccesary.  */
 
 static struct eh_region *
-copy_eh_region (struct eh_region *old, struct eh_region *new_outer,
-		struct eh_region *prev_try_map)
+copy_eh_region (struct eh_region *old, struct eh_region *new_outer)
 {
   struct eh_region *r, *n, *old_try, *new_try, *ret = NULL;
   VEC(eh_region,heap) *catch_list = NULL;
@@ -1410,11 +1390,6 @@ copy_eh_region (struct eh_region *old, struct eh_region *new_outer,
     {
       gcc_assert (old->type != ERT_TRY);
       r = copy_eh_region_1 (old, new_outer);
-      if (r->type == ERT_CLEANUP)
-        {
-	  gcc_assert (r->u.cleanup.prev_try || !prev_try_map);
-          r->u.cleanup.prev_try = prev_try_map;
-	}
       return r;
     }
 
@@ -1477,7 +1452,7 @@ struct eh_region *
 redirect_eh_edge_to_label (edge e, tree new_dest_label, bool is_resx,
 			   bool inlinable_call, int region_number)
 {
-  struct eh_region *outer, *prev_try_map;
+  struct eh_region *outer;
   struct eh_region *region;
   VEC (eh_region, heap) * trace = NULL;
   int i;
@@ -1539,7 +1514,6 @@ redirect_eh_edge_to_label (edge e, tree new_dest_label, bool is_resx,
 	}
       outer = VEC_index (eh_region, trace, start_here)->outer;
       gcc_assert (start_here >= 0);
-      prev_try_map = find_prev_try (outer);
 
       /* And now do the dirty job!  */
       for (i = start_here; i >= 0; i--)
@@ -1548,7 +1522,7 @@ redirect_eh_edge_to_label (edge e, tree new_dest_label, bool is_resx,
 	  gcc_assert (!outer || old->outer != outer->outer);
 
 	  /* Copy region and update label.  */
-	  r = copy_eh_region (old, outer, prev_try_map);
+	  r = copy_eh_region (old, outer);
 	  VEC_replace (eh_region, trace, i, r);
 	  if (r->tree_label && label_to_block (r->tree_label) == old_bb)
 	    {
@@ -1588,14 +1562,11 @@ redirect_eh_edge_to_label (edge e, tree new_dest_label, bool is_resx,
 		 }
 	     }
 
-	  /* Cleanup regions points to outer TRY blocks.  */
-	  if (r->type == ERT_TRY)
-	    prev_try_map = r;
 	  outer = r;
 	}
         
       if (is_resx || region->type == ERT_THROW)
-	r = copy_eh_region (region, outer, prev_try_map);
+	r = copy_eh_region (region, outer);
     }
 
   VEC_free (eh_region, heap, trace);
@@ -2674,32 +2645,6 @@ remove_eh_handler_and_replace (struct eh_region *region,
 
   outer = region->outer;
 
-  /* When we are moving the region in EH tree, update prev_try pointers.  */
-  if ((outer != replace || region->type == ERT_TRY) && region->inner)
-    {
-      struct eh_region *prev_try = find_prev_try (replace);
-      p = region->inner;
-      while (p != region)
-	{
-	  if (p->type == ERT_CLEANUP)
-	    p->u.cleanup.prev_try = prev_try;
-          if (p->type != ERT_TRY
-	      && p->type != ERT_MUST_NOT_THROW
-	      && (p->type != ERT_ALLOWED_EXCEPTIONS
-	          || p->u.allowed.type_list)
-	      && p->inner)
-	    p = p->inner;
-	  else if (p->next_peer)
-	    p = p->next_peer;
-	  else
-	    {
-	      while (p != region && !p->next_peer)
-	        p = p->outer;
-	      if (p != region)
-		p = p->next_peer;
-	    }
-	}
-    }
   /* For the benefit of efficiently handling REG_EH_REGION notes,
      replace this region in the region array with its containing
      region.  Note that previous region deletions may result in
@@ -3123,7 +3068,7 @@ foreach_reachable_handler (int region_number, bool is_resx, bool inlinable_call,
       if (region->type == ERT_CLEANUP)
         {
 	  enum reachable_code code = RNL_NOT_CAUGHT;
-	  region = region->u.cleanup.prev_try;
+	  region = find_prev_try (region->outer);
 	  /* Continue looking for outer TRY region until we find one
 	     that might cath something.  */
           while (region
@@ -4431,9 +4376,6 @@ dump_eh_tree (FILE * out, struct function *fun)
       switch (i->type)
 	{
 	case ERT_CLEANUP:
-	  if (i->u.cleanup.prev_try)
-	    fprintf (out, " prev try:%i",
-		     i->u.cleanup.prev_try->region_number);
 	  break;
 
 	case ERT_TRY:
@@ -4513,21 +4455,13 @@ debug_eh_tree (struct function *fn)
 /* Verify EH region invariants.  */
 
 static bool
-verify_eh_region (struct eh_region *region, struct eh_region *prev_try)
+verify_eh_region (struct eh_region *region)
 {
   bool found = false;
   if (!region)
     return false;
   switch (region->type)
     {
-    case ERT_CLEANUP:
-      if (region->u.cleanup.prev_try != prev_try)
-	{
-	  error ("Wrong prev_try pointer in EH region %i",
-		 region->region_number);
-	  found = true;
-	}
-      break;
     case ERT_TRY:
       {
 	struct eh_region *c, *prev = NULL;
@@ -4574,6 +4508,7 @@ verify_eh_region (struct eh_region *region, struct eh_region *prev_try)
 	  found = true;
 	}
       break;
+    case ERT_CLEANUP:
     case ERT_ALLOWED_EXCEPTIONS:
     case ERT_MUST_NOT_THROW:
     case ERT_THROW:
@@ -4581,14 +4516,8 @@ verify_eh_region (struct eh_region *region, struct eh_region *prev_try)
     case ERT_UNKNOWN:
       gcc_unreachable ();
     }
-  if (region->type == ERT_TRY)
-    prev_try = region;
-  else if (region->type == ERT_MUST_NOT_THROW
-	   || (region->type == ERT_ALLOWED_EXCEPTIONS
-	       && !region->u.allowed.type_list))
-    prev_try = NULL;
   for (region = region->inner; region; region = region->next_peer)
-    found |= verify_eh_region (region, prev_try);
+    found |= verify_eh_region (region);
   return found;
 }
 
@@ -4672,7 +4601,7 @@ verify_eh_tree (struct function *fun)
 		    }
 		  if (!err)
 		    for (i = fun->eh->region_tree; i; i = i->next_peer)
-		      err |= verify_eh_region (i, NULL);
+		      err |= verify_eh_region (i);
 		  
 		  if (err)
 		    {
