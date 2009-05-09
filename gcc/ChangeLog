@@ -1,3 +1,11 @@
+2009-05-09  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/40043
+	* except.c (copy_eh_region): Always set prev_try.
+	(redirect_eh_edge_to_label): Find outer try.
+	(foreach_reachable_handler): When looking for prev try
+	handle case where previous try is not going to be taken.
+
 2009-05-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR tree-optimization/40049

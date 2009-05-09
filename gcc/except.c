@@ -1410,9 +1410,9 @@ copy_eh_region (struct eh_region *old, struct eh_region *new_outer,
     {
       gcc_assert (old->type != ERT_TRY);
       r = copy_eh_region_1 (old, new_outer);
-      if (r->type == ERT_CLEANUP && prev_try_map)
+      if (r->type == ERT_CLEANUP)
         {
-	  gcc_assert (r->u.cleanup.prev_try);
+	  gcc_assert (r->u.cleanup.prev_try || !prev_try_map);
           r->u.cleanup.prev_try = prev_try_map;
 	}
       return r;
@@ -1477,7 +1477,7 @@ struct eh_region *
 redirect_eh_edge_to_label (edge e, tree new_dest_label, bool is_resx,
 			   bool inlinable_call, int region_number)
 {
-  struct eh_region *outer, *prev_try_map = NULL;
+  struct eh_region *outer, *prev_try_map;
   struct eh_region *region;
   VEC (eh_region, heap) * trace = NULL;
   int i;
@@ -1539,6 +1539,7 @@ redirect_eh_edge_to_label (edge e, tree new_dest_label, bool is_resx,
 	}
       outer = VEC_index (eh_region, trace, start_here)->outer;
       gcc_assert (start_here >= 0);
+      prev_try_map = find_prev_try (outer);
 
       /* And now do the dirty job!  */
       for (i = start_here; i >= 0; i--)
@@ -3120,8 +3121,20 @@ foreach_reachable_handler (int region_number, bool is_resx, bool inlinable_call,
 	 to the next outer cleanup region, so the flow graph will be
 	 accurate.  */
       if (region->type == ERT_CLEANUP)
-	region = region->u.cleanup.prev_try;
-      else
+        {
+	  enum reachable_code code = RNL_NOT_CAUGHT;
+	  region = region->u.cleanup.prev_try;
+	  /* Continue looking for outer TRY region until we find one
+	     that might cath something.  */
+          while (region
+	  	 && (code = reachable_next_level (region, type_thrown, &info,
+      			                          inlinable_call || is_resx))
+		     == RNL_NOT_CAUGHT)
+	    region = find_prev_try (region->outer);
+	  if (code >= RNL_CAUGHT)
+	    break;
+	}
+      if (region)
 	region = region->outer;
     }
 }
