@@ -1,3 +1,9 @@
+2009-05-10  Michael Matz  <matz@suse.de>
+
+	PR target/40031
+	* config/arm/arm.c (require_pic_register): Emit on entry edge,
+	not at entry of function.
+
 2009-05-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40081

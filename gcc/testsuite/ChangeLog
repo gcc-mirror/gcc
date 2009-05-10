@@ -1,3 +1,8 @@
+2009-05-10  Michael Matz  <matz@suse.de>
+
+	PR target/40031
+	* gcc.dg/pr40031.c: New test.
+
 2009-05-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40018
