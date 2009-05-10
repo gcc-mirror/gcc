@@ -1,3 +1,8 @@
+2009-05-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.c (c_lex_with_flags): Expect cpp_hashnode in
+	tok->val.node.node.
+
 2009-05-10  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/40084

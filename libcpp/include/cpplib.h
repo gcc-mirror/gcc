@@ -189,8 +189,25 @@ enum cpp_token_fld_kind {
   CPP_TOKEN_FLD_SOURCE,
   CPP_TOKEN_FLD_STR,
   CPP_TOKEN_FLD_ARG_NO,
+  CPP_TOKEN_FLD_TOKEN_NO,
   CPP_TOKEN_FLD_PRAGMA,
   CPP_TOKEN_FLD_NONE
+};
+
+/* A macro argument in the cpp_token union.  */
+struct GTY(()) cpp_macro_arg {
+  /* Argument number.  */
+  unsigned int arg_no;
+};
+
+/* An identifier in the cpp_token union.  */
+struct GTY(()) cpp_identifier {
+  /* The canonical (UTF-8) spelling of the identifier.  */
+  cpp_hashnode *
+    GTY ((nested_ptr (union tree_node,
+		"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
+			"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL")))
+       node;
 };
 
 /* A preprocessing token.  This has been carefully packed and should
@@ -203,12 +220,7 @@ struct GTY(()) cpp_token {
   union cpp_token_u
   {
     /* An identifier.  */
-    cpp_hashnode *
-      GTY ((nested_ptr (union tree_node,
-		"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
-			"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL"),
-	    tag ("CPP_TOKEN_FLD_NODE")))
-	 node;
+    struct cpp_identifier GTY ((tag ("CPP_TOKEN_FLD_NODE"))) node;
 	 
     /* Inherit padding from this token.  */
     cpp_token * GTY ((tag ("CPP_TOKEN_FLD_SOURCE"))) source;
@@ -217,7 +229,11 @@ struct GTY(()) cpp_token {
     struct cpp_string GTY ((tag ("CPP_TOKEN_FLD_STR"))) str;
 
     /* Argument no. for a CPP_MACRO_ARG.  */
-    unsigned int GTY ((tag ("CPP_TOKEN_FLD_ARG_NO"))) arg_no;
+    struct cpp_macro_arg GTY ((tag ("CPP_TOKEN_FLD_ARG_NO"))) macro_arg;
+
+    /* Original token no. for a CPP_PASTE (from a sequence of
+       consecutive paste tokens in a macro expansion).  */
+    unsigned int GTY ((tag ("CPP_TOKEN_FLD_TOKEN_NO"))) token_no;
 
     /* Caller-supplied identifier for a CPP_PRAGMA.  */
     unsigned int GTY ((tag ("CPP_TOKEN_FLD_PRAGMA"))) pragma;

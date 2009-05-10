@@ -76,7 +76,7 @@ cpp_ideq (const cpp_token *token, const char *string)
   if (token->type != CPP_NAME)
     return 0;
 
-  return !ustrcmp (NODE_NAME (token->val.node), (const uchar *) string);
+  return !ustrcmp (NODE_NAME (token->val.node.node), (const uchar *) string);
 }
 
 /* Record a note TYPE at byte POS into the current cleaned logical
@@ -1120,16 +1120,16 @@ _cpp_lex_direct (cpp_reader *pfile)
       result->type = CPP_NAME;
       {
 	struct normalize_state nst = INITIAL_NORMALIZE_STATE;
-	result->val.node = lex_identifier (pfile, buffer->cur - 1, false,
-					   &nst);
+	result->val.node.node = lex_identifier (pfile, buffer->cur - 1, false,
+						&nst);
 	warn_about_normalization (pfile, result, &nst);
       }
 
       /* Convert named operators to their proper types.  */
-      if (result->val.node->flags & NODE_OPERATOR)
+      if (result->val.node.node->flags & NODE_OPERATOR)
 	{
 	  result->flags |= NAMED_OP;
-	  result->type = (enum cpp_ttype) result->val.node->directive_index;
+	  result->type = (enum cpp_ttype) result->val.node.node->directive_index;
 	}
       break;
 
@@ -1244,7 +1244,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	      result->flags |= DIGRAPH;
 	      result->type = CPP_HASH;
 	      if (*buffer->cur == '%' && buffer->cur[1] == ':')
-		buffer->cur += 2, result->type = CPP_PASTE, result->val.arg_no = 0;
+		buffer->cur += 2, result->type = CPP_PASTE, result->val.token_no = 0;
 	    }
 	  else if (*buffer->cur == '>')
 	    {
@@ -1325,7 +1325,7 @@ _cpp_lex_direct (cpp_reader *pfile)
     case '=': IF_NEXT_IS ('=', CPP_EQ_EQ, CPP_EQ); break;
     case '!': IF_NEXT_IS ('=', CPP_NOT_EQ, CPP_NOT); break;
     case '^': IF_NEXT_IS ('=', CPP_XOR_EQ, CPP_XOR); break;
-    case '#': IF_NEXT_IS ('#', CPP_PASTE, CPP_HASH); result->val.arg_no = 0; break;
+    case '#': IF_NEXT_IS ('#', CPP_PASTE, CPP_HASH); result->val.token_no = 0; break;
 
     case '?': result->type = CPP_QUERY; break;
     case '~': result->type = CPP_COMPL; break;
@@ -1350,7 +1350,7 @@ _cpp_lex_direct (cpp_reader *pfile)
 	if (forms_identifier_p (pfile, true, &nst))
 	  {
 	    result->type = CPP_NAME;
-	    result->val.node = lex_identifier (pfile, base, true, &nst);
+	    result->val.node.node = lex_identifier (pfile, base, true, &nst);
 	    warn_about_normalization (pfile, result, &nst);
 	    break;
 	  }
@@ -1376,7 +1376,7 @@ cpp_token_len (const cpp_token *token)
     {
     default:		len = 6;				break;
     case SPELL_LITERAL:	len = token->val.str.len;		break;
-    case SPELL_IDENT:	len = NODE_LEN (token->val.node) * 10;	break;
+    case SPELL_IDENT:	len = NODE_LEN (token->val.node.node) * 10;	break;
     }
 
   return len;
@@ -1457,23 +1457,23 @@ cpp_spell_token (cpp_reader *pfile, const cpp_token *token,
     case SPELL_IDENT:
       if (forstring)
 	{
-	  memcpy (buffer, NODE_NAME (token->val.node),
-		  NODE_LEN (token->val.node));
-	  buffer += NODE_LEN (token->val.node);
+	  memcpy (buffer, NODE_NAME (token->val.node.node),
+		  NODE_LEN (token->val.node.node));
+	  buffer += NODE_LEN (token->val.node.node);
 	}
       else
 	{
 	  size_t i;
-	  const unsigned char * name = NODE_NAME (token->val.node);
+	  const unsigned char * name = NODE_NAME (token->val.node.node);
 	  
-	  for (i = 0; i < NODE_LEN (token->val.node); i++)
+	  for (i = 0; i < NODE_LEN (token->val.node.node); i++)
 	    if (name[i] & ~0x7F)
 	      {
 		i += utf8_to_ucn (buffer, name + i) - 1;
 		buffer += 10;
 	      }
 	    else
-	      *buffer++ = NODE_NAME (token->val.node)[i];
+	      *buffer++ = NODE_NAME (token->val.node.node)[i];
 	}
       break;
 
@@ -1550,9 +1550,9 @@ cpp_output_token (const cpp_token *token, FILE *fp)
     case SPELL_IDENT:
       {
 	size_t i;
-	const unsigned char * name = NODE_NAME (token->val.node);
+	const unsigned char * name = NODE_NAME (token->val.node.node);
 	
-	for (i = 0; i < NODE_LEN (token->val.node); i++)
+	for (i = 0; i < NODE_LEN (token->val.node.node); i++)
 	  if (name[i] & ~0x7F)
 	    {
 	      unsigned char buffer[10];
@@ -1560,7 +1560,7 @@ cpp_output_token (const cpp_token *token, FILE *fp)
 	      fwrite (buffer, 1, 10, fp);
 	    }
 	  else
-	    fputc (NODE_NAME (token->val.node)[i], fp);
+	    fputc (NODE_NAME (token->val.node.node)[i], fp);
       }
       break;
 
@@ -1583,13 +1583,14 @@ _cpp_equiv_tokens (const cpp_token *a, const cpp_token *b)
       {
       default:			/* Keep compiler happy.  */
       case SPELL_OPERATOR:
-	/* arg_no is used to track where multiple consecutive ##
+	/* token_no is used to track where multiple consecutive ##
 	   tokens were originally located.  */
-	return (a->type != CPP_PASTE || a->val.arg_no == b->val.arg_no);
+	return (a->type != CPP_PASTE || a->val.token_no == b->val.token_no);
       case SPELL_NONE:
-	return (a->type != CPP_MACRO_ARG || a->val.arg_no == b->val.arg_no);
+	return (a->type != CPP_MACRO_ARG
+		|| a->val.macro_arg.arg_no == b->val.macro_arg.arg_no);
       case SPELL_IDENT:
-	return a->val.node == b->val.node;
+	return a->val.node.node == b->val.node.node;
       case SPELL_LITERAL:
 	return (a->val.str.len == b->val.str.len
 		&& !memcmp (a->val.str.text, b->val.str.text,
@@ -1901,7 +1902,7 @@ cpp_token_val_index (cpp_token *tok)
       return CPP_TOKEN_FLD_STR;
     case SPELL_OPERATOR:
       if (tok->type == CPP_PASTE)
-	return CPP_TOKEN_FLD_ARG_NO;
+	return CPP_TOKEN_FLD_TOKEN_NO;
       else
 	return CPP_TOKEN_FLD_NONE;
     case SPELL_NONE:

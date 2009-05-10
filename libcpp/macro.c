@@ -946,7 +946,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro, macro_arg
 
 	/* We have an argument.  If it is not being stringified or
 	   pasted it is macro-replaced before insertion.  */
-	arg = &args[src->val.arg_no - 1];
+	arg = &args[src->val.macro_arg.arg_no - 1];
 
 	if (src->flags & STRINGIFY_ARG)
 	  {
@@ -982,7 +982,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro, macro_arg
 	}
 
       paste_flag = 0;
-      arg = &args[src->val.arg_no - 1];
+      arg = &args[src->val.macro_arg.arg_no - 1];
       if (src->flags & STRINGIFY_ARG)
 	count = 1, from = &arg->stringified;
       else if (src->flags & PASTE_LEFT)
@@ -994,7 +994,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro, macro_arg
 	    {
 	      if (dest[-1]->type == CPP_COMMA
 		  && macro->variadic
-		  && src->val.arg_no == macro->paramc)
+		  && src->val.macro_arg.arg_no == macro->paramc)
 		{
 		  /* Swallow a pasted comma if from == NULL, otherwise
 		     drop the paste flag.  */
@@ -1035,7 +1035,7 @@ replace_args (cpp_reader *pfile, cpp_hashnode *node, cpp_macro *macro, macro_arg
 		     "empty macro arguments are undefined"
 		     " in ISO C90 and ISO C++98",
 		     NODE_NAME (node),
-		     src->val.arg_no);
+		     src->val.macro_arg.arg_no);
 	}
 
       /* Avoid paste on RHS (even case count == 0).  */
@@ -1261,7 +1261,7 @@ cpp_get_token (cpp_reader *pfile)
       if (result->type != CPP_NAME)
 	break;
 
-      node = result->val.node;
+      node = result->val.node.node;
 
       if (node->type != NT_MACRO || (result->flags & NO_EXPAND))
 	break;
@@ -1553,7 +1553,7 @@ parse_params (cpp_reader *pfile, cpp_macro *macro)
 	    }
 	  prev_ident = 1;
 
-	  if (_cpp_save_parameter (pfile, macro, token->val.node))
+	  if (_cpp_save_parameter (pfile, macro, token->val.node.node))
 	    return false;
 	  continue;
 
@@ -1626,10 +1626,10 @@ lex_expansion_token (cpp_reader *pfile, cpp_macro *macro)
 
   /* Is this a parameter?  */
   if (token->type == CPP_NAME
-      && (token->val.node->flags & NODE_MACRO_ARG) != 0)
+      && (token->val.node.node->flags & NODE_MACRO_ARG) != 0)
     {
       token->type = CPP_MACRO_ARG;
-      token->val.arg_no = token->val.node->value.arg_index;
+      token->val.macro_arg.arg_no = token->val.node.node->value.arg_index;
     }
   else if (CPP_WTRADITIONAL (pfile) && macro->paramc > 0
 	   && (token->type == CPP_STRING || token->type == CPP_CHAR))
@@ -1771,7 +1771,7 @@ create_iso_definition (cpp_reader *pfile, cpp_macro *macro)
 	    {
 	      macro->extra_tokens = 1;
 	      num_extra_tokens++;
-	      token->val.arg_no = macro->count - 1;
+	      token->val.token_no = macro->count - 1;
 	    }
 	  else
 	    {
@@ -2007,7 +2007,7 @@ cpp_macro_definition (cpp_reader *pfile, const cpp_hashnode *node)
 	  cpp_token *token = &macro->exp.tokens[i];
 
 	  if (token->type == CPP_MACRO_ARG)
-	    len += NODE_LEN (macro->params[token->val.arg_no - 1]);
+	    len += NODE_LEN (macro->params[token->val.macro_arg.arg_no - 1]);
 	  else
 	    len += cpp_token_len (token);
 
@@ -2079,9 +2079,9 @@ cpp_macro_definition (cpp_reader *pfile, const cpp_hashnode *node)
 	  if (token->type == CPP_MACRO_ARG)
 	    {
 	      memcpy (buffer,
-		      NODE_NAME (macro->params[token->val.arg_no - 1]),
-		      NODE_LEN (macro->params[token->val.arg_no - 1]));
-	      buffer += NODE_LEN (macro->params[token->val.arg_no - 1]);
+		      NODE_NAME (macro->params[token->val.macro_arg.arg_no - 1]),
+		      NODE_LEN (macro->params[token->val.macro_arg.arg_no - 1]));
+	      buffer += NODE_LEN (macro->params[token->val.macro_arg.arg_no - 1]);
 	    }
 	  else
 	    buffer = cpp_spell_token (pfile, token, buffer, false);
