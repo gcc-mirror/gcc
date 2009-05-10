@@ -651,7 +651,7 @@ parse_defined (cpp_reader *pfile)
 
   if (token->type == CPP_NAME)
     {
-      node = token->val.node;
+      node = token->val.node.node;
       if (paren && cpp_get_token (pfile)->type != CPP_CLOSE_PAREN)
 	{
 	  cpp_error (pfile, CPP_DL_ERROR, "missing ')' after \"defined\"");
@@ -771,14 +771,14 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
       break;
 
     case CPP_NAME:
-      if (token->val.node == pfile->spec_nodes.n_defined)
+      if (token->val.node.node == pfile->spec_nodes.n_defined)
 	return parse_defined (pfile);
       else if (CPP_OPTION (pfile, cplusplus)
-	       && (token->val.node == pfile->spec_nodes.n_true
-		   || token->val.node == pfile->spec_nodes.n_false))
+	       && (token->val.node.node == pfile->spec_nodes.n_true
+		   || token->val.node.node == pfile->spec_nodes.n_false))
 	{
 	  result.high = 0;
-	  result.low = (token->val.node == pfile->spec_nodes.n_true);
+	  result.low = (token->val.node.node == pfile->spec_nodes.n_true);
 	}
       else
 	{
@@ -786,7 +786,7 @@ eval_token (cpp_reader *pfile, const cpp_token *token)
 	  result.low = 0;
 	  if (CPP_OPTION (pfile, warn_undef) && !pfile->state.skip_eval)
 	    cpp_error (pfile, CPP_DL_WARNING, "\"%s\" is not defined",
-		       NODE_NAME (token->val.node));
+		       NODE_NAME (token->val.node.node));
 	}
       break;
 

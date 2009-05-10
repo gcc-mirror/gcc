@@ -1,3 +1,25 @@
+2009-05-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (enum cpp_token_fld_kind): Add
+	CPP_TOKEN_FLD_TOKEN_NO.
+	(struct cpp_macro_arg, struct cpp_identifier): Define.
+	(union cpp_token_u): Use struct cpp_identifier for identifiers.
+	Use struct cpp_macro_arg for macro arguments.  Add token_no for
+	CPP_PASTE token numbers.
+	* directives.c (_cpp_handle_directive, lex_macro_node, do_pragma,
+	do_pragma_poison, parse_assertion): Use val.node.node in place of
+	val.node.
+	* expr.c (parse_defined, eval_token): Use val.node.node in place
+	of val.node.
+	* lex.c (cpp_ideq, _cpp_lex_direct, cpp_token_len,
+	cpp_spell_token, cpp_output_token, _cpp_equiv_tokens,
+	cpp_token_val_index): Use val.macro_arg.arg_no or val.token_no in
+	place of val.arg_no.  Use val.node.node in place of val.node.
+	* macro.c (replace_args, cpp_get_token, parse_params,
+	lex_expansion_token, create_iso_definition, cpp_macro_definition):
+	Use val.macro_arg.arg_no or val.token_no in place of val.arg_no.
+	Use val.node.node in place of val.node.
+
 2009-05-03  Joseph Myers  <joseph@codesourcery.com>
 
 	* charset.c (one_utf8_to_cppchar): Correct mask used for 5-byte

@@ -408,8 +408,8 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
 
   if (dname->type == CPP_NAME)
     {
-      if (dname->val.node->is_directive)
-	dir = &dtable[dname->val.node->directive_index];
+      if (dname->val.node.node->is_directive)
+	dir = &dtable[dname->val.node.node->directive_index];
     }
   /* We do not recognize the # followed by a number extension in
      assembler code.  */
@@ -538,7 +538,7 @@ lex_macro_node (cpp_reader *pfile, bool is_def_or_undef)
 
   if (token->type == CPP_NAME)
     {
-      cpp_hashnode *node = token->val.node;
+      cpp_hashnode *node = token->val.node.node;
 
       if (is_def_or_undef && node == pfile->spec_nodes.n_defined)
 	cpp_error (pfile, CPP_DL_ERROR,
@@ -549,7 +549,7 @@ lex_macro_node (cpp_reader *pfile, bool is_def_or_undef)
   else if (token->flags & NAMED_OP)
     cpp_error (pfile, CPP_DL_ERROR,
        "\"%s\" cannot be used as a macro name as it is an operator in C++",
-	       NODE_NAME (token->val.node));
+	       NODE_NAME (token->val.node.node));
   else if (token->type == CPP_EOF)
     cpp_error (pfile, CPP_DL_ERROR, "no macro name given in #%s directive",
 	       pfile->directive->name);
@@ -1329,7 +1329,7 @@ do_pragma (cpp_reader *pfile)
   ns_token = *token;
   if (token->type == CPP_NAME)
     {
-      p = lookup_pragma_entry (pfile->pragmas, token->val.node);
+      p = lookup_pragma_entry (pfile->pragmas, token->val.node.node);
       if (p && p->is_nspace)
 	{
 	  bool allow_name_expansion = p->allow_expansion;
@@ -1337,7 +1337,7 @@ do_pragma (cpp_reader *pfile)
 	    pfile->state.prevent_expansion--;
 	  token = cpp_get_token (pfile);
 	  if (token->type == CPP_NAME)
-	    p = lookup_pragma_entry (p->u.space, token->val.node);
+	    p = lookup_pragma_entry (p->u.space, token->val.node.node);
 	  else
 	    p = NULL;
 	  if (allow_name_expansion)
@@ -1429,7 +1429,7 @@ do_pragma_poison (cpp_reader *pfile)
 	  break;
 	}
 
-      hp = tok->val.node;
+      hp = tok->val.node.node;
       if (hp->flags & NODE_POISONED)
 	continue;
 
@@ -1986,12 +1986,12 @@ parse_assertion (cpp_reader *pfile, struct answer **answerp, int type)
     cpp_error (pfile, CPP_DL_ERROR, "predicate must be an identifier");
   else if (parse_answer (pfile, answerp, type) == 0)
     {
-      unsigned int len = NODE_LEN (predicate->val.node);
+      unsigned int len = NODE_LEN (predicate->val.node.node);
       unsigned char *sym = (unsigned char *) alloca (len + 1);
 
       /* Prefix '#' to get it out of macro namespace.  */
       sym[0] = '#';
-      memcpy (sym + 1, NODE_NAME (predicate->val.node), len);
+      memcpy (sym + 1, NODE_NAME (predicate->val.node.node), len);
       result = cpp_lookup (pfile, sym, len + 1);
     }
 
