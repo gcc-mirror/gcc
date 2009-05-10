@@ -1,3 +1,14 @@
+2009-05-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40081
+	Revert
+	* tree-sra.c (instantiate_element): Instantiate scalar replacements
+	using the main variant of the element type.  Do not fiddle with
+	TREE_THIS_VOLATILE or TREE_SIDE_EFFECTS.
+
+	* tree-sra.c (sra_type_can_be_decomposed_p): Do not decompose
+	structs with volatile fields.
+
 2009-05-10  Jan Hubicka  <jh@suse.cz>
 
 	* tree-inline.c (delete_unreachable_blocks_update_callgraph): Declare.
