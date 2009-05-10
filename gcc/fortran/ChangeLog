@@ -1,5 +1,12 @@
 2009-05-10  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/40018
+	* trans-array.c (gfc_trans_array_constructor_value): Fold
+	convert numeric constants.
+	(gfc_build_constant_array_constructor): The same.
+
+2009-05-10  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/38863
 	* trans-expr.c (gfc_conv_operator_assign): Remove function.
 	* trans.h : Remove prototype for gfc_conv_operator_assign.
