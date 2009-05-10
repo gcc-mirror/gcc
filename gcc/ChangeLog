@@ -1,5 +1,53 @@
 2009-05-10  Joseph Myers  <joseph@codesourcery.com>
 
+	* config/arc/arc.c (arc_handle_interrupt_attribute): Use %qE for
+	identifiers in diagnostics.
+	* config/arm/arm.c (arm_handle_fndecl_attribute,
+	arm_handle_isr_attribute): Likewise.
+	* config/avr/avr.c (avr_handle_progmem_attribute,
+	avr_handle_fndecl_attribute, avr_handle_fntype_attribute):
+	Likewise.
+	* config/bfin/bfin.c (handle_int_attribute,
+	bfin_handle_longcall_attribute, bfin_handle_l1_text_attribute,
+	bfin_handle_l1_data_attribute, bfin_handle_longcall_attribute,
+	bfin_handle_l1_text_attribute, bfin_handle_l1_data_attribute):
+	Likewise.
+	* config/darwin.c (darwin_handle_kext_attribute,
+	darwin_handle_weak_import_attribute): Likewise.
+	* config/h8300/h8300.c (h8300_handle_fndecl_attribute,
+	h8300_handle_eightbit_data_attribute,
+	h8300_handle_tiny_data_attribute): Likewise.
+	* config/i386/i386.c (ix86_handle_cconv_attribute,
+	ix86_handle_abi_attribute, ix86_handle_struct_attribute):
+	Likewise.
+	* config/i386/winnt.c (ix86_handle_shared_attribute,
+	ix86_handle_selectany_attribute): Likewise.
+	* config/ia64/ia64.c (ia64_handle_model_attribute): Likewise.
+	* config/m32c/m32c.c (function_vector_handler): Likewise.
+	* config/m68hc11/m68hc11.c (m68hc11_handle_page0_attribute,
+	m68hc11_handle_fntype_attribute): Likewise.
+	* config/m68k/m68k.c (m68k_handle_fndecl_attribute): Likewise.
+	* config/mcore/mcore.c (mcore_handle_naked_attribute): Likewise.
+	* config/mips/mips.c (mips_insert_attributes,
+	mips_merge_decl_attributes, mips_expand_builtin): Likewise.
+	* config/rs6000/rs6000.c (rs6000_handle_longcall_attribute,
+	rs6000_handle_struct_attribute): Likewise.
+	* config/sh/sh.c (sh_insert_attributes,
+	sh_handle_resbank_handler_attribute,
+	sh_handle_interrupt_handler_attribute,
+	sh2a_handle_function_vector_handler_attribute,
+	sh_handle_sp_switch_attribute, sh_handle_trap_exit_attribute):
+	Likewise.
+	* config/sh/symbian.c (sh_symbian_mark_dllimport): Likewise.
+	* config/spu/spu.c (spu_handle_fndecl_attribute,
+	spu_handle_vector_attribute): Likewise.
+	* config/stormy16/stormy16.c
+	(xstormy16_handle_interrupt_attribute): Likewise.
+	* config/v850/v850-c.c (ghs_pragma_section): Likewise.
+	* config/v850/v850.c (v850_handle_interrupt_attribute): Likewise.
+
+2009-05-10  Joseph Myers  <joseph@codesourcery.com>
+
 	* pretty-print.h (struct pretty_print_info): Add
 	translate_identifiers.
 	(pp_translate_identifiers): New.

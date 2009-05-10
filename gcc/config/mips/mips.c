@@ -1292,9 +1292,9 @@ mips_insert_attributes (tree decl, tree *attributes)
 	{
 	  /* DECL cannot be simultaneously "mips16" and "nomips16".  */
 	  if (mips16_p && nomips16_p)
-	    error ("%qs cannot have both %<mips16%> and "
+	    error ("%qE cannot have both %<mips16%> and "
 		   "%<nomips16%> attributes",
-		   IDENTIFIER_POINTER (DECL_NAME (decl)));
+		   DECL_NAME (decl));
 	}
       else if (TARGET_FLIP_MIPS16 && !DECL_ARTIFICIAL (decl))
 	{
@@ -1314,11 +1314,11 @@ mips_merge_decl_attributes (tree olddecl, tree newdecl)
 {
   /* The decls' "mips16" and "nomips16" attributes must match exactly.  */
   if (mips_mips16_decl_p (olddecl) != mips_mips16_decl_p (newdecl))
-    error ("%qs redeclared with conflicting %qs attributes",
-	   IDENTIFIER_POINTER (DECL_NAME (newdecl)), "mips16");
+    error ("%qE redeclared with conflicting %qs attributes",
+	   DECL_NAME (newdecl), "mips16");
   if (mips_nomips16_decl_p (olddecl) != mips_nomips16_decl_p (newdecl))
-    error ("%qs redeclared with conflicting %qs attributes",
-	   IDENTIFIER_POINTER (DECL_NAME (newdecl)), "nomips16");
+    error ("%qE redeclared with conflicting %qs attributes",
+	   DECL_NAME (newdecl), "nomips16");
 
   return merge_attributes (DECL_ATTRIBUTES (olddecl),
 			   DECL_ATTRIBUTES (newdecl));
@@ -12372,8 +12372,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   gcc_assert (avail != 0);
   if (TARGET_MIPS16)
     {
-      error ("built-in function %qs not supported for MIPS16",
-	     IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+      error ("built-in function %qE not supported for MIPS16",
+	     DECL_NAME (fndecl));
       return ignore ? const0_rtx : CONST0_RTX (mode);
     }
   switch (d->builtin_type)

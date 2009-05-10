@@ -1,6 +1,6 @@
 /* Functions for generic Darwin as target machine for GNU C compiler.
    Copyright (C) 1989, 1990, 1991, 1992, 1993, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2008
+   2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
@@ -1407,15 +1407,15 @@ darwin_handle_kext_attribute (tree *node, tree name,
   /* APPLE KEXT stuff -- only applies with pure static C++ code.  */
   if (! TARGET_KEXTABI)
     {
-      warning (0, "%<%s%> 2.95 vtable-compatibility attribute applies "
-	       "only when compiling a kext", IDENTIFIER_POINTER (name));
+      warning (0, "%qE 2.95 vtable-compatibility attribute applies "
+	       "only when compiling a kext", name);
 
       *no_add_attrs = true;
     }
   else if (TREE_CODE (*node) != RECORD_TYPE)
     {
-      warning (0, "%<%s%> 2.95 vtable-compatibility attribute applies "
-	       "only to C++ classes", IDENTIFIER_POINTER (name));
+      warning (0, "%qE 2.95 vtable-compatibility attribute applies "
+	       "only to C++ classes", name);
 
       *no_add_attrs = true;
     }
@@ -1434,8 +1434,8 @@ darwin_handle_weak_import_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) != FUNCTION_DECL && TREE_CODE (*node) != VAR_DECL)
     {
-      warning (OPT_Wattributes, "%qs attribute ignored",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute ignored",
+	       name);
       *no_add_attrs = true;
     }
   else

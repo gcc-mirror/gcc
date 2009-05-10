@@ -269,8 +269,8 @@ sh_symbian_mark_dllimport (tree decl)
 
   if (sh_symbian_dllexport_name_p (oldname))
     {
-      error ("%qs declared as both exported to and imported from a DLL",
-             IDENTIFIER_POINTER (DECL_NAME (decl)));
+      error ("%qE declared as both exported to and imported from a DLL",
+             DECL_NAME (decl));
     }
   else if (sh_symbian_dllimport_name_p (oldname))
     {
@@ -502,8 +502,8 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
       && (   TREE_CODE (node) == VAR_DECL
 	  || TREE_CODE (node) == FUNCTION_DECL))
     {
-      error ("external linkage required for symbol %q+D because of %qs attribute",
-	     node, IDENTIFIER_POINTER (name));
+      error ("external linkage required for symbol %q+D because of %qE attribute",
+	     node, name);
       *no_add_attrs = true;
     }
 

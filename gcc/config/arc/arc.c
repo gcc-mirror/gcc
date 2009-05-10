@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the Argonaut ARC cpu.
    Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003,
-   2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -389,16 +389,16 @@ arc_handle_interrupt_attribute (tree *node ATTRIBUTE_UNUSED,
   if (TREE_CODE (value) != STRING_CST)
     {
       warning (OPT_Wattributes,
-	       "argument of %qs attribute is not a string constant",
-	       IDENTIFIER_POINTER (name));
+	       "argument of %qE attribute is not a string constant",
+	       name);
       *no_add_attrs = true;
     }
   else if (strcmp (TREE_STRING_POINTER (value), "ilink1")
 	   && strcmp (TREE_STRING_POINTER (value), "ilink2"))
     {
       warning (OPT_Wattributes,
-	       "argument of %qs attribute is not \"ilink1\" or \"ilink2\"",
-	       IDENTIFIER_POINTER (name));
+	       "argument of %qE attribute is not \"ilink1\" or \"ilink2\"",
+	       name);
       *no_add_attrs = true;
     }
 
