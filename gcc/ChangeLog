@@ -1,3 +1,9 @@
+2009-05-11  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_categorize_keyword): Update
+	for recent libcpp interface change.
+	(rs6000_macro_to_expand): Likewise.
+
 2009-05-10  Michael Matz  <matz@suse.de>
 
 	PR target/40031
