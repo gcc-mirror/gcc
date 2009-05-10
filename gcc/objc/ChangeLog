@@ -1,3 +1,25 @@
+2009-05-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* objc-act.c: Include intl.h.
+	(objc_lookup_protocol): Use complete sentences for diagnostics
+	with %qE for identifiers and translating results of
+	gen_type_name_0 to locale character set.
+	(objc_check_decl, check_protocol_recursively,
+	lookup_and_install_protocols, objc_build_string_object,
+	objc_get_class_reference, objc_declare_alias, objc_declare_class,
+	objc_get_class_ivars, error_with_ivar, check_duplicates,
+	objc_finish_message_expr, objc_build_protocol_expr,
+	objc_build_selector_expr, build_ivar_reference, objc_add_method,
+	add_category, add_instance_variable, objc_is_public,
+	check_methods, check_methods_accessible, check_protocol,
+	start_class, finish_class, start_protocol, really_start_method,
+	get_super_receiver, objc_lookup_ivar): Use %E and %qE for
+	identifiers in diagnostics.  Translate generated text to locale
+	character set as needed.
+	(check_protocol, check_protocols): Change name parameter to type
+	tree.
+	(lang_report_error_function): Remove.
+
 2009-04-27  Ian Lance Taylor  <iant@google.com>
 
 	* objc-act.c (objc_gimplify_expr): Add casts to enum type.

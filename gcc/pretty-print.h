@@ -148,6 +148,10 @@ typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,
 /* The amount of whitespace to be emitted when starting a new line.  */
 #define pp_indentation(PP) pp_base (PP)->indent_skip
 
+/* True if identifiers are translated to the locale character set on
+   output.  */
+#define pp_translate_identifiers(PP) pp_base (PP)->translate_identifiers
+
 /* The data structure that contains the bare minimum required to do
    proper pretty-printing.  Clients may derived from this structure
    and add additional fields they need.  */
@@ -187,6 +191,10 @@ struct pretty_print_info
 
   /* Nonzero means one should emit a newline before outputting anything.  */
   bool need_newline;
+
+  /* Nonzero means identifiers are translated to the locale character
+     set on output.  */
+  bool translate_identifiers;
 };
 
 #define pp_set_line_maximum_length(PP, L) \
@@ -273,7 +281,9 @@ struct pretty_print_info
    pp_scalar (PP, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) I)
 #define pp_pointer(PP, P)      pp_scalar (PP, "%p", P)
 
-#define pp_identifier(PP, ID)  pp_string (PP, identifier_to_locale (ID))
+#define pp_identifier(PP, ID)  pp_string (PP, (pp_translate_identifiers (PP) \
+					  ? identifier_to_locale (ID)	\
+					  : (ID)))
 #define pp_tree_identifier(PP, T)                      \
   pp_base_tree_identifier (pp_base (PP), T)
 

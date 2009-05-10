@@ -2767,6 +2767,7 @@ maybe_init_pretty_print (FILE *file)
     {
       pp_construct (&buffer, /* prefix */NULL, /* line-width */0);
       pp_needs_newline (&buffer) = true;
+      pp_translate_identifiers (&buffer) = false;
       initialized = 1;
     }
 

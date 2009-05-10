@@ -41,6 +41,10 @@ along with GCC; see the file COPYING3.  If not see
 static cxx_pretty_printer scratch_pretty_printer;
 #define cxx_pp (&scratch_pretty_printer)
 
+/* Translate if being used for diagnostics, but not for dump files or
+   __PRETTY_FUNCTION.  */
+#define M_(msgid) (pp_translate_identifiers (cxx_pp) ? _(msgid) : (msgid))
+
 # define NEXT_CODE(T) (TREE_CODE (TREE_TYPE (T)))
 
 static const char *args_to_string (tree, int);
@@ -298,7 +302,7 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
 	  if (arg)
 	    dump_template_argument (arg, TFF_PLAIN_IDENTIFIER);
 	  else
-	    pp_string (cxx_pp, _("<missing>"));
+	    pp_string (cxx_pp, M_("<missing>"));
 
 	  ++arg_idx;
 	  need_comma = 1;
@@ -339,9 +343,9 @@ dump_type (tree t, int flags)
     {
     case UNKNOWN_TYPE:
       if (t == init_list_type_node)
-	pp_string (cxx_pp, _("<brace-enclosed initializer list>"));
+	pp_string (cxx_pp, M_("<brace-enclosed initializer list>"));
       else
-	pp_string (cxx_pp, _("<unresolved overloaded function type>"));
+	pp_string (cxx_pp, M_("<unresolved overloaded function type>"));
       break;
 
     case TREE_LIST:
@@ -481,7 +485,7 @@ dump_type (tree t, int flags)
       /* Fall through to error.  */
 
     case ERROR_MARK:
-      pp_string (cxx_pp, _("<type error>"));
+      pp_string (cxx_pp, M_("<type error>"));
       break;
     }
 }
@@ -578,9 +582,9 @@ dump_aggr_type (tree t, int flags)
   if (name == 0 || ANON_AGGRNAME_P (name))
     {
       if (flags & TFF_CLASS_KEY_OR_ENUM)
-	pp_string (cxx_pp, _("<anonymous>"));
+	pp_string (cxx_pp, M_("<anonymous>"));
       else
-	pp_printf (pp_base (cxx_pp), _("<anonymous %s>"), variety);
+	pp_printf (pp_base (cxx_pp), M_("<anonymous %s>"), variety);
     }
   else
     pp_cxx_tree_identifier (cxx_pp, name);
@@ -702,7 +706,7 @@ dump_type_prefix (tree t, int flags)
       pp_unsupported_tree (cxx_pp, t);
       /* fall through.  */
     case ERROR_MARK:
-      pp_string (cxx_pp, _("<typeprefixerror>"));
+      pp_string (cxx_pp, M_("<typeprefixerror>"));
       break;
     }
 }
@@ -812,9 +816,9 @@ dump_global_iord (tree t)
   const char *p = NULL;
 
   if (DECL_GLOBAL_CTOR_P (t))
-    p = _("(static initializers for %s)");
+    p = M_("(static initializers for %s)");
   else if (DECL_GLOBAL_DTOR_P (t))
-    p = _("(static destructors for %s)");
+    p = M_("(static destructors for %s)");
   else
     gcc_unreachable ();
 
@@ -841,7 +845,7 @@ dump_simple_decl (tree t, tree type, int flags)
   if (DECL_NAME (t))
     dump_decl (DECL_NAME (t), flags);
   else
-    pp_string (cxx_pp, _("<anonymous>"));
+    pp_string (cxx_pp, M_("<anonymous>"));
   if (flags & TFF_DECL_SPECIFIERS)
     dump_type_suffix (type, flags);
 }
@@ -884,7 +888,7 @@ dump_decl (tree t, int flags)
     case VAR_DECL:
       if (DECL_NAME (t) && VTABLE_NAME_P (DECL_NAME (t)))
 	{
-	  pp_string (cxx_pp, _("vtable for "));
+	  pp_string (cxx_pp, M_("vtable for "));
 	  gcc_assert (TYPE_P (DECL_CONTEXT (t)));
 	  dump_type (DECL_CONTEXT (t), flags);
 	  break;
@@ -896,7 +900,7 @@ dump_decl (tree t, int flags)
       break;
 
     case RESULT_DECL:
-      pp_string (cxx_pp, _("<return value> "));
+      pp_string (cxx_pp, M_("<return value> "));
       dump_simple_decl (t, TREE_TYPE (t), flags);
       break;
 
@@ -909,7 +913,7 @@ dump_decl (tree t, int flags)
 	    dump_scope (CP_DECL_CONTEXT (t), flags);
 	  flags &= ~TFF_UNQUALIFIED_NAME;
 	  if (DECL_NAME (t) == NULL_TREE)
-	    pp_string (cxx_pp, _("<unnamed>"));
+	    pp_string (cxx_pp, M_("<unnamed>"));
 	  else
 	    pp_cxx_tree_identifier (cxx_pp, DECL_NAME (t));
 	}
@@ -983,7 +987,7 @@ dump_decl (tree t, int flags)
 
     case FUNCTION_DECL:
       if (! DECL_LANG_SPECIFIC (t))
-	pp_string (cxx_pp, _("<built-in>"));
+	pp_string (cxx_pp, M_("<built-in>"));
       else if (DECL_GLOBAL_CTOR_P (t) || DECL_GLOBAL_DTOR_P (t))
 	dump_global_iord (t);
       else
@@ -1022,7 +1026,7 @@ dump_decl (tree t, int flags)
       else if (DECL_INITIAL (t))
 	dump_expr (DECL_INITIAL (t), flags | TFF_EXPR_IN_PARENS);
       else
-	pp_string (cxx_pp, _("<enumerator>"));
+	pp_string (cxx_pp, M_("<enumerator>"));
       break;
 
     case USING_DECL:
@@ -1062,7 +1066,7 @@ dump_decl (tree t, int flags)
       /* Fall through to error.  */
 
     case ERROR_MARK:
-      pp_string (cxx_pp, _("<declaration error>"));
+      pp_string (cxx_pp, M_("<declaration error>"));
       break;
     }
 }
@@ -1292,7 +1296,7 @@ dump_function_decl (tree t, int flags)
     {
       pp_cxx_whitespace (cxx_pp);
       pp_cxx_left_bracket (cxx_pp);
-      pp_cxx_ws_string (cxx_pp, _("with"));
+      pp_cxx_ws_string (cxx_pp, M_("with"));
       pp_cxx_whitespace (cxx_pp);
       dump_template_bindings (template_parms, template_args, typenames);
       pp_cxx_right_bracket (cxx_pp);
@@ -1457,7 +1461,7 @@ dump_template_parms (tree info, int primary, int flags)
             pp_separate_with_comma (cxx_pp);
           
           if (!arg)
-            pp_string (cxx_pp, _("<template parameter error>"));
+            pp_string (cxx_pp, M_("<template parameter error>"));
           else
             dump_template_argument (arg, flags);
         }
@@ -1477,7 +1481,7 @@ dump_template_parms (tree info, int primary, int flags)
 
           if (TREE_VEC_ELT (parms, ix) == error_mark_node)
             {
-              pp_string (cxx_pp, _("<template parameter error>"));
+              pp_string (cxx_pp, M_("<template parameter error>"));
               continue;
             }
 
@@ -1603,7 +1607,7 @@ dump_expr (tree t, int flags)
 
   if (STATEMENT_CLASS_P (t))
     {
-      pp_cxx_ws_string (cxx_pp, _("<statement>"));
+      pp_cxx_ws_string (cxx_pp, M_("<statement>"));
       return;
     }
 
@@ -1632,7 +1636,7 @@ dump_expr (tree t, int flags)
     case THROW_EXPR:
       /* While waiting for caret diagnostics, avoid printing
 	 __cxa_allocate_exception, __cxa_throw, and the like.  */
-      pp_cxx_ws_string (cxx_pp, _("<throw-expression>"));
+      pp_cxx_ws_string (cxx_pp, M_("<throw-expression>"));
       break;
 
     case PTRMEM_CST:
@@ -2078,7 +2082,7 @@ dump_expr (tree t, int flags)
       break;
 
     case DEFAULT_ARG:
-      pp_string (cxx_pp, _("<unparsed>"));
+      pp_string (cxx_pp, M_("<unparsed>"));
       break;
 
     case TRY_CATCH_EXPR:
@@ -2224,7 +2228,7 @@ dump_expr (tree t, int flags)
       pp_unsupported_tree (cxx_pp, t);
       /* fall through to ERROR_MARK...  */
     case ERROR_MARK:
-      pp_string (cxx_pp, _("<expression error>"));
+      pp_string (cxx_pp, M_("<expression error>"));
       break;
     }
 }
@@ -2238,7 +2242,7 @@ dump_binary_op (const char *opstring, tree t, int flags)
   if (opstring)
     pp_cxx_ws_string (cxx_pp, opstring);
   else
-    pp_string (cxx_pp, _("<unknown operator>"));
+    pp_string (cxx_pp, M_("<unknown operator>"));
   pp_cxx_whitespace (cxx_pp);
   dump_expr (TREE_OPERAND (t, 1), flags | TFF_EXPR_IN_PARENS);
   pp_cxx_right_paren (cxx_pp);
@@ -2273,6 +2277,15 @@ const char *
 type_as_string (tree typ, int flags)
 {
   reinit_cxx_pp ();
+  pp_translate_identifiers (cxx_pp) = false;
+  dump_type (typ, flags);
+  return pp_formatted_text (cxx_pp);
+}
+
+const char *
+type_as_string_translate (tree typ, int flags)
+{
+  reinit_cxx_pp ();
   dump_type (typ, flags);
   return pp_formatted_text (cxx_pp);
 }
@@ -2281,12 +2294,22 @@ const char *
 expr_as_string (tree decl, int flags)
 {
   reinit_cxx_pp ();
+  pp_translate_identifiers (cxx_pp) = false;
   dump_expr (decl, flags);
   return pp_formatted_text (cxx_pp);
 }
 
 const char *
 decl_as_string (tree decl, int flags)
+{
+  reinit_cxx_pp ();
+  pp_translate_identifiers (cxx_pp) = false;
+  dump_decl (decl, flags);
+  return pp_formatted_text (cxx_pp);
+}
+
+const char *
+decl_as_string_translate (tree decl, int flags)
 {
   reinit_cxx_pp ();
   dump_decl (decl, flags);
@@ -2296,12 +2319,15 @@ decl_as_string (tree decl, int flags)
 /* Generate the three forms of printable names for cxx_printable_name.  */
 
 const char *
-lang_decl_name (tree decl, int v)
+lang_decl_name (tree decl, int v, bool translate)
 {
   if (v >= 2)
-    return decl_as_string (decl, TFF_DECL_SPECIFIERS);
+    return (translate
+	    ? decl_as_string_translate (decl, TFF_DECL_SPECIFIERS)
+	    : decl_as_string (decl, TFF_DECL_SPECIFIERS));
 
   reinit_cxx_pp ();
+  pp_translate_identifiers (cxx_pp) = translate;
   if (v == 1 && DECL_CLASS_SCOPE_P (decl))
     {
       dump_type (CP_DECL_CONTEXT (decl), TFF_PLAIN_IDENTIFIER);
@@ -2420,7 +2446,7 @@ static const char *
 op_to_string (enum tree_code p)
 {
   tree id = operator_name_info[(int) p].identifier;
-  return id ? IDENTIFIER_POINTER (id) : _("<unknown>");
+  return id ? IDENTIFIER_POINTER (id) : M_("<unknown>");
 }
 
 static const char *
@@ -2440,7 +2466,7 @@ static const char *
 assop_to_string (enum tree_code p)
 {
   tree id = assignment_operator_name_info[(int) p].identifier;
-  return id ? IDENTIFIER_POINTER (id) : _("{unknown}");
+  return id ? IDENTIFIER_POINTER (id) : M_("{unknown}");
 }
 
 static const char *
@@ -2454,7 +2480,7 @@ args_to_string (tree p, int verbose)
     return "";
 
   if (TYPE_P (TREE_VALUE (p)))
-    return type_as_string (p, flags);
+    return type_as_string_translate (p, flags);
 
   reinit_cxx_pp ();
   for (; p; p = TREE_CHAIN (p))
@@ -2541,7 +2567,7 @@ cp_print_error_function (diagnostic_context *context,
 	    fndecl = current_function_decl;
 
 	  pp_printf (context->printer, function_category (fndecl),
-		     cxx_printable_name (fndecl, 2));
+		     cxx_printable_name_translate (fndecl, 2));
 
 	  while (abstract_origin)
 	    {
@@ -2592,18 +2618,18 @@ cp_print_error_function (diagnostic_context *context,
 		      if (flag_show_column && s.column != 0)
 			pp_printf (context->printer,
 				   _("    inlined from %qs at %s:%d:%d"),
-				   cxx_printable_name (fndecl, 2),
+				   cxx_printable_name_translate (fndecl, 2),
 				   s.file, s.line, s.column);
 		      else
 			pp_printf (context->printer,
 				   _("    inlined from %qs at %s:%d"),
-				   cxx_printable_name (fndecl, 2),
+				   cxx_printable_name_translate (fndecl, 2),
 				   s.file, s.line);
 
 		    }
 		  else
 		    pp_printf (context->printer, _("    inlined from %qs"),
-			       cxx_printable_name (fndecl, 2));
+			       cxx_printable_name_translate (fndecl, 2));
 		}
 	    }
 	  pp_base_character (context->printer, ':');
@@ -2662,8 +2688,8 @@ print_instantiation_full_context (diagnostic_context *context)
 	    pp_verbatim (context->printer,
 			 _("%s: In instantiation of %qs:\n"),
 			 LOCATION_FILE (location),
-			 decl_as_string (p->decl,
-					 TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
+			 decl_as_string_translate (p->decl,
+						   TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
 
 	  location = p->locus;
 	  p = p->next;
@@ -2686,8 +2712,8 @@ print_instantiation_partial_context (diagnostic_context *context,
 	break;
       pp_verbatim (context->printer, _("%s:%d:   instantiated from %qs\n"),
 		   xloc.file, xloc.line,
-		   decl_as_string (t->decl,
-				   TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
+		   decl_as_string_translate (t->decl,
+					     TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
       loc = t->locus;
     }
   pp_verbatim (context->printer, _("%s:%d:   instantiated from here"),
