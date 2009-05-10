@@ -5,8 +5,6 @@
 	(dump_cgraph_node): Dump new flag.
 	* cgraph.h (struct cgraph_node): Add address_taken.
 	(cgraph_mark_address_taken_node): New function.
-	* cp/decl2.c (cxx_callgraph_analyze_expr): Use
-	cgraph_mark_address_taken.
 	* ipa.c (cgraph_postorder): Prioritize functions with address taken
 	since new direct calls can be born.
 
