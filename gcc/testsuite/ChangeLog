@@ -1,3 +1,11 @@
+2009-04-10  David Billinghurst <billingd@gcc.gnu.org>
+
+	PR fortran/38956
+	* gfortran.dg/chmod_1.f90: Don't run on *-*-cygwin*.
+	* gfortran.dg/chmod_2.f90: Likewise.
+	* gfortran.dg/chmod_3.f90: Likewise.
+	* gfortran.dg/open_errors.f90: Likewise.
+
 2009-05-09  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/40043
