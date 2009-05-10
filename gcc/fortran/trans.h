@@ -310,9 +310,6 @@ void gfc_conv_intrinsic_function (gfc_se *, gfc_expr *);
 /* Does an intrinsic map directly to an external library call.  */
 int gfc_is_intrinsic_libcall (gfc_expr *);
 
-/* Used to call the elemental subroutines used in operator assignments.  */
-tree gfc_conv_operator_assign (gfc_se *, gfc_se *, gfc_symbol *);
-
 /* Used to call ordinary functions/subroutines
    and procedure pointer components.  */
 int gfc_conv_procedure_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *,

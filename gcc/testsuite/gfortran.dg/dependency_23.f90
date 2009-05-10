@@ -52,5 +52,6 @@ end module rg0045_stuff
   use rg0045_stuff
   call rg0045(1, 2, 3)
 end
+! { dg-final { cleanup-modules "rg0045_stuff" } }
 
 
