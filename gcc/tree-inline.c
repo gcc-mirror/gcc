@@ -132,6 +132,7 @@ static tree copy_decl_to_var (tree, copy_body_data *);
 static tree copy_result_decl_to_var (tree, copy_body_data *);
 static tree copy_decl_maybe_to_var (tree, copy_body_data *);
 static gimple remap_gimple_stmt (gimple, copy_body_data *);
+static bool delete_unreachable_blocks_update_callgraph (copy_body_data *id);
 
 /* Insert a tree->tree mapping for ID.  Despite the name suggests
    that the trees should be variables, it is used for more than that.  */
@@ -2768,6 +2769,8 @@ estimate_move_cost (tree type)
 {
   HOST_WIDE_INT size;
 
+  gcc_assert (!VOID_TYPE_P (type));
+
   size = int_size_in_bytes (type);
 
   if (size < 0 || size > MOVE_MAX_PIECES * MOVE_RATIO (!optimize_size))
@@ -3013,20 +3016,24 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 	  {
 	    tree arg;
 	    for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
-	      cost += estimate_move_cost (TREE_TYPE (arg));
+	      if (!VOID_TYPE_P (TREE_TYPE (arg)))
+	        cost += estimate_move_cost (TREE_TYPE (arg));
 	  }
 	else if (funtype && prototype_p (funtype))
 	  {
 	    tree t;
-	    for (t = TYPE_ARG_TYPES (funtype); t; t = TREE_CHAIN (t))
-	      cost += estimate_move_cost (TREE_VALUE (t));
+	    for (t = TYPE_ARG_TYPES (funtype); t && t != void_list_node;
+	    	 t = TREE_CHAIN (t))
+	      if (!VOID_TYPE_P (TREE_VALUE (t)))
+	        cost += estimate_move_cost (TREE_VALUE (t));
 	  }
 	else
 	  {
 	    for (i = 0; i < gimple_call_num_args (stmt); i++)
 	      {
 		tree arg = gimple_call_arg (stmt, i);
-		cost += estimate_move_cost (TREE_TYPE (arg));
+	        if (!VOID_TYPE_P (TREE_TYPE (arg)))
+		  cost += estimate_move_cost (TREE_TYPE (arg));
 	      }
 	  }
 
@@ -3657,6 +3664,10 @@ optimize_inline_calls (tree fn)
   number_blocks (fn);
 
   fold_cond_expr_cond ();
+  delete_unreachable_blocks_update_callgraph (&id);
+#ifdef ENABLE_CHECKING
+  verify_cgraph_node (id.dst_node);
+#endif
 
   /* It would be nice to check SSA/CFG/statement consistency here, but it is
      not possible yet - the IPA passes might make various functions to not
