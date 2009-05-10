@@ -586,8 +586,8 @@ ia64_handle_model_attribute (tree *node, tree name, tree args,
     }
   else
     {
-      warning (OPT_Wattributes, "invalid argument of %qs attribute",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "invalid argument of %qE attribute",
+	       name);
       *no_add_attrs = true;
     }
 
@@ -618,8 +618,8 @@ ia64_handle_model_attribute (tree *node, tree name, tree args,
       break;
 
     default:
-      warning (OPT_Wattributes, "%qs attribute ignored",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute ignored",
+	       name);
       *no_add_attrs = true;
       break;
     }

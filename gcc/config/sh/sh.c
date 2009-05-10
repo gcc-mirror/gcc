@@ -8040,8 +8040,8 @@ sh_insert_attributes (tree node, tree *attributes)
 		  || is_attribute_p ("nosave_low_regs", TREE_PURPOSE (attrs))
 		  || is_attribute_p ("resbank", TREE_PURPOSE (attrs)))
 		warning (OPT_Wattributes,
-			 "%qs attribute only applies to interrupt functions",
-			 IDENTIFIER_POINTER (TREE_PURPOSE (attrs)));
+			 "%qE attribute only applies to interrupt functions",
+			 TREE_PURPOSE (attrs));
 	      else
 		{
 		  *tail = tree_cons (TREE_PURPOSE (attrs), NULL_TREE,
@@ -8123,14 +8123,14 @@ sh_handle_resbank_handler_attribute (tree * node, tree name,
 {
   if (!TARGET_SH2A)
     {
-      warning (OPT_Wattributes, "%qs attribute is supported only for SH2A",
-               IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute is supported only for SH2A",
+               name);
       *no_add_attrs = true;
     }
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning (OPT_Wattributes, "%qs attribute only applies to functions",
-               IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+               name);
       *no_add_attrs = true;
     }
 
@@ -8147,8 +8147,8 @@ sh_handle_interrupt_handler_attribute (tree *node, tree name,
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning (OPT_Wattributes, "%qs attribute only applies to functions",
-               IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+               name);
       *no_add_attrs = true;
     }
   else if (TARGET_SHCOMPACT)
@@ -8170,30 +8170,30 @@ sh2a_handle_function_vector_handler_attribute (tree * node, tree name,
 {
   if (!TARGET_SH2A)
     {
-      warning (OPT_Wattributes, "%qs attribute only applies to SH2A",
-               IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute only applies to SH2A",
+               name);
       *no_add_attrs = true;
     }
   else if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning (OPT_Wattributes, "%qs attribute only applies to functions",
-               IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+               name);
       *no_add_attrs = true;
     }
   else if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
     {
       /* The argument must be a constant integer.  */
       warning (OPT_Wattributes,
-               "`%s' attribute argument not an integer constant",
-               IDENTIFIER_POINTER (name));
+               "%qE attribute argument not an integer constant",
+               name);
       *no_add_attrs = true;
     }
   else if (TREE_INT_CST_LOW (TREE_VALUE (args)) > 255)
     {
       /* The argument value must be between 0 to 255.  */
       warning (OPT_Wattributes,
-               "`%s' attribute argument should be between 0 to 255",
-               IDENTIFIER_POINTER (name));
+               "%qE attribute argument should be between 0 to 255",
+               name);
       *no_add_attrs = true;
     }
   return NULL_TREE;
@@ -8258,15 +8258,15 @@ sh_handle_sp_switch_attribute (tree *node, tree name, tree args,
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning (OPT_Wattributes, "%qs attribute only applies to functions",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
       *no_add_attrs = true;
     }
   else if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
     {
       /* The argument must be a constant string.  */
-      warning (OPT_Wattributes, "%qs attribute argument not a string constant",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute argument not a string constant",
+	       name);
       *no_add_attrs = true;
     }
 
@@ -8281,8 +8281,8 @@ sh_handle_trap_exit_attribute (tree *node, tree name, tree args,
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
-      warning (OPT_Wattributes, "%qs attribute only applies to functions",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
       *no_add_attrs = true;
     }
   /* The argument specifies a trap number to be used in a trapa instruction
@@ -8290,8 +8290,8 @@ sh_handle_trap_exit_attribute (tree *node, tree name, tree args,
   else if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
     {
       /* The argument must be a constant integer.  */
-      warning (OPT_Wattributes, "%qs attribute argument not an "
-	       "integer constant", IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute argument not an "
+	       "integer constant", name);
       *no_add_attrs = true;
     }
 

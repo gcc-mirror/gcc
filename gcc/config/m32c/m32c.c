@@ -1,5 +1,5 @@
 /* Target Code for R8C/M16C/M32C
-   Copyright (C) 2005, 2006, 2007, 2008
+   Copyright (C) 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Red Hat.
 
@@ -2781,24 +2781,24 @@ function_vector_handler (tree * node ATTRIBUTE_UNUSED,
     {
       /* The attribute is not supported for R8C target.  */
       warning (OPT_Wattributes,
-                "`%s' attribute is not supported for R8C target",
-                IDENTIFIER_POINTER (name));
+                "%qE attribute is not supported for R8C target",
+                name);
       *no_add_attrs = true;
     }
   else if (TREE_CODE (*node) != FUNCTION_DECL)
     {
       /* The attribute must be applied to functions only.  */
       warning (OPT_Wattributes,
-                "`%s' attribute applies only to functions",
-                IDENTIFIER_POINTER (name));
+                "%qE attribute applies only to functions",
+                name);
       *no_add_attrs = true;
     }
   else if (TREE_CODE (TREE_VALUE (args)) != INTEGER_CST)
     {
       /* The argument must be a constant integer.  */
       warning (OPT_Wattributes,
-                "`%s' attribute argument not an integer constant",
-                IDENTIFIER_POINTER (name));
+                "%qE attribute argument not an integer constant",
+                name);
       *no_add_attrs = true;
     }
   else if (TREE_INT_CST_LOW (TREE_VALUE (args)) < 18
@@ -2806,8 +2806,8 @@ function_vector_handler (tree * node ATTRIBUTE_UNUSED,
     {
       /* The argument value must be between 18 to 255.  */
       warning (OPT_Wattributes,
-                "`%s' attribute argument should be between 18 to 255",
-                IDENTIFIER_POINTER (name));
+                "%qE attribute argument should be between 18 to 255",
+                name);
       *no_add_attrs = true;
     }
   return NULL_TREE;

@@ -5267,8 +5267,8 @@ handle_int_attribute (tree *node, tree name,
 
   if (TREE_CODE (x) != FUNCTION_TYPE)
     {
-      warning (OPT_Wattributes, "%qs attribute only applies to functions",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
       *no_add_attrs = true;
     }
   else if (funkind (x) != SUBROUTINE)
@@ -5328,8 +5328,8 @@ bfin_handle_longcall_attribute (tree *node, tree name,
       && TREE_CODE (*node) != FIELD_DECL
       && TREE_CODE (*node) != TYPE_DECL)
     {
-      warning (OPT_Wattributes, "`%s' attribute only applies to functions",
-	       IDENTIFIER_POINTER (name));
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
       *no_add_attrs = true;
     }
 
@@ -5357,8 +5357,8 @@ bfin_handle_l1_text_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 
   if (TREE_CODE (decl) != FUNCTION_DECL)
     {
-      error ("`%s' attribute only applies to functions",
-	     IDENTIFIER_POINTER (name));
+      error ("%qE attribute only applies to functions",
+	     name);
       *no_add_attrs = true;
     }
 
@@ -5389,15 +5389,15 @@ bfin_handle_l1_data_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 
   if (TREE_CODE (decl) != VAR_DECL)
     {
-      error ("`%s' attribute only applies to variables",
-	     IDENTIFIER_POINTER (name));
+      error ("%qE attribute only applies to variables",
+	     name);
       *no_add_attrs = true;
     }
   else if (current_function_decl != NULL_TREE
 	   && !TREE_STATIC (decl))
     {
-      error ("`%s' attribute cannot be specified for local variables",
-	     IDENTIFIER_POINTER (name));
+      error ("%qE attribute cannot be specified for local variables",
+	     name);
       *no_add_attrs = true;
     }
   else
