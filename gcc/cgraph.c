@@ -898,64 +898,81 @@ cgraph_redirect_edge_callee (struct cgraph_edge *e, struct cgraph_node *n)
 
 
 /* Update or remove the corresponding cgraph edge if a GIMPLE_CALL
-   OLD_STMT changed into NEW_STMT.  */
+   OLD_STMT changed into NEW_STMT.  OLD_CALL is gimple_call_fndecl
+   of OLD_STMT if it was previously call statement.  */
 
 static void
 cgraph_update_edges_for_call_stmt_node (struct cgraph_node *node,
-					gimple old_stmt, gimple new_stmt)
+					gimple old_stmt, tree old_call, gimple new_stmt)
 {
-  tree new_call = (is_gimple_call (new_stmt)) ? gimple_call_fn (new_stmt) : 0;
-  tree old_call = (is_gimple_call (old_stmt)) ? gimple_call_fn (old_stmt) : 0;
+  tree new_call = (is_gimple_call (new_stmt)) ? gimple_call_fndecl (new_stmt) : 0;
 
+  /* We are seeing indirect calls, then there is nothing to update.  */
+  if (!new_call && !old_call)
+    return;
+  /* See if we turned indirect call into direct call or folded call to one builtin
+     into different bultin.  */
   if (old_call != new_call)
     {
       struct cgraph_edge *e = cgraph_edge (node, old_stmt);
       struct cgraph_edge *ne = NULL;
-      tree new_decl;
+      gcov_type count;
+      int frequency;
+      int loop_nest;
 
       if (e)
 	{
-	  gcov_type count = e->count;
-	  int frequency = e->frequency;
-	  int loop_nest = e->loop_nest;
+	  /* See if the call is already there.  It might be because of indirect
+	     inlining already found it.  */
+	  if (new_call && e->callee->decl == new_call)
+	    return;
 
+	  /* Otherwise remove edge and create new one; we can't simply redirect
+	     since function has changed, so inline plan and other information
+	     attached to edge is invalid.  */
 	  cgraph_remove_edge (e);
-	  if (new_call)
-	    {
-	      new_decl = gimple_call_fndecl (new_stmt);
-	      if (new_decl)
-		{
-		  ne = cgraph_create_edge (node, cgraph_node (new_decl),
-					   new_stmt, count, frequency,
-					   loop_nest);
-		  gcc_assert (ne->inline_failed);
-		}
-	    }
+	  count = e->count;
+	  frequency = e->frequency;
+	  loop_nest = e->loop_nest;
+	}
+      else
+	{
+	  /* We are seeing new direct call; compute profile info based on BB.  */
+	  basic_block bb = gimple_bb (new_stmt);
+	  count = bb->count;
+	  frequency = compute_call_stmt_bb_frequency (current_function_decl,
+						      bb);
+	  loop_nest = bb->loop_depth;
+	}
+
+      if (new_call)
+	{
+	  ne = cgraph_create_edge (node, cgraph_node (new_call),
+				   new_stmt, count, frequency,
+				   loop_nest);
+	  gcc_assert (ne->inline_failed);
 	}
     }
+  /* We only updated the call stmt; update pointer in cgraph edge..  */
   else if (old_stmt != new_stmt)
-    {
-      struct cgraph_edge *e = cgraph_edge (node, old_stmt);
-
-      if (e)
-	cgraph_set_call_stmt (e, new_stmt);
-    }
+    cgraph_set_call_stmt (cgraph_edge (node, old_stmt), new_stmt);
 }
 
 /* Update or remove the corresponding cgraph edge if a GIMPLE_CALL
-   OLD_STMT changed into NEW_STMT.  */
+   OLD_STMT changed into NEW_STMT.  OLD_DECL is gimple_call_fndecl
+   of OLD_STMT before it was updated (updating can happen inplace).  */
 
 void
-cgraph_update_edges_for_call_stmt (gimple old_stmt, gimple new_stmt)
+cgraph_update_edges_for_call_stmt (gimple old_stmt, tree old_decl, gimple new_stmt)
 {
   struct cgraph_node *orig = cgraph_node (cfun->decl);
   struct cgraph_node *node;
 
-  cgraph_update_edges_for_call_stmt_node (orig, old_stmt, new_stmt);
+  cgraph_update_edges_for_call_stmt_node (orig, old_stmt, old_decl, new_stmt);
   if (orig->clones)
     for (node = orig->clones; node != orig;)
       {
-        cgraph_update_edges_for_call_stmt_node (node, old_stmt, new_stmt);
+        cgraph_update_edges_for_call_stmt_node (node, old_stmt, old_decl, new_stmt);
 	if (node->clones)
 	  node = node->clones;
 	else if (node->next_sibling_clone)

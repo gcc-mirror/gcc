@@ -1522,7 +1522,8 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		gcc_assert (dest->needed || !dest->analyzed);
 		if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES)
 		  cgraph_create_edge_including_clones (id->dst_node, dest, stmt,
-						       bb->count, CGRAPH_FREQ_BASE,
+						       bb->count,
+						       compute_call_stmt_bb_frequency (id->dst_node->decl, bb),
 						       bb->loop_depth,
 						       CIF_ORIGINALLY_INDIRECT_CALL);
 		else
@@ -3542,6 +3543,7 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 	  if (pointer_set_contains (statements, gsi_stmt (gsi)))
 	    {
 	      gimple old_stmt = gsi_stmt (gsi);
+	      tree old_decl = is_gimple_call (old_stmt) ? gimple_call_fndecl (old_stmt) : 0;
 
 	      if (fold_stmt (&gsi))
 		{
@@ -3550,8 +3552,9 @@ fold_marked_statements (int first, struct pointer_set_t *statements)
 		  gimple new_stmt = gsi_stmt (gsi);
 		  update_stmt (new_stmt);
 
-		  if (is_gimple_call (old_stmt))
-		    cgraph_update_edges_for_call_stmt (old_stmt, new_stmt);
+		  if (is_gimple_call (old_stmt)
+		      || is_gimple_call (new_stmt))
+		    cgraph_update_edges_for_call_stmt (old_stmt, old_decl, new_stmt);
 
 		  if (maybe_clean_or_replace_eh_stmt (old_stmt, new_stmt))
 		    gimple_purge_dead_eh_edges (BASIC_BLOCK (first));

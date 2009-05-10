@@ -385,7 +385,7 @@ void cgraph_create_edge_including_clones (struct cgraph_node *,
 					  struct cgraph_node *,
 					  gimple, gcov_type, int, int,
 					  cgraph_inline_failed_t);
-void cgraph_update_edges_for_call_stmt (gimple, gimple);
+void cgraph_update_edges_for_call_stmt (gimple, tree, gimple);
 struct cgraph_local_info *cgraph_local_info (tree);
 struct cgraph_global_info *cgraph_global_info (tree);
 struct cgraph_rtl_info *cgraph_rtl_info (tree);
