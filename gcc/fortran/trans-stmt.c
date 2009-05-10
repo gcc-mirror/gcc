@@ -270,9 +270,11 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  gfc_conv_expr_descriptor (&parmse, e, gfc_walk_expr (e));
 	  gfc_add_block_to_block (&se->pre, &parmse.pre);
 
-	  /* If we've got INTENT(INOUT), initialize the array temporary with
-	     a copy of the values.  */
-	  if (fsym->attr.intent == INTENT_INOUT)
+	  /* If we've got INTENT(INOUT) or a derived type with INTENT(OUT),
+	     initialize the array temporary with a copy of the values.  */
+	  if (fsym->attr.intent == INTENT_INOUT
+		|| (fsym->ts.type ==BT_DERIVED
+		      && fsym->attr.intent == INTENT_OUT))
 	    initial = parmse.expr;
 	  else
 	    initial = NULL_TREE;
@@ -332,12 +334,16 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 /* Translate the CALL statement.  Builds a call to an F95 subroutine.  */
 
 tree
-gfc_trans_call (gfc_code * code, bool dependency_check)
+gfc_trans_call (gfc_code * code, bool dependency_check,
+		tree mask, tree count1, bool invert)
 {
   gfc_se se;
   gfc_ss * ss;
   int has_alternate_specifier;
   gfc_dep_check check_variable;
+  tree index = NULL_TREE;
+  tree maskexpr = NULL_TREE;
+  tree tmp;
 
   /* A CALL starts a new block because the actual arguments may have to
      be evaluated first.  */
@@ -429,10 +435,31 @@ gfc_trans_call (gfc_code * code, bool dependency_check)
       gfc_start_scalarized_body (&loop, &body);
       gfc_init_block (&block);
 
+      if (mask && count1)
+	{
+	  /* Form the mask expression according to the mask.  */
+	  index = count1;
+	  maskexpr = gfc_build_array_ref (mask, index, NULL);
+	  if (invert)
+	    maskexpr = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (maskexpr),
+				    maskexpr);
+	}
+
       /* Add the subroutine call to the block.  */
-      gfc_conv_function_call (&loopse, code->resolved_sym, code->ext.actual,
-			      NULL_TREE);
-      gfc_add_expr_to_block (&loopse.pre, loopse.expr);
+      gfc_conv_function_call (&loopse, code->resolved_sym,
+			      code->ext.actual, NULL_TREE);
+
+      if (mask && count1)
+	{
+	  tmp = build3_v (COND_EXPR, maskexpr, loopse.expr,
+			  build_empty_stmt ());
+	  gfc_add_expr_to_block (&loopse.pre, tmp);
+	  tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
+			     count1, gfc_index_one_node);
+	  gfc_add_modify (&loopse.pre, count1, tmp);
+	}
+      else
+	gfc_add_expr_to_block (&loopse.pre, loopse.expr);
 
       gfc_add_block_to_block (&block, &loopse.pre);
       gfc_add_block_to_block (&block, &loopse.post);
@@ -2981,7 +3008,7 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
 	/* Explicit subroutine calls are prevented by the frontend but interface
 	   assignments can legitimately produce them.  */
 	case EXEC_ASSIGN_CALL:
-	  assign = gfc_trans_call (c, true);
+	  assign = gfc_trans_call (c, true, NULL_TREE, NULL_TREE, false);
           tmp = gfc_trans_nested_forall_loop (nested_forall_info, assign, 1);
           gfc_add_expr_to_block (&block, tmp);
           break;
@@ -3176,7 +3203,7 @@ static tree
 gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
 			tree mask, bool invert,
                         tree count1, tree count2,
-			gfc_symbol *sym)
+			gfc_code *cnext)
 {
   gfc_se lse;
   gfc_se rse;
@@ -3189,6 +3216,10 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
   stmtblock_t block;
   stmtblock_t body;
   tree index, maskexpr;
+
+  /* A defined assignment. */  
+  if (cnext && cnext->resolved_sym)
+    return gfc_trans_call (cnext, true, mask, count1, invert);
 
 #if 0
   /* TODO: handle this special case.
@@ -3291,11 +3322,8 @@ gfc_trans_where_assign (gfc_expr *expr1, gfc_expr *expr2,
     maskexpr = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (maskexpr), maskexpr);
 
   /* Use the scalar assignment as is.  */
-  if (sym == NULL)
-    tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
-				   loop.temp_ss != NULL, false);
-  else
-    tmp = gfc_conv_operator_assign (&lse, &rse, sym);
+  tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
+				 loop.temp_ss != NULL, false);
 
   tmp = build3_v (COND_EXPR, maskexpr, tmp, build_empty_stmt ());
 
@@ -3562,7 +3590,7 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
                       tmp = gfc_trans_where_assign (expr1, expr2,
 						    cmask, invert,
 						    count1, count2,
-						    cnext->resolved_sym);
+						    cnext);
 
                       tmp = gfc_trans_nested_forall_loop (nested_forall_info,
                                                           tmp, 1);
@@ -3580,7 +3608,7 @@ gfc_trans_where_2 (gfc_code * code, tree mask, bool invert,
                   tmp = gfc_trans_where_assign (expr1, expr2,
 						cmask, invert,
 						count1, count2,
-						cnext->resolved_sym);
+						cnext);
                   gfc_add_expr_to_block (block, tmp);
 
                 }

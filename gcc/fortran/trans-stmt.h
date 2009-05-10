@@ -39,7 +39,7 @@ tree gfc_trans_goto (gfc_code *);
 tree gfc_trans_entry (gfc_code *);
 tree gfc_trans_pause (gfc_code *);
 tree gfc_trans_stop (gfc_code *);
-tree gfc_trans_call (gfc_code *, bool);
+tree gfc_trans_call (gfc_code *, bool, tree, tree, bool);
 tree gfc_trans_return (gfc_code *);
 tree gfc_trans_if (gfc_code *);
 tree gfc_trans_arithmetic_if (gfc_code *);

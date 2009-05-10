@@ -1109,12 +1109,14 @@ gfc_trans_code (gfc_code * code)
 	    if (code->resolved_isym
 		&& code->resolved_isym->id == GFC_ISYM_MVBITS)
 	      is_mvbits = true;
-	    res = gfc_trans_call (code, is_mvbits);
+	    res = gfc_trans_call (code, is_mvbits, NULL_TREE,
+				  NULL_TREE, false);
 	  }
 	  break;
 
 	case EXEC_ASSIGN_CALL:
-	  res = gfc_trans_call (code, true);
+	  res = gfc_trans_call (code, true, NULL_TREE,
+				NULL_TREE, false);
 	  break;
 
 	case EXEC_RETURN:
