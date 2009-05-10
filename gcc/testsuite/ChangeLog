@@ -1,3 +1,8 @@
+2009-05-10  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/40081
+	* g++.dg/torture/pr40081.C: New testcase.
+
 2009-05-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/38863

@@ -1277,7 +1277,8 @@ instantiate_element (struct sra_elt *elt)
       nowarn = TREE_NO_WARNING (base_elt->parent->element);
   base = base_elt->element;
 
-  elt->replacement = var = make_rename_temp (elt->type, "SR");
+  elt->replacement = var = make_rename_temp (TYPE_MAIN_VARIANT (elt->type),
+					     "SR");
 
   if (DECL_P (elt->element)
       && !tree_int_cst_equal (DECL_SIZE (var), DECL_SIZE (elt->element)))
@@ -1286,7 +1287,8 @@ instantiate_element (struct sra_elt *elt)
       DECL_SIZE_UNIT (var) = DECL_SIZE_UNIT (elt->element);
 
       elt->in_bitfld_block = 1;
-      elt->replacement = fold_build3 (BIT_FIELD_REF, elt->type, var,
+      elt->replacement = fold_build3 (BIT_FIELD_REF,
+				      TYPE_MAIN_VARIANT (elt->type), var,
 				      DECL_SIZE (var),
 				      BYTES_BIG_ENDIAN
 				      ? size_binop (MINUS_EXPR,
@@ -1302,12 +1304,6 @@ instantiate_element (struct sra_elt *elt)
 
   DECL_SOURCE_LOCATION (var) = DECL_SOURCE_LOCATION (base);
   DECL_ARTIFICIAL (var) = 1;
-
-  if (TREE_THIS_VOLATILE (elt->type))
-    {
-      TREE_THIS_VOLATILE (var) = 1;
-      TREE_SIDE_EFFECTS (var) = 1;
-    }
 
   if (DECL_NAME (base) && !DECL_IGNORED_P (base))
     {
