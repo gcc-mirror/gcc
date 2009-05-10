@@ -1,3 +1,11 @@
+2009-05-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from mainline:
+	PR fortran/39879
+	* trans_expr.c (gfc_conv_procedure_call): Deep copy a derived
+	type parentheses argument if it is a variable with allocatable
+	components.
+
 2009-04-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/39519
