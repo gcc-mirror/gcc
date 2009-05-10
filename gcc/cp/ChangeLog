@@ -1,3 +1,8 @@
+2009-05-10  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (cxx_callgraph_analyze_expr): Use
+	cgraph_mark_address_taken.
+
 2009-05-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* call.c (name_as_c_string): Call type_as_string_translate.
