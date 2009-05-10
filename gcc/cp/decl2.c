@@ -3250,11 +3250,11 @@ cxx_callgraph_analyze_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED)
     {
     case PTRMEM_CST:
       if (TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
-	cgraph_mark_needed_node (cgraph_node (PTRMEM_CST_MEMBER (t)));
+	cgraph_mark_address_taken_node (cgraph_node (PTRMEM_CST_MEMBER (t)));
       break;
     case BASELINK:
       if (TREE_CODE (BASELINK_FUNCTIONS (t)) == FUNCTION_DECL)
-	cgraph_mark_needed_node (cgraph_node (BASELINK_FUNCTIONS (t)));
+	cgraph_mark_address_taken_node (cgraph_node (BASELINK_FUNCTIONS (t)));
       break;
     case VAR_DECL:
       if (DECL_VTABLE_OR_VTT_P (t))

@@ -38,6 +38,7 @@ cgraph_postorder (struct cgraph_node **order)
   int stack_size = 0;
   int order_pos = 0;
   struct cgraph_edge *edge, last;
+  int pass;
 
   struct cgraph_node **stack =
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
@@ -48,44 +49,46 @@ cgraph_postorder (struct cgraph_node **order)
      right through inline functions.  */
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;
-  for (node = cgraph_nodes; node; node = node->next)
-    if (!node->aux)
-      {
-	node2 = node;
-	if (!node->callers)
-	  node->aux = &last;
-	else
-	  node->aux = node->callers;
-	while (node2)
-	  {
-	    while (node2->aux != &last)
-	      {
-		edge = (struct cgraph_edge *) node2->aux;
-		if (edge->next_caller)
-		  node2->aux = edge->next_caller;
-		else
-		  node2->aux = &last;
-		if (!edge->caller->aux)
-		  {
-		    if (!edge->caller->callers)
-		      edge->caller->aux = &last;
-		    else
-		      edge->caller->aux = edge->caller->callers;
-		    stack[stack_size++] = node2;
-		    node2 = edge->caller;
-		    break;
-		  }
-	      }
-	    if (node2->aux == &last)
-	      {
-		order[order_pos++] = node2;
-		if (stack_size)
-		  node2 = stack[--stack_size];
-		else
-		  node2 = NULL;
-	      }
-	  }
-      }
+  for (pass = 0; pass < 2; pass++)
+    for (node = cgraph_nodes; node; node = node->next)
+      if (!node->aux
+	  && (pass || (node->needed && !node->address_taken)))
+	{
+	  node2 = node;
+	  if (!node->callers)
+	    node->aux = &last;
+	  else
+	    node->aux = node->callers;
+	  while (node2)
+	    {
+	      while (node2->aux != &last)
+		{
+		  edge = (struct cgraph_edge *) node2->aux;
+		  if (edge->next_caller)
+		    node2->aux = edge->next_caller;
+		  else
+		    node2->aux = &last;
+		  if (!edge->caller->aux)
+		    {
+		      if (!edge->caller->callers)
+			edge->caller->aux = &last;
+		      else
+			edge->caller->aux = edge->caller->callers;
+		      stack[stack_size++] = node2;
+		      node2 = edge->caller;
+		      break;
+		    }
+		}
+	      if (node2->aux == &last)
+		{
+		  order[order_pos++] = node2;
+		  if (stack_size)
+		    node2 = stack[--stack_size];
+		  else
+		    node2 = NULL;
+		}
+	    }
+	}
   free (stack);
   for (node = cgraph_nodes; node; node = node->next)
     node->aux = NULL;

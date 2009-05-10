@@ -1,3 +1,15 @@
+2009-05-10  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphbuild.c (record_reference): Use cgraph_mark_address_taken_node.
+	* cgraph.c (cgraph_mark_address_taken_node): New function.
+	(dump_cgraph_node): Dump new flag.
+	* cgraph.h (struct cgraph_node): Add address_taken.
+	(cgraph_mark_address_taken_node): New function.
+	* cp/decl2.c (cxx_callgraph_analyze_expr): Use
+	cgraph_mark_address_taken.
+	* ipa.c (cgraph_postorder): Prioritize functions with address taken
+	since new direct calls can be born.
+
 2009-05-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-lex.c (c_lex_with_flags): Expect cpp_hashnode in

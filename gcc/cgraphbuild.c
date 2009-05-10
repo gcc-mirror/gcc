@@ -58,7 +58,7 @@ record_reference (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	 functions reachable unconditionally.  */
       decl = TREE_OPERAND (*tp, 0);
       if (TREE_CODE (decl) == FUNCTION_DECL)
-	cgraph_mark_needed_node (cgraph_node (decl));
+	cgraph_mark_address_taken_node (cgraph_node (decl));
       break;
 
     default:
