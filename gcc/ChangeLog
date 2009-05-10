@@ -1,3 +1,13 @@
+2009-05-10  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/40084
+	* cgraph.c (cgraph_update_edges_for_call_stmt_node): Take old_call argument;
+	rewrite.
+	(cgraph_update_edges_for_call_stmt): Take old_decl argument.
+	* cgraph.h (cgraph_update_edges_for_call_stmt): Update prototype.
+	* tree-inline.c (copy_bb): Set frequency correctly.
+	(fold_marked_statements): Update call of cgraph_update_edges_for_call_stmt.
+
 2009-05-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arc/arc.c (arc_handle_interrupt_attribute): Use %qE for
