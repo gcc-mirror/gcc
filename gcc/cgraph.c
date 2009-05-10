@@ -1293,6 +1293,15 @@ cgraph_mark_needed_node (struct cgraph_node *node)
   cgraph_mark_reachable_node (node);
 }
 
+/* Likewise indicate that a node is having address taken.  */
+
+void
+cgraph_mark_address_taken_node (struct cgraph_node *node)
+{
+  node->address_taken = 1;
+  cgraph_mark_needed_node (node);
+}
+
 /* Return local info for the compiled function.  */
 
 struct cgraph_local_info *
@@ -1397,6 +1406,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " nested in: %s", cgraph_node_name (node->origin));
   if (node->needed)
     fprintf (f, " needed");
+  if (node->address_taken)
+    fprintf (f, " address_taken");
   else if (node->reachable)
     fprintf (f, " reachable");
   if (gimple_has_body_p (node->decl))
