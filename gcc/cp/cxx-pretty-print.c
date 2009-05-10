@@ -29,6 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "toplev.h"
 
+/* Translate if being used for diagnostics, but not for dump files or
+   __PRETTY_FUNCTION.  */
+#define M_(msgid) (pp_translate_identifiers (pp) ? _(msgid) : (msgid))
+
 static void pp_cxx_unqualified_id (cxx_pretty_printer *, tree);
 static void pp_cxx_nested_name_specifier (cxx_pretty_printer *, tree);
 static void pp_cxx_qualified_id (cxx_pretty_printer *, tree);
@@ -147,7 +151,7 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
   switch (code)
     {
     case RESULT_DECL:
-      pp_cxx_ws_string (pp, _("<return-value>"));
+      pp_cxx_ws_string (pp, M_("<return-value>"));
       break;
 
     case OVERLOAD:
@@ -166,7 +170,7 @@ pp_cxx_unqualified_id (cxx_pretty_printer *pp, tree t)
 
     case IDENTIFIER_NODE:
       if (t == NULL)
-	pp_cxx_ws_string (pp, _("<unnamed>"));
+	pp_cxx_ws_string (pp, M_("<unnamed>"));
       else if (IDENTIFIER_TYPENAME_P (t))
 	pp_cxx_conversion_function_id (pp, t);
       else
@@ -2048,7 +2052,7 @@ pp_cxx_canonical_template_parameter (cxx_pretty_printer *pp, tree parm)
     parm = TEMPLATE_TYPE_PARM_INDEX (parm);
 
   pp_cxx_begin_template_argument_list (pp);
-  pp_cxx_ws_string (pp, _("template-parameter-"));
+  pp_cxx_ws_string (pp, M_("template-parameter-"));
   pp_wide_integer (pp, TEMPLATE_PARM_LEVEL (parm));
   pp_minus (pp);
   pp_wide_integer (pp, TEMPLATE_PARM_IDX (parm) + 1);

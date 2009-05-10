@@ -5731,7 +5731,7 @@ name_as_c_string (tree name, tree type, bool *free_p)
   if (IDENTIFIER_CTOR_OR_DTOR_P (name))
     {
       pretty_name
-	= CONST_CAST (char *, IDENTIFIER_POINTER (constructor_name (type)));
+	= CONST_CAST (char *, identifier_to_locale (IDENTIFIER_POINTER (constructor_name (type))));
       /* For a destructor, add the '~'.  */
       if (name == complete_dtor_identifier
 	  || name == base_dtor_identifier
@@ -5745,14 +5745,14 @@ name_as_c_string (tree name, tree type, bool *free_p)
   else if (IDENTIFIER_TYPENAME_P (name))
     {
       pretty_name = concat ("operator ",
-			    type_as_string (TREE_TYPE (name),
-					    TFF_PLAIN_IDENTIFIER),
+			    type_as_string_translate (TREE_TYPE (name),
+						      TFF_PLAIN_IDENTIFIER),
 			    NULL);
       /* Remember that we need to free the memory allocated.  */
       *free_p = true;
     }
   else
-    pretty_name = CONST_CAST (char *, IDENTIFIER_POINTER (name));
+    pretty_name = CONST_CAST (char *, identifier_to_locale (IDENTIFIER_POINTER (name)));
 
   return pretty_name;
 }

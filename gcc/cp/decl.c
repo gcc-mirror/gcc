@@ -7701,7 +7701,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  type = TREE_OPERAND (decl, 0);
 		  if (TYPE_P (type))
 		    type = constructor_name (type);
-		  name = IDENTIFIER_POINTER (type);
+		  name = identifier_to_locale (IDENTIFIER_POINTER (type));
 		  dname = decl;
 		}
 		break;
@@ -7727,10 +7727,10 @@ grokdeclarator (const cp_declarator *declarator,
 		  {
 		    error ("declarator-id missing; using reserved word %qD",
 			   dname);
-		    name = IDENTIFIER_POINTER (dname);
+		    name = identifier_to_locale (IDENTIFIER_POINTER (dname));
 		  }
 		else if (!IDENTIFIER_TYPENAME_P (dname))
-		  name = IDENTIFIER_POINTER (dname);
+		  name = identifier_to_locale (IDENTIFIER_POINTER (dname));
 		else
 		  {
 		    gcc_assert (flags == NO_SPECIAL);
@@ -7738,7 +7738,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    ctor_return_type = TREE_TYPE (dname);
 		    sfk = sfk_conversion;
 		    if (is_typename_at_global_scope (dname))
-		      name = IDENTIFIER_POINTER (dname);
+		      name = identifier_to_locale (IDENTIFIER_POINTER (dname));
 		    else
 		      name = "<invalid operator>";
 		  }

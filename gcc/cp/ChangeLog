@@ -1,3 +1,39 @@
+2009-05-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* call.c (name_as_c_string): Call type_as_string_translate.
+	Translate identifiers to locale character set.
+	* cp-tree.h (lang_decl_name): Update prototype.
+	(type_as_string_translate, decl_as_string_translate,
+	cxx_printable_name_translate): Declare.
+	* cxx-pretty-print.c (M_): Define.
+	(pp_cxx_unqualified_id, pp_cxx_canonical_template_parameter): Mark
+	English fragments for conditional translation with M_.
+	* decl.c (grokdeclarator): Translate identifiers to locale
+	character set for diagnostics.
+	* error.c (M_): Define.
+	(dump_template_bindings, dump_type, dump_aggr_type,
+	dump_type_prefix, dump_global_iord, dump_simple_decl, dump_decl,
+	dump_function_decl, dump_template_parms, dump_expr,
+	dump_binary_op, op_to_string, assop_to_string): Mark English
+	fragments for conditional translation with M_.
+	(type_as_string): Disable translation of identifiers.
+	(type_as_string_translate): New.
+	(expr_as_string): Disable translation of identifiers.
+	(decl_as_string): Disable translation of identifiers.
+	(decl_as_string_translate): New.
+	(lang_decl_name): Add parameter translate.
+	(args_to_string): Call type_as_string_translate.
+	(cp_print_error_function): Call cxx_printable_name_translate.
+	(print_instantiation_full_context,
+	print_instantiation_partial_context): Call
+	decl_as_string_translate.
+	* parser.c (cp_lexer_get_preprocessor_token): Use %qE for
+	identifier in diagnostic.
+	* tree.c (cxx_printable_name): Change to
+	cxx_printable_name_internal.  Add parameter translate.
+	(cxx_printable_name, cxx_printable_name_translate): New wrappers
+	round cxx_printable_name_internal.
+
 2009-05-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/36892

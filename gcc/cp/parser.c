@@ -428,8 +428,8 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
               /* Warn about the C++0x keyword (but still treat it as
                  an identifier).  */
               warning (OPT_Wc__0x_compat, 
-                       "identifier %<%s%> will become a keyword in C++0x",
-                       IDENTIFIER_POINTER (token->u.value));
+                       "identifier %qE will become a keyword in C++0x",
+                       token->u.value);
 
               /* Clear out the C_RID_CODE so we don't warn about this
                  particular identifier-turned-keyword again.  */

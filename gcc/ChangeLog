@@ -1,3 +1,19 @@
+2009-05-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* pretty-print.h (struct pretty_print_info): Add
+	translate_identifiers.
+	(pp_translate_identifiers): New.
+	(pp_identifier): Only conditionally translate identifier to locale
+	character set.
+	* pretty-print.c (pp_construct): Set pp_translate_identifiers.
+	(pp_base_tree_identifier): Only conditionally translate identifier
+	to locale character set.
+	* c-pretty-print.c (M_): Define.
+	(pp_c_type_specifier, pp_c_primary_expression): Mark English
+	fragments for conditional translation with M_.
+	* tree-pretty-print.c (maybe_init_pretty_print): Disable
+	identifier translation.
+
 2009-05-10  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40081
