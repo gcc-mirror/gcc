@@ -344,6 +344,26 @@ outside_finally_tree (treemple start, gimple target)
    The eh region creation is straight-forward, but frobbing all the gotos
    and such into shape isn't.  */
 
+/* The GOTO_QUEUE is is an array of GIMPLE_GOTO and GIMPLE_RETURN
+   statements that are seen to escape this GIMPLE_TRY_FINALLY node.
+   The idea is to record a gimple statement for everything except for
+   the conditionals, which get their labels recorded. Since labels are
+   of type 'tree', we need this node to store both gimple and tree
+   objects.  REPL_STMT is the sequence used to replace the goto/return
+   statement.  CONT_STMT is used to store the statement that allows
+   the return/goto to jump to the original destination. */
+
+struct goto_queue_node
+{
+  treemple stmt;
+  gimple_seq repl_stmt;
+  gimple cont_stmt;
+  int index;
+  /* This is used when index >= 0 to indicate that stmt is a label (as
+     opposed to a goto stmt).  */
+  int is_label;
+};
+
 /* State of the world while lowering.  */
 
 struct leh_state
@@ -377,23 +397,8 @@ struct leh_tf_state
   /* The exception region created for it.  */
   struct eh_region *region;
 
-  /* The GOTO_QUEUE is is an array of GIMPLE_GOTO and GIMPLE_RETURN statements
-     that are seen to escape this GIMPLE_TRY_FINALLY node.
-     The idea is to record a gimple statement for everything except for 
-     the conditionals, which get their labels recorded. Since labels are of
-     type 'tree', we need this node to store both gimple and tree objects.
-     REPL_STMT is the sequence used to replace the goto/return statement.
-     CONT_STMT is used to store the statement that allows the return/goto to
-     jump to the original destination. */
-  struct goto_queue_node {
-    treemple stmt;
-    gimple_seq repl_stmt;
-    gimple cont_stmt;
-    int index;
-    /* this is used when index >= 0 to indicate that stmt is a label(as
-       opposed to a goto stmt) */
-    int is_label;
-  } *goto_queue;
+  /* The goto queue.  */
+  struct goto_queue_node *goto_queue;
   size_t goto_queue_size;
   size_t goto_queue_active;
 

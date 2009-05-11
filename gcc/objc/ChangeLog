@@ -1,3 +1,23 @@
+2009-05-10  Ian Lance Taylor  <iant@google.com>
+
+	* objc-act.c (objc_building_struct): New static variable.
+	(objc_in_struct, objc_struct_types): New static variables.
+	(objc_start_struct, objc_finish_struct): New static functions.
+	(generate_struct_by_value_array): Call objc_start_struct instead
+	of start_struct, and call objc_finish_struct instead of
+	finish_struct.
+	(objc_build_struct, build_objc_symtab_template): Likewise.
+	(build_module_descriptor): Likewise.
+	(build_next_objc_exception_stuff): Likewise.
+	(build_protocol_template): Likewise.
+	(build_method_prototype_list_template): Likewise.
+	(build_method_prototype_template): Likewise.
+	(build_category_template, build_selector_template): Likewise.
+	(build_class_template, build_super_template): Likewise.
+	(build_ivar_template, build_ivar_list_template): Likewise.
+	(build_method_list_template): Likewise.
+	(build_method_template): Likewise.
+
 2009-05-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* objc-act.c: Include intl.h.

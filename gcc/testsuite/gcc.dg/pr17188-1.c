@@ -5,20 +5,20 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-struct s0 { };
+struct s0 { }; /* { dg-message "note: originally defined here" } */
 struct s0;
 struct s0 { }; /* { dg-error "redefinition of 'struct s0'" } */
 
-struct s1 { };
+struct s1 { }; /* { dg-message "note: originally defined here" } */
 struct s1 { }; /* { dg-error "redefinition of 'struct s1'" } */
 
-struct s2 { int a : 1; };
+struct s2 { int a : 1; }; /* { dg-message "note: originally defined here" } */
 struct s2 { int a : 1; }; /* { dg-error "redefinition of 'struct s2'" } */
 
-struct s3 { };
+struct s3 { }; /* { dg-message "note: originally defined here" } */
 struct s3 { int a : 1; }; /* { dg-error "redefinition of 'struct s3'" } */
 
-struct s4 { int a : 1; };
+struct s4 { int a : 1; }; /* { dg-message "note: originally defined here" } */
 struct s4 { }; /* { dg-error "redefinition of 'struct s4'" } */
 
 struct s5 { int a : 1; };

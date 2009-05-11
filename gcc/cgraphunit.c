@@ -1162,9 +1162,17 @@ cgraph_expand_all_functions (void)
 
 /* This is used to sort the node types by the cgraph order number.  */
 
+enum cgraph_order_sort_kind
+{
+  ORDER_UNDEFINED = 0,
+  ORDER_FUNCTION,
+  ORDER_VAR,
+  ORDER_ASM
+};
+
 struct cgraph_order_sort
 {
-  enum { ORDER_UNDEFINED = 0, ORDER_FUNCTION, ORDER_VAR, ORDER_ASM } kind;
+  enum cgraph_order_sort_kind kind;
   union
   {
     struct cgraph_node *f;

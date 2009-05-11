@@ -91,6 +91,18 @@ struct _dep;
 /* This is defined in ddg.h .  */
 struct ddg;
 
+/* Assembler instructions for creating various kinds of integer object.  */
+
+struct asm_int_op
+{
+  const char *hi;
+  const char *si;
+  const char *di;
+  const char *ti;
+};
+
+/* The target structure.  This holds all the backend hooks.  */
+
 struct gcc_target
 {
   /* Functions that output assembler for the target.  */
@@ -101,13 +113,7 @@ struct gcc_target
 
     /* Assembler instructions for creating various kinds of integer object.  */
     const char *byte_op;
-    struct asm_int_op
-    {
-      const char *hi;
-      const char *si;
-      const char *di;
-      const char *ti;
-    } aligned_op, unaligned_op;
+    struct asm_int_op aligned_op, unaligned_op;
 
     /* Try to output the assembler code for an integer object whose
        value is given by X.  SIZE is the size of the object in bytes and

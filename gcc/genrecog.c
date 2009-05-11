@@ -71,6 +71,17 @@ struct decision_head
   struct decision *last;
 };
 
+/* These types are roughly in the order in which we'd like to test them.  */
+enum decision_type
+{
+  DT_num_insns,
+  DT_mode, DT_code, DT_veclen,
+  DT_elt_zero_int, DT_elt_one_int, DT_elt_zero_wide, DT_elt_zero_wide_safe,
+  DT_const_int,
+  DT_veclen_ge, DT_dup, DT_pred, DT_c_test,
+  DT_accept_op, DT_accept_insn
+};
+
 /* A single test.  The two accept types aren't tests per-se, but
    their equality (or lack thereof) does affect tree merging so
    it is convenient to keep them here.  */
@@ -80,16 +91,7 @@ struct decision_test
   /* A linked list through the tests attached to a node.  */
   struct decision_test *next;
 
-  /* These types are roughly in the order in which we'd like to test them.  */
-  enum decision_type
-    {
-      DT_num_insns,
-      DT_mode, DT_code, DT_veclen,
-      DT_elt_zero_int, DT_elt_one_int, DT_elt_zero_wide, DT_elt_zero_wide_safe,
-      DT_const_int,
-      DT_veclen_ge, DT_dup, DT_pred, DT_c_test,
-      DT_accept_op, DT_accept_insn
-    } type;
+  enum decision_type type;
 
   union
   {

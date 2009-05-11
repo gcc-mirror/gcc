@@ -24,7 +24,7 @@ foo (void)
   /* A specific type shall have its content defined at most once.  But we
      may redeclare the tag in different scopes.  */
   {
-    struct s0 { int i; };
+    struct s0 { int i; }; /* { dg-message "note: originally defined here" } */
     {
       struct s0 { long l; };
     }
@@ -33,7 +33,7 @@ foo (void)
     }
     struct s0 { int i; }; /* { dg-bogus "warning" "warning in place of error" } */
     /* { dg-error "rede" "struct redef" { target *-*-* } 34 } */
-    union u0 { int i; };
+    union u0 { int i; }; /* { dg-message "note: originally defined here" } */
     {
       union u0 { long l; };
     }
@@ -42,7 +42,7 @@ foo (void)
     }
     union u0 { int i; }; /* { dg-bogus "warning" "warning in place of error" } */
     /* { dg-error "rede" "union redef" { target *-*-* } 43 } */
-    enum e0 { E0A };
+    enum e0 { E0A }; /* { dg-message "note: originally defined here" } */
     {
       enum e0 { E0B };
     }

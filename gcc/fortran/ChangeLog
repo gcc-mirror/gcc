@@ -1,3 +1,13 @@
+2009-05-10  Ian Lance Taylor  <iant@google.com>
+
+	* gfortran.h (enum gfc_omp_sched_kind): New enum, broken out of
+	gfc_omp_clauses.
+	(enum gfc_omp_default_sharing): Likewise.
+	* module.c (enum gfc_rsym_state): New enum, broken out of
+	pointer_info.
+	(enum gfc_wsym_state): Likewise.
+	* parse.c (enum state_order): New enum, broken out of st_state.
+
 2009-05-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40018

@@ -517,6 +517,14 @@ static struct table_elt *free_element_chain;
 static int constant_pool_entries_cost;
 static int constant_pool_entries_regcost;
 
+/* Trace a patch through the CFG.  */
+
+struct branch_path
+{
+  /* The basic block for this path entry.  */
+  basic_block bb;
+};
+
 /* This data describes a block that will be processed by
    cse_extended_basic_block.  */
 
@@ -527,11 +535,7 @@ struct cse_basic_block_data
   /* Size of current branch path, if any.  */
   int path_size;
   /* Current path, indicating which basic_blocks will be processed.  */
-  struct branch_path
-    {
-      /* The basic block for this path entry.  */
-      basic_block bb;
-    } *path;
+  struct branch_path *path;
 };
 
 
@@ -7058,4 +7062,3 @@ struct rtl_opt_pass pass_cse_after_global_opts =
   TODO_verify_flow                      /* todo_flags_finish */
  }
 };
-

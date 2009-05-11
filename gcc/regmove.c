@@ -50,9 +50,16 @@ static void optimize_reg_copy_2 (rtx, rtx, rtx);
 static void optimize_reg_copy_3 (rtx, rtx, rtx);
 static void copy_src_to_dest (rtx, rtx, rtx);
 
+enum match_use
+{
+  READ,
+  WRITE,
+  READWRITE
+};
+
 struct match {
   int with[MAX_RECOG_OPERANDS];
-  enum { READ, WRITE, READWRITE } use[MAX_RECOG_OPERANDS];
+  enum match_use use[MAX_RECOG_OPERANDS];
   int commutative[MAX_RECOG_OPERANDS];
   int early_clobber[MAX_RECOG_OPERANDS];
 };
