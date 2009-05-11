@@ -9086,14 +9086,12 @@ resolve_fl_derived (gfc_symbol *sym)
 	  && !is_sym_host_assoc (c->ts.derived, sym->ns)
 	  && !c->ts.derived->attr.use_assoc
 	  && !gfc_check_access (c->ts.derived->attr.access,
-				c->ts.derived->ns->default_access))
-	{
-	  gfc_notify_std (GFC_STD_F2003, "Fortran 2003: the component '%s' "
-			  "is a PRIVATE type and cannot be a component of "
-			  "'%s', which is PUBLIC at %L", c->name,
-			  sym->name, &sym->declared_at);
-	  return FAILURE;
-	}
+				c->ts.derived->ns->default_access)
+	  && gfc_notify_std (GFC_STD_F2003, "Fortran 2003: the component '%s' "
+			     "is a PRIVATE type and cannot be a component of "
+			     "'%s', which is PUBLIC at %L", c->name,
+			     sym->name, &sym->declared_at) == FAILURE)
+	return FAILURE;
 
       if (sym->attr.sequence)
 	{
