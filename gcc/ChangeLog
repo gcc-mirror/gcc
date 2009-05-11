@@ -1,3 +1,7 @@
+2009-05-11  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipcp_cloning_candidate_p): Add missing return false.
+	
 2009-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-ivcanon.c: Include target.h
