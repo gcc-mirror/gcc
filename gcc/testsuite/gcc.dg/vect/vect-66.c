@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 8
+#define N 16
 
 __attribute__ ((noinline))
 void main1 ()

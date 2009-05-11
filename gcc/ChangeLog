@@ -1,3 +1,13 @@
+2009-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-ivcanon.c: Include target.h
+	(struct loop_size): new structure.
+	(constant_after_peeling): New predicate.
+	(tree_estimate_loop_size): New function.
+	(estimated_unrolled_size): Rewrite for new estimates.
+	(try_unroll_loop_completely): Use new estimates.
+	* Makefile.in (tree-ssa-loop-ivcanon.o): Add dependenc on target.h
+
 2009-05-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* config/spu/spu-c.c (spu_categorize_keyword): Update for recent

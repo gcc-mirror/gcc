@@ -1,3 +1,17 @@
+2009-05-11  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/pr21829.c: Simplify matching since
+	we now optimize better.
+	* gcc.dg/Wunreachable-8.c: Bogus warnings now come
+	out at different places.
+	* gcc.dg/vect/vect-92.c: Increase loop iteration count to prevent
+	unroling.
+	* gcc.dg/vect/vect-76.c: Likewise.
+	* gcc.dg/vect/vect-70.c: Likewise.
+	* gcc.dg/vect/vect-66.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-66.c: Likewise.
+	* gcc.dg/vect/slp-3.c: One of loops gets now fully unrolled.
+
 2009-05-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/40080

@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "flags.h"
 #include "tree-inline.h"
+#include "target.h"
 
 /* Specifies types of loops that may be unrolled.  */
 
@@ -118,7 +119,7 @@ tree_num_loop_insns (struct loop *loop, eni_weights *weights)
 {
   basic_block *body = get_loop_body (loop);
   gimple_stmt_iterator gsi;
-  unsigned size = 1, i;
+  unsigned size = 0, i;
 
   for (i = 0; i < loop->num_nodes; i++)
     for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -128,28 +129,195 @@ tree_num_loop_insns (struct loop *loop, eni_weights *weights)
   return size;
 }
 
-/* Estimate number of insns of completely unrolled loop.  We assume
-   that the size of the unrolled loop is decreased in the
-   following way (the numbers of insns are based on what
-   estimate_num_insns returns for appropriate statements):
+/* Describe size of loop as detected by tree_estimate_loop_size.  */
+struct loop_size
+{
+  /* Number of instructions in the loop.  */
+  int overall;
 
-   1) exit condition gets removed (2 insns)
-   2) increment of the control variable gets removed (2 insns)
-   3) All remaining statements are likely to get simplified
-      due to constant propagation.  Hard to estimate; just
-      as a heuristics we decrease the rest by 1/3.
+  /* Number of instructions that will be likely optimized out in
+     peeled iterations of loop  (i.e. computation based on induction
+     variable where induction variable starts at known constant.)  */
+  int eliminated_by_peeling;
 
-   NINSNS is the number of insns in the loop before unrolling.
-   NUNROLL is the number of times the loop is unrolled.  */
+  /* Same statistics for last iteration of loop: it is smaller because
+     instructions after exit are not executed.  */
+  int last_iteration;
+  int last_iteration_eliminated_by_peeling;
+};
+
+/* Return true if OP in STMT will be constant after peeling LOOP.  */
+
+static bool
+constant_after_peeling (tree op, gimple stmt, struct loop *loop)
+{
+  affine_iv iv;
+
+  if (is_gimple_min_invariant (op))
+    return true;
+  
+  /* We can still fold accesses to constant arrays when index is known.  */
+  if (TREE_CODE (op) != SSA_NAME)
+    {
+      tree base = op;
+
+      /* First make fast look if we see constant array inside.  */
+      while (handled_component_p (base))
+	base = TREE_OPERAND (base, 0);
+      if ((DECL_P (base)
+      	   && TREE_STATIC (base)
+	   && TREE_READONLY (base)
+           && (DECL_INITIAL (base)
+	       || (!DECL_EXTERNAL (base)
+		   && targetm.binds_local_p (base))))
+	  || CONSTANT_CLASS_P (base))
+	{
+	  /* If so, see if we understand all the indices.  */
+	  base = op;
+	  while (handled_component_p (base))
+	    {
+	      if (TREE_CODE (base) == ARRAY_REF
+		  && !constant_after_peeling (TREE_OPERAND (base, 1), stmt, loop))
+		return false;
+	      base = TREE_OPERAND (base, 0);
+	    }
+	  return true;
+	}
+      return false;
+    }
+
+  /* Induction variables are constants.  */
+  if (!simple_iv (loop, loop_containing_stmt (stmt), op, &iv, false))
+    return false;
+  if (!is_gimple_min_invariant (iv.base))
+    return false;
+  if (!is_gimple_min_invariant (iv.step))
+    return false;
+  return true;
+}
+
+/* Computes an estimated number of insns in LOOP, weighted by WEIGHTS.
+   Return results in SIZE, estimate benefits for complete unrolling exiting by EXIT.  */
+
+static void
+tree_estimate_loop_size (struct loop *loop, edge exit, struct loop_size *size)
+{
+  basic_block *body = get_loop_body (loop);
+  gimple_stmt_iterator gsi;
+  unsigned int i;
+  bool after_exit;
+
+  size->overall = 0;
+  size->eliminated_by_peeling = 0;
+  size->last_iteration = 0;
+  size->last_iteration_eliminated_by_peeling = 0;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Estimating sizes for loop %i\n", loop->num);
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      if (exit && body[i] != exit->src
+	  && dominated_by_p (CDI_DOMINATORS, body[i], exit->src))
+	after_exit = true;
+      else
+	after_exit = false;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, " BB: %i, after_exit: %i\n", body[i]->index, after_exit);
+
+      for (gsi = gsi_start_bb (body[i]); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  int num = estimate_num_insns (stmt, &eni_size_weights);
+	  bool likely_eliminated = false;
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "  size: %3i ", num);
+	      print_gimple_stmt (dump_file, gsi_stmt (gsi), 0, 0);
+	    }
+
+	  /* Look for reasons why we might optimize this stmt away. */
+
+	  /* Exit conditional.  */
+	  if (body[i] == exit->src && stmt == last_stmt (exit->src))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+	        fprintf (dump_file, "   Exit condition will be eliminated.\n");
+	      likely_eliminated = true;
+	    }
+	  /* Sets of IV variables  */
+	  else if (gimple_code (stmt) == GIMPLE_ASSIGN
+	      && constant_after_peeling (gimple_assign_lhs (stmt), stmt, loop))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+	        fprintf (dump_file, "   Induction variable computation will"
+			 " be folded away.\n");
+	      likely_eliminated = true;
+	    }
+	  /* Assignments of IV variables.  */
+	  else if (gimple_code (stmt) == GIMPLE_ASSIGN
+		   && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME
+		   && constant_after_peeling (gimple_assign_rhs1 (stmt), stmt,loop)
+		   && (gimple_assign_rhs_class (stmt) != GIMPLE_BINARY_RHS
+		       || constant_after_peeling (gimple_assign_rhs2 (stmt),
+		       				  stmt, loop)))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+	        fprintf (dump_file, "   Constant expression will be folded away.\n");
+	      likely_eliminated = true;
+	    }
+	  /* Conditionals.  */
+	  else if (gimple_code (stmt) == GIMPLE_COND
+		   && constant_after_peeling (gimple_cond_lhs (stmt), stmt, loop)
+		   && constant_after_peeling (gimple_cond_rhs (stmt), stmt, loop))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+	        fprintf (dump_file, "   Constant conditional.\n");
+	      likely_eliminated = true;
+	    }
+
+	  size->overall += num;
+	  if (likely_eliminated)
+	    size->eliminated_by_peeling += num;
+	  if (!after_exit)
+	    {
+	      size->last_iteration += num;
+	      if (likely_eliminated)
+		size->last_iteration_eliminated_by_peeling += num;
+	    }
+	}
+    }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "size: %i-%i, last_iteration: %i-%i\n", size->overall,
+    	     size->eliminated_by_peeling, size->last_iteration,
+	     size->last_iteration_eliminated_by_peeling);
+  
+  free (body);
+}
+
+/* Estimate number of insns of completely unrolled loop.
+   It is (NUNROLL + 1) * size of loop body with taking into account
+   the fact that in last copy everything after exit conditional
+   is dead and that some instructions will be eliminated after
+   peeling.
+
+   Loop body is likely going to simplify futher, this is difficult
+   to guess, we just decrease the result by 1/3.  */
 
 static unsigned HOST_WIDE_INT
-estimated_unrolled_size (unsigned HOST_WIDE_INT ninsns,
+estimated_unrolled_size (struct loop_size *size,
 			 unsigned HOST_WIDE_INT nunroll)
 {
-  HOST_WIDE_INT unr_insns = 2 * ((HOST_WIDE_INT) ninsns - 4) / 3;
+  HOST_WIDE_INT unr_insns = ((nunroll)
+  			     * (HOST_WIDE_INT) (size->overall
+			     			- size->eliminated_by_peeling));
+  if (!nunroll)
+    unr_insns = 0;
+  unr_insns += size->last_iteration - size->last_iteration_eliminated_by_peeling;
+
+  unr_insns = unr_insns * 2 / 3;
   if (unr_insns <= 0)
     unr_insns = 1;
-  unr_insns *= (nunroll + 1);
 
   return unr_insns;
 }
@@ -165,6 +333,7 @@ try_unroll_loop_completely (struct loop *loop,
 {
   unsigned HOST_WIDE_INT n_unroll, ninsns, max_unroll, unr_insns;
   gimple cond;
+  struct loop_size size;
 
   if (loop->inner)
     return false;
@@ -182,9 +351,10 @@ try_unroll_loop_completely (struct loop *loop,
       if (ul == UL_SINGLE_ITER)
 	return false;
 
-      ninsns = tree_num_loop_insns (loop, &eni_size_weights);
+      tree_estimate_loop_size (loop, exit, &size);
+      ninsns = size.overall;
 
-      unr_insns = estimated_unrolled_size (ninsns, n_unroll);
+      unr_insns = estimated_unrolled_size (&size, n_unroll);
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "  Loop size: %d\n", (int) ninsns);
