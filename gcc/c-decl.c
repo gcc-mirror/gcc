@@ -126,6 +126,15 @@ static GTY(()) struct stmt_tree_s c_stmt_tree;
 tree c_break_label;
 tree c_cont_label;
 
+/* True if we are currently parsing the fields of a struct or
+   union.  */
+
+static bool in_struct;
+
+/* A list of types defined in the current struct or union.  */
+
+static VEC(tree,heap) *struct_types;
+
 /* Linked list of TRANSLATION_UNIT_DECLS for the translation units
    included in this invocation.  Note that the current translation
    unit is not included in this list.  */
@@ -1086,13 +1095,12 @@ pop_file_scope (void)
    In that case, the TYPE_SIZE will be zero.  */
 
 static void
-pushtag (tree name, tree type)
+pushtag (tree name, tree type, location_t loc)
 {
   /* Record the identifier as the type's name if it has none.  */
   if (name && !TYPE_NAME (type))
     TYPE_NAME (type) = name;
-  bind (name, type, current_scope, /*invisible=*/false, /*nested=*/false,
-	UNKNOWN_LOCATION);
+  bind (name, type, current_scope, /*invisible=*/false, /*nested=*/false, loc);
 
   /* Create a fake NULL-named TYPE_DECL node whose TREE_TYPE will be the
      tagged type we just added to the current scope.  This fake
@@ -2725,10 +2733,13 @@ define_label (location_t location, tree name)
    If THISLEVEL_ONLY is nonzero, searches only the current_scope.
    CODE says which kind of type the caller wants;
    it is RECORD_TYPE or UNION_TYPE or ENUMERAL_TYPE.
+   If PLOC is not NULL and this returns non-null, it sets *PLOC to the
+   location where the tag was defined.
    If the wrong kind of type is found, an error is reported.  */
 
 static tree
-lookup_tag (enum tree_code code, tree name, int thislevel_only)
+lookup_tag (enum tree_code code, tree name, int thislevel_only,
+	    location_t *ploc)
 {
   struct c_binding *b = I_TAG_BINDING (name);
   int thislevel = 0;
@@ -2765,6 +2776,10 @@ lookup_tag (enum tree_code code, tree name, int thislevel_only)
       if (thislevel)
 	pending_xref_error ();
     }
+
+  if (ploc != NULL)
+    *ploc = b->locus;
+
   return b->decl;
 }
 
@@ -3037,12 +3052,12 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	  else
 	    {
 	      pending_invalid_xref = 0;
-	      t = lookup_tag (code, name, 1);
+	      t = lookup_tag (code, name, 1, NULL);
 
 	      if (t == 0)
 		{
 		  t = make_node (code);
-		  pushtag (name, t);
+		  pushtag (name, t, input_location);
 		}
 	    }
 	}
@@ -3896,6 +3911,17 @@ build_compound_literal (tree type, tree init, bool non_const)
     }
 
   return complit;
+}
+
+/* Check the type of a compound literal.  Here we just check that it
+   is valid for C++.  */
+
+void
+check_compound_literal_type (struct c_type_name *type_name, location_t loc)
+{
+  if (warn_cxx_compat && type_name->specs->tag_defined_p)
+    warning_at (loc, OPT_Wc___compat,
+		"defining a type in a compound literal is invalid in C++");
 }
 
 /* Determine whether TYPE is a structure with a flexible array member,
@@ -5555,10 +5581,11 @@ get_parm_info (bool ellipsis)
    Return a c_typespec structure for the type specifier.  */
 
 struct c_typespec
-parser_xref_tag (enum tree_code code, tree name)
+parser_xref_tag (enum tree_code code, tree name, location_t loc)
 {
   struct c_typespec ret;
   tree ref;
+  location_t refloc;
 
   ret.expr = NULL_TREE;
   ret.expr_const_operands = true;
@@ -5566,7 +5593,7 @@ parser_xref_tag (enum tree_code code, tree name)
   /* If a cross reference is requested, look up the type
      already defined for this tag and return it.  */
 
-  ref = lookup_tag (code, name, 0);
+  ref = lookup_tag (code, name, 0, &refloc);
   /* If this is the right type of tag, return what we found.
      (This reference will be shadowed by shadow_tag later if appropriate.)
      If this is the wrong type of tag, do not return it.  If it was the
@@ -5581,6 +5608,35 @@ parser_xref_tag (enum tree_code code, tree name)
   ret.kind = (ref ? ctsk_tagref : ctsk_tagfirstref);
   if (ref && TREE_CODE (ref) == code)
     {
+      if (C_TYPE_DEFINED_IN_STRUCT (ref)
+	  && loc != UNKNOWN_LOCATION
+	  && warn_cxx_compat)
+	{
+	  switch (code)
+	    {
+	    case ENUMERAL_TYPE:
+	      warning_at (loc, OPT_Wc___compat,
+			  ("enum type defined in struct or union "
+			   "is not visible in C++"));
+	      inform (refloc, "enum type defined here");
+	      break;
+	    case RECORD_TYPE:
+	      warning_at (loc, OPT_Wc___compat,
+			  ("struct defined in struct or union "
+			   "is not visible in C++"));
+	      inform (refloc, "struct defined here");
+	      break;
+	    case UNION_TYPE:
+	      warning_at (loc, OPT_Wc___compat,
+			  ("union defined in struct or union "
+			   "is not visible in C++"));
+	      inform (refloc, "union defined here");
+	      break;
+	    default:
+	      gcc_unreachable();
+	    }
+	}
+
       ret.spec = ref;
       return ret;
     }
@@ -5604,7 +5660,7 @@ parser_xref_tag (enum tree_code code, tree name)
       TYPE_MAX_VALUE (ref) = TYPE_MAX_VALUE (unsigned_type_node);
     }
 
-  pushtag (name, ref);
+  pushtag (name, ref, loc);
 
   ret.spec = ref;
   return ret;
@@ -5617,40 +5673,53 @@ parser_xref_tag (enum tree_code code, tree name)
 tree
 xref_tag (enum tree_code code, tree name)
 {
-  return parser_xref_tag (code, name).spec;
+  return parser_xref_tag (code, name, UNKNOWN_LOCATION).spec;
 }
 
 /* Make sure that the tag NAME is defined *in the current scope*
    at least as a forward reference.
-   CODE says which kind of tag NAME ought to be.  */
+   CODE says which kind of tag NAME ought to be.
+
+   This stores the current value of the file static IN_STRUCT in
+   *ENCLOSING_IN_STRUCT, and sets IN_STRUCT to true.  Similarly, this
+   sets STRUCT_TYPES in *ENCLOSING_STRUCT_TYPES, and sets STRUCT_TYPES
+   to an empty vector.  The old values are restored in
+   finish_struct.  */
 
 tree
-start_struct (enum tree_code code, tree name)
+start_struct (enum tree_code code, tree name, bool *enclosing_in_struct,
+	      VEC(tree,heap) **enclosing_struct_types, location_t loc)
 {
   /* If there is already a tag defined at this scope
      (as a forward reference), just return it.  */
 
-  tree ref = 0;
+  tree ref = NULL_TREE;
+  location_t refloc = UNKNOWN_LOCATION;
 
-  if (name != 0)
-    ref = lookup_tag (code, name, 1);
+  if (name != NULL_TREE)
+    ref = lookup_tag (code, name, 1, &refloc);
   if (ref && TREE_CODE (ref) == code)
     {
       if (TYPE_SIZE (ref))
 	{
 	  if (code == UNION_TYPE)
-	    error ("redefinition of %<union %E%>", name);
+	    error_at (loc, "redefinition of %<union %E%>", name);
 	  else
-	    error ("redefinition of %<struct %E%>", name);
+	    error_at (loc, "redefinition of %<struct %E%>", name);
+	  if (refloc != UNKNOWN_LOCATION)
+	    inform (refloc, "originally defined here");
 	  /* Don't create structures using a name already in use.  */
 	  ref = NULL_TREE;
 	}
       else if (C_TYPE_BEING_DEFINED (ref))
 	{
 	  if (code == UNION_TYPE)
-	    error ("nested redefinition of %<union %E%>", name);
+	    error_at (loc, "nested redefinition of %<union %E%>", name);
 	  else
-	    error ("nested redefinition of %<struct %E%>", name);
+	    error_at (loc, "nested redefinition of %<struct %E%>", name);
+	  /* Don't bother to report "originally defined here" for a
+	     nested redefinition; the original definition should be
+	     obvious.  */
 	  /* Don't create structures that contain themselves.  */
 	  ref = NULL_TREE;
 	}
@@ -5661,11 +5730,28 @@ start_struct (enum tree_code code, tree name)
   if (ref == NULL_TREE || TREE_CODE (ref) != code)
     {
       ref = make_node (code);
-      pushtag (name, ref);
+      pushtag (name, ref, loc);
     }
 
   C_TYPE_BEING_DEFINED (ref) = 1;
   TYPE_PACKED (ref) = flag_pack_struct;
+
+  *enclosing_in_struct = in_struct;
+  *enclosing_struct_types = struct_types;
+  in_struct = true;
+  struct_types = VEC_alloc(tree, heap, 0);
+
+  /* FIXME: This will issue a warning for a use of a type defined
+     within a statement expr used within sizeof, et. al.  This is not
+     terribly serious as C++ doesn't permit statement exprs within
+     sizeof anyhow.  */
+  if (warn_cxx_compat && (in_sizeof || in_typeof || in_alignof))
+    warning_at (loc, OPT_Wc___compat,
+		"defining type in %qs expression is invalid in C++",
+		(in_sizeof
+		 ? "sizeof"
+		 : (in_typeof ? "typeof" : "alignof")));
+
   return ref;
 }
 
@@ -5803,14 +5889,22 @@ detect_field_duplicates (tree fieldlist)
 
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
    FIELDLIST is a chain of FIELD_DECL nodes for the fields.
-   ATTRIBUTES are attributes to be applied to the structure.  */
+   ATTRIBUTES are attributes to be applied to the structure.
+
+   ENCLOSING_IN_STRUCT is the value of IN_STRUCT, and
+   ENCLOSING_STRUCT_TYPES is the value of STRUCT_TYPES, when the
+   struct was started.  This sets the C_TYPE_DEFINED_IN_STRUCT flag
+   for any type defined in the current struct.  */
 
 tree
-finish_struct (tree t, tree fieldlist, tree attributes)
+finish_struct (tree t, tree fieldlist, tree attributes,
+	       bool enclosing_in_struct,
+	       VEC(tree,heap) *enclosing_struct_types)
 {
   tree x;
   bool toplevel = file_scope == current_scope;
   int saw_named_field;
+  unsigned int ix;
 
   /* If this type was previously laid out as a forward reference,
      make sure we lay it out again.  */
@@ -6063,6 +6157,24 @@ finish_struct (tree t, tree fieldlist, tree attributes)
   if (cur_stmt_list && variably_modified_type_p (t, NULL_TREE))
     add_stmt (build_stmt (DECL_EXPR, build_decl (TYPE_DECL, NULL, t)));
 
+  /* Set the C_TYPE_DEFINED_IN_STRUCT flag for each type defined in
+     the current struct.  We do this now at the end of the struct
+     because the flag is used to issue visibility warnings when using
+     -Wc++-compat, and we only want to issue those warnings if the
+     type is referenced outside of the struct declaration.  */
+  for (ix = 0; VEC_iterate (tree, struct_types, ix, x); ++ix)
+    C_TYPE_DEFINED_IN_STRUCT (x) = 1;
+
+  VEC_free (tree, heap, struct_types);
+
+  in_struct = enclosing_in_struct;
+  struct_types = enclosing_struct_types;
+
+  /* If this struct is defined inside a struct, add it to
+     STRUCT_TYPES.  */
+  if (in_struct && !in_sizeof && !in_typeof && !in_alignof)
+    VEC_safe_push (tree, heap, struct_types, t);
+
   return t;
 }
 
@@ -6083,32 +6195,35 @@ layout_array_type (tree t)
    may be used to declare the individual values as they are read.  */
 
 tree
-start_enum (struct c_enum_contents *the_enum, tree name)
+start_enum (struct c_enum_contents *the_enum, tree name, location_t loc)
 {
-  tree enumtype = 0;
+  tree enumtype = NULL_TREE;
+  location_t enumloc = UNKNOWN_LOCATION;
 
   /* If this is the real definition for a previous forward reference,
      fill in the contents in the same object that used to be the
      forward reference.  */
 
-  if (name != 0)
-    enumtype = lookup_tag (ENUMERAL_TYPE, name, 1);
+  if (name != NULL_TREE)
+    enumtype = lookup_tag (ENUMERAL_TYPE, name, 1, &enumloc);
 
   if (enumtype == 0 || TREE_CODE (enumtype) != ENUMERAL_TYPE)
     {
       enumtype = make_node (ENUMERAL_TYPE);
-      pushtag (name, enumtype);
+      pushtag (name, enumtype, loc);
     }
 
   if (C_TYPE_BEING_DEFINED (enumtype))
-    error ("nested redefinition of %<enum %E%>", name);
+    error_at (loc, "nested redefinition of %<enum %E%>", name);
 
   C_TYPE_BEING_DEFINED (enumtype) = 1;
 
   if (TYPE_VALUES (enumtype) != 0)
     {
       /* This enum is a named one that has been declared already.  */
-      error ("redeclaration of %<enum %E%>", name);
+      error_at (loc, "redeclaration of %<enum %E%>", name);
+      if (enumloc != UNKNOWN_LOCATION)
+	inform (enumloc, "originally defined here");
 
       /* Completely replace its old definition.
 	 The old enumerators remain defined, however.  */
@@ -6120,6 +6235,16 @@ start_enum (struct c_enum_contents *the_enum, tree name)
 
   if (flag_short_enums)
     TYPE_PACKED (enumtype) = 1;
+
+  /* FIXME: This will issue a warning for a use of a type defined
+     within sizeof in a statement expr.  This is not terribly serious
+     as C++ doesn't permit statement exprs within sizeof anyhow.  */
+  if (warn_cxx_compat && (in_sizeof || in_typeof || in_alignof))
+    warning_at (loc, OPT_Wc___compat,
+		"defining type in %qs expression is invalid in C++",
+		(in_sizeof
+		 ? "sizeof"
+		 : (in_typeof ? "typeof" : "alignof")));
 
   return enumtype;
 }
@@ -6259,6 +6384,11 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
   /* Finish debugging output for this type.  */
   rest_of_type_compilation (enumtype, toplevel);
+
+  /* If this enum is defined inside a struct, add it to
+     STRUCT_TYPES.  */
+  if (in_struct && !in_sizeof && !in_typeof && !in_alignof)
+    VEC_safe_push (tree, heap, struct_types, enumtype);
 
   return enumtype;
 }

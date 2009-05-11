@@ -1,6 +1,6 @@
 /* Process the ObjC-specific declarations and variables for 
    the Objective-C++ compiler.
-   Copyright (C) 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -37,9 +37,9 @@ extern tree objcp_end_compound_stmt (tree, int);
    invoke the original C++ functions if needed).  */
 #ifdef OBJCP_REMAP_FUNCTIONS
 
-#define start_struct(code, name) \
+#define start_struct(code, name, in_struct, struct_types, loc) \
 	objcp_start_struct (code, name)
-#define finish_struct(t, fieldlist, attributes) \
+#define finish_struct(t, fieldlist, attributes, in_struct, struct_types) \
 	objcp_finish_struct (t, fieldlist, attributes)
 #define finish_function() \
 	objcp_finish_function ()

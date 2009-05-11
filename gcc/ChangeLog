@@ -1,3 +1,82 @@
+2009-05-10  Ian Lance Taylor  <iant@google.com>
+
+	* basic-block.h (enum profile_status): Break out of struct
+	control_flow_graph.
+	* cgraph.h (struct inline_summary): Break out of struct
+	cgraph_local_info.
+	* cgraphunit.c (enum cgraph_order_sort_kind): New enum, broken out
+	of struct cgraph_order_sort.
+	* combine.c (enum undo_kind): New enum, broken out of struct
+	undo.
+	* cse.c (struct branch_path): Break out of struct
+	cse_basic_block_data.
+	* except.h (enum eh_region_type): Break out of struct eh_region.
+	* gcc.c (enum add_del): Break out of struct modify_target.
+	* genrecog.c (enum decision_type): Break out of struct
+	decision_test.
+	* ggc-page.c (struct ggc_pch_ondisk): Break out of struct
+	ggc_pch_data.
+	* matrix-reorg.c (struct free_info): Break out of struct
+	matrix_info.
+	* regmove.c (enum match_use): New enum, broken out of struct
+	match.
+	* sched-int.h (enum post_call_group): New enum, broken out of
+	struct deps.
+	(struct deps_reg): Break out of struct deps.
+	* target.h (struct asm_int_op): Break out of struct gcc_target.
+	* tree-eh.c (struct goto_queue_node): Break out of struct
+	leh_tf_state.
+	* tree-inline.h (enum copy_body_cge_which): Break out of
+	copy_body_data.
+	* tree-pass.h (enum opt_pass_type): Break out of struct opt_pass.
+
+	* c-decl.c (in_struct, struct_types): New static variables.
+	(pushtag): Add loc parameter.  Change all callers.
+	(lookup_tag): Add ploc parameter.  Change all callers.
+	(check_compound_literal_type): New function.
+	(parser_xref_tag): Add loc parameter.  Change all callers.  If
+	-Wc++-compat, warn about struct/union/enum types defined within a
+	struct or union.
+	(start_struct): Add enclosing_in_struct, enclosing_struct_types,
+	and loc parameters.  Change all callers.  Change error calls to
+	error_at, using loc.  For a redefinition, if the location of the
+	original definition is known, report it.  Set in_struct and
+	struct_types.  If -Wc++-compat warn if in sizeof, typeof, or
+	alignof.
+	(finish_struct): Add new parameters enclosing_in_struct and
+	enclosing_struct_types.  Change all callers.  Set
+	C_TYPE_DEFINED_IN_STRUCT for all struct/union/enum types defined
+	in the struct.  If in a struct, add this struct to struct_types.
+	(start_enum): Add loc parameter.  Change all callers.  Use
+	error_at for errors, using loc.  For a redefinition, if the
+	location of the original definition is known, report it.  If in a
+	struct, add this enum type to struct_types.  If -Wc++-compat warn
+	if in sizeof, typeof, or alignof.
+	* c-parser.c (disable_extension_diagnostics): Disable
+	-Wc++-compat.
+	(enable_extension_diagnostics): Reenable -Wc++-compat if
+	appropriate.
+	(c_parser_enum_specifier): Get enum location for start_enum.
+	(c_parser_struct_or_union_specifier): Get struct location for
+	start_struct.  Save in_struct and struct_types status between
+	start_struct and finish_struct.
+	(c_parser_cast_expression): Get location of cast.
+	(c_parser_alignof_expression): Get location of type.
+	(c_parser_postfix_expression): Likewise.
+	(c_parser_postfix_expression_after_paren_type): Add type_loc
+	parameter.  Change all callers.  Call
+	check_compound_literal_type.  Use type_loc for error about
+	variable size type.
+	* c-typeck.c (build_external_ref): If -Wc++-compat, warn about a
+	use of an enum constant from an enum type defined in a struct or
+	union.
+	(c_cast_expr): Add loc parameter.  Change all callers.  If
+	-Wc++-compat, warn about defining a type in a cast.
+	* c-tree.h (C_TYPE_DEFINED_IN_STRUCT): Define.
+	(start_enum, start_struct, finish_struct): Update declarations.
+	(parser_xref_tag, c_cast_expr): Update declarations.
+	(check_compound_literal_type): Declare.
+
 2009-05-11  Ben Elliston  <bje@au.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_categorize_keyword): Update

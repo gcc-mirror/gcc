@@ -73,6 +73,10 @@ struct GTY(()) lang_type {
 #define C_TYPE_VARIABLE_SIZE(TYPE) TYPE_LANG_FLAG_1 (TYPE)
 #define C_DECL_VARIABLE_SIZE(TYPE) DECL_LANG_FLAG_0 (TYPE)
 
+/* Record whether a type is defined inside a struct or union type.
+   This is used for -Wc++-compat. */
+#define C_TYPE_DEFINED_IN_STRUCT(TYPE) TYPE_LANG_FLAG_2 (TYPE)
+
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(EXP) DECL_LANG_FLAG_1 (EXP)
 
@@ -514,7 +518,7 @@ extern void c_maybe_initialize_eh (void);
 extern void finish_decl (tree, tree, tree, tree);
 extern tree finish_enum (tree, tree, tree);
 extern void finish_function (void);
-extern tree finish_struct (tree, tree, tree);
+extern tree finish_struct (tree, tree, tree, bool, VEC(tree,heap) *);
 extern struct c_arg_info *get_parm_info (bool);
 extern tree grokfield (location_t, struct c_declarator *,
 		       struct c_declspecs *, tree, tree *);
@@ -532,15 +536,16 @@ extern tree c_builtin_function (tree);
 extern tree c_builtin_function_ext_scope (tree);
 extern void shadow_tag (const struct c_declspecs *);
 extern void shadow_tag_warned (const struct c_declspecs *, int);
-extern tree start_enum (struct c_enum_contents *, tree);
+extern tree start_enum (struct c_enum_contents *, tree, location_t);
 extern int  start_function (struct c_declspecs *, struct c_declarator *, tree);
 extern tree start_decl (struct c_declarator *, struct c_declspecs *, bool,
 			tree);
-extern tree start_struct (enum tree_code, tree);
+extern tree start_struct (enum tree_code, tree, bool *, VEC(tree,heap) **,
+			  location_t);
 extern void store_parm_decls (void);
 extern void store_parm_decls_from (struct c_arg_info *);
 extern tree xref_tag (enum tree_code, tree);
-extern struct c_typespec parser_xref_tag (enum tree_code, tree);
+extern struct c_typespec parser_xref_tag (enum tree_code, tree, location_t);
 extern int c_expand_decl (tree);
 extern struct c_parm *build_c_parm (struct c_declspecs *, tree,
 				    struct c_declarator *);
@@ -604,7 +609,7 @@ extern struct c_expr parser_build_binary_op (location_t,
 					     struct c_expr);
 extern tree build_conditional_expr (tree, bool, tree, tree);
 extern tree build_compound_expr (tree, tree);
-extern tree c_cast_expr (struct c_type_name *, tree);
+extern tree c_cast_expr (struct c_type_name *, tree, location_t);
 extern tree build_c_cast (tree, tree);
 extern void store_init_value (tree, tree, tree);
 extern void error_init (const char *);
@@ -619,6 +624,7 @@ extern void set_init_index (tree, tree);
 extern void set_init_label (tree);
 extern void process_init_element (struct c_expr, bool);
 extern tree build_compound_literal (tree, tree, bool);
+extern void check_compound_literal_type (struct c_type_name *, location_t);
 extern tree c_start_case (tree);
 extern void c_finish_case (tree);
 extern tree build_asm_expr (tree, tree, tree, tree, bool);

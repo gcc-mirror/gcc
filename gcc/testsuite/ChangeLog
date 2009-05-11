@@ -1,3 +1,12 @@
+2009-05-10  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-7.c: New testcase.
+	* gcc.dg/Wcxx-compat-8.c: New testcase.
+	* gcc.dg/c99-tag-1.c: Recognize new "originally defined here"
+	notes
+	* gcc.dg/pr17188-1.c: Likewise.
+	* gcc.dg/pr39084.c: Likewise.
+
 2009-05-10  Michael Matz  <matz@suse.de>
 
 	PR target/40031

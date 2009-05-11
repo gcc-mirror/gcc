@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -48,17 +48,22 @@ enum availability
 
 extern const char * const cgraph_availability_names[];
 
+/* Function inlining information.  */
+
+struct GTY(()) inline_summary
+{
+  /* Estimated stack frame consumption by the function.  */
+  HOST_WIDE_INT estimated_self_stack_size;
+
+  /* Size of the function before inlining.  */
+  int self_insns;
+};
+
 /* Information about the function collected locally.
    Available after function is analyzed.  */
 
 struct GTY(()) cgraph_local_info {
-  struct inline_summary {
-    /* Estimated stack frame consumption by the function.  */
-    HOST_WIDE_INT estimated_self_stack_size;
-
-    /* Size of the function before inlining.  */
-    int self_insns;
-  } inline_summary;
+  struct inline_summary inline_summary;
 
   /* Set when function function is visible in current compilation unit only
      and its address is never taken.  */

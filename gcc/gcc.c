@@ -268,10 +268,12 @@ static const char *cross_compile = "0";
    switch.  The only case we support now is simply appending or deleting a
    string to or from the end of the first part of the configuration name.  */
 
+enum add_del {ADD, DELETE};
+
 static const struct modify_target
 {
   const char *const sw;
-  const enum add_del {ADD, DELETE} add_del;
+  const enum add_del add_del;
   const char *const str;
 }
 modify_target[] = MODIFY_TARGET_NAME;

@@ -1,5 +1,5 @@
 /* "Bag-of-pages" garbage collector for the GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2063,12 +2063,14 @@ ggc_print_statistics (void)
 #endif
 }
 
+struct ggc_pch_ondisk
+{
+  unsigned totals[NUM_ORDERS];
+};
+
 struct ggc_pch_data
 {
-  struct ggc_pch_ondisk
-  {
-    unsigned totals[NUM_ORDERS];
-  } d;
+  struct ggc_pch_ondisk d;
   size_t base[NUM_ORDERS];
   size_t written[NUM_ORDERS];
 };

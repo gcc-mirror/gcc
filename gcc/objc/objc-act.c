@@ -416,6 +416,35 @@ FILE *gen_declaration_file;
 
 static int generating_instance_variables = 0;
 
+/* For building an objc struct.  These may not be used when this file
+   is compiled as part of obj-c++.  */
+
+static bool objc_building_struct;
+static bool objc_in_struct ATTRIBUTE_UNUSED;
+static VEC(tree,heap) *objc_struct_types ATTRIBUTE_UNUSED;
+
+/* Start building a struct for objc.  */
+
+static tree
+objc_start_struct (tree name)
+{
+  gcc_assert (!objc_building_struct);
+  objc_building_struct = true;
+  return start_struct (RECORD_TYPE, name, &objc_in_struct, &objc_struct_types,
+		       UNKNOWN_LOCATION);
+}
+
+/* Finish building a struct for objc.  */
+
+static tree
+objc_finish_struct (tree type, tree fieldlist)
+{
+  gcc_assert (objc_building_struct);
+  objc_building_struct = false;
+  return finish_struct (type, fieldlist, NULL_TREE, objc_in_struct,
+			objc_struct_types);
+}
+
 /* Some platforms pass small structures through registers versus
    through an invisible pointer.  Determine at what size structure is
    the transition point between the two possibilities.  */
@@ -435,7 +464,7 @@ generate_struct_by_value_array (void)
       char buffer[5];
 
       /* Create an unnamed struct that has `i' character components */
-      type = start_struct (RECORD_TYPE, NULL_TREE);
+      type = objc_start_struct (NULL_TREE);
 
       strcpy (buffer, "c1");
       field_decl = create_field_decl (char_type_node,
@@ -449,7 +478,7 @@ generate_struct_by_value_array (void)
 					  buffer);
 	  chainon (field_decl_chain, field_decl);
 	}
-      finish_struct (type, field_decl_chain, NULL_TREE);
+      objc_finish_struct (type, field_decl_chain);
 
       aggregate_in_mem[i] = aggregate_value_p (type, 0);
       if (!aggregate_in_mem[i])
@@ -789,7 +818,7 @@ static tree
 objc_build_struct (tree klass, tree fields, tree super_name)
 {
   tree name = CLASS_NAME (klass);
-  tree s = start_struct (RECORD_TYPE, name);
+  tree s = objc_start_struct (name);
   tree super = (super_name ? xref_tag (RECORD_TYPE, super_name) : NULL_TREE);
   tree t, objc_info = NULL_TREE;
 
@@ -850,7 +879,7 @@ objc_build_struct (tree klass, tree fields, tree super_name)
   INIT_TYPE_OBJC_INFO (s);
   TYPE_OBJC_INTERFACE (s) = klass;
 
-  s = finish_struct (s, fields, NULL_TREE);
+  s = objc_finish_struct (s, fields);
 
   for (t = TYPE_NEXT_VARIANT (s); t;
        t = TYPE_NEXT_VARIANT (t), objc_info = TREE_CHAIN (objc_info))
@@ -2058,8 +2087,7 @@ build_objc_symtab_template (void)
 {
   tree field_decl, field_decl_chain;
 
-  objc_symtab_template
-    = start_struct (RECORD_TYPE, get_identifier (UTAG_SYMTAB));
+  objc_symtab_template = objc_start_struct (get_identifier (UTAG_SYMTAB));
 
   /* long sel_ref_cnt; */
   field_decl = create_field_decl (long_integer_type_node, "sel_ref_cnt");
@@ -2093,7 +2121,7 @@ build_objc_symtab_template (void)
       chainon (field_decl_chain, field_decl);
     }
 
-  finish_struct (objc_symtab_template, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_symtab_template, field_decl_chain);
 }
 
 /* Create the initial value for the `defs' field of _objc_symtab.
@@ -2293,8 +2321,7 @@ build_module_descriptor (void)
   push_lang_context (lang_name_c); /* extern "C" */
 #endif
 
-  objc_module_template
-    = start_struct (RECORD_TYPE, get_identifier (UTAG_MODULE));
+  objc_module_template = objc_start_struct (get_identifier (UTAG_MODULE));
 
   /* long version; */
   field_decl = create_field_decl (long_integer_type_node, "version");
@@ -2316,7 +2343,7 @@ build_module_descriptor (void)
 			 "symtab");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_module_template, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_module_template, field_decl_chain);
 
   /* Create an instance of "_objc_module".  */
   UOBJC_MODULES_decl = start_var_decl (objc_module_template, "_OBJC_MODULES");
@@ -3994,7 +4021,7 @@ build_next_objc_exception_stuff (void)
   tree field_decl, field_decl_chain, index, temp_type;
 
   objc_exception_data_template
-    = start_struct (RECORD_TYPE, get_identifier (UTAG_EXCDATA));
+    = objc_start_struct (get_identifier (UTAG_EXCDATA));
 
   /* int buf[OBJC_JBLEN]; */
 
@@ -4010,7 +4037,7 @@ build_next_objc_exception_stuff (void)
 				  "pointers");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_exception_data_template, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_exception_data_template, field_decl_chain);
 
   /* int _setjmp(...); */
   /* If the user includes <setjmp.h>, this shall be superseded by
@@ -4157,8 +4184,7 @@ build_protocol_template (void)
 {
   tree field_decl, field_decl_chain;
 
-  objc_protocol_template = start_struct (RECORD_TYPE,
-					 get_identifier (UTAG_PROTOCOL));
+  objc_protocol_template = objc_start_struct (get_identifier (UTAG_PROTOCOL));
 
   /* struct _objc_class *isa; */
   field_decl = create_field_decl (build_pointer_type
@@ -4188,7 +4214,7 @@ build_protocol_template (void)
 				  "class_methods");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_protocol_template, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_protocol_template, field_decl_chain);
 }
 
 static tree
@@ -4238,7 +4264,7 @@ build_method_prototype_list_template (tree list_type, int size)
 
   /* Generate an unnamed struct definition.  */
 
-  objc_ivar_list_record = start_struct (RECORD_TYPE, NULL_TREE);
+  objc_ivar_list_record = objc_start_struct (NULL_TREE);
 
   /* int method_count; */
   field_decl = create_field_decl (integer_type_node, "method_count");
@@ -4252,7 +4278,7 @@ build_method_prototype_list_template (tree list_type, int size)
 				  "method_list");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_ivar_list_record, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_ivar_list_record, field_decl_chain);
 
   return objc_ivar_list_record;
 }
@@ -4263,8 +4289,7 @@ build_method_prototype_template (void)
   tree proto_record;
   tree field_decl, field_decl_chain;
 
-  proto_record
-    = start_struct (RECORD_TYPE, get_identifier (UTAG_METHOD_PROTOTYPE));
+  proto_record = objc_start_struct (get_identifier (UTAG_METHOD_PROTOTYPE));
 
   /* SEL _cmd; */
   field_decl = create_field_decl (objc_selector_type, "_cmd");
@@ -4274,7 +4299,7 @@ build_method_prototype_template (void)
   field_decl = create_field_decl (string_type_node, "method_types");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (proto_record, field_decl_chain, NULL_TREE);
+  objc_finish_struct (proto_record, field_decl_chain);
 
   return proto_record;
 }
@@ -4759,8 +4784,7 @@ build_category_template (void)
 {
   tree field_decl, field_decl_chain;
 
-  objc_category_template = start_struct (RECORD_TYPE,
-					 get_identifier (UTAG_CATEGORY));
+  objc_category_template = objc_start_struct (get_identifier (UTAG_CATEGORY));
 
   /* char *category_name; */
   field_decl = create_field_decl (string_type_node, "category_name");
@@ -4787,7 +4811,7 @@ build_category_template (void)
 				  "protocol_list");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_category_template, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_category_template, field_decl_chain);
 }
 
 /* struct _objc_selector {
@@ -4798,11 +4822,9 @@ build_category_template (void)
 static void
 build_selector_template (void)
 {
-
   tree field_decl, field_decl_chain;
 
-  objc_selector_template
-    = start_struct (RECORD_TYPE, get_identifier (UTAG_SELECTOR));
+  objc_selector_template = objc_start_struct (get_identifier (UTAG_SELECTOR));
 
   /* SEL sel_id; */
   field_decl = create_field_decl (objc_selector_type, "sel_id");
@@ -4812,7 +4834,7 @@ build_selector_template (void)
   field_decl = create_field_decl (string_type_node, "sel_type");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_selector_template, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_selector_template, field_decl_chain);
 }
 
 /* struct _objc_class {
@@ -4848,8 +4870,7 @@ build_class_template (void)
 {
   tree field_decl, field_decl_chain;
 
-  objc_class_template
-    = start_struct (RECORD_TYPE, get_identifier (UTAG_CLASS));
+  objc_class_template = objc_start_struct (get_identifier (UTAG_CLASS));
 
   /* struct _objc_class *isa; */
   field_decl = create_field_decl (build_pointer_type (objc_class_template),
@@ -4942,7 +4963,7 @@ build_class_template (void)
 				  "gc_object_type");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_class_template, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_class_template, field_decl_chain);
 }
 
 /* Generate appropriate forward declarations for an implementation.  */
@@ -5043,7 +5064,7 @@ build_super_template (void)
 {
   tree field_decl, field_decl_chain;
 
-  objc_super_template = start_struct (RECORD_TYPE, get_identifier (UTAG_SUPER));
+  objc_super_template = objc_start_struct (get_identifier (UTAG_SUPER));
 
   /* struct _objc_object *self; */
   field_decl = create_field_decl (objc_object_type, "self");
@@ -5054,7 +5075,7 @@ build_super_template (void)
 				  "super_class");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_super_template, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_super_template, field_decl_chain);
 }
 
 /* struct _objc_ivar {
@@ -5070,7 +5091,7 @@ build_ivar_template (void)
   tree field_decl, field_decl_chain;
 
   objc_ivar_id = get_identifier (UTAG_IVAR);
-  objc_ivar_record = start_struct (RECORD_TYPE, objc_ivar_id);
+  objc_ivar_record = objc_start_struct (objc_ivar_id);
 
   /* char *ivar_name; */
   field_decl = create_field_decl (string_type_node, "ivar_name");
@@ -5084,7 +5105,7 @@ build_ivar_template (void)
   field_decl = create_field_decl (integer_type_node, "ivar_offset");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_ivar_record, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_ivar_record, field_decl_chain);
 
   return objc_ivar_record;
 }
@@ -5100,7 +5121,7 @@ build_ivar_list_template (tree list_type, int size)
   tree objc_ivar_list_record;
   tree field_decl, field_decl_chain;
 
-  objc_ivar_list_record = start_struct (RECORD_TYPE, NULL_TREE);
+  objc_ivar_list_record = objc_start_struct (NULL_TREE);
 
   /* int ivar_count; */
   field_decl = create_field_decl (integer_type_node, "ivar_count");
@@ -5114,7 +5135,7 @@ build_ivar_list_template (tree list_type, int size)
 				  "ivar_list");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_ivar_list_record, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_ivar_list_record, field_decl_chain);
 
   return objc_ivar_list_record;
 }
@@ -5131,7 +5152,7 @@ build_method_list_template (tree list_type, int size)
   tree objc_ivar_list_record;
   tree field_decl, field_decl_chain;
 
-  objc_ivar_list_record = start_struct (RECORD_TYPE, NULL_TREE);
+  objc_ivar_list_record = objc_start_struct (NULL_TREE);
 
   /* struct _objc__method_prototype_list *method_next; */
   field_decl = create_field_decl (objc_method_proto_list_ptr,
@@ -5150,7 +5171,7 @@ build_method_list_template (tree list_type, int size)
 				  "method_list");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (objc_ivar_list_record, field_decl_chain, NULL_TREE);
+  objc_finish_struct (objc_ivar_list_record, field_decl_chain);
 
   return objc_ivar_list_record;
 }
@@ -5338,7 +5359,7 @@ build_method_template (void)
   tree _SLT_record;
   tree field_decl, field_decl_chain;
 
-  _SLT_record = start_struct (RECORD_TYPE, get_identifier (UTAG_METHOD));
+  _SLT_record = objc_start_struct (get_identifier (UTAG_METHOD));
 
   /* SEL _cmd; */
   field_decl = create_field_decl (objc_selector_type, "_cmd");
@@ -5353,7 +5374,7 @@ build_method_template (void)
 				  "_imp");
   chainon (field_decl_chain, field_decl);
 
-  finish_struct (_SLT_record, field_decl_chain, NULL_TREE);
+  objc_finish_struct (_SLT_record, field_decl_chain);
 
   return _SLT_record;
 }

@@ -1580,13 +1580,20 @@ unexpected_statement (gfc_statement st)
 
 */
 
+enum state_order
+{
+  ORDER_START,
+  ORDER_USE,
+  ORDER_IMPORT,
+  ORDER_IMPLICIT_NONE,
+  ORDER_IMPLICIT,
+  ORDER_SPEC,
+  ORDER_EXEC
+};
+
 typedef struct
 {
-  enum
-  { ORDER_START, ORDER_USE, ORDER_IMPORT, ORDER_IMPLICIT_NONE,
-    ORDER_IMPLICIT, ORDER_SPEC, ORDER_EXEC
-  }
-  state;
+  enum state_order state;
   gfc_statement last_statement;
   locus where;
 }

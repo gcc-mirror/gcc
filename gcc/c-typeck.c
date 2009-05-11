@@ -2246,6 +2246,17 @@ build_external_ref (tree id, int fun, location_t loc, tree *type)
   if (TREE_CODE (ref) == CONST_DECL)
     {
       used_types_insert (TREE_TYPE (ref));
+
+      if (warn_cxx_compat
+	  && TREE_CODE (TREE_TYPE (ref)) == ENUMERAL_TYPE
+	  && C_TYPE_DEFINED_IN_STRUCT (TREE_TYPE (ref)))
+	{
+	  warning_at (loc, OPT_Wc___compat,
+		      ("enum constant defined in struct or union "
+		       "is not visible in C++"));
+	  inform (DECL_SOURCE_LOCATION (ref), "enum constant defined here");
+	}
+
       ref = DECL_INITIAL (ref);
       TREE_CONSTANT (ref) = 1;
     }
@@ -4262,7 +4273,7 @@ build_c_cast (tree type, tree expr)
 
 /* Interpret a cast of expression EXPR to type TYPE.  */
 tree
-c_cast_expr (struct c_type_name *type_name, tree expr)
+c_cast_expr (struct c_type_name *type_name, tree expr, location_t loc)
 {
   tree type;
   tree type_expr = NULL_TREE;
@@ -4283,6 +4294,15 @@ c_cast_expr (struct c_type_name *type_name, tree expr)
       ret = build2 (C_MAYBE_CONST_EXPR, TREE_TYPE (ret), type_expr, ret);
       C_MAYBE_CONST_EXPR_NON_CONST (ret) = !type_expr_const;
     }
+
+  if (CAN_HAVE_LOCATION_P (ret) && !EXPR_HAS_LOCATION (ret))
+    SET_EXPR_LOCATION (ret, loc);
+
+  /* C++ does not permits types to be defined in a cast.  */
+  if (warn_cxx_compat && type_name->specs->tag_defined_p)
+    warning_at (loc, OPT_Wc___compat,
+		"defining a type in a cast is invalid in C++");
+
   return ret;
 }
 

@@ -94,17 +94,22 @@ extern const char *dump_file_name;
 /* Return the dump_file_info for the given phase.  */
 extern struct dump_file_info *get_dump_file_info (int);
 
+/* Optimization pass type.  */
+enum opt_pass_type
+{
+  GIMPLE_PASS,
+  RTL_PASS,
+  SIMPLE_IPA_PASS,
+  IPA_PASS
+};
+
 /* Describe one pass; this is the common part shared across different pass
    types.  */
 struct opt_pass
 {
   /* Optimization pass type.  */
-  enum opt_pass_type {
-    GIMPLE_PASS,
-    RTL_PASS,
-    SIMPLE_IPA_PASS,
-    IPA_PASS
-  } type;
+  enum opt_pass_type type;
+
   /* Terse name of the pass used as a fragment of the dump file
      name.  If the name starts with a star, no dump happens. */
   const char *name;

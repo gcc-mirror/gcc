@@ -931,29 +931,34 @@ enum
 
 /* Because a symbol can belong to multiple namelists, they must be
    linked externally to the symbol itself.  */
+
+enum gfc_omp_sched_kind
+{
+  OMP_SCHED_NONE,
+  OMP_SCHED_STATIC,
+  OMP_SCHED_DYNAMIC,
+  OMP_SCHED_GUIDED,
+  OMP_SCHED_RUNTIME,
+  OMP_SCHED_AUTO
+};
+
+enum gfc_omp_default_sharing
+{
+  OMP_DEFAULT_UNKNOWN,
+  OMP_DEFAULT_NONE,
+  OMP_DEFAULT_PRIVATE,
+  OMP_DEFAULT_SHARED,
+  OMP_DEFAULT_FIRSTPRIVATE
+};
+
 typedef struct gfc_omp_clauses
 {
   struct gfc_expr *if_expr;
   struct gfc_expr *num_threads;
   gfc_namelist *lists[OMP_LIST_NUM];
-  enum
-    {
-      OMP_SCHED_NONE,
-      OMP_SCHED_STATIC,
-      OMP_SCHED_DYNAMIC,
-      OMP_SCHED_GUIDED,
-      OMP_SCHED_RUNTIME,
-      OMP_SCHED_AUTO
-    } sched_kind;
+  enum gfc_omp_sched_kind sched_kind;
   struct gfc_expr *chunk_size;
-  enum
-    {
-      OMP_DEFAULT_UNKNOWN,
-      OMP_DEFAULT_NONE,
-      OMP_DEFAULT_PRIVATE,
-      OMP_DEFAULT_SHARED,
-      OMP_DEFAULT_FIRSTPRIVATE
-    } default_sharing;
+  enum gfc_omp_default_sharing default_sharing;
   int collapse;
   bool nowait, ordered, untied;
 }

@@ -1,3 +1,9 @@
+2009-05-10  Ian Lance Taylor  <iant@google.com>
+
+	* objcp-decl.h (start_struct): Add three new, ignored, macro
+	parameters.
+	(finish_struct): Add two new, ignored, macro parameters.
+
 2009-04-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* ChangeLog: Add copyright and license notices.

@@ -243,6 +243,14 @@ typedef struct access_site_info *access_site_info_p;
 DEF_VEC_P (access_site_info_p);
 DEF_VEC_ALLOC_P (access_site_info_p, heap);
 
+/* Calls to free when flattening a matrix.  */
+
+struct free_info
+{
+  gimple stmt;
+  tree func;
+};
+
 /* Information about matrix to flatten.  */
 struct matrix_info
 {
@@ -275,11 +283,7 @@ struct matrix_info
   tree allocation_function_decl;
 
   /* The calls to free for each level of indirection.  */
-  struct free_info
-  {
-    gimple stmt;
-    tree func;
-  } *free_stmts;
+  struct free_info *free_stmts;
 
   /* An array which holds for each dimension its size. where
      dimension 0 is the outer most (one that contains all the others).
