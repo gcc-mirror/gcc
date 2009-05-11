@@ -1424,11 +1424,11 @@ vect_analyze_group_access (struct data_reference *dr)
       /* First stmt in the interleaving chain. Check the chain.  */
       gimple next = DR_GROUP_NEXT_DR (vinfo_for_stmt (stmt));
       struct data_reference *data_ref = dr;
-      unsigned int count = 1, gaps = 0;
+      unsigned int count = 1;
       tree next_step;
       tree prev_init = DR_INIT (data_ref);
       gimple prev = stmt;
-      HOST_WIDE_INT diff, count_in_bytes;
+      HOST_WIDE_INT diff, count_in_bytes, gaps = 0;
 
       while (next)
         {
