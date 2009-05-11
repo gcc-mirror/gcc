@@ -9,8 +9,8 @@ void bar (void)
 {
   int i;
 
-  for (i = 0; i < 2; i++)
-    if (! foo (a[i]))
+  for (i = 0; i < 2; i++)  /* { dg-bogus "will never be executed" "" { xfail *-*-* } } */
+    if (! foo (a[i]))  /* { dg-bogus "will never be executed" "" { xfail *-*-* } } */
       return;
 
   baz ();	/* { dg-bogus "will never be executed" } */

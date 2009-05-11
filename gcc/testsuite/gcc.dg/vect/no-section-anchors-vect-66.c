@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include "tree-vect.h"
 
-#define N 8
+#define N 16
 
 int ia[8][5][N+2];
 int ic[16][16][5][N+2];

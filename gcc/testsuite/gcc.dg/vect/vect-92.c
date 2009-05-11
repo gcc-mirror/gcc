@@ -22,13 +22,13 @@ main1 ()
 {
   int i;
 
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < 10; i++)
     {
       pa[i+1] = pb[i+1] * pc[i+1];
     }
 
   /* check results:  */
-  for (i = 0; i < 5; i++)
+  for (i = 0; i < 10; i++)
     {
       if (pa[i+1] != (pb[i+1] * pc[i+1]))
 	abort ();
@@ -42,13 +42,13 @@ main2 ()
 {
   int i;
 
-  for (i = 0; i < 6; i++)
+  for (i = 0; i < 12; i++)
     {
       pa[i+1] = pb[i+1] * pc[i+1];
     }
 
   /* check results:  */
-  for (i = 0; i < 6; i++)
+  for (i = 0; i < 12; i++)
     {
       if (pa[i+1] != (pb[i+1] * pc[i+1]))
 	abort ();

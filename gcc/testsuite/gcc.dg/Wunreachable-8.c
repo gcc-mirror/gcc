@@ -4,7 +4,7 @@ float Factorial(float X)
 {
   float val = 1.0;
   int k,j;
-  for (k=1; k < 5; k++)
+  for (k=1; k < 5; k++) /* { dg-bogus "will never be executed" "" { xfail *-*-* } } */
     {
       val += 1.0; /* { dg-bogus "will never be executed" "" { xfail *-*-* } } */
     }
