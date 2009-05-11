@@ -1,3 +1,9 @@
+2009-05-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/m68k/m68k-devices.def (52274, 52277, 5301x, 5225x, 51xx):
+	New devices.
+	* doc/invoke.texi (M680x0 Options): Document new coldfire cpus.
+
 2009-05-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* tree-vect-data-refs.c (vect_analyze_group_access): Use

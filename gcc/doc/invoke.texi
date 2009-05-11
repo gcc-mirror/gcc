@@ -12073,7 +12073,7 @@ below, which also classifies the CPUs into families:
 
 @multitable @columnfractions 0.20 0.80
 @item @strong{Family} @tab @strong{@samp{-mcpu} arguments}
-@item @samp{51qe} @tab @samp{51qe}
+@item @samp{51} @tab @samp{51} @samp{51ac} @samp{51cn} @samp{51em} @samp{51qe}
 @item @samp{5206} @tab @samp{5202} @samp{5204} @samp{5206}
 @item @samp{5206e} @tab @samp{5206e}
 @item @samp{5208} @tab @samp{5207} @samp{5208}
@@ -12082,6 +12082,7 @@ below, which also classifies the CPUs into families:
 @item @samp{5216} @tab @samp{5214} @samp{5216}
 @item @samp{52235} @tab @samp{52230} @samp{52231} @samp{52232} @samp{52233} @samp{52234} @samp{52235}
 @item @samp{5225} @tab @samp{5224} @samp{5225}
+@item @samp{52259} @tab @samp{52252} @samp{52254} @samp{52255} @samp{52256} @samp{52258} @samp{52259}
 @item @samp{5235} @tab @samp{5232} @samp{5233} @samp{5234} @samp{5235} @samp{523x}
 @item @samp{5249} @tab @samp{5249}
 @item @samp{5250} @tab @samp{5250}
@@ -12089,6 +12090,7 @@ below, which also classifies the CPUs into families:
 @item @samp{5272} @tab @samp{5272}
 @item @samp{5275} @tab @samp{5274} @samp{5275}
 @item @samp{5282} @tab @samp{5280} @samp{5281} @samp{5282} @samp{528x}
+@item @samp{53017} @tab @samp{53011} @samp{53012} @samp{53013} @samp{53014} @samp{53015} @samp{53016} @samp{53017}
 @item @samp{5307} @tab @samp{5307}
 @item @samp{5329} @tab @samp{5327} @samp{5328} @samp{5329} @samp{532x}
 @item @samp{5373} @tab @samp{5372} @samp{5373} @samp{537x}
