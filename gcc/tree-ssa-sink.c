@@ -570,7 +570,7 @@ struct gimple_opt_pass pass_sink_code =
   0,					/* static_pass_number */
   TV_TREE_SINK,				/* tv_id */
   PROP_no_crit_edges | PROP_cfg
-    | PROP_ssa | PROP_alias,		/* properties_required */
+    | PROP_ssa,				/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */

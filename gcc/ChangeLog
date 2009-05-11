@@ -1,3 +1,25 @@
+2009-05-11  Richard Guenther  <rguenther@suse.de>
+
+	* passes.c (init_optimization_passes): Strip now incorrect comment.
+	(execute_function_todo): Do not set PROP_alias.
+	* tree-pass.h (PROP_alias): Remove.
+	* tree-ssa-structalias.c (pass_build_alias): Do not provide PROP_alias.
+	* tree-if-conv.c (pass_if_conversion): Do not require PROP_alias.
+	* tree-nrv.c (pass_return_slot): Likewise.
+	* tree-object-size.c (pass_object_sizes): Likewise.
+	* tree-ssa-dom.c (pass_dominator): Likewise.
+	(pass_phi_only_cprop): Likewise.
+	* tree-ssa-dse.c (pass_dse): Likewise.
+	* tree-ssa-phiopt.c (pass_phiopt): Likewise.
+	(pass_cselim): Likewise.
+	* tree-ssa-pre.c (pass_pre): Likewise.
+	(pass_fre): Likewise.
+	* tree-ssa-reassoc.c (pass_reassoc): Likewise.
+	* tree-ssa-sink.c (pass_sink_code): Likewise.
+	* tree-stdarg.c (pass_stdarg): Likewise.
+	* tree-tailcall.c (pass_tail_calls): Likewise.
+	* tree-vrp.c (pass_vrp): Likewise.
+
 2009-05-10  Ian Lance Taylor  <iant@google.com>
 
 	* basic-block.h (enum profile_status): Break out of struct
