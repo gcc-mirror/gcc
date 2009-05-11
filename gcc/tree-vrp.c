@@ -7347,7 +7347,7 @@ struct gimple_opt_pass pass_vrp =
   NULL,					/* next */
   0,					/* static_pass_number */
   TV_TREE_VRP,				/* tv_id */
-  PROP_ssa | PROP_alias,		/* properties_required */
+  PROP_ssa,				/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */

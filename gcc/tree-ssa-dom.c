@@ -768,7 +768,7 @@ struct gimple_opt_pass pass_dominator =
   NULL,					/* next */
   0,					/* static_pass_number */
   TV_TREE_SSA_DOMINATOR_OPTS,		/* tv_id */
-  PROP_cfg | PROP_ssa | PROP_alias,	/* properties_required */
+  PROP_cfg | PROP_ssa,			/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
@@ -2923,7 +2923,7 @@ struct gimple_opt_pass pass_phi_only_cprop =
   NULL,                                 /* next */
   0,                                    /* static_pass_number */
   TV_TREE_PHI_CPROP,                    /* tv_id */
-  PROP_cfg | PROP_ssa | PROP_alias,     /* properties_required */
+  PROP_cfg | PROP_ssa,			/* properties_required */
   0,                                    /* properties_provided */
   0,		                        /* properties_destroyed */
   0,                                    /* todo_flags_start */
