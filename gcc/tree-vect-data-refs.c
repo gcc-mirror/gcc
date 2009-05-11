@@ -1424,7 +1424,7 @@ vect_analyze_group_access (struct data_reference *dr)
       /* First stmt in the interleaving chain. Check the chain.  */
       gimple next = DR_GROUP_NEXT_DR (vinfo_for_stmt (stmt));
       struct data_reference *data_ref = dr;
-      unsigned int count = 1;
+      unsigned int count = 1, gaps = 0;
       tree next_step;
       tree prev_init = DR_INIT (data_ref);
       gimple prev = stmt;
@@ -1490,6 +1490,8 @@ vect_analyze_group_access (struct data_reference *dr)
 		    fprintf (vect_dump, "interleaved store with gaps");
 		  return false;
 		}
+
+              gaps += diff - 1;
 	    }
 
           /* Store the gap from the previous member of the group. If there is no
@@ -1506,8 +1508,9 @@ vect_analyze_group_access (struct data_reference *dr)
          the type to get COUNT_IN_BYTES.  */
       count_in_bytes = type_size * count;
 
-      /* Check that the size of the interleaving is not greater than STEP.  */
-      if (dr_step < count_in_bytes)
+     /* Check that the size of the interleaving (including gaps) is not greater
+         than STEP.  */
+      if (dr_step && dr_step < count_in_bytes + gaps * type_size)
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             {
