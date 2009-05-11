@@ -1,3 +1,11 @@
+2009-05-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-05-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* tree-vect-analyze.c (vect_analyze_group_access): Use
+	HOST_WIDE_INT for gap.
+
 2009-05-11  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/40074
