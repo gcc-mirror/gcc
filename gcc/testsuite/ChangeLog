@@ -1,3 +1,8 @@
+2009-05-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/40080
+	* gcc.c-torture/compile/pr40080.c: New.
+
 2009-05-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.c-torture/compile/pr40026.c: New testcase.
