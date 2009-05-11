@@ -1,3 +1,20 @@
+2009-05-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-05-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/40080
+	* gcc.c-torture/compile/pr40080.c: New.
+
+	2009-05-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.c-torture/compile/pr40026.c: New testcase.
+
+	2009-05-09  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/40043
+	* g++.dg/eh/nested-try.C: New test.
+
 2009-05-11  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/40074
