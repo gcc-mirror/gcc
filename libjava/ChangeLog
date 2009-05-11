@@ -1,3 +1,9 @@
+2009-05-11  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.am (install-data-local): Fix symlinks to header files.
+	Don't create a symlink for javac.
+	* Makefile.in: Regenerate.
+
 2009-04-28  Andrew Haley  <aph@redhat.com>
 
 	PR libgcj/39899
@@ -16,11 +22,6 @@
 
 	* configure.ac: Create missing directory gnu/java/security/jce/prng.
 	* configure: Regenerate.
-
-2009-04-23  Matthias Klose  <doko@ubuntu.com>
-
-	* Makefile.am (install-data-local): Fix symlinks to header files.
-	* Makefile.in: Regenerate.
 
 2009-04-21  Release Manager
 

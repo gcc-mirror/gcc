@@ -585,8 +585,6 @@ if CREATE_JAVA_HOME
 	RELATIVE=$$(relative $(DESTDIR)$(bindir) $(DESTDIR)$(SDK_BIN_DIR)); \
 	ln -sf $$RELATIVE/`echo gij | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 	  $(DESTDIR)$(SDK_BIN_DIR)/java; \
-	ln -sf $$RELATIVE/`echo gcj | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
-	  $(DESTDIR)$(SDK_BIN_DIR)/javac; \
 	ln -sf $$RELATIVE/`echo gjar | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 	  $(DESTDIR)$(SDK_BIN_DIR)/jar; \
 	ln -sf $$RELATIVE/`echo gjdoc | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
@@ -676,7 +674,7 @@ if CREATE_JAVA_HOME
 	ln -sf $$RELATIVE/libgcj-tools-$(gcc_version).jar \
 	  $(DESTDIR)$(SDK_LIB_DIR)/tools.jar; \
 	for headername in jawt jni; do \
-	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
+	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/`echo gcj | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 	    -print-file-name=include/$$headername.h)); \
 	  RELATIVE=$$(relative $$DIRECTORY \
 	    $(DESTDIR)$(SDK_INCLUDE_DIR)); \
@@ -684,7 +682,7 @@ if CREATE_JAVA_HOME
 	    $(DESTDIR)$(SDK_INCLUDE_DIR)/$$headername.h; \
 	done; \
 	for headername in jawt_md jni_md; do \
-	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/gcj \
+	  DIRECTORY=$$(dirname $$($(DESTDIR)$(bindir)/`echo gcj | sed 's,^.*/,,;$(transform);s/$$/$(EXEEXT)/'` \
 	    -print-file-name=include/$$headername.h)); \
 	  RELATIVE=$$(relative $$DIRECTORY \
 	    $(DESTDIR)$(SDK_INCLUDE_DIR)/linux); \
