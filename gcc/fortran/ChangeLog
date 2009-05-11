@@ -1,3 +1,7 @@
+2009-05-11  Steve Ellcey  <sje@cup.hp.com>
+
+	* resolve.c (check_host_association): Initialize tail.
+
 2009-05-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40089

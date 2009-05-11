@@ -4353,7 +4353,7 @@ check_host_association (gfc_expr *e)
   gfc_symtree *st;
   int n;
   gfc_ref *ref;
-  gfc_actual_arglist *arg, *tail;
+  gfc_actual_arglist *arg, *tail = NULL;
   bool retval = e->expr_type == EXPR_FUNCTION;
 
   /*  If the expression is the result of substitution in
