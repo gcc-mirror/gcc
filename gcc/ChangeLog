@@ -1,3 +1,9 @@
+2009-05-11  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/40074
+	* tree-vect-analyze.c (vect_analyze_group_access): Take gaps into
+	account in group size and step comparison.
+
 2009-05-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40062
