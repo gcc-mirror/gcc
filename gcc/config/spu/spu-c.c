@@ -42,7 +42,7 @@ spu_categorize_keyword (const cpp_token *tok)
 {
   if (tok->type == CPP_NAME)
     {
-      cpp_hashnode *ident = tok->val.node;
+      cpp_hashnode *ident = tok->val.node.node;
 
       if (ident == C_CPP_HASHNODE (vector_keyword)
 	  || ident == C_CPP_HASHNODE (__vector_keyword))
@@ -60,7 +60,7 @@ spu_categorize_keyword (const cpp_token *tok)
 static cpp_hashnode *
 spu_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
 {
-  cpp_hashnode *expand_this = tok->val.node;
+  cpp_hashnode *expand_this = tok->val.node.node;
   cpp_hashnode *ident;
 
   ident = spu_categorize_keyword (tok);

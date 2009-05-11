@@ -1,3 +1,9 @@
+2009-05-11  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* config/spu/spu-c.c (spu_categorize_keyword): Update for recent
+	libcpp interface change.
+	(spu_macro_to_expand): Likewise.
+
 2009-05-11  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR tree-optimization/40026
