@@ -3643,14 +3643,11 @@ static enum gimplify_status
 gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 			   bool want_value, bool notify_temp_creation)
 {
-  tree object, new_ctor;
-  tree ctor = TREE_OPERAND (*expr_p, 1);
-  tree type = TREE_TYPE (ctor);
+  tree object, ctor, type;
   enum gimplify_status ret;
   VEC(constructor_elt,gc) *elts;
 
-  if (TREE_CODE (ctor) != CONSTRUCTOR)
-    return GS_UNHANDLED;
+  gcc_assert (TREE_CODE (TREE_OPERAND (*expr_p, 1)) == CONSTRUCTOR);
 
   if (!notify_temp_creation)
     {
@@ -3661,8 +3658,10 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
     }
 
   object = TREE_OPERAND (*expr_p, 0);
-  new_ctor = optimize_compound_literals_in_ctor (ctor);
-  elts = CONSTRUCTOR_ELTS (new_ctor);
+  ctor = TREE_OPERAND (*expr_p, 1) =
+    optimize_compound_literals_in_ctor (TREE_OPERAND (*expr_p, 1));
+  type = TREE_TYPE (ctor);
+  elts = CONSTRUCTOR_ELTS (ctor);
   ret = GS_ALL_DONE;
 
   switch (TREE_CODE (type))

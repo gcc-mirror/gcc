@@ -1,3 +1,7 @@
+2009-05-11  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.c-torture/compile/pr40026.c: New testcase.
+
 2009-05-11  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40089
