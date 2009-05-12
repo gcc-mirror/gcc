@@ -1628,20 +1628,63 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 	}
       len = i;
 
-      if (!default_case)
-	{
-	  gimple new_default;
-
-	  /* If the switch has no default label, add one, so that we jump
-	     around the switch body.  */
-	  default_case = build3 (CASE_LABEL_EXPR, void_type_node, NULL_TREE,
-	                         NULL_TREE, create_artificial_label ());
-	  new_default = gimple_build_label (CASE_LABEL (default_case));
-	  gimplify_seq_add_stmt (&switch_body_seq, new_default);
-	}
-
       if (!VEC_empty (tree, labels))
 	sort_case_labels (labels);
+
+      if (!default_case)
+	{
+	  tree type = TREE_TYPE (switch_expr);
+
+	  /* If the switch has no default label, add one, so that we jump
+	     around the switch body.  If the labels already cover the whole
+	     range of type, add the default label pointing to one of the
+	     existing labels.  */
+	  if (type == void_type_node)
+	    type = TREE_TYPE (SWITCH_COND (switch_expr));
+	  if (len
+	      && INTEGRAL_TYPE_P (type)
+	      && TYPE_MIN_VALUE (type)
+	      && TYPE_MAX_VALUE (type)
+	      && tree_int_cst_equal (CASE_LOW (VEC_index (tree, labels, 0)),
+				     TYPE_MIN_VALUE (type)))
+	    {
+	      tree low, high = CASE_HIGH (VEC_index (tree, labels, len - 1));
+	      if (!high)
+		high = CASE_LOW (VEC_index (tree, labels, len - 1));
+	      if (tree_int_cst_equal (high, TYPE_MAX_VALUE (type)))
+		{
+		  for (i = 1; i < len; i++)
+		    {
+		      high = CASE_LOW (VEC_index (tree, labels, i));
+		      low = CASE_HIGH (VEC_index (tree, labels, i - 1));
+		      if (!low)
+			low = CASE_LOW (VEC_index (tree, labels, i - 1));
+		      if ((TREE_INT_CST_LOW (low) + 1
+			   != TREE_INT_CST_LOW (high))
+			  || (TREE_INT_CST_HIGH (low)
+			      + (TREE_INT_CST_LOW (high) == 0)
+			      != TREE_INT_CST_HIGH (high)))
+			break;
+		    }
+		  if (i == len)
+		    default_case = build3 (CASE_LABEL_EXPR, void_type_node,
+					   NULL_TREE, NULL_TREE,
+					   CASE_LABEL (VEC_index (tree,
+								  labels, 0)));
+		}
+	    }
+
+	  if (!default_case)
+	    {
+	      gimple new_default;
+
+	      default_case = build3 (CASE_LABEL_EXPR, void_type_node,
+				     NULL_TREE, NULL_TREE,
+				     create_artificial_label ());
+	      new_default = gimple_build_label (CASE_LABEL (default_case));
+	      gimplify_seq_add_stmt (&switch_body_seq, new_default);
+	    }
+	}
 
       gimple_switch = gimple_build_switch_vec (SWITCH_COND (switch_expr), 
                                                default_case, labels);

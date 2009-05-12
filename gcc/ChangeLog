@@ -1,3 +1,13 @@
+2009-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline:
+	2009-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/39666
+	* gimplify.c (gimplify_switch_expr): If case labels cover the whole
+	range of the type, but default label is missing, add it with one
+	of the existing labels instead of adding a new label for it.
+
 2009-05-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
