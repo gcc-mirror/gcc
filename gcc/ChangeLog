@@ -1,3 +1,7 @@
+2009-05-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	* df-core.c: Update head documentation.
+
 2009-05-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR bootstrap/40118

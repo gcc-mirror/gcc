@@ -170,11 +170,6 @@ There are four ways of doing the incremental scanning:
    d) If the pass modifies all of the insns, as does register
       allocation, it is simply better to rescan the entire function.
 
-   e) If the pass uses either non-standard or ancient techniques to
-      modify insns, automatic detection of the insns that need to be
-      rescanned may be impractical.  Cse and regrename fall into this
-      category.
-
 2) Deferred rescanning - Calls to df_insn_rescan, df_notes_rescan, and
    df_insn_delete do not immediately change the insn but instead make
    a note that the insn needs to be rescanned.  The next call to
@@ -182,27 +177,25 @@ There are four ways of doing the incremental scanning:
    cause all of the pending rescans to be processed.
 
    This is the technique of choice if either 1a, 1b, or 1c are issues
-   in the pass.  In the case of 1a or 1b, a call to df_remove_problem
-   (df_chain) should be made before the next call to df_analyze or
-   df_process_deferred_rescans.
+   in the pass.  In the case of 1a or 1b, a call to df_finish_pass
+   (either manually or via TODO_df_finish) should be made before the
+   next call to df_analyze or df_process_deferred_rescans.
+
+   This mode is also used by a few passes that still rely on note_uses,
+   note_stores and for_each_rtx instead of using the DF data.  This
+   can be said to fall under case 1c.
 
    To enable this mode, call df_set_flags (DF_DEFER_INSN_RESCAN).
    (This mode can be cleared by calling df_clear_flags
    (DF_DEFER_INSN_RESCAN) but this does not cause the deferred insns to
    be rescanned.
 
-   3) Total rescanning - In this mode the rescanning is disabled.
-   However, the df information associated with deleted insn is delete
-   at the time the insn is deleted.  At the end of the pass, a call
-   must be made to df_insn_rescan_all.  This method is used by the
-   register allocator since it generally changes each insn multiple
-   times (once for each ref) and does not need to make use of the
-   updated scanning information.
-
-   It is also currently used by two older passes (cse, and regrename)
-   which change insns in hard to track ways.  It is hoped that this
-   will be fixed soon since this it is expensive to rescan all of the
-   insns when only a small number of them have really changed.
+3) Total rescanning - In this mode the rescanning is disabled.
+   Only when insns are deleted is the df information associated with
+   it also deleted.  At the end of the pass, a call must be made to
+   df_insn_rescan_all.  This method is used by the register allocator
+   since it generally changes each insn multiple times (once for each ref)
+   and does not need to make use of the updated scanning information.
 
 4) Do it yourself - In this mechanism, the pass updates the insns
    itself using the low level df primitives.  Currently no pass does
