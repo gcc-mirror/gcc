@@ -146,6 +146,7 @@ _GLIBCXX_END_NAMESPACE
 #if (defined(__GXX_EXPERIMENTAL_CXX0X__) \
      && defined(_GLIBCXX_ATOMIC_BUILTINS_4))
 #include <exception_ptr.h>
+#include <nested_exception.h>
 #endif
 
 #endif

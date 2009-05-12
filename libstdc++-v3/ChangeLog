@@ -1,3 +1,16 @@
+2009-05-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* libsupc++/exception: Include nested_exception.h in C++0x mode.
+	* libsupc++/nested_exception.h: New.
+	* libsupc++/Makefile.am: Add new header.
+	* libsupc++/Makefile.in: Regenerate.
+	* testsuite/18_support/nested_exception/rethrow_nested.cc: New.
+	* testsuite/18_support/nested_exception/throw_with_nested.cc: New.
+	* testsuite/18_support/nested_exception/cons.cc: New.
+	* testsuite/18_support/nested_exception/nested_ptr.cc: New.
+	* testsuite/18_support/nested_exception/rethrow_if_nested.cc: New.
+	* doc/xml/manual/status_cxx200x.xml: Adjust.
+
 2009-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/throw_allocator.h: Remove redundante include.

@@ -33,7 +33,7 @@ noinst_LTLIBRARIES = libsupc++convenience.la
 
 headers = \
 	exception new typeinfo cxxabi.h cxxabi-forced.h exception_defines.h \
-	initializer_list exception_ptr.h
+	initializer_list exception_ptr.h nested_exception.h
 
 if GLIBCXX_HOSTED
   c_sources = \
