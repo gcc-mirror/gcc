@@ -235,10 +235,9 @@ particular release.
       <entry></entry>
     </row>
     <row>
-      <?dbhtml bgcolor="#C8B0B0" ?> 
       <entry>18.8.6</entry>
       <entry>Class <code>nested_exception</code></entry>
-      <entry>N</entry>
+      <entry>Y</entry>
       <entry></entry>
     </row>
     <row>
