@@ -3626,24 +3626,6 @@ iterative_hash_hashval_t (hashval_t val, hashval_t val2)
   return val2;
 }
 
-/* Produce good hash value combining PTR and VAL2.  */
-static inline hashval_t
-iterative_hash_pointer (const void *ptr, hashval_t val2)
-{
-  if (sizeof (ptr) == sizeof (hashval_t))
-    return iterative_hash_hashval_t ((size_t) ptr, val2);
-  else
-    {
-      hashval_t a = (hashval_t) (size_t) ptr;
-      /* Avoid warnings about shifting of more than the width of the type on
-         hosts that won't execute this path.  */
-      int zero = 0;
-      hashval_t b = (hashval_t) ((size_t) ptr >> (sizeof (hashval_t) * 8 + zero));
-      mix (a, b, val2);
-      return val2;
-    }
-}
-
 /* Produce good hash value combining VAL and VAL2.  */
 static inline hashval_t
 iterative_hash_host_wide_int (HOST_WIDE_INT val, hashval_t val2)
@@ -5330,7 +5312,7 @@ iterative_hash_expr (const_tree t, hashval_t val)
   char tclass;
 
   if (t == NULL_TREE)
-    return iterative_hash_pointer (t, val);
+    return iterative_hash_hashval_t (0, val);
 
   code = TREE_CODE (t);
 
@@ -5364,7 +5346,7 @@ iterative_hash_expr (const_tree t, hashval_t val)
 
     case SSA_NAME:
       /* we can just compare by pointer.  */
-      return iterative_hash_pointer (t, val);
+      return iterative_hash_host_wide_int (SSA_NAME_VERSION (t), val);
 
     case TREE_LIST:
       /* A list of expressions, for a CALL_EXPR or as the elements of a
@@ -5388,13 +5370,12 @@ iterative_hash_expr (const_tree t, hashval_t val)
 	 __builtin__ form.  Otherwise nodes that compare equal
 	 according to operand_equal_p might get different
 	 hash codes.  */
-      if (DECL_BUILT_IN (t))
+      if (DECL_BUILT_IN (t) && built_in_decls[DECL_FUNCTION_CODE (t)])
 	{
-	  val = iterative_hash_pointer (built_in_decls[DECL_FUNCTION_CODE (t)], 
-				      val);
-	  return val;
+	  t = built_in_decls[DECL_FUNCTION_CODE (t)];
+	  code = TREE_CODE (t);
 	}
-      /* else FALL THROUGH */
+      /* FALL THROUGH */
     default:
       tclass = TREE_CODE_CLASS (code);
 
