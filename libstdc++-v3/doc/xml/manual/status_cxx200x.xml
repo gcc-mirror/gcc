@@ -403,8 +403,8 @@ particular release.
     <row>
       <entry>20.3.6</entry>
       <entry>Class template <code>bitset</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>20.4</entry>
@@ -941,8 +941,8 @@ particular release.
     <row>
       <entry>20.9.2.2</entry>
       <entry><code>duration_values</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>20.9.2.3</entry>
@@ -953,14 +953,14 @@ particular release.
     <row>
       <entry>20.9.3</entry>
       <entry>Class template <code>duration</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>20.9.4</entry>
       <entry>Class template <code>time_point</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>20.9.5</entry>
@@ -1033,26 +1033,26 @@ particular release.
     <row>
       <entry>21.2.3.1</entry>
       <entry>struct <code>char_traits&lt;char&gt;</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>21.2.3.2</entry>
       <entry>struct <code>char_traits&lt;char16_t&gt;</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>21.2.3.3</entry>
       <entry>struct <code>char_traits&lt;char32_t&gt;</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>21.2.3.4</entry>
       <entry>struct <code>char_traits&lt;wchar_t&gt;</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>21.3</entry>
@@ -1324,8 +1324,8 @@ particular release.
     <row>
       <entry>23.3.1</entry>
       <entry>Class template <code>array</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>23.3.2</entry>
@@ -1628,8 +1628,8 @@ particular release.
     <row>
       <entry>26.4</entry>
       <entry>Complex numbers</entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>26.5</entry>
@@ -1661,19 +1661,19 @@ particular release.
       <entry>26.5.3.1</entry>
       <entry>Class template <code>linear_congruential_engine</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>26.5.3.2</entry>
       <entry>Class template <code>mersenne_twister_engine</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>26.5.3.3</entry>
       <entry>Class template <code>subtract_with_carry_engine</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>26.5.4</entry>
@@ -1685,19 +1685,19 @@ particular release.
       <entry>26.5.4.1</entry>
       <entry>Class template <code>discard_block_engine</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>26.5.4.2</entry>
       <entry>Class template <code>independent_bits_engine</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>26.5.4.3</entry>
       <entry>Class template <code>shuffle_order_engine</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>26.5.5</entry>
@@ -1709,7 +1709,7 @@ particular release.
       <entry>26.5.6</entry>
       <entry>Class <code>random_device</code></entry>
       <entry>Y</entry>
-      <entry></entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>26.5.7</entry>
@@ -2374,8 +2374,8 @@ particular release.
     <row>
       <entry>30.4.5.1</entry>
       <entry><code>once_flag</code></entry>
-      <entry>Y</entry>
-      <entry></entry>
+      <entry>Partial</entry>
+      <entry>Missing constexpr</entry>
     </row>
     <row>
       <entry>30.4.5.2</entry>

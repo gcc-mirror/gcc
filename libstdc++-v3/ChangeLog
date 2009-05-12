@@ -1,3 +1,9 @@
+2009-05-12  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+        * doc/xml/manual/status_cxx200x.xml: Note missing constexpr for
+	random number engines, complex, bitset, array, time utilities, and
+	char_traits.
+
 2009-05-12  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* libsupc++/exception: Include nested_exception.h in C++0x mode.
