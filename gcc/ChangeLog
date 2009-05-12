@@ -21,7 +21,7 @@
 
 2009-05-12  Uros Bizjak  <ubizjak@gmail.com>
 
-	PR target/37197
+	PR target/37179
 	* config/i386/driver-i386.c (processor_signatures): New enum.
 	(SIG_GEODE): Move from vendor_signatures to processor_signatures.
 	(host_detect_local_cpu): For SIG_AMD vendor, check for SIG_GEODE
