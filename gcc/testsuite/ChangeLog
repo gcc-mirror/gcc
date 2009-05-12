@@ -1,3 +1,8 @@
+2009-05-12  David Billinghurst <billingd@gcc.gnu.org>
+
+	* lib/target-supports.exp (check_profiling_available): Return
+ 	false for -p on *-*-cygwin* targets.
+
 2009-05-11  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR tree-optimization/38632

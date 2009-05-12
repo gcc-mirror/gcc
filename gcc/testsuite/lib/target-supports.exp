@@ -466,6 +466,11 @@ proc check_profiling_available { test_what } {
 	return 0
     }
 
+    # cygwin does not support -p.
+    if { [istarget *-*-cygwin*] && [lindex $test_what 1] == "-p" } {
+	return 0
+    }
+
     # uClibc does not have gcrt1.o.
     if { [check_effective_target_uclibc]
 	 && ([lindex $test_what 1] == "-p"
