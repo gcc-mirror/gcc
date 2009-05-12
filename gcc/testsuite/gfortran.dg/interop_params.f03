@@ -14,7 +14,7 @@ contains
   end subroutine test_0
 
   subroutine test_1(my_f90_real) bind(c)
-    real(c_int), value :: my_f90_real    ! { dg-error "is for type INTEGER" }
+    real(c_int), value :: my_f90_real    ! { dg-warning "is for type INTEGER" }
   end subroutine test_1
 
   subroutine test_2(my_type) bind(c) ! { dg-error "is not C interoperable" }

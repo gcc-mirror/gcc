@@ -2000,9 +2000,9 @@ kind_expr:
   if (ts->f90_type != BT_UNKNOWN && ts->f90_type != ts->type
       && !((ts->f90_type == BT_REAL && ts->type == BT_COMPLEX)
 	   || (ts->f90_type == BT_COMPLEX && ts->type == BT_REAL)))
-    gfc_error_now ("C kind type parameter is for type %s but type at %L "
-		   "is %s", gfc_basic_typename (ts->f90_type), &where,
-		   gfc_basic_typename (ts->type));
+    gfc_warning_now ("C kind type parameter is for type %s but type at %L "
+		     "is %s", gfc_basic_typename (ts->f90_type), &where,
+		     gfc_basic_typename (ts->type));
 
   gfc_gobble_whitespace ();
   if ((c = gfc_next_ascii_char ()) != ')'
