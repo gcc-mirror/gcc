@@ -1,6 +1,7 @@
-! { dg-do run { xfail spu-*-* } }
+! { dg-do run { xfail spu-*-* *-*-cygwin* } }
 ! Test XFAILed on Darwin because the system's printf() lacks
-! proper support for denormals.
+! proper support for denormals. XFAILed on cygwin as the result
+! is off by one bit in some cases.
 !
 ! This tests that the default formats for formatted I/O of reals are
 ! wide enough and have enough precision, by checking that values can

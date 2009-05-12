@@ -1,5 +1,9 @@
 2009-05-12  David Billinghurst <billingd@gcc.gnu.org>
 
+	* gfortran.dg/default_format_1.f90: XFAIL on cygwin. 
+
+2009-05-12  David Billinghurst <billingd@gcc.gnu.org>
+
 	* lib/target-supports.exp (check_profiling_available): Return
  	false for -p on *-*-cygwin* targets.
 
