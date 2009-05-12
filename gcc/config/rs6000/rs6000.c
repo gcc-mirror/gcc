@@ -12991,13 +12991,13 @@ rs6000_generate_compare (rtx cmp, enum machine_mode mode)
       else if (GET_CODE (op1) == UNSPEC
 	       && XINT (op1, 1) == UNSPEC_SP_TEST)
 	{
-	  rtx op1 = XVECEXP (op1, 0, 0);
+	  rtx op1b = XVECEXP (op1, 0, 0);
 	  comp_mode = CCEQmode;
 	  compare_result = gen_reg_rtx (CCEQmode);
 	  if (TARGET_64BIT)
-	    emit_insn (gen_stack_protect_testdi (compare_result, op0, op1));
+	    emit_insn (gen_stack_protect_testdi (compare_result, op0, op1b));
 	  else
-	    emit_insn (gen_stack_protect_testsi (compare_result, op0, op1));
+	    emit_insn (gen_stack_protect_testsi (compare_result, op0, op1b));
 	}
       else
 	emit_insn (gen_rtx_SET (VOIDmode, compare_result,
