@@ -1,5 +1,14 @@
 2009-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	PR target/39561
+	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Don't set
+	TARGET_EXPAND_CBRANCHDI4.
+	* config/sh/sh.md (cbranchdi4): Don't check TARGET_EXPAND_CBRANCHDI4.
+	* config/sh/sh.opt (mexpand-cbranchdi): Remove.
+	(cmpeqdi): Fix comment.
+
+2009-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	* config/sh/sh-protos.h (sh_legitimate_index_p): Declare.
 	(sh_legitimate_address_p): Likewise.
 	* config/sh/sh.c (sh_legitimate_index_p): New.

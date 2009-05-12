@@ -473,10 +473,7 @@ do {									\
       sh_div_str = SH_DIV_STR_FOR_SIZE ;				\
     }									\
   else									\
-    {									\
-      TARGET_CBRANCHDI4 = 1;						\
-      TARGET_EXPAND_CBRANCHDI4 = 1;					\
-    }									\
+    TARGET_CBRANCHDI4 = 1;						\
   /* We can't meaningfully test TARGET_SHMEDIA here, because -m options	\
      haven't been parsed yet, hence we'd read only the default.	\
      sh_target_reg_class will return NO_REGS if this is not SHMEDIA, so	\

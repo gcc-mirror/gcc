@@ -1,6 +1,6 @@
 ;;- Machine description for Renesas / SuperH SH.
 ;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-;;  2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+;;  2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -723,11 +723,9 @@
 
   else
     {
-      if (TARGET_EXPAND_CBRANCHDI4)
-        {
-          if (expand_cbranchdi4 (operands, LAST_AND_UNUSED_RTX_CODE))
-	    DONE;
-        }
+      if (expand_cbranchdi4 (operands, LAST_AND_UNUSED_RTX_CODE))
+	DONE;
+
       comparison = prepare_cbranch_operands (operands, DImode,
 					     LAST_AND_UNUSED_RTX_CODE);
       if (comparison != GET_CODE (operands[0]))
