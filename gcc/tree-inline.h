@@ -130,6 +130,11 @@ typedef struct eni_weights_d
 
   /* Cost for omp construct.  */
   unsigned omp_cost;
+
+  /* True when time of statemnt should be estimated.  Thus i.e
+     cost of switch statement is logarithmic rather than linear in number
+     of cases.  */
+  bool time_based;
 } eni_weights;
 
 /* Weights that estimate_num_insns uses for heuristics in inlining.  */
