@@ -336,7 +336,11 @@ detect_caches_intel (bool xeon_mp, unsigned max_level, unsigned max_ext_level)
 enum vendor_signatures
 {
   SIG_INTEL =	0x756e6547 /* Genu */,
-  SIG_AMD =	0x68747541 /* Auth */,
+  SIG_AMD =	0x68747541 /* Auth */
+};
+
+enum processor_signatures
+{
   SIG_GEODE =	0x646f6547 /* Geod */
 };
 
@@ -433,19 +437,27 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   if (vendor == SIG_AMD)
     {
-      processor = PROCESSOR_PENTIUM;
+      unsigned int name;
 
-      if (has_mmx)
-	processor = PROCESSOR_K6;
-      if (has_3dnowp)
-	processor = PROCESSOR_ATHLON;
-      if (has_sse2 || has_longmode)
-	processor = PROCESSOR_K8;
-      if (has_sse4a)
+      /* Detect geode processor by its processor signature.  */
+      if (ext_level > 0x80000001)
+	__cpuid (0x80000002, name, ebx, ecx, edx);
+      else
+	name = 0;
+
+      if (name == SIG_GEODE)
+	processor = PROCESSOR_GEODE;
+      else if (has_sse4a)
 	processor = PROCESSOR_AMDFAM10;
+      else if (has_sse2 || has_longmode)
+	processor = PROCESSOR_K8;
+      else if (has_3dnowp)
+	processor = PROCESSOR_ATHLON;
+      else if (has_mmx)
+	processor = PROCESSOR_K6;
+      else
+	processor = PROCESSOR_PENTIUM;
     }
-  else if (vendor == SIG_GEODE)
-    processor = PROCESSOR_GEODE;
   else
     {
       switch (family)
