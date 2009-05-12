@@ -1,3 +1,11 @@
+2009-05-12  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/loop-36.c: Reduce amount of iterations to 2 so unrolling
+	still happens.
+	* gcc.dg/ipa/ipacost-1.c: Prevent inlining
+	* gcc.dg/ipa/ipacost-2.c: Likewise.
+	* gcc.dg/vect/slp-3.c: Loop is no longer unrolled.
+
 2009-05-12  David Billinghurst <billingd@gcc.gnu.org>
 
 	* gfortran.dg/default_format_1.f90: XFAIL on cygwin. 

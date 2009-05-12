@@ -1,3 +1,14 @@
+2009-05-12  Jan Hubicka  <jh@suse.cz>
+
+	* tree-inline.c (estimate_operator_cost): Add operands;
+	when division happens by constant, it is cheap.
+	(estimate_num_insns): Loads and stores are not having cost of 0;
+	EH magic stuff is cheap; when computing runtime cost of switch,
+	use log2 base of amount of its cases; builtin_expect has cost of 0;
+	compute cost for moving return value of call.
+	(init_inline_once): Initialize time_based flags.
+	* tree-inline.h (eni_weights_d): Add time_based flag.
+
 2009-05-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	* df-core.c: Update head documentation.

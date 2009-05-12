@@ -46,6 +46,8 @@ i_can_not_be_propagated_fully2 (int *a)
 main()
 {
   i_can_be_propagated_fully2 (array);
+  i_can_be_propagated_fully2 (array);
+  i_can_not_be_propagated_fully2 (array);
   i_can_not_be_propagated_fully2 (array);
 }
 
