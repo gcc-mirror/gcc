@@ -1,3 +1,8 @@
+2009-05-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR tree-optimization/38632
+	* g++.dg/tree-ssa/pr38632.C: New.
+
 2009-05-11  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/pr21829.c: Simplify matching since
