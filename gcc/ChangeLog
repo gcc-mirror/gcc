@@ -1,5 +1,10 @@
 2009-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/sh.h (OVERRIDE_OPTIONS): Clear flag_schedule_insns
+	unless -fschedule-insns is specified.
+
+2009-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	PR target/39561
 	* config/sh/sh.h (OPTIMIZATION_OPTIONS): Don't set
 	TARGET_EXPAND_CBRANCHDI4.
