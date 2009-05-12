@@ -1,3 +1,9 @@
+2009-05-11  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/40103
+	* graphite.c: Force -Wc++-compat to only be a warning before
+	#including "cloog/cloog.h".
+
 2009-05-11  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipcp_cloning_candidate_p): Add missing return false.
