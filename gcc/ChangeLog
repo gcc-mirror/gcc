@@ -1,3 +1,19 @@
+2009-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh-protos.h (sh_legitimate_index_p): Declare.
+	(sh_legitimate_address_p): Likewise.
+	* config/sh/sh.c (sh_legitimate_index_p): New.
+	(sh_legitimate_address_p): Likewise.
+	* config/sh/sh.h (REG_OK_FOR_BASE_P): Add STRICT parameter.
+	(REG_OK_FOR_INDEX_P, SUBREG_OK_FOR_INDEX_P): Likewise.
+	(MODE_DISP_OK_4, MODE_DISP_OK_8): Remove.
+	(MAYBE_BASE_REGISTER_RTX_P): New macro.
+	(MAYBE_INDEX_REGISTER_RTX_P): Likewise.
+	(BASE_REGISTER_RTX_P): Use MAYBE_BASE_REGISTER_RTX_P.
+	(INDEX_REGISTER_RTX_P): Use MAYBE_INDEX_REGISTER_RTX_P.
+	(GO_IF_LEGITIMATE_INDEX): Use sh_legitimate_index_p.
+	(GO_IF_LEGITIMATE_ADDRESS): Use sh_legitimate_address_p.
+
 2009-05-12  Jan Hubicka  <jh@suse.cz>
 
 	* tree-inline.c (estimate_operator_cost): Add operands;
