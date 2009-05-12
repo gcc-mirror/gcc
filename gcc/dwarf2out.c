@@ -11297,9 +11297,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 static void
 add_subscript_info (dw_die_ref type_die, tree type)
 {
-#ifndef MIPS_DEBUGGING_INFO
   unsigned dimension_number;
-#endif
   tree lower, upper;
   dw_die_ref subrange_die;
 
@@ -11316,8 +11314,10 @@ add_subscript_info (dw_die_ref type_die, tree type)
      const enum type.  E.g. const enum machine_mode insn_operand_mode[2][10].
      We work around this by disabling this feature.  See also
      gen_array_type_die.  */
+
+  dimension_number = 0;
 #ifndef MIPS_DEBUGGING_INFO
-  for (dimension_number = 0;
+  for ( ; 
        TREE_CODE (type) == ARRAY_TYPE;
        type = TREE_TYPE (type), dimension_number++)
 #endif

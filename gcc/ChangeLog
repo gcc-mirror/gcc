@@ -1,3 +1,9 @@
+2009-05-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR bootstrap/40061
+	* dwarf2.out.c (add_subscript_info): Initialize dimension for
+	MIPS_DEBUGGING_INFO.
+
 2009-05-08  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40062
