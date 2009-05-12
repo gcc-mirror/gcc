@@ -118,13 +118,6 @@ enum processor_type iq2000_tune;
 /* Which instruction set architecture to use.  */
 int iq2000_isa;
 
-/* Cached operands, and operator to compare for use in set/branch/trap
-   on condition codes.  */
-rtx branch_cmp[2];
-
-/* What type of branch to use.  */
-enum cmp_type branch_type;
-
 /* Local variables.  */
 
 /* The next branch instruction is a branch likely, not branch normal.  */
@@ -1010,60 +1003,31 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
    The comparison operands are saved away by cmp{si,di,sf,df}.  */
 
 void
-gen_conditional_branch (rtx operands[], enum rtx_code test_code)
+gen_conditional_branch (rtx operands[], enum machine_mode mode)
 {
-  enum cmp_type type = branch_type;
-  rtx cmp0 = branch_cmp[0];
-  rtx cmp1 = branch_cmp[1];
-  enum machine_mode mode;
+  enum rtx_code test_code = GET_CODE (operands[0]);
+  rtx cmp0 = operands[1];
+  rtx cmp1 = operands[2];
   rtx reg;
   int invert;
   rtx label1, label2;
 
-  switch (type)
+  invert = 0;
+  reg = gen_int_relational (test_code, NULL_RTX, cmp0, cmp1, &invert);
+
+  if (reg)
     {
-    case CMP_SI:
-    case CMP_DI:
-      mode = type == CMP_SI ? SImode : DImode;
-      invert = 0;
-      reg = gen_int_relational (test_code, NULL_RTX, cmp0, cmp1, &invert);
-
-      if (reg)
-	{
-	  cmp0 = reg;
-	  cmp1 = const0_rtx;
-	  test_code = NE;
-	}
-      else if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) != 0)
-	/* We don't want to build a comparison against a nonzero
-	   constant.  */
-	cmp1 = force_reg (mode, cmp1);
-
-      break;
-
-    case CMP_SF:
-    case CMP_DF:
-      reg = gen_reg_rtx (CCmode);
-
-      /* For cmp0 != cmp1, build cmp0 == cmp1, and test for result == 0.  */
-      emit_insn (gen_rtx_SET (VOIDmode, reg,
-			      gen_rtx_fmt_ee (test_code == NE ? EQ : test_code,
-					      CCmode, cmp0, cmp1)));
-
-      test_code = test_code == NE ? EQ : NE;
-      mode = CCmode;
       cmp0 = reg;
       cmp1 = const0_rtx;
-      invert = 0;
-      break;
-
-    default:
-      abort_with_insn (gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1),
-		       "bad test");
+      test_code = NE;
     }
+  else if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) != 0)
+    /* We don't want to build a comparison against a nonzero
+       constant.  */
+    cmp1 = force_reg (mode, cmp1);
 
   /* Generate the branch.  */
-  label1 = gen_rtx_LABEL_REF (VOIDmode, operands[0]);
+  label1 = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
   label2 = pc_rtx;
 
   if (invert)

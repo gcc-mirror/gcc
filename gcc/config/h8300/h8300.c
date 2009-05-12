@@ -1226,6 +1226,11 @@ h8300_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed)
       *total = 20;
       return true;
 
+    case COMPARE:
+      if (XEXP (x, 1) == const0_rtx)
+	*total = 0;
+      return false;
+
     case AND:
       if (!h8300_dst_operand (XEXP (x, 0), VOIDmode)
 	  || !h8300_src_operand (XEXP (x, 1), VOIDmode))
@@ -3503,15 +3508,41 @@ compute_logical_op_cc (enum machine_mode mode, rtx *operands)
 /* Expand a conditional branch.  */
 
 void
-h8300_expand_branch (enum rtx_code code, rtx label)
+h8300_expand_branch (rtx operands[])
 {
+  enum rtx_code code = GET_CODE (operands[0]);
+  rtx op0 = operands[1];
+  rtx op1 = operands[2];
+  rtx label = operands[3];
   rtx tmp;
+
+  tmp = gen_rtx_COMPARE (VOIDmode, op0, op1);
+  emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx, tmp));
 
   tmp = gen_rtx_fmt_ee (code, VOIDmode, cc0_rtx, const0_rtx);
   tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 			      gen_rtx_LABEL_REF (VOIDmode, label),
 			      pc_rtx);
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+}
+
+
+/* Expand a conditional store.  */
+
+void
+h8300_expand_store (rtx operands[])
+{
+  rtx dest = operands[0];
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx op0 = operands[2];
+  rtx op1 = operands[3];
+  rtx tmp;
+
+  tmp = gen_rtx_COMPARE (VOIDmode, op0, op1);
+  emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx, tmp));
+
+  tmp = gen_rtx_fmt_ee (code, GET_MODE (dest), cc0_rtx, const0_rtx);
+  emit_insn (gen_rtx_SET (VOIDmode, dest, tmp));
 }
 
 /* Shifts.

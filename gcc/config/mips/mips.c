@@ -448,9 +448,6 @@ static int set_noat;
    normal branch.  */
 static bool mips_branch_likely;
 
-/* The operands passed to the last cmpMM expander.  */
-rtx cmp_operands[2];
-
 /* The current instruction-set architecture.  */
 enum processor_type mips_arch;
 const struct mips_cpu_info *mips_arch_info;
@@ -4221,8 +4218,8 @@ mips_reversed_fp_cond (enum rtx_code *code)
 }
 
 /* Convert a comparison into something that can be used in a branch or
-   conditional move.  cmp_operands[0] and cmp_operands[1] are the values
-   being compared and *CODE is the code used to compare them.
+   conditional move.  On entry, *OP0 and *OP1 are the values being
+   compared and *CODE is the code used to compare them.
 
    Update *CODE, *OP0 and *OP1 so that they describe the final comparison.
    If NEED_EQ_NE_P, then only EQ or NE comparisons against zero are possible,
@@ -4235,42 +4232,38 @@ mips_reversed_fp_cond (enum rtx_code *code)
 static void
 mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
 {
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) == MODE_INT)
+  rtx cmp_op0 = *op0;
+  rtx cmp_op1 = *op1;
+
+  if (GET_MODE_CLASS (GET_MODE (*op0)) == MODE_INT)
     {
-      if (!need_eq_ne_p && cmp_operands[1] == const0_rtx)
-	{
-	  *op0 = cmp_operands[0];
-	  *op1 = cmp_operands[1];
-	}
+      if (!need_eq_ne_p && *op1 == const0_rtx)
+	;
       else if (*code == EQ || *code == NE)
 	{
 	  if (need_eq_ne_p)
 	    {
-	      *op0 = mips_zero_if_equal (cmp_operands[0], cmp_operands[1]);
+	      *op0 = mips_zero_if_equal (cmp_op0, cmp_op1);
 	      *op1 = const0_rtx;
 	    }
 	  else
-	    {
-	      *op0 = cmp_operands[0];
-	      *op1 = force_reg (GET_MODE (*op0), cmp_operands[1]);
-	    }
+	    *op1 = force_reg (GET_MODE (cmp_op0), cmp_op1);
 	}
       else
 	{
 	  /* The comparison needs a separate scc instruction.  Store the
 	     result of the scc in *OP0 and compare it against zero.  */
 	  bool invert = false;
-	  *op0 = gen_reg_rtx (GET_MODE (cmp_operands[0]));
-	  mips_emit_int_order_test (*code, &invert, *op0,
-				    cmp_operands[0], cmp_operands[1]);
+	  *op0 = gen_reg_rtx (GET_MODE (cmp_op0));
+	  mips_emit_int_order_test (*code, &invert, *op0, cmp_op0, cmp_op1);
 	  *code = (invert ? EQ : NE);
 	  *op1 = const0_rtx;
 	}
     }
-  else if (ALL_FIXED_POINT_MODE_P (GET_MODE (cmp_operands[0])))
+  else if (ALL_FIXED_POINT_MODE_P (GET_MODE (cmp_op0)))
     {
       *op0 = gen_rtx_REG (CCDSPmode, CCDSP_CC_REGNUM);
-      mips_emit_binary (*code, *op0, cmp_operands[0], cmp_operands[1]);
+      mips_emit_binary (*code, *op0, cmp_op0, cmp_op1);
       *code = NE;
       *op1 = const0_rtx;
     }
@@ -4290,49 +4283,55 @@ mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
 	      ? gen_reg_rtx (CCmode)
 	      : gen_rtx_REG (CCmode, FPSW_REGNUM));
       *op1 = const0_rtx;
-      mips_emit_binary (cmp_code, *op0, cmp_operands[0], cmp_operands[1]);
+      mips_emit_binary (cmp_code, *op0, cmp_op0, cmp_op1);
     }
 }
 
-/* Try comparing cmp_operands[0] and cmp_operands[1] using rtl code CODE.
-   Store the result in TARGET and return true if successful.
+/* Try performing the comparison in OPERANDS[1], whose arms are OPERANDS[2]
+   and OPERAND[3].  Store the result in OPERANDS[0].
 
-   On 64-bit targets, TARGET may be narrower than cmp_operands[0].  */
+   On 64-bit targets, the mode of the comparison and target will always be
+   SImode, thus possibly narrower than that of the comparison's operands.  */
 
-bool
-mips_expand_scc (enum rtx_code code, rtx target)
+void
+mips_expand_scc (rtx operands[])
 {
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
-    return false;
+  rtx target = operands[0];
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx op0 = operands[2];
+  rtx op1 = operands[3];
+
+  gcc_assert (GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT);
 
   if (code == EQ || code == NE)
     {
       if (ISA_HAS_SEQ_SNE
-	  && reg_imm10_operand (cmp_operands[1], GET_MODE (cmp_operands[1])))
-	mips_emit_binary (code, target, cmp_operands[0], cmp_operands[1]);
+	  && reg_imm10_operand (op1, GET_MODE (op1)))
+	mips_emit_binary (code, target, op0, op1);
       else
 	{
-	  rtx zie = mips_zero_if_equal (cmp_operands[0], cmp_operands[1]);
+	  rtx zie = mips_zero_if_equal (op0, op1);
 	  mips_emit_binary (code, target, zie, const0_rtx);
 	}
     }
   else
-    mips_emit_int_order_test (code, 0, target,
-			      cmp_operands[0], cmp_operands[1]);
-  return true;
+    mips_emit_int_order_test (code, 0, target, op0, op1);
 }
 
-/* Compare cmp_operands[0] with cmp_operands[1] using comparison code
-   CODE and jump to OPERANDS[0] if the condition holds.  */
+/* Compare OPERANDS[1] with OPERANDS[2] using comparison code
+   CODE and jump to OPERANDS[3] if the condition holds.  */
 
 void
-mips_expand_conditional_branch (rtx *operands, enum rtx_code code)
+mips_expand_conditional_branch (rtx *operands)
 {
-  rtx op0, op1, condition;
+  enum rtx_code code = GET_CODE (operands[0]);
+  rtx op0 = operands[1];
+  rtx op1 = operands[2];
+  rtx condition;
 
   mips_emit_compare (&code, &op0, &op1, TARGET_MIPS16);
   condition = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
-  emit_jump_insn (gen_condjump (condition, operands[0]));
+  emit_jump_insn (gen_condjump (condition, operands[3]));
 }
 
 /* Implement:
@@ -4359,35 +4358,36 @@ mips_expand_vcondv2sf (rtx dest, rtx true_src, rtx false_src,
 					 cmp_result));
 }
 
-/* Compare cmp_operands[0] with cmp_operands[1] using the code of
-   OPERANDS[1].  Move OPERANDS[2] into OPERANDS[0] if the condition
-   holds, otherwise move OPERANDS[3] into OPERANDS[0].  */
+/* Perform the comparison in OPERANDS[1].  Move OPERANDS[2] into OPERANDS[0]
+   if the condition holds, otherwise move OPERANDS[3] into OPERANDS[0].  */
 
 void
 mips_expand_conditional_move (rtx *operands)
 {
-  enum rtx_code code;
-  rtx cond, op0, op1;
+  rtx cond;
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx op0 = XEXP (operands[1], 0);
+  rtx op1 = XEXP (operands[1], 1);
 
-  code = GET_CODE (operands[1]);
   mips_emit_compare (&code, &op0, &op1, true);
-  cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1),
+  cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
   emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			  gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]), cond,
 						operands[2], operands[3])));
 }
 
-/* Compare cmp_operands[0] with cmp_operands[1] using rtl code CODE,
-   then trap if the condition holds.  */
+/* Perform the comparison in COMPARISON, then trap if the condition holds.  */
 
 void
-mips_expand_conditional_trap (enum rtx_code code)
+mips_expand_conditional_trap (rtx comparison)
 {
   rtx op0, op1;
   enum machine_mode mode;
+  enum rtx_code code;
 
   /* MIPS conditional trap instructions don't have GT or LE flavors,
      so we must swap the operands and convert to LT and GE respectively.  */
+  code = GET_CODE (comparison);
   switch (code)
     {
     case GT:
@@ -4395,17 +4395,17 @@ mips_expand_conditional_trap (enum rtx_code code)
     case GTU:
     case LEU:
       code = swap_condition (code);
-      op0 = cmp_operands[1];
-      op1 = cmp_operands[0];
+      op0 = XEXP (comparison, 1);
+      op1 = XEXP (comparison, 0);
       break;
 
     default:
-      op0 = cmp_operands[0];
-      op1 = cmp_operands[1];
+      op0 = XEXP (comparison, 0);
+      op1 = XEXP (comparison, 1);
       break;
     }
 
-  mode = GET_MODE (cmp_operands[0]);
+  mode = GET_MODE (XEXP (comparison, 0));
   op0 = force_reg (mode, op0);
   if (!arith_operand (op1, mode))
     op1 = force_reg (mode, op1);
@@ -6396,7 +6396,7 @@ static void
 mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 		      HOST_WIDE_INT bytes_per_iter)
 {
-  rtx label, src_reg, dest_reg, final_src;
+  rtx label, src_reg, dest_reg, final_src, test;
   HOST_WIDE_INT leftover;
 
   leftover = length % bytes_per_iter;
@@ -6423,11 +6423,11 @@ mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
   mips_emit_move (dest_reg, plus_constant (dest_reg, bytes_per_iter));
 
   /* Emit the loop condition.  */
+  test = gen_rtx_NE (VOIDmode, src_reg, final_src);
   if (Pmode == DImode)
-    emit_insn (gen_cmpdi (src_reg, final_src));
+    emit_jump_insn (gen_cbranchdi4 (test, src_reg, final_src, label));
   else
-    emit_insn (gen_cmpsi (src_reg, final_src));
-  emit_jump_insn (gen_bne (label));
+    emit_jump_insn (gen_cbranchsi4 (test, src_reg, final_src, label));
 
   /* Mop up any left-over bytes.  */
   if (leftover)

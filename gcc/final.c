@@ -2320,9 +2320,13 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		&& GET_CODE (SET_DEST (set)) == CC0
 		&& insn != last_ignored_compare)
 	      {
+		rtx src1, src2;
 		if (GET_CODE (SET_SRC (set)) == SUBREG)
 		  SET_SRC (set) = alter_subreg (&SET_SRC (set));
-		else if (GET_CODE (SET_SRC (set)) == COMPARE)
+
+		src1 = SET_SRC (set);
+		src2 = NULL_RTX;
+		if (GET_CODE (SET_SRC (set)) == COMPARE)
 		  {
 		    if (GET_CODE (XEXP (SET_SRC (set), 0)) == SUBREG)
 		      XEXP (SET_SRC (set), 0)
@@ -2330,11 +2334,18 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		    if (GET_CODE (XEXP (SET_SRC (set), 1)) == SUBREG)
 		      XEXP (SET_SRC (set), 1)
 			= alter_subreg (&XEXP (SET_SRC (set), 1));
+		    if (XEXP (SET_SRC (set), 1)
+			== CONST0_RTX (GET_MODE (XEXP (SET_SRC (set), 0))))
+		      src2 = XEXP (SET_SRC (set), 0);
 		  }
 		if ((cc_status.value1 != 0
-		     && rtx_equal_p (SET_SRC (set), cc_status.value1))
+		     && rtx_equal_p (src1, cc_status.value1))
 		    || (cc_status.value2 != 0
-			&& rtx_equal_p (SET_SRC (set), cc_status.value2)))
+			&& rtx_equal_p (src1, cc_status.value2))
+		    || (src2 != 0 && cc_status.value1 != 0
+		        && rtx_equal_p (src2, cc_status.value1))
+		    || (src2 != 0 && cc_status.value2 != 0
+			&& rtx_equal_p (src2, cc_status.value2)))
 		  {
 		    /* Don't delete insn if it has an addressing side-effect.  */
 		    if (! FIND_REG_INC_NOTE (insn, NULL_RTX)
@@ -2348,9 +2359,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		  }
 	      }
 	  }
-#endif
 
-#ifdef HAVE_cc0
 	/* If this is a conditional branch, maybe modify it
 	   if the cc's are in a nonstandard state
 	   so that it accomplishes the same thing that it would

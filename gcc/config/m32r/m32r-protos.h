@@ -38,6 +38,7 @@ extern enum m32r_function_type m32r_compute_function_type (tree);
 extern int    easy_di_const (rtx);
 extern int    easy_df_const (rtx);
 extern rtx    gen_compare (enum rtx_code, rtx, rtx, int);
+extern bool   gen_cond_store (enum rtx_code, rtx, rtx, rtx);
 extern rtx    gen_split_move_double (rtx *);
 extern int    m32r_address_code (rtx);
 extern void   m32r_initialize_trampoline (rtx, rtx, rtx);

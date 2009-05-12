@@ -2913,9 +2913,6 @@ enum frv_builtins
 /* Enable prototypes on the call rtl functions.  */
 #define MD_CALL_PROTOTYPES 1
 
-extern GTY(()) rtx frv_compare_op0;			/* operand save for */
-extern GTY(()) rtx frv_compare_op1;			/* comparison generation */
-
 #define CPU_UNITS_QUERY 1
 
 #ifdef __FRV_FDPIC__

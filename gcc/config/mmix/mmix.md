@@ -440,30 +440,6 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
   ""
   "NOR %0,%1,0")
 
-;; Since we don't have cc0, we do what is recommended in the manual;
-;; store away the operands for use in the branch, scc or movcc insn.
-(define_expand "cmpdi"
-  [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "mmix_reg_or_8bit_operand" "")]
-  ""
-  "
-{
-  mmix_compare_op0 = operands[0];
-  mmix_compare_op1 = operands[1];
-  DONE;
-}")
-
-(define_expand "cmpdf"
-  [(match_operand:DF 0 "register_operand" "")
-   (match_operand:DF 1 "register_operand" "")]
-  ""
-  "
-{
-  mmix_compare_op0 = operands[0];
-  mmix_compare_op1 = operands[1];
-  DONE;
-}")
-
 ;; When the user-patterns expand, the resulting insns will match the
 ;; patterns below.
 
@@ -474,7 +450,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; unsigned, so that has to be done another way.
 ;;  FIXME: Perhaps a peep2 changing CCcode to a new code, that
 ;; gets folded here.
-(define_insn "*cmpcc_folded"
+(define_insn "*cmpdi_folded"
   [(set (match_operand:CC 0 "register_operand" "=r")
 	(compare:CC
 	 (match_operand:DI 1 "register_operand" "r")
@@ -485,7 +461,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
    && REGNO (operands[1]) == REGNO (operands[0])"
   "%% folded: cmp %0,%1,0")
 
-(define_insn "*cmpcc"
+(define_insn "*cmps"
   [(set (match_operand:CC 0 "register_operand" "=r")
 	(compare:CC
 	 (match_operand:DI 1 "register_operand" "r")
@@ -724,7 +700,8 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; 0 to use in movdfcc.
 
 (define_expand "movdfcc"
-  [(set (match_operand:DF 0 "register_operand" "")
+  [(set (match_dup 4) (match_dup 5))
+   (set (match_operand:DF 0 "register_operand" "")
 	(if_then_else:DF
 	 (match_operand 1 "comparison_operator" "")
 	 (match_operand:DF 2 "mmix_reg_or_0_operand" "")
@@ -733,15 +710,20 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
-  rtx cc_reg = mmix_gen_compare_reg (code, mmix_compare_op0,
-				     mmix_compare_op1);
-  if (cc_reg == NULL_RTX)
+  if (code == LE || code == GE)
     FAIL;
-  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, cc_reg, const0_rtx);
+
+  operands[4] = mmix_gen_compare_reg (code, XEXP (operands[1], 0),
+				      XEXP (operands[1], 1));
+  operands[5] = gen_rtx_COMPARE (GET_MODE (operands[4]),
+				 XEXP (operands[1], 0),
+				 XEXP (operands[1], 1));
+  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, operands[4], const0_rtx);
 }")
 
 (define_expand "movdicc"
-  [(set (match_operand:DI 0 "register_operand" "")
+  [(set (match_dup 4) (match_dup 5))
+   (set (match_operand:DI 0 "register_operand" "")
 	(if_then_else:DI
 	 (match_operand 1 "comparison_operator" "")
 	 (match_operand:DI 2 "mmix_reg_or_8bit_operand" "")
@@ -750,11 +732,15 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
   "
 {
   enum rtx_code code = GET_CODE (operands[1]);
-  rtx cc_reg = mmix_gen_compare_reg (code, mmix_compare_op0,
-				     mmix_compare_op1);
-  if (cc_reg == NULL_RTX)
+  if (code == LE || code == GE)
     FAIL;
-  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, cc_reg, const0_rtx);
+
+  operands[4] = mmix_gen_compare_reg (code, XEXP (operands[1], 0),
+				      XEXP (operands[1], 1));
+  operands[5] = gen_rtx_COMPARE (GET_MODE (operands[4]),
+				 XEXP (operands[1], 0),
+				 XEXP (operands[1], 1));
+  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, operands[4], const0_rtx);
 }")
 
 ;; FIXME: Is this the right way to do "folding" of CCmode -> DImode?
@@ -854,175 +840,65 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
    CS%d2 %0,%3,%1
    ZS%d2 %0,%3,%1")
 
-;; FIXME: scc patterns will probably help, I just skip them
+;; FIXME: scc insns will probably help, I just skip them
 ;; right now.  Revisit.
 
-(define_expand "beq"
-  [(set (pc)
-	(if_then_else (eq (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
+(define_expand "cbranchdi4"
+  [(set (match_dup 4)
+        (match_op_dup 5
+         [(match_operand:DI 1 "register_operand" "")
+          (match_operand:DI 2 "mmix_reg_or_8bit_operand" "")]))
+   (set (pc)
+        (if_then_else
+              (match_operator 0 "ordered_comparison_operator"
+               [(match_dup 4)
+                (const_int 0)])
+              (label_ref (match_operand 3 "" ""))
+              (pc)))]
   ""
   "
 {
-  operands[1]
-    = mmix_gen_compare_reg (EQ, mmix_compare_op0, mmix_compare_op1);
+  operands[4] = mmix_gen_compare_reg (GET_CODE (operands[0]),
+                                      operands[1], operands[2]);
+  operands[5] = gen_rtx_fmt_ee (COMPARE,
+                                GET_MODE (operands[4]),
+                                operands[1], operands[2]);
 }")
 
-(define_expand "bne"
-  [(set (pc)
-	(if_then_else (ne (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
+(define_expand "cbranchdf4"
+  [(set (match_dup 4)
+        (match_op_dup 5
+         [(match_operand:DF 1 "register_operand" "")
+          (match_operand:DF 2 "register_operand" "")]))
+   (set (pc)
+        (if_then_else
+              (match_operator 0 "float_comparison_operator"
+               [(match_dup 4)
+                (const_int 0)])
+              (label_ref (match_operand 3 "" ""))
+              (pc)))]
   ""
   "
 {
-  operands[1]
-    = mmix_gen_compare_reg (NE, mmix_compare_op0, mmix_compare_op1);
-}")
-
-(define_expand "bgt"
-  [(set (pc)
-	(if_then_else (gt (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  operands[1]
-    = mmix_gen_compare_reg (GT, mmix_compare_op0, mmix_compare_op1);
-}")
-
-(define_expand "ble"
-  [(set (pc)
-	(if_then_else (le (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  operands[1]
-    = mmix_gen_compare_reg (LE, mmix_compare_op0, mmix_compare_op1);
-
   /* The head comment of optabs.c:can_compare_p says we're required to
      implement this, so we have to clean up the mess here.  */
-  if (operands[1] == NULL_RTX)
+  if (GET_CODE (operands[0]) == LE || GET_CODE (operands[0]) == GE)
     {
-      /* FIXME: Watch out for sharing/unsharing of rtx:es.  */
-      emit_jump_insn ((*bcc_gen_fctn[(int) LT]) (operands[0]));
-      emit_jump_insn ((*bcc_gen_fctn[(int) EQ]) (operands[0]));
+      enum rtx_code ltgt_code = GET_CODE (operands[0]) == LE ? LT : GT;
+      emit_cmp_and_jump_insns (operands[1], operands[2], ltgt_code, NULL_RTX,
+			       DFmode, 0, operands[3]);
+      emit_cmp_and_jump_insns (operands[1], operands[2], EQ, NULL_RTX,
+			       DFmode, 0, operands[3]);
       DONE;
     }
+
+  operands[4] = mmix_gen_compare_reg (GET_CODE (operands[0]),
+                                      operands[1], operands[2]);
+  operands[5] = gen_rtx_fmt_ee (COMPARE,
+                                GET_MODE (operands[4]),
+                                operands[1], operands[2]);
 }")
 
-(define_expand "bge"
-  [(set (pc)
-	(if_then_else (ge (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  operands[1]
-    = mmix_gen_compare_reg (GE, mmix_compare_op0, mmix_compare_op1);
-
-  /* The head comment of optabs.c:can_compare_p says we're required to
-     implement this, so we have to clean up the mess here.  */
-  if (operands[1] == NULL_RTX)
-    {
-      /* FIXME: Watch out for sharing/unsharing of rtx:es.  */
-      emit_jump_insn ((*bcc_gen_fctn[(int) GT]) (operands[0]));
-      emit_jump_insn ((*bcc_gen_fctn[(int) EQ]) (operands[0]));
-      DONE;
-    }
-}")
-
-(define_expand "blt"
-  [(set (pc)
-	(if_then_else (lt (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  operands[1]
-    = mmix_gen_compare_reg (LT, mmix_compare_op0, mmix_compare_op1);
-}")
-
-(define_expand "bgtu"
-  [(set (pc)
-	(if_then_else (gtu (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  operands[1]
-    = mmix_gen_compare_reg (GTU, mmix_compare_op0, mmix_compare_op1);
-}")
-
-(define_expand "bleu"
-  [(set (pc)
-	(if_then_else (leu (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  operands[1]
-    = mmix_gen_compare_reg (LEU, mmix_compare_op0, mmix_compare_op1);
-}")
-
-(define_expand "bgeu"
-  [(set (pc)
-	(if_then_else (geu (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  operands[1]
-    = mmix_gen_compare_reg (GEU, mmix_compare_op0, mmix_compare_op1);
-}")
-
-(define_expand "bltu"
-  [(set (pc)
-	(if_then_else (ltu (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  operands[1]
-    = mmix_gen_compare_reg (LTU, mmix_compare_op0, mmix_compare_op1);
-}")
-
-(define_expand "bunordered"
-  [(set (pc)
-	(if_then_else (unordered (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  operands[1]
-    = mmix_gen_compare_reg (UNORDERED, mmix_compare_op0, mmix_compare_op1);
-
-  if (operands[1] == NULL_RTX)
-    FAIL;
-}")
-
-(define_expand "bordered"
-  [(set (pc)
-	(if_then_else (ordered (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  operands[1]
-    = mmix_gen_compare_reg (ORDERED, mmix_compare_op0, mmix_compare_op1);
-}")
 
 ;; FIXME: we can emit an unordered-or-*not*-equal compare in one insn, but
 ;; there's no RTL code for it.  Maybe revisit in future.

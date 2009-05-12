@@ -3657,57 +3657,6 @@ selb\t%0,%4,%0,%3"
   [(set_attr "type" "br")])
 
 
-;; Compare insns are next.  Note that the spu has two types of compares,
-;; signed & unsigned, and one type of branch.
-;;
-;; Start with the DEFINE_EXPANDs to generate the rtl for compares, scc
-;; insns, and branches.  We store the operands of compares until we see
-;; how it is used.
-
-(define_expand "cmp<mode>"
-  [(set (cc0)
-	(compare (match_operand:VQHSI 0 "spu_reg_operand" "")
-  		 (match_operand:VQHSI 1 "spu_nonmem_operand" "")))]
-  ""
-  {
-    spu_compare_op0 = operands[0];
-    spu_compare_op1 = operands[1];
-    DONE;
-  })
-
-(define_expand "cmp<mode>"
-  [(set (cc0)
-	(compare (match_operand:DTI 0 "spu_reg_operand" "")
-  		 (match_operand:DTI 1 "spu_reg_operand" "")))]
-  ""
-  {
-    spu_compare_op0 = operands[0];
-    spu_compare_op1 = operands[1];
-    DONE;
-  })
-
-(define_expand "cmp<mode>"
-  [(set (cc0)
-	(compare (match_operand:VSF 0 "spu_reg_operand" "")
-  		 (match_operand:VSF 1 "spu_reg_operand" "")))]
-  ""
-  {
-    spu_compare_op0 = operands[0];
-    spu_compare_op1 = operands[1];
-    DONE;
-  })
-
-(define_expand "cmpdf"
-  [(set (cc0)
-        (compare (match_operand:DF 0 "register_operand" "")
-                 (match_operand:DF 1 "register_operand" "")))]
-  ""
-  "{
-  spu_compare_op0 = operands[0];
-  spu_compare_op1 = operands[1];
-  DONE;
-}")
-
 ;; vector conditional compare patterns
 (define_expand "vcond<mode>"
   [(set (match_operand:VCMP 0 "spu_reg_operand" "=r")
@@ -3746,108 +3695,72 @@ selb\t%0,%4,%0,%3"
 
 ;; branch on condition
 
-(define_expand "beq"
-  [(use (match_operand 0 "" ""))]
+(define_expand "cbranch<mode>4"
+  [(use (match_operator 0 "ordered_comparison_operator"
+	 [(match_operand:VQHSI 1 "spu_reg_operand" "")
+	  (match_operand:VQHSI 2 "spu_nonmem_operand" "")]))
+   (use (match_operand 3 ""))]
   ""
-  { spu_emit_branch_or_set (0, EQ, operands); DONE; })
+  { spu_emit_branch_or_set (0, operands[0], operands); DONE; })
 
-(define_expand "bne"
-  [(use (match_operand 0 "" ""))]
+(define_expand "cbranch<mode>4"
+  [(use (match_operator 0 "ordered_comparison_operator"
+	 [(match_operand:DTI 1 "spu_reg_operand" "")
+	  (match_operand:DTI 2 "spu_reg_operand" "")]))
+   (use (match_operand 3 ""))]
   ""
-  { spu_emit_branch_or_set (0, NE, operands); DONE; })
+  { spu_emit_branch_or_set (0, operands[0], operands); DONE; })
 
-(define_expand "bge"
-  [(use (match_operand 0 "" ""))]
+(define_expand "cbranch<mode>4"
+  [(use (match_operator 0 "ordered_comparison_operator"
+	 [(match_operand:VSF 1 "spu_reg_operand" "")
+	  (match_operand:VSF 2 "spu_reg_operand" "")]))
+   (use (match_operand 3 ""))]
   ""
-  { spu_emit_branch_or_set (0, GE, operands); DONE; })
+  { spu_emit_branch_or_set (0, operands[0], operands); DONE; })
 
-(define_expand "bgt"
-  [(use (match_operand 0 "" ""))]
+(define_expand "cbranchdf4"
+  [(use (match_operator 0 "ordered_comparison_operator"
+	 [(match_operand:DF 1 "spu_reg_operand" "")
+	  (match_operand:DF 2 "spu_reg_operand" "")]))
+   (use (match_operand 3 ""))]
   ""
-  { spu_emit_branch_or_set (0, GT, operands); DONE; })
-
-(define_expand "ble"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { spu_emit_branch_or_set (0, LE, operands); DONE; })
-
-(define_expand "blt"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { spu_emit_branch_or_set (0, LT, operands); DONE; })
-
-(define_expand "bgeu"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { spu_emit_branch_or_set (0, GEU, operands); DONE; })
-
-(define_expand "bgtu"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { spu_emit_branch_or_set (0, GTU, operands); DONE; })
-
-(define_expand "bleu"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { spu_emit_branch_or_set (0, LEU, operands); DONE; })
-
-(define_expand "bltu"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { spu_emit_branch_or_set (0, LTU, operands); DONE; })
+  { spu_emit_branch_or_set (0, operands[0], operands); DONE; })
 
 
 ;; set on condition
 
-(define_expand "seq"
-  [(clobber (match_operand:SI 0 "spu_reg_operand" ""))]
+(define_expand "cstore<mode>4"
+  [(use (match_operator 1 "ordered_comparison_operator"
+	 [(match_operand:VQHSI 2 "spu_reg_operand" "")
+	  (match_operand:VQHSI 3 "spu_nonmem_operand" "")]))
+   (clobber (match_operand:SI 0 "spu_reg_operand"))]
   ""
-  { spu_emit_branch_or_set (1, EQ, operands); DONE; })
+  { spu_emit_branch_or_set (1, operands[1], operands); DONE; })
 
-(define_expand "sne"
-  [(clobber (match_operand:SI 0 "spu_reg_operand" ""))]
+(define_expand "cstore<mode>4"
+  [(use (match_operator 1 "ordered_comparison_operator"
+	 [(match_operand:DTI 2 "spu_reg_operand" "")
+	  (match_operand:DTI 3 "spu_reg_operand" "")]))
+   (clobber (match_operand:SI 0 "spu_reg_operand"))]
   ""
-  { spu_emit_branch_or_set (1, NE, operands); DONE; })
+  { spu_emit_branch_or_set (1, operands[1], operands); DONE; })
 
-(define_expand "sgt"
-  [(clobber (match_operand:SI 0 "spu_reg_operand" ""))]
+(define_expand "cstore<mode>4"
+  [(use (match_operator 1 "ordered_comparison_operator"
+	 [(match_operand:VSF 2 "spu_reg_operand" "")
+	  (match_operand:VSF 3 "spu_reg_operand" "")]))
+   (clobber (match_operand:SI 0 "spu_reg_operand"))]
   ""
-  { spu_emit_branch_or_set (1, GT, operands); DONE; })
+  { spu_emit_branch_or_set (1, operands[1], operands); DONE; })
 
-(define_expand "slt"
-  [(clobber (match_operand:SI 0 "spu_reg_operand" ""))]
+(define_expand "cstoredf4"
+  [(use (match_operator 1 "ordered_comparison_operator"
+	 [(match_operand:DF 2 "spu_reg_operand" "")
+	  (match_operand:DF 3 "spu_reg_operand" "")]))
+   (clobber (match_operand:SI 0 "spu_reg_operand"))]
   ""
-  { spu_emit_branch_or_set (1, LT, operands); DONE; })
-
-(define_expand "sge"
-  [(clobber (match_operand:SI 0 "spu_reg_operand" ""))]
-  ""
-  { spu_emit_branch_or_set (1, GE, operands); DONE; })
-
-(define_expand "sle"
-  [(clobber (match_operand:SI 0 "spu_reg_operand" ""))]
-  ""
-  { spu_emit_branch_or_set (1, LE, operands); DONE; })
-
-(define_expand "sgtu"
-  [(clobber (match_operand:SI 0 "spu_reg_operand" ""))]
-  ""
-  { spu_emit_branch_or_set (1, GTU, operands); DONE; })
-
-(define_expand "sltu"
-  [(clobber (match_operand:SI 0 "spu_reg_operand" ""))]
-  ""
-  { spu_emit_branch_or_set (1, LTU, operands); DONE; })
-
-(define_expand "sgeu"
-  [(clobber (match_operand:SI 0 "spu_reg_operand" ""))]
-  ""
-  { spu_emit_branch_or_set (1, GEU, operands); DONE; })
-
-(define_expand "sleu"
-  [(clobber (match_operand:SI 0 "spu_reg_operand" ""))]
-  ""
-  { spu_emit_branch_or_set (1, LEU, operands); DONE; })
+  { spu_emit_branch_or_set (1, operands[1], operands); DONE; })
 
 
 ;; conditional move
@@ -3863,12 +3776,12 @@ selb\t%0,%4,%0,%3"
 
 (define_expand "mov<mode>cc"
   [(set (match_operand:ALL 0 "spu_reg_operand" "")
-	(if_then_else:ALL (match_operand 1 "comparison_operator" "")
+	(if_then_else:ALL (match_operand 1 "ordered_comparison_operator" "")
 		      (match_operand:ALL 2 "spu_reg_operand" "")
 		      (match_operand:ALL 3 "spu_reg_operand" "")))]
   ""
   {
-    spu_emit_branch_or_set(2, GET_CODE(operands[1]), operands);
+    spu_emit_branch_or_set(2, operands[1], operands);
     DONE;
   })
 

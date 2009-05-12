@@ -26,6 +26,7 @@ extern bool legitimate_address_p (enum machine_mode, rtx, bool);
 extern bool vax_mode_dependent_address_p (rtx);
 
 #ifdef RTX_CODE
+extern const char *cond_name (rtx);
 extern bool adjacent_operands_p (rtx, rtx, enum machine_mode);
 extern const char *rev_cond_name (rtx);
 extern void print_operand_address (FILE *, rtx);
@@ -35,7 +36,6 @@ extern void vax_expand_addsub_di_operands (rtx *, enum rtx_code);
 extern const char * vax_output_int_move (rtx, rtx *, enum machine_mode);
 extern const char * vax_output_int_add (rtx, rtx *, enum machine_mode);
 extern const char * vax_output_int_subtract (rtx, rtx *, enum machine_mode);
-extern const char * vax_output_conditional_branch (enum rtx_code);
 extern const char * vax_output_movmemsi (rtx, rtx *);
 #endif /* RTX_CODE */
 

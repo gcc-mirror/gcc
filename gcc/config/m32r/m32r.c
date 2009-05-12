@@ -43,10 +43,6 @@
 #include "target-def.h"
 #include "tm-constrs.h"
 
-/* Save the operands last given to a compare for use when we
-   generate a scc or bcc insn.  */
-rtx m32r_compare_op0, m32r_compare_op1;
-
 /* Array of valid operand punctuation characters.  */
 char m32r_punct_chars[256];
 
@@ -864,6 +860,151 @@ gen_compare (enum rtx_code code, rtx x, rtx y, int need_compare)
 
   return gen_rtx_fmt_ee (branch_code, VOIDmode, cc_reg, CONST0_RTX (CCmode));
 }
+
+bool
+gen_cond_store (enum rtx_code code, rtx op0, rtx op1, rtx op2)
+{
+  enum machine_mode mode = GET_MODE (op0);
+
+  gcc_assert (mode == SImode);
+  switch (code)
+    {
+    case EQ:
+      if (!register_operand (op1, mode))
+	op1 = force_reg (mode, op1);
+
+      if (TARGET_M32RX || TARGET_M32R2)
+	{
+	  if (!reg_or_zero_operand (op2, mode))
+	    op2 = force_reg (mode, op2);
+
+	  emit_insn (gen_seq_insn_m32rx (op0, op1, op2));
+	  return true;
+	}
+      if (GET_CODE (op2) == CONST_INT && INTVAL (op2) == 0)
+	{
+	  emit_insn (gen_seq_zero_insn (op0, op1));
+	  return true;
+	}
+
+      if (!reg_or_eq_int16_operand (op2, mode))
+	op2 = force_reg (mode, op2);
+
+      emit_insn (gen_seq_insn (op0, op1, op2));
+      return true;
+
+    case NE:
+      if (GET_CODE (op2) != CONST_INT
+	  || (INTVAL (op2) != 0 && satisfies_constraint_K (op2)))
+	{
+	  rtx reg;
+
+	  if (reload_completed || reload_in_progress)
+	    return false;
+
+	  reg = gen_reg_rtx (SImode);
+	  emit_insn (gen_xorsi3 (reg, op1, op2));
+	  op1 = reg;
+
+	  if (!register_operand (op1, mode))
+	    op1 = force_reg (mode, op1);
+
+	  emit_insn (gen_sne_zero_insn (op0, op1));
+	  return true;
+	}
+      return false;
+
+    case LT:
+    case GT:
+      if (code == GT)
+	{
+	  rtx tmp = op2;
+	  op2 = op1;
+	  op1 = tmp;
+	  code = LT;
+	}
+
+      if (!register_operand (op1, mode))
+	op1 = force_reg (mode, op1);
+
+      if (!reg_or_int16_operand (op2, mode))
+	op2 = force_reg (mode, op2);
+
+      emit_insn (gen_slt_insn (op0, op1, op2));
+      return true;
+
+    case LTU:
+    case GTU:
+      if (code == GTU)
+	{
+	  rtx tmp = op2;
+	  op2 = op1;
+	  op1 = tmp;
+	  code = LTU;
+	}
+
+      if (!register_operand (op1, mode))
+	op1 = force_reg (mode, op1);
+
+      if (!reg_or_int16_operand (op2, mode))
+	op2 = force_reg (mode, op2);
+
+      emit_insn (gen_sltu_insn (op0, op1, op2));
+      return true;
+
+    case GE:
+    case GEU:
+      if (!register_operand (op1, mode))
+	op1 = force_reg (mode, op1);
+
+      if (!reg_or_int16_operand (op2, mode))
+	op2 = force_reg (mode, op2);
+
+      if (code == GE)
+	emit_insn (gen_sge_insn (op0, op1, op2));
+      else
+	emit_insn (gen_sgeu_insn (op0, op1, op2));
+      return true;
+
+    case LE:
+    case LEU:
+      if (!register_operand (op1, mode))
+	op1 = force_reg (mode, op1);
+
+      if (GET_CODE (op2) == CONST_INT)
+	{
+	  HOST_WIDE_INT value = INTVAL (op2);
+	  if (value >= 2147483647)
+	    {
+	      emit_move_insn (op0, const1_rtx);
+	      return true;
+	    }
+
+	  op2 = GEN_INT (value + 1);
+	  if (value < -32768 || value >= 32767)
+	    op2 = force_reg (mode, op2);
+
+          if (code == LEU)
+	    emit_insn (gen_sltu_insn (op0, op1, op2));
+	  else
+	    emit_insn (gen_slt_insn (op0, op1, op2));
+	  return true;
+	}
+
+      if (!register_operand (op2, mode))
+	op2 = force_reg (mode, op2);
+
+      if (code == LEU)
+        emit_insn (gen_sleu_insn (op0, op1, op2));
+      else
+        emit_insn (gen_sle_insn (op0, op1, op2));
+      return true;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 
 /* Split a 2 word move (DI or DF) into component parts.  */
 
@@ -2291,8 +2432,8 @@ m32r_expand_block_move (rtx operands[])
 
       if (bytes > MAX_MOVE_BYTES)
 	{
-	  emit_insn (gen_cmpsi (src_reg, final_src));
-	  emit_jump_insn (gen_bne (label));
+	  rtx test = gen_rtx_NE (VOIDmode, src_reg, final_src);
+	  emit_jump_insn (gen_cbranchsi4 (test, src_reg, final_src, label));
 	}
     }
 

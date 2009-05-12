@@ -1558,12 +1558,6 @@ function_arg_padding ((MODE), (TYPE))
   && (GET_MODE_ALIGNMENT (MODE) == 128		\
       || ((TYPE) && TYPE_ALIGN (TYPE) == 128)))	\
  ? 128 : PARM_BOUNDARY)
-
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  */
-
-extern GTY(()) rtx sparc_compare_op0;
-extern GTY(()) rtx sparc_compare_op1;
 
 
 /* Generate the special assembly code needed to tell the assembler whatever

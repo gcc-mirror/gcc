@@ -78,6 +78,11 @@
   (and (match_code "const_double")
        (match_test "!(TARGET_68881 && standard_68881_constant_p (op))")))
 
+(define_constraint "H"
+  "Defines a real zero constant."
+  (and (match_code "const_double")
+       (match_test "op == CONST0_RTX (GET_MODE (op))")))
+
 (define_constraint "S"
   "Used for operands that satisfy 'm' when -mpcrel is in effect."
   (and (match_code "mem")

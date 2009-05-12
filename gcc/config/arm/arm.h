@@ -124,10 +124,6 @@ extern arm_cc arm_current_cc;
 extern int arm_target_label;
 extern int arm_ccfsm_state;
 extern GTY(()) rtx arm_target_insn;
-/* Define the information needed to generate branch insns.  This is
-   stored from the compare operation.  */
-extern GTY(()) rtx arm_compare_op0;
-extern GTY(()) rtx arm_compare_op1;
 /* The label of the current constant pool.  */
 extern rtx pool_vector_label;
 /* Set to 1 when a return insn is output, this means that the epilogue

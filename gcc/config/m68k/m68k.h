@@ -1060,7 +1060,6 @@ enum m68k_function_kind
 
 /* Variables in m68k.c; see there for details.  */
 extern const char *m68k_library_id_string;
-extern int m68k_last_compare_had_fp_operands;
 extern enum target_device m68k_cpu;
 extern enum uarch_type m68k_tune;
 extern enum fpu_type m68k_fpu;

@@ -736,40 +736,7 @@
 				    operands[0], operands[2], operands[3]);"
   [(set_attr "length" "6,10")
    (set_attr "psw_operand" "clobber,clobber")])
-
-;; ::::::::::::::::::::
-;; ::
-;; :: Comparisons
-;; ::
-;; ::::::::::::::::::::
 
-;; Note, we store the operands in the comparison insns, and use them later
-;; when generating the branch or scc operation.
-
-;; First the routines called by the machine independent part of the compiler
-(define_expand "cmphi"
-  [(set (cc0)
-        (compare (match_operand:HI 0 "register_operand" "")
-  		 (match_operand:HI 1 "nonmemory_operand" "")))]
-  ""
-  {
-    xstormy16_compare_op0 = operands[0];
-    xstormy16_compare_op1 = operands[1];
-    DONE;
-  })
-
-; There are no real SImode comparisons, but some can be emulated
-; by performing a SImode subtract and looking at the condition flags.
-(define_expand "cmpsi"
-  [(set (cc0)
-        (compare (match_operand:SI 0 "register_operand" "")
-  		 (match_operand:SI 1 "nonmemory_operand" "")))]
-  ""
-  {
-    xstormy16_compare_op0 = operands[0];
-    xstormy16_compare_op1 = operands[1];
-    DONE;
-  })
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -777,55 +744,35 @@
 ;; ::
 ;; ::::::::::::::::::::
 
-(define_expand "beq"
-  [(use (match_operand 0 "" ""))]
+(define_expand "cbranchhi4"
+  [(set (pc)
+	(if_then_else (match_operator 0 "comparison_operator"
+				      [(match_operand:HI 1 "register_operand" "")
+				       (match_operand:HI 2 "nonmemory_operand" "")])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))
+   (clobber (reg:BI CARRY_REG))]
   ""
-  { xstormy16_emit_cbranch (EQ, operands[0]); DONE; })
+  {
+  xstormy16_emit_cbranch (GET_CODE (operands[0]), operands[1], operands[2],
+			  operands[3]);
+  DONE;
+})
 
-(define_expand "bne"
-  [(use (match_operand 0 "" ""))]
+(define_expand "cbranchsi4"
+  [(set (pc)
+	(if_then_else (match_operator 0 "comparison_operator"
+				      [(match_operand:SI 1 "register_operand" "")
+				       (match_operand:SI 2 "nonmemory_operand" "")])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))
+   (clobber (reg:BI CARRY_REG))]
   ""
-  { xstormy16_emit_cbranch (NE, operands[0]); DONE; })
-
-(define_expand "bge"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { xstormy16_emit_cbranch (GE, operands[0]); DONE; })
-
-(define_expand "bgt"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { xstormy16_emit_cbranch (GT, operands[0]); DONE; })
-
-(define_expand "ble"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { xstormy16_emit_cbranch (LE, operands[0]); DONE; })
-
-(define_expand "blt"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { xstormy16_emit_cbranch (LT, operands[0]); DONE; })
-
-(define_expand "bgeu"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { xstormy16_emit_cbranch (GEU, operands[0]); DONE; })
-
-(define_expand "bgtu"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { xstormy16_emit_cbranch (GTU, operands[0]); DONE; })
-
-(define_expand "bleu"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { xstormy16_emit_cbranch (LEU, operands[0]); DONE; })
-
-(define_expand "bltu"
-  [(use (match_operand 0 "" ""))]
-  ""
-  { xstormy16_emit_cbranch (LTU, operands[0]); DONE; })
+  {
+  xstormy16_emit_cbranch (GET_CODE (operands[0]), operands[1], operands[2],
+			  operands[3]);
+  DONE;
+})
 
 (define_insn "cbranchhi"
   [(set (pc)

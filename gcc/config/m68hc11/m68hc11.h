@@ -1498,8 +1498,6 @@ extern int current_function_interrupt;
 extern int current_function_trap;
 extern int current_function_far;
 
-extern GTY(()) rtx m68hc11_compare_op0;
-extern GTY(()) rtx m68hc11_compare_op1;
 extern GTY(()) rtx m68hc11_soft_tmp_reg;
 extern GTY(()) rtx ix_reg;
 extern GTY(()) rtx iy_reg;

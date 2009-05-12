@@ -5724,8 +5724,47 @@ or target-specific sections.
 @section Condition Code Status
 @cindex condition code status
 
-@c prevent bad page break with this line
-This describes the condition code status.
+The macros in this section can be split in two families, according to the
+two ways of representing condition codes in GCC.
+
+The first representation is the so called @code{(cc0)} representation
+(@pxref{Jump Patterns}), where all instructions can have an implicit
+clobber of the condition codes.  The second is the condition code
+register representation, which provides better schedulability for
+architectures that do have a condition code register, but on which
+most instructions do not affect it.  The latter category includes
+most RISC machines.
+
+The implicit clobbering poses a strong restriction on the placement of
+the definition and use of the condition code, which need to be in adjacent
+insns for machines using @code{(cc0)}.  This can prevent important
+optimizations on some machines.  For example, on the IBM RS/6000, there
+is a delay for taken branches unless the condition code register is set
+three instructions earlier than the conditional branch.  The instruction
+scheduler cannot perform this optimization if it is not permitted to
+separate the definition and use of the condition code register.
+
+For this reason, it is possible and suggested to use a register to
+represent the condition code for new ports.  If there is a specific
+condition code register in the machine, use a hard register.  If the
+condition code or comparison result can be placed in any general register,
+or if there are multiple condition registers, use a pseudo register.
+Registers used to store the condition code value will usually have a mode
+that is in class @code{MODE_CC}.
+
+Alternatively, you can use @code{BImode} if the comparison operator is
+specified already in the compare instruction.  In this case, you are not
+interested in most macros in this section.
+
+@menu
+* CC0 Condition Codes::      Old style representation of condition codes.
+* MODE_CC Condition Codes::  Modern representation of condition codes.
+* Cond. Exec. Macros::       Macros to control conditional execution.
+@end menu
+
+@node CC0 Condition Codes
+@subsection Representation of condition codes using @code{(cc0)}
+@findex cc0
 
 @findex cc_status
 The file @file{conditions.h} defines a variable @code{cc_status} to
@@ -5791,12 +5830,45 @@ that looks at an attribute (@pxref{Insn Attributes}) named, for example,
 two places, the @file{md} file and in @code{NOTICE_UPDATE_CC}.
 @end defmac
 
+@node MODE_CC Condition Codes
+@subsection Representation of condition codes using registers
+@findex CCmode
+@findex MODE_CC
+
 @defmac SELECT_CC_MODE (@var{op}, @var{x}, @var{y})
-Returns a mode from class @code{MODE_CC} to be used when comparison
-operation code @var{op} is applied to rtx @var{x} and @var{y}.  For
-example, on the SPARC, @code{SELECT_CC_MODE} is defined as (see
-@pxref{Jump Patterns} for a description of the reason for this
-definition)
+On many machines, the condition code may be produced by other instructions
+than compares, for example the branch can use directly the condition
+code set by a subtract instruction.  However, on some machines
+when the condition code is set this way some bits (such as the overflow
+bit) are not set in the same way as a test instruction, so that a different
+branch instruction must be used for some conditional branches.  When
+this happens, use the machine mode of the condition code register to
+record different formats of the condition code register.  Modes can
+also be used to record which compare instruction (e.g. a signed or an
+unsigned comparison) produced the condition codes.
+
+If other modes than @code{CCmode} are required, add them to
+@file{@var{machine}-modes.def} and define @code{SELECT_CC_MODE} to choose
+a mode given an operand of a compare.  This is needed because the modes
+have to be chosen not only during RTL generation but also, for example,
+by instruction combination.  The result of @code{SELECT_CC_MODE} should
+be consistent with the mode used in the patterns; for example to support
+the case of the add on the SPARC discussed above, we have the pattern
+
+@smallexample
+(define_insn ""
+  [(set (reg:CC_NOOV 0)
+        (compare:CC_NOOV
+          (plus:SI (match_operand:SI 0 "register_operand" "%r")
+                   (match_operand:SI 1 "arith_operand" "rI"))
+          (const_int 0)))]
+  ""
+  "@dots{}")
+@end smallexample
+
+@noindent
+together with a @code{SELECT_CC_MODE} that returns @code{CC_NOOVmode}
+for comparisons whose argument is a @code{plus}:
 
 @smallexample
 #define SELECT_CC_MODE(OP,X,Y) \
@@ -5806,6 +5878,10 @@ definition)
        || GET_CODE (X) == NEG) \
       ? CC_NOOVmode : CCmode))
 @end smallexample
+
+Another reason to use modes is to retain information on which operands
+were used by the comparison; see @code{REVERSIBLE_CC_MODE} later in
+this section.
 
 You should define this macro if and only if you define extra CC modes
 in @file{@var{machine}-modes.def}.
@@ -5863,20 +5939,6 @@ like:
 @end smallexample
 @end defmac
 
-@defmac REVERSE_CONDEXEC_PREDICATES_P (@var{op1}, @var{op2})
-A C expression that returns true if the conditional execution predicate
-@var{op1}, a comparison operation, is the inverse of @var{op2} and vice
-versa.  Define this to return 0 if the target has conditional execution
-predicates that cannot be reversed safely.  There is no need to validate
-that the arguments of op1 and op2 are the same, this is done separately.
-If no expansion is specified, this macro is defined as follows:
-
-@smallexample
-#define REVERSE_CONDEXEC_PREDICATES_P (x, y) \
-   (GET_CODE ((x)) == reversed_comparison_code ((y), NULL))
-@end smallexample
-@end defmac
-
 @deftypefn {Target Hook} bool TARGET_FIXED_CONDITION_CODE_REGS (unsigned int *, unsigned int *)
 On targets which do not use @code{(cc0)}, and which use a hard
 register rather than a pseudo-register to hold condition codes, the
@@ -5904,6 +5966,29 @@ The default version of this hook checks whether the modes are the
 same.  If they are, it returns that mode.  If they are different, it
 returns @code{VOIDmode}.
 @end deftypefn
+
+@node Cond. Exec. Macros
+@subsection Macros to control conditional execution
+@findex conditional execution
+@findex predication
+
+There is one macro that may need to be defined for targets
+supporting conditional execution, independent of how they
+represent conditional branches.
+
+@defmac REVERSE_CONDEXEC_PREDICATES_P (@var{op1}, @var{op2})
+A C expression that returns true if the conditional execution predicate
+@var{op1}, a comparison operation, is the inverse of @var{op2} and vice
+versa.  Define this to return 0 if the target has conditional execution
+predicates that cannot be reversed safely.  There is no need to validate
+that the arguments of op1 and op2 are the same, this is done separately.
+If no expansion is specified, this macro is defined as follows:
+
+@smallexample
+#define REVERSE_CONDEXEC_PREDICATES_P (x, y) \
+   (GET_CODE ((x)) == reversed_comparison_code ((y), NULL))
+@end smallexample
+@end defmac
 
 @node Costs
 @section Describing Relative Costs of Operations

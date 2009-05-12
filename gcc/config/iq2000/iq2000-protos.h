@@ -41,7 +41,7 @@ extern void             print_operand (FILE *, rtx, int);
 
 #ifdef RTX_CODE
 extern rtx              gen_int_relational (enum rtx_code, rtx, rtx, rtx, int *);
-extern void             gen_conditional_branch (rtx *, enum rtx_code);
+extern void             gen_conditional_branch (rtx *, enum machine_mode);
 #endif
 
 #ifdef TREE_CODE

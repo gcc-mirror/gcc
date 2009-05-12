@@ -791,11 +791,6 @@
    (DF "ISA_HAS_FP4 && TARGET_FLOAT64")
    (V2SF "TARGET_SB1")])
 
-;; This code iterator allows all branch instructions to be generated from
-;; a single define_expand template.
-(define_code_iterator any_cond [unordered ordered unlt unge uneq ltgt unle ungt
-			        eq ne gt ge lt le gtu geu ltu leu])
-
 ;; This code iterator allows signed and unsigned widening multiplications
 ;; to use the same template.
 (define_code_iterator any_extend [sign_extend zero_extend])
@@ -994,19 +989,15 @@
 }
   [(set_attr "type" "trap")])
 
-(define_expand "conditional_trap"
+(define_expand "ctrap<mode>4"
   [(trap_if (match_operator 0 "comparison_operator"
-			    [(match_dup 2) (match_dup 3)])
-	    (match_operand 1 "const_int_operand"))]
+			    [(match_operand:GPR 1 "reg_or_0_operand")
+			     (match_operand:GPR 2 "arith_operand")])
+	    (match_operand 3 "const_0_operand"))]
   "ISA_HAS_COND_TRAP"
 {
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) == MODE_INT
-      && operands[1] == const0_rtx)
-    {
-      mips_expand_conditional_trap (GET_CODE (operands[0]));
-      DONE;
-    }
-  FAIL;
+  mips_expand_conditional_trap (operands[0]);
+  DONE;
 })
 
 (define_insn "*conditional_trap<mode>"
@@ -3243,6 +3234,7 @@
   rtx reg3 = gen_reg_rtx (SImode);
   rtx label1 = gen_label_rtx ();
   rtx label2 = gen_label_rtx ();
+  rtx test;
   REAL_VALUE_TYPE offset;
 
   real_2expN (&offset, 31, DFmode);
@@ -3252,8 +3244,8 @@
       mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
       do_pending_stack_adjust ();
 
-      emit_insn (gen_cmpdf (operands[1], reg1));
-      emit_jump_insn (gen_bge (label1));
+      test = gen_rtx_GE (VOIDmode, operands[1], reg1);
+      emit_jump_insn (gen_cbranchdf4 (test, operands[1], reg1, label1));
 
       emit_insn (gen_fix_truncdfsi2 (operands[0], operands[1]));
       emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
@@ -3288,6 +3280,7 @@
   rtx reg3 = gen_reg_rtx (DImode);
   rtx label1 = gen_label_rtx ();
   rtx label2 = gen_label_rtx ();
+  rtx test;
   REAL_VALUE_TYPE offset;
 
   real_2expN (&offset, 63, DFmode);
@@ -3295,8 +3288,8 @@
   mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
   do_pending_stack_adjust ();
 
-  emit_insn (gen_cmpdf (operands[1], reg1));
-  emit_jump_insn (gen_bge (label1));
+  test = gen_rtx_GE (VOIDmode, operands[1], reg1);
+  emit_jump_insn (gen_cbranchdf4 (test, operands[1], reg1, label1));
 
   emit_insn (gen_fix_truncdfdi2 (operands[0], operands[1]));
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
@@ -3330,6 +3323,7 @@
   rtx reg3 = gen_reg_rtx (SImode);
   rtx label1 = gen_label_rtx ();
   rtx label2 = gen_label_rtx ();
+  rtx test;
   REAL_VALUE_TYPE offset;
 
   real_2expN (&offset, 31, SFmode);
@@ -3337,8 +3331,8 @@
   mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
   do_pending_stack_adjust ();
 
-  emit_insn (gen_cmpsf (operands[1], reg1));
-  emit_jump_insn (gen_bge (label1));
+  test = gen_rtx_GE (VOIDmode, operands[1], reg1);
+  emit_jump_insn (gen_cbranchsf4 (test, operands[1], reg1, label1));
 
   emit_insn (gen_fix_truncsfsi2 (operands[0], operands[1]));
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
@@ -3372,6 +3366,7 @@
   rtx reg3 = gen_reg_rtx (DImode);
   rtx label1 = gen_label_rtx ();
   rtx label2 = gen_label_rtx ();
+  rtx test;
   REAL_VALUE_TYPE offset;
 
   real_2expN (&offset, 63, SFmode);
@@ -3379,8 +3374,8 @@
   mips_emit_move (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
   do_pending_stack_adjust ();
 
-  emit_insn (gen_cmpsf (operands[1], reg1));
-  emit_jump_insn (gen_bge (label1));
+  test = gen_rtx_GE (VOIDmode, operands[1], reg1);
+  emit_jump_insn (gen_cbranchsf4 (test, operands[1], reg1, label1));
 
   emit_insn (gen_fix_truncsfdi2 (operands[0], operands[1]));
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
@@ -5011,50 +5006,6 @@
 ;;
 ;;  ....................
 ;;
-;;	COMPARISONS
-;;
-;;  ....................
-
-;; Flow here is rather complex:
-;;
-;;  1)	The cmp{si,di,sf,df} routine is called.  It deposits the arguments
-;;	into cmp_operands[] but generates no RTL.
-;;
-;;  2)	The appropriate branch define_expand is called, which then
-;;	creates the appropriate RTL for the comparison and branch.
-;;	Different CC modes are used, based on what type of branch is
-;;	done, so that we can constrain things appropriately.  There
-;;	are assumptions in the rest of GCC that break if we fold the
-;;	operands into the branches for integer operations, and use cc0
-;;	for floating point, so we use the fp status register instead.
-;;	If needed, an appropriate temporary is created to hold the
-;;	of the integer compare.
-
-(define_expand "cmp<mode>"
-  [(set (cc0)
-	(compare:CC (match_operand:GPR 0 "register_operand")
-		    (match_operand:GPR 1 "nonmemory_operand")))]
-  ""
-{
-  cmp_operands[0] = operands[0];
-  cmp_operands[1] = operands[1];
-  DONE;
-})
-
-(define_expand "cmp<mode>"
-  [(set (cc0)
-	(compare:CC (match_operand:SCALARF 0 "register_operand")
-		    (match_operand:SCALARF 1 "register_operand")))]
-  ""
-{
-  cmp_operands[0] = operands[0];
-  cmp_operands[1] = operands[1];
-  DONE;
-})
-
-;;
-;;  ....................
-;;
 ;;	CONDITIONAL BRANCHES
 ;;
 ;;  ....................
@@ -5189,15 +5140,29 @@
   [(set_attr "type" "branch")
    (set_attr "mode" "none")])
 
-(define_expand "b<code>"
+(define_expand "cbranch<mode>4"
   [(set (pc)
-	(if_then_else (any_cond:CC (cc0)
-				   (const_int 0))
-		      (label_ref (match_operand 0 ""))
+	(if_then_else (match_operator 0 "comparison_operator"
+		       [(match_operand:GPR 1 "register_operand")
+		        (match_operand:GPR 2 "nonmemory_operand")])
+		      (label_ref (match_operand 3 ""))
 		      (pc)))]
   ""
 {
-  mips_expand_conditional_branch (operands, <CODE>);
+  mips_expand_conditional_branch (operands);
+  DONE;
+})
+
+(define_expand "cbranch<mode>4"
+  [(set (pc)
+	(if_then_else (match_operator 0 "comparison_operator"
+		       [(match_operand:SCALARF 1 "register_operand")
+		        (match_operand:SCALARF 2 "register_operand")])
+		      (label_ref (match_operand 3 ""))
+		      (pc)))]
+  ""
+{
+  mips_expand_conditional_branch (operands);
   DONE;
 })
 
@@ -5261,12 +5226,16 @@
 
 ;; Destination is always set in SI mode.
 
-(define_expand "seq"
+(define_expand "cstore<mode>4"
   [(set (match_operand:SI 0 "register_operand")
-	(eq:SI (match_dup 1)
-	       (match_dup 2)))]
+	(match_operator:SI 1 "mips_cstore_operator"
+	 [(match_operand:GPR 2 "register_operand")
+	  (match_operand:GPR 3 "nonmemory_operand")]))]
   ""
-  { if (mips_expand_scc (EQ, operands[0])) DONE; else FAIL; })
+{
+  mips_expand_scc (operands);
+  DONE;
+})
 
 (define_insn "*seq_zero_<GPR:mode><GPR2:mode>"
   [(set (match_operand:GPR2 0 "register_operand" "=d")
@@ -5299,16 +5268,6 @@
   [(set_attr "type" "slt")
    (set_attr "mode" "<GPR:MODE>")])
 
-;; "sne" uses sltu instructions in which the first operand is $0.
-;; This isn't possible in mips16 code.
-
-(define_expand "sne"
-  [(set (match_operand:SI 0 "register_operand")
-	(ne:SI (match_dup 1)
-	       (match_dup 2)))]
-  "!TARGET_MIPS16"
-  { if (mips_expand_scc (NE, operands[0])) DONE; else FAIL; })
-
 (define_insn "*sne_zero_<GPR:mode><GPR2:mode>"
   [(set (match_operand:GPR2 0 "register_operand" "=d")
 	(ne:GPR2 (match_operand:GPR 1 "register_operand" "d")
@@ -5331,13 +5290,6 @@
   [(set_attr "type" "slt")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_expand "sgt<u>"
-  [(set (match_operand:SI 0 "register_operand")
-	(any_gt:SI (match_dup 1)
-		   (match_dup 2)))]
-  ""
-  { if (mips_expand_scc (<CODE>, operands[0])) DONE; else FAIL; })
-
 (define_insn "*sgt<u>_<GPR:mode><GPR2:mode>"
   [(set (match_operand:GPR2 0 "register_operand" "=d")
 	(any_gt:GPR2 (match_operand:GPR 1 "register_operand" "d")
@@ -5356,13 +5308,6 @@
   [(set_attr "type" "slt")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_expand "sge<u>"
-  [(set (match_operand:SI 0 "register_operand")
-	(any_ge:SI (match_dup 1)
-		   (match_dup 2)))]
-  ""
-  { if (mips_expand_scc (<CODE>, operands[0])) DONE; else FAIL; })
-
 (define_insn "*sge<u>_<GPR:mode><GPR2:mode>"
   [(set (match_operand:GPR2 0 "register_operand" "=d")
 	(any_ge:GPR2 (match_operand:GPR 1 "register_operand" "d")
@@ -5371,13 +5316,6 @@
   "slt<u>\t%0,%.,%1"
   [(set_attr "type" "slt")
    (set_attr "mode" "<GPR:MODE>")])
-
-(define_expand "slt<u>"
-  [(set (match_operand:SI 0 "register_operand")
-	(any_lt:SI (match_dup 1)
-		   (match_dup 2)))]
-  ""
-  { if (mips_expand_scc (<CODE>, operands[0])) DONE; else FAIL; })
 
 (define_insn "*slt<u>_<GPR:mode><GPR2:mode>"
   [(set (match_operand:GPR2 0 "register_operand" "=d")
@@ -5401,13 +5339,6 @@
 		 (if_then_else (match_operand 2 "m16_uimm8_1")
 			       (const_int 4)
 			       (const_int 8))])])
-
-(define_expand "sle<u>"
-  [(set (match_operand:SI 0 "register_operand")
-	(any_le:SI (match_dup 1)
-		   (match_dup 2)))]
-  ""
-  { if (mips_expand_scc (<CODE>, operands[0])) DONE; else FAIL; })
 
 (define_insn "*sle<u>_<GPR:mode><GPR2:mode>"
   [(set (match_operand:GPR2 0 "register_operand" "=d")

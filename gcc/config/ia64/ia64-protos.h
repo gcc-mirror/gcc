@@ -18,13 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Variables defined in ia64.c.  */
-
-#ifdef RTX_CODE
-extern GTY(()) rtx ia64_compare_op0;
-extern GTY(()) rtx ia64_compare_op1;
-#endif
-
 /* Functions defined in ia64.c */
 
 extern int bundling_p;
@@ -43,7 +36,7 @@ extern void ia64_emit_cond_move (rtx, rtx, rtx);
 extern int ia64_depz_field_mask (rtx, rtx);
 extern void ia64_split_tmode_move (rtx[]);
 extern bool ia64_expand_movxf_movrf (enum machine_mode, rtx[]);
-extern rtx ia64_expand_compare (enum rtx_code, enum machine_mode);
+extern void ia64_expand_compare (rtx *, rtx *, rtx *);
 extern void ia64_expand_vecint_cmov (rtx[]);
 extern bool ia64_expand_vecint_minmax (enum rtx_code, enum machine_mode, rtx[]);
 extern void ia64_expand_widen_sum (rtx[], bool);

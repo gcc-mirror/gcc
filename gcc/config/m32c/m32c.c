@@ -1746,22 +1746,15 @@ m32c_initialize_trampoline (rtx tramp, rtx function, rtx chainval)
 static void
 m32c_init_libfuncs (void)
 {
+  /* We do this because the M32C has an HImode operand, but the
+     M16C has an 8-bit operand.  Since gcc looks at the match data
+     and not the expanded rtl, we have to reset the optab so that
+     the right modes are found. */
   if (TARGET_A24)
     {
-      /* We do this because the M32C has an HImode operand, but the
-	 M16C has an 8-bit operand.  Since gcc looks at the match data
-	 and not the expanded rtl, we have to reset the array so that
-	 the right modes are found. */
-      setcc_gen_code[EQ] = CODE_FOR_seq_24;
-      setcc_gen_code[NE] = CODE_FOR_sne_24;
-      setcc_gen_code[GT] = CODE_FOR_sgt_24;
-      setcc_gen_code[GE] = CODE_FOR_sge_24;
-      setcc_gen_code[LT] = CODE_FOR_slt_24;
-      setcc_gen_code[LE] = CODE_FOR_sle_24;
-      setcc_gen_code[GTU] = CODE_FOR_sgtu_24;
-      setcc_gen_code[GEU] = CODE_FOR_sgeu_24;
-      setcc_gen_code[LTU] = CODE_FOR_sltu_24;
-      setcc_gen_code[LEU] = CODE_FOR_sleu_24;
+      optab_handler (cstore_optab, QImode)->insn_code = CODE_FOR_cstoreqi4_24;
+      optab_handler (cstore_optab, HImode)->insn_code = CODE_FOR_cstorehi4_24;
+      optab_handler (cstore_optab, PSImode)->insn_code = CODE_FOR_cstorepsi4_24;
     }
 }
 
@@ -3691,56 +3684,7 @@ m32c_expand_neg_mulpsi3 (rtx * operands)
   emit_insn (gen_truncsipsi2 (operands[0], temp2));
 }
 
-static rtx compare_op0, compare_op1;
-
-void
-m32c_pend_compare (rtx *operands)
-{
-  compare_op0 = operands[0];
-  compare_op1 = operands[1];
-}
-
-void
-m32c_unpend_compare (void)
-{
-  switch (GET_MODE (compare_op0))
-    {
-    case QImode:
-      emit_insn (gen_cmpqi_op (compare_op0, compare_op1));
-    case HImode:
-      emit_insn (gen_cmphi_op (compare_op0, compare_op1));
-    case PSImode:
-      emit_insn (gen_cmppsi_op (compare_op0, compare_op1));
-    default:
-      /* Just to silence the "missing case" warnings.  */ ;
-    }
-}
-
-void
-m32c_expand_scc (int code, rtx *operands)
-{
-  enum machine_mode mode = TARGET_A16 ? QImode : HImode;
-
-  emit_insn (gen_rtx_SET (mode,
-			  operands[0],
-			  gen_rtx_fmt_ee (code,
-					  mode,
-					  compare_op0,
-					  compare_op1)));
-}
-
 /* Pattern Output Functions */
-
-/* Returns a (OP (reg:CC FLG_REGNO) (const_int 0)) from some other
-   match_operand rtx's OP.  */
-rtx
-m32c_cmp_flg_0 (rtx cmp)
-{
-  return gen_rtx_fmt_ee (GET_CODE (cmp),
-			 GET_MODE (cmp),
-			 gen_rtx_REG (CCmode, FLG_REGNO),
-			 GEN_INT (0));
-}
 
 int
 m32c_expand_movcc (rtx *operands)
@@ -3753,22 +3697,17 @@ m32c_expand_movcc (rtx *operands)
   if (GET_CODE (operands[2]) != CONST_INT
       || GET_CODE (operands[3]) != CONST_INT)
     return 1;
-  emit_insn (gen_cmpqi(XEXP (rel, 0), XEXP (rel, 1)));
   if (GET_CODE (rel) == NE)
     {
       rtx tmp = operands[2];
       operands[2] = operands[3];
       operands[3] = tmp;
+      rel = gen_rtx_EQ (GET_MODE (rel), XEXP (rel, 0), XEXP (rel, 1));
     }
-
-  cmp = gen_rtx_fmt_ee (GET_CODE (rel),
-			GET_MODE (rel),
-			compare_op0,
-			compare_op1);
 
   emit_move_insn (operands[0],
 		  gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
-					cmp,
+					rel,
 					operands[2],
 					operands[3]));
   return 0;

@@ -3432,7 +3432,6 @@ extern int mips_dbx_regno[];
 extern int mips_dwarf_regno[];
 extern bool mips_split_p[];
 extern bool mips_split_hi_p[];
-extern GTY(()) rtx cmp_operands[2];
 extern enum processor_type mips_arch;   /* which cpu to codegen for */
 extern enum processor_type mips_tune;   /* which cpu to schedule for */
 extern int mips_isa;			/* architectural level */

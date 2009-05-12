@@ -2030,7 +2030,7 @@ mn10300_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed ATTRI
     {
     case CONST_INT:
       /* Zeros are extremely cheap.  */
-      if (INTVAL (x) == 0 && outer_code == SET)
+      if (INTVAL (x) == 0 && (outer_code == SET || outer_code == COMPARE))
 	*total = 0;
       /* If it fits in 8 bits, then it's still relatively cheap.  */
       else if (INT_8_BITS (INTVAL (x)))
@@ -2058,6 +2058,12 @@ mn10300_rtx_costs (rtx x, int code, int outer_code, int *total, bool speed ATTRI
 	 so their cost is very high.  */
       *total = 8;
       return true;
+
+    case ZERO_EXTRACT:
+      /* This is cheap, we can use btst.  */
+      if (outer_code == COMPARE)
+	*total = 0;
+      return false;
 
    /* ??? This probably needs more work.  */
     case MOD:

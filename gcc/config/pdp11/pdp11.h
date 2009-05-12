@@ -1031,6 +1031,9 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
 
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
 {									\
+  flag_finite_math_only		= 0;					\
+  flag_trapping_math		= 0;					\
+  flag_signaling_nans		= 0;					\
   if (LEVEL >= 3)							\
     {									\
       flag_omit_frame_pointer		= 1;				\

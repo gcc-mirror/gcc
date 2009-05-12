@@ -1,5 +1,572 @@
 2009-05-12  Paolo Bonzini  <bonzini@gnu.org>
 
+        * dojump.c (compare_from_rtx): Delete.
+        * expmed.c (emit_store_flag): Only try cstore_optab.  Canonicalize
+        any MODE_CC mode to the cstorecc4 pattern.  Use prepare_operand, fail
+	if the comparison does not satisfy the predicate; test predicates for
+	operands 2 and 3 of a cstore pattern.  Don't try cstore optab
+	further if one existing pattern fails.
+        * expr.h (compare_from_rtx): Delete.
+	(prepare_operand): Declare it.
+        * optabs.c: Change "lib call" to "libcall" throughout.
+	(bcc_gen_fctn, setcc_gen_code, trap_rtx,
+        HAVE_conditional_trap, emit_cmp_insn): Delete.
+        (can_compare_p): Delete cmp_optab case.
+	(prepare_float_lib_cmp): Return an rtx and a machine mode.
+        Accept other parameters by value.
+        (prepare_operand): Make non-static.
+        (prepare_cmp_insn): Return an rtx and a machine mode.  Accept
+        other parameters by value.  Try to widen operands here based on
+        an optab_methods argument and looking at cbranch_optab.
+        (emit_cmp_and_jump_insn_1): Accept test and mode, remove widening loop.
+	Use cbranch_optab directly.
+        (emit_cmp_and_jump_insns): Fix comment.  Adjust call to prepare_cmp_insn
+	and emit_cmp_and_jump_insn_1, remove obsolete assertion.
+        (emit_conditional_move, emit_conditional_add): Inline what's needed
+        of compare_from_rtx, using new prepare_cmp_insn for the rest.
+        (init_optabs): Init cmp_optab with UNKNOWN, cbranch_optab
+        with COMPARE.  Move cmov_optab and cstore_optab above
+        with cbranch_optab, move cmp_optab down with ucmp_optab,
+        remove tst_otpab.  Do not initialize trap_rtx.
+        (gen_cond_trap): Do it here.  Use ctrap_optab.  Test predicate
+	for trap code.  Do not check HAVE_conditional_trap.  Use
+	prepare_cmp_insn.  Accept no predicate for operand 3.
+        * optabs.h (OTI_cmp): Mark as used only for libcalls.
+        (OTI_ctrap, ctrap_optab): New.
+        (tst_optab): Delete.
+        (bcc_gen_fctn, setcc_gen_code, emit_cmp_insn): Delete.
+        * ifcvt.c (find_if_header): Replace HAVE_conditional_trap
+        with lookup of ctrap_optab.
+        * genopinit.c (cmp_optab, tst_optab, bcc_gen_fctn,
+        setcc_gen_code): Delete.
+        (ctrap_optab): New.
+
+        * combine.c (combine_simplify_rtx, simplify_set): Do not
+        special case comparing against zero for cc0 machines.
+	* simplify-rtx.c (simplify_binary_operation_1): Never remove
+	COMPARE on cc0 machines.
+	(simplify_relational_operation): Return a new expression when
+	a COMPARE could be removed.
+        * final.c (final_scan_insn): Compare cc_status values
+        against LHS of a (compare FOO (const_int 0)) cc0 source.
+        Also check if cc_status.value is the full compare.
+
+        * doc/md.texi (bCC, sCC, tstMM, cmpMM): Delete.
+        (cstoreMM4): Document.
+	(conditional_trap): Document ctrapMM4 instead.
+        (sync_compare_and_swapMM): Refer to cbranchcc4.
+	(Dependent Patterns): Eliminate obsolete information referring to
+	the old jump optimization phase.
+        (Canonicalization): Include cbranchcc4 case, omit canonicalization
+	of compares with 0 on cc0 machines.
+	(Jump Patterns): Refer to MODE_CC jump patterns preferably,
+	avoiding references to cc0.  Remove text about storing operands
+	in cmpMM.
+	* doc/tm.texi (Condition Codes): Include blurb on different
+	condition code representations, separate into subsections for
+	CC0, MODE_CC and conditional execution.
+
+        * config/alpha/alpha-protos.h (alpha_emit_conditional_branch,
+        alpha_emit_setcc): Accept operands and a machine mode.
+        * config/alpha/alpha.c (alpha_emit_conditional_branch):
+        Get code/op0/op1 from operands, use machine mode argument
+        instead of alpha_compare.fp_p.  Emit the branch here.
+        (alpha_emit_setcc): Likewise, and return boolean.
+        (alpha_emit_conditional_move): Likewise.  Assert that
+        cmp_op_mode == cmp_mode, and simplify accordingly.
+        * config/alpha/alpha.h (struct alpha_compare, alpha_compare): Delete.
+        * config/alpha/alpha.md (cmpdf, cmptf, cmpdi, bCC, sCC): Delete.
+        (cbranchdf4, cbranchtf4, cbranchdi4, cstoredf4, cstoretf4,
+        cstoredi4): Delete.
+        (stack probe test): Use cbranchdi4.
+        * config/alpha/predicates.md (alpha_cbranch_operator): New.
+
+        * config/arc/arc.c (gen_compare_reg): Do not emit cmp. 
+        * config/arc/arc.h (movsicc, movsfcc): Use it.
+        (movdicc, *movdicc_insn, movdfcc, *movdfcc_insn): Remove.
+        (cbranchsi4, cstoresi4): New.
+        (cmpsi, bCC and sCC expanders): Remove. 
+
+        * config/arm/arm.c (arm_compare_op0, arm_compare_op1): Delete.
+        * config/arm/arm.h (arm_compare_op0, arm_compare_op1): Delete.
+        * config/arm/predicates.md (arm_comparison_operator): Only include
+        floating-point operators if there is a hardware floating-point unit.
+        * config/arm/arm.md (cbranchsi4, cstoresi4): Enable for TARGET_32BIT,
+        deferring to cbranch_cc and cstore_cc respectively.
+        (cbranchsf4, cbranchdf4, cbranchdi4, cstoresf4, cstoredf4, cstoredi4,
+        cbranch_cc, cstore_cc): New.
+        (movsicc, movsfcc, movdfcc): Do not use arm_compare_op0 and
+	arm_compare_op1.
+        (bCC, sCC, cmpsi, cmpsf, cmpdf, cmpdi): Delete.
+
+        * config/avr/avr-protos.h (out_tstsi, out_tsthi): Adjust prototype.
+        * config/avr/avr.c (out_tstsi, out_tsthi): Get the tested operand
+        as an argument.
+        (adjust_insn_length): Adjust calls.
+        (avr_reorg): Handle (compare (foo) (const_int 0)).
+        * config/avr/avr.md (tstqi, tsthi, tstsi): Remove.
+        (*negated_tstqi, *negated_tsthi, *negated_tstsi): Unmacroize.
+        (*reversed_tsthi, *reversed_tstsi): Add a scratch for simplicity.
+        (cmpqi, cmphi, cmpsi): Prepend asterisk, fuse tst[qhs]i here.
+        (bCC): Remove.
+        (cbranchqi4, cbranchhi4, cbranchsi4): New.
+	(tst -> sbrc/sbrs peephole2, cpse peephole): Wrap RHS with COMPARE.
+
+        * config/bfin/bfin.md (cmpbi, cmpsi, bCC, sCC): Delete.
+        (cbranchsi4, cstorebi4, cstoresi4): New.
+	(movbisi): This insn is duplicate, split it to zero_extend.
+        * config/bfin/bfin.c (bfin_compare_op0, bfin_compare_op1): Delete
+        (bfin_gen_compare): Do not use them.  Emit VOIDmode SET, not BImode.
+        (bfin_optimize_loop): Use cbranch expander.
+        * config/bfin/bfin.h (bfin_compare_op0, bfin_compare_op1): Delete.
+        * config/bfin/predicates.md (bfin_cbranch_operator): Rename to...
+        (bfin_bimode_comparison_operator): ... this.
+        (bfin_direct_comparison_operator): New.
+ 
+        * config/cris/cris.c (cris_normal_notice_update_cc): Look
+        inside (compare FOO (const_int 0)).
+        (cris_rtx_costs): Handle ZERO_EXTRACT.
+        * config/cris/cris.md (tstdi, tst<mode>, cmpdi): Delete.
+        (*tstdi_non_v32): Fold in *cmpdi_non_v32.
+        (*tstdi_v32): Delete.
+        (*cmpdi_non_v32): Add M alternative for operand 1.
+        (cmpsi, cmp<mode>): Make private.
+        (*tstsi, *tst<mode>_cmp, *tst<mode>_non_cmp, *btst): Wrap
+        LHS with COMPARE.
+        (cbranch<mode>4, cbranchdi4, cstore<mode>4): New.
+
+        * config/crx/crx.md (cstore<mode>4, cbranchcc4): New.
+        (cmp<mode>, bCOND_internal, b<code>, s<code>): Delete.
+        (cbranch<mode>4, sCOND_internal): Use ordered_comparison_operator.
+	(cc_reg_operand): New.
+	(any_cond): Delete.
+        * config/crx/crx.c (crx_compare_op0, crx_compare_op1,
+        crx_expand_compare, crx_expand_branch, crx_expand_scond): Delete.
+        * config/crx/crx.h (crx_compare_op0, crx_compare_op1): Delete.
+        * config/crx/crx-protos.h (crx_expand_compare, crx_expand_branch,
+        crx_expand_scond): Delete.
+
+        * config/fr30/fr30.md (cmp<mode>, bCC): Delete.
+        (cbranchsi4): New.
+        * config/fr30/fr30.c (fr30_compare_op0, fr30_compare_op1): Delete
+        * config/fr30/fr30.h (fr30_compare_op0, fr30_compare_op1): Delete.
+
+        * config/frv/frv.md (cbranchsi4, cbranchsf4, cbranchdf4,
+        cstoresi4, cstoresf4, cstoredf4): New.
+        (cmpdi, cmpsi, cmpsf, cmpdf, bCC, sCC): Remove.
+        * config/frv/frv-protos.h (frv_emit_cbranch, frv_emit_scc):
+        Receive the entire operands array.
+        * config/frv/frv.h (frv_compare_op0,
+        frv_compare_op1): Delete.
+        * config/frv/frv.c (frv_compare_op0,
+        frv_compare_op1): Delete.
+        * config/frv/frv-protos.h (frv_emit_cbranch, frv_emit_scc):
+        Get test/op0/op1 from the operands array.
+        (frv_emit_cond_move): Get test/op0/op1 from the test_rtx.
+
+        * config/h8300/h8300-protos.h (h8300_expand_branch): Accept operands.
+        (h8300_expand_store): New.
+        * config/h8300/h8300.c (h8300_rtx_costs): Handle (compare FOO
+        (const_int 0)).
+        (h8300_expand_branch): Emit compare here.  Adjust for new arguments.
+        (h8300_expand_store): New.
+        * config/h8300/h8300.md (btst combine patterns): Wrap with COMPARE
+        or do not try to produce (set (cc0) REG).
+        (peepholes): Wrap arguments with COMPARE.  Add a peephole to
+        change a compare into a move to a scratch register.  Disable some
+        peepholes when comparing with zero.
+        (tstsi, tsthi, tstsi, cmpqi): Make private.
+        (cmphi): Delete.
+        (bCC, sCC): Delete.
+        (cbranchqi4, cbranchhi4, cbranchsi4, cstoreqi4, cstorehi4,
+        cstoresi4): New.
+
+	* config/i386/i386.c (ix86_expand_int_movcc, ix86_expand_int_addcc,
+	ix86_expand_fp_movcc): Set ix86_compare_op0 and ix86_compare_op1.
+	(ix86_emit_i387_log1p): Use gen_cbranchxf4.
+	(ix86_emit_i387_log1p): Use cbranchxf2.
+	(ix86_expand_setcc): Return void.
+	* config/i386/i386-protos.h (ix86_expand_setcc): Return void.
+	* config/i386/i386.md (cmpti, cmpdi, cmpsi, cmphi, cmpqi, cmpxf,
+	cmp<MODEF>, cmpcc): Remove.
+	(cbranchti4, cbranchdi4, cbranchsi4, cbranchhi4, cbranchqi4, cbranchxf4,
+	cbranch<MODEF>4, cbranchcc4, cstoredi4, cstoresi4, cstorehi4,
+	cstoreqi4, cstorexf4, cstore<MODEF>4, cstorecc): New.
+	(sCC and bCC expanders): Remove.
+	(stack_protect_test): Use cbranchcc4.
+
+        * config/ia64/ia64-protos.h (ia64_compare_op0, ia64_compare_op1):
+        Delete.
+        (ia64_expand_compare): Accept three rtx by reference and return void.
+        * config/ia64/ia64.c (ia64_compare_op0, ia64_compare_op1): Delete.
+        (ia64_expand_compare): Replace op0/op1 with *op0/*op1.  Get code
+        from *expr.  Update *expr with the BImode comparison to do.
+        * config/ia64/ia64.md (cmpbi, cmpsi, cmpdi, cmpsf, cmpdf, cmpxf,
+        cmptf, bCC, sCC, conditional_trap): Delete.
+        (cbranchbi4, cbranchsi4, cbranchdi4, cbranchsf4, cbranchdf4, 
+        cbranchxf4, cbranchtf4, cstorebi4, cstoresi4, cstoredi4, cstoresf4,
+        cstoredf4, cstorexf4, cstoretf4, ctrapbi4, ctrapsi4, ctrapdi4,
+        ctrapsf4, ctrapdf4, ctrapxf4, ctraptf4): New.
+        * config/ia64/predicates.md (ia64_cbranch_operator): New.
+
+        * config/iq2000/iq2000-protos.h (gen_conditional_branch): Change
+        type of last argument.
+        * config/iq2000/iq2000.c (branch_cmp, branch_type): Remove.
+        (gen_conditional_branch): Get code/cmp0/cmp1 from operands,
+        use machine mode argument instead of branch_type.  Remove dead
+        code for floating-point comparisons.
+        * config/iq2000/iq2000.h (branch_cmp, branch_type): Remove.
+        * config/iq2000/iq2000.md (cmpsi, cmpdi, cmpsf, cmpdf, tstsi,
+        bCC): Remove.
+        (cbranchsi4, cstoresi4): New.
+        * config/iq2000/predicates.md (reg_or_const_operand): New.
+
+        * config/m32c/m32c.md (cbranch splitter): Use match_op_dup.
+        * config/m32c/m32c.md (any_cond, gl_cond): Delete.
+        (b<code>_op): Rewrite to...
+        (bcc_op): ... this, using match_operator.
+        (s<code>_op): Rewrite to...
+        (scc_op): ... this, using match_operator.
+        (s<code>_24_op): Rewrite to...
+        (scc_op_24): ... this, using match_operator.
+        (s<code>_<mode>): Rewrite to...
+        (cstore<mode>4): ... this, using match_operator.
+        (s<code>_<mode>_24): Rewrite to...
+        (cstore<mode>4_24): ... this, using match_operator.
+        * config/m32c/m32c-protos.h (m32c_cmp_flg_0, m32c_pend_compare,
+        m32c_unpend_compare, m32c_expand_scc): Delete.
+        * config/m32c/m32c.c (compare_op0, compare_op1, m32c_cmp_flg_0,
+        m32c_pend_compare, m32c_unpend_compare, m32c_expand_scc): Delete.
+        (m32c_expand_movcc): Change NE to EQ if necessary.
+        (m32c_init_libfuncs): Modify cstore optab instead of setcc_gen_code.
+
+        * config/m32r/m32r-protos.h (gen_cond_store): New.
+        * config/m32r/m32r.c (m32r_compare_op0, m32r_compare_op1): Delete.
+        (gen_cond_store): New, from sCC patterns.
+        (m32r_expand_block_move): Use cbranchsi4.
+        * config/m32r/m32r.h (m32r_compare_op0, m32r_compare_op1): Delete.
+        * config/m32r/m32r.md (cmpsi, bCC, sCC): Delete.
+        (cbranchsi4, cstoresi4): New.
+        
+        * config/m68hc11/m68hc11.c (m68hc11_compare_op0, m68hc11_compare_op1):
+        Delete.
+        (m68hc11_rtx_costs_1, m68hc11_rtx_costs): Handle ZERO_EXTRACT.
+	(m68hc11_notice_update_cc): Look into a compare with 0.
+        * config/m68hc11/m68hc11.h (m68hc11_compare_op0, m68hc11_compare_op1):
+        Delete.
+        * config/m68hc11/m68hc11.md (tstsi, tsthi, tstqi, cmpsi,
+        cmphi, cmpqi, bCC): Delete.
+        (cbranchsi4, cbranchhi4, cbranchqi4): New.
+        (tstqi_1, tstqi_z_used, tstqi_1, bitcmpqi, bitcmpqi_z_used,
+        bitcmpqi_12, bitcmphi, various splits and peephole2s): Wrap cc0<-reg
+        sets with COMPARE.
+
+        * config/m68k/predicates.md (m68k_cstore_comparison_operator,
+        const0_operand, const1_operand, m68k_subword_comparison_operand): New.
+        * config/m68k/constraints.md (H): New.
+        * config/m68k/m68k.md (tstdi): Remove define_expand, use name for
+        the define_insn below.
+        (tstsi, tsthi, tst<FP:mode>, cmphi, cmpqi, cmp<FP:mode>): Delete.
+        (*tstsi_internal_68020_cf, *tstsi_internal, *tsthi_internal,
+        *tstqi_internal, tst<mode>_6881, tst<mode>_cf, many unnamed
+        patterns): Wrap RHS with COMPARE.
+        (tst<FP>_68881, tst<FP>_cf): Use const0_operand.
+        (*cmpdi_internal): Name this pattern.
+        (cmpdi): Change to define_insn.
+        (cbranchdi4, cstoredi4, cbranchsi4, cstoresi4, cbranchhi4, cstorehi4,
+        cbranchqi4, cstoreqi4, cbranch<FP:mode>4, cstore<FP:mode>4): New.
+        (scc0_di, scc0_di_5200, scc_di): Use the ordered_comparison_operator
+        predicate.
+        (seq, sne, sgt, sgtu, slt, sltu, sge, sgeu, sle, sleu, sordered,
+        sunordered, suneq, sunge, sungt, sunle, sunlt, sltgt): Delete
+        (conditional_trap): Change to...
+        (ctrapdi4, ctrapsi4, ctraphi4, ctrapqi4): ... these.
+        (*conditional_trap): Use the ordered_comparison_operator and
+        const1_operand predicates.
+        * config/m68k/m68k.c (m68k_last_compare_had_fp_operands): Delete.
+        (m68k_expand_prologue): Use ctrapsi4 instead of cmpsi+conditional_trap.
+        (m68k_rtx_costs): Look for ZERO_EXTRACT in a COMPARE.
+        * config/m68k/m68k.h (m68k_last_compare_had_fp_operands): Delete.
+
+        * config/mcore/mcore-protos.h (arch_compare_op0, arch_compare_op1,
+        mcore_modify_comparison, mcore_gen_compare_reg): Remove.
+        (mcore_gen_compare): New. 
+        * config/mcore/mcore.c (arch_compare_op0, arch_compare_op1): Delete.
+        (mcore_modify_comparison, mcore_gen_compare_reg): Fold into...
+        (mcore_gen_compare): ... this.
+        * config/mcore/mcore.md (cmpsi, bCC, sCC): Remove.
+        (cbranchsi4, cstoresi4): New, using mcore_gen_compare.
+        (stack probe pattern): Use cbranchsi4.
+
+        * config/mips/predicates.md (mips_cstore_operator): New.
+        * config/mips/mips-ps-3d.md (movv2sfcc): Do not use cmp_operands.
+        * config/mips/mips.md (any_cond): Delete.
+        (conditional_trap): Rename to ctrap<GPR:mode>4.  Adjust predicates,
+        always succeed.
+        (fixuns_truncdfsi2, fixuns_truncdfdi2, fixuns_truncsfsi2,
+        fixuns_truncsfdi2): Use cbranch patterns.
+        (cmp<GPR:mode>, cmp<SCALARF:mode>): Delete. 
+        (b<code>): Change to cbranch<GPR:mode>4 and cbranch<SCALARF:mode>4.
+        Adjust call to mips_expand_conditional_branch.
+        (seq, sne, slt<u>, sle<u>, sgt<u>, sge<u>): Change to cstore<GPR:mode>4.
+        * config/mips/mips-protos.h (mips_expand_conditional_branch,
+        mips_expand_scc, mips_expand_conditional_trap): Adjust prototypes.
+        * config/mips/mips.c (cmp_operands): Delete.
+        (mips_emit_compare): Get comparison operands from *op0/*op1.
+        (mips_expand_scc): Get code/op0/op1/target from operands.  Assert
+        that it succeeds.  Use op0/op1 instead of cmp_operands.
+        (mips_expand_conditional_branch, mips_expand_conditional_move,
+        mips_expand_conditional_trap): Likewise.
+        (mips_block_move_loop): Use cbranch patterns. 
+        * config/mips/mips.h (cmp_operands): Delete.
+
+        * config/mmix/mmix.c (mmix_valid_comparison): Delete.
+        (mmix_gen_compare_reg): Just return a register in the right CC mode.
+        * config/mmix/mmix.h (mmix_compare_op0, mmix_compare_op1): New.
+        * config/mmix/mmix.md (cmpdi, cmpdf): Remove.
+        (*cmpcc_folded): Rename to...
+        (*cmpdi_folded): this.
+        (*cmpcc): Rename to...
+        (*cmps): ... this.
+        (movdfcc, movdicc): Adjust for new semantics of mmix_gen_compare_reg.
+        (bCC): Remove.
+        (cbranchdi4): New.
+        (cbranchdf4): New.  Handle invalid comparisons here.
+        * config/mmix/predicates.md (float_comparison_operator): New.
+
+        * config/mn10300/mn10300.c (mn10300_rtx_costs): Consider 0 and
+        zero_extract to be cheap in (compare (zero_extract) (const_int 0).
+        * config/mn10300/mn10300.md (tst): Delete.
+        (*tst_extqisi_am33, *tst_extqisi, *tst_exthisi_am33, *tst_exthisi):
+        Name these patterns and wrap RHS in a compare.
+        (*cmpsi): Make this pattern private.  Include tst.
+        (*cmpsf): Make this pattern private.
+        (and and zero_extract cc0 set): Wrap RHS in a COMPARE.
+        (compare with zero peepholes): Likewise.
+        (bCC): Remove.
+        (cbranchsi4, cbranchsf4): New.
+        (casesi): Use cbranchsi4.
+
+        * config/pa/pa.c (hppa_compare_op0, hppa_compare_op1,
+        hppa_branch_type): Delete.
+        (return_addr_rtx): Use cbranchsi4.
+        (emit_bcond_fp): Accept all operands.  Replace CODE with NE.
+        Emit CCFPmode comparison here.
+        (gen_cmp_fp): Delete, now part of emit_bcond_fp.
+        * config/pa/pa.h (enum cmp_type, hppa_compare_op0, hppa_compare_op1,
+        hppa_branch_type): Delete.
+        * config/pa/pa.md (cmpdi, cmpsi, cmpsf, cmpdf, sCC, bCC): Delete.
+        (movsicc, movdicc): Remove references to hppa_compare_op0,
+        hppa_compare_op1 and compare_from_rtx.
+        (cbranchdi4, cbranchsi4, cbranchsf4, cbranchdf4, cstoresi4): New.
+        (casesi): Use cbranchsi4.
+
+        * config/pdp11/pdp11-protos.h (output_jump): Change prototype.
+        * config/pdp11/pdp11.c (output_jump): Embed opcodes here.
+        * config/pdp11/pdp11.md (register_or_const0_operand): New.
+        (cmpdf, cmphi, cmpqi): Make private.  Add tst alternatives.
+        (cmpsi, tstsi, tstdf, tsthi, tstqi): Delete.
+        (bCC): Delete.
+        (cbranchdf4, cbranchhi4, cbranchqi4): New.
+        (*branch, *branch_inverted): New.
+
+        * config/picochip/picochip.md (cbranchhi4): Use
+        ordered_comparison_operator.
+        (cmphi, bCC): Remove.
+
+        * config/rs6000/predicates.md (rs6000_cbranch_operator): New.
+        (trap_comparison_operator): Delete.
+        * config/rs6000/rs6000-protos.h (rs6000_emit_sCOND,
+        rs6000_emit_cbranch): Accept mode and operands.
+        * config/rs6000/rs6000.c (rs6000_compare_op0, rs6000_compare_op1,
+        rs6000_compare_fp_p): Delete.   
+        (rs6000_generate_compare): Accept mode and comparison.  Extract code
+        and op0/op1 from there.  Replace references to rs6000_compare_op0
+        and rs6000_compare_op1.
+        (rs6000_emit_sCOND): Adjust call to rs6000_generate_compare and
+        extract result from passed operands.
+        (rs6000_emit_cbranch): Adjust call to rs6000_generate_compare and
+        extract loc from passed operands.
+        (rs6000_emit_cmove): Likewise.
+        * config/rs6000/rs6000.h (rs6000_compare_op0, rs6000_compare_op1,
+        rs6000_compare_fp_p): Delete.
+        * config/rs6000/rs6000.md (cmp<GPR>, cmp<FP>, bCC, sCC): Delete.
+        (cbranch<GPR>4, cbranch<FP>4): New.
+        (cstore<mode>4): New.  Consolidate here all choices about when to use
+        portable or specialized sCC sequences.
+        (stack_protect_test): Use cbranchsi4.
+        (conditional_trap): Replace with ctrap<GPR>4.
+        (conditional trap insn): Replace trap_comparison_operator with
+        ordered_comparison_operator. 
+
+        * config/s390/s390.c (s390_compare_op0, s390_compare_op1): Delete.
+        (s390_emit_prologue): Use ctrap.
+        * config/s390/s390.h (s390_compare_op0, s390_compare_op1): Delete.
+        * config/s390/predicates.md (s390_eqne_operator, s390_scond_operator):
+        New predicates replacing...
+        * config/s390/s390.md (COMPARE, SCOND): ... these iterators.
+        (cmp<GPR>, cmp<FP>, cmpcc): Delete.
+        (trunc patterns): Use emit_cmp_and_jump_insns instead of cmp/branch.
+        (add<mode>cc): Do not use s390_compare_op0/op1.
+        (s<code>): Change to...
+        (cstore<mode>4): ... this. Do not use s390_compare_op0/op1.
+        (seq): Change to...
+        (cstorecc4): ... this.  Handle EQ or NE equally.
+        (*sne): Un-privatize for use in cstorecc4.
+        (b<code>): Change to...
+        (cbranch<GPR>4, cbranch<FP>4, cbranchcc4): ... these.
+        (conditional_trap): Replace with...
+        (ctrap<GPR>4, ctrap<FP>4): ... these.
+        (stack_protect): Use cbranchcc4.
+
+        * config/score/score-conv.h (cmp_op0, cmp_op1): Delete.
+        * config/score/score-protos.h (score_gen_cmp): Delete.
+        * config/score/score.c (cmp_op0, cmp_op1, score_gen_cmp): Delete.
+        (score_block_move-loop): Use cbranchsi4.
+        * config/score/score.md (cbranchsi4): New.
+        (cmpsi, bCC): Delete.
+        * config/score/score3.c (cmp_op0, cmp_op1, score3_gen_cmp): Delete.
+        (score3_movsicc): Use ops[1] operands instead of cmp_op0/cmp_op1.
+        * config/score/score7.c (cmp_op0, cmp_op1, score7_gen_cmp): Delete.
+        (score7_movsicc): Use ops[1] operands instead of cmp_op0/cmp_op1.
+        * config/score/score3.h (score3_gen_cmp): Delete.
+        * config/score/score7.h (score7_gen_cmp): Delete.
+
+        * config/sh/sh-protos.h (prepare_scc_operands): Rename to...
+        (sh_emit_scc_to_t): ... this.  Return void.
+        (from_compare): Rename to...
+        (sh_emit_compare_and_branch): ... this.
+        (sh_emit_compare_and_set): New.
+        (sh_expand_t_scc): Accept operands.
+        * config/sh/predicates.md (sh_float_comparison_operator): New.
+        * config/sh/sh.c (sh_compare_op0, sh_compare_op1): Delete.
+        (prepare_scc_operands): Rename to...
+        (sh_emit_scc_to_t): ... this.  Return void.  Get op0/op1 from arguments.
+        (sh_emit_cheap_store_flag): New.
+	(sh_emit_set_t_insn): New.
+        (from_compare): Rename to...
+        (sh_emit_compare_and_branch): ... this.  Accept mode.  Rewrite
+        handling of TARGET_SH2E floating point to avoid recursive call.
+        Generate branch here.
+        (sh_emit_compare_and_set): New.
+        (sh_expand_t_scc): Get op0/op1 from arguments.
+        (sh_emit_cheap_store_flag): New.
+        * config/sh/sh.md (cbranchdi4, cbranchsi4): Include -mno-cbranchdi
+        cases.
+	(cbranchdi4_i): Use an "I08" constraint instead of an "i" constraint.
+        (cmpsi, cmpdi, cmpsf, cmpdf): Delete.
+        (movsicc, movdicc): Do nothing when it recreated operands from
+        sh_compare_*. Use sh_emit_cheap_store_flag.  Adjust call to
+        prepare_scc_operands (now sh_emit_scc_to_t).
+        (udivdi3): Use cstoresi4.
+        (beq_media, bne_media, bge_media, bgtu_media, bgeu_media, beq,
+        bne, bgt, blt, ble, bge, bgtu, bltu, bgeu, bleu, bunordered):
+        Delete.
+        (cbranchint4_media, cbranchfp4_media): New.
+        (casesi): Use cbranchdi4.
+        (seq, slt, sle, sgt, sge, sgtu, sltu, sgeu, sne, sleu, sunordered):
+        Delete.
+        (cstore4_media, cstoresi4, cstoredi4, cstoresf4, cstoredf4): New.
+        (movnegt): Remove second operand.
+        (cbranchsf4, cbranchdf4): New.
+        (stack_protect): Use cbranchdi4/cbranchsi4.
+
+        * config/sparc/sparc.c (sparc_compare_op0, sparc_compare_op1): Delete.
+        (gen_compare_reg): Accept comparison, extract part of it to...
+        (gen_compare_reg_1): ... this. 
+        (gen_compare_operator): Delete.
+        (gen_v9_scc): Accept separate destination, comparison code and arms.
+        Do not use sparc_compare_op0/sparc_compare_op1.
+        (emit_scc_insn, emit_conditional_branch_insn): New.
+        (emit_v9_brxx): Make static.  Remove useless assertion.
+        (sparc_emit_float_lib_cmp): Return RTL instead of calling emit_cmp_insn.
+        (sparc_expand_compare_and_swap_12): Use gen_compare_reg_1+cbranchcc4.
+        * config/sparc/sparc-protos.h (gen_compare_reg,
+	sparc_emit_float_lib_cmp): Adjust prototype.
+	(emit_scc_insn, emit_conditional_branch_insn): New.
+	(gen_v9_scc, emit_v9_brxx_insn, gen_compare_operator): Delete.
+        * config/sparc/sparc.h (sparc_compare_op0, sparc_compare_op1): Delete.
+        * config/sparc/sparc.md (P, I, F, V32, V32I, V64, V64I): Move all
+        iterators to the top.
+        (cmpsi, cmpdi, cmpsf, cmpdf, cmptf, seqsi_special_extend,
+        snesi_special_extend, sCC, bCC, seqdi_special_trunc,
+	snedi_special_trunc): Delete.
+ 	(seqdi_special, snedi_special): Use expansion of seqdi_special_trunc
+	and snedi_special_trunc.
+        (cstoresi4, cstoredi4, cstore<F:mode>4, cbranchcc4, cbranchsi4,
+        cbranchdi4, cbranch<F:mode>4): New.
+        (mov<I:mode>cc, mov<F:mode>cc): Handle sparc_emit_float_lib_cmp
+        here.  Use gen_compare_reg instead of gen_compare_operator.
+        (conditional_trap): Replace with...
+        (ctrapsi4, ctrapdi4): ... this.
+        (stack_protect_test): Use cbranchcc4.
+
+        * config/spu/spu-protos.h (spu_emit_branch_or_set): Change second
+        argument to rtx.
+        * config/spu/spu.c (spu_compare_op0, spu_compare_op1): Remove. 
+        (spu_emit_branch_or_set): Get code/op0/op1 from second argument.
+        Change spu_compare_op0/op1 to op0/op1 throughout.  Get target
+        from operands[0] or operands[3] depending on is_set.
+        * config/spu/spu.h (spu_compare_op0, spu_compare_op1): Remove.
+        * config/spu/spu.md (cmp<mode:VQHSI>, cmp<mode:DTI>, cmp<mode:VSF>,
+        cmpdf, bCC), sCC: Remove.
+        (cbranch<mode:VQHSI>4, cbranch<mode:DTI>, cbranch<mode:VSF>4, 
+        cbranchdf4, cstore<mode:VQHSI>4, cstore<mode:DTI>, cstore<mode:VSF>4,
+        cstoredf4): New.
+        (mov<mode>cc): Accept ordered_comparison_operator, adjust call to
+        spu_emit_branch_or_set.
+
+        * config/stormy16/stormy16-protos.h (xstormy16_emit_cbranch):
+        Add two arguments.
+        * config/stormy16/stormy16.h (xstormy16_compare_op0,
+        xstormy16_compare_op1): Delete.
+        * config/stormy16/stormy16.c (xstormy16_compare_op0,
+        xstormy16_compare_op1): Delete. 
+        (xstormy16_emit_cbranch): Get op0/op1 from the new arguments.
+        Adjust calls.
+        * config/stormy16/stormy16.md (cbranchsi4, cbranchhi4): New.
+        (cmphi, cmpsi, bCC): Remove.
+
+        * config/v850/v850.md (tstsi, cmpsi): Fold into...
+        (*cmpsi): ... this one.
+        (cbranchsi4, cstoresi4): New.
+        (bCC expanders): Delete.
+        (sCC insns): Fold into...
+        (*setcc): ... this one.
+        (casesi): Do not use gen_cmpsi and gen_bgtu. 
+	(various splits): Wrap "naked" RHS of a cc0 set with COMPARE.
+	(movsicc): Simplify.
+	* config/v850/v850.c (v850_rtx_costs): Handle ZERO_EXTRACT in COMPARE.
+
+        * config/vax/vax-protos.h (cond_name): New.
+        (vax_output_conditional_branch): Remove.
+        * config/vax/vax.c (cond_name): New.
+        (vax_output_conditional_branch): Remove.
+        * config/vax/vax.h (PRINT_OPERAND): Dispatch %c to cond_name.
+        * config/vax/vax.md (tst<VAXint>, tst<VAXfp>): Remove.
+        (cmp<VAXint>, cmp<VAXfp>): Privatize.  Add constraints for tst.
+        (bit<VAXint>): Wrap source with (compare).
+        (b<code> and following unnamed pattern): Rename to *branch and
+        *branch_reversed.  Change macroization to match_operator.
+        (cbranch<VAXint>4, cbranch<VAXfp>4): New.
+
+        * config/xtensa/predicates.md (xtensa_cstoresi_operator): New.
+        * config/xtensa/xtensa-protos.h (xtensa_expand_conditional_branch):
+        Change last argument to machine_mode.
+        (xtensa_expand_scc): Add machine_mode argument.
+        * config/xtensa/xtensa.c (branch_cmp, branch_type): Remove.
+        (gen_conditional_move, xtensa_expand_conditional_branch,
+        xtensa_expand_scc, xtensa_expand_conditional_move): Use mode
+        instead of branch_type, fetch cmp0/cmp1/test_code from operands[].
+        Adjust operand numbers.
+        * config/xtensa/xtensa.h (enum cmp_type, branch_cmp, branch_type):
+        Delete.
+        * config/xtensa/xtensa.md (any_cond, any_scc): Delete.
+        (cmpsi, cmpsf, b<code>, s<code>): Delete.
+        (cbranchsi4, cbranchsf4, cstoresi4, cstoresf4): New.
+
+2009-05-12  Paolo Bonzini  <bonzini@gnu.org>
+
 	* optabs.c (prepare_cmp_insn): Temporarily disable test that
 	causes spurious differences between trunk and cond-optab branch.
 

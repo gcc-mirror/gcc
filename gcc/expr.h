@@ -298,6 +298,9 @@ extern rtx expand_simple_unop (enum machine_mode, enum rtx_code, rtx, rtx,
    perform the operation described by CODE and MODE.  */
 extern int have_insn_for (enum rtx_code, enum machine_mode);
 
+extern rtx prepare_operand (int, rtx, int, enum machine_mode, enum machine_mode,
+			    int);
+
 /* Emit code to make a call to a constant function or a library call.  */
 extern void emit_libcall_block (rtx, rtx, rtx, rtx);
 
@@ -573,9 +576,6 @@ extern void jumpif (tree, rtx);
    the result is zero, or IF_TRUE_LABEL if the result is one.  */
 extern void do_jump (tree, rtx, rtx);
 
-/* Generate rtl to compare two rtx's, will call emit_cmp_insn.  */
-extern rtx compare_from_rtx (rtx, rtx, enum rtx_code, int, enum machine_mode,
-			     rtx);
 extern void do_compare_rtx_and_jump (rtx, rtx, enum rtx_code, int,
 				     enum machine_mode, rtx, rtx, rtx);
 

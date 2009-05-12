@@ -418,10 +418,6 @@ extern FILE * asm_out_file;
 /* True if we are currently building a constant table.  */
 int making_const_table;
 
-/* Define the information needed to generate branch insns.  This is
-   stored from the compare operation.  */
-rtx arm_compare_op0, arm_compare_op1;
-
 /* The processor for which instructions should be scheduled.  */
 enum processor_type arm_tune = arm_none;
 

@@ -36,8 +36,7 @@ along with GCC; see the file COPYING3.  If not see
    The `lib_call' slot is the name of the library function that
    can be used to perform the operation.
 
-   A few optabs, such as move_optab and cmp_optab, are used
-   by special code.  */
+   A few optabs, such as move_optab, are used by special code.  */
 
 struct optab_handlers
 {
@@ -271,12 +270,9 @@ enum optab_index
   /* Test for infinite value */
   OTI_isinf,
 
-  /* Compare insn; two operands.  */
+  /* Compare insn; two operands.  Used only for libcalls.  */
   OTI_cmp,
-  /* Used only for libcalls for unsigned comparisons.  */
   OTI_ucmp,
-  /* tst insn; compare one operand against 0 */
-  OTI_tst,
 
   /* Floating point comparison optabs - used primarily for libfuncs */
   OTI_eq,
@@ -290,10 +286,11 @@ enum optab_index
   /* String length */
   OTI_strlen,
 
-  /* Combined compare & jump/store flags/move operations.  */
+  /* Combined compare & jump/move/store flags/trap operations.  */
   OTI_cbranch,
   OTI_cmov,
   OTI_cstore,
+  OTI_ctrap,
 
   /* Push instruction.  */
   OTI_push,
@@ -484,7 +481,6 @@ extern struct optab optab_table[OTI_MAX];
 
 #define cmp_optab (&optab_table[OTI_cmp])
 #define ucmp_optab (&optab_table[OTI_ucmp])
-#define tst_optab (&optab_table[OTI_tst])
 
 #define eq_optab (&optab_table[OTI_eq])
 #define ne_optab (&optab_table[OTI_ne])
@@ -499,6 +495,8 @@ extern struct optab optab_table[OTI_MAX];
 #define cbranch_optab (&optab_table[OTI_cbranch])
 #define cmov_optab (&optab_table[OTI_cmov])
 #define cstore_optab (&optab_table[OTI_cstore])
+#define ctrap_optab (&optab_table[OTI_ctrap])
+
 #define push_optab (&optab_table[OTI_push])
 #define addcc_optab (&optab_table[OTI_addcc])
 
@@ -604,17 +602,6 @@ extern optab code_to_optab[NUM_RTX_CODE + 1];
 
 
 typedef rtx (*rtxfun) (rtx);
-
-/* Indexed by the rtx-code for a conditional (e.g. EQ, LT,...)
-   gives the gen_function to make a branch to test that condition.  */
-
-extern rtxfun bcc_gen_fctn[NUM_RTX_CODE];
-
-/* Indexed by the rtx-code for a conditional (e.g. EQ, LT,...)
-   gives the insn code to make a store-condition insn
-   to test that condition.  */
-
-extern enum insn_code setcc_gen_code[NUM_RTX_CODE];
 
 #ifdef HAVE_conditional_move
 /* Indexed by the machine mode, gives the insn code to make a conditional
@@ -722,10 +709,6 @@ extern rtx expand_copysign (rtx, rtx, rtx);
    an input.  */
 extern void emit_unop_insn (int, rtx, rtx, enum rtx_code);
 extern bool maybe_emit_unop_insn (int, rtx, rtx, enum rtx_code);
-
-/* Emit one rtl insn to compare two rtx's.  */
-extern void emit_cmp_insn (rtx, rtx, enum rtx_code, rtx, enum machine_mode,
-			   int);
 
 /* An extra flag to control optab_for_tree_code's behavior.  This is needed to
    distinguish between machines with a vector shift that takes a scalar for the

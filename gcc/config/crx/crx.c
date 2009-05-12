@@ -124,10 +124,6 @@ static enum machine_mode output_memory_reference_mode;
 /* Table of machine attributes.  */
 const struct attribute_spec crx_attribute_table[];
 
-/* Test and compare insns use these globals to generate branch insns.  */
-rtx crx_compare_op0 = NULL_RTX;
-rtx crx_compare_op1 = NULL_RTX;
-
 /*****************************************************************************/
 /* TARGETM FUNCTION PROTOTYPES						     */
 /*****************************************************************************/
@@ -1215,43 +1211,6 @@ crx_expand_movmem (rtx dstbase, rtx srcbase, rtx count_exp, rtx align_exp)
   gcc_assert (offset == count);
 
   return 1;
-}
-
-rtx
-crx_expand_compare (enum rtx_code code, enum machine_mode mode)
-{
-  rtx op0, op1, cc_reg, ret;
-
-  op0 = crx_compare_op0;
-  op1 = crx_compare_op1;
-
-  /* Emit the compare that writes into CC_REGNUM) */
-  cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
-  ret = gen_rtx_COMPARE (CCmode, op0, op1);
-  emit_insn (gen_rtx_SET (VOIDmode, cc_reg, ret));
-  /* debug_rtx (get_last_insn ()); */
-
-  /* Return the rtx for using the result in CC_REGNUM */
-  return gen_rtx_fmt_ee (code, mode, cc_reg, const0_rtx);
-}
-
-void
-crx_expand_branch (enum rtx_code code, rtx label)
-{
-  rtx tmp = crx_expand_compare (code, VOIDmode);
-  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
-			      gen_rtx_LABEL_REF (VOIDmode, label),
-			      pc_rtx);
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
-  /* debug_rtx (get_last_insn ()); */
-}
-
-void
-crx_expand_scond (enum rtx_code code, rtx dest)
-{
-  rtx tmp = crx_expand_compare (code, GET_MODE (dest));
-  emit_move_insn (dest, tmp);
-  /* debug_rtx (get_last_insn ()); */
 }
 
 static void

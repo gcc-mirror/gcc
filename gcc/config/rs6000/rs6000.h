@@ -1986,12 +1986,6 @@ do {								\
 /* Given a condition code and a mode, return the inverse condition.  */
 #define REVERSE_CONDITION(CODE, MODE) rs6000_reverse_condition (MODE, CODE)
 
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  */
-
-extern GTY(()) rtx rs6000_compare_op0;
-extern GTY(()) rtx rs6000_compare_op1;
-extern int rs6000_compare_fp_p;
 
 /* Control the assembler format that we output.  */
 

@@ -803,24 +803,6 @@ extern int alpha_memory_latency;
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
   function_arg((CUM), (MODE), (TYPE), (NAMED))
 
-/* Try to output insns to set TARGET equal to the constant C if it can be
-   done in less than N insns.  Do all computations in MODE.  Returns the place
-   where the output has been placed if it can be done and the insns have been
-   emitted.  If it would take more than N insns, zero is returned and no
-   insns and emitted.  */
-
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  Note that we can't use "rtx" here
-   since it hasn't been defined!  */
-
-struct alpha_compare
-{
-  struct rtx_def *op0, *op1;
-  int fp_p;
-};
-
-extern struct alpha_compare alpha_compare;
-
 /* Make (or fake) .linkage entry for function call.
    IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
 

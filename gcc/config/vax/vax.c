@@ -428,6 +428,8 @@ print_operand (FILE *file, rtx x, int code)
     fputc (ASM_DOUBLE_CHAR, file);
   else if (code == '|')
     fputs (REGISTER_PREFIX, file);
+  else if (code == 'c')
+    fputs (cond_name (x), file);
   else if (code == 'C')
     fputs (rev_cond_name (x), file);
   else if (code == 'D' && CONST_INT_P (x) && INTVAL (x) < 0)
@@ -479,6 +481,37 @@ print_operand (FILE *file, rtx x, int code)
     }
 }
 
+const char *
+cond_name (rtx op)
+{
+  switch (GET_CODE (op))
+    {
+    case NE:
+      return "neq";
+    case EQ:
+      return "eql";
+    case GE:
+      return "geq";
+    case GT:
+      return "gtr";
+    case LE:
+      return "leq";
+    case LT:
+      return "lss";
+    case GEU:
+      return "gequ";
+    case GTU:
+      return "gtru";
+    case LEU:
+      return "lequ";
+    case LTU:
+      return "lssu";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 const char *
 rev_cond_name (rtx op)
 {
@@ -1514,27 +1547,6 @@ vax_output_int_subtract (rtx insn, rtx *operands, enum machine_mode mode)
     default:
       gcc_unreachable ();
   }
-}
-
-/* Output a conditional branch.  */
-const char *
-vax_output_conditional_branch (enum rtx_code code)
-{
-  switch (code)
-    {
-      case EQ:  return "jeql %l0";
-      case NE:  return "jneq %l0";
-      case GT:  return "jgtr %l0";
-      case LT:  return "jlss %l0";
-      case GTU: return "jgtru %l0";
-      case LTU: return "jlssu %l0";
-      case GE:  return "jgeq %l0";
-      case LE:  return "jleq %l0";
-      case GEU: return "jgequ %l0";
-      case LEU: return "jlequ %l0";
-      default:
-	gcc_unreachable ();
-    }
 }
 
 /* True if X is an rtx for a constant that is a valid address.  */

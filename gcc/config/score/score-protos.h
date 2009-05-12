@@ -25,7 +25,6 @@ enum score_mem_unit {SCORE_BYTE = 0, SCORE_HWORD = 1, SCORE_WORD = 2};
 
 #define SCORE_ALIGN_UNIT(V, UNIT)   !(V & ((1 << UNIT) - 1))
 
-extern void score_gen_cmp (enum machine_mode mode);
 extern void score_prologue (void);
 extern void score_epilogue (int sibcall_p);
 extern void score_call (rtx *ops, bool sib);

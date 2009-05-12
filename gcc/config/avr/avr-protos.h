@@ -72,8 +72,8 @@ extern const char *out_movhi_mr_r (rtx insn, rtx op[], int *l);
 extern const char *out_movsi_r_mr (rtx insn, rtx op[], int *l);
 extern const char *out_movsi_mr_r (rtx insn, rtx op[], int *l);
 extern const char *output_movsisf (rtx insn, rtx operands[], int *l);
-extern const char *out_tstsi (rtx insn, int *l);
-extern const char *out_tsthi (rtx insn, int *l);
+extern const char *out_tstsi (rtx insn, rtx src, int *l);
+extern const char *out_tsthi (rtx insn, rtx src, int *l);
 extern const char *ret_cond_branch (rtx x, int len, int reverse);
 
 extern const char *ashlqi3_out (rtx insn, rtx operands[], int *len);

@@ -801,11 +801,4 @@ do  {						\
    is responsible for updating the value of MORE (typically by (MORE)--).  */
 /* #define MD_SCHED_VARIABLE_ISSUE (FILE, VERBOSE, INSN, MORE) */
 
-
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  Note that we can't use "rtx" here
-   since it hasn't been defined!  */
-
-extern struct rtx_def *xstormy16_compare_op0, *xstormy16_compare_op1;
-
 /* End of xstormy16.h */

@@ -14947,14 +14947,11 @@ ix86_split_fp_branch (enum rtx_code code, rtx op1, rtx op2,
     emit_label (label);
 }
 
-int
+void
 ix86_expand_setcc (enum rtx_code code, rtx dest)
 {
   rtx ret, tmp, tmpreg, equiv;
   rtx second_test, bypass_test;
-
-  if (GET_MODE (ix86_compare_op0) == (TARGET_64BIT ? TImode : DImode))
-    return 0; /* FAIL */
 
   gcc_assert (GET_MODE (dest) == QImode);
 
@@ -14994,8 +14991,6 @@ ix86_expand_setcc (enum rtx_code code, rtx dest)
 				       ix86_compare_op0, ix86_compare_op1);
       set_unique_reg_note (get_last_insn (), REG_EQUAL, equiv);
     }
-
-  return 1; /* DONE */
 }
 
 /* Expand comparison setting or clearing carry flag.  Return true when
@@ -15143,6 +15138,8 @@ ix86_expand_int_movcc (rtx operands[])
   bool sign_bit_compare_p = false;;
 
   start_sequence ();
+  ix86_compare_op0 = XEXP (operands[1], 0);
+  ix86_compare_op1 = XEXP (operands[1], 1);
   compare_op = ix86_expand_compare (code, &second_test, &bypass_test);
   compare_seq = get_insns ();
   end_sequence ();
@@ -15860,6 +15857,8 @@ ix86_expand_fp_movcc (rtx operands[])
   enum rtx_code code = GET_CODE (operands[1]);
   rtx tmp, compare_op, second_test, bypass_test;
 
+  ix86_compare_op0 = XEXP (operands[1], 0);
+  ix86_compare_op1 = XEXP (operands[1], 1);
   if (TARGET_SSE_MATH && SSE_FLOAT_MODE_P (mode))
     {
       enum machine_mode cmode;
@@ -16387,6 +16386,8 @@ ix86_expand_int_addcc (rtx operands[])
   bool fpcmp = false;
   enum machine_mode mode = GET_MODE (operands[0]);
 
+  ix86_compare_op0 = XEXP (operands[1], 0);
+  ix86_compare_op1 = XEXP (operands[1], 1);
   if (operands[3] != const1_rtx
       && operands[3] != constm1_rtx)
     return 0;
@@ -28870,13 +28871,14 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
 
   rtx tmp = gen_reg_rtx (XFmode);
   rtx tmp2 = gen_reg_rtx (XFmode);
+  rtx test;
 
   emit_insn (gen_absxf2 (tmp, op1));
-  emit_insn (gen_cmpxf (tmp,
+  test = gen_rtx_GE (VOIDmode, tmp,
     CONST_DOUBLE_FROM_REAL_VALUE (
        REAL_VALUE_ATOF ("0.29289321881345247561810596348408353", XFmode),
-       XFmode)));
-  emit_jump_insn (gen_bge (label1));
+       XFmode));
+  emit_jump_insn (gen_cbranchxf4 (test, XEXP (test, 0), XEXP (test, 1), label1));
 
   emit_move_insn (tmp2, standard_80387_constant_rtx (4)); /* fldln2 */
   emit_insn (gen_fyl2xp1xf3_i387 (op0, op1, tmp2));

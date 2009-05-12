@@ -167,6 +167,9 @@
 (define_predicate "boolean_operator"
   (match_code "eq,ne"))
 
+(define_predicate "xtensa_cstoresi_operator"
+  (match_code "eq,ne,gt,ge,lt,le"))
+
 (define_predicate "tls_symbol_operand"
   (and (match_code "symbol_ref")
        (match_test "SYMBOL_REF_TLS_MODEL (op) != 0")))

@@ -303,22 +303,6 @@
   ""
   "cmphs	%1,%0")
 
-;; We save the compare operands in the cmpxx patterns and use them when
-;; we generate the branch.
-
-;; We accept constants here, in case we can modify them to ones which
-;; are more efficient to load.  E.g. change 'x <= 62' to 'x < 63'.
-
-(define_expand "cmpsi"
-  [(set (reg:CC 17) (compare:CC (match_operand:SI 0 "mcore_compare_operand" "")
-				(match_operand:SI 1 "nonmemory_operand" "")))]
-  ""
-  "
-{ arch_compare_op0 = operands[0];
-  arch_compare_op1 = operands[1];
-  DONE;
-}")
-
 ;; -------------------------------------------------------------------------
 ;; Logical operations
 ;; -------------------------------------------------------------------------
@@ -1479,6 +1463,10 @@
 ;; Define the real conditional branch instructions.
 ;; ------------------------------------------------------------------------
 
+;; At top-level, condition test are eq/ne, because we
+;; are comparing against the condition register (which
+;; has the result of the true relational test
+
 (define_insn "branch_true"
   [(set (pc) (if_then_else (ne (reg:CC 17) (const_int 0))
 			   (label_ref (match_operand 0 "" ""))
@@ -1513,189 +1501,28 @@
 
 ;; Conditional branch insns
 
-;; At top-level, condition test are eq/ne, because we
-;; are comparing against the condition register (which
-;; has the result of the true relational test
-
-; There is no beq compare, so we reverse the branch arms.
-
-(define_expand "beq"
-  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-			   (pc)
-			   (label_ref (match_operand 0 "" ""))))]
+(define_expand "cbranchsi4"
+  [(set (pc)
+	(if_then_else (match_operator:SI 0 "ordered_comparison_operator"
+		       [(match_operand:SI 1 "mcore_compare_operand")
+			(match_operand:SI 2 "nonmemory_operand")])
+		      (label_ref (match_operand 3 ""))
+		      (pc)))]
   ""
   "
 {
-  operands[1] = mcore_gen_compare_reg (EQ);
-}")
+  bool invert;
+  invert = mcore_gen_compare (GET_CODE (operands[0]),
+			      operands[1], operands[2]);
 
-(define_expand "bne"
-  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-			   (label_ref (match_operand 0 "" ""))
-			   (pc)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (NE);
-}")
-
-; check whether (GT A imm) can become (LE A imm) with the branch reversed.  
-; if so, emit a (LT A imm + 1) in place of the (LE A imm).  BRC
-
-(define_expand "bgt"
-  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-			   (label_ref (match_operand 0 "" ""))
-			   (pc)))]
-  ""
-  "
-{
-  if (mcore_modify_comparison (LE))
-    {
-      emit_jump_insn (gen_reverse_blt (operands[0]));
-      DONE;
-    }
-  operands[1] = mcore_gen_compare_reg (GT);
-}")
-
-; There is no ble compare, so we reverse the branch arms.
-; reversed the condition and branch arms for ble -- the check_dbra_loop()
-; transformation assumes that ble uses a branch-true with the label as
-; as the target. BRC
-
-; check whether (LE A imm) can become (LT A imm + 1).
-
-(define_expand "ble"
-  [(set (pc) (if_then_else (eq (match_dup 1) (const_int 0))
-			   (label_ref (match_operand 0 "" ""))
-                           (pc)))]
-  ""
-  "
-{
-  if (mcore_modify_comparison (LE))
-    {
-      emit_jump_insn (gen_blt (operands[0]));
-      DONE;
-    }
-  operands[1] = mcore_gen_compare_reg (LE);
-}")
-
-; make generating a reversed blt simple
-(define_expand "reverse_blt"
-  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-                           (pc)
-                           (label_ref (match_operand 0 "" ""))))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (LT);
-}")
-
-(define_expand "blt"
-  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-			   (label_ref (match_operand 0 "" ""))
-			   (pc)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (LT);
-}")
-
-; There is no bge compare, so we reverse the branch arms.
-
-(define_expand "bge"
-  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-			   (pc)
-			   (label_ref (match_operand 0 "" ""))))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (GE);
-}")
-
-; There is no gtu compare, so we reverse the branch arms
-
-;(define_expand "bgtu"
-;  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-;			   (pc)
-;			   (label_ref (match_operand 0 "" ""))))]
-;  ""
-;  "
-;{
-;  if (GET_CODE (arch_compare_op1) == CONST_INT
-;      && INTVAL (arch_compare_op1) == 0)
-;    operands[1] = mcore_gen_compare_reg (NE);
-;  else 
-;    { if (mcore_modify_comparison (GTU))
-;	{
-;	  emit_jump_insn (gen_bgeu (operands[0]));
-;	  DONE;
-;	}
-;      operands[1] = mcore_gen_compare_reg (LEU);
-;    }
-;}")
-
-(define_expand "bgtu"
-  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-			   (pc)
-			   (label_ref (match_operand 0 "" ""))))]
-  ""
-  "
-{
-  if (GET_CODE (arch_compare_op1) == CONST_INT
-      && INTVAL (arch_compare_op1) == 0)
-    {
-      /* The inverse of '> 0' for an unsigned test is
-	 '== 0' but we do not have such an instruction available.
-	 Instead we must reverse the branch (back to the normal
-	 ordering) and test '!= 0'.  */
-	 
-      operands[1] = mcore_gen_compare_reg (NE);
-      
-      emit_jump_insn (gen_rtx_SET (VOIDmode,
-	pc_rtx,
-	gen_rtx_IF_THEN_ELSE (VOIDmode,
-	gen_rtx_NE (VOIDmode,
-	operands[1],
-	const0_rtx),
-	gen_rtx_LABEL_REF (VOIDmode,operands[0]),
-	pc_rtx)));
-      DONE;	      
-    }
-  operands[1] = mcore_gen_compare_reg (GTU);
+  if (invert)
+    emit_jump_insn (gen_branch_false (operands[3]));
+  else
+    emit_jump_insn (gen_branch_true (operands[3]));
+  DONE;
 }")
 
 
-(define_expand "bleu"
-  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-			   (label_ref (match_operand 0 "" ""))
-			   (pc)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (LEU);
-}")
-
-; There is no bltu compare, so we reverse the branch arms
-(define_expand "bltu"
-  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-			   (pc)
-			   (label_ref (match_operand 0 "" ""))))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (LTU);
-}")
-
-(define_expand "bgeu"
-  [(set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-			   (label_ref (match_operand 0 "" ""))
-			   (pc)))]
-  ""
-  "
-{
-
-  operands[1] = mcore_gen_compare_reg (GEU);
-}")
 
 ;; ------------------------------------------------------------------------
 ;; Jump and linkage insns
@@ -1853,118 +1680,23 @@
    (set (match_dup 0) (eq:SI (reg:CC 17) (const_int 0)))])
      
 
-(define_expand "seq"
+(define_expand "cstoresi4"
   [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(eq:SI (match_dup 1) (const_int 0)))]
+	(match_operator:SI 1 "ordered_comparison_operator"
+	 [(match_operand:SI 2 "mcore_compare_operand" "")
+	  (match_operand:SI 3 "nonmemory_operand" "")]))]
   ""
   "
 {
-  operands[1] = mcore_gen_compare_reg (NE);
-}")
+  bool invert;
+  invert = mcore_gen_compare (GET_CODE (operands[1]),
+			      operands[2], operands[3]);
 
-(define_expand "sne"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(ne:SI (match_dup 1) (const_int 0)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (NE);
-}")
-
-(define_expand "slt"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(ne:SI (match_dup 1) (const_int 0)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (LT);
-}")
-
-; make generating a LT with the comparison reversed easy.  BRC
-(define_expand "reverse_slt"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-        (eq:SI (match_dup 1) (const_int 0)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (LT);
-}")
-
-(define_expand "sge"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(eq:SI (match_dup 1) (const_int 0)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (LT);
-}")
-
-; check whether (GT A imm) can become (LE A imm) with the comparison
-; reversed.  if so, emit a (LT A imm + 1) in place of the (LE A imm).  BRC
-
-(define_expand "sgt"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(ne:SI (match_dup 1) (const_int 0)))]
-  ""
-  "
-{
-  if (mcore_modify_comparison (LE))
-    {
-      emit_insn (gen_reverse_slt (operands[0]));
-      DONE;
-    }
-  
-  operands[1] = mcore_gen_compare_reg (GT);
-}")
-
-(define_expand "sle"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(eq:SI (match_dup 1) (const_int 0)))]
-  ""
-  "
-{
-  if (mcore_modify_comparison (LE))
-    {
-      emit_insn (gen_slt (operands[0]));
-      DONE;
-    }
-  operands[1] = mcore_gen_compare_reg (GT);
-}")
-
-(define_expand "sltu"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(eq:SI (match_dup 1) (const_int 0)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (GEU);
-}")
-
-(define_expand "sgeu"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(ne:SI (match_dup 1) (const_int 0)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (GEU);
-}")
-
-(define_expand "sgtu"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(eq:SI (match_dup 1) (const_int 0)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (LEU);
-}")
-
-(define_expand "sleu"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(ne:SI (match_dup 1) (const_int 0)))]
-  ""
-  "
-{
-  operands[1] = mcore_gen_compare_reg (LEU);
+  if (invert)
+    emit_insn (gen_mvcv (operands[0]));
+  else
+    emit_insn (gen_mvc (operands[0]));
+  DONE;
 }")
 
 (define_insn "incscc"
@@ -3308,7 +3040,7 @@
       rtx loop_label = gen_label_rtx ();
       rtx step = gen_reg_rtx (Pmode);
       rtx tmp = gen_reg_rtx (Pmode);
-      rtx memref;
+      rtx test, memref;
 
 #if 1
       emit_insn (gen_movsi (tmp, operands[1]));
@@ -3317,8 +3049,8 @@
       if (GET_CODE (operands[1]) != CONST_INT)
 	{
 	  out_label = gen_label_rtx ();
-	  emit_insn (gen_cmpsi (step, tmp));		/* quick out */
-	  emit_jump_insn (gen_bgeu (out_label));
+	  test = gen_rtx_GEU (VOIDmode, step, tmp);		/* quick out */
+	  emit_jump_insn (gen_cbranchsi4 (test, step, tmp, out_label));
 	}
 
       /* Run a loop that steps it incrementally.  */
@@ -3332,8 +3064,8 @@
       emit_insn(gen_subsi3(tmp, tmp, step));
 
       /* Loop condition -- going back up.  */
-      emit_insn (gen_cmpsi (step, tmp));
-      emit_jump_insn (gen_bltu (loop_label));
+      test = gen_rtx_LTU (VOIDmode, step, tmp);
+      emit_jump_insn (gen_cbranchsi4 (test, step, tmp, loop_label));
 
       if (out_label)
 	emit_label (out_label);

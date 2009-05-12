@@ -172,9 +172,13 @@
 	       && REGNO (op) <= LAST_VIRTUAL_REGISTER));
 })
 
-;; Test for an operator valid in a conditional branch
-(define_predicate "bfin_cbranch_operator"
+;; Test for an operator valid in a BImode conditional branch
+(define_predicate "bfin_bimode_comparison_operator"
   (match_code "eq,ne"))
+
+;; Test for an operator whose result is accessible with movbisi.
+(define_predicate "bfin_direct_comparison_operator"
+  (match_code "eq,lt,le,leu,ltu"))
 
 ;; The following two are used to compute the addrtype attribute.  They return
 ;; true if passed a memory address usable for a 16-bit load or store using a

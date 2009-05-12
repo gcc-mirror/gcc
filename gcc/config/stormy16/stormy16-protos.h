@@ -48,7 +48,7 @@ extern rtx xstormy16_function_value (const_tree, const_tree);
 #endif
 
 #ifdef RTX_CODE
-extern void xstormy16_emit_cbranch (enum rtx_code, rtx);
+extern void xstormy16_emit_cbranch (enum rtx_code, rtx, rtx, rtx);
 extern char *xstormy16_output_cbranch_hi (rtx, const char *, int, rtx);
 extern char *xstormy16_output_cbranch_si (rtx, const char *, int, rtx);
 extern int xstormy16_mode_dependent_address_p (rtx);

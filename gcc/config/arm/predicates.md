@@ -191,9 +191,13 @@
 (define_special_predicate "equality_operator"
   (match_code "eq,ne"))
 
-;; True for comparisons other than LTGT or UNEQ.
+;; True for integer comparisons and, if FP is active, for comparisons
+;; other than LTGT or UNEQ.
 (define_special_predicate "arm_comparison_operator"
-  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,ordered,unlt,unle,unge,ungt"))
+  (ior (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu")
+       (and (match_test "TARGET_32BIT && TARGET_HARD_FLOAT
+			 && (TARGET_FPA || TARGET_VFP)")
+            (match_code "unordered,ordered,unlt,unle,unge,ungt"))))
 
 (define_special_predicate "minmax_operator"
   (and (match_code "smin,smax,umin,umax")

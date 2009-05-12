@@ -248,40 +248,16 @@
 
 ;; Test insns.
 
-;; DImode
-;;
-;; Allow register and offsettable mem operands only; post-increment is
-;; not worth the trouble.
-
-(define_expand "tstdi"
-  [(set (cc0) (match_operand:DI 0 "nonimmediate_operand"))]
-  ""
-{
-  if (TARGET_V32 && MEM_P (operands[0]))
-    operands[0] = force_reg (DImode, operands[0]);
-})
-
-(define_insn "*tstdi_non_v32"
-  [(set (cc0)
-	(match_operand:DI 0 "nonimmediate_operand" "r,o"))]
-  "!TARGET_V32"
-  "test.d %M0\;ax\;test.d %H0")
-
-(define_insn "*tstdi_v32"
-  [(set (cc0)
-	(match_operand:DI 0 "register_operand" "r"))]
-  "TARGET_V32"
-  "cmpq 0,%M0\;ax\;cmpq 0,%H0")
-
 ;; No test insns with side-effect on the mem addressing.
 ;;
 ;; See note on cmp-insns with side-effects (or lack of them)
 
 ;; Normal named test patterns from SI on.
 
-(define_insn "tstsi"
+(define_insn "*tstsi"
   [(set (cc0)
-	(match_operand:SI 0 "nonimmediate_operand" "r,Q>,m"))]
+	(compare (match_operand:SI 0 "nonimmediate_operand" "r,Q>,m")
+		 (const_int 0)))]
   ""
 {
   if (which_alternative == 0 && TARGET_V32)
@@ -290,15 +266,10 @@
 }
   [(set_attr "slottable" "yes,yes,no")])
 
-(define_expand "tst<mode>"
-  [(set (cc0)
-	(match_operand:BW 0 "nonimmediate_operand"))]
-  ""
-  "")
-
 (define_insn "*tst<mode>_cmp"
   [(set (cc0)
-	(match_operand:BW 0 "nonimmediate_operand" "r,Q>,m"))]
+	(compare (match_operand:BW 0 "nonimmediate_operand" "r,Q>,m")
+		 (const_int 0)))]
   "cris_cc0_user_requires_cmp (insn)"
   "@
    cmp<m> 0,%0
@@ -308,7 +279,8 @@
 
 (define_insn "*tst<mode>_non_cmp"
   [(set (cc0)
-	(match_operand:BW 0 "nonimmediate_operand" "r,Q>,m"))]
+	(compare (match_operand:BW 0 "nonimmediate_operand" "r,Q>,m")
+		 (const_int 0)))]
   "!cris_cc0_user_requires_cmp (insn)"
   "@
    move<m> %0,%0
@@ -332,24 +304,13 @@
 ;; DImode for anything else but a structure/block-mode.  Just do the
 ;; obvious stuff for the straight-forward constraint letters.
 
-(define_expand "cmpdi"
-  [(set (cc0)
-	(compare (match_operand:DI 0 "nonimmediate_operand" "")
-		 (match_operand:DI 1 "general_operand" "")))]
-  ""
-{
-  if (TARGET_V32 && !REG_P (operands[0]))
-    operands[0] = force_reg (DImode, operands[0]);
-  if (TARGET_V32 && MEM_P (operands[1]))
-    operands[1] = force_reg (DImode, operands[1]);
-})
-
 (define_insn "*cmpdi_non_v32"
   [(set (cc0)
-	(compare (match_operand:DI 0 "nonimmediate_operand" "r,r,r,r,r,r,o")
-		 (match_operand:DI 1 "general_operand" "Kc,I,P,n,r,o,r")))]
+	(compare (match_operand:DI 0 "nonimmediate_operand" "rm,r,r,r,r,r,r,o")
+		 (match_operand:DI 1 "general_operand" "M,Kc,I,P,n,r,o,r")))]
   "!TARGET_V32"
   "@
+   test.d %M0\;ax\;test.d %H0
    cmpq %1,%M0\;ax\;cmpq 0,%H0
    cmpq %1,%M0\;ax\;cmpq -1,%H0
    cmp%e1.%z1 %1,%M0\;ax\;cmpq %H1,%H0
@@ -415,9 +376,9 @@
    (set_attr "cc" "rev")])
 
 ;; The "normal" compare patterns, from SI on.  Special-cases with zero
-;; should not happen.
+;; are covered above.
 
-(define_insn "cmpsi"
+(define_insn "*cmpsi"
   [(set (cc0)
 	(compare
 	 (match_operand:SI 0 "nonimmediate_operand" "r,r,r, Q>,r,r,m")
@@ -434,7 +395,7 @@
   [(set_attr "slottable" "yes,yes,yes,yes,no,no,no")
    (set_attr "cc" "normal,normal,normal,rev,normal,normal,rev")])
 
-(define_insn "cmp<mode>"
+(define_insn "*cmp<mode>"
   [(set (cc0)
 	(compare (match_operand:BW 0 "nonimmediate_operand" "r,r, Q>,r,m")
 		 (match_operand:BW 1 "general_operand"	    "r,Q>,r, g,r")))]
@@ -457,10 +418,12 @@
 ;; extends subregs for lower-size modes.  FIXME: Add testcase.
 (define_insn "*btst"
   [(set (cc0)
-	(zero_extract
-	 (match_operand:SI 0 "nonmemory_operand" "r, r,r, r,r, r,Kp")
-	 (match_operand:SI 1 "const_int_operand" "Kc,n,Kc,n,Kc,n,n")
-	 (match_operand:SI 2 "nonmemory_operand" "M, M,Kc,n,r, r,r")))]
+	(compare
+	 (zero_extract:SI
+	  (match_operand:SI 0 "nonmemory_operand" "r, r,r, r,r, r,Kp")
+	  (match_operand:SI 1 "const_int_operand" "Kc,n,Kc,n,Kc,n,n")
+	  (match_operand:SI 2 "nonmemory_operand" "M, M,Kc,n,r, r,r"))
+	 (const_int 0)))]
   ;; Either it is a single bit, or consecutive ones starting at 0.
   ;; The btst ones depend on stuff in NOTICE_UPDATE_CC.
   "CONST_INT_P (operands[1])
@@ -3550,6 +3513,36 @@
 
 ;; Conditional branches.
 
+(define_expand "cbranch<mode>4"
+  [(set (cc0) (compare
+	       (match_operand:BWD 1 "nonimmediate_operand")
+	       (match_operand:BWD 2 "general_operand")))
+   (set (pc)
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+		       [(cc0) (const_int 0)])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))]
+  ""
+  "")
+
+(define_expand "cbranchdi4"
+  [(set (cc0)
+	(compare (match_operand:DI 1 "nonimmediate_operand" "")
+		 (match_operand:DI 2 "general_operand" "")))
+   (set (pc)
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+		       [(cc0) (const_int 0)])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))]
+  ""
+{
+  if (TARGET_V32 && !REG_P (operands[1]))
+    operands[1] = force_reg (DImode, operands[1]);
+  if (TARGET_V32 && MEM_P (operands[2]))
+    operands[2] = force_reg (DImode, operands[2]);
+})
+
+
 ;; We suffer from the same overflow-bit-gets-in-the-way problem as
 ;; e.g. m68k, so we have to check if overflow bit is set on all "signed"
 ;; conditions.
@@ -3633,6 +3626,31 @@
   [(set_attr "slottable" "has_slot")])
 
 ;; Set on condition: sCC.
+
+(define_expand "cstoredi4"
+  [(set (cc0) (compare
+	       (match_operand:DI 2 "nonimmediate_operand")
+	       (match_operand:DI 3 "general_operand")))
+   (set (match_operand:SI 0 "register_operand")
+	(match_operator:SI 1 "ordered_comparison_operator"
+	 [(cc0) (const_int 0)]))]
+  ""
+{
+  if (TARGET_V32 && !REG_P (operands[2]))
+    operands[2] = force_reg (DImode, operands[2]);
+  if (TARGET_V32 && MEM_P (operands[3]))
+    operands[3] = force_reg (DImode, operands[3]);
+})
+
+(define_expand "cstore<mode>4"
+  [(set (cc0) (compare
+	       (match_operand:BWD 2 "nonimmediate_operand")
+	       (match_operand:BWD 3 "general_operand")))
+   (set (match_operand:SI 0 "register_operand")
+	(match_operator:SI 1 "ordered_comparison_operator"
+	 [(cc0) (const_int 0)]))]
+  ""
+  "")
 
 ;; Like bCC, we have to check the overflow bit for
 ;; signed conditions.

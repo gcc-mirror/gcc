@@ -285,6 +285,12 @@
 (define_predicate "order_operator"
   (match_code "lt,ltu,le,leu,ge,geu,gt,gtu"))
 
+;; For NE, cstore uses sltu instructions in which the first operand is $0.
+;; This isn't possible in mips16 code.
+
+(define_predicate "mips_cstore_operator"
+  (ior (match_code "eq,gt,gtu,ge,geu,lt,ltu,le,leu")
+       (and (match_code "ne") (match_test "!TARGET_MIPS16"))))
 
 (define_predicate "small_data_pattern"
   (and (match_code "set,parallel,unspec,unspec_volatile,prefetch")

@@ -81,11 +81,6 @@ enum alpha_fp_rounding_mode alpha_fprm;
 
 enum alpha_fp_trap_mode alpha_fptm;
 
-/* Save information from a "cmpxx" operation until the branch or scc is
-   emitted.  */
-
-struct alpha_compare alpha_compare;
-
 /* Nonzero if inside of a function, because the Alpha asm can't
    handle .files inside of functions.  */
 
@@ -2424,19 +2419,20 @@ alpha_emit_floatuns (rtx operands[2])
 
 /* Generate the comparison for a conditional branch.  */
 
-rtx
-alpha_emit_conditional_branch (enum rtx_code code)
+void
+alpha_emit_conditional_branch (rtx operands[], enum machine_mode cmp_mode)
 {
   enum rtx_code cmp_code, branch_code;
-  enum machine_mode cmp_mode, branch_mode = VOIDmode;
-  rtx op0 = alpha_compare.op0, op1 = alpha_compare.op1;
+  enum machine_mode branch_mode = VOIDmode;
+  enum rtx_code code = GET_CODE (operands[0]);
+  rtx op0 = operands[1], op1 = operands[2];
   rtx tem;
 
-  if (alpha_compare.fp_p && GET_MODE (op0) == TFmode)
+  if (cmp_mode == TFmode)
     {
       op0 = alpha_emit_xfloating_compare (&code, op0, op1);
       op1 = const0_rtx;
-      alpha_compare.fp_p = 0;
+      cmp_mode = DImode;
     }
 
   /* The general case: fold the comparison code to the types of compares
@@ -2457,7 +2453,7 @@ alpha_emit_conditional_branch (enum rtx_code code)
 
     case GE:  case GT: case GEU:  case GTU:
       /* For FP, we swap them, for INT, we reverse them.  */
-      if (alpha_compare.fp_p)
+      if (cmp_mode == DFmode)
 	{
 	  cmp_code = swap_condition (code);
 	  branch_code = NE;
@@ -2474,9 +2470,8 @@ alpha_emit_conditional_branch (enum rtx_code code)
       gcc_unreachable ();
     }
 
-  if (alpha_compare.fp_p)
+  if (cmp_mode == DFmode)
     {
-      cmp_mode = DFmode;
       if (flag_unsafe_math_optimizations && cmp_code != UNORDERED)
 	{
 	  /* When we are not as concerned about non-finite values, and we
@@ -2501,8 +2496,6 @@ alpha_emit_conditional_branch (enum rtx_code code)
     }
   else
     {
-      cmp_mode = DImode;
-
       /* The following optimizations are only for signed compares.  */
       if (code != LEU && code != LTU && code != GEU && code != GTU)
 	{
@@ -2544,36 +2537,38 @@ alpha_emit_conditional_branch (enum rtx_code code)
       emit_move_insn (tem, gen_rtx_fmt_ee (cmp_code, cmp_mode, op0, op1));
     }
 
-  /* Zero the operands.  */
-  memset (&alpha_compare, 0, sizeof (alpha_compare));
-
-  /* Return the branch comparison.  */
-  return gen_rtx_fmt_ee (branch_code, branch_mode, tem, CONST0_RTX (cmp_mode));
+  /* Emit the branch instruction.  */
+  tem = gen_rtx_SET (VOIDmode, pc_rtx,
+		     gen_rtx_IF_THEN_ELSE (VOIDmode,
+					   gen_rtx_fmt_ee (branch_code,
+							   branch_mode, tem,
+							   CONST0_RTX (cmp_mode)),
+					   gen_rtx_LABEL_REF (VOIDmode,
+							      operands[3]),
+					   pc_rtx));
+  emit_jump_insn (tem);
 }
 
 /* Certain simplifications can be done to make invalid setcc operations
    valid.  Return the final comparison, or NULL if we can't work.  */
 
-rtx
-alpha_emit_setcc (enum rtx_code code)
+bool
+alpha_emit_setcc (rtx operands[], enum machine_mode cmp_mode)
 {
   enum rtx_code cmp_code;
-  rtx op0 = alpha_compare.op0, op1 = alpha_compare.op1;
-  int fp_p = alpha_compare.fp_p;
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx op0 = operands[2], op1 = operands[3];
   rtx tmp;
 
-  /* Zero the operands.  */
-  memset (&alpha_compare, 0, sizeof (alpha_compare));
-
-  if (fp_p && GET_MODE (op0) == TFmode)
+  if (cmp_mode == TFmode)
     {
       op0 = alpha_emit_xfloating_compare (&code, op0, op1);
       op1 = const0_rtx;
-      fp_p = 0;
+      cmp_mode = DImode;
     }
 
-  if (fp_p && !TARGET_FIX)
-    return NULL_RTX;
+  if (cmp_mode == DFmode && !TARGET_FIX)
+    return 0;
 
   /* The general case: fold the comparison code to the types of compares
      that we have, choosing the branch as necessary.  */
@@ -2584,12 +2579,12 @@ alpha_emit_setcc (enum rtx_code code)
     case EQ:  case LE:  case LT:  case LEU:  case LTU:
     case UNORDERED:
       /* We have these compares.  */
-      if (fp_p)
+      if (cmp_mode == DFmode)
 	cmp_code = code, code = NE;
       break;
 
     case NE:
-      if (!fp_p && op1 == const0_rtx)
+      if (cmp_mode == DImode && op1 == const0_rtx)
 	break;
       /* FALLTHRU */
 
@@ -2601,10 +2596,10 @@ alpha_emit_setcc (enum rtx_code code)
     case GE:  case GT: case GEU:  case GTU:
       /* These normally need swapping, but for integer zero we have
 	 special patterns that recognize swapped operands.  */
-      if (!fp_p && op1 == const0_rtx)
+      if (cmp_mode == DImode && op1 == const0_rtx)
 	break;
       code = swap_condition (code);
-      if (fp_p)
+      if (cmp_mode == DFmode)
 	cmp_code = code, code = NE;
       tmp = op0, op0 = op1, op1 = tmp;
       break;
@@ -2613,7 +2608,7 @@ alpha_emit_setcc (enum rtx_code code)
       gcc_unreachable ();
     }
 
-  if (!fp_p)
+  if (cmp_mode == DImode)
     {
       if (!register_operand (op0, DImode))
 	op0 = force_reg (DImode, op0);
@@ -2624,18 +2619,18 @@ alpha_emit_setcc (enum rtx_code code)
   /* Emit an initial compare instruction, if necessary.  */
   if (cmp_code != UNKNOWN)
     {
-      enum machine_mode mode = fp_p ? DFmode : DImode;
-
-      tmp = gen_reg_rtx (mode);
+      tmp = gen_reg_rtx (cmp_mode);
       emit_insn (gen_rtx_SET (VOIDmode, tmp,
-			      gen_rtx_fmt_ee (cmp_code, mode, op0, op1)));
+			      gen_rtx_fmt_ee (cmp_code, cmp_mode, op0, op1)));
 
-      op0 = fp_p ? gen_lowpart (DImode, tmp) : tmp;
+      op0 = cmp_mode == DImode ? gen_lowpart (DImode, tmp) : tmp;
       op1 = const0_rtx;
     }
 
-  /* Return the setcc comparison.  */
-  return gen_rtx_fmt_ee (code, DImode, op0, op1);
+  /* Emit the setcc instruction.  */
+  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			  gen_rtx_fmt_ee (code, DImode, op0, op1)));
+  return true;
 }
 
 
@@ -2651,20 +2646,17 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
 {
   enum rtx_code code = GET_CODE (cmp);
   enum rtx_code cmov_code = NE;
-  rtx op0 = alpha_compare.op0;
-  rtx op1 = alpha_compare.op1;
-  int fp_p = alpha_compare.fp_p;
+  rtx op0 = XEXP (cmp, 0);
+  rtx op1 = XEXP (cmp, 1);
   enum machine_mode cmp_mode
     = (GET_MODE (op0) == VOIDmode ? DImode : GET_MODE (op0));
-  enum machine_mode cmp_op_mode = fp_p ? DFmode : DImode;
   enum machine_mode cmov_mode = VOIDmode;
   int local_fast_math = flag_unsafe_math_optimizations;
   rtx tem;
 
-  /* Zero the operands.  */
-  memset (&alpha_compare, 0, sizeof (alpha_compare));
+  gcc_assert (cmp_mode == DFmode || cmp_mode == DImode);
 
-  if (fp_p != FLOAT_MODE_P (mode))
+  if (FLOAT_MODE_P (cmp_mode) != FLOAT_MODE_P (mode))
     {
       enum rtx_code cmp_code;
 
@@ -2691,7 +2683,7 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
 	case GE: case GT: case GEU: case GTU:
 	  /* These normally need swapping, but for integer zero we have
 	     special patterns that recognize swapped operands.  */
-	  if (!fp_p && op1 == const0_rtx)
+	  if (cmp_mode == DImode && op1 == const0_rtx)
 	    cmp_code = code, code = NE;
 	  else
 	    {
@@ -2705,22 +2697,21 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
 	  gcc_unreachable ();
 	}
 
-      tem = gen_reg_rtx (cmp_op_mode);
+      tem = gen_reg_rtx (cmp_mode);
       emit_insn (gen_rtx_SET (VOIDmode, tem,
-			      gen_rtx_fmt_ee (cmp_code, cmp_op_mode,
+			      gen_rtx_fmt_ee (cmp_code, cmp_mode,
 					      op0, op1)));
 
-      cmp_mode = cmp_op_mode = fp_p ? DImode : DFmode;
-      op0 = gen_lowpart (cmp_op_mode, tem);
-      op1 = CONST0_RTX (cmp_op_mode);
-      fp_p = !fp_p;
+      cmp_mode = cmp_mode == DImode ? DFmode : DImode;
+      op0 = gen_lowpart (cmp_mode, tem);
+      op1 = CONST0_RTX (cmp_mode);
       local_fast_math = 1;
     }
 
   /* We may be able to use a conditional move directly.
      This avoids emitting spurious compares.  */
   if (signed_comparison_operator (cmp, VOIDmode)
-      && (!fp_p || local_fast_math)
+      && (cmp_mode == DImode || local_fast_math)
       && (op0 == CONST0_RTX (cmp_mode) || op1 == CONST0_RTX (cmp_mode)))
     return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
 
@@ -2757,7 +2748,7 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
       gcc_unreachable ();
     }
 
-  if (!fp_p)
+  if (cmp_mode == DImode)
     {
       if (!reg_or_0_operand (op0, DImode))
 	op0 = force_reg (DImode, op0);
@@ -2768,12 +2759,12 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
   /* ??? We mark the branch mode to be CCmode to prevent the compare
      and cmov from being combined, since the compare insn follows IEEE
      rules that the cmov does not.  */
-  if (fp_p && !local_fast_math)
+  if (cmp_mode == DFmode && !local_fast_math)
     cmov_mode = CCmode;
 
-  tem = gen_reg_rtx (cmp_op_mode);
-  emit_move_insn (tem, gen_rtx_fmt_ee (code, cmp_op_mode, op0, op1));
-  return gen_rtx_fmt_ee (cmov_code, cmov_mode, tem, CONST0_RTX (cmp_op_mode));
+  tem = gen_reg_rtx (cmp_mode);
+  emit_move_insn (tem, gen_rtx_fmt_ee (code, cmp_mode, op0, op1));
+  return gen_rtx_fmt_ee (cmov_code, cmov_mode, tem, CONST0_RTX (cmp_mode));
 }
 
 /* Simplify a conditional move of two constants into a setcc with

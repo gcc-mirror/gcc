@@ -41,6 +41,14 @@
   return register_operand (op, mode);
 })
 
+;; Return 1 if OP is a register or a constant.  gen_int_relational
+;; takes care of forcing out-of-range constants into a register.
+
+(define_predicate "reg_or_const_operand"
+  (ior (match_code "const_int")
+       (and (match_code "reg,subreg")
+            (match_operand 0 "register_operand"))))
+
 ;; Return 1 if OP is a integer which fits in 16 bits.
 
 (define_predicate "small_int"
