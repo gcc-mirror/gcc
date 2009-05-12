@@ -1,3 +1,8 @@
+2009-05-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Make-lang.in (GCJ): Renamed to...
+	(XGCJ): ... this.
+
 2009-04-27  Ian Lance Taylor  <iant@google.com>
 
 	* builtins.c (java_builtins): Add casts to enum type.

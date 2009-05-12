@@ -44,10 +44,10 @@
 JAVA_INSTALL_NAME := $(shell echo gcj|sed '$(program_transform_name)')
 JAVA_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcj|sed '$(program_transform_name)')
 
-GCJ = gcj
+XGCJ = gcj
 
 # Define the names for selecting java in LANGUAGES.
-java: jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) jcf-dump$(exeext)
+java: jc1$(exeext) $(XGCJ)$(exeext) jvgenmain$(exeext) jcf-dump$(exeext)
 
 # Define the name of target independent tools to be installed in $(bindir)
 # Names are subject to changes
@@ -62,17 +62,17 @@ jvspec.o: $(srcdir)/java/jvspec.c $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION))
 
-# Create the compiler driver for $(GCJ).
-$(GCJ)$(exeext): $(GCC_OBJS) jvspec.o java/jcf-path.o version.o \
+# Create the compiler driver for $(XGCJ).
+$(XGCJ)$(exeext): $(GCC_OBJS) jvspec.o java/jcf-path.o version.o \
 	   prefix.o intl.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) jvspec.o \
 	  java/jcf-path.o prefix.o intl.o \
 	  version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
-# Create a version of the $(GCJ) driver which calls the cross-compiler.
-$(GCJ)-cross$(exeext): $(GCJ)$(exeext)
-	-rm -f $(GCJ)-cross$(exeext)
-	cp $(GCJ)$(exeext) $(GCJ)-cross$(exeext)
+# Create a version of the $(XGCJ) driver which calls the cross-compiler.
+$(XGCJ)-cross$(exeext): $(XGCJ)$(exeext)
+	-rm -f $(XGCJ)-cross$(exeext)
+	cp $(XGCJ)$(exeext) $(XGCJ)-cross$(exeext)
 
 java.srcextra:
 
@@ -115,8 +115,8 @@ jvgenmain$(exeext): $(JVGENMAIN_OBJS) $(LIBDEPS)
 #
 # Build hooks:
 
-java.all.cross: $(GCJ)-cross$(exeext)
-java.start.encap: $(GCJ)$(exeext)
+java.all.cross: $(XGCJ)-cross$(exeext)
+java.start.encap: $(XGCJ)$(exeext)
 java.rest.encap:
 
 
@@ -158,11 +158,11 @@ check-java-subtargets :
 
 # Install gcj as well as the target-independent tools.
 java.install-common: installdirs
-	-if [ -f $(GCJ)$(exeext) ]; then \
+	-if [ -f $(XGCJ)$(exeext) ]; then \
 	  rm -f $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) $(GCJ)$(exeext) $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) $(XGCJ)$(exeext) $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
 	  chmod a+x $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
-	  if [ -f $(GCJ)-cross$(exeext) ]; then \
+	  if [ -f $(XGCJ)-cross$(exeext) ]; then \
 	    true; \
 	  else \
 	    rm -f $(DESTDIR)$(bindir)/$(JAVA_TARGET_INSTALL_NAME)$(exeext); \
@@ -211,7 +211,7 @@ java.install-pdf: $(JAVA_PDFFILES)
 java.mostlyclean:
 	-rm -f java/*$(objext) $(DEMANGLER_PROG)
 	-rm -f java/*$(coverageexts)
-	-rm -f jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) \
+	-rm -f jc1$(exeext) $(XGCJ)$(exeext) jvgenmain$(exeext) \
           jcf-dump$(exeext) s-java
 java.clean:
 java.distclean:

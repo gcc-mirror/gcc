@@ -1,5 +1,10 @@
 2009-05-12  Alexandre Oliva  <aoliva@redhat.com>
 
+	PR target/37137
+	* doc/install.texi (STAGE1_TFLAGS, BUILD_CONFIG): Document.
+
+2009-05-12  Alexandre Oliva  <aoliva@redhat.com>
+
 	* tree.c (iterative_hash_pointer): Delete.
 	(iterative_hash_expr): Short-circuit handling of NULL pointer.
 	Hash UIDs and versions of SSA names.  Don't special-case built-in

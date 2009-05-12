@@ -1,3 +1,44 @@
+2009-05-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/37137
+	* Makefile.def (flags_to_pass): Remove redundant and incomplete
+	STAGE1_CFLAGS, STAGE2_CFLAGS, STAGE3_CFLAGS, and STAGE4_CFLAGS.
+	Add FLAGS_FOR_TARGET and BUILD_CONFIG.
+	(bootstrap_stage): Remove bootstrap-debug custom stages.  Turn
+	stage_configureflags, stage_cflags and stage_libcflags into
+	explicit Makefile macros.
+	* Makefile.tpl (HOST_EXPORTS, EXTRA_HOST_FLAGS): Pass GCJ and
+	GFORTRAN.
+	(POSTSTAGE1_HOST_EXPORTS): Add XGCC_FLAGS_FOR_TARGET and TFLAGS to
+	CC.  Set CC_FOR_BUILD from CC.
+	(BASE_TARGET_EXPORTS, RAW_CXX_TARGET_EXPORTS,
+	NORMAL_TARGET_EXPORTS): Move SYSROOT_CFLAGS_FOR_TARGET and
+	DEBUG_PREFIX_CFLAGS_FOR_TARGET from CFLAGS and CXXFLAGS to
+	XGCC_FLAGS_FOR_TARGET.  Add it along with TFLAGS to CC, CXX, GCJ,
+	and GFORTRAN.
+	(TFLAGS, STAGE_CFLAGS, STAGE_TFLAGS, STAGE_CONFIGURE_FLAGS): New.
+	(_LIBCFLAGS): Renamed to _TFLAGS.
+	(do-compare-debug, do-compare3-debug): Drop.
+	(CC, GCC_FOR_TARGET, CXX_FOR_TARGET, RAW_CXX_FOR_TARGET,
+	GCJ_FOR_TARGET, GFORTRAN_FOR_TARGET): Remove FLAGS_FOR_TARGET.
+	(FLAGS_FOR_TARGET, SYSROOT_CFLAGS_FOR_TARGET,
+	DEBUG_PREFIX_CFLAGS_FOR_TARGET): Move down.
+	(XGCC_FLAGS_FOR_TARGET): New.
+	(BASE_FLAGS_TO_PASS): Pass STAGEid_CFLAGS, STAGEid_TFLAGS and TFLAGS.
+	(EXTRA_HOST_FLAGS): Pass GCJ and GFORTRAN.
+	(POSTSTAGE1_FLAGS_TO_PASS): Move SYSROOT_CFLAGS_FOR_TARGET and
+	DEBUG_PREFIX_CFLAGS_FOR_TARGET from CFLAGS, CXXFLAGS, LIBCFLAGS,
+	LIBCXXFLAGS to XGCC_FLAGS_FOR_TARGET.    Add it along with TFLAGS
+	to CC, CXX, GCJ, and GFORTRAN.  Pass XGCC_FLAGS_FOR_TARGET and
+	TFLAGS.
+	(BUILD_CONFIG): Include if requested.
+	(all): Set TFLAGS on bootstrap.
+	(configure-stageid-prefixmodule): Pass TFLAGS, adjust FLAGS.
+	(all-stageid-prefixmodule): Likewise.
+	(do-clean, distclean-stageid): Set TFLAGS.
+	(restrap): Fix whitespace.
+	* Makefile.in: Rebuilt.
+
 2009-05-07  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config.guess: Sync with src.

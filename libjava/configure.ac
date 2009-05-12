@@ -409,23 +409,33 @@ else
      which_gcj=path
   fi
 fi
+libgcjdir=`${PWDCMD-pwd}`
+case $GCJ in
+*" -B"*)
+  # Just in case there is a comma in the build dir, quote it for the
+  # sed command below.
+  case $libgcjdir in
+  *[[,\\]]*) qlibgcjdir=`echo "$libgcjdir" | sed 's:[[,\\]]:\\&:g'`;;
+  *) qlibgcjdir=$libgcjdir;;
+  esac
+  GCJ=`echo "$GCJ" | sed "s, -B, -B$qlibgcjdir/&,"`
+  ;;
+*)
+  GCJ=$GCJ" -B$libgcjdir/"
+  ;;
+esac
 case "${which_gcj}" in
    built)
-      GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
       GCJH='$(top_builddir)/$(MULTIBUILDTOP)../../$(host_subdir)/gcc/gcjh'
    ;;
    cross)
       if test "x${with_newlib}" = "xyes"; then
          # FIXME (comment): Why is this needed?
          GCC_UNWIND_INCLUDE=
-         GCJ="${target_noncanonical}-gcj"
-      else
-         GCJ="${target_noncanonical}-gcj -B`${PWDCMD-pwd}`/"
       fi
       GCJH='$(target_noncanonical)-gcjh'
    ;;
    path)
-      GCJ="gcj -B`${PWDCMD-pwd}`/"
       GCJH=gcjh
    ;;
 esac
