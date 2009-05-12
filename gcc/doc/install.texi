@@ -1982,7 +1982,7 @@ bootstrapped, you can use @code{CFLAGS_FOR_TARGET} to modify their
 compilation flags, as for non-bootstrapped target libraries.
 Again, if the native compiler miscompiles the stage1 compiler, you may
 need to work around this by avoiding non-working parts of the stage1
-compiler.  Use @code{STAGE1_LIBCFLAGS} to this end.
+compiler.  Use @code{STAGE1_TFLAGS} to this end.
 
 If you used the flag @option{--enable-languages=@dots{}} to restrict
 the compilers to be built, only those you've actually enabled will be
@@ -2006,6 +2006,26 @@ the one you are building on: for example, you could build a
 @code{powerpc64-unknown-linux-gnu} host.  In this case, pass
 @option{--enable-bootstrap} to the configure script.
 
+@code{BUILD_CONFIG} can be used to bring in additional customization to
+the build.  It can be set to a whitespace-separated list of names.  For
+each such @code{NAME}, top-level @file{config/@code{NAME}.mk} will be
+included by the top-level @file{Makefile}, bringing in any settings it
+contains.  Some examples are:
+
+@table @asis
+@item @samp{bootstrap-O1}
+Removes any @option{-O}-started option from @code{BOOT_CFLAGS}, and adds
+@option{-O1} to it.  @samp{BUILD_CONFIG=bootstrap-O1} is equivalent to
+@samp{BOOT_CFLAGS='-g -O1'}.
+
+@item @samp{bootstrap-O3}
+Analogous to @code{bootstrap-O1}.
+
+@item @samp{bootstrap-debug}
+Builds stage2 without debug information, and uses
+@file{contrib/compare-debug} to compare object files.
+
+@end table
 
 @section Building a cross compiler
 

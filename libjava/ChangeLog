@@ -1,3 +1,9 @@
+2009-05-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.ac: Insert libgcjdir in the GCJ passed in the
+	environment, rather than overriding completely.
+	* configure: Rebuilt.
+
 2009-04-28  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* testsuite/libjava.jvmti/jvmti-interp.exp

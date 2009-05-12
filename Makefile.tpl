@@ -6,7 +6,7 @@ in
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
 #   Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
@@ -178,6 +178,8 @@ HOST_EXPORTS = \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
+	GCJ="$(GCJ)"; export GCJ; \
+	GFORTRAN="$(GFORTRAN)"; export GFORTRAN; \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
 	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
@@ -213,11 +215,9 @@ HOST_EXPORTS = \
 POSTSTAGE1_HOST_EXPORTS = \
 	$(HOST_EXPORTS) \
 	CC="$(STAGE_CC_WRAPPER) $$r/$(HOST_SUBDIR)/prev-gcc/xgcc$(exeext) \
-	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
-	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) \
-	  $$r/$(HOST_SUBDIR)/prev-gcc/xgcc$(exeext) \
-	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ \
-	  -B$(build_tooldir)/bin/"; export CC_FOR_BUILD; \
+	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/ \
+	  $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export CC; \
+	CC_FOR_BUILD="$$CC"; export CC_FOR_BUILD; \
 	GNATBIND="$$r/$(HOST_SUBDIR)/prev-gcc/gnatbind"; export GNATBIND \
 	LDFLAGS="$(BOOT_LDFLAGS)"; export LDFLAGS;
 
@@ -232,13 +232,13 @@ BASE_TARGET_EXPORTS = \
 	$(BASE_EXPORTS) \
 	AR="$(AR_FOR_TARGET)"; export AR; \
 	AS="$(COMPILER_AS_FOR_TARGET)"; export AS; \
-	CC="$(CC_FOR_TARGET)"; export CC; \
-	CFLAGS="$(CFLAGS_FOR_TARGET) $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CC="$(CC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export CC; \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
 	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
 	CPPFLAGS="$(CPPFLAGS_FOR_TARGET)"; export CPPFLAGS; \
-	CXXFLAGS="$(CXXFLAGS_FOR_TARGET) $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)"; export CXXFLAGS; \
-	GCJ="$(GCJ_FOR_TARGET)"; export GCJ; \
-	GFORTRAN="$(GFORTRAN_FOR_TARGET)"; export GFORTRAN; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	GCJ="$(GCJ_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GCJ; \
+	GFORTRAN="$(GFORTRAN_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GFORTRAN; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	LD="$(COMPILER_LD_FOR_TARGET)"; export LD; \
 	LDFLAGS="$(LDFLAGS_FOR_TARGET)"; export LDFLAGS; \
@@ -254,11 +254,11 @@ BASE_TARGET_EXPORTS = \
 RAW_CXX_TARGET_EXPORTS = \
 	$(BASE_TARGET_EXPORTS) \
 	CXX_FOR_TARGET="$(RAW_CXX_FOR_TARGET)"; export CXX_FOR_TARGET; \
-	CXX="$(RAW_CXX_FOR_TARGET)"; export CXX;
+	CXX="$(RAW_CXX_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export CXX;
 
 NORMAL_TARGET_EXPORTS = \
 	$(BASE_TARGET_EXPORTS) \
-	CXX="$(CXX_FOR_TARGET)"; export CXX;
+	CXX="$(CXX_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export CXX;
 
 # Where to find GMP
 HOST_GMPLIBS = @gmplibs@
@@ -358,48 +358,65 @@ LIBCFLAGS = $(CFLAGS)
 CXXFLAGS = @CXXFLAGS@
 LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
 
+TFLAGS =
+
+# Defaults for all stages; some are overridden below.
+
+STAGE_CFLAGS = $(BOOT_CFLAGS)
+STAGE_TFLAGS = $(TFLAGS)
+STAGE_CONFIGURE_FLAGS=@stage2_werror_flag@
+
+[+ FOR bootstrap-stage +]
+# Defaults for stage [+id+]; some are overridden below.
+STAGE[+id+]_CFLAGS = $(STAGE_CFLAGS)
+STAGE[+id+]_TFLAGS = $(STAGE_TFLAGS)
+STAGE[+id+]_CONFIGURE_FLAGS = $(STAGE_CONFIGURE_FLAGS)
+[+ ENDFOR bootstrap-stage +]
+
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the
 # only thing useful for building stage2. STAGE1_CFLAGS (via CFLAGS),
 # MAKEINFO and MAKEINFOFLAGS are explicitly passed here to make them
 # overrideable (for a bootstrap build stage1 also builds gcc.info).
 
+STAGE1_CFLAGS = @stage1_cflags@
 STAGE1_CHECKING=@stage1_checking@
 STAGE1_LANGUAGES=@stage1_languages@
+# * We force-disable intermodule optimizations, even if
+#   --enable-intermodule was passed, since the installed compiler
+#   probably can't handle them.  Luckily, autoconf always respects
+#   the last argument when conflicting --enable arguments are passed.
+# * Likewise, we force-disable coverage flags, since the installed
+#   compiler probably has never heard of them.
+STAGE1_CONFIGURE_FLAGS = --disable-intermodule $(STAGE1_CHECKING) \
+	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)"
 
-STAGE1_CFLAGS=@stage1_cflags@
-STAGE2_CFLAGS=$(BOOT_CFLAGS)
-STAGE3_CFLAGS=$(BOOT_CFLAGS)
-STAGE4_CFLAGS=$(BOOT_CFLAGS)
+STAGEprofile_CFLAGS = $(STAGE2_CFLAGS) -fprofile-generate
+STAGEprofile_TFLAGS = $(STAGE2_TFLAGS)
 
-STAGE1_LIBCFLAGS=$(CFLAGS_FOR_TARGET)
-STAGE2_LIBCFLAGS=$(CFLAGS_FOR_TARGET)
-STAGE3_LIBCFLAGS=$(CFLAGS_FOR_TARGET)
-STAGE4_LIBCFLAGS=$(CFLAGS_FOR_TARGET)
+STAGEfeedback_CFLAGS = $(STAGE3_CFLAGS) -fprofile-use
+STAGEfeedback_TFLAGS = $(STAGE3_TFLAGS)
 
 do-compare = @do_compare@
 do-compare3 = $(do-compare)
-do-compare-debug = $(SHELL) $(srcdir)/contrib/compare-debug $$f1 $$f2
 
 # -----------------------------------------------
 # Programs producing files for the TARGET machine
 # -----------------------------------------------
 
-FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
-
 AR_FOR_TARGET=@AR_FOR_TARGET@
 AS_FOR_TARGET=@AS_FOR_TARGET@
-CC_FOR_TARGET=$(STAGE_CC_WRAPPER) @CC_FOR_TARGET@ $(FLAGS_FOR_TARGET)
+CC_FOR_TARGET=$(STAGE_CC_WRAPPER) @CC_FOR_TARGET@
 
 # If GCC_FOR_TARGET is not overriden on the command line, then this
 # variable is passed down to the gcc Makefile, where it is used to
 # build libgcc2.a.  We define it here so that it can itself be
 # overridden on the command line.
-GCC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCC_FOR_TARGET@ $(FLAGS_FOR_TARGET)
-CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @CXX_FOR_TARGET@ $(FLAGS_FOR_TARGET)
-RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @RAW_CXX_FOR_TARGET@ $(FLAGS_FOR_TARGET)
-GCJ_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCJ_FOR_TARGET@ $(FLAGS_FOR_TARGET)
-GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) @GFORTRAN_FOR_TARGET@ $(FLAGS_FOR_TARGET)
+GCC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCC_FOR_TARGET@
+CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @CXX_FOR_TARGET@
+RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @RAW_CXX_FOR_TARGET@
+GCJ_FOR_TARGET=$(STAGE_CC_WRAPPER) @GCJ_FOR_TARGET@
+GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) @GFORTRAN_FOR_TARGET@
 DLLTOOL_FOR_TARGET=@DLLTOOL_FOR_TARGET@
 LD_FOR_TARGET=@LD_FOR_TARGET@
 
@@ -417,12 +434,16 @@ COMPILER_NM_FOR_TARGET=@COMPILER_NM_FOR_TARGET@
 
 CFLAGS_FOR_TARGET = @CFLAGS_FOR_TARGET@
 CXXFLAGS_FOR_TARGET = @CXXFLAGS_FOR_TARGET@
-SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
-DEBUG_PREFIX_CFLAGS_FOR_TARGET = @DEBUG_PREFIX_CFLAGS_FOR_TARGET@
 
 LIBCFLAGS_FOR_TARGET = $(CFLAGS_FOR_TARGET)
 LIBCXXFLAGS_FOR_TARGET = $(CXXFLAGS_FOR_TARGET) -fno-implicit-templates
 LDFLAGS_FOR_TARGET = 
+
+FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
+SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
+DEBUG_PREFIX_CFLAGS_FOR_TARGET = @DEBUG_PREFIX_CFLAGS_FOR_TARGET@
+
+XGCC_FLAGS_FOR_TARGET = $(FLAGS_FOR_TARGET) $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)
 
 # ------------------------------------
 # Miscellaneous targets and flag lists
@@ -473,7 +494,10 @@ HOST_LIB_PATH_[+module+] = \
 # Flags to pass down to all sub-makes.
 BASE_FLAGS_TO_PASS =[+ FOR flags_to_pass +][+ IF optional +] \
 	"`echo '[+flag+]=$([+flag+])' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"[+ ELSE optional +] \
-	"[+flag+]=$([+flag+])"[+ ENDIF optional+][+ ENDFOR flags_to_pass +] \
+	"[+flag+]=$([+flag+])"[+ ENDIF optional+][+ ENDFOR flags_to_pass +][+ FOR bootstrap-stage +] \
+	"STAGE[+id+]_CFLAGS=$(STAGE[+id+]_CFLAGS)" \
+	"STAGE[+id+]_TFLAGS=$(STAGE[+id+]_TFLAGS)"[+ ENDFOR bootstrap-stage +] \
+	"TFLAGS=$(TFLAGS)" \
 	"CONFIG_SHELL=$(SHELL)" \
 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 
 
@@ -488,6 +512,8 @@ EXTRA_HOST_FLAGS = \
 	'CC=$(CC)' \
 	'CXX=$(CXX)' \
 	'DLLTOOL=$(DLLTOOL)' \
+	'GCJ=$(GCJ)' \
+	'GFORTRAN=$(GFORTRAN)' \
 	'LD=$(LD)' \
 	'LIPO=$(LIPO)' \
 	'NM=$(NM)' \
@@ -526,20 +552,24 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 EXTRA_TARGET_FLAGS = \
 	'AR=$$(AR_FOR_TARGET)' \
 	'AS=$(COMPILER_AS_FOR_TARGET)' \
-	'CC=$$(CC_FOR_TARGET)' \
-	'CFLAGS=$$(CFLAGS_FOR_TARGET) $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)' \
-	'CXX=$$(CXX_FOR_TARGET)' \
-	'CXXFLAGS=$$(CXXFLAGS_FOR_TARGET) $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)' \
+	'CC=$$(CC_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+	'CFLAGS=$$(CFLAGS_FOR_TARGET)' \
+	'CXX=$$(CXX_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+	'CXXFLAGS=$$(CXXFLAGS_FOR_TARGET)' \
 	'DLLTOOL=$$(DLLTOOL_FOR_TARGET)' \
+	'GCJ=$$(GCJ_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+	'GFORTRAN=$$(GFORTRAN_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'LD=$(COMPILER_LD_FOR_TARGET)' \
 	'LDFLAGS=$$(LDFLAGS_FOR_TARGET)' \
-	'LIBCFLAGS=$$(LIBCFLAGS_FOR_TARGET) $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)' \
-	'LIBCXXFLAGS=$$(LIBCXXFLAGS_FOR_TARGET) $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)' \
+	'LIBCFLAGS=$$(LIBCFLAGS_FOR_TARGET)' \
+	'LIBCXXFLAGS=$$(LIBCXXFLAGS_FOR_TARGET)' \
 	'NM=$(COMPILER_NM_FOR_TARGET)' \
 	'OBJDUMP=$$(OBJDUMP_FOR_TARGET)' \
 	'RANLIB=$$(RANLIB_FOR_TARGET)' \
 	'WINDRES=$$(WINDRES_FOR_TARGET)' \
-	'WINDMC=$$(WINDMC_FOR_TARGET)'
+	'WINDMC=$$(WINDMC_FOR_TARGET)' \
+	'XGCC_FLAGS_FOR_TARGET=$(XGCC_FLAGS_FOR_TARGET)' \
+	"TFLAGS=$$TFLAGS"
 
 TARGET_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)
 
@@ -558,6 +588,13 @@ EXTRA_GCC_FLAGS = \
 	"`echo 'LIBGCC2_INCLUDES=$(LIBGCC2_INCLUDES)' | sed -e s'/[^=][^=]*=$$/XFOO=/'`"
 
 GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(EXTRA_GCC_FLAGS)
+
+@if gcc
+BUILD_CONFIG =
+ifneq ($(BUILD_CONFIG),)
+include $(foreach CONFIG, $(BUILD_CONFIG), $(srcdir)/config/$(CONFIG).mk)
+endif
+@endif gcc
 
 .PHONY: configure-host
 configure-host: [+
@@ -582,11 +619,17 @@ all:
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	if [ -f stage_last ]; then \
+@if gcc-bootstrap
+	if [ -f stage_last ]; then : ; \
+	  TFLAGS="$(STAGE$(shell sed s,^stage,, stage_last)_TFLAGS)"; \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target; \
 	else \
+@endif gcc-bootstrap
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-host all-target; \
-	fi
+@if gcc-bootstrap
+	fi; \
+@endif gcc-bootstrap
+	:
 
 .PHONY: all-build
 [+ FOR build_modules +]
@@ -867,6 +910,7 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	@$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE[+id+]_TFLAGS)"; \
 	[+ IF check_multilibs
 	+]echo "Checking multilib configuration for [+module+]..."; \
 	$(CC_FOR_TARGET) --print-multi-lib > [+subdir+]/[+module+]/multilib.tmp 2> /dev/null ; \
@@ -882,11 +926,14 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	fi; \
 	[+ ENDIF check_multilibs +]test ! -f [+subdir+]/[+module+]/Makefile || exit 0; \
 	[+exports+][+ IF prev +] \
-	[+poststage1_exports+][+ ENDIF prev +] [+ IF prefix +] \
-	CFLAGS="[+stage_libcflags+] $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)"; export CFLAGS; \
-	CXXFLAGS="[+stage_libcflags+] $(SYSROOT_CFLAGS_FOR_TARGET) $(DEBUG_PREFIX_CFLAGS_FOR_TARGET)"; export CXXFLAGS; [+ ELSE +] \
-	CFLAGS="[+stage_cflags+]"; export CFLAGS; \
-	CXXFLAGS="[+stage_cflags+]"; export CXXFLAGS; [+ ENDIF +] \
+	[+poststage1_exports+][+ ENDIF prev +][+ IF prefix +] \
+	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
+	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;[+ ELSE prefix +] \
+	CFLAGS="$(STAGE[+id+]_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE[+id+]_CFLAGS)"; export CXXFLAGS;[+ IF prev +] \
+	LIBCFLAGS="$(STAGE[+id+]_CFLAGS)"[+ ELSE prev +] \
+	LIBCFLAGS="$(LIBCFLAGS)"[+ ENDIF prev +]; export LIBCFLAGS;[+ ENDIF prefix +] \
 	echo Configuring stage [+id+] in [+subdir+]/[+module+] ; \
 	$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+] ; \
 	cd [+subdir+]/[+module+] || exit 1; \
@@ -899,9 +946,10 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	libsrcdir="$$s/[+module+]"; \
 	$(SHELL) $${libsrcdir}/configure \
 	  [+args+] --build=${build_alias} --host=[+host_alias+] \
-	  --target=[+target_alias+] $${srcdiroption} \
-	  [+ IF prev +]--with-build-libsubdir=$(HOST_SUBDIR)[+ ENDIF prev +] \
-	  [+stage_configure_flags+] [+extra_configure_flags+]
+	  --target=[+target_alias+] $${srcdiroption} [+ IF prev +]\
+	  --with-build-libsubdir=$(HOST_SUBDIR) [+ ENDIF prev +]\
+	  $(STAGE[+id+]_CONFIGURE_FLAGS)[+ IF extra_configure_flags +] \
+	  [+extra_configure_flags+][+ ENDIF extra_configure_flags +]
 @endif [+prefix+][+module+]-bootstrap
 [+ ENDFOR bootstrap_stage +]
 [+ ENDIF bootstrap +]
@@ -941,16 +989,25 @@ all-stage[+id+]-[+prefix+][+module+]: configure-stage[+id+]-[+prefix+][+module+]
 	@[ $(current_stage) = stage[+id+] ] || $(MAKE) stage[+id+]-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE[+id+]_TFLAGS)"; \
 	[+exports+][+ IF prev +] \
 	[+poststage1_exports+][+ ENDIF prev +] \
 	cd [+subdir+]/[+module+] && \
-	$(MAKE) $(BASE_FLAGS_TO_PASS) \
-		CFLAGS="[+stage_cflags+]" CXXFLAGS="[+stage_cflags+]" \
-		LIBCFLAGS="[+stage_libcflags+]" \
-		CFLAGS_FOR_TARGET="[+stage_libcflags+]" \
-		CXXFLAGS_FOR_TARGET="[+stage_libcflags+]" [+args+] [+
+	$(MAKE) $(BASE_FLAGS_TO_PASS)[+ IF prefix +] \
+		CFLAGS="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"[+ ELSE prefix +] \
+		CFLAGS="$(STAGE[+id+]_CFLAGS)" \
+		CXXFLAGS="$(STAGE[+id+]_CFLAGS)"[+ IF prev +] \
+		LIBCFLAGS="$(STAGE[+id+]_CFLAGS)"[+ ELSE prev +] \
+		LIBCFLAGS="$(LIBCFLAGS)"[+ ENDIF prev +][+ ENDIF prefix +] \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		[+args+] [+
 		IF prev +][+poststage1_args+][+ ENDIF prev
 		+] [+extra_make_flags+] \
+		TFLAGS="$(STAGE[+id+]_TFLAGS)" \
 		$(TARGET-stage[+id+]-[+prefix+][+module+])
 
 maybe-clean-stage[+id+]-[+prefix+][+module+]: clean-stage[+id+]-[+prefix+][+module+]
@@ -1408,6 +1465,7 @@ do-clean: clean-stage[+id+]
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE[+id+]_TFLAGS)"; \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
 
 [+bootstrap-target+]-lean:
@@ -1418,6 +1476,7 @@ do-clean: clean-stage[+id+]
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE[+id+]_TFLAGS)"; \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
 [+ ENDIF bootstrap-target +]
 
@@ -1440,6 +1499,7 @@ distclean-stage[+id+]::
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE[+id+]_TFLAGS)"; \
 	$(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target
 [+ ENDIF cleanstrap-target +]
 @endif gcc-bootstrap
@@ -1477,8 +1537,8 @@ stage_current:
 .PHONY: restrap
 restrap::
 	@: $(MAKE); $(stage)
-	rm -rf stage1-$(TARGET_SUBDIR) [+ FOR bootstrap-stage +][+ IF prev
-	  +]stage[+id+]-* [+ ENDIF prev +][+ ENDFOR bootstrap-stage +]
+	rm -rf stage1-$(TARGET_SUBDIR)[+ FOR bootstrap-stage +][+ IF prev
+	  +] stage[+id+]-*[+ ENDIF prev +][+ ENDFOR bootstrap-stage +]
 restrap:: all
 @endif gcc-bootstrap
 

@@ -1,5 +1,5 @@
 ##                                                          -*- Autoconf -*-
-# Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006
+# Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2008
 # Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
@@ -62,4 +62,7 @@ with_target_subdir="$with_target_subdir"
 ac_configure_args="${multilib_arg} ${ac_configure_args}"
 multi_basedir="$multi_basedir"
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-CC="$CC"])])dnl
+CC="$CC"
+CXX="$CXX"
+GFORTRAN="$GFORTRAN"
+GCJ="$GCJ"])])dnl
