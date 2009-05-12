@@ -709,8 +709,9 @@ do {									\
       /* Never run scheduling before reload, since that can		\
 	 break global alloc, and generates slower code anyway due	\
 	 to the pressure on R0.  */					\
-      /* Enable sched1 for SH4; ready queue will be reordered by	\
-	 the target hooks when pressure is high. We can not do this for \
+      /* Enable sched1 for SH4 if the user explicitly requests.		\
+	 When sched1 is enabled, the ready queue will be reordered by	\
+	 the target hooks if pressure is high.  We can not do this for	\
 	 PIC, SH3 and lower as they give spill failures for R0.  */	\
       if (!TARGET_HARD_SH4 || flag_pic)					\
         flag_schedule_insns = 0;		 			\
@@ -725,6 +726,8 @@ do {									\
 	    warning (0, "ignoring -fschedule-insns because of exception handling bug");	\
 	  flag_schedule_insns = 0;		 			\
 	}								\
+      else if (flag_schedule_insns == 2)				\
+	flag_schedule_insns = 0;		 			\
     }									\
 									\
   if (align_loops == 0)							\
