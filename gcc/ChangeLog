@@ -1,5 +1,14 @@
 2009-05-12  Paolo Bonzini  <bonzini@gnu.org>
 
+	Revert:
+
+	2009-05-12  Paolo Bonzini  <bonzini@gnu.org>
+
+	* optabs.c (prepare_cmp_insn): Temporarily disable test that
+	causes spurious differences between trunk and cond-optab branch.
+
+2009-05-12  Paolo Bonzini  <bonzini@gnu.org>
+
         * dojump.c (compare_from_rtx): Delete.
         * expmed.c (emit_store_flag): Only try cstore_optab.  Canonicalize
         any MODE_CC mode to the cstorecc4 pattern.  Use prepare_operand, fail
