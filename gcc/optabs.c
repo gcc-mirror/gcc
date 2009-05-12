@@ -4015,6 +4015,17 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   gcc_assert (methods == OPTAB_DIRECT || methods == OPTAB_WIDEN
 	      || methods == OPTAB_LIB_WIDEN);
 
+  /* If we are optimizing, force expensive constants into a register.  */
+  if (CONSTANT_P (x) && optimize
+      && (rtx_cost (x, COMPARE, optimize_insn_for_speed_p ())
+          > COSTS_N_INSNS (1)))
+    x = force_reg (mode, x);
+
+  if (CONSTANT_P (y) && optimize
+      && (rtx_cost (y, COMPARE, optimize_insn_for_speed_p ())
+          > COSTS_N_INSNS (1)))
+    y = force_reg (mode, y);
+
 #ifdef HAVE_cc0
   /* Make sure if we have a canonical comparison.  The RTL
      documentation states that canonical comparisons are required only
