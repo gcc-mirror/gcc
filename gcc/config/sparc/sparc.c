@@ -280,10 +280,6 @@ static GTY(()) alias_set_type sparc_sr_alias_set;
 /* The alias set for the structure return value.  */
 static GTY(()) alias_set_type struct_value_alias_set;
 
-/* Save the operands last given to a compare for use when we
-   generate a scc or bcc insn.  */
-rtx sparc_compare_op0, sparc_compare_op1;
-
 /* Vector to say how input registers are mapped to output registers.
    HARD_FRAME_POINTER_REGNUM cannot be remapped by this function to
    eliminate it.  You must use -fomit-frame-pointer to get that.  */
@@ -2005,19 +2001,18 @@ select_cc_mode (enum rtx_code op, rtx x, rtx y ATTRIBUTE_UNUSED)
     }
 }
 
-/* Emit the compare insn and return the CC reg for a CODE comparison.  */
+/* Emit the compare insn and return the CC reg for a CODE comparison
+   with operands X and Y.  */
 
-rtx
-gen_compare_reg (enum rtx_code code)
+static rtx
+gen_compare_reg_1 (enum rtx_code code, rtx x, rtx y)
 {
   enum machine_mode mode;
-  rtx x, y, cc_reg;
+  rtx cc_reg;
 
-  if (GET_MODE_CLASS (GET_MODE (sparc_compare_op0)) == MODE_CC)
-    return sparc_compare_op0;
+  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_CC)
+    return x;
 
-  x = sparc_compare_op0;
-  y = sparc_compare_op1;
   mode = SELECT_CC_MODE (code, x, y);
 
   /* ??? We don't have movcc patterns so we cannot generate pseudo regs for the
@@ -2073,26 +2068,19 @@ gen_compare_reg (enum rtx_code code)
   return cc_reg;
 }
 
-/* Same as above but return the whole compare operator.  */
+
+/* Emit the compare insn and return the CC reg for the comparison in CMP.  */
 
 rtx
-gen_compare_operator (enum rtx_code code)
+gen_compare_reg (rtx cmp)
 {
-  rtx cc_reg;
-
-  if (GET_MODE (sparc_compare_op0) == TFmode && !TARGET_HARD_QUAD)
-    code
-      = sparc_emit_float_lib_cmp (sparc_compare_op0, sparc_compare_op1, code);
-
-  cc_reg = gen_compare_reg (code);
-  return gen_rtx_fmt_ee (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+  return gen_compare_reg_1 (GET_CODE (cmp), XEXP (cmp, 0), XEXP (cmp, 1));
 }
 
 /* This function is used for v9 only.
+   DEST is the target of the Scc insn.
    CODE is the code for an Scc's comparison.
-   OPERANDS[0] is the target of the Scc insn.
-   OPERANDS[1] is the value we compare against const0_rtx (which hasn't
-   been generated yet).
+   X and Y are the values we compare.
 
    This function is needed to turn
 
@@ -2106,53 +2094,50 @@ gen_compare_operator (enum rtx_code code)
 
    IE: The instruction recognizer needs to see the mode of the comparison to
    find the right instruction. We could use "gt:DI" right in the
-   define_expand, but leaving it out allows us to handle DI, SI, etc.
+   define_expand, but leaving it out allows us to handle DI, SI, etc.  */
 
-   We refer to the global sparc compare operands sparc_compare_op0 and
-   sparc_compare_op1.  */
-
-int
-gen_v9_scc (enum rtx_code compare_code, register rtx *operands)
+static int
+gen_v9_scc (rtx dest, enum rtx_code compare_code, rtx x, rtx y)
 {
   if (! TARGET_ARCH64
-      && (GET_MODE (sparc_compare_op0) == DImode
-	  || GET_MODE (operands[0]) == DImode))
+      && (GET_MODE (x) == DImode
+	  || GET_MODE (dest) == DImode))
     return 0;
 
   /* Try to use the movrCC insns.  */
   if (TARGET_ARCH64
-      && GET_MODE_CLASS (GET_MODE (sparc_compare_op0)) == MODE_INT
-      && sparc_compare_op1 == const0_rtx
+      && GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
+      && y == const0_rtx
       && v9_regcmp_p (compare_code))
     {
-      rtx op0 = sparc_compare_op0;
+      rtx op0 = x;
       rtx temp;
 
       /* Special case for op0 != 0.  This can be done with one instruction if
-	 operands[0] == sparc_compare_op0.  */
+	 dest == x.  */
 
       if (compare_code == NE
-	  && GET_MODE (operands[0]) == DImode
-	  && rtx_equal_p (op0, operands[0]))
+	  && GET_MODE (dest) == DImode
+	  && rtx_equal_p (op0, dest))
 	{
-	  emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+	  emit_insn (gen_rtx_SET (VOIDmode, dest,
 			      gen_rtx_IF_THEN_ELSE (DImode,
 				       gen_rtx_fmt_ee (compare_code, DImode,
 						       op0, const0_rtx),
 				       const1_rtx,
-				       operands[0])));
+				       dest)));
 	  return 1;
 	}
 
-      if (reg_overlap_mentioned_p (operands[0], op0))
+      if (reg_overlap_mentioned_p (dest, op0))
 	{
-	  /* Handle the case where operands[0] == sparc_compare_op0.
+	  /* Handle the case where dest == x.
 	     We "early clobber" the result.  */
-	  op0 = gen_reg_rtx (GET_MODE (sparc_compare_op0));
-	  emit_move_insn (op0, sparc_compare_op0);
+	  op0 = gen_reg_rtx (GET_MODE (x));
+	  emit_move_insn (op0, x);
 	}
 
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], const0_rtx));
+      emit_insn (gen_rtx_SET (VOIDmode, dest, const0_rtx));
       if (GET_MODE (op0) != DImode)
 	{
 	  temp = gen_reg_rtx (DImode);
@@ -2160,47 +2145,137 @@ gen_v9_scc (enum rtx_code compare_code, register rtx *operands)
 	}
       else
 	temp = op0;
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			  gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+      emit_insn (gen_rtx_SET (VOIDmode, dest,
+			  gen_rtx_IF_THEN_ELSE (GET_MODE (dest),
 				   gen_rtx_fmt_ee (compare_code, DImode,
 						   temp, const0_rtx),
 				   const1_rtx,
-				   operands[0])));
+				   dest)));
       return 1;
     }
   else
     {
-      operands[1] = gen_compare_reg (compare_code);
+      x = gen_compare_reg_1 (compare_code, x, y);
+      y = const0_rtx;
 
-      switch (GET_MODE (operands[1]))
-	{
-	  case CCmode :
-	  case CCXmode :
-	  case CCFPEmode :
-	  case CCFPmode :
-	    break;
-	  default :
-	    gcc_unreachable ();
-	}
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], const0_rtx));
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			  gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+      gcc_assert (GET_MODE (x) != CC_NOOVmode
+		  && GET_MODE (x) != CCX_NOOVmode);
+
+      emit_insn (gen_rtx_SET (VOIDmode, dest, const0_rtx));
+      emit_insn (gen_rtx_SET (VOIDmode, dest,
+			  gen_rtx_IF_THEN_ELSE (GET_MODE (dest),
 				   gen_rtx_fmt_ee (compare_code,
-						   GET_MODE (operands[1]),
-						   operands[1], const0_rtx),
-				    const1_rtx, operands[0])));
+						   GET_MODE (x), x, y),
+				    const1_rtx, dest)));
       return 1;
     }
+}
+
+
+/* Emit an scc insn.  For seq, sne, sgeu, and sltu, we can do this
+   without jumps using the addx/subx instructions.  */
+
+bool
+emit_scc_insn (rtx operands[])
+{
+  rtx tem;
+  rtx x;
+  rtx y;
+  enum rtx_code code;
+
+  /* The quad-word fp compare library routines all return nonzero to indicate
+     true, which is different from the equivalent libgcc routines, so we must
+     handle them specially here.  */
+  if (GET_MODE (operands[2]) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      operands[1] = sparc_emit_float_lib_cmp (operands[2], operands[3],
+					      GET_CODE (operands[1]));
+      operands[2] = XEXP (operands[1], 0);
+      operands[3] = XEXP (operands[1], 1);
+    }
+
+  code = GET_CODE (operands[1]);
+  x = operands[2];
+  y = operands[3];
+
+  /* For seq/sne on v9 we use the same code as v8 (the addx/subx method has
+     more applications).  The exception to this is "reg != 0" which can
+     be done in one instruction on v9 (so we do it).  */
+  if (code == EQ)
+    {
+      if (GET_MODE (x) == SImode)
+        {
+          rtx pat = gen_seqsi_special (operands[0], x, y);
+          emit_insn (pat);
+          return true;
+        }
+      else if (GET_MODE (x) == DImode)
+        {
+          rtx pat = gen_seqdi_special (operands[0], x, y);
+          emit_insn (pat);
+          return true;
+        }
+    }
+
+  if (code == NE)
+    {
+      if (GET_MODE (x) == SImode)
+        {
+          rtx pat = gen_snesi_special (operands[0], x, y);
+          emit_insn (pat);
+          return true;
+        }
+      else if (GET_MODE (x) == DImode)
+        {
+          rtx pat = gen_snedi_special (operands[0], x, y);
+          emit_insn (pat);
+          return true;
+        }
+    }
+
+  /* For the rest, on v9 we can use conditional moves.  */
+
+  if (TARGET_V9)
+    {
+      if (gen_v9_scc (operands[0], code, x, y))
+        return true;
+    }
+
+  /* We can do LTU and GEU using the addx/subx instructions too.  And
+     for GTU/LEU, if both operands are registers swap them and fall
+     back to the easy case.  */
+  if (code == GTU || code == LEU)
+    {
+      if ((GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
+          && (GET_CODE (y) == REG || GET_CODE (y) == SUBREG))
+        {
+          tem = x;
+          x = y;
+          y = tem;
+          code = swap_condition (code);
+        }
+    }
+
+  if (code == LTU || code == GEU)
+    {
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+			      gen_rtx_fmt_ee (code, SImode, 
+					      gen_compare_reg_1 (code, x, y),
+					      const0_rtx)));
+      return true;
+    }
+
+  /* Nope, do branches.  */
+  return false;
 }
 
 /* Emit a conditional jump insn for the v9 architecture using comparison code
    CODE and jump target LABEL.
    This function exists to take advantage of the v9 brxx insns.  */
 
-void
+static void
 emit_v9_brxx_insn (enum rtx_code code, rtx op0, rtx label)
 {
-  gcc_assert (GET_MODE_CLASS (GET_MODE (sparc_compare_op0)) != MODE_CC);
   emit_jump_insn (gen_rtx_SET (VOIDmode,
 			   pc_rtx,
 			   gen_rtx_IF_THEN_ELSE (VOIDmode,
@@ -2209,6 +2284,37 @@ emit_v9_brxx_insn (enum rtx_code code, rtx op0, rtx label)
 				    gen_rtx_LABEL_REF (VOIDmode, label),
 				    pc_rtx)));
 }
+
+void
+emit_conditional_branch_insn (rtx operands[])
+{
+  /* The quad-word fp compare library routines all return nonzero to indicate
+     true, which is different from the equivalent libgcc routines, so we must
+     handle them specially here.  */
+  if (GET_MODE (operands[1]) == TFmode && ! TARGET_HARD_QUAD)
+    {
+      operands[0] = sparc_emit_float_lib_cmp (operands[1], operands[2],
+					      GET_CODE (operands[0]));
+      operands[1] = XEXP (operands[0], 0);
+      operands[2] = XEXP (operands[0], 1);
+    }
+
+  if (TARGET_ARCH64 && operands[2] == const0_rtx
+      && GET_CODE (operands[1]) == REG
+      && GET_MODE (operands[1]) == DImode)
+    {
+      emit_v9_brxx_insn (GET_CODE (operands[0]), operands[1], operands[3]);
+      return;
+    }
+
+  operands[1] = gen_compare_reg (operands[0]);
+  operands[2] = const0_rtx;
+  operands[0] = gen_rtx_fmt_ee (GET_CODE (operands[0]), VOIDmode,
+				operands[1], operands[2]);
+  emit_jump_insn (gen_cbranchcc4 (operands[0], operands[1], operands[2],
+				  operands[3]));
+}
+
 
 /* Generate a DFmode part of a hard TFmode register.
    REG is the TFmode hard register, LOW is 1 for the
@@ -6116,7 +6222,7 @@ output_cbranch (rtx op, rtx dest, int label, int reversed, int annul,
    values as arguments instead of the TFmode registers themselves,
    that's why we cannot call emit_float_lib_cmp.  */
 
-enum rtx_code
+rtx
 sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 {
   const char *qpfunc;
@@ -6207,32 +6313,24 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
   switch (comparison)
     {
     default:
-      new_comparison = NE;
-      emit_cmp_insn (result, const0_rtx, new_comparison, NULL_RTX, mode, 0);
-      break;
+      return gen_rtx_NE (VOIDmode, result, const0_rtx);
     case ORDERED:
     case UNORDERED:
       new_comparison = (comparison == UNORDERED ? EQ : NE);
-      emit_cmp_insn (result, GEN_INT(3), new_comparison, NULL_RTX, mode, 0);
-      break;
+      return gen_rtx_fmt_ee (new_comparison, VOIDmode, result, GEN_INT(3));
     case UNGT:
     case UNGE:
       new_comparison = (comparison == UNGT ? GT : NE);
-      emit_cmp_insn (result, const1_rtx, new_comparison, NULL_RTX, mode, 0);
-      break;
+      return gen_rtx_fmt_ee (new_comparison, VOIDmode, result, const1_rtx);
     case UNLE:
-      new_comparison = NE;
-      emit_cmp_insn (result, const2_rtx, new_comparison, NULL_RTX, mode, 0);
-      break;
+      return gen_rtx_NE (VOIDmode, result, const2_rtx);
     case UNLT:
       tem = gen_reg_rtx (mode);
       if (TARGET_ARCH32)
 	emit_insn (gen_andsi3 (tem, result, const1_rtx));
       else
 	emit_insn (gen_anddi3 (tem, result, const1_rtx));
-      new_comparison = NE;
-      emit_cmp_insn (tem, const0_rtx, new_comparison, NULL_RTX, mode, 0);
-      break;
+      return gen_rtx_NE (VOIDmode, tem, const0_rtx);
     case UNEQ:
     case LTGT:
       tem = gen_reg_rtx (mode);
@@ -6246,11 +6344,10 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
       else
 	emit_insn (gen_anddi3 (tem2, tem, const2_rtx));
       new_comparison = (comparison == UNEQ ? EQ : NE);
-      emit_cmp_insn (tem2, const0_rtx, new_comparison, NULL_RTX, mode, 0);
-      break;
+      return gen_rtx_fmt_ee (new_comparison, VOIDmode, tem2, const0_rtx);
     }
 
-  return new_comparison;
+  gcc_unreachable ();
 }
 
 /* Generate an unsigned DImode to FP conversion.  This is the same code
@@ -9021,15 +9118,12 @@ sparc_expand_compare_and_swap_12 (rtx result, rtx mem, rtx oldval, rtx newval)
 			  gen_rtx_AND (SImode, gen_rtx_NOT (SImode, mask),
 				       res)));
 
-  sparc_compare_op0 = resv;
-  sparc_compare_op1 = val;
-  cc = gen_compare_reg (NE);
-
+  cc = gen_compare_reg_1 (NE, resv, val);
   emit_insn (gen_rtx_SET (VOIDmode, val, resv));
 
-  sparc_compare_op0 = cc;
-  sparc_compare_op1 = const0_rtx;
-  emit_jump_insn (gen_bne (loop_label));
+  /* Use cbranchcc4 to separate the compare and branch!  */
+  emit_jump_insn (gen_cbranchcc4 (gen_rtx_NE (VOIDmode, cc, const0_rtx),
+				  cc, const0_rtx, loop_label));
 
   emit_label (end_label);
 

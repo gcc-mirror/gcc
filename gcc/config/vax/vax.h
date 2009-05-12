@@ -802,6 +802,7 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 VAX operand formatting codes:
 
  letter	   print
+   c	direct branch condition
    C	reverse branch condition
    D	64-bit immediate operand
    B	the low 8 bits of the complement of a constant operand

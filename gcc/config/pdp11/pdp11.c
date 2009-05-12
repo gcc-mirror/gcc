@@ -1170,11 +1170,27 @@ pdp11_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int *total,
 }
 
 const char *
-output_jump (const char *pos, const char *neg, int length)
+output_jump (enum rtx_code code, int inv, int length)
 {
     static int x = 0;
     
     static char buf[1000];
+    const char *pos, *neg;
+
+    switch (code)
+      {
+      case EQ: pos = "beq", neg = "bne"; break;
+      case NE: pos = "bne", neg = "beq"; break;
+      case GT: pos = "bgt", neg = "ble"; break;
+      case GTU: pos = "bhi", neg = "blos"; break;
+      case LT: pos = "blt", neg = "bge"; break;
+      case LTU: pos = "blo", neg = "bhis"; break;
+      case GE: pos = "bge", neg = "blt"; break;
+      case GEU: pos = "bhis", neg = "blo"; break;
+      case LE: pos = "ble", neg = "bgt"; break;
+      case LEU: pos = "blos", neg = "bhi"; break;
+      default: gcc_unreachable ();
+      }
 
 #if 0
 /* currently we don't need this, because the tstdf and cmpdf 
@@ -1190,14 +1206,13 @@ output_jump (const char *pos, const char *neg, int length)
     {
       case 1:
 	
-	strcpy(buf, pos);
-	strcat(buf, " %l0");
+	sprintf(buf, "%s %%l1", inv ? neg : pos);
 	
 	return buf;
 	
       case 3:
 	
-	sprintf(buf, "%s JMP_%d\n\tjmp %%l0\nJMP_%d:", neg, x, x);
+	sprintf(buf, "%s JMP_%d\n\tjmp %%l1\nJMP_%d:", inv ? pos : neg, x, x);
 	
 	x++;
 	

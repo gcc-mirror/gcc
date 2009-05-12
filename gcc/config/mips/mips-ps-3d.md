@@ -58,7 +58,7 @@
 	   MOVZ.PS.  MOVT.PS and MOVF.PS depend on two CC values and move 
 	   each item independently.  */
 
-  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
+  if (GET_MODE_CLASS (GET_MODE (XEXP (operands[1], 0))) != MODE_INT)
     FAIL;
 
   mips_expand_conditional_move (operands);

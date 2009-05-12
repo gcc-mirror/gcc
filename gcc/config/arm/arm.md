@@ -6386,8 +6386,16 @@
 	        (match_operand:SI 2 "nonmemory_operand" "")])
 	      (label_ref (match_operand 3 "" ""))
 	      (pc)))]
-  "TARGET_THUMB1"
+  "TARGET_THUMB1 || TARGET_32BIT"
   "
+  if (!TARGET_THUMB1)
+    {
+      if (!arm_add_operand (operands[2], SImode))
+	operands[2] = force_reg (SImode, operands[2]);
+      emit_jump_insn (gen_cbranch_cc (operands[0], operands[1], operands[2],
+				      operands[3]));
+      DONE;
+    }
   if (thumb1_cmpneg_operand (operands[2], SImode))
     {
       emit_jump_insn (gen_cbranchsi4_scratch (NULL, operands[1], operands[2],
@@ -6397,6 +6405,43 @@
   if (!thumb1_cmp_operand (operands[2], SImode))
     operands[2] = force_reg (SImode, operands[2]);
   ")
+
+(define_expand "cbranchsf4"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "arm_comparison_operator"
+	       [(match_operand:SF 1 "s_register_operand" "")
+	        (match_operand:SF 2 "arm_float_compare_operand" "")])
+	      (label_ref (match_operand 3 "" ""))
+	      (pc)))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT"
+  "emit_jump_insn (gen_cbranch_cc (operands[0], operands[1], operands[2],
+				   operands[3])); DONE;"
+)
+
+(define_expand "cbranchdf4"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "arm_comparison_operator"
+	       [(match_operand:DF 1 "s_register_operand" "")
+	        (match_operand:DF 2 "arm_float_compare_operand" "")])
+	      (label_ref (match_operand 3 "" ""))
+	      (pc)))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT"
+  "emit_jump_insn (gen_cbranch_cc (operands[0], operands[1], operands[2],
+				   operands[3])); DONE;"
+)
+
+;; this uses the Cirrus DI compare instruction
+(define_expand "cbranchdi4"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "arm_comparison_operator"
+	       [(match_operand:DI 1 "cirrus_fp_register" "")
+	        (match_operand:DI 2 "cirrus_fp_register" "")])
+	      (label_ref (match_operand 3 "" ""))
+	      (pc)))]
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK"
+  "emit_jump_insn (gen_cbranch_cc (operands[0], operands[1], operands[2],
+				   operands[3])); DONE;"
+)
 
 (define_insn "*cbranchsi4_insn"
   [(set (pc) (if_then_else
@@ -7451,39 +7496,6 @@
 
 ;; Comparison and test insns
 
-(define_expand "cmpsi"
-  [(match_operand:SI 0 "s_register_operand" "")
-   (match_operand:SI 1 "arm_add_operand" "")]
-  "TARGET_32BIT"
-  "{
-    arm_compare_op0 = operands[0];
-    arm_compare_op1 = operands[1];
-    DONE;
-  }"
-)
-
-(define_expand "cmpsf"
-  [(match_operand:SF 0 "s_register_operand" "")
-   (match_operand:SF 1 "arm_float_compare_operand" "")]
-  "TARGET_32BIT && TARGET_HARD_FLOAT"
-  "
-  arm_compare_op0 = operands[0];
-  arm_compare_op1 = operands[1];
-  DONE;
-  "
-)
-
-(define_expand "cmpdf"
-  [(match_operand:DF 0 "s_register_operand" "")
-   (match_operand:DF 1 "arm_float_compare_operand" "")]
-  "TARGET_32BIT && TARGET_HARD_FLOAT"
-  "
-  arm_compare_op0 = operands[0];
-  arm_compare_op1 = operands[1];
-  DONE;
-  "
-)
-
 (define_insn "*arm_cmpsi_insn"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC (match_operand:SI 0 "s_register_operand" "r,r")
@@ -7562,17 +7574,6 @@
    (set_attr "cirrus" "compare")]
 )
 
-;; Cirrus DI compare instruction
-(define_expand "cmpdi"
-  [(match_operand:DI 0 "cirrus_fp_register" "")
-   (match_operand:DI 1 "cirrus_fp_register" "")]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK"
-  "{
-     arm_compare_op0 = operands[0];
-     arm_compare_op1 = operands[1];
-     DONE;
-   }")
-
 (define_insn "*cirrus_cmpdi"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC (match_operand:DI 0 "cirrus_fp_register" "v")
@@ -7600,170 +7601,16 @@
 
 ;; Conditional branch insns
 
-(define_expand "beq"
+(define_expand "cbranch_cc"
   [(set (pc)
-	(if_then_else (eq (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+	(if_then_else (match_operator 0 "" [(match_operand 1 "" "")
+					    (match_operand 2 "" "")])
+		      (label_ref (match_operand 3 "" ""))
 		      (pc)))]
   "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (EQ, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bne"
-  [(set (pc)
-	(if_then_else (ne (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (NE, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bgt"
-  [(set (pc)
-	(if_then_else (gt (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (GT, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "ble"
-  [(set (pc)
-	(if_then_else (le (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (LE, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bge"
-  [(set (pc)
-	(if_then_else (ge (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (GE, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "blt"
-  [(set (pc)
-	(if_then_else (lt (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (LT, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bgtu"
-  [(set (pc)
-	(if_then_else (gtu (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (GTU, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bleu"
-  [(set (pc)
-	(if_then_else (leu (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (LEU, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bgeu"
-  [(set (pc)
-	(if_then_else (geu (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (GEU, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bltu"
-  [(set (pc)
-	(if_then_else (ltu (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (LTU, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bunordered"
-  [(set (pc)
-	(if_then_else (unordered (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNORDERED, arm_compare_op0,
-				      arm_compare_op1);"
-)
-
-(define_expand "bordered"
-  [(set (pc)
-	(if_then_else (ordered (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (ORDERED, arm_compare_op0,
-				      arm_compare_op1);"
-)
-
-(define_expand "bungt"
-  [(set (pc)
-	(if_then_else (ungt (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNGT, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bunlt"
-  [(set (pc)
-	(if_then_else (unlt (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNLT, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bunge"
-  [(set (pc)
-	(if_then_else (unge (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNGE, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bunle"
-  [(set (pc)
-	(if_then_else (unle (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNLE, arm_compare_op0, arm_compare_op1);"
-)
-
-;; The following two patterns need two branch instructions, since there is
-;; no single instruction that will handle all cases.
-(define_expand "buneq"
-  [(set (pc)
-	(if_then_else (uneq (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNEQ, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "bltgt"
-  [(set (pc)
-	(if_then_else (ltgt (match_dup 1) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (LTGT, arm_compare_op0, arm_compare_op1);"
+  "operands[1] = arm_gen_compare_reg (GET_CODE (operands[0]),
+				      operands[1], operands[2]);
+   operands[2] = const0_rtx;"
 )
 
 ;;
@@ -7876,140 +7723,15 @@
 
 ; scc insns
 
-(define_expand "seq"
+(define_expand "cstore_cc"
   [(set (match_operand:SI 0 "s_register_operand" "")
-	(eq:SI (match_dup 1) (const_int 0)))]
+	(match_operator:SI 1 "" [(match_operand 2 "" "")
+				 (match_operand 3 "" "")]))]
   "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (EQ, arm_compare_op0, arm_compare_op1);"
+  "operands[2] = arm_gen_compare_reg (GET_CODE (operands[1]),
+				      operands[2], operands[3]);
+   operands[3] = const0_rtx;"
 )
-
-(define_expand "sne"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(ne:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (NE, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "sgt"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(gt:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (GT, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "sle"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(le:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (LE, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "sge"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(ge:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (GE, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "slt"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(lt:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (LT, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "sgtu"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(gtu:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (GTU, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "sleu"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(leu:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (LEU, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "sgeu"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(geu:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (GEU, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "sltu"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(ltu:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT"
-  "operands[1] = arm_gen_compare_reg (LTU, arm_compare_op0, arm_compare_op1);"
-)
-
-(define_expand "sunordered"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(unordered:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNORDERED, arm_compare_op0,
-				      arm_compare_op1);"
-)
-
-(define_expand "sordered"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(ordered:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (ORDERED, arm_compare_op0,
-				      arm_compare_op1);"
-)
-
-(define_expand "sungt"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(ungt:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNGT, arm_compare_op0,
-				      arm_compare_op1);"
-)
-
-(define_expand "sunge"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(unge:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNGE, arm_compare_op0,
-				      arm_compare_op1);"
-)
-
-(define_expand "sunlt"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(unlt:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNLT, arm_compare_op0,
-				      arm_compare_op1);"
-)
-
-(define_expand "sunle"
-  [(set (match_operand:SI 0 "s_register_operand" "")
-	(unle:SI (match_dup 1) (const_int 0)))]
-  "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-  "operands[1] = arm_gen_compare_reg (UNLE, arm_compare_op0,
-				      arm_compare_op1);"
-)
-
-;;; DO NOT add patterns for SUNEQ or SLTGT, these can't be represented with
-;;; simple ARM instructions. 
-;
-; (define_expand "suneq"
-;   [(set (match_operand:SI 0 "s_register_operand" "")
-; 	(uneq:SI (match_dup 1) (const_int 0)))]
-;   "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-;   "gcc_unreachable ();"
-; )
-;
-; (define_expand "sltgt"
-;   [(set (match_operand:SI 0 "s_register_operand" "")
-; 	(ltgt:SI (match_dup 1) (const_int 0)))]
-;   "TARGET_32BIT && TARGET_HARD_FLOAT && (TARGET_FPA || TARGET_VFP)"
-;   "gcc_unreachable ();"
-; )
 
 (define_insn "*mov_scc"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -8046,9 +7768,18 @@
 	(match_operator:SI 1 "arm_comparison_operator"
 	 [(match_operand:SI 2 "s_register_operand" "")
 	  (match_operand:SI 3 "reg_or_int_operand" "")]))]
-  "TARGET_THUMB1"
+  "TARGET_32BIT || TARGET_THUMB1"
   "{
   rtx op3, scratch, scratch2;
+
+  if (!TARGET_THUMB1)
+    {
+      if (!arm_add_operand (operands[3], SImode))
+	operands[3] = force_reg (SImode, operands[3]);
+      emit_insn (gen_cstore_cc (operands[0], operands[1],
+				operands[2], operands[3]));
+      DONE;
+    }
 
   if (operands[3] == const0_rtx)
     {
@@ -8170,6 +7901,38 @@
   DONE;
 }")
 
+(define_expand "cstoresf4"
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(match_operator:SI 1 "arm_comparison_operator"
+	 [(match_operand:SF 2 "s_register_operand" "")
+	  (match_operand:SF 3 "arm_float_compare_operand" "")]))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT"
+  "emit_insn (gen_cstore_cc (operands[0], operands[1],
+			     operands[2], operands[3])); DONE;"
+)
+
+(define_expand "cstoredf4"
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(match_operator:SI 1 "arm_comparison_operator"
+	 [(match_operand:DF 2 "s_register_operand" "")
+	  (match_operand:DF 3 "arm_float_compare_operand" "")]))]
+  "TARGET_32BIT && TARGET_HARD_FLOAT"
+  "emit_insn (gen_cstore_cc (operands[0], operands[1],
+			     operands[2], operands[3])); DONE;"
+)
+
+;; this uses the Cirrus DI compare instruction
+(define_expand "cstoredi4"
+  [(set (match_operand:SI 0 "s_register_operand" "")
+	(match_operator:SI 1 "arm_comparison_operator"
+	 [(match_operand:DI 2 "cirrus_fp_register" "")
+	  (match_operand:DI 3 "cirrus_fp_register" "")]))]
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK"
+  "emit_insn (gen_cstore_cc (operands[0], operands[1],
+			     operands[2], operands[3])); DONE;"
+)
+
+
 (define_expand "cstoresi_eq0_thumb1"
   [(parallel
     [(set (match_operand:SI 0 "s_register_operand" "")
@@ -8250,7 +8013,8 @@
     if (code == UNEQ || code == LTGT)
       FAIL;
 
-    ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
+    ccreg = arm_gen_compare_reg (code, XEXP (operands[1], 0),
+				 XEXP (operands[1], 1));
     operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
   }"
 )
@@ -8275,7 +8039,8 @@
         || (!arm_float_add_operand (operands[3], SFmode)))
       operands[3] = force_reg (SFmode, operands[3]);
 
-    ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
+    ccreg = arm_gen_compare_reg (code, XEXP (operands[1], 0),
+				 XEXP (operands[1], 1));
     operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
   }"
 )
@@ -8294,7 +8059,8 @@
     if (code == UNEQ || code == LTGT)
       FAIL;
 
-    ccreg = arm_gen_compare_reg (code, arm_compare_op0, arm_compare_op1);
+    ccreg = arm_gen_compare_reg (code, XEXP (operands[1], 0),
+				 XEXP (operands[1], 1));
     operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
   }"
 )

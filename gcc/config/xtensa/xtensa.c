@@ -71,13 +71,6 @@ enum internal_test
   ITEST_MAX
 };
 
-/* Cached operands, and operator to compare for use in set/branch on
-   condition codes.  */
-rtx branch_cmp[2];
-
-/* what type of branch to use */
-enum cmp_type branch_type;
-
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
 char xtensa_hard_regno_mode_ok[(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
@@ -128,7 +121,7 @@ const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER] =
 static enum internal_test map_test_to_internal_test (enum rtx_code);
 static rtx gen_int_relational (enum rtx_code, rtx, rtx, int *);
 static rtx gen_float_relational (enum rtx_code, rtx, rtx);
-static rtx gen_conditional_move (rtx);
+static rtx gen_conditional_move (enum rtx_code, enum machine_mode, rtx, rtx);
 static rtx fixup_subreg_mem (rtx);
 static struct machine_function * xtensa_init_machine_status (void);
 static rtx xtensa_legitimize_tls_address (rtx);
@@ -712,27 +705,27 @@ gen_float_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
 
 
 void
-xtensa_expand_conditional_branch (rtx *operands, enum rtx_code test_code)
+xtensa_expand_conditional_branch (rtx *operands, enum machine_mode mode)
 {
-  enum cmp_type type = branch_type;
-  rtx cmp0 = branch_cmp[0];
-  rtx cmp1 = branch_cmp[1];
+  enum rtx_code test_code = GET_CODE (operands[0]);
+  rtx cmp0 = operands[1];
+  rtx cmp1 = operands[2];
   rtx cmp;
   int invert;
   rtx label1, label2;
 
-  switch (type)
+  switch (mode)
     {
-    case CMP_DF:
+    case DFmode:
     default:
       fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
 
-    case CMP_SI:
+    case SImode:
       invert = FALSE;
       cmp = gen_int_relational (test_code, cmp0, cmp1, &invert);
       break;
 
-    case CMP_SF:
+    case SFmode:
       if (!TARGET_HARD_FLOAT)
 	fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode,
 						cmp0, cmp1));
@@ -743,7 +736,7 @@ xtensa_expand_conditional_branch (rtx *operands, enum rtx_code test_code)
 
   /* Generate the branch.  */
 
-  label1 = gen_rtx_LABEL_REF (VOIDmode, operands[0]);
+  label1 = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
   label2 = pc_rtx;
 
   if (invert)
@@ -760,14 +753,13 @@ xtensa_expand_conditional_branch (rtx *operands, enum rtx_code test_code)
 
 
 static rtx
-gen_conditional_move (rtx cmp)
+gen_conditional_move (enum rtx_code code, enum machine_mode mode,
+		      rtx op0, rtx op1)
 {
-  enum rtx_code code = GET_CODE (cmp);
-  rtx op0 = branch_cmp[0];
-  rtx op1 = branch_cmp[1];
-
-  if (branch_type == CMP_SI)
+  if (mode == SImode)
     {
+      rtx cmp;
+
       /* Jump optimization calls get_condition() which canonicalizes
 	 comparisons like (GE x <const>) to (GT x <const-1>).
 	 Transform those comparisons back to GE, since that is the
@@ -825,7 +817,7 @@ gen_conditional_move (rtx cmp)
       return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
     }
 
-  if (TARGET_HARD_FLOAT && (branch_type == CMP_SF))
+  if (TARGET_HARD_FLOAT && mode == SFmode)
     return gen_float_relational (code, op0, op1);
 
   return 0;
@@ -835,36 +827,39 @@ gen_conditional_move (rtx cmp)
 int
 xtensa_expand_conditional_move (rtx *operands, int isflt)
 {
-  rtx cmp;
+  rtx dest = operands[0];
+  rtx cmp = operands[1];
+  enum machine_mode cmp_mode = GET_MODE (XEXP (cmp, 0));
   rtx (*gen_fn) (rtx, rtx, rtx, rtx, rtx);
 
-  if (!(cmp = gen_conditional_move (operands[1])))
+  if (!(cmp = gen_conditional_move (GET_CODE (cmp), cmp_mode,
+				    XEXP (cmp, 0), XEXP (cmp, 1))))
     return 0;
 
   if (isflt)
-    gen_fn = (branch_type == CMP_SI
+    gen_fn = (cmp_mode == SImode
 	      ? gen_movsfcc_internal0
 	      : gen_movsfcc_internal1);
   else
-    gen_fn = (branch_type == CMP_SI
+    gen_fn = (cmp_mode == SImode
 	      ? gen_movsicc_internal0
 	      : gen_movsicc_internal1);
 
-  emit_insn (gen_fn (operands[0], XEXP (cmp, 0),
-		     operands[2], operands[3], cmp));
+  emit_insn (gen_fn (dest, XEXP (cmp, 0), operands[2], operands[3], cmp));
   return 1;
 }
 
 
 int
-xtensa_expand_scc (rtx *operands)
+xtensa_expand_scc (rtx operands[4], enum machine_mode cmp_mode)
 {
   rtx dest = operands[0];
-  rtx cmp = operands[1];
+  rtx cmp;
   rtx one_tmp, zero_tmp;
   rtx (*gen_fn) (rtx, rtx, rtx, rtx, rtx);
 
-  if (!(cmp = gen_conditional_move (cmp)))
+  if (!(cmp = gen_conditional_move (GET_CODE (operands[1]), cmp_mode,
+				    operands[2], operands[3])))
     return 0;
 
   one_tmp = gen_reg_rtx (SImode);
@@ -872,7 +867,7 @@ xtensa_expand_scc (rtx *operands)
   emit_insn (gen_movsi (one_tmp, const_true_rtx));
   emit_insn (gen_movsi (zero_tmp, const0_rtx));
 
-  gen_fn = (branch_type == CMP_SI
+  gen_fn = (cmp_mode == SImode
 	    ? gen_movsicc_internal0
 	    : gen_movsicc_internal1);
   emit_insn (gen_fn (dest, XEXP (cmp, 0), one_tmp, zero_tmp, cmp));

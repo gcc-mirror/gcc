@@ -543,6 +543,12 @@
   (and (match_code "reg")
        (match_operand 0 "register_operand")))
 
+;; Return 1 if OP is a valid Alpha comparison operator for "cbranch"
+;; instructions.
+(define_predicate "alpha_cbranch_operator"
+  (ior (match_operand 0 "ordered_comparison_operator")
+       (match_code "ordered,unordered")))
+
 ;; Return 1 if OP is a valid Alpha comparison operator for "cmp" style
 ;; instructions.
 (define_predicate "alpha_comparison_operator"

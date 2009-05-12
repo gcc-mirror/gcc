@@ -44,7 +44,8 @@ extern const char *output_logical_op (enum machine_mode, rtx *);
 extern unsigned int compute_logical_op_length (enum machine_mode,
 					       rtx *);
 extern int compute_logical_op_cc (enum machine_mode, rtx *);
-extern void h8300_expand_branch (enum rtx_code, rtx);
+extern void h8300_expand_branch (rtx[]);
+extern void h8300_expand_store (rtx[]);
 extern bool expand_a_shift (enum machine_mode, int, rtx[]);
 extern int h8300_shift_needs_scratch_p (int, enum machine_mode);
 extern int expand_a_rotate (rtx[]);

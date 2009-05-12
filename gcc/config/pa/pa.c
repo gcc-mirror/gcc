@@ -165,11 +165,6 @@ static GTY(()) section *som_readonly_data_section;
 static GTY(()) section *som_one_only_readonly_data_section;
 static GTY(()) section *som_one_only_data_section;
 
-/* Save the operands last given to a compare for use when we
-   generate a scc or bcc insn.  */
-rtx hppa_compare_op0, hppa_compare_op1;
-enum cmp_type hppa_branch_type;
-
 /* Which cpu we are scheduling for.  */
 enum processor_type pa_cpu = TARGET_SCHED_DEFAULT;
 
@@ -4383,6 +4378,19 @@ return_addr_rtx (int count, rtx frameaddr)
   rtx saved_rp;
   rtx ins;
 
+  /* Instruction stream at the normal return address for the export stub:
+
+	0x4bc23fd1 | stub+8:   ldw -18(sr0,sp),rp
+	0x004010a1 | stub+12:  ldsid (sr0,rp),r1
+	0x00011820 | stub+16:  mtsp r1,sr0
+	0xe0400002 | stub+20:  be,n 0(sr0,rp)
+
+     0xe0400002 must be specified as -532676606 so that it won't be
+     rejected as an invalid immediate operand on 64-bit hosts.  */
+
+  HOST_WIDE_INT insns[4] = {0x4bc23fd1, 0x004010a1, 0x00011820, -532676606};
+  int i;
+
   if (count != 0)
     return NULL_RTX;
 
@@ -4390,6 +4398,9 @@ return_addr_rtx (int count, rtx frameaddr)
 
   if (TARGET_64BIT || TARGET_NO_SPACE_REGS)
     return rp;
+
+  /* If there is no export stub then just use the value saved from
+     the return pointer register.  */
 
   saved_rp = gen_reg_rtx (Pmode);
   emit_move_insn (saved_rp, rp);
@@ -4402,37 +4413,15 @@ return_addr_rtx (int count, rtx frameaddr)
   label = gen_label_rtx ();
 
   /* Check the instruction stream at the normal return address for the
-     export stub:
+     export stub.  If it is an export stub, than our return address is
+     really in -24[frameaddr].  */
 
-	0x4bc23fd1 | stub+8:   ldw -18(sr0,sp),rp
-	0x004010a1 | stub+12:  ldsid (sr0,rp),r1
-	0x00011820 | stub+16:  mtsp r1,sr0
-	0xe0400002 | stub+20:  be,n 0(sr0,rp)
-
-     If it is an export stub, than our return address is really in
-     -24[frameaddr].  */
-
-  emit_cmp_insn (gen_rtx_MEM (SImode, ins), GEN_INT (0x4bc23fd1), NE,
-		 NULL_RTX, SImode, 1);
-  emit_jump_insn (gen_bne (label));
-
-  emit_cmp_insn (gen_rtx_MEM (SImode, plus_constant (ins, 4)),
-		 GEN_INT (0x004010a1), NE, NULL_RTX, SImode, 1);
-  emit_jump_insn (gen_bne (label));
-
-  emit_cmp_insn (gen_rtx_MEM (SImode, plus_constant (ins, 8)),
-		 GEN_INT (0x00011820), NE, NULL_RTX, SImode, 1);
-  emit_jump_insn (gen_bne (label));
-
-  /* 0xe0400002 must be specified as -532676606 so that it won't be
-     rejected as an invalid immediate operand on 64-bit hosts.  */
-  emit_cmp_insn (gen_rtx_MEM (SImode, plus_constant (ins, 12)),
-		 GEN_INT (-532676606), NE, NULL_RTX, SImode, 1);
-
-  /* If there is no export stub then just use the value saved from
-     the return pointer register.  */
-
-  emit_jump_insn (gen_bne (label));
+  for (i = 0; i < 3; i++)
+    {
+      rtx op0 = gen_rtx_MEM (SImode, plus_constant (ins, i * 4)); 
+      rtx op1 = GEN_INT (insns[i]);
+      emit_cmp_and_jump_insns (op0, op1, NE, NULL, SImode, 0, label);
+    }
 
   /* Here we know that our return address points to an export
      stub.  We don't want to return the address of the export stub,
@@ -4446,28 +4435,30 @@ return_addr_rtx (int count, rtx frameaddr)
 							      -24))));
 
   emit_label (label);
+
   return saved_rp;
 }
 
 void
-emit_bcond_fp (enum rtx_code code, rtx operand0)
+emit_bcond_fp (rtx operands[])
 {
+  enum rtx_code code = GET_CODE (operands[0]);
+  rtx operand0 = operands[1];
+  rtx operand1 = operands[2];
+  rtx label = operands[3];
+
+  emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_REG (CCFPmode, 0),
+		          gen_rtx_fmt_ee (code, CCFPmode, operand0, operand1)));
+
   emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
 			       gen_rtx_IF_THEN_ELSE (VOIDmode,
-						     gen_rtx_fmt_ee (code,
+						     gen_rtx_fmt_ee (NE,
 							      VOIDmode,
 							      gen_rtx_REG (CCFPmode, 0),
 							      const0_rtx),
-						     gen_rtx_LABEL_REF (VOIDmode, operand0),
+						     gen_rtx_LABEL_REF (VOIDmode, label),
 						     pc_rtx)));
 
-}
-
-rtx
-gen_cmp_fp (enum rtx_code code, rtx operand0, rtx operand1)
-{
-  return gen_rtx_SET (VOIDmode, gen_rtx_REG (CCFPmode, 0),
-		      gen_rtx_fmt_ee (code, CCFPmode, operand0, operand1));
 }
 
 /* Adjust the cost of a scheduling dependency.  Return the new cost of

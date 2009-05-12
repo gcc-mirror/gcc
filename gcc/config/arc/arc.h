@@ -1067,11 +1067,6 @@ do { if ((LOG) != 0) fprintf (FILE, "\t.align %d\n", 1 << (LOG)); } while (0)
 /* ??? Not defined in tm.texi.  */
 #define SETJMP_VIA_SAVE_AREA
 
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  Note that we can't use "rtx" here
-   since it hasn't been defined!  */
-extern struct rtx_def *arc_compare_op0, *arc_compare_op1;
-
 /* ARC function types.  */
 enum arc_function_type {
   ARC_FUNCTION_UNKNOWN, ARC_FUNCTION_NORMAL,

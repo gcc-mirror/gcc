@@ -1739,18 +1739,6 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       break;
 
     case COMPARE:
-#ifdef HAVE_cc0
-      /* Convert (compare FOO (const_int 0)) to FOO unless we aren't
-	 using cc0, in which case we want to leave it as a COMPARE
-	 so we can distinguish it from a register-register-copy.
-
-	 In IEEE floating point, x-0 is not the same as x.  */
-      if (!(HONOR_SIGNED_ZEROS (mode)
-	    && HONOR_SIGN_DEPENDENT_ROUNDING (mode))
-	  && trueop1 == CONST0_RTX (mode))
-	return op0;
-#endif
-
       /* Convert (compare (gt (flags) 0) (lt (flags) 0)) to (flags).  */
       if (((GET_CODE (op0) == GT && GET_CODE (op1) == LT)
 	   || (GET_CODE (op0) == GTU && GET_CODE (op1) == LTU))
@@ -3815,8 +3803,8 @@ simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
 
   /* If op0 is a compare, extract the comparison arguments from it.  */
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
-    return simplify_relational_operation (code, mode, VOIDmode,
-				          XEXP (op0, 0), XEXP (op0, 1));
+    return simplify_gen_relational (code, mode, VOIDmode,
+				    XEXP (op0, 0), XEXP (op0, 1));
 
   if (GET_MODE_CLASS (cmp_mode) == MODE_CC
       || CC0_P (op0))

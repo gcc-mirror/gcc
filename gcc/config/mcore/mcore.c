@@ -57,11 +57,6 @@ long   mcore_current_compilation_timestamp = 0;
 
 /* Global variables for machine-dependent things.  */
 
-/* Saved operands from the last compare to use when we generate an scc
-  or bcc insn.  */
-rtx arch_compare_op0;
-rtx arch_compare_op1;
-
 /* Provides the class number of the smallest class containing
    reg number.  */
 const int regno_reg_class[FIRST_PSEUDO_REGISTER] =
@@ -519,26 +514,36 @@ mcore_rtx_costs (rtx x, int code, int outer_code, int * total,
     }
 }
 
-/* Check to see if a comparison against a constant can be made more efficient
-   by incrementing/decrementing the constant to get one that is more efficient
-   to load.  */
+/* Prepare the operands for a comparison.  Return whether the branch/setcc
+   should reverse the operands.  */
 
-int
-mcore_modify_comparison (enum rtx_code code)
+bool
+mcore_gen_compare (enum rtx_code code, rtx op0, rtx op1)
 {
-  rtx op1 = arch_compare_op1;
-  
+  rtx cc_reg = gen_rtx_REG (CCmode, CC_REG);
+  bool invert;
+
   if (GET_CODE (op1) == CONST_INT)
     {
       HOST_WIDE_INT val = INTVAL (op1);
       
       switch (code)
 	{
+	case GTU:
+	  /* Unsigned > 0 is the same as != 0; everything else is converted
+	     below to LEU (reversed cmphs).  */
+	  if (val == 0)
+	    code = NE;
+	  break;
+
+        /* Check whether (LE A imm) can become (LT A imm + 1),
+	   or (GT A imm) can become (GE A imm + 1).  */
+	case GT:
 	case LE:
 	  if (CONST_OK_FOR_J (val + 1))
 	    {
-	      arch_compare_op1 = GEN_INT (val + 1);
-	      return 1;
+	      op1 = GEN_INT (val + 1);
+	      code = code == LE ? LT : GE;
 	    }
 	  break;
 	  
@@ -546,28 +551,18 @@ mcore_modify_comparison (enum rtx_code code)
 	  break;
 	}
     }
-  
-  return 0;
-}
-
-/* Prepare the operands for a comparison.  */
-
-rtx
-mcore_gen_compare_reg (enum rtx_code code)
-{
-  rtx op0 = arch_compare_op0;
-  rtx op1 = arch_compare_op1;
-  rtx cc_reg = gen_rtx_REG (CCmode, CC_REG);
-
+ 
   if (CONSTANT_P (op1) && GET_CODE (op1) != CONST_INT)
     op1 = force_reg (SImode, op1);
 
   /* cmpnei: 0-31 (K immediate)
      cmplti: 1-32 (J immediate, 0 using btsti x,31).  */
+  invert = false;
   switch (code)
     {
     case EQ:	/* Use inverted condition, cmpne.  */
       code = NE;
+      invert = true;
       /* Drop through.  */
       
     case NE:	/* Use normal condition, cmpne.  */
@@ -577,6 +572,7 @@ mcore_gen_compare_reg (enum rtx_code code)
 
     case LE:	/* Use inverted condition, reversed cmplt.  */
       code = GT;
+      invert = true;
       /* Drop through.  */
       
     case GT:	/* Use normal condition, reversed cmplt.  */
@@ -586,6 +582,7 @@ mcore_gen_compare_reg (enum rtx_code code)
 
     case GE:	/* Use inverted condition, cmplt.  */
       code = LT;
+      invert = true;
       /* Drop through.  */
       
     case LT:	/* Use normal condition, cmplt.  */
@@ -597,13 +594,10 @@ mcore_gen_compare_reg (enum rtx_code code)
       break;
 
     case GTU:	/* Use inverted condition, cmple.  */
-      /* Unsigned > 0 is the same as != 0, but we need to invert the
-	 condition, so we want to set code = EQ.  This cannot be done
-	 however, as the mcore does not support such a test.  Instead
-	 we cope with this case in the "bgtu" pattern itself so we
-	 should never reach this point.  */
+      /* We coped with unsigned > 0 above.  */
       gcc_assert (GET_CODE (op1) != CONST_INT || INTVAL (op1) != 0);
       code = LEU;
+      invert = true;
       /* Drop through.  */
       
     case LEU:	/* Use normal condition, reversed cmphs.  */
@@ -613,6 +607,7 @@ mcore_gen_compare_reg (enum rtx_code code)
 
     case LTU:	/* Use inverted condition, cmphs.  */
       code = GEU;
+      invert = true;
       /* Drop through.  */
       
     case GEU:	/* Use normal condition, cmphs.  */
@@ -624,9 +619,10 @@ mcore_gen_compare_reg (enum rtx_code code)
       break;
     }
 
-  emit_insn (gen_rtx_SET (VOIDmode, cc_reg, gen_rtx_fmt_ee (code, CCmode, op0, op1)));
-  
-  return cc_reg;
+  emit_insn (gen_rtx_SET (VOIDmode,
+			  cc_reg,
+			  gen_rtx_fmt_ee (code, CCmode, op0, op1)));
+  return invert;
 }
 
 int

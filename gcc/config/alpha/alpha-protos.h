@@ -88,8 +88,8 @@ extern int check_float_value (enum machine_mode, REAL_VALUE_TYPE *, int);
 #endif
 
 #ifdef RTX_CODE
-extern rtx alpha_emit_conditional_branch (enum rtx_code);
-extern rtx alpha_emit_setcc (enum rtx_code);
+extern void alpha_emit_conditional_branch (rtx[], enum machine_mode);
+extern bool alpha_emit_setcc (rtx[], enum machine_mode);
 extern int alpha_split_conditional_move (enum rtx_code, rtx, rtx, rtx, rtx);
 extern void alpha_emit_xfloating_arith (enum rtx_code, rtx[]);
 extern void alpha_emit_xfloating_cvt (enum rtx_code, rtx[]);

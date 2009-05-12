@@ -536,6 +536,11 @@
        (and (match_code "const_double,const_vector")
 	    (match_test "op == CONST0_RTX (GET_MODE (op))"))))
 
+;; Return 1 if OP is a valid comparison operator for "cbranch" instructions.
+(define_predicate "ia64_cbranch_operator"
+  (ior (match_operand 0 "ordered_comparison_operator")
+       (match_code "ordered,unordered")))
+
 ;; True if this is a comparison operator, which accepts a normal 8-bit
 ;; signed immediate operand.
 (define_predicate "normal_comparison_operator"

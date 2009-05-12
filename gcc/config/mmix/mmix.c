@@ -2359,70 +2359,14 @@ mmix_shiftable_wyde_value (unsigned HOST_WIDEST_INT value)
   return 1;
 }
 
-/* Returns zero if code and mode is not a valid condition from a
-   compare-type insn.  Nonzero if it is.  The parameter op, if non-NULL,
-   is the comparison of mode is CC-somethingmode.  */
-
-int
-mmix_valid_comparison (RTX_CODE code, enum machine_mode mode, rtx op)
-{
-  if (mode == VOIDmode && op != NULL_RTX)
-    mode = GET_MODE (op);
-
-  /* We don't care to look at these, they should always be valid.  */
-  if (mode == CCmode || mode == CC_UNSmode || mode == DImode)
-    return 1;
-
-  if ((mode == CC_FPmode || mode == DFmode)
-      && (code == GT || code == LT))
-    return 1;
-
-  if ((mode == CC_FPEQmode || mode == DFmode)
-      && (code == EQ || code == NE))
-    return 1;
-
-  if ((mode == CC_FUNmode || mode == DFmode)
-      && (code == ORDERED || code == UNORDERED))
-    return 1;
-
-  return 0;
-}
-
-/* X and Y are two things to compare using CODE.  Emit a compare insn if
-   possible and return the rtx for the cc-reg in the proper mode, or
-   NULL_RTX if this is not a valid comparison.  */
+/* X and Y are two things to compare using CODE.  Return the rtx for
+   the cc-reg in the proper mode.  */
 
 rtx
 mmix_gen_compare_reg (RTX_CODE code, rtx x, rtx y)
 {
   enum machine_mode ccmode = SELECT_CC_MODE (code, x, y);
-  rtx cc_reg;
-
-  /* FIXME: Do we get constants here?  Of double mode?  */
-  enum machine_mode mode
-    = GET_MODE (x) == VOIDmode
-    ? GET_MODE (y)
-    : GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT ? DFmode : DImode;
-
-  if (! mmix_valid_comparison (code, mode, x))
-    return NULL_RTX;
-
-  cc_reg = gen_reg_rtx (ccmode);
-
-  /* FIXME:  Can we avoid emitting a compare insn here?  */
-  if (! REG_P (x) && ! REG_P (y))
-    x = force_reg (mode, x);
-
-  /* If it's not quite right yet, put y in a register.  */
-  if (! REG_P (y)
-      && (GET_CODE (y) != CONST_INT
-	  || ! CONST_OK_FOR_LETTER_P (INTVAL (y), 'I')))
-    y = force_reg (mode, y);
-
-  emit_insn (gen_rtx_SET (VOIDmode, cc_reg,
-			  gen_rtx_COMPARE (ccmode, x, y)));
-
-  return cc_reg;
+  return gen_reg_rtx (ccmode);
 }
 
 /* Local (static) helper functions.  */

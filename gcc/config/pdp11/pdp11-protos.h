@@ -33,9 +33,9 @@ extern void output_addr_const_pdp11 (FILE *, rtx);
 extern const char *output_move_double (rtx *);
 extern const char *output_move_quad (rtx *);
 extern const char *output_block_move (rtx *);
+extern const char *output_jump (enum rtx_code, int, int);
 extern void print_operand_address (FILE *, rtx);
 extern int register_move_cost (enum reg_class, enum reg_class);
 #endif /* RTX_CODE */
 
 extern void output_ascii (FILE *, const char *, int);
-extern const char *output_jump (const char *, const char *, int);

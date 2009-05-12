@@ -17,6 +17,11 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+;; Return 1 if OP is a valid comparison operator for "cbranch" instructions.
+;; LE and GE are further lowered by the cbranchdf4 pattern.
+(define_predicate "float_comparison_operator"
+  (match_code "ne, eq, le, ge, lt, gt, ordered, unordered"))
+
 ;; True if this is a foldable comparison operator
 ;; - one where a the result of (compare:CC (reg) (const_int 0)) can be
 ;; replaced by (reg).  */

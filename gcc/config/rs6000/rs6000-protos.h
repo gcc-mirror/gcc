@@ -81,8 +81,8 @@ extern void print_operand_address (FILE *, rtx);
 extern bool rs6000_output_addr_const_extra (FILE *, rtx);
 extern enum rtx_code rs6000_reverse_condition (enum machine_mode,
 					       enum rtx_code);
-extern void rs6000_emit_sCOND (enum rtx_code, rtx);
-extern void rs6000_emit_cbranch (enum rtx_code, rtx);
+extern void rs6000_emit_sCOND (enum machine_mode, rtx[]);
+extern void rs6000_emit_cbranch (enum machine_mode, rtx[]);
 extern char * output_cbranch (rtx, const char *, int, rtx);
 extern char * output_e500_flip_gt_bit (rtx, rtx);
 extern rtx rs6000_emit_set_const (rtx, enum machine_mode, rtx, int);

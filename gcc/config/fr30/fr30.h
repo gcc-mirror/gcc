@@ -1106,16 +1106,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 #endif
 
 /*}}}*/ 
-/*{{{  Exported variables */ 
-
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  Note that we can't use "rtx" here
-   since it hasn't been defined!  */
-
-extern struct rtx_def * fr30_compare_op0;
-extern struct rtx_def * fr30_compare_op1;
-
-/*}}}*/ 
 
 /* Local Variables: */
 /* folded-file: t   */

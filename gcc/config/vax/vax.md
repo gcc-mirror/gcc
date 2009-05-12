@@ -58,30 +58,16 @@
 (include "constraints.md")
 (include "predicates.md")
 
-;; We don't want to allow a constant operand for test insns because
-;; (set (cc0) (const_int foo)) has no mode information.  Such insns will
-;; be folded while optimizing anyway.
-
-(define_insn "tst<mode>"
+(define_insn "*cmp<mode>"
   [(set (cc0)
-	(match_operand:VAXint 0 "nonimmediate_operand" "nrmT"))]
+	(compare (match_operand:VAXint 0 "nonimmediate_operand" "nrmT,nrmT")
+		 (match_operand:VAXint 1 "general_operand" "I,nrmT")))]
   ""
-  "tst<VAXint:isfx> %0")
+  "@
+   tst<VAXint:isfx> %0
+   cmp<VAXint:isfx> %0,%1")
 
-(define_insn "tst<mode>"
-  [(set (cc0)
-	(match_operand:VAXfp 0 "general_operand" "gF"))]
-  ""
-  "tst<VAXfp:fsfx> %0")
-
-(define_insn "cmp<mode>"
-  [(set (cc0)
-	(compare (match_operand:VAXint 0 "nonimmediate_operand" "nrmT")
-		 (match_operand:VAXint 1 "general_operand" "nrmT")))]
-  ""
-  "cmp<VAXint:isfx> %0,%1")
-
-(define_insn "cmp<mode>"
+(define_insn "*cmp<mode>"
   [(set (cc0)
 	(compare (match_operand:VAXfp 0 "general_operand" "gF,gF")
 		 (match_operand:VAXfp 1 "general_operand" "G,gF")))]
@@ -92,8 +78,9 @@
 
 (define_insn "*bit<mode>"
   [(set (cc0)
-	(and:VAXint (match_operand:VAXint 0 "general_operand" "nrmT")
-		   (match_operand:VAXint 1 "general_operand" "nrmT")))]
+	(compare (and:VAXint (match_operand:VAXint 0 "general_operand" "nrmT")
+			     (match_operand:VAXint 1 "general_operand" "nrmT"))
+		 (const_int 0)))]
   ""
   "bit<VAXint:isfx> %0,%1")
 
@@ -1078,21 +1065,45 @@
   "jbr %l0")
 
 ;; Conditional jumps
-(define_code_iterator any_cond [eq ne gt lt gtu ltu ge le geu leu])
 
-(define_insn "b<code>"
+(define_expand "cbranch<mode>4"
+  [(set (cc0)
+        (compare (match_operand:VAXint 1 "nonimmediate_operand" "")
+                 (match_operand:VAXint 2 "general_operand" "")))
+   (set (pc)
+        (if_then_else
+              (match_operator 0 "ordered_comparison_operator" [(cc0)
+                                                               (const_int 0)])
+              (label_ref (match_operand 3 "" ""))
+              (pc)))]
+ "")
+
+(define_expand "cbranch<mode>4"
+  [(set (cc0)
+        (compare (match_operand:VAXfp 1 "general_operand" "")
+                 (match_operand:VAXfp 2 "general_operand" "")))
+   (set (pc)
+        (if_then_else
+              (match_operator 0 "ordered_comparison_operator" [(cc0)
+                                                               (const_int 0)])
+              (label_ref (match_operand 3 "" ""))
+              (pc)))]
+ "")
+
+(define_insn "*branch"
   [(set (pc)
-	(if_then_else (any_cond (cc0)
-				(const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+				      [(cc0)
+				       (const_int 0)])
+		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   ""
-  "* return vax_output_conditional_branch (<CODE>);")
+  "j%c0 %l1")
 
 ;; Recognize reversed jumps.
-(define_insn ""
+(define_insn "*branch_reversed"
   [(set (pc)
-	(if_then_else (match_operator 0 "comparison_operator"
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
 				      [(cc0)
 				       (const_int 0)])
 		      (pc)
@@ -1452,6 +1463,8 @@
    (match_operand 4 "" "")]
   ""
 {
+  rtx test;
+
   /* i = index - minimum_bound;
      But only if the lower bound is not already zero.  */
   if (operands[1] != const0_rtx)
@@ -1463,9 +1476,9 @@
       operands[0] = index;
     }
 
-  /* if (i > (maximum_bound - minimum_bound + 1) goto default;  */
-  emit_insn (gen_cmpsi (operands[0], operands[2]));
-  emit_jump_insn (gen_bgtu (operands[4]));
+  /* if (i > (maximum_bound - minimum_bound + 1)) goto default;  */
+  test = gen_rtx_fmt_ee (GTU, VOIDmode, operands[0], operands[2]);
+  emit_jump_insn (gen_cbranchsi4 (test, operands[0], operands[2], operands[4]));
 
   /* casesi (i, 0, table);  */
   emit_jump_insn (gen_casesi1 (operands[0], operands[2], operands[3]));

@@ -222,11 +222,11 @@ extern void mips_split_doubleword_move (rtx, rtx);
 extern const char *mips_output_move (rtx, rtx);
 extern void mips_restore_gp (rtx);
 #ifdef RTX_CODE
-extern bool mips_expand_scc (enum rtx_code, rtx);
-extern void mips_expand_conditional_branch (rtx *, enum rtx_code);
+extern void mips_expand_scc (rtx *);
+extern void mips_expand_conditional_branch (rtx *);
 extern void mips_expand_vcondv2sf (rtx, rtx, rtx, enum rtx_code, rtx, rtx);
 extern void mips_expand_conditional_move (rtx *);
-extern void mips_expand_conditional_trap (enum rtx_code);
+extern void mips_expand_conditional_trap (rtx);
 #endif
 extern bool mips_use_pic_fn_addr_reg_p (const_rtx);
 extern rtx mips_expand_call (enum mips_call_type, rtx, rtx, rtx, rtx, bool);

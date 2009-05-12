@@ -464,6 +464,11 @@ v850_rtx_costs (rtx x,
 	*total = 20;
       return true;
 
+    case ZERO_EXTRACT:
+      if (outer_code == COMPARE)
+	*total = 0;
+      return false;
+
     default:
       return false;
     }

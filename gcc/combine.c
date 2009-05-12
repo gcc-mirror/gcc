@@ -4906,24 +4906,6 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest)
 	return gen_lowpart (mode, XEXP (x, 0));
       break;
 
-#ifdef HAVE_cc0
-    case COMPARE:
-      /* Convert (compare FOO (const_int 0)) to FOO unless we aren't
-	 using cc0, in which case we want to leave it as a COMPARE
-	 so we can distinguish it from a register-register-copy.  */
-      if (XEXP (x, 1) == const0_rtx)
-	return XEXP (x, 0);
-
-      /* x - 0 is the same as x unless x's mode has signed zeros and
-	 allows rounding towards -infinity.  Under those conditions,
-	 0 - 0 is -0.  */
-      if (!(HONOR_SIGNED_ZEROS (GET_MODE (XEXP (x, 0)))
-	    && HONOR_SIGN_DEPENDENT_ROUNDING (GET_MODE (XEXP (x, 0))))
-	  && XEXP (x, 1) == CONST0_RTX (GET_MODE (XEXP (x, 0))))
-	return XEXP (x, 0);
-      break;
-#endif
-
     case CONST:
       /* (const (const X)) can become (const X).  Do it this way rather than
 	 returning the inner CONST since CONST can be shared with a
@@ -5757,17 +5739,6 @@ simplify_set (rtx x)
 
       if (other_changed)
 	undobuf.other_insn = other_insn;
-
-#ifdef HAVE_cc0
-      /* If we are now comparing against zero, change our source if
-	 needed.  If we do not use cc0, we always have a COMPARE.  */
-      if (op1 == const0_rtx && dest == cc0_rtx)
-	{
-	  SUBST (SET_SRC (x), op0);
-	  src = op0;
-	}
-      else
-#endif
 
       /* Otherwise, if we didn't previously have a COMPARE in the
 	 correct mode, we need one.  */

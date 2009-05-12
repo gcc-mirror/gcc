@@ -62,9 +62,6 @@
 #ifndef HAVE_trap
 #define HAVE_trap 0
 #endif
-#ifndef HAVE_conditional_trap
-#define HAVE_conditional_trap 0
-#endif
 
 #ifndef MAX_CONDITIONAL_EXECUTE
 #define MAX_CONDITIONAL_EXECUTE \
@@ -3043,7 +3040,8 @@ find_if_header (basic_block test_bb, int pass)
       && cond_exec_find_if_block (&ce_info))
     goto success;
 
-  if (HAVE_trap && HAVE_conditional_trap
+  if (HAVE_trap
+      && optab_handler (ctrap_optab, word_mode)->insn_code != CODE_FOR_nothing
       && find_cond_trap (test_bb, then_edge, else_edge))
     goto success;
 

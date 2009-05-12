@@ -1001,13 +1001,6 @@ extern enum processor_type iq2000_tune;
 /* Which instruction set architecture to use.  */
 extern int iq2000_isa;
 
-/* Cached operands, and operator to compare for use in set/branch/trap
-   on condition codes.  */
-extern rtx branch_cmp[2];
-
-/* What type of branch to use.  */
-extern enum cmp_type branch_type;
-
 enum iq2000_builtins
 {
   IQ2000_BUILTIN_ADO16,

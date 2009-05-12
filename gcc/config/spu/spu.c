@@ -212,7 +212,6 @@ static void asm_file_start (void);
 static unsigned int spu_section_type_flags (tree, const char *, int);
 
 extern const char *reg_names[];
-rtx spu_compare_op0, spu_compare_op1;
 
 /* Which instruction set architecture to use.  */
 int spu_arch;
@@ -844,42 +843,44 @@ int spu_comp_icode[12][3] = {
    WORD_MODE, we can generate better code in most cases if we do it
    ourselves.  */
 void
-spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
+spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
 {
   int reverse_compare = 0;
   int reverse_test = 0;
   rtx compare_result, eq_result;
   rtx comp_rtx, eq_rtx;
-  rtx target = operands[0];
   enum machine_mode comp_mode;
   enum machine_mode op_mode;
   enum spu_comp_code scode, eq_code;
   enum insn_code ior_code;
+  enum rtx_code code = GET_CODE (cmp);
+  rtx op0 = XEXP (cmp, 0);
+  rtx op1 = XEXP (cmp, 1);
   int index;
   int eq_test = 0;
 
-  /* When spu_compare_op1 is a CONST_INT change (X >= C) to (X > C-1),
+  /* When op1 is a CONST_INT change (X >= C) to (X > C-1),
      and so on, to keep the constant in operand 1. */
-  if (GET_CODE (spu_compare_op1) == CONST_INT)
+  if (GET_CODE (op1) == CONST_INT)
     {
-      HOST_WIDE_INT val = INTVAL (spu_compare_op1) - 1;
-      if (trunc_int_for_mode (val, GET_MODE (spu_compare_op0)) == val)
+      HOST_WIDE_INT val = INTVAL (op1) - 1;
+      if (trunc_int_for_mode (val, GET_MODE (op0)) == val)
 	switch (code)
 	  {
 	  case GE:
-	    spu_compare_op1 = GEN_INT (val);
+	    op1 = GEN_INT (val);
 	    code = GT;
 	    break;
 	  case LT:
-	    spu_compare_op1 = GEN_INT (val);
+	    op1 = GEN_INT (val);
 	    code = LE;
 	    break;
 	  case GEU:
-	    spu_compare_op1 = GEN_INT (val);
+	    op1 = GEN_INT (val);
 	    code = GTU;
 	    break;
 	  case LTU:
-	    spu_compare_op1 = GEN_INT (val);
+	    op1 = GEN_INT (val);
 	    code = LEU;
 	    break;
 	  default:
@@ -888,7 +889,7 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
     }
 
   comp_mode = SImode;
-  op_mode = GET_MODE (spu_compare_op0);
+  op_mode = GET_MODE (op0);
 
   switch (code)
     {
@@ -1012,18 +1013,18 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
       abort ();
     }
 
-  if (GET_MODE (spu_compare_op1) == DFmode
+  if (GET_MODE (op1) == DFmode
       && (scode != SPU_GT && scode != SPU_EQ))
     abort ();
 
-  if (is_set == 0 && spu_compare_op1 == const0_rtx
-      && (GET_MODE (spu_compare_op0) == SImode
-	  || GET_MODE (spu_compare_op0) == HImode) && scode == SPU_EQ)
+  if (is_set == 0 && op1 == const0_rtx
+      && (GET_MODE (op0) == SImode
+	  || GET_MODE (op0) == HImode) && scode == SPU_EQ)
     {
       /* Don't need to set a register with the result when we are 
          comparing against zero and branching. */
       reverse_test = !reverse_test;
-      compare_result = spu_compare_op0;
+      compare_result = op0;
     }
   else
     {
@@ -1031,23 +1032,22 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
 
       if (reverse_compare)
 	{
-	  rtx t = spu_compare_op1;
-	  spu_compare_op1 = spu_compare_op0;
-	  spu_compare_op0 = t;
+	  rtx t = op1;
+	  op1 = op0;
+	  op0 = t;
 	}
 
       if (spu_comp_icode[index][scode] == 0)
 	abort ();
 
       if (!(*insn_data[spu_comp_icode[index][scode]].operand[1].predicate)
-	  (spu_compare_op0, op_mode))
-	spu_compare_op0 = force_reg (op_mode, spu_compare_op0);
+	  (op0, op_mode))
+	op0 = force_reg (op_mode, op0);
       if (!(*insn_data[spu_comp_icode[index][scode]].operand[2].predicate)
-	  (spu_compare_op1, op_mode))
-	spu_compare_op1 = force_reg (op_mode, spu_compare_op1);
+	  (op1, op_mode))
+	op1 = force_reg (op_mode, op1);
       comp_rtx = GEN_FCN (spu_comp_icode[index][scode]) (compare_result,
-							 spu_compare_op0,
-							 spu_compare_op1);
+							 op0, op1);
       if (comp_rtx == 0)
 	abort ();
       emit_insn (comp_rtx);
@@ -1056,8 +1056,7 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
         {
           eq_result = gen_reg_rtx (comp_mode);
           eq_rtx = GEN_FCN (spu_comp_icode[index][eq_code]) (eq_result,
-							     spu_compare_op0,
-							     spu_compare_op1);
+							     op0, op1);
           if (eq_rtx == 0)
 	    abort ();
           emit_insn (eq_rtx);
@@ -1088,13 +1087,14 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
       else
 	bcomp = gen_rtx_NE (comp_mode, compare_result, const0_rtx);
 
-      loc_ref = gen_rtx_LABEL_REF (VOIDmode, target);
+      loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
       emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
 				   gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
 							 loc_ref, pc_rtx)));
     }
   else if (is_set == 2)
     {
+      rtx target = operands[0];
       int compare_size = GET_MODE_BITSIZE (comp_mode);
       int target_size = GET_MODE_BITSIZE (GET_MODE (target));
       enum machine_mode mode = mode_for_size (target_size, MODE_INT, 0);
@@ -1129,6 +1129,7 @@ spu_emit_branch_or_set (int is_set, enum rtx_code code, rtx operands[])
     }
   else
     {
+      rtx target = operands[0];
       if (reverse_test)
 	emit_insn (gen_rtx_SET (VOIDmode, compare_result,
 				gen_rtx_NOT (comp_mode, compare_result)));

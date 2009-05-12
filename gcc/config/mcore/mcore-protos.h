@@ -46,21 +46,17 @@ extern rtx          mcore_function_value         	(const_tree, const_tree);
 
 #ifdef RTX_CODE
 
-extern GTY(()) rtx arch_compare_op0;
-extern GTY(()) rtx arch_compare_op1;
-
 extern const char * mcore_output_bclri         		(rtx, int);
 extern const char * mcore_output_bseti         		(rtx, int);
 extern const char * mcore_output_cmov          		(rtx *, int, const char *);
 extern char *       mcore_output_call          		(rtx *, int);
 extern int          mcore_is_dead                	(rtx, rtx);
 extern int          mcore_expand_insv            	(rtx *);
-extern int          mcore_modify_comparison      	(RTX_CODE);
 extern bool         mcore_expand_block_move      	(rtx *);
 extern const char * mcore_output_andn          		(rtx, rtx *);
 extern void         mcore_print_operand_address  	(FILE *, rtx);
 extern void         mcore_print_operand          	(FILE *, rtx, int);
-extern rtx          mcore_gen_compare_reg        	(RTX_CODE);
+extern bool         mcore_gen_compare	        	(RTX_CODE, rtx, rtx);
 extern int          mcore_symbolic_address_p     	(rtx);
 extern bool         mcore_r15_operand_p			(rtx);
 extern enum reg_class mcore_secondary_reload_class	(enum reg_class, enum machine_mode, rtx);

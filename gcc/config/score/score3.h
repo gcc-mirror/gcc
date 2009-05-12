@@ -138,7 +138,6 @@ extern enum machine_mode
 score3_select_cc_mode (enum rtx_code op, rtx x, rtx y);
 extern void score3_prologue (void);
 extern void score3_epilogue (int sibcall_p);
-extern void score3_gen_cmp (enum machine_mode mode);
 extern void score3_call (rtx *ops, bool sib);
 extern void score3_call_value (rtx *ops, bool sib);
 extern void score3_movsicc (rtx *ops);

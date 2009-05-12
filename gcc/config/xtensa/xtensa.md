@@ -64,15 +64,6 @@
 (define_code_attr minmax [(smin "min") (umin "minu")
 			  (smax "max") (umax "maxu")])
 
-;; This code iterator allows all branch instructions to be generated from
-;; a single define_expand template.
-(define_code_iterator any_cond [eq ne gt ge lt le gtu geu ltu leu
-				uneq ltgt ungt unge unlt unle
-				unordered ordered])
-
-;; This code iterator is for setting a register from a comparison.
-(define_code_iterator any_scc [eq ne gt ge lt le])
-
 ;; This code iterator is for floating-point comparisons.
 (define_code_iterator any_scc_sf [eq lt le uneq unlt unle unordered])
 (define_code_attr scc_sf [(eq "oeq") (lt "olt") (le "ole") 
@@ -1131,44 +1122,27 @@
 
 ;; Comparisons.
 
-;; Handle comparisons by stashing away the operands and then using that
-;; information in the subsequent conditional branch.
-
-(define_expand "cmpsi"
-  [(set (cc0)
-	(compare:CC (match_operand:SI 0 "register_operand" "")
-		    (match_operand:SI 1 "nonmemory_operand" "")))]
-  ""
-{
-  branch_cmp[0] = operands[0];
-  branch_cmp[1] = operands[1];
-  branch_type = CMP_SI;
-  DONE;
-})
-
-(define_expand "cmpsf"
-  [(set (cc0)
-	(compare:CC (match_operand:SF 0 "register_operand" "")
-		    (match_operand:SF 1 "register_operand" "")))]
-  "TARGET_HARD_FLOAT"
-{
-  branch_cmp[0] = operands[0];
-  branch_cmp[1] = operands[1];
-  branch_type = CMP_SF;
-  DONE;
-})
-
-
 ;; Conditional branches.
 
-(define_expand "b<code>"
-  [(set (pc)
-	(if_then_else (any_cond (cc0) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
+(define_expand "cbranchsi4"
+  [(match_operator 0 "comparison_operator"
+    [(match_operand:SI 1 "register_operand")
+     (match_operand:SI 2 "nonmemory_operand")])
+   (match_operand 3 "")]
   ""
 {
-  xtensa_expand_conditional_branch (operands, <CODE>);
+  xtensa_expand_conditional_branch (operands, SImode);
+  DONE;
+})
+
+(define_expand "cbranchsf4"
+  [(match_operator 0 "comparison_operator"
+    [(match_operand:SF 1 "register_operand")
+     (match_operand:SF 2 "register_operand")])
+   (match_operand 3 "")]
+  "TARGET_HARD_FLOAT"
+{
+  xtensa_expand_conditional_branch (operands, SFmode);
   DONE;
 })
 
@@ -1353,17 +1327,30 @@
 
 ;; Setting a register from a comparison.
 
-(define_expand "s<code>"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(any_scc:SI (match_dup 1)
-		    (match_dup 2)))]
+(define_expand "cstoresi4"
+  [(match_operand:SI 0 "register_operand")
+   (match_operator 1 "xtensa_cstoresi_operator"
+    [(match_operand:SI 2 "register_operand")
+     (match_operand:SI 3 "nonmemory_operand")])]
   ""
 {
-  operands[1] = gen_rtx_<CODE> (SImode, branch_cmp[0], branch_cmp[1]);
-  if (!xtensa_expand_scc (operands))
+  if (!xtensa_expand_scc (operands, SImode))
     FAIL;
   DONE;
 })
+
+(define_expand "cstoresf4"
+  [(match_operand:SI 0 "register_operand")
+   (match_operator:SI 1 "comparison_operator"
+    [(match_operand:SF 2 "register_operand")
+     (match_operand:SF 3 "register_operand")])]
+  "TARGET_HARD_FLOAT"
+{
+  if (!xtensa_expand_scc (operands, SFmode))
+    FAIL;
+  DONE;
+})
+
 
 
 ;; Conditional moves.

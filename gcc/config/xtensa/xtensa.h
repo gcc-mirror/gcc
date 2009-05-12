@@ -27,17 +27,6 @@ extern int optimize;
 
 /* External variables defined in xtensa.c.  */
 
-/* comparison type */
-enum cmp_type {
-  CMP_SI,				/* four byte integers */
-  CMP_DI,				/* eight byte integers */
-  CMP_SF,				/* single precision floats */
-  CMP_DF,				/* double precision floats */
-  CMP_MAX				/* max comparison type */
-};
-
-extern struct rtx_def * branch_cmp[2];	/* operands for compare */
-extern enum cmp_type branch_type;	/* what type of branch to use */
 extern unsigned xtensa_current_frame_size;
 
 /* Macros used in the machine description to select various Xtensa

@@ -803,12 +803,6 @@ do {									\
 #define CANONICALIZE_COMPARISON(CODE, OP0, OP1) \
   s390_canonicalize_comparison (&(CODE), &(OP0), &(OP1))
 
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  Note that we can't use "rtx" here
-   since it hasn't been defined!  */
-extern struct rtx_def *s390_compare_op0, *s390_compare_op1;
-
-
 /* Relative costs of operations.  */
 
 /* On s390, copy between fprs and gprs is expensive.  */

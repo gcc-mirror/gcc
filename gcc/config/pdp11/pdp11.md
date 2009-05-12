@@ -19,6 +19,11 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+;; Match CONST_DOUBLE zero for tstd/tstf.
+(define_predicate "register_or_const0_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_test "op == CONST0_RTX (GET_MODE (op))")))
+
 
 ;; HI is 16 bit
 ;; QI is 8 bit 
@@ -81,140 +86,49 @@
 ;(define_function_unit "fpu" 1 1 (eq_attr "type" "fp") 0 0)
 
 ;; compare
-(define_insn "cmpdf"
+(define_insn "*cmpdf"
   [(set (cc0)
-	(compare (match_operand:DF 0 "general_operand" "fR,Q,F")
-		 (match_operand:DF 1 "register_operand" "a,a,a")))]
+	(compare (match_operand:DF 0 "general_operand" "fR,fR,Q,Q,F")
+		 (match_operand:DF 1 "register_or_const0_operand" "G,a,G,a,a")))]
   "TARGET_FPU"
   "*
 {
   cc_status.flags = CC_IN_FPU;
-  return \"{cmpd|cmpf} %0, %1\;cfcc\";
+  if (which_alternative == 0 || which_alternative == 2)
+    return \"{tstd|tstf} %0, %1\;cfcc\";
+  else
+    return \"{cmpd|cmpf} %0, %1\;cfcc\";
 }"
-  [(set_attr "length" "2,3,6")])
+  [(set_attr "length" "2,2,3,3,6")]) 
 
-;; a bit of brain damage, maybe inline later - 
-;; problem is - gcc seems to NEED SImode because 
-;; of the cmp weirdness - maybe change gcc to handle this?
-
-(define_expand "cmpsi"
-  [(set (reg:SI 0)
-	(match_operand:SI 0 "general_operand" "g"))
-   (set (reg:SI 2)
-	(match_operand:SI 1 "general_operand" "g"))
-   (parallel [(set (cc0)
-		   (compare (reg:SI 0)
-			    (reg:SI 2)))
-	      (clobber (reg:SI 0))])]
-  "0" ;; disable for test
-  "")
-
-;; check for next insn for branch code - does this still
-;; work in gcc 2.* ?
-
-(define_insn ""
+(define_insn "*cmphi"
   [(set (cc0)
-	(compare (reg:SI 0)
-		 (reg:SI 2)))
-   (clobber (reg:SI 0))]
+	(compare (match_operand:HI 0 "general_operand" "rR,rR,rR,Q,Qi,Qi")
+		 (match_operand:HI 1 "general_operand" "N,rR,Qi,N,rR,Qi")))]
   ""
-  "*
-{
-  rtx br_insn = NEXT_INSN (insn);
-  RTX_CODE br_code;
+  "@
+   tst %0
+   cmp %0,%1
+   cmp %0,%1
+   tst %0
+   cmp %0,%1
+   cmp %0,%1"
+  [(set_attr "length" "1,1,2,2,2,3")])
 
-  gcc_assert (GET_CODE (br_insn) == JUMP_INSN);
-  br_code =  GET_CODE (XEXP (XEXP (PATTERN (br_insn), 1), 0));
-  
-  switch(br_code)
-  {
-    case GEU:
-    case LTU:
-    case GTU:
-    case LEU:
-      
-      return \"jsr pc, ___ucmpsi\;cmp $1,r0\";
-
-    case GE:
-    case LT:
-    case GT:
-    case LE:
-    case EQ:
-    case NE:
-
-      return \"jsr pc, ___cmpsi\;tst r0\";
-
-    default:
-
-      gcc_unreachable ();
-  }
-}"
-  [(set_attr "length" "4")])
-
-
-(define_insn "cmphi"
+(define_insn "*cmpqi"
   [(set (cc0)
-	(compare (match_operand:HI 0 "general_operand" "rR,rR,Qi,Qi")
-		 (match_operand:HI 1 "general_operand" "rR,Qi,rR,Qi")))]
+	(compare (match_operand:QI 0 "general_operand" "rR,rR,rR,Q,Qi,Qi")
+		 (match_operand:QI 1 "general_operand" "N,rR,Qi,N,rR,Qi")))]
   ""
-  "cmp %0,%1"
-  [(set_attr "length" "1,2,2,3")])
-
-(define_insn "cmpqi"
-  [(set (cc0)
-	(compare (match_operand:QI 0 "general_operand" "rR,rR,Qi,Qi")
-		 (match_operand:QI 1 "general_operand" "rR,Qi,rR,Qi")))]
-  ""
-  "cmpb %0,%1"
-  [(set_attr "length" "1,2,2,3")])
+  "@
+   tstb %0
+   cmpb %0,%1
+   cmpb %0,%1
+   tstb %0
+   cmpb %0,%1
+   cmpb %0,%1"
+  [(set_attr "length" "1,1,2,2,2,3")])
 			   
-
-;; We have to have this because cse can optimize the previous pattern
-;; into this one.
-
-(define_insn "tstdf"
-  [(set (cc0)
-	(match_operand:DF 0 "general_operand" "fR,Q"))]
-  "TARGET_FPU"
-  "*
-{
-  cc_status.flags = CC_IN_FPU;
-  return \"{tstd|tstf} %0\;cfcc\";
-}"
-  [(set_attr "length" "2,3")])
-
-
-(define_expand "tstsi"
-  [(set (reg:SI 0)
-	(match_operand:SI 0 "general_operand" "g"))
-   (parallel [(set (cc0)
-		   (reg:SI 0))
-	      (clobber (reg:SI 0))])]
-  "0" ;; disable for test
-  "")
-
-(define_insn ""
-  [(set (cc0)
-	(reg:SI 0))
-   (clobber (reg:SI 0))]
-  ""
-  "jsr pc, ___tstsi\;tst r0"
-  [(set_attr "length" "3")])
-
-
-(define_insn "tsthi"
-  [(set (cc0)
-	(match_operand:HI 0 "general_operand" "rR,Q"))]
-  ""
-  "tst %0"
-  [(set_attr "length" "1,2")])
-
-(define_insn "tstqi"
-  [(set (cc0)
-	(match_operand:QI 0 "general_operand" "rR,Q"))]
-  ""
-  "tstb %0"
-  [(set_attr "length" "1,2")])
 
 ;; sob instruction - we need an assembler which can make this instruction
 ;; valid under _all_ circumstances!
@@ -264,6 +178,42 @@
 ;; These control RTL generation for conditional jump insns
 ;; and match them for register allocation.
 
+(define_expand "cbranchdf4"
+  [(set (cc0)
+        (compare (match_operand:DF 1 "general_operand")
+		 (match_operand:DF 2 "general_operand")))
+   (set (pc)
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+		       [(cc0) (const_int 0)])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))]
+  ""
+  "")
+
+(define_expand "cbranchhi4"
+  [(set (cc0)
+        (compare (match_operand:HI 1 "general_operand")
+		 (match_operand:HI 2 "general_operand")))
+   (set (pc)
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+		       [(cc0) (const_int 0)])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))]
+  ""
+  "")
+
+(define_expand "cbranchqi4"
+  [(set (cc0)
+        (compare (match_operand:QI 1 "general_operand")
+		 (match_operand:QI 2 "general_operand")))
+   (set (pc)
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+		       [(cc0) (const_int 0)])
+		      (label_ref (match_operand 3 "" ""))
+		      (pc)))]
+  ""
+  "")
+
 ;; problem with too short jump distance! we need an assembler which can 
 ;; make this valid for all jump distances!
 ;; e.g. gas!
@@ -271,346 +221,38 @@
 ;; these must be changed to check for CC_IN_FCCR if float is to be 
 ;; enabled
 
-(define_insn "beq"
+(define_insn "*branch"
   [(set (pc)
-	(if_then_else (eq (cc0)
-			  (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+		       [(cc0) (const_int 0)])
+		      (label_ref (match_operand 1 "" ""))
 		      (pc)))]
   ""
-  "* return output_jump(\"beq\", \"bne\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
+  "* return output_jump(GET_CODE (operands[0]), 0, get_attr_length(insn));"
+  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 1)
 						      (pc))
 					       (const_int -128))
-					   (ge (minus (match_dup 0)
+					   (ge (minus (match_dup 1)
 						      (pc))
 					       (const_int 128)))
 				      (const_int 3)
 				      (const_int 1)))])
 
 
-(define_insn "bne"
-  [(set (pc)
-	(if_then_else (ne (cc0)
-			  (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "* return output_jump(\"bne\", \"beq\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn "bgt"
-  [(set (pc)
-	(if_then_else (gt (cc0)
-			  (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "* return output_jump(\"bgt\", \"ble\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn "bgtu"
-  [(set (pc)
-	(if_then_else (gtu (cc0)
-			   (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "* return output_jump(\"bhi\", \"blos\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn "blt"
-  [(set (pc)
-	(if_then_else (lt (cc0)
-			  (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "* return output_jump(\"blt\", \"bge\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-
-(define_insn "bltu"
-  [(set (pc)
-	(if_then_else (ltu (cc0)
-			   (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "* return output_jump(\"blo\", \"bhis\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn "bge"
-  [(set (pc)
-	(if_then_else (ge (cc0)
-			  (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "* return output_jump(\"bge\", \"blt\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn "bgeu"
-  [(set (pc)
-	(if_then_else (geu (cc0)
-			   (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "* return output_jump(\"bhis\", \"blo\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn "ble"
-  [(set (pc)
-	(if_then_else (le (cc0)
-			  (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "* return output_jump(\"ble\", \"bgt\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn "bleu"
-  [(set (pc)
-	(if_then_else (leu (cc0)
-			   (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "* return output_jump(\"blos\", \"bhi\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-
 ;; These match inverted jump insns for register allocation.
 
-(define_insn ""
+(define_insn "*branch_inverted"
   [(set (pc)
-	(if_then_else (eq (cc0)
-			  (const_int 0))
+	(if_then_else (match_operator 0 "ordered_comparison_operator"
+		       [(cc0) (const_int 0)])
 		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
+		      (label_ref (match_operand 1 "" ""))))]
   ""
-  "* return output_jump(\"bne\", \"beq\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
+  "* return output_jump(GET_CODE (operands[0]), 1, get_attr_length(insn));"
+  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 1)
 						      (pc))
 					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else (ne (cc0)
-			  (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""
-  "* return output_jump(\"beq\", \"bne\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else (gt (cc0)
-			  (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""
-  "* return output_jump(\"ble\", \"bgt\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else (gtu (cc0)
-			   (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""
-  "* return output_jump(\"blos\", \"bhi\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else (lt (cc0)
-			  (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""
-  "* return output_jump(\"bge\", \"blt\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else (ltu (cc0)
-			   (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""
-  "* return output_jump(\"bhis\", \"blo\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else (ge (cc0)
-			  (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""  
-  "* return output_jump(\"blt\", \"bge\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else (geu (cc0)
-			   (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""
-  "* return output_jump(\"blo\", \"bhis\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else (le (cc0)
-			  (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""
-  "* return output_jump(\"bgt\", \"ble\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
-						      (pc))
-					       (const_int 128)))
-				      (const_int 3)
-				      (const_int 1)))])
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else (leu (cc0)
-			   (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
-  ""
-  "* return output_jump(\"bhi\", \"blos\", get_attr_length(insn));"
-  [(set (attr "length") (if_then_else (ior (le (minus (match_dup 0)
-						      (pc))
-					       (const_int -128))
-					   (ge (minus (match_dup 0)
+					   (ge (minus (match_dup 1)
 						      (pc))
 					       (const_int 128)))
 				      (const_int 3)

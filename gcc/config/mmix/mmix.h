@@ -81,11 +81,6 @@ along with GCC; see the file COPYING3.  If not see
 #define MMIX_FUNCTION_ARG_SIZE(MODE, TYPE) \
  ((MODE) != BLKmode ? GET_MODE_SIZE (MODE) : int_size_in_bytes (TYPE))
 
-/* Declarations for helper variables that are not tied to a particular
-   target macro.  */
-extern GTY(()) rtx mmix_compare_op0;
-extern GTY(()) rtx mmix_compare_op1;
-
 /* Per-function machine data.  This is normally an opaque type just
    defined and used in the tm.c file, but we need to see the definition in
    mmix.md too.  */

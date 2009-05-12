@@ -520,11 +520,4 @@ struct cumulative_args
 
 #define FUNCTION_MODE	QImode
 
-/*****************************************************************************/
-/* EXTERNAL DECLARATIONS FOR VARIABLES DEFINED IN CRX.C			     */
-/*****************************************************************************/
-
-extern rtx crx_compare_op0;    /* operand 0 for comparisons */
-extern rtx crx_compare_op1;    /* operand 1 for comparisons */
-
 #endif /* ! GCC_CRX_H */

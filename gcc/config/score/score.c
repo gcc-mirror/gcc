@@ -117,7 +117,6 @@
 #define TARGET_ADDRESS_COST             score_address_cost
 
 struct extern_list *extern_head = 0;
-rtx cmp_op0, cmp_op1;
 
 /* default 0 = NO_REGS  */
 enum reg_class score_char_to_class[256];
@@ -698,17 +697,6 @@ score_epilogue (int sibcall_p)
   gcc_unreachable ();
 }
 
-void
-score_gen_cmp (enum machine_mode mode)
-{
-  if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_gen_cmp (mode);
-  else if (TARGET_SCORE3)
-    return score3_gen_cmp (mode);
-
-  gcc_unreachable ();
-}
-
 /* Call and sibcall pattern all need call this function.  */
 void
 score_call (rtx *ops, bool sib)
@@ -1118,7 +1106,7 @@ score_block_move_loop (rtx dst, rtx src, HOST_WIDE_INT length)
   HOST_WIDE_INT loop_mov_bytes;
   HOST_WIDE_INT iteration = 0;
   HOST_WIDE_INT head_length = 0, leftover;
-  rtx label, src_reg, dst_reg, final_dst;
+  rtx label, src_reg, dst_reg, final_dst, test;
 
   bool gen_loop_head = (src_align < BITS_PER_WORD
                         || dst_align < BITS_PER_WORD);
@@ -1158,8 +1146,8 @@ score_block_move_loop (rtx dst, rtx src, HOST_WIDE_INT length)
   score_block_move_loop_body (dst_reg, dst_align,
                             src_reg, src_align, loop_mov_bytes);
 
-  emit_insn (gen_cmpsi (dst_reg, final_dst));
-  emit_jump_insn (gen_bne (label));
+  test = gen_rtx_NE (VOIDmode, dst_reg, final_dst);
+  emit_jump_insn (gen_cbranchsi4 (test, dst_reg, final_dst, label));
 
   score_block_move_loop_foot (dst_reg, dst_align,
                             src_reg, src_align, leftover);

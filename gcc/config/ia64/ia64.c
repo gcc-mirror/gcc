@@ -63,11 +63,6 @@ along with GCC; see the file COPYING3.  If not see
    ASM_OUTPUT_LABELREF.  */
 int ia64_asm_output_label = 0;
 
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  */
-struct rtx_def * ia64_compare_op0;
-struct rtx_def * ia64_compare_op1;
-
 /* Register names for ia64_expand_prologue.  */
 static const char * const ia64_reg_numbers[96] =
 { "r32", "r33", "r34", "r35", "r36", "r37", "r38", "r39",
@@ -1493,28 +1488,28 @@ ia64_expand_movxf_movrf (enum machine_mode mode, rtx operands[])
   return false;
 }
 
-/* Emit comparison instruction if necessary, returning the expression
-   that holds the compare result in the proper mode.  */
+/* Emit comparison instruction if necessary, replacing *EXPR, *OP0, *OP1
+   with the expression that holds the compare result (in VOIDmode).  */
 
 static GTY(()) rtx cmptf_libfunc;
 
-rtx
-ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
+void
+ia64_expand_compare (rtx *expr, rtx *op0, rtx *op1)
 {
-  rtx op0 = ia64_compare_op0, op1 = ia64_compare_op1;
+  enum rtx_code code = GET_CODE (*expr);
   rtx cmp;
 
   /* If we have a BImode input, then we already have a compare result, and
      do not need to emit another comparison.  */
-  if (GET_MODE (op0) == BImode)
+  if (GET_MODE (*op0) == BImode)
     {
-      gcc_assert ((code == NE || code == EQ) && op1 == const0_rtx);
-      cmp = op0;
+      gcc_assert ((code == NE || code == EQ) && *op1 == const0_rtx);
+      cmp = *op0;
     }
   /* HPUX TFmode compare requires a library call to _U_Qfcmp, which takes a
      magic number as its third argument, that indicates what to do.
      The return value is an integer to be compared against zero.  */
-  else if (TARGET_HPUX && GET_MODE (op0) == TFmode)
+  else if (TARGET_HPUX && GET_MODE (*op0) == TFmode)
     {
       enum qfcmp_magic {
 	QCMP_INV = 1,	/* Raise FP_INVALID on SNaN as a side effect.  */
@@ -1527,7 +1522,7 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
       enum rtx_code ncode;
       rtx ret, insns;
       
-      gcc_assert (cmptf_libfunc && GET_MODE (op1) == TFmode);
+      gcc_assert (cmptf_libfunc && GET_MODE (*op1) == TFmode);
       switch (code)
 	{
 	  /* 1 = equal, 0 = not equal.  Equality operators do
@@ -1552,7 +1547,7 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
       start_sequence ();
 
       ret = emit_library_call_value (cmptf_libfunc, 0, LCT_CONST, DImode, 3,
-				     op0, TFmode, op1, TFmode,
+				     *op0, TFmode, *op1, TFmode,
 				     GEN_INT (magic), DImode);
       cmp = gen_reg_rtx (BImode);
       emit_insn (gen_rtx_SET (VOIDmode, cmp,
@@ -1563,18 +1558,20 @@ ia64_expand_compare (enum rtx_code code, enum machine_mode mode)
       end_sequence ();
 
       emit_libcall_block (insns, cmp, cmp,
-			  gen_rtx_fmt_ee (code, BImode, op0, op1));
+			  gen_rtx_fmt_ee (code, BImode, *op0, *op1));
       code = NE;
     }
   else
     {
       cmp = gen_reg_rtx (BImode);
       emit_insn (gen_rtx_SET (VOIDmode, cmp,
-			      gen_rtx_fmt_ee (code, BImode, op0, op1)));
+			      gen_rtx_fmt_ee (code, BImode, *op0, *op1)));
       code = NE;
     }
 
-  return gen_rtx_fmt_ee (code, mode, cmp, const0_rtx);
+  *expr = gen_rtx_fmt_ee (code, VOIDmode, cmp, const0_rtx);
+  *op0 = cmp;
+  *op1 = const0_rtx;
 }
 
 /* Generate an integral vector comparison.  Return true if the condition has

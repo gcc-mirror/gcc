@@ -96,7 +96,6 @@ extern void mmix_setup_frame_addresses (void);
 /* Needs to be ifdef:d for sake of enum rtx_code.  */
 extern enum machine_mode mmix_select_cc_mode (enum rtx_code, rtx, rtx);
 extern void mmix_canonicalize_comparison (enum rtx_code *, rtx *, rtx *);
-extern int mmix_valid_comparison (enum rtx_code, enum machine_mode, rtx);
 extern rtx mmix_gen_compare_reg (enum rtx_code, rtx, rtx);
 #endif
 

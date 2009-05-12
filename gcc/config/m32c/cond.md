@@ -58,11 +58,22 @@
   [(set (reg:CC FLG_REGNO)
 	(compare (match_dup 1)
 		 (match_dup 2)))
-   (set (pc) (if_then_else (match_dup 4)
+   (set (pc) (if_then_else (match_op_dup 0 [(reg:CC FLG_REGNO) (const_int 0)])
 			   (label_ref (match_dup 3))
 			   (pc)))]
-  "operands[4] = m32c_cmp_flg_0 (operands[0]);"
+  ""
   )
+
+(define_insn "bcc_op"
+  [(set (pc)
+        (if_then_else (match_operator 0 "ordered_comparison_operator"
+		       [(reg:CC FLG_REGNO) (const_int 0)])
+                      (label_ref (match_operand 1 ""))
+                      (pc)))]
+  ""
+  "j%c0\t%l1"
+  [(set_attr "flags" "n")]
+)
 
 (define_insn "stzx_16"
   [(set (match_operand:QI 0 "mrai_operand" "=R0w,R0w,R0w")
@@ -113,34 +124,6 @@
   "* return m32c_output_compare(insn, operands); "
   [(set_attr "flags" "oszc")])
 
-(define_expand "cmp<mode>"
-  [(set (reg:CC FLG_REGNO)
-	(compare (match_operand:QHPSI 0 "mra_operand" "RraSd")
-		 (match_operand:QHPSI 1 "mrai_operand" "RraSdi")))]
-  ""
-  "m32c_pend_compare (operands); DONE;")
-
-(define_insn "b<code>_op"
-  [(set (pc)
-        (if_then_else (any_cond (reg:CC FLG_REGNO)
-				(const_int 0))
-                      (label_ref (match_operand 0 ""))
-                      (pc)))]
-  ""
-  "j<code>\t%l0"
-  [(set_attr "flags" "n")]
-)
-
-(define_expand "b<code>"
-  [(set (pc)
-        (if_then_else (any_cond (reg:CC FLG_REGNO)
-				(const_int 0))
-                      (label_ref (match_operand 0 ""))
-                      (pc)))]
-  ""
-  "m32c_unpend_compare ();"
-)
-
 ;; m32c_conditional_register_usage changes the setcc_gen_code array to
 ;; point to the _24 variants if needed.
 
@@ -151,51 +134,54 @@
 
 ;; These are the post-split patterns for the conditional sets.
 
-(define_insn "s<code>_op"
+(define_insn "scc_op"
   [(set (match_operand:QI 0 "register_operand" "=Rqi")
-	(any_cond:QI (reg:CC FLG_REGNO) (const_int 0)))]
+	(match_operator:QI 1 "ordered_comparison_operator"
+	 [(reg:CC FLG_REGNO) (const_int 0)]))]
   "TARGET_A16 && reload_completed"
-  "* return m32c_scc_pattern(operands, <CODE>);")
+  "* return m32c_scc_pattern(operands, GET_CODE (operands[1]));")
 
-(define_insn "s<code>_24_op"
+(define_insn "scc_24_op"
   [(set (match_operand:HI 0 "mra_operand" "=RhiSd")
-	(any_cond:HI (reg:CC FLG_REGNO) (const_int 0)))]
+	(match_operator:HI 1 "ordered_comparison_operator"
+	 [(reg:CC FLG_REGNO) (const_int 0)]))]
   "TARGET_A24 && reload_completed"
-  "sc<code>\t%0"
+  "sc%c1\t%0"
   [(set_attr "flags" "n")]
 )
 
-;; These are the pre-split patterns for the conditional sets.  Yes,
-;; there are a lot of permutations.
+;; These are the pre-split patterns for the conditional sets.
 
-(define_insn_and_split "s<code>_<mode>"
+(define_insn_and_split "cstore<mode>4"
   [(set (match_operand:QI 0 "register_operand" "=Rqi")
-	(any_cond:QI (match_operand:QHPSI 1 "mra_operand" "RraSd")
-		     (match_operand:QHPSI 2 "mrai_operand" "RraSdi")))]
+	(match_operator:QI 1 "ordered_comparison_operator"
+	 [(match_operand:QHPSI 2 "mra_operand" "RraSd")
+	  (match_operand:QHPSI 3 "mrai_operand" "RraSdi")]))]
   "TARGET_A16"
   "#"
   "reload_completed"
   [(set (reg:CC FLG_REGNO)
-	(compare (match_dup 1)
-		 (match_dup 2)))
+	(compare (match_dup 2)
+		 (match_dup 3)))
    (set (match_dup 0)
-	(any_cond:QI (reg:CC FLG_REGNO) (const_int 0)))]
+	(match_op_dup 1 [(reg:CC FLG_REGNO) (const_int 0)]))]
   ""
   [(set_attr "flags" "x")]
 )
 
-(define_insn_and_split "s<code>_<mode>_24"
+(define_insn_and_split "cstore<mode>4_24"
   [(set (match_operand:HI 0 "mra_nopp_operand" "=RhiSd")
-	(any_cond:HI (match_operand:QHPSI 1 "mra_operand" "RraSd")
-		     (match_operand:QHPSI 2 "mrai_operand" "RraSdi")))]
+	(match_operator:HI 1 "ordered_comparison_operator"
+	 [(match_operand:QHPSI 2 "mra_operand" "RraSd")
+	  (match_operand:QHPSI 3 "mrai_operand" "RraSdi")]))]
   "TARGET_A24"
   "#"
   "reload_completed"
   [(set (reg:CC FLG_REGNO)
-	(compare (match_dup 1)
-		 (match_dup 2)))
+	(compare (match_dup 2)
+		 (match_dup 3)))
    (set (match_dup 0)
-	(any_cond:HI (reg:CC FLG_REGNO) (const_int 0)))]
+	(match_op_dup 1 [(reg:CC FLG_REGNO) (const_int 0)]))]
   ""
   [(set_attr "flags" "x")]
 )
@@ -240,21 +226,7 @@
   [(set_attr "flags" "x")]
   )
 
-;; And these are the expanders, which read the pending compare
-;; operands to build a combined insn.
-
-(define_expand "s<code>"
-  [(set (match_operand:QI 0 "register_operand" "=Rqi")
-	(any_cond:QI (reg:CC FLG_REGNO) (const_int 0)))]
-  "TARGET_A16"
-  "m32c_expand_scc (<CODE>, operands); DONE;")
-
-(define_expand "s<code>_24"
-  [(set (match_operand:HI 0 "mra_nopp_operand" "=RhiSd")
-	(any_cond:HI (reg:CC FLG_REGNO) (const_int 0)))]
-  "TARGET_A24"
-  "m32c_expand_scc (<CODE>, operands); DONE;")
-
+;; And these are the expanders.
 
 (define_expand "movqicc"
   [(set (match_operand:QI 0 "register_operand" "")

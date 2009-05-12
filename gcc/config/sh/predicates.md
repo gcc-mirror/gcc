@@ -552,6 +552,17 @@
   (and (match_code "minus,div")
        (match_test "GET_MODE (op) == mode")))
 
+;; UNORDERED is only supported on SHMEDIA.
+
+(define_predicate "sh_float_comparison_operator"
+  (ior (match_operand 0 "ordered_comparison_operator")
+       (and (match_test "TARGET_SHMEDIA")
+	    (match_code "unordered"))))
+
+(define_predicate "shmedia_cbranch_comparison_operator"
+  (ior (match_operand 0 "equality_comparison_operator")
+       (match_operand 0 "greater_comparison_operator")))
+
 ;; TODO: Add a comment here.
 
 (define_predicate "sh_const_vec"

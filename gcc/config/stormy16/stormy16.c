@@ -61,11 +61,6 @@ static bool xstormy16_rtx_costs (rtx, int, int, int *, bool);
 static int xstormy16_address_cost (rtx, bool);
 static bool xstormy16_return_in_memory (const_tree, const_tree);
 
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  */
-struct rtx_def * xstormy16_compare_op0;
-struct rtx_def * xstormy16_compare_op1;
-
 static GTY(()) section *bss100_section;
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
@@ -139,10 +134,8 @@ xstormy16_address_cost (rtx x, bool speed ATTRIBUTE_UNUSED)
 /* Emit a branch of kind CODE to location LOC.  */
 
 void
-xstormy16_emit_cbranch (enum rtx_code code, rtx loc)
+xstormy16_emit_cbranch (enum rtx_code code, rtx op0, rtx op1, rtx loc)
 {
-  rtx op0 = xstormy16_compare_op0;
-  rtx op1 = xstormy16_compare_op1;
   rtx condition_rtx, loc_ref, branch, cy_clobber;
   rtvec vec;
   enum machine_mode mode;
@@ -159,10 +152,10 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx loc)
 
       if (gt_p)
 	lab = gen_label_rtx ();
-      xstormy16_emit_cbranch (unsigned_p ? LTU : LT, gt_p ? lab : loc);
+      xstormy16_emit_cbranch (unsigned_p ? LTU : LT, op0, op1, gt_p ? lab : loc);
       /* This should be generated as a comparison against the temporary
 	 created by the previous insn, but reload can't handle that.  */
-      xstormy16_emit_cbranch (gt_p ? NE : EQ, loc);
+      xstormy16_emit_cbranch (gt_p ? NE : EQ, op0, op1, loc);
       if (gt_p)
 	emit_label (lab);
       return;
@@ -171,6 +164,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx loc)
 	   && (code == NE || code == EQ)
 	   && op1 != const0_rtx)
     {
+      rtx op0_word, op1_word;
       rtx lab = NULL_RTX;
       int num_words = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
       int i;
@@ -180,17 +174,17 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx loc)
 
       for (i = 0; i < num_words - 1; i++)
 	{
-	  xstormy16_compare_op0 = simplify_gen_subreg (word_mode, op0, mode,
-						      i * UNITS_PER_WORD);
-	  xstormy16_compare_op1 = simplify_gen_subreg (word_mode, op1, mode,
-						      i * UNITS_PER_WORD);
-	  xstormy16_emit_cbranch (NE, code == EQ ? lab : loc);
+	  op0_word = simplify_gen_subreg (word_mode, op0, mode,
+					  i * UNITS_PER_WORD);
+	  op1_word = simplify_gen_subreg (word_mode, op1, mode,
+					  i * UNITS_PER_WORD);
+	  xstormy16_emit_cbranch (NE, op0_word, op1_word, code == EQ ? lab : loc);
 	}
-      xstormy16_compare_op0 = simplify_gen_subreg (word_mode, op0, mode,
-						  i * UNITS_PER_WORD);
-      xstormy16_compare_op1 = simplify_gen_subreg (word_mode, op1, mode,
-						  i * UNITS_PER_WORD);
-      xstormy16_emit_cbranch (code, loc);
+      op0_word = simplify_gen_subreg (word_mode, op0, mode,
+				      i * UNITS_PER_WORD);
+      op1_word = simplify_gen_subreg (word_mode, op1, mode,
+				      i * UNITS_PER_WORD);
+      xstormy16_emit_cbranch (code, op0_word, op1_word, loc);
 
       if (code == EQ)
 	emit_label (lab);

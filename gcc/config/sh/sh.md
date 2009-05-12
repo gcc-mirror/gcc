@@ -646,8 +646,15 @@
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))
    (clobber (reg:SI T_REG))]
-  "TARGET_CBRANCHDI4"
-  "expand_cbranchsi4 (operands, LAST_AND_UNUSED_RTX_CODE, -1); DONE;")
+  ""
+  "if (TARGET_SHMEDIA)
+      emit_jump_insn (gen_cbranchint4_media (operands[0], operands[1],
+					     operands[2], operands[3]));
+   else if (TARGET_CBRANCHDI4)
+     expand_cbranchsi4 (operands, LAST_AND_UNUSED_RTX_CODE, -1);
+   else
+     sh_emit_compare_and_branch (operands, SImode);
+   DONE;")
 
 ;; -------------------------------------------------------------------------
 ;; SImode unsigned integer comparisons
@@ -676,23 +683,6 @@
   "cmp/hi	%1,%0"
    [(set_attr "type" "mt_group")])
 
-;; We save the compare operands in the cmpxx patterns and use them when
-;; we generate the branch.
-
-(define_expand "cmpsi"
-  [(set (reg:SI T_REG)
-	(compare (match_operand:SI 0 "cmpsi_operand" "")
-		 (match_operand:SI 1 "arith_operand" "")))]
-  "TARGET_SH1 || TARGET_SHMEDIA"
-  "
-{
-  if (GET_CODE (operands[0]) == REG && REGNO (operands[0]) == T_REG
-      && GET_CODE (operands[1]) != CONST_INT)
-    operands[0] = copy_to_mode_reg (SImode, operands[0]);
-  sh_compare_op0 = operands[0];
-  sh_compare_op1 = operands[1];
-  DONE;
-}")
 
 ;; -------------------------------------------------------------------------
 ;; DImode compare and branch
@@ -713,29 +703,45 @@
 		      (pc)))
    (clobber (match_dup 4))
    (clobber (reg:SI T_REG))]
-  "TARGET_CBRANCHDI4"
+  "TARGET_CBRANCHDI4 || TARGET_SH2 || TARGET_SHMEDIA"
   "
 {
   enum rtx_code comparison;
 
-  if (TARGET_EXPAND_CBRANCHDI4)
+  if (TARGET_SHMEDIA)
     {
-      if (expand_cbranchdi4 (operands, LAST_AND_UNUSED_RTX_CODE))
-	DONE;
+      emit_jump_insn (gen_cbranchint4_media (operands[0], operands[1],
+					     operands[2], operands[3]));
+      DONE;
     }
-  comparison = prepare_cbranch_operands (operands, DImode,
-					 LAST_AND_UNUSED_RTX_CODE);
-  if (comparison != GET_CODE (operands[0]))
-    operands[0]
-      = gen_rtx_fmt_ee (comparison, VOIDmode, operands[1], operands[2]);
-   operands[4] = gen_rtx_SCRATCH (SImode);
+
+  else if (!TARGET_CBRANCHDI4)
+    {
+      sh_emit_compare_and_branch (operands, DImode);
+      DONE;
+    }
+
+  else
+    {
+      if (TARGET_EXPAND_CBRANCHDI4)
+        {
+          if (expand_cbranchdi4 (operands, LAST_AND_UNUSED_RTX_CODE))
+	    DONE;
+        }
+      comparison = prepare_cbranch_operands (operands, DImode,
+					     LAST_AND_UNUSED_RTX_CODE);
+      if (comparison != GET_CODE (operands[0]))
+        operands[0]
+          = gen_rtx_fmt_ee (comparison, VOIDmode, operands[1], operands[2]);
+       operands[4] = gen_rtx_SCRATCH (SImode);
+    }
 }")
 
 (define_insn_and_split "cbranchdi4_i"
   [(set (pc)
 	(if_then_else (match_operator 0 "comparison_operator"
 			[(match_operand:DI 1 "arith_operand" "r,r")
-			 (match_operand:DI 2 "arith_operand" "rN,i")])
+			 (match_operand:DI 2 "arith_operand" "rN,I08")])
 		      (label_ref (match_operand 3 "" ""))
 		      (pc)))
    (clobber (match_scratch:SI 4 "=X,&r"))
@@ -907,20 +913,6 @@
   "cmpgtu	%1,r63,%0"
   [(set_attr "type" "cmp_media")])
 
-;; We save the compare operands in the cmpxx patterns and use them when
-;; we generate the branch.
-
-(define_expand "cmpdi"
-  [(set (reg:SI T_REG)
-	(compare (match_operand:DI 0 "arith_operand" "")
-		 (match_operand:DI 1 "arith_operand" "")))]
-  "TARGET_SH2 || TARGET_SHMEDIA"
-  "
-{
-  sh_compare_op0 = operands[0];
-  sh_compare_op1 = operands[1];
-  DONE;
-}")
 ;; -------------------------------------------------------------------------
 ;; Conditional move instructions
 ;; -------------------------------------------------------------------------
@@ -988,92 +980,20 @@
   "
 {
   if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
-      && GET_MODE (sh_compare_op0) == DImode
-      && sh_compare_op1 == const0_rtx)
-    operands[1] = gen_rtx_fmt_ee (GET_CODE (operands[1]), VOIDmode,
-				  sh_compare_op0, sh_compare_op1);
+      && GET_MODE (XEXP (operands[1], 0)) == DImode
+      && XEXP (operands[1], 1) == const0_rtx)
+    ;
   else
     {
-      rtx tmp;
-
       if (!can_create_pseudo_p ())
 	FAIL;
 
-      tmp = gen_reg_rtx (DImode);
-
-      switch (GET_CODE (operands[1]))
-	{
-	case EQ:
-	  emit_insn (gen_seq (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case NE:
-	  emit_insn (gen_seq (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case GT:
-	  emit_insn (gen_sgt (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case LT:
-	  emit_insn (gen_slt (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case GE:
-	  emit_insn (gen_slt (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case LE:
-	  emit_insn (gen_sgt (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case GTU:
-	  emit_insn (gen_sgtu (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case LTU:
-	  emit_insn (gen_sltu (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case GEU:
-	  emit_insn (gen_sltu (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case LEU:
-	  emit_insn (gen_sgtu (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case UNORDERED:
-	  emit_insn (gen_sunordered (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case ORDERED:
-	  emit_insn (gen_sunordered (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case UNEQ:
-	case UNGE:
-	case UNGT:
-	case UNLE:
-	case UNLT:
-	case LTGT:
-	  FAIL;
-
-	default:
-	  gcc_unreachable ();
-	}
+      operands[1] = sh_emit_cheap_store_flag (GET_MODE (operands[0]),
+					      GET_CODE (operands[1]),
+					      XEXP (operands[1], 0),
+	                                      XEXP (operands[1], 1));
+      if (!operands[1])
+	FAIL;
     }
 }")
 
@@ -1268,24 +1188,26 @@
   "
 {
   if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
-      && GET_MODE (sh_compare_op0) == SImode
+      && GET_MODE (XEXP (operands[1], 0)) == SImode
       && (TARGET_SHMEDIA
-	  || (REG_P (sh_compare_op0) && REGNO (sh_compare_op0) == T_REG))
-      && sh_compare_op1 == const0_rtx)
-    operands[1] = gen_rtx_fmt_ee (GET_CODE (operands[1]), VOIDmode,
-				  sh_compare_op0, sh_compare_op1);
+	  || (REG_P (XEXP (operands[1], 0))
+	      && REGNO (XEXP (operands[1], 0)) == T_REG))
+      && XEXP (operands[1], 1) == const0_rtx)
+    ;
+
   else if (TARGET_PRETEND_CMOVE)
     {
       enum rtx_code code = GET_CODE (operands[1]);
       enum rtx_code new_code = code;
-      rtx tmp;
+      rtx op0 = XEXP (operands[1], 0);
+      rtx op1 = XEXP (operands[1], 1);
 
       if (! currently_expanding_to_rtl)
 	FAIL;
       switch (code)
 	{
 	case LT: case LE: case LEU: case LTU:
-	  if (GET_MODE_CLASS (GET_MODE (sh_compare_op0)) != MODE_INT)
+	  if (GET_MODE_CLASS (GET_MODE (op0)) != MODE_INT)
 	    break;
 	case NE:
 	  new_code = reverse_condition (code);
@@ -1295,92 +1217,21 @@
 	default:
 	  FAIL;
 	}
-      tmp = prepare_scc_operands (new_code);
+      sh_emit_scc_to_t (new_code, op0, op1);
       operands[1] = gen_rtx_fmt_ee (new_code == code ? NE : EQ, VOIDmode,
-				    tmp, const0_rtx);
+				    gen_rtx_REG (SImode, T_REG), const0_rtx);
     }
   else
     {
-      rtx tmp;
-
       if (!can_create_pseudo_p ())
 	FAIL;
 
-      tmp = gen_reg_rtx (SImode);
-
-      switch (GET_CODE (operands[1]))
-	{
-	case EQ:
-	  emit_insn (gen_seq (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case NE:
-	  emit_insn (gen_seq (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case GT:
-	  emit_insn (gen_sgt (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case LT:
-	  emit_insn (gen_slt (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case GE:
-	  emit_insn (gen_slt (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case LE:
-	  emit_insn (gen_sgt (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case GTU:
-	  emit_insn (gen_sgtu (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case LTU:
-	  emit_insn (gen_sltu (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case GEU:
-	  emit_insn (gen_sltu (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case LEU:
-	  emit_insn (gen_sgtu (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case UNORDERED:
-	  emit_insn (gen_sunordered (tmp));
-	  operands[1] = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case ORDERED:
-	  emit_insn (gen_sunordered (tmp));
-	  operands[1] = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
-	  break;
-
-	case UNEQ:
-	case UNGE:
-	case UNGT:
-	case UNLE:
-	case UNLT:
-	case LTGT:
-	  FAIL;
-
-	default:
-	  abort ();
-	}
+      operands[1] = sh_emit_cheap_store_flag (GET_MODE (operands[0]),
+					      GET_CODE (operands[1]),
+					      XEXP (operands[1], 0),
+	                                      XEXP (operands[1], 1));
+      if (!operands[1])
+	FAIL;
     }
 }")
 
@@ -1887,8 +1738,9 @@
 	 implemented by comparing with the divisor.  */
       if (operands[1] == const1_rtx && currently_expanding_to_rtl)
 	{
-	  emit_insn (gen_cmpsi (operands[1], operands[2]));
-	  emit_insn (gen_sgeu (operands[0]));
+	  rtx test = gen_rtx_GEU (VOIDmode, operands[1], operands[2]);
+	  emit_insn (gen_cstoresi4 (operands[0], test,
+				    operands[1], operands[2]));
 	  DONE;
 	}
       else if (operands[2] == const0_rtx)
@@ -6877,14 +6729,83 @@ label:
 
 ;; Conditional branch insns
 
-(define_expand "beq_media"
+(define_expand "cbranchint4_media"
   [(set (pc)
-	(if_then_else (eq (match_operand:DI 1 "arith_reg_operand" "r,r")
-			  (match_operand:DI 2 "arith_operand" "r,I06"))
-		      (match_operand 0 "" "")
+	(if_then_else (match_operator 0 "shmedia_cbranch_comparison_operator"
+		       [(match_operand 1 "" "")
+			(match_operand 2 "" "")])
+		      (match_operand 3 "" "")
 		      (pc)))]
   "TARGET_SHMEDIA"
-  "operands[0] = gen_rtx_LABEL_REF (Pmode, operands[0]);")
+  "
+{
+  enum machine_mode mode = GET_MODE (operands[1]);
+  if (mode == VOIDmode)
+    mode = GET_MODE (operands[2]);
+  if (GET_CODE (operands[0]) == EQ || GET_CODE (operands[0]) == NE)
+    {
+      operands[1] = force_reg (mode, operands[1]);
+      if (CONSTANT_P (operands[2])
+          && (! satisfies_constraint_I06 (operands[2])))
+        operands[2] = force_reg (mode, operands[2]);
+    }
+  else
+    {
+      if (operands[1] != const0_rtx)
+        operands[1] = force_reg (mode, operands[1]);
+      if (operands[2] != const0_rtx)
+        operands[2] = force_reg (mode, operands[2]);
+    }
+  switch (GET_CODE (operands[0]))
+    {
+    case LEU:
+    case LE:
+    case LTU:
+    case LT:
+      operands[0] = gen_rtx_fmt_ee (swap_condition (GET_CODE (operands[0])),
+				    VOIDmode, operands[2], operands[1]);
+      operands[1] = XEXP (operands[0], 0);
+      operands[2] = XEXP (operands[0], 1);
+      break;
+    default:
+      operands[0] = gen_rtx_fmt_ee (GET_CODE (operands[0]),
+				    VOIDmode, operands[1], operands[2]);
+      break;
+    }
+  operands[3] = gen_rtx_LABEL_REF (Pmode, operands[3]);
+}")
+
+(define_expand "cbranchfp4_media"
+  [(set (pc)
+	(if_then_else (match_operator 0 "sh_float_comparison_operator"
+		       [(match_operand 1 "" "")
+			(match_operand 2 "" "")])
+		      (match_operand 3 "" "")
+		      (pc)))]
+  "TARGET_SHMEDIA"
+  "
+{
+  /* hack to generate same code.  */
+  rtx tmp_di = GET_CODE (operands[0]) == UNORDERED ? NULL : gen_reg_rtx (DImode);
+  rtx tmp = gen_reg_rtx (SImode);
+  rtx cmp;
+  if (GET_CODE (operands[0]) == NE)
+    cmp = gen_rtx_EQ (SImode, operands[1], operands[2]);
+  else
+    cmp = gen_rtx_fmt_ee (GET_CODE (operands[0]), SImode,
+			  operands[1], operands[2]);
+
+  emit_insn (gen_cstore4_media (tmp, cmp, operands[1], operands[2]));
+  if (tmp_di) emit_insn (gen_extendsidi2 (tmp_di, tmp)); else tmp_di = tmp;
+
+  if (GET_CODE (cmp) == GET_CODE (operands[0]))
+    operands[0] = gen_rtx_NE (VOIDmode, tmp_di, const0_rtx);
+  else
+    operands[0] = gen_rtx_EQ (VOIDmode, tmp_di, const0_rtx);
+  operands[1] = tmp_di;
+  operands[2] = const0_rtx;
+  operands[3] = gen_rtx_LABEL_REF (Pmode, operands[3]);
+}")
 
 (define_insn "*beq_media_i"
   [(set (pc)
@@ -6911,51 +6832,6 @@ label:
 	b%o3%'	%1, %2, %0%>
 	b%o3i%'	%1, %2, %0%>"
   [(set_attr "type" "cbranch_media")])
-
-(define_expand "bne_media"
-  [(set (pc)
-	(if_then_else (ne (match_operand:DI 1 "arith_reg_operand" "r,r")
-			  (match_operand:DI 2 "arith_operand" "r,I06"))
-		      (match_operand 0 "" "")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "operands[0] = gen_rtx_LABEL_REF (Pmode, operands[0]);")
-
-(define_expand "bgt_media"
-  [(set (pc)
-	(if_then_else (gt (match_operand:DI 1 "arith_reg_or_0_operand" "")
-			  (match_operand:DI 2 "arith_reg_or_0_operand" ""))
-		      (match_operand 0 "" "")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "operands[0] = gen_rtx_LABEL_REF (Pmode, operands[0]);")
-
-(define_expand "bge_media"
-  [(set (pc)
-	(if_then_else (ge (match_operand:DI 1 "arith_reg_or_0_operand" "")
-			  (match_operand:DI 2 "arith_reg_or_0_operand" ""))
-		      (match_operand 0 "" "")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "operands[0] = gen_rtx_LABEL_REF (Pmode, operands[0]);")
-
-(define_expand "bgtu_media"
-  [(set (pc)
-	(if_then_else (gtu (match_operand:DI 1 "arith_reg_or_0_operand" "")
-			   (match_operand:DI 2 "arith_reg_or_0_operand" ""))
-		      (match_operand 0 "" "")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "operands[0] = gen_rtx_LABEL_REF (Pmode, operands[0]);")
-
-(define_expand "bgeu_media"
-  [(set (pc)
-	(if_then_else (geu (match_operand:DI 1 "arith_reg_or_0_operand" "")
-			   (match_operand:DI 2 "arith_reg_or_0_operand" ""))
-		      (match_operand 0 "" "")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "operands[0] = gen_rtx_LABEL_REF (Pmode, operands[0]);")
 
 (define_insn "*bgt_media_i"
   [(set (pc)
@@ -7002,343 +6878,6 @@ label:
   "TARGET_SHMEDIA"
   "b%o3%'	%N2, %N1, %0%>"
   [(set_attr "type" "cbranch_media")])
-
-(define_expand "beq"
-  [(set (pc)
-	(if_then_else (ne (reg:SI T_REG) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if (mode != DImode && mode != SImode)
-	{
-	  rtx tmp = gen_reg_rtx (DImode);
-
-	  emit_insn (gen_seq (tmp));
-	  emit_jump_insn (gen_bne_media (operands[0], tmp, const0_rtx));
-	  DONE;
-	}
-
-      sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (CONSTANT_P (sh_compare_op1)
-	  && (! satisfies_constraint_I06 (sh_compare_op1)))
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-      emit_jump_insn (gen_beq_media (operands[0],
-				     sh_compare_op0, sh_compare_op1));
-      DONE;
-    }
-
-  from_compare (operands, EQ);
-}")
-
-(define_expand "bne"
-  [(set (pc)
-	(if_then_else (eq (reg:SI T_REG) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if (mode != DImode && mode != SImode)
-	{
-	  rtx tmp = gen_reg_rtx (DImode);
-
-	  emit_insn (gen_seq (tmp));
-	  emit_jump_insn (gen_beq_media (operands[0], tmp, const0_rtx));
-	  DONE;
-	}
-
-      sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (CONSTANT_P (sh_compare_op1)
-	  && (! satisfies_constraint_I06 (sh_compare_op1)))
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-      emit_jump_insn (gen_bne_media (operands[0],
-				     sh_compare_op0, sh_compare_op1));
-      DONE;
-    }
-
-  from_compare (operands, EQ);
-}")
-
-(define_expand "bgt"
-  [(set (pc)
-	(if_then_else (ne (reg:SI T_REG) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if (mode != DImode && mode != SImode)
-	{
-	  rtx tmp = gen_reg_rtx (DImode);
-
-	  emit_insn (gen_sgt (tmp));
-	  emit_jump_insn (gen_bne_media (operands[0], tmp, const0_rtx));
-	  DONE;
-	}
-
-      if (sh_compare_op0 != const0_rtx)
-	sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-      emit_jump_insn (gen_bgt_media (operands[0],
-				     sh_compare_op0, sh_compare_op1));
-      DONE;
-    }
-
-  from_compare (operands, GT);
-}")
-
-(define_expand "blt"
-  [(set (pc)
-	(if_then_else (eq (reg:SI T_REG) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if (mode != DImode && mode != SImode)
-	{
-	  rtx tmp = gen_reg_rtx (DImode);
-
-	  emit_insn (gen_slt (tmp));
-	  emit_jump_insn (gen_bne_media (operands[0], tmp, const0_rtx));
-	  DONE;
-	}
-
-      if (sh_compare_op0 != const0_rtx)
-	sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-      emit_jump_insn (gen_bgt_media (operands[0],
-				     sh_compare_op1, sh_compare_op0));
-      DONE;
-    }
-
-  if (GET_MODE_CLASS (GET_MODE (sh_compare_op0)) == MODE_FLOAT)
-    {
-      rtx tmp = sh_compare_op0;
-      sh_compare_op0 = sh_compare_op1;
-      sh_compare_op1 = tmp;
-      emit_insn (gen_bgt (operands[0]));
-      DONE;
-    }
-  from_compare (operands, GE);
-}")
-
-(define_expand "ble"
-  [(set (pc)
-	(if_then_else (eq (reg:SI T_REG) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if (mode != DImode && mode != SImode)
-	{
-	  rtx tmp = gen_reg_rtx (DImode);
-
-	  emit_insn (gen_sle (tmp));
-	  emit_jump_insn (gen_bne_media (operands[0], tmp, const0_rtx));
-	  DONE;
-	}
-
-      if (sh_compare_op0 != const0_rtx)
-	sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-      emit_jump_insn (gen_bge_media (operands[0],
-				     sh_compare_op1, sh_compare_op0));
-      DONE;
-    }
-
-  if (TARGET_SH2E
-      && TARGET_IEEE
-      && GET_MODE_CLASS (GET_MODE (sh_compare_op0)) == MODE_FLOAT)
-    {
-      rtx tmp = sh_compare_op0;
-      sh_compare_op0 = sh_compare_op1;
-      sh_compare_op1 = tmp;
-      emit_insn (gen_bge (operands[0]));
-      DONE;
-    }
-  from_compare (operands, GT);
-}")
-
-(define_expand "bge"
-  [(set (pc)
-	(if_then_else (ne (reg:SI T_REG) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if (mode != DImode && mode != SImode)
-	{
-	  rtx tmp = gen_reg_rtx (DImode);
-
-	  emit_insn (gen_sge (tmp));
-	  emit_jump_insn (gen_bne_media (operands[0], tmp, const0_rtx));
-	  DONE;
-	}
-
-      if (sh_compare_op0 != const0_rtx)
-	sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-      emit_jump_insn (gen_bge_media (operands[0],
-				     sh_compare_op0, sh_compare_op1));
-      DONE;
-    }
-
-  if (TARGET_SH2E
-      && ! TARGET_IEEE
-      && GET_MODE_CLASS (GET_MODE (sh_compare_op0)) == MODE_FLOAT)
-    {
-      rtx tmp = sh_compare_op0;
-      sh_compare_op0 = sh_compare_op1;
-      sh_compare_op1 = tmp;
-      emit_insn (gen_ble (operands[0]));
-      DONE;
-    }
-  from_compare (operands, GE);
-}")
-
-(define_expand "bgtu"
-  [(set (pc)
-	(if_then_else (ne (reg:SI T_REG) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if (sh_compare_op0 != const0_rtx)
-	sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-      emit_jump_insn (gen_bgtu_media (operands[0],
-				      sh_compare_op0, sh_compare_op1));
-      DONE;
-    }
-
-  from_compare (operands, GTU);
-}")
-
-(define_expand "bltu"
-  [(set (pc)
-	(if_then_else (eq (reg:SI T_REG) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if (sh_compare_op0 != const0_rtx)
-	sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-      emit_jump_insn (gen_bgtu_media (operands[0],
-				      sh_compare_op1, sh_compare_op0));
-      DONE;
-    }
-
-  from_compare (operands, GEU);
-}")
-
-(define_expand "bgeu"
-  [(set (pc)
-	(if_then_else (ne (reg:SI T_REG) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if (sh_compare_op0 != const0_rtx)
-	sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-      emit_jump_insn (gen_bgeu_media (operands[0],
-				      sh_compare_op0, sh_compare_op1));
-      DONE;
-    }
-
-  from_compare (operands, GEU);
-}")
-
-(define_expand "bleu"
-  [(set (pc)
-	(if_then_else (eq (reg:SI T_REG) (const_int 0))
-		      (label_ref (match_operand 0 "" ""))
-		      (pc)))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if (sh_compare_op0 != const0_rtx)
-	sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-      emit_jump_insn (gen_bgeu_media (operands[0],
-				      sh_compare_op1, sh_compare_op0));
-      DONE;
-    }
-
-  from_compare (operands, GTU);
-}")
-
-(define_expand "bunordered"
-  [(set (match_dup 1) (unordered:SI (match_dup 2) (match_dup 3)))
-   (set (pc)
-	(if_then_else (ne (match_dup 1) (const_int 0))
-		      (match_operand 0 "" "")
-		      (pc)))]
-  "TARGET_SHMEDIA"
-  "
-{
-  operands[0] = gen_rtx_LABEL_REF (Pmode, operands[0]);
-  operands[1] = gen_reg_rtx (SImode);
-  operands[2] = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-  operands[3] = force_reg (GET_MODE (sh_compare_op1), sh_compare_op1);
-}")
 
 ;; combiner splitter for test-and-branch on single bit in register.  This
 ;; is endian dependent because the non-paradoxical subreg looks different
@@ -9120,15 +8659,17 @@ mov.l\\t1f,r0\\n\\
       rtx reg3 = gen_reg_rtx (Pmode);
       rtx reg4 = gen_reg_rtx (Pmode);
       rtx reg5 = gen_reg_rtx (Pmode);
-      rtx load;
+      rtx load, test;
 
       operands[0] = convert_modes (DImode, SImode, operands[0], 0);
       operands[1] = convert_modes (DImode, SImode, operands[1], 0);
       operands[2] = convert_modes (DImode, SImode, operands[2], 1);
 
-      emit_jump_insn (gen_bgt_media (operands[4], operands[1], operands[0]));
+      test = gen_rtx_GT (VOIDmode, operands[1], operands[0]);
+      emit_jump_insn (gen_cbranchdi4 (test, operands[1], operands[0], operands[4]));
       emit_move_insn (reg, gen_rtx_MINUS (DImode, operands[0], operands[1]));
-      emit_jump_insn (gen_bgtu_media (operands[4], reg, operands[2]));
+      test = gen_rtx_GTU (VOIDmode, reg, operands[2]);
+      emit_jump_insn (gen_cbranchdi4 (test, reg, operands[2], operands[4]));
       emit_insn (gen_casesi_shift_media (reg2, reg, operands[3]));
       emit_move_insn (reg3, gen_datalabel_ref (gen_rtx_LABEL_REF
 					       (Pmode, operands[3])));
@@ -9580,536 +9121,133 @@ mov.l\\t1f,r0\\n\\
   "movrt\\t%0"
    [(set_attr "type" "arith")])
 
-(define_expand "seq"
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(match_dup 1))]
-  ""
+(define_expand "cstore4_media"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 1 "sh_float_comparison_operator"
+	 [(match_operand 2 "logical_operand" "")
+	  (match_operand 3 "cmp_operand" "")]))]
+  "TARGET_SHMEDIA"
   "
 {
-  if (TARGET_SHMEDIA)
+  enum machine_mode mode = GET_MODE (operands[2]);
+  enum rtx_code code = GET_CODE (operands[1]);
+  bool invert, swap;
+  if (mode == VOIDmode)
+    mode = GET_MODE (operands[3]);
+  if (operands[2] == const0_rtx)
     {
-      rtx reg;
-
-      sh_compare_op0 = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (GET_MODE (sh_compare_op1) == VOIDmode
-				    ? GET_MODE (sh_compare_op0)
-				    : GET_MODE (sh_compare_op1),
-				    sh_compare_op1);
-      if (GET_MODE_SIZE (GET_MODE (operands[0])) <= 4)
-	{
-	  if (GET_MODE (operands[0]) != SImode)
-	    operands[0] = gen_rtx_SUBREG (SImode, operands[0], 0);
-
-	  switch (GET_MODE (sh_compare_op0))
-	    {
-	    case SImode:
-	      emit_insn (gen_cmpeqsi_media (operands[0],
-					      sh_compare_op0, sh_compare_op1));
-	      break;
-
-	    case DImode:
-	      emit_insn (gen_cmpeqdi_media (operands[0],
-					      sh_compare_op0, sh_compare_op1));
-	      break;
-
-	    case SFmode:
-	      if (! TARGET_SHMEDIA_FPU)
-		FAIL;
-	      emit_insn (gen_cmpeqsf_media (operands[0],
-					      sh_compare_op0, sh_compare_op1));
-	      break;
-
-	    case DFmode:
-	      if (! TARGET_SHMEDIA_FPU)
-		FAIL;
-	      emit_insn (gen_cmpeqdf_media (operands[0],
-					      sh_compare_op0, sh_compare_op1));
-	      break;
-
-	    default:
-	      FAIL;
-	    }
-	  DONE;
-	}
-
-      reg = operands[0];
-      if (GET_MODE (operands[0]) != SImode)
-	reg = (!can_create_pseudo_p ()
-	       ? gen_rtx_SUBREG (SImode, operands[0], 0)
-	       : gen_reg_rtx (SImode));
-
-      switch (GET_MODE (sh_compare_op0))
-	{
-	case SImode:
-	  emit_insn (gen_cmpeqsi_media (reg,
-					sh_compare_op0, sh_compare_op1));
-	  break;
-
-	case DImode:
-	  emit_insn (gen_cmpeqdi_media (reg,
-					sh_compare_op0, sh_compare_op1));
-	  break;
-
-	case SFmode:
-	  if (! TARGET_SHMEDIA_FPU)
-	    FAIL;
-	  emit_insn (gen_cmpeqsf_media (reg,
-					sh_compare_op0, sh_compare_op1));
-	  break;
-
-	case DFmode:
-	  if (! TARGET_SHMEDIA_FPU)
-	    FAIL;
-	  emit_insn (gen_cmpeqdf_media (reg,
-					sh_compare_op0, sh_compare_op1));
-	  break;
-
-	default:
-	  FAIL;
-	}
-
-      if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_extendsidi2 (operands[0], reg));
-
-      DONE;
+      if (code == EQ || code == NE)
+	operands[2] = operands[3], operands[3] = const0_rtx;
     }
-  if (sh_expand_t_scc (EQ, operands[0]))
-    DONE;
-  if (! currently_expanding_to_rtl)
-    FAIL;
-  operands[1] = prepare_scc_operands (EQ);
+  else
+    operands[2] = force_reg (mode, operands[2]);
+  if (operands[3] != const0_rtx)
+    operands[3] = force_reg (mode, operands[3]);
+
+  switch (code)
+    {
+    case GEU:
+    case GE:
+      swap = invert = !FLOAT_MODE_P (mode);
+      break;
+
+    case LEU:
+    case LE:
+      swap = FLOAT_MODE_P (mode), invert = !swap;
+      break;
+
+    case LTU:
+    case LT:
+      swap = true, invert = false;
+      break;
+
+    case GTU:
+    case GT:
+    case EQ:
+    case UNORDERED:
+      swap = invert = false;
+      break;
+
+    case NE:
+      swap = invert = true;
+      break;
+
+    default:
+      gcc_unreachable ();
+  }
+
+  if (swap)
+    {
+      rtx tem = operands[2];
+      operands[2] = operands[3];
+      operands[3] = tem;
+      code = swap_condition (code);
+    }
+
+  if (invert)
+    {
+      rtx tem = can_create_pseudo_p () ? gen_reg_rtx (SImode) : operands[0];
+      code = reverse_condition (code);
+      operands[1] = gen_rtx_fmt_ee (code, VOIDmode, operands[2], operands[3]);
+      emit_insn (gen_cstore4_media (tem, operands[1],
+				    operands[2], operands[3]));
+      code = EQ;
+      operands[2] = tem;
+      operands[3] = const0_rtx;
+    }
+
+  operands[1] = gen_rtx_fmt_ee (code, VOIDmode, operands[2], operands[3]);
 }")
 
-(define_expand "slt"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
+(define_expand "cstoresi4"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 1 "comparison_operator"
+	 [(match_operand:SI 2 "cmpsi_operand" "")
+	  (match_operand:SI 3 "arith_operand" "")]))]
+  "TARGET_SH1 || TARGET_SHMEDIA"
+  "if (TARGET_SHMEDIA)
     {
-      rtx reg;
-
-      sh_compare_op0 = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (GET_MODE (sh_compare_op1) == VOIDmode
-				    ? GET_MODE (sh_compare_op0)
-				    : GET_MODE (sh_compare_op1),
-				    sh_compare_op1);
-
-      reg = operands[0];
-      if (GET_MODE (operands[0]) != SImode)
-	reg = (!can_create_pseudo_p ()
-	       ? gen_rtx_SUBREG (SImode, operands[0], 0)
-	       : gen_reg_rtx (SImode));
-
-      switch (GET_MODE (sh_compare_op0))
-	{
-	case SImode:
-	  emit_insn (gen_cmpgtsi_media (reg,
-					sh_compare_op1, sh_compare_op0));
-	  break;
-
-	case DImode:
-	  emit_insn (gen_cmpgtdi_media (reg,
-					sh_compare_op1, sh_compare_op0));
-	  break;
-
-	case SFmode:
-	  if (! TARGET_SHMEDIA_FPU)
-	    FAIL;
-	  emit_insn (gen_cmpgtsf_media (reg,
-					sh_compare_op1, sh_compare_op0));
-	  break;
-
-	case DFmode:
-	  if (! TARGET_SHMEDIA_FPU)
-	    FAIL;
-	  emit_insn (gen_cmpgtdf_media (reg,
-					sh_compare_op1, sh_compare_op0));
-	  break;
-
-	default:
-	  FAIL;
-	}
-
-      if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_extendsidi2 (operands[0], reg));
-
-      DONE;
-    }
-  if (! currently_expanding_to_rtl)
-    FAIL;
-  operands[1] = prepare_scc_operands (LT);
-}")
-
-(define_expand "sle"
-  [(match_operand:SI 0 "arith_reg_operand" "")]
-  ""
-  "
-{
-  rtx tmp = sh_compare_op0;
-
-  if (TARGET_SHMEDIA)
-    {
-      rtx reg;
-
-      sh_compare_op0 = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (GET_MODE (sh_compare_op1) == VOIDmode
-				    ? GET_MODE (sh_compare_op0)
-				    : GET_MODE (sh_compare_op1),
-				    sh_compare_op1);
-
-      reg = operands[0];
-      if (GET_MODE (operands[0]) != SImode)
-	reg = (!can_create_pseudo_p ()
-	       ? gen_rtx_SUBREG (SImode, operands[0], 0)
-	       : gen_reg_rtx (SImode));
-
-      switch (GET_MODE (sh_compare_op0))
-	{
-	case SImode:
-	  {
-	    tmp = !can_create_pseudo_p () ? reg : gen_reg_rtx (SImode);
-
-	    emit_insn (gen_cmpgtsi_media (tmp,
-					  sh_compare_op0, sh_compare_op1));
-	    emit_insn (gen_cmpeqdi_media (reg, tmp, const0_rtx));
-	    break;
-	  }
-
-	case DImode:
-	  {
-	    tmp = !can_create_pseudo_p () ? reg : gen_reg_rtx (SImode);
-
-	    emit_insn (gen_cmpgtdi_media (tmp,
-					  sh_compare_op0, sh_compare_op1));
-	    emit_insn (gen_cmpeqdi_media (reg, tmp, const0_rtx));
-	    break;
-	  }
-
-	case SFmode:
-	  if (! TARGET_SHMEDIA_FPU)
-	    FAIL;
-	  emit_insn (gen_cmpgesf_media (reg,
-					sh_compare_op1, sh_compare_op0));
-	  break;
-
-	case DFmode:
-	  if (! TARGET_SHMEDIA_FPU)
-	    FAIL;
-	  emit_insn (gen_cmpgedf_media (reg,
-					sh_compare_op1, sh_compare_op0));
-	  break;
-
-	default:
-	  FAIL;
-	}
-
-      if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_extendsidi2 (operands[0], reg));
-
+      emit_insn (gen_cstore4_media (operands[0], operands[1],
+				    operands[2], operands[3]));
       DONE;
     }
 
-  sh_compare_op0 = sh_compare_op1;
-  sh_compare_op1 = tmp;
-  emit_insn (gen_sge (operands[0]));
-  DONE;
-}")
+   if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
+       && sh_expand_t_scc (operands))
+     DONE;
 
-(define_expand "sgt"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
+   if (! currently_expanding_to_rtl)
+     FAIL;
+   
+   sh_emit_compare_and_set (operands, SImode);
+   DONE;
+")
+
+(define_expand "cstoredi4"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 1 "comparison_operator"
+	 [(match_operand:DI 2 "arith_operand" "")
+	  (match_operand:DI 3 "arith_operand" "")]))]
+  "TARGET_SH2 || TARGET_SHMEDIA"
+  "if (TARGET_SHMEDIA)
     {
-      rtx reg;
-
-      reg = operands[0];
-      if (GET_MODE (operands[0]) != SImode)
-	reg = (!can_create_pseudo_p () ?
-	       gen_rtx_SUBREG (SImode, operands[0], 0)
-	       : gen_reg_rtx (SImode));
-      sh_compare_op0 = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (GET_MODE (sh_compare_op1) == VOIDmode
-				    ? GET_MODE (sh_compare_op0)
-				    : GET_MODE (sh_compare_op1),
-				    sh_compare_op1);
-
-      switch (GET_MODE (sh_compare_op0))
-	{
-	case SImode:
-	  emit_insn (gen_cmpgtsi_media (reg,
-					sh_compare_op0, sh_compare_op1));
-	  break;
-
-	case DImode:
-	  emit_insn (gen_cmpgtdi_media (reg,
-					sh_compare_op0, sh_compare_op1));
-	  break;
-
-	case SFmode:
-	  if (! TARGET_SHMEDIA_FPU)
-	    FAIL;
-	  emit_insn (gen_cmpgtsf_media (reg,
-					sh_compare_op0, sh_compare_op1));
-	  break;
-
-	case DFmode:
-	  if (! TARGET_SHMEDIA_FPU)
-	    FAIL;
-	  emit_insn (gen_cmpgtdf_media (reg,
-					sh_compare_op0, sh_compare_op1));
-	  break;
-
-	default:
-	  FAIL;
-	}
-
-      if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_extendsidi2 (operands[0], reg));
-
-      DONE;
-    }
-  if (! currently_expanding_to_rtl)
-    FAIL;
-  operands[1] = prepare_scc_operands (GT);
-}")
-
-(define_expand "sge"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      rtx reg;
-      enum machine_mode mode = GET_MODE (sh_compare_op0);
-
-      if ((mode) == VOIDmode)
-	mode = GET_MODE (sh_compare_op1);
-      reg = operands[0];
-      if (GET_MODE (operands[0]) != SImode)
-	reg = (!can_create_pseudo_p ()
-	       ? gen_rtx_SUBREG (SImode, operands[0], 0)
-	       : gen_reg_rtx (SImode));
-      sh_compare_op0 = force_reg (mode, sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (mode, sh_compare_op1);
-
-      switch (mode)
-	{
-	case SImode:
-	  {
-	    rtx tmp = !can_create_pseudo_p () ? reg : gen_reg_rtx (SImode);
-
-	    emit_insn (gen_cmpgtsi_media (tmp,
-					  sh_compare_op1, sh_compare_op0));
-	    emit_insn (gen_cmpeqdi_media (reg, tmp, const0_rtx));
-	    break;
-	  }
-
-	case DImode:
-	  {
-	    rtx tmp = !can_create_pseudo_p () ? reg : gen_reg_rtx (SImode);
-
-	    emit_insn (gen_cmpgtdi_media (tmp,
-					  sh_compare_op1, sh_compare_op0));
-	    emit_insn (gen_cmpeqdi_media (reg, tmp, const0_rtx));
-	    break;
-	  }
-
-	case SFmode:
-	  if (! TARGET_SHMEDIA_FPU)
-	    FAIL;
-	  emit_insn (gen_cmpgesf_media (reg,
-					sh_compare_op0, sh_compare_op1));
-	  break;
-
-	case DFmode:
-	  if (! TARGET_SHMEDIA_FPU)
-	    FAIL;
-	  emit_insn (gen_cmpgedf_media (reg,
-					sh_compare_op0, sh_compare_op1));
-	  break;
-
-	default:
-	  FAIL;
-	}
-
-      if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_extendsidi2 (operands[0], reg));
-
+      emit_insn (gen_cstore4_media (operands[0], operands[1],
+				    operands[2], operands[3]));
       DONE;
     }
 
-  if (! currently_expanding_to_rtl)
-    FAIL;
-  if (GET_MODE_CLASS (GET_MODE (sh_compare_op0)) == MODE_FLOAT)
-    {
-      if (TARGET_IEEE)
-	{
-	  rtx lab = gen_label_rtx ();
-	  prepare_scc_operands (EQ);
-	  emit_jump_insn (gen_branch_true (lab));
-	  prepare_scc_operands (GT);
-	  emit_label (lab);
-	  emit_insn (gen_movt (operands[0]));
-	}
-      else
-	emit_insn (gen_movnegt (operands[0], prepare_scc_operands (LT)));
-      DONE;
-    }
-  operands[1] = prepare_scc_operands (GE);
-}")
+   if ((GET_CODE (operands[1]) == EQ || GET_CODE (operands[1]) == NE)
+       && sh_expand_t_scc (operands))
+     DONE;
 
-(define_expand "sgtu"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      rtx reg;
+   if (! currently_expanding_to_rtl)
+     FAIL;
+   
+   sh_emit_compare_and_set (operands, DImode);
+   DONE;
+")
 
-      reg = operands[0];
-      if (GET_MODE (operands[0]) == DImode)
-	reg = (!can_create_pseudo_p ()
-	       ? gen_rtx_SUBREG (SImode, operands[0], 0)
-	       : gen_reg_rtx (SImode));
-      sh_compare_op0 = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (GET_MODE (sh_compare_op1) == VOIDmode
-				    ? GET_MODE (sh_compare_op0)
-				    : GET_MODE (sh_compare_op1),
-				    sh_compare_op1);
 
-      emit_insn (gen_cmpgtudi_media (reg,
-				     sh_compare_op0, sh_compare_op1));
-      if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_extendsidi2 (operands[0], reg));
-
-      DONE;
-    }
-  if (! currently_expanding_to_rtl)
-    FAIL;
-  operands[1] = prepare_scc_operands (GTU);
-}")
-
-(define_expand "sltu"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      rtx reg;
-
-      reg = operands[0];
-      if (GET_MODE (operands[0]) == DImode)
-	reg = (!can_create_pseudo_p ()
-	       ? gen_rtx_SUBREG (SImode, operands[0], 0)
-	       : gen_reg_rtx (SImode));
-      sh_compare_op0 = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (GET_MODE (sh_compare_op1) == VOIDmode
-				    ? GET_MODE (sh_compare_op0)
-				    : GET_MODE (sh_compare_op1),
-				    sh_compare_op1);
-
-      emit_insn (gen_cmpgtudi_media (reg,
-				     sh_compare_op1, sh_compare_op0));
-      if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_extendsidi2 (operands[0], reg));
-
-      DONE;
-    }
-  if (! currently_expanding_to_rtl)
-    FAIL;
-  operands[1] = prepare_scc_operands (LTU);
-}")
-
-(define_expand "sleu"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      rtx tmp, reg;
-
-      reg = operands[0];
-      if (GET_MODE (operands[0]) != SImode)
-	reg = (!can_create_pseudo_p ()
-	       ? gen_rtx_SUBREG (SImode, operands[0], 0)
-	       : gen_reg_rtx (SImode));
-      sh_compare_op0 = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (GET_MODE (sh_compare_op1) == VOIDmode
-				    ? GET_MODE (sh_compare_op0)
-				    : GET_MODE (sh_compare_op1),
-				    sh_compare_op1);
-
-      tmp = !can_create_pseudo_p () ? reg : gen_reg_rtx (SImode);
-
-      emit_insn (gen_cmpgtudi_media (tmp, sh_compare_op0, sh_compare_op1));
-      emit_insn (gen_cmpeqdi_media (reg, tmp, const0_rtx));
-      if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_extendsidi2 (operands[0], reg));
-
-      DONE;
-    }
-  if (! currently_expanding_to_rtl)
-    FAIL;
-  operands[1] = prepare_scc_operands (LEU);
-}")
-
-(define_expand "sgeu"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "
-{
-  if (TARGET_SHMEDIA)
-    {
-      rtx tmp, reg;
-
-      reg = operands[0];
-      if (GET_MODE (operands[0]) != SImode)
-	reg = (!can_create_pseudo_p ()
-	       ? gen_rtx_SUBREG (SImode, operands[0], 0)
-	       : gen_reg_rtx (SImode));
-      sh_compare_op0 = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (GET_MODE (sh_compare_op1) == VOIDmode
-				    ? GET_MODE (sh_compare_op0)
-				    : GET_MODE (sh_compare_op1),
-				    sh_compare_op1);
-
-      tmp = !can_create_pseudo_p () ? operands[0] : gen_reg_rtx (SImode);
-
-      emit_insn (gen_cmpgtudi_media (tmp, sh_compare_op1, sh_compare_op0));
-      emit_insn (gen_cmpeqdi_media (reg, tmp, const0_rtx));
-      if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_extendsidi2 (operands[0], reg));
-
-      DONE;
-    }
-
-  if (! currently_expanding_to_rtl)
-    FAIL;
-  operands[1] = prepare_scc_operands (GEU);
-}")
 
 ;; sne moves the complement of the T reg to DEST like this:
 ;;      cmp/eq ...
@@ -10119,81 +9257,20 @@ mov.l\\t1f,r0\\n\\
 ;;   not require r0 and further, the -1 may be CSE-ed or lifted out of a
 ;;   loop.
 
-(define_expand "sne"
-  [(set (match_dup 2) (const_int -1))
-   (parallel [(set (match_operand:SI 0 "arith_reg_operand" "")
-		   (neg:SI (plus:SI (match_dup 1)
-				    (match_dup 2))))
+(define_expand "movnegt"
+  [(set (match_dup 1) (const_int -1))
+   (parallel [(set (match_operand:SI 0 "" "")
+		   (neg:SI (plus:SI (reg:SI T_REG)
+				    (match_dup 1))))
 	      (set (reg:SI T_REG)
-		   (ne:SI (ior:SI (match_dup 1) (match_dup 2))
+		   (ne:SI (ior:SI (reg:SI T_REG) (match_dup 1))
 			  (const_int 0)))])]
   ""
   "
 {
-  if (TARGET_SHMEDIA)
-    {
-      rtx tmp, reg;
-
-      reg = operands[0];
-      if (GET_MODE (operands[0]) != SImode)
-	reg = (!can_create_pseudo_p ()
-	       ? gen_rtx_SUBREG (SImode, operands[0], 0)
-	       : gen_reg_rtx (SImode));
-      if (! TARGET_SHMEDIA_FPU
-	  && GET_MODE (sh_compare_op0) != DImode
-	  && GET_MODE (sh_compare_op0) != SImode)
-	FAIL;
-
-      sh_compare_op0 = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
-	sh_compare_op1 = force_reg (GET_MODE (sh_compare_op1) == VOIDmode
-				    ? GET_MODE (sh_compare_op0)
-				    : GET_MODE (sh_compare_op1),
-				    sh_compare_op1);
-
-      tmp = !can_create_pseudo_p () ? reg : gen_reg_rtx (SImode);
-
-      emit_insn (gen_seq (tmp));
-      emit_insn (gen_cmpeqdi_media (reg, tmp, const0_rtx));
-      if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_extendsidi2 (operands[0], reg));
-
-      DONE;
-    }
-
-  if (sh_expand_t_scc (NE, operands[0]))
-    DONE;
-  if (! currently_expanding_to_rtl)
-    FAIL;
-  operands[1] = prepare_scc_operands (EQ);
-  operands[2] = gen_reg_rtx (SImode);
+  operands[1] = gen_reg_rtx (SImode);
 }")
 
-(define_expand "sunordered"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(unordered:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_SHMEDIA_FPU"
-  "
-{
-  operands[1] = force_reg (GET_MODE (sh_compare_op0), sh_compare_op0);
-  operands[2] = force_reg (GET_MODE (sh_compare_op1), sh_compare_op1);
-}")
-
-;; Use the same trick for FP sle / sge
-
-;; Apart from the constant use and the T setting, this is like movt,
-;; except that it uses the logically negated value of T, i.e.
-;; operand[0] := T ? 0 : 1.
-(define_expand "movnegt"
-  [(set (match_dup 2) (const_int -1))
-   (parallel [(set (match_operand 0 "" "")
-		   (neg:SI (plus:SI (match_dup 1)
-				    (match_dup 2))))
-	      (set (reg:SI T_REG)
-		   (ne:SI (ior:SI (match_operand 1 "" "") (match_dup 2))
-			  (const_int 0)))])]
-  "TARGET_SH1"
-  "operands[2] = gen_reg_rtx (SImode);")
 
 ;; Recognize mov #-1/negc/neg sequence, and change it to movt/add #-1.
 ;; This prevents a regression that occurred when we switched from xor to
@@ -10207,6 +9284,47 @@ mov.l\\t1f,r0\\n\\
   [(set (match_dup 0) (eq:SI (reg:SI T_REG) (const_int 1)))
    (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))]
   "")
+
+(define_expand "cstoresf4"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 1 "sh_float_comparison_operator"
+	 [(match_operand:SF 2 "arith_operand" "")
+	  (match_operand:SF 3 "arith_operand" "")]))]
+  "TARGET_SH2E || TARGET_SHMEDIA_FPU"
+  "if (TARGET_SHMEDIA)
+     {
+       emit_insn (gen_cstore4_media (operands[0], operands[1],
+				     operands[2], operands[3]));
+       DONE;
+     }
+
+   if (! currently_expanding_to_rtl)
+     FAIL;
+   
+   sh_emit_compare_and_set (operands, SFmode);
+   DONE;
+")
+
+(define_expand "cstoredf4"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(match_operator:SI 1 "sh_float_comparison_operator"
+	 [(match_operand:DF 2 "arith_operand" "")
+	  (match_operand:DF 3 "arith_operand" "")]))]
+  "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
+  "if (TARGET_SHMEDIA)
+     {
+       emit_insn (gen_cstore4_media (operands[0], operands[1],
+				     operands[2], operands[3]));
+       DONE;
+     }
+
+    if (! currently_expanding_to_rtl)
+      FAIL;
+   
+   sh_emit_compare_and_set (operands, DFmode);
+   DONE;
+")
+
 
 ;; -------------------------------------------------------------------------
 ;; Instructions to cope with inline literal tables
@@ -10986,15 +10104,21 @@ mov.l\\t1f,r0\\n\\
   "fcmpun.s	%1, %2, %0"
   [(set_attr "type" "fcmp_media")])
 
-(define_expand "cmpsf"
-  [(set (reg:SI T_REG)
-	(compare (match_operand:SF 0 "arith_operand" "")
-		 (match_operand:SF 1 "arith_operand" "")))]
+(define_expand "cbranchsf4"
+  [(set (pc)
+	(if_then_else (match_operator 0 "sh_float_comparison_operator"
+		       [(match_operand:SF 1 "arith_operand" "")
+			(match_operand:SF 2 "arith_operand" "")])
+		      (match_operand 3 "" "")
+		      (pc)))]
   "TARGET_SH2E || TARGET_SHMEDIA_FPU"
   "
 {
-  sh_compare_op0 = operands[0];
-  sh_compare_op1 = operands[1];
+  if (TARGET_SHMEDIA)
+    emit_jump_insn (gen_cbranchfp4_media (operands[0], operands[1], operands[2],
+					  operands[3]));
+  else
+    sh_emit_compare_and_branch (operands, SFmode);
   DONE;
 }")
 
@@ -11484,17 +10608,24 @@ mov.l\\t1f,r0\\n\\
   "fcmpun.d	%1,%2,%0"
   [(set_attr "type" "fcmp_media")])
 
-(define_expand "cmpdf"
-  [(set (reg:SI T_REG)
-	(compare (match_operand:DF 0 "arith_operand" "")
-		 (match_operand:DF 1 "arith_operand" "")))]
+(define_expand "cbranchdf4"
+  [(set (pc)
+	(if_then_else (match_operator 0 "sh_float_comparison_operator"
+		       [(match_operand:DF 1 "arith_operand" "")
+			(match_operand:DF 2 "arith_operand" "")])
+		      (match_operand 3 "" "")
+		      (pc)))]
   "(TARGET_SH4 || TARGET_SH2A_DOUBLE) || TARGET_SHMEDIA_FPU"
   "
 {
-  sh_compare_op0 = operands[0];
-  sh_compare_op1 = operands[1];
+  if (TARGET_SHMEDIA)
+    emit_jump_insn (gen_cbranchfp4_media (operands[0], operands[1], operands[2],
+					  operands[3]));
+  else
+    sh_emit_compare_and_branch (operands, DFmode);
   DONE;
 }")
+
 
 (define_expand "negdf2"
   [(set (match_operand:DF 0 "arith_reg_operand" "")
@@ -14144,15 +13275,21 @@ mov.l\\t1f,r0\\n\\
   if (TARGET_SHMEDIA)
     {
       rtx tmp = gen_reg_rtx (GET_MODE (operands[0]));
+      rtx test;
 
+      test = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
       if (TARGET_SHMEDIA64)
-	emit_insn (gen_stack_protect_test_di_media (tmp, operands[0],
-						    operands[1]));
+	{
+	  emit_insn (gen_stack_protect_test_di_media (tmp, operands[0],
+						      operands[1]));
+          emit_jump_insn (gen_cbranchdi4 (test, tmp, const0_rtx, operands[2]));
+	}
       else
-	emit_insn (gen_stack_protect_test_si_media (tmp, operands[0],
-						    operands[1]));
-
-      emit_jump_insn (gen_bne_media (operands[2], tmp, const0_rtx));
+	{
+	  emit_insn (gen_stack_protect_test_si_media (tmp, operands[0],
+						      operands[1]));
+          emit_jump_insn (gen_cbranchsi4 (test, tmp, const0_rtx, operands[2]));
+	}
     }
   else
     {

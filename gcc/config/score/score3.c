@@ -54,9 +54,6 @@
 #define BITSET_P(VALUE, BIT)      (((VALUE) & (1L << (BIT))) != 0)
 #define INS_BUF_SZ                128
 
-/* Define the information needed to generate branch insns.  This is
-   stored from the compare operation.  */
-extern rtx cmp_op0, cmp_op1;
 extern enum reg_class score_char_to_class[256];
 
 static int score3_sdata_max;
@@ -1647,13 +1644,6 @@ score3_epilogue (int sibcall_p)
     emit_jump_insn (gen_return_internal_score3 (gen_rtx_REG (Pmode, RA_REGNUM)));
 }
 
-void
-score3_gen_cmp (enum machine_mode mode)
-{
-  emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_REG (mode, CC_REGNUM),
-                          gen_rtx_COMPARE (mode, cmp_op0, cmp_op1)));
-}
-
 /* Return true if X is a symbolic constant that can be calculated in
    the same way as a bare symbol.  If it is, store the type of the
    symbol in *SYMBOL_TYPE.  */
@@ -1692,7 +1682,8 @@ score3_movsicc (rtx *ops)
 
   mode = score3_select_cc_mode (GET_CODE (ops[1]), ops[2], ops[3]);
   emit_insn (gen_rtx_SET (VOIDmode, gen_rtx_REG (mode, CC_REGNUM),
-                          gen_rtx_COMPARE (mode, cmp_op0, cmp_op1)));
+                          gen_rtx_COMPARE (mode, XEXP (ops[1], 0),
+					   XEXP (ops[1], 1))));
 }
 
 /* Call and sibcall pattern all need call this function.  */

@@ -223,11 +223,6 @@ struct processor_costs z10_cost =
 
 extern int reload_completed;
 
-/* Save information from a "cmpxx" operation until the branch or scc is
-   emitted.  A pair of a MODE_CC register and a const0_rtx if a compare
-   has been emitted already.  */
-rtx s390_compare_op0, s390_compare_op1;
-
 /* Structure used to hold the components of a S/390 memory
    address.  A legitimate address on S/390 is of the general
    form
@@ -7747,15 +7742,11 @@ s390_emit_prologue (void)
 	      rtx t = gen_rtx_AND (Pmode, stack_pointer_rtx,
 				   GEN_INT (stack_check_mask));
 	      if (TARGET_64BIT)
-		gen_cmpdi (t, const0_rtx);
+	        emit_insn (gen_ctrapdi4 (gen_rtx_EQ (VOIDmode, t, const0_rtx),
+				         t, const0_rtx, const0_rtx));
 	      else
-		gen_cmpsi (t, const0_rtx);
-
-	      emit_insn (gen_conditional_trap (gen_rtx_EQ (CCmode,
-							   gen_rtx_REG (CCmode,
-								     CC_REGNUM),
-							   const0_rtx),
-					       const0_rtx));
+	        emit_insn (gen_ctrapsi4 (gen_rtx_EQ (VOIDmode, t, const0_rtx),
+				         t, const0_rtx, const0_rtx));
 	    }
   	}
 

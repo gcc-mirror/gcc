@@ -45,7 +45,6 @@ void m32c_register_pragmas (void);
 int  m32c_regno_ok_for_base_p (int);
 int  m32c_trampoline_alignment (void);
 int  m32c_trampoline_size (void);
-void m32c_unpend_compare (void);
 
 #if defined(RTX_CODE) && defined(TREE_CODE)
 
@@ -58,7 +57,6 @@ rtx  m32c_function_value (const_tree, const_tree);
 
 int  m32c_cannot_change_mode_class (MM, MM, int);
 int  m32c_class_max_nregs (int, MM);
-rtx  m32c_cmp_flg_0 (rtx);
 rtx  m32c_eh_return_stackadj_rtx (void);
 void m32c_emit_eh_epilogue (rtx);
 int  m32c_expand_cmpstr (rtx *);
@@ -68,7 +66,6 @@ int  m32c_expand_movmemhi (rtx *);
 int  m32c_expand_movstr (rtx *);
 void m32c_expand_neg_mulpsi3 (rtx *);
 int  m32c_expand_setmemhi (rtx *);
-void m32c_expand_scc (int, rtx *);
 int  m32c_extra_constraint_p (rtx, char, const char *);
 int  m32c_extra_constraint_p2 (rtx, char, const char *);
 int  m32c_hard_regno_nregs (int, MM);
@@ -86,7 +83,6 @@ int  m32c_memory_move_cost (MM, int, int);
 int  m32c_modes_tieable_p (MM, MM);
 bool m32c_mov_ok (rtx *, MM);
 char * m32c_output_compare (rtx, rtx *);
-void m32c_pend_compare (rtx *);
 int  m32c_preferred_output_reload_class (rtx, int);
 int  m32c_preferred_reload_class (rtx, int);
 int  m32c_prepare_move (rtx *, MM);

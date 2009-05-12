@@ -2175,6 +2175,20 @@
    (set_attr "length" "4,4")
    (set_attr "mode" "SI")])
 
+(define_expand "cbranchsi4"
+  [(set (reg:CC CC_REGNUM)
+        (compare:CC (match_operand:SI 1 "score_register_operand" "")
+                    (match_operand:SI 2 "arith_operand" "")))
+   (set (pc)
+        (if_then_else
+	 (match_operator 0 "ordered_comparison_operator"
+			 [(reg:CC CC_REGNUM)
+		 	  (const_int 0)]) 
+         (label_ref (match_operand 3 "" ""))
+         (pc)))]
+  ""
+  "")
+
 (define_insn "cbrancheqz"
   [(set (pc) (if_then_else
               (eq (match_operand:SI 0 "score_register_operand" "d")
@@ -2258,16 +2272,6 @@
             (le (minus (match_dup 2) (pc)) (const_int 502)))
        (const_int 4)
        (const_int 6)))])
-
-(define_expand "cmpsi"
-  [(match_operand:SI 0 "score_register_operand")
-   (match_operand:SI 1 "arith_operand")]
-  ""
-{
-  cmp_op0 = operands[0];
-  cmp_op1 = operands[1];
-  DONE;
-})
 
 (define_insn "cmpsi_nz_score7"
   [(set (reg:CC_NZ CC_REGNUM)
@@ -2374,106 +2378,6 @@
    (set_attr "length" "2,4,2")
    (set_attr "up_c" "yes")
    (set_attr "mode" "SI")])
-
-(define_expand "beq"
-  [(set (pc)
-        (if_then_else (eq (reg:CC CC_REGNUM) (const_int 0))
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  ""
-{
-  score_gen_cmp (CCmode);
-})
-
-(define_expand "bne"
-  [(set (pc)
-        (if_then_else (ne (reg:CC CC_REGNUM) (const_int 0))
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  ""
-{
-  score_gen_cmp (CCmode);
-})
-
-(define_expand "bgt"
-  [(set (pc)
-        (if_then_else (gt (reg:CC CC_REGNUM) (const_int 0))
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  ""
-{
-  score_gen_cmp (CCmode);
-})
-
-(define_expand "ble"
-  [(set (pc)
-        (if_then_else (le (reg:CC CC_REGNUM) (const_int 0))
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  ""
-{
-  score_gen_cmp (CCmode);
-})
-
-(define_expand "bge"
-  [(set (pc)
-        (if_then_else (ge (reg:CC CC_REGNUM) (const_int 0))
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  ""
-{
-  score_gen_cmp (CCmode);
-})
-
-(define_expand "blt"
-  [(set (pc)
-        (if_then_else (lt (reg:CC CC_REGNUM) (const_int 0))
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  ""
-{
-  score_gen_cmp (CCmode);
-})
-
-(define_expand "bgtu"
-  [(set (pc)
-        (if_then_else (gtu (reg:CC CC_REGNUM) (const_int 0))
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  ""
-{
-  score_gen_cmp (CCmode);
-})
-
-(define_expand "bleu"
-  [(set (pc)
-        (if_then_else (leu (reg:CC CC_REGNUM) (const_int 0))
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  ""
-{
-  score_gen_cmp (CCmode);
-})
-
-(define_expand "bgeu"
-  [(set (pc)
-        (if_then_else (geu (reg:CC CC_REGNUM) (const_int 0))
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  ""
-{
-  score_gen_cmp (CCmode);
-})
-
-(define_expand "bltu"
-  [(set (pc)
-        (if_then_else (ltu (reg:CC CC_REGNUM) (const_int 0))
-                      (label_ref (match_operand 0 "" ""))
-                      (pc)))]
-  ""
-{
-  score_gen_cmp (CCmode);
-})
 
 (define_insn "*branch_n_score7"
   [(set (pc)

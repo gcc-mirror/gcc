@@ -1495,12 +1495,6 @@ extern char m32r_punct_chars[256];
 /* A function address in a call instruction.  */
 #define FUNCTION_MODE SImode
 
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  Note that we can't use "rtx" here
-   since it hasn't been defined!  */
-extern struct rtx_def * m32r_compare_op0;
-extern struct rtx_def * m32r_compare_op1;
-
 /* M32R function types.  */
 enum m32r_function_type
 {

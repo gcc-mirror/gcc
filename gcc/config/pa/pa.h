@@ -21,14 +21,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-enum cmp_type				/* comparison type */
-{
-  CMP_SI,				/* compare integers */
-  CMP_SF,				/* compare single precision floats */
-  CMP_DF,				/* compare double precision floats */
-  CMP_MAX				/* max comparison type */
-};
-
 /* For long call handling.  */
 extern unsigned long total_code_bytes;
 
@@ -755,10 +747,6 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
    ? PARM_BOUNDARY : MAX_PARM_BOUNDARY)
 
 
-extern GTY(()) rtx hppa_compare_op0;
-extern GTY(()) rtx hppa_compare_op1;
-extern enum cmp_type hppa_branch_type;
-
 /* On HPPA, we emit profiling code as rtl via PROFILE_HOOK rather than
    as assembly via FUNCTION_PROFILER.  Just output a local label.
    We can't use the function label because the GAS SOM target can't

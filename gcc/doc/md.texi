@@ -4236,30 +4236,6 @@ the operand to that mode before generating the instruction.
 @item @samp{one_cmpl@var{m}2}
 Store the bitwise-complement of operand 1 into operand 0.
 
-@cindex @code{cmp@var{m}} instruction pattern
-@item @samp{cmp@var{m}}
-Compare operand 0 and operand 1, and set the condition codes.
-The RTL pattern should look like this:
-
-@smallexample
-(set (cc0) (compare (match_operand:@var{m} 0 @dots{})
-                    (match_operand:@var{m} 1 @dots{})))
-@end smallexample
-
-@cindex @code{tst@var{m}} instruction pattern
-@item @samp{tst@var{m}}
-Compare operand 0 against zero, and set the condition codes.
-The RTL pattern should look like this:
-
-@smallexample
-(set (cc0) (match_operand:@var{m} 0 @dots{}))
-@end smallexample
-
-@samp{tst@var{m}} patterns should not be defined for machines that do
-not use @code{(cc0)}.  Doing so would confuse the optimizer since it
-would no longer be clear which @code{set} operations were comparisons.
-The @samp{cmp@var{m}} patterns should be used instead.
-
 @cindex @code{movmem@var{m}} instruction pattern
 @item @samp{movmem@var{m}}
 Block move instruction.  The destination and source blocks of memory
@@ -4522,16 +4498,14 @@ move operand 2 or (operands 2 + operand 3) into operand 0 according to the
 comparison in operand 1.  If the comparison is true, operand 2 is moved into
 operand 0, otherwise (operand 2 + operand 3) is moved.
 
-@cindex @code{s@var{cond}} instruction pattern
-@item @samp{s@var{cond}}
-Store zero or nonzero in the operand according to the condition codes.
-Value stored is nonzero iff the condition @var{cond} is true.
-@var{cond} is the name of a comparison operation expression code, such
-as @code{eq}, @code{lt} or @code{leu}.
-
-You specify the mode that the operand must have when you write the
-@code{match_operand} expression.  The compiler automatically sees
-which mode you have used and supplies an operand of that mode.
+@cindex @code{cstore@var{mode}4} instruction pattern
+@item @samp{cstore@var{mode}4}
+Store zero or nonzero in operand 0 according to whether a comparison
+is true.  Operand 1 is a comparison operator.  Operand 2 and operand 3
+are the first and second operand of the comparison, respectively.
+You specify the mode that operand 0 must have when you write the
+@code{match_operand} expression.  The compiler automatically sees which
+mode you have used and supplies an operand of that mode.
 
 The value stored for a true condition must have 1 as its low bit, or
 else must be negative.  Otherwise the instruction is not suitable and
@@ -4548,32 +4522,10 @@ integer comparisons, it is best to omit these patterns.
 If these operations are omitted, the compiler will usually generate code
 that copies the constant one to the target and branches around an
 assignment of zero to the target.  If this code is more efficient than
-the potential instructions used for the @samp{s@var{cond}} pattern
+the potential instructions used for the @samp{cstore@var{mode}4} pattern
 followed by those required to convert the result into a 1 or a zero in
-@code{SImode}, you should omit the @samp{s@var{cond}} operations from
+@code{SImode}, you should omit the @samp{cstore@var{mode}4} operations from
 the machine description.
-
-@cindex @code{b@var{cond}} instruction pattern
-@item @samp{b@var{cond}}
-Conditional branch instruction.  Operand 0 is a @code{label_ref} that
-refers to the label to jump to.  Jump if the condition codes meet
-condition @var{cond}.
-
-Some machines do not follow the model assumed here where a comparison
-instruction is followed by a conditional branch instruction.  In that
-case, the @samp{cmp@var{m}} (and @samp{tst@var{m}}) patterns should
-simply store the operands away and generate all the required insns in a
-@code{define_expand} (@pxref{Expander Definitions}) for the conditional
-branch operations.  All calls to expand @samp{b@var{cond}} patterns are
-immediately preceded by calls to expand either a @samp{cmp@var{m}}
-pattern or a @samp{tst@var{m}} pattern.
-
-Machines that use a pseudo register for the condition code value, or
-where the mode used for the comparison depends on the condition being
-tested, should also use the above mechanism.  @xref{Jump Patterns}.
-
-The above discussion also applies to the @samp{mov@var{mode}cc} and
-@samp{s@var{cond}} patterns.
 
 @cindex @code{cbranch@var{mode}4} instruction pattern
 @item @samp{cbranch@var{mode}4}
@@ -5025,18 +4977,20 @@ This pattern, if defined, signals an error, typically by causing some
 kind of signal to be raised.  Among other places, it is used by the Java
 front end to signal `invalid array index' exceptions.
 
-@cindex @code{conditional_trap} instruction pattern
-@item @samp{conditional_trap}
+@cindex @code{ctrap@var{MM}4} instruction pattern
+@item @samp{ctrap@var{MM}4}
 Conditional trap instruction.  Operand 0 is a piece of RTL which
-performs a comparison.  Operand 1 is the trap code, an integer.
+performs a comparison, and operands 1 and 2 are the arms of the
+comparison.  Operand 3 is the trap code, an integer.
 
-A typical @code{conditional_trap} pattern looks like
+A typical @code{ctrap} pattern looks like
 
 @smallexample
-(define_insn "conditional_trap"
+(define_insn "ctrapsi4"
   [(trap_if (match_operator 0 "trap_operator"
-             [(cc0) (const_int 0)])
-            (match_operand 1 "const_int_operand" "i"))]
+             [(match_operand 1 "register_operand")
+	      (match_operand 2 "immediate_operand")])
+            (match_operand 3 "const_int_operand" "i"))]
   ""
   "@dots{}")
 @end smallexample
@@ -5092,14 +5046,16 @@ operation and all memory operations after the atomic operation occur
 after the atomic operation.
 
 For targets where the success or failure of the compare-and-swap
-operation is available via the status flags, it is possible
-to avoid a separate compare operation and issue the subsequent
-setcc or branch immediately after the compare-and-swap.  To this
-end, GCC will look for a @code{MODE_CC} set in the output of
-@code{sync_compare_and_swap@var{mode}}; if the machine description
-includes such a set, the target should also define a special @code{cmpcc}
-instruction.  GCC will then be able to take the destination of the
-@code{MODE_CC} set and use it as the first operand of @code{cmpcc}.
+operation is available via the status flags, it is possible to
+avoid a separate compare operation and issue the subsequent
+branch or store-flag operation immediately after the compare-and-swap.
+To this end, GCC will look for a @code{MODE_CC} set in the
+output of @code{sync_compare_and_swap@var{mode}}; if the machine
+description includes such a set, the target should also define special
+@code{cbranchcc4} and/or @code{cstorecc4} instructions.  GCC will then
+be able to take the destination of the @code{MODE_CC} set and pass it
+to the @code{cbranchcc4} or @code{cstorecc4} pattern as the first
+operand of the comparison (the second will be @code{(const_int 0)}).
 
 @cindex @code{sync_add@var{mode}} instruction pattern
 @cindex @code{sync_sub@var{mode}} instruction pattern
@@ -5275,48 +5231,6 @@ constant value.
 @cindex Dependent Patterns
 @cindex Interdependence of Patterns
 
-Every machine description must have a named pattern for each of the
-conditional branch names @samp{b@var{cond}}.  The recognition template
-must always have the form
-
-@smallexample
-(set (pc)
-     (if_then_else (@var{cond} (cc0) (const_int 0))
-                   (label_ref (match_operand 0 "" ""))
-                   (pc)))
-@end smallexample
-
-@noindent
-In addition, every machine description must have an anonymous pattern
-for each of the possible reverse-conditional branches.  Their templates
-look like
-
-@smallexample
-(set (pc)
-     (if_then_else (@var{cond} (cc0) (const_int 0))
-                   (pc)
-                   (label_ref (match_operand 0 "" ""))))
-@end smallexample
-
-@noindent
-They are necessary because jump optimization can turn direct-conditional
-branches into reverse-conditional branches.
-
-It is often convenient to use the @code{match_operator} construct to
-reduce the number of patterns that must be specified for branches.  For
-example,
-
-@smallexample
-(define_insn ""
-  [(set (pc)
-        (if_then_else (match_operator 0 "comparison_operator"
-                                      [(cc0) (const_int 0)])
-                      (pc)
-                      (label_ref (match_operand 1 "" ""))))]
-  "@var{condition}"
-  "@dots{}")
-@end smallexample
-
 In some cases machines support instructions identical except for the
 machine mode of one or more operands.  For example, there may be
 ``sign-extend halfword'' and ``sign-extend byte'' instructions whose
@@ -5357,113 +5271,38 @@ generating the appropriate machine instruction.
 @cindex jump instruction patterns
 @cindex defining jump instruction patterns
 
-For most machines, GCC assumes that the machine has a condition code.
-A comparison insn sets the condition code, recording the results of both
-signed and unsigned comparison of the given operands.  A separate branch
-insn tests the condition code and branches or not according its value.
-The branch insns come in distinct signed and unsigned flavors.  Many
-common machines, such as the VAX, the 68000 and the 32000, work this
-way.
+GCC does not assume anything about how the machine realizes jumps.
+The machine description should define a single pattern, usually
+a @code{define_expand}, which expands to all the required insns.
 
-Some machines have distinct signed and unsigned compare instructions, and
-only one set of conditional branch instructions.  The easiest way to handle
-these machines is to treat them just like the others until the final stage
-where assembly code is written.  At this time, when outputting code for the
-compare instruction, peek ahead at the following branch using
-@code{next_cc0_user (insn)}.  (The variable @code{insn} refers to the insn
-being output, in the output-writing code in an instruction pattern.)  If
-the RTL says that is an unsigned branch, output an unsigned compare;
-otherwise output a signed compare.  When the branch itself is output, you
-can treat signed and unsigned branches identically.
+Usually, this would be a comparison insn to set the condition code
+and a separate branch insn testing the condition code and branching
+or not according to its value.  For many machines, however,
+separating compares and branches is limiting, which is why the
+more flexible approach with one @code{define_expand} is used in GCC.
+The machine description becomes clearer for architectures that
+have compare-and-branch instructions but no condition code.  It also
+works better when different sets of comparison operators are supported
+by different kinds of conditional branches (e.g. integer vs. floating-point),
+or by conditional branches with respect to conditional stores.
 
-The reason you can do this is that GCC always generates a pair of
-consecutive RTL insns, possibly separated by @code{note} insns, one to
-set the condition code and one to test it, and keeps the pair inviolate
-until the end.
+Two separate insns are always used if the machine description represents
+a condition code register using the legacy RTL expression @code{(cc0)},
+and on most machines that use a separate condition code register
+(@pxref{Condition Code}).  For machines that use @code{(cc0)}, in
+fact, the set and use of the condition code must be separate and
+adjacent@footnote{@code{note} insns can separate them, though.}, thus
+allowing flags in @code{cc_status} to be used (@pxref{Condition Code}) and
+so that the comparison and branch insns could be located from each other
+by using the functions @code{prev_cc0_setter} and @code{next_cc0_user}.
 
-To go with this technique, you must define the machine-description macro
-@code{NOTICE_UPDATE_CC} to do @code{CC_STATUS_INIT}; in other words, no
-compare instruction is superfluous.
-
-Some machines have compare-and-branch instructions and no condition code.
-A similar technique works for them.  When it is time to ``output'' a
-compare instruction, record its operands in two static variables.  When
-outputting the branch-on-condition-code instruction that follows, actually
-output a compare-and-branch instruction that uses the remembered operands.
-
-It also works to define patterns for compare-and-branch instructions.
-In optimizing compilation, the pair of compare and branch instructions
-will be combined according to these patterns.  But this does not happen
-if optimization is not requested.  So you must use one of the solutions
-above in addition to any special patterns you define.
-
-In many RISC machines, most instructions do not affect the condition
-code and there may not even be a separate condition code register.  On
-these machines, the restriction that the definition and use of the
-condition code be adjacent insns is not necessary and can prevent
-important optimizations.  For example, on the IBM RS/6000, there is a
-delay for taken branches unless the condition code register is set three
-instructions earlier than the conditional branch.  The instruction
-scheduler cannot perform this optimization if it is not permitted to
-separate the definition and use of the condition code register.
-
-On these machines, do not use @code{(cc0)}, but instead use a register
-to represent the condition code.  If there is a specific condition code
-register in the machine, use a hard register.  If the condition code or
-comparison result can be placed in any general register, or if there are
-multiple condition registers, use a pseudo register.
-
-@findex prev_cc0_setter
-@findex next_cc0_user
-On some machines, the type of branch instruction generated may depend on
-the way the condition code was produced; for example, on the 68k and
-SPARC, setting the condition code directly from an add or subtract
-instruction does not clear the overflow bit the way that a test
-instruction does, so a different branch instruction must be used for
-some conditional branches.  For machines that use @code{(cc0)}, the set
-and use of the condition code must be adjacent (separated only by
-@code{note} insns) allowing flags in @code{cc_status} to be used.
-(@xref{Condition Code}.)  Also, the comparison and branch insns can be
-located from each other by using the functions @code{prev_cc0_setter}
-and @code{next_cc0_user}.
-
-However, this is not true on machines that do not use @code{(cc0)}.  On
-those machines, no assumptions can be made about the adjacency of the
-compare and branch insns and the above methods cannot be used.  Instead,
-we use the machine mode of the condition code register to record
-different formats of the condition code register.
-
-Registers used to store the condition code value should have a mode that
-is in class @code{MODE_CC}.  Normally, it will be @code{CCmode}.  If
-additional modes are required (as for the add example mentioned above in
-the SPARC), define them in @file{@var{machine}-modes.def}
-(@pxref{Condition Code}).  Also define @code{SELECT_CC_MODE} to choose
-a mode given an operand of a compare.
-
-If it is known during RTL generation that a different mode will be
-required (for example, if the machine has separate compare instructions
-for signed and unsigned quantities, like most IBM processors), they can
-be specified at that time.
-
-If the cases that require different modes would be made by instruction
-combination, the macro @code{SELECT_CC_MODE} determines which machine
-mode should be used for the comparison result.  The patterns should be
-written using that mode.  To support the case of the add on the SPARC
-discussed above, we have the pattern
-
-@smallexample
-(define_insn ""
-  [(set (reg:CC_NOOV 0)
-        (compare:CC_NOOV
-          (plus:SI (match_operand:SI 0 "register_operand" "%r")
-                   (match_operand:SI 1 "arith_operand" "rI"))
-          (const_int 0)))]
-  ""
-  "@dots{}")
-@end smallexample
-
-The @code{SELECT_CC_MODE} macro on the SPARC returns @code{CC_NOOVmode}
-for comparisons whose argument is a @code{plus}.
+Even in this case having a single entry point for conditional branches
+is advantageous, because it handles equally well the case where a single
+comparison instruction records the results of both signed and unsigned
+comparison of the given operands (with the branch insns coming in distinct
+signed and unsigned flavors) as in the x86 or SPARC, and the case where
+there are distinct signed and unsigned compare instructions and only
+one set of conditional branch instructions as in the PowerPC.
 
 @end ifset
 @ifset INTERNALS
@@ -5625,13 +5464,9 @@ the operations as far as possible.  For instance,
 @cindex @code{compare}, canonicalization of
 @item
 For the @code{compare} operator, a constant is always the second operand
-on machines where @code{cc0} is used (@pxref{Jump Patterns}).  On other
-machines, there are rare cases where the compiler might want to construct
-a @code{compare} with a constant as the first operand.  However, these
-cases are not common enough for it to be worthwhile to provide a pattern
-matching a constant as the first operand unless the machine actually has
-such an instruction.
+if the first argument is a condition code register or @code{(cc0)}.
 
+@item
 An operand of @code{neg}, @code{not}, @code{mult}, @code{plus}, or
 @code{minus} is made the first operand under the same conditions as
 above.
@@ -5698,11 +5533,6 @@ the form
 @smallexample
 (plus:@var{m} (plus:@var{m} @var{x} @var{y}) @var{constant})
 @end smallexample
-
-@item
-On machines that do not use @code{cc0},
-@code{(compare @var{x} (const_int 0))} will be converted to
-@var{x}.
 
 @cindex @code{zero_extract}, canonicalization of
 @cindex @code{sign_extract}, canonicalization of

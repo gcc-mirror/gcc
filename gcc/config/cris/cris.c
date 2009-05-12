@@ -1431,13 +1431,18 @@ cris_normal_notice_update_cc (rtx exp, rtx insn)
       if (SET_DEST (exp) == cc0_rtx)
 	{
 	  CC_STATUS_INIT;
-	  cc_status.value1 = SET_SRC (exp);
 
-	  /* Handle flags for the special btstq on one bit.  */
-	  if (GET_CODE (SET_SRC (exp)) == ZERO_EXTRACT
-	      && XEXP (SET_SRC (exp), 1) == const1_rtx)
+	  if (GET_CODE (SET_SRC (exp)) == COMPARE
+	      && XEXP (SET_SRC (exp), 1) == const0_rtx)
+	    cc_status.value1 = XEXP (SET_SRC (exp), 0);
+	  else
+	    cc_status.value1 = SET_SRC (exp);
+
+          /* Handle flags for the special btstq on one bit.  */
+	  if (GET_CODE (cc_status.value1) == ZERO_EXTRACT
+	      && XEXP (cc_status.value1, 1) == const1_rtx)
 	    {
-	      if (CONST_INT_P (XEXP (SET_SRC (exp), 0)))
+	      if (CONST_INT_P (XEXP (cc_status.value1, 0)))
 		/* Using cmpq.  */
 		cc_status.flags = CC_INVERTED;
 	      else
@@ -1445,7 +1450,7 @@ cris_normal_notice_update_cc (rtx exp, rtx insn)
 		cc_status.flags = CC_Z_IN_NOT_N;
 	    }
 
-	  if (GET_CODE (SET_SRC (exp)) == COMPARE)
+	  else if (GET_CODE (SET_SRC (exp)) == COMPARE)
 	    {
 	      if (!REG_P (XEXP (SET_SRC (exp), 0))
 		  && XEXP (SET_SRC (exp), 1) != const0_rtx)
@@ -1854,6 +1859,11 @@ cris_rtx_costs (rtx x, int code, int outer_code, int *total,
 	  return true;
 	}
       return false;
+
+    case ZERO_EXTRACT:
+      if (outer_code != COMPARE)
+        return false;
+      /* fall through */
 
     case ZERO_EXTEND: case SIGN_EXTEND:
       *total = rtx_cost (XEXP (x, 0), outer_code, speed);

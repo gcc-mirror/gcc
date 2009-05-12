@@ -62,10 +62,6 @@ extern void crx_print_operand (FILE *, rtx, int);
 extern void crx_print_operand_address (FILE *, rtx);
 
 /* Misc functions called from crx.md.  */
-extern rtx crx_expand_compare (enum rtx_code, enum machine_mode);
-extern void crx_expand_branch (enum rtx_code, rtx);
-extern void crx_expand_scond (enum rtx_code, rtx);
-
 extern void crx_expand_movmem_single (rtx, rtx, rtx, rtx, rtx, unsigned HOST_WIDE_INT *);
 extern int crx_expand_movmem (rtx, rtx, rtx, rtx);
 #endif /* RTX_CODE */

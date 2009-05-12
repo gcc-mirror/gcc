@@ -5207,8 +5207,9 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
   enum insn_code icode;
   enum machine_mode compare_mode;
   enum machine_mode target_mode = GET_MODE (target);
+  enum mode_class mclass;
   rtx tem;
-  rtx last = get_last_insn ();
+  rtx last;
   rtx pattern, comparison;
 
   if (unsignedp)
@@ -5342,117 +5343,41 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       return op0;
     }
 
-  icode = setcc_gen_code[(int) code];
-
-  if (icode != CODE_FOR_nothing)
+  mclass = GET_MODE_CLASS (mode);
+  for (compare_mode = mode; compare_mode != VOIDmode;
+       compare_mode = GET_MODE_WIDER_MODE (compare_mode))
     {
-      insn_operand_predicate_fn pred;
-
-      /* We think we may be able to do this with a scc insn.  Emit the
-	 comparison and then the scc insn.  */
-
-      do_pending_stack_adjust ();
-      last = get_last_insn ();
-
-      comparison
-	= compare_from_rtx (op0, op1, code, unsignedp, mode, NULL_RTX);
-      if (CONSTANT_P (comparison))
+     enum machine_mode optab_mode = mclass == MODE_CC ? CCmode : compare_mode;
+     icode = optab_handler (cstore_optab, optab_mode)->insn_code;
+     if (icode != CODE_FOR_nothing)
 	{
-	  switch (GET_CODE (comparison))
-	    {
-	    case CONST_INT:
-	      if (comparison == const0_rtx)
-		return const0_rtx;
-	      break;
-	      
-#ifdef FLOAT_STORE_FLAG_VALUE
-	    case CONST_DOUBLE:
-	      if (comparison == CONST0_RTX (GET_MODE (comparison)))
-		return const0_rtx;
-	      break;
-#endif
-	    default:
-	      gcc_unreachable ();
-	    }
-	  
-	  if (normalizep == 1)
-	    return const1_rtx;
-	  if (normalizep == -1)
-	    return constm1_rtx;
-	  return const_true_rtx;
-	}
-
-      /* The code of COMPARISON may not match CODE if compare_from_rtx
-	 decided to swap its operands and reverse the original code.
-
-	 We know that compare_from_rtx returns either a CONST_INT or
-	 a new comparison code, so it is safe to just extract the
-	 code from COMPARISON.  */
-      code = GET_CODE (comparison);
-
-      /* Get a reference to the target in the proper mode for this insn.  */
-      compare_mode = insn_data[(int) icode].operand[0].mode;
-      subtarget = target;
-      pred = insn_data[(int) icode].operand[0].predicate;
-      if (optimize || ! (*pred) (subtarget, compare_mode))
-	subtarget = gen_reg_rtx (compare_mode);
-
-      pattern = GEN_FCN (icode) (subtarget);
-      if (pattern)
-	{
-	  emit_insn (pattern);
-	  return emit_store_flag_1 (target, subtarget, compare_mode,
-				    normalizep);
-	}
-    }
-  else
-    {
-      /* We don't have an scc insn, so try a cstore insn.  */
-
-      for (compare_mode = mode; compare_mode != VOIDmode;
-	   compare_mode = GET_MODE_WIDER_MODE (compare_mode))
-	{
-	  icode = optab_handler (cstore_optab, compare_mode)->insn_code;
-	  if (icode != CODE_FOR_nothing)
-	    break;
-	}
-
-      if (icode != CODE_FOR_nothing)
-	{
+	  rtx x, y;
 	  enum machine_mode result_mode
 	    = insn_data[(int) icode].operand[0].mode;
-	  rtx cstore_op0 = op0;
-	  rtx cstore_op1 = op1;
 
 	  do_pending_stack_adjust ();
 	  last = get_last_insn ();
 
-	  if (compare_mode != mode)
+          x = prepare_operand (icode, op0, 2, mode, compare_mode, unsignedp);
+          y = prepare_operand (icode, op1, 3, mode, compare_mode, unsignedp);
+	  comparison = gen_rtx_fmt_ee (code, result_mode, x, y);
+	  if (!x || !y
+	      || !insn_data[icode].operand[2].predicate
+		  (x, insn_data[icode].operand[2].mode)
+	      || !insn_data[icode].operand[3].predicate
+		  (y, insn_data[icode].operand[3].mode)
+	      || !insn_data[icode].operand[1].predicate (comparison, VOIDmode))
 	    {
-	      cstore_op0 = convert_modes (compare_mode, mode, cstore_op0,
-					  unsignedp);
-	      cstore_op1 = convert_modes (compare_mode, mode, cstore_op1,
-					  unsignedp);
+	      delete_insns_since (last);
+	      continue;
 	    }
-	  
-	  if (!insn_data[(int) icode].operand[2].predicate (cstore_op0,
-							    compare_mode))
-	    cstore_op0 = copy_to_mode_reg (compare_mode, cstore_op0);
 
-	  if (!insn_data[(int) icode].operand[3].predicate (cstore_op1,
-							    compare_mode))
-	    cstore_op1 = copy_to_mode_reg (compare_mode, cstore_op1);
-
-	  comparison = gen_rtx_fmt_ee (code, result_mode, cstore_op0,
-				       cstore_op1);
 	  subtarget = target;
-
 	  if (optimize || !(insn_data[(int) icode].operand[0].predicate
 			    (subtarget, result_mode)))
 	    subtarget = gen_reg_rtx (result_mode);
 
-	  pattern = GEN_FCN (icode) (subtarget, comparison, cstore_op0,
-				     cstore_op1);
+	  pattern = GEN_FCN (icode) (subtarget, comparison, x, y);
 
 	  if (pattern)
 	    {
@@ -5460,10 +5385,13 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	      return emit_store_flag_1 (target, subtarget, result_mode,
 					normalizep);
 	    }
+
+	  delete_insns_since (last);
+	  break;
 	}
     }
 
-  delete_insns_since (last);
+  last = get_last_insn ();
 
   /* If optimizing, use different pseudo registers for each insn, instead
      of reusing the same pseudo.  This leads to better CSE, but slows

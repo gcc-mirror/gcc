@@ -41,7 +41,6 @@ enum sh_function_kind {
 extern rtx sh_fsca_sf2int (void);
 extern rtx sh_fsca_df2int (void);
 extern rtx sh_fsca_int2sf (void);
-extern struct rtx_def *prepare_scc_operands (enum rtx_code);
 
 /* Declare functions defined in sh.c and used in templates.  */
 
@@ -72,7 +71,10 @@ extern enum rtx_code prepare_cbranch_operands (rtx *, enum machine_mode mode,
 					       enum rtx_code comparison);
 extern void expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int);
 extern bool expand_cbranchdi4 (rtx *operands, enum rtx_code comparison);
-extern void from_compare (rtx *, int);
+extern void sh_emit_scc_to_t (enum rtx_code, rtx, rtx);
+extern rtx sh_emit_cheap_store_flag (enum machine_mode, enum rtx_code, rtx, rtx);
+extern void sh_emit_compare_and_branch (rtx *, enum machine_mode);
+extern void sh_emit_compare_and_set (rtx *, enum machine_mode);
 extern int shift_insns_rtx (rtx);
 extern void gen_ashift (int, int, rtx);
 extern void gen_ashift_hi (int, int, rtx);
@@ -117,7 +119,7 @@ extern int sh_insn_length_adjustment (rtx);
 extern int sh_can_redirect_branch (rtx, rtx);
 extern void sh_expand_unop_v2sf (enum rtx_code, rtx, rtx);
 extern void sh_expand_binop_v2sf (enum rtx_code, rtx, rtx, rtx);
-extern int sh_expand_t_scc (enum rtx_code code, rtx target);
+extern int sh_expand_t_scc (rtx *);
 extern rtx sh_gen_truncate (enum machine_mode, rtx, int);
 extern bool sh_vector_mode_supported_p (enum machine_mode);
 #endif /* RTX_CODE */

@@ -22,11 +22,6 @@
 
 extern int target_flags;
 
-/* Define the information needed to generate branch insns.  This is
-   stored from the compare operation.  */
-extern GTY(()) rtx cmp_op0;
-extern GTY(()) rtx cmp_op1;
-
 #define GP_REG_FIRST                    0U
 #define GP_REG_LAST                     31U
 #define GP_REG_NUM                      (GP_REG_LAST - GP_REG_FIRST + 1U)
