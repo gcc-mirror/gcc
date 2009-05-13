@@ -1174,7 +1174,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_LABEL_ASSIGN:
       fputs ("LABEL ASSIGN ", dumpfile);
       show_expr (c->expr);
-      fprintf (dumpfile, " %d", c->label->value);
+      fprintf (dumpfile, " %d", c->label1->value);
       break;
 
     case EXEC_POINTER_ASSIGN:
@@ -1186,8 +1186,8 @@ show_code_node (int level, gfc_code *c)
 
     case EXEC_GOTO:
       fputs ("GOTO ", dumpfile);
-      if (c->label)
-	fprintf (dumpfile, "%d", c->label->value);
+      if (c->label1)
+	fprintf (dumpfile, "%d", c->label1->value);
       else
 	{
 	  show_expr (c->expr);
@@ -1197,7 +1197,7 @@ show_code_node (int level, gfc_code *c)
 	      fputs (", (", dumpfile);
 	      for (; d; d = d ->block)
 		{
-		  code_indent (level, d->label);
+		  code_indent (level, d->label1);
 		  if (d->block != NULL)
 		    fputc (',', dumpfile);
 		  else
@@ -1260,7 +1260,7 @@ show_code_node (int level, gfc_code *c)
       fputs ("IF ", dumpfile);
       show_expr (c->expr);
       fprintf (dumpfile, " %d, %d, %d",
-		  c->label->value, c->label2->value, c->label3->value);
+		  c->label1->value, c->label2->value, c->label3->value);
       break;
 
     case EXEC_IF:
@@ -1287,7 +1287,7 @@ show_code_node (int level, gfc_code *c)
 	  show_code (level + 1, d->next);
 	}
 
-      code_indent (level, c->label);
+      code_indent (level, c->label1);
 
       fputs ("ENDIF", dumpfile);
       break;
@@ -1317,7 +1317,7 @@ show_code_node (int level, gfc_code *c)
 	  show_code (level + 1, d->next);
 	}
 
-      code_indent (level, c->label);
+      code_indent (level, c->label1);
       fputs ("END SELECT", dumpfile);
       break;
 
@@ -1398,7 +1398,7 @@ show_code_node (int level, gfc_code *c)
 
       show_code (level + 1, c->block->next);
 
-      code_indent (level, c->label);
+      code_indent (level, c->label1);
       fputs ("END DO", dumpfile);
       break;
 

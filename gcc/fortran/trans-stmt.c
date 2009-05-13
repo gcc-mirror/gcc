@@ -109,16 +109,16 @@ gfc_trans_label_assign (gfc_code * code)
   len = GFC_DECL_STRING_LEN (se.expr);
   addr = GFC_DECL_ASSIGN_ADDR (se.expr);
 
-  label_tree = gfc_get_label_decl (code->label);
+  label_tree = gfc_get_label_decl (code->label1);
 
-  if (code->label->defined == ST_LABEL_TARGET)
+  if (code->label1->defined == ST_LABEL_TARGET)
     {
       label_tree = gfc_build_addr_expr (pvoid_type_node, label_tree);
       len_tree = integer_minus_one_node;
     }
   else
     {
-      gfc_expr *format = code->label->format;
+      gfc_expr *format = code->label1->format;
 
       label_len = format->value.character.length;
       len_tree = build_int_cst (NULL_TREE, label_len);
@@ -144,8 +144,8 @@ gfc_trans_goto (gfc_code * code)
   tree tmp;
   gfc_se se;
 
-  if (code->label != NULL)
-    return build1_v (GOTO_EXPR, gfc_get_label_decl (code->label));
+  if (code->label1 != NULL)
+    return build1_v (GOTO_EXPR, gfc_get_label_decl (code->label1));
 
   /* ASSIGNED GOTO.  */
   gfc_init_se (&se, NULL);
@@ -170,7 +170,7 @@ gfc_trans_goto (gfc_code * code)
   /* Check the label list.  */
   do
     {
-      target = gfc_get_label_decl (code->label);
+      target = gfc_get_label_decl (code->label1);
       tmp = gfc_build_addr_expr (pvoid_type_node, target);
       tmp = fold_build2 (EQ_EXPR, boolean_type_node, tmp, assigned_goto);
       tmp = build3_v (COND_EXPR, tmp,
@@ -719,14 +719,14 @@ gfc_trans_arithmetic_if (gfc_code * code)
   /* Build something to compare with.  */
   zero = gfc_build_const (TREE_TYPE (se.expr), integer_zero_node);
 
-  if (code->label->value != code->label2->value)
+  if (code->label1->value != code->label2->value)
     {
       /* If (cond < 0) take branch1 else take branch2.
          First build jumps to the COND .LT. 0 and the COND .EQ. 0 cases.  */
-      branch1 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label));
+      branch1 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label1));
       branch2 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label2));
 
-      if (code->label->value != code->label3->value)
+      if (code->label1->value != code->label3->value)
         tmp = fold_build2 (LT_EXPR, boolean_type_node, se.expr, zero);
       else
         tmp = fold_build2 (NE_EXPR, boolean_type_node, se.expr, zero);
@@ -734,9 +734,9 @@ gfc_trans_arithmetic_if (gfc_code * code)
       branch1 = fold_build3 (COND_EXPR, void_type_node, tmp, branch1, branch2);
     }
   else
-    branch1 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label));
+    branch1 = build1_v (GOTO_EXPR, gfc_get_label_decl (code->label1));
 
-  if (code->label->value != code->label3->value
+  if (code->label1->value != code->label3->value
       && code->label2->value != code->label3->value)
     {
       /* if (cond <= 0) take branch1 else take branch2.  */

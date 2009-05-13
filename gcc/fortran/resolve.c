@@ -6645,7 +6645,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	  break;
 
 	case EXEC_GOTO:
-	  resolve_branch (b->label, b);
+	  resolve_branch (b->label1, b);
 	  break;
 
 	case EXEC_SELECT:
@@ -6927,7 +6927,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 			   &code->expr->where);
 	    }
 	  else
-	    resolve_branch (code->label, code);
+	    resolve_branch (code->label1, code);
 	  break;
 
 	case EXEC_RETURN:
@@ -6951,9 +6951,9 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_LABEL_ASSIGN:
-	  if (code->label->defined == ST_LABEL_UNKNOWN)
+	  if (code->label1->defined == ST_LABEL_UNKNOWN)
 	    gfc_error ("Label %d referenced at %L is never defined",
-		       code->label->value, &code->label->where);
+		       code->label1->value, &code->label1->where);
 	  if (t == SUCCESS
 	      && (code->expr->expr_type != EXPR_VARIABLE
 		  || code->expr->symtree->n.sym->ts.type != BT_INTEGER
@@ -6978,7 +6978,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	    gfc_error ("Arithmetic IF statement at %L requires a numeric "
 		       "expression", &code->expr->where);
 
-	  resolve_branch (code->label, code);
+	  resolve_branch (code->label1, code);
 	  resolve_branch (code->label2, code);
 	  resolve_branch (code->label3, code);
 	  break;

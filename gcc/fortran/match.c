@@ -1389,7 +1389,7 @@ match_arithmetic_if (void)
 
   new_st.op = EXEC_ARITHMETIC_IF;
   new_st.expr = expr;
-  new_st.label = l1;
+  new_st.label1 = l1;
   new_st.label2 = l2;
   new_st.label3 = l3;
 
@@ -1470,7 +1470,7 @@ gfc_match_if (gfc_statement *if_type)
 
       new_st.op = EXEC_ARITHMETIC_IF;
       new_st.expr = expr;
-      new_st.label = l1;
+      new_st.label1 = l1;
       new_st.label2 = l2;
       new_st.label3 = l3;
 
@@ -1789,7 +1789,7 @@ done:
       && gfc_reference_st_label (label, ST_LABEL_TARGET) == FAILURE)
     goto cleanup;
 
-  new_st.label = label;
+  new_st.label1 = label;
 
   if (new_st.op == EXEC_DO_WHILE)
     new_st.expr = iter.end;
@@ -2033,7 +2033,7 @@ gfc_match_assign (void)
 	  expr->symtree->n.sym->attr.assign = 1;
 
 	  new_st.op = EXEC_LABEL_ASSIGN;
-	  new_st.label = label;
+	  new_st.label1 = label;
 	  new_st.expr = expr;
 	  return MATCH_YES;
 	}
@@ -2063,7 +2063,7 @@ gfc_match_goto (void)
 	return MATCH_ERROR;
 
       new_st.op = EXEC_GOTO;
-      new_st.label = label;
+      new_st.label1 = label;
       return MATCH_YES;
     }
 
@@ -2108,7 +2108,7 @@ gfc_match_goto (void)
 	      tail = tail->block;
 	    }
 
-	  tail->label = label;
+	  tail->label1 = label;
 	  tail->op = EXEC_GOTO;
 	}
       while (gfc_match_char (',') == MATCH_YES);
@@ -2161,7 +2161,7 @@ gfc_match_goto (void)
 
       tail->next = gfc_get_code ();
       tail->next->op = EXEC_GOTO;
-      tail->next->label = label;
+      tail->next->label1 = label;
     }
   while (gfc_match_char (',') == MATCH_YES);
 
@@ -2782,7 +2782,7 @@ gfc_match_call (void)
 
 	  c->next = gfc_get_code ();
 	  c->next->op = EXEC_GOTO;
-	  c->next->label = a->label;
+	  c->next->label1 = a->label;
 	}
     }
 
