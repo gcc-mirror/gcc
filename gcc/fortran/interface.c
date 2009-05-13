@@ -2591,7 +2591,7 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
   gfc_expr *lhs, *rhs;
   gfc_symbol *sym;
 
-  lhs = c->expr;
+  lhs = c->expr1;
   rhs = c->expr2;
 
   /* Don't allow an intrinsic assignment to be replaced.  */
@@ -2626,7 +2626,7 @@ gfc_extend_assign (gfc_code *c, gfc_namespace *ns)
   /* Replace the assignment with the call.  */
   c->op = EXEC_ASSIGN_CALL;
   c->symtree = gfc_find_sym_in_symtree (sym);
-  c->expr = NULL;
+  c->expr1 = NULL;
   c->expr2 = NULL;
   c->ext.actual = actual;
 

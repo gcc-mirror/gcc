@@ -2149,7 +2149,7 @@ gfc_trans_transfer (gfc_code * code)
   gfc_start_block (&block);
   gfc_init_block (&body);
 
-  expr = code->expr;
+  expr = code->expr1;
   ss = gfc_walk_expr (expr);
 
   ref = NULL;
@@ -2209,7 +2209,7 @@ gfc_trans_transfer (gfc_code * code)
 
       /* Initialize the loop.  */
       gfc_conv_ss_startstride (&loop);
-      gfc_conv_loop_setup (&loop, &code->expr->where);
+      gfc_conv_loop_setup (&loop, &code->expr1->where);
 
       /* The main loop body.  */
       gfc_mark_ss_chain_used (ss, 1);

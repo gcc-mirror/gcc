@@ -952,13 +952,13 @@ gfc_trans_omp_atomic (gfc_code *code)
   code = code->block->next;
   gcc_assert (code->op == EXEC_ASSIGN);
   gcc_assert (code->next == NULL);
-  var = code->expr->symtree->n.sym;
+  var = code->expr1->symtree->n.sym;
 
   gfc_init_se (&lse, NULL);
   gfc_init_se (&rse, NULL);
   gfc_start_block (&block);
 
-  gfc_conv_expr (&lse, code->expr);
+  gfc_conv_expr (&lse, code->expr1);
   gfc_add_block_to_block (&block, &lse.pre);
   type = TREE_TYPE (lse.expr);
   lhsaddr = gfc_build_addr_expr (NULL, lse.expr);

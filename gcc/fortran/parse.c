@@ -2508,10 +2508,10 @@ parse_where_block (void)
   push_state (&s, COMP_WHERE, gfc_new_block);
 
   d = add_statement ();
-  d->expr = top->expr;
+  d->expr1 = top->expr1;
   d->op = EXEC_WHERE;
 
-  top->expr = NULL;
+  top->expr1 = NULL;
   top->block = d;
 
   seen_empty_else = 0;
@@ -2541,12 +2541,12 @@ parse_where_block (void)
 	      break;
 	    }
 
-	  if (new_st.expr == NULL)
+	  if (new_st.expr1 == NULL)
 	    seen_empty_else = 1;
 
 	  d = new_level (gfc_state_stack->head);
 	  d->op = EXEC_WHERE;
-	  d->expr = new_st.expr;
+	  d->expr1 = new_st.expr1;
 
 	  accept_statement (st);
 
@@ -2651,8 +2651,8 @@ parse_if_block (void)
   new_st.op = EXEC_IF;
   d = add_statement ();
 
-  d->expr = top->expr;
-  top->expr = NULL;
+  d->expr1 = top->expr1;
+  top->expr1 = NULL;
   top->block = d;
 
   do
@@ -2676,7 +2676,7 @@ parse_if_block (void)
 
 	  d = new_level (gfc_state_stack->head);
 	  d->op = EXEC_IF;
-	  d->expr = new_st.expr;
+	  d->expr1 = new_st.expr1;
 
 	  accept_statement (st);
 

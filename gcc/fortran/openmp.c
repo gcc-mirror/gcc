@@ -1072,20 +1072,20 @@ resolve_omp_atomic (gfc_code *code)
   gcc_assert (code->op == EXEC_ASSIGN);
   gcc_assert (code->next == NULL);
 
-  if (code->expr->expr_type != EXPR_VARIABLE
-      || code->expr->symtree == NULL
-      || code->expr->rank != 0
-      || (code->expr->ts.type != BT_INTEGER
-	  && code->expr->ts.type != BT_REAL
-	  && code->expr->ts.type != BT_COMPLEX
-	  && code->expr->ts.type != BT_LOGICAL))
+  if (code->expr1->expr_type != EXPR_VARIABLE
+      || code->expr1->symtree == NULL
+      || code->expr1->rank != 0
+      || (code->expr1->ts.type != BT_INTEGER
+	  && code->expr1->ts.type != BT_REAL
+	  && code->expr1->ts.type != BT_COMPLEX
+	  && code->expr1->ts.type != BT_LOGICAL))
     {
       gfc_error ("!$OMP ATOMIC statement must set a scalar variable of "
 		 "intrinsic type at %L", &code->loc);
       return;
     }
 
-  var = code->expr->symtree->n.sym;
+  var = code->expr1->symtree->n.sym;
   expr2 = is_conversion (code->expr2, false);
   if (expr2 == NULL)
     expr2 = code->expr2;
