@@ -853,6 +853,67 @@ remove_ssa_form (bool perform_ter, struct ssaexpand *sa)
 }
 
 
+/* If not already done so for basic block BB, assign increasing uids
+   to each of its instructions.  */
+
+static void
+maybe_renumber_stmts_bb (basic_block bb)
+{
+  unsigned i = 0;
+  gimple_stmt_iterator gsi;
+  
+  if (!bb->aux)
+    return;
+  bb->aux = NULL;
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+      gimple_set_uid (stmt, i);
+      i++;
+    }
+}
+
+
+/* Return true if we can determine that the SSA_NAMEs RESULT (a result
+   of a PHI node) and ARG (one of its arguments) conflict.  Return false
+   otherwise, also when we simply aren't sure.  */
+
+static bool
+trivially_conflicts_p (basic_block bb, tree result, tree arg)
+{
+  use_operand_p use;
+  imm_use_iterator imm_iter;
+  gimple defa = SSA_NAME_DEF_STMT (arg);
+
+  /* If ARG isn't defined in the same block it's too complicated for
+     our little mind.  */
+  if (gimple_bb (defa) != bb)
+    return false;
+
+  FOR_EACH_IMM_USE_FAST (use, imm_iter, result)
+    {
+      gimple use_stmt = USE_STMT (use);
+      /* Now, if there's a use of RESULT that lies outside this basic block,
+	 then there surely is a conflict with ARG.  */
+      if (gimple_bb (use_stmt) != bb)
+	return true;
+      if (gimple_code (use_stmt) == GIMPLE_PHI)
+	continue;
+      /* The use now is in a real stmt of BB, so if ARG was defined
+         in a PHI node (like RESULT) both conflict.  */
+      if (gimple_code (defa) == GIMPLE_PHI)
+	return true;
+      maybe_renumber_stmts_bb (bb);
+      /* If the use of RESULT occurs after the definition of ARG,
+         the two conflict too.  */
+      if (gimple_uid (defa) < gimple_uid (use_stmt))
+	return true;
+    }
+  
+  return false;
+}
+
+
 /* Search every PHI node for arguments associated with backedges which
    we can trivially determine will need a copy (the argument is either
    not an SSA_NAME or the argument has a different underlying variable
@@ -870,6 +931,9 @@ insert_backedge_copies (void)
 
   FOR_EACH_BB (bb)
     {
+      /* Mark block as possibly needing calculation of UIDs.  */
+      bb->aux = &bb->aux;
+
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple phi = gsi_stmt (gsi);
@@ -892,7 +956,8 @@ insert_backedge_copies (void)
 		 needed.  */
 	      if ((e->flags & EDGE_DFS_BACK)
 		  && (TREE_CODE (arg) != SSA_NAME
-		      || SSA_NAME_VAR (arg) != result_var))
+		      || SSA_NAME_VAR (arg) != result_var
+		      || trivially_conflicts_p (bb, result, arg)))
 		{
 		  tree name;
 		  gimple stmt, last = NULL;
@@ -936,6 +1001,9 @@ insert_backedge_copies (void)
 		}
 	    }
 	}
+
+      /* Unmark this block again.  */
+      bb->aux = NULL;
     }
 }
 
