@@ -1,3 +1,10 @@
+2009-05-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* config/m68k/t-uclinux (M68K_MLIB_CPU): Check for FL_UCLINUX.
+	* config/m68k/m68k-devices.def: Add FL_UCLINUX to 68020 and 54455
+	multilibs.
+	* config/m68k/m68k.h (FL_UCLINUX): Define.
+
 2009-05-13  Jan Hubicka  <jh@suse.cz>
 
 	* options.c (gfc_post_options): -fwhole-program imply -fwhole-file.

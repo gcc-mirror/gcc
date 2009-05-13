@@ -232,6 +232,7 @@ along with GCC; see the file COPYING3.  If not see
 #define FL_ISA_C     (1 << 16)
 #define FL_FIDOA     (1 << 17)
 #define FL_MMU 	     0   /* Used by multilib machinery.  */
+#define FL_UCLINUX   0   /* Used by multilib machinery.  */
 
 #define TARGET_68010		((m68k_cpu_flags & FL_ISA_68010) != 0)
 #define TARGET_68020		((m68k_cpu_flags & FL_ISA_68020) != 0)
