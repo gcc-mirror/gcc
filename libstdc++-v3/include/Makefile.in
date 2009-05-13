@@ -1096,7 +1096,7 @@ pch_output_dirs = \
 pch_output_anchors = \
 	${pch1_output_anchor} ${pch2_output_anchor} ${pch3_output_anchor}
 
-PCHFLAGS = -Winvalid-pch -x c++-header $(CXXFLAGS)
+PCHFLAGS = -x c++-header $(CXXFLAGS)
 @GLIBCXX_BUILD_PCH_FALSE@pch_build = 
 @GLIBCXX_BUILD_PCH_TRUE@pch_build = ${pch_output}
 
