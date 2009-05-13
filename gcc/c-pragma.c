@@ -1180,7 +1180,7 @@ valid_location_for_stdc_pragma_p (void)
   return valid_location_for_stdc_pragma;
 }
 
-enum pragma_switch_t { ON, OFF, DEFAULT, BAD };
+enum pragma_switch_t { PRAGMA_ON, PRAGMA_OFF, PRAGMA_DEFAULT, PRAGMA_BAD };
 
 /* A STDC pragma must appear outside of external declarations or
    preceding all explicit declarations and statements inside a compound
@@ -1198,33 +1198,33 @@ handle_stdc_pragma (const char *pname)
     {
       warning (OPT_Wpragmas, "invalid location for %<pragma %s%>, ignored",
 	       pname);
-      return BAD;
+      return PRAGMA_BAD;
     }
 
   if (pragma_lex (&t) != CPP_NAME)
     {
       warning (OPT_Wpragmas, "malformed %<#pragma %s%>, ignored", pname);
-      return BAD;
+      return PRAGMA_BAD;
     }
 
   arg = IDENTIFIER_POINTER (t);
 
   if (!strcmp (arg, "ON"))
-    ret = ON;
+    ret = PRAGMA_ON;
   else if (!strcmp (arg, "OFF"))
-    ret = OFF;
+    ret = PRAGMA_OFF;
   else if (!strcmp (arg, "DEFAULT"))
-    ret = DEFAULT;
+    ret = PRAGMA_DEFAULT;
   else
     {
       warning (OPT_Wpragmas, "malformed %<#pragma %s%>, ignored", pname);
-      return BAD;
+      return PRAGMA_BAD;
     }
 
   if (pragma_lex (&t) != CPP_EOF)
     {
       warning (OPT_Wpragmas, "junk at end of %<#pragma %s%>", pname);
-      return BAD;
+      return PRAGMA_BAD;
     }
 
   return ret;
@@ -1260,14 +1260,14 @@ handle_pragma_float_const_decimal64 (cpp_reader *ARG_UNUSED (dummy))
 
   switch (handle_stdc_pragma ("STDC FLOAT_CONST_DECIMAL64"))
     {
-    case ON:
+    case PRAGMA_ON:
       set_float_const_decimal64 ();
       break;
-    case OFF:
-    case DEFAULT:
+    case PRAGMA_OFF:
+    case PRAGMA_DEFAULT:
       clear_float_const_decimal64 ();
       break;
-    case BAD:
+    case PRAGMA_BAD:
       break;
     }
 }
