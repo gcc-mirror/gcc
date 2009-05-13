@@ -1,3 +1,10 @@
+2009-05-13  Michael Matz  <matz@suse.de>
+
+	PR middle-end/39976
+	* tree-outof-ssa.c (maybe_renumber_stmts_bb): New function.
+	(trivially_conflicts_p): New function.
+	(insert_backedge_copies): Use it.
+
 2009-05-13  Janis Johnson  <janis187@us.ibm.com>
 
 	* c-pragma.c (enum pragma_switch_t): Prefix constants with PRAGMA_.
