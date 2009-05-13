@@ -4738,31 +4738,31 @@ resolve_typebound_call (gfc_code* c)
   gfc_symtree* target;
 
   /* Check that's really a SUBROUTINE.  */
-  if (!c->expr->value.compcall.tbp->subroutine)
+  if (!c->expr1->value.compcall.tbp->subroutine)
     {
       gfc_error ("'%s' at %L should be a SUBROUTINE",
-		 c->expr->value.compcall.name, &c->loc);
+		 c->expr1->value.compcall.name, &c->loc);
       return FAILURE;
     }
 
-  if (check_typebound_baseobject (c->expr) == FAILURE)
+  if (check_typebound_baseobject (c->expr1) == FAILURE)
     return FAILURE;
 
-  if (resolve_typebound_generic_call (c->expr) == FAILURE)
+  if (resolve_typebound_generic_call (c->expr1) == FAILURE)
     return FAILURE;
 
   /* Transform into an ordinary EXEC_CALL for now.  */
 
-  if (resolve_typebound_static (c->expr, &target, &newactual) == FAILURE)
+  if (resolve_typebound_static (c->expr1, &target, &newactual) == FAILURE)
     return FAILURE;
 
   c->ext.actual = newactual;
   c->symtree = target;
   c->op = EXEC_CALL;
 
-  gcc_assert (!c->expr->ref && !c->expr->value.compcall.actual);
-  gfc_free_expr (c->expr);
-  c->expr = NULL;
+  gcc_assert (!c->expr1->ref && !c->expr1->value.compcall.actual);
+  gfc_free_expr (c->expr1);
+  c->expr1 = NULL;
 
   return resolve_call (c);
 }
@@ -4819,22 +4819,22 @@ static gfc_try
 resolve_ppc_call (gfc_code* c)
 {
   gfc_component *comp;
-  gcc_assert (is_proc_ptr_comp (c->expr, &comp));
+  gcc_assert (is_proc_ptr_comp (c->expr1, &comp));
 
-  c->resolved_sym = c->expr->symtree->n.sym;
-  c->expr->expr_type = EXPR_VARIABLE;
-  c->ext.actual = c->expr->value.compcall.actual;
+  c->resolved_sym = c->expr1->symtree->n.sym;
+  c->expr1->expr_type = EXPR_VARIABLE;
+  c->ext.actual = c->expr1->value.compcall.actual;
 
   if (!comp->attr.subroutine)
-    gfc_add_subroutine (&comp->attr, comp->name, &c->expr->where);
+    gfc_add_subroutine (&comp->attr, comp->name, &c->expr1->where);
 
   if (resolve_actual_arglist (c->ext.actual, comp->attr.proc,
 			      comp->formal == NULL) == FAILURE)
     return FAILURE;
 
   /* TODO: Check actual arguments.
-     gfc_procedure_use (stree->n.sym, &c->expr->value.compcall.actual,
-			&c->expr->where);*/
+     gfc_procedure_use (stree->n.sym, &c->expr1->value.compcall.actual,
+			&c->expr1->where);*/
 
   return SUCCESS;
 }
@@ -5412,7 +5412,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code)
       init_st = gfc_get_code ();
       init_st->loc = code->loc;
       init_st->op = EXEC_INIT_ASSIGN;
-      init_st->expr = expr_to_initialize (e);
+      init_st->expr1 = expr_to_initialize (e);
       init_st->expr2 = init_e;
       init_st->next = code->next;
       code->next = init_st;
@@ -5492,7 +5492,7 @@ resolve_allocate_deallocate (gfc_code *code, const char *fcn)
   gfc_expr *stat, *errmsg, *pe, *qe;
   gfc_alloc *a, *p, *q;
 
-  stat = code->expr ? code->expr : NULL;
+  stat = code->expr1 ? code->expr1 : NULL;
 
   errmsg = code->expr2 ? code->expr2 : NULL;
 
@@ -5843,7 +5843,7 @@ resolve_select (gfc_code *code)
   bt type;
   gfc_try t;
 
-  if (code->expr == NULL)
+  if (code->expr1 == NULL)
     {
       /* This was actually a computed GOTO statement.  */
       case_expr = code->expr2;
@@ -5856,12 +5856,12 @@ resolve_select (gfc_code *code)
 	 by the compiler, so it should always be OK.  Just move the
 	 case_expr from expr2 to expr so that we can handle computed
 	 GOTOs as normal SELECTs from here on.  */
-      code->expr = code->expr2;
+      code->expr1 = code->expr2;
       code->expr2 = NULL;
       return;
     }
 
-  case_expr = code->expr;
+  case_expr = code->expr1;
 
   type = case_expr->ts.type;
   if (type != BT_LOGICAL && type != BT_INTEGER && type != BT_CHARACTER)
@@ -6114,7 +6114,7 @@ resolve_transfer (gfc_code *code)
   gfc_ref *ref;
   gfc_expr *exp;
 
-  exp = code->expr;
+  exp = code->expr1;
 
   if (exp->expr_type != EXPR_VARIABLE && exp->expr_type != EXPR_FUNCTION)
     return;
@@ -6123,7 +6123,7 @@ resolve_transfer (gfc_code *code)
   ts = &sym->ts;
 
   /* Go to actual component transferred.  */
-  for (ref = code->expr->ref; ref; ref = ref->next)
+  for (ref = code->expr1->ref; ref; ref = ref->next)
     if (ref->type == REF_COMPONENT)
       ts = &ref->u.c.component->ts;
 
@@ -6319,19 +6319,19 @@ resolve_where (gfc_code *code, gfc_expr *mask)
   /* Store the first WHERE mask-expr of the WHERE statement or construct.
      In case of nested WHERE, only the outmost one is stored.  */
   if (mask == NULL) /* outmost WHERE */
-    e = cblock->expr;
+    e = cblock->expr1;
   else /* inner WHERE */
     e = mask;
 
   while (cblock)
     {
-      if (cblock->expr)
+      if (cblock->expr1)
 	{
 	  /* Check if the mask-expr has a consistent shape with the
 	     outmost WHERE mask-expr.  */
-	  if (resolve_where_shape (cblock->expr, e) == FAILURE)
+	  if (resolve_where_shape (cblock->expr1, e) == FAILURE)
 	    gfc_error ("WHERE mask at %L has inconsistent shape",
-		       &cblock->expr->where);
+		       &cblock->expr1->where);
 	 }
 
       /* the assignment statement of a WHERE statement, or the first
@@ -6345,9 +6345,9 @@ resolve_where (gfc_code *code, gfc_expr *mask)
 	    case EXEC_ASSIGN:
 
 	      /* Check shape consistent for WHERE assignment target.  */
-	      if (e && resolve_where_shape (cnext->expr, e) == FAILURE)
+	      if (e && resolve_where_shape (cnext->expr1, e) == FAILURE)
 	       gfc_error ("WHERE assignment target at %L has "
-			  "inconsistent shape", &cnext->expr->where);
+			  "inconsistent shape", &cnext->expr1->where);
 	      break;
 
   
@@ -6393,21 +6393,21 @@ gfc_resolve_assign_in_forall (gfc_code *code, int nvar, gfc_expr **var_expr)
 
       /* Check whether the assignment target is one of the FORALL index
 	 variable.  */
-      if ((code->expr->expr_type == EXPR_VARIABLE)
-	  && (code->expr->symtree->n.sym == forall_index))
+      if ((code->expr1->expr_type == EXPR_VARIABLE)
+	  && (code->expr1->symtree->n.sym == forall_index))
 	gfc_error ("Assignment to a FORALL index variable at %L",
-		   &code->expr->where);
+		   &code->expr1->where);
       else
 	{
 	  /* If one of the FORALL index variables doesn't appear in the
 	     assignment variable, then there could be a many-to-one
 	     assignment.  Emit a warning rather than an error because the
 	     mask could be resolving this problem.  */
-	  if (find_forall_index (code->expr, forall_index, 0) == FAILURE)
+	  if (find_forall_index (code->expr1, forall_index, 0) == FAILURE)
 	    gfc_warning ("The FORALL with index '%s' is not used on the "
 			 "left side of the assignment at %L and so might "
 			 "cause multiple assignment to this object",
-			 var_expr[n]->symtree->name, &code->expr->where);
+			 var_expr[n]->symtree->name, &code->expr1->where);
 	}
     }
 }
@@ -6623,25 +6623,25 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 
   for (; b; b = b->block)
     {
-      t = gfc_resolve_expr (b->expr);
+      t = gfc_resolve_expr (b->expr1);
       if (gfc_resolve_expr (b->expr2) == FAILURE)
 	t = FAILURE;
 
       switch (b->op)
 	{
 	case EXEC_IF:
-	  if (t == SUCCESS && b->expr != NULL
-	      && (b->expr->ts.type != BT_LOGICAL || b->expr->rank != 0))
+	  if (t == SUCCESS && b->expr1 != NULL
+	      && (b->expr1->ts.type != BT_LOGICAL || b->expr1->rank != 0))
 	    gfc_error ("IF clause at %L requires a scalar LOGICAL expression",
-		       &b->expr->where);
+		       &b->expr1->where);
 	  break;
 
 	case EXEC_WHERE:
 	  if (t == SUCCESS
-	      && b->expr != NULL
-	      && (b->expr->ts.type != BT_LOGICAL || b->expr->rank == 0))
+	      && b->expr1 != NULL
+	      && (b->expr1->ts.type != BT_LOGICAL || b->expr1->rank == 0))
 	    gfc_error ("WHERE/ELSEWHERE clause at %L requires a LOGICAL array",
-		       &b->expr->where);
+		       &b->expr1->where);
 	  break;
 
 	case EXEC_GOTO:
@@ -6719,7 +6719,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
       return true;
     }
 
-  lhs = code->expr;
+  lhs = code->expr1;
   rhs = code->expr2;
 
   if (rhs->is_boz
@@ -6888,7 +6888,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 
       t = SUCCESS;
       if (code->op != EXEC_COMPCALL && code->op != EXEC_CALL_PPC)
-	t = gfc_resolve_expr (code->expr);
+	t = gfc_resolve_expr (code->expr1);
       forall_flag = forall_save;
 
       if (gfc_resolve_expr (code->expr2) == FAILURE)
@@ -6916,25 +6916,25 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_GOTO:
-	  if (code->expr != NULL)
+	  if (code->expr1 != NULL)
 	    {
-	      if (code->expr->ts.type != BT_INTEGER)
+	      if (code->expr1->ts.type != BT_INTEGER)
 		gfc_error ("ASSIGNED GOTO statement at %L requires an "
-			   "INTEGER variable", &code->expr->where);
-	      else if (code->expr->symtree->n.sym->attr.assign != 1)
+			   "INTEGER variable", &code->expr1->where);
+	      else if (code->expr1->symtree->n.sym->attr.assign != 1)
 		gfc_error ("Variable '%s' has not been assigned a target "
-			   "label at %L", code->expr->symtree->n.sym->name,
-			   &code->expr->where);
+			   "label at %L", code->expr1->symtree->n.sym->name,
+			   &code->expr1->where);
 	    }
 	  else
 	    resolve_branch (code->label1, code);
 	  break;
 
 	case EXEC_RETURN:
-	  if (code->expr != NULL
-		&& (code->expr->ts.type != BT_INTEGER || code->expr->rank))
+	  if (code->expr1 != NULL
+		&& (code->expr1->ts.type != BT_INTEGER || code->expr1->rank))
 	    gfc_error ("Alternate RETURN statement at %L requires a SCALAR-"
-		       "INTEGER return specifier", &code->expr->where);
+		       "INTEGER return specifier", &code->expr1->where);
 	  break;
 
 	case EXEC_INIT_ASSIGN:
@@ -6955,28 +6955,28 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	    gfc_error ("Label %d referenced at %L is never defined",
 		       code->label1->value, &code->label1->where);
 	  if (t == SUCCESS
-	      && (code->expr->expr_type != EXPR_VARIABLE
-		  || code->expr->symtree->n.sym->ts.type != BT_INTEGER
-		  || code->expr->symtree->n.sym->ts.kind
+	      && (code->expr1->expr_type != EXPR_VARIABLE
+		  || code->expr1->symtree->n.sym->ts.type != BT_INTEGER
+		  || code->expr1->symtree->n.sym->ts.kind
 		     != gfc_default_integer_kind
-		  || code->expr->symtree->n.sym->as != NULL))
+		  || code->expr1->symtree->n.sym->as != NULL))
 	    gfc_error ("ASSIGN statement at %L requires a scalar "
-		       "default INTEGER variable", &code->expr->where);
+		       "default INTEGER variable", &code->expr1->where);
 	  break;
 
 	case EXEC_POINTER_ASSIGN:
 	  if (t == FAILURE)
 	    break;
 
-	  gfc_check_pointer_assign (code->expr, code->expr2);
+	  gfc_check_pointer_assign (code->expr1, code->expr2);
 	  break;
 
 	case EXEC_ARITHMETIC_IF:
 	  if (t == SUCCESS
-	      && code->expr->ts.type != BT_INTEGER
-	      && code->expr->ts.type != BT_REAL)
+	      && code->expr1->ts.type != BT_INTEGER
+	      && code->expr1->ts.type != BT_REAL)
 	    gfc_error ("Arithmetic IF statement at %L requires a numeric "
-		       "expression", &code->expr->where);
+		       "expression", &code->expr1->where);
 
 	  resolve_branch (code->label1, code);
 	  resolve_branch (code->label2, code);
@@ -6984,11 +6984,11 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_IF:
-	  if (t == SUCCESS && code->expr != NULL
-	      && (code->expr->ts.type != BT_LOGICAL
-		  || code->expr->rank != 0))
+	  if (t == SUCCESS && code->expr1 != NULL
+	      && (code->expr1->ts.type != BT_LOGICAL
+		  || code->expr1->rank != 0))
 	    gfc_error ("IF clause at %L requires a scalar LOGICAL expression",
-		       &code->expr->where);
+		       &code->expr1->where);
 	  break;
 
 	case EXEC_CALL:
@@ -7020,13 +7020,13 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_DO_WHILE:
-	  if (code->expr == NULL)
+	  if (code->expr1 == NULL)
 	    gfc_internal_error ("resolve_code(): No expression on DO WHILE");
 	  if (t == SUCCESS
-	      && (code->expr->rank != 0
-		  || code->expr->ts.type != BT_LOGICAL))
+	      && (code->expr1->rank != 0
+		  || code->expr1->ts.type != BT_LOGICAL))
 	    gfc_error ("Exit condition of DO WHILE loop at %L must be "
-		       "a scalar LOGICAL expression", &code->expr->where);
+		       "a scalar LOGICAL expression", &code->expr1->where);
 	  break;
 
 	case EXEC_ALLOCATE:
@@ -7106,9 +7106,9 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	case EXEC_FORALL:
 	  resolve_forall_iterators (code->ext.forall_iterator);
 
-	  if (code->expr != NULL && code->expr->ts.type != BT_LOGICAL)
+	  if (code->expr1 != NULL && code->expr1->ts.type != BT_LOGICAL)
 	    gfc_error ("FORALL mask clause at %L requires a LOGICAL "
-		       "expression", &code->expr->where);
+		       "expression", &code->expr1->where);
 	  break;
 
 	case EXEC_OMP_ATOMIC:
@@ -7479,7 +7479,7 @@ build_init_assign (gfc_symbol *sym, gfc_expr *init)
   /* Assign the default initializer to the l-value.  */
   init_st->loc = sym->declared_at;
   init_st->op = EXEC_INIT_ASSIGN;
-  init_st->expr = lval;
+  init_st->expr1 = lval;
   init_st->expr2 = init;
 }
 

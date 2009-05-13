@@ -4014,7 +4014,7 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
 tree
 gfc_trans_pointer_assign (gfc_code * code)
 {
-  return gfc_trans_pointer_assignment (code->expr, code->expr2);
+  return gfc_trans_pointer_assignment (code->expr1, code->expr2);
 }
 
 
@@ -4839,11 +4839,11 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag)
 tree
 gfc_trans_init_assign (gfc_code * code)
 {
-  return gfc_trans_assignment (code->expr, code->expr2, true);
+  return gfc_trans_assignment (code->expr1, code->expr2, true);
 }
 
 tree
 gfc_trans_assign (gfc_code * code)
 {
-  return gfc_trans_assignment (code->expr, code->expr2, false);
+  return gfc_trans_assignment (code->expr1, code->expr2, false);
 }

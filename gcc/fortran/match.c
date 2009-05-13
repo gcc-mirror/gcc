@@ -1306,7 +1306,7 @@ gfc_match_assignment (void)
   gfc_set_sym_referenced (lvalue->symtree->n.sym);
 
   new_st.op = EXEC_ASSIGN;
-  new_st.expr = lvalue;
+  new_st.expr1 = lvalue;
   new_st.expr2 = rvalue;
 
   gfc_check_do_variable (lvalue->symtree);
@@ -1346,7 +1346,7 @@ gfc_match_pointer_assignment (void)
     goto cleanup;
 
   new_st.op = EXEC_POINTER_ASSIGN;
-  new_st.expr = lvalue;
+  new_st.expr1 = lvalue;
   new_st.expr2 = rvalue;
 
   return MATCH_YES;
@@ -1388,7 +1388,7 @@ match_arithmetic_if (void)
     return MATCH_ERROR;
 
   new_st.op = EXEC_ARITHMETIC_IF;
-  new_st.expr = expr;
+  new_st.expr1 = expr;
   new_st.label1 = l1;
   new_st.label2 = l2;
   new_st.label3 = l3;
@@ -1469,7 +1469,7 @@ gfc_match_if (gfc_statement *if_type)
 	return MATCH_ERROR;
 
       new_st.op = EXEC_ARITHMETIC_IF;
-      new_st.expr = expr;
+      new_st.expr1 = expr;
       new_st.label1 = l1;
       new_st.label2 = l2;
       new_st.label3 = l3;
@@ -1481,7 +1481,7 @@ gfc_match_if (gfc_statement *if_type)
   if (gfc_match (" then%t") == MATCH_YES)
     {
       new_st.op = EXEC_IF;
-      new_st.expr = expr;
+      new_st.expr1 = expr;
       *if_type = ST_IF_BLOCK;
       return MATCH_YES;
     }
@@ -1601,7 +1601,7 @@ got_match:
   *p->next = new_st;
   p->next->loc = gfc_current_locus;
 
-  p->expr = expr;
+  p->expr1 = expr;
   p->op = EXEC_IF;
 
   gfc_clear_new_st ();
@@ -1677,7 +1677,7 @@ gfc_match_elseif (void)
 
 done:
   new_st.op = EXEC_IF;
-  new_st.expr = expr;
+  new_st.expr1 = expr;
   return MATCH_YES;
 
 cleanup:
@@ -1792,7 +1792,7 @@ done:
   new_st.label1 = label;
 
   if (new_st.op == EXEC_DO_WHILE)
-    new_st.expr = iter.end;
+    new_st.expr1 = iter.end;
   else
     {
       new_st.ext.iterator = ip = gfc_get_iterator ();
@@ -1952,7 +1952,7 @@ gfc_match_stopcode (gfc_statement st)
     }
 
   new_st.op = st == ST_STOP ? EXEC_STOP : EXEC_PAUSE;
-  new_st.expr = e;
+  new_st.expr1 = e;
   new_st.ext.stop_code = stop_code;
 
   return MATCH_YES;
@@ -2034,7 +2034,7 @@ gfc_match_assign (void)
 
 	  new_st.op = EXEC_LABEL_ASSIGN;
 	  new_st.label1 = label;
-	  new_st.expr = expr;
+	  new_st.expr1 = expr;
 	  return MATCH_YES;
 	}
     }
@@ -2077,7 +2077,7 @@ gfc_match_goto (void)
 	return MATCH_ERROR;
 
       new_st.op = EXEC_GOTO;
-      new_st.expr = expr;
+      new_st.expr1 = expr;
 
       if (gfc_match_eos () == MATCH_YES)
 	return MATCH_YES;
@@ -2184,7 +2184,7 @@ gfc_match_goto (void)
      equivalent SELECT statement constructed.  */
 
   new_st.op = EXEC_SELECT;
-  new_st.expr = NULL;
+  new_st.expr1 = NULL;
 
   /* Hack: For a "real" SELECT, the expression is in expr. We put
      it in expr2 so we can distinguish then and produce the correct
@@ -2337,7 +2337,7 @@ alloc_opt_list:
     goto syntax;
 
   new_st.op = EXEC_ALLOCATE;
-  new_st.expr = stat;
+  new_st.expr1 = stat;
   new_st.expr2 = errmsg;
   new_st.ext.alloc_list = head;
 
@@ -2402,7 +2402,7 @@ gfc_match_nullify (void)
 	}
 
       tail->op = EXEC_POINTER_ASSIGN;
-      tail->expr = p;
+      tail->expr1 = p;
       tail->expr2 = e;
 
       if (gfc_match (" )%t") == MATCH_YES)
@@ -2538,7 +2538,7 @@ dealloc_opt_list:
     goto syntax;
 
   new_st.op = EXEC_DEALLOCATE;
-  new_st.expr = stat;
+  new_st.expr1 = stat;
   new_st.expr2 = errmsg;
   new_st.ext.alloc_list = head;
 
@@ -2606,7 +2606,7 @@ done:
       return MATCH_ERROR;
 
   new_st.op = EXEC_RETURN;
-  new_st.expr = e;
+  new_st.expr1 = e;
 
   return MATCH_YES;
 }
@@ -2652,7 +2652,7 @@ match_typebound_call (gfc_symtree* varst)
 		 "at %C");
       return MATCH_ERROR;
     }
-  new_st.expr = base;
+  new_st.expr1 = base;
 
   return MATCH_YES;
 }
@@ -2755,11 +2755,11 @@ gfc_match_call (void)
       select_sym->ts.type = BT_INTEGER;
       select_sym->ts.kind = gfc_default_integer_kind;
       gfc_set_sym_referenced (select_sym);
-      c->expr = gfc_get_expr ();
-      c->expr->expr_type = EXPR_VARIABLE;
-      c->expr->symtree = select_st;
-      c->expr->ts = select_sym->ts;
-      c->expr->where = gfc_current_locus;
+      c->expr1 = gfc_get_expr ();
+      c->expr1->expr_type = EXPR_VARIABLE;
+      c->expr1->symtree = select_st;
+      c->expr1->ts = select_sym->ts;
+      c->expr1->where = gfc_current_locus;
 
       i = 0;
       for (a = arglist; a; a = a->next)
@@ -3655,7 +3655,7 @@ gfc_match_select (void)
     return m;
 
   new_st.op = EXEC_SELECT;
-  new_st.expr = expr;
+  new_st.expr1 = expr;
 
   return MATCH_YES;
 }
@@ -3760,7 +3760,7 @@ match_simple_where (void)
   c = gfc_get_code ();
 
   c->op = EXEC_WHERE;
-  c->expr = expr;
+  c->expr1 = expr;
   c->next = gfc_get_code ();
 
   *c->next = new_st;
@@ -3801,7 +3801,7 @@ gfc_match_where (gfc_statement *st)
     {
       *st = ST_WHERE_BLOCK;
       new_st.op = EXEC_WHERE;
-      new_st.expr = expr;
+      new_st.expr1 = expr;
       return MATCH_YES;
     }
 
@@ -3820,7 +3820,7 @@ gfc_match_where (gfc_statement *st)
   c = gfc_get_code ();
 
   c->op = EXEC_WHERE;
-  c->expr = expr;
+  c->expr1 = expr;
   c->next = gfc_get_code ();
 
   *c->next = new_st;
@@ -3890,7 +3890,7 @@ gfc_match_elsewhere (void)
     }
 
   new_st.op = EXEC_WHERE;
-  new_st.expr = expr;
+  new_st.expr1 = expr;
   return MATCH_YES;
 
 syntax:
@@ -4107,7 +4107,7 @@ match_simple_forall (void)
 
   gfc_clear_new_st ();
   new_st.op = EXEC_FORALL;
-  new_st.expr = mask;
+  new_st.expr1 = mask;
   new_st.ext.forall_iterator = head;
   new_st.block = gfc_get_code ();
 
@@ -4159,7 +4159,7 @@ gfc_match_forall (gfc_statement *st)
     {
       *st = ST_FORALL_BLOCK;
       new_st.op = EXEC_FORALL;
-      new_st.expr = mask;
+      new_st.expr1 = mask;
       new_st.ext.forall_iterator = head;
       return MATCH_YES;
     }
@@ -4182,7 +4182,7 @@ gfc_match_forall (gfc_statement *st)
 
   gfc_clear_new_st ();
   new_st.op = EXEC_FORALL;
-  new_st.expr = mask;
+  new_st.expr1 = mask;
   new_st.ext.forall_iterator = head;
   new_st.block = gfc_get_code ();
   new_st.block->op = EXEC_FORALL;

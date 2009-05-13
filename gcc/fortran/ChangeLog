@@ -1,5 +1,36 @@
 2009-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
 
+	* gfortran.h (gfc_code): Rename struct member expr to expr1.
+	* openmp.c (resolve_omp_atomic): Update expr to expr1.
+	* interface.c (gfc_extend_assign): Ditto.
+	* trans-expr.c (gfc_conv_expr_reference, gfc_trans_assignment,
+	gfc_trans_init_assign): Ditto.
+	* dump-parse-tree.c (show_code_node): Ditto.
+	* trans-openmp.c (gfc_trans_omp_atomic): Ditto.
+	* trans-stmt.c ( gfc_trans_label_assign, gfc_trans_goto, gfc_trans_call,
+	gfc_trans_return, gfc_trans_pause, gfc_trans_stop, gfc_trans_if_1,
+	gfc_trans_arithmetic_if, gfc_trans_do_while, gfc_trans_integer_select,
+	gfc_trans_logical_select, gfc_trans_character_select
+	forall_make_variable_temp, check_forall_dependencies
+	gfc_trans_forall_1, gfc_trans_where_2, gfc_trans_where_3
+	gfc_trans_where, gfc_trans_allocate, gfc_trans_deallocate): Ditto.
+	* io.c (match_io_element, gfc_match_inquire): Ditto.
+	* resolve.c (resolve_typebound_call, resolve_ppc_call,
+	resolve_allocate_expr, resolve_allocate_deallocate, resolve_select,
+	resolve_transfer, resolve_where, gfc_resolve_assign_in_forall,
+	gfc_resolve_blocks, resolve_code, build_init_assign): Ditto.
+	* st.c (gfc_free_statement): Ditto.
+	* match.c (gfc_match_assignment, gfc_match_pointer_assignment,
+	match_arithmetic_if, gfc_match_if, gfc_match_elseif
+	gfc_match_stopcode, gfc_match_assign, gfc_match_goto,
+	gfc_match_nullify, match_typebound_call, gfc_match_call
+	gfc_match_select, match_simple_where, gfc_match_where
+	gfc_match_elsewhere, match_simple_forall, gfc_match_forall): Ditto.
+	* trans-io.c (gfc_trans_transfer): Ditto.
+	* parse.c (parse_where_block, parse_if_block): Ditto.
+
+2009-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
 	* gfortran.h (gfc_code): Rename struct member label to label1.
 	* dump-parse-tree.c (show_code_node): Update symbol.
 	* trans-stmt.c (gfc_trans_label_assign, gfc_trans_goto,

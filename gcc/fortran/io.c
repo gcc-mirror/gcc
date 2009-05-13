@@ -2830,7 +2830,7 @@ match_io_element (io_kind k, gfc_code **cpp)
 
   cp = gfc_get_code ();
   cp->op = EXEC_TRANSFER;
-  cp->expr = expr;
+  cp->expr1 = expr;
 
   *cpp = cp;
   return MATCH_YES;
@@ -3662,7 +3662,7 @@ gfc_match_inquire (void)
 	goto syntax;
 
       new_st.op = EXEC_IOLENGTH;
-      new_st.expr = inquire->iolength;
+      new_st.expr1 = inquire->iolength;
       new_st.ext.inquire = inquire;
 
       if (gfc_pure (NULL))
