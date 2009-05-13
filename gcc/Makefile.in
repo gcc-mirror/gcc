@@ -3421,7 +3421,7 @@ build/genattrtab.o : genattrtab.c $(RTL_BASE_H) $(OBSTACK_H)		\
 build/genautomata.o : genautomata.c $(RTL_BASE_H) $(OBSTACK_H)		\
   $(BCONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) errors.h vec.h		\
   $(HASHTAB_H) gensupport.h
-build/gencheck.o : gencheck.c tree.def $(BCONFIG_H) $(GTM_H)		\
+build/gencheck.o : gencheck.c all-tree.def $(BCONFIG_H) $(GTM_H)	\
 	$(SYSTEM_H) coretypes.h $(lang_tree_files) gimple.def
 build/genchecksum.o : genchecksum.c $(BCONFIG_H) $(SYSTEM_H) $(MD5_H)
 build/gencodes.o : gencodes.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
