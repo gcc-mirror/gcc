@@ -6938,6 +6938,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 	  break;
 
 	case EXEC_INIT_ASSIGN:
+	case EXEC_END_PROCEDURE:
 	  break;
 
 	case EXEC_ASSIGN:

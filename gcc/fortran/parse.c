@@ -1496,6 +1496,11 @@ accept_statement (gfc_statement st)
 	  new_st.op = EXEC_RETURN;
 	  add_statement ();
 	}
+      else
+	{
+	  new_st.op = EXEC_END_PROCEDURE;
+	  add_statement ();
+	}
 
       break;
 

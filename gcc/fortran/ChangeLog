@@ -1,3 +1,13 @@
+2009-05-13  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/34153
+	* gfortran.h (gfc_exec_op): Add EXEC_END_PROCEDURE.
+	* dump-parse-tree.c (show_code_node): Use EXEC_END_PROCEDURE.
+	* trans.c (gfc_trans_code): Ditto.
+	* resolve.c (resolve_code): Ditto.
+	* st.c (gfc_free_statement): Ditto.
+	* parse.c (accept_statement): Ditto.
+
 2009-05-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40110

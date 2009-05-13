@@ -94,6 +94,7 @@ gfc_free_statement (gfc_code *p)
     case EXEC_GOTO:
     case EXEC_CYCLE:
     case EXEC_RETURN:
+    case EXEC_END_PROCEDURE:
     case EXEC_IF:
     case EXEC_PAUSE:
     case EXEC_STOP:

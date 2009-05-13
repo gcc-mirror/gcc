@@ -1148,6 +1148,9 @@ show_code_node (int level, gfc_code *c)
 
   switch (c->op)
     {
+    case EXEC_END_PROCEDURE:
+      break;
+
     case EXEC_NOP:
       fputs ("NOP", dumpfile);
       break;
