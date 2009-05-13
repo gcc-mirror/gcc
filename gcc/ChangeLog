@@ -1,3 +1,10 @@
+2009-05-13  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (store): Add attributes for QI and HI.
+	Update comment.
+	(truncdisi2, truncdihi2, truncdiqi2): Merge these into ...
+	(truncdi<mode>2): ... this new pattern.
+
 2009-05-13  Brad Hards  <bradh@kde.org>
 
 	* Makefile.in (TEXI_GCCINT_FILES): Add plugins.texi.

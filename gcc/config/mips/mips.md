@@ -727,9 +727,10 @@
 ;; This attributes gives the mode mask of a SHORT.
 (define_mode_attr mask [(QI "0x00ff") (HI "0xffff")])
 
-;; Mode attributes for GPR loads and stores.
+;; Mode attributes for GPR loads.
 (define_mode_attr load [(SI "lw") (DI "ld")])
-(define_mode_attr store [(SI "sw") (DI "sd")])
+;; Instruction names for stores.
+(define_mode_attr store [(QI "sb") (HI "sh") (SI "sw") (DI "sd")])
 
 ;; Similarly for MIPS IV indexed FPR loads and stores.
 (define_mode_attr loadx [(SF "lwxc1") (DF "ldxc1") (V2SF "ldxc1")])
@@ -2692,33 +2693,13 @@
 ;;
 ;; Step A needs a real instruction but step B does not.
 
-(define_insn "truncdisi2"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,m")
-        (truncate:SI (match_operand:DI 1 "register_operand" "d,d")))]
+(define_insn "truncdi<mode>2"
+  [(set (match_operand:SUBDI 0 "nonimmediate_operand" "=d,m")
+        (truncate:SUBDI (match_operand:DI 1 "register_operand" "d,d")))]
   "TARGET_64BIT"
   "@
     sll\t%0,%1,0
-    sw\t%1,%0"
-  [(set_attr "move_type" "sll0,store")
-   (set_attr "mode" "SI")])
-
-(define_insn "truncdihi2"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=d,m")
-        (truncate:HI (match_operand:DI 1 "register_operand" "d,d")))]
-  "TARGET_64BIT"
-  "@
-    sll\t%0,%1,0
-    sh\t%1,%0"
-  [(set_attr "move_type" "sll0,store")
-   (set_attr "mode" "SI")])
-
-(define_insn "truncdiqi2"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=d,m")
-        (truncate:QI (match_operand:DI 1 "register_operand" "d,d")))]
-  "TARGET_64BIT"
-  "@
-    sll\t%0,%1,0
-    sb\t%1,%0"
+    <store>\t%1,%0"
   [(set_attr "move_type" "sll0,store")
    (set_attr "mode" "SI")])
 
