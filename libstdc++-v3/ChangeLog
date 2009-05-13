@@ -1,5 +1,10 @@
 2009-05-13  Ben Elliston  <bje@au.ibm.com>
 
+	* include/Makefile.am (PCHFLAGS): Remove -Winvalid-pch.
+	* include/Makefile.in: Likewise.
+
+2009-05-13  Ben Elliston  <bje@au.ibm.com>
+
 	* src/compatibility.cc (_ZTIe, _ZTIPe, _ZTIPKe): Change type to
 	const void * const.
 
