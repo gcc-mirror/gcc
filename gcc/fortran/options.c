@@ -238,9 +238,9 @@ gfc_post_options (const char **pfilename)
     sorry ("-fexcess-precision=standard for Fortran");
   flag_excess_precision_cmdline = EXCESS_PRECISION_FAST;
 
-  /* Issue an error if -fwhole-program was used.  */
+  /* Whole program needs whole file mode.  */
   if (flag_whole_program)
-    gfc_fatal_error ("Option -fwhole-program is not supported for Fortran");
+    gfc_option.flag_whole_file = 1;
 
   /* -fbounds-check is equivalent to -fcheck=bounds */
   if (flag_bounds_check)

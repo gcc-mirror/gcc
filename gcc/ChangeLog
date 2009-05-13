@@ -1,3 +1,7 @@
+2009-05-13  Jan Hubicka  <jh@suse.cz>
+
+	* options.c (gfc_post_options): -fwhole-program imply -fwhole-file.
+
 2009-05-12  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.h (OVERRIDE_OPTIONS): Clear flag_schedule_insns
