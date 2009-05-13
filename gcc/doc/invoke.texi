@@ -6803,7 +6803,7 @@ programs consisting of a single file, in combination with option
 programs since the functions and variables become local for the whole combined
 compilation unit, not for the single source file itself.
 
-This option is not supported for Fortran programs.
+This option implies @option{-fwhole-file} for Fortran programs.
 
 @item -fcprop-registers
 @opindex fcprop-registers
