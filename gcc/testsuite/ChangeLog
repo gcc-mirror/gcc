@@ -1,3 +1,8 @@
+2009-05-14  Ben Elliston  <bje@au.ibm.com>
+	 
+	PR middle-end/40035
+	* gcc.c-torture/compile/pr40035.c: New test.
+
 2009-05-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.target/i386/pr39543-2.c: Skip if ilp32 && pic.
@@ -8,7 +13,6 @@
 	* gfortran.dg/bind_c_usage_18.f90: Change dg-error into dg-warning.
 	* gfortran.dg/c_kind_tests_2.f03: Ditto.
 	* gfortran.dg/interop_params.f03: Ditto.
-
 
 2009-05-12  Jan Hubicka  <jh@suse.cz>
 
