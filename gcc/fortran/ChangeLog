@@ -1,3 +1,14 @@
+2009-05-13  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	* gfortran.h (gfc_code): Rename struct member label to label1.
+	* dump-parse-tree.c (show_code_node): Update symbol.
+	* trans-stmt.c (gfc_trans_label_assign, gfc_trans_goto,
+	gfc_trans_arithmetic_if)": Ditto.
+	* resolve.c (gfc_resolve_blocks, resolve_code): Ditto.
+	* match.c (match_arithmetic_if, gfc_match_if, gfc_reference_st_label,
+	gfc_match_assign, gfc_match_goto): Ditto.
+	* parse.c (parse_do_block): Ditto.
+
 2009-05-13  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/34153

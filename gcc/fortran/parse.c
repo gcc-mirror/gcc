@@ -2867,7 +2867,7 @@ parse_do_block (void)
   gfc_state_data s;
   gfc_symtree *stree;
 
-  s.ext.end_do_label = new_st.label;
+  s.ext.end_do_label = new_st.label1;
 
   if (new_st.ext.iterator != NULL)
     stree = new_st.ext.iterator->var->symtree;

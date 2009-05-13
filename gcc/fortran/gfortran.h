@@ -1913,7 +1913,7 @@ typedef struct gfc_code
   struct gfc_code *block, *next;
   locus loc;
 
-  gfc_st_label *here, *label, *label2, *label3;
+  gfc_st_label *here, *label1, *label2, *label3;
   gfc_symtree *symtree;
   gfc_expr *expr, *expr2;
   /* A name isn't sufficient to identify a subroutine, we need the actual
