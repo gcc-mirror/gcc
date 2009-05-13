@@ -1004,6 +1004,14 @@ do_linemarker (cpp_reader *pfile)
     }
 
   skip_rest_of_line (pfile);
+
+  /* Compensate for the increment in linemap_add that occurs in
+     _cpp_do_file_change.  We're currently at the start of the line
+     *following* the #line directive.  A separate source_location for this
+     location makes no sense (until we do the LC_LEAVE), and
+     complicates LAST_SOURCE_LINE_LOCATION.  */
+  pfile->line_table->highest_location--;
+
   _cpp_do_file_change (pfile, reason, new_file, new_lineno, new_sysp);
 }
 

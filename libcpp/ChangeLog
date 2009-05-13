@@ -1,3 +1,11 @@
+2009-05-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR cpp/36674
+	* directives (do_linemarker): Compensate for the increment in
+	location that occurs when we reach the end of line.
+	* files (_cpp_stack_include): Mention _cpp_find_file in the
+	comment.
+
 2009-05-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (enum cpp_token_fld_kind): Add
