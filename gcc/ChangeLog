@@ -1,3 +1,7 @@
+2009-05-13  Brad Hards  <bradh@kde.org>
+
+	* Makefile.in (TEXI_GCCINT_FILES): Add plugins.texi.
+
 2009-05-13  Jakub Jelinek  <jakub@redhat.com>
 	    Ben Elliston <bje@au.ibm.com>
 
