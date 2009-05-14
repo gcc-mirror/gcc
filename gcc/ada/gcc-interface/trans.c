@@ -7246,30 +7246,29 @@ protect_multiple_eval (tree exp)
   if (!TREE_SIDE_EFFECTS (exp))
     return exp;
 
-  /* If it is a conversion, protect what's inside the conversion.
+  /* If this is a conversion, protect what's inside the conversion.
      Similarly, if we're indirectly referencing something, we only
-     actually need to protect the address since the data itself can't
-     change in these situations.  */
-  else if (TREE_CODE (exp) == NON_LVALUE_EXPR
-	   || CONVERT_EXPR_P (exp)
-	   || TREE_CODE (exp) == VIEW_CONVERT_EXPR
-	   || TREE_CODE (exp) == INDIRECT_REF
-	   || TREE_CODE (exp) == UNCONSTRAINED_ARRAY_REF)
-    return build1 (TREE_CODE (exp), type,
-		   protect_multiple_eval (TREE_OPERAND (exp, 0)));
+     need to protect the address since the data itself can't change
+     in these situations.  */
+  if (TREE_CODE (exp) == NON_LVALUE_EXPR
+      || CONVERT_EXPR_P (exp)
+      || TREE_CODE (exp) == VIEW_CONVERT_EXPR
+      || TREE_CODE (exp) == INDIRECT_REF
+      || TREE_CODE (exp) == UNCONSTRAINED_ARRAY_REF)
+  return build1 (TREE_CODE (exp), type,
+		 protect_multiple_eval (TREE_OPERAND (exp, 0)));
 
-  /* If EXP is a fat pointer or something that can be placed into a register,
-     just make a SAVE_EXPR.  */
+  /* If this is a fat pointer or something that can be placed into a
+     register, just make a SAVE_EXPR.  */
   if (TYPE_FAT_POINTER_P (type) || TYPE_MODE (type) != BLKmode)
     return save_expr (exp);
 
-  /* Otherwise, dereference, protect the address, and re-reference.  */
-  else
-    return
-      build_unary_op (INDIRECT_REF, type,
-		      save_expr (build_unary_op (ADDR_EXPR,
-						 build_reference_type (type),
-						 exp)));
+  /* Otherwise, reference, protect the address and dereference.  */
+  return
+    build_unary_op (INDIRECT_REF, type,
+		    save_expr (build_unary_op (ADDR_EXPR,
+					       build_reference_type (type),
+					       exp)));
 }
 
 /* This is equivalent to stabilize_reference in tree.c, but we know how to

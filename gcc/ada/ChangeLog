@@ -1,3 +1,17 @@
+2009-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (elaborate_expression_1): Remove GNAT_EXPR
+	parameter and move check for static expression to...
+	(elaborate_expression): ...here.  Adjust call to above function.
+	(gnat_to_gnu_entity): Likewise for all calls.  Use correct arguments
+	in calls to elaborate_expression.
+	(elaborate_entity): Likewise.
+	(substitution_list): Likewise.
+	(maybe_variable): Fix formatting.
+	(substitute_in_type) <REAL_TYPE>: Merge with INTEGER_TYPE case and add
+	missing guard.
+	* gcc-interface/trans.c (protect_multiple_eval): Minor cleanup.
+
 2009-05-07  Arnaud Charlet  <charlet@adacore.com>
 
 	* gcc-interface/Make-lang.in: Update dependencies.
