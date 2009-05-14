@@ -71,6 +71,7 @@ enum plugin_event
   PLUGIN_FINISH_UNIT,           /* Useful for summary processing.  */
   PLUGIN_CXX_CP_PRE_GENERICIZE, /* Allows to see low level AST in C++ FE.  */
   PLUGIN_FINISH,                /* Called before GCC exits.  */
+  PLUGIN_ATTRIBUTES,            /* Called during attribute registration */
   PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
                                    array.  */
 @};
@@ -134,4 +135,36 @@ plugin_init (const char *plugin_name, int argc, struct plugin_argument *argv)
 
   ...
 @}
+@end smallexample
+@section Registering custom attributes
+
+For analysis purposes it is useful to be able to add custom attributes.
+
+The @code{PLUGIN_ATTRIBUTES} callback is called during attribute
+registration. Use the @code{register_attribute} function to register
+custom attributes.
+
+@smallexample
+/* Attribute handler callback */
+static tree
+handle_user_attribute (tree *node, tree name, tree args,
+			int flags, bool *no_add_attrs)
+@{
+  return NULL_TREE;
+@}
+
+/* Attribute definition */
+static struct attribute_spec user_attr =
+  @{ "user", 1, 1, false,  false, false, handle_user_attribute @};
+
+/* Plugin callback called during attribute registration.
+Registered with register_callback (plugin_name, PLUGIN_ATTRIBUTES, register_attributes, NULL)
+*/
+static void 
+register_attributes (void *event_data, void *data)
+@{
+  warning (0, G_("Callback to register attributes"));
+  register_attribute (&user_attr);
+@}
+
 @end smallexample

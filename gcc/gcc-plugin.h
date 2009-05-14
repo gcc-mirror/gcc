@@ -29,6 +29,7 @@ enum plugin_event
   PLUGIN_CXX_CP_PRE_GENERICIZE, /* Allows to see low level AST in C++ FE.  */
   PLUGIN_FINISH,                /* Called before GCC exits.  */
   PLUGIN_INFO,                  /* Information about the plugin */
+  PLUGIN_ATTRIBUTES,            /* Called during attribute registration.  */
   PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
                                    array.  */
 };

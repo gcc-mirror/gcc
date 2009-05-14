@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "langhooks.h"
 #include "hashtab.h"
+#include "plugin.h"
 
 static void init_attributes (void);
 
@@ -182,18 +183,27 @@ init_attributes (void)
   for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
     for (k = 0; attribute_tables[i][k].name != NULL; k++)
       {
+        register_attribute (&attribute_tables[i][k]);
+      }
+  invoke_plugin_callbacks (PLUGIN_ATTRIBUTES, NULL);
+  attributes_initialized = true;
+}
+
+/* Insert a single ATTR into the attribute table.  */
+
+void
+register_attribute (const struct attribute_spec *attr) 
+{
 	struct substring str;
 	const void **slot;
 
-	str.str = attribute_tables[i][k].name;
-	str.length = strlen (attribute_tables[i][k].name);
+	str.str = attr->name;
+	str.length = strlen (str.str);
 	slot = (const void **)htab_find_slot_with_hash (attribute_hash, &str,
 					 substring_hash (str.str, str.length),
 					 INSERT);
 	gcc_assert (!*slot);
-	*slot = &attribute_tables[i][k];
-      }
-  attributes_initialized = true;
+	*slot = attr;
 }
 
 /* Return the spec for the attribute named NAME.  */
