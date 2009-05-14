@@ -2421,7 +2421,7 @@ compare_ops (const void *pa, const void *pb)
   basic_block bbb;
 
   if (gimple_nop_p (opstmta) && gimple_nop_p (opstmtb))
-    return 0;
+    return SSA_NAME_VERSION (opa) - SSA_NAME_VERSION (opb);
   else if (gimple_nop_p (opstmta))
     return -1;
   else if (gimple_nop_p (opstmtb))
@@ -2431,7 +2431,7 @@ compare_ops (const void *pa, const void *pb)
   bbb = gimple_bb (opstmtb);
 
   if (!bba && !bbb)
-    return 0;
+    return SSA_NAME_VERSION (opa) - SSA_NAME_VERSION (opb);
   else if (!bba)
     return -1;
   else if (!bbb)
@@ -2441,12 +2441,15 @@ compare_ops (const void *pa, const void *pb)
     {
       if (gimple_code (opstmta) == GIMPLE_PHI
 	  && gimple_code (opstmtb) == GIMPLE_PHI)
-	return 0;
+	return SSA_NAME_VERSION (opa) - SSA_NAME_VERSION (opb);
       else if (gimple_code (opstmta) == GIMPLE_PHI)
 	return -1;
       else if (gimple_code (opstmtb) == GIMPLE_PHI)
 	return 1;
-      return gimple_uid (opstmta) - gimple_uid (opstmtb);
+      else if (gimple_uid (opstmta) != gimple_uid (opstmtb))
+        return gimple_uid (opstmta) - gimple_uid (opstmtb);
+      else
+	return SSA_NAME_VERSION (opa) - SSA_NAME_VERSION (opb);
     }
   return rpo_numbers[bba->index] - rpo_numbers[bbb->index];
 }
