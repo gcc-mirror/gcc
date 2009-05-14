@@ -1,5 +1,10 @@
 2009-05-14  Steven Bosscher  <steven@gcc.gnu.org>
 
+	* store-motion.c: Do not include params.h
+	* Makefile.in: Fix dependencies for various files.
+
+2009-05-14  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* auto-inc-dec.c: Fix pass description, remove apparent
 	accidental duplication.
 

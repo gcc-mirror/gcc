@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "except.h"
 #include "ggc.h"
-#include "params.h"
 #include "intl.h"
 #include "timevar.h"
 #include "tree-pass.h"
