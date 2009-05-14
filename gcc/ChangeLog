@@ -1,5 +1,10 @@
 2009-05-14  Steven Bosscher  <steven@gcc.gnu.org>
 
+	PR driver/40144
+	* opts.c (common_handle_option): Add OPT_fcse_skip_blocks as a no-op.
+
+2009-05-14  Steven Bosscher  <steven@gcc.gnu.org>
+
 	* store-motion.c: Do not include params.h
 	* Makefile.in: Fix dependencies for various files.
 
