@@ -1,3 +1,8 @@
+2009-05-13  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.c (mips_print_operand) <REG, MEM, default>:
+	Check for invalid values of LETTER.
+
 2009-05-13  Taras Glek  <tglek@mozilla.com>
 
        * attribs.c moved out attribute registration into register_attribute

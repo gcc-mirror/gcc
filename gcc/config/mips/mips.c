@@ -7292,6 +7292,8 @@ mips_print_operand (FILE *file, rtx op, int letter)
 		|| (letter == 'L' && TARGET_BIG_ENDIAN)
 		|| letter == 'D')
 	      regno++;
+	    else if (letter && letter != 'z' && letter != 'M' && letter != 'L')
+	      output_operand_lossage ("invalid use of '%%%c'", letter);
 	    /* We need to print $0 .. $31 for COP0 registers.  */
 	    if (COP0_REG_P (regno))
 	      fprintf (file, "$%s", &reg_names[regno][4]);
@@ -7303,6 +7305,8 @@ mips_print_operand (FILE *file, rtx op, int letter)
 	case MEM:
 	  if (letter == 'D')
 	    output_address (plus_constant (XEXP (op, 0), 4));
+	  else if (letter && letter != 'z')
+	    output_operand_lossage ("invalid use of '%%%c'", letter);
 	  else
 	    output_address (XEXP (op, 0));
 	  break;
@@ -7310,6 +7314,8 @@ mips_print_operand (FILE *file, rtx op, int letter)
 	default:
 	  if (letter == 'z' && op == CONST0_RTX (GET_MODE (op)))
 	    fputs (reg_names[GP_REG_FIRST], file);
+	  else if (letter && letter != 'z')
+	    output_operand_lossage ("invalid use of '%%%c'", letter);
 	  else if (CONST_GP_P (op))
 	    fputs (reg_names[GLOBAL_POINTER_REGNUM], file);
 	  else
