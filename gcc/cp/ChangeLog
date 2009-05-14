@@ -1,3 +1,7 @@
+2009-05-13  David Mandelin <dmandelin@mozilla.com>:
+
+      * decl.c (duplicate_decls): Preserve parameter attributes.
+
 2009-05-10  Jan Hubicka  <jh@suse.cz>
 
 	* decl2.c (cxx_callgraph_analyze_expr): Use
