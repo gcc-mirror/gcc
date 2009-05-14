@@ -1,3 +1,9 @@
+2009-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/40147
+	* ipa-utils.h (memory_identifier_string): Moved to ...
+	* tree.h (memory_identifier_string): Here.  Add GTY(()).
+
 2009-05-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* doc/tm.texi (TARGET_LEGITIMATE_ADDRESS_P): Refer mainly to this
