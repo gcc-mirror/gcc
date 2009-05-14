@@ -1,8 +1,6 @@
 ! { dg-do compile }
 ! Test fix for PR16943 in which the double typing of
-! N caused an error.  This is a common extension to the
-! F95 standard, so the error is only thrown for -std=f95
-! or -pedantic.
+! N caused an error.
 !
 ! Contributed by Paul Thomas  <pault@gcc.gnu.org>
 !
@@ -14,7 +12,7 @@
 
     integer function bugf(M) result (N) 
       integer, intent (in) :: M 
-      integer :: N ! { dg-warning "already has basic type of INTEGER" }
+      integer :: N ! { dg-error "already has basic type of INTEGER" }
       N = M 
       return 
     end function bugf

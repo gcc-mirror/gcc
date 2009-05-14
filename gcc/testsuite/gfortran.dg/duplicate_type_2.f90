@@ -7,14 +7,14 @@
 
 INTEGER FUNCTION foo ()
   IMPLICIT NONE
-  INTEGER :: foo ! { dg-warning "basic type of" }
-  INTEGER :: foo ! { dg-warning "basic type of" }
+  INTEGER :: foo ! { dg-error "basic type of" }
+  INTEGER :: foo ! { dg-error "basic type of" }
   foo = 42
 END FUNCTION foo
 
 INTEGER FUNCTION bar () RESULT (x)
   IMPLICIT NONE
-  INTEGER :: x ! { dg-warning "basic type of" }
+  INTEGER :: x ! { dg-error "basic type of" }
 
   INTEGER :: y
   INTEGER :: y ! { dg-error "basic type of" }

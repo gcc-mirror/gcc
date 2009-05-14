@@ -1,3 +1,10 @@
+2009-05-14  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/39996
+	* gfortran.dg/func_decl_2.f90: Modified (replacing warnings by errors).
+	* gfortran.dg/duplicate_type_2.f90: Ditto.
+	* gfortran.dg/duplicate_type_3.f90: New.
+
 2009-05-14  Laurent GUERBY  <laurent@guerby.net>
 	
         * ada/acats/tests/c3/c38202a.ada: Use Impdef.
