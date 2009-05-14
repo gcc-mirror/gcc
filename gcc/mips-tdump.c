@@ -1116,7 +1116,7 @@ print_file_desc (FDR *fdp, int number)
 	  (fdp->fBigendian) ? "BIG" : "LITTLE");
 
   printf ("    Debug level = %-10s Language    = %s\n",
-	  glevel_to_string (fdp->glevel),
+	  glevel_to_string ((glevel_t) fdp->glevel),
 	  lang_to_string((lang_t) fdp->lang));
 
   printf ("    Adr         = 0x%08lx\n\n", (long) fdp->adr);
