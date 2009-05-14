@@ -1,3 +1,14 @@
+2009-05-14  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* config/i386/msformat-c.c (ms_printf_length_specs):  Use enumeration
+	values even in sentinel and empty entries.
+	(ms_printf_flag_specs):  Likewise.
+	(ms_scanf_flag_specs):  Likewise.
+	(ms_strftime_flag_specs):  Likewise.
+	(ms_print_char_table):  Likewise.
+	(ms_scan_char_table):  Likewise.
+	(ms_time_char_table):  Likewise.
+
 2009-05-13  Doug Kwan  <dougkwan@google.com>
 
 	* tree-ssa-sccvn.c (compare_ops): Stabilize qsort.
