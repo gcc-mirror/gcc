@@ -68,6 +68,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 
 
+bool
+default_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+			      rtx addr ATTRIBUTE_UNUSED,
+			      bool strict ATTRIBUTE_UNUSED)
+{
+#ifdef GO_IF_LEGITIMATE_ADDRESS
+  /* Defer to the old implementation using a goto.  */
+  if (strict)
+    return strict_memory_address_p (mode, addr);
+  else
+    return memory_address_p (mode, addr);
+#else
+  gcc_unreachable ();
+#endif
+}
+
 void
 default_external_libcall (rtx fun ATTRIBUTE_UNUSED)
 {

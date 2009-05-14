@@ -2504,8 +2504,8 @@ added to another register (as well as added to a displacement).
 @defmac REGNO_OK_FOR_BASE_P (@var{num})
 A C expression which is nonzero if register number @var{num} is
 suitable for use as a base register in operand addresses.
-Like @code{GO_IF_LEGITIMATE_ADDRESS}, this macro should also
-exist in strict or non-strict variants.  Both variants behave
+Like @code{TARGET_LEGITIMATE_ADDRESS_P}, this macro should also
+define a strict and a non-strict variant.  Both variants behave
 the same for hard register; for pseudos, the strict variant will
 pass only those that have been allocated to a valid hard registers,
 while the non-strict variant will pass all pseudos.
@@ -5361,41 +5361,30 @@ expressions and @code{const} arithmetic expressions, in addition to
 @defmac MAX_REGS_PER_ADDRESS
 A number, the maximum number of registers that can appear in a valid
 memory address.  Note that it is up to you to specify a value equal to
-the maximum number that @code{GO_IF_LEGITIMATE_ADDRESS} would ever
+the maximum number that @code{TARGET_LEGITIMATE_ADDRESS_P} would ever
 accept.
 @end defmac
 
-@defmac GO_IF_LEGITIMATE_ADDRESS (@var{mode}, @var{x}, @var{label})
-A C compound statement with a conditional @code{goto @var{label};}
-executed if @var{x} (an RTX) is a legitimate memory address on the
-target machine for a memory operand of mode @var{mode}.
+@deftypefn {Target Hook} TARGET_LEGITIMATE_ADDRESS_P (enum machine_mode @var{mode}, rtx @var{x}, bool @var{strict})
+A function that returns whether @var{x} (an RTX) is a legitimate memory
+address on the target machine for a memory operand of mode @var{mode}.
 
-It usually pays to define several simpler macros to serve as
-subroutines for this one.  Otherwise it may be too complicated to
-understand.
+Legitimate addresses are defined in two variants: a strict variant and a
+non-strict one.  The @code{strict} parameter chooses which variant is
+desired by the caller.
 
-This macro must exist in two variants: a strict variant and a
-non-strict one.  The strict variant is used in the reload pass.  It
-must be defined so that any pseudo-register that has not been
-allocated a hard register is considered a memory reference.  In
-contexts where some kind of register is required, a pseudo-register
-with no hard register must be rejected.
+The strict variant is used in the reload pass.  It must be defined so
+that any pseudo-register that has not been allocated a hard register is
+considered a memory reference.  This is because in contexts where some
+kind of register is required, a pseudo-register with no hard register
+must be rejected.  For non-hard registers, the strict variant should look
+up the @code{reg_renumber} array; it should then proceed using the hard
+register number in the array, or treat the pseudo as a memory reference
+if the array holds @code{-1}.
 
 The non-strict variant is used in other passes.  It must be defined to
 accept all pseudo-registers in every context where some kind of
 register is required.
-
-@findex REG_OK_STRICT
-Compiler source files that want to use the strict variant of this
-macro define the macro @code{REG_OK_STRICT}.  You should use an
-@code{#ifdef REG_OK_STRICT} conditional to define the strict variant
-in that case and the non-strict variant otherwise.
-
-Subroutines to check for acceptable registers for various purposes (one
-for base registers, one for index registers, and so on) are typically
-among the subroutines used to define @code{GO_IF_LEGITIMATE_ADDRESS}.
-Then only these subroutine macros need have two variants; the higher
-levels of macros may be the same whether strict or not.
 
 Normally, constant addresses which are the sum of a @code{symbol_ref}
 and an integer are stored inside a @code{const} RTX to mark them as
@@ -5417,13 +5406,30 @@ into the @code{symbol_ref}, and then check for it here.  When you see a
 @code{const}, you will have to look inside it to find the
 @code{symbol_ref} in order to determine the section.  @xref{Assembler
 Format}.
-@end defmac
+
+@cindex @code{GO_IF_LEGITIMATE_ADDRESS}
+Some ports are still using a deprecated legacy substitute for
+this hook, the @code{GO_IF_LEGITIMATE_ADDRESS} macro.  This macro
+has this syntax:
+
+@example
+#define GO_IF_LEGITIMATE_ADDRESS (@var{mode}, @var{x}, @var{label})
+@end example
+
+@noindent
+and should @code{goto @var{label}} if the address @var{x} is a valid
+address on the target machine for a memory operand of mode @var{mode}.
+Whether the strict or non-strict variants are desired is defined by
+the @code{REG_OK_STRICT} macro introduced earlier in this section.
+Using the hook is usually simpler because it limits the number of
+files that are recompiled when changes are made.
+@end deftypefn
 
 @defmac TARGET_MEM_CONSTRAINT
 A single character to be used instead of the default @code{'m'}
 character for general memory addresses.  This defines the constraint
 letter which matches the memory addresses accepted by
-@code{GO_IF_LEGITIMATE_ADDRESS_P}.  Define this macro if you want to
+@code{TARGET_LEGITIMATE_ADDRESS_P}.  Define this macro if you want to
 support new address formats in your back end without changing the
 semantics of the @code{'m'} constraint.  This is necessary in order to
 preserve functionality of inline assembly constructs using the
@@ -6957,13 +6963,14 @@ The default value is false.
 
 This section describes macros that help implement generation of position
 independent code.  Simply defining these macros is not enough to
-generate valid PIC; you must also add support to the macros
-@code{GO_IF_LEGITIMATE_ADDRESS} and @code{PRINT_OPERAND_ADDRESS}, as
-well as @code{LEGITIMIZE_ADDRESS}.  You must modify the definition of
-@samp{movsi} to do something appropriate when the source operand
-contains a symbolic address.  You may also need to alter the handling of
-switch statements so that they use relative addresses.
-@c i rearranged the order of the macros above to try to force one of
+generate valid PIC; you must also add support to the hook
+@code{TARGET_LEGITIMATE_ADDRESS_P} and to the macro
+@code{PRINT_OPERAND_ADDRESS}, as well as @code{LEGITIMIZE_ADDRESS}.  You
+must modify the definition of @samp{movsi} to do something appropriate
+when the source operand contains a symbolic address.  You may also
+need to alter the handling of switch statements so that they use
+relative addresses.
+@c i rearranged the order of the macros above to try to force one of 
 @c them to the next line, to eliminate an overfull hbox. --mew 10feb93
 
 @defmac PIC_OFFSET_TABLE_REGNUM

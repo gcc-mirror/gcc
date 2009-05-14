@@ -164,6 +164,7 @@ static bool iq2000_pass_by_reference  (CUMULATIVE_ARGS *, enum machine_mode,
 static int  iq2000_arg_partial_bytes  (CUMULATIVE_ARGS *, enum machine_mode,
 				       tree, bool);
 static void iq2000_va_start	      (tree, rtx);
+static bool iq2000_legitimate_address_p (enum machine_mode, rtx, bool);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -212,6 +213,9 @@ static void iq2000_va_start	      (tree, rtx);
 #undef	TARGET_EXPAND_BUILTIN_VA_START
 #define	TARGET_EXPAND_BUILTIN_VA_START	iq2000_va_start
 
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P	iq2000_legitimate_address_p
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Return nonzero if we split the address into high and low parts.  */
@@ -249,8 +253,8 @@ iq2000_reg_mode_ok_for_base_p (rtx reg,
    memory operand of the indicated MODE.  STRICT is nonzero if this
    function is called during reload.  */
 
-int
-iq2000_legitimate_address_p (enum machine_mode mode, rtx xinsn, int strict)
+bool
+iq2000_legitimate_address_p (enum machine_mode mode, rtx xinsn, bool strict)
 {
   if (TARGET_DEBUG_A_MODE)
     {
@@ -311,7 +315,7 @@ iq2000_legitimate_address_p (enum machine_mode mode, rtx xinsn, int strict)
     }
 
   if (TARGET_DEBUG_A_MODE)
-    GO_PRINTF ("Not a legitimate address\n");
+    GO_PRINTF ("Not a enum machine_mode mode, legitimate address\n");
 
   /* The address was not legitimate.  */
   return 0;

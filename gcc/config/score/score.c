@@ -116,6 +116,9 @@
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST             score_address_cost
 
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P	score_legitimate_address_p
+
 struct extern_list *extern_head = 0;
 
 /* default 0 = NO_REGS  */
@@ -531,13 +534,13 @@ score_regno_mode_ok_for_base_p (int regno, int strict)
 }
 
 /* Implement GO_IF_LEGITIMATE_ADDRESS macro.  */
-int
-score_address_p (enum machine_mode mode, rtx x, int strict)
+bool
+score_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   if (TARGET_SCORE5 || TARGET_SCORE5U || TARGET_SCORE7 || TARGET_SCORE7D)
-    return score7_address_p (mode, x, strict);
+    return score7_legitimate_address_p (mode, x, strict);
   else if (TARGET_SCORE3)
-    return score3_address_p (mode, x, strict);
+    return score3_legitimate_address_p (mode, x, strict);
 
   gcc_unreachable ();
 }

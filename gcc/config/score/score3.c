@@ -911,8 +911,8 @@ score3_regno_mode_ok_for_base_p (int regno, int strict)
 }
 
 /* Implement GO_IF_LEGITIMATE_ADDRESS macro.  */
-int
-score3_address_p (enum machine_mode mode, rtx x, int strict)
+bool
+score3_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   struct score3_address_info addr;
 

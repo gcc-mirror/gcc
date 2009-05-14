@@ -53,7 +53,6 @@ enum crx_addrtype
 };
 
 extern enum crx_addrtype crx_decompose_address (rtx addr, struct crx_address *out);
-extern int crx_legitimate_address_p (enum machine_mode, rtx, int);
 
 extern int crx_const_double_ok (rtx op);
 

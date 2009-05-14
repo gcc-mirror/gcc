@@ -398,7 +398,7 @@ level.  This constraint will never be used and using it in an inline
 assembly is *always* a bug since there is no instruction accepting all
 those addresses.  It just serves as a placeholder for a generic memory
 constraint."
-  (match_test "legitimate_address_p (GET_MODE (op), op, 1)"))
+  (match_test "strict_memory_address_p (GET_MODE (op), op)"))
 
 ; This defines 'm' as normal memory constraint.  This is only possible
 ; since the standard memory constraint is re-defined in s390.h using

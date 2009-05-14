@@ -1823,22 +1823,6 @@ typedef struct ix86_args {
 
 #define LEGITIMATE_CONSTANT_P(X)  legitimate_constant_p (X)
 
-#ifdef REG_OK_STRICT
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
-do {									\
-  if (legitimate_address_p ((MODE), (X), 1))				\
-    goto ADDR;								\
-} while (0)
-
-#else
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
-do {									\
-  if (legitimate_address_p ((MODE), (X), 0))				\
-    goto ADDR;								\
-} while (0)
-
-#endif
-
 /* If defined, a C expression to determine the base term of address X.
    This macro is used in only one place: `find_base_term' in alias.c.
 

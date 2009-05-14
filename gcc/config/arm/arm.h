@@ -2161,43 +2161,11 @@ typedef struct
 #define REG_MODE_OK_FOR_REG_BASE_P(X, MODE)	\
   REG_OK_FOR_INDEX_P (X)
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.  */
-
 #define ARM_BASE_REGISTER_RTX_P(X)  \
   (GET_CODE (X) == REG && ARM_REG_OK_FOR_BASE_P (X))
 
 #define ARM_INDEX_REGISTER_RTX_P(X)  \
   (GET_CODE (X) == REG && ARM_REG_OK_FOR_INDEX_P (X))
-
-#define ARM_GO_IF_LEGITIMATE_ADDRESS(MODE,X,WIN)		\
-  {								\
-    if (arm_legitimate_address_p (MODE, X, SET, REG_STRICT_P))	\
-      goto WIN;							\
-  }
-
-#define THUMB2_GO_IF_LEGITIMATE_ADDRESS(MODE,X,WIN)		\
-  {								\
-    if (thumb2_legitimate_address_p (MODE, X, REG_STRICT_P))	\
-      goto WIN;							\
-  }
-
-#define THUMB1_GO_IF_LEGITIMATE_ADDRESS(MODE,X,WIN)		\
-  {								\
-    if (thumb1_legitimate_address_p (MODE, X, REG_STRICT_P))	\
-      goto WIN;							\
-  }
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, WIN)				\
-  if (TARGET_ARM)							\
-    ARM_GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN)  			\
-  else if (TARGET_THUMB2)						\
-    THUMB2_GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN)  			\
-  else /* if (TARGET_THUMB1) */						\
-    THUMB1_GO_IF_LEGITIMATE_ADDRESS (MODE, X, WIN)
-
 
 /* Define this for compatibility reasons. */
 #define HANDLE_PRAGMA_PACK_PUSH_POP

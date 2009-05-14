@@ -125,6 +125,7 @@ static void mmix_emit_sp_add (HOST_WIDE_INT offset);
 static void mmix_target_asm_function_prologue (FILE *, HOST_WIDE_INT);
 static void mmix_target_asm_function_end_prologue (FILE *);
 static void mmix_target_asm_function_epilogue (FILE *, HOST_WIDE_INT);
+static bool mmix_legitimate_address_p (enum machine_mode, rtx, bool);
 static void mmix_reorg (void);
 static void mmix_asm_output_mi_thunk
   (FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree);
@@ -205,6 +206,9 @@ static bool mmix_pass_by_reference (CUMULATIVE_ARGS *,
 #define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P	mmix_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -985,13 +989,12 @@ mmix_constant_address_p (rtx x)
   return constant_ok || (addend & 3) == 0;
 }
 
-/* Return 1 if the address is OK, otherwise 0.
-   Used by GO_IF_LEGITIMATE_ADDRESS.  */
+/* Return 1 if the address is OK, otherwise 0.  */
 
-int
-mmix_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED,
-			 rtx x,
-			 int strict_checking)
+bool
+mmix_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+			   rtx x,
+			   bool strict_checking)
 {
 #define MMIX_REG_OK(X)							\
   ((strict_checking							\

@@ -248,12 +248,10 @@ get_dup_num (int op_num, bool use_commut_op_p)
 	    break;
 
 	  case 'p':
-	    GO_IF_LEGITIMATE_ADDRESS (VOIDmode, op, win_p);
+	    if (address_operand (op, VOIDmode))
+	      return -1;
 	    break;
-	    
-	  win_p:
-	    return -1;
-	  
+
 	  case 'g':
 	    return -1;
 	    

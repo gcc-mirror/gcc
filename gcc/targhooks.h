@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+extern bool default_legitimate_address_p (enum machine_mode, rtx, bool);
+
 extern void default_external_libcall (rtx);
 extern rtx default_legitimize_address (rtx, rtx, enum machine_mode);
 

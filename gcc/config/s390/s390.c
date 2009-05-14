@@ -3080,8 +3080,8 @@ s390_expand_plus_operand (rtx target, rtx src,
 /* Return true if ADDR is a valid memory address.
    STRICT specifies whether strict register checking applies.  */
 
-bool
-legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
+static bool
+s390_legitimate_address_p (enum machine_mode mode, rtx addr, bool strict)
 {
   struct s390_address ad;
 
@@ -3739,7 +3739,7 @@ s390_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
     {
       x = legitimize_tls_address (x, 0);
 
-      if (legitimate_address_p (mode, x, FALSE))
+      if (s390_legitimate_address_p (mode, x, FALSE))
 	return x;
     }
   else if (GET_CODE (x) == PLUS
@@ -3756,7 +3756,7 @@ s390_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
                   || SYMBOLIC_CONST (XEXP (x, 1)))))
 	  x = legitimize_pic_address (x, 0);
 
-      if (legitimate_address_p (mode, x, FALSE))
+      if (s390_legitimate_address_p (mode, x, FALSE))
 	return x;
     }
 
@@ -9983,6 +9983,9 @@ s390_reorg (void)
 
 #undef TARGET_LIBGCC_SHIFT_COUNT_MODE
 #define TARGET_LIBGCC_SHIFT_COUNT_MODE s390_libgcc_shift_count_mode
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P s390_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

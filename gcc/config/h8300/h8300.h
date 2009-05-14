@@ -921,24 +921,6 @@ struct cum_arg
   ((C) == 'W')
 
 
-#ifndef REG_OK_STRICT
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
-  do						\
-    {						\
-      if (h8300_legitimate_address_p ((MODE), (X), 0))	\
-	goto ADDR;				\
-    }						\
-  while (0)
-#else
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
-  do						\
-    {						\
-      if (h8300_legitimate_address_p ((MODE), (X), 1))	\
-	goto ADDR;				\
-    }						\
-  while (0)
-#endif
-
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.
 

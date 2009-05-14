@@ -235,8 +235,8 @@
 
 (define_special_predicate "arm_extendqisi_mem_op"
   (and (match_operand 0 "memory_operand")
-       (match_test "arm_legitimate_address_p (mode, XEXP (op, 0), SIGN_EXTEND,
-					      0)")))
+       (match_test "arm_legitimate_address_outer_p (mode, XEXP (op, 0),
+						    SIGN_EXTEND, 0)")))
 
 (define_special_predicate "arm_reg_or_extendqisi_mem_op"
   (ior (match_operand 0 "arm_extendqisi_mem_op")

@@ -133,6 +133,14 @@ static rtx crx_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 				 int incoming ATTRIBUTE_UNUSED);
 static bool crx_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED);
 static int crx_address_cost (rtx, bool);
+static bool crx_legitimate_address_p (enum machine_mode, rtx, bool);
+
+/*****************************************************************************/
+/* RTL VALIDITY								     */
+/*****************************************************************************/
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P	crx_legitimate_address_p
 
 /*****************************************************************************/
 /* STACK LAYOUT AND CALLING CONVENTIONS					     */
@@ -722,9 +730,9 @@ crx_decompose_address (rtx addr, struct crx_address *out)
   return retval;
 }
 
-int
+bool
 crx_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
-			  rtx addr, int strict)
+			  rtx addr, bool strict)
 {
   enum crx_addrtype addrtype;
   struct crx_address address;

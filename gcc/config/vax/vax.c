@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 
+static bool vax_legitimate_address_p (enum machine_mode, rtx, bool);
 static void vax_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void vax_file_start (void);
 static void vax_init_libfuncs (void);
@@ -93,6 +94,9 @@ static rtx vax_builtin_setjmp_frame_value (void);
 
 #undef TARGET_BUILTIN_SETJMP_FRAME_VALUE
 #define TARGET_BUILTIN_SETJMP_FRAME_VALUE vax_builtin_setjmp_frame_value
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P vax_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1731,7 +1735,7 @@ indexable_address_p (rtx xfoo0, rtx xfoo1, enum machine_mode mode, bool strict)
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address.  */
 bool
-legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
+vax_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   rtx xfoo0, xfoo1;
 

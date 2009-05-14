@@ -56,7 +56,6 @@ extern void notice_update_cc (rtx, rtx);
 extern bool m68k_legitimate_base_reg_p (rtx, bool);
 extern bool m68k_legitimate_index_reg_p (rtx, bool);
 extern bool m68k_illegitimate_symbolic_constant_p (rtx);
-extern bool m68k_legitimate_address_p (enum machine_mode, rtx, bool);
 extern bool m68k_matches_q_p (rtx);
 extern bool m68k_matches_u_p (rtx);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);

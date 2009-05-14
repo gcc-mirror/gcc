@@ -71,7 +71,6 @@ extern int  nonimmediate_nonstack_operand (rtx, enum machine_mode);
 extern enum reg_class xstormy16_secondary_reload_class 
  (enum reg_class, enum machine_mode, rtx);
 extern enum reg_class xstormy16_preferred_reload_class (rtx, enum reg_class);
-extern int xstormy16_legitimate_address_p (enum machine_mode, rtx, int);
 extern void xstormy16_split_move (enum machine_mode, rtx, rtx);
 extern void xstormy16_expand_move (enum machine_mode, rtx, rtx);
 extern void xstormy16_expand_arith (enum machine_mode, enum rtx_code, 

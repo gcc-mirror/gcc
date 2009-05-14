@@ -2895,8 +2895,26 @@ bfin_valid_reg_p (unsigned int regno, int strict, enum machine_mode mode,
     return REGNO_OK_FOR_BASE_NONSTRICT_P (regno, mode, outer_code, SCRATCH);
 }
 
-bool
-bfin_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
+/* Recognize an RTL expression that is a valid memory address for an
+   instruction.  The MODE argument is the machine mode for the MEM expression
+   that wants to use this address. 
+
+   Blackfin addressing modes are as follows:
+
+      [preg]
+      [preg + imm16]
+
+      B [ Preg + uimm15 ]
+      W [ Preg + uimm16m2 ]
+      [ Preg + uimm17m4 ] 
+
+      [preg++]
+      [preg--]
+      [--sp]
+*/
+
+static bool
+bfin_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   switch (GET_CODE (x)) {
   case REG:
@@ -6317,5 +6335,8 @@ bfin_expand_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY bfin_return_in_memory
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P	bfin_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;

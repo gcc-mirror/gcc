@@ -1169,19 +1169,6 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
   (((GET_CODE (X) == PRE_DEC) || (GET_CODE (X) == POST_INC)) \
 	&& SP_REG_P (XEXP (X, 0)))
 
-/* Go to ADDR if X is a valid address.  */
-#ifndef REG_OK_STRICT
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
-{ \
-  if (m68hc11_go_if_legitimate_address ((X), (MODE), 0)) goto ADDR; \
-}
-#else
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		 \
-{							 \
-  if (m68hc11_go_if_legitimate_address ((X), (MODE), 1)) goto ADDR; \
-}
-#endif
-
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx and check its
    validity for a certain class.  We have two alternate definitions for each
    of them.  The usual definition accepts all pseudo regs; the other rejects

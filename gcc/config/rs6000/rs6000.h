@@ -1722,6 +1722,19 @@ typedef struct rs6000_args
  : (reg_renumber[REGNO] > 0					\
     && (reg_renumber[REGNO] <= 31 || reg_renumber[REGNO] == 67	\
 	|| reg_renumber[REGNO] == FRAME_POINTER_REGNUM)))
+
+/* Nonzero if X is a hard reg that can be used as an index
+   or if it is a pseudo reg in the non-strict case.  */
+#define INT_REG_OK_FOR_INDEX_P(X, STRICT)			\
+  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
+   || REGNO_OK_FOR_INDEX_P (REGNO (X)))
+
+/* Nonzero if X is a hard reg that can be used as a base reg
+   or if it is a pseudo reg in the non-strict case.  */
+#define INT_REG_OK_FOR_BASE_P(X, STRICT)			\
+  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
+   || REGNO_OK_FOR_BASE_P (REGNO (X)))
+
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
@@ -1755,62 +1768,6 @@ typedef struct rs6000_args
 				    && EASY_VECTOR_15((n) >> 1) \
 				    && ((n) & 1) == 0)
 
-/* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
-   and check its validity for a certain class.
-   We have two alternate definitions for each of them.
-   The usual definition accepts all pseudo regs; the other rejects
-   them unless they have been allocated suitable hard regs.
-   The symbol REG_OK_STRICT causes the latter definition to be used.
-
-   Most source files want to accept pseudo regs in the hope that
-   they will get allocated to the class that the insn wants them to be in.
-   Source files for reload pass need to be strict.
-   After reload, it makes no difference, since pseudo regs have
-   been eliminated by then.  */
-
-#ifdef REG_OK_STRICT
-# define REG_OK_STRICT_FLAG 1
-#else
-# define REG_OK_STRICT_FLAG 0
-#endif
-
-/* Nonzero if X is a hard reg that can be used as an index
-   or if it is a pseudo reg in the non-strict case.  */
-#define INT_REG_OK_FOR_INDEX_P(X, STRICT)			\
-  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
-   || REGNO_OK_FOR_INDEX_P (REGNO (X)))
-
-/* Nonzero if X is a hard reg that can be used as a base reg
-   or if it is a pseudo reg in the non-strict case.  */
-#define INT_REG_OK_FOR_BASE_P(X, STRICT)			\
-  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
-   || REGNO_OK_FOR_BASE_P (REGNO (X)))
-
-#define REG_OK_FOR_INDEX_P(X) INT_REG_OK_FOR_INDEX_P (X, REG_OK_STRICT_FLAG)
-#define REG_OK_FOR_BASE_P(X)  INT_REG_OK_FOR_BASE_P (X, REG_OK_STRICT_FLAG)
-
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.
-
-   On the RS/6000, there are four valid addresses: a SYMBOL_REF that
-   refers to a constant pool entry of an address (or the sum of it
-   plus a constant), a short (16-bit signed) constant plus a register,
-   the sum of two registers, or a register indirect, possibly with an
-   auto-increment.  For DFmode, DDmode and DImode with a constant plus
-   register, we must ensure that both words are addressable or PowerPC64
-   with offset word aligned.
-
-   For modes spanning multiple registers (DFmode and DDmode in 32-bit GPRs,
-   32-bit DImode, TImode), indexed addressing cannot be used because
-   adjacent memory cells are accessed by adding word-sized offsets
-   during assembly output.  */
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)			\
-{ if (rs6000_legitimate_address (MODE, X, REG_OK_STRICT_FLAG))	\
-    goto ADDR;							\
-}
 
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This

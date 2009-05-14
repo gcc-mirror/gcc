@@ -408,20 +408,6 @@ extern int avr_reg_order[];
 
 #define MAX_REGS_PER_ADDRESS 1
 
-#ifdef REG_OK_STRICT
-#  define GO_IF_LEGITIMATE_ADDRESS(mode, operand, ADDR)	\
-{							\
-  if (legitimate_address_p (mode, operand, 1))		\
-    goto ADDR;						\
-}
-#  else
-#  define GO_IF_LEGITIMATE_ADDRESS(mode, operand, ADDR)	\
-{							\
-  if (legitimate_address_p (mode, operand, 0))		\
-    goto ADDR;						\
-}
-#endif
-
 #define REG_OK_FOR_BASE_NOSTRICT_P(X) \
   (REGNO (X) >= FIRST_PSEUDO_REGISTER || REG_OK_FOR_BASE_STRICT_P(X))
 

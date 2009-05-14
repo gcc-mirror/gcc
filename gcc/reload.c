@@ -2135,11 +2135,15 @@ hard_reg_set_here_p (unsigned int beg_regno, unsigned int end_regno, rtx x)
 int
 strict_memory_address_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx addr)
 {
+#ifdef GO_IF_LEGITIMATE_ADDRESS
   GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
   return 0;
 
  win:
   return 1;
+#else
+  return targetm.legitimate_address_p (mode, addr, 1);
+#endif
 }
 
 /* Like rtx_equal_p except that it allows a REG and a SUBREG to match

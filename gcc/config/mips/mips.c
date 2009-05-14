@@ -2116,10 +2116,9 @@ mips_classify_address (struct mips_address_info *info, rtx x,
     }
 }
 
-/* Return true if X is a legitimate address for a memory operand of mode
-   MODE.  STRICT_P is true if REG_OK_STRICT is in effect.  */
+/* Implement TARGET_LEGITIMATE_ADDRESS_P.  */
 
-bool
+static bool
 mips_legitimate_address_p (enum machine_mode mode, rtx x, bool strict_p)
 {
   struct mips_address_info addr;
@@ -14914,6 +14913,9 @@ mips_final_postscan_insn (FILE *file, rtx insn, rtx *opvec, int noperands)
 
 #undef TARGET_ASM_FINAL_POSTSCAN_INSN
 #define TARGET_ASM_FINAL_POSTSCAN_INSN mips_final_postscan_insn
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P	mips_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
