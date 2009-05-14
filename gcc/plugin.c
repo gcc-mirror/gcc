@@ -493,6 +493,7 @@ register_callback (const char *plugin_name,
       case PLUGIN_FINISH_TYPE:
       case PLUGIN_FINISH_UNIT:
       case PLUGIN_CXX_CP_PRE_GENERICIZE:
+      case PLUGIN_ATTRIBUTES:
       case PLUGIN_FINISH:
         {
           struct callback_info *new_callback;
@@ -534,6 +535,7 @@ invoke_plugin_callbacks (enum plugin_event event, void *gcc_data)
       case PLUGIN_FINISH_TYPE:
       case PLUGIN_FINISH_UNIT:
       case PLUGIN_CXX_CP_PRE_GENERICIZE:
+      case PLUGIN_ATTRIBUTES:
       case PLUGIN_FINISH:
         {
           /* Iterate over every callback registered with this event and

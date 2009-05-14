@@ -21,7 +21,7 @@ handle_struct (void *event_data, void *data)
            IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
 }
 
-/* Callback function to invoke before the program is genericized.  */ 
+/* Callback function to invoke before the function body is genericized.  */ 
 
 void
 handle_pre_generic (void *event_data, void *data)
