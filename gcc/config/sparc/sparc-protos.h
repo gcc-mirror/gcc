@@ -67,7 +67,6 @@ extern void sparc64_initialize_trampoline (rtx, rtx, rtx);
 extern bool legitimate_constant_p (rtx);
 extern bool constant_address_p (rtx);
 extern bool legitimate_pic_operand_p (rtx);
-extern int legitimate_address_p (enum machine_mode, rtx, int);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern rtx legitimize_tls_address (rtx);
 extern void sparc_emit_call_insn (rtx, rtx);

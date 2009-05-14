@@ -416,17 +416,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define MAX_REGS_PER_ADDRESS 2
 
-#ifdef REG_OK_STRICT
-# define REG_OK_STRICT_FLAG 1
-#else
-# define REG_OK_STRICT_FLAG 0
-#endif
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)			\
-    { if (spu_legitimate_address (MODE, X, REG_OK_STRICT_FLAG))	\
-	goto ADDR;						\
-    }
-
 #define LEGITIMATE_CONSTANT_P(X) spu_legitimate_constant_p(X)
 
 

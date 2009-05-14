@@ -655,26 +655,6 @@ struct cum_arg {int nbytes; };
 
 #define HAVE_POST_INCREMENT (TARGET_AM33)
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.
-
-   The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
-   except for CONSTANT_ADDRESS_P which is actually
-   machine-independent.
-
-   On the mn10300, the value in the address register must be
-   in the same memory space/segment as the effective address.
-
-   This is problematical for reload since it does not understand
-   that base+index != index+base in a memory reference.
-
-   Note it is still possible to use reg+reg addressing modes,
-   it's just much more difficult.  For a discussion of a possible
-   workaround and solution, see the comments in pa.c before the
-   function record_unscaled_index_insn_codes.  */
-
 /* Accept either REG or SUBREG where a register is valid.  */
 
 #define RTX_OK_FOR_BASE_P(X, strict)				\
@@ -683,14 +663,6 @@ struct cum_arg {int nbytes; };
    || (GET_CODE (X) == SUBREG && REG_P (SUBREG_REG (X))		\
        && REGNO_STRICT_OK_FOR_BASE_P (REGNO (SUBREG_REG (X)),	\
  				      (strict))))
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)    	\
-do							\
-  {							\
-    if (legitimate_address_p ((MODE), (X), REG_STRICT))	\
-      goto ADDR;					\
-  }							\
-while (0)
 
 
 

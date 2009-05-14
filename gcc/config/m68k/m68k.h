@@ -758,14 +758,6 @@ __transfer_from_trampoline ()					\
 #define REG_OK_FOR_INDEX_P(X) \
   m68k_legitimate_index_reg_p (X, REG_STRICT_P)
 
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
-  do									\
-    {									\
-      if (m68k_legitimate_address_p (MODE, X, REG_STRICT_P))		\
-        goto ADDR;							\
-    }									\
-  while (0)
-
 
 /* This address is OK as it stands.  */
 #define PIC_CASE_VECTOR_ADDRESS(index) index

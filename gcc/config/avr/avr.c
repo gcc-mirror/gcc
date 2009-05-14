@@ -71,6 +71,7 @@ const struct attribute_spec avr_attribute_table[];
 static bool avr_assemble_integer (rtx, unsigned int, int);
 static void avr_file_start (void);
 static void avr_file_end (void);
+static bool avr_legitimate_address_p (enum machine_mode, rtx, bool);
 static void avr_asm_function_end_prologue (FILE *);
 static void avr_asm_function_begin_epilogue (FILE *);
 static rtx avr_function_value (const_tree, const_tree, bool);
@@ -366,6 +367,9 @@ static const struct mcu_type_s avr_mcu_types[] = {
 #define TARGET_HARD_REGNO_SCRATCH_OK avr_hard_regno_scratch_ok
 #undef TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD avr_case_values_threshold
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P avr_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1099,8 +1103,8 @@ avr_asm_function_begin_epilogue (FILE *file)
 /* Return nonzero if X (an RTX) is a legitimate memory address on the target
    machine for a memory operand of mode MODE.  */
 
-int
-legitimate_address_p (enum machine_mode mode, rtx x, int strict)
+bool
+avr_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   enum reg_class r = NO_REGS;
   

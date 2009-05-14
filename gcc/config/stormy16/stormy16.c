@@ -613,9 +613,9 @@ xstormy16_expand_andqi3 (rtx *operands)
   && INTVAL (X) + (OFFSET) < 0x8000					 \
   && (INTVAL (X) + (OFFSET) < 0x100 || INTVAL (X) + (OFFSET) >= 0x7F00))
 
-int
+static bool
 xstormy16_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
-				rtx x, int strict)
+				rtx x, bool strict)
 {
   if (LEGITIMATE_ADDRESS_CONST_INT_P (x, 0))
     return 1;
@@ -2649,6 +2649,9 @@ xstormy16_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG xstormy16_reorg
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P	xstormy16_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

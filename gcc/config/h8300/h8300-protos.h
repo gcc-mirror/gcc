@@ -60,7 +60,6 @@ extern int same_cmp_preceding_p (rtx);
 extern int same_cmp_following_p (rtx);
 
 extern int h8300_legitimate_constant_p (rtx);
-extern int h8300_legitimate_address_p (enum machine_mode, rtx, int);
 
 /* Used in builtins.c */
 extern rtx h8300_return_addr_rtx (int, rtx);

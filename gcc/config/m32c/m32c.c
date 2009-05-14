@@ -68,6 +68,7 @@ static int m32c_comp_type_attributes (const_tree, const_tree);
 static bool m32c_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static struct machine_function *m32c_init_machine_status (void);
 static void m32c_insert_attributes (tree, tree *);
+static bool m32c_legitimate_address_p (enum machine_mode, rtx, bool);
 static bool m32c_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 				    const_tree, bool);
 static bool m32c_promote_prototypes (const_tree);
@@ -1760,13 +1761,14 @@ m32c_init_libfuncs (void)
 
 /* Addressing Modes */
 
-/* Used by GO_IF_LEGITIMATE_ADDRESS.  The r8c/m32c family supports a
-   wide range of non-orthogonal addressing modes, including the
-   ability to double-indirect on *some* of them.  Not all insns
-   support all modes, either, but we rely on predicates and
-   constraints to deal with that.  */
-int
-m32c_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
+/* The r8c/m32c family supports a wide range of non-orthogonal
+   addressing modes, including the ability to double-indirect on *some*
+   of them.  Not all insns support all modes, either, but we rely on
+   predicates and constraints to deal with that.  */
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P m32c_legitimate_address_p
+bool
+m32c_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   int mode_adjust;
   if (CONSTANT_P (x))

@@ -54,7 +54,6 @@ extern char *xtensa_emit_branch (bool, bool, rtx *);
 extern char *xtensa_emit_bit_branch (bool, bool, rtx *);
 extern char *xtensa_emit_movcc (bool, bool, bool, rtx *);
 extern char *xtensa_emit_call (int, rtx *);
-extern bool xtensa_legitimate_address_p (enum machine_mode, rtx, bool);
 extern bool xtensa_tls_referenced_p (rtx);
 
 #ifdef TREE_CODE

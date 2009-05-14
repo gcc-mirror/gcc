@@ -974,23 +974,6 @@ do {						\
 #define REG_OK_FOR_BASE_P(X)	NONSTRICT_REG_OK_FOR_BASE_P (X)
 #endif
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression that is a
-   valid memory address for an instruction.  */
-
-#ifdef REG_OK_STRICT
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, WIN)	\
-do {						\
-  if (alpha_legitimate_address_p (MODE, X, 1))	\
-    goto WIN;					\
-} while (0)
-#else
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, WIN)	\
-do {						\
-  if (alpha_legitimate_address_p (MODE, X, 0))	\
-    goto WIN;					\
-} while (0)
-#endif
-
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and jump to WIN.  This
    macro is used in only one place: `find_reloads_address' in reload.c.  */

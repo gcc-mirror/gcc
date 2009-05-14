@@ -48,8 +48,6 @@ extern void m68hc11_initialize_trampoline (rtx, rtx, rtx);
 extern rtx m68hc11_expand_compare_and_branch (enum rtx_code, rtx, rtx, rtx);
 extern enum reg_class preferred_reload_class (rtx, enum reg_class);
 
-extern int m68hc11_go_if_legitimate_address (rtx, enum machine_mode, int);
-
 extern void m68hc11_notice_update_cc (rtx, rtx);
 extern void m68hc11_notice_keep_cc (rtx);
 

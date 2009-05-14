@@ -76,6 +76,7 @@ static int thumb1_base_register_rtx_p (rtx, enum machine_mode, int);
 static rtx arm_legitimize_address (rtx, rtx, enum machine_mode);
 static rtx thumb_legitimize_address (rtx, rtx, enum machine_mode);
 inline static int thumb1_index_register_rtx_p (rtx, int);
+static bool arm_legitimate_address_p (enum machine_mode, rtx, bool);
 static int thumb_far_jump_used_p (void);
 static bool thumb_force_lr_save (void);
 static int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
@@ -402,6 +403,9 @@ static bool arm_allocate_stack_slots_for_args (void);
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL arm_output_dwarf_dtprel
 #endif
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P	arm_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3914,8 +3918,8 @@ pcrel_constant_p (rtx x)
 
 /* Return nonzero if X is a valid ARM state address operand.  */
 int
-arm_legitimate_address_p (enum machine_mode mode, rtx x, RTX_CODE outer,
-			  int strict_p)
+arm_legitimate_address_outer_p (enum machine_mode mode, rtx x, RTX_CODE outer,
+			        int strict_p)
 {
   bool use_ldrd;
   enum rtx_code code = GET_CODE (x);
@@ -3999,7 +4003,7 @@ arm_legitimate_address_p (enum machine_mode mode, rtx x, RTX_CODE outer,
 }
 
 /* Return nonzero if X is a valid Thumb-2 address operand.  */
-int
+static int
 thumb2_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 {
   bool use_ldrd;
@@ -4305,7 +4309,7 @@ thumb1_index_register_rtx_p (rtx x, int strict_p)
    addresses based on the frame pointer or arg pointer until the
    reload pass starts.  This is so that eliminating such addresses
    into stack based ones won't produce impossible code.  */
-int
+static int
 thumb1_legitimate_address_p (enum machine_mode mode, rtx x, int strict_p)
 {
   /* ??? Not clear if this is right.  Experiment.  */
@@ -4417,6 +4421,17 @@ thumb_legitimate_offset_p (enum machine_mode mode, HOST_WIDE_INT val)
 	      && (val + GET_MODE_SIZE (mode)) <= 128
 	      && (val & 3) == 0);
     }
+}
+
+bool
+arm_legitimate_address_p (enum machine_mode mode, rtx x, bool strict_p)
+{
+  if (TARGET_ARM)
+    return arm_legitimate_address_outer_p (mode, x, SET, strict_p);
+  else if (TARGET_THUMB2)
+    return thumb2_legitimate_address_p (mode, x, strict_p);
+  else /* if (TARGET_THUMB1) */
+    return thumb1_legitimate_address_p (mode, x, strict_p);
 }
 
 /* Build the SYMBOL_REF for __tls_get_addr.  */
@@ -4654,7 +4669,7 @@ arm_legitimize_address (rtx x, rtx orig_x, enum machine_mode mode)
     }
 
   /* XXX We don't allow MINUS any more -- see comment in
-     arm_legitimate_address_p ().  */
+     arm_legitimate_address_outer_p ().  */
   else if (GET_CODE (x) == MINUS)
     {
       rtx xop0 = XEXP (x, 0);

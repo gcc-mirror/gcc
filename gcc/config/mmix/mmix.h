@@ -690,10 +690,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define MAX_REGS_PER_ADDRESS 2
 
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)		\
- if (mmix_legitimate_address (MODE, X, MMIX_REG_OK_STRICT))	\
-   goto LABEL
-
 #ifndef REG_OK_STRICT
 # define REG_OK_FOR_BASE_P(X)			\
   (REGNO (X) <= MMIX_LAST_GENERAL_REGISTER	\

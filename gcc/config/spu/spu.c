@@ -152,6 +152,7 @@ char regs_ever_allocated[FIRST_PSEUDO_REGISTER];
 static void spu_init_builtins (void);
 static unsigned char spu_scalar_mode_supported_p (enum machine_mode mode);
 static unsigned char spu_vector_mode_supported_p (enum machine_mode mode);
+static bool spu_legitimate_address_p (enum machine_mode, rtx, bool);
 static rtx adjust_operand (rtx op, HOST_WIDE_INT * start);
 static rtx get_pic_reg (void);
 static int need_to_save_reg (int regno, int saving);
@@ -398,6 +399,9 @@ const struct attribute_spec spu_attribute_table[];
 
 #undef TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS spu_section_type_flags
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P spu_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3612,9 +3616,9 @@ spu_legitimate_constant_p (rtx x)
   The alignment matters in the reg+const case because lqd and stqd
   ignore the 4 least significant bits of the const.  (TODO: It might be
   preferable to allow any alignment and fix it up when splitting.) */
-int
-spu_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED,
-			rtx x, int reg_ok_strict)
+bool
+spu_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+			  rtx x, bool reg_ok_strict)
 {
   if (mode == TImode && GET_CODE (x) == AND
       && GET_CODE (XEXP (x, 1)) == CONST_INT

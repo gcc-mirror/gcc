@@ -239,8 +239,8 @@
       subreg = SUBREG_REG (op);
       code = GET_CODE (subreg);
       if (code == MEM)
-	return frv_legitimate_address_p (mode, XEXP (subreg, 0),
-					 reload_completed, FALSE, FALSE);
+	return frv_legitimate_address_p_1 (mode, XEXP (subreg, 0),
+					   reload_completed, FALSE, FALSE);
 
       return (code == REG);
 
@@ -278,8 +278,8 @@
       subreg = SUBREG_REG (op);
       code = GET_CODE (subreg);
       if (code == MEM)
-	return frv_legitimate_address_p (mode, XEXP (subreg, 0),
-					 reload_completed, FALSE, FALSE);
+	return frv_legitimate_address_p_1 (mode, XEXP (subreg, 0),
+					   reload_completed, FALSE, FALSE);
 
       return (code == REG);
 
@@ -334,8 +334,8 @@
       subreg = SUBREG_REG (op);
       code = GET_CODE (subreg);
       if (code == MEM)
-	return frv_legitimate_address_p (mode, XEXP (subreg, 0),
-					 reload_completed, TRUE, FALSE);
+	return frv_legitimate_address_p_1 (mode, XEXP (subreg, 0),
+					   reload_completed, TRUE, FALSE);
 
       return (code == REG);
 
@@ -373,8 +373,8 @@
       subreg = SUBREG_REG (op);
       code = GET_CODE (subreg);
       if (code == MEM)
-	return frv_legitimate_address_p (mode, XEXP (subreg, 0),
-					 reload_completed, TRUE, FALSE);
+	return frv_legitimate_address_p_1 (mode, XEXP (subreg, 0),
+					   reload_completed, TRUE, FALSE);
 
       return (code == REG);
 
@@ -599,7 +599,7 @@
   if (GET_MODE (op) != mode && GET_MODE (op) != VOIDmode)
     return FALSE;
 
-  return frv_legitimate_address_p (DImode, op, reload_completed, FALSE, TRUE);
+  return frv_legitimate_address_p_1 (DImode, op, reload_completed, FALSE, TRUE);
 })
 
 ;; TODO: Add a comment here.

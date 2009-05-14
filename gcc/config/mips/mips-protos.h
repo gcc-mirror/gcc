@@ -184,7 +184,6 @@ enum mips_call_type {
 extern bool mips_symbolic_constant_p (rtx, enum mips_symbol_context,
 				      enum mips_symbol_type *);
 extern int mips_regno_mode_ok_for_base_p (int, enum machine_mode, bool);
-extern bool mips_legitimate_address_p (enum machine_mode, rtx, bool);
 extern bool mips_stack_address_p (rtx, enum machine_mode);
 extern int mips_address_insns (rtx, enum machine_mode, bool);
 extern int mips_const_insns (rtx);

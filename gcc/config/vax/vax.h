@@ -540,11 +540,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) 1
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.  */
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
-  { if (legitimate_address_p ((MODE), (X), 0)) goto ADDR; }
-
 #else
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
@@ -552,11 +547,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.  */
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR) \
-  { if (legitimate_address_p ((MODE), (X), 1)) goto ADDR; }
 
 #endif
 

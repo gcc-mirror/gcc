@@ -69,6 +69,7 @@ enum processor_type mn10300_processor = PROCESSOR_DEFAULT;
 
 
 static bool mn10300_handle_option (size_t, const char *, int);
+static bool mn10300_legitimate_address_p (enum machine_mode, rtx, bool);
 static int mn10300_address_cost_1 (rtx, int *);
 static int mn10300_address_cost (rtx, bool);
 static bool mn10300_rtx_costs (rtx, int, int, int *, bool);
@@ -126,6 +127,9 @@ static unsigned int mn10300_case_values_threshold (void);
 
 #undef TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD mn10300_case_values_threshold
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P	mn10300_legitimate_address_p
 
 static void mn10300_encode_section_info (tree, rtx, int);
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -1900,9 +1904,21 @@ legitimate_pic_operand_p (rtx x)
 }
 
 /* Return TRUE if the address X, taken from a (MEM:MODE X) rtx, is
-   legitimate, and FALSE otherwise.  */
+   legitimate, and FALSE otherwise.
+
+   On the mn10300, the value in the address register must be
+   in the same memory space/segment as the effective address.
+
+   This is problematical for reload since it does not understand
+   that base+index != index+base in a memory reference.
+
+   Note it is still possible to use reg+reg addressing modes,
+   it's just much more difficult.  For a discussion of a possible
+   workaround and solution, see the comments in pa.c before the
+   function record_unscaled_index_insn_codes.  */
+
 bool
-legitimate_address_p (enum machine_mode mode, rtx x, int strict)
+mn10300_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   if (CONSTANT_ADDRESS_P (x)
       && (! flag_pic || legitimate_pic_operand_p (x)))

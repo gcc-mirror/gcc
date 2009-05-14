@@ -5686,8 +5686,8 @@ h8300_rtx_ok_for_base_p (rtx x, int strict)
    legitimate address has the form REG, REG+CONSTANT_ADDRESS or
    CONSTANT_ADDRESS.  */
 
-int
-h8300_legitimate_address_p (enum machine_mode mode, rtx x, int strict)
+static bool
+h8300_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {
   /* The register indirect addresses like @er0 is always valid.  */
   if (h8300_rtx_ok_for_base_p (x, strict))
@@ -5794,6 +5794,9 @@ h8300_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK h8300_hard_regno_scratch_ok
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P	h8300_legitimate_address_p
 
 #undef TARGET_DEFAULT_TARGET_FLAGS
 #define TARGET_DEFAULT_TARGET_FLAGS TARGET_DEFAULT

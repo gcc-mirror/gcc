@@ -122,7 +122,8 @@ extern rtx score7_function_value (tree valtype,
                                   enum machine_mode mode);
 extern void score7_initialize_trampoline (rtx ADDR, rtx FUNC, rtx CHAIN);
 extern int score7_regno_mode_ok_for_base_p (int regno, int strict);
-extern int score7_address_p (enum machine_mode mode, rtx x, int strict);
+extern bool score7_legitimate_address_p (enum machine_mode mode, rtx x,
+					 bool strict);
 extern int score7_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
                                       enum reg_class from,
                                       enum reg_class to);

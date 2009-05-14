@@ -26,7 +26,6 @@ extern void picochip_function_prologue (FILE *, HOST_WIDE_INT);
 extern void picochip_function_epilogue (FILE *, HOST_WIDE_INT);
 
 extern enum reg_class picochip_reg_class_from_letter (unsigned);
-extern int picochip_legitimate_address_p (int, struct rtx_def *, unsigned);
 extern int picochip_const_ok_for_letter_p (unsigned HOST_WIDE_INT value, unsigned c);
 
 #ifdef RTX_CODE			/* inside TREE_CODE */

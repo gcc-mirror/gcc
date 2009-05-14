@@ -2504,25 +2504,11 @@ typedef struct mips_args {
 
 #define MAX_REGS_PER_ADDRESS 1
 
-#ifdef REG_OK_STRICT
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
-{						\
-  if (mips_legitimate_address_p (MODE, X, 1))	\
-    goto ADDR;					\
-}
-#else
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)	\
-{						\
-  if (mips_legitimate_address_p (MODE, X, 0))	\
-    goto ADDR;					\
-}
-#endif
-
 /* Check for constness inline but use mips_legitimate_address_p
    to check whether a constant really is an address.  */
 
 #define CONSTANT_ADDRESS_P(X) \
-  (CONSTANT_P (X) && mips_legitimate_address_p (SImode, X, 0))
+  (CONSTANT_P (X) && memory_address_p (SImode, X))
 
 #define LEGITIMATE_CONSTANT_P(X) (mips_const_insns (X) > 0)
 

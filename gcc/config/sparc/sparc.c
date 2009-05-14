@@ -357,6 +357,7 @@ static int hypersparc_adjust_cost (rtx, rtx, rtx, int);
 static void sparc_output_addr_vec (rtx);
 static void sparc_output_addr_diff_vec (rtx);
 static void sparc_output_deferred_case_vectors (void);
+static bool sparc_legitimate_address_p (enum machine_mode, rtx, bool);
 static rtx sparc_builtin_saveregs (void);
 static int epilogue_renumber (rtx *, int);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
@@ -587,6 +588,9 @@ static bool fpu_option_set = false;
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE sparc_mangle_type
 #endif
+
+#undef TARGET_LEGITIMATE_ADDRESS_P
+#define TARGET_LEGITIMATE_ADDRESS_P sparc_legitimate_address_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3067,8 +3071,8 @@ legitimate_pic_operand_p (rtx x)
 /* Return nonzero if ADDR is a valid memory address.
    STRICT specifies whether strict register checking applies.  */
    
-int
-legitimate_address_p (enum machine_mode mode, rtx addr, int strict)
+static bool
+sparc_legitimate_address_p (enum machine_mode mode, rtx addr, bool strict)
 {
   rtx rs1 = NULL, rs2 = NULL, imm1 = NULL;
 
@@ -3503,7 +3507,7 @@ sparc_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
     x = gen_rtx_PLUS (Pmode, XEXP (x, 0),
 		      force_operand (XEXP (x, 1), NULL_RTX));
 
-  if (x != orig_x && legitimate_address_p (mode, x, FALSE))
+  if (x != orig_x && sparc_legitimate_address_p (mode, x, FALSE))
     return x;
 
   if (SPARC_SYMBOL_REF_TLS_P (x))

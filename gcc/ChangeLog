@@ -1,5 +1,189 @@
 2009-05-14  Paolo Bonzini  <bonzini@gnu.org>
 
+	* doc/tm.texi (TARGET_LEGITIMATE_ADDRESS_P): Refer mainly to this
+	in the former documentation of...
+	(GO_IF_LEGITIMATE_ADDRESS): ... this.
+	* ira-conflicts.c (get_dup_num): Use address_operand.
+	* targhooks.c (default_legitimate_address_p): New.
+	* targhooks.h (default_legitimate_address_p): New.
+	* reload.c (strict_memory_address_p) [!GO_IF_LEGITIMATE_ADDRESS]:
+	Call hook.
+	* recog.c (memory_address_p) [!GO_IF_LEGITIMATE_ADDRESS]: Call hook.
+	* target.h (struct target): Add legitimate_address_p.
+	* target-def.h (TARGET_LEGITIMATE_ADDRESS_P): New.
+	(TARGET_INITIALIZER): Include it.
+
+	* config/alpha/alpha.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/alpha/alpha-protos.h (alpha_legitimate_address_p): Remove.
+	* config/alpha/alpha.c (alpha_legitimate_address_p): Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/frv/frv.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	(REG_OK_STRICT_P): Delete.
+	* config/frv/frv-protos.h (frv_legitimate_address_p): Rename to...
+	(frv_legitimate_address_p_1): ... this.
+	* config/frv/frv.c (frv_legitimate_address_p): Forward to...
+	(frv_legitimate_address_p_1): ... the renamed old
+	frv_legitimate_address_p.
+	* config/frv/predicates.md: Adjust calls to frv_legitimate_address_p.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/s390/s390.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/s390/s390-protos.h (legitimate_address_p): Remove.
+	* config/s390/s390.c (legitimate_address_p): Rename to...
+	(s390_legitimate_address_p): ... this, make static.
+	(legitimize_address): Adjust call.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+	* config/s390/constraints.md ("e"): Call strict_memory_address_p.
+
+	* config/m32c/m32c.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/m32c/m32c-protos.h (m32c_legitimate_address_p): Remove.
+	* config/m32c/m32c.c (m32c_legitimate_address_p): Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/spu/spu.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/spu/spu-protos.h (spu_legitimate_address): Remove.
+	* config/spu/spu.c (spu_legitimate_address): Rename to...
+	(spu_legitimate_address_p): ... this, make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/sparc/sparc.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/sparc/sparc-protos.h (legitimate_address_p): Remove.
+	* config/sparc/sparc.c (legitimate_address_p): Rename to...
+	(sparc_legitimate_address_p): ... this, make static and return bool.
+	(legitimize_address): Adjust call.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/i386/i386.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/i386/i386-protos.h (legitimate_address_p): Remove.
+	* config/i386/i386.c (legitimate_address_p): Rename to...
+	(ix86_legitimate_address_p): ... this, make static.
+	(constant_address_p): Move after it, adjust call.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/avr/avr.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/avr/avr-protos.h (legitimate_address_p): Remove.
+	* config/avr/avr.c (legitimate_address_p): Rename to...
+	(avr_legitimate_address_p): ... this, make static.
+	(legitimize_address): Adjust call.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/crx/crx.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/crx/crx-protos.h (crx_legitimate_address_p): Remove.
+	* config/crx/crx.c (crx_legitimate_address_p): Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/xtensa/xtensa.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/xtensa/xtensa-protos.h (xtensa_legitimate_address_p): Remove.
+	* config/xtensa/xtensa.c (xtensa_legitimate_address_p): Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/stormy16/stormy16.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/stormy16/stormy16-protos.h (xstormy16_legitimate_address_p):
+	Remove.
+	* config/stormy16/stormy16.c (xstormy16_legitimate_address_p):
+	Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/m68hc11/m68hc11.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_go_if_legitimate_address):
+	Remove.
+	* config/m68hc11/m68hc11.c (m68hc11_go_if_legitimate_address):
+	Rename to...
+	(m68hc11_legitimate_address_p): ... this, make static.
+	(go_if_legitimate_address_internal): Rename to...
+	(m68hc11_legitimate_address_p_1): ... this.
+	(legitimize_address): Adjust call.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/iq2000/iq2000.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/iq2000/iq2000-protos.h (iq2000_legitimate_address_p):
+	Remove.
+	* config/iq2000/iq2000.c (iq2000_legitimate_address_p):
+	Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/mn10300/mn10300.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/mn10300/mn10300-protos.h (legitimate_address_p): Remove.
+	* config/mn10300/mn10300.c (legitimate_address_p): Rename to...
+	(mn10300_legitimate_address_p): ... this, make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/m68k/m68k.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/m68k/m68k-protos.h (m68k_legitimate_address_p): Remove.
+	* config/m68k/m68k.c (m68k_legitimate_address_p): Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/rs6000/rs6000.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	(REG_OK_STRICT_FLAG, REG_OK_FOR_BASE_P, REG_OK_FOR_INDEX_P): Delete.
+	(INT_REG_OK_FOR_BASE_P, INT_REG_OK_FOR_INDEX_P): Move above.
+	* config/rs6000/rs6000.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/rs6000/rs6000-protos.h (rs6000_legitimate_address): Remove.
+	* config/rs6000/rs6000.c (rs6000_legitimate_address): Rename to...
+	(rs6000_legitimate_address_p): ... this, make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+	(REG_MODE_OK_FOR_BASE_P): Delete.
+	(rs6000_legitimize_reload_address): Use INT_REG_OK_FOR_BASE_P.
+
+	* config/picochip/picochip.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/picochip/picochip-protos.h (picochip_legitimate_address_p):
+	Delete.
+	* config/picochip/picochip.c (picochip_legitimate_address_p): Make
+	static, adjust types.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/score/score.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/score/score.c (score_address_p): Rename to...
+	(score_legitimate_address_p): ... this.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+	* config/score/score3.c (score3_address_p): Rename to...
+	(score3_legitimate_address_p): ... this.
+	* config/score/score7.c (score7_address_p): Rename to...
+	(score7_legitimate_address_p): ... this.
+
+	* config/arm/arm.h (ARM_GO_IF_LEGITIMATE_ADDRESS,
+	THUMB2_GO_IF_LEGITIMATE_ADDRESS, THUMB1_GO_IF_LEGITIMATE_ADDRESS,
+	GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/arm/arm-protos.h (thumb1_legitimate_address_p,
+	thumb2_legitimate_address_p): Delete.
+	(arm_legitimate_address_p): Rename to...
+	(arm_legitimate_address_outer_p): ... this.
+	* config/arm/constraints.md ("Uq"): Adjust call.
+	* config/arm/predicates.md (arm_extendqisi_mem_op): Likewise.
+	* config/arm/arm.c (arm_legitimate_address_p): New, rename old one to...
+	(arm_legitimate_address_outer_p): ... this.
+	(thumb1_legitimate_address_p, thumb2_legitimate_address_p): Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/mips/mips.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/mips/mips-protos.h (mips_legitimate_address_p): Remove.
+	* config/mips/mips.c (mips_legitimate_address_p): ... Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/vax/vax.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/vax/vax-protos.h (legitimate_address_p): Remove.
+	* config/vax/vax.c (legitimate_address_p): Rename to...
+	(vax_legitimate_address_p): ... this, make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/h8300/h8300.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/h8300/h8300-protos.h (h8300_legitimate_address_p): Remove.
+	* config/h8300/h8300.c (h8300_legitimate_address_p): ... Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/mmix/mmix.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/mmix/mmix-protos.h (mmix_legitimize_address): Remove.
+	* config/mmix/mmix.c (mmix_legitimate_address): Rename to...
+	(mmix_legitimate_address_p): ... this, make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+	* config/bfin/bfin.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/bfin/bfin-protos.h (bfin_legitimate_address_p): Remove.
+	* config/bfin/bfin.c (bfin_legitimate_address_p): ... Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+
+2009-05-14  Paolo Bonzini  <bonzini@gnu.org>
+
 	* config/arm/arm.h (PROMOTE_FUNCTION_MODE): Remove handling
 	of MODE_COMPLEX_INT.
 

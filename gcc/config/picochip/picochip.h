@@ -492,18 +492,6 @@ extern const enum reg_class picochip_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #define MAX_REGS_PER_ADDRESS 1
 
-#ifdef REG_OK_STRICT
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL) 			\
- if (picochip_legitimate_address_p (MODE, X, 1)) goto LABEL;
-
-#else /* REG_OK_STRICT */
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL) 			\
-  if (picochip_legitimate_address_p (MODE, X, 0)) goto LABEL;
-
-#endif /* !REG_OK_STRICT */
-
 /* Legitimize reload address tries machine dependent means of
    reloading addresses.  There seems to be a strange error in gcc,
    which necessitates this macro.  Consider:

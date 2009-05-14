@@ -537,20 +537,6 @@ enum reg_class
 #define MAX_REGS_PER_ADDRESS 1
 
 #ifdef REG_OK_STRICT
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)	\
-do {							\
-  if (xstormy16_legitimate_address_p (MODE, X, 1))	\
-    goto LABEL;						\
-} while (0)
-#else
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)	\
-do {							\
-  if (xstormy16_legitimate_address_p (MODE, X, 0))	\
-    goto LABEL;						\
-} while (0)
-#endif
-
-#ifdef REG_OK_STRICT
 #define REG_OK_FOR_BASE_P(X) 						   \
   (REGNO_OK_FOR_BASE_P (REGNO (X)) && (REGNO (X) < FIRST_PSEUDO_REGISTER))
 #else

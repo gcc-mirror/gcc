@@ -231,8 +231,8 @@
   In ARM state an address valid in ldrsb instructions."
  (and (match_code "mem")
       (match_test "TARGET_ARM
-		   && arm_legitimate_address_p (GET_MODE (op), XEXP (op, 0),
-						SIGN_EXTEND, 0)")))
+		   && arm_legitimate_address_outer_p (GET_MODE (op), XEXP (op, 0),
+						      SIGN_EXTEND, 0)")))
 
 (define_memory_constraint "Q"
  "@internal

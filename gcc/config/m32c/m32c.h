@@ -578,10 +578,6 @@ typedef struct m32c_cumulative_args
 #define REG_OK_STRICT_V 0
 #endif
 
-#define GO_IF_LEGITIMATE_ADDRESS(MODE,X,LABEL) \
-	if (m32c_legitimate_address_p (MODE, X, REG_OK_STRICT_V)) \
-	  goto LABEL;
-
 #define REG_OK_FOR_BASE_P(X) m32c_reg_ok_for_base_p (X, REG_OK_STRICT_V)
 #define REG_OK_FOR_INDEX_P(X) 0
 

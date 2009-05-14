@@ -1253,11 +1253,15 @@ pop_operand (rtx op, enum machine_mode mode)
 int
 memory_address_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx addr)
 {
+#ifdef GO_IF_LEGITIMATE_ADDRESS
   GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
   return 0;
 
  win:
   return 1;
+#else
+  return targetm.legitimate_address_p (mode, addr, 0);
+#endif
 }
 
 /* Return 1 if OP is a valid memory reference with mode MODE,

@@ -54,9 +54,7 @@ extern RTX_CODE arm_canonicalize_comparison (RTX_CODE, enum machine_mode,
 extern int legitimate_pic_operand_p (rtx);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 extern rtx legitimize_tls_address (rtx, rtx);
-extern int arm_legitimate_address_p  (enum machine_mode, rtx, RTX_CODE, int);
-extern int thumb1_legitimate_address_p (enum machine_mode, rtx, int);
-extern int thumb2_legitimate_address_p  (enum machine_mode, rtx, int);
+extern int arm_legitimate_address_outer_p (enum machine_mode, rtx, RTX_CODE, int);
 extern int thumb_legitimate_offset_p (enum machine_mode, HOST_WIDE_INT);
 extern rtx thumb_legitimize_reload_address (rtx *, enum machine_mode, int, int,
 					    int);

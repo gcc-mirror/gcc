@@ -82,7 +82,6 @@ extern rtx mmix_eh_return_stackadj_rtx (void);
 extern rtx mmix_eh_return_handler_rtx (void);
 extern void mmix_initialize_trampoline (rtx, rtx, rtx);
 extern int mmix_constant_address_p (rtx);
-extern int mmix_legitimate_address (enum machine_mode, rtx, int);
 extern int mmix_legitimate_constant_p (rtx);
 extern void mmix_print_operand (FILE *, rtx, int);
 extern void mmix_print_operand_address (FILE *, rtx);

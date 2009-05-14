@@ -72,7 +72,6 @@ extern bool preferred_la_operand_p (rtx, rtx);
 extern int legitimate_pic_operand_p (rtx);
 extern int legitimate_constant_p (rtx);
 extern bool legitimate_reload_constant_p (rtx);
-extern bool legitimate_address_p (enum machine_mode, rtx, int);
 extern rtx legitimize_pic_address (rtx, rtx);
 extern rtx legitimize_reload_address (rtx, enum machine_mode, int, int);
 extern enum reg_class s390_preferred_reload_class (rtx, enum reg_class);

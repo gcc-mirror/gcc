@@ -771,13 +771,6 @@ typedef struct xtensa_args
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 1
 
-/* Identify valid Xtensa addresses.  */
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, ADDR, LABEL)			\
-  do {									\
-    if (xtensa_legitimate_address_p (MODE, ADDR, REG_OK_STRICT_FLAG))	\
-      goto LABEL;							\
-  } while (0)
-
 /* A C expression that is 1 if the RTX X is a constant which is a
    valid address.  This is defined to be the same as 'CONSTANT_P (X)',
    but rejecting CONST_DOUBLE.  */

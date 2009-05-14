@@ -616,6 +616,9 @@ struct gcc_target
   /* Given an address RTX, undo the effects of LEGITIMIZE_ADDRESS.  */
   rtx (* delegitimize_address) (rtx);
 
+  /* Given an address RTX, say whether it is valid.  */
+  bool (* legitimate_address_p) (enum machine_mode, rtx, bool);
+
   /* True if the given constant can be put into an object_block.  */
   bool (* use_blocks_for_constant_p) (enum machine_mode, const_rtx);
 
