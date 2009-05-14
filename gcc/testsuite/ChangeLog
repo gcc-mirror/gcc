@@ -1,8 +1,14 @@
+2009-05-14  Laurent GUERBY  <laurent@guerby.net>
+	
+        * ada/acats/tests/c3/c38202a.ada: Use Impdef.
+        * ada/acats/tests/c5/c59002c.ada: Likewise.
+	
 2009-05-13  Taras Glek  <tglek@mozilla.com>
-       * g++.dg/plugin/attribute_plugin-test-1.C Testcase input for custom attributes and decl smashing
-       * g++.dg/plugin/attribute_plugin.c Testcase plugin to test user attributes
-       * g++.dg/plugin/dumb_plugin.c Fixed typo
-       * g++.dg/plugin/plugin.exp Added attribute_plugin test 
+
+	* g++.dg/plugin/attribute_plugin-test-1.C Testcase input for custom attributes and decl smashing
+	* g++.dg/plugin/attribute_plugin.c Testcase plugin to test user attributes
+	* g++.dg/plugin/dumb_plugin.c Fixed typo
+	* g++.dg/plugin/plugin.exp Added attribute_plugin test 
 
 2009-05-14  Jakub Jelinek  <jakub@redhat.com>
 
