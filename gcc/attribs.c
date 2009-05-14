@@ -194,16 +194,16 @@ init_attributes (void)
 void
 register_attribute (const struct attribute_spec *attr) 
 {
-	struct substring str;
-	const void **slot;
+  struct substring str;
+  const void **slot;
 
-	str.str = attr->name;
-	str.length = strlen (str.str);
-	slot = (const void **)htab_find_slot_with_hash (attribute_hash, &str,
-					 substring_hash (str.str, str.length),
-					 INSERT);
-	gcc_assert (!*slot);
-	*slot = attr;
+  str.str = attr->name;
+  str.length = strlen (str.str);
+  slot = (const void **)htab_find_slot_with_hash (attribute_hash, &str,
+                                                  substring_hash (str.str, str.length),
+                                                  INSERT);
+  gcc_assert (!*slot);
+  *slot = attr;
 }
 
 /* Return the spec for the attribute named NAME.  */
