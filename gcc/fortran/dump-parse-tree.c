@@ -680,9 +680,7 @@ show_components (gfc_symbol *sym)
 static void
 show_typebound (gfc_symtree* st)
 {
-  if (!st->n.tb)
-    return;
-
+  gcc_assert (st->n.tb);
   show_indent ();
 
   if (st->n.tb->is_generic)
@@ -708,7 +706,7 @@ show_typebound (gfc_symtree* st)
   else
     fputs (", PRIVATE", dumpfile);
 
-  fprintf (dumpfile, " :: %s => ", st->n.sym->name);
+  fprintf (dumpfile, " :: %s => ", st->name);
 
   if (st->n.tb->is_generic)
     {
@@ -739,7 +737,7 @@ show_f2k_derived (gfc_namespace* f2k)
     }
 
   /* Type-bound procedures.  */
-  gfc_traverse_symtree (f2k->sym_root, &show_typebound);
+  gfc_traverse_symtree (f2k->tb_sym_root, &show_typebound);
 
   --show_level;
 }
