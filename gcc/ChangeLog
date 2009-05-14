@@ -1,11 +1,20 @@
+2009-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-05-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/40147
+	* ipa-utils.h (memory_identifier_string): Moved to ...
+	* tree.h (memory_identifier_string): Here.  Add GTY(()).
+
 2009-05-14  Ben Elliston <bje@au.ibm.com>
 
 	Backport from mainline:
 	2009-05-14  Jakub Jelinek  <jakub@redhat.com>
 		    Ben Elliston <bje@au.ibm.com>
 
- 	PR middle-end/40035
- 	* dse.c (check_mem_read_rtx): Guard against width == -1.
+	PR middle-end/40035
+	* dse.c (check_mem_read_rtx): Guard against width == -1.
 
 2009-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
