@@ -5339,13 +5339,41 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   gfc_cleanup_loop (&loop);
 }
 
+/* Helper function for gfc_conv_array_parameter if array size needs to be
+   computed.  */
+
+static void
+array_parameter_size (tree desc, gfc_expr *expr, tree *size)
+{
+  tree elem;
+  if (GFC_ARRAY_TYPE_P (TREE_TYPE (desc)))
+    *size = GFC_TYPE_ARRAY_SIZE (TREE_TYPE (desc));
+  else if (expr->rank > 1)
+    *size = build_call_expr (gfor_fndecl_size0, 1,
+			     gfc_build_addr_expr (NULL, desc));
+  else
+    {
+      tree ubound = gfc_conv_descriptor_ubound (desc, gfc_index_zero_node);
+      tree lbound = gfc_conv_descriptor_lbound (desc, gfc_index_zero_node);
+
+      *size = fold_build2 (MINUS_EXPR, gfc_array_index_type, ubound, lbound);
+      *size = fold_build2 (PLUS_EXPR, gfc_array_index_type, *size,
+			   gfc_index_one_node);
+      *size = fold_build2 (MAX_EXPR, gfc_array_index_type, *size,
+			   gfc_index_zero_node);
+    }
+  elem = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (desc)));
+  *size = fold_build2 (MULT_EXPR, gfc_array_index_type, *size,
+		       fold_convert (gfc_array_index_type, elem));
+}
 
 /* Convert an array for passing as an actual parameter.  */
 /* TODO: Optimize passing g77 arrays.  */
 
 void
 gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
-			  const gfc_symbol *fsym, const char *proc_name)
+			  const gfc_symbol *fsym, const char *proc_name,
+			  tree *size)
 {
   tree ptr;
   tree desc;
@@ -5394,6 +5422,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
             se->expr = tmp;
           else
 	    se->expr = gfc_build_addr_expr (NULL_TREE, tmp);
+	  if (size)
+	    array_parameter_size (tmp, expr, size);
 	  return;
         }
       if (sym->attr.allocatable)
@@ -5401,10 +5431,11 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
 	  if (sym->attr.dummy || sym->attr.result)
 	    {
 	      gfc_conv_expr_descriptor (se, expr, ss);
-	      se->expr = gfc_conv_array_data (se->expr);
+	      tmp = se->expr;
 	    }
-	  else
-	    se->expr = gfc_conv_array_data (tmp);
+	  if (size)
+	    array_parameter_size (tmp, expr, size);
+	  se->expr = gfc_conv_array_data (tmp);
           return;
         }
     }
@@ -5413,6 +5444,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
     {
       /* Result of the enclosing function.  */
       gfc_conv_expr_descriptor (se, expr, ss);
+      if (size)
+	array_parameter_size (se->expr, expr, size);
       se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
 
       if (g77 && TREE_TYPE (TREE_TYPE (se->expr)) != NULL_TREE
@@ -5426,6 +5459,9 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
       /* Every other type of array.  */
       se->want_pointer = 1;
       gfc_conv_expr_descriptor (se, expr, ss);
+      if (size)
+	array_parameter_size (build_fold_indirect_ref (se->expr),
+				  expr, size);
     }
 
   /* Deallocate the allocatable components of structures that are

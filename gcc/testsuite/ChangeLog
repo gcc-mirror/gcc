@@ -1,3 +1,13 @@
+2009-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/39865
+	* gfortran.dg/pr39865.f90: New test.
+	* gfortran.dg/hollerith.f90: Don't expect errors for CHARACTER
+	arrays in FMT=.
+	* gfortran.dg/hollerith_f95.f90: Likewise.
+	* gfortran.dg/hollerith6.f90: New test.
+	* gfortran.dg/hollerith7.f90: New test.
+
 2009-05-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR cpp/36674

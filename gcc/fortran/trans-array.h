@@ -106,7 +106,7 @@ void gfc_conv_tmp_ref (gfc_se *);
 void gfc_conv_expr_descriptor (gfc_se *, gfc_expr *, gfc_ss *);
 /* Convert an array for passing as an actual function parameter.  */
 void gfc_conv_array_parameter (gfc_se *, gfc_expr *, gfc_ss *, int,
-			       const gfc_symbol *, const char *);
+			       const gfc_symbol *, const char *, tree *);
 /* Evaluate and transpose a matrix expression.  */
 void gfc_conv_array_transpose (gfc_se *, gfc_expr *);
 
