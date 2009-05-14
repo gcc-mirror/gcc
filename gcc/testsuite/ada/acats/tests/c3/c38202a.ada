@@ -30,6 +30,7 @@
 -- AH  9/12/86
 -- EDS 7/14/98  AVOID OPTIMIZATION
 
+with Impdef;
 WITH REPORT; USE REPORT;
 PROCEDURE C38202A IS
 BEGIN 
@@ -84,7 +85,7 @@ BEGIN
                P.GO_ON;
                ACCEPT TSK_DONE;
                WHILE (NOT P'TERMINATED AND COUNTER <= 3) LOOP
-                    DELAY 10.0;
+                    DELAY 10.0 * Impdef.One_Second;
                     COUNTER := COUNTER + 1;
                END LOOP;
 
@@ -166,7 +167,7 @@ BEGIN
                F1.ALL.GO_ON;
                ACCEPT TSK_DONE;
                WHILE (NOT F1'TERMINATED AND COUNTER <= 3) LOOP
-                    DELAY 10.0;
+                    DELAY 10.0 * Impdef.One_Second;
                     COUNTER := COUNTER + 1;
                END LOOP;
 
