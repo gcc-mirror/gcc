@@ -1,3 +1,9 @@
+2009-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.tcc (cauchy_distribution<>::
+	operator()(_UniformRandomNumberGenerator&, const param_type&)): 
+	Avoid M_PI, a glibc extension.
+
 2009-05-13  Ben Elliston  <bje@au.ibm.com>
 
 	* include/Makefile.am (PCHFLAGS): Remove -Winvalid-pch.

@@ -1653,12 +1653,11 @@ namespace std
 	  __aurng(__urng);
 	_RealType __u;
 	do
-	  {
-	    __u = __aurng();
-	  }
+	  __u = __aurng();
 	while (__u == 0.5);
 
-	return __p.a() + __p.b() * std::tan(M_PI * __u);
+	const _RealType __pi = 3.1415926535897932384626433832795029L;
+	return __p.a() + __p.b() * std::tan(__pi * __u);
       }
 
   template<typename _RealType, typename _CharT, typename _Traits>
