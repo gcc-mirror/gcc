@@ -1,3 +1,8 @@
+2009-05-14  Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/arm/arm.h (PROMOTE_FUNCTION_MODE): Remove handling
+	of MODE_COMPLEX_INT.
+
 2009-05-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/alpha/alpha.c (alpha_initialize_trampoline): Change 0 to
