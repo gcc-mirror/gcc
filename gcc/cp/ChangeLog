@@ -1,3 +1,10 @@
+2009-05-14  Ian Lance Taylor  <iant@google.com>
+
+	* class.c (layout_class_type): Change itk to unsigned int.
+	* decl.c (finish_enum): Change itk to unsigned int.
+	* parser.c (cp_parser_check_decl_spec): Change ds to int.  Remove
+	casts.
+
 2009-05-13  David Mandelin <dmandelin@mozilla.com>:
 
       * decl.c (duplicate_decls): Preserve parameter attributes.

@@ -2197,7 +2197,7 @@ gfc_get_namespace (gfc_namespace *parent, int parent_types)
 {
   gfc_namespace *ns;
   gfc_typespec *ts;
-  gfc_intrinsic_op in;
+  int in;
   int i;
 
   ns = XCNEW (gfc_namespace);
@@ -3088,7 +3088,7 @@ void
 gfc_free_namespace (gfc_namespace *ns)
 {
   gfc_namespace *p, *q;
-  gfc_intrinsic_op i;
+  int i;
 
   if (ns == NULL)
     return;
@@ -4494,4 +4494,3 @@ gfc_get_tbp_symtree (gfc_symtree **root, const char *name)
 
   return result;
 }
-

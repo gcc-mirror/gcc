@@ -1,3 +1,19 @@
+2009-05-14  Ian Lance Taylor  <iant@google.com>
+
+	* passes.c (finish_optimization_passes): Change i to int.
+	* plugin.c (plugins_active_p): Change event to int.
+	(dump_active_plugins): Likewise.
+	* reginfo.c (invalid_mode_change_p): Change to to unsigned int.
+	Add cast.
+	* tree.c (tree_range_check_failed): Change c to unsigned int.
+	(omp_clause_range_check_failed): Likewise.
+	(build_common_builtin_nodes): Change mode to int.  Add cast.
+	* config/ia64/ia64.c (is_emitted): Change r to unsigned int.
+	(ia64_hard_regno_rename_ok, ia64_eh_uses): Likewise.
+
+	* c-typeck.c (build_unary_op): If -Wc++-compat, warn about using
+	++ or -- with a variable of enum type.
+
 2009-05-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR driver/40144

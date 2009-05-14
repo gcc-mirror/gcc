@@ -3267,6 +3267,16 @@ build_unary_op (location_t location,
 				 : lv_decrement)))
 	return error_mark_node;
 
+      if (warn_cxx_compat && TREE_CODE (TREE_TYPE (arg)) == ENUMERAL_TYPE)
+	{
+	  if (code == PREINCREMENT_EXPR || code == POSTINCREMENT_EXPR)
+	    warning_at (location, OPT_Wc___compat,
+			"increment of enumeration value is invalid in C++");
+	  else
+	    warning_at (location, OPT_Wc___compat,
+			"decrement of enumeration value is invalid in C++");
+	}
+
       /* Ensure the argument is fully folded inside any SAVE_EXPR.  */
       arg = c_fully_fold (arg, false, NULL);
 

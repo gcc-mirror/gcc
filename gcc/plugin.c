@@ -767,7 +767,7 @@ print_plugins_help (FILE *file, const char *indent)
 bool
 plugins_active_p (void)
 {
-  enum plugin_event event;
+  int event;
 
   for (event = PLUGIN_PASS_MANAGER_SETUP; event < PLUGIN_EVENT_LAST; event++)
     if (plugin_callbacks[event])
@@ -783,7 +783,7 @@ plugins_active_p (void)
 void
 dump_active_plugins (FILE *file)
 {
-  enum plugin_event event;
+  int event;
 
   if (!plugins_active_p ())
     return;

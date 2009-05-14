@@ -1,3 +1,7 @@
+2009-05-14  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-9.c: New testcase.
+
 2009-05-14  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/39996

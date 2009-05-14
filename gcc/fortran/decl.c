@@ -2815,7 +2815,7 @@ match_attr_spec (void)
 
   locus start, seen_at[NUM_DECL];
   int seen[NUM_DECL];
-  decl_types d;
+  unsigned int d;
   const char *attr;
   match m;
   gfc_try t;
