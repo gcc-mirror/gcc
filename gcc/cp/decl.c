@@ -1913,6 +1913,17 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
     {
       tree parm;
 
+      /* Merge parameter attributes. */
+      tree oldarg, newarg;
+      for (oldarg = DECL_ARGUMENTS(olddecl), 
+               newarg = DECL_ARGUMENTS(newdecl);
+           oldarg && newarg;
+           oldarg = TREE_CHAIN(oldarg), newarg = TREE_CHAIN(newarg)) {
+          DECL_ATTRIBUTES (newarg)
+              = (*targetm.merge_decl_attributes) (oldarg, newarg);
+          DECL_ATTRIBUTES (oldarg) = DECL_ATTRIBUTES (newarg);
+      }
+      
       if (DECL_TEMPLATE_INSTANTIATION (olddecl)
 	  && !DECL_TEMPLATE_INSTANTIATION (newdecl))
 	{

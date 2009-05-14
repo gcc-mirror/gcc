@@ -1,3 +1,7 @@
+2009-05-13  David Mandelin <dmandelin@mozilla.com>:
+
+      * decl.c (duplicate_decls): Preserve parameter attributes.
+
 2009-05-14  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* config/i386/msformat-c.c (ms_printf_length_specs):  Use enumeration
