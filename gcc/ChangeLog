@@ -1,3 +1,7 @@
+2009-05-13  Doug Kwan  <dougkwan@google.com>
+
+	* tree-ssa-sccvn.c (compare_ops): Stabilize qsort.
+
 2009-05-13  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (store): Add attributes for QI and HI.
