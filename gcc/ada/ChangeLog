@@ -1,17 +1,17 @@
 2009-05-07  Arnaud Charlet  <charlet@adacore.com>
 
-	* gcc-interface/Make-lang.in: Update dependencies
+	* gcc-interface/Make-lang.in: Update dependencies.
 
-2009-05-06  Laurent GUERBY <laurent@guerby.net>
+2009-05-06  Laurent GUERBY  <laurent@guerby.net>
 
-        * s-linux.ads, s-linux-alpha.ads, s-linux-hppa.ads, 
-        osinte-linux.ads: Define sa_handler_pos.
-        * s-osinte-linux.ads: Use it.
-        * s-linux-mipsel.ads: New.	
-        * system-linux-mips64el.ads: New.
-        * gcc-interface/Makefile.in: Multilib handling for
-        mipsel-linux and mips64el-linux.
-	
+	* s-linux.ads, s-linux-alpha.ads, s-linux-hppa.ads, osinte-linux.ads:
+	Define sa_handler_pos.
+	* s-osinte-linux.ads: Use it.
+	* s-linux-mipsel.ads: New.
+	* system-linux-mips64el.ads: New.
+	* gcc-interface/Makefile.in: Multilib handling for mipsel-linux and
+	mips64el-linux.
+
 2009-05-06  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_ch5.adb, exp_util.adb, exp_attr.adb, sem_util.adb, sem_res.adb,
@@ -6279,7 +6279,7 @@
 	PR ada/39221
 	* a-teioed.adb (Expand): Fix Result overflow.
 
-2009-02-25  Laurent GUERBY <laurent@guerby.net>
+2009-02-25  Laurent GUERBY  <laurent@guerby.net>
 
 	* gcc-interface/Makefile.in: Fix multilib handling for
 	sparc64-linux.
