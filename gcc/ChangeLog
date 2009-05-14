@@ -232,7 +232,7 @@
 	* mips-tfile.c (add_ext_symbol): Add casts to enum types.
 	(mark_stabs): Add casts to enum types.
 	(parse_stabs_common): Add casts to enum types.
-	
+
 2009-05-13  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.c (mips_print_operand) <REG, MEM, default>:
@@ -240,11 +240,13 @@
 
 2009-05-13  Taras Glek  <tglek@mozilla.com>
 
-       * attribs.c moved out attribute registration into register_attribute
-       * doc/plugins.texi Documented register_attribute and PLUGIN_ATTRIBUTES
-       * gcc-plugin.h Added forward decl for register_attribute
-       * plugin.c Added PLUGIN_ATTRIBUTES boilerplate
-       * plugin.h Added PLUGIN_ATTRIBUTES
+	* attribs.c (register_attribute): moved out attribute registration into
+	register_attribute.
+	* doc/plugins.texi: Documented register_attribute and PLUGIN_ATTRIBUTES.
+	* gcc-plugin.h: Added forward decl for register_attribute.
+	* gcc-plugin.h (plugins_event): Added PLUGIN_ATTRIBUTES.
+	* plugin.c (register_callback, invoke_plugin_callbacks): Added
+	PLUGIN_ATTRIBUTES boilerplate.
 
 2009-05-14  Dave Korn  <dave.korn.cygwin@gmail.com>
 
