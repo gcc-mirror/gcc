@@ -5488,7 +5488,7 @@ alpha_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt,
 
 #ifdef ENABLE_EXECUTE_STACK
   emit_library_call (init_one_libfunc ("__enable_execute_stack"),
-		     0, VOIDmode, 1, tramp, Pmode);
+		     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
 #endif
 
   if (jmpofs >= 0)

@@ -1939,8 +1939,8 @@ add_ext_symbol (EXTR *esym, int ifd)
   if (debug > 1)
     {
       long value = esym->asym.value;
-      const char *sc_str = sc_to_string (esym->asym.sc);
-      const char *st_str = st_to_string (esym->asym.st);
+      const char *sc_str = sc_to_string ((sc_t) esym->asym.sc);
+      const char *st_str = st_to_string ((st_t) esym->asym.st);
 
       fprintf (stderr,
 	       "\tesym\tv= %10ld, ifd= %2d, sc= %-12s",
@@ -3475,7 +3475,8 @@ mark_stabs (const char *start ATTRIBUTE_UNUSED)
       stabs_seen = 1;
       (void) add_local_symbol (stabs_symbol,
 			       stabs_symbol + sizeof (stabs_symbol),
-			       stNil, scInfo, -1, MIPS_MARK_STAB (0));
+			       (st_t) stNil, (sc_t) scInfo, -1,
+			       MIPS_MARK_STAB (0));
 
     }
 }
@@ -3668,8 +3669,8 @@ parse_stabs_common (const char *string_start,	/* start of string or NULL */
 	  /* Traditionally, N_LBRAC and N_RBRAC are *not* relocated.  */
 	  if (code == (int) N_LBRAC || code == (int) N_RBRAC)
 	    {
-	      sc = scNil;
-	      st = stNil;
+	      sc = (sc_t) scNil;
+	      st = (st_t) stNil;
 	    }
 	  else
 	    {

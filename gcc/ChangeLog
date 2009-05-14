@@ -1,3 +1,12 @@
+2009-05-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/alpha/alpha.c (alpha_initialize_trampoline): Change 0 to
+	LCT_NORMAL in function call.
+	* mips-tdump.c (print_file_desc): Add cast to enum type.
+	* mips-tfile.c (add_ext_symbol): Add casts to enum types.
+	(mark_stabs): Add casts to enum types.
+	(parse_stabs_common): Add casts to enum types.
+	
 2009-05-13  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.c (mips_print_operand) <REG, MEM, default>:
