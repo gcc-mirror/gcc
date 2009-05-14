@@ -1322,7 +1322,7 @@ invalid_mode_change_p (unsigned int regno,
 		       enum machine_mode from)
 {
   struct subregs_of_mode_node dummy, *node;
-  enum machine_mode to;
+  unsigned int to;
   unsigned char mask;
 
   gcc_assert (subregs_of_mode);
@@ -1335,7 +1335,7 @@ invalid_mode_change_p (unsigned int regno,
   mask = 1 << (regno & 7);
   for (to = VOIDmode; to < NUM_MACHINE_MODES; to++)
     if (node->modes[to] & mask)
-      if (CANNOT_CHANGE_MODE_CLASS (from, to, rclass))
+      if (CANNOT_CHANGE_MODE_CLASS (from, (enum machine_mode) to, rclass))
 	return true;
 
   return false;

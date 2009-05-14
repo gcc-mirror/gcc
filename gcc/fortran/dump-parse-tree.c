@@ -1,5 +1,5 @@
 /* Parse tree dumper
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Steven Bosscher
 
@@ -1971,7 +1971,7 @@ show_namespace (gfc_namespace *ns)
 {
   gfc_interface *intr;
   gfc_namespace *save;
-  gfc_intrinsic_op op;
+  int op;
   gfc_equiv *eq;
   int i;
 
@@ -2021,7 +2021,7 @@ show_namespace (gfc_namespace *ns)
 
 	  show_indent ();
 	  fprintf (dumpfile, "Operator interfaces for %s:",
-		   gfc_op2string (op));
+		   gfc_op2string ((gfc_intrinsic_op) op));
 
 	  for (; intr; intr = intr->next)
 	    fprintf (dumpfile, " %s", intr->sym->name);

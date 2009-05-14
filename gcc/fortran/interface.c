@@ -1175,7 +1175,7 @@ gfc_check_interfaces (gfc_namespace *ns)
 {
   gfc_namespace *old_ns, *ns2;
   char interface_name[100];
-  gfc_intrinsic_op i;
+  int i;
 
   old_ns = gfc_current_ns;
   gfc_current_ns = ns;
@@ -1193,12 +1193,12 @@ gfc_check_interfaces (gfc_namespace *ns)
 	strcpy (interface_name, "intrinsic assignment operator");
       else
 	sprintf (interface_name, "intrinsic '%s' operator",
-		 gfc_op2string (i));
+		 gfc_op2string ((gfc_intrinsic_op) i));
 
       if (check_interface0 (ns->op[i], interface_name))
 	continue;
 
-      check_operator_interface (ns->op[i], i);
+      check_operator_interface (ns->op[i], (gfc_intrinsic_op) i);
 
       for (ns2 = ns; ns2; ns2 = ns2->parent)
 	{

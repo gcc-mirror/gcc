@@ -2149,11 +2149,11 @@ static void
 cp_parser_check_decl_spec (cp_decl_specifier_seq *decl_specs,
 			   location_t location)
 {
-  cp_decl_spec ds;
+  int ds;
 
   for (ds = ds_first; ds != ds_last; ++ds)
     {
-      unsigned count = decl_specs->specs[(int)ds];
+      unsigned count = decl_specs->specs[ds];
       if (count < 2)
 	continue;
       /* The "long" specifier is a special case because of "long long".  */
@@ -2183,7 +2183,7 @@ cp_parser_check_decl_spec (cp_decl_specifier_seq *decl_specs,
 	    "__complex",
 	    "__thread"
 	  };
-	  error ("%Hduplicate %qs", &location, decl_spec_names[(int)ds]);
+	  error ("%Hduplicate %qs", &location, decl_spec_names[ds]);
 	}
     }
 }

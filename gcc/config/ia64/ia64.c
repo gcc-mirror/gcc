@@ -1943,7 +1943,7 @@ get_reg (enum ia64_frame_regs r)
 static bool
 is_emitted (int regno)
 {
-  enum ia64_frame_regs r;
+  unsigned int r;
 
   for (r = reg_fp; r < number_of_ia64_frame_regs; r++)
     if (emitted_frame_related_regs[r] == regno)
@@ -3657,7 +3657,7 @@ int
 ia64_hard_regno_rename_ok (int from, int to)
 {
   /* Don't clobber any of the registers we reserved for the prologue.  */
-  enum ia64_frame_regs r;
+  unsigned int r;
 
   for (r = reg_fp; r <= reg_save_ar_lc; r++)
     if (to == current_frame_info.r[r] 
@@ -9317,7 +9317,7 @@ ia64_epilogue_uses (int regno)
 int
 ia64_eh_uses (int regno)
 {
-  enum ia64_frame_regs r;
+  unsigned int r;
 
   if (! reload_completed)
     return 0;

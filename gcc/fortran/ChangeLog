@@ -1,3 +1,17 @@
+2009-05-14  Ian Lance Taylor  <iant@google.com>
+
+	* decl.c (match_attr_spec): Change d to unsigned int.
+	* dump-parse-tree.c (show_namespace): Change op to int.  Add cast.
+	* interface.c (gfc_check_interfaces): Change i to int.  Add casts.
+	* module.c (read_module): Change i to int.  Add cast.
+	(write_module): Change i to int.
+	* symbol.c (gfc_get_namespace): Change in to int.
+	(gfc_free_namespace): Change i to int.
+	* trans-io.c (gfc_build_io_library_fndecls): Change ptype to
+	unsigned int.  Add cast.
+	* trans-types.c (gfc_init_kinds): Change mode to unsigned int.
+	Add casts.
+
 2009-05-14  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/40045

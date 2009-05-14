@@ -279,7 +279,7 @@ gfc_build_io_library_fndecls (void)
   tree gfc_intio_type_node;
   tree parm_type, dt_parm_type;
   HOST_WIDE_INT pad_size;
-  enum ioparam_type ptype;
+  unsigned int ptype;
 
   types[IOPARM_type_int4] = gfc_int4_type_node = gfc_get_int_type (4);
   types[IOPARM_type_intio] = gfc_intio_type_node
@@ -302,7 +302,7 @@ gfc_build_io_library_fndecls (void)
 		     TYPE_ALIGN (gfc_get_int_type (gfc_intio_kind)));
 
   for (ptype = IOPARM_ptype_common; ptype < IOPARM_ptype_num; ptype++)
-    gfc_build_st_parameter (ptype, types);
+    gfc_build_st_parameter ((enum ioparam_type) ptype, types);
 
   /* Define the transfer functions.  */
 

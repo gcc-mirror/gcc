@@ -11033,7 +11033,7 @@ finish_enum (tree enumtype)
   int lowprec;
   int highprec;
   int precision;
-  integer_type_kind itk;
+  unsigned int itk;
   tree underlying_type = NULL_TREE;
   bool fixed_underlying_type_p 
     = ENUM_UNDERLYING_TYPE (enumtype) != NULL_TREE;
