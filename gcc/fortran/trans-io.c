@@ -567,65 +567,57 @@ set_parameter_ref (stmtblock_t *block, stmtblock_t *postblock,
 
 /* Given an array expr, find its address and length to get a string. If the
    array is full, the string's address is the address of array's first element
-   and the length is the size of the whole array. If it is an element, the
+   and the length is the size of the whole array.  If it is an element, the
    string's address is the element's address and the length is the rest size of
-   the array.
-*/
+   the array.  */
 
 static void
 gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
 {
-  tree tmp;
-  tree array;
-  tree type;
   tree size;
-  int rank;
-  gfc_symbol *sym;
 
-  sym = e->symtree->n.sym;
-  rank = sym->as->rank - 1;
+  if (e->rank == 0)
+    {
+      tree type, array, tmp;
+      gfc_symbol *sym;
+      int rank;
 
-  if (e->ref->u.ar.type == AR_FULL)
-    {
-      se->expr = gfc_get_symbol_decl (sym);
-      se->expr = gfc_conv_array_data (se->expr);
-    }
-  else
-    {
+      /* If it is an element, we need its address and size of the rest.  */
+      gcc_assert (e->expr_type == EXPR_VARIABLE);
+      gcc_assert (e->ref->u.ar.type == AR_ELEMENT);
+      sym = e->symtree->n.sym;
+      rank = sym->as->rank - 1;
       gfc_conv_expr (se, e);
-    }
 
-  array = sym->backend_decl;
-  type = TREE_TYPE (array);
+      array = sym->backend_decl;
+      type = TREE_TYPE (array);
 
-  if (GFC_ARRAY_TYPE_P (type))
-    size = GFC_TYPE_ARRAY_SIZE (type);
-  else
-    {
-      gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
-      size = gfc_conv_array_stride (array, rank);
-      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-		gfc_conv_array_ubound (array, rank),
-		gfc_conv_array_lbound (array, rank));
-      tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type, tmp,
-		gfc_index_one_node);
-      size = fold_build2 (MULT_EXPR, gfc_array_index_type, tmp, size);      
-    }
+      if (GFC_ARRAY_TYPE_P (type))
+	size = GFC_TYPE_ARRAY_SIZE (type);
+      else
+	{
+	  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
+	  size = gfc_conv_array_stride (array, rank);
+	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
+			     gfc_conv_array_ubound (array, rank),
+			     gfc_conv_array_lbound (array, rank));
+	  tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type, tmp,
+			     gfc_index_one_node);
+	  size = fold_build2 (MULT_EXPR, gfc_array_index_type, tmp, size);
+	}
+      gcc_assert (size);
 
-  gcc_assert (size);
-
-  /* If it is an element, we need the its address and size of the rest.  */
-  if (e->ref->u.ar.type == AR_ELEMENT)
-    {
       size = fold_build2 (MINUS_EXPR, gfc_array_index_type, size,
-		TREE_OPERAND (se->expr, 1));
+			  TREE_OPERAND (se->expr, 1));
       se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
+      tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
+      size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
+			  fold_convert (gfc_array_index_type, tmp));
+      se->string_length = fold_convert (gfc_charlen_type_node, size);
+      return;
     }
 
-  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
-  size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
-		      fold_convert (gfc_array_index_type, tmp));
-
+  gfc_conv_array_parameter (se, e, gfc_walk_expr (e), 1, NULL, NULL, &size);
   se->string_length = fold_convert (gfc_charlen_type_node, size);
 }
 
@@ -654,7 +646,9 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
 		     var, p->field_len, NULL_TREE);
 
   /* Integer variable assigned a format label.  */
-  if (e->ts.type == BT_INTEGER && e->symtree->n.sym->attr.assign == 1)
+  if (e->ts.type == BT_INTEGER
+      && e->rank == 0
+      && e->symtree->n.sym->attr.assign == 1)
     {
       char * msg;
       tree cond;
@@ -680,7 +674,7 @@ set_string (stmtblock_t * block, stmtblock_t * postblock, tree var,
       if (e->ts.type == BT_CHARACTER && e->rank == 0)
 	gfc_conv_expr (&se, e);
       /* Array assigned Hollerith constant or character array.  */
-      else if (e->symtree && (e->symtree->n.sym->as->rank > 0))
+      else if (e->rank > 0 || (e->symtree && e->symtree->n.sym->as->rank > 0))
 	gfc_convert_array_to_string (&se, e);
       else
 	gcc_unreachable ();

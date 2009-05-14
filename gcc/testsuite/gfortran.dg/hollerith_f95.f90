@@ -91,10 +91,3 @@ end subroutine
 ! { dg-error "Non-character in FORMAT tag" "" { target *-*-* } 38 }
 
 ! { dg-error "Non-character in FORMAT tag" "" { target *-*-* } 40 }
-
-! { dg-error "Character array in FORMAT tag" "" { target *-*-* } 44 }
-
-! { dg-error "Character array in FORMAT tag" "" { target *-*-* } 46 }
-
-! { dg-error "Character array in FORMAT tag" "" { target *-*-* } 48 }
-

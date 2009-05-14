@@ -99,10 +99,4 @@ end subroutine
 
 ! { dg-warning "Non-character in FORMAT tag" "" { target *-*-* } 39 }
 
-! { dg-warning "Character array in FORMAT tag" "" { target *-*-* } 43 }
-
-! { dg-warning "Character array in FORMAT tag" "" { target *-*-* } 45 }
-
-! { dg-warning "Character array in FORMAT tag" "" { target *-*-* } 47 }
-
 ! { dg-warning "Hollerith constant" "" { target *-*-* } 51 }
