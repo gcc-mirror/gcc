@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 
    There are (4) basic forms that are matched:
 
+      (1) FORM_PRE_ADD
            a <- b + c
            ...
            *a
@@ -55,6 +56,9 @@ along with GCC; see the file COPYING3.  If not see
            a <- b
            ...
            *(a += c) pre
+
+
+      (2) FORM_PRE_INC
            a += c
            ...
            *a
@@ -62,18 +66,24 @@ along with GCC; see the file COPYING3.  If not see
         becomes
 
            *(a += c) pre
+
+
+      (3) FORM_POST_ADD
            *a
            ...
            b <- a + c
 
-	   for this case to be true, b must not be assigned or used between 
-	   the *a and the assignment to b.  B must also be a Pmode reg.
+	   (For this case to be true, b must not be assigned or used between 
+	   the *a and the assignment to b.  B must also be a Pmode reg.)
 
         becomes
 
            b <- a
            ...
            *(b += c) post
+
+
+      (4) FORM_POST_INC
            *a
            ...
            a <- a + c
@@ -99,56 +109,8 @@ along with GCC; see the file COPYING3.  If not see
   The is one special case: if a already had an offset equal to it +-
   its width and that offset is equal to -c when the increment was
   before the ref or +c if the increment was after the ref, then if we
-  can do the combination but switch the pre/post bit.
+  can do the combination but switch the pre/post bit.  */
 
-        (1) FORM_PRE_ADD
-
-           a <- b + c
-           ...
-           *(a - c)
-
-        becomes
-
-           a <- b
-           ...
-           *(a += c) post
-
-        (2) FORM_PRE_INC
-
-           a += c
-           ...
-           *(a - c)
-
-        becomes
-
-           *(a += c) post
-
-        (3) FORM_POST_ADD
-
-           *(a + c)
-           ...
-           b <- a + c
-
-	   for this case to be true, b must not be assigned or used between 
-	   the *a and the assignment to b. B must also be a Pmode reg.
-
-        becomes
-
-           b <- a
-           ...
-           *(b += c) pre
-
-
-        (4) FORM_POST_INC
-
-           *(a + c)
-           ...
-           a <- a + c 
-
-        becomes
-
-           *(a += c) pre
-*/
 #ifdef AUTO_INC_DEC
 
 enum form
