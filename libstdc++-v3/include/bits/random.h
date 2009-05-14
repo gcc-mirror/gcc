@@ -68,23 +68,6 @@ namespace std
       struct _Shift<_UIntType, __w, true>
       { static const _UIntType __value = _UIntType(1) << __w; };
 
-    // XXX need constexpr
-    template<typename _UIntType, size_t __w,
-	     bool = __w < static_cast<size_t>
-			  (std::numeric_limits<_UIntType>::digits)>
-      struct _ShiftMin1
-      {
-	static const _UIntType __value =
-	  __gnu_cxx::__numeric_traits<_UIntType>::__max;
-      };
-
-    template<typename _UIntType, size_t __w>
-      struct _ShiftMin1<_UIntType, __w, true>
-      {
-	static const _UIntType __value =
-	  (_UIntType(1) << __w) - _UIntType(1);
-      };
-
     template<typename _Tp, _Tp __a, _Tp __c, _Tp __m, bool>
       struct _Mod;
 
@@ -395,11 +378,11 @@ namespace std
       static_assert(__w <=
 		    static_cast<size_t>(numeric_limits<_UIntType>::digits),
 		    "mersenne_twister_engine template arguments out of bounds");
-      static_assert(__a <= __detail::_ShiftMin1<_UIntType, __w>::__value,
+      static_assert(__a <= (__detail::_Shift<_UIntType, __w>::__value - 1),
 		    "mersenne_twister_engine template arguments out of bounds");
-      static_assert(__b <= __detail::_ShiftMin1<_UIntType, __w>::__value,
+      static_assert(__b <= (__detail::_Shift<_UIntType, __w>::__value - 1),
 		    "mersenne_twister_engine template arguments out of bounds");
-      static_assert(__c <= __detail::_ShiftMin1<_UIntType, __w>::__value,
+      static_assert(__c <= (__detail::_Shift<_UIntType, __w>::__value - 1),
 		    "mersenne_twister_engine template arguments out of bounds");
 
     public:
@@ -459,7 +442,7 @@ namespace std
        */
       result_type
       max() const
-      { return __detail::_ShiftMin1<_UIntType, __w>::__value; }
+      { return __detail::_Shift<_UIntType, __w>::__value - 1; }
 
       /**
        * @brief Discard a sequence of random numbers.
@@ -644,7 +627,7 @@ namespace std
        */
       result_type
       max() const
-      { return __detail::_ShiftMin1<_UIntType, __w>::__value; }
+      { return __detail::_Shift<_UIntType, __w>::__value - 1; }
 
       /**
        * @brief Discard a sequence of random numbers.
@@ -1040,7 +1023,7 @@ namespace std
        */
       result_type
       max() const
-      { return __detail::_ShiftMin1<_UIntType, __w>::__value; }
+      { return __detail::_Shift<_UIntType, __w>::__value - 1; }
 
       /**
        * @brief Discard a sequence of random numbers.
