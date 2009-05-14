@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -151,6 +151,17 @@ detect_caches_intel (unsigned max_level)
   return describe_cache (l1_sizekb, l1_line, assoc);
 }
 
+enum vendor_signatures
+{
+  SIG_INTEL =	0x756e6547 /* Genu */,
+  SIG_AMD =	0x68747541 /* Auth */
+};
+
+enum processor_signatures
+{
+  SIG_GEODE =	0x646f6547 /* Geod */
+};
+
 /* This will be called by the spec parser in gcc.c when it sees
    a %:local_cpu_detect(args) construct.  Currently it will be called
    with either "arch" or "tune" as argument depending on if -march=native
@@ -231,27 +242,35 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   if (!arch)
     {
-      if (vendor == *(unsigned int*) "Auth")
+      if (vendor == SIG_AMD)
 	cache = detect_caches_amd (ext_level);
-      else if (vendor == *(unsigned int*) "Genu")
+      else if (vendor == SIG_INTEL)
 	cache = detect_caches_intel (max_level);
     }
 
-  if (vendor == *(unsigned int*) "Auth")
+  if (vendor == SIG_AMD)
     {
-      processor = PROCESSOR_PENTIUM;
+      unsigned int name;
 
-      if (has_mmx)
-	processor = PROCESSOR_K6;
-      if (has_3dnowp)
-	processor = PROCESSOR_ATHLON;
-      if (has_sse2 || has_longmode)
-	processor = PROCESSOR_K8;
-      if (has_sse4a)
+      /* Detect geode processor by its processor signature.  */
+      if (ext_level > 0x80000001)
+	__cpuid (0x80000002, name, ebx, ecx, edx);
+      else
+	name = 0;
+
+      if (name == SIG_GEODE)
+	processor = PROCESSOR_GEODE;
+      else if (has_sse4a)
 	processor = PROCESSOR_AMDFAM10;
+      else if (has_sse2 || has_longmode)
+	processor = PROCESSOR_K8;
+      else if (has_3dnowp)
+	processor = PROCESSOR_ATHLON;
+      else if (has_mmx)
+	processor = PROCESSOR_K6;
+      else
+	processor = PROCESSOR_PENTIUM;
     }
-  else if (vendor == *(unsigned int*) "Geod")
-    processor = PROCESSOR_GEODE;
   else
     {
       switch (family)
