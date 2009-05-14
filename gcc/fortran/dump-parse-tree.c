@@ -1420,6 +1420,12 @@ show_code_node (int level, gfc_code *c)
 	  show_expr (c->expr1);
 	}
 
+      if (c->expr2)
+	{
+	  fputs (" ERRMSG=", dumpfile);
+	  show_expr (c->expr2);
+	}
+
       for (a = c->ext.alloc_list; a; a = a->next)
 	{
 	  fputc (' ', dumpfile);
@@ -1434,6 +1440,12 @@ show_code_node (int level, gfc_code *c)
 	{
 	  fputs (" STAT=", dumpfile);
 	  show_expr (c->expr1);
+	}
+
+      if (c->expr2)
+	{
+	  fputs (" ERRMSG=", dumpfile);
+	  show_expr (c->expr2);
 	}
 
       for (a = c->ext.alloc_list; a; a = a->next)
