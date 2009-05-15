@@ -1,5 +1,10 @@
 2009-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/21_strings/basic_string/40160.cc: Remove spurious
+	double include.
+
+2009-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/40160
 	* include/debug/formatter.h (_Parameter::_Parameter): Don't use
 	typeid when __GXX_RTTI is undefined.
