@@ -17,8 +17,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <string>
-
 // { dg-options "-fno-rtti -D_GLIBCXX_DEBUG" }
 // { dg-do compile }
 
