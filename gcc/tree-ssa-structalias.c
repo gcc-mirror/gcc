@@ -3425,7 +3425,7 @@ handle_lhs_call (tree lhs, int flags, VEC(ce_s, heap) *rhsc)
 static void
 handle_const_call (gimple stmt, VEC(ce_s, heap) **results)
 {
-  struct constraint_expr rhsc, tmpc = {SCALAR, 0, 0};
+  struct constraint_expr rhsc, tmpc;
   tree tmpvar = NULL_TREE;
   unsigned int k;
 
