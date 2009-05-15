@@ -1845,15 +1845,9 @@ do {									\
 #define USE_AS_OFFSETABLE_LO10 0
 #endif
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
-   that is a valid memory address for an instruction.
-   The MODE argument is the machine mode for the MEM expression
-   that wants to use this address.
-
-   On SPARC, the actual legitimate addresses must be REG+REG or REG+SMALLINT
-   ordinarily.  This changes a bit when generating PIC.
-
-   If you change this, execute "rm explow.o recog.o reload.o".  */
+/* On SPARC, the actual legitimate addresses must be REG+REG or REG+SMALLINT
+   ordinarily.  This changes a bit when generating PIC.  The details are
+   in sparc.c's implementation of TARGET_LEGITIMATE_ADDRESS_P.  */
 
 #define SYMBOLIC_CONST(X) symbolic_operand (X, VOIDmode)
 

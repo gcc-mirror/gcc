@@ -387,8 +387,8 @@ do {									\
    containing one of them.  If -mfp-in-toc (the default), we also do
    this for floating-point constants.  We actually can only do this
    if the FP formats of the target and host machines are the same, but
-   we can't check that since not every file that uses
-   GO_IF_LEGITIMATE_ADDRESS_P includes real.h.
+   we can't check that since not every file that uses these target macros
+   includes real.h.
 
    Unlike AIX, we don't key off of -mminimal-toc, but instead do not
    allow floating point constants in the TOC if -mrelocatable.  */

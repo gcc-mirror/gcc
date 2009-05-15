@@ -2022,7 +2022,7 @@ __asm__("\n"								\
 
 /* A number, the maximum number of registers that can appear in a valid memory
    address.  Note that it is up to you to specify a value equal to the maximum
-   number that `GO_IF_LEGITIMATE_ADDRESS' would ever accept.  */
+   number that `TARGET_LEGITIMATE_ADDRESS_P' would ever accept.  */
 #define MAX_REGS_PER_ADDRESS 2
 
 /* A C expression that is nonzero if X (assumed to be a `reg' RTX) is valid for

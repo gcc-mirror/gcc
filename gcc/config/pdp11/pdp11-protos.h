@@ -26,7 +26,6 @@ extern int expand_shift_operand (rtx, enum machine_mode);
 extern int immediate15_operand (rtx, enum machine_mode);
 extern int simple_memory_operand (rtx, enum machine_mode);
 
-extern int legitimate_address_p (enum machine_mode, rtx);
 extern int legitimate_const_double_p (rtx);
 extern void notice_update_cc_on_set (rtx, rtx);
 extern void output_addr_const_pdp11 (FILE *, rtx);

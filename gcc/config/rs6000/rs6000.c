@@ -3794,8 +3794,6 @@ legitimate_lo_sum_address_p (enum machine_mode mode, rtx x, int strict)
    called.  In some cases it is useful to look at this to decide what
    needs to be done.
 
-   MODE is passed so that this function can use GO_IF_LEGITIMATE_ADDRESS.
-
    It is always safe for this function to do nothing.  It exists to
    recognize opportunities to optimize the output.
 
@@ -4390,7 +4388,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
   return x;
 }
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
+/* TARGET_LEGITIMATE_ADDRESS_P recognizes an RTL expression
    that is a valid memory address for an instruction.
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address.

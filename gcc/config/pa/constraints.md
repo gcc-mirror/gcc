@@ -131,7 +131,7 @@
 					  ? SFmode : DFmode),
 					 XEXP (op, 0))")))
 
-;; We could allow short displacements but GO_IF_LEGITIMATE_ADDRESS
+;; We could allow short displacements but TARGET_LEGITIMATE_ADDRESS_P
 ;; can't tell when a long displacement is valid.
 (define_constraint "W"
   "A register indirect memory operand."

@@ -4269,7 +4269,7 @@ strict_low_part_peephole_ok (enum machine_mode mode, rtx first_insn,
    simple fact that the m68k does not allow a pc-relative addressing
    mode as a destination.  gcc does not distinguish between source and
    destination addresses.  Hence, if we claim that pc-relative address
-   modes are valid, e.g. GO_IF_LEGITIMATE_ADDRESS accepts them, then we
+   modes are valid, e.g. TARGET_LEGITIMATE_ADDRESS_P accepts them, then we
    end up with invalid code.  To get around this problem, we left
    pc-relative modes as invalid addresses, and then added special
    predicates and constraints to accept them.

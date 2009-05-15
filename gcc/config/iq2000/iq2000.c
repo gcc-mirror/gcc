@@ -258,7 +258,7 @@ iq2000_legitimate_address_p (enum machine_mode mode, rtx xinsn, bool strict)
 {
   if (TARGET_DEBUG_A_MODE)
     {
-      GO_PRINTF2 ("\n========== GO_IF_LEGITIMATE_ADDRESS, %sstrict\n",
+      GO_PRINTF2 ("\n========== legitimate_address_p, %sstrict\n",
 		  strict ? "" : "not ");
       GO_DEBUG_RTX (xinsn);
     }

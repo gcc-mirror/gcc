@@ -1606,20 +1606,6 @@ output_block_move(rtx *operands)
     return "";
 }
 
-int
-legitimate_address_p (enum machine_mode mode, rtx address)
-{
-/* #define REG_OK_STRICT */
-    GO_IF_LEGITIMATE_ADDRESS(mode, address, win);
-    
-    return 0;
-    
-  win:
-    return 1;
-
-/* #undef REG_OK_STRICT */
-}
-
 /* This function checks whether a real value can be encoded as
    a literal, i.e., addressing mode 27.  In that mode, real values
    are one word values, so the remaining 48 bits have to be zero.  */

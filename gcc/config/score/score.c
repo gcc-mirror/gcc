@@ -533,7 +533,7 @@ score_regno_mode_ok_for_base_p (int regno, int strict)
   gcc_unreachable ();
 }
 
-/* Implement GO_IF_LEGITIMATE_ADDRESS macro.  */
+/* Implement TARGET_LEGITIMIZE_ADDRESS_P.  */
 bool
 score_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {

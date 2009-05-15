@@ -3327,12 +3327,6 @@ frv_regno_ok_for_base_p (int regno, int strict_p)
    conditional to define the strict variant in that case and the non-strict
    variant otherwise.
 
-   Subroutines to check for acceptable registers for various purposes (one for
-   base registers, one for index registers, and so on) are typically among the
-   subroutines used to define `GO_IF_LEGITIMATE_ADDRESS'.  Then only these
-   subroutine macros need have two variants; the higher levels of macros may be
-   the same whether strict or not.
-
    Normally, constant addresses which are the sum of a `symbol_ref' and an
    integer are stored inside a `const' RTX to mark them as constant.
    Therefore, there is no need to recognize such sums specifically as
@@ -3343,22 +3337,6 @@ frv_regno_ok_for_base_p (int regno, int strict_p)
    are not marked with `const'.  It assumes that a naked `plus' indicates
    indexing.  If so, then you *must* reject such naked constant sums as
    illegitimate addresses, so that none of them will be given to
-   `PRINT_OPERAND_ADDRESS'.
-
-   On some machines, whether a symbolic address is legitimate depends on the
-   section that the address refers to.  On these machines, define the macro
-   `ENCODE_SECTION_INFO' to store the information into the `symbol_ref', and
-   then check for it here.  When you see a `const', you will have to look
-   inside it to find the `symbol_ref' in order to determine the section.
-
-   The best way to modify the name string is by adding text to the beginning,
-   with suitable punctuation to prevent any ambiguity.  Allocate the new name
-   in `saveable_obstack'.  You will have to modify `ASM_OUTPUT_LABELREF' to
-   remove and decode the added text and output the name accordingly, and define
-   `(* targetm.strip_name_encoding)' to access the original name string.
-
-   You can check the information stored here into the `symbol_ref' in the
-   definitions of the macros `GO_IF_LEGITIMATE_ADDRESS' and
    `PRINT_OPERAND_ADDRESS'.  */
 
 int
@@ -3484,7 +3462,7 @@ frv_legitimate_address_p_1 (enum machine_mode mode,
 
   if (TARGET_DEBUG_ADDR)
     {
-      fprintf (stderr, "\n========== GO_IF_LEGITIMATE_ADDRESS, mode = %s, result = %d, addresses are %sstrict%s\n",
+      fprintf (stderr, "\n========== legitimate_address_p, mode = %s, result = %d, addresses are %sstrict%s\n",
 	       GET_MODE_NAME (mode), ret, (strict_p) ? "" : "not ",
 	       (condexec_p) ? ", inside conditional code" : "");
       debug_rtx (x);

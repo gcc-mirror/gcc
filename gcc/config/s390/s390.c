@@ -3190,7 +3190,7 @@ s390_load_address (rtx dst, rtx src)
       differentiate them from global data objects.  The returned
       address is the PIC reg + an unspec constant.
 
-   GO_IF_LEGITIMATE_ADDRESS rejects symbolic references unless the PIC
+   TARGET_LEGITIMIZE_ADDRESS_P rejects symbolic references unless the PIC
    reg also appears in the address.  */
 
 rtx

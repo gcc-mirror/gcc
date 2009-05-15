@@ -545,7 +545,7 @@ crx_function_arg_regno_p (int n)
 /* ADDRESSING MODES */
 /* ---------------- */
 
-/* Implements the macro GO_IF_LEGITIMATE_ADDRESS defined in crx.h.
+/* Implements the hook for TARGET_LEGITIMATE_ADDRESS_P defined in crx.h.
  * The following addressing modes are supported on CRX:
  *
  * Relocations		--> const | symbol_ref | label_ref

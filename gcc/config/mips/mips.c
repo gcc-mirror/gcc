@@ -2140,7 +2140,7 @@ mips_stack_address_p (rtx x, enum machine_mode mode)
 
 /* Return true if ADDR matches the pattern for the LWXS load scaled indexed
    address instruction.  Note that such addresses are not considered
-   legitimate in the GO_IF_LEGITIMATE_ADDRESS sense, because their use
+   legitimate in the TARGET_LEGITIMATE_ADDRESS_P sense, because their use
    is so restricted.  */
 
 static bool
