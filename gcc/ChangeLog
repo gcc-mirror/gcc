@@ -1,5 +1,14 @@
 2009-05-15  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/39999
+	* gimple.h (gimple_expr_type): Use the expression type looking
+	through useless conversions.
+	* tree-ssa-sccvn.c (vn_nary_op_lookup_stmt): Use gimple_expr_type.
+	(vn_nary_op_insert_stmt): Likewise.
+	(simplify_binary_expression): Likewise.
+
+2009-05-15  Richard Guenther  <rguenther@suse.de>
+
 	* common.opt (-ftree-forwprop, -ftree-phiprop, -ftree-pta):
 	New options, enabled by default.
 	* doc/invoke.texi (-ftree-forwprop, -ftree-phiprop, -ftree-pta):

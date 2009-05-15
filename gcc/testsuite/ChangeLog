@@ -1,3 +1,8 @@
+2009-05-15  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/39999
+	* gcc.c-torture/compile/pr39999.c: New testcase.
+
 2009-05-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.c-torture/compile/ptr-conv-1.c: New test.
