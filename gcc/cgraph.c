@@ -1393,11 +1393,18 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
   if (node->count)
     fprintf (f, " executed "HOST_WIDEST_INT_PRINT_DEC"x",
 	     (HOST_WIDEST_INT)node->count);
-  if (node->local.inline_summary.self_insns)
-    fprintf (f, " %i insns", node->local.inline_summary.self_insns);
-  if (node->global.insns && node->global.insns
-      != node->local.inline_summary.self_insns)
-    fprintf (f, " (%i after inlining)", node->global.insns);
+  if (node->local.inline_summary.self_time)
+    fprintf (f, " %i time, %i benefit", node->local.inline_summary.self_time,
+    					node->local.inline_summary.time_inlining_benefit);
+  if (node->global.time && node->global.time
+      != node->local.inline_summary.self_time)
+    fprintf (f, " (%i after inlining)", node->global.time);
+  if (node->local.inline_summary.self_size)
+    fprintf (f, " %i size, %i benefit", node->local.inline_summary.self_size,
+    					node->local.inline_summary.size_inlining_benefit);
+  if (node->global.size && node->global.size
+      != node->local.inline_summary.self_size)
+    fprintf (f, " (%i after inlining)", node->global.size);
   if (node->local.inline_summary.estimated_self_stack_size)
     fprintf (f, " %i bytes stack usage", (int)node->local.inline_summary.estimated_self_stack_size);
   if (node->global.estimated_stack_size != node->local.inline_summary.estimated_self_stack_size)
