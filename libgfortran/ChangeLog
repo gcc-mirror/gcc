@@ -1,3 +1,8 @@
+2009-05-16  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/39782
+	* io/transfer.c (finalize_transfer): Remove extra flush.
+
 2009-04-21  Release Manager
 
 	* GCC 4.4.0 released.

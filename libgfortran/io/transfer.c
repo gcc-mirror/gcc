@@ -2948,13 +2948,6 @@ finalize_transfer (st_parameter_dt *dtp)
       if (dtp->u.p.current_unit->flags.form == FORM_FORMATTED
 	  && dtp->u.p.advance_status != ADVANCE_NO)
 	next_record (dtp, 1);
-
-      if (dtp->u.p.current_unit->flags.form == FORM_UNFORMATTED
-	  && file_position (dtp->u.p.current_unit->s) >= dtp->rec)
-	{
-	  flush (dtp->u.p.current_unit->s);
-	  sfree (dtp->u.p.current_unit->s);
-	}
       return;
     }
 
