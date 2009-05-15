@@ -4135,7 +4135,7 @@ eliminate (void)
 		  /* Changing an indirect call to a direct call may
 		     have exposed different semantics.  This may
 		     require an SSA update.  */
-		  todo |= TODO_update_ssa;
+		  todo |= TODO_update_ssa_only_virtuals;
 		}
 	    }
 	}

@@ -1,5 +1,10 @@
 2009-05-15  Richard Guenther  <rguenther@suse.de>
 
+	* tree-ssa-pre.c (eliminate): Use TODO_update_ssa_only_virtuals,
+	not TODO_update_ssa.
+
+2009-05-15  Richard Guenther  <rguenther@suse.de>
+
 	PR tree-optimization/39999
 	* gimple.h (gimple_expr_type): Use the expression type looking
 	through useless conversions.
