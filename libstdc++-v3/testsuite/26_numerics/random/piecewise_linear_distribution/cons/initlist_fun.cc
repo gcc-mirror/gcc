@@ -19,7 +19,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 26.4.8.5.3 Class template piecewise_linear_distribution [rand.dist.samp.plinear]
+// 26.4.8.5.3 Class template piecewise_linear_distribution
+// [rand.dist.samp.plinear]
 // 26.4.2.4 Concept RandomNumberDistribution [rand.concept.dist]
 
 #include <random>
@@ -39,10 +40,11 @@ struct cosine_distribution
         return 0.0;
       else if (x - _M_x0 > _M_lambda / 4)
         return 0.0;
-      else {
-        const double pi = 3.1415926535897932384626433832795029L;
-        return std::cos(2 * pi * (x - _M_x0) / _M_lambda);
-      }
+      else
+	{
+	  const double pi = 3.14159265358979323846;
+	  return std::cos(2 * pi * (x - _M_x0) / _M_lambda);
+	}
     }
 
 private:
