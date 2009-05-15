@@ -1,3 +1,9 @@
+2009-05-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Also
+	recurse on an invariant address if a conversion from a pointer
+	type to a wider integer type is involved.
+
 2009-05-15  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (dump_cgraph_node): Dump size/time/benefit.

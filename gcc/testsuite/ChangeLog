@@ -1,3 +1,7 @@
+2009-05-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.c-torture/compile/ptr-conv-1.c: New test.
+
 2009-05-14  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wcxx-compat-9.c: New testcase.
