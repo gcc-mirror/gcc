@@ -5562,6 +5562,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	 Note that walk_tree knows how to deal with TYPE_DECL, but neither
 	 VAR_DECL nor CONST_DECL.  This appears to be somewhat arbitrary.  */
       mark_visited (&gnu_stmt);
+
       if (TREE_CODE (gnu_decl) == VAR_DECL
 	  || TREE_CODE (gnu_decl) == CONST_DECL)
 	{
@@ -5569,13 +5570,31 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	  mark_visited (&DECL_SIZE_UNIT (gnu_decl));
 	  mark_visited (&DECL_INITIAL (gnu_decl));
 	}
-      /* In any case, we have to deal with our own TYPE_ADA_SIZE field.  */
-      if (TREE_CODE (gnu_decl) == TYPE_DECL
-	  && (TREE_CODE (type) == RECORD_TYPE
-	      || TREE_CODE (type) == UNION_TYPE
-	      || TREE_CODE (type) == QUAL_UNION_TYPE)
-	  && (t = TYPE_ADA_SIZE (type)))
-	mark_visited (&t);
+
+      /* In any case, we have to deal with our own fields.  */
+      else if (TREE_CODE (gnu_decl) == TYPE_DECL)
+	switch (TREE_CODE (type))
+	  {
+	  case RECORD_TYPE:
+	  case UNION_TYPE:
+	  case QUAL_UNION_TYPE:
+	    if ((t = TYPE_ADA_SIZE (type)))
+	      mark_visited (&t);
+	    break;
+
+	  case INTEGER_TYPE:
+	  case ENUMERAL_TYPE:
+	  case BOOLEAN_TYPE:
+	  case REAL_TYPE:
+	    if ((t = TYPE_RM_MIN_VALUE (type)))
+	      mark_visited (&t);
+	    if ((t = TYPE_RM_MAX_VALUE (type)))
+	      mark_visited (&t);
+	    break;
+
+	  default:
+	    break;
+	  }
     }
   else
     add_stmt_with_node (gnu_stmt, gnat_entity);

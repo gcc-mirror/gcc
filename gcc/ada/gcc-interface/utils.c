@@ -530,12 +530,14 @@ gnat_init_decl_processing (void)
   set_sizetype (size_type_node);
 
   /* In Ada, we use an unsigned 8-bit type for the default boolean type.  */
-  boolean_type_node = make_node (BOOLEAN_TYPE);
-  TYPE_PRECISION (boolean_type_node) = 1;
-  fixup_unsigned_type (boolean_type_node);
-  TYPE_RM_SIZE (boolean_type_node) = bitsize_int (1);
+  boolean_type_node = make_unsigned_type (8);
+  TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
+  SET_TYPE_RM_MAX_VALUE (boolean_type_node,
+			 build_int_cst (boolean_type_node, 1));
+  SET_TYPE_RM_SIZE (boolean_type_node, bitsize_int (1));
 
   build_common_tree_nodes_2 (0);
+  boolean_true_node = TYPE_MAX_VALUE (boolean_type_node);
 
   ptr_void_type_node = build_pointer_type (void_type_node);
 }
@@ -1195,6 +1197,42 @@ create_index_type (tree min, tree max, tree index, Node_Id gnat_node)
 
   return type;
 }
+
+/* Return a subtype of TYPE with range MIN to MAX.  If TYPE is NULL,
+   sizetype is used.  */
+
+tree
+create_range_type (tree type, tree min, tree max)
+{
+  tree range_type;
+
+  if (type == NULL_TREE)
+    type = sizetype;
+
+  /* First build a type with the base range.  */
+  range_type
+    = build_range_type (type, TYPE_MIN_VALUE (type), TYPE_MAX_VALUE (type));
+
+  min = convert (type, min);
+  max = convert (type, max);
+
+  /* If this type has the TYPE_RM_{MIN,MAX}_VALUE we want, return it.  */
+  if (TYPE_RM_MIN_VALUE (range_type)
+      && TYPE_RM_MAX_VALUE (range_type)
+      && operand_equal_p (TYPE_RM_MIN_VALUE (range_type), min, 0)
+      && operand_equal_p (TYPE_RM_MAX_VALUE (range_type), max, 0))
+    return range_type;
+
+  /* Otherwise, if TYPE_RM_{MIN,MAX}_VALUE is set, make a copy.  */
+  if (TYPE_RM_MIN_VALUE (range_type) || TYPE_RM_MAX_VALUE (range_type))
+    range_type = copy_type (range_type);
+
+  /* Then set the actual range.  */
+  SET_TYPE_RM_MIN_VALUE (range_type, min);
+  SET_TYPE_RM_MAX_VALUE (range_type, max);
+
+  return range_type;
+}
 
 /* Return a TYPE_DECL node suitable for the TYPE_STUB_DECL field of a type.
    TYPE_NAME gives the name of the type and TYPE is a ..._TYPE node giving
@@ -1581,16 +1619,12 @@ create_param_decl (tree param_name, tree param_type, bool readonly)
       if (TREE_CODE (param_type) == INTEGER_TYPE
 	  && TYPE_BIASED_REPRESENTATION_P (param_type))
 	{
-	  tree subtype = make_node (INTEGER_TYPE);
+	  tree subtype
+	    = make_unsigned_type (TYPE_PRECISION (integer_type_node));
 	  TREE_TYPE (subtype) = integer_type_node;
 	  TYPE_BIASED_REPRESENTATION_P (subtype) = 1;
-
-	  TYPE_UNSIGNED (subtype) = 1;
-	  TYPE_PRECISION (subtype) = TYPE_PRECISION (integer_type_node);
-	  TYPE_MIN_VALUE (subtype) = TYPE_MIN_VALUE (param_type);
-	  TYPE_MAX_VALUE (subtype) = TYPE_MAX_VALUE (param_type);
-	  layout_type (subtype);
-
+	  SET_TYPE_RM_MIN_VALUE (subtype, TYPE_MIN_VALUE (param_type));
+	  SET_TYPE_RM_MAX_VALUE (subtype, TYPE_MAX_VALUE (param_type));
 	  param_type = subtype;
 	}
       else
@@ -4288,8 +4322,7 @@ maybe_unconstrained_array (tree exp)
 }
 
 /* Return true if EXPR is an expression that can be folded as an operand
-   of a VIEW_CONVERT_EXPR.  See the head comment of unchecked_convert for
-   the rationale.  */
+   of a VIEW_CONVERT_EXPR.  See ada-tree.h for a complete rationale.  */
 
 static bool
 can_fold_for_view_convert_p (tree expr)
@@ -4337,22 +4370,7 @@ can_fold_for_view_convert_p (tree expr)
 
    we expect the 8 bits at Vbits'Address to always contain Value, while
    their original location depends on the endianness, at Value'Address
-   on a little-endian architecture but not on a big-endian one.
-
-   ??? There is a problematic discrepancy between what is called precision
-   here (and more generally throughout gigi) for integral types and what is
-   called precision in the middle-end.  In the former case it's the RM size
-   as given by TYPE_RM_SIZE (or rm_size) whereas it's TYPE_PRECISION in the
-   latter case, the hitch being that they are not equal when they matter,
-   that is when the number of value bits is not equal to the type's size:
-   TYPE_RM_SIZE does give the number of value bits but TYPE_PRECISION is set
-   to the size.  The sole exception are BOOLEAN_TYPEs for which both are 1.
-
-   The consequence is that gigi must duplicate code bridging the gap between
-   the type's size and its precision that exists for TYPE_PRECISION in the
-   middle-end, because the latter knows nothing about TYPE_RM_SIZE, and be
-   wary of transformations applied in the middle-end based on TYPE_PRECISION
-   because this value doesn't reflect the actual precision for Ada.  */
+   on a little-endian architecture but not on a big-endian one.  */
 
 tree
 unchecked_convert (tree type, tree expr, bool notrunc_p)
@@ -4397,43 +4415,6 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	  expr = convert (rtype, expr);
 	  expr = build1 (NOP_EXPR, type, expr);
 	}
-
-      /* We have another special case: if we are unchecked converting either
-	 a subtype or a type with limited range into a base type, we need to
-	 ensure that VRP doesn't propagate range information because this
-	 conversion may be done precisely to validate that the object is
-	 within the range it is supposed to have.  */
-      else if (TREE_CODE (expr) != INTEGER_CST
-	       && TREE_CODE (type) == INTEGER_TYPE && !TREE_TYPE (type)
-	       && ((TREE_CODE (etype) == INTEGER_TYPE && TREE_TYPE (etype))
-		   || TREE_CODE (etype) == ENUMERAL_TYPE
-		   || TREE_CODE (etype) == BOOLEAN_TYPE))
-	{
-	  /* The optimization barrier is a VIEW_CONVERT_EXPR node; moreover,
-	     in order not to be deemed an useless type conversion, it must
-	     be from subtype to base type.
-
-	     Therefore we first do the bulk of the conversion to a subtype of
-	     the final type.  And this conversion must itself not be deemed
-	     useless if the source type is not a subtype because, otherwise,
-	     the final VIEW_CONVERT_EXPR will be deemed so as well.  That's
-	     why we toggle the unsigned flag in this conversion, which is
-	     harmless since the final conversion is only a reinterpretation
-	     of the bit pattern.
-
-	     ??? This may raise addressability and/or aliasing issues because
-	     VIEW_CONVERT_EXPR gets gimplified as an lvalue, thus causing the
-	     address of its operand to be taken if it is deemed addressable
-	     and not already in GIMPLE form.  */
-	  tree rtype
-	    = gnat_type_for_mode (TYPE_MODE (type), !TYPE_UNSIGNED (etype));
-	  rtype = copy_type (rtype);
-	  TYPE_MAIN_VARIANT (rtype) = rtype;
-	  TREE_TYPE (rtype) = type;
-	  expr = convert (rtype, expr);
-	  expr = build1 (VIEW_CONVERT_EXPR, type, expr);
-	}
-
       else
 	expr = convert (type, expr);
     }

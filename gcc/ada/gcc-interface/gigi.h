@@ -558,6 +558,10 @@ extern tree copy_type (tree type);
 extern tree create_index_type (tree min, tree max, tree index,
 			       Node_Id gnat_node);
 
+/* Return a subtype of TYPE with range MIN to MAX.  If TYPE is NULL,
+   sizetype is used.  */
+extern tree create_range_type (tree type, tree min, tree max);
+
 /* Return a TYPE_DECL node suitable for the TYPE_STUB_DECL field of a type.
    TYPE_NAME gives the name of the type and TYPE is a ..._TYPE node giving
    its data type.  */

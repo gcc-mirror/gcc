@@ -167,9 +167,87 @@ struct GTY(()) lang_decl { tree t; };
    mechanism refer to the routine gnat_to_gnu_entity. */
 #define TYPE_CI_CO_LIST(NODE) TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
 
-/* For integral types, this is the RM size of the type.  */
+/* For numerical types, this is the GCC lower bound of the type.  The GCC
+   type system is based on the invariant that an object X of a given type
+   cannot hold at run time a value smaller than its lower bound; otherwise
+   the behavior is undefined.  The optimizer takes advantage of this and
+   considers that the assertion X >= LB is always true.  */
+#define TYPE_GCC_MIN_VALUE(NODE) (NUMERICAL_TYPE_CHECK (NODE)->type.minval)
+
+/* For numerical types, this is the GCC upper bound of the type.  The GCC
+   type system is based on the invariant that an object X of a given type
+   cannot hold at run time a value larger than its upper bound; otherwise
+   the behavior is undefined.  The optimizer takes advantage of this and
+   considers that the assertion X <= UB is always true.  */
+#define TYPE_GCC_MAX_VALUE(NODE) (NUMERICAL_TYPE_CHECK (NODE)->type.maxval)
+
+/* For numerical types, this holds various RM-defined values.  */
+#define TYPE_RM_VALUES(NODE) TYPE_LANG_SLOT_1 (NUMERICAL_TYPE_CHECK (NODE))
+
+/* For numerical types, this is the RM size of the type, aka its precision.
+   There is a discrepancy between what is called precision here (and more
+   generally throughout gigi) and what is called precision in the GCC type
+   system: in the former case it's TYPE_RM_SIZE whereas it's TYPE_PRECISION
+   in the latter case.  They are not identical because of the need to support
+   invalid values.
+
+   These values can be outside the range of values allowed by the RM size
+   but they must nevertheless be valid in the GCC type system, otherwise
+   the optimizer can pretend that they simply don't exist.  Therefore they
+   must be within the range of values allowed by the precision in the GCC
+   sense, hence TYPE_PRECISION be set to the Esize, not the RM size.  */
 #define TYPE_RM_SIZE(NODE) \
-  TYPE_LANG_SLOT_1 (TREE_CHECK3 (NODE, ENUMERAL_TYPE, BOOLEAN_TYPE, INTEGER_TYPE))
+  (TYPE_RM_VALUES (NODE) ? TREE_VEC_ELT (TYPE_RM_VALUES (NODE), 0) : NULL_TREE)
+#define SET_TYPE_RM_SIZE(NODE, X)		\
+  TREE_VEC_ELT ((TYPE_RM_VALUES (NODE)		\
+		 = (TYPE_RM_VALUES (NODE)	\
+		    ? TYPE_RM_VALUES (NODE) : make_tree_vec (3))), 0) = (X)
+
+/* For numerical types, this is the RM lower bound of the type.  There is
+   again a discrepancy between this lower bound and the GCC lower bound,
+   again because of the need to support invalid values.
+
+   These values can be outside the range of values allowed by the RM lower
+   bound but they must nevertheless be valid in the GCC type system, otherwise
+   the optimizer can pretend that they simply don't exist.  Therefore they
+   must be within the range of values allowed by the lower bound in the GCC
+   sense, hence the GCC lower bound be set to that of the base type.  */
+#define TYPE_RM_MIN_VALUE(NODE) \
+  (TYPE_RM_VALUES (NODE) ? TREE_VEC_ELT (TYPE_RM_VALUES (NODE), 1) : NULL_TREE)
+#define SET_TYPE_RM_MIN_VALUE(NODE, X)		\
+  TREE_VEC_ELT ((TYPE_RM_VALUES (NODE)		\
+		 = (TYPE_RM_VALUES (NODE)	\
+		    ? TYPE_RM_VALUES (NODE) : make_tree_vec (3))), 1) = (X)
+
+/* For numerical types, this is the RM upper bound of the type.  There is
+   again a discrepancy between this upper bound and the GCC upper bound,
+   again because of the need to support invalid values.
+
+   These values can be outside the range of values allowed by the RM upper
+   bound but they must nevertheless be valid in the GCC type system, otherwise
+   the optimizer can pretend that they simply don't exist.  Therefore they
+   must be within the range of values allowed by the upper bound in the GCC
+   sense, hence the GCC upper bound be set to that of the base type.  */
+#define TYPE_RM_MAX_VALUE(NODE) \
+  (TYPE_RM_VALUES (NODE) ? TREE_VEC_ELT (TYPE_RM_VALUES (NODE), 2) : NULL_TREE)
+#define SET_TYPE_RM_MAX_VALUE(NODE, X)		\
+  TREE_VEC_ELT ((TYPE_RM_VALUES (NODE)		\
+		 = (TYPE_RM_VALUES (NODE)	\
+		    ? TYPE_RM_VALUES (NODE) : make_tree_vec (3))), 2) = (X)
+
+/* For numerical types, this is the lower bound of the type, i.e. the RM lower
+   bound for language-defined types and the GCC lower bound for others.  */
+#undef TYPE_MIN_VALUE
+#define TYPE_MIN_VALUE(NODE) \
+  (TYPE_RM_MIN_VALUE (NODE) \
+   ? TYPE_RM_MIN_VALUE (NODE) : TYPE_GCC_MIN_VALUE (NODE))
+
+/* For numerical types, this is the upper bound of the type, i.e. the RM upper
+   bound for language-defined types and the GCC upper bound for others.  */
+#undef TYPE_MAX_VALUE
+#define TYPE_MAX_VALUE(NODE) \
+  (TYPE_RM_MAX_VALUE (NODE) \
+   ? TYPE_RM_MAX_VALUE (NODE) : TYPE_GCC_MAX_VALUE (NODE))
 
 /* In an UNCONSTRAINED_ARRAY_TYPE, points to the record containing both
    the template and object.

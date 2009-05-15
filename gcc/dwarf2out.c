@@ -5095,8 +5095,7 @@ static void output_line_info (void);
 static void output_file_names (void);
 static dw_die_ref base_type_die (tree);
 static int is_base_type (tree);
-static bool is_subrange_type (const_tree);
-static dw_die_ref subrange_type_die (tree, dw_die_ref);
+static dw_die_ref subrange_type_die (tree, tree, tree, dw_die_ref);
 static dw_die_ref modified_type_die (tree, int, int, dw_die_ref);
 static int type_is_enum (const_tree);
 static unsigned int dbx_reg_number (const_rtx);
@@ -9273,6 +9272,11 @@ base_type_die (tree type)
   if (TREE_CODE (type) == ERROR_MARK || TREE_CODE (type) == VOID_TYPE)
     return 0;
 
+  /* If this is a subtype that should not be emitted as a subrange type,
+     use the base type.  See subrange_type_for_debug_p.  */
+  if (TREE_CODE (type) == INTEGER_TYPE && TREE_TYPE (type) != NULL_TREE)
+    type = TREE_TYPE (type);
+
   switch (TREE_CODE (type))
     {
     case INTEGER_TYPE:
@@ -9392,67 +9396,11 @@ simple_type_size_in_bits (const_tree type)
     return TYPE_ALIGN (type);
 }
 
-/* Return true if the debug information for the given type should be
-   emitted as a subrange type.  */
-
-static inline bool
-is_subrange_type (const_tree type)
-{
-  tree subtype = TREE_TYPE (type);
-
-  /* Subrange types are identified by the fact that they are integer
-     types, and that they have a subtype which is either an integer type
-     or an enumeral type.  */
-
-  if (TREE_CODE (type) != INTEGER_TYPE
-      || subtype == NULL_TREE)
-    return false;
-
-  if (TREE_CODE (subtype) != INTEGER_TYPE
-      && TREE_CODE (subtype) != ENUMERAL_TYPE
-      && TREE_CODE (subtype) != BOOLEAN_TYPE)
-    return false;
-
-  if (TREE_CODE (type) == TREE_CODE (subtype)
-      && int_size_in_bytes (type) == int_size_in_bytes (subtype)
-      && TYPE_MIN_VALUE (type) != NULL
-      && TYPE_MIN_VALUE (subtype) != NULL
-      && tree_int_cst_equal (TYPE_MIN_VALUE (type), TYPE_MIN_VALUE (subtype))
-      && TYPE_MAX_VALUE (type) != NULL
-      && TYPE_MAX_VALUE (subtype) != NULL
-      && tree_int_cst_equal (TYPE_MAX_VALUE (type), TYPE_MAX_VALUE (subtype)))
-    {
-      /* The type and its subtype have the same representation.  If in
-	 addition the two types also have the same name, then the given
-	 type is not a subrange type, but rather a plain base type.  */
-      /* FIXME: brobecker/2004-03-22:
-	 Sizetype INTEGER_CSTs nodes are canonicalized.  It should
-	 therefore be sufficient to check the TYPE_SIZE node pointers
-	 rather than checking the actual size.  Unfortunately, we have
-	 found some cases, such as in the Ada "integer" type, where
-	 this is not the case.  Until this problem is solved, we need to
-	 keep checking the actual size.  */
-      tree type_name = TYPE_NAME (type);
-      tree subtype_name = TYPE_NAME (subtype);
-
-      if (type_name != NULL && TREE_CODE (type_name) == TYPE_DECL)
-	type_name = DECL_NAME (type_name);
-
-      if (subtype_name != NULL && TREE_CODE (subtype_name) == TYPE_DECL)
-	subtype_name = DECL_NAME (subtype_name);
-
-      if (type_name == subtype_name)
-	return false;
-    }
-
-  return true;
-}
-
 /*  Given a pointer to a tree node for a subrange type, return a pointer
     to a DIE that describes the given type.  */
 
 static dw_die_ref
-subrange_type_die (tree type, dw_die_ref context_die)
+subrange_type_die (tree type, tree low, tree high, dw_die_ref context_die)
 {
   dw_die_ref subrange_die;
   const HOST_WIDE_INT size_in_bytes = int_size_in_bytes (type);
@@ -9469,12 +9417,10 @@ subrange_type_die (tree type, dw_die_ref context_die)
       add_AT_unsigned (subrange_die, DW_AT_byte_size, size_in_bytes);
     }
 
-  if (TYPE_MIN_VALUE (type) != NULL)
-    add_bound_info (subrange_die, DW_AT_lower_bound,
-		    TYPE_MIN_VALUE (type));
-  if (TYPE_MAX_VALUE (type) != NULL)
-    add_bound_info (subrange_die, DW_AT_upper_bound,
-		    TYPE_MAX_VALUE (type));
+  if (low)
+    add_bound_info (subrange_die, DW_AT_lower_bound, low);
+  if (high)
+    add_bound_info (subrange_die, DW_AT_upper_bound, high);
 
   return subrange_die;
 }
@@ -9491,7 +9437,7 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
   dw_die_ref sub_die = NULL;
   tree item_type = NULL;
   tree qualified_type;
-  tree name;
+  tree name, low, high;
 
   if (code == ERROR_MARK)
     return NULL;
@@ -9561,9 +9507,11 @@ modified_type_die (tree type, int is_const_type, int is_volatile_type,
 		       simple_type_size_in_bits (type) / BITS_PER_UNIT);
       item_type = TREE_TYPE (type);
     }
-  else if (is_subrange_type (type))
+  else if (code == INTEGER_TYPE
+	   && TREE_TYPE (type) != NULL_TREE
+	   && subrange_type_for_debug_p (type, &low, &high))
     {
-      mod_type_die = subrange_type_die (type, context_die);
+      mod_type_die = subrange_type_die (type, low, high, context_die);
       item_type = TREE_TYPE (type);
     }
   else if (is_base_type (type))

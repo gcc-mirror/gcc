@@ -78,6 +78,7 @@ static int gnat_eh_type_covers		(tree, tree);
 static void gnat_parse_file		(int);
 static void internal_error_function	(const char *, va_list *);
 static tree gnat_type_max_size		(const_tree);
+static void gnat_get_subrange_bounds	(const_tree, tree *, tree *);
 
 /* Definitions for our language-specific hooks.  */
 
@@ -125,6 +126,8 @@ static tree gnat_type_max_size		(const_tree);
 #define LANG_HOOKS_TYPE_FOR_SIZE	gnat_type_for_size
 #undef  LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
+#undef  LANG_HOOKS_GET_SUBRANGE_BOUNDS
+#define LANG_HOOKS_GET_SUBRANGE_BOUNDS  gnat_get_subrange_bounds
 #undef  LANG_HOOKS_ATTRIBUTE_TABLE
 #define LANG_HOOKS_ATTRIBUTE_TABLE	gnat_internal_attribute_table
 #undef  LANG_HOOKS_BUILTIN_FUNCTION
@@ -513,6 +516,12 @@ gnat_print_type (FILE *file, tree node, int indent)
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
       print_node_brief (file, "RM size", TYPE_RM_SIZE (node), indent + 4);
+
+      /* ... fall through ... */
+
+    case REAL_TYPE:
+      print_node_brief (file, "RM min", TYPE_RM_MIN_VALUE (node), indent + 4);
+      print_node_brief (file, "RM max", TYPE_RM_MAX_VALUE (node), indent + 4);
       break;
 
     case ARRAY_TYPE:
@@ -642,6 +651,18 @@ gnat_type_max_size (const_tree gnu_type)
     }
 
   return max_unitsize;
+}
+
+/* GNU_TYPE is a subtype of an integral type.  Set LOWVAL to the low bound
+   and HIGHVAL to the high bound, respectively.  */
+
+static void
+gnat_get_subrange_bounds (const_tree gnu_type, tree *lowval, tree *highval)
+{
+  tree min = TYPE_MIN_VALUE (gnu_type);
+  tree max = TYPE_MAX_VALUE (gnu_type);
+  *lowval = TREE_CONSTANT (min) ? min : TYPE_GCC_MIN_VALUE (gnu_type);
+  *highval = TREE_CONSTANT (max) ? max : TYPE_GCC_MAX_VALUE (gnu_type);
 }
 
 /* GNU_TYPE is a type. Determine if it should be passed by reference by

@@ -1100,21 +1100,6 @@ nb_vars_in_chrec (tree chrec)
     }
 }
 
-/* Returns true if TYPE is a type in that we cannot directly perform
-   arithmetics, even though it is a scalar type.  */
-
-static bool
-avoid_arithmetics_in_type_p (const_tree type)
-{
-  /* Ada frontend uses subtypes -- an arithmetic cannot be directly performed
-     in the subtype, but a base type must be used, and the result then can
-     be casted to the subtype.  */
-  if (TREE_CODE (type) == INTEGER_TYPE && TREE_TYPE (type) != NULL_TREE)
-    return true;
-
-  return false;
-}
-
 static tree chrec_convert_1 (tree, tree, gimple, bool);
 
 /* Converts BASE and STEP of affine scev to TYPE.  LOOP is the loop whose iv
@@ -1135,10 +1120,6 @@ convert_affine_scev (struct loop *loop, tree type,
   bool must_check_src_overflow, must_check_rslt_overflow;
   tree new_base, new_step;
   tree step_type = POINTER_TYPE_P (type) ? sizetype : type;
-
-  /* If we cannot perform arithmetic in TYPE, avoid creating an scev.  */
-  if (avoid_arithmetics_in_type_p (type))
-    return false;
 
   /* In general,
      (TYPE) (BASE + STEP * i) = (TYPE) BASE + (TYPE -- sign extend) STEP * i,
@@ -1340,10 +1321,6 @@ chrec_convert_aggressive (tree type, tree chrec)
 
   inner_type = TREE_TYPE (chrec);
   if (TYPE_PRECISION (type) > TYPE_PRECISION (inner_type))
-    return NULL_TREE;
-
-  /* If we cannot perform arithmetic in TYPE, avoid creating an scev.  */
-  if (avoid_arithmetics_in_type_p (type))
     return NULL_TREE;
 
   rtype = POINTER_TYPE_P (type) ? sizetype : type;

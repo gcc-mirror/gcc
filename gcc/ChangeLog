@@ -1,3 +1,35 @@
+2009-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dbxout.c (dbxout_range_type): Add LOW and HIGH parameters.  Use them
+	for bounds.
+	(print_int_cst_bounds_in_octal_p): Likewise.
+	(dbxout_type): Adjust calls to above functions.  Be prepared to deal
+	with subtypes.
+	* dwarf2out.c (base_type_die): Likewise.
+	(is_subrange_type): Delete.
+	(subrange_type_die): Add LOW and HIGH parameters.  Use them for bounds.
+	(modified_type_die): Call subrange_type_for_debug_p on subtypes.
+	* fold-const.c (fold_truth_not_expr) <CONVERT_EXPR>: Do not strip it if
+	the destination type is boolean.
+	(build_range_check): Do not special-case subtypes.
+	(fold_sign_changed_comparison): Likewise.
+	(fold_unary): Likewise.
+	* langhooks-def.h (LANG_HOOKS_GET_SUBRANGE_BOUNDS): Define.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add LANG_HOOKS_GET_SUBRANGE_BOUNDS.
+	* langhooks.h (lang_hooks_for_types): Add get_subrange_bounds.
+	* tree.c (subrange_type_for_debug_p): New predicate based on the former
+	is_subrange_type.
+	* tree.h (subrange_type_for_debug_p): Declare.
+	* tree-chrec.c (avoid_arithmetics_in_type_p): Delete.
+	(convert_affine_scev): Remove call to above function.
+	(chrec_convert_aggressive): Likewise.
+	* tree-ssa.c (useless_type_conversion_p_1): Do not specifically return
+	false for conversions involving subtypes.
+	* tree-vrp.c (vrp_val_max): Do not special-case subtypes.
+	(vrp_val_min): Likewise.
+	(needs_overflow_infinity): Likewise.
+	(extract_range_from_unary_expr): Likewise.
+
 2009-05-15  Paolo Bonzini  <bonzini@gnu.org>
 
         * config/frv/frv.h: Clean up references to GO_IF_LEGITIMATE_ADDRESS.

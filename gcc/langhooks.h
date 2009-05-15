@@ -130,6 +130,9 @@ struct lang_hooks_for_types
      for the debugger about the array bounds, strides, etc.  */
   bool (*get_array_descr_info) (const_tree, struct array_descr_info *);
 
+  /* Fill in information for the debugger about the bounds of TYPE.  */
+  void (*get_subrange_bounds) (const_tree, tree *, tree *);
+
   /* If we requested a pointer to a vector, build up the pointers that
      we stripped off while looking for the inner type.  Similarly for
      return values from functions.  The argument TYPE is the top of the

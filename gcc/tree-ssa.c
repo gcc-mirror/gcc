@@ -923,19 +923,9 @@ useless_type_conversion_p_1 (tree outer_type, tree inner_type)
 	  || TYPE_PRECISION (inner_type) != TYPE_PRECISION (outer_type))
 	return false;
 
-      /* Conversions from a non-base to a base type are not useless.
-	 This way we preserve the invariant to do arithmetic in
-	 base types only.  */
-      if (TREE_TYPE (inner_type)
-	  && TREE_TYPE (inner_type) != inner_type
-	  && (TREE_TYPE (outer_type) == outer_type
-	      || TREE_TYPE (outer_type) == NULL_TREE))
-	return false;
-
       /* We don't need to preserve changes in the types minimum or
 	 maximum value in general as these do not generate code
 	 unless the types precisions are different.  */
-
       return true;
     }
 
