@@ -1,3 +1,16 @@
+2009-05-15  David Billinghurst <billingd@gcc.gnu.org>
+
+	* testsuite/26_numerics/random/discrete_distribution/cons/num_xbound_fun.cc:
+	Replace non-standard macro M_PI with constant pi.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/cons/initlist_fun.cc:
+	Likewise
+	* testsuite/26_numerics/random/piecewise_constant_distribution/cons/num_xbound_fun.cc:
+	Likewise
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/initlist_fun.cc:
+	Likewise
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/num_xbound_fun.cc:
+	Likewise 
+
 2009-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40123
