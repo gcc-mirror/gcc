@@ -2327,7 +2327,24 @@ fold_convert_const_real_from_real (tree type, const_tree arg1)
   real_convert (&value, TYPE_MODE (type), &TREE_REAL_CST (arg1));
   t = build_real (type, value);
 
-  TREE_OVERFLOW (t) = TREE_OVERFLOW (arg1);
+  /* If converting an infinity or NAN to a representation that doesn't
+     have one, set the overflow bit so that we can produce some kind of
+     error message at the appropriate point if necessary.  It's not the
+     most user-friendly message, but it's better than nothing.  */
+  if (REAL_VALUE_ISINF (TREE_REAL_CST (arg1))
+      && !MODE_HAS_INFINITIES (TYPE_MODE (type)))
+    TREE_OVERFLOW (t) = 1;
+  else if (REAL_VALUE_ISNAN (TREE_REAL_CST (arg1))
+	   && !MODE_HAS_NANS (TYPE_MODE (type)))
+    TREE_OVERFLOW (t) = 1;
+  /* Regular overflow, conversion produced an infinity in a mode that
+     can't represent them.  */
+  else if (!MODE_HAS_INFINITIES (TYPE_MODE (type))
+	   && REAL_VALUE_ISINF (value)
+	   && !REAL_VALUE_ISINF (TREE_REAL_CST (arg1)))
+    TREE_OVERFLOW (t) = 1;
+  else
+    TREE_OVERFLOW (t) = TREE_OVERFLOW (arg1);
   return t;
 }
 

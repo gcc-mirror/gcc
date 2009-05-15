@@ -1,3 +1,8 @@
+2009-05-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* fold-const.c (fold_convert_const_real_from_real): Check for
+	overflow.
+
 2009-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_reorg): Call optimize_function_for_speed_p
