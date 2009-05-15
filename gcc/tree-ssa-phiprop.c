@@ -381,7 +381,7 @@ tree_ssa_phiprop (void)
 static bool
 gate_phiprop (void)
 {
-  return 1;
+  return flag_tree_phiprop;
 }
 
 struct gimple_opt_pass pass_phiprop = 

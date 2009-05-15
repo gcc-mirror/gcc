@@ -1202,6 +1202,10 @@ ftree-dse
 Common Report Var(flag_tree_dse) Optimization
 Enable dead store elimination
 
+ftree-forwprop
+Common Report Var(flag_tree_forwprop) Init(1) Optimization
+Enable forward propagation on trees
+
 ftree-fre
 Common Report Var(flag_tree_fre) Optimization
 Enable Full Redundancy Elimination (FRE) on trees
@@ -1230,9 +1234,17 @@ ftree-parallelize-loops=
 Common Report Joined UInteger Var(flag_tree_parallelize_loops) Init(1)
 Enable automatic parallelization of loops
 
+ftree-phiprop
+Common Report Var(flag_tree_phiprop) Init(1) Optimization
+Enable hoisting loads from conditional pointers.
+
 ftree-pre
 Common Report Var(flag_tree_pre) Optimization
 Enable SSA-PRE optimization on trees
+
+ftree-pta
+Common Report Var(flag_tree_pta) Init(1) Optimization
+Perform function-local points-to analysis on trees.
 
 ftree-reassoc
 Common Report Var(flag_tree_reassoc) Init(1) Optimization
