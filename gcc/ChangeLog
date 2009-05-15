@@ -1,5 +1,14 @@
 2009-05-15  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* real.c (encode_ieee_half): Define.
+	(decode_ieee_half): Define.
+	(ieee_half_format): Define.
+	(arm_half_format): Define.
+	* real.h (ieee_half_format): Declare.
+	(arm_half_format): Declare.
+
+2009-05-15  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* optabs.c (prepare_float_lib_cmp):  Test that the comparison,
 	swapped, and reversed optabs exist before trying to use them.
 
