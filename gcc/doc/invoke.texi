@@ -290,12 +290,14 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-gimple@r{[}-raw@r{]} -fdump-tree-mudflap@r{[}-@var{n}@r{]} @gol
 -fdump-tree-dom@r{[}-@var{n}@r{]} @gol
 -fdump-tree-dse@r{[}-@var{n}@r{]} @gol
+-fdump-tree-phiprop@r{[}-@var{n}@r{]} @gol
 -fdump-tree-phiopt@r{[}-@var{n}@r{]} @gol
 -fdump-tree-forwprop@r{[}-@var{n}@r{]} @gol
 -fdump-tree-copyrename@r{[}-@var{n}@r{]} @gol
 -fdump-tree-nrv -fdump-tree-vect @gol
 -fdump-tree-sink @gol
 -fdump-tree-sra@r{[}-@var{n}@r{]} @gol
+-fdump-tree-forwprop@r{[}-@var{n}@r{]} @gol
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
 -fdump-tree-vrp@r{[}-@var{n}@r{]} @gol
 -ftree-vectorizer-verbose=@var{n} @gol
@@ -368,10 +370,10 @@ Objective-C and Objective-C++ Dialects}.
 -fstrict-aliasing -fstrict-overflow -fthread-jumps -ftracer @gol
 -ftree-builtin-call-dce -ftree-ccp -ftree-ch -ftree-copy-prop @gol
 -ftree-copyrename -ftree-dce @gol
--ftree-dominator-opts -ftree-dse -ftree-fre -ftree-loop-im @gol
--ftree-loop-distribution @gol
+-ftree-dominator-opts -ftree-dse -ftree-forwprop -ftree-fre -ftree-loop-im @gol
+-ftree-phiprop -ftree-loop-distribution @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
--ftree-parallelize-loops=@var{n} -ftree-pre -ftree-reassoc @gol
+-ftree-parallelize-loops=@var{n} -ftree-pre -ftree-pta -ftree-reassoc @gol
 -ftree-sink -ftree-sra -ftree-switch-conversion @gol
 -ftree-ter -ftree-vect-loop-version -ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
@@ -5448,8 +5450,11 @@ compilation time.
 -ftree-dce @gol
 -ftree-dominator-opts @gol
 -ftree-dse @gol
+-ftree-forwprop @gol
 -ftree-fre @gol
+-ftree-phiprop @gol
 -ftree-sra @gol
+-ftree-pta @gol
 -ftree-ter @gol
 -funit-at-a-time}
 
@@ -6162,6 +6167,11 @@ at @option{-O} and higher.
 Perform partial redundancy elimination (PRE) on trees.  This flag is
 enabled by default at @option{-O2} and @option{-O3}.
 
+@item -ftree-forwprop
+@opindex ftree-forwprop
+Perform forward propagation on trees.  This flag is enabled by default
+at @option{-O} and higher.
+
 @item -ftree-fre
 @opindex ftree-fre
 Perform full redundancy elimination (FRE) on trees.  The difference
@@ -6169,6 +6179,11 @@ between FRE and PRE is that FRE only considers expressions
 that are computed on all paths leading to the redundant computation.
 This analysis is faster than PRE, though it exposes fewer redundancies.
 This flag is enabled by default at @option{-O} and higher.
+
+@item -ftree-phiprop
+@opindex ftree-phiprop
+Perform hoisting of loads from conditional pointers on trees.  This
+pass is enabled by default at @option{-O} and higher.
 
 @item -ftree-copy-prop
 @opindex ftree-copy-prop
@@ -6435,6 +6450,11 @@ profitable on multiprocessor machines, for loops that are CPU-intensive,
 rather than constrained e.g.@: by memory bandwidth.  This option
 implies @option{-pthread}, and thus is only supported on targets
 that have support for @option{-pthread}.
+
+@item -ftree-pta
+@opindex ftree-pta
+Perform function-local points-to analysis on trees.  This flag is
+enabled by default at @option{-O} and higher.
 
 @item -ftree-sra
 @opindex ftree-sra

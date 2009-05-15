@@ -1,3 +1,14 @@
+2009-05-15  Richard Guenther  <rguenther@suse.de>
+
+	* common.opt (-ftree-forwprop, -ftree-phiprop, -ftree-pta):
+	New options, enabled by default.
+	* doc/invoke.texi (-ftree-forwprop, -ftree-phiprop, -ftree-pta):
+	Document.
+	* tree-ssa-forwprop.c (gate_forwprop): Use flag_tree_forwprop.
+	* tree-ssa-phiprop.c (gate_phiprop): Use flag_tree_phiprop.
+	* tree-ssa-structalias.c (gate_tree_pta): New function.
+	(pass_build_alias): Use it.
+
 2009-05-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Also

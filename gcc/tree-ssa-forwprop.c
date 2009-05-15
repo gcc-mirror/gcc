@@ -1346,7 +1346,7 @@ tree_ssa_forward_propagate_single_use_vars (void)
 static bool
 gate_forwprop (void)
 {
-  return 1;
+  return flag_tree_forwprop;
 }
 
 struct gimple_opt_pass pass_forwprop = 
