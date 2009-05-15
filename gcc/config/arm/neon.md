@@ -481,7 +481,7 @@
 
   /* FIXME: If the memory layout is changed in big-endian mode, output_move_vfp
      below must be changed to output_move_neon (which will use the
-     element/structure loads/stores), and the constraint changed to 'Un' instead
+     element/structure loads/stores), and the constraint changed to 'Um' instead
      of 'Uv'.  */
 
   switch (which_alternative)

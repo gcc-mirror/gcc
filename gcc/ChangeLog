@@ -1,3 +1,17 @@
+2009-05-15  Paul Brook  <paul@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	gcc/
+	* config/arm/arm.c (neon_vector_mem_operand): Handle element/structure
+	loads.  Allow PRE_DEC.
+	(output_move_neon): Handle PRE_DEC.
+	(arm_print_operand): Add 'A' for neon structure loads.
+	* config/arm/arm-protos.h (neon_vector_mem_operand): Update prototype.
+	* config/arm/neon.md (neon_mov): Update comment.
+	* config/arm/constraints.md (Un, Us): Update neon_vector_mem_operand
+	calls.
+	(Um): New constraint.
+
 2009-05-15  Jan Hubicka  <jh@suse.cz>
 
 	Revert the following patch until testsuite fallout is fixed:
