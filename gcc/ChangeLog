@@ -1,3 +1,8 @@
+2009-05-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* ira-conflicts.c (add_insn_allocno_copies): Fix wrong
+	conditional.
+	
 2009-05-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi: Document MPC requirements, flags etc.

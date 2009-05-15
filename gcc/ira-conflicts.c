@@ -489,7 +489,7 @@ add_insn_allocno_copies (rtx insn)
 				? operand : SUBREG_REG (operand)) != NULL_RTX)
 	    {
 	      str = recog_data.constraints[i];
-	      while (*str == ' ' && *str == '\t')
+	      while (*str == ' ' || *str == '\t')
 		str++;
 	      bound_p = false;
 	      for (j = 0, commut_p = false; j < 2; j++, commut_p = true)
