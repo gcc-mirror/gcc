@@ -8,7 +8,7 @@
 
 /* { dg-do run { target i?86-*-* x86_64-*-* s390*-*-* } } */
 /* { dg-skip-if "" { { i?86-*-* x86_64-*-* } && { ilp32 && { ! nonpic } } } { "*" } { "" } } */
-/* { dg-options "-O2 -foptimize-sibling-calls" } */
+/* { dg-options "-O2 -foptimize-sibling-calls -fno-ipa-cp" } */
 
 extern void abort (void);
 extern void exit (int);
@@ -27,7 +27,7 @@ main ()
   exit (0);
 }
 
-int
+int __attribute__ ((noinline))
 bar (b)
      int b;
 {
@@ -37,7 +37,7 @@ bar (b)
     abort ();
 }
 
-int
+int __attribute__ ((noinline))
 foo (f)
      int f;
 {
