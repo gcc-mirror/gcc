@@ -510,6 +510,7 @@ cgraph_finalize_function (tree decl, bool nested)
   notice_global_symbol (decl);
   node->local.finalized = true;
   node->lowered = DECL_STRUCT_FUNCTION (decl)->cfg != NULL;
+  node->finalized_by_frontend = true;
   record_cdtor_fn (node->decl);
   if (node->nested)
     lower_nested_functions (decl);
@@ -1090,7 +1091,8 @@ cgraph_expand_function (struct cgraph_node *node)
   gcc_assert (node->lowered);
 
   /* Generate RTL for the body of DECL.  */
-  if (lang_hooks.callgraph.emit_associated_thunks)
+  if (lang_hooks.callgraph.emit_associated_thunks
+      && node->finalized_by_frontend)
     lang_hooks.callgraph.emit_associated_thunks (decl);
   tree_rest_of_compilation (decl);
 

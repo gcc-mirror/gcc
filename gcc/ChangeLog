@@ -1,3 +1,9 @@
+2009-05-15  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (struct cgraph_node): Add finalized_by_frotnend flag.
+	* cgraphunit.c (cgraph_finalize_function): Set it.
+	(cgraph_expand_function): Use it.
+
 2009-05-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* real.c (encode_ieee_half): Define.
