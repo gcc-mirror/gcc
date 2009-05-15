@@ -1,3 +1,9 @@
+2009-05-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 16302
+	* gcc.dg/pr16302.c: New.
+	* g++.dg/warn/pr16302.C: New.
+
 2009-05-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-math-5.c: New.

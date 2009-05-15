@@ -4161,7 +4161,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
 	      /* We need to call warn_logical_operator before
 		 converting arg2 to a boolean_type.  */
 	      if (complain & tf_warning)
-		warn_logical_operator (input_location, code,
+		warn_logical_operator (input_location, code, boolean_type_node,
 				       code_orig_arg1, arg1,
 				       code_orig_arg2, arg2);
 
@@ -4202,7 +4202,7 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
-      warn_logical_operator (input_location, code,
+      warn_logical_operator (input_location, code, boolean_type_node,
 			     code_orig_arg1, arg1, code_orig_arg2, arg2);
       /* Fall through.  */
     case PLUS_EXPR:

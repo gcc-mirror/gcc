@@ -2961,7 +2961,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
     warn_about_parentheses (code, code1, arg1.value, code2, arg2.value);
 
   if (warn_logical_op)
-    warn_logical_operator (input_location, code,
+    warn_logical_operator (input_location, code, TREE_TYPE (result.value),
 			   code1, arg1.value, code2, arg2.value);
 
   /* Warn about comparisons against string literals, with the exception
