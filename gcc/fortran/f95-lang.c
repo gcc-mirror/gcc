@@ -43,6 +43,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "tree-dump.h"
 #include "cgraph.h"
+/* For gfc_maybe_initialize_eh.  */
+#include "libfuncs.h"
+#include "expr.h"
+#include "except.h"
 
 #include "gfortran.h"
 #include "cpp.h"
@@ -164,6 +168,10 @@ static GTY(()) struct binding_level *free_binding_level;
    for the reserved type names and storage classes.
    It is indexed by a RID_... value.  */
 tree *ridpointers = NULL;
+
+/* True means we've initialized exception handling.  */
+bool gfc_eh_initialized_p;
+
 
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
    or validate its data type for an `if' or `while' statement or ?..: exp.
@@ -1222,6 +1230,22 @@ gfc_init_ts (void)
   tree_contains_struct[NAMESPACE_DECL][TS_DECL_COMMON] = 1;
   tree_contains_struct[NAMESPACE_DECL][TS_DECL_MINIMAL] = 1;
 }
+
+void
+gfc_maybe_initialize_eh (void)
+{
+  if (!flag_exceptions || gfc_eh_initialized_p)
+    return;
+
+  gfc_eh_initialized_p = true;
+  eh_personality_libfunc
+    = init_one_libfunc (USING_SJLJ_EXCEPTIONS
+                       ? "__gcc_personality_sj0"
+                       : "__gcc_personality_v0");
+  default_init_unwind_resume_libfunc ();
+  using_eh_for_cleanups ();
+}
+
 
 #include "gt-fortran-f95-lang.h"
 #include "gtype-fortran.h"

@@ -2198,6 +2198,9 @@ unsigned int gfc_init_options (unsigned int, const char **);
 int gfc_handle_option (size_t, const char *, int);
 bool gfc_post_options (const char **);
 
+/* f95-lang.c */
+void gfc_maybe_initialize_eh (void);
+
 /* iresolve.c */
 const char * gfc_get_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 bool gfc_find_sym_in_expr (gfc_symbol *, gfc_expr *);
