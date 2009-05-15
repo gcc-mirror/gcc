@@ -6,6 +6,7 @@
 
 float x[256];
 
+__attribute__ ((noinline))
 void foo(void)
 {
  double *z = malloc (sizeof(double) * 256);
