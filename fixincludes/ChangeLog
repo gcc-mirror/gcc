@@ -1,3 +1,8 @@
+2009-05-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* inclhack.def (glibc_tgmath): Correct bypass.
+	* fixincl.x: Regenerate.
+
 2009-04-28  Steve Ellcey  <sje@cup.hp.com>
 
 	* inclhack.def (hpux11_uint32_c): Remove.

@@ -1286,7 +1286,7 @@ fix = {
     hackname  = glibc_tgmath;
     files     = tgmath.h;
     select    = '\(\(\(type\) 0.25\) && \(\(type\) 0.25 - 1\)\)';
-    bypass    = "__floating_type \\\\\n.*__builtin_classify_type";
+    bypass    = "__floating_type\\(type\\) \\\\\n.*__builtin_classify_type";
     c_fix     = format;
     c_fix_arg = "(__builtin_classify_type ((type) 0) == 8 || (__builtin_classify_type ((type) 0) == 9 && __builtin_classify_type (__real__ ((type) 0)) == 8))";
     test_text = "# define __floating_type(type) (((type) 0.25) && ((type) 0.25 - 1))";
