@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009
+// Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -298,9 +298,12 @@ namespace __gnu_debug
 	  }
 	else if (strcmp(__name, "type") == 0)
 	  {
-	    assert(_M_variant._M_iterator._M_type);
-	    // TBD: demangle!
-	    __formatter->_M_print_word(_M_variant._M_iterator._M_type->name());
+	    if (!_M_variant._M_iterator._M_type)
+	      __formatter->_M_print_word("<unknown type>");
+	    else
+	      // TBD: demangle!
+	      __formatter->_M_print_word(_M_variant._M_iterator.
+					 _M_type->name());
 	  }
 	else if (strcmp(__name, "constness") == 0)
 	  {
@@ -310,7 +313,9 @@ namespace __gnu_debug
 		"constant",
 		"mutable"
 	      };
-	    __formatter->_M_print_word(__constness_names[_M_variant._M_iterator._M_constness]);
+	    __formatter->_M_print_word(__constness_names[_M_variant.
+							 _M_iterator.
+							 _M_constness]);
 	  }
 	else if (strcmp(__name, "state") == 0)
 	  {
@@ -322,7 +327,8 @@ namespace __gnu_debug
 		"dereferenceable",
 		"past-the-end"
 	      };
-	    __formatter->_M_print_word(__state_names[_M_variant._M_iterator._M_state]);
+	    __formatter->_M_print_word(__state_names[_M_variant.
+						     _M_iterator._M_state]);
 	  }
 	else if (strcmp(__name, "sequence") == 0)
 	  {
@@ -333,9 +339,12 @@ namespace __gnu_debug
 	  }
 	else if (strcmp(__name, "seq_type") == 0)
 	  {
-	    // TBD: demangle!
-	    assert(_M_variant._M_iterator._M_seq_type);
-	    __formatter->_M_print_word(_M_variant._M_iterator._M_seq_type->name());
+	    if (!_M_variant._M_iterator._M_seq_type)
+	      __formatter->_M_print_word("<unknown seq_type>");
+	    else
+	      // TBD: demangle!
+	      __formatter->_M_print_word(_M_variant._M_iterator.
+					 _M_seq_type->name());
 	  }
 	else
 	  assert(false);
@@ -356,9 +365,12 @@ namespace __gnu_debug
 	  }
 	else if (strcmp(__name, "type") == 0)
 	  {
-	    // TBD: demangle!
-	    assert(_M_variant._M_sequence._M_type);
-	    __formatter->_M_print_word(_M_variant._M_sequence._M_type->name());
+	    if (!_M_variant._M_sequence._M_type)
+	      __formatter->_M_print_word("<unknown type>");
+	    else
+	      // TBD: demangle!
+	      __formatter->_M_print_word(_M_variant._M_sequence.
+					 _M_type->name());
 	  }
 	else
 	  assert(false);
