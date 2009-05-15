@@ -24,6 +24,9 @@
 #ifndef GENERATOR_FILE
 #include <gmp.h>
 #include <mpfr.h>
+#ifdef HAVE_mpc
+#include <mpc.h>
+#endif
 #endif
 #include "machmode.h"
 

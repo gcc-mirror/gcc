@@ -1,3 +1,15 @@
+2009-05-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (do_mpc_arg1, fold_builtin_ccos): New.
+	(fold_builtin_cexp): Ensure we get a complex REAL_TYPE.
+	Evaluate constant arguments.
+	(fold_builtin_carg): Ensure we get a complex REAL_TYPE.
+	(fold_builtin_1): Likewise, also evaluate constant arguments.
+	Remove superfluous break.
+	(do_mpc_ckconv): New.
+	* real.h: Include mpc.h.
+	* toplev.c (print_version): Output MPC version info if available.
+
 2009-05-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* fold-const.c (fold_convert_const_real_from_real): Check for
