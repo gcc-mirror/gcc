@@ -1039,43 +1039,6 @@ get_next_region_sharing_label (int region)
   return r->next_region_sharing_label->region_number;
 }
 
-/* Return bitmap of all labels that are handlers of must not throw regions.  */
-
-bitmap
-must_not_throw_labels (void)
-{
-  struct eh_region *i;
-  bitmap labels = BITMAP_ALLOC (NULL);
-
-  i = cfun->eh->region_tree;
-  if (! i)
-    return labels;
-
-  while (1)
-    {
-      if (i->type == ERT_MUST_NOT_THROW && i->tree_label
-          && LABEL_DECL_UID (i->tree_label) >= 0)
-        bitmap_set_bit (labels, LABEL_DECL_UID (i->tree_label));
-
-      /* If there are sub-regions, process them.  */
-      if (i->inner)
-	i = i->inner;
-      /* If there are peers, process them.  */
-      else if (i->next_peer)
-	i = i->next_peer;
-      /* Otherwise, step back up the tree to the next peer.  */
-      else
-	{
-	  do {
-	    i = i->outer;
-	    if (i == NULL)
-	      return labels;
-	  } while (i->next_peer == NULL);
-	  i = i->next_peer;
-	}
-    }
-}
-
 /* Set up EH labels for RTL.  */
 
 void
