@@ -2930,3 +2930,16 @@ proc check_effective_target_correct_iso_cpp_string_wchar_protos { } {
 	#endif
     }]
 }
+
+# Return 1 if the MPC library is integrated with GCC, 0 otherwise.
+
+proc check_effective_target_mpc { } {
+    return [check_no_compiler_messages mpc executable {
+	extern void link_error(void);
+	int main ()
+	{
+	  if (__builtin_csin(0) != 0)
+	    link_error();
+	}
+    }]
+}

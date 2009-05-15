@@ -1,3 +1,9 @@
+2009-05-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/torture/builtin-math-5.c: New.
+	* gcc.dg/torture/builtin-math-6.c: New.
+	* lib/target-supports.exp (check_effective_target_mpc): New.
+
 2009-05-15  Jan Hubicka  <jh@suse.cz>
 
 	* testsuite/gcc.dg/tree-ssa/inline-3.c: New testcase
