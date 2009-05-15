@@ -1,7 +1,11 @@
+2009-05-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* optabs.c (prepare_float_lib_cmp):  Test that the comparison,
+	swapped, and reversed optabs exist before trying to use them.
+
 2009-05-15  Paul Brook  <paul@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
-	gcc/
 	* config/arm/arm.c (neon_vector_mem_operand): Handle element/structure
 	loads.  Allow PRE_DEC.
 	(output_move_neon): Handle PRE_DEC.

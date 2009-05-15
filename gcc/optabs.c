@@ -4322,10 +4322,12 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      if ((libfunc = optab_libfunc (code_to_optab[comparison], mode)))
+      if (code_to_optab[comparison]
+	  && (libfunc = optab_libfunc (code_to_optab[comparison], mode)))
 	break;
 
-      if ((libfunc = optab_libfunc (code_to_optab[swapped] , mode)))
+      if (code_to_optab[swapped]
+	  && (libfunc = optab_libfunc (code_to_optab[swapped], mode)))
 	{
 	  rtx tmp;
 	  tmp = x; x = y; y = tmp;
@@ -4333,7 +4335,8 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
 	  break;
 	}
 
-      if ((libfunc = optab_libfunc (code_to_optab[reversed], mode))
+      if (code_to_optab[reversed]
+	  && (libfunc = optab_libfunc (code_to_optab[reversed], mode))
 	  && FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, reversed))
 	{
 	  comparison = reversed;
