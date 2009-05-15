@@ -4513,6 +4513,167 @@ const struct real_format decimal_quad_format =
     false
   };
 
+/* Encode half-precision floats.  This routine is used both for the IEEE
+   ARM alternative encodings.  */
+static void
+encode_ieee_half (const struct real_format *fmt, long *buf,
+		  const REAL_VALUE_TYPE *r)
+{
+  unsigned long image, sig, exp;
+  unsigned long sign = r->sign;
+  bool denormal = (r->sig[SIGSZ-1] & SIG_MSB) == 0;
+
+  image = sign << 15;
+  sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 11)) & 0x3ff;
+
+  switch (r->cl)
+    {
+    case rvc_zero:
+      break;
+
+    case rvc_inf:
+      if (fmt->has_inf)
+	image |= 31 << 10;
+      else
+	image |= 0x7fff;
+      break;
+
+    case rvc_nan:
+      if (fmt->has_nans)
+	{
+	  if (r->canonical)
+	    sig = (fmt->canonical_nan_lsbs_set ? (1 << 9) - 1 : 0);
+	  if (r->signalling == fmt->qnan_msb_set)
+	    sig &= ~(1 << 9);
+	  else
+	    sig |= 1 << 9;
+	  if (sig == 0)
+	    sig = 1 << 8;
+
+	  image |= 31 << 10;
+	  image |= sig;
+	}
+      else
+	image |= 0x3ff;
+      break;
+
+    case rvc_normal:
+      /* Recall that IEEE numbers are interpreted as 1.F x 2**exp,
+	 whereas the intermediate representation is 0.F x 2**exp.
+	 Which means we're off by one.  */
+      if (denormal)
+	exp = 0;
+      else
+	exp = REAL_EXP (r) + 15 - 1;
+      image |= exp << 10;
+      image |= sig;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  buf[0] = image;
+}
+
+/* Decode half-precision floats.  This routine is used both for the IEEE
+   ARM alternative encodings.  */
+static void
+decode_ieee_half (const struct real_format *fmt, REAL_VALUE_TYPE *r,
+		  const long *buf)
+{
+  unsigned long image = buf[0] & 0xffff;
+  bool sign = (image >> 15) & 1;
+  int exp = (image >> 10) & 0x1f;
+
+  memset (r, 0, sizeof (*r));
+  image <<= HOST_BITS_PER_LONG - 11;
+  image &= ~SIG_MSB;
+
+  if (exp == 0)
+    {
+      if (image && fmt->has_denorm)
+	{
+	  r->cl = rvc_normal;
+	  r->sign = sign;
+	  SET_REAL_EXP (r, -14);
+	  r->sig[SIGSZ-1] = image << 1;
+	  normalize (r);
+	}
+      else if (fmt->has_signed_zero)
+	r->sign = sign;
+    }
+  else if (exp == 31 && (fmt->has_nans || fmt->has_inf))
+    {
+      if (image)
+	{
+	  r->cl = rvc_nan;
+	  r->sign = sign;
+	  r->signalling = (((image >> (HOST_BITS_PER_LONG - 2)) & 1)
+			   ^ fmt->qnan_msb_set);
+	  r->sig[SIGSZ-1] = image;
+	}
+      else
+	{
+	  r->cl = rvc_inf;
+	  r->sign = sign;
+	}
+    }
+  else
+    {
+      r->cl = rvc_normal;
+      r->sign = sign;
+      SET_REAL_EXP (r, exp - 15 + 1);
+      r->sig[SIGSZ-1] = image | SIG_MSB;
+    }
+}
+
+/* Half-precision format, as specified in IEEE 754R.  */
+const struct real_format ieee_half_format =
+  {
+    encode_ieee_half,
+    decode_ieee_half,
+    2,
+    11,
+    11,
+    -13,
+    16,
+    15,
+    15,
+    false,
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    false
+  };
+
+/* ARM's alternative half-precision format, similar to IEEE but with
+   no reserved exponent value for NaNs and infinities; rather, it just
+   extends the range of exponents by one.  */
+const struct real_format arm_half_format =
+  {
+    encode_ieee_half,
+    decode_ieee_half,
+    2,
+    11,
+    11,
+    -13,
+    17,
+    15,
+    15,
+    false,
+    true,
+    false,
+    false,
+    true,
+    true,
+    false,
+    false
+  };
+
 /* A synthetic "format" for internal arithmetic.  It's the size of the
    internal significand minus the two bits needed for proper rounding.
    The encode and decode routines exist only to satisfy our paranoia
