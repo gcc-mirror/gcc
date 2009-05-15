@@ -1716,14 +1716,18 @@ overflow_warning (tree value)
 /* Warn about uses of logical || / && operator in a context where it
    is likely that the bitwise equivalent was intended by the
    programmer.  We have seen an expression in which CODE is a binary
-   operator used to combine expressions OP_LEFT and OP_RIGHT, which
-   before folding had CODE_LEFT and CODE_RIGHT.  */
-
+   operator used to combine expressions OP_LEFT and OP_RIGHT, which before folding
+   had CODE_LEFT and CODE_RIGHT, into an expression of type TYPE.  */
 void
-warn_logical_operator (location_t location, enum tree_code code,
+warn_logical_operator (location_t location, enum tree_code code, tree type,
 		       enum tree_code code_left, tree op_left, 
 		       enum tree_code ARG_UNUSED (code_right), tree op_right)
 {
+  int or_op = (code == TRUTH_ORIF_EXPR || code == TRUTH_OR_EXPR);
+  int in0_p, in1_p, in_p;
+  tree low0, low1, low, high0, high1, high, lhs, rhs, tem;
+  bool strict_overflow_p = false;
+
   if (code != TRUTH_ANDIF_EXPR
       && code != TRUTH_AND_EXPR
       && code != TRUTH_ORIF_EXPR
@@ -1743,13 +1747,65 @@ warn_logical_operator (location_t location, enum tree_code code,
       && !integer_zerop (op_right)
       && !integer_onep (op_right))
     {
-      if (code == TRUTH_ORIF_EXPR || code == TRUTH_OR_EXPR)
+      if (or_op)
 	warning_at (location, OPT_Wlogical_op, "logical %<or%>"
 		    " applied to non-boolean constant");
       else
 	warning_at (location, OPT_Wlogical_op, "logical %<and%>"
 		    " applied to non-boolean constant");
       TREE_NO_WARNING (op_left) = true;
+      return;
+    }
+
+  /* We do not warn for constants because they are typical of macro
+     expansions that test for features.  */
+  if (CONSTANT_CLASS_P (op_left) || CONSTANT_CLASS_P (op_right))
+    return;
+
+  /* This warning only makes sense with logical operands.  */
+  if (!(truth_value_p (TREE_CODE (op_left))
+	|| INTEGRAL_TYPE_P (TREE_TYPE (op_left)))
+      || !(truth_value_p (TREE_CODE (op_right))
+	   || INTEGRAL_TYPE_P (TREE_TYPE (op_right))))
+    return;
+
+  lhs = make_range (op_left, &in0_p, &low0, &high0, &strict_overflow_p);
+  rhs = make_range (op_right, &in1_p, &low1, &high1, &strict_overflow_p);
+
+  if (lhs && TREE_CODE (lhs) == C_MAYBE_CONST_EXPR)
+    lhs = C_MAYBE_CONST_EXPR_EXPR (lhs);
+
+  if (rhs && TREE_CODE (rhs) == C_MAYBE_CONST_EXPR)
+    rhs = C_MAYBE_CONST_EXPR_EXPR (rhs);
+  
+  /* If this is an OR operation, invert both sides; we will invert
+     again at the end.  */
+  if (or_op)
+    in0_p = !in0_p, in1_p = !in1_p;
+  
+  /* If both expressions are the same, if we can merge the ranges, and we
+     can build the range test, return it or it inverted.  If one of the
+     ranges is always true or always false, consider it to be the same
+     expression as the other.  */
+  if ((lhs == 0 || rhs == 0 || operand_equal_p (lhs, rhs, 0))
+      && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
+		       in1_p, low1, high1)
+      && 0 != (tem = build_range_check (type,
+					lhs != 0 ? lhs
+					: rhs != 0 ? rhs : integer_zero_node,
+					in_p, low, high)))
+    {
+      if (TREE_CODE (tem) != INTEGER_CST)
+	return;
+
+      if (or_op)
+        warning_at (location, OPT_Wlogical_op,
+                    "logical %<or%> "
+                    "of collectively exhaustive tests is always true");
+      else
+        warning_at (location, OPT_Wlogical_op,
+                    "logical %<and%> "
+                    "of mutually exclusive tests is always false");
     }
 }
 

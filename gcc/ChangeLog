@@ -1,5 +1,19 @@
 2009-05-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
+	PR 16302
+	* fold-const.c (make_range,build_range_check,merge_ranges): Move
+	declaration to...
+	(merge_ranges): Returns bool. 
+	* tree.h (make_range): .. to here.
+	(build_range_check): Likewise.
+	(merge_ranges): Likewise. Renamed from merge_ranges.
+	* c-typeck.c (parser_build_binary_op): Update calls to
+	warn_logical_operator.
+	* c-common.c (warn_logical_operator): Add new warning.
+	* c-common.h (warn_logical_operator): Update declaration.
+	
+2009-05-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
 	* ira-conflicts.c (add_insn_allocno_copies): Fix wrong
 	conditional.
 	

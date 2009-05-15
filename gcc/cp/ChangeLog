@@ -1,3 +1,8 @@
+2009-05-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR 16302
+	* call.c (build_new_op): Update calls to warn_logical_operator.
+
 2009-05-14  Ian Lance Taylor  <iant@google.com>
 
 	* class.c (layout_class_type): Change itk to unsigned int.
