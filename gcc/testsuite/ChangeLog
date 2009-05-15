@@ -1,5 +1,9 @@
 2009-05-15  Jan Hubicka  <jh@suse.cz>
 
+	* testsuite/gcc.dg/tree-ssa/inline-3.c: New testcase
+
+2009-05-15  Jan Hubicka  <jh@suse.cz>
+
 	* gcc.target/i386/align-main-1.c (check): Mark noinline.
 	* gcc.target/i386/align-main-2.c (check): Mark noinline.
 	* gcc.dg/ipa/ipa-4.c: Disable early inlining.

@@ -7485,6 +7485,12 @@ whose probability exceeds given threshold (in percents).  The default value is
 Specify growth that early inliner can make.  In effect it increases amount of
 inlining for code having large abstraction penalty.  The default value is 12.
 
+@item max-early-inliner-iterations
+@itemx max-early-inliner-iterations
+Limit of iterations of early inliner.  This basically bounds number of nested
+indirect calls early inliner can resolve.  Deeper chains are still handled by
+late inlining.
+
 @item min-vect-loop-bound
 The minimum number of iterations under which a loop will not get vectorized
 when @option{-ftree-vectorize} is used.  The number of iterations after
