@@ -1,5 +1,15 @@
 2009-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/40160
+	* include/debug/formatter.h (_Parameter::_Parameter): Don't use
+	typeid when __GXX_RTTI is undefined.
+	* src/debug.cc (_Error_formatter::_Parameter::_M_print_field): Adjust
+	for null _M_variant._M_iterator._M_type,
+	_M_variant._M_iterator._M_seq_type, _M_variant._M_sequence._M_type.
+	* testsuite/21_strings/basic_string/40160.cc: New.
+
+2009-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/26_numerics/random/discrete_distribution/cons/
 	num_xbound_fun.cc: Minor tweaks.
 	* testsuite/26_numerics/random/piecewise_constant_distribution/
