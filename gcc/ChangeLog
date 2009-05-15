@@ -1,5 +1,7 @@
 2009-05-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* doc/install.texi: Document MPC requirements, flags etc.
+
 	* builtins.c (do_mpc_arg1, fold_builtin_ccos): New.
 	(fold_builtin_cexp): Ensure we get a complex REAL_TYPE.
 	Evaluate constant arguments.
