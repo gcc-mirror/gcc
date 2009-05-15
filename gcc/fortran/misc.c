@@ -42,21 +42,14 @@ gfc_getmem (size_t n)
 }
 
 
-/* gfortran.h defines free to something that triggers a syntax error,
-   but we need free() here.  */
-
-#define temp free
-#undef free
-
 void
 gfc_free (void *p)
 {
+  /* The parentheses around free are needed in order to call not
+     the redefined free of gfortran.h.  */
   if (p != NULL)
-    free (p);
+    (free) (p);
 }
-
-#define free temp
-#undef temp
 
 
 /* Get terminal width.  */

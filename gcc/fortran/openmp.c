@@ -1503,6 +1503,9 @@ resolve_omp_do (gfc_code *code)
 void
 gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns ATTRIBUTE_UNUSED)
 {
+  if (code->op != EXEC_OMP_ATOMIC)
+    gfc_maybe_initialize_eh ();
+
   switch (code->op)
     {
     case EXEC_OMP_DO:
