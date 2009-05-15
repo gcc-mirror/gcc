@@ -1,3 +1,8 @@
+2009-05-15  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (ix86_reorg): Call optimize_function_for_speed_p
+	only once.
+
 2009-05-15  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi (max-early-inliner-iterations): New flag.
