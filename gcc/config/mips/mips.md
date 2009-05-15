@@ -4081,7 +4081,7 @@
 ;; instructions will still work correctly.
 
 ;; ??? Perhaps it would be better to support these instructions by
-;; modifying GO_IF_LEGITIMATE_ADDRESS and friends.  However, since
+;; modifying TARGET_LEGITIMATE_ADDRESS_P and friends.  However, since
 ;; these instructions can only be used to load and store floating
 ;; point registers, that would probably cause trouble in reload.
 

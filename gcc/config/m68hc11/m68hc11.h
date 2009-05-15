@@ -1132,7 +1132,7 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
 /* Maximum number of registers that can appear in a valid memory address */
 #define MAX_REGS_PER_ADDRESS	2
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression that is a
+/* TARGET_LEGITIMATE_ADDRESS_P recognizes an RTL expression that is a
    valid memory address for an instruction. The MODE argument is the
    machine mode for the MEM expression that wants to use this address.  */
 

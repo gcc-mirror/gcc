@@ -371,7 +371,7 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
 
 #define EXTRA_CONSTRAINT(OP,CODE)					\
   ((GET_CODE (OP) != MEM) ? 0						\
-   : !legitimate_address_p (GET_MODE (OP), XEXP (OP, 0)) ? 0		\
+   : !memory_address_p (GET_MODE (OP), XEXP (OP, 0)) ? 0		\
    : ((CODE) == 'Q')	  ? !simple_memory_operand (OP, GET_MODE (OP))	\
    : ((CODE) == 'R')	  ? simple_memory_operand (OP, GET_MODE (OP))	\
    : 0)

@@ -901,7 +901,7 @@ score7_regno_mode_ok_for_base_p (int regno, int strict)
   return GP_REG_P (regno);
 }
 
-/* Implement GO_IF_LEGITIMATE_ADDRESS macro.  */
+/* Implement TARGET_LEGITIMATE_ADDRESS_P macro.  */
 bool
 score7_legitimate_address_p (enum machine_mode mode, rtx x, bool strict)
 {

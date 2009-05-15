@@ -1803,12 +1803,12 @@ typedef struct ix86_args {
 #define REG_OK_FOR_BASE_P(X)   REG_OK_FOR_BASE_STRICT_P (X)
 #endif
 
-/* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
+/* TARGET_LEGITIMATE_ADDRESS_P recognizes an RTL expression
    that is a valid memory address for an instruction.
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address.
 
-   The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
+   The other macros defined here are used only in TARGET_LEGITIMATE_ADDRESS_P,
    except for CONSTANT_ADDRESS_P which is usually machine-independent.
 
    See legitimize_pic_address in i386.c for details as to what

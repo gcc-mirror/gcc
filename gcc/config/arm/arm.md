@@ -5476,8 +5476,8 @@
 
           /* ??? We shouldn't really get invalid addresses here, but this can
 	     happen if we are passed a SP (never OK for HImode/QImode) or 
-	     virtual register (rejected by GO_IF_LEGITIMATE_ADDRESS for 
-	     HImode/QImode) relative address.  */
+	     virtual register (also rejected as illegitimate for HImode/QImode)
+	     relative address.  */
           /* ??? This should perhaps be fixed elsewhere, for instance, in
 	     fixup_stack_1, by checking for other kinds of invalid addresses,
 	     e.g. a bare reference to a virtual register.  This may confuse the
@@ -5708,8 +5708,8 @@
 	{
           /* ??? We shouldn't really get invalid addresses here, but this can
 	     happen if we are passed a SP (never OK for HImode/QImode) or
-	     virtual register (rejected by GO_IF_LEGITIMATE_ADDRESS for
-	     HImode/QImode) relative address.  */
+	     virtual register (also rejected as illegitimate for HImode/QImode)
+	     relative address.  */
           /* ??? This should perhaps be fixed elsewhere, for instance, in
 	     fixup_stack_1, by checking for other kinds of invalid addresses,
 	     e.g. a bare reference to a virtual register.  This may confuse the
