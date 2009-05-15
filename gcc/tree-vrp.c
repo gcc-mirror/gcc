@@ -121,7 +121,7 @@ DEF_VEC_ALLOC_O(switch_update, heap);
 static VEC (switch_update, heap) *to_update_switch_stmts;
 
 
-/* Return the maximum value for TYPEs base type.  */
+/* Return the maximum value for TYPE.  */
 
 static inline tree
 vrp_val_max (const_tree type)
@@ -129,24 +129,16 @@ vrp_val_max (const_tree type)
   if (!INTEGRAL_TYPE_P (type))
     return NULL_TREE;
 
-  /* For integer sub-types the values for the base type are relevant.  */
-  if (TREE_TYPE (type))
-    type = TREE_TYPE (type);
-
   return TYPE_MAX_VALUE (type);
 }
 
-/* Return the minimum value for TYPEs base type.  */
+/* Return the minimum value for TYPE.  */
 
 static inline tree
 vrp_val_min (const_tree type)
 {
   if (!INTEGRAL_TYPE_P (type))
     return NULL_TREE;
-
-  /* For integer sub-types the values for the base type are relevant.  */
-  if (TREE_TYPE (type))
-    type = TREE_TYPE (type);
 
   return TYPE_MIN_VALUE (type);
 }
@@ -188,11 +180,7 @@ vrp_val_is_min (const_tree val)
 static inline bool
 needs_overflow_infinity (const_tree type)
 {
-  return (INTEGRAL_TYPE_P (type)
-	  && !TYPE_OVERFLOW_WRAPS (type)
-	  /* Integer sub-types never overflow as they are never
-	     operands of arithmetic operators.  */
-	  && !(TREE_TYPE (type) && TREE_TYPE (type) != type));
+  return INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_WRAPS (type);
 }
 
 /* Return whether TYPE can support our overflow infinity
@@ -2701,13 +2689,6 @@ extract_range_from_unary_expr (value_range_t *vr, enum tree_code code,
     {
       tree inner_type = TREE_TYPE (op0);
       tree outer_type = type;
-
-      /* Always use base-types here.  This is important for the
-	 correct signedness.  */
-      if (TREE_TYPE (inner_type))
-	inner_type = TREE_TYPE (inner_type);
-      if (TREE_TYPE (outer_type))
-	outer_type = TREE_TYPE (outer_type);
 
       /* If VR0 is varying and we increase the type precision, assume
 	 a full range for the following transformation.  */

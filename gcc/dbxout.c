@@ -318,9 +318,9 @@ static void dbxout_args (tree);
 static void dbxout_type_fields (tree);
 static void dbxout_type_method_1 (tree);
 static void dbxout_type_methods (tree);
-static void dbxout_range_type (tree);
+static void dbxout_range_type (tree, tree, tree);
 static void dbxout_type (tree, int);
-static bool print_int_cst_bounds_in_octal_p (tree);
+static bool print_int_cst_bounds_in_octal_p (tree, tree, tree);
 static bool is_fortran (void);
 static void dbxout_type_name (tree);
 static void dbxout_class_name_qualifiers (tree);
@@ -1593,10 +1593,10 @@ dbxout_type_methods (tree type)
 
 /* Emit a "range" type specification, which has the form:
    "r<index type>;<lower bound>;<upper bound>;".
-   TYPE is an INTEGER_TYPE.  */
+   TYPE is an INTEGER_TYPE, LOW and HIGH are the bounds.  */
 
 static void
-dbxout_range_type (tree type)
+dbxout_range_type (tree type, tree low, tree high)
 {
   stabstr_C ('r');
   if (TREE_TYPE (type))
@@ -1624,25 +1624,23 @@ dbxout_range_type (tree type)
     }
 
   stabstr_C (';');
-  if (TYPE_MIN_VALUE (type) != 0
-      && host_integerp (TYPE_MIN_VALUE (type), 0))
+  if (low && host_integerp (low, 0))
     {
-      if (print_int_cst_bounds_in_octal_p (type))
-        stabstr_O (TYPE_MIN_VALUE (type));
+      if (print_int_cst_bounds_in_octal_p (type, low, high))
+        stabstr_O (low);
       else
-        stabstr_D (tree_low_cst (TYPE_MIN_VALUE (type), 0));
+        stabstr_D (tree_low_cst (low, 0));
     }
   else
     stabstr_C ('0');
 
   stabstr_C (';');
-  if (TYPE_MAX_VALUE (type) != 0
-      && host_integerp (TYPE_MAX_VALUE (type), 0))
+  if (high && host_integerp (high, 0))
     {
-      if (print_int_cst_bounds_in_octal_p (type))
-        stabstr_O (TYPE_MAX_VALUE (type));
+      if (print_int_cst_bounds_in_octal_p (type, low, high))
+        stabstr_O (high);
       else
-        stabstr_D (tree_low_cst (TYPE_MAX_VALUE (type), 0));
+        stabstr_D (tree_low_cst (high, 0));
       stabstr_C (';');
     }
   else
@@ -1663,10 +1661,9 @@ dbxout_range_type (tree type)
 static void
 dbxout_type (tree type, int full)
 {
-  tree tem;
-  tree main_variant;
   static int anonymous_type_number = 0;
   bool vector_type = false;
+  tree tem, main_variant, low, high;
 
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
@@ -1674,6 +1671,27 @@ dbxout_type (tree type, int full)
 	 containing an array.  Pull out the array type.  */
       type = TREE_TYPE (TYPE_FIELDS (TYPE_DEBUG_REPRESENTATION_TYPE (type)));
       vector_type = true;
+    }
+
+  if (TREE_CODE (type) == INTEGER_TYPE)
+    {
+      if (TREE_TYPE (type) == 0)
+	{
+	  low = TYPE_MIN_VALUE (type);
+	  high = TYPE_MAX_VALUE (type);
+	}
+
+      else if (subrange_type_for_debug_p (type, &low, &high))
+	;
+
+      /* If this is a subtype that should not be emitted as a subrange type,
+	 use the base type.  */
+      else
+	{
+	  type = TREE_TYPE (type);
+	  low = TYPE_MIN_VALUE (type);
+	  high = TYPE_MAX_VALUE (type);
+	}
     }
 
   /* If there was an input error and we don't really have a type,
@@ -1877,7 +1895,7 @@ dbxout_type (tree type, int full)
 	      stabstr_C (';');
 	    }
 
-	  dbxout_range_type (type);
+	  dbxout_range_type (type, low, high);
 	}
 
       else
@@ -1893,7 +1911,7 @@ dbxout_type (tree type, int full)
 	      stabstr_C (';');
 	    }
 
-	  if (print_int_cst_bounds_in_octal_p (type))
+	  if (print_int_cst_bounds_in_octal_p (type, low, high))
 	    {
 	      stabstr_C ('r');
 
@@ -1908,15 +1926,15 @@ dbxout_type (tree type, int full)
                 dbxout_type_index (type);
 
 	      stabstr_C (';');
-	      stabstr_O (TYPE_MIN_VALUE (type));
+	      stabstr_O (low);
 	      stabstr_C (';');
-	      stabstr_O (TYPE_MAX_VALUE (type));
+	      stabstr_O (high);
 	      stabstr_C (';');
 	    }
 
 	  else
 	    /* Output other integer types as subranges of `int'.  */
-	    dbxout_range_type (type);
+	    dbxout_range_type (type, low, high);
 	}
 
       break;
@@ -2010,7 +2028,7 @@ dbxout_type (tree type, int full)
       else
 	{
 	  stabstr_C ('a');
-	  dbxout_range_type (tem);
+	  dbxout_range_type (tem, TYPE_MIN_VALUE (tem), TYPE_MAX_VALUE (tem));
 	}
 
       dbxout_type (TREE_TYPE (type), 0);
@@ -2258,7 +2276,7 @@ dbxout_type (tree type, int full)
    should be printed in octal format.  */
 
 static bool
-print_int_cst_bounds_in_octal_p (tree type)
+print_int_cst_bounds_in_octal_p (tree type, tree low, tree high)
 {
   /* If we can use GDB extensions and the size is wider than a long
      (the size used by GDB to read them) or we may have trouble writing
@@ -2272,10 +2290,8 @@ print_int_cst_bounds_in_octal_p (tree type)
      can't span same size unsigned types.  */
 
   if (use_gnu_debug_info_extensions
-      && TYPE_MIN_VALUE (type) != 0
-      && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
-      && TYPE_MAX_VALUE (type) != 0
-      && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
+      && low && TREE_CODE (low) == INTEGER_CST
+      && high && TREE_CODE (high) == INTEGER_CST
       && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
 	  || ((TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node))
 	      && TYPE_UNSIGNED (type))

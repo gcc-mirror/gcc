@@ -802,11 +802,10 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	  left_type = TREE_TYPE (left_operand);
 	}
 
-      /* Then convert the right operand to its base type.  This will
-	 prevent unneeded signedness conversions when sizetype is wider than
-	 integer.  */
+      /* Then convert the right operand to its base type.  This will prevent
+	 unneeded sign conversions when sizetype is wider than integer.  */
       right_operand = convert (right_base_type, right_operand);
-      right_operand = convert (TYPE_DOMAIN (left_type), right_operand);
+      right_operand = convert (sizetype, right_operand);
 
       if (!TREE_CONSTANT (right_operand)
 	  || !TREE_CONSTANT (TYPE_MIN_VALUE (right_type)))
