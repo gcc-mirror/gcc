@@ -1,5 +1,14 @@
 2009-05-15  Jan Hubicka  <jh@suse.cz>
 
+	* doc/invoke.texi (max-early-inliner-iterations): New flag.
+	* ipa-inline.c (enum inlining_mode): New INLINE_SIZE_NORECURSIVE.
+	(try_inline): Fix return value.
+	(cgraph_decide_inlining_incrementally): Honor new value.
+	(cgraph_early_inlining): Handle indirect inlining.
+	* params.def (PARAM_EARLY_INLINER_MAX_ITERATIONS): New.
+
+2009-05-15  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (struct cgraph_node): Add finalized_by_frotnend flag.
 	* cgraphunit.c (cgraph_finalize_function): Set it.
 	(cgraph_expand_function): Use it.
