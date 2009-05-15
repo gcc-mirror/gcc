@@ -1,3 +1,8 @@
+2009-05-15  Jan Hubicka  <jh@suse.cz>
+
+	* flatten-2.c: Disable early inlining; add comment.
+	* flatten-3.c: New test based on flatten-2.c.
+
 2009-05-15  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/39999
