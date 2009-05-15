@@ -1,5 +1,10 @@
 2009-05-15  Jan Hubicka  <jh@suse.cz>
 
+	* sibcall-6.c: Add no-ipa-cp argument and mark the function to be
+	optimized by sibcall noinline.
+
+2009-05-15  Jan Hubicka  <jh@suse.cz>
+
 	* sibcall-1.c (track): Mark noinline.
 	* sibcall-2.c (track): Mark noinline.
 	* sibcall-3.c (track): Mark noinline.
