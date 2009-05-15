@@ -11,6 +11,7 @@
 typedef int aligned __attribute__((aligned(ALIGNMENT)));
 extern void abort(void);
 
+__attribute__ ((noinline))
 void check(void * a)
 {
   if (((ptrdiff_t)a & (ALIGNMENT-1)) != 0)

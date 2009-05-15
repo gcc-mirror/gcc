@@ -1,5 +1,16 @@
 2009-05-15  Jan Hubicka  <jh@suse.cz>
 
+	* gcc.target/i386/align-main-1.c (check): Mark noinline.
+	* gcc.target/i386/align-main-2.c (check): Mark noinline.
+	* gcc.dg/ipa/ipa-4.c: Disable early inlining.
+	* gcc.dg/vect/vect-iv-10.c (main1): Mark noinline.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c (main1): Mark noinline.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-33.c (main1): Mark noinline.
+	* gcc.dg/vect/pr31699.c (foo): Mark noinline.
+	* gcc.dg/vect/pr18400.c (main1): Mark noinline.
+
+2009-05-15  Jan Hubicka  <jh@suse.cz>
+
 	* sibcall-6.c: Add no-ipa-cp argument and mark the function to be
 	optimized by sibcall noinline.
 
