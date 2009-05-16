@@ -1,3 +1,11 @@
+2009-05-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/mutex: Move std::lock_error to ...
+	* src/compatibility.cc: Here.
+	* src/mutex.cc: Likewise.
+	* testsuite/30_threads/headers/mutex/types_std_c++0x.cc: Add checks
+	for lock types and remove std::lock_error check.
+
 2009-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/21_strings/basic_string/40160.cc: Remove spurious

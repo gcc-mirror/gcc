@@ -386,18 +386,6 @@ namespace std
   extern const try_to_lock_t	try_to_lock;
   extern const adopt_lock_t	adopt_lock;
 
-  /** 
-   *  @brief Thrown to indicate errors with lock operations.
-   *
-   *  @ingroup exceptions
-   */
-  class lock_error : public exception
-  {
-  public:
-    virtual const char*
-    _GLIBCXX_CONST what() const throw();
-  };
-
   /// @brief  Scoped lock idiom.
   // Acquire the mutex here with a constructor call, then release with
   // the destructor call in accordance with RAII style.

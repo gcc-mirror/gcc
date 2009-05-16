@@ -35,7 +35,8 @@ void test01()
   using std::try_to_lock;
   using std::adopt_lock;
 
-  typedef std::lock_error error_t;
+  typedef std::lock_guard<mutext_t> lock_t;
+  typedef std::unique_lock<rmutext_t> ulock_t;
 
   typedef std::once_flag once_t;
 }
