@@ -37,17 +37,17 @@ enum eh_region_type
 };
 
 /* Describes one exception region.  */
-struct GTY(()) eh_region
+struct GTY(()) eh_region_d
 {
   /* The immediately surrounding region.  */
-  struct eh_region *outer;
+  struct eh_region_d *outer;
 
   /* The list of immediately contained regions.  */
-  struct eh_region *inner;
-  struct eh_region *next_peer;
+  struct eh_region_d *inner;
+  struct eh_region_d *next_peer;
 
   /* List of regions sharing label.  */
-  struct eh_region *next_region_sharing_label;
+  struct eh_region_d *next_region_sharing_label;
 
   /* An identifier for this region.  */
   int region_number;
@@ -64,15 +64,15 @@ struct GTY(()) eh_region
     /* A list of catch blocks, a surrounding try block,
        and the label for continuing after a catch.  */
     struct eh_region_u_try {
-      struct eh_region *eh_catch;
-      struct eh_region *last_catch;
+      struct eh_region_d *eh_catch;
+      struct eh_region_d *last_catch;
     } GTY ((tag ("ERT_TRY"))) eh_try;
 
     /* The list through the catch handlers, the list of type objects
        matched, and the list of associated filters.  */
     struct eh_region_u_catch {
-      struct eh_region *next_catch;
-      struct eh_region *prev_catch;
+      struct eh_region_d *next_catch;
+      struct eh_region_d *prev_catch;
       tree type_list;
       tree filter_list;
     } GTY ((tag ("ERT_CATCH"))) eh_catch;
@@ -108,7 +108,7 @@ struct GTY(()) eh_region
   unsigned may_contain_throw : 1;
 };
 
-typedef struct eh_region *eh_region;
+typedef struct eh_region_d *eh_region;
 DEF_VEC_P(eh_region);
 DEF_VEC_ALLOC_P(eh_region, gc);
 DEF_VEC_ALLOC_P(eh_region, heap);
@@ -118,7 +118,7 @@ DEF_VEC_ALLOC_P(eh_region, heap);
 struct GTY(()) eh_status
 {
   /* The tree of all regions for this function.  */
-  struct eh_region *region_tree;
+  struct eh_region_d *region_tree;
 
   /* The same information as an indexable array.  */
   VEC(eh_region,gc) *region_array;
@@ -133,14 +133,14 @@ extern int doing_eh (int);
 
 /* Note that the current EH region (if any) may contain a throw, or a
    call to a function which itself may contain a throw.  */
-extern void note_eh_region_may_contain_throw (struct eh_region *);
+extern void note_eh_region_may_contain_throw (struct eh_region_d *);
 
 /* Invokes CALLBACK for every exception handler label.  Only used by old
    loop hackery; should not be used by new code.  */
 extern void for_each_eh_label (void (*) (rtx));
 
 /* Invokes CALLBACK for every exception region in the current function.  */
-extern void for_each_eh_region (void (*) (struct eh_region *));
+extern void for_each_eh_region (void (*) (struct eh_region_d *));
 
 /* Determine if the given INSN can throw an exception.  */
 extern bool can_throw_internal_1 (int, bool, bool);
@@ -182,19 +182,19 @@ extern int duplicate_eh_regions (struct function *, duplicate_eh_regions_map,
 extern void sjlj_emit_function_exit_after (rtx);
 extern void default_init_unwind_resume_libfunc (void);
 
-extern struct eh_region *gen_eh_region_cleanup (struct eh_region *);
-extern struct eh_region *gen_eh_region_try (struct eh_region *);
-extern struct eh_region *gen_eh_region_catch (struct eh_region *, tree);
-extern struct eh_region *gen_eh_region_allowed (struct eh_region *, tree);
-extern struct eh_region *gen_eh_region_must_not_throw (struct eh_region *);
-extern int get_eh_region_number (struct eh_region *);
-extern bool get_eh_region_may_contain_throw (struct eh_region *);
+extern struct eh_region_d *gen_eh_region_cleanup (struct eh_region_d *);
+extern struct eh_region_d *gen_eh_region_try (struct eh_region_d *);
+extern struct eh_region_d *gen_eh_region_catch (struct eh_region_d *, tree);
+extern struct eh_region_d *gen_eh_region_allowed (struct eh_region_d *, tree);
+extern struct eh_region_d *gen_eh_region_must_not_throw (struct eh_region_d *);
+extern int get_eh_region_number (struct eh_region_d *);
+extern bool get_eh_region_may_contain_throw (struct eh_region_d *);
 extern tree get_eh_region_no_tree_label (int);
-extern tree get_eh_region_tree_label (struct eh_region *);
-extern void set_eh_region_tree_label (struct eh_region *, tree);
+extern tree get_eh_region_tree_label (struct eh_region_d *);
+extern void set_eh_region_tree_label (struct eh_region_d *, tree);
 
 extern void foreach_reachable_handler (int, bool, bool,
-				       void (*) (struct eh_region *, void *),
+				       void (*) (struct eh_region_d *, void *),
 				       void *);
 
 extern void collect_eh_region_array (void);
@@ -274,5 +274,6 @@ extern void set_eh_throw_stmt_table (struct function *, struct htab *);
 extern void remove_unreachable_regions (sbitmap, sbitmap);
 extern VEC(int,heap) * label_to_region_map (void);
 extern int num_eh_regions (void);
-extern struct eh_region *redirect_eh_edge_to_label (struct edge_def *, tree, bool, bool, int);
+extern struct eh_region_d *redirect_eh_edge_to_label (struct edge_def *, tree,
+						      bool, bool, int);
 extern int get_next_region_sharing_label (int);

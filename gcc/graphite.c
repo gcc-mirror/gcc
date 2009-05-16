@@ -181,7 +181,7 @@ register_bb_in_sese (basic_block entry_bb, basic_block exit_bb, sese region)
 sese
 new_sese (edge entry, edge exit)
 {
-  sese res = XNEW (struct sese);
+  sese res = XNEW (struct sese_d);
 
   SESE_ENTRY (res) = entry;
   SESE_EXIT (res) = exit;
@@ -274,7 +274,7 @@ static void
 loop_iv_stack_push_iv (loop_iv_stack stack, tree iv, const char *name)
 {
   iv_stack_entry *entry = XNEW (iv_stack_entry);
-  name_tree named_iv = XNEW (struct name_tree);
+  name_tree named_iv = XNEW (struct name_tree_d);
 
   named_iv->t = iv;
   named_iv->name = name;
@@ -396,7 +396,7 @@ free_loop_iv_stack (loop_iv_stack stack)
 
 /* Structure containing the mapping between the CLooG's induction
    variable and the type of the old induction variable.  */
-typedef struct ivtype_map_elt
+typedef struct ivtype_map_elt_d
 {
   tree type;
   const char *cloog_iv;
@@ -417,7 +417,7 @@ debug_ivtype_elt (ivtype_map_elt elt)
 static int
 debug_ivtype_map_1 (void **slot, void *s ATTRIBUTE_UNUSED)
 {
-  struct ivtype_map_elt *entry = (struct ivtype_map_elt *) *slot;
+  struct ivtype_map_elt_d *entry = (struct ivtype_map_elt_d *) *slot;
   debug_ivtype_elt (entry);
   return 1;
 }
@@ -437,7 +437,7 @@ new_ivtype_map_elt (const char *cloog_iv, tree type)
 {
   ivtype_map_elt res;
   
-  res = XNEW (struct ivtype_map_elt);
+  res = XNEW (struct ivtype_map_elt_d);
   res->cloog_iv = cloog_iv;
   res->type = type;
 
@@ -449,7 +449,7 @@ new_ivtype_map_elt (const char *cloog_iv, tree type)
 static hashval_t
 ivtype_map_elt_info (const void *elt)
 {
-  return htab_hash_pointer (((const struct ivtype_map_elt *) elt)->cloog_iv);
+  return htab_hash_pointer (((const struct ivtype_map_elt_d *) elt)->cloog_iv);
 }
 
 /* Compares database elements E1 and E2.  */
@@ -457,8 +457,8 @@ ivtype_map_elt_info (const void *elt)
 static int
 eq_ivtype_map_elts (const void *e1, const void *e2)
 {
-  const struct ivtype_map_elt *elt1 = (const struct ivtype_map_elt *) e1;
-  const struct ivtype_map_elt *elt2 = (const struct ivtype_map_elt *) e2;
+  const struct ivtype_map_elt_d *elt1 = (const struct ivtype_map_elt_d *) e1;
+  const struct ivtype_map_elt_d *elt2 = (const struct ivtype_map_elt_d *) e2;
 
   return (elt1->cloog_iv == elt2->cloog_iv);
 }
@@ -472,7 +472,7 @@ eq_ivtype_map_elts (const void *e1, const void *e2)
 static tree
 gcc_type_for_cloog_iv (const char *cloog_iv, graphite_bb_p gbb)
 {
-  struct ivtype_map_elt tmp;
+  struct ivtype_map_elt_d tmp;
   PTR *slot;
 
   tmp.cloog_iv = cloog_iv;
@@ -1339,7 +1339,7 @@ free_graphite_bb (struct graphite_bb *gbb)
 
 /* Structure containing the mapping between the old names and the new
    names used after block copy in the new loop context.  */
-typedef struct rename_map_elt
+typedef struct rename_map_elt_d
 {
   tree old_name, new_name;
 } *rename_map_elt;
@@ -1362,7 +1362,7 @@ debug_rename_elt (rename_map_elt elt)
 static int
 debug_rename_map_1 (void **slot, void *s ATTRIBUTE_UNUSED)
 {
-  struct rename_map_elt *entry = (struct rename_map_elt *) *slot;
+  struct rename_map_elt_d *entry = (struct rename_map_elt_d *) *slot;
   debug_rename_elt (entry);
   return 1;
 }
@@ -1382,7 +1382,7 @@ new_rename_map_elt (tree old_name, tree new_name)
 {
   rename_map_elt res;
   
-  res = XNEW (struct rename_map_elt);
+  res = XNEW (struct rename_map_elt_d);
   res->old_name = old_name;
   res->new_name = new_name;
 
@@ -1394,7 +1394,7 @@ new_rename_map_elt (tree old_name, tree new_name)
 static hashval_t
 rename_map_elt_info (const void *elt)
 {
-  return htab_hash_pointer (((const struct rename_map_elt *) elt)->old_name);
+  return htab_hash_pointer (((const struct rename_map_elt_d *) elt)->old_name);
 }
 
 /* Compares database elements E1 and E2.  */
@@ -1402,8 +1402,8 @@ rename_map_elt_info (const void *elt)
 static int
 eq_rename_map_elts (const void *e1, const void *e2)
 {
-  const struct rename_map_elt *elt1 = (const struct rename_map_elt *) e1;
-  const struct rename_map_elt *elt2 = (const struct rename_map_elt *) e2;
+  const struct rename_map_elt_d *elt1 = (const struct rename_map_elt_d *) e1;
+  const struct rename_map_elt_d *elt2 = (const struct rename_map_elt_d *) e2;
 
   return (elt1->old_name == elt2->old_name);
 }
@@ -1413,7 +1413,7 @@ eq_rename_map_elts (const void *e1, const void *e2)
 static tree
 get_new_name_from_old_name (htab_t map, tree old_name)
 {
-  struct rename_map_elt tmp;
+  struct rename_map_elt_d tmp;
   PTR *slot;
 
   tmp.old_name = old_name;
@@ -2419,7 +2419,7 @@ scop_record_loop (scop_p scop, loop_p loop)
   if (!induction_var)
     return false;
 
-  oldiv = XNEW (struct name_tree);
+  oldiv = XNEW (struct name_tree_d);
   oldiv->t = induction_var;
   oldiv->name = get_name (SSA_NAME_VAR (oldiv->t));
   oldiv->loop = loop;
@@ -2664,7 +2664,7 @@ param_index (tree var, scop_p scop)
 
   gcc_assert (SCOP_ADD_PARAMS (scop));
 
-  nvar = XNEW (struct name_tree);
+  nvar = XNEW (struct name_tree_d);
   nvar->t = var;
   nvar->name = NULL;
   VEC_safe_push (name_tree, heap, SCOP_PARAMS (scop), nvar);
@@ -4428,7 +4428,7 @@ build_iv_mapping (loop_iv_stack ivstack, htab_t map, gbb_p gbb, scop_p scop)
 
   for (i = 0; VEC_iterate (name_tree, SCOP_OLDIVS (scop), i, iv); i++)
     {
-      struct rename_map_elt tmp;
+      struct rename_map_elt_d tmp;
 
       if (!flow_bb_inside_loop_p (iv->loop, GBB_BB (gbb)))
 	continue;
@@ -4450,7 +4450,7 @@ build_iv_mapping (loop_iv_stack ivstack, htab_t map, gbb_p gbb, scop_p scop)
 static void
 register_old_and_new_names (htab_t map, tree old_name, tree new_name)
 {
-  struct rename_map_elt tmp;
+  struct rename_map_elt_d tmp;
   PTR *slot;
 
   tmp.old_name = old_name;
@@ -4549,7 +4549,7 @@ copy_bb_and_scalar_dependences (basic_block bb, scop_p scop,
 static int
 add_loop_exit_phis (void **slot, void *s)
 {
-  struct rename_map_elt *entry = (struct rename_map_elt *) *slot;
+  struct rename_map_elt_d *entry = (struct rename_map_elt_d *) *slot;
   tree new_name = entry->new_name;
   basic_block bb = (basic_block) s;
   gimple phi = create_phi_node (new_name, bb);
@@ -4606,7 +4606,7 @@ default_liveout_before_guard (htab_t liveout_before_guard, tree old_name)
 static int
 add_guard_exit_phis (void **slot, void *s)
 {
-  struct rename_map_elt *entry = (struct rename_map_elt *) *slot;
+  struct rename_map_elt_d *entry = (struct rename_map_elt_d *) *slot;
   struct igp *i = (struct igp *) s;
   basic_block bb = i->bb;
   edge true_edge = i->true_edge;
@@ -4661,11 +4661,11 @@ insert_guard_phis (scop_p scop, basic_block bb, edge true_edge,
 static int
 copy_renames (void **slot, void *s)
 {
-  struct rename_map_elt *entry = (struct rename_map_elt *) *slot;
+  struct rename_map_elt_d *entry = (struct rename_map_elt_d *) *slot;
   htab_t res = (htab_t) s;
   tree old_name = entry->old_name;
   tree new_name = entry->new_name;
-  struct rename_map_elt tmp;
+  struct rename_map_elt_d tmp;
   PTR *x;
 
   tmp.old_name = old_name;
@@ -5009,7 +5009,8 @@ remove_sese_region (sese region)
   VEC_free (basic_block, heap, bbs);
 }
 
-typedef struct ifsese {
+typedef struct ifsese_d
+{
   sese region;
   sese true_region;
   sese false_region;
@@ -5083,10 +5084,10 @@ create_if_region_on_edge (edge entry, tree condition)
 {
   edge e;
   edge_iterator ei;
-  sese sese_region = GGC_NEW (struct sese);
-  sese true_region = GGC_NEW (struct sese);
-  sese false_region = GGC_NEW (struct sese);
-  ifsese if_region = GGC_NEW (struct ifsese);
+  sese sese_region = GGC_NEW (struct sese_d);
+  sese true_region = GGC_NEW (struct sese_d);
+  sese false_region = GGC_NEW (struct sese_d);
+  ifsese if_region = GGC_NEW (struct ifsese_d);
   edge exit = create_empty_if_region_on_edge (entry, condition);
 
   if_region->region = sese_region;
@@ -5369,7 +5370,7 @@ compute_cloog_iv_types_1 (graphite_bb_p gbb,
   for (t = user_stmt->substitutions; t; t = t->next, index++)
     {
       PTR *slot;
-      struct ivtype_map_elt tmp;
+      struct ivtype_map_elt_d tmp;
       struct clast_expr *expr = (struct clast_expr *) 
 	((struct clast_assignment *)t)->RHS;
 

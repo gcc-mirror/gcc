@@ -1305,7 +1305,7 @@ verify_omega_pb (omega_pb pb)
   enum omega_result result;
   int e;
   bool any_color = false;
-  omega_pb tmp_problem = XNEW (struct omega_pb);
+  omega_pb tmp_problem = XNEW (struct omega_pb_d);
 
   omega_copy_problem (tmp_problem, pb);
   tmp_problem->safe_vars = 0;
@@ -2286,7 +2286,7 @@ omega_eliminate_redundant (omega_pb pb, bool expensive)
   if (!expensive)
     goto eliminate_redundant_done;
 
-  tmp_problem = XNEW (struct omega_pb);
+  tmp_problem = XNEW (struct omega_pb_d);
   conservative++;
 
   for (e = pb->num_geqs - 1; e >= 0; e--)
@@ -2648,7 +2648,7 @@ omega_eliminate_red (omega_pb pb, bool eliminate_all)
     return;
 
   conservative++;
-  tmp_problem = XNEW (struct omega_pb);
+  tmp_problem = XNEW (struct omega_pb_d);
 
   for (e = pb->num_geqs - 1; e >= 0; e--)
     if (pb->geqs[e].color == omega_red)
@@ -3491,7 +3491,7 @@ parallel_splinter (omega_pb pb, int e, int diff,
       omega_print_problem (dump_file, pb);
     }
 
-  tmp_problem = XNEW (struct omega_pb);
+  tmp_problem = XNEW (struct omega_pb_d);
   omega_copy_eqn (&pb->eqs[0], &pb->geqs[e], pb->num_vars);
   pb->num_eqs = 1;
 
@@ -5499,7 +5499,7 @@ omega_alloc_problem (int nvars, int nprot)
   omega_initialize ();
 
   /* Allocate and initialize PB.  */
-  pb = XCNEW (struct omega_pb);
+  pb = XCNEW (struct omega_pb_d);
   pb->var = XCNEWVEC (int, OMEGA_MAX_VARS + 2);
   pb->forwarding_address = XCNEWVEC (int, OMEGA_MAX_VARS + 2);
   pb->geqs = omega_alloc_eqns (0, OMEGA_MAX_GEQS);

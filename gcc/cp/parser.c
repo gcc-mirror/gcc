@@ -1183,7 +1183,7 @@ function_declarator_p (const cp_declarator *declarator)
 /* Flags that are passed to some parsing functions.  These values can
    be bitwise-ored together.  */
 
-enum cp_parser_flags
+enum
 {
   /* No flags.  */
   CP_PARSER_FLAGS_NONE = 0x0,
@@ -1195,7 +1195,7 @@ enum cp_parser_flags
 };
 
 /* This type is used for parameters and variables which hold
-   combinations of the flags in enum cp_parser_flags.  */
+   combinations of the above flags.  */
 typedef int cp_parser_flags;
 
 /* The different kinds of declarators we want to parse.  */

@@ -917,7 +917,7 @@ static struct label_record
 
 /* Callback for for_each_eh_region.  Helper for cleanup_dead_labels.  */
 static void
-update_eh_label (struct eh_region *region)
+update_eh_label (struct eh_region_d *region)
 {
   tree old_label = get_eh_region_tree_label (region);
   if (old_label)

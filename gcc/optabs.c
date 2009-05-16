@@ -55,25 +55,25 @@ along with GCC; see the file COPYING3.  If not see
    See expr.h for documentation of these optabs.  */
 
 #if GCC_VERSION >= 4000
-__extension__ struct optab optab_table[OTI_MAX]
+__extension__ struct optab_d optab_table[OTI_MAX]
   = { [0 ... OTI_MAX - 1].handlers[0 ... NUM_MACHINE_MODES - 1].insn_code
       = CODE_FOR_nothing };
 #else
 /* init_insn_codes will do runtime initialization otherwise.  */
-struct optab optab_table[OTI_MAX];
+struct optab_d optab_table[OTI_MAX];
 #endif
 
 rtx libfunc_table[LTI_MAX];
 
 /* Tables of patterns for converting one mode to another.  */
 #if GCC_VERSION >= 4000
-__extension__ struct convert_optab convert_optab_table[COI_MAX]
+__extension__ struct convert_optab_d convert_optab_table[COI_MAX]
   = { [0 ... COI_MAX - 1].handlers[0 ... NUM_MACHINE_MODES - 1]
 	[0 ... NUM_MACHINE_MODES - 1].insn_code
       = CODE_FOR_nothing };
 #else
 /* init_convert_optab will do runtime initialization otherwise.  */
-struct convert_optab convert_optab_table[COI_MAX];
+struct convert_optab_d convert_optab_table[COI_MAX];
 #endif
 
 /* Contains the optab used for each rtx code.  */
@@ -2248,7 +2248,7 @@ sign_expand_binop (enum machine_mode mode, optab uoptab, optab soptab,
 {
   rtx temp;
   optab direct_optab = unsignedp ? uoptab : soptab;
-  struct optab wide_soptab;
+  struct optab_d wide_soptab;
 
   /* Do it without widening, if possible.  */
   temp = expand_binop (mode, direct_optab, op0, op1, target,

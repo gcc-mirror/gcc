@@ -5,7 +5,7 @@
    This code has no license restrictions, and is considered public
    domain.
 
-   Changes copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+   Changes copyright (C) 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <sebastian.pop@inria.fr>
 
 This file is part of GCC.
@@ -58,7 +58,7 @@ enum omega_eqn_color {
 };
 
 /* Structure for equations.  */
-typedef struct eqn
+typedef struct eqn_d
 {
   int key;
   int touched;
@@ -72,7 +72,7 @@ typedef struct eqn
   int *coef;
 } *eqn;
 
-typedef struct omega_pb
+typedef struct omega_pb_d
 {
   /* The number of variables in the system of equations.  */
   int num_vars;
@@ -215,7 +215,7 @@ static inline eqn
 omega_alloc_eqns (int s, int n)
 {
   int i;
-  eqn res = (eqn) (xcalloc (n, sizeof (struct eqn)));
+  eqn res = (eqn) (xcalloc (n, sizeof (struct eqn_d)));
 
   for (i = n - 1; i >= 0; i--)
     {

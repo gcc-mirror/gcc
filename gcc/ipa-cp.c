@@ -1,5 +1,5 @@
 /* Interprocedural constant propagation
-   Copyright (C) 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com>
    
 This file is part of GCC.
@@ -1201,7 +1201,7 @@ cgraph_gate_cp (void)
   return flag_ipa_cp;
 }
 
-struct ipa_opt_pass pass_ipa_cp = 
+struct ipa_opt_pass_d pass_ipa_cp =
 {
  {
   IPA_PASS,

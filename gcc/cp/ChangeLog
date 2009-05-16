@@ -1,3 +1,11 @@
+2009-05-15  Ian Lance Taylor  <iant@google.com>
+
+	* cp-tree.h (enum cp_lvalue_kind_flags): Rename from
+	cp_lvalue_kind.  Change all uses.
+	(enum base_access_flags): Rename from enum base_access.  Change
+	all uses.
+	* parser.c (enum cp_parser_flags): Remove enum tag.
+
 2009-05-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 16302

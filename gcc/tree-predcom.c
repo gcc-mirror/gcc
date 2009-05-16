@@ -1,5 +1,5 @@
 /* Predictive commoning.
-   Copyright (C) 2005, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
    
 This file is part of GCC.
    
@@ -210,7 +210,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Data references (or phi nodes that carry data reference values across
    loop iterations).  */
 
-typedef struct dref
+typedef struct dref_d
 {
   /* The reference itself.  */
   struct data_reference *ref;
@@ -775,7 +775,7 @@ split_data_refs_to_components (struct loop *loop,
 	  comps[ca] = comp;
 	}
 
-      dataref = XCNEW (struct dref);
+      dataref = XCNEW (struct dref_d);
       dataref->ref = dr;
       dataref->stmt = DR_STMT (dr);
       dataref->offset = double_int_zero;
@@ -1126,7 +1126,7 @@ find_looparound_phi (struct loop *loop, dref ref, dref root)
 static void
 insert_looparound_copy (chain_p chain, dref ref, gimple phi)
 {
-  dref nw = XCNEW (struct dref), aref;
+  dref nw = XCNEW (struct dref_d), aref;
   unsigned i;
 
   nw->stmt = phi;
@@ -2339,7 +2339,7 @@ combine_chains (chain_p ch1, chain_p ch2)
   for (i = 0; (VEC_iterate (dref, ch1->refs, i, r1)
 	       && VEC_iterate (dref, ch2->refs, i, r2)); i++)
     {
-      nw = XCNEW (struct dref);
+      nw = XCNEW (struct dref_d);
       nw->stmt = stmt_combining_refs (r1, r2);
       nw->distance = r1->distance;
 
