@@ -1114,6 +1114,27 @@ pushtag (tree name, tree type, location_t loc)
   /* An approximation for now, so we can tell this is a function-scope tag.
      This will be updated in pop_scope.  */
   TYPE_CONTEXT (type) = DECL_CONTEXT (TYPE_STUB_DECL (type));
+
+  if (warn_cxx_compat && name != NULL_TREE)
+    {
+      struct c_binding *b = I_SYMBOL_BINDING (name);
+
+      if (b != NULL
+	  && b->decl != NULL_TREE
+	  && TREE_CODE (b->decl) == TYPE_DECL
+	  && (B_IN_CURRENT_SCOPE (b)
+	      || (current_scope == file_scope && B_IN_EXTERNAL_SCOPE (b)))
+	  && (TYPE_MAIN_VARIANT (TREE_TYPE (b->decl))
+	      != TYPE_MAIN_VARIANT (type)))
+	{
+	  warning_at (loc, OPT_Wc___compat,
+		      ("using %qD as both a typedef and a tag is "
+		       "invalid in C++"),
+		      b->decl);
+	  if (b->locus != UNKNOWN_LOCATION)
+	    inform (b->locus, "originally defined here");
+	}
+    }
 }
 
 /* Subroutine of compare_decls.  Allow harmless mismatches in return
@@ -4961,6 +4982,26 @@ grokdeclarator (const struct c_declarator *declarator,
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
       if (declspecs->inline_p)
 	pedwarn (input_location, 0,"typedef %q+D declared %<inline%>", decl);
+
+      if (warn_cxx_compat && declarator->u.id != NULL_TREE)
+	{
+	  struct c_binding *b = I_TAG_BINDING (declarator->u.id);
+
+	  if (b != NULL
+	      && b->decl != NULL_TREE
+	      && (B_IN_CURRENT_SCOPE (b)
+		  || (current_scope == file_scope && B_IN_EXTERNAL_SCOPE (b)))
+	      && TYPE_MAIN_VARIANT (b->decl) != TYPE_MAIN_VARIANT (type))
+	    {
+	      warning_at (declarator->id_loc, OPT_Wc___compat,
+			  ("using %qD as both a typedef and a tag is "
+			   "invalid in C++"),
+			  decl);
+	      if (b->locus != UNKNOWN_LOCATION)
+		inform (b->locus, "originally defined here");
+	    }
+	}
+
       return decl;
     }
 

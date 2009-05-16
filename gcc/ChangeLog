@@ -1,3 +1,39 @@
+2009-05-15  Ian Lance Taylor  <iant@google.com>
+
+	* alias.c (struct alias_set_entry_d): Rename from struct
+	alias_set_entry.  Change all uses.
+	* except.c (struct call_site_record_d): Rename from struct
+	call_site_record.  Change all uses.
+	* except.h (struct eh_region_d): Rename from struct eh_region.
+	Change all uses.
+	* gcse.c (struct hash_table_d): Rename from struct hash_table.
+	Change all uses.
+	* graphite.c (struct ivtype_map_elt_d): Rename fromstruct
+	ivtype_map_elt.  Change all uses.
+	(struct rename_map_elt_d): Rename fromstruct rename_map_elt.
+	Change all uses.
+	(struct ifsese_d): Rename fromstruct ifsese.  Change all uses.
+	* graphite.h (struct name_tree_d): Rename from struct name_tree.
+	Change all uses.
+	(struct sese_d): Rename from struct sese.  Change all uses.
+	* omega.h (struct eqn_d): Rename from struct eqn.  Change all
+	uses.
+	(struct omega_pb_d): Rename from struct omega_pb.  Change all
+	uses.
+	* optabs.h (struct optab_d): Rename from struct optab.  Change all
+	uses.
+	(struct convert_optab_d): Rename from struct convert_optab.
+	Change all uses.
+	* tree-pass.h (struct ipa_opt_pass_d): Rename fromstruct
+	ipa_opt_pass.  Change all uses.
+	* tree-predcom.c (struct dref_d): Rename from struct dref.  Change
+	all uses.
+
+	* c-decl.c (pushtag): If -Wc++-compat, warn if the tag is already
+	defined as a typedef.
+	(grokdeclarator): If -Wc++-compat, warn if a typedef is already
+	defined as a tag.
+
 2009-05-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 16302

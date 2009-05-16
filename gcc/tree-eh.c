@@ -87,7 +87,7 @@ struct_ptr_hash (const void *a)
    of space by only allocating memory for those that can throw.  */
 
 static void
-record_stmt_eh_region (struct eh_region *region, gimple t)
+record_stmt_eh_region (struct eh_region_d *region, gimple t)
 {
   if (!region)
     return;
@@ -371,7 +371,7 @@ struct leh_state
   /* What's "current" while constructing the eh region tree.  These
      correspond to variables of the same name in cfun->eh, which we
      don't have easy access to.  */
-  struct eh_region *cur_region;
+  struct eh_region_d *cur_region;
 
   /* Processing of TRY_FINALLY requires a bit more state.  This is
      split out into a separate structure so that we don't have to
@@ -395,7 +395,7 @@ struct leh_tf_state
   struct leh_state *outer;
 
   /* The exception region created for it.  */
-  struct eh_region *region;
+  struct eh_region_d *region;
 
   /* The goto queue.  */
   struct goto_queue_node *goto_queue;
@@ -1646,7 +1646,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
 static gimple_seq
 lower_catch (struct leh_state *state, gimple tp)
 {
-  struct eh_region *try_region;
+  struct eh_region_d *try_region;
   struct leh_state this_state;
   gimple_stmt_iterator gsi;
   tree out_label;
@@ -1665,7 +1665,7 @@ lower_catch (struct leh_state *state, gimple tp)
   out_label = NULL;
   for (gsi = gsi_start (gimple_try_cleanup (tp)); !gsi_end_p (gsi); )
     {
-      struct eh_region *catch_region;
+      struct eh_region_d *catch_region;
       tree eh_label;
       gimple x, gcatch;
 
@@ -1707,7 +1707,7 @@ static gimple_seq
 lower_eh_filter (struct leh_state *state, gimple tp)
 {
   struct leh_state this_state;
-  struct eh_region *this_region;
+  struct eh_region_d *this_region;
   gimple inner;
   tree eh_label;
 
@@ -1744,7 +1744,7 @@ static gimple_seq
 lower_cleanup (struct leh_state *state, gimple tp)
 {
   struct leh_state this_state;
-  struct eh_region *this_region;
+  struct eh_region_d *this_region;
   struct leh_tf_state fake_tf;
   gimple_seq result;
 
@@ -1947,7 +1947,7 @@ struct gimple_opt_pass pass_lower_eh =
 /* Construct EH edges for STMT.  */
 
 static void
-make_eh_edge (struct eh_region *region, void *data)
+make_eh_edge (struct eh_region_d *region, void *data)
 {
   gimple stmt;
   tree lab;
@@ -2026,7 +2026,7 @@ redirect_eh_edge (edge e, basic_block new_bb)
   bool is_resx;
   bool inlinable = false;
   tree label = gimple_block_label (new_bb);
-  struct eh_region *r;
+  struct eh_region_d *r;
 
   if (gimple_code (stmt) == GIMPLE_RESX)
     {
@@ -2066,7 +2066,7 @@ static bool mark_eh_edge_found_error;
    field, output error if something goes wrong.  */
 
 static void
-mark_eh_edge (struct eh_region *region, void *data)
+mark_eh_edge (struct eh_region_d *region, void *data)
 {
   gimple stmt;
   tree lab;
@@ -2958,7 +2958,7 @@ struct update_info
    operands from DATA->bb_to_remove.  */
 
 static void
-make_eh_edge_and_update_phi (struct eh_region *region, void *data)
+make_eh_edge_and_update_phi (struct eh_region_d *region, void *data)
 {
   struct update_info *info = (struct update_info *) data;
   edge e, e2;

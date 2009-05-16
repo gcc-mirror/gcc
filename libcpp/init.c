@@ -419,7 +419,7 @@ cpp_init_special_builtins (cpp_reader *pfile)
       if (b->always_warn_if_redefined
           || CPP_OPTION (pfile, warn_builtin_macro_redefined))
 	hp->flags |= NODE_WARN;
-      hp->value.builtin = (enum builtin_type) b->value;
+      hp->value.builtin = (enum cpp_builtin_type) b->value;
     }
 }
 

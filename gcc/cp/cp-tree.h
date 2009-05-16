@@ -3466,7 +3466,7 @@ enum tag_types {
 };
 
 /* The various kinds of lvalues we distinguish.  */
-enum cp_lvalue_kind {
+enum cp_lvalue_kind_flags {
   clk_none = 0,     /* Things that are not an lvalue.  */
   clk_ordinary = 1, /* An ordinary lvalue.  */
   clk_class = 2,    /* An rvalue of class-type.  */
@@ -3475,7 +3475,7 @@ enum cp_lvalue_kind {
 };
 
 /* This type is used for parameters and variables which hold
-   combinations of the flags in enum cp_lvalue_kind.  */
+   combinations of the flags in enum cp_lvalue_kind_flags.  */
 typedef int cp_lvalue_kind;
 
 /* Various kinds of template specialization, instantiation, etc.  */
@@ -3575,7 +3575,7 @@ enum tsubst_flags {
 typedef int tsubst_flags_t;
 
 /* The kind of checking we can do looking in a class hierarchy.  */
-enum base_access {
+enum base_access_flags {
   ba_any = 0,  /* Do not check access, allow an ambiguous base,
 		      prefer a non-virtual base */
   ba_unique = 1 << 0,  /* Must be a unique base.  */
@@ -3586,7 +3586,7 @@ enum base_access {
 };
 
 /* This type is used for parameters and variables which hold
-   combinations of the flags in enum base_access.  */
+   combinations of the flags in enum base_access_flags.  */
 typedef int base_access;
 
 /* The various kinds of access check during parsing.  */

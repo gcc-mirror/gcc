@@ -1,3 +1,8 @@
+2009-05-15  Ian Lance Taylor  <iant@google.com>
+
+	* include/cpplib.h (enum cpp_builtin_type): Rename from enum
+	builtin_type.  Change all uses.
+
 2009-05-14  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	PR cpp/36674

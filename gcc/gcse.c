@@ -343,7 +343,7 @@ struct occr
    [one could build a mapping table without holes afterwards though].
    Someday I'll perform the computation and figure it out.  */
 
-struct hash_table
+struct hash_table_d
 {
   /* The table itself.
      This is an array of `expr_hash_table_size' elements.  */
@@ -360,10 +360,10 @@ struct hash_table
 };
 
 /* Expression hash table.  */
-static struct hash_table expr_hash_table;
+static struct hash_table_d expr_hash_table;
 
 /* Copy propagation hash table.  */
-static struct hash_table set_hash_table;
+static struct hash_table_d set_hash_table;
 
 /* This is a list of expressions which are MEMs and will be used by load
    or store motion.
@@ -445,30 +445,30 @@ static void *gcalloc (size_t, size_t) ATTRIBUTE_MALLOC;
 static void *gcse_alloc (unsigned long);
 static void alloc_gcse_mem (void);
 static void free_gcse_mem (void);
-static void hash_scan_insn (rtx, struct hash_table *);
-static void hash_scan_set (rtx, rtx, struct hash_table *);
-static void hash_scan_clobber (rtx, rtx, struct hash_table *);
-static void hash_scan_call (rtx, rtx, struct hash_table *);
+static void hash_scan_insn (rtx, struct hash_table_d *);
+static void hash_scan_set (rtx, rtx, struct hash_table_d *);
+static void hash_scan_clobber (rtx, rtx, struct hash_table_d *);
+static void hash_scan_call (rtx, rtx, struct hash_table_d *);
 static int want_to_gcse_p (rtx);
 static bool gcse_constant_p (const_rtx);
 static int oprs_unchanged_p (const_rtx, const_rtx, int);
 static int oprs_anticipatable_p (const_rtx, const_rtx);
 static int oprs_available_p (const_rtx, const_rtx);
 static void insert_expr_in_table (rtx, enum machine_mode, rtx, int, int,
-				  struct hash_table *);
-static void insert_set_in_table (rtx, rtx, struct hash_table *);
+				  struct hash_table_d *);
+static void insert_set_in_table (rtx, rtx, struct hash_table_d *);
 static unsigned int hash_expr (const_rtx, enum machine_mode, int *, int);
 static unsigned int hash_set (int, int);
 static int expr_equiv_p (const_rtx, const_rtx);
 static void record_last_reg_set_info (rtx, int);
 static void record_last_mem_set_info (rtx);
 static void record_last_set_info (rtx, const_rtx, void *);
-static void compute_hash_table (struct hash_table *);
-static void alloc_hash_table (int, struct hash_table *, int);
-static void free_hash_table (struct hash_table *);
-static void compute_hash_table_work (struct hash_table *);
-static void dump_hash_table (FILE *, const char *, struct hash_table *);
-static struct expr *lookup_set (unsigned int, struct hash_table *);
+static void compute_hash_table (struct hash_table_d *);
+static void alloc_hash_table (int, struct hash_table_d *, int);
+static void free_hash_table (struct hash_table_d *);
+static void compute_hash_table_work (struct hash_table_d *);
+static void dump_hash_table (FILE *, const char *, struct hash_table_d *);
+static struct expr *lookup_set (unsigned int, struct hash_table_d *);
 static struct expr *next_set (unsigned int, struct expr *);
 static void reset_opr_set_tables (void);
 static int oprs_not_set_p (const_rtx, const_rtx);
@@ -481,7 +481,7 @@ static void free_cprop_mem (void);
 static void compute_transp (const_rtx, int, sbitmap *, int);
 static void compute_transpout (void);
 static void compute_local_properties (sbitmap *, sbitmap *, sbitmap *,
-				      struct hash_table *);
+				      struct hash_table_d *);
 static void compute_cprop_data (void);
 static void find_used_regs (rtx *, void *);
 static int try_replace_reg (rtx, rtx, rtx);
@@ -691,7 +691,7 @@ free_gcse_mem (void)
 
 static void
 compute_local_properties (sbitmap *transp, sbitmap *comp, sbitmap *antloc,
-			  struct hash_table *table)
+			  struct hash_table_d *table)
 {
   unsigned int i;
 
@@ -1096,7 +1096,7 @@ expr_equiv_p (const_rtx x, const_rtx y)
 
 static void
 insert_expr_in_table (rtx x, enum machine_mode mode, rtx insn, int antic_p,
-		      int avail_p, struct hash_table *table)
+		      int avail_p, struct hash_table_d *table)
 {
   int found, do_not_record_p;
   unsigned int hash;
@@ -1197,7 +1197,7 @@ insert_expr_in_table (rtx x, enum machine_mode mode, rtx insn, int antic_p,
    basic block.  */
 
 static void
-insert_set_in_table (rtx x, rtx insn, struct hash_table *table)
+insert_set_in_table (rtx x, rtx insn, struct hash_table_d *table)
 {
   int found;
   unsigned int hash;
@@ -1293,7 +1293,7 @@ gcse_constant_p (const_rtx x)
    expression one).  */
 
 static void
-hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
+hash_scan_set (rtx pat, rtx insn, struct hash_table_d *table)
 {
   rtx src = SET_SRC (pat);
   rtx dest = SET_DEST (pat);
@@ -1432,14 +1432,14 @@ hash_scan_set (rtx pat, rtx insn, struct hash_table *table)
 
 static void
 hash_scan_clobber (rtx x ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED,
-		   struct hash_table *table ATTRIBUTE_UNUSED)
+		   struct hash_table_d *table ATTRIBUTE_UNUSED)
 {
   /* Currently nothing to do.  */
 }
 
 static void
 hash_scan_call (rtx x ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED,
-		struct hash_table *table ATTRIBUTE_UNUSED)
+		struct hash_table_d *table ATTRIBUTE_UNUSED)
 {
   /* Currently nothing to do.  */
 }
@@ -1456,7 +1456,7 @@ hash_scan_call (rtx x ATTRIBUTE_UNUSED, rtx insn ATTRIBUTE_UNUSED,
    otherwise it is for the expression hash table.  */
 
 static void
-hash_scan_insn (rtx insn, struct hash_table *table)
+hash_scan_insn (rtx insn, struct hash_table_d *table)
 {
   rtx pat = PATTERN (insn);
   int i;
@@ -1486,7 +1486,7 @@ hash_scan_insn (rtx insn, struct hash_table *table)
 }
 
 static void
-dump_hash_table (FILE *file, const char *name, struct hash_table *table)
+dump_hash_table (FILE *file, const char *name, struct hash_table_d *table)
 {
   int i;
   /* Flattened out table, so it's printed in proper order.  */
@@ -1647,7 +1647,7 @@ record_last_set_info (rtx dest, const_rtx setter ATTRIBUTE_UNUSED, void *data)
    TABLE is the table computed.  */
 
 static void
-compute_hash_table_work (struct hash_table *table)
+compute_hash_table_work (struct hash_table_d *table)
 {
   int i;
 
@@ -1706,7 +1706,7 @@ compute_hash_table_work (struct hash_table *table)
    be created.  */
 
 static void
-alloc_hash_table (int n_insns, struct hash_table *table, int set_p)
+alloc_hash_table (int n_insns, struct hash_table_d *table, int set_p)
 {
   int n;
 
@@ -1726,7 +1726,7 @@ alloc_hash_table (int n_insns, struct hash_table *table, int set_p)
 /* Free things allocated by alloc_hash_table.  */
 
 static void
-free_hash_table (struct hash_table *table)
+free_hash_table (struct hash_table_d *table)
 {
   free (table->table);
 }
@@ -1735,7 +1735,7 @@ free_hash_table (struct hash_table *table)
    expression hash table.  */
 
 static void
-compute_hash_table (struct hash_table *table)
+compute_hash_table (struct hash_table_d *table)
 {
   /* Initialize count of number of entries in hash table.  */
   table->n_elems = 0;
@@ -1750,7 +1750,7 @@ compute_hash_table (struct hash_table *table)
    table entry, or NULL if not found.  */
 
 static struct expr *
-lookup_set (unsigned int regno, struct hash_table *table)
+lookup_set (unsigned int regno, struct hash_table_d *table)
 {
   unsigned int hash = hash_set (regno, table->size);
   struct expr *expr;

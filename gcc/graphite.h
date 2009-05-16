@@ -265,7 +265,7 @@ struct loop_to_cloog_loop_str
   CloogLoop *cloog_loop;
 };
 
-typedef struct name_tree
+typedef struct name_tree_d
 {
   tree t;
   const char *name;
@@ -277,7 +277,7 @@ DEF_VEC_ALLOC_P (name_tree, heap);
 
 /* A Single Entry, Single Exit region is a part of the CFG delimited
    by two edges.  */
-typedef struct sese
+typedef struct sese_d
 {
   /* Single ENTRY and single EXIT from the SESE region.  */
   edge entry, exit;

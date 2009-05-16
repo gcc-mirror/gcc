@@ -1,3 +1,7 @@
+2009-05-15  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-10.c: New testcase.
+
 2009-05-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR 16302
