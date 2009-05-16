@@ -1,3 +1,10 @@
+2009-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/31243
+	* gcc/testsuite/gfortran.dg/string_1.f90: New test.
+	* gcc/testsuite/gfortran.dg/string_2.f90: New test.
+	* gcc/testsuite/gfortran.dg/string_3.f90: New test.
+
 2009-05-16  David Billinghurst <billingd@gcc.gnu.org>
 
 	* gfortran.dg/default_format_denormal_1.f90: XFAIL on cygwin.
