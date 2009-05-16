@@ -1,5 +1,13 @@
 2009-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/33197
+	* intrinsic.c (add_functions): Use ERFC_SCALED simplification.
+	* intrinsic.h (gfc_simplify_erfc_scaled): New prototype.
+	* simplify.c (fullprec_erfc_scaled, asympt_erfc_scaled,
+	gfc_simplify_erfc_scaled): New functions.
+
+2009-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/31243
 	* resolve.c (resolve_substring): Don't allow too large substring
 	indexes.

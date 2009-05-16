@@ -1213,6 +1213,143 @@ gfc_simplify_erfc (gfc_expr *x)
 }
 
 
+/* Helper functions to simplify ERFC_SCALED(x) = ERFC(x) * EXP(X**2).  */
+
+#define MAX_ITER 200
+#define ARG_LIMIT 12
+
+/* Calculate ERFC_SCALED directly by its definition:
+
+     ERFC_SCALED(x) = ERFC(x) * EXP(X**2)
+
+   using a large precision for intermediate results.  This is used for all
+   but large values of the argument.  */
+static void
+fullprec_erfc_scaled (mpfr_t res, mpfr_t arg)
+{
+  mp_prec_t prec;
+  mpfr_t a, b;
+
+  prec = mpfr_get_default_prec ();
+  mpfr_set_default_prec (10 * prec);
+
+  mpfr_init (a);
+  mpfr_init (b);
+
+  mpfr_set (a, arg, GFC_RND_MODE);
+  mpfr_sqr (b, a, GFC_RND_MODE);
+  mpfr_exp (b, b, GFC_RND_MODE);
+  mpfr_erfc (a, a, GFC_RND_MODE);
+  mpfr_mul (a, a, b, GFC_RND_MODE);
+
+  mpfr_set (res, a, GFC_RND_MODE);
+  mpfr_set_default_prec (prec);
+
+  mpfr_clear (a);
+  mpfr_clear (b);
+}
+
+/* Calculate ERFC_SCALED using a power series expansion in 1/arg:
+
+    ERFC_SCALED(x) = 1 / (x * sqrt(pi))
+                     * (1 + Sum_n (-1)**n * (1 * 3 * 5 * ... * (2n-1))
+                                          / (2 * x**2)**n)
+
+  This is used for large values of the argument.  Intermediate calculations
+  are performed with twice the precision.  We don't do a fixed number of
+  iterations of the sum, but stop when it has converged to the required
+  precision.  */
+static void
+asympt_erfc_scaled (mpfr_t res, mpfr_t arg)
+{
+  mpfr_t sum, x, u, v, w, oldsum, sumtrunc;
+  mpz_t num;
+  mp_prec_t prec;
+  unsigned i;
+
+  prec = mpfr_get_default_prec ();
+  mpfr_set_default_prec (2 * prec);
+
+  mpfr_init (sum);
+  mpfr_init (x);
+  mpfr_init (u);
+  mpfr_init (v);
+  mpfr_init (w);
+  mpz_init (num);
+
+  mpfr_init (oldsum);
+  mpfr_init (sumtrunc);
+  mpfr_set_prec (oldsum, prec);
+  mpfr_set_prec (sumtrunc, prec);
+
+  mpfr_set (x, arg, GFC_RND_MODE);
+  mpfr_set_ui (sum, 1, GFC_RND_MODE);
+  mpz_set_ui (num, 1);
+
+  mpfr_set (u, x, GFC_RND_MODE);
+  mpfr_sqr (u, u, GFC_RND_MODE);
+  mpfr_mul_ui (u, u, 2, GFC_RND_MODE);
+  mpfr_pow_si (u, u, -1, GFC_RND_MODE);
+
+  for (i = 1; i < MAX_ITER; i++)
+  {
+    mpfr_set (oldsum, sum, GFC_RND_MODE);
+
+    mpz_mul_ui (num, num, 2 * i - 1);
+    mpz_neg (num, num);
+
+    mpfr_set (w, u, GFC_RND_MODE);
+    mpfr_pow_ui (w, w, i, GFC_RND_MODE);
+
+    mpfr_set_z (v, num, GFC_RND_MODE);
+    mpfr_mul (v, v, w, GFC_RND_MODE);
+
+    mpfr_add (sum, sum, v, GFC_RND_MODE);
+
+    mpfr_set (sumtrunc, sum, GFC_RND_MODE);
+    if (mpfr_cmp (sumtrunc, oldsum) == 0)
+      break;
+  }
+
+  /* We should have converged by now; otherwise, ARG_LIMIT is probably
+     set too low.  */
+  gcc_assert (i < MAX_ITER);
+
+  /* Divide by x * sqrt(Pi).  */
+  mpfr_const_pi (u, GFC_RND_MODE);
+  mpfr_sqrt (u, u, GFC_RND_MODE);
+  mpfr_mul (u, u, x, GFC_RND_MODE);
+  mpfr_div (sum, sum, u, GFC_RND_MODE);
+
+  mpfr_set (res, sum, GFC_RND_MODE);
+  mpfr_set_default_prec (prec);
+
+  mpfr_clears (sum, x, u, v, w, oldsum, sumtrunc, NULL);
+  mpz_clear (num);
+}
+
+
+gfc_expr *
+gfc_simplify_erfc_scaled (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
+  if (mpfr_cmp_d (x->value.real, ARG_LIMIT) >= 0)
+    asympt_erfc_scaled (result->value.real, x->value.real);
+  else
+    fullprec_erfc_scaled (result->value.real, x->value.real);
+
+  return range_check (result, "ERFC_SCALED");
+}
+
+#undef MAX_ITER
+#undef ARG_LIMIT
+
+
 gfc_expr *
 gfc_simplify_epsilon (gfc_expr *e)
 {

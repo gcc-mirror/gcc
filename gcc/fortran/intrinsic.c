@@ -1431,8 +1431,9 @@ add_functions (void)
   make_generic ("erfc", GFC_ISYM_ERFC, GFC_STD_F2008);
 
   add_sym_1 ("erfc_scaled", GFC_ISYM_ERFC_SCALED, CLASS_ELEMENTAL, ACTUAL_NO,
-	     BT_REAL, dr, GFC_STD_F2008, gfc_check_fn_r, NULL,
-	     gfc_resolve_g77_math1, x, BT_REAL, dr, REQUIRED);
+	     BT_REAL, dr, GFC_STD_F2008, gfc_check_fn_r,
+	     gfc_simplify_erfc_scaled, gfc_resolve_g77_math1, x, BT_REAL,
+	     dr, REQUIRED);
 
   make_generic ("erfc_scaled", GFC_ISYM_ERFC_SCALED, GFC_STD_F2008);
 

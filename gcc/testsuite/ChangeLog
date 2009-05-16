@@ -1,5 +1,11 @@
 2009-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/33197
+	* gfortran.dg/erf_2.F90: New test.
+	* gfortran.dg/erfc_scaled_2.f90: New test.
+
+2009-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/31243
 	* gcc/testsuite/gfortran.dg/string_1.f90: New test.
 	* gcc/testsuite/gfortran.dg/string_2.f90: New test.
