@@ -1,3 +1,12 @@
+2009-05-16  Brad Lucier  <lucier@math.purdue.edu>
+
+	PR middle-end/39301
+	* hwint.h: Add macro HOST_WIDEST_INT_PRINT.
+	* bitmap.c (bitmap_descriptor): Make fields HOST_WIDEST_INT.
+	(output_info): Make field HOST_WIDEST_INT.
+	(print_statistics): Use HOST_WIDEST_INT_PRINT.
+	(dump_bitmat_statistics): Same.
+
 2009-05-16  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 
 	* config.gcc (use_gcc_stdint):  Set to wrap.
