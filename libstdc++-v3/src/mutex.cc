@@ -43,10 +43,6 @@ namespace std
   const try_to_lock_t try_to_lock = try_to_lock_t();
   const adopt_lock_t adopt_lock = adopt_lock_t();
 
-  const char*
-  lock_error::what() const throw()
-  { return "std::lock_error"; }
-
 #ifdef _GLIBCXX_HAVE_TLS
   __thread void* __once_callable;
   __thread void (*__once_call)();
