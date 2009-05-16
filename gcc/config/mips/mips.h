@@ -668,6 +668,32 @@ enum mips_code_readable_setting {
 #  endif
 #endif
 
+#ifndef MIPS_ABI_DEFAULT
+#define MIPS_ABI_DEFAULT ABI_32
+#endif
+
+/* Use the most portable ABI flag for the ASM specs.  */
+
+#if MIPS_ABI_DEFAULT == ABI_32
+#define MULTILIB_ABI_DEFAULT "mabi=32"
+#endif
+
+#if MIPS_ABI_DEFAULT == ABI_O64
+#define MULTILIB_ABI_DEFAULT "mabi=o64"
+#endif
+
+#if MIPS_ABI_DEFAULT == ABI_N32
+#define MULTILIB_ABI_DEFAULT "mabi=n32"
+#endif
+
+#if MIPS_ABI_DEFAULT == ABI_64
+#define MULTILIB_ABI_DEFAULT "mabi=64"
+#endif
+
+#if MIPS_ABI_DEFAULT == ABI_EABI
+#define MULTILIB_ABI_DEFAULT "mabi=eabi"
+#endif
+
 #ifndef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS \
     { MULTILIB_ENDIAN_DEFAULT, MULTILIB_ISA_DEFAULT, MULTILIB_ABI_DEFAULT }
@@ -730,10 +756,21 @@ enum mips_code_readable_setting {
 #define MIPS_32BIT_OPTION_SPEC \
   "mips1|mips2|mips32*|mgp32"
 
+#if MIPS_ABI_DEFAULT == ABI_O64 \
+  || MIPS_ABI_DEFAULT == ABI_N32 \
+  || MIPS_ABI_DEFAULT == ABI_64
+#define OPT_ARCH64 "mabi=32|mgp32:;"
+#define OPT_ARCH32 "mabi=32|mgp32"
+#else
+#define OPT_ARCH64 "mabi=o64|mabi=n32|mabi=64|mgp64"
+#define OPT_ARCH32 "mabi=o64|mabi=n32|mabi=64|mgp64:;"
+#endif
+
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march is specified or a -mips is specified
-     (other than -mips16).
-   --with-tune is ignored if -mtune is specified.
+     (other than -mips16); likewise --with-arch-32 and --with-arch-64.
+   --with-tune is ignored if -mtune is specified; likewise
+     --with-tune-32 and --with-tune-64.
    --with-abi is ignored if -mabi is specified.
    --with-float is ignored if -mhard-float or -msoft-float are
      specified.
@@ -741,7 +778,11 @@ enum mips_code_readable_setting {
      specified. */
 #define OPTION_DEFAULT_SPECS \
   {"arch", "%{" MIPS_ARCH_OPTION_SPEC ":;: -march=%(VALUE)}" }, \
+  {"arch_32", "%{" OPT_ARCH32 ":%{" MIPS_ARCH_OPTION_SPEC ":;: -march=%(VALUE)}}" }, \
+  {"arch_64", "%{" OPT_ARCH64 ":%{" MIPS_ARCH_OPTION_SPEC ":;: -march=%(VALUE)}}" }, \
   {"tune", "%{!mtune=*:-mtune=%(VALUE)}" }, \
+  {"tune_32", "%{" OPT_ARCH32 ":%{!mtune=*:-mtune=%(VALUE)}}" }, \
+  {"tune_64", "%{" OPT_ARCH64 ":%{!mtune=*:-mtune=%(VALUE)}}" }, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}" }, \
   {"float", "%{!msoft-float:%{!mhard-float:-m%(VALUE)-float}}" }, \
   {"divide", "%{!mdivide-traps:%{!mdivide-breaks:-mdivide-%(VALUE)}}" }, \
@@ -1076,32 +1117,6 @@ enum mips_code_readable_setting {
 #endif
 
 
-#ifndef MIPS_ABI_DEFAULT
-#define MIPS_ABI_DEFAULT ABI_32
-#endif
-
-/* Use the most portable ABI flag for the ASM specs.  */
-
-#if MIPS_ABI_DEFAULT == ABI_32
-#define MULTILIB_ABI_DEFAULT "mabi=32"
-#endif
-
-#if MIPS_ABI_DEFAULT == ABI_O64
-#define MULTILIB_ABI_DEFAULT "mabi=o64"
-#endif
-
-#if MIPS_ABI_DEFAULT == ABI_N32
-#define MULTILIB_ABI_DEFAULT "mabi=n32"
-#endif
-
-#if MIPS_ABI_DEFAULT == ABI_64
-#define MULTILIB_ABI_DEFAULT "mabi=64"
-#endif
-
-#if MIPS_ABI_DEFAULT == ABI_EABI
-#define MULTILIB_ABI_DEFAULT "mabi=eabi"
-#endif
-
 /* SUBTARGET_ASM_OPTIMIZING_SPEC handles passing optimization options
    to the assembler.  It may be overridden by subtargets.  */
 #ifndef SUBTARGET_ASM_OPTIMIZING_SPEC
