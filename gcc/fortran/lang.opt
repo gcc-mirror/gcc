@@ -350,7 +350,7 @@ Append a second underscore if the name already contains an underscore
 
 fshort-enums
 Fortran
-Use the narrowest integer type possible for enumeration types
+; Documented in C
 
 fsign-zero
 Fortran

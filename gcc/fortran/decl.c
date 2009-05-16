@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "match.h"
 #include "parse.h"
+#include "flags.h"
 
 
 /* Macros to access allocate memory for gfc_data_variable,
@@ -5295,7 +5296,7 @@ set_enum_kind(void)
   if (max_enum == NULL || enum_history == NULL)
     return;
 
-  if (!gfc_option.fshort_enums)
+  if (!flag_short_enums)
     return;
 
   i = 0;

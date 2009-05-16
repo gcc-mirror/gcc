@@ -2060,7 +2060,6 @@ typedef struct
 
   int warn_std;
   int allow_std;
-  int fshort_enums;
   int convert;
   int record_marker;
   int max_subrecord_length;
