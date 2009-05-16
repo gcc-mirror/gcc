@@ -1,5 +1,16 @@
 2009-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR fortran/31243
+	* resolve.c (resolve_substring): Don't allow too large substring
+	indexes.
+	(gfc_resolve_substring_charlen): Fix typo.
+	(gfc_resolve_character_operator): Fix typo.
+	(resolve_charlen): Catch unreasonably large string lengths.
+	* simplify.c (gfc_simplify_len): Don't error out on LEN
+	range checks.
+
+2009-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/36031
 	* decl.c (set_enum_kind): Use global short-enums flag.
 	* gfortran.h (gfc_option_t): Remove short_enums flag.

@@ -3897,6 +3897,8 @@ resolve_array_ref (gfc_array_ref *ar)
 static gfc_try
 resolve_substring (gfc_ref *ref)
 {
+  int k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
+
   if (ref->u.ss.start != NULL)
     {
       if (gfc_resolve_expr (ref->u.ss.start) == FAILURE)
@@ -3952,6 +3954,16 @@ resolve_substring (gfc_ref *ref)
 	{
 	  gfc_error ("Substring end index at %L exceeds the string length",
 		     &ref->u.ss.start->where);
+	  return FAILURE;
+	}
+
+      if (compare_bound_mpz_t (ref->u.ss.end,
+			       gfc_integer_kinds[k].huge) == CMP_GT
+	  && (compare_bound (ref->u.ss.end, ref->u.ss.start) == CMP_EQ
+	      || compare_bound (ref->u.ss.end, ref->u.ss.start) == CMP_GT))
+	{
+	  gfc_error ("Substring end index at %L is too large",
+		     &ref->u.ss.end->where);
 	  return FAILURE;
 	}
     }
@@ -4016,7 +4028,7 @@ gfc_resolve_substring_charlen (gfc_expr *e)
   e->ts.cl->length = gfc_add (e->ts.cl->length, gfc_int_expr (1));
 
   e->ts.cl->length->ts.type = BT_INTEGER;
-  e->ts.cl->length->ts.kind = gfc_charlen_int_kind;;
+  e->ts.cl->length->ts.kind = gfc_charlen_int_kind;
 
   /* Make sure that the length is simplified.  */
   gfc_simplify_expr (e->ts.cl->length, 1);
@@ -4475,7 +4487,7 @@ gfc_resolve_character_operator (gfc_expr *e)
 
   e->ts.cl->length = gfc_add (e1, e2);
   e->ts.cl->length->ts.type = BT_INTEGER;
-  e->ts.cl->length->ts.kind = gfc_charlen_int_kind;;
+  e->ts.cl->length->ts.kind = gfc_charlen_int_kind;
   gfc_simplify_expr (e->ts.cl->length, 0);
   gfc_resolve_expr (e->ts.cl->length);
 
@@ -7383,7 +7395,7 @@ resolve_index_expr (gfc_expr *e)
 static gfc_try
 resolve_charlen (gfc_charlen *cl)
 {
-  int i;
+  int i, k;
 
   if (cl->resolved)
     return SUCCESS;
@@ -7405,6 +7417,16 @@ resolve_charlen (gfc_charlen *cl)
       gfc_warning_now ("CHARACTER variable has zero length at %L",
 		       &cl->length->where);
       gfc_replace_expr (cl->length, gfc_int_expr (0));
+    }
+
+  /* Check that the character length is not too large.  */
+  k = gfc_validate_kind (BT_INTEGER, gfc_charlen_int_kind, false);
+  if (cl->length && cl->length->expr_type == EXPR_CONSTANT
+      && cl->length->ts.type == BT_INTEGER
+      && mpz_cmp (cl->length->value.integer, gfc_integer_kinds[k].huge) > 0)
+    {
+      gfc_error ("String length at %L is too large", &cl->length->where);
+      return FAILURE;
     }
 
   return SUCCESS;

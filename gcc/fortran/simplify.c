@@ -2433,7 +2433,13 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
     {
       result = gfc_constant_result (BT_INTEGER, k, &e->where);
       mpz_set_si (result->value.integer, e->value.character.length);
-      return range_check (result, "LEN");
+      if (gfc_range_check (result) == ARITH_OK)
+	return result;
+      else
+	{
+	  gfc_free_expr (result);
+	  return NULL;
+	}
     }
 
   if (e->ts.cl != NULL && e->ts.cl->length != NULL
@@ -2442,7 +2448,13 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
     {
       result = gfc_constant_result (BT_INTEGER, k, &e->where);
       mpz_set (result->value.integer, e->ts.cl->length->value.integer);
-      return range_check (result, "LEN");
+      if (gfc_range_check (result) == ARITH_OK)
+	return result;
+      else
+	{
+	  gfc_free_expr (result);
+	  return NULL;
+	}
     }
 
   return NULL;
