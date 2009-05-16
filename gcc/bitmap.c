@@ -37,10 +37,10 @@ struct bitmap_descriptor
   const char *function;
   const char *file;
   int line;
-  int allocated;
   int created;
-  int peak;
-  int current;
+  HOST_WIDEST_INT allocated;
+  HOST_WIDEST_INT peak;
+  HOST_WIDEST_INT current;
   int nsearches;
 };
 
@@ -2013,8 +2013,8 @@ bitmap_print (FILE *file, const_bitmap head, const char *prefix, const char *suf
 /* Used to accumulate statistics about bitmap sizes.  */
 struct output_info
 {
+  HOST_WIDEST_INT size;
   int count;
-  int size;
 };
 
 /* Called via htab_traverse.  Output bitmap descriptor pointed out by SLOT
@@ -2034,8 +2034,9 @@ print_statistics (void **slot, void *b)
 	s1 = s2 + 4;
       sprintf (s, "%s:%i (%s)", s1, d->line, d->function);
       s[41] = 0;
-      fprintf (stderr, "%-41s %6d %10d %10d %10d %10d\n", s,
-	       d->created, d->allocated, d->peak, d->current, d->nsearches);
+      fprintf (stderr, "%-41s %8d %15"HOST_WIDEST_INT_PRINT"d %15"
+	       HOST_WIDEST_INT_PRINT"d %15"HOST_WIDEST_INT_PRINT"d %10d\n",
+	       s, d->created, d->allocated, d->peak, d->current, d->nsearches);
       i->size += d->allocated;
       i->count += d->created;
     }
@@ -2053,14 +2054,14 @@ dump_bitmap_statistics (void)
     return;
 
   fprintf (stderr, "\nBitmap                                     Overall "
-		   "Allocated     Peak        Leak   searched "
+		   "   Allocated        Peak           Leak   searched "
 		   "  per search\n");
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
   info.count = 0;
   info.size = 0;
   htab_traverse (bitmap_desc_hash, print_statistics, &info);
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
-  fprintf (stderr, "%-40s %7d %10d\n",
+  fprintf (stderr, "%-40s %9d %15"HOST_WIDEST_INT_PRINT"d\n",
 	   "Total", info.count, info.size);
   fprintf (stderr, "---------------------------------------------------------------------------------\n");
 #endif
