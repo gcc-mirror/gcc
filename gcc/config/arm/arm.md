@@ -8214,7 +8214,7 @@
 
 (define_insn "cstoresi_nltu_thumb1"
   [(set (match_operand:SI 0 "s_register_operand" "=l,l")
-        (neg:SI (gtu:SI (match_operand:SI 1 "s_register_operand" "l,*h")
+        (neg:SI (ltu:SI (match_operand:SI 1 "s_register_operand" "l,*h")
 			(match_operand:SI 2 "thumb1_cmp_operand" "lI*h,*r"))))]
   "TARGET_THUMB1"
   "cmp\\t%1, %2\;sbc\\t%0, %0, %0"

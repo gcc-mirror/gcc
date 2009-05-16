@@ -1,3 +1,9 @@
+2009-05-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/40153
+	* arm.md (cstoresi_nltu_thumb1): Use a neg of ltu as the pattern name
+	implies.
+
 2009-05-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
