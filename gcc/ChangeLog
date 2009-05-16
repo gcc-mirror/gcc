@@ -1,3 +1,10 @@
+2009-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/39942
+	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Don't emit second
+	.p2align 3 if MAX_SKIP is smaller than 7.
+	* config/i386/linux.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+
 2009-05-15  Ian Lance Taylor  <iant@google.com>
 
 	* alias.c (struct alias_set_entry_d): Rename from struct
