@@ -1,5 +1,9 @@
 2009-05-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.md (movdi2): Copy non-reg values to DImode registers.
+
+2009-05-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	PR target/39501
 	* arm.md (movsfcc): Disable if not TARGET_HARD_FLOAT.
 	* testsuite/gcc.c-torture/execute/pr39501.c: New file.
