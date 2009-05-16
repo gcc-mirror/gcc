@@ -553,7 +553,17 @@ static int min_labelno, max_labelno;
 int
 label_to_alignment (rtx label)
 {
-  return LABEL_TO_ALIGNMENT (label);
+  if (CODE_LABEL_NUMBER (label) <= max_labelno)
+    return LABEL_TO_ALIGNMENT (label);
+  return 0;
+}
+
+int
+label_to_max_skip (rtx label)
+{
+  if (CODE_LABEL_NUMBER (label) <= max_labelno)
+    return LABEL_TO_MAX_SKIP (label);
+  return 0;
 }
 
 #ifdef HAVE_ATTR_length

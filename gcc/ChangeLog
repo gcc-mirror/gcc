@@ -1,6 +1,19 @@
 2009-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39942
+	* final.c (label_to_max_skip): New function.
+	(label_to_alignment): Only use LABEL_TO_ALIGNMENT if
+	CODE_LABEL_NUMBER <= max_labelno.
+	* output.h (label_to_max_skip): New prototype.
+	* config/i386/i386.c (ix86_avoid_jump_misspredicts): Renamed to...
+	(ix86_avoid_jump_mispredicts): ... this.  Don't define if
+	ASM_OUTPUT_MAX_SKIP_ALIGN isn't defined.  Update comment.
+	Handle CODE_LABELs with >= 16 byte alignment or with
+	max_skip == (1 << align) - 1.
+	(ix86_reorg): Don't call ix86_avoid_jump_mispredicts if
+	ASM_OUTPUT_MAX_SKIP_ALIGN isn't defined.
+
+	PR target/39942
 	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Don't emit second
 	.p2align 3 if MAX_SKIP is smaller than 7.
 	* config/i386/linux.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
