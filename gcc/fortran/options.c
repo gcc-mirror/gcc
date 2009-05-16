@@ -137,7 +137,7 @@ gfc_init_options (unsigned int argc, const char **argv)
   set_default_std_flags ();
 
   /* -fshort-enums can be default on some targets.  */
-  gfc_option.fshort_enums = targetm.default_short_enums ();
+  flag_short_enums = targetm.default_short_enums ();
 
   /* Initialize cpp-related options.  */
   gfc_cpp_init_options(argc, argv);
@@ -858,7 +858,7 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_fshort_enums:
-      gfc_option.fshort_enums = 1;
+      flag_short_enums = 1;
       break;
 
     case OPT_fconvert_little_endian:
