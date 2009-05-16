@@ -1,5 +1,11 @@
 2009-05-16  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/40153
+	* arm.md (cstoresi_nltu_thumb1): Use a neg of ltu as the pattern name
+	implies.
+
+2009-05-16  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.md (movdi2): Copy non-reg values to DImode registers.
 
 2009-05-16  Jakub Jelinek  <jakub@redhat.com>
