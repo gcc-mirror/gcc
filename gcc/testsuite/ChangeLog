@@ -1,3 +1,8 @@
+2009-05-16  David Billinghurst <billingd@gcc.gnu.org>
+
+	* gfortran.dg/default_format_denormal_1.f90: XFAIL on cygwin.
+	* gfortran.dg/default_format_1.f90: Revert change of 2009-05-12
+
 2009-05-15  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wcxx-compat-10.c: New testcase.
