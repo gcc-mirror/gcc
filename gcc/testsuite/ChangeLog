@@ -1,3 +1,8 @@
+2009-05-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40139
+	* g++.dg/template/dtor6.C: New.
+
 2009-05-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* g++.dg/warn/translate-ice-1.C: New test.

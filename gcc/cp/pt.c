@@ -9930,16 +9930,29 @@ tsubst_qualified_id (tree qualified_id, tree args,
     expr = name;
 
   if (dependent_type_p (scope))
-    return build_qualified_name (/*type=*/NULL_TREE,
-				 scope, expr,
-				 QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
+    {
+      tree type = NULL_TREE;
+      if (DECL_P (expr) && !dependent_scope_p (scope))
+	type = TREE_TYPE (expr);
+      return build_qualified_name (type, scope, expr,
+				   QUALIFIED_NAME_IS_TEMPLATE (qualified_id));
+    }
 
   if (!BASELINK_P (name) && !DECL_P (expr))
     {
       if (TREE_CODE (expr) == BIT_NOT_EXPR)
-	/* If this were actually a destructor call, it would have been
-	   parsed as such by the parser.  */
-	expr = error_mark_node;
+	{
+	  /* A BIT_NOT_EXPR is used to represent a destructor.  */
+	  if (!check_dtor_name (scope, TREE_OPERAND (expr, 0)))
+	    {
+	      error ("qualifying type %qT does not match destructor name ~%qT",
+		     scope, TREE_OPERAND (expr, 0));
+	      expr = error_mark_node;
+	    }
+	  else
+	    expr = lookup_qualified_name (scope, complete_dtor_identifier,
+					  /*is_type_p=*/0, false);
+	}
       else
 	expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0, false);
       if (TREE_CODE (TREE_CODE (expr) == TEMPLATE_DECL
