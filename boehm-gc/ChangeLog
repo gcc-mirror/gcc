@@ -1,3 +1,7 @@
+2009-05-17  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* win32_threads.c (GC_get_thread_stack_base):  Implement for Cygwin.
+
 2009-03-01  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
 	* configure: Regenerate.
