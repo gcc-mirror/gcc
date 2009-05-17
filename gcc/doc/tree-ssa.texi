@@ -108,9 +108,9 @@ full object that they represent.  For instance, given
 
 Since @code{a} and @code{b} are non-aliased locals, the statement
 @code{a = b} will have one real definition and one real use because
-variable @code{b} is completely modified with the contents of
-variable @code{a}.  Real definition are also known as @dfn{killing
-definitions}.  Similarly, the use of @code{a} reads all its bits.
+variable @code{a} is completely modified with the contents of
+variable @code{b}.  Real definition are also known as @dfn{killing
+definitions}.  Similarly, the use of @code{b} reads all its bits.
 
 In contrast, virtual operands are used with variables that can have
 a partial or ambiguous reference.  This includes structures, arrays,
