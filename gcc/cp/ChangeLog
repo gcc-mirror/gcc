@@ -1,3 +1,15 @@
+2009-05-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40139
+	* pt.c (tsubst_qualified_id): Retain the type if we aren't dealing
+	with a dependent type.  Actually look up the destructor.
+	* semantics.c (finish_id_expression): Fix logic.
+	(finish_qualified_id_expr): Don't try to use 'this' if we aren't in
+	a function.
+	* typeck.c (build_x_unary_op): Diagnose taking the address of a
+	constructor or destructor.
+	* tree.c (get_first_fn): Handle OFFSET_REF.
+
 2009-05-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* tree.c (cxx_printable_name_internal): Allow consecutive
