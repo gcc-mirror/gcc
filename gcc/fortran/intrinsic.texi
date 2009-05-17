@@ -167,7 +167,6 @@ Some basic guidelines for editing this document:
 * @code{LEADZ}:         LEADZ,     Number of leading zero bits of an integer
 * @code{LEN}:           LEN,       Length of a character entity
 * @code{LEN_TRIM}:      LEN_TRIM,  Length of a character entity without trailing blank characters
-* @code{LOG_GAMMA}:     LOG_GAMMA, Logarithm of the Gamma function
 * @code{LGE}:           LGE,       Lexical greater than or equal
 * @code{LGT}:           LGT,       Lexical greater than
 * @code{LINK}:          LINK,      Create a hard link
@@ -177,6 +176,7 @@ Some basic guidelines for editing this document:
 * @code{LOC}:           LOC,       Returns the address of a variable
 * @code{LOG}:           LOG,       Logarithm function
 * @code{LOG10}:         LOG10,     Base 10 logarithm function 
+* @code{LOG_GAMMA}:     LOG_GAMMA, Logarithm of the Gamma function
 * @code{LOGICAL}:       LOGICAL,   Convert to logical type
 * @code{LONG}:          LONG,      Convert to integer type
 * @code{LSHIFT}:        LSHIFT,    Left shift bits
@@ -1435,7 +1435,7 @@ end program test_atan2
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
 @item Name            @tab Argument          @tab Return type    @tab Standard
-@item @code{DATAN2(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)} @tab Fortran 77 and later
+@item @code{DATAN2(X, Y)} @tab @code{REAL(8) X}, @code{REAL(8) Y} @tab @code{REAL(8)} @tab Fortran 77 and later
 @end multitable
 @end table
 
@@ -1634,9 +1634,9 @@ end program test_besjn
 
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .20 .20 .25
-@item Name             @tab Argument            @tab Return type       @tab Standard
-@item @code{DBESJN(X)} @tab @code{INTEGER N} @tab @code{REAL(8)}    @tab GNU extension
-@item                  @tab @code{REAL(8) X}    @tab                   @tab
+@item Name                @tab Argument            @tab Return type       @tab Standard
+@item @code{DBESJN(N, X)} @tab @code{INTEGER N}    @tab @code{REAL(8)}    @tab GNU extension
+@item                     @tab @code{REAL(8) X}    @tab                   @tab
 @end multitable
 @end table
 
@@ -2488,7 +2488,7 @@ Inquiry function
 @end multitable
 
 @item @emph{Return value}:
-The return value is of type @code{INTEGER(4)}
+The return value is an @code{INTEGER} of default kind.
 
 @item @emph{Example}:
 @smallexample
@@ -3397,11 +3397,11 @@ end program test_dreal
 
 @table @asis
 @item @emph{Description}:
-@code{DTIME(TARRAY, RESULT)} initially returns the number of seconds of runtime
-since the start of the process's execution in @var{RESULT}.  @var{TARRAY}
-returns the user and system components of this time in @code{TARRAY(1)} and
-@code{TARRAY(2)} respectively. @var{RESULT} is equal to @code{TARRAY(1) +
-TARRAY(2)}.
+@code{DTIME(VALUES, TIME)} initially returns the number of seconds of runtime
+since the start of the process's execution in @var{TIME}.  @var{VALUES}
+returns the user and system components of this time in @code{VALUES(1)} and
+@code{VALUES(2)} respectively. @var{TIME} is equal to @code{VALUES(1) +
+VALUES(2)}.
 
 Subsequent invocations of @code{DTIME} return values accumulated since the
 previous invocation.
@@ -3421,12 +3421,12 @@ results. If possible, use @code{CPU_TIME} instead.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@var{TARRAY} and @var{RESULT} are @code{INTENT(OUT)} and provide the following:
+@var{VALUES} and @var{TIME} are @code{INTENT(OUT)} and provide the following:
 
 @multitable @columnfractions .15 .30 .40
-@item @tab @code{TARRAY(1)}: @tab User time in seconds.
-@item @tab @code{TARRAY(2)}: @tab System time in seconds.
-@item @tab @code{RESULT}: @tab Run time since start in seconds.
+@item @tab @code{VALUES(1)}: @tab User time in seconds.
+@item @tab @code{VALUES(2)}: @tab System time in seconds.
+@item @tab @code{TIME}: @tab Run time since start in seconds.
 @end multitable
 
 @item @emph{Standard}:
@@ -3437,14 +3437,14 @@ Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{CALL DTIME(TARRAY, RESULT)}.
-@item @code{RESULT = DTIME(TARRAY)}, (not recommended).
+@item @code{CALL DTIME(VALUES, TIME)}.
+@item @code{TIME = DTIME(VALUES)}, (not recommended).
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{TARRAY}@tab The type shall be @code{REAL, DIMENSION(2)}.
-@item @var{RESULT}@tab The type shall be @code{REAL}.
+@item @var{VALUES}@tab The type shall be @code{REAL, DIMENSION(2)}.
+@item @var{TIME}@tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -3716,10 +3716,10 @@ end program test_erfc_scaled
 
 @table @asis
 @item @emph{Description}:
-@code{ETIME(TARRAY, RESULT)} returns the number of seconds of runtime
-since the start of the process's execution in @var{RESULT}.  @var{TARRAY}
-returns the user and system components of this time in @code{TARRAY(1)} and
-@code{TARRAY(2)} respectively. @var{RESULT} is equal to @code{TARRAY(1) + TARRAY(2)}.
+@code{ETIME(VALUES, TIME)} returns the number of seconds of runtime
+since the start of the process's execution in @var{TIME}.  @var{VALUES}
+returns the user and system components of this time in @code{VALUES(1)} and
+@code{VALUES(2)} respectively. @var{TIME} is equal to @code{VALUES(1) + VALUES(2)}.
 
 On some systems, the underlying timings are represented using types with
 sufficiently small limits that overflows (wrap around) are possible, such as
@@ -3730,12 +3730,12 @@ run of the compiled program.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@var{TARRAY} and @var{RESULT} are @code{INTENT(OUT)} and provide the following:
+@var{VALUES} and @var{TIME} are @code{INTENT(OUT)} and provide the following:
 
 @multitable @columnfractions .15 .30 .60
-@item @tab @code{TARRAY(1)}: @tab User time in seconds.
-@item @tab @code{TARRAY(2)}: @tab System time in seconds.
-@item @tab @code{RESULT}: @tab Run time since start in seconds.
+@item @tab @code{VALUES(1)}: @tab User time in seconds.
+@item @tab @code{VALUES(2)}: @tab System time in seconds.
+@item @tab @code{TIME}: @tab Run time since start in seconds.
 @end multitable
 
 @item @emph{Standard}:
@@ -3746,14 +3746,14 @@ Subroutine, function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{CALL ETIME(TARRAY, RESULT)}.
-@item @code{RESULT = ETIME(TARRAY)}, (not recommended).
+@item @code{CALL ETIME(VALUES, TIME)}.
+@item @code{TIME = ETIME(VALUES)}, (not recommended).
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{TARRAY}@tab The type shall be @code{REAL, DIMENSION(2)}.
-@item @var{RESULT}@tab The type shall be @code{REAL}.
+@item @var{VALUES}@tab The type shall be @code{REAL, DIMENSION(2)}.
+@item @var{TIME}@tab The type shall be @code{REAL}.
 @end multitable
 
 @item @emph{Return value}:
@@ -4557,7 +4557,7 @@ END PROGRAM
 @code{FSTAT} is identical to @ref{STAT}, except that information about an 
 already opened file is obtained.
 
-The elements in @code{BUFF} are the same as described by @ref{STAT}.
+The elements in @code{VALUES} are the same as described by @ref{STAT}.
 
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
@@ -4569,12 +4569,12 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL FSTAT(UNIT, BUFF [, STATUS])}
+@code{CALL FSTAT(UNIT, VALUES [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{UNIT}   @tab An open I/O unit number of type @code{INTEGER}.
-@item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
+@item @var{VALUES} @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
 on success and a system specific error code otherwise.
 @end multitable
@@ -4817,18 +4817,24 @@ Fortran 2003 and later
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL GET_COMMAND(COMMAND)}
+@code{CALL GET_COMMAND([COMMAND, LENGTH, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{COMMAND} @tab Shall be of type @code{CHARACTER} and of default
-kind.
+@item @var{COMMAND} @tab (Optional) shall be of type @code{CHARACTER} and
+of default kind.
+@item @var{LENGTH} @tab (Optional) Shall be of type @code{INTEGER} and of
+default kind.
+@item @var{STATUS} @tab (Optional) Shall be of type @code{INTEGER} and of
+default kind.
 @end multitable
 
 @item @emph{Return value}:
-Stores the entire command line that was used to invoke the program in
-@var{COMMAND}. If @var{COMMAND} is not large enough, the command will be
-truncated. 
+If @var{COMMAND} is present, stores the entire command line that was used
+to invoke the program in @var{COMMAND}. If @var{LENGTH} is present, it is
+assigned the length of the command line. If @var{STATUS} is present, it
+is assigned 0 upon success of the command, -1 if @var{COMMAND} is too
+short to store the command line, or a positive value in case of an error.
 
 @item @emph{Example}:
 @smallexample
@@ -4867,12 +4873,14 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NUMBER} @tab Shall be a scalar of type @code{INTEGER(4)},
-@math{@var{NUMBER} \geq 0}
+@item @var{NUMBER} @tab Shall be a scalar of type @code{INTEGER} and of
+default kind, @math{@var{NUMBER} \geq 0}
 @item @var{VALUE}  @tab Shall be a scalar of type @code{CHARACTER}
 and of default kind.
-@item @var{LENGTH} @tab (Option) Shall be a scalar of type @code{INTEGER(4)}. 
-@item @var{STATUS} @tab (Option) Shall be a scalar of type @code{INTEGER(4)}. 
+@item @var{LENGTH} @tab (Option) Shall be a scalar of type @code{INTEGER}
+and of default kind.
+@item @var{STATUS} @tab (Option) Shall be a scalar of type @code{INTEGER}
+and of default kind.
 @end multitable
 
 @item @emph{Return value}:
@@ -5022,11 +5030,16 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{NAME}      @tab Shall be a scalar of type @code{CHARACTER(1)}. 
-@item @var{VALUE}     @tab Shall be a scalar of type @code{CHARACTER(1)}. 
-@item @var{LENGTH}    @tab Shall be a scalar of type @code{INTEGER(4)}. 
-@item @var{STATUS}    @tab Shall be a scalar of type @code{INTEGER(4)}. 
-@item @var{TRIM_NAME} @tab Shall be a scalar of type @code{LOGICAL(4)}. 
+@item @var{NAME}      @tab Shall be a scalar of type @code{CHARACTER}
+and of default kind.
+@item @var{VALUE}     @tab Shall be a scalar of type @code{CHARACTER}
+and of default kind.
+@item @var{LENGTH}    @tab Shall be a scalar of type @code{INTEGER}
+and of default kind.
+@item @var{STATUS}    @tab Shall be a scalar of type @code{INTEGER}
+and of default kind.
+@item @var{TRIM_NAME} @tab Shall be a scalar of type @code{LOGICAL}
+and of default kind.
 @end multitable
 
 @item @emph{Return value}:
@@ -5707,9 +5720,9 @@ end program read_val
 
 @table @asis
 @item @emph{Description}:
-@code{IDATE(TARRAY)} Fills @var{TARRAY} with the numerical values at the  
+@code{IDATE(VALUES)} Fills @var{VALUES} with the numerical values at the  
 current local time. The day (in the range 1-31), month (in the range 1-12), 
-and year appear in elements 1, 2, and 3 of @var{TARRAY}, respectively. 
+and year appear in elements 1, 2, and 3 of @var{VALUES}, respectively. 
 The year has four significant digits.
 
 @item @emph{Standard}:
@@ -7212,13 +7225,14 @@ The return value is of type @code{INTEGER} and of the same kind as
 
 @table @asis
 @item @emph{Description}:
-@code{LSTAT} is identical to @ref{STAT}, except that if path is a symbolic link, 
-then the link itself is statted, not the file that it refers to.
+@code{LSTAT} is identical to @ref{STAT}, except that if path is a
+symbolic link, then the link itself is statted, not the file that it
+refers to.
 
-The elements in @code{BUFF} are the same as described by @ref{STAT}.
+The elements in @code{VALUES} are the same as described by @ref{STAT}.
 
-This intrinsic is provided in both subroutine and function forms; however,
-only one form can be used in any given program unit.
+This intrinsic is provided in both subroutine and function forms;
+however, only one form can be used in any given program unit.
 
 @item @emph{Standard}:
 GNU extension
@@ -7227,13 +7241,13 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL LSTAT(FILE, BUFF [, STATUS])}
+@code{CALL LSTAT(NAME, VALUES [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FILE}   @tab The type shall be @code{CHARACTER} of the default
+@item @var{NAME}   @tab The type shall be @code{CHARACTER} of the default
 kind, a valid path within the file system.
-@item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
+@item @var{VALUES} @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}.
 Returns 0 on success and a system specific error code otherwise.
 @end multitable
@@ -7254,8 +7268,8 @@ To stat an open file: @ref{FSTAT}, to stat a file: @ref{STAT}
 
 @table @asis
 @item @emph{Description}:
-Given a system time value @var{STIME} (as provided by the @code{TIME8()}
-intrinsic), fills @var{TARRAY} with values extracted from it appropriate
+Given a system time value @var{TIME} (as provided by the @code{TIME8()}
+intrinsic), fills @var{VALUES} with values extracted from it appropriate
 to the local time zone using @code{localtime(3)}.
 
 @item @emph{Standard}:
@@ -7265,18 +7279,18 @@ GNU extension
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL LTIME(STIME, TARRAY)}
+@code{CALL LTIME(TIME, VALUES)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STIME}  @tab An @code{INTEGER} scalar expression
+@item @var{TIME}  @tab An @code{INTEGER} scalar expression
 corresponding to a system time, with @code{INTENT(IN)}.
-@item @var{TARRAY} @tab A default @code{INTEGER} array with 9 elements,
+@item @var{VALUES} @tab A default @code{INTEGER} array with 9 elements,
 with @code{INTENT(OUT)}.
 @end multitable
 
 @item @emph{Return value}:
-The elements of @var{TARRAY} are assigned as follows:
+The elements of @var{VALUES} are assigned as follows:
 @enumerate
 @item Seconds after the minute, range 0--59 or 0--61 to allow for leap
 seconds
@@ -8046,8 +8060,8 @@ end program
 
 @table @asis
 @item @emph{Description}:
-@code{MOVE_ALLOC(SRC, DEST)} moves the allocation from @var{SRC} to
-@var{DEST}.  @var{SRC} will become deallocated in the process.
+@code{MOVE_ALLOC(FROM, TO)} moves the allocation from @var{FROM} to
+@var{TO}.  @var{FROM} will become deallocated in the process.
 
 @item @emph{Standard}:
 Fortran 2003 and later
@@ -8056,14 +8070,14 @@ Fortran 2003 and later
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL MOVE_ALLOC(SRC, DEST)}
+@code{CALL MOVE_ALLOC(FROM, TO)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{SRC}  @tab @code{ALLOCATABLE}, @code{INTENT(INOUT)}, may be
+@item @var{FROM}  @tab @code{ALLOCATABLE}, @code{INTENT(INOUT)}, may be
 of any type and kind.
-@item @var{DEST} @tab @code{ALLOCATABLE}, @code{INTENT(OUT)}, shall be
-of the same type, kind and rank as @var{SRC}.
+@item @var{TO} @tab @code{ALLOCATABLE}, @code{INTENT(OUT)}, shall be
+of the same type, kind and rank as @var{FROM}.
 @end multitable
 
 @item @emph{Return value}:
@@ -8219,7 +8233,7 @@ end program newline
 
 @table @asis
 @item @emph{Description}:
-@code{NINT(X)} rounds its argument to the nearest whole number.
+@code{NINT(A)} rounds its argument to the nearest whole number.
 
 @item @emph{Standard}:
 Fortran 77 and later, with @var{KIND} argument Fortran 90 and later
@@ -8228,11 +8242,11 @@ Fortran 77 and later, with @var{KIND} argument Fortran 90 and later
 Elemental function
 
 @item @emph{Syntax}:
-@code{RESULT = NINT(X [, KIND])}
+@code{RESULT = NINT(A [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X}    @tab The type of the argument shall be @code{REAL}.
+@item @var{A}    @tab The type of the argument shall be @code{REAL}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
 expression indicating the kind parameter of the result.
 @end multitable
@@ -8368,13 +8382,13 @@ GNU extension
 Function
 
 @item @emph{Syntax}:
-@code{RESULT = OR(X, Y)}
+@code{RESULT = OR(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be either a scalar @code{INTEGER}
+@item @var{I} @tab The type shall be either a scalar @code{INTEGER}
 type or a scalar @code{LOGICAL} type.
-@item @var{Y} @tab The type shall be the same as the type of @var{X}.
+@item @var{J} @tab The type shall be the same as the type of @var{J}.
 @end multitable
 
 @item @emph{Return value}:
@@ -8606,8 +8620,10 @@ Fortran 95 and later
 Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = PRODUCT(ARRAY[, MASK])}
-@code{RESULT = PRODUCT(ARRAY, DIM[, MASK])}
+@multitable @columnfractions .80
+@item @code{RESULT = PRODUCT(ARRAY[, MASK])}
+@item @code{RESULT = PRODUCT(ARRAY, DIM[, MASK])}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8732,11 +8748,11 @@ GNU extension
 Function
 
 @item @emph{Syntax}:
-@code{RESULT = RAND(FLAG)}
+@code{RESULT = RAND(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FLAG} @tab Shall be a scalar @code{INTEGER} of kind 4.
+@item @var{I} @tab Shall be a scalar @code{INTEGER} of kind 4.
 @end multitable
 
 @item @emph{Return value}:
@@ -8839,7 +8855,7 @@ Fortran 95 and later
 Subroutine
 
 @item @emph{Syntax}:
-@code{CALL RANDOM_SEED(SIZE, PUT, GET)}
+@code{CALL RANDOM_SEED([SIZE, PUT, GET])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8924,8 +8940,8 @@ See @code{PRECISION} for an example.
 
 @table @asis
 @item @emph{Description}:
-@code{REAL(X [, KIND])} converts its argument @var{X} to a real type.  The
-@code{REALPART(X)} function is provided for compatibility with @command{g77},
+@code{REAL(A [, KIND])} converts its argument @var{A} to a real type.  The
+@code{REALPART} function is provided for compatibility with @command{g77},
 and its use is strongly discouraged.
 
 @item @emph{Standard}:
@@ -8936,13 +8952,13 @@ Elemental function
 
 @item @emph{Syntax}:
 @multitable @columnfractions .80
-@item @code{RESULT = REAL(X [, KIND])}
+@item @code{RESULT = REAL(A [, KIND])}
 @item @code{RESULT = REALPART(Z)}
 @end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X}    @tab Shall be @code{INTEGER}, @code{REAL}, or
+@item @var{A}    @tab Shall be @code{INTEGER}, @code{REAL}, or
 @code{COMPLEX}.
 @item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
 expression indicating the kind parameter of the result.
@@ -8954,14 +8970,14 @@ the following rules:
 
 @table @asis
 @item (A)
-@code{REAL(X)} is converted to a default real type if @var{X} is an 
+@code{REAL(A)} is converted to a default real type if @var{A} is an 
 integer or real variable.
 @item (B)
-@code{REAL(X)} is converted to a real type with the kind type parameter
-of @var{X} if @var{X} is a complex variable.
+@code{REAL(A)} is converted to a real type with the kind type parameter
+of @var{A} if @var{A} is a complex variable.
 @item (C)
-@code{REAL(X, KIND)} is converted to a real type with kind type
-parameter @var{KIND} if @var{X} is a complex, integer, or real
+@code{REAL(A, KIND)} is converted to a real type with kind type
+parameter @var{KIND} if @var{A} is a complex, integer, or real
 variable.
 @end table
 
@@ -9432,9 +9448,9 @@ end program ascii_kind
 
 @table @asis
 @item @emph{Description}:
-@code{SELECTED_INT_KIND(I)} return the kind value of the smallest integer
-type that can represent all values ranging from @math{-10^I} (exclusive)
-to @math{10^I} (exclusive). If there is no integer kind that accommodates
+@code{SELECTED_INT_KIND(R)} return the kind value of the smallest integer
+type that can represent all values ranging from @math{-10^R} (exclusive)
+to @math{10^R} (exclusive). If there is no integer kind that accommodates
 this range, @code{SELECTED_INT_KIND} returns @math{-1}.
 
 @item @emph{Standard}:
@@ -9444,11 +9460,11 @@ Fortran 95 and later
 Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = SELECTED_INT_KIND(I)}
+@code{RESULT = SELECTED_INT_KIND(R)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab Shall be a scalar and of type @code{INTEGER}.
+@item @var{R} @tab Shall be a scalar and of type @code{INTEGER}.
 @end multitable
 
 @item @emph{Example}:
@@ -9489,7 +9505,7 @@ Fortran 95 and later
 Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = SELECTED_REAL_KIND(P, R)}
+@code{RESULT = SELECTED_REAL_KIND([P, R])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10212,21 +10228,21 @@ This function returns information about a file. No permissions are required on
 the file itself, but execute (search) permission is required on all of the 
 directories in path that lead to the file.
 
-The elements that are obtained and stored in the array @code{BUFF}:
+The elements that are obtained and stored in the array @code{VALUES}:
 @multitable @columnfractions .15 .70
-@item @code{buff(1)}   @tab  Device ID 
-@item @code{buff(2)}   @tab  Inode number 
-@item @code{buff(3)}   @tab  File mode 
-@item @code{buff(4)}   @tab  Number of links 
-@item @code{buff(5)}   @tab  Owner's uid 
-@item @code{buff(6)}   @tab  Owner's gid 
-@item @code{buff(7)}   @tab  ID of device containing directory entry for file (0 if not available) 
-@item @code{buff(8)}   @tab  File size (bytes) 
-@item @code{buff(9)}   @tab  Last access time 
-@item @code{buff(10)}  @tab  Last modification time 
-@item @code{buff(11)}  @tab  Last file status change time 
-@item @code{buff(12)}  @tab  Preferred I/O block size (-1 if not available) 
-@item @code{buff(13)}  @tab  Number of blocks allocated (-1 if not available)
+@item @code{VALUES(1)}   @tab  Device ID 
+@item @code{VALUES(2)}   @tab  Inode number 
+@item @code{VALUES(3)}   @tab  File mode 
+@item @code{VALUES(4)}   @tab  Number of links 
+@item @code{VALUES(5)}   @tab  Owner's uid 
+@item @code{VALUES(6)}   @tab  Owner's gid 
+@item @code{VALUES(7)}   @tab  ID of device containing directory entry for file (0 if not available) 
+@item @code{VALUES(8)}   @tab  File size (bytes) 
+@item @code{VALUES(9)}   @tab  Last access time 
+@item @code{VALUES(10)}  @tab  Last modification time 
+@item @code{VALUES(11)}  @tab  Last file status change time 
+@item @code{VALUES(12)}  @tab  Preferred I/O block size (-1 if not available) 
+@item @code{VALUES(13)}  @tab  Number of blocks allocated (-1 if not available)
 @end multitable
 
 Not all these elements are relevant on all systems. 
@@ -10242,13 +10258,13 @@ GNU extension
 Subroutine, function
 
 @item @emph{Syntax}:
-@code{CALL STAT(FILE,BUFF[,STATUS])}
+@code{CALL STAT(NAME, VALUES [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{FILE}   @tab The type shall be @code{CHARACTER}, of the
+@item @var{NAME}   @tab The type shall be @code{CHARACTER}, of the
 default kind and a valid path within the file system.
-@item @var{BUFF}   @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
+@item @var{VALUES} @tab The type shall be @code{INTEGER(4), DIMENSION(13)}.
 @item @var{STATUS} @tab (Optional) status flag of type @code{INTEGER(4)}. Returns 0 
 on success and a system specific error code otherwise.
 @end multitable
@@ -10305,8 +10321,10 @@ Fortran 95 and later
 Transformational function
 
 @item @emph{Syntax}:
-@code{RESULT = SUM(ARRAY[, MASK])}
-@code{RESULT = SUM(ARRAY, DIM[, MASK])}
+@multitable @columnfractions .80
+@item @code{RESULT = SUM(ARRAY[, MASK])}
+@item @code{RESULT = SUM(ARRAY, DIM[, MASK])}
+@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10965,22 +10983,24 @@ the relevant dimension.
 
 @table @asis
 @item @emph{Description}:
-Sets the file creation mask to @var{MASK} and returns the old value in
-argument @var{OLD} if it is supplied. See @code{umask(2)}.
+Sets the file creation mask to @var{MASK}. If called as a function, it
+returns the old value. If called as a subroutine and argument @var{OLD}
+if it is supplied, it is set to the old value. See @code{umask(2)}.
 
 @item @emph{Standard}:
 GNU extension
 
 @item @emph{Class}:
-Subroutine
+Subroutine, function
 
 @item @emph{Syntax}:
 @code{CALL UMASK(MASK [, OLD])}
+@code{OLD = UMASK(MASK)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{MASK} @tab Shall be a scalar of type @code{INTEGER}.
-@item @var{MASK} @tab (Optional) Shall be a scalar of type
+@item @var{OLD} @tab (Optional) Shall be a scalar of type
 @code{INTEGER}.
 @end multitable
 
@@ -11154,13 +11174,13 @@ GNU extension
 Function
 
 @item @emph{Syntax}:
-@code{RESULT = XOR(X, Y)}
+@code{RESULT = XOR(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{X} @tab The type shall be either  a scalar @code{INTEGER}
+@item @var{I} @tab The type shall be either  a scalar @code{INTEGER}
 type or a scalar @code{LOGICAL} type.
-@item @var{Y} @tab The type shall be the same as the type of @var{I}.
+@item @var{J} @tab The type shall be the same as the type of @var{I}.
 @end multitable
 
 @item @emph{Return value}:

@@ -1,3 +1,14 @@
+2009-05-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/36260
+	* intrinsic.c (add_functions, add_subroutines): Fix argument
+	names and wrap long lines.
+	* intrinsic.texi: Fix documentation and argument names of
+	LOG_GAMMA, DATAN2, DBESJN, DTIME, ETIME, FSTAT, STAT, LSTAT,
+	GET_COMMAND, IDATE, LTIME, MOVE_ALLOC, NINT, OR, PRODUCT,
+	SUM, RAND, RANDOM_SEED, REAL, SELECTED_INT_KIND,
+	SELECTED_REAL_KIND and XOR.
+
 2009-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33197
