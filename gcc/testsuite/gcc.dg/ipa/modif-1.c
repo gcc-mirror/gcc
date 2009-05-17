@@ -15,12 +15,11 @@ void func4 (int *pi);
 
 void the_test (struct whatever u, struct whatever v,
 	       struct whatever w, struct whatever x,
-	       int i, int j, int k, int l)
+	       int i, int k, int l)
 {
   struct whatever *pw = &w;
   int *pk = &k;
 
-  j = l+3;
   v.first = 9;
 
   func1 (u);
@@ -28,7 +27,6 @@ void the_test (struct whatever u, struct whatever v,
   func2 (pw);
   func2 (&x);
   func3 (i);
-  func3 (j);
   func4 (pk);
   func4 (&l);
 }
@@ -40,5 +38,4 @@ void the_test (struct whatever u, struct whatever v,
 /* { dg-final { scan-ipa-dump-not "param 4\[^\\n\]*modified" "inline" } } */
 /* { dg-final { scan-ipa-dump "param 5\[^\\n\]*modified" "inline" } } */
 /* { dg-final { scan-ipa-dump "param 6\[^\\n\]*modified" "inline" } } */
-/* { dg-final { scan-ipa-dump "param 7\[^\\n\]*modified" "inline" } } */
 /* { dg-final { cleanup-ipa-dump "inline" } } */

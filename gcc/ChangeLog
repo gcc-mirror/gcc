@@ -1,3 +1,13 @@
+2009-05-18  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (ipa_check_stmt_modifications): Removed.
+	(visit_store_addr_for_mod_analysis): New function.
+	(ipa_detect_param_modifications): Use walk_stmt_load_store_addr_ops.
+	(determine_cst_member_ptr): Use gimple_assign_single_p.
+	(ipa_get_stmt_member_ptr_load_param): Use gimple_assign_single_p.
+	(ipa_analyze_call_uses): Use !gimple_assign_rhs2 rather than number of
+	operands.  Don't check number of operands of a NOP_EXPR.
+
 2009-05-18  Eric Fisher  <joefoxreal@gmail.com>
 
 	* doc/tree-ssa.texi (SSA Operands): Fix a mistake.
