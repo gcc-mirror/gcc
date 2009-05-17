@@ -1,3 +1,10 @@
+2009-05-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/c_kind_int128_test1.f03: Also test C_INT_FAST128_T.
+	* gfortran.dg/c_kind_int128_test2.f03: Update comment.
+	* gfortran.dg/c_kind_params.f90: Also test int_fast*_t.
+	* gfortran.dg/c_kinds.c: Add int_fast*_t arguments.
+
 2009-05-16  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/33197
