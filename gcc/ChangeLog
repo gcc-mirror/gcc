@@ -1,3 +1,10 @@
+2009-05-17  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (*zero_extend<mode>_trunchi,
+	*zero_extend<mode>_truncqi): Merge these into ...
+	(*zero_extend<GPR:mode>_trunc<SHORT:mode>): ... this new pattern.
+	Name the pattern following this as *zero_extendhi_truncqi.
+
 2009-05-16  Brad Lucier  <lucier@math.purdue.edu>
 
 	PR middle-end/39301
