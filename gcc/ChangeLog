@@ -1,3 +1,7 @@
+2009-05-18  Eric Fisher  <joefoxreal@gmail.com>
+
+	* doc/tree-ssa.texi (SSA Operands): Fix a mistake.
+
 2009-05-17  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/40172
