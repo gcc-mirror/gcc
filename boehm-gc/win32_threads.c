@@ -753,6 +753,12 @@ int GC_pthread_detach(pthread_t thread)
     return result;
 }
 
+GC_PTR GC_get_thread_stack_base()
+{
+  extern GC_PTR _tlsbase __asm__ ("%fs:4");
+  return _tlsbase;
+}
+
 #else /* !CYGWIN32 */
 
 /*
