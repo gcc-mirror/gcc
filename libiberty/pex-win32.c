@@ -753,17 +753,20 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
      original descriptors.  */
   orig_in = in;
   in = _dup (orig_in);
-  _close (orig_in);
+  if (orig_in != STDIN_FILENO)
+    _close (orig_in);
   
   orig_out = out;
   out = _dup (orig_out);
-  _close (orig_out);
+  if (orig_out != STDOUT_FILENO)
+    _close (orig_out);
   
   if (separate_stderr)
     {
       orig_err = errdes;
       errdes = _dup (orig_err);
-      _close (orig_err);
+      if (orig_err != STDERR_FILENO)
+	_close (orig_err);
     }
 
   stdin_handle = INVALID_HANDLE_VALUE;
@@ -844,11 +847,9 @@ pex_win32_exec_child (struct pex_obj *obj ATTRIBUTE_UNUSED, int flags,
   /* Close the standard input, standard output and standard error handles
      in the parent.  */ 
 
-  if (in != STDIN_FILENO)
-    _close (in);
-  if (out != STDOUT_FILENO)
-    _close (out);
-  if (errdes != STDERR_FILENO)
+  _close (in);
+  _close (out);
+  if (separate_stderr)
     _close (errdes);
 
   return pid;

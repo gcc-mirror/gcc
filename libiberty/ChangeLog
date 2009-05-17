@@ -1,3 +1,8 @@
+2009-05-17  Julian Brown  <julian@codesourcery.com>
+
+	* pex-win32.c (pex_win32_exec_child): Fix logic to avoid closing
+	standard handles (stdin, stdout, stderr) in parent.
+
 2009-04-29  Julian Brown  <julian@codesourcery.com>
 
 	* pex-win32.c (pex_win32_pipe): Add _O_NOINHERIT.    
