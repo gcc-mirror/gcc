@@ -1,3 +1,8 @@
+2009-05-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40139
+	* semantics.c (finish_id_expression): Fix logic.
+
 2009-05-06  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/17395
