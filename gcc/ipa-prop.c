@@ -172,48 +172,30 @@ ipa_initialize_node_params (struct cgraph_node *node)
     }
 }
 
-/* Check STMT to detect whether a formal parameter is directly modified within
-   STMT, the appropriate entry is updated in the modified flags of INFO.
-   Directly means that this function does not check for modifications through
-   pointers or escaping addresses because all TREE_ADDRESSABLE parameters are
-   considered modified anyway.  */
+/* Callback of walk_stmt_load_store_addr_ops for the visit_store and visit_addr
+   parameters.  If OP is a parameter declaration, mark it as modified in the
+   info structure passed in DATA.  */
 
-static void
-ipa_check_stmt_modifications (struct ipa_node_params *info, gimple stmt)
+static bool
+visit_store_addr_for_mod_analysis (gimple stmt ATTRIBUTE_UNUSED,
+				   tree op, void *data)
 {
-  int j;
-  int index;
-  tree lhs;
+  struct ipa_node_params *info = (struct ipa_node_params *) data;
 
-  switch (gimple_code (stmt))
+  if (TREE_CODE (op) == PARM_DECL)
     {
-    case GIMPLE_ASSIGN:
-      lhs = gimple_assign_lhs (stmt);
-
-      while (handled_component_p (lhs))
-	lhs = TREE_OPERAND (lhs, 0);
-      if (TREE_CODE (lhs) == SSA_NAME)
-	lhs = SSA_NAME_VAR (lhs);
-      index = ipa_get_param_decl_index (info, lhs);
-      if (index >= 0)
-	info->params[index].modified = true;
-      break;
-
-    case GIMPLE_ASM:
-      /* Asm code could modify any of the parameters.  */
-      for (j = 0; j < ipa_get_param_count (info); j++)
-	info->params[j].modified = true;
-      break;
-
-    default:
-      break;
+      int index = ipa_get_param_decl_index (info, op);
+      gcc_assert (index >= 0);
+      info->params[index].modified = true;
     }
+
+  return false;
 }
 
 /* Compute which formal parameters of function associated with NODE are locally
-   modified.  Parameters may be modified in NODE if they are TREE_ADDRESSABLE,
-   if they appear on the left hand side of an assignment or if there is an
-   ASM_EXPR in the function.  */
+   modified or their address is taken.  Note that this does not apply on
+   parameters with SSA names but those can and should be analyzed
+   differently.  */
 
 void
 ipa_detect_param_modifications (struct cgraph_node *node)
@@ -222,27 +204,17 @@ ipa_detect_param_modifications (struct cgraph_node *node)
   basic_block bb;
   struct function *func;
   gimple_stmt_iterator gsi;
-  gimple stmt;
   struct ipa_node_params *info = IPA_NODE_REF (node);
-  int i, count;
 
   if (ipa_get_param_count (info) == 0 || info->modification_analysis_done)
     return;
 
   func = DECL_STRUCT_FUNCTION (decl);
   FOR_EACH_BB_FN (bb, func)
-    {
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  stmt = gsi_stmt (gsi);
-	  ipa_check_stmt_modifications (info, stmt);
-	}
-    }
-
-  count = ipa_get_param_count (info);
-  for (i = 0; i < count; i++)
-    if (TREE_ADDRESSABLE (ipa_get_param (info, i)))
-      info->params[i].modified = true;
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      walk_stmt_load_store_addr_ops (gsi_stmt (gsi), info, NULL,
+				     visit_store_addr_for_mod_analysis,
+				     visit_store_addr_for_mod_analysis);
 
   info->modification_analysis_done = 1;
 }
@@ -482,7 +454,7 @@ determine_cst_member_ptr (gimple call, tree arg, tree method_field,
       gimple stmt = gsi_stmt (gsi);
       tree lhs, rhs, fld;
 
-      if (!is_gimple_assign (stmt) || gimple_num_ops (stmt) != 2)
+      if (!gimple_assign_single_p (stmt))
 	return;
 
       lhs = gimple_assign_lhs (stmt);
@@ -617,7 +589,7 @@ ipa_get_stmt_member_ptr_load_param (gimple stmt)
 {
   tree rhs;
 
-  if (!is_gimple_assign (stmt) || gimple_num_ops (stmt) != 2)
+  if (!gimple_assign_single_p (stmt))
     return NULL_TREE;
 
   rhs = gimple_assign_rhs1 (stmt);
@@ -797,7 +769,7 @@ ipa_analyze_call_uses (struct ipa_node_params *info, gimple call)
     return;
 
   def = SSA_NAME_DEF_STMT (cond);
-  if (!is_gimple_assign (def) || gimple_num_ops (def) != 3
+  if (!is_gimple_assign (def)
       || gimple_assign_rhs_code (def) != BIT_AND_EXPR
       || !integer_onep (gimple_assign_rhs2 (def)))
     return;
@@ -808,8 +780,8 @@ ipa_analyze_call_uses (struct ipa_node_params *info, gimple call)
 
   def = SSA_NAME_DEF_STMT (cond);
 
-  if (is_gimple_assign (def) && gimple_num_ops (def) == 2
-      && gimple_assign_rhs_code (def) == NOP_EXPR)
+  if (is_gimple_assign (def)
+      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def)))
     {
       cond = gimple_assign_rhs1 (def);
       if (!ipa_is_ssa_with_stmt_def (cond))
