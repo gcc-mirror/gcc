@@ -2254,6 +2254,8 @@ bool gfc_check_character_range (gfc_char_t, int);
 /* trans-types.c */
 gfc_try gfc_check_any_c_kind (gfc_typespec *);
 int gfc_validate_kind (bt, int, bool);
+int gfc_get_int_kind_from_width_isofortranenv (int size);
+int gfc_get_real_kind_from_width_isofortranenv (int size);
 extern int gfc_index_integer_kind;
 extern int gfc_default_integer_kind;
 extern int gfc_max_integer_kind;

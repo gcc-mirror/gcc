@@ -3,15 +3,14 @@
 
 #include <stdint.h>
 
-/* Note: int_fast*_t is currently not supported, cf. PR 448 */
 void param_test(short int my_short, int my_int, long int my_long,
                 long long int my_long_long, int8_t my_int8_t,
-                int_least8_t my_int_least8_t, /*int_fast8_t my_int_fast8_t,*/
+                int_least8_t my_int_least8_t, int_fast8_t my_int_fast8_t,
                 int16_t my_int16_t, int_least16_t my_int_least16_t,
-                /*int_fast16_t my_int_fast16_t,*/ int32_t my_int32_t,
-                int_least32_t my_int_least32_t, /*int_fast32_t my_int_fast32_t,*/
+                int_fast16_t my_int_fast16_t, int32_t my_int32_t,
+                int_least32_t my_int_least32_t, int_fast32_t my_int_fast32_t,
                 int64_t my_int64_t, int_least64_t my_int_least64_t,
-                /*int_fast64_t my_int_fast64_t,*/ intmax_t my_intmax_t,
+                int_fast64_t my_int_fast64_t, intmax_t my_intmax_t,
                 intptr_t my_intptr_t, float my_float, double my_double,
                 long double my_long_double, char my_char, _Bool my_bool);
    
@@ -43,10 +42,10 @@ int main(int argc, char **argv)
    _Bool my_bool = 1;
 
    param_test(my_short, my_int, my_long, my_long_long, my_int8_t,
-              my_int_least8_t, /*my_int_fast8_t,  */ my_int16_t,
-              my_int_least16_t,/* my_int_fast16_t,*/ my_int32_t,
-              my_int_least32_t,/* my_int_fast32_t,*/ my_int64_t,
-              my_int_least64_t,/* my_int_fast64_t,*/ my_intmax_t,
+              my_int_least8_t, my_int_fast8_t, my_int16_t,
+              my_int_least16_t, my_int_fast16_t, my_int32_t,
+              my_int_least32_t, my_int_fast32_t, my_int64_t,
+              my_int_least64_t, my_int_fast64_t, my_intmax_t,
               my_intptr_t, my_float, my_double, my_long_double, my_char,
               my_bool);
 

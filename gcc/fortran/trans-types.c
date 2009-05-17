@@ -163,6 +163,96 @@ get_int_kind_from_node (tree type)
   return -1;
 }
 
+/* Return a typenode for the "standard" C type with a given name.  */
+static tree
+get_typenode_from_name (const char *name)
+{
+  if (name == NULL || *name == '\0')
+    return NULL_TREE;
+
+  if (strcmp (name, "char") == 0)
+    return char_type_node;
+  if (strcmp (name, "unsigned char") == 0)
+    return unsigned_char_type_node;
+  if (strcmp (name, "signed char") == 0)
+    return signed_char_type_node;
+
+  if (strcmp (name, "short int") == 0)
+    return short_integer_type_node;
+  if (strcmp (name, "short unsigned int") == 0)
+    return short_unsigned_type_node;
+
+  if (strcmp (name, "int") == 0)
+    return integer_type_node;
+  if (strcmp (name, "unsigned int") == 0)
+    return unsigned_type_node;
+
+  if (strcmp (name, "long int") == 0)
+    return long_integer_type_node;
+  if (strcmp (name, "long unsigned int") == 0)
+    return long_unsigned_type_node;
+
+  if (strcmp (name, "long long int") == 0)
+    return long_long_integer_type_node;
+  if (strcmp (name, "long long unsigned int") == 0)
+    return long_long_unsigned_type_node;
+
+  gcc_unreachable ();
+}
+
+static int
+get_int_kind_from_name (const char *name)
+{
+  return get_int_kind_from_node (get_typenode_from_name (name));
+}
+
+
+/* Get the kind number corresponding to an integer of given size,
+   following the required return values for ISO_FORTRAN_ENV INT* constants:
+   -2 is returned if we support a kind of larger size, -1 otherwise.  */
+int
+gfc_get_int_kind_from_width_isofortranenv (int size)
+{
+  int i;
+
+  /* Look for a kind with matching storage size.  */
+  for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
+    if (gfc_integer_kinds[i].bit_size == size)
+      return gfc_integer_kinds[i].kind;
+
+  /* Look for a kind with larger storage size.  */
+  for (i = 0; gfc_integer_kinds[i].kind != 0; i++)
+    if (gfc_integer_kinds[i].bit_size > size)
+      return -2;
+
+  return -1;
+}
+
+/* Get the kind number corresponding to a real of given storage size,
+   following the required return values for ISO_FORTRAN_ENV REAL* constants:
+   -2 is returned if we support a kind of larger size, -1 otherwise.  */
+int
+gfc_get_real_kind_from_width_isofortranenv (int size)
+{
+  int i;
+
+  size /= 8;
+
+  /* Look for a kind with matching storage size.  */
+  for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+    if (int_size_in_bytes (gfc_get_real_type (gfc_real_kinds[i].kind)) == size)
+      return gfc_real_kinds[i].kind;
+
+  /* Look for a kind with larger storage size.  */
+  for (i = 0; gfc_real_kinds[i].kind != 0; i++)
+    if (int_size_in_bytes (gfc_get_real_type (gfc_real_kinds[i].kind)) > size)
+      return -2;
+
+  return -1;
+}
+
+
+
 static int
 get_int_kind_from_width (int size)
 {
@@ -679,6 +769,7 @@ gfc_build_logical_type (gfc_logical_info *info)
 
   return new_type;
 }
+
 
 #if 0
 /* Return the bit size of the C "size_t".  */

@@ -2,7 +2,7 @@
 ! { dg-options "-std=gnu" }
 ! { dg-require-effective-target fortran_integer_16 }
 !
-! Note: int_fast*_t currently not supported.
+! Note: int_fast128_t currently not supported.
 
 program c_kind_int128
   use, intrinsic :: iso_c_binding

@@ -33,6 +33,14 @@ NAMED_INTCST (ISOFORTRANENV_FILE_STORAGE_SIZE, "file_storage_size", 8, \
               GFC_STD_F2003)
 NAMED_INTCST (ISOFORTRANENV_INPUT_UNIT, "input_unit", GFC_STDIN_UNIT_NUMBER, \
               GFC_STD_F2003)
+NAMED_INTCST (ISOFORTRANENV_INT8, "int8", \
+              gfc_get_int_kind_from_width_isofortranenv (8), GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_INT16, "int16", \
+              gfc_get_int_kind_from_width_isofortranenv (16), GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_INT32, "int32", \
+              gfc_get_int_kind_from_width_isofortranenv (32), GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_INT64, "int64", \
+              gfc_get_int_kind_from_width_isofortranenv (64), GFC_STD_F2008)
 NAMED_INTCST (ISOFORTRANENV_IOSTAT_END, "iostat_end", LIBERROR_END, \
               GFC_STD_F2003)
 NAMED_INTCST (ISOFORTRANENV_IOSTAT_EOR, "iostat_eor", LIBERROR_EOR, \
@@ -41,3 +49,9 @@ NAMED_INTCST (ISOFORTRANENV_NUMERIC_STORAGE_SIZE, "numeric_storage_size", \
               gfc_numeric_storage_size, GFC_STD_F2003)
 NAMED_INTCST (ISOFORTRANENV_OUTPUT_UNIT, "output_unit", GFC_STDOUT_UNIT_NUMBER, \
               GFC_STD_F2003)
+NAMED_INTCST (ISOFORTRANENV_REAL32, "real32", \
+              gfc_get_real_kind_from_width_isofortranenv (32), GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_REAL64, "real64", \
+              gfc_get_real_kind_from_width_isofortranenv (64), GFC_STD_F2008)
+NAMED_INTCST (ISOFORTRANENV_REAL128, "real128", \
+              gfc_get_real_kind_from_width_isofortranenv (128), GFC_STD_F2008)

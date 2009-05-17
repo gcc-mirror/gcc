@@ -56,41 +56,44 @@ NAMED_INTCST (ISOCBINDING_LONG_LONG, "c_long_long", \
 NAMED_INTCST (ISOCBINDING_INTMAX_T, "c_intmax_t", \
               get_int_kind_from_node (intmax_type_node), GFC_STD_F2003)
 NAMED_INTCST (ISOCBINDING_INTPTR_T, "c_intptr_t", \
-              get_int_kind_from_node (ptr_type_node), GFC_STD_F2003)
+              get_int_kind_from_name (INTPTR_TYPE), GFC_STD_F2003)
 NAMED_INTCST (ISOCBINDING_SIZE_T, "c_size_t", \
               gfc_index_integer_kind, GFC_STD_F2003)
 NAMED_INTCST (ISOCBINDING_SIGNED_CHAR, "c_signed_char", \
               get_int_kind_from_node (signed_char_type_node), GFC_STD_F2003)
 
-NAMED_INTCST (ISOCBINDING_INT8_T, "c_int8_t", get_int_kind_from_width (8), \
-              GFC_STD_F2003)
-NAMED_INTCST (ISOCBINDING_INT16_T, "c_int16_t", get_int_kind_from_width (16), \
-              GFC_STD_F2003)
-NAMED_INTCST (ISOCBINDING_INT32_T, "c_int32_t", get_int_kind_from_width (32), \
-              GFC_STD_F2003)
-NAMED_INTCST (ISOCBINDING_INT64_T, "c_int64_t", get_int_kind_from_width (64), \
-              GFC_STD_F2003)
+NAMED_INTCST (ISOCBINDING_INT8_T, "c_int8_t", \
+              get_int_kind_from_name (INT8_TYPE), GFC_STD_F2003)
+NAMED_INTCST (ISOCBINDING_INT16_T, "c_int16_t", \
+              get_int_kind_from_name (INT16_TYPE), GFC_STD_F2003)
+NAMED_INTCST (ISOCBINDING_INT32_T, "c_int32_t", \
+              get_int_kind_from_name (INT32_TYPE), GFC_STD_F2003)
+NAMED_INTCST (ISOCBINDING_INT64_T, "c_int64_t", \
+              get_int_kind_from_name (INT64_TYPE), GFC_STD_F2003)
 /* GNU Extension.  */
-NAMED_INTCST (ISOCBINDING_INT128_T, "c_int128_t", get_int_kind_from_width (128), \
-              GFC_STD_GNU)
+NAMED_INTCST (ISOCBINDING_INT128_T, "c_int128_t", \
+              get_int_kind_from_width (128), GFC_STD_GNU)
 
 NAMED_INTCST (ISOCBINDING_INT_LEAST8_T, "c_int_least8_t", \
-              get_int_kind_from_minimal_width (8), GFC_STD_F2003)
+              get_int_kind_from_name (INT_LEAST8_TYPE), GFC_STD_F2003)
 NAMED_INTCST (ISOCBINDING_INT_LEAST16_T, "c_int_least16_t", \
-              get_int_kind_from_minimal_width (16), GFC_STD_F2003)
+              get_int_kind_from_name (INT_LEAST16_TYPE), GFC_STD_F2003)
 NAMED_INTCST (ISOCBINDING_INT_LEAST32_T, "c_int_least32_t", \
-              get_int_kind_from_minimal_width (32), GFC_STD_F2003)
+              get_int_kind_from_name (INT_LEAST32_TYPE), GFC_STD_F2003)
 NAMED_INTCST (ISOCBINDING_INT_LEAST64_T, "c_int_least64_t", \
-              get_int_kind_from_minimal_width (64), GFC_STD_F2003)
+              get_int_kind_from_name (INT_LEAST64_TYPE), GFC_STD_F2003)
 /* GNU Extension.  */
 NAMED_INTCST (ISOCBINDING_INT_LEAST128_T, "c_int_least128_t", \
               get_int_kind_from_minimal_width (128), GFC_STD_GNU)
 
-/* TODO: Implement c_int_fast*_t. Depends on PR 448.  */ 
-NAMED_INTCST (ISOCBINDING_INT_FAST8_T, "c_int_fast8_t", -2, GFC_STD_F2003)
-NAMED_INTCST (ISOCBINDING_INT_FAST16_T, "c_int_fast16_t", -2, GFC_STD_F2003)
-NAMED_INTCST (ISOCBINDING_INT_FAST32_T, "c_int_fast32_t", -2, GFC_STD_F2003)
-NAMED_INTCST (ISOCBINDING_INT_FAST64_T, "c_int_fast64_t", -2, GFC_STD_F2003)
+NAMED_INTCST (ISOCBINDING_INT_FAST8_T, "c_int_fast8_t", \
+              get_int_kind_from_name (INT_FAST8_TYPE), GFC_STD_F2003)
+NAMED_INTCST (ISOCBINDING_INT_FAST16_T, "c_int_fast16_t", \
+              get_int_kind_from_name (INT_FAST16_TYPE), GFC_STD_F2003)
+NAMED_INTCST (ISOCBINDING_INT_FAST32_T, "c_int_fast32_t", \
+              get_int_kind_from_name (INT_FAST32_TYPE), GFC_STD_F2003)
+NAMED_INTCST (ISOCBINDING_INT_FAST64_T, "c_int_fast64_t", \
+              get_int_kind_from_name (INT_FAST64_TYPE), GFC_STD_F2003)
 /* GNU Extension.  */
 NAMED_INTCST (ISOCBINDING_INT_FAST128_T, "c_int_fast128_t", -2, GFC_STD_GNU)
 
