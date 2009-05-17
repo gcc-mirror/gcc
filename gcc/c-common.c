@@ -1784,10 +1784,8 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
     in0_p = !in0_p, in1_p = !in1_p;
   
   /* If both expressions are the same, if we can merge the ranges, and we
-     can build the range test, return it or it inverted.  If one of the
-     ranges is always true or always false, consider it to be the same
-     expression as the other.  */
-  if ((lhs == 0 || rhs == 0 || operand_equal_p (lhs, rhs, 0))
+     can build the range test, return it or it inverted.  */
+  if (lhs && rhs && operand_equal_p (lhs, rhs, 0)
       && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
 		       in1_p, low1, high1)
       && 0 != (tem = build_range_check (type,

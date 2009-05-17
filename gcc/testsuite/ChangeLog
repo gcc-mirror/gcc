@@ -1,3 +1,8 @@
+2009-05-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/40172
+	* gcc.dg/pr40172.c: New.
+
 2009-05-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40139
