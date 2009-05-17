@@ -370,6 +370,12 @@ then
 	extra_options="${extra_options} ${cpu_type}/${cpu_type}.opt"
 fi
 
+case $(target) in
+i[34567]86-w64-*)
+	tm_file="i386/biarch32.h $(tm_file)"
+	;;
+esac
+
 case ${target} in
 i[34567]86-*-*)
 	if test "x$enable_cld" = xyes; then

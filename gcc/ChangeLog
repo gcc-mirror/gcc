@@ -1,3 +1,8 @@
+2009-05-17  Kai Tietz  <kai.tietz@onevision.com>
+
+       * config/i386/biarch32.h: New file.
+       * config.gcc: Add for target i386-w64-* the biarch32.h to tm_file.
+
 2009-05-17  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (*zero_extend<mode>_trunchi,
