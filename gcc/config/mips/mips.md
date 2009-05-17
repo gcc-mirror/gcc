@@ -2778,25 +2778,19 @@
 
 ;; Combiner patterns to optimize truncate/zero_extend combinations.
 
-(define_insn "*zero_extend<mode>_trunchi"
+(define_insn "*zero_extend<GPR:mode>_trunc<SHORT:mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d")
         (zero_extend:GPR
-	    (truncate:HI (match_operand:DI 1 "register_operand" "d"))))]
+	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
-  "andi\t%0,%1,0xffff"
+{
+  operands[2] = GEN_INT (GET_MODE_MASK (<SHORT:MODE>mode));
+  return "andi\t%0,%1,%x2";
+}
   [(set_attr "type" "logical")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*zero_extend<mode>_truncqi"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-        (zero_extend:GPR
-	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "andi\t%0,%1,0xff"
-  [(set_attr "type" "logical")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn ""
+(define_insn "*zero_extendhi_truncqi"
   [(set (match_operand:HI 0 "register_operand" "=d")
         (zero_extend:HI
 	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
