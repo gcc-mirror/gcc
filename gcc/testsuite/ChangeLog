@@ -1,3 +1,7 @@
+2009-05-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/warn/translate-ice-1.C: New test.
+
 2009-05-17  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* gfortran.dg/c_kind_int128_test1.f03: Also test C_INT_FAST128_T.
