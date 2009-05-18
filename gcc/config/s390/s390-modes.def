@@ -45,8 +45,8 @@ Signed compares
 
 CCS:  EQ          LT           GT          UNORDERED  (LTGFR, LTGR, LTR, ICM/Y,
                                                        LTDBR, LTDR, LTEBR, LTER,
-                                                       CG/R, C/R/Y, CGHI, CHI, 
-                                                       CDB/R, CD/R, CEB/R, CE/R, 
+                                                       CG/R, C/R/Y, CGHI, CHI,
+                                                       CDB/R, CD/R, CEB/R, CE/R,
                                                        ADB/R, AEB/R, SDB/R, SEB/R,
                                                        SRAG, SRA, SRDA)
 CCSR: EQ          GT           LT          UNORDERED  (CGF/R, CH/Y)
@@ -60,7 +60,7 @@ CCAN: EQ          LT           GT          GT         (AGHI, AHI)
 Condition codes of unsigned adds and subs
 
 CCL:  EQ          NE           EQ          NE         (ALGF/R, ALG/R, AL/R/Y,
-                                                       ALCG/R, ALC/R, 
+                                                       ALCG/R, ALC/R,
                                                        SLGF/R, SLG/R, SL/R/Y,
                                                        SLBG/R, SLB/R)
 CCL1: GEU         GEU          LTU         LTU        (ALG/R, AL/R/Y)
@@ -69,14 +69,14 @@ CCL3: EQ          LTU          EQ          GTU        (SLG/R, SL/R/Y)
 
 Test under mask checks
 
-CCT:  EQ          NE           NE          NE         (ICM/Y, TML, CG/R, CGHI, 
+CCT:  EQ          NE           NE          NE         (ICM/Y, TML, CG/R, CGHI,
                                                        C/R/Y, CHI, NG/R, N/R/Y,
                                                        OG/R, O/R/Y, XG/R, X/R/Y)
 CCT1: NE          EQ           NE          NE         (TMH, TML)
 CCT2: NE          NE           EQ          NE         (TMH, TML)
 CCT3: NE          NE           NE          EQ         (TMH, TML)
 
-CCA and CCT modes are request only modes. These modes are never returned by 
+CCA and CCT modes are request only modes. These modes are never returned by
 s390_select_cc_mode. They are only intended to match other modes.
 
 Requested mode            -> Destination CC register mode
@@ -89,11 +89,11 @@ CCA                       -> CCAP, CCAN
 
 CCAP, CCAN
 
-The CC obtained from add instruction usually can't be used for comparisons 
+The CC obtained from add instruction usually can't be used for comparisons
 because its coupling with overflow flag. In case of an overflow the
 less than/greater than data are lost. Nevertheless a comparison can be done
 whenever immediate values are involved because they are known at compile time.
-If you know whether the used constant is positive or negative you can predict 
+If you know whether the used constant is positive or negative you can predict
 the sign of the result even in case of an overflow.
 
 
@@ -103,7 +103,7 @@ If bits of an integer masked with an AND instruction are checked, the test under
 mask instructions turn out to be very handy for a set of special cases.
 The simple cases are checks whether all masked bits are zero or ones:
 
-  int a; 
+  int a;
   if ((a & (16 + 128)) == 0)          -> CCT/CCZ
   if ((a & (16 + 128)) == 16 + 128)   -> CCT3
 
@@ -120,15 +120,15 @@ CCSR, CCUR
 
 There are several instructions comparing 32 bit with 64-bit unsigned/signed
 values. Such instructions can be considered to have a builtin zero/sign_extend.
-The problem is that in the RTL (to be canonical) the zero/sign extended operand 
-has to be the first one but the machine instructions like it the other way 
-around. The following both modes can be considered as CCS and CCU modes with 
+The problem is that in the RTL (to be canonical) the zero/sign extended operand
+has to be the first one but the machine instructions like it the other way
+around. The following both modes can be considered as CCS and CCU modes with
 exchanged operands.
 
 
 CCL1, CCL2
 
-These modes represent the result of overflow checks. 
+These modes represent the result of overflow checks.
 
 if (a + b < a) -> CCL1 state of the carry bit   (CC2 | CC3)
 if (a - b > a) -> CCL2 state of the borrow bit  (CC0 | CC1)
@@ -142,7 +142,7 @@ CCL3
 
 A logical subtract instruction sets the borrow bit in case of an overflow.
 The resulting condition code of those instructions is represented by the
-CCL3 mode. Together with the CCU mode this mode is used for jumpless 
+CCL3 mode. Together with the CCU mode this mode is used for jumpless
 implementations of several if-constructs - see s390_expand_addcc for more
 details.
 
@@ -152,7 +152,7 @@ The compare and swap instructions sets the condition code to 0/1 if the
 operands were equal/unequal. The CCZ1 mode ensures the result can be
 effectively placed into a register.
 
-*/   
+*/
 
 
 CC_MODE (CCZ);

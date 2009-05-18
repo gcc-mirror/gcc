@@ -180,7 +180,7 @@ extern int s390_arch_flags;
 #define S390_TDC_POSITIVE_NORMALIZED_DFP_NUMBER   (1 << 7)
 #define S390_TDC_NEGATIVE_NORMALIZED_DFP_NUMBER   (1 << 6)
 
-/* For signbit, the BFP-DFP-difference makes no difference. */ 
+/* For signbit, the BFP-DFP-difference makes no difference. */
 #define S390_TDC_SIGNBIT_SET (S390_TDC_NEGATIVE_ZERO \
                           | S390_TDC_NEGATIVE_NORMALIZED_BFP_NUMBER \
                           | S390_TDC_NEGATIVE_DENORMALIZED_BFP_NUMBER\
@@ -298,10 +298,10 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    correspond to actual hardware:
    Reg 32: Argument pointer
    Reg 33: Condition code
-   Reg 34: Frame pointer  
+   Reg 34: Frame pointer
    Reg 35: Return address pointer
 
-   Registers 36 and 37 are mapped to access registers 
+   Registers 36 and 37 are mapped to access registers
    0 and 1, used to implement thread-local storage.  */
 
 #define FIRST_PSEUDO_REGISTER 38
@@ -455,7 +455,7 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 enum reg_class
 {
   NO_REGS, CC_REGS, ADDR_REGS, GENERAL_REGS, ACCESS_REGS,
-  ADDR_CC_REGS, GENERAL_CC_REGS, 
+  ADDR_CC_REGS, GENERAL_CC_REGS,
   FP_REGS, ADDR_FP_REGS, GENERAL_FP_REGS,
   ALL_REGS, LIM_REG_CLASSES
 };
@@ -575,7 +575,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    the argument area.  */
 #define FIRST_PARM_OFFSET(FNDECL) 0
 
-/* Defining this macro makes __builtin_frame_address(0) and 
+/* Defining this macro makes __builtin_frame_address(0) and
    __builtin_return_address(0) work with -fomit-frame-pointer.  */
 #define INITIAL_FRAME_ADDRESS_RTX                                             \
   (plus_constant (arg_pointer_rtx, -STACK_POINTER_OFFSET))
@@ -615,7 +615,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N) ((N) < 4 ? (N) + 6 : INVALID_REGNUM)
 #define EH_RETURN_HANDLER_RTX gen_rtx_MEM (Pmode, return_address_pointer_rtx)
-       
+
 /* Select a format to encode pointers in exception handling data.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)			    \
   (flag_pic								    \
@@ -807,7 +807,7 @@ do {									\
 #define SLOW_BYTE_ACCESS 1
 
 /* An integer expression for the size in bits of the largest integer machine
-   mode that should actually be used.  We allow pairs of registers.  */ 
+   mode that should actually be used.  We allow pairs of registers.  */
 #define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_64BIT ? TImode : DImode)
 
 /* The maximum number of bytes that a single instruction can move quickly

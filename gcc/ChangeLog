@@ -1,3 +1,17 @@
+2009-05-18  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/2064.md: Remove trailing whitespaces.
+	* config/s390/2084.md: Likewise.
+	* config/s390/constraints.md: Likewise.
+	* config/s390/fixdfdi.h: Likewise.
+	* config/s390/libgcc-glibc.ver: Likewise.
+	* config/s390/s390-modes.def: Likewise.
+	* config/s390/s390-protos.h: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/s390/s390.h: Likewise.
+	* config/s390/s390.md: Likewise.
+	* config/s390/tpf-unwind.h: Likewise.
+
 2009-05-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/m68k/m68k.c (m68k_legitimize_address): Fix typo in signature.

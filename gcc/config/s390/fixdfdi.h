@@ -63,12 +63,12 @@ __fixunstfdi (long double a1)
     if (!EXPD (dl1) || SIGND(dl1))
       return 0;
 
-    /* The exponent - considered the binary point at the right end of 
+    /* The exponent - considered the binary point at the right end of
        the mantissa.  */
     exp = EXPD (dl1) - EXPONENT_BIAS - MANTISSA_BITS;
 
     /* number < 1: If the mantissa would need to be right-shifted more bits than
-       its size (plus the implied one bit on the left) the result would be 
+       its size (plus the implied one bit on the left) the result would be
        zero.  */
     if (exp <= -PRECISION)
       return 0;
@@ -238,7 +238,7 @@ __fixunsdfdi (double a1)
     /* shift down until exp < 12 or l = 0 */
     if (exp > 0)
       l <<= exp;
-    else 
+    else
       l >>= -exp;
 
     return l;
@@ -313,7 +313,7 @@ __fixdfdi (double a1)
     /* shift down until exp < 12 or l = 0 */
     if (exp > 0)
       l <<= exp;
-    else 
+    else
       l >>= -exp;
 
     return (SIGND (dl1) ? -l : l);
@@ -381,7 +381,7 @@ __fixunssfdi (float a1)
 
     if (exp > 0)
       l <<= exp;
-    else 
+    else
       l >>= -exp;
 
     return l;
@@ -452,7 +452,7 @@ __fixsfdi (float a1)
 
     if (exp > 0)
       l <<= exp;
-    else 
+    else
       l >>= -exp;
 
     return (SIGN (fl1) ? -l : l);

@@ -23,7 +23,7 @@
 # to defer implementation of these routines to libgcc.so via DT_AUXILIARY.
 
 # Note that we cannot use the default libgcc-glibc.ver file on s390x,
-# because GLIBC_2.0 does not exist on this architecture, as the first 
+# because GLIBC_2.0 does not exist on this architecture, as the first
 # ever glibc release on the platform was GLIBC_2.2.
 
 %ifndef __s390x__
