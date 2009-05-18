@@ -4829,7 +4829,7 @@ output_andsi3 (rtx *operands)
       return "and%.w %2,%0";
     }
   if (GET_CODE (operands[2]) == CONST_INT
-      && (logval = exact_log2 (~ INTVAL (operands[2]))) >= 0
+      && (logval = exact_log2 (~ INTVAL (operands[2]) & 0xffffffff)) >= 0
       && (DATA_REG_P (operands[0])
           || offsettable_memref_p (operands[0])))
     {
@@ -4866,7 +4866,7 @@ output_iorsi3 (rtx *operands)
       return "or%.w %2,%0";
     }
   if (GET_CODE (operands[2]) == CONST_INT
-      && (logval = exact_log2 (INTVAL (operands[2]))) >= 0
+      && (logval = exact_log2 (INTVAL (operands[2]) & 0xffffffff)) >= 0
       && (DATA_REG_P (operands[0])
 	  || offsettable_memref_p (operands[0])))
     {
@@ -4901,7 +4901,7 @@ output_xorsi3 (rtx *operands)
       return "eor%.w %2,%0";
     }
   if (GET_CODE (operands[2]) == CONST_INT
-      && (logval = exact_log2 (INTVAL (operands[2]))) >= 0
+      && (logval = exact_log2 (INTVAL (operands[2]) & 0xffffffff)) >= 0
       && (DATA_REG_P (operands[0])
 	  || offsettable_memref_p (operands[0])))
     {

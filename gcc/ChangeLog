@@ -1,3 +1,11 @@
+2009-05-18  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/39531
+	* config/m68k/m68k.c (output_andsi3): Mask off sign bit copies
+	before calling exact_log2.
+	(output_iorsi3): Likewise.
+	(output_xorsi3): Likewise.
+
 2009-05-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (expand_cbranchdi4): Use a scratch register
