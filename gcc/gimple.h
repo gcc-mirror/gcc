@@ -1394,35 +1394,6 @@ gimple_modified_p (const_gimple g)
   return (gimple_has_ops (g)) ? (bool) g->gsbase.modified : false;
 }
 
-/* Return the type of the main expression computed by STMT.  Return
-   void_type_node if the statement computes nothing.  */
-
-static inline tree
-gimple_expr_type (const_gimple stmt)
-{
-  enum gimple_code code = gimple_code (stmt);
-
-  if (code == GIMPLE_ASSIGN || code == GIMPLE_CALL)
-    {
-      tree type = TREE_TYPE (gimple_get_lhs (stmt));
-      /* Integral sub-types are never the type of the expression,
-         but they still can be the type of the result as the base
-	 type (in which expressions are computed) is trivially
-	 convertible to one of its sub-types.  So always return
-	 the base type here.  */
-      if (INTEGRAL_TYPE_P (type)
-	  && TREE_TYPE (type)
-	  /* But only if they are trivially convertible.  */
-	  && useless_type_conversion_p (type, TREE_TYPE (type)))
-	type = TREE_TYPE (type);
-      return type;
-    }
-  else if (code == GIMPLE_COND)
-    return boolean_type_node;
-  else
-    return void_type_node;
-}
-
 
 /* Return the tree code for the expression computed by STMT.  This is
    only valid for GIMPLE_COND, GIMPLE_CALL and GIMPLE_ASSIGN.  For
@@ -4282,6 +4253,55 @@ gimple_predict_set_outcome (gimple gs, enum prediction outcome)
     gs->gsbase.subcode |= GF_PREDICT_TAKEN;
   else
     gs->gsbase.subcode &= ~GF_PREDICT_TAKEN;
+}
+
+
+/* Return the type of the main expression computed by STMT.  Return
+   void_type_node if the statement computes nothing.  */
+
+static inline tree
+gimple_expr_type (const_gimple stmt)
+{
+  enum gimple_code code = gimple_code (stmt);
+
+  if (code == GIMPLE_ASSIGN || code == GIMPLE_CALL)
+    {
+      tree type;
+      /* In general we want to pass out a type that can be substituted
+         for both the RHS and the LHS types if there is a possibly
+	 useless conversion involved.  That means returning the
+	 original RHS type as far as we can reconstruct it.  */
+      if (code == GIMPLE_CALL)
+	type = gimple_call_return_type (stmt);
+      else
+	switch (gimple_assign_rhs_code (stmt))
+	  {
+	  case POINTER_PLUS_EXPR:
+	    type = TREE_TYPE (gimple_assign_rhs1 (stmt));
+	    break;
+
+	  default:
+	    /* As fallback use the type of the LHS.  */
+	    type = TREE_TYPE (gimple_get_lhs (stmt));
+	    break;
+	  }
+
+      /* Integral sub-types are never the type of the expression,
+         but they still can be the type of the result as the base
+	 type (in which expressions are computed) is trivially
+	 convertible to one of its sub-types.  So always return
+	 the base type here.  */
+      if (INTEGRAL_TYPE_P (type)
+	  && TREE_TYPE (type)
+	  /* But only if they are trivially convertible.  */
+	  && useless_type_conversion_p (type, TREE_TYPE (type)))
+	type = TREE_TYPE (type);
+      return type;
+    }
+  else if (code == GIMPLE_COND)
+    return boolean_type_node;
+  else
+    return void_type_node;
 }
 
 
