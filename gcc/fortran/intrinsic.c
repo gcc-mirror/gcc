@@ -303,7 +303,7 @@ add_sym (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt type
       type = (bt) va_arg (argp, int);
       kind = va_arg (argp, int);
       optional = va_arg (argp, int);
-      intent = va_arg (argp, int);
+      intent = (sym_intent) va_arg (argp, int);
 
       if (sizing != SZ_NOTHING)
 	nargs++;

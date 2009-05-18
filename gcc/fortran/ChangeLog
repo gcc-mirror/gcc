@@ -1,3 +1,8 @@
+2009-05-18  Janus Weil  <janus@gcc.gnu.org>
+
+	* intrinsic.c (add_sym): Fix my last commit (r147655),
+	which broke bootstrap.
+
 2009-05-18  Richard Guenther  <rguenther@suse.de>
 
 	PR fortran/40168
