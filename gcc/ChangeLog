@@ -1,3 +1,9 @@
+2009-05-18  Dodji Seketeli  <dodji@redhat.com>
+
+	PR debug/40109
+	* dwarf2out.c (gen_type_die_with_usage): Generate the DIE as a
+	child of the containing namespace's DIE.
+
 2009-05-18  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (*zero_extend<GPR:mode>_trunc<SHORT:mode>,
