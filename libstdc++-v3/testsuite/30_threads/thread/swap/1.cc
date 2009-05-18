@@ -30,21 +30,21 @@
 
 void f() { }
 
-int main()
+void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  try 
+  try
     {
       std::thread t1(f);
       std::thread::id t1_id = t1.get_id();
       
       std::thread t2;
-      t2.swap(std::move(t1));
       
+      t2.swap(t1);
       VERIFY( t1.get_id() == std::thread::id() );
       VERIFY( t2.get_id() == t1_id );
-      
+
       t2.join();
     }
   catch (const std::system_error&)
@@ -55,6 +55,39 @@ int main()
     {
       VERIFY( false );
     }
+}
+
+void test02()
+{
+  bool test __attribute__((unused)) = true;
+
+  try
+    {
+      std::thread t1(f);
+      std::thread::id t1_id = t1.get_id();
+      
+      std::thread t2;
+      
+      std::swap(t1, t2);
+      VERIFY( t1.get_id() == std::thread::id() );
+      VERIFY( t2.get_id() == t1_id );
+
+      t2.join();
+    }
+  catch (const std::system_error&)
+    {
+      VERIFY( false );
+    }
+  catch (...)
+    {
+      VERIFY( false );
+    }
+}
+
+int main()
+{
+  test01();
+  test02();
 
   return 0;
 }

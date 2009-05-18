@@ -213,7 +213,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
-      swap(stack&& __s)
+      swap(stack& __s)
       { c.swap(__s.c); }
 #endif
     };
@@ -281,16 +281,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp, typename _Seq>
     inline void
     swap(stack<_Tp, _Seq>& __x, stack<_Tp, _Seq>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Tp, typename _Seq>
-    inline void
-    swap(stack<_Tp, _Seq>&& __x, stack<_Tp, _Seq>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Tp, typename _Seq>
-    inline void
-    swap(stack<_Tp, _Seq>& __x, stack<_Tp, _Seq>&& __y)
     { __x.swap(__y); }
 #endif
 

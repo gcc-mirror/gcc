@@ -383,11 +383,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  std::swap(s1,s2) will feed to this function.
        */
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      swap(set&& __x)
-#else
       swap(set& __x)	
-#endif
       { _M_t.swap(__x._M_t); }
 
       // insert/erase
@@ -690,18 +686,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     inline void
     swap(set<_Key, _Compare, _Alloc>& __x, set<_Key, _Compare, _Alloc>& __y)
     { __x.swap(__y); }
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  template<typename _Key, typename _Compare, typename _Alloc>
-    inline void
-    swap(set<_Key, _Compare, _Alloc>&& __x, set<_Key, _Compare, _Alloc>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Key, typename _Compare, typename _Alloc>
-    inline void
-    swap(set<_Key, _Compare, _Alloc>& __x, set<_Key, _Compare, _Alloc>&& __y)
-    { __x.swap(__y); }
-#endif
 
 _GLIBCXX_END_NESTED_NAMESPACE
 

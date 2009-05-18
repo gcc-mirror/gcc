@@ -555,7 +555,7 @@ namespace std
       }
 
       void
-      swap(unique_lock&& __u)
+      swap(unique_lock& __u)
       {
 	std::swap(_M_device, __u._M_device);
 	std::swap(_M_owns, __u._M_owns);
@@ -589,16 +589,6 @@ namespace std
   template<typename _Mutex>
     inline void
     swap(unique_lock<_Mutex>& __x, unique_lock<_Mutex>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Mutex>
-    inline void
-    swap(unique_lock<_Mutex>&& __x, unique_lock<_Mutex>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Mutex>
-    inline void
-    swap(unique_lock<_Mutex>& __x, unique_lock<_Mutex>&& __y)
     { __x.swap(__y); }
 
   template<int _Idx>

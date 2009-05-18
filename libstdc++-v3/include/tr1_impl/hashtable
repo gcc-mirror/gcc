@@ -225,11 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 
       ~_Hashtable();
 
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-      void swap(_Hashtable&&);
-#else
       void swap(_Hashtable&);
-#endif
 
       // Basic container operations
       iterator
@@ -732,11 +728,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     void
     _Hashtable<_Key, _Value, _Allocator, _ExtractKey, _Equal,
 	       _H1, _H2, _Hash, _RehashPolicy, __chc, __cit, __uk>::
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
-    swap(_Hashtable&& __x)
-#else
     swap(_Hashtable& __x)
-#endif
     {
       // The only base class with member variables is hash_code_base.  We
       // define _Hash_code_base::_M_swap because different specializations

@@ -131,7 +131,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	}
 
       void
-      swap(pair&& __p)
+      swap(pair& __p)
       {
 	using std::swap;
 	swap(first, __p.first);
@@ -184,16 +184,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<class _T1, class _T2>
     inline void
     swap(pair<_T1, _T2>& __x, pair<_T1, _T2>& __y)
-    { __x.swap(__y); }
-
-  template<class _T1, class _T2>
-    inline void
-    swap(pair<_T1, _T2>&& __x, pair<_T1, _T2>& __y)
-    { __x.swap(__y); }
-
-  template<class _T1, class _T2>
-    inline void
-    swap(pair<_T1, _T2>& __x, pair<_T1, _T2>&& __y)
     { __x.swap(__y); }
 #endif
 

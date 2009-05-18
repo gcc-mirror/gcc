@@ -367,11 +367,7 @@ namespace __debug
       }
 
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      swap(list&& __x)
-#else
       swap(list& __x)
-#endif
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
@@ -634,18 +630,6 @@ namespace __debug
     inline void
     swap(list<_Tp, _Alloc>& __lhs, list<_Tp, _Alloc>& __rhs)
     { __lhs.swap(__rhs); }
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  template<typename _Tp, typename _Alloc>
-    inline void
-    swap(list<_Tp, _Alloc>&& __lhs, list<_Tp, _Alloc>& __rhs)
-    { __lhs.swap(__rhs); }
-
-  template<typename _Tp, typename _Alloc>
-    inline void
-    swap(list<_Tp, _Alloc>& __lhs, list<_Tp, _Alloc>&& __rhs)
-    { __lhs.swap(__rhs); }
-#endif
 
 } // namespace __debug
 } // namespace std

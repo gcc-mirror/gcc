@@ -743,11 +743,7 @@ template<typename _Alloc>
     }
 
     void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-    swap(vector&& __x)
-#else
     swap(vector& __x)
-#endif
     {
       std::swap(this->_M_impl._M_start, __x._M_impl._M_start);
       std::swap(this->_M_impl._M_finish, __x._M_impl._M_finish);
