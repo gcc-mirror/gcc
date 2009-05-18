@@ -49,7 +49,9 @@ snapshot:
 	.type	snapshot_ret, @function
 snapshot_ret:
 	movq	%rdi, rdi(%rip)
+	subq	$8, %rsp
 	call	*callthis(%rip)
+	addq	$8, %rsp
 	movq	%rax, rax(%rip)
 	movq	%rdx, rdx(%rip)
 	movdqu	%xmm0, xmm_regs+0(%rip)
