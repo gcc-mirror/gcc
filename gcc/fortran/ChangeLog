@@ -1,5 +1,15 @@
 2009-05-18  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/40164
+	* primary.c (gfc_match_rvalue): Handle procedure pointer components in
+	arrays.
+	* resolve.c (resolve_ppc_call,resolve_expr_ppc): Resolve component and
+	array references.
+	(resolve_fl_derived): Procedure pointer components are not required to
+	have constant array bounds in their return value.
+
+2009-05-18  Janus Weil  <janus@gcc.gnu.org>
+
 	* intrinsic.c (add_sym): Fix my last commit (r147655),
 	which broke bootstrap.
 
