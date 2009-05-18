@@ -4840,6 +4840,9 @@ resolve_ppc_call (gfc_code* c)
   if (!comp->attr.subroutine)
     gfc_add_subroutine (&comp->attr, comp->name, &c->expr1->where);
 
+  if (resolve_ref (c->expr1) == FAILURE)
+    return FAILURE;
+
   if (resolve_actual_arglist (c->ext.actual, comp->attr.proc,
 			      comp->formal == NULL) == FAILURE)
     return FAILURE;
@@ -4868,6 +4871,9 @@ resolve_expr_ppc (gfc_expr* e)
 
   if (!comp->attr.function)
     gfc_add_function (&comp->attr, comp->name, &e->where);
+
+  if (resolve_ref (e) == FAILURE)
+    return FAILURE;
 
   if (resolve_actual_arglist (e->value.function.actual, comp->attr.proc,
 			      comp->formal == NULL) == FAILURE)
@@ -9147,7 +9153,8 @@ resolve_fl_derived (gfc_symbol *sym)
 	    && sym != c->ts.derived)
 	add_dt_to_dt_list (c->ts.derived);
 
-      if (c->attr.pointer || c->attr.allocatable ||  c->as == NULL)
+      if (c->attr.pointer || c->attr.proc_pointer || c->attr.allocatable
+	  || c->as == NULL)
 	continue;
 
       for (i = 0; i < c->as->rank; i++)
