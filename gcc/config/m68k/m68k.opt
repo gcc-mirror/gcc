@@ -182,3 +182,7 @@ Tune for the specified target CPU or architecture
 mxgot
 Target Report Mask(XGOT)
 Support more than 8192 GOT entries on ColdFire
+
+mxtls
+Target Report Mask(XTLS)
+Support TLS segment larger than 64K

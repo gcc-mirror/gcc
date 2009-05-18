@@ -1,3 +1,16 @@
+2009-05-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* gcc.target/m68k/tls-ie.c: New test.
+	* gcc.target/m68k/tls-le.c: New test.
+	* gcc.target/m68k/tls-gd.c: New test.
+	* gcc.target/m68k/tls-ld.c: New test.
+	* gcc.target/m68k/tls-ie-xgot.c: New test.
+	* gcc.target/m68k/tls-le-xtls.c: New test.
+	* gcc.target/m68k/tls-gd-xgot.c: New test.
+	* gcc.target/m68k/tls-ld-xgot.c: New test.
+	* gcc.target/m68k/tls-ld-xtls.c: New test.
+	* gcc.target/m68k/tls-ld-xgot-xtls.c: New test.
+
 2009-05-18  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/ipa/modif-1.c: Do not check for unmodified int parameter.

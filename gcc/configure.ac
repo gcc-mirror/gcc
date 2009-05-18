@@ -2570,6 +2570,22 @@ x:
 	tls_first_minor=16
 	tls_as_opt='-32 --fatal-warnings'
 	;;
+  m68k-*-*)
+    conftest_s='
+	.section .tdata,"awT",@progbits
+x:
+	.word 2
+	.text
+foo:
+	move.l x@TLSGD(%a5),%a0
+	move.l x@TLSLDM(%a5),%a0
+	move.l x@TLSLDO(%a5),%a0
+	move.l x@TLSIE(%a5),%a0
+	move.l x@TLSLE(%a5),%a0'
+	tls_first_major=2
+	tls_first_minor=19
+	tls_as_opt='--fatal-warnings'
+	;;
   powerpc-*-*)
     conftest_s='
 	.section ".tdata","awT",@progbits

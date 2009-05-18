@@ -129,6 +129,11 @@
   (and (match_code "const_int")
        (match_test "ival < -0x8000 || ival > 0x7FFF")))
 
+(define_constraint "Cu"
+  "16-bit offset for wrapped symbols"
+  (and (match_code "const")
+       (match_test "m68k_unwrap_symbol (op, false) != op")))
+
 (define_constraint "CQ"
   "Integers valid for mvq."
   (and (match_code "const_int")

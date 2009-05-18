@@ -59,13 +59,20 @@ extern bool m68k_illegitimate_symbolic_constant_p (rtx);
 extern bool m68k_matches_q_p (rtx);
 extern bool m68k_matches_u_p (rtx);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
+extern rtx m68k_legitimize_tls_address (rtx);
+extern bool m68k_tls_reference_p (rtx, bool);
 extern int valid_dbcc_comparison_p_2 (rtx, enum machine_mode);
 extern rtx m68k_libcall_value (enum machine_mode);
 extern rtx m68k_function_value (const_tree, const_tree);
 extern int emit_move_sequence (rtx *, enum machine_mode, rtx);
 extern bool m68k_movem_pattern_p (rtx, rtx, HOST_WIDE_INT, bool);
 extern const char *m68k_output_movem (rtx *, rtx, HOST_WIDE_INT, bool);
+extern void m68k_final_prescan_insn (rtx, rtx *, int);
 
+/* Functions from m68k.c used in constraints.md.  */
+extern rtx m68k_unwrap_symbol (rtx, bool);
+
+/* Functions from m68k.c used in genattrtab.  */
 #ifdef HAVE_ATTR_cpu
 extern enum attr_cpu m68k_sched_cpu;
 extern enum attr_mac m68k_sched_mac;

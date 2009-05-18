@@ -135,7 +135,9 @@
   (match_code "sign_extend,zero_extend"))
 
 ;; Returns true if OP is either a symbol reference or a sum of a
-;; symbol reference and a constant.
+;; symbol reference and a constant.  This predicate is for "raw"
+;; symbol references not yet processed by legitimize*_address,
+;; hence we do not handle UNSPEC_{XGOT, TLS, XTLS} here.
 
 (define_predicate "symbolic_operand"
   (match_code "symbol_ref,label_ref,const")
