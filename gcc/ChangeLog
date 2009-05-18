@@ -1,3 +1,56 @@
+2009-05-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	M68K TLS support.
+	* configure.ac (m68k-*-*): Check if binutils support TLS.
+	* configure: Regenerate.
+	* config/m68k/predicates.md (symbolic_operand): Extend comment.
+	* config/m68k/constraints.md (Cu): New constraint.
+	* config/m68k/m68k.md (UNSPEC_GOTOFF): Remove.
+	(UNSPEC_RELOC16, UNSPEC_RELOC32): New constants.
+	(movsi): Handle TLS symbols.
+	(addsi3_5200): Handle XTLS symbols, indent.
+	* config/m68k/m68k-protos.h (m68k_legitimize_tls_address): Declare.
+	(m68k_tls_reference_p): Declare.
+	(m68k_legitimize_address): Declare.
+	(m68k_unwrap_symbol): Declare.
+	* config/m68k/m68k.opt (mxtls): New option.
+	* config/m68k/m68k.c (ggc.h): Include.
+	(m68k_output_dwarf_dtprel): Implement hook.
+	(TARGET_HAVE_TLS, TARGET_ASM_OUTPUT_DWARF_DTPREL): Define.
+	(m68k_expand_prologue): Load GOT pointer when function needs it.
+	(m68k_illegitimate_symbolic_constant_p): Handle TLS symbols.
+	(m68k_legitimate_constant_address_p): Same.
+	(m68k_decompose_address): Handle TLS references.
+	(m68k_get_gp): New static function.
+	(enum m68k_reloc): New contants.
+	(TLS_RELOC_P): New macro.
+	(m68k_wrap_symbol): New static function.
+	(m68k_unwrap_symbol): New function.
+	(m68k_final_prescan_insn_1): New static function.
+	(m68k_final_prescan_insn): New function.
+	(m68k_move_to_reg, m68k_wrap_symbol_into_got_ref): New static
+	functions.
+	(legitimize_pic_address): Handle TLS references..
+	(m68k_tls_get_addr, m68k_get_tls_get_addr)
+	(m68k_libcall_value_in_a0_p)
+	(m68k_call_tls_get_addr, m68k_read_tp, m68k_get_m68k_read_tp)
+	(m68k_call_m68k_read_tp): Helper variables and functions for ...
+	(m68k_legitimize_tls_address): Handle TLS references.
+	(m68k_tls_symbol_p, m68k_tls_reference_p_1, m68k_tls_reference_p):
+	New functions.
+	(m68k_legitimize_address): Handle TLS symbols.
+	(m68k_get_reloc_decoration): New static function.
+	(m68k_output_addr_const_extra): Handle UNSPEC_RELOC16 and
+	UNSPEC_RELOC32.
+	(m68k_output_dwarf_dtprel): Implement hook.
+	(print_operand_address): Handle UNSPEC_RELOC16 adn UNSPEC_RELOC32.
+	(m68k_libcall_value): Return result in A0 instead of D0 when asked by
+	m68k_call_* routines.
+	(sched_attr_op_type): Handle TLS symbols.
+	(gt-m68k.h): Include.
+	* config/m68k/m68k.h (FINAL_PRESCAN_INSN): Define.
+	(LEGITIMATE_PIC_OPERAND_P): Support TLS.
+
 2009-05-18  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (ipa_check_stmt_modifications): Removed.

@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 /* ??? Need to add a dependency between m68k.o and sched-int.h.  */
 #include "sched-int.h"
 #include "insn-codes.h"
+#include "ggc.h"
 
 enum reg_class regno_reg_class[] =
 {
@@ -144,11 +145,13 @@ static tree m68k_handle_fndecl_attribute (tree *node, tree name,
 static void m68k_compute_frame_layout (void);
 static bool m68k_save_reg (unsigned int regno, bool interrupt_handler);
 static bool m68k_ok_for_sibcall_p (tree, tree);
+static bool m68k_tls_symbol_p (rtx);
 static rtx m68k_legitimize_address (rtx, rtx, enum machine_mode);
 static bool m68k_rtx_costs (rtx, int, int, int *, bool);
 #if M68K_HONOR_TARGET_STRICT_ALIGNMENT
 static bool m68k_return_in_memory (const_tree, const_tree);
 #endif
+static void m68k_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 
 
 /* Specify the identification number of the library being built */
@@ -247,6 +250,14 @@ const char *m68k_library_id_string = "_current_shared_library_a5_offset_";
 #if M68K_HONOR_TARGET_STRICT_ALIGNMENT
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY m68k_return_in_memory
+#endif
+
+#ifdef HAVE_AS_TLS
+#undef TARGET_HAVE_TLS
+#define TARGET_HAVE_TLS (true)
+
+#undef TARGET_ASM_OUTPUT_DWARF_DTPREL
+#define TARGET_ASM_OUTPUT_DWARF_DTPREL m68k_output_dwarf_dtprel
 #endif
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
@@ -1149,8 +1160,7 @@ m68k_expand_prologue (void)
 			    current_frame.reg_mask, true, true));
     }
 
-  if (flag_pic
-      && !TARGET_SEP_DATA
+  if (!TARGET_SEP_DATA
       && crtl->uses_pic_offset_table)
     insn = emit_insn (gen_load_got (pic_offset_table_rtx));
 }
@@ -1435,6 +1445,9 @@ m68k_legitimize_sibcall_address (rtx x)
 rtx
 m68k_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 {
+  if (m68k_tls_symbol_p (x))
+    return m68k_legitimize_tls_address (x);
+
   if (GET_CODE (x) == PLUS)
     {
       int ch = (x) != (oldx);
@@ -1853,7 +1866,7 @@ m68k_illegitimate_symbolic_constant_p (rtx x)
 	  && !offset_within_block_p (base, INTVAL (offset)))
 	return true;
     }
-  return false;
+  return m68k_tls_reference_p (x, false);
 }
 
 /* Return true if X is a legitimate constant address that can reach
@@ -1881,7 +1894,7 @@ m68k_legitimate_constant_address_p (rtx x, unsigned int reach, bool strict_p)
 	return false;
     }
 
-  return true;
+  return !m68k_tls_reference_p (x, false);
 }
 
 /* Return true if X is a LABEL_REF for a jump table.  Assume that unplaced
@@ -1948,15 +1961,17 @@ m68k_decompose_address (enum machine_mode mode, rtx x,
   /* Check for GOT loads.  These are (bd,An,Xn) addresses if
      TARGET_68020 && flag_pic == 2, otherwise they are (d16,An)
      addresses.  */
-  if (flag_pic
-      && GET_CODE (x) == PLUS
-      && XEXP (x, 0) == pic_offset_table_rtx
-      && (GET_CODE (XEXP (x, 1)) == SYMBOL_REF
-	  || GET_CODE (XEXP (x, 1)) == LABEL_REF))
+  if (GET_CODE (x) == PLUS
+      && XEXP (x, 0) == pic_offset_table_rtx)
     {
-      address->base = XEXP (x, 0);
-      address->offset = XEXP (x, 1);
-      return true;
+      /* As we are processing a PLUS, do not unwrap RELOC32 symbols --
+	 they are invalid in this context.  */
+      if (m68k_unwrap_symbol (XEXP (x, 1), false) != XEXP (x, 1))
+	{
+	  address->base = XEXP (x, 0);
+	  address->offset = XEXP (x, 1);
+	  return true;
+	}
     }
 
   /* The ColdFire FPU only accepts addressing modes 2-5.  */
@@ -2101,6 +2116,243 @@ m68k_matches_u_p (rtx x)
 	  && !address.index);
 }
 
+/* Return GOT pointer.  */
+
+static rtx
+m68k_get_gp (void)
+{
+  if (pic_offset_table_rtx == NULL_RTX)
+    pic_offset_table_rtx = gen_rtx_REG (Pmode, PIC_REG);
+
+  crtl->uses_pic_offset_table = 1;
+
+  return pic_offset_table_rtx;
+}
+
+/* M68K relocations, used to distinguish GOT and TLS relocations in UNSPEC
+   wrappers.  */
+enum m68k_reloc { RELOC_GOT, RELOC_TLSGD, RELOC_TLSLDM, RELOC_TLSLDO,
+		  RELOC_TLSIE, RELOC_TLSLE };
+
+#define TLS_RELOC_P(RELOC) ((RELOC) != RELOC_GOT)
+
+/* Wrap symbol X into unspec representing relocation RELOC.
+   BASE_REG - register that should be added to the result.
+   TEMP_REG - if non-null, temporary register.  */
+
+static rtx
+m68k_wrap_symbol (rtx x, enum m68k_reloc reloc, rtx base_reg, rtx temp_reg)
+{
+  bool use_x_p;
+
+  use_x_p = (base_reg == pic_offset_table_rtx) ? TARGET_XGOT : TARGET_XTLS;
+
+  if (TARGET_COLDFIRE && use_x_p)
+    /* When compiling with -mx{got, tls} switch the code will look like this:
+
+       move.l <X>@<RELOC>,<TEMP_REG>
+       add.l <BASE_REG>,<TEMP_REG>  */
+    {
+      /* Wrap X in UNSPEC_??? to tip m68k_output_addr_const_extra
+	 to put @RELOC after reference.  */
+      x = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, x, GEN_INT (reloc)),
+			  UNSPEC_RELOC32);
+      x = gen_rtx_CONST (Pmode, x);
+
+      if (temp_reg == NULL)
+	{
+	  gcc_assert (can_create_pseudo_p ());
+	  temp_reg = gen_reg_rtx (Pmode);
+	}
+
+      emit_move_insn (temp_reg, x);
+      emit_insn (gen_addsi3 (temp_reg, temp_reg, base_reg));
+      x = temp_reg;
+    }
+  else
+    {
+      x = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, x, GEN_INT (reloc)),
+			  UNSPEC_RELOC16);
+      x = gen_rtx_CONST (Pmode, x);
+
+      x = gen_rtx_PLUS (Pmode, base_reg, x);
+    }
+
+  return x;
+}
+
+/* Helper for m68k_unwrap_symbol.
+   Also, if unwrapping was successful (that is if (ORIG != <return value>)),
+   sets *RELOC_PTR to relocation type for the symbol.  */
+
+static rtx
+m68k_unwrap_symbol_1 (rtx orig, bool unwrap_reloc32_p,
+		      enum m68k_reloc *reloc_ptr)
+{
+  if (GET_CODE (orig) == CONST)
+    {
+      rtx x;
+      enum m68k_reloc dummy;
+
+      x = XEXP (orig, 0);
+
+      if (reloc_ptr == NULL)
+	reloc_ptr = &dummy;
+
+      /* Handle an addend.  */
+      if ((GET_CODE (x) == PLUS || GET_CODE (x) == MINUS)
+	  && CONST_INT_P (XEXP (x, 1)))
+	x = XEXP (x, 0);
+
+      if (GET_CODE (x) == UNSPEC)
+	{
+	  switch (XINT (x, 1))
+	    {
+	    case UNSPEC_RELOC16:
+	      orig = XVECEXP (x, 0, 0);
+	      *reloc_ptr = (enum m68k_reloc) INTVAL (XVECEXP (x, 0, 1));
+	      break;
+
+	    case UNSPEC_RELOC32:
+	      if (unwrap_reloc32_p)
+		{
+		  orig = XVECEXP (x, 0, 0);
+		  *reloc_ptr = (enum m68k_reloc) INTVAL (XVECEXP (x, 0, 1));
+		}
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+    }
+
+  return orig;
+}
+
+/* Unwrap symbol from UNSPEC_RELOC16 and, if unwrap_reloc32_p,
+   UNSPEC_RELOC32 wrappers.  */
+
+rtx
+m68k_unwrap_symbol (rtx orig, bool unwrap_reloc32_p)
+{
+  return m68k_unwrap_symbol_1 (orig, unwrap_reloc32_p, NULL);
+}
+
+/* Helper for m68k_final_prescan_insn.  */
+
+static int
+m68k_final_prescan_insn_1 (rtx *x_ptr, void *data ATTRIBUTE_UNUSED)
+{
+  rtx x = *x_ptr;
+
+  if (m68k_unwrap_symbol (x, true) != x)
+    /* For rationale of the below, see comment in m68k_final_prescan_insn.  */
+    {
+      rtx plus;
+
+      gcc_assert (GET_CODE (x) == CONST);
+      plus = XEXP (x, 0);
+
+      if (GET_CODE (plus) == PLUS || GET_CODE (plus) == MINUS)
+	{
+	  rtx unspec;
+	  rtx addend;
+
+	  unspec = XEXP (plus, 0);
+	  gcc_assert (GET_CODE (unspec) == UNSPEC);
+	  addend = XEXP (plus, 1);
+	  gcc_assert (CONST_INT_P (addend));
+
+	  /* We now have all the pieces, rearrange them.  */
+
+	  /* Move symbol to plus.  */
+	  XEXP (plus, 0) = XVECEXP (unspec, 0, 0);
+
+	  /* Move plus inside unspec.  */
+	  XVECEXP (unspec, 0, 0) = plus;
+
+	  /* Move unspec to top level of const.  */
+	  XEXP (x, 0) = unspec;
+	}
+
+      return -1;
+    }
+
+  return 0;
+}
+
+/* Prescan insn before outputing assembler for it.  */
+
+void
+m68k_final_prescan_insn (rtx insn ATTRIBUTE_UNUSED,
+			 rtx *operands, int n_operands)
+{
+  int i;
+
+  /* Combine and, possibly, other optimizations may do good job
+     converting
+       (const (unspec [(symbol)]))
+     into
+       (const (plus (unspec [(symbol)])
+                    (const_int N))).
+     The problem with this is emitting @TLS or @GOT decorations.
+     The decoration is emitted when processing (unspec), so the
+     result would be "#symbol@TLSLE+N" instead of "#symbol+N@TLSLE".
+
+     It seems that the easiest solution to this is to convert such
+     operands to
+       (const (unspec [(plus (symbol)
+                             (const_int N))])).
+     Note, that the top level of operand remains intact, so we don't have
+     to patch up anything outside of the operand.  */
+
+  for (i = 0; i < n_operands; ++i)
+    {
+      rtx op;
+
+      op = operands[i];
+
+      for_each_rtx (&op, m68k_final_prescan_insn_1, NULL);
+    }
+}
+
+/* Move X to a register and add REG_EQUAL note pointing to ORIG.
+   If REG is non-null, use it; generate new pseudo otherwise.  */
+
+static rtx
+m68k_move_to_reg (rtx x, rtx orig, rtx reg)
+{
+  rtx insn;
+
+  if (reg == NULL_RTX)
+    {
+      gcc_assert (can_create_pseudo_p ());
+      reg = gen_reg_rtx (Pmode);
+    }
+
+  insn = emit_move_insn (reg, x);
+  /* Put a REG_EQUAL note on this insn, so that it can be optimized
+     by loop.  */
+  set_unique_reg_note (insn, REG_EQUAL, orig);
+
+  return reg;
+}
+
+/* Does the same as m68k_wrap_symbol, but returns a memory reference to
+   GOT slot.  */
+
+static rtx
+m68k_wrap_symbol_into_got_ref (rtx x, enum m68k_reloc reloc, rtx temp_reg)
+{
+  x = m68k_wrap_symbol (x, reloc, m68k_get_gp (), temp_reg);
+
+  x = gen_rtx_MEM (Pmode, x);
+  MEM_READONLY_P (x) = 1;
+
+  return x;
+}
+
 /* Legitimize PIC addresses.  If the address is already
    position-independent, we return ORIG.  Newly generated
    position-independent addresses go to REG.  If we need more
@@ -2152,42 +2404,15 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
     {
       gcc_assert (reg);
 
-      if (TARGET_COLDFIRE && TARGET_XGOT)
-	/* When compiling with -mxgot switch the code for the above
-	   example will look like this:
-
-	   movel a5, a0
-	   addl _foo@GOT, a0
-	   movel a0@, a0
-	   movel #12345, a0@  */
-	{
-	  rtx pic_offset;
-
-	  /* Wrap ORIG in UNSPEC_GOTOFF to tip m68k_output_addr_const_extra
-	     to put @GOT after reference.  */
-	  pic_offset = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, orig),
-				       UNSPEC_GOTOFF);
-	  pic_offset = gen_rtx_CONST (Pmode, pic_offset);
-	  emit_move_insn (reg, pic_offset);
-	  emit_insn (gen_addsi3 (reg, reg, pic_offset_table_rtx));
-	  pic_ref = gen_rtx_MEM (Pmode, reg);
-	}
-      else
-	pic_ref = gen_rtx_MEM (Pmode,
-			       gen_rtx_PLUS (Pmode,
-					     pic_offset_table_rtx, orig));
-      crtl->uses_pic_offset_table = 1;
-      MEM_READONLY_P (pic_ref) = 1;
-      emit_move_insn (reg, pic_ref);
-      return reg;
+      pic_ref = m68k_wrap_symbol_into_got_ref (orig, RELOC_GOT, reg);
+      pic_ref = m68k_move_to_reg (pic_ref, orig, reg);
     }
   else if (GET_CODE (orig) == CONST)
     {
       rtx base;
 
       /* Make sure this has not already been legitimized.  */
-      if (GET_CODE (XEXP (orig, 0)) == PLUS
-	  && XEXP (XEXP (orig, 0), 0) == pic_offset_table_rtx)
+      if (m68k_unwrap_symbol (orig, true) != orig)
 	return orig;
 
       gcc_assert (reg);
@@ -2200,11 +2425,255 @@ legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
 				     base == reg ? 0 : reg);
 
       if (GET_CODE (orig) == CONST_INT)
-	return plus_constant (base, INTVAL (orig));
-      pic_ref = gen_rtx_PLUS (Pmode, base, orig);
-      /* Likewise, should we set special REG_NOTEs here?  */
+	pic_ref = plus_constant (base, INTVAL (orig));
+      else
+	pic_ref = gen_rtx_PLUS (Pmode, base, orig);
     }
+
   return pic_ref;
+}
+
+/* The __tls_get_addr symbol.  */
+static GTY(()) rtx m68k_tls_get_addr;
+
+/* Return SYMBOL_REF for __tls_get_addr.  */
+
+static rtx
+m68k_get_tls_get_addr (void)
+{
+  if (m68k_tls_get_addr == NULL_RTX)
+    m68k_tls_get_addr = init_one_libfunc ("__tls_get_addr");
+
+  return m68k_tls_get_addr;
+}
+
+/* Return libcall result in A0 instead of usual D0.  */
+static bool m68k_libcall_value_in_a0_p = false;
+
+/* Emit instruction sequence that calls __tls_get_addr.  X is
+   the TLS symbol we are referencing and RELOC is the symbol type to use
+   (either TLSGD or TLSLDM).  EQV is the REG_EQUAL note for the sequence
+   emitted.  A pseudo register with result of __tls_get_addr call is
+   returned.  */
+
+static rtx
+m68k_call_tls_get_addr (rtx x, rtx eqv, enum m68k_reloc reloc)
+{
+  rtx a0;
+  rtx insns;
+  rtx dest;
+
+  /* Emit the call sequence.  */
+  start_sequence ();
+
+  /* FIXME: Unfortunately, emit_library_call_value does not
+     consider (plus (%a5) (const (unspec))) to be a good enough
+     operand for push, so it forces it into a register.  The bad
+     thing about this is that combiner, due to copy propagation and other
+     optimizations, sometimes can not later fix this.  As a consequence,
+     additional register may be allocated resulting in a spill.
+     For reference, see args processing loops in
+     calls.c:emit_library_call_value_1.
+     For testcase, see gcc.target/m68k/tls-{gd, ld}.c  */
+  x = m68k_wrap_symbol (x, reloc, m68k_get_gp (), NULL_RTX);
+
+  /* __tls_get_addr() is not a libcall, but emitting a libcall_value
+     is the simpliest way of generating a call.  The difference between
+     __tls_get_addr() and libcall is that the result is returned in D0
+     instead of A0.  To workaround this, we use m68k_libcall_value_in_a0_p
+     which temporarily switches returning the result to A0.  */ 
+
+  m68k_libcall_value_in_a0_p = true;
+  a0 = emit_library_call_value (m68k_get_tls_get_addr (), NULL_RTX, LCT_PURE,
+				Pmode, 1, x, Pmode);
+  m68k_libcall_value_in_a0_p = false;
+  
+  insns = get_insns ();
+  end_sequence ();
+
+  gcc_assert (can_create_pseudo_p ());
+  dest = gen_reg_rtx (Pmode);
+  emit_libcall_block (insns, dest, a0, eqv);
+
+  return dest;
+}
+
+/* The __tls_get_addr symbol.  */
+static GTY(()) rtx m68k_read_tp;
+
+/* Return SYMBOL_REF for __m68k_read_tp.  */
+
+static rtx
+m68k_get_m68k_read_tp (void)
+{
+  if (m68k_read_tp == NULL_RTX)
+    m68k_read_tp = init_one_libfunc ("__m68k_read_tp");
+
+  return m68k_read_tp;
+}
+
+/* Emit instruction sequence that calls __m68k_read_tp.
+   A pseudo register with result of __m68k_read_tp call is returned.  */
+
+static rtx 
+m68k_call_m68k_read_tp (void)
+{
+  rtx a0;
+  rtx eqv;
+  rtx insns;
+  rtx dest;
+
+  start_sequence ();
+
+  /* __m68k_read_tp() is not a libcall, but emitting a libcall_value
+     is the simpliest way of generating a call.  The difference between
+     __m68k_read_tp() and libcall is that the result is returned in D0
+     instead of A0.  To workaround this, we use m68k_libcall_value_in_a0_p
+     which temporarily switches returning the result to A0.  */ 
+
+  /* Emit the call sequence.  */
+  m68k_libcall_value_in_a0_p = true;
+  a0 = emit_library_call_value (m68k_get_m68k_read_tp (), NULL_RTX, LCT_PURE,
+				Pmode, 0);
+  m68k_libcall_value_in_a0_p = false;
+  insns = get_insns ();
+  end_sequence ();
+
+  /* Attach a unique REG_EQUIV, to allow the RTL optimizers to
+     share the m68k_read_tp result with other IE/LE model accesses.  */
+  eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const1_rtx), UNSPEC_RELOC32);
+
+  gcc_assert (can_create_pseudo_p ());
+  dest = gen_reg_rtx (Pmode);
+  emit_libcall_block (insns, dest, a0, eqv);
+
+  return dest;
+}
+
+/* Return a legitimized address for accessing TLS SYMBOL_REF X.
+   For explanations on instructions sequences see TLS/NPTL ABI for m68k and
+   ColdFire.  */
+
+rtx
+m68k_legitimize_tls_address (rtx orig)
+{
+  switch (SYMBOL_REF_TLS_MODEL (orig))
+    {
+    case TLS_MODEL_GLOBAL_DYNAMIC:
+      orig = m68k_call_tls_get_addr (orig, orig, RELOC_TLSGD);
+      break;
+
+    case TLS_MODEL_LOCAL_DYNAMIC:
+      {
+	rtx eqv;
+	rtx a0;
+	rtx x;
+ 
+	/* Attach a unique REG_EQUIV, to allow the RTL optimizers to
+	   share the LDM result with other LD model accesses.  */
+	eqv = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
+			      UNSPEC_RELOC32);
+
+	a0 = m68k_call_tls_get_addr (orig, eqv, RELOC_TLSLDM);
+
+	x = m68k_wrap_symbol (orig, RELOC_TLSLDO, a0, NULL_RTX);
+
+	if (can_create_pseudo_p ())
+	  x = m68k_move_to_reg (x, orig, NULL_RTX);
+
+	orig = x;
+	break;
+      }
+
+    case TLS_MODEL_INITIAL_EXEC:
+      {
+	rtx a0;
+	rtx x;
+
+	a0 = m68k_call_m68k_read_tp ();
+
+	x = m68k_wrap_symbol_into_got_ref (orig, RELOC_TLSIE, NULL_RTX);
+	x = gen_rtx_PLUS (Pmode, x, a0);
+
+	if (can_create_pseudo_p ())
+	  x = m68k_move_to_reg (x, orig, NULL_RTX);
+
+	orig = x;
+	break;
+      }
+
+    case TLS_MODEL_LOCAL_EXEC:
+      {
+	rtx a0;
+	rtx x;
+
+	a0 = m68k_call_m68k_read_tp ();
+
+	x = m68k_wrap_symbol (orig, RELOC_TLSLE, a0, NULL_RTX);
+
+	if (can_create_pseudo_p ())
+	  x = m68k_move_to_reg (x, orig, NULL_RTX);
+
+	orig = x;
+	break;
+      }
+
+    default:
+      gcc_unreachable ();
+    }
+
+  return orig;
+}
+
+/* Return true if X is a TLS symbol.  */
+
+static bool
+m68k_tls_symbol_p (rtx x)
+{
+  if (!TARGET_HAVE_TLS)
+    return false;
+
+  if (GET_CODE (x) != SYMBOL_REF)
+    return false;
+
+  return SYMBOL_REF_TLS_MODEL (x) != 0;
+}
+
+/* Helper for m68k_tls_referenced_p.  */
+
+static int
+m68k_tls_reference_p_1 (rtx *x_ptr, void *data ATTRIBUTE_UNUSED)
+{
+  /* Note: this is not the same as m68k_tls_symbol_p.  */
+  if (GET_CODE (*x_ptr) == SYMBOL_REF)
+    return SYMBOL_REF_TLS_MODEL (*x_ptr) != 0 ? 1 : 0;
+
+  /* Don't recurse into legitimate TLS references.  */
+  if (m68k_tls_reference_p (*x_ptr, true))
+    return -1;
+
+  return 0;
+}
+
+/* If !LEGITIMATE_P, return true if X is a TLS symbol reference,
+   though illegitimate one.
+   If LEGITIMATE_P, return true if X is a legitimate TLS symbol reference.  */
+
+bool
+m68k_tls_reference_p (rtx x, bool legitimate_p)
+{
+  if (!TARGET_HAVE_TLS)
+    return false;
+
+  if (!legitimate_p)
+    return for_each_rtx (&x, m68k_tls_reference_p_1, NULL) == 1 ? true : false;
+  else
+    {
+      enum m68k_reloc reloc = RELOC_GOT;
+
+      return (m68k_unwrap_symbol_1 (x, true, &reloc) != x
+	      && TLS_RELOC_P (reloc));
+    }
 }
 
 
@@ -3999,18 +4468,92 @@ print_operand (FILE *file, rtx op, int letter)
     }
 }
 
+/* Return string for TLS relocation RELOC.  */
+
+static const char *
+m68k_get_reloc_decoration (enum m68k_reloc reloc)
+{
+  /* To my knowledge, !MOTOROLA assemblers don't support TLS.  */
+  gcc_assert (MOTOROLA || reloc == RELOC_GOT);
+
+  switch (reloc)
+    {
+    case RELOC_GOT:
+      if (MOTOROLA)
+	{
+	  if (flag_pic == 1 && TARGET_68020)
+	    return "@GOT.w";
+	  else
+	    return "@GOT";
+	}
+      else
+	{
+	  if (TARGET_68020)
+	    {
+	      switch (flag_pic)
+		{
+		case 1:
+		  return ":w";
+		case 2:
+		  return ":l";
+		default:
+		  return "";
+		}
+	    }
+	}
+
+    case RELOC_TLSGD:
+      return "@TLSGD";
+
+    case RELOC_TLSLDM:
+      return "@TLSLDM";
+
+    case RELOC_TLSLDO:
+      return "@TLSLDO";
+
+    case RELOC_TLSIE:
+      return "@TLSIE";
+
+    case RELOC_TLSLE:
+      return "@TLSLE";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* m68k implementation of OUTPUT_ADDR_CONST_EXTRA.  */
 
 bool
 m68k_output_addr_const_extra (FILE *file, rtx x)
 {
-  if (GET_CODE (x) != UNSPEC || XINT (x, 1) != UNSPEC_GOTOFF)
-    return false;
+  if (GET_CODE (x) == UNSPEC)
+    {
+      switch (XINT (x, 1))
+	{
+	case UNSPEC_RELOC16:
+	case UNSPEC_RELOC32:
+	  output_addr_const (file, XVECEXP (x, 0, 0));
+	  fputs (m68k_get_reloc_decoration (INTVAL (XVECEXP (x, 0, 1))), file);
+	  return true;
 
-  output_addr_const (file, XVECEXP (x, 0, 0));
-  /* ??? What is the non-MOTOROLA syntax?  */
-  fputs ("@GOT", file);
-  return true;
+	default:
+	  break;
+	}
+    }
+
+  return false;
+}
+
+/* M68K implementation of TARGET_ASM_OUTPUT_DWARF_DTPREL.  */
+
+static void
+m68k_output_dwarf_dtprel (FILE *file, int size, rtx x)
+{
+  gcc_assert (size == 4);
+  fputs ("\t.long\t", file);
+  output_addr_const (file, x);
+  fputs ("@TLSLDO+0x8000", file);
 }
 
 
@@ -4100,15 +4643,8 @@ print_operand_address (FILE *file, rtx addr)
 	  else
 	    {
 	      if (address.offset)
-		{
-		  output_addr_const (file, address.offset);
-		  if (flag_pic && address.base == pic_offset_table_rtx)
-		    {
-		      fprintf (file, "@GOT");
-		      if (flag_pic == 1 && TARGET_68020)
-			fprintf (file, ".w");
-		    }
-		}
+		output_addr_const (file, address.offset);
+
 	      putc ('(', file);
 	      if (address.base)
 		fputs (M68K_REGNAME (REGNO (address.base)), file);
@@ -4141,19 +4677,7 @@ print_operand_address (FILE *file, rtx addr)
 		    fputs (M68K_REGNAME (REGNO (address.base)), file);
 		  fprintf (file, "@(");
 		  if (address.offset)
-		    {
-		      output_addr_const (file, address.offset);
-		      if (address.base == pic_offset_table_rtx && TARGET_68020)
-			switch (flag_pic)
-			  {
-			  case 1:
-			    fprintf (file, ":w"); break;
-			  case 2:
-			    fprintf (file, ":l"); break;
-			  default:
-			    break;
-			  }
-		    }
+		    output_addr_const (file, address.offset);
 		}
 	      /* Print the ",index" component, if any.  */
 	      if (address.index)
@@ -4641,7 +5165,8 @@ m68k_libcall_value (enum machine_mode mode)
   default:
     break;
   }
-  return gen_rtx_REG (mode, D0_REG);
+
+  return gen_rtx_REG (mode, m68k_libcall_value_in_a0_p ? A0_REG : D0_REG);
 }
 
 rtx
@@ -4907,9 +5432,8 @@ sched_attr_op_type (rtx insn, bool opx_p, bool address_p)
 	  return OP_TYPE_IMM_L;
 
 	default:
-	  if (GET_CODE (op) == SYMBOL_REF)
-	    /* ??? Just a guess.  Probably we can guess better using length
-	       attribute of the instructions.  */
+	  if (symbolic_operand (m68k_unwrap_symbol (op, false), VOIDmode))
+	    /* Just a guess.  */
 	    return OP_TYPE_IMM_W;
 
 	  return OP_TYPE_IMM_L;
@@ -5854,3 +6378,5 @@ m68k_sched_indexed_address_bypass_p (rtx pro, rtx con)
       return 0;
     }
 }
+
+#include "gt-m68k.h"
