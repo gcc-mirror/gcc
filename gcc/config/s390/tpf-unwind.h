@@ -46,7 +46,7 @@ __isPATrange (void *addr)
 /* TPF return address offset from start of stack frame.  */
 #define TPFRA_OFFSET 168
 
-/* Exceptions macro defined for TPF so that functions without 
+/* Exceptions macro defined for TPF so that functions without
    dwarf frame information can be used with exceptions.  */
 #define MD_FALLBACK_FRAME_STATE_FOR s390_fallback_frame_state
 
@@ -165,20 +165,20 @@ __tpf_eh_return (void *target)
 
       /* Begin looping through stack frames.  Stop if invalid
          code information is retrieved or if a match between the
-         current stack frame iteration shared object's address 
+         current stack frame iteration shared object's address
          matches that of the target, calculated above.  */
       do
         {
           /* Get return address based on our stackptr iterator.  */
-          current = (void *) *((unsigned long int *) 
+          current = (void *) *((unsigned long int *)
                       (stackptr+RA_OFFSET));
 
           /* Is it a Pat Stub?  */
-          if (__isPATrange (current)) 
+          if (__isPATrange (current))
             {
-              /* Yes it was, get real return address 
+              /* Yes it was, get real return address
                  in TPF stack area.  */
-              current = (void *) *((unsigned long int *) 
+              current = (void *) *((unsigned long int *)
                           (stackptr+TPFRA_OFFSET));
               is_a_stub = 1;
             }
@@ -198,7 +198,7 @@ __tpf_eh_return (void *target)
                /* Yes! They are in the same module.
                   Force copy of TPF private stack area to
                   destination stack frame TPF private area. */
-               destination_frame = (void *) *((unsigned long int *) 
+               destination_frame = (void *) *((unsigned long int *)
                    (*PREVIOUS_STACK_PTR() + R15_OFFSET));
 
                /* Copy TPF linkage area from current frame to
@@ -209,24 +209,24 @@ __tpf_eh_return (void *target)
                /* Now overlay the
                   real target address into the TPF stack area of
                   the target frame we are jumping to.  */
-               *((unsigned long int *) (destination_frame + 
+               *((unsigned long int *) (destination_frame +
                    TPFRA_OFFSET)) = (unsigned long int) target;
 
                /* Before returning the desired pat stub address to
-                  the exception handling unwinder so that it can 
-                  actually do the "leap" shift out the low order 
+                  the exception handling unwinder so that it can
+                  actually do the "leap" shift out the low order
                   bit designated to determine if we are in 64BIT mode.
                   This is necessary for CTOA stubs.
-                  Otherwise we leap one byte past where we want to 
+                  Otherwise we leap one byte past where we want to
                   go to in the TPF pat stub linkage code.  */
-               shifter = *((unsigned long int *) 
+               shifter = *((unsigned long int *)
                      (stackptr + RA_OFFSET));
 
                shifter &= ~1ul;
 
                /* Store Pat Stub Address in destination Stack Frame.  */
                *((unsigned long int *) (destination_frame +
-                   RA_OFFSET)) = shifter;               
+                   RA_OFFSET)) = shifter;
 
                /* Re-adjust pat stub address to go to correct place
                   in linkage.  */
