@@ -1,5 +1,7 @@
 2009-05-18  Andreas Schwab  <schwab@linux-m68k.org>
 
+	* config.gcc: Fix variable syntax.
+
 	PR target/39531
 	* config/m68k/m68k.c (output_andsi3): Mask off sign bit copies
 	before calling exact_log2.
