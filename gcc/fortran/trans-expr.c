@@ -4428,11 +4428,14 @@ gfc_trans_zero_assign (gfc_expr * expr)
   len = fold_build2 (MULT_EXPR, gfc_array_index_type, len,
 		     fold_convert (gfc_array_index_type, tmp));
 
-  /* Convert arguments to the correct types.  */
+  /* If we are zeroing a local array avoid taking its address by emitting
+     a = {} instead.  */
   if (!POINTER_TYPE_P (TREE_TYPE (dest)))
-    dest = gfc_build_addr_expr (pvoid_type_node, dest);
-  else
-    dest = fold_convert (pvoid_type_node, dest);
+    return build2 (MODIFY_EXPR, void_type_node,
+		   dest, build_constructor (TREE_TYPE (dest), NULL));
+
+  /* Convert arguments to the correct types.  */
+  dest = fold_convert (pvoid_type_node, dest);
   len = fold_convert (size_type_node, len);
 
   /* Construct call to __builtin_memset.  */

@@ -20,8 +20,8 @@ program test
   data c /2*1.0/
 
   a(1,:) = 0.    ! This can't be optimized to a memset.
-  b(1,:) = 0.    ! This is optimized to memset.
-  c = 0.         ! This is optimized to memset.
+  b(1,:) = 0.    ! This is optimized to = {}.
+  c = 0.         ! This is optimized to = {}.
   d(:,1) = 0.    ! This can't be otimized to a memset.
   call bar(e)
 
@@ -33,6 +33,6 @@ program test
 
 end program
 
-! { dg-final { scan-tree-dump-times "memset" 2 "original" } }
+! { dg-final { scan-tree-dump-times "= {}" 2 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
 ! { dg-final { cleanup-modules "foo" } }
