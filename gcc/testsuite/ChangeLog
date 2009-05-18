@@ -1,3 +1,9 @@
+2009-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/39907
+	* gcc.target/x86_64/abi/asm-support.s (snapshot_ret): Preserve
+	stack alignment.
+
 2009-05-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from mainline:
