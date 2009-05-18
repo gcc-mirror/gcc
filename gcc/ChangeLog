@@ -1,3 +1,18 @@
+2009-05-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/39942
+	* config/i386/i386.c (ix86_avoid_jump_misspredicts): Replace
+	gen_align with gen_pad.
+	(ix86_reorg): Check ASM_OUTPUT_MAX_SKIP_PAD instead of
+	#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN.
+
+	* config/i386/i386.h (ASM_OUTPUT_MAX_SKIP_PAD): New.
+	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_PAD): Likewise.
+
+	* config/i386/i386.md (align): Renamed to ...
+	(pad): This.  Replace ASM_OUTPUT_MAX_SKIP_ALIGN with
+	ASM_OUTPUT_MAX_SKIP_PAD.
+
 2009-05-18  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config.gcc: Fix variable syntax.

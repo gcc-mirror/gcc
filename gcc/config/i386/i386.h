@@ -2175,6 +2175,22 @@ do {									\
 #define ASM_OUTPUT_OPCODE(STREAM, PTR) \
   ASM_OUTPUT_AVX_PREFIX ((STREAM), (PTR))
 
+/* A C statement to output to the stdio stream FILE an assembler
+   command to pad the location counter to a multiple of 1<<LOG
+   bytes if it is within MAX_SKIP bytes.  */
+
+#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
+#undef  ASM_OUTPUT_MAX_SKIP_PAD
+#define ASM_OUTPUT_MAX_SKIP_PAD(FILE, LOG, MAX_SKIP)			\
+  if ((LOG) != 0)							\
+    {									\
+      if ((MAX_SKIP) == 0)						\
+        fprintf ((FILE), "\t.p2align %d\n", (LOG));			\
+      else								\
+        fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
+    }
+#endif
+
 /* Under some conditions we need jump tables in the text section,
    because the assembler cannot handle label differences between
    sections.  This is the case for x86_64 on Mach-O for example.  */

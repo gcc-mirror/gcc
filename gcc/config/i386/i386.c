@@ -27334,7 +27334,7 @@ ix86_avoid_jump_mispredicts (void)
 	  if (dump_file)
 	    fprintf (dump_file, "Padding insn %i by %i bytes!\n",
 		     INSN_UID (insn), padsize);
-          emit_insn_before (gen_align (GEN_INT (padsize)), insn);
+          emit_insn_before (gen_pad (GEN_INT (padsize)), insn);
 	}
     }
 }
@@ -27402,7 +27402,7 @@ ix86_reorg (void)
     {
       if (TARGET_PAD_RETURNS)
 	ix86_pad_returns ();
-#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
+#ifdef ASM_OUTPUT_MAX_SKIP_PAD
       if (TARGET_FOUR_JUMP_LIMIT)
 	ix86_avoid_jump_mispredicts ();
 #endif
