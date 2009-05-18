@@ -1,3 +1,9 @@
+2009-05-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (expand_cbranchdi4): Use a scratch register
+	for the none zero constant operand except for EQ and NE
+	comprisons even when the first operand is R0.
+
 2009-05-18  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/2064.md: Remove trailing whitespaces.
