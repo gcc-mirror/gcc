@@ -9564,7 +9564,7 @@ mov.l\\t1f,r0\\n\\
 
 ;; The c / m alternative is a fake to guide reload to load directly into
 ;; fpscr, since reload doesn't know how to use post-increment.
-;; GO_IF_LEGITIMATE_ADDRESS guards about bogus addresses before reload,
+;; TARGET_LEGITIMATE_ADDRESS_P guards about bogus addresses before reload,
 ;; SECONDARY_INPUT_RELOAD_CLASS does this during reload, and the insn's
 ;; predicate after reload.
 ;; The mac_gp type for r/!c might look a bit odd, but it actually schedules

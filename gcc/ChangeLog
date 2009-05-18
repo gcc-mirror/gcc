@@ -1,3 +1,11 @@
+2009-05-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh-protos.h (sh_legitimate_address_p): Remove.
+	* config/sh/sh.c (sh_legitimate_address_p): Make static.
+	(TARGET_LEGITIMATE_ADDRESS_P): New.
+	* config/sh/sh.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
+	* config/sh/sh.md: Clean up references to GO_IF_LEGITIMATE_ADDRESS.
+	
 2009-05-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/40109

@@ -2320,20 +2320,6 @@ struct sh_args {
     if (sh_legitimate_index_p ((MODE), (OP)))	\
       goto WIN;					\
   } while (0)
-
-#ifdef REG_OK_STRICT
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)	\
-  do {							\
-    if (sh_legitimate_address_p ((MODE), (X), true))	\
-      goto LABEL;					\
-  } while (0)
-#else
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)	\
-  do {							\
-    if (sh_legitimate_address_p ((MODE), (X), false))	\
-      goto LABEL;					\
-  } while (0)
-#endif
 
 /* A C compound statement that attempts to replace X, which is an address
    that needs reloading, with a valid memory address for an operand of
