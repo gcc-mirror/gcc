@@ -23,6 +23,7 @@ program bsp
   interface
     function p3(x)
       real(8) :: p3,x
+      intent(in) :: x
     end function p3
   end interface
 

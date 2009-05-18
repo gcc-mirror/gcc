@@ -114,7 +114,7 @@ contains
     pointer :: f
     interface
       integer function f(x)
-        integer :: x
+        integer,intent(in) :: x
       end function
     end interface
     f => iabs
@@ -123,7 +123,7 @@ contains
   function g()
     interface
       integer function g(x)
-        integer :: x
+        integer,intent(in) :: x
       end function g
     end interface
     pointer :: g
@@ -133,13 +133,13 @@ contains
   function h(arg)
     interface
       subroutine arg(b)
-        integer :: b
+        integer,intent(inout) :: b
       end subroutine arg
     end interface
     pointer :: h
     interface
       subroutine h(a)
-        integer :: a
+        integer,intent(inout) :: a
       end subroutine h
     end interface
     h => arg
@@ -150,6 +150,7 @@ contains
     interface
       function i(x)
         integer :: i,x
+        intent(in) :: x
       end function i
     end interface
     i => iabs

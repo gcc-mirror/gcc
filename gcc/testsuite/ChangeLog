@@ -1,3 +1,12 @@
+2009-05-18  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/36947
+	PR fortran/40039
+	* gfortran.dg/interface_27.f90: New.
+	* gfortran.dg/interface_28.f90: New.
+	* gfortran.dg/proc_ptr_11.f90: Fixing invalid test case.
+	* gfortran.dg/proc_ptr_result_1.f90: Ditto.
+
 2009-05-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* gcc.target/m68k/tls-ie.c: New test.
