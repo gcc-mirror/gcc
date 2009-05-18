@@ -1,5 +1,9 @@
 2009-05-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
+	* config/m68k/m68k.c (m68k_legitimize_address): Fix typo in signature.
+
+2009-05-18  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
 	M68K TLS support.
 	* configure.ac (m68k-*-*): Check if binutils support TLS.
 	* configure: Regenerate.

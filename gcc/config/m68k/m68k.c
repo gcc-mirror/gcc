@@ -1442,7 +1442,7 @@ m68k_legitimize_sibcall_address (rtx x)
    However, if REG is a broken-out memory address or multiplication,
    nothing needs to be done because REG can certainly go in an address reg.  */
 
-rtx
+static rtx
 m68k_legitimize_address (rtx x, rtx oldx, enum machine_mode mode)
 {
   if (m68k_tls_symbol_p (x))
