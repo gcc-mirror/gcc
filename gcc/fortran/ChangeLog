@@ -1,3 +1,9 @@
+2009-05-18  Richard Guenther  <rguenther@suse.de>
+
+	PR fortran/40168
+	* trans-expr.c (gfc_trans_zero_assign): For local array
+	destinations use an assignment from an empty constructor.
+
 2009-05-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/36947
