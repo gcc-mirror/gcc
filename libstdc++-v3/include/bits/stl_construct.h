@@ -82,6 +82,26 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     _Destroy(_Tp* __pointer)
     { __pointer->~_Tp(); }
 
+  template<bool>
+    struct _Destroy_aux
+    {
+      template<typename _ForwardIterator>
+        static void
+        __destroy(_ForwardIterator __first, _ForwardIterator __last)
+	{
+	  for (; __first != __last; ++__first)
+	    std::_Destroy(&*__first);
+	}
+    };
+
+  template<>
+    struct _Destroy_aux<true>
+    {
+      template<typename _ForwardIterator>
+        static void
+        __destroy(_ForwardIterator, _ForwardIterator) { }
+    };
+
   /**
    * Destroy a range of objects.  If the value_type of the object has
    * a trivial destructor, the compiler should optimize all of this
@@ -93,9 +113,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type
                        _Value_type;
-      if (!__has_trivial_destructor(_Value_type))
-	for (; __first != __last; ++__first)
-	  std::_Destroy(&*__first);
+      std::_Destroy_aux<__has_trivial_destructor(_Value_type)>::
+	__destroy(__first, __last);
     }
 
   /**

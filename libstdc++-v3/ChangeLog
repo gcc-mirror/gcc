@@ -1,3 +1,10 @@
+2009-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/40192
+	* include/bits/stl_construct.h (struct _Destroy_aux): Add.
+	(_Destroy(_ForwardIterator, _ForwardIterator)): Use the latter.
+	* testsuite/23_containers/vector/40192.cc: New.
+
 2009-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/stl_pair.h (swap): Do not swap rvalues.
