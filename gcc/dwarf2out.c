@@ -14646,6 +14646,12 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       /* Prevent broken recursion; we can't hand off to the same type.  */
       gcc_assert (DECL_ORIGINAL_TYPE (TYPE_NAME (type)) != type);
 
+      /* Use the DIE of the containing namespace as the parent DIE of
+         the type description DIE we want to generate.  */
+      if (DECL_CONTEXT (TYPE_NAME (type))
+	  && TREE_CODE (DECL_CONTEXT (TYPE_NAME (type))) == NAMESPACE_DECL)
+	context_die = lookup_decl_die (DECL_CONTEXT (TYPE_NAME (type)));
+
       TREE_ASM_WRITTEN (type) = 1;
       gen_decl_die (TYPE_NAME (type), NULL, context_die);
       return;
