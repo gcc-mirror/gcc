@@ -1,3 +1,9 @@
+2009-05-18  Bechir Zalila  <bechir.zalila@gmail.com>
+
+	PR ada/40166
+	* Makefile.in (TOOLS_TARGET_PAIRS): Use the correct path to the
+	target specific sources.
+
 2009-04-21  Release Manager
 
 	* GCC 4.4.0 released.
