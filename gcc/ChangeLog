@@ -1,3 +1,8 @@
+2009-05-19  Ben Elliston  <bje@au.ibm.com>
+
+	* doc/invoke.texi (C Dialect Options): Update OpenMP specification
+	version to v3.0.
+
 2009-05-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh-protos.h (sh_legitimate_address_p): Remove.
