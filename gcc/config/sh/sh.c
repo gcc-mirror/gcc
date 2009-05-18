@@ -1632,7 +1632,8 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   operands[2] = op2h;
   operands[4] = NULL_RTX;
   if (reload_completed
-      && ! arith_reg_or_0_operand (op2h, SImode) && true_regnum (op1h)
+      && ! arith_reg_or_0_operand (op2h, SImode)
+      && (true_regnum (op1h) || (comparison != EQ && comparison != NE))
       && (msw_taken != LAST_AND_UNUSED_RTX_CODE
 	  || msw_skip != LAST_AND_UNUSED_RTX_CODE))
     {
@@ -1662,8 +1663,12 @@ expand_cbranchdi4 (rtx *operands, enum rtx_code comparison)
   if (lsw_taken != LAST_AND_UNUSED_RTX_CODE)
     {
       if (reload_completed
-	  && ! arith_reg_or_0_operand (op2l, SImode) && true_regnum (op1l))
-	operands[4] = scratch;
+	  && ! arith_reg_or_0_operand (op2l, SImode)
+	  && (true_regnum (op1l) || (lsw_taken != EQ && lsw_taken != NE)))
+	{
+	  emit_move_insn (scratch, operands[2]);
+	  operands[2] = scratch;
+	}
       expand_cbranchsi4 (operands, lsw_taken, lsw_taken_prob);
     }
   if (msw_skip != LAST_AND_UNUSED_RTX_CODE)
