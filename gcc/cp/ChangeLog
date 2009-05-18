@@ -1,3 +1,40 @@
+2009-05-18  Jason Merrill  <jason@redhat.com>
+
+	Implement explicit conversions ops as specified in N2437.
+	* decl.c (grokdeclarator): Handle explicit conversion ops.
+	(check_initializer): Pass flags to store_init_value.
+	* decl2.c (maybe_emit_vtables): Likewise.
+	* init.c (expand_aggr_init_1): Likewise.
+	* call.c (convert_class_to_reference): Take flags parm,
+	check DECL_NONCONVERTING_P.
+	(build_user_type_conversion_1): Check DECL_NONCONVERTING_P.
+	(add_builtin_candidates): Simplify getting type of conversion.
+	(build_object_call): Likewise.  Check DECL_NONCONVERTING_P.
+	(implicit_conversion): Pass through LOOKUP_ONLYCONVERTING.
+	(reference_binding): Take flags parm.  Direct-initialize copy parm.
+	(add_function_candidate): Direct-initialize the copy parm.
+	(add_conv_candidate): Use LOOKUP_IMPLICIT, not LOOKUP_NORMAL.
+	(build_builtin_candidate): Add LOOKUP_ONLYCONVERTING.
+	(conditional_conversion): Likewise.
+	(convert_like_real): Only complain about DECL_NONCONVERTING_P
+	constructors.
+	(perform_implicit_conversion_flags): Add flags parm to
+	perform_implicit_conversion.  Improve diagnostics.
+	* cp-tree.h (LOOKUP_IMPLICIT): New macro.
+	(LOOKUP_COPY_PARM): New bit macro.
+	* cvt.c (build_expr_type_conversion): Check DECL_NONCONVERTING_P.
+	* typeck.c (convert_for_assignment): Take flags parm, pass it to
+	perform_implicit_conversion_flags.
+	(cp_build_modify_expr): Pass flags to convert_for_assignment.
+	(convert_for_initialization): Likewise.
+	* typeck2.c (store_init_value): Take flags parm, pass to
+	digest_init_flags.
+	(digest_init_flags): Add flags parm to digest_init.
+	(digest_init_r): Take flags parm, pass to convert_for_initialization.
+	(process_init_constructor_array): Pass it.
+	(process_init_constructor_record): Likewise.
+	(process_init_constructor_union): Likewise.
+
 2009-05-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40139

@@ -1963,8 +1963,8 @@ struct GTY(()) lang_decl {
    is mutable.  */
 #define DECL_MUTABLE_P(NODE) (DECL_LANG_FLAG_0 (NODE))
 
-/* Nonzero for _DECL means that this constructor is a non-converting
-   constructor.  */
+/* Nonzero for _DECL means that this constructor or conversion function is
+   non-converting.  */
 #define DECL_NONCONVERTING_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.nonconverting)
 
@@ -3758,8 +3758,10 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 /* Even if the function found by lookup is a virtual function, it
    should be called directly.  */
 #define LOOKUP_NONVIRTUAL (1 << 2)
-/* Non-converting (i.e., "explicit") constructors are not tried.  */
+/* Non-converting (i.e., "explicit") constructors are not tried.  This flag
+   indicates that we are not performing direct-initialization.  */
 #define LOOKUP_ONLYCONVERTING (1 << 3)
+#define LOOKUP_IMPLICIT (LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING)
 /* If a temporary is created, it should be created so that it lives
    as long as the current variable bindings; otherwise it only lives
    until the end of the complete-expression.  It also forces
@@ -3793,6 +3795,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 /* Avoid user-defined conversions for the first parameter of a copy
    constructor.  */
 #define LOOKUP_NO_COPY_CTOR_CONVERSION (LOOKUP_NO_NARROWING << 1)
+/* This is the first parameter of a copy constructor.  */
+#define LOOKUP_COPY_PARM (LOOKUP_NO_COPY_CTOR_CONVERSION << 1)
 
 #define LOOKUP_NAMESPACES_ONLY(F)  \
   (((F) & LOOKUP_PREFER_NAMESPACES) && !((F) & LOOKUP_PREFER_TYPES))
@@ -4200,6 +4204,7 @@ extern tree initialize_reference		(tree, tree, tree, tree *);
 extern tree make_temporary_var_for_ref_to_temp	(tree, tree);
 extern tree strip_top_quals			(tree);
 extern tree perform_implicit_conversion		(tree, tree, tsubst_flags_t);
+extern tree perform_implicit_conversion_flags	(tree, tree, tsubst_flags_t, int);
 extern tree perform_direct_initialization_if_possible (tree, tree, bool,
                                                        tsubst_flags_t);
 extern tree in_charge_arg_for_name		(tree);
@@ -5001,9 +5006,10 @@ extern void readonly_error			(tree, const char *);
 extern void complete_type_check_abstract	(tree);
 extern int abstract_virtuals_error		(tree, tree);
 
-extern tree store_init_value			(tree, tree);
+extern tree store_init_value			(tree, tree, int);
 extern void check_narrowing			(tree, tree);
 extern tree digest_init				(tree, tree);
+extern tree digest_init_flags			(tree, tree, int);
 extern tree build_scoped_ref			(tree, tree, tree *);
 extern tree build_x_arrow			(tree);
 extern tree build_m_component_ref		(tree, tree);

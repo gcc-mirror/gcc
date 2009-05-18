@@ -1,3 +1,8 @@
+2009-05-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/explicit1.C: New.
+	* g++.dg/cpp0x/explicit2.C: New.
+
 2009-05-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/40109

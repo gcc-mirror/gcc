@@ -1387,7 +1387,7 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
       /* If store_init_value returns NULL_TREE, the INIT has been
 	 recorded as the DECL_INITIAL for EXP.  That means there's
 	 nothing more we have to do.  */
-      init = store_init_value (exp, init);
+      init = store_init_value (exp, init, flags);
       if (init)
 	finish_expr_stmt (init);
       return;
