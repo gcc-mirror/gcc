@@ -1,3 +1,10 @@
+2009-05-18  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (*zero_extend<GPR:mode>_trunc<SHORT:mode>,
+	*zero_extendhi_truncqi):  Move after the zero_extend patterns.
+	(*extenddi_truncate<mode>, *extendsi_truncate<mode>): Move after the
+	extend patterns.
+
 2009-05-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/39942

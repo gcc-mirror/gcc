@@ -2736,68 +2736,6 @@
   "exts\t%0,%1,%2,31"
   [(set_attr "type" "arith")
    (set_attr "mode" "<MODE>")])
-
-;; Combiner patterns for truncate/sign_extend combinations.  The SI versions
-;; use the shift/truncate patterns above.
-
-(define_insn_and_split "*extenddi_truncate<mode>"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(sign_extend:DI
-	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 2)
-	(ashift:DI (match_dup 1)
-		   (match_dup 3)))
-   (set (match_dup 0)
-	(ashiftrt:DI (match_dup 2)
-		     (match_dup 3)))]
-{
-  operands[2] = gen_lowpart (DImode, operands[0]);
-  operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
-})
-
-(define_insn_and_split "*extendsi_truncate<mode>"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(sign_extend:SI
-	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 2)
-	(ashift:DI (match_dup 1)
-		   (match_dup 3)))
-   (set (match_dup 0)
-	(truncate:SI (ashiftrt:DI (match_dup 2)
-				  (match_dup 3))))]
-{
-  operands[2] = gen_lowpart (DImode, operands[0]);
-  operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
-})
-
-;; Combiner patterns to optimize truncate/zero_extend combinations.
-
-(define_insn "*zero_extend<GPR:mode>_trunc<SHORT:mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-        (zero_extend:GPR
-	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-{
-  operands[2] = GEN_INT (GET_MODE_MASK (<SHORT:MODE>mode));
-  return "andi\t%0,%1,%x2";
-}
-  [(set_attr "type" "logical")
-   (set_attr "mode" "<GPR:MODE>")])
-
-(define_insn "*zero_extendhi_truncqi"
-  [(set (match_operand:HI 0 "register_operand" "=d")
-        (zero_extend:HI
-	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "andi\t%0,%1,0xff"
-  [(set_attr "type" "logical")
-   (set_attr "mode" "HI")])
 
 ;;
 ;;  ....................
@@ -2921,6 +2859,29 @@
   "TARGET_MIPS16"
   "lbu\t%0,%1"
   [(set_attr "move_type" "load")
+   (set_attr "mode" "HI")])
+
+;; Combiner patterns to optimize truncate/zero_extend combinations.
+
+(define_insn "*zero_extend<GPR:mode>_trunc<SHORT:mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+        (zero_extend:GPR
+	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
+  "TARGET_64BIT && !TARGET_MIPS16"
+{
+  operands[2] = GEN_INT (GET_MODE_MASK (<SHORT:MODE>mode));
+  return "andi\t%0,%1,%x2";
+}
+  [(set_attr "type" "logical")
+   (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "*zero_extendhi_truncqi"
+  [(set (match_operand:HI 0 "register_operand" "=d")
+        (zero_extend:HI
+	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
+  "TARGET_64BIT && !TARGET_MIPS16"
+  "andi\t%0,%1,0xff"
+  [(set_attr "type" "logical")
    (set_attr "mode" "HI")])
 
 ;;
@@ -3047,6 +3008,45 @@
    lb\t%0,%1"
   [(set_attr "move_type" "signext,load")
    (set_attr "mode" "SI")])
+
+;; Combiner patterns for truncate/sign_extend combinations.  The SI versions
+;; use the shift/truncate patterns.
+
+(define_insn_and_split "*extenddi_truncate<mode>"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+	(sign_extend:DI
+	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
+  "TARGET_64BIT && !TARGET_MIPS16"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 2)
+	(ashift:DI (match_dup 1)
+		   (match_dup 3)))
+   (set (match_dup 0)
+	(ashiftrt:DI (match_dup 2)
+		     (match_dup 3)))]
+{
+  operands[2] = gen_lowpart (DImode, operands[0]);
+  operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
+})
+
+(define_insn_and_split "*extendsi_truncate<mode>"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(sign_extend:SI
+	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
+  "TARGET_64BIT && !TARGET_MIPS16"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 2)
+	(ashift:DI (match_dup 1)
+		   (match_dup 3)))
+   (set (match_dup 0)
+	(truncate:SI (ashiftrt:DI (match_dup 2)
+				  (match_dup 3))))]
+{
+  operands[2] = gen_lowpart (DImode, operands[0]);
+  operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
+})
 
 (define_insn "extendsfdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
