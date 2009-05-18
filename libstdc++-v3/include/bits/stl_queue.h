@@ -249,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
-      swap(queue&& __q)
+      swap(queue& __q)
       { c.swap(__q.c); }
 #endif
     };
@@ -316,16 +316,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template<typename _Tp, typename _Seq>
     inline void
     swap(queue<_Tp, _Seq>& __x, queue<_Tp, _Seq>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Tp, typename _Seq>
-    inline void
-    swap(queue<_Tp, _Seq>&& __x, queue<_Tp, _Seq>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Tp, typename _Seq>
-    inline void
-    swap(queue<_Tp, _Seq>& __x, queue<_Tp, _Seq>&& __y)
     { __x.swap(__y); }
 #endif
 
@@ -550,7 +540,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
 #ifdef __GXX_EXPERIMENTAL_CXX0X__
       void
-      swap(priority_queue&& __pq)
+      swap(priority_queue& __pq)
       {
 	using std::swap;
 	c.swap(__pq.c);
@@ -566,18 +556,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline void
     swap(priority_queue<_Tp, _Sequence, _Compare>& __x,
 	 priority_queue<_Tp, _Sequence, _Compare>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Tp, typename _Sequence, typename _Compare>
-    inline void
-    swap(priority_queue<_Tp, _Sequence, _Compare>&& __x,
-	 priority_queue<_Tp, _Sequence, _Compare>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Tp, typename _Sequence, typename _Compare>
-    inline void
-    swap(priority_queue<_Tp, _Sequence, _Compare>& __x,
-	 priority_queue<_Tp, _Sequence, _Compare>&& __y)
     { __x.swap(__y); }
 #endif
 

@@ -1439,11 +1439,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
        *  constant time.
       */
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      swap(__versa_string&& __s)
-#else
       swap(__versa_string& __s)
-#endif
       { this->_M_swap(__s); }
 
       // String operations:
@@ -2334,22 +2330,6 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     swap(__versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
 	 __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
     { __lhs.swap(__rhs); }
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  template<typename _CharT, typename _Traits, typename _Alloc,
-	   template <typename, typename, typename> class _Base>
-    inline void
-    swap(__versa_string<_CharT, _Traits, _Alloc, _Base>&& __lhs,
-	 __versa_string<_CharT, _Traits, _Alloc, _Base>& __rhs)
-    { __lhs.swap(__rhs); }
-
-  template<typename _CharT, typename _Traits, typename _Alloc,
-	   template <typename, typename, typename> class _Base>
-    inline void
-    swap(__versa_string<_CharT, _Traits, _Alloc, _Base>& __lhs,
-	 __versa_string<_CharT, _Traits, _Alloc, _Base>&& __rhs)
-    { __lhs.swap(__rhs); }
-#endif
 
 _GLIBCXX_END_NAMESPACE
 

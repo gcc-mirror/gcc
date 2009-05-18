@@ -77,7 +77,7 @@ namespace std
       _Head&       _M_head()       { return *this; }
       const _Head& _M_head() const { return *this; }
     
-      void _M_swap_impl(_Head&&) { /* no-op */ }
+      void _M_swap_impl(_Head&) { /* no-op */ }
     };
 
   template<std::size_t _Idx, typename _Head>
@@ -97,7 +97,7 @@ namespace std
       const _Head& _M_head() const { return _M_head_impl; }        
 
       void
-      _M_swap_impl(_Head&& __h)
+      _M_swap_impl(_Head& __h)
       { 
 	using std::swap;
 	swap(__h, _M_head_impl);
@@ -125,7 +125,7 @@ namespace std
     struct _Tuple_impl<_Idx>
     { 
     protected:
-      void _M_swap_impl(_Tuple_impl&&) { /* no-op */ }
+      void _M_swap_impl(_Tuple_impl&) { /* no-op */ }
     };
 
   /**
@@ -214,7 +214,7 @@ namespace std
 
     protected:
       void
-      _M_swap_impl(_Tuple_impl&& __in)
+      _M_swap_impl(_Tuple_impl& __in)
       {
 	_Base::_M_swap_impl(__in._M_head());
 	_Inherited::_M_swap_impl(__in._M_tail());
@@ -292,7 +292,7 @@ namespace std
 	}
 
       void
-      swap(tuple&& __in)
+      swap(tuple& __in)
       { _Inherited::_M_swap_impl(__in); }
     };
 
@@ -301,7 +301,7 @@ namespace std
     class tuple<>
     {
     public:
-      void swap(tuple&&) { /* no-op */ }
+      void swap(tuple&) { /* no-op */ }
     };
 
   /// tuple (2-element), with construction and assignment from a pair.
@@ -394,7 +394,7 @@ namespace std
 	}
 
       void
-      swap(tuple&& __in)
+      swap(tuple& __in)
       { 
 	using std::swap;
 	swap(this->_M_head(), __in._M_head());
@@ -663,16 +663,6 @@ namespace std
   template<typename... _Elements>
     inline void 
     swap(tuple<_Elements...>& __x, tuple<_Elements...>& __y)
-    { __x.swap(__y); }
-
-  template<typename... _Elements>
-    inline void
-    swap(tuple<_Elements...>&& __x, tuple<_Elements...>& __y)
-    { __x.swap(__y); }
-
-  template<typename... _Elements>
-    inline void
-    swap(tuple<_Elements...>& __x, tuple<_Elements...>&& __y)
     { __x.swap(__y); }
 
   // A class (and instance) which can be used in 'tie' when an element

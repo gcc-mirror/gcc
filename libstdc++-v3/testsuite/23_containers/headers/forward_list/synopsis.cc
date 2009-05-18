@@ -43,10 +43,4 @@ namespace std {
 
   template <class T, class Allocator>
     void swap(forward_list<T,Allocator>& x, forward_list<T,Allocator>& y);
-
-  template <class T, class Allocator>
-    void swap(forward_list<T,Allocator>&& x, forward_list<T,Allocator>& y);
-
-  template <class T, class Allocator>
-    void swap(forward_list<T,Allocator>& x, forward_list<T,Allocator>&& y);
 }

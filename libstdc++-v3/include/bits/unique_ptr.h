@@ -204,7 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       }
 
       void
-      swap(unique_ptr&& __u)
+      swap(unique_ptr& __u)
       {
 	using std::swap;
 	swap(_M_t, __u._M_t);
@@ -350,7 +350,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
         void reset(_Up) = delete;
 
       void
-      swap(unique_ptr&& __u)
+      swap(unique_ptr& __u)
       {
 	using std::swap;
 	swap(_M_t, __u._M_t);
@@ -389,18 +389,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	 unique_ptr<_Tp, _Tp_Deleter>& __y)
     { __x.swap(__y); }
 
-  template<typename _Tp, typename _Tp_Deleter> 
-    inline void
-    swap(unique_ptr<_Tp, _Tp_Deleter>&& __x,
-	 unique_ptr<_Tp, _Tp_Deleter>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Tp, typename _Tp_Deleter> 
-    inline void
-    swap(unique_ptr<_Tp, _Tp_Deleter>& __x,
-	 unique_ptr<_Tp, _Tp_Deleter>&& __y)
-    { __x.swap(__y); }
-  
   template<typename _Tp, typename _Tp_Deleter,
 	   typename _Up, typename _Up_Deleter>
     inline bool

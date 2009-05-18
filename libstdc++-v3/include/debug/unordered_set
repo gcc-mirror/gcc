@@ -129,7 +129,7 @@ namespace __debug
       }
 
       void
-      swap(unordered_set&& __x)
+      swap(unordered_set& __x)
       {
 	_Base::swap(__x);
 	_Safe_base::_M_swap(__x);
@@ -313,18 +313,6 @@ namespace __debug
 	 unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
 
-  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
-    inline void
-    swap(unordered_set<_Value, _Hash, _Pred, _Alloc>&& __x,
-	 unordered_set<_Value, _Hash, _Pred, _Alloc>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
-    inline void
-    swap(unordered_set<_Value, _Hash, _Pred, _Alloc>& __x,
-	 unordered_set<_Value, _Hash, _Pred, _Alloc>&& __y)
-    { __x.swap(__y); }
-
 
   template<typename _Value,
 	   typename _Hash = std::hash<_Value>,
@@ -411,7 +399,7 @@ namespace __debug
       }
 
       void
-      swap(unordered_multiset&& __x)
+      swap(unordered_multiset& __x)
       {
 	_Base::swap(__x);
 	_Safe_base::_M_swap(__x);
@@ -581,18 +569,6 @@ namespace __debug
     inline void
     swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
-    inline void
-    swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>&& __x,
-	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Value, typename _Hash, typename _Pred, typename _Alloc>
-    inline void
-    swap(unordered_multiset<_Value, _Hash, _Pred, _Alloc>& __x,
-	 unordered_multiset<_Value, _Hash, _Pred, _Alloc>&& __y)
     { __x.swap(__y); }
 
 } // namespace __debug

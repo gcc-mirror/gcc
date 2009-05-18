@@ -1,4 +1,67 @@
-2009-05-13  Jonathan Wakely  <jwakely.gcc@gmail.com>
+2009-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_pair.h (swap): Do not swap rvalues.
+	* include/bits/stl_deque.h (swap): Likewise.
+	* include/bits/stl_list.h (swap): Likewise.
+	* include/bits/stl_vector.h (swap): Likewise.
+	* include/bits/stl_bvector.h (swap): Likewise.
+	* include/bits/stl_queue.h (swap): Likewise.
+	* include/bits/stl_stack.h (swap): Likewise.
+	* include/bits/stl_tree.h (swap): Likewise.
+	* include/bits/stl_map.h (swap): Likewise.
+	* include/bits/stl_multimap.h (swap): Likewise.
+	* include/bits/stl_set.h (swap): Likewise.
+	* include/bits/stl_multiset.h (swap): Likewise.
+	* include/bits/forward_list.h (swap): Likewise.
+	* include/bits/unique_ptr.h (swap): Likewise.
+	* include/debug/deque (swap): Likewise.
+	* include/debug/list (swap): Likewise.
+	* include/debug/vector (swap): Likewise.
+	* include/debug/map.h (swap): Likewise.
+	* include/debug/multimap.h (swap): Likewise.
+	* include/debug/set.h (swap): Likewise.
+	* include/debug/multiset.h (swap): Likewise.
+	* include/debug/unordered_map (swap): Likewise.
+	* include/debug/unordered_set (swap): Likewise.
+	* include/ext/vstring.h (swap): Likewise.
+	* include/tr1_impl/unordered_map (swap): Likewise.
+	* include/tr1_impl/hashtable (swap): Likewise.
+	* include/tr1_impl/unordered_set (swap): Likewise.
+	* include/std/tuple (swap): Likewise.
+	* include/std/mutex (swap): Likewise.
+	* include/std/thread (swap): Likewise.
+	(operator<<): Only output to lvalue streams.
+	* testsuite/20_util/shared_ptr/modifiers/swap_rvalue.cc: Remove.
+	* testsuite/23_containers/headers/forward_list/synopsis.cc: Adjust.
+	* testsuite/23_containers/deque/requirements/dr438/
+	assign_neg.cc: Adjust line numbers.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	assign_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	insert_neg.cc: Likewise.
+	* testsuite/30_threads/thread/swap/1.cc: Swap with lvalue and also
+	test non-member swap.
+	* testsuite/30_threads/thread/swap/2.cc: Remove.
+
+2009-05-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/mutex: Move std::lock_error to ...
 	* src/compatibility.cc: Here.

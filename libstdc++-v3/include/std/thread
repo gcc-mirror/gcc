@@ -88,7 +88,7 @@ namespace std
 
       template<class _CharT, class _Traits>
 	friend basic_ostream<_CharT, _Traits>&
-	operator<<(basic_ostream<_CharT, _Traits>&& __out, thread::id __id);
+	operator<<(basic_ostream<_CharT, _Traits>& __out, thread::id __id);
     };
 
     // Simple base type that the templatized, derived class containing
@@ -149,7 +149,7 @@ namespace std
     }
 
     void
-    swap(thread&& __t)
+    swap(thread& __t)
     { std::swap(_M_id, __t._M_id); }
 
     bool
@@ -194,14 +194,6 @@ namespace std
   swap(thread& __x, thread& __y)
   { __x.swap(__y); }
 
-  inline void
-  swap(thread&& __x, thread& __y)
-  { __x.swap(__y); }
-
-  inline void
-  swap(thread& __x, thread&& __y)
-  { __x.swap(__y); }
-
   inline bool
   operator!=(thread::id __x, thread::id __y)
   { return !(__x == __y); }
@@ -220,7 +212,7 @@ namespace std
 
   template<class _CharT, class _Traits>
     inline basic_ostream<_CharT, _Traits>&
-    operator<<(basic_ostream<_CharT, _Traits>&& __out, thread::id __id)
+    operator<<(basic_ostream<_CharT, _Traits>& __out, thread::id __id)
     {
       if (__id == thread::id())
 	return __out << "thread::id of a non-executing thread";

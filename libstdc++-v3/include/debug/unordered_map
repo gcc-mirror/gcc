@@ -129,7 +129,7 @@ namespace __debug
       }
 
       void
-      swap(unordered_map&& __x)
+      swap(unordered_map& __x)
       {
 	_Base::swap(__x);
 	_Safe_base::_M_swap(__x);
@@ -314,20 +314,6 @@ namespace __debug
 	 unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
     { __x.swap(__y); }
 
-  template<typename _Key, typename _Tp, typename _Hash,
-	   typename _Pred, typename _Alloc>
-    inline void
-    swap(unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>&& __x,
-	 unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Key, typename _Tp, typename _Hash,
-	   typename _Pred, typename _Alloc>
-    inline void
-    swap(unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
-	 unordered_map<_Key, _Tp, _Hash, _Pred, _Alloc>&& __y)
-    { __x.swap(__y); }
-
 
   template<typename _Key, typename _Tp,
 	   typename _Hash = std::hash<_Key>,
@@ -415,7 +401,7 @@ namespace __debug
       }
 
       void
-      swap(unordered_multimap&& __x)
+      swap(unordered_multimap& __x)
       {
 	_Base::swap(__x);
 	_Safe_base::_M_swap(__x);
@@ -586,20 +572,6 @@ namespace __debug
     inline void
     swap(unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
 	 unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Key, typename _Tp, typename _Hash,
-	   typename _Pred, typename _Alloc>
-    inline void
-    swap(unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>&& __x,
-	 unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Key, typename _Tp, typename _Hash,
-	   typename _Pred, typename _Alloc>
-    inline void
-    swap(unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>& __x,
-	 unordered_multimap<_Key, _Tp, _Hash, _Pred, _Alloc>&& __y)
     { __x.swap(__y); }
 
 } // namespace __debug

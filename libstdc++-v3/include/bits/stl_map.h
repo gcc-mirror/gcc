@@ -608,11 +608,7 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
        *  that std::swap(m1,m2) will feed to this function.
        */
       void
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-      swap(map&& __x)
-#else
       swap(map& __x)
-#endif
       { _M_t.swap(__x._M_t); }
 
       /**
@@ -851,20 +847,6 @@ _GLIBCXX_BEGIN_NESTED_NAMESPACE(std, _GLIBCXX_STD_D)
     swap(map<_Key, _Tp, _Compare, _Alloc>& __x,
 	 map<_Key, _Tp, _Compare, _Alloc>& __y)
     { __x.swap(__y); }
-
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
-    inline void
-    swap(map<_Key, _Tp, _Compare, _Alloc>&& __x,
-	 map<_Key, _Tp, _Compare, _Alloc>& __y)
-    { __x.swap(__y); }
-
-  template<typename _Key, typename _Tp, typename _Compare, typename _Alloc>
-    inline void
-    swap(map<_Key, _Tp, _Compare, _Alloc>& __x,
-	 map<_Key, _Tp, _Compare, _Alloc>&& __y)
-    { __x.swap(__y); }
-#endif
 
 _GLIBCXX_END_NESTED_NAMESPACE
 

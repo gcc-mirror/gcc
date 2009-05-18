@@ -983,7 +983,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  function.
        */
       void
-      swap(forward_list&& __list)
+      swap(forward_list& __list)
       { _Node_base::swap(this->_M_impl._M_head, __list._M_impl._M_head); }
 
       /**
@@ -1283,20 +1283,6 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     inline void
     swap(forward_list<_Tp, _Alloc>& __lx,
          forward_list<_Tp, _Alloc>& __ly)
-    { __lx.swap(__ly); }
-
-  /// See std::forward_list::swap().
-  template<typename _Tp, typename _Alloc>
-    inline void
-    swap(forward_list<_Tp, _Alloc>&& __lx,
-         forward_list<_Tp, _Alloc>& __ly)
-    { __lx.swap(__ly); }
-
-  /// See std::forward_list::swap().
-  template<typename _Tp, typename _Alloc>
-    inline void 
-    swap(forward_list<_Tp, _Alloc>& __lx,
-	 forward_list<_Tp, _Alloc>&& __ly)
     { __lx.swap(__ly); }
 
 _GLIBCXX_END_NAMESPACE // namespace std
