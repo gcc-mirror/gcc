@@ -3176,7 +3176,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	return SUCCESS;
       if (rvalue->expr_type == EXPR_VARIABLE
 	  && !gfc_compare_interfaces (lvalue->symtree->n.sym,
-				      rvalue->symtree->n.sym, 0))
+				      rvalue->symtree->n.sym, 0, 1))
 	{
 	  gfc_error ("Interfaces don't match "
 		     "in procedure pointer assignment at %L", &rvalue->where);
