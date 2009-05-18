@@ -1181,6 +1181,9 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
       if (winner && winner == cand)
 	continue;
 
+      if (DECL_NONCONVERTING_P (cand))
+	continue;
+
       candidate = non_reference (TREE_TYPE (TREE_TYPE (cand)));
 
       switch (TREE_CODE (candidate))
