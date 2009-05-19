@@ -1,3 +1,8 @@
+2009-05-19  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Do
+	not falsely claim to have propagated into all uses.
+
 2009-05-19  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/invoke.texi (C Dialect Options): Update OpenMP specification
