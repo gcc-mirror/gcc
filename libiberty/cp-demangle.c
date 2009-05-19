@@ -719,8 +719,8 @@ cplus_demangle_fill_ctor (struct demangle_component *p,
 {
   if (p == NULL
       || name == NULL
-      || (kind < gnu_v3_complete_object_ctor
-	  && kind > gnu_v3_complete_object_allocating_ctor))
+      || (int) kind < gnu_v3_complete_object_ctor
+      || (int) kind > gnu_v3_complete_object_allocating_ctor)
     return 0;
   p->type = DEMANGLE_COMPONENT_CTOR;
   p->u.s_ctor.kind = kind;
@@ -738,8 +738,8 @@ cplus_demangle_fill_dtor (struct demangle_component *p,
 {
   if (p == NULL
       || name == NULL
-      || (kind < gnu_v3_deleting_dtor
-	  && kind > gnu_v3_base_object_dtor))
+      || (int) kind < gnu_v3_deleting_dtor
+      || (int) kind > gnu_v3_base_object_dtor)
     return 0;
   p->type = DEMANGLE_COMPONENT_DTOR;
   p->u.s_dtor.kind = kind;

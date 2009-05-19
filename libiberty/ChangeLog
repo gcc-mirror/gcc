@@ -1,3 +1,9 @@
+2009-05-19  Ian Lance Taylor  <iant@google.com>
+	    Ben Elliston  <bje@au.ibm.com>
+
+	* cp-demangle.c (cplus_demangle_fill_ctor): Fix logic bug.
+	(cplus_demangle_fill_dtor): Likewise.
+
 2009-05-17  Julian Brown  <julian@codesourcery.com>
 
 	* pex-win32.c (pex_win32_exec_child): Fix logic to avoid closing
