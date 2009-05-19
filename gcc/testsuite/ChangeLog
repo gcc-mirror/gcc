@@ -1,3 +1,7 @@
+2009-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization6.ad[sb]: New test.
+
 2009-05-19  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/compile/20090519-1.c: New testcase.

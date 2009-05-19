@@ -1141,11 +1141,10 @@ static t_bool
 follow_ssa_edge_expr (struct loop *loop, gimple at_stmt, tree expr, 
 		      gimple halting_phi, tree *evolution_of_loop, int limit)
 {
-  t_bool res = t_false;
-  tree rhs0, rhs1;
-  tree type = TREE_TYPE (expr);
-  enum tree_code code;
-  
+  enum tree_code code = TREE_CODE (expr);
+  tree type = TREE_TYPE (expr), rhs0, rhs1;
+  t_bool res;
+
   /* The EXPR is one of the following cases:
      - an SSA_NAME, 
      - an INTEGER_CST,
@@ -1154,10 +1153,10 @@ follow_ssa_edge_expr (struct loop *loop, gimple at_stmt, tree expr,
      - a MINUS_EXPR,
      - an ASSERT_EXPR,
      - other cases are not yet handled.  */
-  code = TREE_CODE (expr);
+
   switch (code)
     {
-    case NOP_EXPR:
+    CASE_CONVERT:
       /* This assignment is under the form "a_1 = (cast) rhs.  */
       res = follow_ssa_edge_expr (loop, at_stmt, TREE_OPERAND (expr, 0),
 				  halting_phi, evolution_of_loop, limit);
@@ -1168,43 +1167,42 @@ follow_ssa_edge_expr (struct loop *loop, gimple at_stmt, tree expr,
       /* This assignment is under the form "a_1 = 7".  */
       res = t_false;
       break;
-      
+
     case SSA_NAME:
       /* This assignment is under the form: "a_1 = b_2".  */
       res = follow_ssa_edge 
 	(loop, SSA_NAME_DEF_STMT (expr), halting_phi, evolution_of_loop, limit);
       break;
-      
+
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
       /* This case is under the form "rhs0 +- rhs1".  */
       rhs0 = TREE_OPERAND (expr, 0);
       rhs1 = TREE_OPERAND (expr, 1);
-      STRIP_TYPE_NOPS (rhs0);
-      STRIP_TYPE_NOPS (rhs1);
-      return follow_ssa_edge_binary (loop, at_stmt, type, rhs0, code, rhs1,
-				     halting_phi, evolution_of_loop, limit);
+      type = TREE_TYPE (rhs0);
+      STRIP_USELESS_TYPE_CONVERSION (rhs0);
+      STRIP_USELESS_TYPE_CONVERSION (rhs1);
+      res = follow_ssa_edge_binary (loop, at_stmt, type, rhs0, code, rhs1,
+				    halting_phi, evolution_of_loop, limit);
+      break;
 
     case ASSERT_EXPR:
-      {
-	/* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
-	   It must be handled as a copy assignment of the form a_1 = a_2.  */
-	tree op0 = ASSERT_EXPR_VAR (expr);
-	if (TREE_CODE (op0) == SSA_NAME)
-	  res = follow_ssa_edge (loop, SSA_NAME_DEF_STMT (op0),
-				 halting_phi, evolution_of_loop, limit);
-	else
-	  res = t_false;
-	break;
-      }
-
+      /* This assignment is of the form: "a_1 = ASSERT_EXPR <a_2, ...>"
+	 It must be handled as a copy assignment of the form a_1 = a_2.  */
+      rhs0 = ASSERT_EXPR_VAR (expr);
+      if (TREE_CODE (rhs0) == SSA_NAME)
+	res = follow_ssa_edge (loop, SSA_NAME_DEF_STMT (rhs0),
+			       halting_phi, evolution_of_loop, limit);
+      else
+	res = t_false;
+      break;
 
     default:
       res = t_false;
       break;
     }
-  
+
   return res;
 }
 
@@ -1215,34 +1213,39 @@ static t_bool
 follow_ssa_edge_in_rhs (struct loop *loop, gimple stmt,
 			gimple halting_phi, tree *evolution_of_loop, int limit)
 {
-  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
   enum tree_code code = gimple_assign_rhs_code (stmt);
+  tree type = gimple_expr_type (stmt), rhs1, rhs2;
+  t_bool res;
 
-  switch (get_gimple_rhs_class (code))
+  switch (code)
     {
-    case GIMPLE_BINARY_RHS:
-      return follow_ssa_edge_binary (loop, stmt, type,
-				     gimple_assign_rhs1 (stmt), code,
-				     gimple_assign_rhs2 (stmt),
-				     halting_phi, evolution_of_loop, limit);
-    case GIMPLE_SINGLE_RHS:
-      return follow_ssa_edge_expr (loop, stmt, gimple_assign_rhs1 (stmt),
-				   halting_phi, evolution_of_loop, limit);
-    case GIMPLE_UNARY_RHS:
-      if (code == NOP_EXPR)
-	{
-	  /* This assignment is under the form "a_1 = (cast) rhs.  */
-	  t_bool res
-	    = follow_ssa_edge_expr (loop, stmt, gimple_assign_rhs1 (stmt),
+    CASE_CONVERT:
+      /* This assignment is under the form "a_1 = (cast) rhs.  */
+      res = follow_ssa_edge_expr (loop, stmt, gimple_assign_rhs1 (stmt),
+				  halting_phi, evolution_of_loop, limit);
+      *evolution_of_loop = chrec_convert (type, *evolution_of_loop, stmt);
+      break;
+
+    case POINTER_PLUS_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      rhs1 = gimple_assign_rhs1 (stmt);
+      rhs2 = gimple_assign_rhs2 (stmt);
+      type = TREE_TYPE (rhs1);
+      res = follow_ssa_edge_binary (loop, stmt, type, rhs1, code, rhs2,
 				    halting_phi, evolution_of_loop, limit);
-	  *evolution_of_loop = chrec_convert (type, *evolution_of_loop, stmt);
-	  return res;
-	}
-      /* FALLTHRU */
+      break;
 
     default:
-      return t_false;
+      if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
+	res = follow_ssa_edge_expr (loop, stmt, gimple_assign_rhs1 (stmt),
+				    halting_phi, evolution_of_loop, limit);
+      else
+	res = t_false;
+      break;
     }
+
+  return res;
 }
 
 /* Checks whether the I-th argument of a PHI comes from a backedge.  */
