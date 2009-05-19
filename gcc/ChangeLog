@@ -1,3 +1,8 @@
+2009-05-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	* c-common.c (warn_logical_operator): Remove unnecessary
+	conditionals.
+
 2009-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (do_mpc_arg1): Separate MPFR/MPC C rounding types.
