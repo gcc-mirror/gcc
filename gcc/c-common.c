@@ -1788,10 +1788,7 @@ warn_logical_operator (location_t location, enum tree_code code, tree type,
   if (lhs && rhs && operand_equal_p (lhs, rhs, 0)
       && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
 		       in1_p, low1, high1)
-      && 0 != (tem = build_range_check (type,
-					lhs != 0 ? lhs
-					: rhs != 0 ? rhs : integer_zero_node,
-					in_p, low, high)))
+      && 0 != (tem = build_range_check (type, lhs, in_p, low, high)))
     {
       if (TREE_CODE (tem) != INTEGER_CST)
 	return;
