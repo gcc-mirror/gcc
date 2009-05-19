@@ -381,6 +381,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     static void
     _S_destroy_c_locale(__c_locale& __cloc);
 
+    static __c_locale
+    _S_lc_ctype_c_locale(__c_locale __cloc, const char* __s);
+
     // Returns data from the underlying "C" library data for the
     // classic locale.
     static __c_locale
