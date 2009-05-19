@@ -683,6 +683,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
   tree *rhsp, *lhsp;
   gimple use_stmt = gsi_stmt (*use_stmt_gsi);
   enum tree_code rhs_code;
+  bool res = true;
 
   gcc_assert (TREE_CODE (def_rhs) == ADDR_EXPR);
 
@@ -726,19 +727,26 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
   /* Now see if the LHS node is an INDIRECT_REF using NAME.  If so, 
      propagate the ADDR_EXPR into the use of NAME and fold the result.  */
   if (TREE_CODE (lhs) == INDIRECT_REF
-      && TREE_OPERAND (lhs, 0) == name
-      && may_propagate_address_into_dereference (def_rhs, lhs)
-      && (lhsp != gimple_assign_lhs_ptr (use_stmt)
-	  || useless_type_conversion_p (TREE_TYPE (TREE_OPERAND (def_rhs, 0)),
-					TREE_TYPE (rhs))))
+      && TREE_OPERAND (lhs, 0) == name)
     {
-      *lhsp = unshare_expr (TREE_OPERAND (def_rhs, 0));
-      fold_stmt_inplace (use_stmt);
-      tidy_after_forward_propagate_addr (use_stmt);
+      if (may_propagate_address_into_dereference (def_rhs, lhs)
+	  && (lhsp != gimple_assign_lhs_ptr (use_stmt)
+	      || useless_type_conversion_p
+	           (TREE_TYPE (TREE_OPERAND (def_rhs, 0)), TREE_TYPE (rhs))))
+	{
+	  *lhsp = unshare_expr (TREE_OPERAND (def_rhs, 0));
+	  fold_stmt_inplace (use_stmt);
+	  tidy_after_forward_propagate_addr (use_stmt);
 
-      /* Continue propagating into the RHS if this was not the only use.  */
-      if (single_use_p)
-	return true;
+	  /* Continue propagating into the RHS if this was not the only use.  */
+	  if (single_use_p)
+	    return true;
+	}
+      else
+	/* We can have a struct assignment dereferencing our name twice.
+	   Note that we didn't propagate into the lhs to not falsely
+	   claim we did when propagating into the rhs.  */
+	res = false;
     }
 
   /* Strip away any outer COMPONENT_REF, ARRAY_REF or ADDR_EXPR
@@ -758,7 +766,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
       *rhsp = unshare_expr (TREE_OPERAND (def_rhs, 0));
       fold_stmt_inplace (use_stmt);
       tidy_after_forward_propagate_addr (use_stmt);
-      return true;
+      return res;
     }
 
   /* Now see if the RHS node is an INDIRECT_REF using NAME.  If so, 
@@ -789,7 +797,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 					     true, GSI_NEW_STMT);
 	 gimple_assign_set_rhs1 (use_stmt, new_rhs);
 	 tidy_after_forward_propagate_addr (use_stmt);
-	 return true;
+	 return res;
        }
      /* If the defining rhs comes from an indirect reference, then do not
         convert into a VIEW_CONVERT_EXPR.  */
@@ -803,7 +811,7 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	 *rhsp = new_rhs;
 	 fold_stmt_inplace (use_stmt);
 	 tidy_after_forward_propagate_addr (use_stmt);
-	 return true;
+	 return res;
        }
    }
 

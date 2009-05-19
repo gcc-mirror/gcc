@@ -1,3 +1,7 @@
+2009-05-19  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/compile/20090519-1.c: New testcase.
+
 2009-05-18  Dodji Seketeli  <dodji@redhat.com>
 
 	PR debug/40109
