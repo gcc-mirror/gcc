@@ -1,3 +1,12 @@
+2009-05-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/40172
+	* gcc.dg/pr40172.c: Renamed to ...
+	* gcc.dg/pr40172-1.c: This.
+
+	* gcc.dg/pr40172-2.c: New.
+	* gcc.dg/pr40172-3.c: Likewise.
+
 2009-05-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
 	PR c/40172
