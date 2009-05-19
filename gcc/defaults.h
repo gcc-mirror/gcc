@@ -492,6 +492,181 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LONG_LONG_ACCUM_TYPE_SIZE (LONG_LONG_FRACT_TYPE_SIZE * 2)
 #endif
 
+/* We let tm.h override the types used here, to handle trivial differences
+   such as the choice of unsigned int or long unsigned int for size_t.
+   When machines start needing nontrivial differences in the size type,
+   it would be best to do something here to figure out automatically
+   from other information what type to use.  */
+
+#ifndef SIZE_TYPE
+#define SIZE_TYPE "long unsigned int"
+#endif
+
+#ifndef PID_TYPE
+#define PID_TYPE "int"
+#endif
+
+/* If GCC knows the exact uint_least16_t and uint_least32_t types from
+   <stdint.h>, use them for char16_t and char32_t.  Otherwise, use
+   these guesses; getting the wrong type of a given width will not
+   affect C++ name mangling because in C++ these are distinct types
+   not typedefs.  */
+
+#ifdef UINT_LEAST16_TYPE
+#define CHAR16_TYPE UINT_LEAST16_TYPE
+#else
+#define CHAR16_TYPE "short unsigned int"
+#endif
+
+#ifdef UINT_LEAST32_TYPE
+#define CHAR32_TYPE UINT_LEAST32_TYPE
+#else
+#define CHAR32_TYPE "unsigned int"
+#endif
+
+#ifndef WCHAR_TYPE
+#define WCHAR_TYPE "int"
+#endif
+
+/* WCHAR_TYPE gets overridden by -fshort-wchar.  */
+#define MODIFIED_WCHAR_TYPE \
+	(flag_short_wchar ? "short unsigned int" : WCHAR_TYPE)
+
+#ifndef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "long int"
+#endif
+
+#ifndef WINT_TYPE
+#define WINT_TYPE "unsigned int"
+#endif
+
+#ifndef INTMAX_TYPE
+#define INTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+		     ? "int"					\
+		     : ((LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+			? "long int"				\
+			: "long long int"))
+#endif
+
+#ifndef UINTMAX_TYPE
+#define UINTMAX_TYPE ((INT_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+		     ? "unsigned int"				\
+		     : ((LONG_TYPE_SIZE == LONG_LONG_TYPE_SIZE)	\
+			? "long unsigned int"			\
+			: "long long unsigned int"))
+#endif
+
+
+/* There are no default definitions of these <stdint.h> types.  */
+
+#ifndef SIG_ATOMIC_TYPE
+#define SIG_ATOMIC_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT8_TYPE
+#define INT8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT16_TYPE
+#define INT16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT32_TYPE
+#define INT32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT64_TYPE
+#define INT64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT8_TYPE
+#define UINT8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT16_TYPE
+#define UINT16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT32_TYPE
+#define UINT32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT64_TYPE
+#define UINT64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_LEAST8_TYPE
+#define INT_LEAST8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_LEAST16_TYPE
+#define INT_LEAST16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_LEAST32_TYPE
+#define INT_LEAST32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_LEAST64_TYPE
+#define INT_LEAST64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_LEAST8_TYPE
+#define UINT_LEAST8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_LEAST16_TYPE
+#define UINT_LEAST16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_LEAST32_TYPE
+#define UINT_LEAST32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_LEAST64_TYPE
+#define UINT_LEAST64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_FAST8_TYPE
+#define INT_FAST8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_FAST16_TYPE
+#define INT_FAST16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_FAST32_TYPE
+#define INT_FAST32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INT_FAST64_TYPE
+#define INT_FAST64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_FAST8_TYPE
+#define UINT_FAST8_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_FAST16_TYPE
+#define UINT_FAST16_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_FAST32_TYPE
+#define UINT_FAST32_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINT_FAST64_TYPE
+#define UINT_FAST64_TYPE ((const char *) NULL)
+#endif
+
+#ifndef INTPTR_TYPE
+#define INTPTR_TYPE ((const char *) NULL)
+#endif
+
+#ifndef UINTPTR_TYPE
+#define UINTPTR_TYPE ((const char *) NULL)
+#endif
+
 /* Width in bits of a pointer.  Mind the value of the macro `Pmode'.  */
 #ifndef POINTER_SIZE
 #define POINTER_SIZE BITS_PER_WORD
