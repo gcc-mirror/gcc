@@ -1,3 +1,9 @@
+2009-05-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* gcc.dg/vector-4.c: New testcase.
+	* gcc.dg/simd-1b.c: % is now allowed for integer vectors.
+	* g++.dg/ext/vector16.C: New testcase.
+
 2009-05-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/40172
