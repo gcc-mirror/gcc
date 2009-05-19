@@ -13671,6 +13671,7 @@ do_mpc_arg1 (tree arg, tree type, int (*func)(mpc_ptr, mpc_srcptr, mpc_rnd_t))
 	    REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (type)));
 	  const int prec = fmt->p;
 	  const mp_rnd_t rnd = fmt->round_towards_zero ? GMP_RNDZ : GMP_RNDN;
+	  const mpc_rnd_t crnd = fmt->round_towards_zero ? MPC_RNDZZ : MPC_RNDNN;
 	  int inexact;
 	  mpc_t m;
 	  
@@ -13678,7 +13679,7 @@ do_mpc_arg1 (tree arg, tree type, int (*func)(mpc_ptr, mpc_srcptr, mpc_rnd_t))
 	  mpfr_from_real (MPC_RE(m), re, rnd);
 	  mpfr_from_real (MPC_IM(m), im, rnd);
 	  mpfr_clear_flags ();
-	  inexact = func (m, m, rnd);
+	  inexact = func (m, m, crnd);
 	  result = do_mpc_ckconv (m, type, inexact);
 	  mpc_clear (m);
 	}

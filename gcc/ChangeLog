@@ -1,3 +1,7 @@
+2009-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (do_mpc_arg1): Separate MPFR/MPC C rounding types.
+
 2009-05-19  Ben Elliston  <bje@au.ibm.com>
 
 	* unwind-dw2-fde.c (fde_unencoded_compare): Replace type punning
