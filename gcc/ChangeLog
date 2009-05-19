@@ -1,3 +1,11 @@
+2009-05-19  Ben Elliston  <bje@au.ibm.com>
+
+	* unwind-dw2-fde.c (fde_unencoded_compare): Replace type punning
+	assignments with memcpy calls.
+	(add_fdes): Likewise.
+	(binary_search_unencoded_fdes): Likewise.
+	(linear_search_fdes): Eliminate type puns.
+	
 2009-05-19  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Do

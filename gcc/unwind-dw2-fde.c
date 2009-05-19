@@ -318,8 +318,9 @@ static int
 fde_unencoded_compare (struct object *ob __attribute__((unused)),
 		       const fde *x, const fde *y)
 {
-  const _Unwind_Ptr x_ptr = *(const _Unwind_Ptr *) x->pc_begin;
-  const _Unwind_Ptr y_ptr = *(const _Unwind_Ptr *) y->pc_begin;
+  _Unwind_Ptr x_ptr, y_ptr;
+  memcpy (&x_ptr, x->pc_begin, sizeof (_Unwind_Ptr));
+  memcpy (&y_ptr, y->pc_begin, sizeof (_Unwind_Ptr));
 
   if (x_ptr > y_ptr)
     return 1;
@@ -674,7 +675,9 @@ add_fdes (struct object *ob, struct fde_accumulator *accu, const fde *this_fde)
 
       if (encoding == DW_EH_PE_absptr)
 	{
-	  if (*(const _Unwind_Ptr *) this_fde->pc_begin == 0)
+	  _Unwind_Ptr ptr;
+	  memcpy (&ptr, this_fde->pc_begin, sizeof (_Unwind_Ptr));
+	  if (ptr == 0)
 	    continue;
 	}
       else
@@ -792,8 +795,9 @@ linear_search_fdes (struct object *ob, const fde *this_fde, void *pc)
 
       if (encoding == DW_EH_PE_absptr)
 	{
-	  pc_begin = ((const _Unwind_Ptr *) this_fde->pc_begin)[0];
-	  pc_range = ((const _Unwind_Ptr *) this_fde->pc_begin)[1];
+	  const _Unwind_Ptr *pc_array = (const _Unwind_Ptr *) this_fde->pc_begin;
+	  pc_begin = pc_array[0];
+	  pc_range = pc_array[1];
 	  if (pc_begin == 0)
 	    continue;
 	}
@@ -840,8 +844,10 @@ binary_search_unencoded_fdes (struct object *ob, void *pc)
     {
       size_t i = (lo + hi) / 2;
       const fde *const f = vec->array[i];
-      const void *pc_begin = ((const void *const*) f->pc_begin)[0];
-      const uaddr pc_range = ((const uaddr *) f->pc_begin)[1];
+      void *pc_begin;
+      uaddr pc_range;
+      memcpy (&pc_begin, (const void * const *) f->pc_begin, sizeof (void *));
+      memcpy (&pc_range, (const uaddr *) f->pc_begin + 1, sizeof (uaddr));
 
       if (pc < pc_begin)
 	hi = i;
