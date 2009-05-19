@@ -1,3 +1,8 @@
+2009-05-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* c-typeck.c (build_binary_op): Allow % on integal vectors.
+	* doc/extend.texi (Vector Extension): Document that % is allowed too.
+
 2009-05-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (ix86_avoid_jump_mispredicts): Check

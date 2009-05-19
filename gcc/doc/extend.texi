@@ -5746,7 +5746,7 @@ produce code that uses 4 @code{SIs}.
 
 The types defined in this manner can be used with a subset of normal C
 operations.  Currently, GCC will allow using the following operators
-on these types: @code{+, -, *, /, unary minus, ^, |, &, ~}@.
+on these types: @code{+, -, *, /, unary minus, ^, |, &, ~, %}@.
 
 The operations behave like C++ @code{valarrays}.  Addition is defined as
 the addition of the corresponding elements of the operands.  For

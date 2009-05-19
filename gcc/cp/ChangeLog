@@ -1,3 +1,7 @@
+2009-05-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	* typeck.c (build_binary_op): Allow % on integal vectors.
+
 2009-05-18  Jason Merrill  <jason@redhat.com>
 
 	Implement explicit conversions ops as specified in N2437.
