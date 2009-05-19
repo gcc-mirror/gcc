@@ -1073,8 +1073,6 @@ c_common_post_options (const char **pfilename)
     warn_override_init = extra_warnings;
   if (warn_ignored_qualifiers == -1)
     warn_ignored_qualifiers = extra_warnings;
-  if (warn_logical_op == -1)
-    warn_logical_op = extra_warnings;
 
   /* -Wpointer-sign is disabled by default, but it is enabled if any
      of -Wall or -pedantic are given.  */

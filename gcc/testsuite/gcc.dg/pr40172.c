@@ -1,6 +1,6 @@
 /* PR middle-end/40172 */
 /* { dg-do compile } */
-/* { dg-options "-Wall -W -Werror" } */
+/* { dg-options "-Wall -W -Werror -Wlogical-op" } */
 
 struct rtx_def;
 typedef struct rtx_def *rtx; 

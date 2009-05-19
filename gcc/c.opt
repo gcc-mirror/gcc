@@ -285,7 +285,7 @@ C ObjC C++ ObjC++ Warning
 Warn about PCH files that are found but not used
 
 Wlogical-op
-C ObjC C++ ObjC++ Var(warn_logical_op) Init(-1) Warning 
+C ObjC C++ ObjC++ Var(warn_logical_op) Init(0) Warning 
 Warn when a logical operator is suspiciously always evaluating to true or false
 
 Wlong-long

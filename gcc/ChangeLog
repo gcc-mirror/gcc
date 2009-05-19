@@ -1,3 +1,11 @@
+2009-05-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
+
+	PR c/40172
+	* c.opt (Wlogical-op): Disabled by default.
+	* c-opt (c_common_post_options): Do not enable Wlogical-op with
+	Wextra.
+	* doc/invoke.texi (Wlogical-op): Likewise.
+	
 2009-05-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-scalar-evolution.c (follow_ssa_edge_expr) <NOP_EXPR>: Turn
