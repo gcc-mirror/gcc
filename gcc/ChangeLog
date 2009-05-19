@@ -505,35 +505,35 @@
 
 2009-05-15  Paolo Bonzini  <bonzini@gnu.org>
 
-        * config/frv/frv.h: Clean up references to GO_IF_LEGITIMATE_ADDRESS.
-        * config/frv/frv.c: Likewise.
-        * config/s390/s390.c: Likewise.
-        * config/sparc/sparc.h: Likewise.
-        * config/i386/i386.h: Likewise.
-        * config/i386/i386.c: Likewise.
-        * config/crx/crx.c: Likewise.
-        * config/m68hc11/m68hc11.h: Likewise.
-        * config/iq2000/iq2000.c: Likewise.
-        * config/mn10300/mn10300.h: Likewise.
-        * config/mn10300/mn10300.c: Likewise.
-        * config/m68k/m68k.c: Likewise.
-        * config/rs6000/rs6000.c: Likewise.
-        * config/rs6000/xcoff.h: Likewise.
-        * config/rs6000/linux64.h: Likewise.
-        * config/rs6000/sysv4.h: Likewise.
-        * config/score/score3.c: Likewise.
-        * config/score/score7.c: Likewise.
-        * config/score/score.c: Likewise.
-        * config/arm/arm.md: Likewise.
-        * config/mips/mips.c: Likewise.
-        * config/mips/mips.md: Likewise.
-        * config/bfin/bfin.h: Likewise.
-        * config/pa/pa.c: Likewise.
-        * config/pa/constraints.md: Likewise.
+	* config/frv/frv.h: Clean up references to GO_IF_LEGITIMATE_ADDRESS.
+	* config/frv/frv.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/i386/i386.c: Likewise.
+	* config/crx/crx.c: Likewise.
+	* config/m68hc11/m68hc11.h: Likewise.
+	* config/iq2000/iq2000.c: Likewise.
+	* config/mn10300/mn10300.h: Likewise.
+	* config/mn10300/mn10300.c: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/rs6000/xcoff.h: Likewise.
+	* config/rs6000/linux64.h: Likewise.
+	* config/rs6000/sysv4.h: Likewise.
+	* config/score/score3.c: Likewise.
+	* config/score/score7.c: Likewise.
+	* config/score/score.c: Likewise.
+	* config/arm/arm.md: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mips/mips.md: Likewise.
+	* config/bfin/bfin.h: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pa/constraints.md: Likewise.
 
-        * config/pdp11/pdp11-protos.h (legitimate_address_p): Delete.
-        * config/pdp11/pdp11.c (legitimate_address_p): Delete.
-        * config/pdp11/pdp11.h: Use memory_address_p instead.
+	* config/pdp11/pdp11-protos.h (legitimate_address_p): Delete.
+	* config/pdp11/pdp11.c (legitimate_address_p): Delete.
+	* config/pdp11/pdp11.h: Use memory_address_p instead.
 
 2009-05-14  Ian Lance Taylor  <iant@google.com>
 
