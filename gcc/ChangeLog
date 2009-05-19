@@ -1,3 +1,24 @@
+2009-05-19  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/ia64-protos.h (ia64_dconst_0_5): New.
+	(ia64_dconst_0_375): New.
+	* config/ia64/ia64.c (ia64_override_options): Remove
+	-minline-sqrt-min-latency warning.
+	(ia64_dconst_0_5_rtx, ia64_dconst_0_5): New.
+	(ia64_dconst_0_375_rtx, ia64_dconst_0_375): New
+	* config/ia64/ia64.md (*sqrt_approx): Remove.
+	(sqrtsf2): Remove #if 0.
+	(sqrtsf2_internal_thr): Rewrite and move to div.md.
+	(sqrtdf): Remove assert.
+	(sqrtdf2_internal_thr): Rewrite and move to div.md.
+	(sqrtxf2): Remove #if 0.
+	(sqrtxf2_internal_thr): Rewrite and move to div.md.
+	* div.md (sqrt_approx_rf): New.
+	(sqrtsf2_internal_thr): New implementation.
+	(sqrtsf2_internal_lat): New.
+	(sqrtdf2_internal_thr: New implementation.
+	(sqrtxf2_internal): New implementation.
+
 2009-05-19  Francois-Xavier Coudert  <fxcoudert@gmail.com>
 	    Hans-Peter Nilsson  <hp@axis.com>
 

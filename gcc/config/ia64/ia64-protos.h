@@ -102,3 +102,6 @@ extern void ia64_profile_hook (int);
 
 extern void ia64_optimization_options (int, int);
 extern void ia64_init_expanders (void);
+
+extern rtx ia64_dconst_0_5 (void);
+extern rtx ia64_dconst_0_375 (void);
