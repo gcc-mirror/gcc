@@ -226,6 +226,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   locale::facet::_S_clone_c_locale(__c_locale&)
   { return __c_locale(); }
 
+  __c_locale
+  locale::facet::_S_lc_ctype_c_locale(__c_locale, const char*)
+  { return __c_locale(); }
+
 _GLIBCXX_END_NAMESPACE
 
 _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)

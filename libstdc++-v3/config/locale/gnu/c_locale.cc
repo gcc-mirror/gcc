@@ -133,10 +133,10 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       {
 	// This named locale is not supported by the underlying OS.
 	__throw_runtime_error(__N("locale::facet::_S_create_c_locale "
-			      "name not valid"));
+				  "name not valid"));
       }
   }
-  
+
   void
   locale::facet::_S_destroy_c_locale(__c_locale& __cloc)
   {
@@ -147,6 +147,23 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   __c_locale
   locale::facet::_S_clone_c_locale(__c_locale& __cloc)
   { return __duplocale(__cloc); }
+
+  __c_locale
+  locale::facet::_S_lc_ctype_c_locale(__c_locale __cloc, const char* __s)
+  {
+    __c_locale __dup = __duplocale(__cloc);
+    if (__dup == __c_locale(0))
+      __throw_runtime_error(__N("locale::facet::_S_lc_ctype_c_locale "
+				"duplocale error"));
+    __c_locale __changed = __newlocale(LC_CTYPE_MASK, __s, __dup);
+    if (__changed == __c_locale(0))
+      {
+	__freelocale(__dup);
+	__throw_runtime_error(__N("locale::facet::_S_lc_ctype_c_locale "
+				  "newlocale error"));
+      }
+    return __changed;
+  }
 
 _GLIBCXX_END_NAMESPACE
 

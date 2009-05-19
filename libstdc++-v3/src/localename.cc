@@ -180,6 +180,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     // see if the given name is valid.
     __c_locale __cloc;
     locale::facet::_S_create_c_locale(__cloc, __s);
+    __c_locale __clocm = __cloc;
 
     __try
       {
@@ -194,15 +195,19 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	  _M_names[__k] = 0;
 
 	// Name the categories.
+	const char* __smon = __s;
 	const size_t __len = std::strlen(__s);
 	if (!std::memchr(__s, ';', __len))
 	  {
 	    _M_names[0] = new char[__len + 1];
-	    std::memcpy(_M_names[0], __s, __len + 1);	    
+	    std::memcpy(_M_names[0], __s, __len + 1);
 	  }
 	else
 	  {
 	    const char* __end = __s;
+	    bool __found_ctype = false;
+	    bool __found_monetary = false;
+	    size_t __ci = 0, __mi = 0;
 	    for (size_t __i = 0; __i < _S_categories_size; ++__i)
 	      {
 		const char* __beg = std::strchr(__end + 1, '=') + 1;
@@ -212,6 +217,24 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 		_M_names[__i] = new char[__end - __beg + 1];
 		std::memcpy(_M_names[__i], __beg, __end - __beg);
 		_M_names[__i][__end - __beg] = '\0';
+		if (!__found_ctype
+		    && *(__beg - 2) == 'E' && *(__beg - 3) == 'P')
+		  {
+		    __found_ctype = true;
+		    __ci = __i;
+		  }
+		else if (!__found_monetary && *(__beg - 2) == 'Y')
+		  {
+		    __found_monetary = true;
+		    __mi = __i;
+		  }
+	      }
+
+	    if (std::strcmp(_M_names[__ci], _M_names[__mi]))
+	      {
+		__smon = _M_names[__mi];
+		__clocm = locale::facet::_S_lc_ctype_c_locale(__cloc,
+							      __smon);
 	      }
 	  }
  
@@ -222,8 +245,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	_M_init_facet(new num_get<char>);
 	_M_init_facet(new num_put<char>);
 	_M_init_facet(new std::collate<char>(__cloc));
-	_M_init_facet(new moneypunct<char, false>(__cloc, __s));
-	_M_init_facet(new moneypunct<char, true>(__cloc, __s));
+	_M_init_facet(new moneypunct<char, false>(__cloc, 0));
+	_M_init_facet(new moneypunct<char, true>(__cloc, 0));
 	_M_init_facet(new money_get<char>);
 	_M_init_facet(new money_put<char>);
 	_M_init_facet(new __timepunct<char>(__cloc, __s));
@@ -238,8 +261,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	_M_init_facet(new num_get<wchar_t>);
 	_M_init_facet(new num_put<wchar_t>);
 	_M_init_facet(new std::collate<wchar_t>(__cloc));
-	_M_init_facet(new moneypunct<wchar_t, false>(__cloc, __s));
-	_M_init_facet(new moneypunct<wchar_t, true>(__cloc, __s));
+	_M_init_facet(new moneypunct<wchar_t, false>(__clocm, __smon));
+	_M_init_facet(new moneypunct<wchar_t, true>(__clocm, __smon));
 	_M_init_facet(new money_get<wchar_t>);
 	_M_init_facet(new money_put<wchar_t>);
 	_M_init_facet(new __timepunct<wchar_t>(__cloc, __s));
@@ -248,10 +271,14 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 	_M_init_facet(new std::messages<wchar_t>(__cloc, __s));
 #endif	  
 	locale::facet::_S_destroy_c_locale(__cloc);
+	if (__clocm != __cloc)
+	  locale::facet::_S_destroy_c_locale(__clocm);
       }
     __catch(...)
       {
 	locale::facet::_S_destroy_c_locale(__cloc);
+	if (__clocm != __cloc)
+	  locale::facet::_S_destroy_c_locale(__clocm);
 	this->~_Impl();
 	__throw_exception_again;
       }	

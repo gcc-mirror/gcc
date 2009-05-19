@@ -1,3 +1,14 @@
+2009-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/40184
+	* include/bits/locale_classes.h (locale::facet::_S_lc_ctype_c_locale):
+	Declare...
+	* config/locale/gnu/c_locale.cc: ... and define.
+	* config/locale/generic/c_locale.cc: Define.
+	* src/localename.cc (locale::_Impl::_Impl(const char*, size_t)):
+	Use it.
+	* testsuite/22_locale/locale/cons/40184.cc: New.
+
 2009-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40192
