@@ -5280,12 +5280,6 @@ ia64_override_options (void)
   if (TARGET_AUTO_PIC)
     target_flags |= MASK_CONST_GP;
 
-  if (TARGET_INLINE_SQRT == INL_MIN_LAT)
-    {
-      warning (0, "not yet implemented: latency-optimized inline square root");
-      TARGET_INLINE_SQRT = INL_MAX_THR;
-    }
-
   ia64_flag_schedule_insns2 = flag_schedule_insns_after_reload;
   flag_schedule_insns_after_reload = 0;
 
@@ -10570,5 +10564,34 @@ ia64_c_mode_for_suffix (char suffix)
 
   return VOIDmode;
 }
+
+static GTY(()) rtx ia64_dconst_0_5_rtx;
+
+rtx
+ia64_dconst_0_5 (void)
+{
+  if (! ia64_dconst_0_5_rtx)
+    {
+      REAL_VALUE_TYPE rv;
+      real_from_string (&rv, "0.5");
+      ia64_dconst_0_5_rtx = const_double_from_real_value (rv, DFmode);
+    }
+  return ia64_dconst_0_5_rtx;
+}
+
+static GTY(()) rtx ia64_dconst_0_375_rtx;
+
+rtx
+ia64_dconst_0_375 (void)
+{
+  if (! ia64_dconst_0_375_rtx)
+    {
+      REAL_VALUE_TYPE rv;
+      real_from_string (&rv, "0.375");
+      ia64_dconst_0_375_rtx = const_double_from_real_value (rv, DFmode);
+    }
+  return ia64_dconst_0_375_rtx;
+}
+
 
 #include "gt-ia64.h"

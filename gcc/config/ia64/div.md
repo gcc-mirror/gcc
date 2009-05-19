@@ -518,3 +518,281 @@
   emit_insn (gen_truncrfxf2 (operands[0], q_res));
   DONE;
 })
+
+
+;; SQRT operations
+
+
+(define_insn "sqrt_approx_rf"
+  [(set (match_operand:RF 0 "fr_register_operand" "=f")
+                (unspec:RF [(match_operand:RF 1 "fr_reg_or_fp01_operand" "fG")]
+			   UNSPEC_FR_SQRT_RECIP_APPROX_RES))
+   (set (match_operand:BI 2 "register_operand" "=c")
+        (unspec:BI [(match_dup 1)] UNSPEC_FR_SQRT_RECIP_APPROX))
+   (use (match_operand:SI 3 "const_int_operand" ""))]
+  ""
+  "frsqrta.s%3 %0, %2 = %F1"
+  [(set_attr "itanium_class" "fmisc")
+   (set_attr "predicable" "no")])
+
+(define_expand "sqrtsf2_internal_thr"
+  [(set (match_operand:SF 0 "fr_register_operand" "")
+        (sqrt:SF (match_operand:SF 1 "fr_register_operand" "")))]
+  "TARGET_INLINE_SQRT"
+{
+  rtx y         = gen_reg_rtx (RFmode);
+  rtx b         = gen_reg_rtx (RFmode);
+  rtx g         = gen_reg_rtx (RFmode);
+  rtx e         = gen_reg_rtx (RFmode);
+  rtx s         = gen_reg_rtx (RFmode);
+  rtx f         = gen_reg_rtx (RFmode);
+  rtx y1        = gen_reg_rtx (RFmode);
+  rtx g1        = gen_reg_rtx (RFmode);
+  rtx h         = gen_reg_rtx (RFmode);
+  rtx d         = gen_reg_rtx (RFmode);
+  rtx g2        = gen_reg_rtx (RFmode);
+  rtx cond      = gen_reg_rtx (BImode);
+  rtx zero      = CONST0_RTX (RFmode);
+  rtx one       = CONST1_RTX (RFmode);
+  rtx c1        = ia64_dconst_0_5();
+  rtx c2        = ia64_dconst_0_375();
+  rtx reg_df_c1	= gen_reg_rtx (DFmode);
+  rtx reg_df_c2	= gen_reg_rtx (DFmode);
+  rtx reg_rf_c1 = gen_reg_rtx (RFmode);
+  rtx reg_rf_c2 = gen_reg_rtx (RFmode);
+  rtx status0   = CONST0_RTX (SImode);
+  rtx status1   = CONST1_RTX (SImode);
+  rtx trunc_sgl = CONST0_RTX (SImode);
+  rtx trunc_off = CONST2_RTX (SImode);
+
+  /* Put needed constants into registers.	 */
+  emit_insn (gen_movdf (reg_df_c1, c1));
+  emit_insn (gen_movdf (reg_df_c2, c2));
+  emit_insn (gen_extenddfrf2 (reg_rf_c1, reg_df_c1));
+  emit_insn (gen_extenddfrf2 (reg_rf_c2, reg_df_c2));
+  /* Empty conversion to put input into RFmode.  */
+  emit_insn (gen_extendsfrf2 (b, operands[1]));
+  /* y = sqrt (1 / b)			*/
+  emit_insn (gen_sqrt_approx_rf (y, b, cond, status0));
+  /* g = b * y				*/
+  emit_insn (gen_mulrf3_cond (g, cond, b, y, zero, status1, trunc_off));
+  /* e = 1 - (g * y)			*/
+  emit_insn (gen_m2subrf4_cond (e, cond, one, g, y, zero, status1, trunc_off));
+  /* s = 0.5 + (0.375 * e)		*/
+  emit_insn (gen_m2addrf4_cond (s, cond, reg_rf_c1, reg_rf_c2, e, zero, status1, trunc_off));
+  /* f = y * e				*/
+  emit_insn (gen_mulrf3_cond (f, cond, y, e, zero, status1, trunc_off));
+  /* y1 = y + (f * s)			*/
+  emit_insn (gen_m2addrf4_cond (y1, cond, y, f, s, zero, status1, trunc_off));
+  /* g1 = single (b * y1)		*/
+  emit_insn (gen_mulrf3_cond (g1, cond, b, y1, zero, status1, trunc_sgl));
+  /* h = 0.5 * y1			*/
+  emit_insn (gen_mulrf3_cond (h, cond, reg_rf_c1, y1, zero, status1, trunc_off));
+  /* d = b - g1 * g1			*/
+  emit_insn (gen_m2subrf4_cond (d, cond, b, g1, g1, zero, status1, trunc_off));
+  /* g2 = single(g1 + (d * h))		*/
+  emit_insn (gen_m2addrf4_cond (g2, cond, g1, d, h, y, status0, trunc_sgl));
+  /* Conversion back into SFmode.       */
+  emit_insn (gen_truncrfsf2 (operands[0], g2));
+  DONE;
+})
+
+(define_expand "sqrtsf2_internal_lat"
+  [(set (match_operand:SF 0 "fr_register_operand" "")
+        (sqrt:SF (match_operand:SF 1 "fr_register_operand" "")))]
+  "TARGET_INLINE_SQRT"
+{
+  rtx y         = gen_reg_rtx (RFmode);
+  rtx b         = gen_reg_rtx (RFmode);
+  rtx g         = gen_reg_rtx (RFmode);
+  rtx g1        = gen_reg_rtx (RFmode);
+  rtx g2        = gen_reg_rtx (RFmode);
+  rtx e         = gen_reg_rtx (RFmode);
+  rtx s         = gen_reg_rtx (RFmode);
+  rtx f         = gen_reg_rtx (RFmode);
+  rtx f1        = gen_reg_rtx (RFmode);
+  rtx h         = gen_reg_rtx (RFmode);
+  rtx h1        = gen_reg_rtx (RFmode);
+  rtx d         = gen_reg_rtx (RFmode);
+  rtx cond      = gen_reg_rtx (BImode);
+  rtx zero      = CONST0_RTX (RFmode);
+  rtx one       = CONST1_RTX (RFmode);
+  rtx c1        = ia64_dconst_0_5();
+  rtx c2        = ia64_dconst_0_375();
+  rtx reg_df_c1	= gen_reg_rtx (DFmode);
+  rtx reg_df_c2	= gen_reg_rtx (DFmode);
+  rtx reg_rf_c1 = gen_reg_rtx (RFmode);
+  rtx reg_rf_c2 = gen_reg_rtx (RFmode);
+  rtx status0   = CONST0_RTX (SImode);
+  rtx status1   = CONST1_RTX (SImode);
+  rtx trunc_sgl = CONST0_RTX (SImode);
+  rtx trunc_off = CONST2_RTX (SImode);
+
+  /* Put needed constants into registers.	 */
+  emit_insn (gen_movdf (reg_df_c1, c1));
+  emit_insn (gen_movdf (reg_df_c2, c2));
+  emit_insn (gen_extenddfrf2 (reg_rf_c1, reg_df_c1));
+  emit_insn (gen_extenddfrf2 (reg_rf_c2, reg_df_c2));
+  /* Empty conversion to put input into RFmode.  */
+  emit_insn (gen_extendsfrf2 (b, operands[1]));
+  /* y = sqrt (1 / b)			*/
+  emit_insn (gen_sqrt_approx_rf (y, b, cond, status0));
+  /* g = b * y				*/
+  emit_insn (gen_mulrf3_cond (g, cond, b, y, zero, status1, trunc_off));
+  /* e = 1 - (g * y)			*/
+  emit_insn (gen_m2subrf4_cond (e, cond, one, g, y, zero, status1, trunc_off));
+  /* h = 0.5 * y			*/
+  emit_insn (gen_mulrf3_cond (h, cond, reg_rf_c1, y, zero, status1, trunc_off));
+  /* s = 0.5 + (0.375 * e)		*/
+  emit_insn (gen_m2addrf4_cond (s, cond, reg_rf_c1, reg_rf_c2, e, zero, status1, trunc_off));
+  /* f = e * g				*/
+  emit_insn (gen_mulrf3_cond (f, cond, e, g, zero, status1, trunc_off));
+  /* g1 = single (g + (f * s))		*/
+  emit_insn (gen_m2addrf4_cond (g1, cond, g, f, s, zero, status1, trunc_sgl));
+  /* f1 = e * h				*/
+  emit_insn (gen_mulrf3_cond (f1, cond, e, h, zero, status1, trunc_off));
+  /* d = b - g1 * g1			*/
+  emit_insn (gen_m2subrf4_cond (d, cond, b, g1, g1, zero, status1, trunc_off));
+  /* h1 = h + (f1 * s)			*/
+  emit_insn (gen_m2addrf4_cond (h1, cond, h, f1, s, zero, status1, trunc_off));
+  /* g2 = single(g1 + (d * h1))		*/
+  emit_insn (gen_m2addrf4_cond (g2, cond, g1, d, h1, y, status0, trunc_sgl));
+  /* Conversion back into SFmode.       */
+  emit_insn (gen_truncrfsf2 (operands[0], g2));
+  DONE;
+})
+
+(define_expand "sqrtdf2_internal_thr"
+  [(set (match_operand:DF 0 "fr_register_operand" "")
+        (sqrt:DF (match_operand:DF 1 "fr_register_operand" "")))]
+  "TARGET_INLINE_SQRT"
+{
+  rtx y         = gen_reg_rtx (RFmode);
+  rtx b         = gen_reg_rtx (RFmode);
+  rtx g         = gen_reg_rtx (RFmode);
+  rtx g1        = gen_reg_rtx (RFmode);
+  rtx g2        = gen_reg_rtx (RFmode);
+  rtx g3        = gen_reg_rtx (RFmode);
+  rtx g4        = gen_reg_rtx (RFmode);
+  rtx r         = gen_reg_rtx (RFmode);
+  rtx r1        = gen_reg_rtx (RFmode);
+  rtx h         = gen_reg_rtx (RFmode);
+  rtx h1        = gen_reg_rtx (RFmode);
+  rtx h2        = gen_reg_rtx (RFmode);
+  rtx d         = gen_reg_rtx (RFmode);
+  rtx d1        = gen_reg_rtx (RFmode);
+  rtx cond      = gen_reg_rtx (BImode);
+  rtx zero      = CONST0_RTX (RFmode);
+  rtx c1        = ia64_dconst_0_5();
+  rtx reg_df_c1	= gen_reg_rtx (DFmode);
+  rtx reg_rf_c1 = gen_reg_rtx (RFmode);
+  rtx status0   = CONST0_RTX (SImode);
+  rtx status1   = CONST1_RTX (SImode);
+  rtx trunc_dbl = CONST1_RTX (SImode);
+  rtx trunc_off = CONST2_RTX (SImode);
+
+  /* Put needed constants into registers.	 */
+  emit_insn (gen_movdf (reg_df_c1, c1));
+  emit_insn (gen_extenddfrf2 (reg_rf_c1, reg_df_c1));
+  /* Empty conversion to put input into RFmode.  */
+  emit_insn (gen_extenddfrf2 (b, operands[1]));
+  /* y = sqrt (1 / b)			*/
+  emit_insn (gen_sqrt_approx_rf (y, b, cond, status0));
+  /* g = b * y				*/
+  emit_insn (gen_mulrf3_cond (g, cond, b, y, zero, status1, trunc_off));
+  /* h = 0.5 * y			*/
+  emit_insn (gen_mulrf3_cond (h, cond, reg_rf_c1, y, zero, status1, trunc_off));
+  /* r = 0.5 - (g * h)			*/
+  emit_insn (gen_m2subrf4_cond (r, cond, reg_rf_c1, g, h, zero, status1, trunc_off));
+  /* g1 = g + (g * r)			*/
+  emit_insn (gen_m2addrf4_cond (g1, cond, g, g, r, zero, status1, trunc_off));
+  /* h1 = h + (h * r)			*/
+  emit_insn (gen_m2addrf4_cond (h1, cond, h, h, r, zero, status1, trunc_off));
+  /* r1 = 0.5 - (g1 * h1)		*/
+  emit_insn (gen_m2subrf4_cond (r1, cond, reg_rf_c1, g1, h1, zero, status1, trunc_off));
+  /* g2 = g1 + (g1 * r1)		*/
+  emit_insn (gen_m2addrf4_cond (g2, cond, g1, g1, r1, zero, status1, trunc_off));
+  /* h2 = h1 + (h1 * r1)		*/
+  emit_insn (gen_m2addrf4_cond (h2, cond, h1, h1, r1, zero, status1, trunc_off));
+  /* d = b - (g2 * g2)			*/
+  emit_insn (gen_m2subrf4_cond (d, cond, b, g2, g2, zero, status1, trunc_off));
+  /* g3 = g2 + (d * h2)			*/
+  emit_insn (gen_m2addrf4_cond (g3, cond, g2, d, h2, zero, status1, trunc_off));
+  /* d1 = b - (g3 * g3)			*/
+  emit_insn (gen_m2subrf4_cond (d1, cond, b, g3, g3, zero, status1, trunc_off));
+  /* g4 = g3 + (d1 * h2)		*/
+  emit_insn (gen_m2addrf4_cond (g4, cond, g3, d1, h2, y, status1, trunc_dbl));
+  /* Conversion back into SFmode.       */
+  emit_insn (gen_truncrfdf2 (operands[0], g4));
+  DONE;
+})
+
+(define_expand "sqrtxf2_internal"
+  [(set (match_operand:XF 0 "fr_register_operand" "")
+        (sqrt:XF (match_operand:XF 1 "fr_register_operand" "")))]
+  "TARGET_INLINE_SQRT"
+{
+  rtx y         = gen_reg_rtx (RFmode);
+  rtx b         = gen_reg_rtx (RFmode);
+  rtx g         = gen_reg_rtx (RFmode);
+  rtx g1        = gen_reg_rtx (RFmode);
+  rtx g2        = gen_reg_rtx (RFmode);
+  rtx g3        = gen_reg_rtx (RFmode);
+  rtx g4        = gen_reg_rtx (RFmode);
+  rtx e         = gen_reg_rtx (RFmode);
+  rtx e1        = gen_reg_rtx (RFmode);
+  rtx e2        = gen_reg_rtx (RFmode);
+  rtx h         = gen_reg_rtx (RFmode);
+  rtx h1        = gen_reg_rtx (RFmode);
+  rtx h2        = gen_reg_rtx (RFmode);
+  rtx h3        = gen_reg_rtx (RFmode);
+  rtx d         = gen_reg_rtx (RFmode);
+  rtx d1        = gen_reg_rtx (RFmode);
+  rtx cond      = gen_reg_rtx (BImode);
+  rtx zero      = CONST0_RTX (RFmode);
+  rtx c1        = ia64_dconst_0_5();
+  rtx reg_df_c1	= gen_reg_rtx (DFmode);
+  rtx reg_rf_c1 = gen_reg_rtx (RFmode);
+  rtx status0   = CONST0_RTX (SImode);
+  rtx status1   = CONST1_RTX (SImode);
+  rtx trunc_off = CONST2_RTX (SImode);
+
+  /* Put needed constants into registers.	 */
+  emit_insn (gen_movdf (reg_df_c1, c1));
+  emit_insn (gen_extenddfrf2 (reg_rf_c1, reg_df_c1));
+  /* Empty conversion to put input into RFmode.  */
+  emit_insn (gen_extendxfrf2 (b, operands[1]));
+  /* y = sqrt (1 / b)			*/
+  emit_insn (gen_sqrt_approx_rf (y, b, cond, status0));
+  /* g = b * y				*/
+  emit_insn (gen_mulrf3_cond (g, cond, b, y, zero, status1, trunc_off));
+  /* h = 0.5 * y			*/
+  emit_insn (gen_mulrf3_cond (h, cond, reg_rf_c1, y, zero, status1, trunc_off));
+  /* e = 0.5 - (g * h)			*/
+  emit_insn (gen_m2subrf4_cond (e, cond, reg_rf_c1, g, h, zero, status1, trunc_off));
+  /* g1 = g + (g * e)			*/
+  emit_insn (gen_m2addrf4_cond (g1, cond, g, g, e, zero, status1, trunc_off));
+  /* h1 = h + (h * e)			*/
+  emit_insn (gen_m2addrf4_cond (h1, cond, h, h, e, zero, status1, trunc_off));
+  /* e1 = 0.5 - (g1 * h1)		*/
+  emit_insn (gen_m2subrf4_cond (e1, cond, reg_rf_c1, g1, h1, zero, status1, trunc_off));
+  /* g2 = g1 + (g1 * e1)		*/
+  emit_insn (gen_m2addrf4_cond (g2, cond, g1, g1, e1, zero, status1, trunc_off));
+  /* h2 = h1 + (h1 * e1)		*/
+  emit_insn (gen_m2addrf4_cond (h2, cond, h1, h1, e1, zero, status1, trunc_off));
+  /* d = b - (g2 * g2)			*/
+  emit_insn (gen_m2subrf4_cond (d, cond, b, g2, g2, zero, status1, trunc_off));
+  /* e2 = 0.5 - (g2 * h2)		*/
+  emit_insn (gen_m2subrf4_cond (e2, cond, reg_rf_c1, g2, h2, zero, status1, trunc_off));
+  /* g3 = g2 + (d * h2)			*/
+  emit_insn (gen_m2addrf4_cond (g3, cond, g2, d, h2, zero, status1, trunc_off));
+  /* h3 = h2 + (e2 * h2)		*/
+  emit_insn (gen_m2addrf4_cond (h3, cond, h2, e2, h2, zero, status1, trunc_off));
+  /* d1 = b - (g3 * g3)			*/
+  emit_insn (gen_m2subrf4_cond (d1, cond, b, g3, g3, zero, status1, trunc_off));
+  /* g4 = g3 + (d1 * h3)		*/
+  emit_insn (gen_m2addrf4_cond (g4, cond, g3, d1, h3, y, status1, trunc_off));
+  /* Conversion back into SFmode.       */
+  emit_insn (gen_truncrfxf2 (operands[0], g4));
+  DONE;
+})
