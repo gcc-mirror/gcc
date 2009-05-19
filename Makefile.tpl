@@ -620,16 +620,16 @@ all:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 @if gcc-bootstrap
-	if [ -f stage_last ]; then : ; \
+	if [ -f stage_last ]; then \
 	  TFLAGS="$(STAGE$(shell sed s,^stage,, stage_last)_TFLAGS)"; \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target; \
 	else \
 @endif gcc-bootstrap
+@if gcc-no-bootstrap
+	if :; then :; \
+@endif gcc-no-bootstrap
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-host all-target; \
-@if gcc-bootstrap
-	fi; \
-@endif gcc-bootstrap
-	:
+	fi
 
 .PHONY: all-build
 [+ FOR build_modules +]

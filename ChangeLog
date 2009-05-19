@@ -1,3 +1,9 @@
+2009-05-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR other/40159
+	* Makefile.tpl (all): Don't end with unconditional success.
+	* Makefile.in: Rebuilt.
+
 2009-05-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR target/37137
