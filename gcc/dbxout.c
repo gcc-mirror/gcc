@@ -275,8 +275,6 @@ static const char *base_input_file;
 
 #include "gstab.h"
 
-#define STAB_CODE_TYPE enum __stab_debug_code
-
 /* 1 if PARM is passed to this function in memory.  */
 
 #define PARM_PASSED_IN_MEMORY(PARM) \
@@ -326,7 +324,7 @@ static void dbxout_type_name (tree);
 static void dbxout_class_name_qualifiers (tree);
 static int dbxout_symbol_location (tree, tree, const char *, rtx);
 static void dbxout_symbol_name (tree, const char *, int);
-static void dbxout_common_name (tree, const char *, STAB_CODE_TYPE);
+static void dbxout_common_name (tree, const char *, stab_code_type);
 static const char *dbxout_common_check (tree, int *);
 static void dbxout_global_decl (tree);
 static void dbxout_type_decl (tree, int);
@@ -842,7 +840,7 @@ do {								\
    to DBX_FINISH_STABS; see above for details.  */
    
 static void
-dbxout_finish_complex_stabs (tree sym, STAB_CODE_TYPE code,
+dbxout_finish_complex_stabs (tree sym, stab_code_type code,
 			     rtx addr, const char *label, int number)
 {
   int line ATTRIBUTE_UNUSED;
@@ -2852,7 +2850,7 @@ static int
 dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 {
   int letter = 0;
-  STAB_CODE_TYPE code;
+  stab_code_type code;
   rtx addr = 0;
   int number = 0;
   int regno = -1;
@@ -3157,7 +3155,7 @@ dbxout_symbol_name (tree decl, const char *suffix, int letter)
    emits the N_BCOMM and N_ECOMM stabs.  */
 
 static void
-dbxout_common_name (tree decl, const char *name, STAB_CODE_TYPE op)
+dbxout_common_name (tree decl, const char *name, stab_code_type op)
 {
   dbxout_begin_complex_stabs ();
   stabstr_S (name);
@@ -3325,7 +3323,7 @@ dbxout_parms (tree parms)
       {
 	tree eff_type;
 	char letter;
-	STAB_CODE_TYPE code;
+	stab_code_type code;
 	int number;
 
 	/* Perform any necessary register eliminations on the parameter's rtl,

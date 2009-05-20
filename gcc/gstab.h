@@ -1,4 +1,4 @@
-/* Copyright (C) 1997, 1998, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998, 2001, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,11 +21,14 @@ along with GCC; see the file COPYING3.  If not see
 
 #define __define_stab(NAME, CODE, STRING) NAME=CODE,
 
-enum __stab_debug_code
+enum
 {
 #include "stab.def"
 LAST_UNUSED_STAB_CODE
 };
+
+/* stabs debug codes really are integers with expressive names.  */
+typedef int stab_code_type;
 
 #undef __define_stab
 

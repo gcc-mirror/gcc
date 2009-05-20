@@ -675,8 +675,6 @@ main (void)
 
 #include "gstab.h"
 
-#define STAB_CODE_TYPE enum __stab_debug_code
-
 #ifndef MALLOC_CHECK
 #ifdef	__SABER__
 #define MALLOC_CHECK
