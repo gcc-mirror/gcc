@@ -236,7 +236,7 @@ is_sra_scalar_type (tree type)
    instantiated, just that if we decide to break up the type into
    separate pieces that it can be done.  */
 
-bool
+static bool
 sra_type_can_be_decomposed_p (tree type)
 {
   unsigned int cache = TYPE_UID (TYPE_MAIN_VARIANT (type)) * 2;
@@ -1265,6 +1265,26 @@ build_element_name (struct sra_elt *elt)
   build_element_name_1 (elt);
   obstack_1grow (&sra_obstack, '\0');
   return XOBFINISH (&sra_obstack, char *);
+}
+
+/* Insert a gimple_seq SEQ on all the outgoing edges out of BB.  Note that
+   if BB has more than one edge, STMT will be replicated for each edge.
+   Also, abnormal edges will be ignored.  */
+
+static void
+insert_edge_copies_seq (gimple_seq seq, basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  unsigned n_copies = -1;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (!(e->flags & EDGE_ABNORMAL))
+      n_copies++;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (!(e->flags & EDGE_ABNORMAL))
+      gsi_insert_seq_on_edge (e, n_copies-- > 0 ? gimple_seq_copy (seq) : seq);
 }
 
 /* Instantiate an element as an independent variable.  */
@@ -2789,29 +2809,9 @@ generate_element_init (struct sra_elt *elt, tree init, gimple_seq *seq_p)
   return ret;
 }
 
-/* Insert a gimple_seq SEQ on all the outgoing edges out of BB.  Note that
-   if BB has more than one edge, STMT will be replicated for each edge.
-   Also, abnormal edges will be ignored.  */
-
-void
-insert_edge_copies_seq (gimple_seq seq, basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-  unsigned n_copies = -1;
-
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!(e->flags & EDGE_ABNORMAL)) 
-      n_copies++;
-
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (!(e->flags & EDGE_ABNORMAL)) 
-      gsi_insert_seq_on_edge (e, n_copies-- > 0 ? gimple_seq_copy (seq) : seq);
-}
-
 /* Helper function to insert LIST before GSI, and set up line number info.  */
 
-void
+static void
 sra_insert_before (gimple_stmt_iterator *gsi, gimple_seq seq)
 {
   gimple stmt = gsi_stmt (*gsi);
@@ -2823,7 +2823,7 @@ sra_insert_before (gimple_stmt_iterator *gsi, gimple_seq seq)
 
 /* Similarly, but insert after GSI.  Handles insertion onto edges as well.  */
 
-void
+static void
 sra_insert_after (gimple_stmt_iterator *gsi, gimple_seq seq)
 {
   gimple stmt = gsi_stmt (*gsi);
@@ -3601,7 +3601,7 @@ debug_sra_elt_name (struct sra_elt *elt)
   fputc ('\n', stderr);
 }
 
-void 
+static void
 sra_init_cache (void)
 {
   if (sra_type_decomp_cache)
