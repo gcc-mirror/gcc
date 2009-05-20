@@ -25,26 +25,27 @@
 #include <testsuite_allocator.h>
 
 // Check the splice (and merge) bits of N1599.
+template<typename _Tp>
 void
-test01()
+operations05()
 {
   bool test __attribute__((unused)) = true;
   
-  typedef __gnu_test::uneq_allocator<int> my_alloc;
-  typedef std::list<int, my_alloc> my_list;
+  typedef _Tp list_type;
+  typedef typename list_type::allocator_type allocator_type;
 
   const int data1[] = {1, 2, 3, 4, 5};
   const int data2[] = {6, 7, 8, 9, 10};
   const size_t N1 = sizeof(data1) / sizeof(int);
   const size_t N2 = sizeof(data2) / sizeof(int);
   
-  my_alloc alloc01(1), alloc02(2);
+  allocator_type alloc01(1), alloc02(2);
 
-  my_list l01(data1, data1 + N1, alloc01);
-  const my_list l01_ref = l01;
+  list_type l01(data1, data1 + N1, alloc01);
+  const list_type l01_ref = l01;
 
-  my_list l02(data2, data2 + N2, alloc02);
-  const my_list l02_ref = l02;
+  list_type l02(data2, data2 + N2, alloc02);
+  const list_type l02_ref = l02;
 
   bool catched = false;
 
@@ -135,6 +136,10 @@ test01()
 
 int main()
 {
-  test01();
+  typedef int value_type;
+  typedef __gnu_test::uneq_allocator<value_type> allocator_type;
+  typedef std::list<value_type, allocator_type> list_type;
+
+  operations05<list_type>();
   return 0;
 }

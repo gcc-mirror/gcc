@@ -34,8 +34,6 @@
 #include <unistd.h>	// To test for _POSIX_THREAD_PRIORITY_SCHEDULING
 #endif
 
-using namespace std;
-
 #define NTHREADS 8
 #define LOOPS 20
 
@@ -48,19 +46,22 @@ struct tt_t
 void*
 thread_function (void* arg)
 {
+  typedef std::vector<tt_t>		vector_type;
+  typedef std::list<std::string*>	list_type;
+
   int myid __attribute__((unused)) = *(int*) arg;
   for (int i = 0; i < LOOPS; i++)
     {
-      vector<tt_t> myvect1;
+      vector_type myvect1;
 
       for (int j = 0; j < 2000; j++)
 	{
-	  vector<tt_t> myvect2;
+	  vector_type myvect2;
 	  tt_t v;
 	  v.i = j;
 	  myvect1.push_back (v);
 	  myvect2.push_back (v);
-	  list<std::string *> mylist;
+	  list_type mylist;
 	  std::string string_array[4];
 	  string_array[0] = "toto";
 	  string_array[1] = "titi";
@@ -70,7 +71,7 @@ thread_function (void* arg)
 	    {
 	      if (mylist.size ())
 		{
-		  list<std::string *>::iterator aIt;
+		  list_type::iterator aIt;
 		  for (aIt = mylist.begin (); aIt != mylist.end (); ++aIt)
 		    {
 		      if ((*aIt) == &(string_array[k]))

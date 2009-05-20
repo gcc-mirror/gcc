@@ -20,8 +20,6 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 // Range assign
 //
 // This test verifies the following.
@@ -30,17 +28,22 @@ bool test __attribute__((unused)) = true;
 // 23.2.2       const_iterator end() const
 // 23.2.2       size_type size() const
 //
+template<typename _Tp>
 void
-test05()
+cons05()
 {
+  bool test __attribute__((unused)) = true;
   const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
   const int B[] = {101, 102, 103, 104, 105};
   const std::size_t N = sizeof(A) / sizeof(int);
   const std::size_t M = sizeof(B) / sizeof(int);
   std::size_t count;
-  std::list<int>::const_iterator i;
 
-  std::list<int> list0501;
+  typedef _Tp list_type;
+  typedef typename list_type::const_iterator const_iterator;
+  const_iterator i;
+
+  list_type list0501;
 
   // make it bigger
   list0501.assign(A, A + N);
@@ -63,7 +66,7 @@ test05()
 
 int main()
 {
-  test05();
+  cons05<std::list<int> >();
   return 0;
 }
 

@@ -21,23 +21,24 @@
 #include <iterator>
 #include <testsuite_hooks.h>
 
-using __gnu_debug::list;
-using std::advance;
-
-bool test = true;
-
 // Resize
 void test02()
 {
-  list<int> v(10, 17);
+  using std::advance;
+  
+  bool test = true;
+ 
+  typedef __gnu_debug::list<int> list_type;
 
-  list<int>::iterator before = v.begin();
+  list_type v(10, 17);
+
+  list_type::iterator before = v.begin();
   advance(before, 6);
-  list<int>::iterator at = before;
+  list_type::iterator at = before;
   advance(at, 1);
-  list<int>::iterator after = at;
+  list_type::iterator after = at;
   advance(after, 1);
-  list<int>::iterator finish = v.end();
+  list_type::iterator finish = v.end();
 
   // Shrink
   v.resize(7);

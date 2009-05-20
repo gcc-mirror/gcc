@@ -28,7 +28,9 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::list<int> l(7);
+  typedef std::list<int> list_type;
+  list_type l(7);
+
   VERIFY( l.cbegin() == l.begin() );
   VERIFY( l.cend() == l.end() );
   VERIFY( l.crbegin() == l.rbegin() );

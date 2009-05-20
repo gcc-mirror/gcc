@@ -20,21 +20,24 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 // splice(p, x, i) + remove_if + operator==
+template<typename _Tp>
 void
-test02()
+operations02()
 {
+  bool test __attribute__((unused)) = true;
+  typedef _Tp list_type;
+  typedef typename list_type::iterator iterator;
+
   const int A[] = {1, 2, 3, 4, 5};
   const int B[] = {2, 1, 3, 4, 5};
   const int C[] = {1, 3, 4, 5, 2};
   const int N = sizeof(A) / sizeof(int);
-  std::list<int> list0201(A, A + N);
-  std::list<int> list0202(A, A + N);
-  std::list<int> list0203(B, B + N);
-  std::list<int> list0204(C, C + N);
-  std::list<int>::iterator i = list0201.begin();
+  list_type list0201(A, A + N);
+  list_type list0202(A, A + N);
+  list_type list0203(B, B + N);
+  list_type list0204(C, C + N);
+  iterator i = list0201.begin();
 
   // result should be unchanged
   list0201.splice(list0201.begin(), list0201, i);
@@ -53,6 +56,6 @@ test02()
 
 int main()
 {
-  test02();
+  operations02<std::list<int> >();
   return 0;
 }

@@ -20,12 +20,15 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 // splice(p, x, f, l) + sort + merge + unique
+template<typename _Tp>
 void
-test03()
+operations03()
 {
+  bool test __attribute__((unused)) = true;
+  typedef _Tp list_type;
+  typedef typename list_type::iterator iterator;
+
   const int A[] = {103, 203, 603, 303, 403, 503};
   const int B[] = {417, 417, 417, 417, 417};
   const int E[] = {103, 417, 417, 203, 603, 303, 403, 503};
@@ -38,14 +41,14 @@ test03()
   const int Q = sizeof(D) / sizeof(int);
   const int R = sizeof(E) / sizeof(int);
 
-  std::list<int> list0301(A, A + N);
-  std::list<int> list0302(B, B + M);
-  std::list<int> list0303(C, C + P);
-  std::list<int> list0304(D, D + Q);
-  std::list<int> list0305(E, E + R);
-  std::list<int> list0306(F, F + R);
-  std::list<int>::iterator p = list0301.begin();
-  std::list<int>::iterator q = list0302.begin();
+  list_type list0301(A, A + N);
+  list_type list0302(B, B + M);
+  list_type list0303(C, C + P);
+  list_type list0304(D, D + Q);
+  list_type list0305(E, E + R);
+  list_type list0306(F, F + R);
+  iterator p = list0301.begin();
+  iterator q = list0302.begin();
 
   ++p; ++q; ++q;
   list0301.splice(p, list0302, list0302.begin(), q);
@@ -67,6 +70,6 @@ test03()
 
 int main(void)
 {
-  test03();
+  operations03<std::list<int> >();
   return 0;
 }

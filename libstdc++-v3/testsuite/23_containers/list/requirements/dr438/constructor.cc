@@ -23,5 +23,6 @@
 
 void f()
 {
-  std::list<int> l(10, 1);
+  typedef std::list<int> list_type;
+  list_type l(10, 1);
 }

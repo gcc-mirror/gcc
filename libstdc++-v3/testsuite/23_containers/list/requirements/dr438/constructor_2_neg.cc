@@ -26,5 +26,6 @@
 
 void f()
 {
-  std::list<std::list<std::pair<char, char> > > l('a', 'b');
+  typedef std::list<std::list<std::pair<char, char> > > list_type;
+  list_type l('a', 'b');
 }

@@ -20,10 +20,8 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
-// A comparison predicate to order by rightmost digit.  Tracks call counts for
-// performance checks.
+// A comparison predicate to order by rightmost digit.  Tracks call
+// counts for performance checks.
 struct CompLastLt
 {
   bool operator()(const int x, const int y) 
@@ -48,9 +46,13 @@ int CompLastEq::itsCount;
 
 // sort(pred) + merge(pred) + unique(pred)
 // also checks performance requirements
+template<typename _Tp>
 void
-test04()
+operations04()
 {
+  bool test __attribute__((unused)) = true;
+  typedef _Tp list_type;
+
   const int A[] = {1, 2, 3, 4, 5, 6};
   const int B[] = {12, 15, 13, 14, 11};
   const int C[] = {11, 12, 13, 14, 15};
@@ -59,11 +61,11 @@ test04()
   const int M = sizeof(B) / sizeof(int);
   const int Q = sizeof(D) / sizeof(int);
 
-  std::list<int> list0401(A, A + N);
-  std::list<int> list0402(B, B + M);
-  std::list<int> list0403(C, C + M);
-  std::list<int> list0404(D, D + Q);
-  std::list<int> list0405(A, A + N);
+  list_type list0401(A, A + N);
+  list_type list0402(B, B + M);
+  list_type list0403(C, C + M);
+  list_type list0404(D, D + Q);
+  list_type list0405(A, A + N);
 
   // sort B
   CompLastLt lt;
@@ -91,7 +93,7 @@ test04()
 
 int main()
 {
-  test04();
+  operations04<std::list<int> >();
   return 0;
 }
 

@@ -25,7 +25,8 @@ void test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::list<int> l;
+  typedef std::list<int> list_type;
+  list_type l;
 
 #ifndef _GLIBCXX_DEBUG
   using std::_List_node;

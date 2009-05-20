@@ -21,21 +21,21 @@
 #include <iterator>
 #include <testsuite_hooks.h>
 
-using __gnu_debug::list;
-using std::advance;
-
-bool test = true;
-
 // Erase
 void test03()
 {
-  list<int> v(20, 42);
+  using std::advance;
+  
+  bool test = true;
+  typedef __gnu_debug::list<int> list_type;
+
+  list_type v(20, 42);
 
   // Single element erase (middle)
-  list<int>::iterator before = v.begin();
-  list<int>::iterator at = before;
+  list_type::iterator before = v.begin();
+  list_type::iterator at = before;
   advance(at, 3);
-  list<int>::iterator after = at;
+  list_type::iterator after = at;
   at = v.erase(at);
   VERIFY(before._M_dereferenceable());
   VERIFY(at._M_dereferenceable());
@@ -63,7 +63,7 @@ void test03()
 
   // clear()
   before = v.begin();
-  list<int>::iterator finish = v.end();
+  list_type::iterator finish = v.end();
   VERIFY(before._M_dereferenceable());
   v.clear();
   VERIFY(before._M_singular());

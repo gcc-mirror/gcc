@@ -20,35 +20,31 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
-
-// A nontrivial type.
-template<typename T>
-  struct A { };
-
-// Another nontrivial type
-struct B { };
-
 // A nontrivial type convertible from an int
-struct C {
+struct C 
+{
   C(int i) : i_(i) { }
   bool operator==(const C& rhs) { return i_ == rhs.i_; }
   int i_;
 };
 
 // Fill Assignment disguised as a Range Assignment
+template<typename _Tp>
 void
-test06D()
+cons08()
 {
+  typedef _Tp list_type;
+  typedef typename list_type::iterator iterator;
+  bool test __attribute__((unused)) = true;
   const std::size_t LIST_SIZE = 5;
   const int INIT_VALUE = 7;
   std::size_t count = 0;
-  std::list<C> list0604;
+
+  list_type list0604;
   VERIFY(list0604.size() == 0);
   
   list0604.assign(LIST_SIZE, INIT_VALUE);
-  std::list<C>::iterator i = list0604.begin();
+  iterator i = list0604.begin();
   for (; i != list0604.end(); ++i, ++count)
     VERIFY(*i == INIT_VALUE);
   VERIFY(count == LIST_SIZE);
@@ -57,7 +53,7 @@ test06D()
 
 int main()
 {
-  test06D();
+  cons08<std::list<C> >();
   return 0;
 }
 

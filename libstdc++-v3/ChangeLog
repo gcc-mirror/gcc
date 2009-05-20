@@ -1,3 +1,53 @@
+2009-05-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/23_containers/list/14340.cc: Abstract list type.
+	* testsuite/23_containers/list/init-list.cc: Same.
+	* testsuite/23_containers/list/pthread5.cc: Same.
+	* testsuite/23_containers/list/invalidation/1.cc: Same.
+	* testsuite/23_containers/list/invalidation/2.cc: Same.
+	* testsuite/23_containers/list/invalidation/3.cc: Same.
+	* testsuite/23_containers/list/invalidation/4.cc: Same.
+	* testsuite/23_containers/list/modifiers/insert/25288.cc: Same.
+	* testsuite/23_containers/list/modifiers/1.cc: Same.
+	* testsuite/23_containers/list/modifiers/2.cc: Same.
+	* testsuite/23_containers/list/modifiers/3.cc: Same.
+	* testsuite/23_containers/list/modifiers/swap/1.cc: Same.
+	* testsuite/23_containers/list/modifiers/swap/2.cc: Same.
+	* testsuite/23_containers/list/modifiers/swap/3.cc: Same.
+	* testsuite/23_containers/list/cons/1.cc: Same.
+	* testsuite/23_containers/list/cons/2.cc: Same.
+	* testsuite/23_containers/list/cons/3.cc: Same.
+	* testsuite/23_containers/list/cons/4.cc: Same.
+	* testsuite/23_containers/list/cons/5.cc: Same.
+	* testsuite/23_containers/list/cons/6.cc: Same.
+	* testsuite/23_containers/list/cons/7.cc: Same.
+	* testsuite/23_containers/list/cons/clear_allocator.cc: Same.
+	* testsuite/23_containers/list/cons/8.cc: Same.
+	* testsuite/23_containers/list/cons/9.cc: Same.
+	* testsuite/23_containers/list/operations/1.cc: Same.
+	* testsuite/23_containers/list/operations/2.cc: Same.
+	* testsuite/23_containers/list/operations/3.cc: Same.
+	* testsuite/23_containers/list/operations/4.cc: Same.
+	* testsuite/23_containers/list/operations/5.cc: Same.
+	* testsuite/23_containers/list/requirements/citerators.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Same.
+	* testsuite/23_containers/list/requirements/dr438/constructor.cc: Same.
+	* testsuite/23_containers/list/requirements/
+	partial_specialization/1.cc: Same.
+	* testsuite/23_containers/list/23781.cc: Same.
+	* testsuite/23_containers/list/pthread1.cc: Same.
+	* testsuite/23_containers/list/capacity/1.cc: Same.
+	* testsuite/23_containers/list/capacity/29134.cc: Same.
+	* testsuite/23_containers/list/check_construct_destroy.cc: Same.
+	* testsuite/23_containers/list/moveable.cc: Same.
+
+	* testsuite/util/common_type/assoc/common_type.hpp: Re-break lines.
+
 2009-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40184

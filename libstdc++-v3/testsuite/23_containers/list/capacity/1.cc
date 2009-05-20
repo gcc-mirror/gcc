@@ -20,8 +20,6 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 // This test verifies the following.
 //
 // 23.2.2       bool empty() const
@@ -32,10 +30,15 @@ bool test __attribute__((unused)) = true;
 // 23.2.2       size_type max_size() const
 // 23.2.2.2     void resize(size_type s, T c = T())
 //
+template<typename _Tp>
 void
-test01()
+capacity01()
 {
-  std::list<int> list0101;
+  bool test __attribute__((unused)) = true;
+  typedef _Tp list_type;
+  typedef typename list_type::iterator iterator_type;
+
+  list_type list0101;
   VERIFY(list0101.empty());
   VERIFY(list0101.size() == 0);
 
@@ -47,7 +50,7 @@ test01()
   VERIFY(!list0101.empty());
   VERIFY(list0101.size() == 3);
 
-  std::list<int>::iterator i = list0101.begin();
+  iterator_type i = list0101.begin();
   VERIFY(*i == 1); ++i;
   VERIFY(*i == 2); ++i;
   VERIFY(*i == 2); ++i;
@@ -61,8 +64,6 @@ test01()
 int
 main()
 {
-  test01();
+  capacity01<std::list<int> >();
   return 0;
 }
-
-// vi:set sw=2 ts=2:

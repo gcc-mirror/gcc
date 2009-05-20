@@ -21,21 +21,21 @@
 #include <iterator>
 #include <testsuite_hooks.h>
 
-using __gnu_debug::list;
-using std::advance;
-
-bool test = true;
-
 // Assignment
 void test01()
 {
-  list<int> v1;
-  list<int> v2;
+  using std::advance;
+
+  bool test = true;
+
+  typedef __gnu_debug::list<int> list_type;
+  list_type v1;
+  list_type v2;
 
   v1.push_front(17);
 
-  list<int>::iterator start = v1.begin();
-  list<int>::iterator finish = v1.end();
+  list_type::iterator start = v1.begin();
+  list_type::iterator finish = v1.end();
   VERIFY(start._M_dereferenceable());
   VERIFY(!finish._M_dereferenceable() && !finish._M_singular());
 

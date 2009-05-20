@@ -20,8 +20,6 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 // Fill assign
 //
 // This test verifies the following.
@@ -30,17 +28,22 @@ bool test __attribute__((unused)) = true;
 // 23.2.2       const_iterator end() const
 // 23.2.2       size_type size() const
 //
+template<typename _Tp>
 void
-test06()
+cons07()
 {
+  bool test __attribute__((unused)) = true;
   const std::size_t BIG_LIST_SIZE = 11;
   const int BIG_INIT_VALUE = 7;
   const std::size_t SMALL_LIST_SIZE = 5;
   const int SMALL_INIT_VALUE = 17;
   std::size_t count;
-  std::list<int>::const_iterator i;
 
-  std::list<int> list0601;
+  typedef _Tp list_type;
+  typedef typename list_type::const_iterator const_iterator;
+  const_iterator i;
+
+  list_type list0601;
   VERIFY(list0601.size() == 0);
 
   // make it bigger
@@ -64,7 +67,7 @@ test06()
 
 int main()
 {
-  test06();
+  cons07<std::list<int> >();
   return 0;
 }
 

@@ -81,7 +81,8 @@ template<typename Container>
 
 int main()
 {
-  Check_Container<std::list<int, clear_alloc<int> > >();
+  typedef std::list<int, clear_alloc<int> > list_type;
+  Check_Container<list_type>();
   return 0;
 }
 

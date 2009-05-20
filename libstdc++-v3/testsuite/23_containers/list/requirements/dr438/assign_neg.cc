@@ -30,6 +30,7 @@ struct A
 
 void f()
 {
-  std::list<A> l;
+  typedef std::list<A> list_type;
+  list_type l;
   l.assign(10, 1);
 }

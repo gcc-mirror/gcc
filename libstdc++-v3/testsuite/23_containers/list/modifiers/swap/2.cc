@@ -24,14 +24,16 @@
 #include <testsuite_allocator.h>
 
 // uneq_allocator as a non-empty allocator.
+template<typename _Tp>
 void
-test01()
+swap2()
 {
   bool test __attribute__((unused)) = true;
   using namespace std;
 
-  typedef __gnu_test::uneq_allocator<char> my_alloc;
-  typedef list<char, my_alloc> my_list;
+  typedef _Tp list_type;
+  typedef typename list_type::allocator_type allocator_type;
+  typedef typename list_type::size_type size_type;
 
   const char title01[] = "Rivers of sand";
   const char title02[] = "Concret PH";
@@ -43,13 +45,13 @@ test01()
   const size_t N3 = sizeof(title03);
   const size_t N4 = sizeof(title04);
 
-  my_list::size_type size01, size02;
+  size_type size01, size02;
 
-  my_alloc alloc01(1);
+  allocator_type alloc01(1);
 
-  my_list lis01(alloc01);
+  list_type lis01(alloc01);
   size01 = lis01.size();
-  my_list lis02(alloc01);
+  list_type lis02(alloc01);
   size02 = lis02.size();
   
   lis01.swap(lis02);
@@ -58,9 +60,9 @@ test01()
   VERIFY( lis02.size() == size01 );
   VERIFY( lis02.empty() );
 
-  my_list lis03(alloc01);
+  list_type lis03(alloc01);
   size01 = lis03.size();
-  my_list lis04(title02, title02 + N2, alloc01);
+  list_type lis04(title02, title02 + N2, alloc01);
   size02 = lis04.size();
   
   lis03.swap(lis04);
@@ -69,9 +71,9 @@ test01()
   VERIFY( lis04.size() == size01 );
   VERIFY( lis04.empty() );
   
-  my_list lis05(title01, title01 + N1, alloc01);
+  list_type lis05(title01, title01 + N1, alloc01);
   size01 = lis05.size();
-  my_list lis06(title02, title02 + N2, alloc01);
+  list_type lis06(title02, title02 + N2, alloc01);
   size02 = lis06.size();
   
   lis05.swap(lis06);
@@ -80,9 +82,9 @@ test01()
   VERIFY( lis06.size() == size01 );
   VERIFY( equal(lis06.begin(), lis06.end(), title01) );
 
-  my_list lis07(title01, title01 + N1, alloc01);
+  list_type lis07(title01, title01 + N1, alloc01);
   size01 = lis07.size();
-  my_list lis08(title03, title03 + N3, alloc01);
+  list_type lis08(title03, title03 + N3, alloc01);
   size02 = lis08.size();
 
   lis07.swap(lis08);
@@ -91,9 +93,9 @@ test01()
   VERIFY( lis08.size() == size01 );
   VERIFY( equal(lis08.begin(), lis08.end(), title01) );
 
-  my_list lis09(title03, title03 + N3, alloc01);
+  list_type lis09(title03, title03 + N3, alloc01);
   size01 = lis09.size();
-  my_list lis10(title04, title04 + N4, alloc01);
+  list_type lis10(title04, title04 + N4, alloc01);
   size02 = lis10.size();
 
   lis09.swap(lis10);
@@ -102,9 +104,9 @@ test01()
   VERIFY( lis10.size() == size01 );
   VERIFY( equal(lis10.begin(), lis10.end(), title03) );
 
-  my_list lis11(title04, title04 + N4, alloc01);
+  list_type lis11(title04, title04 + N4, alloc01);
   size01 = lis11.size();
-  my_list lis12(title01, title01 + N1, alloc01);
+  list_type lis12(title01, title01 + N1, alloc01);
   size02 = lis12.size();
 
   lis11.swap(lis12);
@@ -113,9 +115,9 @@ test01()
   VERIFY( lis12.size() == size01 );
   VERIFY( equal(lis12.begin(), lis12.end(), title04) );
 
-  my_list lis13(title03, title03 + N3, alloc01);
+  list_type lis13(title03, title03 + N3, alloc01);
   size01 = lis13.size();
-  my_list lis14(title03, title03 + N3, alloc01);
+  list_type lis14(title03, title03 + N3, alloc01);
   size02 = lis14.size();
 
   lis13.swap(lis14);
@@ -127,6 +129,10 @@ test01()
 
 int main()
 { 
-  test01();
+  typedef char value_type;
+  typedef __gnu_test::uneq_allocator<value_type> allocator_type;
+  typedef std::list<value_type, allocator_type> list_type;
+
+  swap2<list_type>();
   return 0;
 }
