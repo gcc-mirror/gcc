@@ -2615,11 +2615,11 @@
   [(set (match_operand:SI         0 "s_register_operand" "=r,r")
 	(ior:SI (match_operand:SI 1 "s_register_operand" "r,r")
 		(match_operand:SI 2 "reg_or_int_operand" "rI,?n")))]
-  "TARGET_32BIT"
+  "TARGET_ARM"
   "@
    orr%?\\t%0, %1, %2
    #"
-  "TARGET_32BIT
+  "TARGET_ARM
    && GET_CODE (operands[2]) == CONST_INT
    && !const_ok_for_arm (INTVAL (operands[2]))"
   [(clobber (const_int 0))]
@@ -2646,7 +2646,7 @@
    (set (match_operand:SI 0 "arm_general_register_operand" "")
 	(ior:SI (match_operand:SI 1 "arm_general_register_operand" "")
 		(match_operand:SI 2 "const_int_operand" "")))]
-  "TARGET_32BIT
+  "TARGET_ARM
    && !const_ok_for_arm (INTVAL (operands[2]))
    && const_ok_for_arm (~INTVAL (operands[2]))"
   [(set (match_dup 3) (match_dup 2))
