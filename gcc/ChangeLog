@@ -1,3 +1,8 @@
+2009-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fold-const.c (build_fold_addr_expr_with_type): Take the address of
+	the operand of VIEW_CONVERT_EXPR.
+
 2009-05-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Check
