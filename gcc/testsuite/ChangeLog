@@ -1,3 +1,8 @@
+2009-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/40204
+	* gcc.c-torture/compile/pr40204.c: New test.
+
 2009-05-20  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.c-torture/compile/20090518-1.c: New testcase.
