@@ -1,3 +1,9 @@
+2009-05-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Check
+	extended family and model for Intel processors.  Support Intel
+	Atom.
+
 2009-05-20  Olivier Hainque  <hainque@adacore.com>
 
 	* gstab.h (stab_code_type): Define, to be used instead of the
