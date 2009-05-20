@@ -125,6 +125,7 @@ gomp_thread_start (void *xdata)
       while (local_fn);
     }
 
+  gomp_sem_destroy (&thr->release);
   return NULL;
 }
 
@@ -201,6 +202,7 @@ gomp_free_pool_helper (void *thread_pool)
   struct gomp_thread_pool *pool
     = (struct gomp_thread_pool *) thread_pool;
   gomp_barrier_wait_last (&pool->threads_dock);
+  gomp_sem_destroy (&gomp_thread ()->release);
   pthread_exit (NULL);
 }
 

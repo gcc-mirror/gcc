@@ -1,3 +1,9 @@
+2009-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/40174
+	* team.c (gomp_thread_start): Destroy thr->release semaphore.
+	(gomp_free_pool_helper): Likewise.
+
 2009-04-21  Release Manager
 
 	* GCC 4.4.0 released.
