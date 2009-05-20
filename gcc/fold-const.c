@@ -11363,6 +11363,8 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 	      if (prec < HOST_BITS_PER_WIDE_INT
 		  || newmask == ~(unsigned HOST_WIDE_INT) 0)
 		{
+		  tree newmaskt;
+
 		  if (shift_type != TREE_TYPE (arg0))
 		    {
 		      tem = fold_build2 (TREE_CODE (arg0), shift_type,
@@ -11373,9 +11375,9 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		    }
 		  else
 		    tem = op0;
-		  return fold_build2 (BIT_AND_EXPR, type, tem,
-				      build_int_cst_type (TREE_TYPE (op1),
-							  newmask));
+		  newmaskt = build_int_cst_type (TREE_TYPE (op1), newmask);
+		  if (!tree_int_cst_equal (newmaskt, arg1))
+		    return fold_build2 (BIT_AND_EXPR, type, tem, newmaskt);
 		}
 	    }
 	}
