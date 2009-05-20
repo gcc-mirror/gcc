@@ -29,5 +29,5 @@ struct user_type {};
 namespace std 
 {
   template<typename Allocator>
-    class list<user_type, Allocator> {};
+    class list<user_type, Allocator> { };
 }

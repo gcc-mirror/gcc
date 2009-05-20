@@ -21,21 +21,22 @@
 #include <iterator>
 #include <testsuite_hooks.h>
 
-using __gnu_debug::list;
-using std::advance;
-
-bool test = true;
-
 // Splice
 void test04()
 {
-  list<int> l1(10, 17);
-  list<int> l2(10, 42);
+  using std::advance;
   
-  list<int>::iterator start2 = l2.begin();
-  list<int>::iterator end2 = start2;
+  bool test = true;
+
+  typedef __gnu_debug::list<int>  list_type;
+
+  list_type l1(10, 17);
+  list_type l2(10, 42);
+  
+  list_type::iterator start2 = l2.begin();
+  list_type::iterator end2 = start2;
   advance(end2, 5);
-  list<int>::iterator after2 = end2;
+  list_type::iterator after2 = end2;
   advance(after2, 2);
   
   l1.splice(l1.begin(), l2, start2, end2);

@@ -23,5 +23,6 @@
 // libstdc++/23781
 #include <list>
 
-std::list<int>::iterator it = NULL; // { dg-error "conversion" }
-std::list<int>::const_iterator cit = NULL; // { dg-error "conversion" }
+typedef std::list<int> list_type;
+list_type::iterator it = NULL; // { dg-error "conversion" }
+list_type::const_iterator cit = NULL; // { dg-error "conversion" }

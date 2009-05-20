@@ -20,8 +20,6 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 // Copy constructor
 //
 // This test verifies the following.
@@ -30,16 +28,21 @@ bool test __attribute__((unused)) = true;
 // 23.2.2       reverse_iterator rend()
 // 23.2.2       size_type size() const
 //
+template<typename _Tp>
 void
-test04()
+cons05()
 {
+  bool test __attribute__((unused)) = true;
   const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
   const std::size_t N = sizeof(A) / sizeof(int);
   int count;
-  std::list<int>::reverse_iterator i;
-  std::list<int> list0401(A, A + N);
 
-  std::list<int> list0402(list0401);
+  typedef _Tp list_type;
+  typedef typename list_type::reverse_iterator reverse_iterator;
+  reverse_iterator i;
+  list_type list0401(A, A + N);
+
+  list_type list0402(list0401);
   for (i = list0401.rbegin(), count = N - 1;
        i != list0401.rend();
        ++i, --count)
@@ -50,7 +53,7 @@ test04()
 
 int main()
 {
-  test04();
+  cons05<std::list<int> >();
   return 0;
 }
 

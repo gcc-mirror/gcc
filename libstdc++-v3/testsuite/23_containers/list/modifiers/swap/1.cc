@@ -31,23 +31,31 @@ namespace std
 }
 
 // Should use list specialization for swap.
-void test01()
+template<typename _Tp>
+void 
+swap11()
 {
   bool test __attribute__((unused)) = true;
-  std::list<T> A;
-  std::list<T> B;
+  typedef _Tp list_type;
+
+  list_type A;
+  list_type B;
   swap_calls = 0;
   std::swap(A, B);
   VERIFY(1 == swap_calls);
 }
 
 // Should use list specialization for swap.
-void test02()
+template<typename _Tp>
+void 
+swap12()
 {
-  bool test __attribute__((unused)) = true;
   using namespace std;
-  list<T> A;
-  list<T> B;
+  bool test __attribute__((unused)) = true;
+  typedef _Tp list_type;
+
+  list_type A;
+  list_type B;
   swap_calls = 0;
   swap(A, B);
   VERIFY(1 == swap_calls);
@@ -60,7 +68,7 @@ template class __gnu_cxx::__mt_alloc<std::_List_node<T> >;
 // See c++/13658 for background info.
 int main()
 {
-  test01();
-  test02();
+  swap11<std::list<T> >();
+  swap12<std::list<T> >();
   return 0;
 }

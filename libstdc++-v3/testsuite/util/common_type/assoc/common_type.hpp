@@ -674,9 +674,7 @@ namespace __gnu_pbds
       typedef typename __gnu_cxx::typelist::create1<cnt_5_u>::type lu_policy1;
 
       typedef
-      typename __gnu_cxx::typelist::create2<
-	lu_policy0,
-	lu_policy1>::type
+      typename __gnu_cxx::typelist::create2<lu_policy0, lu_policy1>::type
       lu_policies;
 
       template<typename Policy_Tl>
@@ -684,18 +682,12 @@ namespace __gnu_pbds
       {
       private:
         typedef
-	typename __gnu_cxx::typelist::at_index<
-	Policy_Tl, 0>::type
+	typename __gnu_cxx::typelist::at_index<Policy_Tl, 0>::type
 	update_policy_t;
 
       public:
         typedef
-	__gnu_pbds::list_update<
-	Key,
-	Data,
-	Eq_Fn,
-	update_policy_t,
-	Allocator>
+	__gnu_pbds::list_update<Key, Data, Eq_Fn, update_policy_t, Allocator>
 	type;
       };
 

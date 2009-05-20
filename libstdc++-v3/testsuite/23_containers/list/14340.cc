@@ -27,7 +27,7 @@
 // libstdc++/14340
 int main()
 {
-  typedef std::list<int> container;
-  __gnu_test::conversion<container>::iterator_to_const_iterator();
+  typedef std::list<int> list_type;
+  __gnu_test::conversion<list_type>::iterator_to_const_iterator();
   return 0;
 }

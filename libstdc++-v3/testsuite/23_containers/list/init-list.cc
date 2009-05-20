@@ -21,28 +21,31 @@
 #include <list>
 #include <testsuite_allocator.h>
 
-using namespace __gnu_test;
-
-int main()
+template<typename _Tp>
+bool
+init_list()
 {
-  typedef std::list<int, tracker_allocator<int> > Container;
+  using namespace __gnu_test;
+  typedef _Tp list_type;
+  typedef typename list_type::iterator iterator;
+
   const int arr10[10] = { 2, 4, 1, 7, 3, 8, 10, 5, 9, 6 };
   bool ok = true;
 
   tracker_allocator_counter::reset();
   {
-    Container c({ 2, 4, 1 });
+    list_type c({ 2, 4, 1 });
     ok = check_construct_destroy("Construct from init-list", 3, 0) && ok;
-    Container::iterator i = c.begin();
+    iterator i = c.begin();
     ok &= (*i++ == 2);
     ok &= (*i++ == 4);
   }
   ok = check_construct_destroy("Construct from init-list", 3, 3) && ok;
 
   {
-    Container c(arr10, arr10 + 10);
+    list_type c(arr10, arr10 + 10);
     tracker_allocator_counter::reset();
-    Container::iterator i = c.begin();
+    iterator i = c.begin();
     ++i; ++i; ++i; ++i; ++i; ++i; ++i;
     c.insert(i, { 234, 42, 1 });
     ok = check_construct_destroy("Insert init-list", 3, 0) && ok;
@@ -52,14 +55,23 @@ int main()
   ok = check_construct_destroy("Insert init-list", 3, 13) && ok;
 
   {
-    Container c;
+    list_type c;
     tracker_allocator_counter::reset();
     c = { 13, 0, 42 };
     ok = check_construct_destroy("Assign init-list", 3, 0) && ok;
-    Container::iterator i = c.begin();
+    iterator i = c.begin();
     ok &= (*i++ == 13);
   }
   ok = check_construct_destroy("Assign init-list", 3, 3) && ok;
 
-  return ok ? 0 : 1;;
+  return ok ? 0 : 1;
+}
+
+int main()
+{
+  typedef int value_type;
+  typedef __gnu_test::tracker_allocator<int> allocator_type;
+  typedef std::list<value_type, allocator_type> list_type;
+  init_list<list_type>();
+  return 0;
 }

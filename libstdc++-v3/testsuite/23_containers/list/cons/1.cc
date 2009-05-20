@@ -20,21 +20,12 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 // A nontrivial type.
 template<typename T>
   struct A { };
 
 // Another nontrivial type
 struct B { };
-
-// A nontrivial type convertible from an int
-struct C {
-  C(int i) : i_(i) { }
-  bool operator==(const C& rhs) { return i_ == rhs.i_; }
-  int i_;
-};
 
 // Default constructor, basic properties
 //
@@ -46,32 +37,36 @@ struct C {
 // 23.2.2       size_type size() const
 // 23.2.2	existence of required typedefs
 //
+template<typename _Tp>
 void
-test01()
+cons01()
 {
-  std::list< A<B> > list0101;
+  bool test __attribute__((unused)) = true;
+  typedef _Tp list_type;
+
+  list_type list0101;
   VERIFY(list0101.begin() == list0101.end());
   VERIFY(list0101.size() == 0);
 
   // check type definitions -- will fail compile if missing
-  typedef std::list< A<B> >::reference              reference;
-  typedef std::list< A<B> >::const_reference        const_reference;
-  typedef std::list< A<B> >::iterator               iterator;
-  typedef std::list< A<B> >::const_iterator         const_iterator;
-  typedef std::list< A<B> >::size_type              size_type;
-  typedef std::list< A<B> >::difference_type        difference_type;
-  typedef std::list< A<B> >::value_type             value_type;
-  typedef std::list< A<B> >::allocator_type         allocator_type;
-  typedef std::list< A<B> >::pointer                pointer;
-  typedef std::list< A<B> >::const_pointer          const_pointer;
-  typedef std::list< A<B> >::reverse_iterator       reverse_iterator;
-  typedef std::list< A<B> >::const_reverse_iterator const_reverse_iterator;
+  typedef typename list_type::reference              reference;
+  typedef typename list_type::const_reference        const_reference;
+  typedef typename list_type::iterator               iterator;
+  typedef typename list_type::const_iterator         const_iterator;
+  typedef typename list_type::size_type              size_type;
+  typedef typename list_type::difference_type        difference_type;
+  typedef typename list_type::value_type             value_type;
+  typedef typename list_type::allocator_type         allocator_type;
+  typedef typename list_type::pointer                pointer;
+  typedef typename list_type::const_pointer          const_pointer;
+  typedef typename list_type::reverse_iterator       reverse_iterator;
+  typedef typename list_type::const_reverse_iterator const_reverse_iterator;
 
   // allocator checks?
 }
 
 int main()
 {
-  test01();
+  cons01<std::list< A<B> > >();
   return 0;
 }

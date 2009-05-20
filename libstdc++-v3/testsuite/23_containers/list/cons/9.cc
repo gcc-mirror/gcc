@@ -20,8 +20,6 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-bool test __attribute__((unused)) = true;
-
 // Assignment operator
 //
 // This test verifies the following.
@@ -31,18 +29,24 @@ bool test __attribute__((unused)) = true;
 // 23.2.2       size_type size() const
 // 23.2.2       bool operator==(const list& x, const list& y)
 //
+template<typename _Tp>
 void
-test07()
+cons09()
 {
+  bool test __attribute__((unused)) = true;
+  typedef _Tp list_type;
+  typedef typename list_type::iterator iterator;
+
   const int A[] = {701, 702, 703, 704, 705};
   const std::size_t N = sizeof(A) / sizeof(int);
   std::size_t count;
-  std::list<int>::iterator i;
 
-  std::list<int> list0701(A, A + N);
+  iterator i;
+
+  list_type list0701(A, A + N);
   VERIFY(list0701.size() == N);
 
-  std::list<int> list0702;
+  list_type list0702;
   VERIFY(list0702.size() == 0);
 
   list0702 = list0701;
@@ -57,7 +61,6 @@ test07()
 
 int main()
 {
-  test07();
+  cons09<std::list<int> >();
   return 0;
 }
-// vi:set sw=2 ts=2:
