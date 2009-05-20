@@ -1,3 +1,7 @@
+2009-05-20  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.c-torture/compile/20090518-1.c: New testcase.
+
 2009-05-19  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/40087

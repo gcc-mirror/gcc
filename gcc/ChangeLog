@@ -1,3 +1,8 @@
+2009-05-20  Richard Guenther  <rguenther@suse.de>
+
+	* expr.c (expand_expr_real_1): Avoid calling do_store_flag
+	with mismatched comparison modes.
+
 2009-05-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
     
 	* config/arm/arm.md (*arm_iorsi3): Refactored for only ARM.
