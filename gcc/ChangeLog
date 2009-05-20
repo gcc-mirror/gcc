@@ -1,3 +1,12 @@
+2009-05-20  Olivier Hainque  <hainque@adacore.com>
+
+	* gstab.h (stab_code_type): Define, to be used instead of the
+	__stab_debug_code enum, made anonymous.  Add 2009 to the copyright
+	notice.
+	* dbxout.c (STAB_CODE_TYPE): Remove #define and replace use
+	occurrences by stab_code_type.
+	* mips-tfile.c (STAB_CODE_TYPE): Remove #define, unused.
+
 2009-05-20  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-flow.h (insert_edge_copies_seq): Undeclare.
