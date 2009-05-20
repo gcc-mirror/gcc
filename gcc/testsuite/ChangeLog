@@ -1,3 +1,11 @@
+2009-05-20  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* gcc.target/mips/octeon-exts-6.c: New test.
+	* gcc.target/mips/extend-1.c: New test.
+	* gcc.target/mips/octeon-exts-2.c: Adjust to not match sign-extension
+	EXTS.
+	* gcc.target/mips/octeon-exts-5.c: Likewise.
+
 2009-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40204

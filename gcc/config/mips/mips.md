@@ -3017,8 +3017,13 @@
 	(sign_extend:DI
 	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
-  "#"
-  "&& reload_completed"
+{
+  if (!ISA_HAS_EXTS)
+    return "#";
+  operands[2] = GEN_INT (GET_MODE_BITSIZE (<SHORT:MODE>mode));
+  return "exts\t%0,%1,0,%m2";
+}
+  "&& reload_completed && !ISA_HAS_EXTS"
   [(set (match_dup 2)
 	(ashift:DI (match_dup 1)
 		   (match_dup 3)))
@@ -3028,15 +3033,22 @@
 {
   operands[2] = gen_lowpart (DImode, operands[0]);
   operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
-})
+}
+  [(set_attr "type" "arith")
+   (set_attr "mode" "DI")])
 
 (define_insn_and_split "*extendsi_truncate<mode>"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(sign_extend:SI
 	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
-  "#"
-  "&& reload_completed"
+{
+  if (!ISA_HAS_EXTS)
+    return "#";
+  operands[2] = GEN_INT (GET_MODE_BITSIZE (<SHORT:MODE>mode));
+  return "exts\t%0,%1,0,%m2";
+}
+  "&& reload_completed && !ISA_HAS_EXTS"
   [(set (match_dup 2)
 	(ashift:DI (match_dup 1)
 		   (match_dup 3)))
@@ -3046,7 +3058,30 @@
 {
   operands[2] = gen_lowpart (DImode, operands[0]);
   operands[3] = GEN_INT (BITS_PER_WORD - GET_MODE_BITSIZE (<MODE>mode));
-})
+}
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
+
+(define_insn_and_split "*extendhi_truncateqi"
+  [(set (match_operand:HI 0 "register_operand" "=d")
+	(sign_extend:HI
+	    (truncate:QI (match_operand:DI 1 "register_operand" "d"))))]
+  "TARGET_64BIT && !TARGET_MIPS16"
+{
+  return ISA_HAS_EXTS ? "exts\t%0,%1,0,7" : "#";
+}
+  "&& reload_completed && !ISA_HAS_EXTS"
+  [(set (match_dup 2)
+	(ashift:DI (match_dup 1)
+		   (const_int 56)))
+   (set (match_dup 0)
+	(truncate:HI (ashiftrt:DI (match_dup 2)
+				  (const_int 56))))]
+{
+  operands[2] = gen_lowpart (DImode, operands[0]);
+}
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
 
 (define_insn "extendsfdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")

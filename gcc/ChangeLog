@@ -1,3 +1,10 @@
+2009-05-20  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (*extenddi_truncate<mode>,
+	*extendsi_truncate<mode>): Emit exts if supported.  Add attribute
+	defintions.
+	(*extendhi_truncateqi): New define_insn_and_sptit.
+
 2009-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40204
