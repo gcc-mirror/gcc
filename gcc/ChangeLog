@@ -1,3 +1,17 @@
+2009-05-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+    
+	* config/arm/arm.md (*arm_iorsi3): Refactored for only ARM.
+        (peephole ior (reg, int) -> mov, ior): Refactored for only ARM.
+        * config/arm/thumb2.md (*thumb_andsi_not_shiftsi_si): Allow bic
+        with shifts for Thumb2.
+        (orsi_notsi): New for orn.
+        (*thumb_orsi_notshiftsi_si): Allow orn with shifts.
+        (*thumb2_iorsi3): Rewrite support for iorsi for Thumb2.
+        * config/arm/arm.c (const_ok_for_op): Split case for IOR for
+        Thumb2.
+        (arm_gen_constant): Set can_invert for IOR and Thumb2, Add
+        comments. Don't invert remainder for IOR.
+	
 2009-05-19  Zdenek Dvorak  <ook@ucw.cz>
 
 	PR tree-optimization/40087

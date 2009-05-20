@@ -57,7 +57,7 @@
 			 [(match_operand:SI 2 "s_register_operand" "r")
 			  (match_operand:SI 3 "const_int_operand" "M")]))
 		(match_operand:SI 1 "s_register_operand" "r")))]
-  "TARGET_ARM"
+  "TARGET_THUMB2"
   "bic%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "2")
@@ -1252,3 +1252,47 @@
    (set_attr "length" "2")]
 )
 
+(define_insn "orsi_notsi_si"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(ior:SI (not:SI (match_operand:SI 2 "s_register_operand" "r"))
+		(match_operand:SI 1 "reg_or_int_operand" "rK")))]
+  "TARGET_THUMB2"
+  "orn%?\\t%0, %1, %2"
+  [(set_attr "predicable" "yes")]
+)
+
+(define_insn "*thumb_orsi_not_shiftsi_si"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(ior:SI (not:SI (match_operator:SI 4 "shift_operator"
+			 [(match_operand:SI 2 "s_register_operand" "r")
+			  (match_operand:SI 3 "const_int_operand" "M")]))
+		(match_operand:SI 1 "s_register_operand" "r")))]
+  "TARGET_THUMB2"
+  "orn%?\\t%0, %1, %2%S4"
+  [(set_attr "predicable" "yes")
+   (set_attr "shift" "2")
+   (set_attr "type" "alu_shift")]
+)
+
+(define_insn_and_split "*thumb2_iorsi3"
+  [(set (match_operand:SI         0 "s_register_operand" "=r,r,r")
+	(ior:SI (match_operand:SI 1 "s_register_operand" "r,r,r")
+		(match_operand:SI 2 "reg_or_int_operand" "rI,K,?n")))]
+  "TARGET_THUMB2"
+  "@
+   orr%?\\t%0, %1, %2
+   orn%?\\t%0, %1, #%B2
+   #"
+  "TARGET_THUMB2
+   && GET_CODE (operands[2]) == CONST_INT
+   && !(const_ok_for_arm (INTVAL (operands[2]))
+	|| const_ok_for_arm (~INTVAL (operands[2])))"
+  [(clobber (const_int 0))]
+  "
+  arm_split_constant  (IOR, SImode, curr_insn, 
+	               INTVAL (operands[2]), operands[0], operands[1], 0);
+  DONE;
+  "
+  [(set_attr "length" "4,4,16")
+   (set_attr "predicable" "yes")]
+)
