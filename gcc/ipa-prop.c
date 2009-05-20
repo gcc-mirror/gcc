@@ -428,6 +428,22 @@ fill_member_ptr_cst_jump_function (struct ipa_jump_func *jfunc,
   jfunc->value.member_cst.delta = delta;
 }
 
+/* If RHS is an SSA_NAMe and it is defined by a simple copy assign statement,
+   return the rhs of its defining statement.  */
+
+static inline tree
+get_ssa_def_if_simple_copy (tree rhs)
+{
+  while (TREE_CODE (rhs) == SSA_NAME && !SSA_NAME_IS_DEFAULT_DEF (rhs))
+    {
+      gimple def_stmt = SSA_NAME_DEF_STMT (rhs);
+
+      if (gimple_assign_single_p (def_stmt))
+	rhs = gimple_assign_rhs1 (def_stmt);
+    }
+  return rhs;
+}
+
 /* Traverse statements from CALL backwards, scanning whether the argument ARG
    which is a member pointer is filled in with constant values.  If it is, fill
    the jump function JFUNC in appropriately.  METHOD_FIELD and DELTA_FIELD are
@@ -467,6 +483,7 @@ determine_cst_member_ptr (gimple call, tree arg, tree method_field,
       fld = TREE_OPERAND (lhs, 1);
       if (!method && fld == method_field)
 	{
+	  rhs = get_ssa_def_if_simple_copy (rhs);
 	  if (TREE_CODE (rhs) == ADDR_EXPR
 	      && TREE_CODE (TREE_OPERAND (rhs, 0)) == FUNCTION_DECL
 	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (rhs, 0))) == METHOD_TYPE)
@@ -484,6 +501,7 @@ determine_cst_member_ptr (gimple call, tree arg, tree method_field,
 
       if (!delta && fld == delta_field)
 	{
+	  rhs = get_ssa_def_if_simple_copy (rhs);
 	  if (TREE_CODE (rhs) == INTEGER_CST)
 	    {
 	      delta = rhs;

@@ -447,6 +447,26 @@ execute_mudflap_function_ops (void)
   return 0;
 }
 
+/* Insert a gimple_seq SEQ on all the outgoing edges out of BB.  Note that
+   if BB has more than one edge, STMT will be replicated for each edge.
+   Also, abnormal edges will be ignored.  */
+
+static void
+insert_edge_copies_seq (gimple_seq seq, basic_block bb)
+{
+  edge e;
+  edge_iterator ei;
+  unsigned n_copies = -1;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (!(e->flags & EDGE_ABNORMAL))
+      n_copies++;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    if (!(e->flags & EDGE_ABNORMAL))
+      gsi_insert_seq_on_edge (e, n_copies-- > 0 ? gimple_seq_copy (seq) : seq);
+}
+
 /* Create and initialize local shadow variables for the lookup cache
    globals.  Put their decls in the *_l globals for use by
    mf_build_check_statement_for.  */
