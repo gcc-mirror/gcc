@@ -1,3 +1,9 @@
+2009-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/40174
+	* team.c (gomp_thread_start): Destroy thr->release semaphore.
+	(gomp_free_pool_helper): Likewise.
+
 2009-04-20  Vasilis Liaskovitis  <vliaskov@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
