@@ -395,9 +395,22 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   __cpuid (1, eax, ebx, ecx, edx);
 
-  /* We don't care for extended family.  */
   model = (eax >> 4) & 0x0f;
   family = (eax >> 8) & 0x0f;
+  if (vendor == SIG_INTEL)
+    {
+      unsigned int extended_model, extended_family;
+
+      extended_model = (eax >> 12) & 0xf0;
+      extended_family = (eax >> 20) & 0xff;
+      if (family == 0x0f)
+	{
+	  family += extended_family;
+	  model += extended_model;
+	}
+      else if (family == 0x06)
+	model += extended_model;
+    }
 
   has_sse3 = ecx & bit_SSE3;
   has_ssse3 = ecx & bit_SSSE3;
@@ -496,8 +509,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       break;
     case PROCESSOR_PENTIUMPRO:
       if (has_longmode)
-	/* It is Core 2 Duo.  */
-	cpu = "core2";
+	/* It is Core 2 or Atom.  */
+	cpu = (model == 28) ? "atom" : "core2";
       else if (arch)
 	{
 	  if (has_sse3)
