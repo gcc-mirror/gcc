@@ -524,9 +524,11 @@
 	(cgraph_default_inline_p): Likewise.
 	(cgraph_edge_badness): Compute badness based on benefit and size cost.
 	(cgraph_decide_recursive_inlining): Check size.
-	(cgraph_decide_inlining_of_small_function): Update size; dump sizes and times.
+	(cgraph_decide_inlining_of_small_function): Update size; dump sizes and
+	times.
 	(cgraph_decide_inlining): Likewise.
-	(cgraph_decide_inlining_incrementally): Likewise; honor PARAM_EARLY_INLINING_INSNS.
+	(cgraph_decide_inlining_incrementally): Likewise; honor
+	PARAM_EARLY_INLINING_INSNS.
 	(likely_eliminated_by_inlining_p): New predicate.
 	(estimate_function_body_sizes): New function.
 	(compute_inline_parameters): Use it.
@@ -592,9 +594,11 @@
 	(cgraph_default_inline_p): Likewise.
 	(cgraph_edge_badness): Compute badness based on benefit and size cost.
 	(cgraph_decide_recursive_inlining): Check size.
-	(cgraph_decide_inlining_of_small_function): Update size; dump sizes and times.
+	(cgraph_decide_inlining_of_small_function): Update size; dump sizes and
+	times.
 	(cgraph_decide_inlining): Likewise.
-	(cgraph_decide_inlining_incrementally): Likewise; honor PARAM_EARLY_INLINING_INSNS.
+	(cgraph_decide_inlining_incrementally): Likewise; honor
+	PARAM_EARLY_INLINING_INSNS.
 	(likely_eliminated_by_inlining_p): New predicate.
 	(estimate_function_body_sizes): New function.
 	(compute_inline_parameters): Use it.
