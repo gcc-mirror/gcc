@@ -7999,6 +7999,13 @@ build_fold_addr_expr_with_type (tree t, tree ptrtype)
       if (TREE_TYPE (t) != ptrtype)
 	t = build1 (NOP_EXPR, ptrtype, t);
     }
+  else if (TREE_CODE (t) == VIEW_CONVERT_EXPR)
+    {
+      t = build_fold_addr_expr (TREE_OPERAND (t, 0));
+
+      if (TREE_TYPE (t) != ptrtype)
+	t = fold_convert (ptrtype, t);
+    }
   else
     t = build1 (ADDR_EXPR, ptrtype, t);
 
