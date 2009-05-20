@@ -3124,21 +3124,27 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			|| !Is_Tagged_Type (gnat_base_type)))
 		  {
 		    tree gnu_old_field
-		      = gnat_to_gnu_field_decl (Original_Record_Component
-						(gnat_field));
+		      = gnat_to_gnu_field_decl
+			(Original_Record_Component (gnat_field));
 		    tree gnu_offset
-		      = TREE_VALUE (purpose_member (gnu_old_field,
-						    gnu_pos_list));
+		      = TREE_VALUE
+			(purpose_member (gnu_old_field, gnu_pos_list));
 		    tree gnu_pos = TREE_PURPOSE (gnu_offset);
 		    tree gnu_bitpos = TREE_VALUE (TREE_VALUE (gnu_offset));
-		    tree gnu_field_type
-		      = gnat_to_gnu_type (Etype (gnat_field));
-		    tree gnu_size = TYPE_SIZE (gnu_field_type);
-		    tree gnu_new_pos = NULL_TREE;
+		    tree gnu_field, gnu_field_type, gnu_size, gnu_new_pos;
 		    unsigned int offset_align
-		      = tree_low_cst (TREE_PURPOSE (TREE_VALUE (gnu_offset)),
-				      1);
-		    tree gnu_field;
+		      = tree_low_cst
+			(TREE_PURPOSE (TREE_VALUE (gnu_offset)), 1);
+
+		    /* If the type is the same, retrieve the GCC type from the
+		       old field to take into account possible adjustments.  */
+		    if (Etype (gnat_field)
+			== Etype (Original_Record_Component (gnat_field)))
+		      gnu_field_type = TREE_TYPE (gnu_old_field);
+		    else
+		      gnu_field_type = gnat_to_gnu_type (Etype (gnat_field));
+
+		    gnu_size = TYPE_SIZE (gnu_field_type);
 
 		    /* If there was a component clause, the field types must be
 		       the same for the type and subtype, so copy the data from
@@ -3197,6 +3203,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 						 TYPE_SIZE (gnu_type)))
 			  continue;
 		      }
+		    else
+		      gnu_new_pos = NULL_TREE;
 
 		    gnu_field
 		      = create_field_decl
