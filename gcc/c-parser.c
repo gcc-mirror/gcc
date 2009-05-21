@@ -921,8 +921,6 @@ static struct c_expr c_parser_expression (c_parser *);
 static struct c_expr c_parser_expression_conv (c_parser *);
 static VEC(tree,gc) *c_parser_expr_list (c_parser *, bool, bool,
 					 VEC(tree,gc) **);
-static void c_parser_release_expr_list (VEC(tree,gc) *);
-static tree c_parser_vec_to_tree_list (VEC(tree,gc) *);
 static void c_parser_omp_construct (c_parser *);
 static void c_parser_omp_threadprivate (c_parser *);
 static void c_parser_omp_barrier (c_parser *);
@@ -2889,9 +2887,9 @@ c_parser_attributes (c_parser *parser)
 		  tree tree_list;
 		  c_parser_consume_token (parser);
 		  expr_list = c_parser_expr_list (parser, false, true, NULL);
-		  tree_list = c_parser_vec_to_tree_list (expr_list);
+		  tree_list = build_tree_list_vec (expr_list);
 		  attr_args = tree_cons (NULL_TREE, arg1, tree_list);
-		  c_parser_release_expr_list (expr_list);
+		  release_tree_vector (expr_list);
 		}
 	    }
 	  else
@@ -2901,8 +2899,8 @@ c_parser_attributes (c_parser *parser)
 	      else
 		{
 		  expr_list = c_parser_expr_list (parser, false, true, NULL);
-		  attr_args = c_parser_vec_to_tree_list (expr_list);
-		  c_parser_release_expr_list (expr_list);
+		  attr_args = build_tree_list_vec (expr_list);
+		  release_tree_vector (expr_list);
 		}
 	    }
 	  attr = build_tree_list (attr_name, attr_args);
@@ -5719,8 +5717,8 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  expr.original_type = NULL;
 	  if (exprlist != NULL)
 	    {
-	      c_parser_release_expr_list (exprlist);
-	      c_parser_release_expr_list (origtypes);
+	      release_tree_vector (exprlist);
+	      release_tree_vector (origtypes);
 	    }
 	  break;
 	case CPP_DOT:
@@ -5853,10 +5851,6 @@ c_parser_expression_conv (c_parser *parser)
      nonempty-expr-list , assignment-expression
 */
 
-/* We cache two vectors, to save most allocation and deallocation.  */
-static GTY((deletable)) VEC(tree,gc) *cached_expr_list_1;
-static GTY((deletable)) VEC(tree,gc) *cached_expr_list_2;
-
 static VEC(tree,gc) *
 c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
 		    VEC(tree,gc) **p_orig_types)
@@ -5865,34 +5859,11 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   VEC(tree,gc) *orig_types;
   struct c_expr expr;
 
-  if (cached_expr_list_1 != NULL)
-    {
-      ret = cached_expr_list_1;
-      cached_expr_list_1 = NULL;
-      VEC_truncate (tree, ret, 0);
-    }
-  else if (cached_expr_list_2 != NULL)
-    {
-      ret = cached_expr_list_2;
-      cached_expr_list_2 = NULL;
-      VEC_truncate (tree, ret, 0);
-    }
-  else
-    ret = VEC_alloc (tree, gc, 16);
-
+  ret = make_tree_vector ();
   if (p_orig_types == NULL)
     orig_types = NULL;
   else
-    {
-      if (cached_expr_list_2 != NULL)
-	{
-	  orig_types = cached_expr_list_2;
-	  cached_expr_list_2 = NULL;
-	  VEC_truncate (tree, orig_types, 0);
-	}
-      else
-	orig_types = VEC_alloc (tree, gc, 16);
-    }
+    orig_types = make_tree_vector ();
 
   expr = c_parser_expr_no_commas (parser, NULL);
   if (convert_p)
@@ -5916,37 +5887,6 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
     }
   if (orig_types != NULL)
     *p_orig_types = orig_types;
-  return ret;
-}
-
-/* Release a vector returned by c_parser_expr_list.  */
-
-static void
-c_parser_release_expr_list (VEC(tree,gc) *vec)
-{
-  if (cached_expr_list_1 == NULL)
-    cached_expr_list_1 = vec;
-  else if (cached_expr_list_2 == NULL)
-    cached_expr_list_2 = vec;
-  else
-    VEC_free (tree, gc, vec);
-}
-
-/* Convert a vector, as returned by c_parser_expr_list, to a
-   tree_list.  */
-
-static tree
-c_parser_vec_to_tree_list (VEC(tree,gc) *vec)
-{
-  tree ret = NULL_TREE;
-  tree *pp = &ret;
-  unsigned int i;
-  tree t;
-  for (i = 0; VEC_iterate (tree, vec, i, t); ++i)
-    {
-      *pp = build_tree_list (NULL, t);
-      pp = &TREE_CHAIN (*pp);
-    }
   return ret;
 }
 
@@ -6830,9 +6770,9 @@ c_parser_objc_keywordexpr (c_parser *parser)
   else
     {
       /* We have a comma expression, we will collapse later.  */
-      ret = c_parser_vec_to_tree_list (expr_list);
+      ret = build_tree_list_vec (expr_list);
     }
-  c_parser_release_expr_list (expr_list);
+  release_tree_vector (expr_list);
   return ret;
 }
 

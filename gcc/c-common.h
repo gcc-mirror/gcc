@@ -1013,6 +1013,10 @@ extern void warn_for_sign_compare (location_t,
 				   enum tree_code resultcode);
 extern void set_underlying_type (tree x);
 extern bool is_typedef_decl (tree x);
+extern VEC(tree,gc) *make_tree_vector (void);
+extern void release_tree_vector (VEC(tree,gc) *);
+extern VEC(tree,gc) *make_tree_vector_single (tree);
+extern VEC(tree,gc) *make_tree_vector_copy (const VEC(tree,gc) *);
 
 /* In c-gimplify.c  */
 extern void c_genericize (tree);

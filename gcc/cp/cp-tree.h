@@ -4176,16 +4176,19 @@ extern bool null_ptr_cst_p			(tree);
 extern bool sufficient_parms_p			(const_tree);
 extern tree type_decays_to			(tree);
 extern tree build_user_type_conversion		(tree, tree, int);
-extern tree build_new_function_call		(tree, tree, bool, 
+extern tree build_new_function_call		(tree, VEC(tree,gc) **, bool, 
 						 tsubst_flags_t);
-extern tree build_operator_new_call		(tree, tree, tree *, tree *,
-						 tree *);
-extern tree build_new_method_call		(tree, tree, tree, tree, int,
-						 tree *, tsubst_flags_t);
-extern tree build_special_member_call		(tree, tree, tree, tree, int,
-                                                 tsubst_flags_t);
+extern tree build_operator_new_call		(tree, VEC(tree,gc) **, tree *,
+						 tree *, tree *);
+extern tree build_new_method_call		(tree, tree, VEC(tree,gc) **,
+						 tree, int, tree *,
+						 tsubst_flags_t);
+extern tree build_special_member_call		(tree, tree, VEC(tree,gc) **,
+						 tree, int, tsubst_flags_t);
 extern tree build_new_op			(enum tree_code, int, tree, 
 						 tree, tree, bool *,
+						 tsubst_flags_t);
+extern tree build_op_call			(tree, VEC(tree,gc) **,
 						 tsubst_flags_t);
 extern tree build_op_delete_call		(enum tree_code, tree, tree, bool, tree, tree);
 extern bool can_convert				(tree, tree);
@@ -4408,7 +4411,7 @@ extern void determine_visibility		(tree);
 extern void constrain_class_visibility		(tree);
 extern void import_export_decl			(tree);
 extern tree build_cleanup			(tree);
-extern tree build_offset_ref_call_from_tree	(tree, tree);
+extern tree build_offset_ref_call_from_tree	(tree, VEC(tree,gc) **);
 extern void check_default_args			(tree);
 extern void mark_used				(tree);
 extern void finish_static_data_member_decl	(tree, tree, bool, tree, int);
@@ -4472,7 +4475,8 @@ extern tree build_zero_init			(tree, tree, bool);
 extern tree build_value_init			(tree);
 extern tree build_value_init_noctor		(tree);
 extern tree build_offset_ref			(tree, tree, bool);
-extern tree build_new				(tree, tree, tree, tree, int,
+extern tree build_new				(VEC(tree,gc) **, tree, tree,
+						 VEC(tree,gc) **, int,
                                                  tsubst_flags_t);
 extern tree build_vec_init			(tree, tree, tree, bool, int,
                                                  tsubst_flags_t);
@@ -4554,7 +4558,8 @@ extern int uses_template_parms			(tree);
 extern int uses_template_parms_level		(tree, int);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
-extern int fn_type_unification			(tree, tree, tree, tree,
+extern int fn_type_unification			(tree, tree, tree,
+						 const tree *, unsigned int,
 						 tree, unification_kind_t, int);
 extern void mark_decl_instantiated		(tree, int);
 extern int more_specialized_fn			(tree, tree, int);
@@ -4592,7 +4597,7 @@ extern bool any_dependent_template_arguments_p  (const_tree);
 extern bool dependent_template_p		(tree);
 extern bool dependent_template_id_p		(tree, tree);
 extern bool type_dependent_expression_p		(tree);
-extern bool any_type_dependent_arguments_p      (const_tree);
+extern bool any_type_dependent_arguments_p      (const VEC(tree,gc) *);
 extern bool type_dependent_expression_p_push	(tree);
 extern bool value_dependent_expression_p	(tree);
 extern bool any_value_dependent_elements_p      (const_tree);
@@ -4600,7 +4605,7 @@ extern bool dependent_omp_for_p			(tree, tree, tree, tree);
 extern tree resolve_typename_type		(tree, bool);
 extern tree template_for_substitution		(tree);
 extern tree build_non_dependent_expr		(tree);
-extern tree build_non_dependent_args		(tree);
+extern void make_args_non_dependent		(VEC(tree,gc) *);
 extern bool reregister_specialization		(tree, tree, tree);
 extern tree fold_non_dependent_expr		(tree);
 extern bool explicit_class_specialization_p     (tree);
@@ -4748,9 +4753,9 @@ extern tree begin_stmt_expr			(void);
 extern tree finish_stmt_expr_expr		(tree, tree);
 extern tree finish_stmt_expr			(tree, bool);
 extern tree stmt_expr_value_expr		(tree);
-extern tree perform_koenig_lookup		(tree, tree);
-extern tree finish_call_expr			(tree, tree, bool, bool, 
-						 tsubst_flags_t);
+extern tree perform_koenig_lookup		(tree, VEC(tree,gc) *);
+extern tree finish_call_expr			(tree, VEC(tree,gc) **, bool,
+						 bool, tsubst_flags_t);
 extern tree finish_increment_expr		(tree, enum tree_code);
 extern tree finish_this_expr			(void);
 extern tree finish_pseudo_destructor_expr       (tree, tree, tree);
@@ -4832,7 +4837,7 @@ extern bool builtin_valid_in_constant_expr_p    (const_tree);
 extern tree build_min				(enum tree_code, tree, ...);
 extern tree build_min_nt			(enum tree_code, ...);
 extern tree build_min_non_dep			(enum tree_code, tree, ...);
-extern tree build_min_non_dep_call_list		(tree, tree, tree);
+extern tree build_min_non_dep_call_vec		(tree, tree, VEC(tree,gc) *);
 extern tree build_cplus_new			(tree, tree);
 extern tree build_aggr_init_expr		(tree, tree);
 extern tree get_target_expr			(tree);
@@ -4932,6 +4937,8 @@ extern tree cp_build_indirect_ref		(tree, const char *,
 extern tree build_array_ref			(tree, tree, location_t);
 extern tree get_member_function_from_ptrfunc	(tree *, tree);
 extern tree cp_build_function_call              (tree, tree, tsubst_flags_t);
+extern tree cp_build_function_call_vec		(tree, VEC(tree,gc) **,
+						 tsubst_flags_t);
 extern tree build_x_binary_op			(enum tree_code, tree,
 						 enum tree_code, tree,
 						 enum tree_code, bool *,
@@ -4945,6 +4952,7 @@ extern tree unary_complex_lvalue		(enum tree_code, tree);
 extern tree build_x_conditional_expr		(tree, tree, tree, 
                                                  tsubst_flags_t);
 extern tree build_x_compound_expr_from_list	(tree, const char *);
+extern tree build_x_compound_expr_from_vec	(VEC(tree,gc) *, const char *);
 extern tree build_x_compound_expr		(tree, tree, tsubst_flags_t);
 extern tree build_compound_expr                 (tree, tree);
 extern tree cp_build_compound_expr		(tree, tree, tsubst_flags_t);

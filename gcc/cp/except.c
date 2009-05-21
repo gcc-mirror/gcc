@@ -1,6 +1,6 @@
 /* Handle exceptional things in C++.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann <tiemann@cygnus.com>
    Rewritten by Mike Stump <mrs@cygnus.com>, based upon an
@@ -736,6 +736,7 @@ build_throw (tree exp)
       if (CLASS_TYPE_P (temp_type))
 	{
 	  int flags = LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING;
+	  VEC(tree,gc) *exp_vec;
 
 	  /* Under C++0x [12.8/16 class.copy], a thrown lvalue is sometimes
 	     treated as an rvalue for the purposes of overload resolution
@@ -749,11 +750,11 @@ build_throw (tree exp)
 	    flags = flags | LOOKUP_PREFER_RVALUE;
 
 	  /* Call the copy constructor.  */
+	  exp_vec = make_tree_vector_single (exp);
 	  exp = (build_special_member_call
-		 (object, complete_ctor_identifier,
-		  build_tree_list (NULL_TREE, exp),
-		  TREE_TYPE (object),
-		  flags, tf_warning_or_error));
+		 (object, complete_ctor_identifier, &exp_vec,
+		  TREE_TYPE (object), flags, tf_warning_or_error));
+	  release_tree_vector (exp_vec);
 	  if (exp == error_mark_node)
 	    {
 	      error ("  in thrown expression");

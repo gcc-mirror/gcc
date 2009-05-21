@@ -1,6 +1,6 @@
 /* Language-level data type conversion for GNU C++.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
@@ -755,11 +755,15 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	   the target with the temp (see [dcl.init]).  */
 	ctor = build_user_type_conversion (type, ctor, flags);
       else
-	ctor = build_special_member_call (NULL_TREE,
-					  complete_ctor_identifier,
-					  build_tree_list (NULL_TREE, ctor),
-					  type, flags,
-                                          tf_warning_or_error);
+	{
+	  VEC(tree,gc) *ctor_vec = make_tree_vector_single (ctor);
+	  ctor = build_special_member_call (NULL_TREE,
+					    complete_ctor_identifier,
+					    &ctor_vec,
+					    type, flags,
+					    tf_warning_or_error);
+	  release_tree_vector (ctor_vec);
+	}
       if (ctor)
 	return build_cplus_new (type, ctor);
     }

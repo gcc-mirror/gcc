@@ -1,3 +1,8 @@
+2009-05-20  Ian Lance Taylor  <iant@google.com>
+
+	* objc-act.c (objc_generate_cxx_ctor_or_dtor): Pass NULL rather
+	than NULL_TREE to build_special_member_call.
+
 2009-05-10  Ian Lance Taylor  <iant@google.com>
 
 	* objc-act.c (objc_building_struct): New static variable.

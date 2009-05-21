@@ -1442,6 +1442,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
 
   /* The type to which we are casting.  */
   tree type;
+  VEC(tree,gc) *parmvec;
 
   if (exp == error_mark_node || parms == error_mark_node)
     return error_mark_node;
@@ -1512,8 +1513,12 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
     }
 
   /* Call the constructor.  */
-  exp = build_special_member_call (NULL_TREE, complete_ctor_identifier, parms,
-				   type, LOOKUP_NORMAL, complain);
+  parmvec = make_tree_vector ();
+  for (; parms != NULL_TREE; parms = TREE_CHAIN (parms))
+    VEC_safe_push (tree, gc, parmvec, TREE_VALUE (parms));
+  exp = build_special_member_call (NULL_TREE, complete_ctor_identifier,
+				   &parmvec, type, LOOKUP_NORMAL, complain);
+  release_tree_vector (parmvec);
 
   if (exp == error_mark_node)
     return error_mark_node;

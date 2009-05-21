@@ -1827,6 +1827,23 @@ build_tree_list_stat (tree parm, tree value MEM_STAT_DECL)
   return t;
 }
 
+/* Build a chain of TREE_LIST nodes from a vector.  */
+
+tree
+build_tree_list_vec_stat (const VEC(tree,gc) *vec MEM_STAT_DECL)
+{
+  tree ret = NULL_TREE;
+  tree *pp = &ret;
+  unsigned int i;
+  tree t;
+  for (i = 0; VEC_iterate (tree, vec, i, t); ++i)
+    {
+      *pp = build_tree_list_stat (NULL, t PASS_MEM_STAT);
+      pp = &TREE_CHAIN (*pp);
+    }
+  return ret;
+}
+
 /* Return a newly created TREE_LIST node whose
    purpose and value fields are PURPOSE and VALUE
    and whose TREE_CHAIN is CHAIN.  */
@@ -1869,6 +1886,22 @@ ctor_to_list (tree ctor)
     }
 
   return list;
+}
+
+/* Return the values of the elements of a CONSTRUCTOR as a vector of
+   trees.  */
+
+VEC(tree,gc) *
+ctor_to_vec (tree ctor)
+{
+  VEC(tree, gc) *vec = VEC_alloc (tree, gc, CONSTRUCTOR_NELTS (ctor));
+  unsigned int ix;
+  tree val;
+
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), ix, val)
+    VEC_quick_push (tree, vec, val);
+
+  return vec;
 }
 
 /* Return the size nominally occupied by an object of type TYPE
@@ -3482,6 +3515,23 @@ build_nt_call_list (tree fn, tree arglist)
   for (i = 0; arglist; arglist = TREE_CHAIN (arglist), i++)
     CALL_EXPR_ARG (t, i) = TREE_VALUE (arglist);
   return t;
+}
+
+/* Similar to build_nt, but for creating a CALL_EXPR object with a
+   tree VEC.  */
+
+tree
+build_nt_call_vec (tree fn, VEC(tree,gc) *args)
+{
+  tree ret, t;
+  unsigned int ix;
+
+  ret = build_vl_exp (CALL_EXPR, VEC_length (tree, args) + 3);
+  CALL_EXPR_FN (ret) = fn;
+  CALL_EXPR_STATIC_CHAIN (ret) = NULL_TREE;
+  for (ix = 0; VEC_iterate (tree, args, ix, t); ++ix)
+    CALL_EXPR_ARG (ret, ix) = t;
+  return ret;
 }
 
 /* Create a DECL_... node of code CODE, name NAME and data type TYPE.
@@ -8240,7 +8290,7 @@ build_call_valist (tree return_type, tree fn, int nargs, va_list args)
    which are specified as a tree array ARGS.  */
 
 tree
-build_call_array (tree return_type, tree fn, int nargs, tree *args)
+build_call_array (tree return_type, tree fn, int nargs, const tree *args)
 {
   tree t;
   int i;
@@ -8253,6 +8303,24 @@ build_call_array (tree return_type, tree fn, int nargs, tree *args)
     CALL_EXPR_ARG (t, i) = args[i];
   process_call_operands (t);
   return t;
+}
+
+/* Like build_call_array, but takes a VEC.  */
+
+tree
+build_call_vec (tree return_type, tree fn, VEC(tree,gc) *args)
+{
+  tree ret, t;
+  unsigned int ix;
+
+  ret = build_vl_exp (CALL_EXPR, VEC_length (tree, args) + 3);
+  TREE_TYPE (ret) = return_type;
+  CALL_EXPR_FN (ret) = fn;
+  CALL_EXPR_STATIC_CHAIN (ret) = NULL_TREE;
+  for (ix = 0; VEC_iterate (tree, args, ix, t); ++ix)
+    CALL_EXPR_ARG (ret, ix) = t;
+  process_call_operands (ret);
+  return ret;
 }
 
 

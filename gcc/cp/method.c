@@ -1,7 +1,7 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
    Copyright (C) 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
@@ -661,19 +661,21 @@ do_build_assign_ref (tree fndecl)
 	   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
 	{
 	  tree converted_parm;
+	  VEC(tree,gc) *parmvec;
 
 	  /* We must convert PARM directly to the base class
 	     explicitly since the base class may be ambiguous.  */
 	  converted_parm = build_base_path (PLUS_EXPR, parm, base_binfo, 1);
 	  /* Call the base class assignment operator.  */
+	  parmvec = make_tree_vector_single (converted_parm);
 	  finish_expr_stmt
 	    (build_special_member_call (current_class_ref,
 					ansi_assopname (NOP_EXPR),
-					build_tree_list (NULL_TREE,
-							 converted_parm),
+					&parmvec,
 					base_binfo,
 					LOOKUP_NORMAL | LOOKUP_NONVIRTUAL,
                                         tf_warning_or_error));
+	  release_tree_vector (parmvec);
 	}
 
       /* Assign to each of the non-static data members.  */
