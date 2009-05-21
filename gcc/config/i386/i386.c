@@ -1965,9 +1965,11 @@ static int ix86_isa_flags_explicit;
 
 #define OPTION_MASK_ISA_ABM_SET \
   (OPTION_MASK_ISA_ABM | OPTION_MASK_ISA_POPCNT)
+
 #define OPTION_MASK_ISA_POPCNT_SET OPTION_MASK_ISA_POPCNT
 #define OPTION_MASK_ISA_CX16_SET OPTION_MASK_ISA_CX16
 #define OPTION_MASK_ISA_SAHF_SET OPTION_MASK_ISA_SAHF
+#define OPTION_MASK_ISA_MOVBE_SET OPTION_MASK_ISA_MOVBE
 
 /* Define a set of ISAs which aren't available when a given ISA is
    disabled.  MMX and SSE ISAs are handled separately.  */
@@ -2009,6 +2011,7 @@ static int ix86_isa_flags_explicit;
 #define OPTION_MASK_ISA_POPCNT_UNSET OPTION_MASK_ISA_POPCNT
 #define OPTION_MASK_ISA_CX16_UNSET OPTION_MASK_ISA_CX16
 #define OPTION_MASK_ISA_SAHF_UNSET OPTION_MASK_ISA_SAHF
+#define OPTION_MASK_ISA_MOVBE_UNSET OPTION_MASK_ISA_MOVBE
 
 /* Vectorization library interface and handlers.  */
 tree (*ix86_veclib_handler)(enum built_in_function, tree, tree) = NULL;
@@ -2299,6 +2302,19 @@ ix86_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED, int value)
 	}
       return true;
 
+    case OPT_mmovbe:
+      if (value)
+	{
+	  ix86_isa_flags |= OPTION_MASK_ISA_MOVBE_SET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_MOVBE_SET;
+	}
+      else
+	{
+	  ix86_isa_flags &= ~OPTION_MASK_ISA_MOVBE_UNSET;
+	  ix86_isa_flags_explicit |= OPTION_MASK_ISA_MOVBE_UNSET;
+	}
+      return true;
+
     case OPT_maes:
       if (value)
 	{
@@ -2361,6 +2377,7 @@ ix86_target_string (int isa, int flags, const char *arch, const char *tune,
     { "-mmmx",		OPTION_MASK_ISA_MMX },
     { "-mabm",		OPTION_MASK_ISA_ABM },
     { "-mpopcnt",	OPTION_MASK_ISA_POPCNT },
+    { "-mmovbe",	OPTION_MASK_ISA_MOVBE },
     { "-maes",		OPTION_MASK_ISA_AES },
     { "-mpclmul",	OPTION_MASK_ISA_PCLMUL },
   };
@@ -2577,7 +2594,8 @@ override_options (bool main_args_p)
       PTA_AES = 1 << 17,
       PTA_PCLMUL = 1 << 18,
       PTA_AVX = 1 << 19,
-      PTA_FMA = 1 << 20 
+      PTA_FMA = 1 << 20,
+      PTA_MOVBE = 1 << 21
     };
 
   static struct pta
@@ -2621,7 +2639,7 @@ override_options (bool main_args_p)
 	| PTA_SSSE3 | PTA_CX16},
       {"atom", PROCESSOR_ATOM, CPU_ATOM,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_SSSE3 | PTA_CX16},
+	| PTA_SSSE3 | PTA_CX16 | PTA_MOVBE},
       {"geode", PROCESSOR_GEODE, CPU_GEODE,
 	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A |PTA_PREFETCH_SSE},
       {"k6", PROCESSOR_K6, CPU_K6, PTA_MMX},
@@ -2935,6 +2953,9 @@ override_options (bool main_args_p)
 	if (!(TARGET_64BIT && (processor_alias_table[i].flags & PTA_NO_SAHF))
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_SAHF))
 	  ix86_isa_flags |= OPTION_MASK_ISA_SAHF;
+	if (processor_alias_table[i].flags & PTA_MOVBE
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_MOVBE))
+	  ix86_isa_flags |= OPTION_MASK_ISA_MOVBE;
 	if (processor_alias_table[i].flags & PTA_AES
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AES))
 	  ix86_isa_flags |= OPTION_MASK_ISA_AES;

@@ -1,9 +1,38 @@
+2009-05-21  H.J. Lu  <hongjiu.lu@intel.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/cpuid.h (bit_MOVBE): New.
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Check movbe.
+
+	* config/i386/i386.c (OPTION_MASK_ISA_MOVBE_SET): New.
+	(OPTION_MASK_ISA_MOVBE_UNSET): Likewise.
+	(ix86_handle_option): Handle OPT_mmovbe.
+	(ix86_target_string): Add -mmovbe.
+	(pta_flags): Add PTA_MOVBE.
+	(processor_alias_table): Add PTA_MOVBE to "atom".
+	(override_options): Handle PTA_MOVBE.
+
+	* config/i386/i386.h (TARGET_MOVBE): New.
+
+	* config/i386/i386.md (bswapsi2): Check TARGET_MOVBE.
+	(*bswapsi_movbe): New.
+	(*bswapdi_movbe): Likewise.
+	(bswapdi2): Renamed to ...
+	(*bswapdi_1): This.
+	(bswapdi2): New expander.
+
+	* config/i386/i386.opt (mmovbe): New.
+
+	* doc/invoke.texi: Document -mmovbe.
+
 2009-05-21  Taras Glek  <tglek@mozilla.com>
 
 	* plugin.c (try_init_one_plugin): Updated to new plugin_init API.
 	* gcc-plugin.h (plugin_init): Updated signature.
 	* gcc-plugin.h (plugin_name_args): Moved to this header.
-	* doc/plugins.texi (plugin_init): Updated documention to reflect API change.
+	* doc/plugins.texi (plugin_init): Updated documention to reflect
+	API change.
 	* doc/plugins.texi (plugin_name_args): Added to documention.
 
 2009-05-21  Mark Mitchell  <mark@codesourcery.com>

@@ -577,7 +577,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num}
 -mincoming-stack-boundary=@var{num}
--mcld -mcx16 -msahf -mrecip @gol
+-mcld -mcx16 -msahf -mmovbe -mrecip @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
 -maes -mpclmul @gol
 -msse4a -m3dnow -mpopcnt -mabm -msse5 @gol
@@ -11457,6 +11457,11 @@ by AMD64 until introduction of Pentium 4 G1 step in December 2005.  LAHF and
 SAHF are load and store instructions, respectively, for certain status flags.
 In 64-bit mode, SAHF instruction is used to optimize @code{fmod}, @code{drem}
 or @code{remainder} built-in functions: see @ref{Other Builtins} for details.
+
+@item -mmovbe
+@opindex mmovbe
+This option will enable GCC to use movbe instruction to implement
+@code{__builtin_bswap32} and @code{__builtin_bswap64}.
 
 @item -mrecip
 @opindex mrecip
