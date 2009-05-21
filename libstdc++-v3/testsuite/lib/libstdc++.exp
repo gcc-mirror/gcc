@@ -402,8 +402,7 @@ proc v3_target_compile { source dest type options } {
     # Flag setting based on type argument.
     if { $type == "executable" } {
 	# Link the support objects into executables.
-        set cxx_final [concat $cxx_final $cxxldflags]
-	lappend options "additional_flags=./libtestc++.a"
+	lappend options "additional_flags=./libtestc++.a $cxxldflags"
     } else {
 	if { $type == "sharedlib" } {
 	    # Don't link in anything.

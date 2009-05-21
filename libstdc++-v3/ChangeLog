@@ -1,3 +1,10 @@
+2009-05-21  David Billinghurst <billingd@gcc.gnu.org>
+
+	Backport from mainline:
+	PR libstdc++/36211
+	* testsuite/lib/libstdc++.exp(v3_target_compile):  Add
+	cxxldflags to additional_flags rather than cxx_final.
+
 2009-05-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/40192
