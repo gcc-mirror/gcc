@@ -6769,6 +6769,24 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 	  break;
 
+	case TARGET_MEM_REF:
+	  {
+	    enum gimplify_status r0 = GS_ALL_DONE, r1 = GS_ALL_DONE;
+
+	    if (TMR_SYMBOL (*expr_p))
+	      r0 = gimplify_expr (&TMR_SYMBOL (*expr_p), pre_p,
+				  post_p, is_gimple_lvalue, fb_either);
+	    else if (TMR_BASE (*expr_p))
+	      r0 = gimplify_expr (&TMR_BASE (*expr_p), pre_p,
+				  post_p, is_gimple_val, fb_either);
+	    if (TMR_INDEX (*expr_p))
+	      r1 = gimplify_expr (&TMR_INDEX (*expr_p), pre_p,
+				  post_p, is_gimple_val, fb_rvalue);
+	    /* TMR_STEP and TMR_OFFSET are always integer constants.  */
+	    ret = MIN (r0, r1);
+	  }
+	  break;
+
 	case NON_LVALUE_EXPR:
 	  /* This should have been stripped above.  */
 	  gcc_unreachable ();

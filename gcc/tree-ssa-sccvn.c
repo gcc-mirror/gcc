@@ -488,20 +488,26 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
   if (TREE_CODE (ref) == TARGET_MEM_REF)
     {
       vn_reference_op_s temp;
+      tree base;
+
+      base = TMR_SYMBOL (ref) ? TMR_SYMBOL (ref) : TMR_BASE (ref);
+      if (!base)
+	base = build_int_cst (ptr_type_node, 0);
 
       memset (&temp, 0, sizeof (temp));
       /* We do not care for spurious type qualifications.  */
       temp.type = TYPE_MAIN_VARIANT (TREE_TYPE (ref));
       temp.opcode = TREE_CODE (ref);
-      temp.op0 = TMR_SYMBOL (ref) ? TMR_SYMBOL (ref) : TMR_BASE (ref);
-      temp.op1 = TMR_INDEX (ref);
+      temp.op0 = TMR_INDEX (ref);
+      temp.op1 = TMR_STEP (ref);
+      temp.op2 = TMR_OFFSET (ref);
       VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
 
       memset (&temp, 0, sizeof (temp));
       temp.type = NULL_TREE;
-      temp.opcode = TREE_CODE (ref);
-      temp.op0 = TMR_STEP (ref);
-      temp.op1 = TMR_OFFSET (ref);
+      temp.opcode = TREE_CODE (base);
+      temp.op0 = base;
+      temp.op1 = TMR_ORIGINAL (ref);
       VEC_safe_push (vn_reference_op_s, heap, *result, &temp);
       return;
     }

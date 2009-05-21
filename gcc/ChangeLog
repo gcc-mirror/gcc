@@ -1,3 +1,13 @@
+2009-05-22  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Record
+	TMR_ORIGINAL.  Always either record TMR_SYMBOL or TMR_BASE.
+	* tree-ssa-pre.c (create_component_ref_by_pieces_1): Handle
+	TARGET_MEM_REF.
+	(create_expression_by_pieces): Only convert if necessary.
+	* gimplify.c (gimplify_expr): Handle TARGET_MEM_REF.
+	* tree-ssa-loop-im.c (gen_lsm_tmp_name): Handle INTEGER_CST.
+
 2009-05-21  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (*extzv_trunc<mode>_exts): Turn into a
