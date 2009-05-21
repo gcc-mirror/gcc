@@ -1255,7 +1255,7 @@
 (define_insn "orsi_notsi_si"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(ior:SI (not:SI (match_operand:SI 2 "s_register_operand" "r"))
-		(match_operand:SI 1 "reg_or_int_operand" "rK")))]
+		(match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_THUMB2"
   "orn%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")]

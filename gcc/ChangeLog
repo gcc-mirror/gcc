@@ -1,3 +1,7 @@
+2009-05-21  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/thumb2.md (orsi_notsi_si): Fix typo in pattern.
+
 2009-05-20  Ian Lance Taylor  <iant@google.com>
 
 	* tree.c (build_tree_list_vec_stat): New function.
