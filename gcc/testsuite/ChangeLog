@@ -1,3 +1,8 @@
+2009-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/target/arm/neon-vmla-1.c: New.
+	* gcc.dg/target/arm/neon-vmls-1.c: Likewise.
+
 2009-05-20  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* gcc.target/mips/octeon-exts-6.c: New test.
