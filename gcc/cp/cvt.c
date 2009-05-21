@@ -581,6 +581,7 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
   tree e = expr;
   enum tree_code code = TREE_CODE (type);
   const char *invalid_conv_diag;
+  tree e1;
 
   if (error_operand_p (e) || type == error_mark_node)
     return error_mark_node;
@@ -628,6 +629,10 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	  return fold_if_not_in_template (build_nop (type, e));
 	}
     }
+
+  e1 = targetm.convert_to_type (type, e);
+  if (e1)
+    return e1;
 
   if (code == VOID_TYPE && (convtype & CONV_STATIC))
     {
@@ -1251,10 +1256,17 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 tree
 type_promotes_to (tree type)
 {
+  tree promoted_type;
+
   if (type == error_mark_node)
     return error_mark_node;
 
   type = TYPE_MAIN_VARIANT (type);
+
+  /* Check for promotions of target-defined types first.  */
+  promoted_type = targetm.promoted_type (type);
+  if (promoted_type)
+    return promoted_type;
 
   /* bool always promotes to int (not unsigned), even if it's the same
      size.  */
