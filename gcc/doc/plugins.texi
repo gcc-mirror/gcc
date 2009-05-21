@@ -41,10 +41,26 @@ This function is called from @code{compile_file} right before invoking
 the parser.  The arguments to @code{plugin_init} are:
 
 @itemize @bullet
-@item @code{plugin_name}: Name of the plugin.
-@item @code{argc}: Number of arguments specified with @option{-fplugin-arg-...}.
-@item @code{argv}: Array of @code{argc} key-value pairs.
+@item @code{plugin_info}: Plugin invocation information.
+@item @code{version}: GCC version.
 @end itemize
+
+The @code{plugin_info} struct is defined as follows:
+
+@smallexample
+struct plugin_name_args
+@{
+  char *base_name;              /* Short name of the plugin
+                                   (filename without .so suffix). */
+  const char *full_name;        /* Path to the plugin as specified with
+                                   -fplugin=. */
+  int argc;                     /* Number of arguments specified with
+                                   -fplugin-arg-.... */
+  struct plugin_argument *argv; /* Array of ARGC key-value pairs. */
+  const char *version;          /* Version string provided by plugin. */
+  const char *help;             /* Help string provided by plugin. */
+@}
+@end smallexample
 
 If initialization fails, @code{plugin_init} must return a non-zero
 value.  Otherwise, it should return 0.
@@ -120,7 +136,8 @@ struct plugin_pass
 
 /* Sample plugin code that registers a new pass.  */
 int
-plugin_init (const char *plugin_name, int argc, struct plugin_argument *argv)
+plugin_init (struct plugin_name_args *plugin_info,
+             struct plugin_gcc_version *version)
 @{
   struct plugin_pass pass_info;
 
@@ -131,7 +148,7 @@ plugin_init (const char *plugin_name, int argc, struct plugin_argument *argv)
   ...
 
   /* Register the new pass.  */
-  register_callback (plugin_name, PLUGIN_PASS_MANAGER_SETUP, NULL, &pass_info);
+  register_callback (plugin_info->base_name, PLUGIN_PASS_MANAGER_SETUP, NULL, &pass_info);
 
   ...
 @}

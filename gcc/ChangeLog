@@ -1,3 +1,11 @@
+2009-05-21  Taras Glek  <tglek@mozilla.com>
+
+	* plugin.c (try_init_one_plugin): Updated to new plugin_init API.
+	* gcc-plugin.h (plugin_init): Updated signature.
+	* gcc-plugin.h (plugin_name_args): Moved to this header.
+	* doc/plugins.texi (plugin_init): Updated documention to reflect API change.
+	* doc/plugins.texi (plugin_name_args): Added to documention.
+
 2009-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/neon.md (*mul<mode>3add<mode>_neon): New pattern.

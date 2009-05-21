@@ -54,10 +54,10 @@ handle_pre_generic (void *event_data, void *data)
 }
 
 int
-plugin_init (const char *plugin_name,
-             struct plugin_gcc_version *version,
-             int argc, struct plugin_argument *argv)
+plugin_init (struct plugin_name_args *plugin_info,
+             struct plugin_gcc_version *version)
 {
+  const char *plugin_name = plugin_info->base_name;
   register_callback (plugin_name, PLUGIN_CXX_CP_PRE_GENERICIZE,
                      handle_pre_generic, NULL);
 

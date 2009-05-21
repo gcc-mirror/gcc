@@ -79,6 +79,20 @@ struct plugin_gcc_version
   const char *configuration_arguments;
 };
 
+/* Object that keeps track of the plugin name and its arguments. */
+struct plugin_name_args
+{
+  char *base_name;              /* Short name of the plugin (filename without
+                                   .so suffix). */
+  const char *full_name;        /* Path to the plugin as specified with
+                                   -fplugin=. */
+  int argc;                     /* Number of arguments specified with
+                                   -fplugin-arg-... */
+  struct plugin_argument *argv; /* Array of ARGC key-value pairs. */
+  const char *version;          /* Version string provided by plugin. */
+  const char *help;             /* Help string provided by plugin. */
+};
+
 /* The default version check. Compares every field in VERSION. */
 
 extern bool plugin_default_version_check (struct plugin_gcc_version *,
@@ -88,21 +102,18 @@ extern bool plugin_default_version_check (struct plugin_gcc_version *,
    should define this as an externally-visible function with name
    "plugin_init."
 
-   PLUGIN_NAME - name of the plugin (useful for error reporting)
-   VERSION     - the plugin_gcc_version symbol of the plugin itself.
-   ARGC        - the size of the ARGV array
-   ARGV        - an array of key-value argument pair
+   PLUGIN_INFO - plugin invocation information.
+   VERSION     - the plugin_gcc_version symbol of GCC.
 
    Returns 0 if initialization finishes successfully.  */
 
-typedef int (*plugin_init_func) (const char *plugin_name,
-                                 struct plugin_gcc_version *version,
-                                 int argc, struct plugin_argument *argv);
+typedef int (*plugin_init_func) (struct plugin_name_args *plugin_info,
+                                 struct plugin_gcc_version *version);
 
 /* Declaration for "plugin_init" function so that it doesn't need to be
    duplicated in every plugin.  */
-extern int plugin_init (const char *, struct plugin_gcc_version *version,
-			int, struct plugin_argument *);
+extern int plugin_init (struct plugin_name_args *plugin_info,
+                        struct plugin_gcc_version *version);
 
 /* Function type for a plugin callback routine.
 
