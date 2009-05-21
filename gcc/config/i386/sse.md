@@ -11201,7 +11201,7 @@
   rtx par = gen_rtx_PARALLEL (V16QImode, vs);
   rtx reg = gen_reg_rtx (V16QImode);
   int i;
-  rtx ele = ((GET_CODE (operands[2]) == CONST_INT)
+  rtx ele = ((CONST_INT_P (operands[2]))
 	     ? GEN_INT (- INTVAL (operands[2]))
 	     : operands[2]);
 
@@ -11210,7 +11210,7 @@
 
   emit_insn (gen_vec_initv16qi (reg, par));
 
-  if (GET_CODE (operands[2]) != CONST_INT)
+  if (!CONST_INT_P (operands[2]))
     {
       rtx neg = gen_reg_rtx (V16QImode);
       emit_insn (gen_negv16qi2 (neg, reg));
@@ -11233,7 +11233,7 @@
   rtx reg = gen_reg_rtx (V2DImode);
   rtx ele;
 
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (CONST_INT_P (operands[2]))
     ele = GEN_INT (- INTVAL (operands[2]));
   else if (GET_MODE (operands[2]) != DImode)
     {
