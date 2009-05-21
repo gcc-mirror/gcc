@@ -1,3 +1,10 @@
+2009-05-21  Taras Glek  <tglek@mozilla.com>
+
+	* gcc.dg/plugin/selfassign.c (plugin_init): Updated to new plugin_init signature.
+	* g++.dg/plugin/selfassign.c (plugin_init): Updated to new plugin_init signature.
+	* g++.dg/plugin/dumb_plugin.c (plugin_init): Updated to new plugin_init signature.
+	* g++.dg/plugin/attribute_plugin.c (plugin_init): Updated to new plugin_init signature.
+
 2009-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/target/arm/neon-vmla-1.c: New.

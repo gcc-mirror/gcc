@@ -54,19 +54,6 @@ const char *plugin_event_name[] =
   "PLUGIN_EVENT_LAST"
 };
 
-/* Object that keeps track of the plugin name and its arguments
-   when parsing the command-line options -fplugin=/path/to/NAME.so and
-   -fplugin-arg-NAME-<key>[=<value>].  */
-struct plugin_name_args
-{
-  char *base_name;
-  const char *full_name;
-  int argc;
-  struct plugin_argument *argv;
-  const char *version;
-  const char *help;
-};
-
 /* Hash table for the plugin_name_args objects created during command-line
    parsing.  */
 static htab_t plugin_name_args_tab = NULL;
@@ -596,8 +583,7 @@ try_init_one_plugin (struct plugin_name_args *plugin)
     }
 
   /* Call the plugin-provided initialization routine with the arguments.  */
-  if ((*plugin_init) (plugin->base_name, &gcc_version, plugin->argc,
-		      plugin->argv))
+  if ((*plugin_init) (plugin, &gcc_version))
     {
       error ("Fail to initialize plugin %s", plugin->full_name);
       return false;
