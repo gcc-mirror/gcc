@@ -1,3 +1,69 @@
+2009-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (memory_address_length): Handle %r12
+	the same as %rsp and %r13 the same as %rbp.  For %rsp and %rbp
+	also check REGNO.
+	(ix86_attr_length_address_default): For MODE_SI lea in 64-bit
+	mode look through optional ZERO_EXTEND and SUBREG.
+	* config/i386/i386.md (R12_REG): New define_constant.
+	(prefix_data16): For sse unit set also for MODE_TI insns.
+	(prefix_rex): For -m32 always return 0.  For TYPE_IMOVX
+	insns set if operand 1 is ext_QIreg_operand.
+	(modrm): For TYPE_IMOV clear only if not MODE_DI.  For
+	TYPE_{ALU{,1},ICMP,TEST} insn clear if there is non-shortened
+	immediate.
+	(*movdi_extzv_1, zero_extendhidi2, zero_extendqidi2): Change
+	mode from MODE_DI to MODE_SI.
+	(movdi_1_rex64): Override modrm and length_immediate attributes
+	only for movabs (TYPE_IMOV, alternative 2).
+	(zero_extendsidi2_rex64): Clear prefix_0f attribute if TYPE_IMOVX.
+	(*float<SSEMODEI24:mode><MODEF:mode>2_mixed_interunit,
+	*float<SSEMODEI24:mode><MODEF:mode>2_mixed_nointerunit,
+	*float<SSEMODEI24:mode><MODEF:mode>2_sse_interunit,
+	*float<SSEMODEI24:mode><MODEF:mode>2_sse_nointerunit): Set
+	prefix_rex attribute if DImode.
+	(*adddi_1_rex64, *adddi_2_rex64, *adddi_3_rex64, *adddi_5_rex64,
+	*addsi_1, *addsi_1_zext, *addsi_2, *addsi_2_zext, *addsi_3,
+	*addsi_3_zext, *addsi_5, *addhi_1_lea, *addhi_1, *addhi_2, *addhi_3,
+	*addhi_5, *addqi_1_lea, *addqi_1): Override length_immediate
+	attribute to 1 if TYPE_ALU and operand 2 is const128_operand.
+	(pro_epilogue_adjust_stack_1, pro_epilogue_adjust_stack_rex64):
+	Likewise.  For TYPE_IMOV clear length_immediate attribute.
+	(*ashldi3_1_rex64, *ashldi3_cmp_rex64, *ashldi3_cconly_rex64,
+	*ashlsi3_1, *ashlsi3_1_zext, *ashlsi3_cmp, **ashlsi3_cconly,
+	*ashlsi3_cmp_zext, *ashlhi3_1_lea, *ashlhi3_1, *ashlhi3_cmp,
+	*ashlhi3_cconly, *ashlqi3_1_lea, *ashlqi3_1, *ashlqi3_cmp,
+	*ashlqi3_cconly): Override length_immediate attribute to 0 if TYPE_ALU
+	or one operand TYPE_ISHIFT.
+	(*ashrdi3_1_one_bit_rex64, *ashrdi3_one_bit_cmp_rex64,
+	*ashrdi3_one_bit_cconly_rex64, *ashrsi3_1_one_bit,
+	*ashrsi3_1_one_bit_zext, *ashrsi3_one_bit_cmp,
+	*ashrsi3_one_bit_cconly, *ashrsi3_one_bit_cmp_zext,
+	*ashrhi3_1_one_bit, *ashrhi3_one_bit_cmp, *ashrhi3_one_bit_cconly,
+	*ashrqi3_1_one_bit, *ashrqi3_1_one_bit_slp, *ashrqi3_one_bit_cmp,
+	*ashrqi3_one_bit_cconly, *lshrdi3_1_one_bit_rex64,
+	*lshrdi3_cmp_one_bit_rex64, *lshrdi3_cconly_one_bit_rex64,
+	*lshrsi3_1_one_bit, *lshrsi3_1_one_bit_zext, *lshrsi3_one_bit_cmp,
+	*lshrsi3_one_bit_cconly, *lshrsi3_cmp_one_bit_zext,
+	*lshrhi3_1_one_bit, *lshrhi3_one_bit_cmp, *lshrhi3_one_bit_cconly,
+	*lshrqi3_1_one_bit, *lshrqi3_1_one_bit_slp, *lshrqi2_one_bit_cmp,
+	*lshrqi2_one_bit_cconly, *rotlsi3_1_one_bit_rex64, *rotlsi3_1_one_bit,
+	*rotlsi3_1_one_bit_zext, *rotlhi3_1_one_bit, *rotlqi3_1_one_bit_slp,
+	*rotlqi3_1_one_bit, *rotrdi3_1_one_bit_rex64, *rotrsi3_1_one_bit,
+	*rotrsi3_1_one_bit_zext, *rotrhi3_one_bit, *rotrqi3_1_one_bit,
+	*rotrqi3_1_one_bit_slp): Override length_immediate attribute to 0,
+	set mode attribute, don't override length attribute.
+	(*btsq, *btrq, *btcq, *btdi_rex64, *btsi): Set prefix_0f attribute
+	to 1.
+	(return_internal_long): Set length attribute to 2 instead of 1.
+	(*strmovqi_rex_1, *strsetqi_rex_1, *rep_stosqi_rex64,
+	*cmpstrnqi_nz_rex_1, *cmpstrnqi_rex_1, *strlenqi_rex_1): Clear
+	prefix_rex attribute.
+	* config/i386/predicates.md (ext_QIreg_operand,
+	const128_operand): New predicates.
+	(memory_displacement_only_operand): Always return 0 for
+	TARGET_64BIT.
+
 2009-05-21  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/thumb2.md (orsi_notsi_si): Fix typo in pattern.

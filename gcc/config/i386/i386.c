@@ -19308,17 +19308,23 @@ memory_address_length (rtx addr)
 
   /* Rule of thumb:
        - esp as the base always wants an index,
-       - ebp as the base always wants a displacement.  */
+       - ebp as the base always wants a displacement,
+       - r12 as the base always wants an index,
+       - r13 as the base always wants a displacement.  */
 
   /* Register Indirect.  */
   if (base && !index && !disp)
     {
       /* esp (for its index) and ebp (for its displacement) need
-	 the two-byte modrm form.  */
-      if (addr == stack_pointer_rtx
-	  || addr == arg_pointer_rtx
-	  || addr == frame_pointer_rtx
-	  || addr == hard_frame_pointer_rtx)
+	 the two-byte modrm form.  Similarly for r12 and r13 in 64-bit
+	 code.  */
+      if (REG_P (addr)
+	  && (addr == arg_pointer_rtx
+	      || addr == frame_pointer_rtx
+	      || REGNO (addr) == SP_REG
+	      || REGNO (addr) == BP_REG
+	      || REGNO (addr) == R12_REG
+	      || REGNO (addr) == R13_REG))
 	len = 1;
     }
 
@@ -19336,16 +19342,18 @@ memory_address_length (rtx addr)
 	  else
 	    len = 4;
 	}
-      /* ebp always wants a displacement.  */
-      else if (base == hard_frame_pointer_rtx)
+      /* ebp always wants a displacement.  Similarly r13.  */
+      else if (REG_P (base)
+	       && (REGNO (base) == BP_REG || REGNO (base) == R13_REG))
         len = 1;
 
       /* An index requires the two-byte modrm form....  */
       if (index
-	  /* ...like esp, which always wants an index.  */
-	  || base == stack_pointer_rtx
+	  /* ...like esp (or r12), which always wants an index.  */
 	  || base == arg_pointer_rtx
-	  || base == frame_pointer_rtx)
+	  || base == frame_pointer_rtx
+	  || (REG_P (base)
+	      && (REGNO (base) == SP_REG || REGNO (base) == R12_REG)))
 	len += 1;
     }
 
@@ -19398,14 +19406,23 @@ ix86_attr_length_address_default (rtx insn)
 
   if (get_attr_type (insn) == TYPE_LEA)
     {
-      rtx set = PATTERN (insn);
+      rtx set = PATTERN (insn), addr;
 
       if (GET_CODE (set) == PARALLEL)
 	set = XVECEXP (set, 0, 0);
 
       gcc_assert (GET_CODE (set) == SET);
 
-      return memory_address_length (SET_SRC (set));
+      addr = SET_SRC (set);
+      if (TARGET_64BIT && get_attr_mode (insn) == MODE_SI)
+	{
+	  if (GET_CODE (addr) == ZERO_EXTEND)
+	    addr = XEXP (addr, 0);
+	  if (GET_CODE (addr) == SUBREG)
+	    addr = SUBREG_REG (addr);
+	}
+
+      return memory_address_length (addr);
     }
 
   extract_insn_cached (insn);
