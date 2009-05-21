@@ -1,3 +1,18 @@
+2009-05-21  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/37846
+	* config/ia64/ia64.opt (mfused-madd): New.
+	* config/ia64/ia64.h (TARGET_DEFAULT): Set MASK_FUSED_MADD.
+	* config/ia64/hpux.h (TARGET_DEFAULT): Ditto.
+	* config/ia64/ia64.md (maddsf4, msubsf4, nmaddsf4,
+	madddf4, madddf4_trunc, msubdf4, msubdf4_trunc, nmadddf4,
+	nmadddf4_truncsf, maddxf4, maddxf4_truncsf, maddxf4_truncdf,
+	msubxf4, msubxf4_truncsf msubxf4_truncdf, nmaddxf4,
+	nmaddxf4_truncsf, nmaddxf4_truncdf): Check TARGET_FUSED_MADD.
+	* config/ia64/vect.md (addv2sf3, subv2sf3): Force fpma/fpms 
+	instruction if !TARGET_FUSED_MADD.
+	(fpma, fpms): Remove colon from name.
+
 2009-05-22  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Record

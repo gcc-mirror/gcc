@@ -106,7 +106,7 @@ do {							\
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (MASK_DWARF2_ASM | MASK_BIG_ENDIAN | MASK_ILP32)
+  (MASK_DWARF2_ASM | MASK_BIG_ENDIAN | MASK_ILP32 | MASK_FUSED_MADD)
 
 /* ??? Might not be needed anymore.  */
 #define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) ((MODE) == TFmode)

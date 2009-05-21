@@ -915,6 +915,11 @@
 {
   rtvec v = gen_rtvec (2, CONST1_RTX (SFmode), CONST1_RTX (SFmode));
   operands[3] = force_reg (V2SFmode, gen_rtx_CONST_VECTOR (V2SFmode, v));
+  if (!TARGET_FUSED_MADD)
+    {
+      emit_insn (gen_fpma (operands[0], operands[1], operands[3], operands[2]));
+      DONE;
+    }
 })
 
 ;; The split condition here could be combine_completed, if we had such.
@@ -960,6 +965,11 @@
 {
   rtvec v = gen_rtvec (2, CONST1_RTX (SFmode), CONST1_RTX (SFmode));
   operands[3] = force_reg (V2SFmode, gen_rtx_CONST_VECTOR (V2SFmode, v));
+  if (!TARGET_FUSED_MADD)
+    {
+      emit_insn (gen_fpms (operands[0], operands[1], operands[3], operands[2]));
+      DONE;
+    }
 })
 
 ;; The split condition here could be combine_completed, if we had such.
@@ -1001,7 +1011,7 @@
   "fpmpy %0 = %1, %2"
   [(set_attr "itanium_class" "fmac")])
 
-(define_insn "*fpma"
+(define_insn "fpma"
   [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
 	(plus:V2SF
 	  (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")
@@ -1011,7 +1021,7 @@
   "fpma %0 = %1, %2, %3"
   [(set_attr "itanium_class" "fmac")])
 
-(define_insn "*fpms"
+(define_insn "fpms"
   [(set (match_operand:V2SF 0 "fr_register_operand" "=f")
 	(minus:V2SF
 	  (mult:V2SF (match_operand:V2SF 1 "fr_register_operand" "f")

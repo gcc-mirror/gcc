@@ -178,4 +178,8 @@ msel-sched-dont-check-control-spec
 Target Report Var(mflag_sel_sched_dont_check_control_spec) Init(0)
 Don't generate checks for control speculation in selective scheduling
 
+mfused-madd
+Target Report Mask(FUSED_MADD)
+Enable fused multiply/add and multiply/subtract instructions
+
 ; This comment is to ensure we retain the blank line above.
