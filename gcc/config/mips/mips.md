@@ -3491,16 +3491,16 @@
   [(set_attr "type"	"arith")
    (set_attr "mode"	"<MODE>")])
 
-(define_insn "*extzv_trunc<mode>_exts"
-  [(set (match_operand:GPR 0 "register_operand" "=d")
-        (truncate:GPR
+(define_insn "*extzv_truncsi_exts"
+  [(set (match_operand:SI 0 "register_operand" "=d")
+        (truncate:SI
 	 (zero_extract:DI (match_operand:DI 1 "register_operand" "d")
 			  (match_operand 2 "const_int_operand" "")
 			  (match_operand 3 "const_int_operand" ""))))]
   "ISA_HAS_EXTS && TARGET_64BIT && IN_RANGE (INTVAL (operands[2]), 32, 63)"
   "exts\t%0,%1,%3,31"
   [(set_attr "type"     "arith")
-   (set_attr "mode"     "<MODE>")])
+   (set_attr "mode"     "SI")])
 
 
 (define_expand "insv"
