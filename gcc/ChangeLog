@@ -1,5 +1,9 @@
 2009-05-21  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.md (adddi_4_rex64, addsi_4, addhi_4): For
+	operand2 -128 override length_immediate attribute to 1.
+	* config/i386/predicates.md (constm128_operand): New predicate.
+
 	* config/i386/i386.c (memory_address_length): Handle %r12
 	the same as %rsp and %r13 the same as %rbp.  For %rsp and %rbp
 	also check REGNO.
