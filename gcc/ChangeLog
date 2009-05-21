@@ -1,3 +1,8 @@
+2009-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/arm/neon.md (*mul<mode>3add<mode>_neon): New pattern.
+	(*mul<mode>3neg<mode>add<mode>_neon): Likewise.
+
 2009-05-21  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* config/i386/i386.c: Use REG_P, MEM_P, CONST_INT_P, LABEL_P and
