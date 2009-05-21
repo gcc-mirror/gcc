@@ -1761,6 +1761,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     : public _Maybe_unary_or_binary_function<_Res, _ArgTypes...>,
       private _Function_base
     {
+#ifndef __GXX_EXPERIMENTAL_CXX0X__
       /// This class is used to implement the safe_bool idiom.
       struct _Hidden_type
       {
@@ -1769,6 +1770,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 
       /// This typedef is used to implement the safe_bool idiom.
       typedef _Hidden_type* _Hidden_type::* _Safe_bool;
+#endif
 
       typedef _Res _Signature_type(_ArgTypes...);
       
@@ -1918,6 +1920,10 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
        *
        *  This function will not throw an exception.
        */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      explicit operator bool() const
+      { return !_M_empty(); }
+#else
       operator _Safe_bool() const
       {
         if (_M_empty())
@@ -1925,6 +1931,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	else
 	  return &_Hidden_type::_M_bool;
       }
+#endif
 
       // [3.7.2.4] function invocation
 

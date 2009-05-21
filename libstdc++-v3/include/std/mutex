@@ -574,7 +574,7 @@ namespace std
       owns_lock() const
       { return _M_owns; }
 
-      /* explicit */ operator bool () const
+      explicit operator bool() const
       { return owns_lock(); }
 
       mutex_type*

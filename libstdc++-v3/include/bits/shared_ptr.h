@@ -816,13 +816,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
       get() const // never throws
       { return _M_ptr; }
 
-      // Implicit conversion to "bool"
-    private:
-      typedef _Tp* __shared_ptr::*__unspecified_bool_type;
-
-    public:
-      operator __unspecified_bool_type() const // never throws
-      { return _M_ptr == 0 ? 0 : &__shared_ptr::_M_ptr; }
+      explicit operator bool() const // never throws
+      { return _M_ptr == 0 ? false : true; }
 
       bool
       unique() const // never throws

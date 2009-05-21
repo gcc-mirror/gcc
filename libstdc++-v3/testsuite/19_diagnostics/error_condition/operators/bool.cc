@@ -27,14 +27,14 @@ void test01()
 
   // 1
   std::error_condition e1;
-  if (e1)
+  if (static_cast<bool>(e1))
     {
       VERIFY( false );
     }
 
   // 2
   std::error_condition e2(std::errc::operation_not_supported);
-  if (e2)
+  if (static_cast<bool>(e2))
     {
       VERIFY( true );
     }

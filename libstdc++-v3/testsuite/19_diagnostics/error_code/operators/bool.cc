@@ -28,14 +28,14 @@ int main()
 
   // 1
   std::error_code e1;
-  if (e1)
+  if (static_cast<bool>(e1))
     {
       VERIFY( false );
     }
 
   // 2
   std::error_code e2(std::make_error_code(std::errc::operation_not_supported));
-  if (e2)
+  if (static_cast<bool>(e2))
     {
       VERIFY( true );
     }

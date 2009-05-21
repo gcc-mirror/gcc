@@ -376,7 +376,7 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
   template <typename _CharT, typename _Traits>
     class basic_ostream<_CharT, _Traits>::sentry
     {
-      // Data Members:
+      // Data Members.
       bool 				_M_ok;
       basic_ostream<_CharT, _Traits>& 	_M_os;
       
@@ -420,6 +420,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
        *  For ease of use, sentries may be converted to booleans.  The
        *  return value is that of the sentry state (true == okay).
       */
+#ifdef __GXX_EXPERIMENTAL_CXX0X__
+      explicit
+#endif
       operator bool() const
       { return _M_ok; }
     };
