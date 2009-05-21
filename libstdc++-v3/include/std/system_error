@@ -152,15 +152,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     message() const
     { return category().message(value()); }
 
-    // Safe bool idiom.
-    // explicit operator bool() const throw()
-    // { return _M_value != 0; }
-    typedef void (*__bool_type)();
-
-    static void __not_bool_type() { }
-
-    operator __bool_type() const
-    { return _M_value != 0 ? &__not_bool_type : false; }
+    explicit operator bool() const
+    { return _M_value != 0 ? true : false; }
 
     // DR 804.
   private:
@@ -233,15 +226,8 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
     message() const
     { return category().message(value()); }
 
-    // Safe bool idiom.
-    // explicit operator bool() const throw()
-    // { return _M_value != 0; }
-    typedef void (*__bool_type)();
-
-    static void __not_bool_type() { }
-
-    operator __bool_type() const
-    { return _M_value != 0 ? &__not_bool_type : false; }
+    explicit operator bool() const
+    { return _M_value != 0 ? true : false; }
 
     // DR 804.
   private:

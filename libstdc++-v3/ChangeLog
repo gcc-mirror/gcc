@@ -1,3 +1,21 @@
+2009-05-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/tr1_impl/functional (function): Use explicit operator bool.
+	* include/bits/shared_ptr.h (__shared_ptr): Same.
+	* include/bits/unique_ptr.h (unique_ptr): Same.
+	* include/std/mutex (unique_lock): Same.
+	* include/std/system_error (error_code): Same.
+	(error_condition): Same.
+	* include/std/ostream (sentry): Same.
+	* include/std/istream (sentry): Same.
+	* testsuite/19_diagnostics/error_condition/operators/bool.cc: Adjust.
+	* testsuite/19_diagnostics/error_condition/operators/bool_neg.cc: Same.
+	* testsuite/19_diagnostics/error_code/operators/bool.cc: Same.
+	* testsuite/19_diagnostics/error_code/operators/bool_neg.cc: Same.
+	* testsuite/20_util/unique_ptr/modifiers/reset_neg.cc: Same.
+	* testsuite/20_util/unique_ptr/assign/assign_neg.cc: Same.
+	* testsuite/20_util/shared_ptr/observers/bool_conv.cc: Same.
+
 2009-05-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/23_containers/list/14340.cc: Abstract list type.
@@ -182,7 +200,7 @@
 	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/
 	initlist_fun.cc: Likewise
 	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/
-	num_xbound_fun.cc: Likewise 
+	num_xbound_fun.cc: Likewise
 
 2009-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -200,7 +218,7 @@
 2009-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.tcc (cauchy_distribution<>::
-	operator()(_UniformRandomNumberGenerator&, const param_type&)): 
+	operator()(_UniformRandomNumberGenerator&, const param_type&)):
 	Avoid M_PI, a glibc extension.
 
 2009-05-13  Ben Elliston  <bje@au.ibm.com>
@@ -215,7 +233,7 @@
 
 2009-05-12  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
-        * doc/xml/manual/status_cxx200x.xml: Note missing constexpr for
+	* doc/xml/manual/status_cxx200x.xml: Note missing constexpr for
 	random number engines, complex, bitset, array, time utilities, and
 	char_traits.
 
