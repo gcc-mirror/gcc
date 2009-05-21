@@ -1,3 +1,11 @@
+2009-05-21  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/37846
+	* gcc.target/ia64/mfused-madd-vect.c: New test.
+	* gcc.target/ia64/mfused-madd.c: New test.
+	* gcc.target/ia64/mno-fused-madd-vect.c: New test.
+	* gcc.target/ia64/mno-fused-madd.c: New test.
+
 2009-05-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.target/i386/movbe-1.c: New.
