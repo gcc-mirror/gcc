@@ -339,6 +339,10 @@ msahf
 Target Report Mask(ISA_SAHF) Var(ix86_isa_flags) VarExists Save
 Support code generation of sahf instruction in 64bit x86-64 code.
 
+mmovbe
+Target Report Mask(ISA_MOVBE) Var(ix86_isa_flags) VarExists Save
+Support code generation of movbe instruction.
+
 maes
 Target Report Mask(ISA_AES) Var(ix86_isa_flags) VarExists Save
 Support AES built-in functions and code generation

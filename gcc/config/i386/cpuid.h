@@ -29,6 +29,7 @@
 #define bit_CMPXCHG16B	(1 << 13)
 #define bit_SSE4_1	(1 << 19)
 #define bit_SSE4_2	(1 << 20)
+#define bit_MOVBE	(1 << 22)
 #define bit_POPCNT	(1 << 23)
 #define bit_AES		(1 << 25)
 #define bit_XSAVE	(1 << 26)

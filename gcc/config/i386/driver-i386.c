@@ -378,6 +378,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   /* Extended features */
   unsigned int has_lahf_lm = 0, has_sse4a = 0;
   unsigned int has_longmode = 0, has_3dnowp = 0, has_3dnow = 0;
+  unsigned int has_movbe = 0;
 
   bool arch;
 
@@ -415,6 +416,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   has_sse3 = ecx & bit_SSE3;
   has_ssse3 = ecx & bit_SSSE3;
   has_cmpxchg16b = ecx & bit_CMPXCHG16B;
+  has_movbe = ecx & bit_MOVBE;
 
   has_cmpxchg8b = edx & bit_CMPXCHG8B;
   has_cmov = edx & bit_CMOV;
@@ -601,6 +603,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	options = concat (options, "-mcx16 ", NULL);
       if (has_lahf_lm)
 	options = concat (options, "-msahf ", NULL);
+      if (has_movbe)
+	options = concat (options, "-mmovbe", NULL);
     }
 
 done:
