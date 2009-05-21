@@ -302,7 +302,7 @@ build_value_init (tree type)
 	return build_aggr_init_expr
 	  (type,
 	   build_special_member_call (NULL_TREE, complete_ctor_identifier,
-				      NULL_TREE, type, LOOKUP_NORMAL,
+				      NULL, type, LOOKUP_NORMAL,
 				      tf_warning_or_error));
       else if (TREE_CODE (type) != UNION_TYPE && TYPE_NEEDS_CONSTRUCTING (type))
 	{
@@ -312,7 +312,7 @@ build_value_init (tree type)
 	     This will be handled in simplify_aggr_init_expr.  */
 	  tree ctor = build_special_member_call
 	    (NULL_TREE, complete_ctor_identifier,
-	     NULL_TREE, type, LOOKUP_NORMAL, tf_warning_or_error);
+	     NULL, type, LOOKUP_NORMAL, tf_warning_or_error);
 
 	  ctor = build_aggr_init_expr (type, ctor);
 	  AGGR_INIT_ZERO_FIRST (ctor) = 1;
@@ -951,7 +951,7 @@ expand_cleanup_for_base (tree binfo, tree flag)
   /* Call the destructor.  */
   expr = build_special_member_call (current_class_ref,
 				    base_dtor_identifier,
-				    NULL_TREE,
+				    NULL,
 				    binfo,
 				    LOOKUP_NORMAL | LOOKUP_NONVIRTUAL,
                                     tf_warning_or_error);
@@ -1285,7 +1285,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
      followed by initialization by X.  If neither of these work
      out, then look hard.  */
   tree rval;
-  tree parms;
+  VEC(tree,gc) *parms;
 
   if (init && TREE_CODE (init) != TREE_LIST
       && (flags & LOOKUP_ONLYCONVERTING))
@@ -1325,23 +1325,28 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags,
       return;
     }
 
-  if (init == NULL_TREE
-      || (TREE_CODE (init) == TREE_LIST && ! TREE_TYPE (init)))
+  if (init == NULL_TREE)
+    parms = NULL;
+  else if (TREE_CODE (init) == TREE_LIST && !TREE_TYPE (init))
     {
-      parms = init;
-      if (parms)
-	init = TREE_VALUE (parms);
+      parms = make_tree_vector ();
+      for (; init != NULL_TREE; init = TREE_CHAIN (init))
+	VEC_safe_push (tree, gc, parms, TREE_VALUE (init));
     }
   else
-    parms = build_tree_list (NULL_TREE, init);
+    parms = make_tree_vector_single (init);
 
   if (true_exp == exp)
     ctor_name = complete_ctor_identifier;
   else
     ctor_name = base_ctor_identifier;
 
-  rval = build_special_member_call (exp, ctor_name, parms, binfo, flags,
+  rval = build_special_member_call (exp, ctor_name, &parms, binfo, flags,
                                     complain);
+
+  if (parms != NULL)
+    release_tree_vector (parms);
+
   if (TREE_SIDE_EFFECTS (rval))
     finish_expr_stmt (convert_to_void (rval, NULL, complain));
 }
@@ -1706,18 +1711,31 @@ build_builtin_delete_call (tree addr)
    the type of the object being allocated; otherwise, it's just TYPE.
    INIT is the initializer, if any.  USE_GLOBAL_NEW is true if the
    user explicitly wrote "::operator new".  PLACEMENT, if non-NULL, is
-   the TREE_LIST of arguments to be provided as arguments to a
-   placement new operator.  This routine performs no semantic checks;
-   it just creates and returns a NEW_EXPR.  */
+   a vector of arguments to be provided as arguments to a placement
+   new operator.  This routine performs no semantic checks; it just
+   creates and returns a NEW_EXPR.  */
 
 static tree
-build_raw_new_expr (tree placement, tree type, tree nelts, tree init,
-		    int use_global_new)
+build_raw_new_expr (VEC(tree,gc) *placement, tree type, tree nelts,
+		    VEC(tree,gc) *init, int use_global_new)
 {
+  tree init_list;
   tree new_expr;
 
-  new_expr = build4 (NEW_EXPR, build_pointer_type (type), placement, type,
-		     nelts, init);
+  /* If INIT is NULL, the we want to store NULL_TREE in the NEW_EXPR.
+     If INIT is not NULL, then we want to store VOID_ZERO_NODE.  This
+     permits us to distinguish the case of a missing initializer "new
+     int" from an empty initializer "new int()".  */
+  if (init == NULL)
+    init_list = NULL_TREE;
+  else if (VEC_empty (tree, init))
+    init_list = void_zero_node;
+  else
+    init_list = build_tree_list_vec (init);
+
+  new_expr = build4 (NEW_EXPR, build_pointer_type (type),
+		     build_tree_list_vec (placement), type, nelts,
+		     init_list);
   NEW_EXPR_USE_GLOBAL (new_expr) = use_global_new;
   TREE_SIDE_EFFECTS (new_expr) = 1;
 
@@ -1776,11 +1794,12 @@ avoid_placement_new_aliasing (tree t, tree placement)
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
-   build_raw_new_expr.  */
+   build_raw_new_expr.  This may change PLACEMENT and INIT.  */
 
 static tree
-build_new_1 (tree placement, tree type, tree nelts, tree init,
-	     bool globally_qualified_p, tsubst_flags_t complain)
+build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
+	     VEC(tree,gc) **init, bool globally_qualified_p,
+	     tsubst_flags_t complain)
 {
   tree size, rval;
   /* True iff this is a call to "operator new[]" instead of just
@@ -1807,11 +1826,12 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
      beginning of the storage allocated for an array-new expression in
      order to store the number of elements.  */
   tree cookie_size = NULL_TREE;
+  bool have_placement;
+  tree placement_first;
   tree placement_expr = NULL_TREE;
   /* True if the function we are calling is a placement allocation
      function.  */
   bool placement_allocation_fn_p;
-  tree args = NULL_TREE;
   /* True if the storage must be initialized, either by a constructor
      or due to an explicit new-initializer.  */
   bool is_initialized;
@@ -1855,9 +1875,9 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
   if (abstract_virtuals_error (NULL_TREE, elt_type))
     return error_mark_node;
 
-  is_initialized = (TYPE_NEEDS_CONSTRUCTING (elt_type) || init);
+  is_initialized = (TYPE_NEEDS_CONSTRUCTING (elt_type) || *init != NULL);
 
-  if (CP_TYPE_CONST_P (elt_type) && !init
+  if (CP_TYPE_CONST_P (elt_type) && *init == NULL
       && !type_has_user_provided_default_constructor (elt_type))
     {
       if (complain & tf_error)
@@ -1871,8 +1891,18 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 
   alloc_fn = NULL_TREE;
 
+  /* If PLACEMENT is a single simple pointer type not passed by
+     reference, prepare to capture it in a temporary variable.  Do
+     this now, since PLACEMENT will change in the calls below.  */
+  have_placement = !VEC_empty (tree, *placement);
+  placement_first = NULL_TREE;
+  if (VEC_length (tree, *placement) == 1
+      && (TREE_CODE (TREE_TYPE (VEC_index (tree, *placement, 0)))
+	  == POINTER_TYPE))
+    placement_first = VEC_index (tree, *placement, 0);
+
   /* Allocate the object.  */
-  if (! placement && TYPE_FOR_JAVA (elt_type))
+  if (VEC_empty (tree, *placement) && TYPE_FOR_JAVA (elt_type))
     {
       tree class_addr;
       tree class_decl = build_java_class_ref (elt_type);
@@ -1928,7 +1958,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 	      size = size_binop (PLUS_EXPR, size, cookie_size);
 	    }
 	  /* Create the argument list.  */
-	  args = tree_cons (NULL_TREE, size, placement);
+	  VEC_safe_insert (tree, gc, *placement, 0, size);
 	  /* Do name-lookup to find the appropriate operator.  */
 	  fns = lookup_fnfields (elt_type, fnname, /*protect=*/2);
 	  if (fns == NULL_TREE)
@@ -1947,7 +1977,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 	      return error_mark_node;
 	    }
 	  alloc_call = build_new_method_call (build_dummy_object (elt_type),
-					      fns, args,
+					      fns, placement,
 					      /*conversion_path=*/NULL_TREE,
 					      LOOKUP_NORMAL,
 					      &alloc_fn,
@@ -1973,12 +2003,10 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 
   gcc_assert (alloc_fn != NULL_TREE);
 
-  /* If PLACEMENT is a simple pointer type and is not passed by reference,
-     then copy it into PLACEMENT_EXPR.  */
+  /* If we found a simple case of PLACEMENT_EXPR above, then copy it
+     into a temporary variable.  */
   if (!processing_template_decl
-      && placement != NULL_TREE
-      && TREE_CHAIN (placement) == NULL_TREE
-      && TREE_CODE (TREE_TYPE (TREE_VALUE (placement))) == POINTER_TYPE
+      && placement_first != NULL_TREE
       && TREE_CODE (alloc_call) == CALL_EXPR
       && call_expr_nargs (alloc_call) == 2
       && TREE_CODE (TREE_TYPE (CALL_EXPR_ARG (alloc_call, 0))) == INTEGER_TYPE
@@ -1989,7 +2017,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
       if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (placement_arg)))
 	  || VOID_TYPE_P (TREE_TYPE (TREE_TYPE (placement_arg))))
 	{
-	  placement_expr = get_target_expr (TREE_VALUE (placement));
+	  placement_expr = get_target_expr (placement_first);
 	  CALL_EXPR_ARG (alloc_call, 1)
 	    = convert (TREE_TYPE (placement_arg), placement_expr);
 	}
@@ -2000,7 +2028,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
   if (!cookie_size && !is_initialized)
     {
       rval = build_nop (pointer_type, alloc_call);
-      if (placement != NULL)
+      if (have_placement)
 	rval = avoid_placement_new_aliasing (rval, placement_expr);
       return rval;
     }
@@ -2109,15 +2137,15 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
       bool stable;
       bool explicit_value_init_p = false;
 
-      if (init == void_zero_node)
+      if (*init != NULL && VEC_empty (tree, *init))
 	{
-	  init = NULL_TREE;
+	  *init = NULL;
 	  explicit_value_init_p = true;
 	}
 
       if (array_p)
 	{
-	  if (init)
+	  if (*init)
             {
               if (complain & tf_error)
                 permerror (input_location, "ISO C++ forbids initialization in array new");
@@ -2130,7 +2158,7 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 						  MINUS_EXPR, outer_nelts,
 						  integer_one_node,
 						  complain),
-			      init,
+			      build_tree_list_vec (*init),
 			      explicit_value_init_p,
 			      /*from_array=*/0,
                               complain);
@@ -2160,17 +2188,13 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
 	    }
 	  else
 	    {
+	      tree ie;
+
 	      /* We are processing something like `new int (10)', which
 		 means allocate an int, and initialize it with 10.  */
 
-	      if (TREE_CODE (init) == TREE_LIST)
-		init = build_x_compound_expr_from_list (init,
-							"new initializer");
-	      else
-		gcc_assert (TREE_CODE (init) != CONSTRUCTOR
-			    || TREE_TYPE (init) != NULL_TREE);
-
-	      init_expr = cp_build_modify_expr (init_expr, INIT_EXPR, init,
+	      ie = build_x_compound_expr_from_vec (*init, "new initializer");
+	      init_expr = cp_build_modify_expr (init_expr, INIT_EXPR, ie,
 						complain);
 	    }
 	  stable = stabilize_init (init_expr, &init_preeval_expr);
@@ -2283,60 +2307,58 @@ build_new_1 (tree placement, tree type, tree nelts, tree init,
   /* A new-expression is never an lvalue.  */
   gcc_assert (!lvalue_p (rval));
 
-  if (placement != NULL)
+  if (have_placement)
     rval = avoid_placement_new_aliasing (rval, placement_expr);
 
   return rval;
 }
 
-/* Generate a representation for a C++ "new" expression.  PLACEMENT is
-   a TREE_LIST of placement-new arguments (or NULL_TREE if none).  If
-   NELTS is NULL, TYPE is the type of the storage to be allocated.  If
-   NELTS is not NULL, then this is an array-new allocation; TYPE is
-   the type of the elements in the array and NELTS is the number of
-   elements in the array.  INIT, if non-NULL, is the initializer for
-   the new object, or void_zero_node to indicate an initializer of
-   "()".  If USE_GLOBAL_NEW is true, then the user explicitly wrote
-   "::new" rather than just "new".  */
+/* Generate a representation for a C++ "new" expression.  *PLACEMENT
+   is a vector of placement-new arguments (or NULL if none).  If NELTS
+   is NULL, TYPE is the type of the storage to be allocated.  If NELTS
+   is not NULL, then this is an array-new allocation; TYPE is the type
+   of the elements in the array and NELTS is the number of elements in
+   the array.  *INIT, if non-NULL, is the initializer for the new
+   object, or an empty vector to indicate an initializer of "()".  If
+   USE_GLOBAL_NEW is true, then the user explicitly wrote "::new"
+   rather than just "new".  This may change PLACEMENT and INIT.  */
 
 tree
-build_new (tree placement, tree type, tree nelts, tree init,
-	   int use_global_new, tsubst_flags_t complain)
+build_new (VEC(tree,gc) **placement, tree type, tree nelts,
+	   VEC(tree,gc) **init, int use_global_new, tsubst_flags_t complain)
 {
   tree rval;
-  tree orig_placement;
-  tree orig_nelts;
-  tree orig_init;
+  VEC(tree,gc) *orig_placement = NULL;
+  tree orig_nelts = NULL_TREE;
+  VEC(tree,gc) *orig_init = NULL;
 
-  if (placement == error_mark_node || type == error_mark_node
-      || init == error_mark_node)
+  if (type == error_mark_node)
     return error_mark_node;
 
-  orig_placement = placement;
-  orig_nelts = nelts;
-  orig_init = init;
-
-  if (nelts == NULL_TREE && init != void_zero_node && list_length (init) == 1)
+  if (nelts == NULL_TREE && VEC_length (tree, *init) == 1)
     {
       tree auto_node = type_uses_auto (type);
-      if (auto_node && describable_type (TREE_VALUE (init)))
-	type = do_auto_deduction (type, TREE_VALUE (init), auto_node);
+      if (auto_node && describable_type (VEC_index (tree, *init, 0)))
+	type = do_auto_deduction (type, VEC_index (tree, *init, 0), auto_node);
     }
 
   if (processing_template_decl)
     {
       if (dependent_type_p (type)
-	  || any_type_dependent_arguments_p (placement)
+	  || any_type_dependent_arguments_p (*placement)
 	  || (nelts && type_dependent_expression_p (nelts))
-	  || (init != void_zero_node
-	      && any_type_dependent_arguments_p (init)))
-	return build_raw_new_expr (placement, type, nelts, init,
+	  || any_type_dependent_arguments_p (*init))
+	return build_raw_new_expr (*placement, type, nelts, *init,
 				   use_global_new);
-      placement = build_non_dependent_args (placement);
+
+      orig_placement = make_tree_vector_copy (*placement);
+      orig_nelts = nelts;
+      orig_init = make_tree_vector_copy (*init);
+
+      make_args_non_dependent (*placement);
       if (nelts)
 	nelts = build_non_dependent_expr (nelts);
-      if (init != void_zero_node)
-	init = build_non_dependent_args (init);
+      make_args_non_dependent (*init);
     }
 
   if (nelts)
@@ -2381,8 +2403,13 @@ build_new (tree placement, tree type, tree nelts, tree init,
     return error_mark_node;
 
   if (processing_template_decl)
-    return build_raw_new_expr (orig_placement, type, orig_nelts, orig_init,
-			       use_global_new);
+    {
+      tree ret = build_raw_new_expr (orig_placement, type, orig_nelts,
+				     orig_init, use_global_new);
+      release_tree_vector (orig_placement);
+      release_tree_vector (orig_init);
+      return ret;
+    }
 
   /* Wrap it in a NOP_EXPR so warn_if_unused_value doesn't complain.  */
   rval = build1 (NOP_EXPR, TREE_TYPE (rval), rval);
@@ -2954,7 +2981,7 @@ build_dtor_call (tree exp, special_function_kind dtor_kind, int flags)
     }
   fn = lookup_fnfields (TREE_TYPE (exp), name, /*protect=*/2);
   return build_new_method_call (exp, fn,
-				/*args=*/NULL_TREE,
+				/*args=*/NULL,
 				/*conversion_path=*/NULL_TREE,
 				flags,
 				/*fn_p=*/NULL,
@@ -3172,7 +3199,7 @@ push_base_cleanups (void)
 	    {
 	      expr = build_special_member_call (current_class_ref,
 						base_dtor_identifier,
-						NULL_TREE,
+						NULL,
 						base_binfo,
 						(LOOKUP_NORMAL
 						 | LOOKUP_NONVIRTUAL),
@@ -3194,7 +3221,7 @@ push_base_cleanups (void)
 
       expr = build_special_member_call (current_class_ref,
 					base_dtor_identifier,
-					NULL_TREE, base_binfo,
+					NULL, base_binfo,
 					LOOKUP_NORMAL | LOOKUP_NONVIRTUAL,
                                         tf_warning_or_error);
       finish_decl_cleanup (NULL_TREE, expr);

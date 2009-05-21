@@ -9132,4 +9132,69 @@ is_typedef_decl (tree x)
           && DECL_ORIGINAL_TYPE (x) != NULL_TREE);
 }
 
+/* The C and C++ parsers both use vectors to hold function arguments.
+   For efficiency, we keep a cache of unused vectors.  This is the
+   cache.  */
+
+typedef VEC(tree,gc)* tree_gc_vec;
+DEF_VEC_P(tree_gc_vec);
+DEF_VEC_ALLOC_P(tree_gc_vec,gc);
+static GTY((deletable)) VEC(tree_gc_vec,gc) *tree_vector_cache;
+
+/* Return a new vector from the cache.  If the cache is empty,
+   allocate a new vector.  These vectors are GC'ed, so it is OK if the
+   pointer is not released..  */
+
+VEC(tree,gc) *
+make_tree_vector (void)
+{
+  if (!VEC_empty (tree_gc_vec, tree_vector_cache))
+    return VEC_pop (tree_gc_vec, tree_vector_cache);
+  else
+    {
+      /* Passing 0 to VEC_alloc returns NULL, and our callers require
+	 that we always return a non-NULL value.  The vector code uses
+	 4 when growing a NULL vector, so we do too.  */
+      return VEC_alloc (tree, gc, 4);
+    }
+}
+
+/* Release a vector of trees back to the cache.  */
+
+void
+release_tree_vector (VEC(tree,gc) *vec)
+{
+  if (vec != NULL)
+    {
+      VEC_truncate (tree, vec, 0);
+      VEC_safe_push (tree_gc_vec, gc, tree_vector_cache, vec);
+    }
+}
+
+/* Get a new tree vector holding a single tree.  */
+
+VEC(tree,gc) *
+make_tree_vector_single (tree t)
+{
+  VEC(tree,gc) *ret = make_tree_vector ();
+  VEC_quick_push (tree, ret, t);
+  return ret;
+}
+
+/* Get a new tree vector which is a copy of an existing one.  */
+
+VEC(tree,gc) *
+make_tree_vector_copy (const VEC(tree,gc) *orig)
+{
+  VEC(tree,gc) *ret;
+  unsigned int ix;
+  tree t;
+
+  ret = make_tree_vector ();
+  VEC_reserve (tree, gc, ret, VEC_length (tree, orig));
+  for (ix = 0; VEC_iterate (tree, orig, ix, t); ++ix)
+    VEC_quick_push (tree, ret, t);
+  return ret;
+}
+
 #include "gt-c-common.h"

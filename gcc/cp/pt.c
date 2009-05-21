@@ -118,8 +118,8 @@ static tree add_outermost_template_args (tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int maybe_adjust_types_for_deduction (unification_kind_t, tree*, tree*,
 					     tree);
-static int  type_unification_real (tree, tree, tree, tree,
-				   int, unification_kind_t, int);
+static int type_unification_real (tree, tree, tree, const tree *,
+				  unsigned int, int, unification_kind_t, int);
 static void note_template_header (int);
 static tree convert_nontype_argument_function (tree, tree);
 static tree convert_nontype_argument (tree, tree);
@@ -11430,24 +11430,54 @@ tsubst_copy_and_build (tree t,
 
     case NEW_EXPR:
       {
+	tree placement = RECUR (TREE_OPERAND (t, 0));
 	tree init = RECUR (TREE_OPERAND (t, 3));
+	VEC(tree,gc) *placement_vec;
+	VEC(tree,gc) *init_vec;
+	tree ret;
 
-	if (TREE_OPERAND (t, 3) && !init)
-	  /* If there was an initializer in the original tree, but
-	     it instantiated to an empty list, then we should pass on
-	     VOID_ZERO_NODE to tell build_new that it was an empty
-	     initializer () rather than no initializer.  This can only
-	     happen when the initializer is a pack expansion whose
-	     parameter packs are of length zero.  */
-	  init = void_zero_node;
+	if (placement == NULL_TREE)
+	  placement_vec = NULL;
+	else
+	  {
+	    placement_vec = make_tree_vector ();
+	    for (; placement != NULL_TREE; placement = TREE_CHAIN (placement))
+	      VEC_safe_push (tree, gc, placement_vec, TREE_VALUE (placement));
+	  }
 
-	return build_new
-	  (RECUR (TREE_OPERAND (t, 0)),
-	   RECUR (TREE_OPERAND (t, 1)),
-	   RECUR (TREE_OPERAND (t, 2)),
-	   init,
-	   NEW_EXPR_USE_GLOBAL (t),
-           complain);
+	/* If there was an initializer in the original tree, but it
+	   instantiated to an empty list, then we should pass a
+	   non-NULL empty vector to tell build_new that it was an
+	   empty initializer() rather than no initializer.  This can
+	   only happen when the initializer is a pack expansion whose
+	   parameter packs are of length zero.  */
+	if (init == NULL_TREE && TREE_OPERAND (t, 3) == NULL_TREE)
+	  init_vec = NULL;
+	else
+	  {
+	    init_vec = make_tree_vector ();
+	    if (init == void_zero_node)
+	      gcc_assert (init_vec != NULL);
+	    else
+	      {
+		for (; init != NULL_TREE; init = TREE_CHAIN (init))
+		  VEC_safe_push (tree, gc, init_vec, TREE_VALUE (init));
+	      }
+	  }
+
+	ret = build_new (&placement_vec,
+			 RECUR (TREE_OPERAND (t, 1)),
+			 RECUR (TREE_OPERAND (t, 2)),
+			 &init_vec,
+			 NEW_EXPR_USE_GLOBAL (t),
+			 complain);
+
+	if (placement_vec != NULL)
+	  release_tree_vector (placement_vec);
+	if (init_vec != NULL)
+	  release_tree_vector (init_vec);
+
+	return ret;
       }
 
     case DELETE_EXPR:
@@ -11465,9 +11495,11 @@ tsubst_copy_and_build (tree t,
     case CALL_EXPR:
       {
 	tree function;
-	tree call_args;
+	VEC(tree,gc) *call_args;
+	unsigned int nargs, i;
 	bool qualified_p;
 	bool koenig_p;
+	tree ret;
 
 	function = CALL_EXPR_FN (t);
 	/* When we parsed the expression,  we determined whether or
@@ -11502,8 +11534,40 @@ tsubst_copy_and_build (tree t,
 	      qualified_p = true;
 	  }
 
-	/* FIXME:  Rewrite this so as not to construct an arglist.  */
-	call_args = RECUR (CALL_EXPR_ARGS (t));
+	nargs = call_expr_nargs (t);
+	call_args = make_tree_vector ();
+	for (i = 0; i < nargs; ++i)
+	  {
+	    tree arg = CALL_EXPR_ARG (t, i);
+
+	    if (!PACK_EXPANSION_P (arg))
+	      VEC_safe_push (tree, gc, call_args,
+			     RECUR (CALL_EXPR_ARG (t, i)));
+	    else
+	      {
+		/* Expand the pack expansion and push each entry onto
+		   CALL_ARGS.  */
+		arg = tsubst_pack_expansion (arg, args, complain, in_decl);
+		if (TREE_CODE (arg) == TREE_VEC)
+		  {
+		    unsigned int len, j;
+
+		    len = TREE_VEC_LENGTH (arg);
+		    for (j = 0; j < len; ++j)
+		      {
+			tree value = TREE_VEC_ELT (arg, j);
+			if (value != NULL_TREE)
+			  value = convert_from_reference (value);
+			VEC_safe_push (tree, gc, call_args, value);
+		      }
+		  }
+		else
+		  {
+		    /* A partial substitution.  Add one entry.  */
+		    VEC_safe_push (tree, gc, call_args, arg);
+		  }
+	      }
+	  }
 
 	/* We do not perform argument-dependent lookup if normal
 	   lookup finds a non-function, in accordance with the
@@ -11524,6 +11588,7 @@ tsubst_copy_and_build (tree t,
 	if (TREE_CODE (function) == IDENTIFIER_NODE)
 	  {
 	    unqualified_name_lookup_error (function);
+	    release_tree_vector (call_args);
 	    return error_mark_node;
 	  }
 
@@ -11532,27 +11597,32 @@ tsubst_copy_and_build (tree t,
 	  mark_used (function);
 
 	if (TREE_CODE (function) == OFFSET_REF)
-	  return build_offset_ref_call_from_tree (function, call_args);
-	if (TREE_CODE (function) == COMPONENT_REF)
+	  ret = build_offset_ref_call_from_tree (function, &call_args);
+	else if (TREE_CODE (function) == COMPONENT_REF)
 	  {
 	    if (!BASELINK_P (TREE_OPERAND (function, 1)))
-	      return finish_call_expr (function, call_args,
+	      ret = finish_call_expr (function, &call_args,
 				       /*disallow_virtual=*/false,
 				       /*koenig_p=*/false,
 				       complain);
 	    else
-	      return (build_new_method_call
+	      ret = (build_new_method_call
 		      (TREE_OPERAND (function, 0),
 		       TREE_OPERAND (function, 1),
-		       call_args, NULL_TREE,
+		       &call_args, NULL_TREE,
 		       qualified_p ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL,
 		       /*fn_p=*/NULL,
 		       complain));
 	  }
-	return finish_call_expr (function, call_args,
-				 /*disallow_virtual=*/qualified_p,
-				 koenig_p,
-				 complain);
+	else
+	  ret = finish_call_expr (function, &call_args,
+				  /*disallow_virtual=*/qualified_p,
+				  koenig_p,
+				  complain);
+
+	release_tree_vector (call_args);
+
+	return ret;
       }
 
     case COND_EXPR:
@@ -12112,9 +12182,10 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
   return fndecl;
 }
 
-/* The FN is a TEMPLATE_DECL for a function.  The ARGS are the
-   arguments that are being used when calling it.  TARGS is a vector
-   into which the deduced template arguments are placed.
+/* The FN is a TEMPLATE_DECL for a function.  ARGS is an array with
+   NARGS elements of the arguments that are being used when calling
+   it.  TARGS is a vector into which the deduced template arguments
+   are placed.
 
    Return zero for success, 2 for an incomplete match that doesn't resolve
    all the types, and 1 for complete failure.  An error message will be
@@ -12146,7 +12217,8 @@ int
 fn_type_unification (tree fn,
 		     tree explicit_targs,
 		     tree targs,
-		     tree args,
+		     const tree *args,
+		     unsigned int nargs,
 		     tree return_type,
 		     unification_kind_t strict,
 		     int flags)
@@ -12263,8 +12335,14 @@ fn_type_unification (tree fn,
 
   if (return_type)
     {
+      tree *new_args;
+
       parms = tree_cons (NULL_TREE, TREE_TYPE (fntype), parms);
-      args = tree_cons (NULL_TREE, return_type, args);
+      new_args = XALLOCAVEC (tree, nargs + 1);
+      new_args[0] = return_type;
+      memcpy (new_args + 1, args, nargs * sizeof (tree));
+      args = new_args;
+      ++nargs;
     }
 
   /* We allow incomplete unification without an error message here
@@ -12272,7 +12350,7 @@ fn_type_unification (tree fn,
      callers must be ready to deal with unification failures in any
      event.  */
   result = type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
-				  targs, parms, args, /*subr=*/0,
+				  targs, parms, args, nargs, /*subr=*/0,
 				  strict, flags);
 
   if (result == 0 && incomplete_argument_packs_p)
@@ -12337,14 +12415,14 @@ fn_type_unification (tree fn,
 	 parameters are used in non-deduced contexts.  */
       if (strict == DEDUCE_EXACT)
 	{
+	  unsigned int i;
+
 	  tree sarg
 	    = skip_artificial_parms_for (fn, TYPE_ARG_TYPES (substed));
-	  tree arg = args;
 	  if (return_type)
 	    sarg = tree_cons (NULL_TREE, TREE_TYPE (substed), sarg);
-	  for (; arg && sarg;
-	       arg = TREE_CHAIN (arg), sarg = TREE_CHAIN (sarg))
-	    if (!same_type_p (TREE_VALUE (arg), TREE_VALUE (sarg)))
+	  for (i = 0; i < nargs && sarg; ++i, sarg = TREE_CHAIN (sarg))
+	    if (!same_type_p (args[i], TREE_VALUE (sarg)))
 	      return 1;
 	}
     }
@@ -12459,7 +12537,8 @@ static int
 type_unification_real (tree tparms,
 		       tree targs,
 		       tree xparms,
-		       tree xargs,
+		       const tree *xargs,
+		       unsigned int xnargs,
 		       int subr,
 		       unification_kind_t strict,
 		       int flags)
@@ -12469,11 +12548,13 @@ type_unification_real (tree tparms,
   int ntparms = TREE_VEC_LENGTH (tparms);
   int sub_strict;
   int saw_undeduced = 0;
-  tree parms, args;
+  tree parms;
+  const tree *args;
+  unsigned int nargs;
+  unsigned int ia;
 
   gcc_assert (TREE_CODE (tparms) == TREE_VEC);
   gcc_assert (xparms == NULL_TREE || TREE_CODE (xparms) == TREE_LIST);
-  gcc_assert (!xargs || TREE_CODE (xargs) == TREE_LIST);
   gcc_assert (ntparms > 0);
 
   switch (strict)
@@ -12498,17 +12579,19 @@ type_unification_real (tree tparms,
  again:
   parms = xparms;
   args = xargs;
+  nargs = xnargs;
 
+  ia = 0;
   while (parms && parms != void_list_node
-	 && args && args != void_list_node)
+	 && ia < nargs)
     {
       if (TREE_CODE (TREE_VALUE (parms)) == TYPE_PACK_EXPANSION)
         break;
 
       parm = TREE_VALUE (parms);
       parms = TREE_CHAIN (parms);
-      arg = TREE_VALUE (args);
-      args = TREE_CHAIN (args);
+      arg = args[ia];
+      ++ia;
       arg_expr = NULL;
 
       if (arg == error_mark_node)
@@ -12587,20 +12670,11 @@ type_unification_real (tree tparms,
       /* Unify the remaining arguments with the pack expansion type.  */
       tree argvec;
       tree parmvec = make_tree_vec (1);
-      int len = 0;
-      tree t;
 
-      /* Count the number of arguments that remain.  */
-      for (t = args; t && t != void_list_node; t = TREE_CHAIN (t))
-        len++;
-        
       /* Allocate a TREE_VEC and copy in all of the arguments */ 
-      argvec = make_tree_vec (len);
-      for (i = 0; args && args != void_list_node; args = TREE_CHAIN (args))
-        {
-          TREE_VEC_ELT (argvec, i) = TREE_VALUE (args);
-          ++i;
-        }
+      argvec = make_tree_vec (nargs - ia);
+      for (i = 0; ia < nargs; ++ia, ++i)
+	TREE_VEC_ELT (argvec, i) = args[ia];
 
       /* Copy the parameter into parmvec.  */
       TREE_VEC_ELT (parmvec, 0) = TREE_VALUE (parms);
@@ -12614,7 +12688,7 @@ type_unification_real (tree tparms,
 
   /* Fail if we've reached the end of the parm list, and more args
      are present, and the parm list isn't variadic.  */
-  if (args && args != void_list_node && parms == void_list_node)
+  if (ia < nargs && parms == void_list_node)
     return 1;
   /* Fail if parms are left and they don't have default values.  */
   if (parms && parms != void_list_node
@@ -13896,26 +13970,42 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 
     case METHOD_TYPE:
     case FUNCTION_TYPE:
-      if (TREE_CODE (arg) != TREE_CODE (parm))
-	return 1;
+      {
+	unsigned int nargs;
+	tree *args;
+	tree a;
+	unsigned int i;
 
-      /* CV qualifications for methods can never be deduced, they must
-	 match exactly.  We need to check them explicitly here,
-	 because type_unification_real treats them as any other
-	 cv-qualified parameter.  */
-      if (TREE_CODE (parm) == METHOD_TYPE
-	  && (!check_cv_quals_for_unify
-	      (UNIFY_ALLOW_NONE,
-	       TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (arg))),
-	       TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (parm))))))
-	return 1;
+	if (TREE_CODE (arg) != TREE_CODE (parm))
+	  return 1;
 
-      if (unify (tparms, targs, TREE_TYPE (parm),
-		 TREE_TYPE (arg), UNIFY_ALLOW_NONE))
-	return 1;
-      return type_unification_real (tparms, targs, TYPE_ARG_TYPES (parm),
-				    TYPE_ARG_TYPES (arg), 1, DEDUCE_EXACT,
-				    LOOKUP_NORMAL);
+	/* CV qualifications for methods can never be deduced, they must
+	   match exactly.  We need to check them explicitly here,
+	   because type_unification_real treats them as any other
+	   cv-qualified parameter.  */
+	if (TREE_CODE (parm) == METHOD_TYPE
+	    && (!check_cv_quals_for_unify
+		(UNIFY_ALLOW_NONE,
+		 TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (arg))),
+		 TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (parm))))))
+	  return 1;
+
+	if (unify (tparms, targs, TREE_TYPE (parm),
+		   TREE_TYPE (arg), UNIFY_ALLOW_NONE))
+	  return 1;
+
+	nargs = list_length (TYPE_ARG_TYPES (arg));
+	args = XALLOCAVEC (tree, nargs);
+	for (a = TYPE_ARG_TYPES (arg), i = 0;
+	     a != NULL_TREE && a != void_list_node;
+	     a = TREE_CHAIN (a), ++i)
+	  args[i] = TREE_VALUE (a);
+	nargs = i;
+
+	return type_unification_real (tparms, targs, TYPE_ARG_TYPES (parm),
+				      args, nargs, 1, DEDUCE_EXACT,
+				      LOOKUP_NORMAL);
+      }
 
     case OFFSET_TYPE:
       /* Unify a pointer to member with a pointer to member function, which
@@ -14469,6 +14559,9 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
   tree targs = make_tree_vec (ntparms);
   tree decl_type;
   tree decl_arg_types;
+  tree *args;
+  unsigned int nargs, ix;
+  tree arg;
 
   /* Substitute the explicit template arguments into the type of DECL.
      The call to fn_type_unification will handle substitution into the
@@ -14503,8 +14596,15 @@ get_bindings (tree fn, tree decl, tree explicit_args, bool check_rettype)
   decl_arg_types = skip_artificial_parms_for (decl, 
 					      TYPE_ARG_TYPES (decl_type));
 
+  nargs = list_length (decl_arg_types);
+  args = XALLOCAVEC (tree, nargs);
+  for (arg = decl_arg_types, ix = 0;
+       arg != NULL_TREE && arg != void_list_node;
+       arg = TREE_CHAIN (arg), ++ix)
+    args[ix] = TREE_VALUE (arg);
+
   if (fn_type_unification (fn, explicit_args, targs,
-			   decl_arg_types,
+			   args, ix,
 			   (check_rettype || DECL_CONV_FN_P (fn)
 			    ? TREE_TYPE (decl_type) : NULL_TREE),
 			   DEDUCE_EXACT, LOOKUP_NORMAL))
@@ -16580,19 +16680,18 @@ type_dependent_expression_p_push (tree expr)
   return b;
 }
 
-/* Returns TRUE if ARGS (a TREE_LIST of arguments to a function call)
-   contains a type-dependent expression.  */
+/* Returns TRUE if ARGS contains a type-dependent expression.  */
 
 bool
-any_type_dependent_arguments_p (const_tree args)
+any_type_dependent_arguments_p (const VEC(tree,gc) *args)
 {
-  while (args)
-    {
-      tree arg = TREE_VALUE (args);
+  unsigned int i;
+  tree arg;
 
+  for (i = 0; VEC_iterate (tree, args, i, arg); ++i)
+    {
       if (type_dependent_expression_p (arg))
 	return true;
-      args = TREE_CHAIN (args);
     }
   return false;
 }
@@ -17012,22 +17111,22 @@ build_non_dependent_expr (tree expr)
   return build1 (NON_DEPENDENT_EXPR, non_reference (TREE_TYPE (expr)), expr);
 }
 
-/* ARGS is a TREE_LIST of expressions as arguments to a function call.
-   Return a new TREE_LIST with the various arguments replaced with
-   equivalent non-dependent expressions.  */
+/* ARGS is a vector of expressions as arguments to a function call.
+   Replace the arguments with equivalent non-dependent expressions.
+   This modifies ARGS in place.  */
 
-tree
-build_non_dependent_args (tree args)
+void
+make_args_non_dependent (VEC(tree,gc) *args)
 {
-  tree a;
-  tree new_args;
+  unsigned int ix;
+  tree arg;
 
-  new_args = NULL_TREE;
-  for (a = args; a; a = TREE_CHAIN (a))
-    new_args = tree_cons (NULL_TREE,
-			  build_non_dependent_expr (TREE_VALUE (a)),
-			  new_args);
-  return nreverse (new_args);
+  for (ix = 0; VEC_iterate (tree, args, ix, arg); ++ix)
+    {
+      tree newarg = build_non_dependent_expr (arg);
+      if (newarg != arg)
+	VEC_replace (tree, args, ix, newarg);
+    }
 }
 
 /* Returns a type which represents 'auto'.  We use a TEMPLATE_TYPE_PARM
@@ -17084,7 +17183,8 @@ listify_autos (tree type, tree auto_node)
 tree
 do_auto_deduction (tree type, tree init, tree auto_node)
 {
-  tree parms, args, tparms, targs;
+  tree parms, tparms, targs;
+  tree args[1];
   int val;
 
   /* [dcl.spec.auto]: Obtain P from T by replacing the occurrences of auto
@@ -17095,12 +17195,12 @@ do_auto_deduction (tree type, tree init, tree auto_node)
     type = listify_autos (type, auto_node);
 
   parms = build_tree_list (NULL_TREE, type);
-  args = build_tree_list (NULL_TREE, init);
+  args[0] = init;
   tparms = make_tree_vec (1);
   targs = make_tree_vec (1);
   TREE_VEC_ELT (tparms, 0)
     = build_tree_list (NULL_TREE, TYPE_NAME (auto_node));
-  val = type_unification_real (tparms, targs, parms, args, 0,
+  val = type_unification_real (tparms, targs, parms, args, 1, 0,
 			       DEDUCE_CALL, LOOKUP_NORMAL);
   if (val > 0)
     {

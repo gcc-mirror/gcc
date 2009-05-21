@@ -3833,6 +3833,7 @@ extern tree maybe_get_identifier (const char *);
 
 extern tree build_nt (enum tree_code, ...);
 extern tree build_nt_call_list (tree, tree);
+extern tree build_nt_call_vec (tree, VEC(tree,gc) *);
 
 extern tree build0_stat (enum tree_code, tree MEM_STAT_DECL);
 #define build0(c,t) build0_stat (c,t MEM_STAT_INFO)
@@ -3870,6 +3871,8 @@ extern tree build_one_cst (tree);
 extern tree build_string (int, const char *);
 extern tree build_tree_list_stat (tree, tree MEM_STAT_DECL);
 #define build_tree_list(t,q) build_tree_list_stat(t,q MEM_STAT_INFO)
+extern tree build_tree_list_vec_stat (const VEC(tree,gc) * MEM_STAT_DECL);
+#define build_tree_list_vec(v) build_tree_list_vec_stat (v MEM_STAT_INFO)
 extern tree build_decl_stat (enum tree_code, tree, tree MEM_STAT_DECL);
 extern tree build_fn_decl (const char *, tree);
 #define build_decl(c,t,q) build_decl_stat (c,t,q MEM_STAT_INFO)
@@ -3883,7 +3886,8 @@ extern tree build_vl_exp_stat (enum tree_code, int MEM_STAT_DECL);
 extern tree build_call_list (tree, tree, tree);
 extern tree build_call_nary (tree, tree, int, ...);
 extern tree build_call_valist (tree, tree, int, va_list);
-extern tree build_call_array (tree, tree, int, tree*);
+extern tree build_call_array (tree, tree, int, const tree *);
+extern tree build_call_vec (tree, tree, VEC(tree,gc) *);
 
 /* Construct various nodes representing data types.  */
 
@@ -4309,6 +4313,10 @@ extern bool initializer_zerop (const_tree);
 /* Given a CONSTRUCTOR CTOR, return the elements as a TREE_LIST.  */
 
 extern tree ctor_to_list (tree);
+
+/* Given a CONSTRUCTOR CTOR, return the element values as a vector.  */
+
+extern VEC(tree,gc) *ctor_to_vec (tree);
 
 /* Examine CTOR to discover:
    * how many scalar fields are set to nonzero values,

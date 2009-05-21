@@ -1719,9 +1719,9 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
    built.  */
 
 tree
-build_min_non_dep_call_list (tree non_dep, tree fn, tree arglist)
+build_min_non_dep_call_vec (tree non_dep, tree fn, VEC(tree,gc) *argvec)
 {
-  tree t = build_nt_call_list (fn, arglist);
+  tree t = build_nt_call_vec (fn, argvec);
   TREE_TYPE (t) = TREE_TYPE (non_dep);
   TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (non_dep);
   return t;

@@ -1,3 +1,34 @@
+2009-05-20  Ian Lance Taylor  <iant@google.com>
+
+	* tree.c (build_tree_list_vec_stat): New function.
+	(ctor_to_vec): New function.
+	(build_nt_call_vec): New function.
+	(build_call_array): Change args to be a const pointer.
+	(build_call_vec): New function.
+	* tree.h (build_nt_call_vec): Declare.
+	(build_tree_list_vec_stat): Declare.
+	(build_tree_list_vec): Define.
+	(build_call_array): Update declaration.
+	(build_call_vec): Declare.
+	(ctor_to_vec): Declare.
+	* c-common.c (tree_vector_cache): New static variable.
+	(make_tree_vector): New function.
+	(release_tree_vector): New function.
+	(make_tree_vector_single): New function.
+	(make_tree_vector_copy): New function.
+	* c-common.h (tree_vector_cache, make_tree_vector): Declare.
+	(make_tree_vector_single, make_tree_vector_copy): Declare.
+	* c-parser.c (cached_expr_list_1, cached_expr_list_2): Remove.
+	(c_parser_expr_list): Don't manage cache here, instead call
+	make_tree_vector.
+	(c_parser_release_expr_list): Remove static function.
+	(c_parser_vec_to_tree_list): Remove static function.
+	(c_parser_attributes): Call build_tree_list_vec instead of
+	c_parser_vec_to_tree_list.  Call release_tree_vector instead of
+	c_parser_release_expr_list.
+	(c_parser_postfix_expression_after_primary): Likewise.
+	(c_parser_objc_keywordexpr): Likewise.
+
 2009-05-20  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* doc/tm.texi (Misc): Document TARGET_INVALID_PARAMETER_TYPE,

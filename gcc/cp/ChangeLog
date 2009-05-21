@@ -1,3 +1,99 @@
+2009-05-20  Ian Lance Taylor  <iant@google.com>
+
+	* parser.c (cp_parser_postfix_expression): Change args to a vec.
+	Release it when done.
+	(tree_vector): Define typedef.  Define VEC functions.
+	(cp_parser_parenthesized_expression_list): Change return type to
+	vec.  Change all callers.
+	(cp_parser_new_expression): Change placement and initializer to
+	vecs.  Release them when done.
+	(cp_parser_new_placement): Change return type to vec.  Change all
+	callers.
+	(cp_parser_new_initializer): Likewise.
+	* typeck.c (build_function_call_vec): Just call
+	cp_build_function_call_vec.
+	(cp_build_function_call): Just build a vec and call
+	cp_build_function_call_vec.
+	(cp_build_function_call_vec): New function based on old
+	cp_build_function_call.
+	(convert_arguments): Remove nargs and argarray parameters.  Change
+	values to a vec.  Change caller.
+	(build_x_compound_expr_from_vec): New function.
+	(cp_build_modify_expr): Build vec to pass to
+	build_special_member_call.
+	* call.c (struct z_candidate): Add first_arg field.  Change args
+	field to vec.
+	(convert_class_to_reference): Handle first argument separately.
+	(add_candidate): Add first_arg parameter.  Change args parameter
+	to vec.  Change all callers.
+	(add_function_candidate, add_conv_candidate): Likewise.
+	(add_template_candidate_real, add_template_candidate): Likewise.
+	(add_template_conv_candidate): Likewise.
+	(build_user_type_conversion_1): Handle first argument separately.
+	(resolve_args): Change return type and parameter type to vecs.
+	Change all callers.
+	(perform_overload_resolution): Change args parameter to vec.
+	Change all callers.
+	(build_new_function_call, build_operator_new_call): Likewise.
+	(add_candidates): Likewise.
+	(build_op_call): New globally visible function, built from and
+	replacing static function build_object_call.
+	(build_new_op): Don't handle CALL_EXPR.  Build vec, not tree_list,
+	of arguments.
+	(build_op_delete_call): Build vec to pass to
+	cp_build_function_call_vec.
+	(build_temp): Build vec to pass to build_special_member_call.
+	(convert_like_real): Likewise.
+	(perform_direct_initialization_if_possible): Likewise.
+	(build_over_call): Handle first_arg field.  Use build_call_array
+	rather than build_call_list.
+	(build_special_member_call): Change args parameter to vec.  Change
+	all callers.
+	(build_new_method_call): Likewise.
+	* init.c (expand_default_init): Change parms to vec.
+	(build_raw_new_expr): Change placement and init to vecs.  Change
+	all callers.
+	(build_new_1, build_new): Likewise.
+	* class.c (resolve_address_of_overloaded_function): Build array to
+	pass to fn_type_unification.
+	* pt.c (tsubst_copy_and_build): For NEW_EXPR build vecs to pass to
+	build_new.  For CALL_EXPR create a vec rather than a tree_list;
+	expand a pack if necessary.
+	(fn_type_unification): Change args parameter to const tree *.  Add
+	nargs parameter.  Change all callers.
+	(type_unification_real): Likewise.
+	(unify): Build array to pass to type_unification_real.
+	(get_bindings): Build array to pass to fn_type_unification.
+	(any_type_dependent_arguments_p): Change args parameter to a vec.
+	Change all callers.
+	(make_args_non_dependent): Renamed from build_non_dependent_args.
+	Change return type to void.  Change parameter type to vec.  Change
+	all callers.
+	(do_auto_deduction): Pass an array to type_unification_real.
+	* semantics.c (perform_koenig_lookup): Change args to vec.  Change
+	all callers.
+	(finish_call_expr): Change args to vec.  Change all callers.  Call
+	build_op_call instead of passing CALL_EXPR to build_new_op.
+	(cxx_omp_create_clause_info): Allocate vec to pass to
+	build_special_member_call.
+	* decl2.c (build_offset_ref_call_from_tree): Change args parameter
+	to vec.  Change all callers.
+	* name-lookup.c (lookup_function_nonclass): Likewise.
+	(struct arg_lookup): Change args to vec.
+	(arg_assoc_namespace): Handle args as a vec.
+	(arg_assoc_args_vec): New static function.
+	(lookup_arg_dependent): Change args parameter to vec.  Change all
+	callers.
+	* method.c (do_build_assign_ref): Allocate vec to pass to
+	build_special_member_call.
+	* except.c (build_throw): Likewise.
+	* typeck2.c (build_functional_cast): Likewise.
+	* cvt.c (ocp_convert): Likewise.
+	* tree.c (build_min_non_dep_call_vec): Change last parameter to
+	vec.  Change all callers.
+	* cp-tree.h: Update declarations.
+	* name-lookup.h: Update declarations.
+
 2009-05-20  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* typeck.c (default_conversion): Check targetm.promoted_type.

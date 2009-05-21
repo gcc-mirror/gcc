@@ -4538,7 +4538,7 @@ objc_generate_cxx_ctor_or_dtor (bool dtor)
 	     (build_special_member_call
 	      (build_ivar_reference (DECL_NAME (ivar)),
 	       dtor ? complete_dtor_identifier : complete_ctor_identifier,
-	       NULL_TREE, type, LOOKUP_NORMAL, tf_warning_or_error));
+	       NULL, type, LOOKUP_NORMAL, tf_warning_or_error));
 	}
     }
 

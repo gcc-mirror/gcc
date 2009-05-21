@@ -6072,6 +6072,9 @@ resolve_address_of_overloaded_function (tree target_type,
       tree target_arg_types;
       tree target_ret_type;
       tree fns;
+      tree *args;
+      unsigned int nargs, ia;
+      tree arg;
 
       if (is_ptrmem)
 	target_fn_type
@@ -6084,6 +6087,14 @@ resolve_address_of_overloaded_function (tree target_type,
       /* Never do unification on the 'this' parameter.  */
       if (TREE_CODE (target_fn_type) == METHOD_TYPE)
 	target_arg_types = TREE_CHAIN (target_arg_types);
+
+      nargs = list_length (target_arg_types);
+      args = XALLOCAVEC (tree, nargs);
+      for (arg = target_arg_types, ia = 0;
+	   arg != NULL_TREE && arg != void_list_node;
+	   arg = TREE_CHAIN (arg), ++ia)
+	args[ia] = TREE_VALUE (arg);
+      nargs = ia;
 
       for (fns = overload; fns; fns = OVL_NEXT (fns))
 	{
@@ -6104,9 +6115,9 @@ resolve_address_of_overloaded_function (tree target_type,
 
 	  /* Try to do argument deduction.  */
 	  targs = make_tree_vec (DECL_NTPARMS (fn));
-	  if (fn_type_unification (fn, explicit_targs, targs,
-				   target_arg_types, target_ret_type,
-				   DEDUCE_EXACT, LOOKUP_NORMAL))
+	  if (fn_type_unification (fn, explicit_targs, targs, args, nargs,
+				   target_ret_type, DEDUCE_EXACT,
+				   LOOKUP_NORMAL))
 	    /* Argument deduction failed.  */
 	    continue;
 

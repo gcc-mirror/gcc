@@ -1584,7 +1584,7 @@ static tree cp_parser_postfix_open_square_expression
   (cp_parser *, tree, bool);
 static tree cp_parser_postfix_dot_deref_expression
   (cp_parser *, enum cpp_ttype, tree, bool, cp_id_kind *, location_t);
-static tree cp_parser_parenthesized_expression_list
+static VEC(tree,gc) *cp_parser_parenthesized_expression_list
   (cp_parser *, bool, bool, bool, bool *);
 static void cp_parser_pseudo_destructor_name
   (cp_parser *, tree *, tree *);
@@ -1594,7 +1594,7 @@ static enum tree_code cp_parser_unary_operator
   (cp_token *);
 static tree cp_parser_new_expression
   (cp_parser *);
-static tree cp_parser_new_placement
+static VEC(tree,gc) *cp_parser_new_placement
   (cp_parser *);
 static tree cp_parser_new_type_id
   (cp_parser *, tree *);
@@ -1602,7 +1602,7 @@ static cp_declarator *cp_parser_new_declarator_opt
   (cp_parser *);
 static cp_declarator *cp_parser_direct_new_declarator
   (cp_parser *);
-static tree cp_parser_new_initializer
+static VEC(tree,gc) *cp_parser_new_initializer
   (cp_parser *);
 static tree cp_parser_delete_expression
   (cp_parser *);
@@ -4685,7 +4685,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    bool is_builtin_constant_p;
 	    bool saved_integral_constant_expression_p = false;
 	    bool saved_non_integral_constant_expression_p = false;
-	    tree args;
+	    VEC(tree,gc) *args;
 
             is_member_access = false;
 
@@ -4713,7 +4713,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  = saved_non_integral_constant_expression_p;
 	      }
 
-	    if (args == error_mark_node)
+	    if (args == NULL)
 	      {
 		postfix_expression = error_mark_node;
 		break;
@@ -4726,6 +4726,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 							       "a function call"))
 	      {
 		postfix_expression = error_mark_node;
+		release_tree_vector (args);
 		break;
 	      }
 
@@ -4735,7 +4736,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	      {
 		if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
 		  {
-		    if (args)
+		    if (!VEC_empty (tree, args))
 		      {
 			koenig_p = true;
 			if (!any_type_dependent_arguments_p (args))
@@ -4749,7 +4750,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		/* We do not perform argument-dependent lookup if
 		   normal lookup finds a non-function, in accordance
 		   with the expected resolution of DR 218.  */
-		else if (args && is_overloaded_fn (postfix_expression))
+		else if (!VEC_empty (tree, args)
+			 && is_overloaded_fn (postfix_expression))
 		  {
 		    tree fn = get_first_fn (postfix_expression);
 
@@ -4782,7 +4784,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			|| any_type_dependent_arguments_p (args)))
 		  {
 		    postfix_expression
-		      = build_nt_call_list (postfix_expression, args);
+		      = build_nt_call_vec (postfix_expression, args);
+		    release_tree_vector (args);
 		    break;
 		  }
 
@@ -4790,7 +4793,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  {
 		  postfix_expression
 		    = (build_new_method_call
-		       (instance, fn, args, NULL_TREE,
+		       (instance, fn, &args, NULL_TREE,
 			(idk == CP_ID_KIND_QUALIFIED
 			 ? LOOKUP_NONVIRTUAL : LOOKUP_NORMAL),
 			/*fn_p=*/NULL,
@@ -4798,7 +4801,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  }
 		else
 		  postfix_expression
-		    = finish_call_expr (postfix_expression, args,
+		    = finish_call_expr (postfix_expression, &args,
 					/*disallow_virtual=*/false,
 					/*koenig_p=*/false,
 					tf_warning_or_error);
@@ -4807,25 +4810,27 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		     || TREE_CODE (postfix_expression) == MEMBER_REF
 		     || TREE_CODE (postfix_expression) == DOTSTAR_EXPR)
 	      postfix_expression = (build_offset_ref_call_from_tree
-				    (postfix_expression, args));
+				    (postfix_expression, &args));
 	    else if (idk == CP_ID_KIND_QUALIFIED)
 	      /* A call to a static class member, or a namespace-scope
 		 function.  */
 	      postfix_expression
-		= finish_call_expr (postfix_expression, args,
+		= finish_call_expr (postfix_expression, &args,
 				    /*disallow_virtual=*/true,
 				    koenig_p,
 				    tf_warning_or_error);
 	    else
 	      /* All other function calls.  */
 	      postfix_expression
-		= finish_call_expr (postfix_expression, args,
+		= finish_call_expr (postfix_expression, &args,
 				    /*disallow_virtual=*/false,
 				    koenig_p,
 				    tf_warning_or_error);
 
 	    /* The POSTFIX_EXPRESSION is certainly no longer an id.  */
 	    idk = CP_ID_KIND_NONE;
+
+	    release_tree_vector (args);
 	  }
 	  break;
 
@@ -5132,24 +5137,22 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
    ALLOW_EXPANSION_P is true if this expression allows expansion of an
    argument pack.
 
-   Returns a TREE_LIST.  The TREE_VALUE of each node is a
-   representation of an assignment-expression.  Note that a TREE_LIST
-   is returned even if there is only a single expression in the list.
-   error_mark_node is returned if the ( and or ) are
-   missing. NULL_TREE is returned on no expressions. The parentheses
-   are eaten. IS_ATTRIBUTE_LIST is true if this is really an attribute
-   list being parsed.  If NON_CONSTANT_P is non-NULL, *NON_CONSTANT_P
-   indicates whether or not all of the expressions in the list were
-   constant.  */
+   Returns a vector of trees.  Each element is a representation of an
+   assignment-expression.  NULL is returned if the ( and or ) are
+   missing.  An empty, but allocated, vector is returned on no
+   expressions.  The parentheses are eaten.  IS_ATTRIBUTE_LIST is true
+   if this is really an attribute list being parsed.  If
+   NON_CONSTANT_P is non-NULL, *NON_CONSTANT_P indicates whether or
+   not all of the expressions in the list were constant.  */
 
-static tree
+static VEC(tree,gc) *
 cp_parser_parenthesized_expression_list (cp_parser* parser,
 					 bool is_attribute_list,
 					 bool cast_p,
                                          bool allow_expansion_p,
 					 bool *non_constant_p)
 {
-  tree expression_list = NULL_TREE;
+  VEC(tree,gc) *expression_list;
   bool fold_expr_p = is_attribute_list;
   tree identifier = NULL_TREE;
   bool saved_greater_than_is_operator_p;
@@ -5159,7 +5162,9 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
     *non_constant_p = false;
 
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, "%<(%>"))
-    return error_mark_node;
+    return NULL;
+
+  expression_list = make_tree_vector ();
 
   /* Within a parenthesized expression, a `>' token is always
      the greater-than operator.  */
@@ -5228,7 +5233,7 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 		expressions to the list, so that we can still tell if
 		the correct form for a parenthesized expression-list
 		is found. That gives better errors.  */
-	    expression_list = tree_cons (NULL_TREE, expr, expression_list);
+	    VEC_safe_push (tree, gc, expression_list, expr);
 
 	    if (expr == error_mark_node)
 	      goto skip_comma;
@@ -5264,17 +5269,15 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 	{
 	  parser->greater_than_is_operator_p
 	    = saved_greater_than_is_operator_p;
-	  return error_mark_node;
+	  return NULL;
 	}
     }
 
   parser->greater_than_is_operator_p
     = saved_greater_than_is_operator_p;
 
-  /* We built up the list in reverse order so we must reverse it now.  */
-  expression_list = nreverse (expression_list);
   if (identifier)
-    expression_list = tree_cons (NULL_TREE, identifier, expression_list);
+    VEC_safe_insert (tree, gc, expression_list, 0, identifier);
 
   return expression_list;
 }
@@ -5618,10 +5621,11 @@ static tree
 cp_parser_new_expression (cp_parser* parser)
 {
   bool global_scope_p;
-  tree placement;
+  VEC(tree,gc) *placement;
   tree type;
-  tree initializer;
+  VEC(tree,gc) *initializer;
   tree nelts;
+  tree ret;
 
   /* Look for the optional `::' operator.  */
   global_scope_p
@@ -5637,7 +5641,11 @@ cp_parser_new_expression (cp_parser* parser)
   placement = cp_parser_new_placement (parser);
   /* If that didn't work out, there's no new-placement.  */
   if (!cp_parser_parse_definitely (parser))
-    placement = NULL_TREE;
+    {
+      if (placement != NULL)
+	release_tree_vector (placement);
+      placement = NULL;
+    }
 
   /* If the next token is a `(', then we have a parenthesized
      type-id.  */
@@ -5673,16 +5681,25 @@ cp_parser_new_expression (cp_parser* parser)
       || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     initializer = cp_parser_new_initializer (parser);
   else
-    initializer = NULL_TREE;
+    initializer = NULL;
 
   /* A new-expression may not appear in an integral constant
      expression.  */
   if (cp_parser_non_integral_constant_expression (parser, "%<new%>"))
-    return error_mark_node;
+    ret = error_mark_node;
+  else
+    {
+      /* Create a representation of the new-expression.  */
+      ret = build_new (&placement, type, nelts, &initializer, global_scope_p,
+		       tf_warning_or_error);
+    }
 
-  /* Create a representation of the new-expression.  */
-  return build_new (placement, type, nelts, initializer, global_scope_p,
-                    tf_warning_or_error);
+  if (placement != NULL)
+    release_tree_vector (placement);
+  if (initializer != NULL)
+    release_tree_vector (initializer);
+
+  return ret;
 }
 
 /* Parse a new-placement.
@@ -5692,10 +5709,10 @@ cp_parser_new_expression (cp_parser* parser)
 
    Returns the same representation as for an expression-list.  */
 
-static tree
+static VEC(tree,gc) *
 cp_parser_new_placement (cp_parser* parser)
 {
-  tree expression_list;
+  VEC(tree,gc) *expression_list;
 
   /* Parse the expression-list.  */
   expression_list = (cp_parser_parenthesized_expression_list
@@ -5885,28 +5902,26 @@ cp_parser_direct_new_declarator (cp_parser* parser)
      ( expression-list [opt] )
      braced-init-list
 
-   Returns a representation of the expression-list.  If there is no
-   expression-list, VOID_ZERO_NODE is returned.  */
+   Returns a representation of the expression-list.  */
 
-static tree
+static VEC(tree,gc) *
 cp_parser_new_initializer (cp_parser* parser)
 {
-  tree expression_list;
+  VEC(tree,gc) *expression_list;
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
+      tree t;
       bool expr_non_constant_p;
       maybe_warn_cpp0x ("extended initializer lists");
-      expression_list = cp_parser_braced_list (parser, &expr_non_constant_p);
-      CONSTRUCTOR_IS_DIRECT_INIT (expression_list) = 1;
-      expression_list = build_tree_list (NULL_TREE, expression_list);
+      t = cp_parser_braced_list (parser, &expr_non_constant_p);
+      CONSTRUCTOR_IS_DIRECT_INIT (t) = 1;
+      expression_list = make_tree_vector_single (t);
     }
   else
     expression_list = (cp_parser_parenthesized_expression_list
 		       (parser, false, /*cast_p=*/false, /*allow_expansion_p=*/true,
 			/*non_constant_p=*/NULL));
-  if (!expression_list)
-    expression_list = void_zero_node;
 
   return expression_list;
 }
@@ -9225,11 +9240,18 @@ cp_parser_mem_initializer (cp_parser* parser)
       expression_list = build_tree_list (NULL_TREE, expression_list);
     }
   else
-    expression_list
-      = cp_parser_parenthesized_expression_list (parser, false,
-						 /*cast_p=*/false,
-						 /*allow_expansion_p=*/true,
-						 /*non_constant_p=*/NULL);
+    {
+      VEC(tree,gc)* vec;
+      vec = cp_parser_parenthesized_expression_list (parser, false,
+						     /*cast_p=*/false,
+						     /*allow_expansion_p=*/true,
+						     /*non_constant_p=*/NULL);
+      if (vec == NULL)
+	return error_mark_node;
+      expression_list = build_tree_list_vec (vec);
+      release_tree_vector (vec);
+    }
+
   if (expression_list == error_mark_node)
     return error_mark_node;
   if (!expression_list)
@@ -14585,10 +14607,17 @@ cp_parser_initializer (cp_parser* parser, bool* is_direct_init,
       init = cp_parser_initializer_clause (parser, non_constant_p);
     }
   else if (token->type == CPP_OPEN_PAREN)
-    init = cp_parser_parenthesized_expression_list (parser, false,
-						    /*cast_p=*/false,
-                                                    /*allow_expansion_p=*/true,
-						    non_constant_p);
+    {
+      VEC(tree,gc) *vec;
+      vec = cp_parser_parenthesized_expression_list (parser, false,
+						     /*cast_p=*/false,
+						     /*allow_expansion_p=*/true,
+						     non_constant_p);
+      if (vec == NULL)
+	return error_mark_node;
+      init = build_tree_list_vec (vec);
+      release_tree_vector (vec);
+    }
   else if (token->type == CPP_OPEN_BRACE)
     {
       maybe_warn_cpp0x ("extended initializer lists");
@@ -16850,10 +16879,18 @@ cp_parser_attribute_list (cp_parser* parser)
 	  /* If it's an `(', then parse the attribute arguments.  */
 	  if (token->type == CPP_OPEN_PAREN)
 	    {
-	      arguments = cp_parser_parenthesized_expression_list
-			  (parser, true, /*cast_p=*/false,
-                           /*allow_expansion_p=*/false,
-			   /*non_constant_p=*/NULL);
+	      VEC(tree,gc) *vec;
+	      vec = cp_parser_parenthesized_expression_list
+		    (parser, true, /*cast_p=*/false,
+		     /*allow_expansion_p=*/false,
+		     /*non_constant_p=*/NULL);
+	      if (vec == NULL)
+		arguments = error_mark_node;
+	      else
+		{
+		  arguments = build_tree_list_vec (vec);
+		  release_tree_vector (vec);
+		}
 	      /* Save the arguments away.  */
 	      TREE_VALUE (attribute) = arguments;
 	    }
@@ -17981,6 +18018,7 @@ cp_parser_simple_cast_expression (cp_parser *parser)
 static tree
 cp_parser_functional_cast (cp_parser* parser, tree type)
 {
+  VEC(tree,gc) *vec;
   tree expression_list;
   tree cast;
   bool nonconst_p;
@@ -17995,11 +18033,18 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
       return finish_compound_literal (type, expression_list);
     }
 
-  expression_list
-    = cp_parser_parenthesized_expression_list (parser, false,
-					       /*cast_p=*/true,
-					       /*allow_expansion_p=*/true,
-					       /*non_constant_p=*/NULL);
+
+  vec = cp_parser_parenthesized_expression_list (parser, false,
+						 /*cast_p=*/true,
+						 /*allow_expansion_p=*/true,
+						 /*non_constant_p=*/NULL);
+  if (vec == NULL)
+    expression_list = error_mark_node;
+  else
+    {
+      expression_list = build_tree_list_vec (vec);
+      release_tree_vector (vec);
+    }
 
   cast = build_functional_cast (type, expression_list,
                                 tf_warning_or_error);
