@@ -1,3 +1,9 @@
+2009-05-21  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* config/mips/mips.md (*extzv_trunc<mode>_exts): Turn into a
+	regular pattern from a template and rename it ...
+	(*extzv_truncsi_exts): ... to this.
+
 2009-05-21  Richard Guenther  <rguenther@suse.de>
 
 	* cgraph.h (struct cgraph_node): Remove inline_decl member.
