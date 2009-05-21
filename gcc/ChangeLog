@@ -1,3 +1,10 @@
+2009-05-21  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* config/i386/i386.c: Use REG_P, MEM_P, CONST_INT_P, LABEL_P and
+	JUMP_TABLE_DATA_P predicates where applicable.
+	* config/i386/predicates.md: Ditto.
+	* config/i386/sse.md: Ditto.
+
 2009-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.md (adddi_4_rex64, addsi_4, addhi_4): For
