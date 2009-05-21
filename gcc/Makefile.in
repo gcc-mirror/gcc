@@ -2785,7 +2785,8 @@ cfgexpand.o : cfgexpand.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    value-prof.h $(TREE_INLINE_H) $(TARGET_H)
 cfgrtl.o : cfgrtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(FLAGS_H) insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h \
-   output.h $(TOPLEV_H) $(FUNCTION_H) except.h $(TM_P_H) insn-config.h $(EXPR_H) \
+   output.h $(TOPLEV_H) $(FUNCTION_H) except.h $(TM_P_H) $(INSN_ATTR_H) \
+   insn-config.h $(EXPR_H) \
    $(CFGLAYOUT_H) $(CFGLOOP_H) $(OBSTACK_H) $(TARGET_H) $(TREE_H) \
    tree-pass.h $(DF_H) $(GGC_H)
 cfganal.o : cfganal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
