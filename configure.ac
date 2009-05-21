@@ -731,7 +731,7 @@ case "${target}" in
     ;;    
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
-    noconfigdirs="$noconfigdirs target-gperf target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-gperf target-libgloss"
     # always build newlib if winsup directory is present.
     if test -d "$srcdir/winsup/cygwin"; then
       skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
