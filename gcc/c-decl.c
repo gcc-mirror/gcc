@@ -4202,6 +4202,7 @@ grokdeclarator (const struct c_declarator *declarator,
   bool bitfield = width != NULL;
   tree element_type;
   struct c_arg_info *arg_info = 0;
+  const char *errmsg;
   tree expr_dummy;
   bool expr_const_operands_dummy;
 
@@ -4835,6 +4836,12 @@ grokdeclarator (const struct c_declarator *declarator,
 		  error ("type name declared as function returning an array");
 		type = integer_type_node;
 	      }
+	    errmsg = targetm.invalid_return_type (type);
+	    if (errmsg)
+	      {
+		error (errmsg);
+		type = integer_type_node;
+	      }
 
 	    /* Construct the function type and go to the next
 	       inner layer of declarator.  */
@@ -5381,6 +5388,7 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
     {
       tree parm, type, typelt;
       unsigned int parmno;
+      const char *errmsg;
 
       /* If there is a parameter of incomplete type in a definition,
 	 this is an error.  In a declaration this is valid, and a
@@ -5422,6 +5430,14 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
 		    warning (0, "%Jparameter %u has void type",
 			     parm, parmno);
 		}
+	    }
+
+	  errmsg = targetm.invalid_parameter_type (type);
+	  if (errmsg)
+	    {
+	      error (errmsg);
+	      TREE_VALUE (typelt) = error_mark_node;
+	      TREE_TYPE (parm) = error_mark_node;
 	    }
 
 	  if (DECL_NAME (parm) && TREE_USED (parm))

@@ -328,3 +328,10 @@ hook_constcharptr_int_const_tree_const_tree_null (int i ATTRIBUTE_UNUSED,
 {
   return NULL;
 }
+
+/* Generic hook that takes a const_tree and returns NULL_TREE.  */
+tree
+hook_tree_const_tree_null (const_tree t ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}

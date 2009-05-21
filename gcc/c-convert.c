@@ -86,6 +86,9 @@ convert (tree type, tree expr)
 
   if (type == TREE_TYPE (expr))
     return expr;
+  ret = targetm.convert_to_type (type, expr);
+  if (ret)
+      return ret;
 
   STRIP_TYPE_NOPS (e);
 

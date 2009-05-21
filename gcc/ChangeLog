@@ -1,3 +1,22 @@
+2009-05-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/tm.texi (Misc): Document TARGET_INVALID_PARAMETER_TYPE,
+	TARGET_INVALID_RETURN_TYPE, TARGET_PROMOTED_TYPE, and
+	TARGET_CONVERT_TO_TYPE.
+	* hooks.c (hook_tree_const_tree_null): Define.
+	* hooks.h (hook_tree_const_tree_null): Declare.
+	* target.h (struct gcc_target):  Add invalid_parameter_type,
+	invalid_return_type, promoted_type, and convert_to_type fields.
+	* target-def.h: (TARGET_INVALID_PARAMETER_TYPE): Define.
+	(TARGET_INVALID_RETURN_TYPE): Define.
+	(TARGET_PROMOTED_TYPE): Define.
+	(TARGET_CONVERT_TO_TYPE): Define.
+	(TARGET_INITIALIZER): Update for new fields.
+	* c-decl.c (grokdeclarator): Check targetm.invalid_return_type.
+	(grokparms): Check targetm.invalid_parameter_type.
+	* c-typeck.c (default_conversion): Check targetm.promoted_type.
+	* c-convert.c (convert): Check targetm.convert_to_type.
+
 2009-05-20  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* config/mips/mips.md (*extenddi_truncate<mode>,

@@ -1766,6 +1766,7 @@ default_conversion (tree exp)
   tree orig_exp;
   tree type = TREE_TYPE (exp);
   enum tree_code code = TREE_CODE (type);
+  tree promoted_type;
 
   /* Functions and arrays have been converted during parsing.  */
   gcc_assert (code != FUNCTION_TYPE);
@@ -1792,6 +1793,10 @@ default_conversion (tree exp)
   exp = require_complete_type (exp);
   if (exp == error_mark_node)
     return error_mark_node;
+
+  promoted_type = targetm.promoted_type (type);
+  if (promoted_type)
+    return convert (promoted_type, exp);
 
   if (INTEGRAL_TYPE_P (type))
     return perform_integral_promotions (exp);

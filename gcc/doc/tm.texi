@@ -10781,6 +10781,38 @@ and @var{type2}, or @code{NULL} if validity should be determined by
 the front end.
 @end deftypefn
 
+@deftypefn {Target Hook} {const char *} TARGET_INVALID_PARAMETER_TYPE (tree @var{type})
+If defined, this macro returns the diagnostic message when it is
+invalid for functions to include parameters of type @var{type}, 
+or @code{NULL} if validity should be determined by
+the front end.  This is currently used only by the C and C++ front ends.
+@end deftypefn
+
+@deftypefn {Target Hook} {const char *} TARGET_INVALID_RETURN_TYPE (tree @var{type})
+If defined, this macro returns the diagnostic message when it is
+invalid for functions to have return type @var{type}, 
+or @code{NULL} if validity should be determined by
+the front end.  This is currently used only by the C and C++ front ends.
+@end deftypefn
+
+@deftypefn {Target Hook} {tree} TARGET_PROMOTED_TYPE (tree @var{type})
+If defined, this target hook returns the type to which values of 
+@var{type} should be promoted when they appear in expressions, 
+analogous to the integer promotions, or @code{NULL_TREE} to use the
+front end's normal promotion rules.  This hook is useful when there are
+target-specific types with special promotion rules.
+This is currently used only by the C and C++ front ends.
+@end deftypefn
+
+@deftypefn {Target Hook} {tree} TARGET_CONVERT_TO_TYPE (tree @var{type}, tree @var{expr})
+If defined, this hook returns the result of converting @var{expr} to 
+@var{type}.  It should return the converted expression, 
+or @code{NULL_TREE} to apply the front end's normal conversion rules.
+This hook is useful when there are target-specific types with special 
+conversion rules.
+This is currently used only by the C and C++ front ends.
+@end deftypefn
+
 @defmac TARGET_USE_JCR_SECTION
 This macro determines whether to use the JCR section to register Java
 classes. By default, TARGET_USE_JCR_SECTION is defined to 1 if both

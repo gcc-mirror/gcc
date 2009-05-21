@@ -1,3 +1,11 @@
+2009-05-20  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* typeck.c (default_conversion): Check targetm.promoted_type.
+	* decl.c (grokdeclarator): Check targetm.invalid_return_type.
+	(grokparms): Check targetm.invalid_parameter_type.
+	* cvt.c (ocp_convert): Check targetm.convert_to_type.
+	(build_expr_type_conversion): Check targetm.promoted_type.
+
 2009-05-19  Andrew Pinski  <andrew_pinski@playstation.sony.com>
 
 	* typeck.c (build_binary_op): Allow % on integal vectors.

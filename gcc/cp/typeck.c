@@ -1699,10 +1699,14 @@ decay_conversion (tree exp)
 tree
 default_conversion (tree exp)
 {
+  /* Check for target-specific promotions.  */
+  tree promoted_type = targetm.promoted_type (TREE_TYPE (exp));
+  if (promoted_type)
+    exp = cp_convert (promoted_type, exp);
   /* Perform the integral promotions first so that bitfield
      expressions (which may promote to "int", even if the bitfield is
      declared "unsigned") are promoted correctly.  */
-  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (exp)))
+  else if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (exp)))
     exp = perform_integral_promotions (exp);
   /* Perform the other conversions.  */
   exp = decay_conversion (exp);
