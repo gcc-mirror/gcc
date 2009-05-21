@@ -135,8 +135,6 @@ update_live_status (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
 static int
 find_basic_block (rtx insn, int search_limit)
 {
-  basic_block bb;
-
   /* Scan backwards to the previous BARRIER.  Then see if we can find a
      label that starts a basic block.  Return the basic block number.  */
   for (insn = prev_nonnote_insn (insn);
@@ -157,11 +155,8 @@ find_basic_block (rtx insn, int search_limit)
   for (insn = next_nonnote_insn (insn);
        insn && LABEL_P (insn);
        insn = next_nonnote_insn (insn))
-    {
-      FOR_EACH_BB (bb)
-	if (insn == BB_HEAD (bb))
-	  return bb->index;
-    }
+    if (BLOCK_FOR_INSN (insn))
+      return BLOCK_FOR_INSN (insn)->index;
 
   return -1;
 }
@@ -851,13 +846,12 @@ return_insn_p (const_rtx insn)
    (with no intervening active insns) to see if any of them start a basic
    block.  If we hit the start of the function first, we use block 0.
 
-   Once we have found a basic block and a corresponding first insns, we can
-   accurately compute the live status from basic_block_live_regs and
-   reg_renumber.  (By starting at a label following a BARRIER, we are immune
-   to actions taken by reload and jump.)  Then we scan all insns between
-   that point and our target.  For each CLOBBER (or for call-clobbered regs
-   when we pass a CALL_INSN), mark the appropriate registers are dead.  For
-   a SET, mark them as live.
+   Once we have found a basic block and a corresponding first insn, we can
+   accurately compute the live status (by starting at a label following a
+   BARRIER, we are immune to actions taken by reload and jump.)  Then we
+   scan all insns between that point and our target.  For each CLOBBER (or
+   for call-clobbered regs when we pass a CALL_INSN), mark the appropriate
+   registers are dead.  For a SET, mark them as live.
 
    We have to be careful when using REG_DEAD notes because they are not
    updated by such things as find_equiv_reg.  So keep track of registers
@@ -957,13 +951,10 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
      TARGET.  Otherwise, we must assume everything is live.  */
   if (b != -1)
     {
-      regset regs_live = DF_LR_IN (BASIC_BLOCK (b));
+      regset regs_live = df_get_live_in (BASIC_BLOCK (b));
       rtx start_insn, stop_insn;
 
-      /* Compute hard regs live at start of block -- this is the real hard regs
-	 marked live, plus live pseudo regs that have been renumbered to
-	 hard regs.  */
-
+      /* Compute hard regs live at start of block.  */
       REG_SET_TO_HARD_REG_SET (current_live_regs, regs_live);
 
       /* Get starting and ending insn, handling the case where each might
@@ -1049,10 +1040,24 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 
 	  else if (LABEL_P (real_insn))
 	    {
+	      basic_block bb;
+
 	      /* A label clobbers the pending dead registers since neither
 		 reload nor jump will propagate a value across a label.  */
 	      AND_COMPL_HARD_REG_SET (current_live_regs, pending_dead_regs);
 	      CLEAR_HARD_REG_SET (pending_dead_regs);
+
+	      /* We must conservatively assume that all registers that used
+		 to be live here still are.  The fallthrough edge may have
+		 left a live register uninitialized.  */
+	      bb = BLOCK_FOR_INSN (real_insn);
+	      if (bb)
+		{
+		  HARD_REG_SET extra_live;
+
+		  REG_SET_TO_HARD_REG_SET (extra_live, df_get_live_in (bb));
+		  IOR_HARD_REG_SET (current_live_regs, extra_live);
+		}
 	    }
 
 	  /* The beginning of the epilogue corresponds to the end of the
@@ -1124,6 +1129,7 @@ void
 init_resource_info (rtx epilogue_insn)
 {
   int i;
+  basic_block bb;
 
   /* Indicate what resources are required to be valid at the end of the current
      function.  The condition code never is and memory always is.  If the
@@ -1192,6 +1198,11 @@ init_resource_info (rtx epilogue_insn)
   /* Allocate and initialize the tables used by mark_target_live_regs.  */
   target_hash_table = XCNEWVEC (struct target_info *, TARGET_HASH_PRIME);
   bb_ticks = XCNEWVEC (int, last_basic_block);
+
+  /* Set the BLOCK_FOR_INSN of each label that starts a basic block.  */
+  FOR_EACH_BB (bb)
+    if (LABEL_P (BB_HEAD (bb)))
+      BLOCK_FOR_INSN (BB_HEAD (bb)) = bb;
 }
 
 /* Free up the resources allocated to mark_target_live_regs ().  This
@@ -1200,6 +1211,8 @@ init_resource_info (rtx epilogue_insn)
 void
 free_resource_info (void)
 {
+  basic_block bb;
+
   if (target_hash_table != NULL)
     {
       int i;
@@ -1225,6 +1238,10 @@ free_resource_info (void)
       free (bb_ticks);
       bb_ticks = NULL;
     }
+
+  FOR_EACH_BB (bb)
+    if (LABEL_P (BB_HEAD (bb)))
+      BLOCK_FOR_INSN (BB_HEAD (bb)) = NULL;
 }
 
 /* Clear any hashed information that we have stored for INSN.  */

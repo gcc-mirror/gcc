@@ -1,3 +1,28 @@
+2009-05-21  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/40105
+	Backport from mainline:
+
+	2009-04-29  Eric Botcazou  <ebotcazou@adacore.com>
+		    Steven Bosscher  <steven@gcc.gnu.org>
+
+	* Makefile.in (cfgrtl.o): Add $(INSN_ATTR_H).
+	* cfgrtl.c: Include insn-attr.h.
+	(rest_of_pass_free_cfg): New function.
+	(pass_free_cfg): Use rest_of_pass_free_cfg as execute function.
+
+	2009-04-27  Richard Sandiford  <rdsandiford@googlemail.com>
+		    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* resource.c (find_basic_block): Use BLOCK_FOR_INSN to look up
+	a label's basic block.
+	(mark_target_live_regs): Tidy and rework obsolete comments.
+	Change back DF problem to LIVE.  If a label starts a basic block,
+	assume that all registers that used to be live then still are.
+	(init_resource_info): If a label starts a basic block, set its
+	BLOCK_FOR_INSN accordingly.
+	(free_resource_info): Undo the setting of BLOCK_FOR_INSN.
+
 2009-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/39942
