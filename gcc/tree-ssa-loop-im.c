@@ -1794,6 +1794,10 @@ gen_lsm_tmp_name (tree ref)
       lsm_tmp_name_add ("R");
       break;
 
+    case INTEGER_CST:
+      /* Nothing.  */
+      break;
+
     default:
       gcc_unreachable ();
     }
