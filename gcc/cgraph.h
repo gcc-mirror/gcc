@@ -213,11 +213,6 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) cgraph_node {
   unsigned alias : 1;
   /* Set for nodes that was constructed and finalized by frontend.  */
   unsigned finalized_by_frontend : 1;
-
-  /* In non-unit-at-a-time mode the function body of inline candidates is saved
-     into clone before compiling so the function in original form can be
-     inlined later.  This pointer points to the clone.  */
-  tree inline_decl;
 };
 
 typedef struct cgraph_node *cgraph_node_ptr;

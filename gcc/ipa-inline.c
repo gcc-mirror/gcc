@@ -258,9 +258,6 @@ cgraph_mark_inline_edge (struct cgraph_edge *e, bool update_original,
   struct cgraph_node *to = NULL, *what;
   struct cgraph_edge *curr = e;
 
-  if (e->callee->inline_decl)
-    cgraph_redirect_edge_callee (e, cgraph_node (e->callee->inline_decl));
-
   gcc_assert (e->inline_failed);
   e->inline_failed = CIF_OK;
 
@@ -425,8 +422,6 @@ cgraph_default_inline_p (struct cgraph_node *n, cgraph_inline_failed_t *reason)
 {
   tree decl = n->decl;
 
-  if (n->inline_decl)
-    decl = n->inline_decl;
   if (!flag_inline_small_functions && !DECL_DECLARED_INLINE_P (decl))
     {
       if (reason)
@@ -1417,7 +1412,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	      }
 	    continue;
 	  }
-	if (!e->callee->analyzed && !e->callee->inline_decl)
+	if (!e->callee->analyzed)
 	  {
 	    if (dump_file)
 	      {
@@ -1493,7 +1488,7 @@ cgraph_decide_inlining_incrementally (struct cgraph_node *node,
 	      }
 	    continue;
 	  }
-	if (!e->callee->analyzed && !e->callee->inline_decl)
+	if (!e->callee->analyzed)
 	  {
 	    if (dump_file)
 	      {
