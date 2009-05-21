@@ -1,3 +1,7 @@
+2009-05-21  Denis Chertykov  <chertykov@gmail.com>
+
+	* MAINTAINERS: Update my e-mail address.
+
 2009-05-21  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* configure.ac (cygwin noconfigdirs):  Remove libgcj.
