@@ -1989,7 +1989,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
     function(const function& __x)
     : _Function_base()
     {
-      if (__x)
+      if (static_cast<bool>(__x))
 	{
 	  _M_invoker = __x._M_invoker;
 	  _M_manager = __x._M_manager;
