@@ -1371,21 +1371,23 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 
 	    if (pat != PATTERN (insn))
 	      {
-		/* The fix_truncdi_1 pattern wants to be able to allocate
-		   its own scratch register.  It does this by clobbering
-		   an fp reg so that it is assured of an empty reg-stack
-		   register.  If the register is live, kill it now.
-		   Remove the DEAD/UNUSED note so we don't try to kill it
-		   later too.  */
+		/* The fix_truncdi_1 pattern wants to be able to
+		   allocate its own scratch register.  It does this by
+		   clobbering an fp reg so that it is assured of an
+		   empty reg-stack register.  If the register is live,
+		   kill it now.  Remove the DEAD/UNUSED note so we
+		   don't try to kill it later too.
+
+		   In reality the UNUSED note can be absent in some
+		   complicated cases when the register is reused for
+		   partially set variable.  */
 
 		if (note)
 		  emit_pop_insn (insn, regstack, *dest, EMIT_BEFORE);
 		else
-		  {
-		    note = find_reg_note (insn, REG_UNUSED, *dest);
-		    gcc_assert (note);
-		  }
-		remove_note (insn, note);
+		  note = find_reg_note (insn, REG_UNUSED, *dest);
+		if (note)
+		  remove_note (insn, note);
 		replace_reg (dest, FIRST_STACK_REG + 1);
 	      }
 	    else
