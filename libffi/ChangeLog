@@ -1,5 +1,10 @@
 2009-05-22  Dave Korn  <dave.korn.cygwin@gmail.com>
 
+	* src/x86/win32.S (_ffi_closure_STDCALL):  New function.
+	(.eh_frame):  Add FDE for it.
+
+2009-05-22  Dave Korn  <dave.korn.cygwin@gmail.com>
+
 	* configure.ac:  Also check if assembler supports pc-relative
 	relocs on X86_WIN32 targets.
 	* configure:  Regenerate.
