@@ -233,20 +233,6 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
       return false;
     }
 
-  /* Don't coalesce if the aliasing sets of the types are different.  */
-  if (POINTER_TYPE_P (TREE_TYPE (root1))
-      && POINTER_TYPE_P (TREE_TYPE (root2))
-      && ((get_alias_set (TREE_TYPE (TREE_TYPE (root1)))
-	   != get_alias_set (TREE_TYPE (TREE_TYPE (root2))))
-	  || (DECL_P (root1) && DECL_P (root2)
-	      && DECL_NO_TBAA_P (root1) != DECL_NO_TBAA_P (root2))))
-    {
-      if (debug)
-	fprintf (debug, " : 2 different aliasing sets. No coalesce.\n");
-      return false;
-    }
-
-
   /* Merge the two partitions.  */
   p3 = partition_union (map->var_partition, p1, p2);
 

@@ -2373,9 +2373,6 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
       || MEM_ALIAS_SET (mem) == ALIAS_SET_MEMORY_BARRIER)
     return 1;
 
-  if (DIFFERENT_ALIAS_SETS_P (x, mem))
-    return 0;
-
   /* A read from read-only memory can't conflict with read-write memory.  */
   if (!writep && MEM_READONLY_P (mem))
     return 0;

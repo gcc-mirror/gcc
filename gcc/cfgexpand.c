@@ -2100,7 +2100,7 @@ expand_gimple_basic_block (basic_block bb)
 		    return new_bb;
 		}
 	    }
-	  else if (gimple_code (stmt) != GIMPLE_CHANGE_DYNAMIC_TYPE)
+	  else
 	    {
 	      def_operand_p def_p;
 	      tree stmt_tree;

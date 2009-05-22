@@ -226,10 +226,6 @@ struct variable_info
   /* True if this is a heap variable.  */
   unsigned int is_heap_var:1;
 
-  /* True if we may not use TBAA to prune references to this
-     variable.  This is used for C++ placement new.  */
-  unsigned int no_tbaa_pruning : 1;
-
   /* True if this field may contain pointers.  */
   unsigned int may_have_pointers : 1;
 
@@ -360,7 +356,6 @@ static varinfo_t
 new_var_info (tree t, unsigned int id, const char *name)
 {
   varinfo_t ret = (varinfo_t) pool_alloc (variable_info_pool);
-  tree var;
 
   ret->id = id;
   ret->name = name;
@@ -371,12 +366,6 @@ new_var_info (tree t, unsigned int id, const char *name)
   ret->is_unknown_size_var = false;
   ret->is_full_var = false;
   ret->may_have_pointers = true;
-  var = t;
-  if (TREE_CODE (var) == SSA_NAME)
-    var = SSA_NAME_VAR (var);
-  ret->no_tbaa_pruning = (DECL_P (var)
-			  && POINTER_TYPE_P (TREE_TYPE (var))
-			  && DECL_NO_TBAA_P (var));
   ret->solution = BITMAP_ALLOC (&pta_obstack);
   ret->oldsolution = BITMAP_ALLOC (&oldpta_obstack);
   ret->next = NULL;
@@ -1424,9 +1413,6 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
 
   merge_graph_nodes (graph, to, from);
   merge_node_constraints (graph, to, from);
-
-  if (get_varinfo (from)->no_tbaa_pruning)
-    get_varinfo (to)->no_tbaa_pruning = true;
 
   /* Mark TO as changed if FROM was changed. If TO was already marked
      as changed, decrease the changed count.  */
@@ -3725,14 +3711,6 @@ find_func_aliases (gimple origt)
 	    }
 	}
     }
-  else if (gimple_code (t) == GIMPLE_CHANGE_DYNAMIC_TYPE)
-    {
-      unsigned int j;
-
-      get_constraint_for (gimple_cdt_location (t), &lhsc);
-      for (j = 0; VEC_iterate (ce_s, lhsc, j, c); ++j)
-	get_varinfo (c->var)->no_tbaa_pruning = true;
-    }
 
   stmt_escape_type = is_escape_site (t);
   if (stmt_escape_type == ESCAPE_STORED_IN_GLOBAL)
@@ -4444,10 +4422,7 @@ dump_solution_for_var (FILE *file, unsigned int var)
 	{
 	  fprintf (file, "%s ", get_varinfo (i)->name);
 	}
-      fprintf (file, "}");
-      if (vi->no_tbaa_pruning)
-	fprintf (file, " no-tbaa-pruning");
-      fprintf (file, "\n");
+      fprintf (file, "}\n");
     }
 }
 
@@ -4628,19 +4603,13 @@ shared_bitmap_add (bitmap pt_vars)
 }
 
 
-/* Set bits in INTO corresponding to the variable uids in solution set FROM.
-   If MEM_ALIAS_SET is not zero, we also use type based alias analysis to
-   prune the points-to sets with this alias-set.
-   Returns the number of pruned variables and updates the vars_contains_global
-   member of *PT .  */
+/* Set bits in INTO corresponding to the variable uids in solution set FROM.  */
 
-static unsigned
-set_uids_in_ptset (bitmap into, bitmap from,
-		   alias_set_type mem_alias_set, struct pt_solution *pt)
+static void 
+set_uids_in_ptset (bitmap into, bitmap from, struct pt_solution *pt)
 {
   unsigned int i;
   bitmap_iterator bi;
-  unsigned pruned = 0;
 
   EXECUTE_IF_SET_IN_BITMAP (from, 0, i, bi)
     {
@@ -4655,22 +4624,6 @@ set_uids_in_ptset (bitmap into, bitmap from,
 	  || TREE_CODE (vi->decl) == PARM_DECL
 	  || TREE_CODE (vi->decl) == RESULT_DECL)
 	{
-	  /* Don't type prune artificial vars or points-to sets
-	     for pointers that have not been dereferenced or with
-	     type-based pruning disabled.  */
-	  if (!vi->is_artificial_var
-	      && !vi->no_tbaa_pruning
-	      && mem_alias_set != 0)
-	    {
-	      alias_set_type var_alias_set = get_alias_set (vi->decl);
-	      if (mem_alias_set != var_alias_set
-		  && !alias_set_subset_of (mem_alias_set, var_alias_set))
-		{
-		  ++pruned;
-		  continue;
-		}
-	    }
-
 	  /* Add the decl to the points-to set.  Note that the points-to
 	     set contains global variables.  */
 	  bitmap_set_bit (into, DECL_UID (vi->decl));
@@ -4678,113 +4631,21 @@ set_uids_in_ptset (bitmap into, bitmap from,
 	    pt->vars_contains_global = true;
 	}
     }
-
-  return pruned;
 }
 
 
 static bool have_alias_info = false;
 
-/* Emit a note for the pointer initialization point DEF.  */
+/* Compute the points-to solution *PT for the variable VI.  */
 
 static void
-emit_pointer_definition (tree ptr, bitmap visited)
+find_what_var_points_to (varinfo_t vi, struct pt_solution *pt)
 {
-  gimple def = SSA_NAME_DEF_STMT (ptr);
-  if (gimple_code (def) == GIMPLE_PHI)
-    {
-      use_operand_p argp;
-      ssa_op_iter oi;
-
-      FOR_EACH_PHI_ARG (argp, def, oi, SSA_OP_USE)
-	{
-	  tree arg = USE_FROM_PTR (argp);
-	  if (TREE_CODE (arg) == SSA_NAME)
-	    {
-	      if (bitmap_set_bit (visited, SSA_NAME_VERSION (arg)))
-		emit_pointer_definition (arg, visited);
-	    }
-	  else
-	    inform (0, "initialized from %qE", arg);
-	}
-    }
-  else if (!gimple_nop_p (def))
-    inform (gimple_location (def), "initialized from here");
-}
-
-/* Emit a strict aliasing warning for dereferencing the pointer PTR.  */
-
-static void
-emit_alias_warning (tree ptr)
-{
-  gimple use;
-  imm_use_iterator ui;
-  bool warned = false;
-
-  FOR_EACH_IMM_USE_STMT (use, ui, ptr)
-    {
-      tree deref = NULL_TREE;
-
-      if (gimple_has_lhs (use))
-	{
-	  tree lhs = get_base_address (gimple_get_lhs (use));
-	  if (lhs
-	      && INDIRECT_REF_P (lhs)
-	      && TREE_OPERAND (lhs, 0) == ptr)
-	    deref = lhs;
-	}
-      if (gimple_assign_single_p (use))
-	{
-	  tree rhs = get_base_address (gimple_assign_rhs1 (use));
-	  if (rhs
-	      && INDIRECT_REF_P (rhs)
-	      && TREE_OPERAND (rhs, 0) == ptr)
-	    deref = rhs;
-	}
-      else if (is_gimple_call (use))
-	{
-	  unsigned i;
-	  for (i = 0; i < gimple_call_num_args (use); ++i)
-	    {
-	      tree op = get_base_address (gimple_call_arg (use, i));
-	      if (op
-		  && INDIRECT_REF_P (op)
-		  && TREE_OPERAND (op, 0) == ptr)
-		deref = op;
-	    }
-	}
-      if (deref
-	  && !TREE_NO_WARNING (deref))
-	{
-	  TREE_NO_WARNING (deref) = 1;
-	  warned |= warning_at (gimple_location (use), OPT_Wstrict_aliasing,
-				"dereferencing pointer %qD does break "
-				"strict-aliasing rules", SSA_NAME_VAR (ptr));
-	}
-    }
-  if (warned)
-    {
-      bitmap visited = BITMAP_ALLOC (NULL);
-      emit_pointer_definition (ptr, visited);
-      BITMAP_FREE (visited);
-    }
-}
-
-/* Compute the points-to solution *PT for the variable VI.
-   Prunes the points-to set based on TBAA rules if DO_TBAA_PRUNING
-   is true.  Returns the number of TBAA pruned variables from the
-   points-to set.  */
-
-static unsigned int
-find_what_var_points_to (varinfo_t vi, struct pt_solution *pt,
-			 bool do_tbaa_pruning)
-{
-  unsigned int i, pruned;
+  unsigned int i;
   bitmap_iterator bi;
   bitmap finished_solution;
   bitmap result;
   tree ptr = vi->decl;
-  alias_set_type mem_alias_set;
 
   memset (pt, 0, sizeof (struct pt_solution));
 
@@ -4821,7 +4682,7 @@ find_what_var_points_to (varinfo_t vi, struct pt_solution *pt,
   /* Instead of doing extra work, simply do not create
      elaborate points-to information for pt_anything pointers.  */
   if (pt->anything)
-    return 0;
+    return;
 
   /* Share the final set of variables when possible.  */
   finished_solution = BITMAP_GGC_ALLOC ();
@@ -4830,15 +4691,7 @@ find_what_var_points_to (varinfo_t vi, struct pt_solution *pt,
   if (TREE_CODE (ptr) == SSA_NAME)
     ptr = SSA_NAME_VAR (ptr);
 
-  /* If the pointer decl is marked that no TBAA is to be applied,
-     do not do tbaa pruning.  */
-  if (!do_tbaa_pruning
-      || DECL_NO_TBAA_P (ptr))
-    mem_alias_set = 0;
-  else
-    mem_alias_set = get_deref_alias_set (ptr);
-  pruned = set_uids_in_ptset (finished_solution, vi->solution,
-			      mem_alias_set, pt);
+  set_uids_in_ptset (finished_solution, vi->solution, pt);
   result = shared_bitmap_lookup (finished_solution);
   if (!result)
     {
@@ -4850,18 +4703,14 @@ find_what_var_points_to (varinfo_t vi, struct pt_solution *pt,
       pt->vars = result;
       bitmap_clear (finished_solution);
     }
-
-  return pruned;
 }
 
-/* Given a pointer variable P, fill in its points-to set.  Apply
-   type-based pruning if IS_DEREFERENCED is true.  */
+/* Given a pointer variable P, fill in its points-to set.  */
 
 static void
-find_what_p_points_to (tree p, bool is_dereferenced)
+find_what_p_points_to (tree p)
 {
   struct ptr_info_def *pi;
-  unsigned int pruned;
   tree lookup_p = p;
   varinfo_t vi;
 
@@ -4877,23 +4726,7 @@ find_what_p_points_to (tree p, bool is_dereferenced)
     return;
 
   pi = get_ptr_info (p);
-  pruned = find_what_var_points_to (vi, &pi->pt, is_dereferenced);
-
-  if (!(pi->pt.anything || pi->pt.nonlocal || pi->pt.escaped)
-      && bitmap_empty_p (pi->pt.vars)
-      && pruned > 0
-      && is_dereferenced
-      && warn_strict_aliasing > 0
-      && !SSA_NAME_IS_DEFAULT_DEF (p))
-    {
-      if (dump_file && dump_flags & TDF_DETAILS)
-	{
-	  fprintf (dump_file, "alias warning for ");
-	  print_generic_expr (dump_file, p, 0);
-	  fprintf (dump_file, "\n");
-	}
-      emit_alias_warning (p);
-    }
+  find_what_var_points_to (vi, &pi->pt);
 }
 
 
@@ -5372,139 +5205,6 @@ remove_preds_and_fake_succs (constraint_graph_t graph)
   bitmap_obstack_release (&predbitmap_obstack);
 }
 
-/* Compute the set of variables we can't TBAA prune.  */
-
-static void
-compute_tbaa_pruning (void)
-{
-  unsigned int size = VEC_length (varinfo_t, varmap);
-  unsigned int i;
-  bool any;
-
-  changed_count = 0;
-  changed = sbitmap_alloc (size);
-  sbitmap_zero (changed);
-
-  /* Mark all initial no_tbaa_pruning nodes as changed.  */
-  any = false;
-  for (i = 0; i < size; ++i)
-    {
-      varinfo_t ivi = get_varinfo (i);
-
-      if (find (i) == i && ivi->no_tbaa_pruning)
-	{
-	  any = true;
-	  if ((graph->succs[i] && !bitmap_empty_p (graph->succs[i]))
-	      || VEC_length (constraint_t, graph->complex[i]) > 0)
-	    {
-	      SET_BIT (changed, i);
-	      ++changed_count;
-	    }
-	}
-    }
-
-  while (changed_count > 0)
-    {
-      struct topo_info *ti = init_topo_info ();
-      ++stats.iterations;
-
-      compute_topo_order (graph, ti);
-
-      while (VEC_length (unsigned, ti->topo_order) != 0)
-	{
-	  bitmap_iterator bi;
-
-	  i = VEC_pop (unsigned, ti->topo_order);
-
-	  /* If this variable is not a representative, skip it.  */
-	  if (find (i) != i)
-	    continue;
-
-	  /* If the node has changed, we need to process the complex
-	     constraints and outgoing edges again.  */
-	  if (TEST_BIT (changed, i))
-	    {
-	      unsigned int j;
-	      constraint_t c;
-	      VEC(constraint_t,heap) *complex = graph->complex[i];
-
-	      RESET_BIT (changed, i);
-	      --changed_count;
-
-	      /* Process the complex copy constraints.  */
-	      for (j = 0; VEC_iterate (constraint_t, complex, j, c); ++j)
-		{
-		  if (c->lhs.type == SCALAR && c->rhs.type == SCALAR)
-		    {
-		      varinfo_t lhsvi = get_varinfo (find (c->lhs.var));
-
-		      if (!lhsvi->no_tbaa_pruning)
-			{
-			  lhsvi->no_tbaa_pruning = true;
-			  if (!TEST_BIT (changed, lhsvi->id))
-			    {
-			      SET_BIT (changed, lhsvi->id);
-			      ++changed_count;
-			    }
-			}
-		    }
-		}
-
-	      /* Propagate to all successors.  */
-	      EXECUTE_IF_IN_NONNULL_BITMAP (graph->succs[i], 0, j, bi)
-		{
-		  unsigned int to = find (j);
-		  varinfo_t tovi = get_varinfo (to);
-
-		  /* Don't propagate to ourselves.  */
-		  if (to == i)
-		    continue;
-
-		  if (!tovi->no_tbaa_pruning)
-		    {
-		      tovi->no_tbaa_pruning = true;
-		      if (!TEST_BIT (changed, to))
-			{
-			  SET_BIT (changed, to);
-			  ++changed_count;
-			}
-		    }
-		}
-	    }
-	}
-
-      free_topo_info (ti);
-    }
-
-  sbitmap_free (changed);
-
-  if (any)
-    {
-      for (i = 0; i < size; ++i)
-	{
-	  varinfo_t ivi = get_varinfo (i);
-	  varinfo_t ivip = get_varinfo (find (i));
-
-	  if (ivip->no_tbaa_pruning)
-	    {
-	      tree var = ivi->decl;
-
-	      if (TREE_CODE (var) == SSA_NAME)
-		var = SSA_NAME_VAR (var);
-
-	      if (POINTER_TYPE_P (TREE_TYPE (var)))
-		{
-		  DECL_NO_TBAA_P (var) = 1;
-
-		  /* Tell the RTL layer that this pointer can alias
-		     anything.  */
-		  DECL_POINTER_ALIAS_SET (var) = 0;
-		}
-	    }
-	}
-    }
-}
-
 /* Initialize the heapvar for statement mapping.  */
 
 static void
@@ -5534,7 +5234,6 @@ compute_points_to_sets (void)
   struct scc_info *si;
   basic_block bb;
   unsigned i;
-  sbitmap dereferenced_ptrs;
 
   timevar_push (TV_TREE_PTA);
 
@@ -5542,11 +5241,6 @@ compute_points_to_sets (void)
   init_alias_heapvars ();
 
   intra_create_variable_infos ();
-
-  /* A bitmap of SSA_NAME pointers that are dereferenced.  This is
-     used to track which points-to sets may be TBAA pruned.  */
-  dereferenced_ptrs = sbitmap_alloc (num_ssa_names);
-  sbitmap_zero (dereferenced_ptrs);
 
   /* Now walk all statements and derive aliases.  */
   FOR_EACH_BB (bb)
@@ -5564,30 +5258,10 @@ compute_points_to_sets (void)
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple stmt = gsi_stmt (gsi);
-	  use_operand_p use_p;
-	  ssa_op_iter iter;
-
-	  /* Mark dereferenced pointers.  This is used by TBAA pruning
-	     of the points-to sets and the alias warning machinery.  */
-	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
-	    {
-	      unsigned num_uses, num_loads, num_stores;
-	      tree op = USE_FROM_PTR (use_p);
-
-	      if (!POINTER_TYPE_P (TREE_TYPE (op)))
-		continue;
-
-	      /* Determine whether OP is a dereferenced pointer.  */
-	      count_uses_and_derefs (op, stmt,
-				     &num_uses, &num_loads, &num_stores);
-	      if (num_loads + num_stores > 0)
-		SET_BIT (dereferenced_ptrs, SSA_NAME_VERSION (op));
-	    }
 
 	  find_func_aliases (stmt);
 	}
     }
-
 
   if (dump_file)
     {
@@ -5642,15 +5316,13 @@ compute_points_to_sets (void)
 
   solve_graph (graph);
 
-  compute_tbaa_pruning ();
-
   if (dump_file)
     dump_sa_points_to_info (dump_file);
 
   /* Compute the points-to sets for ESCAPED and CALLUSED used for
      call-clobber analysis.  */
-  find_what_var_points_to (var_escaped, &cfun->gimple_df->escaped, false);
-  find_what_var_points_to (var_callused, &cfun->gimple_df->callused, false);
+  find_what_var_points_to (var_escaped, &cfun->gimple_df->escaped);
+  find_what_var_points_to (var_callused, &cfun->gimple_df->callused);
 
   /* Make sure the ESCAPED solution (which is used as placeholder in
      other solutions) does not reference itself.  This simplifies
@@ -5663,9 +5335,8 @@ compute_points_to_sets (void)
       tree ptr = ssa_name (i);
       if (ptr
 	  && POINTER_TYPE_P (TREE_TYPE (ptr)))
-	find_what_p_points_to (ptr, TEST_BIT (dereferenced_ptrs, i));
+	find_what_p_points_to (ptr);
     }
-  sbitmap_free (dereferenced_ptrs);
 
   timevar_pop (TV_TREE_PTA);
 

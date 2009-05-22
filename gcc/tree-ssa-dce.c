@@ -295,7 +295,6 @@ mark_stmt_if_obviously_necessary (gimple stmt, bool aggressive)
     case GIMPLE_ASM:
     case GIMPLE_RESX:
     case GIMPLE_RETURN:
-    case GIMPLE_CHANGE_DYNAMIC_TYPE:
       mark_stmt_necessary (stmt, true);
       return;
 

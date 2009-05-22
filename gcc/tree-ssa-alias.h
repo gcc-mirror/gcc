@@ -78,6 +78,8 @@ struct GTY(()) pt_solution
 extern enum escape_type is_escape_site (gimple);
 extern bool ptr_deref_may_alias_global_p (tree);
 extern bool refs_may_alias_p (tree, tree);
+extern bool refs_anti_dependent_p (tree, tree);
+extern bool refs_output_dependent_p (tree, tree);
 extern bool ref_maybe_used_by_stmt_p (gimple, tree);
 extern bool stmt_may_clobber_ref_p (gimple, tree);
 extern void *walk_non_aliased_vuses (tree, tree,

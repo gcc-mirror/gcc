@@ -6856,19 +6856,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    break;
 	  }
 
-	case CHANGE_DYNAMIC_TYPE_EXPR:
-	  {
-	    gimple cdt;
-
-	    ret = gimplify_expr (&CHANGE_DYNAMIC_TYPE_LOCATION (*expr_p),
-				 pre_p, post_p, is_gimple_reg, fb_lvalue);
-	    cdt = gimple_build_cdt (CHANGE_DYNAMIC_TYPE_NEW_TYPE (*expr_p),
-				    CHANGE_DYNAMIC_TYPE_LOCATION (*expr_p));
-	    gimplify_seq_add_stmt (pre_p, cdt);
-	    ret = GS_ALL_DONE;
-	  }
-	  break;
-
 	case OBJ_TYPE_REF:
 	  {
 	    enum gimplify_status r0, r1;

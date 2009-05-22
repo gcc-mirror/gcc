@@ -4,8 +4,8 @@
 
 int foo() {
   int x;
-  float& q = reinterpret_cast<float&> (x);  /* { dg-message "initialized" } */
-  q = 1.0; /* { dg-warning "does break strict-aliasing" } */
+  float& q = reinterpret_cast<float&> (x);  /* { dg-message "initialized" "" { xfail *-*-* } } */
+  q = 1.0; /* { dg-warning "does break strict-aliasing" "" { xfail *-*-* } } */
   return x;
 }
 

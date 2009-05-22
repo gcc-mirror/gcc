@@ -1223,7 +1223,17 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b)
     return false;
 
   /* Query the alias oracle.  */
-  if (!refs_may_alias_p (DR_REF (a), DR_REF (b)))
+  if (!DR_IS_READ (a) && !DR_IS_READ (b))
+    {
+      if (!refs_output_dependent_p (DR_REF (a), DR_REF (b)))
+	return false;
+    }
+  else if (DR_IS_READ (a) && !DR_IS_READ (b))
+    {
+      if (!refs_anti_dependent_p (DR_REF (a), DR_REF (b)))
+	return false;
+    }
+  else if (!refs_may_alias_p (DR_REF (a), DR_REF (b)))
     return false;
 
   if (!addr_a || !addr_b)

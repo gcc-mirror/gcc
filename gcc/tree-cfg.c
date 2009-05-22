@@ -2045,18 +2045,6 @@ remove_useless_stmts_1 (gimple_stmt_iterator *gsi, struct rus_data *data)
           }
           break;
 
-        case GIMPLE_CHANGE_DYNAMIC_TYPE:
-	  /* If we do not optimize remove GIMPLE_CHANGE_DYNAMIC_TYPE as
-	     expansion is confused about them and we only remove them
-	     during alias computation otherwise.  */
-	  if (!optimize)
-	    {
-	      data->last_was_goto = false;
-	      gsi_remove (gsi, false);
-	      break;
-	    }
-	  /* Fallthru.  */
-
         default:
           data->last_was_goto = false;
           gsi_next (gsi);
@@ -4037,10 +4025,6 @@ verify_types_in_gimple_stmt (gimple stmt)
 
     case GIMPLE_ASM:
       return false;
-
-    case GIMPLE_CHANGE_DYNAMIC_TYPE:
-      return (!is_gimple_val (gimple_cdt_location (stmt))
-	      || !POINTER_TYPE_P (TREE_TYPE (gimple_cdt_location (stmt))));
 
     case GIMPLE_PHI:
       return verify_gimple_phi (stmt);

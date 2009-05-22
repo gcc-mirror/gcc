@@ -1648,12 +1648,6 @@ extern void protected_set_expr_location (tree, location_t);
 #define EH_FILTER_MUST_NOT_THROW(NODE) \
   (EH_FILTER_EXPR_CHECK (NODE)->base.static_flag)
 
-/* CHANGE_DYNAMIC_TYPE_EXPR accessors.  */
-#define CHANGE_DYNAMIC_TYPE_NEW_TYPE(NODE) \
-  TREE_OPERAND (CHANGE_DYNAMIC_TYPE_EXPR_CHECK (NODE), 0)
-#define CHANGE_DYNAMIC_TYPE_LOCATION(NODE) \
-  TREE_OPERAND (CHANGE_DYNAMIC_TYPE_EXPR_CHECK (NODE), 1)
-
 /* OBJ_TYPE_REF accessors.  */
 #define OBJ_TYPE_REF_EXPR(NODE)	  TREE_OPERAND (OBJ_TYPE_REF_CHECK (NODE), 0)
 #define OBJ_TYPE_REF_OBJECT(NODE) TREE_OPERAND (OBJ_TYPE_REF_CHECK (NODE), 1)
@@ -2605,11 +2599,6 @@ struct GTY(()) tree_decl_minimal {
 #define DECL_GIMPLE_REG_P(DECL) \
   DECL_COMMON_CHECK (DECL)->decl_common.gimple_reg_flag
 
-/* For a DECL with pointer type, this is set if Type Based Alias
-   Analysis should not be applied to this DECL.  */
-#define DECL_NO_TBAA_P(DECL) \
-  DECL_COMMON_CHECK (DECL)->decl_common.no_tbaa_flag
-
 struct GTY(()) tree_decl_common {
   struct tree_decl_minimal common;
   tree size;
@@ -2649,12 +2638,10 @@ struct GTY(()) tree_decl_common {
   /* Logically, these two would go in a theoretical base shared by var and
      parm decl. */
   unsigned gimple_reg_flag : 1;
-  /* In a DECL with pointer type, set if no TBAA should be done.  */
-  unsigned no_tbaa_flag : 1;
   /* In VAR_DECL, PARM_DECL and RESULT_DECL, this is DECL_BY_REFERENCE.  */
   unsigned decl_by_reference_flag : 1;
   /* Padding so that 'off_align' can be on a 32-bit boundary.  */
-  unsigned decl_common_unused : 1;
+  unsigned decl_common_unused : 2;
 
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */
   unsigned int off_align : 8;

@@ -1,3 +1,81 @@
+2009-05-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38964
+	* alias.c (write_dependence_p): Do not use TBAA for answering
+	anti-dependence or output-dependence.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Remove TBAA pruning
+	code.
+	(emit_pointer_definition): Remove.
+	(emit_alias_warning): Likewise.
+	(find_what_var_points_to): Remove TBAA pruning code.
+	(find_what_p_points_to): Likewise.  Do not warn about strict-aliasing
+	violations.
+	(compute_points_to_sets): Remove code computing the set of
+	dereferenced pointers.
+	* tree-data-ref.c (dr_may_alias_p): Properly use the split
+	oracle for querying anti and output dependencies.
+	* tree-ssa-alias.c (refs_may_alias_p_1): Add argument specifying
+	if TBAA may be applied.
+	(refs_anti_dependent_p): New function.
+	(refs_output_dependent_p): Likewise.
+	* tree-ssa-alias.h (refs_anti_dependent_p): Declare.
+	(refs_output_dependent_p): Likewise.
+	* doc/tree-ssa.texi (Memory model): New section.
+	* doc/c-tree.texi (CHANGE_DYNAMIC_TYPE_EXPR): Remove.
+	* doc/gimple.texi (GIMPLE_CHANGE_DYNAMIC_TYPE): Remove.
+	* cfgexpand.c (expand_gimple_basic_block): Do not handle
+	GIMPLE_CHANGE_DYNAMIC_TYPE or CHANGE_DYNAMIC_TYPE_EXPR.
+	* expr.c (expand_expr_real_1): Likewise.
+	* gimple-low.c (lower_stmt): Likewise.
+	* gimple-pretty-print.c (dump_gimple_stmt): Likewise.
+	(dump_gimple_cdt): Remove.
+	* gimple.c (gss_for_code): Do not handle GIMPLE_CHANGE_DYNAMIC_TYPE.
+	(gimple_size): Likewise.
+	(walk_gimple_op): Likewise.
+	(is_gimple_stmt): Likewise.
+	(walk_stmt_load_store_addr_ops): Likewise.
+	(gimple_build_cdt): Remove.
+	* gimple.def (GIMPLE_CHANGE_DYNAMIC_TYPE): Remove.
+	* gimple.h (gimple_cdt_new_type): Remove.
+	(gimple_cdt_new_type_ptr): Likewise.
+	(gimple_cdt_set_new_type): Likewise.
+	(gimple_cdt_location): Likewise.
+	(gimple_cdt_location_ptr): Likewise.
+	(gimple_cdt_set_location): Likewise.
+	* gimplify.c (gimplify_expr): Do not handle CHANGE_DYNAMIC_TYPE_EXPR.
+	* tree-cfg.c (remove_useless_stmts_1): Do not handle
+	GIMPLE_CHANGE_DYNAMIC_TYPE.
+	(verify_types_in_gimple_stmt): Likewise.
+	* tree-inline.c (estimate_num_insns): Likewise.
+	(expand_call_inline): Do not copy DECL_NO_TBAA_P.
+	(copy_decl_to_var): Likewise.
+	(copy_result_decl_to_var): Likewise.
+	* tree-pretty-print.c (dump_generic_node): Do not handle
+	CHANGE_DYNAMIC_TYPE_EXPR.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Likewise.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+	* tree-ssa-structalias.c (struct variable_info): Remove
+	no_tbaa_pruning member.
+	(new_var_info): Do not set it based on DECL_NO_TBAA_P.
+	(unify_nodes): Do not copy it.
+	(find_func_aliases): Do not handle GIMPLE_CHANGE_DYNAMIC_TYPE.
+	(dump_solution_for_var): Do not dump no_tbaa_pruning state.
+	(set_uids_in_ptset): Do not check it.
+	(find_what_var_points_to): Likewise.
+	(compute_tbaa_pruning): Remove.
+	(compute_points_to_sets): Do not call it.
+	* tree.c (walk_tree_1): Do not handle CHANGE_DYNAMIC_TYPE_EXPR.
+	* tree.def (CHANGE_DYNAMIC_TYPE_EXPR): Remove.
+	* tree.h (CHANGE_DYNAMIC_TYPE_NEW_TYPE): Remove.
+	(CHANGE_DYNAMIC_TYPE_LOCATION): Likewise.
+	(DECL_NO_TBAA_P): Likewise.
+	(struct tree_decl_common): Move no_tbaa_flag to unused flags section.
+	* omp-low.c (copy_var_decl): Do not copy DECL_NO_TBAA_P.
+	(expand_omp_atomic_pipeline): Do not set it.
+	* print-tree.c (print_node): Do not dump it.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Remove
+	redundant check.
+
 2009-05-22 Vladimir Makarov <vmakarov@redhat.com>
 
 	PR target/39856

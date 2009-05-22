@@ -102,7 +102,6 @@ gss_for_code (enum gimple_code code)
     case GIMPLE_COND:
     case GIMPLE_GOTO:
     case GIMPLE_LABEL:
-    case GIMPLE_CHANGE_DYNAMIC_TYPE:
     case GIMPLE_SWITCH:			return GSS_WITH_OPS;
     case GIMPLE_ASM:			return GSS_ASM;
     case GIMPLE_BIND:			return GSS_BIND;
@@ -190,8 +189,6 @@ gimple_size (enum gimple_code code)
       return sizeof (struct gimple_statement_omp_atomic_store);
     case GIMPLE_WITH_CLEANUP_EXPR:
       return sizeof (struct gimple_statement_wce);
-    case GIMPLE_CHANGE_DYNAMIC_TYPE:
-      return sizeof (struct gimple_statement_with_ops);
     case GIMPLE_PREDICT:
       return sizeof (struct gimple_statement_base);
     default:
@@ -1042,20 +1039,6 @@ gimple_build_omp_single (gimple_seq body, tree clauses)
 }
 
 
-/* Build a GIMPLE_CHANGE_DYNAMIC_TYPE statement.  TYPE is the new type
-   for the location PTR.  */
-
-gimple
-gimple_build_cdt (tree type, tree ptr)
-{
-  gimple p = gimple_build_with_ops (GIMPLE_CHANGE_DYNAMIC_TYPE, ERROR_MARK, 2);
-  gimple_cdt_set_new_type (p, type);
-  gimple_cdt_set_location (p, ptr);
-
-  return p;
-}
-
-
 /* Build a GIMPLE_OMP_ATOMIC_LOAD statement.  */
 
 gimple
@@ -1456,16 +1439,6 @@ walk_gimple_op (gimple stmt, walk_tree_fn callback_op,
     case GIMPLE_EH_FILTER:
       ret = walk_tree (gimple_eh_filter_types_ptr (stmt), callback_op, wi,
 		       pset);
-      if (ret)
-	return ret;
-      break;
-
-    case GIMPLE_CHANGE_DYNAMIC_TYPE:
-      ret = walk_tree (gimple_cdt_location_ptr (stmt), callback_op, wi, pset);
-      if (ret)
-	return ret;
-
-      ret = walk_tree (gimple_cdt_new_type_ptr (stmt), callback_op, wi, pset);
       if (ret)
 	return ret;
       break;
@@ -2749,7 +2722,6 @@ is_gimple_stmt (tree t)
     case TRY_FINALLY_EXPR:
     case EH_FILTER_EXPR:
     case CATCH_EXPR:
-    case CHANGE_DYNAMIC_TYPE_EXPR:
     case ASM_EXPR:
     case RESX_EXPR:
     case STATEMENT_LIST:
@@ -3254,8 +3226,7 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
     }
   else if (visit_addr
 	   && (is_gimple_assign (stmt)
-	       || gimple_code (stmt) == GIMPLE_COND
-	       || gimple_code (stmt) == GIMPLE_CHANGE_DYNAMIC_TYPE))
+	       || gimple_code (stmt) == GIMPLE_COND))
     {
       for (i = 0; i < gimple_num_ops (stmt); ++i)
 	if (gimple_op (stmt, i)

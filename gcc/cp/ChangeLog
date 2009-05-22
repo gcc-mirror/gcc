@@ -1,3 +1,9 @@
+2009-05-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38964
+	* init.c (avoid_placement_new_aliasing): Remove.
+	(build_new_1): Do not call it.
+
 2009-05-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (decl_needed_p): Consider dllexport'd functions needed.

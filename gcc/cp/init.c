@@ -1742,55 +1742,6 @@ build_raw_new_expr (VEC(tree,gc) *placement, tree type, tree nelts,
   return new_expr;
 }
 
-/* Make sure that there are no aliasing issues with T, a placement new
-   expression applied to PLACEMENT, by recording the change in dynamic
-   type.  If placement new is inlined, as it is with libstdc++, and if
-   the type of the placement new differs from the type of the
-   placement location itself, then alias analysis may think it is OK
-   to interchange writes to the location from before the placement new
-   and from after the placement new.  We have to prevent type-based
-   alias analysis from applying.  PLACEMENT may be NULL, which means
-   that we couldn't capture it in a temporary variable, in which case
-   we use a memory clobber.  */
-
-static tree
-avoid_placement_new_aliasing (tree t, tree placement)
-{
-  tree type_change;
-
-  if (processing_template_decl)
-    return t;
-
-  /* If we are not using type based aliasing, we don't have to do
-     anything.  */
-  if (!flag_strict_aliasing)
-    return t;
-
-  /* If we have a pointer and a location, record the change in dynamic
-     type.  Otherwise we need a general memory clobber.  */
-  if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE
-      && placement != NULL_TREE
-      && TREE_CODE (TREE_TYPE (placement)) == POINTER_TYPE)
-    type_change = build_stmt (CHANGE_DYNAMIC_TYPE_EXPR,
-			      TREE_TYPE (t),
-			      placement);
-  else
-    {
-      /* Build a memory clobber.  */
-      type_change = build_stmt (ASM_EXPR,
-				build_string (0, ""),
-				NULL_TREE,
-				NULL_TREE,
-				tree_cons (NULL_TREE,
-					   build_string (6, "memory"),
-					   NULL_TREE));
-
-      ASM_VOLATILE_P (type_change) = 1;
-    }
-
-  return build2 (COMPOUND_EXPR, TREE_TYPE (t), type_change, t);
-}
-
 /* Generate code for a new-expression, including calling the "operator
    new" function, initializing the object, and, if an exception occurs
    during construction, cleaning up.  The arguments are as for
@@ -1826,7 +1777,6 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
      beginning of the storage allocated for an array-new expression in
      order to store the number of elements.  */
   tree cookie_size = NULL_TREE;
-  bool have_placement;
   tree placement_first;
   tree placement_expr = NULL_TREE;
   /* True if the function we are calling is a placement allocation
@@ -1894,7 +1844,6 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
   /* If PLACEMENT is a single simple pointer type not passed by
      reference, prepare to capture it in a temporary variable.  Do
      this now, since PLACEMENT will change in the calls below.  */
-  have_placement = !VEC_empty (tree, *placement);
   placement_first = NULL_TREE;
   if (VEC_length (tree, *placement) == 1
       && (TREE_CODE (TREE_TYPE (VEC_index (tree, *placement, 0)))
@@ -2026,12 +1975,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
   /* In the simple case, we can stop now.  */
   pointer_type = build_pointer_type (type);
   if (!cookie_size && !is_initialized)
-    {
-      rval = build_nop (pointer_type, alloc_call);
-      if (have_placement)
-	rval = avoid_placement_new_aliasing (rval, placement_expr);
-      return rval;
-    }
+    return build_nop (pointer_type, alloc_call);
 
   /* Store the result of the allocation call in a variable so that we can
      use it more than once.  */
@@ -2306,9 +2250,6 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
 
   /* A new-expression is never an lvalue.  */
   gcc_assert (!lvalue_p (rval));
-
-  if (have_placement)
-    rval = avoid_placement_new_aliasing (rval, placement_expr);
 
   return rval;
 }

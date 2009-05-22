@@ -11,12 +11,12 @@ int foo() {
   float* r;
 
   if (flag) {
-    q = (float*) &x;  /* { dg-message "initialized" } */
+    q = (float*) &x;  /* { dg-message "initialized" "" { xfail *-*-* } } */
   } else {
-    q = (float*) &y;  /* { dg-message "initialized" } */
+    q = (float*) &y;  /* { dg-message "initialized" "" { xfail *-*-* } } */
   }
 
-  *q = 1.0;  /* { dg-warning "does break strict-aliasing" } */
+  *q = 1.0;  /* { dg-warning "does break strict-aliasing" "" { xfail *-*-* } } */
 
   return x;
 
