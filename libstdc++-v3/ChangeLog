@@ -1,3 +1,18 @@
+2009-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+	
+	PR libstdc++/40094
+	Revert:
+	2009-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
+	* include/ext/throw_allocator.h (throw_allocator_base): Avoid
+	out of line member functions definitions.
+	(throw_allocator_base::_S_g, _S_map, _S_throw_prob, _S_label):
+	Remove, use static locals instead.
+	(throw_allocator_base::do_check_allocated, print_to_string): Declare.
+	* src/throw_allocator.cc: New.
+	* src/Makefile.am: Add.
+	* config/abi/pre/gnu.ver: Add exports.
+	* src/Makefile.in: Regenerate.
+
 2009-05-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/tr1_impl/functional (function): Use explicit operator bool.
