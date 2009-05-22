@@ -368,7 +368,6 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
     case GIMPLE_PREDICT:
     case GIMPLE_LABEL:
     case GIMPLE_SWITCH:
-    case GIMPLE_CHANGE_DYNAMIC_TYPE:
     case GIMPLE_OMP_FOR:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SECTIONS_SWITCH:

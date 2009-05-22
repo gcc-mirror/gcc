@@ -4106,69 +4106,6 @@ gimple_nop_p (const_gimple g)
 }
 
 
-/* Return the new type set by GIMPLE_CHANGE_DYNAMIC_TYPE statement GS.  */
-
-static inline tree
-gimple_cdt_new_type (gimple gs)
-{
-  GIMPLE_CHECK (gs, GIMPLE_CHANGE_DYNAMIC_TYPE);
-  return gimple_op (gs, 1);
-}
-
-/* Return a pointer to the new type set by GIMPLE_CHANGE_DYNAMIC_TYPE
-   statement GS.  */
-
-static inline tree *
-gimple_cdt_new_type_ptr (gimple gs)
-{
-  GIMPLE_CHECK (gs, GIMPLE_CHANGE_DYNAMIC_TYPE);
-  return gimple_op_ptr (gs, 1);
-}
-
-/* Set NEW_TYPE to be the type returned by GIMPLE_CHANGE_DYNAMIC_TYPE
-   statement GS.  */
-
-static inline void
-gimple_cdt_set_new_type (gimple gs, tree new_type)
-{
-  GIMPLE_CHECK (gs, GIMPLE_CHANGE_DYNAMIC_TYPE);
-  gcc_assert (TREE_CODE_CLASS (TREE_CODE (new_type)) == tcc_type);
-  gimple_set_op (gs, 1, new_type);
-}
-
-
-/* Return the location affected by GIMPLE_CHANGE_DYNAMIC_TYPE statement GS.  */
-
-static inline tree
-gimple_cdt_location (gimple gs)
-{
-  GIMPLE_CHECK (gs, GIMPLE_CHANGE_DYNAMIC_TYPE);
-  return gimple_op (gs, 0);
-}
-
-
-/* Return a pointer to the location affected by GIMPLE_CHANGE_DYNAMIC_TYPE
-   statement GS.  */
-
-static inline tree *
-gimple_cdt_location_ptr (gimple gs)
-{
-  GIMPLE_CHECK (gs, GIMPLE_CHANGE_DYNAMIC_TYPE);
-  return gimple_op_ptr (gs, 0);
-}
-
-
-/* Set PTR to be the location affected by GIMPLE_CHANGE_DYNAMIC_TYPE
-   statement GS.  */
-
-static inline void
-gimple_cdt_set_location (gimple gs, tree ptr)
-{
-  GIMPLE_CHECK (gs, GIMPLE_CHANGE_DYNAMIC_TYPE);
-  gimple_set_op (gs, 0, ptr);
-}
-
-
 /* Return the predictor of GIMPLE_PREDICT statement GS.  */
 
 static inline enum br_predictor

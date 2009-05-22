@@ -1995,7 +1995,6 @@ This macro returns the attributes on the type @var{type}.
 @tindex TARGET_EXPR
 @tindex AGGR_INIT_EXPR
 @tindex VA_ARG_EXPR
-@tindex CHANGE_DYNAMIC_TYPE_EXPR
 @tindex OMP_PARALLEL
 @tindex OMP_FOR
 @tindex OMP_SECTIONS
@@ -2707,13 +2706,6 @@ This node is used to implement support for the C/C++ variable argument-list
 mechanism.  It represents expressions like @code{va_arg (ap, type)}.
 Its @code{TREE_TYPE} yields the tree representation for @code{type} and
 its sole argument yields the representation for @code{ap}.
-
-@item CHANGE_DYNAMIC_TYPE_EXPR
-Indicates the special aliasing required by C++ placement new.  It has
-two operands: a type and a location.  It means that the dynamic type
-of the location is changing to be the specified type.  The alias
-analysis code takes this into account when doing type based alias
-analysis.
 
 @item OMP_PARALLEL
 

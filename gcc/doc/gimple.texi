@@ -332,14 +332,13 @@ union gimple_statement_d
 
 The following table briefly describes the GIMPLE instruction set.
 
-@multitable {@code{GIMPLE_CHANGE_DYNAMIC_TYPE}} {High GIMPLE} {Low GIMPLE}
+@multitable {@code{GIMPLE_OMP_SECTIONS_SWITCH}} {High GIMPLE} {Low GIMPLE}
 @item Instruction			@tab High GIMPLE	@tab Low GIMPLE
 @item @code{GIMPLE_ASM}			@tab x			@tab x
 @item @code{GIMPLE_ASSIGN}		@tab x			@tab x
 @item @code{GIMPLE_BIND}		@tab x			@tab
 @item @code{GIMPLE_CALL}		@tab x			@tab x
 @item @code{GIMPLE_CATCH}		@tab x			@tab
-@item @code{GIMPLE_CHANGE_DYNAMIC_TYPE}	@tab x			@tab x
 @item @code{GIMPLE_COND}		@tab x			@tab x
 @item @code{GIMPLE_EH_FILTER}		@tab x			@tab
 @item @code{GIMPLE_GOTO}		@tab x			@tab x
@@ -885,7 +884,6 @@ Return a deep copy of statement @code{STMT}.
 * @code{GIMPLE_BIND}::
 * @code{GIMPLE_CALL}::
 * @code{GIMPLE_CATCH}::
-* @code{GIMPLE_CHANGE_DYNAMIC_TYPE}::
 * @code{GIMPLE_COND}::
 * @code{GIMPLE_EH_FILTER}::
 * @code{GIMPLE_LABEL}::
@@ -1293,45 +1291,6 @@ Set @code{T} to be the set of types handled by @code{GIMPLE_CATCH} @code{G}.
 
 @deftypefn {GIMPLE function} void gimple_catch_set_handler (gimple g, gimple_seq handler)
 Set @code{HANDLER} to be the body of @code{GIMPLE_CATCH} @code{G}. 
-@end deftypefn
-
-@node @code{GIMPLE_CHANGE_DYNAMIC_TYPE}
-@subsection @code{GIMPLE_CHANGE_DYNAMIC_TYPE}
-@cindex @code{GIMPLE_CHANGE_DYNAMIC_TYPE}
-
-@deftypefn {GIMPLE function} gimple gimple_build_cdt (tree type, tree ptr)
-Build a @code{GIMPLE_CHANGE_DYNAMIC_TYPE} statement.  @code{TYPE} is the new
-type for the location @code{PTR}.
-@end deftypefn
-
-@deftypefn {GIMPLE function} tree gimple_cdt_new_type (gimple g)
-Return the new type set by @code{GIMPLE_CHANGE_DYNAMIC_TYPE} statement
-@code{G}. 
-@end deftypefn
-
-@deftypefn {GIMPLE function} tree *gimple_cdt_new_type_ptr (gimple g)
-Return a pointer to the new type set by
-@code{GIMPLE_CHANGE_DYNAMIC_TYPE} statement @code{G}. 
-@end deftypefn
-
-@deftypefn {GIMPLE function} void gimple_cdt_set_new_type (gimple g, tree new_type)
-Set @code{NEW_TYPE} to be the type returned by
-@code{GIMPLE_CHANGE_DYNAMIC_TYPE} statement @code{G}. 
-@end deftypefn
-
-@deftypefn {GIMPLE function} tree gimple_cdt_location (gimple g)
-Return the location affected by @code{GIMPLE_CHANGE_DYNAMIC_TYPE}
-statement @code{G}. 
-@end deftypefn
-
-@deftypefn {GIMPLE function} tree *gimple_cdt_location_ptr (gimple g)
-Return a pointer to the location affected by
-@code{GIMPLE_CHANGE_DYNAMIC_TYPE} statement @code{G}. 
-@end deftypefn
-
-@deftypefn {GIMPLE function} void gimple_cdt_set_location (gimple g, tree ptr)
-Set @code{PTR} to be the location affected by @code{GIMPLE_CHANGE_DYNAMIC_TYPE}
-statement @code{G}. 
 @end deftypefn
 
 

@@ -1,3 +1,10 @@
+2009-05-22  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/38964
+	* g++.dg/warn/Wstrict-aliasing-float-ref-int-obj.C: XFAIL.
+	* gcc.dg/Wstrict-aliasing-converted-assigned.c: Likewise.
+	* gcc.dg/Wstrict-aliasing-float-ptr-int-obj.c: Likewise.
+
 2009-05-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/dll-6.c: New test.

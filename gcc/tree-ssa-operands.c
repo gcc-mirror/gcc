@@ -1009,9 +1009,6 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
         return;
       }
 
-    case CHANGE_DYNAMIC_TYPE_EXPR:
-      gcc_unreachable ();
-
     case FUNCTION_DECL:
     case LABEL_DECL:
     case CONST_DECL:

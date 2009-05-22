@@ -9,5 +9,5 @@ int foo()
   return i;
 }
 
-/* { dg-message "does break strict-aliasing" "" { target { *-*-* && lp64 } } 8 } */
-/* { dg-message "initialized" "" { target { *-*-* && lp64 } } 8 } */
+/* { dg-message "does break strict-aliasing" "" { target { *-*-* && lp64 } xfail *-*-* } 8 } */
+/* { dg-message "initialized" "" { target { *-*-* && lp64 } xfail *-*-* } 8 } */
