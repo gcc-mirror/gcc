@@ -1,3 +1,8 @@
+2009-05-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/40195
+	* module.c (read_md5_from_module_file): Close file before returning.
+
 2009-05-18  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40164
@@ -189,7 +194,7 @@
 	* gfortran.h (gfc_code): Rename struct member label to label1.
 	* dump-parse-tree.c (show_code_node): Update symbol.
 	* trans-stmt.c (gfc_trans_label_assign, gfc_trans_goto,
-	gfc_trans_arithmetic_if)": Ditto.
+	gfc_trans_arithmetic_if): Ditto.
 	* resolve.c (gfc_resolve_blocks, resolve_code): Ditto.
 	* match.c (match_arithmetic_if, gfc_match_if, gfc_reference_st_label,
 	gfc_match_assign, gfc_match_goto): Ditto.
@@ -447,13 +452,13 @@
 2009-04-24  Daniel Kraft  <d@domob.eu>
 
 	* gfortran.h (gfc_get_typebound_proc): Removed as macro, now a function.
-	(struct gfc_symtree): Moved `typebound' member inside union.
-	(struct gfc_namespace): Add `tb_sym_root' as new symtree to sort out
+	(struct gfc_symtree): Moved "typebound" member inside union.
+	(struct gfc_namespace): Add "tb_sym_root" as new symtree to sort out
 	type-bound procedures there.
 	(gfc_get_tbp_symtree): New procedure.
 	* symbol.c (tentative_tbp_list): New global.
-	(gfc_get_namespace): NULL new `tb_sym_root' member.
-	(gfc_new_symtree): Removed initialization of `typebound' member.
+	(gfc_get_namespace): NULL new "tb_sym_root" member.
+	(gfc_new_symtree): Removed initialization of "typebound" member.
 	(gfc_undo_symbols): Process list of tentative tbp's.
 	(gfc_commit_symbols): Ditto.
 	(free_tb_tree): New method.
@@ -466,8 +471,8 @@
 	* primary.c (gfc_match_varspec): Ditto.  Don't reference tbp-symbol
 	as it isn't a symbol any longer.
 	* module.c (mio_typebound_symtree): Adapt to changes.
-	(mio_typebound_proc): Ditto, create symtrees using `gfc_get_tbp_symtree'
-	rather than `gfc_get_sym_tree'.
+	(mio_typebound_proc): Ditto, create symtrees using "gfc_get_tbp_symtree"
+	rather than "gfc_get_sym_tree".
 	(mio_f2k_derived): Ditto.
 	* decl.c (match_procedure_in_type): Ditto.
 	(gfc_match_generic): Ditto.  Don't reference tbp-symbol.
@@ -576,7 +581,7 @@
 2009-04-11  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37746
-	* gfortran.h (struct gfc_charlen): New field `passed_length' to store
+	* gfortran.h (struct gfc_charlen): New field "passed_length" to store
 	the actual passed string length for dummy arguments.
 	* trans-decl.c (gfc_create_string_length): Formatting fixes and added
 	assertion, moved a local variable into the innermost block it is needed.
@@ -684,15 +689,15 @@
 
 2009-04-06  Janus Weil  <janus@gcc.gnu.org>
 
-       PR fortran/39414
-       * decl.c (match_procedure_decl): Fix double declaration problems with
-       PROCEDURE statements.
-       * symbol.c (gfc_add_type): Ditto.
+	PR fortran/39414
+	* decl.c (match_procedure_decl): Fix double declaration problems with
+	PROCEDURE statements.
+	* symbol.c (gfc_add_type): Ditto.
 
 2009-04-06  Paul Thomas  <pault@gcc.gnu.org>
 
-        PR fortran/36091
-        * trans-array.c (gfc_conv_array_ref): If the symbol has the
+	PR fortran/36091
+	* trans-array.c (gfc_conv_array_ref): If the symbol has the
 	temporary attribute use the array_spec for the bounds.
 	* gfortran.h : Add the temporary field to the structure
 	'symbol_attribute'.
@@ -821,7 +826,7 @@
 2009-03-29  Daniel Kraft  <d@domob.eu>
 
 	PR fortran/37423
-	* gfortran.h (struct gfc_typebound_proc): Added new flag `deferred' and
+	* gfortran.h (struct gfc_typebound_proc): Added new flag "deferred" and
 	added a comment explaining DEFERRED binding handling.
 	* decl.c (match_binding_attributes): Really match DEFERRED attribute.
 	(match_procedure_in_type): Really match PROCEDURE(interface) syntax
@@ -833,7 +838,7 @@
 	(resolve_typebound_procedure): Allow abstract interfaces as targets
 	for DEFERRED bindings.
 	(ensure_not_abstract_walker), (ensure_not_abstract): New methods.
-	(resolve_fl_derived): Use new `ensure_not_abstract' method for
+	(resolve_fl_derived): Use new "ensure_not_abstract" method for
 	non-ABSTRACT types extending ABSTRACT ones to ensure each DEFERRED
 	binding is overridden.
 	(check_typebound_baseobject): New method.
@@ -842,7 +847,7 @@
 	* gfc-internals.texi (Type-bound procedures): Document a little bit
 	about internal handling of DEFERRED bindings.
 
-2009-03-29  Tobias Schlüter  <tobi@gcc.gnu.org>
+2009-03-29  Tobias Schlueter  <tobi@gcc.gnu.org>
 
 	PR fortran/38507
 	* gfortran.h (gfc_st_label): Fix comment.
