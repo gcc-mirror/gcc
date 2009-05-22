@@ -1,5 +1,10 @@
+2009-05-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/40221
+	* include/tr1_impl/functional: Add explicit cast.
+
 2009-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
-	
+
 	PR libstdc++/40094
 	Revert:
 	2009-05-07  Paolo Carlini  <paolo.carlini@oracle.com>
