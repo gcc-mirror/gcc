@@ -1,5 +1,14 @@
 2009-05-22  Ben Elliston  <bje@au.ibm.com>
 
+	* Makefile.in (bversion.h, s-bversion): New targets.
+	(TOPLEV_H): Add bversion.h.
+	* toplev.h: Include "bversion.h".
+	(ATTRIBUTE_GCC_DIAG): When building with checking disabled, use
+	the __format__ attribute only if compiling with the same version
+	of GCC as the sources (the "build version").
+
+2009-05-22  Ben Elliston  <bje@au.ibm.com>
+
 	* c-format.c (handle_format_attribute): Fix comment typo.
 
 2009-05-21  Steve Ellcey  <sje@cup.hp.com>

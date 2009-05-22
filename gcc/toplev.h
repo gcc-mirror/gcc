@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TOPLEV_H
 #define GCC_TOPLEV_H
 #include "input.h"
+#include "bversion.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -49,7 +50,7 @@ extern void _fatal_insn (const char *, const_rtx, const char *, int, const char 
 /* None of these functions are suitable for ATTRIBUTE_PRINTF, because
    each language front end can extend them with its own set of format
    specifiers.  We must use custom format checks.  */
-#if GCC_VERSION >= 4001
+#if (ENABLE_CHECKING && GCC_VERSION >= 4001) || GCC_VERSION == BUILDING_GCC_VERSION
 #define ATTRIBUTE_GCC_DIAG(m, n) __attribute__ ((__format__ (GCC_DIAG_STYLE, m, n))) ATTRIBUTE_NONNULL(m)
 #else
 #define ATTRIBUTE_GCC_DIAG(m, n) ATTRIBUTE_NONNULL(m)
