@@ -3268,8 +3268,10 @@ expand_or_defer_fn (tree fn)
 
       /* If the user wants us to keep all inline functions, then mark
 	 this function as needed so that finish_file will make sure to
-	 output it later.  */
-      if (flag_keep_inline_functions && DECL_DECLARED_INLINE_P (fn))
+	 output it later.  Similarly, all dllexport'd functions must
+	 be emitted; there may be callers in other DLLs.  */
+      if ((flag_keep_inline_functions && DECL_DECLARED_INLINE_P (fn))
+	  || lookup_attribute ("dllexport", DECL_ATTRIBUTES (fn)))
 	mark_needed (fn);
     }
 

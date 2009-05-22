@@ -1,3 +1,8 @@
+2009-05-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (handle_dll_attribute): Mark dllexport'd inlines as
+	non-external.
+
 2009-05-22  Ben Elliston  <bje@au.ibm.com>
 
 	* Makefile.in (bversion.h, s-bversion): New targets.

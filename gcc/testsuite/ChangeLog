@@ -1,3 +1,12 @@
+2009-05-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/dll-6.c: New test.
+	* gcc.dg/dll-6a.c: Likewise.
+	* gcc.dg/dll-7.c: Likewise.
+	* gcc.dg/dll-7a.c: Likewise.
+	* g++.dg/ext/dllexport2.C: Likewise.
+	* g++.dg/ext/dllexport2a.cc: Likewise.
+
 2009-05-21  Steve Ellcey  <sje@cup.hp.com>
 
 	PR target/37846

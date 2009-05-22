@@ -1707,6 +1707,10 @@ decl_needed_p (tree decl)
       || (DECL_ASSEMBLER_NAME_SET_P (decl)
 	  && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
       return true;
+  /* Functions marked "dllexport" must be emitted so that they are
+     visible to other DLLs.  */
+  if (lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
+    return true;
   /* Otherwise, DECL does not need to be emitted -- yet.  A subsequent
      reference to DECL might cause it to be emitted later.  */
   return false;
