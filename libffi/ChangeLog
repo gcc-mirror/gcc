@@ -1,3 +1,16 @@
+2009-05-22  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* configure.ac:  Also check if assembler supports pc-relative
+	relocs on X86_WIN32 targets.
+	* configure:  Regenerate.
+	* src/x86/win32.S (ffi_prep_args):  Declare extern, not global.
+	(_ffi_call_SYSV):  Add missing function type symbol .def and
+	add EH markup labels.
+	(_ffi_call_STDCALL):  Likewise.
+	(_ffi_closure_SYSV):  Likewise.
+	(_ffi_closure_raw_SYSV):  Likewise.
+	(.eh_frame):  Add hand-crafted EH data.
+
 2009-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/lib/libffi-dg.exp: Change copyright header to refer to

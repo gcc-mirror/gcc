@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   win32.S - Copyright (c) 1996, 1998, 2001, 2002  Red Hat, Inc.
+   win32.S - Copyright (c) 1996, 1998, 2001, 2002, 2009  Red Hat, Inc.
 	     Copyright (c) 2001  John Beniton
 	     Copyright (c) 2002  Ranjit Mathew
 			
@@ -30,18 +30,20 @@
 #include <fficonfig.h>
 #include <ffi.h>
  
-.text
+	.text
  
-.globl ffi_prep_args
+	.extern	ffi_prep_args
  
         # This assumes we are using gas.
         .balign 16
-.globl _ffi_call_SYSV
- 
+	.globl	_ffi_call_SYSV
+	.def	_ffi_call_SYSV;	.scl	2;	.type	32;	.endef
 _ffi_call_SYSV:
+.LFB1:
         pushl %ebp
+.LCFI0:
         movl  %esp,%ebp
- 
+.LCFI1:
         # Make room for all of the new args.
         movl  16(%ebp),%ecx                                                     
         subl  %ecx,%esp
@@ -144,17 +146,19 @@ epilogue:
         movl %ebp,%esp
         popl %ebp
         ret
- 
 .ffi_call_SYSV_end:
+.LFE1:
 
         # This assumes we are using gas.
         .balign 16
-.globl _ffi_call_STDCALL
-
+	.globl	_ffi_call_STDCALL
+	.def	_ffi_call_STDCALL;	.scl	2;	.type	32;	.endef
 _ffi_call_STDCALL:
+.LFB2:
         pushl %ebp
+.LCFI2:
         movl  %esp,%ebp
-
+.LCFI3:
         # Make room for all of the new args.
         movl  16(%ebp),%ecx 
         subl  %ecx,%esp
@@ -255,13 +259,19 @@ sc_epilogue:
         movl %ebp,%esp
         popl %ebp
         ret
-
 .ffi_call_STDCALL_end:
+.LFE2:
 
-	.globl _ffi_closure_SYSV
+        # This assumes we are using gas.
+        .balign 16
+	.globl	_ffi_closure_SYSV
+	.def	_ffi_closure_SYSV;	.scl	2;	.type	32;	.endef
 _ffi_closure_SYSV:
+.LFB3:
 	pushl	%ebp
+.LCFI4:
 	movl	%esp, %ebp
+.LCFI5:
 	subl	$40, %esp
 	leal	-24(%ebp), %edx
 	movl	%edx, -12(%ebp)	/* resp */
@@ -312,6 +322,7 @@ _ffi_closure_SYSV:
 	movswl	(%ecx), %eax
 	jmp	.Lcls_epilogue
 .ffi_closure_SYSV_end:
+.LFE3:
 
 #if !FFI_NO_RAW_API
 
@@ -320,12 +331,18 @@ _ffi_closure_SYSV:
 #define RAW_CLOSURE_USER_DATA_OFFSET (RAW_CLOSURE_FUN_OFFSET + 4)
 #define CIF_FLAGS_OFFSET 20
 
-	.balign	16
-	.globl _ffi_closure_raw_SYSV
+        # This assumes we are using gas.
+        .balign 16
+	.globl	_ffi_closure_raw_SYSV
+	.def	_ffi_closure_raw_SYSV;	.scl	2;	.type	32;	.endef
 _ffi_closure_raw_SYSV:
+.LFB4:
 	pushl	%ebp
+.LCFI6:
 	movl	%esp, %ebp
+.LCFI7:
 	pushl	%esi
+.LCFI8:
 	subl	$36, %esp
 	movl	RAW_CLOSURE_CIF_OFFSET(%eax), %esi	 /* closure->cif */
 	movl	RAW_CLOSURE_USER_DATA_OFFSET(%eax), %edx /* closure->user_data */
@@ -369,5 +386,169 @@ _ffi_closure_raw_SYSV:
 	movl	-20(%ebp), %edx
 	jmp	.Lrcls_epilogue
 .ffi_closure_raw_SYSV_end:
+.LFE4:
 
+#endif /* !FFI_NO_RAW_API */
+
+
+	.section	.eh_frame,"w"
+.Lframe1:
+.LSCIE1:
+	.long	.LECIE1-.LASCIE1  /* Length of Common Information Entry */
+.LASCIE1:
+	.long	0x0	/* CIE Identifier Tag */
+	.byte	0x1	/* CIE Version */
+#ifdef __PIC__
+	.ascii "zR\0"	/* CIE Augmentation */
+#else
+	.ascii "\0"	/* CIE Augmentation */
 #endif
+	.byte	0x1	/* .uleb128 0x1; CIE Code Alignment Factor */
+	.byte	0x7c	/* .sleb128 -4; CIE Data Alignment Factor */
+	.byte	0x8	/* CIE RA Column */
+#ifdef __PIC__
+	.byte	0x1	/* .uleb128 0x1; Augmentation size */
+	.byte	0x1b	/* FDE Encoding (pcrel sdata4) */
+#endif
+	.byte	0xc	/* DW_CFA_def_cfa CFA = r4 + 4 = 4(%esp) */
+	.byte	0x4	/* .uleb128 0x4 */
+	.byte	0x4	/* .uleb128 0x4 */
+	.byte	0x88	/* DW_CFA_offset, column 0x8 %eip at CFA + 1 * -4 */
+	.byte	0x1	/* .uleb128 0x1 */
+	.align 4
+.LECIE1:
+
+.LSFDE1:
+	.long	.LEFDE1-.LASFDE1	/* FDE Length */
+.LASFDE1:
+	.long	.LASFDE1-.Lframe1	/* FDE CIE offset */
+#if defined __PIC__ && defined HAVE_AS_X86_PCREL
+	.long	.LFB1-.	/* FDE initial location */
+#else
+	.long	.LFB1
+#endif
+	.long	.LFE1-.LFB1	/* FDE address range */
+#ifdef __PIC__
+	.byte	0x0	/* .uleb128 0x0; Augmentation size */
+#endif
+	/* DW_CFA_xxx CFI instructions go here.  */
+
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI0-.LFB1
+	.byte	0xe	/* DW_CFA_def_cfa_offset CFA = r4 + 8 = 8(%esp) */
+	.byte	0x8	/* .uleb128 0x8 */
+	.byte	0x85	/* DW_CFA_offset, column 0x5 %ebp at CFA + 2 * -4 */
+	.byte	0x2	/* .uleb128 0x2 */
+
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI1-.LCFI0
+	.byte	0xd	/* DW_CFA_def_cfa_register CFA = r5 = %ebp */
+	.byte	0x5	/* .uleb128 0x5 */
+
+	/* End of DW_CFA_xxx CFI instructions.  */
+	.align 4
+.LEFDE1:
+
+
+.LSFDE2:
+	.long	.LEFDE2-.LASFDE2	/* FDE Length */
+.LASFDE2:
+	.long	.LASFDE2-.Lframe1	/* FDE CIE offset */
+#if defined __PIC__ && defined HAVE_AS_X86_PCREL
+	.long	.LFB2-.	/* FDE initial location */
+#else
+	.long	.LFB2
+#endif
+	.long	.LFE2-.LFB2	/* FDE address range */
+#ifdef __PIC__
+	.byte	0x0	/* .uleb128 0x0; Augmentation size */
+#endif
+	/* DW_CFA_xxx CFI instructions go here.  */
+
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI2-.LFB2
+	.byte	0xe	/* DW_CFA_def_cfa_offset CFA = r4 + 8 = 8(%esp) */
+	.byte	0x8	/* .uleb128 0x8 */
+	.byte	0x85	/* DW_CFA_offset, column 0x5 %ebp at CFA + 2 * -4 */
+	.byte	0x2	/* .uleb128 0x2 */
+
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI3-.LCFI2
+	.byte	0xd	/* DW_CFA_def_cfa_register CFA = r5 = %ebp */
+	.byte	0x5	/* .uleb128 0x5 */
+
+	/* End of DW_CFA_xxx CFI instructions.  */
+	.align 4
+.LEFDE2:
+
+
+.LSFDE3:
+	.long	.LEFDE3-.LASFDE3	/* FDE Length */
+.LASFDE3:
+	.long	.LASFDE3-.Lframe1	/* FDE CIE offset */
+#if defined __PIC__ && defined HAVE_AS_X86_PCREL
+	.long	.LFB3-.	/* FDE initial location */
+#else
+	.long	.LFB3
+#endif
+	.long	.LFE3-.LFB3	/* FDE address range */
+#ifdef __PIC__
+	.byte	0x0	/* .uleb128 0x0; Augmentation size */
+#endif
+	/* DW_CFA_xxx CFI instructions go here.  */
+
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI4-.LFB3
+	.byte	0xe	/* DW_CFA_def_cfa_offset CFA = r4 + 8 = 8(%esp) */
+	.byte	0x8	/* .uleb128 0x8 */
+	.byte	0x85	/* DW_CFA_offset, column 0x5 %ebp at CFA + 2 * -4 */
+	.byte	0x2	/* .uleb128 0x2 */
+
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI5-.LCFI4
+	.byte	0xd	/* DW_CFA_def_cfa_register CFA = r5 = %ebp */
+	.byte	0x5	/* .uleb128 0x5 */
+
+	/* End of DW_CFA_xxx CFI instructions.  */
+	.align 4
+.LEFDE3:
+
+#if !FFI_NO_RAW_API
+
+.LSFDE4:
+	.long	.LEFDE4-.LASFDE4	/* FDE Length */
+.LASFDE4:
+	.long	.LASFDE4-.Lframe1	/* FDE CIE offset */
+#if defined __PIC__ && defined HAVE_AS_X86_PCREL
+	.long	.LFB4-.	/* FDE initial location */
+#else
+	.long	.LFB4
+#endif
+	.long	.LFE4-.LFB4	/* FDE address range */
+#ifdef __PIC__
+	.byte	0x0	/* .uleb128 0x0; Augmentation size */
+#endif
+	/* DW_CFA_xxx CFI instructions go here.  */
+
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI6-.LFB4
+	.byte	0xe	/* DW_CFA_def_cfa_offset CFA = r4 + 8 = 8(%esp) */
+	.byte	0x8	/* .uleb128 0x8 */
+	.byte	0x85	/* DW_CFA_offset, column 0x5 %ebp at CFA + 2 * -4 */
+	.byte	0x2	/* .uleb128 0x2 */
+
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI7-.LCFI6
+	.byte	0xd	/* DW_CFA_def_cfa_register CFA = r5 = %ebp */
+	.byte	0x5	/* .uleb128 0x5 */
+
+	.byte	0x4	/* DW_CFA_advance_loc4 */
+	.long	.LCFI8-.LCFI7
+	.byte	0x86	/* DW_CFA_offset, column 0x6 %esi at CFA + 3 * -4 */
+	.byte	0x3	/* .uleb128 0x3 */
+
+	/* End of DW_CFA_xxx CFI instructions.  */
+	.align 4
+.LEFDE4:
+
+#endif /* !FFI_NO_RAW_API */

@@ -240,7 +240,7 @@ if test x$TARGET = xSPARC; then
     fi
 fi
 
-if test x$TARGET = xX86 || test x$TARGET = xX86_64; then
+if test x$TARGET = xX86 || test x$TARGET = xX86_WIN32 || test x$TARGET = xX86_64; then
     AC_CACHE_CHECK([assembler supports pc related relocs],
 	libffi_cv_as_x86_pcrel, [
 	libffi_cv_as_x86_pcrel=yes
