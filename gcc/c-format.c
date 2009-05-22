@@ -2865,7 +2865,7 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
     }
 
   /* If this is a custom GCC-internal format type, we have to
-     initialize certain bits a runtime.  */
+     initialize certain bits at runtime.  */
   if (info.format_type == asm_fprintf_format_type
       || info.format_type == gcc_gfc_format_type
       || info.format_type == gcc_diag_format_type
