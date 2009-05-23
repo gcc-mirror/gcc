@@ -608,17 +608,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    return error_mark_node;
 	  }
 
-	/* If an alignment is specified, use it if valid.   Note that
-	   exceptions are objects but don't have alignments.  We must do this
-	   before we validate the size, since the alignment can affect the
-	   size.  */
+	/* If an alignment is specified, use it if valid.  Note that exceptions
+	   are objects but don't have an alignment.  We must do this before we
+	   validate the size, since the alignment can affect the size.  */
 	if (kind != E_Exception && Known_Alignment (gnat_entity))
 	  {
 	    gcc_assert (Present (Alignment (gnat_entity)));
 	    align = validate_alignment (Alignment (gnat_entity), gnat_entity,
 					TYPE_ALIGN (gnu_type));
-	    gnu_type = maybe_pad_type (gnu_type, NULL_TREE, align, gnat_entity,
-				       "PAD", false, definition, true);
+	    /* No point in changing the type if there is an address clause
+	       as the final type of the object will be a reference type.  */
+	    if (Present (Address_Clause (gnat_entity)))
+	      align = 0;
+	    else
+	      gnu_type
+		= maybe_pad_type (gnu_type, NULL_TREE, align, gnat_entity,
+				  "PAD", false, definition, true);
 	  }
 
 	/* If we are defining the object, see if it has a Size value and
