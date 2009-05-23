@@ -10,10 +10,10 @@
 @cindex representation of RTL
 @cindex Register Transfer Language (RTL)
 
-Most of the work of the compiler is done on an intermediate representation
-called register transfer language.  In this language, the instructions to be
-output are described, pretty much one by one, in an algebraic form that
-describes what the instruction does.
+The last part of the compiler work is done on a low-level intermediate
+representation called Register Transfer Language.  In this language, the
+instructions to be output are described, pretty much one by one, in an
+algebraic form that describes what the instruction does.
 
 RTL is inspired by Lisp lists.  It has both an internal form, made up of
 structures that point at other structures, and a textual form that is used

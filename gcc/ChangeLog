@@ -1,3 +1,10 @@
+2009-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/passes.texi: Standardize spelling of RTL, Tree and Tree SSA.
+	Remove outdated reference to flow.c and fix nits.
+	* doc/gccint.texi: Tweak RTL description.
+	* doc/rtl.texi: Likewise.
+
 2009-05-23  Denis Chertykov  <chertykov@gmail.com>
 
 	* config/avr/avr.c: Change my email address.
