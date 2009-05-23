@@ -1,7 +1,6 @@
 2009-05-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/thumb2.md: Add 16-bit multiply instructions.
-	gcc/testsuite/
 
 2009-05-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
