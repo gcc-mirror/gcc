@@ -21,7 +21,7 @@ where near complete.
 * Parsing pass::         The language front end turns text into bits.
 * Gimplification pass::  The bits are turned into something we can optimize.
 * Pass manager::         Sequencing the optimization passes.
-* Tree-SSA passes::      Optimizations on a high-level representation.
+* Tree SSA passes::      Optimizations on a high-level representation.
 * RTL passes::           Optimizations on a low-level representation.
 @end menu
 
@@ -94,8 +94,8 @@ be passed to @code{rest_of_type_compilation}.  Each function definition
 should be passed to @code{cgraph_finalize_function}.
 
 TODO: I know rest_of_compilation currently has all sorts of
-rtl-generation semantics.  I plan to move all code generation
-bits (both tree and rtl) to compile_function.  Should we hide
+RTL generation semantics.  I plan to move all code generation
+bits (both Tree and RTL) to compile_function.  Should we hide
 cgraph from the front ends and move back to rest_of_compilation
 as the official interface?  Possibly we should rename all three
 interfaces such that the names match in some meaningful way and
@@ -172,12 +172,12 @@ dump anything.
 
 TODO: describe the global variables set up by the pass manager,
 and a brief description of how a new pass should use it.
-I need to look at what info rtl passes use first@enddots{}
+I need to look at what info RTL passes use first@enddots{}
 
-@node Tree-SSA passes
-@section Tree-SSA passes
+@node Tree SSA passes
+@section Tree SSA passes
 
-The following briefly describes the tree optimization passes that are
+The following briefly describes the Tree optimization passes that are
 run after gimplification and what source files they are located in.
 
 @itemize @bullet
@@ -401,7 +401,7 @@ and described by @code{pass_loop}.
 The optimizations performed by this pass are:
 
 Loop invariant motion.  This pass moves only invariants that
-would be hard to handle on rtl level (function calls, operations that expand to
+would be hard to handle on RTL level (function calls, operations that expand to
 nontrivial sequences of insns).  With @option{-funswitch-loops} it also moves
 operands of conditions that are invariant out of the loop, so that we can use
 just trivial invariantness analysis in loop unswitching.  The pass also includes
@@ -422,8 +422,8 @@ Loop unswitching.  This pass moves the conditional jumps that are invariant
 out of the loops.  To achieve this, a duplicate of the loop is created for
 each possible outcome of conditional jump(s).  The pass is implemented in
 @file{tree-ssa-loop-unswitch.c}.  This pass should eventually replace the
-rtl-level loop unswitching in @file{loop-unswitch.c}, but currently
-the rtl-level pass is not completely redundant yet due to deficiencies
+RTL level loop unswitching in @file{loop-unswitch.c}, but currently
+the RTL level pass is not completely redundant yet due to deficiencies
 in tree level alias analysis.
 
 The optimizations also use various utility functions contained in
@@ -651,8 +651,8 @@ registers don't need to be saved.  This pass is located in
 @node RTL passes
 @section RTL passes
 
-The following briefly describes the rtl generation and optimization
-passes that are run after tree optimization.
+The following briefly describes the RTL generation and optimization
+passes that are run after the Tree optimization passes.
 
 @itemize @bullet
 @item RTL generation
@@ -679,15 +679,15 @@ generated from the machine description by the programs @code{genflags}
 and @code{gencodes}, tell this pass which standard names are available
 for use and which patterns correspond to them.
 
-@item Generate exception handling landing pads
+@item Generation of exception landing pads
 
 This pass generates the glue that handles communication between the
 exception handling library routines and the exception handlers within
 the function.  Entry points in the function that are invoked by the
 exception handling library are called @dfn{landing pads}.  The code
-for this pass is located within @file{except.c}.
+for this pass is located in @file{except.c}.
 
-@item Cleanup control flow graph
+@item Control flow graph cleanup
 
 This pass removes unreachable code, simplifies jumps to next, jumps to
 jump, jumps across jumps, etc.  The pass is run multiple times.
@@ -702,16 +702,16 @@ This pass attempts to remove redundant computation by substituting
 variables that come from a single definition, and
 seeing if the result can be simplified.  It performs copy propagation
 and addressing mode selection.  The pass is run twice, with values
-being propagated into loops only on the second run.  It is located in
-@file{fwprop.c}.
+being propagated into loops only on the second run.  The code is
+located in @file{fwprop.c}.
 
 @item Common subexpression elimination
 
 This pass removes redundant computation within basic blocks, and
 optimizes addressing modes based on cost.  The pass is run twice.
-The source is located in @file{cse.c}.
+The code for this pass is located in @file{cse.c}.
 
-@item Global common subexpression elimination.
+@item Global common subexpression elimination
 
 This pass performs two
 different types of GCSE  depending on whether you are optimizing for
@@ -755,22 +755,13 @@ This pass attempts to replace conditional branches and surrounding
 assignments with arithmetic, boolean value producing comparison
 instructions, and conditional move instructions.  In the very last
 invocation after reload, it will generate predicated instructions
-when supported by the target.  The pass is located in @file{ifcvt.c}.
+when supported by the target.  The code is located in @file{ifcvt.c}.
 
 @item Web construction
 
 This pass splits independent uses of each pseudo-register.  This can
 improve effect of the other transformation, such as CSE or register
-allocation.  Its source files are @file{web.c}.
-
-@item Life analysis
-
-This pass computes which pseudo-registers are live at each point in
-the program, and makes the first instruction that uses a value point
-at the instruction that computed the value.  It then deletes
-computations whose results are never used, and combines memory
-references with add or subtract instructions to make autoincrement or
-autodecrement addressing.  The pass is located in @file{flow.c}.
+allocation.  The code for this pass is located in @file{web.c}.
 
 @item Instruction combination
 
@@ -778,23 +769,23 @@ This pass attempts to combine groups of two or three instructions that
 are related by data flow into single instructions.  It combines the
 RTL expressions for the instructions by substitution, simplifies the
 result using algebra, and then attempts to match the result against
-the machine description.  The pass is located in @file{combine.c}.
+the machine description.  The code is located in @file{combine.c}.
 
 @item Register movement
 
 This pass looks for cases where matching constraints would force an
 instruction to need a reload, and this reload would be a
 register-to-register move.  It then attempts to change the registers
-used by the instruction to avoid the move instruction.
-The pass is located in @file{regmove.c}.
+used by the instruction to avoid the move instruction.  The code is
+located in @file{regmove.c}.
 
-@item Optimize mode switching
+@item Mode switching optimization
 
 This pass looks for instructions that require the processor to be in a
 specific ``mode'' and minimizes the number of mode changes required to
 satisfy all users.  What these modes are, and what they apply to are
-completely target-specific.
-The source is located in @file{mode-switching.c}.
+completely target-specific.  The code for this pass is located in
+@file{mode-switching.c}.
 
 @cindex modulo scheduling
 @cindex sms, swing, software pipelining
@@ -802,8 +793,8 @@ The source is located in @file{mode-switching.c}.
 
 This pass looks at innermost loops and reorders their instructions
 by overlapping different iterations.  Modulo scheduling is performed
-immediately before instruction scheduling.
-The pass is located in (@file{modulo-sched.c}).
+immediately before instruction scheduling.  The code for this pass is
+located in @file{modulo-sched.c}.
 
 @item Instruction scheduling
 
@@ -813,7 +804,7 @@ floating point instructions often have this behavior on RISC machines.
 It re-orders instructions within a basic block to try to separate the
 definition and use of items that otherwise would cause pipeline
 stalls.  This pass is performed twice, before and after register
-allocation.  The pass is located in @file{haifa-sched.c},
+allocation.  The code for this pass is located in @file{haifa-sched.c},
 @file{sched-deps.c}, @file{sched-ebb.c}, @file{sched-rgn.c} and
 @file{sched-vis.c}.
 
@@ -884,13 +875,13 @@ This pass computes where the variables are stored at each
 position in code and generates notes describing the variable locations
 to RTL code.  The location lists are then generated according to these
 notes to debug information if the debugging information format supports
-location lists.
+location lists.  The code is located in @file{var-tracking.c}.
 
 @item Delayed branch scheduling
 
 This optional pass attempts to find instructions that can go into the
-delay slots of other instructions, usually jumps and calls.  The
-source file name is @file{reorg.c}.
+delay slots of other instructions, usually jumps and calls.  The code
+for this pass is located in @file{reorg.c}.
 
 @item Branch shortening
 
@@ -899,13 +890,14 @@ Thus, longer sequences of instructions must be used for long branches.
 In this pass, the compiler figures out what how far each instruction
 will be from each other instruction, and therefore whether the usual
 instructions, or the longer sequences, must be used for each branch.
+The code for this pass is located in @file{final.c}.
 
 @item Register-to-stack conversion
 
 Conversion from usage of some hard registers to usage of a register
 stack may be done at this point.  Currently, this is supported only
-for the floating-point registers of the Intel 80387 coprocessor.   The
-source file name is @file{reg-stack.c}.
+for the floating-point registers of the Intel 80387 coprocessor.  The
+code for this pass is located in @file{reg-stack.c}.
 
 @item Final
 
