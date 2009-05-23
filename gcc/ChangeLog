@@ -1,3 +1,11 @@
+2009-05-23  Denis Chertykov  <chertykov@gmail.com>
+
+	* config/avr/avr.c: Change my email address.
+	* config/avr/avr.h: Likewise.
+	* config/avr/avr.md: Likewise.
+	* config/avr/avr-protos.h: Likewise.
+	* config/avr/libgcc.S: Likewise.
+
 2009-05-22  Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
 
 	* config/spu/spu-protos.h (aligned_mem_p, spu_valid_mov): Remove.
