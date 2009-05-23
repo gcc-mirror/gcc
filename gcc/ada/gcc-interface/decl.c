@@ -7391,11 +7391,18 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
   if (CONTAINS_PLACEHOLDER_P (old_size))
     old_size = max_size (old_size, true);
 
-  /* If the size of the object is a constant, the new size must not be
-     smaller (the front-end checks this for scalar types).  */
+  /* If the size of the object is a constant, the new size must not be smaller
+     (the front-end has verified this for scalar and packed array types).  */
   if (TREE_CODE (old_size) != INTEGER_CST
       || TREE_OVERFLOW (old_size)
-      || (AGGREGATE_TYPE_P (gnu_type) && tree_int_cst_lt (size, old_size)))
+      || (AGGREGATE_TYPE_P (gnu_type)
+	  && !(TREE_CODE (gnu_type) == ARRAY_TYPE
+	       && TYPE_PACKED_ARRAY_TYPE_P (gnu_type))
+	  && !(TREE_CODE (gnu_type) == RECORD_TYPE
+	       && TYPE_IS_PADDING_P (gnu_type)
+	       && TREE_CODE (TREE_TYPE (TYPE_FIELDS (gnu_type))) == ARRAY_TYPE
+	       && TYPE_PACKED_ARRAY_TYPE_P (TREE_TYPE (TYPE_FIELDS (gnu_type))))
+	  && tree_int_cst_lt (size, old_size)))
     {
       if (Present (gnat_attr_node))
 	post_error_ne_tree

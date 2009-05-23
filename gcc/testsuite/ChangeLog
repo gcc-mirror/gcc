@@ -1,5 +1,9 @@
 2009-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/rep_clause3.ads: New test.
+
+2009-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/addr6.adb: New test.
 
 2009-05-22  Mark Mitchell  <mark@codesourcery.com>
