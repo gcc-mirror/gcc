@@ -1477,6 +1477,17 @@ proc check_effective_target_arm_thumb1_ok { } {
     } "-mthumb"]
 }
 
+# Return 1 is this is an ARM target where -mthumb causes Thumb-2 to be
+# used.
+
+proc check_effective_target_arm_thumb2_ok { } {
+    return [check_no_compiler_messages arm_thumb2_ok assembly {
+	#if !defined(__thumb2__)
+	#error FOO
+	#endif
+    } "-mthumb"]
+}
+
 # Return 1 if the target supports executing NEON instructions, 0
 # otherwise.  Cache the result.
 

@@ -1,3 +1,12 @@
+2009-05-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target_arm_thumb2_ok):
+	New function.
+	* gcc.target/arm/thumb2-mul-space.c: New file.
+	* gcc.target/arm/thumb2-mul-space-2.c: New file.
+	* gcc.target/arm/thumb2-mul-space-3.c: New file.
+	* gcc.target/arm/thumb2-mul-speed.c: New file.
+
 2009-05-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/38964
