@@ -189,9 +189,9 @@ static tree spu_build_builtin_va_list (void);
 static void spu_va_start (tree, rtx);
 static tree spu_gimplify_va_arg_expr (tree valist, tree type,
 				      gimple_seq * pre_p, gimple_seq * post_p);
-static int regno_aligned_for_load (int regno);
 static int store_with_one_insn_p (rtx mem);
 static int mem_is_padded_component_ref (rtx x);
+static int reg_aligned_for_addr (rtx x);
 static bool spu_assemble_integer (rtx x, unsigned int size, int aligned_p);
 static void spu_asm_globalize_label (FILE * file, const char *name);
 static unsigned char spu_rtx_costs (rtx x, int code, int outer_code,
@@ -211,6 +211,7 @@ static tree spu_builtin_vec_perm (tree, tree *);
 static int spu_sms_res_mii (struct ddg *g);
 static void asm_file_start (void);
 static unsigned int spu_section_type_flags (tree, const char *, int);
+static rtx spu_expand_load (rtx, rtx, rtx, int);
 
 extern const char *reg_names[];
 
@@ -582,66 +583,85 @@ adjust_operand (rtx op, HOST_WIDE_INT * start)
 void
 spu_expand_extv (rtx ops[], int unsignedp)
 {
+  rtx dst = ops[0], src = ops[1];
   HOST_WIDE_INT width = INTVAL (ops[2]);
   HOST_WIDE_INT start = INTVAL (ops[3]);
-  HOST_WIDE_INT src_size, dst_size;
-  enum machine_mode src_mode, dst_mode;
-  rtx dst = ops[0], src = ops[1];
-  rtx s;
+  HOST_WIDE_INT align_mask;
+  rtx s0, s1, mask, r0;
 
-  dst = adjust_operand (ops[0], 0);
-  dst_mode = GET_MODE (dst);
-  dst_size = GET_MODE_BITSIZE (GET_MODE (dst));
+  gcc_assert (REG_P (dst) && GET_MODE (dst) == TImode);
 
-  src = adjust_operand (src, &start);
-  src_mode = GET_MODE (src);
-  src_size = GET_MODE_BITSIZE (GET_MODE (src));
-
-  if (start > 0)
+  if (MEM_P (src))
     {
-      s = gen_reg_rtx (src_mode);
-      switch (src_mode)
+      /* First, determine if we need 1 TImode load or 2.  We need only 1
+         if the bits being extracted do not cross the alignment boundary
+         as determined by the MEM and its address. */
+
+      align_mask = -MEM_ALIGN (src);
+      if ((start & align_mask) == ((start + width - 1) & align_mask))
 	{
-	case SImode:
-	  emit_insn (gen_ashlsi3 (s, src, GEN_INT (start)));
-	  break;
-	case DImode:
-	  emit_insn (gen_ashldi3 (s, src, GEN_INT (start)));
-	  break;
-	case TImode:
-	  emit_insn (gen_ashlti3 (s, src, GEN_INT (start)));
-	  break;
-	default:
-	  abort ();
+	  /* Alignment is sufficient for 1 load. */
+	  s0 = gen_reg_rtx (TImode);
+	  r0 = spu_expand_load (s0, 0, src, start / 8);
+	  start &= 7;
+	  if (r0)
+	    emit_insn (gen_rotqby_ti (s0, s0, r0));
 	}
-      src = s;
+      else
+	{
+	  /* Need 2 loads. */
+	  s0 = gen_reg_rtx (TImode);
+	  s1 = gen_reg_rtx (TImode);
+	  r0 = spu_expand_load (s0, s1, src, start / 8);
+	  start &= 7;
+
+	  gcc_assert (start + width <= 128);
+	  if (r0)
+	    {
+	      rtx r1 = gen_reg_rtx (SImode);
+	      mask = gen_reg_rtx (TImode);
+	      emit_move_insn (mask, GEN_INT (-1));
+	      emit_insn (gen_rotqby_ti (s0, s0, r0));
+	      emit_insn (gen_rotqby_ti (s1, s1, r0));
+	      if (GET_CODE (r0) == CONST_INT)
+		r1 = GEN_INT (INTVAL (r0) & 15);
+	      else
+		emit_insn (gen_andsi3 (r1, r0, GEN_INT (15)));
+	      emit_insn (gen_shlqby_ti (mask, mask, r1));
+	      emit_insn (gen_selb (s0, s1, s0, mask));
+	    }
+	}
+
+    }
+  else if (GET_CODE (src) == SUBREG)
+    {
+      rtx r = SUBREG_REG (src);
+      gcc_assert (REG_P (r) && SCALAR_INT_MODE_P (GET_MODE (r)));
+      s0 = gen_reg_rtx (TImode);
+      if (GET_MODE_SIZE (GET_MODE (r)) < GET_MODE_SIZE (TImode))
+	emit_insn (gen_rtx_SET (VOIDmode, s0, gen_rtx_ZERO_EXTEND (TImode, r)));
+      else
+	emit_move_insn (s0, src);
+    }
+  else 
+    {
+      gcc_assert (REG_P (src) && GET_MODE (src) == TImode);
+      s0 = gen_reg_rtx (TImode);
+      emit_move_insn (s0, src);
     }
 
-  if (width < src_size)
+  /* Now s0 is TImode and contains the bits to extract at start. */
+
+  if (start)
+    emit_insn (gen_rotlti3 (s0, s0, GEN_INT (start)));
+
+  if (128 - width)
     {
-      rtx pat;
-      int icode;
-      switch (src_mode)
-	{
-	case SImode:
-	  icode = unsignedp ? CODE_FOR_lshrsi3 : CODE_FOR_ashrsi3;
-	  break;
-	case DImode:
-	  icode = unsignedp ? CODE_FOR_lshrdi3 : CODE_FOR_ashrdi3;
-	  break;
-	case TImode:
-	  icode = unsignedp ? CODE_FOR_lshrti3 : CODE_FOR_ashrti3;
-	  break;
-	default:
-	  abort ();
-	}
-      s = gen_reg_rtx (src_mode);
-      pat = GEN_FCN (icode) (s, src, GEN_INT (src_size - width));
-      emit_insn (pat);
-      src = s;
+      tree c = build_int_cst (NULL_TREE, 128 - width);
+      s0 = expand_shift (RSHIFT_EXPR, TImode, s0, c, s0, unsignedp);
     }
 
-  convert_move (dst, src, unsignedp);
+  emit_move_insn (dst, s0);
 }
 
 void
@@ -734,38 +754,41 @@ spu_expand_insv (rtx ops[])
     }
   if (GET_CODE (ops[0]) == MEM)
     {
-      rtx aligned = gen_reg_rtx (SImode);
       rtx low = gen_reg_rtx (SImode);
-      rtx addr = gen_reg_rtx (SImode);
       rtx rotl = gen_reg_rtx (SImode);
       rtx mask0 = gen_reg_rtx (TImode);
+      rtx addr;
+      rtx addr0;
+      rtx addr1;
       rtx mem;
 
-      emit_move_insn (addr, XEXP (ops[0], 0));
-      emit_insn (gen_andsi3 (aligned, addr, GEN_INT (-16)));
+      addr = force_reg (Pmode, XEXP (ops[0], 0));
+      addr0 = gen_rtx_AND (Pmode, addr, GEN_INT (-16));
       emit_insn (gen_andsi3 (low, addr, GEN_INT (15)));
       emit_insn (gen_negsi2 (rotl, low));
       emit_insn (gen_rotqby_ti (shift_reg, shift_reg, rotl));
       emit_insn (gen_rotqmby_ti (mask0, mask, rotl));
-      mem = change_address (ops[0], TImode, aligned);
+      mem = change_address (ops[0], TImode, addr0);
       set_mem_alias_set (mem, 0);
       emit_move_insn (dst, mem);
       emit_insn (gen_selb (dst, dst, shift_reg, mask0));
-      emit_move_insn (mem, dst);
       if (start + width > MEM_ALIGN (ops[0]))
 	{
 	  rtx shl = gen_reg_rtx (SImode);
 	  rtx mask1 = gen_reg_rtx (TImode);
 	  rtx dst1 = gen_reg_rtx (TImode);
 	  rtx mem1;
+	  addr1 = plus_constant (addr, 16);
+	  addr1 = gen_rtx_AND (Pmode, addr1, GEN_INT (-16));
 	  emit_insn (gen_subsi3 (shl, GEN_INT (16), low));
 	  emit_insn (gen_shlqby_ti (mask1, mask, shl));
-	  mem1 = adjust_address (mem, TImode, 16);
+	  mem1 = change_address (ops[0], TImode, addr1);
 	  set_mem_alias_set (mem1, 0);
 	  emit_move_insn (dst1, mem1);
 	  emit_insn (gen_selb (dst1, dst1, shift_reg, mask1));
 	  emit_move_insn (mem1, dst1);
 	}
+      emit_move_insn (mem, dst);
     }
   else
     emit_insn (gen_selb (dst, copy_rtx (dst), shift_reg, mask));
@@ -2998,7 +3021,7 @@ spu_sched_reorder (FILE *file ATTRIBUTE_UNUSED, int verbose ATTRIBUTE_UNUSED,
       insn = ready[i];
       if (INSN_CODE (insn) == -1
 	  || INSN_CODE (insn) == CODE_FOR_blockage
-	  || INSN_CODE (insn) == CODE_FOR__spu_convert)
+	  || (INSN_P (insn) && get_attr_length (insn) == 0))
 	{
 	  ready[i] = ready[nready - 1];
 	  ready[nready - 1] = insn;
@@ -3129,8 +3152,8 @@ spu_sched_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
       || INSN_CODE (dep_insn) == CODE_FOR_blockage)
     return 0;
 
-  if (INSN_CODE (insn) == CODE_FOR__spu_convert
-      || INSN_CODE (dep_insn) == CODE_FOR__spu_convert)
+  if ((INSN_P (insn) && get_attr_length (insn) == 0)
+      || (INSN_P (dep_insn) && get_attr_length (dep_insn) == 0))
     return 0;
 
   /* Make sure hbrps are spread out. */
@@ -3611,44 +3634,36 @@ spu_legitimate_constant_p (rtx x)
 /* Valid address are:
    - symbol_ref, label_ref, const
    - reg
-   - reg + const, where either reg or const is 16 byte aligned
+   - reg + const_int, where const_int is 16 byte aligned
    - reg + reg, alignment doesn't matter
   The alignment matters in the reg+const case because lqd and stqd
-  ignore the 4 least significant bits of the const.  (TODO: It might be
-  preferable to allow any alignment and fix it up when splitting.) */
-bool
-spu_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
+  ignore the 4 least significant bits of the const.  We only care about
+  16 byte modes because the expand phase will change all smaller MEM
+  references to TImode.  */
+static bool
+spu_legitimate_address_p (enum machine_mode mode,
 			  rtx x, bool reg_ok_strict)
 {
-  if (mode == TImode && GET_CODE (x) == AND
+  int aligned = GET_MODE_SIZE (mode) >= 16;
+  if (aligned
+      && GET_CODE (x) == AND
       && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && INTVAL (XEXP (x, 1)) == (HOST_WIDE_INT) -16)
+      && INTVAL (XEXP (x, 1)) == (HOST_WIDE_INT) - 16)
     x = XEXP (x, 0);
   switch (GET_CODE (x))
     {
-    case SYMBOL_REF:
     case LABEL_REF:
-      return !TARGET_LARGE_MEM;
-
+    case SYMBOL_REF:
     case CONST:
-      if (!TARGET_LARGE_MEM && GET_CODE (XEXP (x, 0)) == PLUS)
-	{
-	  rtx sym = XEXP (XEXP (x, 0), 0);
-	  rtx cst = XEXP (XEXP (x, 0), 1);
-
-	  /* Accept any symbol_ref + constant, assuming it does not
-	     wrap around the local store addressability limit.  */
-	  if (GET_CODE (sym) == SYMBOL_REF && GET_CODE (cst) == CONST_INT)
-	    return 1;
-	}
-      return 0;
+      return !TARGET_LARGE_MEM;
 
     case CONST_INT:
       return INTVAL (x) >= 0 && INTVAL (x) <= 0x3ffff;
 
     case SUBREG:
       x = XEXP (x, 0);
-      gcc_assert (GET_CODE (x) == REG);
+      if (REG_P (x))
+	return 0;
 
     case REG:
       return INT_REG_OK_FOR_BASE_P (x, reg_ok_strict);
@@ -3662,29 +3677,25 @@ spu_legitimate_address_p (enum machine_mode mode ATTRIBUTE_UNUSED,
 	  op0 = XEXP (op0, 0);
 	if (GET_CODE (op1) == SUBREG)
 	  op1 = XEXP (op1, 0);
-	/* We can't just accept any aligned register because CSE can
-	   change it to a register that is not marked aligned and then
-	   recog will fail.   So we only accept frame registers because
-	   they will only be changed to other frame registers. */
 	if (GET_CODE (op0) == REG
 	    && INT_REG_OK_FOR_BASE_P (op0, reg_ok_strict)
 	    && GET_CODE (op1) == CONST_INT
 	    && INTVAL (op1) >= -0x2000
 	    && INTVAL (op1) <= 0x1fff
-	    && (regno_aligned_for_load (REGNO (op0)) || (INTVAL (op1) & 15) == 0))
-	  return 1;
+	    && (!aligned || (INTVAL (op1) & 15) == 0))
+	  return TRUE;
 	if (GET_CODE (op0) == REG
 	    && INT_REG_OK_FOR_BASE_P (op0, reg_ok_strict)
 	    && GET_CODE (op1) == REG
 	    && INT_REG_OK_FOR_INDEX_P (op1, reg_ok_strict))
-	  return 1;
+	  return TRUE;
       }
       break;
 
     default:
       break;
     }
-  return 0;
+  return FALSE;
 }
 
 /* When the address is reg + const_int, force the const_int into a
@@ -4137,60 +4148,14 @@ spu_conditional_register_usage (void)
     }
 }
 
-/* This is called to decide when we can simplify a load instruction.  We
-   must only return true for registers which we know will always be
-   aligned.  Taking into account that CSE might replace this reg with
-   another one that has not been marked aligned.  
-   So this is really only true for frame, stack and virtual registers,
-   which we know are always aligned and should not be adversely effected
-   by CSE.  */
+/* This is called any time we inspect the alignment of a register for
+   addresses.  */
 static int
-regno_aligned_for_load (int regno)
+reg_aligned_for_addr (rtx x)
 {
-  return regno == FRAME_POINTER_REGNUM
-    || (frame_pointer_needed && regno == HARD_FRAME_POINTER_REGNUM)
-    || regno == ARG_POINTER_REGNUM
-    || regno == STACK_POINTER_REGNUM
-    || (regno >= FIRST_VIRTUAL_REGISTER 
-	&& regno <= LAST_VIRTUAL_REGISTER);
-}
-
-/* Return TRUE when mem is known to be 16-byte aligned. */
-int
-aligned_mem_p (rtx mem)
-{
-  if (MEM_ALIGN (mem) >= 128)
-    return 1;
-  if (GET_MODE_SIZE (GET_MODE (mem)) >= 16)
-    return 1;
-  if (GET_CODE (XEXP (mem, 0)) == PLUS)
-    {
-      rtx p0 = XEXP (XEXP (mem, 0), 0);
-      rtx p1 = XEXP (XEXP (mem, 0), 1);
-      if (regno_aligned_for_load (REGNO (p0)))
-	{
-	  if (GET_CODE (p1) == REG && regno_aligned_for_load (REGNO (p1)))
-	    return 1;
-	  if (GET_CODE (p1) == CONST_INT && (INTVAL (p1) & 15) == 0)
-	    return 1;
-	}
-    }
-  else if (GET_CODE (XEXP (mem, 0)) == REG)
-    {
-      if (regno_aligned_for_load (REGNO (XEXP (mem, 0))))
-	return 1;
-    }
-  else if (ALIGNED_SYMBOL_REF_P (XEXP (mem, 0)))
-    return 1;
-  else if (GET_CODE (XEXP (mem, 0)) == CONST)
-    {
-      rtx p0 = XEXP (XEXP (XEXP (mem, 0), 0), 0);
-      rtx p1 = XEXP (XEXP (XEXP (mem, 0), 0), 1);
-      if (GET_CODE (p0) == SYMBOL_REF
-	  && GET_CODE (p1) == CONST_INT && (INTVAL (p1) & 15) == 0)
-	return 1;
-    }
-  return 0;
+  int regno =
+    REGNO (x) < FIRST_PSEUDO_REGISTER ? ORIGINAL_REGNO (x) : REGNO (x);
+  return REGNO_POINTER_ALIGN (regno) >= 128;
 }
 
 /* Encode symbol attributes (local vs. global, tls model) of a SYMBOL_REF
@@ -4219,9 +4184,12 @@ spu_encode_section_info (tree decl, rtx rtl, int first)
 static int
 store_with_one_insn_p (rtx mem)
 {
+  enum machine_mode mode = GET_MODE (mem);
   rtx addr = XEXP (mem, 0);
-  if (GET_MODE (mem) == BLKmode)
+  if (mode == BLKmode)
     return 0;
+  if (GET_MODE_SIZE (mode) >= 16)
+    return 1;
   /* Only static objects. */
   if (GET_CODE (addr) == SYMBOL_REF)
     {
@@ -4242,6 +4210,22 @@ store_with_one_insn_p (rtx mem)
 	  && GET_MODE (mem) == TYPE_MODE (TREE_TYPE (decl)))
 	return 1;
     }
+  return 0;
+}
+
+/* Return 1 when the address is not valid for a simple load and store as
+   required by the '_mov*' patterns.   We could make this less strict
+   for loads, but we prefer mem's to look the same so they are more
+   likely to be merged.  */
+static int
+address_needs_split (rtx mem)
+{
+  if (GET_MODE_SIZE (GET_MODE (mem)) < 16
+      && (GET_MODE_SIZE (GET_MODE (mem)) < 4
+	  || !(store_with_one_insn_p (mem)
+	       || mem_is_padded_component_ref (mem))))
+    return 1;
+
   return 0;
 }
 
@@ -4289,54 +4273,63 @@ spu_expand_mov (rtx * ops, enum machine_mode mode)
 	return spu_split_immediate (ops);
       return 0;
     }
-  else
+
+  /* Catch the SImode immediates greater than 0x7fffffff, and sign
+     extend them. */
+  if (GET_CODE (ops[1]) == CONST_INT)
     {
-      if (GET_CODE (ops[0]) == MEM)
+      HOST_WIDE_INT val = trunc_int_for_mode (INTVAL (ops[1]), mode);
+      if (val != INTVAL (ops[1]))
 	{
-	  if (!spu_valid_move (ops))
-	    {
-	      emit_insn (gen_store (ops[0], ops[1], gen_reg_rtx (TImode),
-				    gen_reg_rtx (TImode)));
-	      return 1;
-	    }
-	}
-      else if (GET_CODE (ops[1]) == MEM)
-	{
-	  if (!spu_valid_move (ops))
-	    {
-	      emit_insn (gen_load
-			 (ops[0], ops[1], gen_reg_rtx (TImode),
-			  gen_reg_rtx (SImode)));
-	      return 1;
-	    }
-	}
-      /* Catch the SImode immediates greater than 0x7fffffff, and sign
-         extend them. */
-      if (GET_CODE (ops[1]) == CONST_INT)
-	{
-	  HOST_WIDE_INT val = trunc_int_for_mode (INTVAL (ops[1]), mode);
-	  if (val != INTVAL (ops[1]))
-	    {
-	      emit_move_insn (ops[0], GEN_INT (val));
-	      return 1;
-	    }
+	  emit_move_insn (ops[0], GEN_INT (val));
+	  return 1;
 	}
     }
+  if (MEM_P (ops[0]))
+    return spu_split_store (ops);
+  if (MEM_P (ops[1]))
+    return spu_split_load (ops);
+
   return 0;
 }
 
-void
-spu_split_load (rtx * ops)
+static void
+spu_convert_move (rtx dst, rtx src)
 {
-  enum machine_mode mode = GET_MODE (ops[0]);
-  rtx addr, load, rot, mem, p0, p1;
-  int rot_amt;
+  enum machine_mode mode = GET_MODE (dst);
+  enum machine_mode int_mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
+  rtx reg;
+  gcc_assert (GET_MODE (src) == TImode);
+  reg = int_mode != mode ? gen_reg_rtx (int_mode) : dst;
+  emit_insn (gen_rtx_SET (VOIDmode, reg,
+	       gen_rtx_TRUNCATE (int_mode,
+		 gen_rtx_LSHIFTRT (TImode, src,
+		   GEN_INT (int_mode == DImode ? 64 : 96)))));
+  if (int_mode != mode)
+    {
+      reg = simplify_gen_subreg (mode, reg, int_mode, 0);
+      emit_move_insn (dst, reg);
+    }
+}
 
-  addr = XEXP (ops[1], 0);
+/* Load TImode values into DST0 and DST1 (when it is non-NULL) using
+   the address from SRC and SRC+16.  Return a REG or CONST_INT that 
+   specifies how many bytes to rotate the loaded registers, plus any
+   extra from EXTRA_ROTQBY.  The address and rotate amounts are
+   normalized to improve merging of loads and rotate computations. */
+static rtx
+spu_expand_load (rtx dst0, rtx dst1, rtx src, int extra_rotby)
+{
+  rtx addr = XEXP (src, 0);
+  rtx p0, p1, rot, addr0, addr1;
+  int rot_amt;
 
   rot = 0;
   rot_amt = 0;
-  if (GET_CODE (addr) == PLUS)
+
+  if (MEM_ALIGN (src) >= 128)
+    /* Address is already aligned; simply perform a TImode load.  */ ;
+  else if (GET_CODE (addr) == PLUS)
     {
       /* 8 cases:
          aligned reg   + aligned reg     => lqx
@@ -4350,12 +4343,34 @@ spu_split_load (rtx * ops)
        */
       p0 = XEXP (addr, 0);
       p1 = XEXP (addr, 1);
-      if (REG_P (p0) && !regno_aligned_for_load (REGNO (p0)))
+      if (!reg_aligned_for_addr (p0))
 	{
-	  if (REG_P (p1) && !regno_aligned_for_load (REGNO (p1)))
+	  if (REG_P (p1) && !reg_aligned_for_addr (p1))
 	    {
-	      emit_insn (gen_addsi3 (ops[3], p0, p1));
-	      rot = ops[3];
+	      rot = gen_reg_rtx (SImode);
+	      emit_insn (gen_addsi3 (rot, p0, p1));
+	    }
+	  else if (GET_CODE (p1) == CONST_INT && (INTVAL (p1) & 15))
+	    {
+	      if (INTVAL (p1) > 0
+		  && REG_POINTER (p0)
+		  && INTVAL (p1) * BITS_PER_UNIT
+		     < REGNO_POINTER_ALIGN (REGNO (p0)))
+		{
+		  rot = gen_reg_rtx (SImode);
+		  emit_insn (gen_addsi3 (rot, p0, p1));
+		  addr = p0;
+		}
+	      else
+		{
+		  rtx x = gen_reg_rtx (SImode);
+		  emit_move_insn (x, p1);
+		  if (!spu_arith_operand (p1, SImode))
+		    p1 = x;
+		  rot = gen_reg_rtx (SImode);
+		  emit_insn (gen_addsi3 (rot, p0, p1));
+		  addr = gen_rtx_PLUS (Pmode, p0, x);
+		}
 	    }
 	  else
 	    rot = p0;
@@ -4365,16 +4380,21 @@ spu_split_load (rtx * ops)
 	  if (GET_CODE (p1) == CONST_INT && (INTVAL (p1) & 15))
 	    {
 	      rot_amt = INTVAL (p1) & 15;
-	      p1 = GEN_INT (INTVAL (p1) & -16);
-	      addr = gen_rtx_PLUS (SImode, p0, p1);
+	      if (INTVAL (p1) & -16)
+		{
+		  p1 = GEN_INT (INTVAL (p1) & -16);
+		  addr = gen_rtx_PLUS (SImode, p0, p1);
+		}
+	      else
+		addr = p0;
 	    }
-	  else if (REG_P (p1) && !regno_aligned_for_load (REGNO (p1)))
+	  else if (REG_P (p1) && !reg_aligned_for_addr (p1))
 	    rot = p1;
 	}
     }
-  else if (GET_CODE (addr) == REG)
+  else if (REG_P (addr))
     {
-      if (!regno_aligned_for_load (REGNO (addr)))
+      if (!reg_aligned_for_addr (addr))
 	rot = addr;
     }
   else if (GET_CODE (addr) == CONST)
@@ -4393,7 +4413,10 @@ spu_split_load (rtx * ops)
 	    addr = XEXP (XEXP (addr, 0), 0);
 	}
       else
-	rot = addr;
+	{
+	  rot = gen_reg_rtx (Pmode);
+	  emit_move_insn (rot, addr);
+	}
     }
   else if (GET_CODE (addr) == CONST_INT)
     {
@@ -4401,49 +4424,96 @@ spu_split_load (rtx * ops)
       addr = GEN_INT (rot_amt & -16);
     }
   else if (!ALIGNED_SYMBOL_REF_P (addr))
-    rot = addr;
+    {
+      rot = gen_reg_rtx (Pmode);
+      emit_move_insn (rot, addr);
+    }
 
-  if (GET_MODE_SIZE (mode) < 4)
-    rot_amt += GET_MODE_SIZE (mode) - 4;
+  rot_amt += extra_rotby;
 
   rot_amt &= 15;
 
   if (rot && rot_amt)
     {
-      emit_insn (gen_addsi3 (ops[3], rot, GEN_INT (rot_amt)));
-      rot = ops[3];
+      rtx x = gen_reg_rtx (SImode);
+      emit_insn (gen_addsi3 (x, rot, GEN_INT (rot_amt)));
+      rot = x;
       rot_amt = 0;
     }
+  if (!rot && rot_amt)
+    rot = GEN_INT (rot_amt);
 
-  load = ops[2];
+  addr0 = copy_rtx (addr);
+  addr0 = gen_rtx_AND (SImode, copy_rtx (addr), GEN_INT (-16));
+  emit_insn (gen__movti (dst0, change_address (src, TImode, addr0)));
 
-  addr = gen_rtx_AND (SImode, copy_rtx (addr), GEN_INT (-16));
-  mem = change_address (ops[1], TImode, addr);
+  if (dst1)
+    {
+      addr1 = plus_constant (copy_rtx (addr), 16);
+      addr1 = gen_rtx_AND (SImode, addr1, GEN_INT (-16));
+      emit_insn (gen__movti (dst1, change_address (src, TImode, addr1)));
+    }
 
-  emit_insn (gen_movti (load, mem));
+  return rot;
+}
+
+int
+spu_split_load (rtx * ops)
+{
+  enum machine_mode mode = GET_MODE (ops[0]);
+  rtx addr, load, rot;
+  int rot_amt;
+
+  if (GET_MODE_SIZE (mode) >= 16)
+    return 0;
+
+  addr = XEXP (ops[1], 0);
+  gcc_assert (GET_CODE (addr) != AND);
+
+  if (!address_needs_split (ops[1]))
+    {
+      ops[1] = change_address (ops[1], TImode, addr);
+      load = gen_reg_rtx (TImode);
+      emit_insn (gen__movti (load, ops[1]));
+      spu_convert_move (ops[0], load);
+      return 1;
+    }
+
+  rot_amt = GET_MODE_SIZE (mode) < 4 ? GET_MODE_SIZE (mode) - 4 : 0;
+
+  load = gen_reg_rtx (TImode);
+  rot = spu_expand_load (load, 0, ops[1], rot_amt);
 
   if (rot)
     emit_insn (gen_rotqby_ti (load, load, rot));
-  else if (rot_amt)
-    emit_insn (gen_rotlti3 (load, load, GEN_INT (rot_amt * 8)));
 
-  if (reload_completed)
-    emit_move_insn (ops[0], gen_rtx_REG (GET_MODE (ops[0]), REGNO (load)));
-  else
-    emit_insn (gen_spu_convert (ops[0], load));
+  spu_convert_move (ops[0], load);
+  return 1;
 }
 
-void
+int
 spu_split_store (rtx * ops)
 {
   enum machine_mode mode = GET_MODE (ops[0]);
-  rtx pat = ops[2];
-  rtx reg = ops[3];
+  rtx reg;
   rtx addr, p0, p1, p1_lo, smem;
   int aform;
   int scalar;
 
+  if (GET_MODE_SIZE (mode) >= 16)
+    return 0;
+
   addr = XEXP (ops[0], 0);
+  gcc_assert (GET_CODE (addr) != AND);
+
+  if (!address_needs_split (ops[0]))
+    {
+      reg = gen_reg_rtx (TImode);
+      emit_insn (gen_spu_convert (reg, ops[1]));
+      ops[0] = change_address (ops[0], TImode, addr);
+      emit_move_insn (ops[0], reg);
+      return 1;
+    }
 
   if (GET_CODE (addr) == PLUS)
     {
@@ -4455,19 +4525,31 @@ spu_split_store (rtx * ops)
          unaligned reg + aligned reg     => lqx, c?x, shuf, stqx
          unaligned reg + unaligned reg   => lqx, c?x, shuf, stqx
          unaligned reg + aligned const   => lqd, c?d, shuf, stqx
-         unaligned reg + unaligned const -> not allowed by legitimate address
+         unaligned reg + unaligned const -> lqx, c?d, shuf, stqx
        */
       aform = 0;
       p0 = XEXP (addr, 0);
       p1 = p1_lo = XEXP (addr, 1);
-      if (GET_CODE (p0) == REG && GET_CODE (p1) == CONST_INT)
+      if (REG_P (p0) && GET_CODE (p1) == CONST_INT)
 	{
 	  p1_lo = GEN_INT (INTVAL (p1) & 15);
-	  p1 = GEN_INT (INTVAL (p1) & -16);
-	  addr = gen_rtx_PLUS (SImode, p0, p1);
+	  if (reg_aligned_for_addr (p0))
+	    {
+	      p1 = GEN_INT (INTVAL (p1) & -16);
+	      if (p1 == const0_rtx)
+		addr = p0;
+	      else
+		addr = gen_rtx_PLUS (SImode, p0, p1);
+	    }
+	  else
+	    {
+	      rtx x = gen_reg_rtx (SImode);
+	      emit_move_insn (x, p1);
+	      addr = gen_rtx_PLUS (SImode, p0, x);
+	    }
 	}
     }
-  else if (GET_CODE (addr) == REG)
+  else if (REG_P (addr))
     {
       aform = 0;
       p0 = addr;
@@ -4481,31 +4563,34 @@ spu_split_store (rtx * ops)
       p1_lo = addr;
       if (ALIGNED_SYMBOL_REF_P (addr))
 	p1_lo = const0_rtx;
-      else if (GET_CODE (addr) == CONST)
+      else if (GET_CODE (addr) == CONST
+	       && GET_CODE (XEXP (addr, 0)) == PLUS
+	       && ALIGNED_SYMBOL_REF_P (XEXP (XEXP (addr, 0), 0))
+	       && GET_CODE (XEXP (XEXP (addr, 0), 1)) == CONST_INT)
 	{
-	  if (GET_CODE (XEXP (addr, 0)) == PLUS
-	      && ALIGNED_SYMBOL_REF_P (XEXP (XEXP (addr, 0), 0))
-	      && GET_CODE (XEXP (XEXP (addr, 0), 1)) == CONST_INT)
-	    {
-	      HOST_WIDE_INT v = INTVAL (XEXP (XEXP (addr, 0), 1));
-	      if ((v & -16) != 0)
-		addr = gen_rtx_CONST (Pmode,
-				      gen_rtx_PLUS (Pmode,
-						    XEXP (XEXP (addr, 0), 0),
-						    GEN_INT (v & -16)));
-	      else
-		addr = XEXP (XEXP (addr, 0), 0);
-	      p1_lo = GEN_INT (v & 15);
-	    }
+	  HOST_WIDE_INT v = INTVAL (XEXP (XEXP (addr, 0), 1));
+	  if ((v & -16) != 0)
+	    addr = gen_rtx_CONST (Pmode,
+				  gen_rtx_PLUS (Pmode,
+						XEXP (XEXP (addr, 0), 0),
+						GEN_INT (v & -16)));
+	  else
+	    addr = XEXP (XEXP (addr, 0), 0);
+	  p1_lo = GEN_INT (v & 15);
 	}
       else if (GET_CODE (addr) == CONST_INT)
 	{
 	  p1_lo = GEN_INT (INTVAL (addr) & 15);
 	  addr = GEN_INT (INTVAL (addr) & -16);
 	}
+      else
+	{
+	  p1_lo = gen_reg_rtx (SImode);
+	  emit_move_insn (p1_lo, addr);
+	}
     }
 
-  addr = gen_rtx_AND (SImode, copy_rtx (addr), GEN_INT (-16));
+  reg = gen_reg_rtx (TImode);
 
   scalar = store_with_one_insn_p (ops[0]);
   if (!scalar)
@@ -4515,28 +4600,18 @@ spu_split_store (rtx * ops)
          possible, and copying the flags will prevent that in certain
          cases, e.g. consider the volatile flag. */
 
+      rtx pat = gen_reg_rtx (TImode);
       rtx lmem = change_address (ops[0], TImode, copy_rtx (addr));
       set_mem_alias_set (lmem, 0);
       emit_insn (gen_movti (reg, lmem));
 
-      if (!p0 || regno_aligned_for_load (REGNO (p0)))
+      if (!p0 || reg_aligned_for_addr (p0))
 	p0 = stack_pointer_rtx;
       if (!p1_lo)
 	p1_lo = const0_rtx;
 
       emit_insn (gen_cpat (pat, p0, p1_lo, GEN_INT (GET_MODE_SIZE (mode))));
       emit_insn (gen_shufb (reg, ops[1], reg, pat));
-    }
-  else if (reload_completed)
-    {
-      if (GET_CODE (ops[1]) == REG)
-	emit_move_insn (reg, gen_rtx_REG (GET_MODE (reg), REGNO (ops[1])));
-      else if (GET_CODE (ops[1]) == SUBREG)
-	emit_move_insn (reg,
-			gen_rtx_REG (GET_MODE (reg),
-				     REGNO (SUBREG_REG (ops[1]))));
-      else
-	abort ();
     }
   else
     {
@@ -4549,15 +4624,16 @@ spu_split_store (rtx * ops)
     }
 
   if (GET_MODE_SIZE (mode) < 4 && scalar)
-    emit_insn (gen_shlqby_ti
-	       (reg, reg, GEN_INT (4 - GET_MODE_SIZE (mode))));
+    emit_insn (gen_ashlti3
+	       (reg, reg, GEN_INT (32 - GET_MODE_BITSIZE (mode))));
 
-  smem = change_address (ops[0], TImode, addr);
+  smem = change_address (ops[0], TImode, copy_rtx (addr));
   /* We can't use the previous alias set because the memory has changed
      size and can potentially overlap objects of other types.  */
   set_mem_alias_set (smem, 0);
 
   emit_insn (gen_movti (smem, reg));
+  return 1;
 }
 
 /* Return TRUE if X is MEM which is a struct member reference
@@ -4654,37 +4730,6 @@ fix_range (const char *const_str)
       *comma = ',';
       str = comma + 1;
     }
-}
-
-int
-spu_valid_move (rtx * ops)
-{
-  enum machine_mode mode = GET_MODE (ops[0]);
-  if (!register_operand (ops[0], mode) && !register_operand (ops[1], mode))
-    return 0;
-
-  /* init_expr_once tries to recog against load and store insns to set
-     the direct_load[] and direct_store[] arrays.  We always want to
-     consider those loads and stores valid.  init_expr_once is called in
-     the context of a dummy function which does not have a decl. */
-  if (cfun->decl == 0)
-    return 1;
-
-  /* Don't allows loads/stores which would require more than 1 insn.
-     During and after reload we assume loads and stores only take 1
-     insn. */
-  if (GET_MODE_SIZE (mode) < 16 && !reload_in_progress && !reload_completed)
-    {
-      if (GET_CODE (ops[0]) == MEM
-	  && (GET_MODE_SIZE (mode) < 4
-	      || !(store_with_one_insn_p (ops[0])
-		   || mem_is_padded_component_ref (ops[0]))))
-	return 0;
-      if (GET_CODE (ops[1]) == MEM
-	  && (GET_MODE_SIZE (mode) < 4 || !aligned_mem_p (ops[1])))
-	return 0;
-    }
-  return 1;
 }
 
 /* Return TRUE if x is a CONST_INT, CONST_DOUBLE or CONST_VECTOR that
@@ -6400,12 +6445,25 @@ spu_sms_res_mii (struct ddg *g)
 
 void
 spu_init_expanders (void)
-{   
-  /* HARD_FRAME_REGISTER is only 128 bit aligned when
-   * frame_pointer_needed is true.  We don't know that until we're
-   * expanding the prologue. */
+{
   if (cfun)
-    REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = 8;
+    {
+      rtx r0, r1;
+      /* HARD_FRAME_REGISTER is only 128 bit aligned when
+         frame_pointer_needed is true.  We don't know that until we're
+         expanding the prologue. */
+      REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM) = 8;
+
+      /* A number of passes use LAST_VIRTUAL_REGISTER+1 and
+	 LAST_VIRTUAL_REGISTER+2 to test the back-end.  We want them
+	 to be treated as aligned, so generate them here. */
+      r0 = gen_reg_rtx (SImode);
+      r1 = gen_reg_rtx (SImode);
+      mark_reg_pointer (r0, 128);
+      mark_reg_pointer (r1, 128);
+      gcc_assert (REGNO (r0) == LAST_VIRTUAL_REGISTER + 1
+		  && REGNO (r1) == LAST_VIRTUAL_REGISTER + 2);
+    }
 }
 
 static enum machine_mode
@@ -6477,6 +6535,22 @@ spu_gen_exp2 (enum machine_mode mode, rtx scale)
       arr[2] = arr[6] = arr[10] = arr[14] = 0;
       arr[3] = arr[7] = arr[11] = arr[15] = 0;
       return array_to_constant (mode, arr);
+    }
+}
+
+/* After reload, just change the convert into a move instruction
+   or a dead instruction. */
+void
+spu_split_convert (rtx ops[])
+{
+  if (REGNO (ops[0]) == REGNO (ops[1]))
+    emit_note (NOTE_INSN_DELETED);
+  else
+    {
+      /* Use TImode always as this might help hard reg copyprop.  */
+      rtx op0 = gen_rtx_REG (TImode, REGNO (ops[0]));
+      rtx op1 = gen_rtx_REG (TImode, REGNO (ops[1]));
+      emit_insn (gen_move_insn (op0, op1));
     }
 }
 
