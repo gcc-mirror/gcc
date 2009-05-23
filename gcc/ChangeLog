@@ -1,3 +1,8 @@
+2009-05-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* final.c (shorten_branches): Do not align labels for jump tables.
+	(final_scan_insn): Use JUMP_TABLE_DATA_P.
+
 2009-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/passes.texi: Standardize spelling of RTL, Tree and Tree SSA.
