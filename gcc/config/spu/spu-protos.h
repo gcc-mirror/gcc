@@ -62,11 +62,9 @@ extern void spu_setup_incoming_varargs (int *cum, enum machine_mode mode,
 					tree type, int *pretend_size,
 					int no_rtl);
 extern void spu_conditional_register_usage (void);
-extern int aligned_mem_p (rtx mem);
 extern int spu_expand_mov (rtx * ops, enum machine_mode mode);
-extern void spu_split_load (rtx * ops);
-extern void spu_split_store (rtx * ops);
-extern int spu_valid_move (rtx * ops);
+extern int spu_split_load (rtx * ops);
+extern int spu_split_store (rtx * ops);
 extern int fsmbi_const_p (rtx x);
 extern int cpat_const_p (rtx x, enum machine_mode mode);
 extern rtx gen_cpat_const (rtx * ops);
@@ -87,6 +85,7 @@ extern void spu_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt);
 extern void spu_expand_sign_extend (rtx ops[]);
 extern void spu_expand_vector_init (rtx target, rtx vals);
 extern void spu_init_expanders (void);
+extern void spu_split_convert (rtx *);
 
 /* spu-c.c */
 extern tree spu_resolve_overloaded_builtin (tree fndecl, void *fnargs);

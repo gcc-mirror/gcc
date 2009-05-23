@@ -1,3 +1,49 @@
+2009-05-22  Trevor Smigiel <Trevor_Smigiel@playstation.sony.com>
+
+	* config/spu/spu-protos.h (aligned_mem_p, spu_valid_mov): Remove.
+	(spu_split_load, spu_split_store): Change return type to int.
+	(spu_split_convert): Declare.
+	* config/spu/predicates.md (spu_mem_operand): Remove.
+	(spu_mov_operand): Update.
+	(spu_dest_operand, shiftrt_operator, extend_operator): Define.
+	* config/spu/spu.c (regno_aligned_for_load): Remove.
+	(reg_aligned_for_addr, spu_expand_load): Define.
+	(spu_expand_extv): Reimplement and handle MEM.
+	(spu_expand_insv): Handle MEM.
+	(spu_sched_reorder): Handle insn's with length 0.
+	(spu_legitimate_address_p): Reimplement.
+	(store_with_one_insn_p): Return TRUE for any mode with size
+	larger than 16 bytes.
+	(address_needs_split): Define.
+	(spu_expand_mov): Call spu_split_load and spu_split_store for MEM
+	operands.
+	(spu_convert_move): Define.
+	(spu_split_load): Use spu_expand_load and change all MEM's to
+	TImode.
+	(spu_split_store): Change all MEM's to TImode.
+	(spu_init_expanders): Preallocate registers that correspond to
+	LAST_VIRTUAL_REG+1 and LAST_VIRTUAL_REG+2 and set them with
+	mark_reg_pointer.
+	(spu_split_convert): Define.
+	* config/spu/spu.md (QHSI, QHSDI): New mode iterators.
+	(_move<mode>, _movdi, _movti): Update predicate and condition.
+	(load, store): Change to define_split.
+	(extendqiti2, extendhiti2, extendsiti2, extendditi2): Simplify to
+	extend<mode>ti2.
+	(zero_extendqiti2, zero_extendhiti2, <v>lshr<mode>3_imm): Define.
+	(lshr<mode>3, lshr<mode>3_imm, lshr<mode>3_re): Simplify to one
+	define_insn_and_split of lshr<mode>3.
+	(shrqbybi_<mode>, shrqby_<mode>): Simplify to define_expand.
+	(<v>ashr<mode>3_imm): Define.
+	(extv, extzv, insv): Allow MEM operands.
+	(trunc_shr_ti<mode>, trunc_shr_tidi, shl_ext_<mode>ti,
+	shl_ext_diti, sext_trunc_lshr_tiqisi, zext_trunc_lshr_tiqisi,
+	sext_trunc_lshr_tihisi, zext_trunc_lshr_tihisi): Define for combine.
+	(_spu_convert2): Change to define_insn_and_split and remove the
+	corresponding define_peephole2.
+	(stack_protect_set, stack_protect_test, stack_protect_test_si):
+	Change predicates to memory_operand.
+
 2009-05-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/arm/thumb2.md: Add 16-bit multiply instructions.
