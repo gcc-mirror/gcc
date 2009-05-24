@@ -1,3 +1,19 @@
+2009-05-24  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/bb-slp-1.c: New test.
+	* gcc.dg/vect/bb-slp-2.c, gcc.dg/vect/bb-slp-3.c, 
+	gcc.dg/vect/bb-slp-4.c, gcc.dg/vect/bb-slp-5.c, 
+	gcc.dg/vect/bb-slp-6.c, gcc.dg/vect/bb-slp-7.c,
+	gcc.dg/vect/bb-slp-8.c, gcc.dg/vect/bb-slp-9.c, 
+	gcc.dg/vect/bb-slp-10.c, gcc.dg/vect/bb-slp-11.c, 
+	gcc.dg/vect/no-tree-reassoc-bb-slp-12.c, gcc.dg/vect/bb-slp-13.c, 
+	gcc.dg/vect/bb-slp-14.c, gcc.dg/vect/bb-slp-15.c, 
+	gcc.dg/vect/bb-slp-16.c, gcc.dg/vect/bb-slp-17.c, 
+	gcc.dg/vect/bb-slp-18.c, gcc.dg/vect/bb-slp-19.c, 
+	gcc.dg/vect/bb-slp-20.c, gcc.dg/vect/bb-slp-21.c,
+	gcc.dg/vect/bb-slp-22.c: Likewise.
+	* gcc.dg/vect/vect.exp: Run basic block SLP tests.
+
 2009-05-23  Mark Mitchell  <mark@codesourcery.com>
 	    Maxim Kuvyrkov  <maxim@codesourcery.com>
 

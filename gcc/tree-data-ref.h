@@ -383,6 +383,9 @@ bool dr_analyze_innermost (struct data_reference *);
 extern bool compute_data_dependences_for_loop (struct loop *, bool,
 					       VEC (data_reference_p, heap) **,
 					       VEC (ddr_p, heap) **);
+extern bool compute_data_dependences_for_bb (basic_block, bool,
+                                             VEC (data_reference_p, heap) **,
+                                             VEC (ddr_p, heap) **);
 extern tree find_data_references_in_loop (struct loop *, 
                                           VEC (data_reference_p, heap) **);
 extern void print_direction_vector (FILE *, lambda_vector, int);

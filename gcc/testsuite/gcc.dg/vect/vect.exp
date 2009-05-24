@@ -122,6 +122,8 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/nodump-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 
 lappend DEFAULT_VECTCFLAGS "-fdump-tree-vect-details" 
+set VECT_SLP_CFLAGS $DEFAULT_VECTCFLAGS
+lappend VECT_SLP_CFLAGS "-fdump-tree-slp-details"
 
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/pr*.\[cS\]]]  \
@@ -130,10 +132,14 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vect-*.\[cS\]]]  \
 	"" $DEFAULT_VECTCFLAGS
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/slp-*.\[cS\]]]  \
         "" $DEFAULT_VECTCFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/bb-slp*.\[cS\]]]  \
+        "" $VECT_SLP_CFLAGS
+
 
 #### Tests with special options
 global SAVED_DEFAULT_VECTCFLAGS
 set SAVED_DEFAULT_VECTCFLAGS $DEFAULT_VECTCFLAGS
+set SAVED_VECT_SLP_CFLAGS $VECT_SLP_CFLAGS
 
 # --param vect-max-version-for-alias-checks=0 tests
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
@@ -262,6 +268,11 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O3-*.\[cS\]]]  \
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/O1-*.\[cS\]]]  \
         "" $O1_VECTCFLAGS
 
+# -fno-tree-reassoc
+set VECT_SLP_CFLAGS $SAVED_VECT_SLP_CFLAGS
+lappend VECT_SLP_CFLAGS "-fno-tree-reassoc"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/no-tree-reassoc-bb-slp-*.\[cS\]]]  \
+        "" $VECT_SLP_CFLAGS
 
 # Clean up.
 set dg-do-what-default ${save-dg-do-what-default}

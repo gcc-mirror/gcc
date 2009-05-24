@@ -1,3 +1,144 @@
+2009-05-24  Ira Rosen  <irar@il.ibm.com>
+
+	* doc/passes.texi (Tree-SSA passes): Document SLP pass.
+	* tree-pass.h (pass_slp_vectorize): New pass.
+	* params.h (SLP_MAX_INSNS_IN_BB): Define.
+	* timevar.def (TV_TREE_SLP_VECTORIZATION): Define.
+	* tree-vectorizer.c (timevar.h): Include.
+	(user_vect_verbosity_level): Declare.
+	(vect_location): Fix comment.
+	(vect_set_verbosity_level): Update user_vect_verbosity_level
+	instead of vect_verbosity_level.
+	(vect_set_dump_settings): Add an argument. Ignore user defined
+	verbosity if dump flags require higher level of verbosity. Print to
+	stderr only for loop vectorization.
+	(vectorize_loops): Update call to vect_set_dump_settings.
+	(execute_vect_slp): New function.
+	(gate_vect_slp): Likewise.
+	(struct gimple_opt_pass pass_slp_vectorize): New.
+	* tree-vectorizer.h (struct _bb_vec_info): Define along macros to
+	access its members.
+	(vec_info_for_bb): New function.
+	(struct _stmt_vec_info): Add bb_vinfo and a macro for its access.
+	(VECTORIZATION_ENABLED): New macro.
+	(SLP_ENABLED, SLP_DISABLED): Likewise.
+	(vect_is_simple_use): Add bb_vec_info argument.
+	(new_stmt_vec_info, vect_analyze_data_ref_dependences,
+	vect_analyze_data_refs_alignment, vect_verify_datarefs_alignment,
+	vect_analyze_data_ref_accesses, vect_analyze_data_refs,
+	vect_schedule_slp, vect_analyze_slp): Likewise.
+	(vect_analyze_stmt): Add slp_tree argument.
+	(find_bb_location): Declare.
+	(vect_slp_analyze_bb, vect_slp_transform_bb): Likewise.
+	* tree-vect-loop.c (new_loop_vec_info): Adjust function calls.
+	(vect_analyze_loop_operations, vect_analyze_loop,
+	get_initial_def_for_induction, vect_create_epilog_for_reduction,
+	vect_finalize_reduction, vectorizable_reduction,
+	vectorizable_live_operation, vect_transform_loop): Likewise.
+	* tree-data-ref.c (dr_analyze_innermost): Update comment,
+	skip evolution analysis if analyzing a basic block.
+	(dr_analyze_indices): Likewise.
+	(initialize_data_dependence_relation): Skip the test whether the
+	object is invariant for basic blocks.
+	(compute_all_dependences): Skip dependence analysis for data
+	references in basic blocks.
+	(find_data_references_in_stmt): Don't fail in case of invariant
+	access in basic block.
+	(find_data_references_in_bb): New function.
+	(find_data_references_in_loop): Move code to
+	find_data_references_in_bb    and add a call to it.
+	(compute_data_dependences_for_bb): New function.
+	* tree-data-ref.h (compute_data_dependences_for_bb): Declare.
+	* tree-vect-data-refs.c (vect_check_interleaving): Adjust to the case
+	that STEP is 0.
+	(vect_analyze_data_ref_dependence): Check for interleaving in case of
+	unknown dependence in basic block and fail in case of dependence in
+	basic block.
+	(vect_analyze_data_ref_dependences): Add bb_vinfo argument, get data
+	dependence instances from either loop or basic block vectorization
+	info.
+	(vect_compute_data_ref_alignment): Check if it is loop vectorization
+	before calling nested_in_vect_loop_p.
+	(vect_compute_data_refs_alignment): Add bb_vinfo argument, get data
+	dependence instances from either loop or basic block vectorization
+	info.
+	(vect_verify_datarefs_alignment): Likewise.
+	(vect_enhance_data_refs_alignment): Adjust function calls.
+	(vect_analyze_data_refs_alignment): Likewise.
+	(vect_analyze_group_access): Fix printing. Skip different checks if
+	DR_STEP is 0. Keep strided stores either in loop or basic block
+	vectorization data structure. Fix indentation.
+	(vect_analyze_data_ref_access): Fix comments, allow zero step in
+	basic blocks.
+	(vect_analyze_data_ref_accesses): Add bb_vinfo argument, get data
+	dependence instances from either loop or basic block vectorization
+	info.
+	(vect_analyze_data_refs): Update comment. Call
+	compute_data_dependences_for_bb to analyze basic blocks.
+	(vect_create_addr_base_for_vector_ref): Check for outer loop only in
+	case of loop vectorization. In case of basic block vectorization use
+	data-ref itself   as  a base.
+	(vect_create_data_ref_ptr): In case of basic block vectorization:
+	don't advance the pointer, add new statements before the current
+	statement.  Adjust function calls.
+	(vect_supportable_dr_alignment): Support only aligned accesses in
+	basic block vectorization.
+	* common.opt (ftree-slp-vectorize): New flag.
+	* tree-vect-patterns.c (widened_name_p): Adjust function calls.
+	(vect_pattern_recog_1): Likewise.
+	* tree-vect-stmts.c (process_use): Likewise.
+	(vect_init_vector): Add new statements in the beginning of the basic
+	block in case of basic block SLP.
+	(vect_get_vec_def_for_operand): Adjust function calls.
+	(vect_finish_stmt_generation): Likewise.
+	(vectorizable_call): Add assert that it is loop vectorization, adjust
+	function calls.
+	(vectorizable_conversion, vectorizable_assignment): Likewise.
+	(vectorizable_operation): In case of basic block SLP, take
+	vectorization factor from statement's type and skip the relevance
+	check. Adjust function calls.
+	(vectorizable_type_demotion): Add assert that it is loop
+	vectorization, adjust function calls.
+	(vectorizable_type_promotion): Likewise.
+	(vectorizable_store): Check for outer loop only in case of loop
+	vectorization. Adjust function calls. For basic blocks, skip the
+	relevance check and don't advance pointers.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Add assert that it is loop vectorization,
+	adjust function calls.
+	(vect_analyze_stmt): Add argument. In case of basic block SLP, check
+	that it is not reduction, get vector type, call only supported
+	functions, skip loop    specific parts.
+	(vect_transform_stmt): Check for outer loop only in case of loop
+	vectorization.
+	(new_stmt_vec_info): Add new argument and initialize bb_vinfo.
+	(vect_is_simple_use): Fix comment, add new argument, fix conditions
+	for external definition.
+	* passes.c (pass_slp_vectorize): New pass.
+	* tree-vect-slp.c (find_bb_location): New function.
+	(vect_get_and_check_slp_defs): Add argument, adjust function calls,
+	check for patterns only in loops.
+	(vect_build_slp_tree): Add argument, adjust function calls, fail in
+	case of multiple types in basic block SLP.
+	(vect_mark_slp_stmts_relevant): New function.
+	(vect_supported_load_permutation_p): Fix comment.
+	(vect_analyze_slp_instance): Add argument. In case of basic block
+	SLP, take vectorization factor from statement's type, check that
+	unrolling factor is 1. Adjust function call. Save SLP instance in
+	either loop or basic block vectorization structure. Return FALSE,
+	if SLP failed.
+	(vect_analyze_slp): Add argument. Get strided stores groups from
+	either loop or basic block vectorization structure. Return FALSE
+	if basic block SLP failed.
+	(new_bb_vec_info): New function.
+	(destroy_bb_vec_info, vect_slp_analyze_node_operations,
+	vect_slp_analyze_operations, vect_slp_analyze_bb): Likewise.
+	(vect_schedule_slp): Add argument. Get SLP instances from either
+	loop or basic block vectorization structure. Set vectorization factor
+	to be 1 for basic block SLP.
+	(vect_slp_transform_bb): New function.
+	* params.def (PARAM_SLP_MAX_INSNS_IN_BB): Define.
+
 2009-05-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* final.c (shorten_branches): Do not align labels for jump tables.

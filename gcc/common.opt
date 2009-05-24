@@ -1330,6 +1330,10 @@ ftree-vectorize
 Common Report Var(flag_tree_vectorize) Optimization
 Enable loop vectorization on trees
 
+ftree-slp-vectorize
+Common Report Var(flag_tree_slp_vectorize) Init(2) Optimization
+Enable basic block vectorization (SLP) on trees
+
 fvect-cost-model
 Common Report Var(flag_vect_cost_model) Optimization
 Enable use of cost model in vectorization

@@ -640,14 +640,14 @@ new_loop_vec_info (struct loop *loop)
             {
               gimple phi = gsi_stmt (si);
               gimple_set_uid (phi, 0);
-              set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, res));
+              set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, res, NULL));
             }
 
           for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
             {
               gimple stmt = gsi_stmt (si);
               gimple_set_uid (stmt, 0);
-              set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, res));
+              set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, res, NULL));
             }
         }
     }
@@ -1153,7 +1153,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 
           gcc_assert (stmt_info);
 
-	  if (!vect_analyze_stmt (stmt, &need_to_vectorize))
+	  if (!vect_analyze_stmt (stmt, &need_to_vectorize, NULL))
 	    return false;
 
           if (STMT_VINFO_RELEVANT_P (stmt_info) && !PURE_SLP_STMT (stmt_info))
@@ -1316,7 +1316,7 @@ vect_analyze_loop (struct loop *loop)
      FORNOW: Handle only simple, array references, which
      alignment can be forced, and aligned pointer-references.  */
 
-  ok = vect_analyze_data_refs (loop_vinfo);
+  ok = vect_analyze_data_refs (loop_vinfo, NULL);
   if (!ok)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1346,7 +1346,7 @@ vect_analyze_loop (struct loop *loop)
   /* Analyze the alignment of the data-refs in the loop.
      Fail if a data reference is found that cannot be vectorized.  */
 
-  ok = vect_analyze_data_refs_alignment (loop_vinfo);
+  ok = vect_analyze_data_refs_alignment (loop_vinfo, NULL);
   if (!ok)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1367,7 +1367,7 @@ vect_analyze_loop (struct loop *loop)
   /* Analyze data dependences between the data-refs in the loop. 
      FORNOW: fail at the first data dependence that we encounter.  */
 
-  ok = vect_analyze_data_ref_dependences (loop_vinfo);
+  ok = vect_analyze_data_ref_dependences (loop_vinfo, NULL);
   if (!ok)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1379,7 +1379,7 @@ vect_analyze_loop (struct loop *loop)
   /* Analyze the access patterns of the data-refs in the loop (consecutive,
      complex, etc.). FORNOW: Only handle consecutive access pattern.  */
 
-  ok = vect_analyze_data_ref_accesses (loop_vinfo);
+  ok = vect_analyze_data_ref_accesses (loop_vinfo, NULL);
   if (!ok)
     {
       if (vect_print_dump_info (REPORT_DETAILS))
@@ -1402,7 +1402,7 @@ vect_analyze_loop (struct loop *loop)
     }
 
   /* Check the SLP opportunities in the loop, analyze and build SLP trees.  */
-  ok = vect_analyze_slp (loop_vinfo);
+  ok = vect_analyze_slp (loop_vinfo, NULL);
   if (ok)
     {
       /* Decide which possible SLP instances to SLP.  */
@@ -2354,7 +2354,7 @@ get_initial_def_for_induction (gimple iv_phi)
   add_referenced_var (vec_dest);
   induction_phi = create_phi_node (vec_dest, iv_loop->header);
   set_vinfo_for_stmt (induction_phi,
-		      new_stmt_vec_info (induction_phi, loop_vinfo));
+		      new_stmt_vec_info (induction_phi, loop_vinfo, NULL));
   induc_def = PHI_RESULT (induction_phi);
 
   /* Create the iv update inside the loop  */
@@ -2363,7 +2363,8 @@ get_initial_def_for_induction (gimple iv_phi)
   vec_def = make_ssa_name (vec_dest, new_stmt);
   gimple_assign_set_lhs (new_stmt, vec_def);
   gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
-  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo));
+  set_vinfo_for_stmt (new_stmt, new_stmt_vec_info (new_stmt, loop_vinfo, 
+                                                   NULL));
 
   /* Set the arguments of the phi node:  */
   add_phi_arg (induction_phi, vec_init, pe);
@@ -2405,7 +2406,7 @@ get_initial_def_for_induction (gimple iv_phi)
 
 	  gsi_insert_before (&si, new_stmt, GSI_SAME_STMT);
 	  set_vinfo_for_stmt (new_stmt,
-			      new_stmt_vec_info (new_stmt, loop_vinfo));
+			      new_stmt_vec_info (new_stmt, loop_vinfo, NULL));
 	  STMT_VINFO_RELATED_STMT (prev_stmt_vinfo) = new_stmt;
 	  prev_stmt_vinfo = vinfo_for_stmt (new_stmt); 
 	}
@@ -2743,7 +2744,7 @@ vect_create_epilog_for_reduction (tree vect_def, gimple stmt,
   for (j = 0; j < ncopies; j++)
     {
       phi = create_phi_node (SSA_NAME_VAR (vect_def), exit_bb);
-      set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, loop_vinfo));
+      set_vinfo_for_stmt (phi, new_stmt_vec_info (phi, loop_vinfo, NULL));
       if (j == 0)
 	new_phi = phi;
       else
@@ -3021,7 +3022,8 @@ vect_finalize_reduction:
 	  epilog_stmt = adjustment_def ? epilog_stmt : new_phi;
 	  STMT_VINFO_VEC_STMT (stmt_vinfo) = epilog_stmt;
 	  set_vinfo_for_stmt (epilog_stmt, 
-			      new_stmt_vec_info (epilog_stmt, loop_vinfo));
+			      new_stmt_vec_info (epilog_stmt, loop_vinfo, 
+			                         NULL));
 	  if (adjustment_def)
 	    STMT_VINFO_RELATED_STMT (vinfo_for_stmt (epilog_stmt)) =
 		STMT_VINFO_RELATED_STMT (vinfo_for_stmt (new_phi));
@@ -3204,7 +3206,7 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
      The last use is the reduction variable.  */
   for (i = 0; i < op_type-1; i++)
     {
-      is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, &def_stmt,
+      is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, NULL, &def_stmt,
 					  &def, &dt);
       gcc_assert (is_simple_use);
       if (dt != vect_internal_def
@@ -3214,8 +3216,8 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 	return false;
     }
 
-  is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, &def_stmt, &def, 
-                                      &dt);
+  is_simple_use = vect_is_simple_use (ops[i], loop_vinfo, NULL, &def_stmt, 
+                                      &def, &dt);
   gcc_assert (is_simple_use);
   gcc_assert (dt == vect_reduction_def);
   gcc_assert (gimple_code (def_stmt) == GIMPLE_PHI);
@@ -3394,7 +3396,8 @@ vectorizable_reduction (gimple stmt, gimple_stmt_iterator *gsi,
 	{
 	  /* Create the reduction-phi that defines the reduction-operand.  */
 	  new_phi = create_phi_node (vec_dest, loop->header);
-	  set_vinfo_for_stmt (new_phi, new_stmt_vec_info (new_phi, loop_vinfo));
+	  set_vinfo_for_stmt (new_phi, new_stmt_vec_info (new_phi, loop_vinfo, 
+	                                                  NULL));
 	}
 
       /* Handle uses.  */
@@ -3592,7 +3595,8 @@ vectorizable_live_operation (gimple stmt,
 	op = TREE_OPERAND (gimple_op (stmt, 1), i);
       else
 	op = gimple_op (stmt, i + 1);
-      if (op && !vect_is_simple_use (op, loop_vinfo, &def_stmt, &def, &dt))
+      if (op
+          && !vect_is_simple_use (op, loop_vinfo, NULL, &def_stmt, &def, &dt))
         {
           if (vect_print_dump_info (REPORT_DETAILS))
             fprintf (vect_dump, "use not simple.");
@@ -3766,7 +3770,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 		  if (vect_print_dump_info (REPORT_DETAILS))
 		    fprintf (vect_dump, "=== scheduling SLP instances ===");
 
-		  vect_schedule_slp (loop_vinfo);
+		  vect_schedule_slp (loop_vinfo, NULL);
 		}
 
 	      /* Hybrid SLP stmts must be vectorized in addition to SLP.  */

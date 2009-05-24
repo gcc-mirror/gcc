@@ -438,10 +438,18 @@ conceptually unrolled by a factor @code{VF} (vectorization factor), which is
 the number of elements operated upon in parallel in each iteration, and the 
 @code{VF} copies of each scalar operation are fused to form a vector operation.
 Additional loop transformations such as peeling and versioning may take place
-to align the number of iterations, and to align the memory accesses in the loop.
-The pass is implemented in @file{tree-vectorizer.c} (the main driver and general
-utilities), @file{tree-vect-analyze.c} and @file{tree-vect-transform.c}.
+to align the number of iterations, and to align the memory accesses in the 
+loop.
+The pass is implemented in @file{tree-vectorizer.c} (the main driver),
+@file{tree-vect-loop.c} and @file{tree-vect-loop-manip.c} (loop specific parts 
+and general loop utilities), @file{tree-vect-slp} (loop-aware SLP 
+functionality), @file{tree-vect-stmts.c} and @file{tree-vect-data-refs.c}.
 Analysis of data references is in @file{tree-data-ref.c}.
+
+SLP Vectorization.  This pass performs vectorization of straight-line code. The
+pass is implemented in @file{tree-vectorizer.c} (the main driver),
+@file{tree-vect-slp.c}, @file{tree-vect-stmts.c} and 
+@file{tree-vect-data-refs.c}.
 
 Autoparallelization.  This pass splits the loop iteration space to run
 into several threads.  The pass is implemented in @file{tree-parloops.c}.
