@@ -1,3 +1,8 @@
+2009-05-24  Nicolas Roche  <roche@adacore.com>
+
+	* Makefile.tpl (compare-target): Skip ./ada/*tools directories.
+	* Makefile.in: Regenerate.
+
 2009-05-21  Denis Chertykov  <chertykov@gmail.com>
 
 	* MAINTAINERS: Update my e-mail address.
