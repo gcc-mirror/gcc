@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,11 +72,21 @@ package Switch is
    --  Returns True iff Switch_Chars represents a front-end switch, i.e. it
    --  starts with -I, -gnat or -?RTS.
 
-private
+   function Is_Internal_GCC_Switch (Switch_Chars : String) return Boolean;
+   --  Returns True iff Switch_Chars represents an internal GCC switch to be
+   --  followed by a single argument, such as -dumpbase, --param or -auxbase.
+   --  Eventhough passed by the "gcc" driver, these need not be stored in ALI
+   --  files and may safely be ignored by non GCC back-ends.
 
+   function Switch_Last (Switch_Chars : String) return Natural;
+   --  Index in Switch_Chars of the last relevant character for later string
+   --  comparison purposes. This is typically 'Last, minus one if there is a
+   --  terminating ASCII.NUL.
+
+private
    --  This section contains some common routines used by the tool dependent
-   --  child packages (there is one such child package for each tool that
-   --  uses Switches to scan switches - Compiler/gnatbind/gnatmake/.
+   --  child packages (there is one such child package for each tool that uses
+   --  Switches to scan switches - Compiler/gnatbind/gnatmake/.
 
    Switch_Max_Value : constant := 999_999;
    --  Maximum value permitted in switches that take a value

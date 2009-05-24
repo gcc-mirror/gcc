@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,6 +138,22 @@ package body Switch is
                       and then Switch_Chars (Ptr + 2 .. Ptr + 4) = "RTS"));
    end Is_Front_End_Switch;
 
+   ----------------------------
+   -- Is_Internal_GCC_Switch --
+   ----------------------------
+
+   function Is_Internal_GCC_Switch (Switch_Chars : String) return Boolean is
+      First : constant Natural := Switch_Chars'First + 1;
+      Last  : constant Natural := Switch_Last (Switch_Chars);
+   begin
+      return Is_Switch (Switch_Chars)
+        and then
+          (Switch_Chars (First .. Last) = "-param"        or else
+           Switch_Chars (First .. Last) = "dumpbase"      or else
+           Switch_Chars (First .. Last) = "auxbase-strip" or else
+           Switch_Chars (First .. Last) = "auxbase");
+   end Is_Internal_GCC_Switch;
+
    ---------------
    -- Is_Switch --
    ---------------
@@ -147,6 +163,22 @@ package body Switch is
       return Switch_Chars'Length > 1
         and then Switch_Chars (Switch_Chars'First) = '-';
    end Is_Switch;
+
+   -----------------
+   -- Switch_last --
+   -----------------
+
+   function Switch_Last (Switch_Chars : String) return Natural is
+      Last : constant Natural := Switch_Chars'Last;
+   begin
+      if Last >= Switch_Chars'First
+        and then Switch_Chars (Last) = ASCII.NUL
+      then
+         return Last - 1;
+      else
+         return Last;
+      end if;
+   end Switch_Last;
 
    -----------------
    -- Nat_Present --
