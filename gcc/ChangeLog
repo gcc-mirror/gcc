@@ -1,3 +1,27 @@
+2009-05-24  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-ssa-operands.h (push_stmt_changes, pop_stmt_changes,
+	discard_stmt_changes): Delete.
+	* tree-ssa-operands.c (scb_stack): Delete.
+	(init_ssa_operands): Do not initialize it.
+	(fini_ssa_operands): Do not free it.
+	(push_stmt_changes, pop_stmt_changes, discard_stmt_changes): Delete.
+
+	* tree-cfg.c (replace_uses_by): Replace pop_stmt_changes with 
+	update_stmt, remove the others.  Fix comments.
+	* tree-dfa.c (optimize_stack_restore): Likewise.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr): Likewise.
+	* tree-ssa-loop-ivopts.c (rewrite_use): Likewise.
+	* tree-ssa-dce.c (eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-ccp.c (optimize_stack_restore, execute_fold_all_builtins):
+	Likewise.
+	* tree-ssa-propagate.c (substitute_and_fold): Likewise.
+	* tree-ssa-dom.c (propagate_rhs_into_lhs): Likewise.
+	(dom_opt_finalize_block): Likewise, adjusting access to stmts_to_rescan.
+	(optimize_stmt): Likewise, adjusting access to stmts_to_rescan.
+	(stmts_to_rescan): Change item type to gimple.
+	(tree_ssa_dominator_optimize): Change type of stmts_to_rescan.
+
 2009-05-24  Ira Rosen  <irar@il.ibm.com>
 
 	* doc/passes.texi (Tree-SSA passes): Document SLP pass.

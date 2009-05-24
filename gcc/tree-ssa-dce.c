@@ -983,10 +983,9 @@ eliminate_unnecessary_stmts (void)
 			  fprintf (dump_file, "\n");
 			}
 		      
-		      push_stmt_changes (gsi_stmt_ptr (&gsi));
 		      gimple_call_set_lhs (stmt, NULL_TREE);
 		      maybe_clean_or_replace_eh_stmt (stmt, stmt);
-		      pop_stmt_changes (gsi_stmt_ptr (&gsi));
+		      update_stmt (stmt);
 		      release_ssa_name (name);
 		    }
 		  notice_special_calls (stmt);

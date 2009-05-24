@@ -651,11 +651,7 @@ get_virtual_var (tree var)
   return var;
 }
 
-/* Mark all the naked symbols in STMT for SSA renaming.
-   
-   NOTE: This function should only be used for brand new statements.
-   If the caller is modifying an existing statement, it should use the
-   combination push_stmt_changes/pop_stmt_changes.  */
+/* Mark all the naked symbols in STMT for SSA renaming.  */
 
 void
 mark_symbols_for_renaming (gimple stmt)

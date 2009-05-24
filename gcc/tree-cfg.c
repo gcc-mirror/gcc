@@ -1289,9 +1289,6 @@ replace_uses_by (tree name, tree val)
 
   FOR_EACH_IMM_USE_STMT (stmt, imm_iter, name)
     {
-      if (gimple_code (stmt) != GIMPLE_PHI)
-	push_stmt_changes (&stmt);
-
       FOR_EACH_IMM_USE_ON_STMT (use, imm_iter)
         {
 	  replace_exp (use, val);
@@ -1318,7 +1315,7 @@ replace_uses_by (tree name, tree val)
 	  if (cfgcleanup_altered_bbs)
 	    bitmap_set_bit (cfgcleanup_altered_bbs, gimple_bb (stmt)->index);
 
-	  /* FIXME.  This should go in pop_stmt_changes.  */
+	  /* FIXME.  This should go in update_stmt.  */
 	  for (i = 0; i < gimple_num_ops (stmt); i++)
 	    {
 	      tree op = gimple_op (stmt, i);
@@ -1330,8 +1327,7 @@ replace_uses_by (tree name, tree val)
 	    }
 
 	  maybe_clean_or_replace_eh_stmt (stmt, stmt);
-
-	  pop_stmt_changes (&stmt);
+	  update_stmt (stmt);
 	}
     }
 

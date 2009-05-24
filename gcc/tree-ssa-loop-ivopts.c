@@ -5304,8 +5304,6 @@ rewrite_use_compare (struct ivopts_data *data,
 static void
 rewrite_use (struct ivopts_data *data, struct iv_use *use, struct iv_cand *cand)
 {
-  push_stmt_changes (&use->stmt);
-
   switch (use->type)
     {
       case USE_NONLINEAR_EXPR:
@@ -5323,8 +5321,8 @@ rewrite_use (struct ivopts_data *data, struct iv_use *use, struct iv_cand *cand)
       default:
 	gcc_unreachable ();
     }
-
-  pop_stmt_changes (&use->stmt);
+  
+  update_stmt (use->stmt);
 }
 
 /* Rewrite the uses using the selected induction variables.  */
