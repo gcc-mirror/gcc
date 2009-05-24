@@ -1,3 +1,8 @@
+2009-05-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40233
+	* gcc.c-torture/compile/pr40233.c: New testcase.
+
 2009-05-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gfortran.dg/erf_2.F90 (dg-options): Add -mieee
