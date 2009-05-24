@@ -6908,6 +6908,8 @@ sh_set_return_address (rtx ra, rtx tmp)
 
   tmp = gen_frame_mem (Pmode, tmp);
   emit_insn (GEN_MOV (tmp, ra));
+  /* Tell this store isn't dead.  */
+  emit_use (tmp);
 }
 
 /* Clear variables at function end.  */
