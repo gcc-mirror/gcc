@@ -1,3 +1,7 @@
+2009-05-24  Eelis van der Weegen  <eelis@eelis.net>
+	
+	* libsupc++/initializer_list (initializer_list): Add missing typedefs.
+
 2009-05-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/40221
