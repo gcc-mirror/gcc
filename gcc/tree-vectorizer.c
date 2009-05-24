@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfglayout.h"
 #include "tree-vectorizer.h"
 #include "tree-pass.h"
+#include "timevar.h"
 
 /* vect_dump will be set to stderr or dump_file if exist.  */
 FILE *vect_dump;
@@ -75,8 +76,9 @@ FILE *vect_dump;
 /* vect_verbosity_level set to an invalid value 
    to mark that it's uninitialized.  */
 static enum verbosity_levels vect_verbosity_level = MAX_VERBOSITY_LEVEL;
+static enum verbosity_levels user_vect_verbosity_level = MAX_VERBOSITY_LEVEL;
 
-/* Loop location.  */
+/* Loop or bb location.  */
 LOC vect_location;
 
 /* Bitmap of virtual variables to be renamed.  */
@@ -99,9 +101,10 @@ vect_set_verbosity_level (const char *val)
 
    vl = atoi (val);
    if (vl < MAX_VERBOSITY_LEVEL)
-     vect_verbosity_level = (enum verbosity_levels) vl;
+     user_vect_verbosity_level = (enum verbosity_levels) vl;
    else
-     vect_verbosity_level = (enum verbosity_levels) (MAX_VERBOSITY_LEVEL - 1);
+     user_vect_verbosity_level 
+      = (enum verbosity_levels) (MAX_VERBOSITY_LEVEL - 1);
 }
 
 
@@ -115,17 +118,33 @@ vect_set_verbosity_level (const char *val)
    print to stderr, otherwise print to the dump file.  */
 
 static void
-vect_set_dump_settings (void)
+vect_set_dump_settings (bool slp)
 {
   vect_dump = dump_file;
 
   /* Check if the verbosity level was defined by the user:  */
-  if (vect_verbosity_level != MAX_VERBOSITY_LEVEL)
+  if (user_vect_verbosity_level != MAX_VERBOSITY_LEVEL)
     {
-      /* If there is no dump file, print to stderr.  */
-      if (!dump_file)
-        vect_dump = stderr;
-      return;
+      vect_verbosity_level = user_vect_verbosity_level;
+      /* Ignore user defined verbosity if dump flags require higher level of
+         verbosity.  */
+      if (dump_file) 
+        {
+          if (((dump_flags & TDF_DETAILS) 
+                && vect_verbosity_level >= REPORT_DETAILS)
+  	       || ((dump_flags & TDF_STATS)
+	            && vect_verbosity_level >= REPORT_UNVECTORIZED_LOCATIONS))
+            return;
+        }
+      else
+        {
+          /* If there is no dump file, print to stderr in case of loop 
+             vectorization.  */ 
+          if (!slp)
+            vect_dump = stderr;
+
+          return;
+        }
     }
 
   /* User didn't specify verbosity level:  */
@@ -185,7 +204,7 @@ vectorize_loops (void)
     return 0;
 
   /* Fix the verbosity level if not defined explicitly by the user.  */
-  vect_set_dump_settings ();
+  vect_set_dump_settings (false);
 
   /* Allocate the bitmap that records which virtual variables  
      need to be renamed.  */
@@ -244,6 +263,68 @@ vectorize_loops (void)
   return num_vectorized_loops > 0 ? TODO_cleanup_cfg : 0;
 }
  
+
+/*  Entry point to basic block SLP phase.  */
+
+static unsigned int
+execute_vect_slp (void)
+{
+  basic_block bb;
+
+  /* Fix the verbosity level if not defined explicitly by the user.  */
+  vect_set_dump_settings (true);
+
+  init_stmt_vec_info_vec ();
+
+  FOR_EACH_BB (bb)
+    {
+      vect_location = find_bb_location (bb);
+
+      if (vect_slp_analyze_bb (bb))
+        {
+          vect_slp_transform_bb (bb);
+
+          if (vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS))
+            fprintf (vect_dump, "basic block vectorized using SLP\n");
+        }
+    }
+
+  free_stmt_vec_info_vec ();
+  return 0;
+}
+
+static bool
+gate_vect_slp (void)
+{
+  /* Apply SLP either if the vectorizer is on and the user didn't specify 
+     whether to run SLP or not, or if the SLP flag was set by the user.  */
+  return ((flag_tree_vectorize != 0 && flag_tree_slp_vectorize != 0) 
+          || flag_tree_slp_vectorize == 1);
+}
+
+struct gimple_opt_pass pass_slp_vectorize =
+{
+ {
+  GIMPLE_PASS,
+  "slp",                                /* name */
+  gate_vect_slp,                        /* gate */
+  execute_vect_slp,                     /* execute */
+  NULL,                                 /* sub */
+  NULL,                                 /* next */
+  0,                                    /* static_pass_number */
+  TV_TREE_SLP_VECTORIZATION,            /* tv_id */
+  PROP_ssa | PROP_cfg,                  /* properties_required */
+  0,                                    /* properties_provided */
+  0,                                    /* properties_destroyed */
+  0,                                    /* todo_flags_start */
+  TODO_ggc_collect
+    | TODO_verify_ssa
+    | TODO_dump_func
+    | TODO_update_ssa   
+    | TODO_verify_stmts                 /* todo_flags_finish */
+ }
+};
+
 
 /* Increase alignment of global arrays to improve vectorization potential.
    TODO:

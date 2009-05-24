@@ -668,8 +668,9 @@ canonicalize_base_object_address (tree addr)
   return build_fold_addr_expr (TREE_OPERAND (addr, 0));
 }
 
-/* Analyzes the behavior of the memory reference DR in the innermost loop that
-   contains it. Returns true if analysis succeed or false otherwise.  */
+/* Analyzes the behavior of the memory reference DR in the innermost loop or 
+   basic block that contains it. Returns true if analysis succeed or false
+   otherwise.  */
 
 bool
 dr_analyze_innermost (struct data_reference *dr)
@@ -683,6 +684,7 @@ dr_analyze_innermost (struct data_reference *dr)
   int punsignedp, pvolatilep;
   affine_iv base_iv, offset_iv;
   tree init, dinit, step;
+  bool in_loop = (loop && loop->num);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "analyze_innermost: ");
@@ -699,13 +701,24 @@ dr_analyze_innermost (struct data_reference *dr)
     }
 
   base = build_fold_addr_expr (base);
-  if (!simple_iv (loop, loop_containing_stmt (stmt), base, &base_iv, false))
+  if (in_loop)
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "failed: evolution of base is not affine.\n");
-      return false;
+      if (!simple_iv (loop, loop_containing_stmt (stmt), base, &base_iv, 
+                      false))
+        {
+          if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "failed: evolution of base is not affine.\n");
+          return false;
+        }
     }
-  if (!poffset)
+  else
+    {
+      base_iv.base = base;
+      base_iv.step = ssize_int (0);
+      base_iv.no_overflow = true;
+    }
+
+  if (!poffset || !in_loop)
     {
       offset_iv.base = ssize_int (0);
       offset_iv.step = ssize_int (0);
@@ -752,17 +765,23 @@ dr_analyze_indices (struct data_reference *dr, struct loop *nest)
   struct loop *loop = loop_containing_stmt (stmt);
   VEC (tree, heap) *access_fns = NULL;
   tree ref = unshare_expr (DR_REF (dr)), aref = ref, op;
-  tree base, off, access_fn;
-  basic_block before_loop = block_before_loop (nest);
-
+  tree base, off, access_fn = NULL_TREE;
+  basic_block before_loop = NULL;
+ 
+  if (nest)
+    before_loop = block_before_loop (nest);
+    
   while (handled_component_p (aref))
     {
       if (TREE_CODE (aref) == ARRAY_REF)
 	{
 	  op = TREE_OPERAND (aref, 1);
-	  access_fn = analyze_scalar_evolution (loop, op);
-	  access_fn = instantiate_scev (before_loop, loop, access_fn);
-	  VEC_safe_push (tree, heap, access_fns, access_fn);
+	  if (nest)
+	    {
+  	      access_fn = analyze_scalar_evolution (loop, op);
+	      access_fn = instantiate_scev (before_loop, loop, access_fn);
+	      VEC_safe_push (tree, heap, access_fns, access_fn);
+	    }
 
 	  TREE_OPERAND (aref, 1) = build_int_cst (TREE_TYPE (op), 0);
 	}
@@ -770,7 +789,7 @@ dr_analyze_indices (struct data_reference *dr, struct loop *nest)
       aref = TREE_OPERAND (aref, 0);
     }
 
-  if (INDIRECT_REF_P (aref))
+  if (nest && INDIRECT_REF_P (aref))
     {
       op = TREE_OPERAND (aref, 0);
       access_fn = analyze_scalar_evolution (loop, op);
@@ -1332,8 +1351,9 @@ initialize_data_dependence_relation (struct data_reference *a,
   /* If the base of the object is not invariant in the loop nest, we cannot
      analyze it.  TODO -- in fact, it would suffice to record that there may
      be arbitrary dependences in the loops where the base object varies.  */
-  if (!object_address_invariant_in_loop_p (VEC_index (loop_p, loop_nest, 0),
-					   DR_BASE_OBJECT (a)))
+  if (loop_nest 
+      && !object_address_invariant_in_loop_p (VEC_index (loop_p, loop_nest, 0),
+     					      DR_BASE_OBJECT (a)))
     {
       DDR_ARE_DEPENDENT (res) = chrec_dont_know;    
       return res;
@@ -4003,7 +4023,8 @@ compute_all_dependences (VEC (data_reference_p, heap) *datarefs,
 	{
 	  ddr = initialize_data_dependence_relation (a, b, loop_nest);
 	  VEC_safe_push (ddr_p, heap, *dependence_relations, ddr);
-	  compute_affine_dependence (ddr, VEC_index (loop_p, loop_nest, 0));
+          if (loop_nest)
+   	    compute_affine_dependence (ddr, VEC_index (loop_p, loop_nest, 0));
 	}
 
   if (compute_self_and_rr)
@@ -4110,9 +4131,10 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
       dr = create_data_ref (nest, *ref->pos, stmt, ref->is_read);
       gcc_assert (dr != NULL);
   
-      /* FIXME -- data dependence analysis does not work correctly for objects with
-	 invariant addresses.  Let us fail here until the problem is fixed.  */
-      if (dr_address_invariant_p (dr))
+      /* FIXME -- data dependence analysis does not work correctly for objects 
+         with invariant addresses in loop nests.  Let us fail here until the
+	 problem is fixed.  */
+      if (dr_address_invariant_p (dr) && nest)
 	{
 	  free_data_ref (dr);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4129,6 +4151,33 @@ find_data_references_in_stmt (struct loop *nest, gimple stmt,
 
 /* Search the data references in LOOP, and record the information into
    DATAREFS.  Returns chrec_dont_know when failing to analyze a
+   difficult case, returns NULL_TREE otherwise.  */
+
+static tree
+find_data_references_in_bb (struct loop *loop, basic_block bb,
+                            VEC (data_reference_p, heap) **datarefs)
+{
+  gimple_stmt_iterator bsi;
+
+  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+    {
+      gimple stmt = gsi_stmt (bsi);
+
+      if (!find_data_references_in_stmt (loop, stmt, datarefs))
+        {
+          struct data_reference *res;
+          res = XCNEW (struct data_reference);
+          VEC_safe_push (data_reference_p, heap, *datarefs, res);
+
+          return chrec_dont_know;
+        }
+    }
+
+  return NULL_TREE;
+}
+
+/* Search the data references in LOOP, and record the information into
+   DATAREFS.  Returns chrec_dont_know when failing to analyze a
    difficult case, returns NULL_TREE otherwise.
 
    TODO: This function should be made smarter so that it can handle address
@@ -4140,7 +4189,6 @@ find_data_references_in_loop (struct loop *loop,
 {
   basic_block bb, *bbs;
   unsigned int i;
-  gimple_stmt_iterator bsi;
 
   bbs = get_loop_body_in_dom_order (loop);
 
@@ -4148,20 +4196,11 @@ find_data_references_in_loop (struct loop *loop,
     {
       bb = bbs[i];
 
-      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	{
-	  gimple stmt = gsi_stmt (bsi);
-
-	  if (!find_data_references_in_stmt (loop, stmt, datarefs))
-	    {
-	      struct data_reference *res;
-	      res = XCNEW (struct data_reference);
-	      VEC_safe_push (data_reference_p, heap, *datarefs, res);
-
-	      free (bbs);
-	      return chrec_dont_know;
-	    }
-	}
+      if (find_data_references_in_bb (loop, bb, datarefs) == chrec_dont_know)
+        {
+          free (bbs);
+          return chrec_dont_know;
+        }
     }
   free (bbs);
 
@@ -4296,6 +4335,26 @@ compute_data_dependences_for_loop (struct loop *loop,
     }
 
   return res;
+}
+
+/* Returns true when the data dependences for the basic block BB have been 
+   computed, false otherwise.
+   DATAREFS is initialized to all the array elements contained in this basic 
+   block, DEPENDENCE_RELATIONS contains the relations between the data
+   references. Compute read-read and self relations if
+   COMPUTE_SELF_AND_READ_READ_DEPENDENCES is TRUE.  */
+bool
+compute_data_dependences_for_bb (basic_block bb,
+                                 bool compute_self_and_read_read_dependences,
+                                 VEC (data_reference_p, heap) **datarefs,
+                                 VEC (ddr_p, heap) **dependence_relations)
+{
+  if (find_data_references_in_bb (NULL, bb, datarefs) == chrec_dont_know)
+    return false;
+
+  compute_all_dependences (*datarefs, dependence_relations, NULL,
+                           compute_self_and_read_read_dependences);
+  return true;
 }
 
 /* Entry point (for testing only).  Analyze all the data references

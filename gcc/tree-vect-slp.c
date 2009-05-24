@@ -38,6 +38,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "tree-vectorizer.h"
 
+/* Extract the location of the basic block in the source code.
+   Return the basic block location if succeed and NULL if not.  */
+
+LOC
+find_bb_location (basic_block bb)
+{
+  gimple stmt = NULL;
+  gimple_stmt_iterator si;
+
+  if (!bb)
+    return UNKNOWN_LOC;
+
+  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+    {
+      stmt = gsi_stmt (si);
+      if (gimple_location (stmt) != UNKNOWN_LOC)
+        return gimple_location (stmt);
+    }
+
+  return UNKNOWN_LOC;
+}
+
+
 /* Recursively free the memory allocated for the SLP tree rooted at NODE.  */
 
 static void
@@ -77,8 +100,9 @@ vect_free_slp_instance (slp_instance instance)
    the SLP group (stored in FIRST_STMT_...).  */
 
 static bool
-vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, slp_tree slp_node,
-			     gimple stmt, VEC (gimple, heap) **def_stmts0,
+vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
+                             slp_tree slp_node, gimple stmt, 
+			     VEC (gimple, heap) **def_stmts0,
 			     VEC (gimple, heap) **def_stmts1,
 			     enum vect_def_type *first_stmt_dt0,
 			     enum vect_def_type *first_stmt_dt1,
@@ -96,7 +120,10 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, slp_tree slp_node,
   stmt_vec_info stmt_info = 
     vinfo_for_stmt (VEC_index (gimple, SLP_TREE_SCALAR_STMTS (slp_node), 0));
   enum gimple_rhs_class rhs_class;
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  struct loop *loop = NULL;
+  
+  if (loop_vinfo)
+    loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   rhs_class = get_gimple_rhs_class (gimple_assign_rhs_code (stmt));
   number_of_oprnds = gimple_num_ops (stmt) - 1;	/* RHS only */
@@ -105,7 +132,8 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, slp_tree slp_node,
     {
       oprnd = gimple_op (stmt, i + 1);
 
-      if (!vect_is_simple_use (oprnd, loop_vinfo, &def_stmt, &def, &dt[i])
+      if (!vect_is_simple_use (oprnd, loop_vinfo, bb_vinfo, &def_stmt, &def, 
+                               &dt[i])
 	  || (!def_stmt && dt[i] != vect_constant_def))
 	{
 	  if (vect_print_dump_info (REPORT_SLP)) 
@@ -117,10 +145,10 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, slp_tree slp_node,
 	  return false;
 	}
 
-      /* Check if DEF_STMT is a part of a pattern and get the def stmt from
-         the pattern. Check that all the stmts of the node are in the
+      /* Check if DEF_STMT is a part of a pattern in LOOP and get the def stmt
+         from the pattern. Check that all the stmts of the node are in the
          pattern.  */
-      if (def_stmt && gimple_bb (def_stmt)
+      if (loop && def_stmt && gimple_bb (def_stmt)
           && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
           && vinfo_for_stmt (def_stmt)
           && STMT_VINFO_IN_PATTERN_P (vinfo_for_stmt (def_stmt)))
@@ -271,12 +299,13 @@ vect_get_and_check_slp_defs (loop_vec_info loop_vinfo, slp_tree slp_node,
    TRUE.  */
 
 static bool
-vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node, 
-		     unsigned int group_size, 
-		     int *inside_cost, int *outside_cost,
-		     int ncopies_for_cost, unsigned int *max_nunits,
+vect_build_slp_tree (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo, 
+                     slp_tree *node, unsigned int group_size,
+                     int *inside_cost, int *outside_cost,
+                     int ncopies_for_cost, unsigned int *max_nunits,
                      VEC (int, heap) **load_permutation,
-                     VEC (slp_tree, heap) **loads)
+                     VEC (slp_tree, heap) **loads,
+                     unsigned int vectorization_factor)
 {
   VEC (gimple, heap) *def_stmts0 = VEC_alloc (gimple, heap, group_size);
   VEC (gimple, heap) *def_stmts1 =  VEC_alloc (gimple, heap, group_size);
@@ -290,7 +319,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
   tree lhs;
   bool stop_recursion = false, need_same_oprnds = false;
   tree vectype, scalar_type, first_op1 = NULL_TREE;
-  unsigned int vectorization_factor = 0, ncopies;
+  unsigned int ncopies;
   optab optab;
   int icode;
   enum machine_mode optab_op2_mode;
@@ -336,13 +365,18 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
             }
           return false;
         }
-
-      gcc_assert (LOOP_VINFO_VECT_FACTOR (loop_vinfo));
-      vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+	
       ncopies = vectorization_factor / TYPE_VECTOR_SUBPARTS (vectype);
-      if (ncopies > 1 && vect_print_dump_info (REPORT_SLP))
-        fprintf (vect_dump, "SLP with multiple types ");
+      if (ncopies != 1)
+        {
+	  if (vect_print_dump_info (REPORT_SLP))
+            fprintf (vect_dump, "SLP with multiple types ");
 
+          /* FORNOW: multiple types are unsupported in BB SLP.  */
+	  if (bb_vinfo)
+	    return false;
+        }
+	
       /* In case of multiple types we need to detect the smallest type.  */
       if (*max_nunits < TYPE_VECTOR_SUBPARTS (vectype))
         *max_nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -438,8 +472,8 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
 	  if (REFERENCE_CLASS_P (lhs))
 	    {
 	      /* Store.  */
-	      if (!vect_get_and_check_slp_defs (loop_vinfo, *node, stmt,
-						&def_stmts0, &def_stmts1, 
+	      if (!vect_get_and_check_slp_defs (loop_vinfo, bb_vinfo, *node, 
+						stmt, &def_stmts0, &def_stmts1, 
 						&first_stmt_dt0, 
 						&first_stmt_dt1, 
 						&first_stmt_def0_type, 
@@ -552,7 +586,7 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
 	    }
 
 	  /* Find the def-stmts.  */ 
-	  if (!vect_get_and_check_slp_defs (loop_vinfo, *node, stmt,
+	  if (!vect_get_and_check_slp_defs (loop_vinfo, bb_vinfo, *node, stmt,
 					    &def_stmts0, &def_stmts1,
 					    &first_stmt_dt0, &first_stmt_dt1, 
 					    &first_stmt_def0_type, 
@@ -590,9 +624,10 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
       SLP_TREE_RIGHT (left_node) = NULL;
       SLP_TREE_OUTSIDE_OF_LOOP_COST (left_node) = 0;
       SLP_TREE_INSIDE_OF_LOOP_COST (left_node) = 0;
-      if (!vect_build_slp_tree (loop_vinfo, &left_node, group_size, 
+      if (!vect_build_slp_tree (loop_vinfo, bb_vinfo, &left_node, group_size, 
 				inside_cost, outside_cost, ncopies_for_cost, 
-				max_nunits, load_permutation, loads))
+				max_nunits, load_permutation, loads,
+				vectorization_factor))
 	return false;
       
       SLP_TREE_LEFT (*node) = left_node;
@@ -607,9 +642,10 @@ vect_build_slp_tree (loop_vec_info loop_vinfo, slp_tree *node,
       SLP_TREE_RIGHT (right_node) = NULL;
       SLP_TREE_OUTSIDE_OF_LOOP_COST (right_node) = 0;
       SLP_TREE_INSIDE_OF_LOOP_COST (right_node) = 0;
-      if (!vect_build_slp_tree (loop_vinfo, &right_node, group_size,
+      if (!vect_build_slp_tree (loop_vinfo, bb_vinfo, &right_node, group_size,
 				inside_cost, outside_cost, ncopies_for_cost,
-				max_nunits, load_permutation, loads))
+				max_nunits, load_permutation, loads,
+				vectorization_factor))
 	return false;
       
       SLP_TREE_RIGHT (*node) = right_node;
@@ -661,6 +697,31 @@ vect_mark_slp_stmts (slp_tree node, enum slp_vect_type mark, int j)
 
   vect_mark_slp_stmts (SLP_TREE_LEFT (node), mark, j);
   vect_mark_slp_stmts (SLP_TREE_RIGHT (node), mark, j);
+}
+
+
+/* Mark the statements of the tree rooted at NODE as relevant (vect_used).  */
+
+static void
+vect_mark_slp_stmts_relevant (slp_tree node)
+{
+  int i;
+  gimple stmt;
+  stmt_vec_info stmt_info;
+
+  if (!node)
+    return;
+
+  for (i = 0; VEC_iterate (gimple, SLP_TREE_SCALAR_STMTS (node), i, stmt); i++)
+    {
+      stmt_info = vinfo_for_stmt (stmt);
+      gcc_assert (!STMT_VINFO_RELEVANT (stmt_info) 
+                  || STMT_VINFO_RELEVANT (stmt_info) == vect_used_in_scope);
+      STMT_VINFO_RELEVANT (stmt_info) = vect_used_in_scope;
+    }
+
+  vect_mark_slp_stmts_relevant (SLP_TREE_LEFT (node));
+  vect_mark_slp_stmts_relevant (SLP_TREE_RIGHT (node));
 }
 
 
@@ -736,7 +797,7 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
   int i = 0, j, prev = -1, next, k;
   bool supported;
 
-  /* FORNOW: permutations are only supported for loop-aware SLP.  */
+  /* FORNOW: permutations are only supported in SLP.  */
   if (!slp_instn)
     return false;
 
@@ -809,7 +870,8 @@ vect_find_first_load_in_slp_instance (slp_instance instance)
    Return FALSE if it's impossible to SLP any stmt in the loop.  */
 
 static bool
-vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
+vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
+                           gimple stmt)
 {
   slp_instance new_instance;
   slp_tree node = XNEW (struct _slp_tree);
@@ -818,7 +880,6 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
   tree vectype, scalar_type;
   gimple next;
   unsigned int vectorization_factor = 0, ncopies;
-  bool slp_impossible = false; 
   int inside_cost = 0, outside_cost = 0, ncopies_for_cost;
   unsigned int max_nunits = 0;
   VEC (int, heap) *load_permutation;
@@ -838,8 +899,23 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
     }
 
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  if (loop_vinfo)
+    vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  else
+    /* No multitypes in BB SLP.  */
+    vectorization_factor = nunits;
+
   ncopies = vectorization_factor / nunits;
+
+  /* Calculate the unrolling factor.  */
+  unrolling_factor = least_common_multiple (nunits, group_size) / group_size;
+  if (unrolling_factor != 1 && !loop_vinfo)
+    {
+      if (vect_print_dump_info (REPORT_SLP))
+        fprintf (vect_dump, "Build SLP failed: unrolling required in BB SLP");
+      
+      return false;
+    }
 
   /* Create a node (a root of the SLP tree) for the packed strided stores.  */ 
   SLP_TREE_SCALAR_STMTS (node) = VEC_alloc (gimple, heap, group_size);
@@ -858,9 +934,6 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
   SLP_TREE_OUTSIDE_OF_LOOP_COST (node) = 0;
   SLP_TREE_INSIDE_OF_LOOP_COST (node) = 0;
 
-  /* Calculate the unrolling factor.  */
-  unrolling_factor = least_common_multiple (nunits, group_size) / group_size;
-	
   /* Calculate the number of vector stmts to create based on the unrolling
      factor (number of vectors is 1 if NUNITS >= GROUP_SIZE, and is
      GROUP_SIZE / NUNITS otherwise.  */
@@ -870,9 +943,10 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
   loads = VEC_alloc (slp_tree, heap, group_size); 
 
   /* Build the tree for the SLP instance.  */
-  if (vect_build_slp_tree (loop_vinfo, &node, group_size, &inside_cost,  
-			   &outside_cost, ncopies_for_cost, &max_nunits,
-                           &load_permutation, &loads))
+  if (vect_build_slp_tree (loop_vinfo, bb_vinfo, &node, group_size, 
+                           &inside_cost, &outside_cost, ncopies_for_cost, 
+			   &max_nunits, &load_permutation, &loads, 
+			   vectorization_factor))
     {
       /* Create a new SLP instance.  */  
       new_instance = XNEW (struct _slp_instance);
@@ -883,7 +957,7 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
       if (max_nunits > nunits)
         unrolling_factor = least_common_multiple (max_nunits, group_size)
                            / group_size;
-
+			   
       SLP_INSTANCE_UNROLLING_FACTOR (new_instance) = unrolling_factor;
       SLP_INSTANCE_OUTSIDE_OF_LOOP_COST (new_instance) = outside_cost;
       SLP_INSTANCE_INSIDE_OF_LOOP_COST (new_instance) = inside_cost;
@@ -912,8 +986,14 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
       else
         VEC_free (int, heap, SLP_INSTANCE_LOAD_PERMUTATION (new_instance));
 
-      VEC_safe_push (slp_instance, heap, LOOP_VINFO_SLP_INSTANCES (loop_vinfo), 
-		     new_instance);
+      if (loop_vinfo)
+        VEC_safe_push (slp_instance, heap, 
+                       LOOP_VINFO_SLP_INSTANCES (loop_vinfo), 
+  		       new_instance);
+      else
+        VEC_safe_push (slp_instance, heap, BB_VINFO_SLP_INSTANCES (bb_vinfo),
+                       new_instance);
+		       
       if (vect_print_dump_info (REPORT_SLP))
 	vect_print_slp_tree (node);
 
@@ -926,12 +1006,7 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
   VEC_free (int, heap, load_permutation);
   VEC_free (slp_tree, heap, loads);
    
-  if (slp_impossible)
-    return false;
-
-  /* SLP failed for this instance, but it is still possible to SLP other stmts 
-     in the loop.  */
-  return true;
+  return false;
 }
 
 
@@ -939,24 +1014,32 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, gimple stmt)
    trees of packed scalar stmts if SLP is possible.  */
 
 bool
-vect_analyze_slp (loop_vec_info loop_vinfo)
+vect_analyze_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 {
   unsigned int i;
-  VEC (gimple, heap) *strided_stores = LOOP_VINFO_STRIDED_STORES (loop_vinfo);
+  VEC (gimple, heap) *strided_stores;
   gimple store;
+  bool ok = false;
 
   if (vect_print_dump_info (REPORT_SLP))
     fprintf (vect_dump, "=== vect_analyze_slp ===");
 
+  if (loop_vinfo)
+    strided_stores = LOOP_VINFO_STRIDED_STORES (loop_vinfo);
+  else
+    strided_stores = BB_VINFO_STRIDED_STORES (bb_vinfo);
+    
   for (i = 0; VEC_iterate (gimple, strided_stores, i, store); i++)
-    if (!vect_analyze_slp_instance (loop_vinfo, store))
-      {
-	/* SLP failed. No instance can be SLPed in the loop.  */
-	if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))	
-	  fprintf (vect_dump, "SLP failed.");
+    if (vect_analyze_slp_instance (loop_vinfo, bb_vinfo, store))
+      ok = true;
 
-	return false;
-      }
+  if (bb_vinfo && !ok)    
+    {
+      if (vect_print_dump_info (REPORT_SLP))
+        fprintf (vect_dump, "Failed to SLP the basic block.");
+
+      return false;
+    }
 
   return true;
 }
@@ -1041,6 +1124,255 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
     vect_detect_hybrid_slp_stmts (SLP_INSTANCE_TREE (instance));
 }
 
+
+/* Create and initialize a new bb_vec_info struct for BB, as well as
+   stmt_vec_info structs for all the stmts in it.  */
+ 
+static bb_vec_info
+new_bb_vec_info (basic_block bb)
+{
+  bb_vec_info res = NULL;
+  gimple_stmt_iterator gsi;
+
+  res = (bb_vec_info) xcalloc (1, sizeof (struct _bb_vec_info));
+  BB_VINFO_BB (res) = bb;
+
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+      gimple_set_uid (stmt, 0);
+      set_vinfo_for_stmt (stmt, new_stmt_vec_info (stmt, NULL, res));
+    }
+
+  BB_VINFO_STRIDED_STORES (res) = VEC_alloc (gimple, heap, 10);
+  BB_VINFO_SLP_INSTANCES (res) = VEC_alloc (slp_instance, heap, 2);
+
+  bb->aux = res;
+  return res;
+}
+
+
+/* Free BB_VINFO struct, as well as all the stmt_vec_info structs of all the
+   stmts in the basic block.  */
+
+static void
+destroy_bb_vec_info (bb_vec_info bb_vinfo)
+{
+  basic_block bb;
+  gimple_stmt_iterator si;
+
+  if (!bb_vinfo)
+    return;
+
+  bb = BB_VINFO_BB (bb_vinfo);
+
+  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+    {
+      gimple stmt = gsi_stmt (si);
+      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+
+      if (stmt_info)
+        /* Free stmt_vec_info.  */
+        free_stmt_vec_info (stmt);
+    }
+
+  VEC_free (gimple, heap, BB_VINFO_STRIDED_STORES (bb_vinfo));
+  VEC_free (slp_instance, heap, BB_VINFO_SLP_INSTANCES (bb_vinfo));
+  free (bb_vinfo);
+  bb->aux = NULL;
+}
+
+
+/* Analyze statements contained in SLP tree node after recursively analyzing
+   the subtree. Return TRUE if the operations are supported.  */
+
+static bool
+vect_slp_analyze_node_operations (bb_vec_info bb_vinfo, slp_tree node)
+{
+  bool dummy;
+  int i;
+  gimple stmt;
+
+  if (!node)
+    return true;
+
+  if (!vect_slp_analyze_node_operations (bb_vinfo, SLP_TREE_LEFT (node))
+      || !vect_slp_analyze_node_operations (bb_vinfo, SLP_TREE_RIGHT (node)))
+    return false;
+
+  for (i = 0; VEC_iterate (gimple, SLP_TREE_SCALAR_STMTS (node), i, stmt); i++)
+    {
+      stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+      gcc_assert (stmt_info);
+      gcc_assert (PURE_SLP_STMT (stmt_info));
+
+      if (!vect_analyze_stmt (stmt, &dummy, node))
+        return false;
+    }
+
+  return true;
+}
+
+
+/* Analyze statements in SLP instances of the basic block. Return TRUE if the
+   operations are supported. */
+
+static bool
+vect_slp_analyze_operations (bb_vec_info bb_vinfo)
+{
+  VEC (slp_instance, heap) *slp_instances = BB_VINFO_SLP_INSTANCES (bb_vinfo);
+  slp_instance instance;
+  int i;
+
+  for (i = 0; VEC_iterate (slp_instance, slp_instances, i, instance); )
+    {
+      if (!vect_slp_analyze_node_operations (bb_vinfo, 
+                                             SLP_INSTANCE_TREE (instance)))
+        {
+ 	  vect_free_slp_instance (instance);
+          VEC_ordered_remove (slp_instance, slp_instances, i);
+	}
+      else
+        i++;
+    }	
+ 
+  if (!VEC_length (slp_instance, slp_instances))
+    return false;
+
+  return true;
+}
+
+
+/* Cheick if the basic block can be vectorized.  */
+
+bb_vec_info
+vect_slp_analyze_bb (basic_block bb)
+{
+  bb_vec_info bb_vinfo;
+  VEC (ddr_p, heap) *ddrs;
+  VEC (slp_instance, heap) *slp_instances;
+  slp_instance instance;
+  int i, insns = 0;
+  gimple_stmt_iterator gsi;
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "===vect_slp_analyze_bb===\n");
+
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    insns++;
+
+  if (insns > PARAM_VALUE (PARAM_SLP_MAX_INSNS_IN_BB))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: too many instructions in basic "
+                            "block.\n");
+
+      return NULL;
+    }
+
+  bb_vinfo = new_bb_vec_info (bb);
+  if (!bb_vinfo)
+    return NULL;
+
+  if (!vect_analyze_data_refs (NULL, bb_vinfo))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: unhandled data-ref in basic "
+                            "block.\n");
+		  
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+
+  ddrs = BB_VINFO_DDRS (bb_vinfo);
+  if (!VEC_length (ddr_p, ddrs)) 
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: not enough data-refs in basic "
+                            "block.\n");
+
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+
+  if (!vect_analyze_data_refs_alignment (NULL, bb_vinfo))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: bad data alignment in basic "
+                            "block.\n");
+	
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+   
+   if (!vect_analyze_data_ref_dependences (NULL, bb_vinfo))
+    {
+     if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+       fprintf (vect_dump, "not vectorized: unhandled data dependence in basic"
+                           " block.\n");
+		  
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+
+  if (!vect_analyze_data_ref_accesses (NULL, bb_vinfo))
+    {
+     if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+       fprintf (vect_dump, "not vectorized: unhandled data access in basic "
+                           "block.\n");
+		
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+
+   if (!vect_verify_datarefs_alignment (NULL, bb_vinfo))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: unsupported alignment in basic "
+                            "block.\n");
+
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+
+  /* Check the SLP opportunities in the basic block, analyze and build SLP
+     trees.  */
+  if (!vect_analyze_slp (NULL, bb_vinfo))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: failed to find SLP opportunities "
+                            "in basic block.\n");
+
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+  
+  slp_instances = BB_VINFO_SLP_INSTANCES (bb_vinfo);
+
+  /* Mark all the statements that we want to vectorize as pure SLP and
+     relevant.  */
+  for (i = 0; VEC_iterate (slp_instance, slp_instances, i, instance); i++)
+    {
+      vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance), pure_slp, -1);
+      vect_mark_slp_stmts_relevant (SLP_INSTANCE_TREE (instance));
+    }  
+
+  if (!vect_slp_analyze_operations (bb_vinfo))
+    {
+      if (vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
+        fprintf (vect_dump, "not vectorized: bad operation in basic block.\n");
+
+      destroy_bb_vec_info (bb_vinfo);
+      return NULL;
+    }
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "BB will be vectorized using SLP\n");
+
+  return bb_vinfo;
+}
+
+
 /* SLP costs are calculated according to SLP instance unrolling factor (i.e., 
    the number of created vector stmts depends on the unrolling factor). However,
    the actual number of vector stmts for every SLP node depends on VF which is
@@ -1063,6 +1395,7 @@ vect_update_slp_costs_according_to_vf (loop_vec_info loop_vinfo)
     SLP_INSTANCE_INSIDE_OF_LOOP_COST (instance) *= vf 
       / SLP_INSTANCE_UNROLLING_FACTOR (instance);	  
 }
+
 
 /* For constant and loop invariant defs of SLP_NODE this function returns 
    (vector) defs (VEC_OPRNDS) that will be used in the vectorized stmts.  
@@ -1283,6 +1616,7 @@ vect_get_slp_defs (slp_tree slp_node, VEC (tree,heap) **vec_oprnds0,
     /* Build vectors from scalar defs.  */
     vect_get_constant_vectors (slp_node, vec_oprnds1, 1, number_of_vects);
 }
+
 
 /* Create NCOPIES permutation statements using the mask MASK_BYTES (by 
    building a vector of type MASK_TYPE from it) and two input vectors placed in
@@ -1588,7 +1922,7 @@ vect_transform_slp_perm_load (gimple stmt, VEC (tree, heap) *dr_chain,
 
 static bool
 vect_schedule_slp_instance (slp_tree node, slp_instance instance,
-                            unsigned int vectorization_factor) 
+                            unsigned int vectorization_factor)
 {
   gimple stmt;
   bool strided_store, is_store;
@@ -1658,7 +1992,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
     si = gsi_for_stmt (SLP_INSTANCE_FIRST_LOAD_STMT (instance));
   else
     si = gsi_for_stmt (stmt);
-
+  
   is_store = vect_transform_stmt (stmt, &si, &strided_store, node, instance);
   if (is_store)
     {
@@ -1680,20 +2014,29 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 
 
 bool
-vect_schedule_slp (loop_vec_info loop_vinfo)
+vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 {
-  VEC (slp_instance, heap) *slp_instances = 
-    LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
+  VEC (slp_instance, heap) *slp_instances;
   slp_instance instance;
-  unsigned int i;
+  unsigned int i, vf;
   bool is_store = false;
+
+  if (loop_vinfo)
+    {
+      slp_instances = LOOP_VINFO_SLP_INSTANCES (loop_vinfo);
+      vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+    }  
+  else
+    {
+      slp_instances = BB_VINFO_SLP_INSTANCES (bb_vinfo);
+      vf = 1;
+    }  
 
   for (i = 0; VEC_iterate (slp_instance, slp_instances, i, instance); i++)
     {
       /* Schedule the tree of INSTANCE.  */
       is_store = vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
-                            instance, LOOP_VINFO_VECT_FACTOR (loop_vinfo));
-			  
+                                             instance, vf);
       if (vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS)
 	  || vect_print_dump_info (REPORT_UNVECTORIZED_LOCATIONS))
 	fprintf (vect_dump, "vectorizing stmts using SLP.");
@@ -1701,3 +2044,51 @@ vect_schedule_slp (loop_vec_info loop_vinfo)
 
   return is_store;
 }
+
+
+/* Vectorize the basic block.  */
+
+void
+vect_slp_transform_bb (basic_block bb)
+{
+  bb_vec_info bb_vinfo = vec_info_for_bb (bb);
+  gimple_stmt_iterator si;
+
+  gcc_assert (bb_vinfo);
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "SLPing BB\n");
+
+  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+    {
+      gimple stmt = gsi_stmt (si);
+      stmt_vec_info stmt_info;
+
+      if (vect_print_dump_info (REPORT_DETAILS))
+        {
+          fprintf (vect_dump, "------>SLPing statement: ");
+          print_gimple_stmt (vect_dump, stmt, 0, TDF_SLIM);
+        }
+
+      stmt_info = vinfo_for_stmt (stmt);
+      gcc_assert (stmt_info);
+
+      /* Schedule all the SLP instances when the first SLP stmt is reached.  */
+      if (STMT_SLP_TYPE (stmt_info))
+        {
+          vect_schedule_slp (NULL, bb_vinfo);
+          break;
+        }
+    }
+
+  mark_sym_for_renaming (gimple_vop (cfun));
+  /* The memory tags and pointers in vectorized statements need to
+     have their SSA forms updated.  FIXME, why can't this be delayed
+     until all the loops have been transformed?  */
+  update_ssa (TODO_update_ssa);
+
+  if (vect_print_dump_info (REPORT_DETAILS))
+    fprintf (vect_dump, "BB VECTORIZED\n");
+}
+
+

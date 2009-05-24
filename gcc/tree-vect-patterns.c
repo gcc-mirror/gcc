@@ -78,7 +78,7 @@ widened_name_p (tree name, gimple use_stmt, tree *half_type, gimple *def_stmt)
   stmt_vinfo = vinfo_for_stmt (use_stmt);
   loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
 
-  if (!vect_is_simple_use (name, loop_vinfo, def_stmt, &def, &dt))
+  if (!vect_is_simple_use (name, loop_vinfo, NULL, def_stmt, &def, &dt))
     return false;
 
   if (dt != vect_internal_def
@@ -102,7 +102,8 @@ widened_name_p (tree name, gimple use_stmt, tree *half_type, gimple *def_stmt)
       || (TYPE_PRECISION (type) < (TYPE_PRECISION (*half_type) * 2)))
     return false;
 
-  if (!vect_is_simple_use (oprnd0, loop_vinfo, &dummy_gimple, &dummy, &dt))
+  if (!vect_is_simple_use (oprnd0, loop_vinfo, NULL, &dummy_gimple, &dummy, 
+                           &dt))
     return false;
 
   return true;
@@ -734,7 +735,7 @@ vect_pattern_recog_1 (
   /* Mark the stmts that are involved in the pattern. */
   gsi_insert_before (&si, pattern_stmt, GSI_SAME_STMT);
   set_vinfo_for_stmt (pattern_stmt,
-		      new_stmt_vec_info (pattern_stmt, loop_vinfo));
+		      new_stmt_vec_info (pattern_stmt, loop_vinfo, NULL));
   pattern_stmt_info = vinfo_for_stmt (pattern_stmt);
   
   STMT_VINFO_RELATED_STMT (pattern_stmt_info) = stmt;

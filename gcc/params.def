@@ -765,6 +765,12 @@ DEFPARAM (PARAM_LOOP_INVARIANT_MAX_BBS_IN_LOOP,
 	  "max basic blocks number in loop for loop invariant motion",
 	  10000, 0, 0)
 
+/* Avoid SLP vectorization of large basic blocks.  */
+DEFPARAM (PARAM_SLP_MAX_INSNS_IN_BB,
+          "slp-max-insns-in-bb",
+          "Maximum number of instructions in basic block to be considered for SLP vectorization",
+          1000, 0, 0)
+
 /*
 Local variables:
 mode:c
