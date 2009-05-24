@@ -76,7 +76,7 @@
 	access in basic block.
 	(find_data_references_in_bb): New function.
 	(find_data_references_in_loop): Move code to
-	find_data_references_in_bb    and add a call to it.
+	find_data_references_in_bb and add a call to it.
 	(compute_data_dependences_for_bb): New function.
 	* tree-data-ref.h (compute_data_dependences_for_bb): Declare.
 	* tree-vect-data-refs.c (vect_check_interleaving): Adjust to the case
@@ -107,7 +107,7 @@
 	compute_data_dependences_for_bb to analyze basic blocks.
 	(vect_create_addr_base_for_vector_ref): Check for outer loop only in
 	case of loop vectorization. In case of basic block vectorization use
-	data-ref itself   as  a base.
+	data-ref itself as a base.
 	(vect_create_data_ref_ptr): In case of basic block vectorization:
 	don't advance the pointer, add new statements before the current
 	statement.  Adjust function calls.
@@ -138,7 +138,7 @@
 	adjust function calls.
 	(vect_analyze_stmt): Add argument. In case of basic block SLP, check
 	that it is not reduction, get vector type, call only supported
-	functions, skip loop    specific parts.
+	functions, skip loop specific parts.
 	(vect_transform_stmt): Check for outer loop only in case of loop
 	vectorization.
 	(new_stmt_vec_info): Add new argument and initialize bb_vinfo.
@@ -209,8 +209,7 @@
 	(spu_expand_mov): Call spu_split_load and spu_split_store for MEM
 	operands.
 	(spu_convert_move): Define.
-	(spu_split_load): Use spu_expand_load and change all MEM's to
-	TImode.
+	(spu_split_load): Use spu_expand_load and change all MEM's to TImode.
 	(spu_split_store): Change all MEM's to TImode.
 	(spu_init_expanders): Preallocate registers that correspond to
 	LAST_VIRTUAL_REG+1 and LAST_VIRTUAL_REG+2 and set them with
@@ -251,8 +250,7 @@
 	PR middle-end/38964
 	* alias.c (write_dependence_p): Do not use TBAA for answering
 	anti-dependence or output-dependence.
-	* tree-ssa-structalias.c (set_uids_in_ptset): Remove TBAA pruning
-	code.
+	* tree-ssa-structalias.c (set_uids_in_ptset): Remove TBAA pruning code.
 	(emit_pointer_definition): Remove.
 	(emit_alias_warning): Likewise.
 	(find_what_var_points_to): Remove TBAA pruning code.
@@ -500,10 +498,9 @@
 	(*strmovqi_rex_1, *strsetqi_rex_1, *rep_stosqi_rex64,
 	*cmpstrnqi_nz_rex_1, *cmpstrnqi_rex_1, *strlenqi_rex_1): Clear
 	prefix_rex attribute.
-	* config/i386/predicates.md (ext_QIreg_operand,
-	const128_operand): New predicates.
-	(memory_displacement_only_operand): Always return 0 for
-	TARGET_64BIT.
+	* config/i386/predicates.md (ext_QIreg_operand, const128_operand):
+	New predicates.
+	(memory_displacement_only_operand): Always return 0 for TARGET_64BIT.
 
 2009-05-21  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
@@ -570,8 +567,7 @@
 
 	PR middle-end/40204
 	* fold-const.c (fold_binary) <case BIT_AND_EXPR>: Avoid infinite
-	recursion if build_int_cst_type returns the same INTEGER_CST as
-	arg1.
+	recursion if build_int_cst_type returns the same INTEGER_CST as arg1.
 
 2009-05-20  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -622,18 +618,17 @@
 	with mismatched comparison modes.
 
 2009-05-20  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
-    
+
 	* config/arm/arm.md (*arm_iorsi3): Refactored for only ARM.
-        (peephole ior (reg, int) -> mov, ior): Refactored for only ARM.
-        * config/arm/thumb2.md (*thumb_andsi_not_shiftsi_si): Allow bic
-        with shifts for Thumb2.
-        (orsi_notsi): New for orn.
-        (*thumb_orsi_notshiftsi_si): Allow orn with shifts.
-        (*thumb2_iorsi3): Rewrite support for iorsi for Thumb2.
-        * config/arm/arm.c (const_ok_for_op): Split case for IOR for
-        Thumb2.
-        (arm_gen_constant): Set can_invert for IOR and Thumb2, Add
-        comments. Don't invert remainder for IOR.
+	(peephole ior (reg, int) -> mov, ior): Refactored for only ARM.
+	* config/arm/thumb2.md (*thumb_andsi_not_shiftsi_si): Allow bic
+	with shifts for Thumb2.
+	(orsi_notsi): New for orn.
+	(*thumb_orsi_notshiftsi_si): Allow orn with shifts.
+	(*thumb2_iorsi3): Rewrite support for iorsi for Thumb2.
+	* config/arm/arm.c (const_ok_for_op): Split case for IOR for Thumb2.
+	(arm_gen_constant): Set can_invert for IOR and Thumb2, Add comments.
+	Don't invert remainder for IOR.
 	
 2009-05-19  Zdenek Dvorak  <ook@ucw.cz>
 
@@ -973,10 +968,8 @@
 	* graphite.h (struct name_tree_d): Rename from struct name_tree.
 	Change all uses.
 	(struct sese_d): Rename from struct sese.  Change all uses.
-	* omega.h (struct eqn_d): Rename from struct eqn.  Change all
-	uses.
-	(struct omega_pb_d): Rename from struct omega_pb.  Change all
-	uses.
+	* omega.h (struct eqn_d): Rename from struct eqn.  Change all uses.
+	(struct omega_pb_d): Rename from struct omega_pb.  Change all uses.
 	* optabs.h (struct optab_d): Rename from struct optab.  Change all
 	uses.
 	(struct convert_optab_d): Rename from struct convert_optab.
@@ -1007,8 +1000,7 @@
 	
 2009-05-15  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-	* ira-conflicts.c (add_insn_allocno_copies): Fix wrong
-	conditional.
+	* ira-conflicts.c (add_insn_allocno_copies): Fix wrong conditional.
 	
 2009-05-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -1026,8 +1018,7 @@
 
 2009-05-15  Sandra Loosemore  <sandra@codesourcery.com>
 
-	* fold-const.c (fold_convert_const_real_from_real): Check for
-	overflow.
+	* fold-const.c (fold_convert_const_real_from_real): Check for overflow.
 
 2009-05-15  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -1087,7 +1078,7 @@
 	(ipcp_estimate_growth, ipcp_insert_stage): Likewise.
 	(ipcp_update_callgraph): Do not touch function bodies.
 	* ipa-inline.c: Include except.h
-	MAX_TIME: New constant.
+	(MAX_TIME): New constant.
 	(overall_insns): Remove
 	(overall_size, max_benefit): New static variables.
 	(cgraph_estimate_time_after_inlining): New function.
@@ -1157,7 +1148,7 @@
 	(ipcp_estimate_growth, ipcp_insert_stage): Likewise.
 	(ipcp_update_callgraph): Do not touch function bodies.
 	* ipa-inline.c: Include except.h
-	MAX_TIME: New constant.
+	(MAX_TIME): New constant.
 	(overall_insns): Remove
 	(overall_size, max_benefit): New static variables.
 	(cgraph_estimate_time_after_inlining): New function.
@@ -1389,10 +1380,8 @@
 	(TARGET_LEGITIMATE_ADDRESS_P): New.
 
 	* config/iq2000/iq2000.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
-	* config/iq2000/iq2000-protos.h (iq2000_legitimate_address_p):
-	Remove.
-	* config/iq2000/iq2000.c (iq2000_legitimate_address_p):
-	Make static.
+	* config/iq2000/iq2000-protos.h (iq2000_legitimate_address_p): Remove.
+	* config/iq2000/iq2000.c (iq2000_legitimate_address_p): Make static.
 	(TARGET_LEGITIMATE_ADDRESS_P): New.
 
 	* config/mn10300/mn10300.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
@@ -2424,8 +2413,7 @@
 	* config/arm/arm.c (arm_handle_fndecl_attribute,
 	arm_handle_isr_attribute): Likewise.
 	* config/avr/avr.c (avr_handle_progmem_attribute,
-	avr_handle_fndecl_attribute, avr_handle_fntype_attribute):
-	Likewise.
+	avr_handle_fndecl_attribute, avr_handle_fntype_attribute): Likewise.
 	* config/bfin/bfin.c (handle_int_attribute,
 	bfin_handle_longcall_attribute, bfin_handle_l1_text_attribute,
 	bfin_handle_l1_data_attribute, bfin_handle_longcall_attribute,
@@ -2437,8 +2425,7 @@
 	h8300_handle_eightbit_data_attribute,
 	h8300_handle_tiny_data_attribute): Likewise.
 	* config/i386/i386.c (ix86_handle_cconv_attribute,
-	ix86_handle_abi_attribute, ix86_handle_struct_attribute):
-	Likewise.
+	ix86_handle_abi_attribute, ix86_handle_struct_attribute): Likewise.
 	* config/i386/winnt.c (ix86_handle_shared_attribute,
 	ix86_handle_selectany_attribute): Likewise.
 	* config/ia64/ia64.c (ia64_handle_model_attribute): Likewise.
@@ -2467,8 +2454,7 @@
 
 2009-05-10  Joseph Myers  <joseph@codesourcery.com>
 
-	* pretty-print.h (struct pretty_print_info): Add
-	translate_identifiers.
+	* pretty-print.h (struct pretty_print_info): Add translate_identifiers.
 	(pp_translate_identifiers): New.
 	(pp_identifier): Only conditionally translate identifier to locale
 	character set.
