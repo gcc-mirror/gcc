@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,12 +158,10 @@ package body Back_End is
       --  entire string should consist of valid switch characters, except that
       --  an optional terminating NUL character is allowed.
       --
-      --  Back end switches have already been checked and processed by GCC
-      --  in toplev.c, so no errors can occur and control will always return.
-      --  The switches must still be scanned to skip the arguments of the
-      --  "-o" or the (undocumented) "-dumpbase" switch, by incrementing
-      --  the Next_Arg variable. The "-dumpbase" switch is used to set the
-      --  basename for GCC dumpfiles.
+      --  Back end switches have already been checked and processed by GCC in
+      --  toplev.c, so no errors can occur and control will always return. The
+      --  switches must still be scanned to skip "-o" or internal GCC switches
+      --  with their argument.
 
       -------------
       -- Len_Arg --
@@ -186,21 +184,13 @@ package body Back_End is
 
       procedure Scan_Back_End_Switches (Switch_Chars : String) is
          First : constant Positive := Switch_Chars'First + 1;
-         Last  : Natural := Switch_Chars'Last;
+         Last  : constant Natural  := Switch_Last (Switch_Chars);
 
       begin
-         if Last >= First
-           and then Switch_Chars (Last) = ASCII.NUL
-         then
-            Last := Last - 1;
-         end if;
+         --  Skip -o or internal GCC switches together with their argument
 
-         --  For switches -o, -dumpbase, --param, skip following argument and
-         --  do not store either the switch or the following argument.
-
-         if Switch_Chars (First .. Last) = "o"        or else
-            Switch_Chars (First .. Last) = "dumpbase" or else
-            Switch_Chars (First .. Last) = "-param"
+         if Switch_Chars (First .. Last) = "o"
+           or else Is_Internal_GCC_Switch (Switch_Chars)
          then
             Next_Arg := Next_Arg + 1;
 

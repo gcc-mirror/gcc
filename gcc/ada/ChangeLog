@@ -1,3 +1,14 @@
+2009-05-24  Olivier Hainque  <hainque@adacore.com>
+
+	* switch.adb (Is_Internal_GCC_Switch, Switch_Last): Bodies of ...
+	* switch.ads (Is_Internal_GCC_Switch, Switch_Last): New functions.
+	Add -auxbase variants to the list of recognized internal switches.
+	* back_end.adb (Scan_Back_End_Switches): Use the new functions and
+	adjust comments.
+	* lib.ads: Make comment on internal GCC switches more general.
+	* gcc-interface/lang-specs.h (specs for Ada): Pass -auxbase variants
+	as for C.	
+	
 2009-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_get_subrange_bounds): Fix thinko.
