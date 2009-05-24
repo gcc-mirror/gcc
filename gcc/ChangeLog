@@ -1,3 +1,8 @@
+2009-05-24  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc/config/sh/sh.c (sh_set_return_address): Mark store of
+	return address with a USE.
+
 2009-05-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40233
