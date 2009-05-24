@@ -1,3 +1,9 @@
+2009-05-24  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/vax/vax-protos.h (legitimate_constant_address_p): Change
+	definition to bool (from int) to un-break build.
+	(legitimate_constant_p, vax_mode_dependent_address_p): Likewise.
+
 2009-05-24  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-ssa-operands.h (push_stmt_changes, pop_stmt_changes,
