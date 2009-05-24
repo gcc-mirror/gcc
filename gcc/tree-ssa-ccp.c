@@ -3023,14 +3023,9 @@ optimize_stack_restore (gimple_stmt_iterator i)
     return NULL_TREE;
 
   stack_save_gsi = gsi_for_stmt (stack_save);
-  push_stmt_changes (gsi_stmt_ptr (&stack_save_gsi));
   rhs = build_int_cst (TREE_TYPE (gimple_call_arg (call, 0)), 0);
   if (!update_call_from_tree (&stack_save_gsi, rhs))
-    {
-      discard_stmt_changes (gsi_stmt_ptr (&stack_save_gsi));
-      return NULL_TREE;
-    }
-  pop_stmt_changes (gsi_stmt_ptr (&stack_save_gsi));
+    return NULL_TREE;
 
   /* No effect, so the statement will be deleted.  */
   return integer_zero_node;
@@ -3252,8 +3247,6 @@ execute_fold_all_builtins (void)
 	    }
 
           old_stmt = stmt;
-	  push_stmt_changes (gsi_stmt_ptr (&i));
-
           if (!update_call_from_tree (&i, result))
 	    {
 	      gimplify_and_update_call_from_tree (&i, result);
@@ -3261,7 +3254,7 @@ execute_fold_all_builtins (void)
 	    }
 
 	  stmt = gsi_stmt (i);
-	  pop_stmt_changes (gsi_stmt_ptr (&i));
+	  update_stmt (stmt);
 
 	  if (maybe_clean_or_replace_eh_stmt (old_stmt, stmt)
 	      && gimple_purge_dead_eh_edges (bb))

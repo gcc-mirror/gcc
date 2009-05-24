@@ -1109,9 +1109,6 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
 	      continue;
 	    }
 
-	  /* Record the state of the statement before replacements.  */
-	  push_stmt_changes (gsi_stmt_ptr (&i));
-
 	  /* Replace the statement with its folded version and mark it
 	     folded.  */
 	  did_replace = false;
@@ -1172,13 +1169,8 @@ substitute_and_fold (prop_value_t *prop_value, bool use_ranges_p)
               }
 
 	      /* Determine what needs to be done to update the SSA form.  */
-	      pop_stmt_changes (gsi_stmt_ptr (&i));
+	      update_stmt (stmt);
 	      something_changed = true;
-	    }
-	  else
-	    {
-	      /* The statement was not modified, discard the change buffer.  */
-	      discard_stmt_changes (gsi_stmt_ptr (&i));
 	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))

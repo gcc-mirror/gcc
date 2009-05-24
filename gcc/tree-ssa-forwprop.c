@@ -951,19 +951,17 @@ forward_propagate_addr_expr (tree name, tree rhs)
 
       {
 	gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
-	push_stmt_changes (&use_stmt);
 	result = forward_propagate_addr_expr_1 (name, rhs, &gsi,
 						single_use_p);
 	/* If the use has moved to a different statement adjust
-	   the update machinery.  */
+	   the update machinery for the old statement too.  */
 	if (use_stmt != gsi_stmt (gsi))
 	  {
-	    pop_stmt_changes (&use_stmt);
-	    use_stmt = gsi_stmt (gsi);
 	    update_stmt (use_stmt);
+	    use_stmt = gsi_stmt (gsi);
 	  }
-	else
-	  pop_stmt_changes (&use_stmt);
+
+	update_stmt (use_stmt);
       }
       all &= result;
 

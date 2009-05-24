@@ -134,7 +134,7 @@ static VEC(expr_hash_elt_t,heap) *avail_exprs_stack;
    expressions are removed from AVAIL_EXPRS.  Else we may change the
    hash code for an expression and be unable to find/remove it from
    AVAIL_EXPRS.  */
-static VEC(gimple_p,heap) *stmts_to_rescan;
+static VEC(gimple,heap) *stmts_to_rescan;
 
 /* Structure for entries in the expression hash table.  */
 
@@ -626,7 +626,7 @@ tree_ssa_dominator_optimize (void)
   avail_exprs = htab_create (1024, real_avail_expr_hash, avail_expr_eq, free_expr_hash_elt);
   avail_exprs_stack = VEC_alloc (expr_hash_elt_t, heap, 20);
   const_and_copies_stack = VEC_alloc (tree, heap, 20);
-  stmts_to_rescan = VEC_alloc (gimple_p, heap, 20);
+  stmts_to_rescan = VEC_alloc (gimple, heap, 20);
   need_eh_cleanup = BITMAP_ALLOC (NULL);
 
   /* Setup callbacks for the generic dominator tree walker.  */
@@ -742,7 +742,7 @@ tree_ssa_dominator_optimize (void)
   
   VEC_free (expr_hash_elt_t, heap, avail_exprs_stack);
   VEC_free (tree, heap, const_and_copies_stack);
-  VEC_free (gimple_p, heap, stmts_to_rescan);
+  VEC_free (gimple, heap, stmts_to_rescan);
   
   /* Free the value-handle array.  */
   threadedge_finalize_values ();
@@ -1047,17 +1047,16 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 
   /* If we queued any statements to rescan in this block, then
      go ahead and rescan them now.  */
-  while (VEC_length (gimple_p, stmts_to_rescan) > 0)
+  while (VEC_length (gimple, stmts_to_rescan) > 0)
     {
-      gimple *stmt_p = VEC_last (gimple_p, stmts_to_rescan);
-      gimple stmt = *stmt_p;
+      gimple stmt = VEC_last (gimple, stmts_to_rescan);
       basic_block stmt_bb = gimple_bb (stmt);
 
       if (stmt_bb != bb)
 	break;
 
-      VEC_pop (gimple_p, stmts_to_rescan);
-      pop_stmt_changes (stmt_p);
+      VEC_pop (gimple, stmts_to_rescan);
+      update_stmt (stmt);
     }
 }
 
@@ -2130,7 +2129,6 @@ optimize_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
   
   update_stmt_if_modified (stmt);
   opt_stats.num_stmts++;
-  push_stmt_changes (gsi_stmt_ptr (&si));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -2253,21 +2251,12 @@ optimize_stmt (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	}
     }
 
+  /* Queue the statement to be re-scanned after all the
+     AVAIL_EXPRS have been processed.  The change buffer stack for
+     all the pushed statements will be processed when this queue
+     is emptied.  */
   if (may_have_exposed_new_symbols)
-    {
-      /* Queue the statement to be re-scanned after all the
-	 AVAIL_EXPRS have been processed.  The change buffer stack for
-	 all the pushed statements will be processed when this queue
-	 is emptied.  */
-      VEC_safe_push (gimple_p, heap, stmts_to_rescan, gsi_stmt_ptr (&si));
-    }
-  else
-    {
-      /* Otherwise, just discard the recently pushed change buffer.  If
-	 not, the STMTS_TO_RESCAN queue will get out of synch with the
-	 change buffer stack.  */
-      discard_stmt_changes (gsi_stmt_ptr (&si));
-    }
+    VEC_safe_push (gimple, heap, stmts_to_rescan, gsi_stmt (si));
 }
 
 /* Search for an existing instance of STMT in the AVAIL_EXPRS table.
@@ -2565,8 +2554,6 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 	      print_gimple_stmt (dump_file, use_stmt, 0, dump_flags);
 	    }
 
-	  push_stmt_changes (&use_stmt);
-
 	  /* Propagate the RHS into this use of the LHS.  */
 	  FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 	    propagate_value (use_p, rhs);
@@ -2601,7 +2588,6 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 		  bitmap_set_bit (interesting_names, SSA_NAME_VERSION (result));
 		}
 
-	      discard_stmt_changes (&use_stmt);
 	      continue;
 	    }
 
@@ -2618,9 +2604,8 @@ propagate_rhs_into_lhs (gimple stmt, tree lhs, tree rhs, bitmap interesting_name
 	  fold_stmt_inplace (use_stmt);
 
 	  /* Sometimes propagation can expose new operands to the
-	     renamer.  Note this will call update_stmt at the 
-	     appropriate time.  */
-	  pop_stmt_changes (&use_stmt);
+	     renamer.  */
+	  update_stmt (use_stmt);
 
 	  /* Dump details.  */
 	  if (dump_file && (dump_flags & TDF_DETAILS))
