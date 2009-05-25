@@ -2705,7 +2705,7 @@ check_bitfield_decl (tree field)
   DECL_INITIAL (field) = NULL_TREE;
 
   /* Detect invalid bit-field type.  */
-  if (!INTEGRAL_TYPE_P (type))
+  if (!INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     {
       error ("bit-field %q+#D with non-integral type", field);
       w = error_mark_node;

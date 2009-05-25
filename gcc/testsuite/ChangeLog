@@ -1,3 +1,8 @@
+2009-05-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38064
+	* g++.dg/cpp0x/enum3.C: New test.
+
 2009-05-25  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/36327

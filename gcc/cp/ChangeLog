@@ -1,3 +1,24 @@
+2009-05-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38064
+	* typeck.c (cp_build_binary_op): Allow ENUMERAL_TYPE in
+	arithmetic comparisons.
+	(cp_common_type): Handle scoped enums.
+
+	* call.c (promoted_arithmetic_type_p): Don't use INTEGRAL_TYPE_P.
+	(add_builtin_candidate, add_builtin_candidates): Likewise.
+	(convert_like_real): Likewise.
+	* class.c (check_bitfield_decl): Likewise.
+	* decl.c (check_static_variable_definition): Likewise.
+	(compute_array_index_type): Likewise.
+	* decl2.c (grokbitfield): Likewise.
+	* init.c (build_new_1): Likewise.
+	* pt.c (convert_nontype_argument): Likewise.
+	(current_instantiation): Likewise.
+	* tree.c (pod_type_p): Likewise.
+	* typeck.c (build_static_cast_1): Likewise.
+	(build_reinterpret_cast_1): Likewise.
+
 2009-05-22  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/38964
