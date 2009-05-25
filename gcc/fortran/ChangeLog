@@ -1,3 +1,20 @@
+2009-05-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/40176
+	* primary.c (gfc_match_varspec): Handle procedure pointer components
+	with array return value.
+	* resolve.c (resolve_expr_ppc): Ditto.
+	(resolve_symbol): Make sure the interface of a procedure pointer has
+	been resolved.
+	* trans-array.c (gfc_walk_function_expr): Handle procedure pointer
+	components with array return value.
+	* trans-expr.c (gfc_conv_component_ref,gfc_conv_procedure_call,
+	gfc_trans_arrayfunc_assign): Ditto.
+	(gfc_trans_pointer_assignment): Handle procedure pointer assignments,
+	where the rhs is a dummy argument.
+	* trans-types.c (gfc_get_ppc_type,gfc_get_derived_type): Handle
+	procedure pointer components with array return value.
+
 2009-05-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Dominique Dhumieres
 

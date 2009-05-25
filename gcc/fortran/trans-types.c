@@ -1875,7 +1875,7 @@ tree
 gfc_get_ppc_type (gfc_component* c)
 {
   tree t;
-  if (c->attr.function)
+  if (c->attr.function && !c->attr.dimension)
     t = gfc_typenode_for_spec (&c->ts);
   else
     t = void_type_node;
@@ -1997,7 +1997,7 @@ gfc_get_derived_type (gfc_symbol * derived)
 
       /* This returns an array descriptor type.  Initialization may be
          required.  */
-      if (c->attr.dimension)
+      if (c->attr.dimension && !c->attr.proc_pointer)
 	{
 	  if (c->attr.pointer || c->attr.allocatable)
 	    {

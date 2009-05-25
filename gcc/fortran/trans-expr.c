@@ -476,8 +476,8 @@ gfc_conv_component_ref (gfc_se * se, gfc_ref * ref)
       se->string_length = tmp;
     }
 
-  if ((c->attr.pointer || c->attr.proc_pointer) && c->attr.dimension == 0
-      && c->ts.type != BT_CHARACTER)
+  if ((c->attr.pointer && c->attr.dimension == 0 && c->ts.type != BT_CHARACTER)
+      || c->attr.proc_pointer)
     se->expr = build_fold_indirect_ref (se->expr);
 }
 
@@ -2396,6 +2396,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   gfc_symbol *fsym;
   stmtblock_t post;
   enum {MISSING = 0, ELEMENTAL, SCALAR, SCALAR_POINTER, ARRAY};
+  gfc_component *comp = NULL;
 
   arglist = NULL_TREE;
   retargs = NULL_TREE;
@@ -2550,11 +2551,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
   gfc_init_block (&post);
   gfc_init_interface_mapping (&mapping);
+  is_proc_ptr_comp (expr, &comp);
   need_interface_mapping = ((sym->ts.type == BT_CHARACTER
 				  && sym->ts.cl->length
 				  && sym->ts.cl->length->expr_type
 						!= EXPR_CONSTANT)
-			      || sym->attr.dimension);
+			      || (comp && comp->attr.dimension)
+			      || (!comp && sym->attr.dimension));
   formal = sym->formal;
   /* Evaluate the arguments.  */
   for (; arg != NULL; arg = arg->next, formal = formal ? formal->next : NULL)
@@ -2825,7 +2828,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       len = cl.backend_decl;
     }
 
-  byref = gfc_return_by_reference (sym);
+  byref = (comp && comp->attr.dimension)
+	  || (!comp && gfc_return_by_reference (sym));
   if (byref)
     {
       if (se->direct_byref)
@@ -4053,6 +4057,10 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  && expr1->symtree->n.sym->attr.dummy)
 	lse.expr = build_fold_indirect_ref (lse.expr);
 
+      if (expr2->symtree && expr2->symtree->n.sym->attr.proc_pointer
+	  && expr2->symtree->n.sym->attr.dummy)
+	rse.expr = build_fold_indirect_ref (rse.expr);
+
       gfc_add_block_to_block (&block, &lse.pre);
       gfc_add_block_to_block (&block, &rse.pre);
 
@@ -4284,6 +4292,7 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   gfc_ss *ss;
   gfc_ref * ref;
   bool seen_array_ref;
+  gfc_component *comp = NULL;
 
   /* The caller has already checked rank>0 and expr_type == EXPR_FUNCTION.  */
   if (expr2->value.function.isym && !gfc_is_intrinsic_libcall (expr2))
@@ -4343,8 +4352,10 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
 
   /* The frontend doesn't seem to bother filling in expr->symtree for intrinsic
      functions.  */
+  is_proc_ptr_comp(expr2, &comp);
   gcc_assert (expr2->value.function.isym
-	      || (gfc_return_by_reference (expr2->value.function.esym)
+	      || (comp && comp->attr.dimension)
+	      || (!comp && gfc_return_by_reference (expr2->value.function.esym)
 	      && expr2->value.function.esym->result->attr.dimension));
 
   ss = gfc_walk_expr (expr1);
