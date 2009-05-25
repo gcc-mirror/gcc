@@ -3451,6 +3451,13 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
      duplicate our body before altering anything.  */
   copy_body (id, bb->count, bb->frequency, bb, return_block);
 
+  /* Reset the escaped and callused solutions.  */
+  if (cfun->gimple_df)
+    {
+      pt_solution_reset (&cfun->gimple_df->escaped);
+      pt_solution_reset (&cfun->gimple_df->callused);
+    }
+
   /* Clean up.  */
   pointer_map_destroy (id->decl_map);
   id->decl_map = st;

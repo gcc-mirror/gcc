@@ -350,6 +350,7 @@ extern struct gimple_opt_pass pass_ccp;
 extern struct gimple_opt_pass pass_phi_only_cprop;
 extern struct gimple_opt_pass pass_build_ssa;
 extern struct gimple_opt_pass pass_build_alias;
+extern struct gimple_opt_pass pass_build_ealias;
 extern struct gimple_opt_pass pass_dominator;
 extern struct gimple_opt_pass pass_dce;
 extern struct gimple_opt_pass pass_dce_loop;

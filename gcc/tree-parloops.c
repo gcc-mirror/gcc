@@ -1886,6 +1886,16 @@ parallelize_loops (void)
 
   free_stmt_vec_info_vec ();
   htab_delete (reduction_list);
+
+  /* Parallelization will cause new function calls to be inserted through
+     which local variables will escape.  Reset the points-to solutions
+     for ESCAPED and CALLUSED.  */
+  if (changed)
+    {
+      pt_solution_reset (&cfun->gimple_df->escaped);
+      pt_solution_reset (&cfun->gimple_df->callused);
+    }
+
   return changed;
 }
 

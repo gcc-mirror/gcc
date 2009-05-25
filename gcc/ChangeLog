@@ -1,3 +1,19 @@
+2009-05-25  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.h (dump_points_to_solution): Declare.
+	* tree-inline.c (expand_call_inline): Reset the escaped and
+	callused solutions.
+	* tree-ssa-structalias.c (pass_build_ealias): New.
+	* tree-pass.h (pass_build_ealias): Declare.
+	* passes.c (init_optimization_passes): Add PTA during 
+	early optimizations.
+	* tree-ssa-alias.c (dump_alias_info): Dump the ESCAPED
+	and CALLUSED solutions.
+	(dump_points_to_solution): New function, split out from ...
+	(dump_points_to_info_for): ... here.
+	* tree-parloops.c (parallelize_loops): Reset the escaped and
+	callused solutions.
+
 2009-05-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR bootstrap/40027

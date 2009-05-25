@@ -330,7 +330,14 @@ dump_alias_info (FILE *file)
 	dump_variable (file, var);
     }
 
-  fprintf (file, "\n\nFlow-insensitive points-to information for %s\n\n", funcname);
+  fprintf (file, "\nCall clobber information\n");
+
+  fprintf (file, "\nESCAPED");
+  dump_points_to_solution (file, &cfun->gimple_df->escaped);
+  fprintf (file, "\nCALLUSED");
+  dump_points_to_solution (file, &cfun->gimple_df->callused);
+
+  fprintf (file, "\n\nFlow-insensitive points-to information\n\n");
 
   for (i = 1; i < num_ssa_names; i++)
     {
@@ -380,6 +387,32 @@ get_ptr_info (tree t)
   return pi;
 }
 
+/* Dump the points-to set *PT into FILE.  */
+
+void
+dump_points_to_solution (FILE *file, struct pt_solution *pt)
+{
+  if (pt->anything)
+    fprintf (file, ", points-to anything");
+
+  if (pt->nonlocal)
+    fprintf (file, ", points-to non-local");
+
+  if (pt->escaped)
+    fprintf (file, ", points-to escaped");
+
+  if (pt->null)
+    fprintf (file, ", points-to NULL");
+
+  if (pt->vars)
+    {
+      fprintf (file, ", points-to vars: ");
+      dump_decl_set (file, pt->vars);
+      if (pt->vars_contains_global)
+	fprintf (file, " (includes global vars)");
+    }
+}
+
 /* Dump points-to information for SSA_NAME PTR into FILE.  */
 
 void
@@ -390,27 +423,9 @@ dump_points_to_info_for (FILE *file, tree ptr)
   print_generic_expr (file, ptr, dump_flags);
 
   if (pi)
-    {
-      if (pi->pt.anything)
-	fprintf (file, ", points-to anything");
-
-      if (pi->pt.nonlocal)
-	fprintf (file, ", points-to non-local");
-
-      if (pi->pt.escaped)
-	fprintf (file, ", points-to escaped");
-
-      if (pi->pt.null)
-	fprintf (file, ", points-to NULL");
-
-      if (pi->pt.vars)
-	{
-	  fprintf (file, ", points-to vars: ");
-	  dump_decl_set (file, pi->pt.vars);
-	  if (pi->pt.vars_contains_global)
-	    fprintf (file, " (includes global vars)");
-	}
-    }
+    dump_points_to_solution (file, &pi->pt);
+  else
+    fprintf (file, ", points-to anything");
 
   fprintf (file, "\n");
 }

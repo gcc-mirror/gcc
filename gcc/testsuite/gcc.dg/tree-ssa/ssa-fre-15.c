@@ -8,6 +8,7 @@ struct Foo
   void *data;
   double size;
 };
+void bar(double *);
 void foo(double (*q)[4])
 {
   struct Foo tmp1;
@@ -22,6 +23,7 @@ void foo(double (*q)[4])
  	 this store to tmp1 here.  */
       tmp1.size -= 1.0;
     }
+  bar(a);
 }
 
 /* { dg-final { scan-tree-dump "Replaced" "fre" } } */
