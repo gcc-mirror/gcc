@@ -1781,7 +1781,7 @@ promoted_arithmetic_type_p (tree type)
      (including e.g.  int and long but excluding e.g.  char).
      Similarly, the term promoted arithmetic type refers to promoted
      integral types plus floating types.  */
-  return ((INTEGRAL_TYPE_P (type)
+  return ((CP_INTEGRAL_TYPE_P (type)
 	   && same_type_p (type_promotes_to (type), type))
 	  || TREE_CODE (type) == REAL_TYPE);
 }
@@ -1883,7 +1883,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	     T       operator~(T);  */
 
     case BIT_NOT_EXPR:
-      if (INTEGRAL_TYPE_P (type1))
+      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type1))
 	break;
       return;
 
@@ -1953,7 +1953,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
     case MINUS_EXPR:
       if (TYPE_PTROB_P (type1) && TYPE_PTROB_P (type2))
 	break;
-      if (TYPE_PTROB_P (type1) && INTEGRAL_TYPE_P (type2))
+      if (TYPE_PTROB_P (type1)
+	  && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type2))
 	{
 	  type2 = ptrdiff_type_node;
 	  break;
@@ -2013,12 +2014,12 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
       if (ARITHMETIC_TYPE_P (type1) && ARITHMETIC_TYPE_P (type2))
 	break;
     case ARRAY_REF:
-      if (INTEGRAL_TYPE_P (type1) && TYPE_PTROB_P (type2))
+      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type1) && TYPE_PTROB_P (type2))
 	{
 	  type1 = ptrdiff_type_node;
 	  break;
 	}
-      if (TYPE_PTROB_P (type1) && INTEGRAL_TYPE_P (type2))
+      if (TYPE_PTROB_P (type1) && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type2))
 	{
 	  type2 = ptrdiff_type_node;
 	  break;
@@ -2042,7 +2043,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
     case BIT_XOR_EXPR:
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
-      if (INTEGRAL_TYPE_P (type1) && INTEGRAL_TYPE_P (type2))
+      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type1) && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type2))
 	break;
       return;
 
@@ -2087,7 +2088,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	{
 	case PLUS_EXPR:
 	case MINUS_EXPR:
-	  if (TYPE_PTROB_P (type1) && INTEGRAL_TYPE_P (type2))
+	  if (TYPE_PTROB_P (type1) && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type2))
 	    {
 	      type2 = ptrdiff_type_node;
 	      break;
@@ -2104,7 +2105,7 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	case BIT_XOR_EXPR:
 	case LSHIFT_EXPR:
 	case RSHIFT_EXPR:
-	  if (INTEGRAL_TYPE_P (type1) && INTEGRAL_TYPE_P (type2))
+	  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type1) && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type2))
 	    break;
 	  return;
 
@@ -2329,7 +2330,7 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 		  type = TYPE_MAIN_VARIANT (type_decays_to (type));
 		  if (enum_p && TREE_CODE (type) == ENUMERAL_TYPE)
 		    types[i] = tree_cons (NULL_TREE, type, types[i]);
-		  if (INTEGRAL_TYPE_P (type))
+		  if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
 		    type = type_promotes_to (type);
 		}
 
@@ -2346,9 +2347,9 @@ add_builtin_candidates (struct z_candidate **candidates, enum tree_code code,
 	  if (i != 0 || ! ref1)
 	    {
 	      type = TYPE_MAIN_VARIANT (type_decays_to (type));
-	      if (enum_p && TREE_CODE (type) == ENUMERAL_TYPE)
+	      if (enum_p && UNSCOPED_ENUM_P (type))
 		types[i] = tree_cons (NULL_TREE, type, types[i]);
-	      if (INTEGRAL_TYPE_P (type))
+	      if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
 		type = type_promotes_to (type);
 	    }
 	  types[i] = tree_cons (NULL_TREE, type, types[i]);
@@ -4755,7 +4756,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       if (inner >= 0)
         {   
           expr = decl_constant_value (expr);
-          if (expr == null_node && INTEGRAL_TYPE_P (totype))
+          if (expr == null_node && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (totype))
             /* If __null has been converted to an integer type, we do not
                want to warn about uses of EXPR as an integer, rather than
                as a pointer.  */

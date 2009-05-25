@@ -4415,9 +4415,9 @@ convert_nontype_argument (tree type, tree expr)
      For a non-type template-parameter of integral or enumeration type,
      integral promotions (_conv.prom_) and integral conversions
      (_conv.integral_) are applied.  */
-  if (INTEGRAL_TYPE_P (type))
+  if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     {
-      if (!INTEGRAL_TYPE_P (expr_type))
+      if (!INTEGRAL_OR_ENUMERATION_TYPE_P (expr_type))
 	return error_mark_node;
 
       expr = fold_decl_constant_value (expr);
@@ -16153,7 +16153,7 @@ current_instantiation (void)
 static int
 invalid_nontype_parm_type_p (tree type, tsubst_flags_t complain)
 {
-  if (INTEGRAL_TYPE_P (type))
+  if (INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     return 0;
   else if (POINTER_TYPE_P (type))
     return 0;

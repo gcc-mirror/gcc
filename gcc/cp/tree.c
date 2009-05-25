@@ -2156,7 +2156,7 @@ pod_type_p (const_tree t)
 
   if (t == error_mark_node)
     return 1;
-  if (INTEGRAL_TYPE_P (t))
+  if (INTEGRAL_OR_ENUMERATION_TYPE_P (t))
     return 1;  /* integral, character or enumeral type */
   if (FLOAT_TYPE_P (t))
     return 1;

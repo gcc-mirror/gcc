@@ -1963,7 +1963,7 @@ build_new_1 (VEC(tree,gc) **placement, tree type, tree nelts,
     {
       tree placement_arg = CALL_EXPR_ARG (alloc_call, 1);
 
-      if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (placement_arg)))
+      if (INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (TREE_TYPE (placement_arg)))
 	  || VOID_TYPE_P (TREE_TYPE (TREE_TYPE (placement_arg))))
 	{
 	  placement_expr = get_target_expr (placement_first);
