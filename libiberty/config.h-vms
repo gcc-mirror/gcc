@@ -1,13 +1,11 @@
-#ifndef NEED_strerror
-#define NEED_strerror
-#endif
-#ifndef NEED_basename
-#define NEED_basename
-#endif
-#ifndef NEED_psignal
-#define NEED_psignal
-#endif
-#ifndef NEED_on_exit
-#define NEED_on_exit
-#endif
+/* This is -*- C -*-  */
+#define HAVE_STDLIB_H 1
+#define HAVE_UNISTD_H 1
+#define HAVE_STRING_H 1
+#define HAVE_SYS_STAT_H 1
+#define HAVE_SYS_TIME_H 1
 
+/* Cheat: use vms builtin alloca.  */
+#ifdef __DECC
+#define C_alloca(x) __ALLOCA(x)
+#endif
