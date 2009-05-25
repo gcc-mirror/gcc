@@ -1,3 +1,8 @@
+2009-05-25  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-14.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-fre-15.c: Likewise.
+
 2009-05-25  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/40238

@@ -5436,6 +5436,28 @@ struct gimple_opt_pass pass_build_alias =
  }
 };
 
+/* A dummy pass to cause points-to information to be computed via
+   TODO_rebuild_alias.  */
+
+struct gimple_opt_pass pass_build_ealias =
+{
+ {
+  GIMPLE_PASS,
+  "ealias",		    /* name */
+  gate_tree_pta,	    /* gate */
+  NULL,                     /* execute */
+  NULL,                     /* sub */
+  NULL,                     /* next */
+  0,                        /* static_pass_number */
+  TV_NONE,                  /* tv_id */
+  PROP_cfg | PROP_ssa,      /* properties_required */
+  0,			    /* properties_provided */
+  0,                        /* properties_destroyed */
+  0,                        /* todo_flags_start */
+  TODO_rebuild_alias | TODO_dump_func  /* todo_flags_finish */
+ }
+};
+
 
 /* Return true if we should execute IPA PTA.  */
 static bool

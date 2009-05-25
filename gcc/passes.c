@@ -554,7 +554,11 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_rename_ssa_copies);
 	  NEXT_PASS (pass_ccp);
 	  NEXT_PASS (pass_forwprop);
-	  NEXT_PASS (pass_update_address_taken);
+	  /* pass_build_ealias is a dummy pass that ensures that we
+	     execute TODO_rebuild_alias at this point.  Re-building
+	     alias information also rewrites no longer addressed
+	     locals into SSA form if possible.  */
+	  NEXT_PASS (pass_build_ealias);
 	  NEXT_PASS (pass_sra_early);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_merge_phi);
