@@ -100,7 +100,7 @@ DEFPARAM (PARAM_PREDICTABLE_BRANCH_OUTCOME,
 DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
 	  "max-inline-insns-single",
 	  "The maximum number of instructions in a single function eligible for inlining",
-	  450, 0, 0)
+	  400, 0, 0)
 
 /* The single function inlining limit for functions that are
    inlined by virtue of -finline-functions (-O3).
@@ -112,7 +112,7 @@ DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
 DEFPARAM (PARAM_MAX_INLINE_INSNS_AUTO,
 	  "max-inline-insns-auto",
 	  "The maximum number of instructions when automatically inlining",
-	  90, 0, 0)
+	  60, 0, 0)
 
 DEFPARAM (PARAM_MAX_INLINE_INSNS_RECURSIVE,
 	  "max-inline-insns-recursive",
@@ -212,9 +212,9 @@ DEFPARAM(PARAM_IPCP_UNIT_GROWTH,
 	 "ipcp-unit-growth",
 	 "how much can given compilation unit grow because of the interprocedural constant propagation (in percent)",
 	 10, 0, 0)
-DEFPARAM(PARAM_INLINE_CALL_COST,
-	 "inline-call-cost",
-	 "expense of call operation relative to ordinary arithmetic operations",
+DEFPARAM(PARAM_EARLY_INLINING_INSNS,
+	 "early-inlining-insns",
+	 "maximal estimated growth of function body caused by early inlining of single call",
 	 12, 0, 0)
 DEFPARAM(PARAM_LARGE_STACK_FRAME,
 	 "large-stack-frame",
