@@ -1,3 +1,13 @@
+2009-05-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Dominique Dhumieres
+
+	PR fortran/35732
+	PR fortran/39872
+	* gfortran.dg/bounds_check_fail_3.f90: New test.
+	* gfortran.dg/bounds_check_fail_4.f90: New test.
+	* gfortran.dg/bounds_check_14.f90: Update test.
+	* gfortran.dg/bound_4.f90: Update test.
+
 2009-05-24  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40233

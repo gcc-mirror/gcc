@@ -13,14 +13,14 @@ end program test
 
 subroutine ha0020(mf3)
   implicit none
-  integer xca(1), xda(1), mf3
+  integer xca(2), xda(2), mf3
 
   xca = 1
   xda = -1
 
-  xca(1:1) = xda(1:2:mf3)
+  xca(1:2:-1) = xda(1:2:mf3)
 
-  if (any (xca /= -1)) call abort
+  if (any (xca /= 1)) call abort
   if (any(xda(1:2:mf3) /= xda(1:0))) call abort
   if (size(xda(1:2:mf3)) /= 0) call abort
   if (any(shape(xda(1:2:mf3)) /= 0)) call abort

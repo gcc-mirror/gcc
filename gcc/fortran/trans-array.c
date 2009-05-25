@@ -3256,6 +3256,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 				 info->start[n]);
 	      tmp = fold_build2 (FLOOR_DIV_EXPR, gfc_array_index_type, tmp,
 				 info->stride[n]);
+	      tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
+				 gfc_index_one_node, tmp);
 	      tmp = fold_build2 (MAX_EXPR, gfc_array_index_type, tmp,
 				 build_int_cst (gfc_array_index_type, 0));
 	      /* We remember the size of the first section, and check all the
