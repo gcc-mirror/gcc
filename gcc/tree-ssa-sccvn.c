@@ -649,6 +649,9 @@ get_ref_from_reference_ops (VEC(vn_reference_op_s, heap) *ops)
 	  break;
 
 	case COMPONENT_REF:
+	  /* We cannot re-construct our fancy union reference handling.  */
+	  if (TREE_CODE (op->op0) == INTEGER_CST)
+	    return NULL_TREE;
 	  *op0_p = build3 (COMPONENT_REF, TREE_TYPE (op->op0), NULL_TREE,
 			   op->op0, op->op1);
 	  op0_p = &TREE_OPERAND (*op0_p, 0);
@@ -940,6 +943,146 @@ vn_reference_lookup_2 (tree op ATTRIBUTE_UNUSED, tree vuse, void *vr_)
   return NULL;
 }
 
+/* Callback for walk_non_aliased_vuses.  Tries to perform a lookup
+   from the statement defining VUSE and if not successful tries to
+   translate *REFP and VR_ through an aggregate copy at the defintion
+   of VUSE.  */
+
+static void *
+vn_reference_lookup_3 (tree *refp, tree vuse, void *vr_)
+{
+  vn_reference_t vr = (vn_reference_t)vr_;
+  gimple def_stmt = SSA_NAME_DEF_STMT (vuse);
+  tree fndecl;
+  tree ref = *refp;
+  tree base;
+  HOST_WIDE_INT offset, size, maxsize;
+
+  base = get_ref_base_and_extent (ref, &offset, &size, &maxsize);
+
+  /* If we cannot constrain the size of the reference we cannot
+     test if anything kills it.  */
+  if (maxsize == -1)
+    return (void *)-1;
+
+  /* def_stmt may-defs *ref.  See if we can derive a value for *ref
+     from that defintion.
+     1) Memset.  */
+  if (is_gimple_reg_type (TREE_TYPE (ref))
+      && is_gimple_call (def_stmt)
+      && (fndecl = gimple_call_fndecl (def_stmt))
+      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMSET
+      && integer_zerop (gimple_call_arg (def_stmt, 1))
+      && host_integerp (gimple_call_arg (def_stmt, 2), 1)
+      && TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR)
+    {
+      tree ref2 = TREE_OPERAND (gimple_call_arg (def_stmt, 0), 0);
+      tree base2;
+      HOST_WIDE_INT offset2, size2, maxsize2;
+      base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &maxsize2);
+      size2 = TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2)) * 8;
+      if ((unsigned HOST_WIDE_INT)size2 / 8
+	  == TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2))
+	  && operand_equal_p (base, base2, 0)
+	  && offset2 <= offset
+	  && offset2 + size2 >= offset + maxsize)
+	return vn_reference_insert (ref,
+				    fold_convert (TREE_TYPE (ref),
+						  integer_zero_node), vuse);
+    }
+
+  /* 2) Assignment from an empty CONSTRUCTOR.  */
+  else if (is_gimple_reg_type (TREE_TYPE (ref))
+	   && gimple_assign_single_p (def_stmt)
+	   && gimple_assign_rhs_code (def_stmt) == CONSTRUCTOR
+	   && CONSTRUCTOR_NELTS (gimple_assign_rhs1 (def_stmt)) == 0)
+    {
+      tree base2;
+      HOST_WIDE_INT offset2, size2, maxsize2;
+      base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
+				       &offset2, &size2, &maxsize2);
+      if (operand_equal_p (base, base2, 0)
+	  && offset2 <= offset
+	  && offset2 + size2 >= offset + maxsize)
+	return vn_reference_insert (ref,
+				    fold_convert (TREE_TYPE (ref),
+						  integer_zero_node), vuse);
+    }
+
+  /* For aggregate copies translate the reference through them if
+     the copy kills ref.  */
+  else if (gimple_assign_single_p (def_stmt)
+	   && (DECL_P (gimple_assign_rhs1 (def_stmt))
+	       || INDIRECT_REF_P (gimple_assign_rhs1 (def_stmt))
+	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))
+    {
+      tree base2;
+      HOST_WIDE_INT offset2, size2, maxsize2;
+      int i, j;
+      VEC (vn_reference_op_s, heap) *lhs = NULL, *rhs = NULL;
+      vn_reference_op_t vro;
+
+      /* See if the assignment kills REF.  */
+      base2 = get_ref_base_and_extent (gimple_assign_lhs (def_stmt),
+				       &offset2, &size2, &maxsize2);
+      if (!operand_equal_p (base, base2, 0)
+	  || offset2 > offset
+	  || offset2 + size2 < offset + maxsize)
+	return (void *)-1;
+
+      /* Find the common base of ref and the lhs.  */
+      copy_reference_ops_from_ref (gimple_assign_lhs (def_stmt), &lhs);
+      i = VEC_length (vn_reference_op_s, vr->operands) - 1;
+      j = VEC_length (vn_reference_op_s, lhs) - 1;
+      while (j >= 0
+	     && vn_reference_op_eq (VEC_index (vn_reference_op_s,
+					       vr->operands, i),
+				    VEC_index (vn_reference_op_s, lhs, j)))
+	{
+	  i--;
+	  j--;
+	}
+      /* i now points to the first additional op.
+	 ???  LHS may not be completely contained in VR, one or more
+	 VIEW_CONVERT_EXPRs could be in its way.  We could at least
+	 try handling outermost VIEW_CONVERT_EXPRs.  */
+      if (j != -1)
+	return (void *)-1;
+      VEC_free (vn_reference_op_s, heap, lhs);
+
+      /* Now re-write REF to be based on the rhs of the assignment.  */
+      copy_reference_ops_from_ref (gimple_assign_rhs1 (def_stmt), &rhs);
+      /* We need to pre-pend vr->operands[0..i] to rhs.  */
+      if (i + 1 + VEC_length (vn_reference_op_s, rhs)
+	  > VEC_length (vn_reference_op_s, vr->operands))
+	{
+	  VEC (vn_reference_op_s, heap) *old = vr->operands;
+	  VEC_safe_grow (vn_reference_op_s, heap, vr->operands,
+			 i + 1 + VEC_length (vn_reference_op_s, rhs));
+	  if (old == shared_lookup_references
+	      && vr->operands != old)
+	    shared_lookup_references = NULL;
+	}
+      else
+	VEC_truncate (vn_reference_op_s, vr->operands,
+		      i + 1 + VEC_length (vn_reference_op_s, rhs));
+      for (j = 0; VEC_iterate (vn_reference_op_s, rhs, j, vro); ++j)
+	VEC_replace (vn_reference_op_s, vr->operands, i + 1 + j, vro);
+      VEC_free (vn_reference_op_s, heap, rhs);
+      vr->hashcode = vn_reference_compute_hash (vr);
+      *refp = get_ref_from_reference_ops (vr->operands);
+      if (!*refp)
+	return (void *)-1;
+
+      /* Keep looking for the adjusted *REF / VR pair.  */
+      return NULL;
+    }
+
+  /* Bail out and stop walking.  */
+  return (void *)-1;
+}
+
 /* Lookup a reference operation by it's parts, in the current hash table.
    Returns the resulting value number if it exists in the hash table,
    NULL_TREE otherwise.  VNRESULT will be filled in with the actual
@@ -956,9 +1099,17 @@ vn_reference_lookup_pieces (tree vuse,
   if (!vnresult)
     vnresult = &tmp;
   *vnresult = NULL;
-  
+
   vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
-  vr1.operands = valueize_refs (operands);
+  VEC_truncate (vn_reference_op_s, shared_lookup_references, 0);
+  VEC_safe_grow (vn_reference_op_s, heap, shared_lookup_references,
+		 VEC_length (vn_reference_op_s, operands));
+  memcpy (VEC_address (vn_reference_op_s, shared_lookup_references),
+	  VEC_address (vn_reference_op_s, operands),
+	  sizeof (vn_reference_op_s)
+	  * VEC_length (vn_reference_op_s, operands));
+  vr1.operands = operands = shared_lookup_references
+    = valueize_refs (shared_lookup_references);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
   vn_reference_lookup_1 (&vr1, vnresult);
 
@@ -967,11 +1118,13 @@ vn_reference_lookup_pieces (tree vuse,
       && vr1.vuse)
     {
       tree ref = get_ref_from_reference_ops (operands);
-      if (!ref)
-	return NULL_TREE;
-      *vnresult =
-	(vn_reference_t)walk_non_aliased_vuses (ref, vr1.vuse,
-						vn_reference_lookup_2, &vr1);
+      if (ref)
+	*vnresult =
+	  (vn_reference_t)walk_non_aliased_vuses (ref, vr1.vuse,
+						  vn_reference_lookup_2,
+						  vn_reference_lookup_3, &vr1);
+      if (vr1.operands != operands)
+	VEC_free (vn_reference_op_s, heap, vr1.operands);
     }
 
   if (*vnresult)
@@ -990,13 +1143,14 @@ tree
 vn_reference_lookup (tree op, tree vuse, bool maywalk,
 		     vn_reference_t *vnresult)
 {
+  VEC (vn_reference_op_s, heap) *operands;
   struct vn_reference_s vr1;
 
   if (vnresult)
     *vnresult = NULL;
 
   vr1.vuse = vuse ? SSA_VAL (vuse) : NULL_TREE;
-  vr1.operands = valueize_shared_reference_ops_from_ref (op);
+  vr1.operands = operands = valueize_shared_reference_ops_from_ref (op);
   vr1.hashcode = vn_reference_compute_hash (&vr1);
 
   if (maywalk
@@ -1005,7 +1159,10 @@ vn_reference_lookup (tree op, tree vuse, bool maywalk,
       vn_reference_t wvnresult;
       wvnresult =
 	(vn_reference_t)walk_non_aliased_vuses (op, vr1.vuse,
-						vn_reference_lookup_2, &vr1);
+						vn_reference_lookup_2,
+						vn_reference_lookup_3, &vr1);
+      if (vr1.operands != operands)
+	VEC_free (vn_reference_op_s, heap, vr1.operands);
       if (wvnresult)
 	{
 	  if (vnresult)

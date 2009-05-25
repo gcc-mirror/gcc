@@ -11,13 +11,13 @@
    more involved than just an ssa_name.  */
 
 int ib[N+OFF] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__))) = {0, 1, 3, 5, 7, 11, 13, 17, 0, 2, 6, 10};
+int ic[N+OFF] = {0, 1, 3, 5, 7, 11, 13, 17, 0, 2, 6, 10};
 
 __attribute__ ((noinline))
 int main1 (int *pib)
 {
   int i;
   int ia[N+OFF];
-  int ic[N+OFF] = {0, 1, 3, 5, 7, 11, 13, 17, 0, 2, 6, 10};
 
   for (i = OFF; i < N; i++)
     {
