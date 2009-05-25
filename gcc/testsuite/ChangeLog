@@ -1,3 +1,8 @@
+2009-05-25  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/40238
+	* gcc.dg/vect/pr40238.c: New test.
+
 2009-05-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 	    Dominique Dhumieres
 

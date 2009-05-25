@@ -2089,6 +2089,7 @@ vect_slp_transform_bb (basic_block bb)
 
   if (vect_print_dump_info (REPORT_DETAILS))
     fprintf (vect_dump, "BB VECTORIZED\n");
-}
 
+  destroy_bb_vec_info (bb_vinfo);
+}
 

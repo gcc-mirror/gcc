@@ -1,3 +1,11 @@
+2009-05-25  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/40238
+	* tree-vect-stmts.c (vect_init_vector): Insert initialization
+	statements after basic block's labels.
+	* tree-vect-slp.c (vect_slp_transform_bb): Call destroy_bb_vec_info() 
+	to free the allocated memory.
+
 2009-05-24  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc/config/sh/sh.c (sh_set_return_address): Mark store of
