@@ -1726,7 +1726,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   tail = NULL;
 
   gfc_gobble_whitespace ();
-  if ((equiv_flag && gfc_peek_ascii_char () == '(') || sym->attr.dimension)
+  if ((equiv_flag && gfc_peek_ascii_char () == '(')
+      || (sym->attr.dimension && !sym->attr.proc_pointer))
     {
       /* In EQUIVALENCE, we don't know yet whether we are seeing
 	 an array, character variable or array of character
@@ -1843,7 +1844,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
           break;
 	}
 
-      if (component->as != NULL)
+      if (component->as != NULL && !component->attr.proc_pointer)
 	{
 	  tail = extend_ref (primary, tail);
 	  tail->type = REF_ARRAY;

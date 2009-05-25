@@ -6295,6 +6295,7 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
   gfc_ss *newss;
   gfc_intrinsic_sym *isym;
   gfc_symbol *sym;
+  gfc_component *comp = NULL;
 
   isym = expr->value.function.isym;
 
@@ -6307,7 +6308,9 @@ gfc_walk_function_expr (gfc_ss * ss, gfc_expr * expr)
       sym = expr->symtree->n.sym;
 
   /* A function that returns arrays.  */
-  if (gfc_return_by_reference (sym) && sym->result->attr.dimension)
+  is_proc_ptr_comp (expr, &comp);
+  if ((!comp && gfc_return_by_reference (sym) && sym->result->attr.dimension)
+      || (comp && comp->attr.dimension))
     {
       newss = gfc_get_ss ();
       newss->type = GFC_SS_FUNCTION;

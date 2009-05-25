@@ -4868,6 +4868,8 @@ resolve_expr_ppc (gfc_expr* e)
   e->value.function.isym = NULL;
   e->value.function.actual = e->value.compcall.actual;
   e->ts = comp->ts;
+  if (comp->as != NULL)
+    e->rank = comp->as->rank;
 
   if (!comp->attr.function)
     gfc_add_function (&comp->attr, comp->name, &e->where);
@@ -9414,6 +9416,7 @@ resolve_symbol (gfc_symbol *sym)
 	  || sym->ts.interface->attr.intrinsic)
 	{
 	  gfc_symbol *ifc = sym->ts.interface;
+	  resolve_symbol (ifc);
 
 	  if (ifc->attr.intrinsic)
 	    resolve_intrinsic (ifc, &ifc->declared_at);
