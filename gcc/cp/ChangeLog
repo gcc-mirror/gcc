@@ -1,3 +1,10 @@
+2009-05-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/38064
+	* typeck.c (cp_build_binary_op): Allow ENUMERAL_TYPE in
+	arithmetic comparisons.
+	(cp_common_type): Handle scoped enums.
+
 2009-05-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40139
