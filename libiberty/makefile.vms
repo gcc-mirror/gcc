@@ -7,19 +7,25 @@
 #
 #
 
-OBJS=bcopy.obj,bcmp.obj,getopt.obj,obstack.obj,xexit.obj,xmalloc.obj,hex.obj,\
-   getopt1.obj,cplus-dem.obj,strncasecmp.obj,strcasecmp.obj,strdup.obj,\
-   concat.obj,getruntime.obj,getpagesize.obj,alloca.obj,xstrerror.obj,\
-   xmemdup.obj,xstrdup.obj,xatexit.obj,choose-temp.obj,fnmatch.obj,objalloc.obj
+OBJS=getopt.obj,obstack.obj,xexit.obj,xmalloc.obj,hex.obj,\
+    getopt1.obj,cplus-dem.obj,cp-demangle.obj,cp-demint.obj,\
+    asprintf.obj vasprintf.obj,mkstemps.obj,\
+    concat.obj,getruntime.obj,getpagesize.obj,getpwd.obj,xstrerror.obj,\
+    xmemdup.obj,xstrdup.obj,xatexit.obj,choose-temp.obj,fnmatch.obj,\
+    objalloc.obj,safe-ctype.obj,hashtab.obj,lbasename.obj,argv.obj,\
+    lrealpath.obj,make-temp-file.obj,unlink-if-ordinary.obj
 
 ifeq ($(CC),gcc)
 CFLAGS=/include=([],[-.include])
 else
 # assume dec c
-CFLAGS=/noopt/debug/include=([],[-.include])/define=("const=")/warnings=disable=(missingreturn,implicitfunc)
+OPT=/noopt/debug/warnings=disable=(missingreturn)
+CFLAGS=$(OPT)/include=([],[-.include])/name=(as_is,shortened)\
+ /define=(HAVE_CONFIG_H=1)\
+ /prefix=(all,except=("getopt","optarg","optopt","optind","opterr"))
 endif
 
-libiberty.olb: config.h alloca-conf.h $(OBJS)
+libiberty.olb: config.h $(OBJS)
 	purge
 	lib/create libiberty *.obj
 

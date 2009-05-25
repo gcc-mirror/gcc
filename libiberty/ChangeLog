@@ -1,3 +1,13 @@
+2009-05-25  Tristan Gingold  <gingold@adacore.com>
+
+	* config.h-vms: Rewritten.  Define configure macros.
+	Use DEC-C builtin alloca.
+
+	* makefile.vms (OBJS): Update list.
+	(OPT): New variable.
+	(CFLAGS): Update compilation flags.
+	(libiberty.olb): Do not depend on alloca-conf.h anymore.
+
 2009-05-19  Ian Lance Taylor  <iant@google.com>
 	    Ben Elliston  <bje@au.ibm.com>
 
