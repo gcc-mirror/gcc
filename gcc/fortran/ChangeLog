@@ -1,3 +1,10 @@
+2009-05-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Dominique Dhumieres
+
+	PR fortran/35732
+	PR fortran/39872
+	* trans-array.c (gfc_conv_ss_startstride): Add one to index.
+
 2009-05-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/40195
