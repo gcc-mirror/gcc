@@ -1086,11 +1086,19 @@ get_continuation_for_phi (gimple phi, tree ref, bitmap *visited)
    WALKER returns non-NULL the walk stops and its result is returned.
    At the end of a non-successful walk NULL is returned.
 
+   TRANSLATE if non-NULL is called with a pointer to REF, the virtual
+   use which definition is a statement that may clobber REF and DATA.
+   If TRANSLATE returns (void *)-1 the walk stops and NULL is returned.
+   If TRANSLATE returns non-NULL the walk stops and its result is returned.
+   If TRANSLATE returns NULL the walk continues and TRANSLATE is supposed
+   to adjust REF and *DATA to make that valid.
+
    TODO: Cache the vector of equivalent vuses per ref, vuse pair.  */
 
 void *
 walk_non_aliased_vuses (tree ref, tree vuse,
-			void *(*walker)(tree, tree, void *), void *data)
+			void *(*walker)(tree, tree, void *),
+			void *(*translate)(tree *, tree, void *),void *data)
 {
   bitmap visited = NULL;
   void *res;
@@ -1114,7 +1122,21 @@ walk_non_aliased_vuses (tree ref, tree vuse,
       else
 	{
 	  if (stmt_may_clobber_ref_p (def_stmt, ref))
-	    break;
+	    {
+	      if (!translate)
+		break;
+	      res = (*translate) (&ref, vuse, data);
+	      /* Failed lookup and translation.  */
+	      if (res == (void *)-1)
+		{
+		  res = NULL;
+		  break;
+		}
+	      /* Lookup succeeded.  */
+	      else if (res != NULL)
+		break;
+	      /* Translation succeeded, continue walking.  */
+	    }
 	  vuse = gimple_vuse (def_stmt);
 	}
     }

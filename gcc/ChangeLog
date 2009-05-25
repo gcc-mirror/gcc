@@ -1,5 +1,21 @@
 2009-05-25  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/36327
+	* tree-ssa-alias.c (walk_non_aliased_vuses): Add second walker
+	callback for reference translation or lookup at the point
+	of may-defs.
+	* tree-ssa-alias.h (walk_non_aliased_vuses): Adjust prototype.
+	* tree-ssa-sccvn.c (get_ref_from_reference_ops): Bail out
+	for union COMPONENT_REFs.
+	(vn_reference_lookup_3): New callback.  Lookup from memset
+	and CONSTRUCTOR assignment, translate through struct copies.
+	(vn_reference_lookup_pieces): Make sure to not free the
+	passed operands array.  Adjust walk_non_aliased_vuses call.
+	(vn_reference_lookup): Adjust walk_non_aliased_vuses call,
+	make sure we do not leak memory.
+
+2009-05-25  Richard Guenther  <rguenther@suse.de>
+
 	* tree-ssa-alias.h (dump_points_to_solution): Declare.
 	* tree-inline.c (expand_call_inline): Reset the escaped and
 	callused solutions.

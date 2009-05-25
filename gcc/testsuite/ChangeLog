@@ -1,3 +1,15 @@
+2009-05-25  Richard Guenther  <rguenther@suse.de>
+
+	PR tree-optimization/36327
+	* gcc.dg/tree-ssa/ssa-fre-24.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-25.c: Likewise.
+	* gcc.dg/tree-ssa/sra-2.c: Disable FRE.
+	* gcc.dg/vect/no-vfa-vect-43.c: Adjust.
+	* gcc.dg/vect/vect-40.c: Likewise.
+	* gcc.dg/vect/vect-42.c: Likewise.
+	* gcc.dg/vect/vect-46.c: Likewise.
+	* gcc.dg/vect/vect-76.c: Likewise.
+
 2009-05-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40176

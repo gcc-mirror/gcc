@@ -83,7 +83,8 @@ extern bool refs_output_dependent_p (tree, tree);
 extern bool ref_maybe_used_by_stmt_p (gimple, tree);
 extern bool stmt_may_clobber_ref_p (gimple, tree);
 extern void *walk_non_aliased_vuses (tree, tree,
-				     void *(*)(tree, tree, void *), void *);
+				     void *(*)(tree, tree, void *),
+				     void *(*)(tree *, tree, void *), void *);
 extern unsigned int walk_aliased_vdefs (tree, tree,
 					bool (*)(tree, tree, void *), void *,
 					bitmap *);
