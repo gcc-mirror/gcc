@@ -833,7 +833,7 @@ vect_init_vector (gimple stmt, tree vector_var, tree vector_type,
 
           gcc_assert (bb_vinfo);
           bb = BB_VINFO_BB (bb_vinfo);
-          gsi_bb_start = gsi_start_bb (bb);
+          gsi_bb_start = gsi_after_labels (bb);
           gsi_insert_before (&gsi_bb_start, init_stmt, GSI_SAME_STMT);
        }
     }
