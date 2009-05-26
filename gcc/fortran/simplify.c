@@ -210,6 +210,24 @@ convert_mpz_to_signed (mpz_t x, int bitsize)
     }
 }
 
+/* Helper function to convert to/from mpfr_t & mpc_t and call the
+   supplied mpc function on the respective values.  */
+
+#ifdef HAVE_mpc
+static void
+call_mpc_func (mpfr_ptr result_re, mpfr_ptr result_im,
+	       mpfr_srcptr input_re, mpfr_srcptr input_im,
+	       int (*func)(mpc_ptr, mpc_srcptr, mpc_rnd_t))
+{
+  mpc_t c;
+  mpc_init2 (c, mpfr_get_default_prec());
+  mpc_set_fr_fr (c, input_re, input_im, GFC_MPC_RND_MODE);
+  func (c, c, GFC_MPC_RND_MODE);
+  mpfr_set (result_re, MPC_RE (c), GFC_RND_MODE);
+  mpfr_set (result_im, MPC_IM (c), GFC_RND_MODE);
+  mpc_clear (c);
+}
+#endif
 
 /********************** Simplification functions *****************************/
 
@@ -985,7 +1003,6 @@ gfc_expr *
 gfc_simplify_cos (gfc_expr *x)
 {
   gfc_expr *result;
-  mpfr_t xp, xq;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -999,6 +1016,12 @@ gfc_simplify_cos (gfc_expr *x)
       break;
     case BT_COMPLEX:
       gfc_set_model_kind (x->ts.kind);
+#ifdef HAVE_mpc
+      call_mpc_func (result->value.complex.r, result->value.complex.i,
+		     x->value.complex.r, x->value.complex.i, mpc_cos);
+#else
+    {
+      mpfr_t xp, xq;
       mpfr_init (xp);
       mpfr_init (xq);
 
@@ -1012,6 +1035,8 @@ gfc_simplify_cos (gfc_expr *x)
       mpfr_neg (result->value.complex.i, xp, GFC_RND_MODE );
 
       mpfr_clears (xp, xq, NULL);
+    }
+#endif
       break;
     default:
       gfc_internal_error ("in gfc_simplify_cos(): Bad type");
@@ -1370,7 +1395,6 @@ gfc_expr *
 gfc_simplify_exp (gfc_expr *x)
 {
   gfc_expr *result;
-  mpfr_t xp, xq;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -1385,6 +1409,12 @@ gfc_simplify_exp (gfc_expr *x)
 
     case BT_COMPLEX:
       gfc_set_model_kind (x->ts.kind);
+#ifdef HAVE_mpc
+      call_mpc_func (result->value.complex.r, result->value.complex.i,
+		     x->value.complex.r, x->value.complex.i, mpc_exp);
+#else
+    {
+      mpfr_t xp, xq;
       mpfr_init (xp);
       mpfr_init (xq);
       mpfr_exp (xq, x->value.complex.r, GFC_RND_MODE);
@@ -1393,6 +1423,8 @@ gfc_simplify_exp (gfc_expr *x)
       mpfr_sin (xp, x->value.complex.i, GFC_RND_MODE);
       mpfr_mul (result->value.complex.i, xq, xp, GFC_RND_MODE);
       mpfr_clears (xp, xq, NULL);
+    }
+#endif
       break;
 
     default:
@@ -2688,7 +2720,6 @@ gfc_expr *
 gfc_simplify_log (gfc_expr *x)
 {
   gfc_expr *result;
-  mpfr_t xr, xi;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -2721,6 +2752,12 @@ gfc_simplify_log (gfc_expr *x)
 	}
 
       gfc_set_model_kind (x->ts.kind);
+#ifdef HAVE_mpc
+      call_mpc_func (result->value.complex.r, result->value.complex.i,
+		     x->value.complex.r, x->value.complex.i, mpc_log);
+#else
+    {
+      mpfr_t xr, xi;
       mpfr_init (xr);
       mpfr_init (xi);
 
@@ -2734,7 +2771,8 @@ gfc_simplify_log (gfc_expr *x)
       mpfr_log (result->value.complex.r, xr, GFC_RND_MODE);
 
       mpfr_clears (xr, xi, NULL);
-
+    }
+#endif
       break;
 
     default:
@@ -4314,7 +4352,6 @@ gfc_expr *
 gfc_simplify_sin (gfc_expr *x)
 {
   gfc_expr *result;
-  mpfr_t xp, xq;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -4329,6 +4366,12 @@ gfc_simplify_sin (gfc_expr *x)
 
     case BT_COMPLEX:
       gfc_set_model (x->value.real);
+#ifdef HAVE_mpc
+      call_mpc_func (result->value.complex.r, result->value.complex.i,
+		     x->value.complex.r, x->value.complex.i, mpc_sin);
+#else
+    {
+      mpfr_t xp, xq;
       mpfr_init (xp);
       mpfr_init (xq);
 
@@ -4341,6 +4384,8 @@ gfc_simplify_sin (gfc_expr *x)
       mpfr_mul (result->value.complex.i, xp, xq, GFC_RND_MODE);
 
       mpfr_clears (xp, xq, NULL);
+    }
+#endif
       break;
 
     default:
@@ -4425,7 +4470,6 @@ gfc_expr *
 gfc_simplify_sqrt (gfc_expr *e)
 {
   gfc_expr *result;
-  mpfr_t ac, ad, s, t, w;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -4442,10 +4486,16 @@ gfc_simplify_sqrt (gfc_expr *e)
       break;
 
     case BT_COMPLEX:
+      gfc_set_model (e->value.real);
+#ifdef HAVE_mpc
+      call_mpc_func (result->value.complex.r, result->value.complex.i,
+		     e->value.complex.r, e->value.complex.i, mpc_sqrt);
+#else
+    {
       /* Formula taken from Numerical Recipes to avoid over- and
 	 underflow.  */
 
-      gfc_set_model (e->value.real);
+      mpfr_t ac, ad, s, t, w;
       mpfr_init (ac);
       mpfr_init (ad);
       mpfr_init (s);
@@ -4517,7 +4567,8 @@ gfc_simplify_sqrt (gfc_expr *e)
 			    &e->where);
 
       mpfr_clears (s, t, ac, ad, w, NULL);
-
+    }
+#endif
       break;
 
     default:

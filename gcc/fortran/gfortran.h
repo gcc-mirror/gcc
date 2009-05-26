@@ -1556,6 +1556,7 @@ gfc_intrinsic_sym;
 #include <gmp.h>
 #include <mpfr.h>
 #define GFC_RND_MODE GMP_RNDN
+#define GFC_MPC_RND_MODE MPC_RNDNN
 
 typedef struct gfc_expr
 {

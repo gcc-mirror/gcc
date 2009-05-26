@@ -1,3 +1,10 @@
+2009-05-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gfortran.h (GFC_MPC_RND_MODE): New.
+	* simplify.c (call_mpc_func): New helper function.
+	(gfc_simplify_cos, gfc_simplify_exp, gfc_simplify_log,
+	gfc_simplify_sin, gfc_simplify_sqrt): Add MPC support.
+
 2009-05-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/40176
