@@ -1,3 +1,12 @@
+2009-05-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/39178
+	* runtime/main.c (store_exe_path): Make static
+	and multiple-times callable.
+	(set_args): Call store_exe_path.
+	* libgfortran.h: Remove store_exe_path prototype.
+	* fmain.c (main): Remove store_exe_path call.
+
 2009-05-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/37754

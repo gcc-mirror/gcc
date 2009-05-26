@@ -1,5 +1,17 @@
 2009-05-26  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/39178
+	* gfortranspec.c (lang_specific_driver): Stop linking
+	libgfortranbegin.
+	* trans-decl.c (gfc_build_builtin_function_decls): Stop
+	making MAIN__ publicly visible.
+	(gfc_build_builtin_function_decls): Add
+	gfor_fndecl_set_args.
+	(create_main_function) New function.
+	(gfc_generate_function_code): Use it.
+
+2009-05-26  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/40246
 	* match.c (gfc_match_nullify): NULLify freed pointer.
 

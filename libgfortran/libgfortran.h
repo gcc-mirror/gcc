@@ -610,9 +610,6 @@ export_proto(set_args);
 extern void get_args (int *, char ***);
 internal_proto(get_args);
 
-extern void store_exe_path (const char *);
-export_proto(store_exe_path);
-
 extern char * full_exe_path (void);
 internal_proto(full_exe_path);
 
