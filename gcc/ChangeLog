@@ -1,3 +1,7 @@
+2009-05-07  Hariharan Sandanagobalane <hariharan@picochip.com>
+
+	* config/picochip/picochip.C (PARAM_INLINE_CALL_COST): Remove.
+
 2009-05-25  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (dump_cgraph_node): Dump size/time/benefit.
