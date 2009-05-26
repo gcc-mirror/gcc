@@ -1,5 +1,9 @@
 2009-05-26  Richard Guenther  <rguenther@suse.de>
 
+	* gcc.dg/tree-ssa/inline-3.c: Remove dump file.
+
+2009-05-26  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/40252
 	* gcc.c-torture/compile/pr40252.c: New testcase.
 
