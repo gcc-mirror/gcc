@@ -1,5 +1,11 @@
 2009-05-26  Richard Guenther  <rguenther@suse.de>
 
+	PR middle-end/40252
+	* fold-const.c (fold_binary): Use the correct types for building
+	rotates.
+
+2009-05-26  Richard Guenther  <rguenther@suse.de>
+
 	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Remove
 	redundant calls to merge_alias_info.
 	(bump_vector_ptr): Likewise.
