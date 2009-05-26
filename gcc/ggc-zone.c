@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "params.h"
 #include "bitmap.h"
+#include "plugin.h"
 
 /* Prefer MAP_ANON(YMOUS) to /dev/zero, since we don't need to keep a
    file open.  Prefer either to valloc.  */
@@ -2029,6 +2030,8 @@ ggc_collect (void)
 	}
     }
 
+  invoke_plugin_callbacks (PLUGIN_GGC_START, NULL);
+
   /* Start by possibly collecting the main zone.  */
   main_zone.was_collected = false;
   marked |= ggc_collect_1 (&main_zone, true);
@@ -2092,6 +2095,8 @@ ggc_collect (void)
 	  free (dead_zone);
 	}
     }
+
+  invoke_plugin_callbacks (PLUGIN_GGC_END, NULL);
 
   timevar_pop (TV_GC);
 }

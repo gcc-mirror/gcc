@@ -28,7 +28,11 @@ enum plugin_event
   PLUGIN_FINISH_UNIT,           /* Useful for summary processing.  */
   PLUGIN_CXX_CP_PRE_GENERICIZE, /* Allows to see low level AST in C++ FE.  */
   PLUGIN_FINISH,                /* Called before GCC exits.  */
-  PLUGIN_INFO,                  /* Information about the plugin */
+  PLUGIN_INFO,                  /* Information about the plugin. */
+  PLUGIN_GGC_START,		/* Called at start of GCC Garbage Collection. */
+  PLUGIN_GGC_MARKING,		/* Extend the GGC marking. */
+  PLUGIN_GGC_END,		/* Called at end of GGC. */
+  PLUGIN_REGISTER_GGC_ROOTS,	/* Register an extra GGC root table. */
   PLUGIN_ATTRIBUTES,            /* Called during attribute registration.  */
   PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
                                    array.  */
@@ -128,7 +132,13 @@ typedef void (*plugin_callback_func) (void *gcc_data, void *user_data);
    PLUGIN_NAME - display name for this plugin
    EVENT       - which event the callback is for
    CALLBACK    - the callback to be called at the event
-   USER_DATA   - plugin-provided data   */
+   USER_DATA   - plugin-provided data.
+*/
+
+/* This is also called without a callback routine for the
+   PLUGIN_PASS_MANAGER_SETUP, PLUGIN_INFO, PLUGIN_REGISTER_GGC_ROOTS
+   pseudo-events, with a specific user_data.
+  */
 
 extern void register_callback (const char *plugin_name,
                                enum plugin_event event,

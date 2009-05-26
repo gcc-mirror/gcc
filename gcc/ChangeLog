@@ -1,3 +1,43 @@
+
+2009-05-26  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* doc/plugins.texi
+	(Loading plugins): typo.
+	(Plugin callbacks): Documented PLUGIN_INFO, PLUGIN_GGC_START,
+	PLUGIN_GGC_MARKING, PLUGIN_GGC_END, PLUGIN_REGISTER_GGC_ROOTS.
+	(Interacting with the GCC Garbage Collector): Added new section.
+	(Giving information about a plugin): Added new section for
+	PLUGIN_INFO.
+	* testsuite/gcc.dg/plugin/plugin.exp: Added ggcplug.c test plugin
+	with ggcplug-test-1.c for testing PLUGIN_GGC_MARKING etc...
+	* testsuite/gcc.dg/plugin/ggcplug-test-1.c: Added new file.
+	* testsuite/gcc.dg/plugin/ggcplug.c: Added new file.
+	* ggc.h (ggc_register_root_tab): Added declaration.
+	* gcc-plugin.h (PLUGIN_GGC_START, PLUGIN_GGC_MARKING)
+	(PLUGIN_GGC_END, PLUGIN_REGISTER_GGC_ROOTS): Added new events.
+	(register_callback): Improved comment in declaration.
+	* ggc-common.c (const_ggc_root_tab_t) Added new typedef for
+	vectors.
+	(extra_root_vec) Added static variable for dynamic roots
+	registration.
+	(ggc_register_root_tab) Added new routine.
+	(ggc_mark_roots) Added iteration inside extra_root_vec, and invoke
+	PLUGIN_GGC_MARKING event.
+	* ggc-zone.c: Include plugin.h.
+	(ggc_collect): Invoke PLUGIN_GGC_START & PLUGIN_GGC_END events.
+	* ggc-page.c: Include plugin.h.
+	(ggc_collect): Invoke PLUGIN_GGC_START & PLUGIN_GGC_END events.
+	* plugin.c (plugin_event_name): added names of PLUGIN_GGC_START,
+	PLUGIN_GGC_MARKING, PLUGIN_GGC_END, PLUGIN_REGISTER_GGC_ROOTS
+	(register_callback): check lack of callbacks for
+	pseudo-events. Added handling of PLUGIN_REGISTER_GGC_ROOTS,
+	PLUGIN_GGC_START, PLUGIN_GGC_MARKING, PLUGIN_GGC_END.
+	(invoke_plugin_callbacks): Handle PLUGIN_GGC_START,
+	PLUGIN_GGC_MARKING, PLUGIN_GGC_END, PLUGIN_REGISTER_GGC_ROOTS.
+	* Makefile.in (ggc-common.o, ggc-zone.o, ggc-page.o): Added
+	dependency on plugin.h.
+	(plugin.o): Added dependency on ggc.h...
+
 2009-05-26  Richard Guenther  <rguenther@suse.de>
 
 	PR middle-end/40248

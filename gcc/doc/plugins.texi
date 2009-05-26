@@ -9,7 +9,7 @@
 
 @section Loading Plugins
 
-Plugins are supported on platforms that support @option{-ld
+Plugins are supported on platforms that support @option{-ldl
 -rdynamic}.  They are loaded by the compiler using @code{dlopen}
 and invoked at pre-determined locations in the compilation
 process.
@@ -65,6 +65,25 @@ struct plugin_name_args
 If initialization fails, @code{plugin_init} must return a non-zero
 value.  Otherwise, it should return 0.
 
+The version of the GCC compiler loading the plugin is described by the
+following structure:
+
+@smallexample
+struct plugin_gcc_version
+@{
+  const char *basever;
+  const char *datestamp;
+  const char *devphase;
+  const char *revision;
+  const char *configuration_arguments;
+@};
+@end smallexample
+
+The function @code{plugin_default_version_check} takes two pointers to
+such structure and compare them field by field. It can be used by the
+plugin's @code{plugin_init} function.
+
+
 @subsection Plugin callbacks
 
 Callback functions have the following prototype:
@@ -87,13 +106,20 @@ enum plugin_event
   PLUGIN_FINISH_UNIT,           /* Useful for summary processing.  */
   PLUGIN_CXX_CP_PRE_GENERICIZE, /* Allows to see low level AST in C++ FE.  */
   PLUGIN_FINISH,                /* Called before GCC exits.  */
+  PLUGIN_INFO,                  /* Information about the plugin. */
+  PLUGIN_GGC_START,		/* Called at start of GCC Garbage Collection. */
+  PLUGIN_GGC_MARKING,		/* Extend the GGC marking. */
+  PLUGIN_GGC_END,		/* Called at end of GGC. */
+  PLUGIN_REGISTER_GGC_ROOTS,	/* Register an extra GGC root table. */
   PLUGIN_ATTRIBUTES,            /* Called during attribute registration */
   PLUGIN_EVENT_LAST             /* Dummy event used for indexing callback
                                    array.  */
 @};
 @end smallexample
 
-To register a callback, the plugin calls @code{register_callback} with the arguments:
+
+To register a callback, the plugin calls @code{register_callback} with
+the arguments:
 
 @itemize
 @item @code{char *name}: Plugin name.
@@ -102,6 +128,9 @@ To register a callback, the plugin calls @code{register_callback} with the argum
 @item @code{void *user_data}: Pointer to plugin-specific data.
 @end itemize
 
+For the PLUGIN_PASS_MANAGER_SETUP, PLUGIN_INFO, and
+PLUGIN_REGISTER_GGC_ROOTS pseudo-events the @code{callback} should be
+null, and the @code{user_data} is specific.
 
 @section Interacting with the pass manager
 
@@ -153,6 +182,50 @@ plugin_init (struct plugin_name_args *plugin_info,
   ...
 @}
 @end smallexample
+
+
+@section Interacting with the GCC Garbage Collector 
+
+Some plugins may want to be informed when GGC (the GCC Garbage
+Collector) is running. They can register callbacks for the
+@code{PLUGIN_GGC_START} and @code{PLUGIN_GGC_END} events (for which
+the callback is called with a null @code{gcc_data}) to be notified of
+the start or end of the GCC garbage collection.
+
+Some plugins may need to have GGC mark additional data. This can be
+done by registering a callback (called with a null @code{gcc_data})
+for the @code{PLUGIN_GGC_MARKING} event. Such callbacks can call the
+@code{ggc_set_mark} routine, preferably thru the @code{ggc_mark} macro
+(and conversly, these routines should usually not be used in plugins
+outside of the @code{PLUGIN_GGC_MARKING} event).
+
+Some plugins may need to add extra GGC root tables, e.g. to handle
+their own @code{GTY}-ed data. This can be done with the
+@code{PLUGIN_REGISTER_GGC_ROOTS} pseudo-event with a null callback and the
+extra root table as @code{user_data}.
+
+You should understand the details of memory management inside GCC
+before using @code{PLUGIN_GGC_MARKING} or
+@code{PLUGIN_REGISTER_GGC_ROOTS}.
+
+
+@section Giving information about a plugin
+
+A plugin should give some information to the user about itself. This
+uses the following structure:
+
+@smallexample
+struct plugin_info
+@{
+  const char *version;
+  const char *help;
+@};
+@end smallexample
+
+Such a structure is passed as the @code{user_data} by the plugin's
+init routine using @code{register_callback} with the
+@code{PLUGIN_INFO} pseudo-event and a null callback.
+
 @section Registering custom attributes
 
 For analysis purposes it is useful to be able to add custom attributes.

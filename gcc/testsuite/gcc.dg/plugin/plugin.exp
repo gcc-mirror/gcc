@@ -47,7 +47,9 @@ load_lib plugin-support.exp
 # Specify the plugin source file and the associated test files in a list.
 # plugin_test_list={ {plugin1 test1 test2 ...} {plugin2 test1 ...} ... }
 set plugin_test_list [list \
-    { selfassign.c self-assign-test-1.c self-assign-test-2.c } ]
+    { selfassign.c self-assign-test-1.c self-assign-test-2.c } \
+    { ggcplug.c ggcplug-test-1.c } \
+]
 
 foreach plugin_test $plugin_test_list {
     # Replace each source file with its full-path name

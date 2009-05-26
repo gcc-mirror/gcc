@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "hosthooks.h"
 #include "hosthooks-def.h"
+#include "plugin.h"
+#include "vec.h"
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
@@ -86,6 +88,34 @@ ggc_htab_delete (void **slot, void *info)
   return 1;
 }
 
+
+/* This extra vector of dynamically registered root_tab-s is used by
+   ggc_mark_roots and gives the ability to dynamically add new GGC root
+   tables, for instance from some plugins; this vector is a heap one
+   [since it is used by GGC internally!] */
+typedef const struct ggc_root_tab* const_ggc_root_tab_t;
+DEF_VEC_P(const_ggc_root_tab_t);
+DEF_VEC_ALLOC_P(const_ggc_root_tab_t, heap);
+static VEC(const_ggc_root_tab_t, heap) *extra_root_vec;
+
+
+/* Dynamically register a new GGC root table RT. This is useful for
+   plugins. */
+
+void 
+ggc_register_root_tab (const struct ggc_root_tab* rt)
+{
+  if (!rt)
+    return;
+  if (!extra_root_vec) 
+    {
+      int vlen = 32;
+      extra_root_vec = VEC_alloc (const_ggc_root_tab_t, heap, vlen);
+    }
+  VEC_safe_push (const_ggc_root_tab_t, heap, extra_root_vec, rt);
+}
+
+
 /* Iterate through all registered roots and mark each element.  */
 
 void
@@ -104,7 +134,21 @@ ggc_mark_roots (void)
   for (rt = gt_ggc_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       for (i = 0; i < rti->nelt; i++)
-	(*rti->cb)(*(void **)((char *)rti->base + rti->stride * i));
+	(*rti->cb) (*(void **)((char *)rti->base + rti->stride * i));
+
+  if (extra_root_vec 
+      && VEC_length(const_ggc_root_tab_t,extra_root_vec) > 0)
+    {
+      const_ggc_root_tab_t rtp = NULL;
+      for (i=0; 
+	   VEC_iterate(const_ggc_root_tab_t, extra_root_vec, i, rtp); 
+	   i++) 
+	{
+	  for (rti = rtp; rti->base != NULL; rti++)
+	    for (i = 0; i < rti->nelt; i++)
+	      (*rti->cb) (*(void **) ((char *)rti->base + rti->stride * i));
+	}
+    }
 
   if (ggc_protect_identifiers)
     ggc_mark_stringpool ();
@@ -123,6 +167,9 @@ ggc_mark_roots (void)
 
   if (! ggc_protect_identifiers)
     ggc_purge_stringpool ();
+
+  /* Some plugins may call ggc_set_mark from here.  */
+  invoke_plugin_callbacks (PLUGIN_GGC_MARKING, NULL);
 }
 
 /* Allocate a block of memory, then clear it.  */
