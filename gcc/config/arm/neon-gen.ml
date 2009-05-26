@@ -399,11 +399,7 @@ let _ =
 "extern \"C\" {";
 "#endif";
 "";
-"#if defined (__vxworks) && defined (_WRS_KERNEL)";
-"#include <vxWorks.h>";
-"#else";
 "#include <stdint.h>";
-"#endif";
 ""];
   deftypes ();
   arrtypes ();
