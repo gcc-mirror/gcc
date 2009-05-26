@@ -10175,8 +10175,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 		&& TREE_INT_CST_HIGH (tree11) == 0
 		&& ((TREE_INT_CST_LOW (tree01) + TREE_INT_CST_LOW (tree11))
 		    == TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)))))
-	      return build2 (LROTATE_EXPR, type, TREE_OPERAND (arg0, 0),
-			     code0 == LSHIFT_EXPR ? tree01 : tree11);
+	      return fold_convert (type,
+				   build2 (LROTATE_EXPR,
+					   TREE_TYPE (TREE_OPERAND (arg0, 0)),
+					   TREE_OPERAND (arg0, 0),
+					   code0 == LSHIFT_EXPR
+					   ? tree01 : tree11));
 	    else if (code11 == MINUS_EXPR)
 	      {
 		tree tree110, tree111;
@@ -10190,10 +10194,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 					      (TREE_TYPE (TREE_OPERAND
 							  (arg0, 0))))
 		    && operand_equal_p (tree01, tree111, 0))
-		  return build2 ((code0 == LSHIFT_EXPR
-				  ? LROTATE_EXPR
-				  : RROTATE_EXPR),
-				 type, TREE_OPERAND (arg0, 0), tree01);
+		  return fold_convert (type,
+				       build2 ((code0 == LSHIFT_EXPR
+						? LROTATE_EXPR
+						: RROTATE_EXPR),
+					       TREE_TYPE (TREE_OPERAND (arg0, 0)),
+					       TREE_OPERAND (arg0, 0), tree01));
 	      }
 	    else if (code01 == MINUS_EXPR)
 	      {
@@ -10208,10 +10214,12 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
 					      (TREE_TYPE (TREE_OPERAND
 							  (arg0, 0))))
 		    && operand_equal_p (tree11, tree011, 0))
-		  return build2 ((code0 != LSHIFT_EXPR
-				  ? LROTATE_EXPR
-				  : RROTATE_EXPR),
-				 type, TREE_OPERAND (arg0, 0), tree11);
+		  return fold_convert (type,
+				       build2 ((code0 != LSHIFT_EXPR
+						? LROTATE_EXPR
+						: RROTATE_EXPR),
+					       TREE_TYPE (TREE_OPERAND (arg0, 0)),
+					       TREE_OPERAND (arg0, 0), tree11));
 	      }
 	  }
       }
