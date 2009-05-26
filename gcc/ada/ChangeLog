@@ -1,3 +1,15 @@
+2009-05-26  Ian Lance Taylor  <iant@google.com>
+
+	* gcc-interface/Makefile.in (COMPILER): Define.
+	(COMPILER_FLAGS, ALL_COMPILERFLAGS): Define.
+	(.c.o, cio.o, init.o, initialize.o, targext.o): Use $(COMPILER).
+	(seh_init.o, tracebak.o): Likewise.
+	* gcc-interface/Make-lang.in (ada/targext.o): Likewise.
+	(ada/cio.o, ada/init.o, ada/initialize.o, ada/raise.o): Likewise.
+	(ada/tracebak.o, ada/cuintp.o, ada/decl.o, ada/misc.o): Likewise.
+	(ada/targtyps.o, ada/trans.o, ada/utils.o): Likewise.
+	(ada/utils2.o): Likewise.
+
 2009-05-24  Olivier Hainque  <hainque@adacore.com>
 
 	* switch.adb (Is_Internal_GCC_Switch, Switch_Last): Bodies of ...

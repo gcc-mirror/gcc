@@ -1124,35 +1124,35 @@ ada/link.o     : ada/link.c
 
 
 ada/targext.o : ada/targext.c $(SYSTEM_H) coretypes.h $(TM_H)
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-		$< $(OUTPUT_OPTION)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
+		$(INCLUDES) $< $(OUTPUT_OPTION)
 
 ada/cio.o     : ada/cio.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 ada/init.o    : ada/init.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 ada/initialize.o : ada/initialize.c
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 ada/raise.o   : ada/raise.c $(CONFIG_H) $(SYSTEM_H) ada/adaint.h ada/raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 # Need to keep the frame pointer to unwind the stack properly for some targets.
 ada/tracebak.o : ada/tracebak.c $(CONFIG_H) $(SYSTEM_H)
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	      -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
+	      $(INCLUDES) -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
 
 ada/cuintp.o : ada/gcc-interface/cuintp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) ada/gcc-interface/ada.h ada/types.h ada/uintp.h \
    ada/atree.h ada/elists.h ada/nlists.h ada/stringt.h ada/fe.h $(ADA_TREE_H) \
    ada/gcc-interface/gigi.h
-	$(CC) -c $(ALL_CFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/decl.o : ada/gcc-interface/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FLAGS_H) toplev.h $(TARGET_H) $(EXPR_H) \
@@ -1160,7 +1160,7 @@ ada/decl.o : ada/gcc-interface/decl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    ada/elists.h ada/namet.h ada/nlists.h ada/repinfo.h ada/snames.h \
    ada/stringt.h ada/uintp.h ada/fe.h ada/sinfo.h ada/einfo.h $(ADA_TREE_H) \
    ada/gcc-interface/gigi.h gt-ada-decl.h
-	$(CC) -c $(ALL_CFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/misc.o : ada/gcc-interface/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(DIAGNOSTIC_H) $(TARGET_H) $(EXPR_H) libfuncs.h \
@@ -1169,14 +1169,14 @@ ada/misc.o : ada/gcc-interface/misc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    ada/gcc-interface/ada.h ada/adadecode.h ada/types.h ada/atree.h \
    ada/elists.h ada/namet.h ada/nlists.h ada/stringt.h ada/uintp.h ada/fe.h \
    ada/sinfo.h ada/einfo.h $(ADA_TREE_H) ada/gcc-interface/gigi.h
-	$(CC) -c $(ALL_CFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/targtyps.o : ada/gcc-interface/targtyps.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TM_H) $(TREE_H) ada/gcc-interface/ada.h ada/types.h \
    ada/atree.h ada/elists.h ada/namet.h ada/nlists.h ada/snames.h \
    ada/stringt.h ada/uintp.h ada/urealp.h ada/fe.h ada/sinfo.h ada/einfo.h \
    $(ADA_TREE_H) ada/gcc-interface/gigi.h
-	$(CC) -c $(ALL_CFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/trans.o : ada/gcc-interface/trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FLAGS_H) $(EXPR_H) output.h tree-iterator.h \
@@ -1184,7 +1184,7 @@ ada/trans.o : ada/gcc-interface/trans.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    ada/atree.h ada/elists.h ada/namet.h ada/nlists.h ada/snames.h \
    ada/stringt.h ada/uintp.h ada/urealp.h ada/fe.h ada/sinfo.h ada/einfo.h \
    $(ADA_TREE_H) ada/gcc-interface/gigi.h gt-ada-trans.h
-	$(CC) -c $(ALL_CFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/utils.o : ada/gcc-interface/utils.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FLAGS_H) toplev.h $(RTL_H) output.h debug.h convert.h \
@@ -1193,14 +1193,14 @@ ada/utils.o : ada/gcc-interface/utils.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    ada/gcc-interface/ada.h ada/types.h ada/atree.h ada/elists.h ada/namet.h \
    ada/nlists.h ada/stringt.h ada/uintp.h ada/fe.h ada/sinfo.h ada/einfo.h \
    $(ADA_TREE_H) ada/gcc-interface/gigi.h gt-ada-utils.h gtype-ada.h
-	$(CC) -c $(ALL_CFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 ada/utils2.o : ada/gcc-interface/utils2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(FLAGS_H) output.h $(TREE_INLINE_H) \
    ada/gcc-interface/ada.h ada/types.h ada/atree.h ada/elists.h ada/namet.h \
    ada/nlists.h ada/snames.h ada/stringt.h ada/uintp.h ada/fe.h ada/sinfo.h \
    ada/einfo.h $(ADA_TREE_H) ada/gcc-interface/gigi.h
-	$(CC) -c $(ALL_CFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) -I.. $(ALL_CPPFLAGS) $< -o $@
 
 #
 # DO NOT PUT SPECIAL RULES BELOW, THIS SECTION IS UPDATED AUTOMATICALLY

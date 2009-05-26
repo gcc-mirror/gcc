@@ -197,6 +197,11 @@ NM = @NM@
 RANLIB = @RANLIB@
 RANLIB_FLAGS = @ranlib_flags@
 
+# The name of the compiler to use.  Currently always $(CC).  In the
+# future this may change to $(CXX).
+COMPILER = $(CC)
+COMPILER_FLAGS = $(CFLAGS)
+
 # -------------------------------------------
 # Programs which operate on the build machine
 # -------------------------------------------
@@ -698,6 +703,10 @@ DIR = ../gcc
 CC_FOR_BUILD = @CC_FOR_BUILD@
 BUILD_CFLAGS= @BUILD_CFLAGS@ -DGENERATOR_FILE
 
+# Native compiler that we use.  This may be C++ some day.
+COMPILER_FOR_BUILD = $(CC_FOR_BUILD)
+BUILD_COMPILERFLAGS = $(BUILD_CFLAGS)
+
 # Native linker and preprocessor flags.  For x-fragment overrides.
 BUILD_LDFLAGS=@BUILD_LDFLAGS@
 BUILD_CPPFLAGS=$(ALL_CPPFLAGS)
@@ -906,6 +915,9 @@ ALL_CFLAGS = $(T_CFLAGS) \
 # win against random include files in /usr/include.
 ALL_CPPFLAGS = $(INCLUDES) $(CPPFLAGS)
 
+# This is the variable to use when using $(COMPILER).
+ALL_COMPILERFLAGS = $(ALL_CFLAGS)
+
 # Build and host support libraries.
 LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/libiberty.a
@@ -952,7 +964,7 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   $(PPLINC) $(CLOOGINC)
 
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $< $(OUTPUT_OPTION)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $< $(OUTPUT_OPTION)
 
 #
 # Support for additional languages (other than C).
@@ -1627,16 +1639,16 @@ libbackend.a: $(OBJS@onestep@)
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
 xgcc$(exeext): $(GCC_OBJS) gccspec.o version.o intl.o prefix.o \
    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) gccspec.o \
-	  intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
+	  gccspec.o intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # cpp is to cpp0 as gcc is to cc1.
 # The only difference from xgcc is that it's linked with cppspec.o
 # instead of gccspec.o.
 cpp$(exeext): $(GCC_OBJS) cppspec.o version.o intl.o prefix.o \
    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) cppspec.o \
-	  intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
+	  cppspec.o intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 $(SPECS): xgcc$(exeext)
@@ -1652,8 +1664,8 @@ gcc-cross$(exeext): xgcc$(exeext)
 dummy-checksum.o : dummy-checksum.c
 
 cc1-dummy$(exeext): $(C_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) dummy-checksum.o \
-	  $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
+	  dummy-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 cc1-checksum.c : cc1-dummy$(exeext) build/genchecksum$(build_exeext)
 	build/genchecksum$(build_exeext) cc1-dummy$(exeext) > $@
@@ -1661,8 +1673,8 @@ cc1-checksum.c : cc1-dummy$(exeext) build/genchecksum$(build_exeext)
 cc1-checksum.o : cc1-checksum.c
 
 cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) cc1-checksum.o \
-	  $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
+	  cc1-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 #
 # Build libgcc.a.
@@ -1878,13 +1890,13 @@ COLLECT2_OBJS = collect2.o tlink.o intl.o version.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o T$@ \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ \
 		$(COLLECT2_OBJS) $(LIBS) $(COLLECT2_LIBS)
 	mv -f T$@ $@
 
 collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h \
 	$(OBSTACK_H) $(DEMANGLE_H) collect2.h version.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS)  \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS)  \
 	-DTARGET_MACHINE=\"$(target_noncanonical)\" \
 	-c $(srcdir)/collect2.c $(OUTPUT_OPTION)
 
@@ -1911,15 +1923,15 @@ c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)		\
         $(TREE_INLINE_H) $(DIAGNOSTIC_H) intl.h debug.h $(C_COMMON_H)	\
         opts.h options.h $(MKDEPS_H) incpath.h cppdefault.h $(TARGET_H) \
 	$(TM_P_H) $(VARRAY_H) $(C_TREE_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 
 c-cppbuiltin.o : c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) version.h $(C_COMMON_H) $(C_PRAGMA_H) $(FLAGS_H) \
 	$(TOPLEV_H) output.h $(EXCEPT_H) $(REAL_H) $(TARGET_H) $(TM_P_H) \
 	$(BASEVER) debug.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) -DBASEVER=$(BASEVER_s) \
-		$< $(OUTPUT_OPTION)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
+		-DBASEVER=$(BASEVER_s) $< $(OUTPUT_OPTION)
 
 # A file used by all variants of C and some other languages.
 
@@ -1943,7 +1955,7 @@ c-dump.o : c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 c-pch.o : c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(CPPLIB_H) $(TREE_H) \
 	$(C_COMMON_H) output.h $(TOPLEV_H) $(C_PRAGMA_H) $(GGC_H) debug.h \
 	langhooks.h $(FLAGS_H) hosthooks.h version.h $(TARGET_H) opts.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  -DHOST_MACHINE=\"$(host)\" -DTARGET_MACHINE=\"$(target)\" \
 	  $< $(OUTPUT_OPTION)
 
@@ -1969,13 +1981,13 @@ gcc.o: gcc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h multilib.h \
     Makefile $(lang_specs_files) specs.h prefix.h $(GCC_H) $(FLAGS_H) \
     configargs.h $(OBSTACK_H) opts.h
 	(SHLIB_LINK='$(SHLIB_LINK)'; \
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
   -c $(srcdir)/gcc.c $(OUTPUT_OPTION))
 
 gccspec.o: gccspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H)
 	(SHLIB_LINK='$(SHLIB_LINK)'; \
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
   $(DRIVER_DEFINES) \
   -c $(srcdir)/gccspec.c $(OUTPUT_OPTION))
 
@@ -2010,7 +2022,8 @@ options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) $(FLAGS_H) 
 	$(TM_H) opts.h intl.h
 
 gcc-options.o: options.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) opts.h intl.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(OUTPUT_OPTION) -DGCC_DRIVER options.c
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(OUTPUT_OPTION) \
+		-DGCC_DRIVER options.c
 
 dumpvers: dumpvers.c
 
@@ -2019,7 +2032,7 @@ version.o: version.c version.h $(REVISION) $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 else
 version.o: version.c version.h $(DATESTAMP) $(BASEVER) $(DEVPHASE)
 endif
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	-DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
 	-DREVISION=$(REVISION_s) \
 	-DDEVPHASE=$(DEVPHASE_s) -DPKGVERSION=$(PKGVERSION_s) \
@@ -2051,7 +2064,7 @@ stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 
 prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) prefix.h \
 	Makefile $(BASEVER)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	-DPREFIX=\"$(prefix)\" -DBASEVER=$(BASEVER_s) \
 	  -c $(srcdir)/prefix.c $(OUTPUT_OPTION)
 
@@ -2473,7 +2486,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(CGRAPH_H) $(COVERAGE_H) alloc-pool.h $(GGC_H) $(INTEGRATE_H) \
    opts.h params.def tree-mudflap.h $(REAL_H) $(TREE_PASS_H) $(GIMPLE_H) \
    tree-ssa-alias.h $(PLUGIN_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -c $(srcdir)/toplev.c $(OUTPUT_OPTION)
 
@@ -3099,18 +3112,20 @@ $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) \
    output.h $(INSN_ATTR_H) $(SYSTEM_H) $(TOPLEV_H) $(TARGET_H) libfuncs.h \
    $(TARGET_DEF_H) $(FUNCTION_H) $(SCHED_INT_H) $(TM_P_H) $(EXPR_H) \
    langhooks.h $(GGC_H) $(OPTABS_H) $(REAL_H) tm-constrs.h $(GIMPLE_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 		$(out_file) $(OUTPUT_OPTION)
 
 # Build auxiliary files that support ecoff format.
 mips-tfile: mips-tfile.o version.o $(LIBDEPS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tfile.o version.o $(LIBS)
+	$(COMPILER) $(COMPILERFLAGS) $(LDFLAGS) -o $@ \
+		mips-tfile.o version.o $(LIBS)
 
 mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) version.h $(srcdir)/../include/getopt.h $(GSTAB_H) intl.h
 
 mips-tdump: mips-tdump.o version.o $(LIBDEPS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tdump.o version.o $(LIBS)
+	$(COMPILER) $(COMPILERFLAGS) $(LDFLAGS) -o $@ \
+		mips-tdump.o version.o $(LIBS)
 
 mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) version.h $(srcdir)/../include/getopt.h stab.def
@@ -3119,7 +3134,7 @@ mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h \
 libbackend.o : $(OBJS-common:.o=.c) $(out_file) \
   insn-config.h insn-flags.h insn-codes.h insn-constants.h \
   insn-attr.h  $(DATESTAMP) $(BASEVER) $(DEVPHASE) gcov-iov.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  -DTARGET_NAME=\"$(target_noncanonical)\" \
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c $(filter %.c,$^) -o $@  \
@@ -3390,7 +3405,8 @@ s-gtype: build/gengtype$(build_exeext) $(filter-out [%], $(GTFILES)) \
 # How to compile object files to run on the build machine.
 
 build/%.o :  # dependencies provided by explicit rule later
-	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) -o $@ $<
+	$(COMPILER_FOR_BUILD) -c $(BUILD_COMPILERFLAGS) $(BUILD_CPPFLAGS) \
+		-o $@ $<
 
 # Header dependencies for the programs that generate source code.
 # These are library modules...
@@ -3468,13 +3484,13 @@ build/genrecog.o : genrecog.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
   coretypes.h $(GTM_H) errors.h gensupport.h
 
 # Compile the programs that generate insn-* from the machine description.
-# They are compiled with $(CC_FOR_BUILD), and associated libraries,
+# They are compiled with $(COMPILER_FOR_BUILD), and associated libraries,
 # since they need to run on this machine
 # even if GCC is being compiled to run on some other machine.
 
 # As a general rule...
 build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	$(COMPILER_FOR_BUILD) $(BUILD_COMPILERFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
 # All these programs use the MD reader ($(BUILD_RTL)).
@@ -3498,7 +3514,7 @@ gengtype-lex.c : gengtype-lex.l
 #
 # Remake internationalization support.
 intl.o: intl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h Makefile
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  -DLOCALEDIR=\"$(localedir)\" \
 	  -c $(srcdir)/intl.c $(OUTPUT_OPTION)
 
@@ -3520,7 +3536,7 @@ PREPROCESSOR_DEFINES = \
 
 cppdefault.o: cppdefault.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	cppdefault.h Makefile
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 	  $(PREPROCESSOR_DEFINES) \
 	  -c $(srcdir)/cppdefault.c $(OUTPUT_OPTION)
 
@@ -3532,7 +3548,8 @@ build/gcov-iov.o: gcov-iov.c $(BCONFIG_H) coretypes.h $(GTM_H) \
   $(SYSTEM_H) coretypes.h $(TM_H)
 
 build/gcov-iov$(build_exeext): build/gcov-iov.o
-	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) build/gcov-iov.o -o $@
+	$(COMPILER_FOR_BUILD) $(BUILD_COMPILERFLAGS) $(BUILD_LDFLAGS) \
+		build/gcov-iov.o -o $@
 
 gcov-iov.h: s-iov
 s-iov: build/gcov-iov$(build_exeext) $(BASEVER) $(DEVPHASE)
@@ -3548,10 +3565,11 @@ gcov-dump.o: gcov-dump.c gcov-io.c $(GCOV_IO_H) $(SYSTEM_H) coretypes.h \
 
 GCOV_OBJS = gcov.o intl.o version.o errors.o
 gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
 GCOV_DUMP_OBJS = gcov-dump.o version.o errors.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) $(LIBS) -o $@
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) \
+		$(LIBS) -o $@
 #
 # Build the include directories.  The stamp files are stmp-* rather than
 # s-* so that mostlyclean does not force the include directory to

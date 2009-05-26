@@ -1,3 +1,9 @@
+2009-05-26  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (g++spec.o): Use $(COMPILER).
+	(g++$(exeext), cc1plus-dummy$(exeext)): Likewise.
+	(cc1plus$(exeext)): Likewise.
+
 2009-05-26  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/40007
