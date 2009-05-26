@@ -27,3 +27,4 @@ inline_me_too (void)
 }
 /* { dg-final { scan-tree-dump-times "Inlining inline_me " 1 "einline2"} } */
 /* { dg-final { scan-tree-dump-times "Inlining inline_me_too " 1 "einline2"} } */
+/* { dg-final { cleanup-tree-dump "einline2" } } */
