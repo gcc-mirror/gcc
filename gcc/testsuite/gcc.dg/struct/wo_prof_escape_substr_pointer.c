@@ -24,6 +24,8 @@ typedef struct
   int c;
 }str_with_substr_t;
 
+int foo;
+
 int
 main (void)
 {
@@ -36,6 +38,8 @@ main (void)
 
   for (i=0; i < N; i++)
     A[i].sub_str->a = 5;
+
+  foo = A[56].sub_str->a;
 
   return 0;
 }
