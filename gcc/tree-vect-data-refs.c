@@ -2497,8 +2497,6 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
 	  duplicate_ssa_name_ptr_info (indx_before_incr, DR_PTR_INFO (dr));
 	  duplicate_ssa_name_ptr_info (indx_after_incr, DR_PTR_INFO (dr));
 	}
-      merge_alias_info (vect_ptr_init, indx_before_incr);
-      merge_alias_info (vect_ptr_init, indx_after_incr);
       if (ptr_incr)
 	*ptr_incr = incr;
 
@@ -2529,8 +2527,6 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
 	  duplicate_ssa_name_ptr_info (indx_before_incr, DR_PTR_INFO (dr));
 	  duplicate_ssa_name_ptr_info (indx_after_incr, DR_PTR_INFO (dr));
 	}
-      merge_alias_info (vect_ptr_init, indx_before_incr);
-      merge_alias_info (vect_ptr_init, indx_after_incr);
       if (ptr_incr)
 	*ptr_incr = incr;
 
@@ -2601,7 +2597,6 @@ bump_vector_ptr (tree dataref_ptr, gimple ptr_incr, gimple_stmt_iterator *gsi,
   /* Copy the points-to information if it exists. */
   if (DR_PTR_INFO (dr))
     duplicate_ssa_name_ptr_info (new_dataref_ptr, DR_PTR_INFO (dr));
-  merge_alias_info (new_dataref_ptr, dataref_ptr);
 
   if (!ptr_incr)
     return new_dataref_ptr;

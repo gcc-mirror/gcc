@@ -1,3 +1,14 @@
+2009-05-26  Richard Guenther  <rguenther@suse.de>
+
+	* tree-vect-data-refs.c (vect_create_data_ref_ptr): Remove
+	redundant calls to merge_alias_info.
+	(bump_vector_ptr): Likewise.
+	* tree-ssa-copy.c (merge_alias_info): Remove.
+	(replace_exp_1): Remove call to merge_alias_info.
+	(propagate_tree_value): Likewise.
+	(fini_copy_prop): Propagate points-to info.
+	* tree-flow.h (merge_alias_info): Remove.
+
 2009-05-07  Hariharan Sandanagobalane <hariharan@picochip.com>
 
 	* config/picochip/picochip.C (PARAM_INLINE_CALL_COST): Remove.
