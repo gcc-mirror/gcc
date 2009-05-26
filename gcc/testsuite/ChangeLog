@@ -1,3 +1,8 @@
+2009-05-26  Richard Guenther  <rguenther@suse.de>
+
+	PR testsuite/40247
+	* gcc.dg/struct/wo_prof_escape_substr_pointer.c: Obfuscate.
+
 2009-05-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38064
