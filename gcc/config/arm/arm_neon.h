@@ -36,7 +36,11 @@
 extern "C" {
 #endif
 
+#if defined (__vxworks) && defined (_WRS_KERNEL)
+#include <vxWorks.h>
+#else
 #include <stdint.h>
+#endif
 
 typedef __builtin_neon_qi int8x8_t	__attribute__ ((__vector_size__ (8)));
 typedef __builtin_neon_hi int16x4_t	__attribute__ ((__vector_size__ (8)));

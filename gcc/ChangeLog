@@ -1,3 +1,9 @@
+2009-05-26  Richard Sandiford  <richard@codesourcery.com>
+
+	* config/arm/neon-gen.ml: Include vxWorks.h rather than stdint.h
+	for VxWorks kernels.
+	* config/arm/arm_neon.h: Regenerate.
+
 2009-05-26  Richard Guenther  <rguenther@suse.de>
 
 	PR tree-optimization/40122
