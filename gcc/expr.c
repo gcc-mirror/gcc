@@ -8248,7 +8248,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       }
 
       if (!op0)
-	op0 = expand_expr (TREE_OPERAND (exp, 0), NULL_RTX, mode, modifier);
+	op0 = expand_expr (TREE_OPERAND (exp, 0),
+			   NULL_RTX, VOIDmode, modifier);
 
       /* If the input and output modes are both the same, we are done.  */
       if (mode == GET_MODE (op0))
@@ -9042,12 +9043,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case LTGT_EXPR:
       temp = do_store_flag (exp,
 			    modifier != EXPAND_STACK_PARM ? target : NULL_RTX,
-			    (tmode != VOIDmode
-			     /* do_store_flag does not handle target modes
-				of a different class than the comparison mode.
-				Avoid ICEing in convert_move.  */
-			     && GET_MODE_CLASS (tmode) == GET_MODE_CLASS (mode))
-			    ? tmode : mode);
+			    tmode != VOIDmode ? tmode : mode);
       if (temp != 0)
 	return temp;
 
