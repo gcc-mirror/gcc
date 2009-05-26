@@ -1,3 +1,60 @@
+2009-05-26  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.in (COMPILER, COMPILER_FLAGS): Define.
+	(COMPILER_FOR_BUILD, BUILD_COMPILERFLAGS): Define.
+	(ALL_COMPILERFLAGS): Define.
+	(.c.o, xgcc$(exeext), cpp$(exeext)): Use $(COMPILER).
+	(cc1-dummy$(exeext), cc1$(exeext)): Likewise.
+	(collect2$(exeext), collect2.o): Likewise.
+	(c-opts.o, c-cppbuiltin.o, c-pch.o, gcc.o, gccspec.o): Likewise.
+	(gcc-options.o, version.o, prefix.o, toplev.o): Likewise.
+	($(out_object_file), mips-tfile, mips-tdump): Likewise.
+	(libbackend.o, intl.o, cppdefault.o): Likewise.
+	(gcov$(exeext), gcov-dump$(exeext)): Likewise.
+	(build/%.o): Use $(COMPILER_FOR_BUILD).
+	(build/gen%$(build_exeext)): Likewise.
+	(build/gcov-iov$(build_exeext)): LIkewise.
+	* config/t-darwin (darwin.o): Use $(COMPILER).
+	(darwin-c.o, darwin-f.o, darwin-driver.o): Likewise.
+	* config/t-sol2 (sol2-c.o): Likewise.
+	(sol2.o): Likewise.
+	* config/t-vxworks (vxworks.o): Likewise.
+	* config/x-darwin (host-darwin.o): Likewise.
+	* config/x-hpux (host-hpux.o): Likewise.
+	* config/x-linux (host-linux.o): Likewise.
+	* config/x-solaris (host-solaris.o): Likewise.
+	* config/alpha/x-alpha (driver-alpha.o): Likewise.
+	* config/arm/t-arm (arm-c.o): Likewise.
+	* config/arm/t-pe (pe.o): Likewise.
+	* config/arm/t-wince-pe (pe.o): Likewise.
+	* config/i386/t-cygming (winnt.o): Likewise.
+	(winnt-cxx.o, winnt-stubs.o, msformat-c.o): Likewise.
+	* config/i386/t-cygwin (cygwin1.o): Likewise.
+	(cygwin2.o): Likewise.
+	* config/i386/t-i386 (i386-c.o): Likewise.
+	* config/i386/t-interix (winnt.o): Likewise.
+	* config/i386/t-netware (netware.o): Likewise.
+	* config/i386/t-nwld (nwld.o): Likewise.
+	* config/i386/x-darwin (host-i386-darwin.o): Likewise.
+	* config/i386/x-i386 (driver-i386.o): Likewise.
+	* config/i386/x-cygwin (host-cygwin.o): Likewise.
+	* config/i386/x-mingw32 (host-mingw32.o): Likewise.
+	* config/ia64/t-ia64 (ia64-c.o): Likewise.
+	* config/m32c/t-m32c (m32c-pragma.o): Likewise.
+	* config/mips/x-native (driver-native.o): Likewise.
+	* config/rs6000/t-rs6000 (rs6000-c.o): Likewise.
+	* config/rs6000/x-darwin (host-ppc-darwin.o): Likewise.
+	* config/rs6000/x-darwin64 (host-ppc64-darwin.o): Likewise.
+	* config/rs6000/x-rs6000 (driver-rs6000.o): Likewise.
+	* config/score/t-score-elf (score7.o): Likewise.
+	(score3.o): Likewise.
+	* config/sh/t-sh (sh-c.o): Likewise.
+	* config/sh/t-symbian (sh-c.o): Likewise.
+	(symbian.o): Likewise.
+	* config/spu/t-spu-elf (spu-c.o): Likewise.
+	* config/v850/t-v850 (v850-c.o): Likewise.
+	* config/v850/t-v850e (v850-c.o): Likewise.
+
 2009-05-26  Richard Sandiford  <richard@codesourcery.com>
 
 	* config/arm/neon-gen.ml: Include vxWorks.h rather than stdint.h

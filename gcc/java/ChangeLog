@@ -1,3 +1,9 @@
+2009-05-26  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (jvspec.o): Use $(COMPILER).
+	($(XGCJ)$(exeext), jc1$(exeext), jcf-dump$(exeext)): Likewise.
+	(jvgenmain$(exeext), java/jcf-io.o, java/jcf-path.o): Likewise.
+
 2009-05-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Make-lang.in (GCJ): Renamed to...

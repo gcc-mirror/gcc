@@ -92,6 +92,9 @@ RANLIB = @RANLIB@
 RANLIB_FLAGS = @ranlib_flags@
 AWK = @AWK@
 
+COMPILER = $(CC)
+COMPILER_FLAGS = $(CFLAGS)
+
 SHELL = @SHELL@
 PWD_COMMAND = $${PWDCMD-pwd}
 # How to copy preserving the date
@@ -218,6 +221,9 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(T_CFLAGS) $(LOOSE_CFLAGS)
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS)
 
+# Used with $(COMPILER).
+ALL_COMPILERFLAGS = $(ALL_CFLAGS)
+
 # This is where we get libiberty.a from.
 LIBIBERTY = ../../libiberty/libiberty.a
 
@@ -253,8 +259,8 @@ ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 	$(CC) -c -x assembler $< $(OUTPUT_OPTION)
 
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< \
-	  $(OUTPUT_OPTION)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
+	  $(INCLUDES) $< $(OUTPUT_OPTION)
 
 .adb.o:
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
@@ -2529,33 +2535,33 @@ raise.o   : raise.c raise.h
 vx_stack_info.o : vx_stack_info.c
 
 cio.o     : cio.c
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 init.o    : init.c adaint.h raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 initialize.o : initialize.c raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 targext.o : targext.c
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) \
 		$(ALL_CPPFLAGS) $(INCLUDES_FOR_SUBDIR) \
 		$< $(OUTPUT_OPTION)
 
 # No optimization to compile this file as optimizations (-O1 or above) breaks
 # the SEH handling on Windows. The reasons are not clear.
 seh_init.o : seh_init.c raise.h
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) -O0 \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) -O0 \
 		 $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 # Need to keep the frame pointer in this file to pop the stack properly on
 # some targets.
 tracebak.o  : tracebak.c tb-alvms.c tb-alvxw.c tb-gcc.c
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	      -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) \
+	      $(INCLUDES) -fno-omit-frame-pointer $< $(OUTPUT_OPTION)
 
 # In GNU Make, ignore whether `stage*' exists.
 .PHONY: stage1 stage2 stage3 stage4 clean realclean TAGS bootstrap

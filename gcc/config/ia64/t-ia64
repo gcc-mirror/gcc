@@ -1,5 +1,5 @@
-# Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008 Free Software Foundation, Inc.
+# Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+# Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -47,7 +47,8 @@ LIB2ADDEH = $(srcdir)/config/ia64/unwind-ia64.c $(srcdir)/unwind-sjlj.c \
 
 ia64-c.o: $(srcdir)/config/ia64/ia64-c.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) $(CPPLIB_H) $(C_COMMON_H) c-pragma.h toplev.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/ia64/ia64-c.c
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/ia64/ia64-c.c
 
 # genattrtab generates very long string literals.
 insn-attrtab.o-warn = -Wno-error

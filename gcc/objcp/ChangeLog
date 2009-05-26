@@ -1,3 +1,8 @@
+2009-05-26  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (cc1objplus-dummy$(exeext)): Use $(COMPILER).
+	(cc1objplus$(exeext), objcp/objcp-act.o): Likwise.
+
 2009-05-10  Ian Lance Taylor  <iant@google.com>
 
 	* objcp-decl.h (start_struct): Add three new, ignored, macro

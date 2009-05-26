@@ -1,5 +1,5 @@
-# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007,
-# 2008 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+# Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -22,22 +22,24 @@ darwin.o: $(srcdir)/config/darwin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h     \
   conditions.h insn-flags.h output.h insn-attr.h flags.h $(TREE_H) expr.h   \
   reload.h function.h $(GGC_H) langhooks.h $(TARGET_H) $(TM_P_H) gt-darwin.h \
   config/darwin-sections.def
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/darwin.c
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/darwin.c
 
 darwin-c.o: $(srcdir)/config/darwin-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(CPPLIB_H) $(TREE_H) c-pragma.h $(C_TREE_H) toplev.h $(TM_P_H) \
   incpath.h flags.h $(C_COMMON_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/darwin-c.c $(PREPROCESSOR_DEFINES)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/darwin-c.c $(PREPROCESSOR_DEFINES)
 
 darwin-f.o: $(srcdir)/config/darwin-f.c $(CONFIG_H) $(SYSTEM_H) coretypes.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/config/darwin-f.c $(PREPROCESSOR_DEFINES)
 
 gt-darwin.h : s-gtype ; @true
 
 darwin-driver.o: $(srcdir)/config/darwin-driver.c \
   $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(srcdir)/config/darwin-driver.c
 
 # How to build crt3.o

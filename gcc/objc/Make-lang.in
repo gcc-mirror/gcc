@@ -1,6 +1,6 @@
 # Top level -*- makefile -*- fragment for GNU Objective-C
 #   Copyright (C) 1997, 1998, 2000, 2001, 2002, 2003, 2004, 2005, 2007,
-#   2008 Free Software Foundation, Inc.
+#   2008, 2009 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -52,7 +52,7 @@ OBJC_OBJS = objc/objc-lang.o objc/objc-act.o
 objc_OBJS = $(OBJC_OBJS) cc1obj-checksum.o
 
 cc1obj-dummy$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o $@ \
 	      $(OBJC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o \
 	      $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
@@ -62,7 +62,7 @@ cc1obj-checksum.c : cc1obj-dummy$(exeext) build/genchecksum$(build_exeext)
 cc1obj-checksum.o : cc1obj-checksum.c
 
 cc1obj$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o $(BACKEND) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o $@ \
 	      $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o \
 	      $(BACKEND) $(LIBS) $(BACKENDLIBS)
 

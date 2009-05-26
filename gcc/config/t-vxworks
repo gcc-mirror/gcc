@@ -50,4 +50,4 @@ EXTRA_MULTILIB_PARTS =
 
 vxworks.o: $(srcdir)/config/vxworks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TARGET_H) toplev.h output.h $(TM_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
