@@ -69,31 +69,12 @@ determine_endianness (void)
 static int argc_save;
 static char **argv_save;
 
-/* Set the saved values of the command line arguments.  */
-
-void
-set_args (int argc, char **argv)
-{
-  argc_save = argc;
-  argv_save = argv;
-}
-
-/* Retrieve the saved values of the command line arguments.  */
-
-void
-get_args (int *argc, char ***argv)
-{
-  *argc = argc_save;
-  *argv = argv_save;
-}
-
-
 static const char *exe_path;
 static int please_free_exe_path_when_done;
 
 /* Save the path under which the program was called, for use in the
    backtrace routines.  */
-void
+static void
 store_exe_path (const char * argv0)
 {
 #ifndef PATH_MAX
@@ -105,6 +86,10 @@ store_exe_path (const char * argv0)
 #endif
 
   char buf[PATH_MAX], *cwd, *path;
+
+  /* This can only happen if store_exe_path is called multiple times.  */
+  if (please_free_exe_path_when_done)
+    free ((char *) exe_path);
 
   /* On the simulator argv is not set.  */
   if (argv0 == NULL || argv0[0] == '/')
@@ -128,12 +113,35 @@ store_exe_path (const char * argv0)
   please_free_exe_path_when_done = 1;
 }
 
+
 /* Return the full path of the executable.  */
 char *
 full_exe_path (void)
 {
   return (char *) exe_path;
 }
+
+
+/* Set the saved values of the command line arguments.  */
+
+void
+set_args (int argc, char **argv)
+{
+  argc_save = argc;
+  argv_save = argv;
+  store_exe_path (argv[0]);
+}
+
+
+/* Retrieve the saved values of the command line arguments.  */
+
+void
+get_args (int *argc, char ***argv)
+{
+  *argc = argc_save;
+  *argv = argv_save;
+}
+
 
 /* Initialize the runtime library.  */
 

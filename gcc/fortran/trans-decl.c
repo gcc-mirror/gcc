@@ -86,6 +86,7 @@ tree gfor_fndecl_runtime_error_at;
 tree gfor_fndecl_runtime_warning_at;
 tree gfor_fndecl_os_error;
 tree gfor_fndecl_generate_error;
+tree gfor_fndecl_set_args;
 tree gfor_fndecl_set_fpe;
 tree gfor_fndecl_set_options;
 tree gfor_fndecl_set_convert;
@@ -1525,7 +1526,7 @@ build_function_decl (gfc_symbol * sym)
   /* This specifies if a function is globally visible, i.e. it is
      the opposite of declaring static in C.  */
   if (DECL_CONTEXT (fndecl) == NULL_TREE
-      && !sym->attr.entry_master)
+      && !sym->attr.entry_master && !sym->attr.is_main_program)
     TREE_PUBLIC (fndecl) = 1;
 
   /* TREE_STATIC means the function body is defined here.  */
@@ -1543,12 +1544,6 @@ build_function_decl (gfc_symbol * sym)
 	DECL_PURE_P (fndecl) = 1;
       TREE_SIDE_EFFECTS (fndecl) = 0;
     }
-
-  /* For -fwhole-program to work well, the main program needs to have the
-     "externally_visible" attribute.  */
-  if (attr.is_main_program)
-    DECL_ATTRIBUTES (fndecl)
-      = tree_cons (get_identifier("externally_visible"), NULL_TREE, NULL_TREE);
 
   /* Layout the function declaration and put it in the binding level
      of the current function.  */
@@ -2635,6 +2630,11 @@ gfc_build_builtin_function_decls (void)
   /* The runtime_error function does not return.  */
   TREE_THIS_VOLATILE (gfor_fndecl_os_error) = 1;
 
+  gfor_fndecl_set_args =
+    gfc_build_library_function_decl (get_identifier (PREFIX("set_args")),
+				     void_type_node, 2, integer_type_node,
+				     build_pointer_type (pchar_type_node));
+
   gfor_fndecl_set_fpe =
     gfc_build_library_function_decl (get_identifier (PREFIX("set_fpe")),
 				    void_type_node, 1, integer_type_node);
@@ -2643,7 +2643,7 @@ gfc_build_builtin_function_decls (void)
   gfor_fndecl_set_options =
     gfc_build_library_function_decl (get_identifier (PREFIX("set_options")),
 				    void_type_node, 2, integer_type_node,
-				    pvoid_type_node);
+				    build_pointer_type (integer_type_node));
 
   gfor_fndecl_set_convert =
     gfc_build_library_function_decl (get_identifier (PREFIX("set_convert")),
@@ -3835,6 +3835,197 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 }
 
 
+static void
+create_main_function (tree fndecl)
+{
+
+  tree ftn_main;
+  tree tmp, decl, result_decl, argc, argv, typelist, arglist;
+  stmtblock_t body;
+
+  /* main() function must be declared with global scope.  */
+  gcc_assert (current_function_decl == NULL_TREE);
+
+  /* Declare the function.  */
+  tmp =  build_function_type_list (integer_type_node, integer_type_node,
+				   build_pointer_type (pchar_type_node),
+				   NULL_TREE);
+  ftn_main = build_decl (FUNCTION_DECL, get_identifier ("main"), tmp);
+  DECL_EXTERNAL (ftn_main) = 0;
+  TREE_PUBLIC (ftn_main) = 1;
+  TREE_STATIC (ftn_main) = 1;
+  DECL_ATTRIBUTES (ftn_main)
+      = tree_cons (get_identifier("externally_visible"), NULL_TREE, NULL_TREE);
+
+  /* Setup the result declaration (for "return 0").  */
+  result_decl = build_decl (RESULT_DECL, NULL_TREE, integer_type_node);
+  DECL_ARTIFICIAL (result_decl) = 1;
+  DECL_IGNORED_P (result_decl) = 1;
+  DECL_CONTEXT (result_decl) = ftn_main;
+  DECL_RESULT (ftn_main) = result_decl;
+
+  pushdecl (ftn_main);
+
+  /* Get the arguments.  */
+
+  arglist = NULL_TREE;
+  typelist = TYPE_ARG_TYPES (TREE_TYPE (ftn_main));
+
+  tmp = TREE_VALUE (typelist);
+  argc = build_decl (PARM_DECL, get_identifier ("argc"), tmp);
+  DECL_CONTEXT (argc) = ftn_main;
+  DECL_ARG_TYPE (argc) = TREE_VALUE (typelist);
+  TREE_READONLY (argc) = 1;
+  gfc_finish_decl (argc);
+  arglist = chainon (arglist, argc);
+
+  typelist = TREE_CHAIN (typelist);
+  tmp = TREE_VALUE (typelist);
+  argv = build_decl (PARM_DECL, get_identifier ("argv"), tmp);
+  DECL_CONTEXT (argv) = ftn_main;
+  DECL_ARG_TYPE (argv) = TREE_VALUE (typelist);
+  TREE_READONLY (argv) = 1;
+  DECL_BY_REFERENCE (argv) = 1;
+  gfc_finish_decl (argv);
+  arglist = chainon (arglist, argv);
+
+  DECL_ARGUMENTS (ftn_main) = arglist;
+  current_function_decl = ftn_main;
+  announce_function (ftn_main);
+
+  rest_of_decl_compilation (ftn_main, 1, 0);
+  make_decl_rtl (ftn_main);
+  init_function_start (ftn_main);
+  pushlevel (0);
+
+  gfc_init_block (&body);
+
+  /* Call some libgfortran initialization routines, call then MAIN__(). */
+
+  /* Call _gfortran_set_args (argc, argv).  */
+  tmp = build_call_expr (gfor_fndecl_set_args, 2, argc, argv);
+  gfc_add_expr_to_block (&body, tmp);
+
+  /* Add a call to set_options to set up the runtime library Fortran
+     language standard parameters.  */
+  {
+    tree array_type, array, var;
+
+    /* Passing a new option to the library requires four modifications:
+     + add it to the tree_cons list below
+          + change the array size in the call to build_array_type
+          + change the first argument to the library call
+            gfor_fndecl_set_options
+          + modify the library (runtime/compile_options.c)!  */
+
+    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
+		       gfc_option.warn_std), NULL_TREE);
+    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
+		       gfc_option.allow_std), array);
+    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node, pedantic),
+		       array);
+    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
+		       gfc_option.flag_dump_core), array);
+    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
+		       gfc_option.flag_backtrace), array);
+    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
+		       gfc_option.flag_sign_zero), array);
+
+    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
+		       (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)), array);
+
+    array = tree_cons (NULL_TREE, build_int_cst (integer_type_node,
+		       gfc_option.flag_range_check), array);
+
+    array_type = build_array_type (integer_type_node,
+		       build_index_type (build_int_cst (NULL_TREE, 7)));
+    array = build_constructor_from_list (array_type, nreverse (array));
+    TREE_CONSTANT (array) = 1;
+    TREE_STATIC (array) = 1;
+
+    /* Create a static variable to hold the jump table.  */
+    var = gfc_create_var (array_type, "options");
+    TREE_CONSTANT (var) = 1;
+    TREE_STATIC (var) = 1;
+    TREE_READONLY (var) = 1;
+    DECL_INITIAL (var) = array;
+    var = gfc_build_addr_expr (build_pointer_type (integer_type_node), var);
+
+    tmp = build_call_expr (gfor_fndecl_set_options, 2,
+			   build_int_cst (integer_type_node, 8), var);
+    gfc_add_expr_to_block (&body, tmp);
+  }
+
+  /* If -ffpe-trap option was provided, add a call to set_fpe so that
+     the library will raise a FPE when needed.  */
+  if (gfc_option.fpe != 0)
+    {
+      tmp = build_call_expr (gfor_fndecl_set_fpe, 1,
+			     build_int_cst (integer_type_node,
+					    gfc_option.fpe));
+      gfc_add_expr_to_block (&body, tmp);
+    }
+
+  /* If this is the main program and an -fconvert option was provided,
+     add a call to set_convert.  */
+
+  if (gfc_option.convert != GFC_CONVERT_NATIVE)
+    {
+      tmp = build_call_expr (gfor_fndecl_set_convert, 1,
+			     build_int_cst (integer_type_node,
+					    gfc_option.convert));
+      gfc_add_expr_to_block (&body, tmp);
+    }
+
+  /* If this is the main program and an -frecord-marker option was provided,
+     add a call to set_record_marker.  */
+
+  if (gfc_option.record_marker != 0)
+    {
+      tmp = build_call_expr (gfor_fndecl_set_record_marker, 1,
+			     build_int_cst (integer_type_node,
+					    gfc_option.record_marker));
+      gfc_add_expr_to_block (&body, tmp);
+    }
+
+  if (gfc_option.max_subrecord_length != 0)
+    {
+      tmp = build_call_expr (gfor_fndecl_set_max_subrecord_length, 1,
+			     build_int_cst (integer_type_node,
+					    gfc_option.max_subrecord_length));
+      gfc_add_expr_to_block (&body, tmp);
+    }
+
+  /* Call MAIN__().  */
+  tmp = build_call_expr (fndecl, 0);
+  gfc_add_expr_to_block (&body, tmp);
+
+  /* "return 0".  */
+  tmp = fold_build2 (MODIFY_EXPR, integer_type_node, DECL_RESULT (ftn_main),
+		     build_int_cst (integer_type_node, 0));
+  tmp = build1_v (RETURN_EXPR, tmp);
+  gfc_add_expr_to_block (&body, tmp);
+
+
+  DECL_SAVED_TREE (ftn_main) = gfc_finish_block (&body);
+  decl = getdecls ();
+
+  /* Finish off this function and send it for code generation.  */
+  poplevel (1, 0, 1);
+  BLOCK_SUPERCONTEXT (DECL_INITIAL (ftn_main)) = ftn_main;
+
+  DECL_SAVED_TREE (ftn_main)
+    = build3_v (BIND_EXPR, decl, DECL_SAVED_TREE (ftn_main),
+		DECL_INITIAL (ftn_main));
+
+  /* Output the GENERIC tree.  */
+  dump_function (TDI_original, ftn_main);
+
+  gfc_gimplify_function (ftn_main);
+  cgraph_finalize_function (ftn_main, false);
+}
+
+
 /* Generate code for a function.  */
 
 void
@@ -3918,107 +4109,6 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   /* Now generate the code for the body of this function.  */
   gfc_init_block (&body);
-
-  /* If this is the main program, add a call to set_options to set up the
-     runtime library Fortran language standard parameters.  */
-  if (sym->attr.is_main_program)
-    {
-      tree array_type, array, var;
-
-      /* Passing a new option to the library requires four modifications:
-	   + add it to the tree_cons list below
-	   + change the array size in the call to build_array_type
-	   + change the first argument to the library call
-	     gfor_fndecl_set_options
-	   + modify the library (runtime/compile_options.c)!  */
-      array = tree_cons (NULL_TREE,
-			 build_int_cst (integer_type_node,
-					gfc_option.warn_std), NULL_TREE);
-      array = tree_cons (NULL_TREE,
-			 build_int_cst (integer_type_node,
-					gfc_option.allow_std), array);
-      array = tree_cons (NULL_TREE,
-			 build_int_cst (integer_type_node, pedantic), array);
-      array = tree_cons (NULL_TREE,
-			 build_int_cst (integer_type_node,
-					gfc_option.flag_dump_core), array);
-      array = tree_cons (NULL_TREE,
-			 build_int_cst (integer_type_node,
-					gfc_option.flag_backtrace), array);
-      array = tree_cons (NULL_TREE,
-			 build_int_cst (integer_type_node,
-					gfc_option.flag_sign_zero), array);
-
-      array = tree_cons (NULL_TREE,
-			 build_int_cst (integer_type_node,
-					(gfc_option.rtcheck
-					 & GFC_RTCHECK_BOUNDS)), array);
-
-      array = tree_cons (NULL_TREE,
-			 build_int_cst (integer_type_node,
-					gfc_option.flag_range_check), array);
-
-      array_type = build_array_type (integer_type_node,
-				     build_index_type (build_int_cst (NULL_TREE,
-								      7)));
-      array = build_constructor_from_list (array_type, nreverse (array));
-      TREE_CONSTANT (array) = 1;
-      TREE_STATIC (array) = 1;
-
-      /* Create a static variable to hold the jump table.  */
-      var = gfc_create_var (array_type, "options");
-      TREE_CONSTANT (var) = 1;
-      TREE_STATIC (var) = 1;
-      TREE_READONLY (var) = 1;
-      DECL_INITIAL (var) = array;
-      var = gfc_build_addr_expr (pvoid_type_node, var);
-
-      tmp = build_call_expr (gfor_fndecl_set_options, 2,
-			     build_int_cst (integer_type_node, 8), var);
-      gfc_add_expr_to_block (&body, tmp);
-    }
-
-  /* If this is the main program and a -ffpe-trap option was provided,
-     add a call to set_fpe so that the library will raise a FPE when
-     needed.  */
-  if (sym->attr.is_main_program && gfc_option.fpe != 0)
-    {
-      tmp = build_call_expr (gfor_fndecl_set_fpe, 1,
-			     build_int_cst (integer_type_node,
-					    gfc_option.fpe));
-      gfc_add_expr_to_block (&body, tmp);
-    }
-
-  /* If this is the main program and an -fconvert option was provided,
-     add a call to set_convert.  */
-
-  if (sym->attr.is_main_program && gfc_option.convert != GFC_CONVERT_NATIVE)
-    {
-      tmp = build_call_expr (gfor_fndecl_set_convert, 1,
-			     build_int_cst (integer_type_node,
-					    gfc_option.convert));
-      gfc_add_expr_to_block (&body, tmp);
-    }
-
-  /* If this is the main program and an -frecord-marker option was provided,
-     add a call to set_record_marker.  */
-
-  if (sym->attr.is_main_program && gfc_option.record_marker != 0)
-    {
-      tmp = build_call_expr (gfor_fndecl_set_record_marker, 1,
-			     build_int_cst (integer_type_node,
-					    gfc_option.record_marker));
-      gfc_add_expr_to_block (&body, tmp);
-    }
-
-  if (sym->attr.is_main_program && gfc_option.max_subrecord_length != 0)
-    {
-      tmp = build_call_expr (gfor_fndecl_set_max_subrecord_length,
-			     1,
-			     build_int_cst (integer_type_node,
-					    gfc_option.max_subrecord_length));
-      gfc_add_expr_to_block (&body, tmp);
-    }
 
    is_recursive = sym->attr.recursive
 		  || (sym->attr.entry_master
@@ -4203,7 +4293,11 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   gfc_trans_use_stmts (ns);
   gfc_traverse_ns (ns, gfc_emit_parameter_debug_info);
+
+  if (sym->attr.is_main_program)
+    create_main_function (fndecl);
 }
+
 
 void
 gfc_generate_constructors (void)

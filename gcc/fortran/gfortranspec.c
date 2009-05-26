@@ -58,10 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 #define MATH_LIBRARY "-lm"
 #endif
 
-#ifndef FORTRAN_INIT
-#define FORTRAN_INIT "-lgfortranbegin"
-#endif
-
 #ifndef FORTRAN_LIBRARY
 #define FORTRAN_LIBRARY "-lgfortran"
 #endif
@@ -277,10 +273,6 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
      1 => last arg was -l<library>
      2 => last two args were -l<library> -lm.  */
   int saw_library = 0;
-
-  /* 0 => initial/reset state
-     1 => FORTRAN_INIT linked in */
-  int use_init = 0;
 
   /* By default, we throw on the math library if we have one.  */
   int need_math = (MATH_LIBRARY[0] != '\0');
@@ -505,12 +497,6 @@ For more information about these matters, see the file named COPYING\n\n"));
 		saw_library = 2;	/* -l<library> -lm.  */
 	      else
 		{
-		  if (0 == use_init)
-		    {
-		      append_arg (FORTRAN_INIT);
-		      use_init = 1;
-		    }
-
 		  ADD_ARG_LIBGFORTRAN (FORTRAN_LIBRARY);
 		}
 	    }
@@ -540,11 +526,6 @@ For more information about these matters, see the file named COPYING\n\n"));
       switch (saw_library)
 	{
 	case 0:
-	  if (0 == use_init)
-	    {
-	      append_arg (FORTRAN_INIT);
-	      use_init = 1;
-	    }
 	  ADD_ARG_LIBGFORTRAN (library);
 	  /* Fall through.  */
 
