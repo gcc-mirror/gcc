@@ -1,3 +1,11 @@
+2009-05-26  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40007
+	* g++.dg/template/typedef18.C: New test.
+	* g++.dg/template/typedef19.C: Likewise.
+	* g++.dg/template/typedef20.C: Likewise.
+	* g++.dg/template/access11.C: Adjust.
+
 2009-05-26  Richard Guenther  <rguenther@suse.de>
 
 	PR testsuite/40247

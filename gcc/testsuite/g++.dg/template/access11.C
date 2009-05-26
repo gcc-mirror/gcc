@@ -17,7 +17,7 @@ template <> struct X::Y<int> {
   A::X x;			// { dg-error "this context" }
 };
 
-template <typename T> struct X::Y { // { dg-error "this context" }
+template <typename T> struct X::Y {
   typename T::X x;		// { dg-error "this context" }
 };
 
