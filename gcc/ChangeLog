@@ -1,5 +1,12 @@
 2009-05-26  Richard Guenther  <rguenther@suse.de>
 
+	PR tree-optimization/40122
+	* tree-ssa-ccp.c (ccp_fold): Fold vector CONSTRUCTORs to
+	VECTOR_CSTs if possible.
+	(fold_gimple_assign): Likewise.
+
+2009-05-26  Richard Guenther  <rguenther@suse.de>
+
 	PR middle-end/40252
 	* fold-const.c (fold_binary): Use the correct types for building
 	rotates.

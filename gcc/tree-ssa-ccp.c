@@ -958,6 +958,30 @@ ccp_fold (gimple stmt)
 			}
 		    }
 		}
+	      else if (TREE_CODE (rhs) == CONSTRUCTOR
+		       && TREE_CODE (TREE_TYPE (rhs)) == VECTOR_TYPE
+		       && (CONSTRUCTOR_NELTS (rhs)
+			   == TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs))))
+		{
+		  unsigned i;
+		  tree val, list;
+
+		  list = NULL_TREE;
+		  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
+		    {
+		      if (TREE_CODE (val) == SSA_NAME
+			  && get_value (val)->lattice_val == CONSTANT)
+			val = get_value (val)->value;
+		      if (TREE_CODE (val) == INTEGER_CST
+			  || TREE_CODE (val) == REAL_CST
+			  || TREE_CODE (val) == FIXED_CST)
+			list = tree_cons (NULL_TREE, val, list);
+		      else
+			return NULL_TREE;
+		    }
+
+		  return build_vector (TREE_TYPE (rhs), nreverse (list));
+		}
 
               if (kind == tcc_reference)
 		{
@@ -2652,6 +2676,25 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	    if (tem)
 	      result = fold_convert (TREE_TYPE (rhs),
 				     build_fold_addr_expr (tem));
+	  }
+
+	else if (TREE_CODE (rhs) == CONSTRUCTOR
+		 && TREE_CODE (TREE_TYPE (rhs)) == VECTOR_TYPE
+		 && (CONSTRUCTOR_NELTS (rhs)
+		     == TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs))))
+	  {
+	    /* Fold a constant vector CONSTRUCTOR to VECTOR_CST.  */
+	    unsigned i;
+	    tree val;
+
+	    FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
+	      if (TREE_CODE (val) != INTEGER_CST
+		  && TREE_CODE (val) != REAL_CST
+		  && TREE_CODE (val) != FIXED_CST)
+		return NULL_TREE;
+
+	    return build_vector_from_ctor (TREE_TYPE (rhs),
+					   CONSTRUCTOR_ELTS (rhs));
 	  }
 
         /* If we couldn't fold the RHS, hand over to the generic
