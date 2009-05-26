@@ -1,3 +1,13 @@
+2009-05-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40248
+	Revert
+	* expr.c (expand_expr_real_1): Avoid calling do_store_flag
+	with mismatched comparison modes.
+
+	* expr.c (expand_expr_real_1): Expand the operand of a
+	VIEW_CONVERT_EXPR in its natural mode.
+
 2009-05-26  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.in (COMPILER, COMPILER_FLAGS): Define.
