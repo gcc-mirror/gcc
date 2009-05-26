@@ -151,44 +151,6 @@ may_propagate_copy_into_asm (tree dest)
 }
 
 
-/* Given two SSA_NAMEs pointers ORIG and NEW such that we are copy
-   propagating NEW into ORIG, consolidate aliasing information so that
-   they both share the same memory tags.  */
-
-void
-merge_alias_info (tree orig_name, tree new_name)
-{
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (orig_name))
-	      && POINTER_TYPE_P (TREE_TYPE (new_name)));
-
-#if defined ENABLE_CHECKING
-  gcc_assert (useless_type_conversion_p (TREE_TYPE (orig_name),
-					 TREE_TYPE (new_name)));
-#endif
-
-  /* Check that flow-sensitive information is compatible.  Notice that
-     we may not merge flow-sensitive information here.  This function
-     is called when propagating equivalences dictated by the IL, like
-     a copy operation P_i = Q_j, and from equivalences dictated by
-     control-flow, like if (P_i == Q_j).
-     
-     In the former case, P_i and Q_j are equivalent in every block
-     dominated by the assignment, so their flow-sensitive information
-     is always the same.  However, in the latter case, the pointers
-     P_i and Q_j are only equivalent in one of the sub-graphs out of
-     the predicate, so their flow-sensitive information is not the
-     same in every block dominated by the predicate.
-
-     Since we cannot distinguish one case from another in this
-     function, we cannot merge flow-sensitive information by
-     intersecting.  Instead the only thing we can do is to _not_
-     merge flow-sensitive information.
-
-     ???  At some point we should enhance this machinery to distinguish
-     both cases in the caller.  */
-}
-
-
 /* Common code for propagate_value and replace_exp.
 
    Replace use operand OP_P with VAL.  FOR_PROPAGATION indicates if the
@@ -208,11 +170,7 @@ replace_exp_1 (use_operand_p op_p, tree val,
 #endif
 
   if (TREE_CODE (val) == SSA_NAME)
-    {
-      if (TREE_CODE (op) == SSA_NAME && POINTER_TYPE_P (TREE_TYPE (op)))
-	merge_alias_info (op, val);
-      SET_USE (op_p, val);
-    }
+    SET_USE (op_p, val);
   else
     SET_USE (op_p, unsave_expr_now (val));
 }
@@ -262,11 +220,7 @@ propagate_tree_value (tree *op_p, tree val)
 #endif
 
   if (TREE_CODE (val) == SSA_NAME)
-    {
-      if (*op_p && TREE_CODE (*op_p) == SSA_NAME && POINTER_TYPE_P (TREE_TYPE (*op_p)))
-	merge_alias_info (*op_p, val);
-      *op_p = val;
-    }
+    *op_p = val;
   else
     *op_p = unsave_expr_now (val);
 }
@@ -872,8 +826,24 @@ fini_copy_prop (void)
   for (i = 1; i < num_ssa_names; i++)
     {
       tree var = ssa_name (i);
-      if (var && copy_of[i].value && copy_of[i].value != var)
-	tmp[i].value = get_last_copy_of (var);
+      if (!var
+	  || !copy_of[i].value
+	  || copy_of[i].value == var)
+	continue;
+
+      tmp[i].value = get_last_copy_of (var);
+
+      /* In theory the points-to solution of all members of the
+         copy chain is their intersection.  For now we do not bother
+	 to compute this but only make sure we do not lose points-to
+	 information completely by setting the points-to solution
+	 of the representative to the first solution we find if
+	 it doesn't have one already.  */
+      if (tmp[i].value != var
+	  && POINTER_TYPE_P (TREE_TYPE (var))
+	  && SSA_NAME_PTR_INFO (var)
+	  && !SSA_NAME_PTR_INFO (tmp[i].value))
+	duplicate_ssa_name_ptr_info (tmp[i].value, SSA_NAME_PTR_INFO (var));
     }
 
   substitute_and_fold (tmp, false);
