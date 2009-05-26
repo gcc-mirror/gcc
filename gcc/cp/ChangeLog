@@ -1,3 +1,24 @@
+2009-05-26  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40007
+	* cp-tree.h (MEMBER_TYPES_NEEDING_ACCESS_CHECK): Remove this accessor.
+	(TI_TYPEDEFS_NEEDING_ACCESS_CHECKING): New accessor.
+	(get_types_needing_access_check): Declare new entry point.
+	* pt.c (append_type_to_template_for_access_check_1,
+	get_types_needing_access_check): New functions.
+	(perform_typedefs_access_check): Accept FUNCTION_DECLs and
+	RECORD_TYPEs rather than TEMPLATE_DECLs. Use the new
+	get_types_needing_access_check, no more
+	MEMBER_TYPES_NEEDING_ACCESS_CHECK.
+	(instantiate_class_template): Set input_location to the source
+	location of the most specialized template definition.
+	Perform access check using the RECORD_TYPE of the template, not its
+	associated most generic TEMPLATE_DECL.
+	(append_type_to_template_for_access_check): Augment function
+	comments. Use the new get_types_needing_access_check, not
+	MEMBER_TYPE_NEEDING_ACCESS_CHECK. Use the new
+	append_type_to_template_for_access_check_1 subroutine.
+
 2009-05-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/38064

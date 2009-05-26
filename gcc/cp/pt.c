@@ -175,6 +175,7 @@ static tree tsubst_copy	(tree, tree, tsubst_flags_t, tree);
 static tree tsubst_pack_expansion (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_decl (tree, tree, tsubst_flags_t);
 static void perform_typedefs_access_check (tree tmpl, tree targs);
+static void append_type_to_template_for_access_check_1 (tree, tree, tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -6941,10 +6942,12 @@ perform_typedefs_access_check (tree tmpl, tree targs)
 {
   tree t;
 
-  if (!tmpl || TREE_CODE (tmpl) != TEMPLATE_DECL)
+  if (!tmpl
+      || (TREE_CODE (tmpl) != RECORD_TYPE
+	  && TREE_CODE (tmpl) != FUNCTION_DECL))
     return;
 
-  for (t = MEMBER_TYPES_NEEDING_ACCESS_CHECK (tmpl); t; t = TREE_CHAIN (t))
+  for (t = get_types_needing_access_check (tmpl); t; t = TREE_CHAIN (t))
     {
       tree type_decl = TREE_PURPOSE (t);
       tree type_scope = TREE_VALUE (t);
@@ -6957,7 +6960,8 @@ perform_typedefs_access_check (tree tmpl, tree targs)
       if (uses_template_parms (type_scope))
 	type_scope = tsubst (type_scope, targs, tf_error, NULL_TREE);
 
-      perform_or_defer_access_check (TYPE_BINFO (type_scope), type_decl, type_decl);
+      perform_or_defer_access_check (TYPE_BINFO (type_scope),
+				     type_decl, type_decl);
     }
 }
 
@@ -7031,9 +7035,9 @@ instantiate_class_template (tree type)
 
   SET_CLASSTYPE_INTERFACE_UNKNOWN (type);
 
-  /* Set the input location to the template definition. This is needed
-     if tsubsting causes an error.  */
-  typedecl = TYPE_MAIN_DECL (type);
+  /* Set the input location to the most specialized template definition.
+     This is needed if tsubsting causes an error.  */
+  typedecl = TYPE_MAIN_DECL (pattern);
   input_location = DECL_SOURCE_LOCATION (typedecl);
 
   TYPE_HAS_USER_CONSTRUCTOR (type) = TYPE_HAS_USER_CONSTRUCTOR (pattern);
@@ -7439,8 +7443,8 @@ instantiate_class_template (tree type)
   /* Some typedefs referenced from within the template code need to be access
      checked at template instantiation time, i.e now. These types were
      added to the template at parsing time. Let's get those and perform
-     the acces checks then.  */
-  perform_typedefs_access_check (templ, args);
+     the access checks then.  */
+  perform_typedefs_access_check (pattern, args);
   perform_deferred_access_checks ();
   pop_nested_class ();
   pop_from_top_level ();
@@ -12163,7 +12167,7 @@ instantiate_template (tree tmpl, tree targ_ptr, tsubst_flags_t complain)
      checked at template instantiation time, i.e now. These types were
      added to the template at parsing time. Let's get those and perfom
      the acces checks then.  */
-  perform_typedefs_access_check (tmpl, targ_ptr);
+  perform_typedefs_access_check (DECL_TEMPLATE_RESULT (tmpl), targ_ptr);
   perform_deferred_access_checks ();
   pop_access_scope (fndecl);
   pop_deferring_access_checks ();
@@ -17267,33 +17271,108 @@ type_uses_auto (tree type)
   return NULL_TREE;
 }
 
+/* For a given template T, return the list of typedefs referenced
+   in T for which access check is needed at T instantiation time.
+   T is either  a FUNCTION_DECL or a RECORD_TYPE.
+   Those typedefs were added to T by the function
+   append_type_to_template_for_access_check.  */
+
+tree
+get_types_needing_access_check (tree t)
+{
+  tree ti, result = NULL_TREE;
+
+  if (!t || t == error_mark_node)
+    return t;
+
+  if (!(ti = get_template_info (t)))
+    return NULL_TREE;
+
+  if (TREE_CODE (t) == RECORD_TYPE || TREE_CODE (t) == FUNCTION_DECL)
+    {
+      if (!TI_TEMPLATE (ti))
+	return NULL_TREE;
+
+      result = TI_TYPEDEFS_NEEDING_ACCESS_CHECKING (ti);
+    }
+
+  return result;
+}
+
+/* Append the typedef TYPE_DECL used in template T to a list of typedefs
+   tied to T. That list of typedefs will be access checked at
+   T instantiation time.
+   T is either a FUNCTION_DECL or a RECORD_TYPE.
+   TYPE_DECL is a TYPE_DECL node representing a typedef.
+   SCOPE is the scope through which TYPE_DECL is accessed.
+
+   This function is a subroutine of
+   append_type_to_template_for_access_check.  */
+
+static void
+append_type_to_template_for_access_check_1 (tree t,
+					    tree type_decl,
+					    tree scope)
+{
+  tree ti;
+
+  if (!t || t == error_mark_node)
+    return;
+
+  gcc_assert ((TREE_CODE (t) == FUNCTION_DECL
+	       || TREE_CODE (t) == RECORD_TYPE)
+	      && type_decl
+	      && TREE_CODE (type_decl) == TYPE_DECL
+	      && scope);
+
+  if (!(ti = get_template_info (t)))
+    return;
+
+  gcc_assert (TI_TEMPLATE (ti));
+
+  TI_TYPEDEFS_NEEDING_ACCESS_CHECKING (ti) =
+    tree_cons (type_decl, scope, TI_TYPEDEFS_NEEDING_ACCESS_CHECKING (ti));
+}
+
 /* Append TYPE_DECL to the template TEMPL.
-   TEMPL is either a class type or a FUNCTION_DECL associated
-   to a TEMPLATE_DECL.
+   TEMPL is either a class type, a FUNCTION_DECL or a a TEMPLATE_DECL.
    At TEMPL instanciation time, TYPE_DECL will be checked to see
-   if it can be accessed through SCOPE.  */
+   if it can be accessed through SCOPE.
+
+   e.g. consider the following code snippet:
+
+     class C
+     {
+       typedef int myint;
+     };
+
+     template<class U> struct S
+     {
+       C::myint mi;
+     };
+
+     S<char> s;
+
+   At S<char> instantiation time, we need to check the access of C::myint
+   In other words, we need to check the access of the myint typedef through
+   the C scope. For that purpose, this function will add the myint typedef
+   and the scope C through which its being accessed to a list of typedefs
+   tied to the template S. That list will be walked at template instantiation
+   time and access check performed on each typedefs it contains.
+   Note that this particular code snippet should yield an error because
+   myint is private to C.  */
 
 void
 append_type_to_template_for_access_check (tree templ,
                                           tree type_decl,
 					  tree scope)
 {
-  tree node, templ_decl;
+  tree node;
 
-  gcc_assert (templ
-	      && get_template_info (templ)
-	      && TI_TEMPLATE (get_template_info (templ))
-	      && type_decl
-	      && (TREE_CODE (type_decl) == TYPE_DECL));
+  gcc_assert (type_decl && (TREE_CODE (type_decl) == TYPE_DECL));
 
-  templ_decl = TI_TEMPLATE (get_template_info (templ));
-  gcc_assert (templ_decl);
-
-  /* Make sure we don't append the type to the template twice.
-     If this appears to be too slow, the
-     MEMBER_TYPE_NEEDING_ACCESS_CHECK property
-     of templ should be a hash table instead.  */
-  for (node = MEMBER_TYPES_NEEDING_ACCESS_CHECK (templ_decl);
+  /* Make sure we don't append the type to the template twice.  */
+  for (node = get_types_needing_access_check (templ);
        node;
        node = TREE_CHAIN (node))
     {
@@ -17304,9 +17383,7 @@ append_type_to_template_for_access_check (tree templ,
 	return;
     }
 
-  MEMBER_TYPES_NEEDING_ACCESS_CHECK (templ_decl) =
-    tree_cons (type_decl, scope,
-	       MEMBER_TYPES_NEEDING_ACCESS_CHECK (templ_decl));
+  append_type_to_template_for_access_check_1 (templ, type_decl, scope);
 }
 
 #include "gt-cp-pt.h"
