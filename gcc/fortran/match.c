@@ -2418,6 +2418,11 @@ syntax:
 
 cleanup:
   gfc_free_statements (new_st.next);
+  new_st.next = NULL;
+  gfc_free_expr (new_st.expr1);
+  new_st.expr1 = NULL;
+  gfc_free_expr (new_st.expr2);
+  new_st.expr2 = NULL;
   return MATCH_ERROR;
 }
 
