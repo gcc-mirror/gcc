@@ -156,6 +156,10 @@ Glenn Chambers for help with the GCJ FAQ@.
 John-Marc Chandonia for various libgcj patches.
 
 @item
+Denis Chertykov for contributed and maintain the AVR port, the first GCC port
+for an 8-bit architecture.
+
+@item
 Scott Christley for his Objective-C contributions.
 
 @item
