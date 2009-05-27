@@ -22,10 +22,10 @@
 (define_predicate "reg_or_zero_operand"
   (match_code "reg,subreg,const_int")
 {
-  if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
+  if (REG_P (op) || GET_CODE (op) == SUBREG)
     return register_operand (op, mode);
 
-  if (GET_CODE (op) != CONST_INT)
+  if (!CONST_INT_P (op))
     return 0;
 
   return INTVAL (op) == 0;
@@ -75,11 +75,11 @@
     return FALSE;
 
   x = XEXP (op, 0);
-  if (GET_CODE (x) != REG || REGNO (x) != CARRY_REGNUM)
+  if (!REG_P (x) || REGNO (x) != CARRY_REGNUM)
     return FALSE;
 
   x = XEXP (op, 1);
-  if (GET_CODE (x) != CONST_INT || INTVAL (x) != 0)
+  if (!CONST_INT_P (x) || INTVAL (x) != 0)
     return FALSE;
 
   return TRUE;
@@ -119,7 +119,7 @@
     case SUBREG :
       /* (subreg (mem ...) ...) can occur here if the inner part was once a
 	 pseudo-reg and is now a stack slot.  */
-      if (GET_CODE (SUBREG_REG (op)) == MEM)
+      if (MEM_P (SUBREG_REG (op)))
 	return address_operand (XEXP (SUBREG_REG (op), 0), mode);
       else
 	return register_operand (op, mode);
@@ -175,7 +175,7 @@
     case SUBREG :
       /* (subreg (mem ...) ...) can occur here if the inner part was once a
 	 pseudo-reg and is now a stack slot.  */
-      if (GET_CODE (SUBREG_REG (op)) == MEM)
+      if (MEM_P (SUBREG_REG (op)))
 	return address_operand (XEXP (SUBREG_REG (op), 0), mode);
       else
 	return register_operand (op, mode);
@@ -205,7 +205,7 @@
     case SUBREG :
       /* (subreg (mem ...) ...) can occur here if the inner part was once a
 	 pseudo-reg and is now a stack slot.  */
-      if (GET_CODE (SUBREG_REG (op)) == MEM)
+      if (MEM_P (SUBREG_REG (op)))
 	return move_double_src_operand (SUBREG_REG (op), mode);
       else
 	return register_operand (op, mode);
@@ -226,7 +226,7 @@
 (define_predicate "two_insn_const_operand"
   (match_code "const_int")
 {
-  if (GET_CODE (op) != CONST_INT)
+  if (!CONST_INT_P (op))
     return 0;
   if (satisfies_constraint_J (op)
       || satisfies_constraint_M (op)
@@ -257,7 +257,7 @@
 (define_predicate "int8_operand"
   (match_code "const_int")
 {
-  if (GET_CODE (op) != CONST_INT)
+  if (!CONST_INT_P (op))
     return 0;
   return satisfies_constraint_I (op);
 })
@@ -267,7 +267,7 @@
 (define_predicate "uint16_operand"
   (match_code "const_int")
 {
-  if (GET_CODE (op) != CONST_INT)
+  if (!CONST_INT_P (op))
     return 0;
   return satisfies_constraint_K (op);
 })
@@ -277,9 +277,9 @@
 (define_predicate "reg_or_int16_operand"
   (match_code "reg,subreg,const_int")
 {
-  if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
+  if (REG_P (op) || GET_CODE (op) == SUBREG)
     return register_operand (op, mode);
-  if (GET_CODE (op) != CONST_INT)
+  if (!CONST_INT_P (op))
     return 0;
   return satisfies_constraint_J (op);
 })
@@ -289,9 +289,9 @@
 (define_predicate "reg_or_uint16_operand"
   (match_code "reg,subreg,const_int")
 {
-  if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
+  if (REG_P (op) || GET_CODE (op) == SUBREG)
     return register_operand (op, mode);
-  if (GET_CODE (op) != CONST_INT)
+  if (!CONST_INT_P (op))
     return 0;
   return satisfies_constraint_K (op);
 })
@@ -302,9 +302,9 @@
 (define_predicate "reg_or_cmp_int16_operand"
   (match_code "reg,subreg,const_int")
 {
-  if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
+  if (REG_P (op) || GET_CODE (op) == SUBREG)
     return register_operand (op, mode);
-  if (GET_CODE (op) != CONST_INT)
+  if (!CONST_INT_P (op))
     return 0;
   return satisfies_constraint_P (op);
 })
@@ -319,10 +319,10 @@
 {
   HOST_WIDE_INT value;
 
-  if (GET_CODE (op) == REG || GET_CODE (op) == SUBREG)
+  if (REG_P (op) || GET_CODE (op) == SUBREG)
     return register_operand (op, mode);
 
-  if (GET_CODE (op) != CONST_INT)
+  if (!CONST_INT_P (op))
     return 0;
 
   value = INTVAL (op);
@@ -335,7 +335,7 @@
 (define_predicate "cmp_int16_operand"
   (match_code "const_int")
 {
-  if (GET_CODE (op) != CONST_INT)
+  if (!CONST_INT_P (op))
     return 0;
   return satisfies_constraint_P (op);
 })
@@ -384,7 +384,7 @@
 (define_predicate "small_insn_p"
   (match_code "insn,call_insn,jump_insn")
 {
-  if (GET_CODE (op) == CONST_INT && INTVAL (op) == 0)
+  if (CONST_INT_P (op) && INTVAL (op) == 0)
     return 1;
 
   if (! INSN_P (op))
@@ -399,7 +399,7 @@
 (define_predicate "m32r_block_immediate_operand"
   (match_code "const_int")
 {
-  if (GET_CODE (op) != CONST_INT
+  if (!CONST_INT_P (op)
       || INTVAL (op) > MAX_MOVE_BYTES
       || INTVAL (op) <= 0)
     return 0;
