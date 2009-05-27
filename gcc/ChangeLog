@@ -1,3 +1,7 @@
+2009-05-27  Tom Tromey  <tromey@redhat.com>
+
+	* system.h (CONST_CAST2): Use C++ const_cast when compiled as C++
+
 2009-05-27  Ian Lance Taylor  <iant@google.com>
 
 	* Makefile.in (LINKER, LINKER_FLAGS): Define.
