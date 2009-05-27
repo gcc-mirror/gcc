@@ -1,3 +1,10 @@
+2009-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/39718
+	* testsuite/libgomp.fortran/fortran.exp: Don't link with
+	libgfortranbegin, check existence of libgfortran.a instead of
+	libgfortranbegin.a.
+
 2009-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/40174
