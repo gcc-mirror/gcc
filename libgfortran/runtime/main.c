@@ -74,7 +74,7 @@ static int please_free_exe_path_when_done;
 
 /* Save the path under which the program was called, for use in the
    backtrace routines.  */
-static void
+void
 store_exe_path (const char * argv0)
 {
 #ifndef PATH_MAX
