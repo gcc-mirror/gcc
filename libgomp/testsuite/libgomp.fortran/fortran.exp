@@ -1,5 +1,5 @@
 set lang_library_path	"../libgfortran/.libs"
-set lang_link_flags	"-lgfortranbegin -lgfortran"
+set lang_link_flags	"-lgfortran"
 set lang_test_file_found 0
 
 load_lib libgomp-dg.exp
@@ -8,11 +8,11 @@ load_lib libgomp-dg.exp
 dg-init
 
 if { $blddir != "" } {
-    if [file exists "${blddir}/${lang_library_path}/libgfortranbegin.a"] {
-        set lang_test_file "${lang_library_path}/libgfortranbegin.a"
+    if [file exists "${blddir}/${lang_library_path}/libgfortran.a"] {
+        set lang_test_file "${lang_library_path}/libgfortran.a"
         set lang_test_file_found 1
     } else {
-        puts "No libgfortranbegin library found, will not execute fortran tests"
+        puts "No libgfortran library found, will not execute fortran tests"
     }
 } elseif [info exists GFORTRAN_UNDER_TEST] {
     set lang_test_file_found 1
