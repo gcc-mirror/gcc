@@ -3838,10 +3838,19 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 static void
 create_main_function (tree fndecl)
 {
-
+  tree old_context;
   tree ftn_main;
   tree tmp, decl, result_decl, argc, argv, typelist, arglist;
   stmtblock_t body;
+
+  old_context = current_function_decl;
+
+  if (old_context)
+    {
+      push_function_context ();
+      saved_parent_function_decls = saved_function_decls;
+      saved_function_decls = NULL_TREE;
+    }
 
   /* main() function must be declared with global scope.  */
   gcc_assert (current_function_decl == NULL_TREE);
@@ -3903,6 +3912,8 @@ create_main_function (tree fndecl)
   /* Call some libgfortran initialization routines, call then MAIN__(). */
 
   /* Call _gfortran_set_args (argc, argv).  */
+  TREE_USED (argc) = 1;
+  TREE_USED (argv) = 1;
   tmp = build_call_expr (gfor_fndecl_set_args, 2, argc, argv);
   gfc_add_expr_to_block (&body, tmp);
 
@@ -4000,6 +4011,9 @@ create_main_function (tree fndecl)
   tmp = build_call_expr (fndecl, 0);
   gfc_add_expr_to_block (&body, tmp);
 
+  /* Mark MAIN__ as used.  */
+  TREE_USED (fndecl) = 1;
+
   /* "return 0".  */
   tmp = fold_build2 (MODIFY_EXPR, integer_type_node, DECL_RESULT (ftn_main),
 		     build_int_cst (integer_type_node, 0));
@@ -4023,6 +4037,13 @@ create_main_function (tree fndecl)
 
   gfc_gimplify_function (ftn_main);
   cgraph_finalize_function (ftn_main, false);
+
+  if (old_context)
+    {
+      pop_function_context ();
+      saved_function_decls = saved_parent_function_decls;
+    }
+  current_function_decl = old_context;
 }
 
 
