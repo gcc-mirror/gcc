@@ -632,7 +632,7 @@ easy_df_const (rtx op)
 int
 memreg_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-  return REG_P (op) && MEM_P (XEXP (op, 0));
+  return MEM_P (op) && REG_P (XEXP (op, 0));
 }
 
 /* Return nonzero if TYPE must be passed by indirect reference.  */
@@ -1107,7 +1107,7 @@ gen_split_move_double (rtx operands[])
 	st r1,r3; st r2,+r3; addi r3,-4
 
      which saves 2 bytes and doesn't force longword alignment.  */
-  else if (REG_P (dest) && MEM_P (src))
+  else if (MEM_P (dest) && REG_P (src))
     {
       emit_insn (gen_rtx_SET (VOIDmode,
 			      adjust_address (dest, SImode, 0),
