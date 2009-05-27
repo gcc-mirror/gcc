@@ -1,3 +1,9 @@
+2009-05-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/40249
+	* Makefile.in (CRTSTUFF_CFLAGS): Replace -fno-inline-functions
+	with -fno-inline.
+
 2009-05-27  Shujing Zhao  <pearly.zhao@oracle.com>
 
 	* config/m32r/m32r.c: Use REG_P, MEM_P and CONST_INT_P where
