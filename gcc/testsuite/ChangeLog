@@ -1,3 +1,10 @@
+2009-05-27  Rafael Avila de Espindola  <espindola@google.com>
+
+	* g++.dg/plugin/attribute_plugin.c: Include gcc-plugin.h first.
+	* g++.dg/plugin/dumb_plugin.c: Include gcc-plugin.h first.
+	* g++.dg/plugin/selfassign.c: Include gcc-plugin.h first.
+	* gcc.dg/plugin/selfassign.c: Include gcc-plugin.h first.
+
 2009-05-27  Kai TIetz  <kai.tietz@onevision.com>
 
         * g++.old-deja/g++.brendan/array1.C (array): Use __SIZE_TYPE__

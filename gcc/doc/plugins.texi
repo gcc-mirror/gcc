@@ -30,6 +30,8 @@ Plugins are activated by the compiler at specific events as defined in
 call @code{register_callback} specifying the name of the event and
 address of the callback function that will handle that event.
 
+The header @file{gcc-plugin.h} must be the first gcc header to be included.
+
 @subsection Plugin initialization
 
 Every plugin should export a function called @code{plugin_init} that

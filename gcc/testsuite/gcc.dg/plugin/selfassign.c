@@ -2,6 +2,7 @@
    self-assignment statements.  */
 /* { dg-options "-O" } */
 
+#include "gcc-plugin.h"
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -12,7 +13,6 @@
 #include "tree.h"
 #include "tree-pass.h"
 #include "intl.h"
-#include "gcc-plugin.h"
 
 
 /* Indicate whether to check overloaded operator '=', which is performed by
