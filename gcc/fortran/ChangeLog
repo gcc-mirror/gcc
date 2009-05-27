@@ -1,3 +1,10 @@
+2009-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40270
+	* trans-decl.c (create_main_function): Mark MAIN__ and
+	argc/argv as TREE_USED and push/pop function_decl context
+	if needed.
+
 2009-05-26  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/39178
