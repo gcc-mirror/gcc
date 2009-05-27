@@ -1,7 +1,14 @@
 2009-05-27  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* libsupc++/initializer_list: Format.
+	* testsuite/18_support/initializer_list/requirements/typedefs.cc: New.
+	* testsuite/18_support/initializer_list/requirements/
+	explicit_instantiation.cc: New.
+
+2009-05-27  Benjamin Kosnik  <bkoz@redhat.com>
+
 	PR libstdc++/40273
-	* include/tr1_impl/functional: Add explicit cast.
+	* include/tr1_impl/functional: Add explicit casts.
 	* testsuite/20_util/function/requirements/
 	explicit_instantiation.cc: New.
 	* testsuite/20_util/function/null_pointer_comparisons.cc: New.
