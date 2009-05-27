@@ -1,3 +1,10 @@
+2009-05-27  Diego Novillo  <dnovillo@google.com>
+
+	* tree-pretty-print.c (dump_location): New.
+	(dump_generic_node): Call it.
+	Factor code to handle BLOCK nodes ...
+	(dump_block_node): ... here.
+
 2009-05-27  Rafael Avila de Espindola  <espindola@google.com>
 
 	* Makefile.in (GCC_PLUGIN_H): New. Replace all uses of gcc-plugin.h with
