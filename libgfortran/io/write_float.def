@@ -603,7 +603,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   int d = f->u.real.d;\
   int w = f->u.real.w;\
   fnode *newf;\
-  GFC_REAL_ ## x exp_d;\
+  GFC_REAL_ ## x rexp_d;\
   int low, high, mid;\
   int ubound, lbound;\
   char *p;\
@@ -612,8 +612,8 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
   save_scale_factor = dtp->u.p.scale_factor;\
   newf = (fnode *) get_mem (sizeof (fnode));\
 \
-  exp_d = calculate_exp_ ## x (d);\
-  if ((m > 0.0 && m < 0.1 - 0.05 / exp_d) || (m >= exp_d - 0.5 ) ||\
+  rexp_d = calculate_exp_ ## x (-d);\
+  if ((m > 0.0 && m < 0.1 - 0.05 * rexp_d) || (rexp_d * (m + 0.5) >= 1.0) ||\
       ((m == 0.0) && !(compile_options.allow_std & GFC_STD_F2003)))\
     { \
       newf->format = FMT_E;\
@@ -635,8 +635,7 @@ output_float_FMT_G_ ## x (st_parameter_dt *dtp, const fnode *f, \
       GFC_REAL_ ## x temp;\
       mid = (low + high) / 2;\
 \
-      temp = (calculate_exp_ ## x (mid) - \
-	      5 * calculate_exp_ ## x (mid - d - 1)) / 10;\
+      temp = (calculate_exp_ ## x (mid - 1) * (1 - 0.5 * rexp_d));\
 \
       if (m < temp)\
         { \

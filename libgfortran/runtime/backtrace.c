@@ -147,7 +147,7 @@ show_backtrace (void)
 
     /* Write the list of addresses in hexadecimal format.  */
     for (i = 0; i < depth; i++)
-      addr[i] = xtoa ((GFC_UINTEGER_LARGEST) (intptr_t) trace[i], addr_buf[i],
+      addr[i] = gfc_xtoa ((GFC_UINTEGER_LARGEST) (intptr_t) trace[i], addr_buf[i],
 		      sizeof (addr_buf[i]));
 
     /* Don't output an error message if something goes wrong, we'll simply

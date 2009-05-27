@@ -108,7 +108,7 @@ write_utf8_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
   gfc_char4_t c;
   static const uchar masks[6] =  { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
   static const uchar limits[6] = { 0x80, 0xE0, 0xF0, 0xF8, 0xFC, 0xFE };
-  size_t nbytes;
+  int nbytes;
   uchar buf[6], d, *q; 
 
   /* Take care of preceding blanks.  */
@@ -597,7 +597,7 @@ write_decimal (st_parameter_dt *dtp, const fnode *f, const char *source,
     n = -n;
   nsign = sign == S_NONE ? 0 : 1;
   
-  /* conv calls gfc_itoa which sets the negative sign needed
+  /* conv calls itoa which sets the negative sign needed
      by write_integer. The sign '+' or '-' is set below based on sign
      calculated above, so we just point past the sign in the string
      before proceeding to avoid double signs in corner cases.
@@ -707,6 +707,48 @@ btoa (GFC_UINTEGER_LARGEST n, char *buffer, size_t len)
 }
 
 
+/* gfc_itoa()-- Integer to decimal conversion.
+   The itoa function is a widespread non-standard extension to standard
+   C, often declared in <stdlib.h>.  Even though the itoa defined here
+   is a static function we take care not to conflict with any prior
+   non-static declaration.  Hence the 'gfc_' prefix, which is normally
+   reserved for functions with external linkage.  */
+
+static const char *
+gfc_itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
+{
+  int negative;
+  char *p;
+  GFC_UINTEGER_LARGEST t;
+
+  assert (len >= GFC_ITOA_BUF_SIZE);
+
+  if (n == 0)
+    return "0";
+
+  negative = 0;
+  t = n;
+  if (n < 0)
+    {
+      negative = 1;
+      t = -n; /*must use unsigned to protect from overflow*/
+    }
+
+  p = buffer + GFC_ITOA_BUF_SIZE - 1;
+  *p = '\0';
+
+  while (t != 0)
+    {
+      *--p = '0' + (t % 10);
+      t /= 10;
+    }
+
+  if (negative)
+    *--p = '-';
+  return p;
+}
+
+
 void
 write_i (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 {
@@ -730,7 +772,7 @@ write_o (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 void
 write_z (st_parameter_dt *dtp, const fnode *f, const char *p, int len)
 {
-  write_int (dtp, f, p, len, xtoa);
+  write_int (dtp, f, p, len, gfc_xtoa);
 }
 
 
@@ -779,8 +821,7 @@ write_x (st_parameter_dt *dtp, int len, int nspaces)
   p = write_block (dtp, len);
   if (p == NULL)
     return;
-
-  if (nspaces > 0)
+  if (nspaces > 0 && len - nspaces >= 0)
     memset (&p[len - nspaces], ' ', nspaces);
 }
 
@@ -1168,7 +1209,7 @@ namelist_write_newline (st_parameter_dt *dtp)
 	  /* Now seek to this record */
 	  record = record * dtp->u.p.current_unit->recl;
 
-	  if (sseek (dtp->u.p.current_unit->s, record) == FAILURE)
+	  if (sseek (dtp->u.p.current_unit->s, record, SEEK_SET) < 0)
 	    {
 	      generate_error (&dtp->common, LIBERROR_INTERNAL_UNIT, NULL);
 	      return;
@@ -1189,13 +1230,13 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   int rep_ctr;
   int num;
   int nml_carry;
-  index_type len;
+  int len;
   index_type obj_size;
   index_type nelem;
-  index_type dim_i;
-  index_type clen;
+  size_t dim_i;
+  size_t clen;
   index_type elem_ctr;
-  index_type obj_name_len;
+  size_t obj_name_len;
   void * p ;
   char cup;
   char * obj_name;
@@ -1225,14 +1266,16 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
       len = 0;
       if (base)
 	{
-	  len =strlen (base->var_name);
-	  for (dim_i = 0; dim_i < (index_type) strlen (base_name); dim_i++)
+	  len = strlen (base->var_name);
+	  base_name_len = strlen (base_name);
+	  for (dim_i = 0; dim_i < base_name_len; dim_i++)
             {
 	      cup = toupper (base_name[dim_i]);
 	      write_character (dtp, &cup, 1, 1);
             }
 	}
-      for (dim_i =len; dim_i < (index_type) strlen (obj->var_name); dim_i++)
+      clen = strlen (obj->var_name);
+      for (dim_i = len; dim_i < clen; dim_i++)
 	{
 	  cup = toupper (obj->var_name[dim_i]);
 	  write_character (dtp, &cup, 1, 1);
@@ -1271,7 +1314,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
   /* Set the index vector and count the number of elements.  */
 
   nelem = 1;
-  for (dim_i=0; dim_i < obj->var_rank; dim_i++)
+  for (dim_i = 0; dim_i < (size_t) obj->var_rank; dim_i++)
     {
       obj->ls[dim_i].idx = obj->dim[dim_i].lbound;
       nelem = nelem * (obj->dim[dim_i].ubound + 1 - obj->dim[dim_i].lbound);
@@ -1374,7 +1417,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 	      /* Append the qualifier.  */
 
 	      tot_len = base_name_len + clen;
-	      for (dim_i = 0; dim_i < obj->var_rank; dim_i++)
+	      for (dim_i = 0; dim_i < (size_t) obj->var_rank; dim_i++)
 		{
 		  if (!dim_i)
 		    {
@@ -1383,7 +1426,7 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 		    }
 		  sprintf (ext_name + tot_len, "%d", (int) obj->ls[dim_i].idx);
 		  tot_len += strlen (ext_name + tot_len);
-		  ext_name[tot_len] = (dim_i == obj->var_rank - 1) ? ')' : ',';
+		  ext_name[tot_len] = ((int) dim_i == obj->var_rank - 1) ? ')' : ',';
 		  tot_len++;
 		}
 
@@ -1437,11 +1480,11 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info * obj, index_type offset,
 obj_loop:
 
     nml_carry = 1;
-    for (dim_i = 0; nml_carry && (dim_i < obj->var_rank); dim_i++)
+    for (dim_i = 0; nml_carry && (dim_i < (size_t) obj->var_rank); dim_i++)
       {
 	obj->ls[dim_i].idx += nml_carry ;
 	nml_carry = 0;
-	if (obj->ls[dim_i].idx  > (ssize_t)obj->dim[dim_i].ubound)
+	if (obj->ls[dim_i].idx  > (index_type) obj->dim[dim_i].ubound)
 	  {
 	    obj->ls[dim_i].idx = obj->dim[dim_i].lbound;
 	    nml_carry = 1;

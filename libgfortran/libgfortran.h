@@ -631,11 +631,8 @@ internal_proto(show_backtrace);
 extern void sys_exit (int) __attribute__ ((noreturn));
 internal_proto(sys_exit);
 
-extern const char *gfc_itoa (GFC_INTEGER_LARGEST, char *, size_t);
-internal_proto(gfc_itoa);
-
-extern const char *xtoa (GFC_UINTEGER_LARGEST, char *, size_t);
-internal_proto(xtoa);
+extern const char *gfc_xtoa (GFC_UINTEGER_LARGEST, char *, size_t);
+internal_proto(gfc_xtoa);
 
 extern void os_error (const char *) __attribute__ ((noreturn));
 iexport_proto(os_error);

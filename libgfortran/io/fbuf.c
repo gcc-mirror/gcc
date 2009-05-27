@@ -28,8 +28,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdlib.h>
 
 
+//#define FBUF_DEBUG
+
+
 void
-fbuf_init (gfc_unit * u, size_t len)
+fbuf_init (gfc_unit * u, int len)
 {
   if (len == 0)
     len = 512;			/* Default size.  */
@@ -37,14 +40,7 @@ fbuf_init (gfc_unit * u, size_t len)
   u->fbuf = get_mem (sizeof (fbuf));
   u->fbuf->buf = get_mem (len);
   u->fbuf->len = len;
-  u->fbuf->act = u->fbuf->flushed = u->fbuf->pos = 0;
-}
-
-
-void
-fbuf_reset (gfc_unit * u)
-{
-  u->fbuf->act = u->fbuf->flushed = u->fbuf->pos = 0;
+  u->fbuf->act = u->fbuf->pos = 0;
 }
 
 
@@ -56,58 +52,79 @@ fbuf_destroy (gfc_unit * u)
   if (u->fbuf->buf)
     free_mem (u->fbuf->buf);
   free_mem (u->fbuf);
+  u->fbuf = NULL;
+}
+
+
+static void
+#ifdef FBUF_DEBUG
+fbuf_debug (gfc_unit * u, const char * format, ...)
+{
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
+  fprintf (stderr, "fbuf_debug pos: %d, act: %d, buf: ''", 
+           u->fbuf->pos, u->fbuf->act);
+  for (int ii = 0; ii < u->fbuf->act; ii++)
+    {
+      putc (u->fbuf->buf[ii], stderr);
+    }
+  fprintf (stderr, "''\n");
+}
+#else
+fbuf_debug (gfc_unit * u __attribute__ ((unused)),
+            const char * format __attribute__ ((unused)),
+            ...) {}
+#endif
+
+  
+
+/* You should probably call this before doing a physical seek on the
+   underlying device.  Returns how much the physical position was
+   modified.  */
+
+int
+fbuf_reset (gfc_unit * u)
+{
+  int seekval = 0;
+
+  if (!u->fbuf)
+    return 0;
+
+  fbuf_debug (u, "fbuf_reset: ");
+  fbuf_flush (u, u->mode);
+  /* If we read past the current position, seek the underlying device
+     back.  */
+  if (u->mode == READING && u->fbuf->act > u->fbuf->pos)
+    {
+      seekval = - (u->fbuf->act - u->fbuf->pos);
+      fbuf_debug (u, "fbuf_reset seekval %d, ", seekval);
+    }
+  u->fbuf->act = u->fbuf->pos = 0;
+  return seekval;
 }
 
 
 /* Return a pointer to the current position in the buffer, and increase
    the pointer by len. Makes sure that the buffer is big enough, 
-   reallocating if necessary. If the buffer is not big enough, there are
-   three cases to consider:
-   1. If we haven't flushed anything, realloc
-   2. If we have flushed enough that by discarding the flushed bytes
-      the request fits into the buffer, do that.
-   3. Else allocate a new buffer, memcpy unflushed active bytes from old
-      buffer. */
+   reallocating if necessary.  */
 
 char *
-fbuf_alloc (gfc_unit * u, size_t len)
+fbuf_alloc (gfc_unit * u, int len)
 {
-  size_t newlen;
+  int newlen;
   char *dest;
+  fbuf_debug (u, "fbuf_alloc len %d, ", len);
   if (u->fbuf->pos + len > u->fbuf->len)
     {
-      if (u->fbuf->flushed == 0)
-	{
-	  /* Round up to nearest multiple of the current buffer length.  */
-	  newlen = ((u->fbuf->pos + len) / u->fbuf->len + 1) * u->fbuf->len;
-	  dest = realloc (u->fbuf->buf, newlen);
-	  if (dest == NULL)
-	    return NULL;
-	  u->fbuf->buf = dest;
-	  u->fbuf->len = newlen;
-	}
-      else if (u->fbuf->act - u->fbuf->flushed + len < u->fbuf->len)
-	{
-	  memmove (u->fbuf->buf, u->fbuf->buf + u->fbuf->flushed,
-		   u->fbuf->act - u->fbuf->flushed);
-	  u->fbuf->act -= u->fbuf->flushed;
-	  u->fbuf->pos -= u->fbuf->flushed;
-	  u->fbuf->flushed = 0;
-	}
-      else
-	{
-	  /* Most general case, flushed != 0, request doesn't fit.  */
-	  newlen = ((u->fbuf->pos - u->fbuf->flushed + len)
-		    / u->fbuf->len + 1) * u->fbuf->len;
-	  dest = get_mem (newlen);
-	  memcpy (dest, u->fbuf->buf + u->fbuf->flushed,
-		  u->fbuf->act - u->fbuf->flushed);
-	  u->fbuf->act -= u->fbuf->flushed;
-	  u->fbuf->pos -= u->fbuf->flushed;
-	  u->fbuf->flushed = 0;
-	  u->fbuf->buf = dest;
-	  u->fbuf->len = newlen;
-	}
+      /* Round up to nearest multiple of the current buffer length.  */
+      newlen = ((u->fbuf->pos + len) / u->fbuf->len + 1) * u->fbuf->len;
+      dest = realloc (u->fbuf->buf, newlen);
+      if (dest == NULL)
+	return NULL;
+      u->fbuf->buf = dest;
+      u->fbuf->len = newlen;
     }
 
   dest = u->fbuf->buf + u->fbuf->pos;
@@ -118,42 +135,134 @@ fbuf_alloc (gfc_unit * u, size_t len)
 }
 
 
-
+/* mode argument is WRITING for write mode and READING for read
+   mode. Return value is 0 for success, -1 on failure.  */
 
 int
-fbuf_flush (gfc_unit * u, int record_done)
+fbuf_flush (gfc_unit * u, unit_mode mode)
 {
-  int status;
-  size_t nbytes;
+  int nwritten;
 
   if (!u->fbuf)
     return 0;
-  if (u->fbuf->act - u->fbuf->flushed != 0)
+
+  fbuf_debug (u, "fbuf_flush with mode %d: ", mode);
+
+  if (mode == WRITING)
     {
-      if (record_done)
-        nbytes = u->fbuf->act - u->fbuf->flushed;
-      else	
-        nbytes = u->fbuf->pos - u->fbuf->flushed;	
-      status = swrite (u->s, u->fbuf->buf + u->fbuf->flushed, &nbytes);
-      u->fbuf->flushed += nbytes;
+      if (u->fbuf->pos > 0)
+	{
+	  nwritten = swrite (u->s, u->fbuf->buf, u->fbuf->pos);
+	  if (nwritten < 0)
+	    return -1;
+	}
     }
-  else
-    status = 0;
-  if (record_done)
-    fbuf_reset (u);
-  return status;
+  /* Salvage remaining bytes for both reading and writing. This
+     happens with the combination of advance='no' and T edit
+     descriptors leaving the final position somewhere not at the end
+     of the record. For reading, this also happens if we sread() past
+     the record boundary.  */ 
+  if (u->fbuf->act > u->fbuf->pos && u->fbuf->pos > 0)
+    memmove (u->fbuf->buf, u->fbuf->buf + u->fbuf->pos, 
+             u->fbuf->act - u->fbuf->pos);
+
+  u->fbuf->act -= u->fbuf->pos;
+  u->fbuf->pos = 0;
+
+  return 0;
 }
 
 
 int
-fbuf_seek (gfc_unit * u, gfc_offset off)
+fbuf_seek (gfc_unit * u, int off, int whence)
 {
-  gfc_offset pos = u->fbuf->pos + off;
-  /* Moving to the left past the flushed marked would imply moving past
-     the left tab limit, which is never allowed. So return error if
-     that is attempted.  */
-  if (pos < (gfc_offset) u->fbuf->flushed)
+  if (!u->fbuf)
     return -1;
-  u->fbuf->pos = pos;
-  return 0;
+
+  switch (whence)
+    {
+    case SEEK_SET:
+      break;
+    case SEEK_CUR:
+      off += u->fbuf->pos;
+      break;
+    case SEEK_END:
+      off += u->fbuf->act;
+      break;
+    default:
+      return -1;
+    }
+
+  fbuf_debug (u, "fbuf_seek, off %d ", off);
+  /* The start of the buffer is always equal to the left tab
+     limit. Moving to the left past the buffer is illegal in C and
+     would also imply moving past the left tab limit, which is never
+     allowed in Fortran. Similarly, seeking past the end of the buffer
+     is not possible, in that case the user must make sure to allocate
+     space with fbuf_alloc().  So return error if that is
+     attempted.  */
+  if (off < 0 || off > u->fbuf->act)
+    return -1;
+  u->fbuf->pos = off;
+  return off;
+}
+
+
+/* Fill the buffer with bytes for reading.  Returns a pointer to start
+   reading from. If we hit EOF, returns a short read count. If any
+   other error occurs, return NULL.  After reading, the caller is
+   expected to call fbuf_seek to update the position with the number
+   of bytes actually processed. */
+
+char *
+fbuf_read (gfc_unit * u, int * len)
+{
+  char *ptr;
+  int oldact, oldpos;
+  int readlen = 0;
+
+  fbuf_debug (u, "fbuf_read, len %d: ", *len);
+  oldact = u->fbuf->act;
+  oldpos = u->fbuf->pos;
+  ptr = fbuf_alloc (u, *len);
+  u->fbuf->pos = oldpos;
+  if (oldpos + *len > oldact)
+    {
+      fbuf_debug (u, "reading %d bytes starting at %d ", 
+                  oldpos + *len - oldact, oldact);
+      readlen = sread (u->s, u->fbuf->buf + oldact, oldpos + *len - oldact);
+      if (readlen < 0)
+	return NULL;
+      *len = oldact - oldpos + readlen;
+    }
+  u->fbuf->act = oldact + readlen;
+  fbuf_debug (u, "fbuf_read done: ");
+  return ptr;
+}
+
+
+/* When the fbuf_getc() inline function runs out of buffer space, it
+   calls this function to fill the buffer with bytes for
+   reading. Never call this function directly.  */
+
+int
+fbuf_getc_refill (gfc_unit * u)
+{
+  int nread;
+  char *p;
+
+  fbuf_debug (u, "fbuf_getc_refill ");
+
+  /* Read 80 bytes (average line length?).  This is a compromise
+     between not needing to call the read() syscall all the time and
+     not having to memmove unnecessary stuff when switching to the
+     next record.  */
+  nread = 80;
+
+  p = fbuf_read (u, &nread);
+
+  if (p && nread > 0)
+    return (unsigned char) u->fbuf->buf[u->fbuf->pos++];
+  else
+    return EOF;
 }
