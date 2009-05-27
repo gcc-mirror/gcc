@@ -1473,18 +1473,31 @@ uw_init_context_1 (struct _Unwind_Context *context,
   context->ra = __builtin_extract_return_addr (outer_ra);
 }
 
+static void _Unwind_DebugHook (void *, void *) __attribute__ ((__noinline__));
+
+/* This function is called during unwinding.  It is intended as a hook
+   for a debugger to intercept exceptions.  CFA is the CFA of the
+   target frame.  HANDLER is the PC to which control will be
+   transferred.  */
+static void
+_Unwind_DebugHook (void *cfa __attribute__ ((__unused__)),
+		   void *handler __attribute__ ((__unused__)))
+{
+  asm ("");
+}
 
 /* Install TARGET into CURRENT so that we can return to it.  This is a
    macro because __builtin_eh_return must be invoked in the context of
    our caller.  */
 
-#define uw_install_context(CURRENT, TARGET)				 \
-  do									 \
-    {									 \
-      long offset = uw_install_context_1 ((CURRENT), (TARGET));		 \
-      void *handler = __builtin_frob_return_addr ((TARGET)->ra);	 \
-      __builtin_eh_return (offset, handler);				 \
-    }									 \
+#define uw_install_context(CURRENT, TARGET)				\
+  do									\
+    {									\
+      long offset = uw_install_context_1 ((CURRENT), (TARGET));		\
+      void *handler = __builtin_frob_return_addr ((TARGET)->ra);	\
+      _Unwind_DebugHook ((TARGET)->cfa, handler);			\
+      __builtin_eh_return (offset, handler);				\
+    }									\
   while (0)
 
 static long
