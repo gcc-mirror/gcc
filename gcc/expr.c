@@ -6224,6 +6224,45 @@ component_ref_field_offset (tree exp)
   else
     return SUBSTITUTE_PLACEHOLDER_IN_EXPR (DECL_FIELD_OFFSET (field), exp);
 }
+
+/* Alignment in bits the TARGET of an assignment may be assumed to have.  */
+
+static unsigned HOST_WIDE_INT
+target_align (const_tree target)
+{
+  /* We might have a chain of nested references with intermediate misaligning
+     bitfields components, so need to recurse to find out.  */
+
+  unsigned HOST_WIDE_INT this_align, outer_align;
+
+  switch (TREE_CODE (target))
+    {
+    case BIT_FIELD_REF:
+      return 1;
+
+    case COMPONENT_REF:
+      this_align = DECL_ALIGN (TREE_OPERAND (target, 1));
+      outer_align = target_align (TREE_OPERAND (target, 0));
+      return MIN (this_align, outer_align);
+
+    case ARRAY_REF:
+    case ARRAY_RANGE_REF:
+      this_align = TYPE_ALIGN (TREE_TYPE (target));
+      outer_align = target_align (TREE_OPERAND (target, 0));
+      return MIN (this_align, outer_align);
+
+    CASE_CONVERT:
+    case NON_LVALUE_EXPR:
+    case VIEW_CONVERT_EXPR:
+      this_align = TYPE_ALIGN (TREE_TYPE (target));
+      outer_align = target_align (TREE_OPERAND (target, 0));
+      return MAX (this_align, outer_align);
+
+    default:
+      return TYPE_ALIGN (TREE_TYPE (target));
+    }
+}
+
 
 /* Given an rtx VALUE that may contain additions and multiplications, return
    an equivalent value that just refers to a register, memory, or constant.
@@ -6670,14 +6709,10 @@ highest_pow2_factor (const_tree exp)
 static unsigned HOST_WIDE_INT
 highest_pow2_factor_for_target (const_tree target, const_tree exp)
 {
-  unsigned HOST_WIDE_INT target_align, factor;
-
-  factor = highest_pow2_factor (exp);
-  if (TREE_CODE (target) == COMPONENT_REF)
-    target_align = DECL_ALIGN_UNIT (TREE_OPERAND (target, 1));
-  else
-    target_align = TYPE_ALIGN_UNIT (TREE_TYPE (target));
-  return MAX (factor, target_align);
+  unsigned HOST_WIDE_INT talign = target_align (target) / BITS_PER_UNIT;
+  unsigned HOST_WIDE_INT factor = highest_pow2_factor (exp);
+  
+  return MAX (factor, talign);
 }
 
 /* Return &VAR expression for emulated thread local VAR.  */
