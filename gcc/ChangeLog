@@ -1,7 +1,14 @@
+2009-05-27  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* config/m32r/m32r.c: Use REG_P, MEM_P and CONST_INT_P where
+	applicable.
+	* config/m32r/m32r.h: Ditto.
+	* config/m32r/m32r.md: Ditto.
+	* config/m32r/predicates.md: Ditto.
+
 2009-05-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cgraph.c (dump_cgraph_node): Honor -fdump-noaddr.
-
 
 2009-05-26  Basile Starynkevitch  <basile@starynkevitch.net>
 

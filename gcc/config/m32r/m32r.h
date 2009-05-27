@@ -1059,7 +1059,7 @@ L2:     .word STATIC
 #define CONSTANT_ADDRESS_P(X)   \
   (    GET_CODE (X) == LABEL_REF  \
    ||  GET_CODE (X) == SYMBOL_REF \
-   ||  GET_CODE (X) == CONST_INT  \
+   ||  CONST_INT_P (X)  \
    || (GET_CODE (X) == CONST      \
        && ! (flag_pic && ! m32r_legitimate_pic_operand_p (X))))
 
@@ -1073,7 +1073,7 @@ L2:     .word STATIC
   (! (GET_CODE (X) == CONST						\
       && GET_CODE (XEXP (X, 0)) == PLUS					\
       && (GET_CODE (XEXP (XEXP (X, 0), 0)) == SYMBOL_REF || GET_CODE (XEXP (XEXP (X, 0), 0)) == LABEL_REF) \
-      && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT			\
+      && CONST_INT_P (XEXP (XEXP (X, 0), 1))			\
       && (unsigned HOST_WIDE_INT) INTVAL (XEXP (XEXP (X, 0), 1)) > 32767))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
@@ -1120,7 +1120,7 @@ L2:     .word STATIC
 
 /* Local to this file.  */
 #define RTX_OK_FOR_OFFSET_P(X) \
-  (GET_CODE (X) == CONST_INT && INT16_P (INTVAL (X)))
+  (CONST_INT_P (X) && INT16_P (INTVAL (X)))
 
 /* Local to this file.  */
 #define LEGITIMATE_OFFSET_ADDRESS_P(MODE, X)			\
@@ -1142,7 +1142,7 @@ L2:     .word STATIC
 #define LOAD_POSTINC_P(MODE, X)					\
   (((MODE) == SImode || (MODE) == SFmode)			\
    && GET_CODE (X) == POST_INC					\
-   && GET_CODE (XEXP (X, 0)) == REG				\
+   && REG_P (XEXP (X, 0))				\
    && RTX_OK_FOR_BASE_P (XEXP (X, 0)))
 
 /* Local to this file.  */
@@ -1150,7 +1150,7 @@ L2:     .word STATIC
 #define STORE_PREINC_PREDEC_P(MODE, X)				\
   (((MODE) == SImode || (MODE) == SFmode)			\
    && (GET_CODE (X) == PRE_INC || GET_CODE (X) == PRE_DEC)	\
-   && GET_CODE (XEXP (X, 0)) == REG				\
+   && REG_P (XEXP (X, 0))				\
    && RTX_OK_FOR_BASE_P (XEXP (X, 0)))
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)			\
