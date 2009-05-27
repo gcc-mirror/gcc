@@ -201,6 +201,8 @@ RANLIB_FLAGS = @ranlib_flags@
 # future this may change to $(CXX).
 COMPILER = $(CC)
 COMPILER_FLAGS = $(CFLAGS)
+LINKER = $(CC)
+LINKER_FLAGS = $(CFLAGS)
 
 # -------------------------------------------
 # Programs which operate on the build machine
@@ -707,6 +709,10 @@ BUILD_CFLAGS= @BUILD_CFLAGS@ -DGENERATOR_FILE
 COMPILER_FOR_BUILD = $(CC_FOR_BUILD)
 BUILD_COMPILERFLAGS = $(BUILD_CFLAGS)
 
+# Native linker that we use.
+LINKER_FOR_BUILD = $(CC_FOR_BUILD)
+BUILD_LINKERFLAGS = $(BUILD_CFLAGS)
+
 # Native linker and preprocessor flags.  For x-fragment overrides.
 BUILD_LDFLAGS=@BUILD_LDFLAGS@
 BUILD_CPPFLAGS=$(ALL_CPPFLAGS)
@@ -918,6 +924,9 @@ ALL_CPPFLAGS = $(INCLUDES) $(CPPFLAGS)
 
 # This is the variable to use when using $(COMPILER).
 ALL_COMPILERFLAGS = $(ALL_CFLAGS)
+
+# This is the variable to use when using $(LINKER).
+ALL_LINKERFLAGS = $(ALL_CFLAGS)
 
 # Build and host support libraries.
 LIBIBERTY = ../libiberty/libiberty.a
@@ -1640,7 +1649,7 @@ libbackend.a: $(OBJS@onestep@)
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
 xgcc$(exeext): $(GCC_OBJS) gccspec.o version.o intl.o prefix.o \
    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
 	  gccspec.o intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # cpp is to cpp0 as gcc is to cc1.
@@ -1648,7 +1657,7 @@ xgcc$(exeext): $(GCC_OBJS) gccspec.o version.o intl.o prefix.o \
 # instead of gccspec.o.
 cpp$(exeext): $(GCC_OBJS) cppspec.o version.o intl.o prefix.o \
    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(GCC_OBJS) \
 	  cppspec.o intl.o prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
@@ -1665,7 +1674,7 @@ gcc-cross$(exeext): xgcc$(exeext)
 dummy-checksum.o : dummy-checksum.c
 
 cc1-dummy$(exeext): $(C_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
 	  dummy-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 cc1-checksum.c : cc1-dummy$(exeext) build/genchecksum$(build_exeext)
@@ -1674,7 +1683,7 @@ cc1-checksum.c : cc1-dummy$(exeext) build/genchecksum$(build_exeext)
 cc1-checksum.o : cc1-checksum.c
 
 cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
 	  cc1-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 #
@@ -1891,7 +1900,7 @@ COLLECT2_OBJS = collect2.o tlink.o intl.o version.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) -o T$@ \
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o T$@ \
 		$(COLLECT2_OBJS) $(LIBS) $(COLLECT2_LIBS)
 	mv -f T$@ $@
 
@@ -3119,14 +3128,14 @@ $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) \
 
 # Build auxiliary files that support ecoff format.
 mips-tfile: mips-tfile.o version.o $(LIBDEPS)
-	$(COMPILER) $(COMPILERFLAGS) $(LDFLAGS) -o $@ \
+	$(LINKER) $(LINKERFLAGS) $(LDFLAGS) -o $@ \
 		mips-tfile.o version.o $(LIBS)
 
 mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) version.h $(srcdir)/../include/getopt.h $(GSTAB_H) intl.h
 
 mips-tdump: mips-tdump.o version.o $(LIBDEPS)
-	$(COMPILER) $(COMPILERFLAGS) $(LDFLAGS) -o $@ \
+	$(LINKER) $(LINKERFLAGS) $(LDFLAGS) -o $@ \
 		mips-tdump.o version.o $(LIBS)
 
 mips-tdump.o : mips-tdump.c $(CONFIG_H) $(RTL_H) $(SYSTEM_H) coretypes.h \
@@ -3492,7 +3501,7 @@ build/genrecog.o : genrecog.c $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
 
 # As a general rule...
 build/gen%$(build_exeext): build/gen%.o $(BUILD_LIBDEPS)
-	$(COMPILER_FOR_BUILD) $(BUILD_COMPILERFLAGS) $(BUILD_LDFLAGS) -o $@ \
+	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \
 	    $(filter-out $(BUILD_LIBDEPS), $^) $(BUILD_LIBS)
 
 # All these programs use the MD reader ($(BUILD_RTL)).
@@ -3550,7 +3559,7 @@ build/gcov-iov.o: gcov-iov.c $(BCONFIG_H) coretypes.h $(GTM_H) \
   $(SYSTEM_H) coretypes.h $(TM_H)
 
 build/gcov-iov$(build_exeext): build/gcov-iov.o
-	$(COMPILER_FOR_BUILD) $(BUILD_COMPILERFLAGS) $(BUILD_LDFLAGS) \
+	$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) \
 		build/gcov-iov.o -o $@
 
 gcov-iov.h: s-iov
@@ -3567,10 +3576,10 @@ gcov-dump.o: gcov-dump.c gcov-io.c $(GCOV_IO_H) $(SYSTEM_H) coretypes.h \
 
 GCOV_OBJS = gcov.o intl.o version.o errors.o
 gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_OBJS) $(LIBS) -o $@
 GCOV_DUMP_OBJS = gcov-dump.o version.o errors.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
-	$(COMPILER) $(ALL_COMPILERFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) \
+	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) \
 		$(LIBS) -o $@
 #
 # Build the include directories.  The stamp files are stmp-* rather than
