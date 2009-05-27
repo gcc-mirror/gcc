@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
@@ -1377,8 +1377,9 @@ void
 dump_cgraph_node (FILE *f, struct cgraph_node *node)
 {
   struct cgraph_edge *edge;
-  fprintf (f, "%s/%i(%i) [%p]:", cgraph_node_name (node), node->uid,
-	   node->pid, (void *) node);
+  fprintf (f, "%s/%i(%i)", cgraph_node_name (node), node->uid,
+	   node->pid);
+  dump_addr (f, " @", (void *)node);
   if (node->global.inlined_to)
     fprintf (f, " (inline copy in %s/%i)",
 	     cgraph_node_name (node->global.inlined_to),
