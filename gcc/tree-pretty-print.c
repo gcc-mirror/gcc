@@ -423,6 +423,135 @@ dump_omp_clauses (pretty_printer *buffer, tree clause, int spc, int flags)
 }
 
 
+/* Dump location LOC to BUFFER.  */
+
+static void
+dump_location (pretty_printer *buffer, location_t loc)
+{
+  expanded_location xloc = expand_location (loc);
+
+  pp_character (buffer, '[');
+  if (xloc.file)
+    {
+      pp_string (buffer, xloc.file);
+      pp_string (buffer, " : ");
+    }
+  pp_decimal_int (buffer, xloc.line);
+  pp_string (buffer, "] ");
+}
+
+
+/* Dump lexical block BLOCK.  BUFFER, SPC and FLAGS are as in
+   dump_generic_node.  */
+
+static void
+dump_block_node (pretty_printer *buffer, tree block, int spc, int flags)
+{
+  tree t;
+
+  pp_printf (buffer, "BLOCK #%d ", BLOCK_NUMBER (block));
+
+  if (flags & TDF_ADDRESS)
+    pp_printf (buffer, "[%p] ", (void *) block);
+
+  if (BLOCK_ABSTRACT (block))
+    pp_string (buffer, "[abstract] ");
+
+  if (TREE_ASM_WRITTEN (block))
+    pp_string (buffer, "[written] ");
+
+  if (flags & TDF_SLIM)
+    return;
+
+  if (BLOCK_SOURCE_LOCATION (block))
+    dump_location (buffer, BLOCK_SOURCE_LOCATION (block));
+
+  newline_and_indent (buffer, spc + 2);
+
+  if (BLOCK_SUPERCONTEXT (block))
+    {
+      pp_string (buffer, "SUPERCONTEXT: ");
+      dump_generic_node (buffer, BLOCK_SUPERCONTEXT (block), 0,
+			 flags | TDF_SLIM, false);
+      newline_and_indent (buffer, spc + 2);
+    }
+
+  if (BLOCK_SUBBLOCKS (block))
+    {
+      pp_string (buffer, "SUBBLOCKS: ");
+      for (t = BLOCK_SUBBLOCKS (block); t; t = BLOCK_CHAIN (t))
+	{
+	  dump_generic_node (buffer, t, 0, flags | TDF_SLIM, false);
+	  pp_string (buffer, " ");
+	}
+      newline_and_indent (buffer, spc + 2);
+    }
+
+  if (BLOCK_CHAIN (block))
+    {
+      pp_string (buffer, "SIBLINGS: ");
+      for (t = BLOCK_CHAIN (block); t; t = BLOCK_CHAIN (t))
+	{
+	  dump_generic_node (buffer, t, 0, flags | TDF_SLIM, false);
+	  pp_string (buffer, " ");
+	}
+      newline_and_indent (buffer, spc + 2);
+    }
+
+  if (BLOCK_VARS (block))
+    {
+      pp_string (buffer, "VARS: ");
+      for (t = BLOCK_VARS (block); t; t = TREE_CHAIN (t))
+	{
+	  dump_generic_node (buffer, t, 0, flags, false);
+	  pp_string (buffer, " ");
+	}
+      newline_and_indent (buffer, spc + 2);
+    }
+
+  if (VEC_length (tree, BLOCK_NONLOCALIZED_VARS (block)) > 0)
+    {
+      unsigned i;
+      VEC(tree,gc) *nlv = BLOCK_NONLOCALIZED_VARS (block);
+
+      pp_string (buffer, "NONLOCALIZED_VARS: ");
+      for (i = 0; VEC_iterate (tree, nlv, i, t); i++)
+	{
+	  dump_generic_node (buffer, t, 0, flags, false);
+	  pp_string (buffer, " ");
+	}
+      newline_and_indent (buffer, spc + 2);
+    }
+
+  if (BLOCK_ABSTRACT_ORIGIN (block))
+    {
+      pp_string (buffer, "ABSTRACT_ORIGIN: ");
+      dump_generic_node (buffer, BLOCK_ABSTRACT_ORIGIN (block), 0,
+			 flags | TDF_SLIM, false);
+      newline_and_indent (buffer, spc + 2);
+    }
+
+  if (BLOCK_FRAGMENT_ORIGIN (block))
+    {
+      pp_string (buffer, "FRAGMENT_ORIGIN: ");
+      dump_generic_node (buffer, BLOCK_FRAGMENT_ORIGIN (block), 0,
+			 flags | TDF_SLIM, false);
+      newline_and_indent (buffer, spc + 2);
+    }
+
+  if (BLOCK_FRAGMENT_CHAIN (block))
+    {
+      pp_string (buffer, "FRAGMENT_CHAIN: ");
+      for (t = BLOCK_FRAGMENT_CHAIN (block); t; t = BLOCK_FRAGMENT_CHAIN (t))
+	{
+	  dump_generic_node (buffer, t, 0, flags | TDF_SLIM, false);
+	  pp_string (buffer, " ");
+	}
+      newline_and_indent (buffer, spc + 2);
+    }
+}
+
+
 /* Dump the node NODE on the pretty_printer BUFFER, SPC spaces of
    indent.  FLAGS specifies details to show in the dump (see TDF_* in
    tree-pass.h).  If IS_STMT is true, the object printed is considered
@@ -446,17 +575,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
     pp_printf (buffer, "<&%p> ", (void *)node);
 
   if ((flags & TDF_LINENO) && EXPR_HAS_LOCATION (node))
-    {
-      expanded_location xloc = expand_location (EXPR_LOCATION (node));
-      pp_character (buffer, '[');
-      if (xloc.file)
-	{
-	  pp_string (buffer, xloc.file);
-	  pp_string (buffer, " : ");
-	}
-      pp_decimal_int (buffer, xloc.line);
-      pp_string (buffer, "] ");
-    }
+    dump_location (buffer, EXPR_LOCATION (node));
 
   switch (TREE_CODE (node))
     {
@@ -2002,62 +2121,8 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case BLOCK:
-      {
-	tree t;
-	pp_string (buffer, "BLOCK");
-
-	if (BLOCK_ABSTRACT (node))
-	  pp_string (buffer, " [abstract]");
-
-	if (TREE_ASM_WRITTEN (node))
-	  pp_string (buffer, " [written]");
-
-	newline_and_indent (buffer, spc + 2);
-
-	if (BLOCK_SUPERCONTEXT (node))
-	  {
-	    pp_string (buffer, "SUPERCONTEXT: ");
-	    if (TREE_CODE (BLOCK_SUPERCONTEXT (node)) == BLOCK)
-	      pp_printf (buffer, "BLOCK %p",
-		         (void *)BLOCK_SUPERCONTEXT (node));
-	    else
-	      dump_generic_node (buffer, BLOCK_SUPERCONTEXT (node), 0, flags,
-				 false);
-	    newline_and_indent (buffer, spc + 2);
-	  }
-
-	if (BLOCK_SUBBLOCKS (node))
-	  {
-	    pp_string (buffer, "SUBBLOCKS: ");
-	    for (t = BLOCK_SUBBLOCKS (node); t; t = BLOCK_CHAIN (t))
-	      pp_printf (buffer, "%p ", (void *)t);
-	    newline_and_indent (buffer, spc + 2);
-	  }
-
-	if (BLOCK_VARS (node))
-	  {
-	    pp_string (buffer, "VARS: ");
-	    for (t = BLOCK_VARS (node); t; t = TREE_CHAIN (t))
-	      {
-		dump_generic_node (buffer, t, 0, flags, false);
-		pp_string (buffer, " ");
-	      }
-	    newline_and_indent (buffer, spc + 2);
-	  }
-
-	if (BLOCK_ABSTRACT_ORIGIN (node))
-	  {
-	    pp_string (buffer, "ABSTRACT_ORIGIN: ");
-	    if (TREE_CODE (BLOCK_ABSTRACT_ORIGIN (node)) == BLOCK)
-	      pp_printf (buffer, "BLOCK %p",
-			 (void *)BLOCK_ABSTRACT_ORIGIN (node));
-	    else
-	      dump_generic_node (buffer, BLOCK_ABSTRACT_ORIGIN (node), 0, flags,
-				 false);
-	    newline_and_indent (buffer, spc + 2);
-	  }
-      }
-    break;
+      dump_block_node (buffer, node, spc, flags);
+      break;
 
     case VEC_EXTRACT_EVEN_EXPR:
       pp_string (buffer, " VEC_EXTRACT_EVEN_EXPR < ");
