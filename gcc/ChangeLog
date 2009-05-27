@@ -1,3 +1,7 @@
+2009-05-21  Denis Chertykov  <denisc@overta.ru>
+
+     * doc/contrib.texi (Contributors): add myself to the list.
+
 2009-05-28  Olivier Hainque  <hainque@adacore.com>
 
 	* expr.c (target_align): New function.  Alignment the TARGET of an
