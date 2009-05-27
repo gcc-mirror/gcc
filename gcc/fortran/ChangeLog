@@ -1,3 +1,9 @@
+2009-05-27  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (gfortran$(exeext)): Change $(COMPILER) to
+	$(LINKER).
+	(f951$(exeext)): Likewise.
+
 2009-05-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40270

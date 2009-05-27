@@ -1,3 +1,16 @@
+2009-05-27  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.in (LINKER, LINKER_FLAGS): Define.
+	(LINKER_FOR_BUILD, BUILD_LINKERFLAGS): Define.
+	(ALL_LINKERFLAGS): Define.
+	(xgcc$(exeext)): Change $(COMPILER) to $(LINKER).
+	(cpp$(exeext), cc1-dummy$(exeext), cc1$(exeext)): Likewise.
+	(collect2$(exeext), mips-tfile, mips-tdump): Likewise.
+	(gcov$(exeext), gcov-dump$(exeext)): Likewise.
+	(build/gen%$(build_exeext)): Change $(COMPILER_FOR_BUILD) to
+	$(LINKER_FOR_BUILD).
+	(build/gcov-iov$(build_exeext)): Likewise.
+
 2009-05-27  Julian Brown  <julian@codesourcery.com>
 
 	* gcse.c (target.h): Include.

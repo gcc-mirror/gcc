@@ -1,3 +1,9 @@
+2009-05-27  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in ($(XGCJ)$(exeext)): Change $(COMPILER) to
+	$(LINKER).
+	(jc1$(exeext), jcf-dump$(exeext), jvgenmain$(exeext)): Likewise.
+
 2009-05-26  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (jvspec.o): Use $(COMPILER).

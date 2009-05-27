@@ -1,3 +1,8 @@
+2009-05-27  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (g++$(exeext)): Change $(COMPILER) to $(LINKER).
+	(cc1plus-dummy$(exeext), cc1plus$(exeext)): Likewise.
+
 2009-05-26  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (g++spec.o): Use $(COMPILER).

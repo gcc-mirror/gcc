@@ -1,3 +1,9 @@
+2009-05-27  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (cc1objplus-dummy$(exeext)): Change $(COMPILER) to
+	$(LINKER).
+	(cc1objplus$(exeext)): Likewise.
+
 2009-05-26  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (cc1objplus-dummy$(exeext)): Use $(COMPILER).
