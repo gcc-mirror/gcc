@@ -552,7 +552,9 @@ mark_all_vars_used (tree *expr_p, void *data)
   walk_tree (expr_p, mark_all_vars_used_1, data, NULL);
 }
 
-/* Dump scope blocks.  */
+
+/* Dump scope blocks starting at SCOPE to FILE.  INDENT is the
+   indentation level and FLAGS is as in print_generic_expr.  */
 
 static void
 dump_scope_block (FILE *file, int indent, tree scope, int flags)
@@ -606,10 +608,24 @@ dump_scope_block (FILE *file, int indent, tree scope, int flags)
   fprintf (file, "\n%*s}\n",indent, "");
 }
 
+
+/* Dump the tree of lexical scopes of current_function_decl to FILE.
+   FLAGS is as in print_generic_expr.  */
+
 void
 dump_scope_blocks (FILE *file, int flags)
 {
   dump_scope_block (file, 0, DECL_INITIAL (current_function_decl), flags);
+}
+
+
+/* Dump the tree of lexical scopes of current_function_decl to stderr.
+   FLAGS is as in print_generic_expr.  */
+
+void
+debug_scope_blocks (int flags)
+{
+  dump_scope_blocks (stderr, flags);
 }
 
 /* Remove local variables that are not referenced in the IL.  */

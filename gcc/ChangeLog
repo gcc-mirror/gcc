@@ -1,6 +1,13 @@
+2009-05-27  Diego Novillo  <dnovillo@google.com>
+
+	* tree-ssa-live.c (dump_scope_block): Document arguments.
+	(dump_scope_blocks): Document.
+	(debug_scope_blocks): New.
+	* tree-flow.h (debug_scope_blocks): Declare.
+
 2009-05-21  Denis Chertykov  <denisc@overta.ru>
 
-     * doc/contrib.texi (Contributors): add myself to the list.
+	* doc/contrib.texi (Contributors): add myself to the list.
 
 2009-05-28  Olivier Hainque  <hainque@adacore.com>
 
