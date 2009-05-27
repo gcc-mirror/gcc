@@ -169,6 +169,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "df.h"
 #include "dbgcnt.h"
+#include "target.h"
 
 /* Propagate flow information through back edges and thus enable PRE's
    moving loop invariant calculations out of loops.
@@ -805,6 +806,11 @@ static GTY(()) rtx test_insn;
 /* Return true if we can assign X to a pseudo register such that the
    resulting insn does not result in clobbering a hard register as a
    side-effect.
+
+   Additionally, if the target requires it, check that the resulting insn
+   can be copied.  If it cannot, this means that X is special and probably
+   has hidden side-effects we don't want to mess with.
+
    This function is typically used by code motion passes, to verify
    that it is safe to insert an insn without worrying about clobbering
    maybe live hard regs.  */
@@ -837,8 +843,18 @@ can_assign_to_reg_without_clobbers_p (rtx x)
      valid.  */
   PUT_MODE (SET_DEST (PATTERN (test_insn)), GET_MODE (x));
   SET_SRC (PATTERN (test_insn)) = x;
-  return ((icode = recog (PATTERN (test_insn), test_insn, &num_clobbers)) >= 0
-	  && (num_clobbers == 0 || ! added_clobbers_hard_reg_p (icode)));
+  
+  icode = recog (PATTERN (test_insn), test_insn, &num_clobbers);
+  if (icode < 0)
+    return false;
+  
+  if (num_clobbers > 0 && added_clobbers_hard_reg_p (icode))
+    return false;
+  
+  if (targetm.cannot_copy_insn_p && targetm.cannot_copy_insn_p (test_insn))
+    return false;
+  
+  return true;
 }
 
 /* Return nonzero if the operands of expression X are unchanged from the
