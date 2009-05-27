@@ -1,3 +1,9 @@
+2009-05-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/initlist15.C: New.
+	* g++.dg/cpp0x/initlist16.C: New.
+	* g++.dg/cpp0x/initlist17.C: New.
+
 2009-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/39178

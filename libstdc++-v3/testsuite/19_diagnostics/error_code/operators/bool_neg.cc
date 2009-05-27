@@ -30,4 +30,4 @@ int main()
   return i;
 }
 
-// { dg-error "could not convert" "" { target *-*-* } 28 }
+// { dg-error "cannot convert" "" { target *-*-* } 28 }
