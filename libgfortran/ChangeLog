@@ -1,3 +1,9 @@
+2009-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR fortran/39178
+	* runtime/main.c (store_exe_path): Remove static attribute.
+	* libgfortran.h: Add back store_exe_path prototype.
+
 2009-05-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/40187
