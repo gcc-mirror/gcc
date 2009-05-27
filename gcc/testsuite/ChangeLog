@@ -1,3 +1,12 @@
+2009-05-27  Kai TIetz  <kai.tietz@onevision.com>
+
+        * g++.old-deja/g++.brendan/array1.C (array): Use __SIZE_TYPE__
+        cast instead of assuming 0ul.
+        * g++.old-deja/g++.brendan/crash64.C (size_t): Define it via
+        __SIZE_TYPE__.
+        (_type_desc): Make first argument const.
+        * g++.old-deja/g++.jason/new3.C (dg-options): Add -Wno-long-long.
+
 2009-05-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR libfortran/40187

@@ -1,5 +1,5 @@
 // { dg-do run  }
-// { dg-options "-fcheck-new -pedantic" }
+// { dg-options "-fcheck-new -pedantic -Wno-long-long" }
 // PRMS Id: 6037
 
 extern "C" void * malloc (__SIZE_TYPE__);
