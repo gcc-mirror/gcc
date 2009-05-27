@@ -20,6 +20,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_PLUGIN_H
 #define GCC_PLUGIN_H
 
+#ifndef IN_GCC
+#define IN_GCC
+#endif
+
+#include "config.h"
+#include "system.h"
+
 /* Event names.  Keep in sync with plugin_event_name[].  */
 enum plugin_event
 {
