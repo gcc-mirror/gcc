@@ -1,3 +1,14 @@
+2009-05-27  Jason Merrill  <jason@redhat.com>
+
+	* call.c (implicit_conversion): Handle conversion from
+	initializer-list to scalar.
+	(convert_like_real): Likewise.  Avoid crashing on list
+	initialization with bad conversions.
+	(can_convert): Use LOOKUP_EXPLICIT.
+	(can_convert_arg_bad): Add flags parm.
+	* cp-tree.h: Adjust.
+	* typeck.c (convert_for_assignment): Pass flags.
+
 2009-05-27  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (g++$(exeext)): Change $(COMPILER) to $(LINKER).

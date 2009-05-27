@@ -1400,9 +1400,31 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
   if (conv)
     return conv;
 
-  if (is_std_init_list (to) && expr
-      && BRACE_ENCLOSED_INITIALIZER_P (expr))
-    return build_list_conv (to, expr, flags);
+  if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
+    {
+      if (is_std_init_list (to))
+	return build_list_conv (to, expr, flags);
+
+      /* Allow conversion from an initializer-list with one element to a
+	 scalar type if this is copy-initialization.  Direct-initialization
+	 would be something like int i({1}), which is invalid.  */
+      if (SCALAR_TYPE_P (to) && CONSTRUCTOR_NELTS (expr) <= 1
+	  && (flags & LOOKUP_ONLYCONVERTING))
+	{
+	  tree elt;
+	  if (CONSTRUCTOR_NELTS (expr) == 1)
+	    elt = CONSTRUCTOR_ELT (expr, 0)->value;
+	  else
+	    elt = integer_zero_node;
+	  conv = implicit_conversion (to, TREE_TYPE (elt), elt,
+				      c_cast_p, flags);
+	  if (conv)
+	    {
+	      conv->check_narrowing = true;
+	      return conv;
+	    }
+	}
+    }
 
   if (expr != NULL_TREE
       && (MAYBE_CLASS_TYPE_P (from)
@@ -4669,6 +4691,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 
   if (convs->bad_p
       && convs->kind != ck_user
+      && convs->kind != ck_list
       && convs->kind != ck_ambig
       && convs->kind != ck_ref_bind
       && convs->kind != ck_rvalue
@@ -4748,6 +4771,17 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	return expr;
       }
     case ck_identity:
+      if (BRACE_ENCLOSED_INITIALIZER_P (expr))
+	{
+	  int nelts = CONSTRUCTOR_NELTS (expr);
+	  if (nelts == 0)
+	    expr = integer_zero_node;
+	  else if (nelts == 1)
+	    expr = CONSTRUCTOR_ELT (expr, 0)->value;
+	  else
+	    gcc_unreachable ();
+	}
+
       if (type_unknown_p (expr))
 	expr = instantiate_type (totype, expr, complain);
       /* Convert a constant to its underlying value, unless we are
@@ -7185,7 +7219,7 @@ tourney (struct z_candidate *candidates)
 bool
 can_convert (tree to, tree from)
 {
-  return can_convert_arg (to, from, NULL_TREE, LOOKUP_NORMAL);
+  return can_convert_arg (to, from, NULL_TREE, LOOKUP_IMPLICIT);
 }
 
 /* Returns nonzero if ARG (of type FROM) can be converted to TO.  */
@@ -7213,7 +7247,7 @@ can_convert_arg (tree to, tree from, tree arg, int flags)
 /* Like can_convert_arg, but allows dubious conversions as well.  */
 
 bool
-can_convert_arg_bad (tree to, tree from, tree arg)
+can_convert_arg_bad (tree to, tree from, tree arg, int flags)
 {
   conversion *t;
   void *p;
@@ -7222,7 +7256,7 @@ can_convert_arg_bad (tree to, tree from, tree arg)
   p = conversion_obstack_alloc (0);
   /* Try to perform the conversion.  */
   t  = implicit_conversion (to, from, arg, /*c_cast_p=*/false,
-			    LOOKUP_NORMAL);
+			    flags);
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
 

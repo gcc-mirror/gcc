@@ -4191,7 +4191,7 @@ extern tree build_op_call			(tree, VEC(tree,gc) **,
 extern tree build_op_delete_call		(enum tree_code, tree, tree, bool, tree, tree);
 extern bool can_convert				(tree, tree);
 extern bool can_convert_arg			(tree, tree, tree, int);
-extern bool can_convert_arg_bad			(tree, tree, tree);
+extern bool can_convert_arg_bad			(tree, tree, tree, int);
 extern bool enforce_access			(tree, tree, tree);
 extern tree convert_default_arg			(tree, tree, tree, int);
 extern tree convert_arg_to_ellipsis		(tree);

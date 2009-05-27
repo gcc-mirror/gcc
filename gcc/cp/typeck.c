@@ -6702,7 +6702,7 @@ convert_for_assignment (tree type, tree rhs,
      We allow bad conversions here because by the time we get to this point
      we are committed to doing the conversion.  If we end up doing a bad
      conversion, convert_like will complain.  */
-  if (!can_convert_arg_bad (type, rhstype, rhs))
+  if (!can_convert_arg_bad (type, rhstype, rhs, flags))
     {
       /* When -Wno-pmf-conversions is use, we just silently allow
 	 conversions from pointers-to-members to plain pointers.  If
