@@ -95,9 +95,17 @@ ISO_C_BINDING_PREFIX (c_f_pointer_u0) (void *c_ptr_in,
 
   if (shape != NULL)
     {
+      index_type source_stride;
+      index_type size;
+      char *p;
+
       f_ptr_out->offset = 0;
       shapeSize = 0;
-      
+      p = shape->data;
+      size = GFC_DESCRIPTOR_SIZE(shape);
+
+      source_stride = shape->dim[0].stride * size;
+
       /* shape's length (rank of the output array) */
       shapeSize = shape->dim[0].ubound + 1 - shape->dim[0].lbound;
       for (i = 0; i < shapeSize; i++)
@@ -107,40 +115,40 @@ ISO_C_BINDING_PREFIX (c_f_pointer_u0) (void *c_ptr_in,
           /* Have to allow for the SHAPE array to be any valid kind for
              an INTEGER type.  */
 #ifdef HAVE_GFC_INTEGER_1
-	  if (GFC_DESCRIPTOR_SIZE (shape) == 1)
-	    f_ptr_out->dim[i].ubound = ((GFC_INTEGER_1 *) (shape->data))[i];
+	  if (size == 1)
+	    f_ptr_out->dim[i].ubound = *((GFC_INTEGER_1 *) p);
 #endif
 #ifdef HAVE_GFC_INTEGER_2
-	  if (GFC_DESCRIPTOR_SIZE (shape) == 2)
-	    f_ptr_out->dim[i].ubound = ((GFC_INTEGER_2 *) (shape->data))[i];
+	  if (size == 2)
+	    f_ptr_out->dim[i].ubound = *((GFC_INTEGER_2 *) p);
 #endif
 #ifdef HAVE_GFC_INTEGER_4
-	  if (GFC_DESCRIPTOR_SIZE (shape) == 4)
-	    f_ptr_out->dim[i].ubound = ((GFC_INTEGER_4 *) (shape->data))[i];
+	  if (size == 4)
+	    f_ptr_out->dim[i].ubound = *((GFC_INTEGER_4 *) p);
 #endif
 #ifdef HAVE_GFC_INTEGER_8
-	  if (GFC_DESCRIPTOR_SIZE (shape) == 8)
-	    f_ptr_out->dim[i].ubound = ((GFC_INTEGER_8 *) (shape->data))[i];
+	  if (size == 8)
+	    f_ptr_out->dim[i].ubound = *((GFC_INTEGER_8 *) p);
 #endif
 #ifdef HAVE_GFC_INTEGER_16
-	  if (GFC_DESCRIPTOR_SIZE (shape) == 16)
-	    f_ptr_out->dim[i].ubound = ((GFC_INTEGER_16 *) (shape->data))[i];
-#endif		
-        }
+	  if (size == 16)
+	    f_ptr_out->dim[i].ubound = *((GFC_INTEGER_16 *) p);
+#endif
+	  p += source_stride;
 
-      /* Set the offset and strides.
-         offset is (sum of (dim[i].lbound * dim[i].stride) for all
-         dims) the -1 means we'll back the data pointer up that much
-         perhaps we could just realign the data pointer and not change
-         the offset?  */
-      f_ptr_out->dim[0].stride = 1;
-      f_ptr_out->offset = f_ptr_out->dim[0].lbound * f_ptr_out->dim[0].stride;
-      for (i = 1; i < shapeSize; i++)
-        {
-          f_ptr_out->dim[i].stride = (f_ptr_out->dim[i-1].ubound + 1)
-            - f_ptr_out->dim[i-1].lbound;
-          f_ptr_out->offset += f_ptr_out->dim[i].lbound
-            * f_ptr_out->dim[i].stride;
+	  if (i == 0)
+	    {
+	      f_ptr_out->dim[0].stride = 1;
+	      f_ptr_out->offset = f_ptr_out->dim[0].lbound
+		* f_ptr_out->dim[0].stride;
+	    }
+	  else
+	    {
+	      f_ptr_out->dim[i].stride = (f_ptr_out->dim[i-1].ubound + 1)
+		- f_ptr_out->dim[i-1].lbound;
+	      f_ptr_out->offset += f_ptr_out->dim[i].lbound
+		* f_ptr_out->dim[i].stride;
+	    }
         }
 
       f_ptr_out->offset *= -1;
