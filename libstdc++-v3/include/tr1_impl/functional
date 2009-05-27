@@ -1557,7 +1557,7 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
 	template<typename _Signature>
 	  static bool
 	  _M_not_empty_function(const function<_Signature>& __f)
-	  { return __f; }
+          { return static_cast<bool>(__f); }
 
 	template<typename _Tp>
 	  static bool
@@ -2095,13 +2095,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Signature>
     inline bool
     operator==(const function<_Signature>& __f, _M_clear_type*)
-    { return !__f; }
+    { return !static_cast<bool>(__f); }
 
   /// @overload
   template<typename _Signature>
     inline bool
     operator==(_M_clear_type*, const function<_Signature>& __f)
-    { return !__f; }
+    { return !static_cast<bool>(__f); }
 
   /**
    *  @brief Compares a polymorphic function object wrapper against 0
@@ -2113,13 +2113,13 @@ _GLIBCXX_BEGIN_NAMESPACE_TR1
   template<typename _Signature>
     inline bool
     operator!=(const function<_Signature>& __f, _M_clear_type*)
-    { return __f; }
+    { return static_cast<bool>(__f); }
 
   /// @overload
   template<typename _Signature>
     inline bool
     operator!=(_M_clear_type*, const function<_Signature>& __f)
-    { return __f; }
+    { return static_cast<bool>(__f); }
 
   // [3.7.2.8] specialized algorithms
 

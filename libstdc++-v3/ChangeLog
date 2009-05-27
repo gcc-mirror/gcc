@@ -1,5 +1,13 @@
+2009-05-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/40273
+	* include/tr1_impl/functional: Add explicit cast.
+	* testsuite/20_util/function/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/20_util/function/null_pointer_comparisons.cc: New.
+
 2009-05-24  Eelis van der Weegen  <eelis@eelis.net>
-	
+
 	* libsupc++/initializer_list (initializer_list): Add missing typedefs.
 
 2009-05-21  Benjamin Kosnik  <bkoz@redhat.com>
