@@ -1,3 +1,9 @@
+2009-05-27  Julian Brown  <julian@codesourcery.com>
+
+	* gcse.c (target.h): Include.
+	(can_assign_to_reg_without_clobbers_p): Check that the target allows
+	copy of argument to a pseudo register.
+
 2009-05-27  Diego Novillo  <dnovillo@google.com>
 
 	* tree-ssa-live.c (dump_scope_block): Document arguments.
