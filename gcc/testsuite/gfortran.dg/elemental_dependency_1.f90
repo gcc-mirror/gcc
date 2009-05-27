@@ -40,14 +40,14 @@ PROGRAM main
 
   b = a
   CALL double((a(1:sz-1)), a(2:sz))     ! paren expression, temporary created
-! { dg-final { scan-tree-dump-times "A\.17\\\[4\\\]" 1 "original" } }
+! { dg-final { scan-tree-dump-times "A\.16\\\[4\\\]" 1 "original" } }
 
   IF (ANY(a /= (/ b(1), (2*b(i), i=1,sz-1) /))) CALL abort 
 
 
   b = a
   CALL double(a(1:sz-1)+1, a(2:sz))     ! op expression, temporary created
-! { dg-final { scan-tree-dump-times "A\.26\\\[4\\\]" 1 "original" } }
+! { dg-final { scan-tree-dump-times "A\.25\\\[4\\\]" 1 "original" } }
 
   IF (ANY(a /= (/ b(1), (2*b(i)+2, i=1,sz-1) /))) CALL abort 
 
@@ -59,7 +59,7 @@ PROGRAM main
 
   b = a
   CALL double(self(a(1:sz-1)), a(2:sz))  ! function expr, temporary created
-! { dg-final { scan-tree-dump-times "A\.38\\\[4\\\]" 1 "original" } }
+! { dg-final { scan-tree-dump-times "A\.37\\\[4\\\]" 1 "original" } }
 
   IF (ANY(a /= (/ b(1), (2*b(i), i=1,sz-1) /))) CALL abort 
 
