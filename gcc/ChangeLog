@@ -1,3 +1,9 @@
+2009-05-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/40266
+	* config/i386/driver-i386.c (host_detect_local_cpu): Support
+	AVX, SSE4, AES, PCLMUL and POPCNT.
+
 2009-05-27  Diego Novillo  <dnovillo@google.com>
 
 	* tree-pretty-print.c (dump_location): New.
