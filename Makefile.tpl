@@ -621,7 +621,7 @@ all:
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 @if gcc-bootstrap
 	if [ -f stage_last ]; then \
-	  TFLAGS="$(STAGE$(shell sed s,^stage,, stage_last)_TFLAGS)"; \
+	  TFLAGS="$(STAGE$(shell test ! -f stage_last || sed s,^stage,, stage_last)_TFLAGS)"; \
 	  $(MAKE) $(TARGET_FLAGS_TO_PASS) all-host all-target; \
 	else \
 @endif gcc-bootstrap
