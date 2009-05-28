@@ -639,6 +639,12 @@ remove_unused_locals (void)
   var_ann_t ann;
   bitmap global_unused_vars = NULL;
 
+  /* Removing declarations from lexical blocks when not optimizing is
+     not only a waste of time, it actually causes differences in stack
+     layout.  */
+  if (!optimize)
+    return;
+
   mark_scope_block_unused (DECL_INITIAL (current_function_decl));
 
   /* Assume all locals are unused.  */
@@ -701,8 +707,7 @@ remove_unused_locals (void)
 
       if (TREE_CODE (var) != FUNCTION_DECL
 	  && (!(ann = var_ann (var))
-	      || !ann->used)
-	  && (optimize || DECL_ARTIFICIAL (var)))
+	      || !ann->used))
 	{
 	  if (is_global_var (var))
 	    {
@@ -761,8 +766,7 @@ remove_unused_locals (void)
 	&& TREE_CODE (t) != PARM_DECL
 	&& TREE_CODE (t) != RESULT_DECL
 	&& !(ann = var_ann (t))->used
-	&& !TREE_ADDRESSABLE (t)
-	&& (optimize || DECL_ARTIFICIAL (t)))
+	&& !TREE_ADDRESSABLE (t))
       remove_referenced_var (t);
   remove_unused_scope_block_p (DECL_INITIAL (current_function_decl));
   if (dump_file && (dump_flags & TDF_DETAILS))
