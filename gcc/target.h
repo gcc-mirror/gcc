@@ -481,7 +481,7 @@ struct gcc_target
 
     /* Target builtin that implements vector permute.  */
     tree (* builtin_vec_perm) (tree, tree*);
-} vectorize;
+  } vectorize;
 
   /* The initial value of target_flags.  */
   int default_target_flags;
@@ -824,6 +824,10 @@ struct gcc_target
      specified.  Use this hook if the target needs to add extra validation
      checks to  handle_dll_attribute ().  */
   bool (* valid_dllimport_attribute_p) (const_tree decl);
+
+  /* If non-zero, align constant anchors in CSE to a multiple of this
+     value.  */
+  unsigned HOST_WIDE_INT const_anchor;
 
   /* Functions relating to calls - argument passing, returns, etc.  */
   struct calls {

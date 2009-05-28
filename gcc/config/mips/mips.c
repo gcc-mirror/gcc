@@ -13928,6 +13928,8 @@ mips_set_mips16_mode (int mips16_p)
       targetm.min_anchor_offset = 0;
       targetm.max_anchor_offset = 127;
 
+      targetm.const_anchor = 0;
+
       if (flag_pic && !TARGET_OLDABI)
 	sorry ("MIPS16 PIC for ABIs other than o32 and o64");
 
@@ -13955,6 +13957,8 @@ mips_set_mips16_mode (int mips16_p)
 
       targetm.min_anchor_offset = -32768;
       targetm.max_anchor_offset = 32767;
+
+      targetm.const_anchor = 0x8000;
     }
 
   /* (Re)initialize MIPS target internals for new ISA.  */

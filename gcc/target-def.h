@@ -423,6 +423,7 @@
 
 /* In cse.c.  */
 #define TARGET_ADDRESS_COST default_address_cost
+#define TARGET_CONST_ANCHOR 0
 
 /* In builtins.c.  */
 #define TARGET_INIT_BUILTINS hook_void_void
@@ -922,6 +923,7 @@
   TARGET_STACK_PROTECT_FAIL,			\
   TARGET_INVALID_WITHIN_DOLOOP,			\
   TARGET_VALID_DLLIMPORT_ATTRIBUTE_P,		\
+  TARGET_CONST_ANCHOR,				\
   TARGET_CALLS,					\
   TARGET_INVALID_CONVERSION,			\
   TARGET_INVALID_UNARY_OP,			\
