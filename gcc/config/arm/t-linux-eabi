@@ -24,8 +24,8 @@ TARGET_LIBGCC2_CFLAGS = -fPIC
 MULTILIB_OPTIONS	=
 MULTILIB_DIRNAMES	=
 
-# Use a version of div0 which raises SIGFPE.
-LIB1ASMFUNCS := $(filter-out _dvmd_tls,$(LIB1ASMFUNCS)) _dvmd_lnx
+# Use a version of div0 which raises SIGFPE, and a special __clear_cache.
+LIB1ASMFUNCS := $(filter-out _dvmd_tls,$(LIB1ASMFUNCS)) _dvmd_lnx _clear_cache
 
 # Multilib the standard Linux files.  Don't include crti.o or crtn.o,
 # which are provided by glibc.
