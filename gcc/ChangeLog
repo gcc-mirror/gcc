@@ -1,3 +1,8 @@
+2009-05-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree-ssa-live.c (remove_unused_locals): Skip when not optimizing.
+	Simplify other tests involving optimize.
+
 2009-05-27  Tom Tromey  <tromey@redhat.com>
 
 	* unwind-dw2.c (_Unwind_DebugHook): New function.
