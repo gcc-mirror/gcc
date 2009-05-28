@@ -31,10 +31,10 @@ using __gnu_test::tracker_allocator_counter;
 using __gnu_test::tracker_allocator;
 using __gnu_test::copy_constructor;
 using __gnu_test::assignment_operator;
-using __gnu_test::counter;
+using __gnu_test::object_counter;
 using __gnu_test::destructor;
 
-typedef std::deque<counter>   gdeque;
+typedef std::deque<object_counter>   gdeque;
 
 bool test __attribute__((unused)) = true;
 

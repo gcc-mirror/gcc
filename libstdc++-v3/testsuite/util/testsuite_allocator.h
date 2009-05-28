@@ -32,12 +32,6 @@
 #include <cassert>
 #include <bits/move.h>
 
-namespace 
-{
-  bool new_called = false;
-  bool delete_called = false;
-}
-
 namespace __gnu_test
 {
   class tracker_allocator_counter
@@ -185,27 +179,6 @@ namespace __gnu_test
 
   bool
   check_construct_destroy(const char* tag, int expected_c, int expected_d);
-
-  template<typename Alloc, bool uses_global_new>
-    bool 
-    check_new(Alloc a = Alloc())
-    {
-      bool test __attribute__((unused)) = true;
-      a.allocate(10);
-      test &= ( new_called == uses_global_new );
-      return test;
-    }
-
-  template<typename Alloc, bool uses_global_delete>
-    bool 
-    check_delete(Alloc a = Alloc())
-    {
-      bool test __attribute__((unused)) = true;
-      typename Alloc::pointer p = a.allocate(10);
-      a.deallocate(p, 10);
-      test &= ( delete_called == uses_global_delete );
-      return test;
-    }
 
   template<typename Alloc>
     bool

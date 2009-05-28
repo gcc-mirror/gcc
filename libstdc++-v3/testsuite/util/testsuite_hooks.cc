@@ -217,7 +217,7 @@ namespace __gnu_test
 #endif
   }
 
-  counter::size_type  counter::count = 0;
+  object_counter::size_type  object_counter::count = 0;
   unsigned int copy_constructor::count_ = 0;
   unsigned int copy_constructor::throw_on_ = 0;
   unsigned int assignment_operator::count_ = 0;

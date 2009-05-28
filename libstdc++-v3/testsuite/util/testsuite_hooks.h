@@ -34,8 +34,8 @@
 //   limit in megabytes (a floating-point number).  If _GLIBCXX_RES_LIMITS is
 //   not #defined before including this header, then no limiting is attempted.
 //
-// 3)  counter
-//   This is a POD with a static data member, gnu_counting_struct::count,
+// 3)  object_counter
+//   This is a POD with a static data member, object_counter::count,
 //   which starts at zero, increments on instance construction, and decrements
 //   on instance destruction.  "assert_count(n)" can be called to VERIFY()
 //   that the count equals N.
@@ -135,19 +135,19 @@ namespace __gnu_test
   run_tests_wrapped_env(const char*, const char*, const func_callback&);
 
   // Counting.
-  struct counter
+  struct object_counter
   {
-    // Specifically and glaringly-obviously marked 'signed' so that when
-    // COUNT mistakenly goes negative, we can track the patterns of
-    // deletions more easily.
+    // Specifically and glaringly-obviously marked 'signed' so that
+    // when COUNT mistakenly goes negative, we can track the patterns
+    // of deletions more easily.
     typedef  signed int     size_type;
     static size_type   count;
-    counter() { ++count; }
-    counter (const counter&) { ++count; }
-    ~counter() { --count; }
+    object_counter() { ++count; }
+    object_counter (const object_counter&) { ++count; }
+    ~object_counter() { --count; }
   };
   
-#define assert_count(n)   VERIFY(__gnu_test::counter::count == n)
+#define assert_count(n)   VERIFY(__gnu_test::object_counter::count == n)
   
   // A (static) class for counting copy constructors and possibly throwing an
   // exception on a desired count.
