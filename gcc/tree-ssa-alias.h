@@ -74,7 +74,39 @@ struct GTY(()) pt_solution
 };
 
 
+/* Simplified and cached information about a memory reference tree.
+   Used by the alias-oracle internally and externally in alternate
+   interfaces.  */
+typedef struct ao_ref_s
+{
+  /* The original full memory reference tree or NULL_TREE if that is
+     not available.  */
+  tree ref;
+
+  /* The following fields are the decomposed reference as returned
+     by get_ref_base_and_extent.  */
+  /* The base object of the memory reference or NULL_TREE if all of
+     the following fields are not yet computed.  */
+  tree base;
+  /* The offset relative to the base.  */
+  HOST_WIDE_INT offset;
+  /* The size of the access.  */
+  HOST_WIDE_INT size;
+  /* The maximum possible extent of the access or -1 if unconstrained.  */
+  HOST_WIDE_INT max_size;
+
+  /* The alias set of the access or -1 if not yet computed.  */
+  alias_set_type ref_alias_set;
+
+  /* The alias set of the base object or -1 if not yet computed.  */
+  alias_set_type base_alias_set;
+} ao_ref;
+
+
 /* In tree-ssa-alias.c  */
+extern void ao_ref_init (ao_ref *, tree);
+extern tree ao_ref_base (ao_ref *);
+extern alias_set_type ao_ref_alias_set (ao_ref *);
 extern enum escape_type is_escape_site (gimple);
 extern bool ptr_deref_may_alias_global_p (tree);
 extern bool refs_may_alias_p (tree, tree);
@@ -82,9 +114,10 @@ extern bool refs_anti_dependent_p (tree, tree);
 extern bool refs_output_dependent_p (tree, tree);
 extern bool ref_maybe_used_by_stmt_p (gimple, tree);
 extern bool stmt_may_clobber_ref_p (gimple, tree);
-extern void *walk_non_aliased_vuses (tree, tree,
-				     void *(*)(tree, tree, void *),
-				     void *(*)(tree *, tree, void *), void *);
+extern bool stmt_may_clobber_ref_p_1 (gimple, ao_ref *);
+extern void *walk_non_aliased_vuses (ao_ref *, tree,
+				     void *(*)(ao_ref *, tree, void *),
+				     void *(*)(ao_ref *, tree, void *), void *);
 extern unsigned int walk_aliased_vdefs (tree, tree,
 					bool (*)(tree, tree, void *), void *,
 					bitmap *);

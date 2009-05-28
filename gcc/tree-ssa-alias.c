@@ -439,6 +439,55 @@ debug_points_to_info_for (tree var)
   dump_points_to_info_for (stderr, var);
 }
 
+
+/* Initializes the alias-oracle reference representation *R from REF.  */
+
+void
+ao_ref_init (ao_ref *r, tree ref)
+{
+  r->ref = ref;
+  r->base = NULL_TREE;
+  r->offset = 0;
+  r->size = -1;
+  r->max_size = -1;
+  r->ref_alias_set = -1;
+  r->base_alias_set = -1;
+}
+
+/* Returns the base object of the memory reference *REF.  */
+
+tree
+ao_ref_base (ao_ref *ref)
+{
+  if (ref->base)
+    return ref->base;
+  ref->base = get_ref_base_and_extent (ref->ref, &ref->offset, &ref->size,
+				       &ref->max_size);
+  return ref->base;
+}
+
+/* Returns the base object alias set of the memory reference *REF.  */
+
+static alias_set_type ATTRIBUTE_UNUSED
+ao_ref_base_alias_set (ao_ref *ref)
+{
+  if (ref->base_alias_set != -1)
+    return ref->base_alias_set;
+  ref->base_alias_set = get_alias_set (ao_ref_base (ref));
+  return ref->base_alias_set;
+}
+
+/* Returns the reference alias set of the memory reference *REF.  */
+
+alias_set_type
+ao_ref_alias_set (ao_ref *ref)
+{
+  if (ref->ref_alias_set != -1)
+    return ref->ref_alias_set;
+  ref->ref_alias_set = get_alias_set (ref->ref);
+  return ref->ref_alias_set;
+}
+
 /* Return 1 if TYPE1 and TYPE2 are to be considered equivalent for the
    purpose of TBAA.  Return 0 if they are distinct and -1 if we cannot
    decide.  */
@@ -675,7 +724,7 @@ indirect_refs_may_alias_p (tree ref1, tree ptr1,
 /* Return true, if the two memory references REF1 and REF2 may alias.  */
 
 static bool
-refs_may_alias_p_1 (tree ref1, tree ref2, bool tbaa_p)
+refs_may_alias_p_1 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 {
   tree base1, base2;
   HOST_WIDE_INT offset1 = 0, offset2 = 0;
@@ -684,18 +733,26 @@ refs_may_alias_p_1 (tree ref1, tree ref2, bool tbaa_p)
   bool var1_p, var2_p, ind1_p, ind2_p;
   alias_set_type set;
 
-  gcc_assert ((SSA_VAR_P (ref1)
-	       || handled_component_p (ref1)
-	       || INDIRECT_REF_P (ref1)
-	       || TREE_CODE (ref1) == TARGET_MEM_REF)
-	      && (SSA_VAR_P (ref2)
-		  || handled_component_p (ref2)
-		  || INDIRECT_REF_P (ref2)
-		  || TREE_CODE (ref2) == TARGET_MEM_REF));
+  gcc_assert ((!ref1->ref
+	       || SSA_VAR_P (ref1->ref)
+	       || handled_component_p (ref1->ref)
+	       || INDIRECT_REF_P (ref1->ref)
+	       || TREE_CODE (ref1->ref) == TARGET_MEM_REF)
+	      && (!ref2->ref
+		  || SSA_VAR_P (ref2->ref)
+		  || handled_component_p (ref2->ref)
+		  || INDIRECT_REF_P (ref2->ref)
+		  || TREE_CODE (ref2->ref) == TARGET_MEM_REF));
 
   /* Decompose the references into their base objects and the access.  */
-  base1 = get_ref_base_and_extent (ref1, &offset1, &size1, &max_size1);
-  base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &max_size2);
+  base1 = ao_ref_base (ref1);
+  offset1 = ref1->offset;
+  size1 = ref1->size;
+  max_size1 = ref1->max_size;
+  base2 = ao_ref_base (ref2);
+  offset2 = ref2->offset;
+  size2 = ref2->size;
+  max_size2 = ref2->max_size;
 
   /* We can end up with registers or constants as bases for example from
      *D.1663_44 = VIEW_CONVERT_EXPR<struct DB_LSN>(__tmp$B0F64_59);
@@ -719,14 +776,15 @@ refs_may_alias_p_1 (tree ref1, tree ref2, bool tbaa_p)
   /* First defer to TBAA if possible.  */
   if (tbaa_p
       && flag_strict_aliasing
-      && !alias_sets_conflict_p (get_alias_set (ref1), get_alias_set (ref2)))
+      && !alias_sets_conflict_p (ao_ref_alias_set (ref1),
+				 ao_ref_alias_set (ref2)))
     return false;
 
   /* If one reference is a TARGET_MEM_REF weird things are allowed.  Still
      TBAA disambiguation based on the access type is possible, so bail
      out only after that check.  */
-  if (TREE_CODE (ref1) == TARGET_MEM_REF
-      || TREE_CODE (ref2) == TARGET_MEM_REF)
+  if ((ref1->ref && TREE_CODE (ref1->ref) == TARGET_MEM_REF)
+      || (ref2->ref && TREE_CODE (ref2->ref) == TARGET_MEM_REF))
     return true;
 
   /* Dispatch to the pointer-vs-decl or pointer-vs-pointer disambiguators.  */
@@ -734,19 +792,19 @@ refs_may_alias_p_1 (tree ref1, tree ref2, bool tbaa_p)
   ind2_p = INDIRECT_REF_P (base2);
   set = tbaa_p ? -1 : 0;
   if (var1_p && ind2_p)
-    return indirect_ref_may_alias_decl_p (ref2, TREE_OPERAND (base2, 0),
+    return indirect_ref_may_alias_decl_p (ref2->ref, TREE_OPERAND (base2, 0),
 					  offset2, max_size2, set,
-					  ref1, base1,
+					  ref1->ref, base1,
 					  offset1, max_size1, set);
   else if (ind1_p && var2_p)
-    return indirect_ref_may_alias_decl_p (ref1, TREE_OPERAND (base1, 0),
+    return indirect_ref_may_alias_decl_p (ref1->ref, TREE_OPERAND (base1, 0),
 					  offset1, max_size1, set,
-					  ref2, base2,
+					  ref2->ref, base2,
 					  offset2, max_size2, set);
   else if (ind1_p && ind2_p)
-    return indirect_refs_may_alias_p (ref1, TREE_OPERAND (base1, 0),
+    return indirect_refs_may_alias_p (ref1->ref, TREE_OPERAND (base1, 0),
 				      offset1, max_size1, set,
-				      ref2, TREE_OPERAND (base2, 0),
+				      ref2->ref, TREE_OPERAND (base2, 0),
 				      offset2, max_size2, set);
 
   gcc_unreachable ();
@@ -755,7 +813,11 @@ refs_may_alias_p_1 (tree ref1, tree ref2, bool tbaa_p)
 bool
 refs_may_alias_p (tree ref1, tree ref2)
 {
-  bool res = refs_may_alias_p_1 (ref1, ref2, true);
+  ao_ref r1, r2;
+  bool res;
+  ao_ref_init (&r1, ref1);
+  ao_ref_init (&r2, ref2);
+  res = refs_may_alias_p_1 (&r1, &r2, true);
   if (res)
     ++alias_stats.refs_may_alias_p_may_alias;
   else
@@ -769,7 +831,10 @@ refs_may_alias_p (tree ref1, tree ref2)
 bool
 refs_anti_dependent_p (tree load, tree store)
 {
-  return refs_may_alias_p_1 (load, store, false);
+  ao_ref r1, r2;
+  ao_ref_init (&r1, load);
+  ao_ref_init (&r2, store);
+  return refs_may_alias_p_1 (&r1, &r2, false);
 }
 
 /* Returns true if there is a output dependence for the stores
@@ -778,7 +843,10 @@ refs_anti_dependent_p (tree load, tree store)
 bool
 refs_output_dependent_p (tree store1, tree store2)
 {
-  return refs_may_alias_p_1 (store1, store2, false);
+  ao_ref r1, r2;
+  ao_ref_init (&r1, store1);
+  ao_ref_init (&r2, store2);
+  return refs_may_alias_p_1 (&r1, &r2, false);
 }
 
 /* If the call CALL may use the memory reference REF return true,
@@ -907,7 +975,7 @@ ref_maybe_used_by_stmt_p (gimple stmt, tree ref)
    return true, otherwise return false.  */
 
 static bool
-call_may_clobber_ref_p_1 (gimple call, tree ref)
+call_may_clobber_ref_p_1 (gimple call, ao_ref *ref)
 {
   tree base;
 
@@ -916,7 +984,7 @@ call_may_clobber_ref_p_1 (gimple call, tree ref)
       & (ECF_PURE|ECF_CONST|ECF_LOOPING_CONST_OR_PURE|ECF_NOVOPS))
     return false;
 
-  base = get_base_address (ref);
+  base = ao_ref_base (ref);
   if (!base)
     return true;
 
@@ -957,10 +1025,13 @@ call_may_clobber_ref_p_1 (gimple call, tree ref)
   return true;
 }
 
-static bool
+static bool ATTRIBUTE_UNUSED
 call_may_clobber_ref_p (gimple call, tree ref)
 {
-  bool res = call_may_clobber_ref_p_1 (call, ref);
+  bool res;
+  ao_ref r;
+  ao_ref_init (&r, ref);
+  res = call_may_clobber_ref_p_1 (call, &r);
   if (res)
     ++alias_stats.call_may_clobber_ref_p_may_alias;
   else
@@ -973,34 +1044,52 @@ call_may_clobber_ref_p (gimple call, tree ref)
    otherwise return false.  */
 
 bool
-stmt_may_clobber_ref_p (gimple stmt, tree ref)
+stmt_may_clobber_ref_p_1 (gimple stmt, ao_ref *ref)
 {
   if (is_gimple_call (stmt))
     {
       tree lhs = gimple_call_lhs (stmt);
       if (lhs
-	  && !is_gimple_reg (lhs)
-	  && refs_may_alias_p (ref, lhs))
-	return true;
+	  && !is_gimple_reg (lhs))
+	{
+	  ao_ref r;
+	  ao_ref_init (&r, lhs);
+	  if (refs_may_alias_p_1 (ref, &r, true))
+	    return true;
+	}
 
-      return call_may_clobber_ref_p (stmt, ref);
+      return call_may_clobber_ref_p_1 (stmt, ref);
     }
   else if (is_gimple_assign (stmt))
-    return refs_may_alias_p (ref, gimple_assign_lhs (stmt));
+    {
+      ao_ref r;
+      ao_ref_init (&r, gimple_assign_lhs (stmt));
+      return refs_may_alias_p_1 (ref, &r, true);
+    }
   else if (gimple_code (stmt) == GIMPLE_ASM)
     return true;
 
   return false;
 }
 
-static tree get_continuation_for_phi (gimple, tree, bitmap *);
+bool
+stmt_may_clobber_ref_p (gimple stmt, tree ref)
+{
+  ao_ref r;
+  ao_ref_init (&r, ref);
+  return stmt_may_clobber_ref_p_1 (stmt, &r);
+}
+
+
+static tree get_continuation_for_phi (gimple, ao_ref *, bitmap *);
 
 /* Walk the virtual use-def chain of VUSE until hitting the virtual operand
    TARGET or a statement clobbering the memory reference REF in which
    case false is returned.  The walk starts with VUSE, one argument of PHI.  */
 
 static bool
-maybe_skip_until (gimple phi, tree target, tree ref, tree vuse, bitmap *visited)
+maybe_skip_until (gimple phi, tree target, ao_ref *ref,
+		  tree vuse, bitmap *visited)
 {
   if (!*visited)
     *visited = BITMAP_ALLOC (NULL);
@@ -1024,7 +1113,7 @@ maybe_skip_until (gimple phi, tree target, tree ref, tree vuse, bitmap *visited)
 	}
       /* A clobbering statement or the end of the IL ends it failing.  */
       else if (gimple_nop_p (def_stmt)
-	       || stmt_may_clobber_ref_p (def_stmt, ref))
+	       || stmt_may_clobber_ref_p_1 (def_stmt, ref))
 	return false;
       vuse = gimple_vuse (def_stmt);
     }
@@ -1038,7 +1127,7 @@ maybe_skip_until (gimple phi, tree target, tree ref, tree vuse, bitmap *visited)
    be found.  */
 
 static tree
-get_continuation_for_phi (gimple phi, tree ref, bitmap *visited)
+get_continuation_for_phi (gimple phi, ao_ref *ref, bitmap *visited)
 {
   unsigned nargs = gimple_phi_num_args (phi);
 
@@ -1096,9 +1185,9 @@ get_continuation_for_phi (gimple phi, tree ref, bitmap *visited)
    TODO: Cache the vector of equivalent vuses per ref, vuse pair.  */
 
 void *
-walk_non_aliased_vuses (tree ref, tree vuse,
-			void *(*walker)(tree, tree, void *),
-			void *(*translate)(tree *, tree, void *),void *data)
+walk_non_aliased_vuses (ao_ref *ref, tree vuse,
+			void *(*walker)(ao_ref *, tree, void *),
+			void *(*translate)(ao_ref *, tree, void *), void *data)
 {
   bitmap visited = NULL;
   void *res;
@@ -1121,11 +1210,11 @@ walk_non_aliased_vuses (tree ref, tree vuse,
 	vuse = get_continuation_for_phi (def_stmt, ref, &visited);
       else
 	{
-	  if (stmt_may_clobber_ref_p (def_stmt, ref))
+	  if (stmt_may_clobber_ref_p_1 (def_stmt, ref))
 	    {
 	      if (!translate)
 		break;
-	      res = (*translate) (&ref, vuse, data);
+	      res = (*translate) (ref, vuse, data);
 	      /* Failed lookup and translation.  */
 	      if (res == (void *)-1)
 		{

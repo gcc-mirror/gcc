@@ -92,6 +92,8 @@ typedef struct vn_reference_s
   unsigned int value_id;
   hashval_t hashcode;
   tree vuse;
+  alias_set_type set;
+  tree type;
   VEC (vn_reference_op_s, heap) *operands;
   tree result;
 } *vn_reference_t;
@@ -177,13 +179,14 @@ void vn_reference_fold_indirect (VEC (vn_reference_op_s, heap) **,
 				 unsigned int *);
 void copy_reference_ops_from_ref (tree, VEC(vn_reference_op_s, heap) **);
 void copy_reference_ops_from_call (gimple, VEC(vn_reference_op_s, heap) **);
-tree get_ref_from_reference_ops (VEC(vn_reference_op_s, heap) *ops);
-tree vn_reference_lookup_pieces (tree,
+bool ao_ref_init_from_vn_reference (ao_ref *, alias_set_type, tree,
+				    VEC (vn_reference_op_s, heap) *);
+tree vn_reference_lookup_pieces (tree, alias_set_type, tree,
 				 VEC (vn_reference_op_s, heap) *,
 				 vn_reference_t *, bool);
 tree vn_reference_lookup (tree, tree, bool, vn_reference_t *);
 vn_reference_t vn_reference_insert (tree, tree, tree);
-vn_reference_t vn_reference_insert_pieces (tree,
+vn_reference_t vn_reference_insert_pieces (tree, alias_set_type, tree,
 					   VEC (vn_reference_op_s, heap) *,
 					   tree, unsigned int);
 

@@ -1,3 +1,8 @@
+2009-05-28  Richard Guenther  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-26.c: New testcase.
+	* gcc.c-torture/execute/20090527-1.c: Likewise.
+
 2009-05-28  Dodji Seketeli  <dodji@redhat.com>
 
 	PR c++/39754
