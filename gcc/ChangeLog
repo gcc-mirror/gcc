@@ -1,3 +1,46 @@
+2009-05-28  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (ao_ref_init): New function.
+	(ao_ref_base): Likewise.
+	(ao_ref_base_alias_set): Likewise.
+	(ao_ref_alias_set): Likewise.
+	(refs_may_alias_p_1): Change signature.
+	(refs_may_alias_p): Adjust.
+	(refs_anti_dependent_p): Likewise.
+	(refs_output_dependent_p): Likewise.
+	(call_may_clobber_ref_p_1): Change signature.
+	(call_may_clobber_ref_p): Adjust.
+	(stmt_may_clobber_ref_p_1): New function split out from ...
+	(stmt_may_clobber_ref_p): ... here.
+	(maybe_skip_until): Adjust signature.
+	(get_continuation_for_phi): Likewise.
+	(walk_non_aliased_vuses): Likewise.
+	* tree-ssa-alias.h (struct ao_ref_s): New structure type.
+	(ao_ref_init): Declare.
+	(ao_ref_base): Likewise.
+	(ao_ref_alias_set): Likewise.
+	(stmt_may_clobber_ref_p_1): Likewise.
+	(walk_non_aliased_vuses): Adjust.
+	* tree-ssa-sccvn.c (ao_ref_init_from_vn_reference): New function.
+	(get_ref_from_reference_ops): remove.
+	(vn_reference_lookup_2): Adjust signature.
+	(vn_reference_lookup_3): Do not re-build trees.  Handle unions.
+	(vn_reference_lookup_pieces): Adjust signature, do not re-build
+	trees.
+	(vn_reference_lookup): Adjust.
+	(vn_reference_insert): Likewise.
+	(vn_reference_insert_pieces): Adjust signature.
+	(visit_reference_op_call): Adjust.
+	* tree-ssa-pre.c (get_expr_type): Simplify.
+	(phi_translate_1): Adjust.
+	(compute_avail): Likewise.
+	(translate_vuse_through_block): Do not re-build trees.
+	(value_dies_in_block_x): Likewise.
+	* tree-ssa-sccvn.h (struct vn_reference_s): Add type and alias-set
+	fields.
+	(vn_reference_lookup_pieces): Adjust declaration.
+	(vn_reference_insert_pieces): Likewise.
+
 2009-05-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* tree-ssa-copy.c (replace_exp_1): Move op for warning-free use

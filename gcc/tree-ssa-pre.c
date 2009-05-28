@@ -1252,12 +1252,12 @@ do_unary:
 
 static tree
 translate_vuse_through_block (VEC (vn_reference_op_s, heap) *operands,
-			      tree vuse,
+			      alias_set_type set, tree type, tree vuse,
 			      basic_block phiblock,
 			      basic_block block)
 {
   gimple phi = SSA_NAME_DEF_STMT (vuse);
-  tree ref;
+  ao_ref ref;
 
   if (gimple_bb (phi) != phiblock)
     return vuse;
@@ -1268,13 +1268,13 @@ translate_vuse_through_block (VEC (vn_reference_op_s, heap) *operands,
       return PHI_ARG_DEF (phi, e->dest_idx);
     }
 
-  if (!(ref = get_ref_from_reference_ops (operands)))
+  if (!ao_ref_init_from_vn_reference (&ref, set, type, operands))
     return NULL_TREE;
 
   /* Use the alias-oracle to find either the PHI node in this block,
      the first VUSE used in this block that is equivalent to vuse or
      the first VUSE which definition in this block kills the value.  */
-  while (!stmt_may_clobber_ref_p (phi, ref))
+  while (!stmt_may_clobber_ref_p_1 (phi, &ref))
     {
       vuse = gimple_vuse (phi);
       phi = SSA_NAME_DEF_STMT (vuse);
@@ -1317,23 +1317,7 @@ get_expr_type (const pre_expr e)
     case CONSTANT:
       return TREE_TYPE (PRE_EXPR_CONSTANT (e));
     case REFERENCE:
-      {
-	vn_reference_op_t vro;
-
-	gcc_assert (PRE_EXPR_REFERENCE (e)->operands);
-	vro = VEC_index (vn_reference_op_s,
-			 PRE_EXPR_REFERENCE (e)->operands,
-			 0);
-	/* We don't store type along with COMPONENT_REF because it is
-	   always the same as FIELD_DECL's type.  */
-	if (!vro->type)
-	  {
-	    gcc_assert (vro->opcode == COMPONENT_REF);
-	    return TREE_TYPE (vro->op0);
-	  }
-	return vro->type;
-      }
-
+      return PRE_EXPR_REFERENCE (e)->type;
     case NARY:
       return PRE_EXPR_NARY (e)->type;
     }
@@ -1661,6 +1645,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	if (vuse)
 	  {
 	    newvuse = translate_vuse_through_block (newoperands,
+						    ref->set, ref->type,
 						    vuse, phiblock, pred);
 	    if (newvuse == NULL_TREE)
 	      {
@@ -1675,7 +1660,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	    unsigned int new_val_id;
 	    pre_expr constant;
 
-	    tree result = vn_reference_lookup_pieces (newvuse,
+	    tree result = vn_reference_lookup_pieces (newvuse, ref->set,
+						      ref->type,
 						      newoperands,
 						      &newref, true);
 	    if (newref)
@@ -1706,7 +1692,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		new_val_id = get_next_value_id ();
 		VEC_safe_grow_cleared (bitmap_set_t, heap, value_expressions,
 				       get_max_value_id() + 1);
-		newref = vn_reference_insert_pieces (newvuse,
+		newref = vn_reference_insert_pieces (newvuse, ref->set,
+						     ref->type,
 						     newoperands,
 						     result, new_val_id);
 		newoperands = NULL;
@@ -1884,10 +1871,10 @@ value_dies_in_block_x (pre_expr expr, basic_block block)
   tree vuse = PRE_EXPR_REFERENCE (expr)->vuse;
   vn_reference_t refx = PRE_EXPR_REFERENCE (expr);
   gimple def;
-  tree ref = NULL_TREE;
   gimple_stmt_iterator gsi;
   unsigned id = get_expression_id (expr);
   bool res = false;
+  ao_ref ref;
 
   if (!vuse)
     return false;
@@ -1902,6 +1889,7 @@ value_dies_in_block_x (pre_expr expr, basic_block block)
      top of the basic block, a statement uses VUSE there can be no kill
      inbetween that use and the original statement that loaded {e, VUSE},
      so we can stop walking.  */
+  ref.base = NULL_TREE;
   for (gsi = gsi_start_bb (block); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       tree def_vuse, def_vdef;
@@ -1924,16 +1912,15 @@ value_dies_in_block_x (pre_expr expr, basic_block block)
 	}
 
       /* Init ref only if we really need it.  */
-      if (ref == NULL_TREE)
+      if (ref.base == NULL_TREE
+	  && !ao_ref_init_from_vn_reference (&ref, refx->set, refx->type,
+					     refx->operands))
 	{
-	  if (!(ref = get_ref_from_reference_ops (refx->operands)))
-	    {
-	      res = true;
-	      break;
-	    }
+	  res = true;
+	  break;
 	}
       /* If the statement may clobber expr, it dies.  */
-      if (stmt_may_clobber_ref_p (def, ref))
+      if (stmt_may_clobber_ref_p_1 (def, &ref))
 	{
 	  res = true;
 	  break;
@@ -3793,7 +3780,8 @@ compute_avail (void)
 		  continue;
 
 		copy_reference_ops_from_call (stmt, &ops);
-		vn_reference_lookup_pieces (gimple_vuse (stmt),
+		vn_reference_lookup_pieces (gimple_vuse (stmt), 0,
+					    gimple_expr_type (stmt),
 					    ops, &ref, false);
 		VEC_free (vn_reference_op_s, heap, ops);
 		if (!ref)
