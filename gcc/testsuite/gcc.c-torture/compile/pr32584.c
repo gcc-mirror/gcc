@@ -1,5 +1,8 @@
-typedef long unsigned int size_t;
-typedef long int __ssize_t;
+typedef __SIZE_TYPE__ size_t;
+/* Kludge */
+#define unsigned
+typedef __SIZE_TYPE__ __ssize_t;
+#undef unsigned
 typedef struct
 {
 } __mbstate_t;

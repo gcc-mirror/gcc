@@ -2,7 +2,7 @@
    conditional returns without updating dominance info.
    Extracted from glibc's dl-load.c.  */
 
-typedef unsigned long size_t;
+typedef __SIZE_TYPE__ size_t;
 
 static size_t
 is_dst (const char *start, const char *name, const char *str,

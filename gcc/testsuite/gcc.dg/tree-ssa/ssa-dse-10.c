@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -w -fdump-tree-dse-vops" } */
 
-typedef unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 typedef struct _IO_FILE FILE;
 typedef struct
 {

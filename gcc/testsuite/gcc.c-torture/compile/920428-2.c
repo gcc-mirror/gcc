@@ -41,7 +41,7 @@ extern struct _iobuf {
  short _flag;
  char _file;
 } _iob[];
-typedef unsigned long size_t;
+typedef __SIZE_TYPE__ size_t;
 typedef char *va_list;
 struct _iobuf *fopen(const char *filename, const char *type);
 struct _iobuf *freopen(const char *filename, const char *type, struct _iobuf *stream);

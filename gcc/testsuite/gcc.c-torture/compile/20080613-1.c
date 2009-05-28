@@ -1,7 +1,7 @@
 /* PR middle-end/36520 */
 /* Testcase by Richard Guenther <rguenth@gcc.gnu.org> */
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 typedef unsigned short int sa_family_t;
 struct cmsghdr   {
     size_t cmsg_len;

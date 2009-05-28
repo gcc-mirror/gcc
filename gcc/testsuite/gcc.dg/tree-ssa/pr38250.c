@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-loop-distribution" } */
 
-typedef long unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 typedef struct   {
           long dat[2];
 } gsl_complex_long_double;

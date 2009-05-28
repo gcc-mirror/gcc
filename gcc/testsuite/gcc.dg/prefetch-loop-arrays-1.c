@@ -3,7 +3,7 @@
 /* { dg-options "-O2 -fprefetch-loop-arrays -w" } */
 /* { dg-options "-O2 -fprefetch-loop-arrays -march=i686 -msse -w" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
-typedef unsigned long size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 
 struct re_pattern_buffer
 {
