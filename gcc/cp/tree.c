@@ -911,19 +911,111 @@ cp_build_qualified_type_real (tree type,
   return result;
 }
 
-/* Returns the canonical version of TYPE.  In other words, if TYPE is
-   a typedef, returns the underlying type.  The cv-qualification of
-   the type returned matches the type input; they will always be
-   compatible types.  */
+/* Builds a qualified variant of T that is not a typedef variant.
+   E.g. consider the following declarations:
+     typedef const int ConstInt;
+     typedef ConstInt* PtrConstInt;
+   If T is PtrConstInt, this function returns a type representing
+     const int*.
+   In other words, if T is a typedef, the function returns the underlying type.
+   The cv-qualification and attributes of the type returned match the
+   input type.
+   They will always be compatible types.
+   The returned type is built so that all of its subtypes
+   recursively have their typedefs stripped as well.
+
+   This is different from just returning TYPE_CANONICAL (T)
+   Because of several reasons:
+    * If T is a type that needs structural equality
+      its TYPE_CANONICAL (T) will be NULL.
+    * TYPE_CANONICAL (T) desn't carry type attributes
+      and looses template parameter names.   */
 
 tree
-canonical_type_variant (tree t)
+strip_typedefs (tree t)
 {
-  if (t == error_mark_node)
-    return error_mark_node;
+  tree result = NULL, type = NULL, t0 = NULL;
 
-  return cp_build_qualified_type (TYPE_MAIN_VARIANT (t), cp_type_quals (t));
+  if (!t || t == error_mark_node || t == TYPE_CANONICAL (t))
+    return t;
+
+  gcc_assert (TYPE_P (t));
+
+  switch (TREE_CODE (t))
+    {
+    case POINTER_TYPE:
+      type = strip_typedefs (TREE_TYPE (t));
+      result = build_pointer_type (type);
+      break;
+    case REFERENCE_TYPE:
+      type = strip_typedefs (TREE_TYPE (t));
+      result = cp_build_reference_type (type, TYPE_REF_IS_RVALUE (t));
+      break;
+    case OFFSET_TYPE:
+      t0 = strip_typedefs (TYPE_OFFSET_BASETYPE (t));
+      type = strip_typedefs (TREE_TYPE (t));
+      result = build_offset_type (t0, type);
+      break;
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (t))
+	{
+	  t0 = strip_typedefs (TYPE_PTRMEMFUNC_FN_TYPE (t));
+	  result = build_ptrmemfunc_type (t0);
+	}
+      break;
+    case ARRAY_TYPE:
+      type = strip_typedefs (TREE_TYPE (t));
+      t0  = strip_typedefs (TYPE_DOMAIN (t));;
+      result = build_cplus_array_type (type, t0);
+      break;
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      {
+	tree arg_types = NULL, arg_node, arg_type;
+	for (arg_node = TYPE_ARG_TYPES (t);
+	     arg_node;
+	     arg_node = TREE_CHAIN (arg_node))
+	  {
+	    if (arg_node == void_list_node)
+	      break;
+	    arg_type = strip_typedefs (TREE_VALUE (arg_node));
+	    gcc_assert (arg_type);
+
+	    arg_types =
+	      tree_cons (TREE_PURPOSE (arg_node), arg_type, arg_types);
+	  }
+
+	if (arg_types)
+	  arg_types = nreverse (arg_types);
+
+	/* A list of parameters not ending with an ellipsis
+	   must end with void_list_node.  */
+	if (arg_node)
+	  arg_types = chainon (arg_types, void_list_node);
+
+	type = strip_typedefs (TREE_TYPE (t));
+	if (TREE_CODE (t) == METHOD_TYPE)
+	  {
+	    tree class_type = TREE_TYPE (TREE_VALUE (arg_types));
+	    gcc_assert (class_type);
+	    result =
+	      build_method_type_directly (class_type, type,
+					  TREE_CHAIN (arg_types));
+	  }
+	else
+	    result = build_function_type (type,
+					  arg_types);
+      }
+      break;
+    default:
+      break;
+    }
+
+  if (!result)
+      result = TYPE_MAIN_VARIANT (t);
+  return cp_build_qualified_type (result, cp_type_quals (t));
 }
+
 
 /* Makes a copy of BINFO and TYPE, which is to be inherited into a
    graph dominated by T.  If BINFO is NULL, TYPE is a dependent base,

@@ -1,3 +1,15 @@
+2009-05-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/39754
+	* g++.dg/template/canon-type-1.C: New test.
+	* g++.dg/template/canon-type-2.C: Likewise.
+	* g++.dg/template/canon-type-3.C: Likewise.
+	* g++.dg/template/canon-type-4.C: Likewise.
+	* g++.dg/template/canon-type-5.C: Likewise.
+	* g++.dg/template/canon-type-6.C: Likewise.
+	* g++.dg/template/canon-type-7.C: Likewise.
+
+
 2009-05-28  Dave Korn  <dave.korn.cygwin@gmail.com>
             Uros Bizjak  <ubizjak@gmail.com>
             Danny Smith  <dansmister@gmail.com>

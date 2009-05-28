@@ -322,7 +322,7 @@ dump_template_bindings (tree parms, tree args, VEC(tree,gc)* typenames)
       t = tsubst (t, args, tf_none, NULL_TREE);
       /* Strip typedefs.  We can't just use TFF_CHASE_TYPEDEF because
 	 pp_simple_type_specifier doesn't know about it.  */
-      t = canonical_type_variant (t);
+      t = strip_typedefs (t);
       dump_type (t, TFF_PLAIN_IDENTIFIER);
     }
 }

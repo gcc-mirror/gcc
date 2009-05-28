@@ -508,7 +508,7 @@ convert_from_reference (tree val)
 {
   if (TREE_CODE (TREE_TYPE (val)) == REFERENCE_TYPE)
     {
-      tree t = canonical_type_variant (TREE_TYPE (TREE_TYPE (val)));
+      tree t = TREE_TYPE (TREE_TYPE (val));
       tree ref = build1 (INDIRECT_REF, t, val);
 
        /* We *must* set TREE_READONLY when dereferencing a pointer to const,
