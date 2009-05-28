@@ -1,3 +1,49 @@
+2009-05-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (check_new, check_delete): Move
+	to ...
+	* testsuite/util/replacement_memory_operators.h: ...here. New.
+	* testsuite/util/testsuite_hooks.h (counter): To object_counter.
+	* testsuite/util/testsuite_hooks.cc: Same.
+
+	* testsuite/ext/mt_allocator/deallocate_local_thread-1.cc: Use
+	replacement_memory_operators.h.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-3.cc: Same.
+	* testsuite/ext/mt_allocator/check_delete.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-5.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local_thread-7.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-1.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global_thread-3.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local-2.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local-4.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local-6.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_local-8.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global-2.cc: Same.
+	* testsuite/ext/mt_allocator/deallocate_global-4.cc: Same.
+	* testsuite/ext/mt_allocator/check_new.cc: Same.
+	* testsuite/ext/debug_allocator/check_delete.cc: Same.
+	* testsuite/ext/debug_allocator/check_new.cc: Same.
+	* testsuite/ext/new_allocator/deallocate_global.cc: Same.
+	* testsuite/ext/new_allocator/check_delete.cc: Same.
+	* testsuite/ext/new_allocator/check_new.cc: Same.
+	* testsuite/ext/new_allocator/deallocate_local.cc: Same.
+	* testsuite/ext/throw_allocator/deallocate_global.cc: Same.
+	* testsuite/ext/throw_allocator/check_delete.cc: Same.
+	* testsuite/ext/throw_allocator/check_new.cc: Same.
+	* testsuite/ext/throw_allocator/deallocate_local.cc: Same.
+	* testsuite/ext/malloc_allocator/deallocate_global.cc: Same.
+	* testsuite/ext/malloc_allocator/check_delete.cc: Same.
+	* testsuite/ext/malloc_allocator/check_new.cc: Same.
+	* testsuite/ext/malloc_allocator/deallocate_local.cc: Same.
+	* testsuite/ext/pool_allocator/check_delete.cc: Same.
+	* testsuite/ext/pool_allocator/check_new.cc: Same.
+	* testsuite/ext/bitmap_allocator/check_delete.cc: Same.
+	* testsuite/ext/bitmap_allocator/check_new.cc: Same.
+	* testsuite/ext/array_allocator/check_delete.cc: Same.
+	* testsuite/ext/array_allocator/check_new.cc: Same.
+	* testsuite/23_containers/deque/cons/1.cc: Same.
+	* testsuite/23_containers/deque/cons/2.cc: Same.
+
 2009-05-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* libsupc++/initializer_list: Format.

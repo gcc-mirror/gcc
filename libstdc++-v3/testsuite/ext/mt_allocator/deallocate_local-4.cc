@@ -23,43 +23,7 @@
 #include <stdexcept>
 #include <cstdio>
 #include <ext/mt_allocator.h>
-
-static size_t count;
-
-struct count_check
-{
-  count_check() { }
-  ~count_check()
-  {
-    // NB: __mt_allocator doesn't clean itself up. Thus, this will not
-    // be zero.
-    if (count != 0)
-      {
-	printf("allocation/deallocation count is %zu \n", count);
-	//throw std::runtime_error("allocation/deallocation count isn't zero");
-      }
-  }
-};
- 
-static count_check check;
-
-void* operator new(size_t size) throw(std::bad_alloc)
-{
-  printf("operator new is called \n");
-  void* p = malloc(size);
-  if (p == NULL)
-    throw std::bad_alloc();
-  count++;
-  return p;
-}
- 
-void operator delete(void* p) throw()
-{
-  printf("operator delete is called \n");
-  if (p == NULL)
-    return;
-  count--;
-}
+#include <replacement_memory_operators.h>
 
 typedef char value_type;
 typedef std::char_traits<value_type> traits_type;
@@ -71,6 +35,9 @@ typedef std::basic_string<value_type, traits_type, allocator_type> string_type;
 
 int main()
 {
+  // NB: __mt_allocator doesn't clean itself up. Thus, the count will
+  // not be zero.
+  __gnu_test::counter::exceptions(false);
   string_type s;
   s += "bayou bend";
   return 0;

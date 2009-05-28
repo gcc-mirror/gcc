@@ -21,50 +21,12 @@
 #include <string>
 #include <stdexcept>
 #include <ext/throw_allocator.h>
-#include <testsuite_hooks.h>
-
-static size_t count;
-
-struct count_check
-{
-  count_check() {}
-  ~count_check()
-  {
-    if (count != 0)
-      throw std::runtime_error("count isn't zero");
-  }
-};
- 
-static count_check check;
-
-void* operator new(size_t size) throw(std::bad_alloc)
-{
-  printf("operator new is called \n");
-  void* p = malloc(size);
-  if (p == NULL)
-    throw std::bad_alloc();
-  count++;
-  return p;
-}
- 
-void operator delete(void* p) throw()
-{
-  printf("operator delete is called \n");
-  if (p == NULL)
-    return;
-  count--;
-  if (count == 0)
-    printf("All memory released \n");
-  else
-    printf("%lu allocations to be released \n",
-	   static_cast<unsigned long>(count));
-  free(p);
-}
+#include <replacement_memory_operators.h>
 
 typedef char char_t;
 typedef std::char_traits<char_t> traits_t;
 typedef __gnu_cxx::throw_allocator<char_t> allocator_t;
-typedef std::basic_string<char_t, traits_t, allocator_t> string_t;
+typedef std::basic_string<char_t, traits_t, allocator_t> string_t;  
 
 string_t s("bayou bend");
 

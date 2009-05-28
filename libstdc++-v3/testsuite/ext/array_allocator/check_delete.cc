@@ -21,40 +21,15 @@
 
 #include <cstdlib>
 #include <ext/array_allocator.h>
-#include <testsuite_hooks.h>
-#include <testsuite_allocator.h>
-
-using __gnu_cxx::array_allocator;
-
-void* 
-operator new(std::size_t n) throw(std::bad_alloc)
-{
-  new_called = true;
-  return std::malloc(n);
-}
-
-void
-operator delete(void *v) throw()
-{
-  delete_called = true;
-  return std::free(v);
-}
-
-// These just help tracking down error messages.
-void test01() 
-{ 
-  bool test __attribute__((unused)) = true;
-  typedef unsigned int value_type;
-  typedef std::tr1::array<value_type, 15> array_type;
-  typedef array_allocator<value_type, array_type> allocator_type;
-  array_type store;
-  allocator_type a(&store);
-  VERIFY( bool(__gnu_test::check_delete<allocator_type, false>(a)) ); 
-}
+#include <replacement_memory_operators.h>
 
 int main()
-{
-  test01();
+{ 
+  typedef unsigned int value_type;
+  typedef std::tr1::array<value_type, 15> array_type;
+  typedef __gnu_cxx::array_allocator<value_type, array_type> allocator_type;
+  array_type store;
+  allocator_type a(&store);
+  __gnu_test::check_delete<allocator_type, false>(a); 
   return 0;
 }
-

@@ -26,7 +26,7 @@
 #include <testsuite_allocator.h>
 #include <testsuite_hooks.h>
 
-typedef std::deque<__gnu_test::counter>   gdeque;
+typedef std::deque<__gnu_test::object_counter>   gdeque;
 
 bool test __attribute__((unused)) = true;
 

@@ -17,50 +17,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 20.4.1.1 allocator members
-
 #include <string>
 #include <stdexcept>
-#include <cstdlib>
-#include <cstdio>
 #include <ext/new_allocator.h>
-
-static size_t count;
-
-struct count_check
-{
-  count_check() { }
-  ~count_check()
-  {
-    if (count != 0)
-      throw std::runtime_error("allocation/deallocation count isn't zero");
-  }
-};
- 
-static count_check check;
-
-void* operator new(size_t size) throw(std::bad_alloc)
-{
-  std::printf("operator new is called \n");
-  void* p = std::malloc(size);
-  if (p == NULL)
-    throw std::bad_alloc();
-  count++;
-  return p;
-}
- 
-void operator delete(void* p) throw()
-{
-  std::printf("operator delete is called \n");
-  if (p == NULL)
-    return;
-  count--;
-}
+#include <replacement_memory_operators.h>
 
 typedef char char_t;
 typedef std::char_traits<char_t> traits_t;
 typedef __gnu_cxx::new_allocator<char_t> allocator_t;
-typedef std::basic_string<char_t, traits_t, allocator_t> string_t;
+typedef std::basic_string<char_t, traits_t, allocator_t> string_t;  
 
 string_t s("bayou bend");
 
