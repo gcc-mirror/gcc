@@ -5,7 +5,7 @@ typedef unsigned char uint8_t;
 typedef unsigned int uint32_t;
 typedef uint8_t byte;
 typedef uint32_t u32bit;
-typedef unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 extern "C" {
     extern void __warn_memset_zero_len (void) __attribute__((__warning__ ("")));
     extern __inline __attribute__ ((__always_inline__)) __attribute__ ((__gnu_inline__, __artificial__))

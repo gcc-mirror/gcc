@@ -6,7 +6,7 @@
 
 typedef unsigned char uint8_t;
 typedef uint8_t uint8;
-typedef long unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 class csVector2
 {
 public:float x;

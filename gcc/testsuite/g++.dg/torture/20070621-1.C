@@ -6,7 +6,7 @@
 
 */
 
-typedef long int ptrdiff_t;
+__extension__ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 namespace std __attribute__ ((__visibility__ ("default"))) {
     template<typename, typename>     struct __are_same     {
         enum {
