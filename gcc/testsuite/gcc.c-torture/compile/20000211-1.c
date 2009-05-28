@@ -1,4 +1,4 @@
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 typedef unsigned char Bufbyte;
 typedef int Bytecount;
 typedef int Charcount;

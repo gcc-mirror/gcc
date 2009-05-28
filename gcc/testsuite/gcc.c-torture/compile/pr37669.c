@@ -1,6 +1,6 @@
 /* This testcase used to fail because a miscompiled execute_fold_all_builtins. */
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 extern __inline __attribute__ ((__always_inline__)) int __attribute__
 ((__nothrow__)) snprintf (char *__restrict __s, size_t __n, __const char
 *__restrict __fmt, ...)  {

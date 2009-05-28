@@ -1,4 +1,4 @@
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 typedef struct   {
       long double dat[2];
 } gsl_complex_long_double;

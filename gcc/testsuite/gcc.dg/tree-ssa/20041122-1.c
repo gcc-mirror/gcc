@@ -2,7 +2,7 @@
 /* { dg-options "-O1 -fdump-tree-dom2" } */
 
 
-typedef unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 extern void *xmalloc (size_t) __attribute__ ((__malloc__));
 struct edge_def
 {

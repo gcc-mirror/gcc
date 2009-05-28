@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -ftree-loop-distribution" } */
 #define NULL ((void *)0)
 
-typedef unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 extern void *foo(size_t nelem, size_t elsize);
 extern void bar (char*, ...);
 

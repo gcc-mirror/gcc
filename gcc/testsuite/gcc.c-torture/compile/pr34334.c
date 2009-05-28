@@ -1,4 +1,4 @@
-typedef unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 __extension__ typedef long long int __quad_t;
 __extension__ typedef unsigned int __mode_t;
 __extension__ typedef __quad_t __off64_t;

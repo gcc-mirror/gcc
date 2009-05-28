@@ -6,7 +6,7 @@
    and when the PHI node at the end of the while() is visited the first
    time, CCP will try to assign it a value of UNDEFINED, but the default
    value for *str is a constant.  */
-typedef	unsigned int size_t;
+typedef	__SIZE_TYPE__ size_t;
 size_t strlength (const char * const);
 char foo();
 
