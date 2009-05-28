@@ -718,17 +718,26 @@ dr_analyze_innermost (struct data_reference *dr)
       base_iv.no_overflow = true;
     }
 
-  if (!poffset || !in_loop)
+  if (!poffset)
     {
       offset_iv.base = ssize_int (0);
       offset_iv.step = ssize_int (0);
     }
-  else if (!simple_iv (loop, loop_containing_stmt (stmt),
-		       poffset, &offset_iv, false))
+  else
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "failed: evolution of offset is not affine.\n");
-      return false;
+      if (!in_loop)
+        {
+          offset_iv.base = poffset;
+          offset_iv.step = ssize_int (0);
+        }
+      else if (!simple_iv (loop, loop_containing_stmt (stmt),
+                           poffset, &offset_iv, false))
+        {
+          if (dump_file && (dump_flags & TDF_DETAILS))
+            fprintf (dump_file, "failed: evolution of offset is not"
+                                " affine.\n");
+          return false;
+        }
     }
 
   init = ssize_int (pbitpos / BITS_PER_UNIT);

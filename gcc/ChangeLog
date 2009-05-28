@@ -1,3 +1,9 @@
+2009-05-28  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/40254
+	* tree-data-ref.c (dr_analyze_innermost): Take POFFSET into account
+	in analysis of basic blocks.
+
 2009-05-28  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR middle-end/33699
