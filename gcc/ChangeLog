@@ -1,3 +1,9 @@
+2009-05-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/thumb2.md (thumb2_zero_extendsidi2): Add a split
+	component.
+	(thumb2_zero_extendqidi2): Likewise.
+
 2009-05-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh_expand_t_scc): Use gen_xorsi3_movrt
