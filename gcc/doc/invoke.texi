@@ -593,21 +593,26 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{IA-64 Options}
 @gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic @gol
--mvolatile-asm-stop  -mregister-names  -mno-sdata @gol
--mconstant-gp  -mauto-pic  -minline-float-divide-min-latency @gol
+-mvolatile-asm-stop  -mregister-names  -msdata -mno-sdata @gol
+-mconstant-gp  -mauto-pic  -mfused-madd @gol
+-minline-float-divide-min-latency @gol
 -minline-float-divide-max-throughput @gol
+-mno-inline-float-divide @gol
 -minline-int-divide-min-latency @gol
 -minline-int-divide-max-throughput  @gol
+-mno-inline-int-divide @gol
 -minline-sqrt-min-latency -minline-sqrt-max-throughput @gol
--mno-dwarf2-asm -mearly-stop-bits @gol
+-mno-inline-sqrt @gol
+-mdwarf2-asm -mearly-stop-bits @gol
 -mfixed-range=@var{register-range} -mtls-size=@var{tls-size} @gol
--mtune=@var{cpu-type} -mt -pthread -milp32 -mlp64 @gol
--mno-sched-br-data-spec -msched-ar-data-spec -mno-sched-control-spec @gol
+-mtune=@var{cpu-type} -milp32 -mlp64 @gol
+-msched-br-data-spec -msched-ar-data-spec -msched-control-spec @gol
 -msched-br-in-data-spec -msched-ar-in-data-spec -msched-in-control-spec @gol
--msched-ldc -mno-sched-control-ldc -mno-sched-spec-verbose @gol
--mno-sched-prefer-non-data-spec-insns @gol
--mno-sched-prefer-non-control-spec-insns @gol
--mno-sched-count-spec-in-critical-path}
+-msched-spec-ldc -msched-spec-control-ldc @gol
+-msched-prefer-non-data-spec-insns -msched-prefer-non-control-spec-insns @gol
+-msched-stop-bits-after-every-cycle -msched-count-spec-in-critical-path @gol
+-msel-sched-dont-check-control-spec -msched-fp-mem-deps-zero-cost @gol
+-msched-max-memory-insns-hard-limit -msched-max-memory-insns=@var{max-insns}}
 
 @emph{M32R/D Options}
 @gccoptlist{-m32r2 -m32rx -m32r @gol
@@ -11723,6 +11728,10 @@ using the minimum latency algorithm.
 Generate code for inline divides of floating point values
 using the maximum throughput algorithm.
 
+@item -mno-inline-float-divide
+@opindex mno-inline-float-divide
+Do not generate inline code for divides of floating point values.
+
 @item -minline-int-divide-min-latency
 @opindex minline-int-divide-min-latency
 Generate code for inline divides of integer values
@@ -11733,6 +11742,10 @@ using the minimum latency algorithm.
 Generate code for inline divides of integer values
 using the maximum throughput algorithm.
 
+@item -mno-inline-float-divide
+@opindex mno-inline-float-divide
+Do not generate inline code for divides of integer values.
+
 @item -minline-sqrt-min-latency
 @opindex minline-sqrt-min-latency
 Generate code for inline square roots
@@ -11742,6 +11755,17 @@ using the minimum latency algorithm.
 @opindex minline-sqrt-max-throughput
 Generate code for inline square roots
 using the maximum throughput algorithm.
+
+@item -mno-inline-sqrt
+@opindex mno-inline-sqrt
+Do not generate inline code for sqrt.
+
+@item -mfused-madd
+@itemx -mno-fused-madd
+@opindex mfused-madd
+@opindex mno-fused-madd
+Do (don't) generate code that uses the fused multiply/add or multiply/subtract
+instructions.    The default is to use these instructions.
 
 @item -mno-dwarf2-asm
 @itemx -mdwarf2-asm
@@ -11775,15 +11799,6 @@ Specify bit size of immediate TLS offsets.  Valid values are 14, 22, and
 @opindex mtune
 Tune the instruction scheduling for a particular CPU, Valid values are
 itanium, itanium1, merced, itanium2, and mckinley.
-
-@item -mt
-@itemx -pthread
-@opindex mt
-@opindex pthread
-Add support for multithreading using the POSIX threads library.  This
-option sets flags for both the preprocessor and linker.  It does
-not affect the thread safety of object code produced by the compiler or
-that of libraries supplied with it.  These are HP-UX specific flags.
 
 @item -milp32
 @itemx -mlp64
@@ -11849,31 +11864,6 @@ are dependent on the control speculative loads.
 This is effective only with @option{-msched-control-spec} enabled.
 The default is 'enable'.
 
-@item -msched-ldc
-@itemx -mno-sched-ldc
-@opindex msched-ldc
-@opindex mno-sched-ldc
-(En/Dis)able use of simple data speculation checks ld.c .
-If disabled, only chk.a instructions will be emitted to check
-data speculative loads.
-The default is 'enable'.
-
-@item -mno-sched-control-ldc
-@itemx -msched-control-ldc
-@opindex mno-sched-control-ldc
-@opindex msched-control-ldc
-(Dis/En)able use of ld.c instructions to check control speculative loads.
-If enabled, in case of control speculative load with no speculatively
-scheduled dependent instructions this load will be emitted as ld.sa and
-ld.c will be used to check it.
-The default is 'disable'.
-
-@item -mno-sched-spec-verbose
-@itemx -msched-spec-verbose
-@opindex mno-sched-spec-verbose
-@opindex msched-spec-verbose
-(Dis/En)able printing of the information about speculative motions.
-
 @item -mno-sched-prefer-non-data-spec-insns
 @itemx -msched-prefer-non-data-spec-insns
 @opindex mno-sched-prefer-non-data-spec-insns
@@ -11900,6 +11890,43 @@ If enabled, speculative dependencies will be considered during
 computation of the instructions priorities.  This will make the use of the
 speculation a bit more conservative.
 The default is 'disable'.
+
+@item -msched-spec-ldc
+@opindex msched-spec-ldc
+Use a simple data speculation check.  This option is on by default.
+
+@item -msched-control-spec-ldc
+@opindex msched-spec-ldc
+Use a simple check for control speculation.  This option is on by default.
+
+@item -msched-stop-bits-after-every-cycle
+@opindex msched-stop-bits-after-every-cycle
+Place a stop bit after every cycle when scheduling.  This option is on
+by default.
+
+@item -msched-fp-mem-deps-zero-cost
+@opindex msched-fp-mem-deps-zero-cost
+Assume that floating-point stores and loads are not likely to cause a conflict
+when placed into the same instruction group.  This option is disabled by
+default.
+
+@item -msel-sched-dont-check-control-spec
+@opindex msel-sched-dont-check-control-spec
+Generate checks for control speculation in selective scheduling.
+This flag is disabled by default.
+
+@item -msched-max-memory-insns=@var{max-insns}
+@opindex msched-max-memory-insns
+Limit on the number of memory insns per instruction group, giving lower
+priority to subsequent memory insns attempting to schedule in the same
+instruction group. Frequently useful to prevent cache bank conflicts.
+The default value is 1.
+
+@item -msched-max-memory-insns-hard-limit
+@opindex msched-max-memory-insns-hard-limit
+Disallow more than `msched-max-memory-insns' in instruction group.
+Otherwise, limit is `soft' meaning that we would prefer non-memory operations
+when limit is reached but may still schedule memory operations.
 
 @end table
 

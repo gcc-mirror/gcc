@@ -1,3 +1,17 @@
+2009-05-28  Steve Ellcey  <sje@cup.hp.com>
+
+	* doc/invoke.texi (IA-64 Options)
+	Add -msdata, -mfused-madd, -mno-inline-float-divide, 
+	-mno-inline-int-divide, -mno-inline-sqrt, -msched-spec-ldc,
+	-msched-spec-control-ldc, -msched-prefer-non-data-spec-insns,
+	-msched-prefer-non-control-spec-insns,
+	-msched-stop-bits-after-every-cycle,
+	-msched-count-spec-in-critical-path,
+	-msel-sched-dont-check-control-spec, -msched-fp-mem-deps-zero-cost
+	-msched-max-memory-insns-hard-limit, -msched-max-memory-insns
+	Remove -mt, -pthread, -msched-ldc, -mno-sched-control-ldc,
+	and -msched-spec-verbose.
+
 2009-05-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/arm/lib1funcs.asm (__clear_cache): Define if
