@@ -844,6 +844,13 @@
 #endif
 
 
+/* Define if your assembler supports specifying the alignment of objects
+   allocated using the GAS .comm command. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_ALIGNED_COMM
+#endif
+
+
 /* Define if your assembler supports .balign and .p2align. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_BALIGN_AND_P2ALIGN

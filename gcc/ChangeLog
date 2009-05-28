@@ -1,3 +1,20 @@
+2009-05-28  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	PR target/37216
+
+	* configure.ac (HAVE_GAS_ALIGNED_COMM):  Add autoconf test and
+	macro definition for support of three-operand format aligned
+	.comm directive in assembler on cygwin/pe/mingw target OS.
+	* configure:  Regenerate.
+	* config.h:  Regenerate.
+
+	* config/i386/winnt.c (i386_pe_asm_output_aligned_decl_common):  Use
+	aligned form of .comm directive if -mpe-aligned-commons is in effect.
+	* config/i386/cygming.opt (-mpe-aligned-commons):  Add new option.
+
+	* doc/invoke.texi (-mpe-aligned-commons):  Document new target option.
+	* doc/tm.texi (ASM_OUTPUT_COMMON):  Document zero size commons.
+
 2009-05-28  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/40254

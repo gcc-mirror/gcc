@@ -611,6 +611,18 @@ proc check_effective_target_pthread {} {
     } "-pthread"]
 }
 
+# Return 1 if compilation with -mpe-aligned-commons is error-free
+# for trivial code, 0 otherwise.
+
+proc check_effective_target_pe_aligned_commons {} {
+    if { [istarget *-*-cygwin*] || [istarget *-*-mingw*] } {
+	return [check_no_compiler_messages pe_aligned_commons object {
+	    int foo;
+	} "-mpe-aligned-commons"]
+    }
+    return 0
+}
+
 # Return 1 if the target supports -fstack-protector
 proc check_effective_target_fstack_protector {} {
     return [check_runtime fstack_protector {

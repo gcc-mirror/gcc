@@ -22631,6 +22631,44 @@ fi
   i[34567]86-*-* | x86_64-*-*)
     case $target_os in
       cygwin* | pe | mingw32*)
+	# Recent binutils allows the three-operand form of ".comm" on PE.  This
+	# definition is used unconditionally to initialise the default state of
+	# the target option variable that governs usage of the feature.
+	echo "$as_me:$LINENO: checking assembler for .comm with alignment" >&5
+echo $ECHO_N "checking assembler for .comm with alignment... $ECHO_C" >&6
+if test "${gcc_cv_as_comm_has_align+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  gcc_cv_as_comm_has_align=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 52`
+  then gcc_cv_as_comm_has_align=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    echo '.comm foo,1,32' > conftest.s
+    if { ac_try='$gcc_cv_as  -o conftest.o conftest.s >&5'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }
+    then
+	gcc_cv_as_comm_has_align=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+echo "$as_me:$LINENO: result: $gcc_cv_as_comm_has_align" >&5
+echo "${ECHO_T}$gcc_cv_as_comm_has_align" >&6
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_GAS_ALIGNED_COMM `if test $gcc_cv_as_comm_has_align = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
 	# Used for DWARF 2 in PE
 	echo "$as_me:$LINENO: checking assembler for .secrel32 relocs" >&5
 echo $ECHO_N "checking assembler for .secrel32 relocs... $ECHO_C" >&6
