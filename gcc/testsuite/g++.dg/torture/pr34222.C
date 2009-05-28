@@ -3,7 +3,7 @@
 namespace std __attribute__ ((__visibility__ ("default"))) {
     template<class _CharT>     struct char_traits;
   }
-typedef long int ptrdiff_t;
+__extension__ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 namespace std __attribute__ ((__visibility__ ("default"))) {
     typedef ptrdiff_t streamsize;
     template<typename _CharT, typename _Traits = char_traits<_CharT> >     class basic_ifstream;

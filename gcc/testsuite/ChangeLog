@@ -1,5 +1,15 @@
 2009-05-28  Kai Tietz  <kai.tietz@onevision.com>
 
+	*  g++.dg/ext/packed6.C (size_t): Use __extension__ and
+	__SIZE_TYPE__.
+	* g++.dg/opt/memcpy1.C (size_t): Likewise.
+	* g++.dg/pr37742.C (size_t): Likewise.
+	* g++.dg/torture/pr34850.C (size_t): Likewise.
+	* g++.dg/torture/20070621-1.C (ptrdiff_t): Use __extension__ and
+	_PTRDIFF_TYPE__.
+	* g++.dg/torture/pr34222.C (ptrdiff_t): Likewise.
+	* g++.dg/tree-ssa/pr22444.C (ptrdiff_t): Likewise.
+	(size_t): Use __extension__ and __SIZE_TYPE__.
         * gcc.c-torture/compile/20000211-1.c (size_t): Typedef size_t via
 	__SIZE_TYPE__.
         * gcc.c-torture/compile/20010328-1.c (size_t): Likewise,
