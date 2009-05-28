@@ -1,3 +1,8 @@
+2009-05-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* tree-ssa-copy.c (replace_exp_1): Move op for warning-free use
+	with checking disabled.
+
 2009-05-28  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	PR target/37216
