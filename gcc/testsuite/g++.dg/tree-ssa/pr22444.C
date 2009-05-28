@@ -4,8 +4,8 @@
 // with the subvars leading to the subvars not being renamed when they should
 // { dg-do compile }
 // { dg-options "-O2" }
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
+__extension__ typedef __PTRDIFF_TYPE__ ptrdiff_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 namespace std
 {
   template<class _T1, class _T2> struct pair
