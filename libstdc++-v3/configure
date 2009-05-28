@@ -2453,7 +2453,7 @@ echo "${ECHO_T}$ac_cv_prog_egrep" >&6
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
 
-  SUBDIRS='include libsupc++ src doc po testsuite'
+  SUBDIRS='include libsupc++ python src doc po testsuite'
 
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
@@ -118371,7 +118371,7 @@ else
 fi
 
 
-                                                                      ac_config_files="$ac_config_files Makefile include/Makefile libsupc++/Makefile src/Makefile doc/Makefile po/Makefile testsuite/Makefile"
+                                                                                ac_config_files="$ac_config_files Makefile include/Makefile libsupc++/Makefile python/Makefile src/Makefile doc/Makefile po/Makefile testsuite/Makefile"
 
           ac_config_files="$ac_config_files scripts/testsuite_flags"
 
@@ -119416,6 +119416,7 @@ do
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "libsupc++/Makefile" ) CONFIG_FILES="$CONFIG_FILES libsupc++/Makefile" ;;
+  "python/Makefile" ) CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
   "src/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
   "doc/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
   "po/Makefile" ) CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;

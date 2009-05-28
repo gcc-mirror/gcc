@@ -1,3 +1,14 @@
+2009-05-28  Tom Tromey  <tromey@redhat.com>
+	    Phil Muldoon  <pmuldoon@redhat.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* python/Makefile.in, , python/libstdcxx/__init__.py,
+	python/libstdcxx/v6/__init__.py, python/libstdcxx/v6/printers.py,
+	python/hook.in, python/Makefile.am: New files.
+	* configure, Makefile.in: Rebuild.
+	* acinclude.m4 (glibcxx_SUBDIRS): Add python.
+	* Makefile.am (SUBDIRS): Add python.
+
 2009-05-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/util/testsuite_allocator.h (check_new, check_delete): Move
