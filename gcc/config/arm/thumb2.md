@@ -849,30 +849,44 @@
 
 ;; Zero and sign extension instructions.
 
-(define_insn "*thumb2_zero_extendsidi2"
+(define_insn_and_split "*thumb2_zero_extendsidi2"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
         (zero_extend:DI (match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_THUMB2"
-  "*
-    /* ??? Output both instructions unconditionally, otherwise the conditional
-       execution insn counter gets confused.
-    if (REGNO (operands[1])
-        != REGNO (operands[0]) + (WORDS_BIG_ENDIAN ? 1 : 0)) */
-      output_asm_insn (\"mov%?\\t%Q0, %1\", operands);
-    return \"mov%?\\t%R0, #0\";
+  "mov%?\\t%Q0, %1\;mov%?\\t%R0, #0"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+  "
+  {
+    rtx lo_part = gen_lowpart (SImode, operands[0]);
+    if (!REG_P (lo_part) || REGNO (lo_part) != REGNO (operands[1]))
+      emit_move_insn (lo_part, operands[1]);
+    operands[0] = gen_highpart (SImode, operands[0]);
+    operands[1] = const0_rtx;
+  }
   "
   [(set_attr "length" "8")
    (set_attr "ce_count" "2")
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "*thumb2_zero_extendqidi2"
+(define_insn_and_split "*thumb2_zero_extendqidi2"
   [(set (match_operand:DI                 0 "s_register_operand"  "=r,r")
 	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
   "TARGET_THUMB2"
   "@
-   and%?\\t%Q0, %1, #255\;mov%?\\t%R0, #0
+   uxtb%?\\t%Q0, %1\;mov%?\\t%R0, #0
    ldr%(b%)\\t%Q0, %1\;mov%?\\t%R0, #0"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:SI (match_dup 1)))
+   (set (match_dup 2) (match_dup 3))]
+  "
+  {
+    operands[2] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[3] = const0_rtx;
+  }
+  "
   [(set_attr "length" "8")
    (set_attr "ce_count" "2")
    (set_attr "predicable" "yes")
