@@ -2494,12 +2494,8 @@ cp_build_indirect_ref (tree ptr, const char *errorstring,
       /* [expr.unary.op]
 
 	 If the type of the expression is "pointer to T," the type
-	 of  the  result  is  "T."
-
-	 We must use the canonical variant because certain parts of
-	 the back end, like fold, do pointer comparisons between
-	 types.  */
-      tree t = canonical_type_variant (TREE_TYPE (type));
+	 of  the  result  is  "T."  */
+      tree t = TREE_TYPE (type);
 
       if (CONVERT_EXPR_P (ptr)
           || TREE_CODE (ptr) == VIEW_CONVERT_EXPR)

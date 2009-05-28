@@ -1,3 +1,19 @@
+2009-05-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/39754
+	* cp-tree.h (canonical_type_variant): Remove this function declaration.
+	(strip_typedefs): New function declaration.
+	* tree.c (strip_typedefs): New function definition.
+	(canonical_type_variant): Remove function definition.
+	* cvt.c (convert_from_reference): No need to use
+	canonical_type_variant.
+	* typeck.c (cp_build_indirect_ref): Likewise.
+	* error.c (dump_template_bindings): Use strip_typedefs instead of
+	canonical_type_variant.
+	* pt.c (convert_template_argument, unify): Likewise.
+	* mangle.c (canonicalize_for_substitution): Don't use
+	canonical_type_variant.
+
 2009-05-27  Jason Merrill  <jason@redhat.com>
 
 	* call.c (implicit_conversion): Handle conversion from

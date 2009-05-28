@@ -338,9 +338,14 @@ canonicalize_for_substitution (tree node)
   /* For a TYPE_DECL, use the type instead.  */
   if (TREE_CODE (node) == TYPE_DECL)
     node = TREE_TYPE (node);
-  if (TYPE_P (node))
-    node = canonical_type_variant (node);
-
+  if (TYPE_P (node)
+      && TYPE_CANONICAL (node) != node
+      && TYPE_MAIN_VARIANT (node) != node)
+      /* Here we want to strip the topmost typedef only.
+         We need to do that so is_std_substitution can do proper
+         name matching.  */
+    node = cp_build_qualified_type (TYPE_MAIN_VARIANT (node),
+                                    cp_type_quals (node));
   return node;
 }
 
