@@ -11085,7 +11085,7 @@ sh_expand_t_scc (rtx operands[])
     emit_insn (gen_movt (result));
   else if (TARGET_SH2A && ((code == EQ && val == 0)
 			    || (code == NE && val == 1)))
-    emit_insn (gen_movrt (result));
+    emit_insn (gen_xorsi3_movrt (result));
   else if ((code == EQ && val == 0) || (code == NE && val == 1))
     {
       emit_clobber (result);
