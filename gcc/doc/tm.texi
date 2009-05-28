@@ -10852,3 +10852,21 @@ cannot safely move arguments from the registers in which they are passed
 to the stack.  Therefore, this hook should return true in general, but
 false for naked functions.  The default implementation always returns true.
 @end deftypefn
+
+
+@deftypevr {Target Hook} {unsigned HOST_WIDE_INT} TARGET_CONST_ANCHOR
+On some architectures it can take multiple instructions to synthesize
+a constant.  If there is another constant already in a register that
+is close enough in value then it is preferable that the new constant
+is computed from this register using immediate addition or
+substraction.  We accomplish this through CSE.  Besides the value of
+the constant we also add a lower and an upper constant anchor to the
+available expressions.  These are then queried when encountering new
+constants.  The anchors are computed by rounding the constant up and
+down to a multiple of the value of @code{TARGET_CONST_ANCHOR}.
+@code{TARGET_CONST_ANCHOR} should be the maximum positive value
+accepted by immediate-add plus one.  We currently assume that the
+value of @code{TARGET_CONST_ANCHOR} is a power of 2.  For example, on
+MIPS, where add-immediate takes a 16-bit signed value,
+@code{TARGET_CONST_ANCHOR} is set to @samp{0x8000}.  The default value
+is zero, which disables this optimization.  @end deftypevr
