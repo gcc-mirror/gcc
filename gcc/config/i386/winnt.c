@@ -499,8 +499,11 @@ i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
 {
   HOST_WIDE_INT rounded;
 
-  /* Compute as in assemble_noswitch_variable, since we don't actually
-     support aligned common.  */
+  /* Compute as in assemble_noswitch_variable, since we don't have
+     support for aligned common on older binutils.  We must also
+     avoid emitting a common symbol of size zero, as this is the
+     overloaded representation that indicates an undefined external
+     symbol in the PE object file format.  */
   rounded = size ? size : 1;
   rounded += (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1;
   rounded = (rounded / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
@@ -510,9 +513,13 @@ i386_pe_asm_output_aligned_decl_common (FILE *stream, tree decl,
 
   fprintf (stream, "\t.comm\t");
   assemble_name (stream, name);
-  fprintf (stream, ", " HOST_WIDE_INT_PRINT_DEC "\t" ASM_COMMENT_START
-	   " " HOST_WIDE_INT_PRINT_DEC "\n",
-	   rounded, size);
+  if (use_pe_aligned_common)
+    fprintf (stream, ", " HOST_WIDE_INT_PRINT_DEC ", %d\n",
+	   size ? size : (HOST_WIDE_INT) 1,
+	   exact_log2 (align) - exact_log2 (CHAR_BIT));
+  else
+    fprintf (stream, ", " HOST_WIDE_INT_PRINT_DEC "\t" ASM_COMMENT_START
+	   " " HOST_WIDE_INT_PRINT_DEC "\n", rounded, size);
 }
 
 /* The Microsoft linker requires that every function be marked as

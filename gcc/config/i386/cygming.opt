@@ -45,3 +45,7 @@ Set Windows defines
 mwindows
 Target
 Create GUI application
+
+mpe-aligned-commons
+Target Var(use_pe_aligned_common) Init(HAVE_GAS_ALIGNED_COMM)
+Use the GNU extension to the PE format for aligned common data

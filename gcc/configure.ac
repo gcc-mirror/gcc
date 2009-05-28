@@ -2954,6 +2954,15 @@ changequote(,)dnl
 changequote([,])dnl
     case $target_os in
       cygwin* | pe | mingw32*)
+	# Recent binutils allows the three-operand form of ".comm" on PE.  This
+	# definition is used unconditionally to initialise the default state of
+	# the target option variable that governs usage of the feature.
+	gcc_GAS_CHECK_FEATURE([.comm with alignment], gcc_cv_as_comm_has_align,
+	 [2,19,52],,[.comm foo,1,32])
+	AC_DEFINE_UNQUOTED(HAVE_GAS_ALIGNED_COMM,
+	  [`if test $gcc_cv_as_comm_has_align = yes; then echo 1; else echo 0; fi`],
+	  [Define if your assembler supports specifying the alignment
+	   of objects allocated using the GAS .comm command.])
 	# Used for DWARF 2 in PE
 	gcc_GAS_CHECK_FEATURE([.secrel32 relocs],
 	  gcc_cv_as_ix86_pe_secrel32,

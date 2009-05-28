@@ -46,7 +46,7 @@ const char *dg_options[] = {
 "/* { dg-options \"%s-I%s\" } */\n",
 "/* { dg-options \"%s-I%s -Wno-abi\" } */\n",
 "/* { dg-options \"%s-I%s -mno-mmx -Wno-abi\" { target i?86-*-* x86_64-*-* } } */\n",
-"/* { dg-options \"%s-I%s -fno-common\" { target hppa*-*-hpux* powerpc*-*-darwin* *-*-mingw32* *-*-cygwin* } } */\n",
+"/* { dg-options \"%s-I%s -fno-common\" { target hppa*-*-hpux* powerpc*-*-darwin* } } */\n",
 "/* { dg-options \"%s-I%s -mno-mmx -fno-common -Wno-abi\" { target i?86-*-darwin* x86_64-*-darwin* } } */\n",
 "/* { dg-options \"%s-I%s -mno-base-addresses\" { target mmix-*-* } } */\n",
 "/* { dg-options \"%s-I%s -mlongcalls -mtext-section-literals\" { target xtensa*-*-* } } */\n"

@@ -1,3 +1,15 @@
+2009-05-28  Dave Korn  <dave.korn.cygwin@gmail.com>
+            Uros Bizjak  <ubizjak@gmail.com>
+            Danny Smith  <dansmister@gmail.com>
+
+	PR target/37216
+
+	* lib/target-supports.exp (check_effective_target_pe_aligned_commons):
+	New function.
+	* gcc.target/i386/pr37216.c:  New test source file.
+	* gcc.dg/compat/struct-layout-1_generate.c (dg_options[]):  No longer
+	use -fno-common for testing Cygwin and MinGW targets.
+
 2009-05-28  Kai Tietz  <kai.tietz@onevision.com>
 
 	*  g++.dg/ext/packed6.C (size_t): Use __extension__ and
