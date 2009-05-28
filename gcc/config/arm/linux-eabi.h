@@ -72,16 +72,8 @@
    do not use -lfloat.  */
 #undef LIBGCC_SPEC
 
-/* Clear the instruction cache from `beg' to `end'.  This makes an
-   inline system call to SYS_cacheflush.  */
+/* Clear the instruction cache from `beg' to `end'.  This is
+   implemented in lib1funcs.asm, so ensure an error if this definition
+   is used.  */
 #undef  CLEAR_INSN_CACHE
-#define CLEAR_INSN_CACHE(BEG, END)					\
-{									\
-  register unsigned long _beg __asm ("a1") = (unsigned long) (BEG);	\
-  register unsigned long _end __asm ("a2") = (unsigned long) (END);	\
-  register unsigned long _flg __asm ("a3") = 0;				\
-  register unsigned long _scno __asm ("r7") = 0xf0002;			\
-  __asm __volatile ("swi 0		@ sys_cacheflush"		\
-		    : "=r" (_beg)					\
-		    : "0" (_beg), "r" (_end), "r" (_flg), "r" (_scno));	\
-}
+#define CLEAR_INSN_CACHE(BEG, END) not used

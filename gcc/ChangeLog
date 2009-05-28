@@ -1,3 +1,11 @@
+2009-05-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/arm/lib1funcs.asm (__clear_cache): Define if
+	L_clear_cache.
+	* config/arm/linux-eabi.h (CLEAR_INSN_CACHE): Define to give an
+	error if used.
+	* config/arm/t-linux-eabi (LIB1ASMFUNCS): Add _clear_cache.
+
 2009-05-28  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (ao_ref_init): New function.

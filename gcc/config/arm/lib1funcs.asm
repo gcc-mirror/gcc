@@ -1096,6 +1096,27 @@ LSYM(Lover12):
 	FUNC_END div0
 	
 #endif /* L_dvmd_lnx */
+#ifdef L_clear_cache
+#if defined __ARM_EABI__ && defined __linux__
+@ EABI GNU/Linux call to cacheflush syscall.
+	FUNC_START clear_cache
+	push	{r7}
+#if __ARM_ARCH__ >= 7 || defined(__ARM_ARCH_6T2__)
+	movw	r7, #2
+	movt	r7, #0xf
+#else
+	mov	r7, #0xf0000
+	add	r7, r7, #2
+#endif
+	mov	r2, #0
+	swi	0
+	pop	{r7}
+	RET
+	FUNC_END clear_cache
+#else
+#error "This is only for ARM EABI GNU/Linux"
+#endif
+#endif /* L_clear_cache */
 /* ------------------------------------------------------------------------ */
 /* Dword shift operations.  */
 /* All the following Dword shift variants rely on the fact that
