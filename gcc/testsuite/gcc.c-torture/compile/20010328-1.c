@@ -1,4 +1,4 @@
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 typedef unsigned int __u_int;
 typedef unsigned long __u_long;
 

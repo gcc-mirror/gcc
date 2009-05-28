@@ -5,7 +5,7 @@
    contains many warnings, but it exposes a copy propagation bug that
    is somewhat difficult to reproduce otherwise.  */
 
-typedef long unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
   extern void fancy_abort (const char *, int, const char *) __attribute__ ((__noreturn__));
   typedef union tree_node *tree;
   enum tree_code {

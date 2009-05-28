@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-w" } */
 
-typedef unsigned int size_t;
+__extension__ typedef __SIZE_TYPE__ size_t;
 typedef unsigned char __u_char;
 typedef unsigned short int __u_short;
 typedef unsigned int __u_int;

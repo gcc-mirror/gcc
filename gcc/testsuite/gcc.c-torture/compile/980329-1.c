@@ -1,4 +1,4 @@
-typedef unsigned long int size_t;
+typedef __SIZE_TYPE__ size_t;
 struct re_pattern_buffer
   {
     unsigned char *buffer;

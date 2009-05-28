@@ -1,4 +1,4 @@
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 typedef const struct objc_selector
 {
   void *sel_id;

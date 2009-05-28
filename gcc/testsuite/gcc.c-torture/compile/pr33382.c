@@ -1,4 +1,4 @@
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 typedef struct {
     int disable;
     char *searchconfig[];
