@@ -11,7 +11,7 @@
 	patterns to reflect frontend changes.
 	* gfortran.dg/vector_subscript_4.f90: Likewise.
 
-2009-05-28  Olivier Hainque  <hainque@adacore.com>	
+2009-05-27  Olivier Hainque  <hainque@adacore.com>	
             Eric Botcazou  <botcazou@adacore.com>
     
 	* gcc.c-torture/execute/align-nest.c: New testcase.
