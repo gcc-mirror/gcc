@@ -1,3 +1,9 @@
+2009-05-28  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_expand_t_scc): Use gen_xorsi3_movrt
+	instead of gen_movrt.
+	* config/sh/sh.md (movrt): Remove.
+
 2009-05-28  Steve Ellcey  <sje@cup.hp.com>
 
 	* doc/invoke.texi (IA-64 Options)

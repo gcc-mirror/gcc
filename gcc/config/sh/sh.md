@@ -9109,16 +9109,6 @@ mov.l\\t1f,r0\\n\\
   "movt	%0"
   [(set_attr "type" "arith")])
 
-;; complements the T bit and stores the result in a register
-(define_insn "movrt"
-  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
-        (if_then_else (eq:SI (reg:SI T_REG) (const_int 0))
-        (const_int 1)
-        (const_int 0)))]
-  "TARGET_SH2A"
-  "movrt\\t%0"
-   [(set_attr "type" "arith")])
-
 (define_expand "cstore4_media"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(match_operator:SI 1 "sh_float_comparison_operator"
