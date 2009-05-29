@@ -1,3 +1,14 @@
+2009-05-29  Ian Lance Taylor  <iant@google.com>
+
+	* builtins.c (validate_gimple_arglist): Don't use va_arg with
+	enum type.
+	* calls.c (emit_library_call_value_1): Likewise.
+
+	* c-typeck.c (c_build_va_arg): New function.
+	* c-tree.h (c_build_va_arg): Declare.
+	* c-parser.c (c_parser_postfix_expression): Call c_build_va_arg
+	instead of build_va_arg.
+
 2009-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-loop-ivopts.c (strip_offset_1) <MULT_EXPR>: New case.

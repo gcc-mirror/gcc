@@ -9976,3 +9976,14 @@ c_build_qualified_type (tree type, int type_quals)
 
   return build_qualified_type (type, type_quals);
 }
+
+/* Build a VA_ARG_EXPR for the C parser.  */
+
+tree
+c_build_va_arg (tree expr, tree type, location_t loc)
+{
+  if (warn_cxx_compat && TREE_CODE (type) == ENUMERAL_TYPE)
+    warning_at (loc, OPT_Wc___compat,
+		"C++ requires promoted type, not enum type, in %<va_arg%>");
+  return build_va_arg (expr, type);
+}

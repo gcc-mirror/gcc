@@ -1,3 +1,7 @@
+2009-05-29  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-11.c: New testcase.
+
 2009-05-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/40019

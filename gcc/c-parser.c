@@ -5338,6 +5338,7 @@ c_parser_postfix_expression (c_parser *parser)
 	      expr.value = error_mark_node;
 	      break;
 	    }
+	  loc = c_parser_peek_token (parser)->location;
 	  t1 = c_parser_type_name (parser);
 	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				     "expected %<)%>");
@@ -5348,9 +5349,9 @@ c_parser_postfix_expression (c_parser *parser)
 	  else
 	    {
 	      tree type_expr = NULL_TREE;
-	      expr.value = build_va_arg (e1.value, groktypename (t1,
-								 &type_expr,
-								 NULL));
+	      expr.value = c_build_va_arg (e1.value,
+					   groktypename (t1, &type_expr, NULL),
+					   loc);
 	      if (type_expr)
 		{
 		  expr.value = build2 (C_MAYBE_CONST_EXPR,

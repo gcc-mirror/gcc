@@ -3445,7 +3445,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   for (; count < nargs; count++)
     {
       rtx val = va_arg (p, rtx);
-      enum machine_mode mode = va_arg (p, enum machine_mode);
+      enum machine_mode mode = (enum machine_mode) va_arg (p, int);
 
       /* We cannot convert the arg value to the mode the library wants here;
 	 must do it earlier where we know the signedness of the arg.  */

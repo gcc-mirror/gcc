@@ -11231,7 +11231,7 @@ validate_gimple_arglist (const_gimple call, ...)
 
   do
     {
-      code = va_arg (ap, enum tree_code);
+      code = (enum tree_code) va_arg (ap, int);
       switch (code)
 	{
 	case 0:
@@ -11282,7 +11282,7 @@ validate_arglist (const_tree callexpr, ...)
 
   do
     {
-      code = va_arg (ap, enum tree_code);
+      code = (enum tree_code) va_arg (ap, int);
       switch (code)
 	{
 	case 0:
