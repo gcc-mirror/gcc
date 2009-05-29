@@ -915,6 +915,11 @@ static FILE *
 pex_win32_fdopenr (struct pex_obj *obj ATTRIBUTE_UNUSED, int fd,
 		   int binary)
 {
+  HANDLE h = (HANDLE) _get_osfhandle (fd);
+  if (h == INVALID_HANDLE_VALUE)
+    return NULL;
+  if (! SetHandleInformation (h, HANDLE_FLAG_INHERIT, 0))
+    return NULL;
   return fdopen (fd, binary ? "rb" : "r");
 }
 

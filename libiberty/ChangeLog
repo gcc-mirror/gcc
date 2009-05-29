@@ -1,3 +1,7 @@
+2009-05-29  Kai Tietz  <kai.tietz@onevision.com>
+
+        * pex-win32.c (pex_win32_fdopenr): Set INHERIT to false.
+
 2009-05-29  Michael Matz  <matz@suse.de>
 
 	* fibheap.c (fibheap_replace_key_data): Make sure we don't early
