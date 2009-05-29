@@ -1,3 +1,12 @@
+2009-05-29  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/40101
+	* sel-sched-ir.c (get_seqno_by_preds): Allow returning negative
+	seqno.	Adjust comment.
+	* sel-sched.c (find_seqno_for_bookkeeping): Assert that when 
+	inserting bookkeeping before a jump, the jump is not scheduled.
+	When no positive seqno found, provide a value.  Add comment.
+
 2009-05-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (nonaliasing_component_refs_p): Remove
