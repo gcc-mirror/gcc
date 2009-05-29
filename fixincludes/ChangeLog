@@ -1,3 +1,12 @@
+2009-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inclhack.def (solaris_int_const): New fix.
+	(solaris_int_limits_1): Likewise.
+	(solaris_int_limits_2): Likewise.
+	* fixincl.x: Regenerate.
+	* tests/base/sys/int_const.h: New file.
+	* tests/base/sys/int_limits.h: Likewise.
+
 2009-05-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (glibc_tgmath): Correct bypass.
