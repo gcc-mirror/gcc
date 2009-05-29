@@ -1,3 +1,8 @@
+2009-05-29  David Billinghurst <billingd@gcc.gnu.org>
+
+	* config.gcc: Add i386/t-fprules-softfp and soft-fp/t-softfp
+	to tmake_file for i[34567]86-*-cygwin*.	
+
 2009-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/40017
