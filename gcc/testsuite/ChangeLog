@@ -1,3 +1,18 @@
+2009-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	* gfortran.dg/pr25923.f90: XFAIL warning expectation.
+	* gcc.dg/tree-ssa/ssa-fre-7.c: Compile with -fno-tree-sra.
+	* gcc.dg/tree-ssa/ssa-fre-8.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-fre-9.c: Likewise.
+	* gcc.dg/memcpy-1.c: Removed param sra-max-structure-size.
+	* gcc.dg/tree-ssa/sra-2.c: Likewise.
+	* gcc.dg/tree-ssa/sra-3.c: Likewise.
+	* gcc.dg/tree-ssa/sra-1.c: Likewise.
+	* gcc.dg/tree-ssa/sra-4.c: Changed comment.
+	* gcc.dg/tree-ssa/sra-5.c: New file.
+	* gcc.dg/tree-ssa/sra-6.c: New file.
+	* gcc.c-torture/compile/sra-1.c: New file.
+
 2009-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40291

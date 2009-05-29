@@ -7312,19 +7312,6 @@ In each case, the @var{value} is an integer.  The allowable choices for
 @var{name} are given in the following table:
 
 @table @gcctabopt
-@item sra-max-structure-size
-The maximum structure size, in bytes, at which the scalar replacement
-of aggregates (SRA) optimization will perform block copies.  The
-default value, 0, implies that GCC will select the most appropriate
-size itself.
-
-@item sra-field-structure-ratio
-The threshold ratio (as a percentage) between instantiated fields and
-the complete structure size.  We say that if the ratio of the number
-of bytes in instantiated fields to the number of bytes in the complete
-structure exceeds this parameter, then block copies are not used.  The
-default is 75.
-
 @item struct-reorg-cold-struct-ratio
 The threshold ratio (as a percentage) between a structure frequency
 and the frequency of the hottest structure in the program.  This parameter

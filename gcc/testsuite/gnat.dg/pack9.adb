@@ -1,5 +1,5 @@
 -- { dg-do compile }
--- { dg-options "-O2 -gnatp -cargs --param sra-max-structure-size=24 --param sra-max-structure-count=6 -fdump-tree-optimized" }
+-- { dg-options "-O2 -gnatp -cargs -fdump-tree-optimized" }
 
 package body Pack9 is
 
