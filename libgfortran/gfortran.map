@@ -1090,6 +1090,13 @@ GFORTRAN_1.1 {
     _gfortran_unpack1_char4;
 } GFORTRAN_1.0; 
 
+
+GFORTRAN_1.2 {
+  global:
+    _gfortran_clz128;
+    _gfortran_ctz128;
+} GFORTRAN_1.1; 
+
 F2C_1.0 {
   global:
     _gfortran_f2c_specific__abs_c4;
