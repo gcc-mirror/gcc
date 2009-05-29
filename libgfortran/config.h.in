@@ -426,6 +426,9 @@
 /* libc includes getuid */
 #undef HAVE_GETUID
 
+/* Define to 1 if you have the `gmtime_r' function. */
+#undef HAVE_GMTIME_R
+
 /* Define if the compiler has a thread header that is non single. */
 #undef HAVE_GTHR_DEFAULT
 
@@ -506,6 +509,9 @@
 
 /* libm includes llroundl */
 #undef HAVE_LLROUNDL
+
+/* Define to 1 if you have the `localtime_r' function. */
+#undef HAVE_LOCALTIME_R
 
 /* libm includes log */
 #undef HAVE_LOG

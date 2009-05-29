@@ -1,3 +1,17 @@
+2009-05-29  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/40190
+	* configure.ac: Check for localtime_r and gmtime_r.
+	* intrinsics/date_and_time.c: Add fallback implementations for
+	localtime_r and gmtime_r.
+	(date_and_time): Change to use localtime_r and gmtime_r instead of
+	localtime and gmtime, respectively.
+	(itime0): Use localtime_r instead of localtime.
+	(ltime_0): Likewise.
+	(gmtime_0): Use gmtime_r instead of gmtime.
+	* config.h.in: Regenerated
+	* configure: Regenerated.
+
 2009-05-27  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR fortran/39178
