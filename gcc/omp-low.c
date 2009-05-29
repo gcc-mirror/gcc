@@ -1911,7 +1911,11 @@ scan_omp_1_op (tree *tp, int *walk_subtrees, void *data)
       if (ctx && TYPE_P (t))
 	*tp = remap_type (t, &ctx->cb);
       else if (!DECL_P (t))
-	*walk_subtrees = 1;
+	{
+	  *walk_subtrees = 1;
+	  if (ctx)
+	    TREE_TYPE (t) = remap_type (TREE_TYPE (t), &ctx->cb);
+	}
       break;
     }
 

@@ -1,3 +1,9 @@
+2009-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/39958
+	* omp-low.c (scan_omp_1_op): Call remap_type on TREE_TYPE
+	for trees other than decls/types.
+
 2009-05-29  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-operands.c (get_expr_operands): Do not handle
