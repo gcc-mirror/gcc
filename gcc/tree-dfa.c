@@ -750,7 +750,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
       switch (TREE_CODE (exp))
 	{
 	case BIT_FIELD_REF:
-	  bit_offset += tree_low_cst (TREE_OPERAND (exp, 2), 0);
+	  bit_offset += TREE_INT_CST_LOW (TREE_OPERAND (exp, 2));
 	  break;
 
 	case COMPONENT_REF:
@@ -761,13 +761,14 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	    if (TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == UNION_TYPE)
 	      seen_union = true;
 
-	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
+	    if (this_offset
+		&& TREE_CODE (this_offset) == INTEGER_CST
+		&& host_integerp (this_offset, 0))
 	      {
-		HOST_WIDE_INT hthis_offset = tree_low_cst (this_offset, 0);
-
+		HOST_WIDE_INT hthis_offset = TREE_INT_CST_LOW (this_offset);
 		hthis_offset *= BITS_PER_UNIT;
 		bit_offset += hthis_offset;
-		bit_offset += tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 0);
+		bit_offset += TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field));
 	      }
 	    else
 	      {
@@ -787,18 +788,20 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	case ARRAY_RANGE_REF:
 	  {
 	    tree index = TREE_OPERAND (exp, 1);
-	    tree low_bound = array_ref_low_bound (exp);
-	    tree unit_size = array_ref_element_size (exp);
+	    tree low_bound, unit_size;
 
 	    /* If the resulting bit-offset is constant, track it.  */
-	    if (host_integerp (index, 0)
-		&& host_integerp (low_bound, 0)
-		&& host_integerp (unit_size, 1))
+	    if (TREE_CODE (index) == INTEGER_CST
+		&& host_integerp (index, 0)
+		&& (low_bound = array_ref_low_bound (exp),
+		    host_integerp (low_bound, 0))
+		&& (unit_size = array_ref_element_size (exp),
+		    host_integerp (unit_size, 1)))
 	      {
-		HOST_WIDE_INT hindex = tree_low_cst (index, 0);
+		HOST_WIDE_INT hindex = TREE_INT_CST_LOW (index);
 
-		hindex -= tree_low_cst (low_bound, 0);
-		hindex *= tree_low_cst (unit_size, 1);
+		hindex -= TREE_INT_CST_LOW (low_bound);
+		hindex *= TREE_INT_CST_LOW (unit_size);
 		hindex *= BITS_PER_UNIT;
 		bit_offset += hindex;
 

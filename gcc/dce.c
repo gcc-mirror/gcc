@@ -354,8 +354,8 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
 	  }
 	for (byte = off; byte < off + INTVAL (MEM_SIZE (mem)); byte++)
 	  {
-	    gcc_assert (!bitmap_bit_p (sp_bytes, byte - min_sp_off));
-	    bitmap_set_bit (sp_bytes, byte - min_sp_off);
+	    if (!bitmap_set_bit (sp_bytes, byte - min_sp_off))
+	      gcc_unreachable ();
 	  }
       }
 
@@ -442,9 +442,8 @@ find_call_stack_args (rtx call_insn, bool do_mark, bool fast,
 	{
 	  if (byte < min_sp_off
 	      || byte >= max_sp_off
-	      || !bitmap_bit_p (sp_bytes, byte - min_sp_off))
+	      || !bitmap_clear_bit (sp_bytes, byte - min_sp_off))
 	    break;
-	  bitmap_clear_bit (sp_bytes, byte - min_sp_off);
 	}
 
       if (!deletable_insn_p (insn, fast, NULL))

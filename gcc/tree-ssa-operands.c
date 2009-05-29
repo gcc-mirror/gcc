@@ -904,18 +904,8 @@ get_expr_operands (gimple stmt, tree *expr_p, int flags)
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       {
-	tree ref;
-	HOST_WIDE_INT offset, size, maxsize;
-
 	if (TREE_THIS_VOLATILE (expr))
 	  gimple_set_has_volatile_ops (stmt, true);
-
-	ref = get_ref_base_and_extent (expr, &offset, &size, &maxsize);
-	if (TREE_CODE (ref) == INDIRECT_REF)
-	  {
-	    get_indirect_ref_operands (stmt, ref, flags, false);
-	    flags |= opf_no_vops;
-	  }
 
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
 	

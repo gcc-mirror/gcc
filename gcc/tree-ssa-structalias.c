@@ -1864,7 +1864,8 @@ equiv_class_label_eq (const void *p1, const void *p2)
 {
   const_equiv_class_label_t const eql1 = (const_equiv_class_label_t) p1;
   const_equiv_class_label_t const eql2 = (const_equiv_class_label_t) p2;
-  return bitmap_equal_p (eql1->labels, eql2->labels);
+  return (eql1->hashcode == eql2->hashcode
+	  && bitmap_equal_p (eql1->labels, eql2->labels));
 }
 
 /* Lookup a equivalence class in TABLE by the bitmap of LABELS it
