@@ -91,6 +91,7 @@ static GTY(()) tree __pixel_keyword;
 static GTY(()) tree pixel_keyword;
 static GTY(()) tree __bool_keyword;
 static GTY(()) tree bool_keyword;
+static GTY(()) tree _Bool_keyword;
 
 /* Preserved across calls.  */
 static tree expand_bool_pixel;
@@ -109,6 +110,9 @@ altivec_categorize_keyword (const cpp_token *tok)
 	return C_CPP_HASHNODE (__pixel_keyword);
 
       if (ident == C_CPP_HASHNODE (bool_keyword))
+	return C_CPP_HASHNODE (__bool_keyword);
+
+      if (ident == C_CPP_HASHNODE (_Bool_keyword))
 	return C_CPP_HASHNODE (__bool_keyword);
 
       return ident;
@@ -141,6 +145,9 @@ init_vector_keywords (void)
 
   bool_keyword = get_identifier ("bool");
   C_CPP_HASHNODE (bool_keyword)->flags |= NODE_CONDITIONAL;
+
+  _Bool_keyword = get_identifier ("_Bool");
+  C_CPP_HASHNODE (_Bool_keyword)->flags |= NODE_CONDITIONAL;
 }
 
 /* Called to decide whether a conditional macro should be expanded.
@@ -295,6 +302,7 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
 	  builtin_define ("vector=vector");
 	  builtin_define ("pixel=pixel");
 	  builtin_define ("bool=bool");
+	  builtin_define ("_Bool=_Bool");
 	  init_vector_keywords ();
 
 	  /* Enable context-sensitive macros.  */

@@ -1,3 +1,11 @@
+2009-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/40017
+	* config/rs6000/rs6000-c.c (_Bool_keyword): New variable.
+	(altivec_categorize_keyword, init_vector_keywords,
+	rs6000_cpu_cpp_builtins): Define _Bool as conditional macro
+	similar to bool.
+
 2009-05-29  Kai Tietz  <kai.tietz@onevision.com>
 
 	* tree.c (handle_dll_attribute): Check if node is
