@@ -1,3 +1,16 @@
+2009-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c:  New implementation of SRA.
+
+	* params.def (PARAM_SRA_MAX_STRUCTURE_SIZE): Removed.
+	(PARAM_SRA_MAX_STRUCTURE_COUNT): Removed.
+	(PARAM_SRA_FIELD_STRUCTURE_RATIO): Removed.
+	* params.h (SRA_MAX_STRUCTURE_SIZE): Removed.
+	(SRA_MAX_STRUCTURE_COUNT): Removed.
+	(SRA_FIELD_STRUCTURE_RATIO): Removed.
+	* doc/invoke.texi (sra-max-structure-size): Removed.
+	(sra-field-structure-ratio): Removed.
+
 2009-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40291

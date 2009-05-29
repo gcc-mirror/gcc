@@ -1,18 +1,19 @@
-/* { dg-do compile } */ 
+/* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-optimized" } */
 
-/* Tests for SRA. */
+/* Tests for SRA of unions. */
 
-typedef struct teststruct
+
+typedef union testunion
 {
   double d;
   char f1;
-} teststruct;
+} testunion;
 
 void
-copystruct1 (teststruct param)
+copyunion1 (testunion param)
 {
-  teststruct local;
+  testunion local;
   param.f1 = 0;
   local = param;
   if (local.f1 != 0)
@@ -20,9 +21,9 @@ copystruct1 (teststruct param)
 }
 
 void
-copystruct11 (teststruct *param)
+copyunion11 (testunion *param)
 {
-  teststruct local;
+  testunion local;
   param->f1 = 0;
   local = *param;
   if (local.f1 != 0)
@@ -30,44 +31,44 @@ copystruct11 (teststruct *param)
 }
 
 void
-copystruct111 (teststruct param)
+copyunion111 (testunion param)
 {
-  teststruct *local = &param;
+  testunion *local = &param;
   param.f1 = 0;
   if (local->f1 != 0)
     link_error ();
 }
 
-teststruct globf;
+testunion globuf;
 void
-copystruct1111 (void)
+copyunion1111 (void)
 {
-  teststruct local;
-  globf.f1 = 0;
-  local = globf;
+  testunion local;
+  globuf.f1 = 0;
+  local = globuf;
   if (local.f1 != 0)
     link_error ();
 }
 
 void
-copystruct11111 (void)
+copyunion11111 (void)
 {
-  teststruct *local = &globf;
-  globf.f1 = 0;
+  testunion *local = &globuf;
+  globuf.f1 = 0;
   if (local->f1 != 0)
     link_error ();
 }
 
 void
-copystruct111111 (teststruct param)
+copyunion111111 (testunion param)
 {
-  static teststruct local;
+  static testunion local;
   param.f1 = 0;
   local = param;
   if (local.f1 != 0)
     link_error ();
 }
 
-/* There should be no referenc to link_error. */
+/* There should be no reference to link_error. */
 /* { dg-final { scan-tree-dump-times "link_error" 0 "optimized"} } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

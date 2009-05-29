@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O1 -fdump-tree-optimized --param sra-max-structure-size=32" } */
+/* { dg-options "-O1 -fdump-tree-optimized" } */
 
 /* Test for SRA. */
 
