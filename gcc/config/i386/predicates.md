@@ -84,6 +84,12 @@
 		    && GET_MODE (op) == QImode
 		    && REGNO (op) > BX_REG")))
 
+;; Similarly, but don't check mode of the operand.
+(define_predicate "ext_QIreg_nomode_operand"
+  (and (match_code "reg")
+       (match_test "TARGET_64BIT
+		    && REGNO (op) > BX_REG")))
+
 ;; Return true if op is not xmm0 register.
 (define_predicate "reg_not_xmm0_operand"
    (and (match_operand 0 "register_operand")
@@ -586,11 +592,6 @@
 (define_predicate "const128_operand"
   (and (match_code "const_int")
        (match_test "INTVAL (op) == 128")))
-
-;; Match exactly -128.
-(define_predicate "constm128_operand"
-  (and (match_code "const_int")
-       (match_test "INTVAL (op) == -128")))
 
 ;; Match 2, 4, or 8.  Used for leal multiplicands.
 (define_predicate "const248_operand"
