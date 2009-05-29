@@ -8900,6 +8900,10 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
   base_reg = base && GET_CODE (base) == SUBREG ? SUBREG_REG (base) : base;
   index_reg = index && GET_CODE (index) == SUBREG ? SUBREG_REG (index) : index;
 
+  /* Avoid useless 0 displacement.  */
+  if (disp == const0_rtx && (base || index))
+    disp = NULL_RTX;
+
   /* Allow arg pointer and stack pointer as index if there is not scaling.  */
   if (base_reg && index_reg && scale == 1
       && (index_reg == arg_pointer_rtx
@@ -8911,10 +8915,16 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
       tmp = base_reg, base_reg = index_reg, index_reg = tmp;
     }
 
-  /* Special case: %ebp cannot be encoded as a base without a displacement.  */
-  if ((base_reg == hard_frame_pointer_rtx
-       || base_reg == frame_pointer_rtx
-       || base_reg == arg_pointer_rtx) && !disp)
+  /* Special case: %ebp cannot be encoded as a base without a displacement.
+     Similarly %r13.  */
+  if (!disp
+      && base_reg
+      && (base_reg == hard_frame_pointer_rtx
+	  || base_reg == frame_pointer_rtx
+	  || base_reg == arg_pointer_rtx
+	  || (REG_P (base_reg)
+	      && (REGNO (base_reg) == HARD_FRAME_POINTER_REGNUM
+		  || REGNO (base_reg) == R13_REG))))
     disp = const0_rtx;
 
   /* Special case: on K6, [%esi] makes the instruction vector decoded.
@@ -8928,7 +8938,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
     disp = const0_rtx;
 
   /* Special case: encode reg+reg instead of reg*2.  */
-  if (!base && index && scale && scale == 2)
+  if (!base && index && scale == 2)
     base = index, base_reg = index_reg, scale = 1;
 
   /* Special case: scaling cannot be encoded without base or displacement.  */
