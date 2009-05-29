@@ -1,3 +1,9 @@
+2009-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/40291
+	* builtins.c (expand_builtin_memcmp): Convert len to sizetype
+	before expansion.
+
 2009-05-29  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/40101
