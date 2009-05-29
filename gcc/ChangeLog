@@ -1,3 +1,233 @@
+2009-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (prefix_data16, prefix_rep): Set to 0 for
+	TYPE_SSE{MULADD,4ARG,IADD1,CVT1} by default.
+	(prefix_rex): For UNIT_MMX don't imply the prefix by default
+	if MODE_DI.
+	(prefix_extra): Default to 2 for TYPE_SSE{MULADD,4ARG} and
+	to 1 for TYPE_SSE{IADD1,CVT1}.
+	(prefix_vex_imm8): Removed.
+	(length_vex): Only pass 1 as second argument to
+	ix86_attr_length_vex_default if prefix_extra is 0.
+	(modrm): For TYPE_INCDEC only set to 0 if not TARGET_64BIT.
+	(length): For prefix vex computation use length_immediate
+	attribute instead of prefix_vex_imm8.
+	(cmpqi_ext_3_insn, cmpqi_ext_3_insn_rex64,
+	addqi_ext_1, addqi_ext_1_rex64, *testqi_ext_0, andqi_ext_0,
+	*andqi_ext_0_cc, *iorqi_ext_0, *xorqi_ext_0, *xorqi_cc_ext_1,
+	*xorqi_cc_ext_1_rex64): Override modrm attribute to 1.
+	(extendsidi2_rex64, extendhidi2, extendqidi2, extendhisi2,
+	*extendhisi2_zext, extendqihi2, extendqisi2, *extendqisi2_zext): Emit
+	a space in between the operands.
+	(*anddi_1_rex64, *andsi_1): Likewise.  Override prefix_rex to 1
+	if one operand is 0xff and the other one si, di, bp or sp.
+	(*andhi_1): Override prefix_rex to 1 if one operand is 0xff and the
+	other one si, di, bp or sp.
+	(*btsq, *btrq, *btcq, *btdi_rex64, *btsi): Add mode attribute.
+	(*ffssi_1, *ffsdi_1, ctzsi2, ctzdi2): Add
+	type and mode attributes.
+	(*bsr, *bsr_rex64, *bsrhi): Add type attribute.
+	(*cmpfp_i_mixed, *cmpfp_iu_mixed): For TYPE_SSECOMI, clear
+	prefix_rep attribute and set prefix_data16 attribute iff MODE_DF.
+	(*cmpfp_i_sse, *cmpfp_iu_sse): Clear prefix_rep attribute and set
+	prefix_data16 attribute iff MODE_DF.
+	(*movsi_1): For TYPE_SSEMOV MODE_SI set prefix_data16 attribute.
+	(fix_trunc<mode>di_sse): Set prefix_rex attribute.
+	(*adddi_4_rex64, *addsi_4): Use const128_operand instead of
+	constm128_operand in length_immediate computation.
+	(*addhi_4): Likewise.  Fix mode attribute to MODE_HI.
+	(anddi_1_rex64): Use movzbl/movzwl instead of movzbq/movzwq.
+	(*avx_ashlti3, sse2_ashlti3, *avx_lshrti3, sse2_lshrti3): Set
+	length_immediate attribute to 1.
+	(x86_fnstsw_1, x86_fnstcw_1, x86_fldcw_1): Fix length attribute.
+	(*movdi_1_rex64): Override prefix_rex or prefix_data16 attributes
+	for certain alternatives.
+	(*movdf_nointeger, *movdf_integer_rex64, *movdf_integer): Override
+	prefix_data16 attribute if MODE_V1DF.
+	(*avx_setcc<mode>, *sse_setcc<mode>, *sse5_setcc<mode>): Set
+	length_immediate to 1.
+	(set_got_rex64, set_rip_rex64): Remove length attribute, set
+	length_address to 4, set mode attribute to MODE_DI.
+	(set_got_offset_rex64): Likewise.  Set length_immediate to 0.
+	(fxam<mode>2_i387): Set length attribute to 4.
+	(*prefetch_sse, *prefetch_sse_rex, *prefetch_3dnow,
+	*prefetch_3dnow_rex): Override length_address attribute.
+	(sse4_2_crc32<mode>): Override prefix_data16 and prefix_rex
+	attributes.
+	* config/i386/predicates.md (ext_QIreg_nomode_operand): New predicate.
+	(constm128_operand): Removed.
+	* config/i386/i386.c (memory_address_length): For
+	disp && !index && !base in 64-bit mode account for SIB byte if
+	print_operand_address can't optimize disp32 into disp32(%rip)
+	and UNSPEC doesn't imply (%rip) addressing.  Add 1 to length
+	for fs: or gs: segment.
+	(ix86_attr_length_immediate_default): When checking if shortform
+	is possible, truncate immediate to the length of the non-shortened
+	immediate.
+	(ix86_attr_length_address_default): Ignore MEM_P operands
+	with X constraint.
+	(ix86_attr_length_vex_default): Only check for DImode on
+	GENERAL_REG_P operands.
+	* config/i386/sse.md (<sse>_comi, <sse>_ucomi): Clear
+	prefix_rep attribute, set prefix_data16 attribute iff MODE_DF.
+	(sse_cvttps2pi): Clear prefix_rep attribute.
+	(sse2_cvttps2dq, *sse2_cvtpd2dq, sse2_cvtps2pd): Clear prefix_data16
+	attribute.
+	(*sse2_cvttpd2dq): Don't clear prefix_rep attribute.
+	(*avx_ashr<mode>3, ashr<mode>3, *avx_lshr<mode>3, lshr<mode>3,
+	*avx_ashl<mode>3, ashl<mode>3): Set length_immediate attribute to 1
+	iff operand 2 is const_int_operand.
+	(*vec_dupv4si, avx_shufpd256_1, *avx_shufpd_<mode>,
+	sse2_shufpd_<mode>): Set length_immediate attribute to 1.
+	(sse2_pshufd_1): Likewise.  Set prefix attribute to maybe_vex
+	instead of vex.
+	(sse2_pshuflw_1, sse2_pshufhw_1): Set length_immediate to 1 and clear
+	prefix_data16.
+	(sse2_unpckhpd, sse2_unpcklpd, sse2_storehpd, *vec_concatv2df): Set
+	prefix_data16 attribute for movlpd and movhpd instructions.
+	(sse2_loadhpd, sse2_loadlpd, sse2_movsd): Likewise.  Override
+	length_immediate for shufpd instruction.
+	(sse2_movntsi, sse3_lddqu): Clear prefix_data16 attribute.
+	(avx_cmpp<avxmodesuffixf2c><mode>3,
+	avx_cmps<ssemodesuffixf2c><mode>3, *avx_maskcmp<mode>3,
+	<sse>_maskcmp<mode>3, <sse>_vmmaskcmp<mode>3,
+	avx_shufps256_1, *avx_shufps_<mode>, sse_shufps_<mode>,
+	*vec_dupv4sf_avx, *vec_dupv4sf): Set
+	length_immediate attribute to 1.
+	(*avx_cvtsi2ssq, *avx_cvtsi2sdq): Set length_vex attribute to 4.
+	(sse_cvtsi2ssq, sse2_cvtsi2sdq): Set prefix_rex attribute to 1.
+	(sse2_cvtpi2pd, sse_loadlps, sse2_storelpd): Override
+	prefix_data16 attribute for the first alternative to 1.
+	(*avx_loadlps): Override length_immediate for the first alternative.
+	(*vec_concatv2sf_avx): Override length_immediate and prefix_extra
+	attributes for second alternative.
+	(*vec_concatv2sf_sse4_1): Override length_immediate and
+	prefix_data16 attributes for second alternative.
+	(*vec_setv4sf_avx, *avx_insertps, vec_extract_lo_<mode>,
+	vec_extract_hi_<mode>, vec_extract_lo_v16hi,
+	vec_extract_hi_v16hi, vec_extract_lo_v32qi,
+	vec_extract_hi_v32qi): Set prefix_extra and length_immediate to 1.
+	(*vec_setv4sf_sse4_1, sse4_1_insertps, *sse4_1_extractps): Set
+	prefix_data16 and length_immediate to 1.
+	(*avx_mulv2siv2di3, *avx_mulv4si3, sse4_2_gtv2di3): Set prefix_extra
+	to 1.
+	(*avx_<code><mode>3, *avx_eq<mode>3, *avx_gt<mode>3): Set
+	prefix_extra attribute for variants that don't have 0f prefix
+	alone.
+	(*avx_pinsr<ssevecsize>): Likewise.  Set length_immediate to 1.
+	(*sse4_1_pinsrb, *sse2_pinsrw, *sse4_1_pinsrd, *sse4_1_pextrb,
+	*sse4_1_pextrb_memory, *sse2_pextrw, *sse4_1_pextrw_memory,
+	*sse4_1_pextrd): Set length_immediate to 1.
+	(*sse4_1_pinsrd): Likewise.  Set prefix_extra to 1.
+	(*sse4_1_pinsrq, *sse4_1_pextrq): Set prefix_rex and length_immediate
+	to 1.
+	(*vec_extractv2di_1_rex64_avx, *vec_extractv2di_1_rex64,
+	*vec_extractv2di_1_avx, *vec_extractv2di_1_sse2): Override
+	length_immediate to 1 for second alternative.
+	(*vec_concatv2si_avx, *vec_concatv2di_rex64_avx): Override
+	prefix_extra and length_immediate attributes for the first
+	alternative.
+	(vec_concatv2si_sse4_1): Override length_immediate to 1 for the
+	first alternative.
+	(*vec_concatv2di_rex64_sse4_1): Likewise.  Override prefix_rex
+	to 1 for the first and third alternative.
+	(*vec_concatv2di_rex64_sse): Override prefix_rex to 1 for the second
+	alternative.
+	(*sse2_maskmovdqu, *sse2_maskmovdqu_rex64): Override length_vex
+	attribute.
+	(*sse_sfence, sse2_mfence, sse2_lfence): Override length_address
+	attribute to 0.
+	(*avx_phaddwv8hi3, *avx_phadddv4si3, *avx_phaddswv8hi3,
+	*avx_phsubwv8hi3, *avx_phsubdv4si3, *avx_phsubswv8hi,
+	*avx_pmaddubsw128, *avx_pmulhrswv8hi3, *avx_pshufbv16qi3,
+	*avx_psign<mode>3): Set prefix_extra attribute to 1.
+	(ssse3_phaddwv4hi3, ssse3_phadddv2si3, ssse3_phaddswv4hi3,
+	ssse3_phsubwv4hi3, ssse3_phsubdv2si3, ssse3_phsubswv4hi3,
+	ssse3_pmaddubsw, *ssse3_pmulhrswv4hi, ssse3_pshufbv8qi3,
+	ssse3_psign<mode>3): Override prefix_rex attribute.
+	(*avx_palignrti): Override prefix_extra and length_immediate
+	to 1.
+	(ssse3_palignrti): Override length_immediate to 1.
+	(ssse3_palignrdi): Override length_immediate to 1, override
+	prefix_rex attribute.
+	(abs<mode>2): Override prefix_rep to 0, override prefix_rex
+	attribute.
+	(sse4a_extrqi): Override length_immediate to 2.
+	(sse4a_insertqi): Likewise.  Override prefix_data16 to 0.
+	(sse4a_insertq): Override prefix_data16 to 0.
+	(avx_blendp<avxmodesuffixf2c><avxmodesuffix>,
+	avx_blendvp<avxmodesuffixf2c><avxmodesuffix>,
+	avx_dpp<avxmodesuffixf2c><avxmodesuffix>, *avx_mpsadbw,
+	*avx_pblendvb, *avx_pblendw, avx_roundp<avxmodesuffixf2c>256,
+	avx_rounds<avxmodesuffixf2c>256): Override prefix_extra
+	and length_immediate to 1.
+	(sse4_1_blendp<ssemodesuffixf2c>, sse4_1_dpp<ssemodesuffixf2c>,
+	sse4_2_pcmpestr, sse4_2_pcmpestri, sse4_2_pcmpestrm,
+	sse4_2_pcmpestr_cconly, sse4_2_pcmpistr, sse4_2_pcmpistri,
+	sse4_2_pcmpistrm, sse4_2_pcmpistr_cconly): Override prefix_data16
+	and length_immediate to 1.
+	(sse4_1_blendvp<ssemodesuffixf2c>): Override prefix_data16 to 1.
+	(sse4_1_mpsadbw, sse4_1_pblendw): Override length_immediate to 1.
+	(*avx_packusdw, avx_vtestp<avxmodesuffixf2c><avxmodesuffix>,
+	avx_ptest256): Override prefix_extra to 1.
+	(sse4_1_roundp<ssemodesuffixf2c>, sse4_1_rounds<ssemodesuffixf2c>):
+	Override prefix_data16 and length_immediate to 1.
+	(sse5_pperm_zero_v16qi_v8hi, sse5_pperm_sign_v16qi_v8hi,
+	sse5_pperm_zero_v8hi_v4si, sse5_pperm_sign_v8hi_v4si,
+	sse5_pperm_zero_v4si_v2di, sse5_pperm_sign_v4si_v2di,
+	sse5_vrotl<mode>3, sse5_ashl<mode>3, sse5_lshl<mode>3): Override
+	prefix_data16 to 0 and prefix_extra to 2.
+	(sse5_rotl<mode>3, sse5_rotr<mode>3): Override length_immediate to 1.
+	(sse5_frcz<mode>2, sse5_vmfrcz<mode>2): Don't override prefix_extra
+	attribute.
+	(*sse5_vmmaskcmp<mode>3, sse5_com_tf<mode>3,
+	sse5_maskcmp<mode>3, sse5_maskcmp<mode>3, sse5_maskcmp_uns<mode>3):
+	Override prefix_data16 and prefix_rep to 0, length_immediate to 1
+	and prefix_extra to 2.
+	(sse5_maskcmp_uns2<mode>3, sse5_pcom_tf<mode>3): Override
+	prefix_data16 to 0, length_immediate to 1 and prefix_extra to 2.
+	(*avx_aesenc, *avx_aesenclast, *avx_aesdec, *avx_aesdeclast,
+	avx_vpermilvar<mode>3,
+	avx_vbroadcasts<avxmodesuffixf2c><avxmodesuffix>,
+	avx_vbroadcastss256, avx_vbroadcastf128_p<avxmodesuffixf2c>256,
+	avx_maskloadp<avxmodesuffixf2c><avxmodesuffix>,
+	avx_maskstorep<avxmodesuffixf2c><avxmodesuffix>):
+	Override prefix_extra to 1.
+	(aeskeygenassist, pclmulqdq): Override length_immediate to 1.
+	(*vpclmulqdq, avx_vpermil<mode>, avx_vperm2f128<mode>3,
+	vec_set_lo_<mode>, vec_set_hi_<mode>, vec_set_lo_v16hi,
+	vec_set_hi_v16hi, vec_set_lo_v32qi, vec_set_hi_v32qi): Override
+	prefix_extra and length_immediate to 1.
+	(*avx_vzeroall, avx_vzeroupper, avx_vzeroupper_rex64): Override
+	modrm to 0.
+	(*vec_concat<mode>_avx): Override prefix_extra and length_immediate
+	to 1 for the first alternative.
+	* config/i386/mmx.md (*mov<mode>_internal_rex64): Override
+	prefix_rep, prefix_data16 and/or prefix_rex attributes in certain
+	cases.
+	(*mov<mode>_internal_avx, *movv2sf_internal_rex64,
+	*movv2sf_internal_avx, *movv2sf_internal): Override
+	prefix_rep attribute for certain alternatives.
+	(*mov<mode>_internal): Override prefix_rep or prefix_data16
+	attributes for certain alternatives.
+	(*movv2sf_internal_rex64_avx): Override prefix_rep and length_vex
+	attributes for certain alternatives.
+	(*mmx_addv2sf3, *mmx_subv2sf3, *mmx_mulv2sf3,
+	*mmx_<code>v2sf3_finite, *mmx_<code>v2sf3, mmx_rcpv2sf2,
+	mmx_rcpit1v2sf3, mmx_rcpit2v2sf3, mmx_rsqrtv2sf2, mmx_rsqit1v2sf3,
+	mmx_haddv2sf3, mmx_hsubv2sf3, mmx_addsubv2sf3,
+	*mmx_eqv2sf3, mmx_gtv2sf3, mmx_gev2sf3, mmx_pf2id, mmx_pf2iw,
+	mmx_pi2fw, mmx_floatv2si2, mmx_pswapdv2sf2, *mmx_pmulhrwv4hi3,
+	mmx_pswapdv2si2): Set prefix_extra attribute to 1.
+	(mmx_ashr<mode>3, mmx_lshr<mode>3, mmx_ashl<mode>3): Set
+	length_immediate to 1 if operand 2 is const_int_operand.
+	(*mmx_pinsrw, mmx_pextrw, mmx_pshufw_1, *vec_dupv4hi,
+	*vec_extractv2si_1): Set length_immediate
+	attribute to 1.
+	(*mmx_uavgv8qi3): Override prefix_extra attribute to 1 if
+	using old 3DNOW insn rather than SSE/3DNOW_A.
+	(mmx_emms, mmx_femms): Clear modrm attribute.
+
 2009-05-29  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c:  New implementation of SRA.
