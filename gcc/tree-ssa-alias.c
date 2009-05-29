@@ -539,8 +539,7 @@ nonaliasing_component_refs_p (tree ref1, tree type1,
 
   /* Now search for the type1 in the access path of ref2.  This
      would be a common base for doing offset based disambiguation on.  */
-  /* Skip the outermost ref - we would have caught that earlier.  */
-  refp = &TREE_OPERAND (ref2, 0);
+  refp = &ref2;
   while (handled_component_p (*refp)
 	 && same_type_for_tbaa (TREE_TYPE (*refp), type1) == 0)
     refp = &TREE_OPERAND (*refp, 0);
@@ -556,7 +555,7 @@ nonaliasing_component_refs_p (tree ref1, tree type1,
       return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
     }
   /* If we didn't find a common base, try the other way around.  */
-  refp = &TREE_OPERAND (ref1, 0);
+  refp = &ref1;
   while (handled_component_p (*refp)
 	 && same_type_for_tbaa (TREE_TYPE (*refp), type2) == 0)
     refp = &TREE_OPERAND (*refp, 0);
