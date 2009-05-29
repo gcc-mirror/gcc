@@ -1,3 +1,11 @@
+2009-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/40017
+	* gcc.target/powerpc/altivec-types-1.c: Don't expect error for
+	__vector _Bool.
+	* gcc.target/powerpc/altivec-30.c: New test.
+	* gcc.target/powerpc/altivec-31.c: New test.
+
 2009-05-28  Richard Guenther  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-fre-26.c: New testcase.
