@@ -1,3 +1,16 @@
+2009-05-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/40019
+	* trans-types.c (gfc_build_uint_type): Make nonstatic.
+	* trans.h (gfor_fndecl_clz128, gfor_fndecl_ctz128): New prototypes.
+	* trans-types.h (gfc_build_uint_type): Add prototype.
+	* trans-decl.c (gfc_build_intrinsic_function_decls): Build
+	gfor_fndecl_clz128 and gfor_fndecl_ctz128.
+	* trans-intrinsic.c (gfc_conv_intrinsic_leadz,
+	gfc_conv_intrinsic_trailz): Call the right builtins or library
+	functions, and cast arguments to unsigned types first.
+	* simplify.c (gfc_simplify_leadz): Deal with negative arguments.
+
 2009-05-27  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (gfortran$(exeext)): Change $(COMPILER) to
