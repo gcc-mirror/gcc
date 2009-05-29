@@ -1,5 +1,8 @@
 2009-05-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_decompose_address): Avoid useless
+	0 displacement.  Add 0 displacement if base is %[er]bp or %r13.
+
 	* config/i386/i386.md (prefix_data16, prefix_rep): Set to 0 for
 	TYPE_SSE{MULADD,4ARG,IADD1,CVT1} by default.
 	(prefix_rex): For UNIT_MMX don't imply the prefix by default
