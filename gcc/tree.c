@@ -4169,7 +4169,8 @@ handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
       if (*no_add_attrs == false)
         DECL_DLLIMPORT_P (node) = 1;
     }
-  else if (DECL_DECLARED_INLINE_P (node))
+  else if (TREE_CODE (node) == FUNCTION_DECL
+	   && DECL_DECLARED_INLINE_P (node))
     /* An exported function, even if inline, must be emitted.  */
     DECL_EXTERNAL (node) = 0;
 
