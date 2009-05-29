@@ -1922,6 +1922,24 @@ strip_offset_1 (tree expr, bool inside_addr, bool top_compref,
 
       return fold_convert (orig_type, expr);
 
+    case MULT_EXPR:
+      op1 = TREE_OPERAND (expr, 1);
+      if (!cst_and_fits_in_hwi (op1))
+	return orig_expr;
+
+      op0 = TREE_OPERAND (expr, 0);
+      op0 = strip_offset_1 (op0, false, false, &off0);
+      if (op0 == TREE_OPERAND (expr, 0))
+	return orig_expr;
+
+      *offset = off0 * int_cst_value (op1);
+      if (integer_zerop (op0))
+	expr = op0;
+      else
+	expr = fold_build2 (MULT_EXPR, type, op0, op1);
+
+      return fold_convert (orig_type, expr);
+
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
       if (!inside_addr)
@@ -3302,6 +3320,19 @@ force_expr_to_var_cost (tree expr, bool speed)
 
       break;
 
+    case NEGATE_EXPR:
+      op0 = TREE_OPERAND (expr, 0);
+      STRIP_NOPS (op0);
+      op1 = NULL_TREE;
+
+      if (is_gimple_val (op0))
+	cost0 = zero_cost;
+      else
+	cost0 = force_expr_to_var_cost (op0, speed);
+
+      cost1 = zero_cost;
+      break;
+
     default:
       /* Just an arbitrary value, FIXME.  */
       return new_cost (target_spill_cost[speed], 0);
@@ -3313,6 +3344,7 @@ force_expr_to_var_cost (tree expr, bool speed)
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
+    case NEGATE_EXPR:
       cost = new_cost (add_cost (mode, speed), 0);
       break;
 
@@ -3415,8 +3447,8 @@ ptr_difference_cost (struct ivopts_data *data,
 		     unsigned HOST_WIDE_INT *offset, bitmap *depends_on)
 {
   HOST_WIDE_INT diff = 0;
-  comp_cost cost;
-  bool speed = optimize_loop_for_speed_p (data->current_loop);
+  aff_tree aff_e1, aff_e2;
+  tree type;
 
   gcc_assert (TREE_CODE (e1) == ADDR_EXPR);
 
@@ -3434,12 +3466,14 @@ ptr_difference_cost (struct ivopts_data *data,
 
   *symbol_present = false;
   *var_present = true;
-  
-  cost = force_var_cost (data, e1, depends_on);
-  cost = add_costs (cost, force_var_cost (data, e2, depends_on));
-  cost.cost += add_cost (Pmode, speed);
 
-  return cost;
+  type = signed_type_for (TREE_TYPE (e1));
+  tree_to_aff_combination (e1, type, &aff_e1);
+  tree_to_aff_combination (e2, type, &aff_e2);
+  aff_combination_scale (&aff_e2, double_int_minus_one);
+  aff_combination_add (&aff_e1, &aff_e2);
+
+  return force_var_cost (data, aff_combination_to_tree (&aff_e1), depends_on);
 }
 
 /* Estimates cost of expressing difference E1 - E2 as
@@ -3453,9 +3487,10 @@ difference_cost (struct ivopts_data *data,
 		 tree e1, tree e2, bool *symbol_present, bool *var_present,
 		 unsigned HOST_WIDE_INT *offset, bitmap *depends_on)
 {
-  comp_cost cost;
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (e1));
   unsigned HOST_WIDE_INT off1, off2;
+  aff_tree aff_e1, aff_e2;
+  tree type;
 
   e1 = strip_offset (e1, &off1);
   e2 = strip_offset (e2, &off2);
@@ -3465,8 +3500,8 @@ difference_cost (struct ivopts_data *data,
   STRIP_NOPS (e2);
 
   if (TREE_CODE (e1) == ADDR_EXPR)
-    return ptr_difference_cost (data, e1, e2, symbol_present, var_present, offset,
-				depends_on);
+    return ptr_difference_cost (data, e1, e2, symbol_present, var_present,
+				offset, depends_on);
   *symbol_present = false;
 
   if (operand_equal_p (e1, e2, 0))
@@ -3474,23 +3509,26 @@ difference_cost (struct ivopts_data *data,
       *var_present = false;
       return zero_cost;
     }
+
   *var_present = true;
+
   if (integer_zerop (e2))
     return force_var_cost (data, e1, depends_on);
 
   if (integer_zerop (e1))
     {
-      cost = force_var_cost (data, e2, depends_on);
+      comp_cost cost = force_var_cost (data, e2, depends_on);
       cost.cost += multiply_by_cost (-1, mode, data->speed);
-
       return cost;
     }
 
-  cost = force_var_cost (data, e1, depends_on);
-  cost = add_costs (cost, force_var_cost (data, e2, depends_on));
-  cost.cost += add_cost (mode, data->speed);
+  type = signed_type_for (TREE_TYPE (e1));
+  tree_to_aff_combination (e1, type, &aff_e1);
+  tree_to_aff_combination (e2, type, &aff_e2);
+  aff_combination_scale (&aff_e2, double_int_minus_one);
+  aff_combination_add (&aff_e1, &aff_e2);
 
-  return cost;
+  return force_var_cost (data, aff_combination_to_tree (&aff_e1), depends_on);
 }
 
 /* Determines the cost of the computation by that USE is expressed
@@ -3511,7 +3549,6 @@ get_computation_cost_at (struct ivopts_data *data,
   HOST_WIDE_INT ratio, aratio;
   bool var_present, symbol_present;
   comp_cost cost;
-  unsigned n_sums;
   double_int rat;
   bool speed = optimize_bb_for_speed_p (gimple_bb (at));
 
@@ -3544,7 +3581,7 @@ get_computation_cost_at (struct ivopts_data *data,
 	return infinite_cost;
     }
 
-  if (TYPE_PRECISION (utype) != TYPE_PRECISION (ctype))
+  if (TYPE_PRECISION (utype) < TYPE_PRECISION (ctype))
     {
       /* TODO -- add direct handling of this case.  */
       goto fallback;
@@ -3569,6 +3606,9 @@ get_computation_cost_at (struct ivopts_data *data,
   else
     return infinite_cost;
 
+  STRIP_NOPS (cbase);
+  ctype = TREE_TYPE (cbase);
+
   /* use = ubase + ratio * (var - cbase).  If either cbase is a constant
      or ratio == 1, it is better to handle this like
      
@@ -3591,6 +3631,18 @@ get_computation_cost_at (struct ivopts_data *data,
 			      &symbol_present, &var_present, &offset,
 			      depends_on);
     }
+  else if (address_p
+	   && !POINTER_TYPE_P (ctype)
+	   && multiplier_allowed_in_address_p (ratio,
+					       TYPE_MODE (TREE_TYPE (utype))))
+    {
+      cbase
+	= fold_build2 (MULT_EXPR, ctype, cbase, build_int_cst (ctype, ratio));
+      cost = difference_cost (data,
+			      ubase, cbase,
+			      &symbol_present, &var_present, &offset,
+			      depends_on);
+    }
   else
     {
       cost = force_var_cost (data, cbase, depends_on);
@@ -3608,39 +3660,38 @@ get_computation_cost_at (struct ivopts_data *data,
     offset -= ratio * cstepi;
 
   /* Now the computation is in shape symbol + var1 + const + ratio * var2.
-     (symbol/var/const parts may be omitted).  If we are looking for an address,
-     find the cost of addressing this.  */
+     (symbol/var1/const parts may be omitted).  If we are looking for an
+     address, find the cost of addressing this.  */
   if (address_p)
-    return add_costs (cost, get_address_cost (symbol_present, var_present,
-				offset, ratio,
-				TYPE_MODE (TREE_TYPE (*use->op_p)), speed));
+    return add_costs (cost,
+		      get_address_cost (symbol_present, var_present,
+					offset, ratio,
+					TYPE_MODE (TREE_TYPE (utype)), speed));
 
   /* Otherwise estimate the costs for computing the expression.  */
-  aratio = ratio > 0 ? ratio : -ratio;
   if (!symbol_present && !var_present && !offset)
     {
       if (ratio != 1)
 	cost.cost += multiply_by_cost (ratio, TYPE_MODE (ctype), speed);
-
       return cost;
     }
 
-  if (aratio != 1)
-    cost.cost += multiply_by_cost (aratio, TYPE_MODE (ctype), speed);
-
-  n_sums = 1;
-  if (var_present
-      /* Symbol + offset should be compile-time computable.  */
-      && (symbol_present || offset))
-    n_sums++;
+  /* Symbol + offset should be compile-time computable so consider that they
+      are added once to the variable, if present.  */
+  if (var_present && (symbol_present || offset))
+    cost.cost += add_cost (TYPE_MODE (ctype), speed)
+		 / AVG_LOOP_NITER (data->current_loop);
 
   /* Having offset does not affect runtime cost in case it is added to
      symbol, but it increases complexity.  */
   if (offset)
     cost.complexity++;
 
-  cost.cost += n_sums * add_cost (TYPE_MODE (ctype), speed);
-  return cost;
+  cost.cost += add_cost (TYPE_MODE (ctype), speed);
+
+  aratio = ratio > 0 ? ratio : -ratio;
+  if (aratio != 1)
+    cost.cost += multiply_by_cost (aratio, TYPE_MODE (ctype), speed);
 
 fallback:
   {

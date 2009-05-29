@@ -1,3 +1,14 @@
+2009-05-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-loop-ivopts.c (strip_offset_1) <MULT_EXPR>: New case.
+	(force_expr_to_var_cost) <NEGATE_EXPR>: Likewise.
+	(ptr_difference_cost): Use affine combinations to compute it.
+	(difference_cost): Likewise.
+	(get_computation_cost_at): Compute more accurate cost for addresses
+	if the ratio is a multiplier allowed in addresses.
+	For non-addresses, consider that an additional offset or symbol is
+	added only once.
+
 2009-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_decompose_address): Avoid useless
