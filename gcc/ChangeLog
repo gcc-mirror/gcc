@@ -1,3 +1,8 @@
+2009-05-29  Kai Tietz  <kai.tietz@onevision.com>
+
+	* tree.c (handle_dll_attribute): Check if node is
+	of kind FUNCTION_DECL for DECL_DECLARED_INLINE_P check.
+
 2009-05-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/thumb2.md (thumb2_zero_extendsidi2): Add a split
