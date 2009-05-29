@@ -1,5 +1,9 @@
 2009-05-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/40291
+	* builtins.c (expand_builtin_memcmp): Convert len to sizetype
+	before expansion.
+
 	PR target/40017
 	* config/rs6000/rs6000-c.c (_Bool_keyword): New variable.
 	(altivec_categorize_keyword, init_vector_keywords,
