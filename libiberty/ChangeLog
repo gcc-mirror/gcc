@@ -1,3 +1,9 @@
+2009-05-29  Michael Matz  <matz@suse.de>
+
+	* fibheap.c (fibheap_replace_key_data): Make sure we don't early
+	out when forcing the minimum.
+	(fibheap_delete_node): Assert that we managed to force the minimum.
+
 2009-05-25  Tristan Gingold  <gingold@adacore.com>
 
 	* config.h-vms: Rewritten.  Define configure macros.
