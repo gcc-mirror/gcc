@@ -1,3 +1,14 @@
+2009-05-29  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (get_expr_operands): Do not handle
+	INDIRECT_REFs in the handled-component case.  Remove
+	unused get_ref_base_and_extent case.
+	* tree-dfa.c (get_ref_base_and_extent): Avoid calling
+	tree_low_cst and host_integerp where possible.
+	* tree-ssa-structalias.c (equiv_class_label_eq): Check hash
+	codes for equivalence.
+	* dce.c (find_call_stack_args): Avoid redundant bitmap queries.
+
 2009-05-29  David Billinghurst <billingd@gcc.gnu.org>
 
 	* config.gcc: Add i386/t-fprules-softfp and soft-fp/t-softfp
