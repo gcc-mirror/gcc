@@ -281,6 +281,10 @@ DEF_RTL_EXPR(CALL, "call", "ee", RTX_EXTRA)
 
 DEF_RTL_EXPR(RETURN, "return", "", RTX_EXTRA)
 
+/* Special for EH return from subroutine.  */
+
+DEF_RTL_EXPR(EH_RETURN, "eh_return", "", RTX_EXTRA)
+
 /* Conditional trap.
    Operand 1 is the condition.
    Operand 2 is the trap code.

@@ -1112,7 +1112,7 @@ cfg_layout_can_duplicate_bb_p (const_basic_block bb)
 rtx
 duplicate_insn_chain (rtx from, rtx to)
 {
-  rtx insn, last;
+  rtx insn, last, copy;
 
   /* Avoid updating of boundaries of previous basic block.  The
      note will get removed from insn stream in fixup.  */
@@ -1133,7 +1133,8 @@ duplicate_insn_chain (rtx from, rtx to)
 	  if (GET_CODE (PATTERN (insn)) == ADDR_VEC
 	      || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
 	    break;
-	  emit_copy_of_insn_after (insn, get_last_insn ());
+	  copy = emit_copy_of_insn_after (insn, get_last_insn ());
+          maybe_copy_epilogue_insn (insn, copy);
 	  break;
 
 	case CODE_LABEL:
@@ -1153,23 +1154,18 @@ duplicate_insn_chain (rtx from, rtx to)
 	    case NOTE_INSN_DELETED:
 	    case NOTE_INSN_DELETED_LABEL:
 	      /* No problem to strip these.  */
-	    case NOTE_INSN_EPILOGUE_BEG:
-	      /* Debug code expect these notes to exist just once.
-		 Keep them in the master copy.
-		 ??? It probably makes more sense to duplicate them for each
-		 epilogue copy.  */
 	    case NOTE_INSN_FUNCTION_BEG:
 	      /* There is always just single entry to function.  */
 	    case NOTE_INSN_BASIC_BLOCK:
 	      break;
 
+	    case NOTE_INSN_EPILOGUE_BEG:
 	    case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	      emit_note_copy (insn);
 	      break;
 
 	    default:
-	      /* All other notes should have already been eliminated.
-	       */
+	      /* All other notes should have already been eliminated.  */
 	      gcc_unreachable ();
 	    }
 	  break;

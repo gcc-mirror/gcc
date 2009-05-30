@@ -118,6 +118,41 @@ REG_NOTE (BR_PRED)
    instead of intuition.  */
 REG_NOTE (FRAME_RELATED_EXPR)
 
+/* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex
+   for FRAME_RELATED_EXPR intuition.  The insn's first pattern must be
+   a SET, and the destination must be the CFA register.  The attached
+   rtx is an expression that defines the CFA.  In the simplest case, the
+   rtx could be just the stack_pointer_rtx; more common would be a PLUS
+   with a base register and a constant offset.  In the most complicated
+   cases, this will result in a DW_CFA_def_cfa_expression with the rtx
+   expression rendered in a dwarf location expression.  */
+REG_NOTE (CFA_DEF_CFA)
+
+/* Attached to insns that are RTX_FRAME_RELATED_P, but are too complex
+   for FRAME_RELATED_EXPR intuition.  This note adjusts the expression
+   from which the CFA is computed.  The attached rtx defines a new CFA
+   expression, relative to the old CFA expression.  This rtx must be of
+   the form (SET new-cfa-reg (PLUS old-cfa-reg const_int)).  If the note
+   rtx is NULL, we use the first SET of the insn.  */
+REG_NOTE (CFA_ADJUST_CFA)
+
+/* Similar to FRAME_RELATED_EXPR, with the additional information that
+   this is a save to memory, i.e. will result in DW_CFA_offset or the
+   like.  The pattern or the insn should be a simple store relative to
+   the CFA.  */
+REG_NOTE (CFA_OFFSET)
+
+/* Similar to FRAME_RELATED_EXPR, with the additional information that this
+   is a save to a register, i.e. will result in DW_CFA_register.  The insn
+   or the pattern should be simple reg-reg move.  */
+REG_NOTE (CFA_REGISTER)
+
+/* Attached to insns that are RTX_FRAME_RELATED_P, with the information
+   that this is a restore operation, i.e. will result in DW_CFA_restore
+   or the like.  Either the attached rtx, or the destination of the insn's
+   first pattern is the register to be restored.  */
+REG_NOTE (CFA_RESTORE)
+
 /* Indicates that REG holds the exception context for the function.
    This context is shared by inline functions, so the code to acquire
    the real exception context is delayed until after inlining.  */

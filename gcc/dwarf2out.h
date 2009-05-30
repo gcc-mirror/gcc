@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 extern void dwarf2out_decl (tree);
 extern void dwarf2out_frame_debug (rtx, bool);
+extern void dwarf2out_begin_epilogue (rtx);
+extern void dwarf2out_frame_debug_restore_state (void);
 
 extern void debug_dwarf (void);
 struct die_struct;
