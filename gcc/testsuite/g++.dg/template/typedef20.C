@@ -4,7 +4,7 @@
 
 class x
 {
-  typedef int privtype; // { dg-error "is private" }
+  typedef int privtype; // { dg-error "is private" "" { xfail *-*-* } }
 
 protected:
   typedef int type;
@@ -18,7 +18,7 @@ struct y : public x
 
 template<typename T>
 struct y<T*> : public x
-{ // { dg-error "within this context" }
+{ // { dg-error "within this context" "" { xfail *-*-* } }
   typedef x::type good;
   typedef x::privtype bad;
 };
