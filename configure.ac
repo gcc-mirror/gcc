@@ -158,7 +158,7 @@ build_tools="build-texinfo build-byacc build-flex build-bison build-m4 build-fix
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr ppl cloog libiconv"
+host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr mpc ppl cloog libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -1191,10 +1191,42 @@ fi
 ACX_PROG_GNAT
 ACX_PROG_CMP_IGNORE_INITIAL
 
-# Check for GMP and MPFR
+# Check for GMP, MPFR and MPC
 gmplibs="-lmpfr -lgmp"
 gmpinc=
 have_gmp=no
+mpclibs=
+mpcinc=
+have_mpc=no
+
+# Specify a location for mpc
+# check for this first so it ends up on the link line before mpfr.
+AC_ARG_WITH(mpc, [  --with-mpc=PATH        specify prefix directory for installed MPC package.
+                          Equivalent to --with-mpc-include=PATH/include
+                          plus --with-mpc-lib=PATH/lib])
+AC_ARG_WITH(mpc_include, [  --with-mpc-include=PATH
+                          specify directory for installed MPC include files])
+AC_ARG_WITH(mpc_lib, [  --with-mpc-lib=PATH    specify directory for the installed MPC library])
+
+if test "x$with_mpc" != x; then
+  mpclibs="-L$with_mpc/lib -lmpc"
+  mpcinc="-I$with_mpc/include $mpcinc"
+fi
+if test "x$with_mpc_include" != x; then
+  mpcinc="-I$with_mpc_include $mpcinc"
+fi
+if test "x$with_mpc_lib" != x; then
+  mpclibs="-L$with_mpc_lib -lmpc"
+fi
+if test "x$with_mpc$with_mpc_include$with_mpc_lib" = x && test -d ${srcdir}/mpc; then
+  mpclibs='-L$$r/$(HOST_SUBDIR)/mpc/src/.libs -L$$r/$(HOST_SUBDIR)/mpc/src/_libs -lmpc'
+  mpcinc='-I$$s/mpc/src '"$mpcinc"
+  # Do not test the mpc version.  Assume that it is sufficient, since
+  # it is in the source tree, and the library has not been built yet
+  # but it would be included on the link line in the version check below
+  # hence making the test fail.
+  have_mpc=yes
+fi
 
 # Specify a location for mpfr
 # check for this first so it ends up on the link line before gmp.
@@ -1222,6 +1254,7 @@ fi
 if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/mpfr; then
   gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/.libs -L$$r/$(HOST_SUBDIR)/mpfr/_libs '"$gmplibs"
   gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr -I$$s/mpfr '"$gmpinc"
+  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr'
   # Do not test the mpfr version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
   # but it would be included on the link line in the version check below
@@ -1255,6 +1288,7 @@ if test "x$with_gmp$with_gmp_include$with_gmp_lib" = x && test -d ${srcdir}/gmp;
   gmplibs='-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/gmp/_libs '"$gmplibs"
   gmpinc='-I$$r/$(HOST_SUBDIR)/gmp -I$$s/gmp '"$gmpinc"
   extra_mpfr_configure_flags='--with-gmp-build=$$r/$(HOST_SUBDIR)/gmp'
+  extra_mpc_gmp_configure_flags='--with-gmp-include=$$r/$(HOST_SUBDIR)/gmp'
   # Do not test the gmp version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
   # but it would be included on the link line in the version check below
@@ -1274,16 +1308,43 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
   #endif
   ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_gmp=no])
 
+  # If we have GMP, check the MPFR version.
   if test x"$have_gmp" = xyes; then
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS $gmplibs"
     dnl MPFR 2.3.1 is acceptable, but MPFR 2.3.2 is better.
     AC_MSG_CHECKING([for correct version of mpfr.h])
-    AC_TRY_LINK([#include <gmp.h>
+    AC_TRY_COMPILE([#include <gmp.h>
     #include <mpfr.h>],[
     #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,1)
     choke me
     #endif
+    ], AC_TRY_COMPILE([#include <gmp.h>
+    #include <mpfr.h>],[
+    #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,2)
+    choke me
+    #endif
+    ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])]),
+     [AC_MSG_RESULT([no]); have_gmp=no])
+  fi
+
+  # Check for the MPC header version.
+  if test x"$have_mpc" != xyes ; then
+    CFLAGS="$CFLAGS $mpcinc"
+    AC_MSG_CHECKING([for the correct version of mpc.h])
+    AC_TRY_COMPILE([#include <mpc.h>],[
+    #if MPC_VERSION < MPC_VERSION_NUM (0,6,0)
+    choke me
+    #endif
+    ], [AC_MSG_RESULT([yes]); have_mpc=maybe],
+       [AC_MSG_RESULT([no]); have_mpc=no; mpclibs= ; mpcinc= ])
+  fi
+
+  # Now check the MPFR library.
+  if test x"$have_gmp" = xyes; then
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS $gmplibs"
+    AC_MSG_CHECKING([for the correct version of the gmp/mpfr libraries])
+    AC_TRY_LINK([#include <gmp.h>
+    #include <mpfr.h>],[
     mpfr_t n;
     mpfr_t x;
     int t;
@@ -1292,16 +1353,36 @@ if test -d ${srcdir}/gcc && test "x$have_gmp" = xno; then
     mpfr_atan2 (n, n, x, GMP_RNDN);
     mpfr_erfc (n, x, GMP_RNDN);
     mpfr_subnormalize (x, t, GMP_RNDN);
-    ], [AC_TRY_LINK([#include <gmp.h>
-    #include <mpfr.h>],[
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,2)
-    choke me
-    #endif
-    mpfr_t n; mpfr_init(n);
-    ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([buggy but acceptable])])],
-     [AC_MSG_RESULT([no]); have_gmp=no])
-      LIBS="$saved_LIBS"
+    ], [AC_MSG_RESULT([yes])], [AC_MSG_RESULT([no]); have_gmp=no])
+    LIBS="$saved_LIBS"
   fi
+
+  if test x"$have_mpc" = xmaybe; then
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS $mpclibs $gmplibs"
+    AC_MSG_CHECKING([for the correct version of the mpc library])
+    AC_TRY_LINK([#include <mpc.h>],[
+    mpc_t n;
+    mpc_init2 (n, 53);
+    mpc_set_ui_ui (n, 1, 1, MPC_RNDNN);
+    mpc_sin (n, n, MPC_RNDNN);
+    mpc_cos (n, n, MPC_RNDNN);
+    mpc_tan (n, n, MPC_RNDNN);
+    mpc_sinh (n, n, MPC_RNDNN);
+    mpc_cosh (n, n, MPC_RNDNN);
+    mpc_tanh (n, n, MPC_RNDNN);
+    mpc_exp (n, n, MPC_RNDNN);
+    mpc_log (n, n, MPC_RNDNN);
+    mpc_sqrt (n, n, MPC_RNDNN);
+    mpc_proj (n, n, MPC_RNDNN);
+    mpc_neg (n, n, MPC_RNDNN);
+    mpc_sqr (n, n, MPC_RNDNN);
+    mpc_clear (n);
+    ], [AC_MSG_RESULT([yes]); have_mpc=yes],
+       [AC_MSG_RESULT([no]); have_mpc=no; mpclibs= ; mpcinc= ])
+    LIBS="$saved_LIBS"
+  fi
+
   CFLAGS="$saved_CFLAGS"
 
   if test x$have_gmp != xyes; then
@@ -1316,10 +1397,15 @@ They may be located in separate packages.])
   fi
 fi
 
-# Flags needed for both GMP and/or MPFR
+gmpinc="$mpcinc $gmpinc"
+gmplibs="$mpclibs $gmplibs"
+
+# Flags needed for both GMP, MPFR and/or MPC.
 AC_SUBST(gmplibs)
 AC_SUBST(gmpinc)
 AC_SUBST(extra_mpfr_configure_flags)
+AC_SUBST(extra_mpc_gmp_configure_flags)
+AC_SUBST(extra_mpc_mpfr_configure_flags)
 
 # Allow host libstdc++ to be specified for static linking with PPL.
 AC_ARG_WITH(host-libstdcxx, [  --with-host-libstdcxx=L Use linker arguments L to link with libstdc++
