@@ -1,3 +1,11 @@
+2009-05-30  Kai Tietz  <kai.tietz@onevision.com>
+
+	* config/i386/mingw-tls.c: New file.
+	* config/i386/t-gthr-win32 (LIB2FUNCS_EXTRA): Add
+	mingw-tls.c file.
+	* gthr-win32.h (MINGW32_SUPPORTS_MT_EH): Define
+	it for targets defining _WIN32 but not __CYGWIN__.
+
 2009-05-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.ac: Add MPC support.
