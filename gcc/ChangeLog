@@ -1,3 +1,9 @@
+2009-05-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.ac: Add MPC support.
+	
+	* config.in, configure: Regenerate.	
+
 2009-05-29  Richard Henderson  <rth@redhat.com>
 
 	* cfgcleanup.c (try_crossjump_to_edge): Only skip past

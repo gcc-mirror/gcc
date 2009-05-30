@@ -272,7 +272,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
 ac_unique_file="move-if-change"
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPLEVEL_CONFIGURE_ARGUMENTS build build_cpu build_vendor build_os build_noncanonical host_noncanonical target_noncanonical host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN LN_S build_libsubdir build_subdir host_subdir target_subdir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX GNATBIND ac_ct_GNATBIND GNATMAKE ac_ct_GNATMAKE do_compare gmplibs gmpinc extra_mpfr_configure_flags ppllibs pplinc clooglibs clooginc stage1_languages SYSROOT_CFLAGS_FOR_TARGET DEBUG_PREFIX_CFLAGS_FOR_TARGET CFLAGS_FOR_TARGET CXXFLAGS_FOR_TARGET RPATH_ENVVAR GCC_SHLIB_SUBDIR tooldir build_tooldir CONFIGURE_GDB_TK GDB_TK INSTALL_GDB_TK build_configargs build_configdirs host_configargs configdirs target_configargs AR_FOR_BUILD AS_FOR_BUILD CC_FOR_BUILD CFLAGS_FOR_BUILD CXXFLAGS_FOR_BUILD CXX_FOR_BUILD DLLTOOL_FOR_BUILD GCJ_FOR_BUILD GFORTRAN_FOR_BUILD LDFLAGS_FOR_BUILD LD_FOR_BUILD NM_FOR_BUILD RANLIB_FOR_BUILD WINDMC_FOR_BUILD WINDRES_FOR_BUILD config_shell YACC BISON M4 LEX FLEX MAKEINFO EXPECT RUNTEST AR AS DLLTOOL LD LIPO NM RANLIB STRIP WINDRES WINDMC OBJCOPY OBJDUMP CC_FOR_TARGET CXX_FOR_TARGET GCC_FOR_TARGET GCJ_FOR_TARGET GFORTRAN_FOR_TARGET AR_FOR_TARGET AS_FOR_TARGET DLLTOOL_FOR_TARGET LD_FOR_TARGET LIPO_FOR_TARGET NM_FOR_TARGET OBJDUMP_FOR_TARGET RANLIB_FOR_TARGET STRIP_FOR_TARGET WINDRES_FOR_TARGET WINDMC_FOR_TARGET RAW_CXX_FOR_TARGET FLAGS_FOR_TARGET COMPILER_AS_FOR_TARGET COMPILER_LD_FOR_TARGET COMPILER_NM_FOR_TARGET MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT stage1_cflags stage1_checking stage2_werror_flag datarootdir docdir pdfdir htmldir LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS TOPLEVEL_CONFIGURE_ARGUMENTS build build_cpu build_vendor build_os build_noncanonical host_noncanonical target_noncanonical host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA LN LN_S build_libsubdir build_subdir host_subdir target_subdir CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CXX CXXFLAGS ac_ct_CXX GNATBIND ac_ct_GNATBIND GNATMAKE ac_ct_GNATMAKE do_compare gmplibs gmpinc extra_mpfr_configure_flags extra_mpc_gmp_configure_flags extra_mpc_mpfr_configure_flags ppllibs pplinc clooglibs clooginc stage1_languages SYSROOT_CFLAGS_FOR_TARGET DEBUG_PREFIX_CFLAGS_FOR_TARGET CFLAGS_FOR_TARGET CXXFLAGS_FOR_TARGET RPATH_ENVVAR GCC_SHLIB_SUBDIR tooldir build_tooldir CONFIGURE_GDB_TK GDB_TK INSTALL_GDB_TK build_configargs build_configdirs host_configargs configdirs target_configargs AR_FOR_BUILD AS_FOR_BUILD CC_FOR_BUILD CFLAGS_FOR_BUILD CXXFLAGS_FOR_BUILD CXX_FOR_BUILD DLLTOOL_FOR_BUILD GCJ_FOR_BUILD GFORTRAN_FOR_BUILD LDFLAGS_FOR_BUILD LD_FOR_BUILD NM_FOR_BUILD RANLIB_FOR_BUILD WINDMC_FOR_BUILD WINDRES_FOR_BUILD config_shell YACC BISON M4 LEX FLEX MAKEINFO EXPECT RUNTEST AR AS DLLTOOL LD LIPO NM RANLIB STRIP WINDRES WINDMC OBJCOPY OBJDUMP CC_FOR_TARGET CXX_FOR_TARGET GCC_FOR_TARGET GCJ_FOR_TARGET GFORTRAN_FOR_TARGET AR_FOR_TARGET AS_FOR_TARGET DLLTOOL_FOR_TARGET LD_FOR_TARGET LIPO_FOR_TARGET NM_FOR_TARGET OBJDUMP_FOR_TARGET RANLIB_FOR_TARGET STRIP_FOR_TARGET WINDRES_FOR_TARGET WINDMC_FOR_TARGET RAW_CXX_FOR_TARGET FLAGS_FOR_TARGET COMPILER_AS_FOR_TARGET COMPILER_LD_FOR_TARGET COMPILER_NM_FOR_TARGET MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT stage1_cflags stage1_checking stage2_werror_flag datarootdir docdir pdfdir htmldir LIBOBJS LTLIBOBJS'
 ac_subst_files='serialization_dependencies host_makefile_frag target_makefile_frag alphaieee_frag ospace_frag'
 ac_pwd=`pwd`
 
@@ -956,6 +956,12 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-build-libsubdir=DIR  Directory where to find libraries for build system
+  --with-mpc=PATH        specify prefix directory for installed MPC package.
+                          Equivalent to --with-mpc-include=PATH/include
+                          plus --with-mpc-lib=PATH/lib
+  --with-mpc-include=PATH
+                          specify directory for installed MPC include files
+  --with-mpc-lib=PATH    specify directory for the installed MPC library
   --with-mpfr-dir=PATH    this option has been REMOVED
   --with-mpfr=PATH        specify prefix directory for installed MPFR package.
                           Equivalent to --with-mpfr-include=PATH/include
@@ -1887,7 +1893,7 @@ build_tools="build-texinfo build-byacc build-flex build-bison build-m4 build-fix
 
 # these libraries are used by various programs built for the host environment
 #
-host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr ppl cloog libiconv"
+host_libs="intl mmalloc libiberty opcodes bfd readline tcl tk itcl libgui zlib libcpp libdecnumber gmp mpfr mpc ppl cloog libiconv"
 
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
@@ -4498,10 +4504,54 @@ do_compare="$gcc_cv_prog_cmp_skip"
 
 
 
-# Check for GMP and MPFR
+# Check for GMP, MPFR and MPC
 gmplibs="-lmpfr -lgmp"
 gmpinc=
 have_gmp=no
+mpclibs=
+mpcinc=
+have_mpc=no
+
+# Specify a location for mpc
+# check for this first so it ends up on the link line before mpfr.
+
+# Check whether --with-mpc or --without-mpc was given.
+if test "${with_mpc+set}" = set; then
+  withval="$with_mpc"
+
+fi;
+
+# Check whether --with-mpc_include or --without-mpc_include was given.
+if test "${with_mpc_include+set}" = set; then
+  withval="$with_mpc_include"
+
+fi;
+
+# Check whether --with-mpc_lib or --without-mpc_lib was given.
+if test "${with_mpc_lib+set}" = set; then
+  withval="$with_mpc_lib"
+
+fi;
+
+if test "x$with_mpc" != x; then
+  mpclibs="-L$with_mpc/lib -lmpc"
+  mpcinc="-I$with_mpc/include $mpcinc"
+fi
+if test "x$with_mpc_include" != x; then
+  mpcinc="-I$with_mpc_include $mpcinc"
+fi
+if test "x$with_mpc_lib" != x; then
+  mpclibs="-L$with_mpc_lib -lmpc"
+fi
+if test "x$with_mpc$with_mpc_include$with_mpc_lib" = x && test -d ${srcdir}/mpc; then
+  mpclibs='-L$$r/$(HOST_SUBDIR)/mpc/src/.libs -L$$r/$(HOST_SUBDIR)/mpc/src/_libs -lmpc'
+  mpcinc='-I$$s/mpc/src '"$mpcinc"
+  # Do not test the mpc version.  Assume that it is sufficient, since
+  # it is in the source tree, and the library has not been built yet
+  # but it would be included on the link line in the version check below
+  # hence making the test fail.
+  have_mpc=yes
+fi
 
 # Specify a location for mpfr
 # check for this first so it ends up on the link line before gmp.
@@ -4548,6 +4598,7 @@ fi
 if test "x$with_mpfr$with_mpfr_include$with_mpfr_lib" = x && test -d ${srcdir}/mpfr; then
   gmplibs='-L$$r/$(HOST_SUBDIR)/mpfr/.libs -L$$r/$(HOST_SUBDIR)/mpfr/_libs '"$gmplibs"
   gmpinc='-I$$r/$(HOST_SUBDIR)/mpfr -I$$s/mpfr '"$gmpinc"
+  extra_mpc_mpfr_configure_flags='--with-mpfr-include=$$s/mpfr'
   # Do not test the mpfr version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
   # but it would be included on the link line in the version check below
@@ -4601,6 +4652,7 @@ if test "x$with_gmp$with_gmp_include$with_gmp_lib" = x && test -d ${srcdir}/gmp;
   gmplibs='-L$$r/$(HOST_SUBDIR)/gmp/.libs -L$$r/$(HOST_SUBDIR)/gmp/_libs '"$gmplibs"
   gmpinc='-I$$r/$(HOST_SUBDIR)/gmp -I$$s/gmp '"$gmpinc"
   extra_mpfr_configure_flags='--with-gmp-build=$$r/$(HOST_SUBDIR)/gmp'
+  extra_mpc_gmp_configure_flags='--with-gmp-include=$$r/$(HOST_SUBDIR)/gmp'
   # Do not test the gmp version.  Assume that it is sufficient, since
   # it is in the source tree, and the library has not been built yet
   # but it would be included on the link line in the version check below
@@ -4668,9 +4720,8 @@ echo "${ECHO_T}no" >&6; have_gmp=no
 fi
 rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
+  # If we have GMP, check the MPFR version.
   if test x"$have_gmp" = xyes; then
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS $gmplibs"
         echo "$as_me:$LINENO: checking for correct version of mpfr.h" >&5
 echo $ECHO_N "checking for correct version of mpfr.h... $ECHO_C" >&6
     cat >conftest.$ac_ext <<_ACEOF
@@ -4688,6 +4739,171 @@ main ()
     #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,1)
     choke me
     #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <gmp.h>
+    #include <mpfr.h>
+int
+main ()
+{
+
+    #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,2)
+    choke me
+    #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+echo "$as_me:$LINENO: result: buggy but acceptable" >&5
+echo "${ECHO_T}buggy but acceptable" >&6
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; have_gmp=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+  fi
+
+  # Check for the MPC header version.
+  if test x"$have_mpc" != xyes ; then
+    CFLAGS="$CFLAGS $mpcinc"
+    echo "$as_me:$LINENO: checking for the correct version of mpc.h" >&5
+echo $ECHO_N "checking for the correct version of mpc.h... $ECHO_C" >&6
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <mpc.h>
+int
+main ()
+{
+
+    #if MPC_VERSION < MPC_VERSION_NUM (0,6,0)
+    choke me
+    #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; have_mpc=maybe
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; have_mpc=no; mpclibs= ; mpcinc=
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+  fi
+
+  # Now check the MPFR library.
+  if test x"$have_gmp" = xyes; then
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS $gmplibs"
+    echo "$as_me:$LINENO: checking for the correct version of the gmp/mpfr libraries" >&5
+echo $ECHO_N "checking for the correct version of the gmp/mpfr libraries... $ECHO_C" >&6
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <gmp.h>
+    #include <mpfr.h>
+int
+main ()
+{
+
     mpfr_t n;
     mpfr_t x;
     int t;
@@ -4723,22 +4939,52 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  cat >conftest.$ac_ext <<_ACEOF
+  echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; have_gmp=no
+fi
+rm -f conftest.err conftest.$ac_objext \
+      conftest$ac_exeext conftest.$ac_ext
+    LIBS="$saved_LIBS"
+  fi
+
+  if test x"$have_mpc" = xmaybe; then
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS $mpclibs $gmplibs"
+    echo "$as_me:$LINENO: checking for the correct version of the mpc library" >&5
+echo $ECHO_N "checking for the correct version of the mpc library... $ECHO_C" >&6
+    cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
 cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
-#include <gmp.h>
-    #include <mpfr.h>
+#include <mpc.h>
 int
 main ()
 {
 
-    #if MPFR_VERSION < MPFR_VERSION_NUM(2,3,2)
-    choke me
-    #endif
-    mpfr_t n; mpfr_init(n);
+    mpc_t n;
+    mpc_init2 (n, 53);
+    mpc_set_ui_ui (n, 1, 1, MPC_RNDNN);
+    mpc_sin (n, n, MPC_RNDNN);
+    mpc_cos (n, n, MPC_RNDNN);
+    mpc_tan (n, n, MPC_RNDNN);
+    mpc_sinh (n, n, MPC_RNDNN);
+    mpc_cosh (n, n, MPC_RNDNN);
+    mpc_tanh (n, n, MPC_RNDNN);
+    mpc_exp (n, n, MPC_RNDNN);
+    mpc_log (n, n, MPC_RNDNN);
+    mpc_sqrt (n, n, MPC_RNDNN);
+    mpc_proj (n, n, MPC_RNDNN);
+    mpc_neg (n, n, MPC_RNDNN);
+    mpc_sqr (n, n, MPC_RNDNN);
+    mpc_clear (n);
 
   ;
   return 0;
@@ -4767,27 +5013,19 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
   echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6
-else
-  echo "$as_me: failed program was:" >&5
-sed 's/^/| /' conftest.$ac_ext >&5
-
-echo "$as_me:$LINENO: result: buggy but acceptable" >&5
-echo "${ECHO_T}buggy but acceptable" >&6
-fi
-rm -f conftest.err conftest.$ac_objext \
-      conftest$ac_exeext conftest.$ac_ext
+echo "${ECHO_T}yes" >&6; have_mpc=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
 echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6; have_gmp=no
+echo "${ECHO_T}no" >&6; have_mpc=no; mpclibs= ; mpcinc=
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
-      LIBS="$saved_LIBS"
+    LIBS="$saved_LIBS"
   fi
+
   CFLAGS="$saved_CFLAGS"
 
   if test x$have_gmp != xyes; then
@@ -4811,7 +5049,12 @@ They may be located in separate packages." >&2;}
   fi
 fi
 
-# Flags needed for both GMP and/or MPFR
+gmpinc="$mpcinc $gmpinc"
+gmplibs="$mpclibs $gmplibs"
+
+# Flags needed for both GMP, MPFR and/or MPC.
+
+
 
 
 
@@ -13262,6 +13505,8 @@ s,@do_compare@,$do_compare,;t t
 s,@gmplibs@,$gmplibs,;t t
 s,@gmpinc@,$gmpinc,;t t
 s,@extra_mpfr_configure_flags@,$extra_mpfr_configure_flags,;t t
+s,@extra_mpc_gmp_configure_flags@,$extra_mpc_gmp_configure_flags,;t t
+s,@extra_mpc_mpfr_configure_flags@,$extra_mpc_mpfr_configure_flags,;t t
 s,@ppllibs@,$ppllibs,;t t
 s,@pplinc@,$pplinc,;t t
 s,@clooglibs@,$clooglibs,;t t

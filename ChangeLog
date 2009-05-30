@@ -1,3 +1,10 @@
+2009-05-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.def: Add MPC support and dependencies.
+	* configure.ac: Likewise.  Reorganize GMP/MPFR checks.
+
+	* Makefile.in, configure: Regenerate.
+
 2009-05-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.tpl (all): Avoid harmless warning in make all when

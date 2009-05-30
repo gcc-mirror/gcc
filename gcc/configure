@@ -24840,6 +24840,14 @@ fi
 
 
 
+case "${GMPLIBS}" in
+  *-lmpc*)
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_mpc 1
+_ACEOF
+ ;;
+esac
+
 
 
 
