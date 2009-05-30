@@ -1,3 +1,9 @@
+2009-05-30  Eli Zaretskii  <eliz@gnu.org>
+
+	* snprintf.c: Doc fix.
+
+	* vsnprintf.c: Doc fix.
+
 2009-05-29  Kai Tietz  <kai.tietz@onevision.com>
 
         * pex-win32.c (pex_win32_fdopenr): Set INHERIT to false.

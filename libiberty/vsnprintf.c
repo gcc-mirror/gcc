@@ -27,13 +27,15 @@ the executable file might be covered by the GNU General Public License. */
 
 @deftypefn Supplemental int vsnprintf (char *@var{buf}, size_t @var{n}, const char *@var{format}, va_list @var{ap})
 
-This function is similar to vsprintf, but it will print at most
-@var{n} characters.  On error the return value is -1, otherwise it
-returns the number of characters that would have been printed had
-@var{n} been sufficiently large, regardless of the actual value of
-@var{n}.  Note some pre-C99 system libraries do not implement this
-correctly so users cannot generally rely on the return value if the
-system version of this function is used.
+This function is similar to @code{vsprintf}, but it will write to
+@var{buf} at most @code{@var{n}-1} bytes of text, followed by a
+terminating null byte, for a total of @var{n} bytes.  On error the
+return value is -1, otherwise it returns the number of characters that
+would have been printed had @var{n} been sufficiently large,
+regardless of the actual value of @var{n}.  Note some pre-C99 system
+libraries do not implement this correctly so users cannot generally
+rely on the return value if the system version of this function is
+used.
 
 @end deftypefn
 
