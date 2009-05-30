@@ -361,15 +361,14 @@ typedef struct {
   __gthread_recursive_mutex_init_function
 #define __GTHREAD_RECURSIVE_MUTEX_INIT_DEFAULT {-1, 0, 0, 0}
 
-#if __MINGW32_MAJOR_VERSION >= 1 || \
-  (__MINGW32_MAJOR_VERSION == 0 && __MINGW32_MINOR_VERSION > 2)
+#if defined (_WIN32) && !defined(__CYGWIN__)
 #define MINGW32_SUPPORTS_MT_EH 1
 /* Mingw runtime >= v0.3 provides a magic variable that is set to nonzero
    if -mthreads option was specified, or 0 otherwise. This is to get around
    the lack of weak symbols in PE-COFF.  */
 extern int _CRT_MT;
 extern int __mingwthr_key_dtor (unsigned long, void (*) (void *));
-#endif /* __MINGW32__ version */
+#endif /* _WIN32 && !__CYGWIN__ */
 
 /* The Windows95 kernel does not export InterlockedCompareExchange.
    This provides a substitute.   When building apps that reference
