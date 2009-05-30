@@ -1,3 +1,45 @@
+2009-05-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+
+	2009-05-28  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/39754
+	* g++.dg/template/canon-type-1.C: New test.
+	* g++.dg/template/canon-type-2.C: Likewise.
+	* g++.dg/template/canon-type-3.C: Likewise.
+	* g++.dg/template/canon-type-4.C: Likewise.
+	* g++.dg/template/canon-type-5.C: Likewise.
+	* g++.dg/template/canon-type-6.C: Likewise.
+	* g++.dg/template/canon-type-7.C: Likewise.
+
+	2009-05-28  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/40254
+	* gcc.dg/vect/pr40254.c: New test.
+
+	2009-05-26  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40252
+	* gcc.c-torture/compile/pr40252.c: New testcase.
+
+	2009-05-26  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/40007
+	* g++.dg/template/typedef18.C: New test.
+	* g++.dg/template/typedef19.C: Likewise.
+	* g++.dg/template/typedef20.C: Likewise.
+
+	2009-05-25  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/40238
+	* gcc.dg/vect/pr40238.c: New test.
+
+	2009-05-24  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40233
+	* gcc.c-torture/compile/pr40233.c: New testcase.
+
 2009-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40291
