@@ -141,8 +141,7 @@
    (UNSPEC_ONES 12)])
 
 (define_constants
-  [(UNSPEC_VOLATILE_EH_RETURN 0)
-   (UNSPEC_VOLATILE_CSYNC 1)
+  [(UNSPEC_VOLATILE_CSYNC 1)
    (UNSPEC_VOLATILE_SSYNC 2)
    (UNSPEC_VOLATILE_LOAD_FUNCDESC 3)
    (UNSPEC_VOLATILE_STORE_EH_HANDLER 4)
@@ -2573,8 +2572,7 @@
   "bfin_expand_epilogue (0, 0, 1); DONE;")
 
 (define_expand "eh_return"
-  [(unspec_volatile [(match_operand:SI 0 "register_operand" "")]
-		    UNSPEC_VOLATILE_EH_RETURN)]
+  [(use (match_operand:SI 0 "register_operand" ""))]
   ""
 {
   emit_insn (gen_eh_store_handler (EH_RETURN_HANDLER_RTX, operands[0]));
@@ -2592,11 +2590,10 @@
   [(set_attr "type" "mcst")])
 
 (define_insn_and_split "eh_return_internal"
-  [(set (pc)
-	(unspec_volatile [(reg:SI REG_P2)] UNSPEC_VOLATILE_EH_RETURN))]
+  [(eh_return)]
   ""
   "#"
-  "reload_completed"
+  "epilogue_completed"
   [(const_int 1)]
   "bfin_expand_epilogue (1, 1, 0); DONE;")
 

@@ -1672,8 +1672,7 @@ try_crossjump_to_edge (int mode, edge e1, edge e2)
   /* Skip possible basic block header.  */
   if (LABEL_P (newpos1))
     newpos1 = NEXT_INSN (newpos1);
-
-  if (NOTE_P (newpos1))
+  if (NOTE_INSN_BASIC_BLOCK_P (newpos1))
     newpos1 = NEXT_INSN (newpos1);
 
   redirect_from = split_block (src1, PREV_INSN (newpos1))->src;

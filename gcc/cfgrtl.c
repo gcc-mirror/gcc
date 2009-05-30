@@ -86,8 +86,16 @@ static void rtl_make_forwarder_block (edge);
 static int
 can_delete_note_p (const_rtx note)
 {
-  return (NOTE_KIND (note) == NOTE_INSN_DELETED
-	  || NOTE_KIND (note) == NOTE_INSN_BASIC_BLOCK);
+  switch (NOTE_KIND (note))
+    {
+    case NOTE_INSN_DELETED:
+    case NOTE_INSN_BASIC_BLOCK:
+    case NOTE_INSN_EPILOGUE_BEG:
+      return true;
+
+    default:
+      return false;
+    }
 }
 
 /* True if a given label can be deleted.  */

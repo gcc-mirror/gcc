@@ -70,4 +70,8 @@ INSN_NOTE (BASIC_BLOCK)
    between hot and cold text sections.  */
 INSN_NOTE (SWITCH_TEXT_SECTIONS)
 
+/* Mark the restore point after an epilogue changed CFI data.  Used only
+   when an epilogue appears in the middle of a function.  */
+INSN_NOTE (CFA_RESTORE_STATE)
+
 #undef INSN_NOTE

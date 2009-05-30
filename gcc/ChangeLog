@@ -1,3 +1,75 @@
+2009-05-29  Richard Henderson  <rth@redhat.com>
+
+	* cfgcleanup.c (try_crossjump_to_edge): Only skip past
+	NOTE_INSN_BASIC_BLOCK.
+	* cfglayout.c (duplicate_insn_chain): Copy epilogue insn marks.
+	Duplicate NOTE_INSN_EPILOGUE_BEG notes.
+	* cfgrtl.c (can_delete_note_p): Allow NOTE_INSN_EPILOGUE_BEG
+	to be deleted.
+	* dwarf2out.c (struct cfa_loc): Change indirect field to bitfield,
+	add in_use field.
+	(add_cfi): Disable check redefining cfa away from drap.
+	(lookup_cfa_1): Add remember argument; handle remember/restore.
+	(lookup_cfa): Pass remember argument.
+	(cfa_remember): New.
+	(compute_barrier_args_size_1): Remove sibcall check.
+	(dwarf2out_frame_debug_def_cfa): New.
+	(dwarf2out_frame_debug_adjust_cfa): New.
+	(dwarf2out_frame_debug_cfa_offset): New.
+	(dwarf2out_frame_debug_cfa_register): New.
+	(dwarf2out_frame_debug_cfa_restore): New.
+	(dwarf2out_frame_debug): Handle REG_CFA_* notes.
+	(dwarf2out_begin_epilogue): New.
+	(dwarf2out_frame_debug_restore_state): New.
+	(dw_cfi_oprnd1_desc): Handle DW_CFA_remember_state,
+	DW_CFA_restore_state.
+	(output_cfi_directive): Likewise.
+	(convert_cfa_to_fb_loc_list): Likewise.
+	(dw_cfi_oprnd1_desc): Handle DW_CFA_restore.
+	* dwarf2out.h: Update.
+	* emit-rtl.c (try_split): Don't split RTX_FRAME_RELATED_P.
+	(copy_insn_1): Early out for null.
+	* final.c (final_scan_insn): Call dwarf2out_begin_epilogue
+	and dwarf2out_frame_debug_restore_state.
+	* function.c (prologue, epilogue, sibcall_epilogue): Remove.
+	(prologue_insn_hash, epilogue_insn_hash): New.
+	(free_after_compilation): Adjust freeing accordingly.
+	(record_insns): Create hash table if needed; push insns into
+	hash instead of array.
+	(maybe_copy_epilogue_insn): New.
+	(contains): Search hash table instead of array.
+	(sibcall_epilogue_contains): Remove.
+	(thread_prologue_and_epilogue_insns): Split eh_return insns
+	and mark them as epilogues.
+	(reposition_prologue_and_epilogue_notes): Rewrite epilogue
+	scanning in terms of basic blocks.
+	* insn-notes.def (CFA_RESTORE_STATE): New.
+	* jump.c (returnjump_p_1): Accept EH_RETURN.
+	(eh_returnjump_p_1, eh_returnjump_p): New.
+	* reg-notes.def (CFA_DEF_CFA, CFA_ADJUST_CFA, CFA_OFFSET,
+	CFA_REGISTER, CFA_RESTORE): New.
+	* rtl.def (EH_RETURN): New.
+	* rtl.h (eh_returnjump_p, maybe_copy_epilogue_insn): Declare.
+
+	* config/bfin/bfin.md (UNSPEC_VOLATILE_EH_RETURN): Remove.
+	(eh_return_internal): Use eh_return rtx; split w/ epilogue.
+
+	* config/i386/i386.c (gen_push): Update cfa state.
+	(pro_epilogue_adjust_stack): Add set_cfa argument.  When true,
+	add a CFA_ADJUST_CFA note.
+	(ix86_dwarf_handle_frame_unspec): Remove.
+	(ix86_expand_prologue): Update cfa state.
+	(ix86_emit_restore_reg_using_pop): New.
+	(ix86_emit_restore_regs_using_pop): New.
+	(ix86_emit_leave): New.
+	(ix86_emit_restore_regs_using_mov): Add CFA_RESTORE notes.
+	(ix86_expand_epilogue): Add notes for unwinding the epilogue.
+	* config/i386/i386.h (struct machine_cfa_state): New.
+	(ix86_cfa_state): New.
+	* config/i386/i386.md (UNSPEC_EH_RETURN): Remove.
+	(eh_return_internal): Merge from eh_return_<mode>,
+	use eh_return rtx, split w/ epilogue.
+
 2009-05-29  Ian Lance Taylor  <iant@google.com>
 
 	* builtins.c (validate_gimple_arglist): Don't use va_arg with
