@@ -1,3 +1,9 @@
+2009-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/40304
+	* config/i386/i386.c (pro_epilogue_adjust_stack): Mark insns
+	frame related even if !set_cfa && style < 0.
+
 2009-05-30  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/mingw-tls.c: New file.

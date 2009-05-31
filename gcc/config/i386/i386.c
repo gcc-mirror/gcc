@@ -8026,6 +8026,8 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
       gcc_assert (style);
       r11 = gen_rtx_REG (DImode, R11_REG);
       insn = emit_insn (gen_rtx_SET (DImode, r11, offset));
+      if (style < 0)
+	RTX_FRAME_RELATED_P (insn) = 1;
       insn = emit_insn (gen_pro_epilogue_adjust_stack_rex64_2 (dest, src, r11,
 							       offset));
     }
@@ -8043,6 +8045,8 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
       add_reg_note (insn, REG_CFA_ADJUST_CFA, r);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
+  else if (style < 0)
+    RTX_FRAME_RELATED_P (insn) = 1;
 }
 
 /* Find an available register to be used as dynamic realign argument
