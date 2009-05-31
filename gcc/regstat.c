@@ -1,5 +1,5 @@
 /* Scanning of rtl for dataflow analysis.
-   Copyright (C) 2007, 2008
+   Copyright (C) 2007, 2008, 2009
    Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck (zadeck@naturalbridge.com).
 
@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 
 
-struct regstat_n_sets_and_refs_t *regstat_n_sets_and_refs;
 struct regstat_n_sets_and_refs_t *regstat_n_sets_and_refs;
 
 /*----------------------------------------------------------------------------
