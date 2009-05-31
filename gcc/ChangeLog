@@ -1,3 +1,12 @@
+2009-05-31  Jason Merrill  <jason@redhat.com>
+
+	* tree-pretty-print.c (print_call_name): Take the callee, not the
+	call itself.  Make non-static.  Use dump_function_name for
+	functions.
+	(dump_generic_node): Adjust.
+	* diagnostic.h: Declare print_call_name.
+	* gimple-pretty-print.c (dump_gimple_call): Use it.
+
 2009-05-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.md (ashldi3_std): New define_expand.
