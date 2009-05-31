@@ -1,5 +1,10 @@
 2009-05-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
+	* config/sh/sh.md (ashldi3_std): New define_expand.
+	(ashldi3): Use it.
+
+2009-05-31  Kaz Kojima  <kkojima@gcc.gnu.org>
+
 	PR target/40313
 	* config/sh/sh.c: Include debug.h.
 	(sh_expand_epilogue): Emit a blockage insn before the frame
