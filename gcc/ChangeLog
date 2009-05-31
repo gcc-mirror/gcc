@@ -1,6 +1,11 @@
 2009-05-31  Ian Lance Taylor  <iant@google.com>
 
-	* Makefile.in (except.o): Depent upon gt-except.h, not
+	* regstat.c (regstat_n_sets_and_refs): Remove duplicate
+	definition.
+
+2009-05-31  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.in (except.o): Depend upon gt-except.h, not
 	gt-$(EXCEPT_H).
 	(ipa-cp.o): Depend upon $(FIBHEAP_H) and $(PARAMS_H).
 	(ipa-reference.o): Depend upon gt-ipa-reference.h.
