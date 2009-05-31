@@ -728,9 +728,6 @@ known_alignment_for_access_p (struct data_reference *data_ref_info)
 extern FILE *vect_dump;
 extern LOC vect_loop_location;
 
-/* Bitmap of virtual variables to be renamed.  */
-extern bitmap vect_memsyms_to_rename;
-
 /*-----------------------------------------------------------------*/
 /* Function prototypes.                                            */
 /*-----------------------------------------------------------------*/

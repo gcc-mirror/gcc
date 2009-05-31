@@ -81,9 +81,6 @@ static enum verbosity_levels user_vect_verbosity_level = MAX_VERBOSITY_LEVEL;
 /* Loop or bb location.  */
 LOC vect_location;
 
-/* Bitmap of virtual variables to be renamed.  */
-bitmap vect_memsyms_to_rename;
-
 /* Vector mapping GIMPLE stmt to stmt_vec_info. */
 VEC(vec_void_p,heap) *stmt_vec_info_vec;
 
@@ -206,10 +203,6 @@ vectorize_loops (void)
   /* Fix the verbosity level if not defined explicitly by the user.  */
   vect_set_dump_settings (false);
 
-  /* Allocate the bitmap that records which virtual variables  
-     need to be renamed.  */
-  vect_memsyms_to_rename = BITMAP_ALLOC (NULL);
-
   init_stmt_vec_info_vec ();
 
   /*  ----------- Analyze loops. -----------  */
@@ -244,7 +237,7 @@ vectorize_loops (void)
 
   /*  ----------- Finalize. -----------  */
 
-  BITMAP_FREE (vect_memsyms_to_rename);
+  mark_sym_for_renaming (gimple_vop (cfun));
 
   for (i = 1; i < vect_loops_num; i++)
     {
