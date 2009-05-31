@@ -1,3 +1,10 @@
+2009-05-31  Ian Lance Taylor  <iant@google.com>
+
+	* Makefile.in (except.o): Depent upon gt-except.h, not
+	gt-$(EXCEPT_H).
+	(ipa-cp.o): Depend upon $(FIBHEAP_H) and $(PARAMS_H).
+	(ipa-reference.o): Depend upon gt-ipa-reference.h.
+
 2009-05-31  Jason Merrill  <jason@redhat.com>
 
 	* tree-pretty-print.c (print_call_name): Take the callee, not the
