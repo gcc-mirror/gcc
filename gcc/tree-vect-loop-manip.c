@@ -371,7 +371,6 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
   basic_block orig_bb = loop->header;
   edge new_exit_e;
   tree current_new_name;
-  tree name;
   gimple_stmt_iterator gsi_orig, gsi_update;
 
   /* Create new bb between loop and new_merge_bb.  */
@@ -386,15 +385,6 @@ slpeel_update_phi_nodes_for_guard1 (edge guard_edge, struct loop *loop,
     {
       orig_phi = gsi_stmt (gsi_orig);
       update_phi = gsi_stmt (gsi_update);
-
-      /* Virtual phi; Mark it for renaming. We actually want to call
-	 mar_sym_for_renaming, but since all ssa renaming datastructures
-	 are going to be freed before we get to call ssa_update, we just
-	 record this name for now in a bitmap, and will mark it for
-	 renaming later.  */
-      name = PHI_RESULT (orig_phi);
-      if (!is_gimple_reg (SSA_NAME_VAR (name)))
-        bitmap_set_bit (vect_memsyms_to_rename, DECL_UID (SSA_NAME_VAR (name)));
 
       /** 1. Handle new-merge-point phis  **/
 

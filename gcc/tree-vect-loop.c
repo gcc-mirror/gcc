@@ -3654,10 +3654,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 			  !do_peeling_for_loop_bound,
 			  &cond_expr, &cond_expr_stmt_list);
 
-  /* CHECKME: we wouldn't need this if we called update_ssa once
-     for all loops.  */
-  bitmap_zero (vect_memsyms_to_rename);
-  
   /* If the loop has a symbolic number of iterations 'n' (i.e. it's not a
      compile time constant), or it is a constant that doesn't divide by the
      vectorization factor, then an epilog loop needs to be created.
@@ -3811,8 +3807,6 @@ vect_transform_loop (loop_vec_info loop_vinfo)
     }				/* BBs in loop */
 
   slpeel_make_loop_iterate_ntimes (loop, ratio);
-
-  mark_set_for_renaming (vect_memsyms_to_rename);
 
   /* The memory tags and pointers in vectorized statements need to
      have their SSA forms updated.  FIXME, why can't this be delayed

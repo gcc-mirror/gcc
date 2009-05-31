@@ -1,3 +1,14 @@
+2009-05-31  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1): Don't
+	mark phis for renaming.
+	* tree-vectorizer.c (vect_memsyms_to_rename): Remove.
+	(vectorize_loops): Don't allocate and free vect_memsyms_to_rename.
+	Call mark_sym_for_renaming.
+	* tree-vectorizer.h (vect_memsyms_to_rename): Remove.
+	* tree-vect-loop.c (vect_transform_loop): Remove vect_memsyms_to_rename
+	initialization and a call to mark_set_for_renaming.
+
 2009-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40304
