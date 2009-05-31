@@ -14,7 +14,7 @@ main1 (unsigned int x, unsigned int y)
 {
   int i;
   unsigned int *pin = &in[0];
-  unsigned int *pout = &out[2];
+  unsigned int *pout = &out[1];
   unsigned int a0, a1, a2, a3;
 
   /* Misaligned store.  */
@@ -29,10 +29,10 @@ main1 (unsigned int x, unsigned int y)
   *pout++ = a3 * y;
 
   /* Check results.  */
-  if (out[2] != (in[0] + 23) * x
-      || out[3] != (in[1] + 142) * y
-      || out[4] != (in[2] + 2) * x
-      || out[5] != (in[3] + 31) * y)
+  if (out[1] != (in[0] + 23) * x
+      || out[2] != (in[1] + 142) * y
+      || out[3] != (in[2] + 2) * x
+      || out[4] != (in[3] + 31) * y)
     abort();
 
   return 0;
