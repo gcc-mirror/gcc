@@ -14,11 +14,6 @@
 #include "gcc-plugin.h"
 
 
-/* The initialization routine exposed to and called by GCC. The spec of this
-   function is defined in gcc/gcc-plugin.h.
-
-   Note that this function needs to be named exactly "plugin_init".  */
-
 
 /* our callback is the same for all PLUGIN_GGC_START,
    PLUGIN_GGC_MARKING, PLUGIN_GGC_END events; it just increments the
@@ -35,12 +30,18 @@ static const struct ggc_root_tab our_xtratab[] = {
   LAST_GGC_ROOT_TAB
 };
 
+
+/* The initialization routine exposed to and called by GCC. The spec of this
+   function is defined in gcc/gcc-plugin.h.
+
+   Note that this function needs to be named exactly "plugin_init".  */
 int
-plugin_init ((struct plugin_name_args *plugin_info,
+plugin_init (struct plugin_name_args *plugin_info,
 	      struct plugin_gcc_version *version)
 {
   const char *plugin_name = plugin_info->base_name;
   int argc = plugin_info->argc;
+  int i = 0;
   struct plugin_argument *argv = plugin_info->argv;
   if (!plugin_default_version_check (version, version))
     return 1;
@@ -97,7 +98,9 @@ plugin_init ((struct plugin_name_args *plugin_info,
 			       (void *) our_xtratab);
 	}
     }
-}
+  /* plugin initialization succeeded */
+  return 0;
+ }
 
 static void
 increment_callback (void *gcc_data, void *user_data)

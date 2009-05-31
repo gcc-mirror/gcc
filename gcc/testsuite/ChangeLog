@@ -1,3 +1,9 @@
+
+2009-05-31  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* gcc.dg/plugin/ggcplug.c: moved comment.
+	(plugin_init): fixed typo, declared i, returned 0 at end.
+
 2009-05-31  Ira Rosen  <irar@il.ibm.com>
 
 	PR testsuite/40244
@@ -132,9 +138,9 @@
 	patterns to reflect frontend changes.
 	* gfortran.dg/vector_subscript_4.f90: Likewise.
 
-2009-05-27  Olivier Hainque  <hainque@adacore.com>	
+2009-05-27  Olivier Hainque  <hainque@adacore.com>
 	    Eric Botcazou  <botcazou@adacore.com>
-    
+
 	* gcc.c-torture/execute/align-nest.c: New testcase.
 	* gnat.dg/misaligned_nest.adb: New testcase.
 
@@ -159,6 +165,13 @@
 	PR libfortran/40187
 	* gfortran.dg/c_f_pointer_shape_tests_4.f03:  New file.
 	* gfortran.dg/c_f_pointer_shape_tests_4_driver.c:  New file.
+
+2009-05-26  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* testsuite/gcc.dg/plugin/plugin.exp: Added ggcplug.c test plugin
+	with ggcplug-test-1.c for testing PLUGIN_GGC_MARKING etc...
+	* testsuite/gcc.dg/plugin/ggcplug-test-1.c: Added new file.
+	* testsuite/gcc.dg/plugin/ggcplug.c: Added new file.
 
 2009-05-26  Tobias Burnus  <burnus@net-b.de>
 
