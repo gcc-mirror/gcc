@@ -1,3 +1,8 @@
+2009-05-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/thumb2.md (thumb2_extendsidi2): Add a split sub-pattern.
+	(thumb2_extendqidi2): New pattern.
+
 2009-05-31  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vect-loop-manip.c (slpeel_update_phi_nodes_for_guard1): Don't
