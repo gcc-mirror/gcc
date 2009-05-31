@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Local functions, macros and variables.  */
 static const char *op_symbol (const_tree);
 static void pretty_print_string (pretty_printer *, const char*);
-static void print_call_name (pretty_printer *, const_tree);
 static void newline_and_indent (pretty_printer *, int);
 static void maybe_init_pretty_print (FILE *);
 static void print_struct_decl (pretty_printer *, const_tree, int, int);
@@ -1329,7 +1328,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       break;
 
     case CALL_EXPR:
-      print_call_name (buffer, node);
+      print_call_name (buffer, CALL_EXPR_FN (node));
 
       /* Print parameters.  */
       pp_space (buffer);
@@ -2662,32 +2661,31 @@ op_symbol (const_tree op)
   return op_symbol_code (TREE_CODE (op));
 }
 
-/* Prints the name of a CALL_EXPR.  */
+/* Prints the name of a call.  NODE is the CALL_EXPR_FN of a CALL_EXPR or
+   the gimple_call_fn of a GIMPLE_CALL.  */
 
-static void
-print_call_name (pretty_printer *buffer, const_tree node)
+void
+print_call_name (pretty_printer *buffer, tree node)
 {
-  tree op0;
-
-  gcc_assert (TREE_CODE (node) == CALL_EXPR);
-
-  op0 = CALL_EXPR_FN (node);
+  tree op0 = node;
 
   if (TREE_CODE (op0) == NON_LVALUE_EXPR)
     op0 = TREE_OPERAND (op0, 0);
 
+ again:
   switch (TREE_CODE (op0))
     {
     case VAR_DECL:
     case PARM_DECL:
+    case FUNCTION_DECL:
       dump_function_name (buffer, op0);
       break;
 
     case ADDR_EXPR:
     case INDIRECT_REF:
     case NOP_EXPR:
-      dump_generic_node (buffer, TREE_OPERAND (op0, 0), 0, 0, false);
-      break;
+      op0 = TREE_OPERAND (op0, 0);
+      goto again;
 
     case COND_EXPR:
       pp_string (buffer, "(");
