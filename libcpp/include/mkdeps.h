@@ -23,6 +23,10 @@ along with this program; see the file COPYING3.  If not see
 #ifndef LIBCPP_MKDEPS_H
 #define LIBCPP_MKDEPS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* This is the data structure used by all the functions in mkdeps.c.
    It's quite straightforward, but should be treated as opaque.  */
 
@@ -75,5 +79,9 @@ extern int deps_restore (struct deps *, FILE *, const char *);
    the intermediate-file deletion misfeature in Make, in some
    automatic dependency schemes.  */
 extern void deps_phony_targets (const struct deps *, FILE *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ! LIBCPP_MKDEPS_H */

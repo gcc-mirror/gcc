@@ -1,3 +1,11 @@
+2009-06-01  Ian Lance Taylor  <iant@google.com>
+
+	* include/cpp-id-data.h: Add extern "C".
+	* include/line-map.h: Likewise.
+	* include/mkdeps.h: Likewise.
+	* include/symtab.h: Likewise.
+	* internal.h: Likewise.
+
 2009-05-15  Ian Lance Taylor  <iant@google.com>
 
 	* include/cpplib.h (enum cpp_builtin_type): Rename from enum
