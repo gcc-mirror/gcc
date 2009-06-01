@@ -1,3 +1,7 @@
+2009-06-01  Luis Machado  <luisgpm@br.ibm.com>
+
+	* alias.c (find_base_term): Check for NULL term before returning.
+
 2009-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	Revert due to PR40320:
