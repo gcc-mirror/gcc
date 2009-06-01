@@ -1196,15 +1196,15 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	}
     }
 
-  vect_versioning_for_alias_required =
-    (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)) > 0);
+  vect_versioning_for_alias_required 
+    = LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo);
 
   /* Temporarily, if versioning for alias is required, we disable peeling
      until we support peeling and versioning.  Often peeling for alignment
      will require peeling for loop-bound, which in turn requires that we
      know how to adjust the loop ivs after the loop.  */
   if (vect_versioning_for_alias_required
-       || !vect_can_advance_ivs_p (loop_vinfo)
+      || !vect_can_advance_ivs_p (loop_vinfo)
       || !slpeel_can_duplicate_loop_p (loop, single_exit (loop)))
     do_peeling = false;
 
@@ -1366,7 +1366,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
         }
       
       /* Versioning requires at least one misaligned data reference.  */
-      if (VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)) == 0)
+      if (!LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo))
         do_versioning = false;
       else if (!do_versioning)
         VEC_truncate (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo), 0);
@@ -2356,10 +2356,9 @@ vect_create_data_ref_ptr (gimple stmt, struct loop *at_loop,
       tree data_ref_base = base_name;
       fprintf (vect_dump, "create vector-pointer variable to type: ");
       print_generic_expr (vect_dump, vectype, TDF_SLIM);
-      if (TREE_CODE (data_ref_base) == VAR_DECL)
-        fprintf (vect_dump, "  vectorizing a one dimensional array ref: ");
-      else if (TREE_CODE (data_ref_base) == ARRAY_REF)
-        fprintf (vect_dump, "  vectorizing a multidimensional array ref: ");
+      if (TREE_CODE (data_ref_base) == VAR_DECL 
+          || TREE_CODE (data_ref_base) == ARRAY_REF)
+        fprintf (vect_dump, "  vectorizing an array ref: ");
       else if (TREE_CODE (data_ref_base) == COMPONENT_REF)
         fprintf (vect_dump, "  vectorizing a record based array ref: ");
       else if (TREE_CODE (data_ref_base) == SSA_NAME)

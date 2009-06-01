@@ -1,3 +1,31 @@
+2009-06-01  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-optimization/39129
+	* tree-vect-loop-manip.c (conservative_cost_threshold): Change the 
+	printed message.
+	(vect_do_peeling_for_loop_bound): Use 
+	LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT and
+	LOOP_REQUIRES_VERSIONING_FOR_ALIAS macros.
+	(vect_loop_versioning): Likewise.
+	(vect_create_cond_for_alias_checks): Fix indentation.
+	* tree-vectorizer.h (struct _loop_vec_info): Fix indentation of the 
+	macros.
+	(LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT): Define.
+	(LOOP_REQUIRES_VERSIONING_FOR_ALIAS): Likewise.
+	* tree-vect-loop.c (vect_analyze_loop_form): Change "too many BBs" to 
+	"control flow in loop".
+	(vect_estimate_min_profitable_iters): Use 
+	LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT and
+	LOOP_REQUIRES_VERSIONING_FOR_ALIAS macros.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): Likewise.
+	(vect_create_data_ref_ptr): Don't mention array dimension in printing.
+	* tree-vect-stmts.c (vectorizable_store): Replace the check that the 
+	statement belongs to a group of strided accesses with the exact code 
+	check.
+	(vectorizable_load): Likewise.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Spell out "basic block".
+	(vect_slp_analyze_bb, vect_slp_transform_bb): Likewise.
+
 2009-06-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* config/freebsd-stdint.h: New file.

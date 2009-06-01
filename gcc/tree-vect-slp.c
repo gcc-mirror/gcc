@@ -912,7 +912,8 @@ vect_analyze_slp_instance (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo,
   if (unrolling_factor != 1 && !loop_vinfo)
     {
       if (vect_print_dump_info (REPORT_SLP))
-        fprintf (vect_dump, "Build SLP failed: unrolling required in BB SLP");
+        fprintf (vect_dump, "Build SLP failed: unrolling required in basic"
+                            " block SLP");
       
       return false;
     }
@@ -1367,7 +1368,7 @@ vect_slp_analyze_bb (basic_block bb)
     }
 
   if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "BB will be vectorized using SLP\n");
+    fprintf (vect_dump, "Basic block will be vectorized using SLP\n");
 
   return bb_vinfo;
 }
@@ -2088,7 +2089,7 @@ vect_slp_transform_bb (basic_block bb)
   update_ssa (TODO_update_ssa);
 
   if (vect_print_dump_info (REPORT_DETAILS))
-    fprintf (vect_dump, "BB VECTORIZED\n");
+    fprintf (vect_dump, "BASIC BLOCK VECTORIZED\n");
 
   destroy_bb_vec_info (bb_vinfo);
 }

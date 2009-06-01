@@ -2903,7 +2903,9 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   scalar_dest = gimple_assign_lhs (stmt);
   if (TREE_CODE (scalar_dest) != ARRAY_REF
       && TREE_CODE (scalar_dest) != INDIRECT_REF
-      && !STMT_VINFO_STRIDED_ACCESS (stmt_info))
+      && TREE_CODE (scalar_dest) != COMPONENT_REF
+      && TREE_CODE (scalar_dest) != IMAGPART_EXPR
+      && TREE_CODE (scalar_dest) != REALPART_EXPR)
     return false;
 
   gcc_assert (gimple_assign_single_p (stmt));
@@ -3285,7 +3287,9 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   code = gimple_assign_rhs_code (stmt);
   if (code != ARRAY_REF
       && code != INDIRECT_REF
-      && !STMT_VINFO_STRIDED_ACCESS (stmt_info))
+      && code != COMPONENT_REF
+      && code != IMAGPART_EXPR
+      && code != REALPART_EXPR)
     return false;
 
   if (!STMT_VINFO_DATA_REF (stmt_info))
