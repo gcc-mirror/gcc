@@ -846,7 +846,7 @@ vect_analyze_loop_form (struct loop *loop)
       if (loop->num_nodes != 2)
         {
           if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
-            fprintf (vect_dump, "not vectorized: too many BBs in loop.");
+            fprintf (vect_dump, "not vectorized: control flow in loop.");
           return NULL;
         }
 
@@ -908,7 +908,7 @@ vect_analyze_loop_form (struct loop *loop)
       if (loop->num_nodes != 5) 
         {
 	  if (vect_print_dump_info (REPORT_BAD_FORM_LOOPS))
-	    fprintf (vect_dump, "not vectorized: too many BBs in loop.");
+	    fprintf (vect_dump, "not vectorized: control flow in loop.");
 	  destroy_loop_vec_info (inner_loop_vinfo, true);
 	  return NULL;
         }
@@ -1756,7 +1756,7 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
     }
 
   /* Requires loop versioning tests to handle misalignment.  */
-  if (VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
+  if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo))
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
       vec_outside_cost +=
@@ -1766,7 +1766,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
                  "versioning to treat misalignment.\n");
     }
 
-  if (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+  /* Requires loop versioning with alias checks.  */
+  if (LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
     {
       /*  FIXME: Make cost depend on complexity of individual check.  */
       vec_outside_cost +=
@@ -1776,11 +1777,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
                  "versioning aliasing.\n");
     }
 
-  if (VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
-      || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
-    {
-      vec_outside_cost += TARG_COND_TAKEN_BRANCH_COST;
-    }
+  if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
+      || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
+    vec_outside_cost += TARG_COND_TAKEN_BRANCH_COST;
 
   /* Count statements in scalar loop.  Using this as scalar cost for a single
      iteration for now.
@@ -1946,12 +1945,12 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo)
      decide whether to vectorize at compile time. Hence the scalar version
      do not carry cost model guard costs.  */
   if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      || VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
-      || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+      || LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
+      || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
     {
       /* Cost model check occurs at versioning.  */
-      if (VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
-	  || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+      if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
+          || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
 	scalar_outside_cost += TARG_COND_NOT_TAKEN_BRANCH_COST;
       else
 	{
@@ -3648,8 +3647,8 @@ vect_transform_loop (loop_vec_info loop_vinfo)
        || (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
 	   && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0));
 
-  if (VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
-      || VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+  if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
+      || LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
     vect_loop_versioning (loop_vinfo,
 			  !do_peeling_for_loop_bound,
 			  &cond_expr, &cond_expr_stmt_list);

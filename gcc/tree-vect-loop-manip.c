@@ -1680,7 +1680,7 @@ conservative_cost_threshold (loop_vec_info loop_vinfo,
     th = (unsigned) min_profitable_iters;
 
   if (th && vect_print_dump_info (REPORT_COST))
-    fprintf (vect_dump, "Vectorization may not be profitable.");
+    fprintf (vect_dump, "Profitability threshold is %u loop iterations.", th);
 
   return th;
 }
@@ -1730,8 +1730,8 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 
   /* If cost model check not done during versioning and 
      peeling for alignment.  */
-  if (!VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo))
-      && !VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo))
+  if (!LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo)
+      && !LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo)
       && !LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo)
       && !cond_expr)
     {
@@ -2280,10 +2280,10 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo,
       else
 	*cond_expr = part_cond_expr;
     }
-    if (vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS))
-      fprintf (vect_dump, "created %u versioning for alias checks.\n",
-               VEC_length (ddr_p, may_alias_ddrs));
 
+  if (vect_print_dump_info (REPORT_VECTORIZED_LOCATIONS))
+    fprintf (vect_dump, "created %u versioning for alias checks.\n",
+             VEC_length (ddr_p, may_alias_ddrs));
 }
 
 
@@ -2339,11 +2339,11 @@ vect_loop_versioning (loop_vec_info loop_vinfo, bool do_versioning,
   *cond_expr = force_gimple_operand (*cond_expr, cond_expr_stmt_list,
 				     false, NULL_TREE);
 
-  if (VEC_length (gimple, LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo)))
+  if (LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo))
       vect_create_cond_for_align_checks (loop_vinfo, cond_expr,
 					 cond_expr_stmt_list);
 
-  if (VEC_length (ddr_p, LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo)))
+  if (LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo))
     vect_create_cond_for_alias_checks (loop_vinfo, cond_expr,
 				       cond_expr_stmt_list);
 
