@@ -1,3 +1,9 @@
+2009-06-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config/freebsd-stdint.h: New file.
+	* config.gcc (*-*-freebsd): Set use_gcc_stdint=wrap.
+	Add freebsd-stdint.h to tm_file.
+
 2009-06-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/thumb2.md (thumb2_zero_extendhidi2): New insn and split.
