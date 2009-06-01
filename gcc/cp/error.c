@@ -2705,19 +2705,30 @@ print_instantiation_partial_context (diagnostic_context *context,
 				     struct tinst_level *t, location_t loc)
 {
   expanded_location xloc;
+  const char *str;
   for (; ; t = t->next)
     {
       xloc = expand_location (loc);
       if (t == NULL)
 	break;
-      pp_verbatim (context->printer, _("%s:%d:   instantiated from %qs\n"),
-		   xloc.file, xloc.line,
-		   decl_as_string_translate (t->decl,
-					     TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
+      str = decl_as_string_translate (t->decl,
+	  			      TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE);
+      if (flag_show_column)
+	pp_verbatim (context->printer,
+		     _("%s:%d:%d:   instantiated from %qs\n"),
+		     xloc.file, xloc.line, xloc.column, str);
+      else
+	pp_verbatim (context->printer,
+		     _("%s:%d:   instantiated from %qs\n"),
+		     xloc.file, xloc.line, str);
       loc = t->locus;
     }
-  pp_verbatim (context->printer, _("%s:%d:   instantiated from here"),
-	       xloc.file, xloc.line);
+  if (flag_show_column)
+    pp_verbatim (context->printer, _("%s:%d:%d:   instantiated from here"),
+		 xloc.file, xloc.line, xloc.column);
+  else
+    pp_verbatim (context->printer, _("%s:%d:   instantiated from here"),
+		 xloc.file, xloc.line);
   pp_base_newline (context->printer);
 }
 

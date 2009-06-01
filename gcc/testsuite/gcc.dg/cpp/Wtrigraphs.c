@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-std=gnu99 -Wtrigraphs -fno-show-column" } */
+/* { dg-options "-std=gnu99 -Wtrigraphs" } */
 
 /* Test we don't double warn for trigraphs immediately after preceding
    text.  Source Neil Booth.  22 Nov 2000.  */

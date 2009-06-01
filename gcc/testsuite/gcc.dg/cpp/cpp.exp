@@ -37,7 +37,7 @@ dg-init
 
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.{c,S} ]] \
-	"-fno-show-column" $DEFAULT_CFLAGS
+	"" $DEFAULT_CFLAGS
 
 # All done.
 dg-finish

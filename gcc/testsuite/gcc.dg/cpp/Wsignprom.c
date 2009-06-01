@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-Wall -fshow-column" } */
+/* { dg-options "-Wall" } */
 
 /* Test that -Wall emits the warnings about integer promotion changing
    the sign of an operand.  */

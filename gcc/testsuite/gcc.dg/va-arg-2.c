@@ -5,7 +5,7 @@
 
 #include <varargs.h>  /* { dg-bogus "varargs.h" "missing file" } */
 
-/* { dg-message "" "In file included from" { target *-*-* } 6 } */
+/* { dg-message "file included from" "file included from" { target *-*-* } 0 } */
 /* { dg-error "no longer implements" "#error 1" { target *-*-* } 4 } */
 /* { dg-error "Revise your code" "#error 2" { target *-*-* } 5 } */
 

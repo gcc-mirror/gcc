@@ -1,6 +1,6 @@
 /* PR preprocessor/19475 */
 /* { dg-do preprocess } */
-/* { dg-options "-std=iso9899:1999 -pedantic-errors -fno-show-column" } */
+/* { dg-options "-std=iso9899:1999 -pedantic-errors" } */
 
 #define a!		/* { dg-error "requires whitespace" } */
 #define b"		/* { dg-error "requires whitespace" } */

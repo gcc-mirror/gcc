@@ -3,7 +3,7 @@
    warnings inside unused clauses because they are often hidden this
    way on purpose.  However they do still require indentation for K&R.  */
 /* { dg-do preprocess } */
-/* { dg-options "-pedantic -Wtraditional -fno-show-column" } */
+/* { dg-options "-pedantic -Wtraditional" } */
 
 #if 1
 

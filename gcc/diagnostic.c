@@ -162,7 +162,7 @@ diagnostic_build_prefix (diagnostic_info *diagnostic)
   return
     (s.file == NULL
      ? build_message_string ("%s: %s", progname, text)
-     : flag_show_column && s.column != 0
+     : flag_show_column
      ? build_message_string ("%s:%d:%d: %s", s.file, s.line, s.column, text)
      : build_message_string ("%s:%d: %s", s.file, s.line, text));
 }
@@ -244,9 +244,15 @@ diagnostic_report_current_module (diagnostic_context *context)
       if (! MAIN_FILE_P (map))
 	{
 	  map = INCLUDED_FROM (line_table, map);
-	  pp_verbatim (context->printer,
-		       "In file included from %s:%d",
-		       map->to_file, LAST_SOURCE_LINE (map));
+	  if (flag_show_column)
+	    pp_verbatim (context->printer,
+			 "In file included from %s:%d:%d",
+			 map->to_file,
+			 LAST_SOURCE_LINE (map), LAST_SOURCE_COLUMN (map));
+	  else
+	    pp_verbatim (context->printer,
+			 "In file included from %s:%d",
+			 map->to_file, LAST_SOURCE_LINE (map));
 	  while (! MAIN_FILE_P (map))
 	    {
 	      map = INCLUDED_FROM (line_table, map);

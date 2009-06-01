@@ -4,7 +4,6 @@
    missing parenthesis message.  */
 
 /* { dg-do preprocess } */
-/* { dg-options "-fshow-column" } */
 #if (1          /* { dg-error "5:missing '\\)'" "missing ')' no. 1" } */
 #endif
 
