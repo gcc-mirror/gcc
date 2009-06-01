@@ -1,3 +1,30 @@
+2009-06-01  Olivier Hainque  <hainque@adacore.com>
+            Eric Botcazou  <botcazou@adacore.com>
+
+	* tree.h (CONSTRUCTOR_BITFIELD_P): True if NODE, a FIELD_DECL, is
+	to be processed as a bitfield for constructor output purposes.
+	* output.h (initializer_constant_valid_for_bitfield_p): Declare
+	new function.
+	* varasm.c (oc_local_state): New type, output_constructor
+	local state to support communication with helpers.
+	(oc_outer_state): New type, output_constructor outer state of
+	relevance in recursive calls.
+	(output_constructor_array_range): New output_constructor helper,
+	extracted code for an array range element.
+	(output_constructor_regular_field): New output_constructor helper,
+	extracted code for an element that is not a bitfield.
+	(output_constructor_bitfield): New output_constructor helper,
+	extracted code for a bitfield element.  Accept an OUTER state
+	argument for recursive processing.  Recurse on record or array
+	CONSTRUCTOR values, possibly past noop conversions.
+	(initializer_constant_valid_for_bitfield_p): New predicate. Whether
+	VALUE is a valid constant-valued expression for use in a static
+	bit-field initializer.
+	(output_constructor): Rework to use helpers. Accept and honor an
+	OUTER state argument for recursive calls. Return total size. Be
+	prepared for nested constructors initializing bitfields.
+	(output_constant): Feed OUTER in calls to output_constructor.
+
 2009-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* calls.c (emit_library_call_value_1): Don't force_operand for move

@@ -1623,34 +1623,35 @@ compare_elmt_bitpos (const PTR rt1, const PTR rt2)
 tree
 gnat_build_constructor (tree type, tree list)
 {
-  tree elmt;
-  int n_elmts;
   bool allconstant = (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST);
   bool side_effects = false;
-  tree result;
+  tree elmt, result;
+  int n_elmts;
 
   /* Scan the elements to see if they are all constant or if any has side
      effects, to let us set global flags on the resulting constructor.  Count
      the elements along the way for possible sorting purposes below.  */
   for (n_elmts = 0, elmt = list; elmt; elmt = TREE_CHAIN (elmt), n_elmts ++)
     {
-      if (!TREE_CONSTANT (TREE_VALUE (elmt))
+      tree obj = TREE_PURPOSE (elmt);
+      tree val = TREE_VALUE (elmt);
+
+      /* The predicate must be in keeping with output_constructor.  */
+      if (!TREE_CONSTANT (val)
 	  || (TREE_CODE (type) == RECORD_TYPE
-	      && DECL_BIT_FIELD (TREE_PURPOSE (elmt))
-	      && TREE_CODE (TREE_VALUE (elmt)) != INTEGER_CST)
-	  || !initializer_constant_valid_p (TREE_VALUE (elmt),
-					    TREE_TYPE (TREE_VALUE (elmt))))
+	      && CONSTRUCTOR_BITFIELD_P (obj)
+	      && !initializer_constant_valid_for_bitfield_p (val))
+	  || !initializer_constant_valid_p (val, TREE_TYPE (val)))
 	allconstant = false;
 
-      if (TREE_SIDE_EFFECTS (TREE_VALUE (elmt)))
+      if (TREE_SIDE_EFFECTS (val))
 	side_effects = true;
 
       /* Propagate an NULL_EXPR from the size of the type.  We won't ever
 	 be executing the code we generate here in that case, but handle it
 	 specially to avoid the compiler blowing up.  */
       if (TREE_CODE (type) == RECORD_TYPE
-	  && (0 != (result
-		    = contains_null_expr (DECL_SIZE (TREE_PURPOSE (elmt))))))
+	  && (result = contains_null_expr (DECL_SIZE (obj))) != NULL_TREE)
 	return build1 (NULL_EXPR, type, TREE_OPERAND (result, 0));
     }
 

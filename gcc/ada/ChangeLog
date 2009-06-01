@@ -1,3 +1,10 @@
+2009-06-01  Olivier Hainque  <hainque@adacore.com>
+            Eric Botcazou  <botcazou@adacore.com>
+	
+	* gcc-interface/utils2.c (gnat_build_constructor): Factor
+	out code. Use initializer_constant_valid_for_bitfield_p and
+	CONSTRUCTOR_BITFIELD_P for bit-fields.
+
 2009-05-26  Ian Lance Taylor  <iant@google.com>
 
 	* gcc-interface/Makefile.in (COMPILER): Define.
