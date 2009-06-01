@@ -475,7 +475,8 @@ case ${target} in
       exit 1
       ;;
   esac
-  fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
+  fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h freebsd-stdint.h"
+  use_gcc_stdint=wrap
   ;;
 *-*-linux* | frv-*-*linux* | *-*-kfreebsd*-gnu | *-*-knetbsd*-gnu | *-*-gnu* | *-*-kopensolaris*-gnu)
   extra_parts="crtbegin.o crtbeginS.o crtbeginT.o crtend.o crtendS.o"
