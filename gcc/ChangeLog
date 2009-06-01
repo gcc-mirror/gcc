@@ -1,5 +1,9 @@
 2009-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR other/40024
+	* emutls.c (__emutls_get_address): Change arr->size to mean number
+	of allocated arr->data entries instead of # of slots + 1.
+
 	PR middle-end/40316
 	* recog.c (peep2_reinit_state): New function.
 	(peephole2_init_state): Use it at the end of a basic block and also

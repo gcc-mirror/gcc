@@ -155,23 +155,23 @@ __emutls_get_address (struct __emutls_object *obj)
   if (__builtin_expect (arr == NULL, 0))
     {
       pointer size = offset + 32;
-      arr = calloc (size, sizeof (void *));
+      arr = calloc (size + 1, sizeof (void *));
       if (arr == NULL)
 	abort ();
       arr->size = size;
       __gthread_setspecific (emutls_key, (void *) arr);
     }
-  else if (__builtin_expect (offset >= arr->size, 0))
+  else if (__builtin_expect (offset > arr->size, 0))
     {
       pointer orig_size = arr->size;
       pointer size = orig_size * 2;
-      if (offset >= size)
+      if (offset > size)
 	size = offset + 32;
-      arr = realloc (arr, size * sizeof (void *));
+      arr = realloc (arr, (size + 1) * sizeof (void *));
       if (arr == NULL)
 	abort ();
       arr->size = size;
-      memset (arr->data + orig_size - 1, 0,
+      memset (arr->data + orig_size, 0,
 	      (size - orig_size) * sizeof (void *));
       __gthread_setspecific (emutls_key, (void *) arr);
     }
