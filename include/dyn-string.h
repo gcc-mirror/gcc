@@ -1,5 +1,6 @@
 /* An abstract string datatype.
-   Copyright (C) 1998, 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2004, 2005, 2009
+   Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GCC.
@@ -19,6 +20,12 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 51 Franklin Street - Fifth Floor,
 Boston, MA 02110-1301, USA.  */
 
+#ifndef DYN_STRING_H
+#define DYN_STRING_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct dyn_string
 {
@@ -58,3 +65,9 @@ extern int dyn_string_append_cstr (dyn_string_t, const char *);
 extern int dyn_string_append_char (dyn_string_t, int);
 extern int dyn_string_substring (dyn_string_t,  dyn_string_t, int, int);
 extern int dyn_string_eq (dyn_string_t, dyn_string_t);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* !defined (DYN_STRING_H) */
