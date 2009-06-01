@@ -1,3 +1,7 @@
+2009-06-01  Ian Lance Taylor  <iant@google.com>
+
+	* jcf-io.c (find_class): Use CONST_CAST.
+
 2009-05-27  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in ($(XGCJ)$(exeext)): Change $(COMPILER) to

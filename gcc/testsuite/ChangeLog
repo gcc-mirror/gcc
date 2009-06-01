@@ -1,3 +1,8 @@
+2009-06-01  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/cast-qual-3.c: New testcase.
+	* g++.dg/warn/Wcast-qual2.C: New testcase.
+
 2009-06-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* lib/gcc-dg.exp (dg-bogus): Override dg-bogus.
