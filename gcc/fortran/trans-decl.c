@@ -289,7 +289,10 @@ gfc_get_label_decl (gfc_st_label * lp)
 static tree
 gfc_sym_identifier (gfc_symbol * sym)
 {
-  return (get_identifier (sym->name));
+  if (sym->attr.is_main_program && strcmp (sym->name, "main") == 0)
+    return (get_identifier ("MAIN__"));
+  else
+    return (get_identifier (sym->name));
 }
 
 
@@ -3874,6 +3877,8 @@ create_main_function (tree fndecl)
   tmp =  build_function_type_list (integer_type_node, integer_type_node,
 				   build_pointer_type (pchar_type_node),
 				   NULL_TREE);
+  main_identifier_node = get_identifier ("main");
+  ftn_main = build_decl (FUNCTION_DECL, main_identifier_node, tmp);
   ftn_main = build_decl (FUNCTION_DECL, get_identifier ("main"), tmp);
   DECL_EXTERNAL (ftn_main) = 0;
   TREE_PUBLIC (ftn_main) = 1;
