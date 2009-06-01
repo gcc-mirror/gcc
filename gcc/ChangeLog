@@ -1,5 +1,9 @@
 2009-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.h (struct machine_cfa_state,
+	struct machine_function): Guard with ifndef USED_FOR_TARGET
+	instead of not IN_LIBGCC2 and not in IN_TARGET_LIBS.
+
 	PR other/40024
 	* emutls.c (__emutls_get_address): Change arr->size to mean number
 	of allocated arr->data entries instead of # of slots + 1.
