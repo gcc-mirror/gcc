@@ -16984,7 +16984,7 @@ thumb_pushpop (FILE *f, unsigned long mask, int push, int *cfa_offset,
 
   if (push && pushed_words && dwarf2out_do_frame ())
     {
-      char *l = dwarf2out_cfi_label ();
+      char *l = dwarf2out_cfi_label (false);
       int pushed_mask = real_regs;
 
       *cfa_offset += pushed_words * 4;
@@ -17880,7 +17880,7 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	 the stack pointer.  */
       if (dwarf2out_do_frame ())
 	{
-	  char *l = dwarf2out_cfi_label ();
+	  char *l = dwarf2out_cfi_label (false);
 
 	  cfa_offset = cfa_offset + crtl->args.pretend_args_size;
 	  dwarf2out_def_cfa (l, SP_REGNUM, cfa_offset);
@@ -17929,7 +17929,7 @@ thumb1_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
       if (dwarf2out_do_frame ())
 	{
-	  char *l = dwarf2out_cfi_label ();
+	  char *l = dwarf2out_cfi_label (false);
 
 	  cfa_offset = cfa_offset + 16;
 	  dwarf2out_def_cfa (l, SP_REGNUM, cfa_offset);

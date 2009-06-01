@@ -5025,7 +5025,7 @@ extern tree tree_overlaps_hard_reg_set (tree, HARD_REG_SET *);
 
 /* Generate a new label for the CFI info to refer to.  */
 
-extern char *dwarf2out_cfi_label (void);
+extern char *dwarf2out_cfi_label (bool);
 
 /* Entry point to update the canonical frame address (CFA).  */
 
