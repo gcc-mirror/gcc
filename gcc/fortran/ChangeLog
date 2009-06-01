@@ -1,3 +1,9 @@
+2009-06-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/40309
+	* trans-decl.c (gfc_sym_identifier): Use "MAIN__" for PROGRAM "main".
+	(create_main_function): Set main_identifier_node.
+
 2009-05-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/40019
