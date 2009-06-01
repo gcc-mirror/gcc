@@ -79,6 +79,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "decimal64Symbols.h"
 
+  #ifdef __cplusplus
+  extern "C" {
+  #endif
+
   /* String conversions 					      */
   decimal64 * decimal64FromString(decimal64 *, const char *, decContext *);
   char * decimal64ToString(const decimal64 *, char *);
@@ -92,5 +96,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   /* Format-dependent utilities 				      */
   uint32_t    decimal64IsCanonical(const decimal64 *);
   decimal64 * decimal64Canonical(decimal64 *, const decimal64 *);
+
+  #ifdef __cplusplus
+  }
+  #endif
 
 #endif

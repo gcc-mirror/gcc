@@ -59,6 +59,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if defined(DEC_BCD2DPD) && DEC_BCD2DPD==1 && !defined(DECBCD2DPD)
 #define DECBCD2DPD
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 const uint16_t BCD2DPD[2458]={	  0,	1,    2,    3,	  4,	5,    6,    7,
     8,	  9,	0,    0,    0,	  0,	0,    0,   16,	 17,   18,   19,   20,
    21,	 22,   23,   24,   25,	  0,	0,    0,    0,	  0,	0,   32,   33,
@@ -1206,5 +1210,9 @@ const uint8_t BIN2BCD8[4000]={
  9,8,1,3, 9,8,2,3, 9,8,3,3, 9,8,4,3, 9,8,5,3, 9,8,6,3, 9,8,7,3, 9,8,8,3, 9,8,9,3,
  9,9,0,3, 9,9,1,3, 9,9,2,3, 9,9,3,3, 9,9,4,3, 9,9,5,3, 9,9,6,3, 9,9,7,3, 9,9,8,3,
  9,9,9,3};
+
+#ifdef __cplusplus
+}
 #endif
 
+#endif
