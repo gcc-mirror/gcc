@@ -1,3 +1,8 @@
+2009-06-01  Doug Kwan  <dougkwan@google.com>
+
+	* configure.ac: Support gold for target arm*-*-*.
+	* configure: Regenerate.
+	
 2009-05-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.def: Add MPC support and dependencies.
