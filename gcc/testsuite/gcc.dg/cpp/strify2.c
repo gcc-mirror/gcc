@@ -1,7 +1,7 @@
 /* Copyright (C) 2000 Free Software Foundation, Inc.  */
 
 /* { dg-do run } */
-/* { dg-options "-std=c99 -pedantic-errors -fno-show-column" } */
+/* { dg-options "-std=c99 -pedantic-errors" } */
 
 /* Tests a whole bunch of things are correctly stringified.  */
 

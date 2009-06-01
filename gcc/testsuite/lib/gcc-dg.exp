@@ -620,6 +620,17 @@ if { [info procs saved-dg-error] == [list] \
 
 	process-message saved-dg-error "$gcc_error_prefix" "$args"
     }
+
+    # Override dg-bogus at the same time.  It doesn't handle a prefix
+    # but its expression should include a column number.  Otherwise the
+    # line number can match the column number for other messages, leading
+    # to insanity.
+    rename dg-bogus saved-dg-bogus
+
+    proc dg-bogus { args } {
+	upvar dg-messages dg-messages
+	process-message saved-dg-bogus "" $args
+    }
 }
 
 # Modify the regular expression saved by a DejaGnu message directive to
@@ -641,20 +652,26 @@ proc process-message { msgproc msgprefix dgargs } {
 	return;
     }
 
-    # Prepend the message prefix to the regular expression and make
-    # it match a single line.
+    # Get the entry for the new message.  Prepend the message prefix to
+    # the regular expression and make it match a single line.
     set newentry [lindex ${dg-messages} end]
     set expmsg [lindex $newentry 2]
 
-    # If we have a column...
+    # Handle column numbers from the specified expression (if there is
+    # one) and set up the search expression that will be used by DejaGnu.
     if [regexp "^(\[0-9\]+):" $expmsg "" column] {
-	# Remove "COLUMN:"
+	# The expression in the directive included a column number.
+	# Remove "COLUMN:" from the original expression and move it
+	# to the proper place in the search expression.
 	regsub "^\[0-9\]+:" $expmsg "" expmsg
-
-	# Include the column in the search expression.
-	set expmsg "$column: $msgprefix\[^\n]*$expmsg"
+	set expmsg "$column: $msgprefix\[^\n\]*$expmsg"
+    } elseif [string match "" [lindex $newentry 0]] {
+	# The specified line number is 0; don't expect a column number.
+	set expmsg "$msgprefix\[^\n\]*$expmsg"
     } else {
-	set expmsg "$msgprefix\[^\n]*$expmsg"
+	# There is no column number in the search expression, but we
+	# should expect one in the message itself.
+	set expmsg "\[0-9\]+: $msgprefix\[^\n\]*$expmsg"
     }
 
     set newentry [lreplace $newentry 2 2 $expmsg]

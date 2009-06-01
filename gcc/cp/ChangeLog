@@ -1,3 +1,8 @@
+2009-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* error.c (print_instantiation_partial_context): Print column
+	numbers.
+
 2009-05-29  Ian Lance Taylor  <iant@google.com>
 
 	* error.c (cp_printer): Don't use va_arg with enum type.

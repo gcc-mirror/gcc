@@ -7,7 +7,7 @@
    independent of target precision.  */
 
 /* { dg-do preprocess } */
-/* { dg-options -fno-show-column } */
+/* { dg-options "" } */
 
 /* Test || operator and its short circuiting.  */
 #if 0 || 0

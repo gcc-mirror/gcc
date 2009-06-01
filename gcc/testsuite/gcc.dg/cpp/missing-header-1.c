@@ -2,7 +2,8 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-#include "nonexistent.h" /* { dg-error "nonexistent.h" } */
+#include "nonexistent.h"
+/* { dg-message "nonexistent.h" "" { target *-*-* } 0 } */
 /* { dg-message "terminated" "" { target *-*-* } 0 } */
 
 /* This declaration should not receive any diagnostic.  */

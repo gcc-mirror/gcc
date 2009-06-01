@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-std=gnu99 -I /jolly/well/better/not/exist -Wmissing-include-dirs -fno-show-column" } */
+/* { dg-options "-std=gnu99 -I /jolly/well/better/not/exist -Wmissing-include-dirs" } */
 
 /* Test that -Wmissing-include-dirs issues a warning when a specified
    directory does not exist.  Source Ben Elliston, 2004-05-13.  */

@@ -1,9 +1,7 @@
 /* C99 6.10.8 para 4: None of [the predefined macro names] shall be
-   the subject of a #define or an #undef preprocessing directive.  We
-   pass -fno-show-column as otherwise dejagnu gets confused.  */
+   the subject of a #define or an #undef preprocessing directive.  */
 
 /* { dg-do preprocess } */
-/* { dg-options "-fno-show-column" } */
 
 #undef __DATE__		/* { dg-warning "undefining" "__DATE__" } */
 #undef __TIME__		/* { dg-warning "undefining" "__TIME__" } */

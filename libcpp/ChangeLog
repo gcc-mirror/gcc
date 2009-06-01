@@ -1,3 +1,7 @@
+2009-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* include/line-map.h (LAST_SOURCE_COLUMN): New.
+
 2009-06-01  Ian Lance Taylor  <iant@google.com>
 
 	* include/cpp-id-data.h: Add extern "C".

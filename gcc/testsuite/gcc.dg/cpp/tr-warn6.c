@@ -2,7 +2,7 @@
    Note, gcc should omit these warnings in system header files.
    By Kaveh R. Ghazi <ghazi@caip.rutgers.edu> 9/8/2000.  */
 /* { dg-do preprocess } */
-/* { dg-options "-Wtraditional -fno-show-column" } */
+/* { dg-options "-Wtraditional" } */
 
 #define foo1(h) sdf "h3" fds "h" /* { dg-warning "macro argument \"h\" would be stringified" "traditional stringification" } */
 #define foo2(h2) sdf "h2" fds "h3" /* { dg-warning "macro argument \"h2\" would be stringified" "traditional stringification" } */

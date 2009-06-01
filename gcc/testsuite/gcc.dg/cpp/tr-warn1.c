@@ -1,6 +1,6 @@
 /* Test for warnings about nontraditional directives.  */
 /* { dg-do preprocess } */
-/* { dg-options "-pedantic -Wtraditional -fno-show-column" } */
+/* { dg-options "-pedantic -Wtraditional" } */
 
 /* Block 1: K+R directives should have the # indented.  */
 

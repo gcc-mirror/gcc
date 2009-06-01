@@ -1,7 +1,7 @@
 /* Copyright (C) 2001 Free Software Foundation, Inc.  */
 
 /* { dg-do compile } */
-/* { dg-options "-Wtraditional -std=c89 -fno-show-column" } */
+/* { dg-options "-Wtraditional -std=c89" } */
 
 /* This tests various diagnostics with -Wtraditioanl about escape
    sequences, for both the preprocessor and the compiler.

@@ -1,7 +1,7 @@
 /* Copyright (C) 2001 Free Software Foundation, Inc.  */
 
 /* { dg-do compile } */
-/* { dg-options "-pedantic -std=c99 -fno-show-column" } */
+/* { dg-options "-pedantic -std=c99" } */
 
 /* This tests various diagnostics with -pedantic about escape
    sequences, for both the preprocessor and the compiler.

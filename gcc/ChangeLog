@@ -1,3 +1,9 @@
+2009-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* diagnostic.c (diagnostic_build_prefix): Always print columns.
+	(diagnostic_report_current_module): Print columns.
+	* common.opt (flag_show_column): Enable by default.
+
 2009-06-01  Luis Machado  <luisgpm@br.ibm.com>
 
 	* alias.c (find_base_term): Check for NULL term before returning.

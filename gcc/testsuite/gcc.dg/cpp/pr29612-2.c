@@ -1,6 +1,6 @@
 /* PR preprocessor/29612 */
 /* { dg-do preprocess } */
-/* { dg-options "-Wtraditional -fno-show-column" } */
+/* { dg-options "-Wtraditional" } */
 
 # 6 "pr29612-2.c"
 

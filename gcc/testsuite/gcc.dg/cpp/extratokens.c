@@ -1,7 +1,7 @@
 /* Copyright (C) 2000, 2008 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
-/* { dg-options "-fno-show-column -Wno-deprecated" } */
+/* { dg-options "-Wno-deprecated" } */
 
 /* Tests all directives that do not permit excess tokens at the end of
    the line.  */

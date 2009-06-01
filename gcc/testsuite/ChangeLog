@@ -1,3 +1,46 @@
+2009-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lib/gcc-dg.exp (dg-bogus): Override dg-bogus.
+	(process-message): Expect column numbers.
+	* gcc.dg/va-arg-2.c: Use line 0 to indicate no column.
+	* gcc.dg/pch/counter-2.c: Same.
+	* gcc.dg/pch/valid-2.c: Same.
+	* gcc.dg/pch/warn-1.c: Same.
+	* gcc.dg/pch/valid-1.c: Same.
+	* gcc.dg/cpp/include2a.c: Handle lack of columns.
+	* gcc.dg/cpp/syshdr.c: Same.
+	* gcc.dg/cpp/19940712-1.c: Same.
+	* gcc.dg/cpp/missing-header-1.c: Same.
+	* gcc.dg/cpp/unc4.c: Remove -fno-show-column.
+	* gcc.dg/cpp/tr-warn3.c: Same.
+	* gcc.dg/cpp/pr29612-2.c: Same.
+	* gcc.dg/cpp/tr-warn4.c: Same.
+	* gcc.dg/cpp/Wtrigraphs.c: Same.
+	* gcc.dg/cpp/poison.c: Same.
+	* gcc.dg/cpp/arith-3.c: Same.
+	* gcc.dg/cpp/sysmac2.c: Same.
+	* gcc.dg/cpp/cpp.exp: Same.
+	* gcc.dg/cpp/tr-warn5.c: Same.
+	* gcc.dg/cpp/include2.c: Same.
+	* gcc.dg/cpp/Wmissingdirs.c: Same.
+	* gcc.dg/cpp/Wmissingdirs.c: Same.
+	* gcc.dg/cpp/tr-warn6.c: Same.
+	* gcc.dg/cpp/Wtrigraphs-2.c: Same.
+	* gcc.dg/cpp/macspace1.c: Same.
+	* gcc.dg/cpp/escape-2.c: Same.
+	* gcc.dg/cpp/assert2.c: Same.
+	* gcc.dg/cpp/undef2.c: Same.
+	* gcc.dg/cpp/macspace2.c: Same.
+	* gcc.dg/cpp/tr-warn1.c: Same.
+	* gcc.dg/cpp/extratokens2.c: Same.
+	* gcc.dg/cpp/strify2.c: Same.
+	* gcc.dg/cpp/Wsignprom.c: Same.
+	* gcc.dg/cpp/redef2.c: Same.
+	* gcc.dg/cpp/trad/trad.exp: Same.
+	* gcc.dg/cpp/arith-1.c: Same.
+	* gcc.dg/cpp/extratokens.c: Same.
+	* gcc.dg/cpp/if-mpar.c: Same.
+
 2009-06-01  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/nested_float_packed.ads: New test.

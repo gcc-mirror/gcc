@@ -1,7 +1,7 @@
 /* Copyright (C) 2002 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
-/* { dg-options "-fno-show-column -Wno-endif-labels" } */
+/* { dg-options "-Wno-endif-labels" } */
 
 /* Tests that -Wno-endif-labels correctly disables the checks done by
    default (and tested in extratokens.c).  */

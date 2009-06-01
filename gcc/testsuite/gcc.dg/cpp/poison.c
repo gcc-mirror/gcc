@@ -1,5 +1,4 @@
-/* { dg-do preprocess }
-   { dg-options "-fno-show-column" } */
+/* { dg-do preprocess } */
 
 #pragma GCC poison foo
 foo			/* { dg-error "foo" "use of foo" } */

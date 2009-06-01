@@ -158,6 +158,8 @@ extern const struct line_map *linemap_lookup
    of the #include, or other directive, that caused a map change.  */
 #define LAST_SOURCE_LINE(MAP) \
   SOURCE_LINE (MAP, LAST_SOURCE_LINE_LOCATION (MAP))
+#define LAST_SOURCE_COLUMN(MAP) \
+  SOURCE_COLUMN (MAP, LAST_SOURCE_LINE_LOCATION (MAP))
 #define LAST_SOURCE_LINE_LOCATION(MAP) \
   ((((MAP)[1].start_location - 1 - (MAP)->start_location) \
     & ~((1 << (MAP)->column_bits) - 1))			  \

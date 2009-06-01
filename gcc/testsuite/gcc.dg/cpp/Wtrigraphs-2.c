@@ -1,5 +1,5 @@
 /* { dg-do preprocess } */
-/* { dg-options "-std=c99 -Wtrigraphs -fno-show-column" } */
+/* { dg-options "-std=c99 -Wtrigraphs" } */
 
 /* Test warnings for trigraphs in comments, with trigraphs enabled.
    Neil Booth.  4 May 2003.  */
