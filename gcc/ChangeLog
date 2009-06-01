@@ -1,3 +1,8 @@
+2009-06-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/thumb2.md (thumb2_zero_extendhidi2): New insn and split.
+	(thumb2_extendhidi2): Likewise.
+
 2009-05-31  Ian Lance Taylor  <iant@google.com>
 
 	* regstat.c (regstat_n_sets_and_refs): Remove duplicate
