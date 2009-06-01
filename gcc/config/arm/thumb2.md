@@ -870,6 +870,31 @@
    (set_attr "predicable" "yes")]
 )
 
+(define_insn_and_split "*thumb2_zero_extendhidi2"
+  [(set (match_operand:DI                 0 "s_register_operand"  "=r,r")
+	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_THUMB2"
+  "@
+   uxth%?\\t%Q0, %1\;mov%?\\t%R0, #0
+   ldr%(h%)\\t%Q0, %1\;mov%?\\t%R0, #0"
+  "&& reload_completed"
+  [(set (match_dup 0) (zero_extend:SI (match_dup 1)))
+   (set (match_dup 2) (match_dup 3))]
+  "
+  {
+    operands[2] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[3] = const0_rtx;
+  }
+  "
+  [(set_attr "length" "8")
+   (set_attr "ce_count" "2")
+   (set_attr "predicable" "yes")
+   (set_attr "type" "*,load_byte")
+   (set_attr "pool_range" "*,4092")
+   (set_attr "neg_pool_range" "*,250")]
+)
+
 (define_insn_and_split "*thumb2_zero_extendqidi2"
   [(set (match_operand:DI                 0 "s_register_operand"  "=r,r")
 	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
@@ -913,6 +938,30 @@
    (set_attr "ce_count" "2")
    (set_attr "shift" "1")
    (set_attr "predicable" "yes")]
+)
+
+(define_insn_and_split "*thumb2_extendhidi2"
+  [(set (match_operand:DI                 0 "s_register_operand"  "=r,r")
+	(sign_extend:DI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_THUMB2"
+  "@
+   sxth%?\\t%Q0, %1\;asr%?\\t%R0, %Q0, #31
+   ldrsh%?\\t%Q0, %1\;asr%?\\t%R0, %Q0, #31"
+  "&& reload_completed"
+  [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
+   (set (match_dup 2) (ashiftrt:SI (match_dup 0) (const_int 31)))]
+  "
+  {
+    operands[2] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+  }
+  "
+  [(set_attr "length" "8")
+   (set_attr "ce_count" "2")
+   (set_attr "predicable" "yes")
+   (set_attr "type" "*,load_byte")
+   (set_attr "pool_range" "*,4092")
+   (set_attr "neg_pool_range" "*,250")]
 )
 
 (define_insn_and_split "*thumb2_extendqidi2"
