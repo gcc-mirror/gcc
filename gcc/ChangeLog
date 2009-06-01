@@ -1,3 +1,17 @@
+2009-06-01  Ian Lance Taylor  <iant@google.com>
+
+	* attribs.c (register_attribute): Use CONST_CAST.
+	* collect2.c (main): Use CONST_CAST2.
+	(scan_prog_file): Likewise.
+	* gcc.c (process_command, main): Likewise.
+	* toplev.c (toplev_main): Likewise.
+
+	* c-typeck.c (handle_warn_cast_qual): New static function,
+	partially broken out of build_c_cast.
+	(build_c_cast): Call handle_warn_cast_qual.
+	* doc/invoke.texi (Warning Options): Document new effect of
+	-Wcast-qual.
+
 2009-06-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* diagnostic.c (diagnostic_build_prefix): Always print columns.

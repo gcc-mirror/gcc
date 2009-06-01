@@ -3694,6 +3694,19 @@ Warn whenever a pointer is cast so as to remove a type qualifier from
 the target type.  For example, warn if a @code{const char *} is cast
 to an ordinary @code{char *}.
 
+Also warn when making a cast which introduces a type qualifier in an
+unsafe way.  For example, casting @code{char **} to @code{const char **}
+is unsafe, as in this example:
+
+@smallexample
+  /* p is char ** value.  */
+  const char **q = (const char **) p;
+  /* Assignment of readonly string to const char * is OK.  */
+  *q = "string";
+  /* Now char** pointer points to read-only memory.  */
+  **p = 'b';
+@end smallexample
+
 @item -Wcast-align
 @opindex Wcast-align
 @opindex Wno-cast-align

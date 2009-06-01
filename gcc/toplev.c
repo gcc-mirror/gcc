@@ -1,6 +1,6 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2349,14 +2349,14 @@ toplev_main (int argc, char **argv)
 {
   expandargv (&argc, &argv);
 
-  save_argv = (const char **) argv;
+  save_argv = CONST_CAST2 (const char **, char **, argv);
 
   /* Initialization of GCC's environment, and diagnostics.  */
   general_init (argv[0]);
 
   /* Parse the options and do minimal processing; basically just
      enough to default flags appropriately.  */
-  decode_options (argc, (const char **) argv);
+  decode_options (argc, CONST_CAST2 (const char **, char **, argv));
 
   init_local_tick ();
 

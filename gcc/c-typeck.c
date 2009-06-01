@@ -4055,6 +4055,93 @@ build_compound_expr (tree expr1, tree expr2)
   return ret;
 }
 
+/* Issue -Wcast-qual warnings when appropriate.  TYPE is the type to
+   which we are casting.  OTYPE is the type of the expression being
+   cast.  Both TYPE and OTYPE are pointer types.  -Wcast-qual appeared
+   on the command line.  */
+
+static void
+handle_warn_cast_qual (tree type, tree otype)
+{
+  tree in_type = type;
+  tree in_otype = otype;
+  int added = 0;
+  int discarded = 0;
+  bool is_const;
+
+  /* Check that the qualifiers on IN_TYPE are a superset of the
+     qualifiers of IN_OTYPE.  The outermost level of POINTER_TYPE
+     nodes is uninteresting and we stop as soon as we hit a
+     non-POINTER_TYPE node on either type.  */
+  do
+    {
+      in_otype = TREE_TYPE (in_otype);
+      in_type = TREE_TYPE (in_type);
+
+      /* GNU C allows cv-qualified function types.  'const' means the
+	 function is very pure, 'volatile' means it can't return.  We
+	 need to warn when such qualifiers are added, not when they're
+	 taken away.  */
+      if (TREE_CODE (in_otype) == FUNCTION_TYPE
+	  && TREE_CODE (in_type) == FUNCTION_TYPE)
+	added |= (TYPE_QUALS (in_type) & ~TYPE_QUALS (in_otype));
+      else
+	discarded |= (TYPE_QUALS (in_otype) & ~TYPE_QUALS (in_type));
+    }
+  while (TREE_CODE (in_type) == POINTER_TYPE
+	 && TREE_CODE (in_otype) == POINTER_TYPE);
+
+  if (added)
+    warning (OPT_Wcast_qual, "cast adds new qualifiers to function type");
+
+  if (discarded)
+    /* There are qualifiers present in IN_OTYPE that are not present
+       in IN_TYPE.  */
+    warning (OPT_Wcast_qual,
+	     "cast discards qualifiers from pointer target type");
+
+  if (added || discarded)
+    return;
+
+  /* A cast from **T to const **T is unsafe, because it can cause a
+     const value to be changed with no additional warning.  We only
+     issue this warning if T is the same on both sides, and we only
+     issue the warning if there are the same number of pointers on
+     both sides, as otherwise the cast is clearly unsafe anyhow.  A
+     cast is unsafe when a qualifier is added at one level and const
+     is not present at all outer levels.
+
+     To issue this warning, we check at each level whether the cast
+     adds new qualifiers not already seen.  We don't need to special
+     case function types, as they won't have the same
+     TYPE_MAIN_VARIANT.  */
+
+  if (TYPE_MAIN_VARIANT (in_type) != TYPE_MAIN_VARIANT (in_otype))
+    return;
+  if (TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE)
+    return;
+
+  in_type = type;
+  in_otype = otype;
+  is_const = TYPE_READONLY (TREE_TYPE (in_type));
+  do
+    {
+      in_type = TREE_TYPE (in_type);
+      in_otype = TREE_TYPE (in_otype);
+      if ((TYPE_QUALS (in_type) &~ TYPE_QUALS (in_otype)) != 0
+	  && !is_const)
+	{
+	  warning (OPT_Wcast_qual,
+		   ("new qualifiers in middle of multi-level non-const cast "
+		    "are unsafe"));
+	  break;
+	}
+      if (is_const)
+	is_const = TYPE_READONLY (in_type);
+    }
+  while (TREE_CODE (in_type) == POINTER_TYPE);
+}
+
 /* Build an expression representing a cast to type TYPE of expression EXPR.  */
 
 tree
@@ -4139,46 +4226,10 @@ build_c_cast (tree type, tree expr)
       otype = TREE_TYPE (value);
 
       /* Optionally warn about potentially worrisome casts.  */
-
       if (warn_cast_qual
 	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE)
-	{
-	  tree in_type = type;
-	  tree in_otype = otype;
-	  int added = 0;
-	  int discarded = 0;
-
-	  /* Check that the qualifiers on IN_TYPE are a superset of
-	     the qualifiers of IN_OTYPE.  The outermost level of
-	     POINTER_TYPE nodes is uninteresting and we stop as soon
-	     as we hit a non-POINTER_TYPE node on either type.  */
-	  do
-	    {
-	      in_otype = TREE_TYPE (in_otype);
-	      in_type = TREE_TYPE (in_type);
-
-	      /* GNU C allows cv-qualified function types.  'const'
-		 means the function is very pure, 'volatile' means it
-		 can't return.  We need to warn when such qualifiers
-		 are added, not when they're taken away.  */
-	      if (TREE_CODE (in_otype) == FUNCTION_TYPE
-		  && TREE_CODE (in_type) == FUNCTION_TYPE)
-		added |= (TYPE_QUALS (in_type) & ~TYPE_QUALS (in_otype));
-	      else
-		discarded |= (TYPE_QUALS (in_otype) & ~TYPE_QUALS (in_type));
-	    }
-	  while (TREE_CODE (in_type) == POINTER_TYPE
-		 && TREE_CODE (in_otype) == POINTER_TYPE);
-
-	  if (added)
-	    warning (OPT_Wcast_qual, "cast adds new qualifiers to function type");
-
-	  if (discarded)
-	    /* There are qualifiers present in IN_OTYPE that are not
-	       present in IN_TYPE.  */
-	    warning (OPT_Wcast_qual, "cast discards qualifiers from pointer target type");
-	}
+	handle_warn_cast_qual (type, otype);
 
       /* Warn about possible alignment problems.  */
       if (STRICT_ALIGNMENT

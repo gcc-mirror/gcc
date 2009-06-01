@@ -1,6 +1,6 @@
 /* Functions dealing with attribute handling, used by most front ends.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -195,15 +195,15 @@ void
 register_attribute (const struct attribute_spec *attr) 
 {
   struct substring str;
-  const void **slot;
+  void **slot;
 
   str.str = attr->name;
   str.length = strlen (str.str);
-  slot = (const void **)htab_find_slot_with_hash (attribute_hash, &str,
-                                                  substring_hash (str.str, str.length),
-                                                  INSERT);
+  slot = htab_find_slot_with_hash (attribute_hash, &str,
+				   substring_hash (str.str, str.length),
+				   INSERT);
   gcc_assert (!*slot);
-  *slot = attr;
+  *slot = (void *) CONST_CAST (struct attribute_spec *, attr);
 }
 
 /* Return the spec for the attribute named NAME.  */
