@@ -3056,6 +3056,26 @@ peep2_find_free_register (int from, int to, const char *class_str,
   return NULL_RTX;
 }
 
+/* Forget all currently tracked instructions, only remember current
+   LIVE regset.  */
+
+static void
+peep2_reinit_state (regset live)
+{
+  int i;
+
+  /* Indicate that all slots except the last holds invalid data.  */
+  for (i = 0; i < MAX_INSNS_PER_PEEP2; ++i)
+    peep2_insn_data[i].insn = NULL_RTX;
+  peep2_current_count = 0;
+
+  /* Indicate that the last slot contains live_after data.  */
+  peep2_insn_data[MAX_INSNS_PER_PEEP2].insn = PEEP2_EOB;
+  peep2_current = MAX_INSNS_PER_PEEP2;
+
+  COPY_REG_SET (peep2_insn_data[MAX_INSNS_PER_PEEP2].live_before, live);
+}
+
 /* Perform the peephole2 optimization pass.  */
 
 static void
@@ -3079,19 +3099,11 @@ peephole2_optimize (void)
   FOR_EACH_BB_REVERSE (bb)
     {
       rtl_profile_for_bb (bb);
-      /* Indicate that all slots except the last holds invalid data.  */
-      for (i = 0; i < MAX_INSNS_PER_PEEP2; ++i)
-	peep2_insn_data[i].insn = NULL_RTX;
-      peep2_current_count = 0;
-
-      /* Indicate that the last slot contains live_after data.  */
-      peep2_insn_data[MAX_INSNS_PER_PEEP2].insn = PEEP2_EOB;
-      peep2_current = MAX_INSNS_PER_PEEP2;
 
       /* Start up propagation.  */
       bitmap_copy (live, DF_LR_OUT (bb));
       df_simulate_initialize_backwards (bb, live);
-      bitmap_copy (peep2_insn_data[MAX_INSNS_PER_PEEP2].live_before, live);
+      peep2_reinit_state (live);
 
       for (insn = BB_END (bb); ; insn = prev)
 	{
@@ -3118,7 +3130,7 @@ peephole2_optimize (void)
 		  /* If an insn has RTX_FRAME_RELATED_P set, peephole
 		     substitution would lose the
 		     REG_FRAME_RELATED_EXPR that is attached.  */
-		  peep2_current_count = 0;
+		  peep2_reinit_state (live);
 		  attempt = NULL;
 		}
 	      else

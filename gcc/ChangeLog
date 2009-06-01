@@ -1,3 +1,10 @@
+2009-06-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/40316
+	* recog.c (peep2_reinit_state): New function.
+	(peephole2_init_state): Use it at the end of a basic block and also
+	when seeing a RTX_FRAME_RELATED_P insn.
+
 2009-06-01  Steve Ellcey  <sje@cup.hp.com>
 
 	* ia64.md (floatdirf2, fix_truncrfdi, floatunsdirf,
