@@ -1,5 +1,6 @@
 /* A Fibonacci heap datatype.
-   Copyright 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2009
+   Free Software Foundation, Inc.
    Contributed by Daniel Berlin (dan@cgsoftware.com).
 
 This file is part of GCC.
@@ -42,6 +43,10 @@ Boston, MA 02110-1301, USA.  */
 
 #include "ansidecl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef long fibheapkey_t;
 
 typedef struct fibheap
@@ -82,5 +87,9 @@ extern void *fibheap_replace_data (fibheap_t, fibnode_t, void *);
 extern void *fibheap_delete_node (fibheap_t, fibnode_t);
 extern void fibheap_delete (fibheap_t);
 extern fibheap_t fibheap_union (fibheap_t, fibheap_t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _FIBHEAP_H_ */

@@ -1,5 +1,6 @@
 /* ANSI and traditional C compatability macros
-   Copyright 1991, 1992, 1993, 1994, 1995, 1996, 1998, 1999, 2000, 2001
+   Copyright 1991, 1992, 1993, 1994, 1995, 1996, 1998, 1999, 2000, 2001,
+   2002, 2003, 2004, 2005, 2006, 2007, 2009
    Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
@@ -114,6 +115,10 @@ Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA 02110-1301, USA. 
 #ifndef	_ANSIDECL_H
 #define _ANSIDECL_H	1
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Every source file includes this file,
    so they will all get the switch for lint.  */
 /* LINTLIBRARY */
@@ -136,7 +141,7 @@ So instead we use the macro below and test it against specific values.  */
 #define GCC_VERSION (__GNUC__ * 1000 + __GNUC_MINOR__)
 #endif /* GCC_VERSION */
 
-#if defined (__STDC__) || defined (_AIX) || (defined (__mips) && defined (_SYSTYPE_SVR4)) || defined(_WIN32) || (defined(__alpha) && defined(__cplusplus))
+#if defined (__STDC__) || defined(__cplusplus) || defined (_AIX) || (defined (__mips) && defined (_SYSTYPE_SVR4)) || defined(_WIN32)
 /* All known AIX compilers implement these things (but don't always
    define __STDC__).  The RISC/OS MIPS compiler defines these things
    in SVR4 mode, but does not define __STDC__.  */
@@ -173,7 +178,7 @@ So instead we use the macro below and test it against specific values.  */
 /* inline requires special treatment; it's in C99, and GCC >=2.7 supports
    it too, but it's not in C89.  */
 #undef inline
-#if __STDC_VERSION__ > 199901L
+#if __STDC_VERSION__ > 199901L || defined(__cplusplus)
 /* it's a keyword */
 #else
 # if GCC_VERSION >= 2007
@@ -388,6 +393,10 @@ So instead we use the macro below and test it against specific values.  */
    gcc 2.8.  */
 #if GCC_VERSION < 2008
 #define __extension__
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif	/* ansidecl.h	*/
