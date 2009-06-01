@@ -1,5 +1,38 @@
 2009-06-01  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (queued_cfa_restores): New static variable.
+	(ix86_add_cfa_restore_note, ix86_add_queued_cfa_restore_notes): New
+	functions.
+	(pro_epilogue_adjust_stack): Call ix86_add_queued_cfa_restore_notes.
+	(ix86_emit_restore_reg_using_pop): Add RED_OFFSET argument.
+	Set RTX_FRAME_RELATED_P immediately after adding a REG_CFA_* note.
+	Call ix86_add_cfa_restore_note instead of adding REG_CFA_OFFSET
+	note unconditionally.
+	(ix86_emit_restore_regs_using_mov): Likewise.
+	(ix86_emit_restore_sse_regs_using_mov): Likewise.
+	(ix86_emit_restore_regs_using_pop): Add RED_OFFSET argument, pass
+	it through to ix86_emit_restore_reg_using_pop.
+	(ix86_emit_leave): Add RED_OFFSET argument.  Call
+	ix86_add_queued_cfa_restore_notes.  Call ix86_add_cfa_restore_note
+	instead of adding REG_CFA_OFFSET note unconditionally.
+	(ix86_expand_epilogue): Compute RED_OFFSET, pass it down to
+	the above functions.  Call ix86_add_queued_cfa_restore_notes when
+	needed.
+
+	* dwarf2out.c (dwarf2out_cfi_label): Add FORCE argument, if true,
+	force output of the label even for dwarf2out_do_cfi_asm.
+	(add_fde_cfi): If -g2 and above and cfi might change CFA,
+	force creation of CFI label and chain DW_CFA_set_loc jumping to it
+	for convert_cfa_to_fb_loc_list.  Adjust other dwarf2out_cfi_label
+	caller.
+	(dwarf2out_stack_adjust, dwarf2out_frame_debug,
+	dwarf2out_begin_epilogue, dwarf2out_frame_debug_restore_state): Adjust
+	dwarf2out_cfi_label callers.
+	* tree.h (dwarf2out_cfi_label): Adjust prototype.
+	* config/arm/arm.c (thumb_pushpop, thumb1_output_function_prologue):
+	Adjust dwarf2out_cfi_label callers.
+	* config/vax/vax.c (vax_output_function_prologue): Likewise.
+
 	* config/i386/i386.h (struct machine_cfa_state,
 	struct machine_function): Guard with ifndef USED_FOR_TARGET
 	instead of not IN_LIBGCC2 and not in IN_TARGET_LIBS.

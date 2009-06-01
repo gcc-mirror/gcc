@@ -8000,6 +8000,49 @@ ix86_emit_save_sse_regs_using_mov (rtx pointer, HOST_WIDE_INT offset)
       }
 }
 
+static GTY(()) rtx queued_cfa_restores;
+
+/* Add a REG_CFA_RESTORE REG note to INSN or queue them until next stack
+   manipulation insn.  Don't add it if the previously
+   saved value will be left untouched within stack red-zone till return,
+   as unwinders can find the same value in the register and
+   on the stack.  */
+
+static void
+ix86_add_cfa_restore_note (rtx insn, rtx reg, HOST_WIDE_INT red_offset)
+{
+  if (TARGET_RED_ZONE
+      && !TARGET_64BIT_MS_ABI
+      && red_offset + RED_ZONE_SIZE >= 0
+      && crtl->args.pops_args < 65536)
+    return;
+
+  if (insn)
+    {
+      add_reg_note (insn, REG_CFA_RESTORE, reg);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
+  else
+    queued_cfa_restores
+      = alloc_reg_note (REG_CFA_RESTORE, reg, queued_cfa_restores);
+}
+
+/* Add queued REG_CFA_RESTORE notes if any to INSN.  */
+
+static void
+ix86_add_queued_cfa_restore_notes (rtx insn)
+{
+  rtx last;
+  if (!queued_cfa_restores)
+    return;
+  for (last = queued_cfa_restores; XEXP (last, 1); last = XEXP (last, 1))
+    ;
+  XEXP (last, 1) = REG_NOTES (insn);
+  REG_NOTES (insn) = queued_cfa_restores;
+  queued_cfa_restores = NULL_RTX;
+  RTX_FRAME_RELATED_P (insn) = 1;
+}
+
 /* Expand prologue or epilogue stack adjustment.
    The pattern exist to put a dependency on all ebp-based memory accesses.
    STYLE should be negative if instructions should be marked as frame related,
@@ -8031,6 +8074,9 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
       insn = emit_insn (gen_pro_epilogue_adjust_stack_rex64_2 (dest, src, r11,
 							       offset));
     }
+
+  if (style >= 0)
+    ix86_add_queued_cfa_restore_notes (insn);
 
   if (set_cfa)
     {
@@ -8474,7 +8520,7 @@ ix86_expand_prologue (void)
 /* Emit code to restore REG using a POP insn.  */
 
 static void
-ix86_emit_restore_reg_using_pop (rtx reg)
+ix86_emit_restore_reg_using_pop (rtx reg, HOST_WIDE_INT red_offset)
 {
   rtx insn = emit_insn (ix86_gen_pop1 (reg));
 
@@ -8496,6 +8542,7 @@ ix86_emit_restore_reg_using_pop (rtx reg)
       ix86_cfa_state->offset -= UNITS_PER_WORD;
       add_reg_note (insn, REG_CFA_ADJUST_CFA,
 		    copy_rtx (XVECEXP (PATTERN (insn), 0, 1)));
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   /* When the frame pointer is the CFA, and we pop it, we are
@@ -8512,37 +8559,43 @@ ix86_emit_restore_reg_using_pop (rtx reg)
       add_reg_note (insn, REG_CFA_DEF_CFA,
 		    gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 				  GEN_INT (UNITS_PER_WORD)));
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  add_reg_note (insn, REG_CFA_RESTORE, reg);
-  RTX_FRAME_RELATED_P (insn) = 1;
+  ix86_add_cfa_restore_note (insn, reg, red_offset);
 }
 
 /* Emit code to restore saved registers using POP insns.  */
 
 static void
-ix86_emit_restore_regs_using_pop (void)
+ix86_emit_restore_regs_using_pop (HOST_WIDE_INT red_offset)
 {
   int regno;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (!SSE_REGNO_P (regno) && ix86_save_reg (regno, false))
-      ix86_emit_restore_reg_using_pop (gen_rtx_REG (Pmode, regno));
+      {
+	ix86_emit_restore_reg_using_pop (gen_rtx_REG (Pmode, regno),
+					 red_offset);
+	red_offset += UNITS_PER_WORD;
+      }
 }
 
 /* Emit code and notes for the LEAVE instruction.  */
 
 static void
-ix86_emit_leave (void)
+ix86_emit_leave (HOST_WIDE_INT red_offset)
 {
   rtx insn = emit_insn (ix86_gen_leave ());
+
+  ix86_add_queued_cfa_restore_notes (insn);
 
   if (ix86_cfa_state->reg == hard_frame_pointer_rtx)
     {
       add_reg_note (insn, REG_CFA_ADJUST_CFA, 
 		    copy_rtx (XVECEXP (PATTERN (insn), 0, 0)));
-      add_reg_note (insn, REG_CFA_RESTORE, hard_frame_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
+      ix86_add_cfa_restore_note (insn, hard_frame_pointer_rtx, red_offset);
     }
 }
 
@@ -8550,6 +8603,7 @@ ix86_emit_leave (void)
    is restored from POINTER + OFFSET.  */
 static void
 ix86_emit_restore_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
+				  HOST_WIDE_INT red_offset,
 				  int maybe_eh_return)
 {
   unsigned int regno;
@@ -8586,10 +8640,12 @@ ix86_emit_restore_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
 	       the drap register.  This will remain until we restore
 	       the stack pointer.  */
 	    add_reg_note (insn, REG_CFA_DEF_CFA, reg);
+	    RTX_FRAME_RELATED_P (insn) = 1;
 	  }
 	else
-	  add_reg_note (insn, REG_CFA_RESTORE, reg);
-	RTX_FRAME_RELATED_P (insn) = 1;
+	  ix86_add_cfa_restore_note (NULL_RTX, reg, red_offset);
+
+	red_offset += UNITS_PER_WORD;
       }
 }
 
@@ -8597,6 +8653,7 @@ ix86_emit_restore_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
    is restored from POINTER + OFFSET.  */
 static void
 ix86_emit_restore_sse_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
+				      HOST_WIDE_INT red_offset,
 				      int maybe_eh_return)
 {
   int regno;
@@ -8625,8 +8682,9 @@ ix86_emit_restore_sse_regs_using_mov (rtx pointer, HOST_WIDE_INT offset,
 	insn = emit_move_insn (reg, mem);
 	offset += 16;
 
-	add_reg_note (insn, REG_CFA_RESTORE, reg);
-	RTX_FRAME_RELATED_P (insn) = 1;
+	ix86_add_cfa_restore_note (NULL_RTX, reg, red_offset);
+
+	red_offset += 16;
       }
 }
 
@@ -8637,7 +8695,7 @@ ix86_expand_epilogue (int style)
 {
   int sp_valid;
   struct ix86_frame frame;
-  HOST_WIDE_INT offset;
+  HOST_WIDE_INT offset, red_offset;
   struct machine_cfa_state cfa_state_save = *ix86_cfa_state;
   bool using_drap;
 
@@ -8655,6 +8713,9 @@ ix86_expand_epilogue (int style)
   if (frame_pointer_needed && frame.red_zone_size)
     emit_insn (gen_memory_blockage ()); 
 
+  using_drap = crtl->drap_reg && crtl->stack_realign_needed;
+  gcc_assert (!using_drap || ix86_cfa_state->reg == crtl->drap_reg);
+
   /* Calculate start of saved registers relative to ebp.  Special care
      must be taken for the normal return case of a function using
      eh_return: the eax and edx registers are marked as saved, but not
@@ -8665,8 +8726,18 @@ ix86_expand_epilogue (int style)
   offset *= -UNITS_PER_WORD;
   offset -= frame.nsseregs * 16 + frame.padding0;
 
-  using_drap = crtl->drap_reg && crtl->stack_realign_needed;
-  gcc_assert (!using_drap || ix86_cfa_state->reg == crtl->drap_reg);
+  /* Calculate start of saved registers relative to esp on entry of the
+     function.  When realigning stack, this needs to be the most negative
+     value possible at runtime.  */
+  red_offset = offset;
+  if (using_drap)
+    red_offset -= crtl->stack_alignment_needed / BITS_PER_UNIT
+		  + UNITS_PER_WORD;
+  else if (stack_realign_fp)
+    red_offset -= crtl->stack_alignment_needed / BITS_PER_UNIT
+		  - UNITS_PER_WORD;
+  if (frame_pointer_needed)
+    red_offset -= UNITS_PER_WORD;
 
   /* If we're only restoring one register and sp is not valid then
      using a move instruction to restore the register since it's
@@ -8703,21 +8774,31 @@ ix86_expand_epilogue (int style)
 	  || stack_realign_fp)
 	{
 	  ix86_emit_restore_sse_regs_using_mov (stack_pointer_rtx,
-					        frame.to_allocate, style == 2);
+						frame.to_allocate, red_offset,
+						style == 2);
 	  ix86_emit_restore_regs_using_mov (stack_pointer_rtx,
 					    frame.to_allocate
+					    + frame.nsseregs * 16
+					    + frame.padding0,
+					    red_offset
 					    + frame.nsseregs * 16
 					    + frame.padding0, style == 2);
 	}
       else
         {
 	  ix86_emit_restore_sse_regs_using_mov (hard_frame_pointer_rtx,
-					        offset, style == 2);
+						offset, red_offset,
+						style == 2);
 	  ix86_emit_restore_regs_using_mov (hard_frame_pointer_rtx,
 					    offset
 					    + frame.nsseregs * 16
+					    + frame.padding0,
+					    red_offset
+					    + frame.nsseregs * 16
 					    + frame.padding0, style == 2);
         }
+
+      red_offset -= offset;
 
       /* eh_return epilogues need %ecx added to the stack pointer.  */
       if (style == 2)
@@ -8746,6 +8827,7 @@ ix86_expand_epilogue (int style)
 		 the return insn.  */
 	      add_reg_note (tmp, REG_CFA_DEF_CFA,
 			    plus_constant (sa, UNITS_PER_WORD));
+	      ix86_add_queued_cfa_restore_notes (tmp);
 	      add_reg_note (tmp, REG_CFA_RESTORE, hard_frame_pointer_rtx);
 	      RTX_FRAME_RELATED_P (tmp) = 1;
 	      ix86_cfa_state->reg = sa;
@@ -8762,6 +8844,7 @@ ix86_expand_epilogue (int style)
 					 + frame.nsseregs * 16
 					 + frame.padding0));
 	      tmp = emit_insn (gen_rtx_SET (VOIDmode, stack_pointer_rtx, tmp));
+	      ix86_add_queued_cfa_restore_notes (tmp);
 
 	      gcc_assert (ix86_cfa_state->reg == stack_pointer_rtx);
 	      if (ix86_cfa_state->offset != UNITS_PER_WORD)
@@ -8784,14 +8867,14 @@ ix86_expand_epilogue (int style)
       /* If not an i386, mov & pop is faster than "leave".  */
       else if (TARGET_USE_LEAVE || optimize_function_for_size_p (cfun)
 	       || !cfun->machine->use_fast_prologue_epilogue)
-	ix86_emit_leave ();
+	ix86_emit_leave (red_offset);
       else
 	{
 	  pro_epilogue_adjust_stack (stack_pointer_rtx,
 				     hard_frame_pointer_rtx,
 				     const0_rtx, style, !using_drap);
 
-	  ix86_emit_restore_reg_using_pop (hard_frame_pointer_rtx);
+	  ix86_emit_restore_reg_using_pop (hard_frame_pointer_rtx, red_offset);
 	}
     }
   else
@@ -8811,7 +8894,8 @@ ix86_expand_epilogue (int style)
 				     hard_frame_pointer_rtx,
 				     GEN_INT (offset), style, false);
           ix86_emit_restore_sse_regs_using_mov (stack_pointer_rtx,
-					        frame.to_allocate, style == 2);
+						frame.to_allocate, red_offset,
+						style == 2);
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 				     GEN_INT (frame.nsseregs * 16),
 				     style, false);
@@ -8819,7 +8903,7 @@ ix86_expand_epilogue (int style)
       else if (frame.to_allocate || frame.nsseregs)
 	{
           ix86_emit_restore_sse_regs_using_mov (stack_pointer_rtx,
-					        frame.to_allocate,
+						frame.to_allocate, red_offset,
 						style == 2);
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 				     GEN_INT (frame.to_allocate
@@ -8828,14 +8912,16 @@ ix86_expand_epilogue (int style)
 				     !using_drap && !frame_pointer_needed);
 	}
 
-      ix86_emit_restore_regs_using_pop ();
+      ix86_emit_restore_regs_using_pop (red_offset + frame.nsseregs * 16
+					+ frame.padding0);
+      red_offset -= offset;
 
       if (frame_pointer_needed)
 	{
 	  /* Leave results in shorter dependency chains on CPUs that are
 	     able to grok it fast.  */
 	  if (TARGET_USE_LEAVE)
-	    ix86_emit_leave ();
+	    ix86_emit_leave (red_offset);
 	  else
             {
               /* For stack realigned really happens, recover stack 
@@ -8845,7 +8931,8 @@ ix86_expand_epilogue (int style)
 		pro_epilogue_adjust_stack (stack_pointer_rtx,
 					   hard_frame_pointer_rtx,
 					   const0_rtx, style, !using_drap);
-	      ix86_emit_restore_reg_using_pop (hard_frame_pointer_rtx);
+	      ix86_emit_restore_reg_using_pop (hard_frame_pointer_rtx,
+					       red_offset);
             }
 	}
     }
@@ -8872,7 +8959,7 @@ ix86_expand_epilogue (int style)
       RTX_FRAME_RELATED_P (insn) = 1;
 
       if (param_ptr_offset)
-	ix86_emit_restore_reg_using_pop (crtl->drap_reg);
+	ix86_emit_restore_reg_using_pop (crtl->drap_reg, -UNITS_PER_WORD);
     }
 
   /* Sibcall epilogues don't want a return instruction.  */
