@@ -1,3 +1,12 @@
+2009-05-31  Ian Lance Taylor  <iant@google.com>
+
+	* decContext.h: Add extern "C" if compiling with C++.
+	* decDPD.h: Likewise.
+	* decNumber.h: Likewise.
+	* dpd/decimal32.h: Likewise.
+	* dpd/decimal64.h: Likewise.
+	* dpd/decimal128.h: Likewise.
+
 2009-04-09  Nick Clifton  <nickc@redhat.com>
 
 	* decRound.c: Change copyright header to refer to version 3 of
