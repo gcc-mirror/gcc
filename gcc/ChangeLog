@@ -1,3 +1,7 @@
+2009-06-01  Nick Clifton  <nickc@redhat.com>
+
+	* doc/invoke.texi (IA-64 Options): Fix typo.
+
 2009-06-01  Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/39129

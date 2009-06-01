@@ -11729,8 +11729,8 @@ using the minimum latency algorithm.
 Generate code for inline divides of integer values
 using the maximum throughput algorithm.
 
-@item -mno-inline-float-divide
-@opindex mno-inline-float-divide
+@item -mno-inline-int-divide
+@opindex mno-inline-int-divide
 Do not generate inline code for divides of integer values.
 
 @item -minline-sqrt-min-latency
