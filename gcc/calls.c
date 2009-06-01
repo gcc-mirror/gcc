@@ -3412,11 +3412,6 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
       nargs++;
 
-      /* Make sure it is a reasonable operand for a move or push insn.  */
-      if (!REG_P (addr) && !MEM_P (addr)
-	  && ! (CONSTANT_P (addr) && LEGITIMATE_CONSTANT_P (addr)))
-	addr = force_operand (addr, NULL_RTX);
-
       argvec[count].value = addr;
       argvec[count].mode = Pmode;
       argvec[count].partial = 0;
@@ -3451,11 +3446,6 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	 must do it earlier where we know the signedness of the arg.  */
       gcc_assert (mode != BLKmode
 		  && (GET_MODE (val) == mode || GET_MODE (val) == VOIDmode));
-
-      /* Make sure it is a reasonable operand for a move or push insn.  */
-      if (!REG_P (val) && !MEM_P (val)
-	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
-	val = force_operand (val, NULL_RTX);
 
       if (pass_by_reference (&args_so_far, mode, NULL_TREE, 1))
 	{
