@@ -303,6 +303,11 @@ extern bool constructor_static_from_elts_p (const_tree);
    arithmetic-combinations of integers.  */
 extern tree initializer_constant_valid_p (tree, tree);
 
+/* Return true if VALUE is a valid constant-valued expression
+   for use in initializing a static bit-field; one that can be
+   an element of a "constant" initializer.  */
+extern bool initializer_constant_valid_for_bitfield_p (tree);
+
 /* Output assembler code for constant EXP to FILE, with no label.
    This includes the pseudo-op such as ".int" or ".byte", and a newline.
    Assumes output_addressed_constants has been done on EXP already.
