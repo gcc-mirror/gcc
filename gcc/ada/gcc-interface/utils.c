@@ -3979,6 +3979,10 @@ convert (tree type, tree expr)
 	  unsigned HOST_WIDE_INT idx;
 	  tree index, value;
 
+	  /* Whether we need to clear TREE_CONSTANT et al. on the output
+	     constructor when we convert in place.  */
+	  bool clear_constant = false;
+
 	  FOR_EACH_CONSTRUCTOR_ELT(e, idx, index, value)
 	    {
 	      constructor_elt *elt = VEC_quick_push (constructor_elt, v, NULL);
@@ -3987,15 +3991,30 @@ convert (tree type, tree expr)
 		break;
 	      elt->index = field;
 	      elt->value = convert (TREE_TYPE (field), value);
+
+	      /* If packing has made this field a bitfield and the input
+		 value couldn't be emitted statically any more, we need to
+		 clear TREE_CONSTANT on our output.  */
+	      if (!clear_constant && TREE_CONSTANT (expr)
+		  && !CONSTRUCTOR_BITFIELD_P (efield)
+		  && CONSTRUCTOR_BITFIELD_P (field)
+		  && !initializer_constant_valid_for_bitfield_p (value))
+		clear_constant = true;
+
 	      efield = TREE_CHAIN (efield);
 	      field = TREE_CHAIN (field);
 	    }
 
+	  /* If we have been able to match and convert all the input fields
+	     to their output type, convert in place now.  We'll fallback to a
+	     view conversion downstream otherwise.  */
 	  if (idx == len)
 	    {
 	      expr = copy_node (expr);
 	      TREE_TYPE (expr) = type;
 	      CONSTRUCTOR_ELTS (expr) = v;
+	      if (clear_constant)
+		TREE_CONSTANT (expr) = TREE_STATIC (expr) = false;
 	      return expr;
 	    }
 	}

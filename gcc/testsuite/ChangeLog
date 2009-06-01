@@ -1,4 +1,8 @@
 2009-06-01  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/nested_float_packed.ads: New test.
+
+2009-06-01  Olivier Hainque  <hainque@adacore.com>
             Eric Botcazou  <botcazou@adacore.com>
 
 	* gnat.dg/oconst[1-6].ad[bs]: New tests. Also support for ...
