@@ -1,3 +1,8 @@
+2009-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* calls.c (emit_library_call_value_1): Don't force_operand for move
+	and push insns.
+
 2009-06-01  Nick Clifton  <nickc@redhat.com>
 
 	* doc/invoke.texi (IA-64 Options): Fix typo.
