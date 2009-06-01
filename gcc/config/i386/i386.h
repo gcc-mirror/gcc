@@ -2395,7 +2395,7 @@ enum ix86_stack_slot
 
 /* Machine specific CFA tracking during prologue/epilogue generation.  */
 
-#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS)
+#ifndef USED_FOR_TARGET
 struct GTY(()) machine_cfa_state
 {
   rtx reg;
