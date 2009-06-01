@@ -222,6 +222,32 @@
      operands[2] = gen_rtx_REG (<MODE>mode, REGNO (operands[1]));
 })
 
+;; Float to integer truncations using an alternative status register. 
+
+(define_insn "fix_truncrfdi2_alts"
+  [(set (match_operand:DI 0 "fr_register_operand" "=f")
+        (fix:DI (match_operand:RF 1 "fr_register_operand" "f")))
+   (use (match_operand:SI 2 "const_int_operand" ""))]
+  ""
+  "fcvt.fx.trunc.s%2 %0 = %1"
+  [(set_attr "itanium_class" "fcvtfx")])
+
+(define_insn "fixuns_truncrfdi2_alts"
+  [(set (match_operand:DI 0 "fr_register_operand" "=f")
+        (unsigned_fix:DI (match_operand:RF 1 "fr_register_operand" "f")))
+   (use (match_operand:SI 2 "const_int_operand" ""))]
+  ""
+  "fcvt.fxu.trunc.s%2 %0 = %1"
+  [(set_attr "itanium_class" "fcvtfx")])
+
+(define_insn "setf_exp_rf"
+  [(set (match_operand:RF 0 "fr_register_operand" "=f")
+        (unspec:RF [(match_operand:DI 1 "register_operand" "r")]
+                  UNSPEC_SETF_EXP))]
+  ""
+  "setf.exp %0 = %1"
+  [(set_attr "itanium_class" "frfr")])
+
 ;; Reciprocal approximation
 
 (define_insn "recip_approx_rf"
@@ -236,6 +262,23 @@
   "frcpa.s%4 %0, %3 = %F1, %F2"
   [(set_attr "itanium_class" "fmisc")
    (set_attr "predicable" "no")])
+
+;; Single precision floating point division
+
+(define_expand "divsf3"
+  [(set (match_operand:SF 0 "fr_register_operand" "")
+	(div:SF (match_operand:SF 1 "fr_reg_or_fp01_operand" "")
+		(match_operand:SF 2 "fr_reg_or_fp01_operand" "")))]
+  "TARGET_INLINE_FLOAT_DIV"
+{
+  rtx insn;
+  if (TARGET_INLINE_FLOAT_DIV == INL_MIN_LAT)
+    insn = gen_divsf3_internal_lat (operands[0], operands[1], operands[2]);
+  else
+    insn = gen_divsf3_internal_thr (operands[0], operands[1], operands[2]);
+  emit_insn (insn);
+  DONE;
+})
 
 ;; Single precision floating point division (maximum throughput algorithm).
 
@@ -334,6 +377,22 @@
   DONE;
 })
 
+;; Double precision floating point division
+
+(define_expand "divdf3"
+  [(set (match_operand:DF 0 "fr_register_operand" "")
+	(div:DF (match_operand:DF 1 "fr_reg_or_fp01_operand" "")
+		(match_operand:DF 2 "fr_reg_or_fp01_operand" "")))]
+  "TARGET_INLINE_FLOAT_DIV"
+{
+  rtx insn;
+  if (TARGET_INLINE_FLOAT_DIV == INL_MIN_LAT)
+    insn = gen_divdf3_internal_lat (operands[0], operands[1], operands[2]);
+  else
+    insn = gen_divdf3_internal_thr (operands[0], operands[1], operands[2]);
+  emit_insn (insn);
+  DONE;
+})
 
 ;; Double precision floating point division (maximum throughput algorithm).
 
@@ -454,7 +513,7 @@
 
 ;; Extended precision floating point division.
 
-(define_expand "divxf3_internal"
+(define_expand "divxf3"
   [(set (match_operand:XF 0 "fr_register_operand" "")
         (div:XF (match_operand:XF 1 "fr_reg_or_fp01_operand" "")
                 (match_operand:XF 2 "fr_reg_or_fp01_operand" "")))]
@@ -520,6 +579,340 @@
 })
 
 
+;; Integer division operations
+
+(define_expand "divsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(div:SI (match_operand:SI 1 "general_operand" "")
+		(match_operand:SI 2 "general_operand" "")))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx op1_rf, op2_rf, op0_rf, op0_di;
+
+  op0_rf = gen_reg_rtx (RFmode);
+  op0_di = gen_reg_rtx (DImode);
+
+  if (! register_operand (operands[1], SImode))
+    operands[1] = force_reg (SImode, operands[1]);
+  op1_rf = gen_reg_rtx (RFmode);
+  expand_float (op1_rf, operands[1], 0);
+
+  if (! register_operand (operands[2], SImode))
+    operands[2] = force_reg (SImode, operands[2]);
+  op2_rf = gen_reg_rtx (RFmode);
+  expand_float (op2_rf, operands[2], 0);
+
+  emit_insn (gen_cond_trap (EQ, operands[2], CONST0_RTX (SImode),
+			    CONST1_RTX (SImode)));
+  
+  emit_insn (gen_divsi3_internal (op0_rf, op1_rf, op2_rf));
+
+  emit_insn (gen_fix_truncrfdi2_alts (op0_di, op0_rf, const1_rtx));
+  emit_move_insn (operands[0], gen_lowpart (SImode, op0_di));
+  DONE;
+})
+
+(define_expand "modsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(mod:SI (match_operand:SI 1 "general_operand" "")
+		(match_operand:SI 2 "general_operand" "")))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx op2_neg, op1_di, div;
+
+  div = gen_reg_rtx (SImode);
+  emit_insn (gen_divsi3 (div, operands[1], operands[2]));
+
+  op2_neg = expand_unop (SImode, neg_optab, operands[2], NULL_RTX, 0);
+
+  /* This is a trick to get us to reuse the value that we're sure to
+     have already copied to the FP regs.  */
+  op1_di = gen_reg_rtx (DImode);
+  convert_move (op1_di, operands[1], 0);
+
+  emit_insn (gen_maddsi4 (operands[0], div, op2_neg,
+			  gen_lowpart (SImode, op1_di)));
+  DONE;
+})
+
+(define_expand "udivsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(udiv:SI (match_operand:SI 1 "general_operand" "")
+		 (match_operand:SI 2 "general_operand" "")))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx op1_rf, op2_rf, op0_rf, op0_di;
+
+  op0_rf = gen_reg_rtx (RFmode);
+  op0_di = gen_reg_rtx (DImode);
+
+  if (! register_operand (operands[1], SImode))
+    operands[1] = force_reg (SImode, operands[1]);
+  op1_rf = gen_reg_rtx (RFmode);
+  expand_float (op1_rf, operands[1], 1);
+
+  if (! register_operand (operands[2], SImode))
+    operands[2] = force_reg (SImode, operands[2]);
+  op2_rf = gen_reg_rtx (RFmode);
+  expand_float (op2_rf, operands[2], 1);
+
+  emit_insn (gen_cond_trap (EQ, operands[2], CONST0_RTX (SImode),
+                            CONST1_RTX (SImode)));
+  
+  emit_insn (gen_divsi3_internal (op0_rf, op1_rf, op2_rf));
+
+  emit_insn (gen_fixuns_truncrfdi2_alts (op0_di, op0_rf, const1_rtx));
+  emit_move_insn (operands[0], gen_lowpart (SImode, op0_di));
+  DONE;
+})
+
+(define_expand "umodsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(umod:SI (match_operand:SI 1 "general_operand" "")
+		 (match_operand:SI 2 "general_operand" "")))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx op2_neg, op1_di, div;
+
+  div = gen_reg_rtx (SImode);
+  emit_insn (gen_udivsi3 (div, operands[1], operands[2]));
+
+  op2_neg = expand_unop (SImode, neg_optab, operands[2], NULL_RTX, 0);
+
+  /* This is a trick to get us to reuse the value that we're sure to
+     have already copied to the FP regs.  */
+  op1_di = gen_reg_rtx (DImode);
+  convert_move (op1_di, operands[1], 1);
+
+  emit_insn (gen_maddsi4 (operands[0], div, op2_neg,
+			  gen_lowpart (SImode, op1_di)));
+  DONE;
+})
+
+(define_expand "divsi3_internal"
+  [(set (match_operand:RF 0 "fr_register_operand" "")
+        (float:RF (div:SI (match_operand:RF 1 "fr_register_operand" "")
+                          (match_operand:RF 2 "fr_register_operand" ""))))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx a         = operands[1];
+  rtx b         = operands[2];
+  rtx y         = gen_reg_rtx (RFmode);
+  rtx e         = gen_reg_rtx (RFmode);
+  rtx e1        = gen_reg_rtx (RFmode);
+  rtx q         = gen_reg_rtx (RFmode);
+  rtx q1        = gen_reg_rtx (RFmode);
+  rtx cond      = gen_reg_rtx (BImode);
+  rtx zero      = CONST0_RTX (RFmode);
+  rtx one       = CONST1_RTX (RFmode);
+  rtx status1   = CONST1_RTX (SImode);
+  rtx trunc_off = CONST2_RTX (SImode);
+  rtx twon34_exp = gen_reg_rtx (DImode);
+  rtx twon34    = gen_reg_rtx (RFmode);
+
+  /* Load cosntant 2**(-34) */
+  emit_move_insn (twon34_exp, GEN_INT (65501));
+  emit_insn (gen_setf_exp_rf (twon34, twon34_exp));
+
+  /* y  = 1 / b			*/
+  emit_insn (gen_recip_approx_rf (y, a, b, cond, status1));
+  /* e  = 1 - (b * y)		*/
+  emit_insn (gen_m2subrf4_cond (e, cond, one, b, y, zero, status1, trunc_off));
+  /* q  = a * y                 */
+  emit_insn (gen_mulrf3_cond (q, cond, a, y, zero, status1, trunc_off));
+  /* q1 = q + (q * e)		*/
+  emit_insn (gen_m2addrf4_cond (q1, cond, q, q, e, zero, status1, trunc_off));
+  /* e1 = (2**-34) + (e * e)		*/
+  emit_insn (gen_m2addrf4_cond (e1, cond, twon34, e, e, zero, status1, trunc_off));
+  /* q2 = q1 + (e1 * q1)		*/
+  emit_insn (gen_m2addrf4_cond (operands[0], cond, q1, e1, q1, y, status1, trunc_off));
+  DONE;
+})
+
+(define_expand "divdi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(div:DI (match_operand:DI 1 "general_operand" "")
+		(match_operand:DI 2 "general_operand" "")))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx op1_rf, op2_rf, op0_rf;
+
+  op0_rf = gen_reg_rtx (RFmode);
+
+  if (! register_operand (operands[1], DImode))
+    operands[1] = force_reg (DImode, operands[1]);
+  op1_rf = gen_reg_rtx (RFmode);
+  expand_float (op1_rf, operands[1], 0);
+
+  if (! register_operand (operands[2], DImode))
+    operands[2] = force_reg (DImode, operands[2]);
+  op2_rf = gen_reg_rtx (RFmode);
+  expand_float (op2_rf, operands[2], 0);
+
+  emit_insn (gen_cond_trap (EQ, operands[2], CONST0_RTX (DImode),
+                            CONST1_RTX (DImode)));
+
+  if (TARGET_INLINE_INT_DIV == INL_MIN_LAT)
+    emit_insn (gen_divdi3_internal_lat (op0_rf, op1_rf, op2_rf));
+  else
+    emit_insn (gen_divdi3_internal_thr (op0_rf, op1_rf, op2_rf));
+
+  emit_insn (gen_fix_truncrfdi2_alts (operands[0], op0_rf, const1_rtx));
+  DONE;
+})
+
+(define_expand "moddi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(mod:SI (match_operand:DI 1 "general_operand" "")
+		(match_operand:DI 2 "general_operand" "")))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx op2_neg, div;
+
+  div = gen_reg_rtx (DImode);
+  emit_insn (gen_divdi3 (div, operands[1], operands[2]));
+
+  op2_neg = expand_unop (DImode, neg_optab, operands[2], NULL_RTX, 0);
+
+  emit_insn (gen_madddi4 (operands[0], div, op2_neg, operands[1]));
+  DONE;
+})
+
+(define_expand "udivdi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(udiv:DI (match_operand:DI 1 "general_operand" "")
+		 (match_operand:DI 2 "general_operand" "")))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx op1_rf, op2_rf, op0_rf;
+
+  op0_rf = gen_reg_rtx (RFmode);
+
+  if (! register_operand (operands[1], DImode))
+    operands[1] = force_reg (DImode, operands[1]);
+  op1_rf = gen_reg_rtx (RFmode);
+  expand_float (op1_rf, operands[1], 1);
+
+  if (! register_operand (operands[2], DImode))
+    operands[2] = force_reg (DImode, operands[2]);
+  op2_rf = gen_reg_rtx (RFmode);
+  expand_float (op2_rf, operands[2], 1);
+
+  emit_insn (gen_cond_trap (EQ, operands[2], CONST0_RTX (DImode),
+                            CONST1_RTX (DImode)));
+
+  if (TARGET_INLINE_INT_DIV == INL_MIN_LAT)
+    emit_insn (gen_divdi3_internal_lat (op0_rf, op1_rf, op2_rf));
+  else
+    emit_insn (gen_divdi3_internal_thr (op0_rf, op1_rf, op2_rf));
+
+  emit_insn (gen_fixuns_truncrfdi2_alts (operands[0], op0_rf, const1_rtx));
+  DONE;
+})
+
+(define_expand "umoddi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(umod:DI (match_operand:DI 1 "general_operand" "")
+		 (match_operand:DI 2 "general_operand" "")))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx op2_neg, div;
+
+  div = gen_reg_rtx (DImode);
+  emit_insn (gen_udivdi3 (div, operands[1], operands[2]));
+
+  op2_neg = expand_unop (DImode, neg_optab, operands[2], NULL_RTX, 0);
+
+  emit_insn (gen_madddi4 (operands[0], div, op2_neg, operands[1]));
+  DONE;
+})
+
+(define_expand "divdi3_internal_lat"
+  [(set (match_operand:RF 0 "fr_register_operand" "")
+        (float:RF (div:DI (match_operand:RF 1 "fr_register_operand" "")
+                          (match_operand:RF 2 "fr_register_operand" ""))))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx a         = operands[1];
+  rtx b         = operands[2];
+  rtx y         = gen_reg_rtx (RFmode);
+  rtx y1        = gen_reg_rtx (RFmode);
+  rtx y2        = gen_reg_rtx (RFmode);
+  rtx e         = gen_reg_rtx (RFmode);
+  rtx e1        = gen_reg_rtx (RFmode);
+  rtx q         = gen_reg_rtx (RFmode);
+  rtx q1        = gen_reg_rtx (RFmode);
+  rtx q2        = gen_reg_rtx (RFmode);
+  rtx r         = gen_reg_rtx (RFmode);
+  rtx cond      = gen_reg_rtx (BImode);
+  rtx zero      = CONST0_RTX (RFmode);
+  rtx one       = CONST1_RTX (RFmode);
+  rtx status1   = CONST1_RTX (SImode);
+  rtx trunc_off = CONST2_RTX (SImode);
+
+  /* y  = 1 / b			*/
+  emit_insn (gen_recip_approx_rf (y, a, b, cond, status1));
+  /* e  = 1 - (b * y)		*/
+  emit_insn (gen_m2subrf4_cond (e, cond, one, b, y, zero, status1, trunc_off));
+  /* q  = a * y                 */
+  emit_insn (gen_mulrf3_cond (q, cond, a, y, zero, status1, trunc_off));
+  /* q1 = q + (q * e)		*/
+  emit_insn (gen_m2addrf4_cond (q1, cond, q, q, e, zero, status1, trunc_off));
+  /* e1 = e * e			*/
+  emit_insn (gen_mulrf3_cond (e1, cond, e, e, zero, status1, trunc_off));
+  /* q2 = q1 + (e1 * q1)	*/
+  emit_insn (gen_m2addrf4_cond (q2, cond, q1, e1, q1, zero, status1, trunc_off));
+  /* y1 = y + (y * e)		*/
+  emit_insn (gen_m2addrf4_cond (y1, cond, y, y, e, zero, status1, trunc_off));
+  /* r  = a - (b * q2)		*/
+  emit_insn (gen_m2subrf4_cond (r, cond, a, b, q2, zero, status1, trunc_off));
+  /* y2 = y1 + (y1 * e1)	*/
+  emit_insn (gen_m2addrf4_cond (y2, cond, y1, y1, e1, zero, status1, trunc_off));
+  /* q3 = q2 + (r * y2)		*/
+  emit_insn (gen_m2addrf4_cond (operands[0], cond, q2, r, y2, y, status1, trunc_off));
+  DONE;
+})
+
+(define_expand "divdi3_internal_thr"
+  [(set (match_operand:RF 0 "fr_register_operand" "")
+        (float:RF (div:DI (match_operand:RF 1 "fr_register_operand" "")
+                          (match_operand:RF 2 "fr_register_operand" ""))))]
+  "TARGET_INLINE_INT_DIV"
+{
+  rtx a         = operands[1];
+  rtx b         = operands[2];
+  rtx y         = gen_reg_rtx (RFmode);
+  rtx y1        = gen_reg_rtx (RFmode);
+  rtx y2        = gen_reg_rtx (RFmode);
+  rtx e         = gen_reg_rtx (RFmode);
+  rtx e1        = gen_reg_rtx (RFmode);
+  rtx q2        = gen_reg_rtx (RFmode);
+  rtx r         = gen_reg_rtx (RFmode);
+  rtx cond      = gen_reg_rtx (BImode);
+  rtx zero      = CONST0_RTX (RFmode);
+  rtx one       = CONST1_RTX (RFmode);
+  rtx status1   = CONST1_RTX (SImode);
+  rtx trunc_off = CONST2_RTX (SImode);
+
+  /* y  = 1 / b			*/
+  emit_insn (gen_recip_approx_rf (y, a, b, cond, status1));
+  /* e  = 1 - (b * y)		*/
+  emit_insn (gen_m2subrf4_cond (e, cond, one, b, y, zero, status1, trunc_off));
+  /* y1 = y + (y * e)		*/
+  emit_insn (gen_m2addrf4_cond (y1, cond, y, y, e, zero, status1, trunc_off));
+  /* e1 = e * e			*/
+  emit_insn (gen_mulrf3_cond (e1, cond, e, e, zero, status1, trunc_off));
+  /* y2 = y1 + (y1 * e1)	*/
+  emit_insn (gen_m2addrf4_cond (y2, cond, y1, y1, e1, zero, status1, trunc_off));
+  /* q2 = y2 * a		*/
+  emit_insn (gen_mulrf3_cond (q2, cond, y2, a, zero, status1, trunc_off));
+  /* r  = a - (b * q2)		*/
+  emit_insn (gen_m2subrf4_cond (r, cond, a, b, q2, zero, status1, trunc_off));
+  /* q3 = q2 + (r * y2)		*/
+  emit_insn (gen_m2addrf4_cond (operands[0], cond, q2, r, y2, y, status1, trunc_off));
+  DONE;
+})
+
 ;; SQRT operations
 
 
@@ -534,6 +927,20 @@
   "frsqrta.s%3 %0, %2 = %F1"
   [(set_attr "itanium_class" "fmisc")
    (set_attr "predicable" "no")])
+
+(define_expand "sqrtsf2"
+  [(set (match_operand:SF 0 "fr_register_operand" "=&f")
+	(sqrt:SF (match_operand:SF 1 "fr_reg_or_fp01_operand" "fG")))]
+  "TARGET_INLINE_SQRT"
+{
+  rtx insn;
+  if (TARGET_INLINE_SQRT == INL_MIN_LAT)
+    insn = gen_sqrtsf2_internal_lat (operands[0], operands[1]);
+  else
+    insn = gen_sqrtsf2_internal_thr (operands[0], operands[1]);
+  emit_insn (insn);
+  DONE;
+})
 
 (define_expand "sqrtsf2_internal_thr"
   [(set (match_operand:SF 0 "fr_register_operand" "")
@@ -662,6 +1069,22 @@
   DONE;
 })
 
+(define_expand "sqrtdf2"
+  [(set (match_operand:DF 0 "fr_register_operand" "=&f")
+	(sqrt:DF (match_operand:DF 1 "fr_reg_or_fp01_operand" "fG")))]
+  "TARGET_INLINE_SQRT"
+{
+  rtx insn;
+#if 0
+  if (TARGET_INLINE_SQRT == INL_MIN_LAT)
+    insn = gen_sqrtdf2_internal_lat (operands[0], operands[1]);
+  else
+#endif
+  insn = gen_sqrtdf2_internal_thr (operands[0], operands[1]);
+  emit_insn (insn);
+  DONE;
+})
+
 (define_expand "sqrtdf2_internal_thr"
   [(set (match_operand:DF 0 "fr_register_operand" "")
         (sqrt:DF (match_operand:DF 1 "fr_register_operand" "")))]
@@ -727,7 +1150,7 @@
   DONE;
 })
 
-(define_expand "sqrtxf2_internal"
+(define_expand "sqrtxf2"
   [(set (match_operand:XF 0 "fr_register_operand" "")
         (sqrt:XF (match_operand:XF 1 "fr_register_operand" "")))]
   "TARGET_INLINE_SQRT"
