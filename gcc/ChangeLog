@@ -29,11 +29,11 @@
 	extracted code for a bitfield element.  Accept an OUTER state
 	argument for recursive processing.  Recurse on record or array
 	CONSTRUCTOR values, possibly past noop conversions.
-	(initializer_constant_valid_for_bitfield_p): New predicate. Whether
+	(initializer_constant_valid_for_bitfield_p): New predicate.  Whether
 	VALUE is a valid constant-valued expression for use in a static
 	bit-field initializer.
-	(output_constructor): Rework to use helpers. Accept and honor an
-	OUTER state argument for recursive calls. Return total size. Be
+	(output_constructor): Rework to use helpers.  Accept and honor an
+	OUTER state argument for recursive calls.  Return total size.  Be
 	prepared for nested constructors initializing bitfields.
 	(output_constant): Feed OUTER in calls to output_constructor.
 
