@@ -1,3 +1,20 @@
+2009-06-01  Steve Ellcey  <sje@cup.hp.com>
+
+	* ia64.md (floatdirf2, fix_truncrfdi, floatunsdirf,
+	fixuns_truncrfdi2): New.
+	(fix_truncxfdi2_alts, fixuns_truncxfdi2_alts,
+	*nmaddsf4_alts, *nmadddf4_alts, *nmadddf4_truncsf_alts,
+	*mulxf3_alts, *mulxf3_truncsf_alts, *mulxf3_truncdf_alts,
+	*maddxf4_alts, *maddxf4_alts_truncsf, *maddxf4_alts_truncdf,
+	*nmaddxf4_alts, *nmaddxf4_truncsf_alts, *nmaddxf4_truncdf_alts,
+	*recip_approx): Remove.
+	(divsi3 modsi3, udivsi3, umodsi3, divsi3_internal, divdi3,
+	moddi3, udivdi3, umoddi3, divdi3_internal_lat, divdi3_internal_thr,
+	divsf3, sqrtsf2, divdf3, sqrtdf2, divxf3, sqrtxf2): Modify and
+	move to div.md.
+	* div.md (fix_truncrfdi2_alts, fixuns_truncrfdi2_alt,
+	setf_exp_rf): New.
+
 2009-06-01  Ian Lance Taylor  <iant@google.com>
 
 	* attribs.c (register_attribute): Use CONST_CAST.
