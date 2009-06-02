@@ -1,3 +1,7 @@
+2009-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/alignment6.adb: Remove XFAIL.
+
 2009-06-02  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/38089
