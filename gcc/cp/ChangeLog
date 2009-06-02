@@ -1,3 +1,11 @@
+2009-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40306
+	PR c++/40307
+	* decl.c (cp_finish_decl): Handle auto deduction from ().
+	* typeck.c (build_x_indirect_ref): Handle dereferencing an operand
+	with dependent type that is known to be a pointer.
+
 2009-06-02  Simon Martin  <simartin@users.sourceforge.net>
 
 	PR c++/38089
