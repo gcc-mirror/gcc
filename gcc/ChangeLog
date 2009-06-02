@@ -1,3 +1,18 @@
+2009-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (dwarf2out_cfi_label): Add FORCE argument, if true,
+	force output of the label even for dwarf2out_do_cfi_asm.
+	(add_fde_cfi): If -g2 and above and cfi might change CFA,
+	force creation of CFI label and chain DW_CFA_set_loc jumping to it
+	for convert_cfa_to_fb_loc_list.  Adjust other dwarf2out_cfi_label
+	caller.
+	(dwarf2out_stack_adjust, dwarf2out_frame_debug): Adjust
+	dwarf2out_cfi_label callers.
+	* tree.h (dwarf2out_cfi_label): Adjust prototype.
+	* config/arm/arm.c (thumb_pushpop, thumb1_output_function_prologue):
+	Adjust dwarf2out_cfi_label callers.
+	* config/vax/vax.c (vax_output_function_prologue): Likewise.
+
 2009-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40291

@@ -122,7 +122,7 @@ vax_output_function_prologue (FILE * file, HOST_WIDE_INT size)
 
   if (dwarf2out_do_frame ())
     {
-      const char *label = dwarf2out_cfi_label ();
+      const char *label = dwarf2out_cfi_label (false);
       int offset = 0;
 
       for (regno = FIRST_PSEUDO_REGISTER-1; regno >= 0; --regno)
