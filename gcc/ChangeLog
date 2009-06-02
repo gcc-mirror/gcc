@@ -1,5 +1,10 @@
 2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
 
+	* print_rtl (print_rtx): Don't print modes in EXPR_LISTs and
+	INSN_LISTs that are out of the REG_NOTE range.
+
+2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
+
 	* loop-unroll.c (struct iv_to_split): Add pointer to next.
 	(struct var_to_expand): Likewise.
 	(struct opt_info): Add head and tail for linked lists of the above.

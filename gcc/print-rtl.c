@@ -1,6 +1,6 @@
 /* Print RTL for GCC.
    Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999, 2000, 2002, 2003,
-   2004, 2005, 2007, 2008
+   2004, 2005, 2007, 2008, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -204,8 +204,9 @@ print_rtx (const_rtx in_rtx)
 	    fputs ("/i", outfile);
 
 	  /* Print REG_NOTE names for EXPR_LIST and INSN_LIST.  */
-	  if (GET_CODE (in_rtx) == EXPR_LIST
-	      || GET_CODE (in_rtx) == INSN_LIST)
+	  if ((GET_CODE (in_rtx) == EXPR_LIST
+	       || GET_CODE (in_rtx) == INSN_LIST)
+	      && (int)GET_MODE (in_rtx) < REG_NOTE_MAX)
 	    fprintf (outfile, ":%s",
 		     GET_REG_NOTE_NAME (GET_MODE (in_rtx)));
 
