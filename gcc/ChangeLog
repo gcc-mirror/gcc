@@ -1,3 +1,8 @@
+2009-06-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_get_frame_offsets): Prefer using r3 for padding a
+	push/pop multiple to 8-byte alignment.
+	
 2009-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (queued_cfa_restores): New static variable.
