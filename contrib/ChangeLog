@@ -1,3 +1,7 @@
+2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	* compare-debug: Don't fail just because of .eh_frame differences.
+
 2009-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/39807

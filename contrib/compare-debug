@@ -2,7 +2,7 @@
 
 # Compare stripped copies of two given object files.
 
-# Copyright (C) 2007 Free Software Foundation
+# Copyright (C) 2007, 2008, 2009 Free Software Foundation
 # Originally by Alexandre Oliva <aoliva@redhat.com>
 
 # This file is part of GCC.
@@ -67,6 +67,82 @@ if cmp "$1.$suf1" "$2.$suf2"; then
   status=0
 else
   status=1
+
+  # Assembler-generated CFI will add an .eh_frame section for -g not
+  # present in -g0.  Try to cope with it by checking that an .eh_frame
+  # section is present in either object file, and then stripping it
+  # off before re-comparing.
+
+  cmd=
+  cmp1=
+  cmp2=
+
+  for t in objdump readelf eu-readelf; do
+    if ($t --help) 2>&1 | grep -e '--\[*section-\]*headers' > /dev/null; then
+      cmd=$t
+
+      $cmd --section-headers "$1.$suf1" | grep '\.eh_frame' > /dev/null
+      cmp1=$?
+
+      $cmd --section-headers "$2.$suf2" | grep '\.eh_frame' > /dev/null
+      cmp2=$?
+
+      break
+    fi
+  done
+
+  # If we found .eh_frame in one but not the other, or if we could not
+  # find a command to tell, try to strip off the .eh_frame section
+  # from both.
+  if test "x$cmp1" != "x$cmp2" || test "x$cmd" = "x"; then
+    suf3=$suf1.
+    while test -f "$1.$suf3"; do
+      suf3=$suf3.
+    done
+
+    suf4=$suf2.
+    while test -f "$2.$suf4"; do
+      suf4=$suf4.
+    done
+
+    trap 'rm -f "$1.$suf1" "$2.$suf2" "$1.$suf3" "$2.$suf4"' 0 1 2 15
+
+    if (objcopy -v) 2>&1 | grep -e "--remove-section" > /dev/null; then
+      objcopy --remove-section .eh_frame "$1.$suf1" "$1.$suf3"
+      cmp "$1.$suf1" "$1.$suf3" > /dev/null
+      cmp1=$?
+
+      objcopy --remove-section .eh_frame "$2.$suf2" "$2.$suf4"
+      cmp "$2.$suf2" "$2.$suf4" > /dev/null
+      cmp2=$?
+
+      mv "$1.$suf3" "$1.$suf1"
+      mv "$2.$suf4" "$2.$suf2"
+    elif (strip --help) 2>&1 | grep -e --remove-section > /dev/null; then
+      cp "$1.$suf1" "$1.$suf3"
+      strip --remove-section .eh_frame "$1.$suf3"
+
+      cp "$2.$suf2" "$2.$suf4"
+      strip --remove-section .eh_frame "$2.$suf4"
+
+      cmp "$1.$suf1" "$1.$suf3" > /dev/null
+      cmp1=$?
+
+      cmp "$2.$suf2" "$2.$suf4" > /dev/null
+      cmp2=$?
+
+      mv "$1.$suf3" "$1.$suf1"
+      mv "$2.$suf4" "$2.$suf2"
+    fi
+
+    trap 'rm -f "$1.$suf1" "$2.$suf2"' 0 1 2 15
+  fi
+
+  if test "x$cmp1" != "x$cmp2" && cmp "$1.$suf1" "$2.$suf2"; then
+    status=0
+  else
+    status=1
+  fi
 fi
 
 $rm "$1.$suf1" "$2.$suf2"
