@@ -1,3 +1,9 @@
+2009-06-02  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c: Revert last change.
+	(sh_expand_epilogue): Emit a blockage insn before the frame
+	pointer adjustment unconditionally.
+
 2009-06-02  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
 	* config/pa/pa-hpux.h (LINK_SPEC): Remove "%<fwhole-program".
