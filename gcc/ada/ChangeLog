@@ -1,3 +1,7 @@
+2009-06-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Make-lang.in: Fix formatting.
+
 2009-06-01  Olivier Hainque  <hainque@adacore.com>
             Eric Botcazou  <ebotcazou@adacore.com>
 	
