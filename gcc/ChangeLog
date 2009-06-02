@@ -1,3 +1,8 @@
+2009-06-02  Richard Guenther  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Use DECL_SIZE
+	for field decls.
+
 2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* cfgexpand.c (gimple_expand_cfg): Discard the source location
