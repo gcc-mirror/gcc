@@ -1,5 +1,5 @@
 2009-06-01  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <botcazou@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
 	
 	* gcc-interface/utils.c (convert) <CONSTRUCTOR case>: When converting
 	to the packable version of the type, clear TREE_STATIC/TREE_CONSTANT
@@ -7,10 +7,10 @@
 	as a static constant any more.
 
 2009-06-01  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <botcazou@adacore.com>
+            Eric Botcazou  <ebotcazou@adacore.com>
 	
 	* gcc-interface/utils2.c (gnat_build_constructor): Factor
-	out code. Use initializer_constant_valid_for_bitfield_p and
+	out code.  Use initializer_constant_valid_for_bitfield_p and
 	CONSTRUCTOR_BITFIELD_P for bit-fields.
 
 2009-05-26  Ian Lance Taylor  <iant@google.com>
