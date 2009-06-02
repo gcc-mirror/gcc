@@ -1,3 +1,10 @@
+2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	* common.opt (fdump-unnumbered-links): New.
+	* doc/invoke.texi (-fdump-unnumbered-links): Document it.
+	* print-rtl.c (flag_dump_unnumbered_links): New.
+	(print_rtx): Test it.
+
 2009-06-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_get_frame_offsets): Prefer using r3 for padding a

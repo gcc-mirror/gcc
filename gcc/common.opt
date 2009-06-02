@@ -462,6 +462,10 @@ fdwarf2-cfi-asm
 Common Report Var(flag_dwarf2_cfi_asm) Init(HAVE_GAS_CFI_DIRECTIVE)
 Enable CFI tables via GAS assembler directives.
 
+fdump-unnumbered-links
+Common Report Var(flag_dump_unnumbered_links) VarExists
+Suppress output of previous and next insn numbers in debugging dumps
+
 fearly-inlining
 Common Report Var(flag_early_inlining) Init(1) Optimization
 Perform early inlining
