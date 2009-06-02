@@ -1,5 +1,9 @@
 2009-06-02  Jason Merrill  <jason@redhat.com>
 
+	* g++.dg/cpp0x/initlist13.C: Remove expected error.
+	* g++.dg/cpp0x/initlist18.C: New.
+	* g++.dg/cpp0x/initlist19.C: New.
+
 	* g++.dg/cpp0x/auto14.C: New.
 
 2009-06-02  Eric Botcazou  <ebotcazou@adacore.com>

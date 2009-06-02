@@ -1406,21 +1406,27 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	return build_list_conv (to, expr, flags);
 
       /* Allow conversion from an initializer-list with one element to a
-	 scalar type if this is copy-initialization.  Direct-initialization
-	 would be something like int i({1}), which is invalid.  */
-      if (SCALAR_TYPE_P (to) && CONSTRUCTOR_NELTS (expr) <= 1
-	  && (flags & LOOKUP_ONLYCONVERTING))
+	 scalar type.  */
+      if (SCALAR_TYPE_P (to))
 	{
+	  int nelts = CONSTRUCTOR_NELTS (expr);
 	  tree elt;
-	  if (CONSTRUCTOR_NELTS (expr) == 1)
+
+	  if (nelts == 0)
+	    elt = integer_zero_node;
+	  else if (nelts == 1)
 	    elt = CONSTRUCTOR_ELT (expr, 0)->value;
 	  else
-	    elt = integer_zero_node;
+	    elt = error_mark_node;
+
 	  conv = implicit_conversion (to, TREE_TYPE (elt), elt,
 				      c_cast_p, flags);
 	  if (conv)
 	    {
 	      conv->check_narrowing = true;
+	      if (BRACE_ENCLOSED_INITIALIZER_P (elt))
+		/* Too many levels of braces, i.e. '{{1}}'.  */
+		conv->bad_p = true;
 	      return conv;
 	    }
 	}
@@ -4698,6 +4704,14 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       && convs->kind != ck_base)
     {
       conversion *t = convs;
+
+      /* Give a helpful error if this is bad because of excess braces.  */
+      if (BRACE_ENCLOSED_INITIALIZER_P (expr)
+	  && SCALAR_TYPE_P (totype)
+	  && CONSTRUCTOR_NELTS (expr) > 0
+	  && BRACE_ENCLOSED_INITIALIZER_P (CONSTRUCTOR_ELT (expr, 0)->value))
+	permerror (input_location, "too many braces around initializer for %qT", totype);
+
       for (; t; t = convs->u.next)
 	{
 	  if (t->kind == ck_user || !t->bad_p)
