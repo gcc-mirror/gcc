@@ -12822,22 +12822,23 @@ arm_get_frame_offsets (void)
 	{
 	  int reg = -1;
 
-	  for (i = 4; i <= (TARGET_THUMB1 ? LAST_LO_REGNUM : 11); i++)
+	  /* If it is safe to use r3, then do so.  This sometimes 
+	     generates better code on Thumb-2 by avoiding the need to
+	     use 32-bit push/pop instructions.  */
+	  if (!crtl->tail_call_emit
+	      && arm_size_return_regs () <= 12)
 	    {
-	      if ((offsets->saved_regs_mask & (1 << i)) == 0)
-		{
-		  reg = i;
-		  break;
-		}
-	    }
-
-	  if (reg == -1 && arm_size_return_regs () <= 12
-	      && !crtl->tail_call_emit)
-	    {
-	      /* Push/pop an argument register (r3) if all callee saved
-	         registers are already being pushed.  */
 	      reg = 3;
 	    }
+	  else
+	    for (i = 4; i <= (TARGET_THUMB1 ? LAST_LO_REGNUM : 11); i++)
+	      {
+		if ((offsets->saved_regs_mask & (1 << i)) == 0)
+		  {
+		    reg = i;
+		    break;
+		  }
+	      }
 
 	  if (reg != -1)
 	    {
