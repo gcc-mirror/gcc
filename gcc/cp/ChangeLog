@@ -1,3 +1,9 @@
+2009-06-02  Simon Martin  <simartin@users.sourceforge.net>
+
+	PR c++/38089
+	* pt.c (register_specialization): Properly setup DECL_CONTEXT for
+	specializations in an invalid namespace.
+
 2009-06-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* error.c (print_instantiation_partial_context): Print column
