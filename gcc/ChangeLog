@@ -1,5 +1,13 @@
 2009-06-02  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
+	* config/pa/pa-hpux.h (LINK_SPEC): Remove "%<fwhole-program".
+	* config/pa/pa-hpux10.h (LINK_SPEC): Likewise.
+	* config/pa/pa-hpux11.h (LINK_SPEC): Likewise.
+	* gcc.c (set_collect_gcc_options): Don't add -fwhole-program
+	to COLLECT_GCC_OPTIONS.
+
+2009-06-02  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
 	* collect2.c (target_system_root): New variable.
 	(main): Handle --sysroot=.
 	(ignore_library): Strip the sysroot from the library path.

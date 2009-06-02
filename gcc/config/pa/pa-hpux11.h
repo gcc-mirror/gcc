@@ -104,8 +104,7 @@ along with GCC; see the file COPYING3.  If not see
    want dereferencing of a NULL pointer to cause a SEGV.  */
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%<fwhole-program\
-   %{!shared:%{p:-L/lib/libp -L/usr/lib/libp %{!static:\
+  "%{!shared:%{p:-L/lib/libp -L/usr/lib/libp %{!static:\
      %nWarning: consider linking with `-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
    %{!shared:%{pg:-L/lib/libp -L/usr/lib/libp %{!static:\
