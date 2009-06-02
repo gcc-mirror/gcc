@@ -2120,7 +2120,13 @@ df_ref_debug (df_ref ref, FILE *file)
 	   DF_REF_FLAGS (ref),
 	   DF_REF_TYPE (ref));
   if (DF_REF_LOC (ref))
-    fprintf (file, "loc %p(%p) chain ", (void *)DF_REF_LOC (ref), (void *)*DF_REF_LOC (ref));
+    {
+      if (flag_dump_noaddr)
+	fprintf (file, "loc #(#) chain ");
+      else
+	fprintf (file, "loc %p(%p) chain ", (void *)DF_REF_LOC (ref),
+		 (void *)*DF_REF_LOC (ref));
+    }
   else
     fprintf (file, "chain ");
   df_chain_dump (DF_REF_CHAIN (ref), file);
