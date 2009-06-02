@@ -1,3 +1,18 @@
+2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
+
+	* loop-unroll.c (struct iv_to_split): Add pointer to next.
+	(struct var_to_expand): Likewise.
+	(struct opt_info): Add head and tail for linked lists of the above.
+	(analyze_insn_to_expand_var): Initialize next.
+	(analyze_iv_to_split_insn): Likewise.
+	(analyze_insns_in_loop): Create linked lists.
+	(allocate_basic_variable): Simplify for use without hash table.
+	(insert_var_expansion_initialization): Likewise, make it type-safer.
+	(combine_var_copies_in_loop_exit): Likewise.
+	(apply_opt_in_copies): Walk lists rather than hash tables.
+	(release_var_copies): Simplified and inlined by hand into...
+	(free_opt_info): ... this function.
+
 2009-06-02  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Use DECL_SIZE

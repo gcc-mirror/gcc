@@ -77,6 +77,7 @@ struct iv_to_split
   rtx base_var;		/* The variable on that the values in the further
 			   iterations are based.  */
   rtx step;		/* Step of the induction variable.  */
+  struct iv_to_split *next; /* Next entry in walking order.  */
   unsigned n_loc;
   unsigned loc[3];	/* Location where the definition of the induction
 			   variable occurs in the insn.  For example if
@@ -91,6 +92,7 @@ struct var_to_expand
   rtx insn;		           /* The insn in that the variable expansion occurs.  */
   rtx reg;                         /* The accumulator which is expanded.  */
   VEC(rtx,heap) *var_expansions;   /* The copies of the accumulator which is expanded.  */ 
+  struct var_to_expand *next;	   /* Next entry in walking order.  */
   enum rtx_code op;                /* The type of the accumulation - addition, subtraction 
                                       or multiplication.  */
   int expansion_count;             /* Count the number of expansions generated so far.  */
@@ -110,8 +112,12 @@ struct var_to_expand
 struct opt_info
 {
   htab_t insns_to_split;           /* A hashtable of insns to split.  */
+  struct iv_to_split *iv_to_split_head; /* The first iv to split.  */
+  struct iv_to_split **iv_to_split_tail; /* Pointer to the tail of the list.  */
   htab_t insns_with_var_to_expand; /* A hashtable of insns with accumulators
                                       to expand.  */
+  struct var_to_expand *var_to_expand_head; /* The first var to expand.  */
+  struct var_to_expand **var_to_expand_tail; /* Pointer to the tail of the list.  */
   unsigned first_new_block;        /* The first basic block that was
                                       duplicated.  */
   basic_block loop_exit;           /* The loop exit basic block.  */
@@ -139,9 +145,10 @@ static struct var_to_expand *analyze_insn_to_expand_var (struct loop*, rtx);
 static bool referenced_in_one_insn_in_loop_p (struct loop *, rtx);
 static struct iv_to_split *analyze_iv_to_split_insn (rtx);
 static void expand_var_during_unrolling (struct var_to_expand *, rtx);
-static int insert_var_expansion_initialization (void **, void *);
-static int combine_var_copies_in_loop_exit (void **, void *);
-static int release_var_copies (void **, void *);
+static void insert_var_expansion_initialization (struct var_to_expand *,
+						 basic_block);
+static void combine_var_copies_in_loop_exit (struct var_to_expand *,
+					     basic_block);
 static rtx get_expansion (struct var_to_expand *);
 
 /* Unroll and/or peel (depending on FLAGS) LOOPS.  */
@@ -1646,8 +1653,9 @@ analyze_insn_to_expand_var (struct loop *loop, rtx insn)
   /* Record the accumulator to expand.  */
   ves = XNEW (struct var_to_expand);
   ves->insn = insn;
-  ves->var_expansions = VEC_alloc (rtx, heap, 1);
   ves->reg = copy_rtx (dest);
+  ves->var_expansions = VEC_alloc (rtx, heap, 1);
+  ves->next = NULL;
   ves->op = GET_CODE (src);
   ves->expansion_count = 0;
   ves->reuse_expansion = 0;
@@ -1723,6 +1731,7 @@ analyze_iv_to_split_insn (rtx insn)
   ivts->insn = insn;
   ivts->base_var = NULL_RTX;
   ivts->step = iv.step;
+  ivts->next = NULL;
   ivts->n_loc = 1;
   ivts->loc[0] = 1;
   
@@ -1754,8 +1763,12 @@ analyze_insns_in_loop (struct loop *loop)
   body = get_loop_body (loop);
 
   if (flag_split_ivs_in_unroller)
-    opt_info->insns_to_split = htab_create (5 * loop->num_nodes,
-                                            si_info_hash, si_info_eq, free);
+    {
+      opt_info->insns_to_split = htab_create (5 * loop->num_nodes,
+					      si_info_hash, si_info_eq, free);
+      opt_info->iv_to_split_head = NULL;
+      opt_info->iv_to_split_tail = &opt_info->iv_to_split_head;
+    }
   
   /* Record the loop exit bb and loop preheader before the unrolling.  */
   opt_info->loop_preheader = loop_preheader_edge (loop)->src;
@@ -1772,8 +1785,13 @@ analyze_insns_in_loop (struct loop *loop)
   
   if (flag_variable_expansion_in_unroller
       && can_apply)
-    opt_info->insns_with_var_to_expand = htab_create (5 * loop->num_nodes,
-						      ve_info_hash, ve_info_eq, free);
+    {
+      opt_info->insns_with_var_to_expand = htab_create (5 * loop->num_nodes,
+							ve_info_hash,
+							ve_info_eq, free);
+      opt_info->var_to_expand_head = NULL;
+      opt_info->var_to_expand_tail = &opt_info->var_to_expand_head;
+    }
   
   for (i = 0; i < loop->num_nodes; i++)
     {
@@ -1792,7 +1810,10 @@ analyze_insns_in_loop (struct loop *loop)
         if (ivts)
           {
             slot1 = htab_find_slot (opt_info->insns_to_split, ivts, INSERT);
+	    gcc_assert (*slot1 == NULL);
             *slot1 = ivts;
+	    *opt_info->iv_to_split_tail = ivts;
+	    opt_info->iv_to_split_tail = &ivts->next;
             continue;
           }
         
@@ -1802,7 +1823,10 @@ analyze_insns_in_loop (struct loop *loop)
         if (ves)
           {
             slot2 = htab_find_slot (opt_info->insns_with_var_to_expand, ves, INSERT);
+	    gcc_assert (*slot2 == NULL);
             *slot2 = ves;
+	    *opt_info->var_to_expand_tail = ves;
+	    opt_info->var_to_expand_tail = &ves->next;
           }
       }
     }
@@ -1862,18 +1886,14 @@ get_ivts_expr (rtx expr, struct iv_to_split *ivts)
   return ret;
 }
 
-/* Allocate basic variable for the induction variable chain.  Callback for
-   htab_traverse.  */
+/* Allocate basic variable for the induction variable chain.  */
 
-static int
-allocate_basic_variable (void **slot, void *data ATTRIBUTE_UNUSED)
+static void
+allocate_basic_variable (struct iv_to_split *ivts)
 {
-  struct iv_to_split *ivts = (struct iv_to_split *) *slot;
   rtx expr = *get_ivts_expr (single_set (ivts->insn), ivts);
 
   ivts->base_var = gen_reg_rtx (GET_MODE (expr));
-
-  return 1;
 }
 
 /* Insert initialization of basic variable of IVTS before INSN, taking
@@ -2010,14 +2030,13 @@ expand_var_during_unrolling (struct var_to_expand *ve, rtx insn)
       }
 }
 
-/* Initialize the variable expansions in loop preheader.  
-   Callbacks for htab_traverse.  PLACE_P is the loop-preheader 
-   basic block where the initialization of the expansions 
-   should take place.  The expansions are initialized with (-0)
-   when the operation is plus or minus to honor sign zero.
-   This way we can prevent cases where the sign of the final result is
-   effected by the sign of the expansion.
-   Here is an example to demonstrate this:
+/* Initialize the variable expansions in loop preheader.  PLACE is the
+   loop-preheader basic block where the initialization of the
+   expansions should take place.  The expansions are initialized with
+   (-0) when the operation is plus or minus to honor sign zero.  This
+   way we can prevent cases where the sign of the final result is
+   effected by the sign of the expansion.  Here is an example to
+   demonstrate this:
    
    for (i = 0 ; i < n; i++)
      sum += something;
@@ -2038,18 +2057,17 @@ expand_var_during_unrolling (struct var_to_expand *ve, rtx insn)
    should be initialized with -zero as well (otherwise we will get +zero
    as the final result).  */
 
-static int
-insert_var_expansion_initialization (void **slot, void *place_p)
+static void
+insert_var_expansion_initialization (struct var_to_expand *ve,
+				     basic_block place)
 {
-  struct var_to_expand *ve = (struct var_to_expand *) *slot;
-  basic_block place = (basic_block)place_p;
   rtx seq, var, zero_init, insn;
   unsigned i;
   enum machine_mode mode = GET_MODE (ve->reg);
   bool honor_signed_zero_p = HONOR_SIGNED_ZEROS (mode);
 
   if (VEC_length (rtx, ve->var_expansions) == 0)
-    return 1;
+    return;
   
   start_sequence ();
   if (ve->op == PLUS || ve->op == MINUS) 
@@ -2077,26 +2095,21 @@ insert_var_expansion_initialization (void **slot, void *place_p)
     insn = NEXT_INSN (insn);
   
   emit_insn_after (seq, insn); 
-  /* Continue traversing the hash table.  */
-  return 1;   
 }
 
-/*  Combine the variable expansions at the loop exit.  
-    Callbacks for htab_traverse.  PLACE_P is the loop exit
-    basic block where the summation of the expansions should 
-    take place.  */
+/* Combine the variable expansions at the loop exit.  PLACE is the
+   loop exit basic block where the summation of the expansions should
+   take place.  */
 
-static int
-combine_var_copies_in_loop_exit (void **slot, void *place_p)
+static void
+combine_var_copies_in_loop_exit (struct var_to_expand *ve, basic_block place)
 {
-  struct var_to_expand *ve = (struct var_to_expand *) *slot;
-  basic_block place = (basic_block)place_p;
   rtx sum = ve->reg;
   rtx expr, seq, var, insn;
   unsigned i;
 
   if (VEC_length (rtx, ve->var_expansions) == 0)
-    return 1;
+    return;
   
   start_sequence ();
   if (ve->op == PLUS || ve->op == MINUS)
@@ -2123,9 +2136,6 @@ combine_var_copies_in_loop_exit (void **slot, void *place_p)
     insn = NEXT_INSN (insn);
 
   emit_insn_after (seq, insn);
-  
-  /* Continue traversing the hash table.  */
-  return 1;
 }
 
 /* Apply loop optimizations in loop copies using the 
@@ -2154,7 +2164,8 @@ apply_opt_in_copies (struct opt_info *opt_info,
   
   /* Allocate the basic variables (i0).  */
   if (opt_info->insns_to_split)
-    htab_traverse (opt_info->insns_to_split, allocate_basic_variable, NULL);
+    for (ivts = opt_info->iv_to_split_head; ivts; ivts = ivts->next)
+      allocate_basic_variable (ivts);
   
   for (i = opt_info->first_new_block; i < (unsigned) last_basic_block; i++)
     {
@@ -2218,12 +2229,10 @@ apply_opt_in_copies (struct opt_info *opt_info,
      and take care of combining them at the loop exit.  */ 
   if (opt_info->insns_with_var_to_expand)
     {
-      htab_traverse (opt_info->insns_with_var_to_expand, 
-                     insert_var_expansion_initialization, 
-                     opt_info->loop_preheader);
-      htab_traverse (opt_info->insns_with_var_to_expand, 
-                     combine_var_copies_in_loop_exit, 
-                     opt_info->loop_exit);
+      for (ves = opt_info->var_to_expand_head; ves; ves = ves->next)
+	insert_var_expansion_initialization (ves, opt_info->loop_preheader);
+      for (ves = opt_info->var_to_expand_head; ves; ves = ves->next)
+	combine_var_copies_in_loop_exit (ves, opt_info->loop_exit);
     }
   
   /* Rewrite also the original loop body.  Find them as originals of the blocks
@@ -2264,20 +2273,6 @@ apply_opt_in_copies (struct opt_info *opt_info,
     }
 }
 
-/*  Release the data structures used for the variable expansion
-    optimization.  Callbacks for htab_traverse.  */
-
-static int
-release_var_copies (void **slot, void *data ATTRIBUTE_UNUSED)
-{
-  struct var_to_expand *ve = (struct var_to_expand *) *slot;
-  
-  VEC_free (rtx, heap, ve->var_expansions);
-  
-  /* Continue traversing the hash table.  */
-  return 1;
-}
-
 /* Release OPT_INFO.  */
 
 static void
@@ -2287,8 +2282,10 @@ free_opt_info (struct opt_info *opt_info)
     htab_delete (opt_info->insns_to_split);
   if (opt_info->insns_with_var_to_expand)
     {
-      htab_traverse (opt_info->insns_with_var_to_expand, 
-                     release_var_copies, NULL);
+      struct var_to_expand *ves;
+
+      for (ves = opt_info->var_to_expand_head; ves; ves = ves->next)
+	VEC_free (rtx, heap, ves->var_expansions);
       htab_delete (opt_info->insns_with_var_to_expand);
     }
   free (opt_info);
