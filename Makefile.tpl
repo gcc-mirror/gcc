@@ -1426,15 +1426,16 @@ do-clean: clean-stage[+id+]
 	: $(MAKE); $(stage); \
 	rm -f .bad_compare ; \
 	echo Comparing stages [+prev+] and [+id+] ; \
-	cd stage[+id+]-gcc; \
-	files=`find . -name "*$(objext)" -print` ; \
-	cd .. ; \
+        sed=`echo stage[+id+] | sed 's,^stage,,;s,.,.,g'`; \
+	files=`find stage[+id+]-* -name "*$(objext)" -print | \
+		 sed -n s,^stage$$sed-,,p` ; \
 	for file in $${files} ; do \
-	  f1=$$r/stage[+prev+]-gcc/$$file; f2=$$r/stage[+id+]-gcc/$$file; \
+	  f1=$$r/stage[+prev+]-$$file; f2=$$r/stage[+id+]-$$file; \
+	  if test ! -f $$f1; then continue; fi; \
 	  $(do-[+compare-target+]) > /dev/null 2>&1; \
 	  if test $$? -eq 1; then \
 	    case $$file in \
-	      ./cc*-checksum$(objext) | ./libgcc/* | ./ada/*tools/* ) \
+	      gcc/cc*-checksum$(objext) | ./libgcc/* | ./gcc/ada/*tools/*) \
 	        echo warning: $$file differs ;; \
 	      *) \
 	        echo $$file differs >> .bad_compare ;; \

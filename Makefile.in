@@ -53135,15 +53135,16 @@ compare:
 	: $(MAKE); $(stage); \
 	rm -f .bad_compare ; \
 	echo Comparing stages 2 and 3 ; \
-	cd stage3-gcc; \
-	files=`find . -name "*$(objext)" -print` ; \
-	cd .. ; \
+        sed=`echo stage3 | sed 's,^stage,,;s,.,.,g'`; \
+	files=`find stage3-* -name "*$(objext)" -print | \
+		 sed -n s,^stage$$sed-,,p` ; \
 	for file in $${files} ; do \
-	  f1=$$r/stage2-gcc/$$file; f2=$$r/stage3-gcc/$$file; \
+	  f1=$$r/stage2-$$file; f2=$$r/stage3-$$file; \
+	  if test ! -f $$f1; then continue; fi; \
 	  $(do-compare) > /dev/null 2>&1; \
 	  if test $$? -eq 1; then \
 	    case $$file in \
-	      ./cc*-checksum$(objext) | ./libgcc/* | ./ada/*tools/* ) \
+	      gcc/cc*-checksum$(objext) | ./libgcc/* | ./gcc/ada/*tools/*) \
 	        echo warning: $$file differs ;; \
 	      *) \
 	        echo $$file differs >> .bad_compare ;; \
@@ -53472,15 +53473,16 @@ compare3:
 	: $(MAKE); $(stage); \
 	rm -f .bad_compare ; \
 	echo Comparing stages 3 and 4 ; \
-	cd stage4-gcc; \
-	files=`find . -name "*$(objext)" -print` ; \
-	cd .. ; \
+        sed=`echo stage4 | sed 's,^stage,,;s,.,.,g'`; \
+	files=`find stage4-* -name "*$(objext)" -print | \
+		 sed -n s,^stage$$sed-,,p` ; \
 	for file in $${files} ; do \
-	  f1=$$r/stage3-gcc/$$file; f2=$$r/stage4-gcc/$$file; \
+	  f1=$$r/stage3-$$file; f2=$$r/stage4-$$file; \
+	  if test ! -f $$f1; then continue; fi; \
 	  $(do-compare3) > /dev/null 2>&1; \
 	  if test $$? -eq 1; then \
 	    case $$file in \
-	      ./cc*-checksum$(objext) | ./libgcc/* | ./ada/*tools/* ) \
+	      gcc/cc*-checksum$(objext) | ./libgcc/* | ./gcc/ada/*tools/*) \
 	        echo warning: $$file differs ;; \
 	      *) \
 	        echo $$file differs >> .bad_compare ;; \
