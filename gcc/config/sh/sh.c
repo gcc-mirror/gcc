@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "target-def.h"
 #include "real.h"
-#include "debug.h"
 #include "langhooks.h"
 #include "basic-block.h"
 #include "df.h"
@@ -6747,11 +6746,9 @@ sh_expand_epilogue (bool sibcall_p)
 
   if (frame_pointer_needed)
     {
-      /* We must avoid scheduling the epilogue with previous basic blocks
-	 when exception handling or frame information is needed.
+      /* We must avoid scheduling the epilogue with previous basic blocks.
 	 See PR/18032 and PR/40313.  */
-      if (flag_exceptions || dwarf2out_do_frame ())
-	emit_insn (gen_blockage ());
+      emit_insn (gen_blockage ());
       output_stack_adjust (frame_size, hard_frame_pointer_rtx, e,
 			   &live_regs_mask);
 
