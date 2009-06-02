@@ -187,3 +187,5 @@ do {									\
 
 /* This target uses the aix64.opt file.  */
 #define TARGET_USES_AIX64_OPT 1
+
+#define TARGET_AIX_VERSION 43

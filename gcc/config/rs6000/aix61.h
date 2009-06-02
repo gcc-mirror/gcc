@@ -202,3 +202,5 @@ extern long long int    atoll(const char *);
 /* Default to 128 bit long double.  */
 
 #define RS6000_DEFAULT_LONG_DOUBLE_SIZE 128
+
+#define TARGET_AIX_VERSION 61

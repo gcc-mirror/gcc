@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #define COLLECT
 
 #include "collect2.h"
+#include "collect2-aix.h"
 #include "demangle.h"
 #include "obstack.h"
 #include "intl.h"
@@ -54,7 +55,9 @@ along with GCC; see the file COPYING3.  If not see
    cross-versions are in the proper directories.  */
 
 #ifdef CROSS_DIRECTORY_STRUCTURE
+#ifndef CROSS_AIX_SUPPORT
 #undef OBJECT_FORMAT_COFF
+#endif
 #undef MD_EXEC_PREFIX
 #undef REAL_LD_FILE_NAME
 #undef REAL_NM_FILE_NAME
@@ -72,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef OBJECT_FORMAT_COFF
 
+#ifndef CROSS_DIRECTORY_STRUCTURE
 #include <a.out.h>
 #include <ar.h>
 
@@ -86,6 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #include <ldfcn.h>
+#endif
 
 /* Some systems have an ISCOFF macro, but others do not.  In some cases
    the macro may be wrong.  MY_ISCOFF is defined in tm.h files for machines
@@ -2409,7 +2414,7 @@ scan_libraries (const char *prog_name)
 #   define GCC_SYMZERO(X)	0
 
 /* 0757 = U803XTOCMAGIC (AIX 4.3) and 0767 = U64_TOCMAGIC (AIX V5) */
-#ifdef _AIX51
+#if TARGET_AIX_VERSION >= 51
 #   define GCC_CHECK_HDR(X) \
      ((HEADER (X).f_magic == U802TOCMAGIC && ! aix64_flag) \
       || (HEADER (X).f_magic == 0767 && aix64_flag))
