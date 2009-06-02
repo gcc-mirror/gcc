@@ -1,5 +1,10 @@
 2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
 
+	* cfgexpand.c (gimple_expand_cfg): Discard the source location
+	only for builtins that are not overridden.
+
+2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
+
 	* gengtype.c (adjust_field_rtx_def): Add NOTE_INSN_DELETED_LABEL's
 	label string.
 
