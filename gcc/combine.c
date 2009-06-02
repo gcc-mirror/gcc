@@ -12144,6 +12144,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx to_insn,
 	return;
 
       if (where_dead
+	  && BLOCK_FOR_INSN (where_dead) == BLOCK_FOR_INSN (to_insn)
 	  && DF_INSN_LUID (where_dead) >= from_luid
 	  && DF_INSN_LUID (where_dead) < DF_INSN_LUID (to_insn))
 	{
