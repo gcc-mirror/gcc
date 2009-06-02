@@ -28,6 +28,16 @@ case "${host}" in
     AC_DEFINE(HAVE_SQRTF)
     ;;
 
+  *-aix*)
+    GLIBCXX_CHECK_LINKER_FEATURES
+    GLIBCXX_CHECK_MATH_SUPPORT
+    GLIBCXX_CHECK_STDLIB_SUPPORT
+    AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1)
+    # We don't yet support AIX's TLS ABI.
+    #GCC_CHECK_TLS
+    AM_ICONV
+    ;;
+
   *-darwin*)
     # Darwin versions vary, but the linker should work in a cross environment,
     # so we just check for all the features here.
