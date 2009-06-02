@@ -102,9 +102,9 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
   template<typename _InputIter, typename _Size, typename _ForwardIter>
     inline pair<_InputIter, _ForwardIter>
     __uninitialized_copy_n(_InputIter __first, _Size __count,
-			 _ForwardIter __result)
-    { return __uninitialized_copy_n(__first, __count, __result,
-				    __iterator_category(__first)); }
+			   _ForwardIter __result)
+    { return __gnu_cxx::__uninitialized_copy_n(__first, __count, __result,
+					       __iterator_category(__first)); }
 
   /**
    *  @brief Copies the range [first,last) into result.
@@ -120,8 +120,8 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
     inline pair<_InputIter, _ForwardIter>
     uninitialized_copy_n(_InputIter __first, _Size __count,
 			 _ForwardIter __result)
-    { return __uninitialized_copy_n(__first, __count, __result,
-				    __iterator_category(__first)); }
+    { return __gnu_cxx::__uninitialized_copy_n(__first, __count, __result,
+					       __iterator_category(__first)); }
 
 
   // An alternative version of uninitialized_copy_n that constructs
@@ -154,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE(__gnu_cxx)
 			     _ForwardIter __result,
 			     std::allocator<_Tp>)
     {
-      return uninitialized_copy_n(__first, __count, __result);
+      return __gnu_cxx::uninitialized_copy_n(__first, __count, __result);
     }
 
   /**
