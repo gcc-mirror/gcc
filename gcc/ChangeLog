@@ -1,5 +1,11 @@
 2009-06-02  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
+	* collect2.c (target_system_root): New variable.
+	(main): Handle --sysroot=.
+	(ignore_library): Strip the sysroot from the library path.
+
+2009-06-02  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
 	* Makefile.in (COLLECT2_OBJS): Add collect2-aix.o.
 	(collect2.o): Depend on collect2-aix.h.
 	(collect2-aix.o): New rule.

@@ -217,6 +217,14 @@ static char *response_file;		/* Name of any current response file */
 struct obstack temporary_obstack;
 char * temporary_firstobj;
 
+/* A string that must be prepended to a target OS path in order to find
+   it on the host system.  */
+#ifdef TARGET_SYSTEM_ROOT
+static const char *target_system_root = TARGET_SYSTEM_ROOT;
+#else
+static const char *target_system_root = "";
+#endif
+
 /* Structure to hold all the directories in which to search for files to
    execute.  */
 
@@ -1224,6 +1232,8 @@ main (int argc, char **argv)
 		  ld1--;
 		  ld2--;
 		}
+	      else if (strncmp (arg, "--sysroot=", 10) == 0)
+		target_system_root = arg + 10;
 	      break;
 	    }
 	}
@@ -2454,7 +2464,15 @@ static int
 ignore_library (const char *name)
 {
   const char *const *p;
+  size_t length;
 
+  if (target_system_root[0] != '\0')
+    {
+      length = strlen (target_system_root);
+      if (strncmp (name, target_system_root, length) != 0)
+	return 0;
+      name += length;
+    }
   for (p = &aix_std_libs[0]; *p != NULL; ++p)
     if (strcmp (name, *p) == 0)
       return 1;
