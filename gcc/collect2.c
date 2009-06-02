@@ -2448,9 +2448,11 @@ static int ignore_library (const char *);
 static int
 ignore_library (const char *name)
 {
-  const char *const *p = &aix_std_libs[0];
-  while (*p++ != NULL)
-    if (! strcmp (name, *p)) return 1;
+  const char *const *p;
+
+  for (p = &aix_std_libs[0]; *p != NULL; ++p)
+    if (strcmp (name, *p) == 0)
+      return 1;
   return 0;
 }
 #endif /* COLLECT_EXPORT_LIST */

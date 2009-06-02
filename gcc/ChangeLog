@@ -1,5 +1,10 @@
 2009-06-02  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
+	* collect2.c (ignore_library): Avoid premature post-increment
+	and null deference.
+
+2009-06-02  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
 	* Makefile.in (libgcc.mvars): Add TARGET_SYSTEM_ROOT.
 	* config/rs6000/aix.h (LINK_SYSCALLS_SPEC): Add %R to the
 	!CROSS_DIRECTORY_STRUCTURE alternative and use it for
