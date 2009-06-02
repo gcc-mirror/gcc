@@ -99,7 +99,7 @@ do {									\
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}	\
   %{ansi: -D_ANSI_C_SOURCE}			\
   %{maix64: -D__64BIT__}			\
-  %{mpe: -I/usr/lpp/ppe.poe/include}		\
+  %{mpe: -I%R/usr/lpp/ppe.poe/include}		\
   %{pthread: -D_THREAD_SAFE}"
 
 /* The GNU C++ standard library requires that these macros be 
@@ -108,7 +108,7 @@ do {									\
 #define CPLUSPLUS_CPP_SPEC			\
   "-D_ALL_SOURCE				\
    %{maix64: -D__64BIT__}			\
-   %{mpe: -I/usr/lpp/ppe.poe/include}		\
+   %{mpe: -I%R/usr/lpp/ppe.poe/include}		\
    %{pthread: -D_THREAD_SAFE}"
 
 #undef  TARGET_DEFAULT
@@ -140,10 +140,10 @@ do {									\
 #undef	MULTILIB_DEFAULTS
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
-   %{p:-L/lib/profiled -L/usr/lib/profiled}\
+#define LIB_SPEC "%{pg:-L%R/lib/profiled -L%R/usr/lib/profiled}\
+   %{p:-L%R/lib/profiled -L%R/usr/lib/profiled}\
    %{!maix64:%{!shared:%{g*:-lg}}}\
-   %{mpe:-L/usr/lpp/ppe.poe/lib -lmpi -lvtd}\
+   %{mpe:-L%R/usr/lpp/ppe.poe/lib -lmpi -lvtd}\
    %{pthread:-lpthreads} -lc"
 
 #undef LINK_SPEC
