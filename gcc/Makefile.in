@@ -1897,7 +1897,7 @@ ebitmap.o: ebitmap.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(EBITMAP_H) $(RTL_H) $(FLAGS_H) $(OBSTACK_H)
 sparseset.o: sparseset.c $(SYSTEM_H) sparseset.h $(CONFIG_H)
 
-COLLECT2_OBJS = collect2.o tlink.o intl.o version.o
+COLLECT2_OBJS = collect2.o collect2-aix.o tlink.o intl.o version.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
@@ -1906,10 +1906,13 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 	mv -f T$@ $@
 
 collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) intl.h \
-	$(OBSTACK_H) $(DEMANGLE_H) collect2.h version.h
+	$(OBSTACK_H) $(DEMANGLE_H) collect2.h collect2-aix.h version.h
 	$(COMPILER) $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS)  \
 	-DTARGET_MACHINE=\"$(target_noncanonical)\" \
-	-c $(srcdir)/collect2.c $(OUTPUT_OPTION)
+	-c $(srcdir)/collect2.c $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
+
+collect2-aix.o : collect2-aix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+    collect2-aix.h
 
 tlink.o: tlink.c $(DEMANGLE_H) $(HASHTAB_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     $(OBSTACK_H) collect2.h intl.h

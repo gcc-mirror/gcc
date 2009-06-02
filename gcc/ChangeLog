@@ -1,5 +1,22 @@
 2009-06-02  Richard Sandiford  <r.sandiford@uk.ibm.com>
 
+	* Makefile.in (COLLECT2_OBJS): Add collect2-aix.o.
+	(collect2.o): Depend on collect2-aix.h.
+	(collect2-aix.o): New rule.
+	* collect2-aix.h: New file.
+	* collect2-aix.c: Likewise.
+	* collect2.c: Include collect2-aix.h.  Don't undefine
+	OBJECT_FORMAT_COFF if CROSS_AIX_SUPPORT is defined.
+	Guard native includes with #ifndef CROSS_DIRECTORY_STRUCTURE.
+	Use TARGET_AIX_VERSION instead of _AIX51.
+	* config/rs6000/aix43.h (TARGET_AIX_VERSION): Define.
+	* config/rs6000/aix51.h (TARGET_AIX_VERSION): Likewise.
+	* config/rs6000/aix52.h (TARGET_AIX_VERSION): Likewise.
+	* config/rs6000/aix53.h (TARGET_AIX_VERSION): Likewise.
+	* config/rs6000/aix61.h (TARGET_AIX_VERSION): Likewise.
+
+2009-06-02  Richard Sandiford  <r.sandiford@uk.ibm.com>
+
 	* collect2.c (ignore_library): Avoid premature post-increment
 	and null deference.
 
