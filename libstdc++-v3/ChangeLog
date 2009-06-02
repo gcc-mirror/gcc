@@ -1,3 +1,9 @@
+2009-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/40299
+	* include/ext/memory: Fully qualify calls with __gnu_cxx.
+	* testsuite/ext/rope/40299.cc: New.
+
 2009-05-28  Tom Tromey  <tromey@redhat.com>
 	    Phil Muldoon  <pmuldoon@redhat.com>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
