@@ -60,6 +60,11 @@ const char *print_rtx_head = "";
    This must be defined here so that programs like gencodes can be linked.  */
 int flag_dump_unnumbered = 0;
 
+/* Nonzero means suppress output of instruction numbers for previous
+   and next insns in debugging dumps.
+   This must be defined here so that programs like gencodes can be linked.  */
+int flag_dump_unnumbered_links = 0;
+
 /* Nonzero means use simplified format without flags, modes, etc.  */
 int flag_simple = 0;
 
@@ -493,7 +498,10 @@ print_rtx (const_rtx in_rtx)
 		  goto do_e;
 	      }
 
-	    if (flag_dump_unnumbered)
+	    if (flag_dump_unnumbered
+		|| (flag_dump_unnumbered_links && (i == 1 || i == 2)
+		    && (INSN_P (in_rtx) || NOTE_P (in_rtx)
+			|| LABEL_P (in_rtx) || BARRIER_P (in_rtx))))
 	      fputs (" #", outfile);
 	    else
 	      fprintf (outfile, " %d", INSN_UID (sub));
