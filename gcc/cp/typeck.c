@@ -6081,8 +6081,11 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 
   if (modifycode == INIT_EXPR)
     {
-      if (TREE_CODE (rhs) == CONSTRUCTOR)
+      if (BRACE_ENCLOSED_INITIALIZER_P (rhs))
+	/* Do the default thing.  */;
+      else if (TREE_CODE (rhs) == CONSTRUCTOR)
 	{
+	  /* Compound literal.  */
 	  if (! same_type_p (TREE_TYPE (rhs), lhstype))
 	    /* Call convert to generate an error; see PR 11063.  */
 	    rhs = convert (lhstype, rhs);

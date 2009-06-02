@@ -1,4 +1,13 @@
-2009-06-01  Jason Merrill  <jason@redhat.com>
+2009-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40308
+	PR c++/40311
+	* typeck.c (cp_build_modify_expr): Always pass init-lists to the
+	conversion code.
+	* call.c (implicit_conversion): Allow init-list conversion to scalar
+	during direct-initialization, too.  Mark the conversion bad if it
+	has too many levels of braces.
+	(convert_like_real): And give a helpful error.
 
 	PR c++/40306
 	PR c++/40307
