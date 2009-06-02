@@ -1,5 +1,10 @@
 2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
 
+	* gengtype.c (adjust_field_rtx_def): Add NOTE_INSN_DELETED_LABEL's
+	label string.
+
+2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
+
 	* df-core.c (df_ref_debug): Honor -fdump-noaddr.
 
 2009-06-02  Alexandre Oliva  <aoliva@redhat.com>
