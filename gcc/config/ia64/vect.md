@@ -873,8 +873,8 @@
 
   if (which_alternative == 1)
     {
-      operands[2] = XVECEXP (operands[1], 0, 1);
-      operands[1] = XVECEXP (operands[1], 0, 0);
+      operands[2] = XVECEXP (operands[1], 0, TARGET_BIG_ENDIAN ? 0 : 1);
+      operands[1] = XVECEXP (operands[1], 0, TARGET_BIG_ENDIAN ? 1 : 0);
     }
 
   return alt[which_alternative];
