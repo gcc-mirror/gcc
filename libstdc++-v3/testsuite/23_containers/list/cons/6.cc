@@ -30,7 +30,7 @@
 //
 template<typename _Tp>
 void
-cons05()
+cons06()
 {
   bool test __attribute__((unused)) = true;
   const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
@@ -66,7 +66,7 @@ cons05()
 
 int main()
 {
-  cons05<std::list<int> >();
+  cons06<std::list<int> >();
   return 0;
 }
 
