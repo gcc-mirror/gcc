@@ -3999,6 +3999,34 @@ label:
   [(set_attr "length" "4")
    (set_attr "type" "arith")])
 
+;; Expander for DImode shift left with SImode operations.
+
+(define_expand "ashldi3_std"
+  [(set (match_operand:DI 0 "arith_reg_dest" "=r")
+	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "r")
+                   (match_operand:DI 2 "const_int_operand" "n")))]
+  "TARGET_SH1 && INTVAL (operands[2]) < 32"
+  "
+{
+  int low_word = (TARGET_LITTLE_ENDIAN ? 0 : 1);
+  int high_word = (TARGET_LITTLE_ENDIAN ? 1 : 0);
+  rtx low_src = operand_subword (operands[1], low_word, 0, DImode);
+  rtx high_src = operand_subword (operands[1], high_word, 0, DImode);
+  rtx dst = gen_reg_rtx (DImode);
+  rtx low_dst = operand_subword (dst, low_word, 1, DImode);
+  rtx high_dst = operand_subword (dst, high_word, 1, DImode);
+  rtx tmp0, tmp1;
+
+  tmp0 = gen_reg_rtx (SImode);
+  tmp1 = gen_reg_rtx (SImode);
+  emit_insn (gen_lshrsi3 (tmp0, low_src, GEN_INT (32 - INTVAL (operands[2]))));
+  emit_insn (gen_ashlsi3 (low_dst, low_src, operands[2]));  
+  emit_insn (gen_ashlsi3 (tmp1, high_src, operands[2]));  
+  emit_insn (gen_iorsi3 (high_dst, tmp0, tmp1));
+  emit_move_insn (operands[0], dst);
+  DONE;
+}")
+
 (define_insn "ashldi3_media"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r,r")
 	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "r,r")
@@ -4031,8 +4059,19 @@ label:
       emit_insn (gen_ashldi3_media (operands[0], operands[1], operands[2]));
       DONE;
     }
-  if (GET_CODE (operands[2]) != CONST_INT
-      || INTVAL (operands[2]) != 1)
+  if (GET_CODE (operands[2]) == CONST_INT
+      && INTVAL (operands[2]) == 1)
+    {
+      emit_insn (gen_ashldi3_k (operands[0], operands[1]));
+      DONE;
+    }
+  else if (GET_CODE (operands[2]) == CONST_INT
+      && INTVAL (operands[2]) < 32)
+    {
+      emit_insn (gen_ashldi3_std (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+  else
     FAIL;
 }")
 
