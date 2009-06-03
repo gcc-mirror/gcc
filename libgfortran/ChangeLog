@@ -1,3 +1,9 @@
+2009-06-04  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/40330
+	* io/format.c (free_format_hash_table): Also free and nullify hash key.
+	(save_parsed_format): Copy string rather than pointer copy.
+	
 2009-05-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/40019
