@@ -31,7 +31,7 @@ void test01()
   }
   catch (const std::nested_exception& e)
   {
-    VERIFY( !e.nested_ptr() );
+    VERIFY( e.nested_ptr() == 0 );
   }
 }
 

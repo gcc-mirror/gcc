@@ -26,6 +26,8 @@
 
 #ifdef _GLIBCXX_ATOMIC_BUILTINS_4
 
+#define _GLIBCXX_EH_PTR_COMPAT
+
 #include <exception>
 #include <exception_ptr.h>
 #include "unwind-cxx.h"
@@ -127,6 +129,7 @@ std::__exception_ptr::exception_ptr::swap(exception_ptr &other) throw()
 }
 
 
+// Retained for compatibility with CXXABI_1.3.
 bool
 std::__exception_ptr::exception_ptr::operator!() const throw()
 {
@@ -134,6 +137,7 @@ std::__exception_ptr::exception_ptr::operator!() const throw()
 }
 
 
+// Retained for compatibility with CXXABI_1.3.
 std::__exception_ptr::exception_ptr::operator __safe_bool() const throw()
 {
   return _M_exception_object ? &exception_ptr::_M_safe_bool_dummy : 0;
@@ -234,5 +238,7 @@ std::rethrow_exception(std::exception_ptr ep)
   __cxa_begin_catch (&dep->unwindHeader);
   std::terminate ();
 }
+
+#undef _GLIBCXX_EH_PTR_COMPAT
 
 #endif

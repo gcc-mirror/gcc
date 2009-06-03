@@ -1,3 +1,4 @@
+// { dg-do compile }
 // { dg-options "-std=gnu++0x" }
 // { dg-require-atomic-builtins "" }
 
@@ -19,35 +20,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <exception>
-#include <testsuite_hooks.h>
 
-void test01() 
+// libstdc++/40296
+bool test01()
 {
-  bool test __attribute__((unused)) = true;
+  std::exception_ptr p;
 
-  std::nested_exception e;
-
-  VERIFY( e.nested_ptr() == 0 );
-}
-
-void test02() 
-{
-  bool test __attribute__((unused)) = true;
-
-  try
-  {
-    throw 42;
-  }
-  catch (...)
-  {
-    std::nested_exception e;
-    VERIFY( e.nested_ptr() == std::current_exception() );
-  }
-}
-
-int main()
-{
-  test01();
-  test02();
-  return 0;
+  return (p == 0);
 }
