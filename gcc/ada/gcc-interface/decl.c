@@ -2899,21 +2899,32 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       of the parent subtype and not those of its base type for the
 	       placeholder machinery to properly work.  */
 	    if (Has_Discriminants (gnat_entity))
-	      for (gnat_field = First_Stored_Discriminant (gnat_entity);
-		   Present (gnat_field);
-		   gnat_field = Next_Stored_Discriminant (gnat_field))
-		if (Present (Corresponding_Discriminant (gnat_field)))
+	      {
+		/* The actual parent subtype is the full view.  */
+		if (IN (Ekind (gnat_parent), Private_Kind))
 		  {
-		    Entity_Id field = Empty;
-		    for (field = First_Stored_Discriminant (gnat_parent);
-			 Present (field);
-			 field = Next_Stored_Discriminant (field))
-		      if (same_discriminant_p (gnat_field, field))
-			break;
-		    gcc_assert (Present (field));
-		    TREE_OPERAND (get_gnu_tree (gnat_field), 1)
-		      = gnat_to_gnu_field_decl (field);
+		    if (Present (Full_View (gnat_parent)))
+		      gnat_parent = Full_View (gnat_parent);
+		    else
+		      gnat_parent = Underlying_Full_View (gnat_parent);
 		  }
+
+		for (gnat_field = First_Stored_Discriminant (gnat_entity);
+		     Present (gnat_field);
+		     gnat_field = Next_Stored_Discriminant (gnat_field))
+		  if (Present (Corresponding_Discriminant (gnat_field)))
+		    {
+		      Entity_Id field = Empty;
+		      for (field = First_Stored_Discriminant (gnat_parent);
+			   Present (field);
+			   field = Next_Stored_Discriminant (field))
+			if (same_discriminant_p (gnat_field, field))
+			  break;
+		      gcc_assert (Present (field));
+		      TREE_OPERAND (get_gnu_tree (gnat_field), 1)
+			= gnat_to_gnu_field_decl (field);
+		    }
+	      }
 
 	    /* The "get to the parent" COMPONENT_REF must be given its
 	       proper type...  */
