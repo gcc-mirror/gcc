@@ -1,3 +1,7 @@
+2009-06-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/ref15.C: Require unwrapped targets.
+
 2009-06-02  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/initlist13.C: Remove expected error.
