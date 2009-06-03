@@ -2920,14 +2920,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    TREE_TYPE (gnu_get_parent) = gnu_parent;
 
 	    /* ...and reference the _Parent field of this record.  */
-	    gnu_field_list
+	    gnu_field
 	      = create_field_decl (get_identifier
 				   (Get_Name_String (Name_uParent)),
 				   gnu_parent, gnu_type, 0,
 				   has_rep ? TYPE_SIZE (gnu_parent) : 0,
 				   has_rep ? bitsize_zero_node : 0, 1);
-	    DECL_INTERNAL_P (gnu_field_list) = 1;
-	    TREE_OPERAND (gnu_get_parent, 1) = gnu_field_list;
+	    DECL_INTERNAL_P (gnu_field) = 1;
+	    TREE_OPERAND (gnu_get_parent, 1) = gnu_field;
+	    TYPE_FIELDS (gnu_type) = gnu_field;
 	  }
 
 	/* Make the fields for the discriminants and put them into the record
@@ -3129,6 +3130,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    && (No (Corresponding_Discriminant (gnat_field))
 			|| !Is_Tagged_Type (gnat_base_type)))
 		  {
+		    Name_Id gnat_name = Chars (gnat_field);
 		    tree gnu_old_field
 		      = gnat_to_gnu_field_decl
 			(Original_Record_Component (gnat_field));
@@ -3138,6 +3140,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    tree gnu_pos = TREE_PURPOSE (gnu_offset);
 		    tree gnu_bitpos = TREE_VALUE (TREE_VALUE (gnu_offset));
 		    tree gnu_field, gnu_field_type, gnu_size, gnu_new_pos;
+		    tree gnu_last = NULL_TREE;
 		    unsigned int offset_align
 		      = tree_low_cst
 			(TREE_PURPOSE (TREE_VALUE (gnu_offset)), 1);
@@ -3243,15 +3246,29 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		    TREE_THIS_VOLATILE (gnu_field)
 		      = TREE_THIS_VOLATILE (gnu_old_field);
 
-		    /* To match the layout crafted in components_to_record, if
-		       this is the _Tag field, put it before any discriminants
-		       instead of after them as for all other fields.  */
-		    if (Chars (gnat_field) == Name_uTag)
+		    /* To match the layout crafted in components_to_record,
+		       if this is the _Tag or _Parent field, put it before
+		       any other fields.  */
+		    if (gnat_name == Name_uTag || gnat_name == Name_uParent)
 		      gnu_field_list = chainon (gnu_field_list, gnu_field);
+
+		    /* Similarly, if this is the _Controller field, put
+		       it before the other fields except for the _Tag or
+		       _Parent field.  */
+		    else if (gnat_name == Name_uController && gnu_last)
+		      {
+			TREE_CHAIN (gnu_field) = TREE_CHAIN (gnu_last);
+			TREE_CHAIN (gnu_last) = gnu_field;
+		      }
+
+		    /* Otherwise, if this is a regular field, put it after
+		       the other fields.  */
 		    else
 		      {
 			TREE_CHAIN (gnu_field) = gnu_field_list;
 			gnu_field_list = gnu_field;
+			if (!gnu_last)
+			  gnu_last = gnu_field;
 		      }
 
 		    save_gnu_tree (gnat_field, gnu_field, false);
@@ -6629,10 +6646,10 @@ compare_field_bitpos (const PTR rt1, const PTR rt2)
 /* Translate and chain the GNAT_COMPONENT_LIST to the GNU_FIELD_LIST, set
    the result as the field list of GNU_RECORD_TYPE and finish it up.  When
    called from gnat_to_gnu_entity during the processing of a record type
-   definition, the GCC nodes for the discriminants and the parent, if any,
-   will be on the GNU_FIELD_LIST.  The other calls to this function are
-   recursive calls for the component list of a variant and, in this case,
-   GNU_FIELD_LIST is empty.
+   definition, the GCC node for the parent, if any, will be the single field
+   of GNU_RECORD_TYPE and the GCC nodes for the discriminants will be on the
+   GNU_FIELD_LIST.  The other calls to this function are recursive calls for
+   the component list of a variant and, in this case, GNU_FIELD_LIST is empty.
 
    PACKED is 1 if this is for a packed record, -1 if this is for a record
    with Component_Alignment of Storage_Unit, -2 if this is for a record
@@ -6668,7 +6685,7 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
   bool layout_with_rep = false;
   Node_Id component_decl, variant_part;
   tree gnu_our_rep_list = NULL_TREE;
-  tree gnu_field, gnu_next, gnu_last;
+  tree gnu_field, gnu_next, gnu_last = tree_last (gnu_field_list);
 
   /* For each component referenced in a component declaration create a GCC
      field and add it to the list, skipping pragmas in the GNAT list.  */
@@ -6679,24 +6696,39 @@ components_to_record (tree gnu_record_type, Node_Id gnat_component_list,
 	 component_decl = Next_Non_Pragma (component_decl))
       {
 	Entity_Id gnat_field = Defining_Entity (component_decl);
+	Name_Id gnat_name = Chars (gnat_field);
 
-	/* If present, the _Parent field must have been created and added
-	   as the last field to the list.  */
-	if (Chars (gnat_field) == Name_uParent)
-	  gnu_field = tree_last (gnu_field_list);
+	/* If present, the _Parent field must have been created as the single
+	   field of the record type.  Put it before any other fields.  */
+	if (gnat_name == Name_uParent)
+	  {
+	    gnu_field = TYPE_FIELDS (gnu_record_type);
+	    gnu_field_list = chainon (gnu_field_list, gnu_field);
+	  }
 	else
 	  {
 	    gnu_field = gnat_to_gnu_field (gnat_field, gnu_record_type,
 					   packed, definition);
 
-	    /* If this is the _Tag field, put it before any discriminants,
-	       instead of after them as is the case for all other fields.  */
-	    if (Chars (gnat_field) == Name_uTag)
+	    /* If this is the _Tag field, put it before any other fields.  */
+	    if (gnat_name == Name_uTag)
 	      gnu_field_list = chainon (gnu_field_list, gnu_field);
+
+	    /* If this is the _Controller field, put it before the other
+	       fields except for the _Tag or _Parent field.  */
+	    else if (gnat_name == Name_uController && gnu_last)
+	      {
+		TREE_CHAIN (gnu_field) = TREE_CHAIN (gnu_last);
+		TREE_CHAIN (gnu_last) = gnu_field;
+	      }
+
+	    /* If this is a regular field, put it after the other fields.  */
 	    else
 	      {
 		TREE_CHAIN (gnu_field) = gnu_field_list;
 		gnu_field_list = gnu_field;
+		if (!gnu_last)
+		  gnu_last = gnu_field;
 	      }
 	  }
 
