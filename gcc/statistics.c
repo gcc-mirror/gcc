@@ -82,7 +82,10 @@ hash_statistics_free (void *p)
 static htab_t
 curr_statistics_hash (void)
 {
-  unsigned idx = current_pass->static_pass_number;
+  unsigned idx;
+
+  gcc_assert (current_pass->static_pass_number >= 0);
+  idx = current_pass->static_pass_number;
 
   if (idx < nr_statistics_hashes
       && statistics_hashes[idx] != NULL)
@@ -294,9 +297,12 @@ statistics_counter_event (struct function *fn, const char *id, int incr)
       || incr == 0)
     return;
 
-  counter = lookup_or_add_counter (curr_statistics_hash (), id, 0, false);
-  gcc_assert (!counter->histogram_p);
-  counter->count += incr;
+  if (current_pass->static_pass_number != -1)
+    {
+      counter = lookup_or_add_counter (curr_statistics_hash (), id, 0, false);
+      gcc_assert (!counter->histogram_p);
+      counter->count += incr;
+    }
 
   if (!statistics_dump_file
       || !(statistics_dump_flags & TDF_DETAILS))

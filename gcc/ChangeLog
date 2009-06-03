@@ -1,3 +1,10 @@
+2009-06-03  Andrey Belevantsev  <abel@ispras.ru>
+
+	* statistics.c (statistics_counter_event): Do not record event 
+	in pass	dump if its number == -1.
+	(curr_statistics_hash): Add assert that we never get passes 
+	with static number == -1.
+
 2009-06-03  Richard Guenther  <rguenther@suse.de>
 	    Andrey Belevantsev  <abel@ispras.ru>
 
