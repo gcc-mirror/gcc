@@ -1,3 +1,7 @@
+2009-06-03  Alexandre Oliva  <aoliva@redhat.com>
+
+	* module.c (mio_f2k_derived): Initialize cur.
+
 2009-06-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/40309
