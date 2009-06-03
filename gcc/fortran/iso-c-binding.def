@@ -95,7 +95,8 @@ NAMED_INTCST (ISOCBINDING_INT_FAST32_T, "c_int_fast32_t", \
 NAMED_INTCST (ISOCBINDING_INT_FAST64_T, "c_int_fast64_t", \
               get_int_kind_from_name (INT_FAST64_TYPE), GFC_STD_F2003)
 /* GNU Extension.  */
-NAMED_INTCST (ISOCBINDING_INT_FAST128_T, "c_int_fast128_t", -2, GFC_STD_GNU)
+NAMED_INTCST (ISOCBINDING_INT_FAST128_T, "c_int_fast128_t",
+	      get_int_kind_from_width (128), GFC_STD_GNU)
 
 NAMED_REALCST (ISOCBINDING_FLOAT, "c_float", \
                get_real_kind_from_node (float_type_node))

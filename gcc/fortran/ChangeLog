@@ -1,3 +1,12 @@
+2009-06-03  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi: Add mixed-language programming, mention
+	varying string lengths, some clean up of introduction parts.
+	* intrinsic.texi (instrinsic modules): Create @menu for subsections.
+	(ISO_C_BINDING): Support ISOCBINDING_INT_FAST128_T.
+	* libgfortran.h: Comment to rember to keep gfortran.texi in sync.
+	* iso-c-binding.def: Support ISOCBINDING_INT_FAST128_T.
+
 2009-06-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
