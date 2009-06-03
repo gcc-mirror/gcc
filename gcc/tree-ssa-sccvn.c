@@ -554,7 +554,7 @@ copy_reference_ops_from_ref (tree ref, VEC(vn_reference_op_s, heap) **result)
 	      && TREE_CODE (DECL_CONTEXT (temp.op0)) == UNION_TYPE
 	      && integer_zerop (DECL_FIELD_OFFSET (temp.op0))
 	      && integer_zerop (DECL_FIELD_BIT_OFFSET (temp.op0))
-	      && host_integerp (TYPE_SIZE (TREE_TYPE (temp.op0)), 0))
+	      && host_integerp (DECL_SIZE (temp.op0), 0))
 	    temp.op0 = DECL_SIZE (temp.op0);
 	  break;
 	case ARRAY_RANGE_REF:
