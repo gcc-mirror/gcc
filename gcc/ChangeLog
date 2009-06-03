@@ -1,3 +1,10 @@
+2009-06-03  Maxim Kuvyrkov  <maxim@codesourcery.com>
+
+	* config/m68k/linux.h (HAVE_GAS_BALIGN_AND_P2ALIGN): Move to ...
+	* config/m68k/m68k.h: ... here.
+	* testsuite/gcc.dg/falign-labels.c (dg-options): Don't restrict for
+	m68k and fido.
+
 2009-06-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/40323

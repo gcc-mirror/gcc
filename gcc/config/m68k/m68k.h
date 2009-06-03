@@ -955,6 +955,13 @@ do { if (cc_prev_status.flags & CC_IN_68881)			\
   if ((LOG) >= 1)			\
     fprintf (FILE, "\t.even\n");
 
+#ifdef HAVE_GAS_BALIGN_AND_P2ALIGN
+/* Use "move.l %a4,%a4" to advance within code.  */
+#define ASM_OUTPUT_ALIGN_WITH_NOP(FILE,LOG)			\
+  if ((LOG) > 0)						\
+    fprintf ((FILE), "\t.balignw %u,0x284c\n", 1 << (LOG));
+#endif
+
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (int)(SIZE))
 

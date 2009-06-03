@@ -126,13 +126,6 @@ along with GCC; see the file COPYING3.  If not see
   if ((LOG) > 0)						\
     fprintf ((FILE), "%s%u\n", ALIGN_ASM_OP, 1 << (LOG));
 
-#ifdef HAVE_GAS_BALIGN_AND_P2ALIGN
-/* Use "move.l %a4,%a4" to advance within code.  */
-#define ASM_OUTPUT_ALIGN_WITH_NOP(FILE,LOG)			\
-  if ((LOG) > 0)						\
-    fprintf ((FILE), "\t.balignw %u,0x284c\n", 1 << (LOG));
-#endif
-
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as uninitialized global
    data.  */
