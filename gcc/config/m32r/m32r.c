@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the Renesas M32R cpu.
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2007, 2008 Free Software Foundation, Inc.
+   2005, 2007, 2008, 2009 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -65,7 +65,7 @@ static bool  m32r_handle_option (size_t, const char *, int);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
 static int   m32r_is_insn (rtx);
-const struct attribute_spec m32r_attribute_table[];
+EXPORTED_CONST struct attribute_spec m32r_attribute_table[];
 static rtx   m32r_legitimize_address (rtx, rtx, enum machine_mode);
 static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void  m32r_output_function_prologue (FILE *, HOST_WIDE_INT);

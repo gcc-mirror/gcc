@@ -61,7 +61,7 @@ cc1objplus-dummy$(exeext): $(OBJCXX_OBJS) dummy-checksum.o $(BACKEND) \
 cc1objplus-checksum.c : cc1objplus-dummy$(exeext) build/genchecksum$(build_exeext)
 	build/genchecksum$(build_exeext) cc1objplus-dummy$(exeext) > $@
 
-cc1objplus-checksum.o : cc1objplus-checksum.c
+cc1objplus-checksum.o : cc1objplus-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
 cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \

@@ -395,6 +395,18 @@ So instead we use the macro below and test it against specific values.  */
 #define __extension__
 #endif
 
+/* This is used to declare a const variable which should be visible
+   outside of the current compilation unit.  Use it as
+     EXPORTED_CONST int i = 1;
+   This is because the semantics of const are different in C and C++.
+   "extern const" is permitted in C but it looks strange, and gcc
+   warns about it when -Wc++-compat is not used.  */
+#ifdef __cplusplus
+#define EXPORTED_CONST extern const
+#else
+#define EXPORTED_CONST const
+#endif
+
 #ifdef __cplusplus
 }
 #endif

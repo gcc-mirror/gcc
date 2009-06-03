@@ -59,7 +59,7 @@ cc1obj-dummy$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) dummy-checksum.o $(BACKEN
 cc1obj-checksum.c : cc1obj-dummy$(exeext) build/genchecksum$(build_exeext)
 	build/genchecksum$(build_exeext) cc1obj-dummy$(exeext) > $@
 
-cc1obj-checksum.o : cc1obj-checksum.c
+cc1obj-checksum.o : cc1obj-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
 cc1obj$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o $(BACKEND) $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \

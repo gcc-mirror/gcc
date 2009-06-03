@@ -1,3 +1,8 @@
+2009-06-03  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (cc1objplus-checksum.o): Depend upon $(CONFIG_H)
+	and $(SYSTEM_H).
+
 2009-05-27  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (cc1objplus-dummy$(exeext)): Change $(COMPILER) to

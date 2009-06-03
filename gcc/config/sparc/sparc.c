@@ -421,7 +421,7 @@ static void sparc_file_end (void);
 static const char *sparc_mangle_type (const_tree);
 #endif
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
-const struct attribute_spec sparc_attribute_table[];
+EXPORTED_CONST struct attribute_spec sparc_attribute_table[];
 #endif
 
 /* Option handling.  */

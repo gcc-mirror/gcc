@@ -1,6 +1,7 @@
 /* Generate code from machine description to compute values of attributes.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008  Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -1637,7 +1638,7 @@ write_length_unit_log (void)
       for (length_unit_log = 0; length_or & 1; length_or >>= 1)
 	length_unit_log++;
     }
-  printf ("const int length_unit_log = %u;\n", length_unit_log);
+  printf ("EXPORTED_CONST int length_unit_log = %u;\n", length_unit_log);
 }
 
 /* Take a COND expression and see if any of the conditions in it can be

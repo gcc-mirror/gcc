@@ -7334,7 +7334,7 @@ alpha_using_fp (void)
 
 #if TARGET_ABI_OPEN_VMS
 
-const struct attribute_spec vms_attribute_table[] =
+static const struct attribute_spec vms_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   { "overlaid",   0, 0, true,  false, false, NULL },

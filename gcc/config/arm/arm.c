@@ -58,7 +58,7 @@
 typedef struct minipool_node    Mnode;
 typedef struct minipool_fixup   Mfix;
 
-const struct attribute_spec arm_attribute_table[];
+EXPORTED_CONST struct attribute_spec arm_attribute_table[];
 
 void (*arm_lang_output_object_attributes_hook)(void);
 
