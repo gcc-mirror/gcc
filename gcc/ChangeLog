@@ -1,3 +1,10 @@
+2009-06-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/driver-i386.c (describe_cache): Optimize
+	concatenation of strings.  Use snprintf instead of sprintf.
+	(host_detect_local_cpu): Ditto.  Ignore -march and -mtune for native
+	target when not compiling with GCC.
+
 2009-06-02  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c: Revert last change.
@@ -210,7 +217,7 @@
 	and push insns.
 
 2009-06-01  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <botcazou@adacore.com>
+	    Eric Botcazou  <botcazou@adacore.com>
 
 	* tree.h (CONSTRUCTOR_BITFIELD_P): True if NODE, a FIELD_DECL, is
 	to be processed as a bitfield for constructor output purposes.
@@ -286,21 +293,18 @@
 
 2009-05-31  Ian Lance Taylor  <iant@google.com>
 
-	* regstat.c (regstat_n_sets_and_refs): Remove duplicate
-	definition.
+	* regstat.c (regstat_n_sets_and_refs): Remove duplicate definition.
 
 2009-05-31  Ian Lance Taylor  <iant@google.com>
 
-	* Makefile.in (except.o): Depend upon gt-except.h, not
-	gt-$(EXCEPT_H).
+	* Makefile.in (except.o): Depend upon gt-except.h, not gt-$(EXCEPT_H).
 	(ipa-cp.o): Depend upon $(FIBHEAP_H) and $(PARAMS_H).
 	(ipa-reference.o): Depend upon gt-ipa-reference.h.
 
 2009-05-31  Jason Merrill  <jason@redhat.com>
 
 	* tree-pretty-print.c (print_call_name): Take the callee, not the
-	call itself.  Make non-static.  Use dump_function_name for
-	functions.
+	call itself.  Make non-static.  Use dump_function_name for functions.
 	(dump_generic_node): Adjust.
 	* diagnostic.h: Declare print_call_name.
 	* gimple-pretty-print.c (dump_gimple_call): Use it.
@@ -330,8 +334,9 @@
 	(vectorize_loops): Don't allocate and free vect_memsyms_to_rename.
 	Call mark_sym_for_renaming.
 	* tree-vectorizer.h (vect_memsyms_to_rename): Remove.
-	* tree-vect-loop.c (vect_transform_loop): Remove vect_memsyms_to_rename
-	initialization and a call to mark_set_for_renaming.
+	* tree-vect-loop.c (vect_transform_loop): Remove
+	vect_memsyms_to_rename initialization and a call to
+	mark_set_for_renaming.
 
 2009-05-31  Jakub Jelinek  <jakub@redhat.com>
 
@@ -342,10 +347,9 @@
 2009-05-30  Kai Tietz  <kai.tietz@onevision.com>
 
 	* config/i386/mingw-tls.c: New file.
-	* config/i386/t-gthr-win32 (LIB2FUNCS_EXTRA): Add
-	mingw-tls.c file.
-	* gthr-win32.h (MINGW32_SUPPORTS_MT_EH): Define
-	it for targets defining _WIN32 but not __CYGWIN__.
+	* config/i386/t-gthr-win32 (LIB2FUNCS_EXTRA): Add mingw-tls.c file.
+	* gthr-win32.h (MINGW32_SUPPORTS_MT_EH): Define it for targets
+	defining _WIN32 but not __CYGWIN__.
 
 2009-05-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -544,8 +548,7 @@
 	avx_cmps<ssemodesuffixf2c><mode>3, *avx_maskcmp<mode>3,
 	<sse>_maskcmp<mode>3, <sse>_vmmaskcmp<mode>3,
 	avx_shufps256_1, *avx_shufps_<mode>, sse_shufps_<mode>,
-	*vec_dupv4sf_avx, *vec_dupv4sf): Set
-	length_immediate attribute to 1.
+	*vec_dupv4sf_avx, *vec_dupv4sf): Set length_immediate attribute to 1.
 	(*avx_cvtsi2ssq, *avx_cvtsi2sdq): Set length_vex attribute to 4.
 	(sse_cvtsi2ssq, sse2_cvtsi2sdq): Set prefix_rex attribute to 1.
 	(sse2_cvtpi2pd, sse_loadlps, sse2_storelpd): Override
@@ -564,8 +567,7 @@
 	(*avx_mulv2siv2di3, *avx_mulv4si3, sse4_2_gtv2di3): Set prefix_extra
 	to 1.
 	(*avx_<code><mode>3, *avx_eq<mode>3, *avx_gt<mode>3): Set
-	prefix_extra attribute for variants that don't have 0f prefix
-	alone.
+	prefix_extra attribute for variants that don't have 0f prefix alone.
 	(*avx_pinsr<ssevecsize>): Likewise.  Set length_immediate to 1.
 	(*sse4_1_pinsrb, *sse2_pinsrw, *sse4_1_pinsrd, *sse4_1_pextrb,
 	*sse4_1_pextrb_memory, *sse2_pextrw, *sse4_1_pextrw_memory,
@@ -597,13 +599,11 @@
 	ssse3_phsubwv4hi3, ssse3_phsubdv2si3, ssse3_phsubswv4hi3,
 	ssse3_pmaddubsw, *ssse3_pmulhrswv4hi, ssse3_pshufbv8qi3,
 	ssse3_psign<mode>3): Override prefix_rex attribute.
-	(*avx_palignrti): Override prefix_extra and length_immediate
-	to 1.
+	(*avx_palignrti): Override prefix_extra and length_immediate to 1.
 	(ssse3_palignrti): Override length_immediate to 1.
 	(ssse3_palignrdi): Override length_immediate to 1, override
 	prefix_rex attribute.
-	(abs<mode>2): Override prefix_rep to 0, override prefix_rex
-	attribute.
+	(abs<mode>2): Override prefix_rep to 0, override prefix_rex attribute.
 	(sse4a_extrqi): Override length_immediate to 2.
 	(sse4a_insertqi): Likewise.  Override prefix_data16 to 0.
 	(sse4a_insertq): Override prefix_data16 to 0.
@@ -674,8 +674,7 @@
 	(mmx_ashr<mode>3, mmx_lshr<mode>3, mmx_ashl<mode>3): Set
 	length_immediate to 1 if operand 2 is const_int_operand.
 	(*mmx_pinsrw, mmx_pextrw, mmx_pshufw_1, *vec_dupv4hi,
-	*vec_extractv2si_1): Set length_immediate
-	attribute to 1.
+	*vec_extractv2si_1): Set length_immediate attribute to 1.
 	(*mmx_uavgv8qi3): Override prefix_extra attribute to 1 if
 	using old 3DNOW insn rather than SSE/3DNOW_A.
 	(mmx_emms, mmx_femms): Clear modrm attribute.
@@ -762,7 +761,7 @@
 
 2009-05-28  Steve Ellcey  <sje@cup.hp.com>
 
-	* doc/invoke.texi (IA-64 Options)
+	* doc/invoke.texi (IA-64 Options):
 	Add -msdata, -mfused-madd, -mno-inline-float-divide, 
 	-mno-inline-int-divide, -mno-inline-sqrt, -msched-spec-ldc,
 	-msched-spec-control-ldc, -msched-prefer-non-data-spec-insns,
@@ -770,14 +769,13 @@
 	-msched-stop-bits-after-every-cycle,
 	-msched-count-spec-in-critical-path,
 	-msel-sched-dont-check-control-spec, -msched-fp-mem-deps-zero-cost
-	-msched-max-memory-insns-hard-limit, -msched-max-memory-insns
+	-msched-max-memory-insns-hard-limit, -msched-max-memory-insns.
 	Remove -mt, -pthread, -msched-ldc, -mno-sched-control-ldc,
 	and -msched-spec-verbose.
 
 2009-05-28  Joseph Myers  <joseph@codesourcery.com>
 
-	* config/arm/lib1funcs.asm (__clear_cache): Define if
-	L_clear_cache.
+	* config/arm/lib1funcs.asm (__clear_cache): Define if L_clear_cache.
 	* config/arm/linux-eabi.h (CLEAR_INSN_CACHE): Define to give an
 	error if used.
 	* config/arm/t-linux-eabi (LIB1ASMFUNCS): Add _clear_cache.
@@ -809,8 +807,7 @@
 	(get_ref_from_reference_ops): remove.
 	(vn_reference_lookup_2): Adjust signature.
 	(vn_reference_lookup_3): Do not re-build trees.  Handle unions.
-	(vn_reference_lookup_pieces): Adjust signature, do not re-build
-	trees.
+	(vn_reference_lookup_pieces): Adjust signature, do not re-build trees.
 	(vn_reference_lookup): Adjust.
 	(vn_reference_insert): Likewise.
 	(vn_reference_insert_pieces): Adjust signature.
@@ -856,8 +853,7 @@
 2009-05-28  Adam Nemet  <anemet@caviumnetworks.com>
 
 	PR middle-end/33699
-	* target.h (struct gcc_target): Fix indentation.  Add
-	const_anchor.
+	* target.h (struct gcc_target): Fix indentation.  Add const_anchor.
 	* target-def.h (TARGET_CONST_ANCHOR): New macro.
 	(TARGET_INITIALIZER): Use it.
 	* cse.c (CHEAPER): Move it up to the other macros.
@@ -869,8 +865,7 @@
 	find_reg_offset_for_const, try_const_anchors): New functions.
 	(cse_insn): Call try_const_anchors.  Adjust cost of src_related
 	when using a const-anchor.  Call insert_const_anchors.
-	* config/mips/mips.c (mips_set_mips16_mode): Set
-	targetm.const_anchor.
+	* config/mips/mips.c (mips_set_mips16_mode): Set targetm.const_anchor.
 	* doc/tm.texi (Misc): Document TARGET_CONST_ANCHOR.
 
 2009-05-28  Alexandre Oliva  <aoliva@redhat.com>
@@ -920,7 +915,7 @@
 
 2009-05-21  Denis Chertykov  <denisc@overta.ru>
 
-	* doc/contrib.texi (Contributors): add myself to the list.
+	* doc/contrib.texi (Contributors): Add myself to the list.
 
 2009-05-27  Olivier Hainque  <hainque@adacore.com>
 
@@ -945,8 +940,8 @@
 
 2009-05-27  Rafael Avila de Espindola  <espindola@google.com>
 
-	* Makefile.in (GCC_PLUGIN_H): New. Replace all uses of gcc-plugin.h with
-	it.
+	* Makefile.in (GCC_PLUGIN_H): New. Replace all uses of gcc-plugin.h
+	with it.
 	* doc/plugins.texi: Document that gcc-plugin.h must be the first to be
 	included.
 	* gcc-plugin.h: Include config.h and system.h.
@@ -983,10 +978,8 @@
 	* gcc-plugin.h (PLUGIN_GGC_START, PLUGIN_GGC_MARKING)
 	(PLUGIN_GGC_END, PLUGIN_REGISTER_GGC_ROOTS): Added new events.
 	(register_callback): Improved comment in declaration.
-	* ggc-common.c (const_ggc_root_tab_t) Added new typedef for
-	vectors.
-	(extra_root_vec) Added static variable for dynamic roots
-	registration.
+	* ggc-common.c (const_ggc_root_tab_t) Added new typedef for vectors.
+	(extra_root_vec) Added static variable for dynamic roots registration.
 	(ggc_register_root_tab) Added new routine.
 	(ggc_mark_roots) Added iteration inside extra_root_vec, and invoke
 	PLUGIN_GGC_MARKING event.
@@ -1123,8 +1116,8 @@
 	(cgraph_default_inline_p): Likewise.
 	(cgraph_edge_badness): Compute badness based on benefit and size cost.
 	(cgraph_decide_recursive_inlining): Check size.
-	(cgraph_decide_inlining_of_small_function): Update size; dump sizes and
-	times.
+	(cgraph_decide_inlining_of_small_function): Update size; dump sizes
+	and times.
 	(cgraph_decide_inlining): Likewise.
 	(cgraph_decide_inlining_incrementally): Likewise; honor
 	PARAM_EARLY_INLINING_INSNS.
@@ -1144,8 +1137,7 @@
 
 	PR tree-optimization/36327
 	* tree-ssa-alias.c (walk_non_aliased_vuses): Add second walker
-	callback for reference translation or lookup at the point
-	of may-defs.
+	callback for reference translation or lookup at the point of may-defs.
 	* tree-ssa-alias.h (walk_non_aliased_vuses): Adjust prototype.
 	* tree-ssa-sccvn.c (get_ref_from_reference_ops): Bail out
 	for union COMPONENT_REFs.
@@ -1222,7 +1214,8 @@
 	Likewise.
 	* tree-ssa-propagate.c (substitute_and_fold): Likewise.
 	* tree-ssa-dom.c (propagate_rhs_into_lhs): Likewise.
-	(dom_opt_finalize_block): Likewise, adjusting access to stmts_to_rescan.
+	(dom_opt_finalize_block): Likewise, adjusting access to
+	stmts_to_rescan.
 	(optimize_stmt): Likewise, adjusting access to stmts_to_rescan.
 	(stmts_to_rescan): Change item type to gimple.
 	(tree_ssa_dominator_optimize): Change type of stmts_to_rescan.
@@ -1776,8 +1769,7 @@
 2009-05-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Check
-	extended family and model for Intel processors.  Support Intel
-	Atom.
+	extended family and model for Intel processors.  Support Intel Atom.
 
 2009-05-20  Olivier Hainque  <hainque@adacore.com>
 
@@ -1908,8 +1900,7 @@
 
 2009-05-19  Manuel López-Ibáñez  <manu@gcc.gnu.org>
 
-	* c-common.c (warn_logical_operator): Remove unnecessary
-	conditionals.
+	* c-common.c (warn_logical_operator): Remove unnecessary conditionals.
 
 2009-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -2289,8 +2280,8 @@
 	(cgraph_default_inline_p): Likewise.
 	(cgraph_edge_badness): Compute badness based on benefit and size cost.
 	(cgraph_decide_recursive_inlining): Check size.
-	(cgraph_decide_inlining_of_small_function): Update size; dump sizes and
-	times.
+	(cgraph_decide_inlining_of_small_function): Update size; dump sizes
+	and times.
 	(cgraph_decide_inlining): Likewise.
 	(cgraph_decide_inlining_incrementally): Likewise; honor
 	PARAM_EARLY_INLINING_INSNS.
@@ -2359,8 +2350,8 @@
 	(cgraph_default_inline_p): Likewise.
 	(cgraph_edge_badness): Compute badness based on benefit and size cost.
 	(cgraph_decide_recursive_inlining): Check size.
-	(cgraph_decide_inlining_of_small_function): Update size; dump sizes and
-	times.
+	(cgraph_decide_inlining_of_small_function): Update size; dump sizes
+	and times.
 	(cgraph_decide_inlining): Likewise.
 	(cgraph_decide_inlining_incrementally): Likewise; honor
 	PARAM_EARLY_INLINING_INSNS.
@@ -2390,16 +2381,16 @@
 	(is_subrange_type): Delete.
 	(subrange_type_die): Add LOW and HIGH parameters.  Use them for bounds.
 	(modified_type_die): Call subrange_type_for_debug_p on subtypes.
-	* fold-const.c (fold_truth_not_expr) <CONVERT_EXPR>: Do not strip it if
-	the destination type is boolean.
+	* fold-const.c (fold_truth_not_expr) <CONVERT_EXPR>: Do not strip it
+	if the destination type is boolean.
 	(build_range_check): Do not special-case subtypes.
 	(fold_sign_changed_comparison): Likewise.
 	(fold_unary): Likewise.
 	* langhooks-def.h (LANG_HOOKS_GET_SUBRANGE_BOUNDS): Define.
 	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Add LANG_HOOKS_GET_SUBRANGE_BOUNDS.
 	* langhooks.h (lang_hooks_for_types): Add get_subrange_bounds.
-	* tree.c (subrange_type_for_debug_p): New predicate based on the former
-	is_subrange_type.
+	* tree.c (subrange_type_for_debug_p): New predicate based on the
+	former is_subrange_type.
 	* tree.h (subrange_type_for_debug_p): Declare.
 	* tree-chrec.c (avoid_arithmetics_in_type_p): Delete.
 	(convert_affine_scev): Remove call to above function.
@@ -2630,9 +2621,11 @@
 	(arm_legitimate_address_outer_p): ... this.
 	* config/arm/constraints.md ("Uq"): Adjust call.
 	* config/arm/predicates.md (arm_extendqisi_mem_op): Likewise.
-	* config/arm/arm.c (arm_legitimate_address_p): New, rename old one to...
+	* config/arm/arm.c (arm_legitimate_address_p): New, rename old one
+	to...
 	(arm_legitimate_address_outer_p): ... this.
-	(thumb1_legitimate_address_p, thumb2_legitimate_address_p): Make static.
+	(thumb1_legitimate_address_p, thumb2_legitimate_address_p): Make
+	static.
 	(TARGET_LEGITIMATE_ADDRESS_P): New.
 
 	* config/mips/mips.h (GO_IF_LEGITIMATE_ADDRESS): Delete.
@@ -2683,9 +2676,10 @@
 
 2009-05-13  Taras Glek  <tglek@mozilla.com>
 
-	* attribs.c (register_attribute): moved out attribute registration into
-	register_attribute.
-	* doc/plugins.texi: Documented register_attribute and PLUGIN_ATTRIBUTES.
+	* attribs.c (register_attribute): moved out attribute registration
+	into register_attribute.
+	* doc/plugins.texi: Documented register_attribute and
+	PLUGIN_ATTRIBUTES.
 	* gcc-plugin.h: Added forward decl for register_attribute.
 	* gcc-plugin.h (plugins_event): Added PLUGIN_ATTRIBUTES.
 	* plugin.c (register_callback, invoke_plugin_callbacks): Added
@@ -2860,8 +2854,8 @@
 	(bcc_gen_fctn, setcc_gen_code, emit_cmp_insn): Delete.
 	* ifcvt.c (find_if_header): Replace HAVE_conditional_trap
 	with lookup of ctrap_optab.
-	* genopinit.c (cmp_optab, tst_optab, bcc_gen_fctn,
-	setcc_gen_code): Delete.
+	* genopinit.c (cmp_optab, tst_optab, bcc_gen_fctn, setcc_gen_code):
+	Delete.
 	(ctrap_optab): New.
 
 	* combine.c (combine_simplify_rtx, simplify_set): Do not

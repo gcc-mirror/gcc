@@ -72,7 +72,7 @@
 	* gnat.dg/nested_float_packed.ads: New test.
 
 2009-06-01  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <botcazou@adacore.com>
+	    Eric Botcazou  <botcazou@adacore.com>
 
 	* gnat.dg/oconst[1-6].ad[bs]: New tests. Also support for ...
 	* gnat.dg/test_oconst.adb: New test.
@@ -154,8 +154,7 @@
 
 2009-05-28  Kai Tietz  <kai.tietz@onevision.com>
 
-	*  g++.dg/ext/packed6.C (size_t): Use __extension__ and
-	__SIZE_TYPE__.
+	*  g++.dg/ext/packed6.C (size_t): Use __extension__ and __SIZE_TYPE__.
 	* g++.dg/opt/memcpy1.C (size_t): Likewise.
 	* g++.dg/pr37742.C (size_t): Likewise.
 	* g++.dg/torture/pr34850.C (size_t): Likewise.
@@ -314,7 +313,7 @@
 	* gcc.dg/vect/pr40238.c: New test.
 
 2009-05-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
-	    Dominique Dhumieres
+	    Dominique Dhumieres  <dominiq@lps.ens.fr>
 
 	PR fortran/35732
 	PR fortran/39872
@@ -580,8 +579,10 @@
 	* gcc.target/i386/align-main-2.c (check): Mark noinline.
 	* gcc.dg/ipa/ipa-4.c: Disable early inlining.
 	* gcc.dg/vect/vect-iv-10.c (main1): Mark noinline.
-	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c (main1): Mark noinline.
-	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-33.c (main1): Mark noinline.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-33.c (main1):
+	Mark noinline.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-33.c (main1):
+	Mark noinline.
 	* gcc.dg/vect/pr31699.c (foo): Mark noinline.
 	* gcc.dg/vect/pr18400.c (main1): Mark noinline.
 
@@ -669,8 +670,8 @@
 
 2009-05-12  Jan Hubicka  <jh@suse.cz>
 
-	* gcc.dg/tree-ssa/loop-36.c: Reduce amount of iterations to 2 so unrolling
-	still happens.
+	* gcc.dg/tree-ssa/loop-36.c: Reduce amount of iterations to 2
+	so unrolling still happens.
 	* gcc.dg/ipa/ipacost-1.c: Prevent inlining
 	* gcc.dg/ipa/ipacost-2.c: Likewise.
 	* gcc.dg/vect/slp-3.c: Loop is no longer unrolled.
