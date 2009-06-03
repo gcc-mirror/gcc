@@ -211,13 +211,12 @@
 2009-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	Revert due to PR40320:
-	
 	2009-06-01  Maxim Kuvyrkov  <maxim@codesourcery.com>
 	* calls.c (emit_library_call_value_1): Don't force_operand for move
 	and push insns.
 
 2009-06-01  Olivier Hainque  <hainque@adacore.com>
-	    Eric Botcazou  <botcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree.h (CONSTRUCTOR_BITFIELD_P): True if NODE, a FIELD_DECL, is
 	to be processed as a bitfield for constructor output purposes.
