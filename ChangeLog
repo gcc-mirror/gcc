@@ -1,3 +1,9 @@
+2009-06-03  Jerome Guitton  <guitton@adacore.com>
+	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+        * Makefile.tpl (all): Avoid a trailing backslash.
+        * Makefile.in: Regenerate.
+
 2009-06-03  Ben Elliston  <bje@au.ibm.com>
 
 	* config.sub, config.guess: Update from upstream sources.
@@ -18,7 +24,7 @@
 
 	* configure.ac: Support gold for target arm*-*-*.
 	* configure: Regenerate.
-	
+
 2009-05-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.def: Add MPC support and dependencies.

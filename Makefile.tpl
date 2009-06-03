@@ -628,8 +628,9 @@ all:
 	  $(MAKE) $(RECURSE_FLAGS_TO_PASS) all-host all-target \
 @if gcc-bootstrap
 	    ; \
-	fi
+	fi \
 @endif gcc-bootstrap
+	&& :
 
 .PHONY: all-build
 [+ FOR build_modules +]
