@@ -127,7 +127,7 @@ static void       mcore_mark_dllexport          (tree);
 static void       mcore_mark_dllimport          (tree);
 static int        mcore_dllexport_p             (tree);
 static int        mcore_dllimport_p             (tree);
-const struct attribute_spec mcore_attribute_table[];
+EXPORTED_CONST struct attribute_spec mcore_attribute_table[];
 static tree       mcore_handle_naked_attribute  (tree *, tree, tree, int, bool *);
 #ifdef OBJECT_FORMAT_ELF
 static void	  mcore_asm_named_section       (const char *,

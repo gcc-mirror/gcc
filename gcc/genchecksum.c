@@ -1,5 +1,5 @@
 /* Generate checksums of executables for PCH validation
-   Copyright (C) 2005, 2007
+   Copyright (C) 2005, 2007, 2009
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -56,7 +56,9 @@ dosum (const char *file)
       exit (1);
     }
 
-  fputs ("const unsigned char executable_checksum[16] = { ", stdout);
+  puts ("#include \"config.h\"");
+  puts ("#include \"system.h\"");
+  fputs ("EXPORTED_CONST unsigned char executable_checksum[16] = { ", stdout);
   for (i = 0; i < 16; i++)
     printf ("%#02x%s", result[i], i == 15 ? " };\n" : ", ");
 }

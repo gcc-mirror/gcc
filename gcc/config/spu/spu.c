@@ -316,7 +316,7 @@ spu_libgcc_shift_count_mode (void);
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST spu_sched_adjust_cost
 
-const struct attribute_spec spu_attribute_table[];
+EXPORTED_CONST struct attribute_spec spu_attribute_table[];
 #undef  TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE spu_attribute_table
 

@@ -565,7 +565,7 @@ const enum reg_class mips_regno_to_class[FIRST_PSEUDO_REGISTER] = {
 };
 
 /* The value of TARGET_ATTRIBUTE_TABLE.  */
-const struct attribute_spec mips_attribute_table[] = {
+static const struct attribute_spec mips_attribute_table[] = {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   { "long_call",   0, 0, false, true,  true,  NULL },
   { "far",     	   0, 0, false, true,  true,  NULL },

@@ -1,3 +1,34 @@
+2009-06-03  Ian Lance Taylor  <iant@google.com>
+
+	* dummy-checksum.c (executable_checksum): Use EXPORTED_CONST.
+	* genattrtab.c (write_length_unit_log): Likewise.
+	* genchecksum.c (dosum): Likewise.
+	* gengtype.c (write_rtx_next): Likewise.
+	(finish_root_table, write_roots): Likewise.
+	* gimple.c (gimple_ops_offset_): Likewise.
+	* tree-nomudflap.c (gt_ggc_r_gt_tree_mudflap_h): Likewise.
+	* config/arc/arc.c (arc_attribute_table): Likewise.
+	* config/arm/arm.c (arm_attribute_table): Likewise.
+	* config/avr/avr.c (avr_attribute_table): Likewise.
+	* config/crx/crx.c (crx_attribute_table): Likewise.
+	* config/m32r/m32r.c (m32r_attribute_table): Likewise.
+	* config/m68hc11/m68hc11.c (m68hc11_attribute_table): Likewise.
+	* config/mcore/mcore.c (mcore_attribute_table): Likewise.
+	* config/rs6000/rs6000.c (rs6000_attribute_table): Likewise.
+	* config/sh/sh.c (sh_attribute_table): Likewise.
+	* config/sparc/sparc.c (sparc_attribute_table): Likewise.
+	* config/spu/spu.c (spu_attribute_table): Likewise.
+	* config/v850/v850.c (v850_attribute_table): Likewise.
+
+	* config/alpha/alpha.c (vms_attribute_table): Make static.
+	* config/bfin/bfin.c (bfin_attribute_table): Likewise.
+	* config/h8300/h8300.c (h8300_attribute_table): Likewise.
+	* config/mips/mips.c (mips_attribute_table): Likewise.
+
+	* Makefile.in (dummy-checksum.o): Depend upon $(CONFIG_H) and
+	$(SYSTEM_H).
+	(cc1-checksum.o): Likewise.
+
 2009-06-03  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/vect.md (*movv2sf_internal): Handle big endian case.

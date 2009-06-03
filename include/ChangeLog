@@ -1,3 +1,7 @@
+2009-06-02  Ian Lance Taylor  <iant@google.com>
+
+	* ansidecl.h (EXPORTED_CONST): Define.
+
 2009-05-31  Ian Lance Taylor  <iant@google.com>
 
 	* ansidecl.h: Add extern "C" when compiling with C++.  Treat C++

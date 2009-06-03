@@ -132,6 +132,6 @@ struct gimple_opt_pass pass_mudflap_2 =
 We prepare a little dummy struct here.
 */
 
-const struct ggc_root_tab gt_ggc_r_gt_tree_mudflap_h[] = {
+EXPORTED_CONST struct ggc_root_tab gt_ggc_r_gt_tree_mudflap_h[] = {
   LAST_GGC_ROOT_TAB
 };

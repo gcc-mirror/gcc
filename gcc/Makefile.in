@@ -1671,7 +1671,7 @@ $(SPECS): xgcc$(exeext)
 gcc-cross$(exeext): xgcc$(exeext)
 	cp xgcc$(exeext) gcc-cross$(exeext)
 
-dummy-checksum.o : dummy-checksum.c
+dummy-checksum.o : dummy-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
 cc1-dummy$(exeext): $(C_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
@@ -1680,7 +1680,7 @@ cc1-dummy$(exeext): $(C_OBJS) dummy-checksum.o $(BACKEND) $(LIBDEPS)
 cc1-checksum.c : cc1-dummy$(exeext) build/genchecksum$(build_exeext)
 	build/genchecksum$(build_exeext) cc1-dummy$(exeext) > $@
 
-cc1-checksum.o : cc1-checksum.c
+cc1-checksum.o : cc1-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
 cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
 	$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \

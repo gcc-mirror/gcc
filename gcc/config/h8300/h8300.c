@@ -5263,7 +5263,7 @@ h8300_insert_attributes (tree node, tree *attributes)
    tiny_data: This variable lives in the tiny data area and can be
    referenced with 16-bit absolute memory references.  */
 
-const struct attribute_spec h8300_attribute_table[] =
+static const struct attribute_spec h8300_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   { "interrupt_handler", 0, 0, true,  false, false, h8300_handle_fndecl_attribute },

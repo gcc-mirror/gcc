@@ -1,6 +1,7 @@
 /* Output routines for GCC for CRX.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -122,7 +123,7 @@ static enum machine_mode output_memory_reference_mode;
 /*****************************************************************************/
 
 /* Table of machine attributes.  */
-const struct attribute_spec crx_attribute_table[];
+EXPORTED_CONST struct attribute_spec crx_attribute_table[];
 
 /*****************************************************************************/
 /* TARGETM FUNCTION PROTOTYPES						     */
@@ -1435,4 +1436,3 @@ crx_expand_epilogue (void)
   else
     emit_jump_insn (gen_pop_and_popret_return (GEN_INT (sum_regs)));
 }
-

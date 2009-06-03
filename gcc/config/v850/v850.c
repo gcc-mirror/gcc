@@ -58,7 +58,7 @@ static void substitute_ep_register   (rtx, rtx, int, int, rtx *, rtx *);
 static void v850_reorg		     (void);
 static int  ep_memory_offset         (enum machine_mode, int);
 static void v850_set_data_area       (tree, v850_data_area);
-const struct attribute_spec v850_attribute_table[];
+EXPORTED_CONST struct attribute_spec v850_attribute_table[];
 static tree v850_handle_interrupt_attribute (tree *, tree, tree, int, bool *);
 static tree v850_handle_data_area_attribute (tree *, tree, tree, int, bool *);
 static void v850_insert_attributes   (tree, tree *);

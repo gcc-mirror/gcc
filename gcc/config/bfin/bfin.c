@@ -5446,7 +5446,7 @@ bfin_handle_l1_data_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 }
 
 /* Table of valid machine attributes.  */
-const struct attribute_spec bfin_attribute_table[] =
+static const struct attribute_spec bfin_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   { "interrupt_handler", 0, 0, false, true,  true, handle_int_attribute },

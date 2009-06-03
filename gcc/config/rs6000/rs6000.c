@@ -775,7 +775,7 @@ static bool rs6000_ms_bitfield_layout_p (const_tree);
 static tree rs6000_handle_struct_attribute (tree *, tree, tree, int, bool *);
 static void rs6000_eliminate_indexed_memrefs (rtx operands[2]);
 static const char *rs6000_mangle_type (const_tree);
-extern const struct attribute_spec rs6000_attribute_table[];
+EXPORTED_CONST struct attribute_spec rs6000_attribute_table[];
 static void rs6000_set_default_type_attributes (tree);
 static rtx rs6000_savres_routine_sym (rs6000_stack_t *, bool, bool, bool);
 static rtx rs6000_emit_stack_reset (rs6000_stack_t *, rtx, rtx, int, bool);

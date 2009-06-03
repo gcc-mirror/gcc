@@ -73,7 +73,7 @@ static int m68hc11_shift_cost (enum machine_mode, rtx, int);
 static int m68hc11_rtx_costs_1 (rtx, enum rtx_code, enum rtx_code);
 static bool m68hc11_rtx_costs (rtx, int, int, int *, bool);
 static tree m68hc11_handle_fntype_attribute (tree *, tree, tree, int, bool *);
-const struct attribute_spec m68hc11_attribute_table[];
+EXPORTED_CONST struct attribute_spec m68hc11_attribute_table[];
 
 void create_regs_rtx (void);
 

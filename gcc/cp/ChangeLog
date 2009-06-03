@@ -1,3 +1,8 @@
+2009-06-03  Ian Lance Taylor  <iant@google.com>
+
+	* Make-lang.in (cc1plus-checksum.o): Depend upon $(CONFIG_H) and
+	$(SYSTEM_H).
+
 2009-06-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (maybe_deduce_size_from_array_init): Use relayout_decl.
