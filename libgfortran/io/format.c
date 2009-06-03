@@ -87,7 +87,12 @@ free_format_hash_table (gfc_unit *u)
   for (i = 0; i < FORMAT_HASH_SIZE; i++)
     {
       if (u->format_hash_table[i].hashed_fmt != NULL)
-	free_format_data (u->format_hash_table[i].hashed_fmt);
+	{
+	  free_format_data (u->format_hash_table[i].hashed_fmt);
+	  free_mem (u->format_hash_table[i].key);
+	}
+      u->format_hash_table[i].key = NULL;
+      u->format_hash_table[i].key_len = 0;      
       u->format_hash_table[i].hashed_fmt = NULL;
     }
 }
@@ -164,7 +169,11 @@ save_parsed_format (st_parameter_dt *dtp)
     free_format_data (u->format_hash_table[hash].hashed_fmt);
   u->format_hash_table[hash].hashed_fmt = NULL;
 
-  u->format_hash_table[hash].key = dtp->format;
+  if (u->format_hash_table[hash].key != NULL)
+    free_mem (u->format_hash_table[hash].key);
+  u->format_hash_table[hash].key = get_mem (dtp->format_len);
+  memcpy (u->format_hash_table[hash].key, dtp->format, dtp->format_len);
+
   u->format_hash_table[hash].key_len = dtp->format_len;
   u->format_hash_table[hash].hashed_fmt = dtp->u.p.fmt;
 }
