@@ -1,5 +1,21 @@
 2009-06-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/rs6000/rs6000.c (rs6000_emit_stack_reset): Return generated
+	insn if it is changing sp.  Use gen_add3_insn instead of
+	conditionally gen_addsi3 and gen_adddi3.
+	(offset_below_red_zone_p): New static inline function.
+	(rs6000_emit_epilogue): Emit needed epilogue unwind info.
+	Use gen_add3_insn instead of conditionally gen_addsi3 and gen_adddi3.
+	* config/rs6000/ppc-asm.h: Include auto-host.h.
+	(CFI_STARTPROC, CFI_ENDPROC, CFI_DEF_CFA_REGISTER, CFI_OFFSET,
+	CFI_RESTORE): Define.
+	* config/rs6000/crtresxgpr.asm: Add unwind info.
+	* config/rs6000/crtresxfpr.asm: Likewise.
+	* config/rs6000/crtresgpr.asm: Likewise.
+	* config/rs6000/crtresfpr.asm: Likewise.
+	* config/rs6000/crtsavgpr.asm: Likewise.
+	* config/rs6000/crtsavfpr.asm: Likewise.
+
 	* dwarf2out.c (output_cfi_directive): Pass 1 instead of
 	0 to second argument of DWARF2_FRAME_REG_OUT macros.
 
