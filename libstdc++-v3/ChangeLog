@@ -1,5 +1,16 @@
 2009-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/40296
+	* libsupc++/exception_ptr.h (exception_ptr::operator!,
+	exception_ptr::operator __safe_bool): Only declare when
+	_GLIBCXX_EH_PTR_COMPAT is undefined.
+	* libsupc++/eh_ptr.cc: Define _GLIBCXX_EH_PTR_COMPAT before including
+	exception_ptr.
+	* testsuite/18_support/exception_ptr/40296.cc: New.
+	* testsuite/18_support/exception_ptr/current_exception.cc: Adjust.
+
+2009-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/40299
 	* include/ext/memory: Fully qualify calls with __gnu_cxx.
 	* testsuite/ext/rope/40299.cc: New.

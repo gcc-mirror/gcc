@@ -141,8 +141,11 @@ namespace std
       }
 #endif
 
+#ifdef _GLIBCXX_EH_PTR_COMPAT
+      // Retained for compatibility with CXXABI_1.3.
       bool operator!() const throw();
       operator __safe_bool() const throw();
+#endif
 
       friend bool 
       operator==(const exception_ptr&, const exception_ptr&) throw();
