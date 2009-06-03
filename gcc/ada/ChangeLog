@@ -1,5 +1,11 @@
 2009-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: When
+	adjusting the discriminant nodes in an extension, use the full view
+	of the parent subtype if it is of a private kind.
+
+2009-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Add the
 	_Parent field, if any, to the record before adding the other fields.
 	<E_Record_Subtype>: Put the _Controller field before the other fields
