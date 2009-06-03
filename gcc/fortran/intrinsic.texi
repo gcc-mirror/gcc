@@ -11211,7 +11211,13 @@ Fortran 95 elemental function: @ref{IEOR}
 @chapter Intrinsic Modules
 @cindex intrinsic Modules
 
-@c @node ISO_FORTRAN_ENV
+@menu
+* ISO_FORTRAN_ENV::
+* ISO_C_BINDING::
+* OpenMP Modules OMP_LIB and OMP_LIB_KINDS::
+@end menu
+
+@node ISO_FORTRAN_ENV
 @section @code{ISO_FORTRAN_ENV}
 @table @asis
 @item @emph{Standard}:
@@ -11251,7 +11257,7 @@ Identifies the preconnected unit identified by the asterisk
 (@code{*}) in @code{WRITE} statement.
 @end table
 
-@c @node ISO_C_BINDING
+@node ISO_C_BINDING
 @section @code{ISO_C_BINDING}
 @table @asis
 @item @emph{Standard}:
@@ -11272,12 +11278,8 @@ manual.
 @c TODO: Vertical spacing between C_FUNLOC and C_LOC wrong in PDF,
 @c don't really know why.
 
-The @code{ISO_C_BINDING} module provides the following named constants of the
-type integer, which can be used as KIND type parameter. Note that GNU
-Fortran currently does not support the @code{C_INT_FAST...} KIND type
-parameters (marked by an asterisk (@code{*}) in the list below).
-The @code{C_INT_FAST...} parameters have therefore the value @math{-2}
-and cannot be used as KIND type parameter of the @code{INTEGER} type.
+The @code{ISO_C_BINDING} module provides the following named constants of
+type default integer, which can be used as KIND type parameters.
 
 In addition to the integer named constants required by the Fortran 2003 
 standard, GNU Fortran provides as an extension named constants for the 
@@ -11296,17 +11298,17 @@ C_INT_LEAST128_T, C_INT_FAST128_T}.
 @item @code{INTEGER}@tab @code{C_INT16_T}       @tab @code{int16_t}
 @item @code{INTEGER}@tab @code{C_INT32_T}       @tab @code{int32_t}
 @item @code{INTEGER}@tab @code{C_INT64_T}       @tab @code{int64_t}
-@item @code{INTEGER}@tab @code{C_INT128_T}       @tab @code{int128_t}                      @tab Ext.
+@item @code{INTEGER}@tab @code{C_INT128_T}      @tab @code{int128_t}                      @tab Ext.
 @item @code{INTEGER}@tab @code{C_INT_LEAST8_T}  @tab @code{int_least8_t}
 @item @code{INTEGER}@tab @code{C_INT_LEAST16_T} @tab @code{int_least16_t}
 @item @code{INTEGER}@tab @code{C_INT_LEAST32_T} @tab @code{int_least32_t}
 @item @code{INTEGER}@tab @code{C_INT_LEAST64_T} @tab @code{int_least64_t}
-@item @code{INTEGER}@tab @code{C_INT_LEAST128_T} @tab @code{int_least128_t}                @tab Ext.
-@item @code{INTEGER}@tab @code{C_INT_FAST8_T}*  @tab @code{int_fast8_t}
-@item @code{INTEGER}@tab @code{C_INT_FAST16_T}* @tab @code{int_fast16_t}
-@item @code{INTEGER}@tab @code{C_INT_FAST32_T}* @tab @code{int_fast32_t}
-@item @code{INTEGER}@tab @code{C_INT_FAST64_T}* @tab @code{int_fast64_t}
-@item @code{INTEGER}@tab @code{C_INT_FAST128_T}* @tab @code{int_fast128_t}                 @tab Ext.
+@item @code{INTEGER}@tab @code{C_INT_LEAST128_T}@tab @code{int_least128_t}                @tab Ext.
+@item @code{INTEGER}@tab @code{C_INT_FAST8_T}   @tab @code{int_fast8_t}
+@item @code{INTEGER}@tab @code{C_INT_FAST16_T}  @tab @code{int_fast16_t}
+@item @code{INTEGER}@tab @code{C_INT_FAST32_T}  @tab @code{int_fast32_t}
+@item @code{INTEGER}@tab @code{C_INT_FAST64_T}  @tab @code{int_fast64_t}
+@item @code{INTEGER}@tab @code{C_INT_FAST128_T} @tab @code{int_fast128_t}                 @tab Ext.
 @item @code{INTEGER}@tab @code{C_INTMAX_T}      @tab @code{intmax_t}
 @item @code{INTEGER}@tab @code{C_INTPTR_T}      @tab @code{intptr_t}
 @item @code{REAL}   @tab @code{C_FLOAT}         @tab @code{float}
@@ -11334,7 +11336,7 @@ defined.
 @item @code{C_VERTICAL_TAB}    @tab vertical tab    @tab @code{'\v'}
 @end multitable
 
-@c @node OpenMP Modules OMP_LIB and OMP_LIB_KINDS
+@node OpenMP Modules OMP_LIB and OMP_LIB_KINDS
 @section OpenMP Modules @code{OMP_LIB} and @code{OMP_LIB_KINDS}
 @table @asis
 @item @emph{Standard}:
