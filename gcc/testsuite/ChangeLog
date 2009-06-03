@@ -1,3 +1,8 @@
+2009-06-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40328
+	* gcc.dg/torture/pr40328.c: New testcase.
+
 2009-06-03  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/torture/pr40323.C: New file.
