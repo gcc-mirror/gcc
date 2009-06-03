@@ -38,6 +38,7 @@
 /* Called with r11 pointing to the stack header word of the caller of the */
 /* function, just beyond the end of the floating point save area.  */
 
+CFI_STARTPROC
 HIDDEN_FUNC(_savefpr_14)	stfd	14,-144(11)	/* save fp registers */
 HIDDEN_FUNC(_savefpr_15)	stfd	15,-136(11)
 HIDDEN_FUNC(_savefpr_16)	stfd	16,-128(11)
@@ -75,5 +76,6 @@ FUNC_END(_savefpr_17)
 FUNC_END(_savefpr_16)
 FUNC_END(_savefpr_15)
 FUNC_END(_savefpr_14)
+CFI_ENDPROC
 
 #endif

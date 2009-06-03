@@ -778,7 +778,7 @@ static const char *rs6000_mangle_type (const_tree);
 extern const struct attribute_spec rs6000_attribute_table[];
 static void rs6000_set_default_type_attributes (tree);
 static rtx rs6000_savres_routine_sym (rs6000_stack_t *, bool, bool, bool);
-static void rs6000_emit_stack_reset (rs6000_stack_t *, rtx, rtx, int, bool);
+static rtx rs6000_emit_stack_reset (rs6000_stack_t *, rtx, rtx, int, bool);
 static rtx rs6000_make_savres_rtx (rs6000_stack_t *, rtx, int,
 				   enum machine_mode, bool, bool, bool);
 static bool rs6000_reg_live_or_pic_offset_p (int);
@@ -15892,7 +15892,7 @@ rs6000_savres_routine_sym (rs6000_stack_t *info, bool savep, bool gpr, bool exit
    stack pointer, but move the base of the frame into r11 for use by
    out-of-line register restore routines.  */
 
-static void
+static rtx
 rs6000_emit_stack_reset (rs6000_stack_t *info,
 			 rtx sp_reg_rtx, rtx frame_reg_rtx,
 			 int sp_offset, bool savres)
@@ -15908,10 +15908,10 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
   if (frame_reg_rtx != sp_reg_rtx)
     {
       if (sp_offset != 0)
-	emit_insn (gen_addsi3 (sp_reg_rtx, frame_reg_rtx,
-			       GEN_INT (sp_offset)));
+	return emit_insn (gen_addsi3 (sp_reg_rtx, frame_reg_rtx,
+				      GEN_INT (sp_offset)));
       else if (!savres)
-	emit_move_insn (sp_reg_rtx, frame_reg_rtx);
+	return emit_move_insn (sp_reg_rtx, frame_reg_rtx);
     }
   else if (sp_offset != 0)
     {
@@ -15923,12 +15923,12 @@ rs6000_emit_stack_reset (rs6000_stack_t *info,
 		      ? gen_rtx_REG (Pmode, 11)
 		      : sp_reg_rtx);
 
-      emit_insn (TARGET_32BIT
-		 ? gen_addsi3 (dest_reg, sp_reg_rtx,
-			       GEN_INT (sp_offset))
-		 : gen_adddi3 (dest_reg, sp_reg_rtx,
-			       GEN_INT (sp_offset)));
+      rtx insn = emit_insn (gen_add3_insn (dest_reg, sp_reg_rtx,
+					   GEN_INT (sp_offset)));
+      if (!savres)
+	return insn;
     }
+  return NULL_RTX;
 }
 
 /* Construct a parallel rtx describing the effect of a call to an
@@ -16838,12 +16838,19 @@ rs6000_restore_saved_cr (rtx reg, int using_mfcr_multiple)
 	}
 }
 
-/* Emit function epilogue as insns.
+/* Return true if OFFSET from stack pointer can be clobbered by signals.
+   V.4 doesn't have any stack cushion, AIX ABIs have 220 or 288 bytes
+   below stack pointer not cloberred by signals.  */
 
-   At present, dwarf2out_frame_debug_expr doesn't understand
-   register restores, so we don't bother setting RTX_FRAME_RELATED_P
-   anywhere in the epilogue.  Most of the insns below would in any case
-   need special notes to explain where r11 is in relation to the stack.  */
+static inline bool
+offset_below_red_zone_p (HOST_WIDE_INT offset)
+{
+  return offset < (DEFAULT_ABI == ABI_V4
+		   ? 0
+		   : TARGET_32BIT ? -220 : -288);
+}
+
+/* Emit function epilogue as insns.  */
 
 void
 rs6000_emit_epilogue (int sibcall)
@@ -16859,6 +16866,8 @@ rs6000_emit_epilogue (int sibcall)
   int sp_offset = 0;
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, 1);
   rtx frame_reg_rtx = sp_reg_rtx;
+  rtx cfa_restores = NULL_RTX;
+  rtx insn;
   enum machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
   int i;
@@ -16999,7 +17008,7 @@ rs6000_emit_epilogue (int sibcall)
       && info->altivec_size != 0
       && (ALWAYS_RESTORE_ALTIVEC_BEFORE_POP
 	  || (DEFAULT_ABI != ABI_V4
-	      && info->altivec_save_offset < (TARGET_32BIT ? -220 : -288))))
+	      && offset_below_red_zone_p (info->altivec_save_offset))))
     {
       int i;
 
@@ -17016,7 +17025,7 @@ rs6000_emit_epilogue (int sibcall)
       for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
 	if (info->vrsave_mask & ALTIVEC_REG_BIT (i))
 	  {
-	    rtx addr, areg, mem;
+	    rtx addr, areg, mem, reg;
 
 	    areg = gen_rtx_REG (Pmode, 0);
 	    emit_move_insn
@@ -17028,7 +17037,13 @@ rs6000_emit_epilogue (int sibcall)
 	    addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, areg);
 	    mem = gen_frame_mem (V4SImode, addr);
 
-	    emit_move_insn (gen_rtx_REG (V4SImode, i), mem);
+	    reg = gen_rtx_REG (V4SImode, i);
+	    emit_move_insn (reg, mem);
+	    if (offset_below_red_zone_p (info->altivec_save_offset
+					 + (i - info->first_altivec_reg_save)
+					   * 16))
+	      cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					     cfa_restores);
 	  }
     }
 
@@ -17038,7 +17053,7 @@ rs6000_emit_epilogue (int sibcall)
       && info->vrsave_mask != 0
       && (ALWAYS_RESTORE_ALTIVEC_BEFORE_POP
 	  || (DEFAULT_ABI != ABI_V4
-	      && info->vrsave_save_offset < (TARGET_32BIT ? -220 : -288))))
+	      && offset_below_red_zone_p (info->vrsave_save_offset))))
     {
       rtx addr, mem, reg;
 
@@ -17064,6 +17079,7 @@ rs6000_emit_epilogue (int sibcall)
       emit_insn (generate_set_vrsave (reg, info, 1));
     }
 
+  insn = NULL_RTX;
   /* If we have a large stack frame, restore the old stack pointer
      using the backchain.  */
   if (use_backchain_to_restore_sp)
@@ -17075,8 +17091,8 @@ rs6000_emit_epilogue (int sibcall)
 	  if (DEFAULT_ABI == ABI_V4)
 	    frame_reg_rtx = gen_rtx_REG (Pmode, 11);
 
-	  emit_move_insn (frame_reg_rtx,
-			  gen_rtx_MEM (Pmode, sp_reg_rtx));
+	  insn = emit_move_insn (frame_reg_rtx,
+				 gen_rtx_MEM (Pmode, sp_reg_rtx));
 	  sp_offset = 0;
 	}
       else if (ALWAYS_RESTORE_ALTIVEC_BEFORE_POP
@@ -17085,7 +17101,7 @@ rs6000_emit_epilogue (int sibcall)
 	;
       else
 	{
-	  emit_move_insn (sp_reg_rtx, frame_reg_rtx);
+	  insn = emit_move_insn (sp_reg_rtx, frame_reg_rtx);
 	  frame_reg_rtx = sp_reg_rtx;
 	}
     }
@@ -17097,23 +17113,27 @@ rs6000_emit_epilogue (int sibcall)
       if (DEFAULT_ABI == ABI_V4)
 	frame_reg_rtx = gen_rtx_REG (Pmode, 11);
 
-      emit_insn (TARGET_32BIT
-		 ? gen_addsi3 (frame_reg_rtx, hard_frame_pointer_rtx,
-			       GEN_INT (info->total_size))
-		 : gen_adddi3 (frame_reg_rtx, hard_frame_pointer_rtx,
-			       GEN_INT (info->total_size)));
+      insn = emit_insn (gen_add3_insn (frame_reg_rtx, hard_frame_pointer_rtx,
+				       GEN_INT (info->total_size)));
       sp_offset = 0;
     }
   else if (info->push_p
 	   && DEFAULT_ABI != ABI_V4
 	   && !crtl->calls_eh_return)
     {
-      emit_insn (TARGET_32BIT
-		 ? gen_addsi3 (sp_reg_rtx, sp_reg_rtx,
-			       GEN_INT (info->total_size))
-		 : gen_adddi3 (sp_reg_rtx, sp_reg_rtx,
-			       GEN_INT (info->total_size)));
+      insn = emit_insn (gen_add3_insn (sp_reg_rtx, sp_reg_rtx,
+				       GEN_INT (info->total_size)));
       sp_offset = 0;
+    }
+  if (insn && frame_reg_rtx == sp_reg_rtx)
+    {
+      if (cfa_restores)
+	{
+	  REG_NOTES (insn) = cfa_restores;
+	  cfa_restores = NULL_RTX;
+	}
+      add_reg_note (insn, REG_CFA_DEF_CFA, sp_reg_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   /* Restore AltiVec registers if we have not done so already.  */
@@ -17121,14 +17141,14 @@ rs6000_emit_epilogue (int sibcall)
       && TARGET_ALTIVEC_ABI
       && info->altivec_size != 0
       && (DEFAULT_ABI == ABI_V4
-	  || info->altivec_save_offset >= (TARGET_32BIT ? -220 : -288)))
+	  || !offset_below_red_zone_p (info->altivec_save_offset)))
     {
       int i;
 
       for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
 	if (info->vrsave_mask & ALTIVEC_REG_BIT (i))
 	  {
-	    rtx addr, areg, mem;
+	    rtx addr, areg, mem, reg;
 
 	    areg = gen_rtx_REG (Pmode, 0);
 	    emit_move_insn
@@ -17140,7 +17160,11 @@ rs6000_emit_epilogue (int sibcall)
 	    addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, areg);
 	    mem = gen_frame_mem (V4SImode, addr);
 
-	    emit_move_insn (gen_rtx_REG (V4SImode, i), mem);
+	    reg = gen_rtx_REG (V4SImode, i);
+	    emit_move_insn (reg, mem);
+	    if (DEFAULT_ABI == ABI_V4)
+	      cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					     cfa_restores);
 	  }
     }
 
@@ -17150,7 +17174,7 @@ rs6000_emit_epilogue (int sibcall)
       && TARGET_ALTIVEC_VRSAVE
       && info->vrsave_mask != 0
       && (DEFAULT_ABI == ABI_V4
-	  || info->vrsave_save_offset >= (TARGET_32BIT ? -220 : -288)))
+	  || !offset_below_red_zone_p (info->vrsave_save_offset)))
     {
       rtx addr, mem, reg;
 
@@ -17183,7 +17207,8 @@ rs6000_emit_epilogue (int sibcall)
       emit_move_insn (gen_rtx_REG (SImode, 12), mem);
     }
 
-  /* Set LR here to try to overlap restores below.  */
+  /* Set LR here to try to overlap restores below.  LR is always saved
+     above incoming stack, so it never needs REG_CFA_RESTORE.  */
   if (restore_lr)
     emit_move_insn (gen_rtx_REG (Pmode, LR_REGNO),
 		    gen_rtx_REG (Pmode, 0));
@@ -17265,7 +17290,7 @@ rs6000_emit_epilogue (int sibcall)
 	  for (i = 0; i < 32 - info->first_gp_reg_save; i++)
 	    if (rs6000_reg_live_or_pic_offset_p (info->first_gp_reg_save + i))
 	      {
-		rtx offset, addr, mem;
+		rtx offset, addr, mem, reg;
 
 		/* We're doing all this to ensure that the immediate offset
 		   fits into the immediate field of 'evldd'.  */
@@ -17274,9 +17299,24 @@ rs6000_emit_epilogue (int sibcall)
 		offset = GEN_INT (spe_offset + reg_size * i);
 		addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, offset);
 		mem = gen_rtx_MEM (V2SImode, addr);
+		reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
 
-		emit_move_insn (gen_rtx_REG (reg_mode, info->first_gp_reg_save + i),
-				mem);
+		insn = emit_move_insn (reg, mem);
+		if (DEFAULT_ABI == ABI_V4)
+		  {
+		    if (frame_pointer_needed
+			&& info->first_gp_reg_save + i
+			   == HARD_FRAME_POINTER_REGNUM)
+		      {
+			add_reg_note (insn, REG_CFA_DEF_CFA,
+				      plus_constant (frame_reg_rtx,
+						     sp_offset));
+			RTX_FRAME_RELATED_P (insn) = 1;
+		      }
+
+		    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+						   cfa_restores);
+		  }
 	      }
 	}
       else
@@ -17288,7 +17328,6 @@ rs6000_emit_epilogue (int sibcall)
 					/*savep=*/false, /*gpr=*/true,
 					/*exitp=*/true);
 	  emit_jump_insn (par);
-
 	  /* We don't want anybody else emitting things after we jumped
 	     back.  */
 	  return;
@@ -17317,8 +17356,15 @@ rs6000_emit_epilogue (int sibcall)
       if (can_use_exit)
 	{
 	  if (info->cr_save_p)
-	    rs6000_restore_saved_cr (gen_rtx_REG (SImode, 12),
-				     using_mtcr_multiple);
+	    {
+	      rs6000_restore_saved_cr (gen_rtx_REG (SImode, 12),
+				       using_mtcr_multiple);
+	      if (DEFAULT_ABI == ABI_V4)
+		cfa_restores
+		  = alloc_reg_note (REG_CFA_RESTORE,
+				    gen_rtx_REG (SImode, CR2_REGNO),
+				    cfa_restores);
+	    }
 
 	  emit_jump_insn (par);
 
@@ -17326,8 +17372,22 @@ rs6000_emit_epilogue (int sibcall)
 	     back.  */
 	  return;
 	}
-      else
-	emit_insn (par);
+
+      insn = emit_insn (par);
+      if (DEFAULT_ABI == ABI_V4)
+	{
+	  if (frame_pointer_needed)
+	    {
+	      add_reg_note (insn, REG_CFA_DEF_CFA,
+			    plus_constant (frame_reg_rtx, sp_offset));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
+
+	  for (i = info->first_gp_reg_save; i < 32; i++)
+	    cfa_restores
+	      = alloc_reg_note (REG_CFA_RESTORE,
+				gen_rtx_REG (reg_mode, i), cfa_restores);
+	}
     }
   else if (using_load_multiple)
     {
@@ -17340,13 +17400,20 @@ rs6000_emit_epilogue (int sibcall)
 					    + sp_offset
 					    + reg_size * i));
 	  rtx mem = gen_frame_mem (reg_mode, addr);
+	  rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
 
-	  RTVEC_ELT (p, i) =
-	    gen_rtx_SET (VOIDmode,
-			 gen_rtx_REG (reg_mode, info->first_gp_reg_save + i),
-			 mem);
+	  RTVEC_ELT (p, i) = gen_rtx_SET (VOIDmode, reg, mem);
+	  if (DEFAULT_ABI == ABI_V4)
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					   cfa_restores);
 	}
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
+      insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, p));
+      if (DEFAULT_ABI == ABI_V4 && frame_pointer_needed)
+	{
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (frame_reg_rtx, sp_offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
     }
   else
     {
@@ -17358,9 +17425,23 @@ rs6000_emit_epilogue (int sibcall)
                                               + sp_offset
                                               + reg_size * i));
             rtx mem = gen_frame_mem (reg_mode, addr);
+	    rtx reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
 
-            emit_move_insn (gen_rtx_REG (reg_mode,
-                                         info->first_gp_reg_save + i), mem);
+	    insn = emit_move_insn (reg, mem);
+	    if (DEFAULT_ABI == ABI_V4)
+	      {
+	        if (frame_pointer_needed
+		    && info->first_gp_reg_save + i
+		       == HARD_FRAME_POINTER_REGNUM)
+		  {
+		    add_reg_note (insn, REG_CFA_DEF_CFA,
+				  plus_constant (frame_reg_rtx, sp_offset));
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		  }
+
+		cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					       cfa_restores);
+	      }
           }
     }
 
@@ -17370,36 +17451,52 @@ rs6000_emit_epilogue (int sibcall)
       if ((df_regs_ever_live_p (info->first_fp_reg_save+i)
 	   && ! call_used_regs[info->first_fp_reg_save+i]))
 	{
-	  rtx addr, mem;
+	  rtx addr, mem, reg;
 	  addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->fp_save_offset
 					+ sp_offset
 					+ 8 * i));
 	  mem = gen_frame_mem (((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
 				 ? DFmode : SFmode), addr);
+	  reg = gen_rtx_REG (((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT)
+			       ? DFmode : SFmode),
+			     info->first_fp_reg_save + i);
 
- 	  emit_move_insn (gen_rtx_REG (((TARGET_HARD_FLOAT 
-					 && TARGET_DOUBLE_FLOAT)
-				        ? DFmode : SFmode),
-				       info->first_fp_reg_save + i),
-			  mem);
+ 	  emit_move_insn (reg, mem);
+	  if (DEFAULT_ABI == ABI_V4)
+	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg,
+					   cfa_restores);
 	}
 
   /* If we saved cr, restore it here.  Just those that were used.  */
   if (info->cr_save_p)
-    rs6000_restore_saved_cr (gen_rtx_REG (SImode, 12), using_mtcr_multiple);
+    {
+      rs6000_restore_saved_cr (gen_rtx_REG (SImode, 12), using_mtcr_multiple);
+      if (DEFAULT_ABI == ABI_V4)
+	cfa_restores
+	  = alloc_reg_note (REG_CFA_RESTORE, gen_rtx_REG (SImode, CR2_REGNO),
+			    cfa_restores);
+    }
 
   /* If this is V.4, unwind the stack pointer after all of the loads
      have been done.  */
-  rs6000_emit_stack_reset (info, sp_reg_rtx, frame_reg_rtx,
-			   sp_offset, !restoring_FPRs_inline);
+  insn = rs6000_emit_stack_reset (info, sp_reg_rtx, frame_reg_rtx,
+				  sp_offset, !restoring_FPRs_inline);
+  if (insn)
+    {
+      if (cfa_restores)
+	{
+	  REG_NOTES (insn) = cfa_restores;
+	  cfa_restores = NULL_RTX;
+	}
+      add_reg_note (insn, REG_CFA_DEF_CFA, sp_reg_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
+    }
 
   if (crtl->calls_eh_return)
     {
       rtx sa = EH_RETURN_STACKADJ_RTX;
-      emit_insn (TARGET_32BIT
-		 ? gen_addsi3 (sp_reg_rtx, sp_reg_rtx, sa)
-		 : gen_adddi3 (sp_reg_rtx, sp_reg_rtx, sa));
+      emit_insn (gen_add3_insn (sp_reg_rtx, sp_reg_rtx, sa));
     }
 
   if (!sibcall)

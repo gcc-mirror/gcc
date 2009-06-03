@@ -38,6 +38,7 @@
 /* Called with r11 pointing to the stack header word of the caller of the */
 /* function, just beyond the end of the integer restore area.  */
 
+CFI_STARTPROC
 HIDDEN_FUNC(_restgpr_14)	lwz	14,-72(11)	/* restore gp registers */
 HIDDEN_FUNC(_restgpr_15)	lwz	15,-68(11)
 HIDDEN_FUNC(_restgpr_16)	lwz	16,-64(11)
@@ -75,5 +76,6 @@ FUNC_END(_restgpr_17)
 FUNC_END(_restgpr_16)
 FUNC_END(_restgpr_15)
 FUNC_END(_restgpr_14)
+CFI_ENDPROC
 
 #endif

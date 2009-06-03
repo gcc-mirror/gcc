@@ -38,6 +38,7 @@
 /* Called with r11 pointing to the stack header word of the caller of the */
 /* function, just beyond the end of the integer save area.  */
 
+CFI_STARTPROC
 HIDDEN_FUNC(_savegpr_14)	stw	14,-72(11)	/* save gp registers */
 HIDDEN_FUNC(_savegpr_15)	stw	15,-68(11)
 HIDDEN_FUNC(_savegpr_16)	stw	16,-64(11)
@@ -75,5 +76,6 @@ FUNC_END(_savegpr_17)
 FUNC_END(_savegpr_16)
 FUNC_END(_savegpr_15)
 FUNC_END(_savegpr_14)
+CFI_ENDPROC
 
 #endif
