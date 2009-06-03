@@ -440,6 +440,8 @@ get_ssa_def_if_simple_copy (tree rhs)
 
       if (gimple_assign_single_p (def_stmt))
 	rhs = gimple_assign_rhs1 (def_stmt);
+      else
+	break;
     }
   return rhs;
 }
