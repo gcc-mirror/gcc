@@ -620,10 +620,11 @@
    sub%?\\t%0, %1, #%n2
    sub%?\\t%0, %1, #%n2
    #"
-  "TARGET_32BIT &&
-   GET_CODE (operands[2]) == CONST_INT
+  "TARGET_32BIT
+   && GET_CODE (operands[2]) == CONST_INT
    && !(const_ok_for_arm (INTVAL (operands[2]))
-        || const_ok_for_arm (-INTVAL (operands[2])))"
+        || const_ok_for_arm (-INTVAL (operands[2])))
+   && (reload_completed || !arm_eliminable_register (operands[1]))"
   [(clobber (const_int 0))]
   "
   arm_split_constant (PLUS, SImode, curr_insn,

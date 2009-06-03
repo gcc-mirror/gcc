@@ -1,3 +1,9 @@
+2009-06-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/10242
+	* arm.md (arm_addsi3): Don't try to split an add with an
+	eliminable register until after reload has completed.
+
 2009-06-03  Ian Lance Taylor  <iant@google.com>
 
 	* dummy-checksum.c (executable_checksum): Use EXPORTED_CONST.
@@ -225,7 +231,7 @@
 
 	* arm.c (arm_get_frame_offsets): Prefer using r3 for padding a
 	push/pop multiple to 8-byte alignment.
-	
+
 2009-06-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (queued_cfa_restores): New static variable.
