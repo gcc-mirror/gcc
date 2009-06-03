@@ -1,3 +1,9 @@
+2009-06-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* iso-c-binding.def: Use INTMAX_TYPE instead of intmax_type_node.
+	* trans-types.c (init_c_interop_kinds): Remove intmax_type_node.
+
 2009-06-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* module.c (mio_f2k_derived): Initialize cur.

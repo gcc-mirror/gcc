@@ -54,7 +54,7 @@ NAMED_INTCST (ISOCBINDING_LONG_LONG, "c_long_long", \
               get_int_kind_from_node (long_long_integer_type_node), GFC_STD_F2003)
 
 NAMED_INTCST (ISOCBINDING_INTMAX_T, "c_intmax_t", \
-              get_int_kind_from_node (intmax_type_node), GFC_STD_F2003)
+              get_int_kind_from_name (INTMAX_TYPE), GFC_STD_F2003)
 NAMED_INTCST (ISOCBINDING_INTPTR_T, "c_intptr_t", \
               get_int_kind_from_name (INTPTR_TYPE), GFC_STD_F2003)
 NAMED_INTCST (ISOCBINDING_SIZE_T, "c_size_t", \
