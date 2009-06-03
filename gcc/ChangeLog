@@ -1,3 +1,8 @@
+2009-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (output_cfi_directive): Pass 1 instead of
+	0 to second argument of DWARF2_FRAME_REG_OUT macros.
+
 2009-06-03  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.c (arm_hard_regno_mode_ok): Permit values of four
