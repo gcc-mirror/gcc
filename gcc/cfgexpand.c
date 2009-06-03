@@ -2321,7 +2321,8 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
 	  t = get_base_address (t);
-	  if (t && DECL_P (t))
+	  if (t && DECL_P (t)
+              && DECL_MODE (t) != BLKmode)
 	    TREE_ADDRESSABLE (t) = 1;
 	}
 

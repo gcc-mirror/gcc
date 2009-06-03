@@ -1,3 +1,9 @@
+2009-06-03  Richard Guenther  <rguenther@suse.de>
+	    Andrey Belevantsev  <abel@ispras.ru>
+
+	* cfgexpand.c (discover_nonconstant_array_refs_r): Make only 
+	non-BLKmode arrays addressable.
+
 2009-06-03  Maxim Kuvyrkov  <maxim@codesourcery.com>
 
 	* config/m68k/linux.h (HAVE_GAS_BALIGN_AND_P2ALIGN): Move to ...
