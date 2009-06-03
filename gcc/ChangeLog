@@ -1,3 +1,7 @@
+2009-06-03  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/vect.md (*movv2sf_internal): Handle big endian case.
+
 2009-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_stack_reset): Return generated
