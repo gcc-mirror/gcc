@@ -1,6 +1,8 @@
 // PR c++/20416.  We correctly constructed the temporary S in foo(),
 // but incorrectly destroyed it every time foo() was called.
-// { dg-do run }
+// When using a wrapped target, there is no way to override the exit
+// code after returning from main.
+// { dg-do run { target unwrapped } }
 extern "C" void abort (void);
 extern "C" void _exit (int);
 
