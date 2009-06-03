@@ -1,3 +1,9 @@
+2009-06-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/40323
+	* ipa-prop.c (get_ssa_def_if_simple_copy): Break if not single
+	assignment.
+
 2009-06-03  Richard Guenther  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (copy_reference_ops_from_ref): Use DECL_SIZE

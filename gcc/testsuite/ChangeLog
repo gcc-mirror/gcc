@@ -1,3 +1,7 @@
+2009-06-03  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/torture/pr40323.C: New file.
+
 2009-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/root.ads: New test.
