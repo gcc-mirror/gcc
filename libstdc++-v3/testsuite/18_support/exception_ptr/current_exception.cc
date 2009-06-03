@@ -31,7 +31,7 @@ void test01()
   using namespace std;
 
   exception_ptr ep = current_exception();
-  VERIFY( !ep );
+  VERIFY( ep == 0 );
 }
 
 void test02()
@@ -43,7 +43,7 @@ void test02()
     throw 0;
   } catch(...) {
     exception_ptr ep = current_exception();
-    VERIFY( ep );
+    VERIFY( ep != 0 );
   }
 }
 
@@ -56,7 +56,7 @@ void test03()
     throw exception();
   } catch(std::exception&) {
     exception_ptr ep = current_exception();
-    VERIFY( ep );
+    VERIFY( ep != 0 );
   }
 }
 

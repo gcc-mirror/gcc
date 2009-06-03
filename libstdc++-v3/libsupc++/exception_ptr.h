@@ -77,10 +77,12 @@ namespace std
   namespace __exception_ptr
   {
     bool 
-    operator==(const exception_ptr&, const exception_ptr&) throw() __attribute__ ((__pure__));
+    operator==(const exception_ptr&, const exception_ptr&)
+      throw() __attribute__ ((__pure__));
 
     bool 
-    operator!=(const exception_ptr&, const exception_ptr&) throw() __attribute__ ((__pure__));
+    operator!=(const exception_ptr&, const exception_ptr&)
+      throw() __attribute__ ((__pure__));
 
     class exception_ptr
     {
@@ -141,11 +143,15 @@ namespace std
       }
 #endif
 
+#ifdef _GLIBCXX_EH_PTR_COMPAT
+      // Retained for compatibility with CXXABI_1.3.
       bool operator!() const throw() __attribute__ ((__pure__));
       operator __safe_bool() const throw();
+#endif
 
       friend bool 
-      operator==(const exception_ptr&, const exception_ptr&) throw() __attribute__ ((__pure__));
+      operator==(const exception_ptr&, const exception_ptr&)
+	throw() __attribute__ ((__pure__));
 
       const type_info*
       __cxa_exception_type() const throw() __attribute__ ((__pure__));
