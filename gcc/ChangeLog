@@ -1,3 +1,8 @@
+2009-06-03  Richard Guenther  <rguenther@suse.de>
+
+	PR middle-end/40328
+	* fold-const.c (fold_convert): Fold the build COMPLEX_EXPR.
+
 2009-06-03  Andrey Belevantsev  <abel@ispras.ru>
 
 	* statistics.c (statistics_counter_event): Do not record event 
