@@ -1,3 +1,7 @@
+2009-06-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (maybe_deduce_size_from_array_init): Use relayout_decl.
+
 2009-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/40308
