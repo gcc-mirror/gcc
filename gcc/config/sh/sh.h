@@ -888,7 +888,7 @@ do {									\
 #define LABEL_ALIGN(A_LABEL) \
 (									\
   (PREV_INSN (A_LABEL)							\
-   && GET_CODE (PREV_INSN (A_LABEL)) == INSN				\
+   && NONJUMP_INSN_P (PREV_INSN (A_LABEL))				\
    && GET_CODE (PATTERN (PREV_INSN (A_LABEL))) == UNSPEC_VOLATILE	\
    && XINT (PATTERN (PREV_INSN (A_LABEL)), 1) == UNSPECV_ALIGN)		\
    /* explicit alignment insn in constant tables.  */			\
@@ -900,9 +900,9 @@ do {									\
 
 /* The base two logarithm of the known minimum alignment of an insn length.  */
 #define INSN_LENGTH_ALIGNMENT(A_INSN)					\
-  (GET_CODE (A_INSN) == INSN						\
+  (NONJUMP_INSN_P (A_INSN)						\
    ? 1 << TARGET_SHMEDIA						\
-   : GET_CODE (A_INSN) == JUMP_INSN || GET_CODE (A_INSN) == CALL_INSN	\
+   : JUMP_P (A_INSN) || CALL_P (A_INSN)					\
    ? 1 << TARGET_SHMEDIA						\
    : CACHE_LOG)
 
@@ -1547,12 +1547,12 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 #if 0
 #define SECONDARY_INOUT_RELOAD_CLASS(CLASS,MODE,X,ELSE) \
   ((((REGCLASS_HAS_FP_REG (CLASS) 					\
-      && (GET_CODE (X) == REG						\
+      && (REG_P (X)							\
       && (GENERAL_OR_AP_REGISTER_P (REGNO (X))				\
 	  || (FP_REGISTER_P (REGNO (X)) && (MODE) == SImode		\
 	      && TARGET_FMOVD))))					\
      || (REGCLASS_HAS_GENERAL_REG (CLASS) 				\
-	 && GET_CODE (X) == REG						\
+	 && REG_P (X)							\
 	 && FP_REGISTER_P (REGNO (X))))					\
     && ! TARGET_SHMEDIA							\
     && ((MODE) == SFmode || (MODE) == SImode))				\
@@ -1560,8 +1560,8 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    : (((CLASS) == FPUL_REGS						\
        || (REGCLASS_HAS_FP_REG (CLASS)					\
 	   && ! TARGET_SHMEDIA && MODE == SImode))			\
-      && (GET_CODE (X) == MEM						\
-	  || (GET_CODE (X) == REG					\
+      && (MEM_P (X)							\
+	  || (REG_P (X)							\
 	      && (REGNO (X) >= FIRST_PSEUDO_REGISTER			\
 		  || REGNO (X) == T_REG					\
 		  || system_reg_operand (X, VOIDmode)))))		\
@@ -1569,13 +1569,13 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    : (((CLASS) == TARGET_REGS						\
        || (TARGET_SHMEDIA && (CLASS) == SIBCALL_REGS))			\
       && !satisfies_constraint_Csy (X)					\
-      && (GET_CODE (X) != REG || ! GENERAL_REGISTER_P (REGNO (X))))	\
+      && (!REG_P (X) || ! GENERAL_REGISTER_P (REGNO (X))))		\
    ? GENERAL_REGS							\
    : (((CLASS) == MAC_REGS || (CLASS) == PR_REGS)			\
-      && GET_CODE (X) == REG && ! GENERAL_REGISTER_P (REGNO (X))	\
+      && REG_P (X) && ! GENERAL_REGISTER_P (REGNO (X))			\
       && (CLASS) != REGNO_REG_CLASS (REGNO (X)))			\
    ? GENERAL_REGS							\
-   : ((CLASS) != GENERAL_REGS && GET_CODE (X) == REG			\
+   : ((CLASS) != GENERAL_REGS && REG_P (X)				\
       && TARGET_REGISTER_P (REGNO (X)))					\
    ? GENERAL_REGS : (ELSE))
 
@@ -1590,7 +1590,7 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
 	  && (MODE) == SFmode && fldi_ok ()))				\
    ? R0_REGS								\
    : ((CLASS) == FPUL_REGS						\
-      && ((GET_CODE (X) == REG						\
+      && ((REG_P (X)							\
 	   && (REGNO (X) == MACL_REG || REGNO (X) == MACH_REG		\
 	       || REGNO (X) == T_REG))					\
 	  || GET_CODE (X) == PLUS))					\
@@ -1600,8 +1600,8 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
       ? GENERAL_REGS							\
       : R0_REGS)							\
    : ((CLASS) == FPSCR_REGS						\
-      && ((GET_CODE (X) == REG && REGNO (X) >= FIRST_PSEUDO_REGISTER)	\
-	  || (GET_CODE (X) == MEM && GET_CODE (XEXP ((X), 0)) == PLUS)))\
+      && ((REG_P (X) && REGNO (X) >= FIRST_PSEUDO_REGISTER)		\
+	  || (MEM_P (X) && GET_CODE (XEXP ((X), 0)) == PLUS)))		\
    ? GENERAL_REGS							\
    : (REGCLASS_HAS_FP_REG (CLASS) 					\
       && TARGET_SHMEDIA							\
@@ -2218,11 +2218,11 @@ struct sh_args {
    || (GET_CODE ((OP)) == CONST						\
        && GET_CODE (XEXP ((OP), 0)) == PLUS				\
        && GET_CODE (XEXP (XEXP ((OP), 0), 0)) == LABEL_REF		\
-       && GET_CODE (XEXP (XEXP ((OP), 0), 1)) == CONST_INT))
+       && CONST_INT_P (XEXP (XEXP ((OP), 0), 1))))
 
 #define IS_NON_EXPLICIT_CONSTANT_P(OP)					\
   (CONSTANT_P (OP)							\
-   && GET_CODE (OP) != CONST_INT					\
+   && !CONST_INT_P (OP)					\
    && GET_CODE (OP) != CONST_DOUBLE					\
    && (!flag_pic							\
        || (LEGITIMATE_PIC_OPERAND_P (OP)				\
@@ -2252,7 +2252,7 @@ struct sh_args {
    && (UNSPEC_GOTOFF_P (XEXP ((OP), 0)) \
        || (GET_CODE (XEXP ((OP), 0)) == PLUS \
            && UNSPEC_GOTOFF_P (XEXP (XEXP ((OP), 0), 0)) \
-	   && GET_CODE (XEXP (XEXP ((OP), 0), 1)) == CONST_INT)))
+	   && CONST_INT_P (XEXP (XEXP ((OP), 0), 1)))))
 
 #define PIC_ADDR_P(OP) \
   (GET_CODE (OP) == CONST && GET_CODE (XEXP ((OP), 0)) == UNSPEC \
@@ -2273,7 +2273,7 @@ struct sh_args {
        && (GET_CODE (XEXP (XEXP ((OP), 0), 0)) == SYMBOL_REF \
 	   || GET_CODE (XEXP (XEXP ((OP), 0), 0)) == LABEL_REF \
 	   || DATALABEL_REF_NO_CONST_P (XEXP (XEXP ((OP), 0), 0))) \
-       && GET_CODE (XEXP (XEXP ((OP), 0), 1)) == CONST_INT))
+       && CONST_INT_P (XEXP (XEXP ((OP), 0), 1))))
 
 #define PIC_REFERENCE_P(OP) \
   (GOT_ENTRY_P (OP) || GOTPLT_ENTRY_P (OP) \
@@ -2286,22 +2286,22 @@ struct sh_args {
    : NON_PIC_REFERENCE_P (OP))
 
 #define MAYBE_BASE_REGISTER_RTX_P(X, STRICT)			\
-  ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X, STRICT))	\
+  ((REG_P (X) && REG_OK_FOR_BASE_P (X, STRICT))	\
    || (GET_CODE (X) == SUBREG					\
        && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE ((X))),	\
 				 GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (X)))) \
-       && GET_CODE (SUBREG_REG (X)) == REG			\
+       && REG_P (SUBREG_REG (X))			\
        && REG_OK_FOR_BASE_P (SUBREG_REG (X), STRICT)))
 
 /* Since this must be r0, which is a single register class, we must check
    SUBREGs more carefully, to be sure that we don't accept one that extends
    outside the class.  */
 #define MAYBE_INDEX_REGISTER_RTX_P(X, STRICT)				\
-  ((GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X, STRICT))	\
+  ((REG_P (X) && REG_OK_FOR_INDEX_P (X, STRICT))	\
    || (GET_CODE (X) == SUBREG					\
        && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE ((X))), \
 				 GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (X)))) \
-       && GET_CODE (SUBREG_REG (X)) == REG		\
+       && REG_P (SUBREG_REG (X))		\
        && SUBREG_OK_FOR_INDEX_P (SUBREG_REG (X), SUBREG_BYTE (X), STRICT)))
 
 #ifdef REG_OK_STRICT
@@ -2332,7 +2332,7 @@ struct sh_args {
 {									\
   if (GET_CODE (X) == PLUS						\
       && (GET_MODE_SIZE (MODE) == 4 || GET_MODE_SIZE (MODE) == 8)	\
-      && GET_CODE (XEXP (X, 1)) == CONST_INT				\
+      && CONST_INT_P (XEXP (X, 1))					\
       && BASE_REGISTER_RTX_P (XEXP (X, 0))				\
       && ! TARGET_SHMEDIA						\
       && ! (TARGET_SH4 && (MODE) == DFmode)				\
@@ -2387,9 +2387,9 @@ struct sh_args {
   else if (GET_CODE (X) == PLUS						\
 	   && (GET_MODE_SIZE (MODE) == 4 || GET_MODE_SIZE (MODE) == 8)	\
 	   && GET_CODE (XEXP (X, 0)) == PLUS				\
-	   && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT		\
+	   && CONST_INT_P (XEXP (XEXP (X, 0), 1))			\
 	   && BASE_REGISTER_RTX_P (XEXP (XEXP (X, 0), 0))		\
-	   && GET_CODE (XEXP (X, 1)) == CONST_INT			\
+	   && CONST_INT_P (XEXP (X, 1))					\
 	   && ! TARGET_SHMEDIA						\
 	   && ! (TARGET_SH2E && MODE == SFmode))			\
     {									\
@@ -2521,14 +2521,14 @@ struct sh_args {
    in particular.  */
 
 #define INSN_SETS_ARE_DELAYED(X) 		\
-  ((GET_CODE (X) == INSN			\
+  ((NONJUMP_INSN_P (X)			\
     && GET_CODE (PATTERN (X)) != SEQUENCE	\
     && GET_CODE (PATTERN (X)) != USE		\
     && GET_CODE (PATTERN (X)) != CLOBBER	\
     && get_attr_is_sfunc (X)))
 
 #define INSN_REFERENCES_ARE_DELAYED(X) 		\
-  ((GET_CODE (X) == INSN			\
+  ((NONJUMP_INSN_P (X)			\
     && GET_CODE (PATTERN (X)) != SEQUENCE	\
     && GET_CODE (PATTERN (X)) != USE		\
     && GET_CODE (PATTERN (X)) != CLOBBER	\
