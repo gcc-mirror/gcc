@@ -2445,6 +2445,10 @@ build_x_indirect_ref (tree expr, const char *errorstring,
 
   if (processing_template_decl)
     {
+      /* Retain the type if we know the operand is a pointer so that
+	 describable_type doesn't make auto deduction break.  */
+      if (TREE_TYPE (expr) && POINTER_TYPE_P (TREE_TYPE (expr)))
+	return build_min (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
       if (type_dependent_expression_p (expr))
 	return build_min_nt (INDIRECT_REF, expr);
       expr = build_non_dependent_expr (expr);
@@ -5976,8 +5980,11 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 
   if (modifycode == INIT_EXPR)
     {
-      if (TREE_CODE (rhs) == CONSTRUCTOR)
+      if (BRACE_ENCLOSED_INITIALIZER_P (rhs))
+	/* Do the default thing.  */;
+      else if (TREE_CODE (rhs) == CONSTRUCTOR)
 	{
+	  /* Compound literal.  */
 	  if (! same_type_p (TREE_TYPE (rhs), lhstype))
 	    /* Call convert to generate an error; see PR 11063.  */
 	    rhs = convert (lhstype, rhs);

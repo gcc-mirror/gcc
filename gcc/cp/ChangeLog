@@ -1,6 +1,25 @@
+2009-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40308
+	PR c++/40311
+	* typeck.c (cp_build_modify_expr): Always pass init-lists to the
+	conversion code.
+	* call.c (implicit_conversion): Allow init-list conversion to scalar
+	during direct-initialization, too.  Mark the conversion bad if it
+	has too many levels of braces.
+	(convert_like_real): And give a helpful error.
+
+	PR c++/40306
+	PR c++/40307
+	* decl.c (cp_finish_decl): Handle auto deduction from ().
+	* typeck.c (build_x_indirect_ref): Handle dereferencing an operand
+	with dependent type that is known to be a pointer.
+
 2009-05-27  Jason Merrill  <jason@redhat.com>
 
-	* call.c (convert_like_real): Avoid crashing on list
+	* call.c (implicit_conversion): Handle conversion from
+	initializer-list to scalar.
+	(convert_like_real): Likewise.  Avoid crashing on list
 	initialization with bad conversions.
 
 2009-05-22  Jason Merrill  <jason@redhat.com>
