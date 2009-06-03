@@ -3340,7 +3340,7 @@ mio_f2k_derived (gfc_namespace *f2k)
       f2k->finalizers = NULL;
       while (peek_atom () != ATOM_RPAREN)
 	{
-	  gfc_finalizer *cur;
+	  gfc_finalizer *cur = NULL;
 	  mio_finalizer (&cur);
 	  cur->next = f2k->finalizers;
 	  f2k->finalizers = cur;
