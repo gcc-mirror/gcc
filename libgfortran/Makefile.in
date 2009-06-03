@@ -416,9 +416,9 @@ am__libgfortran_la_SOURCES_DIST = runtime/backtrace.c \
 	io/size_from_kind.c io/transfer.c io/unit.c io/unix.c \
 	io/write.c io/fbuf.c intrinsics/associated.c \
 	intrinsics/abort.c intrinsics/access.c intrinsics/args.c \
-	intrinsics/c99_functions.c intrinsics/chdir.c \
-	intrinsics/chmod.c intrinsics/clock.c intrinsics/cpu_time.c \
-	intrinsics/cshift0.c intrinsics/ctime.c \
+	intrinsics/bit_intrinsics.c intrinsics/c99_functions.c \
+	intrinsics/chdir.c intrinsics/chmod.c intrinsics/clock.c \
+	intrinsics/cpu_time.c intrinsics/cshift0.c intrinsics/ctime.c \
 	intrinsics/date_and_time.c intrinsics/dtime.c intrinsics/env.c \
 	intrinsics/eoshift0.c intrinsics/eoshift2.c \
 	intrinsics/erfc_scaled.c intrinsics/etime.c intrinsics/exit.c \
@@ -711,9 +711,9 @@ am__objects_35 = close.lo file_pos.lo format.lo inquire.lo \
 	intrinsics.lo list_read.lo lock.lo open.lo read.lo \
 	size_from_kind.lo transfer.lo unit.lo unix.lo write.lo fbuf.lo
 am__objects_36 = associated.lo abort.lo access.lo args.lo \
-	c99_functions.lo chdir.lo chmod.lo clock.lo cpu_time.lo \
-	cshift0.lo ctime.lo date_and_time.lo dtime.lo env.lo \
-	eoshift0.lo eoshift2.lo erfc_scaled.lo etime.lo exit.lo \
+	bit_intrinsics.lo c99_functions.lo chdir.lo chmod.lo clock.lo \
+	cpu_time.lo cshift0.lo ctime.lo date_and_time.lo dtime.lo \
+	env.lo eoshift0.lo eoshift2.lo erfc_scaled.lo etime.lo exit.lo \
 	fnum.lo gerror.lo getcwd.lo getlog.lo getXid.lo hostnm.lo \
 	ierrno.lo ishftc.lo iso_c_generated_procs.lo iso_c_binding.lo \
 	kill.lo link.lo malloc.lo mvbits.lo move_alloc.lo \
@@ -987,6 +987,7 @@ intrinsics/associated.c \
 intrinsics/abort.c \
 intrinsics/access.c \
 intrinsics/args.c \
+intrinsics/bit_intrinsics.c \
 intrinsics/c99_functions.c \
 intrinsics/chdir.c \
 intrinsics/chmod.c \
@@ -1801,6 +1802,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/args.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/associated.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bit_intrinsics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/c99_functions.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chdir.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chmod.Plo@am__quote@
@@ -5318,6 +5320,13 @@ args.lo: intrinsics/args.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/args.c' object='args.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o args.lo `test -f 'intrinsics/args.c' || echo '$(srcdir)/'`intrinsics/args.c
+
+bit_intrinsics.lo: intrinsics/bit_intrinsics.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT bit_intrinsics.lo -MD -MP -MF "$(DEPDIR)/bit_intrinsics.Tpo" -c -o bit_intrinsics.lo `test -f 'intrinsics/bit_intrinsics.c' || echo '$(srcdir)/'`intrinsics/bit_intrinsics.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/bit_intrinsics.Tpo" "$(DEPDIR)/bit_intrinsics.Plo"; else rm -f "$(DEPDIR)/bit_intrinsics.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='intrinsics/bit_intrinsics.c' object='bit_intrinsics.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o bit_intrinsics.lo `test -f 'intrinsics/bit_intrinsics.c' || echo '$(srcdir)/'`intrinsics/bit_intrinsics.c
 
 c99_functions.lo: intrinsics/c99_functions.c
 @am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT c99_functions.lo -MD -MP -MF "$(DEPDIR)/c99_functions.Tpo" -c -o c99_functions.lo `test -f 'intrinsics/c99_functions.c' || echo '$(srcdir)/'`intrinsics/c99_functions.c; \

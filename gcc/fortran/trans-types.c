@@ -595,7 +595,7 @@ gfc_build_int_type (gfc_integer_info *info)
   return make_signed_type (mode_precision);
 }
 
-static tree
+tree
 gfc_build_uint_type (int size)
 {
   if (size == CHAR_TYPE_SIZE)

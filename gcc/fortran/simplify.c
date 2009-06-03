@@ -2410,10 +2410,13 @@ gfc_simplify_leadz (gfc_expr *e)
   bs = gfc_integer_kinds[i].bit_size;
   if (mpz_cmp_si (e->value.integer, 0) == 0)
     lz = bs;
+  else if (mpz_cmp_si (e->value.integer, 0) < 0)
+    lz = 0;
   else
     lz = bs - mpz_sizeinbase (e->value.integer, 2);
 
-  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind, &e->where);
+  result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind,
+				&e->where);
   mpz_set_ui (result->value.integer, lz);
 
   return result;

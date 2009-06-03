@@ -141,6 +141,8 @@ tree gfor_fndecl_convert_char4_to_char1;
 tree gfor_fndecl_size0;
 tree gfor_fndecl_size1;
 tree gfor_fndecl_iargc;
+tree gfor_fndecl_clz128;
+tree gfor_fndecl_ctz128;
 
 /* Intrinsic functions implemented in Fortran.  */
 tree gfor_fndecl_sc_kind;
@@ -2488,6 +2490,19 @@ gfc_build_intrinsic_function_decls (void)
     gfc_build_library_function_decl (get_identifier (PREFIX ("iargc")),
 				     gfc_int4_type_node,
 				     0);
+
+  if (gfc_type_for_size (128, true))
+    {
+      tree uint128 = gfc_type_for_size (128, true);
+
+      gfor_fndecl_clz128 =
+	gfc_build_library_function_decl (get_identifier (PREFIX ("clz128")),
+					 integer_type_node, 1, uint128);
+
+      gfor_fndecl_ctz128 =
+	gfc_build_library_function_decl (get_identifier (PREFIX ("ctz128")),
+					 integer_type_node, 1, uint128);
+    }
 }
 
 
