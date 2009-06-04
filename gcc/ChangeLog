@@ -1,3 +1,43 @@
+2009-06-04  Cary Coutant  <ccoutant@google.com>
+
+	* basic-block.h (struct basic_block_def): Add discriminator field.
+	* dbxout.c (dbxout_source_line): Add new parameter.  Change all
+	callers.
+	* debug.c (do_nothing_debug_hooks): Add additional entry.
+	(debug_nothing_int_charstar_int): New function.
+	* debug.h (struct gcc_debug_hooks): Add parameter to source_line
+	hook.
+	(debug_nothing_int_charstar_int): New declaration.
+	* dwarf2out.c (dwarf2out_source_line): Add new parameter.  Write
+	discriminator value in .loc directive.
+	* final.c (last_discriminator): New variable.
+	(discriminator): New variable.
+	(final_start_function): Initialize above variables, pass current
+	discriminator to debug hook.
+	(notice_source_line): Check for discriminator change.
+	* gimple-pretty-print.c (dump_bb_header): Print discriminator value.
+	* sdbout.c (sdbout_source_line): New parameter.
+	* tree-cfg.c (struct locus_discrim_map): New structure type.
+	(discriminator_per_locus): New hash table.
+	(build_gimple_cfg): Allocate and free discriminator hash table.
+	(make_edges): Call assign_discriminator.
+	(locus_map_hash): New function.
+	(locus_map_eq): New function.
+	(next_discriminator_for_locus): New function.
+	(same_line_p): New function.
+	(assign_discriminator): New function.
+	(make_cond_expr_edges): Call assign_discriminator.
+	(make_gimple_switch_edges): Likewise.
+	(first_non_label_stmt): New function.
+	* vmsdbgout.c (vmsdbgout_source_line): Add new parameter.  Change
+	all callers.
+	* xcoffout.c (xcoffout_source_line): Add new parameter.
+
+	* configure.ac (gcc_cv_as_discriminator): New configury check for
+	gas support for discriminator.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2009-06-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.c (thumb2_legitimate_index_p): Initialize

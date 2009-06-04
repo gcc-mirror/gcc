@@ -1558,6 +1558,12 @@ dump_bb_header (pretty_printer *buffer, basic_block bb, int indent, int flags)
 		pp_decimal_int (buffer, get_lineno (gsi_stmt (gsi)));
 		break;
 	      }
+
+          if (bb->discriminator)
+            {
+              pp_string (buffer, ", discriminator ");
+	      pp_decimal_int (buffer, bb->discriminator);
+            }
 	}
       newline_and_indent (buffer, indent);
 
