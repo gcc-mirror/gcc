@@ -1,3 +1,15 @@
+2009-06-04  Richard Guenther  <rguenther@suse.de>
+
+	Backport from mainline
+	2009-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/39371
+	* g++.dg/opt/switch2.C: Add -w to dg-options.
+	* g++.dg/warn/Wswitch-1.C: Adjust expected warnings.
+	* g++.dg/warn/switch1.C: New test.
+	* g++.dg/other/switch3.C: New test.
+	* g++.dg/torture/pr40335.C: New testcase.
+
 2009-05-26  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
