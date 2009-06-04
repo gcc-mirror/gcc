@@ -318,7 +318,7 @@ Objective-C and Objective-C++ Dialects}.
 -print-multi-directory  -print-multi-lib @gol
 -print-prog-name=@var{program}  -print-search-dirs  -Q @gol
 -print-sysroot -print-sysroot-headers-suffix @gol
--save-temps -save-temps=cwd -save-temps=obj -time}
+-save-temps -save-temps=cwd -save-temps=obj -time@r{[}=@var{file}@r{]}}
 
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
@@ -5287,11 +5287,13 @@ would create @file{foo.i}, @file{foo.s}, @file{dir/xbar.i},
 @file{dir/xbar.s}, @file{dir2/yfoobar.i}, @file{dir2/yfoobar.s}, and
 @file{dir2/yfoobar.o}.
 
-@item -time
+@item -time@r{[}=@var{file}@r{]}
 @opindex time
 Report the CPU time taken by each subprocess in the compilation
 sequence.  For C source files, this is the compiler proper and assembler
-(plus the linker if linking is done).  The output looks like this:
+(plus the linker if linking is done).
+
+Without the specification of an output file, the output looks like this:
 
 @smallexample
 # cc1 0.12 0.01
@@ -5302,6 +5304,18 @@ The first number on each line is the ``user time'', that is time spent
 executing the program itself.  The second number is ``system time'',
 time spent executing operating system routines on behalf of the program.
 Both numbers are in seconds.
+
+With the specification of an output file, the output is appended to the
+named file, and it looks like this:
+
+@smallexample
+0.12 0.01 cc1 @var{options}
+0.00 0.01 as @var{options}
+@end smallexample
+
+The ``user time'' and the ``system time'' are moved before the program
+name, and the options passed to the program are displayed, so that one
+can later tell what file was being compiled, and with which options.
 
 @item -fvar-tracking
 @opindex fvar-tracking

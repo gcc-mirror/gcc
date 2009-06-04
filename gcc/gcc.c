@@ -198,6 +198,10 @@ static int print_subprocess_help;
 
 static int report_times;
 
+/* Whether we should report subprocess execution times to a file.  */
+
+FILE *report_times_to_file = NULL;
+
 /* Nonzero means place this string before uses of /, so that include
    and library files can be found in an alternate location.  */
 
@@ -3017,7 +3021,8 @@ execute (void)
 
   /* Run each piped subprocess.  */
 
-  pex = pex_init (PEX_USE_PIPES | (report_times ? PEX_RECORD_TIMES : 0),
+  pex = pex_init (PEX_USE_PIPES | ((report_times || report_times_to_file)
+				   ? PEX_RECORD_TIMES : 0),
 		  programname, temp_filename);
   if (pex == NULL)
     pfatal_with_name (_("pex_init failed"));
@@ -3061,7 +3066,7 @@ execute (void)
     if (!pex_get_status (pex, n_commands, statuses))
       pfatal_with_name (_("failed to get exit status"));
 
-    if (report_times)
+    if (report_times || report_times_to_file)
       {
 	times = (struct pex_time *) alloca (n_commands * sizeof (struct pex_time));
 	if (!pex_get_times (pex, n_commands, times))
@@ -3106,7 +3111,7 @@ See %s for instructions.",
 	    ret_code = -1;
 	  }
 
-	if (report_times)
+	if (report_times || report_times_to_file)
 	  {
 	    struct pex_time *pt = &times[i];
 	    double ut, st;
@@ -3117,7 +3122,43 @@ See %s for instructions.",
 		  + (double) pt->system_microseconds / 1.0e6);
 
 	    if (ut + st != 0)
-	      notice ("# %s %.2f %.2f\n", commands[i].prog, ut, st);
+	      {
+		if (report_times)
+		  notice ("# %s %.2f %.2f\n", commands[i].prog, ut, st);
+
+		if (report_times_to_file)
+		  {
+		    int c = 0;
+		    const char *const *j;
+
+		    fprintf (report_times_to_file, "%g %g", ut, st);
+
+		    for (j = &commands[i].prog; *j; j = &commands[i].argv[++c])
+		      {
+			const char *p;
+			for (p = *j; *p; ++p)
+			  if (*p == '"' || *p == '\\' || *p == '$'
+			      || ISSPACE (*p))
+			    break;
+
+			if (*p)
+			  {
+			    fprintf (report_times_to_file, " \"");
+			    for (p = *j; *p; ++p)
+			      {
+				if (*p == '"' || *p == '\\' || *p == '$')
+				  fputc ('\\', report_times_to_file);
+				fputc (*p, report_times_to_file);
+			      }
+			    fputc ('"', report_times_to_file);
+			  }
+			else
+			  fprintf (report_times_to_file, " %s", *j);
+		      }
+
+		    fputc ('\n', report_times_to_file);
+		  }
+	      }
 	  }
       }
 
@@ -3876,6 +3917,12 @@ process_command (int argc, const char **argv)
 	}
       else if (strcmp (argv[i], "-time") == 0)
 	report_times = 1;
+      else if (strncmp (argv[i], "-time=", sizeof ("-time=") - 1) == 0)
+	{
+	  if (report_times_to_file)
+	    fclose (report_times_to_file);
+	  report_times_to_file = fopen (argv[i] + sizeof ("-time=") - 1, "a");
+	}
       else if (strcmp (argv[i], "-pipe") == 0)
 	{
 	  /* -pipe has to go into the switches array as well as
@@ -4287,6 +4334,8 @@ process_command (int argc, const char **argv)
       else if (strncmp (argv[i], "-specs=", 7) == 0)
 	;
       else if (strcmp (argv[i], "-time") == 0)
+	;
+      else if (strncmp (argv[i], "-time=", sizeof ("-time=") - 1) == 0)
 	;
       else if (strcmp (argv[i], "-###") == 0)
 	;
