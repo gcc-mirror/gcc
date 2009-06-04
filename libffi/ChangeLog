@@ -1,3 +1,23 @@
+2008-02-26  Anthony Green  <green@redhat.com>
+            Thomas Heller  <theller@ctypes.org>
+
+        * src/x86/ffi.c (ffi_closure_SYSV_inner): Change C++ comment to C
+        comment.
+
+2008-02-03  Timothy Wall  <twall@users.sf.net>
+
+        * src/x86/ffi.c (FFI_INIT_TRAMPOLINE_STDCALL): Calculate jump return
+          offset based on code pointer, not data pointer.
+
+2008-01-31  Timothy Wall <twall@users.sf.net>
+
+        * testsuite/libffi.call/closure_stdcall.c: Add test for stdcall
+        closures.
+        * src/x86/ffitarget.h: Increase size of trampoline for stdcall
+        closures.
+        * src/x86/win32.S: Add assembly for stdcall closure.
+        * src/x86/ffi.c: Initialize stdcall closure trampoline.
+
 2009-06-04  Andrew Haley  <aph@redhat.com>
 
 	* include/ffi.h.in: Change void (*)() to void (*)(void).

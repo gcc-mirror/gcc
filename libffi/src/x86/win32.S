@@ -264,6 +264,22 @@ sc_epilogue:
 .ffi_call_STDCALL_end:
 .LFE2:
 
+	.globl _ffi_closure_STDCALL
+_ffi_closure_STDCALL:
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$40, %esp
+	leal	-24(%ebp), %edx
+	movl	%edx, -12(%ebp)	/* resp */
+	leal	12(%ebp), %edx  /* account for stub return address on stack */
+	movl	%edx, 4(%esp)	/* args */
+	leal	-12(%ebp), %edx
+	movl	%edx, (%esp)	/* &resp */
+	call	_ffi_closure_SYSV_inner
+	movl	-12(%ebp), %ecx
+	jmp     .Lcls_return_result
+.ffi_closure_STDCALL_end:
+
         # This assumes we are using gas.
         .balign 16
 	.globl	_ffi_closure_SYSV
@@ -283,6 +299,7 @@ _ffi_closure_SYSV:
 	movl	%edx, (%esp)	/* &resp */
 	call	_ffi_closure_SYSV_inner
 	movl	-12(%ebp), %ecx
+.Lcls_return_result:
 	cmpl	$FFI_TYPE_INT, %eax
 	je	.Lcls_retint
 	cmpl	$FFI_TYPE_FLOAT, %eax
@@ -392,70 +409,6 @@ _ffi_closure_raw_SYSV:
 
 #endif /* !FFI_NO_RAW_API */
 
-        # This assumes we are using gas.
-	.balign	16
-	.globl	_ffi_closure_STDCALL
-	.def	_ffi_closure_STDCALL;	.scl	2;	.type	32;	.endef
-_ffi_closure_STDCALL:
-.LFB5:
-	pushl	%ebp
-.LCFI9:
-	movl	%esp, %ebp
-.LCFI10:
-	subl	$40, %esp
-	leal	-24(%ebp), %edx
-	movl	%edx, -12(%ebp)	/* resp */
-	leal	12(%ebp), %edx  /* account for stub return address on stack */
-	movl	%edx, 4(%esp)	/* args */
-	leal	-12(%ebp), %edx
-	movl	%edx, (%esp)	/* &resp */
-	call	_ffi_closure_SYSV_inner
-	movl	-12(%ebp), %ecx
-	/* It would be nice to just share this code with the
-	   duplicate sequence in _ffi_closure_SYSV, if only
-	   there were some way to represent that in the EH info.  */
-	cmpl	$FFI_TYPE_INT, %eax
-	je	.Lscls_retint
-	cmpl	$FFI_TYPE_FLOAT, %eax
-	je	.Lscls_retfloat
-	cmpl	$FFI_TYPE_DOUBLE, %eax
-	je	.Lscls_retdouble
-	cmpl	$FFI_TYPE_LONGDOUBLE, %eax
-	je	.Lscls_retldouble
-	cmpl	$FFI_TYPE_SINT64, %eax
-	je	.Lscls_retllong
-	cmpl	$FFI_TYPE_SINT8, %eax	/* 1-byte struct */
-	je	.Lscls_retstruct1
-	cmpl	$FFI_TYPE_SINT16, %eax	/* 2-bytes struct */
-	je	.Lscls_retstruct2
-.Lscls_epilogue:
-	movl	%ebp, %esp
-	popl	%ebp
-	ret
-.Lscls_retint:
-	movl	(%ecx), %eax
-	jmp	.Lscls_epilogue
-.Lscls_retfloat:
-	flds	(%ecx)
-	jmp	.Lscls_epilogue
-.Lscls_retdouble:
-	fldl	(%ecx)
-	jmp	.Lscls_epilogue
-.Lscls_retldouble:
-	fldt	(%ecx)
-	jmp	.Lscls_epilogue
-.Lscls_retllong:
-	movl	(%ecx), %eax
-	movl	4(%ecx), %edx
-	jmp	.Lscls_epilogue
-.Lscls_retstruct1:
-	movsbl	(%ecx), %eax
-	jmp	.Lscls_epilogue
-.Lscls_retstruct2:
-	movswl	(%ecx), %eax
-	jmp	.Lscls_epilogue
-.ffi_closure_STDCALL_end:
-.LFE5:
 
 	.section	.eh_frame,"w"
 .Lframe1:
@@ -618,34 +571,3 @@ _ffi_closure_STDCALL:
 .LEFDE4:
 
 #endif /* !FFI_NO_RAW_API */
-
-.LSFDE5:
-	.long	.LEFDE5-.LASFDE5	/* FDE Length */
-.LASFDE5:
-	.long	.LASFDE5-.Lframe1	/* FDE CIE offset */
-#if defined __PIC__ && defined HAVE_AS_X86_PCREL
-	.long	.LFB5-.	/* FDE initial location */
-#else
-	.long	.LFB5
-#endif
-	.long	.LFE5-.LFB5	/* FDE address range */
-#ifdef __PIC__
-	.byte	0x0	/* .uleb128 0x0; Augmentation size */
-#endif
-	/* DW_CFA_xxx CFI instructions go here.  */
-
-	.byte	0x4	/* DW_CFA_advance_loc4 */
-	.long	.LCFI9-.LFB5
-	.byte	0xe	/* DW_CFA_def_cfa_offset CFA = r4 + 8 = 8(%esp) */
-	.byte	0x8	/* .uleb128 0x8 */
-	.byte	0x85	/* DW_CFA_offset, column 0x5 %ebp at CFA + 2 * -4 */
-	.byte	0x2	/* .uleb128 0x2 */
-
-	.byte	0x4	/* DW_CFA_advance_loc4 */
-	.long	.LCFI10-.LCFI9
-	.byte	0xd	/* DW_CFA_def_cfa_register CFA = r5 = %ebp */
-	.byte	0x5	/* .uleb128 0x5 */
-
-	/* End of DW_CFA_xxx CFI instructions.  */
-	.align 4
-.LEFDE5:
