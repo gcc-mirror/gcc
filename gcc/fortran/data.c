@@ -416,7 +416,11 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index)
     }
 
   if (ref || last_ts->type == BT_CHARACTER)
-    expr = create_character_intializer (init, last_ts, ref, rvalue);
+    {
+      if (lvalue->ts.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
+	return FAILURE;
+      expr = create_character_intializer (init, last_ts, ref, rvalue);
+    }
   else
     {
       /* Overwriting an existing initializer is non-standard but usually only
