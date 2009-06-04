@@ -1,3 +1,8 @@
+2009-06-04  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.c (thumb2_legitimate_index_p): Initialize
+	val after checking for integers.
+
 2009-06-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (X86_64_MS_REGPARM_MAX): Rename from
