@@ -1,5 +1,12 @@
 2009-06-04  Alexandre Oliva  <aoliva@redhat.com>
 
+	* gcc.c (report_times_to_file): New.
+	(execute): Implement it.
+	(process_command): Support -time=.
+	* doc/invoke.texi: Document it.
+
+2009-06-04  Alexandre Oliva  <aoliva@redhat.com>
+
 	* tree-ssa-live.c (remove_unused_scope_block_p): Keep variables
 	that have value exprs.
 
