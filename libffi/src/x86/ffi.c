@@ -180,15 +180,15 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 }
 
 extern void ffi_call_SYSV(void (*)(char *, extended_cif *), extended_cif *,
-			  unsigned, unsigned, unsigned *, void (*fn)());
+			  unsigned, unsigned, unsigned *, void (*fn)(void));
 
 #ifdef X86_WIN32
 extern void ffi_call_STDCALL(void (*)(char *, extended_cif *), extended_cif *,
-			  unsigned, unsigned, unsigned *, void (*fn)());
+			  unsigned, unsigned, unsigned *, void (*fn)(void));
 
 #endif /* X86_WIN32 */
 
-void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
+void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 
@@ -391,16 +391,16 @@ ffi_prep_args_raw(char *stack, extended_cif *ecif)
 
 extern void
 ffi_call_SYSV(void (*)(char *, extended_cif *), extended_cif *, unsigned, 
-	      unsigned, unsigned *, void (*fn)());
+	      unsigned, unsigned *, void (*fn)(void));
 
 #ifdef X86_WIN32
 extern void
 ffi_call_STDCALL(void (*)(char *, extended_cif *), extended_cif *, unsigned,
-		 unsigned, unsigned *, void (*fn)());
+		 unsigned, unsigned *, void (*fn)(void));
 #endif /* X86_WIN32 */
 
 void
-ffi_raw_call(ffi_cif *cif, void (*fn)(), void *rvalue, ffi_raw *fake_avalue)
+ffi_raw_call(ffi_cif *cif, void (*fn)(void), void *rvalue, ffi_raw *fake_avalue)
 {
   extended_cif ecif;
   void **avalue = (void **)fake_avalue;

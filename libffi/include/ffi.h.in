@@ -222,7 +222,7 @@ typedef ffi_raw ffi_java_raw;
 
 
 void ffi_raw_call (ffi_cif *cif,
-		   void (*fn)(),
+		   void (*fn)(void),
 		   void *rvalue,
 		   ffi_raw *avalue);
 
@@ -235,7 +235,7 @@ size_t ffi_raw_size (ffi_cif *cif);
 /* longs and doubles are followed by an empty 64-bit word.		*/
 
 void ffi_java_raw_call (ffi_cif *cif,
-			void (*fn)(),
+			void (*fn)(void),
 			void *rvalue,
 			ffi_java_raw *avalue);
 
@@ -349,7 +349,7 @@ ffi_status ffi_prep_cif(ffi_cif *cif,
 			ffi_type **atypes);
 
 void ffi_call(ffi_cif *cif,
-	      void (*fn)(),
+	      void (*fn)(void),
 	      void *rvalue,
 	      void **avalue);
 

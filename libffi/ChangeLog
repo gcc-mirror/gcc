@@ -1,5 +1,10 @@
 2009-06-04  Andrew Haley  <aph@redhat.com>
 
+	* include/ffi.h.in: Change void (*)() to void (*)(void).
+	* src/x86/ffi.c: Likewise.
+
+2009-06-04  Andrew Haley  <aph@redhat.com>
+
 	* src/powerpc/ppc_closure.S: Insert licence header.
 	* src/powerpc/linux64_closure.S: Likewise.
 	* src/m68k/sysv.S: Likewise.
