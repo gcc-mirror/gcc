@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1998, 2007 Red Hat, Inc.
+   ffi.c - Copyright (c) 1998, 2007, 2008 Red Hat, Inc.
 	   Copyright (c) 2000 Hewlett Packard Company
    
    IA64 Foreign Function Interface 
@@ -270,10 +270,10 @@ ffi_prep_cif_machdep(ffi_cif *cif)
   return FFI_OK;
 }
 
-extern int ffi_call_unix (struct ia64_args *, PTR64, void (*)(), UINT64);
+extern int ffi_call_unix (struct ia64_args *, PTR64, void (*)(void), UINT64);
 
 void
-ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
+ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   struct ia64_args *stack;
   long i, avn, gpcount, fpcount;

@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1996, 2007 Red Hat, Inc.
+   ffi.c - Copyright (c) 1996, 2007, 2008  Red Hat, Inc.
+           Copyright (c) 2008       David Daney
    
    MIPS Foreign Function Interface 
 
@@ -28,6 +29,16 @@
 #include <ffi_common.h>
 
 #include <stdlib.h>
+
+#ifdef __GNUC__
+#  if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3))
+#    define USE__BUILTIN___CLEAR_CACHE 1
+#  endif
+#endif
+
+#ifndef USE__BUILTIN___CLEAR_CACHE
+#include <sys/cachectl.h>
+#endif
 
 #ifdef FFI_DEBUG
 # define FFI_MIPS_STOP_HERE() ffi_stop_here()
@@ -483,14 +494,14 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 /* Low level routine for calling O32 functions */
 extern int ffi_call_O32(void (*)(char *, extended_cif *, int, int), 
 			extended_cif *, unsigned, 
-			unsigned, unsigned *, void (*)());
+			unsigned, unsigned *, void (*)(void));
 
 /* Low level routine for calling N32 functions */
 extern int ffi_call_N32(void (*)(char *, extended_cif *, int, int), 
 			extended_cif *, unsigned, 
-			unsigned, unsigned *, void (*)());
+			unsigned, unsigned *, void (*)(void));
 
-void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
+void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 
@@ -616,8 +627,11 @@ ffi_prep_closure_loc (ffi_closure *closure,
   closure->fun = fun;
   closure->user_data = user_data;
 
+#ifdef USE__BUILTIN___CLEAR_CACHE
   __builtin___clear_cache(clear_location, clear_location + FFI_TRAMPOLINE_SIZE);
-
+#else
+  cacheflush (clear_location, FFI_TRAMPOLINE_SIZE, ICACHE);
+#endif
   return FFI_OK;
 }
 

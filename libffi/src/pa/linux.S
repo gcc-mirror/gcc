@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    linux.S - (c) 2003-2004 Randolph Chung <tausq@debian.org>
+	     (c) 2008 Red Hat, Inc.
 
    HPPA Foreign Function Interface
 
@@ -36,7 +37,7 @@
 			       unsigned bytes,
 			       unsigned flags,
 			       unsigned *rvalue,
-			       void (*fn)());
+			       void (*fn)(void));
 	 */
 
 	.export ffi_call_pa32,code

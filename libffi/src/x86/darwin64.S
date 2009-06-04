@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    darwin64.S - Copyright (c) 2006 Free Software Foundation, Inc.
+	        Copyright (c) 2008 Red Hat, Inc.
    derived from unix64.S
 
    x86-64 Foreign Function Interface for Darwin.
@@ -33,7 +34,7 @@
 .text
 
 /* ffi_call_unix64 (void *args, unsigned long bytes, unsigned flags,
-		    void *raddr, void (*fnaddr)());
+		    void *raddr, void (*fnaddr)(void));
 
    Bit o trickiness here -- ARGS+BYTES is the base of the stack frame
    for this function.  This has been allocated by ffi_call.  We also

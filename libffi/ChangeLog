@@ -1,5 +1,36 @@
 2009-06-04  Andrew Haley  <aph@redhat.com>
 
+	* src/powerpc/ppc_closure.S: Insert licence header.
+	* src/powerpc/linux64_closure.S: Likewise.
+	* src/m68k/sysv.S: Likewise.
+
+	* src/sh64/ffi.c: Change void (*)() to void (*)(void).
+	* src/powerpc/ffi.c: Likewise.
+	* src/powerpc/ffi_darwin.c: Likewise.
+	* src/m32r/ffi.c: Likewise.
+	* src/sh64/ffi.c: Likewise.
+	* src/x86/ffi64.c: Likewise.
+	* src/alpha/ffi.c: Likewise.
+	* src/alpha/osf.S: Likewise.
+	* src/frv/ffi.c: Likewise.
+	* src/s390/ffi.c: Likewise.
+	* src/pa/ffi.c: Likewise.
+	* src/pa/hpux32.S: Likewise.
+	* src/ia64/unix.S: Likewise.
+	* src/ia64/ffi.c: Likewise.
+	* src/sparc/ffi.c: Likewise.
+	* src/mips/ffi.c: Likewise.
+	* src/sh/ffi.c: Likewise.
+
+2008-02-15  David Daney  <ddaney@avtrex.com>
+
+        * src/mips/ffi.c (USE__BUILTIN___CLEAR_CACHE):
+        Define (conditionally), and use it to include cachectl.h.
+        (ffi_prep_closure_loc): Fix cache flushing.
+        * src/mips/ffitarget.h (_ABIN32, _ABI64, _ABIO32): Define.
+
+2009-06-04  Andrew Haley  <aph@redhat.com>
+
 	include/ffi.h.in,
 	src/arm/ffitarget.h,
 	src/arm/ffi.c,

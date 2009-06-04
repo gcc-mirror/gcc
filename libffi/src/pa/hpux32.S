@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    hpux32.S - Copyright (c) 2006 Free Software Foundation, Inc.
+	                (c) 2008 Red Hat, Inc.
    based on src/pa/linux.S
 
    HP-UX PA Foreign Function Interface
@@ -40,7 +41,7 @@
 			       unsigned bytes,
 			       unsigned flags,
 			       unsigned *rvalue,
-			       void (*fn)());
+			       void (*fn)(void));
 	 */
 
 	.export	ffi_call_pa32,ENTRY,PRIV_LEV=3

@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   java_raw_api.c - Copyright (c) 1999, 2007  Red Hat, Inc.
+   java_raw_api.c - Copyright (c) 1999, 2007, 2008  Red Hat, Inc.
 
    Cloned from raw_api.c
 
@@ -295,7 +295,7 @@ ffi_java_raw_to_rvalue (ffi_cif *cif, void *rvalue)
  * these following couple of functions will handle the translation forth
  * and back automatically. */
 
-void ffi_java_raw_call (ffi_cif *cif, void (*fn)(), void *rvalue,
+void ffi_java_raw_call (ffi_cif *cif, void (*fn)(void), void *rvalue,
 			ffi_java_raw *raw)
 {
   void **avalue = (void**) alloca (cif->nargs * sizeof (void*));

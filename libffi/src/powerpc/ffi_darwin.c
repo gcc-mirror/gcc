@@ -425,11 +425,11 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 }
 
 extern void ffi_call_AIX(extended_cif *, unsigned, unsigned, unsigned *,
-			 void (*fn)(), void (*fn2)());
+			 void (*fn)(void), void (*fn2)(void));
 extern void ffi_call_DARWIN(extended_cif *, unsigned, unsigned, unsigned *,
-			    void (*fn)(), void (*fn2)());
+			    void (*fn)(void), void (*fn2)(void));
 
-void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
+void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 

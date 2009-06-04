@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    ffi.c - Copyright (c) 1998 Geoffrey Keating
    Copyright (C) 2007, 2008 Free Software Foundation, Inc
+   Copyright (C) 2008 Red Hat, Inc
 
    PowerPC Foreign Function Interface
 
@@ -875,13 +876,13 @@ ffi_prep_cif_machdep (ffi_cif *cif)
 }
 
 extern void ffi_call_SYSV(extended_cif *, unsigned, unsigned, unsigned *,
-			  void (*fn)());
+			  void (*fn)(void));
 extern void FFI_HIDDEN ffi_call_LINUX64(extended_cif *, unsigned long,
 					unsigned long, unsigned long *,
-					void (*fn)());
+					void (*fn)(void));
 
 void
-ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
+ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 
