@@ -1,3 +1,8 @@
+2009-06-04  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/vect/vect-42.c: Modify vect_no_align case.
+	* gcc.dg/vect/no-vfa-vect-43.c: Ditto.
+
 2009-06-04  Richard Guenther  <rguenther@suse.de>
 
 	PR c++/39371
