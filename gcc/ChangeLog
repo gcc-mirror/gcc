@@ -1,3 +1,16 @@
+2009-06-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (X86_64_MS_REGPARM_MAX): Rename from
+	X64_REGPARM_MAX.
+	(REGPARM_MAX): Use X86_64_MS_REGPARM_MAX.
+	(X86_64_MS_SSE_REGPARM_MAX): Rename from X64_SSE_REGPARM_MAX.
+	(SSE_REGPARM_MAX): Use X86_64_MS_SSE_REGPARM_MAX.
+	* config/i386/i386.c: Use X86_64_MS_REGPARM_MAX instead of
+	X64_REGPARM_MAX.  Use X86_64_MS_SSE_REGPARM_MAX instead of
+	X64_SSE_REGPARM_MAX.
+	* config/i386/i386.md: Use X86_64_MS_SSE_REGPARM_MAX instead of
+	X64_SSE_REGPARM_MAX.
+
 2009-06-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c (report_times_to_file): New.

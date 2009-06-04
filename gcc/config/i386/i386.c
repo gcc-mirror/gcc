@@ -4407,7 +4407,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
 
   if (TARGET_64BIT)
     return (ix86_function_type_abi (type) == SYSV_ABI
-	    ? X86_64_REGPARM_MAX : X64_REGPARM_MAX);
+	    ? X86_64_REGPARM_MAX : X86_64_MS_REGPARM_MAX);
 
   regparm = ix86_regparm;
   attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
@@ -4650,8 +4650,8 @@ ix86_function_arg_regno_p (int regno)
     parm_regs = x86_64_ms_abi_int_parameter_registers;
   else
     parm_regs = x86_64_int_parameter_registers;
-  for (i = 0; i < (ix86_abi == MS_ABI ? X64_REGPARM_MAX
-  					 : X86_64_REGPARM_MAX); i++)
+  for (i = 0; i < (ix86_abi == MS_ABI
+		   ? X86_64_MS_REGPARM_MAX : X86_64_REGPARM_MAX); i++)
     if (regno == parm_regs[i])
       return true;
   return false;
@@ -4777,8 +4777,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   if (TARGET_64BIT)
     {
       if (cum->call_abi != ix86_abi)
-        cum->nregs = ix86_abi != SYSV_ABI ? X86_64_REGPARM_MAX
-        				     : X64_REGPARM_MAX;
+        cum->nregs = (ix86_abi != SYSV_ABI
+		      ? X86_64_REGPARM_MAX : X86_64_MS_REGPARM_MAX);
     }
   if (TARGET_SSE)
     {
@@ -4786,8 +4786,9 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
       if (TARGET_64BIT)
         {
           if (cum->call_abi != ix86_abi)
-            cum->sse_nregs = ix86_abi != SYSV_ABI ? X86_64_SSE_REGPARM_MAX
-            					     : X64_SSE_REGPARM_MAX;
+            cum->sse_nregs = (ix86_abi != SYSV_ABI
+			      ? X86_64_SSE_REGPARM_MAX
+			      : X86_64_MS_SSE_REGPARM_MAX);
         }
     }
   if (TARGET_MMX)
@@ -5898,10 +5899,11 @@ function_arg_64 (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     return GEN_INT (cum->maybe_vaarg
 		    ? (cum->sse_nregs < 0
 		       ? (cum->call_abi == ix86_abi
-		          ? SSE_REGPARM_MAX
-		          : (ix86_abi != SYSV_ABI ? X86_64_SSE_REGPARM_MAX
-		          			     : X64_SSE_REGPARM_MAX))
- 	       : cum->sse_regno)
+			  ? SSE_REGPARM_MAX
+			  : (ix86_abi != SYSV_ABI
+			     ? X86_64_SSE_REGPARM_MAX
+			     : X86_64_MS_SSE_REGPARM_MAX))
+		       : cum->sse_regno)
 		    : -1);
 
   switch (mode)
@@ -6603,7 +6605,8 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
   int regparm = ix86_regparm;
 
   if (cum->call_abi != ix86_abi)
-    regparm = ix86_abi != SYSV_ABI ? X86_64_REGPARM_MAX : X64_REGPARM_MAX;
+    regparm = (ix86_abi != SYSV_ABI
+	       ? X86_64_REGPARM_MAX : X86_64_MS_REGPARM_MAX);
 
   /* GPR size of varargs save area.  */
   if (cfun->va_list_gpr_size)
@@ -6700,7 +6703,7 @@ setup_incoming_varargs_ms_64 (CUMULATIVE_ARGS *cum)
   alias_set_type set = get_varargs_alias_set ();
   int i;
 
-  for (i = cum->regno; i < X64_REGPARM_MAX; i++)
+  for (i = cum->regno; i < X86_64_MS_REGPARM_MAX; i++)
     {
       rtx reg, mem;
 
