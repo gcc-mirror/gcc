@@ -1,6 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 1996, 1998, 2001, 2002, 2003, 2005, 2008
-   Red Hat, Inc.
+   sysv.S - Copyright (c) 1996, 1998, 2001-2003, 2005, 2008  Red Hat, Inc.
    
    X86 Foreign Function Interface 
 

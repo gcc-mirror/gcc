@@ -1,9 +1,7 @@
 /* -----------------------------------------------------------------------
-   raw_api.c - Copyright (c) 1999  Red Hat, Inc.
+   raw_api.c - Copyright (c) 1999, 2008  Red Hat, Inc.
 
    Author: Kresten Krab Thorup <krab@gnu.org>
-
-   $Id $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -190,7 +188,7 @@ ffi_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
  * these following couple of functions will handle the translation forth
  * and back automatically. */
 
-void ffi_raw_call (ffi_cif *cif, void (*fn)(), void *rvalue, ffi_raw *raw)
+void ffi_raw_call (ffi_cif *cif, void (*fn)(void), void *rvalue, ffi_raw *raw)
 {
   void **avalue = (void**) alloca (cif->nargs * sizeof (void*));
   ffi_raw_to_ptrarray (cif, raw, avalue);

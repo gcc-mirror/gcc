@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    ffi.c - Copyright (c) 2000, 2007 Software AG
+           Copyright (c) 2008 Red Hat, Inc
  
    S390 Foreign Function Interface
  
@@ -88,7 +89,7 @@ extern void ffi_call_SYSV(unsigned,
 			  void (*)(unsigned char *, extended_cif *),
 			  unsigned,
 			  void *,
-			  void (*fn)());
+			  void (*fn)(void));
 
 extern void ffi_closure_SYSV(void);
  
@@ -498,7 +499,7 @@ ffi_prep_cif_machdep(ffi_cif *cif)
  
 void
 ffi_call(ffi_cif *cif,
-	 void (*fn)(),
+	 void (*fn)(void),
 	 void *rvalue,
 	 void **avalue)
 {

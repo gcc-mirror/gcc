@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 2004  Anthony Green
+   ffi.c - Copyright (C) 2004  Anthony Green
    Copyright (C) 2007  Free Software Foundation, Inc.
+	   Copyright (C) 2008  Red Hat, Inc.
    
    FR-V Foreign Function Interface 
 
@@ -126,10 +127,10 @@ extern void ffi_call_EABI(void *(*)(char *, extended_cif *),
 			  extended_cif *, 
 			  unsigned, unsigned, 
 			  unsigned *, 
-			  void (*fn)());
+			  void (*fn)(void));
 
 void ffi_call(ffi_cif *cif, 
-	      void (*fn)(), 
+	      void (*fn)(void), 
 	      void *rvalue, 
 	      void **avalue)
 {

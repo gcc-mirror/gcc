@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1998, 2001, 2007 Red Hat, Inc.
+   ffi.c - Copyright (c) 1998, 2001, 2007, 2008  Red Hat, Inc.
    
    Alpha Foreign Function Interface 
 
@@ -39,7 +39,7 @@
 # define FFI_TYPE_LONGDOUBLE 4
 #endif
 
-extern void ffi_call_osf(void *, unsigned long, unsigned, void *, void (*)())
+extern void ffi_call_osf(void *, unsigned long, unsigned, void *, void (*)(void))
   FFI_HIDDEN;
 extern void ffi_closure_osf(void) FFI_HIDDEN;
 
@@ -76,7 +76,7 @@ ffi_prep_cif_machdep(ffi_cif *cif)
 
 
 void
-ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
+ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   unsigned long *stack, *argp;
   long i, avn;

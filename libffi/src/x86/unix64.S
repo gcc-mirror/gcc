@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
-   unix64.S - Copyright (c) 2002, 2008  Bo Thorsen <bo@suse.de>
+   unix64.S - Copyright (c) 2002  Bo Thorsen <bo@suse.de>
+	      Copyright (c) 2008  Red Hat, Inc
 
    x86-64 Foreign Function Interface 
 
@@ -32,7 +33,7 @@
 .text
 
 /* ffi_call_unix64 (void *args, unsigned long bytes, unsigned flags,
-	            void *raddr, void (*fnaddr)());
+	            void *raddr, void (*fnaddr)(void));
 
    Bit o trickiness here -- ARGS+BYTES is the base of the stack frame
    for this function.  This has been allocated by ffi_call.  We also

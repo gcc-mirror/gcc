@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    sysv.h - Copyright (c) 2003 Jakub Jelinek <jakub@redhat.com>
+	    Copyright (c) 2008 Red Hat, Inc.
 
    PowerPC64 Assembly glue.
 
@@ -179,4 +180,8 @@ ffi_call_LINUX64:
 	.uleb128 0x4
 	.align 3
 .LEFDE1:
+#endif
+
+#if defined __ELF__ && defined __linux__
+	.section	.note.GNU-stack,"",@progbits
 #endif

@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1996, 2003, 2004, 2007 Red Hat, Inc.
+   ffi.c - Copyright (c) 1996, 2003, 2004, 2007, 2008 Red Hat, Inc.
    
    SPARC Foreign Function Interface 
 
@@ -369,13 +369,13 @@ int ffi_v9_layout_struct(ffi_type *arg, int off, char *ret, char *intg, char *fl
 
 #ifdef SPARC64
 extern int ffi_call_v9(void *, extended_cif *, unsigned, 
-		       unsigned, unsigned *, void (*fn)());
+		       unsigned, unsigned *, void (*fn)(void));
 #else
 extern int ffi_call_v8(void *, extended_cif *, unsigned, 
-		       unsigned, unsigned *, void (*fn)());
+		       unsigned, unsigned *, void (*fn)(void));
 #endif
 
-void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
+void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   extended_cif ecif;
   void *rval = rvalue;

@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   osf.S - Copyright (c) 1998, 2001, 2007 Red Hat
+   osf.S - Copyright (c) 1998, 2001, 2007, 2008 Red Hat
    
    Alpha/OSF Foreign Function Interface 
 
@@ -32,7 +32,7 @@
 	.text
 
 /* ffi_call_osf (void *args, unsigned long bytes, unsigned flags,
-		 void *raddr, void (*fnaddr)());
+		 void *raddr, void (*fnaddr)(void));
 
    Bit o trickiness here -- ARGS+BYTES is the base of the stack frame
    for this function.  This has been allocated by ffi_call.  We also

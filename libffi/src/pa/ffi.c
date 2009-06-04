@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    ffi.c - (c) 2003-2004 Randolph Chung <tausq@debian.org>
+           (c) 2008 Red Hat, Inc.
 
    HPPA Foreign Function Interface
    HP-UX PA ABI support (c) 2006 Free Software Foundation, Inc.
@@ -368,9 +369,9 @@ ffi_status ffi_prep_cif_machdep(ffi_cif *cif)
 
 extern void ffi_call_pa32(void (*)(UINT32 *, extended_cif *, unsigned),
 			  extended_cif *, unsigned, unsigned, unsigned *,
-			  void (*fn)());
+			  void (*fn)(void));
 
-void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
+void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 

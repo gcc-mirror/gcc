@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    ffi.c - Copyright (c) 2002, 2007  Bo Thorsen <bo@suse.de>
+           Copyright (c) 2008  Red Hat, Inc.
    
    x86-64 Foreign Function Interface 
 
@@ -43,7 +44,7 @@ struct register_args
 };
 
 extern void ffi_call_unix64 (void *args, unsigned long bytes, unsigned flags,
-			     void *raddr, void (*fnaddr)(), unsigned ssecount);
+			     void *raddr, void (*fnaddr)(void), unsigned ssecount);
 
 /* All reference to register classes here is identical to the code in
    gcc/config/i386/i386.c. Do *not* change one without the other.  */
@@ -340,7 +341,7 @@ ffi_prep_cif_machdep (ffi_cif *cif)
 }
 
 void
-ffi_call (ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
+ffi_call (ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   enum x86_64_reg_class classes[MAX_CLASSES];
   char *stack, *argp;

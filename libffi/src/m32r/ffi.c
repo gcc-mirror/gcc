@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    ffi.c - Copyright (c) 2004  Renesas Technology
+           Copyright (c) 2008  Red Hat, Inc.
    
    M32R Foreign Function Interface 
 
@@ -172,9 +173,9 @@ ffi_prep_cif_machdep(ffi_cif *cif)
 }
 
 extern void ffi_call_SYSV(void (*)(char *, extended_cif *), extended_cif *,
-			  unsigned, unsigned, unsigned *, void (*fn)());
+			  unsigned, unsigned, unsigned *, void (*fn)(void));
 
-void ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
+void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
 {
   extended_cif ecif;
 
