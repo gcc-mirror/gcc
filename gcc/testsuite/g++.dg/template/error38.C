@@ -26,6 +26,7 @@ void f (T &t, int = 0);		// { dg-message "" }
 
 typedef int myint;
 myint i;
+myint *p;
 
 int main()
 {
@@ -34,4 +35,5 @@ int main()
   a.g();			// { dg-error "" }
 
   f(i);				// { dg-error "" }
+  f(p);				// { dg-error "" }
 }

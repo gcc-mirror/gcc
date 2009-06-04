@@ -1,3 +1,7 @@
+2009-06-04  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/error38.C: Add pointer-to-typedef case.
+
 2009-06-04  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/vect/vect-42.c: Modify vect_no_align case.
