@@ -2324,7 +2324,7 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
 {
   mpz_t size;
   mpz_t nelems;
-  int m;
+  int shape_size;
 
   if (array_check (source, 0) == FAILURE)
     return FAILURE;
@@ -2342,26 +2342,121 @@ gfc_check_reshape (gfc_expr *source, gfc_expr *shape,
       return FAILURE;
     }
 
-  m = mpz_cmp_ui (size, GFC_MAX_DIMENSIONS);
+  shape_size = mpz_get_ui (size);
   mpz_clear (size);
 
-  if (m > 0)
+  if (shape_size <= 0)
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L is empty",
+		 gfc_current_intrinsic_arg[1], gfc_current_intrinsic,
+		 &shape->where);
+      return FAILURE;
+    }
+  else if (shape_size > GFC_MAX_DIMENSIONS)
     {
       gfc_error ("'shape' argument of 'reshape' intrinsic at %L has more "
 		 "than %d elements", &shape->where, GFC_MAX_DIMENSIONS);
       return FAILURE;
+    }
+  else if (shape->expr_type == EXPR_ARRAY)
+    {
+      gfc_expr *e;
+      int i, extent;
+      for (i = 0; i < shape_size; ++i)
+	{
+	  e = gfc_get_array_element (shape, i);
+	  if (e->expr_type != EXPR_CONSTANT)
+	    {
+	      gfc_free_expr (e);
+	      continue;
+	    }
+
+	  gfc_extract_int (e, &extent);
+	  if (extent < 0)
+	    {
+	      gfc_error ("'%s' argument of '%s' intrinsic at %L has "
+			 "negative element (%d)", gfc_current_intrinsic_arg[1],
+			 gfc_current_intrinsic, &e->where, extent);
+	      return FAILURE;
+	    }
+
+	  gfc_free_expr (e);
+	}
     }
 
   if (pad != NULL)
     {
       if (same_type_check (source, 0, pad, 2) == FAILURE)
 	return FAILURE;
+
       if (array_check (pad, 2) == FAILURE)
 	return FAILURE;
     }
 
-  if (order != NULL && array_check (order, 3) == FAILURE)
-    return FAILURE;
+  if (order != NULL)
+    {
+      if (array_check (order, 3) == FAILURE)
+	return FAILURE;
+
+      if (type_check (order, 3, BT_INTEGER) == FAILURE)
+	return FAILURE;
+
+      if (order->expr_type == EXPR_ARRAY)
+	{
+	  int i, order_size, dim, perm[GFC_MAX_DIMENSIONS];
+	  gfc_expr *e;
+
+	  for (i = 0; i < GFC_MAX_DIMENSIONS; ++i)
+	    perm[i] = 0;
+
+	  gfc_array_size (order, &size);
+	  order_size = mpz_get_ui (size);
+	  mpz_clear (size);
+
+	  if (order_size != shape_size)
+	    {
+	      gfc_error ("'%s' argument of '%s' intrinsic at %L "
+			 "has wrong number of elements (%d/%d)", 
+			 gfc_current_intrinsic_arg[3],
+			 gfc_current_intrinsic, &order->where,
+			 order_size, shape_size);
+	      return FAILURE;
+	    }
+
+	  for (i = 1; i <= order_size; ++i)
+	    {
+	      e = gfc_get_array_element (order, i-1);
+	      if (e->expr_type != EXPR_CONSTANT)
+		{
+		  gfc_free_expr (e);
+		  continue;
+		}
+
+	      gfc_extract_int (e, &dim);
+
+	      if (dim < 1 || dim > order_size)
+		{
+		  gfc_error ("'%s' argument of '%s' intrinsic at %L "
+			     "has out-of-range dimension (%d)", 
+			     gfc_current_intrinsic_arg[3],
+			     gfc_current_intrinsic, &e->where, dim);
+		  return FAILURE;
+		}
+
+	      if (perm[dim-1] != 0)
+		{
+		  gfc_error ("'%s' argument of '%s' intrinsic at %L has "
+			     "invalid permutation of dimensions (dimension "
+			     "'%d' duplicated)", gfc_current_intrinsic_arg[3],
+			     gfc_current_intrinsic, &e->where, dim);
+		  return FAILURE;
+		}
+
+	      perm[dim-1] = 1;
+	      gfc_free_expr (e);
+	    }
+	}
+    }
 
   if (pad == NULL && shape->expr_type == EXPR_ARRAY
       && gfc_is_constant_expr (shape)

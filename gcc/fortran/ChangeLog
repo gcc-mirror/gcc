@@ -1,3 +1,11 @@
+2009-06-04  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/37203
+	* check.c (gfc_check_reshape): Additional checks for the
+	SHAPE and ORDER arguments.
+	* simplify.c (gfc_simplify_reshape): Converted argument checks
+	to asserts.
+
 2009-06-03  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.texi: Add mixed-language programming, mention
