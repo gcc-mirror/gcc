@@ -59,8 +59,9 @@ struct gcc_debug_hooks
      though the BLOCK information is messed up.  Defaults to true.  */
   bool (* ignore_block) (const_tree);
 
-  /* Record a source file location at (FILE, LINE).  */
-  void (* source_line) (unsigned int line, const char *file);
+  /* Record a source file location at (FILE, LINE, DISCRIMINATOR).  */
+  void (* source_line) (unsigned int line, const char *file,
+                        int discriminator);
 
   /* Called at start of prologue code.  LINE is the first line in the
      function.  This has been given the same prototype as source_line,
@@ -141,6 +142,7 @@ extern const struct gcc_debug_hooks *debug_hooks;
 extern void debug_nothing_void (void);
 extern void debug_nothing_charstar (const char *);
 extern void debug_nothing_int_charstar (unsigned int, const char *);
+extern void debug_nothing_int_charstar_int (unsigned int, const char *, int);
 extern void debug_nothing_int (unsigned int);
 extern void debug_nothing_int_int (unsigned int, unsigned int);
 extern void debug_nothing_tree (tree);

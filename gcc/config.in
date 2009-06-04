@@ -869,6 +869,12 @@
 #endif
 
 
+/* Define if your assembler supports the .loc discriminator sub-directive. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_DISCRIMINATOR
+#endif
+
+
 /* Define if your assembler and linker support .hidden. */
 #undef HAVE_GAS_HIDDEN
 

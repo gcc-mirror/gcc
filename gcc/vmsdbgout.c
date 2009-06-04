@@ -173,7 +173,7 @@ static void vmsdbgout_end_source_file (unsigned int);
 static void vmsdbgout_begin_block (unsigned int, unsigned int);
 static void vmsdbgout_end_block (unsigned int, unsigned int);
 static bool vmsdbgout_ignore_block (const_tree);
-static void vmsdbgout_source_line (unsigned int, const char *);
+static void vmsdbgout_source_line (unsigned int, const char *, int);
 static void vmsdbgout_begin_prologue (unsigned int, const char *);
 static void vmsdbgout_end_prologue (unsigned int, const char *);
 static void vmsdbgout_end_function (unsigned int);
@@ -1297,7 +1297,7 @@ vmsdbgout_end_prologue (unsigned int line, const char *file)
       ASM_OUTPUT_LABEL (asm_out_file, label);
 
       /* VMS PCA expects every PC range to correlate to some line and file.  */
-      vmsdbgout_source_line (line, file);
+      vmsdbgout_source_line (line, file, 0);
     }
 }
 
@@ -1331,7 +1331,7 @@ vmsdbgout_end_epilogue (unsigned int line, const char *file)
       ASM_OUTPUT_LABEL (asm_out_file, label);
 
       /* VMS PCA expects every PC range to correlate to some line and file.  */
-      vmsdbgout_source_line (line, file);
+      vmsdbgout_source_line (line, file, 0);
     }
 }
 
@@ -1533,10 +1533,11 @@ lookup_filename (const char *file_name)
    'line_info_table' for later output of the .debug_line section.  */
 
 static void
-vmsdbgout_source_line (register unsigned line, register const char *filename)
+vmsdbgout_source_line (register unsigned line, register const char *filename,
+                       int discriminator)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
-    (*dwarf2_debug_hooks.source_line) (line, filename);
+    (*dwarf2_debug_hooks.source_line) (line, filename, discriminator);
 
   if (debug_info_level >= DINFO_LEVEL_TERSE)
     {

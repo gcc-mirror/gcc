@@ -333,7 +333,7 @@ static void dbxout_handle_pch (unsigned);
 /* The debug hooks structure.  */
 #if defined (DBX_DEBUGGING_INFO)
 
-static void dbxout_source_line (unsigned int, const char *);
+static void dbxout_source_line (unsigned int, const char *, int);
 static void dbxout_begin_prologue (unsigned int, const char *);
 static void dbxout_source_file (const char *);
 static void dbxout_function_end (tree);
@@ -1265,7 +1265,7 @@ dbxout_begin_prologue (unsigned int lineno, const char *filename)
   /* pre-increment the scope counter */
   scope_labelno++;
 
-  dbxout_source_line (lineno, filename);
+  dbxout_source_line (lineno, filename, 0);
   /* Output function begin block at function scope, referenced 
      by dbxout_block, dbxout_source_line and dbxout_function_end.  */
   emit_pending_bincls_if_required ();
@@ -1276,7 +1276,8 @@ dbxout_begin_prologue (unsigned int lineno, const char *filename)
    number LINENO.  */
 
 static void
-dbxout_source_line (unsigned int lineno, const char *filename)
+dbxout_source_line (unsigned int lineno, const char *filename,
+                    int discriminator ATTRIBUTE_UNUSED)
 {
   dbxout_source_file (filename);
 
