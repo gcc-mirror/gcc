@@ -7424,6 +7424,21 @@ restore_fpr (rtx base, int offset, int regnum)
   return emit_move_insn (gen_rtx_REG (DFmode, regnum), addr);
 }
 
+/* Return true if REGNO is a global register, but not one
+   of the special ones that need to be saved/restored in anyway.  */
+
+static inline bool
+global_not_special_regno_p (int regno)
+{
+  return (global_regs[regno]
+	  /* These registers are special and need to be
+	     restored in any case.  */
+	  && !(regno == STACK_POINTER_REGNUM
+	       || regno == RETURN_REGNUM
+	       || regno == BASE_REGNUM
+	       || (flag_pic && regno == (int)PIC_OFFSET_TABLE_REGNUM)));
+}
+
 /* Generate insn to save registers FIRST to LAST into
    the register save area located at offset OFFSET
    relative to register BASE.  */
@@ -7447,7 +7462,8 @@ save_gprs (rtx base, int offset, int first, int last)
       else
         insn = gen_movsi (addr, gen_rtx_REG (Pmode, first));
 
-      RTX_FRAME_RELATED_P (insn) = 1;
+      if (!global_not_special_regno_p (first))
+	RTX_FRAME_RELATED_P (insn) = 1;
       return insn;
     }
 
@@ -7477,28 +7493,41 @@ save_gprs (rtx base, int offset, int first, int last)
      set, even if it does not.  Therefore we emit a new pattern
      without those registers as REG_FRAME_RELATED_EXPR note.  */
 
-  if (first >= 6)
+  if (first >= 6 && !global_not_special_regno_p (first))
     {
       rtx pat = PATTERN (insn);
 
       for (i = 0; i < XVECLEN (pat, 0); i++)
-	if (GET_CODE (XVECEXP (pat, 0, i)) == SET)
+	if (GET_CODE (XVECEXP (pat, 0, i)) == SET
+	    && !global_not_special_regno_p (REGNO (SET_SRC (XVECEXP (pat,
+								     0, i)))))
 	  RTX_FRAME_RELATED_P (XVECEXP (pat, 0, i)) = 1;
 
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else if (last >= 6)
     {
-      addr = plus_constant (base, offset + (6 - first) * UNITS_PER_WORD);
+      int start;
+
+      for (start = first >= 6 ? first : 6; start <= last; start++)
+	if (!global_not_special_regno_p (start))
+	  break;
+
+      if (start > last)
+	return insn;
+
+      addr = plus_constant (base, offset + (start - first) * UNITS_PER_WORD);
       note = gen_store_multiple (gen_rtx_MEM (Pmode, addr),
-				 gen_rtx_REG (Pmode, 6),
-				 GEN_INT (last - 6 + 1));
+				 gen_rtx_REG (Pmode, start),
+				 GEN_INT (last - start + 1));
       note = PATTERN (note);
 
       add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
 
       for (i = 0; i < XVECLEN (note, 0); i++)
-	if (GET_CODE (XVECEXP (note, 0, i)) == SET)
+	if (GET_CODE (XVECEXP (note, 0, i)) == SET
+	    && !global_not_special_regno_p (REGNO (SET_SRC (XVECEXP (note,
+								     0, i)))))
 	  RTX_FRAME_RELATED_P (XVECEXP (note, 0, i)) = 1;
 
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -7882,7 +7911,7 @@ s390_emit_prologue (void)
 void
 s390_emit_epilogue (bool sibcall)
 {
-  rtx frame_pointer, return_reg;
+  rtx frame_pointer, return_reg, cfa_restores = NULL_RTX;
   int area_bottom, area_top, offset = 0;
   int next_offset;
   rtvec p;
@@ -7924,11 +7953,13 @@ s390_emit_epilogue (bool sibcall)
     }
   else
     {
-      rtx insn, frame_off;
+      rtx insn, frame_off, cfa;
 
       offset = area_bottom < 0 ? -area_bottom : 0;
       frame_off = GEN_INT (cfun_frame_layout.frame_size - offset);
 
+      cfa = gen_rtx_SET (VOIDmode, frame_pointer,
+			 gen_rtx_PLUS (Pmode, frame_pointer, frame_off));
       if (DISP_IN_RANGE (INTVAL (frame_off)))
 	{
 	  insn = gen_rtx_SET (VOIDmode, frame_pointer,
@@ -7943,6 +7974,8 @@ s390_emit_epilogue (bool sibcall)
 	  insn = emit_insn (gen_add2_insn (frame_pointer, frame_off));
 	  annotate_constant_pool_refs (&PATTERN (insn));
 	}
+      add_reg_note (insn, REG_CFA_ADJUST_CFA, cfa);
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   /* Restore call saved fprs.  */
@@ -7958,6 +7991,9 @@ s390_emit_epilogue (bool sibcall)
 		{
 		  restore_fpr (frame_pointer,
 			       offset + next_offset, i);
+		  cfa_restores
+		    = alloc_reg_note (REG_CFA_RESTORE,
+				      gen_rtx_REG (DFmode, i), cfa_restores);
 		  next_offset += 8;
 		}
 	    }
@@ -7973,6 +8009,9 @@ s390_emit_epilogue (bool sibcall)
 	    {
 	      restore_fpr (frame_pointer,
 			   offset + next_offset, i);
+	      cfa_restores
+		= alloc_reg_note (REG_CFA_RESTORE,
+				  gen_rtx_REG (DFmode, i), cfa_restores);
 	      next_offset += 8;
 	    }
 	  else if (!TARGET_PACKED_STACK)
@@ -7999,15 +8038,7 @@ s390_emit_epilogue (bool sibcall)
 	   i <= cfun_frame_layout.last_restore_gpr;
 	   i++)
 	{
-	  /* These registers are special and need to be
-	     restored in any case.  */
-	  if (i == STACK_POINTER_REGNUM
-              || i == RETURN_REGNUM
-              || i == BASE_REGNUM
-              || (flag_pic && i == (int)PIC_OFFSET_TABLE_REGNUM))
-	    continue;
-
-	  if (global_regs[i])
+	  if (global_not_special_regno_p (i))
 	    {
 	      addr = plus_constant (frame_pointer,
 				    offset + cfun_frame_layout.gprs_offset
@@ -8017,6 +8048,10 @@ s390_emit_epilogue (bool sibcall)
 	      set_mem_alias_set (addr, get_frame_alias_set ());
 	      emit_move_insn (addr, gen_rtx_REG (Pmode, i));
 	    }
+	  else
+	    cfa_restores
+	      = alloc_reg_note (REG_CFA_RESTORE,
+				gen_rtx_REG (Pmode, i), cfa_restores);
 	}
 
       if (! sibcall)
@@ -8051,7 +8086,11 @@ s390_emit_epilogue (bool sibcall)
 			   * UNITS_PER_WORD,
 			   cfun_frame_layout.first_restore_gpr,
 			   cfun_frame_layout.last_restore_gpr);
-      emit_insn (insn);
+      insn = emit_insn (insn);
+      REG_NOTES (insn) = cfa_restores;
+      add_reg_note (insn, REG_CFA_DEF_CFA,
+		    plus_constant (stack_pointer_rtx, STACK_POINTER_OFFSET));
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   if (! sibcall)
