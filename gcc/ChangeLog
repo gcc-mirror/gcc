@@ -1,3 +1,8 @@
+2009-06-05  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* config/rs6000/ppc-asm.h: Protect auto-host.h inclusion and
+	CFI_* definitions with IN_GCC.
+
 2009-06-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* xcoffout.h (xcoffout_source_line): Update prototype.
