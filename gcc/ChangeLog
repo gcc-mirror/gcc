@@ -1,3 +1,9 @@
+2009-06-05  Richard Guenther  <rguenther@suse.de>
+
+	PR bootstrap/40350
+	* dwarf2out.c (dwarf2out_begin_function): Mark discriminator
+	as possibly unused.
+
 2009-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/s390/s390.c (global_not_special_regno_p): New static inline.

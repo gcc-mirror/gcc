@@ -16226,7 +16226,7 @@ dwarf2out_begin_function (tree fun)
 
 static void
 dwarf2out_source_line (unsigned int line, const char *filename,
-                       int discriminator)
+                       int discriminator ATTRIBUTE_UNUSED)
 {
   if (debug_info_level >= DINFO_LEVEL_NORMAL
       && line != 0)
