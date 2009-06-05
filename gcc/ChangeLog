@@ -1,5 +1,11 @@
 2009-06-05  Nathan Froyd  <froydnj@codesourcery.com>
 
+	* config/rs6000/eabi.asm (__eabi_convert): Don't define if
+	_RELOCATABLE.
+	(__eabi_uconvert): Likewise.
+
+2009-06-05  Nathan Froyd  <froydnj@codesourcery.com>
+
 	* config/rs6000/ppc-asm.h: Protect auto-host.h inclusion and
 	CFI_* definitions with IN_GCC.
 
