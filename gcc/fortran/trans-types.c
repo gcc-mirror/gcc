@@ -1675,6 +1675,16 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
   arraytype = build_pointer_type (arraytype);
   GFC_TYPE_ARRAY_DATAPTR_TYPE (fat_type) = arraytype;
 
+  /* This will generate the base declarations we need to emit debug
+     information for this type.  FIXME: there must be a better way to
+     avoid divergence between compilations with and without debug
+     information.  */
+  {
+    struct array_descr_info info;
+    gfc_get_array_descr_info (fat_type, &info);
+    gfc_get_array_descr_info (build_pointer_type (fat_type), &info);
+  }
+
   return fat_type;
 }
 
@@ -2398,14 +2408,16 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   info->ndimensions = rank;
   info->element_type = etype;
   ptype = build_pointer_type (gfc_array_index_type);
-  if (indirect)
+  base_decl = GFC_TYPE_ARRAY_BASE_DECL (type, indirect);
+  if (!base_decl)
     {
-      info->base_decl = build_decl (VAR_DECL, NULL_TREE,
-				    build_pointer_type (ptype));
-      base_decl = build1 (INDIRECT_REF, ptype, info->base_decl);
+      base_decl = build_decl (VAR_DECL, NULL_TREE,
+			      indirect ? build_pointer_type (ptype) : ptype);
+      GFC_TYPE_ARRAY_BASE_DECL (type, indirect) = base_decl;
     }
-  else
-    info->base_decl = base_decl = build_decl (VAR_DECL, NULL_TREE, ptype);
+  info->base_decl = base_decl;
+  if (indirect)
+    base_decl = build1 (INDIRECT_REF, ptype, base_decl);
 
   if (GFC_TYPE_ARRAY_SPAN (type))
     elem_size = GFC_TYPE_ARRAY_SPAN (type);

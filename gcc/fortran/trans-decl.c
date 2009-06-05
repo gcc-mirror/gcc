@@ -713,9 +713,6 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
       layout_type (type);
     }
 
-  if (write_symbols == NO_DEBUG)
-    return;
-
   if (TYPE_NAME (type) != NULL_TREE
       && GFC_TYPE_ARRAY_UBOUND (type, sym->as->rank - 1) != NULL_TREE
       && TREE_CODE (GFC_TYPE_ARRAY_UBOUND (type, sym->as->rank - 1)) == VAR_DECL)
