@@ -4837,7 +4837,7 @@
      reload pass.  */
   if (TARGET_MIPS16
       && optimize
-      && GET_CODE (operands[2]) == CONST_INT
+      && CONST_INT_P (operands[2])
       && INTVAL (operands[2]) > 8
       && INTVAL (operands[2]) <= 16
       && !reload_in_progress
@@ -4858,7 +4858,7 @@
 		       (match_operand:SI 2 "arith_operand" "dI")))]
   "!TARGET_MIPS16"
 {
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (CONST_INT_P (operands[2]))
     operands[2] = GEN_INT (INTVAL (operands[2])
 			   & (GET_MODE_BITSIZE (<MODE>mode) - 1));
 
@@ -4874,7 +4874,7 @@
 			 (match_operand:SI 2 "arith_operand" "dI"))))]
   "TARGET_64BIT && !TARGET_MIPS16"
 {
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (CONST_INT_P (operands[2]))
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return "<insn>\t%0,%1,%2";
@@ -4930,7 +4930,7 @@
 		     (match_operand:SI 2 "arith_operand" "d,I")))]
   "TARGET_64BIT && TARGET_MIPS16"
 {
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (CONST_INT_P (operands[2]))
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
 
   return "dsra\t%0,%2";
@@ -4949,7 +4949,7 @@
 		     (match_operand:SI 2 "arith_operand" "d,I")))]
   "TARGET_64BIT && TARGET_MIPS16"
 {
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (CONST_INT_P (operands[2]))
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
 
   return "dsrl\t%0,%2";
@@ -5004,7 +5004,7 @@
 		      (match_operand:SI 2 "arith_operand" "dI")))]
   "ISA_HAS_ROR"
 {
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (CONST_INT_P (operands[2]))
     gcc_assert (INTVAL (operands[2]) >= 0
 		&& INTVAL (operands[2]) < GET_MODE_BITSIZE (<MODE>mode));
 

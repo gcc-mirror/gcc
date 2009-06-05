@@ -1,3 +1,8 @@
+2009-06-05  Shujing Zhao  <pearly.zhao@oracle.com>
+
+	* config/mips/mips.c: Use REG_P and CONST_INT_P where applicable.
+	* config/mips/mips.md: Ditto.
+
 2009-06-05  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* config/rs6000/eabi.asm (__eabi_convert): Don't define if
