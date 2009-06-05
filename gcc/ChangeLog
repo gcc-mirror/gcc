@@ -1,3 +1,19 @@
+2009-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/40340
+	* tree-ssa-live.c (remove_unused_scope_block_p): Don't prune
+	inlined_function_outer_scope_p blocks for artificial inlines
+	even at -g0/-g1.
+	* tree.c (tree_nonartificial_location): Rewrite using
+	block_nonartificial_location.
+
+	* gcc.dg/pr40340-1.c: New test.
+	* gcc.dg/pr40340-2.c: New test.
+	* gcc.dg/pr40340-3.c: New test.
+	* gcc.dg/pr40340-4.c: New test.
+	* gcc.dg/pr40340-5.c: New test.
+	* gcc.dg/pr40340.h: New file.
+
 2009-06-05  Revital Eres  <eres@il.ibm.com>
 	    Leehod Baruch  <leehod@il.ibm.com>
 
@@ -21,7 +37,7 @@
 	* dwarf2out.c (dwarf2out_begin_function): Mark discriminator
 	as possibly unused.
 
-2009-06-04  Jakub Jelinek  <jakub@redhat.com>
+2009-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/s390/s390.c (global_not_special_regno_p): New static inline.
 	(save_gprs): Don't tell unwinder when a global register is saved.
