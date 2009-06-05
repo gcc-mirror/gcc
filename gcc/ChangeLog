@@ -1,3 +1,15 @@
+2009-06-05  Revital Eres  <eres@il.ibm.com>
+	    Leehod Baruch  <leehod@il.ibm.com>
+
+	* expr.c (expand_assignment): Expand MISALIGNED_INDIRECT_REF.
+	(expand_expr_real_1): Remove comment.
+	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment):
+	Vectorize misaligned access when the target supports it.
+	(vect_supportable_dr_alignment): Check for unaligned access
+	support.
+	* tree-vect-stmts.c (vectorizable_store): Generate misaligned store
+	and remove asset.
+
 2009-06-05  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/ieee754-df.S (cmpdf2): Avoid writing below SP.

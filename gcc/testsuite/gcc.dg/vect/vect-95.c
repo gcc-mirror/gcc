@@ -62,8 +62,9 @@ int main (void)
    stores and generate misaligned accesses for the loads. For targets that 
    don't support unaligned loads we version for all four accesses.  */
 
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail vect_no_align } } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 2 "vect" { xfail vect_no_align } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" { xfail { vect_no_align || vect_hw_misalign } } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 4 "vect" { target vect_hw_misalign } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 2 "vect" { xfail { vect_no_align || vect_hw_misalign } } } } */
 /*  { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" { target vect_no_align } } } */
 /*  { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 4 "vect" { target vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

@@ -4296,6 +4296,36 @@ expand_assignment (tree to, tree from, bool nontemporal)
       return;
     }
 
+   else if (TREE_CODE (to) == MISALIGNED_INDIRECT_REF)
+     {
+       enum machine_mode mode, op_mode1;
+       enum insn_code icode;
+       rtx reg, addr, mem, insn;
+
+       reg = expand_expr (from, NULL_RTX, VOIDmode, EXPAND_NORMAL);
+       reg = force_not_mem (reg);
+
+       mode = TYPE_MODE (TREE_TYPE (to));
+       addr = expand_expr (TREE_OPERAND (to, 0), NULL_RTX, VOIDmode,
+                         EXPAND_SUM);
+       addr = memory_address (mode, addr);
+       mem = gen_rtx_MEM (mode, addr);
+
+       set_mem_attributes (mem, to, 0);
+
+       icode = movmisalign_optab->handlers[mode].insn_code;
+       gcc_assert (icode != CODE_FOR_nothing);
+
+       op_mode1 = insn_data[icode].operand[1].mode;
+       if (! (*insn_data[icode].operand[1].predicate) (reg, op_mode1)
+           && op_mode1 != VOIDmode)
+         reg = copy_to_mode_reg (op_mode1, reg);
+
+      insn = GEN_FCN (icode) (mem, reg);
+       emit_insn (insn);
+       return;
+     }
+
   /* If the rhs is a function call and its value is not an aggregate,
      call the function before we start to compute the lhs.
      This is needed for correct code for cases such as
@@ -7575,9 +7605,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	/* Resolve the misalignment now, so that we don't have to remember
 	   to resolve it later.  Of course, this only works for reads.  */
-	/* ??? When we get around to supporting writes, we'll have to handle
-	   this in store_expr directly.  The vectorizer isn't generating
-	   those yet, however.  */
 	if (code == MISALIGNED_INDIRECT_REF)
 	  {
 	    int icode;

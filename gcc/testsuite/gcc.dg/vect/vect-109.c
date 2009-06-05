@@ -73,6 +73,7 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops" 2 "vect" } } */
-/* { dg-final { scan-tree-dump-times "not vectorized: unsupported unaligned store" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "not vectorized: unsupported unaligned store" 2 "vect" { xfail vect_hw_misalign } } } */
+/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 3 "vect" { target vect_hw_misalign } } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */
 
