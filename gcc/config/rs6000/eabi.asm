@@ -230,7 +230,7 @@ FUNC_END(__eabi)
    r11		has the address of .LCTOC1 in it.
    r12		has the value to add to each pointer
    r13 .. r31	are unchanged */
-	
+#ifdef _RELOCATABLE
 FUNC_START(__eabi_convert)
         cmplw	1,3,4				/* any pointers to convert? */
         subf	5,3,4				/* calculate number of words to convert */
@@ -285,5 +285,5 @@ FUNC_START(__eabi_uconvert)
         blr
 
 FUNC_END(__eabi_uconvert)
-
+#endif
 #endif
