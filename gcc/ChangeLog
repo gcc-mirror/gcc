@@ -1,3 +1,9 @@
+2009-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/s390/s390.c (global_not_special_regno_p): New static inline.
+	(save_gprs): Don't tell unwinder when a global register is saved.
+	(s390_emit_epilogue): Emit needed epilogue unwind info.
+
 2009-06-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dwarf2out.c (deferred_asm_name): New.
