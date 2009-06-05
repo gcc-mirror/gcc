@@ -1,5 +1,5 @@
 /* Nested function decomposition for GIMPLE.
-   Copyright (C) 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2179,10 +2179,26 @@ finalize_nesting_tree_1 (struct nesting_info *root)
       /* In some cases the frame type will trigger the -Wpadded warning.
 	 This is not helpful; suppress it. */
       int save_warn_padded = warn_padded;
+      tree *adjust;
+
       warn_padded = 0;
       layout_type (root->frame_type);
       warn_padded = save_warn_padded;
       layout_decl (root->frame_decl, 0);
+
+      /* Remove root->frame_decl from root->new_local_var_chain, so
+	 that we can declare it also in the lexical blocks, which
+	 helps ensure virtual regs that end up appearing in its RTL
+	 expression get substituted in instantiate_virtual_regs().  */
+      for (adjust = &root->new_local_var_chain;
+	   *adjust != root->frame_decl;
+	   adjust = &TREE_CHAIN (*adjust))
+	gcc_assert (TREE_CHAIN (*adjust));
+      *adjust = TREE_CHAIN (*adjust);
+
+      TREE_CHAIN (root->frame_decl) = NULL_TREE;
+      declare_vars (root->frame_decl,
+		    gimple_seq_first_stmt (gimple_body (context)), true);
     }
 
   /* If any parameters were referenced non-locally, then we need to 
