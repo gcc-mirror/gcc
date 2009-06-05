@@ -1117,7 +1117,7 @@ ARM_FUNC_ALIAS nedf2 cmpdf2
 ARM_FUNC_ALIAS eqdf2 cmpdf2
 	mov	ip, #1			@ how should we specify unordered here?
 
-1:	str	ip, [sp, #-4]
+1:	str	ip, [sp, #-4]!
 
 	@ Trap any INF/NAN first.
 	mov	ip, xh, lsl #1
@@ -1129,7 +1129,8 @@ ARM_FUNC_ALIAS eqdf2 cmpdf2
 
 	@ Test for equality.
 	@ Note that 0.0 is equal to -0.0.
-2:	orrs	ip, xl, xh, lsl #1	@ if x == 0.0 or -0.0
+2:	add	sp, sp, #4
+	orrs	ip, xl, xh, lsl #1	@ if x == 0.0 or -0.0
 	do_it	eq, e
 	COND(orr,s,eq)	ip, yl, yh, lsl #1	@ and y == 0.0 or -0.0
 	teqne	xh, yh			@ or xh == yh
@@ -1168,7 +1169,7 @@ ARM_FUNC_ALIAS eqdf2 cmpdf2
 	bne	2b
 	orrs	ip, yl, yh, lsl #12
 	beq	2b			@ y is not NAN
-5:	ldr	r0, [sp, #-4]		@ unordered return code
+5:	ldr	r0, [sp], #4		@ unordered return code
 	RET
 
 	FUNC_END gedf2
