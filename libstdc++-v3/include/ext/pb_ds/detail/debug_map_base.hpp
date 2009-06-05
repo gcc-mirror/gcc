@@ -154,8 +154,8 @@ namespace __gnu_pbds
     {
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
       __gnu_cxx::throw_allocator<char> alloc;
-      const double orig_throw_prob = alloc.get_throw_prob();
-      alloc.set_throw_prob(0);
+      const double orig_throw_prob = alloc.get_probability();
+      alloc.set_probability(0);
       if (find(r_key) != m_key_set.end())
 	{
 	  std::cerr << "insert_new" << r_key << std::endl;
@@ -171,7 +171,7 @@ namespace __gnu_pbds
 	  std::cerr << "insert_new" << r_key << std::endl;
 	  std::abort();
 	}
-      alloc.set_throw_prob(orig_throw_prob);
+      alloc.set_probability(orig_throw_prob);
       _GLIBCXX_DEBUG_ONLY(assert_valid();)
     }
 
@@ -315,8 +315,8 @@ namespace __gnu_pbds
     split(const_key_reference r_key, Cmp_Fn cmp_fn, PB_DS_CLASS_C_DEC& other)
     {
       __gnu_cxx::throw_allocator<char> alloc;
-      const double orig_throw_prob = alloc.get_throw_prob();
-      alloc.set_throw_prob(0);
+      const double orig_throw_prob = alloc.get_probability();
+      alloc.set_probability(0);
       other.clear();
       key_set_iterator it = m_key_set.begin();
       while (it != m_key_set.end())
@@ -327,7 +327,7 @@ namespace __gnu_pbds
 	  }
         else
 	  ++it;
-      alloc.set_throw_prob(orig_throw_prob);
+      alloc.set_probability(orig_throw_prob);
     }
 
     PB_DS_CLASS_T_DEC
@@ -336,8 +336,8 @@ namespace __gnu_pbds
     join(PB_DS_CLASS_C_DEC& other)
     {
       __gnu_cxx::throw_allocator<char> alloc;
-      const double orig_throw_prob = alloc.get_throw_prob();
-      alloc.set_throw_prob(0);
+      const double orig_throw_prob = alloc.get_probability();
+      alloc.set_probability(0);
       key_set_iterator it = other.m_key_set.begin();
       while (it != other.m_key_set.end())
 	{
@@ -345,7 +345,7 @@ namespace __gnu_pbds
 	  it = other.m_key_set.erase(it);
 	}
       _GLIBCXX_DEBUG_ASSERT(other.m_key_set.empty());
-      alloc.set_throw_prob(orig_throw_prob);
+      alloc.set_probability(orig_throw_prob);
     }
 
 #undef PB_DS_CLASS_T_DEC

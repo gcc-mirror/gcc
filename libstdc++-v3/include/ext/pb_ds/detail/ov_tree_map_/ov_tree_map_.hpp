@@ -414,7 +414,7 @@ namespace __gnu_pbds
       {
 	_GLIBCXX_DEBUG_ONLY(assert_valid();)
 #ifdef PB_DS_REGRESSION
-	  typename Allocator::group_throw_prob_adjustor adjust(m_size);
+	  typename Allocator::group_adjustor adjust(m_size);
 #endif 
 
 	_GLIBCXX_DEBUG_ONLY(debug_base::check_key_does_not_exist(PB_DS_V2F(r_value)));
