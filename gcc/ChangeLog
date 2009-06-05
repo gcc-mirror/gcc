@@ -1,3 +1,7 @@
+2009-06-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* xcoffout.h (xcoffout_source_line): Update prototype.
+
 2009-06-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (do_mpc_ckconv, do_mpc_arg1): Use
