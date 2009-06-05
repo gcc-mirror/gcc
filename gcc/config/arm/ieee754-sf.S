@@ -822,7 +822,7 @@ ARM_FUNC_ALIAS nesf2 cmpsf2
 ARM_FUNC_ALIAS eqsf2 cmpsf2
 	mov	ip, #1			@ how should we specify unordered here?
 
-1:	str	ip, [sp, #-4]
+1:	str	ip, [sp, #-4]!
 
 	@ Trap any INF/NAN first.
 	mov	r2, r0, lsl #1
@@ -834,7 +834,8 @@ ARM_FUNC_ALIAS eqsf2 cmpsf2
 
 	@ Compare values.
 	@ Note that 0.0 is equal to -0.0.
-2:	orrs	ip, r2, r3, lsr #1	@ test if both are 0, clear C flag
+2:	add	sp, sp, #4
+	orrs	ip, r2, r3, lsr #1	@ test if both are 0, clear C flag
 	do_it	ne
 	teqne	r0, r1			@ if not 0 compare sign
 	do_it	pl
@@ -858,7 +859,7 @@ ARM_FUNC_ALIAS eqsf2 cmpsf2
 	bne	2b
 	movs	ip, r1, lsl #9
 	beq	2b			@ r1 is not NAN
-5:	ldr	r0, [sp, #-4]		@ return unordered code.
+5:	ldr	r0, [sp], #4		@ return unordered code.
 	RET
 
 	FUNC_END gesf2

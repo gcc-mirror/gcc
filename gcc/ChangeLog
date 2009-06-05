@@ -1,3 +1,8 @@
+2009-06-05  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/ieee754-df.S (cmpdf2): Avoid writing below SP.
+	* config/arm/ieee754-sf.S (cmpsf2): Likewise.
+
 2009-06-05  Richard Guenther  <rguenther@suse.de>
 
 	PR bootstrap/40350
