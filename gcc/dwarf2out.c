@@ -5182,6 +5182,11 @@ static GTY(()) dw_die_ref comp_unit_die;
 /* A list of DIEs with a NULL parent waiting to be relocated.  */
 static GTY(()) limbo_die_node *limbo_die_list;
 
+/* A list of DIEs for which we may have to generate
+   DW_AT_MIPS_linkage_name once their DECL_ASSEMBLER_NAMEs are
+   set.  */
+static GTY(()) limbo_die_node *deferred_asm_name;
+
 /* Filenames referenced by this compilation unit.  */
 static GTY((param_is (struct dwarf_file_data))) htab_t file_table;
 
@@ -12915,12 +12920,25 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl)
 
       if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
 	  && TREE_PUBLIC (decl)
-	  && DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl)
 	  && !DECL_ABSTRACT (decl)
 	  && !(TREE_CODE (decl) == VAR_DECL && DECL_REGISTER (decl))
 	  && !is_fortran ())
-	add_AT_string (die, DW_AT_MIPS_linkage_name,
-		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	{
+	  /* Defer until we have an assembler name set.  */
+	  if (!DECL_ASSEMBLER_NAME_SET_P (decl))
+	    {
+	      limbo_die_node *asm_name;
+
+	      asm_name = GGC_CNEW (limbo_die_node);
+	      asm_name->die = die;
+	      asm_name->created_for = decl;
+	      asm_name->next = deferred_asm_name;
+	      deferred_asm_name = asm_name;
+	    }
+	  else if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
+	    add_AT_string (die, DW_AT_MIPS_linkage_name,
+			   IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	}
     }
 
 #ifdef VMS_DEBUGGING_INFO
@@ -16824,6 +16842,36 @@ file_table_relative_p (void ** slot, void *param)
   return 1;
 }
 
+/* Move a DW_AT_MIPS_linkage_name attribute just added to dw_die_ref
+   to the location it would have been added, should we know its
+   DECL_ASSEMBLER_NAME when we added other attributes.  This will
+   probably improve compactness of debug info, removing equivalent
+   abbrevs, and hide any differences caused by deferring the
+   computation of the assembler name, triggered by e.g. PCH.  */
+
+static inline void
+move_linkage_attr (dw_die_ref die)
+{
+  unsigned ix = VEC_length (dw_attr_node, die->die_attr);
+  dw_attr_node linkage = *VEC_index (dw_attr_node, die->die_attr, ix - 1);
+
+  gcc_assert (linkage.dw_attr == DW_AT_MIPS_linkage_name);
+
+  while (--ix > 0)
+    {
+      dw_attr_node *prev = VEC_index (dw_attr_node, die->die_attr, ix - 1);
+
+      if (prev->dw_attr == DW_AT_decl_line || prev->dw_attr == DW_AT_name)
+	break;
+    }
+
+  if (ix != VEC_length (dw_attr_node, die->die_attr) - 1)
+    {
+      VEC_pop (dw_attr_node, die->die_attr);
+      VEC_quick_insert (dw_attr_node, die->die_attr, ix, &linkage);
+    }
+}
+
 /* Output stuff that dwarf requires at the end of every file,
    and generate the DWARF-2 debugging info.  */
 
@@ -16911,6 +16959,19 @@ dwarf2out_finish (const char *filename)
     }
 
   limbo_die_list = NULL;
+
+  for (node = deferred_asm_name; node; node = node->next)
+    {
+      tree decl = node->created_for;
+      if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
+	{
+	  add_AT_string (node->die, DW_AT_MIPS_linkage_name,
+			 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+	  move_linkage_attr (node->die);
+	}
+    }
+
+  deferred_asm_name = NULL;
 
   /* Walk through the list of incomplete types again, trying once more to
      emit full debugging info for them.  */
