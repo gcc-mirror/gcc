@@ -38,7 +38,7 @@ void insert1()
     for (int i = 0; i < 10; ++i)
       {
 	allocator_type alloc1;
-	typename allocator_type::zero_throw_prob_adjustor adjust1;
+	typename allocator_type::never_adjustor adjust1;
 	list_type list1(alloc1);
 	
 	for (int k = 0; k < j; ++k)
@@ -46,7 +46,7 @@ void insert1()
       
 	try
 	  {
-	    alloc1.set_throw_prob(1);
+	    typename allocator_type::always_adjustor adjust2;
 	    list1.insert(list1.begin(), 10, 99);
 	    VERIFY( false );
 	  }
@@ -56,7 +56,7 @@ void insert1()
 	  }
 	catch (...)
 	  {
-	    VERIFY( false );
+	    __throw_exception_again;
 	  }
 	
 	VERIFY( list1.size() == size_type(j) );
@@ -64,7 +64,6 @@ void insert1()
 	VERIFY( list1.size() == 0 || list1.front() == -1 );
 
 	allocator_type alloc2;
-	typename allocator_type::zero_throw_prob_adjustor adjust2;
 	list_type list2(alloc2);
 	
 	const int data[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -74,7 +73,7 @@ void insert1()
 	
 	try
 	  {
-	    alloc2.set_throw_prob(1);
+	    typename allocator_type::always_adjustor adjust3;
 	    list2.insert(list2.begin(), data, data + 10);
 	    VERIFY( false );
 	  }

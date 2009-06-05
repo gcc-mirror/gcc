@@ -79,7 +79,7 @@ PB_DS_CLASS_C_DEC::
 resize_imp(size_type new_size)
 {
 #ifdef PB_DS_REGRESSION
-  typename Allocator::group_throw_prob_adjustor adjust(m_num_e);
+  typename Allocator::group_adjustor adjust(m_num_e);
 #endif 
 
   if (new_size == m_num_e)

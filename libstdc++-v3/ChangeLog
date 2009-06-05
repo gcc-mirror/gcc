@@ -1,3 +1,16 @@
+2009-06-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/throw_allocator.h: Rework.
+	* include/ext/pb_ds/detail/debug_map_base.hpp: Adjust usage.
+	* include/ext/pb_ds/detail/gp_hash_table_map_/resize_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/erase_fn_imps.hpp: Same.
+	* include/ext/pb_ds/detail/ov_tree_map_/ov_tree_map_.hpp: Same.
+	* testsuite/23_containers/list/modifiers/insert/25288.cc: Same.
+	* testsuite/util/regression/rand/priority_queue/
+	container_rand_regression_test.tcc: Inline functions.
+	* testsuite/util/regression/rand/assoc/
+	container_rand_regression_test.tcc: Same.
+
 2009-06-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/23_containers/list/cons/6.cc: Adjust test name.
