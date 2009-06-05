@@ -1,3 +1,8 @@
+2009-06-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* simplify.c (call_mpc_func): Use mpc_realref/mpc_imagref
+	instead of MPC_RE/MPC_IM.
+
 2009-06-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* trans-decl.c (gfc_build_qualified_array): Don't skip generation
