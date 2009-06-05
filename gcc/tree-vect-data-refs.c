@@ -1138,11 +1138,10 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   /* While cost model enhancements are expected in the future, the high level
      view of the code at this time is as follows:
 
-     A) If there is a misaligned write then see if peeling to align this write
-        can make all data references satisfy vect_supportable_dr_alignment.
-        If so, update data structures as needed and return true.  Note that
-        at this time vect_supportable_dr_alignment is known to return false
-        for a misaligned write.
+     A) If there is an unsupported misaligned access then see if peeling
+        to align this access can make all data references satisfy
+        vect_supportable_dr_alignment.  If so, update data structures
+        as needed and return true.
 
      B) If peeling wasn't possible and there is a data reference with an
         unknown misalignment that does not satisfy vect_supportable_dr_alignment
@@ -1169,8 +1168,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
        in code size).
 
      The scheme we use FORNOW: peel to force the alignment of the first
-     misaligned store in the loop.
-     Rationale: misaligned stores are not yet supported.
+     unsupported misaligned access in the loop.
 
      TODO: Use a cost model.  */
 
@@ -1178,6 +1176,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
     {
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
+      supportable_dr_alignment = vect_supportable_dr_alignment (dr);
 
       /* For interleaving, only the alignment of the first access
          matters.  */
@@ -1185,7 +1184,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
           && DR_GROUP_FIRST_DR (stmt_info) != stmt)
         continue;
 
-      if (!DR_IS_READ (dr) && !aligned_access_p (dr))
+      if (!supportable_dr_alignment)
         {
 	  do_peeling = vector_alignment_reachable_p (dr);
 	  if (do_peeling)
@@ -3475,6 +3474,11 @@ vect_supportable_dr_alignment (struct data_reference *dr)
 	/* Can't software pipeline the loads, but can at least do them.  */
 	return dr_unaligned_supported;
     }
+   else
+     {
+       if (movmisalign_optab->handlers[mode].insn_code != CODE_FOR_nothing)
+         return dr_unaligned_supported;
+     }
 
   /* Unsupported.  */
   return dr_unaligned_unsupported;
