@@ -1327,7 +1327,7 @@ mips_merge_decl_attributes (tree olddecl, tree newdecl)
 static void
 mips_split_plus (rtx x, rtx *base_ptr, HOST_WIDE_INT *offset_ptr)
 {
-  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
+  if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1)))
     {
       *base_ptr = XEXP (x, 0);
       *offset_ptr = INTVAL (XEXP (x, 1));
@@ -1921,7 +1921,7 @@ mips_cannot_force_const_mem (rtx x)
      references, reload will consider forcing C into memory and using
      one of the instruction's memory alternatives.  Returning false
      here will force it to use an input reload instead.  */
-  if (GET_CODE (x) == CONST_INT && LEGITIMATE_CONSTANT_P (x))
+  if (CONST_INT_P (x) && LEGITIMATE_CONSTANT_P (x))
     return true;
 
   split_const (x, &base, &offset);
@@ -2153,7 +2153,7 @@ mips_lwxs_address_p (rtx addr)
       rtx offset = XEXP (addr, 0);
       if (GET_CODE (offset) == MULT
 	  && REG_P (XEXP (offset, 0))
-	  && GET_CODE (XEXP (offset, 1)) == CONST_INT
+	  && CONST_INT_P (XEXP (offset, 1))
 	  && INTVAL (XEXP (offset, 1)) == 4)
 	return true;
     }
@@ -3068,7 +3068,7 @@ mips_rewrite_small_data (rtx pattern)
 static int
 m16_check_op (rtx op, int low, int high, int mask)
 {
-  return (GET_CODE (op) == CONST_INT
+  return (CONST_INT_P (op)
 	  && IN_RANGE (INTVAL (op), low, high)
 	  && (INTVAL (op) & mask) == 0);
 }
@@ -4108,7 +4108,7 @@ mips_canonicalize_int_order_test (enum rtx_code *code, rtx *cmp1,
   if (mips_int_order_operand_ok_p (*code, *cmp1))
     return true;
 
-  if (GET_CODE (*cmp1) == CONST_INT)
+  if (CONST_INT_P (*cmp1))
     switch (*code)
       {
       case LE:
@@ -6439,7 +6439,7 @@ mips_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 bool
 mips_expand_block_move (rtx dest, rtx src, rtx length)
 {
-  if (GET_CODE (length) == CONST_INT)
+  if (CONST_INT_P (length))
     {
       if (INTVAL (length) <= MIPS_MAX_MOVE_BYTES_STRAIGHT)
 	{
@@ -7194,28 +7194,28 @@ mips_print_operand (FILE *file, rtx op, int letter)
   switch (letter)
     {
     case 'X':
-      if (GET_CODE (op) == CONST_INT)
+      if (CONST_INT_P (op))
 	fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (op));
       else
 	output_operand_lossage ("invalid use of '%%%c'", letter);
       break;
 
     case 'x':
-      if (GET_CODE (op) == CONST_INT)
+      if (CONST_INT_P (op))
 	fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (op) & 0xffff);
       else
 	output_operand_lossage ("invalid use of '%%%c'", letter);
       break;
 
     case 'd':
-      if (GET_CODE (op) == CONST_INT)
+      if (CONST_INT_P (op))
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op));
       else
 	output_operand_lossage ("invalid use of '%%%c'", letter);
       break;
 
     case 'm':
-      if (GET_CODE (op) == CONST_INT)
+      if (CONST_INT_P (op))
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op) - 1);
       else
 	output_operand_lossage ("invalid use of '%%%c'", letter);
@@ -9398,7 +9398,7 @@ mips_emit_loadgp (void)
 static int
 mips_kernel_reg_p (rtx *x, void *data ATTRIBUTE_UNUSED)
 {
-  return GET_CODE (*x) == REG && KERNEL_REG_P (REGNO (*x));
+  return REG_P (*x) && KERNEL_REG_P (REGNO (*x));
 }
 
 /* Expand the "prologue" pattern.  */
@@ -14710,7 +14710,7 @@ mips_epilogue_uses (unsigned int regno)
 static int
 mips_at_reg_p (rtx *x, void *data ATTRIBUTE_UNUSED)
 {
-  return GET_CODE (*x) == REG && REGNO (*x) == AT_REGNUM;
+  return REG_P (*x) && REGNO (*x) == AT_REGNUM;
 }
 
 
