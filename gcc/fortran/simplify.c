@@ -223,8 +223,8 @@ call_mpc_func (mpfr_ptr result_re, mpfr_ptr result_im,
   mpc_init2 (c, mpfr_get_default_prec());
   mpc_set_fr_fr (c, input_re, input_im, GFC_MPC_RND_MODE);
   func (c, c, GFC_MPC_RND_MODE);
-  mpfr_set (result_re, MPC_RE (c), GFC_RND_MODE);
-  mpfr_set (result_im, MPC_IM (c), GFC_RND_MODE);
+  mpfr_set (result_re, mpc_realref (c), GFC_RND_MODE);
+  mpfr_set (result_im, mpc_imagref (c), GFC_RND_MODE);
   mpc_clear (c);
 }
 #endif
