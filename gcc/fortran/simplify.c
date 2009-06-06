@@ -3808,7 +3808,7 @@ gfc_simplify_reshape (gfc_expr *source, gfc_expr *shape_exp,
   for (i = 0; i < rank; i++)
     x[i] = 0;
 
-  for (;;)
+  while (nsource > 0 || npad > 0)
     {
       /* Figure out which element to extract.  */
       mpz_set_ui (index, 0);
