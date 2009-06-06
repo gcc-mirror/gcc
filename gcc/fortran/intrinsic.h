@@ -289,6 +289,7 @@ gfc_expr *gfc_simplify_null (gfc_expr *);
 gfc_expr *gfc_simplify_idnint (gfc_expr *);
 gfc_expr *gfc_simplify_not (gfc_expr *);
 gfc_expr *gfc_simplify_or (gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_pack (gfc_expr *, gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_precision (gfc_expr *);
 gfc_expr *gfc_simplify_radix (gfc_expr *);
 gfc_expr *gfc_simplify_range (gfc_expr *);

@@ -2149,13 +2149,63 @@ gfc_check_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
 
   if (vector != NULL)
     {
+      mpz_t array_size, vector_size;
+      bool have_array_size, have_vector_size;
+
       if (same_type_check (array, 0, vector, 2) == FAILURE)
 	return FAILURE;
 
       if (rank_check (vector, 2, 1) == FAILURE)
 	return FAILURE;
 
-      /* TODO: More constraints here.  */
+      /* VECTOR requires at least as many elements as MASK
+         has .TRUE. values.  */
+      have_array_size = gfc_array_size (array, &array_size) == SUCCESS;
+      have_vector_size = gfc_array_size (vector, &vector_size) == SUCCESS;
+
+      if (have_vector_size
+	  && (mask->expr_type == EXPR_ARRAY
+	      || (mask->expr_type == EXPR_CONSTANT
+		  && have_array_size)))
+	{
+	  int mask_true_values = 0;
+
+	  if (mask->expr_type == EXPR_ARRAY)
+	    {
+	      gfc_constructor *mask_ctor = mask->value.constructor;
+	      while (mask_ctor)
+		{
+		  if (mask_ctor->expr->expr_type != EXPR_CONSTANT)
+		    {
+		      mask_true_values = 0;
+		      break;
+		    }
+
+		  if (mask_ctor->expr->value.logical)
+		    mask_true_values++;
+
+		  mask_ctor = mask_ctor->next;
+		}
+	    }
+	  else if (mask->expr_type == EXPR_CONSTANT && mask->value.logical)
+	    mask_true_values = mpz_get_si (array_size);
+
+	  if (mpz_get_si (vector_size) < mask_true_values)
+	    {
+	      gfc_error ("'%s' argument of '%s' intrinsic at %L must "
+			 "provide at least as many elements as there "
+			 "are .TRUE. values in '%s' (%ld/%d)",
+			 gfc_current_intrinsic_arg[2],gfc_current_intrinsic, 
+			 &vector->where, gfc_current_intrinsic_arg[1],
+			 mpz_get_si (vector_size), mask_true_values);
+	      return FAILURE;
+	    }
+	}
+
+      if (have_array_size)
+	mpz_clear (array_size);
+      if (have_vector_size)
+	mpz_clear (vector_size);
     }
 
   return SUCCESS;

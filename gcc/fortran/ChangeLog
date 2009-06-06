@@ -1,3 +1,15 @@
+2009-06-06  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/32890
+	* intrinsic.h (gfc_simplify_pack): New prototype.
+	* intrinsic.c (add_functions): Added
+	simplifier-callback to PACK.
+	* simplify.c (is_constant_array_expr): Moved
+	to beginning of file.
+	(gfc_simplify_pack): New.
+	* check.c (gfc_check_pack): Check that VECTOR has enough elements.
+	Added safeguards for empty arrays.
+
 2009-06-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* simplify.c (call_mpc_func): Use mpc_realref/mpc_imagref
