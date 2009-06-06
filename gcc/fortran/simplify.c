@@ -27,6 +27,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "intrinsic.h"
 #include "target-memory.h"
 
+/* Savely advance an array constructor by 'n' elements.
+   Mainly used by simplifiers of transformational intrinsics.  */
+#define ADVANCE(ctor, n) do { int i; for (i = 0; i < n && ctor; ++i) ctor = ctor->next; } while (0)
+
 gfc_expr gfc_bad_expr;
 
 
@@ -228,6 +232,28 @@ call_mpc_func (mpfr_ptr result_re, mpfr_ptr result_im,
   mpc_clear (c);
 }
 #endif
+
+
+/* Test that the expression is an constant array.  */
+
+static bool
+is_constant_array_expr (gfc_expr *e)
+{
+  gfc_constructor *c;
+
+  if (e == NULL)
+    return true;
+
+  if (e->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (e))
+    return false;
+
+  for (c = e->value.constructor; c; c = c->next)
+    if (c->expr->expr_type != EXPR_CONSTANT)
+      return false;
+
+  return true;
+}
+
 
 /********************** Simplification functions *****************************/
 
@@ -3360,6 +3386,75 @@ gfc_simplify_or (gfc_expr *x, gfc_expr *y)
 
 
 gfc_expr *
+gfc_simplify_pack (gfc_expr *array, gfc_expr *mask, gfc_expr *vector)
+{
+  gfc_expr *result;
+  gfc_constructor *array_ctor, *mask_ctor, *vector_ctor;
+
+  if (!is_constant_array_expr(array)
+      || !is_constant_array_expr(vector)
+      || (!gfc_is_constant_expr (mask)
+          && !is_constant_array_expr(mask)))
+    return NULL;
+
+  result = gfc_start_constructor (array->ts.type, 
+				  array->ts.kind,
+				  &array->where);
+
+  array_ctor = array->value.constructor;
+  vector_ctor = vector ? vector->value.constructor : NULL;
+
+  if (mask->expr_type == EXPR_CONSTANT
+      && mask->value.logical)
+    {
+      /* Copy all elements of ARRAY to RESULT.  */
+      while (array_ctor)
+	{
+	  gfc_append_constructor (result, 
+				  gfc_copy_expr (array_ctor->expr));
+
+	  ADVANCE (array_ctor, 1);
+	  ADVANCE (vector_ctor, 1);
+	}
+    }
+  else if (mask->expr_type == EXPR_ARRAY)
+    {
+      /* Copy only those elements of ARRAY to RESULT whose 
+	 MASK equals .TRUE..  */
+      mask_ctor = mask->value.constructor;
+      while (mask_ctor)
+	{
+	  if (mask_ctor->expr->value.logical)
+	    {
+	      gfc_append_constructor (result, 
+				      gfc_copy_expr (array_ctor->expr)); 
+	      ADVANCE (vector_ctor, 1);
+	    }
+
+	  ADVANCE (array_ctor, 1);
+	  ADVANCE (mask_ctor, 1);
+	}
+    }
+
+  /* Append any left-over elements from VECTOR to RESULT.  */
+  while (vector_ctor)
+    {
+      gfc_append_constructor (result, 
+			      gfc_copy_expr (vector_ctor->expr));
+      ADVANCE (vector_ctor, 1);
+    }
+
+  result->shape = gfc_get_shape (1);
+  gfc_array_size (result, &result->shape[0]);
+
+  if (array->ts.type == BT_CHARACTER)
+    result->ts.cl = array->ts.cl;
+
+  return result;
+}
+
+
+gfc_expr *
 gfc_simplify_precision (gfc_expr *e)
 {
   gfc_expr *result;
@@ -3618,27 +3713,6 @@ gfc_simplify_repeat (gfc_expr *e, gfc_expr *n)
 
   result->value.character.string[nlen] = '\0';	/* For debugger */
   return result;
-}
-
-
-/* Test that the expression is an constant array.  */
-
-static bool
-is_constant_array_expr (gfc_expr *e)
-{
-  gfc_constructor *c;
-
-  if (e == NULL)
-    return true;
-
-  if (e->expr_type != EXPR_ARRAY || !gfc_is_constant_expr (e))
-    return false;
-  
-  for (c = e->value.constructor; c; c = c->next)
-    if (c->expr->expr_type != EXPR_CONSTANT)
-      return false;
-
-  return true;
 }
 
 

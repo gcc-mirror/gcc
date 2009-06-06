@@ -2209,7 +2209,7 @@ add_functions (void)
   make_generic ("null", GFC_ISYM_NULL, GFC_STD_F95);
 
   add_sym_3 ("pack", GFC_ISYM_PACK, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_pack, NULL, gfc_resolve_pack,
+	     gfc_check_pack, gfc_simplify_pack, gfc_resolve_pack,
 	     ar, BT_REAL, dr, REQUIRED, msk, BT_LOGICAL, dl, REQUIRED,
 	     v, BT_REAL, dr, OPTIONAL);
 
