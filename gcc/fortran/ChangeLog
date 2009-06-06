@@ -1,5 +1,11 @@
 2009-06-06  Daniel Franke  <franke.daniel@gmail.com>
 
+	PR fortran/37203
+	* simplify.c (gfc_simplify_reshape): Fixed reshaping of empty arrays
+	without padding.
+
+2009-06-06  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/32890
 	* intrinsic.h (gfc_simplify_pack): New prototype.
 	* intrinsic.c (add_functions): Added
