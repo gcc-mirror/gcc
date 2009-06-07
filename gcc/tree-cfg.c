@@ -1571,7 +1571,7 @@ gimple_merge_blocks (basic_block a, basic_block b)
 
 
 /* Return the one of two successors of BB that is not reachable by a
-   reached by a complex edge, if there is one.  Else, return BB.  We use
+   complex edge, if there is one.  Else, return BB.  We use
    this in optimizations that use post-dominators for their heuristics,
    to catch the cases in C++ where function calls are involved.  */
 
@@ -4464,6 +4464,7 @@ verify_stmts (void)
 	  if (gimple_bb (stmt) != bb)
 	    {
 	      error ("gimple_bb (stmt) is set to a wrong basic block");
+	      debug_gimple_stmt (stmt);
 	      err |= true;
 	    }
 
