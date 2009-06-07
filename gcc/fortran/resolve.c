@@ -1584,8 +1584,8 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
       /* Elemental procedure's array actual arguments must conform.  */
       if (e != NULL)
 	{
-	  if (gfc_check_conformance ("elemental procedure", arg->expr, e)
-	      == FAILURE)
+	  if (gfc_check_conformance (arg->expr, e,
+				     "elemental procedure") == FAILURE)
 	    return FAILURE;
 	}
       else

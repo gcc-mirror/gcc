@@ -3617,14 +3617,13 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
       first_expr = arg->expr;
 
       for ( ; arg && arg->expr; arg = arg->next, n++)
-	{
-          char buffer[80];
-	  snprintf (buffer, 80, "arguments '%s' and '%s' for intrinsic '%s'",
-		    gfc_current_intrinsic_arg[0], gfc_current_intrinsic_arg[n],
-		    gfc_current_intrinsic);
-	  if (gfc_check_conformance (buffer, first_expr, arg->expr) == FAILURE)
-	    return FAILURE;
-	}
+	if (gfc_check_conformance (first_expr, arg->expr,
+				   "arguments '%s' and '%s' for "
+				   "intrinsic '%s'",
+				   gfc_current_intrinsic_arg[0],
+				   gfc_current_intrinsic_arg[n],
+				   gfc_current_intrinsic) == FAILURE)
+	  return FAILURE;
     }
 
   if (t == FAILURE)

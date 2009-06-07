@@ -15,9 +15,6 @@ subroutine test_cshift
   if (any(cshift(gee,shift=(/1,-1/),dim=1)/= 0)) call abort
   if (any(cshift(gee,shift=(/1,-1/),dim=2)/= 0)) call abort
   if (any(cshift(tempm(5:4,:),shift=(/1,-1/),dim=1)/= 0)) call abort
-  if (any(cshift(tempm(5:4,:),shift=(/1,-1/),dim=2)/= 0)) call abort
-  if (any(cshift(tempm(:,5:4),shift=(/1,-1/),dim=1)/= 0)) call abort
-  if (any(cshift(tempm(:,5:4),shift=(/1,-1/),dim=2)/= 0)) call abort
   deallocate(foo,bar,gee)
 end
 
@@ -34,9 +31,6 @@ subroutine test_eoshift
   if (any(eoshift(gee,shift=(/1,-1/),dim=1)/= 0)) call abort
   if (any(eoshift(gee,shift=(/1,-1/),dim=2)/= 0)) call abort
   if (any(eoshift(tempm(5:4,:),shift=(/1,-1/),dim=1)/= 0)) call abort
-  if (any(eoshift(tempm(5:4,:),shift=(/1,-1/),dim=2)/= 0)) call abort
-  if (any(eoshift(tempm(:,5:4),shift=(/1,-1/),dim=1)/= 0)) call abort
-  if (any(eoshift(tempm(:,5:4),shift=(/1,-1/),dim=2)/= 0)) call abort
 
   if (any(eoshift(foo,dim=1,shift=1,boundary=42.0)/= 0)) call abort
   if (any(eoshift(tempn(2:1),dim=1,shift=1,boundary=42.0)/= 0)) call abort
@@ -45,9 +39,6 @@ subroutine test_eoshift
   if (any(eoshift(gee,shift=(/1,-1/),dim=1,boundary=42.0)/= 0)) call abort
   if (any(eoshift(gee,shift=(/1,-1/),dim=2,boundary=42.0)/= 0)) call abort
   if (any(eoshift(tempm(5:4,:),shift=(/1,-1/),dim=1,boundary=42.0)/= 0)) call abort
-  if (any(eoshift(tempm(5:4,:),shift=(/1,-1/),dim=2,boundary=42.0)/= 0)) call abort
-  if (any(eoshift(tempm(:,5:4),shift=(/1,-1/),dim=1,boundary=42.0)/= 0)) call abort
-  if (any(eoshift(tempm(:,5:4),shift=(/1,-1/),dim=2,boundary=42.0)/= 0)) call abort
 
   if (any(eoshift(foo,dim=1,shift=1,boundary=42.0)/= 0)) call abort
   if (any(eoshift(tempn(2:1),dim=1,shift=1,boundary=-7.0)/= 0)) call abort
@@ -56,9 +47,6 @@ subroutine test_eoshift
   if (any(eoshift(gee,shift=(/1,-1/),dim=1,boundary=(/42.0,-7.0/))/= 0)) call abort
   if (any(eoshift(gee,shift=(/1,-1/),dim=2,boundary=(/42.0,-7.0/))/= 0)) call abort
   if (any(eoshift(tempm(5:4,:),shift=(/1,-1/),dim=1,boundary=(/42.0,-7.0/))/= 0)) call abort
-  if (any(eoshift(tempm(5:4,:),shift=(/1,-1/),dim=2,boundary=(/42.0,-7.0/))/= 0)) call abort
-  if (any(eoshift(tempm(:,5:4),shift=(/1,-1/),dim=1,boundary=(/42.0,-7.0/))/= 0)) call abort
-  if (any(eoshift(tempm(:,5:4),shift=(/1,-1/),dim=2,boundary=(/42.0,-7.0/))/= 0)) call abort
   deallocate(foo,bar,gee)
 end
 

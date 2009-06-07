@@ -8,8 +8,6 @@ program main
   b = cshift (a,1)
   b = cshift (a,j)
   b = eoshift (a,1)
-  b = eoshift (a,(/1/))
   b = eoshift (a,1,boundary=c(1,:))
   b = eoshift (a, j, boundary=c(1,:))
-
 end program main
