@@ -1,5 +1,20 @@
 2009-06-07  Daniel Franke  <franke.daniel@gmail.com>
 
+	* check.c (dim_rank_check): Return SUCCESS if DIM=NULL.
+	(gfc_check_lbound): Removed (now) redundant check for DIM=NULL.
+	(gfc_check_minloc_maxloc): Likewise.
+	(check_reduction): Likewise.
+	(gfc_check_size): Likewise.
+	(gfc_check_ubound): Likewise.
+	(gfc_check_cshift): Added missing shape-conformance checks.
+	(gfc_check_eoshift): Likewise.
+	* gfortran.h (gfc_check_conformance): Modified prototype to printf-style.
+	* expr.c (gfc_check_conformance): Accept error-message chunks in 
+	printf-style. Changed all callers.
+
+
+2009-06-07  Daniel Franke  <franke.daniel@gmail.com>
+
 	PR fortran/25104
 	PR fortran/29962
 	* intrinsic.h (gfc_simplify_dot_product): New prototype.

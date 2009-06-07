@@ -1561,7 +1561,7 @@ reduce_binary_aa (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
   rc = ARITH_OK;
   d = op2->value.constructor;
 
-  if (gfc_check_conformance ("elemental binary operation", op1, op2)
+  if (gfc_check_conformance (op1, op2, "elemental binary operation")
       != SUCCESS)
     rc = ARITH_INCOMMENSURATE;
   else

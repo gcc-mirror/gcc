@@ -2776,18 +2776,25 @@ gfc_specification_expr (gfc_expr *e)
 /* Given two expressions, make sure that the arrays are conformable.  */
 
 gfc_try
-gfc_check_conformance (const char *optype_msgid, gfc_expr *op1, gfc_expr *op2)
+gfc_check_conformance (gfc_expr *op1, gfc_expr *op2, const char *optype_msgid, ...)
 {
   int op1_flag, op2_flag, d;
   mpz_t op1_size, op2_size;
   gfc_try t;
 
+  va_list argp;
+  char buffer[240];
+
   if (op1->rank == 0 || op2->rank == 0)
     return SUCCESS;
 
+  va_start (argp, optype_msgid);
+  vsnprintf (buffer, 240, optype_msgid, argp);
+  va_end (argp);
+
   if (op1->rank != op2->rank)
     {
-      gfc_error ("Incompatible ranks in %s (%d and %d) at %L", _(optype_msgid),
+      gfc_error ("Incompatible ranks in %s (%d and %d) at %L", _(buffer),
 		 op1->rank, op2->rank, &op1->where);
       return FAILURE;
     }
@@ -2802,7 +2809,7 @@ gfc_check_conformance (const char *optype_msgid, gfc_expr *op1, gfc_expr *op2)
       if (op1_flag && op2_flag && mpz_cmp (op1_size, op2_size) != 0)
 	{
 	  gfc_error ("Different shape for %s at %L on dimension %d "
-		     "(%d and %d)", _(optype_msgid), &op1->where, d + 1,
+		     "(%d and %d)", _(buffer), &op1->where, d + 1,
 		     (int) mpz_get_si (op1_size),
 		     (int) mpz_get_si (op2_size));
 
@@ -2950,7 +2957,7 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform)
 
   /* Check size of array assignments.  */
   if (lvalue->rank != 0 && rvalue->rank != 0
-      && gfc_check_conformance ("array assignment", lvalue, rvalue) != SUCCESS)
+      && gfc_check_conformance (lvalue, rvalue, "array assignment") != SUCCESS)
     return FAILURE;
 
   if (rvalue->is_boz && lvalue->ts.type != BT_INTEGER

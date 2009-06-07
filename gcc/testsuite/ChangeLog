@@ -1,3 +1,10 @@
+2009-06-07  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/36874
+	* gfortran.dg/intrinsic_argument_conformance_2.f90: Adjusted error message.
+	* gfortran.dg/zero_sized_1.f90: Removed checks with incompatible shapes.
+	* gfortran.dg/zero_sized_5.f90: Likewise.
+
 2009-06-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR middle-end/32950
