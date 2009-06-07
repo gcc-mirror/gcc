@@ -1,3 +1,8 @@
+2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* basic-block.h (ENTRY_BLOCK, EXIT_BLOCK): Document that neither of
+	them is supposed to hold actual statements.
+
 2009-06-06  Ian Lance Taylor  <iant@google.com>
 
 	* doc/extend.texi (Attribute Syntax): Document that C++ labels on

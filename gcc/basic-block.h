@@ -491,7 +491,8 @@ extern bitmap_obstack reg_obstack;
 #define BB_HEAD(B)      (B)->il.rtl->head_
 #define BB_END(B)       (B)->il.rtl->end_
 
-/* Special block numbers [markers] for entry and exit.  */
+/* Special block numbers [markers] for entry and exit.
+   Neither of them is supposed to hold actual statements.  */
 #define ENTRY_BLOCK (0)
 #define EXIT_BLOCK (1)
 
