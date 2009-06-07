@@ -1189,7 +1189,7 @@ add_functions (void)
   make_generic ("aint", GFC_ISYM_AINT, GFC_STD_F77);
 
   add_sym_2 ("all", GFC_ISYM_ALL, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F95,
-	     gfc_check_all_any, NULL, gfc_resolve_all,
+	     gfc_check_all_any, gfc_simplify_all, gfc_resolve_all,
 	     msk, BT_LOGICAL, dl, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL);
 
   make_generic ("all", GFC_ISYM_ALL, GFC_STD_F95);
@@ -1211,7 +1211,7 @@ add_functions (void)
   make_generic ("anint", GFC_ISYM_ANINT, GFC_STD_F77);
 
   add_sym_2 ("any", GFC_ISYM_ANY, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_LOGICAL, dl, GFC_STD_F95,
-	     gfc_check_all_any, NULL, gfc_resolve_any,
+	     gfc_check_all_any, gfc_simplify_any, gfc_resolve_any,
 	     msk, BT_LOGICAL, dl, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL);
 
   make_generic ("any", GFC_ISYM_ANY, GFC_STD_F95);
@@ -1451,7 +1451,7 @@ add_functions (void)
 
   add_sym_3 ("count", GFC_ISYM_COUNT, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
 	     BT_INTEGER, di, GFC_STD_F95,
-	     gfc_check_count, NULL, gfc_resolve_count,
+	     gfc_check_count, gfc_simplify_count, gfc_resolve_count,
 	     msk, BT_LOGICAL, dl, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
 	     kind, BT_INTEGER, di, OPTIONAL);
 
@@ -2228,7 +2228,7 @@ add_functions (void)
   make_generic ("present", GFC_ISYM_PRESENT, GFC_STD_F95);
 
   add_sym_3red ("product", GFC_ISYM_PRODUCT, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-		gfc_check_product_sum, NULL, gfc_resolve_product,
+		gfc_check_product_sum, gfc_simplify_product, gfc_resolve_product,
 		ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
 		msk, BT_LOGICAL, dl, OPTIONAL);
 
@@ -2466,7 +2466,7 @@ add_functions (void)
   make_generic ("stat", GFC_ISYM_STAT, GFC_STD_GNU);
 
   add_sym_3red ("sum", GFC_ISYM_SUM, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-		gfc_check_product_sum, NULL, gfc_resolve_sum,
+		gfc_check_product_sum, gfc_simplify_sum, gfc_resolve_sum,
 		ar, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, OPTIONAL,
 		msk, BT_LOGICAL, dl, OPTIONAL);
 

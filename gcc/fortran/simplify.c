@@ -387,6 +387,246 @@ compute_dot_product (gfc_constructor *ctor_a, int stride_a,
   return result;
 }
 
+
+/* Build a result expression for transformational intrinsics, 
+   depending on DIM. */
+
+static gfc_expr *
+transformational_result (gfc_expr *array, gfc_expr *dim, bt type,
+			 int kind, locus* where)
+{
+  gfc_expr *result;
+  int i, nelem;
+
+  if (!dim || array->rank == 1)
+    return gfc_constant_result (type, kind, where);
+
+  result = gfc_start_constructor (type, kind, where);
+  result->shape = gfc_copy_shape_excluding (array->shape, array->rank, dim);
+  result->rank = array->rank - 1;
+
+  /* gfc_array_size() would count the number of elements in the constructor,
+     we have not built those yet.  */
+  nelem = 1;
+  for  (i = 0; i < result->rank; ++i)
+    nelem *= mpz_get_ui (result->shape[i]);
+
+  for (i = 0; i < nelem; ++i)
+    {
+      gfc_expr *e = gfc_constant_result (type, kind, where);
+      gfc_append_constructor (result, e);
+    }
+
+  return result;
+}
+
+
+typedef gfc_expr* (*transformational_op)(gfc_expr*, gfc_expr*);
+
+/* Wrapper function, implements 'op1 += 1'. Only called if MASK
+   of COUNT intrinsic is .TRUE..
+
+   Interface and implimentation mimics arith functions as
+   gfc_add, gfc_multiply, etc.  */
+
+static gfc_expr* gfc_count (gfc_expr *op1, gfc_expr *op2)
+{
+  gfc_expr *result;
+
+  gcc_assert (op1->ts.type == BT_INTEGER);
+  gcc_assert (op2->ts.type == BT_LOGICAL);
+  gcc_assert (op2->value.logical);
+
+  result = gfc_copy_expr (op1);
+  mpz_add_ui (result->value.integer, result->value.integer, 1);
+
+  gfc_free_expr (op1);
+  gfc_free_expr (op2);
+  return result;
+}
+
+
+/* Transforms an ARRAY with operation OP, according to MASK, to a
+   scalar RESULT. E.g. called if
+
+     REAL, PARAMETER :: array(n, m) = ...
+     REAL, PARAMETER :: s = SUM(array)
+
+  where OP == gfc_add().  */
+
+static gfc_expr *
+simplify_transformation_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *mask,
+				   transformational_op op)
+{
+  gfc_expr *a, *m;
+  gfc_constructor *array_ctor, *mask_ctor;
+
+  /* Shortcut for constant .FALSE. MASK.  */
+  if (mask
+      && mask->expr_type == EXPR_CONSTANT
+      && !mask->value.logical)
+    return result;
+
+  array_ctor = array->value.constructor;
+  mask_ctor = NULL;
+  if (mask && mask->expr_type == EXPR_ARRAY)
+    mask_ctor = mask->value.constructor;
+
+  while (array_ctor)
+    {
+      a = array_ctor->expr;
+      array_ctor = array_ctor->next;
+
+      /* A constant MASK equals .TRUE. here and can be ignored.  */
+      if (mask_ctor)
+	{
+	  m = mask_ctor->expr;
+	  mask_ctor = mask_ctor->next;
+	  if (!m->value.logical)
+	    continue;
+	}
+
+      result = op (result, gfc_copy_expr (a));
+    }
+
+  return result;
+}
+
+/* Transforms an ARRAY with operation OP, according to MASK, to an
+   array RESULT. E.g. called if
+
+     REAL, PARAMETER :: array(n, m) = ...
+     REAL, PARAMETER :: s(n) = PROD(array, DIM=1)
+
+  where OP == gfc_multiply().  */
+
+static gfc_expr *
+simplify_transformation_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *dim,
+				  gfc_expr *mask, transformational_op op)
+{
+  mpz_t size;
+  int done, i, n, arraysize, resultsize, dim_index, dim_extent, dim_stride;
+  gfc_expr **arrayvec, **resultvec, **base, **src, **dest;
+  gfc_constructor *array_ctor, *mask_ctor, *result_ctor;
+
+  int count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
+      sstride[GFC_MAX_DIMENSIONS], dstride[GFC_MAX_DIMENSIONS],
+      tmpstride[GFC_MAX_DIMENSIONS];
+
+  /* Shortcut for constant .FALSE. MASK.  */
+  if (mask
+      && mask->expr_type == EXPR_CONSTANT
+      && !mask->value.logical)
+    return result;
+
+  /* Build an indexed table for array element expressions to minimize
+     linked-list traversal. Masked elements are set to NULL.  */
+  gfc_array_size (array, &size);
+  arraysize = mpz_get_ui (size);
+
+  arrayvec = (gfc_expr**) gfc_getmem (sizeof (gfc_expr*) * arraysize);
+
+  array_ctor = array->value.constructor;
+  mask_ctor = NULL;
+  if (mask && mask->expr_type == EXPR_ARRAY)
+    mask_ctor = mask->value.constructor;
+
+  for (i = 0; i < arraysize; ++i)
+    {
+      arrayvec[i] = array_ctor->expr;
+      array_ctor = array_ctor->next;
+
+      if (mask_ctor)
+	{
+	  if (!mask_ctor->expr->value.logical)
+	    arrayvec[i] = NULL;
+
+	  mask_ctor = mask_ctor->next;
+	}
+    }
+
+  /* Same for the result expression.  */
+  gfc_array_size (result, &size);
+  resultsize = mpz_get_ui (size);
+  mpz_clear (size);
+
+  resultvec = (gfc_expr**) gfc_getmem (sizeof (gfc_expr*) * resultsize);
+  result_ctor = result->value.constructor;
+  for (i = 0; i < resultsize; ++i)
+    {
+      resultvec[i] = result_ctor->expr;
+      result_ctor = result_ctor->next;
+    }
+
+  gfc_extract_int (dim, &dim_index);
+  dim_index -= 1;               /* zero-base index */
+  dim_extent = 0;
+  dim_stride = 0;
+
+  for (i = 0, n = 0; i < array->rank; ++i)
+    {
+      count[i] = 0;
+      tmpstride[i] = (i == 0) ? 1 : tmpstride[i-1] * mpz_get_si (array->shape[i-1]);
+      if (i == dim_index)
+	{
+	  dim_extent = mpz_get_si (array->shape[i]);
+	  dim_stride = tmpstride[i];
+	  continue;
+	}
+
+      extent[n] = mpz_get_si (array->shape[i]);
+      sstride[n] = tmpstride[i];
+      dstride[n] = (n == 0) ? 1 : dstride[n-1] * extent[n-1];
+      n += 1;
+    }
+
+  done = false;
+  base = arrayvec;
+  dest = resultvec;
+  while (!done)
+    {
+      for (src = base, n = 0; n < dim_extent; src += dim_stride, ++n)
+	if (*src)
+	  *dest = op (*dest, gfc_copy_expr (*src));
+
+      count[0]++;
+      base += sstride[0];
+      dest += dstride[0];
+
+      n = 0;
+      while (!done && count[n] == extent[n])
+	{
+	  count[n] = 0;
+	  base -= sstride[n] * extent[n];
+	  dest -= dstride[n] * extent[n];
+
+	  n++;
+	  if (n < result->rank)
+	    {
+	      count [n]++;
+	      base += sstride[n];
+	      dest += dstride[n];
+	    }
+	  else
+	    done = true;
+       }
+    }
+
+  /* Place updated expression in result constructor.  */
+  result_ctor = result->value.constructor;
+  for (i = 0; i < resultsize; ++i)
+    {
+      result_ctor->expr = resultvec[i];
+      result_ctor = result_ctor->next;
+    }
+
+  gfc_free (arrayvec);
+  gfc_free (resultvec);
+  return result;
+}
+
+
+
 /********************** Simplification functions *****************************/
 
 gfc_expr *
@@ -658,6 +898,25 @@ gfc_simplify_aint (gfc_expr *e, gfc_expr *k)
 
 
 gfc_expr *
+gfc_simplify_all (gfc_expr *mask, gfc_expr *dim)
+{
+  gfc_expr *result;
+
+  if (!is_constant_array_expr (mask)
+      || !gfc_is_constant_expr (dim))
+    return NULL;
+
+  result = transformational_result (mask, dim, mask->ts.type,
+				    mask->ts.kind, &mask->where);
+  init_result_expr (result, true, NULL);
+
+  return !dim || mask->rank == 1 ?
+    simplify_transformation_to_scalar (result, mask, NULL, gfc_and) :
+    simplify_transformation_to_array (result, mask, dim, NULL, gfc_and);
+}
+
+
+gfc_expr *
 gfc_simplify_dint (gfc_expr *e)
 {
   gfc_expr *rtrunc, *result;
@@ -719,6 +978,25 @@ gfc_simplify_and (gfc_expr *x, gfc_expr *y)
       result->value.logical = x->value.logical && y->value.logical;
       return result;
     }
+}
+
+
+gfc_expr *
+gfc_simplify_any (gfc_expr *mask, gfc_expr *dim)
+{
+  gfc_expr *result;
+
+  if (!is_constant_array_expr (mask)
+      || !gfc_is_constant_expr (dim))
+    return NULL;
+
+  result = transformational_result (mask, dim, mask->ts.type,
+				    mask->ts.kind, &mask->where);
+  init_result_expr (result, false, NULL);
+
+  return !dim || mask->rank == 1 ?
+    simplify_transformation_to_scalar (result, mask, NULL, gfc_or) :
+    simplify_transformation_to_array (result, mask, dim, NULL, gfc_or);
 }
 
 
@@ -1218,6 +1496,32 @@ gfc_simplify_cosh (gfc_expr *x)
   mpfr_cosh (result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "COSH");
+}
+
+
+gfc_expr *
+gfc_simplify_count (gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
+{
+  gfc_expr *result;
+
+  if (!is_constant_array_expr (mask)
+      || !gfc_is_constant_expr (dim)
+      || !gfc_is_constant_expr (kind))
+    return NULL;
+
+  result = transformational_result (mask, dim,
+				    BT_INTEGER,
+				    get_kind (BT_INTEGER, kind, "COUNT",
+					      gfc_default_integer_kind),
+				    &mask->where);
+
+  init_result_expr (result, 0, NULL);
+
+  /* Passing MASK twice, once as data array, once as mask.
+     Whenever gfc_count is called, '1' is added to the result.  */
+  return !dim || mask->rank == 1 ?
+    simplify_transformation_to_scalar (result, mask, mask, gfc_count) :
+    simplify_transformation_to_array (result, mask, dim, mask, gfc_count);
 }
 
 
@@ -3706,6 +4010,30 @@ gfc_simplify_precision (gfc_expr *e)
 
 
 gfc_expr *
+gfc_simplify_product (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
+{
+  gfc_expr *result;
+
+  if (!is_constant_array_expr (array)
+      || !gfc_is_constant_expr (dim))
+    return NULL;
+
+  if (mask
+      && !is_constant_array_expr (mask)
+      && mask->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = transformational_result (array, dim, array->ts.type,
+				    array->ts.kind, &array->where);
+  init_result_expr (result, 1, NULL);
+
+  return !dim || array->rank == 1 ?
+    simplify_transformation_to_scalar (result, array, mask, gfc_multiply) :
+    simplify_transformation_to_array (result, array, dim, mask, gfc_multiply);
+}
+
+
+gfc_expr *
 gfc_simplify_radix (gfc_expr *e)
 {
   gfc_expr *result;
@@ -4824,6 +5152,30 @@ negative_arg:
   gfc_free_expr (result);
   gfc_error ("Argument of SQRT at %L has a negative value", &e->where);
   return &gfc_bad_expr;
+}
+
+
+gfc_expr *
+gfc_simplify_sum (gfc_expr *array, gfc_expr *dim, gfc_expr *mask)
+{
+  gfc_expr *result;
+
+  if (!is_constant_array_expr (array)
+      || !gfc_is_constant_expr (dim))
+    return NULL;
+
+  if (mask
+      && !is_constant_array_expr (mask)
+      && mask->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = transformational_result (array, dim, array->ts.type,
+				    array->ts.kind, &array->where);
+  init_result_expr (result, 0, NULL);
+
+  return !dim || array->rank == 1 ?
+    simplify_transformation_to_scalar (result, array, mask, gfc_add) :
+    simplify_transformation_to_array (result, array, dim, mask, gfc_add);
 }
 
 

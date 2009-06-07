@@ -522,6 +522,9 @@ gfc_check_all_any (gfc_expr *mask, gfc_expr *dim)
   if (dim_check (dim, 1, false) == FAILURE)
     return FAILURE;
 
+  if (dim_rank_check (dim, mask, 0) == FAILURE)
+    return FAILURE;
+
   return SUCCESS;
 }
 
@@ -858,6 +861,8 @@ gfc_check_count (gfc_expr *mask, gfc_expr *dim, gfc_expr *kind)
   if (logical_array_check (mask, 0) == FAILURE)
     return FAILURE;
   if (dim_check (dim, 1, false) == FAILURE)
+    return FAILURE;
+  if (dim_rank_check (dim, mask, 0) == FAILURE)
     return FAILURE;
   if (kind_check (kind, 2, BT_INTEGER) == FAILURE)
     return FAILURE;
