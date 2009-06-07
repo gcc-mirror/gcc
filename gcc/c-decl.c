@@ -3520,7 +3520,7 @@ void
 finish_decl (tree decl, tree init, tree origtype, tree asmspec_tree)
 {
   tree type;
-  int was_incomplete = (DECL_SIZE (decl) == 0);
+  bool was_incomplete = (DECL_SIZE (decl) == 0);
   const char *asmspec = 0;
 
   /* If a name was specified, get the string.  */
@@ -7293,7 +7293,6 @@ finish_function (void)
 	      cgraph_add_new_function (fndecl, false);
 	      return;
 	    }
-
 	  cgraph_finalize_function (fndecl, false);
 	}
       else

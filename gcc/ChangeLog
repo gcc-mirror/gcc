@@ -1,5 +1,10 @@
 2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
+	* c-decl.c (finish_decl): Use bool for variable was_incomplete.
+	(finish_function): Remove erroneous whitespace.
+
+2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
 	* tree-cfg.c (gimple_merge_blocks): Commentary typo fix.
 	(verify_stmts): Print statement who's gimple_bb is set to a wrong BB
 
