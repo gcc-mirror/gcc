@@ -1,3 +1,11 @@
+2009-06-07  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/25104
+	PR fortran/29962
+	* gfortran.dg/dot_product_1.f03: New.
+	* gfortran.dg/matmul_8.f03: New.
+	* gfortran.dg/transpose_3.f03: New.
+
 2009-06-06  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wunused-label-1.c: New test case.

@@ -2127,8 +2127,15 @@ check_transformational (gfc_expr *e)
     "selected_real_kind", "transfer", "trim", NULL
   };
 
+  static const char * const trans_func_f2003[] =  {
+    "dot_product", "matmul", "null", "pack", "repeat",
+    "reshape", "selected_char_kind", "selected_int_kind",
+    "selected_real_kind", "transfer", "transpose", "trim", NULL
+  };
+
   int i;
   const char *name;
+  const char *const *functions;
 
   if (!e->value.function.isym
       || !e->value.function.isym->transformational)
@@ -2136,31 +2143,23 @@ check_transformational (gfc_expr *e)
 
   name = e->symtree->n.sym->name;
 
+  functions = (gfc_option.allow_std & GFC_STD_F2003) 
+		? trans_func_f2003 : trans_func_f95;
+
   /* NULL() is dealt with below.  */
   if (strcmp ("null", name) == 0)
     return MATCH_NO;
 
-  for (i = 0; trans_func_f95[i]; i++)
-    if (strcmp (trans_func_f95[i], name) == 0)
-      break;
+  for (i = 0; functions[i]; i++)
+    if (strcmp (functions[i], name) == 0)
+       break;
 
-  /* FIXME, F2003: implement translation of initialization
-     expressions before enabling this check. For F95, error
-     out if the transformational function is not in the list.  */
-#if 0
-  if (trans_func_f95[i] == NULL
-      && gfc_notify_std (GFC_STD_F2003, 
-			 "transformational intrinsic '%s' at %L is not permitted "
-			 "in an initialization expression", name, &e->where) == FAILURE)
-    return MATCH_ERROR;
-#else
-  if (trans_func_f95[i] == NULL)
+  if (functions[i] == NULL)
     {
       gfc_error("transformational intrinsic '%s' at %L is not permitted "
 		"in an initialization expression", name, &e->where);
       return MATCH_ERROR;
     }
-#endif
 
   return check_init_expr_arguments (e);
 }
