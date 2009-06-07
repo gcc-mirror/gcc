@@ -1,5 +1,9 @@
 2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
+	* ipa-struct-reorg.c (do_reorg_1): Fix whitespace in dump output.
+
+2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
 	* c-decl.c (finish_decl): Use bool for variable was_incomplete.
 	(finish_function): Remove erroneous whitespace.
 
