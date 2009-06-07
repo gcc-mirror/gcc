@@ -21,6 +21,10 @@
 #ifndef TREE_SSA_SCCVN_H
 #define TREE_SSA_SCCVN_H
 
+/* In tree-ssa-sccvn.c  */
+bool expressions_equal_p (tree, tree);
+
+
 /* TOP of the VN lattice.  */
 extern tree VN_TOP;
 
