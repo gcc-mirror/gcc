@@ -39,6 +39,6 @@ program main
   if (any(eoshift(foo,dim=1,shift=1,boundary=(/42.0,-7.0/))/= 0)) call abort() ! { dg-error "must be a scalar" }
   if (any(eoshift(tempn(2:1),dim=1,shift=1,boundary=(/42.0,-7.0/))/= 0)) call abort() ! { dg-error "must be a scalar" }
 
-  if (any(unpack(tempv,tempv(1:0)/=0,tempv) /= -47)) call abort() ! { dg-error "Different shape" }
-  if (any(unpack(tempv(5:4),tempv(1:0)/=0,tempv) /= -47)) call abort() ! { dg-error "Different shape" }
+  if (any(unpack(tempv,tempv(1:0)/=0,tempv) /= -47)) call abort() ! { dg-error "must have identical shape" }
+  if (any(unpack(tempv(5:4),tempv(1:0)/=0,tempv) /= -47)) call abort() ! { dg-error "must have identical shape" }
 end program main

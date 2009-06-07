@@ -2433,7 +2433,7 @@ add_functions (void)
   make_generic ("spacing", GFC_ISYM_SPACING, GFC_STD_F95);
 
   add_sym_3 ("spread", GFC_ISYM_SPREAD, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_spread, NULL, gfc_resolve_spread,
+	     gfc_check_spread, gfc_simplify_spread, gfc_resolve_spread,
 	     src, BT_REAL, dr, REQUIRED, dm, BT_INTEGER, ii, REQUIRED,
 	     ncopies, BT_INTEGER, di, REQUIRED);
 
@@ -2575,7 +2575,7 @@ add_functions (void)
   make_generic ("unlink", GFC_ISYM_UNLINK, GFC_STD_GNU);
 
   add_sym_3 ("unpack", GFC_ISYM_UNPACK, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_unpack, NULL, gfc_resolve_unpack,
+	     gfc_check_unpack, gfc_simplify_unpack, gfc_resolve_unpack,
 	     v, BT_REAL, dr, REQUIRED, msk, BT_LOGICAL, dl, REQUIRED,
 	     f, BT_REAL, dr, REQUIRED);
 

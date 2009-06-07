@@ -5038,6 +5038,99 @@ gfc_simplify_spacing (gfc_expr *x)
 
 
 gfc_expr *
+gfc_simplify_spread (gfc_expr *source, gfc_expr *dim_expr, gfc_expr *ncopies_expr)
+{
+  gfc_expr *result = 0L;
+  int i, j, dim, ncopies;
+
+  if ((!gfc_is_constant_expr (source)
+       && !is_constant_array_expr (source))
+      || !gfc_is_constant_expr (dim_expr)
+      || !gfc_is_constant_expr (ncopies_expr))
+    return NULL;
+
+  gcc_assert (dim_expr->ts.type == BT_INTEGER);
+  gfc_extract_int (dim_expr, &dim);
+  dim -= 1;   /* zero-base DIM */
+
+  gcc_assert (ncopies_expr->ts.type == BT_INTEGER);
+  gfc_extract_int (ncopies_expr, &ncopies);
+  ncopies = MAX (ncopies, 0);
+
+  if (source->expr_type == EXPR_CONSTANT)
+    {
+      gcc_assert (dim == 0);
+
+      result = gfc_start_constructor (source->ts.type,
+				      source->ts.kind,
+				      &source->where);
+      result->rank = 1;
+      result->shape = gfc_get_shape (result->rank);
+      mpz_init_set_si (result->shape[0], ncopies);
+
+      for (i = 0; i < ncopies; ++i)
+        gfc_append_constructor (result, gfc_copy_expr (source));
+    }
+  else if (source->expr_type == EXPR_ARRAY)
+    {
+      int result_size, rstride[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS];
+      gfc_constructor *ctor, *source_ctor, *result_ctor;
+
+      gcc_assert (source->rank < GFC_MAX_DIMENSIONS);
+      gcc_assert (dim >= 0 && dim <= source->rank);
+
+      result = gfc_start_constructor (source->ts.type,
+				      source->ts.kind,
+				      &source->where);
+      result->rank = source->rank + 1;
+      result->shape = gfc_get_shape (result->rank);
+
+      result_size = 1;
+      for (i = 0, j = 0; i < result->rank; ++i)
+	{
+	  if (i != dim)
+	    mpz_init_set (result->shape[i], source->shape[j++]);
+	  else
+	    mpz_init_set_si (result->shape[i], ncopies);
+
+	  extent[i] = mpz_get_si (result->shape[i]);
+	  rstride[i] = (i == 0) ? 1 : rstride[i-1] * extent[i-1];
+	  result_size *= extent[i];
+	}
+
+      for (i = 0; i < result_size; ++i)
+	gfc_append_constructor (result, NULL);
+
+      source_ctor = source->value.constructor;
+      result_ctor = result->value.constructor;
+      while (source_ctor)
+	{
+	  ctor = result_ctor;
+
+	  for (i = 0; i < ncopies; ++i)
+	  {
+	    ctor->expr = gfc_copy_expr (source_ctor->expr);
+	    ADVANCE (ctor, rstride[dim]);
+	  }
+
+	  ADVANCE (result_ctor, (dim == 0 ? ncopies : 1));
+	  ADVANCE (source_ctor, 1);
+	}
+    }
+  else
+    /* FIXME: Returning here avoids a regression in array_simplify_1.f90.
+       Replace NULL with gcc_unreachable() after implementing
+       gfc_simplify_cshift(). */
+    return NULL;
+
+  if (source->ts.type == BT_CHARACTER)
+    result->ts.cl = source->ts.cl;
+
+  return result;
+}
+
+
+gfc_expr *
 gfc_simplify_sqrt (gfc_expr *e)
 {
   gfc_expr *result;
@@ -5428,6 +5521,54 @@ gfc_expr *
 gfc_simplify_ubound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 {
   return simplify_bound (array, dim, kind, 1);
+}
+
+
+gfc_expr *
+gfc_simplify_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
+{
+  gfc_expr *result, *e;
+  gfc_constructor *vector_ctor, *mask_ctor, *field_ctor;
+
+  if (!is_constant_array_expr (vector)
+      || !is_constant_array_expr (mask)
+      || (!gfc_is_constant_expr (field)
+	  && !is_constant_array_expr(field)))
+    return NULL;
+
+  result = gfc_start_constructor (vector->ts.type,
+				  vector->ts.kind,
+				  &vector->where);
+  result->rank = mask->rank;
+  result->shape = gfc_copy_shape (mask->shape, mask->rank);
+
+  if (vector->ts.type == BT_CHARACTER)
+    result->ts.cl = vector->ts.cl;
+
+  vector_ctor = vector->value.constructor;
+  mask_ctor = mask->value.constructor;
+  field_ctor = field->expr_type == EXPR_ARRAY ? field->value.constructor : NULL;
+
+  while (mask_ctor)
+    {
+      if (mask_ctor->expr->value.logical)
+	{
+	  gcc_assert (vector_ctor);
+	  e = gfc_copy_expr (vector_ctor->expr);
+	  ADVANCE (vector_ctor, 1);
+	}
+      else if (field->expr_type == EXPR_ARRAY)
+	e = gfc_copy_expr (field_ctor->expr);
+      else
+	e = gfc_copy_expr (field);
+
+      gfc_append_constructor (result, e);
+
+      ADVANCE (mask_ctor, 1);
+      ADVANCE (field_ctor, 1);
+    }
+
+  return result;
 }
 
 
