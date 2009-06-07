@@ -1,3 +1,11 @@
+2009-06-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-06-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/32950
+	* g++.dg/torture/pr32950.C: New.
+
 2009-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40340
