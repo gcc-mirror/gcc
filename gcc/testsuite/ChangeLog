@@ -1,3 +1,10 @@
+2009-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/40008
+	* gfortran.dg/negative_unit.f: Update test.
+	* gfortran.dg/negative_unit_int8.f: Update test.
+	* gfortran.dg/newunit_1.f90: New test.
+
 2009-06-07  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/25104

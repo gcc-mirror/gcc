@@ -6,20 +6,19 @@
 ! Test case update by Jerry DeLisle <jvdelisle@gcc.gnu.org>
 !
 ! Bugs submitted by Walt Brainerd
-      integer i
+      integer i,j
       logical l
       
-      i = 0
+      i = -1
 ! gfortran created a 'fort.-1' file and wrote "Hello" in it
-      write (unit=-1, fmt=*, iostat=i) "Hello"
-      if (i <= 0) call abort
+      write (unit=i, fmt=*, iostat=j) "Hello"
+      if (j <= 0) call abort
       
-      i = 0
-      open (unit=-11, file="xxx", iostat=i)
-      if (i <= 0) call abort
+      i = -11
+      open (unit=i, file="xxx", iostat=j)
+      if (j <= 0) call abort
 
-      i = 0
-      inquire (unit=-42, exist=l)
+      i = -42
+      inquire (unit=i, exist=l)
       if (l) call abort
-
       end
