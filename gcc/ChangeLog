@@ -1,14 +1,18 @@
 2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
-	* errors.c (internal_error): Commentary typo fix.
-	* gimple-iterator.c (gsi_insert_seq_on_edge): Ditto.
-	* tree-ssa-pre.c: Ditto.
+	* tree-cfg.c (gimple_merge_blocks): Commentary typo fix.
+	(verify_stmts): Print statement who's gimple_bb is set to a wrong BB
 
 2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* errors.c (internal_error): Commentary typo fix.
 	* gimple-iterator.c (gsi_insert_seq_on_edge): Ditto.
 	* tree-ssa-pre.c: Ditto.
+
+2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* basic-block.h (ENTRY_BLOCK, EXIT_BLOCK): Document that neither of
+	them is supposed to hold actual statements.
 
 2009-06-06  Ian Lance Taylor  <iant@google.com>
 
