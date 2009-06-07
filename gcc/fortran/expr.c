@@ -2130,7 +2130,8 @@ check_transformational (gfc_expr *e)
   static const char * const trans_func_f2003[] =  {
     "all", "any", "count", "dot_product", "matmul", "null", "pack",
     "product", "repeat", "reshape", "selected_char_kind", "selected_int_kind",
-    "selected_real_kind", "sum", "transfer", "transpose", "trim", NULL
+    "selected_real_kind", "spread", "sum", "transfer", "transpose",
+    "trim", "unpack", NULL
   };
 
   int i;

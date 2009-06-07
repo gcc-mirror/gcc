@@ -2,6 +2,22 @@
 
 	PR fortran/25104
 	PR fortran/29962
+	* array.c (gfc_append_constructor): Added NULL-check.
+	* check.c (gfc_check_spread): Check DIM.
+	(gfc_check_unpack): Check that the ARRAY arguments provides enough
+	values for MASK.
+	* intrinsic.h (gfc_simplify_spread): New prototype.
+	(gfc_simplify_unpack): Likewise.
+	* intrinsic.c (add_functions): Added new simplifier callbacks.
+	* simplify.c (gfc_simplify_spread): New.
+	(gfc_simplify_unpack): New.
+	* expr.c (check_transformational): Allow additional transformational
+	intrinsics in initialization expression.
+
+2009-06-07  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/25104
+	PR fortran/29962
 	* check.c (gfc_check_all_any): Check rank of DIM.
 	(gfc_check_count): Likewise.
 	* intrinsic.h (gfc_simplify_all): New prototype.

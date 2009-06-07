@@ -2816,6 +2816,18 @@ gfc_check_spread (gfc_expr *source, gfc_expr *dim, gfc_expr *ncopies)
   if (dim_check (dim, 1, false) == FAILURE)
     return FAILURE;
 
+  /* dim_rank_check() does not apply here.  */
+  if (dim 
+      && dim->expr_type == EXPR_CONSTANT
+      && (mpz_cmp_ui (dim->value.integer, 1) < 0
+	  || mpz_cmp_ui (dim->value.integer, source->rank + 1) > 0))
+    {
+      gfc_error ("'%s' argument of '%s' intrinsic at %L is not a valid "
+		 "dimension index", gfc_current_intrinsic_arg[1],
+		 gfc_current_intrinsic, &dim->where);
+      return FAILURE;
+    }
+
   if (type_check (ncopies, 2, BT_INTEGER) == FAILURE)
     return FAILURE;
 
@@ -3120,6 +3132,8 @@ gfc_check_ubound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 gfc_try
 gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
 {
+  mpz_t vector_size;
+
   if (rank_check (vector, 0, 1) == FAILURE)
     return FAILURE;
 
@@ -3132,10 +3146,45 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
   if (same_type_check (vector, 0, field, 2) == FAILURE)
     return FAILURE;
 
+  if (mask->expr_type == EXPR_ARRAY
+      && gfc_array_size (vector, &vector_size) == SUCCESS)
+    {
+      int mask_true_count = 0;
+      gfc_constructor *mask_ctor = mask->value.constructor;
+      while (mask_ctor)
+	{
+	  if (mask_ctor->expr->expr_type != EXPR_CONSTANT)
+	    {
+	      mask_true_count = 0;
+	      break;
+	    }
+
+	  if (mask_ctor->expr->value.logical)
+	    mask_true_count++;
+
+	  mask_ctor = mask_ctor->next;
+	}
+
+      if (mpz_get_si (vector_size) < mask_true_count)
+	{
+	  gfc_error ("'%s' argument of '%s' intrinsic at %L must "
+		     "provide at least as many elements as there "
+		     "are .TRUE. values in '%s' (%ld/%d)",
+		     gfc_current_intrinsic_arg[0], gfc_current_intrinsic,
+		     &vector->where, gfc_current_intrinsic_arg[1],
+		     mpz_get_si (vector_size), mask_true_count);
+	  return FAILURE;
+	}
+
+      mpz_clear (vector_size);
+    }
+
   if (mask->rank != field->rank && field->rank != 0)
     {
-      gfc_error ("FIELD argument at %L of UNPACK must have the same rank as "
-		 "MASK or be a scalar", &field->where);
+      gfc_error ("'%s' argument of '%s' intrinsic at %L must have "
+		 "the same rank as '%s' or be a scalar", 
+		 gfc_current_intrinsic_arg[2], gfc_current_intrinsic,
+		 &field->where, gfc_current_intrinsic_arg[1]);
       return FAILURE;
     }
 
@@ -3145,9 +3194,11 @@ gfc_check_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
       for (i = 0; i < field->rank; i++)
 	if (! identical_dimen_shape (mask, i, field, i))
 	{
-	  gfc_error ("Different shape in dimension %d for MASK and FIELD "
-		     "arguments of UNPACK at %L", mask->rank, &field->where);
-	  return FAILURE;
+	  gfc_error ("'%s' and '%s' arguments of '%s' intrinsic at %L "
+		     "must have identical shape.", 
+		     gfc_current_intrinsic_arg[2],
+		     gfc_current_intrinsic_arg[1], gfc_current_intrinsic,
+		     &field->where);
 	}
     }
 
