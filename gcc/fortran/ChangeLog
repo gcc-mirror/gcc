@@ -1,4 +1,4 @@
-2009-05-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+2009-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/40008
 	* gfortran.h (gfc_open): Add newunit expression to structure.
