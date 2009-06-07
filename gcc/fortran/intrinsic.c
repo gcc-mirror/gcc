@@ -1499,7 +1499,7 @@ add_functions (void)
   make_generic ("dim", GFC_ISYM_DIM, GFC_STD_F77);
 
   add_sym_2 ("dot_product", GFC_ISYM_DOT_PRODUCT, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr,
-	     GFC_STD_F95, gfc_check_dot_product, NULL, gfc_resolve_dot_product,
+	     GFC_STD_F95, gfc_check_dot_product, gfc_simplify_dot_product, gfc_resolve_dot_product,
 	     va, BT_REAL, dr, REQUIRED, vb, BT_REAL, dr, REQUIRED);
 
   make_generic ("dot_product", GFC_ISYM_DOT_PRODUCT, GFC_STD_F95);
@@ -2034,7 +2034,7 @@ add_functions (void)
   make_generic ("malloc", GFC_ISYM_MALLOC, GFC_STD_GNU);
 
   add_sym_2 ("matmul", GFC_ISYM_MATMUL, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_matmul, NULL, gfc_resolve_matmul,
+	     gfc_check_matmul, gfc_simplify_matmul, gfc_resolve_matmul,
 	     ma, BT_REAL, dr, REQUIRED, mb, BT_REAL, dr, REQUIRED);
 
   make_generic ("matmul", GFC_ISYM_MATMUL, GFC_STD_F95);
@@ -2535,7 +2535,7 @@ add_functions (void)
   make_generic ("transfer", GFC_ISYM_TRANSFER, GFC_STD_F95);
 
   add_sym_1 ("transpose", GFC_ISYM_TRANSPOSE, CLASS_TRANSFORMATIONAL, ACTUAL_NO, BT_REAL, dr, GFC_STD_F95,
-	     gfc_check_transpose, NULL, gfc_resolve_transpose,
+	     gfc_check_transpose, gfc_simplify_transpose, gfc_resolve_transpose,
 	     m, BT_REAL, dr, REQUIRED);
 
   make_generic ("transpose", GFC_ISYM_TRANSPOSE, GFC_STD_F95);

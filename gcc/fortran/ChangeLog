@@ -1,3 +1,19 @@
+2009-06-07  Daniel Franke  <franke.daniel@gmail.com>
+
+	PR fortran/25104
+	PR fortran/29962
+	* intrinsic.h (gfc_simplify_dot_product): New prototype.
+	(gfc_simplify_matmul): Likewise.
+	(gfc_simplify_transpose): Likewise.
+	* intrinsic.c (add_functions): Added new simplifier callbacks.
+	* simplify.c (init_result_expr): New.
+	(compute_dot_product): New.
+	(gfc_simplify_dot_product): New.
+	(gfc_simplify_matmul): New.
+	(gfc_simplify_transpose): New.
+	* expr.c (check_transformational): Allow transformational intrinsics
+	with simplifier in initialization expression.
+
 2009-06-06  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/37203

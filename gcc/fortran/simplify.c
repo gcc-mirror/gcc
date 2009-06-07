@@ -255,6 +255,138 @@ is_constant_array_expr (gfc_expr *e)
 }
 
 
+/* Initialize a transformational result expression with a given value.  */
+
+static void
+init_result_expr (gfc_expr *e, int init, gfc_expr *array)
+{
+  if (e && e->expr_type == EXPR_ARRAY)
+    {
+      gfc_constructor *ctor = e->value.constructor;
+      while (ctor)
+	{
+	  init_result_expr (ctor->expr, init, array);
+	  ctor = ctor->next;
+	}
+    }
+  else if (e && e->expr_type == EXPR_CONSTANT)
+    {
+      int i = gfc_validate_kind (e->ts.type, e->ts.kind, false);
+      int length;
+      gfc_char_t *string;
+
+      switch (e->ts.type)
+	{
+	  case BT_LOGICAL:
+	    e->value.logical = (init ? 1 : 0);
+	    break;
+
+	  case BT_INTEGER:
+	    if (init == INT_MIN)
+	      mpz_set (e->value.integer, gfc_integer_kinds[i].min_int);
+	    else if (init == INT_MAX)
+	      mpz_set (e->value.integer, gfc_integer_kinds[i].huge);
+	    else
+	      mpz_set_si (e->value.integer, init);
+	    break;
+
+	  case BT_REAL:
+	    if (init == INT_MIN)
+	      {
+		mpfr_set (e->value.real, gfc_real_kinds[i].huge, GFC_RND_MODE);
+		mpfr_neg (e->value.real, e->value.real, GFC_RND_MODE);
+	      }
+	    else if (init == INT_MAX)
+	      mpfr_set (e->value.real, gfc_real_kinds[i].huge, GFC_RND_MODE);
+	    else
+	      mpfr_set_si (e->value.real, init, GFC_RND_MODE);
+	    break;
+
+	  case BT_COMPLEX:
+	    mpfr_set_si (e->value.complex.r, init, GFC_RND_MODE);
+	    mpfr_set_si (e->value.complex.i, 0, GFC_RND_MODE);
+	    break;
+
+	  case BT_CHARACTER:
+	    if (init == INT_MIN)
+	      {
+		gfc_expr *len = gfc_simplify_len (array, NULL);
+		gfc_extract_int (len, &length);
+		string = gfc_get_wide_string (length + 1);
+		gfc_wide_memset (string, 0, length);
+	      }
+	    else if (init == INT_MAX)
+	      {
+		gfc_expr *len = gfc_simplify_len (array, NULL);
+		gfc_extract_int (len, &length);
+		string = gfc_get_wide_string (length + 1);
+		gfc_wide_memset (string, 255, length);
+	      }
+	    else
+	      {
+		length = 0;
+		string = gfc_get_wide_string (1);
+	      }
+
+	    string[length] = '\0';
+	    e->value.character.length = length;
+	    e->value.character.string = string;
+	    break;
+
+	  default:
+	    gcc_unreachable();
+	}
+    }
+  else
+    gcc_unreachable();
+}
+
+
+/* Helper function for gfc_simplify_dot_product() and gfc_simplify_matmul.  */
+
+static gfc_expr *
+compute_dot_product (gfc_constructor *ctor_a, int stride_a,
+		     gfc_constructor *ctor_b, int stride_b)
+{
+  gfc_expr *result;
+  gfc_expr *a = ctor_a->expr, *b = ctor_b->expr;
+
+  gcc_assert (gfc_compare_types (&a->ts, &b->ts));
+
+  result = gfc_constant_result (a->ts.type, a->ts.kind, &a->where);
+  init_result_expr (result, 0, NULL);
+
+  while (ctor_a && ctor_b)
+    {
+      /* Copying of expressions is required as operands are free'd
+	 by the gfc_arith routines.  */
+      switch (result->ts.type)
+	{
+	  case BT_LOGICAL:
+	    result = gfc_or (result,
+			     gfc_and (gfc_copy_expr (ctor_a->expr),
+				      gfc_copy_expr (ctor_b->expr)));
+	    break;
+
+	  case BT_INTEGER:
+	  case BT_REAL:
+	  case BT_COMPLEX:
+	    result = gfc_add (result,
+			      gfc_multiply (gfc_copy_expr (ctor_a->expr),
+					    gfc_copy_expr (ctor_b->expr)));
+	    break;
+
+	  default:
+	    gcc_unreachable();
+	}
+
+      ADVANCE (ctor_a, stride_a);
+      ADVANCE (ctor_b, stride_b);
+    }
+
+  return result;
+}
+
 /********************** Simplification functions *****************************/
 
 gfc_expr *
@@ -1207,6 +1339,32 @@ gfc_simplify_dim (gfc_expr *x, gfc_expr *y)
     }
 
   return range_check (result, "DIM");
+}
+
+
+gfc_expr*
+gfc_simplify_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
+{
+  gfc_expr *result;
+
+  if (!is_constant_array_expr (vector_a)
+      || !is_constant_array_expr (vector_b))
+    return NULL;
+
+  gcc_assert (vector_a->rank == 1);
+  gcc_assert (vector_b->rank == 1);
+  gcc_assert (gfc_compare_types (&vector_a->ts, &vector_b->ts));
+
+  if (vector_a->value.constructor && vector_b->value.constructor)
+    return compute_dot_product (vector_a->value.constructor, 1,
+			        vector_b->value.constructor, 1);
+
+  /* Zero sized array ...  */
+  result = gfc_constant_result (vector_a->ts.type,
+				vector_a->ts.kind,
+				&vector_a->where);
+  init_result_expr (result, 0, NULL);
+  return result;
 }
 
 
@@ -2851,6 +3009,84 @@ gfc_simplify_logical (gfc_expr *e, gfc_expr *k)
   result = gfc_constant_result (BT_LOGICAL, kind, &e->where);
 
   result->value.logical = e->value.logical;
+
+  return result;
+}
+
+
+gfc_expr*
+gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
+{
+  gfc_expr *result;
+  gfc_constructor *ma_ctor, *mb_ctor;
+  int row, result_rows, col, result_columns, stride_a, stride_b;
+
+  if (!is_constant_array_expr (matrix_a)
+      || !is_constant_array_expr (matrix_b))
+    return NULL;
+
+  gcc_assert (gfc_compare_types (&matrix_a->ts, &matrix_b->ts));
+  result = gfc_start_constructor (matrix_a->ts.type,
+				  matrix_a->ts.kind,
+				  &matrix_a->where);
+
+  if (matrix_a->rank == 1 && matrix_b->rank == 2)
+    {
+      result_rows = 1;
+      result_columns = mpz_get_si (matrix_b->shape[0]);
+      stride_a = 1;
+      stride_b = mpz_get_si (matrix_b->shape[0]);
+
+      result->rank = 1;
+      result->shape = gfc_get_shape (result->rank);
+      mpz_init_set_si (result->shape[0], result_columns);
+    }
+  else if (matrix_a->rank == 2 && matrix_b->rank == 1)
+    {
+      result_rows = mpz_get_si (matrix_b->shape[0]);
+      result_columns = 1;
+      stride_a = mpz_get_si (matrix_a->shape[0]);
+      stride_b = 1;
+
+      result->rank = 1;
+      result->shape = gfc_get_shape (result->rank);
+      mpz_init_set_si (result->shape[0], result_rows);
+    }
+  else if (matrix_a->rank == 2 && matrix_b->rank == 2)
+    {
+      result_rows = mpz_get_si (matrix_a->shape[0]);
+      result_columns = mpz_get_si (matrix_b->shape[1]);
+      stride_a = mpz_get_si (matrix_a->shape[1]);
+      stride_b = mpz_get_si (matrix_b->shape[0]);
+
+      result->rank = 2;
+      result->shape = gfc_get_shape (result->rank);
+      mpz_init_set_si (result->shape[0], result_rows);
+      mpz_init_set_si (result->shape[1], result_columns);
+    }
+  else
+    gcc_unreachable();
+
+  ma_ctor = matrix_a->value.constructor;
+  mb_ctor = matrix_b->value.constructor;
+
+  for (col = 0; col < result_columns; ++col)
+    {
+      ma_ctor = matrix_a->value.constructor;
+
+      for (row = 0; row < result_rows; ++row)
+	{
+	  gfc_expr *e;
+	  e = compute_dot_product (ma_ctor, stride_a,
+				   mb_ctor, 1);
+
+	  gfc_append_constructor (result, e);
+
+	  ADVANCE (ma_ctor, 1);
+	}
+
+      ADVANCE (mb_ctor, stride_b);
+    }
 
   return result;
 }
@@ -4755,6 +4991,47 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 
   /* And read the buffer back into the new expression.  */
   gfc_target_interpret_expr (buffer, buffer_size, result);
+
+  return result;
+}
+
+
+gfc_expr *
+gfc_simplify_transpose (gfc_expr *matrix)
+{
+  int i, matrix_rows;
+  gfc_expr *result;
+  gfc_constructor *matrix_ctor;
+
+  if (!is_constant_array_expr (matrix))
+    return NULL;
+
+  gcc_assert (matrix->rank == 2);
+
+  result = gfc_start_constructor (matrix->ts.type, matrix->ts.kind, &matrix->where);
+  result->rank = 2;
+  result->shape = gfc_get_shape (result->rank);
+  mpz_set (result->shape[0], matrix->shape[1]);
+  mpz_set (result->shape[1], matrix->shape[0]);
+
+  if (matrix->ts.type == BT_CHARACTER)
+    result->ts.cl = matrix->ts.cl;
+
+  matrix_rows = mpz_get_si (matrix->shape[0]);
+  matrix_ctor = matrix->value.constructor;
+  for (i = 0; i < matrix_rows; ++i)
+    {
+      gfc_constructor *column_ctor = matrix_ctor;
+      while (column_ctor)
+	{
+	  gfc_append_constructor (result, 
+				  gfc_copy_expr (column_ctor->expr));
+
+	  ADVANCE (column_ctor, matrix_rows);
+	}
+
+      ADVANCE (matrix_ctor, 1);
+    }
 
   return result;
 }
