@@ -67,6 +67,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Subroutines related to units */
 
+GFC_INTEGER_4 next_available_newunit;
+#define GFC_FIRST_NEWUNIT -10
 
 #define CACHE_SIZE 3
 static gfc_unit *unit_cache[CACHE_SIZE];
@@ -129,7 +131,6 @@ rotate_right (gfc_unit * t)
 
   return temp;
 }
-
 
 
 static int
@@ -480,7 +481,7 @@ free_internal_unit (st_parameter_dt *dtp)
 
 
 /* get_unit()-- Returns the unit structure associated with the integer
- * unit or the internal file. */
+   unit or the internal file.  */
 
 gfc_unit *
 get_unit (st_parameter_dt *dtp, int do_create)
@@ -489,7 +490,7 @@ get_unit (st_parameter_dt *dtp, int do_create)
   if ((dtp->common.flags & IOPARM_DT_HAS_INTERNAL_UNIT) != 0)
     return get_internal_unit(dtp);
 
-  /* Has to be an external unit */
+  /* Has to be an external unit.  */
 
   dtp->u.p.unit_is_internal = 0;
   dtp->internal_unit_desc = NULL;
@@ -499,7 +500,7 @@ get_unit (st_parameter_dt *dtp, int do_create)
 
 
 /*************************/
-/* Initialize everything */
+/* Initialize everything.  */
 
 void
 init_units (void)
@@ -510,6 +511,8 @@ init_units (void)
 #ifndef __GTHREAD_MUTEX_INIT
   __GTHREAD_MUTEX_INIT_FUNCTION (&unit_lock);
 #endif
+
+  next_available_newunit = GFC_FIRST_NEWUNIT;
 
   if (options.stdin_unit >= 0)
     {				/* STDIN */
@@ -601,10 +604,8 @@ init_units (void)
     }
 
   /* Calculate the maximum file offset in a portable manner.
-   * max will be the largest signed number for the type gfc_offset.
-   *
-   * set a 1 in the LSB and keep a running sum, stopping at MSB-1 bit. */
-
+     max will be the largest signed number for the type gfc_offset.
+     set a 1 in the LSB and keep a running sum, stopping at MSB-1 bit.  */
   max_offset = 0;
   for (i = 0; i < sizeof (max_offset) * 8 - 1; i++)
     max_offset = max_offset + ((gfc_offset) 1 << i);
@@ -663,8 +664,8 @@ unlock_unit (gfc_unit *u)
 }
 
 /* close_unit()-- Close a unit.  The stream is closed, and any memory
- * associated with the stream is freed.  Returns nonzero on I/O error.
- * Should be called with the u->lock locked. */
+   associated with the stream is freed.  Returns nonzero on I/O error.
+   Should be called with the u->lock locked. */
 
 int
 close_unit (gfc_unit *u)
@@ -674,11 +675,11 @@ close_unit (gfc_unit *u)
 
 
 /* close_units()-- Delete units on completion.  We just keep deleting
- * the root of the treap until there is nothing left.
- * Not sure what to do with locking here.  Some other thread might be
- * holding some unit's lock and perhaps hold it indefinitely
- * (e.g. waiting for input from some pipe) and close_units shouldn't
- * delay the program too much.  */
+   the root of the treap until there is nothing left.
+   Not sure what to do with locking here.  Some other thread might be
+   holding some unit's lock and perhaps hold it indefinitely
+   (e.g. waiting for input from some pipe) and close_units shouldn't
+   delay the program too much.  */
 
 void
 close_units (void)
@@ -813,3 +814,22 @@ finish_last_advance_record (gfc_unit *u)
   fbuf_flush (u, u->mode);
 }
 
+/* Assign a negative number for NEWUNIT in OPEN statements.  */
+GFC_INTEGER_4
+get_unique_unit_number (st_parameter_open *opp)
+{
+  GFC_INTEGER_4 num;
+
+  __gthread_mutex_lock (&unit_lock);
+  num = next_available_newunit--;
+
+  /* Do not allow NEWUNIT numbers to wrap.  */
+  if (next_available_newunit >=  GFC_FIRST_NEWUNIT )
+    {
+      __gthread_mutex_unlock (&unit_lock);
+      generate_error (&opp->common, LIBERROR_INTERNAL, "NEWUNIT exhausted");
+      return 0;
+    }
+  __gthread_mutex_unlock (&unit_lock);
+  return num;
+}

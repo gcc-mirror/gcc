@@ -2020,7 +2020,7 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 	close_unit (dtp->u.p.current_unit);
 	dtp->u.p.current_unit = NULL;
 	generate_error (&dtp->common, LIBERROR_BAD_OPTION,
-			"Bad unit number in OPEN statement");
+			"Bad unit number in statement");
 	return;
       }
     memset (&u_flags, '\0', sizeof (u_flags));

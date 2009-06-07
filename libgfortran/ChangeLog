@@ -1,5 +1,21 @@
 2009-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
+	PR libfortran/40008
+	* libgfortran.h: Define IOPARM_OPEN_HAS_NEWUNIT.
+	* io/open.c (st_open): Don't error on negative unit number if NEWUNIT
+	was specified. If NEWUNIT is specified, call new function to get the
+	unique unit number and assign it.
+	* io/io.h (st_parameter_open): Add pointer to newunit.  Add prototype for
+	next_available_newunit. Add prototype for new function,
+	get_unique_unit_number.
+	* io/unit.c: Declare next_available_newunit. Define the first newunit
+	number. (init_units): Initialize next_available_unit.
+	(get_unique_unit_number): New function. Fix whitespace and comments.
+	* io/transfer.c (data_transfer_init): Update error message to not be
+	specific to OPEN statements.
+
+2009-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
 	PR libfortran/40334
 	* io/list_read.c (list_formatted_read_scalar): Set the end file
 	conditions after a return from EOF error.
