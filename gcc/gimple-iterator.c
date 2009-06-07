@@ -604,7 +604,7 @@ gsi_insert_seq_on_edge (edge e, gimple_seq seq)
 
    In all cases, the returned *GSI points to the correct location.  The
    return value is true if insertion should be done after the location,
-   or false if it should be done before the location.  If new basic block
+   or false if it should be done before the location.  If a new basic block
    has to be created, it is stored in *NEW_BB.  */
 
 static bool

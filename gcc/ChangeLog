@@ -1,7 +1,14 @@
 2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
-	* basic-block.h (ENTRY_BLOCK, EXIT_BLOCK): Document that neither of
-	them is supposed to hold actual statements.
+	* errors.c (internal_error): Commentary typo fix.
+	* gimple-iterator.c (gsi_insert_seq_on_edge): Ditto.
+	* tree-ssa-pre.c: Ditto.
+
+2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* errors.c (internal_error): Commentary typo fix.
+	* gimple-iterator.c (gsi_insert_seq_on_edge): Ditto.
+	* tree-ssa-pre.c: Ditto.
 
 2009-06-06  Ian Lance Taylor  <iant@google.com>
 
