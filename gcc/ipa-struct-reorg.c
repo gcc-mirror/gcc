@@ -3646,7 +3646,7 @@ do_reorg_1 (void)
 	push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 	current_function_decl = node->decl;
 	if (dump_file)
-	  fprintf (dump_file, "\nFunction to do reorg is  %s: \n",
+	  fprintf (dump_file, "\nFunction to do reorg is %s: \n",
 		   (const char *) IDENTIFIER_POINTER (DECL_NAME (node->decl)));
 	do_reorg_for_func (node);
 	free_dominance_info (CDI_DOMINATORS);
