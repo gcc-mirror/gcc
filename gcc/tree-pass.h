@@ -297,6 +297,7 @@ struct dump_file_info
 /* Rebuild the addressable-vars bitmap and do register promotion.  */
 #define TODO_update_address_taken	(1 << 21)
 
+/* Internally used in execute_function_todo().  */
 #define TODO_update_ssa_any		\
     (TODO_update_ssa			\
      | TODO_update_ssa_no_phi		\

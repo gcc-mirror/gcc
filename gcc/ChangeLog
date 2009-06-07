@@ -1,5 +1,9 @@
 2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
+	* tree-pass.h (TODO_update_ssa_any): Document internal use only.
+
+2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
 	* gbl-ctors.h: Add header guard.
 
 2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
