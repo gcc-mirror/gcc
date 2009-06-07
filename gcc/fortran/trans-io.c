@@ -469,26 +469,27 @@ set_parameter_value (stmtblock_t *block, tree var, enum iofield type,
   gfc_conv_expr_val (&se, e);
 
   /* If we're storing a UNIT number, we need to check it first.  */
-  if (type == IOPARM_common_unit && e->ts.kind != 4)
+  if (type == IOPARM_common_unit && e->ts.kind > 4)
     {
-      tree cond, max;
+      tree cond, val;
       int i;
 
       /* Don't evaluate the UNIT number multiple times.  */
       se.expr = gfc_evaluate_now (se.expr, &se.pre);
 
-      /* UNIT numbers should be nonnegative.  */
+      /* UNIT numbers should be greater than the min.  */
+      i = gfc_validate_kind (BT_INTEGER, 4, false);
+      val = gfc_conv_mpz_to_tree (gfc_integer_kinds[i].pedantic_min_int, 4);
       cond = fold_build2 (LT_EXPR, boolean_type_node, se.expr,
-			  build_int_cst (TREE_TYPE (se.expr),0));
+			  fold_convert (TREE_TYPE (se.expr), val));
       gfc_trans_io_runtime_check (cond, var, LIBERROR_BAD_UNIT,
-			       "Negative unit number in I/O statement",
+			       "Unit number in I/O statement too small",
 			       &se.pre);
     
       /* UNIT numbers should be less than the max.  */
-      i = gfc_validate_kind (BT_INTEGER, 4, false);
-      max = gfc_conv_mpz_to_tree (gfc_integer_kinds[i].huge, 4);
+      val = gfc_conv_mpz_to_tree (gfc_integer_kinds[i].huge, 4);
       cond = fold_build2 (GT_EXPR, boolean_type_node, se.expr,
-			  fold_convert (TREE_TYPE (se.expr), max));
+			  fold_convert (TREE_TYPE (se.expr), val));
       gfc_trans_io_runtime_check (cond, var, LIBERROR_BAD_UNIT,
 			       "Unit number in I/O statement too large",
 			       &se.pre);
@@ -950,6 +951,10 @@ gfc_trans_open (gfc_code * code)
   if (p->convert)
     mask |= set_string (&block, &post_block, var, IOPARM_open_convert,
 			p->convert);
+			
+  if (p->newunit)
+    mask |= set_parameter_ref (&block, &post_block, var, IOPARM_open_newunit,
+			       p->newunit);
 
   set_parameter_const (&block, var, IOPARM_common_flags, mask);
 
