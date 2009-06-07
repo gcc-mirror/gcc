@@ -297,6 +297,7 @@ typedef struct
   CHARACTER2 (round);
   CHARACTER1 (sign);
   CHARACTER2 (asynchronous);
+  GFC_INTEGER_4 *newunit;
 }
 st_parameter_open;
 
@@ -794,6 +795,10 @@ internal_proto(unpack_filename);
 extern gfc_offset max_offset;
 internal_proto(max_offset);
 
+/* Unit number to be assigned when NEWUNIT is used in an OPEN statement.  */
+extern GFC_INTEGER_4 next_available_newunit;
+internal_proto(next_available_newunit);
+
 /* Unit tree root.  */
 extern gfc_unit *unit_root;
 internal_proto(unit_root);
@@ -830,6 +835,9 @@ internal_proto (finish_last_advance_record);
 
 extern int unit_truncate (gfc_unit *, gfc_offset, st_parameter_common *);
 internal_proto (unit_truncate);
+
+extern GFC_INTEGER_4 get_unique_unit_number (st_parameter_open *);
+internal_proto(get_unique_unit_number);
 
 /* open.c */
 
