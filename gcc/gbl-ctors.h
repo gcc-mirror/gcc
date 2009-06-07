@@ -35,6 +35,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	Note that this file should only be compiled with GCC.
 */
 
+#ifndef GCC_GBL_CTORS_H
+#define GCC_GBL_CTORS_H
+
 /*  Declare a pointer to void function type.  */
 
 typedef void (*func_ptr) (void);
@@ -81,3 +84,4 @@ do {									\
 } while (0)
 #endif
 
+#endif /* GCC_GBL_CTORS_H */
