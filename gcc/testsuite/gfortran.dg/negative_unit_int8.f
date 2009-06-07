@@ -13,22 +13,22 @@
       integer, parameter ::ERROR_BAD_UNIT = 5005
       logical l
       
-      i = 0
+      i = -1
 ! gfortran created a 'fort.-1' file and wrote "Hello" in it
-      write (unit=-1, fmt=*, iostat=i) "Hello"
+      write (unit=i, fmt=*, iostat=i) "Hello"
       if (i <= 0) call abort
       
-      i = 0
-      open (unit=-11, file="xxx", iostat=i)
+      i = -11
+      open (unit=i, file="xxx", iostat=i)
       if (i <= 0) call abort
 
-      i = 0
-      inquire (unit=-42, exist=l)
+      i = -42
+      inquire (unit=i, exist=l)
       if (l) call abort
 
-      i = 0 
+      i = 2_8*huge(0_4)+20_8
 ! This one is nasty
-      inquire (unit=2_8*huge(0_4)+20_8, exist=l, iostat=i)
+      inquire (unit=i, exist=l, iostat=i)
       if (l) call abort
       if (i.ne.ERROR_BAD_UNIT) call abort
 
