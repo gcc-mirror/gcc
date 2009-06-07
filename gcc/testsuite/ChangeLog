@@ -1,3 +1,8 @@
+2009-06-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR middle-end/32950
+	* g++.dg/torture/pr32950.C: New.
+
 2009-06-07  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/25104
