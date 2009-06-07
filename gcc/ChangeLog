@@ -1,5 +1,16 @@
 2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
+	* tree-flow.h (make_value_handle, set_value_handle, sort_vuses,
+	sort_vuses_heap, vn_lookup_or_add, vn_lookup_or_add_with_stmt,
+	vn_lookup_or_add_with_vuses, vn_add, vn_add_with_vuses,
+	vn_lookup_with_stmt, vn_lookup, vn_lookup_with_vuses): Remove
+	prototypes for removed functions.
+	(expressions_equal_p): Move to ...
+	* tree-ssa-sccvn.h: ... here and ...
+	* matrix-reorg.c: ... adjust includes.
+
+2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
 	* ipa-struct-reorg.c (do_reorg_1): Fix whitespace in dump output.
 
 2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
