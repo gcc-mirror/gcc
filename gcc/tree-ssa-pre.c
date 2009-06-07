@@ -134,7 +134,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Representation of expressions on value numbers:
 
-   Expressions consisting of  value numbers are represented the same
+   Expressions consisting of value numbers are represented the same
    way as our VN internally represents them, with an additional
    "pre_expr" wrapping around them in order to facilitate storing all
    of the expressions in the same sets.  */
@@ -1290,7 +1290,7 @@ translate_vuse_through_block (VEC (vn_reference_op_s, heap) *operands,
   return NULL_TREE;
 }
 
-/* Like find_leader, but checks for the value existing in SET1 *or*
+/* Like bitmap_find_leader, but checks for the value existing in SET1 *or*
    SET2.  This is used to avoid making a set consisting of the union
    of PA_IN and ANTIC_IN during insert.  */
 
@@ -2562,8 +2562,8 @@ is_exception_related (gimple stmt)
 	      || gimple_assign_rhs_code (stmt) == EXC_PTR_EXPR));
 }
 
-/* Return true if OP is a tree which we can perform PRE on
-   on.  This may not match the operations we can value number, but in
+/* Return true if OP is a tree which we can perform PRE on.
+   This may not match the operations we can value number, but in
    a perfect world would.  */
 
 static bool
