@@ -7052,6 +7052,7 @@ static void
 cp_parser_label_for_labeled_statement (cp_parser* parser)
 {
   cp_token *token;
+  tree label = NULL_TREE;
 
   /* The next token should be an identifier.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -7111,12 +7112,34 @@ cp_parser_label_for_labeled_statement (cp_parser* parser)
 
     default:
       /* Anything else must be an ordinary label.  */
-      finish_label_stmt (cp_parser_identifier (parser));
+      label = finish_label_stmt (cp_parser_identifier (parser));
       break;
     }
 
   /* Require the `:' token.  */
   cp_parser_require (parser, CPP_COLON, "%<:%>");
+
+  /* An ordinary label may optionally be followed by attributes.
+     However, this is only permitted if the attributes are then
+     followed by a semicolon.  This is because, for backward
+     compatibility, when parsing
+       lab: __attribute__ ((unused)) int i;
+     we want the attribute to attach to "i", not "lab".  */
+  if (label != NULL_TREE
+      && cp_lexer_next_token_is_keyword (parser->lexer, RID_ATTRIBUTE))
+    {
+      tree attrs;
+
+      cp_parser_parse_tentatively (parser);
+      attrs = cp_parser_attributes_opt (parser);
+      if (attrs == NULL_TREE
+	  || cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
+	cp_parser_abort_tentative_parse (parser);
+      else if (!cp_parser_parse_definitely (parser))
+	;
+      else
+	cplus_decl_attributes (&label, attrs, 0);
+    }
 }
 
 /* Parse an expression-statement.

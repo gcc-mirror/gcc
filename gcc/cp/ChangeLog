@@ -1,3 +1,10 @@
+2009-06-06  Ian Lance Taylor  <iant@google.com>
+
+	* parser.c (cp_parser_label_for_labeled_statement): Support
+	attribute on labels if immediately followed by semicolon.
+	* semantics.c (finish_label_stmt): Return new label.
+	* pt.c (tsubst_expr): Handle attributes for LABEL_EXPR.
+
 2009-06-03  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (cc1plus-checksum.o): Depend upon $(CONFIG_H) and

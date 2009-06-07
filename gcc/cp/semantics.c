@@ -1315,17 +1315,19 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
   return add_stmt (r);
 }
 
-/* Finish a label with the indicated NAME.  */
+/* Finish a label with the indicated NAME.  Returns the new label.  */
 
 tree
 finish_label_stmt (tree name)
 {
   tree decl = define_label (input_location, name);
 
-  if (decl  == error_mark_node)
+  if (decl == error_mark_node)
     return error_mark_node;
 
-  return add_stmt (build_stmt (LABEL_EXPR, decl));
+  add_stmt (build_stmt (LABEL_EXPR, decl));
+
+  return decl;
 }
 
 /* Finish a series of declarations for local labels.  G++ allows users

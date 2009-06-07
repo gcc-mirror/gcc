@@ -10895,7 +10895,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       break;
 
     case LABEL_EXPR:
-      finish_label_stmt (DECL_NAME (LABEL_EXPR_LABEL (t)));
+      {
+	tree decl = LABEL_EXPR_LABEL (t);
+	tree label;
+
+	label = finish_label_stmt (DECL_NAME (decl));
+	if (DECL_ATTRIBUTES (decl) != NULL_TREE)
+	  cplus_decl_attributes (&label, DECL_ATTRIBUTES (decl), 0);
+      }
       break;
 
     case GOTO_EXPR:
