@@ -1,3 +1,10 @@
+2009-06-06  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wunused-label-1.c: New test case.
+	* g++.dg/warn/Wunused-label-1.C: New test case.
+	* g++.dg/warn/Wunused-label-2.C: New test case.
+	* g++.dg/warn/Wunused-label-3.C: New test case.
+
 2009-06-06  Daniel Franke  <franke.daniel@gmail.com>
 
 	PR fortran/37203
