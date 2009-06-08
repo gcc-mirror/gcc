@@ -7914,6 +7914,15 @@ The size of L1 cache, in kilobytes.
 @item l2-cache-size
 The size of L2 cache, in kilobytes.
 
+@item min-insn-to-prefetch-ratio
+The minimum ratio between the number of instructions and the 
+number of prefetches to enable prefetching in a loop with an 
+unknown trip count.
+
+@item prefetch-min-insn-to-mem-ratio
+The minimum ratio between the number of instructions and the 
+number of memory references to enable prefetching in a loop.
+
 @item use-canonical-types
 Whether the compiler should use the ``canonical'' type system.  By
 default, this should always be 1, which uses a more efficient internal

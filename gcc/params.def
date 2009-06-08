@@ -741,6 +741,17 @@ DEFPARAM (PARAM_SLP_MAX_INSNS_IN_BB,
           "Maximum number of instructions in basic block to be considered for SLP vectorization",
           1000, 0, 0)
 
+DEFPARAM (PARAM_MIN_INSN_TO_PREFETCH_RATIO,
+	  "min-insn-to-prefetch-ratio",
+	  "min. ratio of insns to prefetches to enable prefetching for "
+          "a loop with an unknown trip count",
+	  10, 0, 0)
+
+DEFPARAM (PARAM_PREFETCH_MIN_INSN_TO_MEM_RATIO,
+	  "prefetch-min-insn-to-mem-ratio",
+	  "min. ratio of insns to mem ops to enable prefetching in a loop",
+	  3, 0, 0)
+
 /*
 Local variables:
 mode:c

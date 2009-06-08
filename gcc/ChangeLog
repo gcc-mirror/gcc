@@ -1,3 +1,22 @@
+2009-06-08  Ghassan Shobaki  <ghassan.shobaki@amd.com>
+            Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
+	
+	* tree-ssa-loop-prefetch.c 
+	(gather_memory_references): Introduced a counter for the number of 
+	memory references.
+	(anything_to_prefetch_p): Introduced a counter for the number of 
+	prefetches.
+	(is_loop_prefetching_profitable): New function with a cost model 
+	for prefetching.
+	(loop_prefetch_arrays): Use the new cost model to determine if 
+	prefetching is profitable.
+	* params.def (MIN_INSN_TO_PREFETCH_RATIO, 
+	PREFETCH_MIN_INSN_TO_MEM_RATIO): New parameters.
+	* params.h (MIN_INSN_TO_PREFETCH_RATIO, 
+	PREFETCH_MIN_INSN_TO_MEM_RATIO): New parameters.
+	* doc/invoke.texi (MIN_INSN_TO_PREFETCH_RATIO, 
+	PREFETCH_MIN_INSN_TO_MEM_RATIO): New parameters.
+	
 2009-06-08  Michael Matz  <matz@suse.de>
 
 	PR debug/40012
