@@ -1,5 +1,10 @@
 2009-06-08  Jan Hubicka  <jh@suse.cz>
 
+	PR debug/39834
+	* gcc.dg/torture/pr39834.c
+
+2009-06-08  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/40102
 	* g++.dg/torture/pr40102.C: New testcase.
 

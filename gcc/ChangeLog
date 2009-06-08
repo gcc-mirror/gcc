@@ -1,3 +1,11 @@
+2009-06-08  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/39834
+	* cgraphunit.c (save_inline_function_body): Do not copy transform hooks
+	for saved inline bodies.
+	* ipa-passes.c (do_per_function): Do not add the hoks multiple times
+	for given function.
+
 2009-06-08  Adam Nemet  <anemet@caviumnetworks.com>
 
 	* jump.c (returnjump_p): Handle delayed branches.  Add missing
