@@ -1,3 +1,8 @@
+2009-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/40373
+	* g++.dg/template/dtor7.C: New test.
+
 2009-06-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline:
