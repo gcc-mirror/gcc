@@ -1,3 +1,71 @@
+2009-06-08  Andrew Haley  <aph@redhat.com>
+
+	* testsuite/libffi.call/err_bad_abi.c: Add xfails.
+	* testsuite/libffi.call/cls_longdouble_va.c: Add xfails.
+	* testsuite/libffi.call/cls_dbls_struct.c: Add xfail x86_64-*-linux-*.
+	* testsuite/libffi.call/err_bad_typedef.c: Add xfails.
+
+	* testsuite/libffi.call/stret_medium2.c: Add __UNUSED__ to args.
+	* testsuite/libffi.call/stret_medium.c: Likewise.
+	* testsuite/libffi.call/stret_large2.c: Likewise.
+	* testsuite/libffi.call/stret_large.c:  Likewise.
+
+2008-12-26  Timothy Wall  <twall@users.sf.net>
+
+        * testsuite/libffi.call/cls_longdouble.c,
+        testsuite/libffi.call/cls_longdouble_va.c,
+        testsuite/libffi.call/cls_align_longdouble.c,
+        testsuite/libffi.call/cls_align_longdouble_split.c,
+        testsuite/libffi.call/cls_align_longdouble_split2.c: mark expected
+        failures on x86_64 cygwin/mingw.
+
+2008-12-22  Timothy Wall  <twall@users.sf.net>
+
+        * testsuite/libffi.call/closure_fn0.c,
+        testsuite/libffi.call/closure_fn1.c,
+        testsuite/libffi.call/closure_fn2.c,
+        testsuite/libffi.call/closure_fn3.c,
+        testsuite/libffi.call/closure_fn4.c,
+        testsuite/libffi.call/closure_fn5.c,
+        testsuite/libffi.call/closure_fn6.c,
+        testsuite/libffi.call/closure_loc_fn0.c,
+        testsuite/libffi.call/closure_stdcall.c,
+        testsuite/libffi.call/cls_align_pointer.c,
+        testsuite/libffi.call/cls_pointer.c,
+        testsuite/libffi.call/cls_pointer_stack.c: use portable cast from
+        pointer to integer (intptr_t).
+        * testsuite/libffi.call/cls_longdouble.c: disable for win64.
+
+2008-07-24  Anthony Green  <green@redhat.com>
+
+        * testsuite/libffi.call/cls_dbls_struct.c,
+        testsuite/libffi.call/cls_double_va.c,
+        testsuite/libffi.call/cls_longdouble.c,
+        testsuite/libffi.call/cls_longdouble_va.c,
+        testsuite/libffi.call/cls_pointer.c,
+        testsuite/libffi.call/cls_pointer_stack.c,
+        testsuite/libffi.call/err_bad_abi.c: Clean up failures from
+        compiler warnings.
+
+2008-03-04  Anthony Green  <green@redhat.com>
+            Blake Chaffin
+            hos@tamanegi.org
+
+        * testsuite/libffi.call/cls_align_longdouble_split2.c
+          testsuite/libffi.call/cls_align_longdouble_split.c
+          testsuite/libffi.call/cls_dbls_struct.c
+          testsuite/libffi.call/cls_double_va.c
+          testsuite/libffi.call/cls_longdouble.c
+          testsuite/libffi.call/cls_longdouble_va.c
+          testsuite/libffi.call/cls_pointer.c
+          testsuite/libffi.call/cls_pointer_stack.c
+          testsuite/libffi.call/err_bad_abi.c
+          testsuite/libffi.call/err_bad_typedef.c
+          testsuite/libffi.call/stret_large2.c
+          testsuite/libffi.call/stret_large.c
+          testsuite/libffi.call/stret_medium2.c
+          testsuite/libffi.call/stret_medium.c: New tests from Apple.
+
 2009-06-05  Andrew Haley  <aph@redhat.com>
 
 	* src/x86/ffitarget.h, src/x86/ffi.c: Merge stdcall changes from

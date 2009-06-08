@@ -20,7 +20,7 @@ static void closure_test_fn2(ffi_cif* cif __UNUSED__, void* resp, void** args,
     (int)(*(double *)args[8]) + (int)*(int *)args[9] +
     (int)(*(int *)args[10]) + (int)(*(float *)args[11]) +
     (int)*(int *)args[12] + (int)(*(float *)args[13]) +
-    (int)(*(int *)args[14]) + *(int *)args[15] + (int)(long)userdata;
+    (int)(*(int *)args[14]) + *(int *)args[15] + (intptr_t)userdata;
 
   printf("%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d: %d\n",
 	 (int)*(double *)args[0], (int)(*(double *)args[1]),
@@ -30,7 +30,7 @@ static void closure_test_fn2(ffi_cif* cif __UNUSED__, void* resp, void** args,
 	 (int)(*(double*)args[8]), (int)*(int *)args[9],
 	 (int)(*(int *)args[10]), (int)(*(float *)args[11]),
 	 (int)*(int *)args[12], (int)(*(float *)args[13]),
-	 (int)(*(int *)args[14]), *(int *)args[15], (int)(long)userdata,
+	 (int)(*(int *)args[14]), *(int *)args[15], (int)(intptr_t)userdata,
 	 (int)*(ffi_arg *)resp);
 }
 

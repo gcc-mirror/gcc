@@ -4,7 +4,7 @@
    PR:		none.
    Originator:	<hos@tamanegi.org> 20031203	 */
 
-/* { dg-do run } */
+/* { dg-do run { xfail x86_64-*-mingw* x86_64-*-cygwin* } } */
 
 #include "ffitest.h"
 
