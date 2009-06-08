@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfglayout.h"
 #include "intl.h"
 #include "sched-int.h"
+#include "params.h"
 #include "ggc.h"
 #include "gimple.h"
 #include "cfgloop.h"
@@ -608,6 +609,280 @@ sh_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
     default:
       return true;
     }
+}
+
+/* Set default optimization options.  */
+void
+sh_optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
+{
+  if (level)
+    {
+      flag_omit_frame_pointer = 2;
+      if (!size)
+	sh_div_str = "inv:minlat";
+    }
+  if (size)
+    {
+      target_flags |= MASK_SMALLCODE;
+      sh_div_str = SH_DIV_STR_FOR_SIZE ;
+    }
+  else
+    TARGET_CBRANCHDI4 = 1;
+  /* We can't meaningfully test TARGET_SHMEDIA here, because -m options
+     haven't been parsed yet, hence we'd read only the default.
+     sh_target_reg_class will return NO_REGS if this is not SHMEDIA, so
+     it's OK to always set flag_branch_target_load_optimize.  */
+  if (level > 1)
+    {
+      flag_branch_target_load_optimize = 1;
+      if (!size)
+	target_flags |= MASK_SAVE_ALL_TARGET_REGS;
+    }
+  /* Likewise, we can't meaningfully test TARGET_SH2E / TARGET_IEEE
+     here, so leave it to OVERRIDE_OPTIONS to set
+    flag_finite_math_only.  We set it to 2 here so we know if the user
+    explicitly requested this to be on or off.  */
+  flag_finite_math_only = 2;
+  /* If flag_schedule_insns is 1, we set it to 2 here so we know if
+     the user explicitly requested this to be on or off.  */
+  if (flag_schedule_insns > 0)
+    flag_schedule_insns = 2;
+
+  set_param_value ("simultaneous-prefetches", 2);
+}
+
+/* Implement OVERRIDE_OPTIONS macro.  Validate and override various
+   options, and do some machine dependent initialization.  */
+void
+sh_override_options (void)
+{
+  int regno;
+
+  SUBTARGET_OVERRIDE_OPTIONS;
+  if (flag_finite_math_only == 2)
+    flag_finite_math_only
+      = !flag_signaling_nans && TARGET_SH2E && ! TARGET_IEEE;
+  if (TARGET_SH2E && !flag_finite_math_only)
+    target_flags |= MASK_IEEE;
+  sh_cpu = PROCESSOR_SH1;
+  assembler_dialect = 0;
+  if (TARGET_SH2)
+    sh_cpu = PROCESSOR_SH2;
+  if (TARGET_SH2E)
+    sh_cpu = PROCESSOR_SH2E;
+  if (TARGET_SH2A)
+    {
+      sh_cpu = PROCESSOR_SH2A;
+      if (TARGET_SH2A_DOUBLE)
+        target_flags |= MASK_FMOVD;
+    }
+  if (TARGET_SH3)
+    sh_cpu = PROCESSOR_SH3;
+  if (TARGET_SH3E)
+    sh_cpu = PROCESSOR_SH3E;
+  if (TARGET_SH4)
+    {
+      assembler_dialect = 1;
+      sh_cpu = PROCESSOR_SH4;
+    }
+  if (TARGET_SH4A_ARCH)
+    {
+      assembler_dialect = 1;
+      sh_cpu = PROCESSOR_SH4A;
+    }
+  if (TARGET_SH5)
+    {
+      sh_cpu = PROCESSOR_SH5;
+      target_flags |= MASK_ALIGN_DOUBLE;
+      if (TARGET_SHMEDIA_FPU)
+	target_flags |= MASK_FMOVD;
+      if (TARGET_SHMEDIA)
+	{
+	  /* There are no delay slots on SHmedia.  */
+	  flag_delayed_branch = 0;
+	  /* Relaxation isn't yet supported for SHmedia */
+	  target_flags &= ~MASK_RELAX;
+	  /* After reload, if conversion does little good but can cause
+	     ICEs:
+	     - find_if_block doesn't do anything for SH because we don't
+	       have conditional execution patterns.  (We use conditional
+	       move patterns, which are handled differently, and only
+	       before reload).
+	     - find_cond_trap doesn't do anything for the SH because we
+	       don't have conditional traps.
+	     - find_if_case_1 uses redirect_edge_and_branch_force in
+	       the only path that does an optimization, and this causes
+	       an ICE when branch targets are in registers.
+	     - find_if_case_2 doesn't do anything for the SHmedia after
+	       reload except when it can redirect a tablejump - and
+	       that's rather rare.  */
+	  flag_if_conversion2 = 0;
+	  if (! strcmp (sh_div_str, "call"))
+	    sh_div_strategy = SH_DIV_CALL;
+	  else if (! strcmp (sh_div_str, "call2"))
+	    sh_div_strategy = SH_DIV_CALL2;
+	  if (! strcmp (sh_div_str, "fp") && TARGET_FPU_ANY)
+	    sh_div_strategy = SH_DIV_FP;
+	  else if (! strcmp (sh_div_str, "inv"))
+	    sh_div_strategy = SH_DIV_INV;
+	  else if (! strcmp (sh_div_str, "inv:minlat"))
+	    sh_div_strategy = SH_DIV_INV_MINLAT;
+	  else if (! strcmp (sh_div_str, "inv20u"))
+	    sh_div_strategy = SH_DIV_INV20U;
+	  else if (! strcmp (sh_div_str, "inv20l"))
+	    sh_div_strategy = SH_DIV_INV20L;
+	  else if (! strcmp (sh_div_str, "inv:call2"))
+	    sh_div_strategy = SH_DIV_INV_CALL2;
+	  else if (! strcmp (sh_div_str, "inv:call"))
+	    sh_div_strategy = SH_DIV_INV_CALL;
+	  else if (! strcmp (sh_div_str, "inv:fp"))
+	    {
+	      if (TARGET_FPU_ANY)
+		sh_div_strategy = SH_DIV_INV_FP;
+	      else
+		sh_div_strategy = SH_DIV_INV;
+	    }
+	  TARGET_CBRANCHDI4 = 0;
+	  /* Assembler CFI isn't yet fully supported for SHmedia.  */
+	  flag_dwarf2_cfi_asm = 0;
+	}
+    }
+  else
+    {
+       /* Only the sh64-elf assembler fully supports .quad properly.  */
+       targetm.asm_out.aligned_op.di = NULL;
+       targetm.asm_out.unaligned_op.di = NULL;
+    }
+  if (TARGET_SH1)
+    {
+      if (! strcmp (sh_div_str, "call-div1"))
+	sh_div_strategy = SH_DIV_CALL_DIV1;
+      else if (! strcmp (sh_div_str, "call-fp")
+	       && (TARGET_FPU_DOUBLE
+		   || (TARGET_HARD_SH4 && TARGET_SH2E)
+		   || (TARGET_SHCOMPACT && TARGET_FPU_ANY)))
+	sh_div_strategy = SH_DIV_CALL_FP;
+      else if (! strcmp (sh_div_str, "call-table") && TARGET_SH2)
+	sh_div_strategy = SH_DIV_CALL_TABLE;
+      else
+	/* Pick one that makes most sense for the target in general.
+	   It is not much good to use different functions depending
+	   on -Os, since then we'll end up with two different functions
+	   when some of the code is compiled for size, and some for
+	   speed.  */
+
+	/* SH4 tends to emphasize speed.  */
+	if (TARGET_HARD_SH4)
+	  sh_div_strategy = SH_DIV_CALL_TABLE;
+	/* These have their own way of doing things.  */
+	else if (TARGET_SH2A)
+	  sh_div_strategy = SH_DIV_INTRINSIC;
+	/* ??? Should we use the integer SHmedia function instead?  */
+	else if (TARGET_SHCOMPACT && TARGET_FPU_ANY)
+	  sh_div_strategy = SH_DIV_CALL_FP;
+        /* SH1 .. SH3 cores often go into small-footprint systems, so
+	   default to the smallest implementation available.  */
+	else if (TARGET_SH2)	/* ??? EXPERIMENTAL */
+	  sh_div_strategy = SH_DIV_CALL_TABLE;
+	else
+	  sh_div_strategy = SH_DIV_CALL_DIV1;
+    }
+  if (!TARGET_SH1)
+    TARGET_PRETEND_CMOVE = 0;
+  if (sh_divsi3_libfunc[0])
+    ; /* User supplied - leave it alone.  */
+  else if (TARGET_DIVIDE_CALL_FP)
+    sh_divsi3_libfunc = "__sdivsi3_i4";
+  else if (TARGET_DIVIDE_CALL_TABLE)
+    sh_divsi3_libfunc = "__sdivsi3_i4i";
+  else if (TARGET_SH5)
+    sh_divsi3_libfunc = "__sdivsi3_1";
+  else
+    sh_divsi3_libfunc = "__sdivsi3";
+  if (sh_branch_cost == -1)
+    sh_branch_cost
+      = TARGET_SH5 ? 1 : ! TARGET_SH2 || TARGET_HARD_SH4 ? 2 : 1;
+
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (! VALID_REGISTER_P (regno))
+      sh_register_names[regno][0] = '\0';
+
+  for (regno = 0; regno < ADDREGNAMES_SIZE; regno++)
+    if (! VALID_REGISTER_P (ADDREGNAMES_REGNO (regno)))
+      sh_additional_register_names[regno][0] = '\0';
+
+  if (flag_omit_frame_pointer == 2)
+   {
+     /* The debugging information is sufficient,
+        but gdb doesn't implement this yet */
+     if (0)
+      flag_omit_frame_pointer
+        = (PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);
+     else
+      flag_omit_frame_pointer = 0;
+   }
+
+  if ((flag_pic && ! TARGET_PREFERGOT)
+      || (TARGET_SHMEDIA && !TARGET_PT_FIXED))
+    flag_no_function_cse = 1;
+
+  if (SMALL_REGISTER_CLASSES)
+    {
+      /* Never run scheduling before reload, since that can
+	 break global alloc, and generates slower code anyway due
+	 to the pressure on R0.  */
+      /* Enable sched1 for SH4 if the user explicitly requests.
+	 When sched1 is enabled, the ready queue will be reordered by
+	 the target hooks if pressure is high.  We can not do this for
+	 PIC, SH3 and lower as they give spill failures for R0.  */
+      if (!TARGET_HARD_SH4 || flag_pic)
+        flag_schedule_insns = 0;
+      /* ??? Current exception handling places basic block boundaries
+	 after call_insns.  It causes the high pressure on R0 and gives
+	 spill failures for R0 in reload.  See PR 22553 and the thread
+	 on gcc-patches
+         <http://gcc.gnu.org/ml/gcc-patches/2005-10/msg00816.html>.  */
+      else if (flag_exceptions)
+	{
+	  if (flag_schedule_insns == 1)
+	    warning (0, "ignoring -fschedule-insns because of exception handling bug");
+	  flag_schedule_insns = 0;
+	}
+      else if (flag_schedule_insns == 2)
+	flag_schedule_insns = 0;
+    }
+
+  if (align_loops == 0)
+    align_loops =  1 << (TARGET_SH5 ? 3 : 2);
+  if (align_jumps == 0)
+    align_jumps = 1 << CACHE_LOG;
+  else if (align_jumps < (TARGET_SHMEDIA ? 4 : 2))
+    align_jumps = TARGET_SHMEDIA ? 4 : 2;
+
+  /* Allocation boundary (in *bytes*) for the code of a function.
+     SH1: 32 bit alignment is faster, because instructions are always
+     fetched as a pair from a longword boundary.
+     SH2 .. SH5 : align to cache line start.  */
+  if (align_functions == 0)
+    align_functions
+      = TARGET_SMALLCODE ? FUNCTION_BOUNDARY/8 : (1 << CACHE_LOG);
+  /* The linker relaxation code breaks when a function contains
+     alignments that are larger than that at the start of a
+     compilation unit.  */
+  if (TARGET_RELAX)
+    {
+      int min_align
+	= align_loops > align_jumps ? align_loops : align_jumps;
+
+      /* Also take possible .long constants / mova tables int account.	*/
+      if (min_align < 4)
+	min_align = 4;
+      if (align_functions < min_align)
+	align_functions = min_align;
+    }
+
+  if (sh_fixed_range_str)
+    sh_fix_range (sh_fixed_range_str);
 }
 
 /* Print the operand address in x to the stream.  */
