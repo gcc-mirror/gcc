@@ -1,3 +1,10 @@
+2009-06-08  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/40102
+	* cgraph.c (cgraph_create_edge_including_clones): Also asume that the
+	original node might've been modified.
+	* tree-inline.c (copy_bb): Do not assume that all clones are the same.
+
 2009-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-object-size.c (addr_object_size): Add OSI argument.
