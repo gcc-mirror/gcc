@@ -1,5 +1,9 @@
 2009-06-08  Andrew Haley  <aph@redhat.com>
 
+	* README: Import from libffi 3.0.8.
+
+2009-06-08  Andrew Haley  <aph@redhat.com>
+
 	* testsuite/libffi.call/err_bad_abi.c: Add xfails.
 	* testsuite/libffi.call/cls_longdouble_va.c: Add xfails.
 	* testsuite/libffi.call/cls_dbls_struct.c: Add xfail x86_64-*-linux-*.
