@@ -1508,11 +1508,14 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		gcc_unreachable ();
 		}
 
+	    edge = cgraph_edge (id->src_node, orig_stmt);
 	    /* Constant propagation on argument done during inlining
 	       may create new direct call.  Produce an edge for it.  */
-	    if (!edge && is_gimple_call (stmt)
-		&& (fn = gimple_call_fndecl (stmt)) != NULL
-		&& !cgraph_edge (id->dst_node, stmt))
+	    if ((!edge 
+		 || (edge->indirect_call
+		     && id->transform_call_graph_edges == CB_CGE_MOVE_CLONES))
+		&& is_gimple_call (stmt)
+		&& (fn = gimple_call_fndecl (stmt)) != NULL)
 	      {
 		struct cgraph_node *dest = cgraph_node (fn);
 

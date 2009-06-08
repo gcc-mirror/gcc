@@ -701,8 +701,9 @@ cgraph_create_edge_including_clones (struct cgraph_node *orig, struct cgraph_nod
 {
   struct cgraph_node *node;
 
-  cgraph_create_edge (orig, callee, stmt, count, freq, loop_depth)->inline_failed =
-    reason;
+  if (!cgraph_edge (orig, stmt))
+     cgraph_create_edge (orig, callee, stmt,
+     			 count, freq, loop_depth)->inline_failed = reason;
 
   if (orig->clones)
     for (node = orig->clones; node != orig;)
