@@ -1,3 +1,8 @@
+2009-06-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.ac: Detect MPC in default directory.
+	* configure: Regenerate.
+
 2009-06-03  Jerome Guitton  <guitton@adacore.com>
 	    Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 

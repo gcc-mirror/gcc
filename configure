@@ -4508,7 +4508,7 @@ do_compare="$gcc_cv_prog_cmp_skip"
 gmplibs="-lmpfr -lgmp"
 gmpinc=
 have_gmp=no
-mpclibs=
+mpclibs=-lmpc
 mpcinc=
 have_mpc=no
 
@@ -5047,6 +5047,11 @@ sure that you have installed both the libraries and the header files.
 They may be located in separate packages." >&2;}
    { (exit 1); exit 1; }; }
   fi
+fi
+
+if test x$have_mpc != xyes ; then
+  mpcinc=
+  mpclibs=
 fi
 
 gmpinc="$mpcinc $gmpinc"
