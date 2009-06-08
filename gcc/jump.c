@@ -886,11 +886,18 @@ returnjump_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
     }
 }
 
+/* Return TRUE if INSN is a return jump.  */
+
 int
 returnjump_p (rtx insn)
 {
+  /* Handle delayed branches.  */
+  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
+    insn = XVECEXP (PATTERN (insn), 0, 0);
+
   if (!JUMP_P (insn))
     return 0;
+
   return for_each_rtx (&PATTERN (insn), returnjump_p_1, NULL);
 }
 

@@ -1,3 +1,8 @@
+2009-06-08  Adam Nemet  <anemet@caviumnetworks.com>
+
+	* jump.c (returnjump_p): Handle delayed branches.  Add missing
+	function comment.
+
 2009-06-08  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/40102
