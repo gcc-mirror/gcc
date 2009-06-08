@@ -268,7 +268,11 @@ namespace std
        * @brief Gets the next random number in the sequence.
        */
       result_type
-      operator()();
+      operator()()
+      {
+	_M_x = __detail::__mod<_UIntType, __a, __c, __m>(_M_x);
+	return _M_x;
+      }
 
       /**
        * @brief Compares two linear congruential random number generator
@@ -1588,12 +1592,7 @@ namespace std
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
-	{
-	  typedef typename _UniformRandomNumberGenerator::result_type
-	    _UResult_type;
-	  return _M_call(__urng, this->a(), this->b(),
-			 typename is_integral<_UResult_type>::type());
-	}
+        { return this->operator()(__urng, this->param()); }
 
       /**
        * Gets a uniform random number in the range @f$[0, n)@f$.
@@ -1765,11 +1764,7 @@ namespace std
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
-	{
-	  __detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
-	    __aurng(__urng);
-	  return (__aurng() * (this->b() - this->a())) + this->a();
-	}
+        { return this->operator()(__urng, this->param()); }
 
       template<typename _UniformRandomNumberGenerator>
 	result_type
@@ -2014,12 +2009,12 @@ namespace std
       explicit
       lognormal_distribution(_RealType __m = _RealType(0),
 			     _RealType __s = _RealType(1))
-      : _M_param(__m, __s)
+      : _M_param(__m, __s), _M_nd()
       { }
 
       explicit
       lognormal_distribution(const param_type& __p)
-      : _M_param(__p)
+      : _M_param(__p), _M_nd()
       { }
 
       /**
@@ -2027,7 +2022,7 @@ namespace std
        */
       void
       reset()
-      { }
+      { _M_nd.reset(); }
 
       /**
        *
@@ -2077,10 +2072,13 @@ namespace std
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng,
-		   const param_type& __p);
+		   const param_type& __p)
+        { return std::exp(__p.s() * _M_nd(__urng) + __p.m()); }
 
     private:
       param_type _M_param;
+
+      normal_distribution<result_type> _M_nd;
     };
 
   /**
@@ -2555,12 +2553,12 @@ namespace std
 
       explicit
       student_t_distribution(_RealType __n = _RealType(1))
-      : _M_param(__n)
+      : _M_param(__n), _M_nd()
       { }
 
       explicit
       student_t_distribution(const param_type& __p)
-      : _M_param(__p)
+      : _M_param(__p), _M_nd()
       { }
 
       /**
@@ -2568,7 +2566,7 @@ namespace std
        */
       void
       reset()
-      { }
+      { _M_nd.reset(); }
 
       /**
        *
@@ -2617,12 +2615,9 @@ namespace std
 		   const param_type& __p);
 
     private:
-      template<typename _UniformRandomNumberGenerator>
-	result_type
-	_M_gaussian(_UniformRandomNumberGenerator& __urng,
-		    const result_type __sigma);
-
       param_type _M_param;
+
+      normal_distribution<result_type> _M_nd;
     };
 
   /**
@@ -2761,14 +2756,7 @@ namespace std
     template<typename _UniformRandomNumberGenerator>
       result_type
       operator()(_UniformRandomNumberGenerator& __urng)
-      {
-	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
-	  __aurng(__urng);
-	if ((__aurng() - __aurng.min())
-	     < this->p() * (__aurng.max() - __aurng.min()))
-	  return true;
-	return false;
-      }
+      { return this->operator()(__urng, this->param()); }
 
     template<typename _UniformRandomNumberGenerator>
       result_type
@@ -3539,11 +3527,7 @@ namespace std
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
-	{
-	  __detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
-	    __aurng(__urng);
-	  return -std::log(__aurng()) / this->lambda();
-	}
+        { return this->operator()(__urng, this->param()); }
 
       template<typename _UniformRandomNumberGenerator>
 	result_type
@@ -3633,8 +3617,7 @@ namespace std
 	_RealType _M_alpha;
 	_RealType _M_beta;
 
-	// Hosts either lambda of GB or d of modified Vaduva's.
-	_RealType _M_l_d;
+	_RealType _M_malpha, _M_a2;
       };
 
     public:
@@ -3645,21 +3628,20 @@ namespace std
       explicit
       gamma_distribution(_RealType __alpha_val = _RealType(1),
 			 _RealType __beta_val = _RealType(1))
-      : _M_param(__alpha_val, __beta_val)
+      : _M_param(__alpha_val, __beta_val), _M_nd()
       { }
 
       explicit
       gamma_distribution(const param_type& __p)
-      : _M_param(__p)
+      : _M_param(__p), _M_nd()
       { }
 
       /**
        * @brief Resets the distribution state.
-       *
-       * Does nothing for the gamma distribution.
        */
       void
-      reset() { }
+      reset()
+      { _M_nd.reset(); }
 
       /**
        * @brief Returns the @f$ \alpha @f$ of the distribution.
@@ -3716,6 +3698,8 @@ namespace std
 
     private:
       param_type _M_param;
+
+      normal_distribution<result_type> _M_nd;
     };
 
   /**
@@ -3854,13 +3838,7 @@ namespace std
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng,
-		   const param_type& __p)
-	{
-	  __detail::_Adaptor<_UniformRandomNumberGenerator, result_type>
-	    __aurng(__urng);
-	  return __p.b() * std::pow(-std::log(__aurng()),
-				    result_type(1) / __p.a());
-	}
+		   const param_type& __p);
 
     private:
       param_type _M_param;
@@ -4222,7 +4200,9 @@ namespace std
 	typedef piecewise_constant_distribution<_RealType> distribution_type;
 	friend class piecewise_constant_distribution<_RealType>;
 
-	param_type();
+	param_type()
+	: _M_int(), _M_den(), _M_cp()
+	{ _M_initialize(); }
 
 	template<typename _InputIteratorB, typename _InputIteratorW>
 	  param_type(_InputIteratorB __bfirst,
