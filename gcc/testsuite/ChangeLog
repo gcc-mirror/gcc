@@ -4,6 +4,9 @@
 	* gcc.dg/builtin-object-size-4.c (test1): Adjust expected results.
 	* gcc.dg/builtin-object-size-6.c: New test.
 
+	PR c++/40373
+	* g++.dg/template/dtor7.C: New test.
+
 	PR c++/40370
 	PR c++/40372
 	* g++.dg/template/error41.C: New test.

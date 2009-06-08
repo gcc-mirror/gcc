@@ -1,5 +1,9 @@
 2009-06-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/40373
+	* call.c (check_dtor_name): Return false even if
+	get_type_value (name) is error_mark_node.
+
 	PR c++/40370
 	PR c++/40372
 	* parser.c (cp_parser_direct_declarator): Don't set TREE_SIDE_EFFECTS

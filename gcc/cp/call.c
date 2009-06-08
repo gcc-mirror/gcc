@@ -242,7 +242,7 @@ check_dtor_name (tree basetype, tree name)
       return false;
     }
 
-  if (!name)
+  if (!name || name == error_mark_node)
     return false;
   return same_type_p (TYPE_MAIN_VARIANT (basetype), TYPE_MAIN_VARIANT (name));
 }
