@@ -554,7 +554,7 @@ coverage_begin_output (void)
 {
   /* We don't need to output .gcno file unless we're under -ftest-coverage
      (e.g. -fprofile-arcs/generate/use don't need .gcno to work). */
-  if (no_coverage || !flag_test_coverage)
+  if (no_coverage || !flag_test_coverage || flag_compare_debug)
     return 0;
 
   if (!bbg_function_announced)

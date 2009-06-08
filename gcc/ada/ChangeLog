@@ -1,3 +1,8 @@
+2009-06-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* lib-writ.adb (flag_compare_debug): Import.
+	(Write_ALI): Skip during -fcompare-debug-second.
+
 2009-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: When

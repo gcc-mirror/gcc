@@ -1,3 +1,8 @@
+2009-06-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* options.c (gfc_post_options): Disable dump_parse_tree
+	during -fcompare-debug-second.
+
 2009-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/40008

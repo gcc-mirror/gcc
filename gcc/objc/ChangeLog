@@ -1,3 +1,8 @@
+2009-06-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* objc-act.c (objc_init): Skip print_struct_values during
+	-fcompare-debug-second.
+
 2009-06-03  Ian Lance Taylor  <iant@google.com>
 
 	* Make-lang.in (cc1obj-checksum.o): Depend upon $(CONFIG_H) and

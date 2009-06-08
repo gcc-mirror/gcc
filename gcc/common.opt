@@ -384,6 +384,14 @@ fconserve-stack
 Common Var(flag_conserve_stack) Optimization
 Do not perform optimizations increasing noticeably stack usage
 
+fcompare-debug=
+Common JoinedOrMissing RejectNegative Var(flag_compare_debug_opt)
+-fcompare-debug[=<opts>] Compile with and without e.g. -gtoggle, and compare the final-insns dump
+
+fcompare-debug-second
+Common RejectNegative Var(flag_compare_debug)
+Run only the second compilation of -fcompare-debug
+
 fcprop-registers
 Common Report Var(flag_cprop_registers) Optimization
 Perform a register copy-propagation optimization pass
@@ -449,6 +457,10 @@ Amend appropriate diagnostic messages with the command line option that controls
 fdump-
 Common Joined RejectNegative
 -fdump-<type>	Dump various compiler internals to a file
+
+fdump-final-insns=
+Common RejectNegative Joined Var(flag_dump_final_insns)
+-fdump-final-insns=filename	Dump to filename the insns at the end of translation
 
 fdump-noaddr
 Common Report Var(flag_dump_noaddr)
@@ -1416,6 +1428,10 @@ Generate debug information in STABS format
 gstabs+
 Common JoinedOrMissing Negative(gvms)
 Generate debug information in extended STABS format
+
+gtoggle
+Common Report Var(flag_gtoggle)
+Toggle debug information generation
 
 gvms
 Common JoinedOrMissing Negative(gxcoff)

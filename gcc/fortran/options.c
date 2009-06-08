@@ -246,6 +246,9 @@ gfc_post_options (const char **pfilename)
   if (flag_bounds_check)
     gfc_option.rtcheck |= GFC_RTCHECK_BOUNDS;
 
+  if (flag_compare_debug)
+    gfc_option.dump_parse_tree = 0;
+
   /* Verify the input file name.  */
   if (!filename || strcmp (filename, "-") == 0)
     {

@@ -84,6 +84,18 @@ compilation is specified by a string called a "spec".  */
 #include "flags.h"
 #include "opts.h"
 
+#ifdef HAVE_MMAP_FILE
+# include <sys/mman.h>
+# ifdef HAVE_MINCORE
+/* This is on Solaris.  */
+#  include <sys/types.h>
+# endif
+#endif
+
+#ifndef MAP_FAILED
+# define MAP_FAILED ((void *)-1)
+#endif
+
 /* By default there is no special suffix for target executables.  */
 /* FIXME: when autoconf is fixed, remove the host check - dj */
 #if defined(TARGET_EXECUTABLE_SUFFIX) && defined(HOST_EXECUTABLE_SUFFIX)
@@ -391,6 +403,9 @@ static const char *replace_outfile_spec_function (int, const char **);
 static const char *version_compare_spec_function (int, const char **);
 static const char *include_spec_function (int, const char **);
 static const char *print_asm_header_spec_function (int, const char **);
+static const char *compare_debug_dump_opt_spec_function (int, const char **);
+static const char *compare_debug_self_opt_spec_function (int, const char **);
+static const char *compare_debug_auxbase_opt_spec_function (int, const char **);
 
 /* The Specs Language
 
@@ -853,7 +868,8 @@ static const char *cpp_debug_options = "%{d*}";
 static const char *cc1_options =
 "%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
  %1 %{!Q:-quiet} -dumpbase %B %{d*} %{m*} %{a*}\
- %{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}%{!c:%{!S:-auxbase %b}}\
+ %{fcompare-debug-second:%:compare-debug-auxbase-opt(%b)} \
+ %{!fcompare-debug-second:%{c|S:%{o*:-auxbase-strip %*}%{!o*:-auxbase %b}}}%{!c:%{!S:-auxbase %b}} \
  %{g*} %{O*} %{W*&pedantic*} %{w} %{std*&ansi&trigraphs}\
  %{v:-version} %{pg:-p} %{p} %{f*} %{undef}\
  %{Qn:-fno-ident} %{--help:--help}\
@@ -875,9 +891,11 @@ static const char *asm_options =
 
 static const char *invoke_as =
 #ifdef AS_NEEDS_DASH_FOR_PIPED_INPUT
-"%{!S:-o %|.s |\n as %(asm_options) %|.s %A }";
+"%{fcompare-debug=*:%:compare-debug-dump-opt()}\
+ %{!S:-o %|.s |\n as %(asm_options) %|.s %A }";
 #else
-"%{!S:-o %|.s |\n as %(asm_options) %m.s %A }";
+"%{fcompare-debug=*:%:compare-debug-dump-opt()}\
+ %{!S:-o %|.s |\n as %(asm_options) %m.s %A }";
 #endif
 
 /* Some compilers have limits on line lengths, and the multilib_select
@@ -1673,6 +1691,9 @@ static const struct spec_function static_spec_functions[] =
   { "version-compare",		version_compare_spec_function },
   { "include",			include_spec_function },
   { "print-asm-header",		print_asm_header_spec_function },
+  { "compare-debug-dump-opt",	compare_debug_dump_opt_spec_function },
+  { "compare-debug-self-opt",	compare_debug_self_opt_spec_function },
+  { "compare-debug-auxbase-opt", compare_debug_auxbase_opt_spec_function },
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
 #endif
@@ -3196,6 +3217,29 @@ static struct switchstr *switches;
 
 static int n_switches;
 
+/* Set to zero if -fcompare-debug is disabled, positive if it's
+   enabled and we're running the first compilation, negative if it's
+   enabled and we're running the second compilation.  For most of the
+   time, it's in the range -1..1, but it can be temporarily set to 2
+   or 3 to indicate that the -fcompare-debug flags didn't come from
+   the command-line, but rather from the GCC_COMPARE_DEBUG environment
+   variable, until a synthesized -fcompare-debug flag is added to the
+   command line.  */
+int compare_debug;
+
+/* Set to nonzero if we've seen the -fcompare-debug-second flag.  */
+int compare_debug_second;
+
+/* Set to the flags that should be passed to the second compilation in
+   a -fcompare-debug compilation.  */
+const char *compare_debug_opt;
+
+static struct switchstr *switches_debug_check[2];
+
+static int n_switches_debug_check[2];
+
+static char *debug_check_temp_file[2];
+
 /* Language is one of three things:
 
    1) The name of a real programming language.
@@ -3790,6 +3834,38 @@ process_command (int argc, const char **argv)
 	print_multi_os_directory = 1;
       else if (! strcmp (argv[i], "-print-sysroot-headers-suffix"))
 	print_sysroot_headers_suffix = 1;
+      else if (! strcmp (argv[i], "-fcompare-debug-second"))
+	{
+	  compare_debug_second = 1;
+	  n_switches++;
+	}
+      else if (! strcmp (argv[i], "-fno-compare-debug"))
+	{
+	  argv[i] = "-fcompare-debug=";
+	  goto compare_debug_with_arg;
+	}
+      else if (! strcmp (argv[i], "-fcompare-debug"))
+	{
+	  argv[i] = "-fcompare-debug=-gtoggle";
+	  goto compare_debug_with_arg;
+	}
+#define OPT "-fcompare-debug="
+      else if (! strncmp (argv[i], OPT, sizeof (OPT) - 1))
+	{
+	  const char *opt;
+	compare_debug_with_arg:
+	  opt = argv[i] + sizeof (OPT) - 1;
+#undef OPT
+	  if (*opt)
+	    compare_debug = 1;
+	  else
+	    compare_debug = -1;
+	  if (compare_debug < 0)
+	    compare_debug_opt = NULL;
+	  else
+	    compare_debug_opt = opt;
+	  n_switches++;
+	}
       else if (! strncmp (argv[i], "-Wa,", 4))
 	{
 	  int prev, j;
@@ -4147,6 +4223,29 @@ process_command (int argc, const char **argv)
       use_pipes = 0;
     }
 
+  if (!compare_debug)
+    {
+      const char *gcd = getenv ("GCC_COMPARE_DEBUG");
+
+      if (gcd && gcd[0] == '-')
+	{
+	  compare_debug = 2;
+	  compare_debug_opt = gcd;
+	  n_switches++;
+	}
+      else if (gcd && *gcd && strcmp (gcd, "0"))
+	{
+	  compare_debug = 3;
+	  compare_debug_opt = "-gtoggle";
+	  n_switches++;
+	}
+    }
+  else if (compare_debug < 0)
+    {
+      compare_debug = 0;
+      gcc_assert (!compare_debug_opt);
+    }
+
   /* Set up the search paths.  We add directories that we expect to
      contain GNU Toolchain components before directories specified by
      the machine description so that we will find GNU components (like
@@ -4439,6 +4538,19 @@ process_command (int argc, const char **argv)
 
   if (n_infiles == last_language_n_infiles && spec_lang != 0)
     error ("warning: '-x %s' after last input file has no effect", spec_lang);
+
+  if (compare_debug == 2 || compare_debug == 3)
+    {
+      switches[n_switches].part1 = concat ("fcompare-debug=",
+					   compare_debug_opt,
+					   NULL);
+      switches[n_switches].args = 0;
+      switches[n_switches].live_cond = 0;
+      switches[n_switches].validated = 0;
+      switches[n_switches].ordering = 0;
+      n_switches++;
+      compare_debug = 1;
+    }
 
   /* Ensure we only invoke each subprocess once.  */
   if (print_subprocess_help || print_help_list || print_version)
@@ -4740,28 +4852,69 @@ do_self_spec (const char *spec)
 
   if (argbuf_index > 0)
     {
-      int i, first;
+      int i;
 
-      first = n_switches;
-      n_switches += argbuf_index;
-      switches = XRESIZEVEC (struct switchstr, switches, n_switches + 1);
+      switches = XRESIZEVEC (struct switchstr, switches,
+			     n_switches + argbuf_index + 1);
 
-      switches[n_switches] = switches[first];
       for (i = 0; i < argbuf_index; i++)
 	{
 	  struct switchstr *sw;
+	  const char *p = argbuf[i];
+	  int c = *p;
 
 	  /* Each switch should start with '-'.  */
-	  if (argbuf[i][0] != '-')
+	  if (c != '-')
 	    fatal ("switch '%s' does not start with '-'", argbuf[i]);
 
-	  sw = &switches[i + first];
-	  sw->part1 = &argbuf[i][1];
-	  sw->args = 0;
+	  p++;
+	  c = *p;
+
+	  sw = &switches[n_switches++];
+	  sw->part1 = p;
 	  sw->live_cond = 0;
 	  sw->validated = 0;
 	  sw->ordering = 0;
+
+	  /* Deal with option arguments in separate argv elements.  */
+	  if ((SWITCH_TAKES_ARG (c) > (p[1] != 0))
+	      || WORD_SWITCH_TAKES_ARG (p))
+	    {
+	      int j = 0;
+	      int n_args = WORD_SWITCH_TAKES_ARG (p);
+
+	      if (n_args == 0)
+		{
+		  /* Count only the option arguments in separate argv elements.  */
+		  n_args = SWITCH_TAKES_ARG (c) - (p[1] != 0);
+		}
+	      if (i + n_args >= argbuf_index)
+		fatal ("argument to '-%s' is missing", p);
+	      sw->args
+		= XNEWVEC (const char *, n_args + 1);
+	      while (j < n_args)
+		sw->args[j++] = argbuf[++i];
+	      /* Null-terminate the vector.  */
+	      sw->args[j] = 0;
+	    }
+	  else if (strchr (switches_need_spaces, c))
+	    {
+	      /* On some systems, ld cannot handle some options without
+		 a space.  So split the option from its argument.  */
+	      char *part1 = XNEWVEC (char, 2);
+	      part1[0] = c;
+	      part1[1] = '\0';
+
+	      sw->part1 = part1;
+	      sw->args = XNEWVEC (const char *, 2);
+	      sw->args[0] = xstrdup (p+1);
+	      sw->args[1] = 0;
+	    }
+	  else
+	    sw->args = 0;
 	}
+
+      switches[n_switches].part1 = 0;
     }
 }
 
@@ -4947,6 +5100,8 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      obstack_grow (&obstack, save_temps_prefix, save_temps_length);
 	    else
 	      obstack_grow (&obstack, input_basename, basename_length);
+	    if (compare_debug < 0)
+	      obstack_grow (&obstack, ".gk", 3);
 	    arg_going = 1;
 	    break;
 
@@ -4955,6 +5110,8 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      obstack_grow (&obstack, save_temps_prefix, save_temps_length);
 	    else
 	      obstack_grow (&obstack, input_basename, suffixed_basename_length);
+	    if (compare_debug < 0)
+	      obstack_grow (&obstack, ".gk", 3);
 	    arg_going = 1;
 	    break;
 
@@ -5098,6 +5255,12 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 				TARGET_OBJECT_SUFFIX);
 		      }
 		    suffix_length += strlen (TARGET_OBJECT_SUFFIX);
+		  }
+
+		if (compare_debug < 0)
+		  {
+		    suffix = concat (".gk", suffix, NULL);
+		    suffix_length += 3;
 		  }
 
 		/* If -save-temps=obj and -o were specified, use that for the
@@ -6190,17 +6353,18 @@ check_live_switch (int switchnum, int prefix_length)
   const char *name = switches[switchnum].part1;
   int i;
 
+  /* If we already processed this switch and determined if it was
+     live or not, return our past determination.  */
+  if (switches[switchnum].live_cond != 0)
+    return ((switches[switchnum].live_cond & SWITCH_LIVE) != 0
+	    && (switches[switchnum].live_cond & SWITCH_FALSE) == 0
+	    && (switches[switchnum].live_cond & SWITCH_IGNORE) == 0);
+
   /* In the common case of {<at-most-one-letter>*}, a negating
      switch would always match, so ignore that case.  We will just
      send the conflicting switches to the compiler phase.  */
   if (prefix_length >= 0 && prefix_length <= 1)
     return 1;
-
-  /* If we already processed this switch and determined if it was
-     live or not, return our past determination.  */
-  if (switches[switchnum].live_cond != 0)
-    return ((switches[switchnum].live_cond & SWITCH_LIVE) != 0
-	    && (switches[switchnum].live_cond & SWITCH_FALSE) == 0);
 
   /* Now search for duplicate in a manner that depends on the name.  */
   switch (*name)
@@ -6398,6 +6562,125 @@ fatal_error (int signum)
   kill (getpid (), signum);
 }
 
+/* Compare the contents of the two files named CMPFILE[0] and
+   CMPFILE[1].  Return zero if they're identical, nonzero
+   otherwise.  */
+
+static int
+compare_files (char *cmpfile[])
+{
+  int ret = 0;
+  FILE *temp[2] = { NULL, NULL };
+  int i;
+
+#if HAVE_MMAP_FILE
+  {
+    size_t length[2];
+    void *map[2] = { NULL, NULL };
+
+    for (i = 0; i < 2; i++)
+      {
+	struct stat st;
+
+	if (stat (cmpfile[i], &st) < 0 || !S_ISREG (st.st_mode))
+	  {
+	    error ("%s: could not determine length of compare-debug file %s",
+		   input_filename, cmpfile[i]);
+	    ret = 1;
+	    break;
+	  }
+
+	length[i] = st.st_size;
+      }
+
+    if (!ret && length[0] != length[1])
+      {
+	error ("%s: -fcompare-debug failure (length)", input_filename);
+	ret = 1;
+      }
+
+    if (!ret)
+      for (i = 0; i < 2; i++)
+	{
+	  int fd = open (cmpfile[i], O_RDONLY);
+	  if (fd < 0)
+	    {
+	      error ("%s: could not open compare-debug file %s",
+		     input_filename, cmpfile[i]);
+	      ret = 1;
+	      break;
+	    }
+
+	  map[i] = mmap (NULL, length[i], PROT_READ, MAP_PRIVATE, fd, 0);
+	  close (fd);
+
+	  if (map[i] == (void *) MAP_FAILED)
+	    {
+	      ret = -1;
+	      break;
+	    }
+	}
+
+    if (!ret)
+      {
+	if (memcmp (map[0], map[1], length[0]) != 0)
+	  {
+	    error ("%s: -fcompare-debug failure", input_filename);
+	    ret = 1;
+	  }
+      }
+
+    for (i = 0; i < 2; i++)
+      if (map[i])
+	munmap (map[i], length[i]);
+
+    if (ret >= 0)
+      return ret;
+
+    ret = 0;
+  }
+#endif
+
+  for (i = 0; i < 2; i++)
+    {
+      temp[i] = fopen (cmpfile[i], "r");
+      if (!temp[i])
+	{
+	  error ("%s: could not open compare-debug file %s",
+		 input_filename, cmpfile[i]);
+	  ret = 1;
+	  break;
+	}
+    }
+
+  if (!ret && temp[0] && temp[1])
+    for (;;)
+      {
+	int c0, c1;
+	c0 = fgetc (temp[0]);
+	c1 = fgetc (temp[1]);
+
+	if (c0 != c1)
+	  {
+	    error ("%s: -fcompare-debug failure",
+		   input_filename);
+	    ret = 1;
+	    break;
+	  }
+
+	if (c0 == EOF)
+	  break;
+      }
+
+  for (i = 1; i >= 0; i--)
+    {
+      if (temp[i])
+	fclose (temp[i]);
+    }
+
+  return ret;
+}
+
 extern int main (int, char **);
 
 int
@@ -6569,6 +6852,43 @@ main (int argc, char **argv)
 
   for (i = 0; i < ARRAY_SIZE (driver_self_specs); i++)
     do_self_spec (driver_self_specs[i]);
+
+  if (compare_debug)
+    {
+      enum save_temps save;
+
+      if (!compare_debug_second)
+	{
+	  n_switches_debug_check[1] = n_switches;
+	  switches_debug_check[1] = XDUPVEC (struct switchstr, switches,
+					     n_switches + 1);
+
+	  do_self_spec ("%:compare-debug-self-opt()");
+	  n_switches_debug_check[0] = n_switches;
+	  switches_debug_check[0] = switches;
+
+	  n_switches = n_switches_debug_check[1];
+	  switches = switches_debug_check[1];
+	}
+
+      /* Avoid crash when computing %j in this early.  */
+      save = save_temps_flag;
+      save_temps_flag = SAVE_TEMPS_NONE;
+
+      compare_debug = -compare_debug;
+      do_self_spec ("%:compare-debug-self-opt()");
+
+      save_temps_flag = save;
+
+      if (!compare_debug_second)
+	{
+	  n_switches_debug_check[1] = n_switches;
+	  switches_debug_check[1] = switches;
+	  compare_debug = -compare_debug;
+	  n_switches = n_switches_debug_check[0];
+	  switches = switches_debug_check[0];
+	}
+    }
 
   /* If not cross-compiling, look for executables in the standard
      places.  */
@@ -6998,10 +7318,63 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	    }
 	  else
 	    {
+	      if (compare_debug)
+		{
+		  if (debug_check_temp_file[0])
+		    free (debug_check_temp_file[0]);
+		  debug_check_temp_file[0] = NULL;
+
+		  if (debug_check_temp_file[1])
+		    free (debug_check_temp_file[1]);
+		  debug_check_temp_file[1] = NULL;
+		}
+
 	      value = do_spec (input_file_compiler->spec);
 	      infiles[i].compiled = true;
 	      if (value < 0)
 		this_file_error = 1;
+	      else if (compare_debug && debug_check_temp_file[0])
+		{
+		  if (verbose_flag)
+		    error ("Recompiling with -fcompare-debug");
+
+		  compare_debug = -compare_debug;
+		  n_switches = n_switches_debug_check[1];
+		  switches = switches_debug_check[1];
+
+		  value = do_spec (input_file_compiler->spec);
+
+		  compare_debug = -compare_debug;
+		  n_switches = n_switches_debug_check[0];
+		  switches = switches_debug_check[0];
+
+		  if (value < 0)
+		    {
+		      error ("during -fcompare-debug recompilation");
+		      this_file_error = 1;
+		    }
+
+		  gcc_assert (debug_check_temp_file[1]
+			      && strcmp (debug_check_temp_file[0],
+					 debug_check_temp_file[1]));
+
+		  if (verbose_flag)
+		    error ("Comparing final insns dumps");
+
+		  if (compare_files (debug_check_temp_file))
+		    this_file_error = 1;
+		}
+
+	      if (compare_debug)
+		{
+		  if (debug_check_temp_file[0])
+		    free (debug_check_temp_file[0]);
+		  debug_check_temp_file[0] = NULL;
+
+		  if (debug_check_temp_file[1])
+		    free (debug_check_temp_file[1]);
+		  debug_check_temp_file[1] = NULL;
+		}
 	    }
 	}
 
@@ -8285,4 +8658,126 @@ print_asm_header_spec_function (int arg ATTRIBUTE_UNUSED,
   printf (_("Use \"-Wa,OPTION\" to pass \"OPTION\" to the assembler.\n\n"));
   fflush (stdout);
   return NULL;
+}
+
+/* %:compare-debug-dump-opt spec function.  Save the last argument,
+   expected to be the last -fdump-final-insns option, or generate a
+   temporary.  */
+
+static const char *
+compare_debug_dump_opt_spec_function (int arg,
+				      const char **argv ATTRIBUTE_UNUSED)
+{
+  const char *ret;
+  char *name;
+  int which;
+
+  if (arg != 0)
+    fatal ("too many arguments to %%:compare-debug-dump-opt");
+
+  if (!compare_debug)
+    return NULL;
+
+  do_spec_2 ("%{fdump-final-insns=*:%*}");
+  do_spec_1 (" ", 0, NULL);
+
+  if (argbuf_index > 0)
+    {
+      name = xstrdup (argv[argbuf_index - 1]);
+      ret = NULL;
+    }
+  else
+    {
+#define OPT "-fdump-final-insns="
+      ret = "-fdump-final-insns=%g.gkd";
+
+      do_spec_2 (ret + sizeof (OPT) - 1);
+      do_spec_1 (" ", 0, NULL);
+#undef OPT
+
+      gcc_assert (argbuf_index > 0);
+
+      name = xstrdup (argbuf[argbuf_index - 1]);
+    }
+
+  which = compare_debug < 0;
+  debug_check_temp_file[which] = name;
+
+#if 0
+  error ("compare-debug: [%i]=\"%s\", ret %s", which, name, ret);
+#endif
+
+  return ret;
+}
+
+static const char *debug_auxbase_opt;
+
+/* %:compare-debug-self-opt spec function.  Expands to the options
+    that are to be passed in the second compilation of
+    compare-debug.  */
+
+static const char *
+compare_debug_self_opt_spec_function (int arg,
+				      const char **argv ATTRIBUTE_UNUSED)
+{
+  if (arg != 0)
+    fatal ("too many arguments to %%:compare-debug-self-opt");
+
+  if (compare_debug >= 0)
+    return NULL;
+
+  do_spec_2 ("%{c|S:%{o*:%*}}");
+  do_spec_1 (" ", 0, NULL);
+
+  if (argbuf_index > 0)
+    debug_auxbase_opt = concat ("-auxbase-strip ",
+				argbuf[argbuf_index - 1],
+				NULL);
+  else
+    debug_auxbase_opt = NULL;
+
+  return concat ("\
+%<o %<MD %<MMD %<MF* %<MG %<MP %<MQ* %<MT* \
+%<fdump-final-insns=* -w -S -o %j \
+%{!fcompare-debug-second:-fcompare-debug-second} \
+", compare_debug_opt, NULL);
+}
+
+/* %:compare-debug-auxbase-opt spec function.  Expands to the auxbase
+    options that are to be passed in the second compilation of
+    compare-debug.  It expects, as an argument, the basename of the
+    current input file name, with the .gk suffix appended to it.  */
+
+static const char *
+compare_debug_auxbase_opt_spec_function (int arg,
+					 const char **argv)
+{
+  char *name;
+  int len;
+
+  if (arg == 0)
+    fatal ("too few arguments to %%:compare-debug-auxbase-opt");
+
+  if (arg != 1)
+    fatal ("too many arguments to %%:compare-debug-auxbase-opt");
+
+  if (compare_debug >= 0)
+    return NULL;
+
+  len = strlen (argv[0]);
+  if (len < 3 || strcmp (argv[0] + len - 3, ".gk") != 0)
+    fatal ("argument to %%:compare-debug-auxbase-opt does not end in .gk");
+
+  if (debug_auxbase_opt)
+    return debug_auxbase_opt;
+
+#define OPT "-auxbase "
+
+  len -= 3;
+  name = (char*) xmalloc (sizeof (OPT) + len);
+  memcpy (name, OPT, sizeof (OPT) - 1);
+  memcpy (name + sizeof (OPT) - 1, argv[0], len);
+  name[sizeof (OPT) - 1 + len] = '\0';
+
+  return name;
 }
