@@ -1,3 +1,12 @@
+2009-06-08  Revital Eres  <eres@il.ibm.com>
+
+	PR40359
+	* gcc.dg/vect/vect-58.c: Change checks to use vect_hw_misalign.
+	* gcc.dg/vect/vect-88.c: Likewise.
+	* gcc.dg/vect/no-section-anchors-vect-66.c: Likewise.
+	* gcc.dg/vect/pr25413.c: Likewise.
+	* lib/target-supports.exp: Add i?86 to vect_hw_misalign.
+
 2009-06-07  Ian Lance Taylor  <iant@google.com>
 
 	* g++.dg/warn/Wswitch-3.C: New testcase.
