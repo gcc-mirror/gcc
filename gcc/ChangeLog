@@ -1,3 +1,13 @@
+2009-06-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh-protos.h (sh_optimization_options): Declare.
+	(sh_override_options): Likewise.
+	* config/sh/sh.c: Include params.h.
+	(sh_optimization_options): New.
+	(sh_override_options): Likewise.
+	* config/sh/sh.c (OPTIMIZATION_OPTIONS): Use sh_optimization_options.
+	(OVERRIDE_OPTIONS): Use sh_override_options.
+
 2009-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (emit_cfa_remember): New variable.

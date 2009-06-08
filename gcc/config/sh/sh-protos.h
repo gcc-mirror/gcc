@@ -125,6 +125,8 @@ extern rtx sh_gen_truncate (enum machine_mode, rtx, int);
 extern bool sh_vector_mode_supported_p (enum machine_mode);
 #endif /* RTX_CODE */
 
+extern void sh_optimization_options (int, int);
+extern void sh_override_options (void);
 extern const char *output_jump_label_table (void);
 extern int sh_handle_pragma (int (*)(void), void (*)(int), const char *);
 extern struct rtx_def *get_fpscr_rtx (void);
