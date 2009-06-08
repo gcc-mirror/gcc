@@ -899,8 +899,8 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
         }
     }
 
-  ubound = gfc_conv_descriptor_ubound (desc, bound);
-  lbound = gfc_conv_descriptor_lbound (desc, bound);
+  ubound = gfc_conv_descriptor_ubound_get (desc, bound);
+  lbound = gfc_conv_descriptor_lbound_get (desc, bound);
   
   /* Follow any component references.  */
   if (arg->expr->expr_type == EXPR_VARIABLE
@@ -962,7 +962,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
 
   if (as)
     {
-      tree stride = gfc_conv_descriptor_stride (desc, bound);
+      tree stride = gfc_conv_descriptor_stride_get (desc, bound);
 
       cond1 = fold_build2 (GE_EXPR, boolean_type_node, ubound, lbound);
       cond2 = fold_build2 (LE_EXPR, boolean_type_node, ubound, lbound);
@@ -3476,8 +3476,8 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
       tree ubound, lbound;
 
       arg1 = build_fold_indirect_ref (arg1);
-      ubound = gfc_conv_descriptor_ubound (arg1, argse.expr);
-      lbound = gfc_conv_descriptor_lbound (arg1, argse.expr);
+      ubound = gfc_conv_descriptor_ubound_get (arg1, argse.expr);
+      lbound = gfc_conv_descriptor_lbound_get (arg1, argse.expr);
       se->expr = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 			      ubound, lbound);
       se->expr = fold_build2 (PLUS_EXPR, gfc_array_index_type, se->expr,
@@ -3563,8 +3563,8 @@ gfc_conv_intrinsic_sizeof (gfc_se *se, gfc_expr *expr)
 	{
 	  tree idx;
 	  idx = gfc_rank_cst[n];
-	  lower = gfc_conv_descriptor_lbound (argse.expr, idx);
-	  upper = gfc_conv_descriptor_ubound (argse.expr, idx);
+	  lower = gfc_conv_descriptor_lbound_get (argse.expr, idx);
+	  upper = gfc_conv_descriptor_ubound_get (argse.expr, idx);
 	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 			     upper, lower);
 	  tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
@@ -3752,9 +3752,9 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 	  tree idx;
 	  idx = gfc_rank_cst[n];
 	  gfc_add_modify (&argse.pre, source_bytes, tmp);
-	  stride = gfc_conv_descriptor_stride (argse.expr, idx);
-	  lower = gfc_conv_descriptor_lbound (argse.expr, idx);
-	  upper = gfc_conv_descriptor_ubound (argse.expr, idx);
+	  stride = gfc_conv_descriptor_stride_get (argse.expr, idx);
+	  lower = gfc_conv_descriptor_lbound_get (argse.expr, idx);
+	  upper = gfc_conv_descriptor_ubound_get (argse.expr, idx);
 	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
 			     upper, lower);
 	  gfc_add_modify (&argse.pre, extent, tmp);
@@ -4070,7 +4070,7 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	     present.  */
 	  arg1se.descriptor_only = 1;
 	  gfc_conv_expr_lhs (&arg1se, arg1->expr);
-	  tmp = gfc_conv_descriptor_stride (arg1se.expr,
+	  tmp = gfc_conv_descriptor_stride_get (arg1se.expr,
 					    gfc_rank_cst[arg1->expr->rank - 1]);
 	  nonzero_arraylen = fold_build2 (NE_EXPR, boolean_type_node, tmp,
 					  build_int_cst (TREE_TYPE (tmp), 0));

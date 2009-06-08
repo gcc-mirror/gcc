@@ -150,14 +150,14 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
 
   gfc_add_modify (&cond_block, decl, outer);
   rank = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (type) - 1];
-  size = gfc_conv_descriptor_ubound (decl, rank);
+  size = gfc_conv_descriptor_ubound_get (decl, rank);
   size = fold_build2 (MINUS_EXPR, gfc_array_index_type, size,
-		      gfc_conv_descriptor_lbound (decl, rank));
+		      gfc_conv_descriptor_lbound_get (decl, rank));
   size = fold_build2 (PLUS_EXPR, gfc_array_index_type, size,
 		      gfc_index_one_node);
   if (GFC_TYPE_ARRAY_RANK (type) > 1)
     size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
-			gfc_conv_descriptor_stride (decl, rank));
+			gfc_conv_descriptor_stride_get (decl, rank));
   esize = fold_convert (gfc_array_index_type,
 			TYPE_SIZE_UNIT (gfc_get_element_type (type)));
   size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, esize);
@@ -202,14 +202,14 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
 
   gfc_add_modify (&block, dest, src);
   rank = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (type) - 1];
-  size = gfc_conv_descriptor_ubound (dest, rank);
+  size = gfc_conv_descriptor_ubound_get (dest, rank);
   size = fold_build2 (MINUS_EXPR, gfc_array_index_type, size,
-		      gfc_conv_descriptor_lbound (dest, rank));
+		      gfc_conv_descriptor_lbound_get (dest, rank));
   size = fold_build2 (PLUS_EXPR, gfc_array_index_type, size,
 		      gfc_index_one_node);
   if (GFC_TYPE_ARRAY_RANK (type) > 1)
     size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
-			gfc_conv_descriptor_stride (dest, rank));
+			gfc_conv_descriptor_stride_get (dest, rank));
   esize = fold_convert (gfc_array_index_type,
 			TYPE_SIZE_UNIT (gfc_get_element_type (type)));
   size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, esize);
@@ -243,14 +243,14 @@ gfc_omp_clause_assign_op (tree clause ATTRIBUTE_UNUSED, tree dest, tree src)
   gfc_start_block (&block);
 
   rank = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (type) - 1];
-  size = gfc_conv_descriptor_ubound (dest, rank);
+  size = gfc_conv_descriptor_ubound_get (dest, rank);
   size = fold_build2 (MINUS_EXPR, gfc_array_index_type, size,
-		      gfc_conv_descriptor_lbound (dest, rank));
+		      gfc_conv_descriptor_lbound_get (dest, rank));
   size = fold_build2 (PLUS_EXPR, gfc_array_index_type, size,
 		      gfc_index_one_node);
   if (GFC_TYPE_ARRAY_RANK (type) > 1)
     size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
-			gfc_conv_descriptor_stride (dest, rank));
+			gfc_conv_descriptor_stride_get (dest, rank));
   esize = fold_convert (gfc_array_index_type,
 			TYPE_SIZE_UNIT (gfc_get_element_type (type)));
   size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, esize);
@@ -606,14 +606,14 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
 
       gfc_add_modify (&block, decl, outer_sym.backend_decl);
       rank = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (type) - 1];
-      size = gfc_conv_descriptor_ubound (decl, rank);
+      size = gfc_conv_descriptor_ubound_get (decl, rank);
       size = fold_build2 (MINUS_EXPR, gfc_array_index_type, size,
-			  gfc_conv_descriptor_lbound (decl, rank));
+			  gfc_conv_descriptor_lbound_get (decl, rank));
       size = fold_build2 (PLUS_EXPR, gfc_array_index_type, size,
 			  gfc_index_one_node);
       if (GFC_TYPE_ARRAY_RANK (type) > 1)
 	size = fold_build2 (MULT_EXPR, gfc_array_index_type, size,
-			    gfc_conv_descriptor_stride (decl, rank));
+			    gfc_conv_descriptor_stride_get (decl, rank));
       esize = fold_convert (gfc_array_index_type,
 			    TYPE_SIZE_UNIT (gfc_get_element_type (type)));
       size = fold_build2 (MULT_EXPR, gfc_array_index_type, size, esize);
