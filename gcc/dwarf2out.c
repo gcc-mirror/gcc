@@ -717,13 +717,29 @@ dwarf2out_cfi_label (bool force)
   return label;
 }
 
+/* True if remember_state should be emitted before following CFI directive.  */
+static bool emit_cfa_remember;
+
 /* Add CFI to the current fde at the PC value indicated by LABEL if specified,
    or to the CIE if LABEL is NULL.  */
 
 static void
 add_fde_cfi (const char *label, dw_cfi_ref cfi)
 {
-  dw_cfi_ref *list_head = &cie_cfi_head;
+  dw_cfi_ref *list_head;
+
+  if (emit_cfa_remember)
+    {
+      dw_cfi_ref cfi_remember;
+
+      /* Emit the state save.  */
+      emit_cfa_remember = false;
+      cfi_remember = new_cfi (); 
+      cfi_remember->dw_cfi_opc = DW_CFA_remember_state;
+      add_fde_cfi (label, cfi_remember);
+    }
+
+  list_head = &cie_cfi_head;
 
   if (dwarf2out_do_cfi_asm ())
     {
@@ -2709,7 +2725,6 @@ dwarf2out_begin_epilogue (rtx insn)
 {
   bool saw_frp = false;
   rtx i;
-  dw_cfi_ref cfi;
 
   /* Scan forward to the return insn, noticing if there are possible
      frame related insns.  */
@@ -2755,10 +2770,7 @@ dwarf2out_begin_epilogue (rtx insn)
     }
   emit_note_before (NOTE_INSN_CFA_RESTORE_STATE, i);
 
-  /* Emit the state save.  */
-  cfi = new_cfi (); 
-  cfi->dw_cfi_opc = DW_CFA_remember_state;
-  add_fde_cfi (dwarf2out_cfi_label (false), cfi);
+  emit_cfa_remember = true;
 
   /* And emulate the state save.  */
   gcc_assert (!cfa_remember.in_use);

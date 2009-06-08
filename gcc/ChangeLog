@@ -1,3 +1,11 @@
+2009-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (emit_cfa_remember): New variable.
+	(add_fde_cfi): If emit_cfa_remember, recurse to add
+	DW_CFA_remember_state first.
+	(dwarf2out_begin_epilogue): Don't add_fde_cfi DW_CFA_remember_state,
+	instead just set emit_cfa_remember.
+
 2009-06-08  Jan Hubicka  <jh@suse.cz>
 
 	PR debug/40126
