@@ -1,3 +1,11 @@
+2009-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-object-size.c (addr_object_size): Add OSI argument.
+	Handle also INDIRECT_REF with SSA_NAME inside of it as base address.
+	(compute_builtin_object_size, expr_object_size): Adjust callers.
+	(plus_stmt_object_size): Call addr_object_size instead of
+	compute_builtin_object_size.
+
 2009-06-08  Ghassan Shobaki  <ghassan.shobaki@amd.com>
             Dwarakanath Rajagopal  <dwarak.rajagopal@amd.com>
 	
@@ -20,7 +28,6 @@
 2009-06-08  Michael Matz  <matz@suse.de>
 
 	PR debug/40012
-
 	* cfgexpand.c (set_rtl): Store place also in DECL_RTL, if all
 	partitions use the same.
 	(expand_one_var): Deal with DECL_RTL sometimes begin set also
