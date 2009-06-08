@@ -1,6 +1,13 @@
+2009-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/40370
+	PR c++/40372
+	* g++.dg/template/error41.C: New test.
+	* g++.dg/template/error42.C: New test.
+
 2009-06-08  Revital Eres  <eres@il.ibm.com>
 
-	PR40359
+	PR testsuite/40359
 	* gcc.dg/vect/vect-58.c: Change checks to use vect_hw_misalign.
 	* gcc.dg/vect/vect-88.c: Likewise.
 	* gcc.dg/vect/no-section-anchors-vect-66.c: Likewise.
