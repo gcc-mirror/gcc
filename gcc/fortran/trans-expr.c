@@ -1628,15 +1628,15 @@ gfc_set_interface_mapping_bounds (stmtblock_t * block, tree type, tree desc)
       if (GFC_TYPE_ARRAY_LBOUND (type, n) == NULL_TREE)
 	{
 	  GFC_TYPE_ARRAY_LBOUND (type, n)
-		= gfc_conv_descriptor_lbound (desc, dim);
+		= gfc_conv_descriptor_lbound_get (desc, dim);
 	  GFC_TYPE_ARRAY_UBOUND (type, n)
-		= gfc_conv_descriptor_ubound (desc, dim);
+		= gfc_conv_descriptor_ubound_get (desc, dim);
 	}
       else if (GFC_TYPE_ARRAY_UBOUND (type, n) == NULL_TREE)
 	{
 	  tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type,
-			     gfc_conv_descriptor_ubound (desc, dim),
-			     gfc_conv_descriptor_lbound (desc, dim));
+			     gfc_conv_descriptor_ubound_get (desc, dim),
+			     gfc_conv_descriptor_lbound_get (desc, dim));
 	  tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
 			     GFC_TYPE_ARRAY_LBOUND (type, n),
 			     tmp);
@@ -3620,7 +3620,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 
 	  /* Shift the lbound and ubound of temporaries to being unity, rather
 	     than zero, based.  Calculate the offset for all cases.  */
-	  offset = gfc_conv_descriptor_offset (dest);
+	  offset = gfc_conv_descriptor_offset_get (dest);
 	  gfc_add_modify (&block, offset, gfc_index_zero_node);
 	  tmp2 =gfc_create_var (gfc_array_index_type, NULL);
 	  for (n = 0; n < expr->rank; n++)
@@ -3629,24 +3629,24 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 		    && expr->expr_type != EXPR_CONSTANT)
 		{
 		  tree span;
-		  tmp = gfc_conv_descriptor_ubound (dest, gfc_rank_cst[n]);
+		  tmp = gfc_conv_descriptor_ubound_get (dest, gfc_rank_cst[n]);
 		  span = fold_build2 (MINUS_EXPR, gfc_array_index_type, tmp,
-			    gfc_conv_descriptor_lbound (dest, gfc_rank_cst[n]));
-		  gfc_add_modify (&block, tmp,
-				       fold_build2 (PLUS_EXPR,
-						    gfc_array_index_type,
-						    span, gfc_index_one_node));
-		  tmp = gfc_conv_descriptor_lbound (dest, gfc_rank_cst[n]);
-		  gfc_add_modify (&block, tmp, gfc_index_one_node);
+			    gfc_conv_descriptor_lbound_get (dest, gfc_rank_cst[n]));
+		  tmp = fold_build2 (PLUS_EXPR, gfc_array_index_type,
+				     span, gfc_index_one_node);
+		  gfc_conv_descriptor_ubound_set (&block, dest, gfc_rank_cst[n],
+						  tmp);
+		  gfc_conv_descriptor_lbound_set (&block, dest, gfc_rank_cst[n],
+						  gfc_index_one_node);
 		}
 	      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
-				 gfc_conv_descriptor_lbound (dest,
+				 gfc_conv_descriptor_lbound_get (dest,
 							     gfc_rank_cst[n]),
-				 gfc_conv_descriptor_stride (dest,
+				 gfc_conv_descriptor_stride_get (dest,
 							     gfc_rank_cst[n]));
 	      gfc_add_modify (&block, tmp2, tmp);
 	      tmp = fold_build2 (MINUS_EXPR, gfc_array_index_type, offset, tmp2);
-	      gfc_add_modify (&block, offset, tmp);
+	      gfc_conv_descriptor_offset_set (&block, dest, tmp);
 	    }
 
 	  if (expr->expr_type == EXPR_FUNCTION

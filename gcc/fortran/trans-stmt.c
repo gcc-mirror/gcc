@@ -309,8 +309,8 @@ gfc_conv_elemental_dependencies (gfc_se * se, gfc_se * loopse,
 	  offset = gfc_index_zero_node;
 	  for (n = 0; n < info->dimen; n++)
 	    {
-	      tmp = gfc_conv_descriptor_stride (info->descriptor,
-						gfc_rank_cst[n]);
+	      tmp = gfc_conv_descriptor_stride_get (info->descriptor,
+						    gfc_rank_cst[n]);
 	      tmp = fold_build2 (MULT_EXPR, gfc_array_index_type,
 				 loopse->loop->from[n], tmp);
 	      offset = fold_build2 (MINUS_EXPR, gfc_array_index_type,
@@ -1746,9 +1746,8 @@ forall_make_variable_temp (gfc_code *c, stmtblock_t *pre, stmtblock_t *post)
       if (e->ts.type != BT_CHARACTER)
 	{
 	  /* Use the variable offset for the temporary.  */
-	  tmp = gfc_conv_descriptor_offset (tse.expr);
-	  gfc_add_modify (pre, tmp,
-		gfc_conv_array_offset (old_sym->backend_decl));
+	  tmp = gfc_conv_array_offset (old_sym->backend_decl);
+	  gfc_conv_descriptor_offset_set (pre, tse.expr, tmp);
 	}
     }
   else
