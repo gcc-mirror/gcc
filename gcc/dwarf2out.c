@@ -3758,11 +3758,6 @@ struct GTY(()) dwarf_file_data {
   int emitted_number;
 };
 
-/* We need some way to distinguish DW_OP_addr with a direct symbol
-   relocation from DW_OP_addr with a dtp-relative symbol relocation.  */
-#define INTERNAL_DW_OP_tls_addr		(0x100 + DW_OP_addr)
-
-
 typedef struct dw_val_struct *dw_val_ref;
 typedef struct die_struct *dw_die_ref;
 typedef const struct die_struct *const_dw_die_ref;

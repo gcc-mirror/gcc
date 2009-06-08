@@ -1,3 +1,8 @@
+2009-06-07  Ian Lance Taylor  <iant@google.com>
+
+	* jcf-parse.c (handle_constant): Change local variable 'kind' to
+	unsigned int.
+
 2009-06-01  Ian Lance Taylor  <iant@google.com>
 
 	* jcf-io.c (find_class): Use CONST_CAST.

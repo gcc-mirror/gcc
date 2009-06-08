@@ -498,7 +498,7 @@ handle_long_constant (JCF *jcf, CPool *cpool, enum cpool_tag kind,
 static uint16
 handle_constant (JCF *jcf, int index, enum cpool_tag purpose)
 {
-  enum cpool_tag kind;
+  unsigned int kind;
   CPool *cpool = cpool_for_class (output_class);
   
   if (index == 0)
@@ -507,7 +507,7 @@ handle_constant (JCF *jcf, int index, enum cpool_tag purpose)
   if (! CPOOL_INDEX_IN_RANGE (&jcf->cpool, index))
     error ("<constant pool index %d not in range>", index);
   
-  kind = (enum cpool_tag) JPOOL_TAG (jcf, index);
+  kind = JPOOL_TAG (jcf, index);
 
   if ((kind & ~CONSTANT_ResolvedFlag) != purpose)
     {
@@ -555,12 +555,12 @@ handle_constant (JCF *jcf, int index, enum cpool_tag purpose)
       break;
 
     case CONSTANT_Long:
-      index = handle_long_constant (jcf, cpool, kind, index, 
+      index = handle_long_constant (jcf, cpool, CONSTANT_Long, index,
 				    WORDS_BIG_ENDIAN);
       break;
       
     case CONSTANT_Double:
-      index = handle_long_constant (jcf, cpool, kind, index, 
+      index = handle_long_constant (jcf, cpool, CONSTANT_Double, index,
 				    FLOAT_WORDS_BIG_ENDIAN);
       break;
 
