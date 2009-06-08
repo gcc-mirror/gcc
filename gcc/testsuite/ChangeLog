@@ -1,5 +1,9 @@
 2009-06-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/builtin-object-size-2.c (test1): Adjust expected results.
+	* gcc.dg/builtin-object-size-4.c (test1): Adjust expected results.
+	* gcc.dg/builtin-object-size-6.c: New test.
+
 	PR c++/40370
 	PR c++/40372
 	* g++.dg/template/error41.C: New test.

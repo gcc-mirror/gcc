@@ -43,7 +43,8 @@ struct object_size_info
 static unsigned HOST_WIDE_INT unknown[4] = { -1, -1, 0, 0 };
 
 static tree compute_object_offset (const_tree, const_tree);
-static unsigned HOST_WIDE_INT addr_object_size (const_tree, int);
+static unsigned HOST_WIDE_INT addr_object_size (struct object_size_info *,
+						const_tree, int);
 static unsigned HOST_WIDE_INT alloc_object_size (const_gimple, int);
 static tree pass_through_call (const_gimple);
 static void collect_object_sizes_for (struct object_size_info *, tree);
@@ -152,9 +153,10 @@ compute_object_offset (const_tree expr, const_tree var)
    If unknown, return unknown[object_size_type].  */
 
 static unsigned HOST_WIDE_INT
-addr_object_size (const_tree ptr, int object_size_type)
+addr_object_size (struct object_size_info *osi, const_tree ptr,
+		  int object_size_type)
 {
-  tree pt_var;
+  tree pt_var, pt_var_size = NULL_TREE, var_size, bytes;
 
   gcc_assert (TREE_CODE (ptr) == ADDR_EXPR);
 
@@ -163,58 +165,170 @@ addr_object_size (const_tree ptr, int object_size_type)
     pt_var = get_base_address (pt_var);
 
   if (pt_var
-      && (SSA_VAR_P (pt_var) || TREE_CODE (pt_var) == STRING_CST)
-      && TYPE_SIZE_UNIT (TREE_TYPE (pt_var))
-      && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)), 1)
-      && (unsigned HOST_WIDE_INT)
-	 tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)), 1) < offset_limit)
+      && TREE_CODE (pt_var) == INDIRECT_REF
+      && TREE_CODE (TREE_OPERAND (pt_var, 0)) == SSA_NAME
+      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (pt_var, 0))))
     {
-      tree bytes;
+      unsigned HOST_WIDE_INT sz;
 
-      if (pt_var != TREE_OPERAND (ptr, 0))
+      if (!osi)
+	sz = compute_builtin_object_size (TREE_OPERAND (pt_var, 0),
+					  object_size_type);
+      else
 	{
-	  tree var;
-
-	  if (object_size_type & 1)
-	    {
-	      var = TREE_OPERAND (ptr, 0);
-
-	      while (var != pt_var
-		      && TREE_CODE (var) != BIT_FIELD_REF
-		      && TREE_CODE (var) != COMPONENT_REF
-		      && TREE_CODE (var) != ARRAY_REF
-		      && TREE_CODE (var) != ARRAY_RANGE_REF
-		      && TREE_CODE (var) != REALPART_EXPR
-		      && TREE_CODE (var) != IMAGPART_EXPR)
-		var = TREE_OPERAND (var, 0);
-	      if (var != pt_var && TREE_CODE (var) == ARRAY_REF)
-		var = TREE_OPERAND (var, 0);
-	      if (! TYPE_SIZE_UNIT (TREE_TYPE (var))
-		  || ! host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (var)), 1)
-		  || tree_int_cst_lt (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)),
-				      TYPE_SIZE_UNIT (TREE_TYPE (var))))
-		var = pt_var;
-	    }
+	  tree var = TREE_OPERAND (pt_var, 0);
+	  if (osi->pass == 0)
+	    collect_object_sizes_for (osi, var);
+	  if (bitmap_bit_p (computed[object_size_type],
+			    SSA_NAME_VERSION (var)))
+	    sz = object_sizes[object_size_type][SSA_NAME_VERSION (var)];
 	  else
-	    var = pt_var;
+	    sz = unknown[object_size_type];
+	}
 
-	  bytes = compute_object_offset (TREE_OPERAND (ptr, 0), var);
-	  if (bytes != error_mark_node)
+      if (sz != unknown[object_size_type] && sz < offset_limit)
+	pt_var_size = size_int (sz);
+    }
+  else if (pt_var
+	   && (SSA_VAR_P (pt_var) || TREE_CODE (pt_var) == STRING_CST)
+	   && TYPE_SIZE_UNIT (TREE_TYPE (pt_var))
+	   && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)), 1)
+	   && (unsigned HOST_WIDE_INT)
+	      tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (pt_var)), 1)
+	      < offset_limit)
+    pt_var_size = TYPE_SIZE_UNIT (TREE_TYPE (pt_var));
+  else
+    return unknown[object_size_type];
+
+  if (pt_var != TREE_OPERAND (ptr, 0))
+    {
+      tree var;
+
+      if (object_size_type & 1)
+	{
+	  var = TREE_OPERAND (ptr, 0);
+
+	  while (var != pt_var
+		 && TREE_CODE (var) != BIT_FIELD_REF
+		 && TREE_CODE (var) != COMPONENT_REF
+		 && TREE_CODE (var) != ARRAY_REF
+		 && TREE_CODE (var) != ARRAY_RANGE_REF
+		 && TREE_CODE (var) != REALPART_EXPR
+		 && TREE_CODE (var) != IMAGPART_EXPR)
+	    var = TREE_OPERAND (var, 0);
+	  if (var != pt_var && TREE_CODE (var) == ARRAY_REF)
+	      var = TREE_OPERAND (var, 0);
+	  if (! TYPE_SIZE_UNIT (TREE_TYPE (var))
+	      || ! host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (var)), 1)
+	      || (pt_var_size
+		  && tree_int_cst_lt (pt_var_size,
+				      TYPE_SIZE_UNIT (TREE_TYPE (var)))))
+	    var = pt_var;
+	  else if (var != pt_var && TREE_CODE (pt_var) == INDIRECT_REF)
 	    {
-	      if (TREE_CODE (bytes) == INTEGER_CST
-		  && tree_int_cst_lt (TYPE_SIZE_UNIT (TREE_TYPE (var)), bytes))
-		bytes = size_zero_node;
-	      else
-		bytes = size_binop (MINUS_EXPR,
-				    TYPE_SIZE_UNIT (TREE_TYPE (var)), bytes);
+	      tree v = var;
+	      /* For &X->fld, compute object size only if fld isn't the last
+		 field, as struct { int i; char c[1]; } is often used instead
+		 of flexible array member.  */
+	      while (v && v != pt_var)
+		switch (TREE_CODE (v))
+		  {
+		  case ARRAY_REF:
+		    if (TYPE_SIZE_UNIT (TREE_TYPE (TREE_OPERAND (v, 0)))
+			&& TREE_CODE (TREE_OPERAND (v, 1)) == INTEGER_CST)
+		      {
+			tree domain
+			  = TYPE_DOMAIN (TREE_TYPE (TREE_OPERAND (v, 0)));
+			if (domain
+			    && TYPE_MAX_VALUE (domain)
+			    && TREE_CODE (TYPE_MAX_VALUE (domain))
+			       == INTEGER_CST
+			    && tree_int_cst_lt (TREE_OPERAND (v, 1),
+						TYPE_MAX_VALUE (domain)))
+			  {
+			    v = NULL_TREE;
+			    break;
+			  }
+		      }
+		    v = TREE_OPERAND (v, 0);
+		    break;
+		  case REALPART_EXPR:
+		  case IMAGPART_EXPR:
+		    v = NULL_TREE;
+		    break;
+		  case COMPONENT_REF:
+		    if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			 == RECORD_TYPE
+			 && TREE_CHAIN (TREE_OPERAND (v, 1)))
+			|| TREE_CODE (TREE_TYPE (v)) != ARRAY_TYPE)
+		      v = NULL_TREE;
+		    else
+		      {
+			if (TREE_CODE (TREE_TYPE (TREE_OPERAND (v, 0)))
+			    == RECORD_TYPE)
+			  v = TREE_OPERAND (v, 0);
+			while (v && v != pt_var && TREE_CODE (v) == COMPONENT_REF)
+			  if (TREE_CODE (TREE_TYPE (v)) != UNION_TYPE
+			      && TREE_CODE (TREE_TYPE (v)) != QUAL_UNION_TYPE)
+			    break;
+			  else
+			    v = TREE_OPERAND (v, 0);
+			if (v && v != pt_var)
+			  v = NULL_TREE;
+			else
+			  v = pt_var;
+		      }
+		    break;
+		  default:
+		    v = pt_var;
+		    break;
+		  }
+	      if (v == pt_var)
+		var = pt_var;
 	    }
 	}
       else
-	bytes = TYPE_SIZE_UNIT (TREE_TYPE (pt_var));
+	var = pt_var;
 
-      if (host_integerp (bytes, 1))
-	return tree_low_cst (bytes, 1);
+      if (var != pt_var)
+	var_size = TYPE_SIZE_UNIT (TREE_TYPE (var));
+      else if (!pt_var_size)
+	return unknown[object_size_type];
+      else
+	var_size = pt_var_size;
+      bytes = compute_object_offset (TREE_OPERAND (ptr, 0), var);
+      if (bytes != error_mark_node)
+	{
+	  if (TREE_CODE (bytes) == INTEGER_CST
+	      && tree_int_cst_lt (var_size, bytes))
+	    bytes = size_zero_node;
+	  else
+	    bytes = size_binop (MINUS_EXPR, var_size, bytes);
+	}
+      if (var != pt_var
+	  && pt_var_size
+	  && TREE_CODE (pt_var) == INDIRECT_REF
+	  && bytes != error_mark_node)
+	{
+	  tree bytes2 = compute_object_offset (TREE_OPERAND (ptr, 0), pt_var);
+	  if (bytes2 != error_mark_node)
+	    {
+	      if (TREE_CODE (bytes2) == INTEGER_CST
+		  && tree_int_cst_lt (pt_var_size, bytes2))
+		bytes2 = size_zero_node;
+	      else
+		bytes2 = size_binop (MINUS_EXPR, var_size, bytes2);
+	      bytes = size_binop (MIN_EXPR, bytes, bytes2);
+	    }
+	}
     }
+  else if (!pt_var_size)
+    return unknown[object_size_type];
+  else
+    bytes = pt_var_size;
+
+  if (host_integerp (bytes, 1))
+    return tree_low_cst (bytes, 1);
 
   return unknown[object_size_type];
 }
@@ -332,11 +446,11 @@ compute_builtin_object_size (tree ptr, int object_size_type)
     init_offset_limit ();
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
-    return addr_object_size (ptr, object_size_type);
+    return addr_object_size (NULL, ptr, object_size_type);
 
   if (TREE_CODE (ptr) == SSA_NAME
-	   && POINTER_TYPE_P (TREE_TYPE (ptr))
-	   && object_sizes[object_size_type] != NULL)
+      && POINTER_TYPE_P (TREE_TYPE (ptr))
+      && object_sizes[object_size_type] != NULL)
     {
       if (!bitmap_bit_p (computed[object_size_type], SSA_NAME_VERSION (ptr)))
 	{
@@ -477,7 +591,7 @@ expr_object_size (struct object_size_info *osi, tree ptr, tree value)
 	      || !POINTER_TYPE_P (TREE_TYPE (value)));
 
   if (TREE_CODE (value) == ADDR_EXPR)
-    bytes = addr_object_size (value, object_size_type);
+    bytes = addr_object_size (osi, value, object_size_type);
   else
     bytes = unknown[object_size_type];
 
@@ -633,7 +747,7 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple stmt)
 	  unsigned HOST_WIDE_INT off = tree_low_cst (op1, 1);
 
           /* op0 will be ADDR_EXPR here.  */
-	  bytes = compute_builtin_object_size (op0, object_size_type);
+	  bytes = addr_object_size (osi, op0, object_size_type);
 	  if (bytes == unknown[object_size_type])
 	    ;
 	  else if (off > offset_limit)
