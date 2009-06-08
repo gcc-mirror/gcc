@@ -1,3 +1,9 @@
+2009-06-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* repo.c (get_base_filename): Use aux_base_name rather than
+	alternate temporary file during second compare debug compilation.
+	(finish_repo): Skip during -fcompare-debug-second.
+
 2009-06-06  Ian Lance Taylor  <iant@google.com>
 
 	* parser.c (cp_parser_label_for_labeled_statement): Support

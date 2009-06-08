@@ -4313,6 +4313,41 @@ static unsigned int
 rest_of_clean_state (void)
 {
   rtx insn, next;
+  FILE *final_output = NULL;
+  int save_unnumbered = flag_dump_unnumbered;
+  int save_noaddr = flag_dump_noaddr;
+
+  if (flag_dump_final_insns)
+    {
+      final_output = fopen (flag_dump_final_insns, "a");
+      if (!final_output)
+	{
+	  error ("could not open final insn dump file %qs: %s",
+		 flag_dump_final_insns, strerror (errno));
+	  flag_dump_final_insns = NULL;
+	}
+      else
+	{
+	  const char *aname;
+
+	  aname = (IDENTIFIER_POINTER
+		   (DECL_ASSEMBLER_NAME (current_function_decl)));
+	  fprintf (final_output, "\n;; Function (%s) %s\n\n", aname,
+	     cfun->function_frequency == FUNCTION_FREQUENCY_HOT
+	     ? " (hot)"
+	     : cfun->function_frequency == FUNCTION_FREQUENCY_UNLIKELY_EXECUTED
+	     ? " (unlikely executed)"
+	     : "");
+
+	  flag_dump_noaddr = flag_dump_unnumbered = 1;
+
+	  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+	    if (LABEL_P (insn))
+	      INSN_UID (insn) = CODE_LABEL_NUMBER (insn);
+	    else
+	      INSN_UID (insn) = 0;
+	}
+    }
 
   /* It is very important to decompose the RTL instruction chain here:
      debug information keeps pointing into CODE_LABEL insns inside the function
@@ -4323,6 +4358,27 @@ rest_of_clean_state (void)
       next = NEXT_INSN (insn);
       NEXT_INSN (insn) = NULL;
       PREV_INSN (insn) = NULL;
+
+      if (final_output
+	  && (!NOTE_P (insn) ||
+	      (NOTE_KIND (insn) != NOTE_INSN_VAR_LOCATION
+	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_BEG
+	       && NOTE_KIND (insn) != NOTE_INSN_BLOCK_END)))
+	print_rtl_single (final_output, insn);
+
+    }
+
+  if (final_output)
+    {
+      flag_dump_noaddr = save_noaddr;
+      flag_dump_unnumbered = save_unnumbered;
+
+      if (fclose (final_output))
+	{
+	  error ("could not close final insn dump file %qs: %s",
+		 flag_dump_final_insns, strerror (errno));
+	  flag_dump_final_insns = NULL;
+	}
     }
 
   /* In case the function was not output,

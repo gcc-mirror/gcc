@@ -550,7 +550,7 @@ objc_init (void)
 
   init_objc ();
 
-  if (print_struct_values)
+  if (print_struct_values && !flag_compare_debug)
     generate_struct_by_value_array ();
 
   return true;

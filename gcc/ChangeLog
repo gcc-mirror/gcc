@@ -1,3 +1,32 @@
+2009-06-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* common.opt (fcompare-debug=, fcompare-debug-second): New.
+	(fdump-final-insns=, gtoggle): New.
+	* doc/invoke.texi: Document them.
+	* final.c (rest_of_clean_state): Dump final insn stream.
+	* gcc.c (invoke_as): Hook in -fcompare-debug.
+	(static_spec_functions): Add compare-debug-dump-opt,
+	compare-debug-self-opt and compare-debug-auxbase-opt.
+	(compare_debug, compare_debug_second, compare_debug_opt): New.
+	(switches_debug_check, n_switches_debug_check): New.
+	(debug_auxbase_opt, debug_check_temp_file): New.
+	(process_command): Handle -fno-compare-debug, -fcompare-debug and
+	-fcompare-debug=*.
+	(do_self_spec): Handle arguments after switches.
+	(do_spec_1): Add .gk extension to temp file basenames for compare.
+	(check_live_switch): Take SWITCH_IGNORE into account, and earlier.
+	(cc1_options): Use it instead of normal auxbase computation for
+	the second compare-debug compilation.
+	(compare_files): New.
+	(main): Set up and implement compare debug mode.
+	(compare_debug_dump_opt_spec_function): New.
+	(compare_debug_self_opt_spec_function): New.
+	(compare_debug_auxbase_opt_spec_function): New.
+	* toplev.c (process_options): Handle flag_gtoggle,
+	flag_dump_final_insns.
+	* coverage.c (coverage_begin_output): Don't overwrite .gcno file
+	during -fcompare-debug-second compilation.
+
 2009-06-07  Ian Lance Taylor  <iant@google.com>
 
 	* dwarf2.h (enum dwarf_location_atom): Add
