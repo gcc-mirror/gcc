@@ -1,3 +1,15 @@
+2009-06-07  Ian Lance Taylor  <iant@google.com>
+
+	* dwarf2.h (enum dwarf_location_atom): Add
+	INTERNAL_DW_OP_tls_addr.
+	* dwarf2out.c (INTERNAL_DW_OP_tls_addr): Don't #define.
+
+	* c-common.c (c_do_switch_warnings): Don't exit early for -Wswitch
+	with no default node.  Change warning with %H to warning_at.
+	Don't clear warn_switch around case checking.
+	* doc/invoke.texi (Warning Options): Clarify distinction between
+	-Wswitch and -Wswitch-enum.
+
 2009-06-07  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* tree-pass.h (TODO_update_ssa_any): Document internal use only.

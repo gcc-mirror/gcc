@@ -1,3 +1,10 @@
+2009-06-07  Ian Lance Taylor  <iant@google.com>
+
+	* g++.dg/warn/Wswitch-3.C: New testcase.
+	* gcc.dg/Wswitch.c: Adjust for -Wswitch change.
+	* gcc.dg/Wswitch-enum-error.c: Likewise.
+	* gcc.dg/Wswitch-error.c: Likewise.
+
 2009-06-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/40008

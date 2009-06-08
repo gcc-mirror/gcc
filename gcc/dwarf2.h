@@ -562,7 +562,13 @@ enum dwarf_location_atom
     DW_OP_HP_fltconst8   = 0xe3,
     DW_OP_HP_mod_range   = 0xe4,
     DW_OP_HP_unmod_range = 0xe5,
-    DW_OP_HP_tls         = 0xe6
+    DW_OP_HP_tls         = 0xe6,
+
+    /* Used internally in dwarf2out.c to distinguish DW_OP_addr with a
+       direct symbol relocation from DW_OP_addr with a dtp-relative
+       symbol relocation.  */
+    INTERNAL_DW_OP_tls_addr = 0x103
+
   };
 
 /* Type encodings.  */
