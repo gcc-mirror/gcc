@@ -1,3 +1,16 @@
+2009-06-08  Michael Matz  <matz@suse.de>
+
+	PR debug/40012
+
+	* cfgexpand.c (set_rtl): Store place also in DECL_RTL, if all
+	partitions use the same.
+	(expand_one_var): Deal with DECL_RTL sometimes begin set also
+	for basevars of SSA_NAMEs.
+	(expand_used_vars): Reset TREE_USED for basevars of SSA_NAMEs,
+	to not expand them twice.
+	(gimple_expand_cfg): Clear DECL_RTL for those decls that have
+	multiple places.
+
 2009-06-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* common.opt (fcompare-debug=, fcompare-debug-second): New.
