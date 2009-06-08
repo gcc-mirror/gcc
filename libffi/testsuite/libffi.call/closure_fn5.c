@@ -24,7 +24,7 @@ closure_test_fn5(ffi_cif* cif __UNUSED__, void* resp, void** args,
     (int)*(unsigned long long *)args[12] +
     (int)*(unsigned long long *)args[13] +
     (int)*(unsigned long long *)args[14] +
-    *(int *)args[15] + (int)(long)userdata;
+    *(int *)args[15] + (intptr_t)userdata;
 
   printf("%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d: %d\n",
 	 (int)*(unsigned long long *)args[0],
@@ -43,7 +43,7 @@ closure_test_fn5(ffi_cif* cif __UNUSED__, void* resp, void** args,
 	 (int)*(unsigned long long *)args[13],
 	 (int)*(unsigned long long *)args[14],
 	 *(int *)args[15],
-	 (int)(long)userdata, (int)*(ffi_arg *)resp);
+	 (int)(intptr_t)userdata, (int)*(ffi_arg *)resp);
 
 }
 
