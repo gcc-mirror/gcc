@@ -13792,6 +13792,7 @@ dwarf2out_abstract_function (tree decl)
 
   /* Make sure we have the actual abstract inline, not a clone.  */
   decl = DECL_ORIGIN (decl);
+  htab_empty (decl_loc_table);
 
   old_die = lookup_decl_die (decl);
   if (old_die && get_AT (old_die, DW_AT_inline))

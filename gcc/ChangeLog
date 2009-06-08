@@ -1,5 +1,10 @@
 2009-06-08  Jan Hubicka  <jh@suse.cz>
 
+	PR debug/40126
+	* dwarf2out.c (dwarf2out_abstract_function): Free decl_loc_table.
+
+2009-06-08  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/39834
 	* cgraphunit.c (save_inline_function_body): Do not copy transform hooks
 	for saved inline bodies.
