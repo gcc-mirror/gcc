@@ -1,3 +1,8 @@
+2009-06-09  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/40334
+	* gfortran.dg/backspace_11.f90: New.
+
 2009-06-09  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/defaulted10.C: New.
