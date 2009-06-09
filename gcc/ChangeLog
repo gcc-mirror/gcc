@@ -1,3 +1,9 @@
+2009-06-09  Ghassan Shobaki  <ghassan.shobaki@amd.com>
+
+        * tree-ssa-loop-prefetch.c
+        (loop_prefetch_arrays): Fixed a portability problem in printf format
+        string.
+
 2009-06-09  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/40351
