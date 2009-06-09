@@ -1,3 +1,7 @@
+2009-06-09  Olivier Hainque  <hainque@adacore.com>
+
+	* gnat.dg/align_max.adb: New test.
+
 2009-06-08  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/auto15.C: New.

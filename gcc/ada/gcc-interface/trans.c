@@ -5101,9 +5101,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	  tree gnu_obj_type;
 	  tree gnu_actual_obj_type = 0;
 	  tree gnu_obj_size;
-	  unsigned int align;
-	  unsigned int default_allocator_alignment
-	    = get_target_default_allocator_alignment () * BITS_PER_UNIT;
 
 	  /* If this is a thin pointer, we must dereference it to create
 	     a fat pointer, then go back below to a thin pointer.  The
@@ -5142,7 +5139,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_actual_obj_type = gnu_obj_type;
 
 	  gnu_obj_size = TYPE_SIZE_UNIT (gnu_actual_obj_type);
-	  align = TYPE_ALIGN (gnu_obj_type);
 
 	  if (TREE_CODE (gnu_obj_type) == RECORD_TYPE
 	      && TYPE_CONTAINS_TEMPLATE_P (gnu_obj_type))
@@ -5159,42 +5155,11 @@ gnat_to_gnu (Node_Id gnat_node)
 					 gnu_ptr, gnu_byte_offset);
 	    }
 
- 	  /* If the object was allocated from the default storage pool, the
- 	     alignment was greater than what the allocator provides, and this
- 	     is not a fat or thin pointer, what we have in gnu_ptr here is an
- 	     address dynamically adjusted to match the alignment requirement
- 	     (see build_allocator).  What we need to pass to free is the
- 	     initial allocator's return value, which has been stored just in
- 	     front of the block we have.  */
-
- 	  if (No (Procedure_To_Call (gnat_node))
- 	      && align > default_allocator_alignment
- 	      && ! TYPE_FAT_OR_THIN_POINTER_P (gnu_ptr_type))
- 	    {
- 	      /* We set GNU_PTR
- 		 as * (void **)((void *)GNU_PTR - (void *)sizeof(void *))
- 		 in two steps:  */
-
- 	      /* GNU_PTR (void *)
-		 = (void *)GNU_PTR - (void *)sizeof (void *))  */
- 	      gnu_ptr
- 		= build_binary_op
-		    (POINTER_PLUS_EXPR, ptr_void_type_node,
-		     convert (ptr_void_type_node, gnu_ptr),
-		     size_int (-POINTER_SIZE/BITS_PER_UNIT));
-
- 	      /* GNU_PTR (void *) = *(void **)GNU_PTR  */
- 	      gnu_ptr
- 		= build_unary_op
-		    (INDIRECT_REF, NULL_TREE,
-		     convert (build_pointer_type (ptr_void_type_node),
-			      gnu_ptr));
- 	    }
-
-	  gnu_result = build_call_alloc_dealloc (gnu_ptr, gnu_obj_size, align,
-						 Procedure_To_Call (gnat_node),
-						 Storage_Pool (gnat_node),
-						 gnat_node);
+	  gnu_result
+	      = build_call_alloc_dealloc (gnu_ptr, gnu_obj_size, gnu_obj_type,
+					  Procedure_To_Call (gnat_node),
+					  Storage_Pool (gnat_node),
+					  gnat_node);
 	}
       break;
 
