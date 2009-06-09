@@ -1,3 +1,8 @@
+2009-06-08  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_type_id_1): 'auto' type is ok with a
+	late-specified return type.
+
 2009-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/40373
