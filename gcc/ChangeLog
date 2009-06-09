@@ -1,3 +1,8 @@
+2009-06-09  Sebastian Pop  <sebastian.pop@amd.com>
+
+	PR bootstrap/40103
+	* graphite.c: Remove pragma GCC diagnostic warning "-Wc++-compat".
+
 2009-06-09  Ghassan Shobaki  <ghassan.shobaki@amd.com>
 
         * tree-ssa-loop-prefetch.c
