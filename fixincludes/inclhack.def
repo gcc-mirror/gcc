@@ -1023,6 +1023,108 @@ fix = {
 
 
 /*
+ * Darwin headers have a stdint.h that defines UINT8_C and UINT16_C to
+ * unsigned constants.
+ */
+fix = {
+    hackname  = darwin_stdint_1;
+    mach      = "*-*-darwin*";
+    files     = stdint.h;
+    c_fix     = format;
+    c_fix_arg = "#define UINT8_C(v)\tv\n#define UINT16_C(v)\tv";
+    select    = "#define UINT8_C\\(v\\)[ \t]+\\(v ## U\\)\n"
+		"#define UINT16_C\\(v\\)[ \t]+\\(v ## U\\)";
+    test_text = "#define UINT8_C(v)   (v ## U)\n"
+		"#define UINT16_C(v)  (v ## U)";
+};
+
+
+/*
+ * Darwin headers have a stdint.h that defines INTPTR_MIN and INTPTR_MAX
+ * with wrong types.
+ */
+fix = {
+    hackname  = darwin_stdint_2;
+    mach      = "*-*-darwin*";
+    files     = stdint.h;
+    c_fix     = format;
+    c_fix_arg = "#if __WORDSIZE == 64\n"
+		"#define INTPTR_MAX 9223372036854775807L\n"
+		"#define INTPTR_MIN (-INTPTR_MAX-1)\n"
+		"#else\n"
+		"#define INTPTR_MAX 2147483647L\n"
+		"#define INTPTR_MIN (-INTPTR_MAX-1)\n"
+		"#endif";
+    select    = "#if __WORDSIZE == 64\n"
+		"#define INTPTR_MIN[ \t]+INT64_MIN\n"
+		"#define INTPTR_MAX[ \t]+INT64_MAX\n"
+		"#else\n"
+		"#define INTPTR_MIN[ \t]+INT32_MIN\n"
+		"#define INTPTR_MAX[ \t]+INT32_MAX\n"
+		"#endif";
+    test_text = "#if __WORDSIZE == 64\n"
+		"#define INTPTR_MIN        INT64_MIN\n"
+		"#define INTPTR_MAX        INT64_MAX\n"
+		"#else\n"
+		"#define INTPTR_MIN        INT32_MIN\n"
+		"#define INTPTR_MAX        INT32_MAX\n"
+		"#endif";
+};
+
+
+/*
+ * Darwin headers have a stdint.h that defines UINTPTR_MAX with a wrong type.
+ */
+fix = {
+    hackname  = darwin_stdint_3;
+    mach      = "*-*-darwin*";
+    files     = stdint.h;
+    c_fix     = format;
+    c_fix_arg = "#if __WORDSIZE == 64\n"
+		"#define UINTPTR_MAX 18446744073709551615UL\n"
+		"#else\n"
+		"#define UINTPTR_MAX 4294967295UL\n"
+		"#endif";
+    select    = "#if __WORDSIZE == 64\n"
+		"#define UINTPTR_MAX[ \t]+UINT64_MAX\n"
+		"#else\n"
+		"#define UINTPTR_MAX[ \t]+UINT32_MAX\n"
+		"#endif";
+    test_text = "#if __WORDSIZE == 64\n"
+		"#define UINTPTR_MAX       UINT64_MAX\n"
+		"#else\n"
+		"#define UINTPTR_MAX       UINT32_MAX\n"
+		"#endif";
+};
+
+
+/*
+ * Darwin headers have a stdint.h that defines SIZE_MAX with a wrong type.
+ */
+fix = {
+    hackname  = darwin_stdint_4;
+    mach      = "*-*-darwin*";
+    files     = stdint.h;
+    c_fix     = format;
+    c_fix_arg = "#if __WORDSIZE == 64\n"
+		"#define SIZE_MAX 18446744073709551615UL\n"
+		"#else\n"
+		"#define SIZE_MAX 4294967295UL\n"
+		"#endif";
+    select    = "#if __WORDSIZE == 64\n"
+		"#define SIZE_MAX[ \t]+UINT64_MAX\n"
+		"#else\n"
+		"#define SIZE_MAX[ \t]+UINT32_MAX\n"
+		"#endif";
+    test_text = "#if __WORDSIZE == 64\n"
+		"#define SIZE_MAX          UINT64_MAX\n"
+		"#else\n"
+		"#define SIZE_MAX          UINT32_MAX\n"
+		"#endif";
+};
+
+
+/*
  *  Fix <c_asm.h> on Digital UNIX V4.0:
  *  It contains a prototype for a DEC C internal asm() function,
  *  clashing with gcc's asm keyword.  So protect this with __DECC.
