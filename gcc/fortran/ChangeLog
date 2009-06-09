@@ -1,3 +1,10 @@
+2009-06-09  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (gfc_generate_function_code): Use gfc_option.rtcheck
+	instead of flag_bounds_check.
+	* intrinsic.texi (ISO_FORTRAN_ENV): Document INT{8,16,32,64} and
+	REAL{32,64,128}.
+
 2009-06-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	* trans-array.h : Replace prototypes for

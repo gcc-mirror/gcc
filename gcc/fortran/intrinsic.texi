@@ -11241,6 +11241,11 @@ Size in bits of the file-storage unit.
 Identifies the preconnected unit identified by the asterisk
 (@code{*}) in @code{READ} statement.
 
+@item @code{INT8}, @code{INT16}, @code{INT32}, @code{INT64}
+Kind type parameters to specify an INTEGER type with a storage
+size of 16, 32, and 64 bits. It is negative if a target platform
+does not support the particular kind.
+
 @item @code{IOSTAT_END}:
 The value assigned to the variable passed to the IOSTAT= specifier of
 an input/output statement if an end-of-file condition occurred.
@@ -11255,7 +11260,14 @@ The size in bits of the numeric storage unit.
 @item @code{OUTPUT_UNIT}:
 Identifies the preconnected unit identified by the asterisk
 (@code{*}) in @code{WRITE} statement.
+
+@item @code{REAL32}, @code{REAL64}, @code{REAL128}
+Kind type parameters to specify a REAL type with a storage
+size of 32, 64, and 128 bits. It is negative if a target platform
+does not support the particular kind.
 @end table
+
+
 
 @node ISO_C_BINDING
 @section @code{ISO_C_BINDING}
