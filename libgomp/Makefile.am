@@ -41,6 +41,11 @@ if USE_FORTRAN
 nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod
 endif
 
+LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
+
+LINK = $(LIBTOOL) --tag CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LTLDFLAGS) -o $@
+
 omp_lib_kinds.mod: omp_lib.mod
 	:
 omp_lib.mod: omp_lib.f90
