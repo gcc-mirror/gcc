@@ -1,5 +1,9 @@
 2009-06-09  Sebastian Pop  <sebastian.pop@amd.com>
 
+	* graphite.c: Revert previous patch.
+
+2009-06-09  Sebastian Pop  <sebastian.pop@amd.com>
+
 	PR bootstrap/40103
 	* graphite.c: Remove pragma GCC diagnostic warning "-Wc++-compat".
 
