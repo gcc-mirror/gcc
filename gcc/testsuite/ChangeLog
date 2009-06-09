@@ -1,3 +1,7 @@
+2009-06-09  Martin Jambor  <mjambor@suse.cz>
+
+	* testsuite/gcc.c-torture/compile/pr40351.c: New file.
+
 2009-06-09  Olivier Hainque  <hainque@adacore.com>
 
 	* gnat.dg/align_max.adb: New test.

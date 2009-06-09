@@ -1544,6 +1544,13 @@ propagate_subacesses_accross_link (struct access *lacc, struct access *racc)
 	  continue;
 	}
 
+      /* If a (part of) a union field in on the RHS of an assignment, it can
+	 have sub-accesses which do not make sense on the LHS (PR 40351).
+	 Check that this is not the case.  */
+      if (!build_ref_for_offset (NULL, TREE_TYPE (lacc->base), norm_offset,
+				 rchild->type, false))
+	continue;
+
       new_acc = create_artificial_child_access (lacc, rchild, norm_offset);
       if (racc->first_child)
 	propagate_subacesses_accross_link (new_acc, rchild);

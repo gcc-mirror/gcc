@@ -1,3 +1,9 @@
+2009-06-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/40351
+	* tree-sra.c (propagate_subacesses_accross_link): Check that a refrence
+	to a potential artifical subaccess can be constructed.
+
 2009-06-08  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh-protos.h (sh_optimization_options): Declare.
