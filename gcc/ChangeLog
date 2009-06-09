@@ -1,3 +1,29 @@
+2009-06-09  Ian Lance Taylor  <iant@google.com>
+
+	* targhooks.c (default_builtin_vectorized_function): Change fn
+	parameter to unsigned int.
+	(default_builtin_vectorized_conversion): Change code parameter to
+	unsigned int.
+	(default_builtin_reciprocal): Change fn parameter to unsigned int.
+	* targhooks.h: Update declarations.
+	* config/rs6000/rs6000.c (rs6000_builtin_conversion): Change code
+	parameter to unsigned int.
+
+	* c-typeck.c (comptypes_check_enum_int): New static function.
+	(comptypes_internal): Add enum_and_int_p parameter.  Change all
+	callers.
+	(comp_target_types): Add location parameter.  Change all callers.
+	(tagged_types_tu_compatible_p): Add enum_and_int_p parameter.
+	Change all callers.
+	(function_types_compatible_p, type_lists_compatible_p): Likewise.
+	(build_conditional_expr): Add colon_loc parameter.  Change all
+	callers.
+	(convert_for_assignment): Add location parameter.  Change all
+	callers.
+	* c-parser.c (c_parser_conditional_expression): Pass location of
+	colon to build_conditional_expr.
+	* c-tree.h (build_conditional_expr): Update declaration.
+
 2009-06-09  Sebastian Pop  <sebastian.pop@amd.com>
 
 	* graphite.c: Revert previous patch.

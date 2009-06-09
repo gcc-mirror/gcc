@@ -1,3 +1,8 @@
+2009-06-09  Ian Lance Taylor  <iant@google.com>
+
+	* objc-act.c (objc_gimplify_expr): Change return type to int.
+	* objc-act.h: Update declaration.
+
 2009-06-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* objc-act.c (objc_init): Skip print_struct_values during

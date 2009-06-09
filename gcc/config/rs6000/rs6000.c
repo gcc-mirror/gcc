@@ -858,7 +858,7 @@ static tree rs6000_builtin_reciprocal (unsigned int, bool, bool);
 static tree rs6000_builtin_mask_for_load (void);
 static tree rs6000_builtin_mul_widen_even (tree);
 static tree rs6000_builtin_mul_widen_odd (tree);
-static tree rs6000_builtin_conversion (enum tree_code, tree);
+static tree rs6000_builtin_conversion (unsigned int, tree);
 static tree rs6000_builtin_vec_perm (tree, tree *);
 
 static void def_builtin (int, const char *, tree, int);
@@ -2013,8 +2013,10 @@ rs6000_builtin_mask_for_load (void)
    side of the conversion.
    Return NULL_TREE if it is not available.  */
 static tree
-rs6000_builtin_conversion (enum tree_code code, tree type)
+rs6000_builtin_conversion (unsigned int tcode, tree type)
 {
+  enum tree_code code = (enum tree_code) tcode;
+
   if (!TARGET_ALTIVEC)
     return NULL_TREE;
 

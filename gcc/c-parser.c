@@ -4503,7 +4503,7 @@ static struct c_expr
 c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
 {
   struct c_expr cond, exp1, exp2, ret;
-  location_t cond_loc;
+  location_t cond_loc, colon_loc;
 
   gcc_assert (!after || c_dialect_objc ());
 
@@ -4542,6 +4542,8 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
       skip_evaluation += ((cond.value == truthvalue_true_node)
 			  - (cond.value == truthvalue_false_node));
     }
+
+  colon_loc = c_parser_peek_token (parser)->location;
   if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
     {
       skip_evaluation -= cond.value == truthvalue_true_node;
@@ -4553,7 +4555,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
   exp2 = c_parser_conditional_expression (parser, NULL);
   exp2 = default_function_array_conversion (exp2);
   skip_evaluation -= cond.value == truthvalue_true_node;
-  ret.value = build_conditional_expr (cond.value,
+  ret.value = build_conditional_expr (colon_loc, cond.value,
 				      cond.original_code == C_MAYBE_CONST_EXPR,
 				      exp1.value, exp2.value);
   ret.original_code = ERROR_MARK;
