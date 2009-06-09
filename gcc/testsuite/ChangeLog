@@ -1,3 +1,7 @@
+2009-06-09  Ian Lance Taylor  <iant@google.com>
+
+	* gcc.dg/Wcxx-compat-12.c: New testcase.
+
 2009-06-09  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	PR libfortran/40334
