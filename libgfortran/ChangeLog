@@ -1,3 +1,9 @@
+2009-06-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/40334
+	* io/list_read.c (list_formatted_read_scalar): Set the end file
+	conditions after a return from EOF error.
+
 2009-06-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR fortran/40019

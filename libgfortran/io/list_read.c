@@ -1687,6 +1687,11 @@ list_formatted_read_scalar (st_parameter_dt *dtp, volatile bt type, void *p,
   if (setjmp (eof_jump))
     {
       generate_error (&dtp->common, LIBERROR_END, NULL);
+    if (!is_internal_unit (dtp))
+      {
+        dtp->u.p.current_unit->endfile = AFTER_ENDFILE;
+        dtp->u.p.current_unit->current_record = 0;
+      }
       goto cleanup;
     }
 
