@@ -1583,10 +1583,11 @@ loop_prefetch_arrays (struct loop *loop)
   unroll_factor = determine_unroll_factor (loop, refs, ninsns, &desc,
 					   est_niter);
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Ahead %d, unroll factor %d, trip count %ld\n"
+    fprintf (dump_file, "Ahead %d, unroll factor %d, trip count " 
+	     HOST_WIDE_INT_PRINT_DEC "\n"
 	     "insn count %d, mem ref count %d, prefetch count %d\n", 
-	     ahead, unroll_factor, est_niter, ninsns, mem_ref_count, 
-	     prefetch_count);
+	     ahead, unroll_factor, est_niter, 
+	     ninsns, mem_ref_count, prefetch_count);    
 
   if (!is_loop_prefetching_profitable (ahead, est_niter, ninsns, 
 				       prefetch_count, mem_ref_count))
