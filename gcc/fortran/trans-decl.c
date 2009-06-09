@@ -4185,7 +4185,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   /* If bounds-checking is enabled, generate code to check passed in actual
      arguments against the expected dummy argument attributes (e.g. string
      lengths).  */
-  if (flag_bounds_check)
+  if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
     add_argument_checking (&body, sym);
 
   tmp = gfc_trans_code (ns->code);
