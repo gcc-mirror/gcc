@@ -1,3 +1,8 @@
+2009-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/40381
+	* decl2.c (mark_used): Return after complaining about deleted fn.
+
 2009-06-08  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_type_id_1): 'auto' type is ok with a

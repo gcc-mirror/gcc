@@ -1,3 +1,7 @@
+2009-06-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/defaulted10.C: New.
+
 2009-06-08  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/auto15.C: New.
