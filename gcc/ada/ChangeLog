@@ -1,3 +1,28 @@
+2009-06-09  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/utils2.c (build_call_alloc_dealloc_proc): New
+	helper for build_call_alloc_dealloc with arguments to be interpreted
+	identically.  Process the case where a GNAT_PROC to call is provided.
+	(maybe_wrap_malloc): New helper for build_call_alloc_dealloc, to build
+	and return an allocator for DATA_SIZE bytes aimed at containing a
+	DATA_TYPE object, using the default __gnat_malloc allocator.  Honor
+	DATA_TYPE alignments greater than what the latter offers.
+	(maybe_wrap_free): New helper for build_call_alloc_dealloc, to
+	release a DATA_TYPE object designated by DATA_PTR using	the
+	__gnat_free entry point.
+	(build_call_alloc_dealloc): Expect object data type instead of naked
+	alignment constraint. Use the new helpers.
+	(build_allocator): Remove special processing for the super-aligned
+	case, now handled by build_call_alloc_dealloc.  Pass data
+	type instead of the former alignment argument, as expected by the new
+	interface.
+	* gcc-interface/gigi.h (build_call_alloc_dealloc): Adjust prototype
+	and comment.
+	* gcc-interface/trans.c (gnat_to_gnu) <case N_Free_Statement>:
+	Remove special processing for the super-aligned case, now handled
+	by build_call_alloc_dealloc.  Pass data type instead of	the former
+	alignment argument, as expected by the new interface.
+	
 2009-06-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* lib-writ.adb (flag_compare_debug): Import.

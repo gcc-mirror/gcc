@@ -843,13 +843,13 @@ extern tree build_component_ref (tree record_variable, tree component,
    If GNU_OBJ is nonzero, it is an object to deallocate.  Otherwise,
    generate an allocator.
 
-   GNU_SIZE is the size of the object in bytes and ALIGN is the alignment
-   in bits.  GNAT_PROC, if present, is a procedure to call and GNAT_POOL
-   is the storage pool to use.  If not present, malloc and free are used.
-   GNAT_NODE is used to provide an error location for restriction violation
-   messages.  */
+   GNU_SIZE is the number of bytes to allocate and GNU_TYPE is the contained
+   object type, used to determine the to-be-honored address alignment.
+   GNAT_PROC, if present, is a procedure to call and GNAT_POOL is the storage
+   pool to use.  If not present, malloc and free are used.  GNAT_NODE is used
+   to provide an error location for restriction violation messages.  */
 extern tree build_call_alloc_dealloc (tree gnu_obj, tree gnu_size,
-                                      unsigned align, Entity_Id gnat_proc,
+                                      tree gnu_type, Entity_Id gnat_proc,
 				      Entity_Id gnat_pool, Node_Id gnat_node);
 
 /* Build a GCC tree to correspond to allocating an object of TYPE whose
