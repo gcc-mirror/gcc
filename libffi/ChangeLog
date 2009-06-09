@@ -1,5 +1,28 @@
 2009-06-08  Andrew Haley  <aph@redhat.com>
 
+	Import from libffi 3.0.8:
+
+	* doc/libffi.texi: New file.
+	* doc/libffi.info: Likewise.
+	* doc/stamp-vti: Likewise.
+	* man/Makefile.am: New file.
+	* man/ffi_call.3: New file.
+
+	* Makefile.am (EXTRA_DIST): Add src/x86/darwin64.S,
+	src/dlmalloc.c.
+	(nodist_libffi_la_SOURCES): Add X86_FREEBSD.
+
+	* configure.ac: Bump version to 3.0.8.
+	parisc*-*-linux*: Add.
+	i386-*-freebsd* | i386-*-openbsd*: Add.
+	powerpc-*-beos*: Add.
+	AM_CONDITIONAL X86_FREEBSD: Add.
+	AC_CONFIG_FILES: Add man/Makefile.
+
+	* include/ffi.h.in (FFI_FN): Change void (*)() to void (*)(void).
+
+2009-06-08  Andrew Haley  <aph@redhat.com>
+
 	* README: Import from libffi 3.0.8.
 
 2009-06-08  Andrew Haley  <aph@redhat.com>

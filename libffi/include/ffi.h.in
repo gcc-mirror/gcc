@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------*-C-*-
-   libffi @VERSION@ - Copyright (c) 1996-2003, 2007  Red Hat, Inc.
+   libffi @VERSION@ - Copyright (c) 1996-2003, 2007, 2008  Red Hat, Inc.
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -354,7 +354,7 @@ void ffi_call(ffi_cif *cif,
 	      void **avalue);
 
 /* Useful for eliminating compiler warnings */
-#define FFI_FN(f) ((void (*)())f)
+#define FFI_FN(f) ((void (*)(void))f)
 
 /* ---- Definitions shared with assembly code ---------------------------- */
 
