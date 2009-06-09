@@ -3,7 +3,7 @@
 AUTOMAKE_OPTIONS = foreign subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
-SUBDIRS = include testsuite
+SUBDIRS = include testsuite man
 
 EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
 	src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h \
@@ -25,11 +25,13 @@ EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
 	src/sh/ffi.c src/sh/sysv.S src/sh/ffitarget.h \
 	src/sh64/ffi.c src/sh64/sysv.S src/sh64/ffitarget.h \
 	src/sparc/v8.S src/sparc/v9.S src/sparc/ffitarget.h \
-	src/sparc/ffi.c \
+	src/sparc/ffi.c src/x86/darwin64.S \
 	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S src/x86/darwin.S \
 	src/x86/ffi64.c src/x86/unix64.S src/x86/ffitarget.h \
 	src/pa/ffitarget.h src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
-	src/frv/ffi.c src/frv/eabi.S src/frv/ffitarget.h
+	src/frv/ffi.c src/frv/eabi.S src/frv/ffitarget.h src/dlmalloc.c
+
+info_TEXINFOS = doc/libffi.texi
 
 ## ################################################################
 
@@ -89,6 +91,9 @@ nodist_libffi_la_SOURCES += src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 endif
 if X86
 nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/sysv.S
+endif
+if X86_FREEBSD
+nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/freebsd.S
 endif
 if X86_WIN32
 nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/win32.S
