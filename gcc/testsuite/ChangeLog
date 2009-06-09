@@ -1,3 +1,7 @@
+2009-06-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto15.C: New.
+
 2009-06-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/40334
