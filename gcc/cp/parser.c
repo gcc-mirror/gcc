@@ -13848,8 +13848,17 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg)
   if (type_specifier_seq.type
       && type_uses_auto (type_specifier_seq.type))
     {
-      error ("invalid use of %<auto%>");
-      return error_mark_node;
+      /* A type-id with type 'auto' is only ok if the abstract declarator
+	 is a function declarator with a late-specified return type.  */
+      if (abstract_declarator
+	  && abstract_declarator->kind == cdk_function
+	  && abstract_declarator->u.function.late_return_type)
+	/* OK */;
+      else
+	{
+	  error ("invalid use of %<auto%>");
+	  return error_mark_node;
+	}
     }
   
   return groktypename (&type_specifier_seq, abstract_declarator,

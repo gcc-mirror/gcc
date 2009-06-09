@@ -1,3 +1,7 @@
+2009-06-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/auto15.C: New.
+
 2009-06-08  Jan Hubicka  <jh@suse.cz>
 
 	PR debug/39834
