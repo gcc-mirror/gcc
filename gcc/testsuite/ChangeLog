@@ -1,3 +1,7 @@
+2009-06-09  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/defaulted10.C: New.
+
 2009-06-09  Martin Jambor  <mjambor@suse.cz>
 
 	* testsuite/gcc.c-torture/compile/pr40351.c: New file.
