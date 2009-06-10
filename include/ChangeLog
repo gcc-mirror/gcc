@@ -1,4 +1,8 @@
-2009-06-02  Ian Lance Taylor  <iant@google.com>
+2009-06-09  Ian Lance Taylor  <ian@airs.com>
+
+	* ansidecl.h (ATTRIBUTE_UNUSED_LABEL): Define for C++.
+
+2009-06-03  Ian Lance Taylor  <iant@google.com>
 
 	* ansidecl.h (EXPORTED_CONST): Define.
 
