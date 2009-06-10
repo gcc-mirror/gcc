@@ -296,15 +296,21 @@
 (define_expand "cbranchsi4"
   [(set (reg:CC CC_REG)
         (compare:CC
-         (match_operand:SI 1 "register_operand" "")
-         (match_operand:SI 2 "register_operand" "")))
+         (match_operand:SI 1 "general_operand" "")
+         (match_operand:SI 2 "general_operand" "")))
    (set (pc)
         (if_then_else (match_operator:CC 0 "comparison_operator"
                        [(reg:CC CC_REG) (const_int 0)])
                       (label_ref (match_operand 3 "" ""))
                       (pc)))]
   ""
-  "")
+  "
+/* Force the compare operands into registers.  */
+if (GET_CODE (operands[1]) != REG)
+  operands[1] = force_reg (SImode, operands[1]);
+if (GET_CODE (operands[2]) != REG)
+  operands[2] = force_reg (SImode, operands[2]);
+")
 
 (define_insn "*cmpsi"
   [(set (reg:CC CC_REG)
