@@ -39,18 +39,25 @@
 
 _GLIBCXX_BEGIN_NAMESPACE(std)
 
-  // 20.2.2, forward/move
+  /// identity
   template<typename _Tp>
     struct identity
     {
       typedef _Tp type;
     };
 
+  /// forward
   template<typename _Tp>
     inline _Tp&&
     forward(typename std::identity<_Tp>::type&& __t)
     { return __t; }
 
+  /**
+   *  @brief Move a value.
+   *  @ingroup mutating_algorithms
+   *  @param  __t  A thing of arbitrary type.
+   *  @return Same, moved.
+  */
   template<typename _Tp>
     inline typename std::remove_reference<_Tp>::type&&
     move(_Tp&& __t)
@@ -67,8 +74,9 @@ _GLIBCXX_BEGIN_NAMESPACE(std)
 
   /**
    *  @brief Swaps two values.
-   *  @param  a  A thing of arbitrary type.
-   *  @param  b  Another thing of arbitrary type.
+   *  @ingroup mutating_algorithms
+   *  @param  __a  A thing of arbitrary type.
+   *  @param  __b  Another thing of arbitrary type.
    *  @return   Nothing.
   */
   template<typename _Tp>
