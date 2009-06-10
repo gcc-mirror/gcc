@@ -373,8 +373,10 @@ struct GTY(()) tree_base {
   unsigned lang_flag_6 : 1;
 
   unsigned visited : 1;
+  unsigned packed_flag : 1;
+  unsigned user_align : 1;
 
-  unsigned spare : 23;
+  unsigned spare : 21;
 
   union tree_ann_d *ann;
 };
@@ -2108,7 +2110,7 @@ extern enum machine_mode vector_type_mode (const_tree);
 
 /* 1 if the alignment for this type was requested by "aligned" attribute,
    0 if it is the default for this type.  */
-#define TYPE_USER_ALIGN(NODE) (TYPE_CHECK (NODE)->type.user_align)
+#define TYPE_USER_ALIGN(NODE) (TYPE_CHECK (NODE)->common.base.user_align)
 
 /* The alignment for NODE, in bytes.  */
 #define TYPE_ALIGN_UNIT(NODE) (TYPE_ALIGN (NODE) / BITS_PER_UNIT)
@@ -2219,7 +2221,7 @@ extern enum machine_mode vector_type_mode (const_tree);
 
 /* Indicated that objects of this type should be laid out in as
    compact a way as possible.  */
-#define TYPE_PACKED(NODE) (TYPE_CHECK (NODE)->type.packed_flag)
+#define TYPE_PACKED(NODE) (TYPE_CHECK (NODE)->common.base.packed_flag)
 
 /* Used by type_contains_placeholder_p to avoid recomputation.
    Values are: 0 (unknown), 1 (false), 2 (true).  Never access
@@ -2237,17 +2239,16 @@ struct GTY(()) tree_type {
   tree attributes;
   unsigned int uid;
 
-  unsigned int precision : 9;
-  ENUM_BITFIELD(machine_mode) mode : 7;
-
-  unsigned string_flag : 1;
+  unsigned int precision : 10;
   unsigned no_force_blk_flag : 1;
   unsigned needs_constructing_flag : 1;
   unsigned transparent_union_flag : 1;
-  unsigned packed_flag : 1;
   unsigned restrict_flag : 1;
   unsigned contains_placeholder_bits : 2;
 
+  ENUM_BITFIELD(machine_mode) mode : 8;
+
+  unsigned string_flag : 1;
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
   unsigned lang_flag_2 : 1;
@@ -2255,7 +2256,6 @@ struct GTY(()) tree_type {
   unsigned lang_flag_4 : 1;
   unsigned lang_flag_5 : 1;
   unsigned lang_flag_6 : 1;
-  unsigned user_align : 1;
 
   unsigned int align;
   alias_set_type alias_set;
@@ -2509,7 +2509,7 @@ struct GTY(()) tree_decl_minimal {
 #define DECL_ALIGN_UNIT(NODE) (DECL_ALIGN (NODE) / BITS_PER_UNIT)
 /* Set if the alignment of this DECL has been set by the user, for
    example with an 'aligned' attribute.  */
-#define DECL_USER_ALIGN(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.user_align)
+#define DECL_USER_ALIGN(NODE) (DECL_COMMON_CHECK (NODE)->common.base.user_align)
 /* Holds the machine mode corresponding to the declaration of a variable or
    field.  Always equal to TYPE_MODE (TREE_TYPE (decl)) except for a
    FIELD_DECL.  */
@@ -2546,7 +2546,7 @@ struct GTY(()) tree_decl_minimal {
    example, for a FUNCTION_DECL, DECL_SAVED_TREE may be non-NULL and
    DECL_EXTERNAL may be true simultaneously; that can be the case for
    a C99 "extern inline" function.  */
-#define DECL_EXTERNAL(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.decl_flag_2)
+#define DECL_EXTERNAL(NODE) (DECL_COMMON_CHECK (NODE)->decl_common.decl_flag_1)
 
 /* Nonzero in a ..._DECL means this variable is ref'd from a nested function.
    For VAR_DECL nodes, PARM_DECL nodes, and FUNCTION_DECL nodes.
@@ -2615,7 +2615,6 @@ struct GTY(()) tree_decl_common {
   unsigned ignored_flag : 1;
   unsigned abstract_flag : 1;
   unsigned artificial_flag : 1;
-  unsigned user_align : 1;
   unsigned preserve_flag: 1;
   unsigned debug_expr_is_from : 1;
 
@@ -2631,22 +2630,20 @@ struct GTY(()) tree_decl_common {
   /* In LABEL_DECL, this is DECL_ERROR_ISSUED.
      In VAR_DECL and PARM_DECL, this is DECL_REGISTER.  */
   unsigned decl_flag_0 : 1;
-  /* In FIELD_DECL, this is DECL_PACKED.  */
-  unsigned decl_flag_1 : 1;
   /* In FIELD_DECL, this is DECL_BIT_FIELD
      In VAR_DECL and FUNCTION_DECL, this is DECL_EXTERNAL.
-     In TYPE_DECL, this is TYPE_DECL_SUPRESS_DEBUG.  */
-  unsigned decl_flag_2 : 1;
+     In TYPE_DECL, this is TYPE_DECL_SUPPRESS_DEBUG.  */
+  unsigned decl_flag_1 : 1;
   /* In FIELD_DECL, this is DECL_NONADDRESSABLE_P
-     In VAR_DECL and PARM_DECL, this is DECL_HAS_VALUE_EXPR.  */
-  unsigned decl_flag_3 : 1;
+     In VAR_DECL and PARM_DECL, this is DECL_HAS_VALUE_EXPR_P.  */
+  unsigned decl_flag_2 : 1;
   /* Logically, these two would go in a theoretical base shared by var and
      parm decl. */
   unsigned gimple_reg_flag : 1;
   /* In VAR_DECL, PARM_DECL and RESULT_DECL, this is DECL_BY_REFERENCE.  */
   unsigned decl_by_reference_flag : 1;
   /* Padding so that 'off_align' can be on a 32-bit boundary.  */
-  unsigned decl_common_unused : 2;
+  unsigned decl_common_unused : 4;
 
   /* DECL_OFFSET_ALIGN, used only for FIELD_DECLs.  */
   unsigned int off_align : 8;
@@ -2672,7 +2669,7 @@ extern void decl_value_expr_insert (tree, tree);
    decl itself.  This should only be used for debugging; once this field has
    been set, the decl itself may not legitimately appear in the function.  */
 #define DECL_HAS_VALUE_EXPR_P(NODE) \
-  (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL)->decl_common.decl_flag_3)
+  (TREE_CHECK2 (NODE, VAR_DECL, PARM_DECL)->decl_common.decl_flag_2)
 #define DECL_VALUE_EXPR(NODE) \
   (decl_value_expr_lookup (DECL_WRTL_CHECK (NODE)))
 #define SET_DECL_VALUE_EXPR(NODE, VAL)			\
@@ -2750,11 +2747,11 @@ struct GTY(()) tree_decl_with_rtl {
 #define DECL_FCONTEXT(NODE) (FIELD_DECL_CHECK (NODE)->field_decl.fcontext)
 
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
-#define DECL_PACKED(NODE) (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_1)
+#define DECL_PACKED(NODE) (FIELD_DECL_CHECK (NODE)->common.base.packed_flag)
 
 /* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
    specially.  */
-#define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_2)
+#define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_1)
 
 /* Used in a FIELD_DECL to indicate that we cannot form the address of
    this component.  This makes it possible for Type-Based Alias Analysis
@@ -2772,7 +2769,7 @@ struct GTY(()) tree_decl_with_rtl {
    accesses to s.i must not be given the alias set of the type of 'i'
    (int) but instead directly that of the type of 's' (struct S).  */
 #define DECL_NONADDRESSABLE_P(NODE) \
-  (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_3)
+  (FIELD_DECL_CHECK (NODE)->decl_common.decl_flag_2)
 
 struct GTY(()) tree_field_decl {
   struct tree_decl_common common;
@@ -3242,7 +3239,7 @@ struct GTY(()) tree_function_decl {
    into stabs.  Instead it will generate cross reference ('x') of names.
    This uses the same flag as DECL_EXTERNAL.  */
 #define TYPE_DECL_SUPPRESS_DEBUG(NODE) \
-  (TYPE_DECL_CHECK (NODE)->decl_common.decl_flag_2)
+  (TYPE_DECL_CHECK (NODE)->decl_common.decl_flag_1)
 
 /* Getter of the imported declaration associated to the
    IMPORTED_DECL node.  */

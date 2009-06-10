@@ -1,3 +1,25 @@
+2009-06-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* tree.h (tree_base): Add packed_flag and user_align fields.
+	Decrease size of spare field.
+	(TYPE_USER_ALIGN): Use user_align from tree_base.
+	(DECL_USER_ALIGN): Likewise.
+	(TYPE_PACKED): Use packed_flag from tree_base.
+	(DECL_PACKED): Likewise.
+	(tree_type): Delete packed_flag and user_align fields.  Widen
+	precision field.  Widen mode field and shuffle fields to align
+	mode on an 8-bit boundary.
+	(tree_decl_common): Delete decl_flag_1 and user_align fields.
+	Renumber decl_flag_* fields.  Fix comments.  Widen
+	decl_common_unused field.
+	(DECL_HAS_VALUE_EXPR_P): Adjust for renumbering of decl_flag_*
+	fields.
+	(DECL_EXTERNAL): Likewise.
+	(DECL_BIT_FIELD): Likewise.
+	(DECL_NONADDRESSABLE_P): Likewise.
+	(TYPE_DECL_SUPRESS_DEBUG): Likewise.
+	* config/arm/arm-modes.def (XImode): Make it an INT_MODE.
+
 2009-06-10  Ian Lance Taylor  <iant@google.com>
 
 	* vec.h (DEF_VEC_ALLOC_I): Use DEF_VEC_NONALLOC_FUNCS_I.

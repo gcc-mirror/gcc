@@ -1,3 +1,7 @@
+2009-06-10  Nathan Froyd  <froydnj@codesourcery.com>
+
+	* gcc.target/arm/neon-modes-1.c: New test.
+
 2009-06-10  Kai Tietz  <kai.tietz@onevision.com>
 
 	* g++.dg/torture/pr31579.C: Cast pointer
