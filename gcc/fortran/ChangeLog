@@ -1,3 +1,7 @@
+2009-06-10  Dave Korn  <dave.korn.cygwin@gmail.com>
+
+	* trans-decl.c (create_main_function):  Don't build main decl twice.
+
 2009-06-09  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-decl.c (gfc_generate_function_code): Use gfc_option.rtcheck

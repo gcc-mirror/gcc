@@ -3876,7 +3876,6 @@ create_main_function (tree fndecl)
 				   NULL_TREE);
   main_identifier_node = get_identifier ("main");
   ftn_main = build_decl (FUNCTION_DECL, main_identifier_node, tmp);
-  ftn_main = build_decl (FUNCTION_DECL, get_identifier ("main"), tmp);
   DECL_EXTERNAL (ftn_main) = 0;
   TREE_PUBLIC (ftn_main) = 1;
   TREE_STATIC (ftn_main) = 1;
