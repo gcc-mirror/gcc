@@ -1,3 +1,12 @@
+2009-06-10  Tom Tromey  <tromey@redhat.com>
+
+	PR libstdc++/40289:
+	* python/Makefile.in: Rebuild.
+	* python/hook.in: Compute module path relative to objfile.
+	* python/Makefile.am (pythondir): Redefine.
+	(gdb.py): Subst toolexeclibdir.
+	(install-data-local): Rewrite.
+
 2009-06-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/move.h: Doxygen group fixes.

@@ -298,7 +298,7 @@ WARN_CXXFLAGS = \
 
 # -I/-D flags to pass when compiling.
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
-pythondir = $(pkgdatadir)/python
+pythondir = $(datadir)/gcc-$(gcc_version)/python
 nobase_python_DATA = \
     libstdcxx/v6/printers.py \
     libstdcxx/v6/__init__.py \
@@ -492,11 +492,23 @@ uninstall-am: uninstall-info-am uninstall-nobase_pythonDATA
 all-local: gdb.py
 
 gdb.py: hook.in Makefile
-	sed -e 's,@dir@,$(pythondir),' < $(srcdir)/hook.in > $@
+	sed -e 's,@pythondir@,$(pythondir),' \
+	    -e 's,@toolexeclibdir@,$(toolexeclibdir),' < $(srcdir)/hook.in > $@
 
 install-data-local: gdb.py
 	@$(mkdir_p) $(DESTDIR)$(toolexeclibdir)
-	@libname=`cd $(toolexeclibdir) && ls -r libstdc++* | fgrep -v gdb.py | sed 1q`; \
+	@here=`pwd`; cd $(toolexeclibdir); \
+	  for file in libstdc++*; do \
+	    case $$file in \
+	      *-gdb.py) ;; \
+	      *.la) ;; \
+	      *) if test -h $$file; then \
+	           continue; \
+	         fi; \
+	         libname=$$file;; \
+	    esac; \
+	  done; \
+	cd $$here; \
 	echo " $(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py"; \
 	$(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
