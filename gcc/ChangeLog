@@ -1,5 +1,15 @@
 2009-06-09  Ian Lance Taylor  <iant@google.com>
 
+	* system.h (HAVE_DESIGNATED_INITIALIZERS): Don't define if
+	compiling with C++.
+	* optabs.c (optab_table): Only use designated initializers if
+	HAVE_DESIGNATED_INITIALIZERS is defined.
+	(convert_optab_table): Likewise.
+	(init_optabs): Always call init_insn_codes if
+	HAVE_DESIGNATED_INITIALIZERS is not defined.
+
+2009-06-09  Ian Lance Taylor  <iant@google.com>
+
 	* targhooks.c (default_builtin_vectorized_function): Change fn
 	parameter to unsigned int.
 	(default_builtin_vectorized_conversion): Change code parameter to
