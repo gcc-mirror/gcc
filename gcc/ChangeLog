@@ -1,3 +1,10 @@
+2009-06-10  Martin Jambor  <mjambor@suse.cz>
+
+	* cgraph.c (cgraph_node_can_be_local_p): New function.
+	(cgraph_make_node_local): New function.
+	* cgraph.h (cgraph_node_can_be_local_p): Declare.
+	(cgraph_make_node_local): Declare.
+
 2009-06-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* tree.h (tree_base): Add packed_flag and user_align fields.

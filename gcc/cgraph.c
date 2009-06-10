@@ -1871,4 +1871,32 @@ cgraph_add_new_function (tree fndecl, bool lowered)
     }
 }
 
+/* Return true if NODE can be made local for API change.
+   Extern inline functions and C++ COMDAT functions can be made local
+   at the expense of possible code size growth if function is used in multiple
+   compilation units.  */
+bool
+cgraph_node_can_be_local_p (struct cgraph_node *node)
+{
+  return !node->needed;
+}
+
+/* Bring NODE local.  */
+void
+cgraph_make_node_local (struct cgraph_node *node)
+{
+  gcc_assert (cgraph_node_can_be_local_p (node));
+  if (DECL_COMDAT (node->decl) || DECL_EXTERNAL (node->decl))
+    {
+      DECL_COMDAT (node->decl) = 0;
+      DECL_ONE_ONLY (node->decl) = 0;
+      TREE_PUBLIC (node->decl) = 0;
+      DECL_WEAK (node->decl) = 0;
+      DECL_EXTERNAL (node->decl) = 0;
+      node->local.externally_visible = false;
+      node->local.local = true;
+      gcc_assert (cgraph_function_body_availability (node) == AVAIL_LOCAL);
+    }
+}
+
 #include "gt-cgraph.h"
