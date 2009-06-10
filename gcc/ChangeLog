@@ -1,3 +1,7 @@
+2009-06-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/extend.texi: Add description for __builtin_ia32_crc32di.
+
 2009-06-10  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/crti.asm: New file.
