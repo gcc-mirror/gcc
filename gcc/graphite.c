@@ -3224,7 +3224,7 @@ add_conditions_to_domain (graphite_bb_p gb)
               }
           break;
           }
-        case SWITCH_EXPR:
+        case GIMPLE_SWITCH:
           /* Switch statements are not supported right know.  */
           gcc_unreachable ();
           break;

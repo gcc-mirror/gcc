@@ -1,3 +1,9 @@
+2009-06-10  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/40408
+	* graphite.c (add_conditions_to_domain): Change SWITCH_EXPR to
+	GIMPLE_SWITCH.
+
 2009-06-10  Revital Eres  <eres@il.ibm.com>
 
 	* passes.c (init_optimization_passes): Reschedule
