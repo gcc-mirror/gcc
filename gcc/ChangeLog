@@ -1,3 +1,7 @@
+2009-06-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.c (compare_files): Cast munmap argumento to caddr_t.
+
 2009-06-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* doc/extend.texi: Add description for __builtin_ia32_crc32di.
