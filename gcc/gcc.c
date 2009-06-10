@@ -6632,7 +6632,7 @@ compare_files (char *cmpfile[])
 
     for (i = 0; i < 2; i++)
       if (map[i])
-	munmap (map[i], length[i]);
+	munmap ((caddr_t) map[i], length[i]);
 
     if (ret >= 0)
       return ret;
