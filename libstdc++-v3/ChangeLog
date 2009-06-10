@@ -1,3 +1,7 @@
+2009-06-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/move.h: Doxygen group fixes.
+
 2009-06-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/random.tcc (gamma_distribution<>::operator()
