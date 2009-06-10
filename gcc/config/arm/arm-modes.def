@@ -62,6 +62,4 @@ VECTOR_MODES (FLOAT, 16);     /*       V8HF V4SF V2DF */
 INT_MODE (EI, 24);
 INT_MODE (OI, 32);
 INT_MODE (CI, 48);
-/* ??? This should actually have 512 bits but the precision only has 9
-   bits.  */
-FRACTIONAL_INT_MODE (XI, 511, 64);
+INT_MODE (XI, 64);
