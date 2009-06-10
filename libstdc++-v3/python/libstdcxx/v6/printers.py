@@ -452,8 +452,6 @@ class StdStringPrinter:
             encoding = gdb.parameter('target-charset')
         elif encoding == 1:
             encoding = gdb.parameter('target-wide-charset')
-        elif isinstance(encoding, WideEncoding):
-            encoding = encoding.value
         return self.val['_M_dataplus']['_M_p'].string(encoding)
 
     def display_hint (self):
@@ -559,7 +557,7 @@ def lookup_function (val):
     "Look-up and return a pretty-printer that can print val."
 
     # Get the type.
-    type = val.type;
+    type = val.type
 
     # If it points to a reference, get the reference.
     if type.code == gdb.TYPE_CODE_REF:
@@ -587,10 +585,10 @@ def build_libstdcxx_dictionary ():
     # libstdc++ objects requiring pretty-printing.
     # In order from:
     # http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01847.html
-    pretty_printers_dict[re.compile('^std::basic_string<char,.*>$')] = lambda val: StdStringPrinter(0, val)
-    pretty_printers_dict[re.compile('^std::basic_string<wchar_t,.*>$')] = lambda val: StdStringPrinter(1, val)
-    pretty_printers_dict[re.compile('^std::basic_string<char16_t,.*>$')] = lambda val: StdStringPrinter('UTF-16', val)
-    pretty_printers_dict[re.compile('^std::basic_string<char32_t,.*>$')] = lambda val: StdStringPrinter('UTF-32', val)
+    pretty_printers_dict[re.compile('^std::basic_string<char(,.*)?>$')] = lambda val: StdStringPrinter(0, val)
+    pretty_printers_dict[re.compile('^std::basic_string<wchar_t(,.*)?>$')] = lambda val: StdStringPrinter(1, val)
+    pretty_printers_dict[re.compile('^std::basic_string<char16_t(,.*)?>$')] = lambda val: StdStringPrinter('UTF-16', val)
+    pretty_printers_dict[re.compile('^std::basic_string<char32_t(,.*)?>$')] = lambda val: StdStringPrinter('UTF-32', val)
     pretty_printers_dict[re.compile('^std::bitset<.*>$')] = StdBitsetPrinter
     pretty_printers_dict[re.compile('^std::deque<.*>$')] = StdDequePrinter
     pretty_printers_dict[re.compile('^std::list<.*>$')] = StdListPrinter
