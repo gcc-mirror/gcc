@@ -261,14 +261,23 @@ So instead we use the macro below and test it against specific values.  */
 # endif /* GNUC >= 2.96 */
 #endif /* ATTRIBUTE_MALLOC */
 
-/* Attributes on labels were valid as of gcc 2.93. */
+/* Attributes on labels were valid as of gcc 2.93 and g++ 4.5.  For
+   g++ an attribute on a label must be followed by a semicolon.  */
 #ifndef ATTRIBUTE_UNUSED_LABEL
-# if (!defined (__cplusplus) && GCC_VERSION >= 2093)
-#  define ATTRIBUTE_UNUSED_LABEL ATTRIBUTE_UNUSED
+# ifndef __cplusplus
+#  if GCC_VERSION >= 2093
+#   define ATTRIBUTE_UNUSED_LABEL ATTRIBUTE_UNUSED
+#  else
+#   define ATTRIBUTE_UNUSED_LABEL
+#  endif
 # else
-#  define ATTRIBUTE_UNUSED_LABEL
-# endif /* !__cplusplus && GNUC >= 2.93 */
-#endif /* ATTRIBUTE_UNUSED_LABEL */
+#  if GCC_VERSION >= 4005
+#   define ATTRIBUTE_UNUSED_LABEL ATTRIBUTE_UNUSED ;
+#  else
+#   define ATTRIBUTE_UNUSED_LABEL
+#  endif
+# endif
+#endif
 
 #ifndef ATTRIBUTE_UNUSED
 #define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
