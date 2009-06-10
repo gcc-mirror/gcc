@@ -1,3 +1,8 @@
+2009-06-10  Anthony Green  <green@moxielogic.com>
+
+	* testsuite/lib/target-supports.exp (check_profiling_available):
+	Profiling is not available for testing purposes on moxie.
+
 2009-06-09  Ian Lance Taylor  <iant@google.com>
 
 	* gcc.dg/Wcxx-compat-12.c: New testcase.

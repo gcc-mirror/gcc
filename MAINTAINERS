@@ -74,6 +74,7 @@ mips port		Richard Sandiford	rdsandiford@googlemail.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
+moxie port		Anthony Green		green@moxielogic.com
 pdp11 port		Paul Koning		ni1d@arrl.net
 picochip port		Hariharan Sandanagobalane	hariharan@picochip.com
 picochip port		Daniel Towner		dant@picochip.com

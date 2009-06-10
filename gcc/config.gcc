@@ -274,6 +274,8 @@ crisv32-*)
 	;;
 frv*)	cpu_type=frv
 	;;
+moxie*)	cpu_type=moxie
+	;;
 fido-*-*)
 	cpu_type=m68k
 	extra_headers=math-68881.h
@@ -880,6 +882,13 @@ frv-*-*linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} \
 	         linux.h glibc-stdint.h frv/linux.h frv/frv-abi.h"
 	tmake_file="${tmake_file} frv/t-frv frv/t-linux"
+	;;
+moxie-*-elf)
+	gas=yes
+	gnu_ld=yes
+	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
+	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
+	tmake_file="${tmake_file} moxie/t-moxie moxie/t-moxie-softfp soft-fp/t-softfp"
 	;;
 h8300-*-rtems*)
 	tmake_file="h8300/t-h8300 h8300/t-elf t-rtems h8300/t-rtems"
