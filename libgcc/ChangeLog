@@ -1,3 +1,8 @@
+2009-05-31  Anthony Green  <green@moxielogic.com>
+
+	* config.host: Add moxie support.
+	* config/moxie/t-moxie: New file.
+
 2009-05-29  David Billinghurst <billingd@gcc.gnu.org>
 
 	* config.host: Add i386/${host_address}/t-fprules-softfp and

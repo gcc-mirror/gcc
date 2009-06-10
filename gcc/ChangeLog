@@ -1,3 +1,20 @@
+2009-06-10  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/crti.asm: New file.
+	* config/moxie/crtn.asm: New file.
+	* config/moxie/moxie.c: New file.
+	* config/moxie/moxie.h: New file.
+	* config/moxie/sfp-machine.h: New file.
+	* config/moxie/moxie-protos.h: New file.
+	* config/moxie/t-moxie: Created.
+	* config/moxie/t-moxie-softfp: Created.
+	* config/moxie/moxie.md: Created.
+	* config/moxie/constraints.md: Created.
+	* config.gcc: Add moxie support.
+	* doc/md.texi (Machine Constraints): Add moxie constraints.
+	* doc/contrib.texi (Contributors): Mention moxie port.
+	* doc/install.texi (Specific): Mention the moxie port.
+
 2009-06-09  Ian Lance Taylor  <iant@google.com>
 
 	* system.h (HAVE_DESIGNATED_INITIALIZERS): Don't define if

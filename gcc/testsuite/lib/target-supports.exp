@@ -499,6 +499,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget m68k-*-elf]
 	     || [istarget m68k-*-uclinux*]
 	     || [istarget mips*-*-elf*]
+	     || [istarget moxie-*-elf*]
 	     || [istarget xstormy16-*]
 	     || [istarget xtensa*-*-elf]
 	     || [istarget *-*-rtems*]

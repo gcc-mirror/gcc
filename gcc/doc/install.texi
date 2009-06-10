@@ -3762,6 +3762,13 @@ information about using GCC on IRIX platforms.
 @html
 <hr />
 @end html
+@heading @anchor{moxie-x-elf}moxie-*-elf
+The moxie processor.  See @uref{http://moxielogic.org/} for more
+information about this processor.
+
+@html
+<hr />
+@end html
 @heading @anchor{powerpc-x-x}powerpc-*-*
 
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
