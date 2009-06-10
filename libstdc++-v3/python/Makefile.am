@@ -24,7 +24,7 @@
 include $(top_srcdir)/fragment.am
 
 ## Where to install the module code.
-pythondir = $(pkgdatadir)/python
+pythondir = $(datadir)/gcc-$(gcc_version)/python
 
 all-local: gdb.py
 
@@ -34,10 +34,27 @@ nobase_python_DATA = \
     libstdcxx/__init__.py
 
 gdb.py: hook.in Makefile
-	sed -e 's,@dir@,$(pythondir),' < $(srcdir)/hook.in > $@
+	sed -e 's,@pythondir@,$(pythondir),' \
+	    -e 's,@toolexeclibdir@,$(toolexeclibdir),' < $(srcdir)/hook.in > $@
 
 install-data-local: gdb.py
 	@$(mkdir_p) $(DESTDIR)$(toolexeclibdir)
-	@libname=`cd $(toolexeclibdir) && ls -r libstdc++* | fgrep -v gdb.py | sed 1q`; \
+## We want to install gdb.py as SOMETHING-gdb.py.  SOMETHING is the
+## full name of the final library.  We want to ignore symlinks, the
+## .la file, and any previous -gdb.py file.  This is inherently
+## fragile, but there does not seem to be a better option, because
+## libtool hides the real names from us.
+	@here=`pwd`; cd $(toolexeclibdir); \
+	  for file in libstdc++*; do \
+	    case $$file in \
+	      *-gdb.py) ;; \
+	      *.la) ;; \
+	      *) if test -h $$file; then \
+	           continue; \
+	         fi; \
+	         libname=$$file;; \
+	    esac; \
+	  done; \
+	cd $$here; \
 	echo " $(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py"; \
 	$(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py
