@@ -1,3 +1,18 @@
+2009-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Use
+	a reference to the original type for the type of the field of the
+	XVS type.
+	(maybe_pad_type): Likewise.
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Factor
+	common predicate and remove redundant setting of TYPE_BY_REFERENCE_P.
+	Pass correctly typed arguments to create_field_decl.
+	<E_Record_Subtype>: Set BLKmode for tagged and limited types in the
+	case of contrained discriminants as well.  Use the padded base type
+	in the other case as well.  Rename temporary variable.  Tweak test.
+	Factor common access pattern.  Set GNU_SIZE only once.
+
 2009-06-09  Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/utils2.c (build_call_alloc_dealloc_proc): New
