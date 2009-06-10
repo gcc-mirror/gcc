@@ -1,3 +1,8 @@
+2009-06-10  Kai Tietz  <kai.tietz@onevision.com>
+
+	* g++.dg/torture/pr31579.C: Cast pointer
+	via __SIZE_TYPE__ instead of 'unsigned long'.
+
 2009-06-10  Anthony Green  <green@moxielogic.com>
 
 	* testsuite/lib/target-supports.exp (check_profiling_available):
