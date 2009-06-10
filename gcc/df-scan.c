@@ -46,6 +46,19 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "tree-pass.h"
 
+DEF_VEC_P(df_ref);
+DEF_VEC_ALLOC_P_STACK(df_ref);
+
+#define VEC_df_ref_stack_alloc(alloc) VEC_stack_alloc (df_ref, alloc)
+
+typedef struct df_mw_hardreg *df_mw_hardreg_ptr;
+
+DEF_VEC_P(df_mw_hardreg_ptr);
+DEF_VEC_ALLOC_P_STACK(df_mw_hardreg_ptr);
+
+#define VEC_df_mw_hardreg_ptr_stack_alloc(alloc) \
+  VEC_stack_alloc (df_mw_hardreg_ptr, alloc)
+
 #ifndef HAVE_epilogue
 #define HAVE_epilogue 0
 #endif
@@ -84,14 +97,10 @@ static HARD_REG_SET elim_reg_set;
 
 struct df_collection_rec
 {
-  df_ref * def_vec;
-  df_ref * use_vec;
-  unsigned int next_def;
-  unsigned int next_use;
-  df_ref * eq_use_vec;
-  struct df_mw_hardreg **mw_vec;
-  unsigned int next_eq_use;
-  unsigned int next_mw;
+  VEC(df_ref,stack) *def_vec;
+  VEC(df_ref,stack) *use_vec;
+  VEC(df_ref,stack) *eq_use_vec;
+  VEC(df_mw_hardreg_ptr,stack) *mw_vec;
 };
 
 static df_ref df_null_ref_rec[1];
@@ -1180,25 +1189,28 @@ df_insn_delete (basic_block bb, unsigned int uid)
 static void
 df_free_collection_rec (struct df_collection_rec *collection_rec)
 {
+  unsigned int ix;
   struct df_scan_problem_data *problem_data 
     = (struct df_scan_problem_data *) df_scan->problem_data;
-  df_ref *ref;
-  struct df_mw_hardreg **mw;
+  df_ref ref;
+  struct df_mw_hardreg *mw;
 
-  if (collection_rec->def_vec)
-    for (ref = collection_rec->def_vec; *ref; ref++)
-      df_free_ref (*ref);
-  if (collection_rec->use_vec)
-    for (ref = collection_rec->use_vec; *ref; ref++)
-      df_free_ref (*ref);
-  if (collection_rec->eq_use_vec)
-    for (ref = collection_rec->eq_use_vec; *ref; ref++)
-      df_free_ref (*ref);
-  if (collection_rec->mw_vec)
-    for (mw = collection_rec->mw_vec; *mw; mw++)
-      pool_free (problem_data->mw_reg_pool, *mw);
+  for (ix = 0; VEC_iterate (df_ref, collection_rec->def_vec, ix, ref); ++ix)
+    df_free_ref (ref);
+  for (ix = 0; VEC_iterate (df_ref, collection_rec->use_vec, ix, ref); ++ix)
+    df_free_ref (ref);
+  for (ix = 0; VEC_iterate (df_ref, collection_rec->eq_use_vec, ix, ref); ++ix)
+    df_free_ref (ref);
+  for (ix = 0;
+       VEC_iterate (df_mw_hardreg_ptr, collection_rec->mw_vec, ix, mw);
+       ++ix)
+    pool_free (problem_data->mw_reg_pool, mw);
+
+  VEC_free (df_ref, stack, collection_rec->def_vec);
+  VEC_free (df_ref, stack, collection_rec->use_vec);
+  VEC_free (df_ref, stack, collection_rec->eq_use_vec);
+  VEC_free (df_mw_hardreg_ptr, stack, collection_rec->mw_vec);
 }
-
 
 /* Rescan INSN.  Return TRUE if the rescanning produced any changes.  */
 
@@ -1209,10 +1221,6 @@ df_insn_rescan (rtx insn)
   struct df_insn_info *insn_info = NULL;
   basic_block bb = BLOCK_FOR_INSN (insn);
   struct df_collection_rec collection_rec;
-  collection_rec.def_vec = XALLOCAVEC (df_ref, 1000);
-  collection_rec.use_vec = XALLOCAVEC (df_ref, 1000);
-  collection_rec.eq_use_vec = XALLOCAVEC (df_ref, 1000);
-  collection_rec.mw_vec = XALLOCAVEC (struct df_mw_hardreg *, 100);
 
   if ((!df) || (!INSN_P (insn)))
     return false;
@@ -1253,6 +1261,11 @@ df_insn_rescan (rtx insn)
       return false;
     }
 
+  collection_rec.def_vec = VEC_alloc (df_ref, stack, 128);
+  collection_rec.use_vec = VEC_alloc (df_ref, stack, 32);
+  collection_rec.eq_use_vec = VEC_alloc (df_ref, stack, 32);
+  collection_rec.mw_vec = VEC_alloc (df_mw_hardreg_ptr, stack, 32);
+
   bitmap_clear_bit (df->insns_to_delete, uid);
   bitmap_clear_bit (df->insns_to_rescan, uid);
   bitmap_clear_bit (df->insns_to_notes_rescan, uid);
@@ -1288,6 +1301,12 @@ df_insn_rescan (rtx insn)
 
   df_refs_add_to_chains (&collection_rec, bb, insn);
   df_set_bb_dirty (bb);
+
+  VEC_free (df_ref, stack, collection_rec.def_vec);
+  VEC_free (df_ref, stack, collection_rec.use_vec);
+  VEC_free (df_ref, stack, collection_rec.eq_use_vec);
+  VEC_free (df_mw_hardreg_ptr, stack, collection_rec.mw_vec);
+
   return true;
 }
 
@@ -2131,10 +2150,11 @@ df_notes_rescan (rtx insn)
       rtx note;
       struct df_collection_rec collection_rec;
       unsigned int num_deleted;
+      unsigned int mw_len;
 
       memset (&collection_rec, 0, sizeof (struct df_collection_rec));
-      collection_rec.eq_use_vec = XALLOCAVEC (df_ref, 1000);
-      collection_rec.mw_vec = XALLOCAVEC (struct df_mw_hardreg *, 1000);
+      collection_rec.eq_use_vec = VEC_alloc (df_ref, stack, 32);
+      collection_rec.mw_vec = VEC_alloc (df_mw_hardreg_ptr, stack, 32);
 
       num_deleted = df_mw_hardreg_chain_delete_eq_uses (insn_info);
       df_ref_chain_delete (insn_info->eq_uses);
@@ -2158,7 +2178,8 @@ df_notes_rescan (rtx insn)
 
       /* Find some place to put any new mw_hardregs.  */
       df_canonize_collection_rec (&collection_rec);
-      if (collection_rec.next_mw)
+      mw_len = VEC_length (df_mw_hardreg_ptr, collection_rec.mw_vec);
+      if (mw_len)
 	{
 	  unsigned int count = 0;
 	  struct df_mw_hardreg **mw_rec = insn_info->mw_hardregs;
@@ -2172,33 +2193,36 @@ df_notes_rescan (rtx insn)
 	    {
 	      /* Append to the end of the existing record after
 		 expanding it if necessary.  */
-	      if (collection_rec.next_mw > num_deleted)
+	      if (mw_len > num_deleted)
 		{
 		  insn_info->mw_hardregs = 
 		    XRESIZEVEC (struct df_mw_hardreg *,
-				insn_info->mw_hardregs, 
-				count + 1 + collection_rec.next_mw);
+				insn_info->mw_hardregs,
+				count + 1 + mw_len);
 		}
-	      memcpy (&insn_info->mw_hardregs[count], collection_rec.mw_vec, 
-		      (collection_rec.next_mw + 1) * sizeof (struct df_mw_hardreg *));
-	      qsort (insn_info->mw_hardregs, count + collection_rec.next_mw, 
+	      memcpy (&insn_info->mw_hardregs[count],
+		      VEC_address (df_mw_hardreg_ptr, collection_rec.mw_vec), 
+		      mw_len * sizeof (struct df_mw_hardreg *));
+	      insn_info->mw_hardregs[count + mw_len] = NULL;
+	      qsort (insn_info->mw_hardregs, count + mw_len, 
 		     sizeof (struct df_mw_hardreg *), df_mw_compare);
 	    }
 	  else
 	    {
 	      /* No vector there. */  
 	      insn_info->mw_hardregs 
-		= XNEWVEC (struct df_mw_hardreg*, 
-			   count + 1 + collection_rec.next_mw);
-	      memcpy (insn_info->mw_hardregs, collection_rec.mw_vec, 
-		      (collection_rec.next_mw + 1) * sizeof (struct df_mw_hardreg *));
+		= XNEWVEC (struct df_mw_hardreg*, 1 + mw_len);
+	      memcpy (insn_info->mw_hardregs,
+		      VEC_address (df_mw_hardreg_ptr, collection_rec.mw_vec),
+		      mw_len * sizeof (struct df_mw_hardreg *));
+	      insn_info->mw_hardregs[mw_len] = NULL;
 	    }
 	}
       /* Get rid of the mw_rec so that df_refs_add_to_chains will
 	 ignore it.  */
-      collection_rec.mw_vec = NULL;
-      collection_rec.next_mw = 0;
+      VEC_free (df_mw_hardreg_ptr, stack, collection_rec.mw_vec);
       df_refs_add_to_chains (&collection_rec, bb, insn);
+      VEC_free (df_ref, stack, collection_rec.eq_use_vec);
     }
   else
     df_insn_rescan (insn);
@@ -2316,35 +2340,43 @@ df_ref_compare (const void *r1, const void *r2)
 }
 
 static void
-df_swap_refs (df_ref *ref_vec, int i, int j)
+df_swap_refs (VEC(df_ref,stack) **ref_vec, int i, int j)
 {
-  df_ref tmp = ref_vec[i];
-  ref_vec[i] = ref_vec[j];
-  ref_vec[j] = tmp;
+  df_ref tmp = VEC_index (df_ref, *ref_vec, i);
+  VEC_replace (df_ref, *ref_vec, i, VEC_index (df_ref, *ref_vec, j));
+  VEC_replace (df_ref, *ref_vec, j, tmp);
 }
 
 /* Sort and compress a set of refs.  */
 
-static unsigned int
-df_sort_and_compress_refs (df_ref *ref_vec, unsigned int count)
+static void
+df_sort_and_compress_refs (VEC(df_ref,stack) **ref_vec)
 {
+  unsigned int count;
   unsigned int i;
   unsigned int dist = 0;
 
-  ref_vec[count] = NULL;
+  count = VEC_length (df_ref, *ref_vec);
+
   /* If there are 1 or 0 elements, there is nothing to do.  */
   if (count < 2)
-    return count;
+    return;
   else if (count == 2)
     {
-      if (df_ref_compare (&ref_vec[0], &ref_vec[1]) > 0)
+      df_ref r0 = VEC_index (df_ref, *ref_vec, 0);
+      df_ref r1 = VEC_index (df_ref, *ref_vec, 1);
+      if (df_ref_compare (&r0, &r1) > 0)
         df_swap_refs (ref_vec, 0, 1);
     }
   else
     {
       for (i = 0; i < count - 1; i++)
-        if (df_ref_compare (&ref_vec[i], &ref_vec[i+1]) >= 0)
-          break;
+	{
+	  df_ref r0 = VEC_index (df_ref, *ref_vec, i);
+	  df_ref r1 = VEC_index (df_ref, *ref_vec, i + 1);
+	  if (df_ref_compare (&r0, &r1) >= 0)
+	    break;
+	}
       /* If the array is already strictly ordered,
          which is the most common case for large COUNT case
          (which happens for CALL INSNs),
@@ -2353,26 +2385,29 @@ df_sort_and_compress_refs (df_ref *ref_vec, unsigned int count)
          Make sure DF_GET_ADD_REFS adds refs in the increasing order
          of DF_REF_COMPARE.  */
       if (i == count - 1)
-        return count;
-      qsort (ref_vec, count, sizeof (df_ref), df_ref_compare);
+        return;
+      qsort (VEC_address (df_ref, *ref_vec), count, sizeof (df_ref),
+	     df_ref_compare);
     }
 
   for (i=0; i<count-dist; i++)
     {
       /* Find the next ref that is not equal to the current ref.  */
-      while (df_ref_equal_p (ref_vec[i], ref_vec[i + dist + 1]))
+      while (i + dist + 1 < count
+	     && df_ref_equal_p (VEC_index (df_ref, *ref_vec, i),
+				VEC_index (df_ref, *ref_vec, i + dist + 1)))
 	{
-	  df_free_ref (ref_vec[i + dist + 1]);
+	  df_free_ref (VEC_index (df_ref, *ref_vec, i + dist + 1));
 	  dist++;
 	}
       /* Copy it down to the next position.  */
-      if (dist)
-	ref_vec[i+1] = ref_vec[i + dist + 1];
+      if (dist && i + dist + 1 < count)
+	VEC_replace (df_ref, *ref_vec, i + 1,
+		     VEC_index (df_ref, *ref_vec, i + dist + 1));
     }
 
   count -= dist;
-  ref_vec[count] = NULL;
-  return count;
+  VEC_truncate (df_ref, *ref_vec, count);
 }
 
 
@@ -2425,45 +2460,55 @@ df_mw_compare (const void *m1, const void *m2)
 
 /* Sort and compress a set of refs.  */
 
-static unsigned int
-df_sort_and_compress_mws (struct df_mw_hardreg **mw_vec, unsigned int count)
+static void
+df_sort_and_compress_mws (VEC(df_mw_hardreg_ptr,stack) **mw_vec)
 {
+  unsigned int count;
   struct df_scan_problem_data *problem_data 
     = (struct df_scan_problem_data *) df_scan->problem_data;
   unsigned int i;
   unsigned int dist = 0;
-  mw_vec[count] = NULL;
 
+  count = VEC_length (df_mw_hardreg_ptr, *mw_vec);
   if (count < 2)
-    return count;
+    return;
   else if (count == 2)
     {
-      if (df_mw_compare (&mw_vec[0], &mw_vec[1]) > 0)
+      struct df_mw_hardreg *m0 = VEC_index (df_mw_hardreg_ptr, *mw_vec, 0);
+      struct df_mw_hardreg *m1 = VEC_index (df_mw_hardreg_ptr, *mw_vec, 1);
+      if (df_mw_compare (&m0, &m1) > 0)
         {
-          struct df_mw_hardreg *tmp = mw_vec[0];
-          mw_vec[0] = mw_vec[1];
-          mw_vec[1] = tmp;
+          struct df_mw_hardreg *tmp = VEC_index (df_mw_hardreg_ptr,
+						 *mw_vec, 0);
+	  VEC_replace (df_mw_hardreg_ptr, *mw_vec, 0,
+		       VEC_index (df_mw_hardreg_ptr, *mw_vec, 1));
+	  VEC_replace (df_mw_hardreg_ptr, *mw_vec, 1, tmp);
         }
     }
   else
-    qsort (mw_vec, count, sizeof (struct df_mw_hardreg *), df_mw_compare);
+    qsort (VEC_address (df_mw_hardreg_ptr, *mw_vec), count,
+	   sizeof (struct df_mw_hardreg *), df_mw_compare);
 
   for (i=0; i<count-dist; i++)
     {
       /* Find the next ref that is not equal to the current ref.  */
-      while (df_mw_equal_p (mw_vec[i], mw_vec[i + dist + 1]))
+      while (i + dist + 1 < count
+	     && df_mw_equal_p (VEC_index (df_mw_hardreg_ptr, *mw_vec, i),
+			       VEC_index (df_mw_hardreg_ptr, *mw_vec,
+					  i + dist + 1)))
 	{
-	  pool_free (problem_data->mw_reg_pool, mw_vec[i + dist + 1]);
+	  pool_free (problem_data->mw_reg_pool,
+		     VEC_index (df_mw_hardreg_ptr, *mw_vec, i + dist + 1));
 	  dist++;
 	}
       /* Copy it down to the next position.  */
-      if (dist)
-	mw_vec[i+1] = mw_vec[i + dist + 1];
+      if (dist && i + dist + 1 < count)
+	VEC_replace (df_mw_hardreg_ptr, *mw_vec, i + 1,
+		     VEC_index (df_mw_hardreg_ptr, *mw_vec, i + dist + 1));
     }
 
   count -= dist;
-  mw_vec[count] = NULL;
-  return count;
+  VEC_truncate (df_mw_hardreg_ptr, *mw_vec, count);
 }
 
 
@@ -2472,22 +2517,10 @@ df_sort_and_compress_mws (struct df_mw_hardreg **mw_vec, unsigned int count)
 static void
 df_canonize_collection_rec (struct df_collection_rec *collection_rec)
 {
-  if (collection_rec->def_vec)
-    collection_rec->next_def 
-      = df_sort_and_compress_refs (collection_rec->def_vec,
-				   collection_rec->next_def);
-  if (collection_rec->use_vec)
-    collection_rec->next_use 
-      = df_sort_and_compress_refs (collection_rec->use_vec,
-				   collection_rec->next_use);
-  if (collection_rec->eq_use_vec)
-    collection_rec->next_eq_use 
-      = df_sort_and_compress_refs (collection_rec->eq_use_vec,
-				   collection_rec->next_eq_use);
-  if (collection_rec->mw_vec)
-    collection_rec->next_mw 
-      = df_sort_and_compress_mws (collection_rec->mw_vec,
-				  collection_rec->next_mw);
+  df_sort_and_compress_refs (&collection_rec->def_vec);
+  df_sort_and_compress_refs (&collection_rec->use_vec);
+  df_sort_and_compress_refs (&collection_rec->eq_use_vec);
+  df_sort_and_compress_mws (&collection_rec->mw_vec);
 }
 
 
@@ -2545,16 +2578,20 @@ df_install_ref (df_ref this_ref,
 
 static df_ref *
 df_install_refs (basic_block bb,
-		 df_ref *old_vec, unsigned int count, 
+		 VEC(df_ref,stack)* old_vec,
 		 struct df_reg_info **reg_info, 
 		 struct df_ref_info *ref_info,
 		 bool is_notes)
 {
+  unsigned int count;
+
+  count = VEC_length (df_ref, old_vec);
   if (count)
     {
-      unsigned int i;
       df_ref *new_vec = XNEWVEC (df_ref, count + 1);
       bool add_to_table;
+      df_ref this_ref;
+      unsigned int ix;
 
       switch (ref_info->ref_order)
 	{
@@ -2579,10 +2616,9 @@ df_install_refs (basic_block bb,
       if (add_to_table && df->analyze_subset)
 	add_to_table = bitmap_bit_p (df->blocks_to_analyze, bb->index);
 
-      for (i = 0; i < count; i++)
+      for (ix = 0; VEC_iterate (df_ref, old_vec, ix, this_ref); ++ix)
 	{
-	  df_ref this_ref = old_vec[i];
-	  new_vec[i] = this_ref;
+	  new_vec[ix] = this_ref;
 	  df_install_ref (this_ref, reg_info[DF_REF_REGNO (this_ref)], 
 			  ref_info, add_to_table);
 	}
@@ -2599,14 +2635,18 @@ df_install_refs (basic_block bb,
    insn.  */
 
 static struct df_mw_hardreg **
-df_install_mws (struct df_mw_hardreg **old_vec, unsigned int count)
+df_install_mws (VEC(df_mw_hardreg_ptr,stack) *old_vec)
 {
+  unsigned int count;
+
+  count = VEC_length (df_mw_hardreg_ptr, old_vec);
   if (count)
     {
       struct df_mw_hardreg **new_vec 
 	= XNEWVEC (struct df_mw_hardreg*, count + 1);
-      memcpy (new_vec, old_vec, 
-	      sizeof (struct df_mw_hardreg*) * (count + 1));
+      memcpy (new_vec, VEC_address (df_mw_hardreg_ptr, old_vec), 
+	      sizeof (struct df_mw_hardreg*) * count);
+      new_vec[count] = NULL;
       return new_vec;
     }
   else
@@ -2631,8 +2671,7 @@ df_refs_add_to_chains (struct df_collection_rec *collection_rec,
 	{
 	  df_scan_free_ref_vec (insn_rec->defs);
 	  insn_rec->defs 
-	    = df_install_refs (bb, collection_rec->def_vec, 
-			       collection_rec->next_def,
+	    = df_install_refs (bb, collection_rec->def_vec,
 			       df->def_regs,
 			       &df->def_info, false);
 	}
@@ -2641,7 +2680,6 @@ df_refs_add_to_chains (struct df_collection_rec *collection_rec,
 	  df_scan_free_ref_vec (insn_rec->uses);
 	  insn_rec->uses 
 	    = df_install_refs (bb, collection_rec->use_vec, 
-			       collection_rec->next_use,
 			       df->use_regs,
 			       &df->use_info, false);
 	}
@@ -2650,7 +2688,6 @@ df_refs_add_to_chains (struct df_collection_rec *collection_rec,
 	  df_scan_free_ref_vec (insn_rec->eq_uses);
 	  insn_rec->eq_uses 
 	    = df_install_refs (bb, collection_rec->eq_use_vec, 
-			       collection_rec->next_eq_use,
 			       df->eq_use_regs,
 			       &df->use_info, true);
 	}
@@ -2658,8 +2695,7 @@ df_refs_add_to_chains (struct df_collection_rec *collection_rec,
 	{
 	  df_scan_free_mws_vec (insn_rec->mw_hardregs);
 	  insn_rec->mw_hardregs 
-	    = df_install_mws (collection_rec->mw_vec, 
-			      collection_rec->next_mw);
+	    = df_install_mws (collection_rec->mw_vec);
 	}
     }
   else
@@ -2668,14 +2704,12 @@ df_refs_add_to_chains (struct df_collection_rec *collection_rec,
 
       df_scan_free_ref_vec (bb_info->artificial_defs);
       bb_info->artificial_defs 
-	= df_install_refs (bb, collection_rec->def_vec, 
-			   collection_rec->next_def,
+	= df_install_refs (bb, collection_rec->def_vec,
 			   df->def_regs,
 			   &df->def_info, false);
       df_scan_free_ref_vec (bb_info->artificial_uses);
       bb_info->artificial_uses 
 	= df_install_refs (bb, collection_rec->use_vec, 
-			   collection_rec->next_use,
 			   df->use_regs,
 			   &df->use_info, false);
     }
@@ -2767,11 +2801,11 @@ df_ref_create_structure (enum df_ref_class cl,
   if (collection_rec)
     {
       if (DF_REF_REG_DEF_P (this_ref))
-	collection_rec->def_vec[collection_rec->next_def++] = this_ref;
+	VEC_safe_push (df_ref, stack, collection_rec->def_vec, this_ref);
       else if (DF_REF_FLAGS (this_ref) & DF_REF_IN_NOTE)
-	collection_rec->eq_use_vec[collection_rec->next_eq_use++] = this_ref;
+	VEC_safe_push (df_ref, stack, collection_rec->eq_use_vec, this_ref);
       else
-	collection_rec->use_vec[collection_rec->next_use++] = this_ref;
+	VEC_safe_push (df_ref, stack, collection_rec->use_vec, this_ref);
     }
 
   return this_ref;
@@ -2837,7 +2871,8 @@ df_ref_record (enum df_ref_class cl,
 	  hardreg->start_regno = regno;
 	  hardreg->end_regno = endregno - 1;
 	  hardreg->mw_order = df->ref_order++;
-	  collection_rec->mw_vec[collection_rec->next_mw++] = hardreg;
+	  VEC_safe_push (df_mw_hardreg_ptr, stack, collection_rec->mw_vec,
+			 hardreg);
 	}
 
       for (i = regno; i < endregno; i++)
@@ -3291,10 +3326,11 @@ df_uses_record (enum df_ref_class cl, struct df_collection_rec *collection_rec,
 static void
 df_get_conditional_uses (struct df_collection_rec *collection_rec)
 {
-  unsigned int i;
-  for (i = 0; i < collection_rec->next_def; i++)
+  unsigned int ix;
+  df_ref ref;
+
+  for (ix = 0; VEC_iterate (df_ref, collection_rec->def_vec, ix, ref); ++ix)
     {
-      df_ref ref = collection_rec->def_vec[i];
       if (DF_REF_FLAGS_IS_SET (ref, DF_REF_CONDITIONAL))
         {
 	  int width = -1;
@@ -3333,16 +3369,14 @@ df_get_call_refs (struct df_collection_rec * collection_rec,
   unsigned int ui;
   bool is_sibling_call;
   unsigned int i;
+  df_ref def;
   bitmap defs_generated = BITMAP_ALLOC (&df_bitmap_obstack);
 
   /* Do not generate clobbers for registers that are the result of the
      call.  This causes ordering problems in the chain building code
      depending on which def is seen first.  */
-  for (i=0; i<collection_rec->next_def; i++)
-    {
-      df_ref def = collection_rec->def_vec[i];
-      bitmap_set_bit (defs_generated, DF_REF_REGNO (def));
-    }
+  for (i = 0; VEC_iterate (df_ref, collection_rec->def_vec, i, def); ++i)
+    bitmap_set_bit (defs_generated, DF_REF_REGNO (def));
 
   /* Record the registers used to pass arguments, and explicitly
      noted as clobbered.  */
@@ -3420,10 +3454,10 @@ df_insn_refs_collect (struct df_collection_rec* collection_rec,
   bool is_cond_exec = (GET_CODE (PATTERN (insn_info->insn)) == COND_EXEC);
 
   /* Clear out the collection record.  */
-  collection_rec->next_def = 0;
-  collection_rec->next_use = 0;
-  collection_rec->next_eq_use = 0;
-  collection_rec->next_mw = 0;
+  VEC_truncate (df_ref, collection_rec->def_vec, 0);
+  VEC_truncate (df_ref, collection_rec->use_vec, 0);
+  VEC_truncate (df_ref, collection_rec->eq_use_vec, 0);
+  VEC_truncate (df_mw_hardreg_ptr, collection_rec->mw_vec, 0);
 
   /* Record register defs.  */
   df_defs_record (collection_rec, PATTERN (insn_info->insn), bb, insn_info, 0);
@@ -3521,10 +3555,10 @@ df_need_static_chain_reg (struct function *fun)
 static void
 df_bb_refs_collect (struct df_collection_rec *collection_rec, basic_block bb)
 {
-  collection_rec->next_def = 0;
-  collection_rec->next_use = 0;
-  collection_rec->next_eq_use = 0;
-  collection_rec->next_mw = 0;
+  VEC_truncate (df_ref, collection_rec->def_vec, 0);
+  VEC_truncate (df_ref, collection_rec->use_vec, 0);
+  VEC_truncate (df_ref, collection_rec->eq_use_vec, 0);
+  VEC_truncate (df_mw_hardreg_ptr, collection_rec->mw_vec, 0);
 
   if (bb->index == ENTRY_BLOCK)
     {
@@ -3590,10 +3624,6 @@ df_bb_refs_record (int bb_index, bool scan_insns)
   int luid = 0;
   struct df_scan_bb_info *bb_info;
   struct df_collection_rec collection_rec;
-  collection_rec.def_vec = XALLOCAVEC (df_ref, 1000);
-  collection_rec.use_vec = XALLOCAVEC (df_ref, 1000);
-  collection_rec.eq_use_vec = XALLOCAVEC (df_ref, 1000);
-  collection_rec.mw_vec = XALLOCAVEC (struct df_mw_hardreg *, 100);
 
   if (!df)
     return;
@@ -3608,6 +3638,11 @@ df_bb_refs_record (int bb_index, bool scan_insns)
       bb_info->artificial_defs = NULL;
       bb_info->artificial_uses = NULL;
     }
+
+  collection_rec.def_vec = VEC_alloc (df_ref, stack, 128);
+  collection_rec.use_vec = VEC_alloc (df_ref, stack, 32);
+  collection_rec.eq_use_vec = VEC_alloc (df_ref, stack, 32);
+  collection_rec.mw_vec = VEC_alloc (df_mw_hardreg_ptr, stack, 32);
 
   if (scan_insns)
     /* Scan the block an insn at a time from beginning to end.  */
@@ -3630,6 +3665,11 @@ df_bb_refs_record (int bb_index, bool scan_insns)
   /* Other block level artificial refs */
   df_bb_refs_collect (&collection_rec, bb);
   df_refs_add_to_chains (&collection_rec, bb, NULL);
+
+  VEC_free (df_ref, stack, collection_rec.def_vec);
+  VEC_free (df_ref, stack, collection_rec.use_vec);
+  VEC_free (df_ref, stack, collection_rec.eq_use_vec);
+  VEC_free (df_mw_hardreg_ptr, stack, collection_rec.mw_vec);
 
   /* Now that the block has been processed, set the block as dirty so
      LR and LIVE will get it processed.  */
@@ -3889,12 +3929,12 @@ df_record_entry_block_defs (bitmap entry_block_defs)
 {
   struct df_collection_rec collection_rec;
   memset (&collection_rec, 0, sizeof (struct df_collection_rec));
-  collection_rec.def_vec = XALLOCAVEC (df_ref, FIRST_PSEUDO_REGISTER);
-
+  collection_rec.def_vec = VEC_alloc (df_ref, stack, FIRST_PSEUDO_REGISTER);
   df_entry_block_defs_collect (&collection_rec, entry_block_defs);
 
   /* Process bb_refs chain */
   df_refs_add_to_chains (&collection_rec, BASIC_BLOCK (ENTRY_BLOCK), NULL);
+  VEC_free (df_ref, stack, collection_rec.def_vec);
 }
 
 
@@ -4060,12 +4100,13 @@ df_record_exit_block_uses (bitmap exit_block_uses)
 {
   struct df_collection_rec collection_rec;
   memset (&collection_rec, 0, sizeof (struct df_collection_rec));
-  collection_rec.use_vec = XALLOCAVEC (df_ref, FIRST_PSEUDO_REGISTER);
+  collection_rec.use_vec = VEC_alloc (df_ref, stack, FIRST_PSEUDO_REGISTER);
 
   df_exit_block_uses_collect (&collection_rec, exit_block_uses);
 
   /* Process bb_refs chain */
   df_refs_add_to_chains (&collection_rec, BASIC_BLOCK (EXIT_BLOCK), NULL);
+  VEC_free (df_ref, stack, collection_rec.use_vec);
 }
 
 
@@ -4242,7 +4283,7 @@ df_compute_regs_ever_live (bool reset)
 
   df_reg_chain_mark (refs, regno, is_def, is_eq_use)
   df_reg_chain_verify_unmarked (refs)
-  df_refs_verify (ref*, ref*, bool)
+  df_refs_verify (VEC(stack,df_ref)*, ref*, bool)
   df_mws_verify (mw*, mw*, bool)
   df_insn_refs_verify (collection_rec, bb, insn, bool)
   df_bb_refs_verify (bb, refs, bool)
@@ -4306,12 +4347,15 @@ df_reg_chain_verify_unmarked (df_ref refs)
 /* Verify that NEW_REC and OLD_REC have exactly the same members. */
 
 static bool
-df_refs_verify (df_ref *new_rec, df_ref *old_rec,
+df_refs_verify (VEC(df_ref,stack) *new_rec, df_ref *old_rec,
 		bool abort_if_fail)
 {
-  while ((*new_rec) && (*old_rec))
+  unsigned int ix;
+  df_ref new_ref;
+
+  for (ix = 0; VEC_iterate (df_ref, new_rec, ix, new_ref); ++ix)
     {
-      if (!df_ref_equal_p (*new_rec, *old_rec))
+      if (*old_rec == NULL || !df_ref_equal_p (new_ref, *old_rec))
 	{
 	  if (abort_if_fail)
 	    gcc_assert (0);
@@ -4327,14 +4371,13 @@ df_refs_verify (df_ref *new_rec, df_ref *old_rec,
 	  DF_REF_REG_UNMARK (*old_rec);
 	}
 
-      new_rec++;
       old_rec++;
     }
 
   if (abort_if_fail)
-    gcc_assert ((*new_rec == NULL) && (*old_rec == NULL));
+    gcc_assert (*old_rec == NULL);
   else
-    return ((*new_rec == NULL) && (*old_rec == NULL));
+    return *old_rec == NULL;
   return false;
 }
 
@@ -4342,26 +4385,29 @@ df_refs_verify (df_ref *new_rec, df_ref *old_rec,
 /* Verify that NEW_REC and OLD_REC have exactly the same members. */
 
 static bool
-df_mws_verify (struct df_mw_hardreg **new_rec, struct df_mw_hardreg **old_rec,
+df_mws_verify (VEC(df_mw_hardreg_ptr,stack) *new_rec,
+	       struct df_mw_hardreg **old_rec,
 	       bool abort_if_fail)
 {
-  while ((*new_rec) && (*old_rec))
+  unsigned int ix;
+  struct df_mw_hardreg *new_reg;
+
+  for (ix = 0; VEC_iterate (df_mw_hardreg_ptr, new_rec, ix, new_reg); ++ix)
     {
-      if (!df_mw_equal_p (*new_rec, *old_rec))
+      if (*old_rec == NULL || !df_mw_equal_p (new_reg, *old_rec))
 	{
 	  if (abort_if_fail)
 	    gcc_assert (0);
 	  else
 	    return false;
 	}
-      new_rec++;
       old_rec++;
     }
 
   if (abort_if_fail)
-    gcc_assert ((*new_rec == NULL) && (*old_rec == NULL));
+    gcc_assert (*old_rec == NULL);
   else
-    return ((*new_rec == NULL) && (*old_rec == NULL));
+    return *old_rec == NULL;
   return false;
 }
 
@@ -4424,10 +4470,10 @@ df_bb_verify (basic_block bb)
   struct df_collection_rec collection_rec;
   
   memset (&collection_rec, 0, sizeof (struct df_collection_rec));
-  collection_rec.def_vec = XALLOCAVEC (df_ref, 1000);
-  collection_rec.use_vec = XALLOCAVEC (df_ref, 1000);
-  collection_rec.eq_use_vec = XALLOCAVEC (df_ref, 1000);
-  collection_rec.mw_vec = XALLOCAVEC (struct df_mw_hardreg *, 100);
+  collection_rec.def_vec = VEC_alloc (df_ref, stack, 128);
+  collection_rec.use_vec = VEC_alloc (df_ref, stack, 32);
+  collection_rec.eq_use_vec = VEC_alloc (df_ref, stack, 32);
+  collection_rec.mw_vec = VEC_alloc (df_mw_hardreg_ptr, stack, 32);
 
   gcc_assert (bb_info);
 

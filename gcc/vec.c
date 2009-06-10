@@ -372,6 +372,147 @@ vec_heap_o_reserve_exact (void *vec, int reserve, size_t vec_offset,
 			       PASS_MEM_STAT);
 }
 
+/* Stack vectors are a little different.  VEC_alloc turns into a call
+   to vec_stack_p_reserve_exact1 and passes in space allocated via a
+   call to alloca.  We record that pointer so that we know that we
+   shouldn't free it.  If the vector is resized, we resize it on the
+   heap.  We record the pointers in a vector and search it in LIFO
+   order--i.e., we look for the newest stack vectors first.  We don't
+   expect too many stack vectors at any one level, and searching from
+   the end should normally be efficient even if they are used in a
+   recursive function.  */
+
+typedef void *void_p;
+DEF_VEC_P(void_p);
+DEF_VEC_ALLOC_P(void_p,heap);
+
+static VEC(void_p,heap) *stack_vecs;
+
+/* Allocate a vector which uses alloca for the initial allocation.
+   SPACE is space allocated using alloca, ALLOC is the number of
+   entries allocated.  */
+
+void *
+vec_stack_p_reserve_exact_1 (int alloc, void *space)
+{
+  struct vec_prefix *pfx = (struct vec_prefix *) space;
+
+  VEC_safe_push (void_p, heap, stack_vecs, space);
+
+  pfx->num = 0;
+  pfx->alloc = alloc;
+
+  return space;
+}
+
+/* Grow a vector allocated using alloca.  When this happens, we switch
+   back to heap allocation.  We remove the vector from stack_vecs, if
+   it is there, since we no longer need to avoid freeing it.  */
+
+static void *
+vec_stack_o_reserve_1 (void *vec, int reserve, size_t vec_offset,
+		       size_t elt_size, bool exact MEM_STAT_DECL)
+{
+  bool found;
+  unsigned int ix;
+  void *newvec;
+
+  found = false;
+  for (ix = VEC_length (void_p, stack_vecs); ix > 0; --ix)
+    {
+      if (VEC_index (void_p, stack_vecs, ix - 1) == vec)
+	{
+	  VEC_unordered_remove (void_p, stack_vecs, ix - 1);
+	  found = true;
+	  break;
+	}
+    }
+
+  if (!found)
+    {
+      /* VEC is already on the heap.  */
+      return vec_heap_o_reserve_1 (vec, reserve, vec_offset, elt_size,
+				   exact PASS_MEM_STAT);
+    }
+
+  /* Move VEC to the heap.  */
+  reserve += ((struct vec_prefix *) vec)->num;
+  newvec = vec_heap_o_reserve_1 (NULL, reserve, vec_offset, elt_size,
+				 exact PASS_MEM_STAT);
+  if (newvec && vec)
+    {
+      ((struct vec_prefix *) newvec)->num = ((struct vec_prefix *) vec)->num;
+      memcpy (((struct vec_prefix *) newvec)->vec,
+	      ((struct vec_prefix *) vec)->vec,
+	      ((struct vec_prefix *) vec)->num * elt_size);
+    }
+  return newvec;
+}
+
+/* Grow a vector allocated on the stack.  */
+
+void *
+vec_stack_p_reserve (void *vec, int reserve MEM_STAT_DECL)
+{
+  return vec_stack_o_reserve_1 (vec, reserve,
+				offsetof (struct vec_prefix, vec),
+				sizeof (void *), false
+				PASS_MEM_STAT);
+}
+
+/* Exact version of vec_stack_p_reserve.  */
+
+void *
+vec_stack_p_reserve_exact (void *vec, int reserve MEM_STAT_DECL)
+{
+  return vec_stack_o_reserve_1 (vec, reserve,
+				offsetof (struct vec_prefix, vec),
+				sizeof (void *), true
+				PASS_MEM_STAT);
+}
+
+/* Like vec_stack_p_reserve, but for objects.  */
+
+void *
+vec_stack_o_reserve (void *vec, int reserve, size_t vec_offset,
+		     size_t elt_size MEM_STAT_DECL)
+{
+  return vec_stack_o_reserve_1 (vec, reserve, vec_offset, elt_size, false
+				PASS_MEM_STAT);
+}
+
+/* Like vec_stack_p_reserve_exact, but for objects.  */
+
+void *
+vec_stack_o_reserve_exact (void *vec, int reserve, size_t vec_offset,
+			    size_t elt_size MEM_STAT_DECL)
+{
+  return vec_stack_o_reserve_1 (vec, reserve, vec_offset, elt_size, true
+				PASS_MEM_STAT);
+}
+
+/* Free a vector allocated on the stack.  Don't actually free it if we
+   find it in the hash table.  */
+
+void
+vec_stack_free (void *vec)
+{
+  unsigned int ix;
+
+  for (ix = VEC_length (void_p, stack_vecs); ix > 0; --ix)
+    {
+      if (VEC_index (void_p, stack_vecs, ix - 1) == vec)
+	{
+	  VEC_unordered_remove (void_p, stack_vecs, ix - 1);
+	  return;
+	}
+    }
+
+  /* VEC was not on the list of vecs allocated on the stack, so it
+     must be allocated on the heap.  */
+  vec_heap_free (vec);
+}
+
 #if ENABLE_CHECKING
 /* Issue a vector domain error, and then fall over.  */
 
