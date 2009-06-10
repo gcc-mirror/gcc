@@ -1,5 +1,6 @@
 /* Declarations to interface gcj with bytecode verifier.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,11 +26,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #ifndef GCC_VERIFY_H
 #define GCC_VERIFY_H
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
 
 #include "system.h"
 #include "coretypes.h"
@@ -154,9 +150,5 @@ typedef enum
 #define JV_CONSTANT_Methodref CONSTANT_Methodref
 
 int verify_method (vfy_method *meth);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* ! GCC_VERIFY_H */
