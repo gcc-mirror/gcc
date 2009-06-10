@@ -534,6 +534,8 @@ v850e-*-*)
 	;;
 v850-*-*)
 	;;
+vax-*-linux*)
+	;;
 vax-*-netbsdelf*)
 	;;
 vax-*-netbsd*)
