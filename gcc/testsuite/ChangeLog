@@ -1,3 +1,8 @@
+2009-06-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40402
+	* gfortran.dg/data_value_1.f90: New test.
+
 2009-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	PR testsuite/39831
