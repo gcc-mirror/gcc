@@ -1,3 +1,12 @@
+2009-06-11  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.md: Define length attribute for all
+	instructions.
+	(rCC): Define.
+	(*b<cond:code>): Support limited branch ranges for new PC-relative
+	branch instructions.
+	* config/moxie/moxie.h (HAS_LONG_UNCOND_BRANCH): Define.
+
 2009-06-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (min_insn_size): Use get_attr_length

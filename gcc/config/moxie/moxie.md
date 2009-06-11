@@ -19,11 +19,14 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;; -------------------------------------------------------------------------
-;; Moxie specific constraints
+;; Moxie specific constraints, predicates and attributes
 ;; -------------------------------------------------------------------------
 
 (include "constraints.md")
 (include "predicates.md")
+
+; Most instructions are two bytes long.
+(define_attr "length" "" (const_int 2))
 
 ;; -------------------------------------------------------------------------
 ;; nop instruction
@@ -232,7 +235,8 @@
    ld.l   %0, %1
    lda.l  %0, %1
    sto.l  %0, %1
-   ldo.l  %0, %1")
+   ldo.l  %0, %1"
+  [(set_attr "length"	"2,6,2,6,2,6,6,6")])
 
 (define_expand "movqi"
   [(set (match_operand:QI 0 "general_operand" "")
@@ -258,7 +262,8 @@
    ld.b   %0, %1
    lda.b  %0, %1
    sto.b  %0, %1
-   ldo.b  %0, %1")
+   ldo.b  %0, %1"
+  [(set_attr "length"	"2,6,2,6,2,6,6,6")])
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "general_operand" "")
@@ -284,7 +289,8 @@
    ld.s   %0, %1
    lda.s  %0, %1
    sto.s  %0, %1
-   ldo.s  %0, %1")
+   ldo.s  %0, %1"
+  [(set_attr "length"	"2,6,2,6,2,6,6,6")])
 
 ;; -------------------------------------------------------------------------
 ;; Compare instructions
@@ -305,12 +311,12 @@
                       (pc)))]
   ""
   "
-/* Force the compare operands into registers.  */
-if (GET_CODE (operands[1]) != REG)
-  operands[1] = force_reg (SImode, operands[1]);
-if (GET_CODE (operands[2]) != REG)
-  operands[2] = force_reg (SImode, operands[2]);
-")
+  /* Force the compare operands into registers.  */
+  if (GET_CODE (operands[1]) != REG)
+	operands[1] = force_reg (SImode, operands[1]);
+  if (GET_CODE (operands[2]) != REG)
+	operands[2] = force_reg (SImode, operands[2]);
+  ")
 
 (define_insn "*cmpsi"
   [(set (reg:CC CC_REG)
@@ -329,6 +335,9 @@ if (GET_CODE (operands[2]) != REG)
 (define_code_attr CC [(ne "ne") (eq "eq") (lt "lt") (ltu "ltu") 
 		      (gt "gt") (gtu "gtu") (ge "ge") (le "le") 
 		      (geu "geu") (leu "leu") ])
+(define_code_attr rCC [(ne "eq") (eq "ne") (lt "ge") (ltu "geu") 
+		       (gt "le") (gtu "leu") (ge "lt") (le "gt") 
+		       (geu "ltu") (leu "gtu") ])
 
 (define_insn "*b<cond:code>"
   [(set (pc)
@@ -337,7 +346,15 @@ if (GET_CODE (operands[2]) != REG)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "b<CC>   %l0")
+{
+  if (get_attr_length (insn) == 2)
+    return "b<CC>   %l0";
+  else
+    return "b<rCC>   .+6\n\tjmpa   %l0";
+}
+  [(set (attr "length")
+        (if_then_else (lt (abs (minus (pc) (match_dup 0))) (const_int 1022))
+                      (const_int 2) (const_int 8)))])
 
 ;; -------------------------------------------------------------------------
 ;; Call and Jump instructions
@@ -358,7 +375,8 @@ if (GET_CODE (operands[2]) != REG)
   ""
   "@
    jsra   %0
-   jsr    %0")
+   jsr    %0"
+  [(set_attr "length"	"6,2")])
 
 (define_expand "call_value"
   [(set (match_operand 0 "" "")
@@ -375,7 +393,8 @@ if (GET_CODE (operands[2]) != REG)
 		       1 "immediate_operand" "i"))
 	      (match_operand 2 "" "")))]
   ""
-  "jsra   %1")
+  "jsra   %1"
+  [(set_attr "length"	"6")])
 
 (define_insn "*call_value_indirect"
   [(set (match_operand 0 "register_operand" "=r")
@@ -394,7 +413,8 @@ if (GET_CODE (operands[2]) != REG)
   [(set (pc)
 	(label_ref (match_operand 0 "" "")))]
   ""
-  "jmpa   %l0")
+  "jmpa   %l0"
+  [(set_attr "length"	"6")])
 
 
 ;; -------------------------------------------------------------------------
