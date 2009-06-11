@@ -6815,6 +6815,61 @@ intentionally executing an illegal instruction) or by calling
 you should not rely on any particular implementation.
 @end deftypefn
 
+@deftypefn {Built-in Function} void __builtin_unreachable (void)
+If control flow reaches the point of the @code{__builtin_unreachable},
+the program is undefined.  It is useful in situations where the
+compiler cannot deduce the unreachability of the code.
+
+One such case is immediately following an @code{asm} statement that
+will either never terminate, or one that transfers control elsewhere
+and never returns.  In this example, without the
+@code{__builtin_unreachable}, GCC would issue a warning that control
+reaches the end of a non-void function.  It would also generate code
+to return after the @code{asm}.
+
+@smallexample
+int f (int c, int v)
+@{
+  if (c)
+    @{
+      return v;
+    @}
+  else
+    @{
+      asm("jmp error_handler");
+      __builtin_unreachable ();
+    @}
+@}
+@end smallexample
+
+Because the @code{asm} statement unconditionally transfers control out
+of the function, control will never reach the end of the function
+body.  The @code{__builtin_unreachable} is in fact unreachable and
+communicates this fact to the compiler.
+
+Another use for @code{__builtin_unreachable} is following a call a
+function that never returns but that is not declared
+@code{__attribute__((noreturn))}, as in this example:
+
+@smallexample
+void function_that_never_returns (void);
+
+int g (int c)
+@{
+  if (c)
+    @{
+      return 1;
+    @}
+  else
+    @{
+      function_that_never_returns ();
+      __builtin_unreachable ();
+    @}
+@}
+@end smallexample
+
+@end deftypefn
+
 @deftypefn {Built-in Function} void __builtin___clear_cache (char *@var{begin}, char *@var{end})
 This function is used to flush the processor's instruction cache for
 the region of memory between @var{begin} inclusive and @var{end}

@@ -1,3 +1,9 @@
+2009-06-11  David Daney  <ddaney@caviumnetworks.com>
+
+	PR c/39252
+	* gcc.dg/builtin-unreachable-1.c: New test.
+	* gcc.dg/builtin-unreachable-2.c: Same.
+
 2009-06-11  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40402
