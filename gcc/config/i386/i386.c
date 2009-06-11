@@ -27756,7 +27756,7 @@ ix86_pad_returns (void)
 	}
       if (replace)
 	{
-	  emit_insn_before (gen_return_internal_long (), ret);
+	  emit_jump_insn_before (gen_return_internal_long (), ret);
 	  delete_insn (ret);
 	}
     }
