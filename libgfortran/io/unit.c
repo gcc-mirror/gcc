@@ -638,7 +638,6 @@ close_unit_1 (gfc_unit *u, int locked)
   u->file = NULL;
   u->file_len = 0;
 
-  free_format_hash_table (u);  
   fbuf_destroy (u);
 
   if (!locked)

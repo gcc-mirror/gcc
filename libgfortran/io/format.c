@@ -31,7 +31,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "io.h"
 #include <ctype.h>
 #include <string.h>
-#include <stdbool.h>
 
 #define FARRAY_SIZE 64
 
@@ -70,138 +69,6 @@ static const char posint_required[] = "Positive width required in format",
   bad_hollerith[] = "Hollerith constant extends past the end of the format",
   reversion_error[] = "Exhausted data descriptors in format",
   zero_width[] = "Zero width in format descriptor";
-
-/* The following routines support caching format data from parsed format strings
-   into a hash table.  This avoids repeatedly parsing duplicate format strings
-   or format strings in I/O statements that are repeated in loops.  */
-
-
-/* Traverse the table and free all data.  */
-
-void
-free_format_hash_table (gfc_unit *u)
-{
-  size_t i;
-
-  /* free_format_data handles any NULL pointers.  */
-  for (i = 0; i < FORMAT_HASH_SIZE; i++)
-    {
-      if (u->format_hash_table[i].hashed_fmt != NULL)
-	{
-	  free_format_data (u->format_hash_table[i].hashed_fmt);
-	  free_mem (u->format_hash_table[i].key);
-	}
-      u->format_hash_table[i].key = NULL;
-      u->format_hash_table[i].key_len = 0;      
-      u->format_hash_table[i].hashed_fmt = NULL;
-    }
-}
-
-/* Traverse the format_data structure and reset the fnode counters.  */
-
-static void
-reset_node (fnode *fn)
-{
-  fnode *f;
-
-  fn->count = 0;
-  fn->current = NULL;
-  
-  if (fn->format != FMT_LPAREN)
-    return;
-
-  for (f = fn->u.child; f; f = f->next)
-    {
-      if (f->format == FMT_RPAREN)
-	break;
-      reset_node (f);
-    }
-}
-
-static void
-reset_fnode_counters (st_parameter_dt *dtp)
-{
-  fnode *f;
-  format_data *fmt;
-
-  fmt = dtp->u.p.fmt;
-
-  /* Clear this pointer at the head so things start at the right place.  */
-  fmt->array.array[0].current = NULL;
-
-  for (f = fmt->last->array[0].u.child; f; f = f->next)
-    reset_node (f);
-}
-
-
-/* A simple hashing function to generate an index into the hash table.  */
-
-static inline
-uint32_t format_hash (st_parameter_dt *dtp)
-{
-  char *key;
-  gfc_charlen_type key_len;
-  uint32_t hash = 0;
-  gfc_charlen_type i;
-
-  /* Hash the format string. Super simple, but what the heck!  */
-  key = dtp->format;
-  key_len = dtp->format_len;
-  for (i = 0; i < key_len; i++)
-    hash ^= key[i];
-  hash &= (FORMAT_HASH_SIZE - 1);
-  return hash;
-}
-
-
-static void
-save_parsed_format (st_parameter_dt *dtp)
-{
-  uint32_t hash;
-  gfc_unit *u;
-
-  hash = format_hash (dtp);
-  u = dtp->u.p.current_unit;
-
-  /* Index into the hash table.  We are simply replacing whatever is there
-     relying on probability.  */
-  if (u->format_hash_table[hash].hashed_fmt != NULL)
-    free_format_data (u->format_hash_table[hash].hashed_fmt);
-  u->format_hash_table[hash].hashed_fmt = NULL;
-
-  if (u->format_hash_table[hash].key != NULL)
-    free_mem (u->format_hash_table[hash].key);
-  u->format_hash_table[hash].key = get_mem (dtp->format_len);
-  memcpy (u->format_hash_table[hash].key, dtp->format, dtp->format_len);
-
-  u->format_hash_table[hash].key_len = dtp->format_len;
-  u->format_hash_table[hash].hashed_fmt = dtp->u.p.fmt;
-}
-
-
-static format_data *
-find_parsed_format (st_parameter_dt *dtp)
-{
-  uint32_t hash;
-  gfc_unit *u;
-
-  hash = format_hash (dtp);
-  u = dtp->u.p.current_unit;
-
-  if (u->format_hash_table[hash].key != NULL)
-    {
-      /* See if it matches.  */
-      if (u->format_hash_table[hash].key_len == dtp->format_len)
-	{
-	  /* So far so good.  */
-	  if (strncmp (u->format_hash_table[hash].key,
-	      dtp->format, dtp->format_len) == 0)
-	    return u->format_hash_table[hash].hashed_fmt;
-	}
-    }
-  return NULL;
-}
-
 
 /* next_char()-- Return the next character in the format string.
  * Returns -1 when the string is done.  If the literal flag is set,
@@ -270,10 +137,10 @@ get_fnode (format_data *fmt, fnode **head, fnode **tail, format_token t)
 /* free_format_data()-- Free all allocated format data.  */
 
 void
-free_format_data (format_data *fmt)
+free_format_data (st_parameter_dt *dtp)
 {
   fnode_array *fa, *fa_next;
-
+  format_data *fmt = dtp->u.p.fmt;
 
   if (fmt == NULL)
     return;
@@ -285,7 +152,7 @@ free_format_data (format_data *fmt)
     }
 
   free_mem (fmt);
-  fmt = NULL;
+  dtp->u.p.fmt = NULL;
 }
 
 
@@ -584,10 +451,8 @@ parse_format_list (st_parameter_dt *dtp)
   format_token t, u, t2;
   int repeat;
   format_data *fmt = dtp->u.p.fmt;
-  bool save_format;
 
   head = tail = NULL;
-  save_format = !is_internal_unit (dtp);
 
   /* Get the next format item */
  format_item:
@@ -698,7 +563,6 @@ parse_format_list (st_parameter_dt *dtp)
     case FMT_DP:
       notify_std (&dtp->common, GFC_STD_F2003, "Fortran 2003: DC or DP "
 		  "descriptor not allowed");
-      save_format = true;
     /* Fall through.  */
     case FMT_S:
     case FMT_SS:
@@ -724,7 +588,6 @@ parse_format_list (st_parameter_dt *dtp)
       get_fnode (fmt, &head, &tail, FMT_DOLLAR);
       tail->repeat = 1;
       notify_std (&dtp->common, GFC_STD_GNU, "Extension: $ descriptor");
-      save_format = false;
       goto between_desc;
 
 
@@ -822,7 +685,6 @@ parse_format_list (st_parameter_dt *dtp)
 	      fmt->saved_token = t;
 	      fmt->value = 1;	/* Default width */
 	      notify_std (&dtp->common, GFC_STD_GNU, posint_required);
-	      save_format = false;
 	    }
 	}
 
@@ -1167,21 +1029,6 @@ parse_format (st_parameter_dt *dtp)
 {
   format_data *fmt;
 
-  /* Lookup format string to see if it has already been parsed.  */
-
-  dtp->u.p.fmt = find_parsed_format (dtp);
-
-  if (dtp->u.p.fmt != NULL)
-    {
-      dtp->u.p.fmt->reversion_ok = 0;
-      dtp->u.p.fmt->saved_token = FMT_NONE;
-      dtp->u.p.fmt->saved_format = NULL;
-      reset_fnode_counters (dtp);
-      return;
-    }
-
-  /* Not found so proceed as follows.  */
-
   dtp->u.p.fmt = fmt = get_mem (sizeof (format_data));
   fmt->format_string = dtp->format;
   fmt->format_string_len = dtp->format_len;
@@ -1213,12 +1060,7 @@ parse_format (st_parameter_dt *dtp)
     fmt->error = "Missing initial left parenthesis in format";
 
   if (fmt->error)
-    {
-      format_error (dtp, NULL, fmt->error);
-      free_format_hash_table (dtp->u.p.current_unit);
-      return;
-    }
-  save_parsed_format (dtp);
+    format_error (dtp, NULL, fmt->error);
 }
 
 
