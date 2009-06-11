@@ -7834,16 +7834,16 @@ package body Sem_Attr is
                   --  Check the static accessibility rule of 3.10.2(32).
                   --  This rule also applies within the private part of an
                   --  instantiation. This rule does not apply to anonymous
-                  --  access-to-subprogram types (Ada 2005).
+                  --  access-to-subprogram types in access parameters.
 
                   elsif Attr_Id = Attribute_Access
                     and then not In_Instance_Body
+                    and then
+                      (Ekind (Btyp) = E_Access_Subprogram_Type
+                        or else Is_Local_Anonymous_Access (Btyp))
+
                     and then Subprogram_Access_Level (Entity (P)) >
                                Type_Access_Level (Btyp)
-                    and then Ekind (Btyp) /=
-                               E_Anonymous_Access_Subprogram_Type
-                    and then Ekind (Btyp) /=
-                               E_Anonymous_Access_Protected_Subprogram_Type
                   then
                      Error_Msg_F
                        ("subprogram must not be deeper than access type", P);

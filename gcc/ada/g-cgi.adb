@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                      Copyright (C) 2001-2006, AdaCore                    --
+--                      Copyright (C) 2001-2009, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,6 +122,11 @@ package body GNAT.CGI is
             Result (J) := Character'Val
               (Natural'Value ("16#" & S (K + 1 .. K + 2) & '#'));
             K := K + 3;
+
+         elsif S (K) = '+' then
+            --  + sign is decoded as a space
+            Result (J) := ' ';
+            K := K + 1;
 
          else
             Result (J) := S (K);

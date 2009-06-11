@@ -3523,11 +3523,11 @@ package body Sem_Warn is
 
             if Nkind (Original_Node (X)) = N_Integer_Literal then
                if Intval (X) = Low_Bound then
-                  Error_Msg_FE
+                  Error_Msg_FE --  CODEFIX
                     ("\suggested replacement: `&''First`", X, Ent);
                else
                   Error_Msg_Uint_1 := Intval (X) - Low_Bound;
-                  Error_Msg_FE
+                  Error_Msg_FE --  CODEFIX
                     ("\suggested replacement: `&''First + ^`", X, Ent);
 
                end if;
@@ -3633,7 +3633,7 @@ package body Sem_Warn is
 
                --  Replacement subscript is now in string buffer
 
-               Error_Msg_FE
+               Error_Msg_FE --  CODEFIX
                  ("\suggested replacement: `&~`", Original_Node (X), Ent);
             end if;
 
