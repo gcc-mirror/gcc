@@ -1,3 +1,9 @@
+2009-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR fortran/38718
+	* gfortran.dg/is_iostat_end_eor_2.f90: New test.
+	* gfortran.dg/nan_5.f90: New test.
+
 2009-06-10  Nathan Froyd  <froydnj@codesourcery.com>
 
 	* gcc.target/arm/neon-modes-1.c: New test.
