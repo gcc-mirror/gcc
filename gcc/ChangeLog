@@ -1,3 +1,9 @@
+2009-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/darwin.h (LINK_COMMAND_SPEC): Adjust spec to link libcov
+	when -fprofile-generate* was passed.
+	* config/darwin9.h (LINK_COMMAND_SPEC): Likewise.
+
 2009-06-11  Anthony Green  <green@moxielogic.com>
 
 	* config/moxie/moxie.md: Define length attribute for all
