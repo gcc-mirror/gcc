@@ -1,3 +1,15 @@
+2009-06-11  David Daney  <ddaney@caviumnetworks.com>
+
+	PR c/39252
+	* doc/extend.texi ( __builtin_unreachable): Document new builtin.
+	* builtins.c (expand_builtin_unreachable): New function.
+	(expand_builtin): Handle BUILT_IN_UNREACHABLE case.
+	* builtins.def (BUILT_IN_UNREACHABLE): Add new builtin.
+	* cfgcleanup.c (try_optimize_cfg): Delete empty blocks with no
+	successors.
+	* cfgrtl.c (rtl_verify_flow_info): Handle empty blocks when
+	searching for missing barriers.
+
 2009-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* config/darwin.h (LINK_COMMAND_SPEC): Adjust spec to link libcov

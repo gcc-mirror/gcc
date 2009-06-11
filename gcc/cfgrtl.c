@@ -2046,15 +2046,17 @@ rtl_verify_flow_info (void)
 	  rtx insn;
 
 	  /* Ensure existence of barrier in BB with no fallthru edges.  */
-	  for (insn = BB_END (bb); !insn || !BARRIER_P (insn);
-	       insn = NEXT_INSN (insn))
-	    if (!insn
-		|| NOTE_INSN_BASIC_BLOCK_P (insn))
+	  for (insn = NEXT_INSN (BB_END (bb)); ; insn = NEXT_INSN (insn))
+	    {
+	      if (!insn || NOTE_INSN_BASIC_BLOCK_P (insn))
 		{
 		  error ("missing barrier after block %i", bb->index);
 		  err = 1;
 		  break;
 		}
+	      if (BARRIER_P (insn))
+		break;
+	    }
 	}
       else if (e->src != ENTRY_BLOCK_PTR
 	       && e->dest != EXIT_BLOCK_PTR)

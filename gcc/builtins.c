@@ -5298,6 +5298,17 @@ expand_builtin_trap (void)
   emit_barrier ();
 }
 
+/* Expand a call to __builtin_unreachable.  We do nothing except emit
+   a barrier saying that control flow will not pass here.
+
+   It is the responsibility of the program being compiled to ensure
+   that control flow does never reach __builtin_unreachable.  */
+static void
+expand_builtin_unreachable (void)
+{
+  emit_barrier ();
+}
+
 /* Expand EXP, a call to fabs, fabsf or fabsl.
    Return NULL_RTX if a normal call should be emitted rather than expanding
    the function inline.  If convenient, the result should be placed
@@ -6793,6 +6804,10 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
 
     case BUILT_IN_TRAP:
       expand_builtin_trap ();
+      return const0_rtx;
+
+    case BUILT_IN_UNREACHABLE:
+      expand_builtin_unreachable ();
       return const0_rtx;
 
     case BUILT_IN_PRINTF:
