@@ -1,7 +1,33 @@
+2009-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.tcc
+	(negative_binomial_distribution<>::operator()
+	(_UniformRandomNumberGenerator&, const param_type&): Tweak to use a
+	class member gamma_distribution.
+	(negative_binomial_distribution<>::operator()
+	(_UniformRandomNumberGenerator&)): Implement out of line here.
+	(operator<<(basic_ostream<>&, negative_binomial_distribution<>),
+	operator>>(basic_ostream<>&, negative_binomial_distribution<>): Adjust.
+	(student_t_distribution<>::operator()
+	(_UniformRandomNumberGenerator&, const param_type&): Move inline,
+	simplify.
+	(operator<<(basic_ostream<>&, student_t_distribution<>),
+	operator>>(basic_ostream<>&, student_t_distribution<>): Adjust.
+	(chi_squared_distribution<>::operator()
+	(_UniformRandomNumberGenerator&, const param_type&): Move inline,
+	tweak to use a class member gamma_distribution.
+	(operator<<(basic_ostream<>&, chi_squared_distribution<>),
+	operator>>(basic_ostream<>&, chi_squared_distribution<>): Adjust.
+	(fisher_f_distribution<>::operator() (_UniformRandomNumberGenerator&,
+	const param_type&): Move inline, tweak to use class member
+	gamma_distributions.
+	(operator<<(basic_ostream<>&, fisher_f_distribution<>),
+	operator>>(basic_ostream<>&, fisher_f_distribution<>): Adjust.
+	* include/bits/random.h: Adjust, minor tweaks.
+
 2009-06-10  Tom Tromey  <tromey@redhat.com>
 
-	* python/libstdcxx/v6/printers.py (lookup_function): Remove extra
-	';'.
+	* python/libstdcxx/v6/printers.py (lookup_function): Remove extra ';'.
 	(build_libstdcxx_dictionary): Accept shortened form of
 	basic_string names.
 	(StdStringPrinter.to_string): Remove reference to WideEncoding.

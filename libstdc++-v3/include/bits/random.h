@@ -2078,7 +2078,7 @@ namespace std
     private:
       param_type _M_param;
 
-      normal_distribution<result_type> _M_nd;
+      std::normal_distribution<result_type> _M_nd;
     };
 
   /**
@@ -2111,15 +2111,16 @@ namespace std
     operator>>(std::basic_istream<_CharT, _Traits>&,
 	       std::lognormal_distribution<_RealType>&);
 
-
+  
   /**
-   * @brief A chi_squared_distribution random number distribution.
+   * @brief A gamma continuous distribution for random numbers.
    *
-   * The formula for the normal probability mass function is
-   * @f$ p(x|n) = \frac{x^{(n/2) - 1}e^{-x/2}}{\Gamma(n/2) 2^{n/2}} @f$
+   * The formula for the gamma probability density function is
+   * @f$ p(x|\alpha,\beta) = \frac{1}{\beta\Gamma(\alpha)}
+   *                         (x/\beta)^{\alpha - 1} e^{-x/\beta} @f$.
    */
   template<typename _RealType = double>
-    class chi_squared_distribution
+    class gamma_distribution
     {
     public:
       /** The type of the range of the distribution. */
@@ -2127,29 +2128,50 @@ namespace std
       /** Parameter type. */
       struct param_type
       {
-	typedef chi_squared_distribution<_RealType> distribution_type;
+	typedef gamma_distribution<_RealType> distribution_type;
+	friend class gamma_distribution<_RealType>;
 
 	explicit
-	param_type(_RealType __n = _RealType(1))
-	: _M_n(__n)
-	{ }
+	param_type(_RealType __alpha_val = _RealType(1),
+		   _RealType __beta_val = _RealType(1))
+	: _M_alpha(__alpha_val), _M_beta(__beta_val)
+	{
+	  _GLIBCXX_DEBUG_ASSERT(_M_alpha > _RealType(0));
+	  _M_initialize();
+	}
 
 	_RealType
-	n() const
-	{ return _M_n; }
+	alpha() const
+	{ return _M_alpha; }
+
+	_RealType
+	beta() const
+	{ return _M_beta; }
 
       private:
-	_RealType _M_n;
+	void
+	_M_initialize();
+
+	_RealType _M_alpha;
+	_RealType _M_beta;
+
+	_RealType _M_malpha, _M_a2;
       };
 
+    public:
+      /**
+       * @brief Constructs a gamma distribution with parameters
+       * @f$ \alpha @f$ and @f$ \beta @f$.
+       */
       explicit
-      chi_squared_distribution(_RealType __n = _RealType(1))
-      : _M_param(__n)
+      gamma_distribution(_RealType __alpha_val = _RealType(1),
+			 _RealType __beta_val = _RealType(1))
+      : _M_param(__alpha_val, __beta_val), _M_nd()
       { }
 
       explicit
-      chi_squared_distribution(const param_type& __p)
-      : _M_param(__p)
+      gamma_distribution(const param_type& __p)
+      : _M_param(__p), _M_nd()
       { }
 
       /**
@@ -2157,14 +2179,21 @@ namespace std
        */
       void
       reset()
-      { }
+      { _M_nd.reset(); }
 
       /**
-       *
+       * @brief Returns the @f$ \alpha @f$ of the distribution.
        */
       _RealType
-      n() const
-      { return _M_param.n(); }
+      alpha() const
+      { return _M_param.alpha(); }
+
+      /**
+       * @brief Returns the @f$ \beta @f$ of the distribution.
+       */
+      _RealType
+      beta() const
+      { return _M_param.beta(); }
 
       /**
        * @brief Returns the parameter set of the distribution.
@@ -2207,6 +2236,142 @@ namespace std
 
     private:
       param_type _M_param;
+
+      std::normal_distribution<result_type> _M_nd;
+    };
+
+  /**
+   * @brief Inserts a %gamma_distribution random number distribution
+   * @p __x into the output stream @p __os.
+   *
+   * @param __os An output stream.
+   * @param __x  A %gamma_distribution random number distribution.
+   *
+   * @returns The output stream with the state of @p __x inserted or in
+   * an error state.
+   */
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_ostream<_CharT, _Traits>&
+    operator<<(std::basic_ostream<_CharT, _Traits>&,
+	       const std::gamma_distribution<_RealType>&);
+
+  /**
+   * @brief Extracts a %gamma_distribution random number distribution
+   * @p __x from the input stream @p __is.
+   *
+   * @param __is An input stream.
+   * @param __x  A %gamma_distribution random number generator engine.
+   *
+   * @returns The input stream with @p __x extracted or in an error state.
+   */
+  template<typename _RealType, typename _CharT, typename _Traits>
+    std::basic_istream<_CharT, _Traits>&
+    operator>>(std::basic_istream<_CharT, _Traits>&,
+	       std::gamma_distribution<_RealType>&);
+
+
+  /**
+   * @brief A chi_squared_distribution random number distribution.
+   *
+   * The formula for the normal probability mass function is
+   * @f$ p(x|n) = \frac{x^{(n/2) - 1}e^{-x/2}}{\Gamma(n/2) 2^{n/2}} @f$
+   */
+  template<typename _RealType = double>
+    class chi_squared_distribution
+    {
+    public:
+      /** The type of the range of the distribution. */
+      typedef _RealType result_type;
+      /** Parameter type. */
+      struct param_type
+      {
+	typedef chi_squared_distribution<_RealType> distribution_type;
+
+	explicit
+	param_type(_RealType __n = _RealType(1))
+	: _M_n(__n)
+	{ }
+
+	_RealType
+	n() const
+	{ return _M_n; }
+
+      private:
+	_RealType _M_n;
+      };
+
+      explicit
+      chi_squared_distribution(_RealType __n = _RealType(1))
+      : _M_param(__n), _M_gd(__n / 2)
+      { }
+
+      explicit
+      chi_squared_distribution(const param_type& __p)
+      : _M_param(__p), _M_gd(__p.n() / 2)
+      { }
+
+      /**
+       * @brief Resets the distribution state.
+       */
+      void
+      reset()
+      { _M_gd.reset(); }
+
+      /**
+       *
+       */
+      _RealType
+      n() const
+      { return _M_param.n(); }
+
+      /**
+       * @brief Returns the parameter set of the distribution.
+       */
+      param_type
+      param() const
+      { return _M_param; }
+
+      /**
+       * @brief Sets the parameter set of the distribution.
+       * @param __param The new parameter set of the distribution.
+       */
+      void
+      param(const param_type& __param)
+      { _M_param = __param; }
+
+      /**
+       * @brief Returns the greatest lower bound value of the distribution.
+       */
+      result_type
+      min() const
+      { return result_type(0); }
+
+      /**
+       * @brief Returns the least upper bound value of the distribution.
+       */
+      result_type
+      max() const
+      { return std::numeric_limits<result_type>::max(); }
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng)
+	{ return 2 * _M_gd(__urng); }
+
+      template<typename _UniformRandomNumberGenerator>
+	result_type
+	operator()(_UniformRandomNumberGenerator& __urng,
+		   const param_type& __p)
+        {
+	  typedef typename std::gamma_distribution<result_type>::param_type
+	    param_type;
+	  return 2 * _M_gd(__urng, param_type(__p.n() / 2));
+	}
+
+    private:
+      param_type _M_param;
+
+      std::gamma_distribution<result_type> _M_gd;
     };
 
   /**
@@ -2420,12 +2585,12 @@ namespace std
       explicit
       fisher_f_distribution(_RealType __m = _RealType(1),
 			    _RealType __n = _RealType(1))
-      : _M_param(__m, __n)
+      : _M_param(__m, __n), _M_gd_x(__m / 2), _M_gd_y(__n / 2)
       { }
 
       explicit
       fisher_f_distribution(const param_type& __p)
-      : _M_param(__p)
+      : _M_param(__p), _M_gd_x(__p.m() / 2), _M_gd_y(__p.n() / 2)
       { }
 
       /**
@@ -2433,7 +2598,10 @@ namespace std
        */
       void
       reset()
-      { }
+      {
+	_M_gd_x.reset();
+	_M_gd_y.reset();
+      }
 
       /**
        *
@@ -2478,15 +2646,23 @@ namespace std
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng)
-	{ return this->operator()(__urng, this->param()); }
+	{ return (_M_gd_x(__urng) * n()) / (_M_gd_y(__urng) * m()); }
 
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng,
-		   const param_type& __p);
+		   const param_type& __p)
+        {
+	  typedef typename std::gamma_distribution<result_type>::param_type
+	    param_type;
+	  return ((_M_gd_x(__urng, param_type(__p.m() / 2)) * n())
+		  / (_M_gd_y(__urng, param_type(__p.n() / 2)) * m()));
+	}
 
     private:
       param_type _M_param;
+
+      std::gamma_distribution<result_type> _M_gd_x, _M_gd_y;
     };
 
   /**
@@ -2553,12 +2729,12 @@ namespace std
 
       explicit
       student_t_distribution(_RealType __n = _RealType(1))
-      : _M_param(__n), _M_nd()
+      : _M_param(__n), _M_nd(), _M_gd(__n / 2, 2)
       { }
 
       explicit
       student_t_distribution(const param_type& __p)
-      : _M_param(__p), _M_nd()
+      : _M_param(__p), _M_nd(), _M_gd(__p.n() / 2, 2)
       { }
 
       /**
@@ -2566,7 +2742,10 @@ namespace std
        */
       void
       reset()
-      { _M_nd.reset(); }
+      {
+	_M_nd.reset();
+	_M_gd.reset();
+      }
 
       /**
        *
@@ -2606,18 +2785,26 @@ namespace std
 
       template<typename _UniformRandomNumberGenerator>
 	result_type
-	operator()(_UniformRandomNumberGenerator& __urng)
-	{ return this->operator()(__urng, this->param()); }
+        operator()(_UniformRandomNumberGenerator& __urng)
+        { return _M_nd(__urng) * std::sqrt(n() / _M_gd(__urng)); }
 
       template<typename _UniformRandomNumberGenerator>
 	result_type
 	operator()(_UniformRandomNumberGenerator& __urng,
-		   const param_type& __p);
+		   const param_type& __p)
+        {
+	  typedef typename std::gamma_distribution<result_type>::param_type
+	    param_type;
+	
+	  const result_type __g = _M_gd(__urng, param_type(__p.n() / 2, 2));
+	  return _M_nd(__urng) * std::sqrt(__p.n() / __g);
+        }
 
     private:
       param_type _M_param;
 
-      normal_distribution<result_type> _M_nd;
+      std::normal_distribution<result_type> _M_nd;
+      std::gamma_distribution<result_type> _M_gd;
     };
 
   /**
@@ -2977,7 +3164,7 @@ namespace std
       param_type _M_param;
 
       // NB: Unused when _GLIBCXX_USE_C99_MATH_TR1 is undefined.
-      normal_distribution<double> _M_nd;
+      std::normal_distribution<double> _M_nd;
     };
 
 
@@ -3166,12 +3353,12 @@ namespace std
 
       explicit
       negative_binomial_distribution(_IntType __k = 1, double __p = 0.5)
-      : _M_param(__k, __p)
+      : _M_param(__k, __p), _M_gd(__k, __p / (1.0 - __p))
       { }
 
       explicit
       negative_binomial_distribution(const param_type& __p)
-      : _M_param(__p)
+      : _M_param(__p), _M_gd(__p.k(), __p.p() / (1.0 - __p.p()))
       { }
 
       /**
@@ -3179,7 +3366,7 @@ namespace std
        */
       void
       reset()
-      { }
+      { _M_gd.reset(); }
 
       /**
        * @brief Return the @f$ k @f$ parameter of the distribution.
@@ -3226,8 +3413,7 @@ namespace std
 
       template<typename _UniformRandomNumberGenerator>
 	result_type
-	operator()(_UniformRandomNumberGenerator& __urng)
-	{ return this->operator()(__urng, this->param()); }
+        operator()(_UniformRandomNumberGenerator& __urng);
 
       template<typename _UniformRandomNumberGenerator>
 	result_type
@@ -3236,6 +3422,8 @@ namespace std
 
     private:
       param_type _M_param;
+
+      std::gamma_distribution<double> _M_gd;
     };
 
   /**
@@ -3421,7 +3609,7 @@ namespace std
       param_type _M_param;
 
       // NB: Unused when _GLIBCXX_USE_C99_MATH_TR1 is undefined.
-      normal_distribution<double> _M_nd;
+      std::normal_distribution<double> _M_nd;
     };
 
   /**
@@ -3572,164 +3760,6 @@ namespace std
     std::basic_istream<_CharT, _Traits>&
     operator>>(std::basic_istream<_CharT, _Traits>&,
 	       std::exponential_distribution<_RealType>&);
-
-
-  /**
-   * @brief A gamma continuous distribution for random numbers.
-   *
-   * The formula for the gamma probability density function is
-   * @f$ p(x|\alpha,\beta) = \frac{1}{\beta\Gamma(\alpha)}
-   *                         (x/\beta)^{\alpha - 1} e^{-x/\beta} @f$.
-   */
-  template<typename _RealType = double>
-    class gamma_distribution
-    {
-    public:
-      /** The type of the range of the distribution. */
-      typedef _RealType result_type;
-      /** Parameter type. */
-      struct param_type
-      {
-	typedef gamma_distribution<_RealType> distribution_type;
-	friend class gamma_distribution<_RealType>;
-
-	explicit
-	param_type(_RealType __alpha_val = _RealType(1),
-		   _RealType __beta_val = _RealType(1))
-	: _M_alpha(__alpha_val), _M_beta(__beta_val)
-	{
-	  _GLIBCXX_DEBUG_ASSERT(_M_alpha > _RealType(0));
-	  _M_initialize();
-	}
-
-	_RealType
-	alpha() const
-	{ return _M_alpha; }
-
-	_RealType
-	beta() const
-	{ return _M_beta; }
-
-      private:
-	void
-	_M_initialize();
-
-	_RealType _M_alpha;
-	_RealType _M_beta;
-
-	_RealType _M_malpha, _M_a2;
-      };
-
-    public:
-      /**
-       * @brief Constructs a gamma distribution with parameters
-       * @f$ \alpha @f$ and @f$ \beta @f$.
-       */
-      explicit
-      gamma_distribution(_RealType __alpha_val = _RealType(1),
-			 _RealType __beta_val = _RealType(1))
-      : _M_param(__alpha_val, __beta_val), _M_nd()
-      { }
-
-      explicit
-      gamma_distribution(const param_type& __p)
-      : _M_param(__p), _M_nd()
-      { }
-
-      /**
-       * @brief Resets the distribution state.
-       */
-      void
-      reset()
-      { _M_nd.reset(); }
-
-      /**
-       * @brief Returns the @f$ \alpha @f$ of the distribution.
-       */
-      _RealType
-      alpha() const
-      { return _M_param.alpha(); }
-
-      /**
-       * @brief Returns the @f$ \beta @f$ of the distribution.
-       */
-      _RealType
-      beta() const
-      { return _M_param.beta(); }
-
-      /**
-       * @brief Returns the parameter set of the distribution.
-       */
-      param_type
-      param() const
-      { return _M_param; }
-
-      /**
-       * @brief Sets the parameter set of the distribution.
-       * @param __param The new parameter set of the distribution.
-       */
-      void
-      param(const param_type& __param)
-      { _M_param = __param; }
-
-      /**
-       * @brief Returns the greatest lower bound value of the distribution.
-       */
-      result_type
-      min() const
-      { return result_type(0); }
-
-      /**
-       * @brief Returns the least upper bound value of the distribution.
-       */
-      result_type
-      max() const
-      { return std::numeric_limits<result_type>::max(); }
-
-      template<typename _UniformRandomNumberGenerator>
-	result_type
-	operator()(_UniformRandomNumberGenerator& __urng)
-	{ return this->operator()(__urng, this->param()); }
-
-      template<typename _UniformRandomNumberGenerator>
-	result_type
-	operator()(_UniformRandomNumberGenerator& __urng,
-		   const param_type& __p);
-
-    private:
-      param_type _M_param;
-
-      normal_distribution<result_type> _M_nd;
-    };
-
-  /**
-   * @brief Inserts a %gamma_distribution random number distribution
-   * @p __x into the output stream @p __os.
-   *
-   * @param __os An output stream.
-   * @param __x  A %gamma_distribution random number distribution.
-   *
-   * @returns The output stream with the state of @p __x inserted or in
-   * an error state.
-   */
-  template<typename _RealType, typename _CharT, typename _Traits>
-    std::basic_ostream<_CharT, _Traits>&
-    operator<<(std::basic_ostream<_CharT, _Traits>&,
-	       const std::gamma_distribution<_RealType>&);
-
-  /**
-   * @brief Extracts a %gamma_distribution random number distribution
-   * @p __x from the input stream @p __is.
-   *
-   * @param __is An input stream.
-   * @param __x  A %gamma_distribution random number generator engine.
-   *
-   * @returns The input stream with @p __x extracted or in an error state.
-   */
-  template<typename _RealType, typename _CharT, typename _Traits>
-    std::basic_istream<_CharT, _Traits>&
-    operator>>(std::basic_istream<_CharT, _Traits>&,
-	       std::gamma_distribution<_RealType>&);
 
 
   /**
