@@ -1,3 +1,8 @@
+2009-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_pad_returns): Use emit_jump_insn_before
+	instead of emit_insn_before.
+
 2009-06-10  Ian Lance Taylor  <iant@google.com>
 
 	PR bootstrap/40408
