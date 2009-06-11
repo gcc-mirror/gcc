@@ -49,9 +49,9 @@ int main (void)
 	args[2] = NULL;
 
 	ffi_call(&cif, FFI_FN(printf), &res, args);
-	// { dg-output "7.0" { xfail i*86-*-linux-* x86_64-*-linux-* } }
+	// { dg-output "7.0" { xfail i*86-*-linux-* x86_64-*-linux-* sh*-*-linux-* } }
 	printf("res: %d\n", (int) res);
-	// { dg-output "\nres: 4" { xfail i*86-*-linux-* x86_64-*-linux-* } }
+	// { dg-output "\nres: 4" { xfail i*86-*-linux-* x86_64-*-linux-* sh*-*-linux-* } }
 
 	CHECK(ffi_prep_closure(pcl, &cif, cls_longdouble_va_fn, NULL) == FFI_OK);
 
