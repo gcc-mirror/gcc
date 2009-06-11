@@ -637,7 +637,8 @@ package body SFN_Scan is
 
       loop
          if At_EOF or else S (P) = LF or else S (P) = CR then
-            Error ("missing string quote");
+            Error --  CODEFIX
+              ("missing string quote");
 
          elsif S (P) = HT then
             Error ("tab character in string");

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2000-2006, AdaCore                     --
+--                     Copyright (C) 2000-2009, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,7 +78,7 @@
 --           --  the HTML form) and that one of them is called "client_name".
 
 --           if CGI.Argument_Count = 2
---             and the CGI.Key_Exists ("client_name")
+--             and then CGI.Key_Exists ("client_name")
 --           then
 --              Add_Client_To_Database (CGI.Value ("client_name"));
 --           end if;

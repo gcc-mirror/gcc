@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                     Copyright (C) 2000-2008, AdaCore                     *
+ *                     Copyright (C) 2000-2009, AdaCore                     *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -294,9 +294,11 @@ struct layout
 
 #elif defined (i386)
 
-#ifdef __WIN32
+#if defined (__WIN32)
 #include <windows.h>
 #define IS_BAD_PTR(ptr) (IsBadCodePtr((void *)ptr))
+#elif defined (sun)
+#define IS_BAD_PTR(ptr) ((unsigned long)ptr == -1)
 #else
 #define IS_BAD_PTR(ptr) 0
 #endif

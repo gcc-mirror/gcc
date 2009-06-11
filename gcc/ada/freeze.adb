@@ -2205,9 +2205,9 @@ package body Freeze is
                declare
                   Sz : constant Node_Id := Size_Clause (Rec);
                begin
-                  Error_Msg_NE
+                  Error_Msg_NE --  CODEFIX
                     ("size given for& too small", Sz, Rec);
-                  Error_Msg_N
+                  Error_Msg_N --  CODEFIX
                     ("\use explicit pragma Pack "
                      & "or use pragma Implicit_Packing", Sz);
                end;

@@ -875,7 +875,8 @@ package body Scng is
                end if;
             end if;
 
-            Error_Msg_S ("missing string quote");
+            Error_Msg_S --  CODEFIX
+              ("missing string quote");
          end Error_Unterminated_String;
 
          ----------------

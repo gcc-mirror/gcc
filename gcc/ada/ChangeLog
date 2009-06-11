@@ -1,3 +1,29 @@
+2009-06-11  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute, case 'access): Add missing
+	accessibiliy check on access_to_subprogram in the context of an
+	anonymous access that is not an access parameter.
+
+2009-06-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tracebak.c (i386 section): Define IS_BAD_PTR on Solaris.
+	
+2009-06-11  Quentin Ochem  <ochem@adacore.com>
+
+	* sem_warn.adb, scng.adb, sfn_scan.adb, freeze.adb: Add CODEFIX
+	comments for message handled by GPS.
+
+2009-06-11  Matthew Gingell  <gingell@adacore.com>
+
+	* adaint.c: Use fopen64 instead of fopen on platforms where we know
+	it's supported.
+
+2009-06-11  Pascal Obry  <obry@adacore.com>
+
+	* g-cgi.ads: Fix comment typo.
+
+	* g-cgi.adb: Properly decode "+" in CGI parameters as spaces.
+
 2009-06-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Subtype>: Use

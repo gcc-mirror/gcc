@@ -775,7 +775,15 @@ __gnat_fopen (char *path, char *mode, int encoding ATTRIBUTE_UNUSED)
 #elif defined (VMS)
   return decc$fopen (path, mode);
 #else
+
+#if defined (__GLIBC__) || defined (sun)
+  /* GLIBC and Solaris provides fopen64, which allows IO on files
+     larger than 2GB on systems that support it. */
+  return fopen64 (path, mode);
+#else
   return fopen (path, mode);
+#endif
+
 #endif
 }
 
