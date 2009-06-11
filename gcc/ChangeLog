@@ -1,3 +1,19 @@
+2009-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline:
+	2008-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/38222
+	* config/i386/i386.md (SWI248): New mode iterator.
+	(popcount<mode>2): Rename from popcounthi2, popcountsi2 and
+	popcounthi2 insn patterns. Macroize pattern using SWI248 mode
+	iterator.  Generate popcnt mnemonic without mode extensions
+	for Darwin x86 targets.
+	(*popcount<mode>2_cmp): Ditto.
+	(*popcountsi2_cmp_zext): Generate popcnt mnemonic without mode
+	extensions for Darwin x86 targets.
+
+
 2009-05-26  Richard Guenther  <rguenther@suse.de>
 
 	Backport from mainline
