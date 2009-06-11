@@ -4,7 +4,7 @@
    PR:			none.
    Originator:	Blake Chaffin 6/6/2007	 */
 
-/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* i*86-*-linux-* x86_64-*-linux-* } } */
+/* { dg-do run { xfail mips*-*-* arm*-*-* strongarm*-*-* xscale*-*-* i*86-*-linux-* x86_64-*-linux-* sh*-*-* } } */
 #include "ffitest.h"
 
 static void
