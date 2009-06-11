@@ -1,3 +1,10 @@
+2009-06-11  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline:
+	2009-06-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/extend.texi: Add description for __builtin_ia32_crc32di.
+
 2009-06-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/40340
