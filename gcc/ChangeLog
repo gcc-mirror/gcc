@@ -1,5 +1,9 @@
 2009-06-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (min_insn_size): Use get_attr_length
+	for normal insns other than TYPE_MULTI, TYPE_OTHER and TYPE_FCMP.
+	For __asm return 0.
+
 	* config/i386/i386.c (ix86_pad_returns): Use emit_jump_insn_before
 	instead of emit_insn_before.
 

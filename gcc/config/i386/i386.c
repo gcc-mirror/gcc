@@ -27571,7 +27571,7 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 static int
 min_insn_size (rtx insn)
 {
-  int l = 0;
+  int l = 0, len;
 
   if (!INSN_P (insn) || !active_insn_p (insn))
     return 0;
@@ -27580,7 +27580,7 @@ min_insn_size (rtx insn)
   if (GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
       && XINT (PATTERN (insn), 1) == UNSPECV_ALIGN)
     return 0;
-  if (JUMP_TABLE_DATA_P(insn))
+  if (JUMP_TABLE_DATA_P (insn))
     return 0;
 
   /* Important case - calls are always 5 bytes.
@@ -27589,14 +27589,31 @@ min_insn_size (rtx insn)
       && symbolic_reference_mentioned_p (PATTERN (insn))
       && !SIBLING_CALL_P (insn))
     return 5;
-  if (get_attr_length (insn) <= 1)
+  len = get_attr_length (insn);
+  if (len <= 1)
     return 1;
 
-  /* For normal instructions we may rely on the sizes of addresses
-     and the presence of symbol to require 4 bytes of encoding.
-     This is not the case for jumps where references are PC relative.  */
+  /* For normal instructions we rely on get_attr_length being exact,
+     with a few exceptions.  */
   if (!JUMP_P (insn))
     {
+      enum attr_type type = get_attr_type (insn);
+
+      switch (type)
+	{
+	case TYPE_MULTI:
+	  if (GET_CODE (PATTERN (insn)) == ASM_INPUT
+	      || asm_noperands (PATTERN (insn)) >= 0)
+	    return 0;
+	  break;
+	case TYPE_OTHER:
+	case TYPE_FCMP:
+	  break;
+	default:
+	  /* Otherwise trust get_attr_length.  */
+	  return len;
+	}
+
       l = get_attr_length_address (insn);
       if (l < 4 && symbolic_reference_mentioned_p (PATTERN (insn)))
 	l = 4;
