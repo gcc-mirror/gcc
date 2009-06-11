@@ -571,4 +571,6 @@ do									      \
     builtin_define_std ("MOXIE");		\
   }
 
+#define HAS_LONG_UNCOND_BRANCH true
+
 #endif /* GCC_MOXIE_H */
