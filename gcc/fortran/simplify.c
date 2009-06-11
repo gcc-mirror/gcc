@@ -2626,6 +2626,54 @@ gfc_simplify_ior (gfc_expr *x, gfc_expr *y)
 
 
 gfc_expr *
+gfc_simplify_is_iostat_end (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
+				&x->where);
+  result->value.logical = (mpz_cmp_si (x->value.integer, LIBERROR_END) == 0);
+
+  return result;
+}
+
+
+gfc_expr *
+gfc_simplify_is_iostat_eor (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
+				&x->where);
+  result->value.logical = (mpz_cmp_si (x->value.integer, LIBERROR_EOR) == 0);
+
+  return result;
+}
+
+
+gfc_expr *
+gfc_simplify_isnan (gfc_expr *x)
+{
+  gfc_expr *result;
+
+  if (x->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  result = gfc_constant_result (BT_LOGICAL, gfc_default_logical_kind,
+				&x->where);
+  result->value.logical = mpfr_nan_p (x->value.real);
+
+  return result;
+}
+
+
+gfc_expr *
 gfc_simplify_ishft (gfc_expr *e, gfc_expr *s)
 {
   gfc_expr *result;
