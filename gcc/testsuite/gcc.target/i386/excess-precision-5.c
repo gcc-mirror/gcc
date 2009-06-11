@@ -1,8 +1,7 @@
 /* Excess precision tests.  Verify excess precision doesn't affect
    actual types.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
-/* { dg-options "-fexcess-precision=standard" } */
+/* { dg-options "-mfpmath=387 -fexcess-precision=standard" } */
 
 float f;
 double d;

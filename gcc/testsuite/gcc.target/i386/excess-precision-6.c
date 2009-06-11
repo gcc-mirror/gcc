@@ -1,8 +1,7 @@
 /* Excess precision tests.  Make sure sqrt is not inlined for float or
    double.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -fno-math-errno -fexcess-precision=standard" } */
+/* { dg-options "-mfpmath=387 -O2 -fno-math-errno -fexcess-precision=standard" } */
 
 float f;
 double d;

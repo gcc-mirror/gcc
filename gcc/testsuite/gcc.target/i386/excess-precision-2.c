@@ -1,7 +1,6 @@
 /* Excess precision tests.  Test excess precision of constants.  */
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -fexcess-precision=standard" } */
+/* { dg-options "-O2 -mfpmath=387 -fexcess-precision=standard" } */
 
 #include <float.h>
 

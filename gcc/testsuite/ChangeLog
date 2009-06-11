@@ -1,5 +1,16 @@
 2009-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
+	PR testsuite/39831
+	* gcc.target/i386/excess-precision-1.c: Use -mfpmath=387, and
+	remove ilp32 requirement.
+	* gcc.target/i386/excess-precision-2.c: Likewise.
+	* gcc.target/i386/excess-precision-3.c: Likewise.
+	* gcc.target/i386/excess-precision-4.c: Likewise.
+	* gcc.target/i386/excess-precision-5.c: Likewise.
+	* gcc.target/i386/excess-precision-6.c: Likewise.
+
+2009-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
 	PR fortran/38718
 	* gfortran.dg/is_iostat_end_eor_2.f90: New test.
 	* gfortran.dg/nan_5.f90: New test.

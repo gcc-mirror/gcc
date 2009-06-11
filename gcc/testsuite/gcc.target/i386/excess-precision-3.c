@@ -1,8 +1,7 @@
 /* Excess precision tests.  Test excess precision is removed when
    necessary.  */
 /* { dg-do run } */
-/* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -fexcess-precision=standard" } */
+/* { dg-options "-O2 -mfpmath=387 -fexcess-precision=standard" } */
 
 #include <float.h>
 #include <stdarg.h>
