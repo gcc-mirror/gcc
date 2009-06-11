@@ -1654,18 +1654,16 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	  gfc_char_t *s;
 	  int start, end;
 
+	  start = 0;
 	  if (p->ref && p->ref->u.ss.start)
 	    {
 	      gfc_extract_int (p->ref->u.ss.start, &start);
 	      start--;  /* Convert from one-based to zero-based.  */
 	    }
-	  else
-	    start = 0;
 
+	  end = p->value.character.length;
 	  if (p->ref && p->ref->u.ss.end)
 	    gfc_extract_int (p->ref->u.ss.end, &end);
-	  else
-	    end = p->value.character.length;
 
 	  s = gfc_get_wide_string (end - start + 2);
 	  memcpy (s, p->value.character.string + start,

@@ -95,7 +95,7 @@ gfc_free_interface (gfc_interface *intr)
    minus respectively, leaving the rest unchanged.  */
 
 static gfc_intrinsic_op
-fold_unary (gfc_intrinsic_op op)
+fold_unary_intrinsic (gfc_intrinsic_op op)
 {
   switch (op)
     {
@@ -136,10 +136,11 @@ gfc_match_generic_spec (interface_type *type,
   if (gfc_match (" operator ( %o )", &i) == MATCH_YES)
     {				/* Operator i/f */
       *type = INTERFACE_INTRINSIC_OP;
-      *op = fold_unary (i);
+      *op = fold_unary_intrinsic (i);
       return MATCH_YES;
     }
 
+  *op = INTRINSIC_NONE;
   if (gfc_match (" operator ( ") == MATCH_YES)
     {
       m = gfc_match_defined_op_name (buffer, 1);
@@ -2482,7 +2483,7 @@ gfc_extend_expr (gfc_expr *e)
       actual->next->expr = e->value.op.op2;
     }
 
-  i = fold_unary (e->value.op.op);
+  i = fold_unary_intrinsic (e->value.op.op);
 
   if (i == INTRINSIC_USER)
     {

@@ -1,3 +1,13 @@
+2009-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* interface.c (fold_unary): Rename to...
+	(fold_unary_intrinsic): ... this.
+	(gfc_extend_expr): Adjust caller.
+	(gfc_match_generic_spec): Likewise.  Initialize *op to INTRINSIC_NONE
+	to avoid warnings.
+	* expr.c (gfc_simplify_expr): Initialize start and end before calling
+	gfc_extract_int.
+
 2009-06-10  Dave Korn  <dave.korn.cygwin@gmail.com>
 
 	* trans-decl.c (create_main_function):  Don't build main decl twice.
