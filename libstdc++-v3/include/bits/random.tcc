@@ -854,6 +854,20 @@ namespace std
       return __is;
     }
 
+
+  template<typename _IntType>
+    template<typename _UniformRandomNumberGenerator>
+      typename negative_binomial_distribution<_IntType>::result_type
+      negative_binomial_distribution<_IntType>::
+      operator()(_UniformRandomNumberGenerator& __urng)
+      {
+	const double __y = _M_gd(__urng);
+
+	// XXX Is the constructor too slow?
+	std::poisson_distribution<result_type> __poisson(__y);
+	return __poisson(__urng);
+      }
+
   template<typename _IntType>
     template<typename _UniformRandomNumberGenerator>
       typename negative_binomial_distribution<_IntType>::result_type
@@ -861,11 +875,13 @@ namespace std
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __p)
       {
-	gamma_distribution<> __gamma(__p.k(), 1.0);
-	double __x = __gamma(__urng);
+	typedef typename std::gamma_distribution<result_type>::param_type
+	  param_type;
+	
+	const double __y =
+	  _M_gd(__urng, param_type(__p.k(), __p.p() / (1.0 - __p.p())));
 
-	poisson_distribution<result_type> __poisson(__x * __p.p()
-						    / (1.0 - __p.p()));
+	std::poisson_distribution<result_type> __poisson(__y);
 	return __poisson(__urng);
       }
 
@@ -885,7 +901,8 @@ namespace std
       __os.fill(__os.widen(' '));
       __os.precision(std::numeric_limits<double>::digits10 + 1);
 
-      __os << __x.k() << __space << __x.p();
+      __os << __x.k() << __space << __x.p()
+	   << __space << __x._M_gd;
 
       __os.flags(__flags);
       __os.fill(__fill);
@@ -906,7 +923,7 @@ namespace std
 
       _IntType __k;
       double __p;
-      __is >> __k >> __p;
+      __is >> __k >> __p >> __x._M_gd;
       __x.param(typename negative_binomial_distribution<_IntType>::
 		param_type(__k, __p));
 
@@ -1538,17 +1555,6 @@ namespace std
     }
 
 
-  template<typename _RealType>
-    template<typename _UniformRandomNumberGenerator>
-      typename chi_squared_distribution<_RealType>::result_type
-      chi_squared_distribution<_RealType>::
-      operator()(_UniformRandomNumberGenerator& __urng,
-		 const param_type& __p)
-      {
-	gamma_distribution<_RealType> __gamma(__p.n() / 2, 1.0);
-	return 2 * __gamma(__urng);
-      }
-
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
@@ -1565,7 +1571,7 @@ namespace std
       __os.fill(__space);
       __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
 
-      __os << __x.n();
+      __os << __x.n() << __space << __x._M_gd;
 
       __os.flags(__flags);
       __os.fill(__fill);
@@ -1585,7 +1591,7 @@ namespace std
       __is.flags(__ios_base::dec | __ios_base::skipws);
 
       _RealType __n;
-      __is >> __n;
+      __is >> __n >> __x._M_gd;
       __x.param(typename chi_squared_distribution<_RealType>::
 		param_type(__n));
 
@@ -1657,23 +1663,6 @@ namespace std
     }
 
 
-  template<typename _RealType>
-    template<typename _UniformRandomNumberGenerator>
-      typename fisher_f_distribution<_RealType>::result_type
-      fisher_f_distribution<_RealType>::
-      operator()(_UniformRandomNumberGenerator& __urng,
-		 const param_type& __p)
-      {
-	gamma_distribution<_RealType> __gamma;
-	_RealType __ym = __gamma(__urng,
-	 typename gamma_distribution<_RealType>::param_type(__p.m() / 2, 2));
-
-	_RealType __yn = __gamma(__urng,
-	 typename gamma_distribution<_RealType>::param_type(__p.n() / 2, 2));
-
-	return (__ym * __p.n()) / (__yn * __p.m());
-      }
-
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
     operator<<(std::basic_ostream<_CharT, _Traits>& __os,
@@ -1690,7 +1679,8 @@ namespace std
       __os.fill(__space);
       __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
 
-      __os << __x.m() << __space << __x.n();
+      __os << __x.m() << __space << __x.n()
+	   << __space << __x._M_gd_x << __space << __x._M_gd_y;
 
       __os.flags(__flags);
       __os.fill(__fill);
@@ -1710,7 +1700,7 @@ namespace std
       __is.flags(__ios_base::dec | __ios_base::skipws);
 
       _RealType __m, __n;
-      __is >> __m >> __n;
+      __is >> __m >> __n >> __x._M_gd_x >> __x._M_gd_y;
       __x.param(typename fisher_f_distribution<_RealType>::
 		param_type(__m, __n));
 
@@ -1718,43 +1708,6 @@ namespace std
       return __is;
     }
 
-
-  template<typename _RealType>
-    template<typename _UniformRandomNumberGenerator>
-      typename student_t_distribution<_RealType>::result_type
-      student_t_distribution<_RealType>::
-      operator()(_UniformRandomNumberGenerator& __urng,
-		 const param_type& __param)
-      {
-	if (__param.n() <= 2.0)
-	  {
-	    _RealType __y1 = _M_nd(__urng);
-	    chi_squared_distribution<_RealType> __chisq(__param.n());
-	    _RealType __y2 = __chisq(__urng);
-
-	    return __y1 / std::sqrt(__y2 / __param.n());
-	  }
-	else
-	  {
-	    _RealType __y1, __y2, __z;
-	    exponential_distribution<_RealType>
-	      __exponential(1.0 / (__param.n() / 2.0 - 1.0));
-
-	    do
-	      {
-		__y1 = _M_nd(__urng);
-		__y2 = __exponential(__urng);
-
-		__z = __y1 * __y1 / (__param.n() - 2.0);
-	      }
-	    while (1.0 - __z < 0.0 || std::exp(-__y2 - __z) > (1.0 - __z));
-
-	    // Note that there is a typo in Knuth's formula, the line below
-	    // is taken from the original paper of Marsaglia, Mathematics of
-	    // Computation, 34 (1980), p 234-256
-	    return __y1 / std::sqrt((1.0 - 2.0 / __param.n()) * (1.0 - __z));
-	  }
-      }
 
   template<typename _RealType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
@@ -1772,7 +1725,7 @@ namespace std
       __os.fill(__space);
       __os.precision(std::numeric_limits<_RealType>::digits10 + 1);
 
-      __os << __x.n() << __space << __x._M_nd;
+      __os << __x.n() << __space << __x._M_nd << __space << __x._M_gd;
 
       __os.flags(__flags);
       __os.fill(__fill);
@@ -1792,7 +1745,7 @@ namespace std
       __is.flags(__ios_base::dec | __ios_base::skipws);
 
       _RealType __n;
-      __is >> __n >> __x._M_nd;
+      __is >> __n >> __x._M_nd >> __x._M_gd;
       __x.param(typename student_t_distribution<_RealType>::param_type(__n));
 
       __is.flags(__flags);
