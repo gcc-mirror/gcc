@@ -1,3 +1,8 @@
+2009-06-11  Richard Henderson  <rth@redhat.com>
+
+	* gcc-interface/misc.c (gnat_handle_option): Rename
+	OPT_gdwarf_ to OPT_gdwarfplus.
+
 2009-06-11  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Resolve_Attribute, case 'access): Add missing
@@ -105,7 +110,7 @@
 	* gcc-interface/Make-lang.in: Fix formatting.
 
 2009-06-01  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 	
 	* gcc-interface/utils.c (convert) <CONSTRUCTOR case>: When converting
 	to the packable version of the type, clear TREE_STATIC/TREE_CONSTANT
@@ -113,7 +118,7 @@
 	as a static constant any more.
 
 2009-06-01  Olivier Hainque  <hainque@adacore.com>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 	
 	* gcc-interface/utils2.c (gnat_build_constructor): Factor
 	out code.  Use initializer_constant_valid_for_bitfield_p and
@@ -293,7 +298,7 @@
 	GPS.
 
 	* sinput.ads, sinput.adb (Expr_First_Char): New function
-        (Expr_Last_Char): New function
+	(Expr_Last_Char): New function
 
 2009-05-06  Sergey Rybin  <rybin@adacore.com>
 
@@ -1313,9 +1318,9 @@
 
 	* prj-proc.adb, prj.adb, prj.ads, prj-nmsc.adb, prj-env.adb
 	(Source_Iterator): new type.
-        This removes the need for having the sources on three different
-        lists at the project tree, project and language level. They are now
-        on a single list.
+	This removes the need for having the sources on three different
+	lists at the project tree, project and language level. They are now
+	on a single list.
 
 2009-04-24  Emmanuel Briot  <briot@adacore.com>
 
@@ -1344,7 +1349,7 @@
 	efficient.
 
 2009-04-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
-            Thomas Quinot  <quinot@adacore.com>
+	    Thomas Quinot  <quinot@adacore.com>
 
 	* fe.h (Set_Identifier_Casing): Add const to second parameter.
 	* gcc-interface/misc.c (internal_error_function): Make copy of return
@@ -5522,17 +5527,17 @@
 
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 
-        * checks.adb:
-        (Insert_Valid_Check): Avoid unnecessary generation of junk declaration
-        when no invalid values exist, Avoid duplicate read of atomic variable.
+	* checks.adb:
+	(Insert_Valid_Check): Avoid unnecessary generation of junk declaration
+	when no invalid values exist, Avoid duplicate read of atomic variable.
 
-        * cstand.adb (Build_Signed_Integer_Type): Set Is_Known_Valid
-        (Standard_Unsigned): Set Is_Known_Valid
+	* cstand.adb (Build_Signed_Integer_Type): Set Is_Known_Valid
+	(Standard_Unsigned): Set Is_Known_Valid
 
-        * sem_ch3.adb (Analyze_Subtype_Declaration): Copy Is_Known_Valid on
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Copy Is_Known_Valid on
 	subtype declaration if no constraint.
-        (Set_Modular_Size): Set Is_Known_Valid if appropriate
-        (Build_Derived_Numeric_Type): Copy Is_Known_Valid if no constraint
+	(Set_Modular_Size): Set Is_Known_Valid if appropriate
+	(Build_Derived_Numeric_Type): Copy Is_Known_Valid if no constraint
 
 2009-04-09  Robert Dewar  <dewar@adacore.com>
 

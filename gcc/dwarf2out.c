@@ -317,8 +317,6 @@ dw_fde_node;
 #define DWARF_INITIAL_LENGTH_SIZE (DWARF_OFFSET_SIZE == 4 ? 4 : 12)
 #endif
 
-#define DWARF_VERSION 2
-
 /* Round SIZE up to the nearest BOUNDARY.  */
 #define DWARF_ROUND(SIZE,BOUNDARY) \
   ((((SIZE) + (BOUNDARY) - 1) / (BOUNDARY)) * (BOUNDARY))
@@ -749,50 +747,51 @@ add_fde_cfi (const char *label, dw_cfi_ref cfi)
 
 	  gcc_assert (fde != NULL);
 
-	  /* We still have to add the cfi to the list so that
-	     lookup_cfa works later on.  When -g2 and above we
-	     even need to force emitting of CFI labels and
-	     add to list a DW_CFA_set_loc for convert_cfa_to_fb_loc_list
-	     purposes.  */
-	  switch (cfi->dw_cfi_opc)
+	  /* We still have to add the cfi to the list so that lookup_cfa
+	     works later on.  When -g2 and above we even need to force
+	     emitting of CFI labels and add to list a DW_CFA_set_loc for
+	     convert_cfa_to_fb_loc_list purposes.  If we're generating
+	     DWARF3 output we use DW_OP_call_frame_cfa and so don't use
+	     convert_cfa_to_fb_loc_list.  */
+	  if (dwarf_version == 2
+	      && debug_info_level > DINFO_LEVEL_TERSE
+	      && (write_symbols == DWARF2_DEBUG
+		  || write_symbols == VMS_AND_DWARF2_DEBUG))
 	    {
-	    case DW_CFA_def_cfa_offset:
-	    case DW_CFA_def_cfa_offset_sf:
-	    case DW_CFA_def_cfa_register:
-	    case DW_CFA_def_cfa:
-	    case DW_CFA_def_cfa_sf:
-	    case DW_CFA_def_cfa_expression:
-	    case DW_CFA_restore_state:
-	      if (write_symbols != DWARF2_DEBUG
-		  && write_symbols != VMS_AND_DWARF2_DEBUG)
-		break;
-	      if (debug_info_level <= DINFO_LEVEL_TERSE)
-		break;
-
-	      if (*label == 0 || strcmp (label, "<do not output>") == 0)
-		label = dwarf2out_cfi_label (true);
-
-	      if (fde->dw_fde_current_label == NULL
-		  || strcmp (label, fde->dw_fde_current_label) != 0)
+	      switch (cfi->dw_cfi_opc)
 		{
-		  dw_cfi_ref xcfi;
+		case DW_CFA_def_cfa_offset:
+		case DW_CFA_def_cfa_offset_sf:
+		case DW_CFA_def_cfa_register:
+		case DW_CFA_def_cfa:
+		case DW_CFA_def_cfa_sf:
+		case DW_CFA_def_cfa_expression:
+		case DW_CFA_restore_state:
+		  if (*label == 0 || strcmp (label, "<do not output>") == 0)
+		    label = dwarf2out_cfi_label (true);
 
-		  label = xstrdup (label);
+		  if (fde->dw_fde_current_label == NULL
+		      || strcmp (label, fde->dw_fde_current_label) != 0)
+		    {
+		      dw_cfi_ref xcfi;
 
-		  /* Set the location counter to the new label.  */
-		  xcfi = new_cfi ();
-		  /* It doesn't metter whether DW_CFA_set_loc
-		     or DW_CFA_advance_loc4 is added here, those aren't
-		     emitted into assembly, only looked up by
-		     convert_cfa_to_fb_loc_list.  */
-		  xcfi->dw_cfi_opc = DW_CFA_set_loc;
-		  xcfi->dw_cfi_oprnd1.dw_cfi_addr = label;
-		  add_cfi (&fde->dw_fde_cfi, xcfi);
-		  fde->dw_fde_current_label = label;
-		}
-	      break;
-	    default:
-	      break;
+		      label = xstrdup (label);
+
+		      /* Set the location counter to the new label.  */
+		      xcfi = new_cfi ();
+		      /* It doesn't metter whether DW_CFA_set_loc
+		         or DW_CFA_advance_loc4 is added here, those aren't
+		         emitted into assembly, only looked up by
+		         convert_cfa_to_fb_loc_list.  */
+		      xcfi->dw_cfi_opc = DW_CFA_set_loc;
+		      xcfi->dw_cfi_oprnd1.dw_cfi_addr = label;
+		      add_cfi (&fde->dw_fde_cfi, xcfi);
+		      fde->dw_fde_current_label = label;
+		    }
+		  break;
+		default:
+		  break;
+	        }
 	    }
 
 	  output_cfi_directive (cfi);
@@ -3197,6 +3196,7 @@ output_call_frame_info (int for_eh)
   int per_encoding = DW_EH_PE_absptr;
   int lsda_encoding = DW_EH_PE_absptr;
   int return_reg;
+  int dw_cie_version;
 
   /* Don't emit a CIE if there won't be any FDEs.  */
   if (fde_table_in_use == 0)
@@ -3277,7 +3277,14 @@ output_call_frame_info (int for_eh)
 		       (for_eh ? 0 : DWARF_CIE_ID),
 		       "CIE Identifier Tag");
 
-  dw2_asm_output_data (1, DW_CIE_VERSION, "CIE Version");
+  /* Use the CIE version 3 for DWARF3; allow DWARF2 to continue to
+     use CIE version 1, unless that would produce incorrect results
+     due to overflowing the return register column.  */
+  return_reg = DWARF2_FRAME_REG_OUT (DWARF_FRAME_RETURN_COLUMN, for_eh);
+  dw_cie_version = 1;
+  if (return_reg >= 256 || dwarf_version > 2)
+    dw_cie_version = 3;
+  dw2_asm_output_data (1, dw_cie_version, "CIE Version");
 
   augmentation[0] = 0;
   augmentation_size = 0;
@@ -3349,8 +3356,7 @@ output_call_frame_info (int for_eh)
   dw2_asm_output_data_sleb128 (DWARF_CIE_DATA_ALIGNMENT,
 			       "CIE Data Alignment Factor");
 
-  return_reg = DWARF2_FRAME_REG_OUT (DWARF_FRAME_RETURN_COLUMN, for_eh);
-  if (DW_CIE_VERSION == 1)
+  if (dw_cie_version == 1)
     dw2_asm_output_data (1, return_reg, "CIE RA Column");
   else
     dw2_asm_output_data_uleb128 (return_reg, "CIE RA Column");
@@ -4187,6 +4193,7 @@ dwarf_stack_op_name (unsigned int op)
       return "DW_OP_xderef_size";
     case DW_OP_nop:
       return "DW_OP_nop";
+
     case DW_OP_push_object_address:
       return "DW_OP_push_object_address";
     case DW_OP_call2:
@@ -4195,10 +4202,20 @@ dwarf_stack_op_name (unsigned int op)
       return "DW_OP_call4";
     case DW_OP_call_ref:
       return "DW_OP_call_ref";
+    case DW_OP_form_tls_address:
+      return "DW_OP_form_tls_address";
+    case DW_OP_call_frame_cfa:
+      return "DW_OP_call_frame_cfa";
+    case DW_OP_bit_piece:
+      return "DW_OP_bit_piece";
+
     case DW_OP_GNU_push_tls_address:
       return "DW_OP_GNU_push_tls_address";
     case DW_OP_GNU_uninit:
       return "DW_OP_GNU_uninit";
+    case DW_OP_GNU_encoded_addr:
+      return "DW_OP_GNU_encoded_addr";
+
     default:
       return "OP_<unknown>";
     }
@@ -5616,6 +5633,9 @@ static int maybe_emit_file (struct dwarf_file_data *fd);
 #endif
 #ifndef DEBUG_PUBNAMES_SECTION
 #define DEBUG_PUBNAMES_SECTION	".debug_pubnames"
+#endif
+#ifndef DEBUG_PUBTYPES_SECTION
+#define DEBUG_PUBTYPES_SECTION	".debug_pubtypes"
 #endif
 #ifndef DEBUG_STR_SECTION
 #define DEBUG_STR_SECTION	".debug_str"
@@ -7869,7 +7889,6 @@ build_abbrev_table (dw_die_ref die)
 	&& AT_ref (a)->die_mark == 0)
       {
 	gcc_assert (AT_ref (a)->die_symbol);
-
 	set_AT_ref_external (a, 1);
       }
 
@@ -7997,7 +8016,9 @@ size_of_die (dw_die_ref die)
 	  size += 1;
 	  break;
 	case dw_val_class_die_ref:
-	  if (AT_ref_external (a))
+	  /* In DWARF2, DW_FORM_ref_addr is sized by target address length,
+	     whereas in DWARF3 it's always sized as an offset.  */
+	  if (AT_ref_external (a) && dwarf_version == 2)
 	    size += DWARF2_ADDR_SIZE;
 	  else
 	    size += DWARF_OFFSET_SIZE;
@@ -8526,10 +8547,17 @@ output_die (dw_die_ref die)
 	  if (AT_ref_external (a))
 	    {
 	      char *sym = AT_ref (a)->die_symbol;
+	      int size;
 
 	      gcc_assert (sym);
-	      dw2_asm_output_offset (DWARF2_ADDR_SIZE, sym, debug_info_section,
-				     "%s", name);
+
+	      /* In DWARF2, DW_FORM_ref_addr is sized by target address
+		 length, whereas in DWARF3 it's always sized as an offset.  */
+	      if (dwarf_version == 2)
+		size = DWARF2_ADDR_SIZE;
+	      else
+		size = DWARF_OFFSET_SIZE;
+	      dw2_asm_output_offset (size, sym, debug_info_section, "%s", name);
 	    }
 	  else
 	    {
@@ -8608,7 +8636,7 @@ output_compilation_unit_header (void)
   dw2_asm_output_data (DWARF_OFFSET_SIZE,
 		       next_die_offset - DWARF_INITIAL_LENGTH_SIZE,
 		       "Length of Compilation Unit Info");
-  dw2_asm_output_data (2, DWARF_VERSION, "DWARF version number");
+  dw2_asm_output_data (2, dwarf_version, "DWARF version number");
   dw2_asm_output_offset (DWARF_OFFSET_SIZE, abbrev_section_label,
 			 debug_abbrev_section,
 			 "Offset Into Abbrev. Section");
@@ -8689,7 +8717,6 @@ add_pubname_string (const char *str, dw_die_ref die)
 static void
 add_pubname (tree decl, dw_die_ref die)
 {
-
   if (TREE_PUBLIC (decl))
     add_pubname_string (dwarf2_name (decl, 1), die);
 }
@@ -8749,7 +8776,8 @@ output_pubnames (VEC (pubname_entry, gc) * names)
   else
     dw2_asm_output_data (DWARF_OFFSET_SIZE, pubnames_length,
 			 "Length of Public Type Names Info");
-  dw2_asm_output_data (2, DWARF_VERSION, "DWARF Version");
+  /* Version number for pubnames/pubtypes is still 2, even in DWARF3.  */
+  dw2_asm_output_data (2, 2, "DWARF Version");
   dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_info_section_label,
 			 debug_info_section,
 			 "Offset of Compilation Unit Info");
@@ -8811,7 +8839,8 @@ output_aranges (void)
       "Initial length escape value indicating 64-bit DWARF extension");
   dw2_asm_output_data (DWARF_OFFSET_SIZE, aranges_length,
 		       "Length of Address Ranges Info");
-  dw2_asm_output_data (2, DWARF_VERSION, "DWARF Version");
+  /* Version number for aranges is still 2, even in DWARF3.  */
+  dw2_asm_output_data (2, 2, "DWARF Version");
   dw2_asm_output_offset (DWARF_OFFSET_SIZE, debug_info_section_label,
 			 debug_info_section,
 			 "Offset of Compilation Unit Info");
@@ -9356,7 +9385,7 @@ output_line_info (void)
 			"Length of Source Line Info");
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
-  dw2_asm_output_data (2, DWARF_VERSION, "DWARF Version");
+  dw2_asm_output_data (2, dwarf_version, "DWARF Version");
   dw2_asm_output_delta (DWARF_OFFSET_SIZE, p2, p1, "Prolog Length");
   ASM_OUTPUT_LABEL (asm_out_file, p1);
 
@@ -14079,17 +14108,19 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	 (3) We can at least reuse the code inspection and interpretation
 	 code that determines the CFA position at various points in the
 	 function.  */
-      /* ??? Use some command-line or configury switch to enable the use
-	 of dwarf3 DW_OP_call_frame_cfa.  At present there are no dwarf
-	 consumers that understand it; fall back to "pure" dwarf2 and
-	 convert the CFA data into a location list.  */
-      {
-	dw_loc_list_ref list = convert_cfa_to_fb_loc_list (cfa_fb_offset);
-	if (list->dw_loc_next)
-	  add_AT_loc_list (subr_die, DW_AT_frame_base, list);
-	else
-	  add_AT_loc (subr_die, DW_AT_frame_base, list->expr);
-      }
+      if (dwarf_version >= 3)
+	{
+	  dw_loc_descr_ref op = new_loc_descr (DW_OP_call_frame_cfa, 0, 0);
+	  add_AT_loc (subr_die, DW_AT_frame_base, op);
+	}
+      else
+	{
+	  dw_loc_list_ref list = convert_cfa_to_fb_loc_list (cfa_fb_offset);
+	  if (list->dw_loc_next)
+	    add_AT_loc_list (subr_die, DW_AT_frame_base, list);
+	  else
+	    add_AT_loc (subr_die, DW_AT_frame_base, list->expr);
+	}
 
       /* Compute a displacement from the "steady-state frame pointer" to
 	 the CFA.  The former is what all stack slots and argument slots
@@ -16457,10 +16488,8 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 				   SECTION_DEBUG, NULL);
   debug_pubnames_section = get_section (DEBUG_PUBNAMES_SECTION,
 					SECTION_DEBUG, NULL);
-#ifdef DEBUG_PUBTYPES_SECTION
   debug_pubtypes_section = get_section (DEBUG_PUBTYPES_SECTION,
 					SECTION_DEBUG, NULL);
-#endif
   debug_str_section = get_section (DEBUG_STR_SECTION,
 				   DEBUG_STR_SECTION_FLAGS, NULL);
   debug_ranges_section = get_section (DEBUG_RANGES_SECTION,
@@ -17092,14 +17121,15 @@ dwarf2out_finish (const char *filename)
       output_pubnames (pubname_table);
     }
 
-#ifdef DEBUG_PUBTYPES_SECTION
   /* Output public types table if necessary.  */
+  /* ??? Only defined by DWARF3, but emitted by Darwin for DWARF2.
+     It shouldn't hurt to emit it always, since pure DWARF2 consumers
+     simply won't look for the section.  */
   if (!VEC_empty (pubname_entry, pubtype_table))
     {
       switch_to_section (debug_pubtypes_section);
       output_pubnames (pubtype_table);
     }
-#endif
 
   /* Output the address range information.  We only put functions in the arange
      table, so don't write it out if we don't have any.  */
