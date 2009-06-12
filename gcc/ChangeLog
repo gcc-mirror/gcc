@@ -1,3 +1,9 @@
+2009-06-12  Ian Lance Taylor  <iant@google.com>
+
+	PR bootstrap/40430
+	* collect2.c (main): Use CONST_CAST2 in code inside #if
+	LINK_ELIMINATE_DUPLICATE_LDIRECTORIES.
+
 2009-06-12  Joey Ye  <joey.ye@intel.com>
 
 	PR middle-end/39146

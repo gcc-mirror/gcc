@@ -1167,7 +1167,9 @@ main (int argc, char **argv)
 #else
 #if LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
 	    case 'L':
-	      if (is_in_args (arg, (const char **) ld1_argv, ld1-1))
+	      if (is_in_args (arg,
+			      CONST_CAST2 (const char **, char **, ld1_argv),
+			      ld1 - 1))
 		--ld1;
 	      break;
 #endif /* LINK_ELIMINATE_DUPLICATE_LDIRECTORIES */
