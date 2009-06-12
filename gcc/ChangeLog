@@ -1,3 +1,9 @@
+2009-06-12  Andrew Pinski  <andrew_pinski@playstation.sony.com>
+
+	PR tree-opt/38865
+	* tree-ssa-sccvn.c (visit_reference_op_load): If vn_reference_lookup
+	is returns NULL and OP is a VCE, look through the VCE.
+
 2009-06-12  Ian Lance Taylor  <iant@google.com>
 
 	PR bootstrap/40430

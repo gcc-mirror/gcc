@@ -1976,6 +1976,12 @@ visit_reference_op_load (tree lhs, tree op, gimple stmt)
   bool changed = false;
   tree result = vn_reference_lookup (op, gimple_vuse (stmt), true, NULL);
 
+  /* If we have a VCE, try looking up its operand as it might be stored in
+     a different type.  */
+  if (!result && TREE_CODE (op) == VIEW_CONVERT_EXPR)
+    result = vn_reference_lookup (TREE_OPERAND (op, 0), gimple_vuse (stmt),
+    				  true, NULL);
+
   /* We handle type-punning through unions by value-numbering based
      on offset and size of the access.  Be prepared to handle a
      type-mismatch here via creating a VIEW_CONVERT_EXPR.  */
