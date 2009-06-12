@@ -522,6 +522,25 @@ init_return_column_size (enum machine_mode mode, rtx mem, unsigned int c)
   emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
 }
 
+/* Divide OFF by DWARF_CIE_DATA_ALIGNMENT, asserting no remainder.  */
+
+static HOST_WIDE_INT
+div_data_align (HOST_WIDE_INT off)
+{
+  HOST_WIDE_INT r = off / DWARF_CIE_DATA_ALIGNMENT;
+  gcc_assert (r * DWARF_CIE_DATA_ALIGNMENT == off);
+  return r;
+}
+
+/* Return true if we need a signed version of a given opcode
+   (e.g. DW_CFA_offset_extended_sf vs DW_CFA_offset_extended).  */
+
+static bool
+need_data_align_sf_opcode (HOST_WIDE_INT off)
+{
+  return DWARF_CIE_DATA_ALIGNMENT < 0 ? off > 0 : off < 0;
+}
+
 /* Generate code to initialize the register size table.  */
 
 void
@@ -1000,7 +1019,7 @@ def_cfa_1 (const char *label, dw_cfa_location *loc_p)
 	 the specified offset.  The data factoring for DW_CFA_def_cfa_sf
 	 happens in output_cfi, or in the assembler via the .cfi_def_cfa
 	 directive.  */
-      if (loc.offset < 0)
+      if (need_data_align_sf_opcode (loc.offset))
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_sf;
       else
 	cfi->dw_cfi_opc = DW_CFA_def_cfa;
@@ -1048,7 +1067,7 @@ reg_save (const char *label, unsigned int reg, unsigned int sreg, HOST_WIDE_INT 
     }
   else if (sreg == INVALID_REGNUM)
     {
-      if (offset < 0)
+      if (need_data_align_sf_opcode (offset))
 	cfi->dw_cfi_opc = DW_CFA_offset_extended_sf;
       else if (reg & ~0x3f)
 	cfi->dw_cfi_opc = DW_CFA_offset_extended;
@@ -2924,16 +2943,6 @@ switch_to_eh_frame_section (void)
 				       IDENTIFIER_POINTER (label));
       ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
     }
-}
-
-/* Divide OFF by DWARF_CIE_DATA_ALIGNMENT, asserting no remainder.  */
-
-static HOST_WIDE_INT
-div_data_align (HOST_WIDE_INT off)
-{
-  HOST_WIDE_INT r = off / DWARF_CIE_DATA_ALIGNMENT;
-  gcc_assert (r * DWARF_CIE_DATA_ALIGNMENT == off);
-  return r;
 }
 
 /* Output a Call Frame Information opcode and its operand(s).  */
