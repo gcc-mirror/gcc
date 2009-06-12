@@ -92,6 +92,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef DWARF2_DEBUGGING_INFO
 static void dwarf2out_source_line (unsigned int, const char *, int);
+
+static rtx last_var_location_insn;
 #endif
 
 #ifndef DWARF2_FRAME_INFO
@@ -3692,6 +3694,10 @@ dwarf2out_end_epilogue (unsigned int line ATTRIBUTE_UNUSED,
 {
   dw_fde_ref fde;
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
+
+#ifdef DWARF2_DEBUGGING_INFO
+  last_var_location_insn = NULL_RTX;
+#endif
 
   if (dwarf2out_do_cfi_asm ())
     fprintf (asm_out_file, "\t.cfi_endproc\n");
@@ -16202,6 +16208,7 @@ dwarf2out_set_name (tree decl, tree name)
   else
     add_name_attribute (die, dwarf2_name (name, 0));
 }
+
 /* Called by the final INSN scan whenever we see a var location.  We
    use it to drop labels in the right places, and throw the location in
    our lookup table.  */
@@ -16211,26 +16218,27 @@ dwarf2out_var_location (rtx loc_note)
 {
   char loclabel[MAX_ARTIFICIAL_LABEL_BYTES];
   struct var_loc_node *newloc;
-  rtx prev_insn;
-  static rtx last_insn;
+  rtx next_real;
   static const char *last_label;
+  static bool last_in_cold_section_p;
   tree decl;
 
   if (!DECL_P (NOTE_VAR_LOCATION_DECL (loc_note)))
     return;
-  prev_insn = PREV_INSN (loc_note);
+
+  next_real = next_real_insn (loc_note);
+  /* If there are no instructions which would be affected by this note,
+     don't do anything.  */
+  if (next_real == NULL_RTX)
+    return;
 
   newloc = GGC_CNEW (struct var_loc_node);
-  /* If the insn we processed last time is the previous insn
-     and it is also a var location note, use the label we emitted
-     last time.  */
-  if (last_insn != NULL_RTX
-      && last_insn == prev_insn
-      && NOTE_P (prev_insn)
-      && NOTE_KIND (prev_insn) == NOTE_INSN_VAR_LOCATION)
-    {
-      newloc->label = last_label;
-    }
+  /* If there were no real insns between note we processed last time
+     and this note, use the label we emitted last time.  */
+  if (last_var_location_insn != NULL_RTX
+      && last_var_location_insn == next_real
+      && last_in_cold_section_p == in_cold_section_p)
+    newloc->label = last_label;
   else
     {
       ASM_GENERATE_INTERNAL_LABEL (loclabel, "LVL", loclabel_num);
@@ -16246,8 +16254,9 @@ dwarf2out_var_location (rtx loc_note)
   else
     newloc->section_label = text_section_label;
 
-  last_insn = loc_note;
+  last_var_location_insn = next_real;
   last_label = newloc->label;
+  last_in_cold_section_p = in_cold_section_p;
   decl = NOTE_VAR_LOCATION_DECL (loc_note);
   add_var_loc_to_decl (decl, newloc);
 }
