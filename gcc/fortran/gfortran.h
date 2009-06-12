@@ -2249,7 +2249,6 @@ void gfc_get_errors (int *, int *);
 /* arith.c */
 void gfc_arith_init_1 (void);
 void gfc_arith_done_1 (void);
-gfc_expr *gfc_enum_initializer (gfc_expr *, locus);
 arith gfc_check_integer_range (mpz_t p, int kind);
 bool gfc_check_character_range (gfc_char_t, int);
 
