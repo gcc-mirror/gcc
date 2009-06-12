@@ -1,3 +1,10 @@
+2009-06-12  Steven G. Kargl  <kargls@comcast.net>
+
+	* arith.c (gfc_enum_initializer): Move function ...
+	* decl.c: ... here.  Remove gfc_ prefix and make static.
+	(enumerator_decl): Update function call.
+	* gfortran.h:  Remove gfc_enum_initializer prototype.
+
 2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* trans-array.c (gfc_trans_allocate_array_storage): Pass
