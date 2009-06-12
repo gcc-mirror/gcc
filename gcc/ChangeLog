@@ -1,3 +1,29 @@
+2009-06-11  Richard Henderson  <rth@redhat.com>
+
+        * common.opt (gdwarf-): Accept a version number.
+	* doc/invoke.texi (gdwarf-): Update docs.
+	* opth-gen.awk: Special case -gdwarf+ to OPT_gdwarfplus.
+	* opts.c (common_handle_option) [OPT_gdwarf_]: Verify dwarf
+	version level, and record it.
+
+	* dwarf2.h (DW_CIE_VERSION): Remove.
+	* dwarf2out.c (DWARF_VERSION): Remove.
+	(add_fde_cfi): Skip DW_CFA_set_loc addition for dwarf3.
+	(output_call_frame_info): Use CIE version 3 for dwarf3,
+	or if the return register column is out of range for version 1.
+	(dwarf_stack_op_name): Add all dwarf3 values.
+	(DEBUG_PUBTYPES_SECTION): New.
+	(size_of_die) [dw_val_class_die_ref]: Handle DW_FORM_ref_addr
+	encoding change for dwarf3.
+	(output_die) [dw_val_class_die_ref]: Likewise.
+	(output_compilation_unit_header): Emit correct version for dwarf3.
+	(output_line_info): Likewise.
+	(output_pubnames): Update for DWARF_VERSION removal.
+	(output_aranges): Likewise.
+	(gen_subprogram_die): Emit DW_OP_call_frame_cfa if emitting dwarf3.
+	(dwarf2out_init): Don't ifdef DEBUG_PUBTYPES_SECTION.
+	(dwarf2out_finish): Likewise.
+
 2009-06-11  David Daney  <ddaney@caviumnetworks.com>
 
 	* system.h (gcc_assert, gcc_unreachable): Revert accidental commit
