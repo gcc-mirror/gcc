@@ -1,5 +1,10 @@
 2009-06-11  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (alpha_emit_setcc): Fix test for
+	when gen_lowpart is needed.
+
+2009-06-11  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2out.c (def_cfa_1): Likewise for DW_CFA_cfa_offset.
 
 	* dwarf2out.c (need_data_align_sf_opcode): New.
