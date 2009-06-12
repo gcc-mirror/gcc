@@ -1,5 +1,10 @@
 2009-06-11  David Daney  <ddaney@caviumnetworks.com>
 
+	* system.h (gcc_assert, gcc_unreachable): Revert accidental commit
+	in r148403.
+
+2009-06-11  David Daney  <ddaney@caviumnetworks.com>
+
 	PR c/39252
 	* doc/extend.texi ( __builtin_unreachable): Document new builtin.
 	* builtins.c (expand_builtin_unreachable): New function.
