@@ -524,7 +524,7 @@ init_return_column_size (enum machine_mode mode, rtx mem, unsigned int c)
 
 /* Divide OFF by DWARF_CIE_DATA_ALIGNMENT, asserting no remainder.  */
 
-static HOST_WIDE_INT
+static inline HOST_WIDE_INT
 div_data_align (HOST_WIDE_INT off)
 {
   HOST_WIDE_INT r = off / DWARF_CIE_DATA_ALIGNMENT;
@@ -535,7 +535,7 @@ div_data_align (HOST_WIDE_INT off)
 /* Return true if we need a signed version of a given opcode
    (e.g. DW_CFA_offset_extended_sf vs DW_CFA_offset_extended).  */
 
-static bool
+static inline bool
 need_data_align_sf_opcode (HOST_WIDE_INT off)
 {
   return DWARF_CIE_DATA_ALIGNMENT < 0 ? off > 0 : off < 0;
@@ -992,7 +992,7 @@ def_cfa_1 (const char *label, dw_cfa_location *loc_p)
 	 the CFA register did not change but the offset did.  The data 
 	 factoring for DW_CFA_def_cfa_offset_sf happens in output_cfi, or
 	 in the assembler via the .cfi_def_cfa_offset directive.  */
-      if (loc.offset < 0)
+      if (need_data_align_sf_opcode (loc.offset))
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset_sf;
       else
 	cfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
