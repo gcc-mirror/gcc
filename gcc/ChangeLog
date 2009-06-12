@@ -1,5 +1,11 @@
 2009-06-11  Richard Henderson  <rth@redhat.com>
 
+        * alpha.c (alpha_expand_prologue): Add a REF_CFA_REGISTER
+	note when storing the frame pointer in a register.
+	(FRP): Don't redefine to nothing for epilogue.
+	(alpha_expand_epilogue): Mark register and sp restores.
+	(unicosmk_gen_dsib): Don't mark weird frame pointer adjust.
+
 	* config/alpha/alpha.c (alpha_emit_setcc): Fix test for
 	when gen_lowpart is needed.
 
