@@ -2623,7 +2623,7 @@ alpha_emit_setcc (rtx operands[], enum machine_mode cmp_mode)
       emit_insn (gen_rtx_SET (VOIDmode, tmp,
 			      gen_rtx_fmt_ee (cmp_code, cmp_mode, op0, op1)));
 
-      op0 = cmp_mode == DImode ? gen_lowpart (DImode, tmp) : tmp;
+      op0 = cmp_mode != DImode ? gen_lowpart (DImode, tmp) : tmp;
       op1 = const0_rtx;
     }
 
