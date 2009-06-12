@@ -871,7 +871,7 @@ dw2_output_indirect_constant_1 (splay_tree_node node,
   sym = (const char *) node->key;
   id = (tree) node->value;
 
-  decl = build_decl (VAR_DECL, id, ptr_type_node);
+  decl = build_decl (UNKNOWN_LOCATION, VAR_DECL, id, ptr_type_node);
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   DECL_INITIAL (decl) = decl;

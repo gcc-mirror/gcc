@@ -6529,15 +6529,20 @@ ix86_build_builtin_va_list_abi (enum calling_abi abi)
     return build_pointer_type (char_type_node);
 
   record = (*lang_hooks.types.make_type) (RECORD_TYPE);
-  type_decl = build_decl (TYPE_DECL, get_identifier ("__va_list_tag"), record);
+  type_decl = build_decl (BUILTINS_LOCATION,
+			  TYPE_DECL, get_identifier ("__va_list_tag"), record);
 
-  f_gpr = build_decl (FIELD_DECL, get_identifier ("gp_offset"),
+  f_gpr = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, get_identifier ("gp_offset"),
 		      unsigned_type_node);
-  f_fpr = build_decl (FIELD_DECL, get_identifier ("fp_offset"),
+  f_fpr = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, get_identifier ("fp_offset"),
 		      unsigned_type_node);
-  f_ovf = build_decl (FIELD_DECL, get_identifier ("overflow_arg_area"),
+  f_ovf = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, get_identifier ("overflow_arg_area"),
 		      ptr_type_node);
-  f_sav = build_decl (FIELD_DECL, get_identifier ("reg_save_area"),
+  f_sav = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, get_identifier ("reg_save_area"),
 		      ptr_type_node);
 
   va_list_gpr_counter_field = f_gpr;
@@ -6929,8 +6934,8 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
       bool need_temp;
       tree int_addr, sse_addr;
 
-      lab_false = create_artificial_label ();
-      lab_over = create_artificial_label ();
+      lab_false = create_artificial_label (UNKNOWN_LOCATION);
+      lab_over = create_artificial_label (UNKNOWN_LOCATION);
 
       examine_argument (nat_mode, type, 0, &needed_intregs, &needed_sseregs);
 
@@ -7512,7 +7517,8 @@ ix86_file_end (void)
 	{
 	  tree decl;
 
-	  decl = build_decl (FUNCTION_DECL, get_identifier (name),
+	  decl = build_decl (BUILTINS_LOCATION,
+			     FUNCTION_DECL, get_identifier (name),
 			     error_mark_node);
 	  TREE_PUBLIC (decl) = 1;
 	  TREE_STATIC (decl) = 1;
@@ -10257,7 +10263,8 @@ get_dllimport_decl (tree decl)
   *loc = h = GGC_NEW (struct tree_map);
   h->hash = in.hash;
   h->base.from = decl;
-  h->to = to = build_decl (VAR_DECL, NULL, ptr_type_node);
+  h->to = to = build_decl (DECL_SOURCE_LOCATION (decl),
+			   VAR_DECL, NULL, ptr_type_node);
   DECL_ARTIFICIAL (to) = 1;
   DECL_IGNORED_P (to) = 1;
   DECL_EXTERNAL (to) = 1;
@@ -25923,7 +25930,8 @@ ix86_veclibabi_svml (enum built_in_function fn, tree type_out, tree type_in)
     fntype = build_function_type_list (type_out, type_in, type_in, NULL);
 
   /* Build a function declaration for the vectorized function.  */
-  new_fndecl = build_decl (FUNCTION_DECL, get_identifier (name), fntype);
+  new_fndecl = build_decl (BUILTINS_LOCATION,
+			   FUNCTION_DECL, get_identifier (name), fntype);
   TREE_PUBLIC (new_fndecl) = 1;
   DECL_EXTERNAL (new_fndecl) = 1;
   DECL_IS_NOVOPS (new_fndecl) = 1;
@@ -26007,7 +26015,8 @@ ix86_veclibabi_acml (enum built_in_function fn, tree type_out, tree type_in)
     fntype = build_function_type_list (type_out, type_in, type_in, NULL);
 
   /* Build a function declaration for the vectorized function.  */
-  new_fndecl = build_decl (FUNCTION_DECL, get_identifier (name), fntype);
+  new_fndecl = build_decl (BUILTINS_LOCATION,
+			   FUNCTION_DECL, get_identifier (name), fntype);
   TREE_PUBLIC (new_fndecl) = 1;
   DECL_EXTERNAL (new_fndecl) = 1;
   DECL_IS_NOVOPS (new_fndecl) = 1;

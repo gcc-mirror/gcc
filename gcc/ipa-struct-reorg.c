@@ -2178,7 +2178,8 @@ create_new_var_1 (tree orig_decl, d_str str, new_var node)
       type = gen_struct_type (orig_decl, type); 
 
       if (is_global_var (orig_decl))
-	new_decl = build_decl (VAR_DECL, new_name, type); 
+	new_decl = build_decl (DECL_SOURCE_LOCATION (orig_decl),
+			       VAR_DECL, new_name, type); 
       else
 	{
 	  const char *name = new_name ? IDENTIFIER_POINTER (new_name) : NULL;

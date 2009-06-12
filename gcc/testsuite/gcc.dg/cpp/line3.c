@@ -14,15 +14,15 @@ main(void)
   char *A;
 
   A = "text";		/* { dg-warning "discards qualifiers" "case zero" } */
-  A = one("text"
+  A = one("text"	/* { dg-warning "discards qualifiers" "case one" } */
 	  "text")
-	;		/* { dg-warning "discards qualifiers" "case one" } */
-  A = two("text"
+	;
+  A = two("text"	/* { dg-warning "discards qualifiers" "case two" } */
 	  "text")
-	;		/* { dg-warning "discards qualifiers" "case two" } */
-  A = four("text"
+	;
+  A = four("text"	/* { dg-warning "discards qualifiers" "case four" } */
 	   "text")
-	;		/* { dg-warning "discards qualifiers" "case four" } */
+	;
 
   return 0;
 }

@@ -477,7 +477,8 @@ default_stack_protect_guard (void)
 
   if (t == NULL)
     {
-      t = build_decl (VAR_DECL, get_identifier ("__stack_chk_guard"),
+      t = build_decl (UNKNOWN_LOCATION,
+		      VAR_DECL, get_identifier ("__stack_chk_guard"),
 		      ptr_type_node);
       TREE_STATIC (t) = 1;
       TREE_PUBLIC (t) = 1;
@@ -503,7 +504,8 @@ default_external_stack_protect_fail (void)
   if (t == NULL_TREE)
     {
       t = build_function_type_list (void_type_node, NULL_TREE);
-      t = build_decl (FUNCTION_DECL, get_identifier ("__stack_chk_fail"), t);
+      t = build_decl (UNKNOWN_LOCATION,
+		      FUNCTION_DECL, get_identifier ("__stack_chk_fail"), t);
       TREE_STATIC (t) = 1;
       TREE_PUBLIC (t) = 1;
       DECL_EXTERNAL (t) = 1;
@@ -535,7 +537,7 @@ default_hidden_stack_protect_fail (void)
   if (t == NULL_TREE)
     {
       t = build_function_type_list (void_type_node, NULL_TREE);
-      t = build_decl (FUNCTION_DECL,
+      t = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
 		      get_identifier ("__stack_chk_fail_local"), t);
       TREE_STATIC (t) = 1;
       TREE_PUBLIC (t) = 1;

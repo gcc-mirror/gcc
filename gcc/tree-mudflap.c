@@ -295,7 +295,8 @@ static GTY (()) tree mf_set_options_fndecl;
 static inline tree
 mf_make_builtin (enum tree_code category, const char *name, tree type)
 {
-  tree decl = mf_mark (build_decl (category, get_identifier (name), type));
+  tree decl = mf_mark (build_decl (UNKNOWN_LOCATION,
+				   category, get_identifier (name), type));
   TREE_PUBLIC (decl) = 1;
   DECL_EXTERNAL (decl) = 1;
   lang_hooks.decls.pushdecl (decl);
@@ -315,8 +316,10 @@ mf_make_mf_cache_struct_type (tree field_type)
   /* There is, abominably, no language-independent way to construct a
      RECORD_TYPE.  So we have to call the basic type construction
      primitives by hand.  */
-  tree fieldlo = build_decl (FIELD_DECL, get_identifier ("low"), field_type);
-  tree fieldhi = build_decl (FIELD_DECL, get_identifier ("high"), field_type);
+  tree fieldlo = build_decl (UNKNOWN_LOCATION,
+			     FIELD_DECL, get_identifier ("low"), field_type);
+  tree fieldhi = build_decl (UNKNOWN_LOCATION,
+			     FIELD_DECL, get_identifier ("high"), field_type);
 
   tree struct_type = make_node (RECORD_TYPE);
   DECL_CONTEXT (fieldlo) = struct_type;

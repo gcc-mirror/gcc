@@ -803,7 +803,8 @@ gfc_init_types (void)
 
   /* Create and name the types.  */
 #define PUSH_TYPE(name, node) \
-  pushdecl (build_decl (TYPE_DECL, get_identifier (name), node))
+  pushdecl (build_decl (input_location, \
+			TYPE_DECL, get_identifier (name), node))
 
   for (index = 0; gfc_integer_kinds[index].kind != 0; ++index)
     {
@@ -1241,19 +1242,22 @@ gfc_get_desc_dim_type (void)
   TYPE_PACKED (type) = 1;
 
   /* Consists of the stride, lbound and ubound members.  */
-  decl = build_decl (FIELD_DECL,
+  decl = build_decl (input_location,
+		     FIELD_DECL,
 		     get_identifier ("stride"), gfc_array_index_type);
   DECL_CONTEXT (decl) = type;
   TREE_NO_WARNING (decl) = 1;
   fieldlist = decl;
 
-  decl = build_decl (FIELD_DECL,
+  decl = build_decl (input_location,
+		     FIELD_DECL,
 		     get_identifier ("lbound"), gfc_array_index_type);
   DECL_CONTEXT (decl) = type;
   TREE_NO_WARNING (decl) = 1;
   fieldlist = chainon (fieldlist, decl);
 
-  decl = build_decl (FIELD_DECL,
+  decl = build_decl (input_location,
+		     FIELD_DECL,
 		     get_identifier ("ubound"), gfc_array_index_type);
   DECL_CONTEXT (decl) = type;
   TREE_NO_WARNING (decl) = 1;
@@ -1505,7 +1509,8 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed)
 				    GFC_TYPE_ARRAY_UBOUND (type, n));
 	  gtype = build_array_type (gtype, rtype);
 	}
-      TYPE_NAME (type) = type_decl = build_decl (TYPE_DECL, NULL, gtype);
+      TYPE_NAME (type) = type_decl = build_decl (input_location,
+						 TYPE_DECL, NULL, gtype);
       DECL_ORIGINAL_TYPE (type_decl) = gtype;
     }
 
@@ -1539,20 +1544,23 @@ gfc_get_array_descriptor_base (int dimen)
   TYPE_NAME (fat_type) = get_identifier (name);
 
   /* Add the data member as the first element of the descriptor.  */
-  decl = build_decl (FIELD_DECL, get_identifier ("data"), ptr_type_node);
+  decl = build_decl (input_location,
+		     FIELD_DECL, get_identifier ("data"), ptr_type_node);
 
   DECL_CONTEXT (decl) = fat_type;
   fieldlist = decl;
 
   /* Add the base component.  */
-  decl = build_decl (FIELD_DECL, get_identifier ("offset"),
+  decl = build_decl (input_location,
+		     FIELD_DECL, get_identifier ("offset"),
 		     gfc_array_index_type);
   DECL_CONTEXT (decl) = fat_type;
   TREE_NO_WARNING (decl) = 1;
   fieldlist = chainon (fieldlist, decl);
 
   /* Add the dtype component.  */
-  decl = build_decl (FIELD_DECL, get_identifier ("dtype"),
+  decl = build_decl (input_location,
+		     FIELD_DECL, get_identifier ("dtype"),
 		     gfc_array_index_type);
   DECL_CONTEXT (decl) = fat_type;
   TREE_NO_WARNING (decl) = 1;
@@ -1565,7 +1573,8 @@ gfc_get_array_descriptor_base (int dimen)
 					gfc_index_zero_node,
 					gfc_rank_cst[dimen - 1]));
 
-  decl = build_decl (FIELD_DECL, get_identifier ("dim"), arraytype);
+  decl = build_decl (input_location,
+		     FIELD_DECL, get_identifier ("dim"), arraytype);
   DECL_CONTEXT (decl) = fat_type;
   TREE_NO_WARNING (decl) = 1;
   fieldlist = chainon (fieldlist, decl);
@@ -1803,7 +1812,8 @@ gfc_finish_type (tree type)
 {
   tree decl;
 
-  decl = build_decl (TYPE_DECL, NULL_TREE, type);
+  decl = build_decl (input_location,
+		     TYPE_DECL, NULL_TREE, type);
   TYPE_STUB_DECL (type) = decl;
   layout_type (type);
   rest_of_type_compilation (type, 1);
@@ -1822,7 +1832,8 @@ gfc_add_field_to_struct (tree *fieldlist, tree context,
 {
   tree decl;
 
-  decl = build_decl (FIELD_DECL, name, type);
+  decl = build_decl (input_location,
+		     FIELD_DECL, name, type);
 
   DECL_CONTEXT (decl) = context;
   DECL_INITIAL (decl) = 0;
@@ -2124,7 +2135,8 @@ gfc_get_mixed_entry_union (gfc_namespace *ns)
 
       if (el == el2)
 	{
-	  decl = build_decl (FIELD_DECL,
+	  decl = build_decl (input_location,
+			     FIELD_DECL,
 			     get_identifier (el->sym->result->name),
 			     gfc_sym_type (el->sym->result));
 	  DECL_CONTEXT (decl) = type;
@@ -2411,7 +2423,7 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   base_decl = GFC_TYPE_ARRAY_BASE_DECL (type, indirect);
   if (!base_decl)
     {
-      base_decl = build_decl (VAR_DECL, NULL_TREE,
+      base_decl = build_decl (input_location, VAR_DECL, NULL_TREE,
 			      indirect ? build_pointer_type (ptype) : ptype);
       GFC_TYPE_ARRAY_BASE_DECL (type, indirect) = base_decl;
     }

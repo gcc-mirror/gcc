@@ -1349,7 +1349,7 @@ cxx_sizeof_or_alignof_type (tree type, enum tree_code op, bool complain)
       return value;
     }
 
-  return c_sizeof_or_alignof_type (complete_type (type),
+  return c_sizeof_or_alignof_type (input_location, complete_type (type),
 				   op == SIZEOF_EXPR,
 				   complain);
 }
@@ -2573,7 +2573,7 @@ cp_build_indirect_ref (tree ptr, const char *errorstring,
    LOC is the location to use in building the array reference.  */
 
 tree
-build_array_ref (tree array, tree idx, location_t loc)
+build_array_ref (location_t loc, tree array, tree idx)
 {
   tree ret;
 
@@ -2593,7 +2593,7 @@ build_array_ref (tree array, tree idx, location_t loc)
     {
     case COMPOUND_EXPR:
       {
-	tree value = build_array_ref (TREE_OPERAND (array, 1), idx, loc);
+	tree value = build_array_ref (loc, TREE_OPERAND (array, 1), idx);
 	ret = build2 (COMPOUND_EXPR, TREE_TYPE (value),
 		      TREE_OPERAND (array, 0), value);
 	SET_EXPR_LOCATION (ret, loc);
@@ -2603,9 +2603,9 @@ build_array_ref (tree array, tree idx, location_t loc)
     case COND_EXPR:
       ret = build_conditional_expr
 	      (TREE_OPERAND (array, 0),
-	      build_array_ref (TREE_OPERAND (array, 1), idx, loc),
-	      build_array_ref (TREE_OPERAND (array, 2), idx, loc),
-	      tf_warning_or_error);
+	       build_array_ref (loc, TREE_OPERAND (array, 1), idx),
+	       build_array_ref (loc, TREE_OPERAND (array, 2), idx),
+	       tf_warning_or_error);
       protected_set_expr_location (ret, loc);
       return ret;
 
@@ -2864,14 +2864,16 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
 
 /* Used by the C-common bits.  */
 tree
-build_function_call (tree function, tree params)
+build_function_call (location_t loc ATTRIBUTE_UNUSED, 
+		     tree function, tree params)
 {
   return cp_build_function_call (function, params, tf_warning_or_error);
 }
 
 /* Used by the C-common bits.  */
 tree
-build_function_call_vec (tree function, VEC(tree,gc) *params,
+build_function_call_vec (location_t loc ATTRIBUTE_UNUSED,
+			 tree function, VEC(tree,gc) *params,
 			 VEC(tree,gc) *origtypes ATTRIBUTE_UNUSED)
 {
   VEC(tree,gc) *orig_params = params;
@@ -4067,7 +4069,7 @@ cp_build_binary_op (location_t location,
   if (TREE_OVERFLOW_P (result) 
       && !TREE_OVERFLOW_P (op0) 
       && !TREE_OVERFLOW_P (op1))
-    overflow_warning (result);
+    overflow_warning (location, result);
 
   return result;
 }
@@ -5079,7 +5081,7 @@ build_x_compound_expr (tree op1, tree op2, tsubst_flags_t complain)
 /* Like cp_build_compound_expr, but for the c-common bits.  */
 
 tree
-build_compound_expr (tree lhs, tree rhs)
+build_compound_expr (location_t loc ATTRIBUTE_UNUSED, tree lhs, tree rhs)
 {
   return cp_build_compound_expr (lhs, rhs, tf_warning_or_error);
 }
@@ -5836,7 +5838,7 @@ build_const_cast (tree type, tree expr, tsubst_flags_t complain)
 /* Like cp_build_c_cast, but for the c-common bits.  */
 
 tree
-build_c_cast (tree type, tree expr)
+build_c_cast (location_t loc ATTRIBUTE_UNUSED, tree type, tree expr)
 {
   return cp_build_c_cast (type, expr, tf_warning_or_error);
 }
@@ -5953,7 +5955,8 @@ cp_build_c_cast (tree type, tree expr, tsubst_flags_t complain)
 tree
 build_modify_expr (location_t location ATTRIBUTE_UNUSED,
 		   tree lhs, tree lhs_origtype ATTRIBUTE_UNUSED,
-		   enum tree_code modifycode, tree rhs,
+		   enum tree_code modifycode, 
+		   location_t rhs_location ATTRIBUTE_UNUSED, tree rhs,
 		   tree rhs_origtype ATTRIBUTE_UNUSED)
 {
   return cp_build_modify_expr (lhs, modifycode, rhs, tf_warning_or_error);
@@ -6501,7 +6504,7 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p)
   /* Handle null pointer to member function conversions.  */
   if (integer_zerop (pfn))
     {
-      pfn = build_c_cast (type, integer_zero_node);
+      pfn = build_c_cast (input_location, type, integer_zero_node);
       return build_ptrmemfunc1 (to_type,
 				integer_zero_node,
 				pfn);

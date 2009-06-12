@@ -635,7 +635,8 @@ gfc_trans_allocate_array_storage (stmtblock_t * pre, stmtblock_t * post,
 	      was_packed = fold_build2 (EQ_EXPR, boolean_type_node,
 					packed, source_data);
 	      tmp = gfc_finish_block (&do_copying);
-	      tmp = build3_v (COND_EXPR, was_packed, tmp, build_empty_stmt ());
+	      tmp = build3_v (COND_EXPR, was_packed, tmp,
+			      build_empty_stmt (input_location));
 	      gfc_add_expr_to_block (pre, tmp);
 
 	      tmp = fold_convert (pvoid_type_node, packed);
@@ -1442,7 +1443,8 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock, tree type,
 					   shadow_loopvar, end));
 	  tmp = build1_v (GOTO_EXPR, exit_label);
 	  TREE_USED (exit_label) = 1;
-	  tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
+	  tmp = build3_v (COND_EXPR, cond, tmp,
+			  build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&body, tmp);
 
 	  /* The main loop body.  */
@@ -2776,12 +2778,13 @@ gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
       TREE_TYPE (stmt) = void_type_node;
       OMP_FOR_BODY (stmt) = loopbody = gfc_finish_block (pbody);
 
-      OMP_FOR_CLAUSES (stmt) = build_omp_clause (OMP_CLAUSE_SCHEDULE);
+      OMP_FOR_CLAUSES (stmt) = build_omp_clause (input_location,
+						 OMP_CLAUSE_SCHEDULE);
       OMP_CLAUSE_SCHEDULE_KIND (OMP_FOR_CLAUSES (stmt))
 	= OMP_CLAUSE_SCHEDULE_STATIC;
       if (ompws_flags & OMPWS_NOWAIT)
 	OMP_CLAUSE_CHAIN (OMP_FOR_CLAUSES (stmt))
-	  = build_omp_clause (OMP_CLAUSE_NOWAIT);
+	  = build_omp_clause (input_location, OMP_CLAUSE_NOWAIT);
 
       /* Initialize the loopvar.  */
       TREE_VEC_ELT (init, 0) = build2_v (MODIFY_EXPR, loop->loopvar[n],
@@ -2818,7 +2821,7 @@ gfc_trans_scalarized_loop_end (gfc_loopinfo * loop, int n,
 			 loop->loopvar[n], loop->to[n]);
       tmp = build1_v (GOTO_EXPR, exit_label);
       TREE_USED (exit_label) = 1;
-      tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
+      tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt (input_location));
       gfc_add_expr_to_block (&block, tmp);
 
       /* The main body.  */
@@ -3337,7 +3340,7 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 	      || ss->expr->symtree->n.sym->attr.not_always_present)
 	    tmp = build3_v (COND_EXPR,
 			    gfc_conv_expr_present (ss->expr->symtree->n.sym),
-			    tmp, build_empty_stmt ());
+			    tmp, build_empty_stmt (input_location));
 
 	  gfc_add_expr_to_block (&block, tmp);
 
@@ -4391,7 +4394,7 @@ gfc_trans_g77_array (gfc_symbol * sym, tree body)
   if (sym->attr.optional || sym->attr.not_always_present)
     {
       tmp = gfc_conv_expr_present (sym);
-      stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
+      stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt (input_location));
     }
   
   gfc_add_expr_to_block (&block, stmt);
@@ -4675,7 +4678,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
   if (optional_arg)
     {
       tmp = gfc_conv_expr_present (sym);
-      stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
+      stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt (input_location));
     }
   gfc_add_expr_to_block (&block, stmt);
 
@@ -4704,12 +4707,13 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
       tmp = build_fold_indirect_ref (dumdesc);
       tmp = gfc_conv_descriptor_data_get (tmp);
       tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp, tmpdesc);
-      stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
+      stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt (input_location));
 
       if (optional_arg)
         {
           tmp = gfc_conv_expr_present (sym);
-          stmt = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
+          stmt = build3_v (COND_EXPR, tmp, stmt,
+			   build_empty_stmt (input_location));
         }
       gfc_add_expr_to_block (&block, stmt);
     }
@@ -5603,7 +5607,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77,
 	tmp = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
 			   gfc_conv_expr_present (sym), tmp);
 
-      tmp = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
+      tmp = build3_v (COND_EXPR, tmp, stmt, build_empty_stmt (input_location));
 
       gfc_add_expr_to_block (&block, tmp);
       gfc_add_block_to_block (&block, &se->post);
@@ -5807,7 +5811,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
       tmp = gfc_finish_block (&fnblock);
       if (null_cond != NULL_TREE)
-	tmp = build3_v (COND_EXPR, null_cond, tmp, build_empty_stmt ());
+	tmp = build3_v (COND_EXPR, null_cond, tmp,
+			build_empty_stmt (input_location));
 
       return tmp;
     }

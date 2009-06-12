@@ -224,7 +224,7 @@ objc_build_protocol_expr (tree ARG_UNUSED (expr))
 }
 
 tree
-objc_build_selector_expr (tree ARG_UNUSED (expr))
+objc_build_selector_expr (location_t ARG_UNUSED (loc), tree ARG_UNUSED (expr))
 {
   return 0;
 }
@@ -279,7 +279,7 @@ objc_get_class_ivars (tree ARG_UNUSED (name))
 }
 
 tree
-objc_build_throw_stmt (tree ARG_UNUSED (expr))
+objc_build_throw_stmt (location_t ARG_UNUSED (loc), tree ARG_UNUSED (expr))
 {
   return 0;
 }

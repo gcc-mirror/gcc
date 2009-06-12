@@ -1,3 +1,299 @@
+2009-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-pretty-print.c (dump_generic_node): Dump column numbers.
+	* gimple-pretty-print.c (dump_gimple_stmt): Same.
+	* gimplify.c (gimplify_modify_expr): Set location for GIMPLE_ASSIGNs
+	created.
+	* c-parser.c (c_parser_binary_expression): Use current column while
+	building binary operations.
+	* common.opt (fshow-column): Enable by default.
+	* tree-vrp.c (check_array_ref): Use warning_at.
+	(check_array_bounds): Use location from call back if expr has no
+	location.
+	* tree.h: Add location argument to maybe_fold_*.
+	* tree-ssa-ccp.c (ccp_fold): Pass location to maybe_fold_*.
+	(maybe_fold_offset_to_array_ref): Add location argument and use it.
+	(maybe_fold_offset_to_component_ref): Same.
+	(maybe_fold_offset_to_reference): Same.
+	(maybe_fold_offset_to_address): Same.
+	(maybe_fold_stmt_indirect): Same.
+	(maybe_fold_stmt_addition): Same.
+	(fold_stmt_r): Pass location to maybe_fold_*.
+	(fold_gimple_assign): Same.
+	* c-tree.h: Add location argument to finish_decl,
+	default_function_array_conversion, store_init_value.
+	* c-decl.c (define_label): Use error_at.
+	(c_make_fname_decl): Pass location to finish_decl.
+	(finish_decl): New location argument.
+	(build_compound_literal): Pass location to store_init_value.
+	(grokdeclarator): Pass location to finish_decl.
+	(grokfield): Same.
+	* c-typeck.c (array_to_pointer_conversion): New location argument.
+	(function_to_pointer_conversion): Same.
+	(default_function_array_conversion): Same.
+	(parser_build_unary_op): Pass location to overflow_warning.
+	(parser_build_binary_op): Same.  Use warning_at.
+	(build_unary_op): Pass location to array_to_pointer_conversion.
+	(build_c_cast): Pass location to digest_init.
+	(build_modify_expr): New location argument.
+	(convert_for_assignment): Same.
+	(store_init_value): Same.
+	(digest_init): Same.
+	(output_init_element): Pass location to digest_init and
+	array_to_pointer_conversion.
+	(c_finish_return): Pass location to convert_for_assignment.
+	* gimplify.c (gimplify_conversion): Pass location to
+	maybe_fold_offset_to_address.
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Pass location
+	to maybe_fold_stmt_addition.
+	* c-omp.c (c_finish_omp_atomic): Pass new location to
+	build_modify_expr.
+	(c_finish_omp_for): Same.
+	* c-common.c (overflow_warning): New argument.
+	* c-common.h: New argument to build_modify_expr, overflow_warning.
+	* c-parser.c (c_parser_declaration_or_fndef): Pass location to
+	finish_decl.
+	(c_parser_initializer): Pass location to
+	default_function_array_conversion.
+	(c_parser_initelt): Same.
+	(c_parser_initval): Same.
+	(c_parser_asm_operands): Same.
+	(c_parser_expr_no_commas): Same.  Pass location to build_modify_expr.
+	(c_parser_conditional_expression): Same.
+	(c_parser_binary_expression): Add location info to stack.  Use it.
+	(c_parser_unary_expression): Pass location to
+	default_function_array_conversion, parser_build_unary_op,
+	build_indirect_ref, c_parser_postfix_expression_after_primary.
+	(c_parser_postfix_expression_after_primary): New location argument.
+	Use it.
+	(c_parser_expression_conv): Pass location to
+	default_function_array_conversion.
+	(c_parser_expr_list): Same.
+	(c_parser_omp_atomic): Same.
+	(c_parser_omp_for_loop): Same.
+	* c-tree.h: (struct c_declarator): Add comment to id_loc.
+	(build_array_declarator): New argument.
+	* c-decl.c (build_array_declarator): Add location argument.
+	(grokdeclarator): Set id_loc for cdk_array.
+	* c-parser.c (c_parser_direct_declarator_inner): Pass location to
+	build_array_declarator.
+	* tree.c (build_omp_clause): Add location argument.
+	* tree.h (OMP_CLAUSE_HAS_LOCATION): New macro.
+	(OMP_CLAUSE_LOCATION): New macro.
+	(struct tree_omp_clause): Add location field.
+	(build_omp_clause): Add argument.
+	* testsuite/gcc.dg/gomp/for-1.c: Fix column.
+	* cp/pt.c (tsubst_omp_for_iterator): Pass location to
+	build_omp_clause.
+	* cp/parser.c (cp_parser_omp_var_list_no_open): Same.
+	(cp_parser_omp_clause_collapse): Same.
+	(cp_parser_omp_clause_default): Same.
+	(cp_parser_omp_clause_if): Same.
+	(cp_parser_omp_clause_nowait): Same.
+	(cp_parser_omp_clause_num_threads): Same.
+	(cp_parser_omp_clause_ordered): Same.
+	(cp_parser_omp_clause_schedule): Same.
+	(cp_parser_omp_clause_untied): Same.
+	(cp_parser_omp_for_loop): Same.
+	(cp_parser_omp_parallel): Pass location to c_split_parallel_clauses.
+	* c-tree.h (c_start_case): Add location argument.
+	(c_process_expr_stmt): Same.
+	(c_finish_goto_*): Same.
+	* tree-parloops.c (initialize_reductions): Pass location to
+	build_omp_clause.
+	(create_parallel_loop): Same.
+	* fortran/trans-openmp.c (gfc_trans_omp_variable_list): Same.
+	(gfc_trans_omp_reduction_list): Same.
+	(gfc_trans_omp_clauses): Same.
+	(gfc_trans_omp_do): Same.
+	* c-typeck.c (c_finish_goto_label): Same.
+	(c_finish_goto_ptr): New location argument.
+	(c_start_case): Same.
+	(emit_side_effect_warnings): Same.
+	(c_process_expr_stmt): Same.
+	(c_finish_stmt_expr): Same.
+	(c_finish_omp_clauses): Use error_at instead of error.
+	* gimplify.c (gimplify_adjust_omp_clauses_1): Pass location to
+	build_omp_clause.
+	* c-omp.c (c_split_parallel_clauses): New location argument.
+	* tree-nested.c (convert_nonlocal_reference_stmt): Pass location
+	to build_omp_clause.
+	(convert_local_reference_stmt): Same.
+	(convert_gimple_call): Same.
+	* c-common.h (c_split_parallel_clauses): New argument.
+	* c-parser.c (c_parser_statement_after_labels): Pass location to
+	c_finish_goto_label.
+	(c_parser_switch_statement): Pass location to c_start_case.
+	(c_parser_for_statement): Pass location to c_finish_expr_stmt,
+	and c_process_expr_stmt.
+	(c_parser_omp_variable_list): Add location argument.
+	(c_parser_omp_clause_collapse): Pass location to
+	build_omp_clause.
+	(c_parser_omp_clause_default): Same.
+	(c_parser_omp_clause_if): Same.
+	(c_parser_omp_clause_num_threads): Same.
+	(-c_parser_omp_clause_ordered): Same.
+	(c_parser_omp_clause_reduction): Pass location to
+	c_parser_omp_variable_list.
+	(c_parser_omp_clause_schedule): Pass location to build_omp_clause.
+	(c_parser_omp_clause_untied): Same.
+	(c_parser_omp_for_loop): Pass location to c_process_expr_stmt.
+	(c_parser_omp_parallel): Pass location to
+	c_split_parallel_clauses.
+
+	* c-tree.h (check_for_loop_decls, undeclared_variable,
+	build_component_ref, build_array_ref, build_external_ref,
+	c_expr_sizeof_expr, c_expr_sizeof_type, parser_build_unary_op,
+	build_conditional_expr, build_compound_expr, c_cast_expr,
+	build_c_cast, build_asm_expr, c_end_compound_stmt, c_finish_stmt_expr,
+	c_finish_return, c_finish_omp_parallel, c_finish_omp_task): New
+	argument.
+	* c-semantics.c (build_stmt): Same.
+	(build_case_label): Same.
+	* c-decl.c (c_finish_incomplete_decl): Pass location on down.
+	(undeclared_variable): New argument.
+	(make_label): Same.
+	(lookup_label): Pass location on down.
+	(define_label): Same.
+	(finish_decl): Same.
+	(build_compound_literal): Same.
+	(finish_struct): Same.
+	(finish_function): Do not set location here.
+	(check_for_loop_decls): New argument.
+	* tree.c (save_expr): Set location.
+	(build_empty_stmt): New argument.
+	* tree.h (build_empty_stmt): New argument to build_empty_stmt.
+	(CAN_HAVE_LOCATION_P): Make sure we have a non empty node.
+	* builtins.c (gimplify_va_arg_expr): Use locations.
+	(expand_builtin_sync_operation): Same.
+	* c-typeck.c (build_component_ref): New argument.
+	(build_array_ref): Same.
+	(build_external_ref): Same.
+	(c_expr_sizeof_expr): Same.
+	(c_expr_sizeof_type): Same.
+	(parser_build_unary_op): Same.
+	(build_conditional_expr): Same.
+	(build_compound_expr): Pass location on down.
+	(build_compound_expr): New argument.
+	(build_c_cast): Same.
+	(c_cast_expr): Same.
+	(build_asm_expr): Same.
+	(c_finish_return): Same.
+	(c_process_expr_stmt): Pass location on down.
+	(c_finish_stmt_expr): New argument.
+	(push_clenaup): Same.
+	(c_finish_omp_parallel): Same.
+	(c_finish_omp_task): Same.
+	* gimplify.c (gimplify_call_expr): Pass location on down.
+	* c-omp.c (c_finish_omp_master): New argument.
+	(c_finish_omp_critical): Same.
+	(c_finish_omp_ordered): Same.
+	(c_finish_omp_barrier): Same.
+	(-c_finish_omp_taskwait): Same.
+	(c_finish_omp_atomic): Same.
+	(c_finish_omp_flush): Same.
+	* tree-inline.c (copy_tree_body_r): Pass location on down.
+	(inline_forbidden_p): Remove use of input_location.
+	* c-gimplify.c (c_build_bind_expr): New argument.
+	* c-common.c (c_common_truthvalue_conversion): Pass location on down.
+	(c_sizeof_or_alignof_type): New argument.
+	(c_alignof_expr): Same.
+	(build_va_arg): Same.
+	(c_add_case_label): Same.
+	* c-common.h (c_sizeof_or_alignof_type, c_alignof_expr,
+	c_sizeof, c_alignof, build_va_arg, build_stmt, build_case_label,
+	c_build_bind_expr, objc_build_selector_expr, objc_build_throw_stmt,
+	c_finish_omp_master, c_finish_omp_critical, c_finish_omp_ordered,
+	c_finish_omp_barrier, c_finish_omp_atomic, c_finish_omp_flush,
+	c_finish_omp_taskwait, c_finish_omp_for, c_split_parallel_clauses):
+	New argument.
+	* stub-objc.c (objc_build_selector_expr): Same.
+	(objc_build_throw_stmt): Same.
+	* c-parser.c (c_parser_declaration_or_fndef): Pass location on down.
+	(c_parser_initelt): Same.
+	(c_parser_compound_statement): Same.
+	(c_parser_compound_statement_nostart): Same.
+	(c_parser_label): Same.
+	(c_parser_statement_after_labels): Same.
+	(c_parser_if_body): Same.
+	(c_parser_else_body): Same.
+	(c_parser_if_statement): Same.
+	(c_parser_switch_statement): Same.
+	(c_parser_while_statement): Same.
+	(c_parser_do_statement): Same.
+	(c_parser_for_statement): Same.
+	(c_parser_asm_statement): Same.
+	(c_parser_conditional_expression): Same.
+	(c_parser_binary_expression): Same.
+	(c_parser_cast_expression): Same.
+	(c_parser_unary_expression): Same.
+	(c_parser_sizeof_expression): Same.
+	(c_parser_alignof_expression): Same.
+	(c_parser_postfix_expression): Same.
+	(c_parser_expression): Same.
+	(c_parser_objc_receiver): Same.
+	(c_parser_omp_variable_list): Same.
+	(c_parser_omp_structured_block): Same.
+	(c_parser_omp_atomic): New argument.
+	(c_parser_omp_barrier): Same.
+	(c_parser_omp_critical): Same.
+	(c_parser_omp_flush): Pass location on down.
+	(c_parser_omp_for_loop): New argument.
+	(c_parser_omp_for): Same.
+	(c_parser_omp_master): Same.
+	(c_parser_omp_ordered): Same.
+	(c_parser_omp_sections_scope): Same.
+	(c_parser_omp_sections): Same.
+	(c_parser_omp_parallel): Same.
+	(c_parser_omp_single): Same.
+	(c_parser_omp_task): Same.
+	(c_parser_omp_taskwait): Pass location on down.
+	(c_parser_omp_construct): Same.
+	(c_parser_omp_threadprivate): Same.
+	* dwarf2asm.c, targhooks.c, optabs.c, tree.c, tree.h, target.h,
+	builtins.c, omp-low.c, cgraphunit.c, tree-call-cdce.c,
+	tree-ssa-alias.c, gimple-low.c, c-tree.h, expr.c, tree-parloops.c,
+	c-decl.c, tree-eh.c, langhooks.c, function.c, stor-layout.c,
+	c-typeck.c, gimplify.c, c-pragma.c, expmed.c, except.c, coverage.c,
+	emit-rtl.c, cfgexpand.c, tree-mudflap.c, varasm.c, tree-nested.c,
+	rtl.h, tree-inline.c, tree-profile.c, c-common.c, c-common.h,
+	tree-switch-conversion.c, tree-cfg.c, ipa-struct-reorg.c, c-parser.c,
+	config/i386/i386.c, stmt.c:
+	Add location argument to the following function definitions and/or
+	function calls: build_decl, objcp_start_struct, objcp_finish_struct,
+	start_struct, finish_struct, PUSH_FIELD, create_artificial_label,
+	cp_make_fname_decl, pushtag, implicitly_declare, c_make_fname_decl,
+	build_compound_literal, parser_xref_tag, resolve_overloaded_builtin,
+	do_case, c_finish_bc_stmt, build_compound_literal,
+	build_function_call.
+	* c-decl.c (build_compound_literal): Add location argument.
+	Make all diagnostic calls use location.
+	(start_struct): Same.
+	(finish_struct): Same.
+	(start_enum): Same.
+	(build_enumerator): Same.
+	(start_function): Same.
+	(grokdeclarator): Make all diagnostic calls use location.
+	(store_parm_decls_oldstyle): Same.
+	* c-typeck.c (build_function_call): Add location argument.
+	Make all diagnostic calls use location.
+	(do_case): Same.
+	(c_finish_bc_stmt): Same.
+	* tree-nested.c (get_trampoline_type): Add argument.
+	Pass location to build_decl.
+	(lookup_tramp_for_decl): Pass location to get_trampoline_type.
+	* rtl.h (RTL_LOCATION): New.
+	* c-common.c (c_add_case_label): Add location argument.
+	Make all diagnostic calls use location.
+	* c-common.h: Add location argument to make_fname_decl, do_case,
+	c_add_case_label, build_function_call, resolve_overloaded_builtin.
+	* c-parser.c (c_parser_enum_specifier): Rename ident_loc to enum_loc.
+	Set it appropriately for every case.  Pass enum_loc to start_enum
+	call.  Pass value_loc first to build_enumerator.  Pass enum_loc to
+	parser_xref_tag.
+	(c_parser_struct_or_union_specifier): Save location.  Use it for
+	start_struct, finish_struct, and parser_xref_tag.
+
 2009-06-12  Ian Lance Taylor  <iant@google.com>
 
 	* fold-const.c (fold_unary): Rename local variable and to

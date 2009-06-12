@@ -1703,10 +1703,11 @@ java_emit_static_constructor (void)
       tree name = get_identifier ("_Jv_global_static_constructor");
 
       tree decl 
-	= build_decl (FUNCTION_DECL, name,
+	= build_decl (input_location, FUNCTION_DECL, name,
 		      build_function_type (void_type_node, void_list_node));
 
-      tree resdecl = build_decl (RESULT_DECL, NULL_TREE, void_type_node);
+      tree resdecl = build_decl (input_location,
+				 RESULT_DECL, NULL_TREE, void_type_node);
       DECL_ARTIFICIAL (resdecl) = 1;
       DECL_RESULT (decl) = resdecl;
       current_function_decl = decl;
@@ -1835,7 +1836,8 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	    duplicate_class_warning (IDENTIFIER_POINTER (node));
 	  else
 	    {
-	      tree file_decl = build_decl (TRANSLATION_UNIT_DECL, node, NULL);
+	      tree file_decl = build_decl (input_location,
+					   TRANSLATION_UNIT_DECL, node, NULL);
 	      TREE_CHAIN (file_decl) = current_file_list;
 	      current_file_list = file_decl;
 	      IS_A_COMMAND_LINE_FILENAME_P (node) = 1;

@@ -6044,7 +6044,8 @@ init_one_libfunc (const char *name)
 	 targetm.encode_section_info.  */
       /* ??? We don't have any type information except for this is
 	 a function.  Pretend this is "int foo()".  */
-      decl = build_decl (FUNCTION_DECL, get_identifier (name),
+      decl = build_decl (UNKNOWN_LOCATION,
+			 FUNCTION_DECL, get_identifier (name),
 			 build_function_type (integer_type_node, NULL_TREE));
       DECL_ARTIFICIAL (decl) = 1;
       DECL_EXTERNAL (decl) = 1;

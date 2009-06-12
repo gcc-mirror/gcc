@@ -1161,7 +1161,8 @@ create_pseudo_type_info (int tk, const char *real_name, ...)
     sprintf (pseudo_name + strlen (pseudo_name), "%d", tk - TK_FIXED);
 
   /* First field is the pseudo type_info base class.  */
-  fields = build_decl (FIELD_DECL, NULL_TREE,
+  fields = build_decl (input_location,
+		       FIELD_DECL, NULL_TREE,
 		       VEC_index (tinfo_s, tinfo_descs,
 				  TK_TYPE_INFO_TYPE)->type);
 
@@ -1290,9 +1291,12 @@ get_pseudo_ti_index (tree type)
 	      push_abi_namespace ();
 	      create_pseudo_type_info
 		(ix, "__vmi_class_type_info",
-		 build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
-		 build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
-		 build_decl (FIELD_DECL, NULL_TREE, base_array),
+		 build_decl (input_location,
+			     FIELD_DECL, NULL_TREE, integer_type_node),
+		 build_decl (input_location,
+			     FIELD_DECL, NULL_TREE, integer_type_node),
+		 build_decl (input_location,
+			     FIELD_DECL, NULL_TREE, base_array),
 		 NULL);
 	      pop_abi_namespace ();
 	      break;
@@ -1324,10 +1328,12 @@ create_tinfo_types (void)
   {
     tree field, fields;
 
-    field = build_decl (FIELD_DECL, NULL_TREE, const_ptr_type_node);
+    field = build_decl (BUILTINS_LOCATION,
+			FIELD_DECL, NULL_TREE, const_ptr_type_node);
     fields = field;
 
-    field = build_decl (FIELD_DECL, NULL_TREE, const_string_type_node);
+    field = build_decl (BUILTINS_LOCATION,
+			FIELD_DECL, NULL_TREE, const_string_type_node);
     TREE_CHAIN (field) = fields;
     fields = field;
 
@@ -1353,7 +1359,8 @@ create_tinfo_types (void)
   /* Single public non-virtual base class. Add pointer to base class.
      This is really a descendant of __class_type_info.  */
   create_pseudo_type_info (TK_SI_CLASS_TYPE, "__si_class_type_info",
-	    build_decl (FIELD_DECL, NULL_TREE, type_info_ptr_type),
+	    build_decl (BUILTINS_LOCATION,
+			FIELD_DECL, NULL_TREE, type_info_ptr_type),
 	    NULL);
 
   /* Base class internal helper. Pointer to base type, offset to base,
@@ -1361,10 +1368,12 @@ create_tinfo_types (void)
   {
     tree field, fields;
 
-    field = build_decl (FIELD_DECL, NULL_TREE, type_info_ptr_type);
+    field = build_decl (BUILTINS_LOCATION,
+			FIELD_DECL, NULL_TREE, type_info_ptr_type);
     fields = field;
 
-    field = build_decl (FIELD_DECL, NULL_TREE, integer_types[itk_long]);
+    field = build_decl (BUILTINS_LOCATION,
+			FIELD_DECL, NULL_TREE, integer_types[itk_long]);
     TREE_CHAIN (field) = fields;
     fields = field;
 
@@ -1381,8 +1390,10 @@ create_tinfo_types (void)
      and pointer to the pointed to type.  This is really a descendant of
      __pbase_type_info.  */
   create_pseudo_type_info (TK_POINTER_TYPE, "__pointer_type_info",
-       build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
-       build_decl (FIELD_DECL, NULL_TREE, type_info_ptr_type),
+       build_decl (BUILTINS_LOCATION, 
+		   FIELD_DECL, NULL_TREE, integer_type_node),
+       build_decl (BUILTINS_LOCATION,
+		   FIELD_DECL, NULL_TREE, type_info_ptr_type),
        NULL);
 
   /* Pointer to member data type_info.  Add qualifications flags,
@@ -1390,9 +1401,12 @@ create_tinfo_types (void)
      This is really a descendant of __pbase_type_info.  */
   create_pseudo_type_info (TK_POINTER_MEMBER_TYPE,
        "__pointer_to_member_type_info",
-	build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
-	build_decl (FIELD_DECL, NULL_TREE, type_info_ptr_type),
-	build_decl (FIELD_DECL, NULL_TREE, type_info_ptr_type),
+	build_decl (BUILTINS_LOCATION,
+		    FIELD_DECL, NULL_TREE, integer_type_node),
+	build_decl (BUILTINS_LOCATION,
+		    FIELD_DECL, NULL_TREE, type_info_ptr_type),
+	build_decl (BUILTINS_LOCATION,
+		    FIELD_DECL, NULL_TREE, type_info_ptr_type),
 	NULL);
 
   pop_abi_namespace ();

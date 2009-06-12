@@ -411,7 +411,7 @@ getVolatile_builtin (tree method_return_type ATTRIBUTE_UNUSED,
   
   stmt = build_call_expr (built_in_decls[BUILT_IN_SYNCHRONIZE], 0);
   
-  tmp = build_decl (VAR_DECL, NULL, method_return_type);
+  tmp = build_decl (BUILTINS_LOCATION, VAR_DECL, NULL, method_return_type);
   DECL_IGNORED_P (tmp) = 1;
   DECL_ARTIFICIAL (tmp) = 1;
   pushdecl (tmp);
@@ -453,7 +453,8 @@ define_builtin (enum built_in_function val,
 {
   tree decl;
 
-  decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
+  decl = build_decl (BUILTINS_LOCATION,
+		     FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   SET_DECL_ASSEMBLER_NAME (decl, get_identifier (libname));

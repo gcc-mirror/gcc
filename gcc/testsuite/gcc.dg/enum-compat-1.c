@@ -12,8 +12,8 @@ enum e2 {c, d};
 void f(enum e1); /* { dg-error "prototype" "error at decl" } */
 
 void f(x)
-     enum e2 x;
-{ /* { dg-error "doesn't match prototype" "error at defn" } */
+     enum e2 x; /* { dg-error "doesn't match prototype" } */
+{
   return;
 }
 

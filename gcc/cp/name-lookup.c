@@ -3491,7 +3491,7 @@ do_using_directive (tree name_space)
   gcc_assert (TREE_CODE (name_space) == NAMESPACE_DECL);
 
   if (building_stmt_tree ())
-    add_stmt (build_stmt (USING_STMT, name_space));
+    add_stmt (build_stmt (input_location, USING_STMT, name_space));
   name_space = ORIGINAL_NAMESPACE (name_space);
 
   if (!toplevel_bindings_p ())
@@ -5415,7 +5415,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
     if (TREE_CODE (t) != TEMPLATE_DECL)
       {
 	if (building_stmt_tree ())
-	  add_stmt (build_stmt (USING_STMT, t));
+	  add_stmt (build_stmt (input_location, USING_STMT, t));
 	else
 	  (*debug_hooks->imported_module_or_decl) (t, NULL_TREE, context, false);
       }

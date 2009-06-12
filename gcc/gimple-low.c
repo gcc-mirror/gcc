@@ -169,7 +169,7 @@ lower_function_body (void)
       tree disp_label, disp_var, arg;
 
       /* Build 'DISP_LABEL:' and insert.  */
-      disp_label = create_artificial_label ();
+      disp_label = create_artificial_label (cfun->function_end_locus);
       /* This mark will create forward edges from every call site.  */
       DECL_NONLOCAL (disp_label) = 1;
       cfun->has_nonlocal_label = 1;
@@ -727,7 +727,7 @@ lower_gimple_return (gimple_stmt_iterator *gsi, struct lower_data *data)
     }
 
   /* Not found.  Create a new label and record the return statement.  */
-  tmp_rs.label = create_artificial_label ();
+  tmp_rs.label = create_artificial_label (cfun->function_end_locus);
   tmp_rs.stmt = stmt;
   VEC_safe_push (return_statements_t, heap, data->return_statements, &tmp_rs);
 
@@ -797,8 +797,9 @@ static void
 lower_builtin_setjmp (gimple_stmt_iterator *gsi)
 {
   gimple stmt = gsi_stmt (*gsi);
-  tree cont_label = create_artificial_label ();
-  tree next_label = create_artificial_label ();
+  location_t loc = gimple_location (stmt);
+  tree cont_label = create_artificial_label (loc);
+  tree next_label = create_artificial_label (loc);
   tree dest, t, arg;
   gimple g;
 

@@ -44,6 +44,6 @@ void foo (int j, int k)
     baz (i);
 
   #pragma omp for
-  for (i = 0; i < 10; i-=3, j+=2)	/* { dg-error "23:invalid increment expression" } */
+  for (i = 0; i < 10; i-=3, j+=2)	/* { dg-error "27:invalid increment expression" } */
     baz (i);
 }

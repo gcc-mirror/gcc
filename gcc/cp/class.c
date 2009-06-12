@@ -626,7 +626,7 @@ build_vtbl_ref_1 (tree instance, tree idx)
     vtbl = build_vfield_ref (instance, basetype);
 
 
-  aref = build_array_ref (vtbl, idx, input_location);
+  aref = build_array_ref (input_location, vtbl, idx);
   TREE_CONSTANT (aref) |= TREE_CONSTANT (vtbl) && TREE_CONSTANT (idx);
 
   return aref;
@@ -3636,7 +3636,8 @@ build_base_field (record_layout_info rli, tree binfo,
       CLASSTYPE_EMPTY_P (t) = 0;
 
       /* Create the FIELD_DECL.  */
-      decl = build_decl (FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
+      decl = build_decl (input_location,
+			 FIELD_DECL, NULL_TREE, CLASSTYPE_AS_BASE (basetype));
       DECL_ARTIFICIAL (decl) = 1;
       DECL_IGNORED_P (decl) = 1;
       DECL_FIELD_CONTEXT (decl) = t;
@@ -4428,7 +4429,8 @@ create_vtable_ptr (tree t, tree* virtuals_p)
 	 stores cannot alias stores to void*!  */
       tree field;
 
-      field = build_decl (FIELD_DECL, get_vfield_name (t), vtbl_ptr_type_node);
+      field = build_decl (input_location, 
+			  FIELD_DECL, get_vfield_name (t), vtbl_ptr_type_node);
       DECL_VIRTUAL_P (field) = 1;
       DECL_ARTIFICIAL (field) = 1;
       DECL_FIELD_CONTEXT (field) = t;
@@ -5008,7 +5010,8 @@ layout_class_type (tree t, tree *virtuals_p)
 	{
 	  tree padding_field;
 
-	  padding_field = build_decl (FIELD_DECL,
+	  padding_field = build_decl (input_location,
+				      FIELD_DECL,
 				      NULL_TREE,
 				      char_type_node);
 	  DECL_BIT_FIELD (padding_field) = 1;
@@ -5096,7 +5099,8 @@ layout_class_type (tree t, tree *virtuals_p)
       for (field = TYPE_FIELDS (t); field; field = TREE_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
-	    *next_field = build_decl (FIELD_DECL,
+	    *next_field = build_decl (input_location,
+				      FIELD_DECL,
 				      DECL_NAME (field),
 				      TREE_TYPE (field));
 	    DECL_CONTEXT (*next_field) = base_t;
@@ -5137,7 +5141,8 @@ layout_class_type (tree t, tree *virtuals_p)
   /* Make sure not to create any structures with zero size.  */
   if (integer_zerop (rli_size_unit_so_far (rli)) && CLASSTYPE_EMPTY_P (t))
     place_field (rli,
-		 build_decl (FIELD_DECL, NULL_TREE, char_type_node));
+		 build_decl (input_location,
+			     FIELD_DECL, NULL_TREE, char_type_node));
 
   /* Let the back end lay out the type.  */
   finish_record_layout (rli, /*free_p=*/true);

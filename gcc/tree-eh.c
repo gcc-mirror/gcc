@@ -486,6 +486,7 @@ replace_goto_queue_cond_clause (tree *tp, struct leh_tf_state *tf,
   tree label;
   gimple_seq new_seq;
   treemple temp;
+  location_t loc = gimple_location (gsi_stmt (*gsi));
 
   temp.tp = tp;
   new_seq = find_goto_replacement (tf, temp);
@@ -499,7 +500,7 @@ replace_goto_queue_cond_clause (tree *tp, struct leh_tf_state *tf,
       return;
     }
 
-  label = create_artificial_label ();
+  label = create_artificial_label (loc);
   /* Set the new label for the GIMPLE_COND */
   *tp = label;
 
@@ -832,6 +833,7 @@ frob_into_branch_around (gimple tp, tree lab, tree over)
 {
   gimple x;
   gimple_seq cleanup, result;
+  location_t loc = gimple_location (tp);
 
   cleanup = gimple_try_cleanup (tp);
   result = gimple_try_eval (tp);
@@ -839,7 +841,7 @@ frob_into_branch_around (gimple tp, tree lab, tree over)
   if (gimple_seq_may_fallthru (result))
     {
       if (!over)
-	over = create_artificial_label ();
+	over = create_artificial_label (loc);
       x = gimple_build_goto (over);
       gimple_seq_add_stmt (&result, x);
     }
@@ -890,7 +892,7 @@ lower_try_finally_fallthru_label (struct leh_tf_state *tf)
 
   if (!label)
     {
-      label = create_artificial_label ();
+      label = create_artificial_label (gimple_location (tf->try_finally_expr));
       tf->fallthru_label = label;
       if (tf->outer->tf)
         {
@@ -1082,7 +1084,7 @@ lower_try_finally_nofallthru (struct leh_state *state,
   if (tf->may_throw)
     lab = tf->eh_label;
   else
-    lab = create_artificial_label ();
+    lab = create_artificial_label (gimple_location (tf->try_finally_expr));
 
   /* We expect that tf->top_p is a GIMPLE_TRY. */
   finally = gimple_try_cleanup (tf->top_p);
@@ -1117,6 +1119,7 @@ lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
   gimple x;
   gimple_seq finally;
   tree finally_label;
+  location_t loc = gimple_location (tf->try_finally_expr);
 
   finally = gimple_try_cleanup (tf->top_p);
   tf->top_p_seq = gimple_try_eval (tf->top_p);
@@ -1148,7 +1151,7 @@ lower_try_finally_onedest (struct leh_state *state, struct leh_tf_state *tf)
       return;
     }
 
-  finally_label = create_artificial_label ();
+  finally_label = create_artificial_label (loc);
   x = gimple_build_label (finally_label);
   gimple_seq_add_stmt (&tf->top_p_seq, x);
 
@@ -1201,6 +1204,7 @@ lower_try_finally_copy (struct leh_state *state, struct leh_tf_state *tf)
   gimple_seq seq;
   gimple x;
   tree tmp;
+  location_t tf_loc = gimple_location (tf->try_finally_expr);
 
   finally = gimple_try_cleanup (tf->top_p);
   tf->top_p_seq = gimple_try_eval (tf->top_p);
@@ -1262,7 +1266,8 @@ lower_try_finally_copy (struct leh_state *state, struct leh_tf_state *tf)
 	  if (! q)
 	    continue;
 
-	  lab = labels[index].label = create_artificial_label ();
+	  lab = labels[index].label
+	    = create_artificial_label (tf_loc);
 
 	  if (index == return_index)
 	    do_return_redirection (q, lab, NULL, &return_val);
@@ -1327,12 +1332,22 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   gimple switch_stmt;
   gimple_seq finally;
   struct pointer_map_t *cont_map = NULL;
+  /* The location of the TRY_FINALLY stmt.  */
+  location_t tf_loc;
+  /* The location of the finally block.  */
+  location_t finally_loc;
 
   switch_body = gimple_seq_alloc ();
 
   /* Mash the TRY block to the head of the chain.  */
   finally = gimple_try_cleanup (tf->top_p);
   tf->top_p_seq = gimple_try_eval (tf->top_p);
+
+  /* The location of the finally is either the last stmt in the finally
+     block or the location of the TRY_FINALLY itself.  */
+  finally_loc = gimple_seq_last_stmt (tf->top_p_seq) != NULL ?
+    gimple_location (gimple_seq_last_stmt (tf->top_p_seq))
+    : tf_loc;
 
   /* Lower the finally block itself.  */
   lower_eh_constructs_1 (state, finally);
@@ -1345,7 +1360,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
   ndests = fallthru_index + tf->may_fallthru;
 
   finally_tmp = create_tmp_var (integer_type_node, "finally_tmp");
-  finally_label = create_artificial_label ();
+  finally_label = create_artificial_label (finally_loc);
 
   /* We use VEC_quick_push on case_label_vec throughout this function,
      since we know the size in advance and allocate precisely as muce
@@ -1373,7 +1388,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
       last_case = build3 (CASE_LABEL_EXPR, void_type_node,
 			  build_int_cst (NULL_TREE, fallthru_index), NULL,
-			  create_artificial_label ());
+			  create_artificial_label (tf_loc));
       VEC_quick_push (tree, case_label_vec, last_case);
       last_case_index++;
 
@@ -1396,7 +1411,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
       last_case = build3 (CASE_LABEL_EXPR, void_type_node,
 			  build_int_cst (NULL_TREE, eh_index), NULL,
-			  create_artificial_label ());
+			  create_artificial_label (tf_loc));
       VEC_quick_push (tree, case_label_vec, last_case);
       last_case_index++;
 
@@ -1480,7 +1495,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       gcc_assert (slot);
       cont_stmt = *(gimple *) slot;
 
-      label = create_artificial_label ();
+      label = create_artificial_label (tf_loc);
       CASE_LABEL (last_case) = label;
 
       x = gimple_build_label (label);
@@ -1502,6 +1517,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
      label.  */
   switch_stmt = gimple_build_switch_vec (finally_tmp, last_case,
                                          case_label_vec);
+  gimple_set_location (switch_stmt, finally_loc);
 
   /* Need to link SWITCH_STMT after running replace_goto_queue
      due to not wanting to process the same goto stmts twice.  */
@@ -1561,6 +1577,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
   struct leh_tf_state this_tf;
   struct leh_state this_state;
   int ndests;
+  location_t tf_loc = gimple_location (tp);
 
   /* Process the try block.  */
 
@@ -1587,7 +1604,7 @@ lower_try_finally (struct leh_state *state, gimple tp)
     this_tf.may_throw = get_eh_region_may_contain_throw (this_tf.region);
   if (this_tf.may_throw)
     {
-      this_tf.eh_label = create_artificial_label ();
+      this_tf.eh_label = create_artificial_label (tf_loc);
       set_eh_region_tree_label (this_tf.region, this_tf.eh_label);
       honor_protect_cleanup_actions (state, &this_state, &this_tf);
     }
@@ -1650,6 +1667,7 @@ lower_catch (struct leh_state *state, gimple tp)
   struct leh_state this_state;
   gimple_stmt_iterator gsi;
   tree out_label;
+  location_t try_catch_loc = gimple_location (tp);
 
   try_region = gen_eh_region_try (state->cur_region);
   this_state.cur_region = try_region;
@@ -1676,7 +1694,7 @@ lower_catch (struct leh_state *state, gimple tp)
       this_state.cur_region = catch_region;
       lower_eh_constructs_1 (&this_state, gimple_catch_handler (gcatch));
 
-      eh_label = create_artificial_label ();
+      eh_label = create_artificial_label (try_catch_loc);
       set_eh_region_tree_label (catch_region, eh_label);
 
       x = gimple_build_label (eh_label);
@@ -1685,7 +1703,7 @@ lower_catch (struct leh_state *state, gimple tp)
       if (gimple_seq_may_fallthru (gimple_catch_handler (gcatch)))
 	{
 	  if (!out_label)
-	    out_label = create_artificial_label ();
+	    out_label = create_artificial_label (try_catch_loc);
 
 	  x = gimple_build_goto (out_label);
 	  gimple_seq_add_stmt (gimple_catch_handler_ptr (gcatch), x);
@@ -1731,7 +1749,7 @@ lower_eh_filter (struct leh_state *state, gimple tp)
   lower_eh_constructs_1 (state, gimple_eh_filter_failure (inner));
   gimple_try_set_cleanup (tp, gimple_eh_filter_failure (inner));
 
-  eh_label = create_artificial_label ();
+  eh_label = create_artificial_label (gimple_location (inner));
   set_eh_region_tree_label (this_region, eh_label);
 
   return frob_into_branch_around (tp, eh_label, NULL);
@@ -1770,13 +1788,13 @@ lower_cleanup (struct leh_state *state, gimple tp)
   /* Build enough of a try-finally state so that we can reuse
      honor_protect_cleanup_actions.  */
   memset (&fake_tf, 0, sizeof (fake_tf));
-  fake_tf.top_p = tp;
+  fake_tf.top_p = fake_tf.try_finally_expr = tp;
   fake_tf.outer = state;
   fake_tf.region = this_region;
   fake_tf.may_fallthru = gimple_seq_may_fallthru (gimple_try_eval (tp));
   fake_tf.may_throw = true;
 
-  fake_tf.eh_label = create_artificial_label ();
+  fake_tf.eh_label = create_artificial_label (gimple_location (tp));
   set_eh_region_tree_label (this_region, fake_tf.eh_label);
 
   honor_protect_cleanup_actions (state, NULL, &fake_tf);

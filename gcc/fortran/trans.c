@@ -238,7 +238,7 @@ gfc_finish_block (stmtblock_t * stmtblock)
 
   expr = stmtblock->head;
   if (!expr)
-    expr = build_empty_stmt ();
+    expr = build_empty_stmt (input_location);
 
   stmtblock->head = NULL_TREE;
 
@@ -485,7 +485,7 @@ gfc_trans_runtime_check (bool error, bool once, tree cond, stmtblock_t * pblock,
       cond = build_call_expr (built_in_decls[BUILT_IN_EXPECT], 2, cond, tmp);
       cond = fold_convert (boolean_type_node, cond);
 
-      tmp = build3_v (COND_EXPR, cond, body, build_empty_stmt ());
+      tmp = build3_v (COND_EXPR, cond, body, build_empty_stmt (input_location));
       gfc_add_expr_to_block (pblock, tmp);
     }
 }
@@ -516,7 +516,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
       ("Attempt to allocate a negative amount of memory."));
   tmp = fold_build3 (COND_EXPR, void_type_node, negative,
 		     build_call_expr (gfor_fndecl_runtime_error, 1, msg),
-		     build_empty_stmt ());
+		     build_empty_stmt (input_location));
   gfc_add_expr_to_block (block, tmp);
 
   /* Call malloc and check the result.  */
@@ -534,7 +534,7 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
       ("Memory allocation failed"));
   tmp = fold_build3 (COND_EXPR, void_type_node, null_result,
 		     build_call_expr (gfor_fndecl_os_error, 1, msg),
-		     build_empty_stmt ());
+		     build_empty_stmt (input_location));
   gfc_add_expr_to_block (&block2, tmp);
   malloc_result = gfc_finish_block (&block2);
 
@@ -607,7 +607,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
       tmp = fold_build3 (COND_EXPR, void_type_node,
 			 fold_build2 (NE_EXPR, boolean_type_node, status,
 				      build_int_cst (TREE_TYPE (status), 0)),
-			 tmp, build_empty_stmt ());
+			 tmp, build_empty_stmt (input_location));
       gfc_add_expr_to_block (block, tmp);
     }
 
@@ -664,7 +664,7 @@ gfc_allocate_with_status (stmtblock_t * block, tree size, tree status)
   tmp = fold_build3 (COND_EXPR, void_type_node,
 		     fold_build2 (EQ_EXPR, boolean_type_node, res,
 				  build_int_cst (pvoid_type_node, 0)),
-		     tmp, build_empty_stmt ());
+		     tmp, build_empty_stmt (input_location));
   gfc_add_expr_to_block (&alloc_block, tmp);
 
   cond = fold_build2 (LT_EXPR, boolean_type_node, size,
@@ -790,7 +790,7 @@ gfc_call_free (tree var)
 		      build_int_cst (pvoid_type_node, 0));
   call = build_call_expr (built_in_decls[BUILT_IN_FREE], 1, var);
   tmp = fold_build3 (COND_EXPR, void_type_node, cond, call,
-		     build_empty_stmt ());
+		     build_empty_stmt (input_location));
   gfc_add_expr_to_block (&block, tmp);
 
   return gfc_finish_block (&block);
@@ -854,7 +854,7 @@ gfc_deallocate_with_status (tree pointer, tree status, bool can_fail,
 				       varname);
     }
   else
-    error = build_empty_stmt ();
+    error = build_empty_stmt (input_location);
 
   if (status != NULL_TREE && !integer_zerop (status))
     {
@@ -889,7 +889,7 @@ gfc_deallocate_with_status (tree pointer, tree status, bool can_fail,
 			 fold_build1 (INDIRECT_REF, status_type, status),
 			 build_int_cst (status_type, 0));
       tmp = fold_build3 (COND_EXPR, void_type_node, cond2, tmp,
-			 build_empty_stmt ());
+			 build_empty_stmt (input_location));
       gfc_add_expr_to_block (&non_null, tmp);
     }
 
@@ -936,7 +936,7 @@ gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
       ("Attempt to allocate a negative amount of memory."));
   tmp = fold_build3 (COND_EXPR, void_type_node, negative,
 		     build_call_expr (gfor_fndecl_runtime_error, 1, msg),
-		     build_empty_stmt ());
+		     build_empty_stmt (input_location));
   gfc_add_expr_to_block (block, tmp);
 
   /* Call realloc and check the result.  */
@@ -953,14 +953,14 @@ gfc_call_realloc (stmtblock_t * block, tree mem, tree size)
 						("Out of memory"));
   tmp = fold_build3 (COND_EXPR, void_type_node, null_result,
 		     build_call_expr (gfor_fndecl_os_error, 1, msg),
-		     build_empty_stmt ());
+		     build_empty_stmt (input_location));
   gfc_add_expr_to_block (block, tmp);
 
   /* if (size == 0) then the result is NULL.  */
   tmp = fold_build2 (MODIFY_EXPR, type, res, build_int_cst (type, 0));
   zero = fold_build1 (TRUTH_NOT_EXPR, boolean_type_node, nonzero);
   tmp = fold_build3 (COND_EXPR, void_type_node, zero, tmp,
-		     build_empty_stmt ());
+		     build_empty_stmt (input_location));
   gfc_add_expr_to_block (block, tmp);
 
   return res;
@@ -1038,7 +1038,7 @@ gfc_trans_code (gfc_code * code)
   tree res;
 
   if (!code)
-    return build_empty_stmt ();
+    return build_empty_stmt (input_location);
 
   gfc_start_block (&block);
 
@@ -1289,10 +1289,9 @@ gfc_generate_module_code (gfc_namespace * ns)
 
   gcc_assert (ns->proc_name->backend_decl == NULL);
   ns->proc_name->backend_decl
-    = build_decl (NAMESPACE_DECL, get_identifier (ns->proc_name->name),
+    = build_decl (ns->proc_name->declared_at.lb->location,
+		  NAMESPACE_DECL, get_identifier (ns->proc_name->name),
 		  void_type_node);
-  gfc_set_decl_location (ns->proc_name->backend_decl,
-			 &ns->proc_name->declared_at);
   entry = gfc_find_module (ns->proc_name->name);
   if (entry->namespace_decl)
     /* Buggy sourcecode, using a module before defining it?  */

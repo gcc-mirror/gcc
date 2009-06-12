@@ -418,7 +418,8 @@ coverage_counter_alloc (unsigned counter, unsigned num)
       tree gcov_type_array_type
         = build_array_type (gcov_type_node, NULL_TREE);
       tree_ctr_tables[counter]
-        = build_decl (VAR_DECL, NULL_TREE, gcov_type_array_type);
+        = build_decl (BUILTINS_LOCATION,
+		      VAR_DECL, NULL_TREE, gcov_type_array_type);
       TREE_STATIC (tree_ctr_tables[counter]) = 1;
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", counter + 1);
       DECL_NAME (tree_ctr_tables[counter]) = get_identifier (buf);
@@ -639,10 +640,12 @@ build_fn_info_type (unsigned int counters)
   tree array_type;
 
   /* ident */
-  fields = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
+  fields = build_decl (BUILTINS_LOCATION,
+		       FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
 
   /* checksum */
-  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
 
@@ -651,7 +654,8 @@ build_fn_info_type (unsigned int counters)
   array_type = build_array_type (get_gcov_unsigned_t (), array_type);
 
   /* counters */
-  field = build_decl (FIELD_DECL, NULL_TREE, array_type);
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, array_type);
   TREE_CHAIN (field) = fields;
   fields = field;
 
@@ -714,12 +718,14 @@ build_ctr_info_type (void)
   tree gcov_merge_fn_type;
 
   /* counters */
-  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
 
   /* values */
-  field = build_decl (FIELD_DECL, NULL_TREE, gcov_ptr_type);
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, gcov_ptr_type);
   TREE_CHAIN (field) = fields;
   fields = field;
 
@@ -728,7 +734,8 @@ build_ctr_info_type (void)
     build_function_type_list (void_type_node,
 			      gcov_ptr_type, get_gcov_unsigned_t (),
 			      NULL_TREE);
-  field = build_decl (FIELD_DECL, NULL_TREE,
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE,
 		      build_pointer_type (gcov_merge_fn_type));
   TREE_CHAIN (field) = fields;
   fields = field;
@@ -780,7 +787,8 @@ build_ctr_info_value (unsigned int counter, tree type)
     value = tree_cons (fields, null_pointer_node, value);
   fields = TREE_CHAIN (fields);
 
-  fn = build_decl (FUNCTION_DECL,
+  fn = build_decl (BUILTINS_LOCATION,
+		   FUNCTION_DECL,
 		   get_identifier (ctr_merge_functions[counter]),
 		   TREE_TYPE (TREE_TYPE (fields)));
   DECL_EXTERNAL (fn) = 1;
@@ -825,20 +833,23 @@ build_gcov_info (void)
   const_type = build_qualified_type (type, TYPE_QUAL_CONST);
 
   /* Version ident */
-  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field, build_int_cstu (TREE_TYPE (field), GCOV_VERSION),
 		     value);
 
   /* next -- NULL */
-  field = build_decl (FIELD_DECL, NULL_TREE, build_pointer_type (const_type));
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, build_pointer_type (const_type));
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field, null_pointer_node, value);
 
   /* stamp */
-  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field, build_int_cstu (TREE_TYPE (field), local_tick),
@@ -847,7 +858,8 @@ build_gcov_info (void)
   /* Filename */
   string_type = build_pointer_type (build_qualified_type (char_type_node,
 						    TYPE_QUAL_CONST));
-  field = build_decl (FIELD_DECL, NULL_TREE, string_type);
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, string_type);
   TREE_CHAIN (field) = fields;
   fields = field;
   da_file_name_len = strlen (da_file_name);
@@ -882,7 +894,8 @@ build_gcov_info (void)
     fn_info_value = null_pointer_node;
 
   /* number of functions */
-  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field,
@@ -890,13 +903,15 @@ build_gcov_info (void)
 		     value);
 
   /* fn_info table */
-  field = build_decl (FIELD_DECL, NULL_TREE, fn_info_ptr_type);
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, fn_info_ptr_type);
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field, fn_info_value, value);
 
   /* counter_mask */
-  field = build_decl (FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, get_gcov_unsigned_t ());
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field,
@@ -917,7 +932,8 @@ build_gcov_info (void)
   ctr_info_value = build_constructor_from_list (ctr_info_ary_type,
 				                nreverse (ctr_info_value));
 
-  field = build_decl (FIELD_DECL, NULL_TREE, ctr_info_ary_type);
+  field = build_decl (BUILTINS_LOCATION,
+		      FIELD_DECL, NULL_TREE, ctr_info_ary_type);
   TREE_CHAIN (field) = fields;
   fields = field;
   value = tree_cons (field, ctr_info_value, value);
@@ -947,7 +963,8 @@ create_coverage (void)
 
   t = build_gcov_info ();
 
-  gcov_info = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (t));
+  gcov_info = build_decl (BUILTINS_LOCATION,
+			  VAR_DECL, NULL_TREE, TREE_TYPE (t));
   TREE_STATIC (gcov_info) = 1;
   ASM_GENERATE_INTERNAL_LABEL (name_buf, "LPBX", 0);
   DECL_NAME (gcov_info) = get_identifier (name_buf);
@@ -959,7 +976,8 @@ create_coverage (void)
   /* Build a decl for __gcov_init.  */
   t = build_pointer_type (TREE_TYPE (gcov_info));
   t = build_function_type_list (void_type_node, t, NULL);
-  t = build_decl (FUNCTION_DECL, get_identifier ("__gcov_init"), t);
+  t = build_decl (BUILTINS_LOCATION,
+		  FUNCTION_DECL, get_identifier ("__gcov_init"), t);
   TREE_PUBLIC (t) = 1;
   DECL_EXTERNAL (t) = 1;
   gcov_init = t;

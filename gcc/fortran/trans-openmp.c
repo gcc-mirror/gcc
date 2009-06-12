@@ -436,7 +436,7 @@ gfc_trans_omp_variable_list (enum omp_clause_code code, gfc_namelist *namelist,
 	tree t = gfc_trans_omp_variable (namelist->sym);
 	if (t != error_mark_node)
 	  {
-	    tree node = build_omp_clause (code);
+	    tree node = build_omp_clause (input_location, code);
 	    OMP_CLAUSE_DECL (node) = t;
 	    list = gfc_trans_add_clause (node, list);
 	  }
@@ -682,7 +682,8 @@ gfc_trans_omp_reduction_list (gfc_namelist *namelist, tree list,
 	tree t = gfc_trans_omp_variable (namelist->sym);
 	if (t != error_mark_node)
 	  {
-	    tree node = build_omp_clause (OMP_CLAUSE_REDUCTION);
+	    tree node = build_omp_clause (where.lb->location,
+					  OMP_CLAUSE_REDUCTION);
 	    OMP_CLAUSE_DECL (node) = t;
 	    OMP_CLAUSE_REDUCTION_CODE (node) = reduction_code;
 	    if (namelist->sym->attr.dimension)
@@ -801,7 +802,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       if_var = gfc_evaluate_now (se.expr, block);
       gfc_add_block_to_block (block, &se.post);
 
-      c = build_omp_clause (OMP_CLAUSE_IF);
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_IF);
       OMP_CLAUSE_IF_EXPR (c) = if_var;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
@@ -816,7 +817,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       num_threads = gfc_evaluate_now (se.expr, block);
       gfc_add_block_to_block (block, &se.post);
 
-      c = build_omp_clause (OMP_CLAUSE_NUM_THREADS);
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_NUM_THREADS);
       OMP_CLAUSE_NUM_THREADS_EXPR (c) = num_threads;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
@@ -833,7 +834,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
   if (clauses->sched_kind != OMP_SCHED_NONE)
     {
-      c = build_omp_clause (OMP_CLAUSE_SCHEDULE);
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_SCHEDULE);
       OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (c) = chunk_size;
       switch (clauses->sched_kind)
 	{
@@ -860,7 +861,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
   if (clauses->default_sharing != OMP_DEFAULT_UNKNOWN)
     {
-      c = build_omp_clause (OMP_CLAUSE_DEFAULT);
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_DEFAULT);
       switch (clauses->default_sharing)
 	{
 	case OMP_DEFAULT_NONE:
@@ -883,25 +884,25 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
   if (clauses->nowait)
     {
-      c = build_omp_clause (OMP_CLAUSE_NOWAIT);
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_NOWAIT);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
   if (clauses->ordered)
     {
-      c = build_omp_clause (OMP_CLAUSE_ORDERED);
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_ORDERED);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
   if (clauses->untied)
     {
-      c = build_omp_clause (OMP_CLAUSE_UNTIED);
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_UNTIED);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
   if (clauses->collapse)
     {
-      c = build_omp_clause (OMP_CLAUSE_COLLAPSE);
+      c = build_omp_clause (where.lb->location, OMP_CLAUSE_COLLAPSE);
       OMP_CLAUSE_COLLAPSE_EXPR (c) = build_int_cst (NULL, clauses->collapse);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
@@ -1244,7 +1245,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 
       if (!dovar_found)
 	{
-	  tmp = build_omp_clause (OMP_CLAUSE_PRIVATE);
+	  tmp = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
 	  OMP_CLAUSE_DECL (tmp) = dovar;
 	  omp_clauses = gfc_trans_add_clause (tmp, omp_clauses);
 	}
@@ -1277,7 +1278,8 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
 		    && OMP_CLAUSE_DECL (c) == dovar)
 		  {
-		    tree l = build_omp_clause (OMP_CLAUSE_LASTPRIVATE);
+		    tree l = build_omp_clause (input_location,
+					       OMP_CLAUSE_LASTPRIVATE);
 		    OMP_CLAUSE_DECL (l) = dovar;
 		    OMP_CLAUSE_CHAIN (l) = omp_clauses;
 		    OMP_CLAUSE_LASTPRIVATE_STMT (l) = tmp;
@@ -1290,7 +1292,7 @@ gfc_trans_omp_do (gfc_code *code, stmtblock_t *pblock,
 	}
       if (!simple)
 	{
-	  tmp = build_omp_clause (OMP_CLAUSE_PRIVATE);
+	  tmp = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
 	  OMP_CLAUSE_DECL (tmp) = count;
 	  omp_clauses = gfc_trans_add_clause (tmp, omp_clauses);
 	}
@@ -1558,7 +1560,7 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
   pushlevel (0);
 
   if (!code)
-    return build_empty_stmt ();
+    return build_empty_stmt (input_location);
 
   gfc_start_block (&block);
   pblock = &block;
@@ -1681,7 +1683,8 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
       tmp = gfc_finish_block (&singleblock);
       tmp = build2 (OMP_SINGLE, void_type_node, tmp,
 		    clauses->nowait
-		    ? build_omp_clause (OMP_CLAUSE_NOWAIT) : NULL_TREE);
+		    ? build_omp_clause (input_location, OMP_CLAUSE_NOWAIT)
+		    : NULL_TREE);
       gfc_add_expr_to_block (pblock, tmp);
     }
 

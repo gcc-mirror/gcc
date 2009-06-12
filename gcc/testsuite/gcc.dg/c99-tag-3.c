@@ -13,10 +13,10 @@ void f (void) { struct s0; }
 
 /* A declaration with a qualifier or storage class specifier declares
    the tag if no other declaration of it is visible.  */
-const union u0; /* { dg-warning "useless type qualifier in empty declaration" } */
+const union u0; /* { dg-warning "13:useless type qualifier in empty declaration" } */
 union u0 { long b; };
 
-extern struct s1; /* { dg-warning "useless storage class specifier in empty declaration" } */
+extern struct s1; /* { dg-warning "15:useless storage class specifier in empty declaration" } */
 
 /* But if a declaration of the tag is visible, whether at the same
    scope or an outer scope, the declaration specifies the same type as
@@ -25,13 +25,13 @@ extern struct s1; /* { dg-warning "useless storage class specifier in empty decl
    the members of an enumeration, it is a constraint violation.  */
 
 struct s2 { char x; };
-const struct s2; /* { dg-error "empty declaration with type qualifier does not redeclare tag" } */
+const struct s2; /* { dg-error "14:empty declaration with type qualifier does not redeclare tag" } */
 
 union u1;
-extern union u1; /* { dg-error "empty declaration with storage class specifier does not redeclare tag" } */
+extern union u1; /* { dg-error "14:empty declaration with storage class specifier does not redeclare tag" } */
 
 union u2 { long b; };
-void g(void) { const union u2; } /* { dg-error "empty declaration with type qualifier does not redeclare tag" } */
+void g(void) { const union u2; } /* { dg-error "28:empty declaration with type qualifier does not redeclare tag" } */
 
 /* And it does not redeclare the tag either if the outer tag is the
    wrong kind of tag.  This also yields an error for the reference to
@@ -39,21 +39,21 @@ void g(void) { const union u2; } /* { dg-error "empty declaration with type qual
    declaration.  */
 
 union u3 { float v; };
-void h(void) { const struct u3; } /* { dg-error "'u3' defined as wrong kind of tag" } */
-/* { dg-error "empty declaration with type qualifier does not redeclare tag" "wrong tag empty" { target *-*-* } 42 } */
+void h(void) { const struct u3; } /* { dg-error "29:'u3' defined as wrong kind of tag" } */
+/* { dg-error "29:empty declaration with type qualifier does not redeclare tag" "wrong tag empty" { target *-*-* } 42 } */
 
 /* However, such useless specifiers are OK if the contents of the tag
    are being defined, or shadowed in an inner scope with the contents
    included in the shadowing.  */
 
 struct s3;
-const struct s3 { int a; }; /* { dg-warning "useless type qualifier in empty declaration" } */
+const struct s3 { int a; }; /* { dg-warning "14:useless type qualifier in empty declaration" } */
 
 union u4;
-extern union u4 { int z; }; /* { dg-warning "useless storage class specifier in empty declaration" } */
+extern union u4 { int z; }; /* { dg-warning "14:useless storage class specifier in empty declaration" } */
 
 enum e0 { E0 };
-void i(void) { const enum e0 { E1 }; } /* { dg-warning "useless type qualifier in empty declaration" } */
+void i(void) { const enum e0 { E1 }; } /* { dg-warning "32:useless type qualifier in empty declaration" } */
 
 union u5 { int p; };
-void j(void) { extern struct u5 { int q; }; } /* { dg-warning "useless storage class specifier in empty declaration" } */
+void j(void) { extern struct u5 { int q; }; } /* { dg-warning "30:useless storage class specifier in empty declaration" } */

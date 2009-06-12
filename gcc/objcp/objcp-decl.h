@@ -23,8 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OBJCP_DECL_H
 #define GCC_OBJCP_DECL_H
 
-extern tree objcp_start_struct (enum tree_code, tree);
-extern tree objcp_finish_struct (tree, tree, tree);
+extern tree objcp_start_struct (location_t, enum tree_code, tree);
+extern tree objcp_finish_struct (location_t, tree, tree, tree);
 extern void objcp_finish_function (void);
 extern tree objcp_build_function_call (tree, tree);
 extern tree objcp_xref_tag (enum tree_code, tree);
@@ -49,7 +49,7 @@ extern tree objcp_end_compound_stmt (tree, int);
 	objcp_comptypes (type1, type2)
 #define c_begin_compound_stmt(flags) \
 	objcp_begin_compound_stmt (flags)
-#define c_end_compound_stmt(stmt, flags) \
+#define c_end_compound_stmt(loc, stmt, flags)	\
 	objcp_end_compound_stmt (stmt, flags)
 
 #undef OBJC_TYPE_NAME

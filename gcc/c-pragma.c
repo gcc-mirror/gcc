@@ -455,7 +455,8 @@ maybe_apply_pending_pragma_weaks (void)
       if (TREE_VALUE (t) == NULL)
 	continue;
 
-      decl = build_decl (FUNCTION_DECL, alias_id, default_function_type);
+      decl = build_decl (UNKNOWN_LOCATION,
+			 FUNCTION_DECL, alias_id, default_function_type);
 
       DECL_ARTIFICIAL (decl) = 1;
       TREE_PUBLIC (decl) = 1;

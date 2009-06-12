@@ -1048,7 +1048,8 @@ ccp_fold (gimple stmt)
 		  if (!useless_type_conversion_p (TREE_TYPE (lhs),
 						  TREE_TYPE (op0))
 		      && ((tem = maybe_fold_offset_to_address
-				   (op0, integer_zero_node, TREE_TYPE (lhs)))
+			   (gimple_location (stmt),
+			    op0, integer_zero_node, TREE_TYPE (lhs)))
 			  != NULL_TREE))
 		    return tem;
 		  return op0;
@@ -1085,8 +1086,8 @@ ccp_fold (gimple stmt)
 		  && TREE_CODE (op1) == INTEGER_CST)
 		{
 		  tree lhs = gimple_assign_lhs (stmt);
-		  tree tem = maybe_fold_offset_to_address (op0, op1,
-							   TREE_TYPE (lhs));
+		  tree tem = maybe_fold_offset_to_address
+		    (gimple_location (stmt), op0, op1, TREE_TYPE (lhs));
 		  if (tem != NULL_TREE)
 		    return tem;
 		}
@@ -1644,10 +1645,13 @@ struct gimple_opt_pass pass_ccp =
 
 /* A subroutine of fold_stmt.  Attempts to fold *(A+O) to A[X].
    BASE is an array type.  OFFSET is a byte displacement.  ORIG_TYPE
-   is the desired result type.  */
+   is the desired result type.
+
+   LOC is the location of the original expression.  */
 
 static tree
-maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type,
+maybe_fold_offset_to_array_ref (location_t loc, tree base, tree offset,
+				tree orig_type,
 				bool allow_negative_idx)
 {
   tree min_idx, idx, idx_type, elt_offset = integer_zero_node;
@@ -1780,16 +1784,23 @@ maybe_fold_offset_to_array_ref (tree base, tree offset, tree orig_type,
 	   && compare_tree_int (idx, 0) < 0)
     return NULL_TREE;
 
-  return build4 (ARRAY_REF, elt_type, base, idx, NULL_TREE, NULL_TREE);
+  {
+    tree t = build4 (ARRAY_REF, elt_type, base, idx, NULL_TREE, NULL_TREE);
+    SET_EXPR_LOCATION (t, loc);
+    return t;
+  }
 }
 
 
 /* Attempt to fold *(S+O) to S.X.
    BASE is a record type.  OFFSET is a byte displacement.  ORIG_TYPE
-   is the desired result type.  */
+   is the desired result type.
+
+   LOC is the location of the original expression.  */
 
 static tree
-maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
+maybe_fold_offset_to_component_ref (location_t loc, tree record_type,
+				    tree base, tree offset,
 				    tree orig_type, bool base_is_ptr)
 {
   tree f, t, field_type, tail_array_field, field_offset;
@@ -1872,14 +1883,16 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
 	new_base = build1 (INDIRECT_REF, record_type, base);
       else
 	new_base = base;
+      protected_set_expr_location (new_base, loc);
       new_base = build3 (COMPONENT_REF, field_type, new_base, f, NULL_TREE);
+      protected_set_expr_location (new_base, loc);
 
       /* Recurse to possibly find the match.  */
-      ret = maybe_fold_offset_to_array_ref (new_base, t, orig_type,
+      ret = maybe_fold_offset_to_array_ref (loc, new_base, t, orig_type,
 					    f == TYPE_FIELDS (record_type));
       if (ret)
 	return ret;
-      ret = maybe_fold_offset_to_component_ref (field_type, new_base, t,
+      ret = maybe_fold_offset_to_component_ref (loc, field_type, new_base, t,
 						orig_type, false);
       if (ret)
 	return ret;
@@ -1895,25 +1908,32 @@ maybe_fold_offset_to_component_ref (tree record_type, tree base, tree offset,
   /* If we get here, we've got an aggregate field, and a possibly 
      nonzero offset into them.  Recurse and hope for a valid match.  */
   if (base_is_ptr)
-    base = build1 (INDIRECT_REF, record_type, base);
+    {
+      base = build1 (INDIRECT_REF, record_type, base);
+      SET_EXPR_LOCATION (base, loc);
+    }
   base = build3 (COMPONENT_REF, field_type, base, f, NULL_TREE);
+  SET_EXPR_LOCATION (base, loc);
 
-  t = maybe_fold_offset_to_array_ref (base, offset, orig_type,
+  t = maybe_fold_offset_to_array_ref (loc, base, offset, orig_type,
 				      f == TYPE_FIELDS (record_type));
   if (t)
     return t;
-  return maybe_fold_offset_to_component_ref (field_type, base, offset,
+  return maybe_fold_offset_to_component_ref (loc, field_type, base, offset,
 					     orig_type, false);
 }
 
 /* Attempt to express (ORIG_TYPE)BASE+OFFSET as BASE->field_of_orig_type
-   or BASE[index] or by combination of those. 
+   or BASE[index] or by combination of those.
+
+   LOC is the location of original expression.
 
    Before attempting the conversion strip off existing ADDR_EXPRs and
    handled component refs.  */
 
 tree
-maybe_fold_offset_to_reference (tree base, tree offset, tree orig_type)
+maybe_fold_offset_to_reference (location_t loc, tree base, tree offset,
+				tree orig_type)
 {
   tree ret;
   tree type;
@@ -1960,13 +1980,17 @@ maybe_fold_offset_to_reference (tree base, tree offset, tree orig_type)
 	return NULL_TREE;
       type = TREE_TYPE (TREE_TYPE (base));
     }
-  ret = maybe_fold_offset_to_component_ref (type, base, offset,
+  ret = maybe_fold_offset_to_component_ref (loc, type, base, offset,
 					    orig_type, base_is_ptr);
   if (!ret)
     {
       if (base_is_ptr)
-	base = build1 (INDIRECT_REF, type, base);
-      ret = maybe_fold_offset_to_array_ref (base, offset, orig_type, true);
+	{
+	  base = build1 (INDIRECT_REF, type, base);
+	  SET_EXPR_LOCATION (base, loc);
+	}
+      ret = maybe_fold_offset_to_array_ref (loc,
+					    base, offset, orig_type, true);
     }
   return ret;
 }
@@ -1974,17 +1998,21 @@ maybe_fold_offset_to_reference (tree base, tree offset, tree orig_type)
 /* Attempt to express (ORIG_TYPE)&BASE+OFFSET as &BASE->field_of_orig_type
    or &BASE[index] or by combination of those.
 
+   LOC is the location of the original expression.
+
    Before attempting the conversion strip off existing component refs.  */
 
 tree
-maybe_fold_offset_to_address (tree addr, tree offset, tree orig_type)
+maybe_fold_offset_to_address (location_t loc, tree addr, tree offset,
+			      tree orig_type)
 {
   tree t;
 
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (addr))
 	      && POINTER_TYPE_P (orig_type));
 
-  t = maybe_fold_offset_to_reference (addr, offset, TREE_TYPE (orig_type));
+  t = maybe_fold_offset_to_reference (loc, addr, offset,
+				      TREE_TYPE (orig_type));
   if (t != NULL_TREE)
     {
       tree orig = addr;
@@ -2021,7 +2049,9 @@ maybe_fold_offset_to_address (tree addr, tree offset, tree orig_type)
       ptr_type = build_pointer_type (TREE_TYPE (t));
       if (!useless_type_conversion_p (orig_type, ptr_type))
 	return NULL_TREE;
-      return build_fold_addr_expr_with_type (t, ptr_type);
+      t = build_fold_addr_expr_with_type (t, ptr_type);
+      protected_set_expr_location (t, loc);
+      return t;
     }
 
   return NULL_TREE;
@@ -2035,6 +2065,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
 {
   tree t;
   bool volatile_p = TREE_THIS_VOLATILE (expr);
+  location_t loc = EXPR_LOCATION (expr);
 
   /* We may well have constructed a double-nested PLUS_EXPR via multiple
      substitutions.  Fold that down to one.  Remove NON_LVALUE_EXPRs that
@@ -2075,7 +2106,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
 	return DECL_INITIAL (base);
 
       /* Try folding *(&B+O) to B.X.  */
-      t = maybe_fold_offset_to_reference (base_addr, offset,
+      t = maybe_fold_offset_to_reference (loc, base_addr, offset,
 					  TREE_TYPE (expr));
       if (t)
 	{
@@ -2114,7 +2145,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
       /* Try folding *(B+O) to B->X.  Still an improvement.  */
       if (POINTER_TYPE_P (TREE_TYPE (base)))
 	{
-          t = maybe_fold_offset_to_reference (base, offset,
+          t = maybe_fold_offset_to_reference (loc, base, offset,
 				              TREE_TYPE (expr));
 	  if (t)
 	    return t;
@@ -2139,7 +2170,7 @@ maybe_fold_stmt_indirect (tree expr, tree base, tree offset)
    which may be able to propagate further.  */
 
 tree
-maybe_fold_stmt_addition (tree res_type, tree op0, tree op1)
+maybe_fold_stmt_addition (location_t loc, tree res_type, tree op0, tree op1)
 {
   tree ptd_type;
   tree t;
@@ -2236,12 +2267,15 @@ maybe_fold_stmt_addition (tree res_type, tree op0, tree op1)
     ptd_type = TREE_TYPE (TREE_TYPE (op0));
 
   /* At which point we can try some of the same things as for indirects.  */
-  t = maybe_fold_offset_to_array_ref (op0, op1, ptd_type, true);
+  t = maybe_fold_offset_to_array_ref (loc, op0, op1, ptd_type, true);
   if (!t)
-    t = maybe_fold_offset_to_component_ref (TREE_TYPE (op0), op0, op1,
+    t = maybe_fold_offset_to_component_ref (loc, TREE_TYPE (op0), op0, op1,
 					    ptd_type, false);
   if (t)
-    t = build1 (ADDR_EXPR, res_type, t);
+    {
+      t = build1 (ADDR_EXPR, res_type, t);
+      SET_EXPR_LOCATION (t, loc);
+    }
 
   return t;
 }
@@ -2740,7 +2774,8 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 		 && POINTER_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt))))
 	  {
 	    tree type = gimple_expr_type (stmt);
-	    tree t = maybe_fold_offset_to_address (gimple_assign_rhs1 (stmt),
+	    tree t = maybe_fold_offset_to_address (gimple_location (stmt),
+						   gimple_assign_rhs1 (stmt),
 						   integer_zero_node, type);
 	    if (t)
 	      return t;
@@ -2760,7 +2795,8 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 		    (TREE_TYPE (gimple_assign_lhs (stmt)), type))
 		type = TREE_TYPE (gimple_assign_rhs1 (stmt));
 	    }
-	  result = maybe_fold_stmt_addition (type,
+	  result = maybe_fold_stmt_addition (gimple_location (stmt),
+					     type,
 					     gimple_assign_rhs1 (stmt),
 					     gimple_assign_rhs2 (stmt));
 	}

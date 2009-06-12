@@ -329,7 +329,7 @@ factor_computed_gotos (void)
 
 	      /* Build a label for the new block which will contain the
 		 factored computed goto.  */
-	      factored_label_decl = create_artificial_label ();
+	      factored_label_decl = create_artificial_label (UNKNOWN_LOCATION);
 	      factored_computed_goto_label
 		= gimple_build_label (factored_label_decl);
 	      gsi_insert_after (&new_gsi, factored_computed_goto_label,
@@ -4268,7 +4268,7 @@ verify_stmt (gimple_stmt_iterator *gsi)
   if (addr)
     {
       debug_generic_expr (addr);
-      inform (input_location, "in statement");
+      inform (gimple_location (gsi_stmt (*gsi)), "in statement");
       debug_gimple_stmt (stmt);
       return true;
     }
@@ -4874,7 +4874,7 @@ gimple_block_label (basic_block bb)
 	}
     }
 
-  label = create_artificial_label ();
+  label = create_artificial_label (UNKNOWN_LOCATION);
   stmt = gimple_build_label (label);
   gsi_insert_before (&s, stmt, GSI_NEW_STMT);
   return label;
@@ -6033,7 +6033,7 @@ new_label_mapper (tree decl, void *data)
   m = XNEW (struct tree_map);
   m->hash = DECL_UID (decl);
   m->base.from = decl;
-  m->to = create_artificial_label ();
+  m->to = create_artificial_label (UNKNOWN_LOCATION);
   LABEL_DECL_UID (m->to) = LABEL_DECL_UID (decl);
   if (LABEL_DECL_UID (m->to) >= cfun->cfg->last_label_uid)
     cfun->cfg->last_label_uid = LABEL_DECL_UID (m->to) + 1;

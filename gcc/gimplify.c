@@ -516,7 +516,8 @@ create_tmp_var_raw (tree type, const char *prefix)
   new_type = build_type_variant (type, 0, 0);
   TYPE_ATTRIBUTES (new_type) = TYPE_ATTRIBUTES (type);
 
-  tmp_var = build_decl (VAR_DECL, prefix ? create_tmp_var_name (prefix) : NULL,
+  tmp_var = build_decl (input_location,
+			VAR_DECL, prefix ? create_tmp_var_name (prefix) : NULL,
 			type);
 
   /* The variable was declared by the compiler.  */
@@ -1464,7 +1465,7 @@ static enum gimplify_status
 gimplify_loop_expr (tree *expr_p, gimple_seq *pre_p)
 {
   tree saved_label = gimplify_ctxp->exit_label;
-  tree start_label = create_artificial_label ();
+  tree start_label = create_artificial_label (UNKNOWN_LOCATION);
 
   gimplify_seq_add_stmt (pre_p, gimple_build_label (start_label));
 
@@ -1654,9 +1655,10 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 	    {
 	      gimple new_default;
 
-	      default_case = build3 (CASE_LABEL_EXPR, void_type_node,
-				     NULL_TREE, NULL_TREE,
-				     create_artificial_label ());
+	      default_case
+		= build3 (CASE_LABEL_EXPR, void_type_node,
+			  NULL_TREE, NULL_TREE,
+			  create_artificial_label (UNKNOWN_LOCATION));
 	      new_default = gimple_build_label (CASE_LABEL (default_case));
 	      gimplify_seq_add_stmt (&switch_body_seq, new_default);
 	    }
@@ -1707,7 +1709,7 @@ build_and_jump (tree *label_p)
 
   if (*label_p == NULL_TREE)
     {
-      tree label = create_artificial_label ();
+      tree label = create_artificial_label (UNKNOWN_LOCATION);
       *label_p = label;
     }
 
@@ -1853,7 +1855,7 @@ gimplify_conversion (tree *expr_p)
 {
   tree tem;
   gcc_assert (CONVERT_EXPR_P (*expr_p));
-  
+
   /* Then strip away all but the outermost conversion.  */
   STRIP_SIGN_NOPS (TREE_OPERAND (*expr_p, 0));
 
@@ -1868,8 +1870,8 @@ gimplify_conversion (tree *expr_p)
       && POINTER_TYPE_P (TREE_TYPE (*expr_p))
       && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (*expr_p, 0)))
       && (tem = maybe_fold_offset_to_address
-		  (TREE_OPERAND (*expr_p, 0),
-		   integer_zero_node, TREE_TYPE (*expr_p))) != NULL_TREE)
+	  (EXPR_LOCATION (*expr_p), TREE_OPERAND (*expr_p, 0),
+	   integer_zero_node, TREE_TYPE (*expr_p))) != NULL_TREE)
     *expr_p = tem;
 
   /* If we still have a conversion at the toplevel,
@@ -2310,6 +2312,7 @@ gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location)
   /* If this is a variable sized type, we must remember the size.  */
   maybe_with_size_expr (arg_p);
 
+  /* FIXME diagnostics: This will mess up gcc.dg/Warray-bounds.c.  */
   /* Make sure arguments have the same location as the function call
      itself.  */
   protected_set_expr_location (*arg_p, call_location);
@@ -2374,13 +2377,13 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
 	  if (call_expr_nargs (*expr_p) < 2)
 	    {
 	      error ("too few arguments to function %<va_start%>");
-	      *expr_p = build_empty_stmt ();
+	      *expr_p = build_empty_stmt (EXPR_LOCATION (*expr_p));
 	      return GS_OK;
 	    }
 	  
 	  if (fold_builtin_next_arg (*expr_p, true))
 	    {
-	      *expr_p = build_empty_stmt ();
+	      *expr_p = build_empty_stmt (EXPR_LOCATION (*expr_p));
 	      return GS_OK;
 	    }
 	}
@@ -3048,7 +3051,7 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
       have_then_clause_p = true;
     }
   else
-    label_true = create_artificial_label ();
+    label_true = create_artificial_label (UNKNOWN_LOCATION);
   if (TREE_OPERAND (expr, 2) != NULL
       && TREE_CODE (TREE_OPERAND (expr, 2)) == GOTO_EXPR
       && TREE_CODE (GOTO_DESTINATION (TREE_OPERAND (expr, 2))) == LABEL_DECL
@@ -3066,7 +3069,7 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
       have_else_clause_p = true;
     }
   else
-    label_false = create_artificial_label ();
+    label_false = create_artificial_label (UNKNOWN_LOCATION);
 
   gimple_cond_get_ops_from_tree (COND_EXPR_COND (expr), &pred_code, &arm1,
 				 &arm2);
@@ -3097,7 +3100,7 @@ gimplify_cond_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 	      && gimple_seq_may_fallthru (seq))
 	    {
 	      gimple g;
-	      label_cont = create_artificial_label ();
+	      label_cont = create_artificial_label (UNKNOWN_LOCATION);
 
 	      g = gimple_build_goto (label_cont);
 
@@ -3380,9 +3383,9 @@ gimplify_init_ctor_eval_range (tree object, tree lower, tree upper,
   tree loop_entry_label, loop_exit_label, fall_thru_label;
   tree var, var_type, cref, tmp;
 
-  loop_entry_label = create_artificial_label ();
-  loop_exit_label = create_artificial_label ();
-  fall_thru_label = create_artificial_label ();
+  loop_entry_label = create_artificial_label (UNKNOWN_LOCATION);
+  loop_exit_label = create_artificial_label (UNKNOWN_LOCATION);
+  fall_thru_label = create_artificial_label (UNKNOWN_LOCATION);
 
   /* Create and initialize the index variable.  */
   var_type = TREE_TYPE (upper);
@@ -4479,7 +4482,10 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       gimple_call_set_lhs (assign, *to_p);
     }
   else
-    assign = gimple_build_assign (*to_p, *from_p);
+    {
+      assign = gimple_build_assign (*to_p, *from_p);
+      gimple_set_location (assign, EXPR_LOCATION (*expr_p));
+    }
 
   gimplify_seq_add_stmt (pre_p, assign);
 
@@ -5819,7 +5825,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   else
     gcc_unreachable ();
 
-  clause = build_omp_clause (code);
+  clause = build_omp_clause (input_location, code);
   OMP_CLAUSE_DECL (clause) = decl;
   OMP_CLAUSE_CHAIN (clause) = *list_p;
   if (private_debug)
@@ -6969,8 +6975,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	   */
 	  if (TREE_CODE (TREE_OPERAND (*expr_p, 1)) == INTEGER_CST
 	      && (tmp = maybe_fold_offset_to_address
-			 (TREE_OPERAND (*expr_p, 0), TREE_OPERAND (*expr_p, 1),
-		   	  TREE_TYPE (*expr_p))))
+		  (EXPR_LOCATION (*expr_p),
+		   TREE_OPERAND (*expr_p, 0), TREE_OPERAND (*expr_p, 1),
+		   TREE_TYPE (*expr_p))))
 	    {
 	      *expr_p = tmp;
 	      break;
@@ -6981,10 +6988,11 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*expr_p,
 									0),0)))
 	      && (tmp = maybe_fold_offset_to_address
-			 (TREE_OPERAND (TREE_OPERAND (*expr_p, 0), 0),
-			  TREE_OPERAND (*expr_p, 1),
-		   	  TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*expr_p, 0),
-						   0)))))
+		  (EXPR_LOCATION (*expr_p),
+		   TREE_OPERAND (TREE_OPERAND (*expr_p, 0), 0),
+		   TREE_OPERAND (*expr_p, 1),
+		   TREE_TYPE (TREE_OPERAND (TREE_OPERAND (*expr_p, 0),
+					    0)))))
 	     {
                *expr_p = fold_convert (TREE_TYPE (*expr_p), tmp);
 	       break;

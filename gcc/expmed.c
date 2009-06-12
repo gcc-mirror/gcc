@@ -5076,7 +5076,7 @@ make_tree (tree type, rtx x)
       /* else fall through.  */
 
     default:
-      t = build_decl (VAR_DECL, NULL_TREE, type);
+      t = build_decl (RTL_LOCATION (x), VAR_DECL, NULL_TREE, type);
 
       /* If TYPE is a POINTER_TYPE, X might be Pmode with TYPE_MODE being
 	 ptr_mode.  So convert.  */
